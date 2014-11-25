@@ -48,7 +48,7 @@ AbstractModule::~AbstractModule()
 {
 }
 
-AbstractNode *AbstractModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *AbstractModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	(void)ctx; // avoid unusued parameter warning
 
@@ -173,13 +173,17 @@ Module::~Module()
 {
 }
 
-AbstractNode *Module::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *Module::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	if (StackCheck::inst()->check()) {
 		throw RecursionException("module", inst->name());
 		return NULL;
 	}
 
+	// At this point we know that nobody will modify the dependencies of the local scope
+	// passed to this instance, so we can populate the context
+	inst->scope.apply(*evalctx);
+    
 	ModuleContext c(ctx, evalctx);
 	// set $children first since we might have variables depending on it
 	c.set_variable("$children", ValuePtr(double(inst->scope.children.size())));
@@ -329,7 +333,7 @@ bool FileModule::handleDependencies()
 	return somethingchanged;
 }
 
-AbstractNode *FileModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *FileModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	assert(evalctx == NULL);
 	FileContext c(*this, ctx);
@@ -341,7 +345,7 @@ AbstractNode *FileModule::instantiate(const Context *ctx, const ModuleInstantiat
 
 	AbstractNode *node = new AbstractNode(inst);
 	try {
-		std::vector<AbstractNode *> instantiatednodes = this->scope.instantiateChildren(ctx, &c);
+		std::vector<AbstractNode *> instantiatednodes = this->scope.instantiateChildren(&c);
 		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 	}
 	catch (RecursionException &e) {

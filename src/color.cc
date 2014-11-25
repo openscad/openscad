@@ -42,7 +42,7 @@ class ColorModule : public AbstractModule
 public:
 	ColorModule();
 	virtual ~ColorModule();
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
 
 private:
 	boost::unordered_map<std::string, Color4f> webcolors;
@@ -205,7 +205,7 @@ ColorModule::~ColorModule()
 {
 }
 
-AbstractNode *ColorModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *ColorModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	ColorNode *node = new ColorNode(inst);
 
@@ -218,6 +218,7 @@ AbstractNode *ColorModule::instantiate(const Context *ctx, const ModuleInstantia
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);
+	inst->scope.apply(*evalctx);
 
 	ValuePtr v = c.lookup_variable("c");
 	if (v->type() == Value::VECTOR) {

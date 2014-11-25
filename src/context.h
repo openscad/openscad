@@ -16,7 +16,7 @@ public:
 
 	const Context *getParent() const { return this->parent; }
 	virtual ValuePtr evaluate_function(const std::string &name, const class EvalContext *evalctx) const;
-	virtual class AbstractNode *instantiate_module(const class ModuleInstantiation &inst, const EvalContext *evalctx) const;
+	virtual class AbstractNode *instantiate_module(const class ModuleInstantiation &inst, EvalContext *evalctx) const;
 
 	void setVariables(const AssignmentList &args,
 										const class EvalContext *evalctx = NULL);

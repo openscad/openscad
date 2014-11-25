@@ -46,10 +46,10 @@ class OffsetModule : public AbstractModule
 {
 public:
 	OffsetModule() { }
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
 };
 
-AbstractNode *OffsetModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *OffsetModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	OffsetNode *node = new OffsetNode(inst);
 
@@ -58,6 +58,7 @@ AbstractNode *OffsetModule::instantiate(const Context *ctx, const ModuleInstanti
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);
+	inst->scope.apply(*evalctx);
 
 	node->fn = c.lookup_variable("$fn")->toDouble();
 	node->fs = c.lookup_variable("$fs")->toDouble();

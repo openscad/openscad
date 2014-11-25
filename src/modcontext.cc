@@ -71,6 +71,7 @@ void ModuleContext::initializeModule(const class Module &module)
 	BOOST_FOREACH(const Assignment &ass, module.scope.assignments) {
 		this->set_variable(ass.first, ass.second->evaluate(this));
 	}
+
 // Experimental code. See issue #399
 //	evaluateAssignments(module.scope.assignments);
 }
@@ -115,7 +116,7 @@ const AbstractModule *ModuleContext::findLocalModule(const std::string &name) co
 		}
 		std::string replacement = Builtins::instance()->isDeprecated(name);
 		if (!replacement.empty()) {
-			PRINT_DEPRECATION("DEPRECATED: The %s() module will be removed in future releases. Use %s() instead.", name % replacement);
+			PRINT_DEPRECATION("DEPRECATED: The %s() module will be removed in future releases. Use %s instead.", name % replacement);
 		}
 		return m;
 	}
@@ -131,7 +132,7 @@ ValuePtr ModuleContext::evaluate_function(const std::string &name,
 	return Context::evaluate_function(name, evalctx);
 }
 
-AbstractNode *ModuleContext::instantiate_module(const ModuleInstantiation &inst, const EvalContext *evalctx) const
+AbstractNode *ModuleContext::instantiate_module(const ModuleInstantiation &inst, EvalContext *evalctx) const
 {
 	const AbstractModule *foundm = this->findLocalModule(inst.name());
 	if (foundm) return foundm->instantiate(this, &inst, evalctx);
@@ -209,7 +210,7 @@ ValuePtr FileContext::evaluate_function(const std::string &name,
 	return ModuleContext::evaluate_function(name, evalctx);
 }
 
-AbstractNode *FileContext::instantiate_module(const ModuleInstantiation &inst, const EvalContext *evalctx) const
+AbstractNode *FileContext::instantiate_module(const ModuleInstantiation &inst, EvalContext *evalctx) const
 {
 	const AbstractModule *foundm = this->findLocalModule(inst.name());
 	if (foundm) return foundm->instantiate(this, &inst, evalctx);

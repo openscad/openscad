@@ -67,7 +67,7 @@ public:
 	virtual ~AbstractModule();
         virtual bool is_experimental() const { return feature != NULL; }
         virtual bool is_enabled() const { return (feature == NULL) || feature->is_enabled(); }
-	virtual class AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const class EvalContext *evalctx = NULL) const;
+	virtual class AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, class EvalContext *evalctx = NULL) const;
 	virtual std::string dump(const std::string &indent, const std::string &name) const;
         virtual double lookup_double_variable_with_default(Context &c, std::string variable, double def) const;
         virtual std::string lookup_string_variable_with_default(Context &c, std::string variable, std::string def) const;
@@ -80,7 +80,7 @@ public:
 	Module(const Feature& feature) : AbstractModule(feature) { }
 	virtual ~Module();
 
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx = NULL) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx = NULL) const;
 	virtual std::string dump(const std::string &indent, const std::string &name) const;
 	static const std::string& stack_element(int n) { return module_stack[n]; };
 	static int stack_size() { return module_stack.size(); };
@@ -107,7 +107,7 @@ public:
 	void registerInclude(const std::string &localpath, const std::string &fullpath);
 	bool includesChanged() const;
 	bool handleDependencies();
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx = NULL) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx = NULL) const;
 	bool hasIncludes() const { return !this->includes.empty(); }
 	bool usesLibraries() const { return !this->usedlibs.empty(); }
 	bool isHandlingDependencies() const { return this->is_handling_dependencies; }

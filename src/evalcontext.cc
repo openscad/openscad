@@ -9,6 +9,12 @@
 
 #include <boost/foreach.hpp>
 
+EvalContext::EvalContext(const Context *parent, 
+												 const AssignmentList &args, const class LocalScope *const scope)
+	: Context(parent), eval_arguments(args), scope(scope)
+{
+}
+
 const std::string &EvalContext::getArgName(size_t i) const
 {
 	assert(i < this->eval_arguments.size());

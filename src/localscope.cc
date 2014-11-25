@@ -42,13 +42,28 @@ std::string LocalScope::dump(const std::string &indent) const
 	return dump.str();
 }
 
-std::vector<AbstractNode*> LocalScope::instantiateChildren(const Context *evalctx, FileContext *filectx) const
+// FIXME: Two parameters here is a hack. Rather have separate types of scopes, or check the type of the first parameter. Note const vs. non-const
+std::vector<AbstractNode*> LocalScope::instantiateChildren(const Context *evalctx) const
 {
 	std::vector<AbstractNode*> childnodes;
 	BOOST_FOREACH (ModuleInstantiation *modinst, this->children) {
-		AbstractNode *node = modinst->evaluate(filectx ? filectx : evalctx);
+		AbstractNode *node = modinst->evaluate(evalctx);
 		if (node) childnodes.push_back(node);
 	}
 
 	return childnodes;
+}
+
+/*!
+	When instantiating a module which can take a scope as parameter (i.e. non-leaf nodes),
+	use this method to apply the local scope definitions to the evaluation context.
+	This will enable variables defined in local blocks.
+	NB! for loops are special as the local block may depend on variables evaluated by the
+	for loop parameters. The for loop code will handle this specially.
+*/
+void LocalScope::apply(Context &ctx) const
+{
+	BOOST_FOREACH(const Assignment &ass, this->assignments) {
+		ctx.set_variable(ass.first, ass.second->evaluate(&ctx));
+	}
 }

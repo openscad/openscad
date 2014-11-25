@@ -270,6 +270,7 @@ if_statement:
 child_statements:
           /* empty */
         | child_statements child_statement
+        | child_statements assignment
         ;
 
 child_statement:
@@ -280,13 +281,6 @@ child_statement:
                 if ($1) scope_stack.top()->addChild($1);
             }
         ;
-
-/*
- FIXME: This allows for variable declaration in child blocks, not activated yet
- |
-assignment ;
-*/
-
 
 // "for" is a valid module identifier
 module_id:

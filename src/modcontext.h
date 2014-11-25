@@ -21,7 +21,7 @@ public:
 	virtual ValuePtr evaluate_function(const std::string &name, 
 																										const EvalContext *evalctx) const;
 	virtual AbstractNode *instantiate_module(const ModuleInstantiation &inst, 
-																					 const EvalContext *evalctx) const;
+																					 EvalContext *evalctx) const;
 
 	const AbstractModule *findLocalModule(const std::string &name) const;
 	const AbstractFunction *findLocalFunction(const std::string &name) const;
@@ -48,7 +48,7 @@ public:
 	virtual ValuePtr evaluate_function(const std::string &name, 
 																		 const EvalContext *evalctx) const;
 	virtual AbstractNode *instantiate_module(const ModuleInstantiation &inst, 
-																					 const EvalContext *evalctx) const;
+																					 EvalContext *evalctx) const;
 
 private:
 	const FileModule::ModuleContainer &usedlibs;
