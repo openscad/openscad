@@ -11,16 +11,70 @@ extern std::vector<std::string> librarypath;
 extern std::vector<std::string> fontpath;
 
 namespace {
+	bool path_initialized = false;
 	std::string applicationpath;
+	std::string resourcespath;
+}
+
+const char *PlatformUtils::OPENSCAD_FOLDER_NAME = "OpenSCAD";
+
+static std::string lookupResourcesPath()
+{
+	fs::path resourcedir(applicationpath);
+	PRINTDB("Looking up resource folder with application path '%s'", resourcedir.c_str());
+	
+#ifndef WIN32
+#ifdef __APPLE__
+	const char *searchpath[] = {
+	    "../Resources", 	// Resources can be bundled on Mac.
+	    "../../..",       // Dev location
+	    "..",          // Test location
+	    NULL
+	};
+#else
+	const char *searchpath[] = {
+	    "../share/openscad",
+	    "../../share/openscad",
+	    ".",
+	    "..",
+	    "../..",
+	    NULL
+	};
+#endif	
+
+	fs::path tmpdir;
+	for (int a = 0;searchpath[a] != NULL;a++) {
+	    tmpdir = resourcedir / searchpath[a];
+	    
+	    const fs::path checkdir = tmpdir / "libraries";
+	    PRINTDB("Checking '%s'", checkdir.c_str());
+
+	    if (is_directory(checkdir)) {
+		resourcedir = tmpdir;
+		PRINTDB("Found resource folder '%s'", tmpdir.c_str());
+		break;
+	    }
+	}
+#endif // !WIN32
+
+	// resourcedir defaults to applicationPath
+	std::string result = boosty::stringy(boosty::canonical(resourcedir));
+	PRINTDB("Using resource folder '%s'", result);
+	return result;
 }
 
 void PlatformUtils::registerApplicationPath(const std::string &apppath)
 {
 	applicationpath = apppath;
+	resourcespath = lookupResourcesPath();
+	path_initialized = true;
 }
 
 std::string PlatformUtils::applicationPath()
 {
+	if (!path_initialized) {
+	    throw std::runtime_error("PlatformUtils::applicationPath(): application path not initialized!");
+	}
 	return applicationpath;
 }
 
@@ -52,7 +106,7 @@ std::string PlatformUtils::userLibraryPath()
 		//PRINTB("path size %i",boosty::stringy(path).size());
 		//PRINTB("lib path found: [%s]", path );
 		if (path.empty()) return "";
-		path /= "OpenSCAD";
+		path /= OPENSCAD_FOLDER_NAME;
 		path /= "libraries";
 		//PRINTB("Appended path %s", path );
 		//PRINTB("Exists: %i", fs::exists(path) );
@@ -71,7 +125,7 @@ std::string PlatformUtils::backupPath()
 		if (pathstr=="") return "";
 		path = boosty::canonical(fs::path( pathstr ));
 		if (path.empty()) return "";
-		path /= "OpenSCAD";
+		path /= OPENSCAD_FOLDER_NAME;
 		path /= "backups";
 	} catch (const fs::filesystem_error& ex) {
 		PRINTB("ERROR: %s",ex.what());
@@ -99,35 +153,10 @@ bool PlatformUtils::createBackupPath()
 // This is the built-in read-only resources path
 std::string PlatformUtils::resourcesPath()
 {
-	fs::path resourcedir(applicationPath());
-	fs::path tmpdir;
-#ifdef __APPLE__
-	// Resources can be bundled on Mac. If not, fall back to development layout
-	bool isbundle = is_directory(resourcedir / ".." / "Resources");
-	if (isbundle) {
-		resourcedir /= "../Resources";
-		// Fall back to dev layout
-		if (!is_directory(resourcedir / "libraries")) resourcedir /= "../../..";
+	if (!path_initialized) {
+	    throw std::runtime_error("PlatformUtils::resourcesPath(): application path not initialized!");
 	}
-#elif !defined(WIN32)
-	tmpdir = resourcedir / "../share/openscad";
-	if (is_directory(tmpdir / "libraries")) {
-		resourcedir = tmpdir;
-	}
-	else {
-		tmpdir = resourcedir / "../../share/openscad";
-		if (is_directory(tmpdir / "libraries")) {
-			resourcedir = tmpdir;
-		} else {
-			tmpdir = resourcedir / "../..";
-			if (is_directory(tmpdir / "libraries")) {
-				resourcedir = tmpdir;
-			}
-		}
-	}
-#endif
-	// resourcedir defaults to applicationPath
-	return boosty::stringy(boosty::canonical(resourcedir));
+	return resourcespath;
 }
 
 int PlatformUtils::setenv(const char *name, const char *value, int overwrite)

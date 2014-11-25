@@ -1,0 +1,18 @@
+{
+    "name" : "DeepOcean",
+    "index" : 1600,
+    "show-in-gui" : true,
+
+    "colors" : {
+        "background" :         "#333333",
+        "opencsg-face-front" : "#eeeeee",
+        "opencsg-face-back" :  "#0babc8",
+        "cgal-face-front" :    "#eeeeee",
+        "cgal-face-back" :     "#0babc8",
+        "cgal-face-2d" :       "#9370db",
+        "cgal-edge-front" :    "#0000ff",
+        "cgal-edge-back" :     "#0000ff",
+        "cgal-edge-2d" :       "#ff00ff",
+        "crosshair" :          "#f0f0f0"
+    }
+}

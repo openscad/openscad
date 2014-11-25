@@ -19,5 +19,27 @@ std::string PlatformUtils::documentsPath()
 	}
 }
 
+// see http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
+std::string PlatformUtils::userConfigPath()
+{
+    fs::path config_path;
+    
+    const char *xdg_env = getenv("XDG_CONFIG_HOME");
+    if (xdg_env && fs::exists(fs::path(xdg_env))) {
+	config_path = fs::path(xdg_env) / OPENSCAD_FOLDER_NAME;
+    } else {
+	const char *home = getenv("HOME");
+	if (home) {
+	    config_path = fs::path(home) / ".config" / OPENSCAD_FOLDER_NAME;
+	}
+    }
+
+    if (fs::is_directory(config_path)) {
+	return boosty::stringy(boosty::absolute(config_path));
+    }
+    
+    return "";
+}
+
 void PlatformUtils::ensureStdIO(void) {}
 

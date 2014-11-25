@@ -326,12 +326,14 @@ case $OS in
         EXAMPLESDIR=OpenSCAD.app/Contents/Resources/examples
         LIBRARYDIR=OpenSCAD.app/Contents/Resources/libraries
         FONTDIR=OpenSCAD.app/Contents/Resources/fonts
+        COLORSCHEMESDIR=OpenSCAD.app/Contents/Resources/color-schemes
     ;;
     UNIX_CROSS_WIN)
         cd $OPENSCADDIR
         EXAMPLESDIR=$DEPLOYDIR/openscad-$VERSION/examples/
         LIBRARYDIR=$DEPLOYDIR/openscad-$VERSION/libraries/
         FONTDIR=$DEPLOYDIR/openscad-$VERSION/fonts/
+        COLORSCHEMESDIR=$DEPLOYDIR/openscad-$VERSION/color-schemes/
         rm -rf $DEPLOYDIR/openscad-$VERSION
         mkdir $DEPLOYDIR/openscad-$VERSION
     ;;
@@ -339,6 +341,7 @@ case $OS in
         EXAMPLESDIR=openscad-$VERSION/examples/
         LIBRARYDIR=openscad-$VERSION/libraries/
         FONTDIR=openscad-$VERSION/fonts/
+        COLORSCHEMESDIR=openscad-$VERSION/color-schemes/
         rm -rf openscad-$VERSION
         mkdir openscad-$VERSION
     ;;
@@ -365,6 +368,11 @@ if [ -n $FONTDIR ]; then
       cp -a "$DEPLOYDIR"/mingw-cross-env/etc/fonts/. "$FONTDIR"
       ;;
   esac
+fi
+if [ -n $COLORSCHEMESDIR ]; then
+  echo $COLORSCHEMESDIR
+  mkdir -p $COLORSCHEMESDIR
+  cp -a color-schemes/* $COLORSCHEMESDIR
 fi
 if [ -n $LIBRARYDIR ]; then
     echo $LIBRARYDIR

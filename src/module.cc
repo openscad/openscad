@@ -46,7 +46,7 @@ AbstractModule::~AbstractModule()
 {
 }
 
-AbstractNode *AbstractModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *AbstractModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	(void)ctx; // avoid unusued parameter warning
 
@@ -185,7 +185,7 @@ private:
 	const ModuleInstantiation &inst;
 };
 
-AbstractNode *Module::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *Module::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	ModRecursionGuard g(*inst);
 	if (g.recursion_detected()) { 
@@ -193,6 +193,10 @@ AbstractNode *Module::instantiate(const Context *ctx, const ModuleInstantiation 
 		return NULL;
 	}
 
+	// At this point we know that nobody will modify the dependencies of the local scope
+	// passed to this instance, so we can populate the context
+	inst->scope.apply(*evalctx);
+    
 	ModuleContext c(ctx, evalctx);
 	// set $children first since we might have variables depending on it
 	c.set_variable("$children", Value(double(inst->scope.children.size())));
@@ -342,7 +346,7 @@ bool FileModule::handleDependencies()
 	return somethingchanged;
 }
 
-AbstractNode *FileModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *FileModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	assert(evalctx == NULL);
 	FileContext c(*this, ctx);
@@ -353,7 +357,7 @@ AbstractNode *FileModule::instantiate(const Context *ctx, const ModuleInstantiat
 #endif
 
 	AbstractNode *node = new AbstractNode(inst);
-	std::vector<AbstractNode *> instantiatednodes = this->scope.instantiateChildren(ctx, &c);
+	std::vector<AbstractNode *> instantiatednodes = this->scope.instantiateChildren(&c);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 
 	return node;

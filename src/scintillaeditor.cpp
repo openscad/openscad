@@ -4,6 +4,45 @@
 #include "scintillaeditor.h"
 #include <Qsci/qscicommandset.h>
 #include "Preferences.h"
+#include "PlatformUtils.h"
+
+EditorColorScheme::EditorColorScheme(fs::path path) : path(path)
+{
+    try {
+	boost::property_tree::read_json(boosty::stringy(path).c_str(), pt);
+	_name = QString(pt.get<std::string>("name").c_str());
+	_index = pt.get<int>("index");
+    } catch (const std::exception & e) {
+	PRINTB("Error reading color scheme file '%s': %s", path.c_str() % e.what());
+	_name = "";
+	_index = 0;
+    }
+}
+
+EditorColorScheme::~EditorColorScheme()
+{
+    
+}
+
+bool EditorColorScheme::valid() const
+{
+    return !_name.isEmpty();
+}
+
+const QString & EditorColorScheme::name() const
+{
+    return _name;
+}
+
+int EditorColorScheme::index() const
+{
+    return _index;
+}
+
+const boost::property_tree::ptree & EditorColorScheme::propertyTree() const
+{
+    return pt;
+}
 
 ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 {
@@ -51,7 +90,6 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
   initMargin();
   qsci->setFolding(QsciScintilla::BoxedTreeFoldStyle, 4);
   qsci->setCaretLineVisible(true);
-  this->setHighlightScheme(Preferences::inst()->getValue("editor/syntaxhighlight").toString());
 
   connect(qsci, SIGNAL(textChanged()), this, SIGNAL(contentsChanged()));
   connect(qsci, SIGNAL(modificationChanged(bool)), this, SIGNAL(modificationChanged(bool)));
@@ -87,7 +125,6 @@ void ScintillaEditor::highlightError(int error_pos)
   int line, index;
   qsci->lineIndexFromPosition(error_pos, &line, &index);
   qsci->fillIndicatorRange(line, index, line, index+1, indicatorNumber);	
-  qsci->setIndicatorForegroundColor(QColor(255,0,0,100));
   qsci->markerAdd(line, markerNumber);
 }
 
@@ -100,115 +137,155 @@ void ScintillaEditor::unhighlightLastError()
   qsci->markerDeleteAll(markerNumber);
 }
 
-//Editor themes
-void ScintillaEditor::forLightBackground()
+QColor ScintillaEditor::readColor(const boost::property_tree::ptree &pt, const std::string name, const QColor defaultColor)
 {
-  lexer->setPaper("#fff");
-  lexer->setColor(QColor("#272822")); // -> Style: Default text
-  lexer->setColor(QColor("Green"), QsciLexerCPP::Keyword);	    // -> Style: Keyword	
-  lexer->setColor(QColor("Green"), QsciLexerCPP::KeywordSet2);	    // -> Style: KeywordSet2
-  lexer->setColor(Qt::blue, QsciLexerCPP::CommentDocKeyword);	    // -> used in comments only like /*! \cube */
-  lexer->setColor(QColor("DarkBlue"), QsciLexerCPP::GlobalClass);	    // -> Style: GlobalClass
-  lexer->setColor(Qt::blue, QsciLexerCPP::Operator);
-  lexer->setColor(Qt::darkMagenta, QsciLexerCPP::DoubleQuotedString);	
-  lexer->setColor(Qt::darkCyan, QsciLexerCPP::Comment);
-  lexer->setColor(Qt::darkCyan, QsciLexerCPP::CommentLine);
-  lexer->setColor(QColor("DarkRed"), QsciLexerCPP::Number);
-  qsci->setMarkerBackgroundColor(QColor(255, 0, 0, 100), markerNumber);
-  qsci->setCaretLineBackgroundColor(QColor("#ffe4e4"));
-  qsci->setMarginsBackgroundColor(QColor("#ccc"));
-  qsci->setMarginsForegroundColor(QColor("#111"));
-  qsci->setMatchedBraceBackgroundColor(QColor("#333"));
-  qsci->setMatchedBraceForegroundColor(QColor("#fff"));
+    try {
+	const std::string val = pt.get<std::string>(name);
+	return QColor(val.c_str());
+    } catch (std::exception e) {
+	return defaultColor;
+    }
 }
 
-void ScintillaEditor::forDarkBackground()
+int ScintillaEditor::readInt(const boost::property_tree::ptree &pt, const std::string name, const int defaultValue)
 {
-  lexer->setPaper(QColor("#272822"));
-  lexer->setColor(QColor(Qt::white));          
-  lexer->setColor(QColor("#f12971"), QsciLexerCPP::Keyword);
-  lexer->setColor(QColor("#56dbf0"),QsciLexerCPP::KeywordSet2);	
-  lexer->setColor(QColor("#ccdf32"), QsciLexerCPP::CommentDocKeyword);
-  lexer->setColor(QColor("#56d8f0"), QsciLexerCPP::GlobalClass); 
-  lexer->setColor(QColor("#d8d8d8"), QsciLexerCPP::Operator);
-  lexer->setColor(QColor("#e6db74"), QsciLexerCPP::DoubleQuotedString);	
-  lexer->setColor(QColor("#e6db74"), QsciLexerCPP::CommentLine);
-  lexer->setColor(QColor("#af7dff"), QsciLexerCPP::Number);
-  qsci->setCaretLineBackgroundColor(QColor(104,225,104, 127));
-  qsci->setMarkerBackgroundColor(QColor(255, 0, 0, 100), markerNumber);
-  qsci->setMarginsBackgroundColor(QColor("20,20,20,150"));
-  qsci->setMarginsForegroundColor(QColor("#fff"));
-  qsci->setCaretWidth(2);
-  qsci->setCaretForegroundColor(QColor("#ffff00"));
+    try {
+	const int val = pt.get<int>(name);
+	return val;
+    } catch (std::exception e) {
+	return defaultValue;
+    }
 }
 
-void ScintillaEditor::Monokai()
+void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 {
-  lexer->setPaper("#272822");
-  lexer->setColor(QColor("#f8f8f2")); // -> Style: Default text
-  lexer->setColor(QColor("#66c3b3"), QsciLexerCPP::Keyword);	    // -> Style: Keyword	
-  lexer->setColor(QColor("#79abff"), QsciLexerCPP::KeywordSet2);	    // -> Style: KeywordSet2
-  lexer->setColor(QColor("#ccdf32"), QsciLexerCPP::CommentDocKeyword);	    // -> used in comments only like /*! \cube */
-  lexer->setColor(QColor("#ffffff"), QsciLexerCPP::GlobalClass);	    // -> Style: GlobalClass
-  lexer->setColor(QColor("#d8d8d8"), QsciLexerCPP::Operator);
-  lexer->setColor(QColor("#e6db74"), QsciLexerCPP::DoubleQuotedString);	
-  lexer->setColor(QColor("#75715e"), QsciLexerCPP::CommentLine);
-  lexer->setColor(QColor("#7fb347"), QsciLexerCPP::Number);
-  qsci->setMarkerBackgroundColor(QColor(255, 0, 0, 100), markerNumber);
-  qsci->setCaretLineBackgroundColor(QColor("#3e3d32"));
-  qsci->setMarginsBackgroundColor(QColor("#757575"));
-  qsci->setMarginsForegroundColor(QColor("#f8f8f2"));
-  qsci->setCaretWidth(2);
-  qsci->setCaretForegroundColor(QColor("#ffff00"));
-}
+    const boost::property_tree::ptree & pt = colorScheme->propertyTree();
 
-void ScintillaEditor::Solarized_light()
-{
-  lexer->setPaper("#fdf6e3");
-  lexer->setColor(QColor("#657b83")); // -> Style: Default text
-  lexer->setColor(QColor("#268ad1"), QsciLexerCPP::Keyword);	    // -> Style: Keyword	
-  lexer->setColor(QColor("#6c71c4"), QsciLexerCPP::KeywordSet2);	    // -> Style: KeywordSet2
-  lexer->setColor(QColor("#b58900"), QsciLexerCPP::CommentDocKeyword);	    // -> used in comments only like /*! \cube */
-  lexer->setColor(QColor("#b58800"), QsciLexerCPP::GlobalClass);	    // -> Style: GlobalClass
-  lexer->setColor(QColor("#859900"), QsciLexerCPP::Operator);
-  lexer->setColor(QColor("#2aa198"), QsciLexerCPP::DoubleQuotedString);	
-  lexer->setColor(QColor("#b58800"), QsciLexerCPP::CommentLine);
-  lexer->setColor(QColor("#cb4b16"), QsciLexerCPP::Number);
-  qsci->setMarkerBackgroundColor(QColor(255, 0, 0, 100), markerNumber);
-  qsci->setCaretLineBackgroundColor(QColor("#eeead5"));
-  qsci->setMarginsBackgroundColor(QColor("#eee8d5"));
-  qsci->setMarginsForegroundColor(QColor("#93a1a1"));
-  qsci->setMatchedBraceBackgroundColor(QColor("#0000ff"));
-  qsci->setMatchedBraceBackgroundColor(QColor("#333"));
-  qsci->setMatchedBraceForegroundColor(QColor("#fff"));
+    try {
+	const QColor textColor(pt.get<std::string>("text").c_str());
+	const QColor paperColor(pt.get<std::string>("paper").c_str());
+
+	lexer->setColor(textColor);
+	lexer->setPaper(paperColor);
+
+        const boost::property_tree::ptree& colors = pt.get_child("colors");
+	lexer->setColor(readColor(colors, "keyword1", textColor), QsciLexerCPP::Keyword);
+	lexer->setColor(readColor(colors, "keyword2", textColor), QsciLexerCPP::KeywordSet2);
+	lexer->setColor(readColor(colors, "keyword3", textColor), QsciLexerCPP::GlobalClass);
+	lexer->setColor(readColor(colors, "comment", textColor), QsciLexerCPP::CommentDocKeyword);
+	lexer->setColor(readColor(colors, "number", textColor), QsciLexerCPP::Number);
+	lexer->setColor(readColor(colors, "string", textColor), QsciLexerCPP::DoubleQuotedString);
+	lexer->setColor(readColor(colors, "operator", textColor), QsciLexerCPP::Operator);
+	lexer->setColor(readColor(colors, "commentline", textColor), QsciLexerCPP::CommentLine);
+
+        const boost::property_tree::ptree& caret = pt.get_child("caret");
+	
+	qsci->setCaretWidth(readInt(caret, "width", 1));
+	qsci->setCaretForegroundColor(readColor(caret, "foreground", textColor));
+	qsci->setCaretLineBackgroundColor(readColor(caret, "line-background", paperColor));
+
+	qsci->setMarkerBackgroundColor(readColor(colors, "error-marker", QColor(255, 0, 0, 100)), markerNumber);
+	qsci->setMarginsBackgroundColor(readColor(colors, "margin-background", paperColor));
+	qsci->setMarginsForegroundColor(readColor(colors, "margin-foreground", textColor));
+	qsci->setMatchedBraceBackgroundColor(readColor(colors, "matched-brace-background", paperColor));
+	qsci->setMatchedBraceForegroundColor(readColor(colors, "matched-brace-foreground", textColor));
+	qsci->setUnmatchedBraceBackgroundColor(readColor(colors, "unmatched-brace-background", paperColor));
+	qsci->setUnmatchedBraceForegroundColor(readColor(colors, "unmatched-brace-foreground", textColor));
+	qsci->setSelectionForegroundColor(readColor(colors, "selection-foreground", paperColor));
+	qsci->setSelectionBackgroundColor(readColor(colors, "selection-background", textColor));
+        qsci->setFoldMarginColors(readColor(colors, "margin-foreground", textColor),
+		readColor(colors, "margin-background", paperColor));
+	qsci->setEdgeColor(readColor(colors, "edge", textColor));
+    } catch (std::exception e) {
+	noColor();
+    }
 }
 
 void ScintillaEditor::noColor()
 {
-  lexer->setPaper(Qt::white);
-  lexer->setColor(Qt::black);
-  qsci->setMarginsBackgroundColor(QColor("#ccc"));
-  qsci->setMarginsForegroundColor(QColor("#111"));
+    lexer->setPaper(Qt::white);
+    lexer->setColor(Qt::black);
+    qsci->setCaretWidth(2);
+    qsci->setCaretForegroundColor(Qt::black);
+    qsci->setMarkerBackgroundColor(QColor(255, 0, 0, 100), markerNumber);
+    qsci->setCaretLineBackgroundColor(Qt::white);
+    qsci->setMarginsBackgroundColor(Qt::white);
+    qsci->setMarginsForegroundColor(Qt::black);
+    qsci->setSelectionForegroundColor(Qt::white);
+    qsci->setSelectionBackgroundColor(Qt::black);
+    qsci->setMatchedBraceBackgroundColor(Qt::white);
+    qsci->setMatchedBraceForegroundColor(Qt::black);
+    qsci->setUnmatchedBraceBackgroundColor(Qt::white);
+    qsci->setUnmatchedBraceForegroundColor(Qt::black);
+    qsci->setMarginsBackgroundColor(Qt::lightGray);
+    qsci->setMarginsForegroundColor(Qt::black);
+    qsci->setFoldMarginColors(Qt::black, Qt::lightGray);
+    qsci->setEdgeColor(Qt::black);
+}
+
+void ScintillaEditor::enumerateColorSchemesInPath(ScintillaEditor::colorscheme_set_t &result_set, const fs::path path)
+{
+    const fs::path color_schemes = path / "color-schemes" / "editor";
+
+    fs::directory_iterator end_iter;
+    
+    if (fs::exists(color_schemes) && fs::is_directory(color_schemes)) {
+	for (fs::directory_iterator dir_iter(color_schemes); dir_iter != end_iter; ++dir_iter) {
+	    if (!fs::is_regular_file(dir_iter->status())) {
+		continue;
+	    }
+	    
+	    const fs::path path = (*dir_iter).path();
+	    if (!(path.extension().string() == ".json")) {
+		continue;
+	    }
+	    
+	    EditorColorScheme *colorScheme = new EditorColorScheme(path);
+	    if (colorScheme->valid()) {
+		result_set.insert(colorscheme_set_t::value_type(colorScheme->index(), boost::shared_ptr<EditorColorScheme>(colorScheme)));
+	    } else {
+		delete colorScheme;
+	    }
+	}
+    }
+}
+
+ScintillaEditor::colorscheme_set_t ScintillaEditor::enumerateColorSchemes()
+{
+    colorscheme_set_t result_set;
+
+    enumerateColorSchemesInPath(result_set, PlatformUtils::resourcesPath());
+    enumerateColorSchemesInPath(result_set, PlatformUtils::userConfigPath());
+    
+    return result_set;
+}
+
+QStringList ScintillaEditor::colorSchemes()
+{
+    const colorscheme_set_t colorscheme_set = enumerateColorSchemes();
+
+    QStringList colorSchemes;
+    for (colorscheme_set_t::const_iterator it = colorscheme_set.begin();it != colorscheme_set.end();it++) {
+        colorSchemes <<  (*it).second.get()->name();
+    }
+    colorSchemes << "Off";
 	
+    return colorSchemes;
 }
 
 void ScintillaEditor::setHighlightScheme(const QString &name)
 {
-  if(name == "For Light Background") {
-    forLightBackground();
-  }
-  else if(name == "For Dark Background") {
-    forDarkBackground();
-  }
-  else if(name == "Monokai") {
-    Monokai();
-  }
-  else if(name == "Solarized") {
-    Solarized_light();
-  }
-  else if(name == "Off") {
+    const colorscheme_set_t colorscheme_set = enumerateColorSchemes();
+
+    for (colorscheme_set_t::const_iterator it = colorscheme_set.begin();it != colorscheme_set.end();it++) {
+        const EditorColorScheme *colorScheme = (*it).second.get();
+	if (colorScheme->name() == name) {
+	    setColormap(colorScheme);
+	    return;
+	}
+    }
+    
     noColor();
-  }
 }
 
 void ScintillaEditor::insert(const QString &text)
@@ -307,7 +384,7 @@ void ScintillaEditor::replaceSelectedText(const QString &newText)
   if (qsci->selectedText() != newText) qsci->replaceSelectedText(newText);
 }
 
-void ScintillaEditor::get_range(int *lineFrom, int *lineTo)
+void ScintillaEditor::getRange(int *lineFrom, int *lineTo)
 {
     int indexFrom, indexTo;
     if (qsci->hasSelectedText()) {
@@ -324,7 +401,7 @@ void ScintillaEditor::get_range(int *lineFrom, int *lineTo)
 void ScintillaEditor::indentSelection()
 {
     int lineFrom, lineTo;
-    get_range(&lineFrom, &lineTo);
+    getRange(&lineFrom, &lineTo);
     for (int line = lineFrom;line <= lineTo;line++) {
 	qsci->indent(line);
     }
@@ -333,7 +410,7 @@ void ScintillaEditor::indentSelection()
 void ScintillaEditor::unindentSelection()
 {
     int lineFrom, lineTo;
-    get_range(&lineFrom, &lineTo);
+    getRange(&lineFrom, &lineTo);
     for (int line = lineFrom;line <= lineTo;line++) {
 	qsci->unindent(line);
     }
@@ -344,7 +421,7 @@ void ScintillaEditor::commentSelection()
     bool hasSelection = qsci->hasSelectedText();
     
     int lineFrom, lineTo;
-    get_range(&lineFrom, &lineTo);
+    getRange(&lineFrom, &lineTo);
     for (int line = lineFrom;line <= lineTo;line++) {
 	qsci->insertAt("//", line, 0);
     }
@@ -359,7 +436,7 @@ void ScintillaEditor::uncommentSelection()
     bool hasSelection = qsci->hasSelectedText();
 
     int lineFrom, lineTo;
-    get_range(&lineFrom, &lineTo);
+    getRange(&lineFrom, &lineTo);
     for (int line = lineFrom;line <= lineTo;line++) {
 	QString lineText = qsci->text(line);
 	if (lineText.startsWith("//")) {

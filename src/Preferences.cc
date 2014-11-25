@@ -48,7 +48,10 @@ Q_DECLARE_METATYPE(Feature *);
 Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 {
 	setupUi(this);
+}
 
+void Preferences::init() {
+	
 	// Editor pane
 	// Setup default font (Try to use a nice monospace font)
 	QString fontfamily;
@@ -110,7 +113,7 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	QActionGroup *group = new QActionGroup(this);
 	addPrefPage(group, prefsAction3DView, page3DView);
 	addPrefPage(group, prefsActionEditor, pageEditor);
-#if defined(OPENSCAD_DEPLOY) && defined(Q_OS_MAC)
+#ifdef OPENSCAD_UPDATER
 	addPrefPage(group, prefsActionUpdate, pageUpdate);
 #else
 	this->toolBar->removeAction(prefsActionUpdate);
@@ -136,14 +139,12 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 #endif
 	this->polysetCacheSizeEdit->setValidator(validator);
 	this->opencsgLimitEdit->setValidator(validator);
-
-	setupFeaturesPage();
-	updateGUI();
 }
 
 Preferences::~Preferences()
 {
 	removeDefaultSettings();
+	instance = NULL;
 }
 
 /**
@@ -273,7 +274,7 @@ void Preferences::on_editorType_editTextChanged(const QString &type)
 	settings.setValue("editor/editortype", type);
 }
 
-void Preferences::on_syntaxHighlight_currentIndexChanged(const QString &s)
+void Preferences::on_syntaxHighlight_activated(const QString &s)
 {
 	QSettings settings;
 	settings.setValue("editor/syntaxhighlight", s);
@@ -307,7 +308,7 @@ void Preferences::on_snapshotCheckBox_toggled(bool on)
 
 void Preferences::on_checkNowButton_clicked()
 {
-	if (AutoUpdater *updater =AutoUpdater::updater()) {
+	if (AutoUpdater *updater = AutoUpdater::updater()) {
 		updater->checkForUpdates();
 	} else {
 		unimplemented_msg();
@@ -459,7 +460,14 @@ void Preferences::updateGUI()
 
 	QString shighlight = getValue("editor/syntaxhighlight").toString();
 	int shidx = this->syntaxHighlight->findText(shighlight);
-	if (shidx >= 0) this->syntaxHighlight->setCurrentIndex(shidx);
+	if (shidx >= 0) {
+	    this->syntaxHighlight->setCurrentIndex(shidx);
+	} else {
+	    int offidx = this->syntaxHighlight->findText("Off");
+	    if (offidx >= 0) {
+		this->syntaxHighlight->setCurrentIndex(offidx);
+	    }
+	}
 
 	QString editortypevar = getValue("editor/editortype").toString();
 	int edidx = this->editorType->findText(editortypevar);
@@ -491,4 +499,33 @@ void Preferences::apply() const
 	emit fontChanged(getValue("editor/fontfamily").toString(), getValue("editor/fontsize").toUInt());
 	emit requestRedraw();
 	emit openCSGSettingsChanged();
+	emit syntaxHighlightChanged(getValue("editor/syntaxhighlight").toString());
+}
+
+void Preferences::create(QStringList colorSchemes)
+{
+    if (instance != NULL) {
+	return;
+    }
+
+    std::list<std::string> names = ColorMap::inst()->colorSchemeNames(true);
+    QStringList renderColorSchemes;
+    foreach (std::string name, names) {
+	renderColorSchemes << name.c_str();
+    }
+    
+    instance = new Preferences();
+    instance->syntaxHighlight->clear();
+    instance->syntaxHighlight->addItems(colorSchemes);
+    instance->colorSchemeChooser->clear();
+    instance->colorSchemeChooser->addItems(renderColorSchemes);
+    instance->init();
+    instance->setupFeaturesPage();
+    instance->updateGUI();
+}
+
+Preferences *Preferences::inst() {
+    assert(instance != NULL);
+    
+    return instance;
 }

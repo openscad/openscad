@@ -18,6 +18,7 @@ ECHO: "user-defined special variables as parameter"
 ECHO: 7
 ECHO: 7
 ECHO: "assign only visible in children's scope"
+DEPRECATED: The assign() module will be removed in future releases. Use a regular assignment instead.
 WARNING: Ignoring unknown variable 'c'.
 ECHO: undef
 ECHO: 5

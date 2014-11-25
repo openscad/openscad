@@ -1,0 +1,30 @@
+WARNING: Ignoring unknown variable 'h'.
+ECHO: "union scope"
+ECHO: "local a (5):", 5
+ECHO: "global a (4):", 4
+ECHO: "module scope:"
+ECHO: "local b (7)", 7
+ECHO: "local b (7)", 7
+ECHO: "module children scope:"
+ECHO: "b2 (3)", 3
+ECHO: "for loop (c = 0,1,25):"
+ECHO: "c", 0
+ECHO: "c", 1
+ECHO: "c", 25
+ECHO: "if scope:"
+ECHO: "d (8)", 8
+ECHO: "else scope:"
+ECHO: "d (9)", 9
+ECHO: "anonymous inner scope (scope ignored):"
+ECHO: "outer e (3)", 3
+ECHO: "inner e (3)", 3
+ECHO: "anonymous scope (scope ignored):"
+ECHO: "outer f (2)", 2
+ECHO: "inner f (2)", 2
+ECHO: "anonymous scope reassign:"
+ECHO: "g (2)", 2
+ECHO: "anonymous reassign using outer (scope ignored)", undef
+ECHO: "h (undef)", undef
+ECHO: "override variable in assign scope:"
+DEPRECATED: The assign() module will be removed in future releases. Use a regular assignment instead.
+ECHO: "i (10)", 10

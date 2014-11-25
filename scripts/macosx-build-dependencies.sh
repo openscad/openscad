@@ -771,7 +771,7 @@ fi
 echo "Using basedir:" $BASEDIR
 mkdir -p $SRCDIR $DEPLOYDIR
 build_qt5 5.3.1
-build_qscintilla 2.8.3
+build_qscintilla 2.8.4
 # NB! For eigen, also update the path in the function
 build_eigen 3.2.1
 build_gmp 5.1.3

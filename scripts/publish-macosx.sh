@@ -2,6 +2,11 @@
 # NB! To build a release build, the VERSION and VERSIONDATE environment variables needs to be set.
 # See doc/release-checklist.txt
 
+#
+# Usage:
+#   ./scripts/publish-macosx.sh [buildonly]
+#
+
 export NUMCPU=$(sysctl -n hw.ncpu)
 
 human_filesize()
@@ -40,6 +45,13 @@ update_www_download_links()
     fi
 }
 
+# Cmd-line parameters
+DOUPLOAD=1
+if [ "`echo $* | grep buildonly`" ]; then
+  echo "Build only, no upload"
+  DOUPLOAD=
+fi
+
 if test -z "$VERSIONDATE"; then
   VERSIONDATE=`date "+%Y.%m.%d"`
 fi
@@ -74,6 +86,10 @@ echo "Sanity check of the app bundle..."
 `dirname $0`/macosx-sanity-check.py OpenSCAD.app/Contents/MacOS/OpenSCAD
 if [[ $? != 0 ]]; then
   exit 1
+fi
+
+if [ ! $DOUPLOAD ]; then
+  exit 0
 fi
 
 SIGNATURE=$(openssl dgst -sha1 -binary < OpenSCAD-$VERSION.dmg  | openssl dgst -dss1 -sign $HOME/.ssh/openscad-appcast.pem | openssl enc -base64)
