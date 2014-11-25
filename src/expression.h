@@ -13,16 +13,7 @@ public:
 	Expression *second;
 	Expression *third;
 
-	ValuePtr const_value;
-	std::string var_name;
-
-	std::string call_funcname;
-	AssignmentList call_arguments;
-
 	Expression();
-	Expression(const ValuePtr &val);
-	Expression(const std::string &val);
-	Expression(const std::string &val, Expression *expr);
 	Expression(Expression *expr);
 	Expression(Expression *left, Expression *right);
 	Expression(Expression *expr1, Expression *expr2, Expression *expr3);
@@ -161,6 +152,7 @@ public:
 	ExpressionArrayLookup(Expression *left, Expression *right);
 	ValuePtr evaluate(const class Context *context) const;
 	virtual void print(std::ostream &stream) const;
+private:
 };
 
 class ExpressionInvert : public Expression
@@ -177,6 +169,8 @@ public:
 	ExpressionConst(const ValuePtr &val);
 	ValuePtr evaluate(const class Context *) const;
 	virtual void print(std::ostream &stream) const;
+private:
+	ValuePtr const_value;
 };
 
 class ExpressionRange : public Expression
@@ -199,33 +193,42 @@ public:
 class ExpressionLookup : public Expression
 {
 public:
-	ExpressionLookup(const std::string &val);
+	ExpressionLookup(const std::string &var_name);
 	ValuePtr evaluate(const class Context *context) const;
 	virtual void print(std::ostream &stream) const;
+private:
+	std::string var_name;
 };
 
 class ExpressionMember : public Expression
 {
 public:
-	ExpressionMember(const std::string &val, Expression *expr);
+	ExpressionMember(Expression *expr, const std::string &member);
 	ValuePtr evaluate(const class Context *context) const;
 	virtual void print(std::ostream &stream) const;
+private:
+	std::string member;
 };
 
-class ExpressionFunction : public Expression
+class ExpressionFunctionCall : public Expression
 {
 public:
-	ExpressionFunction();
+	ExpressionFunctionCall(const std::string &funcname, const AssignmentList &arglist);
 	ValuePtr evaluate(const class Context *context) const;
 	virtual void print(std::ostream &stream) const;
+public:
+	std::string funcname;
+	AssignmentList call_arguments;
 };
 
 class ExpressionLet : public Expression
 {
 public:
-	ExpressionLet(Expression *expr);
+	ExpressionLet(const AssignmentList &arglist, Expression *expr);
 	ValuePtr evaluate(const class Context *context) const;
 	virtual void print(std::ostream &stream) const;
+private:
+	AssignmentList call_arguments;
 };
 
 class ExpressionLcExpression : public Expression
@@ -240,8 +243,13 @@ class ExpressionLc : public Expression
 {
 	virtual bool isListComprehension() const;
 public:
-	ExpressionLc(Expression *expr);
-	ExpressionLc(Expression *expr1, Expression *expr2);
+	ExpressionLc(const std::string &name, 
+							 const AssignmentList &arglist, Expression *expr);
+	ExpressionLc(const std::string &name, 
+							 Expression *expr1, Expression *expr2);
 	ValuePtr evaluate(const class Context *context) const;
 	virtual void print(std::ostream &stream) const;
+private:
+	std::string name;
+	AssignmentList call_arguments;
 };

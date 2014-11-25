@@ -319,7 +319,7 @@ expr:
             }
         | expr '.' TOK_ID
             {
-                $$ = new ExpressionMember($3, $1);
+              $$ = new ExpressionMember($1, $3);
                 free($3);
             }
         | TOK_STRING
@@ -333,8 +333,7 @@ expr:
             }
         | TOK_LET '(' arguments_call ')' expr %prec LET
             {
-                $$ = new ExpressionLet($5);
-                $$->call_arguments = *$3;
+              $$ = new ExpressionLet(*$3, $5);
                 delete $3;
             }
         | '[' expr ':' expr ']'
@@ -435,9 +434,7 @@ expr:
             }
         | TOK_ID '(' arguments_call ')'
             {
-                $$ = new ExpressionFunction();
-                $$->call_funcname = $1;
-                $$->call_arguments = *$3;
+              $$ = new ExpressionFunctionCall($1, *$3);
                 free($1);
                 delete $3;
             }
@@ -448,9 +445,7 @@ list_comprehension_elements:
              be parsed as an expression) */
           TOK_LET '(' arguments_call ')' list_comprehension_elements
             {
-                $$ = new ExpressionLc($5);
-                $$->call_funcname = "let";
-                $$->call_arguments = *$3;
+              $$ = new ExpressionLc("let", *$3, $5);
                 delete $3;
             }
         | TOK_FOR '(' arguments_call ')' list_comprehension_elements_or_expr
@@ -459,17 +454,16 @@ list_comprehension_elements:
 
                 /* transform for(i=...,j=...) -> for(i=...) for(j=...) */
                 for (int i = $3->size()-1; i >= 0; i--) {
-                    Expression *e = new ExpressionLc($$);
-                    e->call_funcname = "for";
-                    e->call_arguments.push_back((*$3)[i]);
+                  AssignmentList arglist;
+                  arglist.push_back((*$3)[i]);
+                  Expression *e = new ExpressionLc("for", arglist, $$);
                     $$ = e;
                 }
                 delete $3;
             }
         | TOK_IF '(' expr ')' list_comprehension_elements_or_expr
             {
-                $$ = new ExpressionLc($3, $5);
-                $$->call_funcname = "if";
+              $$ = new ExpressionLc("if", $3, $5);
             }
         ;
 
