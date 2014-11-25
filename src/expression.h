@@ -28,9 +28,9 @@ public:
 	Expression(Expression *expr1, Expression *expr2, Expression *expr3);
 	virtual ~Expression();
 
-	virtual bool isListComprehension();
+	virtual bool isListComprehension() const;
 	virtual ValuePtr evaluate(const class Context *context) const = 0;
-	std::string toString() const;
+	virtual void print(std::ostream &stream) const = 0;
 };
 
 std::ostream &operator<<(std::ostream &stream, const Expression &expr);
@@ -39,7 +39,8 @@ class ExpressionNot : public Expression
 {
 public:
 	ExpressionNot(Expression *expr);
-	ValuePtr evaluate(const class Context *context) const;
+	virtual ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
 };
 
 class ExpressionLogicalAnd : public Expression
@@ -47,6 +48,7 @@ class ExpressionLogicalAnd : public Expression
 public:
 	ExpressionLogicalAnd(Expression *left, Expression *right);
 	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
 };
 
 class ExpressionLogicalOr : public Expression
@@ -54,6 +56,7 @@ class ExpressionLogicalOr : public Expression
 public:
 	ExpressionLogicalOr(Expression *left, Expression *right);
 	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
 };
 
 class ExpressionMultiply : public Expression
@@ -61,6 +64,7 @@ class ExpressionMultiply : public Expression
 public:
 	ExpressionMultiply(Expression *left, Expression *right);
 	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
 };
 
 class ExpressionDivision : public Expression
@@ -68,6 +72,7 @@ class ExpressionDivision : public Expression
 public:
 	ExpressionDivision(Expression *left, Expression *right);
 	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
 };
 
 class ExpressionModulo : public Expression
@@ -75,6 +80,7 @@ class ExpressionModulo : public Expression
 public:
 	ExpressionModulo(Expression *left, Expression *right);
 	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
 };
 
 class ExpressionPlus : public Expression
@@ -82,6 +88,7 @@ class ExpressionPlus : public Expression
 public:
 	ExpressionPlus(Expression *left, Expression *right);
 	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
 };
 
 class ExpressionMinus : public Expression
@@ -89,6 +96,7 @@ class ExpressionMinus : public Expression
 public:
 	ExpressionMinus(Expression *left, Expression *right);
 	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
 };
 
 class ExpressionLess : public Expression
@@ -96,6 +104,7 @@ class ExpressionLess : public Expression
 public:
 	ExpressionLess(Expression *left, Expression *right);
 	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
 };
 
 class ExpressionLessOrEqual : public Expression
@@ -103,6 +112,7 @@ class ExpressionLessOrEqual : public Expression
 public:
 	ExpressionLessOrEqual(Expression *left, Expression *right);
 	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
 };
 
 class ExpressionEqual : public Expression
@@ -110,6 +120,7 @@ class ExpressionEqual : public Expression
 public:
 	ExpressionEqual(Expression *left, Expression *right);
 	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
 };
 
 class ExpressionNotEqual : public Expression
@@ -117,6 +128,7 @@ class ExpressionNotEqual : public Expression
 public:
 	ExpressionNotEqual(Expression *left, Expression *right);
 	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
 };
 
 class ExpressionGreaterOrEqual : public Expression
@@ -124,6 +136,7 @@ class ExpressionGreaterOrEqual : public Expression
 public:
 	ExpressionGreaterOrEqual(Expression *left, Expression *right);
 	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
 };
 
 class ExpressionGreater : public Expression
@@ -131,6 +144,7 @@ class ExpressionGreater : public Expression
 public:
 	ExpressionGreater(Expression *left, Expression *right);
 	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
 };
 
 class ExpressionTernary : public Expression
@@ -138,13 +152,15 @@ class ExpressionTernary : public Expression
 public:
 	ExpressionTernary(Expression *expr1, Expression *expr2, Expression *expr3);
 	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
 };
 
-class ExpressionArray : public Expression
+class ExpressionArrayLookup : public Expression
 {
 public:
-	ExpressionArray(Expression *left, Expression *right);
+	ExpressionArrayLookup(Expression *left, Expression *right);
 	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
 };
 
 class ExpressionInvert : public Expression
@@ -152,6 +168,7 @@ class ExpressionInvert : public Expression
 public:
 	ExpressionInvert(Expression *expr);
 	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
 };
 
 class ExpressionConst : public Expression
@@ -159,6 +176,7 @@ class ExpressionConst : public Expression
 public:
 	ExpressionConst(const ValuePtr &val);
 	ValuePtr evaluate(const class Context *) const;
+	virtual void print(std::ostream &stream) const;
 };
 
 class ExpressionRange : public Expression
@@ -167,6 +185,7 @@ public:
 	ExpressionRange(Expression *expr1, Expression *expr2);
 	ExpressionRange(Expression *expr1, Expression *expr2, Expression *expr3);
 	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
 };
 
 class ExpressionVector : public Expression
@@ -174,6 +193,7 @@ class ExpressionVector : public Expression
 public:
 	ExpressionVector(Expression *expr);
 	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
 };
 
 class ExpressionLookup : public Expression
@@ -181,6 +201,7 @@ class ExpressionLookup : public Expression
 public:
 	ExpressionLookup(const std::string &val);
 	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
 };
 
 class ExpressionMember : public Expression
@@ -188,6 +209,7 @@ class ExpressionMember : public Expression
 public:
 	ExpressionMember(const std::string &val, Expression *expr);
 	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
 };
 
 class ExpressionFunction : public Expression
@@ -195,13 +217,15 @@ class ExpressionFunction : public Expression
 public:
 	ExpressionFunction();
 	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
 };
 
 class ExpressionLet : public Expression
 {
 public:
-	ExpressionLet();
+	ExpressionLet(Expression *expr);
 	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
 };
 
 class ExpressionLcExpression : public Expression
@@ -209,13 +233,15 @@ class ExpressionLcExpression : public Expression
 public:
 	ExpressionLcExpression(Expression *expr);
 	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
 };
 
 class ExpressionLc : public Expression
 {
-	bool isListComprehension();
+	virtual bool isListComprehension() const;
 public:
 	ExpressionLc(Expression *expr);
 	ExpressionLc(Expression *expr1, Expression *expr2);
 	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
 };

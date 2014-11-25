@@ -333,10 +333,9 @@ expr:
             }
         | TOK_LET '(' arguments_call ')' expr %prec LET
             {
-                $$ = new ExpressionLet();
+                $$ = new ExpressionLet($5);
                 $$->call_arguments = *$3;
                 delete $3;
-                $$->children.push_back($5);
             }
         | '[' expr ':' expr ']'
             {
@@ -432,7 +431,7 @@ expr:
             }
         | expr '[' expr ']'
             {
-                $$ = new ExpressionArray($1, $3);
+                $$ = new ExpressionArrayLookup($1, $3);
             }
         | TOK_ID '(' arguments_call ')'
             {

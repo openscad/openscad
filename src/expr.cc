@@ -131,116 +131,9 @@ namespace /* anonymous*/ {
 
 }
 
-bool Expression::isListComprehension()
+bool Expression::isListComprehension() const
 {
 	return false;
-}
-
-std::string Expression::toString() const
-{
-	std::stringstream stream;
-/*
-	switch (this->type) {
-	case EXPRESSION_TYPE_MULTIPLY:
-	case EXPRESSION_TYPE_DIVISION:
-	case EXPRESSION_TYPE_MODULO:
-	case EXPRESSION_TYPE_PLUS:
-	case EXPRESSION_TYPE_MINUS:
-	case EXPRESSION_TYPE_LESS:
-	case EXPRESSION_TYPE_GREATER:
-	stream << "(" << *this->children[0] << " " << this->type << " " << *this->children[1] << ")";
-	break;
-	case EXPRESSION_TYPE_NOT:
-	stream << "!" << *this->children[0];
-	break;
-	case EXPRESSION_TYPE_LOGICAL_AND:
-	stream << "(" << *this->children[0] << " && " << *this->children[1] << ")";
-	break;
-	case EXPRESSION_TYPE_LOGICAL_OR:
-	stream << "(" << *this->children[0] << " || " << *this->children[1] << ")";
-	break;
-	case EXPRESSION_TYPE_LESS_OR_EQUAL:
-	stream << "(" << *this->children[0] << " <= " << *this->children[1] << ")";
-	break;
-	case EXPRESSION_TYPE_EQUAL:
-	stream << "(" << *this->children[0] << " == " << *this->children[1] << ")";
-	break;
-	case EXPRESSION_TYPE_NOT_EQUAL:
-	stream << "(" << *this->children[0] << " != " << *this->children[1] << ")";
-	break;
-	case EXPRESSION_TYPE_GREATER_OR_EQUAL:
-	stream << "(" << *this->children[0] << " >= " << *this->children[1] << ")";
-	break;
-	case EXPRESSION_TYPE_TERNARY:
-	stream << "(" << *this->children[0] << " ? " << *this->children[1] << " : " << *this->children[2] << ")";
-	break;
-	case EXPRESSION_TYPE_ARRAY_ACCESS:
-	stream << *this->children[0] << "[" << *this->children[1] << "]";
-	break;
-	case EXPRESSION_TYPE_INVERT:
-	stream << "-" << *this->children[0];
-	break;
-	case EXPRESSION_TYPE_CONST:
-	stream << *this->const_value;
-	break;
-	case EXPRESSION_TYPE_RANGE:
-	stream << "[" << *this->children[0] << " : " << *this->children[1];
-	if (this->children.size() > 2) {
-	stream << " : " << *this->children[2];
-	}
-	stream << "]";
-	break;
-	case EXPRESSION_TYPE_VECTOR:
-	stream << "[";
-	for (size_t i=0; i < this->children.size(); i++) {
-	if (i > 0) stream << ", ";
-	stream << *this->children[i];
-	}
-	stream << "]";
-	break;
-	case EXPRESSION_TYPE_LOOKUP:
-	stream << this->var_name;
-	break;
-	case EXPRESSION_TYPE_MEMBER:
-	stream << *this->children[0] << "." << this->var_name;
-	break;
-	case EXPRESSION_TYPE_FUNCTION:
-	stream << this->call_funcname << "(" << this->call_arguments << ")";
-	break;
-	case EXPRESSION_TYPE_LET:
-	stream << "let(" << this->call_arguments << ") " << *this->children[0];
-	break;
-	case EXPRESSION_TYPE_LC_EXPRESSION:  // list comprehension expression
-	//case EXPRESSION_TYPE_LC:
-	{
-	Expression const* c = this->children[0];
-
-	stream << "[";
-
-	do {
-	if (c->call_funcname == "for") {
-	stream << "for(" << c->call_arguments << ") ";
-	c = c->children[0];
-	} else if (c->call_funcname == "if") {
-	stream << "if(" << c->children[0] << ") ";
-	c = c->children[1];
-	} else if (c->call_funcname == "let") {
-	stream << "let(" << c->call_arguments << ") ";
-	c = c->children[0];
-	} else {
-	assert(false && "Illegal list comprehension element");
-	}
-	} while (c->type == EXPRESSION_TYPE_LC);
-
-	stream << *c << "]";
-	break;
-	}
-	default:
-	assert(false && "Illegal expression type");
-	break;
-	}
-*/
-	return stream.str();
 }
 
 ExpressionNot::ExpressionNot(Expression *expr) : Expression(expr)
@@ -252,6 +145,11 @@ ValuePtr ExpressionNot::evaluate(const Context *context) const
 	return !first->evaluate(context);
 }
 
+void ExpressionNot::print(std::ostream &stream) const
+{
+	stream << "!" << *first;
+}
+
 ExpressionLogicalAnd::ExpressionLogicalAnd(Expression *left, Expression *right) : Expression(left, right)
 {
 }
@@ -259,6 +157,11 @@ ExpressionLogicalAnd::ExpressionLogicalAnd(Expression *left, Expression *right) 
 ValuePtr ExpressionLogicalAnd::evaluate(const Context *context) const
 {
 	return this->first->evaluate(context) && this->second->evaluate(context);
+}
+
+void ExpressionLogicalAnd::print(std::ostream &stream) const
+{
+	stream << "(" << *first << " && " << *second << ")";
 }
 
 ExpressionLogicalOr::ExpressionLogicalOr(Expression *left, Expression *right) : Expression(left, right)
@@ -270,6 +173,11 @@ ValuePtr ExpressionLogicalOr::evaluate(const Context *context) const
 	return this->first->evaluate(context) || this->second->evaluate(context);
 }
 
+void ExpressionLogicalOr::print(std::ostream &stream) const
+{
+	stream << "(" << *first << " || " << *second << ")";
+}
+
 ExpressionMultiply::ExpressionMultiply(Expression *left, Expression *right) : Expression(left, right)
 {
 }
@@ -277,6 +185,11 @@ ExpressionMultiply::ExpressionMultiply(Expression *left, Expression *right) : Ex
 ValuePtr ExpressionMultiply::evaluate(const Context *context) const
 {
 	return this->first->evaluate(context) * this->second->evaluate(context);
+}
+
+void ExpressionMultiply::print(std::ostream &stream) const
+{
+	stream << "(" << *first << " * " << *second << ")";
 }
 
 ExpressionDivision::ExpressionDivision(Expression *left, Expression *right) : Expression(left, right)
@@ -288,6 +201,11 @@ ValuePtr ExpressionDivision::evaluate(const Context *context) const
 	return this->first->evaluate(context) / this->second->evaluate(context);
 }
 
+void ExpressionDivision::print(std::ostream &stream) const
+{
+	stream << "(" << *first << " / " << *second << ")";
+}
+
 ExpressionModulo::ExpressionModulo(Expression *left, Expression *right) : Expression(left, right)
 {
 }
@@ -295,6 +213,11 @@ ExpressionModulo::ExpressionModulo(Expression *left, Expression *right) : Expres
 ValuePtr ExpressionModulo::evaluate(const Context *context) const
 {
 	return this->first->evaluate(context) % this->second->evaluate(context);
+}
+
+void ExpressionModulo::print(std::ostream &stream) const
+{
+	stream << "(" << *first << " % " << *second << ")";
 }
 
 ExpressionPlus::ExpressionPlus(Expression *left, Expression *right) : Expression(left, right)
@@ -306,6 +229,11 @@ ValuePtr ExpressionPlus::evaluate(const Context *context) const
 	return this->first->evaluate(context) + this->second->evaluate(context);
 }
 
+void ExpressionPlus::print(std::ostream &stream) const
+{
+	stream << "(" << *first << " + " << *second << ")";
+}
+
 ExpressionMinus::ExpressionMinus(Expression *left, Expression *right) : Expression(left, right)
 {
 }
@@ -313,6 +241,11 @@ ExpressionMinus::ExpressionMinus(Expression *left, Expression *right) : Expressi
 ValuePtr ExpressionMinus::evaluate(const Context *context) const
 {
 	return this->first->evaluate(context) - this->second->evaluate(context);
+}
+
+void ExpressionMinus::print(std::ostream &stream) const
+{
+	stream << "(" << *first << " - " << *second << ")";
 }
 
 ExpressionLess::ExpressionLess(Expression *left, Expression *right) : Expression(left, right)
@@ -324,6 +257,11 @@ ValuePtr ExpressionLess::evaluate(const Context *context) const
 	return this->first->evaluate(context) < this->second->evaluate(context);
 }
 
+void ExpressionLess::print(std::ostream &stream) const
+{
+	stream << "(" << *first << " < " << *second << ")";
+}
+
 ExpressionLessOrEqual::ExpressionLessOrEqual(Expression *left, Expression *right) : Expression(left, right)
 {
 }
@@ -331,6 +269,11 @@ ExpressionLessOrEqual::ExpressionLessOrEqual(Expression *left, Expression *right
 ValuePtr ExpressionLessOrEqual::evaluate(const Context *context) const
 {
 	return this->first->evaluate(context) <= this->second->evaluate(context);
+}
+
+void ExpressionLessOrEqual::print(std::ostream &stream) const
+{
+	stream << "(" << *first << " <= " << *second << ")";
 }
 
 ExpressionEqual::ExpressionEqual(Expression *left, Expression *right) : Expression(left, right)
@@ -342,6 +285,11 @@ ValuePtr ExpressionEqual::evaluate(const Context *context) const
 	return this->first->evaluate(context) == this->second->evaluate(context);
 }
 
+void ExpressionEqual::print(std::ostream &stream) const
+{
+	stream << "(" << *first << " == " << *second << ")";
+}
+
 ExpressionNotEqual::ExpressionNotEqual(Expression *left, Expression *right) : Expression(left, right)
 {
 }
@@ -349,6 +297,11 @@ ExpressionNotEqual::ExpressionNotEqual(Expression *left, Expression *right) : Ex
 ValuePtr ExpressionNotEqual::evaluate(const Context *context) const
 {
 	return this->first->evaluate(context) != this->second->evaluate(context);
+}
+
+void ExpressionNotEqual::print(std::ostream &stream) const
+{
+	stream << "(" << *first << " != " << *second << ")";
 }
 
 ExpressionGreaterOrEqual::ExpressionGreaterOrEqual(Expression *left, Expression *right) : Expression(left, right)
@@ -360,6 +313,11 @@ ValuePtr ExpressionGreaterOrEqual::evaluate(const Context *context) const
 	return this->first->evaluate(context) >= this->second->evaluate(context);
 }
 
+void ExpressionGreaterOrEqual::print(std::ostream &stream) const
+{
+	stream << "(" << *first << " >= " << *second << ")";
+}
+
 ExpressionGreater::ExpressionGreater(Expression *left, Expression *right) : Expression(left, right)
 {
 }
@@ -367,6 +325,11 @@ ExpressionGreater::ExpressionGreater(Expression *left, Expression *right) : Expr
 ValuePtr ExpressionGreater::evaluate(const Context *context) const
 {
 	return this->first->evaluate(context) > this->second->evaluate(context);
+}
+
+void ExpressionGreater::print(std::ostream &stream) const
+{
+	stream << "(" << *first << " > " << *second << ")";
 }
 
 ExpressionTernary::ExpressionTernary(Expression *expr1, Expression *expr2, Expression *expr3) : Expression(expr1, expr2, expr3)
@@ -378,12 +341,22 @@ ValuePtr ExpressionTernary::evaluate(const Context *context) const
 	return (this->first->evaluate(context) ? this->second : this->third)->evaluate(context);
 }
 
-ExpressionArray::ExpressionArray(Expression *left, Expression *right) : Expression(left, right)
+void ExpressionTernary::print(std::ostream &stream) const
+{
+	stream << "(" << *first << " ? " << *second << " : " << *third << ")";
+}
+
+ExpressionArrayLookup::ExpressionArrayLookup(Expression *left, Expression *right) : Expression(left, right)
 {
 }
 
-ValuePtr ExpressionArray::evaluate(const Context *context) const {
+ValuePtr ExpressionArrayLookup::evaluate(const Context *context) const {
 	return this->first->evaluate(context)[this->second->evaluate(context)];
+}
+
+void ExpressionArrayLookup::print(std::ostream &stream) const
+{
+	stream << *first << "[" << *second << "]";
 }
 
 ExpressionInvert::ExpressionInvert(Expression *expr) : Expression(expr)
@@ -395,6 +368,11 @@ ValuePtr ExpressionInvert::evaluate(const Context *context) const
 	return -this->first->evaluate(context);
 }
 
+void ExpressionInvert::print(std::ostream &stream) const
+{
+	stream << "-" << *first;
+}
+
 ExpressionConst::ExpressionConst(const ValuePtr &val) : Expression(val)
 {
 }
@@ -402,6 +380,11 @@ ExpressionConst::ExpressionConst(const ValuePtr &val) : Expression(val)
 ValuePtr ExpressionConst::evaluate(const class Context *) const
 {
 	return ValuePtr(this->const_value);
+}
+
+void ExpressionConst::print(std::ostream &stream) const
+{
+    stream << *this->const_value;
 }
 
 ExpressionRange::ExpressionRange(Expression *expr1, Expression *expr2) : Expression(expr1, expr2)
@@ -433,6 +416,13 @@ ValuePtr ExpressionRange::evaluate(const Context *context) const
 	return ValuePtr::undefined;
 }
 
+void ExpressionRange::print(std::ostream &stream) const
+{
+	stream << "[" << *first << " : " << *second;
+	if (this->children.size() > 2) stream << " : " << *third;
+	stream << "]";
+}
+
 ExpressionVector::ExpressionVector(Expression *expr) : Expression(expr)
 {
 }
@@ -446,6 +436,16 @@ ValuePtr ExpressionVector::evaluate(const Context *context) const
 	return ValuePtr(vec);
 }
 
+void ExpressionVector::print(std::ostream &stream) const
+{
+	stream << "[";
+	for (size_t i=0; i < this->children.size(); i++) {
+		if (i > 0) stream << ", ";
+		stream << *this->children[i];
+	}
+	stream << "]";
+}
+
 ExpressionLookup::ExpressionLookup(const std::string &val) : Expression(val)
 {
 }
@@ -453,6 +453,11 @@ ExpressionLookup::ExpressionLookup(const std::string &val) : Expression(val)
 ValuePtr ExpressionLookup::evaluate(const Context *context) const
 {
 	return context->lookup_variable(this->var_name);
+}
+
+void ExpressionLookup::print(std::ostream &stream) const
+{
+	stream << this->var_name;
 }
 
 ExpressionMember::ExpressionMember(const std::string &val, Expression *expr) : Expression(val, expr)
@@ -475,6 +480,11 @@ ValuePtr ExpressionMember::evaluate(const Context *context) const
 	return ValuePtr::undefined;
 }
 
+void ExpressionMember::print(std::ostream &stream) const
+{
+	stream << *first << "." << this->var_name;
+}
+
 ExpressionFunction::ExpressionFunction()
 {
 }
@@ -492,7 +502,12 @@ ValuePtr ExpressionFunction::evaluate(const Context *context) const
 	return result;
 }
 
-ExpressionLet::ExpressionLet()
+void ExpressionFunction::print(std::ostream &stream) const
+{
+	stream << this->call_funcname << "(" << this->call_arguments << ")";
+}
+
+ExpressionLet::ExpressionLet(Expression *expr) : Expression(expr)
 {
 }
 
@@ -504,6 +519,11 @@ ValuePtr ExpressionLet::evaluate(const Context *context) const
 	return this->children[0]->evaluate(&c);
 }
 
+void ExpressionLet::print(std::ostream &stream) const
+{
+	stream << "let(" << this->call_arguments << ") " << *first;
+}
+
 ExpressionLcExpression::ExpressionLcExpression(Expression *expr) : Expression(expr)
 {
 }
@@ -511,6 +531,30 @@ ExpressionLcExpression::ExpressionLcExpression(Expression *expr) : Expression(ex
 ValuePtr ExpressionLcExpression::evaluate(const Context *context) const
 {
 	return this->children[0]->evaluate(context);
+}
+
+void ExpressionLcExpression::print(std::ostream &stream) const
+{
+	Expression const* c = this->first;
+	
+	stream << "[";
+	
+	do {
+		if (c->call_funcname == "for") {
+			stream << "for(" << c->call_arguments << ") ";
+			c = c->children[0];
+		} else if (c->call_funcname == "if") {
+			stream << "if(" << c->children[0] << ") ";
+			c = c->children[1];
+		} else if (c->call_funcname == "let") {
+			stream << "let(" << c->call_arguments << ") ";
+			c = c->children[0];
+		} else {
+			assert(false && "Illegal list comprehension element");
+		}
+	} while (c->isListComprehension());
+	
+	stream << *c << "]";
 }
 
 ExpressionLc::ExpressionLc(Expression *expr) : Expression(expr)
@@ -521,7 +565,7 @@ ExpressionLc::ExpressionLc(Expression *expr1, Expression *expr2) : Expression(ex
 {
 }
 
-bool ExpressionLc::isListComprehension()
+bool ExpressionLc::isListComprehension() const
 {
 	return true;
 }
@@ -587,8 +631,13 @@ ValuePtr ExpressionLc::evaluate(const Context *context) const
 	}
 }
 
+void ExpressionLc::print(std::ostream &stream) const
+{
+	// FIXME: Implement?
+}
+
 std::ostream &operator<<(std::ostream &stream, const Expression &expr)
 {
-	stream << expr.toString();
+	expr.print(stream);
 	return stream;
 }
