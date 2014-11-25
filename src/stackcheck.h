@@ -13,8 +13,6 @@ public:
     unsigned long size();
     
 private:
-    unsigned char * sp() { unsigned char c; return &c; };
-    
     unsigned char * ptr;
     
     static StackCheck *self;

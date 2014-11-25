@@ -15,12 +15,14 @@ StackCheck::~StackCheck()
 
 void StackCheck::init()
 {
-    ptr = sp();
+	unsigned char c;
+	ptr = &c;
 }
 
 unsigned long StackCheck::size()
 {
-    return std::labs(ptr - sp());
+	unsigned char c;
+	return std::labs(ptr - &c);
 }
 
 bool StackCheck::check()
