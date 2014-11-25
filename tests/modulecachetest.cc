@@ -34,6 +34,7 @@
 #include "export.h"
 #include "builtin.h"
 #include "Tree.h"
+#include "stackcheck.h"
 
 #ifndef _MSC_VER
 #include <getopt.h>
@@ -67,6 +68,7 @@ int main(int argc, char **argv)
 
 	int rc = 0;
 
+	StackCheck::inst()->init();
 	Builtins::instance()->initialize();
 
 	fs::path original_path = fs::current_path();
