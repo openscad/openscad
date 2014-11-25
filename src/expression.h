@@ -9,9 +9,9 @@ class Expression
 {
 public:
 	std::vector<Expression*> children;
-        Expression *first;
-        Expression *second;
-        Expression *third;
+	Expression *first;
+	Expression *second;
+	Expression *third;
 
 	ValuePtr const_value;
 	std::string var_name;
@@ -28,9 +28,8 @@ public:
 	Expression(Expression *expr1, Expression *expr2, Expression *expr3);
 	virtual ~Expression();
 
-        virtual bool isListComprehension();
+	virtual bool isListComprehension();
 	virtual ValuePtr evaluate(const class Context *context) const = 0;
-
 	std::string toString() const;
 };
 
@@ -39,184 +38,184 @@ std::ostream &operator<<(std::ostream &stream, const Expression &expr);
 class ExpressionNot : public Expression
 {
 public:
-    ExpressionNot(Expression *expr);
-    ValuePtr evaluate(const class Context *context) const;
+	ExpressionNot(Expression *expr);
+	ValuePtr evaluate(const class Context *context) const;
 };
 
 class ExpressionLogicalAnd : public Expression
 {
 public:
-    ExpressionLogicalAnd(Expression *left, Expression *right);
-    ValuePtr evaluate(const class Context *context) const;
+	ExpressionLogicalAnd(Expression *left, Expression *right);
+	ValuePtr evaluate(const class Context *context) const;
 };
 
 class ExpressionLogicalOr : public Expression
 {
 public:
-    ExpressionLogicalOr(Expression *left, Expression *right);
-    ValuePtr evaluate(const class Context *context) const;
+	ExpressionLogicalOr(Expression *left, Expression *right);
+	ValuePtr evaluate(const class Context *context) const;
 };
 
 class ExpressionMultiply : public Expression
 {
 public:
-    ExpressionMultiply(Expression *left, Expression *right);
-    ValuePtr evaluate(const class Context *context) const;
+	ExpressionMultiply(Expression *left, Expression *right);
+	ValuePtr evaluate(const class Context *context) const;
 };
 
 class ExpressionDivision : public Expression
 {
 public:
-    ExpressionDivision(Expression *left, Expression *right);
-    ValuePtr evaluate(const class Context *context) const;
+	ExpressionDivision(Expression *left, Expression *right);
+	ValuePtr evaluate(const class Context *context) const;
 };
 
 class ExpressionModulo : public Expression
 {
 public:
-    ExpressionModulo(Expression *left, Expression *right);
-    ValuePtr evaluate(const class Context *context) const;
+	ExpressionModulo(Expression *left, Expression *right);
+	ValuePtr evaluate(const class Context *context) const;
 };
 
 class ExpressionPlus : public Expression
 {
 public:
-    ExpressionPlus(Expression *left, Expression *right);
-    ValuePtr evaluate(const class Context *context) const;
+	ExpressionPlus(Expression *left, Expression *right);
+	ValuePtr evaluate(const class Context *context) const;
 };
 
 class ExpressionMinus : public Expression
 {
 public:
-    ExpressionMinus(Expression *left, Expression *right);
-    ValuePtr evaluate(const class Context *context) const;
+	ExpressionMinus(Expression *left, Expression *right);
+	ValuePtr evaluate(const class Context *context) const;
 };
 
 class ExpressionLess : public Expression
 {
 public:
-    ExpressionLess(Expression *left, Expression *right);
-    ValuePtr evaluate(const class Context *context) const;
+	ExpressionLess(Expression *left, Expression *right);
+	ValuePtr evaluate(const class Context *context) const;
 };
 
 class ExpressionLessOrEqual : public Expression
 {
 public:
-    ExpressionLessOrEqual(Expression *left, Expression *right);
-    ValuePtr evaluate(const class Context *context) const;
+	ExpressionLessOrEqual(Expression *left, Expression *right);
+	ValuePtr evaluate(const class Context *context) const;
 };
 
 class ExpressionEqual : public Expression
 {
 public:
-    ExpressionEqual(Expression *left, Expression *right);
-    ValuePtr evaluate(const class Context *context) const;
+	ExpressionEqual(Expression *left, Expression *right);
+	ValuePtr evaluate(const class Context *context) const;
 };
 
 class ExpressionNotEqual : public Expression
 {
 public:
-    ExpressionNotEqual(Expression *left, Expression *right);
-    ValuePtr evaluate(const class Context *context) const;
+	ExpressionNotEqual(Expression *left, Expression *right);
+	ValuePtr evaluate(const class Context *context) const;
 };
 
 class ExpressionGreaterOrEqual : public Expression
 {
 public:
-    ExpressionGreaterOrEqual(Expression *left, Expression *right);
-    ValuePtr evaluate(const class Context *context) const;
+	ExpressionGreaterOrEqual(Expression *left, Expression *right);
+	ValuePtr evaluate(const class Context *context) const;
 };
 
 class ExpressionGreater : public Expression
 {
 public:
-    ExpressionGreater(Expression *left, Expression *right);
-    ValuePtr evaluate(const class Context *context) const;
+	ExpressionGreater(Expression *left, Expression *right);
+	ValuePtr evaluate(const class Context *context) const;
 };
 
 class ExpressionTernary : public Expression
 {
 public:
-    ExpressionTernary(Expression *expr1, Expression *expr2, Expression *expr3);
-    ValuePtr evaluate(const class Context *context) const;
+	ExpressionTernary(Expression *expr1, Expression *expr2, Expression *expr3);
+	ValuePtr evaluate(const class Context *context) const;
 };
 
 class ExpressionArray : public Expression
 {
 public:
-    ExpressionArray(Expression *left, Expression *right);
-    ValuePtr evaluate(const class Context *context) const;
+	ExpressionArray(Expression *left, Expression *right);
+	ValuePtr evaluate(const class Context *context) const;
 };
 
 class ExpressionInvert : public Expression
 {
 public:
-    ExpressionInvert(Expression *expr);
-    ValuePtr evaluate(const class Context *context) const;
+	ExpressionInvert(Expression *expr);
+	ValuePtr evaluate(const class Context *context) const;
 };
 
 class ExpressionConst : public Expression
 {
 public:
-    ExpressionConst(const ValuePtr &val);
-    ValuePtr evaluate(const class Context *) const;
+	ExpressionConst(const ValuePtr &val);
+	ValuePtr evaluate(const class Context *) const;
 };
 
 class ExpressionRange : public Expression
 {
 public:
-    ExpressionRange(Expression *expr1, Expression *expr2);
-    ExpressionRange(Expression *expr1, Expression *expr2, Expression *expr3);
-    ValuePtr evaluate(const class Context *context) const;
+	ExpressionRange(Expression *expr1, Expression *expr2);
+	ExpressionRange(Expression *expr1, Expression *expr2, Expression *expr3);
+	ValuePtr evaluate(const class Context *context) const;
 };
 
 class ExpressionVector : public Expression
 {
 public:
-    ExpressionVector(Expression *expr);
-    ValuePtr evaluate(const class Context *context) const;
+	ExpressionVector(Expression *expr);
+	ValuePtr evaluate(const class Context *context) const;
 };
 
 class ExpressionLookup : public Expression
 {
 public:
-    ExpressionLookup(const std::string &val);
-    ValuePtr evaluate(const class Context *context) const;
+	ExpressionLookup(const std::string &val);
+	ValuePtr evaluate(const class Context *context) const;
 };
 
 class ExpressionMember : public Expression
 {
 public:
-    ExpressionMember(const std::string &val, Expression *expr);
-    ValuePtr evaluate(const class Context *context) const;
+	ExpressionMember(const std::string &val, Expression *expr);
+	ValuePtr evaluate(const class Context *context) const;
 };
 
 class ExpressionFunction : public Expression
 {
 public:
-    ExpressionFunction();
-    ValuePtr evaluate(const class Context *context) const;
+	ExpressionFunction();
+	ValuePtr evaluate(const class Context *context) const;
 };
 
 class ExpressionLet : public Expression
 {
 public:
-    ExpressionLet();
-    ValuePtr evaluate(const class Context *context) const;
+	ExpressionLet();
+	ValuePtr evaluate(const class Context *context) const;
 };
 
 class ExpressionLcExpression : public Expression
 {
 public:
-    ExpressionLcExpression(Expression *expr);
-    ValuePtr evaluate(const class Context *context) const;
+	ExpressionLcExpression(Expression *expr);
+	ValuePtr evaluate(const class Context *context) const;
 };
 
 class ExpressionLc : public Expression
 {
-    bool isListComprehension();
+	bool isListComprehension();
 public:
-    ExpressionLc(Expression *expr);
-    ExpressionLc(Expression *expr1, Expression *expr2);
-    ValuePtr evaluate(const class Context *context) const;
+	ExpressionLc(Expression *expr);
+	ExpressionLc(Expression *expr1, Expression *expr2);
+	ValuePtr evaluate(const class Context *context) const;
 };
