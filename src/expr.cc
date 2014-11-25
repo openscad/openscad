@@ -495,9 +495,8 @@ ValuePtr ExpressionFunction::evaluate(const Context *context) const
 		throw RecursionException("function", call_funcname);
 	}
     
-	EvalContext *c = new EvalContext(context, this->call_arguments);
-	ValuePtr result = context->evaluate_function(this->call_funcname, c);
-	delete c;
+	EvalContext c(context, this->call_arguments);
+	ValuePtr result = context->evaluate_function(this->call_funcname, &c);
 
 	return result;
 }

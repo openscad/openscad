@@ -92,10 +92,9 @@ Function::~Function()
 ValuePtr Function::evaluate(const Context *ctx, const EvalContext *evalctx) const
 {
 	if (!expr) return ValuePtr::undefined;
-	Context *c = new Context(ctx);
-	c->setVariables(definition_arguments, evalctx);
-	ValuePtr result = expr->evaluate(c);
-	delete c;
+	Context c(ctx);
+	c.setVariables(definition_arguments, evalctx);
+	ValuePtr result = expr->evaluate(&c);
 
 	return result;
 }
