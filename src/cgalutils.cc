@@ -67,7 +67,7 @@ namespace /* anonymous */ {
 			Grid3d<int> grid(GRID_FINE);
 			std::vector<size_t> indices(3);
 		
-			BOOST_FOREACH(const PolySet::Polygon &p, ps.polygons) {
+			BOOST_FOREACH(const Polygon &p, ps.polygons) {
 				BOOST_REVERSE_FOREACH(Vector3d v, p) {
 					if (!grid.has(v[0], v[1], v[2])) {
 						// align v to the grid; the CGALPoint will receive the aligned vertex
@@ -85,7 +85,7 @@ namespace /* anonymous */ {
 			BOOST_FOREACH(const CGALPoint &p, vertices) {
 				B.add_vertex(p);
 			}
-			BOOST_FOREACH(const PolySet::Polygon &p, ps.polygons) {
+			BOOST_FOREACH(const Polygon &p, ps.polygons) {
 #ifdef GEN_SURFACE_DEBUG
 				if (pidx++ > 0) printf(",");
 #endif
@@ -148,7 +148,7 @@ namespace /* anonymous */ {
 #ifdef GEN_SURFACE_DEBUG
 				printf("polyhedron(faces=[");
 #endif
-				BOOST_FOREACH(const PolySet::Polygon &p, ps.polygons) {
+				BOOST_FOREACH(const Polygon &p, ps.polygons) {
 #ifdef GEN_SURFACE_DEBUG
 					if (pidx++ > 0) printf(",");
 #endif
@@ -373,7 +373,7 @@ namespace CGALUtils {
 			} else {
 				const PolySet *ps = dynamic_cast<const PolySet *>(chgeom.get());
 				if (ps) {
-					BOOST_FOREACH(const PolySet::Polygon &p, ps->polygons) {
+					BOOST_FOREACH(const Polygon &p, ps->polygons) {
 						BOOST_FOREACH(const Vector3d &v, p) {
 							points.insert(K::Point_3(v[0], v[1], v[2]));
 						}

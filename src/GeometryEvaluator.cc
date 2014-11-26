@@ -573,7 +573,7 @@ Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 
 static void translate_PolySet(PolySet &ps, const Vector3d &translation)
 {
-	BOOST_FOREACH(PolySet::Polygon &p, ps.polygons) {
+	BOOST_FOREACH(Polygon &p, ps.polygons) {
 		BOOST_FOREACH(Vector3d &v, p) {
 			v += translation;
 		}
@@ -651,7 +651,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &
 	PolySet *ps_bottom = poly.tessellate(); // bottom
 	
 	// Flip vertex ordering for bottom polygon
-	BOOST_FOREACH(PolySet::Polygon &p, ps_bottom->polygons) {
+	BOOST_FOREACH(Polygon &p, ps_bottom->polygons) {
 		std::reverse(p.begin(), p.end());
 	}
 	translate_PolySet(*ps_bottom, Vector3d(0,0,h1));

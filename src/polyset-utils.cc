@@ -32,7 +32,7 @@ namespace PolysetUtils {
 	Polygon2d *project(const PolySet &ps) {
 		Polygon2d *poly = new Polygon2d;
 
-		BOOST_FOREACH(const PolySet::Polygon &p, ps.polygons) {
+		BOOST_FOREACH(const Polygon &p, ps.polygons) {
 			Outline2d outline;
 			BOOST_FOREACH(const Vector3d &v, p) {
 				outline.vertices.push_back(Vector2d(v[0], v[1]));
@@ -65,12 +65,12 @@ namespace PolysetUtils {
 	void tessellate_faces(const PolySet &inps, PolySet &outps) {
 		int degeneratePolygons = 0;
 		for (size_t i = 0; i < inps.polygons.size(); i++) {
-			const PolySet::Polygon pgon = inps.polygons[i];
+			const Polygon pgon = inps.polygons[i];
 			if (pgon.size() < 3) {
 				degeneratePolygons++;
 				continue;
 			}
-			std::vector<PolySet::Polygon> triangles;
+			std::vector<Polygon> triangles;
 			if (pgon.size() == 3) {
 				triangles.push_back(pgon);
 			}
@@ -98,7 +98,7 @@ namespace PolysetUtils {
 				// Iterate over the resulting faces
 				CDT::Finite_faces_iterator fit;
 				for (fit=cdt.finite_faces_begin(); fit!=cdt.finite_faces_end(); fit++) {
-					PolySet::Polygon pgon;
+					Polygon pgon;
 					for (int i=0;i<3;i++) {
 						K::Point_3 v = cdt.triangle(fit)[i];
 						pgon.push_back(Vector3d(v.x(), v.y(), v.z()));
@@ -109,7 +109,7 @@ namespace PolysetUtils {
 
 			// ..and pass to the output polyhedron
 			for (size_t j=0;j<triangles.size();j++) {
-				PolySet::Polygon t = triangles[j];
+				Polygon t = triangles[j];
 				outps.append_poly();
 				outps.append_vertex(t[0].x(),t[0].y(),t[0].z());
 				outps.append_vertex(t[1].x(),t[1].y(),t[1].z());
