@@ -26,6 +26,7 @@ public:
 	void set_constant(const std::string &name, const ValuePtr &value);
 	void set_constant(const std::string &name, const Value &value);
 
+        void apply_variables(const Context &other);
 	ValuePtr lookup_variable(const std::string &name, bool silent = false) const;
 	bool has_local_variable(const std::string &name) const;
 

@@ -84,6 +84,11 @@ std::string AbstractFunction::dump(const std::string &indent, const std::string 
 	return dump.str();
 }
 
+Function::Function(const char *name, AssignmentList &definition_arguments, Expression *expr)
+	: name(name), definition_arguments(definition_arguments), expr(expr)
+{
+}
+
 Function::~Function()
 {
 	delete expr;
@@ -111,6 +116,66 @@ std::string Function::dump(const std::string &indent, const std::string &name) c
 	}
 	dump << ") = " << *expr << ";\n";
 	return dump.str();
+}
+
+class FunctionTailRecursion : public Function
+{
+private:
+	bool invert;
+	ExpressionFunctionCall *call; // memory owned by the main expression
+	Expression *endexpr; // memory owned by the main expression
+
+public:
+	FunctionTailRecursion(const char *name, AssignmentList &definition_arguments, Expression *expr, ExpressionFunctionCall *call, Expression *endexpr, bool invert);
+	virtual ~FunctionTailRecursion();
+
+	virtual ValuePtr evaluate(const Context *ctx, const EvalContext *evalctx) const;
+};
+
+FunctionTailRecursion::FunctionTailRecursion(const char *name, AssignmentList &definition_arguments, Expression *expr, ExpressionFunctionCall *call, Expression *endexpr, bool invert)
+	: Function(name, definition_arguments, expr), invert(invert), call(call), endexpr(endexpr)
+{
+}
+
+FunctionTailRecursion::~FunctionTailRecursion()
+{
+}
+
+ValuePtr FunctionTailRecursion::evaluate(const Context *ctx, const EvalContext *evalctx) const
+{
+	if (!expr) return ValuePtr::undefined;
+
+	Context c(ctx);
+	c.setVariables(definition_arguments, evalctx);
+
+	EvalContext ec(&c, call->call_arguments);
+	while (invert ^ expr->first->evaluate(&c)) {
+		Context tmp;
+		tmp.setVariables(definition_arguments, &ec);
+		c.apply_variables(tmp);
+	}
+
+	ValuePtr result = endexpr->evaluate(&c);
+
+	return result;
+}
+
+Function * Function::create(const char *name, AssignmentList &definition_arguments, Expression *expr)
+{
+	if (dynamic_cast<ExpressionTernary *>(expr)) {
+		ExpressionFunctionCall *f1 = dynamic_cast<ExpressionFunctionCall *>(expr->second);
+		ExpressionFunctionCall *f2 = dynamic_cast<ExpressionFunctionCall *>(expr->third);
+		if (f1 && !f2) {
+			if (name == f1->funcname) {
+				return new FunctionTailRecursion(name, definition_arguments, expr, f1, expr->third, false);
+			}
+		} else if (f2 && !f1) {
+			if (name == f2->funcname) {
+				return new FunctionTailRecursion(name, definition_arguments, expr, f2, expr->second, true);
+			}
+		}
+	}
+	return new Function(name, definition_arguments, expr);
 }
 
 BuiltinFunction::~BuiltinFunction()

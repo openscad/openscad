@@ -166,9 +166,7 @@ statement:
             }
         | TOK_FUNCTION TOK_ID '(' arguments_decl optional_commas ')' '=' expr
             {
-                Function *func = new Function();
-                func->definition_arguments = *$4;
-                func->expr = $8;
+                Function *func = Function::create($2, *$4, $8);
                 scope_stack.top()->functions[$2] = func;
                 free($2);
                 delete $4;

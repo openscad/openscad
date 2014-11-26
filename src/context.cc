@@ -121,6 +121,13 @@ void Context::set_constant(const std::string &name, const Value &value)
 	set_constant(name, ValuePtr(value));
 }
 
+void Context::apply_variables(const Context &other)
+{
+	for (ValueMap::const_iterator it = other.variables.begin();it != other.variables.end();it++) {
+		set_variable((*it).first, (*it).second);
+	}
+}
+
 ValuePtr Context::lookup_variable(const std::string &name, bool silent) const
 {
 	if (!this->ctx_stack) {

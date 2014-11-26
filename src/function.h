@@ -38,13 +38,16 @@ public:
 class Function : public AbstractFunction
 {
 public:
+        std::string name;
 	AssignmentList definition_arguments;
 
 	Expression *expr;
 
-	Function() { }
+	Function(const char *name, AssignmentList &definition_arguments, Expression *expr);
 	virtual ~Function();
 
 	virtual ValuePtr evaluate(const Context *ctx, const EvalContext *evalctx) const;
 	virtual std::string dump(const std::string &indent, const std::string &name) const;
+        
+        static Function * create(const char *name, AssignmentList &definition_arguments, Expression *expr);
 };
