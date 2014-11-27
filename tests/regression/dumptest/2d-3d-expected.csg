@@ -3,4 +3,8 @@ group() {
 	multmatrix([[1, 0, 0, 2], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 		square(size = [1, 1], center = false);
 	}
+	union() {
+		cube(size = [0, 0, 0], center = false);
+		circle($fn = 0, $fa = 12, $fs = 2, r = 0);
+	}
 }
