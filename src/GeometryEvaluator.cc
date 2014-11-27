@@ -88,8 +88,12 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const Abstrac
 			}
 		}
 	}
-	if (dim == 2) return ResultObject(applyToChildren2D(node, op));
-	else if (dim == 3) return applyToChildren3D(node, op);
+    if (dim == 2) {
+        Polygon2d *p2d = applyToChildren2D(node, op);
+        assert(!p2d || !p2d->isEmpty());
+        return ResultObject(p2d);
+    }
+    else if (dim == 3) return applyToChildren3D(node, op);
 	return ResultObject();
 }
 

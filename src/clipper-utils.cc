@@ -81,12 +81,19 @@ namespace ClipperUtils {
 		return result;
 	}
 
+	/*!
+		Apply the clipper operator to the given paths.
+
+		Returns a Polygon2d, or NULL if the result is empty.
+
+		NB! Will not return an empty Polygon2d.
+	 */
 	Polygon2d *apply(const std::vector<ClipperLib::Paths> &pathsvector,
 									 ClipperLib::ClipType clipType)
 	{
 		ClipperLib::Clipper clipper;
 
-		if (clipType == ClipperLib::ctIntersection && pathsvector.size() > 2) {
+		if (clipType == ClipperLib::ctIntersection && pathsvector.size() >= 2) {
 			// intersection operations must be split into a sequence of binary operations
 			ClipperLib::Paths source = pathsvector[0];
 			ClipperLib::PolyTree result;
@@ -99,7 +106,7 @@ namespace ClipperUtils {
                     clipper.Clear();
                 }
 			}
-			return ClipperUtils::toPolygon2d(result);
+			return (result.Total() == 0) ? NULL : ClipperUtils::toPolygon2d(result);
 		}
 
 		bool first = true;
@@ -116,6 +123,13 @@ namespace ClipperUtils {
 		return ClipperUtils::toPolygon2d(sumresult);
 	}
 
+  /*!
+		Apply the clipper operator to the given polygons.
+		
+		Returns a Polygon2d, or NULL if the result is empty.
+
+		NB! Will not return an empty Polygon2d.
+	 */
 	Polygon2d *apply(const std::vector<const Polygon2d*> &polygons, 
 									 ClipperLib::ClipType clipType)
 	{
@@ -125,7 +139,9 @@ namespace ClipperUtils {
 			if (!polygon->isSanitized()) ClipperLib::PolyTreeToPaths(sanitize(polypaths), polypaths);
 			pathsvector.push_back(polypaths);
 		}
-		return apply(pathsvector, clipType);
+		Polygon2d *res = apply(pathsvector, clipType);
+		assert(!res || !res->isEmpty());
+		return res;
 	}
 
 
