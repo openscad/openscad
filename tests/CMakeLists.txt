@@ -1119,8 +1119,10 @@ list(APPEND EXPORT3D_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/rotate_extrude-hole.scad)
 
 disable_tests(
-  # This doesn't output anything
+  # These don't output anything
+  dxfpngtest_text-empty-tests
   dxfpngtest_nothing-decimal-comma-separated
+  dxfpngtest_nullspace-2d
 
   # Not useful
   throwntogethertest_internal-cavity
