@@ -516,8 +516,7 @@ Geometry *PrimitiveNode::createGeometry() const
 					if (!this->points.toVector()[pt].getVec3(px, py, pz) ||
 							isinf(px) || isinf(py) || isinf(pz)) {
 						PRINTB("ERROR: Unable to convert point at index %d to a vec3 of numbers", j);
-						delete p;
-						return NULL;
+						return p;
 					}
 					p->insert_vertex(px, py, pz);
 				}
