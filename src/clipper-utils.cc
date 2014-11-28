@@ -84,9 +84,7 @@ namespace ClipperUtils {
 	/*!
 		Apply the clipper operator to the given paths.
 
-		Returns a Polygon2d, or NULL if the result is empty.
-
-		NB! Will not return an empty Polygon2d.
+     May return an empty Polygon2d, but will not return NULL.
 	 */
 	Polygon2d *apply(const std::vector<ClipperLib::Paths> &pathsvector,
 									 ClipperLib::ClipType clipType)
@@ -106,7 +104,7 @@ namespace ClipperUtils {
                     clipper.Clear();
                 }
 			}
-			return (result.Total() == 0) ? NULL : ClipperUtils::toPolygon2d(result);
+			return ClipperUtils::toPolygon2d(result);
 		}
 
 		bool first = true;
@@ -116,7 +114,6 @@ namespace ClipperUtils {
 		}
 		ClipperLib::PolyTree sumresult;
 		clipper.Execute(clipType, sumresult, ClipperLib::pftNonZero, ClipperLib::pftNonZero);
-		if (sumresult.Total() == 0) return NULL;
 		// The returned result will have outlines ordered according to whether 
 		// they're positive or negative: Positive outlines counter-clockwise and 
 		// negative outlines clockwise.
@@ -126,9 +123,7 @@ namespace ClipperUtils {
   /*!
 		Apply the clipper operator to the given polygons.
 		
-		Returns a Polygon2d, or NULL if the result is empty.
-
-		NB! Will not return an empty Polygon2d.
+		May return an empty Polygon2d, but will not return NULL.
 	 */
 	Polygon2d *apply(const std::vector<const Polygon2d*> &polygons, 
 									 ClipperLib::ClipType clipType)
@@ -140,7 +135,7 @@ namespace ClipperUtils {
 			pathsvector.push_back(polypaths);
 		}
 		Polygon2d *res = apply(pathsvector, clipType);
-		assert(!res || !res->isEmpty());
+        assert(res);
 		return res;
 	}
 

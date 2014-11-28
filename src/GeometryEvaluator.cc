@@ -90,7 +90,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const Abstrac
 	}
     if (dim == 2) {
         Polygon2d *p2d = applyToChildren2D(node, op);
-        assert(!p2d || !p2d->isEmpty());
+        assert(p2d);
         return ResultObject(p2d);
     }
     else if (dim == 3) return applyToChildren3D(node, op);
@@ -129,10 +129,16 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 }
 
 
+
+/*!
+	Apply 2D hull.
+
+	May return an empty geometry but will not return NULL.
+*/
 Polygon2d *GeometryEvaluator::applyHull2D(const AbstractNode &node)
 {
 	std::vector<const Polygon2d *> children = collectChildren2D(node);
-	Polygon2d *geometry = NULL;
+	Polygon2d *geometry = new Polygon2d();
 
 	typedef CGAL::Point_2<CGAL::Cartesian<double> > CGALPoint2;
 	// Collect point cloud
@@ -154,7 +160,6 @@ Polygon2d *GeometryEvaluator::applyHull2D(const AbstractNode &node)
 		BOOST_FOREACH(const CGALPoint2 &p, result) {
 			outline.vertices.push_back(Vector2d(p[0], p[1]));
 		}
-		geometry = new Polygon2d();
 		geometry->addOutline(outline);
 	}
 	return geometry;
@@ -275,11 +280,11 @@ Geometry::ChildList GeometryEvaluator::collectChildren3D(const AbstractNode &nod
 		smartCacheInsert(*chnode, chgeom);
 		
 		if (chgeom) {
-			if (chgeom->isEmpty() || chgeom->getDimension() == 3) {
-				children.push_back(item);
-			}
-			else {
+			if (chgeom->getDimension() == 2) {
 				PRINT("WARNING: Ignoring 2D child object for 3D operation");
+			}
+			else if (chgeom->isEmpty() || chgeom->getDimension() == 3) {
+				children.push_back(item);
 			}
 		}
 	}
@@ -447,6 +452,7 @@ Response GeometryEvaluator::visit(State &state, const LeafNode &node)
 		shared_ptr<const Geometry> geom;
 		if (!isSmartCached(node)) {
 			const Geometry *geometry = node.createGeometry();
+            assert(geometry);
 			if (const Polygon2d *polygon = dynamic_cast<const Polygon2d*>(geometry)) {
 				if (!polygon->isSanitized()) {
 					Polygon2d *p = ClipperUtils::sanitize(*polygon);
