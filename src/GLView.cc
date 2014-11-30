@@ -483,13 +483,13 @@ void GLView::showAxes(const Color4f &col)
 void GLView::showCrosshairs()
 {
   // FIXME: this might not work with Vector camera
-  glLineWidth(3);
+  glLineWidth(this->getDPI());
   Color4f col = ColorMap::getColor(*this->colorscheme, CROSSHAIR_COLOR);
   glColor3f(col[0], col[1], col[2]);
   glBegin(GL_LINES);
   for (double xf = -1; xf <= +1; xf += 2)
   for (double yf = -1; yf <= +1; yf += 2) {
-    double vd = cam.viewer_distance/5;
+    double vd = cam.viewer_distance/8;
     glVertex3d(-xf*vd, -yf*vd, -vd);
     glVertex3d(+xf*vd, +yf*vd, +vd);
   }
