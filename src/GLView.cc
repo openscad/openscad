@@ -113,7 +113,6 @@ void GLView::setupCamera()
 		glRotated(cam.object_rot.x(), 1.0, 0.0, 0.0);
 		glRotated(cam.object_rot.y(), 0.0, 1.0, 0.0);
 		glRotated(cam.object_rot.z(), 0.0, 0.0, 1.0);
-		glTranslated(cam.object_trans.x(), cam.object_trans.y(), cam.object_trans.z() );
 		break;
 	case Camera::VECTOR: {
 		switch (this->cam.projection) {
@@ -152,16 +151,20 @@ void GLView::paintGL()
 {
   glDisable(GL_LIGHTING);
 
-  setupCamera();
-
   Color4f bgcol = ColorMap::getColor(*this->colorscheme, BACKGROUND_COLOR);
   Color4f bgcontrast = ColorMap::getContrastColor(bgcol);
   glClearColor(bgcol[0], bgcol[1], bgcol[2], 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-  // Only for GIMBAL cam
-  if (showcrosshairs) GLView::showCrosshairs();
-  if (showaxes) GLView::showAxes(bgcontrast);
+  setupCamera();
+  if (this->cam.type) {
+    // Only for GIMBAL cam
+    // The crosshair should be fixed at the center of the viewport...
+    if (showcrosshairs) GLView::showCrosshairs();
+    glTranslated(cam.object_trans.x(), cam.object_trans.y(), cam.object_trans.z());
+    // ...the axis lines need to follow the object translation.
+    if (showaxes) GLView::showAxes(bgcontrast);
+  }
 
   glEnable(GL_LIGHTING);
   glDepthFunc(GL_LESS);
@@ -486,7 +489,7 @@ void GLView::showCrosshairs()
   glBegin(GL_LINES);
   for (double xf = -1; xf <= +1; xf += 2)
   for (double yf = -1; yf <= +1; yf += 2) {
-    double vd = cam.viewer_distance/20;
+    double vd = cam.viewer_distance/5;
     glVertex3d(-xf*vd, -yf*vd, -vd);
     glVertex3d(+xf*vd, +yf*vd, +vd);
   }
