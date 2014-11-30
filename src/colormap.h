@@ -79,6 +79,8 @@ public:
 	std::list<std::string> colorSchemeNames(bool guiOnly = false) const;
 
 	static Color4f getColor(const ColorScheme &cs, const RenderColor rc);
+        static Color4f getContrastColor(const Color4f &col);
+	static Color4f getColorHSV(const Color4f &col);
 	
 private:
 	ColorMap();
