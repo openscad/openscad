@@ -309,7 +309,7 @@ void PolySet::render_surface(Renderer::csgmode_e csgmode, const Transform3d &m, 
 		else {
 			// If we don't have borders, use the polygons as borders.
 			// FIXME: When is this used?
-			const std::vector<Polygon> *borders_p = &polygons;
+			const Polygons *borders_p = &polygons;
 			for (size_t i = 0; i < borders_p->size(); i++) {
 				const Polygon *poly = &borders_p->at(i);
 				for (size_t j = 1; j <= poly->size(); j++) {

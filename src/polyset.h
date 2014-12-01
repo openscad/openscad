@@ -14,8 +14,7 @@ BOOST_TRIBOOL_THIRD_STATE(unknown)
 class PolySet : public Geometry
 {
 public:
-	typedef std::vector<Vector3d> Polygon;
-	std::vector<Polygon> polygons;
+	Polygons polygons;
 
 	PolySet(unsigned int dim, boost::tribool convex = unknown);
 	PolySet(const Polygon2d &origin);

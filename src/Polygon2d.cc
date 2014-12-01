@@ -11,7 +11,8 @@
 
 	We can store sanitized vs. unsanitized polygons. Sanitized polygons
 	will have opposite winding order for holes and is guaranteed to not
-	have intersecting geometry. Sanitization is typically done by ClipperUtils.
+	have intersecting geometry. Sanitization is typically done by ClipperUtils, but
+	if you create geometry which you know is sanitized, the flag can be set manually.
 */
 
 size_t Polygon2d::memsize() const

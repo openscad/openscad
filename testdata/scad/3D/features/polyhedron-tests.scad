@@ -46,3 +46,6 @@ translate([0,2,0]) difference() {
 // dont crash (issue #703)
 polyhedron(points = undef, triangles = [[1, 2, 3]]);
 polyhedron(points = [[0,0,0],[1,1,1]], triangles = undef);
+// More malformed polyhedrons
+polyhedron();
+polyhedron(points=[0], faces = [[0]]);

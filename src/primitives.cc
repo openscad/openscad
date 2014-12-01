@@ -61,7 +61,7 @@ class PrimitiveModule : public AbstractModule
 public:
 	primitive_type_e type;
 	PrimitiveModule(primitive_type_e type) : type(type) { }
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
 private:
 	Value lookup_radius(const Context &ctx, const std::string &radius_var, const std::string &diameter_var) const;
 };
@@ -141,7 +141,7 @@ Value PrimitiveModule::lookup_radius(const Context &ctx, const std::string &diam
 	}
 }
 
-AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	PrimitiveNode *node = new PrimitiveNode(inst, this->type);
 
@@ -516,8 +516,7 @@ Geometry *PrimitiveNode::createGeometry() const
 					if (!this->points.toVector()[pt].getVec3(px, py, pz) ||
 							isinf(px) || isinf(py) || isinf(pz)) {
 						PRINTB("ERROR: Unable to convert point at index %d to a vec3 of numbers", j);
-						delete p;
-						return NULL;
+						return p;
 					}
 					p->insert_vertex(px, py, pz);
 				}
@@ -544,8 +543,8 @@ Geometry *PrimitiveNode::createGeometry() const
 			o.vertices[2] = v2;
 			o.vertices[3] = Vector2d(v1[0], v2[1]);
 			p->addOutline(o);
-			p->setSanitized(true);
 		}
+		p->setSanitized(true);
 	}
 		break;
 	case CIRCLE: {
@@ -561,8 +560,8 @@ Geometry *PrimitiveNode::createGeometry() const
 				o.vertices[i] = Vector2d(this->r1*cos(phi), this->r1*sin(phi));
 			}
 			p->addOutline(o);
-			p->setSanitized(true);
 		}
+		p->setSanitized(true);
 	}
 		break;
 	case POLYGON:	{
@@ -574,12 +573,10 @@ Geometry *PrimitiveNode::createGeometry() const
 			const Value::VectorType &vec = this->points.toVector();
 			for (unsigned int i=0;i<vec.size();i++) {
 				const Value &val = vec[i];
-				if (!val.getVec2(x, y) ||
-						isinf(x) || isinf(y)) {
+				if (!val.getVec2(x, y) || isinf(x) || isinf(y)) {
 					PRINTB("ERROR: Unable to convert point %s at index %d to a vec2 of numbers", 
 								 val.toString() % i);
-					delete p;
-					return NULL;
+					return p;
 				}
 				outline.vertices.push_back(Vector2d(x, y));
 			}
@@ -601,11 +598,7 @@ Geometry *PrimitiveNode::createGeometry() const
 				}
 			}
         
-			if (p->outlines().size() == 0) {
-				delete p;
-				g = NULL;
-			}
-			else {
+			if (p->outlines().size() > 0) {
 				p->setConvexity(convexity);
 			}
 	}

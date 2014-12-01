@@ -77,11 +77,12 @@ void Builtins::initialize()
 	register_builtin_dxf_rotate_extrude();
 	register_builtin_text();
 
-	this->deprecations["dxf_linear_extrude"] = "linear_extrude";
-	this->deprecations["dxf_rotate_extrude"] = "rotate_extrude";
-	this->deprecations["import_stl"] = "import";
-	this->deprecations["import_dxf"] = "import";
-	this->deprecations["import_off"] = "import";
+	this->deprecations["dxf_linear_extrude"] = "linear_extrude()";
+	this->deprecations["dxf_rotate_extrude"] = "rotate_extrude()";
+	this->deprecations["import_stl"] = "import()";
+	this->deprecations["import_dxf"] = "import()";
+	this->deprecations["import_off"] = "import()";
+	this->deprecations["assign"] = "a regular assignment";
 }
 
 std::string Builtins::isDeprecated(const std::string &name)

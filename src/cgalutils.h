@@ -5,6 +5,12 @@
 #include "CGAL_Nef_polyhedron.h"
 #include "enums.h"
 
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+typedef CGAL::Epick K;
+typedef CGAL::Point_3<K> Vertex3K;
+typedef std::vector<Vertex3K> PolygonK;
+typedef std::vector<PolygonK> PolyholeK;
+
 namespace CGALUtils {
 	bool applyHull(const Geometry::ChildList &children, PolySet &P);
 	void applyOperator(const Geometry::ChildList &children, CGAL_Nef_polyhedron &dest, OpenSCADOperator op);
@@ -19,8 +25,16 @@ namespace CGALUtils {
 	bool createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3 &N, PolySet &ps);
 	bool createPolyhedronFromPolySet(const PolySet &ps, CGAL_Polyhedron &p);
 
-	typedef std::vector<CGAL_Point_3> CGAL_Polygon_3;
-	bool tessellate3DFaceWithHoles(std::vector<CGAL_Polygon_3> &polygons,
+	bool tessellatePolygon(const PolygonK &polygon,
+												 Polygons &triangles,
+												 const K::Vector_3 *normal = NULL);
+	bool tessellatePolygonWithHoles(const PolyholeK &polygons,
+																	Polygons &triangles,
+																	const K::Vector_3 *normal = NULL);
+	bool tessellate3DFaceWithHolesNew(std::vector<CGAL_Polygon_3> &polygons, 
+																 Polygons &triangles,
+																 CGAL::Plane_3<CGAL_Kernel3> &plane);
+	bool tessellate3DFaceWithHoles(std::vector<CGAL_Polygon_3> &polygons, 
 																 std::vector<CGAL_Polygon_3> &triangles,
 																 CGAL::Plane_3<CGAL_Kernel3> &plane);
 };

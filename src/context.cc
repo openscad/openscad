@@ -152,7 +152,7 @@ Value Context::evaluate_function(const std::string &name, const EvalContext *eva
 	return Value();
 }
 
-AbstractNode *Context::instantiate_module(const ModuleInstantiation &inst, const EvalContext *evalctx) const
+AbstractNode *Context::instantiate_module(const ModuleInstantiation &inst, EvalContext *evalctx) const
 {
 	if (this->parent) return this->parent->instantiate_module(inst, evalctx);
 	PRINTB("WARNING: Ignoring unknown module '%s'.", inst.name());

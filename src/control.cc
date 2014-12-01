@@ -29,6 +29,7 @@
 #include "node.h"
 #include "evalcontext.h"
 #include "modcontext.h"
+#include "expression.h"
 #include "builtin.h"
 #include "printutils.h"
 #include <sstream>
@@ -55,7 +56,7 @@ public: // methods
 		: type(type)
 	{ }
 
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
 
 	static void for_eval(AbstractNode &node, const ModuleInstantiation &inst, size_t l, 
 						 const Context *ctx, const EvalContext *evalctx);
@@ -99,7 +100,14 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 			for_eval(node, inst, l+1, &c, evalctx);
 		}
 	} else if (l > 0) {
-		std::vector<AbstractNode *> instantiatednodes = inst.instantiateChildren(ctx);
+		// At this point, the for loop variables have been set and we can initialize
+		// the local scope (as they may depend on the for loop variables
+		Context c(ctx);
+		BOOST_FOREACH(const Assignment &ass, inst.scope.assignments) {
+			c.set_variable(ass.first, ass.second->evaluate(&c));
+		}
+		
+		std::vector<AbstractNode *> instantiatednodes = inst.instantiateChildren(&c);
 		node.children.insert(node.children.end(), instantiatednodes.begin(), instantiatednodes.end());
 	}
 }
@@ -155,12 +163,12 @@ AbstractNode* ControlModule::getChild(const Value& value, const EvalContext* mod
 	return modulectx->getChild(n)->evaluate(modulectx);
 }
 
-AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	AbstractNode *node = NULL;
 
-	if (type == CHILD)
-	{
+	switch (this->type) {
+	case CHILD:	{
 		printDeprecation("DEPRECATED: child() will be removed in future releases. Use children() instead.");
 		int n = 0;
 		if (evalctx->numArgs() > 0) {
@@ -192,9 +200,9 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 		}
 		return node;
 	}
+		break;
 
-	if (type == CHILDREN)
-	{
+	case CHILDREN: {
 		const EvalContext *modulectx = getLastModuleCtx(evalctx);
 		if (modulectx==NULL) {
 			return NULL;
@@ -251,14 +259,10 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 		}
 		return NULL;
 	}
+		break;
 
-	if (type == INT_FOR)
-		node = new AbstractIntersectionNode(inst);
-	else
+	case ECHO: {
 		node = new AbstractNode(inst);
-
-	if (type == ECHO)
-	{
 		std::stringstream msg;
 		msg << "ECHO: ";
 		for (size_t i = 0; i < inst->arguments.size(); i++) {
@@ -273,36 +277,50 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 		}
 		PRINTB("%s", msg.str());
 	}
+		break;
 
-	if (type == ASSIGN)
-	{
+	case ASSIGN: {
+		node = new AbstractNode(inst);
+		// We create a new context to avoid parameters from influencing each other
+		// -> parallel evaluation. This is to be backwards compatible.
 		Context c(evalctx);
 		for (size_t i = 0; i < evalctx->numArgs(); i++) {
 			if (!evalctx->getArgName(i).empty())
 				c.set_variable(evalctx->getArgName(i), evalctx->getArgValue(i));
 		}
+		// Let any local variables override the parameters
+		inst->scope.apply(c);
 		std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(&c);
 		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 	}
+		break;
 
-	if (type == FOR || type == INT_FOR)
-	{
+	case FOR:
+		node = new AbstractNode(inst);
 		for_eval(*node, *inst, 0, evalctx, evalctx);
-	}
+		break;
 
-	if (type == IF)
-	{
+	case INT_FOR:
+		node = new AbstractIntersectionNode(inst);
+		for_eval(*node, *inst, 0, evalctx, evalctx);
+		break;
+
+	case IF: {
+		node = new AbstractNode(inst);
 		const IfElseModuleInstantiation *ifelse = dynamic_cast<const IfElseModuleInstantiation*>(inst);
 		if (evalctx->numArgs() > 0 && evalctx->getArgValue(0).toBool()) {
+			inst->scope.apply(*evalctx);
 			std::vector<AbstractNode *> instantiatednodes = ifelse->instantiateChildren(evalctx);
 			node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 		}
 		else {
+			ifelse->else_scope.apply(*evalctx);
 			std::vector<AbstractNode *> instantiatednodes = ifelse->instantiateElseChildren(evalctx);
 			node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 		}
 	}
-
+		break;
+	}
 	return node;
 }
 

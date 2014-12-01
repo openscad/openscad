@@ -17,6 +17,9 @@ using Eigen::Matrix4d;
 #define Transform3d Eigen::Affine3d
 #define Transform2d Eigen::Affine2d
 
+typedef std::vector<Vector3d> Polygon;
+typedef std::vector<Polygon> Polygons;
+
 bool matrix_contains_infinity( const Transform3d &m );
 bool matrix_contains_nan( const Transform3d &m );
 
