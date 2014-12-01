@@ -149,8 +149,8 @@ ValuePtr FunctionTailRecursion::evaluate(const Context *ctx, const EvalContext *
 	c.setVariables(definition_arguments, evalctx);
 
 	EvalContext ec(&c, call->call_arguments);
+	Context tmp(&c);
 	while (invert ^ expr->first->evaluate(&c)) {
-		Context tmp;
 		tmp.setVariables(definition_arguments, &ec);
 		c.apply_variables(tmp);
 	}
