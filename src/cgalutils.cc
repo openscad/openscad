@@ -35,7 +35,7 @@ namespace /* anonymous */ {
 		return Result(CGAL::to_double(v[0]),CGAL::to_double(v[1]),CGAL::to_double(v[2]));
 	}
 
-#define GEN_SURFACE_DEBUG
+#undef GEN_SURFACE_DEBUG
 
 	class CGAL_Build_PolySet : public CGAL::Modifier_base<CGAL_HDS>
 	{
