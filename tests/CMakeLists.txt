@@ -1350,6 +1350,8 @@ set_test_config(Bugs offpngtest_polyhedron-tests
                      offpngtest_bad-stl-pcbvicebar
                      offpngtest_bad-stl-tardis
                      offpngtest_bad-stl-wing)
+# No issue - this was introduced when fixing #1033
+set_test_config(Bugs stlpngtest_bad-stl-wing)
 
 add_cmdline_test(monotonepngtest EXE ${OPENSCAD_BINPATH} ARGS --colorscheme=Monotone --enable=text --render -o SUFFIX png FILES ${EXPORT3D_TEST_FILES})
 add_cmdline_test(stlpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=STL --render=cgal EXPECTEDDIR monotonepngtest SUFFIX png FILES ${EXPORT3D_TEST_FILES})
