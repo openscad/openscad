@@ -32,4 +32,6 @@ group() {
 	}
 	polyhedron(points = undef, faces = [[1, 2, 3]], convexity = 1);
 	polyhedron(points = [[0, 0, 0], [1, 1, 1]], faces = undef, convexity = 1);
+	polyhedron(points = undef, faces = undef, convexity = 1);
+	polyhedron(points = [0], faces = [[0]], convexity = 1);
 }

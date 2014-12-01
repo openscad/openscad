@@ -41,3 +41,7 @@ offset(delta = 5) shape1(1, -1);
 // Bug with fragment calculateion with delta < 1 due to abs() instead of std::abs()
 translate([-50,-50]) scale([25,25,1])
 	offset(delta = 0.9, join_type="round") square(.1);
+
+// Malformed offsets
+offset();
+offset() square(0);

@@ -588,6 +588,9 @@ std::string DxfData::dump() const
 	return out.str();
 }
 
+/*
+    May return an empty polygon, but will not return NULL
+ */
 Polygon2d *DxfData::toPolygon2d() const
 {
 	Polygon2d *poly = new Polygon2d();
@@ -601,10 +604,6 @@ Polygon2d *DxfData::toPolygon2d() const
 			outline.vertices.push_back(Vector2d(this->points[path.indices[path.indices.size()-j]]));
 		}
 		poly->addOutline(outline);
-	}
-	if (poly->outlines().size() == 0) {
-		delete poly;
-		poly = NULL;
 	}
 	return poly;
 }

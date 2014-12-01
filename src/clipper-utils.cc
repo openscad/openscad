@@ -81,12 +81,17 @@ namespace ClipperUtils {
 		return result;
 	}
 
+	/*!
+		Apply the clipper operator to the given paths.
+
+     May return an empty Polygon2d, but will not return NULL.
+	 */
 	Polygon2d *apply(const std::vector<ClipperLib::Paths> &pathsvector,
 									 ClipperLib::ClipType clipType)
 	{
 		ClipperLib::Clipper clipper;
 
-		if (clipType == ClipperLib::ctIntersection && pathsvector.size() > 2) {
+		if (clipType == ClipperLib::ctIntersection && pathsvector.size() >= 2) {
 			// intersection operations must be split into a sequence of binary operations
 			ClipperLib::Paths source = pathsvector[0];
 			ClipperLib::PolyTree result;
@@ -109,13 +114,17 @@ namespace ClipperUtils {
 		}
 		ClipperLib::PolyTree sumresult;
 		clipper.Execute(clipType, sumresult, ClipperLib::pftNonZero, ClipperLib::pftNonZero);
-		if (sumresult.Total() == 0) return NULL;
 		// The returned result will have outlines ordered according to whether 
 		// they're positive or negative: Positive outlines counter-clockwise and 
 		// negative outlines clockwise.
 		return ClipperUtils::toPolygon2d(sumresult);
 	}
 
+  /*!
+		Apply the clipper operator to the given polygons.
+		
+		May return an empty Polygon2d, but will not return NULL.
+	 */
 	Polygon2d *apply(const std::vector<const Polygon2d*> &polygons, 
 									 ClipperLib::ClipType clipType)
 	{
@@ -125,7 +134,9 @@ namespace ClipperUtils {
 			if (!polygon->isSanitized()) ClipperLib::PolyTreeToPaths(sanitize(polypaths), polypaths);
 			pathsvector.push_back(polypaths);
 		}
-		return apply(pathsvector, clipType);
+		Polygon2d *res = apply(pathsvector, clipType);
+        assert(res);
+		return res;
 	}
 
 

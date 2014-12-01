@@ -98,8 +98,8 @@ private:
 class FileModule : public Module
 {
 public:
-	FileModule() : is_handling_dependencies(false) {}
-	virtual ~FileModule() {}
+	FileModule() : context(NULL), is_handling_dependencies(false) {}
+	virtual ~FileModule();
 
 	void setModulePath(const std::string &path) { this->path = path; }
 	const std::string &modulePath() const { return this->path; }
@@ -107,14 +107,17 @@ public:
 	void registerInclude(const std::string &localpath, const std::string &fullpath);
 	bool includesChanged() const;
 	bool handleDependencies();
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx = NULL) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx = NULL);
 	bool hasIncludes() const { return !this->includes.empty(); }
 	bool usesLibraries() const { return !this->usedlibs.empty(); }
 	bool isHandlingDependencies() const { return this->is_handling_dependencies; }
+        Value lookup_variable(const std::string &name) const;
 
 	typedef boost::unordered_set<std::string> ModuleContainer;
 	ModuleContainer usedlibs;
 private:
+        /** Reference to retain the context that was used in the last evaluation */
+        class FileContext *context;
 	struct IncludeFile {
 		std::string filename;
 		bool valid;

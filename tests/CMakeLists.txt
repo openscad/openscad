@@ -675,6 +675,7 @@ set(CGAL_SOURCES
   ../src/CGAL_Nef_polyhedron.cc 
   ../src/cgalutils.cc 
   ../src/cgalutils-tess.cc 
+  ../src/cgalutils-tess-old.cc 
   ../src/CGALCache.cc
   ../src/CGAL_Nef_polyhedron_DxfData.cc
   ../src/Polygon2d-CGAL.cc
@@ -1120,8 +1121,10 @@ list(APPEND EXPORT3D_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/rotate_extrude-hole.scad)
 
 disable_tests(
-  # This doesn't output anything
+  # These don't output anything
+  dxfpngtest_text-empty-tests
   dxfpngtest_nothing-decimal-comma-separated
+  dxfpngtest_nullspace-2d
 
   # Not useful
   throwntogethertest_internal-cavity
@@ -1348,6 +1351,8 @@ set_test_config(Bugs offpngtest_polyhedron-tests
                      offpngtest_bad-stl-pcbvicebar
                      offpngtest_bad-stl-tardis
                      offpngtest_bad-stl-wing)
+# No issue - this was introduced when fixing #1033
+set_test_config(Bugs stlpngtest_bad-stl-wing)
 
 add_cmdline_test(monotonepngtest EXE ${OPENSCAD_BINPATH} ARGS --colorscheme=Monotone --enable=text --render -o SUFFIX png FILES ${EXPORT3D_TEST_FILES})
 add_cmdline_test(stlpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=STL --render=cgal EXPECTEDDIR monotonepngtest SUFFIX png FILES ${EXPORT3D_TEST_FILES})

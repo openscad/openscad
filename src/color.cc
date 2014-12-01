@@ -198,7 +198,8 @@ ColorModule::ColorModule()
 	    ("white", Color4f(255, 255, 255))
 	    ("whitesmoke", Color4f(245, 245, 245))
 	    ("yellow", Color4f(255, 255, 0))
-	    ("yellowgreen", Color4f(154, 205, 50));
+	    ("yellowgreen", Color4f(154, 205, 50))
+		.convert_to_container<boost::unordered_map<std::string, Color4f> >();
 }
 
 ColorModule::~ColorModule()

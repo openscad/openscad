@@ -1,4 +1,6 @@
-#include <Carbon/Carbon.h>
+#include <AppleEvents.h>
+#include <MacTypes.h>
+#include <CoreServices/CoreServices.h>
 #include <QApplication>
 #include "MainWindow.h"
 
