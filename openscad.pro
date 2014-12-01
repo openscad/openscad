@@ -440,6 +440,7 @@ HEADERS += src/cgal.h \
 
 SOURCES += src/cgalutils.cc \
            src/cgalutils-tess.cc \
+           src/cgalutils-tess-old.cc \
            src/CGALCache.cc \
            src/CGALRenderer.cc \
            src/CGAL_Nef_polyhedron.cc \

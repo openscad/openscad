@@ -2,25 +2,7 @@
 #include "polyset.h"
 #include "Polygon2d.h"
 #include "printutils.h"
-#include "cgal.h"
-
-#ifdef NDEBUG
-#define PREV_NDEBUG NDEBUG
-#undef NDEBUG
-#endif
-#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-#include <CGAL/Constrained_Delaunay_triangulation_2.h>
-#include <CGAL/Triangulation_2_filtered_projection_traits_3.h>
-#ifdef PREV_NDEBUG
-#define NDEBUG PREV_NDEBUG
-#endif
-
-typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
-typedef CGAL::Triangulation_2_filtered_projection_traits_3<K> Projection;
-typedef CGAL::Triangulation_data_structure_2 <
-	CGAL::Triangulation_vertex_base_2<Projection>,
-	CGAL::Constrained_triangulation_face_base_2<Projection> > Tds;
-typedef CGAL::Constrained_Delaunay_triangulation_2<Projection, Tds, CGAL::Exact_predicates_tag> CDT;
+#include "cgalutils.h"
 
 #include <boost/foreach.hpp>
 
@@ -60,7 +42,7 @@ namespace PolysetUtils {
 	 faces. As of writing, our only tessellation method is triangulation
 	 using CGAL's Constrained Delaunay algorithm. This code assumes the input
 	 polyset has simple polygon faces with no holes.
-	 The tessellation will  be robust wrt. degenerate and self-intersecting
+	 The tessellation will be robust wrt. degenerate and self-intersecting
 */
 	void tessellate_faces(const PolySet &inps, PolySet &outps) {
 		int degeneratePolygons = 0;
@@ -76,35 +58,12 @@ namespace PolysetUtils {
 			}
 			else {
 				// Build a data structure that CGAL accepts
-				std::vector<K::Point_3> cgalpoints;
+				PolygonK cgalpoints;
 				BOOST_FOREACH(const Vector3d &v, pgon) {
-					cgalpoints.push_back(K::Point_3(v[0], v[1], v[2]));
+					cgalpoints.push_back(Vertex3K(v[0], v[1], v[2]));
 				}
-				// Calculate best guess at face normal using Newell's method
-				K::Vector_3 normal;
-				CGAL::normal_vector_newell_3(cgalpoints.begin(), cgalpoints.end(), normal);
 
-				// Pass the normal vector to the (undocumented)
-				// CGAL::Triangulation_2_filtered_projection_traits_3. This
-				// trait deals with projection from 3D to 2D using the normal
-				// vector as a hint, and allows for near-planar polygons to be passed to
-				// the Constrained Delaunay Triangulator.
-				Projection actualProjection(normal);
-				CDT cdt(actualProjection);
-				for (size_t i=0;i<cgalpoints.size(); i++) {
-					cdt.insert_constraint(cgalpoints[i], cgalpoints[(i+1)%cgalpoints.size()]);
-				}
-				
-				// Iterate over the resulting faces
-				CDT::Finite_faces_iterator fit;
-				for (fit=cdt.finite_faces_begin(); fit!=cdt.finite_faces_end(); fit++) {
-					Polygon pgon;
-					for (int i=0;i<3;i++) {
-						K::Point_3 v = cdt.triangle(fit)[i];
-						pgon.push_back(Vector3d(v.x(), v.y(), v.z()));
-					}
-					triangles.push_back(pgon);
-				}
+				bool err = CGALUtils::tessellatePolygon(cgalpoints, triangles);
 			}
 
 			// ..and pass to the output polyhedron
