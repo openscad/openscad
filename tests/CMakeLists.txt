@@ -738,13 +738,13 @@ target_link_libraries(tests-cgal tests-common ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_L
 #
 if (NOT NULLGL)
   add_library(tests-nocgal STATIC ${NOCGAL_SOURCES})
-  set_target_properties(tests-nocgal PROPERTIES COMPILE_FLAGS ${ENABLE_OPENCSG_FLAG})
+  set_target_properties(tests-nocgal PROPERTIES COMPILE_FLAGS "${ENABLE_OPENCSG_FLAG}")
   target_link_libraries(tests-nocgal tests-common)
 else()
   message(STATUS "NULLGL: cannot use GL/GLU tessellator. see dxftess.cc")
   message(STATUS "NULLGL: non-CGAL tests will use CGAL's tessellator")
   add_library(tests-nocgal STATIC ${NOCGAL_SOURCES})
-  set_target_properties(tests-nocgal PROPERTIES COMPILE_FLAGS ${ENABLE_OPENCSG_FLAG})
+  set_target_properties(tests-nocgal PROPERTIES COMPILE_FLAGS "${ENABLE_OPENCSG_FLAG}")
   target_link_libraries(tests-nocgal tests-common)
 endif()
 
