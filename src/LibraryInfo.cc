@@ -93,7 +93,7 @@ std::string LibraryInfo::info()
 	  << "\nGLib version: "       << GLIB_MAJOR_VERSION << "." << GLIB_MINOR_VERSION << "." << GLIB_MICRO_VERSION
 	  << "\nApplication Path: " << PlatformUtils::applicationPath()
 	  << "\nDocuments Path: " << PlatformUtils::documentsPath()
-	  << "\nResource Path: " << PlatformUtils::resourcesPath()
+	  << "\nResource Path: " << PlatformUtils::resourceBasePath()
 	  << "\nUser Library Path: " << PlatformUtils::userLibraryPath()
 	  << "\nUser Config Path: " << PlatformUtils::userConfigPath()
 	  << "\nBackup Path: " << PlatformUtils::backupPath()

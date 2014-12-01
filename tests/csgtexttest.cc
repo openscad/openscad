@@ -81,8 +81,7 @@ int main(int argc, char **argv)
 
 	std::string applicationpath = boosty::stringy(fs::path(argv[0]).branch_path());
 	PlatformUtils::registerApplicationPath(applicationpath);
-	parser_init(applicationpath);
-	add_librarydir(boosty::stringy(fs::path(argv[0]).branch_path() / "../libraries"));
+	parser_init();
 
 	ModuleContext top_ctx;
 	top_ctx.registerBuiltin();
