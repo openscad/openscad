@@ -238,6 +238,11 @@ std::string Module::dump(const std::string &indent, const std::string &name) con
 	return dump.str();
 }
 
+FileModule::~FileModule()
+{
+	delete context;
+}
+
 void FileModule::registerUse(const std::string path) {
 	std::string extraw = boosty::extension_str(fs::path(path));
 	std::string ext = boost::algorithm::to_lower_copy(extraw);
@@ -346,19 +351,31 @@ bool FileModule::handleDependencies()
 	return somethingchanged;
 }
 
-AbstractNode *FileModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
+AbstractNode *FileModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx)
 {
 	assert(evalctx == NULL);
-	FileContext c(*this, ctx);
-	c.initializeModule(*this);
+	
+	delete context;
+	context = new FileContext(*this, ctx);
+	context->initializeModule(*this);
+
 	// FIXME: Set document path to the path of the module
 #if 0 && DEBUG
 	c.dump(this, inst);
 #endif
 
 	AbstractNode *node = new AbstractNode(inst);
-	std::vector<AbstractNode *> instantiatednodes = this->scope.instantiateChildren(&c);
+	std::vector<AbstractNode *> instantiatednodes = this->scope.instantiateChildren(context);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 
 	return node;
+}
+
+Value FileModule::lookup_variable(const std::string &name) const
+{
+	if (!context) {
+		return Value::undefined;
+	}
+	
+	return context->lookup_variable(name, true);
 }

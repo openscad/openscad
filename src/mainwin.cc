@@ -938,6 +938,7 @@ void MainWindow::compileDone(bool didchange)
 	const char *callslot;
 	if (didchange) {
 		instantiateRoot();
+		updateCamera();
 		callslot = afterCompileSlot;
 	}
 	else {
@@ -1525,34 +1526,27 @@ void MainWindow::updateCamera()
 	double rz = cam.object_rot.z();
 	double d = cam.viewer_distance;
 
-	ModuleContext mc(&top_ctx, NULL);
-	mc.initializeModule(*root_module);
+	double x, y, z;
+	const Value vpr = root_module->lookup_variable("$vpr");
+	if (vpr.getVec3(x, y, z)) {
+		rx = x;
+		ry = y;
+		rz = z;
+		camera_set = true;
+	}
 
-	BOOST_FOREACH(const Assignment &a, root_module->scope.assignments) {
-		double x, y, z;
-		if ("$vpr" == a.first) {
-			const Value vpr = a.second.get()->evaluate(&mc);
-			if (vpr.getVec3(x, y, z)) {
-				rx = x;
-				ry = y;
-				rz = z;
-				camera_set = true;
-			}
-		} else if ("$vpt" == a.first) {
-			const Value vpt = a.second.get()->evaluate(&mc);
-			if (vpt.getVec3(x, y, z)) {
-				tx = x;
-				ty = y;
-				tz = z;
-				camera_set = true;
-			}
-		} else if ("$vpd" == a.first) {
-			const Value vpd = a.second.get()->evaluate(&mc);
-			if (vpd.type() == Value::NUMBER) {
-				d = vpd.toDouble();
-				camera_set = true;
-			}
-		}
+	const Value vpt = root_module->lookup_variable("$vpt");
+	if (vpt.getVec3(x, y, z)) {
+		tx = x;
+		ty = y;
+		tz = z;
+		camera_set = true;
+	}
+
+	const Value vpd = root_module->lookup_variable("$vpd");
+	if (vpd.type() == Value::NUMBER) {
+		d = vpd.toDouble();
+		camera_set = true;
 	}
 
 	if (camera_set) {
@@ -1613,8 +1607,6 @@ void MainWindow::compileTopLevelDocument()
 	this->root_module = parse(fulltext.c_str(),
 	this->fileName.isEmpty() ? "" :
 	QFileInfo(this->fileName).absolutePath().toLocal8Bit(), false);
-
-	updateCamera();
 }
 
 void MainWindow::checkAutoReload()
