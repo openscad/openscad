@@ -111,7 +111,7 @@ public:
 	bool hasIncludes() const { return !this->includes.empty(); }
 	bool usesLibraries() const { return !this->usedlibs.empty(); }
 	bool isHandlingDependencies() const { return this->is_handling_dependencies; }
-        Value lookup_variable(const std::string &name) const;
+        ValuePtr lookup_variable(const std::string &name) const;
 
 	typedef boost::unordered_set<std::string> ModuleContainer;
 	ModuleContainer usedlibs;
