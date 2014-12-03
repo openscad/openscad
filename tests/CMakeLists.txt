@@ -738,7 +738,7 @@ target_link_libraries(tests-cgal tests-common ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_L
 add_library(tests-nocgal STATIC ${NOCGAL_SOURCES})
 target_link_libraries(tests-nocgal tests-common)
 if (NOT NULLGL)
-  set_target_properties(tests-nocgal PROPERTIES COMPILE_FLAGS ${ENABLE_OPENCSG_FLAG})
+  set_target_properties(tests-nocgal PROPERTIES COMPILE_FLAGS "${ENABLE_OPENCSG_FLAG}")
 endif()
 
 add_library(tests-offscreen STATIC ${OFFSCREEN_SOURCES})
