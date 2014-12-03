@@ -389,7 +389,7 @@ Response GeometryEvaluator::visit(State &state, const OffsetNode &node)
 				// circular arc is ... Pi / acos(1 - arc_tolerance / abs(delta))
 				double n = Calc::get_fragments_from_r(10, node.fn, node.fs, node.fa);
 				double arc_tolerance = std::abs(node.delta) * (1 - cos(M_PI / n));
-				const Polygon2d *result = ClipperUtils::applyOffset(*polygon, node.delta, node.join_type, node.miter_limit, arc_tolerance);
+				const Polygon2d *result = ClipperUtils::applyOffset(*polygon, node.delta, node.join_type, node.bevel_limit, arc_tolerance);
 				assert(result);
 				geom.reset(result);
 				delete geometry;

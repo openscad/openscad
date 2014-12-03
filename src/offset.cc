@@ -54,7 +54,7 @@ AbstractNode *OffsetModule::instantiate(const Context *ctx, const ModuleInstanti
 	OffsetNode *node = new OffsetNode(inst);
 
 	AssignmentList args;
-	args += Assignment("delta");
+	args += Assignment("r");
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);
@@ -64,30 +64,35 @@ AbstractNode *OffsetModule::instantiate(const Context *ctx, const ModuleInstanti
 	node->fs = c.lookup_variable("$fs").toDouble();
 	node->fa = c.lookup_variable("$fa").toDouble();
 
-	Value delta = c.lookup_variable("delta");
+	// default with no argument at all is round / delta = 1
+	// radius takes precedence if both r and delta are given.
 	node->delta = 1;
-	delta.getDouble(node->delta);
+	node->join_type = ClipperLib::jtRound;
+	const Value r = c.lookup_variable("r");
+	const Value delta = c.lookup_variable("delta", true);
 	
-	Value miter_limit = c.lookup_variable("miter_limit", true);
-	node->miter_limit = 2;
-	miter_limit.getDouble(node->miter_limit);
-	
-	Value join_type = c.lookup_variable("join_type", true);
-	if (join_type.type() == Value::STRING) {
-		std::string jt = join_type.toString();
-		if (std::string("bevel") == jt) {
-			node->join_type = ClipperLib::jtSquare;
-		} else if (std::string("round") == jt) {
-			node->join_type = ClipperLib::jtRound;
-		} else if (std::string("miter") == jt) {
-			node->join_type = ClipperLib::jtMiter;
-		} else {
-			PRINTB("WARNING: Unknown join_type for offset(): '%s'", jt);
-		}
-		
-		if ((node->join_type != ClipperLib::jtMiter) && !miter_limit.isUndefined()) {
-			PRINTB("WARNING: miter_limit is ignored in offset() for join_type: '%s'", jt);
-		}
+	if (r.isDefinedAs(Value::NUMBER)) {
+	    r.getDouble(node->delta);
+	} else if (delta.isDefinedAs(Value::NUMBER)) {
+	    delta.getDouble(node->delta);
+
+	    const Value bevel_limit = c.lookup_variable("bevel_limit", true);
+	    node->bevel_limit = 2;
+	    bevel_limit.getDouble(node->bevel_limit);
+
+	    // The join_type is inferred from the value given to bevel_limit
+	    // (bevel_limit not set -> use default value of 2)
+	    //
+	    // = 0          : Use jtSquare
+	    // <> 0 and < 2 : Use jtSquare but produce a warning.
+	    // >= 2         : Use jtMiter and actually use the bevel_limit value.
+	    node->join_type = ClipperLib::jtSquare;
+	    if (node->bevel_limit >= 2) {
+		node->join_type = ClipperLib::jtMiter;
+	    } else if (node->bevel_limit != 0) {
+		PRINTB("WARNING: Invalid value for bevel_limit (value = %f), valid values are bevel_limit = 0 or bevel_limit >= 2.", node->bevel_limit);
+		node->bevel_limit = 0;
+	    }
 	}
 	
 	std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(evalctx);
@@ -100,21 +105,17 @@ std::string OffsetNode::toString() const
 {
 	std::stringstream stream;
 
-	stream  << this->name()
-		<< "(delta = " << std::dec << this->delta
-		<< ", join_type = \""
-			<< (this->join_type == ClipperLib::jtSquare
-				? "bevel"
-				: this->join_type == ClipperLib::jtRound
-					? "round"
-					: "miter") << "\"";
-	if (this->join_type == ClipperLib::jtMiter) {
-		stream << ", miter_limit = " << this->miter_limit;
+	bool isRadius = this->join_type == ClipperLib::jtRound;
+	const char *var = isRadius ? "(r = " : "(delta = ";
+
+	stream  << this->name() << var << std::dec << this->delta;
+	if (!isRadius) {
+	    stream << ", bevel_limit = " << this->bevel_limit;
 	}
 	stream  << ", $fn = " << this->fn
 		<< ", $fa = " << this->fa
 		<< ", $fs = " << this->fs << ")";
-	
+
 	return stream.str();
 }
 
