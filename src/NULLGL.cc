@@ -4,16 +4,10 @@ GLView::GLView() {}
 void GLView::setRenderer(Renderer* r) {}
 void GLView::initializeGL() {}
 void GLView::resizeGL(int w, int h) {}
-//void GLView::setupGimbalCamPerspective() {}
-//void GLView::setupGimbalCamOrtho(double distance, bool offset) {}
-//void GLView::setupVectorCamPerspective() {}
-//void GLView::setupVectorCamOrtho(bool offset) {}
-void GLView::setCamera(const Camera &cam ) {}
+void GLView::setCamera(const Camera &cam ) {assert(false && "not implemented");}
 void GLView::paintGL() {}
-//void GLView::vectorCamPaintGL() {}
-//void GLView::gimbalCamPaintGL() {}
-void GLView::showSmallaxes() {}
-void GLView::showAxes() {}
+void GLView::showSmallaxes(const Color4f &col) {}
+void GLView::showAxes(const Color4f &col) {}
 void GLView::showCrosshairs() {}
 void GLView::setColorScheme(const ColorScheme &cs){assert(false && "not implemented");}
 void GLView::setColorScheme(const std::string &cs) {assert(false && "not implemented");}
