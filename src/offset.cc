@@ -60,21 +60,21 @@ AbstractNode *OffsetModule::instantiate(const Context *ctx, const ModuleInstanti
 	c.setVariables(args, evalctx);
 	inst->scope.apply(*evalctx);
 
-	node->fn = c.lookup_variable("$fn").toDouble();
-	node->fs = c.lookup_variable("$fs").toDouble();
-	node->fa = c.lookup_variable("$fa").toDouble();
+	node->fn = c.lookup_variable("$fn")->toDouble();
+	node->fs = c.lookup_variable("$fs")->toDouble();
+	node->fa = c.lookup_variable("$fa")->toDouble();
 
-	Value delta = c.lookup_variable("delta");
+	ValuePtr delta = c.lookup_variable("delta");
 	node->delta = 1;
-	delta.getDouble(node->delta);
+	delta->getDouble(node->delta);
 	
-	Value miter_limit = c.lookup_variable("miter_limit", true);
+	ValuePtr miter_limit = c.lookup_variable("miter_limit", true);
 	node->miter_limit = 2;
-	miter_limit.getDouble(node->miter_limit);
+	miter_limit->getDouble(node->miter_limit);
 	
-	Value join_type = c.lookup_variable("join_type", true);
-	if (join_type.type() == Value::STRING) {
-		std::string jt = join_type.toString();
+	ValuePtr join_type = c.lookup_variable("join_type", true);
+	if (join_type->type() == Value::STRING) {
+		std::string jt = join_type->toString();
 		if (std::string("bevel") == jt) {
 			node->join_type = ClipperLib::jtSquare;
 		} else if (std::string("round") == jt) {
@@ -85,7 +85,7 @@ AbstractNode *OffsetModule::instantiate(const Context *ctx, const ModuleInstanti
 			PRINTB("WARNING: Unknown join_type for offset(): '%s'", jt);
 		}
 		
-		if ((node->join_type != ClipperLib::jtMiter) && !miter_limit.isUndefined()) {
+		if ((node->join_type != ClipperLib::jtMiter) && !miter_limit->isUndefined()) {
 			PRINTB("WARNING: miter_limit is ignored in offset() for join_type: '%s'", jt);
 		}
 	}

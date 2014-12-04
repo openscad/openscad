@@ -17,7 +17,7 @@ public:
 
 	size_t numArgs() const { return this->eval_arguments.size(); }
 	const std::string &getArgName(size_t i) const;
-	Value getArgValue(size_t i, const Context *ctx = NULL) const;
+	ValuePtr getArgValue(size_t i, const Context *ctx = NULL) const;
 
 	size_t numChildren() const;
 	ModuleInstantiation *getChild(size_t i) const;

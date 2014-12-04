@@ -39,6 +39,7 @@
 #include "PlatformUtils.h"
 #include "LibraryInfo.h"
 #include "nodedumper.h"
+#include "stackcheck.h"
 #include "CocoaUtils.h"
 
 #include <string>
@@ -655,6 +656,8 @@ int main(int argc, char **argv)
 {
 	int rc = 0;
 	bool isGuiLaunched = getenv("GUI_LAUNCHED") != 0;
+	StackCheck::inst()->init();
+	
 #ifdef Q_OS_MAC
 	if (isGuiLaunched) set_output_handler(CocoaUtils::nslog, NULL);
 #else
