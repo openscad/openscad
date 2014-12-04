@@ -38,6 +38,7 @@
 #include "CGAL_Nef_polyhedron.h"
 #include "GeometryEvaluator.h"
 #include "CGALCache.h"
+#include "stackcheck.h"
 
 #ifndef _MSC_VER
 #include <getopt.h>
@@ -88,6 +89,8 @@ int main(int argc, char **argv)
 {
 	const char *filename, *outfilename = NULL;
 	size_t cgalcachesize = 1*1024*1024;
+	StackCheck::inst()->init();
+
 	po::variables_map vm;
 	try {
 		vm = parse_options(argc, argv);

@@ -95,19 +95,19 @@ std::string Builtins::isDeprecated(const std::string &name)
 
 Builtins::Builtins()
 {
-	this->globalscope.assignments.push_back(Assignment("$fn", boost::shared_ptr<Expression>(new Expression(Value(0.0)))));
-	this->globalscope.assignments.push_back(Assignment("$fs", boost::shared_ptr<Expression>(new Expression(Value(2.0)))));
-	this->globalscope.assignments.push_back(Assignment("$fa", boost::shared_ptr<Expression>(new Expression(Value(12.0)))));
-	this->globalscope.assignments.push_back(Assignment("$t", boost::shared_ptr<Expression>(new Expression(Value(0.0)))));
+	this->globalscope.assignments.push_back(Assignment("$fn", boost::shared_ptr<Expression>(new ExpressionConst(ValuePtr(0.0)))));
+	this->globalscope.assignments.push_back(Assignment("$fs", boost::shared_ptr<Expression>(new ExpressionConst(ValuePtr(2.0)))));
+	this->globalscope.assignments.push_back(Assignment("$fa", boost::shared_ptr<Expression>(new ExpressionConst(ValuePtr(12.0)))));
+	this->globalscope.assignments.push_back(Assignment("$t", boost::shared_ptr<Expression>(new ExpressionConst(ValuePtr(0.0)))));
 
 	Value::VectorType zero3;
 	zero3.push_back(Value(0.0));
 	zero3.push_back(Value(0.0));
 	zero3.push_back(Value(0.0));
-	Value zero3val(zero3);
-	this->globalscope.assignments.push_back(Assignment("$vpt", boost::shared_ptr<Expression>(new Expression(zero3val))));
-	this->globalscope.assignments.push_back(Assignment("$vpr", boost::shared_ptr<Expression>(new Expression(zero3val))));
-	this->globalscope.assignments.push_back(Assignment("$vpd", boost::shared_ptr<Expression>(new Expression(500))));
+	ValuePtr zero3val(zero3);
+	this->globalscope.assignments.push_back(Assignment("$vpt", boost::shared_ptr<Expression>(new ExpressionConst(zero3val))));
+	this->globalscope.assignments.push_back(Assignment("$vpr", boost::shared_ptr<Expression>(new ExpressionConst(zero3val))));
+	this->globalscope.assignments.push_back(Assignment("$vpd", boost::shared_ptr<Expression>(new ExpressionConst(ValuePtr(500)))));
 }
 
 Builtins::~Builtins()

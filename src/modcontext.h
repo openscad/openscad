@@ -18,8 +18,8 @@ public:
 
 	void initializeModule(const Module &m);
 	void registerBuiltin();
-	virtual Value evaluate_function(const std::string &name, 
-																	const EvalContext *evalctx) const;
+	virtual ValuePtr evaluate_function(const std::string &name, 
+																										const EvalContext *evalctx) const;
 	virtual AbstractNode *instantiate_module(const ModuleInstantiation &inst, 
 																					 EvalContext *evalctx) const;
 
@@ -45,7 +45,8 @@ class FileContext : public ModuleContext
 public:
 	FileContext(const class FileModule &module, const Context *parent);
 	virtual ~FileContext() {}
-	virtual Value evaluate_function(const std::string &name, const EvalContext *evalctx) const;
+	virtual ValuePtr evaluate_function(const std::string &name, 
+																		 const EvalContext *evalctx) const;
 	virtual AbstractNode *instantiate_module(const ModuleInstantiation &inst, 
 																					 EvalContext *evalctx) const;
 
@@ -53,5 +54,7 @@ private:
 	const FileModule::ModuleContainer &usedlibs;
 
 	// This sub_* method is needed to minimize stack usage only.
-	Value sub_evaluate_function(const std::string &name, const EvalContext *evalctx, FileModule *usedmod) const;
+	ValuePtr sub_evaluate_function(const std::string &name, 
+																 const EvalContext *evalctx, 
+																 FileModule *usedmod) const;
 };

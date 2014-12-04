@@ -18,5 +18,22 @@ std::string PlatformUtils::userConfigPath()
 	return std::string([[appSupportDir path] UTF8String]) + std::string("/") + PlatformUtils::OPENSCAD_FOLDER_NAME;
 }
 
+unsigned long PlatformUtils::stackLimit()
+{
+  struct rlimit limit;        
+  
+  int ret = getrlimit(RLIMIT_STACK, &limit);
+  if (ret == 0) {
+    if (limit.rlim_cur > STACK_BUFFER_SIZE) {
+      return limit.rlim_cur - STACK_BUFFER_SIZE;
+    }
+    if (limit.rlim_max > STACK_BUFFER_SIZE) {
+      return limit.rlim_max - STACK_BUFFER_SIZE;
+    }
+  }
+  
+  return STACK_LIMIT_DEFAULT;
+}
+
 void PlatformUtils::ensureStdIO(void) {}
 

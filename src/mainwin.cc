@@ -1486,7 +1486,7 @@ bool MainWindow::eventFilter(QObject* obj, QEvent *event)
 
 void MainWindow::updateTemporalVariables()
 {
-	this->top_ctx.set_variable("$t", Value(this->e_tval->text().toDouble()));
+	this->top_ctx.set_variable("$t", ValuePtr(this->e_tval->text().toDouble()));
 
 	Value::VectorType vpt;
 	vpt.push_back(Value(-qglview->cam.object_trans.x()));
@@ -1498,9 +1498,9 @@ void MainWindow::updateTemporalVariables()
 	vpr.push_back(Value(fmodf(360 - qglview->cam.object_rot.x() + 90, 360)));
 	vpr.push_back(Value(fmodf(360 - qglview->cam.object_rot.y(), 360)));
 	vpr.push_back(Value(fmodf(360 - qglview->cam.object_rot.z(), 360)));
-	top_ctx.set_variable("$vpr", Value(vpr));
+	top_ctx.set_variable("$vpr", ValuePtr(vpr));
 
-	top_ctx.set_variable("$vpd", Value(qglview->cam.viewer_distance));
+	top_ctx.set_variable("$vpd", ValuePtr(qglview->cam.viewer_distance));
 }
 
 
@@ -1527,25 +1527,25 @@ void MainWindow::updateCamera()
 	double d = cam.viewer_distance;
 
 	double x, y, z;
-	const Value vpr = root_module->lookup_variable("$vpr");
-	if (vpr.getVec3(x, y, z)) {
+	const ValuePtr vpr = root_module->lookup_variable("$vpr");
+	if (vpr->getVec3(x, y, z)) {
 		rx = x;
 		ry = y;
 		rz = z;
 		camera_set = true;
 	}
 
-	const Value vpt = root_module->lookup_variable("$vpt");
-	if (vpt.getVec3(x, y, z)) {
+	const ValuePtr vpt = root_module->lookup_variable("$vpt");
+	if (vpt->getVec3(x, y, z)) {
 		tx = x;
 		ty = y;
 		tz = z;
 		camera_set = true;
 	}
 
-	const Value vpd = root_module->lookup_variable("$vpd");
-	if (vpd.type() == Value::NUMBER) {
-		d = vpd.toDouble();
+	const ValuePtr vpd = root_module->lookup_variable("$vpd");
+	if (vpd->type() == Value::NUMBER) {
+		d = vpd->toDouble();
 		camera_set = true;
 	}
 

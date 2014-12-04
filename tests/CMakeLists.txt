@@ -78,7 +78,6 @@ endif()
 # Most tests will fail, but it can be used for testing/experiments
 
 if(NULLGL)
-  set(ENABLE_OPENCSG_FLAG "") # OpenCSG is entirely an OpenGL software
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNULLGL")
   set(SKIP_IMAGEMAGICK "1") # we dont generate png, so nothing to compare
 else()
@@ -620,6 +619,7 @@ set(CORE_SOURCES
   ../src/calc.cc 
   ../src/expr.cc 
   ../src/func.cc 
+  ../src/stackcheck.cc 
   ../src/localscope.cc 
   ../src/module.cc 
   ../src/ModuleCache.cc 
@@ -736,16 +736,10 @@ target_link_libraries(tests-cgal tests-common ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_L
 #
 # Create non-CGAL tests
 #
+add_library(tests-nocgal STATIC ${NOCGAL_SOURCES})
+target_link_libraries(tests-nocgal tests-common)
 if (NOT NULLGL)
-  add_library(tests-nocgal STATIC ${NOCGAL_SOURCES})
-  set_target_properties(tests-nocgal PROPERTIES COMPILE_FLAGS ${ENABLE_OPENCSG_FLAG})
-  target_link_libraries(tests-nocgal tests-common)
-else()
-  message(STATUS "NULLGL: cannot use GL/GLU tessellator. see dxftess.cc")
-  message(STATUS "NULLGL: non-CGAL tests will use CGAL's tessellator")
-  add_library(tests-nocgal STATIC ${NOCGAL_SOURCES})
-  set_target_properties(tests-nocgal PROPERTIES COMPILE_FLAGS ${ENABLE_OPENCSG_FLAG})
-  target_link_libraries(tests-nocgal tests-common)
+  set_target_properties(tests-nocgal PROPERTIES COMPILE_FLAGS "${ENABLE_OPENCSG_FLAG}")
 endif()
 
 add_library(tests-offscreen STATIC ${OFFSCREEN_SOURCES})
@@ -767,8 +761,8 @@ target_link_libraries(csgtexttest tests-nocgal)
 # cgalcachetest
 #
 add_executable(cgalcachetest cgalcachetest.cc)
-set_target_properties(cgalcachetest PROPERTIES COMPILE_FLAGS "${ENABLE_OPENCSG_FLAG} -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
-target_link_libraries(cgalcachetest tests-cgal ${GLEW_LIBRARY})
+set_target_properties(cgalcachetest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
+target_link_libraries(cgalcachetest tests-cgal)
 
 #
 # openscad no-qt
@@ -1044,6 +1038,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/search-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/search-tests-unicode.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/recursion-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/tail-recursion-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/value-reassignment-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/value-reassignment-tests2.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/variable-scope-tests.scad

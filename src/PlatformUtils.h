@@ -4,6 +4,9 @@
 
 #include "boosty.h"
 
+#define STACK_BUFFER_SIZE (64 * 1024)
+#define STACK_LIMIT_DEFAULT (8 * 1024 * 1024 - STACK_BUFFER_SIZE)
+
 namespace PlatformUtils {
         extern const char *OPENSCAD_FOLDER_NAME;
 
@@ -40,6 +43,14 @@ namespace PlatformUtils {
          * @return 0 on success.
          */
         int setenv(const char *name, const char *value, int overwrite);
+        
+        /**
+         * Return system defined stack limit. If the system does not define
+         * a specific limit, the platform specific code will select a value.
+         * 
+         * @return maximum stack size in bytes.
+         */
+        unsigned long stackLimit();
         
 	/**
 	 * Single character separating path specifications in a list

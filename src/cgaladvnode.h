@@ -26,7 +26,7 @@ public:
 	virtual std::string toString() const;
 	virtual std::string name() const;
 
-	Value path;
+	ValuePtr path;
 	std::string subdiv_type;
 	int convexity, level;
 	Vector3d newsize;
