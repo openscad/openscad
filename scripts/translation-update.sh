@@ -71,9 +71,16 @@ GETTEXT_PATH=""
 #	GETTEXT_PATH="$OPENSCAD_LIBRARIES/bin/"
 #fi
 
+SCRIPTDIR="`dirname \"$0\"`"
+TOPDIR="`dirname \"$SCRIPTDIR\"`"
+
+cd "$TOPDIR" || exit 1
+
 if [ "x$1" = xupdatemo ]; then
  updatemo
 else
+ echo "Generating POTFILES..."
+ ./scripts/generate-potfiles.sh > locale/POTFILES
  updatepot && updatepo && updatemo
 fi
 

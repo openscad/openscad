@@ -51,14 +51,14 @@ files.
 
 Then run the script to scan the source files, and regenerate .pot & .po files.
 
-   $ ./scripts/translation-make.sh
+   $ ./scripts/translation-update.sh
 
 This will create new .po files with any new untranslated strings you 
 added to the source code. These .po files can be distributed to 
 translators for translation. After the translated .po file is obtained, 
 overwrite the old .po and run the same script to update the .mo files.
 
-   $ ./scripts/translation-make.sh
+   $ ./scripts/translation-update.sh
 
 To add a new language:
 ======================

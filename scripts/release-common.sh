@@ -280,6 +280,10 @@ if [[ $? != 0 ]]; then
   exit 1
 fi
 
+echo "Updating language files..."
+
+cd $OPENSCADDIR
+./scripts/translation-update.sh
 
 echo "Building test suite..."
 

@@ -3,19 +3,13 @@
 # Script for use from qmake to generate the translation
 # related files.
 #
-# Step 1) call generate-potfiles.sh to collect input files
-# Step 2) call translation-update.sh to generate *.mo files
-#
 
 SCRIPTDIR="`dirname \"$0\"`"
 TOPDIR="`dirname \"$SCRIPTDIR\"`"
 
-cd "$TOPDIR"
+cd "$TOPDIR" || exit 1
 
-echo "Generating POTFILES..."
-./scripts/generate-potfiles.sh > locale/POTFILES
-
-echo "Updating translation files..."
-./scripts/translation-update.sh
+echo "Compiling language files..."
+./scripts/translation-update.sh updatemo
 
 echo "Done."
