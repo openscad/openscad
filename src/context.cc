@@ -162,6 +162,14 @@ bool Context::has_local_variable(const std::string &name) const
 	return variables.find(name) != variables.end();
 }
 
+/**
+ * This is separated because PRINTB uses quite a lot of stack space
+ * and the methods using it evaluate_function() and instantiate_module()
+ * are called often when recursive functions or modules are evaluated.
+ * 
+ * @param what what is ignored
+ * @param name name of the ignored object
+ */
 static void print_ignore_warning(const char *what, const char *name)
 {
 	PRINTB("WARNING: Ignoring unknown %s '%s'.", what % name);

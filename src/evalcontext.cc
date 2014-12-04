@@ -27,12 +27,7 @@ ValuePtr EvalContext::getArgValue(size_t i, const Context *ctx) const
 	const Assignment &arg = this->eval_arguments[i];
 	ValuePtr v;
 	if (arg.second) {
-		try {
-			v = arg.second->evaluate(ctx ? ctx : this);
-		}
-		catch (RecursionException &e) {
-			PRINT(e.what());
-		}
+		v = arg.second->evaluate(ctx ? ctx : this);
 	}
 	return v;
 }
