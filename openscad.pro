@@ -486,10 +486,6 @@ isEmpty(PREFIX):PREFIX = /usr/local
 target.path = $$PREFIX/bin/
 INSTALLS += target
 
-
-# Run translation update scripts as last step after linking the target
-QMAKE_POST_LINK += $$PWD/scripts/translation-make.sh
-
 # Create install targets for the languages defined in LINGUAS
 LINGUAS = $$cat(locale/LINGUAS)
 LOCALE_PREFIX = $$PREFIX/share/openscad/locale
