@@ -3,6 +3,8 @@
 #include "printutils.h"
 #include "PlatformUtils.h"
 
+#include <boost/property_tree/json_parser.hpp>
+
 static const char *DEFAULT_COLOR_SCHEME_NAME = "Cornfield";
 
 // See http://lolengine.net/blog/2013/01/13/fast-rgb-to-hsv

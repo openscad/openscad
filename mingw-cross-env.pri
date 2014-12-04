@@ -19,7 +19,7 @@ CONFIG(mingw-cross-env) {
   LIBS += mingw-cross-env/lib/libexpat.a
   LIBS += mingw-cross-env/lib/libintl.a
   LIBS += mingw-cross-env/lib/libiconv.a
-  QMAKE_CXXFLAGS += -fpermissive
+  QMAKE_CXXFLAGS += -fpermissive -DNOGDI
   WINSTACKSIZE = 8388608 # 8MB # github issue 116
   QMAKE_CXXFLAGS += -Wl,--stack,$$WINSTACKSIZE
   LIBS += -Wl,--stack,$$WINSTACKSIZE 
