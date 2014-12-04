@@ -1,3 +1,2 @@
 ERROR: Recursion detected calling function 'crash'
-ECHO: undef
 ERROR: Recursion detected calling module 'crash'
