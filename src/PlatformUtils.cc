@@ -1,11 +1,6 @@
 #include <stdlib.h>
 
 #include "PlatformUtils.h"
-#include "boosty.h"
-#include <Eigen/Core>
-#ifdef USE_SCINTILLA_EDITOR
-#include <Qsci/qsciglobal.h>
-#endif
 
 extern std::vector<std::string> librarypath;
 extern std::vector<std::string> fontpath;
@@ -151,12 +146,27 @@ bool PlatformUtils::createBackupPath()
 }
 
 // This is the built-in read-only resources path
-std::string PlatformUtils::resourcesPath()
+std::string PlatformUtils::resourceBasePath()
 {
 	if (!path_initialized) {
 	    throw std::runtime_error("PlatformUtils::resourcesPath(): application path not initialized!");
 	}
 	return resourcespath;
+}
+
+fs::path PlatformUtils::resourcePath(const std::string &resource)
+{
+	fs::path base(resourceBasePath());
+	if (!fs::is_directory(base)) {
+		return fs::path();
+	}
+	
+	fs::path resource_dir = base / resource;
+	if (!fs::is_directory(resource_dir)) {
+		return fs::path();
+	}
+	
+	return resource_dir;
 }
 
 int PlatformUtils::setenv(const char *name, const char *value, int overwrite)

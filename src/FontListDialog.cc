@@ -27,6 +27,7 @@
 #include <QClipboard>
 #include <QSortFilterProxyModel>
 
+#include "qtgettext.h"
 #include "FontListDialog.h"
 #include "FontCache.h"
 

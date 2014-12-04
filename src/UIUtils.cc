@@ -31,6 +31,7 @@
 #include <QFileDialog>
 #include <QDesktopServices>
 
+#include "qtgettext.h"
 #include "UIUtils.h"
 #include "PlatformUtils.h"
 
@@ -81,15 +82,15 @@ QStringList UIUtils::exampleCategories()
 {
     QStringList categories;
     //categories in File menu item - Examples
-    categories << "Basics" << "Shapes" << "Extrusion" << "Advanced";
+    categories << N_("Basics") << N_("Shapes") << N_("Extrusion") << N_("Advanced");
     
     return categories;
 }
 
 QFileInfoList UIUtils::exampleFiles(const QString &category)
 {
-    QDir dir(QString::fromStdString(PlatformUtils::resourcesPath()));
-    if (!dir.cd("examples") || !dir.cd(category)) {
+    QDir dir(QString::fromStdString(PlatformUtils::resourcePath("examples").string()));
+    if (!dir.cd(category)) {
 	return QFileInfoList();
     }
 

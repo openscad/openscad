@@ -3,6 +3,7 @@
 #include <QStandardItemModel>
 #include <QSortFilterProxyModel>
 
+#include "qtgettext.h"
 #include "ui_FontListDialog.h"
 
 #define STRINGIFY(x) #x

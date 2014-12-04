@@ -159,6 +159,25 @@ static void info()
 	exit(0);
 }
 
+/**
+ * Initialize gettext. This must be called after the appliation path was
+ * determined so we can lookup the resource path for the language translation
+ * files.
+ */
+void localization_init() {
+	fs::path po_dir(PlatformUtils::resourcePath("locale"));
+	std::string locale_path(po_dir.string());
+
+	if (fs::is_directory(locale_path)) {
+		setlocale(LC_ALL, "");
+		bindtextdomain("openscad", locale_path.c_str());
+		bind_textdomain_codeset("openscad", "UTF-8");
+		textdomain("openscad");
+	} else {
+		PRINT("Could not initialize localization.");
+	}
+}
+
 Camera get_camera(po::variables_map vm)
 {
 	Camera camera;
@@ -283,7 +302,9 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	const std::string application_path = boosty::stringy(boosty::absolute(boost::filesystem::path(argv[0]).parent_path()));
 #endif	
 	PlatformUtils::registerApplicationPath(application_path);
-	parser_init(PlatformUtils::applicationPath());
+	parser_init();
+	localization_init();
+
 	Tree tree;
 #ifdef ENABLE_CGAL
 	GeometryEvaluator geomevaluator(tree);
@@ -518,6 +539,7 @@ Q_IMPORT_PLUGIN(qtaccessiblewidgets)
 #endif // MINGW64/MINGW32/MSCVER
 #include "MainWindow.h"
 #include "launchingscreen.h"
+#include "qsettings.h"
   #ifdef __APPLE__
   #include "EventFilter.h"
   #endif
@@ -525,6 +547,7 @@ Q_IMPORT_PLUGIN(qtaccessiblewidgets)
 #include <QDir>
 #include <QFileInfo>
 #include <QMetaType>
+#include <QTextCodec>
 
 Q_DECLARE_METATYPE(shared_ptr<const Geometry>);
 
@@ -574,6 +597,8 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	QCoreApplication::setApplicationVersion(TOSTRING(OPENSCAD_VERSION));
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 	QGuiApplication::setApplicationDisplayName("OpenSCAD");
+#else
+	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
 #endif
 	
 	// Other global settings
@@ -582,7 +607,12 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	const QString &app_path = app.applicationDirPath();
 	PlatformUtils::registerApplicationPath(app_path.toLocal8Bit().constData());
 
-  parser_init(PlatformUtils::applicationPath());
+	parser_init();
+
+	QSettings settings;
+	if (settings.value("advanced/localization", true).toBool()) {
+	        localization_init();
+	}
 
 #ifdef Q_OS_MAC
 	installAppleEventHandlers();
@@ -611,7 +641,6 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 		inputFiles.push_back("");
 	}
 
-	QSettings settings;
 	QVariant showOnStartup = settings.value("launcher/showOnStartup");
 	if (noInputFiles && (showOnStartup.isNull() || showOnStartup.toBool())) {
 		LaunchingScreen *launcher = new LaunchingScreen();
@@ -663,6 +692,7 @@ int main(int argc, char **argv)
 #else
 	PlatformUtils::ensureStdIO();
 #endif
+
 #ifdef ENABLE_CGAL
 	// Causes CGAL errors to abort directly instead of throwing exceptions
 	// (which we don't catch). This gives us stack traces without rerunning in gdb.

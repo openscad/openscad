@@ -24,6 +24,7 @@
  *
  */
 
+#include "qtgettext.h"
 #include "QGLView.h"
 #include "Preferences.h"
 #include "renderer.h"
@@ -110,7 +111,7 @@ std::string QGLView::getRendererInfo() const
 {
   std::string glewinfo = glew_dump();
   std::string glextlist = glew_extensions_dump();
-  return glewinfo + std::string("\nUsing QGLWidget\n\n") + glextlist;
+  return glewinfo + std::string(_("\nUsing QGLWidget\n\n")) + glextlist;
 }
 
 #ifdef ENABLE_OPENCSG
@@ -127,19 +128,19 @@ void QGLView::display_opencsg_warning_dialog()
 
   QString message;
   if (this->is_opencsg_capable) {
-    message += "Warning: You may experience OpenCSG rendering errors.\n\n";
+    message += _("Warning: You may experience OpenCSG rendering errors.\n\n");
   }
   else {
-    message += "Warning: Missing OpenGL capabilities for OpenCSG - OpenCSG has been disabled.\n\n";
+    message += _("Warning: Missing OpenGL capabilities for OpenCSG - OpenCSG has been disabled.\n\n");
     dialog->enableOpenCSGBox->hide();
   }
-  message += "It is highly recommended to use OpenSCAD on a system with "
+  message += _("It is highly recommended to use OpenSCAD on a system with "
     "OpenGL 2.0 or later.\n"
-    "Your renderer information is as follows:\n";
+    "Your renderer information is as follows:\n");
   QString rendererinfo;
-  rendererinfo.sprintf("GLEW version %s\n"
+  rendererinfo.sprintf(_("GLEW version %s\n"
                        "%s (%s)\n"
-                       "OpenGL version %s\n",
+                       "OpenGL version %s\n"),
                        glewGetString(GLEW_VERSION),
                        glGetString(GL_RENDERER), glGetString(GL_VENDOR),
                        glGetString(GL_VERSION));
@@ -167,7 +168,7 @@ void QGLView::paintGL()
 
     Camera nc(cam);
     nc.gimbalDefaultTranslate();
-    msg.sprintf("Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], distance = %.2f",
+    msg.sprintf(_("Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], distance = %.2f"),
       nc.object_trans.x(), nc.object_trans.y(), nc.object_trans.z(),
       nc.object_rot.x(), nc.object_rot.y(), nc.object_rot.z(),
       nc.viewer_distance );

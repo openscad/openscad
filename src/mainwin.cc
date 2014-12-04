@@ -765,7 +765,7 @@ void MainWindow::setFileName(const QString &filename)
 {
 	if (filename.isEmpty()) {
 		this->fileName.clear();
-		setWindowFilePath("untitled.scad");
+		setWindowFilePath(_("Untitled.scad"));
 		
 		this->top_ctx.setDocumentPath(currentdir);
 	} else {
@@ -1198,7 +1198,7 @@ void MainWindow::show_examples()
 
         foreach (const QString &cat, UIUtils::exampleCategories()) {
 		QFileInfoList examples = UIUtils::exampleFiles(cat);
-                QMenu *menu = this->menuExamples->addMenu(cat);
+                QMenu *menu = this->menuExamples->addMenu(gettext(cat.toStdString().c_str()));
 
                 foreach(const QFileInfo &ex, examples) {
                         QAction *openAct = new QAction(ex.fileName(), this);
@@ -1300,9 +1300,9 @@ void MainWindow::actionSave()
 
 void MainWindow::actionSaveAs()
 {
-	QString new_filename = QFileDialog::getSaveFileName(this, "Save File",
-			this->fileName.isEmpty()?"Untitled.scad":this->fileName,
-			"OpenSCAD Designs (*.scad)");
+	QString new_filename = QFileDialog::getSaveFileName(this, _("Save File"),
+			this->fileName.isEmpty()?_("Untitled.scad"):this->fileName,
+			_("OpenSCAD Designs (*.scad)"));
 	if (!new_filename.isEmpty()) {
 		if (QFileInfo(new_filename).suffix().isEmpty()) {
 			new_filename.append(".scad");
@@ -1312,7 +1312,7 @@ void MainWindow::actionSaveAs()
 			QFileInfo info(new_filename);
 			if (info.exists()) {
 				if (QMessageBox::warning(this, windowTitle(),
-						 tr("%1 already exists.\nDo you want to replace it?").arg(info.fileName()),
+						 QString(_("%1 already exists.\nDo you want to replace it?")).arg(info.fileName()),
 						 QMessageBox::Yes | QMessageBox::No, QMessageBox::No) != QMessageBox::Yes) {
 					return;
 				}
@@ -1631,9 +1631,9 @@ bool MainWindow::checkEditorModified()
 {
 	if (editor->isContentModified()) {
 		QMessageBox::StandardButton ret;
-		ret = QMessageBox::warning(this, "Application",
-				"The document has been modified.\n"
-				"Do you really want to reload the file?",
+		ret = QMessageBox::warning(this, _("Application"),
+				_("The document has been modified.\n"
+				"Do you really want to reload the file?"),
 				QMessageBox::Yes | QMessageBox::No);
 		if (ret != QMessageBox::Yes) {
 			designActionAutoReload->setChecked(false);
@@ -1943,9 +1943,9 @@ void MainWindow::actionExport(export_type_e, QString, QString)
 	 	PRINT("Warning: Object may not be a valid 2-manifold and may need repair! See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
 	}
 
-	QString title = QString("Export %1 File").arg(type_name);
-	QString filter = QString("%1 Files (*%2)").arg(type_name, suffix);
-	QString filename = this->fileName.isEmpty() ? QString("Untitled") + suffix : QFileInfo(this->fileName).baseName() + suffix;
+	QString title = QString(_("Export %1 File")).arg(type_name);
+	QString filter = QString(_("%1 Files (*%2)")).arg(type_name, suffix);
+	QString filename = this->fileName.isEmpty() ? QString(_("Untitled")) + suffix : QFileInfo(this->fileName).baseName() + suffix;
 	QString export_filename = QFileDialog::getSaveFileName(this, title, filename, filter);
 	if (export_filename.isEmpty()) {
 		PRINTB("No filename specified. %s export aborted.", type_name);
@@ -2000,11 +2000,11 @@ QString MainWindow::get2dExportFilename(QString format, QString extension) {
 		return QString();
 	}
 
-	QString caption = QString("Export %1 File").arg(format);
+	QString caption = QString(_("Export %1 File")).arg(format);
 	QString suggestion = this->fileName.isEmpty()
-		? QString("Untitled%1").arg(extension)
+		? QString(_("Untitled%1")).arg(extension)
 		: QFileInfo(this->fileName).baseName() + extension;
-	QString filter = QString("%1 Files (*%2)").arg(format, extension);
+	QString filter = QString(_("%1 Files (*%2)")).arg(format, extension);
 	QString exportFilename = QFileDialog::getSaveFileName(this, caption, suggestion, filter);
 	if (exportFilename.isEmpty()) {
 		PRINT("No filename specified. DXF export aborted.");
@@ -2053,9 +2053,9 @@ void MainWindow::actionExportCSG()
 		return;
 	}
 
-	QString csg_filename = QFileDialog::getSaveFileName(this, "Export CSG File",
-	    this->fileName.isEmpty() ? "Untitled.csg" : QFileInfo(this->fileName).baseName()+".csg",
-	    "CSG Files (*.csg)");
+	QString csg_filename = QFileDialog::getSaveFileName(this, _("Export CSG File"),
+	    this->fileName.isEmpty() ? _("Untitled.csg") : QFileInfo(this->fileName).baseName()+".csg",
+	    _("CSG Files (*.csg)"));
 	
 	if (csg_filename.isEmpty()) {
 		PRINT("No filename specified. CSG export aborted.");
@@ -2081,7 +2081,7 @@ void MainWindow::actionExportImage()
 	setCurrentOutput();
 
 	QString img_filename = QFileDialog::getSaveFileName(this,
-			"Export Image", "", "PNG Files (*.png)");
+			_("Export Image"), "", _("PNG Files (*.png)"));
 	if (img_filename.isEmpty()) {
 		PRINT("No filename specified. Image export aborted.");
 	} else {
@@ -2316,12 +2316,12 @@ void MainWindow::on_consoleDock_visibilityChanged(bool)
 
 void MainWindow::editorTopLevelChanged(bool topLevel)
 {
-	setDockWidgetTitle(editorDock, QString("Editor"), topLevel);
+	setDockWidgetTitle(editorDock, QString(_("Editor")), topLevel);
 }
 
 void MainWindow::consoleTopLevelChanged(bool topLevel)
 {
-	setDockWidgetTitle(consoleDock, QString("Console"), topLevel);
+	setDockWidgetTitle(consoleDock, QString(_("Console")), topLevel);
 }
 
 void MainWindow::setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel)
@@ -2448,8 +2448,8 @@ bool MainWindow::maybeSave()
 	if (editor->isContentModified()) {
 		QMessageBox::StandardButton ret;
 		QMessageBox box(this);
-		box.setText("The document has been modified.");
-		box.setInformativeText("Do you want to save your changes?");
+		box.setText(_("The document has been modified."));
+		box.setInformativeText(_("Do you want to save your changes?"));
 		box.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
 		box.setDefaultButton(QMessageBox::Save);
 		box.setIcon(QMessageBox::Warning);

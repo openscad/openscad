@@ -8,7 +8,11 @@
 # OPENCSGDIR
 # OPENSCAD_LIBRARIES
 #
-# Please see the 'Building' sections of the OpenSCAD user manual
+# qmake Variables to define the installation:
+#
+#   PREFIX defines the base installation folder
+#
+# Please see the 'Building' sections of the OpenSCAD user manual 
 # for updated tips & workarounds.
 #
 # http://en.wikibooks.org/wiki/OpenSCAD_User_Manual
@@ -120,6 +124,8 @@ unix:!macx {
   QMAKE_LIBS_OPENGL *= -lX11
 }
 
+#QTPLUGIN += qtaccessiblewidgets
+
 netbsd* {
    QMAKE_LFLAGS += -L/usr/X11R7/lib
    QMAKE_LFLAGS += -Wl,-R/usr/X11R7/lib
@@ -159,6 +165,8 @@ netbsd* {
   QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-variable
   QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-function
   QMAKE_CXXFLAGS_WARN_ON += -Wno-c++11-extensions
+  # gettext
+  QMAKE_CXXFLAGS_WARN_ON += -Wno-format-security
   # might want to actually turn this on once in a while
   QMAKE_CXXFLAGS_WARN_ON += -Wno-sign-compare
 }
@@ -178,6 +186,7 @@ CONFIG += glib-2.0
 CONFIG += harfbuzz
 CONFIG += freetype
 CONFIG += fontconfig
+CONFIG += gettext
 
 #Uncomment the following line to enable the QScintilla editor
 CONFIG += scintilla
@@ -208,7 +217,12 @@ win* {
 
 RESOURCES = openscad.qrc
 
-FORMS += src/MainWindow.ui \
+# Qt5 removed access to the QMAKE_UIC variable, the following
+# way works for both Qt4 and Qt5
+load(uic)
+uic.commands += -tr _
+
+FORMS   += src/MainWindow.ui \
            src/Preferences.ui \
            src/OpenCSGWarningDialog.ui \
            src/AboutDialog.ui \
@@ -471,6 +485,22 @@ isEmpty(PREFIX):PREFIX = /usr/local
 
 target.path = $$PREFIX/bin/
 INSTALLS += target
+
+# Create install targets for the languages defined in LINGUAS
+LINGUAS = $$cat(locale/LINGUAS)
+LOCALE_PREFIX = $$PREFIX/share/openscad/locale
+for(language, LINGUAS) {
+  catalog = locale/$$language/LC_MESSAGES/openscad.mo
+  exists($$catalog) {
+    translation_path = translation_$${language}.path
+    translation_files = translation_$${language}.files
+    translation_depends = translation_$${language}.depends
+    $$translation_path = $$LOCALE_PREFIX/$$language/LC_MESSAGES/
+    $$translation_files = $$catalog
+    $$translation_depends = locale/$${language}.po
+    INSTALLS += translation_$$language
+  }
+}
 
 examples.path = $$PREFIX/share/openscad/examples/
 examples.files = examples/*

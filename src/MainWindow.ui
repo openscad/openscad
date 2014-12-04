@@ -179,7 +179,7 @@
     </property>
     <widget class="QMenu" name="menuOpenRecent">
      <property name="title">
-      <string>Open Recent</string>
+      <string>Recent Files</string>
      </property>
     </widget>
     <widget class="QMenu" name="menuExamples">

@@ -30,6 +30,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
 
+#include "boosty.h"
 #include "FontCache.h"
 #include "PlatformUtils.h"
 #include "parsersettings.h"
@@ -89,7 +90,7 @@ FontCache::FontCache()
 	// If we've got a bundled fonts.conf, initialize fontconfig with our own config
 	// by overriding the built-in fontconfig path.
 	// For system installs and dev environments, we leave this alone
-	fs::path fontdir(fs::path(PlatformUtils::resourcesPath()) / "fonts");
+	fs::path fontdir(PlatformUtils::resourcePath("fonts"));
 	if (fs::is_regular_file(fontdir / "fonts.conf")) {
 		PlatformUtils::setenv("FONTCONFIG_PATH", boosty::stringy(boosty::absolute(fontdir)).c_str(), 0);
 	}
@@ -102,7 +103,7 @@ FontCache::FontCache()
 	}
 
 	// Add the built-in fonts & config
-	fs::path builtinfontpath = fs::path(PlatformUtils::resourcesPath()) / "fonts";
+	fs::path builtinfontpath(PlatformUtils::resourcePath("fonts"));
 	if (fs::is_directory(builtinfontpath)) {
 		FcConfigParseAndLoad(this->config, reinterpret_cast<const FcChar8 *>(boosty::stringy(builtinfontpath).c_str()), false);
 		add_font_dir(boosty::stringy(boosty::canonical(builtinfontpath)));

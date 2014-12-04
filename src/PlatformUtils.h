@@ -2,6 +2,8 @@
 
 #include <string>
 
+#include "boosty.h"
+
 #define STACK_BUFFER_SIZE (64 * 1024)
 #define STACK_LIMIT_DEFAULT (8 * 1024 * 1024 - STACK_BUFFER_SIZE)
 
@@ -12,7 +14,8 @@ namespace PlatformUtils {
 	std::string applicationPath();
 
 	std::string documentsPath();
-	std::string resourcesPath();
+        std::string resourceBasePath();
+	fs::path resourcePath(const std::string& resource);
 	std::string userLibraryPath();
         
         /**
