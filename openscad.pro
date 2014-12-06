@@ -528,23 +528,23 @@ colorschemes.files = color-schemes/*
 INSTALLS += colorschemes
 
 applications.path = $$PREFIX/share/applications
-applications.extra = cp -f icons/openscad.desktop \"$$applications.path/$${FULLNAME}.desktop\"
+applications.extra = cp -f icons/openscad.desktop \"\$(INSTALL_ROOT)$${applications.path}/$${FULLNAME}.desktop\"
 INSTALLS += applications
 
 mimexml.path = $$PREFIX/share/mime/packages
-mimexml.extra = cp -f icons/openscad.xml \"$$mimexml.path/$${FULLNAME}.xml\"
+mimexml.extra = cp -f icons/openscad.xml \"\$(INSTALL_ROOT)$${mimexml.path}/$${FULLNAME}.xml\"
 INSTALLS += mimexml
 
 appdata.path = $$PREFIX/share/appdata
-appdata.extra = cp -f openscad.appdata.xml \"$$appdata.path/$${FULLNAME}.appdata.xml\"
+appdata.extra = cp -f openscad.appdata.xml \"\$(INSTALL_ROOT)$${appdata.path}/$${FULLNAME}.appdata.xml\"
 INSTALLS += appdata
 
 icons.path = $$PREFIX/share/pixmaps
-icons.extra = cp -f icons/openscad.png \"$$icons.path/$${FULLNAME}.png\"
+icons.extra = cp -f icons/openscad.png \"\$(INSTALL_ROOT)$${icons.path}/$${FULLNAME}.png\"
 INSTALLS += icons
 
 man.path = $$PREFIX/share/man/man1
-man.extra = cp -f doc/openscad.1 \"$$man.path/$${FULLNAME}.1\"
+man.extra = cp -f doc/openscad.1 \"\$(INSTALL_ROOT)$${man.path}/$${FULLNAME}.1\"
 INSTALLS += man
 
 CONFIG(winconsole) {
