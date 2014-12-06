@@ -2,6 +2,12 @@
 
 #include "PlatformUtils.h"
 
+#ifdef INSTALL_SUFFIX
+#define RESOURCE_FOLDER(path) path INSTALL_SUFFIX
+#else
+#define RESOURCE_FOLDER(path) path
+#endif
+
 extern std::vector<std::string> librarypath;
 extern std::vector<std::string> fontpath;
 
@@ -28,8 +34,8 @@ static std::string lookupResourcesPath()
 	};
 #else
 	const char *searchpath[] = {
-	    "../share/openscad",
-	    "../../share/openscad",
+	    RESOURCE_FOLDER("../share/openscad"),
+	    RESOURCE_FOLDER("../../share/openscad"),
 	    ".",
 	    "..",
 	    "../..",
