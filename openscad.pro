@@ -499,13 +499,16 @@ QMAKE_POST_LINK += $$PWD/scripts/translation-make.sh
 LINGUAS = $$cat(locale/LINGUAS)
 LOCALE_PREFIX = "$$PREFIX/share/$${FULLNAME}/locale"
 for(language, LINGUAS) {
-  catalog = locale/$$language/LC_MESSAGES/openscad.mo
+  catalogdir = locale/$$language/LC_MESSAGES
   exists(locale/$${language}.po) {
+    # Use .extra and copy manually as the source path might not exist,
+    # e.g. on a clean checkout. In that case qmake would not create
+    # the needed targets in the generated Makefile.
     translation_path = translation_$${language}.path
-    translation_files = translation_$${language}.files
+    translation_extra = translation_$${language}.extra
     translation_depends = translation_$${language}.depends
     $$translation_path = $$LOCALE_PREFIX/$$language/LC_MESSAGES/
-    $$translation_files = $$catalog
+    $$translation_extra = cp -f $${catalogdir}/openscad.mo \"\$(INSTALL_ROOT)$$LOCALE_PREFIX/$$language/LC_MESSAGES/openscad.mo\"
     $$translation_depends = locale/$${language}.po
     INSTALLS += translation_$$language
   }
