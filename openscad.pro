@@ -500,7 +500,7 @@ LINGUAS = $$cat(locale/LINGUAS)
 LOCALE_PREFIX = "$$PREFIX/share/$${FULLNAME}/locale"
 for(language, LINGUAS) {
   catalog = locale/$$language/LC_MESSAGES/openscad.mo
-  exists($$catalog) {
+  exists(locale/$${language}.po) {
     translation_path = translation_$${language}.path
     translation_files = translation_$${language}.files
     translation_depends = translation_$${language}.depends
