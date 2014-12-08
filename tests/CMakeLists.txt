@@ -1124,6 +1124,7 @@ disable_tests(
   # Not useful
   throwntogethertest_internal-cavity
   throwntogethertest_internal-cavity-polyhedron
+  throwntogethertest_nullspace-difference
 
   # these take too long, for little relative gain in testing
   stlpngtest_iteration
