@@ -603,8 +603,7 @@ namespace CGALUtils {
 						fake_children.push_back(std::make_pair((const AbstractNode*)NULL,
 															   shared_ptr<const Geometry>(createNefPolyhedronFromGeometry(ps))));
 					}
-					CGAL_Nef_polyhedron *N = new CGAL_Nef_polyhedron;
-					CGALUtils::applyOperator(fake_children, *N, OPENSCAD_UNION);
+					CGAL_Nef_polyhedron *N = CGALUtils::applyOperator(fake_children, OPENSCAD_UNION);
 					t.stop();
 					PRINTDB("Minkowski: Union done: %f s",t.time());
 					t.reset();
@@ -623,8 +622,7 @@ namespace CGALUtils {
 			// If anything throws we simply fall back to Nef Minkowski
 			PRINTD("Minkowski: Falling back to Nef Minkowski");
 
-			CGAL_Nef_polyhedron *N = new CGAL_Nef_polyhedron;
-			applyOperator(children, *N, OPENSCAD_MINKOWSKI);
+			CGAL_Nef_polyhedron *N = applyOperator(children, OPENSCAD_MINKOWSKI);
 			return N;
 		}
 	}
@@ -633,7 +631,7 @@ namespace CGALUtils {
 	Applies op to all children and stores the result in dest.
 	The child list should be guaranteed to contain non-NULL 3D or empty Geometry objects
 */
-	void applyOperator(const Geometry::ChildList &children, CGAL_Nef_polyhedron &dest, OpenSCADOperator op)
+	CGAL_Nef_polyhedron *applyOperator(const Geometry::ChildList &children, OpenSCADOperator op)
 	{
 		// Speeds up n-ary union operations significantly
 		CGAL::Nef_nary_union_3<CGAL_Nef_polyhedron3> nary_union;
@@ -720,13 +718,15 @@ namespace CGALUtils {
 			}
 			CGAL::set_error_behaviour(old_behaviour);
 		}
-		if (N) dest = *N;
+		return N;
 	}
 
 /*!
 	Modifies target by applying op to target and src:
 	target = target [op] src
 */
+//FIXME: Old, can be removed:
+#if 0
 	void applyBinaryOperator(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedron &src, OpenSCADOperator op)
 	{
 		if (target.getDimension() != 2 && target.getDimension() != 3) {
@@ -772,6 +772,7 @@ namespace CGALUtils {
 		}
 		CGAL::set_error_behaviour(old_behaviour);
 	}
+#endif
 
 	static void add_outline_to_poly(CGAL_Nef_polyhedron2::Explorer &explorer,
 									CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator circ,

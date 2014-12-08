@@ -123,8 +123,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 
 	if (op == OPENSCAD_MINKOWSKI) return ResultObject(CGALUtils::applyMinkowski(children));
 
-	CGAL_Nef_polyhedron *N = new CGAL_Nef_polyhedron;
-	CGALUtils::applyOperator(children, *N, op);
+	CGAL_Nef_polyhedron *N = CGALUtils::applyOperator(children, op);
 	return ResultObject(N);
 }
 
@@ -354,6 +353,7 @@ void GeometryEvaluator::addToParent(const State &state,
 		// Root node, insert into cache
 		smartCacheInsert(node, geom);
 		this->root = geom;
+        assert(this->visitedchildren.empty());
 	}
 }
 
