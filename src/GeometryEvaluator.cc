@@ -63,10 +63,12 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 				PolySet *ps = new PolySet(3);
 				ps->setConvexity(N->getConvexity());
 				this->root.reset(ps);
-				bool err = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, *ps);
-				if (err) {
-					PRINT("ERROR: Nef->PolySet failed");
-				}
+                if (!N->isEmpty()) {
+                    bool err = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, *ps);
+                    if (err) {
+                        PRINT("ERROR: Nef->PolySet failed");
+                    }
+                }
 
 				smartCacheInsert(node, this->root);
 			}
@@ -124,6 +126,8 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 	if (op == OPENSCAD_MINKOWSKI) return ResultObject(CGALUtils::applyMinkowski(children));
 
 	CGAL_Nef_polyhedron *N = CGALUtils::applyOperator(children, op);
+	// FIXME: Clarify when we can return NULL and what that means
+	if (!N) N = new CGAL_Nef_polyhedron;
 	return ResultObject(N);
 }
 

@@ -609,7 +609,7 @@ namespace CGALUtils {
 					t.reset();
 					operands[0] = N;
 				} else {
-					return NULL;
+                    operands[0] = new CGAL_Nef_polyhedron();
 				}
 			}
 
@@ -628,7 +628,7 @@ namespace CGALUtils {
 	}
 	
 /*!
-	Applies op to all children and stores the result in dest.
+	Applies op to all children and returns the result.
 	The child list should be guaranteed to contain non-NULL 3D or empty Geometry objects
 */
 	CGAL_Nef_polyhedron *applyOperator(const Geometry::ChildList &children, OpenSCADOperator op)
