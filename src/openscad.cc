@@ -625,14 +625,20 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	updater->init();
 #endif
 
+	QGLFormat fmt;
 #if 0 /*** disabled by clifford wolf: adds rendering artefacts with OpenCSG ***/
 	// turn on anti-aliasing
-	QGLFormat f;
-	f.setSampleBuffers(true);
-	f.setSamples(4);
-	QGLFormat::setDefaultFormat(f);
+	fmt.setSampleBuffers(true);
+	fmt.setSamples(4);
 #endif
-	
+	// The default SwapInterval causes very bad interactive behavior as
+	// waiting for the buffer swap seems to block mouse events. So the
+	// effect is that we can process mouse events at the frequency of
+	// the screen retrace interval causing them to queue up.
+	// (see https://bugreports.qt-project.org/browse/QTBUG-39370
+	fmt.setSwapInterval(0);
+	QGLFormat::setDefaultFormat(fmt);
+
 	set_render_color_scheme(arg_colorscheme, false);
 	
 	bool noInputFiles = false;
