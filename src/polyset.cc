@@ -142,7 +142,7 @@ void PolySet::transform(const Transform3d &mat)
 }
 
 bool PolySet::is_convex() const {
-	if (convex) return true;
+	if (convex || this->isEmpty()) return true;
 	if (!convex) return false;
 	return PolysetUtils::is_approximately_convex(*this);
 }
