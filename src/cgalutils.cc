@@ -273,7 +273,11 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 	if (ps.isEmpty()) return new CGAL_Nef_polyhedron();
 	assert(ps.getDimension() == 3);
 
-	if (ps.is_convex()) {
+	// Since is_convex doesn't work well with non-planar faces,
+	// we tessellate the polyset before checking.
+	PolySet ps_tri(3);
+	PolysetUtils::tessellate_faces(ps, ps_tri);
+	if (ps_tri.is_convex()) {
 		typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 		// Collect point cloud
 		std::set<K::Point_3> points;
@@ -316,10 +320,8 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 		}
 	}
 	if (plane_error) try {
-			PolySet ps2(3);
 			CGAL_Polyhedron P;
-			PolysetUtils::tessellate_faces(ps, ps2);
-			bool err = CGALUtils::createPolyhedronFromPolySet(ps2,P);
+			bool err = CGALUtils::createPolyhedronFromPolySet(ps_tri, P);
 			if (!err) N = new CGAL_Nef_polyhedron3(P);
 		}
 		catch (const CGAL::Assertion_exception &e) {
@@ -933,6 +935,13 @@ namespace CGALUtils {
 	};
 
 
+  /*!
+		Check if all faces of a polyset is within 0.1 degree of being convex.
+		
+		NB! This function can give false positives if the polyset contains
+		non-planar faces. To be on the safe side, consider passing a tessellated polyset.
+		See issue #1061.
+	*/
 	bool is_approximately_convex(const PolySet &ps) {
 
 		const double angle_threshold = cos(.1/180*M_PI); // .1°
