@@ -69,6 +69,19 @@ unsigned long PlatformUtils::stackLimit()
     return STACK_LIMIT_DEFAULT;
 }
 
+static std::string readText(const std::string &path)
+{
+    std::ifstream s(path.c_str());
+    s.seekg(0, std::ios::end);
+    if (s.fail() || s.tellg() > 4096) {
+	return "";
+    }
+    s.seekg(0, std::ios::beg);
+
+    std::string text((std::istreambuf_iterator<char>(s)), std::istreambuf_iterator<char>());
+    return text;
+}
+
 /**
  * Check /etc/os-release as defined by systemd.
  * @see http://0pointer.de/blog/projects/os-release.html
@@ -77,8 +90,7 @@ unsigned long PlatformUtils::stackLimit()
  */
 static std::string checkOsRelease()
 {
-    std::ifstream os_release_stream("/etc/os-release");
-    std::string os_release((std::istreambuf_iterator<char>(os_release_stream)), std::istreambuf_iterator<char>());
+    std::string os_release(readText("/etc/os-release"));
 
     boost::smatch results;
     boost::regex pretty_name("^PRETTY_NAME=\"([^\"]+)\"");
@@ -91,8 +103,7 @@ static std::string checkOsRelease()
 
 static std::string checkEtcIssue()
 {
-    std::ifstream issue_stream("/etc/issue");
-    std::string issue((std::istreambuf_iterator<char>(issue_stream)), std::istreambuf_iterator<char>());
+    std::string issue(readText("/etc/issue"));
 
     boost::regex nl("\n.*$");
     issue = boost::regex_replace(issue, nl, "");
