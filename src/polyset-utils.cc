@@ -2,7 +2,9 @@
 #include "polyset.h"
 #include "Polygon2d.h"
 #include "printutils.h"
+#ifdef ENABLE_CGAL
 #include "cgalutils.h"
+#endif
 
 #include <boost/foreach.hpp>
 
@@ -45,6 +47,7 @@ namespace PolysetUtils {
 	 The tessellation will be robust wrt. degenerate and self-intersecting
 */
 	void tessellate_faces(const PolySet &inps, PolySet &outps) {
+#ifdef ENABLE_CGAL
 		int degeneratePolygons = 0;
 		for (size_t i = 0; i < inps.polygons.size(); i++) {
 			const Polygon pgon = inps.polygons[i];
@@ -76,5 +79,17 @@ namespace PolysetUtils {
 			}
 		}
 		if (degeneratePolygons > 0) PRINT("WARNING: PolySet has degenerate polygons");
+#else
+		assert(false);
+#endif
 	}
+
+	bool is_approximately_convex(const PolySet &ps) {
+#ifdef ENABLE_CGAL
+		return CGALUtils::is_approximately_convex(ps);
+#else
+		return false;
+#endif
+	}
+
 }

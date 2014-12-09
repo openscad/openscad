@@ -632,7 +632,6 @@ set(CORE_SOURCES
   ../src/csgtermnormalizer.cc 
   ../src/Geometry.cc 
   ../src/Polygon2d.cc 
-  ../src/polyset.cc 
   ../src/csgops.cc 
   ../src/transform.cc 
   ../src/color.cc 
@@ -666,7 +665,10 @@ set(NOCGAL_SOURCES
   ../src/builtin.cc 
   ../src/import.cc
   ../src/export.cc
-  ../src/LibraryInfo.cc)
+  ../src/LibraryInfo.cc
+  ../src/polyset.cc
+  ../src/polyset-utils.cc)
+
 
 set(CGAL_SOURCES
   ${NOCGAL_SOURCES}
@@ -678,7 +680,6 @@ set(CGAL_SOURCES
   ../src/CGALCache.cc
   ../src/CGAL_Nef_polyhedron_DxfData.cc
   ../src/Polygon2d-CGAL.cc
-  ../src/polyset-utils.cc 
   ../src/svg.cc
   ../src/GeometryEvaluator.cc)
 
@@ -749,20 +750,20 @@ set_target_properties(tests-offscreen PROPERTIES COMPILE_FLAGS "${ENABLE_OPENCSG
 # modulecachetest
 #
 add_executable(modulecachetest modulecachetest.cc)
-target_link_libraries(modulecachetest tests-nocgal)
+target_link_libraries(modulecachetest tests-nocgal ${GLEW_LIBRARY} ${OPENCSG_LIBRARY} ${APP_SERVICES_LIBRARY})
 
 #
 # csgtexttest
 #
 add_executable(csgtexttest csgtexttest.cc CSGTextRenderer.cc CSGTextCache.cc)
-target_link_libraries(csgtexttest tests-nocgal)
+target_link_libraries(csgtexttest tests-nocgal ${GLEW_LIBRARY} ${OPENCSG_LIBRARY} ${APP_SERVICES_LIBRARY})
 
 #
 # cgalcachetest
 #
 add_executable(cgalcachetest cgalcachetest.cc)
 set_target_properties(cgalcachetest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
-target_link_libraries(cgalcachetest tests-cgal)
+target_link_libraries(cgalcachetest tests-cgal ${GLEW_LIBRARY} ${OPENCSG_LIBRARY} ${APP_SERVICES_LIBRARY})
 
 #
 # openscad no-qt
@@ -1213,7 +1214,8 @@ list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue584.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue964b.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue990.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1004.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1005.scad)
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1005.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1061.scad)
 list(APPEND EXPORT3D_TEST_FILES ${BUGS_FILES})
 list(REMOVE_ITEM EXPORT3D_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue899.scad)
 list(APPEND ALL_2D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue899.scad)
