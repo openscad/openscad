@@ -1,4 +1,13 @@
+#include <string>
+#include <fstream>
+#include <streambuf>
+#include <unistd.h>
 #include <sys/resource.h>
+#include <sys/utsname.h>
+
+#include <boost/regex.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include "PlatformUtils.h"
 #include "boosty.h"
@@ -58,6 +67,99 @@ unsigned long PlatformUtils::stackLimit()
     }
 
     return STACK_LIMIT_DEFAULT;
+}
+
+/**
+ * Check /etc/os-release as defined by systemd.
+ * @see http://0pointer.de/blog/projects/os-release.html
+ * @see http://www.freedesktop.org/software/systemd/man/os-release.html
+ * @return the PRETTY_NAME from the os-release file or an empty string.
+ */
+static std::string checkOsRelease()
+{
+    std::ifstream os_release_stream("/etc/os-release");
+    std::string os_release((std::istreambuf_iterator<char>(os_release_stream)), std::istreambuf_iterator<char>());
+
+    boost::smatch results;
+    boost::regex pretty_name("^PRETTY_NAME=\"([^\"]+)\"");
+    if (boost::regex_search(os_release, results, pretty_name)) {
+	return results[1];
+    }
+
+    return "";
+}
+
+static std::string checkEtcIssue()
+{
+    std::ifstream issue_stream("/etc/issue");
+    std::string issue((std::istreambuf_iterator<char>(issue_stream)), std::istreambuf_iterator<char>());
+
+    boost::regex nl("\n.*$");
+    issue = boost::regex_replace(issue, nl, "");
+    boost::regex esc("\\\\.");
+    issue = boost::regex_replace(issue, esc, "");
+    boost::algorithm::trim(issue);
+    
+    return issue;
+}
+
+static std::string detectDistribution()
+{
+    std::string osrelease = checkOsRelease();
+    if (!osrelease.empty()) {
+	return osrelease;
+    }
+
+    std::string etcissue = checkEtcIssue();
+    if (!etcissue.empty()) {
+	return etcissue;
+    }
+    
+    return "";
+}
+
+std::string PlatformUtils::sysinfo()
+{
+    std::string result;
+    
+    struct utsname osinfo;
+    if (uname(&osinfo) == 0) {
+	result += osinfo.sysname;
+	result += " ";
+	result += osinfo.release;
+	result += " ";
+	result += osinfo.version;
+	result += " ";
+	result += osinfo.machine;
+    } else {
+        result += "Unknown Linux";
+    }
+    
+    long numcpu = sysconf(_SC_NPROCESSORS_ONLN);
+    if (numcpu > 0) {
+	result += " ";
+	result += boost::lexical_cast<std::string>(numcpu);
+	result += " CPU";
+	if (numcpu > 1) {
+	    result += "s";
+	}
+    }
+    
+    long pages = sysconf(_SC_PHYS_PAGES);
+    long pagesize = sysconf(_SC_PAGE_SIZE);
+    if ((pages > 0) && (pagesize > 0)) {
+	result += " ";
+	result += PlatformUtils::toMemorySizeString(pages * pagesize, 2);
+	result += " RAM";
+    }
+
+    std::string distribution = detectDistribution();
+    if (!distribution.empty()) {
+        result += " ";
+	result += distribution;
+    }
+
+    return result;
 }
 
 void PlatformUtils::ensureStdIO(void) {}

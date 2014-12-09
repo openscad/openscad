@@ -35,5 +35,47 @@ unsigned long PlatformUtils::stackLimit()
   return STACK_LIMIT_DEFAULT;
 }
 
+std::string PlatformUtils::sysinfo()
+{
+    std::string result;
+
+#if 0    
+    struct utsname osinfo;
+    if (uname(&osinfo) == 0) {
+	result += osinfo.sysname;
+	result += " ";
+	result += osinfo.release;
+	result += " ";
+	result += osinfo.version;
+	result += " ";
+	result += osinfo.machine;
+    } else {
+#endif
+        result += "Unknown MacOS";
+#if 0
+    }
+    
+    long numcpu = sysconf(_SC_NPROCESSORS_ONLN);
+    if (numcpu > 0) {
+	result += " ";
+	result += boost::lexical_cast<std::string>(numcpu);
+	result += " CPU";
+	if (numcpu > 1) {
+	    result += "s";
+	}
+    }
+    
+    long pages = sysconf(_SC_PHYS_PAGES);
+    long pagesize = sysconf(_SC_PAGE_SIZE);
+    if ((pages > 0) && (pagesize > 0)) {
+	result += " ";
+	result += PlatformUtils::toMemorySizeString(pages * pagesize, 2);
+	result += " RAM";
+    }
+#endif
+
+    return result;
+}
+
 void PlatformUtils::ensureStdIO(void) {}
 

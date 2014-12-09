@@ -88,6 +88,7 @@ std::string LibraryInfo::info()
 	const char *env_font_path = getenv("OPENSCAD_FONT_PATH");
 	
 	s << "OpenSCAD Version: " << TOSTRING(OPENSCAD_VERSION)
+	  << "\nSystem information: " << PlatformUtils::sysinfo()
           << "\nCompiler, build date: " << compiler_info << ", " << __DATE__
 	  << "\nBoost version: " << BOOST_LIB_VERSION
 	  << "\nEigen version: " << EIGEN_WORLD_VERSION << "." << EIGEN_MAJOR_VERSION << "." << EIGEN_MINOR_VERSION

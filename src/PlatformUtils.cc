@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <iomanip>
 
 #include "PlatformUtils.h"
 
@@ -189,4 +190,26 @@ int PlatformUtils::setenv(const char *name, const char *value, int overwrite)
 #else
     return ::setenv(name, value, overwrite);
 #endif
+}
+
+std::string PlatformUtils::toMemorySizeString(unsigned long bytes, int digits)
+{
+	static const char *units[] = { "B", "kB", "MB", "GB", "TB", NULL };
+	
+	int idx = 0;
+	double val = bytes;
+	while (true) {
+		if (val < 1024.0) {
+			break;
+		}
+		if (units[idx + 1] == NULL) {
+			break;
+		}
+		idx++;
+		val /= 1024.0;
+	}
+	
+	boost::format fmt("%f %s");
+	fmt % boost::io::group(std::setprecision(digits), val) % units[idx];
+	return fmt.str();
 }
