@@ -1,5 +1,8 @@
 #include "PlatformUtils.h"
 #import <Foundation/Foundation.h>
+#include <boost/lexical_cast.hpp>
+#include <sys/types.h>
+#include <sys/sysctl.h>
 
 std::string PlatformUtils::pathSeparatorChar()
 {
@@ -37,44 +40,30 @@ unsigned long PlatformUtils::stackLimit()
 
 std::string PlatformUtils::sysinfo()
 {
-    std::string result;
-
-#if 0    
-    struct utsname osinfo;
-    if (uname(&osinfo) == 0) {
-	result += osinfo.sysname;
-	result += " ";
-	result += osinfo.release;
-	result += " ";
-	result += osinfo.version;
-	result += " ";
-	result += osinfo.machine;
-    } else {
-#endif
-        result += "Unknown MacOS";
-#if 0
-    }
-    
-    long numcpu = sysconf(_SC_NPROCESSORS_ONLN);
-    if (numcpu > 0) {
-	result += " ";
-	result += boost::lexical_cast<std::string>(numcpu);
-	result += " CPU";
-	if (numcpu > 1) {
-	    result += "s";
-	}
-    }
-    
-    long pages = sysconf(_SC_PHYS_PAGES);
-    long pagesize = sysconf(_SC_PAGE_SIZE);
-    if ((pages > 0) && (pagesize > 0)) {
-	result += " ";
-	result += PlatformUtils::toMemorySizeString(pages * pagesize, 2);
-	result += " RAM";
-    }
-#endif
-
-    return result;
+  std::string result;
+  
+  result += "Mac OS X ";
+  result += [[[NSProcessInfo processInfo] operatingSystemVersionString] UTF8String];
+  
+  int mib[2];
+  int64_t physical_memory;
+  int32_t numcpu;
+  size_t length64 = sizeof(int64_t);
+  size_t length32 = sizeof(int32_t);;
+  
+  sysctlbyname("hw.memsize", &physical_memory, &length64, NULL, 0);
+  sysctlbyname("hw.physicalcpu", &numcpu, &length32, NULL, 0);
+  
+  result += " ";
+  result += boost::lexical_cast<std::string>(numcpu);
+  result += " CPU";
+  if (numcpu > 1) result += "s";
+  
+  result += " ";
+  result += PlatformUtils::toMemorySizeString(physical_memory, 2);
+  result += " RAM";
+  
+  return result;
 }
 
 void PlatformUtils::ensureStdIO(void) {}
