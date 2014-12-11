@@ -29,12 +29,20 @@ std::string LibraryInfo::info()
 {
 	std::stringstream s;
 
+#if defined(__x86_64__) || defined(_M_X64)
+	std::string bits(" 64bit");
+#elif defined(__i386) || defined(_M_IX86)
+	std::string bits(" 32bit");
+#else
+	std::string bits("");
+#endif
+	
 #if defined(__GNUG__) && !defined(__clang__)
-	std::string compiler_info( "GCC " + std::string(TOSTRING(__VERSION__)) );
+	std::string compiler_info( "GCC " + std::string(TOSTRING(__VERSION__)) + bits);
 #elif defined(_MSC_VER)
-	std::string compiler_info( "MSVC " + std::string(TOSTRING(_MSC_FULL_VER)) );
+	std::string compiler_info( "MSVC " + std::string(TOSTRING(_MSC_FULL_VER)) + bits);
 #elif defined(__clang__)
-	std::string compiler_info( "Clang " + std::string(TOSTRING(__clang_version__)) );
+	std::string compiler_info( "Clang " + std::string(TOSTRING(__clang_version__)) + bits);
 #else
 	std::string compiler_info( "unknown compiler" );
 #endif
@@ -80,6 +88,7 @@ std::string LibraryInfo::info()
 	const char *env_font_path = getenv("OPENSCAD_FONT_PATH");
 	
 	s << "OpenSCAD Version: " << TOSTRING(OPENSCAD_VERSION)
+	  << "\nSystem information: " << PlatformUtils::sysinfo()
           << "\nCompiler, build date: " << compiler_info << ", " << __DATE__
 	  << "\nBoost version: " << BOOST_LIB_VERSION
 	  << "\nEigen version: " << EIGEN_WORLD_VERSION << "." << EIGEN_MAJOR_VERSION << "." << EIGEN_MINOR_VERSION

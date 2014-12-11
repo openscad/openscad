@@ -116,7 +116,6 @@ macx {
 
 win* {
   RC_FILE = openscad_win32.rc
-  QTPLUGIN += qtaccessiblewidgets
 }
 
 CONFIG += qt
@@ -129,8 +128,6 @@ unix:!macx {
   QMAKE_LIBS_OPENGL *= -lGLU
   QMAKE_LIBS_OPENGL *= -lX11
 }
-
-#QTPLUGIN += qtaccessiblewidgets
 
 netbsd* {
    QMAKE_LFLAGS += -L/usr/X11R7/lib
