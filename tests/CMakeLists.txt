@@ -1220,7 +1220,13 @@ list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue584.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1005.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1061.scad)
 list(APPEND EXPORT3D_TEST_FILES ${BUGS_FILES})
-list(REMOVE_ITEM EXPORT3D_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue899.scad)
+list(REMOVE_ITEM EXPORT3D_TEST_FILES
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue899.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue964.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue964b.scad)
+list(APPEND EXPORTCSG_TEST_FILES 
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue964.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue964b.scad)
 list(APPEND ALL_2D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue899.scad)
 
 list(APPEND OPENCSGTEST_FILES ${BUGS_FILES})
