@@ -1,8 +1,9 @@
 #include "PlatformUtils.h"
-#import <Foundation/Foundation.h>
-#include <boost/lexical_cast.hpp>
 #include <sys/types.h>
 #include <sys/sysctl.h>
+#include <boost/lexical_cast.hpp>
+
+#import <Foundation/Foundation.h>
 
 std::string PlatformUtils::pathSeparatorChar()
 {
