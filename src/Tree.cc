@@ -3,6 +3,7 @@
 
 #include <assert.h>
 #include <algorithm>
+#include <sstream>
 #include <boost/regex.hpp>
 
 Tree::~Tree()
