@@ -187,6 +187,7 @@ public:
   bool operator>=(const ValuePtr &v) const;
   bool operator>(const ValuePtr &v) const;
   ValuePtr operator-() const;
+  ValuePtr operator!() const;
   ValuePtr operator[](const ValuePtr &v) const;
   ValuePtr operator+(const ValuePtr &v) const;
   ValuePtr operator-(const ValuePtr &v) const;

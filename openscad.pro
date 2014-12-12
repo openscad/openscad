@@ -12,6 +12,10 @@
 #
 #   PREFIX defines the base installation folder
 #
+#   SUFFIX defines an optional suffix for the binary and the
+#   resource folder. E.g. using SUFFIX=-nightly will name the
+#   resulting binary openscad-nightly.
+#
 # Please see the 'Building' sections of the OpenSCAD user manual 
 # for updated tips & workarounds.
 #
@@ -78,8 +82,10 @@ macx {
   TARGET = OpenSCAD
 }
 else {
-  TARGET = openscad
+  TARGET = openscad$${SUFFIX}
 }
+FULLNAME = openscad$${SUFFIX}
+!isEmpty(SUFFIX): DEFINES += INSTALL_SUFFIX="\"\\\"$${SUFFIX}\\\"\""
 
 macx {
   ICON = icons/OpenSCAD.icns
@@ -110,7 +116,6 @@ macx {
 
 win* {
   RC_FILE = openscad_win32.rc
-  QTPLUGIN += qtaccessiblewidgets
 }
 
 CONFIG += qt
@@ -123,8 +128,6 @@ unix:!macx {
   QMAKE_LIBS_OPENGL *= -lGLU
   QMAKE_LIBS_OPENGL *= -lX11
 }
-
-#QTPLUGIN += qtaccessiblewidgets
 
 netbsd* {
    QMAKE_LFLAGS += -L/usr/X11R7/lib
@@ -491,54 +494,57 @@ QMAKE_POST_LINK += $$PWD/scripts/translation-make.sh
 
 # Create install targets for the languages defined in LINGUAS
 LINGUAS = $$cat(locale/LINGUAS)
-LOCALE_PREFIX = $$PREFIX/share/openscad/locale
+LOCALE_PREFIX = "$$PREFIX/share/$${FULLNAME}/locale"
 for(language, LINGUAS) {
-  catalog = locale/$$language/LC_MESSAGES/openscad.mo
-  exists($$catalog) {
+  catalogdir = locale/$$language/LC_MESSAGES
+  exists(locale/$${language}.po) {
+    # Use .extra and copy manually as the source path might not exist,
+    # e.g. on a clean checkout. In that case qmake would not create
+    # the needed targets in the generated Makefile.
     translation_path = translation_$${language}.path
-    translation_files = translation_$${language}.files
+    translation_extra = translation_$${language}.extra
     translation_depends = translation_$${language}.depends
     $$translation_path = $$LOCALE_PREFIX/$$language/LC_MESSAGES/
-    $$translation_files = $$catalog
+    $$translation_extra = cp -f $${catalogdir}/openscad.mo \"\$(INSTALL_ROOT)$$LOCALE_PREFIX/$$language/LC_MESSAGES/openscad.mo\"
     $$translation_depends = locale/$${language}.po
     INSTALLS += translation_$$language
   }
 }
 
-examples.path = $$PREFIX/share/openscad/examples/
+examples.path = "$$PREFIX/share/$${FULLNAME}/examples/"
 examples.files = examples/*
 INSTALLS += examples
 
-libraries.path = $$PREFIX/share/openscad/libraries/
+libraries.path = "$$PREFIX/share/$${FULLNAME}/libraries/"
 libraries.files = libraries/*
 INSTALLS += libraries
 
-fonts.path = $$PREFIX/share/openscad/fonts/
+fonts.path = "$$PREFIX/share/$${FULLNAME}/fonts/"
 fonts.files = fonts/*
 INSTALLS += fonts
 
-colorschemes.path = $$PREFIX/share/openscad/color-schemes/
+colorschemes.path = "$$PREFIX/share/$${FULLNAME}/color-schemes/"
 colorschemes.files = color-schemes/*
 INSTALLS += colorschemes
 
 applications.path = $$PREFIX/share/applications
-applications.files = icons/openscad.desktop
+applications.extra = cat icons/openscad.desktop | sed -e \"'s/^Icon=openscad/Icon=$${FULLNAME}/; s/^Exec=openscad/Exec=$${FULLNAME}/'\" > \"\$(INSTALL_ROOT)$${applications.path}/$${FULLNAME}.desktop\"
 INSTALLS += applications
 
 mimexml.path = $$PREFIX/share/mime/packages
-mimexml.files = icons/openscad.xml
+mimexml.extra = cp -f icons/openscad.xml \"\$(INSTALL_ROOT)$${mimexml.path}/$${FULLNAME}.xml\"
 INSTALLS += mimexml
 
 appdata.path = $$PREFIX/share/appdata
-appdata.files = openscad.appdata.xml
+appdata.extra = cp -f openscad.appdata.xml \"\$(INSTALL_ROOT)$${appdata.path}/$${FULLNAME}.appdata.xml\"
 INSTALLS += appdata
 
 icons.path = $$PREFIX/share/pixmaps
-icons.files = icons/openscad.png
+icons.extra = cp -f icons/openscad.png \"\$(INSTALL_ROOT)$${icons.path}/$${FULLNAME}.png\"
 INSTALLS += icons
 
 man.path = $$PREFIX/share/man/man1
-man.files = doc/openscad.1
+man.extra = cp -f doc/openscad.1 \"\$(INSTALL_ROOT)$${man.path}/$${FULLNAME}.1\"
 INSTALLS += man
 
 CONFIG(winconsole) {

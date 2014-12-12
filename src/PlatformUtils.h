@@ -35,6 +35,20 @@ namespace PlatformUtils {
 	bool createBackupPath();
 
         /**
+         * Return a human readable text describing the operating system
+         * the application is currently running on. This is mainly intended
+         * to provide information for bug reports (e.g. to be included in
+         * the LibraryInfoDialog).
+         * 
+         * If there is some error to retrieve the details, at least the
+         * OS type is reported based on what platform the application was
+         * built for.
+         * 
+         * @return system information.
+         */
+        std::string sysinfo();
+
+        /**
          * Platform abstraction to set environment variables. Windows/MinGW
          * does not support setenv(), but needs _putenv().
          * 
@@ -65,4 +79,10 @@ namespace PlatformUtils {
 	 * Currently limited to MS Windows GUI application console only.
 	 */
 	void ensureStdIO(void);
+        
+        /**
+         * Convert the number of bytes to a human readable string with
+         * a given number of digits.
+         */
+        std::string toMemorySizeString(unsigned long bytes, int digits);
 }

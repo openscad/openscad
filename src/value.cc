@@ -877,6 +877,11 @@ ValuePtr ValuePtr::operator-() const
 	return ValuePtr(-**this);
 }
 
+ValuePtr ValuePtr::operator!() const
+{
+	return ValuePtr(!**this);
+}
+
 ValuePtr ValuePtr::operator[](const ValuePtr &v) const
 {
 	return ValuePtr((**this)[*v]);

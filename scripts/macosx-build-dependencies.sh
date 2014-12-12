@@ -515,7 +515,7 @@ build_freetype()
   cd "$BASEDIR"/src
   rm -rf "freetype-$version"
   if [ ! -f "freetype-$version.tar.gz" ]; then
-    curl --insecure -LO "http://download.savannah.gnu.org/releases/freetype/freetype-$version.tar.gz"
+    curl --insecure -LO "http://downloads.sourceforge.net/project/freetype/freetype2/$version/freetype-$version.tar.gz"
   fi
   tar xzf "freetype-$version.tar.gz"
   cd "freetype-$version"
@@ -655,7 +655,7 @@ build_ragel()
   cd "$BASEDIR"/src
   rm -rf "ragel-$version"
   if [ ! -f "ragel-$version.tar.gz" ]; then
-    curl --insecure -LO "http://www.colm.net/wp-content/uploads/2014/10/ragel-$version.tar.gz"
+    curl --insecure -LO "http://www.colm.net/files/ragel/ragel-$version.tar.gz"
   fi
   tar xzf "ragel-$version.tar.gz"
   cd "ragel-$version"
@@ -770,7 +770,7 @@ fi
 
 echo "Using basedir:" $BASEDIR
 mkdir -p $SRCDIR $DEPLOYDIR
-build_qt5 5.3.1
+build_qt5 5.3.2
 build_qscintilla 2.8.4
 # NB! For eigen, also update the path in the function
 build_eigen 3.2.1
@@ -784,7 +784,7 @@ build_gettext 0.18.3.2
 build_libffi 3.1
 build_glib2 2.40.0
 build_opencsg 1.4.0
-build_freetype 2.5.3 --without-png
+build_freetype 2.5.4 --without-png
 build_ragel 6.9
 build_harfbuzz 0.9.35 "--with-coretext=auto --with-glib=no"
 export FREETYPE_CFLAGS="-I$DEPLOYDIR/include -I$DEPLOYDIR/include/freetype2"

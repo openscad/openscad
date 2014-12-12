@@ -1051,9 +1051,6 @@ void MainWindow::compileCSG(bool procevents)
 		CSGTermEvaluator csgrenderer(this->tree, &geomevaluator);
 		if (procevents) QApplication::processEvents();
 		this->root_raw_term = csgrenderer.evaluateCSGTerm(*root_node, highlight_terms, background_terms);
-		if (!root_raw_term && background_terms.empty()) {
-			PRINT("ERROR: CSG generation failed! (no objects found)");
-		}
 		GeometryCache::instance()->print();
 #ifdef ENABLE_CGAL
 		CGALCache::instance()->print();
@@ -1768,8 +1765,8 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 		int s = this->progresswidget->elapsedTime() / 1000;
 		PRINTB("Total rendering time: %d hours, %d minutes, %d seconds", (s / (60*60)) % ((s / 60) % 60) % (s % 60));
 			
-		if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(root_geom.get())) {
-			if (!N->isEmpty()) {
+		if (root_geom && !root_geom->isEmpty()) {
+			if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(root_geom.get())) {
 				if (N->getDimension() == 3) {
 					PRINT("   Top level object is a 3D object:");
 					PRINTB("   Simple:     %6s", (N->p3->is_simple() ? "yes" : "no"));
@@ -1781,16 +1778,16 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 					PRINTB("   Volumes:    %6d", N->p3->number_of_volumes());
 				}
 			}
-		}
-		else if (const PolySet *ps = dynamic_cast<const PolySet *>(root_geom.get())) {
-			assert(ps->getDimension() == 3);
-			PRINT("   Top level object is a 3D object:");
-			PRINTB("   Facets:     %6d", ps->numPolygons());
-		} else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(root_geom.get())) {
-			PRINT("   Top level object is a 2D object:");
-			PRINTB("   Contours:     %6d", poly->outlines().size());
-		} else {
-			assert(false && "Unknown geometry type");
+			else if (const PolySet *ps = dynamic_cast<const PolySet *>(root_geom.get())) {
+				assert(ps->getDimension() == 3);
+				PRINT("   Top level object is a 3D object:");
+				PRINTB("   Facets:     %6d", ps->numPolygons());
+			} else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(root_geom.get())) {
+				PRINT("   Top level object is a 2D object:");
+				PRINTB("   Contours:     %6d", poly->outlines().size());
+			} else {
+				assert(false && "Unknown geometry type");
+			}
 		}
 		PRINT("Rendering finished.");
 
