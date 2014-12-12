@@ -3,6 +3,7 @@
 
 #include <assert.h>
 #include <algorithm>
+#include <boost/regex.hpp>
 
 Tree::~Tree()
 {
@@ -46,9 +47,13 @@ const std::string &Tree::getIdString(const AbstractNode &node) const
 {
 	assert(this->root_node);
 	if (!this->nodeidcache.contains(node)) {
-		std::string str = getString(node);
-		str.erase(std::remove_if(str.begin(), str.end(), filter), str.end());
-		return this->nodeidcache.insert(node, str);
+		const std::string &str = getString(node);
+		const boost::regex re("(\".*\")|\\S+");
+		std::stringstream sstream;
+		boost::sregex_token_iterator i(str.begin(), str.end(), re, 0);
+    std::copy(i, boost::sregex_token_iterator(), std::ostream_iterator<std::string>(sstream));
+
+		return this->nodeidcache.insert(node, sstream.str());
 	}
 	return this->nodeidcache[node];
 }
