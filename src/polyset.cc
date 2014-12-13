@@ -25,6 +25,7 @@
  */
 
 #include "polyset.h"
+#include "polyset-utils.h"
 #include "linalg.h"
 #include "printutils.h"
 #include <Eigen/LU>
@@ -140,20 +141,10 @@ void PolySet::transform(const Transform3d &mat)
 	}
 }
 
-namespace CGALUtils {
-	extern bool is_approximately_convex(const PolySet &ps);
-}
-
 bool PolySet::is_convex() const {
-	if (convex)  return true;
+	if (convex || this->isEmpty()) return true;
 	if (!convex) return false;
-
-#ifdef ENABLE_CGAL
-	convex = CGALUtils::is_approximately_convex(*this);
-	return convex;
-#else
-	return false;
-#endif
+	return PolysetUtils::is_approximately_convex(*this);
 }
 
 void PolySet::resize(Vector3d newsize, const Eigen::Matrix<bool,3,1> &autosize)

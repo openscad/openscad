@@ -63,10 +63,12 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 				PolySet *ps = new PolySet(3);
 				ps->setConvexity(N->getConvexity());
 				this->root.reset(ps);
-				bool err = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, *ps);
-				if (err) {
-					PRINT("ERROR: Nef->PolySet failed");
-				}
+                if (!N->isEmpty()) {
+                    bool err = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, *ps);
+                    if (err) {
+                        PRINT("ERROR: Nef->PolySet failed");
+                    }
+                }
 
 				smartCacheInsert(node, this->root);
 			}
@@ -123,8 +125,9 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 
 	if (op == OPENSCAD_MINKOWSKI) return ResultObject(CGALUtils::applyMinkowski(children));
 
-	CGAL_Nef_polyhedron *N = new CGAL_Nef_polyhedron;
-	CGALUtils::applyOperator(children, *N, op);
+	CGAL_Nef_polyhedron *N = CGALUtils::applyOperator(children, op);
+	// FIXME: Clarify when we can return NULL and what that means
+	if (!N) N = new CGAL_Nef_polyhedron;
 	return ResultObject(N);
 }
 
@@ -354,6 +357,7 @@ void GeometryEvaluator::addToParent(const State &state,
 		// Root node, insert into cache
 		smartCacheInsert(node, geom);
 		this->root = geom;
+        assert(this->visitedchildren.empty());
 	}
 }
 
@@ -547,7 +551,12 @@ Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 							node.matrix(1,0), node.matrix(1,1), node.matrix(1,3),
 							node.matrix(3,0), node.matrix(3,1), node.matrix(3,3);
 						newpoly->transform(mat2);
-						geom = newpoly;
+						// A 2D transformation may flip the winding order of a polygon.
+						// If that happens with a sanitized polygon, we need to reverse
+						// the winding order for it to be correct.
+						if (newpoly->isSanitized() && mat2.matrix().determinant() <= 0) {
+							geom.reset(ClipperUtils::sanitize(*newpoly));
+						}
 					}
 					else if (geom->getDimension() == 3) {
 						shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(geom);

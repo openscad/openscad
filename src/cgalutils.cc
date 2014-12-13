@@ -273,7 +273,11 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 	if (ps.isEmpty()) return new CGAL_Nef_polyhedron();
 	assert(ps.getDimension() == 3);
 
-	if (ps.is_convex()) {
+	// Since is_convex doesn't work well with non-planar faces,
+	// we tessellate the polyset before checking.
+	PolySet ps_tri(3);
+	PolysetUtils::tessellate_faces(ps, ps_tri);
+	if (ps_tri.is_convex()) {
 		typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 		// Collect point cloud
 		std::set<K::Point_3> points;
@@ -316,10 +320,8 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 		}
 	}
 	if (plane_error) try {
-			PolySet ps2(3);
 			CGAL_Polyhedron P;
-			PolysetUtils::tessellate_faces(ps, ps2);
-			bool err = CGALUtils::createPolyhedronFromPolySet(ps2,P);
+			bool err = CGALUtils::createPolyhedronFromPolySet(ps_tri, P);
 			if (!err) N = new CGAL_Nef_polyhedron3(P);
 		}
 		catch (const CGAL::Assertion_exception &e) {
@@ -603,14 +605,13 @@ namespace CGALUtils {
 						fake_children.push_back(std::make_pair((const AbstractNode*)NULL,
 															   shared_ptr<const Geometry>(createNefPolyhedronFromGeometry(ps))));
 					}
-					CGAL_Nef_polyhedron *N = new CGAL_Nef_polyhedron;
-					CGALUtils::applyOperator(fake_children, *N, OPENSCAD_UNION);
+					CGAL_Nef_polyhedron *N = CGALUtils::applyOperator(fake_children, OPENSCAD_UNION);
 					t.stop();
 					PRINTDB("Minkowski: Union done: %f s",t.time());
 					t.reset();
 					operands[0] = N;
 				} else {
-					return NULL;
+                    operands[0] = new CGAL_Nef_polyhedron();
 				}
 			}
 
@@ -623,17 +624,16 @@ namespace CGALUtils {
 			// If anything throws we simply fall back to Nef Minkowski
 			PRINTD("Minkowski: Falling back to Nef Minkowski");
 
-			CGAL_Nef_polyhedron *N = new CGAL_Nef_polyhedron;
-			applyOperator(children, *N, OPENSCAD_MINKOWSKI);
+			CGAL_Nef_polyhedron *N = applyOperator(children, OPENSCAD_MINKOWSKI);
 			return N;
 		}
 	}
 	
 /*!
-	Applies op to all children and stores the result in dest.
+	Applies op to all children and returns the result.
 	The child list should be guaranteed to contain non-NULL 3D or empty Geometry objects
 */
-	void applyOperator(const Geometry::ChildList &children, CGAL_Nef_polyhedron &dest, OpenSCADOperator op)
+	CGAL_Nef_polyhedron *applyOperator(const Geometry::ChildList &children, OpenSCADOperator op)
 	{
 		// Speeds up n-ary union operations significantly
 		CGAL::Nef_nary_union_3<CGAL_Nef_polyhedron3> nary_union;
@@ -720,13 +720,15 @@ namespace CGALUtils {
 			}
 			CGAL::set_error_behaviour(old_behaviour);
 		}
-		if (N) dest = *N;
+		return N;
 	}
 
 /*!
 	Modifies target by applying op to target and src:
 	target = target [op] src
 */
+//FIXME: Old, can be removed:
+#if 0
 	void applyBinaryOperator(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedron &src, OpenSCADOperator op)
 	{
 		if (target.getDimension() != 2 && target.getDimension() != 3) {
@@ -772,6 +774,7 @@ namespace CGALUtils {
 		}
 		CGAL::set_error_behaviour(old_behaviour);
 	}
+#endif
 
 	static void add_outline_to_poly(CGAL_Nef_polyhedron2::Explorer &explorer,
 									CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator circ,
@@ -932,6 +935,13 @@ namespace CGALUtils {
 	};
 
 
+  /*!
+		Check if all faces of a polyset is within 0.1 degree of being convex.
+		
+		NB! This function can give false positives if the polyset contains
+		non-planar faces. To be on the safe side, consider passing a tessellated polyset.
+		See issue #1061.
+	*/
 	bool is_approximately_convex(const PolySet &ps) {
 
 		const double angle_threshold = cos(.1/180*M_PI); // .1°

@@ -36,6 +36,7 @@
 #include "stl-utils.h"
 #include "printutils.h"
 #include "stackcheck.h"
+#include "exceptions.h"
 #include <boost/foreach.hpp>
 
 #include <boost/math/special_functions/fpclassify.hpp>
@@ -150,9 +151,12 @@ ValuePtr FunctionTailRecursion::evaluate(const Context *ctx, const EvalContext *
 
 	EvalContext ec(&c, call->call_arguments);
 	Context tmp(&c);
+	unsigned int counter = 0;
 	while (invert ^ expr->first->evaluate(&c)) {
 		tmp.setVariables(definition_arguments, &ec);
 		c.apply_variables(tmp);
+
+		if (counter++ == 1000000) throw RecursionException("function", this->name);
 	}
 
 	ValuePtr result = endexpr->evaluate(&c);
