@@ -66,6 +66,14 @@ get_debian_deps()
   libharfbuzz-dev gtk-doc-tools libglib2.0-dev gettext
 }
 
+get_arch_deps()
+{
+ pacman -S \
+  qt4 qscintilla cgal gmp  mpfr cmake boost opencsg \
+  glew eigen glib2 fontconfig freetype2 harfbuzz \
+  gcc bison flex pkg-config
+}
+
 unknown()
 {
  echo "Unknown system type. Please install the dependency packages listed"
@@ -73,7 +81,9 @@ unknown()
 }
 
 if [ -e /etc/issue ]; then
- if [ "`grep -i ubuntu /etc/issue`" ]; then
+ if [ "`grep -i arch /etc/issue`" ]; then
+  get_arch_deps
+ elif [ "`grep -i ubuntu /etc/issue`" ]; then
   get_debian_deps
  elif [ "`grep -i debian /etc/issue`" ]; then
   get_debian_deps
