@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: OpenSCAD 2013.02.07\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-11-13 00:22+0100\n"
-"PO-Revision-Date: 2014-12-14 00:32-0500\n"
+"PO-Revision-Date: 2014-12-14 10:20-0500\n"
 "Last-Translator: Keven Villeneuve <keven.villeneuve@gmail.com>\n"
 "Language-Team: French\n"
 "Language: fr\n"
@@ -27,8 +27,7 @@ msgstr "À propos de OpenSCAD"
 msgid "OpenSCAD Font List"
 msgstr "Liste des polices OpenSCAD"
 
-#: objects/ui_FontListDialog.h:103
-#: objects/ui_LibraryInfoDialog.h:77
+#: objects/ui_FontListDialog.h:103 objects/ui_LibraryInfoDialog.h:77
 msgid "&OK"
 msgstr "&OK"
 
@@ -72,8 +71,7 @@ msgstr "Récents"
 msgid "Open Recent"
 msgstr "Ouvrir un fichier récent"
 
-#: objects/ui_launchingscreen.h:282
-#: objects/ui_launchingscreen.h:284
+#: objects/ui_launchingscreen.h:282 objects/ui_launchingscreen.h:284
 #: objects/ui_MainWindow.h:858
 msgid "Examples"
 msgstr "Exemples"
@@ -242,8 +240,7 @@ msgstr "Ctrl+T"
 msgid "Paste viewport rotation"
 msgstr "Coller la rotation de la fenêtre de rendu"
 
-#: objects/ui_MainWindow.h:766
-#: objects/ui_MainWindow.h:845
+#: objects/ui_MainWindow.h:766 objects/ui_MainWindow.h:845
 msgid "Zoom In"
 msgstr "Zoom Avant"
 
@@ -251,8 +248,7 @@ msgstr "Zoom Avant"
 msgid "Ctrl++"
 msgstr "Ctrl++"
 
-#: objects/ui_MainWindow.h:768
-#: objects/ui_MainWindow.h:847
+#: objects/ui_MainWindow.h:768 objects/ui_MainWindow.h:847
 msgid "Zoom Out"
 msgstr "Zoom Arrière"
 
@@ -338,7 +334,7 @@ msgstr "F11"
 
 #: objects/ui_MainWindow.h:789
 msgid "Thrown Together"
-msgstr ""
+msgstr "Jeté ensemble"
 
 #: objects/ui_MainWindow.h:790
 msgid "F12"
@@ -362,7 +358,7 @@ msgstr "Ctrl+2"
 
 #: objects/ui_MainWindow.h:795
 msgid "Show Crosshairs"
-msgstr ""
+msgstr "Afficher la Mire"
 
 #: objects/ui_MainWindow.h:796
 msgid "Ctrl+3"
@@ -460,8 +456,7 @@ msgstr "Effacer Récents"
 msgid "Export as DXF..."
 msgstr "Exporter comme DXF..."
 
-#: objects/ui_MainWindow.h:820
-#: objects/ui_OpenCSGWarningDialog.h:94
+#: objects/ui_MainWindow.h:820 objects/ui_OpenCSGWarningDialog.h:94
 msgid "Close"
 msgstr "Fermer"
 
@@ -469,8 +464,7 @@ msgstr "Fermer"
 msgid "Ctrl+W"
 msgstr "Ctrl+W"
 
-#: objects/ui_MainWindow.h:822
-#: objects/ui_Preferences.h:608
+#: objects/ui_MainWindow.h:822 objects/ui_Preferences.h:608
 msgid "Preferences"
 msgstr "Préférences"
 
@@ -630,8 +624,7 @@ msgstr "&Aide"
 msgid "Find"
 msgstr "Rechercher"
 
-#: objects/ui_MainWindow.h:867
-#: objects/ui_MainWindow.h:874
+#: objects/ui_MainWindow.h:867 objects/ui_MainWindow.h:874
 msgid "Replace"
 msgstr "Remplacer"
 
@@ -689,13 +682,11 @@ msgstr "Affiche ce message à nouveau"
 msgid "3D View"
 msgstr "&Vue 3D"
 
-#: objects/ui_Preferences.h:610
-#: src/UIUtils.cc:85
+#: objects/ui_Preferences.h:610 src/UIUtils.cc:85
 msgid "Advanced"
 msgstr "Avancé"
 
-#: objects/ui_Preferences.h:611
-#: src/mainwin.cc:2339
+#: objects/ui_Preferences.h:611 src/mainwin.cc:2339
 msgid "Editor"
 msgstr "Éditeur"
 
@@ -703,8 +694,7 @@ msgstr "Éditeur"
 msgid "Update"
 msgstr "Mettre à jour"
 
-#: objects/ui_Preferences.h:613
-#: objects/ui_Preferences.h:633
+#: objects/ui_Preferences.h:613 objects/ui_Preferences.h:633
 msgid "Features"
 msgstr "Fonctionnalités"
 
@@ -782,14 +772,13 @@ msgstr "éléments"
 
 #: objects/ui_Preferences.h:639
 msgid "Force Goldfeather"
-msgstr ""
+msgstr "Forcer Goldfeather"
 
 #: objects/ui_Preferences.h:640
 msgid "CGAL Cache size"
 msgstr "Taille du Cache de CGAL"
 
-#: objects/ui_Preferences.h:641
-#: objects/ui_Preferences.h:643
+#: objects/ui_Preferences.h:641 objects/ui_Preferences.h:643
 msgid "bytes"
 msgstr "octets"
 
@@ -833,8 +822,7 @@ msgstr "%v / %m"
 msgid "About OpenSCAD "
 msgstr "À propos de OpenSCAD"
 
-#: src/mainwin.cc:773
-#: src/mainwin.cc:1315
+#: src/mainwin.cc:773 src/mainwin.cc:1315
 msgid "Untitled.scad"
 msgstr "Untitled.scad"
 
@@ -866,13 +854,11 @@ msgstr ""
 "Ce document a été modifié.\n"
 "Voulez-vous vraiment recharger le fichier?"
 
-#: src/mainwin.cc:1966
-#: src/mainwin.cc:2023
+#: src/mainwin.cc:1966 src/mainwin.cc:2023
 msgid "Export %1 File"
 msgstr "Exporter %1 Fichier"
 
-#: src/mainwin.cc:1967
-#: src/mainwin.cc:2027
+#: src/mainwin.cc:1967 src/mainwin.cc:2027
 msgid "%1 Files (*%2)"
 msgstr "%1 Fichiers (*%2)"
 
