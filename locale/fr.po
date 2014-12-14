@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: OpenSCAD 2013.02.07\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-11-13 00:22+0100\n"
-"PO-Revision-Date: 2014-12-13 22:25-0500\n"
+"PO-Revision-Date: 2014-12-14 00:32-0500\n"
 "Last-Translator: Keven Villeneuve <keven.villeneuve@gmail.com>\n"
 "Language-Team: French\n"
 "Language: fr\n"
@@ -27,7 +27,8 @@ msgstr "À propos de OpenSCAD"
 msgid "OpenSCAD Font List"
 msgstr "Liste des polices OpenSCAD"
 
-#: objects/ui_FontListDialog.h:103 objects/ui_LibraryInfoDialog.h:77
+#: objects/ui_FontListDialog.h:103
+#: objects/ui_LibraryInfoDialog.h:77
 msgid "&OK"
 msgstr "&OK"
 
@@ -44,45 +45,24 @@ msgid "Filter:"
 msgstr "Filtre:"
 
 #: objects/ui_FontListDialog.h:109
-msgid ""
-"<html><head/><body><p>This list shows the fonts currently registered with "
-"OpenSCAD.</p><p>Example:</p><pre style=\" margin-top:12px; margin-"
-"bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-"
-"indent:0px;\"><span style=\" font-family:'Courier New,courier';\">  text(t = "
-"&quot;OpenSCAD&quot;, font = &quot;DejaVu Sans&quot;);</span></pre><pre "
-"style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-"
-"right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-"
-"family:'Courier New,courier';\">  text(t = &quot;OpenSCAD&quot;, font = "
-"&quot;Liberation Sans:style=Italic&quot;);</span></pre></body></html>"
-msgstr ""
-"<html><head/><body><p>Cette liste affiche les polices présentement chargées "
-"avec OpenSCAD</p><p>Example:</p><pre style=\" margin-top:12px; margin-"
-"bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-"
-"indent:0px;\"><span style=\" font-family:'Courier New,courier';\">  text(t = "
-"&quot;OpenSCAD&quot;, font = &quot;DejaVu Sans&quot;);</span></pre><pre "
-"style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-"
-"right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-"
-"family:'Courier New,courier';\">  text(t = &quot;OpenSCAD&quot;, font = "
-"&quot;Liberation Sans:style=Italic&quot;);</span></pre></body></html>"
+msgid "<html><head/><body><p>This list shows the fonts currently registered with OpenSCAD.</p><p>Example:</p><pre style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:'Courier New,courier';\">  text(t = &quot;OpenSCAD&quot;, font = &quot;DejaVu Sans&quot;);</span></pre><pre style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:'Courier New,courier';\">  text(t = &quot;OpenSCAD&quot;, font = &quot;Liberation Sans:style=Italic&quot;);</span></pre></body></html>"
+msgstr "<html><head/><body><p>Cette liste affiche les polices présentement chargées avec OpenSCAD</p><p>Example:</p><pre style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:'Courier New,courier';\">  text(t = &quot;OpenSCAD&quot;, font = &quot;DejaVu Sans&quot;);</span></pre><pre style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:'Courier New,courier';\">  text(t = &quot;OpenSCAD&quot;, font = &quot;Liberation Sans:style=Italic&quot;);</span></pre></body></html>"
 
 #: objects/ui_launchingscreen.h:276
 msgid "Welcome to OpenSCAD"
 msgstr "Bienvenue dans OpenSCAD"
 
 #: objects/ui_launchingscreen.h:277
-#, fuzzy
 msgid "New"
-msgstr "&Nouveau"
+msgstr "Nouveau"
 
 #: objects/ui_launchingscreen.h:278
-#, fuzzy
 msgid "Open"
-msgstr "&Ouvrir..."
+msgstr "Ouvrir..."
 
 #: objects/ui_launchingscreen.h:279
-#, fuzzy
 msgid "Help"
-msgstr "&Aide"
+msgstr "Aide"
 
 #: objects/ui_launchingscreen.h:280
 msgid "Recents"
@@ -92,10 +72,11 @@ msgstr "Récents"
 msgid "Open Recent"
 msgstr "Ouvrir un fichier récent"
 
-#: objects/ui_launchingscreen.h:282 objects/ui_launchingscreen.h:284
+#: objects/ui_launchingscreen.h:282
+#: objects/ui_launchingscreen.h:284
 #: objects/ui_MainWindow.h:858
 msgid "Examples"
-msgstr "&Exemples"
+msgstr "Exemples"
 
 #: objects/ui_launchingscreen.h:285
 msgid "Open Example"
@@ -104,23 +85,15 @@ msgstr "&Ouvrir un example"
 #: objects/ui_launchingscreen.h:287
 msgid ""
 "<html><head/><body>\n"
-"<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-"
-"weight: bold; padding-bottom: 0; margin-bottom: 0; font-size: 22pt;\"><span "
-"style=\"color: green;\">Open</span>SCAD</p>\n"
-"<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-"
-"weight: normal; font-size: 14pt; padding-top: 0; margin-top: 0; margin-left: "
-"2em;\">The Programmers Solid 3D CAD Modeller</p>\n"
+"<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-weight: bold; padding-bottom: 0; margin-bottom: 0; font-size: 22pt;\"><span style=\"color: green;\">Open</span>SCAD</p>\n"
+"<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-weight: normal; font-size: 14pt; padding-top: 0; margin-top: 0; margin-left: 2em;\">The Programmers Solid 3D CAD Modeller</p>\n"
 "</body></html>\n"
 "\n"
 "\n"
 msgstr ""
 "<html><head/><body>\n"
-"<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-"
-"weight: bold; padding-bottom: 0; margin-bottom: 0; font-size: 22pt;\"><span "
-"style=\"color: green;\">Open</span>SCAD</p>\n"
-"<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-"
-"weight: normal; font-size: 14pt; padding-top: 0; margin-top: 0; margin-left: "
-"2em;\">Le logiciel CAD 3D de conception paramétriques des programmeurs</p>\n"
+"<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-weight: bold; padding-bottom: 0; margin-bottom: 0; font-size: 22pt;\"><span style=\"color: green;\">Open</span>SCAD</p>\n"
+"<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-weight: normal; font-size: 14pt; padding-top: 0; margin-top: 0; margin-left: 2em;\">Le modeleur CAD 3D des programmeurs</p>\n"
 "</body></html>\n"
 "\n"
 "\n"
@@ -131,7 +104,7 @@ msgstr "Ne plus afficher"
 
 #: objects/ui_LibraryInfoDialog.h:75
 msgid "Lib & Build Info"
-msgstr "Bibliothèque et Infos de la version"
+msgstr "Bibliothèques et Infos de la version"
 
 #: objects/ui_LibraryInfoDialog.h:76
 msgid "OpenSCAD Detailed Library and Build Information"
@@ -267,9 +240,10 @@ msgstr "Ctrl+T"
 
 #: objects/ui_MainWindow.h:765
 msgid "Paste viewport rotation"
-msgstr "Coller la rotation de la fenêtre rendu"
+msgstr "Coller la rotation de la fenêtre de rendu"
 
-#: objects/ui_MainWindow.h:766 objects/ui_MainWindow.h:845
+#: objects/ui_MainWindow.h:766
+#: objects/ui_MainWindow.h:845
 msgid "Zoom In"
 msgstr "Zoom Avant"
 
@@ -277,7 +251,8 @@ msgstr "Zoom Avant"
 msgid "Ctrl++"
 msgstr "Ctrl++"
 
-#: objects/ui_MainWindow.h:768 objects/ui_MainWindow.h:847
+#: objects/ui_MainWindow.h:768
+#: objects/ui_MainWindow.h:847
 msgid "Zoom Out"
 msgstr "Zoom Arrière"
 
@@ -463,7 +438,7 @@ msgstr "Perspective"
 
 #: objects/ui_MainWindow.h:814
 msgid "Orthogonal"
-msgstr "Orthogonal"
+msgstr "Orthogonale"
 
 #: objects/ui_MainWindow.h:815
 msgid "Hide console"
@@ -485,7 +460,8 @@ msgstr "Effacer Récents"
 msgid "Export as DXF..."
 msgstr "Exporter comme DXF..."
 
-#: objects/ui_MainWindow.h:820 objects/ui_OpenCSGWarningDialog.h:94
+#: objects/ui_MainWindow.h:820
+#: objects/ui_OpenCSGWarningDialog.h:94
 msgid "Close"
 msgstr "Fermer"
 
@@ -493,7 +469,8 @@ msgstr "Fermer"
 msgid "Ctrl+W"
 msgstr "Ctrl+W"
 
-#: objects/ui_MainWindow.h:822 objects/ui_Preferences.h:608
+#: objects/ui_MainWindow.h:822
+#: objects/ui_Preferences.h:608
 msgid "Preferences"
 msgstr "Préférences"
 
@@ -559,7 +536,7 @@ msgstr "Exporter comme CSG..."
 
 #: objects/ui_MainWindow.h:838
 msgid "Library info"
-msgstr "Informations Bibliothèque"
+msgstr "Informations Bibliothèques"
 
 #: objects/ui_MainWindow.h:839
 msgid "Check for Update.."
@@ -567,7 +544,7 @@ msgstr "Vérifier les mises à jours"
 
 #: objects/ui_MainWindow.h:840
 msgid "Show Library Folder..."
-msgstr "Afficher le dossier de la bibliothèque"
+msgstr "Afficher le dossier des bibliothèques"
 
 #: objects/ui_MainWindow.h:841
 msgid "Reset View"
@@ -599,7 +576,7 @@ msgstr "&Voir Tout"
 
 #: objects/ui_MainWindow.h:850
 msgid "Convert Tabs to Spaces"
-msgstr "Convertir les tabulations pour des espaces"
+msgstr "Convertir les tabulations par des espaces"
 
 #: objects/ui_MainWindow.h:851
 msgid "Hide toolbars"
@@ -653,7 +630,8 @@ msgstr "&Aide"
 msgid "Find"
 msgstr "Rechercher"
 
-#: objects/ui_MainWindow.h:867 objects/ui_MainWindow.h:874
+#: objects/ui_MainWindow.h:867
+#: objects/ui_MainWindow.h:874
 msgid "Replace"
 msgstr "Remplacer"
 
@@ -687,27 +665,17 @@ msgstr "Avertissements OpenGL"
 
 #: objects/ui_OpenCSGWarningDialog.h:87
 msgid ""
-"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/"
-"REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css"
-"\">\n"
+"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:'Lucida Grande'; font-size:13pt; "
-"font-weight:400; font-style:normal;\">\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; "
-"margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"></"
-"p></body></html>"
+"</style></head><body style=\" font-family:'Lucida Grande'; font-size:13pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"></p></body></html>"
 msgstr ""
-"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/"
-"REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css"
-"\">\n"
+"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:'Lucida Grande'; font-size:13pt; "
-"font-weight:400; font-style:normal;\">\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; "
-"margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"></"
-"p></body></html>"
+"</style></head><body style=\" font-family:'Lucida Grande'; font-size:13pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"></p></body></html>"
 
 #: objects/ui_OpenCSGWarningDialog.h:92
 msgid "Enable OpenCSG"
@@ -721,11 +689,13 @@ msgstr "Affiche ce message à nouveau"
 msgid "3D View"
 msgstr "&Vue 3D"
 
-#: objects/ui_Preferences.h:610 src/UIUtils.cc:85
+#: objects/ui_Preferences.h:610
+#: src/UIUtils.cc:85
 msgid "Advanced"
 msgstr "Avancé"
 
-#: objects/ui_Preferences.h:611 src/mainwin.cc:2339
+#: objects/ui_Preferences.h:611
+#: src/mainwin.cc:2339
 msgid "Editor"
 msgstr "Éditeur"
 
@@ -733,7 +703,8 @@ msgstr "Éditeur"
 msgid "Update"
 msgstr "Mettre à jour"
 
-#: objects/ui_Preferences.h:613 objects/ui_Preferences.h:633
+#: objects/ui_Preferences.h:613
+#: objects/ui_Preferences.h:633
 msgid "Features"
 msgstr "Fonctionnalités"
 
@@ -817,7 +788,8 @@ msgstr ""
 msgid "CGAL Cache size"
 msgstr "Taille du Cache de CGAL"
 
-#: objects/ui_Preferences.h:641 objects/ui_Preferences.h:643
+#: objects/ui_Preferences.h:641
+#: objects/ui_Preferences.h:643
 msgid "bytes"
 msgstr "octets"
 
@@ -835,8 +807,7 @@ msgstr "Activer l'ancrage de l'Éditeur et de la Console à différents endroits
 
 #: objects/ui_Preferences.h:646
 msgid "Enable undocking of Editor and Console to separate windows"
-msgstr ""
-"Activer désancrage de l'Éditeur et de la Console dans des fenêtres séparés"
+msgstr "Activer désancrage de l'Éditeur et de la Console dans des fenêtres séparés"
 
 #: objects/ui_Preferences.h:647
 msgid "Show Welcome Screen"
@@ -844,9 +815,7 @@ msgstr "Affiche l'écran d'accueil"
 
 #: objects/ui_Preferences.h:648
 msgid "Enable user interface localization (requires restart of OpenSCAD)"
-msgstr ""
-"Activer la localisation de l'interface utilisateur (Nécessite un redémarrage "
-"d'OpenSCAD)"
+msgstr "Activer la localisation de l'interface utilisateur (Nécessite un redémarrage d'OpenSCAD)"
 
 #: objects/ui_Preferences.h:649
 msgid "toolBar"
@@ -864,7 +833,8 @@ msgstr "%v / %m"
 msgid "About OpenSCAD "
 msgstr "À propos de OpenSCAD"
 
-#: src/mainwin.cc:773 src/mainwin.cc:1315
+#: src/mainwin.cc:773
+#: src/mainwin.cc:1315
 msgid "Untitled.scad"
 msgstr "Untitled.scad"
 
@@ -896,11 +866,13 @@ msgstr ""
 "Ce document a été modifié.\n"
 "Voulez-vous vraiment recharger le fichier?"
 
-#: src/mainwin.cc:1966 src/mainwin.cc:2023
+#: src/mainwin.cc:1966
+#: src/mainwin.cc:2023
 msgid "Export %1 File"
 msgstr "Exporter %1 Fichier"
 
-#: src/mainwin.cc:1967 src/mainwin.cc:2027
+#: src/mainwin.cc:1967
+#: src/mainwin.cc:2027
 msgid "%1 Files (*%2)"
 msgstr "%1 Fichiers (*%2)"
 
@@ -964,22 +936,18 @@ msgstr ""
 
 #: src/QGLView.cc:134
 msgid ""
-"Warning: Missing OpenGL capabilities for OpenCSG - OpenCSG has been "
-"disabled.\n"
+"Warning: Missing OpenGL capabilities for OpenCSG - OpenCSG has been disabled.\n"
 "\n"
 msgstr ""
-"Avertissement: Capacités OpenGL manquantes pour OpenCSG - OpenCSG a été "
-"désactivé.\n"
+"Avertissement: Capacités OpenGL manquantes pour OpenCSG - OpenCSG a été désactivé.\n"
 "\n"
 
 #: src/QGLView.cc:137
 msgid ""
-"It is highly recommended to use OpenSCAD on a system with OpenGL 2.0 or "
-"later.\n"
+"It is highly recommended to use OpenSCAD on a system with OpenGL 2.0 or later.\n"
 "Your renderer information is as follows:\n"
 msgstr ""
-"Il est hautement recommandé d'utiliser OpenSCAD sur un système compatible "
-"OpenGL 2.0 ou ultérieur.\n"
+"Il est hautement recommandé d'utiliser OpenSCAD sur un système compatible OpenGL 2.0 ou ultérieur.\n"
 "Voici les informations de votre moteur de rendu:\n"
 
 #: src/QGLView.cc:141
@@ -995,12 +963,8 @@ msgstr ""
 
 #: src/QGLView.cc:171
 #, c-format
-msgid ""
-"Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], "
-"distance = %.2f"
-msgstr ""
-"Fenêtre de rendu: translation = [ %.2f %.2f %.2f ], rotation = [ %.2f %.2f "
-"%.2f ], distance = %.2f"
+msgid "Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], distance = %.2f"
+msgstr "Fenêtre de rendu: translation = [ %.2f %.2f %.2f ], rotation = [ %.2f %.2f %.2f ], distance = %.2f"
 
 #: src/UIUtils.cc:85
 msgid "Basics"
