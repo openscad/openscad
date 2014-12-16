@@ -1595,9 +1595,9 @@ void MainWindow::compileTopLevelDocument()
 	this->last_compiled_doc = editor->toPlainText();
 
 	std::string fulltext =
-		std::string(this->last_compiled_doc.toLocal8Bit().constData()) +
+		std::string(this->last_compiled_doc.toUtf8().constData()) +
 		"\n" + commandline_commands;
-
+	
 	delete this->root_module;
 	this->root_module = NULL;
 
@@ -1819,7 +1819,7 @@ void MainWindow::actionDisplayAST()
 	e->setWindowTitle("AST Dump");
 	e->setReadOnly(true);
 	if (root_module) {
-		e->setPlainText(QString::fromLocal8Bit(root_module->dump("", "").c_str()));
+		e->setPlainText(QString::fromUtf8(root_module->dump("", "").c_str()));
 	} else {
 		e->setPlainText("No AST to dump. Please try compiling first...");
 	}
@@ -1837,7 +1837,7 @@ void MainWindow::actionDisplayCSGTree()
 	e->setWindowTitle("CSG Tree Dump");
 	e->setReadOnly(true);
 	if (this->root_node) {
-		e->setPlainText(QString::fromLocal8Bit(this->tree.getString(*this->root_node).c_str()));
+		e->setPlainText(QString::fromUtf8(this->tree.getString(*this->root_node).c_str()));
 	} else {
 		e->setPlainText("No CSG to dump. Please try compiling first...");
 	}
@@ -1856,11 +1856,11 @@ void MainWindow::actionDisplayCSGProducts()
 	e->setReadOnly(true);
 	e->setPlainText(QString("\nCSG before normalization:\n%1\n\n\nCSG after normalization:\n%2\n\n\nCSG rendering chain:\n%3\n\n\nHighlights CSG rendering chain:\n%4\n\n\nBackground CSG rendering chain:\n%5\n")
 									
-	.arg(root_raw_term ? QString::fromLocal8Bit(root_raw_term->dump().c_str()) : "N/A",
-	root_norm_term ? QString::fromLocal8Bit(root_norm_term->dump().c_str()) : "N/A",
-	this->root_chain ? QString::fromLocal8Bit(this->root_chain->dump().c_str()) : "N/A",
-	highlights_chain ? QString::fromLocal8Bit(highlights_chain->dump().c_str()) : "N/A",
-	background_chain ? QString::fromLocal8Bit(background_chain->dump().c_str()) : "N/A"));
+	.arg(root_raw_term ? QString::fromUtf8(root_raw_term->dump().c_str()) : "N/A",
+	root_norm_term ? QString::fromUtf8(root_norm_term->dump().c_str()) : "N/A",
+	this->root_chain ? QString::fromUtf8(this->root_chain->dump().c_str()) : "N/A",
+	highlights_chain ? QString::fromUtf8(highlights_chain->dump().c_str()) : "N/A",
+	background_chain ? QString::fromUtf8(background_chain->dump().c_str()) : "N/A"));
 	
 	e->show();
 	e->resize(600, 400);
@@ -2528,7 +2528,7 @@ void MainWindow::consoleOutput(const std::string &msg, void *userdata)
   // originates in a worker thread.
 	MainWindow *thisp = static_cast<MainWindow*>(userdata);
 	QMetaObject::invokeMethod(thisp->console, "append", Qt::QueuedConnection,
-	Q_ARG(QString, QString::fromLocal8Bit(msg.c_str())));
+	Q_ARG(QString, QString::fromUtf8(msg.c_str())));
 	if (thisp->procevents) QApplication::processEvents();
 }
 
