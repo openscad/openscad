@@ -862,6 +862,8 @@ void MainWindow::compile(bool reload, bool forcedone)
 	bool shouldcompiletoplevel = false;
 	bool didcompile = false;
 
+	this->renderingTime.start();
+
 	// Reload checks the timestamp of the toplevel file and refreshes if necessary,
 	if (reload) {
 		// Refresh files if it has changed on disk
@@ -1035,9 +1037,6 @@ void MainWindow::compileCSG(bool procevents)
 	if (procevents) QApplication::processEvents();
 
 	// Main CSG evaluation
-	QTime t;
-	t.start();
-
 	this->progresswidget = new ProgressWidget(this);
 	connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
 
@@ -1123,8 +1122,8 @@ void MainWindow::compileCSG(bool procevents)
 	this->thrownTogetherRenderer = new ThrownTogetherRenderer(this->root_chain,
 																														this->highlights_chain,
 																														this->background_chain);
-	PRINT("CSG generation finished.");
-	int s = t.elapsed() / 1000;
+	PRINT("Compile and preview finished.");
+	int s = this->renderingTime.elapsed() / 1000;
 	PRINTB("Total rendering time: %d hours, %d minutes, %d seconds", (s / (60*60)) % ((s / 60) % 60) % (s % 60));
 	if (procevents) QApplication::processEvents();
 }
@@ -1762,7 +1761,7 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 		CGALCache::instance()->print();
 #endif
 
-		int s = this->progresswidget->elapsedTime() / 1000;
+		int s = this->renderingTime.elapsed() / 1000;
 		PRINTB("Total rendering time: %d hours, %d minutes, %d seconds", (s / (60*60)) % ((s / 60) % 60) % (s % 60));
 			
 		if (root_geom && !root_geom->isEmpty()) {

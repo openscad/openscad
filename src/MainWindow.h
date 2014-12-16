@@ -14,6 +14,7 @@
 #include <vector>
 #include <QMutex>
 #include <QSet>
+#include <QTime>
 
 enum export_type_e {
 	EXPORT_TYPE_UNKNOWN,
@@ -39,6 +40,8 @@ public:
 	QTimer *autoReloadTimer;
 	std::string autoReloadId;
 	QTimer *waitAfterReloadTimer;
+
+	QTime renderingTime;
 
 	ModuleContext top_ctx;
 	FileModule *root_module;      // Result of parsing
