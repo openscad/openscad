@@ -49,7 +49,7 @@ const std::string &Tree::getIdString(const AbstractNode &node) const
 	assert(this->root_node);
 	if (!this->nodeidcache.contains(node)) {
 		const std::string &str = getString(node);
-		const boost::regex re("(\".*\")|\\S+");
+		const boost::regex re("[^\\s\\\"]+|\\\"(?:[^\\\"\\\\]|\\\\.)*\\\"");
 		std::stringstream sstream;
 		boost::sregex_token_iterator i(str.begin(), str.end(), re, 0);
     std::copy(i, boost::sregex_token_iterator(), std::ostream_iterator<std::string>(sstream));
