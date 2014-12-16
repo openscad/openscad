@@ -46,7 +46,6 @@ std::string PlatformUtils::sysinfo()
   result += "Mac OS X ";
   result += [[[NSProcessInfo processInfo] operatingSystemVersionString] UTF8String];
   
-  int mib[2];
   int64_t physical_memory;
   int32_t numcpu;
   size_t length64 = sizeof(int64_t);
