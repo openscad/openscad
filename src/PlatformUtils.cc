@@ -192,7 +192,7 @@ int PlatformUtils::setenv(const char *name, const char *value, int overwrite)
 #endif
 }
 
-std::string PlatformUtils::toMemorySizeString(unsigned long bytes, int digits)
+std::string PlatformUtils::toMemorySizeString(uint64_t bytes, int digits)
 {
 	static const char *units[] = { "B", "kB", "MB", "GB", "TB", NULL };
 	

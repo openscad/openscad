@@ -84,5 +84,5 @@ namespace PlatformUtils {
          * Convert the number of bytes to a human readable string with
          * a given number of digits.
          */
-        std::string toMemorySizeString(unsigned long bytes, int digits);
+        std::string toMemorySizeString(uint64_t bytes, int digits);
 }
