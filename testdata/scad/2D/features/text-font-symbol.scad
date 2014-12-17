@@ -1,6 +1,6 @@
-use <../../ttf/marvosym-3.10/marvosym.ttf>
-use <../../ttf/liberation-2.00.1/LiberationSans-Regular.ttf>
-use <../../ttf/amiri-0.106/amiri-regular.ttf>
+use <../../../ttf/marvosym-3.10/marvosym.ttf>
+use <../../../ttf/liberation-2.00.1/LiberationSans-Regular.ttf>
+use <../../../ttf/amiri-0.106/amiri-regular.ttf>
 
 // FIXME: Needs a freely distributable font that is encoded like Webdings
 // FIXME: with Microsoft/System charmap and charcodes at 0xf000. Using

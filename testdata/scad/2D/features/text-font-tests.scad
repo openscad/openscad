@@ -1,5 +1,5 @@
-use <../../ttf/amiri-0.106/amiri-regular.ttf>
-use <../../ttf/liberation-2.00.1/LiberationSans-Regular.ttf>
+use <../../../ttf/amiri-0.106/amiri-regular.ttf>
+use <../../../ttf/liberation-2.00.1/LiberationSans-Regular.ttf>
 
 t1="OpenSCAD";
 t2="الخط الأميري";

@@ -40,4 +40,5 @@ group() {
 	multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]);
 	color([-1, -1, -1, 1]);
 	offset(delta = 1, join_type = "miter", miter_limit = 2, $fn = 0, $fa = 12, $fs = 2);
+	text(text = "", size = 10, spacing = 1, font = "", direction = "ltr", language = "en", script = "latin", halign = "left", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
 }
