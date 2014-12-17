@@ -41,6 +41,7 @@
 #include "nodedumper.h"
 #include "stackcheck.h"
 #include "CocoaUtils.h"
+#include "FontCache.h"
 
 #include <string>
 #include <vector>
@@ -577,6 +578,22 @@ bool QtUseGUI()
 	return useGUI;
 }
 
+
+#include <QProgressDialog>
+QProgressDialog *fontCacheProgress = NULL;
+
+void fontCacheStart(void *userdata)
+{
+	fontCacheProgress = new QProgressDialog("Fontconfig needs to update its font cache.\nThis can take up to a couple of minutes.", QString(), 0, 0);
+	fontCacheProgress->show();
+}
+
+void fontCacheEnd(void *userdata)
+{
+	delete fontCacheProgress;
+	fontCacheProgress = NULL;
+}
+
 int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, char ** argv)
 {
 #ifdef Q_OS_MACX
@@ -606,6 +623,10 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	
 	const QString &app_path = app.applicationDirPath();
 	PlatformUtils::registerApplicationPath(app_path.toLocal8Bit().constData());
+
+	FontCache::registerProgressHandler(fontCacheStart, fontCacheEnd);
+
+
 
 	parser_init();
 

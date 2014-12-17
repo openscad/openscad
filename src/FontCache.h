@@ -75,11 +75,17 @@ public:
     FontInfoList *list_fonts() const;
     
     static FontCache *instance();
+
+	typedef void (ProgressHandlerFunc)(void *userdata);
+	static void registerProgressHandler(ProgressHandlerFunc *start, ProgressHandlerFunc *end, void *userdata = NULL);
 private:
     typedef std::pair<FT_Face, time_t> cache_entry_t;
     typedef std::map<std::string, cache_entry_t> cache_t;
 
     static FontCache *self;
+	static ProgressHandlerFunc *start_cb;
+	static ProgressHandlerFunc *end_cb;
+	static void *cb_userdata;
     
     bool init_ok;
     cache_t cache;

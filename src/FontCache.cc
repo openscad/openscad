@@ -81,6 +81,9 @@ const std::string &FontInfo::get_file() const
 }
 
 FontCache * FontCache::self = NULL;
+FontCache::ProgressHandlerFunc *FontCache::start_cb = NULL;
+FontCache::ProgressHandlerFunc *FontCache::end_cb = NULL;
+void *FontCache::cb_userdata = NULL;
 const std::string FontCache::DEFAULT_FONT("XXX");
 
 FontCache::FontCache()
@@ -131,8 +134,9 @@ FontCache::FontCache()
 		}
 	}
 
-	// FIXME: Caching happens here. This would be a good place to notify the user
+	if (FontCache::start_cb) FontCache::start_cb(FontCache::cb_userdata);
 	FcConfigBuildFonts(this->config);
+	if (FontCache::end_cb) FontCache::end_cb(FontCache::cb_userdata);
 
 	// For use by LibraryInfo
 	FcStrList *dirs = FcConfigGetFontDirs(this->config);
@@ -160,6 +164,13 @@ FontCache * FontCache::instance()
 		self = new FontCache();
 	}
 	return self;
+}
+
+void FontCache::registerProgressHandler(ProgressHandlerFunc *start, ProgressHandlerFunc *end, void *userdata)
+{
+	FontCache::start_cb = start;
+	FontCache::end_cb = end;
+	FontCache::cb_userdata = userdata;
 }
 
 void FontCache::register_font_file(const std::string &path)
