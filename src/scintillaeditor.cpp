@@ -50,6 +50,8 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
   scintillaLayout = new QVBoxLayout(this);
   qsci = new QsciScintilla(this);
 
+  // Force EOL mode to Unix, since QTextStream will manage local EOL modes.
+  qsci->setEolMode(QsciScintilla::EolUnix);
 
   //
   // Remapping some scintilla key binding which conflict with OpenSCAD global
