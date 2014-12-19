@@ -181,10 +181,8 @@ void PolySet::quantizeVertices()
 	Grid3d<int> grid(GRID_FINE);
 	BOOST_FOREACH(Polygon &p, this->polygons) {
 		BOOST_FOREACH(Vector3d &v, p) {
-			if (!grid.has(v[0], v[1], v[2])) {
-				// align v to the grid
-				grid.align(v[0], v[1], v[2]);
-			}
+			// align v to the grid
+			if (!grid.has(v)) grid.align(v);
 		}
 	}
 }

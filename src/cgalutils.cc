@@ -69,9 +69,9 @@ namespace /* anonymous */ {
 		
 			BOOST_FOREACH(const Polygon &p, ps.polygons) {
 				BOOST_REVERSE_FOREACH(Vector3d v, p) {
-					if (!grid.has(v[0], v[1], v[2])) {
+					if (!grid.has(v)) {
 						// align v to the grid; the CGALPoint will receive the aligned vertex
-						grid.align(v[0], v[1], v[2]) = vertices.size();
+						grid.align(v) = vertices.size();
 						vertices.push_back(CGALPoint(v[0], v[1], v[2]));
 					}
 				}
@@ -91,7 +91,7 @@ namespace /* anonymous */ {
 #endif
 				indices.clear();
 				BOOST_FOREACH(const Vector3d &v, p) {
-					indices.push_back(grid.data(v[0], v[1], v[2]));
+					indices.push_back(grid.data(v));
 				}
 
 				// We perform this test since there is a bug in CGAL's
