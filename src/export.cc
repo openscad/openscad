@@ -30,6 +30,7 @@
 #include "polyset-utils.h"
 #include "dxfdata.h"
 
+#include <algorithm>
 #include <boost/foreach.hpp>
 #include <boost/algorithm/string.hpp>
 
@@ -61,6 +62,9 @@ void exportFile(const class Geometry *root_geom, std::ostream &output, FileForma
 		case OPENSCAD_AMF:
 			export_amf(N, output);
 			break;
+		case OPENSCAD_SVG:
+			export_svg(N, output);
+			break;
 		case OPENSCAD_DXF:
 			assert(false && "Export Nef polyhedron as DXF not supported");
 			break;
@@ -79,6 +83,9 @@ void exportFile(const class Geometry *root_geom, std::ostream &output, FileForma
 				break;
 			case OPENSCAD_AMF:
 				export_amf(*ps, output);
+				break;
+			case OPENSCAD_SVG:
+				export_svg(*ps, output);
 				break;
 			default:
 				assert(false && "Unsupported file format");
@@ -531,8 +538,89 @@ void export_svg(const Polygon2d &poly, std::ostream &output)
 	}
 	output << "\" stroke=\"black\" fill=\"lightgray\" stroke-width=\"0.5\"/>";
 
-	output << "</svg>\n";	
+	output << "</svg>\n";
 
 	setlocale(LC_NUMERIC, "");      // Set default locale
 }
 
+struct PolygonCenterComparator {
+	bool operator()(const Polygon &lhs, const Polygon &rhs) {
+		double z1;
+		BOOST_FOREACH(const Vector3d &v, lhs) {
+			z1 += v.z();
+		}
+		z1 /= lhs.size();
+
+		double z2;
+		BOOST_FOREACH(const Vector3d &v, rhs) {
+			z2 += v.z();
+		}
+		z2 /= rhs.size();
+
+		if (std::abs(z2 - z1) < 0.0001) {
+			return false;
+		};
+		return z1 < z2;
+	}
+} polygonCenterComparator;
+
+void export_svg_polygon(const Polygon &poly, std::ostream &output)
+{
+	output << "<path d=\"M " << poly[0].x() << "," << -poly[0].y();
+
+	int col;
+	Vector3d normal = ((poly[0] - poly[1]).cross(poly[1] - poly[2])).normalized();
+	if ((std::abs(normal.x()) < 0.01) && ((std::abs(normal.y()) < 0.01))) {
+		col = 240;
+	} else {
+		double z = std::atan2(normal.x(), normal.y());
+		col = 40 + (std::abs(z / M_PI) * 200);
+	}
+
+	BOOST_FOREACH(const Vector3d &v, poly) {
+		output << " L " << v.x() << "," << -v.y();
+	}
+
+	boost::format fmt("#%02x%02x%02x");
+	fmt % col % col % col;
+	std::string color = fmt.str();
+
+	output << " z\" stroke=\"" << color << "\" fill=\"" << color << "\"/>\n";
+}
+
+void export_svg(const class PolySet &ps, std::ostream &output)
+{
+	BoundingBox bbox = ps.getBoundingBox();
+	int minx = floor(bbox.min().x());
+	int miny = floor(-bbox.max().y());
+	int maxx = ceil(bbox.max().x());
+	int maxy = ceil(-bbox.min().y());
+
+	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
+
+	output
+		<< "<?xml version=\"1.0\" standalone=\"no\"?>\n"
+		<< "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n"
+		<< "<svg preserveAspectRatio=\"xMidYMid meet\" viewBox=\"" << (minx - 1) << " " << (miny - 1) << " " << (maxx - minx + 2) << " " << (maxy - miny + 2) << "\" xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">\n"
+		<< "<title>OpenSCAD Model</title>\n"
+		<< "<g fill=\"none\" stroke-width=\"0.03\" stroke-linejoin=\"round\">\n";
+
+	Polygons polys = ps.polygons;
+	std::stable_sort(polys.begin(), polys.end(), polygonCenterComparator);
+	BOOST_FOREACH(const Polygon &p, polys) {
+		export_svg_polygon(p, output);
+	}
+
+	output << "</g>\n</svg>\n";
+	setlocale(LC_NUMERIC, "");      // Set default locale
+
+}
+
+void export_svg(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
+{
+	PolySet ps(3);
+	bool err = CGALUtils::createPolySetFromNefPolyhedron3(*(root_N->p3), ps);
+	if (!err) {
+		export_svg(ps, output);
+	}
+}

@@ -20,6 +20,7 @@ enum export_type_e {
 	EXPORT_TYPE_UNKNOWN,
 	EXPORT_TYPE_STL,
 	EXPORT_TYPE_AMF,
+        EXPORT_TYPE_SVG,
 	EXPORT_TYPE_OFF
 };
 

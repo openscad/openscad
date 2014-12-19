@@ -502,7 +502,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		}
 		
 		if (svg_output_file) {
-			if (!checkAndExport(root_geom, 2, OPENSCAD_SVG, svg_output_file))
+			if (!checkAndExport(root_geom, root_geom->getDimension(), OPENSCAD_SVG, svg_output_file))
 				return 1;
 		}
 

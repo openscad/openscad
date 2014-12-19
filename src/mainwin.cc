@@ -1954,6 +1954,7 @@ void MainWindow::actionExport(export_type_e, QString, QString)
 	case EXPORT_TYPE_STL: format = OPENSCAD_STL; break;
 	case EXPORT_TYPE_OFF: format = OPENSCAD_OFF; break;
 	case EXPORT_TYPE_AMF: format = OPENSCAD_AMF; break;
+	case EXPORT_TYPE_SVG: format = OPENSCAD_SVG; break;
 	default:
 		assert(false && "Unknown export type");
 		break;
@@ -2028,6 +2029,11 @@ void MainWindow::actionExportDXF()
 
 void MainWindow::actionExportSVG()
 {
+	if (this->root_geom->getDimension() == 3) {
+		actionExport(EXPORT_TYPE_SVG, "SVG", ".svg");
+		return;
+	}
+
 	QString svg_filename = get2dExportFilename("SVG", ".svg");
 	if (svg_filename.isEmpty()) {
 		return;
