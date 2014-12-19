@@ -275,8 +275,10 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 
 	// Since is_convex doesn't work well with non-planar faces,
 	// we tessellate the polyset before checking.
-	PolySet ps_tri(3);
-	PolysetUtils::tessellate_faces(ps, ps_tri);
+	PolySet psq(ps);
+	psq.quantizeVertices();
+    PolySet ps_tri(3);
+	PolysetUtils::tessellate_faces(psq, ps_tri);
 	if (ps_tri.is_convex()) {
 		typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 		// Collect point cloud
