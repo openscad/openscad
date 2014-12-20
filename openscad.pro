@@ -122,7 +122,7 @@ win* {
 mingw* {
   # needed to prevent compilation error on MSYS2:
   # as.exe: objects/cgalutils.o: too many sections (76541)
-  QMAKE_CXXFLAGS += -Wa,-mbig-obj
+  # using -Wa,-mbig-obj did not help
   debug: QMAKE_CXXFLAGS += -O1
 }
 
