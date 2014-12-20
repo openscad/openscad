@@ -116,6 +116,7 @@ macx {
 
 win* {
   RC_FILE = openscad_win32.rc
+  QMAKE_CXXFLAGS += -DNOGDI
 }
 
 CONFIG += qt
