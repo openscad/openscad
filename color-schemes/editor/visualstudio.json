@@ -1,22 +1,26 @@
 {
     "name" : "Visual Studio",
     "index" : 1400,
-    "paper" : "white",
-    "text" : "#111",
+    "paper" : "#ffffff",
+    "text" : "#101010",
     "caret" : {
         "width" : 2,
         "foreground" : "#000000",
-        "line-background" : "#eee"
+        "line-background" : "#eeeeee"
     },
     "colors" : {
         "keyword1" : "blue",
         "keyword2" : "blue",
         "keyword3" : "#2B91AF",
         "comment" : "DarkGreen",
+        "commentline" : "DarkGreen",
+        "commentdoc" : "#DarkGreen",
+        "commentdockeyword" : "#DarkGreen",
         "number" : "DarkRed",
         "string" : "#A31515",
         "operator" : "Blue",
-        "commentline" : "DarkGreen",
+        "whitespace-background" : "#ffffff",
+        "whitespace-foreground" : "#101010",
         "selection-foreground" : "black",
         "selection-background" : "lightblue",
         "margin-background" : "white",
@@ -24,8 +28,10 @@
         "matched-brace-background" : "darkgrey",
         "matched-brace-foreground" : "black",
         "unmatched-brace-background" : "red",
-        "unmatched-brace-foreground" : "#fff",
+        "unmatched-brace-foreground" : "#ffffff",
         "error-marker" : "#ff0000",
+        "error-indicator" : "#60ff0000",
+        "error-indicator-outline" : "#ff000000",
         "edge" : "#ffffff"
     }
 }
