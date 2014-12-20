@@ -119,6 +119,13 @@ win* {
   QMAKE_CXXFLAGS += -DNOGDI
 }
 
+mingw* {
+  # needed to prevent compilation error on MSYS2:
+  # as.exe: objects/cgalutils.o: too many sections (76541)
+  QMAKE_CXXFLAGS += -Wa,-mbig-obj
+  debug: QMAKE_CXXFLAGS += -O1
+}
+
 CONFIG += qt
 QT += opengl
 
