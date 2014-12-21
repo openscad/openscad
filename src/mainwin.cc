@@ -1936,7 +1936,7 @@ void MainWindow::actionExport(export_type_e, QString, QString)
 
 	const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(this->root_geom.get());
 	if (N && !N->p3->is_simple()) {
-	 	PRINT("Warning: Object may not be a valid 2-manifold and may need repair! See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
+	 	PRINT("WARNING: Object may not be a valid 2-manifold and may need repair! See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
 	}
 
 	QString title = QString(_("Export %1 File")).arg(type_name);
@@ -2524,10 +2524,15 @@ void MainWindow::quit()
 void MainWindow::consoleOutput(const std::string &msg, void *userdata)
 {
 	// Invoke the append function in the main thread in case the output
-  // originates in a worker thread.
+	// originates in a worker thread.
 	MainWindow *thisp = static_cast<MainWindow*>(userdata);
-	QMetaObject::invokeMethod(thisp->console, "append", Qt::QueuedConnection,
-	Q_ARG(QString, QString::fromUtf8(msg.c_str())));
+	QString qmsg = QString::fromUtf8(msg.c_str());
+	if (qmsg.startsWith("WARNING:")) {
+		qmsg = "<html><span style=\"color: black; background-color: #ffffb0;\">" + qmsg + "</span></html>";
+	} else if (qmsg.startsWith("ERROR:")) {
+		qmsg = "<html><span style=\"color: black; background-color: #ffb0b0;\">" + qmsg + "</span></html>";
+	}
+	QMetaObject::invokeMethod(thisp->console, "append", Qt::QueuedConnection, Q_ARG(QString, qmsg));
 	if (thisp->procevents) QApplication::processEvents();
 }
 

@@ -59,7 +59,7 @@ bool Polygon2d::isEmpty() const
 void Polygon2d::transform(const Transform2d &mat)
 {
 	if (mat.matrix().determinant() == 0) {
-		PRINT("Warning: Scaling a 2D object with 0 - removing object");
+		PRINT("WARNING: Scaling a 2D object with 0 - removing object");
 		this->theoutlines.clear();
 		return;
 	}

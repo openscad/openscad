@@ -246,7 +246,7 @@ static void export_stl(const CGAL_Polyhedron &P, std::ostream &output)
 void export_stl(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
 {
 	if (!root_N->p3->is_simple()) {
-		PRINT("Warning: Exported object may not be a valid 2-manifold and may need repair");
+		PRINT("WARNING: Exported object may not be a valid 2-manifold and may need repair");
 	}
 
 	bool usePolySet = true;
@@ -271,10 +271,10 @@ void export_stl(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
 			export_stl(P, output);
 		}
 		catch (const CGAL::Assertion_exception &e) {
-			PRINTB("CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s", e.what());
+			PRINTB("ERROR: CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s", e.what());
 		}
 		catch (...) {
-			PRINT("CGAL unknown error in CGAL_Nef_polyhedron3::convert_to_Polyhedron()");
+			PRINT("ERROR: CGAL unknown error in CGAL_Nef_polyhedron3::convert_to_Polyhedron()");
 		}
 		CGAL::set_error_behaviour(old_behaviour);
 	}
@@ -291,7 +291,7 @@ void export_off(const class PolySet &ps, std::ostream &output)
 void export_off(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
 {
 	if (!root_N->p3->is_simple()) {
-		PRINT("Object isn't a valid 2-manifold! Modify your design.");
+		PRINT("WARNING: Export failed, the object isn't a valid 2-manifold.");
 		return;
 	}
 	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
@@ -301,7 +301,7 @@ void export_off(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
 		output << P;
 	}
 	catch (const CGAL::Assertion_exception &e) {
-		PRINTB("CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s", e.what());
+		PRINTB("ERROR: CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s", e.what());
 	}
 	CGAL::set_error_behaviour(old_behaviour);
 }
@@ -321,7 +321,7 @@ void export_amf(const class PolySet &ps, std::ostream &output)
 void export_amf(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
 {
 	if (!root_N->p3->is_simple()) {
-		PRINT("Object isn't a valid 2-manifold! Modify your design.");
+		PRINT("WARNING: Export failed, the object isn't a valid 2-manifold.");
 		return;
 	}
 	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
