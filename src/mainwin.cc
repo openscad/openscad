@@ -1232,7 +1232,7 @@ void MainWindow::writeBackup(QFile *file)
 	writer.setCodec("UTF-8");
 	writer << this->editor->toPlainText();
 
-	PRINTB("Saved backup file: %s", file->fileName().toLocal8Bit().constData());
+    PRINTB("Saved backup file: %s", file->fileName().toUtf8().constData());
 }
 
 void MainWindow::saveBackup()
@@ -1243,7 +1243,7 @@ void MainWindow::saveBackup()
 		return;
 	}
 
-	QString backupPath = QString::fromStdString(path);
+    QString backupPath = QString::fromLocal8Bit(path.c_str());
 	if (!backupPath.endsWith("/")) backupPath.append("/");
 
 	QString basename = "unsaved";
