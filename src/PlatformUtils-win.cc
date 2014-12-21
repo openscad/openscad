@@ -61,11 +61,12 @@ static const std::string getFolderPath(int nFolder)
 	int result = SHGetFolderPathW( hwndOwner, nFolder, hToken, dwFlags, pszPath );
 
 	if (result == S_OK) {
-		path = std::wstring( path.c_str() ); // strip extra NULLs
-		//std::wcerr << "wchar path:" << "\n";
-		const std::string retval = winapi_wstr_to_utf8( path );
-		//PRINTB("Path found: %s",retval);
-		return retval;
+        path = std::wstring( path.c_str() ); // strip extra NULLs
+        // Use boost::filesystem to decide how to convert from wstring
+        // to string. Normally the path encoding is system local and
+        // we don't want to force conversion to UTF-8.
+        fs::path p(path);
+        return p.string();
 	}
 	return "";
 }
