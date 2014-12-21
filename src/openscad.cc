@@ -549,6 +549,9 @@ Q_IMPORT_PLUGIN(qtaccessiblewidgets)
 #include <QFileInfo>
 #include <QMetaType>
 #include <QTextCodec>
+#include <QProgressDialog>
+#include <QFutureWatcher>
+#include <QtConcurrentRun>
 
 Q_DECLARE_METATYPE(shared_ptr<const Geometry>);
 
@@ -578,20 +581,29 @@ bool QtUseGUI()
 	return useGUI;
 }
 
-
-#include <QProgressDialog>
-QProgressDialog *fontCacheProgress = NULL;
-
-void fontCacheStart(void *userdata)
+void dialogThreadFunc(FontCacheInitializer *initializer)
 {
-	fontCacheProgress = new QProgressDialog("Fontconfig needs to update its font cache.\nThis can take up to a couple of minutes.", QString(), 0, 0);
-	fontCacheProgress->show();
+	 initializer->run();
 }
 
-void fontCacheEnd(void *userdata)
+void dialogInitHandler(FontCacheInitializer *initializer, void *)
 {
-	delete fontCacheProgress;
-	fontCacheProgress = NULL;
+	QProgressDialog dialog;
+	dialog.setLabelText("Fontconfig needs to update its font cache.\nThis can take up to a couple of minutes.");
+	dialog.setCancelButton(0);
+
+	QFutureWatcher<void> futureWatcher;
+	QObject::connect(&futureWatcher, SIGNAL(finished()), &dialog, SLOT(reset()));
+	QObject::connect(&dialog, SIGNAL(canceled()), &futureWatcher, SLOT(cancel()));
+	QObject::connect(&futureWatcher, SIGNAL(progressRangeChanged(int,int)), &dialog, SLOT(setRange(int,int)));
+	QObject::connect(&futureWatcher, SIGNAL(progressValueChanged(int)), &dialog, SLOT(setValue(int)));
+
+	QFuture<void> future = QtConcurrent::run(boost::bind(dialogThreadFunc, initializer));
+	futureWatcher.setFuture(future);
+
+	dialog.exec();
+
+	futureWatcher.waitForFinished();
 }
 
 int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, char ** argv)
@@ -624,9 +636,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	const QString &app_path = app.applicationDirPath();
 	PlatformUtils::registerApplicationPath(app_path.toLocal8Bit().constData());
 
-	FontCache::registerProgressHandler(fontCacheStart, fontCacheEnd);
-
-
+	FontCache::registerProgressHandler(dialogInitHandler);
 
 	parser_init();
 

@@ -81,10 +81,19 @@ const std::string &FontInfo::get_file() const
 }
 
 FontCache * FontCache::self = NULL;
-FontCache::ProgressHandlerFunc *FontCache::start_cb = NULL;
-FontCache::ProgressHandlerFunc *FontCache::end_cb = NULL;
+FontCache::InitHandlerFunc *FontCache::cb_handler = FontCache::defaultInitHandler;
 void *FontCache::cb_userdata = NULL;
 const std::string FontCache::DEFAULT_FONT("XXX");
+
+/**
+ * Default implementation for the font cache initialization. In case no other
+ * handler is registered, the cache build is just called synchronously in the
+ * current thread by this handler.
+ */
+void FontCache::defaultInitHandler(FontCacheInitializer *initializer, void *)
+{
+	initializer->run();
+}
 
 FontCache::FontCache()
 {
@@ -134,9 +143,8 @@ FontCache::FontCache()
 		}
 	}
 
-	if (FontCache::start_cb) FontCache::start_cb(FontCache::cb_userdata);
-	FcConfigBuildFonts(this->config);
-	if (FontCache::end_cb) FontCache::end_cb(FontCache::cb_userdata);
+	FontCacheInitializer initializer(this->config);
+	cb_handler(&initializer, cb_userdata);
 
 	// For use by LibraryInfo
 	FcStrList *dirs = FcConfigGetFontDirs(this->config);
@@ -166,10 +174,9 @@ FontCache * FontCache::instance()
 	return self;
 }
 
-void FontCache::registerProgressHandler(ProgressHandlerFunc *start, ProgressHandlerFunc *end, void *userdata)
+void FontCache::registerProgressHandler(InitHandlerFunc *handler, void *userdata)
 {
-	FontCache::start_cb = start;
-	FontCache::end_cb = end;
+	FontCache::cb_handler = handler;
 	FontCache::cb_userdata = userdata;
 }
 

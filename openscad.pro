@@ -127,7 +127,7 @@ mingw* {
 }
 
 CONFIG += qt
-QT += opengl
+QT += opengl concurrent
 
 # see http://fedoraproject.org/wiki/UnderstandingDSOLinkChange
 # and https://github.com/openscad/openscad/pull/119
