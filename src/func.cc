@@ -930,7 +930,7 @@ ValuePtr builtin_norm(const Context *, const EvalContext *evalctx)
 					register double x = v[i].toDouble();
 					sum += x*x;
 				} else {
-					PRINT("  WARNING: Incorrect arguments to norm()");
+					PRINT("WARNING: Incorrect arguments to norm()");
 					return ValuePtr::undefined;
 				}
 			return ValuePtr(sqrt(sum));

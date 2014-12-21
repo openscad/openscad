@@ -46,7 +46,7 @@ void CGAL_Nef_polyhedron::transform( const Transform3d &matrix )
 {
 	if (!this->isEmpty()) {
 		if (matrix.matrix().determinant() == 0) {
-			PRINT("Warning: Scaling a 3D object with 0 - removing object");
+			PRINT("WARNING: Scaling a 3D object with 0 - removing object");
 			this->reset();
 		}
 		else {

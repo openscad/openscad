@@ -530,7 +530,7 @@ Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 		if (!isSmartCached(node)) {
 			if (matrix_contains_infinity(node.matrix) || matrix_contains_nan(node.matrix)) {
 				// due to the way parse/eval works we can't currently distinguish between NaN and Inf
-				PRINT("Warning: Transformation matrix contains Not-a-Number and/or Infinity - removing object.");
+				PRINT("WARNING: Transformation matrix contains Not-a-Number and/or Infinity - removing object.");
 			}
 			else {
 				// First union all children
