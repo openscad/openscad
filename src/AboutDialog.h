@@ -12,7 +12,7 @@ class AboutDialog : public QDialog, public Ui::AboutDialog
 public:
 	AboutDialog(QWidget *) {
 		setupUi(this);
-		this->setWindowTitle( QString(_("About OpenSCAD ")) + QString(TOSTRING( OPENSCAD_VERSION)) );
+		this->setWindowTitle( QString(_("About OpenSCAD")) + " " + QString(TOSTRING( OPENSCAD_VERSION)) );
 		this->aboutText->setOpenExternalLinks(true);
 		QUrl flattr_qurl(":icons/flattr.png" );
 		this->aboutText->loadResource( QTextDocument::ImageResource, flattr_qurl );
