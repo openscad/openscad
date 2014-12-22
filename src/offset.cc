@@ -64,7 +64,7 @@ AbstractNode *OffsetModule::instantiate(const Context *ctx, const ModuleInstanti
 	node->fs = c.lookup_variable("$fs")->toDouble();
 	node->fa = c.lookup_variable("$fa")->toDouble();
 
-	// default with no argument at all is round / delta = 1
+	// default with no argument at all is (r = 1, chamfer = false)
 	// radius takes precedence if both r and delta are given.
 	node->delta = 1;
 	node->chamfer = false;
