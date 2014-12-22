@@ -26,9 +26,13 @@ CONFIG(debug, debug|release) {
 	}
     }
 } else {
-    greaterThan(QT_MAJOR_VERSION, 4) {
-	LIBS += -lqt5scintilla2
+    win32: {
+        LIBS += -lqscintilla2
     } else {
-	LIBS += -lqscintilla2
+        greaterThan(QT_MAJOR_VERSION, 4) {
+	    LIBS += -lqt5scintilla2
+        } else {
+	    LIBS += -lqscintilla2
+        }
     }
 }
