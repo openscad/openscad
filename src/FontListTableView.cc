@@ -23,22 +23,44 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+#include <QDrag>
+#include <QPixmap>
+#include <QPainter>
+#include <QMimeData>
 
-#pragma once
+#include "qtgettext.h"
+#include "FontListDialog.h"
 
-extern class FileModule *parse(const char *text, const char *path, int debug);
+FontListTableView::FontListTableView(QWidget *parent) : QTableView(parent)
+{
+}
 
-#include <string>
-extern std::string commandline_commands;
+void FontListTableView::setDragText(const QString &text)
+{
+	this->text = text.trimmed();
+}
 
-// The CWD when application started. We shouldn't change CWD, but until we stop
-// doing this, use currentdir to get the original CWD.
-extern std::string currentdir;
+void FontListTableView::startDrag(Qt::DropActions supportedActions)
+{
+	if (text.isEmpty()) {
+		return;
+	}
 
-extern std::string versionnumber;
+	QMimeData *mimeData = new QMimeData;
+	mimeData->setText(text);
 
-// Just the number (might have the git commit as suffix), e.g. 2014.12.23.
-extern std::string openscad_versionnumber;
+	QFontMetrics fm(font());
+	QRect rect(0, 0, fm.width(text), fm.height());
+	QPixmap pixmap(rect.width(), rect.height());
+	pixmap.fill(Qt::transparent);
 
-// The string "OpenSCAD " and the version number.
-extern std::string openscad_version;
+	QPainter painter(&pixmap);
+	painter.setFont(font());
+	painter.drawText(rect, Qt::AlignCenter, text);
+
+        QDrag *drag = new QDrag(this);
+	drag->setPixmap(pixmap);
+        drag->setMimeData(mimeData);
+	drag->setHotSpot(QPoint(-10, rect.height() + 6));
+        drag->exec(supportedActions, Qt::CopyAction);
+}

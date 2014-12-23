@@ -24,6 +24,7 @@
  *
  */
 #include <iostream>
+#include "openscad.h"
 #include "GeometryCache.h"
 #include "ModuleCache.h"
 #include "MainWindow.h"
@@ -124,15 +125,8 @@ QSet<MainWindow*> *MainWindow::getWindows()
 // Global application state
 unsigned int GuiLocker::gui_locked = 0;
 
-#define QUOTE(x__) # x__
-#define QUOTED(x__) QUOTE(x__)
+static std::string helptitle = openscad_version +  "\nhttp://www.openscad.org\n\n";
 
-static char helptitle[] =
-	"OpenSCAD " QUOTED(OPENSCAD_VERSION)
-#ifdef OPENSCAD_COMMIT
-	" (git " QUOTED(OPENSCAD_COMMIT) ")"
-#endif
-	"\nhttp://www.openscad.org\n\n";
 static char copyrighttext[] =
 	"Copyright (C) 2009-2014 The OpenSCAD Developers\n"
 	"\n"
@@ -188,6 +182,9 @@ MainWindow::MainWindow(const QString &filename)
 	this->editorDock->setAction(this->viewActionHideEditor);
 	this->consoleDock->setConfigKey("view/hideConsole");
 	this->consoleDock->setAction(this->viewActionHideConsole);
+
+	QLabel *versionLabel = new QLabel(openscad_version.c_str());
+	this->statusbar->addPermanentWidget(versionLabel);
 
 	QSettings settings;
 	editortype = settings.value("editor/editortype").toString();
