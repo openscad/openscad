@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: OpenSCAD 2013.02.24\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-11-13 00:22+0100\n"
-"PO-Revision-Date: 2014-12-21 23:22+0100\n"
+"PO-Revision-Date: 2014-12-23 12:24+0100\n"
 "Last-Translator: Miro Hrončok <miro@hroncok.cz>\n"
 "Language-Team: Czech <miro@hroncok.cz>\n"
 "Language: cs\n"
@@ -534,7 +534,7 @@ msgstr "Domovská stránka OpenSCADu"
 
 #: objects/ui_MainWindow.h:835
 msgid "Automatic Reload and Preview"
-msgstr "Automaticky načítat a zobrazit"
+msgstr "Automaticky načítat a zobrazovat"
 
 #: objects/ui_MainWindow.h:836
 msgid "Export as Image..."
@@ -836,7 +836,7 @@ msgstr "%v / %m"
 
 #: src/AboutDialog.h:15
 msgid "About OpenSCAD "
-msgstr "O OpenSCADu"
+msgstr "O OpenSCADu "
 
 #: src/mainwin.cc:773 src/mainwin.cc:1315
 msgid "Untitled.scad"
