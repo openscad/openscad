@@ -679,6 +679,11 @@ MainWindow::~MainWindow()
 #endif
 	delete this->thrownTogetherRenderer;
 	MainWindow::getWindows()->remove(this);
+	if (MainWindow::getWindows()->size() == 0) {
+		// Quit application even in case some other windows like
+		// Preferences are still open.
+		qApp->quit();
+	}
 }
 
 void MainWindow::showProgress()
