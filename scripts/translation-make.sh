@@ -11,5 +11,3 @@ cd "$TOPDIR" || exit 1
 
 echo "Compiling language files..."
 ./scripts/translation-update.sh updatemo
-
-echo "Done."
