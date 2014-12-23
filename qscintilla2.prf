@@ -26,13 +26,17 @@ CONFIG(debug, debug|release) {
 	}
     }
 } else {
-    win32: {
-        LIBS += -lqscintilla2
+    mac: {
+	LIBS += -lqscintilla2
     } else {
+      win32: {
+        LIBS += -lqscintilla2
+      } else {
         greaterThan(QT_MAJOR_VERSION, 4) {
 	    LIBS += -lqt5scintilla2
         } else {
 	    LIBS += -lqscintilla2
         }
+      }
     }
 }
