@@ -50,13 +50,14 @@ void FontListTableView::startDrag(Qt::DropActions supportedActions)
 	mimeData->setText(text);
 
 	QFontMetrics fm(font());
-	QRect rect(0, 0, fm.width(text), fm.height());
+	QRect rect(0, 0, fm.width(text) + 8, fm.height() + 8);
 	QPixmap pixmap(rect.width(), rect.height());
-	pixmap.fill(Qt::transparent);
+	pixmap.fill(QColor(240, 240, 240, 160));
 
 	QPainter painter(&pixmap);
 	painter.setFont(font());
 	painter.drawText(rect, Qt::AlignCenter, text);
+	painter.drawRect(0, 0, rect.width() - 1, rect.height() - 1);
 
         QDrag *drag = new QDrag(this);
 	drag->setPixmap(pixmap);
