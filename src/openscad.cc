@@ -105,7 +105,7 @@ public:
 	}
 };
 
-static void help(const char *progname)
+static void help(const char *progname, bool failure = false)
 {
   int tablen = strlen(progname)+8;
   char tabstr[tablen+1];
@@ -133,14 +133,14 @@ static void help(const char *progname)
 #endif
          "%2%filename\n",
  				 progname % (const char *)tabstr);
-	exit(0);
+	exit(failure ? 1 : 0);
 }
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 static void version()
 {
-	PRINTB("OpenSCAD version %s\n", TOSTRING(OPENSCAD_VERSION));
+	PRINTB("OpenSCAD version %s", TOSTRING(OPENSCAD_VERSION));
 	exit(0);
 }
 
@@ -785,7 +785,7 @@ int main(int argc, char **argv)
 	}
 	catch(const std::exception &e) { // Catches e.g. unknown options
 		PRINTB("%s\n", e.what());
-		help(argv[0]);
+		help(argv[0], true);
 	}
 
 	OpenSCAD::debug = "";
@@ -813,27 +813,25 @@ int main(int argc, char **argv)
 
 	if (vm.count("o")) {
 		// FIXME: Allow for multiple output files?
-		if (output_file) help(argv[0]);
+		if (output_file) help(argv[0], true);
 		output_file = vm["o"].as<string>().c_str();
 	}
 	if (vm.count("s")) {
 		printDeprecation("DEPRECATED: The -s option is deprecated. Use -o instead.\n");
-		if (output_file) help(argv[0]);
+		if (output_file) help(argv[0], true);
 		output_file = vm["s"].as<string>().c_str();
 	}
 	if (vm.count("x")) { 
 		printDeprecation("DEPRECATED: The -x option is deprecated. Use -o instead.\n");
-		if (output_file) help(argv[0]);
+		if (output_file) help(argv[0], true);
 		output_file = vm["x"].as<string>().c_str();
 	}
 	if (vm.count("d")) {
-		if (deps_output_file)
-			help(argv[0]);
+		if (deps_output_file) help(argv[0], true);
 		deps_output_file = vm["d"].as<string>().c_str();
 	}
 	if (vm.count("m")) {
-		if (make_command)
-			help(argv[0]);
+		if (make_command) help(argv[0], true);
 		make_command = vm["m"].as<string>().c_str();
 	}
 
@@ -870,13 +868,11 @@ int main(int argc, char **argv)
 	bool cmdlinemode = false;
 	if (output_file) { // cmd-line mode
 		cmdlinemode = true;
-		if (!inputFiles.size()) help(argv[0]);
+		if (!inputFiles.size()) help(argv[0], true);
 	}
 
 	if (arg_info || cmdlinemode) {
-		if (inputFiles.size() > 1) {
-			help(argv[0]);
-		}
+		if (inputFiles.size() > 1) help(argv[0], true);
 		rc = cmdline(deps_output_file, inputFiles[0], camera, output_file, original_path, renderer, argc, argv);
 	}
 	else if (QtUseGUI()) {
@@ -884,7 +880,7 @@ int main(int argc, char **argv)
 	}
 	else {
 		PRINT("Requested GUI mode but can't open display!\n");
-		help(argv[0]);
+		help(argv[0], true);
 	}
 
 	Builtins::instance(true);
