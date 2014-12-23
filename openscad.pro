@@ -259,6 +259,7 @@ HEADERS += src/typedefs.h \
            src/OpenCSGWarningDialog.h \
            src/AboutDialog.h \
            src/FontListDialog.h \
+           src/FontListTableView.h \
            src/builtin.h \
            src/calc.h \
            src/context.h \
@@ -428,6 +429,7 @@ SOURCES += src/version_check.cc \
            src/UIUtils.cc \
            src/Dock.cc \
            src/FontListDialog.cc \
+           src/FontListTableView.cc \
            src/launchingscreen.cc \
            src/legacyeditor.cc \
            src/LibraryInfoDialog.cc
@@ -554,7 +556,3 @@ INSTALLS += icons
 man.path = $$PREFIX/share/man/man1
 man.extra = cp -f doc/openscad.1 \"\$(INSTALL_ROOT)$${man.path}/$${FULLNAME}.1\"
 INSTALLS += man
-
-CONFIG(winconsole) {
-  include(winconsole.pri)
-}
