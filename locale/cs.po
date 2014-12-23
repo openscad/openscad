@@ -981,9 +981,6 @@ msgstr "Vytažení"
 #~ msgid "Paste font selector to Editor Window"
 #~ msgstr "Vložit výběr písma do zdrojového kódu"
 
-#~ msgid "About OpenSCAD "
-#~ msgstr "O OpenSCADu"
-
 #~ msgid "Check for Update.."
 #~ msgstr "Zkontrolovat aktualizaci..."
 
