@@ -24,6 +24,7 @@
  *
  */
 #include <iostream>
+#include "openscad.h"
 #include "GeometryCache.h"
 #include "ModuleCache.h"
 #include "MainWindow.h"
@@ -123,17 +124,6 @@ QSet<MainWindow*> *MainWindow::getWindows()
 
 // Global application state
 unsigned int GuiLocker::gui_locked = 0;
-
-#define QUOTE(x__) # x__
-#define QUOTED(x__) QUOTE(x__)
-
-static std::string versionnumber = QUOTED(OPENSCAD_VERSION)
-#ifdef OPENSCAD_COMMIT
-	" (git " QUOTED(OPENSCAD_COMMIT) ")"
-#endif
-;
-
-static std::string openscad_version = "OpenSCAD " + versionnumber;
 
 static std::string helptitle = openscad_version +  "\nhttp://www.openscad.org\n\n";
 

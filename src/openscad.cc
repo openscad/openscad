@@ -90,6 +90,17 @@ std::string currentdir;
 static bool arg_info = false;
 static std::string arg_colorscheme;
 
+#define QUOTE(x__) # x__
+#define QUOTED(x__) QUOTE(x__)
+
+std::string openscad_versionnumber = QUOTED(OPENSCAD_VERSION)
+#ifdef OPENSCAD_COMMIT
+	" (git " QUOTED(OPENSCAD_COMMIT) ")"
+#endif
+;
+
+std::string openscad_version = "OpenSCAD " + openscad_versionnumber;
+
 class Echostream : public std::ofstream
 {
 public:
