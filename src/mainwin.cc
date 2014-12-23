@@ -125,8 +125,6 @@ QSet<MainWindow*> *MainWindow::getWindows()
 // Global application state
 unsigned int GuiLocker::gui_locked = 0;
 
-static std::string helptitle = openscad_version +  "\nhttp://www.openscad.org\n\n";
-
 static char copyrighttext[] =
 	"Copyright (C) 2009-2014 The OpenSCAD Developers\n"
 	"\n"
@@ -404,6 +402,7 @@ MainWindow::MainWindow(const QString &filename)
 
 	setCurrentOutput();
 
+	std::string helptitle = openscad_version +  "\nhttp://www.openscad.org\n\n";
 	PRINT(helptitle);
 	PRINT(copyrighttext);
 	PRINT("");
@@ -2400,7 +2399,6 @@ void MainWindow::helpAbout()
 	qApp->setWindowIcon(QApplication::windowIcon());
 	AboutDialog *dialog = new AboutDialog(this);
 	dialog->exec();
-	//QMessageBox::information(this, "About OpenSCAD", QString(helptitle) + QString(copyrighttext));
 }
 
 void MainWindow::helpHomepage()
