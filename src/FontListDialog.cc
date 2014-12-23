@@ -60,6 +60,7 @@ void FontListDialog::selection_changed(const QItemSelection &current, const QIte
 {
 	if (current.count() == 0) {
 		copyButton->setEnabled(false);
+		tableView->setDragText("");
 		return;
 	}
 	
@@ -68,6 +69,7 @@ void FontListDialog::selection_changed(const QItemSelection &current, const QIte
 	const QString style = model->item(idx.row(), 1)->text();
 	selection = QString("\"%1:style=%2\"").arg(quote(name)).arg(quote(style));
 	copyButton->setEnabled(true);
+	tableView->setDragText(selection);
 }
 
 void FontListDialog::update_font_list()
