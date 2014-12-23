@@ -600,7 +600,9 @@ void dialogThreadFunc(FontCacheInitializer *initializer)
 void dialogInitHandler(FontCacheInitializer *initializer, void *)
 {
 	QProgressDialog dialog;
-	dialog.setLabelText("Fontconfig needs to update its font cache.\nThis can take up to a couple of minutes.");
+	dialog.setLabelText(_("Fontconfig needs to update its font cache.\nThis can take up to a couple of minutes."));
+	dialog.setMinimum(0);
+	dialog.setMaximum(0);
 	dialog.setCancelButton(0);
 
 	QFutureWatcher<void> futureWatcher;
