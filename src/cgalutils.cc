@@ -606,6 +606,9 @@ namespace CGALUtils {
 															   shared_ptr<const Geometry>(createNefPolyhedronFromGeometry(ps))));
 					}
 					CGAL_Nef_polyhedron *N = CGALUtils::applyOperator(fake_children, OPENSCAD_UNION);
+					// FIXME: This hould really never throw.
+					// Assert once we figured out what went wrong with issue #1069?
+					if (!N) throw 0;
 					t.stop();
 					PRINTDB("Minkowski: Union done: %f s",t.time());
 					t.reset();
@@ -635,53 +638,46 @@ namespace CGALUtils {
 */
 	CGAL_Nef_polyhedron *applyOperator(const Geometry::ChildList &children, OpenSCADOperator op)
 	{
-		// Speeds up n-ary union operations significantly
-		CGAL::Nef_nary_union_3<CGAL_Nef_polyhedron3> nary_union;
-		int nary_union_num_inserted = 0;
 		CGAL_Nef_polyhedron *N = NULL;
-
-		BOOST_FOREACH(const Geometry::ChildItem &item, children) {
-			const shared_ptr<const Geometry> &chgeom = item.second;
-			shared_ptr<const CGAL_Nef_polyhedron> chN = 
-				dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
-			if (!chN) {
-				const PolySet *chps = dynamic_cast<const PolySet*>(chgeom.get());
-				if (chps) chN.reset(createNefPolyhedronFromGeometry(*chps));
-			}
-
-			if (op == OPENSCAD_UNION) {
-				if (!chN->isEmpty()) {
-					// nary_union.add_polyhedron() can issue assertion errors:
-					// https://github.com/openscad/openscad/issues/802
-					CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
-					try {
+		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+		try {
+			// Speeds up n-ary union operations significantly
+			CGAL::Nef_nary_union_3<CGAL_Nef_polyhedron3> nary_union;
+			int nary_union_num_inserted = 0;
+			
+			BOOST_FOREACH(const Geometry::ChildItem &item, children) {
+				const shared_ptr<const Geometry> &chgeom = item.second;
+				shared_ptr<const CGAL_Nef_polyhedron> chN = 
+					dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
+				if (!chN) {
+					const PolySet *chps = dynamic_cast<const PolySet*>(chgeom.get());
+					if (chps) chN.reset(createNefPolyhedronFromGeometry(*chps));
+				}
+				
+				if (op == OPENSCAD_UNION) {
+					if (!chN->isEmpty()) {
+						// nary_union.add_polyhedron() can issue assertion errors:
+						// https://github.com/openscad/openscad/issues/802
 						nary_union.add_polyhedron(*chN->p3);
 						nary_union_num_inserted++;
 					}
-					catch (const CGAL::Failure_exception &e) {
-						PRINTB("CGAL error in CGALUtils::applyBinaryOperator union: %s", e.what());
-					}
-					CGAL::set_error_behaviour(old_behaviour);
+					continue;
 				}
-				continue;
-			}
-			// Initialize N with first expected geometric object
-			if (!N) {
-				N = new CGAL_Nef_polyhedron(*chN);
-				continue;
-			}
-
-			// Intersecting something with nothing results in nothing
-			if (chN->isEmpty()) {
-				if (op == OPENSCAD_INTERSECTION) *N = *chN;
-				continue;
-			}
-            
-            // empty op <something> => empty
-            if (N->isEmpty()) continue;
-
-			CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
-			try {
+				// Initialize N with first expected geometric object
+				if (!N) {
+					N = new CGAL_Nef_polyhedron(*chN);
+					continue;
+				}
+				
+				// Intersecting something with nothing results in nothing
+				if (chN->isEmpty()) {
+					if (op == OPENSCAD_INTERSECTION) *N = *chN;
+					continue;
+				}
+				
+				// empty op <something> => empty
+				if (N->isEmpty()) continue;
+				
 				switch (op) {
 				case OPENSCAD_INTERSECTION:
 					*N *= *chN;
@@ -695,31 +691,19 @@ namespace CGALUtils {
 				default:
 					PRINTB("ERROR: Unsupported CGAL operator: %d", op);
 				}
+				item.first->progress_report();
 			}
-			catch (const CGAL::Failure_exception &e) {
-				// union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad and testdata/scad/bugs/issue204.scad
-				std::string opstr = op == OPENSCAD_INTERSECTION ? "intersection" : op == OPENSCAD_DIFFERENCE ? "difference" : op == OPENSCAD_MINKOWSKI ? "minkowski" : "UNKNOWN";
-				PRINTB("CGAL error in CGALUtils::applyBinaryOperator %s: %s", opstr % e.what());
-				
-				// Errors can result in corrupt polyhedrons, so put back the old one
-				*N = *chN;
-			}
-			CGAL::set_error_behaviour(old_behaviour);
-			item.first->progress_report();
-		}
 
-		if (op == OPENSCAD_UNION && nary_union_num_inserted > 0) {
-			CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
-			try {
-
+			if (op == OPENSCAD_UNION && nary_union_num_inserted > 0) {
 				N = new CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3(nary_union.get_union()));
-
-			} catch (const CGAL::Failure_exception &e) {
-				std::string opstr = "union";
-				PRINTB("CGAL error in CGALUtils::applyBinaryOperator %s: %s", opstr % e.what());
 			}
-			CGAL::set_error_behaviour(old_behaviour);
 		}
+	// union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad and testdata/scad/bugs/issue204.scad
+		catch (const CGAL::Failure_exception &e) {
+			std::string opstr = op == OPENSCAD_INTERSECTION ? "intersection" : op == OPENSCAD_DIFFERENCE ? "difference" : op == OPENSCAD_MINKOWSKI ? "minkowski" : "UNKNOWN";
+			PRINTB("CGAL error in CGALUtils::applyBinaryOperator %s: %s", opstr % e.what());
+		}
+		CGAL::set_error_behaviour(old_behaviour);
 		return N;
 	}
 
