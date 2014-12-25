@@ -61,5 +61,7 @@
         <file>icons/background.png</file>
         <file>images/Increase-Indent-32.png</file>
         <file>images/Decrease-Indent-32.png</file>
+        <file>images/Command-Undo-32.png</file>
+        <file>images/Command-Redo-32.png</file>
     </qresource>
 </RCC>

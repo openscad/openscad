@@ -348,6 +348,8 @@
        <addaction name="designActionExportSTL"/>
        <addaction name="editActionIndent"/>
        <addaction name="editActionUnindent"/>
+       <addaction name="editActionUndo"/>
+       <addaction name="editActionRedo"/>
       </widget>
      </item>
      <item>
@@ -550,6 +552,10 @@
    </property>
   </action>
   <action name="editActionUndo">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/Command-Undo-32.png</normaloff>:/images/Command-Undo-32.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Undo</string>
    </property>
@@ -561,6 +567,10 @@
    </property>
   </action>
   <action name="editActionRedo">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/Command-Redo-32.png</normaloff>:/images/Command-Redo-32.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Redo</string>
    </property>
