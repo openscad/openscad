@@ -33,6 +33,9 @@ public:
   virtual Response visit(class State &state, const class ImportNode &node) {
 		return visit(state, (const class LeafNode &)node);
 	}
+  virtual Response visit(class State &state, const class TraceNode &node) {
+		return visit(state, (const class LeafNode &)node);
+	}
   virtual Response visit(class State &state, const class PrimitiveNode &node) {
 		return visit(state, (const class LeafNode &)node);
 	}

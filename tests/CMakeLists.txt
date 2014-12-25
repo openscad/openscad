@@ -464,8 +464,18 @@ if(${CMAKE_CXX_COMPILER} MATCHES ".*clang.*" AND NOT ${CGAL_CXX_FLAGS_INIT} STRE
 	string(REPLACE "--param=ssp-buffer-size=4" "" CGAL_CXX_FLAGS_INIT ${CGAL_CXX_FLAGS_INIT})
 endif()
 
-# GLib2
+# potrace
+find_package(POTRACE 1.10)
+add_definitions(${POTRACE_DEFINITIONS})
+inclusion(POTRACE_DIR POTRACE_INCLUDE_DIRS)
+set(LIBS ${LIBS} ${POTRACE_LIBRARIES})
+if (DEFINED POTRACE_FOUND)
+  add_definitions(-DHAVE_POTRACE=1)
+else()
+  message(STATUS "potrace not found, trace() disabled")
+endif()
 
+# GLib2
 find_package(GLIB2 2.2.0 REQUIRED)
 add_definitions(${GLIB2_DEFINITIONS})
 inclusion(GLIB2_DIR GLIB2_INCLUDE_DIRS)
@@ -645,6 +655,7 @@ set(CORE_SOURCES
   ../src/dxfdata.cc 
   ../src/dxfdim.cc 
   ../src/offset.cc 
+  ../src/trace.cc 
   ../src/linearextrude.cc 
   ../src/rotateextrude.cc 
   ../src/text.cc 
@@ -726,7 +737,7 @@ if(NULLGL)
 endif()
 
 add_library(tests-core STATIC ${CORE_SOURCES})
-target_link_libraries(tests-core ${OPENGL_LIBRARIES} ${GLIB2_LIBRARIES} ${FONTCONFIG_LDFLAGS} ${FREETYPE_LDFLAGS} ${HARFBUZZ_LDFLAGS} ${Boost_LIBRARIES} ${COCOA_LIBRARY})
+target_link_libraries(tests-core ${OPENGL_LIBRARIES} ${GLIB2_LIBRARIES} ${FONTCONFIG_LDFLAGS} ${FREETYPE_LDFLAGS} ${HARFBUZZ_LDFLAGS} ${POTRACE_LIBRARIES} ${Boost_LIBRARIES} ${COCOA_LIBRARY})
 
 add_library(tests-common STATIC ${COMMON_SOURCES})
 target_link_libraries(tests-common tests-core)

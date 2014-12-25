@@ -198,6 +198,7 @@ CONFIG += harfbuzz
 CONFIG += freetype
 CONFIG += fontconfig
 CONFIG += gettext
+CONFIG += potrace
 
 #Uncomment the following line to enable the QScintilla editor
 CONFIG += scintilla
@@ -283,6 +284,7 @@ HEADERS += src/typedefs.h \
            src/node.h \
            src/csgnode.h \
            src/offsetnode.h \
+           src/tracenode.h \
            src/linearextrudenode.h \
            src/rotateextrudenode.h \
            src/projectionnode.h \
@@ -379,6 +381,7 @@ SOURCES += src/version_check.cc \
            src/dxfdata.cc \
            src/dxfdim.cc \
            src/offset.cc \
+           src/trace.cc \
            src/linearextrude.cc \
            src/rotateextrude.cc \
            src/printutils.cc \
