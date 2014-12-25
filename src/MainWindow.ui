@@ -170,7 +170,7 @@
      <x>0</x>
      <y>0</y>
      <width>1397</width>
-     <height>22</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -346,6 +346,8 @@
        <addaction name="designActionRender"/>
        <addaction name="separator"/>
        <addaction name="designActionExportSTL"/>
+       <addaction name="editActionIndent"/>
+       <addaction name="editActionUnindent"/>
       </widget>
      </item>
      <item>
@@ -603,19 +605,15 @@
    </property>
   </action>
   <action name="editActionIndent">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/Increase-Indent-32.png</normaloff>:/images/Increase-Indent-32.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Indent</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+I</string>
-   </property>
-  </action>
-  <action name="editActionUnindent">
-   <property name="text">
-    <string>U&amp;nindent</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Shift+I</string>
    </property>
   </action>
   <action name="editActionComment">
@@ -1135,6 +1133,27 @@
    </property>
    <property name="text">
     <string>Hide toolbars</string>
+   </property>
+  </action>
+  <action name="actionUnindent">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/Decrease-Indent-32 (1).png</normaloff>:/images/Decrease-Indent-32 (1).png</iconset>
+   </property>
+   <property name="text">
+    <string>Unindent</string>
+   </property>
+  </action>
+  <action name="editActionUnindent">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/Decrease-Indent-32 (3).png</normaloff>:/images/Decrease-Indent-32 (3).png</iconset>
+   </property>
+   <property name="text">
+    <string>U&amp;nindent</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+I</string>
    </property>
   </action>
  </widget>
