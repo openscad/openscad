@@ -1137,7 +1137,7 @@
   </action>
   <action name="actionUnindent">
    <property name="icon">
-    <iconset resource="../openscad.qrc">
+    <iconset>
      <normaloff>:/images/Decrease-Indent-32 (1).png</normaloff>:/images/Decrease-Indent-32 (1).png</iconset>
    </property>
    <property name="text">
@@ -1147,7 +1147,7 @@
   <action name="editActionUnindent">
    <property name="icon">
     <iconset resource="../openscad.qrc">
-     <normaloff>:/images/Decrease-Indent-32 (3).png</normaloff>:/images/Decrease-Indent-32 (3).png</iconset>
+     <normaloff>:/images/Decrease-Indent-32.png</normaloff>:/images/Decrease-Indent-32.png</iconset>
    </property>
    <property name="text">
     <string>U&amp;nindent</string>
