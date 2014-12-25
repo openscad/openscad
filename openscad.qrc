@@ -59,7 +59,7 @@
         <file>images/perspective1white.png</file>
         <file>images/crosswhite.png</file>
         <file>icons/background.png</file>
-        <file>images/Decrease-Indent-32 (3).png</file>
         <file>images/Increase-Indent-32.png</file>
+        <file>images/Decrease-Indent-32.png</file>
     </qresource>
 </RCC>
