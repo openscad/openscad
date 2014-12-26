@@ -89,7 +89,7 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
   qsci->setIndentationsUseTabs(false);  
   
   lexer = new ScadLexer(this);
-  initLexer();
+  qsci->setLexer(lexer);
   initMargin();
   qsci->setFolding(QsciScintilla::BoxedTreeFoldStyle, 4);
   qsci->setCaretLineVisible(true);
@@ -150,6 +150,16 @@ QColor ScintillaEditor::readColor(const boost::property_tree::ptree &pt, const s
     }
 }
 
+std::string ScintillaEditor::readString(const boost::property_tree::ptree &pt, const std::string name, const std::string defaultValue)
+{
+    try {
+	const std::string val = pt.get<std::string>(name);
+	return val;
+    } catch (std::exception e) {
+	return defaultValue;
+    }
+}
+
 int ScintillaEditor::readInt(const boost::property_tree::ptree &pt, const std::string name, const int defaultValue)
 {
     try {
@@ -165,29 +175,56 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
     const boost::property_tree::ptree & pt = colorScheme->propertyTree();
 
     try {
+	QFont font = lexer->font(lexer->defaultStyle());
 	const QColor textColor(pt.get<std::string>("text").c_str());
 	const QColor paperColor(pt.get<std::string>("paper").c_str());
 
-	lexer->setColor(textColor);
-	lexer->setPaper(paperColor);
+	ScadLexer *l = new ScadLexer(this);
+
+	// Keywords must be set before the lexer is attached to QScintilla
+	// as they seem to be read and cached at attach time.
+        boost::optional<const boost::property_tree::ptree&> keywords = pt.get_child_optional("keywords");
+	if (keywords.is_initialized()) {
+		l->setKeywords(1, readString(keywords.get(), "keyword-set1", ""));
+		l->setKeywords(2, readString(keywords.get(), "keyword-set2", ""));
+		l->setKeywords(3, readString(keywords.get(), "keyword-set-doc", ""));
+		l->setKeywords(4, readString(keywords.get(), "keyword-set3", ""));
+	}
+
+	qsci->setLexer(l);
+	delete lexer;
+	lexer = l;
+
+	// All other properties must be set after attaching to QSCintilla so
+	// the editor gets the change events and updates itself to match
+	l->setFont(font);
+	l->setColor(textColor);
+	l->setPaper(paperColor);
 
         const boost::property_tree::ptree& colors = pt.get_child("colors");
-	lexer->setColor(readColor(colors, "keyword1", textColor), QsciLexerCPP::Keyword);
-	lexer->setColor(readColor(colors, "keyword2", textColor), QsciLexerCPP::KeywordSet2);
-	lexer->setColor(readColor(colors, "keyword3", textColor), QsciLexerCPP::GlobalClass);
-	lexer->setColor(readColor(colors, "comment", textColor), QsciLexerCPP::CommentDocKeyword);
-	lexer->setColor(readColor(colors, "number", textColor), QsciLexerCPP::Number);
-	lexer->setColor(readColor(colors, "string", textColor), QsciLexerCPP::DoubleQuotedString);
-	lexer->setColor(readColor(colors, "operator", textColor), QsciLexerCPP::Operator);
-	lexer->setColor(readColor(colors, "commentline", textColor), QsciLexerCPP::CommentLine);
+	l->setColor(readColor(colors, "keyword1", textColor), QsciLexerCPP::Keyword);
+	l->setColor(readColor(colors, "keyword2", textColor), QsciLexerCPP::KeywordSet2);
+	l->setColor(readColor(colors, "keyword3", textColor), QsciLexerCPP::GlobalClass);
+	l->setColor(readColor(colors, "number", textColor), QsciLexerCPP::Number);
+	l->setColor(readColor(colors, "string", textColor), QsciLexerCPP::SingleQuotedString);
+	l->setColor(readColor(colors, "string", textColor), QsciLexerCPP::DoubleQuotedString);
+	l->setColor(readColor(colors, "operator", textColor), QsciLexerCPP::Operator);
+	l->setColor(readColor(colors, "comment", textColor), QsciLexerCPP::Comment);
+	l->setColor(readColor(colors, "commentline", textColor), QsciLexerCPP::CommentLine);
+	l->setColor(readColor(colors, "commentdoc", textColor), QsciLexerCPP::CommentDoc);
+	l->setColor(readColor(colors, "commentdoc", textColor), QsciLexerCPP::CommentLineDoc);
+	l->setColor(readColor(colors, "commentdockeyword", textColor), QsciLexerCPP::CommentDocKeyword);
 
         const boost::property_tree::ptree& caret = pt.get_child("caret");
-	
 	qsci->setCaretWidth(readInt(caret, "width", 1));
 	qsci->setCaretForegroundColor(readColor(caret, "foreground", textColor));
 	qsci->setCaretLineBackgroundColor(readColor(caret, "line-background", paperColor));
 
 	qsci->setMarkerBackgroundColor(readColor(colors, "error-marker", QColor(255, 0, 0, 100)), markerNumber);
+	qsci->setIndicatorForegroundColor(readColor(colors, "error-indicator", QColor(255, 0, 0, 100)), indicatorNumber);
+	qsci->setIndicatorOutlineColor(readColor(colors, "error-indicator-outline", QColor(255, 0, 0, 100)), indicatorNumber);
+	qsci->setWhitespaceBackgroundColor(readColor(colors, "whitespace-background", paperColor));
+	qsci->setWhitespaceForegroundColor(readColor(colors, "whitespace-foreground", textColor));
 	qsci->setMarginsBackgroundColor(readColor(colors, "margin-background", paperColor));
 	qsci->setMarginsForegroundColor(readColor(colors, "margin-foreground", textColor));
 	qsci->setMatchedBraceBackgroundColor(readColor(colors, "matched-brace-background", paperColor));
@@ -211,7 +248,11 @@ void ScintillaEditor::noColor()
     qsci->setCaretWidth(2);
     qsci->setCaretForegroundColor(Qt::black);
     qsci->setMarkerBackgroundColor(QColor(255, 0, 0, 100), markerNumber);
+    qsci->setIndicatorForegroundColor(QColor(255, 0, 0, 128), indicatorNumber);
+    qsci->setIndicatorOutlineColor(QColor(0, 0, 0, 255), indicatorNumber); // only alpha part is used
     qsci->setCaretLineBackgroundColor(Qt::white);
+    qsci->setWhitespaceBackgroundColor(Qt::white);
+    qsci->setWhitespaceForegroundColor(Qt::black);
     qsci->setMarginsBackgroundColor(Qt::white);
     qsci->setMarginsForegroundColor(Qt::black);
     qsci->setSelectionForegroundColor(Qt::white);
@@ -342,11 +383,6 @@ void ScintillaEditor::initFont(const QString& fontName, uint size)
   QFont font(fontName, size);
   font.setFixedPitch(true);
   lexer->setFont(font);
-}
-
-void ScintillaEditor::initLexer()
-{
-  qsci->setLexer(lexer);
 }
 
 void ScintillaEditor::initMargin()

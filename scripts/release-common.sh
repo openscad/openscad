@@ -254,8 +254,8 @@ case $OS in
             echo "cant find $TARGET/openscad.exe. build failed. stopping."
             exit
         fi
-        # make console pipe-able openscad.com - see winconsole.pri for info
-        qmake CONFIG+=winconsole ../openscad.pro
+        # make console pipe-able openscad.com - see winconsole.pro for info
+        qmake ../winconsole.pro
         make
         if [ ! -e $TARGET/openscad.com ]; then
             echo "cant find $TARGET/openscad.com. build failed. stopping."
@@ -279,11 +279,6 @@ if [[ $? != 0 ]]; then
   echo "Error building OpenSCAD. Aborting."
   exit 1
 fi
-
-echo "Updating language files..."
-
-cd $OPENSCADDIR
-./scripts/translation-update.sh
 
 echo "Building test suite..."
 

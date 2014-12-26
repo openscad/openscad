@@ -35,9 +35,6 @@
    </item>
    <item row="4" column="3">
     <widget class="QPushButton" name="copyButton">
-     <property name="toolTip">
-      <string>Paste font selector to Editor Window</string>
-     </property>
      <property name="text">
       <string>Copy to Clipboard</string>
      </property>
@@ -70,7 +67,17 @@
     </widget>
    </item>
    <item row="2" column="0" colspan="5">
-    <widget class="QTableView" name="tableView"/>
+    <widget class="FontListTableView" name="tableView">
+     <property name="dragEnabled">
+      <bool>true</bool>
+     </property>
+     <property name="dragDropMode">
+      <enum>QAbstractItemView::DragOnly</enum>
+     </property>
+     <property name="selectionBehavior">
+      <enum>QAbstractItemView::SelectRows</enum>
+     </property>
+    </widget>
    </item>
    <item row="0" column="0" colspan="5">
     <widget class="QLabel" name="label">
@@ -103,6 +110,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>FontListTableView</class>
+   <extends>QTableView</extends>
+   <header>FontListTableView.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="../openscad.qrc"/>
  </resources>

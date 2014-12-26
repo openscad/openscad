@@ -24,6 +24,7 @@
  *
  */
 #include <iostream>
+#include "openscad.h"
 #include "GeometryCache.h"
 #include "ModuleCache.h"
 #include "MainWindow.h"
@@ -37,6 +38,7 @@
 #include "highlighter.h"
 #include "export.h"
 #include "builtin.h"
+#include "memory.h"
 #include "expression.h"
 #include "progress.h"
 #include "dxfdim.h"
@@ -124,15 +126,6 @@ QSet<MainWindow*> *MainWindow::getWindows()
 // Global application state
 unsigned int GuiLocker::gui_locked = 0;
 
-#define QUOTE(x__) # x__
-#define QUOTED(x__) QUOTE(x__)
-
-static char helptitle[] =
-	"OpenSCAD " QUOTED(OPENSCAD_VERSION)
-#ifdef OPENSCAD_COMMIT
-	" (git " QUOTED(OPENSCAD_COMMIT) ")"
-#endif
-	"\nhttp://www.openscad.org\n\n";
 static char copyrighttext[] =
 	"Copyright (C) 2009-2014 The OpenSCAD Developers\n"
 	"\n"
@@ -188,6 +181,9 @@ MainWindow::MainWindow(const QString &filename)
 	this->editorDock->setAction(this->viewActionHideEditor);
 	this->consoleDock->setConfigKey("view/hideConsole");
 	this->consoleDock->setAction(this->viewActionHideConsole);
+
+	this->versionLabel = NULL; // must be initialized before calling updateStatusBar()
+	updateStatusBar(NULL);
 
 	QSettings settings;
 	editortype = settings.value("editor/editortype").toString();
@@ -407,6 +403,7 @@ MainWindow::MainWindow(const QString &filename)
 
 	setCurrentOutput();
 
+	std::string helptitle = openscad_version +  "\nhttp://www.openscad.org\n\n";
 	PRINT(helptitle);
 	PRINT(copyrighttext);
 	PRINT("");
@@ -683,11 +680,16 @@ MainWindow::~MainWindow()
 #endif
 	delete this->thrownTogetherRenderer;
 	MainWindow::getWindows()->remove(this);
+	if (MainWindow::getWindows()->size() == 0) {
+		// Quit application even in case some other windows like
+		// Preferences are still open.
+		qApp->quit();
+	}
 }
 
 void MainWindow::showProgress()
 {
-	this->statusBar()->addPermanentWidget(qobject_cast<ProgressWidget*>(sender()));
+	updateStatusBar(qobject_cast<ProgressWidget*>(sender()));
 }
 
 void MainWindow::report_func(const class AbstractNode*, void *vp, int mark)
@@ -1060,9 +1062,7 @@ void MainWindow::compileCSG(bool procevents)
 		PRINT("CSG generation cancelled.");
 	}
 	progress_report_fin();
-	this->statusBar()->removeWidget(this->progresswidget);
-	delete this->progresswidget;
-	this->progresswidget = NULL;
+	updateStatusBar(NULL);
 
 	PRINT("Compiling design (CSG Products normalization)...");
 	if (procevents) QApplication::processEvents();
@@ -1232,7 +1232,7 @@ void MainWindow::writeBackup(QFile *file)
 	writer.setCodec("UTF-8");
 	writer << this->editor->toPlainText();
 
-	PRINTB("Saved backup file: %s", file->fileName().toLocal8Bit().constData());
+    PRINTB("Saved backup file: %s", file->fileName().toUtf8().constData());
 }
 
 void MainWindow::saveBackup()
@@ -1243,7 +1243,7 @@ void MainWindow::saveBackup()
 		return;
 	}
 
-	QString backupPath = QString::fromStdString(path);
+    QString backupPath = QString::fromLocal8Bit(path.c_str());
 	if (!backupPath.endsWith("/")) backupPath.append("/");
 
 	QString basename = "unsaved";
@@ -1800,14 +1800,46 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 		PRINT("WARNING: No top level geometry to render");
 	}
 
-	this->statusBar()->removeWidget(this->progresswidget);
-	delete this->progresswidget;
-	this->progresswidget = NULL;
+	updateStatusBar(NULL);
+
 	this->contentschanged = false;
 	compileEnded();
 }
 
 #endif /* ENABLE_CGAL */
+
+/**
+ * Switch version label and progress widget. When switching to the progress
+ * widget, the new instance is passed by the caller.
+ * In case of resetting back to the version label, NULL will be passed and
+ * multiple calls can happen. So this method must guard against adding the
+ * version label multiple times.
+ *
+ * @param progressWidget a pointer to the progress widget to show or NULL in
+ * case the display should switch back to the version label.
+ */
+void MainWindow::updateStatusBar(ProgressWidget *progressWidget)
+{
+	QStatusBar *sb = this->statusBar();
+	if (progressWidget == NULL) {
+		if (this->progresswidget != NULL) {
+			sb->removeWidget(this->progresswidget);
+			delete this->progresswidget;
+			this->progresswidget = NULL;
+		}
+		if (versionLabel == NULL) {
+			versionLabel = new QLabel(openscad_version.c_str());
+			sb->addPermanentWidget(this->versionLabel);
+		}
+	} else {
+		if (this->versionLabel != NULL) {
+			sb->removeWidget(this->versionLabel);
+			delete this->versionLabel;
+			this->versionLabel = NULL;
+		}
+		sb->addPermanentWidget(progressWidget);
+	}
+}
 
 void MainWindow::actionDisplayAST()
 {
@@ -1885,9 +1917,13 @@ void MainWindow::actionCheckValidity() {
 	}
 
 	bool valid = false;
-	if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(this->root_geom.get()))
+	shared_ptr<const CGAL_Nef_polyhedron> N;
+	if (const PolySet *ps = dynamic_cast<const PolySet *>(this->root_geom.get())) {
+		N.reset(CGALUtils::createNefPolyhedronFromGeometry(*ps));
+	}
+	if (N || (N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(this->root_geom))) {
 		valid = N->p3->is_valid();
-
+	}
 	PRINTB("   Valid:      %6s", (valid ? "yes" : "no"));
 	clearCurrentOutput();
 #endif /* ENABLE_CGAL */
@@ -1936,7 +1972,7 @@ void MainWindow::actionExport(export_type_e, QString, QString)
 
 	const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(this->root_geom.get());
 	if (N && !N->p3->is_simple()) {
-	 	PRINT("Warning: Object may not be a valid 2-manifold and may need repair! See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
+	 	PRINT("WARNING: Object may not be a valid 2-manifold and may need repair! See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
 	}
 
 	QString title = QString(_("Export %1 File")).arg(type_name);
@@ -2403,7 +2439,6 @@ void MainWindow::helpAbout()
 	qApp->setWindowIcon(QApplication::windowIcon());
 	AboutDialog *dialog = new AboutDialog(this);
 	dialog->exec();
-	//QMessageBox::information(this, "About OpenSCAD", QString(helptitle) + QString(copyrighttext));
 }
 
 void MainWindow::helpHomepage()
@@ -2524,10 +2559,15 @@ void MainWindow::quit()
 void MainWindow::consoleOutput(const std::string &msg, void *userdata)
 {
 	// Invoke the append function in the main thread in case the output
-  // originates in a worker thread.
+	// originates in a worker thread.
 	MainWindow *thisp = static_cast<MainWindow*>(userdata);
-	QMetaObject::invokeMethod(thisp->console, "append", Qt::QueuedConnection,
-	Q_ARG(QString, QString::fromUtf8(msg.c_str())));
+	QString qmsg = QString::fromUtf8(msg.c_str());
+	if (qmsg.startsWith("WARNING:")) {
+		qmsg = "<html><span style=\"color: black; background-color: #ffffb0;\">" + qmsg + "</span></html>";
+	} else if (qmsg.startsWith("ERROR:")) {
+		qmsg = "<html><span style=\"color: black; background-color: #ffb0b0;\">" + qmsg + "</span></html>";
+	}
+	QMetaObject::invokeMethod(thisp->console, "append", Qt::QueuedConnection, Q_ARG(QString, qmsg));
 	if (thisp->procevents) QApplication::processEvents();
 }
 

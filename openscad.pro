@@ -116,10 +116,18 @@ macx {
 
 win* {
   RC_FILE = openscad_win32.rc
+  QMAKE_CXXFLAGS += -DNOGDI
+}
+
+mingw* {
+  # needed to prevent compilation error on MSYS2:
+  # as.exe: objects/cgalutils.o: too many sections (76541)
+  # using -Wa,-mbig-obj did not help
+  debug: QMAKE_CXXFLAGS += -O1
 }
 
 CONFIG += qt
-QT += opengl
+QT += opengl concurrent
 
 # see http://fedoraproject.org/wiki/UnderstandingDSOLinkChange
 # and https://github.com/openscad/openscad/pull/119
@@ -251,6 +259,7 @@ HEADERS += src/typedefs.h \
            src/OpenCSGWarningDialog.h \
            src/AboutDialog.h \
            src/FontListDialog.h \
+           src/FontListTableView.h \
            src/builtin.h \
            src/calc.h \
            src/context.h \
@@ -420,6 +429,7 @@ SOURCES += src/version_check.cc \
            src/UIUtils.cc \
            src/Dock.cc \
            src/FontListDialog.cc \
+           src/FontListTableView.cc \
            src/launchingscreen.cc \
            src/legacyeditor.cc \
            src/LibraryInfoDialog.cc
@@ -546,7 +556,3 @@ INSTALLS += icons
 man.path = $$PREFIX/share/man/man1
 man.extra = cp -f doc/openscad.1 \"\$(INSTALL_ROOT)$${man.path}/$${FULLNAME}.1\"
 INSTALLS += man
-
-CONFIG(winconsole) {
-  include(winconsole.pri)
-}

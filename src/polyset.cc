@@ -253,7 +253,7 @@ void PolySet::render_surface(Renderer::csgmode_e csgmode, const Transform3d &m, 
 #endif /* ENABLE_OPENCSG */
 	if (this->dim == 2) {
 		// Render 2D objects 1mm thick, but differences slightly larger
-		double zbase = 1 + (csgmode & CSGMODE_DIFFERENCE_FLAG) * 0.1;
+		double zbase = 1 + ((csgmode & CSGMODE_DIFFERENCE_FLAG) ? 0.1 : 0);
 		glBegin(GL_TRIANGLES);
 
 		// Render top+bottom
@@ -382,7 +382,7 @@ void PolySet::render_edges(Renderer::csgmode_e csgmode) const
 		}
 		else {
 			// Render 2D objects 1mm thick, but differences slightly larger
-			double zbase = 1 + (csgmode & CSGMODE_DIFFERENCE_FLAG) * 0.1;
+			double zbase = 1 + ((csgmode & CSGMODE_DIFFERENCE_FLAG) ? 0.1 : 0);
 
 			BOOST_FOREACH(const Outline2d &o, polygon.outlines()) {
 				// Render top+bottom outlines

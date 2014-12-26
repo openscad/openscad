@@ -90,6 +90,17 @@ std::string currentdir;
 static bool arg_info = false;
 static std::string arg_colorscheme;
 
+#define QUOTE(x__) # x__
+#define QUOTED(x__) QUOTE(x__)
+
+std::string openscad_versionnumber = QUOTED(OPENSCAD_VERSION)
+#ifdef OPENSCAD_COMMIT
+	" (git " QUOTED(OPENSCAD_COMMIT) ")"
+#endif
+;
+
+std::string openscad_version = "OpenSCAD " + openscad_versionnumber;
+
 class Echostream : public std::ofstream
 {
 public:
@@ -105,7 +116,7 @@ public:
 	}
 };
 
-static void help(const char *progname)
+static void help(const char *progname, bool failure = false)
 {
   int tablen = strlen(progname)+8;
   char tabstr[tablen+1];
@@ -114,6 +125,7 @@ static void help(const char *progname)
 
 	PRINTB("Usage: %1% [ -o output_file [ -d deps_file ] ]\\\n"
          "%2%[ -m make_command ] [ -D var=val [..] ] \\\n"
+	 "%2%[ --help ] print this help message and exit \\\n"
          "%2%[ --version ] [ --info ] \\\n"
          "%2%[ --camera=translatex,y,z,rotx,y,z,dist | \\\n"
          "%2%  --camera=eyex,y,z,centerx,y,z ] \\\n"
@@ -132,15 +144,15 @@ static void help(const char *progname)
 #endif
          "%2%filename\n",
  				 progname % (const char *)tabstr);
-	exit(1);
+	exit(failure ? 1 : 0);
 }
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 static void version()
 {
-	PRINTB("OpenSCAD version %s\n", TOSTRING(OPENSCAD_VERSION));
-	exit(1);
+	PRINTB("OpenSCAD version %s", TOSTRING(OPENSCAD_VERSION));
+	exit(0);
 }
 
 static void info()
@@ -549,6 +561,9 @@ Q_IMPORT_PLUGIN(qtaccessiblewidgets)
 #include <QFileInfo>
 #include <QMetaType>
 #include <QTextCodec>
+#include <QProgressDialog>
+#include <QFutureWatcher>
+#include <QtConcurrentRun>
 
 Q_DECLARE_METATYPE(shared_ptr<const Geometry>);
 
@@ -578,20 +593,31 @@ bool QtUseGUI()
 	return useGUI;
 }
 
-
-#include <QProgressDialog>
-QProgressDialog *fontCacheProgress = NULL;
-
-void fontCacheStart(void *userdata)
+void dialogThreadFunc(FontCacheInitializer *initializer)
 {
-	fontCacheProgress = new QProgressDialog("Fontconfig needs to update its font cache.\nThis can take up to a couple of minutes.", QString(), 0, 0);
-	fontCacheProgress->show();
+	 initializer->run();
 }
 
-void fontCacheEnd(void *userdata)
+void dialogInitHandler(FontCacheInitializer *initializer, void *)
 {
-	delete fontCacheProgress;
-	fontCacheProgress = NULL;
+	QProgressDialog dialog;
+	dialog.setLabelText(_("Fontconfig needs to update its font cache.\nThis can take up to a couple of minutes."));
+	dialog.setMinimum(0);
+	dialog.setMaximum(0);
+	dialog.setCancelButton(0);
+
+	QFutureWatcher<void> futureWatcher;
+	QObject::connect(&futureWatcher, SIGNAL(finished()), &dialog, SLOT(reset()));
+	QObject::connect(&dialog, SIGNAL(canceled()), &futureWatcher, SLOT(cancel()));
+	QObject::connect(&futureWatcher, SIGNAL(progressRangeChanged(int,int)), &dialog, SLOT(setRange(int,int)));
+	QObject::connect(&futureWatcher, SIGNAL(progressValueChanged(int)), &dialog, SLOT(setValue(int)));
+
+	QFuture<void> future = QtConcurrent::run(boost::bind(dialogThreadFunc, initializer));
+	futureWatcher.setFuture(future);
+
+	dialog.exec();
+
+	futureWatcher.waitForFinished();
 }
 
 int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, char ** argv)
@@ -604,6 +630,9 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
     }
 #endif
 	QApplication app(argc, argv, true); //useGUI);
+	// remove ugly frames in the QStatusBar when using additional widgets
+	app.setStyleSheet("QStatusBar::item { border: 0px solid black; }");
+
 #ifdef Q_OS_MAC
 	app.installEventFilter(new EventFilter(&app));
 #endif
@@ -624,9 +653,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	const QString &app_path = app.applicationDirPath();
 	PlatformUtils::registerApplicationPath(app_path.toLocal8Bit().constData());
 
-	FontCache::registerProgressHandler(fontCacheStart, fontCacheEnd);
-
-
+	FontCache::registerProgressHandler(dialogInitHandler);
 
 	parser_init();
 
@@ -774,7 +801,7 @@ int main(int argc, char **argv)
 	}
 	catch(const std::exception &e) { // Catches e.g. unknown options
 		PRINTB("%s\n", e.what());
-		help(argv[0]);
+		help(argv[0], true);
 	}
 
 	OpenSCAD::debug = "";
@@ -802,27 +829,25 @@ int main(int argc, char **argv)
 
 	if (vm.count("o")) {
 		// FIXME: Allow for multiple output files?
-		if (output_file) help(argv[0]);
+		if (output_file) help(argv[0], true);
 		output_file = vm["o"].as<string>().c_str();
 	}
 	if (vm.count("s")) {
 		printDeprecation("DEPRECATED: The -s option is deprecated. Use -o instead.\n");
-		if (output_file) help(argv[0]);
+		if (output_file) help(argv[0], true);
 		output_file = vm["s"].as<string>().c_str();
 	}
 	if (vm.count("x")) { 
 		printDeprecation("DEPRECATED: The -x option is deprecated. Use -o instead.\n");
-		if (output_file) help(argv[0]);
+		if (output_file) help(argv[0], true);
 		output_file = vm["x"].as<string>().c_str();
 	}
 	if (vm.count("d")) {
-		if (deps_output_file)
-			help(argv[0]);
+		if (deps_output_file) help(argv[0], true);
 		deps_output_file = vm["d"].as<string>().c_str();
 	}
 	if (vm.count("m")) {
-		if (make_command)
-			help(argv[0]);
+		if (make_command) help(argv[0], true);
 		make_command = vm["m"].as<string>().c_str();
 	}
 
@@ -859,13 +884,11 @@ int main(int argc, char **argv)
 	bool cmdlinemode = false;
 	if (output_file) { // cmd-line mode
 		cmdlinemode = true;
-		if (!inputFiles.size()) help(argv[0]);
+		if (!inputFiles.size()) help(argv[0], true);
 	}
 
 	if (arg_info || cmdlinemode) {
-		if (inputFiles.size() > 1) {
-			help(argv[0]);
-		}
+		if (inputFiles.size() > 1) help(argv[0], true);
 		rc = cmdline(deps_output_file, inputFiles[0], camera, output_file, original_path, renderer, argc, argv);
 	}
 	else if (QtUseGUI()) {
@@ -873,7 +896,7 @@ int main(int argc, char **argv)
 	}
 	else {
 		PRINT("Requested GUI mode but can't open display!\n");
-		help(argv[0]);
+		help(argv[0], true);
 	}
 
 	Builtins::instance(true);

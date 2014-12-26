@@ -212,15 +212,16 @@ complete, build OpenSCAD and package it to an installer:
 If you wish you can only build the openscad.exe binary:
 
     cd mingw32
-    qmake .. CONFIG+=mingw-cross-env
+    qmake ../openscad.pro CONFIG+=mingw-cross-env
     make
 
 For a 64-bit Windows cross-build, replace 32 with 64 in the above instructions. 
 
 ### Compilation
 
-First, run 'qmake' from Qt4 to generate a Makefile. On some systems you need to
-run 'qmake4', 'qmake-qt4' or something alike to run the qt4 version of the tool.
+First, run 'qmake openscad.pro' from Qt4 to generate a Makefile. On some systems
+you need to run 'qmake4', 'qmake-qt4' or something alike to run the qt4 version
+of the tool.
 
 Then run make. Finally you might run 'make install' as root or simply copy the
 'openscad' binary (OpenSCAD.app on Mac OS X) to the bin directory of your choice.

@@ -58,6 +58,7 @@ private:
         void getRange(int *lineFrom, int *lineTo);
         void setColormap(const EditorColorScheme *colorScheme);
         int readInt(const boost::property_tree::ptree &pt, const std::string name, const int defaultValue);
+        std::string readString(const boost::property_tree::ptree &pt, const std::string name, const std::string defaultValue);
         QColor readColor(const boost::property_tree::ptree &pt, const std::string name, const QColor defaultColor);
         void enumerateColorSchemesInPath(colorscheme_set_t &result_set, const fs::path path);
         colorscheme_set_t enumerateColorSchemes();
