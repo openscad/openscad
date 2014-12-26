@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>852</width>
-    <height>554</height>
+    <height>592</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -27,7 +27,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>4</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="page3DView">
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -288,6 +288,255 @@
            </spacer>
           </item>
          </layout>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="groupBoxEditorSettings">
+          <property name="title">
+           <string>Editor settings</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout">
+           <property name="topMargin">
+            <number>20</number>
+           </property>
+           <item row="3" column="2" colspan="4">
+            <widget class="QComboBox" name="comboBoxLineWrap">
+             <item>
+              <property name="text">
+               <string>None</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Wrap at character boundaries</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Wrap at word boundaries</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <spacer name="horizontalSpacer_8">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeType">
+              <enum>QSizePolicy::Fixed</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>2</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="6" column="0">
+            <widget class="QLabel" name="labelShowWhitespaces">
+             <property name="text">
+              <string>Show whitespaces</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="6">
+            <spacer name="horizontalSpacer_4">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="6" column="2" colspan="4">
+            <widget class="QComboBox" name="comboBoxShowWhitespaces">
+             <item>
+              <property name="text">
+               <string>Never</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Always</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Only after indentation</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item row="5" column="3">
+            <widget class="QComboBox" name="comboBoxLineWrapVisualizationStart">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <item>
+              <property name="text">
+               <string>None</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Text</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Border</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Margin</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item row="1" column="2" colspan="4">
+            <widget class="QSpinBox" name="spinBoxTabWidth">
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="2">
+            <widget class="QLabel" name="labelLineWrapVisualizationStart">
+             <property name="text">
+              <string>Start</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="0">
+            <widget class="QLabel" name="labelLineWrapVisualization">
+             <property name="text">
+              <string>Line wrap visualization</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0">
+            <widget class="QLabel" name="labelLineWrapIndentation">
+             <property name="text">
+              <string>Line wrap indentation</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="labelTabWidth">
+             <property name="text">
+              <string>Tab width</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="labelLineWrap">
+             <property name="text">
+              <string>Line wrap</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="4">
+            <widget class="QLabel" name="labelLineWrapVisualizationEnd">
+             <property name="text">
+              <string>End</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="5">
+            <widget class="QComboBox" name="comboBoxLineWrapVisualizationEnd">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <item>
+              <property name="text">
+               <string>None</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Text</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Border</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Margin</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item row="4" column="4">
+            <widget class="QLabel" name="labelLineWrapIndentationIndent">
+             <property name="text">
+              <string>Indent</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="3">
+            <widget class="QComboBox" name="comboBoxLineWrapIndentation">
+             <item>
+              <property name="text">
+               <string>Fixed</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Same</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Indented</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item row="4" column="2">
+            <widget class="QLabel" name="labelLineWrapIndentationStyle">
+             <property name="text">
+              <string>Style</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="5">
+            <widget class="QSpinBox" name="spinBoxLineWrapIndentationIndent">
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="labelIndentationWidth">
+             <property name="text">
+              <string>Indentation width</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2" colspan="4">
+            <widget class="QSpinBox" name="spinBoxIndentationWidth">
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
         </item>
         <item>
          <spacer name="verticalSpacer_4">
@@ -646,7 +895,7 @@
           </property>
          </widget>
         </item>
-	<item>
+        <item>
          <widget class="QCheckBox" name="localizationCheckBox">
           <property name="text">
            <string>Enable user interface localization (requires restart of OpenSCAD)</string>
