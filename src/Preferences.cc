@@ -39,6 +39,7 @@
 #endif
 #include "colormap.h"
 #include "rendersettings.h"
+#include "settings.h"
 
 Preferences *Preferences::instance = NULL;
 
@@ -400,11 +401,64 @@ void Preferences::on_mouseWheelZoomBox_toggled(bool state)
 	settings.setValue("editor/ctrlmousewheelzoom", state);
 }
 
-void
-Preferences::on_launcherBox_toggled(bool state)
+void Preferences::on_launcherBox_toggled(bool state)
 {
 	QSettings settings;
  	settings.setValue("launcher/showOnStartup", state);	
+}
+
+void Preferences::on_spinBoxIndentationWidth_valueChanged(int val)
+{
+	Settings::Settings::inst()->set(Settings::Settings::indentationWidth, val);
+	emit editorConfigChanged();
+}
+
+void Preferences::on_spinBoxTabWidth_valueChanged(int val)
+{
+	Settings::Settings::inst()->set(Settings::Settings::tabWidth, val);
+	emit editorConfigChanged();
+}
+
+void Preferences::on_comboBoxLineWrap_activated(int val)
+{
+	Settings::Settings::inst()->set(Settings::Settings::lineWrap, (Settings::LineWrap)val);
+	emit editorConfigChanged();
+}
+
+void Preferences::on_comboBoxLineWrapIndentation_activated(int val)
+{
+	Settings::Settings::inst()->set(Settings::Settings::lineWrapIndentationStyle, (Settings::LineWrapIndentationStyle)val);
+	emit editorConfigChanged();
+}
+
+void Preferences::on_spinBoxLineWrapIndentationIndent_valueChanged(int val)
+{
+	Settings::Settings::inst()->set(Settings::Settings::lineWrapIndentation, val);
+	emit editorConfigChanged();
+}
+
+void Preferences::on_comboBoxLineWrapVisualizationStart_activated(int val)
+{
+	Settings::Settings::inst()->set(Settings::Settings::lineWrapVisualizationBegin, (Settings::LineWrapVisualization)val);
+	emit editorConfigChanged();
+}
+
+void Preferences::on_comboBoxLineWrapVisualizationEnd_activated(int val)
+{
+	Settings::Settings::inst()->set(Settings::Settings::lineWrapVisualizationEnd, (Settings::LineWrapVisualization)val);
+	emit editorConfigChanged();
+}
+
+void Preferences::on_comboBoxShowWhitespaces_activated(int val)
+{
+	Settings::Settings::inst()->set(Settings::Settings::showWhitespaces, (Settings::ShowWhitespaces)val);
+	emit editorConfigChanged();
+}
+
+void Preferences::on_spinBoxShowWhitespacesSize_valueChanged(int val)
+{
+	Settings::Settings::inst()->set(Settings::Settings::showWhitespacesSize, val);
+	emit editorConfigChanged();
 }
 
 void Preferences::keyPressEvent(QKeyEvent *e)
@@ -500,6 +554,17 @@ void Preferences::updateGUI()
 	this->undockCheckBox->setChecked(getValue("advanced/undockableWindows").toBool());
 	this->undockCheckBox->setEnabled(this->reorderCheckBox->isChecked());
 	this->launcherBox->setChecked(getValue("launcher/showOnStartup").toBool());
+
+	Settings::Settings *s = Settings::Settings::inst();
+	this->spinBoxIndentationWidth->setValue(s->get(Settings::Settings::indentationWidth));
+	this->spinBoxTabWidth->setValue(s->get(Settings::Settings::tabWidth));
+	this->comboBoxLineWrap->setCurrentIndex(s->get(Settings::Settings::lineWrap));
+	this->comboBoxLineWrapIndentation->setCurrentIndex(s->get(Settings::Settings::lineWrapIndentationStyle));
+	this->spinBoxLineWrapIndentationIndent->setValue(s->get(Settings::Settings::lineWrapIndentation));
+	this->comboBoxLineWrapVisualizationStart->setCurrentIndex(s->get(Settings::Settings::lineWrapVisualizationBegin));
+	this->comboBoxLineWrapVisualizationEnd->setCurrentIndex(s->get(Settings::Settings::lineWrapVisualizationEnd));
+	this->comboBoxShowWhitespaces->setCurrentIndex(s->get(Settings::Settings::showWhitespaces));
+	this->spinBoxShowWhitespacesSize->setValue(s->get(Settings::Settings::showWhitespacesSize));
 }
 
 void Preferences::apply() const

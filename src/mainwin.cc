@@ -193,12 +193,19 @@ MainWindow::MainWindow(const QString &filename)
 #ifdef USE_SCINTILLA_EDITOR
 	if (useScintilla) {
 		 editor = new ScintillaEditor(editorDockContents);
+
 	}
 	else
 #endif
 	    editor = new LegacyEditor(editorDockContents);
 
 	Preferences::create(editor->colorSchemes());
+
+#ifdef USE_SCINTILLA_EDITOR
+	if (useScintilla) {
+		connect(Preferences::inst(), SIGNAL(editorConfigChanged()), editor, SLOT(applySettings()));
+	}
+#endif
 
 	editorDockContents->layout()->addWidget(editor);
 

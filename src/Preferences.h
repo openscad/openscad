@@ -43,6 +43,17 @@ public slots:
 	void on_launcherBox_toggled(bool);
 	void on_editorType_editTextChanged(const QString &);
 
+        // editor settings
+        void on_spinBoxIndentationWidth_valueChanged(int);
+        void on_spinBoxTabWidth_valueChanged(int);
+        void on_comboBoxLineWrap_activated(int);
+        void on_comboBoxLineWrapIndentation_activated(int);
+        void on_spinBoxLineWrapIndentationIndent_valueChanged(int);
+        void on_comboBoxLineWrapVisualizationStart_activated(int);
+        void on_comboBoxLineWrapVisualizationEnd_activated(int);
+        void on_comboBoxShowWhitespaces_activated(int);
+        void on_spinBoxShowWhitespacesSize_valueChanged(int);
+
 signals:
 	void requestRedraw() const;
 	void updateMdiMode(bool mdi) const;
@@ -53,6 +64,7 @@ signals:
 	void openCSGSettingsChanged() const;
 	void syntaxHighlightChanged(const QString &s) const;
 	void editorTypeChanged(const QString &type);
+	void editorConfigChanged() const;
 
 private:
 	Preferences(QWidget *parent = NULL);

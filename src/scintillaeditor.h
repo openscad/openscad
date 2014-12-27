@@ -87,6 +87,7 @@ public slots:
 
 private slots:
 	void onTextChanged();
+        void applySettings();
 
 private:
 	QVBoxLayout *scintillaLayout;
