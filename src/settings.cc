@@ -22,6 +22,9 @@ SettingsEntry<LineWrapVisualization> Settings::lineWrapVisualizationBegin("edito
 SettingsEntry<LineWrapVisualization> Settings::lineWrapVisualizationEnd("editor", "lineWrapVisualizationEnd", LINE_WRAP_VISUALIZATION_BORDER);
 SettingsEntry<ShowWhitespaces> Settings::showWhitespaces("editor", "showWhitespaces", SHOW_WHITESPACES_NEVER);
 SettingsEntry<int> Settings::showWhitespacesSize("editor", "showWhitespacesSize", 2);
+SettingsEntry<bool> Settings::autoIndent("editor", "autoIndent", true);
+SettingsEntry<bool> Settings::tabIndents("editor", "tabIndents", true);
+SettingsEntry<bool> Settings::indentationsUseTabs("editor", "indentationsUseTabs", false);
 
 Settings *Settings::inst(bool erase)
 {
@@ -60,6 +63,10 @@ void Settings::set(SettingsEntry<T> &entry, T val)
 {
     entry.value = val;
 }
+
+template bool Settings::defaultValue(const SettingsEntry<bool>&);
+template bool Settings::get(const SettingsEntry<bool>&);
+template void Settings::set(SettingsEntry<bool>&, bool);
 
 template int Settings::defaultValue(const SettingsEntry<int>&);
 template int Settings::get(const SettingsEntry<int>&);

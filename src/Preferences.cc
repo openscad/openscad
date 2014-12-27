@@ -461,6 +461,24 @@ void Preferences::on_spinBoxShowWhitespacesSize_valueChanged(int val)
 	emit editorConfigChanged();
 }
 
+void Preferences::on_checkBoxAutoIndent_toggled(bool val)
+{
+	Settings::Settings::inst()->set(Settings::Settings::autoIndent, val);
+	emit editorConfigChanged();
+}
+
+void Preferences::on_checkBoxTabIndents_toggled(bool val)
+{
+	Settings::Settings::inst()->set(Settings::Settings::tabIndents, val);
+	emit editorConfigChanged();
+}
+
+void Preferences::on_checkBoxIndentationsUseTabs_toggled(bool val)
+{
+	Settings::Settings::inst()->set(Settings::Settings::indentationsUseTabs, val);
+	emit editorConfigChanged();
+}
+
 void Preferences::keyPressEvent(QKeyEvent *e)
 {
 #ifdef Q_OS_MAC
@@ -565,6 +583,9 @@ void Preferences::updateGUI()
 	this->comboBoxLineWrapVisualizationEnd->setCurrentIndex(s->get(Settings::Settings::lineWrapVisualizationEnd));
 	this->comboBoxShowWhitespaces->setCurrentIndex(s->get(Settings::Settings::showWhitespaces));
 	this->spinBoxShowWhitespacesSize->setValue(s->get(Settings::Settings::showWhitespacesSize));
+	this->checkBoxAutoIndent->setChecked(s->get(Settings::Settings::autoIndent));
+	this->checkBoxTabIndents->setChecked(s->get(Settings::Settings::tabIndents));
+	this->checkBoxIndentationsUseTabs->setChecked(s->get(Settings::Settings::indentationsUseTabs));
 }
 
 void Preferences::apply() const

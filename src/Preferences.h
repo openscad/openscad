@@ -53,6 +53,9 @@ public slots:
         void on_comboBoxLineWrapVisualizationEnd_activated(int);
         void on_comboBoxShowWhitespaces_activated(int);
         void on_spinBoxShowWhitespacesSize_valueChanged(int);
+        void on_checkBoxAutoIndent_toggled(bool);
+        void on_checkBoxTabIndents_toggled(bool);
+        void on_checkBoxIndentationsUseTabs_toggled(bool);
 
 signals:
 	void requestRedraw() const;

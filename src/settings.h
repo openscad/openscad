@@ -57,6 +57,9 @@ public:
     static SettingsEntry<LineWrapVisualization> lineWrapVisualizationEnd;
     static SettingsEntry<ShowWhitespaces> showWhitespaces;
     static SettingsEntry<int> showWhitespacesSize;
+    static SettingsEntry<bool> autoIndent;
+    static SettingsEntry<bool> tabIndents;
+    static SettingsEntry<bool> indentationsUseTabs;
 
     static Settings *inst(bool erase = false);
     

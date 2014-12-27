@@ -174,11 +174,11 @@ void ScintillaEditor::applySettings()
 		s->get(Settings::Settings::lineWrapIndentation));
 	qsci->setWhitespaceVisibility(conv.fromShowWhitespaces(s->get(Settings::Settings::showWhitespaces)));
 	qsci->setWhitespaceSize(s->get(Settings::Settings::showWhitespacesSize));
+	qsci->setAutoIndent(s->get(Settings::Settings::autoIndent));
+	qsci->setTabIndents(s->get(Settings::Settings::tabIndents));
+	qsci->setIndentationsUseTabs(s->get(Settings::Settings::indentationsUseTabs));
 
 	qsci->setBraceMatching(QsciScintilla::SloppyBraceMatch);
-	qsci->setAutoIndent(true);
-	qsci->setTabIndents(true);
-	qsci->setIndentationsUseTabs(false);
 	qsci->setFolding(QsciScintilla::BoxedTreeFoldStyle, 4);
 	qsci->setCaretLineVisible(true);
 }
