@@ -370,7 +370,8 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->viewActionShowEdges, SIGNAL(triggered()), this, SLOT(viewModeShowEdges()));
 	connect(this->viewActionShowAxes, SIGNAL(triggered()), this, SLOT(viewModeShowAxes()));
 	connect(this->viewActionShowCrosshairs, SIGNAL(triggered()), this, SLOT(viewModeShowCrosshairs()));
-	connect(this->viewActionAnimate, SIGNAL(triggered()), this, SLOT(viewModeAnimate()));
+    connect(this->viewActionShowScaleProportional, SIGNAL(triggered()), this, SLOT(viewModeShowScaleProportional()));
+    connect(this->viewActionAnimate, SIGNAL(triggered()), this, SLOT(viewModeAnimate()));
 	connect(this->viewActionTop, SIGNAL(triggered()), this, SLOT(viewAngleTop()));
 	connect(this->viewActionBottom, SIGNAL(triggered()), this, SLOT(viewAngleBottom()));
 	connect(this->viewActionLeft, SIGNAL(triggered()), this, SLOT(viewAngleLeft()));
@@ -605,6 +606,10 @@ void MainWindow::loadViewSettings(){
 		viewActionShowCrosshairs->setChecked(true);
 		viewModeShowCrosshairs();
 	}
+    if (settings.value("view/showScaleProportional").toBool()) {
+        viewActionShowScaleProportional->setChecked(true);
+        viewModeShowScaleProportional();
+    }
 	if (settings.value("view/orthogonalProjection").toBool()) {
 		viewOrthogonal();
 	} else {
@@ -2216,6 +2221,14 @@ void MainWindow::viewModeShowCrosshairs()
 	settings.setValue("view/showCrosshairs",viewActionShowCrosshairs->isChecked());
 	this->qglview->setShowCrosshairs(viewActionShowCrosshairs->isChecked());
 	this->qglview->updateGL();
+}
+
+void MainWindow::viewModeShowScaleProportional()
+{
+    QSettings settings;
+    settings.setValue("view/showScaleProportional",viewActionShowScaleProportional->isChecked());
+    this->qglview->setShowScaleProportional(viewActionShowScaleProportional->isChecked());
+    this->qglview->updateGL();
 }
 
 void MainWindow::viewModeAnimate()
