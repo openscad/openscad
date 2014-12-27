@@ -25,7 +25,6 @@ static std::string lookupResourcesPath()
 	fs::path resourcedir(applicationpath);
 	PRINTDB("Looking up resource folder with application path '%s'", resourcedir.c_str());
 	
-#ifndef WIN32
 #ifdef __APPLE__
 	const char *searchpath[] = {
 	    "../Resources", 	// Resources can be bundled on Mac.
@@ -34,7 +33,15 @@ static std::string lookupResourcesPath()
 	    NULL
 	};
 #else
-	const char *searchpath[] = {
+#ifdef WIN32
+    const char *searchpath[] = {
+        ".", // Release location
+        RESOURCE_FOLDER("../share/openscad"), // MSYS2 location
+        "..", // Dev location
+        NULL
+    };
+#else
+    const char *searchpath[] = {
 	    RESOURCE_FOLDER("../share/openscad"),
 	    RESOURCE_FOLDER("../../share/openscad"),
 	    ".",
@@ -43,6 +50,7 @@ static std::string lookupResourcesPath()
 	    NULL
 	};
 #endif	
+#endif
 
 	fs::path tmpdir;
 	for (int a = 0;searchpath[a] != NULL;a++) {
@@ -57,7 +65,6 @@ static std::string lookupResourcesPath()
 		break;
 	    }
 	}
-#endif // !WIN32
 
 	// resourcedir defaults to applicationPath
 	std::string result = boosty::stringy(boosty::canonical(resourcedir));

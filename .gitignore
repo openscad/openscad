@@ -16,6 +16,7 @@ parser_yacc.h
 /locale/*/*/*.mo
 /locale/POTFILES
 /nbproject
+/openscad.pro.user
 /openscad
 /tests/openscad_nogui
 testdata/scad/features/import_dxf-tests.scad

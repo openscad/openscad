@@ -631,7 +631,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 #endif
 	QApplication app(argc, argv, true); //useGUI);
 	// remove ugly frames in the QStatusBar when using additional widgets
-	app.setStyleSheet("QStatusBar::item { border: 0px solid black }; ");
+	app.setStyleSheet("QStatusBar::item { border: 0px solid black; }");
 
 #ifdef Q_OS_MAC
 	app.installEventFilter(new EventFilter(&app));

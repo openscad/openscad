@@ -38,6 +38,7 @@
 #include "highlighter.h"
 #include "export.h"
 #include "builtin.h"
+#include "memory.h"
 #include "expression.h"
 #include "progress.h"
 #include "dxfdim.h"
@@ -1921,9 +1922,13 @@ void MainWindow::actionCheckValidity() {
 	}
 
 	bool valid = false;
-	if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(this->root_geom.get()))
+	shared_ptr<const CGAL_Nef_polyhedron> N;
+	if (const PolySet *ps = dynamic_cast<const PolySet *>(this->root_geom.get())) {
+		N.reset(CGALUtils::createNefPolyhedronFromGeometry(*ps));
+	}
+	if (N || (N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(this->root_geom))) {
 		valid = N->p3->is_valid();
-
+	}
 	PRINTB("   Valid:      %6s", (valid ? "yes" : "no"));
 	clearCurrentOutput();
 #endif /* ENABLE_CGAL */
