@@ -354,7 +354,6 @@ void GLView::initializeGL()
   glEnable(GL_LIGHT1);
   glEnable(GL_LIGHTING);
   glEnable(GL_NORMALIZE);
-  glEnable(GL_LINE_STIPPLE);
 
   glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
   // The following line is reported to fix issue #71
@@ -468,6 +467,7 @@ void GLView::showAxes(const Color4f &col)
   glEnd();
 
   glPushAttrib(GL_LINE_BIT);
+  glEnable(GL_LINE_STIPPLE);
   glLineStipple(3, 0xAAAA);
   glBegin(GL_LINES);
   glVertex3d(0, 0, 0);
