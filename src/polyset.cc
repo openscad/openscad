@@ -28,6 +28,8 @@
 #include "polyset-utils.h"
 #include "linalg.h"
 #include "printutils.h"
+#include "grid.h"
+
 #include <Eigen/LU>
 #include <boost/foreach.hpp>
 
@@ -172,6 +174,17 @@ void PolySet::resize(Vector3d newsize, const Eigen::Matrix<bool,3,1> &autosize)
     0, 0, 0, 1;
 
 	this->transform(t);
+}
+
+void PolySet::quantizeVertices()
+{
+	Grid3d<int> grid(GRID_FINE);
+	BOOST_FOREACH(Polygon &p, this->polygons) {
+		BOOST_FOREACH(Vector3d &v, p) {
+			// align v to the grid
+			if (!grid.has(v)) grid.align(v);
+		}
+	}
 }
 
 // all GL functions grouped together here

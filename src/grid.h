@@ -1,6 +1,8 @@
 #pragma once
 
 #include "mathc99.h"
+#include "linalg.h"
+
 #ifdef WIN32
 typedef __int64 int64_t;
 #else
@@ -96,10 +98,10 @@ public:
 		res = resolution;
 	}
 
-	T &align(double &x, double &y, double &z) {
-		int64_t ix = (int64_t)round(x / res);
-		int64_t iy = (int64_t)round(y / res);
-		int64_t iz = (int64_t)round(z / res);
+	T &align(Vector3d &v) {
+		int64_t ix = (int64_t)round(v[0] / res);
+		int64_t iy = (int64_t)round(v[1] / res);
+		int64_t iz = (int64_t)round(v[2] / res);
 		if (db.find(std::make_pair(std::make_pair(ix, iy), iz)) == db.end()) {
 			int dist = 10;
 			for (int64_t jx = ix - 1; jx <= ix + 1; jx++) {
@@ -118,14 +120,14 @@ public:
 				}
 			}
 		}
-		x = ix * res, y = iy * res, z = iz * res;
+		v[0] = ix * res, v[1] = iy * res, v[2] = iz * res;
 		return db[std::make_pair(std::make_pair(ix, iy), iz)];
 	}
 
-	bool has(double x, double y, double z) {
-		int64_t ix = (int64_t)round(x / res);
-		int64_t iy = (int64_t)round(y / res);
-		int64_t iz = (int64_t)round(z / res);
+	bool has(const Vector3d &v) {
+		int64_t ix = (int64_t)round(v[0] / res);
+		int64_t iy = (int64_t)round(v[1] / res);
+		int64_t iz = (int64_t)round(v[2] / res);
 		if (db.find(std::make_pair(std::make_pair(ix, iy), iz)) != db.end())
 			return true;
 		for (int64_t jx = ix - 1; jx <= ix + 1; jx++)
@@ -137,19 +139,8 @@ public:
 		return false;
 	}
 
-	bool eq(double x1, double y1, double z1, double x2, double y2, double z2) {
-		align(x1, y1, z1);
-		align(x2, y2, z2);
-		if (fabs(x1 - x2) < res && fabs(y1 - y2) < res && fabs(z1 - z2) < res)
-			return true;
-		return false;
+	T &data(Vector3d v) { 
+		return align(v);
 	}
 
-	T &data(double x, double y, double z) {
-		return align(x, y, z);
-	}
-
-	T &operator()(double x, double y, double z) {
-		return align(x, y, z);
-	}
 };

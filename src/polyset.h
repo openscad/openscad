@@ -27,6 +27,7 @@ public:
 	virtual bool isEmpty() const { return polygons.size() == 0; }
 	virtual Geometry *copy() const { return new PolySet(*this); }
 
+	void quantizeVertices();
 	size_t numPolygons() const { return polygons.size(); }
 	void append_poly();
 	void append_vertex(double x, double y, double z = 0.0);

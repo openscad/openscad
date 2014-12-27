@@ -69,9 +69,9 @@ namespace /* anonymous */ {
 		
 			BOOST_FOREACH(const Polygon &p, ps.polygons) {
 				BOOST_REVERSE_FOREACH(Vector3d v, p) {
-					if (!grid.has(v[0], v[1], v[2])) {
+					if (!grid.has(v)) {
 						// align v to the grid; the CGALPoint will receive the aligned vertex
-						grid.align(v[0], v[1], v[2]) = vertices.size();
+						grid.align(v) = vertices.size();
 						vertices.push_back(CGALPoint(v[0], v[1], v[2]));
 					}
 				}
@@ -91,7 +91,7 @@ namespace /* anonymous */ {
 #endif
 				indices.clear();
 				BOOST_FOREACH(const Vector3d &v, p) {
-					indices.push_back(grid.data(v[0], v[1], v[2]));
+					indices.push_back(grid.data(v));
 				}
 
 				// We perform this test since there is a bug in CGAL's
@@ -275,8 +275,10 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 
 	// Since is_convex doesn't work well with non-planar faces,
 	// we tessellate the polyset before checking.
-	PolySet ps_tri(3);
-	PolysetUtils::tessellate_faces(ps, ps_tri);
+	PolySet psq(ps);
+	psq.quantizeVertices();
+    PolySet ps_tri(3);
+	PolysetUtils::tessellate_faces(psq, ps_tri);
 	if (ps_tri.is_convex()) {
 		typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 		// Collect point cloud
