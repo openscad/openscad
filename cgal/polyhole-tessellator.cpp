@@ -1,9 +1,12 @@
 #include <boost/foreach.hpp>
+#include <boost/algorithm/string.hpp>
 #include <sstream>
 #include <iostream>
 #include <locale.h>
 
 #include "cgalutils.h"
+
+
 
 // Nef polyhedron are using CGAL_Kernel3 (Cartesian<Gmpq>)
 // Triangulation will use Epick
@@ -95,12 +98,23 @@ bool import_polygon(PolyholeK &polyhole, const std::string &filename)
 int main(int argc, char *argv[])
 {
   PolyholeK polyhole;
-  if (argc == 2) {
+  K::Vector_3 *normal = NULL;
+  if (argc >= 2) {
     if (!import_polygon(polyhole, argv[1])) {
       std::cerr << "Error importing polygon" << std::endl;
       exit(1);
     }
     std::cerr << "Imported " << polyhole.size() << " polygons" << std::endl;
+
+    if (argc == 3) {
+      std::vector<std::string> strs;
+      std::vector<double> normalvec;
+      std::string arg(argv[2]);
+      boost::split(strs, arg, boost::is_any_of(","));
+      assert(strs.size() == 3);
+      BOOST_FOREACH(const std::string &s, strs) normalvec.push_back(boost::lexical_cast<double>(s));
+      normal = new K::Vector_3(normalvec[0], normalvec[1], normalvec[2]);
+   }
   }
   else {
     //construct two non-intersecting nested polygons  
@@ -119,7 +133,7 @@ int main(int argc, char *argv[])
   }
 
   Polygons triangles;
-  bool ok = CGALUtils::tessellatePolygonWithHoles(polyhole, triangles);
+  bool ok = CGALUtils::tessellatePolygonWithHoles(polyhole, triangles, normal);
   std::cerr << "Tessellated into " << triangles.size() << " triangles" << std::endl;
 
   export_stl(triangles, std::cout);
