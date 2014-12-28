@@ -46,6 +46,29 @@ Preferences *Preferences::instance = NULL;
 const char * Preferences::featurePropertyName = "FeatureProperty";
 Q_DECLARE_METATYPE(Feature *);
 
+class SettingsReader : public Settings::Visitor
+{
+    QSettings settings;
+    virtual void handle(Settings::SettingsEntryBase * entry) const {
+	std::string key = entry->category() + "/" + entry->name();
+	std::string value = settings.value(QString::fromStdString(key)).toString().toStdString();
+	entry->from_string(value);
+    }
+};
+
+class SettingsWriter : public Settings::Visitor
+{
+    virtual void handle(Settings::SettingsEntryBase * entry) const {
+	QSettings settings;
+	QString key = QString::fromStdString(entry->category() + "/" + entry->name());
+	if (entry->is_default()) {
+	    settings.remove(key);
+	} else {
+	    settings.setValue(key, QString::fromStdString(entry->to_string()));
+	}
+    }
+};
+
 Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 {
 	setupUi(this);
@@ -141,6 +164,11 @@ void Preferences::init() {
 #endif
 	this->polysetCacheSizeEdit->setValidator(validator);
 	this->opencsgLimitEdit->setValidator(validator);
+
+	Settings::Settings *s = Settings::Settings::inst();
+	SettingsReader settingsReader;
+	s->visit(&settingsReader);
+	emit editorConfigChanged();
 }
 
 Preferences::~Preferences()
@@ -410,72 +438,79 @@ void Preferences::on_launcherBox_toggled(bool state)
 void Preferences::on_spinBoxIndentationWidth_valueChanged(int val)
 {
 	Settings::Settings::inst()->set(Settings::Settings::indentationWidth, val);
-	emit editorConfigChanged();
+	fireEditorConfigChanged();
 }
 
 void Preferences::on_spinBoxTabWidth_valueChanged(int val)
 {
 	Settings::Settings::inst()->set(Settings::Settings::tabWidth, val);
-	emit editorConfigChanged();
+	fireEditorConfigChanged();
 }
 
 void Preferences::on_comboBoxLineWrap_activated(int val)
 {
 	Settings::Settings::inst()->set(Settings::Settings::lineWrap, (Settings::LineWrap)val);
-	emit editorConfigChanged();
+	fireEditorConfigChanged();
 }
 
 void Preferences::on_comboBoxLineWrapIndentation_activated(int val)
 {
 	Settings::Settings::inst()->set(Settings::Settings::lineWrapIndentationStyle, (Settings::LineWrapIndentationStyle)val);
-	emit editorConfigChanged();
+	fireEditorConfigChanged();
 }
 
 void Preferences::on_spinBoxLineWrapIndentationIndent_valueChanged(int val)
 {
 	Settings::Settings::inst()->set(Settings::Settings::lineWrapIndentation, val);
-	emit editorConfigChanged();
+	fireEditorConfigChanged();
 }
 
 void Preferences::on_comboBoxLineWrapVisualizationStart_activated(int val)
 {
 	Settings::Settings::inst()->set(Settings::Settings::lineWrapVisualizationBegin, (Settings::LineWrapVisualization)val);
-	emit editorConfigChanged();
+	fireEditorConfigChanged();
 }
 
 void Preferences::on_comboBoxLineWrapVisualizationEnd_activated(int val)
 {
 	Settings::Settings::inst()->set(Settings::Settings::lineWrapVisualizationEnd, (Settings::LineWrapVisualization)val);
-	emit editorConfigChanged();
+	fireEditorConfigChanged();
 }
 
 void Preferences::on_comboBoxShowWhitespaces_activated(int val)
 {
 	Settings::Settings::inst()->set(Settings::Settings::showWhitespaces, (Settings::ShowWhitespaces)val);
-	emit editorConfigChanged();
+	fireEditorConfigChanged();
 }
 
 void Preferences::on_spinBoxShowWhitespacesSize_valueChanged(int val)
 {
 	Settings::Settings::inst()->set(Settings::Settings::showWhitespacesSize, val);
-	emit editorConfigChanged();
+	fireEditorConfigChanged();
 }
 
 void Preferences::on_checkBoxAutoIndent_toggled(bool val)
 {
 	Settings::Settings::inst()->set(Settings::Settings::autoIndent, val);
-	emit editorConfigChanged();
+	fireEditorConfigChanged();
 }
 
 void Preferences::on_checkBoxTabIndents_toggled(bool val)
 {
 	Settings::Settings::inst()->set(Settings::Settings::tabIndents, val);
-	emit editorConfigChanged();
+	fireEditorConfigChanged();
 }
 
 void Preferences::on_checkBoxIndentationsUseTabs_toggled(bool val)
 {
 	Settings::Settings::inst()->set(Settings::Settings::indentationsUseTabs, val);
+	fireEditorConfigChanged();
+}
+
+void Preferences::fireEditorConfigChanged() const
+{
+	SettingsWriter settingsWriter;
+	Settings::Settings::inst()->visit(&settingsWriter);
 	emit editorConfigChanged();
 }
 

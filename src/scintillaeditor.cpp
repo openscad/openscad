@@ -146,7 +146,7 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator, indicatorNumber);
 	qsci->markerDefine(QsciScintilla::Circle, markerNumber);
 	qsci->setUtf8(true);
-	applySettings();
+	qsci->setFolding(QsciScintilla::BoxedTreeFoldStyle, 4);
 
 	lexer = new ScadLexer(this);
 	qsci->setLexer(lexer);
@@ -179,7 +179,6 @@ void ScintillaEditor::applySettings()
 	qsci->setIndentationsUseTabs(s->get(Settings::Settings::indentationsUseTabs));
 
 	qsci->setBraceMatching(QsciScintilla::SloppyBraceMatch);
-	qsci->setFolding(QsciScintilla::BoxedTreeFoldStyle, 4);
 	qsci->setCaretLineVisible(true);
 }
 

@@ -1,16 +1,106 @@
 #include "settings.h"
+#include "value.h"
 
 namespace Settings {
 
+std::list<SettingsEntryBase *> SettingsEntryBase::entries;
+
+SettingsEntryBase::SettingsEntryBase(const std::string category, const std::string name) : _category(category), _name(name)
+{
+	entries.push_back(this);
+}
+
+SettingsEntryBase::~SettingsEntryBase()
+{
+}
+
+const std::string & SettingsEntryBase::category() const
+{
+	return _category;
+}
+
+const std::string & SettingsEntryBase::name() const
+{
+	return _name;
+}
+
 template <class T>
 SettingsEntry<T>::SettingsEntry(const std::string category, const std::string name, T defaultValue)
-    : category(category), name(name), value(defaultValue), defaultValue(defaultValue)
+    : SettingsEntryBase(category, name), value(defaultValue), defaultValue(defaultValue)
 {
 }
 
 template <class T>
 SettingsEntry<T>::~SettingsEntry()
 {
+}
+
+template <class T>
+bool SettingsEntry<T>::is_default() const
+{
+	return defaultValue == value;
+}
+
+template <class T>
+std::string SettingsEntry<T>::to_string() const
+{
+	return boost::lexical_cast<std::string>(value);
+}
+
+template <>
+std::string SettingsEntry<int>::to_string() const
+{
+	return boost::lexical_cast<std::string>(value);
+}
+
+template <class T>
+void SettingsEntry<T>::from_string(std::string val)
+{
+	try {
+		value = boost::lexical_cast<T>(val);
+	} catch (const boost::bad_lexical_cast &e) {
+		value = defaultValue;
+	}
+}
+
+template <>
+void SettingsEntry<LineWrap>::from_string(std::string val)
+{
+	try {
+		value = (LineWrap)boost::lexical_cast<int>(val);
+	} catch (const boost::bad_lexical_cast &e) {
+		value = defaultValue;
+	}
+}
+
+template <>
+void SettingsEntry<LineWrapIndentationStyle>::from_string(std::string val)
+{
+	try {
+		value = (LineWrapIndentationStyle)boost::lexical_cast<int>(val);
+	} catch (const boost::bad_lexical_cast &e) {
+		value = defaultValue;
+	}
+}
+
+template <>
+void SettingsEntry<LineWrapVisualization>::from_string(std::string val)
+{
+	try {
+		value = (LineWrapVisualization)boost::lexical_cast<int>(val);
+	} catch (const boost::bad_lexical_cast &e) {
+		value = defaultValue;
+	}
+}
+
+template <>
+void SettingsEntry<ShowWhitespaces>::from_string(std::string val)
+{
+	try {
+		value = (ShowWhitespaces)boost::lexical_cast<int>(val);
+	} catch (const boost::bad_lexical_cast &e) {
+		value = defaultValue;
+	}
 }
 
 SettingsEntry<int> Settings::indentationWidth("editor", "indentationWidth", 4);
@@ -44,6 +134,13 @@ Settings::Settings()
 
 Settings::~Settings()
 {
+}
+
+void Settings::visit(class Visitor *visitor)
+{
+	for (std::list<SettingsEntryBase *>::iterator it = SettingsEntryBase::entries.begin();it != SettingsEntryBase::entries.end();it++) {
+		visitor->handle(*it);
+	}
 }
 
 template <typename T>
@@ -87,5 +184,13 @@ template void Settings::set(SettingsEntry<LineWrapIndentationStyle>&, LineWrapIn
 template ShowWhitespaces Settings::defaultValue(const SettingsEntry<ShowWhitespaces>&);
 template ShowWhitespaces Settings::get(const SettingsEntry<ShowWhitespaces>&);
 template void Settings::set(SettingsEntry<ShowWhitespaces>&, ShowWhitespaces);
+
+Visitor::Visitor()
+{
+}
+
+Visitor::~Visitor()
+{
+}
 
 }

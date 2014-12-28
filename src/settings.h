@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <list>
 #include <string>
 
 namespace Settings {
@@ -30,17 +31,42 @@ typedef enum {
     SHOW_WHITESPACES_AFTER_INDENTATION,
 } ShowWhitespaces;
 
-template <class T>
-class SettingsEntry
+class SettingsEntryBase
 {
 private:
-    std::string category;
-    std::string name;
+    std::string _category;
+    std::string _name;
+
+public:
+    const std::string & category() const;
+    const std::string & name() const;
+
+    virtual bool is_default() const = 0;
+    virtual std::string to_string() const = 0;
+    virtual void from_string(std::string) = 0;
+
+protected:
+    SettingsEntryBase(const std::string category, const std::string name);
+    ~SettingsEntryBase();
+
+    static std::list<SettingsEntryBase *> entries;
+
+    friend class Settings;
+};
+
+template <class T>
+class SettingsEntry : public SettingsEntryBase
+{
+private:
     T value;
     T defaultValue;
     
     SettingsEntry(const std::string category, const std::string name, T defaultValue);
     virtual ~SettingsEntry();
+
+    virtual bool is_default() const;
+    virtual std::string to_string() const;
+    virtual void from_string(std::string);
     
     friend class Settings;
 };
@@ -62,7 +88,9 @@ public:
     static SettingsEntry<bool> indentationsUseTabs;
 
     static Settings *inst(bool erase = false);
-    
+
+    void visit(class Visitor *visitor);
+
     template <typename T> T defaultValue(const SettingsEntry<T> &entry);
     template <typename T> T get(const SettingsEntry<T> &entry);
     template <typename T> void set(SettingsEntry<T> &entry, T val);
@@ -70,6 +98,15 @@ public:
 private:
     Settings();
     virtual ~Settings();
+};
+
+class Visitor
+{
+public:
+    Visitor();
+    virtual ~Visitor();
+
+    virtual void handle(SettingsEntryBase * entry) const = 0;
 };
 
 }

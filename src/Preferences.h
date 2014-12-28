@@ -75,6 +75,7 @@ private:
 	void updateGUI();
 	void removeDefaultSettings();
 	void setupFeaturesPage();
+        void fireEditorConfigChanged() const;
 	void addPrefPage(QActionGroup *group, QAction *action, QWidget *widget);
 
 	QSettings::SettingsMap defaultmap;
