@@ -78,4 +78,5 @@ private:
 	void showAxes(const Color4f &col);
 	void showSmallaxes(const Color4f &col);
     void showScalemarkers(const Color4f &col);
+    void decodeMarkerValue(double i, double l, int size_div_sm);
 };
