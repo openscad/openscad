@@ -13,7 +13,7 @@ public:
 	QsciScintilla::WrapMode fromWrapMode(Settings::LineWrap val);
 	QsciScintilla::WrapVisualFlag fromLineWrapVisualization(Settings::LineWrapVisualization val);
 	QsciScintilla::WrapIndentMode fromLineWrapIndentationStyle(Settings::LineWrapIndentationStyle val);
-	QsciScintilla::WhitespaceVisibility fromShowWhitespaces(Settings::ShowWhitespaces val);
+	QsciScintilla::WhitespaceVisibility fromShowWhitespaces(Settings::ShowWhitespace val);
 };
 
 QsciScintilla::WrapMode SettingsConverter::fromWrapMode(Settings::LineWrap val)
@@ -60,7 +60,7 @@ QsciScintilla::WrapIndentMode SettingsConverter::fromLineWrapIndentationStyle(Se
 	}
 }
 
-QsciScintilla::WhitespaceVisibility SettingsConverter::fromShowWhitespaces(Settings::ShowWhitespaces val)
+QsciScintilla::WhitespaceVisibility SettingsConverter::fromShowWhitespaces(Settings::ShowWhitespace val)
 {
 	switch(val) {
 	case Settings::SHOW_WHITESPACES_NEVER:
@@ -172,14 +172,25 @@ void ScintillaEditor::applySettings()
 	qsci->setWrapVisualFlags(conv.fromLineWrapVisualization(s->get(Settings::Settings::lineWrapVisualizationEnd)),
 		conv.fromLineWrapVisualization(s->get(Settings::Settings::lineWrapVisualizationBegin)),
 		s->get(Settings::Settings::lineWrapIndentation));
-	qsci->setWhitespaceVisibility(conv.fromShowWhitespaces(s->get(Settings::Settings::showWhitespaces)));
-	qsci->setWhitespaceSize(s->get(Settings::Settings::showWhitespacesSize));
+	qsci->setWhitespaceVisibility(conv.fromShowWhitespaces(s->get(Settings::Settings::showWhitespace)));
+	qsci->setWhitespaceSize(s->get(Settings::Settings::showWhitespaceSize));
 	qsci->setAutoIndent(s->get(Settings::Settings::autoIndent));
-	qsci->setTabIndents(s->get(Settings::Settings::tabIndents));
-	qsci->setIndentationsUseTabs(s->get(Settings::Settings::indentationsUseTabs));
 
-	qsci->setBraceMatching(QsciScintilla::SloppyBraceMatch);
-	qsci->setCaretLineVisible(true);
+	switch (s->get(Settings::Settings::indentStyle)) {
+	case Settings::INDENT_SPACES:
+		qsci->setTabIndents(true);
+		qsci->setIndentationsUseTabs(false);
+		break;
+	case Settings::INDENT_TABS:
+		qsci->setTabIndents(false);
+		qsci->setIndentationsUseTabs(true);
+		break;
+	default:
+		assert(false && "unknown indent style");
+	}
+
+	qsci->setBraceMatching(s->get(Settings::Settings::enableBraceMatching) ? QsciScintilla::SloppyBraceMatch : QsciScintilla::NoBraceMatch);
+	qsci->setCaretLineVisible(s->get(Settings::Settings::highlightCurrentLine));
 }
 
 void ScintillaEditor::setPlainText(const QString &text)

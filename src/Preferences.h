@@ -51,11 +51,12 @@ public slots:
         void on_spinBoxLineWrapIndentationIndent_valueChanged(int);
         void on_comboBoxLineWrapVisualizationStart_activated(int);
         void on_comboBoxLineWrapVisualizationEnd_activated(int);
-        void on_comboBoxShowWhitespaces_activated(int);
-        void on_spinBoxShowWhitespacesSize_valueChanged(int);
+        void on_comboBoxShowWhitespace_activated(int);
+        void on_spinBoxShowWhitespaceSize_valueChanged(int);
         void on_checkBoxAutoIndent_toggled(bool);
-        void on_checkBoxTabIndents_toggled(bool);
-        void on_checkBoxIndentationsUseTabs_toggled(bool);
+        void on_comboBoxIndentUsing_activated(int);
+        void on_checkBoxHighlightCurrentLine_toggled(bool);
+        void on_checkBoxEnableBraceMatching_toggled(bool);
 
 signals:
 	void requestRedraw() const;

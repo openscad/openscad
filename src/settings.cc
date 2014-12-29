@@ -94,10 +94,20 @@ void SettingsEntry<LineWrapVisualization>::from_string(std::string val)
 }
 
 template <>
-void SettingsEntry<ShowWhitespaces>::from_string(std::string val)
+void SettingsEntry<ShowWhitespace>::from_string(std::string val)
 {
 	try {
-		value = (ShowWhitespaces)boost::lexical_cast<int>(val);
+		value = (ShowWhitespace)boost::lexical_cast<int>(val);
+	} catch (const boost::bad_lexical_cast &e) {
+		value = defaultValue;
+	}
+}
+
+template <>
+void SettingsEntry<IndentStyle>::from_string(std::string val)
+{
+	try {
+		value = (IndentStyle)boost::lexical_cast<int>(val);
 	} catch (const boost::bad_lexical_cast &e) {
 		value = defaultValue;
 	}
@@ -110,11 +120,12 @@ SettingsEntry<LineWrapIndentationStyle> Settings::lineWrapIndentationStyle("edit
 SettingsEntry<int> Settings::lineWrapIndentation("editor", "lineWrapIndentation", 4);
 SettingsEntry<LineWrapVisualization> Settings::lineWrapVisualizationBegin("editor", "lineWrapVisualizationBegin", LINE_WRAP_VISUALIZATION_NONE);
 SettingsEntry<LineWrapVisualization> Settings::lineWrapVisualizationEnd("editor", "lineWrapVisualizationEnd", LINE_WRAP_VISUALIZATION_BORDER);
-SettingsEntry<ShowWhitespaces> Settings::showWhitespaces("editor", "showWhitespaces", SHOW_WHITESPACES_NEVER);
-SettingsEntry<int> Settings::showWhitespacesSize("editor", "showWhitespacesSize", 2);
+SettingsEntry<ShowWhitespace> Settings::showWhitespace("editor", "showWhitespaces", SHOW_WHITESPACES_NEVER);
+SettingsEntry<int> Settings::showWhitespaceSize("editor", "showWhitespacesSize", 2);
 SettingsEntry<bool> Settings::autoIndent("editor", "autoIndent", true);
-SettingsEntry<bool> Settings::tabIndents("editor", "tabIndents", true);
-SettingsEntry<bool> Settings::indentationsUseTabs("editor", "indentationsUseTabs", false);
+SettingsEntry<IndentStyle> Settings::indentStyle("editor", "indentStyle", INDENT_SPACES);
+SettingsEntry<bool> Settings::highlightCurrentLine("editor", "highlightCurrentLine", true);
+SettingsEntry<bool> Settings::enableBraceMatching("editor", "enableBraceMatching", true);
 
 Settings *Settings::inst(bool erase)
 {
@@ -181,9 +192,13 @@ template LineWrapIndentationStyle Settings::defaultValue(const SettingsEntry<Lin
 template LineWrapIndentationStyle Settings::get(const SettingsEntry<LineWrapIndentationStyle>&);
 template void Settings::set(SettingsEntry<LineWrapIndentationStyle>&, LineWrapIndentationStyle);
 
-template ShowWhitespaces Settings::defaultValue(const SettingsEntry<ShowWhitespaces>&);
-template ShowWhitespaces Settings::get(const SettingsEntry<ShowWhitespaces>&);
-template void Settings::set(SettingsEntry<ShowWhitespaces>&, ShowWhitespaces);
+template ShowWhitespace Settings::defaultValue(const SettingsEntry<ShowWhitespace>&);
+template ShowWhitespace Settings::get(const SettingsEntry<ShowWhitespace>&);
+template void Settings::set(SettingsEntry<ShowWhitespace>&, ShowWhitespace);
+
+template IndentStyle Settings::defaultValue(const SettingsEntry<IndentStyle>&);
+template IndentStyle Settings::get(const SettingsEntry<IndentStyle>&);
+template void Settings::set(SettingsEntry<IndentStyle>&, IndentStyle);
 
 Visitor::Visitor()
 {

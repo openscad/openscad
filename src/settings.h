@@ -5,7 +5,12 @@
 #include <string>
 
 namespace Settings {
- 
+
+typedef enum {
+    INDENT_SPACES,
+    INDENT_TABS,
+} IndentStyle;
+
 typedef enum {
     LINE_WRAP_NONE,
     LINE_WRAP_CHARACTER,
@@ -29,7 +34,7 @@ typedef enum {
     SHOW_WHITESPACES_NEVER,
     SHOW_WHITESPACES_ALWAYS,
     SHOW_WHITESPACES_AFTER_INDENTATION,
-} ShowWhitespaces;
+} ShowWhitespace;
 
 class SettingsEntryBase
 {
@@ -81,11 +86,12 @@ public:
     static SettingsEntry<int> lineWrapIndentation;
     static SettingsEntry<LineWrapVisualization> lineWrapVisualizationBegin;
     static SettingsEntry<LineWrapVisualization> lineWrapVisualizationEnd;
-    static SettingsEntry<ShowWhitespaces> showWhitespaces;
-    static SettingsEntry<int> showWhitespacesSize;
+    static SettingsEntry<ShowWhitespace> showWhitespace;
+    static SettingsEntry<int> showWhitespaceSize;
     static SettingsEntry<bool> autoIndent;
-    static SettingsEntry<bool> tabIndents;
-    static SettingsEntry<bool> indentationsUseTabs;
+    static SettingsEntry<IndentStyle> indentStyle;
+    static SettingsEntry<bool> highlightCurrentLine;
+    static SettingsEntry<bool> enableBraceMatching;
 
     static Settings *inst(bool erase = false);
 

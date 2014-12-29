@@ -477,15 +477,15 @@ void Preferences::on_comboBoxLineWrapVisualizationEnd_activated(int val)
 	fireEditorConfigChanged();
 }
 
-void Preferences::on_comboBoxShowWhitespaces_activated(int val)
+void Preferences::on_comboBoxShowWhitespace_activated(int val)
 {
-	Settings::Settings::inst()->set(Settings::Settings::showWhitespaces, (Settings::ShowWhitespaces)val);
+	Settings::Settings::inst()->set(Settings::Settings::showWhitespace, (Settings::ShowWhitespace)val);
 	fireEditorConfigChanged();
 }
 
-void Preferences::on_spinBoxShowWhitespacesSize_valueChanged(int val)
+void Preferences::on_spinBoxShowWhitespaceSize_valueChanged(int val)
 {
-	Settings::Settings::inst()->set(Settings::Settings::showWhitespacesSize, val);
+	Settings::Settings::inst()->set(Settings::Settings::showWhitespaceSize, val);
 	fireEditorConfigChanged();
 }
 
@@ -495,15 +495,21 @@ void Preferences::on_checkBoxAutoIndent_toggled(bool val)
 	fireEditorConfigChanged();
 }
 
-void Preferences::on_checkBoxTabIndents_toggled(bool val)
+void Preferences::on_comboBoxIndentUsing_activated(int val)
 {
-	Settings::Settings::inst()->set(Settings::Settings::tabIndents, val);
+	Settings::Settings::inst()->set(Settings::Settings::indentStyle, (Settings::IndentStyle)val);
 	fireEditorConfigChanged();
 }
 
-void Preferences::on_checkBoxIndentationsUseTabs_toggled(bool val)
+void Preferences::on_checkBoxHighlightCurrentLine_toggled(bool val)
 {
-	Settings::Settings::inst()->set(Settings::Settings::indentationsUseTabs, val);
+	Settings::Settings::inst()->set(Settings::Settings::highlightCurrentLine, val);
+	fireEditorConfigChanged();
+}
+
+void Preferences::on_checkBoxEnableBraceMatching_toggled(bool val)
+{
+	Settings::Settings::inst()->set(Settings::Settings::enableBraceMatching, val);
 	fireEditorConfigChanged();
 }
 
@@ -616,11 +622,12 @@ void Preferences::updateGUI()
 	this->spinBoxLineWrapIndentationIndent->setValue(s->get(Settings::Settings::lineWrapIndentation));
 	this->comboBoxLineWrapVisualizationStart->setCurrentIndex(s->get(Settings::Settings::lineWrapVisualizationBegin));
 	this->comboBoxLineWrapVisualizationEnd->setCurrentIndex(s->get(Settings::Settings::lineWrapVisualizationEnd));
-	this->comboBoxShowWhitespaces->setCurrentIndex(s->get(Settings::Settings::showWhitespaces));
-	this->spinBoxShowWhitespacesSize->setValue(s->get(Settings::Settings::showWhitespacesSize));
+	this->comboBoxShowWhitespace->setCurrentIndex(s->get(Settings::Settings::showWhitespace));
+	this->spinBoxShowWhitespaceSize->setValue(s->get(Settings::Settings::showWhitespaceSize));
 	this->checkBoxAutoIndent->setChecked(s->get(Settings::Settings::autoIndent));
-	this->checkBoxTabIndents->setChecked(s->get(Settings::Settings::tabIndents));
-	this->checkBoxIndentationsUseTabs->setChecked(s->get(Settings::Settings::indentationsUseTabs));
+	this->comboBoxIndentUsing->setCurrentIndex(s->get(Settings::Settings::indentStyle));
+	this->checkBoxHighlightCurrentLine->setChecked(s->get(Settings::Settings::highlightCurrentLine));
+	this->checkBoxEnableBraceMatching->setChecked(s->get(Settings::Settings::enableBraceMatching));
 }
 
 void Preferences::apply() const
