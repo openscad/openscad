@@ -20,6 +20,7 @@ public:
 	QVariant getValue(const QString &key) const;
         void init();
 	void apply() const;
+        void fireEditorConfigChanged() const;
 
 public slots:
 	void actionTriggered(class QAction *);
@@ -87,7 +88,7 @@ private:
 	void updateGUI();
 	void removeDefaultSettings();
 	void setupFeaturesPage();
-        void fireEditorConfigChanged() const;
+        void writeSettings();
 	void addPrefPage(QActionGroup *group, QAction *action, QWidget *widget);
 
         /** Initialize combobox list values from the settings range values */

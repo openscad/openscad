@@ -474,13 +474,13 @@ void Preferences::on_launcherBox_toggled(bool state)
 void Preferences::on_spinBoxIndentationWidth_valueChanged(int val)
 {
 	Settings::Settings::inst()->set(Settings::Settings::indentationWidth, Value(val));
-	fireEditorConfigChanged();
+	writeSettings();
 }
 
 void Preferences::on_spinBoxTabWidth_valueChanged(int val)
 {
 	Settings::Settings::inst()->set(Settings::Settings::tabWidth, Value(val));
-	fireEditorConfigChanged();
+	writeSettings();
 }
 
 void Preferences::on_comboBoxLineWrap_activated(int val)
@@ -496,7 +496,7 @@ void Preferences::on_comboBoxLineWrapIndentationStyle_activated(int val)
 void Preferences::on_spinBoxLineWrapIndentationIndent_valueChanged(int val)
 {
 	Settings::Settings::inst()->set(Settings::Settings::lineWrapIndentation, Value(val));
-	fireEditorConfigChanged();
+	writeSettings();
 }
 
 void Preferences::on_comboBoxLineWrapVisualizationStart_activated(int val)
@@ -517,13 +517,13 @@ void Preferences::on_comboBoxShowWhitespace_activated(int val)
 void Preferences::on_spinBoxShowWhitespaceSize_valueChanged(int val)
 {
 	Settings::Settings::inst()->set(Settings::Settings::showWhitespaceSize, Value(val));
-	fireEditorConfigChanged();
+	writeSettings();
 }
 
 void Preferences::on_checkBoxAutoIndent_toggled(bool val)
 {
 	Settings::Settings::inst()->set(Settings::Settings::autoIndent, Value(val));
-	fireEditorConfigChanged();
+	writeSettings();
 }
 
 void Preferences::on_comboBoxIndentUsing_activated(int val)
@@ -539,19 +539,24 @@ void Preferences::on_comboBoxTabKeyFunction_activated(int val)
 void Preferences::on_checkBoxHighlightCurrentLine_toggled(bool val)
 {
 	Settings::Settings::inst()->set(Settings::Settings::highlightCurrentLine, Value(val));
-	fireEditorConfigChanged();
+	writeSettings();
 }
 
 void Preferences::on_checkBoxEnableBraceMatching_toggled(bool val)
 {
 	Settings::Settings::inst()->set(Settings::Settings::enableBraceMatching, Value(val));
+	writeSettings();
+}
+
+void Preferences::writeSettings()
+{
+	SettingsWriter settingsWriter;
+	Settings::Settings::inst()->visit(settingsWriter);
 	fireEditorConfigChanged();
 }
 
 void Preferences::fireEditorConfigChanged() const
 {
-	SettingsWriter settingsWriter;
-	Settings::Settings::inst()->visit(settingsWriter);
 	emit editorConfigChanged();
 }
 
@@ -709,7 +714,7 @@ void Preferences::applyComboBox(QComboBox *comboBox, int val, Settings::Settings
 {
 	QString s = comboBox->itemData(val).toString();
 	Settings::Settings::inst()->set(entry, Value(s.toStdString()));
-	fireEditorConfigChanged();
+	writeSettings();
 }
 
 void Preferences::apply() const
