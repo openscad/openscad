@@ -639,12 +639,12 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
         {1,0,2,3,5,4}};
 
     int or_6[6][6]={
-        {1,0,4,3,5,2},
+        {1,0,4,5,3,2},
         {0,1,5,4,2,3},
         {0,1,5,4,2,3},
         {0,1,5,4,2,3},
-        {1,0,4,3,5,2},
-        {1,0,4,3,5,2}};
+        {1,0,4,5,3,2},
+        {1,0,4,5,3,2}};
 
     int or_7[6][3]={
         {0,1,4},
@@ -674,13 +674,14 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
             digit = "-" + stash_digit;
         }
 
+        // fix the axes that need to run the opposite direction
         if (di>0 && di<4){
             std::reverse(digit.begin(),digit.end());
         }
 
         // walk through and render the characters of the string
         for(std::string::size_type char_num = 0; char_num < digit.size(); ++char_num){
-
+            // setup the vertices for the char rendering based on the axis and position
             double dig_vrt[6][3] = {
                 {polarity*((i+((char_num)*dig_wk))-(dig_w/2)),dig_h,0},
                 {polarity*((i+((char_num)*dig_wk))+(dig_w/2)),dig_h,0},
@@ -689,6 +690,13 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
                 {polarity*((i+((char_num)*dig_wk))-(dig_w/2)),dig_buf,0},
                 {polarity*((i+((char_num)*dig_wk))+(dig_w/2)),dig_buf,0}};
 
+            // convert the char into lines appropriate for the axis being used
+            // psuedo 7 segment vertices are:
+            // A--B
+            // |  |
+            // C--D
+            // |  |
+            // E--F
             switch(digit[char_num]){
             case '1':
                 glBegin(GL_LINES);
