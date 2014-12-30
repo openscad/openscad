@@ -531,6 +531,11 @@ void Preferences::on_comboBoxIndentUsing_activated(int val)
 	applyComboBox(comboBoxIndentUsing, val, Settings::Settings::indentStyle);
 }
 
+void Preferences::on_comboBoxTabKeyFunction_activated(int val)
+{
+	applyComboBox(comboBoxTabKeyFunction, val, Settings::Settings::tabKeyFunction);
+}
+
 void Preferences::on_checkBoxHighlightCurrentLine_toggled(bool val)
 {
 	Settings::Settings::inst()->set(Settings::Settings::highlightCurrentLine, Value(val));

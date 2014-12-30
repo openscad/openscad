@@ -45,20 +45,29 @@ public slots:
 	void on_launcherBox_toggled(bool);
 	void on_editorType_editTextChanged(const QString &);
 
-        // editor settings
-        void on_spinBoxIndentationWidth_valueChanged(int);
-        void on_spinBoxTabWidth_valueChanged(int);
-        void on_comboBoxLineWrap_activated(int);
-        void on_comboBoxLineWrapIndentationStyle_activated(int);
-        void on_spinBoxLineWrapIndentationIndent_valueChanged(int);
-        void on_comboBoxLineWrapVisualizationStart_activated(int);
-        void on_comboBoxLineWrapVisualizationEnd_activated(int);
-        void on_comboBoxShowWhitespace_activated(int);
-        void on_spinBoxShowWhitespaceSize_valueChanged(int);
-        void on_checkBoxAutoIndent_toggled(bool);
-        void on_comboBoxIndentUsing_activated(int);
-        void on_checkBoxHighlightCurrentLine_toggled(bool);
-        void on_checkBoxEnableBraceMatching_toggled(bool);
+  //
+	// editor settings
+  //
+
+	// Indentation
+	void on_checkBoxAutoIndent_toggled(bool);
+	void on_comboBoxIndentUsing_activated(int);
+	void on_spinBoxIndentationWidth_valueChanged(int);
+	void on_spinBoxTabWidth_valueChanged(int);
+	void on_comboBoxTabKeyFunction_activated(int);
+	void on_comboBoxShowWhitespace_activated(int);
+	void on_spinBoxShowWhitespaceSize_valueChanged(int);
+	
+	// Line wrap
+	void on_comboBoxLineWrap_activated(int);
+	void on_comboBoxLineWrapIndentationStyle_activated(int);
+	void on_spinBoxLineWrapIndentationIndent_valueChanged(int);
+	void on_comboBoxLineWrapVisualizationStart_activated(int);
+	void on_comboBoxLineWrapVisualizationEnd_activated(int);
+
+	// Display
+	void on_checkBoxHighlightCurrentLine_toggled(bool);
+	void on_checkBoxEnableBraceMatching_toggled(bool);
 
 signals:
 	void requestRedraw() const;
