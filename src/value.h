@@ -82,6 +82,10 @@ public:
         this->end_val == other.end_val;
     }
 
+    double begin_value() { return begin_val; }
+    double step_value() { return step_val; }
+    double end_value() { return end_val; }
+
     iterator begin() { return iterator(*this, RANGE_TYPE_BEGIN); }
     iterator end() { return iterator(*this, RANGE_TYPE_END); }
 

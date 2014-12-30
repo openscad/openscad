@@ -1,131 +1,71 @@
 #include "settings.h"
-#include "value.h"
+#include "printutils.h"
+
+#include <boost/assign/std/vector.hpp>
+using namespace boost::assign; // bring 'operator+=()' into scope
 
 namespace Settings {
 
-std::list<SettingsEntryBase *> SettingsEntryBase::entries;
+static std::list<SettingsEntry *> entries;
 
-SettingsEntryBase::SettingsEntryBase(const std::string category, const std::string name) : _category(category), _name(name)
+SettingsEntry::SettingsEntry(const std::string category, const std::string name, const Value range, const Value def)
+	: _category(category), _name(name), _value(def), _range(range), _default(def)
 {
 	entries.push_back(this);
 }
 
-SettingsEntryBase::~SettingsEntryBase()
+SettingsEntry::~SettingsEntry()
 {
 }
 
-const std::string & SettingsEntryBase::category() const
+const std::string & SettingsEntry::category() const
 {
 	return _category;
 }
 
-const std::string & SettingsEntryBase::name() const
+const std::string & SettingsEntry::name() const
 {
 	return _name;
 }
 
-template <class T>
-SettingsEntry<T>::SettingsEntry(const std::string category, const std::string name, T defaultValue)
-    : SettingsEntryBase(category, name), value(defaultValue), defaultValue(defaultValue)
+const Value & SettingsEntry::defaultValue() const
 {
+	return _default;
 }
 
-template <class T>
-SettingsEntry<T>::~SettingsEntry()
+const Value & SettingsEntry::range() const
 {
+	return _range;
 }
 
-template <class T>
-bool SettingsEntry<T>::is_default() const
+bool SettingsEntry::is_default() const
 {
-	return defaultValue == value;
+	return _value == _default;
 }
 
-template <class T>
-std::string SettingsEntry<T>::to_string() const
-{
-	return boost::lexical_cast<std::string>(value);
+static Value value(std::string s1, std::string s2) {
+	Value::VectorType v;
+	v += Value(s1), Value(s2);
+	return v;
 }
 
-template <>
-std::string SettingsEntry<int>::to_string() const
-{
-	return boost::lexical_cast<std::string>(value);
+static Value values(std::string s1, std::string s1disp, std::string s2, std::string s2disp) {
+	Value::VectorType v;
+	v += value(s1, s1disp), value(s2, s2disp);
+	return v;
 }
 
-template <class T>
-void SettingsEntry<T>::from_string(std::string val)
-{
-	try {
-		value = boost::lexical_cast<T>(val);
-	} catch (const boost::bad_lexical_cast &e) {
-		value = defaultValue;
-	}
+static Value values(std::string s1, std::string s1disp, std::string s2, std::string s2disp, std::string s3, std::string s3disp) {
+	Value::VectorType v;
+	v += value(s1, s1disp), value(s2, s2disp), value(s3, s3disp);
+	return v;
 }
 
-template <>
-void SettingsEntry<LineWrap>::from_string(std::string val)
-{
-	try {
-		value = (LineWrap)boost::lexical_cast<int>(val);
-	} catch (const boost::bad_lexical_cast &e) {
-		value = defaultValue;
-	}
+static Value values(std::string s1, std::string s1disp, std::string s2, std::string s2disp, std::string s3, std::string s3disp, std::string s4, std::string s4disp) {
+	Value::VectorType v;
+	v += value(s1, s1disp), value(s2, s2disp), value(s3, s3disp), value(s4, s4disp);
+	return v;
 }
-
-template <>
-void SettingsEntry<LineWrapIndentationStyle>::from_string(std::string val)
-{
-	try {
-		value = (LineWrapIndentationStyle)boost::lexical_cast<int>(val);
-	} catch (const boost::bad_lexical_cast &e) {
-		value = defaultValue;
-	}
-}
-
-template <>
-void SettingsEntry<LineWrapVisualization>::from_string(std::string val)
-{
-	try {
-		value = (LineWrapVisualization)boost::lexical_cast<int>(val);
-	} catch (const boost::bad_lexical_cast &e) {
-		value = defaultValue;
-	}
-}
-
-template <>
-void SettingsEntry<ShowWhitespace>::from_string(std::string val)
-{
-	try {
-		value = (ShowWhitespace)boost::lexical_cast<int>(val);
-	} catch (const boost::bad_lexical_cast &e) {
-		value = defaultValue;
-	}
-}
-
-template <>
-void SettingsEntry<IndentStyle>::from_string(std::string val)
-{
-	try {
-		value = (IndentStyle)boost::lexical_cast<int>(val);
-	} catch (const boost::bad_lexical_cast &e) {
-		value = defaultValue;
-	}
-}
-
-SettingsEntry<int> Settings::indentationWidth("editor", "indentationWidth", 4);
-SettingsEntry<int> Settings::tabWidth("editor", "tabWidth", 8);
-SettingsEntry<LineWrap> Settings::lineWrap("editor", "lineWrap", LINE_WRAP_WORD);
-SettingsEntry<LineWrapIndentationStyle> Settings::lineWrapIndentationStyle("editor", "lineWrapIndentationStyle", LINE_WRAP_INDENTATION_FIXED);
-SettingsEntry<int> Settings::lineWrapIndentation("editor", "lineWrapIndentation", 4);
-SettingsEntry<LineWrapVisualization> Settings::lineWrapVisualizationBegin("editor", "lineWrapVisualizationBegin", LINE_WRAP_VISUALIZATION_NONE);
-SettingsEntry<LineWrapVisualization> Settings::lineWrapVisualizationEnd("editor", "lineWrapVisualizationEnd", LINE_WRAP_VISUALIZATION_BORDER);
-SettingsEntry<ShowWhitespace> Settings::showWhitespace("editor", "showWhitespaces", SHOW_WHITESPACES_NEVER);
-SettingsEntry<int> Settings::showWhitespaceSize("editor", "showWhitespacesSize", 2);
-SettingsEntry<bool> Settings::autoIndent("editor", "autoIndent", true);
-SettingsEntry<IndentStyle> Settings::indentStyle("editor", "indentStyle", INDENT_SPACES);
-SettingsEntry<bool> Settings::highlightCurrentLine("editor", "highlightCurrentLine", true);
-SettingsEntry<bool> Settings::enableBraceMatching("editor", "enableBraceMatching", true);
 
 Settings *Settings::inst(bool erase)
 {
@@ -147,58 +87,22 @@ Settings::~Settings()
 {
 }
 
-void Settings::visit(class Visitor *visitor)
+void Settings::visit(Visitor& visitor)
 {
-	for (std::list<SettingsEntryBase *>::iterator it = SettingsEntryBase::entries.begin();it != SettingsEntryBase::entries.end();it++) {
-		visitor->handle(*it);
+	for (std::list<SettingsEntry *>::iterator it = entries.begin();it != entries.end();it++) {
+		visitor.handle(*(*it));
 	}
 }
 
-template <typename T>
-T Settings::defaultValue(const SettingsEntry<T> &entry)
+Value Settings::get(const SettingsEntry& entry)
 {
-    return entry.defaultValue;
+    return entry._value;
 }
 
-template <typename T>
-T Settings::get(const SettingsEntry<T> &entry)
+void Settings::set(SettingsEntry& entry, const Value val)
 {
-    return entry.value;
+    entry._value = val;
 }
-
-template <typename T>
-void Settings::set(SettingsEntry<T> &entry, T val)
-{
-    entry.value = val;
-}
-
-template bool Settings::defaultValue(const SettingsEntry<bool>&);
-template bool Settings::get(const SettingsEntry<bool>&);
-template void Settings::set(SettingsEntry<bool>&, bool);
-
-template int Settings::defaultValue(const SettingsEntry<int>&);
-template int Settings::get(const SettingsEntry<int>&);
-template void Settings::set(SettingsEntry<int>&, int);
-
-template LineWrap Settings::defaultValue(const SettingsEntry<LineWrap>&);
-template LineWrap Settings::get(const SettingsEntry<LineWrap>&);
-template void Settings::set(SettingsEntry<LineWrap>&, LineWrap);
-
-template LineWrapVisualization Settings::defaultValue(const SettingsEntry<LineWrapVisualization>&);
-template LineWrapVisualization Settings::get(const SettingsEntry<LineWrapVisualization>&);
-template void Settings::set(SettingsEntry<LineWrapVisualization>&, LineWrapVisualization);
-
-template LineWrapIndentationStyle Settings::defaultValue(const SettingsEntry<LineWrapIndentationStyle>&);
-template LineWrapIndentationStyle Settings::get(const SettingsEntry<LineWrapIndentationStyle>&);
-template void Settings::set(SettingsEntry<LineWrapIndentationStyle>&, LineWrapIndentationStyle);
-
-template ShowWhitespace Settings::defaultValue(const SettingsEntry<ShowWhitespace>&);
-template ShowWhitespace Settings::get(const SettingsEntry<ShowWhitespace>&);
-template void Settings::set(SettingsEntry<ShowWhitespace>&, ShowWhitespace);
-
-template IndentStyle Settings::defaultValue(const SettingsEntry<IndentStyle>&);
-template IndentStyle Settings::get(const SettingsEntry<IndentStyle>&);
-template void Settings::set(SettingsEntry<IndentStyle>&, IndentStyle);
 
 Visitor::Visitor()
 {
@@ -207,5 +111,29 @@ Visitor::Visitor()
 Visitor::~Visitor()
 {
 }
+
+/*
+ * Supported settings entry types are: bool / int and string selection
+ *
+ * String selection is used to handle comboboxes and has two values
+ * per config selection. The first value is used internally for both
+ * finding the combobox selection and for storing the value in the
+ * external settings file. The second value is the display value that
+ * can be translated.
+ */
+SettingsEntry Settings::indentationWidth("editor", "indentationWidth", Value(Value::RangeType(1, 16)), Value(4));
+SettingsEntry Settings::tabWidth("editor", "tabWidth", Value(Value::RangeType(1, 16)), Value(8));
+SettingsEntry Settings::lineWrap("editor", "lineWrap", values("None", _("None"), "Char", _("Wrap at character boundaries"), "Word", _("Wrap at word boundaries")), Value("Word"));
+SettingsEntry Settings::lineWrapIndentationStyle("editor", "lineWrapIndentationStyle", values("Fixed", _("Fixed"), "Same", _("Same"), "Indented", _("Indented")), Value("Fixed"));
+SettingsEntry Settings::lineWrapIndentation("editor", "lineWrapIndentation", Value(Value::RangeType(0, 999)), Value(4));
+SettingsEntry Settings::lineWrapVisualizationBegin("editor", "lineWrapVisualizationBegin", values("None", _("None"), "Text", _("Text"), "Border", _("Border"), "Margin", _("Margin")), Value("None"));
+SettingsEntry Settings::lineWrapVisualizationEnd("editor", "lineWrapVisualizationEnd", values("None", _("None"), "Text", _("Text"), "Border", _("Border"), "Margin", _("Margin")), Value("Border"));
+SettingsEntry Settings::showWhitespace("editor", "showWhitespaces", values("Never", _("Never"), "Always", _("Always"), "AfterIndentation", _("After indentation")), Value("Never"));
+SettingsEntry Settings::showWhitespaceSize("editor", "showWhitespacesSize", Value(Value::RangeType(1, 16)), Value(2));
+SettingsEntry Settings::autoIndent("editor", "autoIndent", Value(true), Value(true));
+SettingsEntry Settings::indentStyle("editor", "indentStyle", values("Spaces", _("Spaces"), "Tabs", _("Tabs")), Value("Spaces"));
+SettingsEntry Settings::tabKeyFunction("editor", "tabKeyFunction", values("Indent", _("Indent"), "InsertTab", _("Insert Tab")), Value("Indent"));
+SettingsEntry Settings::highlightCurrentLine("editor", "highlightCurrentLine", Value(true), Value(true));
+SettingsEntry Settings::enableBraceMatching("editor", "enableBraceMatching", Value(true), Value(true));
 
 }

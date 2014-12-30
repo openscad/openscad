@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>607</width>
-    <height>432</height>
+    <width>621</width>
+    <height>413</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -780,7 +780,7 @@
                   </widget>
                  </item>
                  <item>
-                  <widget class="QComboBox" name="comboBoxLineWrapIndentation">
+                  <widget class="QComboBox" name="comboBoxLineWrapIndentationStyle">
                    <item>
                     <property name="text">
                      <string>Fixed</string>
@@ -1201,7 +1201,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>640</width>
+             <width>596</width>
              <height>499</height>
             </rect>
            </property>

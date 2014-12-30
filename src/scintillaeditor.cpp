@@ -10,67 +10,59 @@
 
 class SettingsConverter {
 public:
-	QsciScintilla::WrapMode fromWrapMode(Settings::LineWrap val);
-	QsciScintilla::WrapVisualFlag fromLineWrapVisualization(Settings::LineWrapVisualization val);
-	QsciScintilla::WrapIndentMode fromLineWrapIndentationStyle(Settings::LineWrapIndentationStyle val);
-	QsciScintilla::WhitespaceVisibility fromShowWhitespaces(Settings::ShowWhitespace val);
+	QsciScintilla::WrapMode toWrapMode(Value val);
+	QsciScintilla::WrapVisualFlag toLineWrapVisualization(Value val);
+	QsciScintilla::WrapIndentMode toLineWrapIndentationStyle(Value val);
+	QsciScintilla::WhitespaceVisibility toShowWhitespaces(Value val);
 };
 
-QsciScintilla::WrapMode SettingsConverter::fromWrapMode(Settings::LineWrap val)
+QsciScintilla::WrapMode SettingsConverter::toWrapMode(Value val)
 {
-	switch (val) {
-	case Settings::LINE_WRAP_NONE:
-		return QsciScintilla::WrapNone;
-	case Settings::LINE_WRAP_CHARACTER:
+	std::string v = val.toString();
+	if (v == "Char") {
 		return QsciScintilla::WrapCharacter;
-	case Settings::LINE_WRAP_WORD:
+	} else if (v == "Word") {
 		return QsciScintilla::WrapWord;
-	default:
-		assert(false && "unknown wrap mode setting");
+	} else {
+		return QsciScintilla::WrapNone;
 	}
 }
 
-QsciScintilla::WrapVisualFlag SettingsConverter::fromLineWrapVisualization(Settings::LineWrapVisualization val)
+QsciScintilla::WrapVisualFlag SettingsConverter::toLineWrapVisualization(Value val)
 {
-	switch (val) {
-	case Settings::LINE_WRAP_VISUALIZATION_NONE:
-		return QsciScintilla::WrapFlagNone;
-	case Settings::LINE_WRAP_VISUALIZATION_TEXT:
+	std::string v = val.toString();
+	if (v == "Text") {
 		return QsciScintilla::WrapFlagByText;
-	case Settings::LINE_WRAP_VISUALIZATION_BORDER:
+	} else if (v == "Border") {
 		return QsciScintilla::WrapFlagByBorder;
-	case Settings::LINE_WRAP_VISUALIZATION_MARGIN:
+	} else if (v == "Margin") {
 		return QsciScintilla::WrapFlagInMargin;
-	default:
-		assert(false && "unknown wrap visualization setting");
+	} else {
+		return QsciScintilla::WrapFlagNone;
 	}
 }
 
-QsciScintilla::WrapIndentMode SettingsConverter::fromLineWrapIndentationStyle(Settings::LineWrapIndentationStyle val)
+QsciScintilla::WrapIndentMode SettingsConverter::toLineWrapIndentationStyle(Value val)
 {
-	switch (val) {
-	case Settings::LINE_WRAP_INDENTATION_FIXED:
-		return QsciScintilla::WrapIndentFixed;
-	case Settings::LINE_WRAP_INDENTATION_SAME:
+	std::string v = val.toString();
+	if (v == "Same") {
 		return QsciScintilla::WrapIndentSame;
-	case Settings::LINE_WRAP_INDENTATION_INDENTED:
+	} else if (v == "Indented") {
 		return QsciScintilla::WrapIndentIndented;
-	default:
-		assert(false && "unknown wrap indentation style setting");
+	} else {
+		return QsciScintilla::WrapIndentFixed;
 	}
 }
 
-QsciScintilla::WhitespaceVisibility SettingsConverter::fromShowWhitespaces(Settings::ShowWhitespace val)
+QsciScintilla::WhitespaceVisibility SettingsConverter::toShowWhitespaces(Value val)
 {
-	switch(val) {
-	case Settings::SHOW_WHITESPACES_NEVER:
-		return QsciScintilla::WsInvisible;
-	case Settings::SHOW_WHITESPACES_ALWAYS:
+	std::string v = val.toString();
+	if (v == "Always") {
 		return QsciScintilla::WsVisible;
-	case Settings::SHOW_WHITESPACES_AFTER_INDENTATION:
+	} else if (v == "AfterIndentation") {
 		return QsciScintilla::WsVisibleAfterIndent;
-	default:
-		assert(false && "unknown show whitespace setting");
+	} else {
+		return QsciScintilla::WsInvisible;
 	}
 }
 
@@ -165,32 +157,24 @@ void ScintillaEditor::applySettings()
 	SettingsConverter conv;
 	Settings::Settings *s = Settings::Settings::inst();
 
-	qsci->setIndentationWidth(s->get(Settings::Settings::indentationWidth));
-	qsci->setTabWidth(s->get(Settings::Settings::tabWidth));
-	qsci->setWrapMode(conv.fromWrapMode(s->get(Settings::Settings::lineWrap)));
-	qsci->setWrapIndentMode(conv.fromLineWrapIndentationStyle(s->get(Settings::Settings::lineWrapIndentationStyle)));
-	qsci->setWrapVisualFlags(conv.fromLineWrapVisualization(s->get(Settings::Settings::lineWrapVisualizationEnd)),
-		conv.fromLineWrapVisualization(s->get(Settings::Settings::lineWrapVisualizationBegin)),
-		s->get(Settings::Settings::lineWrapIndentation));
-	qsci->setWhitespaceVisibility(conv.fromShowWhitespaces(s->get(Settings::Settings::showWhitespace)));
-	qsci->setWhitespaceSize(s->get(Settings::Settings::showWhitespaceSize));
-	qsci->setAutoIndent(s->get(Settings::Settings::autoIndent));
+	qsci->setIndentationWidth(s->get(Settings::Settings::indentationWidth).toDouble());
+	qsci->setTabWidth(s->get(Settings::Settings::tabWidth).toDouble());
+	qsci->setWrapMode(conv.toWrapMode(s->get(Settings::Settings::lineWrap)));
+	qsci->setWrapIndentMode(conv.toLineWrapIndentationStyle(s->get(Settings::Settings::lineWrapIndentationStyle)));
+	qsci->setWrapVisualFlags(conv.toLineWrapVisualization(s->get(Settings::Settings::lineWrapVisualizationEnd)),
+		conv.toLineWrapVisualization(s->get(Settings::Settings::lineWrapVisualizationBegin)),
+		s->get(Settings::Settings::lineWrapIndentation).toDouble());
+	qsci->setWhitespaceVisibility(conv.toShowWhitespaces(s->get(Settings::Settings::showWhitespace)));
+	qsci->setWhitespaceSize(s->get(Settings::Settings::showWhitespaceSize).toDouble());
+	qsci->setAutoIndent(s->get(Settings::Settings::autoIndent).toBool());
 
-	switch (s->get(Settings::Settings::indentStyle)) {
-	case Settings::INDENT_SPACES:
-		qsci->setTabIndents(true);
-		qsci->setIndentationsUseTabs(false);
-		break;
-	case Settings::INDENT_TABS:
-		qsci->setTabIndents(false);
-		qsci->setIndentationsUseTabs(true);
-		break;
-	default:
-		assert(false && "unknown indent style");
-	}
+	std::string indentStyle = s->get(Settings::Settings::indentStyle).toString();
+	qsci->setIndentationsUseTabs(indentStyle == "Tabs");
+	std::string tabKeyFunction = s->get(Settings::Settings::tabKeyFunction).toString();
+	qsci->setTabIndents(tabKeyFunction == "Indent");
 
-	qsci->setBraceMatching(s->get(Settings::Settings::enableBraceMatching) ? QsciScintilla::SloppyBraceMatch : QsciScintilla::NoBraceMatch);
-	qsci->setCaretLineVisible(s->get(Settings::Settings::highlightCurrentLine));
+	qsci->setBraceMatching(s->get(Settings::Settings::enableBraceMatching).toBool() ? QsciScintilla::SloppyBraceMatch : QsciScintilla::NoBraceMatch);
+	qsci->setCaretLineVisible(s->get(Settings::Settings::highlightCurrentLine).toBool());
 }
 
 void ScintillaEditor::setPlainText(const QString &text)

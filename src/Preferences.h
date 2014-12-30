@@ -1,9 +1,11 @@
 #pragma once
 
-#include "qtgettext.h"
 #include <QMainWindow>
 #include <QSettings>
+
+#include "qtgettext.h"
 #include "ui_Preferences.h"
+#include "settings.h"
 
 class Preferences : public QMainWindow, public Ui::Preferences
 {
@@ -47,7 +49,7 @@ public slots:
         void on_spinBoxIndentationWidth_valueChanged(int);
         void on_spinBoxTabWidth_valueChanged(int);
         void on_comboBoxLineWrap_activated(int);
-        void on_comboBoxLineWrapIndentation_activated(int);
+        void on_comboBoxLineWrapIndentationStyle_activated(int);
         void on_spinBoxLineWrapIndentationIndent_valueChanged(int);
         void on_comboBoxLineWrapVisualizationStart_activated(int);
         void on_comboBoxLineWrapVisualizationEnd_activated(int);
@@ -78,6 +80,15 @@ private:
 	void setupFeaturesPage();
         void fireEditorConfigChanged() const;
 	void addPrefPage(QActionGroup *group, QAction *action, QWidget *widget);
+
+        /** Initialize combobox list values from the settings range values */
+        void initComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry);
+        /** Initialize spinbox min/max values from the settings range values */
+        void initSpinBox(QSpinBox *spinBox, const Settings::SettingsEntry& entry);
+        /** Update combobox from current settings */
+        void updateComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry);
+        /** Set value from combobox to settings */
+        void applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntry& entry);
 
 	QSettings::SettingsMap defaultmap;
 	QHash<const QAction *, QWidget *> prefPages;
