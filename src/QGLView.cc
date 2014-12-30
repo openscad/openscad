@@ -182,6 +182,7 @@ void QGLView::paintGL()
 void QGLView::mousePressEvent(QMouseEvent *event)
 {
   mouse_drag_active = true;
+  QApplication::setOverrideCursor(QCursor(Qt::CrossCursor));
   last_mouse = event->globalPos();
 }
 
@@ -304,6 +305,7 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
 void QGLView::mouseReleaseEvent(QMouseEvent*)
 {
   mouse_drag_active = false;
+  QApplication::restoreOverrideCursor();
   releaseMouse();
 }
 
