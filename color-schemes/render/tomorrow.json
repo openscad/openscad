@@ -4,7 +4,7 @@
     "show-in-gui" : true,
 
     "colors" : {
-        "background" :         "#f0f0f0",
+        "background" :         "#f8f8f8",
         "opencsg-face-front" : "#4271ae",
         "opencsg-face-back" :  "#f5871f",
         "cgal-face-front" :    "#3e999f",
