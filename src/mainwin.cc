@@ -43,6 +43,7 @@
 #include "progress.h"
 #include "dxfdim.h"
 #include "legacyeditor.h"
+#include "settings.h"
 #ifdef USE_SCINTILLA_EDITOR
 #include "scintillaeditor.h"
 #endif
@@ -192,12 +193,20 @@ MainWindow::MainWindow(const QString &filename)
 #ifdef USE_SCINTILLA_EDITOR
 	if (useScintilla) {
 		 editor = new ScintillaEditor(editorDockContents);
+
 	}
 	else
 #endif
 	    editor = new LegacyEditor(editorDockContents);
 
 	Preferences::create(editor->colorSchemes());
+
+#ifdef USE_SCINTILLA_EDITOR
+	if (useScintilla) {
+		connect(Preferences::inst(), SIGNAL(editorConfigChanged()), editor, SLOT(applySettings()));
+		Preferences::inst()->editorConfigChanged();
+	}
+#endif
 
 	editorDockContents->layout()->addWidget(editor);
 
