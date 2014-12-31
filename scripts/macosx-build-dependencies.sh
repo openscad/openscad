@@ -450,6 +450,7 @@ build_eigen()
   elif [ $version = "3.1.4" ]; then EIGENDIR=eigen-eigen-36bf2ceaf8f5;
   elif [ $version = "3.2.0" ]; then EIGENDIR=eigen-eigen-ffa86ffb5570;
   elif [ $version = "3.2.1" ]; then EIGENDIR=eigen-eigen-6b38706d90a9;
+  elif [ $version = "3.2.2" ]; then EIGENDIR=eigen-eigen-1306d75b4a21;
   fi
 
   if [ $EIGENDIR = "none" ]; then
@@ -773,7 +774,7 @@ mkdir -p $SRCDIR $DEPLOYDIR
 build_qt5 5.3.2
 build_qscintilla 2.8.4
 # NB! For eigen, also update the path in the function
-build_eigen 3.2.1
+build_eigen 3.2.2
 build_gmp 5.1.3
 build_mpfr 3.1.2
 build_boost 1.54.0
