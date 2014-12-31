@@ -21,10 +21,13 @@ namespace CGALUtils {
 	bool is_approximately_convex(const PolySet &ps);
 	Geometry const* applyMinkowski(const Geometry::ChildList &children);
 
-	CGAL_Nef_polyhedron *createNefPolyhedronFromGeometry(const class Geometry &geom);
 	template <typename Polyhedron> bool createPolySetFromPolyhedron(const Polyhedron &p, PolySet &ps);
+	template <typename Polyhedron> bool createPolyhedronFromPolySet(const PolySet &ps, Polyhedron &p);
+	template <class Polyhedron_A, class Polyhedron_B> 
+	void copyPolyhedron(const Polyhedron_A &poly_a, Polyhedron_B &poly_b);
+
+	CGAL_Nef_polyhedron *createNefPolyhedronFromGeometry(const class Geometry &geom);
 	bool createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3 &N, PolySet &ps);
-	bool createPolyhedronFromPolySet(const PolySet &ps, CGAL_Polyhedron &p);
 
 	bool tessellatePolygon(const PolygonK &polygon,
 												 Polygons &triangles,
