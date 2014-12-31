@@ -35,8 +35,10 @@ QsciScintilla::WrapVisualFlag SettingsConverter::toLineWrapVisualization(Value v
 		return QsciScintilla::WrapFlagByText;
 	} else if (v == "Border") {
 		return QsciScintilla::WrapFlagByBorder;
+#if QSCINTILLA_VERSION >= 0x020700
 	} else if (v == "Margin") {
 		return QsciScintilla::WrapFlagInMargin;
+#endif
 	} else {
 		return QsciScintilla::WrapFlagNone;
 	}
