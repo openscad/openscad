@@ -427,7 +427,7 @@ void export_amf(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
 			<< " </object>\r\n"
 			<< "</amf>\r\n";
 	} catch (CGAL::Assertion_exception e) {
-		PRINTB("CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s", e.what());
+		PRINTB("ERROR: CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s", e.what());
 	}
 	CGAL::set_error_behaviour(old_behaviour);
 	setlocale(LC_NUMERIC, ""); // Set default locale

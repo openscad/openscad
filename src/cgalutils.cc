@@ -86,7 +86,7 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 				PRINT("PolySet has nonplanar faces. Attempting alternate construction");
 				plane_error=true;
 		} else {
-			PRINTB("CGAL error in CGAL_Nef_polyhedron3(): %s", e.what());
+			PRINTB("ERROR: CGAL error in CGAL_Nef_polyhedron3(): %s", e.what());
 		}
 	}
 	if (plane_error) try {
@@ -95,7 +95,7 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 			if (!err) N = new CGAL_Nef_polyhedron3(P);
 		}
 		catch (const CGAL::Assertion_exception &e) {
-			PRINTB("Alternate construction failed. CGAL error in CGAL_Nef_polyhedron3(): %s", e.what());
+			PRINTB("ERROR: Alternate construction failed. CGAL error in CGAL_Nef_polyhedron3(): %s", e.what());
 		}
 	CGAL::set_error_behaviour(old_behaviour);
 	return new CGAL_Nef_polyhedron(N);
@@ -455,7 +455,7 @@ namespace CGALUtils {
 	// union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad and testdata/scad/bugs/issue204.scad
 		catch (const CGAL::Failure_exception &e) {
 			std::string opstr = op == OPENSCAD_INTERSECTION ? "intersection" : op == OPENSCAD_DIFFERENCE ? "difference" : op == OPENSCAD_MINKOWSKI ? "minkowski" : "UNKNOWN";
-			PRINTB("CGAL error in CGALUtils::applyBinaryOperator %s: %s", opstr % e.what());
+			PRINTB("ERROR: CGAL error in CGALUtils::applyBinaryOperator %s: %s", opstr % e.what());
 		}
 		CGAL::set_error_behaviour(old_behaviour);
 		return N;
@@ -505,7 +505,7 @@ namespace CGALUtils {
 		catch (const CGAL::Failure_exception &e) {
 			// union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad and testdata/scad/bugs/issue204.scad
 			std::string opstr = op == OPENSCAD_UNION ? "union" : op == OPENSCAD_INTERSECTION ? "intersection" : op == OPENSCAD_DIFFERENCE ? "difference" : op == OPENSCAD_MINKOWSKI ? "minkowski" : "UNKNOWN";
-			PRINTB("CGAL error in CGALUtils::applyBinaryOperator %s: %s", opstr % e.what());
+			PRINTB("ERROR: CGAL error in CGALUtils::applyBinaryOperator %s: %s", opstr % e.what());
 
 			// Errors can result in corrupt polyhedrons, so put back the old one
 			target = src;
@@ -593,7 +593,7 @@ namespace CGALUtils {
 					newN.p3.reset(new CGAL_Nef_polyhedron3(nef_bigbox.intersection(*N.p3)));
 				}
 				catch (const CGAL::Failure_exception &e) {
-					PRINTB("CGAL error in CGALUtils::project during bigbox intersection: %s", e.what());
+					PRINTB("ERROR: CGAL error in CGALUtils::project during bigbox intersection: %s", e.what());
 				}
 			}
 				
@@ -621,7 +621,7 @@ namespace CGALUtils {
 				}
 				poly = convertToPolygon2d(*zremover.output_nefpoly2d);
 			}	catch (const CGAL::Failure_exception &e) {
-				PRINTB("CGAL error in CGALUtils::project while flattening: %s", e.what());
+				PRINTB("ERROR: CGAL error in CGALUtils::project while flattening: %s", e.what());
 			}
 			PRINTD("</svg>");
 				
