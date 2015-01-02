@@ -1670,6 +1670,37 @@ bool MainWindow::fileChangedOnDisk()
 	return false;
 }
 
+static void dump_parameters(const Module *module)
+{
+	if (module == NULL) {
+		return;
+	}
+
+	ModuleContext ctx;
+
+	foreach(Assignment assignment, module->scope.assignments)
+	{
+		const Annotation *param = assignment.annotation("Parameter");
+		if (!param) {
+			continue;
+		}
+
+		const std::string name = assignment.first;
+		const ValuePtr values = param->evaluate(&ctx, "values");
+		std::cout << "Parameter name: " << name << std::endl
+			<< "  - default value: " << *assignment.second.get()->evaluate(&ctx) << std::endl
+			<< "  - values: " << *values << std::endl;
+
+		const Annotation *desc = assignment.annotation("Description");
+		if (desc) {
+			const ValuePtr v = desc->evaluate(&ctx, "text");
+			if (v->type() == Value::STRING) {
+				std::cout << "  - description: " << v->toString() << std::endl;
+			}
+		}
+	}
+}
+
 /*!
 	Returns true if anything was compiled.
 */
@@ -1687,8 +1718,10 @@ void MainWindow::compileTopLevelDocument()
 	this->root_module = NULL;
 
 	this->root_module = parse(fulltext.c_str(),
-	this->fileName.isEmpty() ? "" :
-	QFileInfo(this->fileName).absolutePath().toLocal8Bit(), false);
+		this->fileName.isEmpty() ? "" :
+		QFileInfo(this->fileName).absolutePath().toLocal8Bit(), false);
+
+	dump_parameters(this->root_module);
 }
 
 void MainWindow::checkAutoReload()
