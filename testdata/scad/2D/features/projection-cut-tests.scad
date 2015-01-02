@@ -7,7 +7,7 @@ projection(cut=true) translate([20,0,0]) cube(10, center=true);
 translate([0,20,0]) projection(cut=true) translate([0,0,-4.999999]) cube(10, center=true);
 
 // Empty cut
-projection(cut=true) !translate([0,0,5]) cube(5, center=true);
+projection(cut=true) translate([0,0,5]) cube(5, center=true);
 
 // holes
 translate([0,-10,0]) projection(cut=true) {
