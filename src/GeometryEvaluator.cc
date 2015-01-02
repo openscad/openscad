@@ -953,9 +953,10 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 					}
 					if (!Nptr->isEmpty()) {
 						Polygon2d *poly = CGALUtils::project(*Nptr, node.cut_mode);
-						assert(poly);
-						poly->setConvexity(node.convexity);
-						geom.reset(poly);
+						if (poly) {
+							poly->setConvexity(node.convexity);
+							geom.reset(poly);
+						}
 					}
 				}
 			}

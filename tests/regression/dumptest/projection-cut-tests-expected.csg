@@ -14,6 +14,11 @@ group() {
 			}
 		}
 	}
+	projection(cut = true, convexity = 0) {
+		multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 5], [0, 0, 0, 1]]) {
+			cube(size = [5, 5, 5], center = true);
+		}
+	}
 	multmatrix([[1, 0, 0, 0], [0, 1, 0, -10], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 		projection(cut = true, convexity = 0) {
 			union() {
