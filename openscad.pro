@@ -352,6 +352,8 @@ SOURCES += src/version_check.cc \
            src/value.cc \
            src/expr.cc \
            src/stackcheck.cc \
+           src/assignment.cc \
+           src/annotation.cc \
            src/func.cc \
            src/localscope.cc \
            src/module.cc \
