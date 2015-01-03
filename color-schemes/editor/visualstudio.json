@@ -19,7 +19,6 @@
         "number" : "DarkRed",
         "string" : "#A31515",
         "operator" : "Blue",
-        "whitespace-background" : "#ffffff",
         "whitespace-foreground" : "#101010",
         "selection-foreground" : "black",
         "selection-background" : "lightblue",

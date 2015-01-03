@@ -19,7 +19,6 @@
         "number" : "#d33682",
         "string" : "#b58900",
         "operator" : "#cb4b16",
-        "whitespace-background" : "#002b36",
         "whitespace-foreground" : "#839496",
         "selection-foreground" : "#fdf6e3",
         "selection-background" : "#657b83",
