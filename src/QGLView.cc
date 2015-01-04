@@ -164,16 +164,9 @@ void QGLView::paintGL()
   GLView::paintGL();
 
   if (statusLabel) {
-    QString msg;
-
     Camera nc(cam);
     nc.gimbalDefaultTranslate();
-    msg.sprintf(_("Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], distance = %.2f"),
-      nc.object_trans.x(), nc.object_trans.y(), nc.object_trans.z(),
-      nc.object_rot.x(), nc.object_rot.y(), nc.object_rot.z(),
-      nc.viewer_distance );
-
-    statusLabel->setText(msg);
+    statusLabel->setText(QString::fromStdString(nc.statusText()));
   }
 
   if (running_under_wine) swapBuffers();

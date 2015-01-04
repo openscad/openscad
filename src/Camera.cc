@@ -109,3 +109,12 @@ void Camera::setProjection(ProjectionType type)
 {
 	this->projection = type;
 }
+
+std::string Camera::statusText()
+{
+	boost::format fmt(_("Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], distance = %.2f"));
+	fmt % object_trans.x() % object_trans.y() % object_trans.z()
+		% object_rot.x() % object_rot.y() % object_rot.z()
+		% (this->projection == PERSPECTIVE ? viewer_distance : height);
+	return fmt.str();
+}
