@@ -139,18 +139,20 @@ namespace CGALUtils {
 		if (points.size() <= 3) return false;
 
 		// Apply hull
+		bool success = false;
 		if (points.size() >= 4) {
 			CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 			try {
 				CGAL::Polyhedron_3<K> r;
 				CGAL::convex_hull_3(points.begin(), points.end(), r);
-				if (!createPolySetFromPolyhedron(r, result)) return true;
+				success = !createPolySetFromPolyhedron(r, result);
 			}
 			catch (const CGAL::Assertion_exception &e) {
 				PRINTB("ERROR: CGAL error in applyHull(): %s", e.what());
 			}
+			CGAL::set_error_behaviour(old_behaviour);
 		}
-		return false;
+		return success;
 	}
 
 	template<typename Polyhedron>
