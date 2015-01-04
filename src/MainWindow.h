@@ -213,7 +213,8 @@ public slots:
 	void viewModeShowEdges();
 	void viewModeShowAxes();
 	void viewModeShowCrosshairs();
-	void viewModeAnimate();
+    void viewModeShowScaleProportional();
+    void viewModeAnimate();
 	void viewAngleTop();
 	void viewAngleBottom();
 	void viewAngleLeft();

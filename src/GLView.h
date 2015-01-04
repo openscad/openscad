@@ -62,6 +62,7 @@ public:
 	bool showfaces;
 	bool showedges;
 	bool showcrosshairs;
+    bool showscale;
 
 #ifdef ENABLE_OPENCSG
 	GLint shaderinfo[11];
@@ -76,4 +77,5 @@ private:
 	void showCrosshairs();
 	void showAxes(const Color4f &col);
 	void showSmallaxes(const Color4f &col);
+    void showScalemarkers(const Color4f &col);
 };

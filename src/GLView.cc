@@ -23,6 +23,7 @@ GLView::GLView()
   showfaces = true;
   showaxes = false;
   showcrosshairs = false;
+  showscale = false;
   renderer = NULL;
   colorscheme = &ColorMap::inst()->defaultColorScheme();
   cam = Camera();
@@ -164,6 +165,8 @@ void GLView::paintGL()
     glTranslated(cam.object_trans.x(), cam.object_trans.y(), cam.object_trans.z());
     // ...the axis lines need to follow the object translation.
     if (showaxes) GLView::showAxes(bgcontrast);
+    // mark the scale along the axis lines
+    if (showscale) GLView::showScalemarkers(bgcontrast);
   }
 
   glEnable(GL_LIGHTING);
@@ -494,5 +497,67 @@ void GLView::showCrosshairs()
     glVertex3d(+xf*vd, +yf*vd, +vd);
   }
   glEnd();
+}
+
+void GLView::showScalemarkers(const Color4f &col)
+{
+    // Add scale tics on large axes
+    double l = cam.projection == Camera::PERSPECTIVE ? cam.viewer_distance : cam.height;
+    glLineWidth(this->getDPI());
+    glColor3f(col[0], col[1], col[2]);
+
+    int log_l = (int)log10(l);
+    double j = 10;
+    j = pow(j,log_l-1);
+    int size_div_sm = 60; // divisor for l to determine tic size
+    int size_div = size_div_sm;
+    int line_cnt = 0;
+
+    for (double i=0;i<l;i+=j){
+        if (line_cnt++ == 10){
+           size_div = size_div_sm * .5;
+           line_cnt = 1;
+        } else {
+           size_div = size_div_sm;
+        }
+
+        glBegin(GL_LINES);
+        glVertex3d(i,-l/size_div,0);
+        glVertex3d(i,l/size_div,0);
+        glVertex3d(i,0,-l/size_div);
+        glVertex3d(i,0,l/size_div);
+
+        glVertex3d(-l/size_div,i,0);
+        glVertex3d(l/size_div,i,0);
+        glVertex3d(0,i,-l/size_div);
+        glVertex3d(0,i,l/size_div);
+
+        glVertex3d(-l/size_div,0,i);
+        glVertex3d(l/size_div,0,i);
+        glVertex3d(0,-l/size_div,i);
+        glVertex3d(0,l/size_div,i);
+        glEnd();
+
+        glPushAttrib(GL_LINE_BIT);
+        glEnable(GL_LINE_STIPPLE);
+        glLineStipple(3, 0xAAAA);
+        glBegin(GL_LINES);
+        glVertex3d(-i,-l/size_div,0);
+        glVertex3d(-i,l/size_div,0);
+        glVertex3d(-i,0,-l/size_div);
+        glVertex3d(-i,0,l/size_div);
+
+        glVertex3d(0,-i,-l/size_div);
+        glVertex3d(0,-i,l/size_div);
+        glVertex3d(-l/size_div,-i,0);
+        glVertex3d(l/size_div,-i,0);
+
+        glVertex3d(0,-l/size_div,-i);
+        glVertex3d(0,l/size_div,-i);
+        glVertex3d(-l/size_div,0,-i);
+        glVertex3d(l/size_div,0,-i);
+        glEnd();
+        glPopAttrib();
+    }
 }
 
