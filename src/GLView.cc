@@ -91,21 +91,23 @@ void GLView::setupCamera()
   glLoadIdentity();
 
 	switch (this->cam.type) {
-	case Camera::GIMBAL:
+	case Camera::GIMBAL: {
+		double eyeY = 0.0;
 		switch (this->cam.projection) {
 		case Camera::PERSPECTIVE: {
-			double dist = cam.viewer_distance;
-			gluPerspective(cam.fov, aspectratio, 0.1*dist, 100*dist);
+			eyeY = cam.viewer_distance;
+			gluPerspective(cam.fov, aspectratio, 0.1 * eyeY, 100 * eyeY);
 			break;
 		}
 		case Camera::ORTHOGONAL: {
+			eyeY = cam.height;
 			glOrtho(-cam.height/2*aspectratio, cam.height*aspectratio/2,
 							-cam.height/2, cam.height/2,
 							-far_far_away, +far_far_away);
 			break;
 		}
 		}
-		gluLookAt(0.0, -cam.viewer_distance, 0.0,
+		gluLookAt(0.0, -eyeY, 0.0,
 							0.0, 0.0, 0.0,
 							0.0, 0.0, 1.0);
 		glMatrixMode(GL_MODELVIEW);
@@ -114,6 +116,7 @@ void GLView::setupCamera()
 		glRotated(cam.object_rot.y(), 0.0, 1.0, 0.0);
 		glRotated(cam.object_rot.z(), 0.0, 0.0, 1.0);
 		break;
+	}
 	case Camera::VECTOR: {
 		switch (this->cam.projection) {
 		case Camera::PERSPECTIVE: {
