@@ -505,11 +505,15 @@ void export_svg(const Polygon2d &poly, std::ostream &output)
 	int miny = floor(-bbox.max().y());
 	int maxx = ceil(bbox.max().x());
 	int maxy = ceil(-bbox.min().y());
-	
+
+	int width = maxx - minx;
+	int height = maxy - miny;
 	output
 		<< "<?xml version=\"1.0\" standalone=\"no\"?>\n"
 		<< "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n"
-		<< "<svg width=\"" << (maxx - minx) << "\" height=\"" << (maxy - miny) << "\" viewBox=\"" << (minx - 1) << " " << (miny - 1) << " " << (maxx - minx + 2) << " " << (maxy - miny + 2) << "\" xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">\n"
+		<< "<svg width=\"" << width << "\" height=\"" << height
+		<< "\" viewBox=\"" << minx << " " << miny << " " << width << " " << height
+		<< "\" xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">\n"
 		<< "<title>OpenSCAD Model</title>\n";
 
 	output << "<path d=\"\n";
