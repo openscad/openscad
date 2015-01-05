@@ -45,7 +45,7 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 	// we tessellate the polyset before checking.
 	PolySet psq(ps);
 	psq.quantizeVertices();
-    PolySet ps_tri(3);
+	PolySet ps_tri(3, psq.convexValue());
 	PolysetUtils::tessellate_faces(psq, ps_tri);
 	if (ps_tri.is_convex()) {
 		typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
