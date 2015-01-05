@@ -92,21 +92,22 @@ void GLView::setupCamera()
 
 	switch (this->cam.type) {
 	case Camera::GIMBAL: {
+		double eyeY = 0.0;
 		switch (this->cam.projection) {
 		case Camera::PERSPECTIVE: {
-			double dist = cam.zoomValue();
-			gluPerspective(cam.fov, aspectratio, 0.1 * dist, 100 * dist);
+			eyeY = cam.viewer_distance;
+			gluPerspective(cam.fov, aspectratio, 0.1 * eyeY, 100 * eyeY);
 			break;
 		}
 		case Camera::ORTHOGONAL: {
-			double height = cam.zoomValue();
-			glOrtho(-height/2*aspectratio, height*aspectratio/2,
-							-height/2, height/2,
+			eyeY = cam.height;
+			glOrtho(-cam.height/2*aspectratio, cam.height*aspectratio/2,
+							-cam.height/2, cam.height/2,
 							-far_far_away, +far_far_away);
 			break;
 		}
 		}
-		gluLookAt(0.0, -cam.zoomValue(), 0.0,
+		gluLookAt(0.0, -eyeY, 0.0,
 							0.0, 0.0, 0.0,
 							0.0, 0.0, 1.0);
 		glMatrixMode(GL_MODELVIEW);
@@ -124,9 +125,8 @@ void GLView::setupCamera()
 			break;
 		}
 		case Camera::ORTHOGONAL: {
-			double height = cam.zoomValue();
-			glOrtho(-height/2*aspectratio, height*aspectratio/2,
-							-height/2, height/2,
+			glOrtho(-cam.height/2*aspectratio, cam.height*aspectratio/2,
+							-cam.height/2, cam.height/2,
 							-far_far_away, +far_far_away);
 			break;
 		}
@@ -453,7 +453,7 @@ void GLView::showSmallaxes(const Color4f &col)
 
 void GLView::showAxes(const Color4f &col)
 {
-  double l = cam.zoomValue();
+  double l = cam.projection == Camera::PERSPECTIVE ? cam.viewer_distance : cam.height;
   
   // FIXME: doesn't work under Vector Camera
   // Large gray axis cross inline with the model
@@ -492,7 +492,7 @@ void GLView::showCrosshairs()
   glBegin(GL_LINES);
   for (double xf = -1; xf <= +1; xf += 2)
   for (double yf = -1; yf <= +1; yf += 2) {
-    double vd = cam.zoomValue()/8;
+    double vd = cam.viewer_distance/8;
     glVertex3d(-xf*vd, -yf*vd, -vd);
     glVertex3d(+xf*vd, +yf*vd, +vd);
   }

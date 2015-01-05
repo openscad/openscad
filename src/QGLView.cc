@@ -84,7 +84,9 @@ void QGLView::init()
 
 void QGLView::resetView()
 {
-	cam.resetView();
+  cam.object_rot << 35, 0, -25;
+  cam.object_trans << 0, 0, 0;
+  cam.viewer_distance = 140;
 }
 
 void QGLView::viewAll()
@@ -243,10 +245,11 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
       // Middle button pans in the xy plane
       // Shift-right and Shift-middle zooms
       if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
-	      cam.zoom(-12.0 * dy);
+        cam.viewer_distance += (GLdouble)dy;
       } else {
-      double mx = +(dx) * 3.0 * cam.zoomValue() / QWidget::width();
-      double mz = -(dy) * 3.0 * cam.zoomValue() / QWidget::height();
+
+      double mx = +(dx) * cam.viewer_distance/1000;
+      double mz = -(dy) * cam.viewer_distance/1000;
 
       double my = 0;
 #if (QT_VERSION < QT_VERSION_CHECK(4, 7, 0))
