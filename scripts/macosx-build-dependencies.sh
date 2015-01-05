@@ -325,10 +325,10 @@ build_boost()
   fi
   if $USING_LLVM; then
     BOOST_TOOLSET="toolset=darwin-llvm"
-    echo "using darwin : llvm : llvm-g++ ;" >> tools/build/v2/user-config.jam 
+    echo "using darwin : llvm : llvm-g++ ;" >> tools/build/user-config.jam 
   elif $USING_CLANG; then
     BOOST_TOOLSET="toolset=clang"
-    echo "using clang ;" >> tools/build/v2/user-config.jam 
+    echo "using clang ;" >> tools/build/user-config.jam 
   fi
   ./b2 -j"$NUMCPU" -d+2 $BOOST_TOOLSET cflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64 $BOOST_EXTRA_FLAGS" linkflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64 $BOOST_EXTRA_FLAGS -headerpad_max_install_names" install
   install_name_tool -id $DEPLOYDIR/lib/libboost_thread.dylib $DEPLOYDIR/lib/libboost_thread.dylib 
@@ -356,8 +356,9 @@ build_cgal()
   cd $BASEDIR/src
   rm -rf CGAL-$version
   if [ ! -f CGAL-$version.tar.gz ]; then
-    # 4.5
-    curl -O https://gforge.inria.fr/frs/download.php/file/34149/CGAL-$version.tar.gz
+    # 4.5.1
+    curl -O https://gforge.inria.fr/frs/download.php/file/34400/CGAL-$version.tar.gz
+    # 4.5 curl -O https://gforge.inria.fr/frs/download.php/file/34149/CGAL-$version.tar.gz
     # 4.4 curl -O https://gforge.inria.fr/frs/download.php/file/33525/CGAL-$version.tar.gz
     # 4.3 curl -O https://gforge.inria.fr/frs/download.php/32994/CGAL-$version.tar.gz
     # 4.2 curl -O https://gforge.inria.fr/frs/download.php/32359/CGAL-$version.tar.gz
@@ -451,6 +452,7 @@ build_eigen()
   elif [ $version = "3.2.0" ]; then EIGENDIR=eigen-eigen-ffa86ffb5570;
   elif [ $version = "3.2.1" ]; then EIGENDIR=eigen-eigen-6b38706d90a9;
   elif [ $version = "3.2.2" ]; then EIGENDIR=eigen-eigen-1306d75b4a21;
+  elif [ $version = "3.2.3" ]; then EIGENDIR=eigen-eigen-36fd1ba04c12;
   fi
 
   if [ $EIGENDIR = "none" ]; then
@@ -542,7 +544,7 @@ build_libxml2()
   fi
   tar xzf "libxml2-$version.tar.gz"
   cd "libxml2-$version"
-  ./configure --prefix="$DEPLOYDIR" --without-ftp --without-http --without-python CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN
+  ./configure --prefix="$DEPLOYDIR" --with-zlib=/usr -without-lzma --without-ftp --without-http --without-python CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN
   make -j$NUMCPU
   make install
 }
@@ -771,26 +773,26 @@ fi
 
 echo "Using basedir:" $BASEDIR
 mkdir -p $SRCDIR $DEPLOYDIR
-build_qt5 5.3.2
+build_qt5 5.4.0
 build_qscintilla 2.8.4
 # NB! For eigen, also update the path in the function
-build_eigen 3.2.2
+build_eigen 3.2.3
 build_gmp 5.1.3
 build_mpfr 3.1.2
-build_boost 1.54.0
+build_boost 1.57.0
 # NB! For CGAL, also update the actual download URL in the function
-build_cgal 4.5
-build_glew 1.10.0
-build_gettext 0.18.3.2
-build_libffi 3.1
-build_glib2 2.40.0
+build_cgal 4.5.1
+build_glew 1.11.0
+build_gettext 0.19.4
+build_libffi 3.2.1
+build_glib2 2.42.1
 build_opencsg 1.4.0
 build_freetype 2.5.4 --without-png
 build_ragel 6.9
 build_harfbuzz 0.9.37 "--with-coretext=auto --with-glib=no"
 export FREETYPE_CFLAGS="-I$DEPLOYDIR/include -I$DEPLOYDIR/include/freetype2"
 export FREETYPE_LIBS="-L$DEPLOYDIR/lib -lfreetype"
-build_libxml2 2.9.1
+build_libxml2 2.9.2
 build_fontconfig 2.11.1
 if $OPTION_DEPLOY; then
 #  build_sparkle andymatuschak 0ed83cf9f2eeb425d4fdd141c01a29d843970c20
