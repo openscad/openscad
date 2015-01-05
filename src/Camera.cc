@@ -47,6 +47,15 @@ void Camera::gimbalDefaultTranslate()
 	object_rot.z() = fmodf(360 - object_rot.z(), 360);
 }
 
+void Camera::resetView()
+{
+	type = Camera::GIMBAL;
+	object_rot << 35, 0, -25;
+	object_trans << 0, 0, 0;
+	height = 140;
+	viewer_distance = 140;
+}
+
 /*!
 	Moves camera so that the given bbox is fully visible.
 	FIXME: The scalefactor is a temporary hack to be compatible with

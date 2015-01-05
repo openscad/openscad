@@ -30,6 +30,7 @@ public:
 	void gimbalDefaultTranslate();
 	void setProjection(ProjectionType type);
 	void zoom(int delta);
+        void resetView();
 	void viewAll(const BoundingBox &bbox, float scalefactor = 1.0f);
         std::string statusText();
 

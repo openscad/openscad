@@ -64,7 +64,6 @@ static bool running_under_wine = false;
 
 void QGLView::init()
 {
-  cam.type = Camera::GIMBAL;
   resetView();
 
   this->mouse_drag_active = false;
@@ -84,9 +83,7 @@ void QGLView::init()
 
 void QGLView::resetView()
 {
-  cam.object_rot << 35, 0, -25;
-  cam.object_trans << 0, 0, 0;
-  cam.viewer_distance = 140;
+	cam.resetView();
 }
 
 void QGLView::viewAll()
