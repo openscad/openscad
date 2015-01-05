@@ -3,13 +3,12 @@
 #include "printutils.h"
 
 Camera::Camera(enum CameraType camtype) :
-	type(camtype), projection(Camera::PERSPECTIVE), fov(45), viewall(false), height(60)
+	type(camtype), projection(Camera::PERSPECTIVE), fov(45), viewall(false), zoom_value(500)
 {
 	PRINTD("Camera()");
 	if (this->type == Camera::GIMBAL) {
 		object_trans << 0,0,0;
 		object_rot << 35,0,25;
-		viewer_distance = 500;
 	} else if (this->type == Camera::VECTOR) {
 		center << 0,0,0;
 		Eigen::Vector3d cameradir(1, 1, -0.5);
@@ -26,8 +25,7 @@ void Camera::setup(std::vector<double> params)
 		type = Camera::GIMBAL;
 		object_trans << params[0], params[1], params[2];
 		object_rot << params[3], params[4], params[5];
-		viewer_distance = params[6];
-		height = params[6];
+		zoom_value = params[6];
 	} else if (params.size() == 6) {
 		type = Camera::VECTOR;
 		eye << params[0], params[1], params[2];
@@ -52,8 +50,7 @@ void Camera::resetView()
 	type = Camera::GIMBAL;
 	object_rot << 35, 0, -25;
 	object_trans << 0, 0, 0;
-	height = 140;
-	viewer_distance = 140;
+	zoom_value = 140;
 }
 
 /*!
@@ -83,13 +80,13 @@ void Camera::viewAll(const BoundingBox &bbox, float scalefactor)
 
 	switch (this->projection) {
 	case Camera::ORTHOGONAL:
-		this->height = bbox.diagonal().norm();
+		this->zoom_value = bbox.diagonal().norm();
 		break;
 	case Camera::PERSPECTIVE: {
 		double radius = bbox.diagonal().norm()/2;
 		switch (this->type) {
 		case Camera::GIMBAL:
-			this->viewer_distance = radius / tan(this->fov*M_PI/360);
+			this->zoom_value = radius / tan(this->fov*M_PI/360);
 			break;
 		case Camera::VECTOR: {
 			Vector3d cameradir = (this->center - this->eye).normalized();
@@ -110,13 +107,12 @@ void Camera::viewAll(const BoundingBox &bbox, float scalefactor)
 
 double Camera::zoomValue()
 {
-	return this->projection == PERSPECTIVE ? viewer_distance : height;
+	return zoom_value;
 }
 
 void Camera::zoom(int delta)
 {
-	this->viewer_distance *= pow(0.9, delta / 120.0);
-	this->height = this->viewer_distance;
+	this->zoom_value *= pow(0.9, delta / 120.0);
 }
 
 void Camera::setProjection(ProjectionType type)
@@ -129,6 +125,6 @@ std::string Camera::statusText()
 	boost::format fmt(_("Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], distance = %.2f"));
 	fmt % object_trans.x() % object_trans.y() % object_trans.z()
 		% object_rot.x() % object_rot.y() % object_rot.z()
-		% (this->projection == PERSPECTIVE ? viewer_distance : height);
+		% zoom_value;
 	return fmt.str();
 }

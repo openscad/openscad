@@ -59,8 +59,8 @@ public:
 	unsigned int pixel_height;
 
 protected:
-        // Perspective settings
-	double viewer_distance;
-	// Orthographic settings
-	double height; // world-space height of viewport
+        // This is the viewer-distance in perspective mode and in
+        // ortographic mode, this is defining the viewport height
+        // (in world-space)
+        double zoom_value;
 };
