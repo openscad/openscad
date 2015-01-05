@@ -101,25 +101,20 @@ void Camera::viewAll(const BoundingBox &bbox, float scalefactor)
 
 void Camera::zoom(int delta)
 {
-	if (this->projection == PERSPECTIVE) {
-		this->viewer_distance *= pow(0.9, delta / 120.0);
-	}
-	else {
-		this->height *= pow(0.9, delta / 120.0);
-	}
+	this->viewer_distance *= pow(0.9, delta / 120.0);
+	this->height = this->viewer_distance;
 }
 
 void Camera::setProjection(ProjectionType type)
 {
-	if (this->projection != type) {
-		switch (type) {
-		case PERSPECTIVE:
-			this->viewer_distance = this->height;
-			break;
-		case ORTHOGONAL:
-			this->height = this->viewer_distance;
-			break;
-		}
-		this->projection = type;
-	}
+	this->projection = type;
+}
+
+std::string Camera::statusText()
+{
+	boost::format fmt(_("Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], distance = %.2f"));
+	fmt % object_trans.x() % object_trans.y() % object_trans.z()
+		% object_rot.x() % object_rot.y() % object_rot.z()
+		% (this->projection == PERSPECTIVE ? viewer_distance : height);
+	return fmt.str();
 }
