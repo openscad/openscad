@@ -228,7 +228,7 @@ namespace CGALUtils {
 						if (ps) {
 							PRINTDB("Minkowski: child %d is nonconvex PolySet, transforming to Nef and decomposing...", i);
 							CGAL_Nef_polyhedron *p = createNefPolyhedronFromGeometry(*ps);
-							decomposed_nef = *p->p3;
+							if (!p->isEmpty()) decomposed_nef = *p->p3;
 							delete p;
 						} else {
 							PRINTDB("Minkowski: child %d is nonconvex Nef, decomposing...",i);
