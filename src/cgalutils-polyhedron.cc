@@ -98,7 +98,7 @@ namespace /* anonymous */ {
 #ifdef GEN_SURFACE_DEBUG
 				printf("[");
 				int fidx = 0;
-				BOOST_FOREACH(size_t i, indices) {
+				BOOST_REVERSE_FOREACH(size_t i, indices) {
 					if (fidx++ > 0) printf(",");
 					printf("%ld", i);
 				}
