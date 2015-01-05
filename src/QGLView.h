@@ -55,6 +55,7 @@ private:
 
 	bool mouse_drag_active;
 	QPoint last_mouse;
+    int override_cursor_stack;
 
 	void wheelEvent(QWheelEvent *event);
 	void mousePressEvent(QMouseEvent *event);

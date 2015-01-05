@@ -176,6 +176,8 @@ void QGLView::mousePressEvent(QMouseEvent *event)
 {
   mouse_drag_active = true;
   last_mouse = event->globalPos();
+  //init the cursor_stack
+  override_cursor_stack = 0;
 }
 
 void QGLView::mouseDoubleClickEvent (QMouseEvent *event) {
@@ -231,6 +233,11 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
       ) {
       // Left button rotates in xz, Shift-left rotates in xy
       // On Mac, Ctrl-Left is handled as right button on other platforms
+
+      // Change to rotate mouse cursor
+      override_cursor_stack++;
+      QApplication::setOverrideCursor(QCursor(QPixmap(QLatin1String(":/images/rotate.png")), 16, 16));
+
       cam.object_rot.x() += dy;
       if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0)
         cam.object_rot.y() += dx;
@@ -247,6 +254,11 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
       if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
         cam.viewer_distance += (GLdouble)dy;
       } else {
+
+      // change to translate mouse cursor
+      override_cursor_stack++;
+      //QApplication::setOverrideCursor(QCursor(QPixmap(QLatin1String(":/images/plain_pan.png")), 2, 3));
+      QApplication::setOverrideCursor(QCursor(Qt::SizeAllCursor));
 
       double mx = +(dx) * cam.viewer_distance/1000;
       double mz = -(dy) * cam.viewer_distance/1000;
@@ -297,6 +309,10 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
 void QGLView::mouseReleaseEvent(QMouseEvent*)
 {
   mouse_drag_active = false;
+  // back out all the cursor overrides
+  for (int i=0;i<override_cursor_stack; i++){
+    QApplication::restoreOverrideCursor();
+  }
   releaseMouse();
 }
 
