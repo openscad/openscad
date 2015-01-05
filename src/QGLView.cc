@@ -245,8 +245,8 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
 	      cam.zoom(-12.0 * dy);
       } else {
 
-      double mx = +(dx) * cam.zoomValue() / 1000;
-      double mz = -(dy) * cam.zoomValue() / 1000;
+      double mx = +(dx) * 3.0 * cam.zoomValue() / QWidget::width();
+      double mz = -(dy) * 3.0 * cam.zoomValue() / QWidget::height();
 
       double my = 0;
 #if (QT_VERSION < QT_VERSION_CHECK(4, 7, 0))
