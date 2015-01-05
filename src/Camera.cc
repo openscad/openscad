@@ -3,7 +3,7 @@
 #include "printutils.h"
 
 Camera::Camera(enum CameraType camtype) :
-	type(camtype), projection(Camera::PERSPECTIVE), fov(45), height(60), viewall(false)
+	type(camtype), projection(Camera::PERSPECTIVE), fov(45), viewall(false), height(60)
 {
 	PRINTD("Camera()");
 	if (this->type == Camera::GIMBAL) {
@@ -106,6 +106,11 @@ void Camera::viewAll(const BoundingBox &bbox, float scalefactor)
 	PRINTDB("modified eye    x y z %f %f %f",eye.x() % eye.y() % eye.z());
 	PRINTDB("modified obj trans x y z %f %f %f",object_trans.x() % object_trans.y() % object_trans.z());
 	PRINTDB("modified obj rot   x y z %f %f %f",object_rot.x() % object_rot.y() % object_rot.z());
+}
+
+double Camera::zoomValue()
+{
+	return this->projection == PERSPECTIVE ? viewer_distance : height;
 }
 
 void Camera::zoom(int delta)

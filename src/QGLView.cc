@@ -242,11 +242,11 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
       // Middle button pans in the xy plane
       // Shift-right and Shift-middle zooms
       if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
-        cam.viewer_distance += (GLdouble)dy;
+	      cam.zoom(-12.0 * dy);
       } else {
 
-      double mx = +(dx) * cam.viewer_distance/1000;
-      double mz = -(dy) * cam.viewer_distance/1000;
+      double mx = +(dx) * cam.zoomValue() / 1000;
+      double mz = -(dy) * cam.zoomValue() / 1000;
 
       double my = 0;
 #if (QT_VERSION < QT_VERSION_CHECK(4, 7, 0))
