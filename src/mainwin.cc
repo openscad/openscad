@@ -1505,7 +1505,7 @@ void MainWindow::updateTemporalVariables()
 	vpr.push_back(Value(fmodf(360 - qglview->cam.object_rot.z(), 360)));
 	top_ctx.set_variable("$vpr", ValuePtr(vpr));
 
-	top_ctx.set_variable("$vpd", ValuePtr(qglview->cam.viewer_distance));
+	top_ctx.set_variable("$vpd", ValuePtr(qglview->cam.zoomValue()));
 }
 
 
@@ -1529,7 +1529,7 @@ void MainWindow::updateCamera()
 	double rx = cam.object_rot.x();
 	double ry = cam.object_rot.y();
 	double rz = cam.object_rot.z();
-	double d = cam.viewer_distance;
+	double d = cam.zoomValue();
 
 	double x, y, z;
 	const ValuePtr vpr = root_module->lookup_variable("$vpr");

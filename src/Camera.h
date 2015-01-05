@@ -30,7 +30,9 @@ public:
 	void gimbalDefaultTranslate();
 	void setProjection(ProjectionType type);
 	void zoom(int delta);
+        void resetView();
 	void viewAll(const BoundingBox &bbox, float scalefactor = 1.0f);
+        double zoomValue();
         std::string statusText();
 
 	// Vectorcam
@@ -41,13 +43,9 @@ public:
 	// Gimbalcam
 	Eigen::Vector3d object_trans;
 	Eigen::Vector3d object_rot;
-	double viewer_distance;
 
 	// Perspective settings
 	double fov; // Field of view
-
-	// Orthographic settings
-	double height; // world-space height of viewport
 
 	// true if camera should try to view everything in a given
 	// bounding box.
@@ -59,4 +57,10 @@ public:
 
 	unsigned int pixel_width;
 	unsigned int pixel_height;
+
+protected:
+        // This is the viewer-distance in perspective mode and in
+        // ortographic mode, this is defining the viewport height
+        // (in world-space)
+        double zoom_value;
 };
