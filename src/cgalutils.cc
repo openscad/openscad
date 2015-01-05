@@ -92,6 +92,10 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 	if (plane_error) try {
 			CGAL_Polyhedron P;
 			bool err = CGALUtils::createPolyhedronFromPolySet(ps_tri, P);
+            if (!err) {
+                PRINTDB("Polyhedron is closed: %d", P.is_closed());
+                PRINTDB("Polyhedron is valid: %d", P.is_valid(false, 0));
+            }
 			if (!err) N = new CGAL_Nef_polyhedron3(P);
 		}
 		catch (const CGAL::Assertion_exception &e) {
