@@ -79,26 +79,19 @@ namespace /* anonymous */ {
 					indices.push_back(grid.data(v));
 				}
 
-				// We perform this test since there is a bug in CGAL's
-				// Polyhedron_incremental_builder_3::test_facet() which
-				// fails to detect duplicate indices
-				bool err = false;
-				for (std::size_t i = 0; i < indices.size(); ++i) {
-					// check if vertex indices[i] is already in the sequence [0..i-1]
-					for (std::size_t k = 0; k < i && !err; ++k) {
-						if (indices[k] == indices[i]) {
-							err = true;
-							break;
-						}
-					}
-				}
-				if (!err && B.test_facet(indices.begin(), indices.end())) {
+				// We remove duplicate indices since there is a bug in CGAL's
+				// Polyhedron_incremental_builder_3::test_facet() which fails to detect this
+				std::vector<size_t>::iterator last = std::unique(indices.begin(), indices.end());
+				std::advance(last, -1);
+				if (*last != indices.front()) last++; // In case the first & last are equal
+				indices.erase(last, indices.end());
+				if (indices.size() >= 3 && B.test_facet(indices.begin(), indices.end())) {
 					B.add_facet(indices.begin(), indices.end());
 				}
 #ifdef GEN_SURFACE_DEBUG
 				printf("[");
 				int fidx = 0;
-				BOOST_FOREACH(size_t i, indices) {
+				BOOST_REVERSE_FOREACH(size_t i, indices) {
 					if (fidx++ > 0) printf(",");
 					printf("%ld", i);
 				}
