@@ -410,6 +410,7 @@ SOURCES += src/version_check.cc \
            src/QGLView.cc \
            src/AutoUpdater.cc \
            \
+           src/grid.cc \
            src/builtin.cc \
            src/calc.cc \
            src/export.cc \
