@@ -43,6 +43,7 @@ public:
 	void resize(Vector3d newsize, const Eigen::Matrix<bool,3,1> &autosize);
 
 	bool is_convex() const;
+	boost::tribool convexValue() const { return this->convex; }
 
 private:
 	Polygon2d polygon;
