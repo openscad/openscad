@@ -1,2 +1,2 @@
 %square(20);
-cube(10);
+translate([1,1,0]) cube(10);
