@@ -64,7 +64,6 @@ static bool running_under_wine = false;
 
 void QGLView::init()
 {
-  cam.type = Camera::GIMBAL;
   resetView();
 
   this->mouse_drag_active = false;
@@ -245,6 +244,7 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
       if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
 	      cam.zoom(-12.0 * dy);
       } else {
+
       double mx = +(dx) * 3.0 * cam.zoomValue() / QWidget::width();
       double mz = -(dy) * 3.0 * cam.zoomValue() / QWidget::height();
 
