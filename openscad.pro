@@ -467,6 +467,7 @@ HEADERS += src/cgal.h \
            src/CGALRenderer.h \
            src/CGAL_Nef_polyhedron.h \
            src/CGAL_Nef3_workaround.h \
+           src/convex_hull_3_bugfix.h \
            src/cgalworker.h \
            src/Polygon2d-CGAL.h
 
