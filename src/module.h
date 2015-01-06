@@ -81,6 +81,8 @@ public:
 	Module(const Feature& feature) : AbstractModule(feature) { }
 	virtual ~Module();
 
+        virtual void add_annotations(AnnotationList *annotations);
+
 	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx = NULL) const;
 	virtual std::string dump(const std::string &indent, const std::string &name) const;
 	static const std::string& stack_element(int n) { return module_stack[n]; };
@@ -89,6 +91,9 @@ public:
 	AssignmentList definition_arguments;
 
 	LocalScope scope;
+
+protected:
+        AnnotationMap annotations;
 
 private:
 	static std::deque<std::string> module_stack;

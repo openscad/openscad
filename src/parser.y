@@ -195,6 +195,16 @@ statement:
                 free($2);
                 delete $4;
             }
+        | annotations TOK_MODULE TOK_ID '(' arguments_decl optional_commas ')'
+            {
+                Module *newmodule = new Module();
+                newmodule->definition_arguments = *$5;
+                newmodule->add_annotations($1);
+                scope_stack.top()->modules[$3] = newmodule;
+                scope_stack.push(&newmodule->scope);
+                free($3);
+                delete $5;
+            }
           statement
             {
                 scope_stack.pop();
