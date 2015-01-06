@@ -178,6 +178,13 @@ Module::~Module()
 {
 }
 
+void Module::add_annotations(AnnotationList *annotations)
+{
+	for (AnnotationList::iterator it = annotations->begin();it != annotations->end();it++) {
+		this->annotations.insert(std::pair<const std::string, Annotation *>((*it).get_name(), &(*it)));
+	}
+}
+
 AbstractNode *Module::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	if (StackCheck::inst()->check()) {
