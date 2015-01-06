@@ -39,7 +39,9 @@
 #include "PlatformUtils.h"
 #include "LibraryInfo.h"
 #include "nodedumper.h"
+#include "stackcheck.h"
 #include "CocoaUtils.h"
+#include "FontCache.h"
 
 #include <string>
 #include <vector>
@@ -88,6 +90,17 @@ std::string currentdir;
 static bool arg_info = false;
 static std::string arg_colorscheme;
 
+#define QUOTE(x__) # x__
+#define QUOTED(x__) QUOTE(x__)
+
+std::string openscad_versionnumber = QUOTED(OPENSCAD_VERSION)
+#ifdef OPENSCAD_COMMIT
+	" (git " QUOTED(OPENSCAD_COMMIT) ")"
+#endif
+;
+
+std::string openscad_version = "OpenSCAD " + openscad_versionnumber;
+
 class Echostream : public std::ofstream
 {
 public:
@@ -103,7 +116,7 @@ public:
 	}
 };
 
-static void help(const char *progname)
+static void help(const char *progname, bool failure = false)
 {
   int tablen = strlen(progname)+8;
   char tabstr[tablen+1];
@@ -112,6 +125,7 @@ static void help(const char *progname)
 
 	PRINTB("Usage: %1% [ -o output_file [ -d deps_file ] ]\\\n"
          "%2%[ -m make_command ] [ -D var=val [..] ] \\\n"
+	 "%2%[ --help ] print this help message and exit \\\n"
          "%2%[ --version ] [ --info ] \\\n"
          "%2%[ --camera=translatex,y,z,rotx,y,z,dist | \\\n"
          "%2%  --camera=eyex,y,z,centerx,y,z ] \\\n"
@@ -130,15 +144,15 @@ static void help(const char *progname)
 #endif
          "%2%filename\n",
  				 progname % (const char *)tabstr);
-	exit(1);
+	exit(failure ? 1 : 0);
 }
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 static void version()
 {
-	PRINTB("OpenSCAD version %s\n", TOSTRING(OPENSCAD_VERSION));
-	exit(1);
+	PRINTB("OpenSCAD version %s", TOSTRING(OPENSCAD_VERSION));
+	exit(0);
 }
 
 static void info()
@@ -156,6 +170,25 @@ static void info()
 	std::cout << csgInfo.glview->getRendererInfo() << "\n";
 
 	exit(0);
+}
+
+/**
+ * Initialize gettext. This must be called after the appliation path was
+ * determined so we can lookup the resource path for the language translation
+ * files.
+ */
+void localization_init() {
+	fs::path po_dir(PlatformUtils::resourcePath("locale"));
+	std::string locale_path(po_dir.string());
+
+	if (fs::is_directory(locale_path)) {
+		setlocale(LC_ALL, "");
+		bindtextdomain("openscad", locale_path.c_str());
+		bind_textdomain_codeset("openscad", "UTF-8");
+		textdomain("openscad");
+	} else {
+		PRINT("Could not initialize localization.");
+	}
 }
 
 Camera get_camera(po::variables_map vm)
@@ -282,7 +315,9 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	const std::string application_path = boosty::stringy(boosty::absolute(boost::filesystem::path(argv[0]).parent_path()));
 #endif	
 	PlatformUtils::registerApplicationPath(application_path);
-	parser_init(PlatformUtils::applicationPath());
+	parser_init();
+	localization_init();
+
 	Tree tree;
 #ifdef ENABLE_CGAL
 	GeometryEvaluator geomevaluator(tree);
@@ -422,10 +457,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 			// echo or OpenCSG png -> don't necessarily need geometry evaluation
 		} else {
 			root_geom = geomevaluator.evaluateGeometry(*tree.root(), true);
-			if (!root_geom) {
-				PRINT("No top-level object found.");
-				return 1;
-			}
+			if (!root_geom) root_geom.reset(new CGAL_Nef_polyhedron());
 			if (renderer == Render::CGAL && root_geom->getDimension() == 3) {
 				const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron*>(root_geom.get());
 				if (!N) {
@@ -517,6 +549,7 @@ Q_IMPORT_PLUGIN(qtaccessiblewidgets)
 #endif // MINGW64/MINGW32/MSCVER
 #include "MainWindow.h"
 #include "launchingscreen.h"
+#include "qsettings.h"
   #ifdef __APPLE__
   #include "EventFilter.h"
   #endif
@@ -524,6 +557,10 @@ Q_IMPORT_PLUGIN(qtaccessiblewidgets)
 #include <QDir>
 #include <QFileInfo>
 #include <QMetaType>
+#include <QTextCodec>
+#include <QProgressDialog>
+#include <QFutureWatcher>
+#include <QtConcurrentRun>
 
 Q_DECLARE_METATYPE(shared_ptr<const Geometry>);
 
@@ -553,6 +590,33 @@ bool QtUseGUI()
 	return useGUI;
 }
 
+void dialogThreadFunc(FontCacheInitializer *initializer)
+{
+	 initializer->run();
+}
+
+void dialogInitHandler(FontCacheInitializer *initializer, void *)
+{
+	QProgressDialog dialog;
+	dialog.setLabelText(_("Fontconfig needs to update its font cache.\nThis can take up to a couple of minutes."));
+	dialog.setMinimum(0);
+	dialog.setMaximum(0);
+	dialog.setCancelButton(0);
+
+	QFutureWatcher<void> futureWatcher;
+	QObject::connect(&futureWatcher, SIGNAL(finished()), &dialog, SLOT(reset()));
+	QObject::connect(&dialog, SIGNAL(canceled()), &futureWatcher, SLOT(cancel()));
+	QObject::connect(&futureWatcher, SIGNAL(progressRangeChanged(int,int)), &dialog, SLOT(setRange(int,int)));
+	QObject::connect(&futureWatcher, SIGNAL(progressValueChanged(int)), &dialog, SLOT(setValue(int)));
+
+	QFuture<void> future = QtConcurrent::run(boost::bind(dialogThreadFunc, initializer));
+	futureWatcher.setFuture(future);
+
+	dialog.exec();
+
+	futureWatcher.waitForFinished();
+}
+
 int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, char ** argv)
 {
 #ifdef Q_OS_MACX
@@ -563,6 +627,9 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
     }
 #endif
 	QApplication app(argc, argv, true); //useGUI);
+	// remove ugly frames in the QStatusBar when using additional widgets
+	app.setStyleSheet("QStatusBar::item { border: 0px solid black; }");
+
 #ifdef Q_OS_MAC
 	app.installEventFilter(new EventFilter(&app));
 #endif
@@ -573,6 +640,8 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	QCoreApplication::setApplicationVersion(TOSTRING(OPENSCAD_VERSION));
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 	QGuiApplication::setApplicationDisplayName("OpenSCAD");
+#else
+	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
 #endif
 	
 	// Other global settings
@@ -581,7 +650,14 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	const QString &app_path = app.applicationDirPath();
 	PlatformUtils::registerApplicationPath(app_path.toLocal8Bit().constData());
 
-  parser_init(PlatformUtils::applicationPath());
+	FontCache::registerProgressHandler(dialogInitHandler);
+
+	parser_init();
+
+	QSettings settings;
+	if (settings.value("advanced/localization", true).toBool()) {
+	        localization_init();
+	}
 
 #ifdef Q_OS_MAC
 	installAppleEventHandlers();
@@ -594,14 +670,20 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	updater->init();
 #endif
 
+	QGLFormat fmt;
 #if 0 /*** disabled by clifford wolf: adds rendering artefacts with OpenCSG ***/
 	// turn on anti-aliasing
-	QGLFormat f;
-	f.setSampleBuffers(true);
-	f.setSamples(4);
-	QGLFormat::setDefaultFormat(f);
+	fmt.setSampleBuffers(true);
+	fmt.setSamples(4);
 #endif
-	
+	// The default SwapInterval causes very bad interactive behavior as
+	// waiting for the buffer swap seems to block mouse events. So the
+	// effect is that we can process mouse events at the frequency of
+	// the screen retrace interval causing them to queue up.
+	// (see https://bugreports.qt-project.org/browse/QTBUG-39370
+	fmt.setSwapInterval(0);
+	QGLFormat::setDefaultFormat(fmt);
+
 	set_render_color_scheme(arg_colorscheme, false);
 	
 	bool noInputFiles = false;
@@ -610,7 +692,6 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 		inputFiles.push_back("");
 	}
 
-	QSettings settings;
 	QVariant showOnStartup = settings.value("launcher/showOnStartup");
 	if (noInputFiles && (showOnStartup.isNull() || showOnStartup.toBool())) {
 		LaunchingScreen *launcher = new LaunchingScreen();
@@ -655,11 +736,14 @@ int main(int argc, char **argv)
 {
 	int rc = 0;
 	bool isGuiLaunched = getenv("GUI_LAUNCHED") != 0;
+	StackCheck::inst()->init();
+	
 #ifdef Q_OS_MAC
 	if (isGuiLaunched) set_output_handler(CocoaUtils::nslog, NULL);
 #else
 	PlatformUtils::ensureStdIO();
 #endif
+
 #ifdef ENABLE_CGAL
 	// Causes CGAL errors to abort directly instead of throwing exceptions
 	// (which we don't catch). This gives us stack traces without rerunning in gdb.
@@ -714,7 +798,7 @@ int main(int argc, char **argv)
 	}
 	catch(const std::exception &e) { // Catches e.g. unknown options
 		PRINTB("%s\n", e.what());
-		help(argv[0]);
+		help(argv[0], true);
 	}
 
 	OpenSCAD::debug = "";
@@ -742,27 +826,25 @@ int main(int argc, char **argv)
 
 	if (vm.count("o")) {
 		// FIXME: Allow for multiple output files?
-		if (output_file) help(argv[0]);
+		if (output_file) help(argv[0], true);
 		output_file = vm["o"].as<string>().c_str();
 	}
 	if (vm.count("s")) {
 		printDeprecation("DEPRECATED: The -s option is deprecated. Use -o instead.\n");
-		if (output_file) help(argv[0]);
+		if (output_file) help(argv[0], true);
 		output_file = vm["s"].as<string>().c_str();
 	}
 	if (vm.count("x")) { 
 		printDeprecation("DEPRECATED: The -x option is deprecated. Use -o instead.\n");
-		if (output_file) help(argv[0]);
+		if (output_file) help(argv[0], true);
 		output_file = vm["x"].as<string>().c_str();
 	}
 	if (vm.count("d")) {
-		if (deps_output_file)
-			help(argv[0]);
+		if (deps_output_file) help(argv[0], true);
 		deps_output_file = vm["d"].as<string>().c_str();
 	}
 	if (vm.count("m")) {
-		if (make_command)
-			help(argv[0]);
+		if (make_command) help(argv[0], true);
 		make_command = vm["m"].as<string>().c_str();
 	}
 
@@ -799,13 +881,11 @@ int main(int argc, char **argv)
 	bool cmdlinemode = false;
 	if (output_file) { // cmd-line mode
 		cmdlinemode = true;
-		if (!inputFiles.size()) help(argv[0]);
+		if (!inputFiles.size()) help(argv[0], true);
 	}
 
 	if (arg_info || cmdlinemode) {
-		if (inputFiles.size() > 1) {
-			help(argv[0]);
-		}
+		if (inputFiles.size() > 1) help(argv[0], true);
 		rc = cmdline(deps_output_file, inputFiles[0], camera, output_file, original_path, renderer, argc, argv);
 	}
 	else if (QtUseGUI()) {
@@ -813,7 +893,7 @@ int main(int argc, char **argv)
 	}
 	else {
 		PRINT("Requested GUI mode but can't open display!\n");
-		help(argv[0]);
+		help(argv[0], true);
 	}
 
 	Builtins::instance(true);

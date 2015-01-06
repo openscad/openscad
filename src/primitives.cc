@@ -108,7 +108,7 @@ public:
 	double fn, fs, fa;
 	primitive_type_e type;
 	int convexity;
-	Value points, paths, faces;
+	ValuePtr points, paths, faces;
 	virtual Geometry *createGeometry() const;
 };
 
@@ -125,19 +125,19 @@ public:
  */
 Value PrimitiveModule::lookup_radius(const Context &ctx, const std::string &diameter_var, const std::string &radius_var) const
 {
-	const Value d = ctx.lookup_variable(diameter_var, true);
-	const Value r = ctx.lookup_variable(radius_var, true);
-	const bool r_defined = (r.type() == Value::NUMBER);
+	ValuePtr d = ctx.lookup_variable(diameter_var, true);
+	ValuePtr r = ctx.lookup_variable(radius_var, true);
+	const bool r_defined = (r->type() == Value::NUMBER);
 	
-	if (d.type() == Value::NUMBER) {
+	if (d->type() == Value::NUMBER) {
 		if (r_defined) {
 			PRINTB("WARNING: Ignoring radius variable '%s' as diameter '%s' is defined too.", radius_var % diameter_var);
 		}
-		return Value(d.toDouble() / 2.0);
+		return Value(d->toDouble() / 2.0);
 	} else if (r_defined) {
-		return r;
+		return *r;
 	} else {
-		return Value();
+		return Value::undefined;
 	}
 }
 
@@ -179,9 +179,9 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 	Context c(ctx);
 	c.setVariables(args, evalctx);
 
-	node->fn = c.lookup_variable("$fn").toDouble();
-	node->fs = c.lookup_variable("$fs").toDouble();
-	node->fa = c.lookup_variable("$fa").toDouble();
+	node->fn = c.lookup_variable("$fn")->toDouble();
+	node->fs = c.lookup_variable("$fs")->toDouble();
+	node->fa = c.lookup_variable("$fa")->toDouble();
 
 	if (node->fs < F_MINIMUM) {
 		PRINTB("WARNING: $fs too small - clamping to %f", F_MINIMUM);
@@ -194,14 +194,14 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 
 	switch (this->type)  {
 	case CUBE: {
-		Value size = c.lookup_variable("size");
-		Value center = c.lookup_variable("center");
-		size.getDouble(node->x);
-		size.getDouble(node->y);
-		size.getDouble(node->z);
-		size.getVec3(node->x, node->y, node->z);
-		if (center.type() == Value::BOOL) {
-			node->center = center.toBool();
+		ValuePtr size = c.lookup_variable("size");
+		ValuePtr center = c.lookup_variable("center");
+		size->getDouble(node->x);
+		size->getDouble(node->y);
+		size->getDouble(node->z);
+		size->getVec3(node->x, node->y, node->z);
+		if (center->type() == Value::BOOL) {
+			node->center = center->toBool();
 		}
 		break;
 	}
@@ -213,9 +213,9 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		break;
 	}
 	case CYLINDER: {
-		const Value h = c.lookup_variable("h");
-		if (h.type() == Value::NUMBER) {
-			node->h = h.toDouble();
+		ValuePtr h = c.lookup_variable("h");
+		if (h->type() == Value::NUMBER) {
+			node->h = h->toDouble();
 		}
 
 		const Value r = lookup_radius(c, "d", "r");
@@ -232,32 +232,32 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 			node->r2 = r2.toDouble();
 		}
 		
-		const Value center = c.lookup_variable("center");
-		if (center.type() == Value::BOOL) {
-			node->center = center.toBool();
+		ValuePtr center = c.lookup_variable("center");
+		if (center->type() == Value::BOOL) {
+			node->center = center->toBool();
 		}
 		break;
 	}
 	case POLYHEDRON: {
 		node->points = c.lookup_variable("points");
 		node->faces = c.lookup_variable("faces");
-		if (node->faces.type() == Value::UNDEFINED) {
+		if (node->faces->type() == Value::UNDEFINED) {
 			// backwards compatible
 			node->faces = c.lookup_variable("triangles", true);
-			if (node->faces.type() != Value::UNDEFINED) {
+			if (node->faces->type() != Value::UNDEFINED) {
 				printDeprecation("DEPRECATED: polyhedron(triangles=[]) will be removed in future releases. Use polyhedron(faces=[]) instead.");
 			}
 		}
 		break;
 	}
 	case SQUARE: {
-		Value size = c.lookup_variable("size");
-		Value center = c.lookup_variable("center");
-		size.getDouble(node->x);
-		size.getDouble(node->y);
-		size.getVec2(node->x, node->y);
-		if (center.type() == Value::BOOL) {
-			node->center = center.toBool();
+		ValuePtr size = c.lookup_variable("size");
+		ValuePtr center = c.lookup_variable("center");
+		size->getDouble(node->x);
+		size->getDouble(node->y);
+		size->getVec2(node->x, node->y);
+		if (center->type() == Value::BOOL) {
+			node->center = center->toBool();
 		}
 		break;
 	}
@@ -275,7 +275,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 	}
 	}
 
-	node->convexity = c.lookup_variable("convexity", true).toDouble();
+	node->convexity = c.lookup_variable("convexity", true)->toDouble();
 	if (node->convexity < 1)
 		node->convexity = 1;
 
@@ -505,19 +505,18 @@ Geometry *PrimitiveNode::createGeometry() const
 		PolySet *p = new PolySet(3);
 		g = p;
 		p->setConvexity(this->convexity);
-		for (size_t i=0; i<this->faces.toVector().size(); i++)
+		for (size_t i=0; i<this->faces->toVector().size(); i++)
 		{
 			p->append_poly();
-			const Value::VectorType &vec = this->faces.toVector()[i].toVector();
+			const Value::VectorType &vec = this->faces->toVector()[i].toVector();
 			for (size_t j=0; j<vec.size(); j++) {
 				size_t pt = vec[j].toDouble();
-				if (pt < this->points.toVector().size()) {
+				if (pt < this->points->toVector().size()) {
 					double px, py, pz;
-					if (!this->points.toVector()[pt].getVec3(px, py, pz) ||
+					if (!this->points->toVector()[pt].getVec3(px, py, pz) ||
 							isinf(px) || isinf(py) || isinf(pz)) {
 						PRINTB("ERROR: Unable to convert point at index %d to a vec3 of numbers", j);
-						delete p;
-						return NULL;
+						return p;
 					}
 					p->insert_vertex(px, py, pz);
 				}
@@ -544,8 +543,8 @@ Geometry *PrimitiveNode::createGeometry() const
 			o.vertices[2] = v2;
 			o.vertices[3] = Vector2d(v1[0], v2[1]);
 			p->addOutline(o);
-			p->setSanitized(true);
 		}
+		p->setSanitized(true);
 	}
 		break;
 	case CIRCLE: {
@@ -561,8 +560,8 @@ Geometry *PrimitiveNode::createGeometry() const
 				o.vertices[i] = Vector2d(this->r1*cos(phi), this->r1*sin(phi));
 			}
 			p->addOutline(o);
-			p->setSanitized(true);
 		}
+		p->setSanitized(true);
 	}
 		break;
 	case POLYGON:	{
@@ -571,24 +570,22 @@ Geometry *PrimitiveNode::createGeometry() const
 
 			Outline2d outline;
 			double x,y;
-			const Value::VectorType &vec = this->points.toVector();
+			const Value::VectorType &vec = this->points->toVector();
 			for (unsigned int i=0;i<vec.size();i++) {
 				const Value &val = vec[i];
-				if (!val.getVec2(x, y) ||
-						isinf(x) || isinf(y)) {
+				if (!val.getVec2(x, y) || isinf(x) || isinf(y)) {
 					PRINTB("ERROR: Unable to convert point %s at index %d to a vec2 of numbers", 
 								 val.toString() % i);
-					delete p;
-					return NULL;
+					return p;
 				}
 				outline.vertices.push_back(Vector2d(x, y));
 			}
 
-			if (this->paths.toVector().size() == 0 && outline.vertices.size() > 2) {
+			if (this->paths->toVector().size() == 0 && outline.vertices.size() > 2) {
 				p->addOutline(outline);
 			}
 			else {
-				BOOST_FOREACH(const Value &polygon, this->paths.toVector()) {
+				BOOST_FOREACH(const Value &polygon, this->paths->toVector()) {
 					Outline2d curroutline;
 					BOOST_FOREACH(const Value &index, polygon.toVector()) {
 						unsigned int idx = index.toDouble();
@@ -601,11 +598,7 @@ Geometry *PrimitiveNode::createGeometry() const
 				}
 			}
         
-			if (p->outlines().size() == 0) {
-				delete p;
-				g = NULL;
-			}
-			else {
+			if (p->outlines().size() > 0) {
 				p->setConvexity(convexity);
 			}
 	}
@@ -635,8 +628,8 @@ std::string PrimitiveNode::toString() const
 					 << ", r2 = " << this->r2 << ", center = " << (center ? "true" : "false") << ")";
 			break;
 	case POLYHEDRON:
-		stream << "(points = " << this->points
-					 << ", faces = " << this->faces
+		stream << "(points = " << *this->points
+					 << ", faces = " << *this->faces
 					 << ", convexity = " << this->convexity << ")";
 			break;
 	case SQUARE:
@@ -648,7 +641,7 @@ std::string PrimitiveNode::toString() const
 					 << ", $fs = " << this->fs << ", r = " << this->r1 << ")";
 		break;
 	case POLYGON:
-		stream << "(points = " << this->points << ", paths = " << this->paths << ", convexity = " << this->convexity << ")";
+		stream << "(points = " << *this->points << ", paths = " << *this->paths << ", convexity = " << this->convexity << ")";
 			break;
 	default:
 		assert(false);

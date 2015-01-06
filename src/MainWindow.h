@@ -1,5 +1,6 @@
 #pragma once
 
+#include "qtgettext.h"
 #include <QMainWindow>
 #include <QIcon>
 #include "ui_MainWindow.h"
@@ -13,6 +14,7 @@
 #include <vector>
 #include <QMutex>
 #include <QSet>
+#include <QTime>
 
 enum export_type_e {
 	EXPORT_TYPE_UNKNOWN,
@@ -38,6 +40,8 @@ public:
 	QTimer *autoReloadTimer;
 	std::string autoReloadId;
 	QTimer *waitAfterReloadTimer;
+
+	QTime renderingTime;
 
 	ModuleContext top_ctx;
 	FileModule *root_module;      // Result of parsing
@@ -67,6 +71,7 @@ public:
 	QAction *actionRecentFile[UIUtils::maxRecentFiles];
         QMap<QString, QString> knownFileExtensions;
 
+        QLabel *versionLabel;
         QWidget *editorDockTitleWidget;
         QWidget *consoleDockTitleWidget;
         
@@ -112,6 +117,7 @@ private:
 	void show_examples();
 	void setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel);
         void addKeyboardShortCut(const QList<QAction *> &actions);
+        void updateStatusBar(class ProgressWidget *progressWidget);
 
 	EditorInterface *editor;
 

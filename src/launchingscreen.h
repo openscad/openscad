@@ -3,6 +3,8 @@
 #include <QString>
 #include <QDialog>
 #include <QTreeWidgetItem>
+
+#include "qtgettext.h"
 #include "ui_launchingscreen.h"
 
 class LaunchingScreen : public QDialog, public Ui::LaunchingScreen

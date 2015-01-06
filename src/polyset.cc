@@ -25,8 +25,11 @@
  */
 
 #include "polyset.h"
+#include "polyset-utils.h"
 #include "linalg.h"
 #include "printutils.h"
+#include "grid.h"
+
 #include <Eigen/LU>
 #include <boost/foreach.hpp>
 
@@ -140,20 +143,10 @@ void PolySet::transform(const Transform3d &mat)
 	}
 }
 
-namespace CGALUtils {
-	extern bool is_approximately_convex(const PolySet &ps);
-}
-
 bool PolySet::is_convex() const {
-	if (convex)  return true;
+	if (convex || this->isEmpty()) return true;
 	if (!convex) return false;
-
-#ifdef ENABLE_CGAL
-	convex = CGALUtils::is_approximately_convex(*this);
-	return convex;
-#else
-	return false;
-#endif
+	return PolysetUtils::is_approximately_convex(*this);
 }
 
 void PolySet::resize(Vector3d newsize, const Eigen::Matrix<bool,3,1> &autosize)
@@ -181,6 +174,17 @@ void PolySet::resize(Vector3d newsize, const Eigen::Matrix<bool,3,1> &autosize)
     0, 0, 0, 1;
 
 	this->transform(t);
+}
+
+void PolySet::quantizeVertices()
+{
+	Grid3d<int> grid(GRID_FINE);
+	BOOST_FOREACH(Polygon &p, this->polygons) {
+		BOOST_FOREACH(Vector3d &v, p) {
+			// align v to the grid
+			if (!grid.has(v)) grid.align(v);
+		}
+	}
 }
 
 // all GL functions grouped together here
@@ -249,7 +253,7 @@ void PolySet::render_surface(Renderer::csgmode_e csgmode, const Transform3d &m, 
 #endif /* ENABLE_OPENCSG */
 	if (this->dim == 2) {
 		// Render 2D objects 1mm thick, but differences slightly larger
-		double zbase = 1 + (csgmode & CSGMODE_DIFFERENCE_FLAG) * 0.1;
+		double zbase = 1 + ((csgmode & CSGMODE_DIFFERENCE_FLAG) ? 0.1 : 0);
 		glBegin(GL_TRIANGLES);
 
 		// Render top+bottom
@@ -309,7 +313,7 @@ void PolySet::render_surface(Renderer::csgmode_e csgmode, const Transform3d &m, 
 		else {
 			// If we don't have borders, use the polygons as borders.
 			// FIXME: When is this used?
-			const std::vector<Polygon> *borders_p = &polygons;
+			const Polygons *borders_p = &polygons;
 			for (size_t i = 0; i < borders_p->size(); i++) {
 				const Polygon *poly = &borders_p->at(i);
 				for (size_t j = 1; j <= poly->size(); j++) {
@@ -378,7 +382,7 @@ void PolySet::render_edges(Renderer::csgmode_e csgmode) const
 		}
 		else {
 			// Render 2D objects 1mm thick, but differences slightly larger
-			double zbase = 1 + (csgmode & CSGMODE_DIFFERENCE_FLAG) * 0.1;
+			double zbase = 1 + ((csgmode & CSGMODE_DIFFERENCE_FLAG) ? 0.1 : 0);
 
 			BOOST_FOREACH(const Outline2d &o, polygon.outlines()) {
 				// Render top+bottom outlines

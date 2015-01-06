@@ -1,10 +1,12 @@
 #include <stdlib.h>
+#include <iomanip>
 
 #include "PlatformUtils.h"
-#include "boosty.h"
-#include <Eigen/Core>
-#ifdef USE_SCINTILLA_EDITOR
-#include <Qsci/qsciglobal.h>
+
+#ifdef INSTALL_SUFFIX
+#define RESOURCE_FOLDER(path) path INSTALL_SUFFIX
+#else
+#define RESOURCE_FOLDER(path) path
 #endif
 
 extern std::vector<std::string> librarypath;
@@ -23,7 +25,6 @@ static std::string lookupResourcesPath()
 	fs::path resourcedir(applicationpath);
 	PRINTDB("Looking up resource folder with application path '%s'", resourcedir.c_str());
 	
-#ifndef WIN32
 #ifdef __APPLE__
 	const char *searchpath[] = {
 	    "../Resources", 	// Resources can be bundled on Mac.
@@ -32,15 +33,24 @@ static std::string lookupResourcesPath()
 	    NULL
 	};
 #else
-	const char *searchpath[] = {
-	    "../share/openscad",
-	    "../../share/openscad",
+#ifdef WIN32
+    const char *searchpath[] = {
+        ".", // Release location
+        RESOURCE_FOLDER("../share/openscad"), // MSYS2 location
+        "..", // Dev location
+        NULL
+    };
+#else
+    const char *searchpath[] = {
+	    RESOURCE_FOLDER("../share/openscad"),
+	    RESOURCE_FOLDER("../../share/openscad"),
 	    ".",
 	    "..",
 	    "../..",
 	    NULL
 	};
 #endif	
+#endif
 
 	fs::path tmpdir;
 	for (int a = 0;searchpath[a] != NULL;a++) {
@@ -55,7 +65,6 @@ static std::string lookupResourcesPath()
 		break;
 	    }
 	}
-#endif // !WIN32
 
 	// resourcedir defaults to applicationPath
 	std::string result = boosty::stringy(boosty::canonical(resourcedir));
@@ -151,12 +160,27 @@ bool PlatformUtils::createBackupPath()
 }
 
 // This is the built-in read-only resources path
-std::string PlatformUtils::resourcesPath()
+std::string PlatformUtils::resourceBasePath()
 {
 	if (!path_initialized) {
 	    throw std::runtime_error("PlatformUtils::resourcesPath(): application path not initialized!");
 	}
 	return resourcespath;
+}
+
+fs::path PlatformUtils::resourcePath(const std::string &resource)
+{
+	fs::path base(resourceBasePath());
+	if (!fs::is_directory(base)) {
+		return fs::path();
+	}
+	
+	fs::path resource_dir = base / resource;
+	if (!fs::is_directory(resource_dir)) {
+		return fs::path();
+	}
+	
+	return resource_dir;
 }
 
 int PlatformUtils::setenv(const char *name, const char *value, int overwrite)
@@ -173,4 +197,26 @@ int PlatformUtils::setenv(const char *name, const char *value, int overwrite)
 #else
     return ::setenv(name, value, overwrite);
 #endif
+}
+
+std::string PlatformUtils::toMemorySizeString(uint64_t bytes, int digits)
+{
+	static const char *units[] = { "B", "kB", "MB", "GB", "TB", NULL };
+	
+	int idx = 0;
+	double val = bytes;
+	while (true) {
+		if (val < 1024.0) {
+			break;
+		}
+		if (units[idx + 1] == NULL) {
+			break;
+		}
+		idx++;
+		val /= 1024.0;
+	}
+	
+	boost::format fmt("%f %s");
+	fmt % boost::io::group(std::setprecision(digits), val) % units[idx];
+	return fmt.str();
 }

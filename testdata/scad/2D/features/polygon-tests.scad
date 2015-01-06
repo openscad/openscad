@@ -26,4 +26,10 @@ translate([0,0,0])
 polygon(points = [[0,1], [0,0], [1,0], [1,1], [0.8,0.8], [0.8,0.2], [0.2,0.2], [0.2,0.8]],
         paths = [[7,6,5,4,3,2,1,0],[7,0,3,4] ]);
 
+
+// More malformed polygons
+polyhedron(points = undef, paths = [[1, 2, 3]]);
+polyhedron(points = [[0,0,0],[1,1,1]], paths = undef);
+polyhedron(points=[0], paths = [[0]]);
+    
 // FIXME: convexity

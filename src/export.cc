@@ -133,7 +133,7 @@ void export_stl(const PolySet &ps, std::ostream &output)
 
 	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
 	output << "solid OpenSCAD_Model\n";
-	BOOST_FOREACH(const PolySet::Polygon &p, triangulated.polygons) {
+	BOOST_FOREACH(const Polygon &p, triangulated.polygons) {
 		assert(p.size() == 3); // STL only allows triangles
 		std::stringstream stream;
 		stream << p[0][0] << " " << p[0][1] << " " << p[0][2];
@@ -246,7 +246,7 @@ static void export_stl(const CGAL_Polyhedron &P, std::ostream &output)
 void export_stl(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
 {
 	if (!root_N->p3->is_simple()) {
-		PRINT("Warning: Exported object may not be a valid 2-manifold and may need repair");
+		PRINT("WARNING: Exported object may not be a valid 2-manifold and may need repair");
 	}
 
 	bool usePolySet = true;
@@ -271,10 +271,10 @@ void export_stl(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
 			export_stl(P, output);
 		}
 		catch (const CGAL::Assertion_exception &e) {
-			PRINTB("CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s", e.what());
+			PRINTB("ERROR: CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s", e.what());
 		}
 		catch (...) {
-			PRINT("CGAL unknown error in CGAL_Nef_polyhedron3::convert_to_Polyhedron()");
+			PRINT("ERROR: CGAL unknown error in CGAL_Nef_polyhedron3::convert_to_Polyhedron()");
 		}
 		CGAL::set_error_behaviour(old_behaviour);
 	}
@@ -291,7 +291,7 @@ void export_off(const class PolySet &ps, std::ostream &output)
 void export_off(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
 {
 	if (!root_N->p3->is_simple()) {
-		PRINT("Object isn't a valid 2-manifold! Modify your design.");
+		PRINT("WARNING: Export failed, the object isn't a valid 2-manifold.");
 		return;
 	}
 	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
@@ -301,7 +301,7 @@ void export_off(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
 		output << P;
 	}
 	catch (const CGAL::Assertion_exception &e) {
-		PRINTB("CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s", e.what());
+		PRINTB("ERROR: CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s", e.what());
 	}
 	CGAL::set_error_behaviour(old_behaviour);
 }
@@ -321,7 +321,7 @@ void export_amf(const class PolySet &ps, std::ostream &output)
 void export_amf(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
 {
 	if (!root_N->p3->is_simple()) {
-		PRINT("Object isn't a valid 2-manifold! Modify your design.");
+		PRINT("WARNING: Export failed, the object isn't a valid 2-manifold.");
 		return;
 	}
 	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
@@ -427,7 +427,7 @@ void export_amf(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
 			<< " </object>\r\n"
 			<< "</amf>\r\n";
 	} catch (CGAL::Assertion_exception e) {
-		PRINTB("CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s", e.what());
+		PRINTB("ERROR: CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s", e.what());
 	}
 	CGAL::set_error_behaviour(old_behaviour);
 	setlocale(LC_NUMERIC, ""); // Set default locale
@@ -505,11 +505,15 @@ void export_svg(const Polygon2d &poly, std::ostream &output)
 	int miny = floor(-bbox.max().y());
 	int maxx = ceil(bbox.max().x());
 	int maxy = ceil(-bbox.min().y());
-	
+
+	int width = maxx - minx;
+	int height = maxy - miny;
 	output
 		<< "<?xml version=\"1.0\" standalone=\"no\"?>\n"
 		<< "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n"
-		<< "<svg width=\"" << (maxx - minx) << "\" height=\"" << (maxy - miny) << "\" viewBox=\"" << (minx - 1) << " " << (miny - 1) << " " << (maxx - minx + 2) << " " << (maxy - miny + 2) << "\" xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">\n"
+		<< "<svg width=\"" << width << "\" height=\"" << height
+		<< "\" viewBox=\"" << minx << " " << miny << " " << width << " " << height
+		<< "\" xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">\n"
 		<< "<title>OpenSCAD Model</title>\n";
 
 	output << "<path d=\"\n";

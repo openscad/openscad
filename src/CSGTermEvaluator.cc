@@ -95,7 +95,13 @@ static shared_ptr<CSGTerm> evaluate_csg_term_from_geometry(const State &state,
 {
 	std::stringstream stream;
 	stream << node.name() << node.index();
-	shared_ptr<CSGTerm> t(new CSGTerm(geom, state.matrix(), state.color(), stream.str()));
+
+	// We cannot render Polygon2d directly, so we preprocess (tessellate) it here
+	shared_ptr<const Geometry> g = geom;
+	shared_ptr<const Polygon2d> p2d = dynamic_pointer_cast<const Polygon2d>(geom);
+	if (p2d) g.reset(p2d->tessellate());
+
+	shared_ptr<CSGTerm> t(new CSGTerm(g, state.matrix(), state.color(), stream.str()));
 	if (modinst->isHighlight()) {
 		t->flag = CSGTerm::FLAG_HIGHLIGHT;
 		highlights.push_back(t);

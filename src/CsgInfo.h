@@ -12,13 +12,8 @@
 class CsgInfo
 {
 public:
-	CsgInfo()
+    CsgInfo() : glview(NULL), root_chain(NULL), highlights_chain(NULL), background_chain(NULL), progress_function(NULL)
 	{
-		root_chain = NULL;
-		highlights_chain = NULL;
-		background_chain = NULL;
-		glview = NULL;
-		progress_function = NULL;
 		normalizelimit = RenderSettings::inst()->openCSGTermLimit;
 	}
 	OffscreenView *glview;
@@ -42,12 +37,6 @@ public:
 		GeometryEvaluator geomevaluator(tree);
 		CSGTermEvaluator evaluator(tree, &geomevaluator);
 		boost::shared_ptr<CSGTerm> root_raw_term = evaluator.evaluateCSGTerm( *root_node, this->highlight_terms, this->background_terms );
-
-		if (!root_raw_term && this->background_terms.empty()) {
-			PRINT("Error: CSG generation failed! (no objects found)");
-			call_progress_function();
-			return false;
-		}
 
 		PRINT("Compiling design (CSG Products normalization)...");
 		call_progress_function();

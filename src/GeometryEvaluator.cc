@@ -63,10 +63,12 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 				PolySet *ps = new PolySet(3);
 				ps->setConvexity(N->getConvexity());
 				this->root.reset(ps);
-				bool err = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, *ps);
-				if (err) {
-					PRINT("ERROR: Nef->PolySet failed");
-				}
+                if (!N->isEmpty()) {
+                    bool err = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, *ps);
+                    if (err) {
+                        PRINT("ERROR: Nef->PolySet failed");
+                    }
+                }
 
 				smartCacheInsert(node, this->root);
 			}
@@ -88,8 +90,12 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const Abstrac
 			}
 		}
 	}
-	if (dim == 2) return ResultObject(applyToChildren2D(node, op));
-	else if (dim == 3) return applyToChildren3D(node, op);
+    if (dim == 2) {
+        Polygon2d *p2d = applyToChildren2D(node, op);
+        assert(p2d);
+        return ResultObject(p2d);
+    }
+    else if (dim == 3) return applyToChildren3D(node, op);
 	return ResultObject();
 }
 
@@ -119,16 +125,23 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 
 	if (op == OPENSCAD_MINKOWSKI) return ResultObject(CGALUtils::applyMinkowski(children));
 
-	CGAL_Nef_polyhedron *N = new CGAL_Nef_polyhedron;
-	CGALUtils::applyOperator(children, *N, op);
+	CGAL_Nef_polyhedron *N = CGALUtils::applyOperator(children, op);
+	// FIXME: Clarify when we can return NULL and what that means
+	if (!N) N = new CGAL_Nef_polyhedron;
 	return ResultObject(N);
 }
 
 
+
+/*!
+	Apply 2D hull.
+
+	May return an empty geometry but will not return NULL.
+*/
 Polygon2d *GeometryEvaluator::applyHull2D(const AbstractNode &node)
 {
 	std::vector<const Polygon2d *> children = collectChildren2D(node);
-	Polygon2d *geometry = NULL;
+	Polygon2d *geometry = new Polygon2d();
 
 	typedef CGAL::Point_2<CGAL::Cartesian<double> > CGALPoint2;
 	// Collect point cloud
@@ -150,7 +163,6 @@ Polygon2d *GeometryEvaluator::applyHull2D(const AbstractNode &node)
 		BOOST_FOREACH(const CGALPoint2 &p, result) {
 			outline.vertices.push_back(Vector2d(p[0], p[1]));
 		}
-		geometry = new Polygon2d();
 		geometry->addOutline(outline);
 	}
 	return geometry;
@@ -271,11 +283,11 @@ Geometry::ChildList GeometryEvaluator::collectChildren3D(const AbstractNode &nod
 		smartCacheInsert(*chnode, chgeom);
 		
 		if (chgeom) {
-			if (chgeom->isEmpty() || chgeom->getDimension() == 3) {
-				children.push_back(item);
-			}
-			else {
+			if (chgeom->getDimension() == 2) {
 				PRINT("WARNING: Ignoring 2D child object for 3D operation");
+			}
+			else if (chgeom->isEmpty() || chgeom->getDimension() == 3) {
+				children.push_back(item);
 			}
 		}
 	}
@@ -345,6 +357,7 @@ void GeometryEvaluator::addToParent(const State &state,
 		// Root node, insert into cache
 		smartCacheInsert(node, geom);
 		this->root = geom;
+        assert(this->visitedchildren.empty());
 	}
 }
 
@@ -378,7 +391,7 @@ Response GeometryEvaluator::visit(State &state, const OffsetNode &node)
 				const Polygon2d *polygon = dynamic_cast<const Polygon2d*>(geometry);
 				// ClipperLib documentation: The formula for the number of steps in a full
 				// circular arc is ... Pi / acos(1 - arc_tolerance / abs(delta))
-				double n = Calc::get_fragments_from_r(10, node.fn, node.fs, node.fa);
+                double n = Calc::get_fragments_from_r(std::abs(node.delta), node.fn, node.fs, node.fa);
 				double arc_tolerance = std::abs(node.delta) * (1 - cos(M_PI / n));
 				const Polygon2d *result = ClipperUtils::applyOffset(*polygon, node.delta, node.join_type, node.miter_limit, arc_tolerance);
 				assert(result);
@@ -443,6 +456,7 @@ Response GeometryEvaluator::visit(State &state, const LeafNode &node)
 		shared_ptr<const Geometry> geom;
 		if (!isSmartCached(node)) {
 			const Geometry *geometry = node.createGeometry();
+            assert(geometry);
 			if (const Polygon2d *polygon = dynamic_cast<const Polygon2d*>(geometry)) {
 				if (!polygon->isSanitized()) {
 					Polygon2d *p = ClipperUtils::sanitize(*polygon);
@@ -516,7 +530,7 @@ Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 		if (!isSmartCached(node)) {
 			if (matrix_contains_infinity(node.matrix) || matrix_contains_nan(node.matrix)) {
 				// due to the way parse/eval works we can't currently distinguish between NaN and Inf
-				PRINT("Warning: Transformation matrix contains Not-a-Number and/or Infinity - removing object.");
+				PRINT("WARNING: Transformation matrix contains Not-a-Number and/or Infinity - removing object.");
 			}
 			else {
 				// First union all children
@@ -537,7 +551,12 @@ Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 							node.matrix(1,0), node.matrix(1,1), node.matrix(1,3),
 							node.matrix(3,0), node.matrix(3,1), node.matrix(3,3);
 						newpoly->transform(mat2);
-						geom = newpoly;
+						// A 2D transformation may flip the winding order of a polygon.
+						// If that happens with a sanitized polygon, we need to reverse
+						// the winding order for it to be correct.
+						if (newpoly->isSanitized() && mat2.matrix().determinant() <= 0) {
+							geom.reset(ClipperUtils::sanitize(*newpoly));
+						}
 					}
 					else if (geom->getDimension() == 3) {
 						shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(geom);
@@ -573,7 +592,7 @@ Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 
 static void translate_PolySet(PolySet &ps, const Vector3d &translation)
 {
-	BOOST_FOREACH(PolySet::Polygon &p, ps.polygons) {
+	BOOST_FOREACH(Polygon &p, ps.polygons) {
 		BOOST_FOREACH(Vector3d &v, p) {
 			v += translation;
 		}
@@ -651,7 +670,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &
 	PolySet *ps_bottom = poly.tessellate(); // bottom
 	
 	// Flip vertex ordering for bottom polygon
-	BOOST_FOREACH(PolySet::Polygon &p, ps_bottom->polygons) {
+	BOOST_FOREACH(Polygon &p, ps_bottom->polygons) {
 		std::reverse(p.begin(), p.end());
 	}
 	translate_PolySet(*ps_bottom, Vector3d(0,0,h1));
@@ -934,9 +953,10 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 					}
 					if (!Nptr->isEmpty()) {
 						Polygon2d *poly = CGALUtils::project(*Nptr, node.cut_mode);
-						assert(poly);
-						poly->setConvexity(node.convexity);
-						geom.reset(poly);
+						if (poly) {
+							poly->setConvexity(node.convexity);
+							geom.reset(poly);
+						}
 					}
 				}
 			}

@@ -1,38 +1,63 @@
+#include <boost/algorithm/string.hpp>
+
 #include "scadlexer.h"
 
-ScadLexer::ScadLexer(QObject *parent)
-  : QsciLexerCPP(parent)
-{ }
+ScadLexer::ScadLexer(QObject *parent) : QsciLexerCPP(parent)
+{
+	// -> Style: Keyword (lexer.l)
+	keywordSet[0] =
+		"if else let for module function true false undef "
+		"include use";
+
+	// -> Style: KeywordSet2 (func.cc)
+	keywordSet[1] =
+		"abs sign rands min max sin cos asin acos tan atan atan2 "
+		"round ceil floor pow sqrt exp len log ln str chr concat "
+		"lookup search version version_num norm cross parent_module "
+		"dxf_dim dxf_cross";
+
+	// -> used in comments only like /*! \cube */
+	keywordSet[2] =
+		"struct union enum fn var def typedef file namespace package "
+		"interface param see return class brief";
+
+	// -> Style: GlobalClass
+	keywordSet[3] =
+		"cube sphere cylinder polyhedron square circle polygon text "
+		"minkowski hull resize child echo union difference "
+		"intersection linear_extrude rotate_extrude import group  "
+		"projection render surface scale rotate mirror translate "
+		"multmatrix color offset ";
+}
 
 ScadLexer::~ScadLexer()
-{ }
+{
+}
 
 const char *ScadLexer::language() const
 {
-  return "SCAD";
+	return "SCAD";
+}
+
+void ScadLexer::setKeywords(int set, const std::string& keywords)
+{
+	if ((set < 1) || (set > 4)) {
+		return;
+	}
+
+	std::string trimmedKeywords(keywords);
+        boost::algorithm::trim(trimmedKeywords);
+	if (trimmedKeywords.empty()) {
+		return;
+	}
+
+	keywordSet[set - 1] = trimmedKeywords;
 }
 
 const char *ScadLexer::keywords(int set) const
 {
-
-  if (set == 1)
-    return  "if else for module function intersection_for assign echo search "
-      " str let true false ";       // -> Style: Keyword
-
-  if (set == 2)
-    return " abs sign acos asin atan atan2 sin cos tan floor round ceil len ln "
-      " log lookup min max pow sqrt exp rands version version_num "
-      " group difference union intersection render translate rotate scale multmatrix color "
-      " projection hull resize mirror minkowski glide subdiv child "
-      " include use dxf_dim dxf_cross "
-      " linear_extrude rotate_extrude ";      // -> Style: KeywordSet2
-
-  if (set == 3)
-    return " param author ";          // -> used in comments only like /*! \cube */
-
-  if (set == 4)
-    return "cube circle cylinder polygon polyhedron square sphere "
-      "surface import ";           // -> Style: GlobalClass
-
-  return 0;
+	if ((set < 1) || (set > 4)) {
+		return 0;
+	}
+	return keywordSet[set - 1].c_str();
 }

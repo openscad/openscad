@@ -5,6 +5,7 @@
 #include "printutils.h"
 #include "builtin.h"
 #include "localscope.h"
+#include "exceptions.h"
 
 #include <boost/foreach.hpp>
 
@@ -20,11 +21,15 @@ const std::string &EvalContext::getArgName(size_t i) const
 	return this->eval_arguments[i].first;
 }
 
-Value EvalContext::getArgValue(size_t i, const Context *ctx) const
+ValuePtr EvalContext::getArgValue(size_t i, const Context *ctx) const
 {
 	assert(i < this->eval_arguments.size());
 	const Assignment &arg = this->eval_arguments[i];
-	return arg.second ? arg.second->evaluate(ctx ? ctx : this) : Value();
+	ValuePtr v;
+	if (arg.second) {
+		v = arg.second->evaluate(ctx ? ctx : this);
+	}
+	return v;
 }
 
 size_t EvalContext::numChildren() const
@@ -62,7 +67,7 @@ std::string EvalContext::dump(const AbstractModule *mod, const ModuleInstantiati
 		if (m) {
 			s << boost::format("  module args:");
 			BOOST_FOREACH(const Assignment &arg, m->definition_arguments) {
-				s << boost::format("    %s = %s") % arg.first % variables[arg.first];
+				s << boost::format("    %s = %s") % arg.first % *(variables[arg.first]);
 			}
 		}
 	}

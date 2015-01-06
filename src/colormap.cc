@@ -3,7 +3,32 @@
 #include "printutils.h"
 #include "PlatformUtils.h"
 
+#include <boost/property_tree/json_parser.hpp>
+
 static const char *DEFAULT_COLOR_SCHEME_NAME = "Cornfield";
+
+// See http://lolengine.net/blog/2013/01/13/fast-rgb-to-hsv
+static void rgbtohsv(float r, float g, float b, float &h, float &s, float &v)
+{
+    float K = 0.f;
+
+    if (g < b)
+    {
+        std::swap(g, b);
+        K = -1.f;
+    }
+
+    if (r < g)
+    {
+        std::swap(r, g);
+        K = -2.f / 6.f - K;
+    }
+
+    float chroma = r - std::min(g, b);
+    h = fabs(K + (g - b) / (6.f * chroma + 1e-20f));
+    s = chroma / (r + 1e-20f);
+    v = r;
+}
 
 RenderColorScheme::RenderColorScheme() : _path("")
 {
@@ -196,6 +221,42 @@ Color4f ColorMap::getColor(const ColorScheme &cs, const RenderColor rc)
 	return Color4f(0, 0, 0, 127);
 }
 
+Color4f ColorMap::getColorHSV(const Color4f &col)
+{
+	float h, s, v;
+	rgbtohsv(col[0], col[1], col[2], h, s, v);
+	return Color4f(h, s, v, col[3]);
+}
+
+/**
+ * Calculate contrast color. Based on the article 
+ * http://gamedev.stackexchange.com/questions/38536/given-a-rgb-color-x-how-to-find-the-most-contrasting-color-y
+ * 
+ * @param col the input color
+ * @return a color with high contrast to the input color
+ */
+Color4f ColorMap::getContrastColor(const Color4f &col)
+{
+	Color4f hsv = ColorMap::getColorHSV(col);
+	float Y = 0.2126 * col[0] + 0.7152 * col[1] + 0.0722 * col[2];
+	float S = hsv[1];
+
+	if (S < 0.5) {
+		// low saturation, choose between black / white based on luminance Y
+		float val = Y > 0.5 ? 0.0f : 1.0f;
+		return Color4f(val, val, val, 1.0f);
+	} else {
+		float H = 360 * hsv[0];
+		if ((H < 60) || (H > 300)) {
+			return Color4f(0.0f, 1.0f, 1.0f, 1.0f); // red -> cyan
+		} else if (H < 180) {
+			return Color4f(1.0f, 0.0f, 1.0f, 1.0f); // green -> magenta
+		} else {
+			return Color4f(1.0f, 1.0f, 0.0f, 1.0f); // blue -> yellow
+		}
+	}
+}
+
 void ColorMap::enumerateColorSchemesInPath(colorscheme_set_t &result_set, const fs::path basePath)
 {
     const fs::path color_schemes = basePath / "color-schemes" / "render";
@@ -235,7 +296,7 @@ ColorMap::colorscheme_set_t ColorMap::enumerateColorSchemes()
     RenderColorScheme *defaultColorScheme = new RenderColorScheme();
     result_set.insert(colorscheme_set_t::value_type(defaultColorScheme->index(),
 	    boost::shared_ptr<RenderColorScheme>(defaultColorScheme)));
-    enumerateColorSchemesInPath(result_set, PlatformUtils::resourcesPath());
+    enumerateColorSchemesInPath(result_set, PlatformUtils::resourceBasePath());
     enumerateColorSchemesInPath(result_set, PlatformUtils::userConfigPath());
     
     return result_set;

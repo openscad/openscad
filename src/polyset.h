@@ -14,8 +14,7 @@ BOOST_TRIBOOL_THIRD_STATE(unknown)
 class PolySet : public Geometry
 {
 public:
-	typedef std::vector<Vector3d> Polygon;
-	std::vector<Polygon> polygons;
+	Polygons polygons;
 
 	PolySet(unsigned int dim, boost::tribool convex = unknown);
 	PolySet(const Polygon2d &origin);
@@ -28,6 +27,7 @@ public:
 	virtual bool isEmpty() const { return polygons.size() == 0; }
 	virtual Geometry *copy() const { return new PolySet(*this); }
 
+	void quantizeVertices();
 	size_t numPolygons() const { return polygons.size(); }
 	void append_poly();
 	void append_vertex(double x, double y, double z = 0.0);
@@ -43,6 +43,7 @@ public:
 	void resize(Vector3d newsize, const Eigen::Matrix<bool,3,1> &autosize);
 
 	bool is_convex() const;
+	boost::tribool convexValue() const { return this->convex; }
 
 private:
 	Polygon2d polygon;

@@ -1,0 +1,361 @@
+ECHO: v = undef, op = "not v", result = true
+ECHO: v = undef, op = "-v", result = undef
+ECHO: v = undef, op = "v *", result = undef
+ECHO: v = undef, op = "* v", result = undef
+ECHO: v = undef, op = "v /", result = undef
+ECHO: v = undef, op = "/ v", result = undef
+ECHO: v = undef, op = "v %", result = undef
+ECHO: v = undef, op = "% v", result = undef
+ECHO: v = undef, op = "v +", result = undef
+ECHO: v = undef, op = "+ v", result = undef
+ECHO: v = undef, op = "v -", result = undef
+ECHO: v = undef, op = "- v", result = undef
+ECHO: v = undef, op = "v and true", result = false
+ECHO: v = undef, op = "v and false", result = false
+ECHO: v = undef, op = "v or true", result = true
+ECHO: v = undef, op = "v or false", result = false
+ECHO: v = undef, op = "[v]", result = undef
+ECHO: v = undef, op = "v[0]", result = undef
+ECHO: v = undef, op = "v[4]", result = undef
+ECHO: v = inf, op = "not v", result = false
+ECHO: v = inf, op = "-v", result = -inf
+ECHO: v = inf, op = "v *", result = inf
+ECHO: v = inf, op = "* v", result = inf
+ECHO: v = inf, op = "v /", result = inf
+ECHO: v = inf, op = "/ v", result = 0
+ECHO: v = inf, op = "v %", result = nan
+ECHO: v = inf, op = "% v", result = 2
+ECHO: v = inf, op = "v +", result = inf
+ECHO: v = inf, op = "+ v", result = inf
+ECHO: v = inf, op = "v -", result = inf
+ECHO: v = inf, op = "- v", result = -inf
+ECHO: v = inf, op = "v and true", result = true
+ECHO: v = inf, op = "v and false", result = false
+ECHO: v = inf, op = "v or true", result = true
+ECHO: v = inf, op = "v or false", result = true
+ECHO: v = inf, op = "[v]", result = undef
+ECHO: v = inf, op = "v[0]", result = undef
+ECHO: v = inf, op = "v[4]", result = undef
+ECHO: v = -inf, op = "not v", result = false
+ECHO: v = -inf, op = "-v", result = inf
+ECHO: v = -inf, op = "v *", result = -inf
+ECHO: v = -inf, op = "* v", result = -inf
+ECHO: v = -inf, op = "v /", result = -inf
+ECHO: v = -inf, op = "/ v", result = 0
+ECHO: v = -inf, op = "v %", result = nan
+ECHO: v = -inf, op = "% v", result = 2
+ECHO: v = -inf, op = "v +", result = -inf
+ECHO: v = -inf, op = "+ v", result = -inf
+ECHO: v = -inf, op = "v -", result = -inf
+ECHO: v = -inf, op = "- v", result = inf
+ECHO: v = -inf, op = "v and true", result = true
+ECHO: v = -inf, op = "v and false", result = false
+ECHO: v = -inf, op = "v or true", result = true
+ECHO: v = -inf, op = "v or false", result = true
+ECHO: v = -inf, op = "[v]", result = undef
+ECHO: v = -inf, op = "v[0]", result = undef
+ECHO: v = -inf, op = "v[4]", result = undef
+ECHO: v = nan, op = "not v", result = false
+ECHO: v = nan, op = "-v", result = nan
+ECHO: v = nan, op = "v *", result = nan
+ECHO: v = nan, op = "* v", result = nan
+ECHO: v = nan, op = "v /", result = nan
+ECHO: v = nan, op = "/ v", result = nan
+ECHO: v = nan, op = "v %", result = nan
+ECHO: v = nan, op = "% v", result = nan
+ECHO: v = nan, op = "v +", result = nan
+ECHO: v = nan, op = "+ v", result = nan
+ECHO: v = nan, op = "v -", result = nan
+ECHO: v = nan, op = "- v", result = nan
+ECHO: v = nan, op = "v and true", result = true
+ECHO: v = nan, op = "v and false", result = false
+ECHO: v = nan, op = "v or true", result = true
+ECHO: v = nan, op = "v or false", result = true
+ECHO: v = nan, op = "[v]", result = undef
+ECHO: v = nan, op = "v[0]", result = undef
+ECHO: v = nan, op = "v[4]", result = undef
+ECHO: v = 0, op = "not v", result = true
+ECHO: v = 0, op = "-v", result = 0
+ECHO: v = 0, op = "v *", result = 0
+ECHO: v = 0, op = "* v", result = 0
+ECHO: v = 0, op = "v /", result = 0
+ECHO: v = 0, op = "/ v", result = inf
+ECHO: v = 0, op = "v %", result = 0
+ECHO: v = 0, op = "% v", result = nan
+ECHO: v = 0, op = "v +", result = 3
+ECHO: v = 0, op = "+ v", result = 2
+ECHO: v = 0, op = "v -", result = -3
+ECHO: v = 0, op = "- v", result = 2
+ECHO: v = 0, op = "v and true", result = false
+ECHO: v = 0, op = "v and false", result = false
+ECHO: v = 0, op = "v or true", result = true
+ECHO: v = 0, op = "v or false", result = false
+ECHO: v = 0, op = "[v]", result = "a"
+ECHO: v = 0, op = "v[0]", result = undef
+ECHO: v = 0, op = "v[4]", result = undef
+ECHO: v = -4.2, op = "not v", result = false
+ECHO: v = -4.2, op = "-v", result = 4.2
+ECHO: v = -4.2, op = "v *", result = -12.6
+ECHO: v = -4.2, op = "* v", result = -8.4
+ECHO: v = -4.2, op = "v /", result = -1.4
+ECHO: v = -4.2, op = "/ v", result = -0.47619047619
+ECHO: v = -4.2, op = "v %", result = -1.2
+ECHO: v = -4.2, op = "% v", result = 2
+ECHO: v = -4.2, op = "v +", result = -1.2
+ECHO: v = -4.2, op = "+ v", result = -2.2
+ECHO: v = -4.2, op = "v -", result = -7.2
+ECHO: v = -4.2, op = "- v", result = 6.2
+ECHO: v = -4.2, op = "v and true", result = true
+ECHO: v = -4.2, op = "v and false", result = false
+ECHO: v = -4.2, op = "v or true", result = true
+ECHO: v = -4.2, op = "v or false", result = true
+ECHO: v = -4.2, op = "[v]", result = undef
+ECHO: v = -4.2, op = "v[0]", result = undef
+ECHO: v = -4.2, op = "v[4]", result = undef
+ECHO: v = -2, op = "not v", result = false
+ECHO: v = -2, op = "-v", result = 2
+ECHO: v = -2, op = "v *", result = -6
+ECHO: v = -2, op = "* v", result = -4
+ECHO: v = -2, op = "v /", result = -0.66666666666
+ECHO: v = -2, op = "/ v", result = -1
+ECHO: v = -2, op = "v %", result = -2
+ECHO: v = -2, op = "% v", result = 0
+ECHO: v = -2, op = "v +", result = 1
+ECHO: v = -2, op = "+ v", result = 0
+ECHO: v = -2, op = "v -", result = -5
+ECHO: v = -2, op = "- v", result = 4
+ECHO: v = -2, op = "v and true", result = true
+ECHO: v = -2, op = "v and false", result = false
+ECHO: v = -2, op = "v or true", result = true
+ECHO: v = -2, op = "v or false", result = true
+ECHO: v = -2, op = "[v]", result = undef
+ECHO: v = -2, op = "v[0]", result = undef
+ECHO: v = -2, op = "v[4]", result = undef
+ECHO: v = 3, op = "not v", result = false
+ECHO: v = 3, op = "-v", result = -3
+ECHO: v = 3, op = "v *", result = 9
+ECHO: v = 3, op = "* v", result = 6
+ECHO: v = 3, op = "v /", result = 1
+ECHO: v = 3, op = "/ v", result = 0.66666666666
+ECHO: v = 3, op = "v %", result = 0
+ECHO: v = 3, op = "% v", result = 2
+ECHO: v = 3, op = "v +", result = 6
+ECHO: v = 3, op = "+ v", result = 5
+ECHO: v = 3, op = "v -", result = 0
+ECHO: v = 3, op = "- v", result = -1
+ECHO: v = 3, op = "v and true", result = true
+ECHO: v = 3, op = "v and false", result = false
+ECHO: v = 3, op = "v or true", result = true
+ECHO: v = 3, op = "v or false", result = true
+ECHO: v = 3, op = "[v]", result = "d"
+ECHO: v = 3, op = "v[0]", result = undef
+ECHO: v = 3, op = "v[4]", result = undef
+ECHO: v = 42.42, op = "not v", result = false
+ECHO: v = 42.42, op = "-v", result = -42.42
+ECHO: v = 42.42, op = "v *", result = 127.26
+ECHO: v = 42.42, op = "* v", result = 84.84
+ECHO: v = 42.42, op = "v /", result = 14.14
+ECHO: v = 42.42, op = "/ v", result = 0.0471475719
+ECHO: v = 42.42, op = "v %", result = 0.42
+ECHO: v = 42.42, op = "% v", result = 2
+ECHO: v = 42.42, op = "v +", result = 45.42
+ECHO: v = 42.42, op = "+ v", result = 44.42
+ECHO: v = 42.42, op = "v -", result = 39.42
+ECHO: v = 42.42, op = "- v", result = -40.42
+ECHO: v = 42.42, op = "v and true", result = true
+ECHO: v = 42.42, op = "v and false", result = false
+ECHO: v = 42.42, op = "v or true", result = true
+ECHO: v = 42.42, op = "v or false", result = true
+ECHO: v = 42.42, op = "[v]", result = undef
+ECHO: v = 42.42, op = "v[0]", result = undef
+ECHO: v = 42.42, op = "v[4]", result = undef
+ECHO: v = 242, op = "not v", result = false
+ECHO: v = 242, op = "-v", result = -242
+ECHO: v = 242, op = "v *", result = 726
+ECHO: v = 242, op = "* v", result = 484
+ECHO: v = 242, op = "v /", result = 80.66666666666
+ECHO: v = 242, op = "/ v", result = 0.00826446281
+ECHO: v = 242, op = "v %", result = 2
+ECHO: v = 242, op = "% v", result = 2
+ECHO: v = 242, op = "v +", result = 245
+ECHO: v = 242, op = "+ v", result = 244
+ECHO: v = 242, op = "v -", result = 239
+ECHO: v = 242, op = "- v", result = -240
+ECHO: v = 242, op = "v and true", result = true
+ECHO: v = 242, op = "v and false", result = false
+ECHO: v = 242, op = "v or true", result = true
+ECHO: v = 242, op = "v or false", result = true
+ECHO: v = 242, op = "[v]", result = undef
+ECHO: v = 242, op = "v[0]", result = undef
+ECHO: v = 242, op = "v[4]", result = undef
+ECHO: v = true, op = "not v", result = false
+ECHO: v = true, op = "-v", result = undef
+ECHO: v = true, op = "v *", result = undef
+ECHO: v = true, op = "* v", result = undef
+ECHO: v = true, op = "v /", result = undef
+ECHO: v = true, op = "/ v", result = undef
+ECHO: v = true, op = "v %", result = undef
+ECHO: v = true, op = "% v", result = undef
+ECHO: v = true, op = "v +", result = undef
+ECHO: v = true, op = "+ v", result = undef
+ECHO: v = true, op = "v -", result = undef
+ECHO: v = true, op = "- v", result = undef
+ECHO: v = true, op = "v and true", result = true
+ECHO: v = true, op = "v and false", result = false
+ECHO: v = true, op = "v or true", result = true
+ECHO: v = true, op = "v or false", result = true
+ECHO: v = true, op = "[v]", result = undef
+ECHO: v = true, op = "v[0]", result = undef
+ECHO: v = true, op = "v[4]", result = undef
+ECHO: v = false, op = "not v", result = true
+ECHO: v = false, op = "-v", result = undef
+ECHO: v = false, op = "v *", result = undef
+ECHO: v = false, op = "* v", result = undef
+ECHO: v = false, op = "v /", result = undef
+ECHO: v = false, op = "/ v", result = undef
+ECHO: v = false, op = "v %", result = undef
+ECHO: v = false, op = "% v", result = undef
+ECHO: v = false, op = "v +", result = undef
+ECHO: v = false, op = "+ v", result = undef
+ECHO: v = false, op = "v -", result = undef
+ECHO: v = false, op = "- v", result = undef
+ECHO: v = false, op = "v and true", result = false
+ECHO: v = false, op = "v and false", result = false
+ECHO: v = false, op = "v or true", result = true
+ECHO: v = false, op = "v or false", result = false
+ECHO: v = false, op = "[v]", result = undef
+ECHO: v = false, op = "v[0]", result = undef
+ECHO: v = false, op = "v[4]", result = undef
+ECHO: v = "", op = "not v", result = true
+ECHO: v = "", op = "-v", result = undef
+ECHO: v = "", op = "v *", result = undef
+ECHO: v = "", op = "* v", result = undef
+ECHO: v = "", op = "v /", result = undef
+ECHO: v = "", op = "/ v", result = undef
+ECHO: v = "", op = "v %", result = undef
+ECHO: v = "", op = "% v", result = undef
+ECHO: v = "", op = "v +", result = undef
+ECHO: v = "", op = "+ v", result = undef
+ECHO: v = "", op = "v -", result = undef
+ECHO: v = "", op = "- v", result = undef
+ECHO: v = "", op = "v and true", result = false
+ECHO: v = "", op = "v and false", result = false
+ECHO: v = "", op = "v or true", result = true
+ECHO: v = "", op = "v or false", result = false
+ECHO: v = "", op = "[v]", result = undef
+ECHO: v = "", op = "v[0]", result = undef
+ECHO: v = "", op = "v[4]", result = undef
+ECHO: v = "text", op = "not v", result = false
+ECHO: v = "text", op = "-v", result = undef
+ECHO: v = "text", op = "v *", result = undef
+ECHO: v = "text", op = "* v", result = undef
+ECHO: v = "text", op = "v /", result = undef
+ECHO: v = "text", op = "/ v", result = undef
+ECHO: v = "text", op = "v %", result = undef
+ECHO: v = "text", op = "% v", result = undef
+ECHO: v = "text", op = "v +", result = undef
+ECHO: v = "text", op = "+ v", result = undef
+ECHO: v = "text", op = "v -", result = undef
+ECHO: v = "text", op = "- v", result = undef
+ECHO: v = "text", op = "v and true", result = true
+ECHO: v = "text", op = "v and false", result = false
+ECHO: v = "text", op = "v or true", result = true
+ECHO: v = "text", op = "v or false", result = true
+ECHO: v = "text", op = "[v]", result = undef
+ECHO: v = "text", op = "v[0]", result = "t"
+ECHO: v = "text", op = "v[4]", result = undef
+ECHO: v = [], op = "not v", result = true
+ECHO: v = [], op = "-v", result = []
+ECHO: v = [], op = "v *", result = []
+ECHO: v = [], op = "* v", result = []
+ECHO: v = [], op = "v /", result = []
+ECHO: v = [], op = "/ v", result = []
+ECHO: v = [], op = "v %", result = undef
+ECHO: v = [], op = "% v", result = undef
+ECHO: v = [], op = "v +", result = undef
+ECHO: v = [], op = "+ v", result = undef
+ECHO: v = [], op = "v -", result = undef
+ECHO: v = [], op = "- v", result = undef
+ECHO: v = [], op = "v and true", result = false
+ECHO: v = [], op = "v and false", result = false
+ECHO: v = [], op = "v or true", result = true
+ECHO: v = [], op = "v or false", result = false
+ECHO: v = [], op = "[v]", result = undef
+ECHO: v = [], op = "v[0]", result = undef
+ECHO: v = [], op = "v[4]", result = undef
+ECHO: v = [0], op = "not v", result = false
+ECHO: v = [0], op = "-v", result = [0]
+ECHO: v = [0], op = "v *", result = [0]
+ECHO: v = [0], op = "* v", result = [0]
+ECHO: v = [0], op = "v /", result = [0]
+ECHO: v = [0], op = "/ v", result = [inf]
+ECHO: v = [0], op = "v %", result = undef
+ECHO: v = [0], op = "% v", result = undef
+ECHO: v = [0], op = "v +", result = undef
+ECHO: v = [0], op = "+ v", result = undef
+ECHO: v = [0], op = "v -", result = undef
+ECHO: v = [0], op = "- v", result = undef
+ECHO: v = [0], op = "v and true", result = true
+ECHO: v = [0], op = "v and false", result = false
+ECHO: v = [0], op = "v or true", result = true
+ECHO: v = [0], op = "v or false", result = true
+ECHO: v = [0], op = "[v]", result = undef
+ECHO: v = [0], op = "v[0]", result = 0
+ECHO: v = [0], op = "v[4]", result = undef
+ECHO: v = [1], op = "not v", result = false
+ECHO: v = [1], op = "-v", result = [-1]
+ECHO: v = [1], op = "v *", result = [3]
+ECHO: v = [1], op = "* v", result = [2]
+ECHO: v = [1], op = "v /", result = [0.33333333333]
+ECHO: v = [1], op = "/ v", result = [2]
+ECHO: v = [1], op = "v %", result = undef
+ECHO: v = [1], op = "% v", result = undef
+ECHO: v = [1], op = "v +", result = undef
+ECHO: v = [1], op = "+ v", result = undef
+ECHO: v = [1], op = "v -", result = undef
+ECHO: v = [1], op = "- v", result = undef
+ECHO: v = [1], op = "v and true", result = true
+ECHO: v = [1], op = "v and false", result = false
+ECHO: v = [1], op = "v or true", result = true
+ECHO: v = [1], op = "v or false", result = true
+ECHO: v = [1], op = "[v]", result = undef
+ECHO: v = [1], op = "v[0]", result = 1
+ECHO: v = [1], op = "v[4]", result = undef
+ECHO: v = [0 : 1 : 0], op = "not v", result = false
+ECHO: v = [0 : 1 : 0], op = "-v", result = undef
+ECHO: v = [0 : 1 : 0], op = "v *", result = undef
+ECHO: v = [0 : 1 : 0], op = "* v", result = undef
+ECHO: v = [0 : 1 : 0], op = "v /", result = undef
+ECHO: v = [0 : 1 : 0], op = "/ v", result = undef
+ECHO: v = [0 : 1 : 0], op = "v %", result = undef
+ECHO: v = [0 : 1 : 0], op = "% v", result = undef
+ECHO: v = [0 : 1 : 0], op = "v +", result = undef
+ECHO: v = [0 : 1 : 0], op = "+ v", result = undef
+ECHO: v = [0 : 1 : 0], op = "v -", result = undef
+ECHO: v = [0 : 1 : 0], op = "- v", result = undef
+ECHO: v = [0 : 1 : 0], op = "v and true", result = true
+ECHO: v = [0 : 1 : 0], op = "v and false", result = false
+ECHO: v = [0 : 1 : 0], op = "v or true", result = true
+ECHO: v = [0 : 1 : 0], op = "v or false", result = true
+ECHO: v = [0 : 1 : 0], op = "[v]", result = undef
+ECHO: v = [0 : 1 : 0], op = "v[0]", result = 0
+ECHO: v = [0 : 1 : 0], op = "v[4]", result = undef
+ECHO: v = [1 : 1 : 2], op = "not v", result = false
+ECHO: v = [1 : 1 : 2], op = "-v", result = undef
+ECHO: v = [1 : 1 : 2], op = "v *", result = undef
+ECHO: v = [1 : 1 : 2], op = "* v", result = undef
+ECHO: v = [1 : 1 : 2], op = "v /", result = undef
+ECHO: v = [1 : 1 : 2], op = "/ v", result = undef
+ECHO: v = [1 : 1 : 2], op = "v %", result = undef
+ECHO: v = [1 : 1 : 2], op = "% v", result = undef
+ECHO: v = [1 : 1 : 2], op = "v +", result = undef
+ECHO: v = [1 : 1 : 2], op = "+ v", result = undef
+ECHO: v = [1 : 1 : 2], op = "v -", result = undef
+ECHO: v = [1 : 1 : 2], op = "- v", result = undef
+ECHO: v = [1 : 1 : 2], op = "v and true", result = true
+ECHO: v = [1 : 1 : 2], op = "v and false", result = false
+ECHO: v = [1 : 1 : 2], op = "v or true", result = true
+ECHO: v = [1 : 1 : 2], op = "v or false", result = true
+ECHO: v = [1 : 1 : 2], op = "[v]", result = undef
+ECHO: v = [1 : 1 : 2], op = "v[0]", result = 1
+ECHO: v = [1 : 1 : 2], op = "v[4]", result = undef

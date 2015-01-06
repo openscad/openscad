@@ -18,7 +18,7 @@ class ModuleInstantiation
 {
 public:
 	ModuleInstantiation(const std::string &name = "")
-		: tag_root(false), tag_highlight(false), tag_background(false), recursioncount(0), modname(name) { }
+		: tag_root(false), tag_highlight(false), tag_background(false), modname(name) { }
 	virtual ~ModuleInstantiation();
 
 	virtual std::string dump(const std::string &indent) const;
@@ -40,7 +40,6 @@ public:
 	bool tag_root;
 	bool tag_highlight;
 	bool tag_background;
-	mutable int recursioncount;
 protected:
 	std::string modname;
 	std::string modpath;
@@ -99,8 +98,8 @@ private:
 class FileModule : public Module
 {
 public:
-	FileModule() : is_handling_dependencies(false) {}
-	virtual ~FileModule() {}
+	FileModule() : context(NULL), is_handling_dependencies(false) {}
+	virtual ~FileModule();
 
 	void setModulePath(const std::string &path) { this->path = path; }
 	const std::string &modulePath() const { return this->path; }
@@ -108,14 +107,17 @@ public:
 	void registerInclude(const std::string &localpath, const std::string &fullpath);
 	bool includesChanged() const;
 	bool handleDependencies();
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx = NULL) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx = NULL);
 	bool hasIncludes() const { return !this->includes.empty(); }
 	bool usesLibraries() const { return !this->usedlibs.empty(); }
 	bool isHandlingDependencies() const { return this->is_handling_dependencies; }
+        ValuePtr lookup_variable(const std::string &name) const;
 
 	typedef boost::unordered_set<std::string> ModuleContainer;
 	ModuleContainer usedlibs;
 private:
+        /** Reference to retain the context that was used in the last evaluation */
+        class FileContext *context;
 	struct IncludeFile {
 		std::string filename;
 		bool valid;

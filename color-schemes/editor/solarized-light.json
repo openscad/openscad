@@ -1,0 +1,36 @@
+{
+    "name" : "Solarized (light)",
+    "index" : 1300,
+    "paper" : "#fdf6e3",
+    "text" : "#657b83",
+    "caret" : {
+        "width" : 2,
+        "foreground" : "#000000",
+        "line-background" : "#eee8d5"
+    },
+    "colors" : {
+        "keyword1" : "#268ad1",
+        "keyword2" : "#2aa198",
+        "keyword3" : "#859900",
+        "comment" : "#93a1a1",
+        "commentline" : "#93a1a1",
+        "commentdoc" : "#93a1a1",
+        "commentdockeyword" : "#6c71c4",
+        "number" : "#d33682",
+        "string" : "#b58900",
+        "operator" : "#cb4b16",
+        "whitespace-foreground" : "#657b83",
+        "selection-foreground" : "#fdf6e3",
+        "selection-background" : "#657b83",
+        "margin-background" : "#eee8d5",
+        "margin-foreground" : "#657b83",
+        "matched-brace-background" : "#c7f6cb",
+        "matched-brace-foreground" : "#cb4b16",
+        "unmatched-brace-background" : "#ffcdcc",
+        "unmatched-brace-foreground" : "#cb4b16",
+        "error-marker" : "#ff0000",
+        "error-indicator" : "#80ff0000",
+        "error-indicator-outline" : "#ff000000",
+        "edge" : "#d33682"
+    }
+}

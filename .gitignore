@@ -13,10 +13,11 @@ parser_yacc.h
 /tmp
 /OpenSCAD.app
 */#*#
+/locale/*/*/*.mo
+/locale/POTFILES
 /nbproject
+/openscad.pro.user
 /openscad
-/mingw32
-/mingw64
 /tests/openscad_nogui
 testdata/scad/features/import_dxf-tests.scad
 testdata/scad/features/import_stl-tests.scad

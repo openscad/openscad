@@ -34,6 +34,7 @@
 #include "export.h"
 #include "builtin.h"
 #include "Tree.h"
+#include "stackcheck.h"
 
 #ifndef _MSC_VER
 #include <getopt.h>
@@ -46,6 +47,7 @@
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 #include "boosty.h"
+#include "PlatformUtils.h"
 
 std::string commandline_commands;
 std::string currentdir;
@@ -67,14 +69,15 @@ int main(int argc, char **argv)
 
 	int rc = 0;
 
+	StackCheck::inst()->init();
 	Builtins::instance()->initialize();
 
 	fs::path original_path = fs::current_path();
 
 	currentdir = boosty::stringy( fs::current_path() );
 
-	parser_init(boosty::stringy(fs::path(argv[0]).branch_path()));
-	add_librarydir(boosty::stringy(fs::path(argv[0]).branch_path() / "../libraries"));
+	PlatformUtils::registerApplicationPath(boosty::stringy(fs::path(argv[0]).branch_path()));
+	parser_init();
 
 	ModuleContext top_ctx;
 	top_ctx.registerBuiltin();

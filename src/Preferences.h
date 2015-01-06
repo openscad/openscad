@@ -2,7 +2,10 @@
 
 #include <QMainWindow>
 #include <QSettings>
+
+#include "qtgettext.h"
 #include "ui_Preferences.h"
+#include "settings.h"
 
 class Preferences : public QMainWindow, public Ui::Preferences
 {
@@ -17,6 +20,7 @@ public:
 	QVariant getValue(const QString &key) const;
         void init();
 	void apply() const;
+        void fireEditorConfigChanged() const;
 
 public slots:
 	void actionTriggered(class QAction *);
@@ -32,6 +36,7 @@ public slots:
 	void on_opencsgLimitEdit_textChanged(const QString &);
 	void on_forceGoldfeatherBox_toggled(bool);
 	void on_mouseWheelZoomBox_toggled(bool);
+	void on_localizationCheckBox_toggled(bool);
 	void on_updateCheckBox_toggled(bool);
 	void on_snapshotCheckBox_toggled(bool);
 	void on_mdiCheckBox_toggled(bool);
@@ -40,6 +45,30 @@ public slots:
 	void on_checkNowButton_clicked();
 	void on_launcherBox_toggled(bool);
 	void on_editorType_editTextChanged(const QString &);
+
+  //
+	// editor settings
+  //
+
+	// Indentation
+	void on_checkBoxAutoIndent_toggled(bool);
+	void on_comboBoxIndentUsing_activated(int);
+	void on_spinBoxIndentationWidth_valueChanged(int);
+	void on_spinBoxTabWidth_valueChanged(int);
+	void on_comboBoxTabKeyFunction_activated(int);
+	void on_comboBoxShowWhitespace_activated(int);
+	void on_spinBoxShowWhitespaceSize_valueChanged(int);
+	
+	// Line wrap
+	void on_comboBoxLineWrap_activated(int);
+	void on_comboBoxLineWrapIndentationStyle_activated(int);
+	void on_spinBoxLineWrapIndentationIndent_valueChanged(int);
+	void on_comboBoxLineWrapVisualizationStart_activated(int);
+	void on_comboBoxLineWrapVisualizationEnd_activated(int);
+
+	// Display
+	void on_checkBoxHighlightCurrentLine_toggled(bool);
+	void on_checkBoxEnableBraceMatching_toggled(bool);
 
 signals:
 	void requestRedraw() const;
@@ -51,6 +80,7 @@ signals:
 	void openCSGSettingsChanged() const;
 	void syntaxHighlightChanged(const QString &s) const;
 	void editorTypeChanged(const QString &type);
+	void editorConfigChanged() const;
 
 private:
 	Preferences(QWidget *parent = NULL);
@@ -58,7 +88,17 @@ private:
 	void updateGUI();
 	void removeDefaultSettings();
 	void setupFeaturesPage();
+        void writeSettings();
 	void addPrefPage(QActionGroup *group, QAction *action, QWidget *widget);
+
+        /** Initialize combobox list values from the settings range values */
+        void initComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry);
+        /** Initialize spinbox min/max values from the settings range values */
+        void initSpinBox(QSpinBox *spinBox, const Settings::SettingsEntry& entry);
+        /** Update combobox from current settings */
+        void updateComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry);
+        /** Set value from combobox to settings */
+        void applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntry& entry);
 
 	QSettings::SettingsMap defaultmap;
 	QHash<const QAction *, QWidget *> prefPages;

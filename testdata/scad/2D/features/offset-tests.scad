@@ -1,43 +1,56 @@
-
-module shape1(x, y) {
-	translate([50 * x, 50 * y]) difference() {
-		square([30, 30], center = true);
-		square([8, 8], center = true);
-	}
+module m(x, y) {
+    translate(60 * [x, y]) children();
 }
 
-module shape2(x, y) {
-	translate([50 * x, 50 * y]) {
-		polygon(points=[
-			[-15, 80],[15, 80],[0,-15],[-8, 60],[8, 60],[0, 5]
-		], paths=[
-			[0,1,2],[3,4,5]
-		]);
-	}
+module shape1(w = 20) {
+    difference() {
+        square([ w,  w], center = true);
+        square([10, 10], center = true);
+    }
 }
 
-offset(delta = -1, join_type = "miter") shape2(-1, 2);
-shape2(0, 2);
-offset(delta = 1, join_type = "miter") shape2(1, 2);
+module shape2() {
+    polygon(points=[
+            [-15, 80],[15, 80],[0,-15],[-8, 60],[8, 60],[0, 5]
+    ], paths=[
+            [0,1,2],[3,4,5]
+    ]);
+}
 
-offset(delta = -1, join_type = "miter", miter_limit = 10) shape2(2, 2);
-offset(delta = 1, join_type = "miter", miter_limit = 10) shape2(3, 2);
+m(-1, 0) shape1();
+m(-1, 2) shape2();
 
-offset(delta = -1, join_type = "bevel") shape2(2, -1);
-offset(delta = 1, join_type = "bevel") shape2(3, -1);
+m(0, 0) offset() shape1();
+m(0, 1) offset(5) shape1();
+m(0, 2) offset(5) shape2();
 
-offset(delta = -5, join_type = "round") shape1(-1, 1);
-shape1(0, 1);
-offset(delta = 5, join_type = "round") shape1(1, 1);
+m(1, 0) offset(r = 1) shape1(30);
+m(1, 1) offset(r = 5) shape1(30);
+m(1, 2) offset(r = 5) shape2();
 
-offset(-4) shape1(-1, 0);
-shape1(0, 0);
-offset(4) shape1(1, 0);
+m(2, 0) offset(r = -5) shape1(40);
+m(2, 1) offset(r = -10.01) shape1(50);
+m(2, 2) offset(r = -1) shape2();
 
-offset(delta = -5) shape1(2, 1);
-shape1(0, -1);
-offset(delta = 5) shape1(1, -1);
+m(3, 0) offset(delta = 4) shape1();
+m(3, 1) offset(delta = 1) shape1();
+m(3, 2) offset(delta = 5) shape2();
+
+m(4, 0) offset(delta = -2) shape1(30);
+m(4, 1) offset(delta = -5) shape1(40);
+m(4, 2) offset(delta = -1) shape2();
+
+m(5, 0) offset(delta = 4, chamfer = true) shape1();
+m(5, 1) offset(delta = 1, chamfer = true) shape1();
+m(5, 2) offset(delta = 5, chamfer = true) shape2();
+
+m(6, 0) offset(delta = -2, chamfer = true) shape1(30);
+m(6, 1) offset(delta = -5, chamfer = true) shape1(40);
+m(6, 2) offset(delta = -1, chamfer = true) shape2();
 
 // Bug with fragment calculateion with delta < 1 due to abs() instead of std::abs()
-translate([-50,-50]) scale([25,25,1])
-	offset(delta = 0.9, join_type="round") square(.1);
+m(-2, 1) scale([30, 30]) offset(r = 0.8) square(1);
+
+// Malformed offsets
+offset();
+offset() square(0);

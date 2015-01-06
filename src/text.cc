@@ -40,7 +40,7 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 class TextModule : public AbstractModule
 {
 public:
-	TextModule() : AbstractModule(Feature::ExperimentalTextModule) { }
+	TextModule() : AbstractModule() { }
 	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
 };
 
@@ -54,9 +54,9 @@ AbstractNode *TextModule::instantiate(const Context *ctx, const ModuleInstantiat
 	Context c(ctx);
 	c.setVariables(args, evalctx);
 
-	double fn = c.lookup_variable("$fn").toDouble();
-	double fa = c.lookup_variable("$fa").toDouble();
-	double fs = c.lookup_variable("$fs").toDouble();
+	double fn = c.lookup_variable("$fn")->toDouble();
+	double fa = c.lookup_variable("$fa")->toDouble();
+	double fs = c.lookup_variable("$fs")->toDouble();
 
 	node->params.set_fn(fn);
 	node->params.set_fa(fa);

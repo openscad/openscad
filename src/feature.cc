@@ -18,7 +18,6 @@ Feature::list_t Feature::feature_list;
  * argument to enable the option and for saving the option value in GUI
  * context.
  */
-const Feature Feature::ExperimentalTextModule("text", "Enable the <code>text()</code> module.");
 
 Feature::Feature(const std::string &name, const std::string &description)
 	: enabled(false), name(name), description(description)

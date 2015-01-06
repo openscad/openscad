@@ -1,8 +1,11 @@
 #include "Tree.h"
 #include "nodedumper.h"
+#include "printutils.h"
 
 #include <assert.h>
 #include <algorithm>
+#include <sstream>
+#include <boost/regex.hpp>
 
 Tree::~Tree()
 {
@@ -29,11 +32,6 @@ const std::string &Tree::getString(const AbstractNode &node) const
 	return this->nodecache[node];
 }
 
-static bool filter(char c)
-{
-	return c == ' ' || c == '\n' || c == '\t' || c == '\r';
-}
-
 /*!
 	Returns the cached ID string representation of the subtree rooted by \a node.
 	If node is not cached, the cache will be rebuilt.
@@ -45,12 +43,22 @@ static bool filter(char c)
 const std::string &Tree::getIdString(const AbstractNode &node) const
 {
 	assert(this->root_node);
+
 	if (!this->nodeidcache.contains(node)) {
-		std::string str = getString(node);
-		str.erase(std::remove_if(str.begin(), str.end(), filter), str.end());
-		return this->nodeidcache.insert(node, str);
+		const std::string &nodestr = getString(node);
+		const boost::regex re("[^\\s\\\"]+|\\\"(?:[^\\\"\\\\]|\\\\.)*\\\"");
+		std::stringstream sstream;
+		boost::sregex_token_iterator i(nodestr.begin(), nodestr.end(), re, 0);
+		std::copy(i, boost::sregex_token_iterator(), std::ostream_iterator<std::string>(sstream));
+
+		const std::string & result = this->nodeidcache.insert(node, sstream.str());
+		PRINTDB("Id Cache MISS: %s", result);
+		return result;
+	} else {
+		const std::string & result = this->nodeidcache[node];
+		PRINTDB("Id Cache HIT:  %s", result);
+		return result;
 	}
-	return this->nodeidcache[node];
 }
 
 /*!

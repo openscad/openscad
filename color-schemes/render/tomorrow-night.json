@@ -1,0 +1,18 @@
+{
+    "name" : "Tomorrow Night",
+    "index" : 1900,
+    "show-in-gui" : true,
+
+    "colors" : {
+        "background" :         "#1d1f21",
+        "opencsg-face-front" : "#81a2be",
+        "opencsg-face-back" :  "#de935f",
+        "cgal-face-front" :    "#8abeb7",
+        "cgal-face-back" :     "#f0c674",
+        "cgal-face-2d" :       "#b5bd68",
+        "cgal-edge-front" :    "#c5c8c6",
+        "cgal-edge-back" :     "#c5c8c6",
+        "cgal-edge-2d" :       "#cc6666",
+        "crosshair" :          "#b294bb"
+    }
+}

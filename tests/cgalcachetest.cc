@@ -38,6 +38,7 @@
 #include "CGAL_Nef_polyhedron.h"
 #include "GeometryEvaluator.h"
 #include "CGALCache.h"
+#include "stackcheck.h"
 
 #ifndef _MSC_VER
 #include <getopt.h>
@@ -52,6 +53,7 @@ namespace fs = boost::filesystem;
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
 #include "boosty.h"
+#include "PlatformUtils.h"
 
 std::string commandline_commands;
 std::string currentdir;
@@ -87,6 +89,8 @@ int main(int argc, char **argv)
 {
 	const char *filename, *outfilename = NULL;
 	size_t cgalcachesize = 1*1024*1024;
+	StackCheck::inst()->init();
+
 	po::variables_map vm;
 	try {
 		vm = parse_options(argc, argv);
@@ -116,8 +120,8 @@ int main(int argc, char **argv)
 
 	currentdir = boosty::stringy(fs::current_path());
 
-	parser_init(boosty::stringy(fs::path(argv[0]).branch_path()));
-	add_librarydir(boosty::stringy(fs::path(argv[0]).branch_path() / "../libraries"));
+	PlatformUtils::registerApplicationPath(boosty::stringy(fs::path(argv[0]).branch_path()));
+	parser_init();
 
 	ModuleContext top_ctx;
 	top_ctx.registerBuiltin();

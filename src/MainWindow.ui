@@ -179,7 +179,7 @@
     </property>
     <widget class="QMenu" name="menuOpenRecent">
      <property name="title">
-      <string>Open Recent</string>
+      <string>Recent Files</string>
      </property>
     </widget>
     <widget class="QMenu" name="menuExamples">
@@ -542,6 +542,9 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Q</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::QuitRole</enum>
    </property>
   </action>
   <action name="editActionUndo">
@@ -955,6 +958,9 @@
    <property name="text">
     <string>About</string>
    </property>
+   <property name="menuRole">
+    <enum>QAction::AboutRole</enum>
+   </property>
   </action>
   <action name="helpActionManual">
    <property name="text">
@@ -982,6 +988,9 @@
   <action name="editActionPreferences">
    <property name="text">
     <string>Preferences</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::PreferencesRole</enum>
    </property>
   </action>
   <action name="editActionFind">

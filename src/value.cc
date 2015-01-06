@@ -41,6 +41,9 @@
 
 #include <boost/math/special_functions/fpclassify.hpp>
 
+Value Value::undefined;
+ValuePtr ValuePtr::undefined;
+
 std::ostream &operator<<(std::ostream &stream, const Filename &filename)
 {
   fs::path fnpath = fs::path( (std::string)filename );
@@ -76,8 +79,6 @@ std::ostream &operator<<(std::ostream &stream, const QuotedString &s)
   stream << '"';
   return stream;
 }
-
-Value Value::undefined;
 
 Value::Value() : value(boost::blank())
 {
@@ -129,9 +130,19 @@ Value::ValueType Value::type() const
   return static_cast<ValueType>(this->value.which());
 }
 
+bool Value::isDefined() const
+{
+  return this->type() != UNDEFINED;
+}
+
+bool Value::isDefinedAs(const ValueType type) const
+{
+  return this->type() == type;
+}
+
 bool Value::isUndefined() const
 {
-  return this->type() == UNDEFINED;
+  return !isDefined();
 }
 
 bool Value::toBool() const
@@ -688,7 +699,7 @@ public:
   }
 };
 
-Value Value::operator[](const Value &v)
+Value Value::operator[](const Value &v) const
 {
   return boost::apply_visitor(bracket_visitor(), this->value, v.value);
 }
@@ -790,3 +801,124 @@ bool Value::RangeType::iterator::operator!=(const self_type &other) const
 {
     return !(*this == other);
 }
+
+ValuePtr::ValuePtr()
+{
+	this->reset(new Value());
+}
+
+ValuePtr::ValuePtr(const Value &v)
+{
+	this->reset(new Value(v));
+}
+
+ValuePtr::ValuePtr(bool v)
+{
+	this->reset(new Value(v));
+}
+
+ValuePtr::ValuePtr(int v)
+{
+	this->reset(new Value(v));
+}
+
+ValuePtr::ValuePtr(double v)
+{
+	this->reset(new Value(v));
+}
+
+ValuePtr::ValuePtr(const std::string &v)
+{
+	this->reset(new Value(v));
+}
+
+ValuePtr::ValuePtr(const char *v)
+{
+	this->reset(new Value(v));
+}
+
+ValuePtr::ValuePtr(const char v)
+{
+	this->reset(new Value(v));
+}
+
+ValuePtr::ValuePtr(const Value::VectorType &v)
+{
+	this->reset(new Value(v));
+}
+
+ValuePtr::ValuePtr(const Value::RangeType &v)
+{
+	this->reset(new Value(v));
+}
+
+bool ValuePtr::operator==(const ValuePtr &v) const
+{
+	return ValuePtr(**this == *v);
+}
+
+bool ValuePtr::operator!=(const ValuePtr &v) const
+{
+	return ValuePtr(**this != *v);
+}
+
+bool ValuePtr::operator<(const ValuePtr &v) const
+{
+	return ValuePtr(**this < *v);
+}
+
+bool ValuePtr::operator<=(const ValuePtr &v) const
+{
+	return ValuePtr(**this <= *v);
+}
+
+bool ValuePtr::operator>=(const ValuePtr &v) const
+{
+	return ValuePtr(**this >= *v);
+}
+
+bool ValuePtr::operator>(const ValuePtr &v) const
+{
+	return ValuePtr(**this > *v);
+}
+
+ValuePtr ValuePtr::operator-() const
+{
+	return ValuePtr(-**this);
+}
+
+ValuePtr ValuePtr::operator!() const
+{
+	return ValuePtr(!**this);
+}
+
+ValuePtr ValuePtr::operator[](const ValuePtr &v) const
+{
+	return ValuePtr((**this)[*v]);
+}
+
+ValuePtr ValuePtr::operator+(const ValuePtr &v) const
+{
+	return ValuePtr(**this + *v);
+}
+
+ValuePtr ValuePtr::operator-(const ValuePtr &v) const
+{
+	return ValuePtr(**this - *v);
+}
+
+ValuePtr ValuePtr::operator*(const ValuePtr &v) const
+{
+	return ValuePtr(**this * *v);
+}
+
+ValuePtr ValuePtr::operator/(const ValuePtr &v) const
+{
+	return ValuePtr(**this / *v);
+}
+
+ValuePtr ValuePtr::operator%(const ValuePtr &v) const
+{
+	return ValuePtr(**this % *v);
+}
+

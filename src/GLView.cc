@@ -91,21 +91,23 @@ void GLView::setupCamera()
   glLoadIdentity();
 
 	switch (this->cam.type) {
-	case Camera::GIMBAL:
+	case Camera::GIMBAL: {
+		double eyeY = 0.0;
 		switch (this->cam.projection) {
 		case Camera::PERSPECTIVE: {
-			double dist = cam.viewer_distance;
-			gluPerspective(cam.fov, aspectratio, 0.1*dist, 100*dist);
+			eyeY = cam.zoomValue();
+			gluPerspective(cam.fov, aspectratio, 0.1 * eyeY, 100 * eyeY);
 			break;
 		}
 		case Camera::ORTHOGONAL: {
-			glOrtho(-cam.height/2*aspectratio, cam.height*aspectratio/2,
-							-cam.height/2, cam.height/2,
+			eyeY = cam.zoomValue();
+			glOrtho(-eyeY/2*aspectratio, eyeY*aspectratio/2,
+							-eyeY/2, eyeY/2,
 							-far_far_away, +far_far_away);
 			break;
 		}
 		}
-		gluLookAt(0.0, -cam.viewer_distance, 0.0,
+		gluLookAt(0.0, -eyeY, 0.0,
 							0.0, 0.0, 0.0,
 							0.0, 0.0, 1.0);
 		glMatrixMode(GL_MODELVIEW);
@@ -113,8 +115,8 @@ void GLView::setupCamera()
 		glRotated(cam.object_rot.x(), 1.0, 0.0, 0.0);
 		glRotated(cam.object_rot.y(), 0.0, 1.0, 0.0);
 		glRotated(cam.object_rot.z(), 0.0, 0.0, 1.0);
-		glTranslated(cam.object_trans.x(), cam.object_trans.y(), cam.object_trans.z() );
 		break;
+	}
 	case Camera::VECTOR: {
 		switch (this->cam.projection) {
 		case Camera::PERSPECTIVE: {
@@ -123,8 +125,9 @@ void GLView::setupCamera()
 			break;
 		}
 		case Camera::ORTHOGONAL: {
-			glOrtho(-cam.height/2*aspectratio, cam.height*aspectratio/2,
-							-cam.height/2, cam.height/2,
+			double height = cam.zoomValue();
+			glOrtho(-height/2*aspectratio, height*aspectratio/2,
+							-height/2, height/2,
 							-far_far_away, +far_far_away);
 			break;
 		}
@@ -150,18 +153,24 @@ void GLView::setupCamera()
 
 void GLView::paintGL()
 {
-  glEnable(GL_LIGHTING);
-
-	setupCamera();
+  glDisable(GL_LIGHTING);
 
   Color4f bgcol = ColorMap::getColor(*this->colorscheme, BACKGROUND_COLOR);
+  Color4f bgcontrast = ColorMap::getContrastColor(bgcol);
   glClearColor(bgcol[0], bgcol[1], bgcol[2], 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-	// Only for GIMBAL cam
-  if (showcrosshairs) GLView::showCrosshairs();
-  if (showaxes) GLView::showAxes();
+  setupCamera();
+  if (this->cam.type) {
+    // Only for GIMBAL cam
+    // The crosshair should be fixed at the center of the viewport...
+    if (showcrosshairs) GLView::showCrosshairs();
+    glTranslated(cam.object_trans.x(), cam.object_trans.y(), cam.object_trans.z());
+    // ...the axis lines need to follow the object translation.
+    if (showaxes) GLView::showAxes(bgcontrast);
+  }
 
+  glEnable(GL_LIGHTING);
   glDepthFunc(GL_LESS);
   glCullFace(GL_BACK);
   glDisable(GL_CULL_FACE);
@@ -174,10 +183,11 @@ void GLView::paintGL()
     OpenCSG::setContext(this->opencsg_id);
 #endif
     this->renderer->draw(showfaces, showedges);
-	}
+  }
 
   // Only for GIMBAL
-	if (showaxes) GLView::showSmallaxes();
+  glDisable(GL_LIGHTING);
+  if (showaxes) GLView::showSmallaxes(bgcontrast);
 }
 
 #ifdef ENABLE_OPENCSG
@@ -358,7 +368,7 @@ void GLView::initializeGL()
 #endif
 }
 
-void GLView::showSmallaxes()
+void GLView::showSmallaxes(const Color4f &col)
 {
   // Fixme - this doesnt work in Vector Camera mode
 
@@ -423,14 +433,9 @@ void GLView::showSmallaxes()
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
-  // FIXME: This was an attempt to keep contrast with background, but is suboptimal
-  // (e.g. nearly invisible against a gray background).
-  //    int r,g,b;
-  //    r=g=b=0;
-  //    bgcol.getRgb(&r, &g, &b);
-  //    glColor3f((255.0f-r)/255.0f, (255.0f-g)/255.0f, (255.0f-b)/255.0f);
-	float d = 3*dpi;
-  glColor3f(0.0f, 0.0f, 0.0f);
+  glColor3f(col[0], col[1], col[2]);
+
+  float d = 3*dpi;
   glBegin(GL_LINES);
   // X Label
   glVertex3d(xlabel_x-d, xlabel_y-d, 0); glVertex3d(xlabel_x+d, xlabel_y+d, 0);
@@ -447,36 +452,48 @@ void GLView::showSmallaxes()
   glEnd();
 }
 
-void GLView::showAxes()
+void GLView::showAxes(const Color4f &col)
 {
+  double l = cam.zoomValue();
+  
   // FIXME: doesn't work under Vector Camera
   // Large gray axis cross inline with the model
-  // FIXME: This is always gray - adjust color to keep contrast with background
   glLineWidth(this->getDPI());
-  glColor3d(0.5, 0.5, 0.5);
+  glColor3f(col[0], col[1], col[2]);
+
   glBegin(GL_LINES);
-  double l = cam.projection == Camera::PERSPECTIVE ? cam.viewer_distance : cam.height;
-  glVertex3d(-l, 0, 0);
+  glVertex3d(0, 0, 0);
   glVertex3d(+l, 0, 0);
-  glVertex3d(0, -l, 0);
+  glVertex3d(0, 0, 0);
   glVertex3d(0, +l, 0);
-  glVertex3d(0, 0, -l);
+  glVertex3d(0, 0, 0);
   glVertex3d(0, 0, +l);
   glEnd();
+
+  glPushAttrib(GL_LINE_BIT);
+  glEnable(GL_LINE_STIPPLE);
+  glLineStipple(3, 0xAAAA);
+  glBegin(GL_LINES);
+  glVertex3d(0, 0, 0);
+  glVertex3d(-l, 0, 0);
+  glVertex3d(0, 0, 0);
+  glVertex3d(0, -l, 0);
+  glVertex3d(0, 0, 0);
+  glVertex3d(0, 0, -l);
+  glEnd();
+  glPopAttrib();
 }
 
 void GLView::showCrosshairs()
 {
   // FIXME: this might not work with Vector camera
-  // FIXME: Crosshairs and axes are lighted, this doesn't make sense and causes them
-  // to change color based on view orientation.
-  glLineWidth(3);
+  glLineWidth(this->getDPI());
   Color4f col = ColorMap::getColor(*this->colorscheme, CROSSHAIR_COLOR);
   glColor3f(col[0], col[1], col[2]);
   glBegin(GL_LINES);
   for (double xf = -1; xf <= +1; xf += 2)
   for (double yf = -1; yf <= +1; yf += 2) {
-    double vd = cam.viewer_distance/20;
+    double vd = cam.zoomValue()/8;
     glVertex3d(-xf*vd, -yf*vd, -vd);
     glVertex3d(+xf*vd, +yf*vd, +vd);
   }

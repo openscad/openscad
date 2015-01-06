@@ -11,7 +11,10 @@
 
 	We can store sanitized vs. unsanitized polygons. Sanitized polygons
 	will have opposite winding order for holes and is guaranteed to not
-	have intersecting geometry. Sanitization is typically done by ClipperUtils.
+	have intersecting geometry. The winding order will be counter-clockwise 
+	for positive outlines and clockwise for holes. Sanitization is typically 
+	done by ClipperUtils, but if you create geometry which you know is sanitized, 
+	the flag can be set manually.
 */
 
 size_t Polygon2d::memsize() const
@@ -56,7 +59,7 @@ bool Polygon2d::isEmpty() const
 void Polygon2d::transform(const Transform2d &mat)
 {
 	if (mat.matrix().determinant() == 0) {
-		PRINT("Warning: Scaling a 2D object with 0 - removing object");
+		PRINT("WARNING: Scaling a 2D object with 0 - removing object");
 		this->theoutlines.clear();
 		return;
 	}

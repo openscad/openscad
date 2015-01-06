@@ -74,12 +74,15 @@ void ThrownTogetherRenderer::renderCSGChain(CSGChain *chain, bool highlight,
 		const Color4f &c = obj.color;
 		glPushMatrix();
 		glMultMatrixd(m.data());
-		csgmode_e csgmode  = obj.type == CSGTerm::TYPE_DIFFERENCE ? CSGMODE_DIFFERENCE : CSGMODE_NORMAL;
+		csgmode_e csgmode = csgmode_e(
+			(highlight ? 
+			 CSGMODE_HIGHLIGHT :
+			 (background ? CSGMODE_BACKGROUND : CSGMODE_NORMAL)) |
+			(obj.type == CSGTerm::TYPE_DIFFERENCE ? CSGMODE_DIFFERENCE : 0));
 		ColorMode colormode = COLORMODE_NONE;
 		ColorMode edge_colormode = COLORMODE_NONE;
 
 		if (highlight) {
-			csgmode = csgmode_e(csgmode + 20);
 			colormode = COLORMODE_HIGHLIGHT;
 			edge_colormode = COLORMODE_HIGHLIGHT_EDGES;
 		} else if (background) {
@@ -89,16 +92,11 @@ void ThrownTogetherRenderer::renderCSGChain(CSGChain *chain, bool highlight,
 			else {
 				colormode = COLORMODE_BACKGROUND;
 			}
-			csgmode = csgmode_e(csgmode + 10);
 			edge_colormode = COLORMODE_BACKGROUND_EDGES;
 		} else if (fberror) {
-			if (highlight) csgmode = csgmode_e(csgmode + 20);
-			else if (background) csgmode = csgmode_e(csgmode + 10);
-			else csgmode = csgmode_e(csgmode);
 		} else if (obj.type == CSGTerm::TYPE_DIFFERENCE) {
 			if (obj.flag & CSGTerm::FLAG_HIGHLIGHT) {
 				colormode = COLORMODE_HIGHLIGHT;
-				csgmode = csgmode_e(csgmode + 20);
 			}
 			else {
 				colormode = COLORMODE_CUTOUT;
@@ -107,7 +105,6 @@ void ThrownTogetherRenderer::renderCSGChain(CSGChain *chain, bool highlight,
 		} else {
 			if (obj.flag & CSGTerm::FLAG_HIGHLIGHT) {
 				colormode = COLORMODE_HIGHLIGHT;
-				csgmode = csgmode_e(csgmode + 20);
 			}
 			else {
 				colormode = COLORMODE_MATERIAL;
