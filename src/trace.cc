@@ -74,7 +74,8 @@ AbstractNode *TraceModule::instantiate(const Context *ctx, const ModuleInstantia
 	node->fa = c.lookup_variable("$fa")->toDouble();
 
 	ValuePtr fileval = c.lookup_variable("file");
-	node->file = lookup_file(fileval->isUndefined() ? "" : fileval->toString(), inst->path(), c.documentPath());
+	node->file = fileval->toString();
+	node->fullpath = lookup_file(fileval->isUndefined() ? "" : fileval->toString(), inst->path(), c.documentPath());
 
 	ValuePtr threshold = c.lookup_variable("threshold", false);
 	node->threshold = threshold->type() == Value::NUMBER ? threshold->toDouble() : 0.5;
@@ -85,13 +86,13 @@ AbstractNode *TraceModule::instantiate(const Context *ctx, const ModuleInstantia
 const Geometry * TraceNode::createGeometry() const
 {
 	std::vector<unsigned char> png;
-	lodepng::load_file(png, file);
+	lodepng::load_file(png, fullpath);
 
 	unsigned int width, height;
 	std::vector<unsigned char> img;
 	unsigned error = lodepng::decode(img, width, height, png);
 	if (error) {
-		PRINTB("ERROR: Can't read PNG image '%s'", file);
+		PRINTB("ERROR: Can't read PNG image '%s'", fullpath);
 		return new Polygon2d();
 	}
 
@@ -198,7 +199,7 @@ const Geometry * TraceNode::traceBitmap(std::vector<unsigned char> &img, unsigne
 
 const Geometry * TraceNode::createDummyGeometry(std::vector<unsigned char> &, unsigned int width, unsigned int height) const
 {
-	PRINTB("WARNING: Creating dummy geometry for file '%s' because trace() is not enabled.", file);
+	PRINTB("WARNING: Creating dummy geometry for file '%s' because trace() is not enabled.", fullpath);
 	Polygon2d *p = new Polygon2d();
 	Outline2d outline;
 	outline.vertices.push_back(Vector2d(0, 0));

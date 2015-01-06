@@ -1,12 +1,12 @@
 group() {
-	trace(file = "/data/OpenSCAD/openscad-master/tests/../testdata/scad/2D/features/../../../image/trace-test-card.png", threshold = 0.5, $fn = 0, $fa = 12, $fs = 2);
+	trace(file = "../../../image/trace-test-card.png", threshold = 0.5, $fn = 0, $fa = 12, $fs = 2);
 	multmatrix([[1, 0, 0, 300], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		trace(file = "/data/OpenSCAD/openscad-master/tests/../testdata/scad/2D/features/../../../image/trace-test-card.png", threshold = 0.9, $fn = 0, $fa = 12, $fs = 2);
+		trace(file = "../../../image/trace-test-card.png", threshold = 0.9, $fn = 0, $fa = 12, $fs = 2);
 	}
 	multmatrix([[1, 0, 0, 0], [0, 1, 0, 300], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		trace(file = "/data/OpenSCAD/openscad-master/tests/../testdata/scad/2D/features/../../../image/trace-test-card.png", threshold = 0.5, $fn = 1, $fa = 12, $fs = 2);
+		trace(file = "../../../image/trace-test-card.png", threshold = 0.5, $fn = 1, $fa = 12, $fs = 2);
 	}
 	multmatrix([[1, 0, 0, 300], [0, 1, 0, 300], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		trace(file = "/data/OpenSCAD/openscad-master/tests/../testdata/scad/2D/features/../../../image/trace-test-card.png", threshold = 0.1, $fn = 0, $fa = 12, $fs = 2);
+		trace(file = "../../../image/trace-test-card.png", threshold = 0.1, $fn = 0, $fa = 12, $fs = 2);
 	}
 }

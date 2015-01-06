@@ -15,7 +15,7 @@ public:
 	virtual const class Geometry *createGeometry() const;
 
 	double fn, fs, fa, threshold;
-        std::string file;
+        std::string file, fullpath;
 private:
         const Geometry * traceBitmap(std::vector<unsigned char> &img, unsigned int width, unsigned int height) const;
         const Geometry * createDummyGeometry(std::vector<unsigned char> &img, unsigned int width, unsigned int height) const;
