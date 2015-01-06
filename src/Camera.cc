@@ -3,7 +3,7 @@
 #include "printutils.h"
 
 Camera::Camera(enum CameraType camtype) :
-	type(camtype), projection(Camera::PERSPECTIVE), fov(45), viewall(false), zoom_value(500)
+	type(camtype), projection(Camera::PERSPECTIVE), fov(45), viewall(false), zoom_value(60)
 {
 	PRINTD("Camera()");
 	if (this->type == Camera::GIMBAL) {
