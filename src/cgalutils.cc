@@ -9,10 +9,20 @@
 #include "node.h"
 
 #include "cgal.h"
-#include <CGAL/convex_hull_3.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/normal_vector_newell_3.h>
 #include <CGAL/Handle_hash_function.h>
+
+#include <CGAL/config.h> 
+#include <CGAL/version.h> 
+
+// Apply CGAL bugfix. Note: If using CGAL < 4.3, hull() might be buggy
+#if CGAL_VERSION_NR > CGAL_VERSION_NUMBER(4,5,1) || CGAL_VERSION_NR < CGAL_VERSION_NUMBER(4,3,0) 
+#include <CGAL/convex_hull_3.h>
+#else
+#include "convex_hull_3_bugfix.h"
+#endif
+
 #include "svg.h"
 #include "Reindexer.h"
 
@@ -40,13 +50,15 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 	PolySet ps_tri(3, psq.convexValue());
 	PolysetUtils::tessellate_faces(psq, ps_tri);
 	if (ps_tri.is_convex()) {
-		typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
+		typedef CGAL::Epick K;
 		// Collect point cloud
 		// FIXME: Use unordered container (need hash)
-		std::set<K::Point_3> points;
-		for (int i = 0; i < psq.polygons.size(); i++) {
-			for (int j = 0; j < psq.polygons[i].size(); j++) {
-				points.insert(vector_convert<K::Point_3>(psq.polygons[i][j]));
+		// NB! CGAL's convex_hull_3() doesn't like std::set iterators, so we use a list
+		// instead.
+		std::list<K::Point_3> points;
+		for (int i = 0; i < ps.polygons.size(); i++) {
+			for (int j = 0; j < ps.polygons[i].size(); j++) {
+				points.push_back(vector_convert<K::Point_3>(ps.polygons[i][j]));
 			}
 		}
 
@@ -108,9 +120,11 @@ namespace CGALUtils {
 
 	bool applyHull(const Geometry::ChildList &children, PolySet &result)
 	{
-		typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
+		typedef CGAL::Epick K;
 		// Collect point cloud
-		std::set<K::Point_3> points;
+		// NB! CGAL's convex_hull_3() doesn't like std::set iterators, so we use a list
+		// instead.
+		std::list<K::Point_3> points;
 
 		BOOST_FOREACH(const Geometry::ChildItem &item, children) {
 			const shared_ptr<const Geometry> &chgeom = item.second;
@@ -118,7 +132,7 @@ namespace CGALUtils {
 			if (N) {
 				if (!N->isEmpty()) {
 					for (CGAL_Nef_polyhedron3::Vertex_const_iterator i = N->p3->vertices_begin(); i != N->p3->vertices_end(); ++i) {
-						points.insert(K::Point_3(to_double(i->point()[0]),to_double(i->point()[1]),to_double(i->point()[2])));
+						points.push_back(vector_convert<K::Point_3>(i->point()));
 					}
 				}
 			} else {
@@ -126,7 +140,7 @@ namespace CGALUtils {
 				if (ps) {
 					BOOST_FOREACH(const Polygon &p, ps->polygons) {
 						BOOST_FOREACH(const Vector3d &v, p) {
-							points.insert(K::Point_3(v[0], v[1], v[2]));
+							points.push_back(K::Point_3(v[0], v[1], v[2]));
 						}
 					}
 				}
@@ -142,6 +156,10 @@ namespace CGALUtils {
 			try {
 				CGAL::Polyhedron_3<K> r;
 				CGAL::convex_hull_3(points.begin(), points.end(), r);
+                            PRINTDB("After hull vertices: %d", r.size_of_vertices());
+                            PRINTDB("After hull facets: %d", r.size_of_facets());
+                            PRINTDB("After hull closed: %d", r.is_closed());
+                            PRINTDB("After hull valid: %d", r.is_valid());
 				success = !createPolySetFromPolyhedron(r, result);
 			}
 			catch (const CGAL::Assertion_exception &e) {
@@ -199,7 +217,7 @@ namespace CGALUtils {
 			while (++it != children.end()) {
 				operands[1] = it->second.get();
 
-				typedef CGAL::Exact_predicates_inexact_constructions_kernel Hull_kernel;
+				typedef CGAL::Epick Hull_kernel;
 
 				std::list<CGAL_Polyhedron> P[2];
 				std::list<CGAL::Polyhedron_3<Hull_kernel> > result_parts;
