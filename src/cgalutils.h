@@ -21,6 +21,7 @@ namespace CGALUtils {
 	bool is_approximately_convex(const PolySet &ps);
 	Geometry const* applyMinkowski(const Geometry::ChildList &children);
 
+	template <typename Polyhedron> std::string printPolyhedron(const Polyhedron &p);
 	template <typename Polyhedron> bool createPolySetFromPolyhedron(const Polyhedron &p, PolySet &ps);
 	template <typename Polyhedron> bool createPolyhedronFromPolySet(const PolySet &ps, Polyhedron &p);
 	template <class Polyhedron_A, class Polyhedron_B> 

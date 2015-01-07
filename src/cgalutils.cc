@@ -917,10 +917,13 @@ namespace CGALUtils {
 				 and let the tessellater deal with the holes, and then
 				 just output the resulting 3d triangles*/
 
-			CGAL::Vector_3<CGAL_Kernel3> nvec = plane.orthogonal_vector();
-			K::Vector_3 normal(CGAL::to_double(nvec.x()), CGAL::to_double(nvec.y()), CGAL::to_double(nvec.z()));
+			// We cannot trust the plane from Nef polyhedron to be correct.
+			// Passing an incorrect normal vector can cause a crash in the constrained delaunay triangulator
+      // See http://cgal-discuss.949826.n4.nabble.com/Nef3-Wrong-normal-vector-reported-causes-triangulator-crash-tt4660282.html
+			// CGAL::Vector_3<CGAL_Kernel3> nvec = plane.orthogonal_vector();
+			// K::Vector_3 normal(CGAL::to_double(nvec.x()), CGAL::to_double(nvec.y()), CGAL::to_double(nvec.z()));
 			std::vector<Polygon> triangles;
-			bool err = CGALUtils::tessellatePolygonWithHoles(polyholes, triangles, &normal);
+			bool err = CGALUtils::tessellatePolygonWithHoles(polyholes, triangles, NULL);
 			if (!err) {
 				BOOST_FOREACH(const Polygon &p, triangles) {
 					if (p.size() != 3) {
