@@ -296,6 +296,63 @@ namespace CGALUtils {
 	template bool createPolySetFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Epeck> &p, PolySet &ps);
 	template bool createPolySetFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Simple_cartesian<long> > &p, PolySet &ps);
 
+	class Polyhedron_writer {
+    std::ostream *out;
+		bool firstv;
+		std::vector<int> indices;
+	public:
+    Polyhedron_writer() {}
+    void write_header(std::ostream &stream,
+											std::size_t vertices,
+											std::size_t halfedges,
+											std::size_t facets,
+											bool normals = false) {
+			this->out = &stream;
+			*out << "polyhedron(points=[";
+			firstv = true;
+		}
+    void write_footer() {
+			*out << "]);" << std::endl;
+		}
+    void write_vertex( const double& x, const double& y, const double& z) {
+			*out << (firstv ? "" : ",") << '[' << x << ',' << y << ',' << z << ']';
+			firstv = false;
+    }
+    void write_facet_header() {
+			*out << "], faces=[";
+			firstv = true;
+    }
+    void write_facet_begin( std::size_t no) {
+			*out << (firstv ? "" : ",") << '[';
+			indices.clear();
+			firstv = false;
+    }
+    void write_facet_vertex_index( std::size_t index) {
+			indices.push_back(index);
+    }
+    void write_facet_end() {
+			bool firsti = true;
+			BOOST_REVERSE_FOREACH(int i, indices) {
+				*out << (firsti ? "" : ",") << i;
+				firsti = false;
+			}
+			*out << ']';
+    }
+	};
+
+	template <typename Polyhedron>
+	std::string printPolyhedron(const Polyhedron &p) {
+		std::stringstream sstream;
+		sstream.precision(20);
+
+    Polyhedron_writer writer;
+    generic_print_polyhedron(sstream, p, writer);
+		
+		return sstream.str();
+	}
+
+	template std::string printPolyhedron(const CGAL_Polyhedron &p);
+
 }; // namespace CGALUtils
 
 #endif /* ENABLE_CGAL */
