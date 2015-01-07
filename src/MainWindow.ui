@@ -170,7 +170,7 @@
      <x>0</x>
      <y>0</y>
      <width>1397</width>
-     <height>22</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -342,10 +342,15 @@
        <addaction name="fileActionOpen"/>
        <addaction name="fileActionSave"/>
        <addaction name="separator"/>
+       <addaction name="editActionUndo"/>
+       <addaction name="editActionRedo"/>
+       <addaction name="editActionIndent"/>
+       <addaction name="editActionUnindent"/>
        <addaction name="designActionPreview"/>
        <addaction name="designActionRender"/>
        <addaction name="separator"/>
        <addaction name="designActionExportSTL"/>
+       <addaction name="viewActionResetView"/>
       </widget>
      </item>
      <item>
@@ -548,6 +553,10 @@
    </property>
   </action>
   <action name="editActionUndo">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/Command-Undo-32.png</normaloff>:/images/Command-Undo-32.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Undo</string>
    </property>
@@ -559,6 +568,10 @@
    </property>
   </action>
   <action name="editActionRedo">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/Command-Redo-32.png</normaloff>:/images/Command-Redo-32.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Redo</string>
    </property>
@@ -603,19 +616,15 @@
    </property>
   </action>
   <action name="editActionIndent">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/Increase-Indent-32.png</normaloff>:/images/Increase-Indent-32.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Indent</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+I</string>
-   </property>
-  </action>
-  <action name="editActionUnindent">
-   <property name="text">
-    <string>U&amp;nindent</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Shift+I</string>
    </property>
   </action>
   <action name="editActionComment">
@@ -1072,6 +1081,10 @@
    </property>
   </action>
   <action name="viewActionResetView">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/Command-Reset-32.png</normaloff>:/images/Command-Reset-32.png</iconset>
+   </property>
    <property name="text">
     <string>Reset View</string>
    </property>
@@ -1135,6 +1148,18 @@
    </property>
    <property name="text">
     <string>Hide toolbars</string>
+   </property>
+  </action>
+  <action name="editActionUnindent">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/Decrease-Indent-32.png</normaloff>:/images/Decrease-Indent-32.png</iconset>
+   </property>
+   <property name="text">
+    <string>U&amp;nindent</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+I</string>
    </property>
   </action>
  </widget>
