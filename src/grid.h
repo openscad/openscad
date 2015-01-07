@@ -137,7 +137,8 @@ public:
 			}
 		}
 		if (iter == db.end()) { // Not found: insert using key
-			T &data = db[key] = db.size();
+			T data = db.size();
+			db[key] = data;
 			return data;
 		}
 
