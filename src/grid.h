@@ -120,14 +120,14 @@ public:
 		createGridVertex(v, key);
 		typename GridContainer::iterator iter = db.find(key);
 		if (iter == db.end()) {
-			int dist = 10; // > max possible distance
+			float dist = 10.0f; // > max possible distance
 			for (int64_t jx = key[0] - 1; jx <= key[0] + 1; jx++) {
 				for (int64_t jy = key[1] - 1; jy <= key[1] + 1; jy++) {
 					for (int64_t jz = key[2] - 1; jz <= key[2] + 1; jz++) {
 						Vector3l k(jx, jy, jz);
 						typename GridContainer::iterator tmpiter = db.find(k);
 						if (tmpiter == db.end()) continue;
-						int d = (key-k).norm();
+						float d = sqrt((key-k).squaredNorm());
 						if (d < dist) {
 						  dist = d;
 							iter = tmpiter;
