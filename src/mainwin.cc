@@ -2614,7 +2614,7 @@ void MainWindow::consoleOutput(const std::string &msg, void *userdata)
 	// originates in a worker thread.
 	MainWindow *thisp = static_cast<MainWindow*>(userdata);
 	QString qmsg = QString::fromUtf8(msg.c_str());
-	if (qmsg.startsWith("WARNING:")) {
+	if (qmsg.startsWith("WARNING:") || qmsg.startsWith("DEPRECATED:")) {
 		thisp->compileWarnings++;
 		qmsg = "<html><span style=\"color: black; background-color: #ffffb0;\">" + qmsg + "</span></html>";
 	} else if (qmsg.startsWith("ERROR:")) {

@@ -114,8 +114,9 @@ std::set<std::string> printedDeprecations;
 void printDeprecation(const std::string &str)
 {
 	if (printedDeprecations.find(str) == printedDeprecations.end()) {
-		PRINT(str);
 		printedDeprecations.insert(str);
+		std::string msg = "DEPRECATED: " + str;
+		PRINT(msg);
 	}
 }
 
