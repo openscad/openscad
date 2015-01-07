@@ -31,14 +31,6 @@
 #include <boost/foreach.hpp>
 #include <boost/unordered_set.hpp>
 
-namespace Eigen {
-		size_t hash_value(Vector3d const &v) {
-			size_t seed = 0;
-			for (int i=0;i<3;i++) boost::hash_combine(seed, v[i]);
-			return seed;
-		}
-}
-
 namespace /* anonymous */ {
 	template<typename Result, typename V>
 	Result vector_convert(V const& v) {
@@ -60,6 +52,7 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 	if (ps_tri.is_convex()) {
 		typedef CGAL::Epick K;
 		// Collect point cloud
+		// FIXME: Use unordered container (need hash)
 		// NB! CGAL's convex_hull_3() doesn't like std::set iterators, so we use a list
 		// instead.
 		std::list<K::Point_3> points;
@@ -84,7 +77,7 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 	try {
 		CGAL_Polyhedron P;
-		bool err = CGALUtils::createPolyhedronFromPolySet(ps, P);
+		bool err = CGALUtils::createPolyhedronFromPolySet(psq, P);
 		 if (!err) {
 		 	PRINTDB("Polyhedron is closed: %d", P.is_closed());
 		 	PRINTDB("Polyhedron is valid: %d", P.is_valid(false, 0));
@@ -481,7 +474,7 @@ namespace CGALUtils {
 		}
 	// union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad and testdata/scad/bugs/issue204.scad
 		catch (const CGAL::Failure_exception &e) {
-			std::string opstr = op == OPENSCAD_INTERSECTION ? "intersection" : op == OPENSCAD_DIFFERENCE ? "difference" : op == OPENSCAD_MINKOWSKI ? "minkowski" : "UNKNOWN";
+			std::string opstr = op == OPENSCAD_INTERSECTION ? "intersection" : op == OPENSCAD_DIFFERENCE ? "difference" : op == OPENSCAD_UNION ? "union" : "UNKNOWN";
 			PRINTB("ERROR: CGAL error in CGALUtils::applyBinaryOperator %s: %s", opstr % e.what());
 		}
 		CGAL::set_error_behaviour(old_behaviour);
