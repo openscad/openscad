@@ -1,16 +1,4 @@
 // logo_and_text.scad - Example for text() usage in OpenSCAD
-//
-// Written in 2014 by Torsten Paul <Torsten.Paul@gmx.de>
-//
-// To the extent possible under law, the author(s) have dedicated all
-// copyright and related and neighboring rights to this software to the
-// public domain worldwide. This software is distributed without any
-// warranty.
-//
-// You should have received a copy of the CC0 Public Domain
-// Dedication along with this software.
-// If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-//
 
 echo(version=version());
 
@@ -56,3 +44,15 @@ translate([110, 0, 80]) {
 	translate([160, 0, -40]) black() t("Solid 3D CAD Modeller");
 }
 
+
+
+// Written in 2014 by Torsten Paul <Torsten.Paul@gmx.de>
+//
+// To the extent possible under law, the author(s) have dedicated all
+// copyright and related and neighboring rights to this software to the
+// public domain worldwide. This software is distributed without any
+// warranty.
+//
+// You should have received a copy of the CC0 Public Domain
+// Dedication along with this software.
+// If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
