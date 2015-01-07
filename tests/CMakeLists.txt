@@ -264,7 +264,9 @@ if (EIGEN_DIR)
 endif()
 
 if (NOT EIGEN_INCLUDE_DIR)
-  find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS ${OPENSCAD_LIBDIR}/include/eigen3)
+  # The NO_CMAKE_SYSTEM_PATH is necessary to avoid OS X from picking up 
+  # a stray Eigen from /Library/Framework
+  find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS ${OPENSCAD_LIBDIR}/include/eigen3 NO_CMAKE_SYSTEM_PATH)
 endif()
 
 if (NOT EIGEN_INCLUDE_DIR)
