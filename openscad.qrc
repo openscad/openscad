@@ -1,5 +1,10 @@
 <RCC>
   <qresource prefix="/">
+    <file>icons/close.png</file>
+    <file>icons/information-icons-error.png</file>
+    <file>icons/information-icons-info.png</file>
+    <file>icons/information-icons-question.png</file>
+    <file>icons/information-icons-warning.png</file>
     <file>icons/openscad.png</file>
     <file>icons/button.png</file>
     <file>icons/background-welcome-screen.svg</file>

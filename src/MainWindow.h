@@ -78,6 +78,9 @@ public:
 	QString editortype;	
 	bool useScintilla;
 
+        int compileErrors;
+        int compileWarnings;
+
 	MainWindow(const QString &filename);
 	~MainWindow();
 
@@ -103,6 +106,7 @@ private:
 	void updateTemporalVariables();
 	bool fileChangedOnDisk();
 	void compileTopLevelDocument();
+        void updateCompileResult();
 	void compile(bool reload, bool forcedone = false);
 	void compileCSG(bool procevents);
 	bool maybeSave();
@@ -149,6 +153,7 @@ private slots:
 	void hideToolbars();
 	void hideEditor();
 	void hideConsole();
+	void showConsole();
 
 private slots:
 	void selectFindType(int);
@@ -200,6 +205,7 @@ public slots:
 	void actionReloadRenderPreview();
         void on_editorDock_visibilityChanged(bool);
         void on_consoleDock_visibilityChanged(bool);
+        void on_pushButtonCompileResultClose_clicked();
         void editorTopLevelChanged(bool);
         void consoleTopLevelChanged(bool);
 #ifdef ENABLE_OPENCSG

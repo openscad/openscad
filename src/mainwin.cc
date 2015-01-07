@@ -282,6 +282,9 @@ MainWindow::MainWindow(const QString &filename)
 
 	animate_panel->hide();
 	find_panel->hide();
+	frameCompileResult->hide();
+	this->labelCompileResultMessage->setOpenExternalLinks(false);
+	connect(this->labelCompileResultMessage, SIGNAL(linkActivated(QString)), SLOT(showConsole()));
 
 	// File menu
 	connect(this->fileActionNew, SIGNAL(triggered()), this, SLOT(actionNew())); 
@@ -873,6 +876,9 @@ void MainWindow::compile(bool reload, bool forcedone)
 	bool shouldcompiletoplevel = false;
 	bool didcompile = false;
 
+	compileErrors = 0;
+	compileWarnings = 0;
+
 	this->renderingTime.start();
 
 	// Reload checks the timestamp of the toplevel file and refreshes if necessary,
@@ -946,12 +952,43 @@ void MainWindow::waitAfterReload()
 	}
 }
 
+void MainWindow::on_pushButtonCompileResultClose_clicked()
+{
+	frameCompileResult->hide();
+}
+
+void MainWindow::updateCompileResult()
+{
+	if ((compileErrors == 0) && (compileWarnings == 0)) {
+		frameCompileResult->hide();
+		return;
+	}
+
+	QString msg;
+	if (compileErrors > 0) {
+		if (fileName.isEmpty()) {
+			msg = QString(_("Compile error."));
+		} else {
+			QFileInfo fileInfo(fileName);
+			msg = QString(_("Error while compiling '%1'.")).arg(fileInfo.fileName());
+		}
+		labelCompileResultIcon->setPixmap(QPixmap(QString::fromUtf8(":/icons/information-icons-error.png")));
+	} else {
+		msg = QString(_("Compilation generated %1 warnings.")).arg(compileWarnings);
+		labelCompileResultIcon->setPixmap(QPixmap(QString::fromUtf8(":/icons/information-icons-warning.png")));
+	}
+	msg += _(" For details see <a href=\"#console\">console window</a>.");
+	labelCompileResultMessage->setText(msg);
+	frameCompileResult->show();
+}
+
 void MainWindow::compileDone(bool didchange)
 {
 	const char *callslot;
 	if (didchange) {
 		instantiateRoot();
 		updateCamera();
+		updateCompileResult();
 		callslot = afterCompileSlot;
 	}
 	else {
@@ -2399,8 +2436,14 @@ void MainWindow::hideEditor()
 	}
 }
 
-void MainWindow::hideConsole()
+void MainWindow::showConsole()
+{
+	viewActionHideConsole->setChecked(false);
+	consoleDock->show();
+	frameCompileResult->hide();
+}
 
+void MainWindow::hideConsole()
 {
 	if (viewActionHideConsole->isChecked()) {
 		consoleDock->hide();
@@ -2572,8 +2615,10 @@ void MainWindow::consoleOutput(const std::string &msg, void *userdata)
 	MainWindow *thisp = static_cast<MainWindow*>(userdata);
 	QString qmsg = QString::fromUtf8(msg.c_str());
 	if (qmsg.startsWith("WARNING:")) {
+		thisp->compileWarnings++;
 		qmsg = "<html><span style=\"color: black; background-color: #ffffb0;\">" + qmsg + "</span></html>";
 	} else if (qmsg.startsWith("ERROR:")) {
+		thisp->compileErrors++;
 		qmsg = "<html><span style=\"color: black; background-color: #ffb0b0;\">" + qmsg + "</span></html>";
 	}
 	QMetaObject::invokeMethod(thisp->console, "append", Qt::QueuedConnection, Q_ARG(QString, qmsg));
