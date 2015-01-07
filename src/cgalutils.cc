@@ -56,9 +56,9 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 		// NB! CGAL's convex_hull_3() doesn't like std::set iterators, so we use a list
 		// instead.
 		std::list<K::Point_3> points;
-		for (int i = 0; i < ps.polygons.size(); i++) {
-			for (int j = 0; j < ps.polygons[i].size(); j++) {
-				points.push_back(vector_convert<K::Point_3>(ps.polygons[i][j]));
+		BOOST_FOREACH(const Polygon &poly, ps.polygons) {
+			BOOST_FOREACH(const Vector3d &p, poly) {
+				points.push_back(vector_convert<K::Point_3>(p));
 			}
 		}
 
@@ -270,8 +270,8 @@ namespace CGALUtils {
 				std::vector<Hull_kernel::Point_3> points[2];
 				std::vector<Hull_kernel::Point_3> minkowski_points;
 
-				for (int i = 0; i < P[0].size(); i++) {
-					for (int j = 0; j < P[1].size(); j++) {
+				for (size_t i = 0; i < P[0].size(); i++) {
+					for (size_t j = 0; j < P[1].size(); j++) {
 						t.start();
 						points[0].clear();
 						points[1].clear();
