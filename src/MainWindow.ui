@@ -274,6 +274,7 @@
     <addaction name="viewActionShowEdges"/>
     <addaction name="viewActionShowAxes"/>
     <addaction name="viewActionShowCrosshairs"/>
+    <addaction name="viewActionShowScaleProportional"/>
     <addaction name="viewActionAnimate"/>
     <addaction name="separator"/>
     <addaction name="viewActionTop"/>
@@ -825,6 +826,21 @@
    <property name="shortcut">
     <string>Ctrl+3</string>
    </property>
+  </action>
+  <action name="viewActionShowScaleProportional">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/scalemarkers.png</normaloff>:/images/scalemarkers.png</iconset>
+   </property>
+   <property name="text">
+    <string>Show Scale Markers</string>
+   </property>
+   <!--<property name="shortcut">
+    <string></string>
+   </property>-->
   </action>
   <action name="viewActionAnimate">
    <property name="checkable">
