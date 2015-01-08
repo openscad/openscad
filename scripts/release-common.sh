@@ -255,7 +255,7 @@ case $OS in
             exit
         fi
         # make console pipe-able openscad.com - see winconsole.pro for info
-        qmake ../winconsole.pro
+        qmake ../winconsole/winconsole.pro
         make
         if [ ! -e $TARGET/openscad.com ]; then
             echo "cant find $TARGET/openscad.com. build failed. stopping."
