@@ -64,5 +64,6 @@
     <file>images/perspective1white.png</file>
     <file>images/crosswhite.png</file>
     <file>icons/background.png</file>
+    <file>images/scalemarkers.png</file>
   </qresource>
 </RCC>
