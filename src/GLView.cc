@@ -506,7 +506,7 @@ void GLView::showCrosshairs()
 void GLView::showScalemarkers(const Color4f &col)
 {
     // Add scale tics on large axes
-    double l = cam.projection == Camera::PERSPECTIVE ? cam.viewer_distance : cam.height;
+	double l = cam.zoomValue();
     glLineWidth(this->getDPI());
     glColor3f(col[0], col[1], col[2]);
 
