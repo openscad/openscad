@@ -48,17 +48,22 @@ namespace /* anonymous */ {
 		void operator()(HDS& hds) {
 			CGAL_Polybuilder B(hds, true);
 		
-			std::vector<CGALPoint> vertices;
 			Grid3d<int> grid(GRID_FINE);
-			std::vector<size_t> indices(3);
-		
+			std::vector<CGALPoint> vertices;
+			std::vector<std::vector<size_t> > indices;
+
+			// Align all vertices to grid and build vertex array in vertices
 			BOOST_FOREACH(const Polygon &p, ps.polygons) {
+				indices.push_back(std::vector<size_t>());
+                            indices.back().reserve(p.size());
 				BOOST_REVERSE_FOREACH(Vector3d v, p) {
-					if (!grid.has(v)) {
-						// align v to the grid; the CGALPoint will receive the aligned vertex
-						grid.align(v) = vertices.size();
-						vertices.push_back(CGALPoint(v[0], v[1], v[2]));
+					// align v to the grid; the CGALPoint will receive the aligned vertex
+					size_t idx = grid.align(v);
+					if (idx == vertices.size()) {
+						CGALPoint p(v[0], v[1], v[2]);
+						vertices.push_back(p);
 					}
+					indices.back().push_back(idx);
 				}
 			}
 
@@ -70,28 +75,24 @@ namespace /* anonymous */ {
 			BOOST_FOREACH(const CGALPoint &p, vertices) {
 				B.add_vertex(p);
 			}
-			BOOST_FOREACH(const Polygon &p, ps.polygons) {
+			BOOST_FOREACH(std::vector<size_t> &pindices, indices) {
 #ifdef GEN_SURFACE_DEBUG
 				if (pidx++ > 0) printf(",");
 #endif
-				indices.clear();
-				BOOST_FOREACH(const Vector3d &v, p) {
-					indices.push_back(grid.data(v));
-				}
 
 				// We remove duplicate indices since there is a bug in CGAL's
 				// Polyhedron_incremental_builder_3::test_facet() which fails to detect this
-				std::vector<size_t>::iterator last = std::unique(indices.begin(), indices.end());
+				std::vector<size_t>::iterator last = std::unique(pindices.begin(), pindices.end());
 				std::advance(last, -1);
-				if (*last != indices.front()) last++; // In case the first & last are equal
-				indices.erase(last, indices.end());
-				if (indices.size() >= 3 && B.test_facet(indices.begin(), indices.end())) {
-					B.add_facet(indices.begin(), indices.end());
+				if (*last != pindices.front()) last++; // In case the first & last are equal
+				pindices.erase(last, pindices.end());
+				if (pindices.size() >=3 && B.test_facet(pindices.begin(), pindices.end())) {
+					B.add_facet(pindices.begin(), pindices.end());
 				}
 #ifdef GEN_SURFACE_DEBUG
 				printf("[");
 				int fidx = 0;
-				BOOST_REVERSE_FOREACH(size_t i, indices) {
+				BOOST_REVERSE_FOREACH(size_t i, pindices) {
 					if (fidx++ > 0) printf(",");
 					printf("%ld", i);
 				}
@@ -294,6 +295,63 @@ namespace CGALUtils {
 	template bool createPolySetFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Epick> &p, PolySet &ps);
 	template bool createPolySetFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Epeck> &p, PolySet &ps);
 	template bool createPolySetFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Simple_cartesian<long> > &p, PolySet &ps);
+
+	class Polyhedron_writer {
+    std::ostream *out;
+		bool firstv;
+		std::vector<int> indices;
+	public:
+    Polyhedron_writer() {}
+    void write_header(std::ostream &stream,
+											std::size_t vertices,
+											std::size_t halfedges,
+											std::size_t facets,
+											bool normals = false) {
+			this->out = &stream;
+			*out << "polyhedron(points=[";
+			firstv = true;
+		}
+    void write_footer() {
+			*out << "]);" << std::endl;
+		}
+    void write_vertex( const double& x, const double& y, const double& z) {
+			*out << (firstv ? "" : ",") << '[' << x << ',' << y << ',' << z << ']';
+			firstv = false;
+    }
+    void write_facet_header() {
+			*out << "], faces=[";
+			firstv = true;
+    }
+    void write_facet_begin( std::size_t no) {
+			*out << (firstv ? "" : ",") << '[';
+			indices.clear();
+			firstv = false;
+    }
+    void write_facet_vertex_index( std::size_t index) {
+			indices.push_back(index);
+    }
+    void write_facet_end() {
+			bool firsti = true;
+			BOOST_REVERSE_FOREACH(int i, indices) {
+				*out << (firsti ? "" : ",") << i;
+				firsti = false;
+			}
+			*out << ']';
+    }
+	};
+
+	template <typename Polyhedron>
+	std::string printPolyhedron(const Polyhedron &p) {
+		std::stringstream sstream;
+		sstream.precision(20);
+
+    Polyhedron_writer writer;
+    generic_print_polyhedron(sstream, p, writer);
+		
+		return sstream.str();
+	}
+
+	template std::string printPolyhedron(const CGAL_Polyhedron &p);
 
 }; // namespace CGALUtils
 

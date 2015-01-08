@@ -31,14 +31,6 @@
 #include <boost/foreach.hpp>
 #include <boost/unordered_set.hpp>
 
-namespace Eigen {
-		size_t hash_value(Vector3d const &v) {
-			size_t seed = 0;
-			for (int i=0;i<3;i++) boost::hash_combine(seed, v[i]);
-			return seed;
-		}
-}
-
 namespace /* anonymous */ {
 	template<typename Result, typename V>
 	Result vector_convert(V const& v) {
@@ -60,12 +52,13 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 	if (ps_tri.is_convex()) {
 		typedef CGAL::Epick K;
 		// Collect point cloud
+		// FIXME: Use unordered container (need hash)
 		// NB! CGAL's convex_hull_3() doesn't like std::set iterators, so we use a list
 		// instead.
 		std::list<K::Point_3> points;
-		for (int i = 0; i < ps.polygons.size(); i++) {
-			for (int j = 0; j < ps.polygons[i].size(); j++) {
-				points.push_back(vector_convert<K::Point_3>(ps.polygons[i][j]));
+		BOOST_FOREACH(const Polygon &poly, ps.polygons) {
+			BOOST_FOREACH(const Vector3d &p, poly) {
+				points.push_back(vector_convert<K::Point_3>(p));
 			}
 		}
 
@@ -84,7 +77,7 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 	try {
 		CGAL_Polyhedron P;
-		bool err = CGALUtils::createPolyhedronFromPolySet(ps, P);
+		bool err = CGALUtils::createPolyhedronFromPolySet(psq, P);
 		 if (!err) {
 		 	PRINTDB("Polyhedron is closed: %d", P.is_closed());
 		 	PRINTDB("Polyhedron is valid: %d", P.is_valid(false, 0));
@@ -277,8 +270,8 @@ namespace CGALUtils {
 				std::vector<Hull_kernel::Point_3> points[2];
 				std::vector<Hull_kernel::Point_3> minkowski_points;
 
-				for (int i = 0; i < P[0].size(); i++) {
-					for (int j = 0; j < P[1].size(); j++) {
+				for (size_t i = 0; i < P[0].size(); i++) {
+					for (size_t j = 0; j < P[1].size(); j++) {
 						t.start();
 						points[0].clear();
 						points[1].clear();
@@ -481,7 +474,7 @@ namespace CGALUtils {
 		}
 	// union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad and testdata/scad/bugs/issue204.scad
 		catch (const CGAL::Failure_exception &e) {
-			std::string opstr = op == OPENSCAD_INTERSECTION ? "intersection" : op == OPENSCAD_DIFFERENCE ? "difference" : op == OPENSCAD_MINKOWSKI ? "minkowski" : "UNKNOWN";
+			std::string opstr = op == OPENSCAD_INTERSECTION ? "intersection" : op == OPENSCAD_DIFFERENCE ? "difference" : op == OPENSCAD_UNION ? "union" : "UNKNOWN";
 			PRINTB("ERROR: CGAL error in CGALUtils::applyBinaryOperator %s: %s", opstr % e.what());
 		}
 		CGAL::set_error_behaviour(old_behaviour);
@@ -924,10 +917,13 @@ namespace CGALUtils {
 				 and let the tessellater deal with the holes, and then
 				 just output the resulting 3d triangles*/
 
-			CGAL::Vector_3<CGAL_Kernel3> nvec = plane.orthogonal_vector();
-			K::Vector_3 normal(CGAL::to_double(nvec.x()), CGAL::to_double(nvec.y()), CGAL::to_double(nvec.z()));
+			// We cannot trust the plane from Nef polyhedron to be correct.
+			// Passing an incorrect normal vector can cause a crash in the constrained delaunay triangulator
+      // See http://cgal-discuss.949826.n4.nabble.com/Nef3-Wrong-normal-vector-reported-causes-triangulator-crash-tt4660282.html
+			// CGAL::Vector_3<CGAL_Kernel3> nvec = plane.orthogonal_vector();
+			// K::Vector_3 normal(CGAL::to_double(nvec.x()), CGAL::to_double(nvec.y()), CGAL::to_double(nvec.z()));
 			std::vector<Polygon> triangles;
-			bool err = CGALUtils::tessellatePolygonWithHoles(polyholes, triangles, &normal);
+			bool err = CGALUtils::tessellatePolygonWithHoles(polyholes, triangles, NULL);
 			if (!err) {
 				BOOST_FOREACH(const Polygon &p, triangles) {
 					if (p.size() != 3) {
