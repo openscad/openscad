@@ -164,6 +164,8 @@ namespace CGALUtils {
 		else {
 			// Calculate best guess at face normal using Newell's method
 			CGAL::normal_vector_newell_3(polygon.begin(), polygon.end(), normalvec);
+			double sqrl = normalvec.squared_length();
+			if (sqrl > 0.0) normalvec = normalvec / sqrt(sqrl);
 		}
 		
 		// Pass the normal vector to the (undocumented)
