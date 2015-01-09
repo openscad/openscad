@@ -31,6 +31,7 @@
 #include <QKeyEvent>
 #include <QSettings>
 #include <QStatusBar>
+#include <boost/algorithm/string.hpp>
 #include "GeometryCache.h"
 #include "AutoUpdater.h"
 #include "feature.h"
@@ -49,18 +50,27 @@ class SettingsReader : public Settings::Visitor
 {
     QSettings settings;
     const Value getValue(const Settings::SettingsEntry& entry, const std::string& value) const {
-	if (value.empty()) {
+	std::string trimmed_value(value);
+	boost::trim(trimmed_value);
+
+	if (trimmed_value.empty()) {
 		return entry.defaultValue();
 	}
 
 	try {
 		switch (entry.defaultValue().type()) {
 		case Value::STRING:
-			return Value(value);
+			return Value(trimmed_value);
 		case Value::NUMBER:
-			return Value(boost::lexical_cast<int>(value));
+			return Value(boost::lexical_cast<int>(trimmed_value));
 		case Value::BOOL:
-			return Value(boost::lexical_cast<bool>(value));
+			boost::to_lower(trimmed_value);
+			if ("false" == trimmed_value) {
+				return Value(false);
+			} else if ("true" == trimmed_value) {
+				return Value(true);
+			}
+			return Value(boost::lexical_cast<bool>(trimmed_value));
 		default:
 			assert(false && "invalid value type for settings");
 		}
@@ -74,7 +84,9 @@ class SettingsReader : public Settings::Visitor
 
 	std::string key = entry.category() + "/" + entry.name();
 	std::string value = settings.value(QString::fromStdString(key)).toString().toStdString();
-	s->set(entry, getValue(entry, value));
+	const Value v = getValue(entry, value);
+	PRINTDB("SettingsReader R: %s = '%s' => '%s'", key.c_str() % value.c_str() % v.toString());
+	s->set(entry, v);
     }
 };
 
@@ -87,9 +99,11 @@ class SettingsWriter : public Settings::Visitor
 	QString key = QString::fromStdString(entry.category() + "/" + entry.name());
 	if (entry.is_default()) {
 	    settings.remove(key);
+	    PRINTDB("SettingsWriter D: %s", key.toStdString().c_str());
 	} else {
 	    Value value = s->get(entry);
 	    settings.setValue(key, QString::fromStdString(value.toString()));
+	    PRINTDB("SettingsWriter W: %s = '%s'", key.toStdString().c_str() % value.toString().c_str());
 	}
     }
 };
