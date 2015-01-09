@@ -11,13 +11,13 @@
 # properly
 
 TEMPLATE = app
-TARGET = openscad_winconsole
+TARGET = winconsole
 FORMS =
 HEADERS =
 FLEXSOURCES =
 BISONSOURCES =
 RESOURCES =
-SOURCES = src/winconsole.c
+SOURCES = winconsole.c
 CONFIG -= qt
 CONFIG += console # sets IMAGE_SUBSYSTEM_WINDOWS_CUI in binary
-QMAKE_POST_LINK = cd $(DESTDIR) && mv openscad_winconsole.exe openscad.com
+QMAKE_POST_LINK = cd $(DESTDIR) && mv winconsole.exe openscad.com
