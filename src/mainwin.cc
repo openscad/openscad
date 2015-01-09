@@ -952,6 +952,11 @@ void MainWindow::updateCompileResult()
 		return;
 	}
 
+	Settings::Settings *s = Settings::Settings::inst();
+	if (!s->get(Settings::Settings::showWarningsIn3dView).toBool()) {
+		return;
+	}
+
 	QString msg;
 	if (compileErrors > 0) {
 		if (fileName.isEmpty()) {

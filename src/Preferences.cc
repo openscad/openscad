@@ -485,6 +485,12 @@ void Preferences::on_launcherBox_toggled(bool state)
  	settings.setValue("launcher/showOnStartup", state);	
 }
 
+void Preferences::on_checkBoxShowWarningsIn3dView_toggled(bool val)
+{
+	Settings::Settings::inst()->set(Settings::Settings::showWarningsIn3dView, Value(val));
+	writeSettings();
+}
+
 void Preferences::on_spinBoxIndentationWidth_valueChanged(int val)
 {
 	Settings::Settings::inst()->set(Settings::Settings::indentationWidth, Value(val));
@@ -683,6 +689,7 @@ void Preferences::updateGUI()
 	this->checkBoxAutoIndent->setChecked(s->get(Settings::Settings::autoIndent).toBool());
 	this->checkBoxHighlightCurrentLine->setChecked(s->get(Settings::Settings::highlightCurrentLine).toBool());
 	this->checkBoxEnableBraceMatching->setChecked(s->get(Settings::Settings::enableBraceMatching).toBool());
+	this->checkBoxShowWarningsIn3dView->setChecked(s->get(Settings::Settings::showWarningsIn3dView).toBool());
 }
 
 void Preferences::initComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry)
