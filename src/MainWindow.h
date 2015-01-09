@@ -99,6 +99,7 @@ private slots:
 	void showProgress();
 	void openCSGSettingsChanged();
 private:
+        void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
 	void openFile(const QString &filename);
         void handleFileDrop(const QString &filename);
 	void refreshDocument();

@@ -473,60 +473,31 @@ MainWindow::MainWindow(const QString &filename)
 	addKeyboardShortCut(this->viewerToolBar->actions());
 	addKeyboardShortCut(this->editortoolbar->actions());
 	
-	//Toolbar
-	int defaultcolor = viewerToolBar->palette().background().color().lightness(); 
-        
-	if (defaultcolor > 165) { 
-		fileActionNew->setIcon(QIcon("://images/blackNew.png"));
-		fileActionOpen->setIcon(QIcon("://images/Open-32.png"));
-		fileActionSave->setIcon(QIcon("://images/Save-32.png"));
-		editActionZoomIn->setIcon(QIcon("://images/zoomin.png"));
-		editActionZoomOut->setIcon(QIcon("://images/zoomout.png"));
-		designActionRender->setIcon(QIcon("://images/blackRender.png"));
-		viewActionShowAxes->setIcon(QIcon("://images/blackaxes.png"));
-		viewActionShowEdges->setIcon(QIcon("://images/Rotation-32.png")); 
-		viewActionZoomIn->setIcon(QIcon("://images/zoomin.png"));
-		viewActionZoomOut->setIcon(QIcon("://images/zoomout.png"));
-		viewActionTop->setIcon(QIcon("://images/blackUp.png"));
-		viewActionBottom->setIcon(QIcon("://images/blackbottom.png"));
-		viewActionLeft->setIcon(QIcon("://images/blackleft (copy).png"));
-		viewActionRight->setIcon(QIcon("://images/rightright.png"));
-		viewActionFront->setIcon(QIcon("://images/blackfront.png"));
-		viewActionBack->setIcon(QIcon("://images/blackback.png"));
-		viewActionSurfaces->setIcon(QIcon("://images/surface.png"));
-		viewActionWireframe->setIcon(QIcon("://images/wireframe1.png"));
-		viewActionShowCrosshairs->setIcon(QIcon("://images/cross.png"));
-		viewActionPerspective->setIcon(QIcon("://images/perspective1.png"));
-		viewActionOrthogonal->setIcon(QIcon("://images/orthogonal.png"));
-		viewActionPreview->setIcon(QIcon("://images/Preview-32.png"));
-		viewActionAnimate->setIcon(QIcon("://images/animate.png"));
-	} else {
-		fileActionNew->setIcon(QIcon("://images/Document-New-128.png"));
-		fileActionOpen->setIcon(QIcon("://images/Open-128.png"));
-		fileActionSave->setIcon(QIcon("://images/Save-128.png"));
-		editActionZoomIn->setIcon(QIcon("://images/Zoom-In-32.png"));
-		editActionZoomOut->setIcon(QIcon("://images/Zoom-Out-32.png"));
-		designActionRender->setIcon(QIcon("://images/Arrowhead-Right-32.png"));
-		viewActionZoomIn->setIcon(QIcon("://images/Zoom-In-32.png"));
-		viewActionZoomOut->setIcon(QIcon("://images/Zoom-Out-32.png")); 
-		viewActionShowAxes->setIcon(QIcon("://images/axes.png"));
-		viewActionShowEdges->setIcon(QIcon("://images/grid.png"));
-		viewActionTop->setIcon(QIcon("://images/up.png"));
-		viewActionBottom->setIcon(QIcon("://images/bottom.png"));
-		viewActionLeft->setIcon(QIcon("://images/left.png"));
-		viewActionRight->setIcon(QIcon("://images/right.png"));
-		viewActionFront->setIcon(QIcon("://images/front.png"));
-		viewActionBack->setIcon(QIcon("://images/back.png"));
-		viewActionSurfaces->setIcon(QIcon("://images/surfaceWhite.png"));
-		viewActionWireframe->setIcon(QIcon("://images/wireframeWhite.png"));
-		viewActionShowCrosshairs->setIcon(QIcon("://images/crosswhite.png"));
-		viewActionPreview->setIcon(QIcon("://images/Preview-32(1).png"));
-		viewActionPerspective->setIcon(QIcon("://images/perspective1white.png"));
-		viewActionOrthogonal->setIcon(QIcon("://images/orthogonalwhite.png"));
-		viewActionAnimate->setIcon(QIcon("://images/animate.png"));
-		designActionExportSTL->setIcon(QIcon(":/images/export-white.png"));
-		viewActionViewAll->setIcon(QIcon(":/images/zoom-all-white.png"));
-	}
+	initActionIcon(fileActionNew, ":/images/blackNew.png", ":/images/Document-New-128.png");
+	initActionIcon(fileActionOpen, ":/images/Open-32.png", ":/images/Open-128.png");
+	initActionIcon(fileActionSave, ":/images/Save-32.png", ":/images/Save-128.png");
+	initActionIcon(editActionZoomIn, ":/images/zoomin.png", ":/images/Zoom-In-32.png");
+	initActionIcon(editActionZoomOut, ":/images/zoomout.png", ":/images/Zoom-Out-32.png");
+	initActionIcon(designActionRender, ":/images/blackRender.png", ":/images/Arrowhead-Right-32.png");
+	initActionIcon(viewActionShowAxes, ":/images/blackaxes.png", ":/images/axes.png");
+	initActionIcon(viewActionShowEdges, ":/images/Rotation-32.png", ":/images/grid.png");
+	initActionIcon(viewActionZoomIn, ":/images/zoomin.png", ":/images/Zoom-In-32.png");
+	initActionIcon(viewActionZoomOut, ":/images/zoomout.png", ":/images/Zoom-Out-32.png");
+	initActionIcon(viewActionTop, ":/images/blackUp.png", ":/images/up.png");
+	initActionIcon(viewActionBottom, ":/images/blackbottom.png", ":/images/bottom.png");
+	initActionIcon(viewActionLeft, ":/images/blackleft (copy).png", ":/images/left.png");
+	initActionIcon(viewActionRight, ":/images/rightright.png", ":/images/right.png");
+	initActionIcon(viewActionFront, ":/images/blackfront.png", ":/images/front.png");
+	initActionIcon(viewActionBack, ":/images/blackback.png", ":/images/back.png");
+	initActionIcon(viewActionSurfaces, ":/images/surface.png", ":/images/surfaceWhite.png");
+	initActionIcon(viewActionWireframe, ":/images/wireframe1.png", ":/images/wireframeWhite.png");
+	initActionIcon(viewActionShowCrosshairs, ":/images/cross.png", ":/images/crosswhite.png");
+	initActionIcon(viewActionPerspective, ":/images/perspective1.png", ":/images/perspective1white.png");
+	initActionIcon(viewActionOrthogonal, ":/images/orthogonal.png", ":/images/orthogonalwhite.png");
+	initActionIcon(designActionPreview, ":/images/Preview-32.png", ":/images/Preview-32-white.png");
+	initActionIcon(viewActionAnimate, ":/images/animate.png", ":/images/animate.png");
+	initActionIcon(designActionExportSTL, ":/images/export.png", ":/images/export-white.png");
+	initActionIcon(viewActionViewAll, ":/images/zoom-all.png", ":/images/zoom-all-white.png");
 	
 	// make sure it looks nice..
 	QByteArray windowState = settings.value("window/state", QByteArray()).toByteArray();
@@ -585,6 +556,13 @@ MainWindow::MainWindow(const QString &filename)
 
 	setAcceptDrops(true);
 	clearCurrentOutput();
+}
+
+void MainWindow::initActionIcon(QAction *action, const char *darkResource, const char *lightResource)
+{
+	int defaultcolor = viewerToolBar->palette().background().color().lightness();
+        const char *resource = (defaultcolor > 165) ? darkResource : lightResource;
+	action->setIcon(QIcon(resource));
 }
 
 void MainWindow::addKeyboardShortCut(const QList<QAction *> &actions)
