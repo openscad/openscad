@@ -210,6 +210,7 @@
          <addaction name="viewActionViewAll"/>
          <addaction name="viewActionZoomIn"/>
          <addaction name="viewActionZoomOut"/>
+         <addaction name="viewActionResetView"/>
          <addaction name="separator"/>
          <addaction name="viewActionRight"/>
          <addaction name="viewActionTop"/>
@@ -405,13 +406,12 @@
        <addaction name="separator"/>
        <addaction name="editActionUndo"/>
        <addaction name="editActionRedo"/>
-       <addaction name="editActionIndent"/>
        <addaction name="editActionUnindent"/>
+       <addaction name="editActionIndent"/>
        <addaction name="designActionPreview"/>
        <addaction name="designActionRender"/>
        <addaction name="separator"/>
        <addaction name="designActionExportSTL"/>
-       <addaction name="viewActionResetView"/>
       </widget>
      </item>
      <item>

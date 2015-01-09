@@ -1,5 +1,10 @@
 <RCC>
   <qresource prefix="/">
+    <file>images/Command-Redo-32-white.png</file>
+    <file>images/Command-Reset-32-white.png</file>
+    <file>images/Command-Undo-32-white.png</file>
+    <file>images/Decrease-Indent-32-white.png</file>
+    <file>images/Increase-Indent-32-white.png</file>
     <file>images/Command-Redo-32.png</file>
     <file>images/Command-Reset-32.png</file>
     <file>images/Command-Undo-32.png</file>
