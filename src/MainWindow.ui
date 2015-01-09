@@ -221,6 +221,7 @@
          <addaction name="separator"/>
          <addaction name="viewActionPerspective"/>
          <addaction name="viewActionOrthogonal"/>
+         <addaction name="separator"/>
          <addaction name="viewActionShowAxes"/>
          <addaction name="viewActionShowEdges"/>
         </widget>
@@ -240,7 +241,7 @@
      <x>0</x>
      <y>0</y>
      <width>1397</width>
-     <height>35</height>
+     <height>33</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -408,6 +409,7 @@
        <addaction name="editActionRedo"/>
        <addaction name="editActionUnindent"/>
        <addaction name="editActionIndent"/>
+       <addaction name="separator"/>
        <addaction name="designActionPreview"/>
        <addaction name="designActionRender"/>
        <addaction name="separator"/>
