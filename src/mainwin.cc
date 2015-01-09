@@ -957,7 +957,7 @@ void MainWindow::waitAfterReload()
 	}
 }
 
-void MainWindow::on_pushButtonCompileResultClose_clicked()
+void MainWindow::on_toolButtonCompileResultClose_clicked()
 {
 	frameCompileResult->hide();
 }
@@ -977,10 +977,11 @@ void MainWindow::updateCompileResult()
 			QFileInfo fileInfo(fileName);
 			msg = QString(_("Error while compiling '%1'.")).arg(fileInfo.fileName());
 		}
-		labelCompileResultIcon->setPixmap(QPixmap(QString::fromUtf8(":/icons/information-icons-error.png")));
+		toolButtonCompileResultIcon->setIcon(QIcon(QString::fromUtf8(":/icons/information-icons-error.png")));
 	} else {
-		msg = QString(_("Compilation generated %1 warnings.")).arg(compileWarnings);
-		labelCompileResultIcon->setPixmap(QPixmap(QString::fromUtf8(":/icons/information-icons-warning.png")));
+		const char *fmt = ngettext("Compilation generated %1 warning.", "Compilation generated %1 warnings.", compileWarnings);
+		msg = QString(fmt).arg(compileWarnings);
+		toolButtonCompileResultIcon->setIcon(QIcon(QString::fromUtf8(":/icons/information-icons-warning.png")));
 	}
 	msg += _(" For details see <a href=\"#console\">console window</a>.");
 	labelCompileResultMessage->setText(msg);

@@ -205,7 +205,7 @@ public slots:
 	void actionReloadRenderPreview();
         void on_editorDock_visibilityChanged(bool);
         void on_consoleDock_visibilityChanged(bool);
-        void on_pushButtonCompileResultClose_clicked();
+        void on_toolButtonCompileResultClose_clicked();
         void editorTopLevelChanged(bool);
         void consoleTopLevelChanged(bool);
 #ifdef ENABLE_OPENCSG

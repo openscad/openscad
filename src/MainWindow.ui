@@ -45,37 +45,18 @@
           <property name="leftMargin">
            <number>9</number>
           </property>
+          <property name="topMargin">
+           <number>9</number>
+          </property>
           <property name="rightMargin">
-           <number>2</number>
+           <number>9</number>
           </property>
           <property name="bottomMargin">
-           <number>2</number>
+           <number>6</number>
           </property>
-          <item row="0" column="0">
-           <widget class="QLabel" name="labelCompileResultIcon">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>26</width>
-              <height>26</height>
-             </size>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="pixmap">
-             <pixmap resource="../openscad.qrc">:/icons/information-icons-error.png</pixmap>
-            </property>
-            <property name="scaledContents">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
+          <property name="horizontalSpacing">
+           <number>4</number>
+          </property>
           <item row="0" column="1">
            <widget class="QLabel" name="labelCompileResultMessage">
             <property name="sizePolicy">
@@ -86,7 +67,6 @@
             </property>
             <property name="font">
              <font>
-              <pointsize>14</pointsize>
               <weight>75</weight>
               <bold>true</bold>
              </font>
@@ -97,7 +77,10 @@
            </widget>
           </item>
           <item row="0" column="2">
-           <widget class="QPushButton" name="pushButtonCompileResultClose">
+           <widget class="QToolButton" name="toolButtonCompileResultClose">
+            <property name="styleSheet">
+             <string notr="true"/>
+            </property>
             <property name="text">
              <string/>
             </property>
@@ -105,8 +88,40 @@
              <iconset resource="../openscad.qrc">
               <normaloff>:/icons/close.png</normaloff>:/icons/close.png</iconset>
             </property>
-            <property name="flat">
+            <property name="iconSize">
+             <size>
+              <width>22</width>
+              <height>22</height>
+             </size>
+            </property>
+            <property name="toolButtonStyle">
+             <enum>Qt::ToolButtonIconOnly</enum>
+            </property>
+            <property name="autoRaise">
              <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QToolButton" name="toolButtonCompileResultIcon">
+            <property name="styleSheet">
+             <string notr="true">QToolButton { border: none; }</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="../openscad.qrc">
+              <normaloff>:/icons/information-icons-error.png</normaloff>:/icons/information-icons-error.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>22</width>
+              <height>22</height>
+             </size>
+            </property>
+            <property name="autoRaise">
+             <bool>false</bool>
             </property>
            </widget>
           </item>
@@ -874,9 +889,6 @@
    <property name="text">
     <string>Show Scale Markers</string>
    </property>
-   <!--<property name="shortcut">
-    <string></string>
-   </property>-->
   </action>
   <action name="viewActionAnimate">
    <property name="checkable">
