@@ -972,6 +972,12 @@ void MainWindow::updateCompileResult()
 		msg = QString(fmt).arg(compileWarnings);
 		toolButtonCompileResultIcon->setIcon(QIcon(QString::fromUtf8(":/icons/information-icons-warning.png")));
 	}
+	QFontMetrics fm(labelCompileResultMessage->font());
+	int sizeIcon = std::max(12, std::min(32, fm.height()));
+	int sizeClose = std::max(10, std::min(32, fm.height()) - 4);
+	toolButtonCompileResultIcon->setIconSize(QSize(sizeIcon, sizeIcon));
+	toolButtonCompileResultClose->setIconSize(QSize(sizeClose, sizeClose));
+
 	msg += _(" For details see <a href=\"#console\">console window</a>.");
 	labelCompileResultMessage->setText(msg);
 	frameCompileResult->show();
