@@ -285,6 +285,7 @@
     <addaction name="editActionUnindent"/>
     <addaction name="editActionComment"/>
     <addaction name="editActionUncomment"/>
+    <addaction name="editActionReformat"/>
     <addaction name="editActionConvertTabsToSpaces"/>
     <addaction name="separator"/>
     <addaction name="editActionPasteVPT"/>
@@ -874,9 +875,6 @@
    <property name="text">
     <string>Show Scale Markers</string>
    </property>
-   <!--<property name="shortcut">
-    <string></string>
-   </property>-->
   </action>
   <action name="viewActionAnimate">
    <property name="checkable">
@@ -1187,6 +1185,14 @@
    </property>
    <property name="text">
     <string>Hide toolbars</string>
+   </property>
+  </action>
+  <action name="editActionReformat">
+   <property name="text">
+    <string>Reformat</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+F</string>
    </property>
   </action>
  </widget>

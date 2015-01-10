@@ -39,6 +39,7 @@
 #endif
 #include "colormap.h"
 #include "rendersettings.h"
+#include "CodeFormatter.h"
 
 Preferences *Preferences::instance = NULL;
 
@@ -190,6 +191,10 @@ void Preferences::init() {
 	this->polysetCacheSizeEdit->setValidator(validator);
 	this->opencsgLimitEdit->setValidator(validator);
 
+	SettingsReader settingsReader;
+	Settings::Settings::inst()->visit(settingsReader);
+	emit editorConfigChanged();
+
 	initComboBox(this->comboBoxIndentUsing, Settings::Settings::indentStyle);
 	initComboBox(this->comboBoxLineWrap, Settings::Settings::lineWrap);
 	initComboBox(this->comboBoxLineWrapIndentationStyle, Settings::Settings::lineWrapIndentationStyle);
@@ -197,14 +202,12 @@ void Preferences::init() {
 	initComboBox(this->comboBoxLineWrapVisualizationStart, Settings::Settings::lineWrapVisualizationBegin);
 	initComboBox(this->comboBoxShowWhitespace, Settings::Settings::showWhitespace);
 	initComboBox(this->comboBoxTabKeyFunction, Settings::Settings::tabKeyFunction);
+	initComboBox(this->comboBoxFormattingStyle, Settings::Settings::codeFormattingStyle);
 	initSpinBox(this->spinBoxIndentationWidth, Settings::Settings::indentationWidth);
 	initSpinBox(this->spinBoxLineWrapIndentationIndent, Settings::Settings::lineWrapIndentation);
 	initSpinBox(this->spinBoxShowWhitespaceSize, Settings::Settings::showWhitespaceSize);
 	initSpinBox(this->spinBoxTabWidth, Settings::Settings::tabWidth);
-
-	SettingsReader settingsReader;
-	Settings::Settings::inst()->visit(settingsReader);
-	emit editorConfigChanged();
+	initSpinBox(this->spinBoxMaxCodeLineLength, Settings::Settings::maxCodeLineLength);
 }
 
 Preferences::~Preferences()
@@ -548,6 +551,17 @@ void Preferences::on_checkBoxEnableBraceMatching_toggled(bool val)
 	writeSettings();
 }
 
+void Preferences::on_comboBoxFormattingStyle_activated(int val)
+{
+	applyComboBox(comboBoxFormattingStyle, val, Settings::Settings::codeFormattingStyle);
+}
+
+void Preferences::on_spinBoxMaxCodeLineLength_valueChanged(int val)
+{
+	Settings::Settings::inst()->set(Settings::Settings::maxCodeLineLength, Value(val));
+	writeSettings();
+}
+
 void Preferences::writeSettings()
 {
 	SettingsWriter settingsWriter;
@@ -662,13 +676,19 @@ void Preferences::updateGUI()
 	updateComboBox(this->comboBoxShowWhitespace, Settings::Settings::showWhitespace);
 	updateComboBox(this->comboBoxIndentUsing, Settings::Settings::indentStyle);
 	updateComboBox(this->comboBoxTabKeyFunction, Settings::Settings::tabKeyFunction);
+	updateComboBox(this->comboBoxFormattingStyle, Settings::Settings::codeFormattingStyle);
 	this->spinBoxIndentationWidth->setValue(s->get(Settings::Settings::indentationWidth).toDouble());
 	this->spinBoxTabWidth->setValue(s->get(Settings::Settings::tabWidth).toDouble());
 	this->spinBoxLineWrapIndentationIndent->setValue(s->get(Settings::Settings::lineWrapIndentation).toDouble());
 	this->spinBoxShowWhitespaceSize->setValue(s->get(Settings::Settings::showWhitespaceSize).toDouble());
+	this->spinBoxMaxCodeLineLength->setValue(s->get(Settings::Settings::maxCodeLineLength).toDouble());
 	this->checkBoxAutoIndent->setChecked(s->get(Settings::Settings::autoIndent).toBool());
 	this->checkBoxHighlightCurrentLine->setChecked(s->get(Settings::Settings::highlightCurrentLine).toBool());
 	this->checkBoxEnableBraceMatching->setChecked(s->get(Settings::Settings::enableBraceMatching).toBool());
+
+	if (!CodeFormatter::inst()->available()) {
+		groupBoxCodeFormatting->hide();
+	}
 }
 
 void Preferences::initComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry)
@@ -684,9 +704,13 @@ void Preferences::initComboBox(QComboBox *comboBox, const Settings::SettingsEntr
 
 void Preferences::initSpinBox(QSpinBox *spinBox, const Settings::SettingsEntry& entry)
 {
+	Settings::Settings *s = Settings::Settings::inst();
+	int value = s->get(entry).toDouble();
+
 	Value::RangeType range = entry.range().toRange();
-	spinBox->setMinimum(range.begin_value());
 	spinBox->setMaximum(range.end_value());
+	spinBox->setValue(value);
+	spinBox->setMinimum(range.begin_value());
 }
 
 void Preferences::updateComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry)

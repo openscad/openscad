@@ -198,6 +198,7 @@ CONFIG += harfbuzz
 CONFIG += freetype
 CONFIG += fontconfig
 CONFIG += gettext
+CONFIG += astyle
 
 #Uncomment the following line to enable the QScintilla editor
 CONFIG += scintilla
@@ -250,6 +251,7 @@ HEADERS += src/typedefs.h \
            src/settings.h \
            src/rendersettings.h \
            src/colormap.h \
+           src/CodeFormatter.h \
            src/ThrownTogetherRenderer.h \
            src/CGAL_OGL_Polyhedron.h \
            src/OGL_helper.h \
@@ -418,6 +420,7 @@ SOURCES += src/version_check.cc \
            src/import.cc \
            src/renderer.cc \
            src/colormap.cc \
+           src/CodeFormatter.cc \
            src/ThrownTogetherRenderer.cc \
            src/CSGTermEvaluator.cc \
            src/svg.cc \

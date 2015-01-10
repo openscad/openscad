@@ -67,6 +67,25 @@ static Value values(std::string s1, std::string s1disp, std::string s2, std::str
 	return v;
 }
 
+static Value codeFormattingOptions() {
+	Value::VectorType v;
+	v += value("allman", "Allman/Ansi/BSD/break");
+	v += value("java", "Java/attach");
+	v += value("k&r", "Kernighan & Ritchie");
+	v += value("stroustrup", "Stroustrup");
+	v += value("whitesmith", "Whitesmith");
+	v += value("banner", "Banner");
+	v += value("gnu", "GNU");
+	v += value("linux", "Linux");
+	v += value("horstmann", "Horstmann");
+	v += value("1tbs", "One True Brace");
+	v += value("pico", "Pico");
+	v += value("lisp", "Lisp/Python");
+	v += value("google", "Google");
+	v += value("vtk", "Vtk");
+	return v;
+}
+
 Settings *Settings::inst(bool erase)
 {
 	static Settings *instance = new Settings;
@@ -135,5 +154,7 @@ SettingsEntry Settings::indentStyle("editor", "indentStyle", values("Spaces", _(
 SettingsEntry Settings::tabKeyFunction("editor", "tabKeyFunction", values("Indent", _("Indent"), "InsertTab", _("Insert Tab")), Value("Indent"));
 SettingsEntry Settings::highlightCurrentLine("editor", "highlightCurrentLine", Value(true), Value(true));
 SettingsEntry Settings::enableBraceMatching("editor", "enableBraceMatching", Value(true), Value(true));
+SettingsEntry Settings::codeFormattingStyle("editor", "codeFormattingStyle", codeFormattingOptions(), Value("k&r"));
+SettingsEntry Settings::maxCodeLineLength("editor", "maxCodeLineLength", Value(Value::RangeType(50, 200)), Value(120));
 
 }

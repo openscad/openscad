@@ -141,6 +141,7 @@ private slots:
 	void actionReload();
 	void actionShowLibraryFolder();
         void convertTabsToSpaces();
+        void actionReformat();
 
 	void instantiateRoot();
 	void compileDone(bool didchange);

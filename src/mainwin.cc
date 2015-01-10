@@ -28,6 +28,7 @@
 #include "GeometryCache.h"
 #include "ModuleCache.h"
 #include "MainWindow.h"
+#include "CodeFormatter.h"
 #include "parsersettings.h"
 #include "rendersettings.h"
 #include "Preferences.h"
@@ -413,6 +414,12 @@ MainWindow::MainWindow(const QString &filename)
 #ifdef OPENSCAD_UPDATER
 	this->menuBar()->addMenu(AutoUpdater::updater()->updateMenu);
 #endif
+
+	if (CodeFormatter::inst()->available()) {
+		connect(this->editActionReformat, SIGNAL(triggered()), this, SLOT(actionReformat()));
+	} else {
+		this->menu_Edit->removeAction(this->editActionReformat);
+	}
 
 	setCurrentOutput();
 
@@ -1458,6 +1465,15 @@ void MainWindow::replaceAll()
 {
 	while (this->editor->find(this->findInputField->text(), true)) {
 		this->editor->replaceSelectedText(this->replaceInputField->text());
+	}
+}
+
+void MainWindow::actionReformat()
+{
+	const QString text = this->editor->toPlainText();
+	std::string formatted = CodeFormatter::inst()->format(text.toStdString());
+	if (!formatted.empty()) {
+		editor->replaceAll(QString::fromStdString(formatted));
 	}
 }
 

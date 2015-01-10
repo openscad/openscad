@@ -66,6 +66,10 @@ public slots:
 	void on_comboBoxLineWrapVisualizationStart_activated(int);
 	void on_comboBoxLineWrapVisualizationEnd_activated(int);
 
+        // Formatting style
+	void on_comboBoxFormattingStyle_activated(int);
+	void on_spinBoxMaxCodeLineLength_valueChanged(int);
+
 	// Display
 	void on_checkBoxHighlightCurrentLine_toggled(bool);
 	void on_checkBoxEnableBraceMatching_toggled(bool);
