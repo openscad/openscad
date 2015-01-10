@@ -226,6 +226,7 @@
          <addaction name="viewActionOrthogonal"/>
          <addaction name="separator"/>
          <addaction name="viewActionShowAxes"/>
+         <addaction name="viewActionShowScaleProportional"/>
          <addaction name="viewActionShowEdges"/>
         </widget>
        </item>

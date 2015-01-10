@@ -75,5 +75,6 @@
     <file>images/crosswhite.png</file>
     <file>icons/background.png</file>
     <file>images/scalemarkers.png</file>
+    <file>images/scalemarkers-white.png</file>
   </qresource>
 </RCC>
