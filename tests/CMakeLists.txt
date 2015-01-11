@@ -660,6 +660,7 @@ set(CORE_SOURCES
   ../src/FreetypeRenderer.cc
   ../src/lodepng.cpp
   ../src/PlatformUtils.cc 
+  ../src/CodeFormatter.cc
   ../src/${PLATFORMUTILS_SOURCE}
   ${FLEX_OpenSCADlexer_OUTPUTS}
   ${BISON_OpenSCADparser_OUTPUTS})
