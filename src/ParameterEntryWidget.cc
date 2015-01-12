@@ -162,14 +162,14 @@ void ParameterEntryWidget::setValue(const ValuePtr defaultValue, const ValuePtr 
 
 	if (dvt == Value::BOOL) {
 		target = CHECKBOX;
-	} else if (dvt == Value::NUMBER) {
-		target = NUMBER;
 	} else if ((dvt == Value::VECTOR) && (defaultValue->toVector().size() <= 4)) {
 		target = VECTOR;
 	} else if ((vt == Value::VECTOR) && ((dvt == Value::NUMBER) || (dvt == Value::STRING))) {
 		target = COMBOBOX;
 	} else if ((vt == Value::RANGE) && (dvt == Value::NUMBER)) {
 		target = SLIDER;
+	} else if (dvt == Value::NUMBER) {
+		target = NUMBER;
 	} else {
 		target = TEXT;
 	}
