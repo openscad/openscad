@@ -1988,7 +1988,7 @@ void MainWindow::actionExport(export_type_e, QString, QString)
 	setCurrentOutput();
 
 	if (!this->root_geom) {
-		PRINT("Nothing to export! Try building first (press F6).");
+		PRINT("WARNING: Nothing to export! Try building first (press F6).");
 		clearCurrentOutput();
 		return;
 	}
@@ -2068,13 +2068,13 @@ QString MainWindow::get2dExportFilename(QString format, QString extension) {
 	setCurrentOutput();
 
 	if (!this->root_geom) {
-		PRINT("Nothing to export! Try building first (press F6).");
+		PRINT("WARNING: Nothing to export! Try building first (press F6).");
 		clearCurrentOutput();
 		return QString();
 	}
 
 	if (this->root_geom->getDimension() != 2) {
-		PRINT("Current top level object is not a 2D object.");
+		PRINT("WARNING: Current top level object is not a 2D object.");
 		clearCurrentOutput();
 		return QString();
 	}
@@ -2127,7 +2127,7 @@ void MainWindow::actionExportCSG()
 	setCurrentOutput();
 
 	if (!this->root_node) {
-		PRINT("Nothing to export. Please try compiling first...");
+		PRINT("WARNING: Nothing to export. Please try compiling first...");
 		clearCurrentOutput();
 		return;
 	}
