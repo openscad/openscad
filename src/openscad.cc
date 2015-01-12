@@ -338,6 +338,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	const char *ast_output_file = NULL;
 	const char *term_output_file = NULL;
 	const char *echo_output_file = NULL;
+	const char *params_output_file = NULL;
 
 	std::string suffix = boosty::extension_str( output_file );
 	boost::algorithm::to_lower( suffix );
@@ -352,6 +353,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	else if (suffix == ".ast") ast_output_file = output_file;
 	else if (suffix == ".term") term_output_file = output_file;
 	else if (suffix == ".echo") echo_output_file = output_file;
+	else if (suffix == ".params") params_output_file = output_file;
 	else {
 		PRINTB("Unknown suffix for output file %s\n", output_file);
 		return 1;
@@ -416,6 +418,18 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		else {
 			fs::current_path(fparent); // Force exported filenames to be relative to document path
 			fstream << tree.getString(*root_node) << "\n";
+			fstream.close();
+		}
+	}
+	else if (params_output_file) {
+		fs::current_path(original_path);
+		std::ofstream fstream(params_output_file);
+		if (!fstream.is_open()) {
+			PRINTB("Can't open file \"%s\" for export", params_output_file);
+		}
+		else {
+			fs::current_path(fparent); // Force exported filenames to be relative to document path
+			export_parameter(fstream, root_module);
 			fstream.close();
 		}
 	}

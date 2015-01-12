@@ -426,6 +426,7 @@ SOURCES += src/version_check.cc \
            src/calc.cc \
            src/export.cc \
            src/export_png.cc \
+           src/export_params.cc \
            src/import.cc \
            src/renderer.cc \
            src/colormap.cc \

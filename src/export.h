@@ -4,6 +4,7 @@
 #include "Tree.h"
 #include "Camera.h"
 #include "memory.h"
+#include "module.h"
 
 #ifdef ENABLE_CGAL
 
@@ -31,6 +32,7 @@ void export_svg(const class Polygon2d &poly, std::ostream &output);
 void export_png(const CGAL_Nef_polyhedron *root_N, Camera &c, std::ostream &output);
 void export_png_with_opencsg(Tree &tree, Camera &c, std::ostream &output);
 void export_png_with_throwntogether(Tree &tree, Camera &c, std::ostream &output);
+void export_parameter(std::ostream &output, FileModule *fileModule);
 
 #endif // ENABLE_CGAL
 
