@@ -496,6 +496,7 @@ unix:!macx {
   SOURCES += src/PlatformUtils-posix.cc
 }
 win* {
+  HEADERS += src/findversion.h
   SOURCES += src/PlatformUtils-win.cc
 }
 
