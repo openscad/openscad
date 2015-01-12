@@ -26,8 +26,7 @@ void Camera::setup(std::vector<double> params)
 		type = Camera::GIMBAL;
 		object_trans << params[0], params[1], params[2];
 		object_rot << params[3], params[4], params[5];
-		viewer_distance = params[6];
-		height = params[6];
+		height = viewer_distance = params[6];
 	} else if (params.size() == 6) {
 		type = Camera::VECTOR;
 		eye << params[0], params[1], params[2];
@@ -74,13 +73,13 @@ void Camera::viewAll(const BoundingBox &bbox, float scalefactor)
 
 	switch (this->projection) {
 	case Camera::ORTHOGONAL:
-		this->height = bbox.diagonal().norm();
+		this->height = this->viewer_distance = bbox.diagonal().norm();
 		break;
 	case Camera::PERSPECTIVE: {
 		double radius = bbox.diagonal().norm()/2;
 		switch (this->type) {
 		case Camera::GIMBAL:
-			this->viewer_distance = radius / tan(this->fov*M_PI/360);
+			this->height = this->viewer_distance = radius / tan(this->fov*M_PI/360);
 			break;
 		case Camera::VECTOR: {
 			Vector3d cameradir = (this->center - this->eye).normalized();
@@ -101,8 +100,7 @@ void Camera::viewAll(const BoundingBox &bbox, float scalefactor)
 
 void Camera::zoom(int delta)
 {
-	this->viewer_distance *= pow(0.9, delta / 120.0);
-	this->height = this->viewer_distance;
+	this->height = this->viewer_distance *= pow(0.9, delta / 120.0);
 }
 
 void Camera::setProjection(ProjectionType type)
@@ -115,8 +113,7 @@ void Camera::resetView()
 	type = Camera::GIMBAL;
 	object_rot << 35, 0, -25;
 	object_trans << 0, 0, 0;
-	height = 140;
-	viewer_distance = 140;
+	height = viewer_distance = 140;
 }
 
 double Camera::zoomValue()
