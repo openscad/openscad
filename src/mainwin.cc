@@ -1042,8 +1042,6 @@ void MainWindow::compileDone(bool didchange)
 		updateCamera();
 		updateCompileResult();
 		this->libraryWidget->setParameters(this->root_module);
-		this->parameterWidget->applyParameters(this->root_module);
-		this->parameterWidget->setParameters(this->root_module);
 		callslot = afterCompileSlot;
 	}
 	else {
@@ -1721,6 +1719,9 @@ void MainWindow::compileTopLevelDocument()
 	this->root_module = parse(fulltext.c_str(),
 		this->fileName.isEmpty() ? "" :
 		QFileInfo(this->fileName).absolutePath().toLocal8Bit(), false);
+
+	this->parameterWidget->applyParameters(this->root_module);
+	this->parameterWidget->setParameters(this->root_module);
 }
 
 void MainWindow::checkAutoReload()
