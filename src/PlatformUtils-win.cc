@@ -1,5 +1,6 @@
 #include "PlatformUtils.h"
 #include "printutils.h"
+#include "findversion.h"
 #ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x0501
 #endif
@@ -126,7 +127,8 @@ std::string PlatformUtils::sysinfo()
     
     OSVERSIONINFOEX osinfo;
     osinfo.dwOSVersionInfoSize = sizeof(osinfo);
-    if (GetVersionEx((OSVERSIONINFO*)&osinfo) == 0) {
+
+    if (GetVersionExEx(&osinfo) == 0) {
 	result += "Unknown Windows";
     } else {
 	unsigned int version = osinfo.dwMajorVersion * 1000 + osinfo.dwMinorVersion;
@@ -154,9 +156,25 @@ std::string PlatformUtils::sysinfo()
 		    // For applications that have been manifested for Windows 8.1.
 		    result += (osinfo.wProductType == VER_NT_WORKSTATION ? "Windows 8.1" : "Windows Server 2012 R2");
 		    break;
+        default:
+            result += "Unknown Windows";
+            break;
 	    }
-	    boost::format fmt(" (v%d.%d)");
-	    fmt % osinfo.dwMajorVersion % osinfo.dwMinorVersion;
+
+        if (osinfo.wServicePackMajor > 0) {
+            boost::format fmtServicePack;
+            if (osinfo.wServicePackMinor == 0) {
+                fmtServicePack = boost::format(" SP%d");
+                fmtServicePack % osinfo.wServicePackMajor;
+            } else {
+                fmtServicePack = boost::format(" SP%d.%d");
+                fmtServicePack % osinfo.wServicePackMajor % osinfo.wServicePackMinor;
+            }
+            result += fmtServicePack.str();
+        }
+
+        boost::format fmt(" (v%d.%d.%d.%d)");
+        fmt % osinfo.dwMajorVersion % osinfo.dwMinorVersion % osinfo.wServicePackMajor % osinfo.wServicePackMinor;
 	    result += fmt.str();
 	} else {
 	    boost::format fmt("Unknown Windows (dwPlatformId = %d, dwMajorVersion = %d, dwMinorVersion = %d");
