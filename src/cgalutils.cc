@@ -892,6 +892,8 @@ namespace CGALUtils {
 	bool createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3 &N, PolySet &ps)
 	{
 		bool err = false;
+		// Grid all vertices in a Nef polyhedron to merge close vertices.
+		Grid3d<int> grid(GRID_FINE);
 		CGAL_Nef_polyhedron3::Halffacet_const_iterator hfaceti;
 		CGAL_forall_halffacets(hfaceti, N) {
 			CGAL::Plane_3<CGAL_Kernel3> plane(hfaceti->plane());
@@ -903,11 +905,22 @@ namespace CGALUtils {
 				CGAL_Nef_polyhedron3::SHalfedge_around_facet_const_circulator c1(cyclei);
 				CGAL_Nef_polyhedron3::SHalfedge_around_facet_const_circulator c2(c1);
 				PolygonK polygon;
+				std::vector<int> indices; // Vertex indices in one polygon
 				CGAL_For_all(c1, c2) {
 					CGAL_Point_3 p = c1->source()->center_vertex()->point();
-					polygon.push_back(Vertex3K(CGAL::to_double(p.x()), CGAL::to_double(p.y()), CGAL::to_double(p.z())));
+					Vector3d v = vector_convert<Vector3d>(p);
+					indices.push_back(grid.align(v));
+					polygon.push_back(Vertex3K(v[0], v[1], v[2]));
 				}
-				polyholes.push_back(polygon);
+				// Remove consecutive duplicate vertices
+				PolygonK::iterator currp = polygon.begin();
+				for (int i=0;i<indices.size();i++) {
+					if (indices[i] != indices[(i+1)%indices.size()]) {
+						(*currp++) = polygon[i];
+					}
+				}
+				polygon.erase(currp, polygon.end());
+				if (polygon.size() >= 3) polyholes.push_back(polygon);
 			}
 
 			/* at this stage, we have a sequence of polygons. the first
