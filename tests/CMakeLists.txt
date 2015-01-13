@@ -555,7 +555,7 @@ else()
 endif()
 
 # Internal includes
-include_directories(../src)
+include_directories(../src ../src/libtess2/Include)
 
 # Handle OpenSCAD version based on VERSION env. variable.
 # Use current timestamp if not specified (development builds)
@@ -679,8 +679,8 @@ set(CGAL_SOURCES
   ../src/CGAL_Nef_polyhedron.cc 
   ../src/cgalutils.cc 
   ../src/cgalutils-tess.cc 
+  ../src/cgalutils-tess2.cc 
   ../src/cgalutils-polyhedron.cc 
-  ../src/cgalutils-tess-old.cc 
   ../src/CGALCache.cc
   ../src/CGAL_Nef_polyhedron_DxfData.cc
   ../src/Polygon2d-CGAL.cc
@@ -692,8 +692,15 @@ set(COMMON_SOURCES
   ../src/traverser.cc 
   ../src/GeometryCache.cc 
   ../src/clipper-utils.cc 
+  ../src/Tree.cc
   ../src/polyclipping/clipper.cpp
-  ../src/Tree.cc)
+  ../src/libtess2/Source/bucketalloc.c
+  ../src/libtess2/Source/dict.c
+  ../src/libtess2/Source/geom.c
+  ../src/libtess2/Source/mesh.c
+  ../src/libtess2/Source/priorityq.c
+  ../src/libtess2/Source/sweep.c
+  ../src/libtess2/Source/tess.c)
 
 #
 # Offscreen OpenGL context source code

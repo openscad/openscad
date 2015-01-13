@@ -923,7 +923,7 @@ namespace CGALUtils {
 			// CGAL::Vector_3<CGAL_Kernel3> nvec = plane.orthogonal_vector();
 			// K::Vector_3 normal(CGAL::to_double(nvec.x()), CGAL::to_double(nvec.y()), CGAL::to_double(nvec.z()));
 			std::vector<Polygon> triangles;
-			bool err = CGALUtils::tessellatePolygonWithHoles(polyholes, triangles, NULL);
+			bool err = CGALUtils::tessellatePolygonWithHolesNew(polyholes, triangles, NULL);
 			if (!err) {
 				BOOST_FOREACH(const Polygon &p, triangles) {
 					if (p.size() != 3) {
