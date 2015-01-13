@@ -256,7 +256,7 @@ MainWindow::MainWindow(const QString &filename)
 	knownFileExtensions["scad"] = "";
 	knownFileExtensions["csg"] = "";
 	
-	editActionZoomIn->setShortcuts(QList<QKeySequence>() << editActionZoomIn->shortcuts() << QKeySequence("CTRL+="));
+	editActionZoomTextIn->setShortcuts(QList<QKeySequence>() << editActionZoomTextIn->shortcuts() << QKeySequence("CTRL+="));
 
 	connect(this, SIGNAL(highlightError(int)), editor, SLOT(highlightError(int)));
 	connect(this, SIGNAL(unhighlightLastError()), editor, SLOT(unhighlightLastError()));
@@ -330,8 +330,8 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->editActionConvertTabsToSpaces, SIGNAL(triggered()), this, SLOT(convertTabsToSpaces()));
 	connect(this->editActionPasteVPT, SIGNAL(triggered()), this, SLOT(pasteViewportTranslation()));
 	connect(this->editActionPasteVPR, SIGNAL(triggered()), this, SLOT(pasteViewportRotation()));
-	connect(this->editActionZoomIn, SIGNAL(triggered()), editor, SLOT(zoomIn()));
-	connect(this->editActionZoomOut, SIGNAL(triggered()), editor, SLOT(zoomOut()));
+	connect(this->editActionZoomTextIn, SIGNAL(triggered()), editor, SLOT(zoomIn()));
+	connect(this->editActionZoomTextOut, SIGNAL(triggered()), editor, SLOT(zoomOut()));
 	connect(this->editActionPreferences, SIGNAL(triggered()), this, SLOT(preferences()));
 	// Edit->Find
 	connect(this->editActionFind, SIGNAL(triggered()), this, SLOT(find()));
@@ -476,8 +476,8 @@ MainWindow::MainWindow(const QString &filename)
 	initActionIcon(fileActionNew, ":/images/blackNew.png", ":/images/Document-New-128.png");
 	initActionIcon(fileActionOpen, ":/images/Open-32.png", ":/images/Open-128.png");
 	initActionIcon(fileActionSave, ":/images/Save-32.png", ":/images/Save-128.png");
-	initActionIcon(editActionZoomIn, ":/images/zoomin.png", ":/images/Zoom-In-32.png");
-	initActionIcon(editActionZoomOut, ":/images/zoomout.png", ":/images/Zoom-Out-32.png");
+	initActionIcon(editActionZoomTextIn, ":/images/zoom-text-in.png", ":/images/zoom-text-in-white.png");
+	initActionIcon(editActionZoomTextOut, ":/images/zoom-text-out.png", ":/images/zoom-text-out-white.png");
 	initActionIcon(designActionRender, ":/images/blackRender.png", ":/images/Arrowhead-Right-32.png");
 	initActionIcon(viewActionShowAxes, ":/images/blackaxes.png", ":/images/axes.png");
 	initActionIcon(viewActionShowEdges, ":/images/Rotation-32.png", ":/images/grid.png");

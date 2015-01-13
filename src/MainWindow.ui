@@ -317,8 +317,8 @@
     <addaction name="editActionFindPrevious"/>
     <addaction name="editActionUseSelectionForFind"/>
     <addaction name="separator"/>
-    <addaction name="editActionZoomIn"/>
-    <addaction name="editActionZoomOut"/>
+    <addaction name="editActionZoomTextIn"/>
+    <addaction name="editActionZoomTextOut"/>
     <addaction name="editActionPreferences"/>
    </widget>
    <widget class="QMenu" name="menu_Design">
@@ -714,17 +714,17 @@
     <string>Paste viewport rotation</string>
    </property>
   </action>
-  <action name="editActionZoomIn">
+  <action name="editActionZoomTextIn">
    <property name="text">
-    <string>Zoom In</string>
+    <string>Increase Font Size</string>
    </property>
    <property name="shortcut">
     <string>Ctrl++</string>
    </property>
   </action>
-  <action name="editActionZoomOut">
+  <action name="editActionZoomTextOut">
    <property name="text">
-    <string>Zoom Out</string>
+    <string>Decrease Font Size</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+-</string>
