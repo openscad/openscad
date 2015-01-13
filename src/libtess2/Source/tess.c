@@ -70,6 +70,15 @@ static int LongAxis( TESSreal v[3] )
 	return i;
 }
 
+static int ShortAxis( TESSreal v[3] )
+{
+	int i = 0;
+
+	if( ABS(v[1]) < ABS(v[0]) ) { i = 1; }
+	if( ABS(v[2]) < ABS(v[i]) ) { i = 2; }
+	return i;
+}
+
 static void ComputeNormal( TESStesselator *tess, TESSreal norm[3] )
 {
 	TESSvertex *v, *v1, *v2;
@@ -136,7 +145,7 @@ static void ComputeNormal( TESStesselator *tess, TESSreal norm[3] )
 	if( maxLen2 <= 0 ) {
 		/* All points lie on a single line -- any decent normal will do */
 		norm[0] = norm[1] = norm[2] = 0;
-		norm[LongAxis(d1)] = 1;
+		norm[ShortAxis(d1)] = 1;
 	}
 }
 

@@ -1121,10 +1121,10 @@ static void InitEdgeDict( TESStesselator *tess )
 	w = (tess->bmax[0] - tess->bmin[0]);
 	h = (tess->bmax[1] - tess->bmin[1]);
 
-	smin = tess->bmin[0] - w;
-	smax = tess->bmax[0] + w;
-	tmin = tess->bmin[1] - h;
-	tmax = tess->bmax[1] + h;
+	smin = tess->bmin[0] - w - 0.01;
+	smax = tess->bmax[0] + w + 0.01;
+	tmin = tess->bmin[1] - h - 0.01;
+	tmax = tess->bmax[1] + h + 0.01;
 
 	AddSentinel( tess, smin, smax, tmin );
 	AddSentinel( tess, smin, smax, tmax );
