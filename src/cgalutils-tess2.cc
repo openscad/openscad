@@ -19,11 +19,21 @@ static void stdFree(void* userData, void* ptr) {
 namespace CGALUtils {
 
 bool tessellatePolygonWithHolesNew(const PolyholeK &polygons,
-                                Polygons &triangles,
-                                const K::Vector_3 *normal)
+																	 Polygons &triangles,
+																	 const K::Vector_3 *normal)
 {
   // No polygon. FIXME: Will this ever happen or can we assert here?
   if (polygons.empty()) return false;
+
+	if (polygons.size() == 1 && polygons[0].size() == 3) {
+		// Input polygon has 3 points. shortcut tessellation.
+		Polygon t;
+		t.push_back(Vector3d(polygons[0][0].x(), polygons[0][0].y(), polygons[0][0].z()));
+		t.push_back(Vector3d(polygons[0][1].x(), polygons[0][1].y(), polygons[0][1].z()));
+		t.push_back(Vector3d(polygons[0][2].x(), polygons[0][2].y(), polygons[0][2].z()));
+		triangles.push_back(t);
+		return false;
+	}
 
   TESSreal *normalvec = NULL;
   TESSreal passednormal[3];
@@ -52,16 +62,16 @@ bool tessellatePolygonWithHolesNew(const PolyholeK &polygons,
   BOOST_FOREACH(const PolygonK &poly, polygons) {
     contour.clear();
     BOOST_FOREACH(const Vertex3K &v, poly) {
-      outputvertices.push_back(Vector3d(v.x(), v.y(), v.z()));
-      contour.push_back(v.x());
-      contour.push_back(v.y());
-      contour.push_back(v.z());
+			TESSreal tessv[3] = {v.x(), v.y(), v.z()};
+      outputvertices.push_back(Vector3d(tessv[0], tessv[1], tessv[2]));
+      contour.push_back(tessv[0]);
+      contour.push_back(tessv[1]);
+      contour.push_back(tessv[2]);
     }
     tessAddContour(tess, 3, &contour.front(), sizeof(TESSreal) * 3, poly.size());
   }
 
   if (!tessTesselate(tess, TESS_WINDING_ODD, TESS_CONSTRAINED_DELAUNAY_TRIANGLES, 3, 3, normalvec)) return -1;
-  //  printf("Memory used: %.1f kB\n", allocated/1024.0f);
 
   const TESSindex *vindices = tessGetVertexIndices(tess);
   const TESSindex *elements = tessGetElements(tess);
@@ -70,12 +80,15 @@ bool tessellatePolygonWithHolesNew(const PolyholeK &polygons,
   Polygon tri;
   for (int t=0;t<numelems;t++) {
     tri.resize(3);
+    bool err = false;
     for (int i=0;i<3;i++) {
-      tri[i] = outputvertices[vindices[elements[t*3 + i]]];
-      //      printf("%d (%d) ", elements[t*3 + i], vindices[elements[t*3 + i]]);
+      int vidx = vindices[elements[t*3 + i]];
+      if (vidx == TESS_UNDEF) err = true;
+      else tri[i] = outputvertices[vidx];
     }
-    //   printf("\n");
-    triangles.push_back(tri);
+		// FIXME: We ignore self-intersecting triangles rather than detecting and handling this
+    if (!err) triangles.push_back(tri);
+		else PRINT("WARNING: Self-intersecting polygon encountered - ignoring");
   }
 
   tessDeleteTess(tess);
