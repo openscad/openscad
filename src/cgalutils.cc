@@ -888,7 +888,7 @@ namespace CGALUtils {
 		return err;
 	}
 #endif
-#if 1
+#if 0
 	bool createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3 &N, PolySet &ps)
 	{
 		bool err = false;
@@ -921,6 +921,58 @@ namespace CGALUtils {
 				}
 				polygon.erase(currp, polygon.end());
 				if (polygon.size() >= 3) polyholes.push_back(polygon);
+			}
+
+			/* at this stage, we have a sequence of polygons. the first
+				 is the "outside edge' or 'body' or 'border', and the rest of the
+				 polygons are 'holes' within the first. there are several
+				 options here to get rid of the holes. we choose to go ahead
+				 and let the tessellater deal with the holes, and then
+				 just output the resulting 3d triangles*/
+
+			// We cannot trust the plane from Nef polyhedron to be correct.
+			// Passing an incorrect normal vector can cause a crash in the constrained delaunay triangulator
+      // See http://cgal-discuss.949826.n4.nabble.com/Nef3-Wrong-normal-vector-reported-causes-triangulator-crash-tt4660282.html
+			// CGAL::Vector_3<CGAL_Kernel3> nvec = plane.orthogonal_vector();
+			// K::Vector_3 normal(CGAL::to_double(nvec.x()), CGAL::to_double(nvec.y()), CGAL::to_double(nvec.z()));
+			std::vector<Polygon> triangles;
+			bool err = CGALUtils::tessellatePolygonWithHolesNew(polyholes, triangles, NULL);
+			if (!err) {
+				BOOST_FOREACH(const Polygon &p, triangles) {
+					if (p.size() != 3) {
+						PRINT("WARNING: triangle doesn't have 3 points. skipping");
+						continue;
+					}
+					ps.append_poly();
+					ps.append_vertex(p[0].x(), p[0].y(), p[0].z());
+					ps.append_vertex(p[1].x(), p[1].y(), p[1].z());
+					ps.append_vertex(p[2].x(), p[2].y(), p[2].z());
+				}
+			}
+		}
+		return err;
+	}
+#endif
+#if 1
+	bool createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3 &N, PolySet &ps)
+	{
+		bool err = false;
+		CGAL_Nef_polyhedron3::Halffacet_const_iterator hfaceti;
+		CGAL_forall_halffacets(hfaceti, N) {
+			CGAL::Plane_3<CGAL_Kernel3> plane(hfaceti->plane());
+			PolyholeK polyholes;
+			// the 0-mark-volume is the 'empty' volume of space. skip it.
+			if (hfaceti->incident_volume()->mark()) continue;
+			CGAL_Nef_polyhedron3::Halffacet_cycle_const_iterator cyclei;
+			CGAL_forall_facet_cycles_of(cyclei, hfaceti) {
+				CGAL_Nef_polyhedron3::SHalfedge_around_facet_const_circulator c1(cyclei);
+				CGAL_Nef_polyhedron3::SHalfedge_around_facet_const_circulator c2(c1);
+				PolygonK polygon;
+				CGAL_For_all(c1, c2) {
+					CGAL_Point_3 p = c1->source()->center_vertex()->point();
+					polygon.push_back(Vertex3K(CGAL::to_double(p.x()), CGAL::to_double(p.y()), CGAL::to_double(p.z())));
+				}
+				polyholes.push_back(polygon);
 			}
 
 			/* at this stage, we have a sequence of polygons. the first
