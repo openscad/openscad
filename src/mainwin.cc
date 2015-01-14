@@ -407,6 +407,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->helpActionAbout, SIGNAL(triggered()), this, SLOT(helpAbout()));
 	connect(this->helpActionHomepage, SIGNAL(triggered()), this, SLOT(helpHomepage()));
 	connect(this->helpActionManual, SIGNAL(triggered()), this, SLOT(helpManual()));
+	connect(this->helpActionCheatSheet, SIGNAL(triggered()), this, SLOT(helpCheatSheet()));
 	connect(this->helpActionLibraryInfo, SIGNAL(triggered()), this, SLOT(helpLibrary()));
 	connect(this->helpActionFontInfo, SIGNAL(triggered()), this, SLOT(helpFontInfo()));
 
@@ -2516,6 +2517,11 @@ void MainWindow::helpHomepage()
 void MainWindow::helpManual()
 {
         UIUtils::openUserManualURL();
+}
+
+void MainWindow::helpCheatSheet()
+{
+        UIUtils::openCheatSheetURL();
 }
 
 void MainWindow::helpLibrary()

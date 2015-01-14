@@ -42,4 +42,6 @@ namespace UIUtils {
     void openHomepageURL();
 
     void openUserManualURL();
+
+    void openCheatSheetURL();
 }
