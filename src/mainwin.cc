@@ -1753,6 +1753,8 @@ void MainWindow::csgRender()
 	}
 
 	if (viewActionAnimate->isChecked() && e_dump->isChecked()) {
+		// Force reading from front buffer. Some configurations will read from the back buffer here.
+		glReadBuffer(GL_FRONT);
 		QImage img = this->qglview->grabFrameBuffer();
 		QString filename;
 		double s = this->e_fsteps->text().toDouble();
