@@ -1,10 +1,5 @@
-// chopped_blocks.stl is derived from Mblock.stl
-// (c) 2009 Will Langford licensed under
-// the Creative Commons - GNU GPL license.
-// http://www.thingiverse.com/thing:753
-//
-// Jonas Pfeil converted the file to binary
-// STL and duplicated its content.
+// chopped_blocks.stl is derived from Basics/LetterBlock.scad
+// The exported STL was converted to binary using MeshLab
 
 echo(version=version());
 
@@ -21,7 +16,7 @@ module blk2() {
 }
 
 module chop() {
-	translate([ -14, 0, 0 ])
+	translate([ -18, 0, 0 ])
 		import(file = "chopped_blocks.stl", convexity = 12);
 }
 
@@ -36,3 +31,14 @@ difference() {
 	}
 }
 
+// Written by Clifford Wolf <clifford@clifford.at> and Marius
+// Kintel <marius@kintel.net>
+//
+// To the extent possible under law, the author(s) have dedicated all
+// copyright and related and neighboring rights to this software to the
+// public domain worldwide. This software is distributed without any
+// warranty.
+//
+// You should have received a copy of the CC0 Public Domain
+// Dedication along with this software.
+// If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
