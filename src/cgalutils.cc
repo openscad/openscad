@@ -970,7 +970,8 @@ namespace CGALUtils {
 				PolygonK polygon;
 				CGAL_For_all(c1, c2) {
 					CGAL_Point_3 p = c1->source()->center_vertex()->point();
-					polygon.push_back(Vertex3K(CGAL::to_double(p.x()), CGAL::to_double(p.y()), CGAL::to_double(p.z())));
+					float v[3] = { CGAL::to_double(p.x()), CGAL::to_double(p.y()), CGAL::to_double(p.z()) };
+					polygon.push_back(Vertex3K(v[0], v[1], v[2]));
 				}
 				polyholes.push_back(polygon);
 			}
