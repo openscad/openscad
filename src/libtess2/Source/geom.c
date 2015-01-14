@@ -266,10 +266,16 @@ void tesedgeIntersect( TESSvertex *o1, TESSvertex *d1,
  */
 TESSreal calcAngle( TESSvertex *v0, TESSvertex *v1, TESSvertex *v2 )
 {
-	TESSreal a[2] = { v2->s - v1->s, v2->t - v1->t };
-	TESSreal b[2] = { v0->s - v1->s, v0->t - v1->t };
-	TESSreal num = a[0] * b[0] + a[1] * b[1];
-	TESSreal den = sqrt( a[0] * a[0] + a[1] * a[1] ) * sqrt( b[0] * b[0] + b[1] * b[1] );
+	TESSreal num;
+	TESSreal den;
+	TESSreal a[2];
+	TESSreal b[2];
+	a[0] = v2->s - v1->s;
+	a[1] = v2->t - v1->t;
+	b[0] = v0->s - v1->s;
+	b[1] = v0->t - v1->t;
+	num = a[0] * b[0] + a[1] * b[1];
+	den = sqrt( a[0] * a[0] + a[1] * a[1] ) * sqrt( b[0] * b[0] + b[1] * b[1] );
 	if ( den > 0.0 ) num /= den;
 	if ( num < -1.0 ) num = -1.0;
 	if ( num >  1.0 ) num =  1.0;

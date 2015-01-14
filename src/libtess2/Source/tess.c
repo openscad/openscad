@@ -461,9 +461,9 @@ int tessMeshRefineDelaunay( TESSmesh *mesh, TESSalloc *alloc )
 */
 	TESSface *f;
 	EdgeStack stack;
-	stackInit(&stack, alloc);
 	TESShalfEdge *e;
 	TESShalfEdge *edges[4];
+	stackInit(&stack, alloc);
 	for( f = mesh->fHead.next; f != &mesh->fHead; f = f->next ) {
 		if ( f->inside) {
 			e = f->anEdge;
@@ -482,13 +482,14 @@ int tessMeshRefineDelaunay( TESSmesh *mesh, TESSalloc *alloc )
 		e = stackPop(&stack);
 		e->mark = e->Sym->mark = 0;
 		if (!tesedgeIsLocallyDelaunay(e)) {
+			int i;
 			tessMeshFlipEdge(mesh, e);
 			// for each opposite edge
 			edges[0] = e->Lnext;
 			edges[1] = e->Lprev;
 			edges[2] = e->Sym->Lnext;
 			edges[3] = e->Sym->Lprev;
-			for (int i=0;i<3;i++) {
+			for (i=0;i<3;i++) {
 				if (!edges[i]->mark && EdgeIsInternal(edges[i])) {
 					edges[i]->mark = edges[i]->Sym->mark = 1;
 					stackPush(&stack, edges[i]);

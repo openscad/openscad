@@ -752,16 +752,12 @@ int tessMeshMergeConvexFaces( TESSmesh *mesh, int maxVertsPerFace )
 
 void tessMeshFlipEdge( TESSmesh *mesh, TESShalfEdge *edge )
 {
-	assert(EdgeIsInternal(edge));
-
 	TESShalfEdge *a0 = edge;
 	TESShalfEdge *a1 = a0->Lnext;
 	TESShalfEdge *a2 = a1->Lnext;
-	assert(a2->Lnext == a0);
 	TESShalfEdge *b0 = edge->Sym;
 	TESShalfEdge *b1 = b0->Lnext;
 	TESShalfEdge *b2 = b1->Lnext;
-	assert(b2->Lnext == b0);
 
 	TESSvertex *aOrg = a0->Org;
 	TESSvertex *aOpp = a2->Org;
@@ -770,6 +766,10 @@ void tessMeshFlipEdge( TESSmesh *mesh, TESShalfEdge *edge )
 
 	TESSface *fa = a0->Lface;
 	TESSface *fb = b0->Lface;
+
+	assert(EdgeIsInternal(edge));
+	assert(a2->Lnext == a0);
+	assert(b2->Lnext == b0);
 
 	a0->Org = bOpp;
 	a0->Onext = b1->Sym;
