@@ -320,12 +320,6 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	parser_init();
 	localization_init();
 
-#ifdef Q_OS_WIN
-    QSettings reg_setting(QLatin1String("HKEY_CURRENT_USER"), QSettings::NativeFormat);
-    QString appPath = QDir::toNativeSeparators(app.applicationFilePath() + QLatin1String(",1"));
-    reg_setting.setValue(QLatin1String("Software/Classes/OpenSCAD_File/DefaultIcon/Default"),QVariant(appPath));
-#endif
-
 	Tree tree;
 #ifdef ENABLE_CGAL
 	GeometryEvaluator geomevaluator(tree);
