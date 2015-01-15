@@ -51,10 +51,9 @@ public:
   /*!
     Copies the internal vector to the given destination
   */
-  void copy(std::vector<T> &dest) {
+  template <class OutputIterator> void copy(OutputIterator dest) {
     this->getArray();
-    dest.resize(this->vec.size());
-    std::copy(this->vec.begin(), this->vec.end(), dest.begin());
+    std::copy(this->vec.begin(), this->vec.end(), dest);
   }
 
 private:
