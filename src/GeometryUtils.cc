@@ -4,9 +4,7 @@
 #include <boost/foreach.hpp>
 
 static void *stdAlloc(void* userData, unsigned int size) {
-	int* allocated = ( int*)userData;
 	TESS_NOTUSED(userData);
-	*allocated += (int)size;
 	return malloc(size);
 }
 
