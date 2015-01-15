@@ -131,7 +131,7 @@ bool GeometryUtils::tessellatePolygonWithHoles(const IndexedPolygons &polygons,
 				int j;
 				for (j = i; j < numInputVerts && vflags[j] == 0; j++) {
 					// Create triangle fan from vertex i-1 to the first existing vertex
-					PRINTDB("(%d) (%d) (%d)\n", startv % j % (j+1)%numInputVerts);
+					PRINTDB("(%d) (%d) (%d)\n", startv % j % ((j+1)%numInputVerts));
 					tri[0] = startv;
 					tri[1] = j;
 					tri[2] = (j+1)%numInputVerts;
