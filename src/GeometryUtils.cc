@@ -63,6 +63,7 @@ bool GeometryUtils::tessellatePolygonWithHoles(const IndexedPolygons &polygons,
 
 	int numContours = 0;
   std::vector<TESSreal> contour;
+	std::vector<int> vflags(polygons.vertices.size()); // Inits with 0's
   BOOST_FOREACH(const IndexedFace &face, polygons.faces) {
 		const Vector3f *verts = &polygons.vertices.front();
     contour.clear();
@@ -71,6 +72,7 @@ bool GeometryUtils::tessellatePolygonWithHoles(const IndexedPolygons &polygons,
       contour.push_back(v[0]);
       contour.push_back(v[1]);
       contour.push_back(v[2]);
+			vflags[idx]++;
     }
 		assert(face.size() >= 3);
 		PRINTDB("Contour: %d\n", face.size());
@@ -101,8 +103,8 @@ bool GeometryUtils::tessellatePolygonWithHoles(const IndexedPolygons &polygons,
 			B) Locate all unused vertices
 			C) For each unused vertex, create a triangle connecting it to the existing mesh
 		*/
-		int numInputVerts = polygons.faces[0].size();
-		std::vector<int> vflags(numInputVerts); // Init 0
+		const IndexedFace &face = polygons.faces.front();
+		int inputSize = face.size();
 		
 		IndexedTriangle tri;
 		for (int t=0;t<numelems;t++) {
@@ -119,22 +121,22 @@ bool GeometryUtils::tessellatePolygonWithHoles(const IndexedPolygons &polygons,
 			// FIXME: We ignore self-intersecting triangles rather than detecting and handling this
 			if (!err) {
 				triangles.push_back(tri);
-				vflags[tri[0]] = 1; // B)
-				vflags[tri[1]] = 1;
-				vflags[tri[2]] = 1;
+				vflags[tri[0]] = 0; // B)
+				vflags[tri[1]] = 0;
+				vflags[tri[2]] = 0;
 			}
 		}
 
-		for (int i=0;i<numInputVerts;i++) {
-			if (vflags[i] == 0) { // vertex missing in output: C)
-				int startv = (i+numInputVerts-1)%numInputVerts;
+		for (int i=0;i<inputSize;i++) {
+			if (vflags[face[i]]) { // vertex missing in output: C)
+				int startv = (i+inputSize-1)%inputSize;
 				int j;
-				for (j = i; j < numInputVerts && vflags[j] == 0; j++) {
+				for (j = i; j < inputSize && vflags[face[j]]; j++) {
 					// Create triangle fan from vertex i-1 to the first existing vertex
-					PRINTDB("(%d) (%d) (%d)\n", startv % j % ((j+1)%numInputVerts));
-					tri[0] = startv;
-					tri[1] = j;
-					tri[2] = (j+1)%numInputVerts;
+					PRINTDB("(%d) (%d) (%d)\n", face[startv] % face[j] % face[((j+1)%inputSize)]);
+					tri[0] = face[startv];
+					tri[1] = face[j];
+					tri[2] = face[(j+1)%inputSize];
 					triangles.push_back(tri);
 				}
 				i = j;
