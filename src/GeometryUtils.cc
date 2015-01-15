@@ -15,6 +15,22 @@ static void stdFree(void* userData, void* ptr) {
 	free(ptr);
 }
 
+/*!
+	Tessellates input contours into a triangle mesh.
+
+	The input contours may consist of positive (CCW) and negative (CW)
+	contours. These define holes, and possibly islands.
+
+	The output will be written as indices into the input vertex vector.
+
+	This function should be robust wrt. malformed input.
+
+	It will only use existing vertices and is guaranteed use all
+	existing vertices, i.e. it will maintain connectivity if the input
+	polygon is part of a polygon mesh.
+
+	Returns true on error, false on success.
+*/
 bool GeometryUtils::tessellatePolygonWithHoles(const IndexedPolygons &polygons, 
 																							 std::vector<IndexedTriangle> &triangles,
 																							 const Vector3f *normal)
@@ -31,24 +47,21 @@ bool GeometryUtils::tessellatePolygonWithHoles(const IndexedPolygons &polygons,
   TESSreal *normalvec = NULL;
   TESSreal passednormal[3];
   if (normal) {
-    passednormal[0] = normal->x();
-    passednormal[1] = normal->y();
-    passednormal[2] = normal->z();
+    passednormal[0] = (*normal)[0];
+		passednormal[1] = (*normal)[1];
+		passednormal[2] = (*normal)[2];
     normalvec = passednormal;
   }
 
-  int allocated = 0;
   TESSalloc ma;
   TESStesselator* tess = 0;
 
   memset(&ma, 0, sizeof(ma));
   ma.memalloc = stdAlloc;
   ma.memfree = stdFree;
-  ma.userData = (void*)&allocated;
   ma.extraVertices = 256; // realloc not provided, allow 256 extra vertices.
   
-  tess = tessNewTess(&ma);
-  if (!tess) return -1;
+  if (!(tess = tessNewTess(&ma))) return true;
 
 	int numContours = 0;
   std::vector<TESSreal> contour;
@@ -73,7 +86,23 @@ bool GeometryUtils::tessellatePolygonWithHoles(const IndexedPolygons &polygons,
   const TESSindex *elements = tessGetElements(tess);
   int numelems = tessGetElementCount(tess);
   
+	/*
+		At this point, we have a delaunay triangle mesh.
+
+		However, as libtess2 might merge vertices, as well as insert new
+		vertices for intersecting edges, we need to detect these and
+		insert dummy triangles to maintain external connectivity.
+
+		FIXME: This currently only works for polygons without holes.
+	 */
 	if (polygons.faces.size() == 1) { // Only works for polygons without holes
+
+		/*
+			Algorithm:
+			A) Collect all triangles using _only_ existing vertices -> triangles
+			B) Locate all unused vertices
+			C) For each unused vertex, create a triangle connecting it to the existing mesh
+		*/
 		int numInputVerts = polygons.faces[0].size();
 		std::vector<int> vflags(numInputVerts); // Init 0
 		
@@ -83,7 +112,7 @@ bool GeometryUtils::tessellatePolygonWithHoles(const IndexedPolygons &polygons,
 			for (int i=0;i<3;i++) {
 				int vidx = vindices[elements[t*3 + i]];
 				if (vidx == TESS_UNDEF) err = true;
-				else tri[i] = vidx;
+				else tri[i] = vidx; // A)
 			}
 			PRINTDB("%d (%d) %d (%d) %d (%d)",
 							elements[t*3 + 0] % vindices[elements[t*3 + 0]] %
@@ -92,14 +121,14 @@ bool GeometryUtils::tessellatePolygonWithHoles(const IndexedPolygons &polygons,
 			// FIXME: We ignore self-intersecting triangles rather than detecting and handling this
 			if (!err) {
 				triangles.push_back(tri);
-				vflags[tri[0]] = 1;
+				vflags[tri[0]] = 1; // B)
 				vflags[tri[1]] = 1;
 				vflags[tri[2]] = 1;
 			}
 		}
 
 		for (int i=0;i<numInputVerts;i++) {
-			if (vflags[i] == 0) { // vertex missing in output
+			if (vflags[i] == 0) { // vertex missing in output: C)
 				int startv = (i+numInputVerts-1)%numInputVerts;
 				int j;
 				for (j = i; j < numInputVerts && vflags[j] == 0; j++) {
