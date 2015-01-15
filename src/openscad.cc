@@ -43,8 +43,6 @@
 #include "CocoaUtils.h"
 #include "FontCache.h"
 
-#include <QDir>
-
 #include <string>
 #include <vector>
 #include <fstream>
