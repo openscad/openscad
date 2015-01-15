@@ -670,7 +670,8 @@ set(NOCGAL_SOURCES
   ../src/export.cc
   ../src/LibraryInfo.cc
   ../src/polyset.cc
-  ../src/polyset-utils.cc)
+  ../src/polyset-utils.cc
+  ../src/GeometryUtils.cc)
 
 
 set(CGAL_SOURCES
@@ -679,7 +680,6 @@ set(CGAL_SOURCES
   ../src/CGAL_Nef_polyhedron.cc 
   ../src/cgalutils.cc 
   ../src/cgalutils-tess.cc 
-  ../src/cgalutils-tess2.cc 
   ../src/cgalutils-polyhedron.cc 
   ../src/CGALCache.cc
   ../src/CGAL_Nef_polyhedron_DxfData.cc

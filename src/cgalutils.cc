@@ -25,6 +25,7 @@
 
 #include "svg.h"
 #include "Reindexer.h"
+#include "GeometryUtils.h"
 
 #include <map>
 #include <queue>
@@ -953,7 +954,7 @@ namespace CGALUtils {
 		return err;
 	}
 #endif
-#if 1
+#if 0
 	bool createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3 &N, PolySet &ps)
 	{
 		bool err = false;
@@ -975,6 +976,15 @@ namespace CGALUtils {
 				}
 				polyholes.push_back(polygon);
 			}
+
+			std::cout << "---\n";
+			BOOST_FOREACH(const PolygonK &poly, polyholes) {
+				BOOST_FOREACH(const Vertex3K &v, poly) {
+					std::cout << v.x() << "," << v.y() << "," << v.z() << "\n";
+				}
+				std::cout << "\n";
+			}
+			std::cout << "-\n";
 
 			/* at this stage, we have a sequence of polygons. the first
 				 is the "outside edge' or 'body' or 'border', and the rest of the
@@ -1000,6 +1010,78 @@ namespace CGALUtils {
 					ps.append_vertex(p[0].x(), p[0].y(), p[0].z());
 					ps.append_vertex(p[1].x(), p[1].y(), p[1].z());
 					ps.append_vertex(p[2].x(), p[2].y(), p[2].z());
+					// std::cout << p[0].x() << "," << p[0].y() << "," << p[0].z() << "\n";
+					// std::cout << p[1].x() << "," << p[1].y() << "," << p[1].z() << "\n";
+					// std::cout << p[2].x() << "," << p[2].y() << "," << p[2].z() << "\n\n";
+				}
+			}
+		}
+		return err;
+	}
+#endif
+#if 1
+	bool createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3 &N, PolySet &ps)
+	{
+		bool err = false;
+		CGAL_Nef_polyhedron3::Halffacet_const_iterator hfaceti;
+		CGAL_forall_halffacets(hfaceti, N) {
+			CGAL::Plane_3<CGAL_Kernel3> plane(hfaceti->plane());
+			// Since we're downscaling to float, vertices might merge during this conversion.
+			// To avoid passing equal vertices to the tessellator, we remove consecutively identical
+			// vertices.
+			Reindexer<Vector3f> uniqueVertices;
+			IndexedPolygons polyhole;
+			// the 0-mark-volume is the 'empty' volume of space. skip it.
+			if (hfaceti->incident_volume()->mark()) continue;
+			CGAL_Nef_polyhedron3::Halffacet_cycle_const_iterator cyclei;
+			CGAL_forall_facet_cycles_of(cyclei, hfaceti) {
+				CGAL_Nef_polyhedron3::SHalfedge_around_facet_const_circulator c1(cyclei);
+				CGAL_Nef_polyhedron3::SHalfedge_around_facet_const_circulator c2(c1);
+				polyhole.faces.push_back(IndexedFace());
+				IndexedFace &currface = polyhole.faces.back();
+				CGAL_For_all(c1, c2) {
+					CGAL_Point_3 p = c1->source()->center_vertex()->point();
+					// Create vertex indices and remove consecutive duplicate vertices
+					int idx = uniqueVertices.lookup(vector_convert<Vector3f>(p));
+					if (currface.empty() || idx != currface.back()) currface.push_back(idx);
+				}
+				if (currface.front() == currface.back()) currface.pop_back();
+				if (currface.size() < 3) polyhole.faces.pop_back(); // Cull empty triangles
+			}
+			uniqueVertices.copy(std::back_inserter(polyhole.vertices));
+
+#if 0 // For debugging
+			std::cout << "---\n";
+			BOOST_FOREACH(const IndexedFace &poly, polyhole.faces) {
+				BOOST_FOREACH(int i, poly) {
+					std::cout << polyhole.vertices[i][0] << "," << polyhole.vertices[i][1] << "," << polyhole.vertices[i][2] << "\n";
+				}
+				std::cout << "\n";
+			}
+			std::cout << "-\n";
+#endif
+
+			/* at this stage, we have a sequence of polygons. the first
+				 is the "outside edge' or 'body' or 'border', and the rest of the
+				 polygons are 'holes' within the first. there are several
+				 options here to get rid of the holes. we choose to go ahead
+				 and let the tessellater deal with the holes, and then
+				 just output the resulting 3d triangles*/
+
+			// We cannot trust the plane from Nef polyhedron to be correct.
+			// Passing an incorrect normal vector can cause a crash in the constrained delaunay triangulator
+      // See http://cgal-discuss.949826.n4.nabble.com/Nef3-Wrong-normal-vector-reported-causes-triangulator-crash-tt4660282.html
+			// CGAL::Vector_3<CGAL_Kernel3> nvec = plane.orthogonal_vector();
+			// K::Vector_3 normal(CGAL::to_double(nvec.x()), CGAL::to_double(nvec.y()), CGAL::to_double(nvec.z()));
+			std::vector<IndexedTriangle> triangles;
+			bool err = GeometryUtils::tessellatePolygonWithHoles(polyhole, triangles, NULL);
+			const Vector3f *verts = &polyhole.vertices.front();
+			if (!err) {
+				BOOST_FOREACH(const Vector3i &t, triangles) {
+					ps.append_poly();
+					ps.append_vertex(verts[t[0]]);
+					ps.append_vertex(verts[t[1]]);
+					ps.append_vertex(verts[t[2]]);
 				}
 			}
 		}

@@ -297,6 +297,7 @@ HEADERS += src/typedefs.h \
            src/Geometry.h \
            src/Polygon2d.h \
            src/clipper-utils.h \
+           src/GeometryUtils.h \
            src/polyset-utils.h \
            src/polyset.h \
            src/printutils.h \
@@ -365,6 +366,7 @@ SOURCES += src/version_check.cc \
            src/Polygon2d.cc \
            src/clipper-utils.cc \
            src/polyset-utils.cc \
+           src/GeometryUtils.cc \
            src/polyset.cc \
            src/csgops.cc \
            src/transform.cc \
@@ -492,7 +494,6 @@ HEADERS += src/cgal.h \
 
 SOURCES += src/cgalutils.cc \
            src/cgalutils-tess.cc \
-           src/cgalutils-tess2.cc \
            src/cgalutils-polyhedron.cc \
            src/CGALCache.cc \
            src/CGALRenderer.cc \

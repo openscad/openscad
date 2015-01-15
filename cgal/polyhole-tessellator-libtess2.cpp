@@ -3,27 +3,24 @@
 #include <boost/lexical_cast.hpp>
 #include <sstream>
 #include <fstream>
+#include <iostream>
 #include <locale.h>
 
-#include "cgalutils.h"
+#include "GeometryUtils.h"
+#include "Reindexer.h"
 #include "linalg.h"
+#include "grid.h"
 
-#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-typedef CGAL::Epick K;
-typedef CGAL::Point_3<K> Vertex3K;
-typedef std::vector<Vertex3K> PolygonK;
-typedef std::vector<PolygonK> PolyholeK;
-
-
-// Nef polyhedron are using CGAL_Kernel3 (Cartesian<Gmpq>)
-// Triangulation will use Epick
-
-static void export_stl(const Polygons &triangles, std::ostream &output)
+static void export_stl(const IndexedTriangleMesh &trimesh, std::ostream &output)
 {
   setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
   output << "solid OpenSCAD_Model\n";
-  BOOST_FOREACH(const Polygon &p, triangles) {
-    assert(p.size() == 3); // STL only allows triangles
+  const Vector3f *verts = &trimesh.vertices.front();
+  BOOST_FOREACH(const IndexedTriangle &t, trimesh.triangles) {
+    Vector3f p[3];
+    p[0] = verts[t[0]];
+    p[1] = verts[t[1]];
+    p[2] = verts[t[2]];
     std::stringstream stream;
     stream << p[0][0] << " " << p[0][1] << " " << p[0][2];
     std::string vs1 = stream.str();
@@ -39,13 +36,13 @@ static void export_stl(const Polygons &triangles, std::ostream &output)
       // so the default value of "1 0 0" can be used. If the vertices are not
       // collinear then the unit normal must be calculated from the
       // components.
-      Vector3d normal = (p[1] - p[0]).cross(p[2] - p[0]);
+      Vector3f normal = (p[1] - p[0]).cross(p[2] - p[0]);
       normal.normalize();
       output << "  facet normal " << normal[0] << " " << normal[1] << " " << normal[2] << "\n";
       output << "    outer loop\n";
 		
-      BOOST_FOREACH(const Vector3d &v, p) {
-        output << "      vertex " << v[0] << " " << v[1] << " " << v[2] << "\n";
+      for (int i=0;i<3;i++) {
+        output << "      vertex " << p[i][0] << " " << p[i][1] << " " << p[i][2] << "\n";
       }
       output << "    endloop\n";
       output << "  endfacet\n";
@@ -62,19 +59,20 @@ static void export_stl(const Polygons &triangles, std::ostream &output)
   each coordinate is on a separate line
   2. each polygon is separated by one or more blank lines
 */
-bool import_polygon(PolyholeK &polyhole, const std::string &filename)
+bool import_polygon(IndexedPolygons &polyhole, const std::string &filename)
 {
+  Reindexer<Vector3f> uniqueVertices;
   std::ifstream ifs(filename.c_str());
   if (!ifs) return false;
 
   std::string line;
-  PolygonK polygon;
+  IndexedFace polygon;
   while (std::getline(ifs, line)) {
     std::stringstream ss(line);
     double X = 0.0, Y = 0.0, Z = 0.0;
     if (!(ss >> X)) {
       //ie blank lines => flag start of next polygon 
-      if (polygon.size() > 0) polyhole.push_back(polygon);
+      if (polygon.size() > 0) polyhole.faces.push_back(polygon);
       polygon.clear();
       continue;
     }
@@ -94,23 +92,24 @@ bool import_polygon(PolyholeK &polyhole, const std::string &filename)
       std::cerr << "Z error\n";
       return false;
     }
-    polygon.push_back(Vertex3K(X, Y, Z));
+    polygon.push_back(uniqueVertices.lookup(Vector3f(X, Y, Z)));
   }
-  if (polygon.size() > 0) polyhole.push_back(polygon);
+  if (polygon.size() > 0) polyhole.faces.push_back(polygon);
   ifs.close();
+  uniqueVertices.copy(std::back_inserter(polyhole.vertices));
   return true;
 }
 
 int main(int argc, char *argv[])
 {
-  PolyholeK polyhole;
-  K::Vector_3 *normal = NULL;
+  IndexedPolygons polyhole;
+  Vector3f *normal = NULL;
   if (argc >= 2) {
     if (!import_polygon(polyhole, argv[1])) {
       std::cerr << "Error importing polygon" << std::endl;
       exit(1);
     }
-    std::cerr << "Imported " << polyhole.size() << " polygons" << std::endl;
+    std::cerr << "Imported " << polyhole.faces.size() << " polygons" << std::endl;
 
     if (argc == 3) {
       std::vector<std::string> strs;
@@ -119,29 +118,35 @@ int main(int argc, char *argv[])
       boost::split(strs, arg, boost::is_any_of(","));
       assert(strs.size() == 3);
       BOOST_FOREACH(const std::string &s, strs) normalvec.push_back(boost::lexical_cast<double>(s));
-      normal = new K::Vector_3(normalvec[0], normalvec[1], normalvec[2]);
+      normal = new Vector3f(normalvec[0], normalvec[1], normalvec[2]);
       
    }
   }
   else {
     //construct two non-intersecting nested polygons  
-    PolygonK polygon1;
-    polygon1.push_back(Vertex3K(0,0,0));
-    polygon1.push_back(Vertex3K(2,0,0));
-    polygon1.push_back(Vertex3K(2,2,0));
-    polygon1.push_back(Vertex3K(0,2,0));
-    PolygonK polygon2;
-    polygon2.push_back(Vertex3K(0.5,0.5,0));
-    polygon2.push_back(Vertex3K(1.5,0.5,0));
-    polygon2.push_back(Vertex3K(1.5,1.5,0));
-    polygon2.push_back(Vertex3K(0.5,1.5,0));
-    polyhole.push_back(polygon1);
-    polyhole.push_back(polygon2);
+    Reindexer<Vector3f> uniqueVertices;
+    IndexedFace polygon1;
+    polygon1.push_back(uniqueVertices.lookup(Vector3f(0,0,0)));
+    polygon1.push_back(uniqueVertices.lookup(Vector3f(2,0,0)));
+    polygon1.push_back(uniqueVertices.lookup(Vector3f(2,2,0)));
+    polygon1.push_back(uniqueVertices.lookup(Vector3f(0,2,0)));
+    IndexedFace polygon2;
+    polygon2.push_back(uniqueVertices.lookup(Vector3f(0.5,0.5,0)));
+    polygon2.push_back(uniqueVertices.lookup(Vector3f(1.5,0.5,0)));
+    polygon2.push_back(uniqueVertices.lookup(Vector3f(1.5,1.5,0)));
+    polygon2.push_back(uniqueVertices.lookup(Vector3f(0.5,1.5,0)));
+    polyhole.faces.push_back(polygon1);
+    polyhole.faces.push_back(polygon2);
+    uniqueVertices.copy(std::back_inserter(polyhole.vertices));
   }
 
-  Polygons triangles;
-  bool ok = CGALUtils::tessellatePolygonWithHolesNew(polyhole, triangles, normal);
+  std::vector<IndexedTriangle> triangles;
+  bool ok = GeometryUtils::tessellatePolygonWithHoles(polyhole, triangles, normal);
   std::cerr << "Tessellated into " << triangles.size() << " triangles" << std::endl;
 
-  export_stl(triangles, std::cout);
+  IndexedTriangleMesh trimesh;
+  trimesh.vertices = polyhole.vertices;
+  trimesh.triangles = triangles;
+
+  export_stl(trimesh, std::cout);
 }
