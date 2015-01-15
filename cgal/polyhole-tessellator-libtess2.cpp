@@ -17,6 +17,10 @@ static void export_stl(const IndexedTriangleMesh &trimesh, std::ostream &output)
   output << "solid OpenSCAD_Model\n";
   const Vector3f *verts = &trimesh.vertices.front();
   BOOST_FOREACH(const IndexedTriangle &t, trimesh.triangles) {
+    assert(t[0] < trimesh.vertices.size());
+    assert(t[1] < trimesh.vertices.size());
+    assert(t[2] < trimesh.vertices.size());
+
     Vector3f p[3];
     p[0] = verts[t[0]];
     p[1] = verts[t[1]];
