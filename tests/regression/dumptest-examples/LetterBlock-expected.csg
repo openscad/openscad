@@ -1,0 +1,15 @@
+group() {
+	group();
+	group() {
+		difference() {
+			multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 7.5], [0, 0, 0, 1]]) {
+				cube(size = [30, 30, 15], center = true);
+			}
+			multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 5], [0, 0, 0, 1]]) {
+				linear_extrude(height = 30, center = false, convexity = 3, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
+					text(text = "M", size = 22, spacing = 1, font = "Tahoma", direction = "ltr", language = "en", script = "latin", halign = "center", valign = "center", $fn = 0, $fa = 12, $fs = 2);
+				}
+			}
+		}
+	}
+}

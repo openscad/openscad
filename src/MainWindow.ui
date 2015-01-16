@@ -381,6 +381,7 @@
     <addaction name="helpActionAbout"/>
     <addaction name="helpActionHomepage"/>
     <addaction name="helpActionManual"/>
+    <addaction name="helpActionCheatSheet"/>
     <addaction name="helpActionLibraryInfo"/>
     <addaction name="helpActionFontInfo"/>
    </widget>
@@ -1230,6 +1231,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+I</string>
+   </property>
+  </action>
+  <action name="helpActionCheatSheet">
+   <property name="text">
+    <string>Cheat Sheet</string>
    </property>
   </action>
  </widget>

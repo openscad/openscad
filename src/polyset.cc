@@ -92,9 +92,14 @@ void PolySet::append_vertex(double x, double y, double z)
 	append_vertex(Vector3d(x, y, z));
 }
 
-void PolySet::append_vertex(Vector3d v)
+void PolySet::append_vertex(const Vector3d &v)
 {
 	polygons.back().push_back(v);
+}
+
+void PolySet::append_vertex(const Vector3f &v)
+{
+	polygons.back().push_back(v.cast<double>());
 }
 
 void PolySet::insert_vertex(double x, double y, double z)
@@ -102,9 +107,14 @@ void PolySet::insert_vertex(double x, double y, double z)
 	insert_vertex(Vector3d(x, y, z));
 }
 
-void PolySet::insert_vertex(Vector3d v)
+void PolySet::insert_vertex(const Vector3d &v)
 {
 	polygons.back().insert(polygons.back().begin(), v);
+}
+
+void PolySet::insert_vertex(const Vector3f &v)
+{
+	polygons.back().insert(polygons.back().begin(), v.cast<double>());
 }
 
 BoundingBox PolySet::getBoundingBox() const

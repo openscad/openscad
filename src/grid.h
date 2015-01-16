@@ -90,6 +90,7 @@ public:
 typedef Eigen::Matrix<int64_t, 3, 1> Vector3l;
 
 namespace Eigen {
+	size_t hash_value(Vector3f const &v);
 	size_t hash_value(Vector3d const &v);
 	size_t hash_value(Vector3l const &v);
 }

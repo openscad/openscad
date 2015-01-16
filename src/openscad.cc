@@ -93,6 +93,8 @@ static std::string arg_colorscheme;
 #define QUOTE(x__) # x__
 #define QUOTED(x__) QUOTE(x__)
 
+std::string versionnumber = QUOTED(OPENSCAD_VERSION);
+
 std::string openscad_versionnumber = QUOTED(OPENSCAD_VERSION)
 #ifdef OPENSCAD_COMMIT
 	" (git " QUOTED(OPENSCAD_COMMIT) ")"

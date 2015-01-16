@@ -407,6 +407,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->helpActionAbout, SIGNAL(triggered()), this, SLOT(helpAbout()));
 	connect(this->helpActionHomepage, SIGNAL(triggered()), this, SLOT(helpHomepage()));
 	connect(this->helpActionManual, SIGNAL(triggered()), this, SLOT(helpManual()));
+	connect(this->helpActionCheatSheet, SIGNAL(triggered()), this, SLOT(helpCheatSheet()));
 	connect(this->helpActionLibraryInfo, SIGNAL(triggered()), this, SLOT(helpLibrary()));
 	connect(this->helpActionFontInfo, SIGNAL(triggered()), this, SLOT(helpFontInfo()));
 
@@ -1749,6 +1750,8 @@ void MainWindow::csgRender()
 	}
 
 	if (viewActionAnimate->isChecked() && e_dump->isChecked()) {
+		// Force reading from front buffer. Some configurations will read from the back buffer here.
+		glReadBuffer(GL_FRONT);
 		QImage img = this->qglview->grabFrameBuffer();
 		QString filename;
 		double s = this->e_fsteps->text().toDouble();
@@ -2510,6 +2513,11 @@ void MainWindow::helpHomepage()
 void MainWindow::helpManual()
 {
         UIUtils::openUserManualURL();
+}
+
+void MainWindow::helpCheatSheet()
+{
+        UIUtils::openCheatSheetURL();
 }
 
 void MainWindow::helpLibrary()

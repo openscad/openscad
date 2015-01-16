@@ -36,9 +36,6 @@ namespace CGALUtils {
 	bool tessellatePolygonWithHoles(const PolyholeK &polygons,
 																	Polygons &triangles,
 																	const K::Vector_3 *normal = NULL);
-	bool tessellate3DFaceWithHolesNew(std::vector<CGAL_Polygon_3> &polygons, 
-																 Polygons &triangles,
-																 CGAL::Plane_3<CGAL_Kernel3> &plane);
 	bool tessellate3DFaceWithHoles(std::vector<CGAL_Polygon_3> &polygons, 
 																 std::vector<CGAL_Polygon_3> &triangles,
 																 CGAL::Plane_3<CGAL_Kernel3> &plane);
