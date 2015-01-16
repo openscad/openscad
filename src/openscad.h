@@ -35,6 +35,7 @@ extern std::string commandline_commands;
 // doing this, use currentdir to get the original CWD.
 extern std::string currentdir;
 
+// Version number without the git suffix.
 extern std::string versionnumber;
 
 // Just the number (might have the git commit as suffix), e.g. 2014.12.23.

@@ -360,6 +360,7 @@
     <addaction name="helpActionAbout"/>
     <addaction name="helpActionHomepage"/>
     <addaction name="helpActionManual"/>
+    <addaction name="helpActionCheatSheet"/>
     <addaction name="helpActionLibraryInfo"/>
     <addaction name="helpActionFontInfo"/>
    </widget>
@@ -874,9 +875,6 @@
    <property name="text">
     <string>Show Scale Markers</string>
    </property>
-   <!--<property name="shortcut">
-    <string></string>
-   </property>-->
   </action>
   <action name="viewActionAnimate">
    <property name="checkable">
@@ -1187,6 +1185,11 @@
    </property>
    <property name="text">
     <string>Hide toolbars</string>
+   </property>
+  </action>
+  <action name="helpActionCheatSheet">
+   <property name="text">
+    <string>Cheat Sheet</string>
    </property>
   </action>
  </widget>
