@@ -46,7 +46,7 @@ ValuePtr ValuePtr::undefined;
 
 std::ostream &operator<<(std::ostream &stream, const Filename &filename)
 {
-  fs::path fnpath = fs::path( (std::string)filename );
+  fs::path fnpath = fs::path(filename);
   fs::path fpath = boostfs_uncomplete(fnpath, fs::current_path());
   stream << QuotedString(boosty::stringy( fpath ));
   return stream;
