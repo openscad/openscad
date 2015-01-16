@@ -10,6 +10,7 @@
 #include "Reindexer.h"
 #include "linalg.h"
 #include "grid.h"
+#include "printutils.h"
 
 static void export_stl(const IndexedTriangleMesh &trimesh, std::ostream &output)
 {
@@ -106,6 +107,8 @@ bool import_polygon(IndexedPolygons &polyhole, const std::string &filename)
 
 int main(int argc, char *argv[])
 {
+  OpenSCAD::debug = "GeometryUtils";
+
   IndexedPolygons polyhole;
   Vector3f *normal = NULL;
   if (argc >= 2) {
