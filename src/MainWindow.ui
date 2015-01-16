@@ -15,7 +15,16 @@
     <property name="spacing">
      <number>0</number>
     </property>
-    <property name="margin">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
      <number>0</number>
     </property>
     <item>
@@ -30,7 +39,16 @@
        <property name="spacing">
         <number>0</number>
        </property>
-       <property name="margin">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
         <number>0</number>
        </property>
        <item>
@@ -144,7 +162,16 @@
           <number>0</number>
          </property>
          <layout class="QHBoxLayout" name="horizontalLayoutAnimate">
-          <property name="margin">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
            <number>0</number>
           </property>
           <item>
@@ -224,7 +251,7 @@
      <x>0</x>
      <y>0</y>
      <width>1397</width>
-     <height>33</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -379,7 +406,16 @@
      <property name="spacing">
       <number>0</number>
      </property>
-     <property name="margin">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
       <number>0</number>
      </property>
      <item>
@@ -499,7 +535,16 @@
    </attribute>
    <widget class="QWidget" name="consoleDockContents">
     <layout class="QVBoxLayout" name="verticalLayout_5">
-     <property name="margin">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
       <number>0</number>
      </property>
      <item>
@@ -763,13 +808,17 @@
   <action name="designActionExportSTL">
    <property name="icon">
     <iconset resource="../openscad.qrc">
-     <normaloff>:/images/export.png</normaloff>:/images/export.png</iconset>
+     <normaloff>:/images/STL.png</normaloff>:/images/STL.png</iconset>
    </property>
    <property name="text">
     <string>Export as &amp;STL...</string>
    </property>
   </action>
   <action name="designActionExportOFF">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/OFF.png</normaloff>:/images/OFF.png</iconset>
+   </property>
    <property name="text">
     <string>Export as &amp;OFF...</string>
    </property>
@@ -874,9 +923,6 @@
    <property name="text">
     <string>Show Scale Markers</string>
    </property>
-   <!--<property name="shortcut">
-    <string></string>
-   </property>-->
   </action>
   <action name="viewActionAnimate">
    <property name="checkable">
@@ -1025,6 +1071,10 @@
    </property>
   </action>
   <action name="designActionExportDXF">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/DXF.png</normaloff>:/images/DXF.png</iconset>
+   </property>
    <property name="text">
     <string>Export as DXF...</string>
    </property>
@@ -1104,11 +1154,19 @@
    </property>
   </action>
   <action name="designActionExportImage">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/PNG.png</normaloff>:/images/PNG.png</iconset>
+   </property>
    <property name="text">
     <string>Export as Image...</string>
    </property>
   </action>
   <action name="designActionExportCSG">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/CSG.png</normaloff>:/images/CSG.png</iconset>
+   </property>
    <property name="text">
     <string>Export as CSG...</string>
    </property>
@@ -1134,11 +1192,19 @@
    </property>
   </action>
   <action name="designActionExportSVG">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/SVG.png</normaloff>:/images/SVG.png</iconset>
+   </property>
    <property name="text">
     <string>Export as SVG...</string>
    </property>
   </action>
   <action name="designActionExportAMF">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/AMF.png</normaloff>:/images/AMF.png</iconset>
+   </property>
    <property name="text">
     <string>Export as AMF...</string>
    </property>
