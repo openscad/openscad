@@ -1051,14 +1051,15 @@ namespace CGALUtils {
 			uniqueVertices.copy(std::back_inserter(polyhole.vertices));
 
 #if 0 // For debugging
-			std::cout << "---\n";
+			std::cerr << "---\n";
+			std::cerr.precision(20);
 			BOOST_FOREACH(const IndexedFace &poly, polyhole.faces) {
 				BOOST_FOREACH(int i, poly) {
-					std::cout << polyhole.vertices[i][0] << "," << polyhole.vertices[i][1] << "," << polyhole.vertices[i][2] << "\n";
+					std::cerr << polyhole.vertices[i][0] << "," << polyhole.vertices[i][1] << "," << polyhole.vertices[i][2] << "\n";
 				}
-				std::cout << "\n";
+				std::cerr << "\n";
 			}
-			std::cout << "-\n";
+			std::cerr << "-\n";
 #endif
 
 			/* at this stage, we have a sequence of polygons. the first
