@@ -43,39 +43,20 @@
          </property>
          <layout class="QGridLayout" name="gridLayout_2">
           <property name="leftMargin">
-           <number>9</number>
+           <number>6</number>
+          </property>
+          <property name="topMargin">
+           <number>6</number>
           </property>
           <property name="rightMargin">
-           <number>2</number>
+           <number>6</number>
           </property>
           <property name="bottomMargin">
-           <number>2</number>
+           <number>4</number>
           </property>
-          <item row="0" column="0">
-           <widget class="QLabel" name="labelCompileResultIcon">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>26</width>
-              <height>26</height>
-             </size>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="pixmap">
-             <pixmap resource="../openscad.qrc">:/icons/information-icons-error.png</pixmap>
-            </property>
-            <property name="scaledContents">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
+          <property name="horizontalSpacing">
+           <number>4</number>
+          </property>
           <item row="0" column="1">
            <widget class="QLabel" name="labelCompileResultMessage">
             <property name="sizePolicy">
@@ -86,7 +67,6 @@
             </property>
             <property name="font">
              <font>
-              <pointsize>14</pointsize>
               <weight>75</weight>
               <bold>true</bold>
              </font>
@@ -94,10 +74,16 @@
             <property name="text">
              <string>Message</string>
             </property>
+            <property name="wordWrap">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
           <item row="0" column="2">
-           <widget class="QPushButton" name="pushButtonCompileResultClose">
+           <widget class="QToolButton" name="toolButtonCompileResultClose">
+            <property name="styleSheet">
+             <string notr="true"/>
+            </property>
             <property name="text">
              <string/>
             </property>
@@ -105,8 +91,40 @@
              <iconset resource="../openscad.qrc">
               <normaloff>:/icons/close.png</normaloff>:/icons/close.png</iconset>
             </property>
-            <property name="flat">
+            <property name="iconSize">
+             <size>
+              <width>22</width>
+              <height>22</height>
+             </size>
+            </property>
+            <property name="toolButtonStyle">
+             <enum>Qt::ToolButtonIconOnly</enum>
+            </property>
+            <property name="autoRaise">
              <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QToolButton" name="toolButtonCompileResultIcon">
+            <property name="styleSheet">
+             <string notr="true">QToolButton { border: none; }</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="../openscad.qrc">
+              <normaloff>:/icons/information-icons-error.png</normaloff>:/icons/information-icons-error.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>22</width>
+              <height>22</height>
+             </size>
+            </property>
+            <property name="autoRaise">
+             <bool>false</bool>
             </property>
            </widget>
           </item>
@@ -195,6 +213,7 @@
          <addaction name="viewActionViewAll"/>
          <addaction name="viewActionZoomIn"/>
          <addaction name="viewActionZoomOut"/>
+         <addaction name="viewActionResetView"/>
          <addaction name="separator"/>
          <addaction name="viewActionRight"/>
          <addaction name="viewActionTop"/>
@@ -205,7 +224,9 @@
          <addaction name="separator"/>
          <addaction name="viewActionPerspective"/>
          <addaction name="viewActionOrthogonal"/>
+         <addaction name="separator"/>
          <addaction name="viewActionShowAxes"/>
+         <addaction name="viewActionShowScaleProportional"/>
          <addaction name="viewActionShowEdges"/>
         </widget>
        </item>
@@ -296,8 +317,8 @@
     <addaction name="editActionFindPrevious"/>
     <addaction name="editActionUseSelectionForFind"/>
     <addaction name="separator"/>
-    <addaction name="editActionZoomIn"/>
-    <addaction name="editActionZoomOut"/>
+    <addaction name="editActionZoomTextIn"/>
+    <addaction name="editActionZoomTextOut"/>
     <addaction name="editActionPreferences"/>
    </widget>
    <widget class="QMenu" name="menu_Design">
@@ -388,6 +409,11 @@
        <addaction name="fileActionNew"/>
        <addaction name="fileActionOpen"/>
        <addaction name="fileActionSave"/>
+       <addaction name="separator"/>
+       <addaction name="editActionUndo"/>
+       <addaction name="editActionRedo"/>
+       <addaction name="editActionUnindent"/>
+       <addaction name="editActionIndent"/>
        <addaction name="separator"/>
        <addaction name="designActionPreview"/>
        <addaction name="designActionRender"/>
@@ -586,6 +612,10 @@
    </property>
   </action>
   <action name="editActionUndo">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/Command-Undo-32.png</normaloff>:/images/Command-Undo-32.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Undo</string>
    </property>
@@ -597,6 +627,10 @@
    </property>
   </action>
   <action name="editActionRedo">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/Command-Redo-32.png</normaloff>:/images/Command-Redo-32.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Redo</string>
    </property>
@@ -641,19 +675,15 @@
    </property>
   </action>
   <action name="editActionIndent">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/Increase-Indent-32.png</normaloff>:/images/Increase-Indent-32.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Indent</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+I</string>
-   </property>
-  </action>
-  <action name="editActionUnindent">
-   <property name="text">
-    <string>U&amp;nindent</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Shift+I</string>
    </property>
   </action>
   <action name="editActionComment">
@@ -685,17 +715,17 @@
     <string>Paste viewport rotation</string>
    </property>
   </action>
-  <action name="editActionZoomIn">
+  <action name="editActionZoomTextIn">
    <property name="text">
-    <string>Zoom In</string>
+    <string>Increase Font Size</string>
    </property>
    <property name="shortcut">
     <string>Ctrl++</string>
    </property>
   </action>
-  <action name="editActionZoomOut">
+  <action name="editActionZoomTextOut">
    <property name="text">
-    <string>Zoom Out</string>
+    <string>Decrease Font Size</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+-</string>
@@ -1122,6 +1152,10 @@
    </property>
   </action>
   <action name="viewActionResetView">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/Command-Reset-32.png</normaloff>:/images/Command-Reset-32.png</iconset>
+   </property>
    <property name="text">
     <string>Reset View</string>
    </property>
@@ -1185,6 +1219,18 @@
    </property>
    <property name="text">
     <string>Hide toolbars</string>
+   </property>
+  </action>
+  <action name="editActionUnindent">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/Decrease-Indent-32.png</normaloff>:/images/Decrease-Indent-32.png</iconset>
+   </property>
+   <property name="text">
+    <string>U&amp;nindent</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+I</string>
    </property>
   </action>
   <action name="helpActionCheatSheet">

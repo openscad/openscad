@@ -331,7 +331,6 @@ void ScintillaEditor::noColor()
 	qsci->setIndicatorForegroundColor(QColor(255, 0, 0, 128), indicatorNumber);
 	qsci->setIndicatorOutlineColor(QColor(0, 0, 0, 255), indicatorNumber); // only alpha part is used
 	qsci->setCaretLineBackgroundColor(Qt::white);
-	qsci->setWhitespaceBackgroundColor(Qt::white);
 	qsci->setWhitespaceForegroundColor(Qt::black);
 	qsci->setMarginsBackgroundColor(Qt::white);
 	qsci->setMarginsForegroundColor(Qt::black);
