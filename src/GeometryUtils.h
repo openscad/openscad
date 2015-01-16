@@ -20,6 +20,8 @@ struct IndexedTriangleMesh {
 };
 
 namespace GeometryUtils {
+	bool tessellatePolygon(const Polygon &polygon, Polygons &triangles,
+												 const Vector3f *normal = NULL);
 	bool tessellatePolygonWithHoles(const IndexedPolygons &polygons, std::vector<IndexedTriangle> &triangles,
 																	const Vector3f *normal = NULL);
 }

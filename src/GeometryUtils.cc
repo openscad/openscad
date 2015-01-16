@@ -1,6 +1,8 @@
 #include "GeometryUtils.h"
 #include "tesselator.h"
 #include "printutils.h"
+#include "Reindexer.h"
+#include "grid.h"
 #include <boost/foreach.hpp>
 
 static void *stdAlloc(void* userData, unsigned int size) {
@@ -170,4 +172,36 @@ bool GeometryUtils::tessellatePolygonWithHoles(const IndexedPolygons &polygons,
   tessDeleteTess(tess);
 
   return false;
+}
+
+/*!
+	Tessellates a single contour. Non-indexed version.
+*/
+bool GeometryUtils::tessellatePolygon(const Polygon &polygon, Polygons &triangles,
+																			const Vector3f *normal)
+{
+	bool err = false;
+	Reindexer<Vector3f> uniqueVertices;
+	IndexedPolygons indexedpolygons;
+	indexedpolygons.faces.push_back(IndexedFace());
+	IndexedFace &currface = indexedpolygons.faces.back();
+	BOOST_FOREACH (const Vector3d &v, polygon) {
+		int idx = uniqueVertices.lookup(v.cast<float>());
+		if (currface.empty() || idx != currface.back()) currface.push_back(idx);
+	}
+	if (currface.front() == currface.back()) currface.pop_back();
+	if (currface.size() >= 3) { // Cull empty triangles
+		uniqueVertices.copy(std::back_inserter(indexedpolygons.vertices));
+		std::vector<IndexedTriangle> indexedtriangles;
+		err = tessellatePolygonWithHoles(indexedpolygons, indexedtriangles, normal);
+		Vector3f *verts = &indexedpolygons.vertices.front();
+		BOOST_FOREACH(const IndexedTriangle &t, indexedtriangles) {
+			triangles.push_back(Polygon());
+			Polygon &p = triangles.back();
+			p.push_back(verts[t[0]].cast<double>());
+			p.push_back(verts[t[1]].cast<double>());
+			p.push_back(verts[t[2]].cast<double>());
+		}
+	}
+	return err;
 }

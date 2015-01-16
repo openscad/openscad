@@ -2,6 +2,7 @@
 #include "polyset.h"
 #include "Polygon2d.h"
 #include "printutils.h"
+#include "GeometryUtils.h"
 #ifdef ENABLE_CGAL
 #include "cgalutils.h"
 #endif
@@ -47,41 +48,30 @@ namespace PolysetUtils {
 	 The tessellation will be robust wrt. degenerate and self-intersecting
 */
 	void tessellate_faces(const PolySet &inps, PolySet &outps) {
-#ifdef ENABLE_CGAL
 		int degeneratePolygons = 0;
 		for (size_t i = 0; i < inps.polygons.size(); i++) {
-			const Polygon pgon = inps.polygons[i];
+			const Polygon &pgon = inps.polygons[i];
 			if (pgon.size() < 3) {
 				degeneratePolygons++;
-				continue;
-			}
-			std::vector<Polygon> triangles;
-			if (pgon.size() == 3) {
-				triangles.push_back(pgon);
 			}
 			else {
-				// Build a data structure that CGAL accepts
-				PolygonK cgalpoints;
-				BOOST_FOREACH(const Vector3d &v, pgon) {
-					cgalpoints.push_back(Vertex3K(v[0], v[1], v[2]));
+				Polygons triangles;
+				bool err = GeometryUtils::tessellatePolygon(pgon, triangles);
+				if (triangles.empty()) {
+					degeneratePolygons++;
 				}
-
-				bool err = CGALUtils::tessellatePolygon(cgalpoints, triangles);
-			}
-
-			// ..and pass to the output polyhedron
-			for (size_t j=0;j<triangles.size();j++) {
-				Polygon t = triangles[j];
-				outps.append_poly();
-				outps.append_vertex(t[0].x(),t[0].y(),t[0].z());
-				outps.append_vertex(t[1].x(),t[1].y(),t[1].z());
-				outps.append_vertex(t[2].x(),t[2].y(),t[2].z());
+				else {
+					// ..and pass to the output polyhedron
+					BOOST_FOREACH(const Polygon &t, triangles) {
+						outps.append_poly();
+						outps.append_vertex(t[0]);
+						outps.append_vertex(t[1]);
+						outps.append_vertex(t[2]);
+					}
+				}
 			}
 		}
 		if (degeneratePolygons > 0) PRINT("WARNING: PolySet has degenerate polygons");
-#else
-		assert(false);
-#endif
 	}
 
 	bool is_approximately_convex(const PolySet &ps) {
