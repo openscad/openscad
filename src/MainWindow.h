@@ -194,7 +194,6 @@ private slots:
 	void actionExportCSG();
 	void actionExportImage();
 	void actionFlushCaches();
-
 public:
 	static QSet<MainWindow*> *getWindows();
 	void viewModeActionsUncheck();

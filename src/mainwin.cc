@@ -524,8 +524,14 @@ MainWindow::MainWindow(const QString &filename)
 		viewActionPerspective->setIcon(QIcon("://images/perspective1white.png"));
 		viewActionOrthogonal->setIcon(QIcon("://images/orthogonalwhite.png"));
 		viewActionAnimate->setIcon(QIcon("://images/animate.png"));
-		designActionExportSTL->setIcon(QIcon(":/images/export-white.png"));
+        designActionExportSTL->setIcon(QIcon(":/images/STL_wht.png"));
 		viewActionViewAll->setIcon(QIcon(":/images/zoom-all-white.png"));
+        designActionExportAMF->setIcon(QIcon(":/images/AMF_wht.png"));
+        designActionExportOFF->setIcon(QIcon(":/images/OFF_wht.png"));
+        designActionExportDXF->setIcon(QIcon(":/images/DXF_wht.png"));
+        designActionExportSVG->setIcon(QIcon(":/images/SVG_wht.png"));
+        designActionExportCSG->setIcon(QIcon(":/images/CSG_wht.png"));
+        designActionExportImage->setIcon(QIcon(":/images/PNG_wht.png"));
 	}
 	
 	// make sure it looks nice..
