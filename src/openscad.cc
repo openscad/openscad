@@ -666,6 +666,12 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	installAppleEventHandlers();
 #endif
 
+#ifdef Q_OS_WIN
+    QSettings reg_setting(QLatin1String("HKEY_CURRENT_USER"), QSettings::NativeFormat);
+    QString appPath = QDir::toNativeSeparators(app.applicationFilePath() + QLatin1String(",1"));
+    reg_setting.setValue(QLatin1String("Software/Classes/OpenSCAD_File/DefaultIcon/Default"),QVariant(appPath));
+#endif
+
 #ifdef OPENSCAD_UPDATER
 	AutoUpdater *updater = new SparkleAutoUpdater;
 	AutoUpdater::setUpdater(updater);
@@ -903,4 +909,3 @@ int main(int argc, char **argv)
 
 	return rc;
 }
-
