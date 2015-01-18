@@ -148,6 +148,11 @@ namespace CGALUtils {
 			}
 		}
 
+		return applyHull(points, result);
+	}
+
+	bool applyHull(const std::list<K::Point_3> &points, PolySet &result)
+	{
 		if (points.size() <= 3) return false;
 
 		// Apply hull

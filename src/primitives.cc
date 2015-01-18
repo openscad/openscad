@@ -35,6 +35,7 @@
 #include "context.h"
 #include "calc.h"
 #include "mathc99.h"
+#include "cgalutils.h"
 #include <sstream>
 #include <assert.h>
 #include <boost/foreach.hpp>
@@ -51,6 +52,7 @@ enum primitive_type_e {
 	SPHERE,
 	CYLINDER,
 	POLYHEDRON,
+	CONVEX,
 	SQUARE,
 	CIRCLE,
 	POLYGON
@@ -87,6 +89,9 @@ public:
 			break;
 		case POLYHEDRON:
 			return "polyhedron";
+			break;
+		case CONVEX:
+			return "convex";
 			break;
 		case SQUARE:
 			return "square";
@@ -162,6 +167,9 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		break;
 	case POLYHEDRON:
 		args += Assignment("points"), Assignment("faces"), Assignment("convexity");
+		break;
+	case CONVEX:
+		args += Assignment("points");
 		break;
 	case SQUARE:
 		args += Assignment("size"), Assignment("center");
@@ -248,6 +256,10 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 				printDeprecation("polyhedron(triangles=[]) will be removed in future releases. Use polyhedron(faces=[]) instead.");
 			}
 		}
+		break;
+	}
+	case CONVEX: {
+		node->points = c.lookup_variable("points");
 		break;
 	}
 	case SQUARE: {
@@ -524,6 +536,23 @@ Geometry *PrimitiveNode::createGeometry() const
 		}
 	}
 		break;
+	case CONVEX: {
+		PolySet *p = new PolySet(3);
+		g = p;
+		std::list<K::Point_3> points;
+
+		for (size_t j=0; j<this->points->toVector().size(); j++) {
+			double px, py, pz;
+			if (!this->points->toVector()[j].getVec3(px, py, pz) ||
+				isinf(px) || isinf(py) || isinf(pz)) {
+					PRINTB("ERROR: Unable to convert point at index %d to a vec3 of numbers", j);
+						return p;
+			}
+			points.push_back(K::Point_3(px, py, pz));
+		}
+		CGALUtils::applyHull(points, *p);
+		break;
+	}
 	case SQUARE: {
 		Polygon2d *p = new Polygon2d();
 		g = p;
@@ -632,6 +661,9 @@ std::string PrimitiveNode::toString() const
 					 << ", faces = " << *this->faces
 					 << ", convexity = " << this->convexity << ")";
 			break;
+	case CONVEX:
+		stream << "(points = " << *this->points << ")";
+			break;
 	case SQUARE:
 		stream << "(size = [" << this->x << ", " << this->y << "], "
 					 << "center = " << (center ? "true" : "false") << ")";
@@ -656,6 +688,7 @@ void register_builtin_primitives()
 	Builtins::init("sphere", new PrimitiveModule(SPHERE));
 	Builtins::init("cylinder", new PrimitiveModule(CYLINDER));
 	Builtins::init("polyhedron", new PrimitiveModule(POLYHEDRON));
+	Builtins::init("convex", new PrimitiveModule(CONVEX));
 	Builtins::init("square", new PrimitiveModule(SQUARE));
 	Builtins::init("circle", new PrimitiveModule(CIRCLE));
 	Builtins::init("polygon", new PrimitiveModule(POLYGON));

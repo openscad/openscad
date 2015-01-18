@@ -13,6 +13,7 @@ typedef std::vector<PolygonK> PolyholeK;
 
 namespace CGALUtils {
 	bool applyHull(const Geometry::ChildList &children, PolySet &P);
+	bool applyHull(const std::list<K::Point_3>& points, PolySet &P);
 	CGAL_Nef_polyhedron *applyOperator(const Geometry::ChildList &children, OpenSCADOperator op);
 	//FIXME: Old, can be removed:
 	//void applyBinaryOperator(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedron &src, OpenSCADOperator op);

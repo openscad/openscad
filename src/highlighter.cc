@@ -222,7 +222,7 @@ Highlighter::Highlighter(QTextDocument *parent)
 	tokentypes["keyword"] << "module" << "function" << "for" << "intersection_for" << "if" << "assign" << "echo"<< "search" << "str" << "let";
 	tokentypes["transform"] << "scale" << "translate" << "rotate" << "multmatrix" << "color" << "projection" << "hull" << "resize" << "mirror" << "minkowski";
 	tokentypes["csgop"]	<< "union" << "intersection" << "difference" << "render";
-	tokentypes["prim3d"] << "cube" << "cylinder" << "sphere" << "polyhedron";
+	tokentypes["prim3d"] << "cube" << "cylinder" << "sphere" << "polyhedron" << "convex";
 	tokentypes["prim2d"] << "square" << "polygon" << "circle";
 	tokentypes["import"] << "include" << "use" << "import_stl" << "import" << "import_dxf" << "dxf_dim" << "dxf_cross" << "surface";
 	tokentypes["special"] << "$children" << "child" << "children" << "$fn" << "$fa" << "$fs" << "$t" << "$vpt" << "$vpr" << "$vpd";
