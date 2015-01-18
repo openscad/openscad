@@ -497,7 +497,13 @@ MainWindow::MainWindow(const QString &filename)
 	initActionIcon(viewActionOrthogonal, ":/images/orthogonal.png", ":/images/orthogonalwhite.png");
 	initActionIcon(designActionPreview, ":/images/Preview-32.png", ":/images/Preview-32-white.png");
 	initActionIcon(viewActionAnimate, ":/images/animate.png", ":/images/animate.png");
-	initActionIcon(designActionExportSTL, ":/images/export.png", ":/images/export-white.png");
+	initActionIcon(designActionExportSTL, ":/images/STL.png", ":/images/STL-white.png");
+	initActionIcon(designActionExportAMF, ":/images/AMF.png", ":/images/AMF-white.png");
+	initActionIcon(designActionExportOFF, ":/images/OFF.png", ":/images/OFF-white.png");
+	initActionIcon(designActionExportDXF, ":/images/DXF.png", ":/images/DXF-white.png");
+	initActionIcon(designActionExportSVG, ":/images/SVG.png", ":/images/SVG-white.png");
+	initActionIcon(designActionExportCSG, ":/images/CSG.png", ":/images/CSG-white.png");
+	initActionIcon(designActionExportImage, ":/images/PNG.png", ":/images/PNG-white.png");
 	initActionIcon(viewActionViewAll, ":/images/zoom-all.png", ":/images/zoom-all-white.png");
 	initActionIcon(editActionUndo, ":/images/Command-Undo-32.png", ":/images/Command-Undo-32-white.png");
 	initActionIcon(editActionRedo, ":/images/Command-Redo-32.png", ":/images/Command-Redo-32-white.png");

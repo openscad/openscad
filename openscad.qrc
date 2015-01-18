@@ -80,5 +80,19 @@
     <file>icons/background.png</file>
     <file>images/scalemarkers.png</file>
     <file>images/scalemarkers-white.png</file>
+    <file>images/AMF.png</file>
+    <file>images/AMF-white.png</file>
+    <file>images/CSG.png</file>
+    <file>images/CSG-white.png</file>
+    <file>images/DXF.png</file>
+    <file>images/DXF-white.png</file>
+    <file>images/OFF.png</file>
+    <file>images/OFF-white.png</file>
+    <file>images/PNG.png</file>
+    <file>images/PNG-white.png</file>
+    <file>images/STL.png</file>
+    <file>images/STL-white.png</file>
+    <file>images/SVG.png</file>
+    <file>images/SVG-white.png</file>
   </qresource>
 </RCC>
