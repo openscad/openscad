@@ -1,6 +1,7 @@
 #ifdef ENABLE_CGAL
 
 #include "cgalutils.h"
+#include "cgalutils2.h"
 #include "polyset.h"
 #include "printutils.h"
 #include "Polygon2d.h"
@@ -149,6 +150,16 @@ namespace CGALUtils {
 		}
 
 		return applyHull(points, result);
+	}
+
+	bool applyHull(const std::vector<Vector3d>& points, PolySet &result)
+	{
+	    	std::list<K::Point_3> p3s;
+		std::vector<Vector3d>::const_iterator itr;
+		for (itr = points.begin() ; itr != points.end() ; itr++)
+		    p3s.push_back(K::Point_3((*itr)[0], (*itr)[1], (*itr)[2]));
+
+		return applyHull(p3s, result);
 	}
 
 	bool applyHull(const std::list<K::Point_3> &points, PolySet &result)
