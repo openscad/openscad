@@ -366,14 +366,17 @@ void GeometryEvaluator::addToParent(const State &state,
 */
 Response GeometryEvaluator::visit(State &state, const AbstractNode &node)
 {
-	if (state.isPrefix() && isSmartCached(node)) return PruneTraversal;
+	if (state.isPrefix()) {
+		if (isSmartCached(node)) return PruneTraversal;
+		state.setPreferNef(true); // Improve quality of CSG by avoiding conversion loss
+	}
 	if (state.isPostfix()) {
 		shared_ptr<const class Geometry> geom;
 		if (!isSmartCached(node)) {
 			geom = applyToChildren(node, OPENSCAD_UNION).constptr();
 		}
 		else {
-			geom = smartCacheGet(node);
+			geom = smartCacheGet(node, state.preferNef());
 		}
 		addToParent(state, node, geom);
 	}
@@ -400,7 +403,7 @@ Response GeometryEvaluator::visit(State &state, const OffsetNode &node)
 			}
 		}
 		else {
-			geom = smartCacheGet(node);
+			geom = smartCacheGet(node, false);
 		}
 		addToParent(state, node, geom);
 	}
@@ -412,7 +415,10 @@ Response GeometryEvaluator::visit(State &state, const OffsetNode &node)
 */
 Response GeometryEvaluator::visit(State &state, const RenderNode &node)
 {
-	if (state.isPrefix() && isSmartCached(node)) return PruneTraversal;
+	if (state.isPrefix()) {
+		if (isSmartCached(node)) return PruneTraversal;
+		state.setPreferNef(true); // Improve quality of CSG by avoiding conversion loss
+	}
 	if (state.isPostfix()) {
 		shared_ptr<const class Geometry> geom;
 		if (!isSmartCached(node)) {
@@ -437,7 +443,7 @@ Response GeometryEvaluator::visit(State &state, const RenderNode &node)
 			}
 		}
 		else {
-			geom = smartCacheGet(node);
+			geom = smartCacheGet(node, state.preferNef());
 		}
 		addToParent(state, node, geom);
 	}
@@ -466,7 +472,7 @@ Response GeometryEvaluator::visit(State &state, const LeafNode &node)
 			}
             geom.reset(geometry);
 		}
-		else geom = smartCacheGet(node);
+		else geom = smartCacheGet(node, state.preferNef());
 		addToParent(state, node, geom);
 	}
 	return PruneTraversal;
@@ -501,14 +507,17 @@ Response GeometryEvaluator::visit(State &state, const TextNode &node)
  */			
 Response GeometryEvaluator::visit(State &state, const CsgNode &node)
 {
-	if (state.isPrefix() && isSmartCached(node)) return PruneTraversal;
+	if (state.isPrefix()) {
+		if (isSmartCached(node)) return PruneTraversal;
+		state.setPreferNef(true); // Improve quality of CSG by avoiding conversion loss
+	}
 	if (state.isPostfix()) {
 		shared_ptr<const Geometry> geom;
 		if (!isSmartCached(node)) {
 			geom = applyToChildren(node, node.type).constptr();
 		}
 		else {
-			geom = smartCacheGet(node);
+			geom = smartCacheGet(node, state.preferNef());
 		}
 		addToParent(state, node, geom);
 	}
@@ -583,7 +592,7 @@ Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 			}
 		}
 		else {
-			geom = smartCacheGet(node);
+			geom = smartCacheGet(node, state.preferNef());
 		}
 		addToParent(state, node, geom);
 	}
@@ -736,7 +745,7 @@ Response GeometryEvaluator::visit(State &state, const LinearExtrudeNode &node)
 			}
 		}
 		else {
-			geom = smartCacheGet(node);
+			geom = smartCacheGet(node, false);
 		}
 		addToParent(state, node, geom);
 	}
@@ -844,7 +853,7 @@ Response GeometryEvaluator::visit(State &state, const RotateExtrudeNode &node)
 			}
 		}
 		else {
-			geom = smartCacheGet(node);
+			geom = smartCacheGet(node, false);
 		}
 		addToParent(state, node, geom);
 	}
@@ -962,7 +971,7 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 			}
 		}
 		else {
-			geom = smartCacheGet(node);
+			geom = smartCacheGet(node, false);
 		}
 		addToParent(state, node, geom);
 	}
@@ -1038,7 +1047,7 @@ Response GeometryEvaluator::visit(State &state, const CgaladvNode &node)
 			}
 		}
 		else {
-			geom = smartCacheGet(node);
+			geom = smartCacheGet(node, state.preferNef());
 		}
 		addToParent(state, node, geom);
 	}
@@ -1047,14 +1056,17 @@ Response GeometryEvaluator::visit(State &state, const CgaladvNode &node)
 
 Response GeometryEvaluator::visit(State &state, const AbstractIntersectionNode &node)
 {
-	if (state.isPrefix() && isSmartCached(node)) return PruneTraversal;
+	if (state.isPrefix()) {
+		if (isSmartCached(node)) return PruneTraversal;
+		state.setPreferNef(true); // Improve quality of CSG by avoiding conversion loss
+	}
 	if (state.isPostfix()) {
 		shared_ptr<const class Geometry> geom;
 		if (!isSmartCached(node)) {
 			geom = applyToChildren(node, OPENSCAD_INTERSECTION).constptr();
 		}
 		else {
-			geom = smartCacheGet(node);
+			geom = smartCacheGet(node, state.preferNef());
 		}
 		addToParent(state, node, geom);
 	}
