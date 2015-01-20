@@ -1,5 +1,19 @@
 <RCC>
   <qresource prefix="/">
+    <file>images/zoom-text-in-white.png</file>
+    <file>images/zoom-text-in.png</file>
+    <file>images/zoom-text-out-white.png</file>
+    <file>images/zoom-text-out.png</file>
+    <file>images/Command-Redo-32-white.png</file>
+    <file>images/Command-Reset-32-white.png</file>
+    <file>images/Command-Undo-32-white.png</file>
+    <file>images/Decrease-Indent-32-white.png</file>
+    <file>images/Increase-Indent-32-white.png</file>
+    <file>images/Command-Redo-32.png</file>
+    <file>images/Command-Reset-32.png</file>
+    <file>images/Command-Undo-32.png</file>
+    <file>images/Decrease-Indent-32.png</file>
+    <file>images/Increase-Indent-32.png</file>
     <file>icons/close.png</file>
     <file>icons/information-icons-error.png</file>
     <file>icons/information-icons-info.png</file>
@@ -59,11 +73,26 @@
     <file>images/perspective1.png</file>
     <file>images/Preview-32.png</file>
     <file>images/animate.png</file>
-    <file>images/Preview-32 (1).png</file>
     <file>images/orthogonalwhite.png</file>
     <file>images/perspective1white.png</file>
+    <file>images/Preview-32-white.png</file>
     <file>images/crosswhite.png</file>
     <file>icons/background.png</file>
     <file>images/scalemarkers.png</file>
+    <file>images/scalemarkers-white.png</file>
+    <file>images/AMF.png</file>
+    <file>images/AMF-white.png</file>
+    <file>images/CSG.png</file>
+    <file>images/CSG-white.png</file>
+    <file>images/DXF.png</file>
+    <file>images/DXF-white.png</file>
+    <file>images/OFF.png</file>
+    <file>images/OFF-white.png</file>
+    <file>images/PNG.png</file>
+    <file>images/PNG-white.png</file>
+    <file>images/STL.png</file>
+    <file>images/STL-white.png</file>
+    <file>images/SVG.png</file>
+    <file>images/SVG-white.png</file>
   </qresource>
 </RCC>

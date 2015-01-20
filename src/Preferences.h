@@ -46,6 +46,7 @@ public slots:
 	void on_launcherBox_toggled(bool);
 	void on_editorType_editTextChanged(const QString &);
 
+	void on_checkBoxShowWarningsIn3dView_toggled(bool);
   //
 	// editor settings
   //

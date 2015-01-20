@@ -99,6 +99,7 @@ private slots:
 	void showProgress();
 	void openCSGSettingsChanged();
 private:
+        void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
 	void openFile(const QString &filename);
         void handleFileDrop(const QString &filename);
 	void refreshDocument();
@@ -205,7 +206,7 @@ public slots:
 	void actionReloadRenderPreview();
         void on_editorDock_visibilityChanged(bool);
         void on_consoleDock_visibilityChanged(bool);
-        void on_pushButtonCompileResultClose_clicked();
+        void on_toolButtonCompileResultClose_clicked();
         void editorTopLevelChanged(bool);
         void consoleTopLevelChanged(bool);
 #ifdef ENABLE_OPENCSG
@@ -240,6 +241,7 @@ public slots:
 	void helpAbout();
 	void helpHomepage();
 	void helpManual();
+	void helpCheatSheet();
 	void helpLibrary();
 	void helpFontInfo();
 	void quit();

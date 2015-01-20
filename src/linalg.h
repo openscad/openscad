@@ -9,6 +9,10 @@ EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(Eigen::Vector2d)
 using Eigen::Vector2d;
 EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(Eigen::Vector3d)
 using Eigen::Vector3d;
+EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(Eigen::Vector3f)
+using Eigen::Vector3f;
+EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(Eigen::Vector3i)
+using Eigen::Vector3i;
 
 typedef Eigen::AlignedBox<double, 3> BoundingBox;
 using Eigen::Matrix3f;
@@ -16,9 +20,6 @@ using Eigen::Matrix3d;
 using Eigen::Matrix4d;
 #define Transform3d Eigen::Affine3d
 #define Transform2d Eigen::Affine2d
-
-typedef std::vector<Vector3d> Polygon;
-typedef std::vector<Polygon> Polygons;
 
 bool matrix_contains_infinity( const Transform3d &m );
 bool matrix_contains_nan( const Transform3d &m );
