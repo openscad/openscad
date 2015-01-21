@@ -123,29 +123,41 @@ To pull the MCAD library (http://reprap.org/wiki/MCAD), do the following:
 ### Building for Mac OS X
 
 Prerequisites:
-* XCode, including XCode command-line tools (install from XCode Preferences).
 
-Prerequisites that can be installed through MacPorts/homebrew:
-* [CMake](http://cmake.org/)
-* [automake](http://www.gnu.org/software/automake/)
-* [pkg-config](http://www.freedesktop.org/wiki/Software/pkg-config/)
-* [libtool](https://www.gnu.org/software/libtool/)
+* XCode, including XCode command-line tools.
 
-Then after you've cloned this git repository, run the script that sets up the
-environment variables.
+Install Dependencies:
 
-    source setenv_mac-qt5.sh
+Run the script that sets up the environment variables:
+    ```source setenv_mac-qt5.sh```
 
-Then run the script to compile all the prerequisite libraries above:
+Then run the script to compile all the dependencies:
+    ```./scripts/macosx-build-dependencies.sh```
 
-    ./scripts/macosx-build-dependencies.sh
 
-You can also install the prerequisites using
-[MacPorts](http://www.macports.org).  Unfortunately,
-[brew](http://mxcl.github.com/homebrew/) doesn't yet support CGAL and
-OpenCSG.
+After building dependencies, follow the instructions in the *Compilation* section.
 
-After that, follow the Compilation instructions below.
+For the adventurous, it might be possible to build OpenSCAD using _MacPorts_ or _Homebrew_. The main challenge is that both these systems have partially broken libraries, but that tends to change from time to time.
+
+1. **MacPorts** (assumes [MacPorts](http://macports.org) is already installed)
+
+    NB! MacPorts currently doesn't support Qt5 very well, so using Qt4
+    is the only working option at the moment. However, MacPorts' Qt4
+    has a broken ```moc``` command, causing OpenSCAD compilation to
+    break. This may be fixed in MacPorts by the time you read this.
+
+    ```sudo port install opencsg qscintilla boost cgal pkgconfig eigen3 harfbuzz fontconfig```
+
+1. **Homebrew** (assumes [Homebrew](http://brew.sh)) is already installed)
+
+    NB! Homebrew's ```qscintilla2``` component doesn't support Qt5, so using Qt4 is currently necessary.
+    However, Homebrew's Qt4 has a broken ```moc``` command, causing OpenSCAD compilation to
+    break. This may be fixed in Homebrew by the time you read this.
+    NB! Homebrew's ```harfbuzz``` package requires X11, so you may have to install an X11 server.
+    NB! Homebrew doesnt have an OpenCSG package
+
+    ```brew install cgal qscintilla2 eigen harfbuzz```
+
 
 ### Building for Linux/BSD
 
@@ -220,9 +232,9 @@ For a 64-bit Windows cross-build, replace 32 with 64 in the above instructions.
 
 ### Compilation
 
-First, run 'qmake openscad.pro' from Qt4 to generate a Makefile. On some systems
-you need to run 'qmake4', 'qmake-qt4' or something alike to run the qt4 version
-of the tool.
+First, run 'qmake openscad.pro' from Qt4 to generate a Makefile.
+
+On some systems, depending on which version(s) of Qt you have installed, you may need to specify which version you want to use, e.g. by running 'qmake4', 'qmake-qt4' or something alike.
 
 Then run make. Finally you might run 'make install' as root or simply copy the
 'openscad' binary (OpenSCAD.app on Mac OS X) to the bin directory of your choice.
