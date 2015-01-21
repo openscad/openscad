@@ -35,6 +35,7 @@ protected:
 class Settings
 {
 public:
+    static SettingsEntry showWarningsIn3dView;
     static SettingsEntry indentationWidth;
     static SettingsEntry tabWidth;
     static SettingsEntry lineWrap;

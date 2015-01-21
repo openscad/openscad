@@ -555,7 +555,7 @@ else()
 endif()
 
 # Internal includes
-include_directories(../src)
+include_directories(../src ../src/libtess2/Include)
 
 # Handle OpenSCAD version based on VERSION env. variable.
 # Use current timestamp if not specified (development builds)
@@ -670,7 +670,8 @@ set(NOCGAL_SOURCES
   ../src/export.cc
   ../src/LibraryInfo.cc
   ../src/polyset.cc
-  ../src/polyset-utils.cc)
+  ../src/polyset-utils.cc
+  ../src/GeometryUtils.cc)
 
 
 set(CGAL_SOURCES
@@ -680,7 +681,6 @@ set(CGAL_SOURCES
   ../src/cgalutils.cc 
   ../src/cgalutils-tess.cc 
   ../src/cgalutils-polyhedron.cc 
-  ../src/cgalutils-tess-old.cc 
   ../src/CGALCache.cc
   ../src/CGAL_Nef_polyhedron_DxfData.cc
   ../src/Polygon2d-CGAL.cc
@@ -692,8 +692,15 @@ set(COMMON_SOURCES
   ../src/traverser.cc 
   ../src/GeometryCache.cc 
   ../src/clipper-utils.cc 
+  ../src/Tree.cc
   ../src/polyclipping/clipper.cpp
-  ../src/Tree.cc)
+  ../src/libtess2/Source/bucketalloc.c
+  ../src/libtess2/Source/dict.c
+  ../src/libtess2/Source/geom.c
+  ../src/libtess2/Source/mesh.c
+  ../src/libtess2/Source/priorityq.c
+  ../src/libtess2/Source/sweep.c
+  ../src/libtess2/Source/tess.c)
 
 #
 # Offscreen OpenGL context source code
@@ -1208,7 +1215,9 @@ set_test_config(Heavy cgalpngtest_rotate_extrude-tests
 
 # Bugs
 
-list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue584.scad
+list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue13.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue13b.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue584.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue591.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue666.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue791.scad
@@ -1222,7 +1231,8 @@ list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue584.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1105.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1105b.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1105c.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1105d.scad)
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1105d.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1165.scad)
 list(APPEND EXPORT3D_TEST_FILES ${BUGS_FILES})
 list(REMOVE_ITEM EXPORT3D_TEST_FILES
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue899.scad

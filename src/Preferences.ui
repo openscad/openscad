@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>621</width>
-    <height>413</height>
+    <width>675</width>
+    <height>476</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -31,6 +31,9 @@
       </property>
       <widget class="QWidget" name="page3DView">
        <layout class="QVBoxLayout" name="verticalLayout_4">
+        <property name="margin">
+         <number>0</number>
+        </property>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,3">
           <item>
@@ -74,6 +77,16 @@
            </spacer>
           </item>
          </layout>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="checkBoxShowWarningsIn3dView">
+          <property name="text">
+           <string>Show Warnings and Errors in 3D View</string>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
