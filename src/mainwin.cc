@@ -1823,14 +1823,18 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 		if (root_geom && !root_geom->isEmpty()) {
 			if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(root_geom.get())) {
 				if (N->getDimension() == 3) {
+					bool simple = N->p3->is_simple();
 					PRINT("   Top level object is a 3D object:");
-					PRINTB("   Simple:     %6s", (N->p3->is_simple() ? "yes" : "no"));
+					PRINTB("   Simple:     %6s", (simple ? "yes" : "no"));
 					PRINTB("   Vertices:   %6d", N->p3->number_of_vertices());
 					PRINTB("   Halfedges:  %6d", N->p3->number_of_halfedges());
 					PRINTB("   Edges:      %6d", N->p3->number_of_edges());
 					PRINTB("   Halffacets: %6d", N->p3->number_of_halffacets());
 					PRINTB("   Facets:     %6d", N->p3->number_of_facets());
 					PRINTB("   Volumes:    %6d", N->p3->number_of_volumes());
+					if (!simple) {
+						PRINT("WARNING: Object may not be a valid 2-manifold and may need repair!");
+					}
 				}
 			}
 			else if (const PolySet *ps = dynamic_cast<const PolySet *>(root_geom.get())) {
