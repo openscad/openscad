@@ -88,24 +88,23 @@ libraries from aptitude. If you're using Mac, or an older Linux/BSD, there
 are build scripts that download and compile the libraries from source. 
 Follow the instructions for the platform you're compiling on below.
 
-* [Qt4 (4.4 - 5.3)](http://www.qt.nokia.com/)
-* [QScintilla2 (2.7)](http://www.riverbankcomputing.co.uk/software/qscintilla/)
-* [CGAL (3.6 - 4.4)](http://www.cgal.org/)
+* [Qt4 (4.4 - 5.4)](http://www.qt.nokia.com/)
+* [QScintilla2 (2.7 - 2.8)](http://www.riverbankcomputing.co.uk/software/qscintilla/)
+* [CGAL (3.6 - 4.5)](http://www.cgal.org/)
  * [GMP (5.x)](http://www.gmplib.org/)
  * [MPFR (3.x)](http://www.mpfr.org/)
-* [cmake (2.8, required by CGAL and the test framework)](http://www.cmake.org/)
-* [boost (1.35 - 1.55)](http://www.boost.org/)
+* [cmake (2.8 - 3.0, required by CGAL and the test framework)](http://www.cmake.org/)
+* [boost (1.35 - 1.57)](http://www.boost.org/)
 * [OpenCSG (1.3.2 ->)](http://www.opencsg.org/)
 * [GLEW (1.5.4 ->)](http://glew.sourceforge.net/)
 * [Eigen (3.x)](http://eigen.tuxfamily.org/)
 * [glib2 (2.x)](https://developer.gnome.org/glib/)
-* [fontconfig (2.10)](http://fontconfig.org/)
-* [freetype2 (2.4)](http://freetype.org/)
-* [harfbuzz (0.9.19)](http://harfbuzz.org/)
-* [GCC C++ Compiler (4.2 ->)](http://gcc.gnu.org/)
-* [Bison (2.4)](http://www.gnu.org/software/bison/)
-* [Flex (2.5.35)](http://flex.sourceforge.net/)
-* [pkg-config (0.26)](http://www.freedesktop.org/wiki/Software/pkg-config/)
+* [fontconfig (2.10 -> )](http://fontconfig.org/)
+* [freetype2 (2.4 -> )](http://freetype.org/)
+* [harfbuzz (0.9.19 -> )](http://harfbuzz.org/)
+* [Bison (2.4 -> )](http://www.gnu.org/software/bison/)
+* [Flex (2.5.35 -> )](http://flex.sourceforge.net/)
+* [pkg-config (0.26 -> )](http://www.freedesktop.org/wiki/Software/pkg-config/)
 
 ### Getting the source code
 
