@@ -479,7 +479,7 @@ MainWindow::MainWindow(const QString &filename)
 	initActionIcon(fileActionSave, ":/images/Save-32.png", ":/images/Save-128.png");
 	initActionIcon(editActionZoomTextIn, ":/images/zoom-text-in.png", ":/images/zoom-text-in-white.png");
 	initActionIcon(editActionZoomTextOut, ":/images/zoom-text-out.png", ":/images/zoom-text-out-white.png");
-	initActionIcon(designActionRender, ":/images/blackRender.png", ":/images/Arrowhead-Right-32.png");
+	initActionIcon(designActionRender, ":/images/render-32.png", ":/images/render-32-white.png");
 	initActionIcon(viewActionShowAxes, ":/images/blackaxes.png", ":/images/axes.png");
 	initActionIcon(viewActionShowEdges, ":/images/Rotation-32.png", ":/images/grid.png");
 	initActionIcon(viewActionZoomIn, ":/images/zoomin.png", ":/images/Zoom-In-32.png");
@@ -495,7 +495,7 @@ MainWindow::MainWindow(const QString &filename)
 	initActionIcon(viewActionShowCrosshairs, ":/images/cross.png", ":/images/crosswhite.png");
 	initActionIcon(viewActionPerspective, ":/images/perspective1.png", ":/images/perspective1white.png");
 	initActionIcon(viewActionOrthogonal, ":/images/orthogonal.png", ":/images/orthogonalwhite.png");
-	initActionIcon(designActionPreview, ":/images/Preview-32.png", ":/images/Preview-32-white.png");
+	initActionIcon(designActionPreview, ":/images/preview-32.png", ":/images/preview-32-white.png");
 	initActionIcon(viewActionAnimate, ":/images/animate.png", ":/images/animate.png");
 	initActionIcon(designActionExportSTL, ":/images/STL.png", ":/images/STL-white.png");
 	initActionIcon(designActionExportAMF, ":/images/AMF.png", ":/images/AMF-white.png");

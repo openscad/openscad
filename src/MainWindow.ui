@@ -245,7 +245,7 @@
      <x>0</x>
      <y>0</y>
      <width>1397</width>
-     <height>33</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -750,7 +750,7 @@
   <action name="designActionPreview">
    <property name="icon">
     <iconset resource="../openscad.qrc">
-     <normaloff>:/images/Preview-32.png</normaloff>:/images/Preview-32.png</iconset>
+     <normaloff>:/images/preview-32.png</normaloff>:/images/preview-32.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Preview</string>
@@ -762,7 +762,7 @@
   <action name="designActionRender">
    <property name="icon">
     <iconset resource="../openscad.qrc">
-     <normaloff>:/images/blackRender.png</normaloff>:/images/blackRender.png</iconset>
+     <normaloff>:/images/render-32.png</normaloff>:/images/render-32.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Render</string>
