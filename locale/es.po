@@ -1,0 +1,1012 @@
+# French translations for OpenSCAD package.
+# Copyright (C) 2013 THE OpenSCAD'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the OpenSCAD package.
+# don <hugh.m.bright@gmail.com>, 2013.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: OpenSCAD 2013.02.07\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2014-12-22 23:28+0100\n"
+"PO-Revision-Date: 2015-01-21 22:23-0300\n"
+"Last-Translator: Ernesto Bazzano <bazza@riseup.net>\n"
+"Language-Team: Español\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Generator: Poedit 1.5.4\n"
+
+#: objects/ui_AboutDialog.h:51 src/AboutDialog.h:15
+msgid "About OpenSCAD"
+msgstr "acerca de OpenSCAD"
+
+#: objects/ui_FontListDialog.h:102
+msgid "OpenSCAD Font List"
+msgstr "Lista de fuentes OpenSCAD"
+
+#: objects/ui_FontListDialog.h:103 objects/ui_LibraryInfoDialog.h:77
+msgid "&OK"
+msgstr "&Aceptar"
+
+#: objects/ui_FontListDialog.h:104
+msgid "Copy to Clipboard"
+msgstr "Copiar al portapapeles"
+
+#: objects/ui_FontListDialog.h:105
+msgid "Filter:"
+msgstr "Filtro:"
+
+#: objects/ui_FontListDialog.h:106
+msgid ""
+"<html><head/><body><p>This list shows the fonts currently registered with "
+"OpenSCAD.</p><p>Example:</p><pre style=\" margin-top:12px; margin-"
+"bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-"
+"indent:0px;\"><span style=\" font-family:'Courier New,courier';\">  text(t = "
+"&quot;OpenSCAD&quot;, font = &quot;DejaVu Sans&quot;);</span></pre><pre "
+"style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-"
+"right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-"
+"family:'Courier New,courier';\">  text(t = &quot;OpenSCAD&quot;, font = "
+"&quot;Liberation Sans:style=Italic&quot;);</span></pre></body></html>"
+msgstr ""
+"<html><head/><body><p>Cette liste affiche les polices présentement chargées "
+"avec OpenSCAD</p><p>Example:</p><pre style=\" margin-top:12px; margin-"
+"bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-"
+"indent:0px;\"><span style=\" font-family:'Courier New,courier';\">  text(t = "
+"&quot;OpenSCAD&quot;, font = &quot;DejaVu Sans&quot;);</span></pre><pre "
+"style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-"
+"right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-"
+"family:'Courier New,courier';\">  text(t = &quot;OpenSCAD&quot;, font = "
+"&quot;Liberation Sans:style=Italic&quot;);</span></pre></body></html>"
+
+#: objects/ui_launchingscreen.h:276
+msgid "Welcome to OpenSCAD"
+msgstr "Bienvenido a OpenSCAD"
+
+#: objects/ui_launchingscreen.h:277
+msgid "New"
+msgstr "Nuevo"
+
+#: objects/ui_launchingscreen.h:278
+msgid "Open"
+msgstr "Abrir"
+
+#: objects/ui_launchingscreen.h:279
+msgid "Help"
+msgstr "Ayuda"
+
+#: objects/ui_launchingscreen.h:280
+msgid "Recents"
+msgstr "Recientes"
+
+#: objects/ui_launchingscreen.h:281
+msgid "Open Recent"
+msgstr "Abrir recientes"
+
+#: objects/ui_launchingscreen.h:282 objects/ui_launchingscreen.h:284
+#: objects/ui_MainWindow.h:855
+msgid "Examples"
+msgstr "Ejemplos"
+
+#: objects/ui_launchingscreen.h:285
+msgid "Open Example"
+msgstr "Abrir ejemplos"
+
+#: objects/ui_launchingscreen.h:287
+msgid ""
+"<html><head/><body>\n"
+"<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-"
+"weight: bold; padding-bottom: 0; margin-bottom: 0; font-size: 22pt;\"><span "
+"style=\"color: green;\">Open</span>SCAD</p>\n"
+"<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-"
+"weight: normal; font-size: 14pt; padding-top: 0; margin-top: 0; margin-left: "
+"2em;\">The Programmers Solid 3D CAD Modeller</p>\n"
+"</body></html>\n"
+"\n"
+"\n"
+msgstr ""
+"<html><head/><body>\n"
+"<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-"
+"weight: bold; padding-bottom: 0; margin-bottom: 0; font-size: 22pt;\"><span "
+"style=\"color: green;\">Open</span>SCAD</p>\n"
+"<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-"
+"weight: normal; font-size: 14pt; padding-top: 0; margin-top: 0; margin-left: "
+"2em;\">Le modeleur CAD 3D des programmeurs</p>\n"
+"</body></html>\n"
+"\n"
+"\n"
+
+#: objects/ui_launchingscreen.h:294
+msgid "Don't show again"
+msgstr "No mostrar de nuevo"
+
+#: objects/ui_LibraryInfoDialog.h:75
+msgid "Lib & Build Info"
+msgstr "Informacion de las librerias y compilación"
+
+#: objects/ui_LibraryInfoDialog.h:76
+msgid "OpenSCAD Detailed Library and Build Information"
+msgstr "Informations detalles de las librerias y compilación"
+
+#: objects/ui_MainWindow.h:731
+msgid "&New"
+msgstr "&Nuevos"
+
+#: objects/ui_MainWindow.h:732
+msgid "Ctrl+N"
+msgstr "Ctrl+N"
+
+#: objects/ui_MainWindow.h:733
+msgid "&Open..."
+msgstr "&Abrir..."
+
+#: objects/ui_MainWindow.h:734
+msgid "Ctrl+O"
+msgstr "Ctrl+O"
+
+#: objects/ui_MainWindow.h:735
+msgid "&Save"
+msgstr "&Salvar"
+
+#: objects/ui_MainWindow.h:736
+msgid "Ctrl+S"
+msgstr "Ctrl+S"
+
+#: objects/ui_MainWindow.h:737
+msgid "Save &As..."
+msgstr "S&alvar como..."
+
+#: objects/ui_MainWindow.h:738
+msgid "Ctrl+Shift+S"
+msgstr "Ctrl+Shift+S"
+
+#: objects/ui_MainWindow.h:739
+msgid "&Reload"
+msgstr "&Recargar"
+
+#: objects/ui_MainWindow.h:740
+msgid "Ctrl+R"
+msgstr "Ctrl+R"
+
+#: objects/ui_MainWindow.h:741
+msgid "&Quit"
+msgstr "Salir"
+
+#: objects/ui_MainWindow.h:742
+msgid "Ctrl+Q"
+msgstr "Ctrl+Q"
+
+#: objects/ui_MainWindow.h:743
+msgid "&Undo"
+msgstr "An&ular"
+
+#: objects/ui_MainWindow.h:744
+msgid "Ctrl+Z"
+msgstr "Ctrl+Z"
+
+#: objects/ui_MainWindow.h:745
+msgid "&Redo"
+msgstr "&Repetir"
+
+#: objects/ui_MainWindow.h:746
+msgid "Ctrl+Shift+Z"
+msgstr "Ctrl+Shift+Z"
+
+#: objects/ui_MainWindow.h:747
+msgid "Cu&t"
+msgstr "Co&rtar"
+
+#: objects/ui_MainWindow.h:748
+msgid "Ctrl+X"
+msgstr "Ctrl+X"
+
+#: objects/ui_MainWindow.h:749
+msgid "&Copy"
+msgstr "&Copiar"
+
+#: objects/ui_MainWindow.h:750
+msgid "Ctrl+C"
+msgstr "Ctrl+C"
+
+#: objects/ui_MainWindow.h:751
+msgid "&Paste"
+msgstr "&Pegar"
+
+#: objects/ui_MainWindow.h:752
+msgid "Ctrl+V"
+msgstr "Ctrl+V"
+
+# no se que es
+#: objects/ui_MainWindow.h:753
+msgid "&Indent"
+msgstr "&Indenter"
+
+#: objects/ui_MainWindow.h:754
+msgid "Ctrl+I"
+msgstr "Ctrl+I"
+
+#: objects/ui_MainWindow.h:755
+msgid "U&nindent"
+msgstr "Dési&ndenter"
+
+#: objects/ui_MainWindow.h:756
+msgid "Ctrl+Shift+I"
+msgstr "Ctrl+Shift+I"
+
+#: objects/ui_MainWindow.h:757
+msgid "C&omment"
+msgstr "C&omentar"
+
+#: objects/ui_MainWindow.h:758
+msgid "Ctrl+D"
+msgstr "Ctrl+D"
+
+#: objects/ui_MainWindow.h:759
+msgid "Unco&mment"
+msgstr "Desco&mentar"
+
+#: objects/ui_MainWindow.h:760
+msgid "Ctrl+Shift+D"
+msgstr "Ctrl+Shift+D"
+
+#: objects/ui_MainWindow.h:761
+msgid "Paste viewport translation"
+msgstr "Pegar posición de la marco"
+
+#: objects/ui_MainWindow.h:762
+msgid "Ctrl+T"
+msgstr "Ctrl+T"
+
+#: objects/ui_MainWindow.h:763
+msgid "Paste viewport rotation"
+msgstr "Pegar rotación de la ventana"
+
+#: objects/ui_MainWindow.h:764 objects/ui_MainWindow.h:842
+msgid "Zoom In"
+msgstr "Acercar"
+
+#: objects/ui_MainWindow.h:765
+msgid "Ctrl++"
+msgstr "Ctrl++"
+
+#: objects/ui_MainWindow.h:766 objects/ui_MainWindow.h:844
+msgid "Zoom Out"
+msgstr "Alejar"
+
+#: objects/ui_MainWindow.h:767
+msgid "Ctrl+-"
+msgstr "Ctrl+-"
+
+#: objects/ui_MainWindow.h:768
+msgid "Hide editor"
+msgstr "Ocultar editor"
+
+#: objects/ui_MainWindow.h:769
+msgid "&Reload and Preview"
+msgstr "&Recargar y previsualizar"
+
+#: objects/ui_MainWindow.h:770
+msgid "F4"
+msgstr "F4"
+
+#: objects/ui_MainWindow.h:771
+msgid "&Preview"
+msgstr "&Previsualizar"
+
+#: objects/ui_MainWindow.h:772
+msgid "F5"
+msgstr "F5"
+
+#: objects/ui_MainWindow.h:773
+msgid "&Render"
+msgstr "&Renderizar"
+
+#: objects/ui_MainWindow.h:774
+msgid "F6"
+msgstr "F6"
+
+#: objects/ui_MainWindow.h:775
+msgid "Check Validity"
+msgstr "Chequear validez"
+
+#: objects/ui_MainWindow.h:776
+msgid "Display &AST..."
+msgstr "Mostrar &AST..."
+
+#: objects/ui_MainWindow.h:777
+msgid "Display CSG &Tree..."
+msgstr "Mostrar CSG &Arbre"
+
+#: objects/ui_MainWindow.h:778
+msgid "Display CSG &Products..."
+msgstr "Mostar CSG &Produits"
+
+#: objects/ui_MainWindow.h:779
+msgid "Export as &STL..."
+msgstr "Exportar como &STL..."
+
+#: objects/ui_MainWindow.h:780
+msgid "Export as &OFF..."
+msgstr "Exportar como &OFF..."
+
+#: objects/ui_MainWindow.h:781
+msgid "Preview"
+msgstr "Previsualizar"
+
+#: objects/ui_MainWindow.h:782
+msgid "F9"
+msgstr "F9"
+
+#: objects/ui_MainWindow.h:783
+msgid "Surfaces"
+msgstr "Superficie"
+
+#: objects/ui_MainWindow.h:784
+msgid "F10"
+msgstr "F10"
+
+#: objects/ui_MainWindow.h:785
+msgid "Wireframe"
+msgstr "Estructura"
+
+#: objects/ui_MainWindow.h:786
+msgid "F11"
+msgstr "F11"
+
+#: objects/ui_MainWindow.h:787
+msgid "Thrown Together"
+msgstr "Lanzar Juntos"
+
+#: objects/ui_MainWindow.h:788
+msgid "F12"
+msgstr "F12"
+
+#: objects/ui_MainWindow.h:789
+msgid "Show Edges"
+msgstr "Mostrar puntos"
+
+#: objects/ui_MainWindow.h:790
+msgid "Ctrl+1"
+msgstr "Ctrl+1"
+
+#: objects/ui_MainWindow.h:791
+msgid "Show Axes"
+msgstr "Mostrar ejes"
+
+#: objects/ui_MainWindow.h:792
+msgid "Ctrl+2"
+msgstr "Ctrl+2"
+
+#: objects/ui_MainWindow.h:793
+msgid "Show Crosshairs"
+msgstr "Mostrar punto de mira"
+
+#: objects/ui_MainWindow.h:794
+msgid "Ctrl+3"
+msgstr "Ctrl+3"
+
+#: objects/ui_MainWindow.h:795
+msgid "Animate"
+msgstr "Animar"
+
+#: objects/ui_MainWindow.h:796
+msgid "Top"
+msgstr "Arriba"
+
+#: objects/ui_MainWindow.h:797
+msgid "Ctrl+4"
+msgstr "Ctrl+4"
+
+#: objects/ui_MainWindow.h:798
+msgid "Bottom"
+msgstr "Abajo"
+
+#: objects/ui_MainWindow.h:799
+msgid "Ctrl+5"
+msgstr "Ctrl+5"
+
+#: objects/ui_MainWindow.h:800
+msgid "Left"
+msgstr "Izquierda"
+
+#: objects/ui_MainWindow.h:801
+msgid "Ctrl+6"
+msgstr "Ctrl+6"
+
+#: objects/ui_MainWindow.h:802
+msgid "Right"
+msgstr "Derecha"
+
+#: objects/ui_MainWindow.h:803
+msgid "Ctrl+7"
+msgstr "Ctrl+7"
+
+#: objects/ui_MainWindow.h:804
+msgid "Front"
+msgstr "Frente"
+
+#: objects/ui_MainWindow.h:805
+msgid "Ctrl+8"
+msgstr "Ctrl+8"
+
+#: objects/ui_MainWindow.h:806
+msgid "Back"
+msgstr "Atrás"
+
+#: objects/ui_MainWindow.h:807
+msgid "Ctrl+9"
+msgstr "Ctrl+9"
+
+#: objects/ui_MainWindow.h:808
+msgid "Diagonal"
+msgstr "Diagonal"
+
+#: objects/ui_MainWindow.h:809
+msgid "Ctrl+0"
+msgstr "Ctrl+0"
+
+#: objects/ui_MainWindow.h:810
+msgid "Center"
+msgstr "Centro"
+
+#: objects/ui_MainWindow.h:811
+msgid "Perspective"
+msgstr "Perspectiva"
+
+#: objects/ui_MainWindow.h:812
+msgid "Orthogonal"
+msgstr "Orthogonal"
+
+#: objects/ui_MainWindow.h:813
+msgid "Hide console"
+msgstr "Ocultar consola"
+
+#: objects/ui_MainWindow.h:814
+msgid "About"
+msgstr "Acerca de"
+
+#: objects/ui_MainWindow.h:815
+msgid "Documentation"
+msgstr "Documentación"
+
+#: objects/ui_MainWindow.h:816
+msgid "Clear Recent"
+msgstr "Borrar recientes"
+
+#: objects/ui_MainWindow.h:817
+msgid "Export as DXF..."
+msgstr "Exportar a DXF..."
+
+#: objects/ui_MainWindow.h:818 objects/ui_OpenCSGWarningDialog.h:94
+msgid "Close"
+msgstr "Cerrar"
+
+#: objects/ui_MainWindow.h:819
+msgid "Ctrl+W"
+msgstr "Ctrl+W"
+
+#: objects/ui_MainWindow.h:820 objects/ui_Preferences.h:608
+msgid "Preferences"
+msgstr "Preferencias"
+
+#: objects/ui_MainWindow.h:821
+msgid "Find..."
+msgstr "Buscar..."
+
+#: objects/ui_MainWindow.h:822
+msgid "Ctrl+F"
+msgstr "Ctrl+F"
+
+#: objects/ui_MainWindow.h:823
+msgid "Find and Replace..."
+msgstr "Buscar y reemplazar..."
+
+#: objects/ui_MainWindow.h:824
+msgid "Ctrl+Alt+F"
+msgstr "Ctrl+Alt+F"
+
+#: objects/ui_MainWindow.h:825
+msgid "Find Next"
+msgstr "Buscar próximo"
+
+#: objects/ui_MainWindow.h:826
+msgid "Ctrl+G"
+msgstr "Ctrl+G"
+
+#: objects/ui_MainWindow.h:827
+msgid "Find Previous"
+msgstr "Buscar previo"
+
+#: objects/ui_MainWindow.h:828
+msgid "Ctrl+Shift+G"
+msgstr "Ctrl+Shift+G"
+
+#: objects/ui_MainWindow.h:829
+msgid "Use Selection for Find"
+msgstr "Buscar selección"
+
+#: objects/ui_MainWindow.h:830
+msgid "Ctrl+E"
+msgstr "Ctrl+E"
+
+#: objects/ui_MainWindow.h:831
+msgid "Flush Caches"
+msgstr "Borrar cache"
+
+#: objects/ui_MainWindow.h:832
+msgid "OpenSCAD Homepage"
+msgstr "Pagina de OpenSCAD"
+
+#: objects/ui_MainWindow.h:833
+msgid "Automatic Reload and Preview"
+msgstr "Recargar y previsualizar automáticamente"
+
+#: objects/ui_MainWindow.h:834
+msgid "Export as Image..."
+msgstr "Exportar imagen..."
+
+#: objects/ui_MainWindow.h:835
+msgid "Export as CSG..."
+msgstr "Exportar en CSG..."
+
+#: objects/ui_MainWindow.h:836
+msgid "Library info"
+msgstr "Información de librerías"
+
+#: objects/ui_MainWindow.h:837
+msgid "Show Library Folder..."
+msgstr "Mostrar carpeta de librerías"
+
+#: objects/ui_MainWindow.h:838
+msgid "Reset View"
+msgstr "Reiniciar vista"
+
+#: objects/ui_MainWindow.h:839
+msgid "Font List"
+msgstr "Lista de fuentes"
+
+#: objects/ui_MainWindow.h:840
+msgid "Export as SVG..."
+msgstr "Exportar en SVG..."
+
+#: objects/ui_MainWindow.h:841
+msgid "Export as AMF..."
+msgstr "Exportar en AMF..."
+
+#: objects/ui_MainWindow.h:843
+msgid "Ctrl+]"
+msgstr "Ctrl+]"
+
+#: objects/ui_MainWindow.h:845
+msgid "Ctrl+["
+msgstr "Ctrl+["
+
+#: objects/ui_MainWindow.h:846
+msgid "View All"
+msgstr "Ver todo"
+
+#: objects/ui_MainWindow.h:847
+msgid "Convert Tabs to Spaces"
+msgstr "Convertir tabulado en espacios"
+
+#: objects/ui_MainWindow.h:848
+msgid "Hide toolbars"
+msgstr "Ocultar barra de herramientas"
+
+#: objects/ui_MainWindow.h:849
+msgid "Time:"
+msgstr "Tiempo:"
+
+#: objects/ui_MainWindow.h:850
+msgid "FPS:"
+msgstr "FPS:"
+
+#: objects/ui_MainWindow.h:851
+msgid "Steps:"
+msgstr "Pasos:"
+
+#: objects/ui_MainWindow.h:852
+msgid "Dump Pictures"
+msgstr "Grabar imágenes"
+
+#: objects/ui_MainWindow.h:853
+msgid "&File"
+msgstr "&Archivo"
+
+#: objects/ui_MainWindow.h:854
+msgid "Recent Files"
+msgstr "Archivos recientes"
+
+#: objects/ui_MainWindow.h:856
+msgid "Export"
+msgstr "Exportar"
+
+#: objects/ui_MainWindow.h:857
+msgid "&Edit"
+msgstr "&Editar"
+
+#: objects/ui_MainWindow.h:858
+msgid "&Design"
+msgstr "&Diseñar"
+
+#: objects/ui_MainWindow.h:859
+msgid "&View"
+msgstr "&Ver"
+
+#: objects/ui_MainWindow.h:860
+msgid "&Help"
+msgstr "&Ayuda"
+
+#: objects/ui_MainWindow.h:863
+msgid "Find"
+msgstr "Buscar"
+
+#: objects/ui_MainWindow.h:864 objects/ui_MainWindow.h:871
+msgid "Replace"
+msgstr "Reemplazar"
+
+#: objects/ui_MainWindow.h:866
+msgid "Search string"
+msgstr "Buscar palabra"
+
+#: objects/ui_MainWindow.h:867
+msgid "<"
+msgstr "<"
+
+#: objects/ui_MainWindow.h:868
+msgid ">"
+msgstr ">"
+
+#: objects/ui_MainWindow.h:869
+msgid "Done"
+msgstr "Terminar"
+
+#: objects/ui_MainWindow.h:870
+msgid "Replacement string"
+msgstr "Remplazar palabra"
+
+#: objects/ui_MainWindow.h:872
+msgid "All"
+msgstr "Todo"
+
+#: objects/ui_OpenCSGWarningDialog.h:86
+msgid "OpenGL Warning"
+msgstr "Advertencia OpenGL"
+
+#: objects/ui_OpenCSGWarningDialog.h:87
+msgid ""
+"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/"
+"REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css"
+"\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:'Lucida Grande'; font-size:13pt; "
+"font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; "
+"margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"></"
+"p></body></html>"
+msgstr ""
+"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/"
+"REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css"
+"\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:'Lucida Grande'; font-size:13pt; "
+"font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; "
+"margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"></"
+"p></body></html>"
+
+#: objects/ui_OpenCSGWarningDialog.h:92
+msgid "Enable OpenCSG"
+msgstr "Activar OpenCSG"
+
+#: objects/ui_OpenCSGWarningDialog.h:93
+msgid "Show this message again"
+msgstr "Mostrar el mensaje de nuevo"
+
+#: objects/ui_Preferences.h:609
+msgid "3D View"
+msgstr "Vista 3D"
+
+#: objects/ui_Preferences.h:610 src/UIUtils.cc:85
+msgid "Advanced"
+msgstr "Advertencia"
+
+#: objects/ui_Preferences.h:611 src/mainwin.cc:2315
+msgid "Editor"
+msgstr "Editar"
+
+#: objects/ui_Preferences.h:612
+msgid "Update"
+msgstr "Actualizar"
+
+#: objects/ui_Preferences.h:613 objects/ui_Preferences.h:633
+msgid "Features"
+msgstr "Mejoras"
+
+#: objects/ui_Preferences.h:615
+msgid "Enable/Disable experimental features"
+msgstr "Activar/desactivar mejoras experimentales"
+
+#: objects/ui_Preferences.h:617
+msgid "Color scheme:"
+msgstr "Paleta de colores:"
+
+#: objects/ui_Preferences.h:618
+msgid "Editor Type"
+msgstr "Editor de texto"
+
+#: objects/ui_Preferences.h:621
+msgid "Simple Editor"
+msgstr "Editor simple"
+
+#: objects/ui_Preferences.h:622
+msgid "QScintilla Editor"
+msgstr "Editor QScintilla"
+
+#: objects/ui_Preferences.h:624
+msgid "(requires restart)"
+msgstr "(necesita reiniciar)"
+
+#: objects/ui_Preferences.h:625
+msgid "Font"
+msgstr "Fuente"
+
+#: objects/ui_Preferences.h:626
+msgid "Color syntax highlighting"
+msgstr "Colorear sintaxis"
+
+#: objects/ui_Preferences.h:627
+msgid "Use Ctrl/Cmd-Mouse-wheel to zoom text"
+msgstr "Use ctrl/cmd + rueda del mouse para hacer zoom al texto"
+
+#: objects/ui_Preferences.h:629
+msgid "Automatically check for updates"
+msgstr "Comprobar actualización automáticamente"
+
+#: objects/ui_Preferences.h:630
+msgid "Include development snapshots"
+msgstr "Incluir las versiones en desarrollo"
+
+#: objects/ui_Preferences.h:631
+msgid "Check Now"
+msgstr "Chequear ahora"
+
+#: objects/ui_Preferences.h:632
+msgid "Last checked: "
+msgstr "Último chequeo:"
+
+#: objects/ui_Preferences.h:634
+msgid "OpenCSG"
+msgstr "OpenCSG"
+
+#: objects/ui_Preferences.h:635
+msgid "Show capability warning"
+msgstr "Advertir incapacidad"
+
+#: objects/ui_Preferences.h:636
+msgid "Enable for OpenGL 1.x"
+msgstr "Activar OpenGL 1.x"
+
+#: objects/ui_Preferences.h:637
+msgid "Turn off rendering at "
+msgstr "Desactivar el render de"
+
+#: objects/ui_Preferences.h:638
+msgid "elements"
+msgstr "elementos"
+
+#: objects/ui_Preferences.h:639
+msgid "Force Goldfeather"
+msgstr "Forzar Goldfeather"
+
+#: objects/ui_Preferences.h:640
+msgid "CGAL Cache size"
+msgstr "Tamaño de cache de CGAL"
+
+#: objects/ui_Preferences.h:641 objects/ui_Preferences.h:643
+msgid "bytes"
+msgstr "bytes"
+
+#: objects/ui_Preferences.h:642
+msgid "PolySet Cache size"
+msgstr "Tamaño de cache de PolySet"
+
+#: objects/ui_Preferences.h:644
+msgid "Allow to open multiple documents"
+msgstr "Permitir a abrir varios documentos"
+
+#: objects/ui_Preferences.h:645
+msgid "Enable docking of Editor and Console in different places"
+msgstr "Habilitar soporte de editor y consola en diferentes lugares"
+
+#: objects/ui_Preferences.h:646
+msgid "Enable undocking of Editor and Console to separate windows"
+msgstr ""
+"Habilitar el desacoplamiento de editor y consola para separar las ventanas"
+
+#: objects/ui_Preferences.h:647
+msgid "Show Welcome Screen"
+msgstr "Pantalla de bienvenida"
+
+#: objects/ui_Preferences.h:648
+msgid "Enable user interface localization (requires restart of OpenSCAD)"
+msgstr ""
+"Habilitar interfaz de usuario localización (requiere reiniciar OpenSCAD)"
+
+#: objects/ui_Preferences.h:649
+msgid "toolBar"
+msgstr "barra de herramientas"
+
+#: objects/ui_ProgressWidget.h:72
+msgid "Form"
+msgstr "Formulario"
+
+#: objects/ui_ProgressWidget.h:73
+msgid "%v / %m"
+msgstr "%v / %m"
+
+#: src/mainwin.cc:768 src/mainwin.cc:1300
+msgid "Untitled.scad"
+msgstr "Sintitulo.scad"
+
+#: src/mainwin.cc:1299
+msgid "Save File"
+msgstr "Salver archivo"
+
+#: src/mainwin.cc:1301
+msgid "OpenSCAD Designs (*.scad)"
+msgstr "Diseño OpenSCAD (*.scad)"
+
+#: src/mainwin.cc:1311
+msgid ""
+"%1 already exists.\n"
+"Do you want to replace it?"
+msgstr ""
+"%1 existe.\n"
+"Deseas reemplazarlo?"
+
+#: src/mainwin.cc:1630
+msgid "Application"
+msgstr "Aplicación"
+
+#: src/mainwin.cc:1631
+msgid ""
+"The document has been modified.\n"
+"Do you really want to reload the file?"
+msgstr ""
+"El documento ha sido modificado.\n"
+"¿Realmente desea volver a cargar el archivo ?"
+
+#: src/mainwin.cc:1942 src/mainwin.cc:1999
+msgid "Export %1 File"
+msgstr "Exportar %1 Archivo"
+
+#: src/mainwin.cc:1943 src/mainwin.cc:2003
+msgid "%1 Files (*%2)"
+msgstr "%1 Archivo (*%2)"
+
+#: src/mainwin.cc:1944
+msgid "Untitled"
+msgstr "Sin titulo"
+
+#: src/mainwin.cc:2001
+msgid "Untitled%1"
+msgstr "Sintitulo%1"
+
+#: src/mainwin.cc:2052
+msgid "Export CSG File"
+msgstr "Exportar archivo CSG"
+
+#: src/mainwin.cc:2053
+msgid "Untitled.csg"
+msgstr "Sintitulo.csg"
+
+#: src/mainwin.cc:2054
+msgid "CSG Files (*.csg)"
+msgstr "Archivo CSG (*.csg)"
+
+#: src/mainwin.cc:2080
+msgid "Export Image"
+msgstr "Exportar una imagen"
+
+#: src/mainwin.cc:2080
+msgid "PNG Files (*.png)"
+msgstr "Archivo PNG (*.png)"
+
+#: src/mainwin.cc:2320
+msgid "Console"
+msgstr "Consola"
+
+#: src/mainwin.cc:2447
+msgid "The document has been modified."
+msgstr "El documento ha sido modificado."
+
+#: src/mainwin.cc:2448
+msgid "Do you want to save your changes?"
+msgstr "¿Quieres guardar los cambios ?"
+
+#: src/QGLView.cc:114
+msgid ""
+"\n"
+"Using QGLWidget\n"
+"\n"
+msgstr ""
+"\n"
+"Utilizar QGLWidget\n"
+"\n"
+
+#: src/QGLView.cc:131
+msgid ""
+"Warning: You may experience OpenCSG rendering errors.\n"
+"\n"
+msgstr ""
+"Advertencia: Usted puede experimentar OpenCSG errores de renderizado.\n"
+"\n"
+
+#: src/QGLView.cc:134
+msgid ""
+"Warning: Missing OpenGL capabilities for OpenCSG - OpenCSG has been "
+"disabled.\n"
+"\n"
+msgstr ""
+"Advertencia: Manquantes capacités OpenGL vierten OpenCSG - OpenCSG ha sido "
+"desactivada. .\n"
+"\n"
+
+#: src/QGLView.cc:137
+msgid ""
+"It is highly recommended to use OpenSCAD on a system with OpenGL 2.0 or "
+"later.\n"
+"Your renderer information is as follows:\n"
+msgstr ""
+"Es muy recomendable utilizar OpenSCAD en un sistema con OpenGL 2.0 o "
+"posterior.\n"
+"Su información renderer es como sigue:\n"
+
+#: src/QGLView.cc:141
+#, c-format
+msgid ""
+"GLEW version %s\n"
+"%s (%s)\n"
+"OpenGL version %s\n"
+msgstr ""
+"Versión GLEW %s\n"
+"%s (%s)\n"
+"Versión OpenGL %s\n"
+
+#: src/QGLView.cc:171
+#, c-format
+msgid ""
+"Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], "
+"distance = %.2f"
+msgstr ""
+"Marco:  posición = [ %.2f %.2f %.2f ], rotación = [ %.2f %.2f %.2f ], "
+"distancia = %.2f"
+
+#: src/UIUtils.cc:85
+msgid "Basics"
+msgstr "Básico"
+
+#: src/UIUtils.cc:85
+msgid "Shapes"
+msgstr "Formas"
+
+#: src/UIUtils.cc:85
+msgid "Extrusion"
+msgstr "Extrusión"
+
+#~ msgid "Paste font selector to Editor Window"
+#~ msgstr "Coller le sélecteur de polices dans l'éditeur de fenêtres"
+
+#~ msgid "About OpenSCAD "
+#~ msgstr "À propos de OpenSCAD"
+
+#~ msgid "Check for Update.."
+#~ msgstr "Vérifier les mises à jours"
+
+#~ msgid "OpenGL Info"
+#~ msgstr "Information OpenGL"
