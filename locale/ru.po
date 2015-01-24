@@ -9,7 +9,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-01-24 20:49+0100\n"
 "PO-Revision-Date: 2013-02-24 17:50+0100\n"
-"Last-Translator:  <hugh.m.bright@gmail.com>\n"
+"Last-Translator:  <soniczerops@gmail.com>\n"
 "Language-Team: Russian\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
@@ -38,7 +38,7 @@ msgstr ""
 
 #: objects/ui_AboutDialog.h:112
 msgid "OK"
-msgstr ""
+msgstr "ОК"
 
 #: objects/ui_FontListDialog.h:105
 #, fuzzy
@@ -47,15 +47,15 @@ msgstr "Шрифт"
 
 #: objects/ui_FontListDialog.h:106 objects/ui_LibraryInfoDialog.h:77
 msgid "&OK"
-msgstr ""
+msgstr "&ОК"
 
 #: objects/ui_FontListDialog.h:107
 msgid "Copy to Clipboard"
-msgstr ""
+msgstr "Скопировать в буфер"
 
 #: objects/ui_FontListDialog.h:108
 msgid "Filter:"
-msgstr ""
+msgstr "Фильтр:"
 
 #: objects/ui_FontListDialog.h:109
 msgid ""
@@ -111,15 +111,15 @@ msgstr "Примеры"
 
 #: objects/ui_launchingscreen.h:312
 msgid "Don't show again"
-msgstr ""
+msgstr "Не показывать снова"
 
 #: objects/ui_launchingscreen.h:313
 msgid "Version"
-msgstr ""
+msgstr "Версия"
 
 #: objects/ui_LibraryInfoDialog.h:75
 msgid "Lib & Build Info"
-msgstr ""
+msgstr "Информация о сборке"
 
 #: objects/ui_LibraryInfoDialog.h:76
 msgid "OpenSCAD Detailed Library and Build Information"
@@ -131,7 +131,7 @@ msgstr "&Создать"
 
 #: objects/ui_MainWindow.h:839
 msgid "Ctrl+N"
-msgstr ""
+msgstr "Ctrl+N"
 
 #: objects/ui_MainWindow.h:840
 msgid "&Open..."
@@ -139,7 +139,7 @@ msgstr "&Открыть..."
 
 #: objects/ui_MainWindow.h:841
 msgid "Ctrl+O"
-msgstr ""
+msgstr "Ctrl+O"
 
 #: objects/ui_MainWindow.h:842
 msgid "&Save"
@@ -147,7 +147,7 @@ msgstr "&Сохранить"
 
 #: objects/ui_MainWindow.h:843
 msgid "Ctrl+S"
-msgstr ""
+msgstr "Ctrl+S"
 
 #: objects/ui_MainWindow.h:844
 msgid "Save &As..."
@@ -155,7 +155,7 @@ msgstr "Сохранить &как..."
 
 #: objects/ui_MainWindow.h:845
 msgid "Ctrl+Shift+S"
-msgstr ""
+msgstr "Ctrl+Shift+S"
 
 #: objects/ui_MainWindow.h:846
 msgid "&Reload"
@@ -163,7 +163,7 @@ msgstr "&Обновить"
 
 #: objects/ui_MainWindow.h:847
 msgid "Ctrl+R"
-msgstr ""
+msgstr "Ctrl+R"
 
 #: objects/ui_MainWindow.h:848
 msgid "&Quit"
@@ -171,7 +171,7 @@ msgstr "&Выход"
 
 #: objects/ui_MainWindow.h:849
 msgid "Ctrl+Q"
-msgstr ""
+msgstr "Ctrl+Q"
 
 #: objects/ui_MainWindow.h:850
 msgid "&Undo"
@@ -179,7 +179,7 @@ msgstr "&Отменить"
 
 #: objects/ui_MainWindow.h:851
 msgid "Ctrl+Z"
-msgstr ""
+msgstr "Ctrl+Z"
 
 #: objects/ui_MainWindow.h:852
 msgid "&Redo"
@@ -187,7 +187,7 @@ msgstr "&Повторить"
 
 #: objects/ui_MainWindow.h:853
 msgid "Ctrl+Shift+Z"
-msgstr ""
+msgstr "Ctrl+Shift+Z"
 
 #: objects/ui_MainWindow.h:854
 msgid "Cu&t"
@@ -195,7 +195,7 @@ msgstr "Вы&резать"
 
 #: objects/ui_MainWindow.h:855
 msgid "Ctrl+X"
-msgstr ""
+msgstr "Ctrl+X"
 
 #: objects/ui_MainWindow.h:856
 msgid "&Copy"
@@ -203,7 +203,7 @@ msgstr "&Копировать"
 
 #: objects/ui_MainWindow.h:857
 msgid "Ctrl+C"
-msgstr ""
+msgstr "Ctrl+C"
 
 #: objects/ui_MainWindow.h:858
 msgid "&Paste"
@@ -211,7 +211,7 @@ msgstr "&Вставить"
 
 #: objects/ui_MainWindow.h:859
 msgid "Ctrl+V"
-msgstr ""
+msgstr "Ctrl+V"
 
 #: objects/ui_MainWindow.h:860
 msgid "&Indent"
@@ -219,7 +219,7 @@ msgstr "&Добавить отступ"
 
 #: objects/ui_MainWindow.h:861
 msgid "Ctrl+I"
-msgstr ""
+msgstr "Ctrl+I"
 
 #: objects/ui_MainWindow.h:862
 msgid "C&omment"
@@ -227,7 +227,7 @@ msgstr "Зако&мментировать"
 
 #: objects/ui_MainWindow.h:863
 msgid "Ctrl+D"
-msgstr ""
+msgstr "Ctrl+D"
 
 #: objects/ui_MainWindow.h:864
 msgid "Unco&mment"
@@ -235,7 +235,7 @@ msgstr "Р&аскомментировать"
 
 #: objects/ui_MainWindow.h:865
 msgid "Ctrl+Shift+D"
-msgstr ""
+msgstr "Ctrl+Shift+D"
 
 #: objects/ui_MainWindow.h:866
 msgid "Paste viewport translation"
@@ -243,7 +243,7 @@ msgstr "Вставить смещение точки обзора"
 
 #: objects/ui_MainWindow.h:867
 msgid "Ctrl+T"
-msgstr ""
+msgstr "Ctrl+T"
 
 #: objects/ui_MainWindow.h:868
 msgid "Paste viewport rotation"
@@ -251,19 +251,19 @@ msgstr "Вставить поворот точки обзора"
 
 #: objects/ui_MainWindow.h:869
 msgid "Increase Font Size"
-msgstr ""
+msgstr "Увеличить размер шрифта"
 
 #: objects/ui_MainWindow.h:870
 msgid "Ctrl++"
-msgstr ""
+msgstr "Ctrl++"
 
 #: objects/ui_MainWindow.h:871
 msgid "Decrease Font Size"
-msgstr ""
+msgstr "Уменьшить размер шрифта"
 
 #: objects/ui_MainWindow.h:872
 msgid "Ctrl+-"
-msgstr ""
+msgstr "Ctrl+-"
 
 #: objects/ui_MainWindow.h:873
 msgid "Hide editor"
@@ -276,27 +276,30 @@ msgstr "&Обновить и компилировать"
 
 #: objects/ui_MainWindow.h:875
 msgid "F4"
-msgstr ""
+msgstr "F4"
 
 #: objects/ui_MainWindow.h:876
+#, fuzzy
 msgid "&Preview"
-msgstr ""
+msgstr "&Превью"
 
 #: objects/ui_MainWindow.h:877
 msgid "F5"
-msgstr ""
+msgstr "F5"
 
 #: objects/ui_MainWindow.h:878
+#, fuzzy
 msgid "&Render"
-msgstr ""
+msgstr "&Рендер"
 
 #: objects/ui_MainWindow.h:879
 msgid "F6"
-msgstr ""
+msgstr "F6"
 
 #: objects/ui_MainWindow.h:880
+#, fuzzy
 msgid "Check Validity"
-msgstr ""
+msgstr "Проверить"
 
 #: objects/ui_MainWindow.h:881
 msgid "Display &AST..."
@@ -320,11 +323,11 @@ msgstr "Экспортировать в &OFF..."
 
 #: objects/ui_MainWindow.h:886
 msgid "Preview"
-msgstr ""
+msgstr "Превью"
 
 #: objects/ui_MainWindow.h:887
 msgid "F9"
-msgstr ""
+msgstr "F9"
 
 #: objects/ui_MainWindow.h:888
 #, fuzzy
@@ -333,7 +336,7 @@ msgstr "Поверхности CGAL"
 
 #: objects/ui_MainWindow.h:889
 msgid "F10"
-msgstr ""
+msgstr "F10"
 
 #: objects/ui_MainWindow.h:890
 msgid "Wireframe"
@@ -341,7 +344,7 @@ msgstr ""
 
 #: objects/ui_MainWindow.h:891
 msgid "F11"
-msgstr ""
+msgstr "F11"
 
 #: objects/ui_MainWindow.h:892
 msgid "Thrown Together"
@@ -349,7 +352,7 @@ msgstr "Всё вместе"
 
 #: objects/ui_MainWindow.h:893
 msgid "F12"
-msgstr ""
+msgstr "F12"
 
 #: objects/ui_MainWindow.h:894
 msgid "Show Edges"
@@ -357,7 +360,7 @@ msgstr "Показывать рёбра"
 
 #: objects/ui_MainWindow.h:895
 msgid "Ctrl+1"
-msgstr ""
+msgstr "Ctrl+1"
 
 #: objects/ui_MainWindow.h:896
 msgid "Show Axes"
@@ -365,7 +368,7 @@ msgstr "Показывать оси"
 
 #: objects/ui_MainWindow.h:897
 msgid "Ctrl+2"
-msgstr ""
+msgstr "Ctrl+2"
 
 #: objects/ui_MainWindow.h:898
 msgid "Show Crosshairs"
@@ -373,11 +376,12 @@ msgstr "Показывать перекрестия"
 
 #: objects/ui_MainWindow.h:899
 msgid "Ctrl+3"
-msgstr ""
+msgstr "Ctrl+3"
 
 #: objects/ui_MainWindow.h:900
+#, fuzzy
 msgid "Show Scale Markers"
-msgstr ""
+msgstr "Показать метки масштаба"
 
 #: objects/ui_MainWindow.h:901
 msgid "Animate"
@@ -389,7 +393,7 @@ msgstr "Сверху"
 
 #: objects/ui_MainWindow.h:903
 msgid "Ctrl+4"
-msgstr ""
+msgstr "Ctrl+4"
 
 #: objects/ui_MainWindow.h:904
 msgid "Bottom"
@@ -397,7 +401,7 @@ msgstr "Снизу"
 
 #: objects/ui_MainWindow.h:905
 msgid "Ctrl+5"
-msgstr ""
+msgstr "Ctrl+5"
 
 #: objects/ui_MainWindow.h:906
 msgid "Left"
@@ -405,7 +409,7 @@ msgstr "Слева"
 
 #: objects/ui_MainWindow.h:907
 msgid "Ctrl+6"
-msgstr ""
+msgstr "Ctrl+6"
 
 #: objects/ui_MainWindow.h:908
 msgid "Right"
@@ -413,7 +417,7 @@ msgstr "Справа"
 
 #: objects/ui_MainWindow.h:909
 msgid "Ctrl+7"
-msgstr ""
+msgstr "Ctrl+7"
 
 #: objects/ui_MainWindow.h:910
 msgid "Front"
@@ -421,7 +425,7 @@ msgstr "Спереди"
 
 #: objects/ui_MainWindow.h:911
 msgid "Ctrl+8"
-msgstr ""
+msgstr "Ctrl+8"
 
 #: objects/ui_MainWindow.h:912
 msgid "Back"
@@ -429,7 +433,7 @@ msgstr "Сзади"
 
 #: objects/ui_MainWindow.h:913
 msgid "Ctrl+9"
-msgstr ""
+msgstr "Ctrl+9"
 
 #: objects/ui_MainWindow.h:914
 msgid "Diagonal"
@@ -437,7 +441,7 @@ msgstr "Аксонометрический"
 
 #: objects/ui_MainWindow.h:915
 msgid "Ctrl+0"
-msgstr ""
+msgstr "Ctrl+0"
 
 #: objects/ui_MainWindow.h:916
 msgid "Center"
@@ -477,7 +481,7 @@ msgstr "Закрыть"
 
 #: objects/ui_MainWindow.h:925
 msgid "Ctrl+W"
-msgstr ""
+msgstr "Ctrl+W"
 
 #: objects/ui_MainWindow.h:926 objects/ui_Preferences.h:1061
 msgid "Preferences"
@@ -485,43 +489,43 @@ msgstr "Настройки"
 
 #: objects/ui_MainWindow.h:927
 msgid "Find..."
-msgstr ""
+msgstr "Найти..."
 
 #: objects/ui_MainWindow.h:928
 msgid "Ctrl+F"
-msgstr ""
+msgstr "Ctrl+F"
 
 #: objects/ui_MainWindow.h:929
 msgid "Find and Replace..."
-msgstr ""
+msgstr "Найти и замена..."
 
 #: objects/ui_MainWindow.h:930
 msgid "Ctrl+Alt+F"
-msgstr ""
+msgstr "Ctrl+Alt+F"
 
 #: objects/ui_MainWindow.h:931
 msgid "Find Next"
-msgstr ""
+msgstr "Искать дальше"
 
 #: objects/ui_MainWindow.h:932
 msgid "Ctrl+G"
-msgstr ""
+msgstr "Ctrl+G"
 
 #: objects/ui_MainWindow.h:933
 msgid "Find Previous"
-msgstr ""
+msgstr "Искать раньше"
 
 #: objects/ui_MainWindow.h:934
 msgid "Ctrl+Shift+G"
-msgstr ""
+msgstr "Ctrl+Shift+G"
 
 #: objects/ui_MainWindow.h:935
 msgid "Use Selection for Find"
-msgstr ""
+msgstr "Найти выделенный текст"
 
 #: objects/ui_MainWindow.h:936
 msgid "Ctrl+E"
-msgstr ""
+msgstr "Ctrl+E"
 
 #: objects/ui_MainWindow.h:937
 msgid "Flush Caches"
@@ -577,7 +581,7 @@ msgstr "Увеличить масштаб"
 
 #: objects/ui_MainWindow.h:949
 msgid "Ctrl+]"
-msgstr ""
+msgstr "Ctrl+]"
 
 #: objects/ui_MainWindow.h:950
 msgid "Zoom Out"
@@ -585,7 +589,7 @@ msgstr "Уменьшить масштаб"
 
 #: objects/ui_MainWindow.h:951
 msgid "Ctrl+["
-msgstr ""
+msgstr "Ctrl+["
 
 #: objects/ui_MainWindow.h:952
 #, fuzzy
@@ -594,12 +598,12 @@ msgstr "&Вид"
 
 #: objects/ui_MainWindow.h:953
 msgid "Convert Tabs to Spaces"
-msgstr ""
+msgstr "Преобразовать табуляции в пробелы"
 
 #: objects/ui_MainWindow.h:954
 #, fuzzy
 msgid "Hide toolbars"
-msgstr "Скрыть редактор"
+msgstr "Скрыть панель"
 
 #: objects/ui_MainWindow.h:955
 msgid "U&nindent"
@@ -607,15 +611,16 @@ msgstr "У&брать отступ"
 
 #: objects/ui_MainWindow.h:956
 msgid "Ctrl+Shift+I"
-msgstr ""
+msgstr "Ctrl+Shift+I"
 
 #: objects/ui_MainWindow.h:957
+#, fuzzy
 msgid "Cheat Sheet"
-msgstr ""
+msgstr "Указатель"
 
 #: objects/ui_MainWindow.h:958
 msgid "Message"
-msgstr ""
+msgstr "Сообщение"
 
 #: objects/ui_MainWindow.h:961
 msgid "Time:"
@@ -644,7 +649,7 @@ msgstr "Открыть файл"
 
 #: objects/ui_MainWindow.h:968
 msgid "Export"
-msgstr ""
+msgstr "Экспорт"
 
 #: objects/ui_MainWindow.h:969
 msgid "&Edit"
@@ -664,27 +669,27 @@ msgstr "&Справка"
 
 #: objects/ui_MainWindow.h:975
 msgid "Find"
-msgstr ""
+msgstr "Найти"
 
 #: objects/ui_MainWindow.h:976 objects/ui_MainWindow.h:983
 msgid "Replace"
-msgstr ""
+msgstr "Заменить"
 
 #: objects/ui_MainWindow.h:978
 msgid "Search string"
-msgstr ""
+msgstr "Строка поиска"
 
 #: objects/ui_MainWindow.h:979
 msgid "<"
-msgstr ""
+msgstr "<"
 
 #: objects/ui_MainWindow.h:980
 msgid ">"
-msgstr ""
+msgstr ">"
 
 #: objects/ui_MainWindow.h:981
 msgid "Done"
-msgstr ""
+msgstr "Готово"
 
 #: objects/ui_MainWindow.h:982
 #, fuzzy
@@ -693,7 +698,7 @@ msgstr "элементах"
 
 #: objects/ui_MainWindow.h:984
 msgid "All"
-msgstr ""
+msgstr "Все"
 
 #: objects/ui_OpenCSGWarningDialog.h:86
 msgid "OpenGL Warning"
@@ -744,7 +749,7 @@ msgstr "Функции"
 
 #: objects/ui_Preferences.h:1068
 msgid "Enable/Disable experimental features"
-msgstr ""
+msgstr "Включить/Выключить экспериментальные возможности"
 
 #: objects/ui_Preferences.h:1070
 msgid "Color scheme:"
@@ -752,7 +757,7 @@ msgstr "Цветовая схема:"
 
 #: objects/ui_Preferences.h:1071
 msgid "Show Warnings and Errors in 3D View"
-msgstr ""
+msgstr "Показывать ошибки и предупреждения в 3D виде"
 
 #: objects/ui_Preferences.h:1072
 #, fuzzy
@@ -762,7 +767,7 @@ msgstr "Редактор"
 #: objects/ui_Preferences.h:1075
 #, fuzzy
 msgid "Simple Editor"
-msgstr "Скрыть редактор"
+msgstr "Простой редактор"
 
 #: objects/ui_Preferences.h:1076
 msgid "QScintilla Editor"
@@ -770,7 +775,7 @@ msgstr ""
 
 #: objects/ui_Preferences.h:1078
 msgid "(requires restart)"
-msgstr ""
+msgstr "(требуется перезапуск)"
 
 #: objects/ui_Preferences.h:1079
 msgid "Font"
@@ -782,7 +787,7 @@ msgstr "Подсветка синтаксиса"
 
 #: objects/ui_Preferences.h:1081
 msgid "Ctrl/Cmd-Mouse-wheel zooms text"
-msgstr ""
+msgstr "Ctrl/Cmd-Колесико-мыши увеличивает текст"
 
 #: objects/ui_Preferences.h:1082
 #, fuzzy
@@ -810,15 +815,15 @@ msgstr ""
 
 #: objects/ui_Preferences.h:1090
 msgid "Indentation width"
-msgstr ""
+msgstr "Ширина отступа"
 
 #: objects/ui_Preferences.h:1091
 msgid "Tab width"
-msgstr ""
+msgstr "Ширина табуляции"
 
 #: objects/ui_Preferences.h:1092
 msgid "Tab key function"
-msgstr ""
+msgstr "Функция клавиши Tab"
 
 #: objects/ui_Preferences.h:1095 objects/ui_Preferences.h:1125
 #: src/settings.cc:136
@@ -828,27 +833,27 @@ msgstr "&Добавить отступ"
 
 #: objects/ui_Preferences.h:1096 src/settings.cc:136
 msgid "Insert Tab"
-msgstr ""
+msgstr "Вставить Tab"
 
 #: objects/ui_Preferences.h:1098
 msgid "Show whitespace"
-msgstr ""
+msgstr "Показать пробел"
 
 #: objects/ui_Preferences.h:1101 src/settings.cc:132
 msgid "Never"
-msgstr ""
+msgstr "Никогда"
 
 #: objects/ui_Preferences.h:1102 src/settings.cc:132
 msgid "Always"
-msgstr ""
+msgstr "Всегда"
 
 #: objects/ui_Preferences.h:1103
 msgid "Only after indentation"
-msgstr ""
+msgstr "Только после отступа"
 
 #: objects/ui_Preferences.h:1105
 msgid "Size"
-msgstr ""
+msgstr "Размер"
 
 #: objects/ui_Preferences.h:1106
 #, fuzzy
@@ -856,12 +861,13 @@ msgid "Display"
 msgstr "Показать &AST..."
 
 #: objects/ui_Preferences.h:1107
+#, fuzzy
 msgid "Enable brace matching"
-msgstr ""
+msgstr "Вклчить автозакрытие скобок"
 
 #: objects/ui_Preferences.h:1108
 msgid "Highlight current line"
-msgstr ""
+msgstr "Выделить текущую строчку"
 
 #: objects/ui_Preferences.h:1109 objects/ui_Preferences.h:1142
 msgid "Line wrap"
@@ -870,8 +876,9 @@ msgstr ""
 #: objects/ui_Preferences.h:1112 objects/ui_Preferences.h:1129
 #: objects/ui_Preferences.h:1137 src/settings.cc:127 src/settings.cc:130
 #: src/settings.cc:131
+#, fuzzy
 msgid "None"
-msgstr ""
+msgstr "Нет"
 
 #: objects/ui_Preferences.h:1113 src/settings.cc:127
 msgid "Wrap at character boundaries"
@@ -891,15 +898,16 @@ msgstr ""
 
 #: objects/ui_Preferences.h:1118
 msgid "Style"
-msgstr ""
+msgstr "Стиль"
 
 #: objects/ui_Preferences.h:1121 src/settings.cc:128
 msgid "Fixed"
-msgstr ""
+msgstr "Фиксированный"
 
 #: objects/ui_Preferences.h:1122 src/settings.cc:128
 msgid "Same"
-msgstr ""
+#, fuzzy
+msgstr "Так же"
 
 #: objects/ui_Preferences.h:1123 src/settings.cc:128
 #, fuzzy
@@ -907,18 +915,19 @@ msgid "Indented"
 msgstr "&Добавить отступ"
 
 #: objects/ui_Preferences.h:1126
+#, fuzzy
 msgid "Start"
-msgstr ""
+msgstr "Начало"
 
 #: objects/ui_Preferences.h:1130 objects/ui_Preferences.h:1138
 #: src/settings.cc:130 src/settings.cc:131
 msgid "Text"
-msgstr ""
+msgstr "Текст"
 
 #: objects/ui_Preferences.h:1131 objects/ui_Preferences.h:1139
 #: src/settings.cc:130 src/settings.cc:131
 msgid "Border"
-msgstr ""
+msgstr "Граница"
 
 #: objects/ui_Preferences.h:1132 objects/ui_Preferences.h:1140
 #: src/settings.cc:130 src/settings.cc:131
@@ -927,7 +936,7 @@ msgstr ""
 
 #: objects/ui_Preferences.h:1134
 msgid "End"
-msgstr ""
+msgstr "Конец"
 
 #: objects/ui_Preferences.h:1143
 msgid "Automatically check for updates"
@@ -947,7 +956,7 @@ msgstr "Последняя проверка: "
 
 #: objects/ui_Preferences.h:1148
 msgid "OpenCSG"
-msgstr ""
+msgstr "OpenCSG"
 
 #: objects/ui_Preferences.h:1149
 msgid "Show capability warning"
@@ -983,27 +992,27 @@ msgstr "Размер кэша PolySet"
 
 #: objects/ui_Preferences.h:1158
 msgid "Allow to open multiple documents"
-msgstr ""
+msgstr "Разрешить открытие нескольких документов"
 
 #: objects/ui_Preferences.h:1159
 msgid "Enable docking of Editor and Console in different places"
-msgstr ""
+msgstr "Включить прилипание Редактора и Консоли в разных местах"
 
 #: objects/ui_Preferences.h:1160
 msgid "Enable undocking of Editor and Console to separate windows"
-msgstr ""
+msgstr "Включить перетаскивание Редактора и Консоли в разные окна"
 
 #: objects/ui_Preferences.h:1161
 msgid "Show Welcome Screen"
-msgstr ""
+msgstr "Показать экран преветствия"
 
 #: objects/ui_Preferences.h:1162
 msgid "Enable user interface localization (requires restart of OpenSCAD)"
-msgstr ""
+msgstr "Включить локализацию интерфейса (необходимо перезапустить OpenSCAD)"
 
 #: objects/ui_Preferences.h:1163
 msgid "toolBar"
-msgstr ""
+msgstr "Панель инструментов"
 
 #: objects/ui_ProgressWidget.h:72
 msgid "Form"
@@ -1031,7 +1040,7 @@ msgstr "&Компилировать"
 
 #: src/mainwin.cc:974
 msgid "Error while compiling '%1'."
-msgstr ""
+msgstr "Ошибка во время компиляции '%1'."
 
 #: src/mainwin.cc:978
 msgid "Compilation generated %1 warning."
@@ -1042,7 +1051,7 @@ msgstr[2] ""
 
 #: src/mainwin.cc:988
 msgid " For details see <a href=\"#console\">console window</a>."
-msgstr ""
+msgstr "Для подробностей смотреть <a href=\"#console\">окно консоли</a>."
 
 #: src/mainwin.cc:1353
 msgid "Save File"
@@ -1057,16 +1066,20 @@ msgid ""
 "%1 already exists.\n"
 "Do you want to replace it?"
 msgstr ""
+"%1 уже существует.\n"
+"Перезаписать?"
 
 #: src/mainwin.cc:1684
 msgid "Application"
-msgstr ""
+msgstr "Приложение"
 
 #: src/mainwin.cc:1685
 msgid ""
 "The document has been modified.\n"
 "Do you really want to reload the file?"
 msgstr ""
+"Документ был изменен.\n"
+"Хотите перезагрузить документ?"
 
 #: src/mainwin.cc:2038 src/mainwin.cc:2094
 #, fuzzy
@@ -1089,27 +1102,27 @@ msgstr "Безымянный.scad"
 
 #: src/mainwin.cc:2147
 msgid "Export CSG File"
-msgstr ""
+msgstr "Экспортировать файл CSG"
 
 #: src/mainwin.cc:2148
 msgid "Untitled.csg"
-msgstr ""
+msgstr "Безимянный.csg"
 
 #: src/mainwin.cc:2149
 msgid "CSG Files (*.csg)"
-msgstr ""
+msgstr "Файлы CSG (*.csg)"
 
 #: src/mainwin.cc:2175
 msgid "Export Image"
-msgstr ""
+msgstr "Экспортировать изображение"
 
 #: src/mainwin.cc:2175
 msgid "PNG Files (*.png)"
-msgstr ""
+msgstr "Файлы PNG (*.png)"
 
 #: src/mainwin.cc:2423
 msgid "Console"
-msgstr ""
+msgstr "Консоль"
 
 #: src/mainwin.cc:2560
 #, fuzzy
@@ -1130,6 +1143,8 @@ msgid ""
 "Fontconfig needs to update its font cache.\n"
 "This can take up to a couple of minutes."
 msgstr ""
+"Fontconfig требуется обновить кеш шрифтов.\n"
+"Это может занять пару минут."
 
 #: src/QGLView.cc:111
 msgid ""
@@ -1143,6 +1158,8 @@ msgid ""
 "Warning: You may experience OpenCSG rendering errors.\n"
 "\n"
 msgstr ""
+"Предупреждение: Возможны ошибки рендринга OpenCSG.\n"
+"\n"
 
 #: src/QGLView.cc:131
 msgid ""
@@ -1150,6 +1167,9 @@ msgid ""
 "disabled.\n"
 "\n"
 msgstr ""
+"Предупреждение: Не найдены OpenGL расширения для OpenCSG - OpenCSG "
+"был отключен.\n"
+"\n"
 
 #: src/QGLView.cc:134
 msgid ""
@@ -1157,6 +1177,9 @@ msgid ""
 "later.\n"
 "Your renderer information is as follows:\n"
 msgstr ""
+"Крайне рекомендуется использовать OpenSCAD на системе с поддержкой "
+" OpenGL 2.0 или новее.\n"
+"Информация о рендере:\n"
 
 #: src/QGLView.cc:138
 #, c-format
@@ -1168,19 +1191,19 @@ msgstr ""
 
 #: src/settings.cc:132
 msgid "After indentation"
-msgstr ""
+msgstr "После отступа"
 
 #: src/UIUtils.cc:86
 msgid "Basics"
-msgstr ""
+msgstr "Примитивы"
 
 #: src/UIUtils.cc:86
 msgid "Shapes"
-msgstr ""
+msgstr "Формы"
 
 #: src/UIUtils.cc:86
 msgid "Extrusion"
-msgstr ""
+msgstr "Выдавливание"
 
 #~ msgid "Check for Update.."
 #~ msgstr "Проверить обновления..."
