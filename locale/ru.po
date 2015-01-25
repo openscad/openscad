@@ -905,8 +905,8 @@ msgid "Fixed"
 msgstr "Фиксированный"
 
 #: objects/ui_Preferences.h:1122 src/settings.cc:128
-msgid "Same"
 #, fuzzy
+msgid "Same"
 msgstr "Так же"
 
 #: objects/ui_Preferences.h:1123 src/settings.cc:128
