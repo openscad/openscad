@@ -128,7 +128,7 @@ QSet<MainWindow*> *MainWindow::getWindows()
 unsigned int GuiLocker::gui_locked = 0;
 
 static char copyrighttext[] =
-	"Copyright (C) 2009-2014 The OpenSCAD Developers\n"
+	"Copyright (C) 2009-2015 The OpenSCAD Developers\n"
 	"\n"
 	"This program is free software; you can redistribute it and/or modify "
 	"it under the terms of the GNU General Public License as published by "
@@ -479,7 +479,7 @@ MainWindow::MainWindow(const QString &filename)
 	initActionIcon(fileActionSave, ":/images/Save-32.png", ":/images/Save-128.png");
 	initActionIcon(editActionZoomTextIn, ":/images/zoom-text-in.png", ":/images/zoom-text-in-white.png");
 	initActionIcon(editActionZoomTextOut, ":/images/zoom-text-out.png", ":/images/zoom-text-out-white.png");
-	initActionIcon(designActionRender, ":/images/blackRender.png", ":/images/Arrowhead-Right-32.png");
+	initActionIcon(designActionRender, ":/images/render-32.png", ":/images/render-32-white.png");
 	initActionIcon(viewActionShowAxes, ":/images/blackaxes.png", ":/images/axes.png");
 	initActionIcon(viewActionShowEdges, ":/images/Rotation-32.png", ":/images/grid.png");
 	initActionIcon(viewActionZoomIn, ":/images/zoomin.png", ":/images/Zoom-In-32.png");
@@ -495,7 +495,7 @@ MainWindow::MainWindow(const QString &filename)
 	initActionIcon(viewActionShowCrosshairs, ":/images/cross.png", ":/images/crosswhite.png");
 	initActionIcon(viewActionPerspective, ":/images/perspective1.png", ":/images/perspective1white.png");
 	initActionIcon(viewActionOrthogonal, ":/images/orthogonal.png", ":/images/orthogonalwhite.png");
-	initActionIcon(designActionPreview, ":/images/Preview-32.png", ":/images/Preview-32-white.png");
+	initActionIcon(designActionPreview, ":/images/preview-32.png", ":/images/preview-32-white.png");
 	initActionIcon(viewActionAnimate, ":/images/animate.png", ":/images/animate.png");
 	initActionIcon(designActionExportSTL, ":/images/STL.png", ":/images/STL-white.png");
 	initActionIcon(designActionExportAMF, ":/images/AMF.png", ":/images/AMF-white.png");
@@ -1823,14 +1823,18 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 		if (root_geom && !root_geom->isEmpty()) {
 			if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(root_geom.get())) {
 				if (N->getDimension() == 3) {
+					bool simple = N->p3->is_simple();
 					PRINT("   Top level object is a 3D object:");
-					PRINTB("   Simple:     %6s", (N->p3->is_simple() ? "yes" : "no"));
+					PRINTB("   Simple:     %6s", (simple ? "yes" : "no"));
 					PRINTB("   Vertices:   %6d", N->p3->number_of_vertices());
 					PRINTB("   Halfedges:  %6d", N->p3->number_of_halfedges());
 					PRINTB("   Edges:      %6d", N->p3->number_of_edges());
 					PRINTB("   Halffacets: %6d", N->p3->number_of_halffacets());
 					PRINTB("   Facets:     %6d", N->p3->number_of_facets());
 					PRINTB("   Volumes:    %6d", N->p3->number_of_volumes());
+					if (!simple) {
+						PRINT("WARNING: Object may not be a valid 2-manifold and may need repair!");
+					}
 				}
 			}
 			else if (const PolySet *ps = dynamic_cast<const PolySet *>(root_geom.get())) {
