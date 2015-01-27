@@ -1,11 +1,11 @@
-# French translations for OpenSCAD package.
-# Copyright (C) 2013 THE OpenSCAD'S COPYRIGHT HOLDER
+# Spanish translations for OpenSCAD package.
+# Copyright (C) 2015 THE OpenSCAD'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the OpenSCAD package.
-# don <hugh.m.bright@gmail.com>, 2013.
+# bazza <bazza@riseup.net>, 2015.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: OpenSCAD 2013.02.07\n"
+"Project-Id-Version: OpenSCAD 2015.01.21\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-01-24 20:49+0100\n"
 "PO-Revision-Date: 2015-01-21 22:36-0300\n"
