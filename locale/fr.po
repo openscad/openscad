@@ -2,13 +2,13 @@
 # Copyright (C) 2013 THE OpenSCAD'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the OpenSCAD package.
 # don <hugh.m.bright@gmail.com>, 2013.
-# 
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2013.02.07\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-01-24 20:49+0100\n"
-"PO-Revision-Date: 2014-12-14 10:20-0500\n"
+"PO-Revision-Date: 2015-01-27 18:47-0500\n"
 "Last-Translator: Keven Villeneuve <keven.villeneuve@gmail.com>\n"
 "Language-Team: French\n"
 "Language: fr\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Poedit-SourceCharset: utf-8\n"
-"X-Generator: Poedit 1.7.1\n"
+"X-Generator: Poedit 1.7.4\n"
 
 #: objects/ui_AboutDialog.h:103 src/AboutDialog.h:13
 msgid "About OpenSCAD"
@@ -48,9 +48,8 @@ msgstr ""
 "\n"
 
 #: objects/ui_AboutDialog.h:112
-#, fuzzy
 msgid "OK"
-msgstr "&OK"
+msgstr "OK"
 
 #: objects/ui_FontListDialog.h:105
 msgid "OpenSCAD Font List"
@@ -128,9 +127,8 @@ msgid "Don't show again"
 msgstr "Ne plus afficher"
 
 #: objects/ui_launchingscreen.h:313
-#, fuzzy
 msgid "Version"
-msgstr "Extrusion"
+msgstr "Version"
 
 #: objects/ui_LibraryInfoDialog.h:75
 msgid "Lib & Build Info"
@@ -266,7 +264,7 @@ msgstr "Coller la rotation de la fenêtre de rendu"
 
 #: objects/ui_MainWindow.h:869
 msgid "Increase Font Size"
-msgstr ""
+msgstr "Agrandir la police"
 
 #: objects/ui_MainWindow.h:870
 msgid "Ctrl++"
@@ -274,7 +272,7 @@ msgstr "Ctrl++"
 
 #: objects/ui_MainWindow.h:871
 msgid "Decrease Font Size"
-msgstr ""
+msgstr "Réduire la police"
 
 #: objects/ui_MainWindow.h:872
 msgid "Ctrl+-"
@@ -390,7 +388,7 @@ msgstr "Ctrl+3"
 
 #: objects/ui_MainWindow.h:900
 msgid "Show Scale Markers"
-msgstr ""
+msgstr "Afficher les Marqueurs d'Échelle"
 
 #: objects/ui_MainWindow.h:901
 msgid "Animate"
@@ -618,11 +616,11 @@ msgstr "Ctrl+Shift+I"
 
 #: objects/ui_MainWindow.h:957
 msgid "Cheat Sheet"
-msgstr ""
+msgstr "Aide-Mémoire"
 
 #: objects/ui_MainWindow.h:958
 msgid "Message"
-msgstr ""
+msgstr "Message"
 
 #: objects/ui_MainWindow.h:961
 msgid "Time:"
@@ -766,7 +764,7 @@ msgstr "Palette de couleurs:"
 
 #: objects/ui_Preferences.h:1071
 msgid "Show Warnings and Errors in 3D View"
-msgstr ""
+msgstr "Afficher les Avertissements et les Erreurs dans la fenêtre de rendu"
 
 #: objects/ui_Preferences.h:1072
 msgid "Editor Type"
@@ -793,154 +791,146 @@ msgid "Color syntax highlighting"
 msgstr "Colorer la coloration syntaxique"
 
 #: objects/ui_Preferences.h:1081
-#, fuzzy
 msgid "Ctrl/Cmd-Mouse-wheel zooms text"
-msgstr "Utiliser Ctrl/Cmd-Roulette-Souris pour agrandir le texte"
+msgstr "Ctrl/Cmd-Roulette-Souris agrandit le texte"
 
 #: objects/ui_Preferences.h:1082
-#, fuzzy
 msgid "Indentation"
-msgstr "Documentation"
+msgstr "Indentation"
 
 #: objects/ui_Preferences.h:1083
-#, fuzzy
 msgid "Auto Indent"
-msgstr "&Indenter"
+msgstr "Indentation Auto"
 
 #: objects/ui_Preferences.h:1084
-#, fuzzy
 msgid "Indent using"
-msgstr "&Indenter"
+msgstr "Indenter en utilisant"
 
 #: objects/ui_Preferences.h:1087 src/settings.cc:135
-#, fuzzy
 msgid "Spaces"
-msgstr "Surfaces"
+msgstr "Espaces"
 
 #: objects/ui_Preferences.h:1088 src/settings.cc:135
 msgid "Tabs"
-msgstr ""
+msgstr "Tabulations"
 
 #: objects/ui_Preferences.h:1090
 msgid "Indentation width"
-msgstr ""
+msgstr "Largeur d'Indentation"
 
 #: objects/ui_Preferences.h:1091
 msgid "Tab width"
-msgstr ""
+msgstr "Largeur des tabulations"
 
 #: objects/ui_Preferences.h:1092
 msgid "Tab key function"
-msgstr ""
+msgstr "Fonction de la touche Tab"
 
 #: objects/ui_Preferences.h:1095 objects/ui_Preferences.h:1125
 #: src/settings.cc:136
-#, fuzzy
 msgid "Indent"
-msgstr "&Indenter"
+msgstr "Indenter"
 
 #: objects/ui_Preferences.h:1096 src/settings.cc:136
 msgid "Insert Tab"
-msgstr ""
+msgstr "Insérer une Tabulation"
 
 #: objects/ui_Preferences.h:1098
 msgid "Show whitespace"
-msgstr ""
+msgstr "Afficher les espaces blancs"
 
 #: objects/ui_Preferences.h:1101 src/settings.cc:132
 msgid "Never"
-msgstr ""
+msgstr "Jamais"
 
 #: objects/ui_Preferences.h:1102 src/settings.cc:132
 msgid "Always"
-msgstr ""
+msgstr "Toujours"
 
 #: objects/ui_Preferences.h:1103
 msgid "Only after indentation"
-msgstr ""
+msgstr "Seulement après indentation"
 
 #: objects/ui_Preferences.h:1105
 msgid "Size"
-msgstr ""
+msgstr "Taille"
 
 #: objects/ui_Preferences.h:1106
-#, fuzzy
 msgid "Display"
-msgstr "Afficher &AST..."
+msgstr "Afficher"
 
 #: objects/ui_Preferences.h:1107
 msgid "Enable brace matching"
-msgstr ""
+msgstr "Activer la correspondance d'accolades"
 
 #: objects/ui_Preferences.h:1108
 msgid "Highlight current line"
-msgstr ""
+msgstr "Surligner la ligne courante"
 
 #: objects/ui_Preferences.h:1109 objects/ui_Preferences.h:1142
 msgid "Line wrap"
-msgstr ""
+msgstr "Retour à la ligne"
 
 #: objects/ui_Preferences.h:1112 objects/ui_Preferences.h:1129
 #: objects/ui_Preferences.h:1137 src/settings.cc:127 src/settings.cc:130
 #: src/settings.cc:131
 msgid "None"
-msgstr ""
+msgstr "Aucun"
 
 #: objects/ui_Preferences.h:1113 src/settings.cc:127
 msgid "Wrap at character boundaries"
-msgstr ""
+msgstr "Enveloppez aux limites des caractères"
 
 #: objects/ui_Preferences.h:1114 src/settings.cc:127
 msgid "Wrap at word boundaries"
-msgstr ""
+msgstr "Enveloppez aux limites des mots"
 
 #: objects/ui_Preferences.h:1116
 msgid "Line wrap indentation"
-msgstr ""
+msgstr "Indentation des retours à la ligne"
 
 #: objects/ui_Preferences.h:1117
 msgid "Line wrap visualization"
-msgstr ""
+msgstr "Visualisation des retours à la ligne"
 
 #: objects/ui_Preferences.h:1118
 msgid "Style"
-msgstr ""
+msgstr "Style"
 
 #: objects/ui_Preferences.h:1121 src/settings.cc:128
 msgid "Fixed"
-msgstr ""
+msgstr "Fixé"
 
 #: objects/ui_Preferences.h:1122 src/settings.cc:128
 msgid "Same"
-msgstr ""
+msgstr "Identique"
 
 #: objects/ui_Preferences.h:1123 src/settings.cc:128
-#, fuzzy
 msgid "Indented"
-msgstr "&Indenter"
+msgstr "Indenté"
 
 #: objects/ui_Preferences.h:1126
 msgid "Start"
-msgstr ""
+msgstr "Début"
 
 #: objects/ui_Preferences.h:1130 objects/ui_Preferences.h:1138
 #: src/settings.cc:130 src/settings.cc:131
 msgid "Text"
-msgstr ""
+msgstr "Texte"
 
 #: objects/ui_Preferences.h:1131 objects/ui_Preferences.h:1139
 #: src/settings.cc:130 src/settings.cc:131
 msgid "Border"
-msgstr ""
+msgstr "Bordure"
 
 #: objects/ui_Preferences.h:1132 objects/ui_Preferences.h:1140
 #: src/settings.cc:130 src/settings.cc:131
 msgid "Margin"
-msgstr ""
+msgstr "Marge"
 
 #: objects/ui_Preferences.h:1134
 msgid "End"
-msgstr ""
+msgstr "Fin"
 
 #: objects/ui_Preferences.h:1143
 msgid "Automatically check for updates"
@@ -1044,21 +1034,21 @@ msgstr "Untitled.scad"
 
 #: src/mainwin.cc:971
 msgid "Compile error."
-msgstr ""
+msgstr "Erreur de Compilation."
 
 #: src/mainwin.cc:974
 msgid "Error while compiling '%1'."
-msgstr ""
+msgstr "Erreur lors de la compilation de '%1'."
 
 #: src/mainwin.cc:978
 msgid "Compilation generated %1 warning."
 msgid_plural "Compilation generated %1 warnings."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "La compilation a généré %1 avertissement"
+msgstr[1] "La compilation a généré %1 avertissements"
 
 #: src/mainwin.cc:988
 msgid " For details see <a href=\"#console\">console window</a>."
-msgstr ""
+msgstr " Pour détails voir <a href=\"#console\">Fenêtre de la Console</a>."
 
 #: src/mainwin.cc:1353
 msgid "Save File"
@@ -1141,6 +1131,8 @@ msgid ""
 "Fontconfig needs to update its font cache.\n"
 "This can take up to a couple of minutes."
 msgstr ""
+"Fontconfig a besoin de mettre à jour son cache de polices.\n"
+"Celà peut prendre quelques minutes."
 
 #: src/QGLView.cc:111
 msgid ""
@@ -1193,7 +1185,7 @@ msgstr ""
 
 #: src/settings.cc:132
 msgid "After indentation"
-msgstr ""
+msgstr "Après indentation"
 
 #: src/UIUtils.cc:86
 msgid "Basics"
