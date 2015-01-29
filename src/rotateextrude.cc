@@ -79,7 +79,7 @@ AbstractNode *RotateExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	node->scale = scale->toDouble();
 
 	if (node->convexity <= 0)
-		node->convexity = 1;
+		node->convexity = 2;
 
 	if (node->scale <= 0)
 		node->scale = 1;
