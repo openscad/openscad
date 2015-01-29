@@ -353,13 +353,13 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->designActionDisplayAST, SIGNAL(triggered()), this, SLOT(actionDisplayAST()));
 	connect(this->designActionDisplayCSGTree, SIGNAL(triggered()), this, SLOT(actionDisplayCSGTree()));
 	connect(this->designActionDisplayCSGProducts, SIGNAL(triggered()), this, SLOT(actionDisplayCSGProducts()));
-	connect(this->designActionExportSTL, SIGNAL(triggered()), this, SLOT(actionExportSTL()));
-	connect(this->designActionExportOFF, SIGNAL(triggered()), this, SLOT(actionExportOFF()));
-	connect(this->designActionExportAMF, SIGNAL(triggered()), this, SLOT(actionExportAMF()));
-	connect(this->designActionExportDXF, SIGNAL(triggered()), this, SLOT(actionExportDXF()));
-	connect(this->designActionExportSVG, SIGNAL(triggered()), this, SLOT(actionExportSVG()));
-	connect(this->designActionExportCSG, SIGNAL(triggered()), this, SLOT(actionExportCSG()));
-	connect(this->designActionExportImage, SIGNAL(triggered()), this, SLOT(actionExportImage()));
+	connect(this->fileActionExportSTL, SIGNAL(triggered()), this, SLOT(actionExportSTL()));
+	connect(this->fileActionExportOFF, SIGNAL(triggered()), this, SLOT(actionExportOFF()));
+	connect(this->fileActionExportAMF, SIGNAL(triggered()), this, SLOT(actionExportAMF()));
+	connect(this->fileActionExportDXF, SIGNAL(triggered()), this, SLOT(actionExportDXF()));
+	connect(this->fileActionExportSVG, SIGNAL(triggered()), this, SLOT(actionExportSVG()));
+	connect(this->fileActionExportCSG, SIGNAL(triggered()), this, SLOT(actionExportCSG()));
+	connect(this->fileActionExportImage, SIGNAL(triggered()), this, SLOT(actionExportImage()));
 	connect(this->designActionFlushCaches, SIGNAL(triggered()), this, SLOT(actionFlushCaches()));
 
 	// View menu
@@ -497,13 +497,13 @@ MainWindow::MainWindow(const QString &filename)
 	initActionIcon(viewActionOrthogonal, ":/images/orthogonal.png", ":/images/orthogonalwhite.png");
 	initActionIcon(designActionPreview, ":/images/preview-32.png", ":/images/preview-32-white.png");
 	initActionIcon(viewActionAnimate, ":/images/animate.png", ":/images/animate.png");
-	initActionIcon(designActionExportSTL, ":/images/STL.png", ":/images/STL-white.png");
-	initActionIcon(designActionExportAMF, ":/images/AMF.png", ":/images/AMF-white.png");
-	initActionIcon(designActionExportOFF, ":/images/OFF.png", ":/images/OFF-white.png");
-	initActionIcon(designActionExportDXF, ":/images/DXF.png", ":/images/DXF-white.png");
-	initActionIcon(designActionExportSVG, ":/images/SVG.png", ":/images/SVG-white.png");
-	initActionIcon(designActionExportCSG, ":/images/CSG.png", ":/images/CSG-white.png");
-	initActionIcon(designActionExportImage, ":/images/PNG.png", ":/images/PNG-white.png");
+	initActionIcon(fileActionExportSTL, ":/images/STL.png", ":/images/STL-white.png");
+	initActionIcon(fileActionExportAMF, ":/images/AMF.png", ":/images/AMF-white.png");
+	initActionIcon(fileActionExportOFF, ":/images/OFF.png", ":/images/OFF-white.png");
+	initActionIcon(fileActionExportDXF, ":/images/DXF.png", ":/images/DXF-white.png");
+	initActionIcon(fileActionExportSVG, ":/images/SVG.png", ":/images/SVG-white.png");
+	initActionIcon(fileActionExportCSG, ":/images/CSG.png", ":/images/CSG-white.png");
+	initActionIcon(fileActionExportImage, ":/images/PNG.png", ":/images/PNG-white.png");
 	initActionIcon(viewActionViewAll, ":/images/zoom-all.png", ":/images/zoom-all-white.png");
 	initActionIcon(editActionUndo, ":/images/Command-Undo-32.png", ":/images/Command-Undo-32-white.png");
 	initActionIcon(editActionRedo, ":/images/Command-Redo-32.png", ":/images/Command-Redo-32-white.png");
