@@ -108,8 +108,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>659</width>
-             <height>769</height>
+             <width>605</width>
+             <height>662</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_5">
@@ -226,7 +226,7 @@
                  <widget class="QFontComboBox" name="fontChooser">
                   <property name="currentFont">
                    <font>
-                    <family>Liberation Sans</family>
+                    <family>Helvetica</family>
                     <pointsize>12</pointsize>
                    </font>
                   </property>
@@ -1160,8 +1160,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>100</width>
-               <height>30</height>
+               <width>98</width>
+               <height>36</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_10">
@@ -1214,8 +1214,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>596</width>
-             <height>499</height>
+             <width>440</width>
+             <height>339</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_12">
@@ -1389,9 +1389,6 @@
    </layout>
   </widget>
   <widget class="QToolBar" name="toolBar">
-   <property name="windowTitle">
-    <string>toolBar</string>
-   </property>
    <property name="movable">
     <bool>false</bool>
    </property>
