@@ -691,7 +691,7 @@ MainWindow::~MainWindow()
 	if (MainWindow::getWindows()->size() == 0) {
 		// Quit application even in case some other windows like
 		// Preferences are still open.
-		qApp->quit();
+		this->quit();
 	}
 }
 
