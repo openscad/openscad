@@ -123,7 +123,15 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 	// Only one child -> this is a noop
 	if (children.size() == 1) return ResultObject(children.front().second);
 
-	if (op == OPENSCAD_MINKOWSKI) return ResultObject(CGALUtils::applyMinkowski(children));
+	if (op == OPENSCAD_MINKOWSKI) {
+		Geometry::ChildList actualchildren;
+		BOOST_FOREACH(const Geometry::ChildItem &item, children) {
+			if (!item.second->isEmpty()) actualchildren.push_back(item);
+		}
+		if (actualchildren.empty()) return ResultObject();
+		if (actualchildren.size() == 1) return ResultObject(actualchildren.front().second);
+		return ResultObject(CGALUtils::applyMinkowski(actualchildren));
+	}
 
 	CGAL_Nef_polyhedron *N = CGALUtils::applyOperator(children, op);
 	// FIXME: Clarify when we can return NULL and what that means

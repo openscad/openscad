@@ -207,6 +207,9 @@ namespace CGALUtils {
 		return visited.size() == p.size_of_facets();
 	}
 
+	/*!
+		children cannot contain NULL objects
+	*/
 	Geometry const * applyMinkowski(const Geometry::ChildList &children)
 	{
 		CGAL::Timer t,t_tot;
