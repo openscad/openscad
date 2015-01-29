@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: OpenSCAD 2013.02.24\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-01-24 20:49+0100\n"
-"PO-Revision-Date: 2014-12-23 12:24+0100\n"
+"PO-Revision-Date: 2015-01-28 10:50+0100\n"
 "Last-Translator: Miro Hrončok <miro@hroncok.cz>\n"
 "Language-Team: Czech <miro@hroncok.cz>\n"
 "Language: cs\n"
@@ -38,9 +38,8 @@ msgid ""
 msgstr ""
 
 #: objects/ui_AboutDialog.h:112
-#, fuzzy
 msgid "OK"
-msgstr "&OK"
+msgstr "OK"
 
 #: objects/ui_FontListDialog.h:105
 msgid "OpenSCAD Font List"
@@ -118,9 +117,8 @@ msgid "Don't show again"
 msgstr "Příště nezobrazovat"
 
 #: objects/ui_launchingscreen.h:313
-#, fuzzy
 msgid "Version"
-msgstr "Vytažení"
+msgstr "Verze"
 
 #: objects/ui_LibraryInfoDialog.h:75
 msgid "Lib & Build Info"
@@ -256,7 +254,7 @@ msgstr "Vložit rotaci pohledu"
 
 #: objects/ui_MainWindow.h:869
 msgid "Increase Font Size"
-msgstr ""
+msgstr "Zvětšit písmo"
 
 #: objects/ui_MainWindow.h:870
 msgid "Ctrl++"
@@ -264,7 +262,7 @@ msgstr "Ctrl++"
 
 #: objects/ui_MainWindow.h:871
 msgid "Decrease Font Size"
-msgstr ""
+msgstr "Zmenšit písmo"
 
 #: objects/ui_MainWindow.h:872
 msgid "Ctrl+-"
@@ -380,7 +378,7 @@ msgstr "Ctrl+3"
 
 #: objects/ui_MainWindow.h:900
 msgid "Show Scale Markers"
-msgstr ""
+msgstr "Zobrazit pravítko"
 
 #: objects/ui_MainWindow.h:901
 msgid "Animate"
@@ -608,11 +606,11 @@ msgstr "Ctrl+Shift+I"
 
 #: objects/ui_MainWindow.h:957
 msgid "Cheat Sheet"
-msgstr ""
+msgstr "Tahák"
 
 #: objects/ui_MainWindow.h:958
 msgid "Message"
-msgstr ""
+msgstr "Zpráva"
 
 #: objects/ui_MainWindow.h:961
 msgid "Time:"
@@ -746,7 +744,7 @@ msgstr "Barevné téma:"
 
 #: objects/ui_Preferences.h:1071
 msgid "Show Warnings and Errors in 3D View"
-msgstr ""
+msgstr "Zobrazovat varování a chyby v 3D okně"
 
 #: objects/ui_Preferences.h:1072
 msgid "Editor Type"
@@ -773,154 +771,146 @@ msgid "Color syntax highlighting"
 msgstr "Barva zvýrazňování syntaxe"
 
 #: objects/ui_Preferences.h:1081
-#, fuzzy
 msgid "Ctrl/Cmd-Mouse-wheel zooms text"
-msgstr "Použít Ctrl/Cmd a kolečko myši k změně velikosti písma"
+msgstr "Ctrl/Cmd a kolečko myši mění velikost písma"
 
 #: objects/ui_Preferences.h:1082
-#, fuzzy
 msgid "Indentation"
-msgstr "Dokumentace"
+msgstr "Odsazování"
 
 #: objects/ui_Preferences.h:1083
-#, fuzzy
 msgid "Auto Indent"
-msgstr "Odsad&it"
+msgstr "Automatické odsazování"
 
 #: objects/ui_Preferences.h:1084
-#, fuzzy
 msgid "Indent using"
-msgstr "Odsad&it"
+msgstr "Odsazovat pomocí"
 
 #: objects/ui_Preferences.h:1087 src/settings.cc:135
-#, fuzzy
 msgid "Spaces"
-msgstr "Povrchy"
+msgstr "mezer"
 
 #: objects/ui_Preferences.h:1088 src/settings.cc:135
 msgid "Tabs"
-msgstr ""
+msgstr "tabulátorů"
 
 #: objects/ui_Preferences.h:1090
 msgid "Indentation width"
-msgstr ""
+msgstr "Velikost odsazení"
 
 #: objects/ui_Preferences.h:1091
 msgid "Tab width"
-msgstr ""
+msgstr "Šířka tabulátoru"
 
 #: objects/ui_Preferences.h:1092
 msgid "Tab key function"
-msgstr ""
+msgstr "Funkce klávesy tabulátor"
 
 #: objects/ui_Preferences.h:1095 objects/ui_Preferences.h:1125
 #: src/settings.cc:136
-#, fuzzy
 msgid "Indent"
-msgstr "Odsad&it"
+msgstr "odsadí"
 
 #: objects/ui_Preferences.h:1096 src/settings.cc:136
 msgid "Insert Tab"
-msgstr ""
+msgstr "vloží znak tabulátoru"
 
 #: objects/ui_Preferences.h:1098
 msgid "Show whitespace"
-msgstr ""
+msgstr "Zobrazovat mazery"
 
 #: objects/ui_Preferences.h:1101 src/settings.cc:132
 msgid "Never"
-msgstr ""
+msgstr "nikdy"
 
 #: objects/ui_Preferences.h:1102 src/settings.cc:132
 msgid "Always"
-msgstr ""
+msgstr "vždy"
 
 #: objects/ui_Preferences.h:1103
 msgid "Only after indentation"
-msgstr ""
+msgstr "pouze za odsazením"
 
 #: objects/ui_Preferences.h:1105
 msgid "Size"
-msgstr ""
+msgstr "Velikost"
 
 #: objects/ui_Preferences.h:1106
-#, fuzzy
 msgid "Display"
-msgstr "Ukázat &ATS..."
+msgstr "Vzhled"
 
 #: objects/ui_Preferences.h:1107
 msgid "Enable brace matching"
-msgstr ""
+msgstr "Zvýrazňovat párové závorky"
 
 #: objects/ui_Preferences.h:1108
 msgid "Highlight current line"
-msgstr ""
+msgstr "Zvýrazňovat aktuální řádek"
 
 #: objects/ui_Preferences.h:1109 objects/ui_Preferences.h:1142
 msgid "Line wrap"
-msgstr ""
+msgstr "Zalamování řádek"
 
 #: objects/ui_Preferences.h:1112 objects/ui_Preferences.h:1129
 #: objects/ui_Preferences.h:1137 src/settings.cc:127 src/settings.cc:130
 #: src/settings.cc:131
 msgid "None"
-msgstr ""
+msgstr "vypnout"
 
 #: objects/ui_Preferences.h:1113 src/settings.cc:127
 msgid "Wrap at character boundaries"
-msgstr ""
+msgstr "zalamovat na úrovni znaků"
 
 #: objects/ui_Preferences.h:1114 src/settings.cc:127
 msgid "Wrap at word boundaries"
-msgstr ""
+msgstr "zalamovat na úrovni slov"
 
 #: objects/ui_Preferences.h:1116
 msgid "Line wrap indentation"
-msgstr ""
+msgstr "Odsazení zalomených řádek"
 
 #: objects/ui_Preferences.h:1117
 msgid "Line wrap visualization"
-msgstr ""
+msgstr "Pozice symbolu zalomení"
 
 #: objects/ui_Preferences.h:1118
 msgid "Style"
-msgstr ""
+msgstr "Styl"
 
 #: objects/ui_Preferences.h:1121 src/settings.cc:128
 msgid "Fixed"
-msgstr ""
+msgstr "vždy stejný"
 
 #: objects/ui_Preferences.h:1122 src/settings.cc:128
 msgid "Same"
-msgstr ""
+msgstr "jako počátek"
 
 #: objects/ui_Preferences.h:1123 src/settings.cc:128
-#, fuzzy
 msgid "Indented"
-msgstr "Odsad&it"
+msgstr "odsazený"
 
 #: objects/ui_Preferences.h:1126
 msgid "Start"
-msgstr ""
+msgstr "Začátek"
 
 #: objects/ui_Preferences.h:1130 objects/ui_Preferences.h:1138
 #: src/settings.cc:130 src/settings.cc:131
 msgid "Text"
-msgstr ""
+msgstr "za textem"
 
 #: objects/ui_Preferences.h:1131 objects/ui_Preferences.h:1139
 #: src/settings.cc:130 src/settings.cc:131
 msgid "Border"
-msgstr ""
+msgstr "konec řádky"
 
 #: objects/ui_Preferences.h:1132 objects/ui_Preferences.h:1140
 #: src/settings.cc:130 src/settings.cc:131
 msgid "Margin"
-msgstr ""
+msgstr "levý okraj"
 
 #: objects/ui_Preferences.h:1134
 msgid "End"
-msgstr ""
+msgstr "Konec"
 
 #: objects/ui_Preferences.h:1143
 msgid "Automatically check for updates"
@@ -1020,24 +1010,23 @@ msgid "Untitled.scad"
 msgstr "Bezejmenný.scad"
 
 #: src/mainwin.cc:971
-#, fuzzy
 msgid "Compile error."
-msgstr "Z&kompilovat"
+msgstr "Chyba kompilace."
 
 #: src/mainwin.cc:974
 msgid "Error while compiling '%1'."
-msgstr ""
+msgstr "Chyba při kompilaci '%1'."
 
 #: src/mainwin.cc:978
 msgid "Compilation generated %1 warning."
 msgid_plural "Compilation generated %1 warnings."
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Kompilace vyvolala %1 varování."
+msgstr[1] "Kompilace vyvolala %1 varování."
+msgstr[2] "Kompilace vyvolala %1 varování."
 
 #: src/mainwin.cc:988
 msgid " For details see <a href=\"#console\">console window</a>."
-msgstr ""
+msgstr "Pro podrobnosti nahlédněte do <a href=\"#console\">konzole</a>."
 
 #: src/mainwin.cc:1353
 msgid "Save File"
@@ -1120,6 +1109,8 @@ msgid ""
 "Fontconfig needs to update its font cache.\n"
 "This can take up to a couple of minutes."
 msgstr ""
+"Fontconfig potřebuje aktualizovat cache.\n"
+"To může trvat až několik minut."
 
 #: src/QGLView.cc:111
 msgid ""
@@ -1170,7 +1161,7 @@ msgstr ""
 
 #: src/settings.cc:132
 msgid "After indentation"
-msgstr ""
+msgstr "za odsazením"
 
 #: src/UIUtils.cc:86
 msgid "Basics"
