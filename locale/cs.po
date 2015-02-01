@@ -8,15 +8,15 @@ msgstr ""
 "Project-Id-Version: OpenSCAD 2013.02.24\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-02-01 18:03+0100\n"
-"PO-Revision-Date: 2015-01-28 10:50+0100\n"
+"PO-Revision-Date: 2015-02-01 20:54+0100\n"
 "Last-Translator: Miro Hrončok <miro@hroncok.cz>\n"
 "Language-Team: Czech <miro@hroncok.cz>\n"
 "Language: cs\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.5.4\n"
-"Plural-Forms: nplurals=3; plural=n==1 ? 0 : n>=2 && n<=4 ? 1 : 2;\n"
+"X-Generator: Poedit 1.7.3\n"
+"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 
 #: objects/ui_AboutDialog.h:103 src/AboutDialog.h:13
@@ -161,7 +161,7 @@ msgstr "Ctrl+Shift+S"
 
 #: objects/ui_MainWindow.h:845
 msgid "&Reload"
-msgstr "&Znovu načíst"
+msgstr "Zno&vu načíst"
 
 #: objects/ui_MainWindow.h:846
 msgid "Ctrl+R"
@@ -185,7 +185,7 @@ msgstr "Ctrl+Z"
 
 #: objects/ui_MainWindow.h:851
 msgid "&Redo"
-msgstr "Zn&ovu"
+msgstr "Znov&u"
 
 #: objects/ui_MainWindow.h:852
 msgid "Ctrl+Shift+Z"
@@ -193,7 +193,7 @@ msgstr "Ctrl+Shift+Z"
 
 #: objects/ui_MainWindow.h:853
 msgid "Cu&t"
-msgstr "&Vyjmout"
+msgstr "Vy&jmout"
 
 #: objects/ui_MainWindow.h:854
 msgid "Ctrl+X"
@@ -225,7 +225,7 @@ msgstr "Ctrl+I"
 
 #: objects/ui_MainWindow.h:861
 msgid "C&omment"
-msgstr "&Zakomentovat"
+msgstr "Zakomen&tovat"
 
 #: objects/ui_MainWindow.h:862
 msgid "Ctrl+D"
@@ -240,41 +240,36 @@ msgid "Ctrl+Shift+D"
 msgstr "Ctrl+Shift+D"
 
 #: objects/ui_MainWindow.h:865
-#, fuzzy
 msgid "P&aste viewport translation"
-msgstr "Vložit posun pohledu"
+msgstr "Vložit posun pohl&edu"
 
 #: objects/ui_MainWindow.h:866
 msgid "Ctrl+T"
 msgstr "Ctrl+T"
 
 #: objects/ui_MainWindow.h:867
-#, fuzzy
 msgid "Past&e viewport rotation"
-msgstr "Vložit rotaci pohledu"
+msgstr "Vlo&žit rotaci pohledu"
 
 #: objects/ui_MainWindow.h:868
-#, fuzzy
 msgid "Increase Font &Size"
-msgstr "Zvětšit písmo"
+msgstr "Zv&ětšit písmo"
 
 #: objects/ui_MainWindow.h:869
 msgid "Ctrl++"
 msgstr "Ctrl++"
 
 #: objects/ui_MainWindow.h:870
-#, fuzzy
 msgid "Decrease Font Si&ze"
-msgstr "Zmenšit písmo"
+msgstr "Z&menšit písmo"
 
 #: objects/ui_MainWindow.h:871
 msgid "Ctrl+-"
 msgstr "Ctrl+-"
 
 #: objects/ui_MainWindow.h:872
-#, fuzzy
 msgid "H&ide editor"
-msgstr "Skrýt editor"
+msgstr "Skrýt &editor"
 
 #: objects/ui_MainWindow.h:873
 msgid "&Reload and Preview"
@@ -293,7 +288,6 @@ msgid "F5"
 msgstr "F5"
 
 #: objects/ui_MainWindow.h:877
-#, fuzzy
 msgid "R&ender"
 msgstr "Vy&renderovat"
 
@@ -302,21 +296,18 @@ msgid "F6"
 msgstr "F6"
 
 #: objects/ui_MainWindow.h:879
-#, fuzzy
 msgid "&Check Validity"
-msgstr "Zkontrolovat správnost"
+msgstr "Zkontrolovat &správnost"
 
 #: objects/ui_MainWindow.h:880
-#, fuzzy
 msgid "Display A&ST..."
-msgstr "Ukázat &ATS..."
+msgstr "&Ukázat ATS..."
 
 #: objects/ui_MainWindow.h:881
 msgid "Display CSG &Tree..."
 msgstr "Ukázat CSG s&trom..."
 
 #: objects/ui_MainWindow.h:882
-#, fuzzy
 msgid "Display CSG Pr&oducts..."
 msgstr "Ukázat CSG &produkty..."
 
@@ -394,43 +385,39 @@ msgstr "Animovat"
 
 #: objects/ui_MainWindow.h:901
 msgid "&Top"
-msgstr ""
+msgstr "Ses&hora"
 
 #: objects/ui_MainWindow.h:902
 msgid "Ctrl+4"
 msgstr "Ctrl+4"
 
 #: objects/ui_MainWindow.h:903
-#, fuzzy
 msgid "&Bottom"
-msgstr "Zespoda"
+msgstr "Ze&spoda"
 
 #: objects/ui_MainWindow.h:904
 msgid "Ctrl+5"
 msgstr "Ctrl+5"
 
 #: objects/ui_MainWindow.h:905
-#, fuzzy
 msgid "&Left"
-msgstr "Zleva"
+msgstr "Z&leva"
 
 #: objects/ui_MainWindow.h:906
 msgid "Ctrl+6"
 msgstr "Ctrl+6"
 
 #: objects/ui_MainWindow.h:907
-#, fuzzy
 msgid "&Right"
-msgstr "Zprava"
+msgstr "Z&prava"
 
 #: objects/ui_MainWindow.h:908
 msgid "Ctrl+7"
 msgstr "Ctrl+7"
 
 #: objects/ui_MainWindow.h:909
-#, fuzzy
 msgid "&Front"
-msgstr "Zepředu"
+msgstr "Zepře&du"
 
 #: objects/ui_MainWindow.h:910
 msgid "Ctrl+8"
@@ -438,172 +425,147 @@ msgstr "Ctrl+8"
 
 #: objects/ui_MainWindow.h:911
 msgid "Bac&k"
-msgstr ""
+msgstr "Ze&zadu"
 
 #: objects/ui_MainWindow.h:912
 msgid "Ctrl+9"
 msgstr "Ctrl+9"
 
 #: objects/ui_MainWindow.h:913
-#, fuzzy
 msgid "&Diagonal"
-msgstr "Diagonálně"
+msgstr "Dia&gonálně"
 
 #: objects/ui_MainWindow.h:914
 msgid "Ctrl+0"
 msgstr "Ctrl+0"
 
 #: objects/ui_MainWindow.h:915
-#, fuzzy
 msgid "Ce&nter"
-msgstr "Vycentrovat"
+msgstr "Vy&centrovat"
 
 #: objects/ui_MainWindow.h:916
-#, fuzzy
 msgid "&Perspective"
-msgstr "Perspektivně"
+msgstr "Pe&rspektivně"
 
 #: objects/ui_MainWindow.h:917
-#, fuzzy
 msgid "&Orthogonal"
-msgstr "Ortogonálně"
+msgstr "&Ortogonálně"
 
 #: objects/ui_MainWindow.h:918
-#, fuzzy
 msgid "H&ide console"
-msgstr "Skrýt terminál"
+msgstr "Skrýt &terminál"
 
 #: objects/ui_MainWindow.h:919
-#, fuzzy
 msgid "&About"
-msgstr "O aplikaci"
+msgstr "&O aplikaci"
 
 #: objects/ui_MainWindow.h:920
-#, fuzzy
 msgid "&Documentation"
-msgstr "Dokumentace"
+msgstr "&Dokumentace"
 
 #: objects/ui_MainWindow.h:921
 msgid "Clear Recent"
 msgstr "Zapomenout nedávné"
 
 #: objects/ui_MainWindow.h:922
-#, fuzzy
 msgid "Export as &DXF..."
-msgstr "Exportovat jako &DXF"
+msgstr "Exportovat jako &DXF..."
 
 #: objects/ui_MainWindow.h:923
-#, fuzzy
 msgid "&Close"
-msgstr "Zavřít"
+msgstr "&Zavřít"
 
 #: objects/ui_MainWindow.h:924
 msgid "Ctrl+W"
 msgstr "Ctrl+W"
 
 #: objects/ui_MainWindow.h:925
-#, fuzzy
 msgid "&Preferences"
-msgstr "Předvolby"
+msgstr "Předvolb&y"
 
 #: objects/ui_MainWindow.h:926
-#, fuzzy
 msgid "&Find..."
-msgstr "Najít..."
+msgstr "&Najít..."
 
 #: objects/ui_MainWindow.h:927
 msgid "Ctrl+F"
 msgstr "Ctrl+F"
 
 #: objects/ui_MainWindow.h:928
-#, fuzzy
 msgid "Fin&d and Replace..."
-msgstr "Najít a nahradit..."
+msgstr "Najít a na&hradit..."
 
 #: objects/ui_MainWindow.h:929
 msgid "Ctrl+Alt+F"
 msgstr "Ctrl+Alt+F"
 
 #: objects/ui_MainWindow.h:930
-#, fuzzy
 msgid "Find Ne&xt"
-msgstr "Najít další"
+msgstr "Najít &další"
 
 #: objects/ui_MainWindow.h:931
 msgid "Ctrl+G"
 msgstr "Ctrl+G"
 
 #: objects/ui_MainWindow.h:932
-#, fuzzy
 msgid "Find Pre&vious"
-msgstr "Najít předchozí"
+msgstr "Najít &předchozí"
 
 #: objects/ui_MainWindow.h:933
 msgid "Ctrl+Shift+G"
 msgstr "Ctrl+Shift+G"
 
 #: objects/ui_MainWindow.h:934
-#, fuzzy
 msgid "Use Se&lection for Find"
-msgstr "Hledat vybraný řetězec"
+msgstr "Hledat vybraný řetěze&c"
 
 #: objects/ui_MainWindow.h:935
 msgid "Ctrl+E"
 msgstr "Ctrl+E"
 
 #: objects/ui_MainWindow.h:936
-#, fuzzy
 msgid "&Flush Caches"
-msgstr "Vyprázdnit mezipaměť"
+msgstr "&Vyprázdnit mezipaměť"
 
 #: objects/ui_MainWindow.h:937
-#, fuzzy
 msgid "&OpenSCAD Homepage"
-msgstr "Domovská stránka OpenSCADu"
+msgstr "Domovská &stránka OpenSCADu"
 
 #: objects/ui_MainWindow.h:938
-#, fuzzy
 msgid "&Automatic Reload and Preview"
-msgstr "Automaticky načítat a zobrazovat"
+msgstr "&Automaticky načítat a zobrazovat"
 
 #: objects/ui_MainWindow.h:939
-#, fuzzy
 msgid "Export as &Image..."
-msgstr "Exportovat jako obrázek..."
+msgstr "Exportovat jako &obrázek..."
 
 #: objects/ui_MainWindow.h:940
-#, fuzzy
 msgid "Export as &CSG..."
-msgstr "Exportovat jako CSG..."
+msgstr "Exportovat jako &CSG..."
 
 #: objects/ui_MainWindow.h:941
-#, fuzzy
 msgid "&Library info"
-msgstr "Informace o knihovnách"
+msgstr "&Informace o knihovnách"
 
 #: objects/ui_MainWindow.h:942
-#, fuzzy
 msgid "Show &Library Folder..."
-msgstr "Adresář s knihovnami..."
+msgstr "&Adresář s knihovnami..."
 
 #: objects/ui_MainWindow.h:943
 msgid "Reset View"
 msgstr "Výchozí pohled"
 
 #: objects/ui_MainWindow.h:944
-#, fuzzy
 msgid "&Font List"
-msgstr "Seznam písem"
+msgstr "Seznam &písem"
 
 #: objects/ui_MainWindow.h:945
-#, fuzzy
 msgid "Export as S&VG..."
-msgstr "Exportovat jako SVG..."
+msgstr "Exportovat jako S&VG..."
 
 #: objects/ui_MainWindow.h:946
-#, fuzzy
 msgid "Export as &AMF..."
-msgstr "Exportovat jako AMF..."
+msgstr "Exportovat jako &AMF..."
 
 #: objects/ui_MainWindow.h:947
 msgid "Zoom In"
@@ -626,9 +588,8 @@ msgid "View All"
 msgstr "Zobrazit vše"
 
 #: objects/ui_MainWindow.h:952
-#, fuzzy
 msgid "Conv&ert Tabs to Spaces"
-msgstr "Převést tabulátory na mezery"
+msgstr "Pře&vést tabulátory na mezery"
 
 #: objects/ui_MainWindow.h:953
 msgid "Hide toolbars"
@@ -643,9 +604,8 @@ msgid "Ctrl+Shift+I"
 msgstr "Ctrl+Shift+I"
 
 #: objects/ui_MainWindow.h:956
-#, fuzzy
 msgid "&Cheat Sheet"
-msgstr "Tahák"
+msgstr "&Tahák"
 
 #: objects/ui_MainWindow.h:957
 msgid "Message"
@@ -672,19 +632,16 @@ msgid "&File"
 msgstr "&Soubor"
 
 #: objects/ui_MainWindow.h:965
-#, fuzzy
 msgid "Recen&t Files"
-msgstr "Nedávné soubory"
+msgstr "Nedávné &soubory"
 
 #: objects/ui_MainWindow.h:966
-#, fuzzy
 msgid "&Examples"
-msgstr "Příklady"
+msgstr "&Příklady"
 
 #: objects/ui_MainWindow.h:967
-#, fuzzy
 msgid "E&xport"
-msgstr "Exportovat"
+msgstr "&Exportovat"
 
 #: objects/ui_MainWindow.h:968
 msgid "&Edit"
