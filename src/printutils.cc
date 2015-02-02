@@ -83,7 +83,7 @@ void PRINTDEBUG(const std::string &filename, const std::string &msg)
 	boost::algorithm::to_lower( lowdebug );
 	if (OpenSCAD::debug=="all") {
 		PRINT_NOCACHE( shortfname+": "+ msg );
-	} else if (lowshortfname.find(lowdebug) != std::string::npos) {
+	} else if (lowdebug.find(lowshortfname) != std::string::npos) {
 		PRINT_NOCACHE( shortfname+": "+ msg );
 	}
 }
