@@ -605,6 +605,7 @@ void dialogInitHandler(FontCacheInitializer *initializer, void *)
 	dialog.setMinimum(0);
 	dialog.setMaximum(0);
 	dialog.setCancelButton(0);
+	dialog.moveToThread(QApplication::instance()->thread());
 
 	QFutureWatcher<void> futureWatcher;
 	QObject::connect(&futureWatcher, SIGNAL(finished()), &dialog, SLOT(reset()));
