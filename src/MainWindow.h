@@ -249,6 +249,8 @@ public slots:
 	void waitAfterReload();
 	void autoReloadSet(bool);
 	void setContentsChanged();
+	void showFontCacheDialog();
+	void hideFontCacheDialog();
 
 private:
 	static void report_func(const class AbstractNode*, void *vp, int mark);
@@ -256,6 +258,7 @@ private:
 	static bool undockMode;
 	static bool reorderMode;
 	static QSet<MainWindow*> *windows;
+	static class QProgressDialog *fontCacheDialog;
 
 	char const * afterCompileSlot;
 	bool procevents;

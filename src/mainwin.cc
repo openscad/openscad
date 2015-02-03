@@ -170,6 +170,8 @@ bool MainWindow::mdiMode = false;
 bool MainWindow::undockMode = false;
 bool MainWindow::reorderMode = false;
 
+QProgressDialog *MainWindow::fontCacheDialog = NULL;
+
 MainWindow::MainWindow(const QString &filename)
 	: root_inst("group"), library_info_dialog(NULL), font_list_dialog(NULL), tempFile(NULL), progresswidget(NULL), contentschanged(false)
 {
@@ -2672,4 +2674,22 @@ void MainWindow::openCSGSettingsChanged()
 void MainWindow::setContentsChanged()
 {
 	this->contentschanged = true;
+}
+
+void MainWindow::showFontCacheDialog()
+{
+	if (!MainWindow::fontCacheDialog) MainWindow::fontCacheDialog = new QProgressDialog;	
+	QProgressDialog *dialog = MainWindow::fontCacheDialog;
+
+	dialog->setLabelText(_("Fontconfig needs to update its font cache.\nThis can take up to a couple of minutes."));
+	dialog->setMinimum(0);
+	dialog->setMaximum(0);
+	dialog->setCancelButton(0);
+	dialog->exec();
+}
+
+void MainWindow::hideFontCacheDialog()
+{
+	assert(MainWindow::fontCacheDialog);
+	MainWindow::fontCacheDialog->reset();
 }
