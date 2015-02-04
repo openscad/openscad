@@ -2638,19 +2638,27 @@ void MainWindow::quit()
 
 void MainWindow::consoleOutput(const std::string &msg, void *userdata)
 {
-	// Invoke the append function in the main thread in case the output
+	// Invoke the method in the main thread in case the output
 	// originates in a worker thread.
 	MainWindow *thisp = static_cast<MainWindow*>(userdata);
+	QMetaObject::invokeMethod(thisp, "consoleOutput", Q_ARG(std::string, msg));
+}
+
+void MainWindow::consoleOutput(const std::string &msg)
+{
 	QString qmsg = QString::fromUtf8(msg.c_str());
 	if (qmsg.startsWith("WARNING:") || qmsg.startsWith("DEPRECATED:")) {
-		thisp->compileWarnings++;
-		qmsg = "<html><span style=\"color: black; background-color: #ffffb0;\">" + qmsg + "</span></html>";
+		this->compileWarnings++;
+		qmsg = "<html><span style=\"color: black; background-color: #ffffb0;\">" + qmsg + "</span></html>\n";
 	} else if (qmsg.startsWith("ERROR:")) {
-		thisp->compileErrors++;
-		qmsg = "<html><span style=\"color: black; background-color: #ffb0b0;\">" + qmsg + "</span></html>";
+		this->compileErrors++;
+		qmsg = "<html><span style=\"color: black; background-color: #ffb0b0;\">" + qmsg + "</span></html>\n";
 	}
-	QMetaObject::invokeMethod(thisp->console, "append", Qt::QueuedConnection, Q_ARG(QString, qmsg));
-	if (thisp->procevents) QApplication::processEvents();
+	QTextCursor c = this->console->textCursor();
+	c.movePosition(QTextCursor::End);
+	this->console->setTextCursor(c);
+	this->console->append(qmsg);
+	if (this->procevents) QApplication::processEvents();
 }
 
 void MainWindow::setCurrentOutput()

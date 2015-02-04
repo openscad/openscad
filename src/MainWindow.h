@@ -98,6 +98,8 @@ private slots:
 	void setColorScheme(const QString &cs);
 	void showProgress();
 	void openCSGSettingsChanged();
+	void consoleOutput(const std::string &msg);
+
 private:
         void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
 	void openFile(const QString &filename);
