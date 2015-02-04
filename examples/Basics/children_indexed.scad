@@ -1,25 +1,9 @@
-echo(version=version());
+// children_indexed.scad - Usage of indexed children()
 
 // children() with a parameter allows access to a specific child
 // object with children(0) being the first one. In addition the
 // $children variable is automatically set to the number of child
 // objects.
-
-module align_in_grid_and_add_text()
-{
-    if ($children == 0) {
-        text("Nothing...", 6, halign = "center");
-    } else {
-        t = $children == 1 ? "one object" : str($children, " objects ");
-        text(t, 6, halign = "center");
-
-        for (y = [0 : $children - 1])
-            for (x = [0 : $children - 1])
-                translate([15 * (x - ($children - 1) / 2), 20 * y + 40, 0])
-                    scale(1 + x / $children)
-                        children(y);
-    }
-}
 
 color("red")
     translate([-100, -20, 0])
@@ -47,7 +31,23 @@ color("green")
         }
 
 
+module align_in_grid_and_add_text()
+{
+    if ($children == 0) {
+        text("Nothing...", 6, halign = "center");
+    } else {
+        t = $children == 1 ? "one object" : str($children, " objects ");
+        text(t, 6, halign = "center");
 
+        for (y = [0 : $children - 1])
+            for (x = [0 : $children - 1])
+                translate([15 * (x - ($children - 1) / 2), 20 * y + 40, 0])
+                    scale(1 + x / $children)
+                        children(y);
+    }
+}
+
+echo(version=version());
 // Written in 2015 by Torsten Paul <Torsten.Paul@gmx.de>
 //
 // To the extent possible under law, the author(s) have dedicated all
