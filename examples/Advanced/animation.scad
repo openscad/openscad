@@ -1,4 +1,4 @@
-echo(version=version());
+// animation.scad - Demo of animation usage
 
 // The animation funtionality is based simply on a variable $t
 // that is changed automatically by OpenSCAD while repeatedly
@@ -14,6 +14,13 @@ echo(version=version());
 // the arm movements.
 arm1_length = 70;
 arm2_length = 50;
+
+r = 2;
+$fn = 30;
+
+plate();
+pos = position($t);
+arm(pos[0], pos[1], arm1_length, arm2_length);
 
 // Function describing the X/Y position that should be traced
 // by the arm over time.
@@ -56,27 +63,20 @@ module arm(x, y, l1, l2) {
         cylinder(r1 = 0, r2 = r, h = 4 * r, center = true);
 }
 
+module curve() polygon([for (a = [ 0 : 0.004 : 1]) position(a)]);
+
 // Draws the plate and the traced function using small black cubes.
 module plate() {
-    %translate([0, 25, -3*r])
-        cube([150, 150, 0.1], center = true);
-    %for (a = [ 0 : 0.004 : 1]) {
-        pos = position(a);
-        color("black")
-            translate([pos[0], pos[1], -3*r])
-                cube([0.8, 0.8, 0.2], center = true);
+    %translate([0, 0, -3*r]) {
+        translate([0,25,0]) cube([150, 150, 0.1], center = true);
+        color("Black") linear_extrude(0.1) difference() {
+            curve();
+            offset(-1) curve();
+        }
     }
 }
 
-r = 2;
-$fn = 30;
-
-plate();
-pos = position($t);
-arm(pos[0], pos[1], arm1_length, arm2_length);
-
-
-
+echo(version=version());
 // Written in 2015 by Torsten Paul <Torsten.Paul@gmx.de>
 //
 // To the extent possible under law, the author(s) have dedicated all
