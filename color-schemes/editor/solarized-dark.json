@@ -1,0 +1,36 @@
+{
+    "name" : "Solarized (dark)",
+    "index" : 1310,
+    "paper" : "#002b36",
+    "text" : "#839496",
+    "caret" : {
+        "width" : 2,
+        "foreground" : "#fff070",
+        "line-background" : "#073642"
+    },
+    "colors" : {
+        "keyword1" : "#268ad1",
+        "keyword2" : "#2aa198",
+        "keyword3" : "#859900",
+        "comment" : "#657b83",
+        "commentline" : "#657b83",
+        "commentdoc" : "#657b83",
+        "commentdockeyword" : "#6c71c4",
+        "number" : "#d33682",
+        "string" : "#b58900",
+        "operator" : "#cb4b16",
+        "whitespace-foreground" : "#839496",
+        "selection-foreground" : "#fdf6e3",
+        "selection-background" : "#657b83",
+        "margin-background" : "#002b36",
+        "margin-foreground" : "#839496",
+        "matched-brace-background" : "#0c4e22",
+        "matched-brace-foreground" : "#fff070",
+        "unmatched-brace-background" : "#92211f",
+        "unmatched-brace-foreground" : "#fff070",
+        "error-marker" : "#ff0000",
+        "error-indicator" : "#90ff8080",
+        "error-indicator-outline" : "#ff000000",
+        "edge" : "#d33682"
+    }
+}

@@ -7,7 +7,7 @@ group() {
 			linear_extrude(file = "localfiles_dir/localfile.dxf", layer = "", origin = [0, 0], height = 100, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2);
 		}
 		multmatrix([[1, 0, 0, 0], [0, 1, 0, 350], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-			rotate_extrude(file = "localfiles_dir/localfile.dxf", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2);
+			rotate_extrude(file = "localfiles_dir/localfile.dxf", layer = "", origin = [0, 0], scale = 1, convexity = 2, $fn = 0, $fa = 12, $fs = 2);
 		}
 		multmatrix([[1, 0, 0, 250], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 			multmatrix([[200, 0, 0, 0], [0, 200, 0, 0], [0, 0, 50, 0], [0, 0, 0, 1]]) {

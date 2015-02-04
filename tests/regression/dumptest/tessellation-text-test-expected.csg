@@ -1,0 +1,22 @@
+group() {
+	linear_extrude(height = 10, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
+		group() {
+			text(text = "C", size = 50, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "latin", halign = "center", valign = "center", $fn = 8, $fa = 12, $fs = 2);
+		}
+		multmatrix([[1, 0, 0, 50], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			group() {
+				text(text = "C", size = 50, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "latin", halign = "center", valign = "center", $fn = 16, $fa = 12, $fs = 2);
+			}
+		}
+		multmatrix([[1, 0, 0, 0], [0, 1, 0, 50], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			group() {
+				text(text = "C", size = 50, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "latin", halign = "center", valign = "center", $fn = 24, $fa = 12, $fs = 2);
+			}
+		}
+		multmatrix([[1, 0, 0, 50], [0, 1, 0, 50], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			group() {
+				text(text = "C", size = 50, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "latin", halign = "center", valign = "center", $fn = 32, $fa = 12, $fs = 2);
+			}
+		}
+	}
+}

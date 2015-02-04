@@ -1,0 +1,10 @@
+group() {
+	intersection() {
+		multmatrix([[1, 0, 0, -2], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			cube(size = [1, 1, 1], center = false);
+		}
+		multmatrix([[1, 0, 0, 2], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			cube(size = [1, 1, 1], center = false);
+		}
+	}
+}

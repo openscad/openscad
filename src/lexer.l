@@ -164,7 +164,7 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
  files on the cmd-line as in the editor.
 */%}
 
-\xc2\xa0
+[\xc2\xa0]+
 
 {UNICODE}+              { parser_error_pos -= strlen(yytext); return TOK_ERROR; }
 

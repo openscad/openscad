@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		E0034E2019AA8409009F0BD0 /* dummy.c in Sources */ = {isa = PBXBuildFile; fileRef = E0034E1F19AA8409009F0BD0 /* dummy.c */; };
 		E018B43619AA8AA1004C9DF7 /* dummy.c in Sources */ = {isa = PBXBuildFile; fileRef = E0034E1F19AA8409009F0BD0 /* dummy.c */; };
+		E0ED6EC71A50B0F3007E979A /* Test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E0ED6EC51A50B0F3007E979A /* Test.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -262,6 +263,10 @@
 		E0BD020A1979C2D90020CC1B /* FontListDialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FontListDialog.h; sourceTree = "<group>"; };
 		E0BD020B1979C2D90020CC1B /* FreetypeRenderer.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FreetypeRenderer.cc; sourceTree = "<group>"; };
 		E0BD020C1979C2D90020CC1B /* FreetypeRenderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FreetypeRenderer.h; sourceTree = "<group>"; };
+		E0ED6EC51A50B0F3007E979A /* Test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Test.cpp; path = ../Test.cpp; sourceTree = "<group>"; };
+		E0ED6EC61A50B0F3007E979A /* Test.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Test.h; path = ../Test.h; sourceTree = "<group>"; };
+		E0F8E5411A5B02AB004723C5 /* cgalutils-polyhedron.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = "cgalutils-polyhedron.cc"; sourceTree = "<group>"; };
+		E0FCDD621A27B96C0024E633 /* clipper-utils.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = "clipper-utils.cc"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -276,6 +281,8 @@
 		E022640517C307FA00499974 = {
 			isa = PBXGroup;
 			children = (
+				E0ED6EC51A50B0F3007E979A /* Test.cpp */,
+				E0ED6EC61A50B0F3007E979A /* Test.h */,
 				E018B43719AA8B2D004C9DF7 /* dummy sources */,
 				E05FBE6A17C30A05004F525B /* src */,
 				E056783C19AA721200F5650C /* Products */,
@@ -328,11 +335,13 @@
 				E05FBE8817C30A05004F525B /* CGALRenderer.cc */,
 				E05FBE8917C30A05004F525B /* CGALRenderer.h */,
 				E091574D19AA58C900D699E9 /* cgalutils-tess.cc */,
+				E0F8E5411A5B02AB004723C5 /* cgalutils-polyhedron.cc */,
 				E05FBE8A17C30A05004F525B /* cgalutils.cc */,
 				E05FBE8B17C30A05004F525B /* cgalutils.h */,
 				E05FBE8C17C30A05004F525B /* cgalworker.cc */,
 				E05FBE8D17C30A05004F525B /* cgalworker.h */,
 				E091574E19AA58C900D699E9 /* clipper-utils.h */,
+				E0FCDD621A27B96C0024E633 /* clipper-utils.cc */,
 				E05FBE8E17C30A05004F525B /* CocoaUtils.h */,
 				E05FBE8F17C30A05004F525B /* CocoaUtils.mm */,
 				E05FBE9017C30A05004F525B /* color.cc */,
@@ -638,7 +647,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "rm -rf \"$BUILT_PRODUCTS_DIR/$FULL_PRODUCT_NAME\"\ncp -Rf \"$PROJECT_DIR/../$FULL_PRODUCT_NAME\" \"$PROJECT_DIR/../libraries\" \"$PROJECT_DIR/../examples\" \"$PROJECT_DIR/../fonts\" \"$BUILT_PRODUCTS_DIR\"";
+			shellScript = "rm -rf \"$BUILT_PRODUCTS_DIR/$FULL_PRODUCT_NAME\"\ncp -Rf \"$PROJECT_DIR/../$FULL_PRODUCT_NAME\" \"$PROJECT_DIR/../libraries\" \"$PROJECT_DIR/../examples\" \"$PROJECT_DIR/../fonts\" \"$PROJECT_DIR/../color-schemes\" \"$BUILT_PRODUCTS_DIR\"";
 		};
 		E0395E7C19AA884F00E43D12 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -651,7 +660,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "rm -rf \"$BUILT_PRODUCTS_DIR/$FULL_PRODUCT_NAME\"\ncp -Rf \"$PROJECT_DIR/../tests/$FULL_PRODUCT_NAME\" \"$PROJECT_DIR/../libraries\" \"$PROJECT_DIR/../examples\" \"$PROJECT_DIR/../fonts\" \"$BUILT_PRODUCTS_DIR\"";
+			shellScript = "rm -rf \"$BUILT_PRODUCTS_DIR/$FULL_PRODUCT_NAME\"\ncp -Rf \"$PROJECT_DIR/../tests/$FULL_PRODUCT_NAME\" \"$PROJECT_DIR/../libraries\" \"$PROJECT_DIR/../examples\" \"$PROJECT_DIR/../fonts\" \"$PROJECT_DIR/../color-schemes\" \"$BUILT_PRODUCTS_DIR\"";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -661,6 +670,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E0034E2019AA8409009F0BD0 /* dummy.c in Sources */,
+				E0ED6EC71A50B0F3007E979A /* Test.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

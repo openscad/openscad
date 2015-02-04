@@ -16,8 +16,8 @@ group() {
 	intersection();
 	linear_extrude(height = 100, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2);
 	linear_extrude(height = 100, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2);
-	rotate_extrude(convexity = 1, $fn = 0, $fa = 12, $fs = 2);
-	rotate_extrude(convexity = 1, $fn = 0, $fa = 12, $fs = 2);
+	rotate_extrude(convexity = 2, $fn = 0, $fa = 12, $fs = 2);
+	rotate_extrude(convexity = 2, $fn = 0, $fa = 12, $fs = 2);
 	import(file = "", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2);
 	import(file = "", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2);
 	import(file = "", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2);
@@ -39,4 +39,6 @@ group() {
 	multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]);
 	multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]);
 	color([-1, -1, -1, 1]);
+	offset(r = 1, $fn = 0, $fa = 12, $fs = 2);
+	text(text = "", size = 10, spacing = 1, font = "", direction = "ltr", language = "en", script = "latin", halign = "left", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
 }

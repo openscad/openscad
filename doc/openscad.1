@@ -1,4 +1,4 @@
-.TH OPENSCAD 1 "2014.03"
+.TH OPENSCAD 1 "2015.02"
 .\" Please adjust this date whenever revising the manpage.
 .SH NAME
 openscad \- script file based graphical CAD environment
@@ -19,7 +19,7 @@ the OpenSCAD user manual at http://en.wikibooks.org/wiki/OpenSCAD_User_Manual.
 
 .TP
 \fB-o\fP \fIoutputfile\fP
-Export the given file to \fIoutputfile\fP in STL, OFF, DXF, or PNG
+Export the given file to \fIoutputfile\fP in STL, OFF, AMF, DXF, SVG, or PNG
 format, depending on file extension of \fIoutputfile\fP. If this
 option is given, the GUI will not be started.
 
@@ -49,10 +49,10 @@ strings, care has to be taken that the shell does not consume quotation marks.
 More than one \fB-D\fP option can be given.
 .TP
 .B \-\-render
-If exporting an image, use a full CGAL render. (Default is an OpenCSG compile)
+If exporting an image, render the model fully. (Default is preview)
 .TP
 .B \-\-preview[=throwntogether]
-If exporting an image, use an OpenCSG previce (optionally in throwntogether mode for quicker rendering).
+If exporting an image, use an OpenCSG preview (optionally in throwntogether mode for quicker rendering).
 .TP
 .B \-\-csglimit=limit
 If exporting an image as an OpenCSG preview, stop rendering after encountering \fIlimit\fP elements to avoid runaway resource usage.
@@ -69,12 +69,21 @@ The first three are for the Eye position, while the next three are for
 the Center (or target) that the camera will look at. The 'up' vector is 
 not currently supported.
 .TP
+.B \-\-viewall
+If exporting an image, adjust camera distance to fit the whole design in the frame
+.TP
+.B \-\-autocenter
+If exporting an image, center the design in the frame
+.TP
 .B \-\-imgsize=width,height
 If exporting an image, specify the pixel width and height 
 .TP
 .B \-\-projection=[o|ortho|p|perspective]
 If exporting an image, specify whether to use orthographic or perspective 
 projection
+.TP
+.B \-\-colorscheme=[Cornfield|Sunset|Metallic|Starnight|BeforeDawn|Nature|DeepOcean]
+If exporting an image, use the specified color scheme for the rendering.
 .TP
 .B \-v, \-\-version
 Show version of program.

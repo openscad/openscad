@@ -58,6 +58,16 @@
             ReferencedContainer = "container:OpenSCAD.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <CommandLineArguments>
+         <CommandLineArgument
+            argument = "testdata/scad/bugs/issue1061.scad -o out.png --render=cgal"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "testdata/scad/misc/empty-shape-tests.scad.csg --enable=text -o out.png --enable=text --render"
+            isEnabled = "YES">
+         </CommandLineArgument>
+      </CommandLineArguments>
       <AdditionalOptions>
       </AdditionalOptions>
    </LaunchAction>

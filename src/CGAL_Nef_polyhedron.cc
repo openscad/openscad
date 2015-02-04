@@ -48,6 +48,11 @@ size_t CGAL_Nef_polyhedron::memsize() const
 	return memsize;
 }
 
+bool CGAL_Nef_polyhedron::isEmpty() const
+{
+	return !this->p3 || this->p3->is_empty();
+}
+
 /*!
 	Creates a new PolySet and initializes it with the data from this polyhedron
 

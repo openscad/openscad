@@ -23,6 +23,7 @@ GLView::GLView()
   showfaces = true;
   showaxes = false;
   showcrosshairs = false;
+  showscale = false;
   renderer = NULL;
   colorscheme = &ColorMap::inst()->defaultColorScheme();
   cam = Camera();
@@ -91,21 +92,23 @@ void GLView::setupCamera()
   glLoadIdentity();
 
 	switch (this->cam.type) {
-	case Camera::GIMBAL:
+	case Camera::GIMBAL: {
+		double eyeY = 0.0;
 		switch (this->cam.projection) {
 		case Camera::PERSPECTIVE: {
-			double dist = cam.viewer_distance;
-			gluPerspective(cam.fov, aspectratio, 0.1*dist, 100*dist);
+			eyeY = cam.zoomValue();
+			gluPerspective(cam.fov, aspectratio, 0.1 * eyeY, 100 * eyeY);
 			break;
 		}
 		case Camera::ORTHOGONAL: {
-			glOrtho(-cam.height/2*aspectratio, cam.height*aspectratio/2,
-							-cam.height/2, cam.height/2,
+			eyeY = cam.zoomValue();
+			glOrtho(-eyeY/2*aspectratio, eyeY*aspectratio/2,
+							-eyeY/2, eyeY/2,
 							-far_far_away, +far_far_away);
 			break;
 		}
 		}
-		gluLookAt(0.0, -cam.viewer_distance, 0.0,
+		gluLookAt(0.0, -eyeY, 0.0,
 							0.0, 0.0, 0.0,
 							0.0, 0.0, 1.0);
 		glMatrixMode(GL_MODELVIEW);
@@ -113,8 +116,8 @@ void GLView::setupCamera()
 		glRotated(cam.object_rot.x(), 1.0, 0.0, 0.0);
 		glRotated(cam.object_rot.y(), 0.0, 1.0, 0.0);
 		glRotated(cam.object_rot.z(), 0.0, 0.0, 1.0);
-		glTranslated(cam.object_trans.x(), cam.object_trans.y(), cam.object_trans.z() );
 		break;
+	}
 	case Camera::VECTOR: {
 		switch (this->cam.projection) {
 		case Camera::PERSPECTIVE: {
@@ -123,8 +126,9 @@ void GLView::setupCamera()
 			break;
 		}
 		case Camera::ORTHOGONAL: {
-			glOrtho(-cam.height/2*aspectratio, cam.height*aspectratio/2,
-							-cam.height/2, cam.height/2,
+			double height = cam.zoomValue();
+			glOrtho(-height/2*aspectratio, height*aspectratio/2,
+							-height/2, height/2,
 							-far_far_away, +far_far_away);
 			break;
 		}
@@ -150,18 +154,26 @@ void GLView::setupCamera()
 
 void GLView::paintGL()
 {
-  glEnable(GL_LIGHTING);
-
-	setupCamera();
+  glDisable(GL_LIGHTING);
 
   Color4f bgcol = ColorMap::getColor(*this->colorscheme, BACKGROUND_COLOR);
+  Color4f bgcontrast = ColorMap::getContrastColor(bgcol);
   glClearColor(bgcol[0], bgcol[1], bgcol[2], 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-	// Only for GIMBAL cam
-  if (showcrosshairs) GLView::showCrosshairs();
-  if (showaxes) GLView::showAxes();
+  setupCamera();
+  if (this->cam.type) {
+    // Only for GIMBAL cam
+    // The crosshair should be fixed at the center of the viewport...
+    if (showcrosshairs) GLView::showCrosshairs();
+    glTranslated(cam.object_trans.x(), cam.object_trans.y(), cam.object_trans.z());
+    // ...the axis lines need to follow the object translation.
+    if (showaxes) GLView::showAxes(bgcontrast);
+    // mark the scale along the axis lines
+    if (showscale) GLView::showScalemarkers(bgcontrast);
+  }
 
+  glEnable(GL_LIGHTING);
   glDepthFunc(GL_LESS);
   glCullFace(GL_BACK);
   glDisable(GL_CULL_FACE);
@@ -174,10 +186,11 @@ void GLView::paintGL()
     OpenCSG::setContext(this->opencsg_id);
 #endif
     this->renderer->draw(showfaces, showedges);
-	}
+  }
 
   // Only for GIMBAL
-	if (showaxes) GLView::showSmallaxes();
+  glDisable(GL_LIGHTING);
+  if (showaxes) GLView::showSmallaxes(bgcontrast);
 }
 
 #ifdef ENABLE_OPENCSG
@@ -358,7 +371,7 @@ void GLView::initializeGL()
 #endif
 }
 
-void GLView::showSmallaxes()
+void GLView::showSmallaxes(const Color4f &col)
 {
   // Fixme - this doesnt work in Vector Camera mode
 
@@ -423,14 +436,9 @@ void GLView::showSmallaxes()
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
-  // FIXME: This was an attempt to keep contrast with background, but is suboptimal
-  // (e.g. nearly invisible against a gray background).
-  //    int r,g,b;
-  //    r=g=b=0;
-  //    bgcol.getRgb(&r, &g, &b);
-  //    glColor3f((255.0f-r)/255.0f, (255.0f-g)/255.0f, (255.0f-b)/255.0f);
-	float d = 3*dpi;
-  glColor3f(0.0f, 0.0f, 0.0f);
+  glColor3f(col[0], col[1], col[2]);
+
+  float d = 3*dpi;
   glBegin(GL_LINES);
   // X Label
   glVertex3d(xlabel_x-d, xlabel_y-d, 0); glVertex3d(xlabel_x+d, xlabel_y+d, 0);
@@ -447,39 +455,369 @@ void GLView::showSmallaxes()
   glEnd();
 }
 
-void GLView::showAxes()
+void GLView::showAxes(const Color4f &col)
 {
+  double l = cam.zoomValue();
+  
   // FIXME: doesn't work under Vector Camera
   // Large gray axis cross inline with the model
-  // FIXME: This is always gray - adjust color to keep contrast with background
   glLineWidth(this->getDPI());
-  glColor3d(0.5, 0.5, 0.5);
+  glColor3f(col[0], col[1], col[2]);
+
   glBegin(GL_LINES);
-  double l = cam.projection == Camera::PERSPECTIVE ? cam.viewer_distance : cam.height;
-  glVertex3d(-l, 0, 0);
+  glVertex3d(0, 0, 0);
   glVertex3d(+l, 0, 0);
-  glVertex3d(0, -l, 0);
+  glVertex3d(0, 0, 0);
   glVertex3d(0, +l, 0);
-  glVertex3d(0, 0, -l);
+  glVertex3d(0, 0, 0);
   glVertex3d(0, 0, +l);
   glEnd();
+
+  glPushAttrib(GL_LINE_BIT);
+  glEnable(GL_LINE_STIPPLE);
+  glLineStipple(3, 0xAAAA);
+  glBegin(GL_LINES);
+  glVertex3d(0, 0, 0);
+  glVertex3d(-l, 0, 0);
+  glVertex3d(0, 0, 0);
+  glVertex3d(0, -l, 0);
+  glVertex3d(0, 0, 0);
+  glVertex3d(0, 0, -l);
+  glEnd();
+  glPopAttrib();
 }
 
 void GLView::showCrosshairs()
 {
   // FIXME: this might not work with Vector camera
-  // FIXME: Crosshairs and axes are lighted, this doesn't make sense and causes them
-  // to change color based on view orientation.
-  glLineWidth(3);
+  glLineWidth(this->getDPI());
   Color4f col = ColorMap::getColor(*this->colorscheme, CROSSHAIR_COLOR);
   glColor3f(col[0], col[1], col[2]);
   glBegin(GL_LINES);
   for (double xf = -1; xf <= +1; xf += 2)
   for (double yf = -1; yf <= +1; yf += 2) {
-    double vd = cam.viewer_distance/20;
+    double vd = cam.zoomValue()/8;
     glVertex3d(-xf*vd, -yf*vd, -vd);
     glVertex3d(+xf*vd, +yf*vd, +vd);
   }
   glEnd();
+}
+
+void GLView::showScalemarkers(const Color4f &col)
+{
+    // Add scale tics on large axes
+	double l = cam.zoomValue();
+    glLineWidth(this->getDPI());
+    glColor3f(col[0], col[1], col[2]);
+
+    // determine the log value to provide proportional tics
+    int log_l = (int)log10(l);
+
+    // j represents the increment for each minor tic
+    double j = 10;
+    // deal with 0 log values
+    if (l < 1.5){
+        j = pow(10,log_l-2);
+    } else {
+        j = pow(10,log_l-1);
+    }
+
+    int size_div_sm = 60;       // divisor for l to determine minor tic size
+    int size_div = size_div_sm;
+    int line_cnt = 0;
+
+    for (double i=0;i<l;i+=j){      // i represents the position along the axis
+        if (line_cnt++ == 10){      // major tic
+           size_div = size_div_sm * .5; // resize to a major tic
+           line_cnt = 1;                // reset the major tic counter
+           GLView::decodeMarkerValue(i, l, size_div_sm);    // print number
+        } else {                    // minor tic
+           size_div = size_div_sm;      // set the minor tic to the standard size
+        }
+
+        /*
+         * The length of each tic is proportional to the length of the axis
+         * (which changes with the zoom value.)  l/size_div provides the
+         * proportional length
+         *
+         * Commented glVertex3d lines provide additional 'arms' for the tic
+         * the number of arms will (hopefully) eventually be driven via Preferences
+         */
+
+        // positive axes
+        glBegin(GL_LINES);
+        // x
+        glVertex3d(i,0,0); glVertex3d(i,-l/size_div,0); // 1 arm
+        //glVertex3d(i,-l/size_div,0); glVertex3d(i,l/size_div,0); // 2 arms
+        //glVertex3d(i,0,-l/size_div); glVertex3d(i,0,l/size_div); // 4 arms (w/ 2 arms line)
+
+        // y
+        glVertex3d(0,i,0); glVertex3d(-l/size_div,i,0); // 1 arm
+        //glVertex3d(-l/size_div,i,0); glVertex3d(l/size_div,i,0); // 2 arms
+        //glVertex3d(0,i,-l/size_div); glVertex3d(0,i,l/size_div); // 4 arms (w/ 2 arms line)
+
+        // z
+        glVertex3d(0,0,i); glVertex3d(-l/size_div,0,i); // 1 arm
+        //glVertex3d(-l/size_div,0,i); glVertex3d(l/size_div,0,i); // 2 arms
+        //glVertex3d(0,-l/size_div,i); glVertex3d(0,l/size_div,i); // 4 arms (w/ 2 arms line)
+        glEnd();
+
+        // negative axes
+        glPushAttrib(GL_LINE_BIT);
+        glEnable(GL_LINE_STIPPLE);
+        glLineStipple(3, 0xAAAA);
+        glBegin(GL_LINES);
+        // x
+        glVertex3d(-i,0,0); glVertex3d(-i,-l/size_div,0); // 1 arm
+        //glVertex3d(-i,-l/size_div,0); glVertex3d(-i,l/size_div,0); // 2 arms
+        //glVertex3d(-i,0,-l/size_div); glVertex3d(-i,0,l/size_div); // 4 arms (w/ 2 arms line)
+
+        // y
+        glVertex3d(0,-i,0); glVertex3d(-l/size_div,-i,0); // 1 arm
+        //glVertex3d(-l/size_div,-i,0); glVertex3d(l/size_div,-i,0); // 2 arms
+        //glVertex3d(0,-i,-l/size_div); glVertex3d(0,-i,l/size_div); // 4 arms (w/ 2 arms line)
+
+        // z
+        glVertex3d(0,0,-i); glVertex3d(-l/size_div,0,-i); // 1 arm
+        //glVertex3d(-l/size_div,0,-i); glVertex3d(l/size_div,0,-i); // 2 arms
+        //glVertex3d(0,-l/size_div,-i); glVertex3d(0,l/size_div,-i); // 4 arms (w/ 2 arms line)
+        glEnd();
+        glPopAttrib();
+    }
+}
+
+void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
+{
+    // convert the axis position to a string
+    std::string digit = static_cast<std::ostringstream*>( &(std::ostringstream() << i) )->str();
+
+    // setup how far above the axis (or tic TBD) to draw the number
+    double dig_buf = (l/size_div_sm)/4;
+    // setup the size of the character box
+    double dig_w = (l/size_div_sm)/2;
+    double dig_h = (l/size_div_sm) + dig_buf;
+    // setup the distance between characters
+    double kern = dig_buf;
+    double dig_wk = (dig_w) + kern;
+
+    // set up ordering for different axes
+    int ax[6][3] = {
+        {0,1,2},
+        {1,0,2},
+        {1,2,0},
+        {0,1,2},
+        {1,0,2},
+        {1,2,0}};
+
+    // set up character vertex seqeunces for different axes
+    int or_2[6][6]={
+        {0,1,3,2,4,5},
+        {1,0,2,3,5,4},
+        {1,0,2,3,5,4},
+        {1,0,2,3,5,4},
+        {0,1,3,2,4,5},
+        {0,1,3,2,4,5}};
+
+    int or_3[6][7]={
+        {0,1,3,2,3,5,4},
+        {1,0,2,3,2,4,5},
+        {1,0,2,3,2,4,5},
+        {1,0,2,3,2,4,5},
+        {0,1,3,2,3,5,4},
+        {0,1,3,2,3,5,4}};
+
+    int or_4[6][5]={
+        {0,2,3,1,5},
+        {1,3,2,0,4},
+        {1,3,2,0,4},
+        {1,3,2,0,4},
+        {0,2,3,1,5},
+        {0,2,3,1,5}};
+
+    int or_5[6][6]={
+        {1,0,2,3,5,4},
+        {0,1,3,2,4,5},
+        {0,1,3,2,4,5},
+        {0,1,3,2,4,5},
+        {1,0,2,3,5,4},
+        {1,0,2,3,5,4}};
+
+    int or_6[6][6]={
+        {1,0,4,5,3,2},
+        {0,1,5,4,2,3},
+        {0,1,5,4,2,3},
+        {0,1,5,4,2,3},
+        {1,0,4,5,3,2},
+        {1,0,4,5,3,2}};
+
+    int or_7[6][3]={
+        {0,1,4},
+        {1,0,5},
+        {1,0,5},
+        {1,0,5},
+        {0,1,4},
+        {0,1,4}};
+
+    int or_9[6][5]={
+        {5,1,0,2,3},
+        {4,0,1,3,2},
+        {4,0,1,3,2},
+        {4,0,1,3,2},
+        {5,1,0,2,3},
+        {5,1,0,2,3}};
+
+    std::string stash_digit = digit;
+
+    // walk through axes
+    for (int di=0;di<6;di++){
+
+        // setup negative axes
+        double polarity = 1;
+        if (di>2){
+            polarity = -1;
+            digit = "-" + stash_digit;
+        }
+
+        // fix the axes that need to run the opposite direction
+        if (di>0 && di<4){
+            std::reverse(digit.begin(),digit.end());
+        }
+
+        // walk through and render the characters of the string
+        for(std::string::size_type char_num = 0; char_num < digit.size(); ++char_num){
+            // setup the vertices for the char rendering based on the axis and position
+            double dig_vrt[6][3] = {
+                {polarity*((i+((char_num)*dig_wk))-(dig_w/2)),dig_h,0},
+                {polarity*((i+((char_num)*dig_wk))+(dig_w/2)),dig_h,0},
+                {polarity*((i+((char_num)*dig_wk))-(dig_w/2)),dig_h/2+dig_buf,0},
+                {polarity*((i+((char_num)*dig_wk))+(dig_w/2)),dig_h/2+dig_buf,0},
+                {polarity*((i+((char_num)*dig_wk))-(dig_w/2)),dig_buf,0},
+                {polarity*((i+((char_num)*dig_wk))+(dig_w/2)),dig_buf,0}};
+
+            // convert the char into lines appropriate for the axis being used
+            // psuedo 7 segment vertices are:
+            // A--B
+            // |  |
+            // C--D
+            // |  |
+            // E--F
+            switch(digit[char_num]){
+            case '1':
+                glBegin(GL_LINES);
+                glVertex3d(dig_vrt[0][ax[di][0]],dig_vrt[0][ax[di][1]],dig_vrt[0][ax[di][2]]);  //a
+                glVertex3d(dig_vrt[4][ax[di][0]],dig_vrt[4][ax[di][1]],dig_vrt[4][ax[di][2]]);  //e
+                glEnd();
+                break;
+
+            case '2':
+                glBegin(GL_LINE_STRIP);
+                glVertex3d(dig_vrt[or_2[di][0]][ax[di][0]],dig_vrt[or_2[di][0]][ax[di][1]],dig_vrt[or_2[di][0]][ax[di][2]]);  //a
+                glVertex3d(dig_vrt[or_2[di][1]][ax[di][0]],dig_vrt[or_2[di][1]][ax[di][1]],dig_vrt[or_2[di][1]][ax[di][2]]);  //b
+                glVertex3d(dig_vrt[or_2[di][2]][ax[di][0]],dig_vrt[or_2[di][2]][ax[di][1]],dig_vrt[or_2[di][2]][ax[di][2]]);  //d
+                glVertex3d(dig_vrt[or_2[di][3]][ax[di][0]],dig_vrt[or_2[di][3]][ax[di][1]],dig_vrt[or_2[di][3]][ax[di][2]]);  //c
+                glVertex3d(dig_vrt[or_2[di][4]][ax[di][0]],dig_vrt[or_2[di][4]][ax[di][1]],dig_vrt[or_2[di][4]][ax[di][2]]);  //e
+                glVertex3d(dig_vrt[or_2[di][5]][ax[di][0]],dig_vrt[or_2[di][5]][ax[di][1]],dig_vrt[or_2[di][5]][ax[di][2]]);  //f
+                glEnd();
+                break;
+
+            case '3':
+                glBegin(GL_LINE_STRIP);
+                glVertex3d(dig_vrt[or_3[di][0]][ax[di][0]],dig_vrt[or_3[di][0]][ax[di][1]],dig_vrt[or_3[di][0]][ax[di][2]]);  //a
+                glVertex3d(dig_vrt[or_3[di][1]][ax[di][0]],dig_vrt[or_3[di][1]][ax[di][1]],dig_vrt[or_3[di][1]][ax[di][2]]);  //b
+                glVertex3d(dig_vrt[or_3[di][2]][ax[di][0]],dig_vrt[or_3[di][2]][ax[di][1]],dig_vrt[or_3[di][2]][ax[di][2]]);  //d
+                glVertex3d(dig_vrt[or_3[di][3]][ax[di][0]],dig_vrt[or_3[di][3]][ax[di][1]],dig_vrt[or_3[di][3]][ax[di][2]]);  //c
+                glVertex3d(dig_vrt[or_3[di][4]][ax[di][0]],dig_vrt[or_3[di][4]][ax[di][1]],dig_vrt[or_3[di][4]][ax[di][2]]);  //d
+                glVertex3d(dig_vrt[or_3[di][5]][ax[di][0]],dig_vrt[or_3[di][5]][ax[di][1]],dig_vrt[or_3[di][5]][ax[di][2]]);  //f
+                glVertex3d(dig_vrt[or_3[di][6]][ax[di][0]],dig_vrt[or_3[di][6]][ax[di][1]],dig_vrt[or_3[di][6]][ax[di][2]]);  //e
+                glEnd();
+                break;
+
+            case '4':
+                glBegin(GL_LINE_STRIP);
+                glVertex3d(dig_vrt[or_4[di][0]][ax[di][0]],dig_vrt[or_4[di][0]][ax[di][1]],dig_vrt[or_4[di][0]][ax[di][2]]);  //a
+                glVertex3d(dig_vrt[or_4[di][1]][ax[di][0]],dig_vrt[or_4[di][1]][ax[di][1]],dig_vrt[or_4[di][1]][ax[di][2]]);  //c
+                glVertex3d(dig_vrt[or_4[di][2]][ax[di][0]],dig_vrt[or_4[di][2]][ax[di][1]],dig_vrt[or_4[di][2]][ax[di][2]]);  //d
+                glVertex3d(dig_vrt[or_4[di][3]][ax[di][0]],dig_vrt[or_4[di][3]][ax[di][1]],dig_vrt[or_4[di][3]][ax[di][2]]);  //b
+                glVertex3d(dig_vrt[or_4[di][4]][ax[di][0]],dig_vrt[or_4[di][4]][ax[di][1]],dig_vrt[or_4[di][4]][ax[di][2]]);  //f
+                glEnd();
+                break;
+
+            case '5':
+                glBegin(GL_LINE_STRIP);
+                glVertex3d(dig_vrt[or_5[di][0]][ax[di][0]],dig_vrt[or_5[di][0]][ax[di][1]],dig_vrt[or_5[di][0]][ax[di][2]]);  //b
+                glVertex3d(dig_vrt[or_5[di][1]][ax[di][0]],dig_vrt[or_5[di][1]][ax[di][1]],dig_vrt[or_5[di][1]][ax[di][2]]);  //a
+                glVertex3d(dig_vrt[or_5[di][2]][ax[di][0]],dig_vrt[or_5[di][2]][ax[di][1]],dig_vrt[or_5[di][2]][ax[di][2]]);  //c
+                glVertex3d(dig_vrt[or_5[di][3]][ax[di][0]],dig_vrt[or_5[di][3]][ax[di][1]],dig_vrt[or_5[di][3]][ax[di][2]]);  //d
+                glVertex3d(dig_vrt[or_5[di][4]][ax[di][0]],dig_vrt[or_5[di][4]][ax[di][1]],dig_vrt[or_5[di][4]][ax[di][2]]);  //f
+                glVertex3d(dig_vrt[or_5[di][5]][ax[di][0]],dig_vrt[or_5[di][5]][ax[di][1]],dig_vrt[or_5[di][5]][ax[di][2]]);  //e
+                glEnd();
+                break;
+
+            case '6':
+                glBegin(GL_LINE_STRIP);
+                glVertex3d(dig_vrt[or_6[di][0]][ax[di][0]],dig_vrt[or_6[di][0]][ax[di][1]],dig_vrt[or_6[di][0]][ax[di][2]]);  //b
+                glVertex3d(dig_vrt[or_6[di][1]][ax[di][0]],dig_vrt[or_6[di][1]][ax[di][1]],dig_vrt[or_6[di][1]][ax[di][2]]);  //a
+                glVertex3d(dig_vrt[or_6[di][2]][ax[di][0]],dig_vrt[or_6[di][2]][ax[di][1]],dig_vrt[or_6[di][2]][ax[di][2]]);  //e
+                glVertex3d(dig_vrt[or_6[di][3]][ax[di][0]],dig_vrt[or_6[di][3]][ax[di][1]],dig_vrt[or_6[di][3]][ax[di][2]]);  //f
+                glVertex3d(dig_vrt[or_6[di][4]][ax[di][0]],dig_vrt[or_6[di][4]][ax[di][1]],dig_vrt[or_6[di][4]][ax[di][2]]);  //d
+                glVertex3d(dig_vrt[or_6[di][5]][ax[di][0]],dig_vrt[or_6[di][5]][ax[di][1]],dig_vrt[or_6[di][5]][ax[di][2]]);  //c
+                glEnd();
+                break;
+
+            case '7':
+                glBegin(GL_LINE_STRIP);
+                glVertex3d(dig_vrt[or_7[di][0]][ax[di][0]],dig_vrt[or_7[di][0]][ax[di][1]],dig_vrt[or_7[di][0]][ax[di][2]]);  //a
+                glVertex3d(dig_vrt[or_7[di][1]][ax[di][0]],dig_vrt[or_7[di][1]][ax[di][1]],dig_vrt[or_7[di][1]][ax[di][2]]);  //b
+                glVertex3d(dig_vrt[or_7[di][2]][ax[di][0]],dig_vrt[or_7[di][2]][ax[di][1]],dig_vrt[or_7[di][2]][ax[di][2]]);  //e
+                glEnd();
+                break;
+
+            case '8':
+                glBegin(GL_LINE_STRIP);
+                glVertex3d(dig_vrt[2][ax[di][0]],dig_vrt[2][ax[di][1]],dig_vrt[2][ax[di][2]]);  //c
+                glVertex3d(dig_vrt[3][ax[di][0]],dig_vrt[3][ax[di][1]],dig_vrt[3][ax[di][2]]);  //d
+                glVertex3d(dig_vrt[1][ax[di][0]],dig_vrt[1][ax[di][1]],dig_vrt[1][ax[di][2]]);  //b
+                glVertex3d(dig_vrt[0][ax[di][0]],dig_vrt[0][ax[di][1]],dig_vrt[0][ax[di][2]]);  //a
+                glVertex3d(dig_vrt[4][ax[di][0]],dig_vrt[4][ax[di][1]],dig_vrt[4][ax[di][2]]);  //e
+                glVertex3d(dig_vrt[5][ax[di][0]],dig_vrt[5][ax[di][1]],dig_vrt[5][ax[di][2]]);  //f
+                glVertex3d(dig_vrt[3][ax[di][0]],dig_vrt[3][ax[di][1]],dig_vrt[3][ax[di][2]]);  //d
+                glEnd();
+                break;
+
+            case '9':
+                glBegin(GL_LINE_STRIP);
+                glVertex3d(dig_vrt[or_9[di][0]][ax[di][0]],dig_vrt[or_9[di][0]][ax[di][1]],dig_vrt[or_9[di][0]][ax[di][2]]);  //f
+                glVertex3d(dig_vrt[or_9[di][1]][ax[di][0]],dig_vrt[or_9[di][1]][ax[di][1]],dig_vrt[or_9[di][1]][ax[di][2]]);  //b
+                glVertex3d(dig_vrt[or_9[di][2]][ax[di][0]],dig_vrt[or_9[di][2]][ax[di][1]],dig_vrt[or_9[di][2]][ax[di][2]]);  //a
+                glVertex3d(dig_vrt[or_9[di][3]][ax[di][0]],dig_vrt[or_9[di][3]][ax[di][1]],dig_vrt[or_9[di][3]][ax[di][2]]);  //c
+                glVertex3d(dig_vrt[or_9[di][4]][ax[di][0]],dig_vrt[or_9[di][4]][ax[di][1]],dig_vrt[or_9[di][4]][ax[di][2]]);  //d
+                glEnd();
+                break;
+
+            case '0':
+                glBegin(GL_LINE_LOOP);
+                glVertex3d(dig_vrt[0][ax[di][0]],dig_vrt[0][ax[di][1]],dig_vrt[0][ax[di][2]]);  //a
+                glVertex3d(dig_vrt[1][ax[di][0]],dig_vrt[1][ax[di][1]],dig_vrt[1][ax[di][2]]);  //b
+                glVertex3d(dig_vrt[5][ax[di][0]],dig_vrt[5][ax[di][1]],dig_vrt[5][ax[di][2]]);  //f
+                glVertex3d(dig_vrt[4][ax[di][0]],dig_vrt[4][ax[di][1]],dig_vrt[4][ax[di][2]]);  //e
+                glEnd();
+                break;
+
+            case '-':
+                glBegin(GL_LINES);
+                glVertex3d(dig_vrt[2][ax[di][0]],dig_vrt[2][ax[di][1]],dig_vrt[2][ax[di][2]]);  //c
+                glVertex3d(dig_vrt[3][ax[di][0]],dig_vrt[3][ax[di][1]],dig_vrt[3][ax[di][2]]);  //d
+                glEnd();
+                break;
+
+            case '.':
+                glBegin(GL_LINES);
+                glVertex3d(dig_vrt[4][ax[di][0]],dig_vrt[4][ax[di][1]],dig_vrt[4][ax[di][2]]);  //e
+                glVertex3d(dig_vrt[5][ax[di][0]],dig_vrt[5][ax[di][1]],dig_vrt[5][ax[di][2]]);  //f
+                glEnd();
+                break;
+            }
+        }
+    }
 }
 

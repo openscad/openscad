@@ -27,7 +27,7 @@ using boost::uintmax_t;
 #include <CGAL/Cartesian.h>
 #include <CGAL/Polyhedron_3.h>
 #include <CGAL/Nef_polyhedron_3.h>
-#include <CGAL_Nef3_workaround.h>
+#include "CGAL_Nef3_workaround.h"
 #include <CGAL/IO/Polyhedron_iostream.h>
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 #include <CGAL/Polygon_2.h>
@@ -57,11 +57,10 @@ typedef CGAL::Nef_polyhedron_3<CGAL_Kernel3> CGAL_Nef_polyhedron3;
 typedef CGAL_Nef_polyhedron3::Aff_transformation_3 CGAL_Aff_transformation;
 
 typedef CGAL::Polyhedron_3<CGAL_Kernel3> CGAL_Polyhedron;
-typedef CGAL_Polyhedron::HalfedgeDS CGAL_HDS;
-typedef CGAL::Polyhedron_incremental_builder_3<CGAL_HDS> CGAL_Polybuilder;
 
 typedef CGAL::Point_3<CGAL_Kernel3> CGAL_Point_3;
 typedef CGAL::Iso_cuboid_3<CGAL_Kernel3> CGAL_Iso_cuboid_3;
+typedef std::vector<CGAL_Point_3> CGAL_Polygon_3;
 
 // CGAL_Nef_polyhedron2 uses CGAL_Kernel2, but Iso_rectangle_2 needs to match
 // CGAL_Nef_polyhedron2::Explorer::Point which is different than

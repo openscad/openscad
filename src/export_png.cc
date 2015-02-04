@@ -53,10 +53,7 @@ void export_png_preview_common(Tree &tree, Camera &cam, std::ostream &output, Pr
 {
 	PRINTD("export_png_preview_common");
 	CsgInfo csgInfo = CsgInfo();
-	if (!csgInfo.compile_chains(tree)) {
-		fprintf(stderr,"Couldn't initialize CSG chains\n");
-		return;
-	}
+    csgInfo.compile_chains(tree);
 
 	try {
 		csgInfo.glview = new OffscreenView(cam.pixel_width, cam.pixel_height);

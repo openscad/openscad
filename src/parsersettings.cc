@@ -9,7 +9,7 @@ namespace fs = boost::filesystem;
 
 std::vector<std::string> librarypath;
 
-void add_librarydir(const std::string &libdir)
+static void add_librarydir(const std::string &libdir)
 {
 	librarypath.push_back(libdir);
 }
@@ -89,7 +89,7 @@ fs::path find_valid_path(const fs::path &sourcepath,
 	return fs::path();
 }
 
-void parser_init(const std::string &applicationpath)
+void parser_init()
 {
 	// Add paths from OPENSCADPATH before adding built-in paths
 	const char *openscadpaths = getenv("OPENSCADPATH");
@@ -106,5 +106,5 @@ void parser_init(const std::string &applicationpath)
 	add_librarydir(PlatformUtils::userLibraryPath());
 #endif
 
-	add_librarydir(boosty::absolute(fs::path(PlatformUtils::resourcesPath()) / "libraries").string());
+	add_librarydir(boosty::absolute(PlatformUtils::resourcePath("libraries")).string());
 }

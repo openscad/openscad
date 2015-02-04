@@ -44,10 +44,10 @@ class RotateExtrudeModule : public AbstractModule
 {
 public:
 	RotateExtrudeModule() { }
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
 };
 
-AbstractNode *RotateExtrudeModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *RotateExtrudeModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	RotateExtrudeNode *node = new RotateExtrudeNode(inst);
 
@@ -56,29 +56,30 @@ AbstractNode *RotateExtrudeModule::instantiate(const Context *ctx, const ModuleI
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);
+	inst->scope.apply(*evalctx);
 
-	node->fn = c.lookup_variable("$fn").toDouble();
-	node->fs = c.lookup_variable("$fs").toDouble();
-	node->fa = c.lookup_variable("$fa").toDouble();
+	node->fn = c.lookup_variable("$fn")->toDouble();
+	node->fs = c.lookup_variable("$fs")->toDouble();
+	node->fa = c.lookup_variable("$fa")->toDouble();
 
-	Value file = c.lookup_variable("file");
-	Value layer = c.lookup_variable("layer", true);
-	Value convexity = c.lookup_variable("convexity", true);
-	Value origin = c.lookup_variable("origin", true);
-	Value scale = c.lookup_variable("scale", true);
+	ValuePtr file = c.lookup_variable("file");
+	ValuePtr layer = c.lookup_variable("layer", true);
+	ValuePtr convexity = c.lookup_variable("convexity", true);
+	ValuePtr origin = c.lookup_variable("origin", true);
+	ValuePtr scale = c.lookup_variable("scale", true);
 
-	if (!file.isUndefined()) {
-		printDeprecation("DEPRECATED: Support for reading files in rotate_extrude will be removed in future releases. Use a child import() instead.");
-		node->filename = lookup_file(file.toString(), inst->path(), c.documentPath());
+	if (!file->isUndefined()) {
+		printDeprecation("Support for reading files in rotate_extrude will be removed in future releases. Use a child import() instead.");
+		node->filename = lookup_file(file->toString(), inst->path(), c.documentPath());
 	}
 
-	node->layername = layer.isUndefined() ? "" : layer.toString();
-	node->convexity = (int)convexity.toDouble();
-	origin.getVec2(node->origin_x, node->origin_y);
-	node->scale = scale.toDouble();
+	node->layername = layer->isUndefined() ? "" : layer->toString();
+	node->convexity = (int)convexity->toDouble();
+	origin->getVec2(node->origin_x, node->origin_y);
+	node->scale = scale->toDouble();
 
 	if (node->convexity <= 0)
-		node->convexity = 1;
+		node->convexity = 2;
 
 	if (node->scale <= 0)
 		node->scale = 1;

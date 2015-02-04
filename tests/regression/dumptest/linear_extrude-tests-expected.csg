@@ -1,7 +1,7 @@
 group() {
-	rotate_extrude(convexity = 1, $fn = 0, $fa = 12, $fs = 2);
-	rotate_extrude(convexity = 1, $fn = 0, $fa = 12, $fs = 2);
-	rotate_extrude(convexity = 1, $fn = 0, $fa = 12, $fs = 2) {
+	rotate_extrude(convexity = 2, $fn = 0, $fa = 12, $fs = 2);
+	rotate_extrude(convexity = 2, $fn = 0, $fa = 12, $fs = 2);
+	rotate_extrude(convexity = 2, $fn = 0, $fa = 12, $fs = 2) {
 		cube(size = [1, 1, 1], center = false);
 	}
 	linear_extrude(height = 10, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {

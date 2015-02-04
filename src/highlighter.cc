@@ -235,9 +235,6 @@ Highlighter::Highlighter(QTextDocument *parent)
 	tokentypes["_$quote"] << "_$quote";
 	tokentypes["_$number"] << "_$number";
 
-	QString syntaxhighlight = Preferences::inst()->getValue("editor/syntaxhighlight").toString();
-	this->assignFormatsToTokens(syntaxhighlight);
-
 	errorFormat.setBackground(Qt::red);
 	errorState = false;
 	errorPos = -1;

@@ -38,10 +38,10 @@ class RenderModule : public AbstractModule
 {
 public:
 	RenderModule() { }
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
 };
 
-AbstractNode *RenderModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *RenderModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	RenderNode *node = new RenderNode(inst);
 
@@ -50,10 +50,11 @@ AbstractNode *RenderModule::instantiate(const Context *ctx, const ModuleInstanti
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);
+	inst->scope.apply(*evalctx);
 
-	Value v = c.lookup_variable("convexity");
-	if (v.type() == Value::NUMBER)
-		node->convexity = (int)v.toDouble();
+	ValuePtr v = c.lookup_variable("convexity");
+	if (v->type() == Value::NUMBER)
+		node->convexity = (int)v->toDouble();
 
 	std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(evalctx);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());

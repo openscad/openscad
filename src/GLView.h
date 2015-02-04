@@ -42,10 +42,6 @@ public:
 	void setCamera(const Camera &cam);
 	void setupCamera();
 
-	void showCrosshairs();
-	void showAxes();
-	void showSmallaxes();
-
 	void setColorScheme(const ColorScheme &cs);
 	void setColorScheme(const std::string &cs);
 	void updateColorScheme();
@@ -66,6 +62,7 @@ public:
 	bool showfaces;
 	bool showedges;
 	bool showcrosshairs;
+	bool showscale;
 
 #ifdef ENABLE_OPENCSG
 	GLint shaderinfo[11];
@@ -76,4 +73,10 @@ public:
 	bool opencsg_support;
 	int opencsg_id;
 #endif
+private:
+	void showCrosshairs();
+	void showAxes(const Color4f &col);
+	void showSmallaxes(const Color4f &col);
+	void showScalemarkers(const Color4f &col);
+	void decodeMarkerValue(double i, double l, int size_div_sm);
 };

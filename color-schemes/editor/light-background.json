@@ -1,0 +1,36 @@
+{
+    "name" : "For Light Background",
+    "index" : 1000,
+    "paper" : "#ffffff",
+    "text" : "#272822",
+    "caret" : {
+        "width" : 2,
+        "foreground" : "#000000",
+        "line-background" : "#f8f8f8"
+    },
+    "colors" : {
+        "keyword1" : "Green",
+        "keyword2" : "Green",
+        "keyword3" : "DarkBlue",
+        "comment" : "DarkCyan",
+        "commentline" : "DarkCyan",
+        "commentdoc" : "DarkCyan",
+        "commentdockeyword" : "DarkCyan",
+        "number" : "DarkRed",
+        "string" : "DarkMagenta",
+        "operator" : "Blue",
+        "whitespace-foreground" : "#272822",
+        "selection-foreground" : "#ffffff",
+        "selection-background" : "#4a90d9",
+        "margin-background" : "#f8f8f8",
+        "margin-foreground" : "#000000",
+        "matched-brace-background" : "#c7f6cb",
+        "matched-brace-foreground" : "Blue",
+        "unmatched-brace-background" : "#ffcdcc",
+        "unmatched-brace-foreground" : "Blue",
+        "error-marker" : "#ff0000",
+        "error-indicator" : "#60ff0000",
+        "error-indicator-outline" : "#ff000000",
+        "edge" : "#ffffff"
+    }
+}

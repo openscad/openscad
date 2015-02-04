@@ -1,7 +1,7 @@
 # get VERSION from system date
 
 isEmpty(VERSION) {
-  win32-msvc*:!mingw-cross-env {
+  win32*:!mingw-cross-env {
     # 
     # Windows XP date command only has one argument, /t
     # and it can print the date in various localized formats. 

@@ -39,10 +39,10 @@ class CgaladvModule : public AbstractModule
 public:
 	cgaladv_type_e type;
 	CgaladvModule(cgaladv_type_e type) : type(type) { }
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
 };
 
-AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	CgaladvNode *node = new CgaladvNode(inst, type);
 
@@ -62,9 +62,13 @@ AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstant
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);
+	inst->scope.apply(*evalctx);
 
-	Value convexity, path, subdiv_type, level;
-
+	ValuePtr convexity = ValuePtr::undefined;
+	ValuePtr path = ValuePtr::undefined;
+	ValuePtr subdiv_type = ValuePtr::undefined;
+	ValuePtr level = ValuePtr::undefined;
+	
 	if (type == MINKOWSKI) {
 		convexity = c.lookup_variable("convexity", true);
 	}
@@ -81,31 +85,31 @@ AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstant
 	}
 
 	if (type == RESIZE) {
-		Value ns = c.lookup_variable("newsize");
+		ValuePtr ns = c.lookup_variable("newsize");
 		node->newsize << 0,0,0;
-		if ( ns.type() == Value::VECTOR ) {
-			Value::VectorType vs = ns.toVector();
+		if ( ns->type() == Value::VECTOR ) {
+			const Value::VectorType &vs = ns->toVector();
 			if ( vs.size() >= 1 ) node->newsize[0] = vs[0].toDouble();
 			if ( vs.size() >= 2 ) node->newsize[1] = vs[1].toDouble();
 			if ( vs.size() >= 3 ) node->newsize[2] = vs[2].toDouble();
 		}
-		Value autosize = c.lookup_variable("auto");
+		ValuePtr autosize = c.lookup_variable("auto");
 		node->autosize << false, false, false;
-		if ( autosize.type() == Value::VECTOR ) {
-			Value::VectorType va = autosize.toVector();
+		if ( autosize->type() == Value::VECTOR ) {
+			const Value::VectorType &va = autosize->toVector();
 			if ( va.size() >= 1 ) node->autosize[0] = va[0].toBool();
 			if ( va.size() >= 2 ) node->autosize[1] = va[1].toBool();
 			if ( va.size() >= 3 ) node->autosize[2] = va[2].toBool();
 		}
-		else if ( autosize.type() == Value::BOOL ) {
-			node->autosize << autosize.toBool(),autosize.toBool(),autosize.toBool();
+		else if ( autosize->type() == Value::BOOL ) {
+			node->autosize << autosize->toBool(),autosize->toBool(),autosize->toBool();
 		}
 	}
 
-	node->convexity = (int)convexity.toDouble();
+	node->convexity = (int)convexity->toDouble();
 	node->path = path;
-	node->subdiv_type = subdiv_type.toString();
-	node->level = (int)level.toDouble();
+	node->subdiv_type = subdiv_type->toString();
+	node->level = (int)level->toDouble();
 
 	if (node->level <= 1)
 		node->level = 1;
@@ -150,7 +154,7 @@ std::string CgaladvNode::toString() const
 		stream << "(convexity = " << this->convexity << ")";
 		break;
 	case GLIDE:
-		stream << "(path = " << this->path << ", convexity = " << this->convexity << ")";
+		stream << "(path = " << *this->path << ", convexity = " << this->convexity << ")";
 		break;
 	case SUBDIV:
 		stream << "(level = " << this->level << ", convexity = " << this->convexity << ")";

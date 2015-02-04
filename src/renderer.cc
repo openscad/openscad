@@ -101,31 +101,13 @@ void Renderer::setColorScheme(const ColorScheme &cs) {
 
 void Renderer::render_surface(shared_ptr<const Geometry> geom, csgmode_e csgmode, const Transform3d &m, GLint *shaderinfo)
 {
-	shared_ptr<const PolySet> ps;
-	shared_ptr<const Polygon2d> p2d = dynamic_pointer_cast<const Polygon2d>(geom);
-	if (p2d) {
-		ps.reset(p2d->tessellate());
-	}
-	else {
-		ps = dynamic_pointer_cast<const PolySet>(geom);
-	}
-	if (ps) {
-		ps->render_surface(csgmode, m, shaderinfo);
-	}
+	shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(geom);
+	if (ps) ps->render_surface(csgmode, m, shaderinfo);
 }
 
 void Renderer::render_edges(shared_ptr<const Geometry> geom, csgmode_e csgmode)
 {
-	shared_ptr<const PolySet> ps;
-	shared_ptr<const Polygon2d> p2d = dynamic_pointer_cast<const Polygon2d>(geom);
-	if (p2d) {
-		ps.reset(p2d->tessellate());
-	}
-	else {
-		ps = dynamic_pointer_cast<const PolySet>(geom);
-	}
-	if (ps) {
-		ps->render_edges(csgmode);
-	}
+	shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(geom);
+	if (ps) ps->render_edges(csgmode);
 }
 

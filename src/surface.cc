@@ -52,7 +52,7 @@ class SurfaceModule : public AbstractModule
 {
 public:
 	SurfaceModule() { }
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
 };
 
 typedef boost::unordered_map<std::pair<int,int>,double> img_data_t;
@@ -80,7 +80,7 @@ private:
 	img_data_t read_png_or_dat(std::string filename) const;
 };
 
-AbstractNode *SurfaceModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *SurfaceModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	SurfaceNode *node = new SurfaceNode(inst);
 	node->center = false;
@@ -93,22 +93,22 @@ AbstractNode *SurfaceModule::instantiate(const Context *ctx, const ModuleInstant
 	Context c(ctx);
 	c.setVariables(args, evalctx);
 
-	Value fileval = c.lookup_variable("file");
-	node->filename = lookup_file(fileval.isUndefined() ? "" : fileval.toString(), inst->path(), c.documentPath());
+	ValuePtr fileval = c.lookup_variable("file");
+	node->filename = lookup_file(fileval->isUndefined() ? "" : fileval->toString(), inst->path(), c.documentPath());
 
-	Value center = c.lookup_variable("center", true);
-	if (center.type() == Value::BOOL) {
-		node->center = center.toBool();
+	ValuePtr center = c.lookup_variable("center", true);
+	if (center->type() == Value::BOOL) {
+		node->center = center->toBool();
 	}
 
-	Value convexity = c.lookup_variable("convexity", true);
-	if (convexity.type() == Value::NUMBER) {
-		node->convexity = (int)convexity.toDouble();
+	ValuePtr convexity = c.lookup_variable("convexity", true);
+	if (convexity->type() == Value::NUMBER) {
+		node->convexity = (int)convexity->toDouble();
 	}
 
-	Value invert = c.lookup_variable("invert", true);
-	if (invert.type() == Value::BOOL) {
-		node->invert = invert.toBool();
+	ValuePtr invert = c.lookup_variable("invert", true);
+	if (invert->type() == Value::BOOL) {
+		node->invert = invert->toBool();
 	}
 
 	return node;

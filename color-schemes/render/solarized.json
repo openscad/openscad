@@ -1,0 +1,18 @@
+{
+    "name" : "Solarized",
+    "index" : 1700,
+    "show-in-gui" : true,
+
+    "colors" : {
+        "background" :         "#fdf6e3",
+        "opencsg-face-front" : "#b58800",
+        "opencsg-face-back" :  "#882233",
+        "cgal-face-front" :    "#b58800",
+        "cgal-face-back" :     "#882233",
+        "cgal-face-2d" :       "#6c71c4",
+        "cgal-edge-front" :    "#b58800",
+        "cgal-edge-back" :     "#b58800",
+        "cgal-edge-2d" :       "#b58800",
+        "crosshair" :          "#800000"
+    }
+}

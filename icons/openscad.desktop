@@ -5,4 +5,4 @@ Name=OpenSCAD
 Icon=openscad
 Exec=openscad %f
 MimeType=application/x-openscad;
-Categories=Graphics;3DGraphics;Engineering;Development;
+Categories=Graphics;3DGraphics;Engineering;

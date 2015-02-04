@@ -9,4 +9,34 @@ greaterThan(QT_MAJOR_VERSION, 4) {
 INCLUDEPATH += $$[QT_INSTALL_HEADERS]
 
 LIBS += -L$$[QT_INSTALL_LIBS]
-LIBS += -lqscintilla2
+
+CONFIG(debug, debug|release) {
+    mac: {
+	#LIBS += -lqscintilla2_debug
+	LIBS += -lqscintilla2
+    } else {
+	win32: {
+	    LIBS += -lqscintilla2d
+	} else {
+	    greaterThan(QT_MAJOR_VERSION, 4) {
+		LIBS += -lqt5scintilla2
+	    } else {
+		LIBS += -lqscintilla2
+	    }
+	}
+    }
+} else {
+    mac: {
+	LIBS += -lqscintilla2
+    } else {
+      win32: {
+        LIBS += -lqscintilla2
+      } else {
+        greaterThan(QT_MAJOR_VERSION, 4) {
+	    LIBS += -lqt5scintilla2
+        } else {
+	    LIBS += -lqscintilla2
+        }
+      }
+    }
+}

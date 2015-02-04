@@ -11,15 +11,21 @@ boost {
 
   # See https://svn.boost.org/trac/boost/ticket/6219
   macx: DEFINES += __ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES=0
+
+  # MXE cross build
   CONFIG(mingw-cross-env) {
     DEFINES += BOOST_STATIC
     DEFINES += BOOST_THREAD_USE_LIB
     DEFINES += Boost_USE_STATIC_LIBS
     BOOST_LINK_FLAGS = -lboost_thread_win32-mt -lboost_program_options-mt -lboost_filesystem-mt -lboost_system-mt -lboost_regex-mt -lboost_chrono-mt
-  } 
+  }
 
-  isEmpty(BOOST_LINK_FLAGS):win* {
-    BOOST_LINK_FLAGS = -llibboost_thread-vc90-mt-s-1_46_1 -llibboost_program_options-vc90-mt-s-1_46_1 -llibboost_filesystem-vc90-mt-s-1_46_1 -llibboost_system-vc90-mt-s-1_46_1 -llibboost_regex-vc90-mt-s-1_46_1
+  # MSYS2
+  isEmpty(BOOST_LINK_FLAGS):win32-g++ {
+    DEFINES += BOOST_STATIC
+    DEFINES += BOOST_THREAD_USE_LIB
+    DEFINES += Boost_USE_STATIC_LIBS
+    BOOST_LINK_FLAGS = -lboost_thread-mt -lboost_program_options-mt -lboost_filesystem-mt -lboost_system-mt -lboost_regex-mt
   } 
 
   # check for OPENSCAD_LIBDIR + multithread

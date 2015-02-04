@@ -1,5 +1,6 @@
 group() {
 	import(file = "", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2);
+	import(file = "notfound.dxf", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2);
 	multmatrix([[1, 0, 0, -210], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 		import(file = "../../../dxf/polygons.dxf", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2);
 	}

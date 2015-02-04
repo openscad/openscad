@@ -1,0 +1,19 @@
+{
+    "name" : "Monotone",
+    "index" : 9999,
+    "show-in-gui" : false,
+    "description" : "Color scheme with no difference between 'back face' and 'front face'",
+
+    "colors" : {
+        "background" :         "#ffffe5",
+        "opencsg-face-front" : "#f9d72c",
+        "opencsg-face-back" :  "#f9d72c",
+        "cgal-face-front" :    "#f9d72c",
+        "cgal-face-back" :     "#f9d72c",
+        "cgal-face-2d" :       "#00bf99",
+        "cgal-edge-front" :    "#ff0000",
+        "cgal-edge-back" :     "#ff0000",
+        "cgal-edge-2d" :       "#ff0000",
+        "crosshair" :          "#800000"
+    }
+}

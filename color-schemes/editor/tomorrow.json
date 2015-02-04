@@ -1,0 +1,36 @@
+{
+    "name" : "Tomorrow",
+    "index" : 1500,
+    "paper" : "#f8f8f8",
+    "text" : "#4d4d4c",
+    "caret" : {
+        "width" : 2,
+        "foreground" : "#000000",
+        "line-background" : "#efefef"
+    },
+    "colors" : {
+        "keyword1" : "#f5871f",
+        "keyword2" : "#8959a8",
+        "keyword3" : "#4271ae",
+        "comment" : "#8e908c",
+        "commentline" : "#8e908c",
+        "commentdoc" : "#8e908c",
+        "commentdockeyword" : "#eab700",
+        "number" : "#c82829",
+        "string" : "#718c00",
+        "operator" : "#3e999f",
+        "whitespace-foreground" : "#4d4d4c",
+        "selection-foreground" : "#4d4d4c",
+        "selection-background" : "#d6d6d6",
+        "margin-background" : "#f8f8f8",
+        "margin-foreground" : "#4d4d4c",
+        "matched-brace-background" : "#c7f6cb",
+        "matched-brace-foreground" : "#4d4d4c",
+        "unmatched-brace-background" : "#ffcdcc",
+        "unmatched-brace-foreground" : "#4d4d4c",
+        "error-marker" : "#ff0000",
+        "error-indicator" : "#80ff0000",
+        "error-indicator-outline" : "#ff000000",
+        "edge" : "#d33682"
+    }
+}

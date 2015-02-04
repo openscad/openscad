@@ -1,0 +1,36 @@
+{
+    "name" : "For Dark Background",
+    "index" : 1100,
+    "paper" : "#222222",
+    "text" : "#e0e0e0",
+    "caret" : {
+        "width" : 2,
+        "foreground" : "#ffff00",
+        "line-background" : "#303030"
+    },
+    "colors" : {
+        "keyword1" : "#90ee90",
+        "keyword2" : "#56dbf0",
+        "keyword3" : "#add8e6",
+        "comment" : "#808080",
+        "commentline" : "#808080",
+        "commentdoc" : "#808080",
+        "commentdockeyword" : "#808080",
+        "number" : "#ff0000",
+        "string" : "#e6db74",
+        "operator" : "#e8b609",
+        "whitespace-foreground" : "#e0e0e0",
+        "selection-foreground" : "#ffffff",
+        "selection-background" : "#4a90d9",
+        "margin-background" : "#272822",
+        "margin-foreground" : "#e0e0e0",
+        "matched-brace-background" : "#505050",
+        "matched-brace-foreground" : "#ffffff",
+        "unmatched-brace-background" : "#dc322f",
+        "unmatched-brace-foreground" : "#fdf6e3",
+        "error-marker" : "#ff0000",
+        "error-indicator" : "#60ff0000",
+        "error-indicator-outline" : "#ff000000",
+        "edge" : "#ffffff"
+    }
+}

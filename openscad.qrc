@@ -1,5 +1,27 @@
 <RCC>
   <qresource prefix="/">
+    <file>images/zoom-text-in-white.png</file>
+    <file>images/zoom-text-in.png</file>
+    <file>images/zoom-text-out-white.png</file>
+    <file>images/zoom-text-out.png</file>
+    <file>images/Command-Redo-32-white.png</file>
+    <file>images/Command-Reset-32-white.png</file>
+    <file>images/Command-Undo-32-white.png</file>
+    <file>images/Decrease-Indent-32-white.png</file>
+    <file>images/Increase-Indent-32-white.png</file>
+    <file>images/Command-Redo-32.png</file>
+    <file>images/Command-Reset-32.png</file>
+    <file>images/Command-Undo-32.png</file>
+    <file>images/Decrease-Indent-32.png</file>
+    <file>images/Increase-Indent-32.png</file>
+    <file>icons/close.png</file>
+    <file>icons/information-icons-error.png</file>
+    <file>icons/information-icons-info.png</file>
+    <file>icons/information-icons-question.png</file>
+    <file>icons/information-icons-warning.png</file>
+    <file>icons/openscad.png</file>
+    <file>icons/button.png</file>
+    <file>icons/background-welcome-screen.svg</file>
     <file>icons/prefsFeatures.png</file>
     <file>icons/stopbutton.png</file>
     <file>icons/prefsAdvanced.png</file>
@@ -8,5 +30,69 @@
     <file>icons/prefsUpdate.png</file>
     <file>icons/flattr.png</file>
     <file>src/AboutDialog.html</file>
+    <file>images/export.png</file>
+    <file>images/axes.png</file>
+    <file>images/export-white.png</file>
+    <file>images/back.png</file>
+    <file>images/Document-New-128.png</file>
+    <file>images/front.png</file>
+    <file>images/grid.png</file>
+    <file>images/Open-128.png</file>
+    <file>images/openscad.png</file>
+    <file>images/right.png</file>
+    <file>images/Save-128.png</file>
+    <file>images/up.png</file>
+    <file>images/bottom.png</file>
+    <file>images/left.png</file>
+    <file>images/blackUp.png</file>
+    <file>images/blackNew.png</file>
+    <file>images/Rotation-32.png</file>
+    <file>images/Shape-Cube-32.png</file>
+    <file>images/Open-32.png</file>
+    <file>images/Save-32.png</file>
+    <file>images/blackbottom.png</file>
+    <file>images/blackleft (copy).png</file>
+    <file>images/rightright.png</file>
+    <file>images/blackfront.png</file>
+    <file>images/blackback.png</file>
+    <file>images/blackaxes.png</file>
+    <file>images/zoomin.png</file>
+    <file>images/zoomout.png</file>
+    <file>images/wireframe1.png</file>
+    <file>images/surface.png</file>
+    <file>images/Zoom-In-32.png</file>
+    <file>images/Zoom-Out-32.png</file>
+    <file>images/zoom-all.png</file>
+    <file>images/zoom-all-white.png</file>
+    <file>images/surfaceWhite.png</file>
+    <file>images/wireframeWhite.png</file>
+    <file>images/orthogonal.png</file>
+    <file>images/cross.png</file>
+    <file>images/perspective1.png</file>
+    <file>images/preview-32.png</file>
+    <file>images/preview-32-white.png</file>
+    <file>images/render-32.png</file>
+    <file>images/render-32-white.png</file>
+    <file>images/animate.png</file>
+    <file>images/orthogonalwhite.png</file>
+    <file>images/perspective1white.png</file>
+    <file>images/crosswhite.png</file>
+    <file>icons/background.png</file>
+    <file>images/scalemarkers.png</file>
+    <file>images/scalemarkers-white.png</file>
+    <file>images/AMF.png</file>
+    <file>images/AMF-white.png</file>
+    <file>images/CSG.png</file>
+    <file>images/CSG-white.png</file>
+    <file>images/DXF.png</file>
+    <file>images/DXF-white.png</file>
+    <file>images/OFF.png</file>
+    <file>images/OFF-white.png</file>
+    <file>images/PNG.png</file>
+    <file>images/PNG-white.png</file>
+    <file>images/STL.png</file>
+    <file>images/STL-white.png</file>
+    <file>images/SVG.png</file>
+    <file>images/SVG-white.png</file>
   </qresource>
 </RCC>
