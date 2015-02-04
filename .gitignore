@@ -2,6 +2,7 @@
 *~
 *.tar*
 *.new
+out.*
 Makefile
 objects
 .gdbinit
