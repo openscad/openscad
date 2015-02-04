@@ -1,0 +1,129 @@
+// http://www.olivergast.de/2012/04/18/css3-dropdown-menu/
+
+#menu {
+    width: 800px;
+    margin: 50px auto;
+}
+
+#menu h3 {
+    font-size: 12px;
+    color: #fff;
+    padding: 10px;
+    margin: 0;
+    background: #000;
+    line-height: 20px;
+}
+
+#menu ul {
+    position: absolute;
+    top: 30px;
+    margin: 0 auto;
+    margin-left: 20px;
+    list-style: none;
+}
+
+#menu ul li {
+    float: left;
+    margin: 0 0 0 14px;
+    font-size: 14px;
+    font-family: 'Arial', sans-serif;
+    line-height: 30px;
+}
+
+#menu ul li a {
+    color: #000;
+    text-decoration: none;
+    -webkit-transition: all .5s ease-in-out;
+    -moz-transition: all .5s ease-in-out;
+    -o-transition: all .5s ease-in-out;
+    -ms-transition: all .5s ease-in-out;
+    transition: all .5s ease-in-out;
+}
+
+#menu ul li a:hover {
+    color: #999;
+}
+
+#menu ul li div {
+    float: left;
+    width: 4px;
+    height: 4px;
+    margin: 10px 5px;
+    padding: 4px;
+    background: #999;
+    -webkit-border-radius: 12px;
+    -moz-border-radius: 12px;
+    border-radius: 12px;
+    -webkit-transition: all .5s ease-in-out;
+    -moz-transition: all .5s ease-in-out;
+    -o-transition: all .5s ease-in-out;
+    -ms-transition: all .5s ease-in-out;
+    transition: all .5s ease-in-out;
+}
+
+#menu ul li:hover div {
+    background: #000;
+}
+
+#menu ul ul {
+    position: absolute;
+    z-index: 100;
+    top: -9999px;
+    background: #fff;
+    padding: 0;
+    margin: 0 0 0 -5px;
+    -webkit-box-shadow: 0 10px 20px #888;
+    -moz-box-shadow: 0 10px 20px #888;
+    box-shadow: 0 10px 20px #888;
+}
+
+#menu ul ul:before {
+    position: absolute;
+    content:"";
+    width: 10px;
+    height: 10px;
+    top: -5px;
+    left: 11px;
+    background: #000;
+    -webkit-transform: rotate(45deg);
+    -moz-transform: rotate(45deg);
+    -o-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    transform: rotate(45deg);
+}
+
+#menu ul li:hover ul {
+    top: 30px;
+}
+
+#menu ul ul li {
+    float: none;
+    font-size: 12px;
+    padding: 5px 10px;
+    text-align: left;
+    margin: 0;
+    border-bottom: 1px solid #ddd;
+    line-height: 20px;
+    -webkit-transition: all .5s ease-in-out;
+    -moz-transition: all .5s ease-in-out;
+    -o-transition: all .5s ease-in-out;
+    -ms-transition: all .5s ease-in-out;
+    transition: all .5s ease-in-out;
+}
+
+#menu ul ul a {
+    color: #333;
+    text-decoration: none;
+}
+
+#menu ul ul li.all {
+    font-size: 12px;
+    border-bottom: none;
+    text-transform: none;
+}
+
+#menu ul ul li:hover {
+    background: #333;
+    color: #fff;
+}
+
