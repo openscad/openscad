@@ -600,24 +600,23 @@ void dialogThreadFunc(FontCacheInitializer *initializer)
 
 void dialogInitHandler(FontCacheInitializer *initializer, void *)
 {
-	QProgressDialog dialog;
-	dialog.setLabelText(_("Fontconfig needs to update its font cache.\nThis can take up to a couple of minutes."));
-	dialog.setMinimum(0);
-	dialog.setMaximum(0);
-	dialog.setCancelButton(0);
+	MainWindow *mainw = *MainWindow::getWindows()->begin();
 
 	QFutureWatcher<void> futureWatcher;
-	QObject::connect(&futureWatcher, SIGNAL(finished()), &dialog, SLOT(reset()));
-	QObject::connect(&dialog, SIGNAL(canceled()), &futureWatcher, SLOT(cancel()));
-	QObject::connect(&futureWatcher, SIGNAL(progressRangeChanged(int,int)), &dialog, SLOT(setRange(int,int)));
-	QObject::connect(&futureWatcher, SIGNAL(progressValueChanged(int)), &dialog, SLOT(setValue(int)));
+	QObject::connect(&futureWatcher, SIGNAL(finished()), mainw, SLOT(hideFontCacheDialog()));
 
 	QFuture<void> future = QtConcurrent::run(boost::bind(dialogThreadFunc, initializer));
 	futureWatcher.setFuture(future);
 
-	dialog.exec();
+	// We don't always get the started() signal, so we start manually
+	QMetaObject::invokeMethod(mainw, "showFontCacheDialog");
 
+	// Block, in case we're in a separate thread, or the dialog was closed by the user
 	futureWatcher.waitForFinished();
+
+	// We don't always receive the finished signal. We still need the signal to break 
+	// out of the exec() though.
+	QMetaObject::invokeMethod(mainw, "hideFontCacheDialog");
 }
 
 int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, char ** argv)

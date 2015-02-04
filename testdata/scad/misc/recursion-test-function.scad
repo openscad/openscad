@@ -1,5 +1,3 @@
 function crash() = crash();
+// Recursion as module parameter
 echo(crash());
-
-module crash() crash();
-crash();

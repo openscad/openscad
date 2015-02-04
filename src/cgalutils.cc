@@ -207,6 +207,9 @@ namespace CGALUtils {
 		return visited.size() == p.size_of_facets();
 	}
 
+	/*!
+		children cannot contain NULL objects
+	*/
 	Geometry const * applyMinkowski(const Geometry::ChildList &children)
 	{
 		CGAL::Timer t,t_tot;
@@ -251,6 +254,7 @@ namespace CGALUtils {
 							decomposed_nef = *nef->p3;
 						}
 
+						t.start();
 						CGAL::convex_decomposition_3(decomposed_nef);
 
 						// the first volume is the outer volume, which ignored in the decomposition
@@ -265,6 +269,8 @@ namespace CGALUtils {
 
 
 						PRINTDB("Minkowski: decomposed into %d convex parts", P[i].size());
+						t.stop();
+						PRINTDB("Minkowski: decomposition took %f s", t.time());
 					}
 				}
 

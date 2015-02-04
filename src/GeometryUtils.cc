@@ -25,9 +25,11 @@ static void stdFree(void* userData, void* ptr) {
 
 	This function should be robust wrt. malformed input.
 
-	It will only use existing vertices and is guaranteed use all
-	existing vertices, i.e. it will maintain connectivity if the input
-	polygon is part of a polygon mesh.
+	It will only use existing vertices and is guaranteed to maintain
+	connectivity if the input polygon is part of a polygon mesh.
+
+	One requirement: The input vertices must be distinct
+	(i.e. duplicated must resolve to the same index).
 
 	Returns true on error, false on success.
 */
@@ -38,12 +40,39 @@ bool GeometryUtils::tessellatePolygonWithHoles(const IndexedPolygons &polygons,
   // No polygon. FIXME: Will this ever happen or can we assert here?
   if (polygons.faces.empty()) return false;
 
-	if (polygons.faces.size() == 1 && polygons.faces[0].size() == 3) {
+	// Remove consecutive equal vertices, as well as null ears
+	std::vector<IndexedFace> faces = polygons.faces;
+  BOOST_FOREACH(IndexedFace &face, faces) {
+		int i=0;
+		while (i < face.size()) {
+			if (face[i] == face[(i+1)%face.size()]) { // Two consecutively equal indices
+				face.erase(face.begin()+i);
+			}
+			else if (face[i] == face[(i+2)%face.size()]) { // Null ear
+				face.erase(face.begin() + (i+1)%face.size());
+			}
+			else {
+				i++;
+			}
+		}
+	}
+	// First polygon has < 3 points - no output
+	if (faces[0].size() < 3) return false;
+	// Remove collapsed holes
+	for (int i=1;i<faces.size();i++) {
+		if (faces[i].size() < 3) {
+			faces.erase(faces.begin() + i);
+			i--;
+		}
+	}
+
+	if (faces.size() == 1 && faces[0].size() == 3) {
 		// Input polygon has 3 points. shortcut tessellation.
-		triangles.push_back(IndexedTriangle(polygons.faces[0][0], polygons.faces[0][1], polygons.faces[0][2]));
+		triangles.push_back(IndexedTriangle(faces[0][0], faces[0][1], faces[0][2]));
 		return false;
 	}
 
+	const Vector3f *verts = &polygons.vertices.front();
   TESSreal *normalvec = NULL;
   TESSreal passednormal[3];
   if (normal) {
@@ -68,8 +97,7 @@ bool GeometryUtils::tessellatePolygonWithHoles(const IndexedPolygons &polygons,
 	// Since libtess2's indices is based on the running number of points added, we need to map back
 	// to our indices. allindices does the mapping.
 	std::vector<int> allindices;
-  BOOST_FOREACH(const IndexedFace &face, polygons.faces) {
-		const Vector3f *verts = &polygons.vertices.front();
+  BOOST_FOREACH(const IndexedFace &face, faces) {
     contour.clear();
     BOOST_FOREACH(int idx, face) {
 			const Vector3f &v = verts[idx];
@@ -99,7 +127,7 @@ bool GeometryUtils::tessellatePolygonWithHoles(const IndexedPolygons &polygons,
 
 		FIXME: This currently only works for polygons without holes.
 	 */
-	if (polygons.faces.size() == 1) { // Only works for polygons without holes
+	if (faces.size() == 1) { // Only works for polygons without holes
 
 		/*
 			Algorithm:
@@ -107,7 +135,6 @@ bool GeometryUtils::tessellatePolygonWithHoles(const IndexedPolygons &polygons,
 			B) Locate all unused vertices
 			C) For each unused vertex, create a triangle connecting it to the existing mesh
 		*/
-		const IndexedFace &face = polygons.faces.front();
 		int inputSize = allindices.size(); // inputSize is number of points added to libtess2
 		std::vector<int> vflags(inputSize); // Inits with 0's
 		

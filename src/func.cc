@@ -255,12 +255,12 @@ ValuePtr builtin_rands(const Context *, const EvalContext *evalctx)
 			deterministic_rng.seed((unsigned int) v3->toDouble());
 			deterministic = true;
 		}
-		boost::uniform_real<> distributor( min, max );
 		Value::VectorType vec;
-		if (min==max) { // workaround boost bug
+		if (min==max) { // Boost doesn't allow min == max
 			for (size_t i=0; i < numresults; i++)
 				vec.push_back( Value( min ) );
 		} else {
+			boost::uniform_real<> distributor( min, max );
 			for (size_t i=0; i < numresults; i++) {
 				if ( deterministic ) {
 					vec.push_back(Value(distributor(deterministic_rng)));

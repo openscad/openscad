@@ -70,6 +70,8 @@ o Notify package managers
   - OpenSUSE: Pavol Rusnak <prusnak@opensuse.org>
   - MacPorts: Frank Schima <macports2000@gmail.com>
   - Arch Linux: Kyle Keen <keenerd@gmail.com>
+o Update dev version to release version in documentation
+  - https://en.wikibooks.org/wiki/OpenSCAD_User_Manual
 
 Build and Upload Release Binaries
 ---------------------------------

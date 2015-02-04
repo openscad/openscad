@@ -165,6 +165,7 @@ int main(int argc, char *argv[])
       N = new CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3);
       std::ifstream stream(filename.c_str());
       stream >> *N->p3;
+      std::cerr << "Imported Nef polyhedron" << std::endl;
     }
   }
   else {

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1397</width>
-    <height>586</height>
+    <width>1118</width>
+    <height>636</height>
    </rect>
   </property>
   <widget class="QWidget" name="centralwidget">
@@ -244,8 +244,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1397</width>
-     <height>33</height>
+     <width>1118</width>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -254,26 +254,26 @@
     </property>
     <widget class="QMenu" name="menuOpenRecent">
      <property name="title">
-      <string>Recent Files</string>
+      <string>Recen&amp;t Files</string>
      </property>
     </widget>
     <widget class="QMenu" name="menuExamples">
      <property name="title">
-      <string>Examples</string>
+      <string>&amp;Examples</string>
      </property>
     </widget>
     <widget class="QMenu" name="menuExport">
      <property name="title">
-      <string>Export</string>
+      <string>E&amp;xport</string>
      </property>
-     <addaction name="designActionExportSTL"/>
-     <addaction name="designActionExportOFF"/>
-     <addaction name="designActionExportAMF"/>
-     <addaction name="designActionExportDXF"/>
-     <addaction name="designActionExportSVG"/>
-     <addaction name="designActionExportCSG"/>
+     <addaction name="fileActionExportSTL"/>
+     <addaction name="fileActionExportOFF"/>
+     <addaction name="fileActionExportAMF"/>
+     <addaction name="fileActionExportDXF"/>
+     <addaction name="fileActionExportSVG"/>
+     <addaction name="fileActionExportCSG"/>
      <addaction name="separator"/>
-     <addaction name="designActionExportImage"/>
+     <addaction name="fileActionExportImage"/>
     </widget>
     <addaction name="fileActionNew"/>
     <addaction name="fileActionOpen"/>
@@ -361,11 +361,10 @@
     <addaction name="viewActionDiagonal"/>
     <addaction name="viewActionCenter"/>
     <addaction name="viewActionViewAll"/>
+    <addaction name="viewActionResetView"/>
     <addaction name="separator"/>
     <addaction name="viewActionZoomIn"/>
     <addaction name="viewActionZoomOut"/>
-    <addaction name="separator"/>
-    <addaction name="viewActionResetView"/>
     <addaction name="separator"/>
     <addaction name="viewActionPerspective"/>
     <addaction name="viewActionOrthogonal"/>
@@ -418,7 +417,7 @@
        <addaction name="designActionPreview"/>
        <addaction name="designActionRender"/>
        <addaction name="separator"/>
-       <addaction name="designActionExportSTL"/>
+       <addaction name="fileActionExportSTL"/>
       </widget>
      </item>
      <item>
@@ -704,7 +703,7 @@
   </action>
   <action name="editActionPasteVPT">
    <property name="text">
-    <string>Paste viewport translation</string>
+    <string>P&amp;aste viewport translation</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+T</string>
@@ -712,12 +711,12 @@
   </action>
   <action name="editActionPasteVPR">
    <property name="text">
-    <string>Paste viewport rotation</string>
+    <string>Past&amp;e viewport rotation</string>
    </property>
   </action>
   <action name="editActionZoomTextIn">
    <property name="text">
-    <string>Increase Font Size</string>
+    <string>Increase Font &amp;Size</string>
    </property>
    <property name="shortcut">
     <string>Ctrl++</string>
@@ -725,7 +724,7 @@
   </action>
   <action name="editActionZoomTextOut">
    <property name="text">
-    <string>Decrease Font Size</string>
+    <string>Decrease Font Si&amp;ze</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+-</string>
@@ -736,7 +735,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Hide editor</string>
+    <string>H&amp;ide editor</string>
    </property>
   </action>
   <action name="designActionReloadAndPreview">
@@ -750,7 +749,7 @@
   <action name="designActionPreview">
    <property name="icon">
     <iconset resource="../openscad.qrc">
-     <normaloff>:/images/Preview-32.png</normaloff>:/images/Preview-32.png</iconset>
+     <normaloff>:/images/preview-32.png</normaloff>:/images/preview-32.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Preview</string>
@@ -762,10 +761,10 @@
   <action name="designActionRender">
    <property name="icon">
     <iconset resource="../openscad.qrc">
-     <normaloff>:/images/blackRender.png</normaloff>:/images/blackRender.png</iconset>
+     <normaloff>:/images/render-32.png</normaloff>:/images/render-32.png</iconset>
    </property>
    <property name="text">
-    <string>&amp;Render</string>
+    <string>R&amp;ender</string>
    </property>
    <property name="shortcut">
     <string>F6</string>
@@ -773,12 +772,12 @@
   </action>
   <action name="designCheckValidity">
    <property name="text">
-    <string>Check Validity</string>
+    <string>&amp;Check Validity</string>
    </property>
   </action>
   <action name="designActionDisplayAST">
    <property name="text">
-    <string>Display &amp;AST...</string>
+    <string>Display A&amp;ST...</string>
    </property>
   </action>
   <action name="designActionDisplayCSGTree">
@@ -788,19 +787,23 @@
   </action>
   <action name="designActionDisplayCSGProducts">
    <property name="text">
-    <string>Display CSG &amp;Products...</string>
+    <string>Display CSG Pr&amp;oducts...</string>
    </property>
   </action>
-  <action name="designActionExportSTL">
+  <action name="fileActionExportSTL">
    <property name="icon">
     <iconset resource="../openscad.qrc">
-     <normaloff>:/images/export.png</normaloff>:/images/export.png</iconset>
+     <normaloff>:/images/STL.png</normaloff>:/images/STL.png</iconset>
    </property>
    <property name="text">
     <string>Export as &amp;STL...</string>
    </property>
   </action>
-  <action name="designActionExportOFF">
+  <action name="fileActionExportOFF">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/OFF.png</normaloff>:/images/OFF.png</iconset>
+   </property>
    <property name="text">
     <string>Export as &amp;OFF...</string>
    </property>
@@ -920,7 +923,7 @@
      <normaloff>:/images/blackUp.png</normaloff>:/images/blackUp.png</iconset>
    </property>
    <property name="text">
-    <string>Top</string>
+    <string>&amp;Top</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+4</string>
@@ -932,7 +935,7 @@
      <normaloff>:/images/blackbottom.png</normaloff>:/images/blackbottom.png</iconset>
    </property>
    <property name="text">
-    <string>Bottom</string>
+    <string>&amp;Bottom</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+5</string>
@@ -944,7 +947,7 @@
      <normaloff>:/images/blackleft (copy).png</normaloff>:/images/blackleft (copy).png</iconset>
    </property>
    <property name="text">
-    <string>Left</string>
+    <string>&amp;Left</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+6</string>
@@ -956,7 +959,7 @@
      <normaloff>:/images/rightright.png</normaloff>:/images/rightright.png</iconset>
    </property>
    <property name="text">
-    <string>Right</string>
+    <string>&amp;Right</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+7</string>
@@ -968,7 +971,7 @@
      <normaloff>:/images/blackfront.png</normaloff>:/images/blackfront.png</iconset>
    </property>
    <property name="text">
-    <string>Front</string>
+    <string>&amp;Front</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+8</string>
@@ -980,7 +983,7 @@
      <normaloff>:/images/blackback.png</normaloff>:/images/blackback.png</iconset>
    </property>
    <property name="text">
-    <string>Back</string>
+    <string>Bac&amp;k</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+9</string>
@@ -988,7 +991,7 @@
   </action>
   <action name="viewActionDiagonal">
    <property name="text">
-    <string>Diagonal</string>
+    <string>&amp;Diagonal</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+0</string>
@@ -996,7 +999,7 @@
   </action>
   <action name="viewActionCenter">
    <property name="text">
-    <string>Center</string>
+    <string>Ce&amp;nter</string>
    </property>
   </action>
   <action name="viewActionPerspective">
@@ -1008,7 +1011,7 @@
      <normaloff>:/images/perspective1.png</normaloff>:/images/perspective1.png</iconset>
    </property>
    <property name="text">
-    <string>Perspective</string>
+    <string>&amp;Perspective</string>
    </property>
   </action>
   <action name="viewActionOrthogonal">
@@ -1020,7 +1023,7 @@
      <normaloff>:/images/orthogonal.png</normaloff>:/images/orthogonal.png</iconset>
    </property>
    <property name="text">
-    <string>Orthogonal</string>
+    <string>&amp;Orthogonal</string>
    </property>
   </action>
   <action name="viewActionHideConsole">
@@ -1028,7 +1031,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Hide console</string>
+    <string>H&amp;ide console</string>
    </property>
   </action>
   <action name="helpActionAbout">
@@ -1036,7 +1039,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>About</string>
+    <string>&amp;About</string>
    </property>
    <property name="menuRole">
     <enum>QAction::AboutRole</enum>
@@ -1044,7 +1047,7 @@
   </action>
   <action name="helpActionManual">
    <property name="text">
-    <string>Documentation</string>
+    <string>&amp;Documentation</string>
    </property>
   </action>
   <action name="fileActionClearRecent">
@@ -1052,14 +1055,18 @@
     <string>Clear Recent</string>
    </property>
   </action>
-  <action name="designActionExportDXF">
+  <action name="fileActionExportDXF">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/DXF.png</normaloff>:/images/DXF.png</iconset>
+   </property>
    <property name="text">
-    <string>Export as DXF...</string>
+    <string>Export as &amp;DXF...</string>
    </property>
   </action>
   <action name="fileActionClose">
    <property name="text">
-    <string>Close</string>
+    <string>&amp;Close</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+W</string>
@@ -1067,7 +1074,7 @@
   </action>
   <action name="editActionPreferences">
    <property name="text">
-    <string>Preferences</string>
+    <string>&amp;Preferences</string>
    </property>
    <property name="menuRole">
     <enum>QAction::PreferencesRole</enum>
@@ -1075,7 +1082,7 @@
   </action>
   <action name="editActionFind">
    <property name="text">
-    <string>Find...</string>
+    <string>&amp;Find...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+F</string>
@@ -1083,7 +1090,7 @@
   </action>
   <action name="editActionFindAndReplace">
    <property name="text">
-    <string>Find and Replace...</string>
+    <string>Fin&amp;d and Replace...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Alt+F</string>
@@ -1091,7 +1098,7 @@
   </action>
   <action name="editActionFindNext">
    <property name="text">
-    <string>Find Next</string>
+    <string>Find Ne&amp;xt</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+G</string>
@@ -1099,7 +1106,7 @@
   </action>
   <action name="editActionFindPrevious">
    <property name="text">
-    <string>Find Previous</string>
+    <string>Find Pre&amp;vious</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+G</string>
@@ -1107,7 +1114,7 @@
   </action>
   <action name="editActionUseSelectionForFind">
    <property name="text">
-    <string>Use Selection for Find</string>
+    <string>Use Se&amp;lection for Find</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+E</string>
@@ -1115,12 +1122,12 @@
   </action>
   <action name="designActionFlushCaches">
    <property name="text">
-    <string>Flush Caches</string>
+    <string>&amp;Flush Caches</string>
    </property>
   </action>
   <action name="helpActionHomepage">
    <property name="text">
-    <string>OpenSCAD Homepage</string>
+    <string>&amp;OpenSCAD Homepage</string>
    </property>
   </action>
   <action name="designActionAutoReload">
@@ -1128,27 +1135,35 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Automatic Reload and Preview</string>
+    <string>&amp;Automatic Reload and Preview</string>
    </property>
   </action>
-  <action name="designActionExportImage">
+  <action name="fileActionExportImage">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/PNG.png</normaloff>:/images/PNG.png</iconset>
+   </property>
    <property name="text">
-    <string>Export as Image...</string>
+    <string>Export as &amp;Image...</string>
    </property>
   </action>
-  <action name="designActionExportCSG">
+  <action name="fileActionExportCSG">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/CSG.png</normaloff>:/images/CSG.png</iconset>
+   </property>
    <property name="text">
-    <string>Export as CSG...</string>
+    <string>Export as &amp;CSG...</string>
    </property>
   </action>
   <action name="helpActionLibraryInfo">
    <property name="text">
-    <string>Library info</string>
+    <string>&amp;Library info</string>
    </property>
   </action>
   <action name="fileShowLibraryFolder">
    <property name="text">
-    <string>Show Library Folder...</string>
+    <string>Show &amp;Library Folder...</string>
    </property>
   </action>
   <action name="viewActionResetView">
@@ -1162,17 +1177,25 @@
   </action>
   <action name="helpActionFontInfo">
    <property name="text">
-    <string>Font List</string>
+    <string>&amp;Font List</string>
    </property>
   </action>
-  <action name="designActionExportSVG">
+  <action name="fileActionExportSVG">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/CSG.png</normaloff>:/images/CSG.png</iconset>
+   </property>
    <property name="text">
-    <string>Export as SVG...</string>
+    <string>Export as S&amp;VG...</string>
    </property>
   </action>
-  <action name="designActionExportAMF">
+  <action name="fileActionExportAMF">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/AMF.png</normaloff>:/images/AMF.png</iconset>
+   </property>
    <property name="text">
-    <string>Export as AMF...</string>
+    <string>Export as &amp;AMF...</string>
    </property>
   </action>
   <action name="viewActionZoomIn">
@@ -1210,7 +1233,7 @@
   </action>
   <action name="editActionConvertTabsToSpaces">
    <property name="text">
-    <string>Convert Tabs to Spaces</string>
+    <string>Conv&amp;ert Tabs to Spaces</string>
    </property>
   </action>
   <action name="viewActionHideToolBars">
@@ -1235,7 +1258,7 @@
   </action>
   <action name="helpActionCheatSheet">
    <property name="text">
-    <string>Cheat Sheet</string>
+    <string>&amp;Cheat Sheet</string>
    </property>
   </action>
  </widget>

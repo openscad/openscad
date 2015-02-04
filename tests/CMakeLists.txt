@@ -783,6 +783,9 @@ add_executable(openscad_nogui ../src/openscad.cc)
 set_target_properties(openscad_nogui PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing -DEIGEN_DONT_ALIGN ${ENABLE_OPENCSG_FLAG} -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
 target_link_libraries(openscad_nogui tests-offscreen tests-cgal ${GLEW_LIBRARY} ${OPENCSG_LIBRARY} ${APP_SERVICES_LIBRARY})
 
+# also run translation compilation to verify the files are without syntax errors
+add_custom_target(locale_files ALL COMMAND ${CMAKE_SOURCE_DIR}/../scripts/translation-make.sh)
+
 #
 # GUI binary tests
 #
@@ -1055,7 +1058,9 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/vector-values.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/search-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/search-tests-unicode.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/recursion-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/recursion-test-function.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/recursion-test-function2.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/recursion-test-module.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/tail-recursion-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/value-reassignment-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/value-reassignment-tests2.scad
@@ -1069,6 +1074,8 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/no-break-space-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/unicode-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/utf8-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/nbsp-utf8-test.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/nbsp-latin1-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/concat-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-recursive-test.scad
@@ -1122,6 +1129,7 @@ list(APPEND EXPORT3D_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/polyhedron-tests.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/rotate_extrude-tests.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/union-coincident-test.scad
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/mirror-tests.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/null-polygons.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/internal-cavity.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/internal-cavity-polyhedron.scad
@@ -1231,8 +1239,7 @@ list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue13.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1105.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1105b.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1105c.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1105d.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1165.scad)
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1105d.scad)
 list(APPEND EXPORT3D_TEST_FILES ${BUGS_FILES})
 list(REMOVE_ITEM EXPORT3D_TEST_FILES
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue899.scad

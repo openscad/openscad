@@ -698,8 +698,9 @@ void Preferences::initComboBox(QComboBox *comboBox, const Settings::SettingsEntr
 	Value::VectorType vector = entry.range().toVector();
 	for (Value::VectorType::iterator it = vector.begin();it != vector.end();it++) {
 		QString val = QString::fromStdString((*it)[0].toString());
-		QString text = QString::fromStdString((*it)[1].toString());
-		comboBox->addItem(text, val);
+		std::string text((*it)[1].toString());
+		QString qtext = QString::fromStdString(gettext(text.c_str()));
+		comboBox->addItem(qtext, val);
 	}
 }
 

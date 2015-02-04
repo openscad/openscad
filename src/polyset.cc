@@ -146,10 +146,14 @@ void PolySet::append(const PolySet &ps)
 
 void PolySet::transform(const Transform3d &mat)
 {
+	// If mirroring transform, flip faces to avoid the object to end up being inside-out
+	bool mirrored = mat.matrix().determinant() < 0;
+
 	BOOST_FOREACH(Polygon &p, this->polygons) {
 		BOOST_FOREACH(Vector3d &v, p) {
 			v = mat * v;
 		}
+		if (mirrored) std::reverse(p.begin(), p.end());
 	}
 }
 

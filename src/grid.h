@@ -137,18 +137,24 @@ public:
 				}
 			}
 		}
+
+		T data;
 		if (iter == db.end()) { // Not found: insert using key
-			T data = db.size();
+			data = db.size();
 			db[key] = data;
-			return data;
+		}
+		else {
+			// If found return existing data
+			key = iter->first;
+			data = iter->second;
 		}
 
-		// If found, align vertex and return existing data
-		key = iter->first;
+		// Align vertex
 		v[0] = key[0] * this->res;
 		v[1] = key[1] * this->res;
 		v[2] = key[2] * this->res;
-		return iter->second;
+
+		return data;
 	}
 
 	bool has(const Vector3d &v, T *data = NULL) {

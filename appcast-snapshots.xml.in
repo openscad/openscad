@@ -7,9 +7,9 @@
     <item>
       <title>OpenSCAD @VERSION@</title>
       <pubDate>@VERSIONDATE@</pubDate>
-      <sparkle:releaseNotesLink>https://raw.github.com/openscad/openscad/master/RELEASE_NOTES</sparkle:releaseNotesLink>
+      <sparkle:releaseNotesLink>https://raw.github.com/openscad/openscad/master/releases/2014.QX.md</sparkle:releaseNotesLink>
       <sparkle:minimumSystemVersion>10.7.0</sparkle:minimumSystemVersion>
-      <enclosure url="http://files.openscad.org/OpenSCAD-@VERSION@.dmg"
+      <enclosure url="http://files.openscad.org/snapshots/OpenSCAD-@VERSION@.dmg"
                  sparkle:version="@VERSIONDATE@"
                  sparkle:shortVersionString="@VERSION@"
                  sparkle:dsaSignature="@DSASIGNATURE@"
