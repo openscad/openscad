@@ -1,7 +1,5 @@
 // logo.scad - Basic example of difference() usage in OpenSCAD
 
-echo(version=version());
-
 size = 50;
 hole = 25;
 cylinderHeight = size * 1.25;
@@ -17,6 +15,7 @@ difference() {
     rotate([0, 90, 0]) cylinder(d=hole, h=cylinderHeight, center=true);
 }
 
+echo(version=version());
 // Written by Clifford Wolf <clifford@clifford.at> and Marius
 // Kintel <marius@kintel.net>
 //
@@ -28,3 +27,4 @@ difference() {
 // You should have received a copy of the CC0 Public Domain
 // Dedication along with this software.
 // If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+

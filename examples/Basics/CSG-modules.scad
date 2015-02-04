@@ -1,7 +1,5 @@
 // CSG-modules.scad - Basic usage of modules, if, color, $fs/$fa
 
-echo(version=version());
-
 // Change this to false to remove the helper geometry
 debug = true;
 
@@ -83,6 +81,7 @@ module helpers() {
     }
 }
 
+echo(version=version());
 // Written by Marius Kintel <marius@kintel.net>
 //
 // To the extent possible under law, the author(s) have dedicated all
