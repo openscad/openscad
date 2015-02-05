@@ -2641,18 +2641,21 @@ void MainWindow::consoleOutput(const std::string &msg, void *userdata)
 	// Invoke the method in the main thread in case the output
 	// originates in a worker thread.
 	MainWindow *thisp = static_cast<MainWindow*>(userdata);
-	QMetaObject::invokeMethod(thisp, "consoleOutput", Q_ARG(std::string, msg));
+	QMetaObject::invokeMethod(thisp, "consoleOutput", Q_ARG(QString, QString::fromStdString(msg)));
 }
 
-void MainWindow::consoleOutput(const std::string &msg)
+void MainWindow::consoleOutput(const QString &msg)
 {
-	QString qmsg = QString::fromUtf8(msg.c_str());
-	if (qmsg.startsWith("WARNING:") || qmsg.startsWith("DEPRECATED:")) {
+	QString qmsg;
+	if (msg.startsWith("WARNING:") || msg.startsWith("DEPRECATED:")) {
 		this->compileWarnings++;
-		qmsg = "<html><span style=\"color: black; background-color: #ffffb0;\">" + qmsg + "</span></html>\n";
-	} else if (qmsg.startsWith("ERROR:")) {
+		qmsg = "<html><span style=\"color: black; background-color: #ffffb0;\">" + msg + "</span></html>\n";
+	} else if (msg.startsWith("ERROR:")) {
 		this->compileErrors++;
-		qmsg = "<html><span style=\"color: black; background-color: #ffb0b0;\">" + qmsg + "</span></html>\n";
+		qmsg = "<html><span style=\"color: black; background-color: #ffb0b0;\">" + msg + "</span></html>\n";
+	}
+	else {
+		qmsg = msg;
 	}
 	QTextCursor c = this->console->textCursor();
 	c.movePosition(QTextCursor::End);
