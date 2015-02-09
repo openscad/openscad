@@ -604,7 +604,7 @@ void MainWindow::loadViewSettings(){
 		viewActionShowEdges->setChecked(true);
 		viewModeShowEdges();
 	}
-	if (settings.value("view/showAxes").toBool()) {
+	if (settings.value("view/showAxes", true).toBool()) {
 		viewActionShowAxes->setChecked(true);
 		viewModeShowAxes();
 	}
@@ -612,7 +612,7 @@ void MainWindow::loadViewSettings(){
 		viewActionShowCrosshairs->setChecked(true);
 		viewModeShowCrosshairs();
 	}
-    if (settings.value("view/showScaleProportional").toBool()) {
+	if (settings.value("view/showScaleProportional", true).toBool()) {
         viewActionShowScaleProportional->setChecked(true);
         viewModeShowScaleProportional();
     }
@@ -635,7 +635,7 @@ void MainWindow::loadViewSettings(){
 void MainWindow::loadDesignSettings()
 {
 	QSettings settings;
-	if (settings.value("design/autoReload").toBool()) {
+	if (settings.value("design/autoReload", true).toBool()) {
 		designActionAutoReload->setChecked(true);
 	}
 	uint polySetCacheSize = Preferences::inst()->getValue("advanced/polysetCacheSize").toUInt();
