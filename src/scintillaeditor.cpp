@@ -307,14 +307,14 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 		qsci->setWhitespaceForegroundColor(readColor(colors, "whitespace-foreground", textColor));
 		qsci->setMarginsBackgroundColor(readColor(colors, "margin-background", paperColor));
 		qsci->setMarginsForegroundColor(readColor(colors, "margin-foreground", textColor));
+		qsci->setFoldMarginColors(readColor(colors, "margin-background", paperColor),
+                                          readColor(colors, "margin-background", paperColor));
 		qsci->setMatchedBraceBackgroundColor(readColor(colors, "matched-brace-background", paperColor));
 		qsci->setMatchedBraceForegroundColor(readColor(colors, "matched-brace-foreground", textColor));
 		qsci->setUnmatchedBraceBackgroundColor(readColor(colors, "unmatched-brace-background", paperColor));
 		qsci->setUnmatchedBraceForegroundColor(readColor(colors, "unmatched-brace-foreground", textColor));
 		qsci->setSelectionForegroundColor(readColor(colors, "selection-foreground", paperColor));
 		qsci->setSelectionBackgroundColor(readColor(colors, "selection-background", textColor));
-		qsci->setFoldMarginColors(readColor(colors, "margin-foreground", textColor),
-			readColor(colors, "margin-background", paperColor));
 		qsci->setEdgeColor(readColor(colors, "edge", textColor));
 	} catch (std::exception e) {
 		noColor();
@@ -331,7 +331,6 @@ void ScintillaEditor::noColor()
 	qsci->setIndicatorForegroundColor(QColor(255, 0, 0, 128), indicatorNumber);
 	qsci->setIndicatorOutlineColor(QColor(0, 0, 0, 255), indicatorNumber); // only alpha part is used
 	qsci->setCaretLineBackgroundColor(Qt::white);
-	qsci->setWhitespaceBackgroundColor(Qt::white);
 	qsci->setWhitespaceForegroundColor(Qt::black);
 	qsci->setMarginsBackgroundColor(Qt::white);
 	qsci->setMarginsForegroundColor(Qt::black);

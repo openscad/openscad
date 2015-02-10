@@ -255,12 +255,12 @@ ValuePtr builtin_rands(const Context *, const EvalContext *evalctx)
 			deterministic_rng.seed((unsigned int) v3->toDouble());
 			deterministic = true;
 		}
-		boost::uniform_real<> distributor( min, max );
 		Value::VectorType vec;
-		if (min==max) { // workaround boost bug
+		if (min==max) { // Boost doesn't allow min == max
 			for (size_t i=0; i < numresults; i++)
 				vec.push_back( Value( min ) );
 		} else {
+			boost::uniform_real<> distributor( min, max );
 			for (size_t i=0; i < numresults; i++) {
 				if ( deterministic ) {
 					vec.push_back(Value(distributor(deterministic_rng)));
@@ -712,7 +712,7 @@ ValuePtr builtin_lookup(const Context *, const EvalContext *evalctx)
 */
 
 static Value::VectorType search(const std::string &find, const std::string &table,
-																unsigned int num_returns_per_match, unsigned int index_col_num)
+																unsigned int num_returns_per_match)
 {
 	Value::VectorType returnvec;
 	//Unicode glyph count for the length
@@ -761,7 +761,12 @@ static Value::VectorType search(const std::string &find, const Value::VectorType
 		Value::VectorType resultvec;
 		const gchar *ptr_ft = g_utf8_offset_to_pointer(find.c_str(), i);
 		for (size_t j = 0; j < searchTableSize; j++) {
-			const gchar *ptr_st = g_utf8_offset_to_pointer(table[j].toVector()[index_col_num].toString().c_str(), 0);
+			Value::VectorType entryVec = table[j].toVector();
+			if (entryVec.size() <= index_col_num) {
+				PRINTB("WARNING: Invalid entry in search vector at index %d, required number of values in the entry: %d. Invalid entry: %s", j % (index_col_num + 1) % table[j]);
+				return Value::VectorType();
+			}
+			const gchar *ptr_st = g_utf8_offset_to_pointer(entryVec[index_col_num].toString().c_str(), 0);
 			if (ptr_ft && ptr_st && (g_utf8_get_char(ptr_ft) == g_utf8_get_char(ptr_st)) ) {
 				matchCount++;
 				if (num_returns_per_match == 1) {
@@ -814,7 +819,7 @@ ValuePtr builtin_search(const Context *, const EvalContext *evalctx)
 		}
 	} else if (findThis->type() == Value::STRING) {
 		if (searchTable->type() == Value::STRING) {
-			returnvec = search(findThis->toString(), searchTable->toString(), num_returns_per_match, index_col_num);
+			returnvec = search(findThis->toString(), searchTable->toString(), num_returns_per_match);
 		}
 		else {
 			returnvec = search(findThis->toString(), searchTable->toVector(), num_returns_per_match, index_col_num);

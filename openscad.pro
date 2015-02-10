@@ -279,6 +279,7 @@ HEADERS += src/typedefs.h \
            src/Geometry.h \
            src/Polygon2d.h \
            src/clipper-utils.h \
+           src/GeometryUtils.h \
            src/polyset-utils.h \
            src/polyset.h \
            src/printutils.h \
@@ -347,6 +348,7 @@ SOURCES += src/version_check.cc \
            src/Polygon2d.cc \
            src/clipper-utils.cc \
            src/polyset-utils.cc \
+           src/GeometryUtils.cc \
            src/polyset.cc \
            src/csgops.cc \
            src/transform.cc \
@@ -392,6 +394,7 @@ SOURCES += src/version_check.cc \
            src/QGLView.cc \
            src/AutoUpdater.cc \
            \
+           src/grid.cc \
            src/builtin.cc \
            src/calc.cc \
            src/export.cc \
@@ -422,6 +425,24 @@ SOURCES += src/version_check.cc \
 SOURCES += src/polyclipping/clipper.cpp
 HEADERS += src/polyclipping/clipper.hpp
 
+# libtess2
+INCLUDEPATH += src/libtess2/Include
+SOURCES += src/libtess2/Source/bucketalloc.c \
+           src/libtess2/Source/dict.c \
+           src/libtess2/Source/geom.c \
+           src/libtess2/Source/mesh.c \
+           src/libtess2/Source/priorityq.c \
+           src/libtess2/Source/sweep.c \
+           src/libtess2/Source/tess.c
+HEADERS += src/libtess2/Include/tesselator.h \
+           src/libtess2/Source/bucketalloc.h \
+           src/libtess2/Source/dict.h \
+           src/libtess2/Source/geom.h \
+           src/libtess2/Source/mesh.h \
+           src/libtess2/Source/priorityq.h \
+           src/libtess2/Source/sweep.h \
+           src/libtess2/Source/tess.h
+
 unix:!macx {
   SOURCES += src/imageutils-lodepng.cc
   SOURCES += src/OffscreenContextGLX.cc
@@ -449,13 +470,13 @@ HEADERS += src/cgal.h \
            src/CGALRenderer.h \
            src/CGAL_Nef_polyhedron.h \
            src/CGAL_Nef3_workaround.h \
+           src/convex_hull_3_bugfix.h \
            src/cgalworker.h \
            src/Polygon2d-CGAL.h
 
 SOURCES += src/cgalutils.cc \
            src/cgalutils-tess.cc \
            src/cgalutils-polyhedron.cc \
-           src/cgalutils-tess-old.cc \
            src/CGALCache.cc \
            src/CGALRenderer.cc \
            src/CGAL_Nef_polyhedron.cc \
@@ -476,6 +497,7 @@ unix:!macx {
   SOURCES += src/PlatformUtils-posix.cc
 }
 win* {
+  HEADERS += src/findversion.h
   SOURCES += src/PlatformUtils-win.cc
 }
 

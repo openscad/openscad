@@ -128,7 +128,7 @@ QSet<MainWindow*> *MainWindow::getWindows()
 unsigned int GuiLocker::gui_locked = 0;
 
 static char copyrighttext[] =
-	"Copyright (C) 2009-2014 The OpenSCAD Developers\n"
+	"Copyright (C) 2009-2015 The OpenSCAD Developers\n"
 	"\n"
 	"This program is free software; you can redistribute it and/or modify "
 	"it under the terms of the GNU General Public License as published by "
@@ -169,6 +169,8 @@ settings_valueList(const QString &key, const QList<int> &defaultList = QList<int
 bool MainWindow::mdiMode = false;
 bool MainWindow::undockMode = false;
 bool MainWindow::reorderMode = false;
+
+QProgressDialog *MainWindow::fontCacheDialog = NULL;
 
 MainWindow::MainWindow(const QString &filename)
 	: root_inst("group"), library_info_dialog(NULL), font_list_dialog(NULL), tempFile(NULL), progresswidget(NULL), contentschanged(false)
@@ -256,7 +258,7 @@ MainWindow::MainWindow(const QString &filename)
 	knownFileExtensions["scad"] = "";
 	knownFileExtensions["csg"] = "";
 	
-	editActionZoomIn->setShortcuts(QList<QKeySequence>() << editActionZoomIn->shortcuts() << QKeySequence("CTRL+="));
+	editActionZoomTextIn->setShortcuts(QList<QKeySequence>() << editActionZoomTextIn->shortcuts() << QKeySequence("CTRL+="));
 
 	connect(this, SIGNAL(highlightError(int)), editor, SLOT(highlightError(int)));
 	connect(this, SIGNAL(unhighlightLastError()), editor, SLOT(unhighlightLastError()));
@@ -282,6 +284,9 @@ MainWindow::MainWindow(const QString &filename)
 
 	animate_panel->hide();
 	find_panel->hide();
+	frameCompileResult->hide();
+	this->labelCompileResultMessage->setOpenExternalLinks(false);
+	connect(this->labelCompileResultMessage, SIGNAL(linkActivated(QString)), SLOT(showConsole()));
 
 	// File menu
 	connect(this->fileActionNew, SIGNAL(triggered()), this, SLOT(actionNew())); 
@@ -327,8 +332,8 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->editActionConvertTabsToSpaces, SIGNAL(triggered()), this, SLOT(convertTabsToSpaces()));
 	connect(this->editActionPasteVPT, SIGNAL(triggered()), this, SLOT(pasteViewportTranslation()));
 	connect(this->editActionPasteVPR, SIGNAL(triggered()), this, SLOT(pasteViewportRotation()));
-	connect(this->editActionZoomIn, SIGNAL(triggered()), editor, SLOT(zoomIn()));
-	connect(this->editActionZoomOut, SIGNAL(triggered()), editor, SLOT(zoomOut()));
+	connect(this->editActionZoomTextIn, SIGNAL(triggered()), editor, SLOT(zoomIn()));
+	connect(this->editActionZoomTextOut, SIGNAL(triggered()), editor, SLOT(zoomOut()));
 	connect(this->editActionPreferences, SIGNAL(triggered()), this, SLOT(preferences()));
 	// Edit->Find
 	connect(this->editActionFind, SIGNAL(triggered()), this, SLOT(find()));
@@ -350,13 +355,13 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->designActionDisplayAST, SIGNAL(triggered()), this, SLOT(actionDisplayAST()));
 	connect(this->designActionDisplayCSGTree, SIGNAL(triggered()), this, SLOT(actionDisplayCSGTree()));
 	connect(this->designActionDisplayCSGProducts, SIGNAL(triggered()), this, SLOT(actionDisplayCSGProducts()));
-	connect(this->designActionExportSTL, SIGNAL(triggered()), this, SLOT(actionExportSTL()));
-	connect(this->designActionExportOFF, SIGNAL(triggered()), this, SLOT(actionExportOFF()));
-	connect(this->designActionExportAMF, SIGNAL(triggered()), this, SLOT(actionExportAMF()));
-	connect(this->designActionExportDXF, SIGNAL(triggered()), this, SLOT(actionExportDXF()));
-	connect(this->designActionExportSVG, SIGNAL(triggered()), this, SLOT(actionExportSVG()));
-	connect(this->designActionExportCSG, SIGNAL(triggered()), this, SLOT(actionExportCSG()));
-	connect(this->designActionExportImage, SIGNAL(triggered()), this, SLOT(actionExportImage()));
+	connect(this->fileActionExportSTL, SIGNAL(triggered()), this, SLOT(actionExportSTL()));
+	connect(this->fileActionExportOFF, SIGNAL(triggered()), this, SLOT(actionExportOFF()));
+	connect(this->fileActionExportAMF, SIGNAL(triggered()), this, SLOT(actionExportAMF()));
+	connect(this->fileActionExportDXF, SIGNAL(triggered()), this, SLOT(actionExportDXF()));
+	connect(this->fileActionExportSVG, SIGNAL(triggered()), this, SLOT(actionExportSVG()));
+	connect(this->fileActionExportCSG, SIGNAL(triggered()), this, SLOT(actionExportCSG()));
+	connect(this->fileActionExportImage, SIGNAL(triggered()), this, SLOT(actionExportImage()));
 	connect(this->designActionFlushCaches, SIGNAL(triggered()), this, SLOT(actionFlushCaches()));
 
 	// View menu
@@ -380,6 +385,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->viewActionShowEdges, SIGNAL(triggered()), this, SLOT(viewModeShowEdges()));
 	connect(this->viewActionShowAxes, SIGNAL(triggered()), this, SLOT(viewModeShowAxes()));
 	connect(this->viewActionShowCrosshairs, SIGNAL(triggered()), this, SLOT(viewModeShowCrosshairs()));
+	connect(this->viewActionShowScaleProportional, SIGNAL(triggered()), this, SLOT(viewModeShowScaleProportional()));
 	connect(this->viewActionAnimate, SIGNAL(triggered()), this, SLOT(viewModeAnimate()));
 	connect(this->viewActionTop, SIGNAL(triggered()), this, SLOT(viewAngleTop()));
 	connect(this->viewActionBottom, SIGNAL(triggered()), this, SLOT(viewAngleBottom()));
@@ -403,6 +409,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->helpActionAbout, SIGNAL(triggered()), this, SLOT(helpAbout()));
 	connect(this->helpActionHomepage, SIGNAL(triggered()), this, SLOT(helpHomepage()));
 	connect(this->helpActionManual, SIGNAL(triggered()), this, SLOT(helpManual()));
+	connect(this->helpActionCheatSheet, SIGNAL(triggered()), this, SLOT(helpCheatSheet()));
 	connect(this->helpActionLibraryInfo, SIGNAL(triggered()), this, SLOT(helpLibrary()));
 	connect(this->helpActionFontInfo, SIGNAL(triggered()), this, SLOT(helpFontInfo()));
 
@@ -469,60 +476,43 @@ MainWindow::MainWindow(const QString &filename)
 	addKeyboardShortCut(this->viewerToolBar->actions());
 	addKeyboardShortCut(this->editortoolbar->actions());
 	
-	//Toolbar
-	int defaultcolor = viewerToolBar->palette().background().color().lightness(); 
-        
-	if (defaultcolor > 165) { 
-		fileActionNew->setIcon(QIcon("://images/blackNew.png"));
-		fileActionOpen->setIcon(QIcon("://images/Open-32.png"));
-		fileActionSave->setIcon(QIcon("://images/Save-32.png"));
-		editActionZoomIn->setIcon(QIcon("://images/zoomin.png"));
-		editActionZoomOut->setIcon(QIcon("://images/zoomout.png"));
-		designActionRender->setIcon(QIcon("://images/blackRender.png"));
-		viewActionShowAxes->setIcon(QIcon("://images/blackaxes.png"));
-		viewActionShowEdges->setIcon(QIcon("://images/Rotation-32.png")); 
-		viewActionZoomIn->setIcon(QIcon("://images/zoomin.png"));
-		viewActionZoomOut->setIcon(QIcon("://images/zoomout.png"));
-		viewActionTop->setIcon(QIcon("://images/blackUp.png"));
-		viewActionBottom->setIcon(QIcon("://images/blackbottom.png"));
-		viewActionLeft->setIcon(QIcon("://images/blackleft (copy).png"));
-		viewActionRight->setIcon(QIcon("://images/rightright.png"));
-		viewActionFront->setIcon(QIcon("://images/blackfront.png"));
-		viewActionBack->setIcon(QIcon("://images/blackback.png"));
-		viewActionSurfaces->setIcon(QIcon("://images/surface.png"));
-		viewActionWireframe->setIcon(QIcon("://images/wireframe1.png"));
-		viewActionShowCrosshairs->setIcon(QIcon("://images/cross.png"));
-		viewActionPerspective->setIcon(QIcon("://images/perspective1.png"));
-		viewActionOrthogonal->setIcon(QIcon("://images/orthogonal.png"));
-		viewActionPreview->setIcon(QIcon("://images/Preview-32.png"));
-		viewActionAnimate->setIcon(QIcon("://images/animate.png"));
-	} else {
-		fileActionNew->setIcon(QIcon("://images/Document-New-128.png"));
-		fileActionOpen->setIcon(QIcon("://images/Open-128.png"));
-		fileActionSave->setIcon(QIcon("://images/Save-128.png"));
-		editActionZoomIn->setIcon(QIcon("://images/Zoom-In-32.png"));
-		editActionZoomOut->setIcon(QIcon("://images/Zoom-Out-32.png"));
-		designActionRender->setIcon(QIcon("://images/Arrowhead-Right-32.png"));
-		viewActionZoomIn->setIcon(QIcon("://images/Zoom-In-32.png"));
-		viewActionZoomOut->setIcon(QIcon("://images/Zoom-Out-32.png")); 
-		viewActionShowAxes->setIcon(QIcon("://images/axes.png"));
-		viewActionShowEdges->setIcon(QIcon("://images/grid.png"));
-		viewActionTop->setIcon(QIcon("://images/up.png"));
-		viewActionBottom->setIcon(QIcon("://images/bottom.png"));
-		viewActionLeft->setIcon(QIcon("://images/left.png"));
-		viewActionRight->setIcon(QIcon("://images/right.png"));
-		viewActionFront->setIcon(QIcon("://images/front.png"));
-		viewActionBack->setIcon(QIcon("://images/back.png"));
-		viewActionSurfaces->setIcon(QIcon("://images/surfaceWhite.png"));
-		viewActionWireframe->setIcon(QIcon("://images/wireframeWhite.png"));
-		viewActionShowCrosshairs->setIcon(QIcon("://images/crosswhite.png"));
-		viewActionPreview->setIcon(QIcon("://images/Preview-32(1).png"));
-		viewActionPerspective->setIcon(QIcon("://images/perspective1white.png"));
-		viewActionOrthogonal->setIcon(QIcon("://images/orthogonalwhite.png"));
-		viewActionAnimate->setIcon(QIcon("://images/animate.png"));
-		designActionExportSTL->setIcon(QIcon(":/images/export-white.png"));
-		viewActionViewAll->setIcon(QIcon(":/images/zoom-all-white.png"));
-	}
+	initActionIcon(fileActionNew, ":/images/blackNew.png", ":/images/Document-New-128.png");
+	initActionIcon(fileActionOpen, ":/images/Open-32.png", ":/images/Open-128.png");
+	initActionIcon(fileActionSave, ":/images/Save-32.png", ":/images/Save-128.png");
+	initActionIcon(editActionZoomTextIn, ":/images/zoom-text-in.png", ":/images/zoom-text-in-white.png");
+	initActionIcon(editActionZoomTextOut, ":/images/zoom-text-out.png", ":/images/zoom-text-out-white.png");
+	initActionIcon(designActionRender, ":/images/render-32.png", ":/images/render-32-white.png");
+	initActionIcon(viewActionShowAxes, ":/images/blackaxes.png", ":/images/axes.png");
+	initActionIcon(viewActionShowEdges, ":/images/Rotation-32.png", ":/images/grid.png");
+	initActionIcon(viewActionZoomIn, ":/images/zoomin.png", ":/images/Zoom-In-32.png");
+	initActionIcon(viewActionZoomOut, ":/images/zoomout.png", ":/images/Zoom-Out-32.png");
+	initActionIcon(viewActionTop, ":/images/blackUp.png", ":/images/up.png");
+	initActionIcon(viewActionBottom, ":/images/blackbottom.png", ":/images/bottom.png");
+	initActionIcon(viewActionLeft, ":/images/blackleft (copy).png", ":/images/left.png");
+	initActionIcon(viewActionRight, ":/images/rightright.png", ":/images/right.png");
+	initActionIcon(viewActionFront, ":/images/blackfront.png", ":/images/front.png");
+	initActionIcon(viewActionBack, ":/images/blackback.png", ":/images/back.png");
+	initActionIcon(viewActionSurfaces, ":/images/surface.png", ":/images/surfaceWhite.png");
+	initActionIcon(viewActionWireframe, ":/images/wireframe1.png", ":/images/wireframeWhite.png");
+	initActionIcon(viewActionShowCrosshairs, ":/images/cross.png", ":/images/crosswhite.png");
+	initActionIcon(viewActionPerspective, ":/images/perspective1.png", ":/images/perspective1white.png");
+	initActionIcon(viewActionOrthogonal, ":/images/orthogonal.png", ":/images/orthogonalwhite.png");
+	initActionIcon(designActionPreview, ":/images/preview-32.png", ":/images/preview-32-white.png");
+	initActionIcon(viewActionAnimate, ":/images/animate.png", ":/images/animate.png");
+	initActionIcon(fileActionExportSTL, ":/images/STL.png", ":/images/STL-white.png");
+	initActionIcon(fileActionExportAMF, ":/images/AMF.png", ":/images/AMF-white.png");
+	initActionIcon(fileActionExportOFF, ":/images/OFF.png", ":/images/OFF-white.png");
+	initActionIcon(fileActionExportDXF, ":/images/DXF.png", ":/images/DXF-white.png");
+	initActionIcon(fileActionExportSVG, ":/images/SVG.png", ":/images/SVG-white.png");
+	initActionIcon(fileActionExportCSG, ":/images/CSG.png", ":/images/CSG-white.png");
+	initActionIcon(fileActionExportImage, ":/images/PNG.png", ":/images/PNG-white.png");
+	initActionIcon(viewActionViewAll, ":/images/zoom-all.png", ":/images/zoom-all-white.png");
+	initActionIcon(editActionUndo, ":/images/Command-Undo-32.png", ":/images/Command-Undo-32-white.png");
+	initActionIcon(editActionRedo, ":/images/Command-Redo-32.png", ":/images/Command-Redo-32-white.png");
+	initActionIcon(editActionUnindent, ":/images/Decrease-Indent-32.png", ":/images/Decrease-Indent-32-white.png");
+	initActionIcon(editActionIndent, ":/images/Increase-Indent-32.png", ":/images/Increase-Indent-32-white.png");
+	initActionIcon(viewActionResetView, ":/images/Command-Reset-32.png", ":/images/Command-Reset-32-white.png");
+	initActionIcon(viewActionShowScaleProportional, ":/images/scalemarkers.png", ":/images/scalemarkers-white.png");
 	
 	// make sure it looks nice..
 	QByteArray windowState = settings.value("window/state", QByteArray()).toByteArray();
@@ -583,6 +573,13 @@ MainWindow::MainWindow(const QString &filename)
 	clearCurrentOutput();
 }
 
+void MainWindow::initActionIcon(QAction *action, const char *darkResource, const char *lightResource)
+{
+	int defaultcolor = viewerToolBar->palette().background().color().lightness();
+        const char *resource = (defaultcolor > 165) ? darkResource : lightResource;
+	action->setIcon(QIcon(resource));
+}
+
 void MainWindow::addKeyboardShortCut(const QList<QAction *> &actions)
 {
     foreach (QAction *action, actions) {
@@ -607,7 +604,7 @@ void MainWindow::loadViewSettings(){
 		viewActionShowEdges->setChecked(true);
 		viewModeShowEdges();
 	}
-	if (settings.value("view/showAxes").toBool()) {
+	if (settings.value("view/showAxes", true).toBool()) {
 		viewActionShowAxes->setChecked(true);
 		viewModeShowAxes();
 	}
@@ -615,6 +612,10 @@ void MainWindow::loadViewSettings(){
 		viewActionShowCrosshairs->setChecked(true);
 		viewModeShowCrosshairs();
 	}
+	if (settings.value("view/showScaleProportional", true).toBool()) {
+        viewActionShowScaleProportional->setChecked(true);
+        viewModeShowScaleProportional();
+    }
 	if (settings.value("view/orthogonalProjection").toBool()) {
 		viewOrthogonal();
 	} else {
@@ -634,7 +635,7 @@ void MainWindow::loadViewSettings(){
 void MainWindow::loadDesignSettings()
 {
 	QSettings settings;
-	if (settings.value("design/autoReload").toBool()) {
+	if (settings.value("design/autoReload", true).toBool()) {
 		designActionAutoReload->setChecked(true);
 	}
 	uint polySetCacheSize = Preferences::inst()->getValue("advanced/polysetCacheSize").toUInt();
@@ -692,7 +693,7 @@ MainWindow::~MainWindow()
 	if (MainWindow::getWindows()->size() == 0) {
 		// Quit application even in case some other windows like
 		// Preferences are still open.
-		qApp->quit();
+		this->quit();
 	}
 }
 
@@ -873,6 +874,9 @@ void MainWindow::compile(bool reload, bool forcedone)
 	bool shouldcompiletoplevel = false;
 	bool didcompile = false;
 
+	compileErrors = 0;
+	compileWarnings = 0;
+
 	this->renderingTime.start();
 
 	// Reload checks the timestamp of the toplevel file and refreshes if necessary,
@@ -946,12 +950,55 @@ void MainWindow::waitAfterReload()
 	}
 }
 
+void MainWindow::on_toolButtonCompileResultClose_clicked()
+{
+	frameCompileResult->hide();
+}
+
+void MainWindow::updateCompileResult()
+{
+	if ((compileErrors == 0) && (compileWarnings == 0)) {
+		frameCompileResult->hide();
+		return;
+	}
+
+	Settings::Settings *s = Settings::Settings::inst();
+	if (!s->get(Settings::Settings::showWarningsIn3dView).toBool()) {
+		return;
+	}
+
+	QString msg;
+	if (compileErrors > 0) {
+		if (fileName.isEmpty()) {
+			msg = QString(_("Compile error."));
+		} else {
+			QFileInfo fileInfo(fileName);
+			msg = QString(_("Error while compiling '%1'.")).arg(fileInfo.fileName());
+		}
+		toolButtonCompileResultIcon->setIcon(QIcon(QString::fromUtf8(":/icons/information-icons-error.png")));
+	} else {
+		const char *fmt = ngettext("Compilation generated %1 warning.", "Compilation generated %1 warnings.", compileWarnings);
+		msg = QString(fmt).arg(compileWarnings);
+		toolButtonCompileResultIcon->setIcon(QIcon(QString::fromUtf8(":/icons/information-icons-warning.png")));
+	}
+	QFontMetrics fm(labelCompileResultMessage->font());
+	int sizeIcon = std::max(12, std::min(32, fm.height()));
+	int sizeClose = std::max(10, std::min(32, fm.height()) - 4);
+	toolButtonCompileResultIcon->setIconSize(QSize(sizeIcon, sizeIcon));
+	toolButtonCompileResultClose->setIconSize(QSize(sizeClose, sizeClose));
+
+	msg += _(" For details see <a href=\"#console\">console window</a>.");
+	labelCompileResultMessage->setText(msg);
+	frameCompileResult->show();
+}
+
 void MainWindow::compileDone(bool didchange)
 {
 	const char *callslot;
 	if (didchange) {
 		instantiateRoot();
 		updateCamera();
+		updateCompileResult();
 		callslot = afterCompileSlot;
 	}
 	else {
@@ -1711,6 +1758,8 @@ void MainWindow::csgRender()
 	}
 
 	if (viewActionAnimate->isChecked() && e_dump->isChecked()) {
+		// Force reading from front buffer. Some configurations will read from the back buffer here.
+		glReadBuffer(GL_FRONT);
 		QImage img = this->qglview->grabFrameBuffer();
 		QString filename;
 		double s = this->e_fsteps->text().toDouble();
@@ -1776,14 +1825,18 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 		if (root_geom && !root_geom->isEmpty()) {
 			if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(root_geom.get())) {
 				if (N->getDimension() == 3) {
+					bool simple = N->p3->is_simple();
 					PRINT("   Top level object is a 3D object:");
-					PRINTB("   Simple:     %6s", (N->p3->is_simple() ? "yes" : "no"));
+					PRINTB("   Simple:     %6s", (simple ? "yes" : "no"));
 					PRINTB("   Vertices:   %6d", N->p3->number_of_vertices());
 					PRINTB("   Halfedges:  %6d", N->p3->number_of_halfedges());
 					PRINTB("   Edges:      %6d", N->p3->number_of_edges());
 					PRINTB("   Halffacets: %6d", N->p3->number_of_halffacets());
 					PRINTB("   Facets:     %6d", N->p3->number_of_facets());
 					PRINTB("   Volumes:    %6d", N->p3->number_of_volumes());
+					if (!simple) {
+						PRINT("WARNING: Object may not be a valid 2-manifold and may need repair!");
+					}
 				}
 			}
 			else if (const PolySet *ps = dynamic_cast<const PolySet *>(root_geom.get())) {
@@ -1950,7 +2003,7 @@ void MainWindow::actionExport(export_type_e, QString, QString)
 	setCurrentOutput();
 
 	if (!this->root_geom) {
-		PRINT("Nothing to export! Try building first (press F6).");
+		PRINT("WARNING: Nothing to export! Try building first (press F6).");
 		clearCurrentOutput();
 		return;
 	}
@@ -1989,7 +2042,6 @@ void MainWindow::actionExport(export_type_e, QString, QString)
 	QString filename = this->fileName.isEmpty() ? QString(_("Untitled")) + suffix : QFileInfo(this->fileName).baseName() + suffix;
 	QString export_filename = QFileDialog::getSaveFileName(this, title, filename, filter);
 	if (export_filename.isEmpty()) {
-		PRINTB("No filename specified. %s export aborted.", type_name);
 		clearCurrentOutput();
 		return;
 	}
@@ -2030,13 +2082,13 @@ QString MainWindow::get2dExportFilename(QString format, QString extension) {
 	setCurrentOutput();
 
 	if (!this->root_geom) {
-		PRINT("Nothing to export! Try building first (press F6).");
+		PRINT("WARNING: Nothing to export! Try building first (press F6).");
 		clearCurrentOutput();
 		return QString();
 	}
 
 	if (this->root_geom->getDimension() != 2) {
-		PRINT("Current top level object is not a 2D object.");
+		PRINT("WARNING: Current top level object is not a 2D object.");
 		clearCurrentOutput();
 		return QString();
 	}
@@ -2089,7 +2141,7 @@ void MainWindow::actionExportCSG()
 	setCurrentOutput();
 
 	if (!this->root_node) {
-		PRINT("Nothing to export. Please try compiling first...");
+		PRINT("WARNING: Nothing to export. Please try compiling first...");
 		clearCurrentOutput();
 		return;
 	}
@@ -2230,6 +2282,14 @@ void MainWindow::viewModeShowCrosshairs()
 	settings.setValue("view/showCrosshairs",viewActionShowCrosshairs->isChecked());
 	this->qglview->setShowCrosshairs(viewActionShowCrosshairs->isChecked());
 	this->qglview->updateGL();
+}
+
+void MainWindow::viewModeShowScaleProportional()
+{
+    QSettings settings;
+    settings.setValue("view/showScaleProportional",viewActionShowScaleProportional->isChecked());
+    this->qglview->setShowScaleProportional(viewActionShowScaleProportional->isChecked());
+    this->qglview->updateGL();
 }
 
 void MainWindow::viewModeAnimate()
@@ -2399,8 +2459,14 @@ void MainWindow::hideEditor()
 	}
 }
 
-void MainWindow::hideConsole()
+void MainWindow::showConsole()
+{
+	viewActionHideConsole->setChecked(false);
+	consoleDock->show();
+	frameCompileResult->hide();
+}
 
+void MainWindow::hideConsole()
 {
 	if (viewActionHideConsole->isChecked()) {
 		consoleDock->hide();
@@ -2458,6 +2524,11 @@ void MainWindow::helpHomepage()
 void MainWindow::helpManual()
 {
         UIUtils::openUserManualURL();
+}
+
+void MainWindow::helpCheatSheet()
+{
+        UIUtils::openCheatSheetURL();
 }
 
 void MainWindow::helpLibrary()
@@ -2567,17 +2638,30 @@ void MainWindow::quit()
 
 void MainWindow::consoleOutput(const std::string &msg, void *userdata)
 {
-	// Invoke the append function in the main thread in case the output
+	// Invoke the method in the main thread in case the output
 	// originates in a worker thread.
 	MainWindow *thisp = static_cast<MainWindow*>(userdata);
-	QString qmsg = QString::fromUtf8(msg.c_str());
-	if (qmsg.startsWith("WARNING:")) {
-		qmsg = "<html><span style=\"color: black; background-color: #ffffb0;\">" + qmsg + "</span></html>";
-	} else if (qmsg.startsWith("ERROR:")) {
-		qmsg = "<html><span style=\"color: black; background-color: #ffb0b0;\">" + qmsg + "</span></html>";
+	QMetaObject::invokeMethod(thisp, "consoleOutput", Q_ARG(QString, QString::fromStdString(msg)));
+}
+
+void MainWindow::consoleOutput(const QString &msg)
+{
+	QString qmsg;
+	if (msg.startsWith("WARNING:") || msg.startsWith("DEPRECATED:")) {
+		this->compileWarnings++;
+		qmsg = "<html><span style=\"color: black; background-color: #ffffb0;\">" + msg + "</span></html>\n";
+	} else if (msg.startsWith("ERROR:")) {
+		this->compileErrors++;
+		qmsg = "<html><span style=\"color: black; background-color: #ffb0b0;\">" + msg + "</span></html>\n";
 	}
-	QMetaObject::invokeMethod(thisp->console, "append", Qt::QueuedConnection, Q_ARG(QString, qmsg));
-	if (thisp->procevents) QApplication::processEvents();
+	else {
+		qmsg = msg;
+	}
+	QTextCursor c = this->console->textCursor();
+	c.movePosition(QTextCursor::End);
+	this->console->setTextCursor(c);
+	this->console->append(qmsg);
+	if (this->procevents) QApplication::processEvents();
 }
 
 void MainWindow::setCurrentOutput()
@@ -2601,4 +2685,22 @@ void MainWindow::openCSGSettingsChanged()
 void MainWindow::setContentsChanged()
 {
 	this->contentschanged = true;
+}
+
+void MainWindow::showFontCacheDialog()
+{
+	if (!MainWindow::fontCacheDialog) MainWindow::fontCacheDialog = new QProgressDialog;	
+	QProgressDialog *dialog = MainWindow::fontCacheDialog;
+
+	dialog->setLabelText(_("Fontconfig needs to update its font cache.\nThis can take up to a couple of minutes."));
+	dialog->setMinimum(0);
+	dialog->setMaximum(0);
+	dialog->setCancelButton(0);
+	dialog->exec();
+}
+
+void MainWindow::hideFontCacheDialog()
+{
+	assert(MainWindow::fontCacheDialog);
+	MainWindow::fontCacheDialog->reset();
 }

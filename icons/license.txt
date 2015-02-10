@@ -1,3 +1,14 @@
 Taken from http://tango.freedesktop.org/Tango_Icon_Library, version 0.8.90 / public domain:
 
 - prefsFeatures.png (converted from preferences-system.svg)
+
+https://openclipart.org/detail/2281/information-icons-set-by-kuba / public domain:
+
+- information-icons-error.png
+- information-icons-question.png
+- information-icons-info.png
+- information-icons-warning.png
+
+https://openclipart.org/detail/171382/cross-icon-by-zawertun-171382 / public domain:
+
+- close.png

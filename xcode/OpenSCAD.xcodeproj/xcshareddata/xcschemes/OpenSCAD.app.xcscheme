@@ -60,12 +60,40 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "../openscad/cube.scad"
+            argument = "minkowskitest.scad -o out.png --debug=cgalutils"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "falsetest.scad -o out.echo"
+            argument = "import-hullcrash_off.scad -o out.png --debug=cgalutils"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "issue1090.scad -o out.png --render"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "issue1105C.scad -o out.stl"
             isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "degenerate.scad -o out.png --debug=cgalutils --render=cgal"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "import-out.scad"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "issue1069.scad -o out.png --debug=cgalutils"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "testdata/scad/3D/features/cube-tests.scad -o out.png --preview"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "issue803-performance.scad"
+            isEnabled = "NO">
          </CommandLineArgument>
       </CommandLineArguments>
       <AdditionalOptions>

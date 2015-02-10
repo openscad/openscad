@@ -813,7 +813,7 @@ build_glib2 2.38.2
 build_freetype 2.5.0.1 --without-png
 build_libxml2 2.9.1
 build_fontconfig 2.11.0 --with-add-fonts=/usr/X11R6/lib/X11/fonts,/usr/local/share/fonts
-build_ragel 6.8
+build_ragel 6.9
 build_harfbuzz 0.9.23 --with-glib=yes
 
 echo "OpenSCAD dependencies built and installed to " $BASEDIR

@@ -32,6 +32,7 @@
 // dxfdata.h must come first for Eigen SIMD alignment issues
 #include "dxfdata.h"
 #include "polyset.h"
+#include "polyset-utils.h"
 #include "printutils.h"
 
 #include "CGALRenderer.h"
@@ -44,7 +45,13 @@
 CGALRenderer::CGALRenderer(shared_ptr<const class Geometry> geom)
 {
 	if (shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(geom)) {
-		this->polyset = ps;
+		assert(ps->getDimension() == 3);
+		// We need to tessellate here, in case the generated PolySet contains concave polygons
+    // See testdata/scad/3D/features/polyhedron-concave-test.scad
+		PolySet *ps_tri = new PolySet(3, ps->convexValue());
+		ps_tri->setConvexity(ps->getConvexity());
+		PolysetUtils::tessellate_faces(*ps, *ps_tri);
+		this->polyset.reset(ps_tri);
 	}
 	else if (shared_ptr<const Polygon2d> poly = dynamic_pointer_cast<const Polygon2d>(geom)) {
 		this->polyset.reset(poly->tessellate());

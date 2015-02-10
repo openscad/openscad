@@ -108,7 +108,8 @@ std::string QGLView::getRendererInfo() const
 {
   std::string glewinfo = glew_dump();
   std::string glextlist = glew_extensions_dump();
-  return glewinfo + std::string(_("\nUsing QGLWidget\n\n")) + glextlist;
+	// Don't translate as translated text in the Library Info dialog is not wanted
+  return glewinfo + std::string("\nUsing QGLWidget\n\n") + glextlist;
 }
 
 #ifdef ENABLE_OPENCSG
@@ -299,6 +300,8 @@ void QGLView::mouseReleaseEvent(QMouseEvent*)
 
 bool QGLView::save(const char *filename)
 {
+	// Force reading from front buffer. Some configurations will read from the back buffer here.
+	glReadBuffer(GL_FRONT);
   QImage img = grabFrameBuffer();
   return img.save(filename, "PNG");
 }

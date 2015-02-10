@@ -93,6 +93,8 @@ static std::string arg_colorscheme;
 #define QUOTE(x__) # x__
 #define QUOTED(x__) QUOTE(x__)
 
+std::string versionnumber = QUOTED(OPENSCAD_VERSION);
+
 std::string openscad_versionnumber = QUOTED(OPENSCAD_VERSION)
 #ifdef OPENSCAD_COMMIT
 	" (git " QUOTED(OPENSCAD_COMMIT) ")"
@@ -461,7 +463,8 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 			if (renderer == Render::CGAL && root_geom->getDimension() == 3) {
 				const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron*>(root_geom.get());
 				if (!N) {
-					root_geom.reset(CGALUtils::createNefPolyhedronFromGeometry(*root_geom));
+					N = CGALUtils::createNefPolyhedronFromGeometry(*root_geom);
+					root_geom.reset(N);
 					PRINT("Converted to Nef polyhedron");
 				}
 			}
@@ -597,24 +600,23 @@ void dialogThreadFunc(FontCacheInitializer *initializer)
 
 void dialogInitHandler(FontCacheInitializer *initializer, void *)
 {
-	QProgressDialog dialog;
-	dialog.setLabelText(_("Fontconfig needs to update its font cache.\nThis can take up to a couple of minutes."));
-	dialog.setMinimum(0);
-	dialog.setMaximum(0);
-	dialog.setCancelButton(0);
+	MainWindow *mainw = *MainWindow::getWindows()->begin();
 
 	QFutureWatcher<void> futureWatcher;
-	QObject::connect(&futureWatcher, SIGNAL(finished()), &dialog, SLOT(reset()));
-	QObject::connect(&dialog, SIGNAL(canceled()), &futureWatcher, SLOT(cancel()));
-	QObject::connect(&futureWatcher, SIGNAL(progressRangeChanged(int,int)), &dialog, SLOT(setRange(int,int)));
-	QObject::connect(&futureWatcher, SIGNAL(progressValueChanged(int)), &dialog, SLOT(setValue(int)));
+	QObject::connect(&futureWatcher, SIGNAL(finished()), mainw, SLOT(hideFontCacheDialog()));
 
 	QFuture<void> future = QtConcurrent::run(boost::bind(dialogThreadFunc, initializer));
 	futureWatcher.setFuture(future);
 
-	dialog.exec();
+	// We don't always get the started() signal, so we start manually
+	QMetaObject::invokeMethod(mainw, "showFontCacheDialog");
 
+	// Block, in case we're in a separate thread, or the dialog was closed by the user
 	futureWatcher.waitForFinished();
+
+	// We don't always receive the finished signal. We still need the signal to break 
+	// out of the exec() though.
+	QMetaObject::invokeMethod(mainw, "hideFontCacheDialog");
 }
 
 int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, char ** argv)
@@ -640,6 +642,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	QCoreApplication::setApplicationVersion(TOSTRING(OPENSCAD_VERSION));
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 	QGuiApplication::setApplicationDisplayName("OpenSCAD");
+	QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 #else
 	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
 #endif
@@ -661,6 +664,12 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 
 #ifdef Q_OS_MAC
 	installAppleEventHandlers();
+#endif
+
+#ifdef Q_OS_WIN
+    QSettings reg_setting(QLatin1String("HKEY_CURRENT_USER"), QSettings::NativeFormat);
+    QString appPath = QDir::toNativeSeparators(app.applicationFilePath() + QLatin1String(",1"));
+    reg_setting.setValue(QLatin1String("Software/Classes/OpenSCAD_File/DefaultIcon/Default"),QVariant(appPath));
 #endif
 
 #ifdef OPENSCAD_UPDATER
@@ -830,12 +839,12 @@ int main(int argc, char **argv)
 		output_file = vm["o"].as<string>().c_str();
 	}
 	if (vm.count("s")) {
-		printDeprecation("DEPRECATED: The -s option is deprecated. Use -o instead.\n");
+		printDeprecation("The -s option is deprecated. Use -o instead.\n");
 		if (output_file) help(argv[0], true);
 		output_file = vm["s"].as<string>().c_str();
 	}
 	if (vm.count("x")) { 
-		printDeprecation("DEPRECATED: The -x option is deprecated. Use -o instead.\n");
+		printDeprecation("The -x option is deprecated. Use -o instead.\n");
 		if (output_file) help(argv[0], true);
 		output_file = vm["x"].as<string>().c_str();
 	}
@@ -900,4 +909,3 @@ int main(int argc, char **argv)
 
 	return rc;
 }
-

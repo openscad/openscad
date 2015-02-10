@@ -121,6 +121,7 @@ Visitor::~Visitor()
  * external settings file. The second value is the display value that
  * can be translated.
  */
+SettingsEntry Settings::showWarningsIn3dView("3dview", "showWarningsIn3dView", Value(true), Value(true));
 SettingsEntry Settings::indentationWidth("editor", "indentationWidth", Value(Value::RangeType(1, 16)), Value(4));
 SettingsEntry Settings::tabWidth("editor", "tabWidth", Value(Value::RangeType(1, 16)), Value(8));
 SettingsEntry Settings::lineWrap("editor", "lineWrap", values("None", _("None"), "Char", _("Wrap at character boundaries"), "Word", _("Wrap at word boundaries")), Value("Word"));
