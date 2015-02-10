@@ -6,7 +6,8 @@
 # 
 # This script must be run from the OpenSCAD source root directory
 #
-# Usage: macosx-build-dependencies.sh [-6lcd] [<package>]
+# Usage: macosx-build-dependencies.sh [-16lcdf] [<package>]
+#  -1   Build using C++11
 #  -6   Build only 64-bit binaries
 #  -l   Force use of LLVM compiler
 #  -c   Force use of clang compiler
@@ -60,7 +61,7 @@ DEPLOY_PACKAGES=(
 
 printUsage()
 {
-  echo "Usage: $0 [-6lcd] [<package>]"
+  echo "Usage: $0 [-16lcdf] [<package>]"
   echo
   echo "  -1   Build using C++11"
   echo "  -6   Build only 64-bit binaries"
@@ -830,7 +831,7 @@ OPENSCAD_SCRIPTDIR=$PWD/scripts
 while getopts '16lcdf' c
 do
   case $c in
-    6) OPTION_CXX11=true;;
+    1) OPTION_CXX11=true;;
     6) OPTION_32BIT=false;;
     l) OPTION_LLVM=true;;
     c) OPTION_CLANG=true;;
@@ -923,6 +924,7 @@ fi
 
 # Build specified (or all) packages
 ALL_PACKAGES=$(all_packages)
+echo $ALL_PACKAGES
 if [ -z "$OPTION_PACKAGES" ]; then
   OPTION_PACKAGES=$ALL_PACKAGES
 fi
