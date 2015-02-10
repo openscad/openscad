@@ -156,7 +156,7 @@ AbstractNode *ModuleInstantiation::evaluate(const Context *ctx) const
 	try {
 		AbstractNode *node = ctx->instantiate_module(*this, &c); // Passes c as evalctx
 		return node;
-	} catch (RecursionException &e) {
+	} catch (const RecursionException &e) {
 		PRINT(e.what());
 		return NULL;
 	}
@@ -181,7 +181,7 @@ Module::~Module()
 AbstractNode *Module::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	if (StackCheck::inst()->check()) {
-		throw RecursionException("module", inst->name());
+		throw RecursionException::create("module", inst->name());
 		return NULL;
 	}
 
