@@ -23,7 +23,7 @@
 BASEDIR=$PWD/../libraries
 OPENSCADDIR=$PWD
 SRCDIR=$BASEDIR/src
-DEPLOYDIR=$BASEDIR/install
+DEPLOYDIR=$BASEDIR/install-c++11
 MAC_OSX_VERSION_MIN=10.7
 OPTION_32BIT=false
 OPTION_LLVM=false
@@ -31,6 +31,7 @@ OPTION_CLANG=false
 OPTION_GCC=false
 OPTION_DEPLOY=false
 OPTION_FORCE=0
+OPTION_CXX11=false
 
 PACKAGES=(
     "eigen 3.2.4"
@@ -61,6 +62,7 @@ printUsage()
 {
   echo "Usage: $0 [-6lcd] [<package>]"
   echo
+  echo "  -1   Build using C++11"
   echo "  -6   Build only 64-bit binaries"
   echo "  -l   Force use of LLVM compiler"
   echo "  -c   Force use of clang compiler"
@@ -223,7 +225,7 @@ build_qt5()
   cd qt-everywhere-opensource-src-$version
   ./configure -prefix $DEPLOYDIR -release -opensource -confirm-license \
 		-nomake examples -nomake tests \
-		-no-xcb -no-c++11 -no-glib -no-harfbuzz -no-sql-db2 -no-sql-ibase -no-sql-mysql -no-sql-oci -no-sql-odbc \
+		-no-xcb -no-glib -no-harfbuzz -no-sql-db2 -no-sql-ibase -no-sql-mysql -no-sql-oci -no-sql-odbc \
 		-no-sql-psql -no-sql-sqlite2 -no-sql-tds -no-cups -no-qml-debug \
 		-skip activeqt -skip connectivity -skip declarative -skip doc \
 		-skip enginio -skip graphicaleffects -skip location -skip multimedia \
@@ -248,7 +250,7 @@ build_qscintilla()
   fi
   tar xzf QScintilla-gpl-$version.tar.gz
   cd QScintilla-gpl-$version/Qt4Qt5
-  qmake qscintilla.pro
+  qmake QMAKE_CXXFLAGS+="$CXXFLAGS" QMAKE_LFLAGS+="$CXXFLAGS" qscintilla.pro
   make -j6 install
   install_name_tool -id $DEPLOYDIR/lib/libqscintilla2.dylib $DEPLOYDIR/lib/libqscintilla2.dylib
 }
@@ -434,7 +436,7 @@ build_boost()
     BOOST_TOOLSET="toolset=clang"
     echo "using clang ;" >> tools/build/user-config.jam 
   fi
-  ./b2 -j"$NUMCPU" -d+2 $BOOST_TOOLSET cflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64 $BOOST_EXTRA_FLAGS" linkflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64 $BOOST_EXTRA_FLAGS -headerpad_max_install_names" install
+  ./b2 -j"$NUMCPU" -d+2 $BOOST_TOOLSET cflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64 $BOOST_EXTRA_FLAGS $CXXFLAGS" linkflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64 $BOOST_EXTRA_FLAGS $CXXFLAGS -headerpad_max_install_names" install
   install_name_tool -id $DEPLOYDIR/lib/libboost_thread.dylib $DEPLOYDIR/lib/libboost_thread.dylib 
   install_name_tool -change libboost_system.dylib $DEPLOYDIR/lib/libboost_system.dylib $DEPLOYDIR/lib/libboost_thread.dylib 
   install_name_tool -change libboost_chrono.dylib $DEPLOYDIR/lib/libboost_chrono.dylib $DEPLOYDIR/lib/libboost_thread.dylib 
@@ -532,7 +534,7 @@ build_opencsg()
   if $OPTION_32BIT; then
     OPENCSG_EXTRA_FLAGS="x86"
   fi
-  qmake -r QMAKE_CXXFLAGS+="-I$DEPLOYDIR/include" QMAKE_LFLAGS+="-L$DEPLOYDIR/lib" CONFIG+="x86_64 $OPENCSG_EXTRA_FLAGS" DESTDIR=$DEPLOYDIR
+  qmake -r QMAKE_CXXFLAGS+="-I$DEPLOYDIR/include $CXXFLAGS" QMAKE_LFLAGS+="-L$DEPLOYDIR/lib $CXXFLAGS" CONFIG+="x86_64 $OPENCSG_EXTRA_FLAGS" DESTDIR=$DEPLOYDIR
   make install
 }
 
@@ -788,7 +790,7 @@ build_ragel()
   tar xzf "ragel-$version.tar.gz"
   cd "ragel-$version"
   sed -e "s/setiosflags(ios::right)/std::&/g" ragel/javacodegen.cpp > ragel/javacodegen.cpp.new && mv ragel/javacodegen.cpp.new ragel/javacodegen.cpp
-  ./configure --prefix="$DEPLOYDIR"
+  CXXFLAGS="$CXXFLAGS -Wno-c++11-narrowing" ./configure --prefix="$DEPLOYDIR"
   make -j$NUMCPU
   make install
 }
@@ -814,7 +816,7 @@ build_harfbuzz()
   # disable doc directories as they make problems on Mac OS Build
   sed -e "s/SUBDIRS = src util test docs/SUBDIRS = src util test/g" Makefile.am > Makefile.am.bak && mv Makefile.am.bak Makefile.am
   sed -e "s/^docs.*$//" configure.ac > configure.ac.bak && mv configure.ac.bak configure.ac
-  PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" ./autogen.sh --prefix="$DEPLOYDIR" --with-freetype=yes --with-gobject=no --with-cairo=no --with-icu=no CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN CXXFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN $extra_config_flags
+  PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" ./autogen.sh --prefix="$DEPLOYDIR" --with-freetype=yes --with-gobject=no --with-cairo=no --with-icu=no CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN CXXFLAGS="$CXXFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="$CXXFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN" $extra_config_flags
   make -j$NUMCPU
   make install
 }
@@ -825,9 +827,10 @@ if [ ! -f $OPENSCADDIR/openscad.pro ]; then
 fi
 OPENSCAD_SCRIPTDIR=$PWD/scripts
 
-while getopts '6lcdf' c
+while getopts '16lcdf' c
 do
   case $c in
+    6) OPTION_CXX11=true;;
     6) OPTION_32BIT=false;;
     l) OPTION_LLVM=true;;
     c) OPTION_CLANG=true;;
@@ -884,6 +887,10 @@ elif $USING_CLANG; then
   export CXX=clang++
 fi
 
+if $USING_CXX11; then
+  export CXXFLAGS="-std=c++11 -stdlib=libc++"
+fi
+
 echo "Building for $MAC_OSX_VERSION_MIN or later"
 
 if [ ! $NUMCPU ]; then
@@ -893,9 +900,6 @@ fi
 
 if $OPTION_DEPLOY; then
   echo "Building deployment version of libraries"
-  OPTION_32BIT=true
-else
-  OPTION_32BIT=false
 fi
 
 if $OPTION_32BIT; then
