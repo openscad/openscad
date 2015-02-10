@@ -17,6 +17,8 @@
 #include <opencsg.h>
 #endif
 
+#include <boost/lexical_cast.hpp>
+
 GLView::GLView()
 {
   showedges = false;
@@ -589,7 +591,7 @@ void GLView::showScalemarkers(const Color4f &col)
 void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
 {
     // convert the axis position to a string
-    std::string digit = static_cast<std::ostringstream*>( &(std::ostringstream() << i) )->str();
+	std::string digit = boost::lexical_cast<std::string>(i);
 
     // setup how far above the axis (or tic TBD) to draw the number
     double dig_buf = (l/size_div_sm)/4;
