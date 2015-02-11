@@ -4,6 +4,9 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/circular_buffer.hpp>
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
+#include "boosty.h"
 
 std::list<std::string> print_messages_stack;
 OutputHandlerFunc *outputhandler = NULL;
@@ -52,7 +55,7 @@ void PRINT_NOCACHE(const std::string &msg)
 	if (msg.empty()) return;
 
 	if (boost::starts_with(msg, "WARNING") || boost::starts_with(msg, "ERROR")) {
-		int i;
+		size_t i;
 		for (i=0;i<lastmessages.size();i++) {
 			if (lastmessages[i] != msg) break;
 		}
@@ -71,19 +74,13 @@ void PRINTDEBUG(const std::string &filename, const std::string &msg)
 {
 	// see printutils.h for usage instructions
 	if (OpenSCAD::debug=="") return;
-	std::string fname(filename);
-	std::string lowdebug( OpenSCAD::debug );
-	boost::replace_all( fname, "src/", "" );
-	std::string shortfname(fname);
-	boost::replace_all( shortfname, ".cc", "");
-	boost::replace_all( shortfname, ".h", "");
-	boost::replace_all( shortfname, ".hpp", "");
-	std::string lowshortfname( shortfname );
-	boost::algorithm::to_lower( lowshortfname );
-	boost::algorithm::to_lower( lowdebug );
-	if (OpenSCAD::debug=="all") {
-		PRINT_NOCACHE( shortfname+": "+ msg );
-	} else if (lowdebug.find(lowshortfname) != std::string::npos) {
+	std::string shortfname = boosty::stringy(fs::path(filename).stem());
+	std::string lowshortfname(shortfname);
+	boost::algorithm::to_lower(lowshortfname);
+	std::string lowdebug(OpenSCAD::debug);
+	boost::algorithm::to_lower(lowdebug);
+	if (OpenSCAD::debug=="all" ||
+			lowdebug.find(lowshortfname) != std::string::npos) {
 		PRINT_NOCACHE( shortfname+": "+ msg );
 	}
 }
