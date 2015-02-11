@@ -156,7 +156,7 @@ ValuePtr FunctionTailRecursion::evaluate(const Context *ctx, const EvalContext *
 		tmp.setVariables(definition_arguments, &ec);
 		c.apply_variables(tmp);
 
-		if (counter++ == 1000000) throw RecursionException("function", this->name);
+		if (counter++ == 1000000) throw RecursionException::create("function", this->name);
 	}
 
 	ValuePtr result = endexpr->evaluate(&c);
