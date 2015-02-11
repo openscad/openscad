@@ -139,23 +139,30 @@ bool GeometryUtils::tessellatePolygonWithHoles(const IndexedPolygons &polygons,
 		std::vector<int> vflags(inputSize); // Inits with 0's
 		
 		IndexedTriangle tri;
+		IndexedTriangle mappedtri;
 		for (int t=0;t<numelems;t++) {
 			bool err = false;
+			mappedtri.fill(-1);
 			for (int i=0;i<3;i++) {
 				int vidx = vindices[elements[t*3 + i]];
-				if (vidx == TESS_UNDEF) err = true;
-				else tri[i] = vidx; // A)
+				if (vidx == TESS_UNDEF) {
+					err = true;
+				}
+				else {
+					tri[i] = vidx; // A)
+					mappedtri[i] = allindices[vidx];
+				}
 			}
 			PRINTDB("%d (%d) %d (%d) %d (%d)",
-							elements[t*3 + 0] % allindices[vindices[elements[t*3 + 0]]] %
-							elements[t*3 + 1] % allindices[vindices[elements[t*3 + 1]]] %
-							elements[t*3 + 2] % allindices[vindices[elements[t*3 + 2]]]);
+							elements[t*3 + 0] % mappedtri[0] %
+							elements[t*3 + 1] % mappedtri[1] %
+							elements[t*3 + 2] % mappedtri[2]);
 			// FIXME: We ignore self-intersecting triangles rather than detecting and handling this
 			if (!err) {
 				vflags[tri[0]]++; // B)
 				vflags[tri[1]]++;
 				vflags[tri[2]]++;
-				triangles.push_back(IndexedTriangle(allindices[tri[0]], allindices[tri[1]], allindices[tri[2]]));
+				triangles.push_back(mappedtri);
 			}
 		}
 
@@ -169,6 +176,9 @@ bool GeometryUtils::tessellatePolygonWithHoles(const IndexedPolygons &polygons,
 					tri[0] = allindices[starti];
 					tri[1] = allindices[j];
 					tri[2] = allindices[(j+1)%inputSize];
+					vflags[tri[0]]++;
+					vflags[tri[1]]++;
+					vflags[tri[2]]++;
 					triangles.push_back(tri);
 				}
 				i = j;
