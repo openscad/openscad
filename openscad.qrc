@@ -40,7 +40,7 @@
     <file>images/Open-128.png</file>
     <file>images/openscad.png</file>
     <file>images/right.png</file>
-    <file>images/Save-128.png</file>
+    <file>images/Save.svg</file>
     <file>images/up.png</file>
     <file>images/bottom.png</file>
     <file>images/left.png</file>
@@ -49,7 +49,6 @@
     <file>images/Rotation-32.png</file>
     <file>images/Shape-Cube-32.png</file>
     <file>images/Open-32.png</file>
-    <file>images/Save-32.png</file>
     <file>images/blackbottom.png</file>
     <file>images/blackleft (copy).png</file>
     <file>images/rightright.png</file>

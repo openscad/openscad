@@ -574,7 +574,7 @@
   <action name="fileActionSave">
    <property name="icon">
     <iconset resource="../openscad.qrc">
-     <normaloff>:/images/Save-32.png</normaloff>:/images/Save-32.png</iconset>
+     <normaloff>:/images/Save.svg</normaloff>:/images/Save.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Save</string>
