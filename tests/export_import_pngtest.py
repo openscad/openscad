@@ -14,6 +14,7 @@
 #         of the original .scad file. they should be the same!
 #
 # All the optional openscad args are passed on to OpenSCAD both in step 2 and 4.
+# Exception: Any --render argument will be replaced with --render=cgal for step 2
 #
 # This script should return 0 on success, not-0 on error.
 #
@@ -84,9 +85,12 @@ if inputsuffix != '.scad' and inputsuffix != '.csg':
 #
 # First run: Just export the given filetype
 #
-export_cmd = [args.openscad, inputfile, '-o', exportfile] + remaining_args
-print('Running OpenSCAD #1:')
-print(' '.join(export_cmd))
+tmpargs =  [arg for arg in remaining_args if not arg.startswith('--render')]
+tmpargs.append('--render=cgal')
+
+export_cmd = [args.openscad, inputfile, '-o', exportfile] + tmpargs
+print >> sys.stderr, 'Running OpenSCAD #1:'
+print >> sys.stderr, ' '.join(export_cmd)
 result = subprocess.call(export_cmd)
 if result != 0:
 	failquit('OpenSCAD #1 failed with return code ' + str(result))
@@ -106,8 +110,8 @@ if args.format != 'csg':
         createImport(exportfile, newscadfile)
 
 create_png_cmd = [args.openscad, newscadfile, '-o', pngfile] + remaining_args
-print('Running OpenSCAD #2:')
-print(' '.join(create_png_cmd))
+print >> sys.stderr, 'Running OpenSCAD #2:'
+print >> sys.stderr, ' '.join(create_png_cmd)
 fontdir =  os.path.join(os.path.dirname(args.openscad), "..", "testdata");
 fontenv = os.environ.copy();
 fontenv["OPENSCAD_FONT_PATH"] = fontdir;
