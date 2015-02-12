@@ -3,6 +3,7 @@
 /*-output
 /*.scad
 /*.png
+/*.pyc
 out.*
 /CMakeFiles
 /CMakeCache.txt
