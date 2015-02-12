@@ -24,6 +24,7 @@
 # Authors: Torsten Paul, Don Bright, Marius Kintel
 
 import sys, os, re, subprocess, argparse
+from validatestl import validateSTL
 
 def failquit(*args):
 	if len(args)!=0: print(args)
@@ -89,6 +90,10 @@ print(' '.join(export_cmd))
 result = subprocess.call(export_cmd)
 if result != 0:
 	failquit('OpenSCAD #1 failed with return code ' + str(result))
+
+if args.format == 'stl':
+        if not validateSTL(exportfile):
+                failquit("Error: Non-manifold STL file exported from OpenSCAD")
 
 
 #
