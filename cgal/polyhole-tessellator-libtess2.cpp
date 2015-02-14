@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
   }
 
   std::vector<IndexedTriangle> triangles;
-  bool ok = GeometryUtils::tessellatePolygonWithHoles(polyhole, triangles, normal);
+  bool ok = GeometryUtils::tessellatePolygonWithHoles(&polyhole.vertices.front(), polyhole.faces, triangles, normal);
   std::cerr << "Tessellated into " << triangles.size() << " triangles" << std::endl;
 
   IndexedTriangleMesh trimesh;
