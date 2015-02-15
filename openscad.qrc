@@ -1,11 +1,11 @@
 <RCC>
   <qresource prefix="/">
     <file>icons/svg/new.svg</file>
-    <file>images/Document-New-128.png</file>
+    <file>icons/svg/new-white.svg</file>
     <file>icons/svg/open.svg</file>
-    <file>images/Open-128.png</file>
+    <file>icons/svg/open-white.svg</file>
     <file>icons/svg/save.svg</file>
-    <file>images/Save-128.png</file>
+    <file>icons/svg/save-white.svg</file>
     <file>images/STL.png</file>
     <file>images/STL-white.png</file>
     <file>images/AMF.png</file>
@@ -26,13 +26,13 @@
     <file>images/zoom-text-out.png</file>
     <file>images/zoom-text-out-white.png</file>
     <file>icons/svg/undo.svg</file>
-    <file>images/Command-Undo-32-white.png</file>
+    <file>icons/svg/undo-white.svg</file>
     <file>icons/svg/redo.svg</file>
-    <file>images/Command-Redo-32-white.png</file>
+    <file>icons/svg/redo-white.svg</file>
     <file>icons/svg/indent.svg</file>
-    <file>images/Increase-Indent-32-white.png</file>
+    <file>icons/svg/indent-white.svg</file>
     <file>icons/svg/unindent.svg</file>
-    <file>images/Decrease-Indent-32-white.png</file>
+    <file>icons/svg/unindent-white.svg</file>
 
     <file>images/preview-32.png</file>
     <file>images/preview-32-white.png</file>
@@ -77,12 +77,12 @@
     <file>images/blackfront.png</file>
     <file>images/blackback.png</file>
     <file>images/blackaxes.png</file>
-    <file>images/zoomin.png</file>
-    <file>images/zoomout.png</file>
     <file>images/wireframe1.png</file>
     <file>images/surface.png</file>
     <file>icons/svg/zoom-in.svg</file>
+    <file>icons/svg/zoom-in-white.svg</file>
     <file>icons/svg/zoom-out.svg</file>
+    <file>icons/svg/zoom-out-white.svg</file>
     <file>images/zoom-all.png</file>
     <file>images/zoom-all-white.png</file>
     <file>images/surfaceWhite.png</file>

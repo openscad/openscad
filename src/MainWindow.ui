@@ -550,7 +550,7 @@
   <action name="fileActionNew">
    <property name="icon">
     <iconset resource="../openscad.qrc">
-     <normaloff>:/images/blackNew.png</normaloff>:/images/blackNew.png</iconset>
+     <normaloff>:/icons/svg/new.svg</normaloff>:/icons/svg/new.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;New</string>
@@ -562,7 +562,7 @@
   <action name="fileActionOpen">
    <property name="icon">
     <iconset resource="../openscad.qrc">
-     <normaloff>:/images/Open-32.png</normaloff>:/images/Open-32.png</iconset>
+     <normaloff>:/icons/svg/open.svg</normaloff>:/icons/svg/open.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Open...</string>
@@ -574,7 +574,7 @@
   <action name="fileActionSave">
    <property name="icon">
     <iconset resource="../openscad.qrc">
-     <normaloff>:/images/Save.svg</normaloff>:/images/Save.svg</iconset>
+     <normaloff>:/icons/svg/save.svg</normaloff>:/icons/svg/save.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Save</string>
@@ -613,7 +613,7 @@
   <action name="editActionUndo">
    <property name="icon">
     <iconset resource="../openscad.qrc">
-     <normaloff>:/images/Command-Undo-32.png</normaloff>:/images/Command-Undo-32.png</iconset>
+     <normaloff>:/icons/svg/undo.svg</normaloff>:/icons/svg/undo.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Undo</string>
@@ -628,7 +628,7 @@
   <action name="editActionRedo">
    <property name="icon">
     <iconset resource="../openscad.qrc">
-     <normaloff>:/images/Command-Redo-32.png</normaloff>:/images/Command-Redo-32.png</iconset>
+     <normaloff>:/icons/svg/redo.svg</normaloff>:/icons/svg/redo.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Redo</string>
@@ -676,7 +676,7 @@
   <action name="editActionIndent">
    <property name="icon">
     <iconset resource="../openscad.qrc">
-     <normaloff>:/images/Increase-Indent-32.png</normaloff>:/images/Increase-Indent-32.png</iconset>
+     <normaloff>:/icons/svg/indent.svg</normaloff>:/icons/svg/indent.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Indent</string>
@@ -1201,7 +1201,7 @@
   <action name="viewActionZoomIn">
    <property name="icon">
     <iconset resource="../openscad.qrc">
-     <normaloff>:/images/zoomin.png</normaloff>:/images/zoomin.png</iconset>
+     <normaloff>:/icons/svg/zoom-in.svg</normaloff>:/icons/svg/zoom-in.svg</iconset>
    </property>
    <property name="text">
     <string>Zoom In</string>
@@ -1213,7 +1213,7 @@
   <action name="viewActionZoomOut">
    <property name="icon">
     <iconset resource="../openscad.qrc">
-     <normaloff>:/images/zoomout.png</normaloff>:/images/zoomout.png</iconset>
+     <normaloff>:/icons/svg/zoom-out.svg</normaloff>:/icons/svg/zoom-out.svg</iconset>
    </property>
    <property name="text">
     <string>Zoom Out</string>
@@ -1247,7 +1247,7 @@
   <action name="editActionUnindent">
    <property name="icon">
     <iconset resource="../openscad.qrc">
-     <normaloff>:/images/Decrease-Indent-32.png</normaloff>:/images/Decrease-Indent-32.png</iconset>
+     <normaloff>:/icons/svg/unindent.svg</normaloff>:/icons/svg/unindent.svg</iconset>
    </property>
    <property name="text">
     <string>U&amp;nindent</string>

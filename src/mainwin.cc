@@ -475,10 +475,14 @@ MainWindow::MainWindow(const QString &filename)
 	
 	addKeyboardShortCut(this->viewerToolBar->actions());
 	addKeyboardShortCut(this->editortoolbar->actions());
+
 	
-	initActionIcon(fileActionNew, ":/icons/svg/new.svg", ":/images/Document-New-128.png");
-	initActionIcon(fileActionOpen, ":/icons/svg/open.svg", ":/images/Open-128.png");
-	initActionIcon(fileActionSave, ":/icons/svg/save.svg", ":/images/Save-128.svg");
+	viewerToolBar->setAutoFillBackground(true);
+	viewerToolBar->setStyleSheet("QToolBar { background-color: blue; border: 1px solid black; }");
+	
+	initActionIcon(fileActionNew, ":/icons/svg/new.svg", ":/icons/svg/new-white.svg");
+	initActionIcon(fileActionOpen, ":/icons/svg/open.svg", ":/icons/svg/open-white.svg");
+	initActionIcon(fileActionSave, ":/icons/svg/save.svg", ":/icons/svg/save-white.svg");
 	initActionIcon(fileActionExportSTL, ":/images/STL.png", ":/images/STL-white.png");
 	initActionIcon(fileActionExportAMF, ":/images/AMF.png", ":/images/AMF-white.png");
 	initActionIcon(fileActionExportOFF, ":/images/OFF.png", ":/images/OFF-white.png");
@@ -489,18 +493,18 @@ MainWindow::MainWindow(const QString &filename)
 
 	initActionIcon(editActionZoomTextIn, ":/images/zoom-text-in.png", ":/images/zoom-text-in-white.png");
 	initActionIcon(editActionZoomTextOut, ":/images/zoom-text-out.png", ":/images/zoom-text-out-white.png");
-	initActionIcon(editActionUndo, ":/icons/svg/undo.svg", ":/images/Command-Undo-32-white.png");
-	initActionIcon(editActionRedo, ":/icons/svg/redo.svg", ":/images/Command-Redo-32-white.png");
-	initActionIcon(editActionUnindent, ":/icons/svg/indent.svg", ":/images/Decrease-Indent-32-white.png");
-	initActionIcon(editActionIndent, ":/icons/svg/unindent.svg", ":/images/Increase-Indent-32-white.png");
+	initActionIcon(editActionUndo, ":/icons/svg/undo.svg", ":/icons/svg/undo-white.svg");
+	initActionIcon(editActionRedo, ":/icons/svg/redo.svg", ":/icons/svg/redo-white.svg");
+	initActionIcon(editActionUnindent, ":/icons/svg/indent.svg", ":/icons/svg/indent-white.svg");
+	initActionIcon(editActionIndent, ":/icons/svg/unindent.svg", ":/icons/svg/unindent-white.svg");
 
 	initActionIcon(designActionPreview, ":/images/preview-32.png", ":/images/preview-32-white.png");
 	initActionIcon(designActionRender, ":/images/render-32.png", ":/images/render-32-white.png");
 
 	initActionIcon(viewActionShowAxes, ":/images/blackaxes.png", ":/images/axes.png");
 	initActionIcon(viewActionShowEdges, ":/images/Rotation-32.png", ":/images/grid.png");
-	initActionIcon(viewActionZoomIn, ":/icons/svg/zoom-in.svg", ":/images/Zoom-In-32.png");
-	initActionIcon(viewActionZoomOut, ":/icons/svg/zoom-out.svg", ":/images/Zoom-Out-32.png");
+	initActionIcon(viewActionZoomIn, ":/icons/svg/zoom-in.svg", ":/icons/svg/zoom-in-white.svg");
+	initActionIcon(viewActionZoomOut, ":/icons/svg/zoom-out.svg", ":/icons/svg/zoom-out-white.svg");
 	initActionIcon(viewActionTop, ":/images/blackUp.png", ":/images/up.png");
 	initActionIcon(viewActionBottom, ":/images/blackbottom.png", ":/images/bottom.png");
 	initActionIcon(viewActionLeft, ":/images/blackleft (copy).png", ":/images/left.png");
@@ -579,7 +583,7 @@ MainWindow::MainWindow(const QString &filename)
 void MainWindow::initActionIcon(QAction *action, const char *darkResource, const char *lightResource)
 {
 	int defaultcolor = viewerToolBar->palette().background().color().lightness();
-        const char *resource = (defaultcolor > 165) ? darkResource : lightResource;
+	const char *resource = (defaultcolor > 165) ? darkResource : lightResource;
 	action->setIcon(QIcon(resource));
 }
 
