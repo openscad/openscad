@@ -1,5 +1,5 @@
 $fn = 60;
-width = 60;
+width = 70;
 height = 100;
 thickness = 5;
 edge_rounding = 2;
@@ -20,7 +20,10 @@ icons = [
     ["zoom-in"],
     ["zoom-out"],
     ["undo"],
-    ["redo"]
+    ["redo"],
+    ["indent"],
+    ["unindent"],
+    ["new"],
 ];
 
 module outline(w) {
@@ -48,8 +51,8 @@ module export_paper() {
     difference() {
         outline(thickness) paper();
         translate([-1, height - corner_size + 1]) square([corner_size, corner_size]);
-        translate([-10, -10]) square([height, 55]);
     }
+    export_paper_corner();
 }
 
 module export_paper_corner() {
@@ -66,8 +69,10 @@ module export_paper_corner() {
 }
 
 module export(t) {
-    export_paper();
-    export_paper_corner();
+    difference() {
+        export_paper();
+        translate([-10, -10]) square([height, 55]);
+    }
     translate([width / 2, 0])
         text(t, 35, font = font, halign = "center");
 }
@@ -142,16 +147,18 @@ module zoom() {
     }
 }
 
+module cross() {
+    square([10, 35], center = true);
+    square([35, 10], center = true);
+}
+
 module zoom_in() {
-    zoom() {
-        square([8, 40], center = true);
-        square([40, 8], center = true);
-    }
+    zoom() cross();
 }
 
 module zoom_out() {
     zoom() {
-        square([40, 8], center = true);
+        square([35, 10], center = true);
     }
 }
 
@@ -169,6 +176,27 @@ module undo() {
 
 module redo() {
     mirror([1, 0, 0]) undo();
+}
+
+module indent_document() {
+    for (a = [ 0 : 3 ]) {
+        x = abs(a - 1.5) < 1 ? 30 : 0;
+        translate([x, 20 * a]) square([80 - x, 10]);
+    }
+    offset(2) children();
+}
+
+module indent() {
+    indent_document() polygon([[2, 50], [17, 35], [2, 20]]);
+}
+
+module unindent() {
+    indent_document() polygon([[2, 35], [17, 50], [17, 20]]);
+}
+
+module new() {
+    export_paper();
+    translate([width / 2, 2 * height / 5]) cross();
 }
 
 module icon_translate(idx, icon, cols) {
@@ -195,6 +223,9 @@ module icon(icon) {
     icon_translate(9, icon, cols) zoom_out();
     icon_translate(10, icon, cols) undo();
     icon_translate(11, icon, cols) redo();
+    icon_translate(12, icon, cols) indent();
+    icon_translate(13, icon, cols) unindent();
+    icon_translate(14, icon, cols) new();
 }
 
 icon = "all";
