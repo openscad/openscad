@@ -19,9 +19,21 @@ struct IndexedTriangleMesh {
 	std::vector<IndexedTriangle> triangles;
 };
 
+// Indexed polygon mesh, where each polygon can have holes
+struct IndexedPolyMesh {
+	std::vector<Vector3f> vertices;
+	std::vector<std::vector<IndexedFace> > polygons;
+};
+
 namespace GeometryUtils {
-	bool tessellatePolygon(const Polygon &polygon, Polygons &triangles,
+	bool tessellatePolygon(const Polygon &polygon,
+												 Polygons &triangles,
 												 const Vector3f *normal = NULL);
-	bool tessellatePolygonWithHoles(const IndexedPolygons &polygons, std::vector<IndexedTriangle> &triangles,
+	bool tessellatePolygonWithHoles(const Vector3f *vertices,
+																	const std::vector<IndexedFace> &faces, 
+																	std::vector<IndexedTriangle> &triangles,
 																	const Vector3f *normal = NULL);
+
+	int findUnconnectedEdges(const std::vector<std::vector<IndexedFace> > &polygons);
+	int findUnconnectedEdges(const std::vector<IndexedTriangle> &triangles);
 }
