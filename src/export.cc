@@ -297,7 +297,12 @@ void export_off(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
 	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 	try {
 		CGAL_Polyhedron P;
-		root_N->p3->convert_to_Polyhedron(P);
+		//root_N->p3->convert_to_Polyhedron(P);
+		bool err = nefworkaround::convert_to_Polyhedron<CGAL_Kernel3>(*(root_N->p3), P);
+		if (err) {
+			PRINT("ERROR: CGAL NefPolyhedron->Polyhedron conversion failed");
+			return;
+		}
 		output << P;
 	}
 	catch (const CGAL::Assertion_exception &e) {
@@ -327,7 +332,12 @@ void export_amf(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
 	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 	try {
 		CGAL_Polyhedron P;
-		root_N->p3->convert_to_Polyhedron(P);
+		//root_N->p3->convert_to_Polyhedron(P);
+		bool err = nefworkaround::convert_to_Polyhedron<CGAL_Kernel3>(*(root_N->p3), P);
+		if (err) {
+			PRINT("ERROR: CGAL NefPolyhedron->Polyhedron conversion failed");
+			return;
+		}
 
 		typedef CGAL_Polyhedron::Vertex Vertex;
 		typedef CGAL_Polyhedron::Vertex_const_iterator VCI;
