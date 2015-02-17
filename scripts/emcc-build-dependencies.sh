@@ -416,7 +416,7 @@ build_cgal()
   DEBUGBOOSTFIND=0 # for debugging FindBoost.cmake (not for debugging boost)
   Boost_NO_SYSTEM_PATHS=1
   if [ "`echo $2 | grep use-sys-libs`" ]; then
-    emmake cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DCMAKE_BUILD_TYPE=$CGAL_BUILDTYPE -DBoost_DEBUG=$DEBUGBOOSTFIND ..
+    EMCONFIGURE_JS=1 emmake cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DCMAKE_BUILD_TYPE=$CGAL_BUILDTYPE -DBoost_DEBUG=$DEBUGBOOSTFIND ..
   else
     emmake cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.so -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.so -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.so -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DBOOST_LIBRARYDIR=$DEPLOYDIR/lib -DBOOST_INCLUDEDIR=$DEPLOYDIR/include -DCMAKE_BUILD_TYPE=$CGAL_BUILDTYPE -DBoost_DEBUG=$DEBUGBOOSTFIND -DBoost_NO_SYSTEM_PATHS=1 ..
   fi
@@ -506,27 +506,31 @@ build_opencsg()
   cp opencsg.pro opencsg.pro.bak
   cat opencsg.pro.bak | sed s/example// > opencsg.pro
 
-  if [ "`command -v qmake-qt4`" ]; then
-    OPENCSG_QMAKE=qmake-qt4
-  elif [ "`command -v qmake4`" ]; then
-    OPENCSG_QMAKE=qmake4
-  elif [ "`command -v qmake`" ]; then
-    OPENCSG_QMAKE=qmake
-  else
-    echo qmake not found... using standard OpenCSG makefiles
-    OPENCSG_QMAKE=make
+  #if [ "`command -v qmake-qt4`" ]; then
+  #  OPENCSG_QMAKE=emmake qmake-qt4
+  #elif [ "`command -v qmake4`" ]; then
+  #  OPENCSG_QMAKE=emmake qmake4
+  #elif [ "`command -v qmake`" ]; then
+  #  OPENCSG_QMAKE=emmake qmake
+  #else
+  #  echo qmake not found... using standard OpenCSG makefiles
+    echo not using qmake because reasons
+    OPENCSG_QMAKE=emmake make
     cp Makefile Makefile.bak
     cp src/Makefile src/Makefile.bak
 
     cat Makefile.bak | sed s/example// |sed s/glew// > Makefile
     cat src/Makefile.bak | sed s@^INCPATH.*@INCPATH\ =\ -I$BASEDIR/include\ -I../include\ -I..\ -I.@ > src/Makefile
     cp src/Makefile src/Makefile.bak2
-    cat src/Makefile.bak2 | sed s@^LIBS.*@LIBS\ =\ -L$BASEDIR/lib\ -L/usr/X11R6/lib\ -lGLU\ -lGL@ > src/Makefile
+    #cat src/Makefile.bak2 | sed s@^LIBS.*@LIBS\ =\ -L$BASEDIR/lib\ -L/usr/X11R6/lib\ -lGLU\ -lGL@ > src/Makefile
+    cat src/Makefile.bak2 | sed s@^LIBS.*@LIBS\ =\ -L$BASEDIR/lib\ -lGLU\ -lGL@ > src/Makefile
     tmp=$version
     detect_glu
-    if [ ! $detect_glu_result ]; then build_glu 9.0.0 ; fi
+    if [ ! $detect_glu_result ]; then 
+      echo building glu
+      build_glu 9.0.0 ; fi
     version=$tmp
-  fi
+  #fi
 
   cd $BASEDIR/src/OpenCSG-$version/src
   $OPENCSG_QMAKE
@@ -1008,7 +1012,7 @@ if [ $1 ]; then
     exit $?
   fi
   if [ $1 = "mpfr" ]; then
-    #Requires gmp
+    #RTHIS ONE COMPILES!!!
     build_mpfr 3.1.1
     exit $?
   fi
