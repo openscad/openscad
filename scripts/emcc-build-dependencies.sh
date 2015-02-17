@@ -289,7 +289,7 @@ build_mpfr()
   cd mpfr-$version
   mkdir build
   cd build
-  emconfigure ../configure --prefix=$DEPLOYDIR --with-gmp=$DEPLOYDIR
+  EMCONFIGURE_JS=1 emconfigure ../configure --prefix=$DEPLOYDIR --with-gmp=$DEPLOYDIR
   emmake make -j$NUMCPU
   emmake make install
   cd ..
@@ -998,11 +998,12 @@ if [ $1 ]; then
     exit $?
   fi
   if [ $1 = "eigen" ]; then
+    #THIS ONE COMPILES!!!
     build_eigen 3.2.2
     exit $?
   fi
   if [ $1 = "gmp" ]; then
-    #claims c++ compiler not available...
+    #THIS ONE COMPILES!!!
     build_gmp 5.0.5
     exit $?
   fi
