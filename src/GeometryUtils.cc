@@ -96,65 +96,78 @@ public:
 		}
 	}
 
+	void remove_from_v2e(int vidx, int next, int prev) {
+		std::list<int> &l = v2e[vidx];
+		std::list<int>::iterator it = std::find(l.begin(), l.end(), next);
+		if (it != l.end()) l.erase(it);
+		if (l.empty()) v2e.erase(vidx);
+
+		std::list<int> &l2 = v2e_reverse[vidx];
+		it = std::find(l2.begin(), l2.end(), prev);
+		if (it != l2.end()) l2.erase(it);
+		if (l2.empty()) v2e_reverse.erase(vidx);
+	}
+
+	void extractTriangle(int vidx, int next, std::vector<IndexedTriangle> &triangles) {
+		assert(v2e_reverse.find(vidx) != v2e_reverse.end());
+		assert(!v2e_reverse[vidx].empty());
+		int prev = v2e_reverse[vidx].front();
+		
+		IndexedTriangle t(prev, vidx, next);
+		PRINTDB("Clipping ear: %d %d %d", t[0] % t[1] % t[2]);
+		triangles.push_back(t);
+		// Remove the generated triangle from the original.
+		// Add new boundary edges to the edge dict
+		this->remove(t);
+
+            // If next->prev doesn't exists, add prev->next
+            std::list<int>::iterator v2eit = std::find(v2e[next].begin(), v2e[next].end(), prev);
+            if (v2eit == v2e[next].end()) {
+                v2e[prev].push_back(next);
+                v2e_reverse[next].push_back(prev);
+            }
+            remove_from_v2e(vidx, next, prev);
+            remove_from_v2e(prev, vidx, next);
+            remove_from_v2e(next, prev, vidx);
+		
+		
+	}
+
 	// Triangulate remaining loops and add to triangles
 	void triangulateLoops(std::vector<IndexedTriangle> &triangles) {
 		// First, look for self-intersections in edges
-		boost::unordered_map<int, std::list<int> > v2e;
-		boost::unordered_map<int, std::list<int> > v2e_reverse;
-		
+		v2e.clear();
+		v2e_reverse.clear();
 		BOOST_FOREACH(const IndexedEdgeDict::value_type &v, this->edges) {
 			const IndexedEdge &e = v.first;
-			v2e[e.first].push_back(e.second);
-			v2e_reverse[e.second].push_back(e.first);
+			for (int i=0;i<v.second;i++) {
+				v2e[e.first].push_back(e.second);
+				v2e_reverse[e.second].push_back(e.first);
+			}
 		}
 
 		while (!v2e.empty()) {
-			for (boost::unordered_map<int, std::list<int> >::iterator it = v2e.begin();
-					 it != v2e.end();
-					 it++) {
+			boost::unordered_map<int, std::list<int> >::iterator it;
+			for (it = v2e.begin();it != v2e.end();it++) {
 				if (it->second.size() == 1) { // First single vertex
 					int vidx = it->first;
 					int next = it->second.front();
-					assert(v2e_reverse.find(vidx) != v2e_reverse.end());
-					assert(!v2e_reverse[vidx].empty());
-					int prev = v2e_reverse[vidx].front();
-					
-					IndexedTriangle t(prev, vidx, next);
-					PRINTDB("Clipping ear: %d %d %d", t[0] % t[1] % t[2]);
-					triangles.push_back(t);
-					// Remove the generated triangle from the original.
-					// Add new boundary edges to the edge dict
-					this->remove(t);
-
-					v2e.erase(vidx); // single vertex
-					v2e_reverse.erase(vidx); // single vertex
-					
-					// If next->prev exists, remove it, otherwise add prev->next
-					std::list<int>::iterator v2eit = std::find(v2e[next].begin(), v2e[next].end(), prev);
-					if (v2eit != v2e[next].end()) {
-						v2e[next].erase(v2eit);
-						v2e_reverse[prev].remove(next);
-					}
-					else {
-						v2e[prev].push_back(next);
-						v2e_reverse[next].push_back(prev);
-					}
-					if (v2e[next].empty()) v2e.erase(next);
-					if (v2e_reverse[prev].empty()) v2e.erase(prev);
-					
-					// Remove prev->vidx
-					v2e[prev].remove(vidx);
-					if (v2e[prev].empty()) v2e.erase(prev);
-					v2e_reverse[next].remove(vidx);
-					if (v2e_reverse[next].empty()) v2e_reverse.erase(next);
-					
+					extractTriangle(vidx, next, triangles);
 					break;
 				}
+			}
+			// Only duplicate vertices left
+			if (it == v2e.end() && !v2e.empty()) {
+				int vidx = v2e.begin()->first;
+				int next = v2e.begin()->second.front();
+				extractTriangle(vidx, next, triangles);
 			}
 		}
 	}
 
 	IndexedEdgeDict edges;
+	boost::unordered_map<int, std::list<int> > v2e;
+	boost::unordered_map<int, std::list<int> > v2e_reverse;
 };
 
 
