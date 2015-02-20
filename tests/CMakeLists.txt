@@ -1149,8 +1149,6 @@ list(APPEND EXPORT3D_CGALCGAL_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/rotate_extrude-hole.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue904.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1105.scad
-                                ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1105b.scad
-                                ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1105c.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1105d.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1215.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1215c.scad
@@ -1162,10 +1160,14 @@ set_test_config(Bugs
                      offcgalpngtest_bad-stl-pcbvicebar
                      offcgalpngtest_bad-stl-tardis
                      offpngtest_bad-stl-wing
+                     offcgalpngtest_issue1105b
+                     offcgalpngtest_issue1105c
                      offcgalpngtest_issue1215b)
 
 list(APPEND EXPORT3D_CGAL_TEST_FILES 
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/polyhedron-tests.scad
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1105b.scad
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1105c.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1215b.scad)
 
 list(APPEND EXPORT3D_TEST_FILES 
