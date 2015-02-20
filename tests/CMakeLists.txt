@@ -1147,6 +1147,7 @@ list(APPEND EXPORT3D_CGALCGAL_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/bad-stl-pcbvicebar.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/bad-stl-tardis.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/rotate_extrude-hole.scad
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue904.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1105.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1105b.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1105c.scad
@@ -1265,7 +1266,6 @@ list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue13.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue791.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue802.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue899.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue904.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue945.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue945b.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue945c.scad
