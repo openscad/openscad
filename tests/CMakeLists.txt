@@ -1148,7 +1148,8 @@ list(APPEND EXPORT3D_CGALCGAL_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/bad-stl-tardis.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/rotate_extrude-hole.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1215.scad
-                                ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1215c.scad)
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1215c.scad
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1221.scad)
 # Issue #910
 set_test_config(Bugs 
                      offcgalpngtest_polyhedron-tests
@@ -1269,8 +1270,7 @@ list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue13.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1105.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1105b.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1105c.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1105d.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1221.scad)
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1105d.scad)
 
 # We know that we cannot import weakly manifold files into CGAL, so to make tests easier
 # to manage, don't try. Once we improve import, we can reenable this
