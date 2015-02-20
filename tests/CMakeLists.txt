@@ -1146,17 +1146,21 @@ list(APPEND EXPORT3D_CGALCGAL_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/internal-cavity-polyhedron.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/bad-stl-pcbvicebar.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/bad-stl-tardis.scad
-                                ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/rotate_extrude-hole.scad)
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/rotate_extrude-hole.scad
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1215.scad
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1215c.scad)
 # Issue #910
 set_test_config(Bugs 
                      offcgalpngtest_polyhedron-tests
                      offpngtest_nonmanifold-polyhedron
                      offcgalpngtest_bad-stl-pcbvicebar
                      offcgalpngtest_bad-stl-tardis
-                     offpngtest_bad-stl-wing)
+                     offpngtest_bad-stl-wing
+                     offcgalpngtest_issue1215b)
 
 list(APPEND EXPORT3D_CGAL_TEST_FILES 
-                                ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/polyhedron-tests.scad)
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/polyhedron-tests.scad
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1215b.scad)
 
 list(APPEND EXPORT3D_TEST_FILES 
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/nonmanifold-polyhedron.scad
@@ -1266,9 +1270,6 @@ list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue13.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1105b.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1105c.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1105d.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1215.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1215b.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1215c.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1221.scad)
 
 # We know that we cannot import weakly manifold files into CGAL, so to make tests easier
@@ -1280,18 +1281,11 @@ list(APPEND EXPORT3D_CGALCGAL_TEST_FILES ${BUGS_FILES})
 list(REMOVE_ITEM EXPORT3D_CGALCGAL_TEST_FILES
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1105b.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1105c.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1215b.scad
 )
 list(APPEND EXPORT3D_CGAL_TEST_FILES
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1105b.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1105c.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1215b.scad
 )
-
-#disable_tests(
-## This triggers a Value to string difference when compiled as testing
-#csgpngtest_issue1215
-#)
 
 # 2D files
 list(REMOVE_ITEM EXPORT3D_CGALCGAL_TEST_FILES
