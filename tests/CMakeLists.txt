@@ -1284,9 +1284,8 @@ list(REMOVE_ITEM EXPORT3D_CGALCGAL_TEST_FILES
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue945d.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1105b.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1105c.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1215.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1215b.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1215c.scad)
+)
 list(APPEND EXPORT3D_CGAL_TEST_FILES
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue13.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue13b.scad
@@ -1296,14 +1295,13 @@ list(APPEND EXPORT3D_CGAL_TEST_FILES
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue945d.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1105b.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1105c.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1215.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1215b.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1215c.scad)
-
-disable_tests(
-# This triggers a Value to string difference when compiled as testing
-csgpngtest_issue1215
 )
+
+#disable_tests(
+## This triggers a Value to string difference when compiled as testing
+#csgpngtest_issue1215
+#)
 
 # 2D files
 list(REMOVE_ITEM EXPORT3D_CGALCGAL_TEST_FILES
