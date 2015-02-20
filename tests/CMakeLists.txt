@@ -1260,6 +1260,7 @@ list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue13.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue945b.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue945c.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue945d.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue945e.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1105.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1105b.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1105c.scad
@@ -1278,10 +1279,6 @@ list(APPEND EXPORT3D_CGALCGAL_TEST_FILES ${BUGS_FILES})
 list(REMOVE_ITEM EXPORT3D_CGALCGAL_TEST_FILES
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue13.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue13b.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue945.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue945b.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue945c.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue945d.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1105b.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1105c.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1215b.scad
@@ -1289,10 +1286,6 @@ list(REMOVE_ITEM EXPORT3D_CGALCGAL_TEST_FILES
 list(APPEND EXPORT3D_CGAL_TEST_FILES
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue13.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue13b.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue945.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue945b.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue945c.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue945d.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1105b.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1105c.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1215b.scad
