@@ -1266,7 +1266,8 @@ list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue13.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1105d.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1215.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1215b.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1215c.scad)
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1215c.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1221.scad)
 
 # We know that we cannot import weakly manifold files into CGAL, so to make tests easier
 # to manage, don't try. Once we improve import, we can reenable this
