@@ -308,7 +308,11 @@ bool QGLView::save(const char *filename)
 
 void QGLView::wheelEvent(QWheelEvent *event)
 {
+#if QT_VERSION >= 0x050000
 	this->cam.zoom(event->angleDelta().y());
+#else
+	this->cam.zoom(event->delta());
+#endif
   updateGL();
 }
 
