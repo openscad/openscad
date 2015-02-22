@@ -308,7 +308,7 @@ bool QGLView::save(const char *filename)
 
 void QGLView::wheelEvent(QWheelEvent *event)
 {
-	this->cam.zoom(event->delta());
+	this->cam.zoom(event->angleDelta().y());
   updateGL();
 }
 
