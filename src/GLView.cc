@@ -591,7 +591,9 @@ void GLView::showScalemarkers(const Color4f &col)
 void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
 {
     // convert the axis position to a string
-	std::string digit = boost::lexical_cast<std::string>(i);
+	std::ostringstream oss;
+	oss << i;
+	std::string digit = oss.str();
 
     // setup how far above the axis (or tic TBD) to draw the number
     double dig_buf = (l/size_div_sm)/4;
@@ -667,6 +669,14 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
         {4,0,1,3,2},
         {5,1,0,2,3},
         {5,1,0,2,3}};
+
+    int or_e[6][7]={
+        {1,0,2,3,2,4,5},
+        {0,1,3,2,3,5,4},
+        {0,1,3,2,3,5,4},
+        {0,1,3,2,3,5,4},
+        {1,0,2,3,2,4,5},
+        {1,0,2,3,2,4,5}};
 
     std::string stash_digit = digit;
 
@@ -818,6 +828,19 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
                 glVertex3d(dig_vrt[5][ax[di][0]],dig_vrt[5][ax[di][1]],dig_vrt[5][ax[di][2]]);  //f
                 glEnd();
                 break;
+
+            case 'e':
+                glBegin(GL_LINE_STRIP);
+                glVertex3d(dig_vrt[or_e[di][0]][ax[di][0]],dig_vrt[or_e[di][0]][ax[di][1]],dig_vrt[or_e[di][0]][ax[di][2]]);  //b
+                glVertex3d(dig_vrt[or_e[di][1]][ax[di][0]],dig_vrt[or_e[di][1]][ax[di][1]],dig_vrt[or_e[di][1]][ax[di][2]]);  //a
+                glVertex3d(dig_vrt[or_e[di][2]][ax[di][0]],dig_vrt[or_e[di][2]][ax[di][1]],dig_vrt[or_e[di][2]][ax[di][2]]);  //c
+                glVertex3d(dig_vrt[or_e[di][3]][ax[di][0]],dig_vrt[or_e[di][3]][ax[di][1]],dig_vrt[or_e[di][3]][ax[di][2]]);  //d
+                glVertex3d(dig_vrt[or_e[di][4]][ax[di][0]],dig_vrt[or_e[di][4]][ax[di][1]],dig_vrt[or_e[di][4]][ax[di][2]]);  //c
+                glVertex3d(dig_vrt[or_e[di][5]][ax[di][0]],dig_vrt[or_e[di][5]][ax[di][1]],dig_vrt[or_e[di][5]][ax[di][2]]);  //e
+                glVertex3d(dig_vrt[or_e[di][6]][ax[di][0]],dig_vrt[or_e[di][6]][ax[di][1]],dig_vrt[or_e[di][6]][ax[di][2]]);  //f
+                glEnd();
+                break;
+
             }
         }
     }
