@@ -139,8 +139,7 @@ void SurfaceNode::convert_image(img_data_t &data, std::vector<unsigned char> &im
 			if (invert) {
 				z = h - z;
 			}
-			data[std::make_pair(height - y, x)] = z;
-			
+			data[std::make_pair(height - 1 - y, x)] = z;
 		}
 	}
 }
