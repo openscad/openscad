@@ -177,6 +177,8 @@ void QGLView::mousePressEvent(QMouseEvent *event)
 }
 
 void QGLView::mouseDoubleClickEvent (QMouseEvent *event) {
+
+	PRINTD("QGLView::mouseDoubleClickEvent");
 	setupCamera();
 
 	int viewport[4];
