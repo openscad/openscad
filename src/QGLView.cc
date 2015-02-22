@@ -189,8 +189,8 @@ void QGLView::mouseDoubleClickEvent (QMouseEvent *event) {
 	glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
 	glGetDoublev(GL_PROJECTION_MATRIX, projection);
 
-	double x = event->pos().x();
-	double y = viewport[3] - event->pos().y();
+	double x = event->pos().x() * this->getDPI();
+	double y = viewport[3] - event->pos().y() * this->getDPI();
 	GLfloat z = 0;
 
 	glReadPixels(x, y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &z);
@@ -202,9 +202,7 @@ void QGLView::mouseDoubleClickEvent (QMouseEvent *event) {
 	GLint success = gluUnProject(x, y, z, modelview, projection, viewport, &px, &py, &pz);
 
 	if (success == GL_TRUE) {
-		cam.object_trans.x() = -px;
-		cam.object_trans.y() = -py;
-		cam.object_trans.z() = -pz;
+            cam.object_trans -= Vector3d(px, py, pz);
 		updateGL();
 		emit doAnimateUpdate();
 	}
