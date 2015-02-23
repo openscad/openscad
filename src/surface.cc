@@ -220,10 +220,11 @@ Geometry *SurfaceNode::createGeometry() const
 	
 	int lines = 0;
 	int columns = 0;
-	double min_val = 0;
+	double min_val = std::numeric_limits<double>::max();
 	for (img_data_t::iterator it = data.begin();it != data.end();it++) {
 		lines = std::max(lines, (*it).first.first + 1);
 		columns = std::max(columns, (*it).first.second + 1);
+		min_val = std::min((*it).second - 1, min_val);
 	}
 
 	double ox = center ? -(columns-1)/2.0 : 0;
