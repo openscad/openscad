@@ -460,8 +460,12 @@ void ScintillaEditor::zoomOut()
 void ScintillaEditor::initFont(const QString& fontName, uint size)
 {
 	QFont font(fontName, size);
+	QFontMetrics fontmetrics = QFontMetrics(font);
 	font.setFixedPitch(true);
 	lexer->setFont(font);
+	qsci->setFont(font);
+        qsci->setMarginsFont(font);
+	qsci->setMarginWidth(1, fontmetrics.width(QString::number(qsci->lines())) + 6);
 }
 
 void ScintillaEditor::initMargin()
