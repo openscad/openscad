@@ -150,9 +150,16 @@ void export_stl(const PolySet &ps, std::ostream &output)
 			// so the default value of "1 0 0" can be used. If the vertices are not
 			// collinear then the unit normal must be calculated from the
 			// components.
+			output << "  facet normal ";
+
 			Vector3d normal = (p[1] - p[0]).cross(p[2] - p[0]);
 			normal.normalize();
-			output << "  facet normal " << normal[0] << " " << normal[1] << " " << normal[2] << "\n";
+			if (is_finite(normal) && !is_nan(normal)) {
+				output << normal[0] << " " << normal[1] << " " << normal[2] << "\n";
+			}
+			else {
+				output << "0 0 0\n";
+			}
 			output << "    outer loop\n";
 		
 			BOOST_FOREACH(const Vector3d &v, p) {
