@@ -256,7 +256,7 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 	const boost::property_tree::ptree & pt = colorScheme->propertyTree();
 
 	try {
-		QFont font = lexer->font(lexer->defaultStyle());
+          QFont font = lexer->font(lexer->defaultStyle());
 		const QColor textColor(pt.get<std::string>("text").c_str());
 		const QColor paperColor(pt.get<std::string>("paper").c_str());
 
@@ -281,6 +281,8 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 		l->setFont(font);
 		l->setColor(textColor);
 		l->setPaper(paperColor);
+                // Somehow, the margin font got lost when we deleted the old lexer
+                qsci->setMarginsFont(font);
 
 		const boost::property_tree::ptree& colors = pt.get_child("colors");
 		l->setColor(readColor(colors, "keyword1", textColor), QsciLexerCPP::Keyword);
@@ -342,7 +344,7 @@ void ScintillaEditor::noColor()
 	qsci->setUnmatchedBraceForegroundColor(Qt::black);
 	qsci->setMarginsBackgroundColor(Qt::lightGray);
 	qsci->setMarginsForegroundColor(Qt::black);
-	qsci->setFoldMarginColors(Qt::black, Qt::lightGray);
+	qsci->setFoldMarginColors(Qt::lightGray, Qt::lightGray);
 	qsci->setEdgeColor(Qt::black);
 }
 
@@ -459,23 +461,17 @@ void ScintillaEditor::zoomOut()
 
 void ScintillaEditor::initFont(const QString& fontName, uint size)
 {
-	QFont font(fontName, size);
-	QFontMetrics fontmetrics = QFontMetrics(font);
-	font.setFixedPitch(true);
-	lexer->setFont(font);
-	qsci->setFont(font);
-        qsci->setMarginsFont(font);
-	qsci->setMarginWidth(1, fontmetrics.width(QString::number(qsci->lines())) + 6);
+  QFont font(fontName, size);
+  font.setFixedPitch(true);
+  lexer->setFont(font);
+  qsci->setMarginsFont(font);
+  onTextChanged(); // Update margin width
 }
 
 void ScintillaEditor::initMargin()
 {
-	QFontMetrics fontmetrics = QFontMetrics(qsci->font());
-	qsci->setMarginsFont(qsci->font());
-	qsci->setMarginWidth(1, fontmetrics.width(QString::number(qsci->lines())) + 6);
-	qsci->setMarginLineNumbers(1, true);
-
-	connect(qsci, SIGNAL(textChanged()), this, SLOT(onTextChanged()));
+  qsci->setMarginLineNumbers(1, true);
+  connect(qsci, SIGNAL(textChanged()), this, SLOT(onTextChanged()));
 }
 
 void ScintillaEditor::onTextChanged()
