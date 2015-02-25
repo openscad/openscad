@@ -27,7 +27,7 @@ public slots:
 	void featuresCheckBoxToggled(bool);
 	void on_colorSchemeChooser_itemSelectionChanged();
 	void on_fontChooser_activated(const QString &);
-	void on_fontSize_editTextChanged(const QString &);
+	void on_fontSize_currentIndexChanged(const QString &);
 	void on_syntaxHighlight_activated(const QString &);
 	void on_openCSGWarningBox_toggled(bool);
 	void on_enableOpenCSGBox_toggled(bool);
@@ -44,7 +44,7 @@ public slots:
 	void on_undockCheckBox_toggled(bool);
 	void on_checkNowButton_clicked();
 	void on_launcherBox_toggled(bool);
-	void on_editorType_editTextChanged(const QString &);
+	void on_editorType_currentIndexChanged(const QString &);
 
 	void on_checkBoxShowWarningsIn3dView_toggled(bool);
   //
