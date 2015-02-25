@@ -43,7 +43,7 @@ static void append_stl(const PolySet &ps, std::ostream &output)
 
 	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
 	output << "solid OpenSCAD_Model\n";
-	BOOST_FOREACH(const PolySet::Polygon &p, triangulated.polygons) {
+	BOOST_FOREACH(const Polygon &p, triangulated.polygons) {
 		assert(p.size() == 3); // STL only allows triangles
 		std::stringstream stream;
 		stream << p[0][0] << " " << p[0][1] << " " << p[0][2];
@@ -60,9 +60,15 @@ static void append_stl(const PolySet &ps, std::ostream &output)
 			// so the default value of "1 0 0" can be used. If the vertices are not
 			// collinear then the unit normal must be calculated from the
 			// components.
+			output << "  facet normal ";
 			Vector3d normal = (p[1] - p[0]).cross(p[2] - p[0]);
 			normal.normalize();
-			output << "  facet normal " << normal[0] << " " << normal[1] << " " << normal[2] << "\n";
+			if (is_finite(normal) && !is_nan(normal)) {
+				output << normal[0] << " " << normal[1] << " " << normal[2] << "\n";
+			}
+			else {
+				output << "0 0 0\n";
+			}
 			output << "    outer loop\n";
 		
 			BOOST_FOREACH(const Vector3d &v, p) {
@@ -145,7 +151,7 @@ static void append_stl(const CGAL_Polyhedron &P, std::ostream &output)
 static void append_stl(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 {
 	if (!root_N.p3->is_simple()) {
-		PRINT("Warning: Exported object may not be a valid 2-manifold and may need repair");
+		PRINT("WARNING: Exported object may not be a valid 2-manifold and may need repair");
 	}
 
 	bool usePolySet = true;
@@ -170,10 +176,10 @@ static void append_stl(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 			append_stl(P, output);
 		}
 		catch (const CGAL::Assertion_exception &e) {
-			PRINTB("CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s", e.what());
+			PRINTB("ERROR: CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s", e.what());
 		}
 		catch (...) {
-			PRINT("CGAL unknown error in CGAL_Nef_polyhedron3::convert_to_Polyhedron()");
+			PRINT("ERROR: CGAL unknown error in CGAL_Nef_polyhedron3::convert_to_Polyhedron()");
 		}
 		CGAL::set_error_behaviour(old_behaviour);
 	}

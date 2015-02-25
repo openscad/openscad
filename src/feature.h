@@ -13,8 +13,7 @@ public:
 	typedef list_t::iterator iterator;
 
 	static const Feature ExperimentalLazyUnion;
-	static const Feature ExperimentalTextModule;
-    
+
 	const std::string& get_name() const;
 	const std::string& get_description() const;
     

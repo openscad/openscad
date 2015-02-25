@@ -41,10 +41,10 @@ class ProjectionModule : public AbstractModule
 {
 public:
 	ProjectionModule() { }
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
 };
 
-AbstractNode *ProjectionModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *ProjectionModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	ProjectionNode *node = new ProjectionNode(inst);
 
@@ -53,14 +53,15 @@ AbstractNode *ProjectionModule::instantiate(const Context *ctx, const ModuleInst
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);
+	inst->scope.apply(*evalctx);
 
-	Value convexity = c.lookup_variable("convexity", true);
-	Value cut = c.lookup_variable("cut", true);
+	ValuePtr convexity = c.lookup_variable("convexity", true);
+	ValuePtr cut = c.lookup_variable("cut", true);
 
-	node->convexity = (int)convexity.toDouble();
+	node->convexity = (int)convexity->toDouble();
 
-	if (cut.type() == Value::BOOL)
-		node->cut_mode = cut.toBool();
+	if (cut->type() == Value::BOOL)
+		node->cut_mode = cut->toBool();
 
 	std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(evalctx);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());

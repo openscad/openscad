@@ -31,8 +31,10 @@
 #include <QFileDialog>
 #include <QDesktopServices>
 
+#include "qtgettext.h"
 #include "UIUtils.h"
 #include "PlatformUtils.h"
+#include "openscad.h"
 
 QFileInfo UIUtils::openFile(QWidget *parent)
 {
@@ -81,15 +83,15 @@ QStringList UIUtils::exampleCategories()
 {
     QStringList categories;
     //categories in File menu item - Examples
-    categories << "Basics" << "Shapes" << "Extrusion" << "Advanced";
+    categories << N_("Basics") << N_("Shapes") << N_("Extrusion") << N_("Advanced");
     
     return categories;
 }
 
 QFileInfoList UIUtils::exampleFiles(const QString &category)
 {
-    QDir dir(QString::fromStdString(PlatformUtils::resourcesPath()));
-    if (!dir.cd("examples") || !dir.cd(category)) {
+    QDir dir(QString::fromStdString(PlatformUtils::resourcePath("examples").string()));
+    if (!dir.cd(category)) {
 	return QFileInfoList();
     }
 
@@ -102,7 +104,17 @@ void UIUtils::openHomepageURL()
     QDesktopServices::openUrl(QUrl("http://openscad.org/"));
 }
 
+static void openVersionedURL(QString url)
+{
+    QDesktopServices::openUrl(QUrl(url.arg(versionnumber.c_str())));
+}
+
 void UIUtils::openUserManualURL()
 {
-    QDesktopServices::openUrl(QUrl("http://www.openscad.org/documentation.html"));
+    openVersionedURL("http://www.openscad.org/documentation.html?version=%1");
+}
+
+void UIUtils::openCheatSheetURL()
+{
+    openVersionedURL("http://www.openscad.org/cheatsheet/index.html?version=%1");
 }

@@ -1,4 +1,5 @@
 import();
+import("notfound.dxf");
 translate([-210,0,0]) import(file="../../../dxf/polygons.dxf");
 translate([-210,0,0]) import(file="../../../dxf/polygons.dxf", origin=[0,110]);
 translate([-210,0,0]) import(file="../../../dxf/polygons.dxf", origin=[110,110], scale=0.5);

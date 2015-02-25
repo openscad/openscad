@@ -33,5 +33,6 @@ VS_VERSION_INFO VERSIONINFO
 /* End of Version info */
 
 IDI_ICON1   ICON    DISCARDABLE "icons/openscad.ico"
+IDI_ICON2   ICON    DISCARDABLE "icons/openscad_doc.ico"
 
 

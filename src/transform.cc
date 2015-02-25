@@ -50,10 +50,10 @@ class TransformModule : public AbstractModule
 public:
 	transform_type_e type;
 	TransformModule(transform_type_e type) : type(type) { }
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
 };
 
-AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	TransformNode *node = new TransformNode(inst);
 
@@ -83,49 +83,50 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);
+	inst->scope.apply(*evalctx);
 
 	if (this->type == SCALE)
 	{
 		Vector3d scalevec(1,1,1);
-		Value v = c.lookup_variable("v");
-		if (!v.getVec3(scalevec[0], scalevec[1], scalevec[2], 1.0)) {
+		ValuePtr v = c.lookup_variable("v");
+		if (!v->getVec3(scalevec[0], scalevec[1], scalevec[2], 1.0)) {
 			double num;
-			if (v.getDouble(num)) scalevec.setConstant(num);
+			if (v->getDouble(num)) scalevec.setConstant(num);
 		}
 		node->matrix.scale(scalevec);
 	}
 	else if (this->type == ROTATE)
 	{
-		Value val_a = c.lookup_variable("a");
-		if (val_a.type() == Value::VECTOR)
+		ValuePtr val_a = c.lookup_variable("a");
+		if (val_a->type() == Value::VECTOR)
 		{
 			Eigen::AngleAxisd rotx(0, Vector3d::UnitX());
 			Eigen::AngleAxisd roty(0, Vector3d::UnitY());
 			Eigen::AngleAxisd rotz(0, Vector3d::UnitZ());
 			double a;
-			if (val_a.toVector().size() > 0) {
-				val_a.toVector()[0].getDouble(a);
+			if (val_a->toVector().size() > 0) {
+				val_a->toVector()[0].getDouble(a);
 				rotx = Eigen::AngleAxisd(a*M_PI/180, Vector3d::UnitX());
 			}
-			if (val_a.toVector().size() > 1) {
-				val_a.toVector()[1].getDouble(a);
+			if (val_a->toVector().size() > 1) {
+				val_a->toVector()[1].getDouble(a);
 				roty = Eigen::AngleAxisd(a*M_PI/180, Vector3d::UnitY());
 			}
-			if (val_a.toVector().size() > 2) {
-				val_a.toVector()[2].getDouble(a);
+			if (val_a->toVector().size() > 2) {
+				val_a->toVector()[2].getDouble(a);
 				rotz = Eigen::AngleAxisd(a*M_PI/180, Vector3d::UnitZ());
 			}
 			node->matrix.rotate(rotz * roty * rotx);
 		}
 		else
 		{
-			Value val_v = c.lookup_variable("v");
+			ValuePtr val_v = c.lookup_variable("v");
 			double a = 0;
 
-			val_a.getDouble(a);
+			val_a->getDouble(a);
 
 			Vector3d axis(0,0,1);
-			if (val_v.getVec3(axis[0], axis[1], axis[2])) {
+			if (val_v->getVec3(axis[0], axis[1], axis[2])) {
 				if (axis.squaredNorm() > 0) axis.normalize();
 			}
 
@@ -136,10 +137,10 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 	}
 	else if (this->type == MIRROR)
 	{
-		Value val_v = c.lookup_variable("v");
+		ValuePtr val_v = c.lookup_variable("v");
 		double x = 1, y = 0, z = 0;
 	
-		if (val_v.getVec3(x, y, z)) {
+		if (val_v->getVec3(x, y, z)) {
 			if (x != 0.0 || y != 0.0 || z != 0.0) {
 				double sn = 1.0 / sqrt(x*x + y*y + z*z);
 				x *= sn, y *= sn, z *= sn;
@@ -158,19 +159,20 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 	}
 	else if (this->type == TRANSLATE)
 	{
-		Value v = c.lookup_variable("v");
+		ValuePtr v = c.lookup_variable("v");
 		Vector3d translatevec(0,0,0);
-		v.getVec3(translatevec[0], translatevec[1], translatevec[2]);
+		v->getVec3(translatevec[0], translatevec[1], translatevec[2]);
 		node->matrix.translate(translatevec);
 	}
 	else if (this->type == MULTMATRIX)
 	{
-		Value v = c.lookup_variable("m");
-		if (v.type() == Value::VECTOR) {
+		ValuePtr v = c.lookup_variable("m");
+		if (v->type() == Value::VECTOR) {
 			for (int i = 0; i < 16; i++) {
 				size_t x = i / 4, y = i % 4;
-				if (y < v.toVector().size() && v.toVector()[y].type() == Value::VECTOR && x < v.toVector()[y].toVector().size())
-					v.toVector()[y].toVector()[x].getDouble(node->matrix(y, x));
+				if (y < v->toVector().size() && v->toVector()[y].type() == 
+						Value::VECTOR && x < v->toVector()[y].toVector().size())
+					v->toVector()[y].toVector()[x].getDouble(node->matrix(y, x));
 			}
 		}
 	}
@@ -189,7 +191,7 @@ std::string TransformNode::toString() const
 	for (int j=0;j<4;j++) {
 		stream << "[";
 		for (int i=0;i<4;i++) {
-			Value v( this->matrix(j, i) );
+			Value v(this->matrix(j, i));
 			stream << v;
 			if (i != 3) stream << ", ";
 		}

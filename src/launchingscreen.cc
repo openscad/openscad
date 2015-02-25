@@ -2,6 +2,7 @@
 #include <QSettings>
 #include <QListWidgetItem>
 
+#include "openscad.h"
 #include "launchingscreen.h"
 #include "ui_launchingscreen.h"
 
@@ -24,9 +25,11 @@ LaunchingScreen::LaunchingScreen(QWidget *parent) : QDialog(parent)
 {
 	LaunchingScreen::inst = this;
 	setupUi(this);
-	this->setStyleSheet("QDialog {background-image:url(':/icons/background.png')}"
-											"QPushButton {color:white;}");
-   
+
+	this->setStyleSheet("QDialog {background-image:url(':/icons/background.png')} QPushButton {color:white;}");
+
+	this->versionNumberLabel->setText(openscad_version.c_str());
+
 	QStringList recentFiles = UIUtils::recentFiles();
 	for (int a = 0;a < recentFiles.size();a++) {
 		QFileInfo fileInfo(recentFiles[a]);
@@ -39,7 +42,7 @@ LaunchingScreen::LaunchingScreen(QWidget *parent) : QDialog(parent)
 	foreach(const QString &category, UIUtils::exampleCategories())
 	{
 		QFileInfoList examples = UIUtils::exampleFiles(category);
-		QTreeWidgetItem *categoryItem = new QTreeWidgetItem(QStringList(category));
+		QTreeWidgetItem *categoryItem = new QTreeWidgetItem(QStringList(gettext(category.toStdString().c_str())));
 
 		foreach(const QFileInfo &example, examples)
 		{
@@ -75,7 +78,7 @@ QString LaunchingScreen::selectedFile()
 	return this->selection;
 }
 
-void LaunchingScreen::enableRecentButton(const QModelIndex & current, const QModelIndex & previous)
+void LaunchingScreen::enableRecentButton(const QModelIndex &, const QModelIndex &)
 {
 	this->openRecentButton->setEnabled(true);
 	this->openRecentButton->setDefault(true);
@@ -91,7 +94,7 @@ void LaunchingScreen::openRecent()
 	checkOpen(item->data(Qt::UserRole));
 }
 
-void LaunchingScreen::enableExampleButton(QTreeWidgetItem *current, QTreeWidgetItem *previous)
+void LaunchingScreen::enableExampleButton(QTreeWidgetItem *current, QTreeWidgetItem *)
 {
   const bool enable = current->childCount() == 0;
   this->openExampleButton->setEnabled(enable);

@@ -19,7 +19,7 @@ public:
 	virtual std::string dump() const;
 	virtual unsigned int getDimension() const { return 3; }
   // Empty means it is a geometric node which has zero area/volume
-	virtual bool isEmpty() const { return !p3; }
+	virtual bool isEmpty() const;
 	virtual Geometry *copy() const { return new CGAL_Nef_polyhedron(*this); }
 
 	void reset() { p3.reset(); }

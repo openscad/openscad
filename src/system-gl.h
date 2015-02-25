@@ -8,9 +8,6 @@
 #else
  #include <GL/gl.h>
  #include <GL/glu.h>
- #ifdef _WIN32
-  #include <windows.h> // For the CALLBACK macro
- #endif
 #endif
 
 #else // NULLGL

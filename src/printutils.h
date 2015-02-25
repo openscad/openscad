@@ -5,6 +5,10 @@
 #include <iostream>
 #include <boost/format.hpp>
 
+#include <libintl.h>
+#include <locale.h>
+inline char * _( const char * msgid ) { return gettext( msgid ); }
+
 typedef void (OutputHandlerFunc)(const std::string &msg, void *userdata);
 extern OutputHandlerFunc *outputhandler;
 extern void *outputhandler_data;

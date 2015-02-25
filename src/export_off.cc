@@ -37,6 +37,7 @@
 #include "cgalutils.h"
 
 #include "Reindexer.h"
+#include "grid.h"
 
 struct IndexedMesh {
 	IndexedMesh() : numfaces(0) {}
@@ -49,7 +50,7 @@ struct IndexedMesh {
 
 static void append_geometry(const PolySet &ps, IndexedMesh &mesh)
 {
-	BOOST_FOREACH(const PolySet::Polygon &p, ps.polygons) {
+	BOOST_FOREACH(const Polygon &p, ps.polygons) {
 		BOOST_FOREACH(const Vector3d &v, p) {
 			mesh.indices.push_back(mesh.vertices.lookup(v));
 		}

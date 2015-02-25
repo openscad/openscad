@@ -22,7 +22,7 @@ std::string lookup_file(const std::string &filename,
 
 		if (!fs::exists(absfile) && fs::exists(absfile_fallback)) {
 			resultfile = absfile_fallback.string();
-			PRINT_DEPRECATION("DEPRECATED: Imported file (%s) found in document root instead of relative to the importing module. This behavior is deprecated", filename);
+			PRINT_DEPRECATION("Imported file (%s) found in document root instead of relative to the importing module. This behavior is deprecated", filename);
 		}
 		else {
 			resultfile = absfile.string();

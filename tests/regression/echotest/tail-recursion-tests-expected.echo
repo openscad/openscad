@@ -1,0 +1,6 @@
+ECHO: "without tail-recursion eliminiation: ", 5050
+ECHO: "with tail-recursion eliminiation: ", 5050
+ECHO: "with tail-recursion eliminiation: ", 2001000
+ECHO: [1980, 1980]
+ECHO: 50000, "ACEGIKMOQSUWYACEGIKMOQSUWYACEGIKMOQSUWYA"
+ECHO: 50000, "abcdefghijklmnopqrstuvwxyzabcdefghijklmn"

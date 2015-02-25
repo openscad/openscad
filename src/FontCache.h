@@ -59,6 +59,19 @@ private:
 
 typedef std::vector<FontInfo> FontInfoList;
 
+/**
+ * Slow call of the font cache initialization. This is separated here so it
+ * can be passed to the GUI to run in a separate thread while showing a
+ * progress dialog.
+ */
+class FontCacheInitializer {
+public:
+    FontCacheInitializer(FcConfig *config) : config(config) { }
+    void run() { FcConfigBuildFonts(config); }
+private:
+    FcConfig *config;
+};
+
 class FontCache {
 public:
     const static std::string DEFAULT_FONT;
@@ -75,12 +88,20 @@ public:
     FontInfoList *list_fonts() const;
     
     static FontCache *instance();
+
+    typedef void (InitHandlerFunc)(FontCacheInitializer *initializer, void *userdata);
+    static void registerProgressHandler(InitHandlerFunc *handler, void *userdata = NULL);
+
 private:
     typedef std::pair<FT_Face, time_t> cache_entry_t;
     typedef std::map<std::string, cache_entry_t> cache_t;
 
     static FontCache *self;
-    
+    static InitHandlerFunc *cb_handler;
+    static void *cb_userdata;
+
+    static void defaultInitHandler(FontCacheInitializer *delegate, void *userdata);
+
     bool init_ok;
     cache_t cache;
     FcConfig *config;

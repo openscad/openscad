@@ -11,6 +11,7 @@
 #include "printutils.h"
 #include "GeometryEvaluator.h"
 #include "polyset.h"
+#include "polyset-utils.h"
 
 #include <string>
 #include <map>
@@ -105,7 +106,28 @@ static shared_ptr<CSGTerm> evaluate_csg_term_from_geometry(const State &state,
 {
 	std::stringstream stream;
 	stream << node.name() << node.index();
-	shared_ptr<CSGTerm> t(new CSGTerm(geom, state.matrix(), state.color(), stream.str()));
+
+	// We cannot render Polygon2d directly, so we preprocess (tessellate) it here
+	shared_ptr<const Geometry> g = geom;
+	if (!g->isEmpty()) {
+		shared_ptr<const Polygon2d> p2d = dynamic_pointer_cast<const Polygon2d>(geom);
+		if (p2d) {
+			g.reset(p2d->tessellate());
+		}
+		else {
+			// We cannot render concave polygons, so tessellate any 3D PolySets
+			shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(geom);
+			if (ps) {
+				assert(ps->getDimension() == 3);
+				PolySet *ps_tri = new PolySet(3, ps->convexValue());
+				ps_tri->setConvexity(ps->getConvexity());
+				PolysetUtils::tessellate_faces(*ps, *ps_tri);
+				g.reset(ps_tri);
+			}
+		}
+	}
+
+	shared_ptr<CSGTerm> t(new CSGTerm(g, state.matrix(), state.color(), stream.str()));
 	if (modinst->isHighlight()) {
 		t->flag = CSGTerm::FLAG_HIGHLIGHT;
 		highlights.push_back(t);

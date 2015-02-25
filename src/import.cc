@@ -61,10 +61,10 @@ class ImportModule : public AbstractModule
 public:
 	import_type_e type;
 	ImportModule(import_type_e type = TYPE_UNKNOWN) : type(type) { }
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
 };
 
-AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	AssignmentList args;
 	args += Assignment("file"), Assignment("layer"), Assignment("convexity"), Assignment("origin"), Assignment("scale");
@@ -91,18 +91,18 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 	c.dump(this, inst);
 #endif
 
-	Value v = c.lookup_variable("file");
-	if (v.isUndefined()) {
+	ValuePtr v = c.lookup_variable("file");
+	if (v->isUndefined()) {
 		v = c.lookup_variable("filename");
-		if (!v.isUndefined()) {
-			printDeprecation("DEPRECATED: filename= is deprecated. Please use file=");
+		if (!v->isUndefined()) {
+			printDeprecation("filename= is deprecated. Please use file=");
 		}
 	}
-	std::string filename = lookup_file(v.isUndefined() ? "" : v.toString(), inst->path(), ctx->documentPath());
+	std::string filename = lookup_file(v->isUndefined() ? "" : v->toString(), inst->path(), ctx->documentPath());
 	import_type_e actualtype = this->type;
 	if (actualtype == TYPE_UNKNOWN) {
-		std::string extraw = boosty::extension_str( fs::path(filename) );
-		std::string ext = boost::algorithm::to_lower_copy( extraw );
+		std::string extraw = boosty::extension_str(fs::path(filename));
+		std::string ext = boost::algorithm::to_lower_copy(extraw);
 		if (ext == ".stl") actualtype = TYPE_STL;
 		else if (ext == ".off") actualtype = TYPE_OFF;
 		else if (ext == ".dxf") actualtype = TYPE_DXF;
@@ -110,31 +110,30 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 
 	ImportNode *node = new ImportNode(inst, actualtype);
 
-	node->fn = c.lookup_variable("$fn").toDouble();
-	node->fs = c.lookup_variable("$fs").toDouble();
-	node->fa = c.lookup_variable("$fa").toDouble();
+	node->fn = c.lookup_variable("$fn")->toDouble();
+	node->fs = c.lookup_variable("$fs")->toDouble();
+	node->fa = c.lookup_variable("$fa")->toDouble();
 
 	node->filename = filename;
-	Value layerval = c.lookup_variable("layer", true);
+	Value layerval = *c.lookup_variable("layer", true);
 	if (layerval.isUndefined()) {
-		layerval = c.lookup_variable("layername");
+		layerval = *c.lookup_variable("layername");
 		if (!layerval.isUndefined()) {
-			printDeprecation("DEPRECATED: layername= is deprecated. Please use layer=");
+			printDeprecation("layername= is deprecated. Please use layer=");
 		}
 	}
 	node->layername = layerval.isUndefined() ? ""  : layerval.toString();
-	node->convexity = c.lookup_variable("convexity", true).toDouble();
+	node->convexity = c.lookup_variable("convexity", true)->toDouble();
 
 	if (node->convexity <= 0) node->convexity = 1;
 
-	Value origin = c.lookup_variable("origin", true);
+	ValuePtr origin = c.lookup_variable("origin", true);
 	node->origin_x = node->origin_y = 0;
-	origin.getVec2(node->origin_x, node->origin_y);
+	origin->getVec2(node->origin_x, node->origin_y);
 
-	node->scale = c.lookup_variable("scale", true).toDouble();
+	node->scale = c.lookup_variable("scale", true)->toDouble();
 
-	if (node->scale <= 0)
-		node->scale = 1;
+	if (node->scale <= 0) node->scale = 1;
 
 	return node;
 }

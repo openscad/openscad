@@ -46,47 +46,43 @@ class OffsetModule : public AbstractModule
 {
 public:
 	OffsetModule() { }
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
 };
 
-AbstractNode *OffsetModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *OffsetModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	OffsetNode *node = new OffsetNode(inst);
 
 	AssignmentList args;
-	args += Assignment("delta");
+	args += Assignment("r");
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);
+	inst->scope.apply(*evalctx);
 
-	node->fn = c.lookup_variable("$fn").toDouble();
-	node->fs = c.lookup_variable("$fs").toDouble();
-	node->fa = c.lookup_variable("$fa").toDouble();
+	node->fn = c.lookup_variable("$fn")->toDouble();
+	node->fs = c.lookup_variable("$fs")->toDouble();
+	node->fa = c.lookup_variable("$fa")->toDouble();
 
-	Value delta = c.lookup_variable("delta");
+	// default with no argument at all is (r = 1, chamfer = false)
+	// radius takes precedence if both r and delta are given.
 	node->delta = 1;
-	delta.getDouble(node->delta);
+	node->chamfer = false;
+	node->join_type = ClipperLib::jtRound;
+	const ValuePtr r = c.lookup_variable("r", true);
+	const ValuePtr delta = c.lookup_variable("delta", true);
+	const ValuePtr chamfer = c.lookup_variable("chamfer", true);
 	
-	Value miter_limit = c.lookup_variable("miter_limit", true);
-	node->miter_limit = 2;
-	miter_limit.getDouble(node->miter_limit);
-	
-	Value join_type = c.lookup_variable("join_type", true);
-	if (join_type.type() == Value::STRING) {
-		std::string jt = join_type.toString();
-		if (std::string("bevel") == jt) {
-			node->join_type = ClipperLib::jtSquare;
-		} else if (std::string("round") == jt) {
-			node->join_type = ClipperLib::jtRound;
-		} else if (std::string("miter") == jt) {
-			node->join_type = ClipperLib::jtMiter;
-		} else {
-			PRINTB("WARNING: Unknown join_type for offset(): '%s'", jt);
-		}
-		
-		if ((node->join_type != ClipperLib::jtMiter) && !miter_limit.isUndefined()) {
-			PRINTB("WARNING: miter_limit is ignored in offset() for join_type: '%s'", jt);
-		}
+	if (r->isDefinedAs(Value::NUMBER)) {
+	    r->getDouble(node->delta);
+	} else if (delta->isDefinedAs(Value::NUMBER)) {
+	    delta->getDouble(node->delta);
+
+	    node->join_type = ClipperLib::jtMiter;
+	    if (chamfer->isDefinedAs(Value::BOOL) && chamfer->toBool()) {
+		node->chamfer = true;
+		node->join_type = ClipperLib::jtSquare;
+	    }
 	}
 	
 	std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(evalctx);
@@ -99,21 +95,17 @@ std::string OffsetNode::toString() const
 {
 	std::stringstream stream;
 
-	stream  << this->name()
-		<< "(delta = " << std::dec << this->delta
-		<< ", join_type = \""
-			<< (this->join_type == ClipperLib::jtSquare
-				? "bevel"
-				: this->join_type == ClipperLib::jtRound
-					? "round"
-					: "miter") << "\"";
-	if (this->join_type == ClipperLib::jtMiter) {
-		stream << ", miter_limit = " << this->miter_limit;
+	bool isRadius = this->join_type == ClipperLib::jtRound;
+	const char *var = isRadius ? "(r = " : "(delta = ";
+
+	stream  << this->name() << var << std::dec << this->delta;
+	if (!isRadius) {
+	    stream << ", chamfer = " << (this->chamfer ? "true" : "false");
 	}
 	stream  << ", $fn = " << this->fn
 		<< ", $fa = " << this->fa
 		<< ", $fs = " << this->fs << ")";
-	
+
 	return stream.str();
 }
 

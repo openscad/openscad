@@ -1,6 +1,8 @@
 #pragma once
 
 #include "mathc99.h"
+#include "linalg.h"
+
 #ifdef WIN32
 typedef __int64 int64_t;
 #else
@@ -85,71 +87,97 @@ public:
 	}
 };
 
+typedef Eigen::Matrix<int64_t, 3, 1> Vector3l;
+
+namespace Eigen {
+	size_t hash_value(Vector3f const &v);
+	size_t hash_value(Vector3d const &v);
+	size_t hash_value(Vector3l const &v);
+}
+
 template <typename T>
 class Grid3d
 {
 public:
 	double res;
-	boost::unordered_map<std::pair<std::pair<int64_t,int64_t>,int64_t>, T> db;
+	typedef Vector3l Key;
+	typedef boost::unordered_map<Key, T> GridContainer;
+	GridContainer db;
 
 	Grid3d(double resolution) {
 		res = resolution;
 	}
 
-	T &align(double &x, double &y, double &z) {
-		int64_t ix = (int64_t)round(x / res);
-		int64_t iy = (int64_t)round(y / res);
-		int64_t iz = (int64_t)round(z / res);
-		if (db.find(std::make_pair(std::make_pair(ix, iy), iz)) == db.end()) {
-			int dist = 10;
-			for (int64_t jx = ix - 1; jx <= ix + 1; jx++) {
-				for (int64_t jy = iy - 1; jy <= iy + 1; jy++) {
-					for (int64_t jz = iz - 1; jz <= iz + 1; jz++) {
-						if (db.find(std::make_pair(std::make_pair(jx, jy), jz)) == db.end())
-							continue;
-						int d = abs(int(ix-jx)) + abs(int(iy-jy)) + abs(int(iz-jz));
+	inline void createGridVertex(const Vector3d &v, Vector3l &i) {
+		i[0] = int64_t(v[0] / this->res);
+		i[1] = int64_t(v[1] / this->res);
+		i[2] = int64_t(v[2] / this->res);
+	}
+
+	// Aligns vertex to the grid. Returns index of the vertex.
+	// Will automatically increase the index as new unique vertices are added.
+	T align(Vector3d &v) {
+		Vector3l key;
+		createGridVertex(v, key);
+		typename GridContainer::iterator iter = db.find(key);
+		if (iter == db.end()) {
+			float dist = 10.0f; // > max possible distance
+			for (int64_t jx = key[0] - 1; jx <= key[0] + 1; jx++) {
+				for (int64_t jy = key[1] - 1; jy <= key[1] + 1; jy++) {
+					for (int64_t jz = key[2] - 1; jz <= key[2] + 1; jz++) {
+						Vector3l k(jx, jy, jz);
+						typename GridContainer::iterator tmpiter = db.find(k);
+						if (tmpiter == db.end()) continue;
+						float d = sqrt((key-k).squaredNorm());
 						if (d < dist) {
 						  dist = d;
-							ix = jx;
-							iy = jy;
-							iz = jz;
+							iter = tmpiter;
 						}
 					}
 				}
 			}
 		}
-		x = ix * res, y = iy * res, z = iz * res;
-		return db[std::make_pair(std::make_pair(ix, iy), iz)];
-	}
 
-	bool has(double x, double y, double z) {
-		int64_t ix = (int64_t)round(x / res);
-		int64_t iy = (int64_t)round(y / res);
-		int64_t iz = (int64_t)round(z / res);
-		if (db.find(std::make_pair(std::make_pair(ix, iy), iz)) != db.end())
-			return true;
-		for (int64_t jx = ix - 1; jx <= ix + 1; jx++)
-		for (int64_t jy = iy - 1; jy <= iy + 1; jy++)
-		for (int64_t jz = iz - 1; jz <= iz + 1; jz++) {
-			if (db.find(std::make_pair(std::make_pair(jx, jy), jz)) != db.end())
-				return true;
+		T data;
+		if (iter == db.end()) { // Not found: insert using key
+			data = db.size();
+			db[key] = data;
 		}
-		return false;
+		else {
+			// If found return existing data
+			key = iter->first;
+			data = iter->second;
+		}
+
+		// Align vertex
+		v[0] = key[0] * this->res;
+		v[1] = key[1] * this->res;
+		v[2] = key[2] * this->res;
+
+		return data;
 	}
 
-	bool eq(double x1, double y1, double z1, double x2, double y2, double z2) {
-		align(x1, y1, z1);
-		align(x2, y2, z2);
-		if (fabs(x1 - x2) < res && fabs(y1 - y2) < res && fabs(z1 - z2) < res)
+	bool has(const Vector3d &v, T *data = NULL) {
+		Vector3l key = createGridVertex(v);
+		typename GridContainer::iterator pos = db.find(key);
+		if (pos != db.end()) {
+			if (data) *data = pos->second;
 			return true;
+		}
+		for (int64_t jx = key[0] - 1; jx <= key[0] + 1; jx++)
+			for (int64_t jy = key[1] - 1; jy <= key[1] + 1; jy++)
+				for (int64_t jz = key[2] - 1; jz <= key[2] + 1; jz++) {
+					pos = db.find(Vector3l(jx, jy, jz));
+					if (pos != db.end()) {
+						if (data) *data = pos->second;
+						return true;
+					}
+				}
 		return false;
 	}
 
-	T &data(double x, double y, double z) {
-		return align(x, y, z);
+	T data(Vector3d v) { 
+		return align(v);
 	}
 
-	T &operator()(double x, double y, double z) {
-		return align(x, y, z);
-	}
 };

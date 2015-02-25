@@ -24,6 +24,7 @@
  *
  */
 
+#include "qtgettext.h"
 #include "QGLView.h"
 #include "Preferences.h"
 #include "renderer.h"
@@ -63,7 +64,6 @@ static bool running_under_wine = false;
 
 void QGLView::init()
 {
-  cam.type = Camera::GIMBAL;
   resetView();
 
   this->mouse_drag_active = false;
@@ -83,9 +83,7 @@ void QGLView::init()
 
 void QGLView::resetView()
 {
-  cam.object_rot << 35, 0, -25;
-  cam.object_trans << 0, 0, 0;
-  cam.viewer_distance = 140;
+	cam.resetView();
 }
 
 void QGLView::viewAll()
@@ -110,6 +108,7 @@ std::string QGLView::getRendererInfo() const
 {
   std::string glewinfo = glew_dump();
   std::string glextlist = glew_extensions_dump();
+	// Don't translate as translated text in the Library Info dialog is not wanted
   return glewinfo + std::string("\nUsing QGLWidget\n\n") + glextlist;
 }
 
@@ -127,19 +126,19 @@ void QGLView::display_opencsg_warning_dialog()
 
   QString message;
   if (this->is_opencsg_capable) {
-    message += "Warning: You may experience OpenCSG rendering errors.\n\n";
+    message += _("Warning: You may experience OpenCSG rendering errors.\n\n");
   }
   else {
-    message += "Warning: Missing OpenGL capabilities for OpenCSG - OpenCSG has been disabled.\n\n";
+    message += _("Warning: Missing OpenGL capabilities for OpenCSG - OpenCSG has been disabled.\n\n");
     dialog->enableOpenCSGBox->hide();
   }
-  message += "It is highly recommended to use OpenSCAD on a system with "
+  message += _("It is highly recommended to use OpenSCAD on a system with "
     "OpenGL 2.0 or later.\n"
-    "Your renderer information is as follows:\n";
+    "Your renderer information is as follows:\n");
   QString rendererinfo;
-  rendererinfo.sprintf("GLEW version %s\n"
+  rendererinfo.sprintf(_("GLEW version %s\n"
                        "%s (%s)\n"
-                       "OpenGL version %s\n",
+                       "OpenGL version %s\n"),
                        glewGetString(GLEW_VERSION),
                        glGetString(GL_RENDERER), glGetString(GL_VENDOR),
                        glGetString(GL_VERSION));
@@ -163,16 +162,9 @@ void QGLView::paintGL()
   GLView::paintGL();
 
   if (statusLabel) {
-    QString msg;
-
     Camera nc(cam);
     nc.gimbalDefaultTranslate();
-    msg.sprintf("Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], distance = %.2f",
-      nc.object_trans.x(), nc.object_trans.y(), nc.object_trans.z(),
-      nc.object_rot.x(), nc.object_rot.y(), nc.object_rot.z(),
-      nc.viewer_distance );
-
-    statusLabel->setText(msg);
+    statusLabel->setText(QString::fromStdString(nc.statusText()));
   }
 
   if (running_under_wine) swapBuffers();
@@ -185,6 +177,7 @@ void QGLView::mousePressEvent(QMouseEvent *event)
 }
 
 void QGLView::mouseDoubleClickEvent (QMouseEvent *event) {
+
 	setupCamera();
 
 	int viewport[4];
@@ -195,8 +188,8 @@ void QGLView::mouseDoubleClickEvent (QMouseEvent *event) {
 	glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
 	glGetDoublev(GL_PROJECTION_MATRIX, projection);
 
-	double x = event->pos().x();
-	double y = viewport[3] - event->pos().y();
+	double x = event->pos().x() * this->getDPI();
+	double y = viewport[3] - event->pos().y() * this->getDPI();
 	GLfloat z = 0;
 
 	glReadPixels(x, y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &z);
@@ -208,9 +201,7 @@ void QGLView::mouseDoubleClickEvent (QMouseEvent *event) {
 	GLint success = gluUnProject(x, y, z, modelview, projection, viewport, &px, &py, &pz);
 
 	if (success == GL_TRUE) {
-		cam.object_trans.x() = -px;
-		cam.object_trans.y() = -py;
-		cam.object_trans.z() = -pz;
+            cam.object_trans -= Vector3d(px, py, pz);
 		updateGL();
 		emit doAnimateUpdate();
 	}
@@ -251,11 +242,11 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
       // Middle button pans in the xy plane
       // Shift-right and Shift-middle zooms
       if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
-        cam.viewer_distance += (GLdouble)dy;
+	      cam.zoom(-12.0 * dy);
       } else {
 
-      double mx = +(dx) * cam.viewer_distance/1000;
-      double mz = -(dy) * cam.viewer_distance/1000;
+      double mx = +(dx) * 3.0 * cam.zoomValue() / QWidget::width();
+      double mz = -(dy) * 3.0 * cam.zoomValue() / QWidget::height();
 
       double my = 0;
 #if (QT_VERSION < QT_VERSION_CHECK(4, 7, 0))
@@ -308,13 +299,19 @@ void QGLView::mouseReleaseEvent(QMouseEvent*)
 
 bool QGLView::save(const char *filename)
 {
+	// Force reading from front buffer. Some configurations will read from the back buffer here.
+	glReadBuffer(GL_FRONT);
   QImage img = grabFrameBuffer();
   return img.save(filename, "PNG");
 }
 
 void QGLView::wheelEvent(QWheelEvent *event)
 {
+#if QT_VERSION >= 0x050000
+	this->cam.zoom(event->angleDelta().y());
+#else
 	this->cam.zoom(event->delta());
+#endif
   updateGL();
 }
 

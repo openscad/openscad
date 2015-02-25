@@ -1,2 +1,4 @@
 surface(file = "", center = false, invert = false);
+surface(file = "notfound.dat", center = false, invert = false);
+surface(file = "notfound.png", center = false, invert = false);
 surface(file = "surface.dat", center = true, invert = false);

@@ -6,7 +6,6 @@ cgal {
   CGAL_DIR = $$(CGALDIR)
   !isEmpty(CGAL_DIR) {
     QMAKE_INCDIR += $$CGAL_DIR/include
-    win*: QMAKE_INCDIR += $$CGAL_DIR/auxiliary/gmp/include
     QMAKE_LIBDIR += $$CGAL_DIR/lib
     message("CGAL location: $$CGAL_DIR")
   }
@@ -19,14 +18,13 @@ cgal {
       *-g++* { 
         QMAKE_CXXFLAGS += -frounding-math 
       }
-      LIBS += $$CGAL_DIR/auxiliary/gmp/lib/libmpfr-4.lib -lCGAL-vc110-mt-gd
     } else {
-      LIBS += -lgmp -lmpfr -lCGAL
       QMAKE_CXXFLAGS += -frounding-math 
     }
+    LIBS += -lCGAL -lmpfr -lgmp
   }
 
-	*clang* {
-		QMAKE_CXXFLAGS -= -frounding-math
-	}
+  *clang* {
+    QMAKE_CXXFLAGS -= -frounding-math
+  }
 }

@@ -19,7 +19,6 @@ Feature::list_t Feature::feature_list;
  * context.
  */
 const Feature Feature::ExperimentalLazyUnion("lazy-union", "Enable lazy unions.");
-const Feature Feature::ExperimentalTextModule("text", "Enable the <code>text()</code> module.");
 
 Feature::Feature(const std::string &name, const std::string &description)
 	: enabled(false), name(name), description(description)

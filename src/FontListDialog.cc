@@ -27,6 +27,7 @@
 #include <QClipboard>
 #include <QSortFilterProxyModel>
 
+#include "qtgettext.h"
 #include "FontListDialog.h"
 #include "FontCache.h"
 
@@ -59,14 +60,16 @@ void FontListDialog::selection_changed(const QItemSelection &current, const QIte
 {
 	if (current.count() == 0) {
 		copyButton->setEnabled(false);
+		tableView->setDragText("");
 		return;
 	}
 	
 	const QModelIndex &idx = proxy->mapToSource(current.indexes().at(0));
 	const QString name = model->item(idx.row(), 0)->text();
 	const QString style = model->item(idx.row(), 1)->text();
-	selection = QString("\"%1:style=%2\"").arg(name).arg(style);
+	selection = QString("\"%1:style=%2\"").arg(quote(name)).arg(quote(style));
 	copyButton->setEnabled(true);
+	tableView->setDragText(selection);
 }
 
 void FontListDialog::update_font_list()
@@ -115,4 +118,29 @@ void FontListDialog::update_font_list()
 	connect(tableView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(selection_changed(const QItemSelection &, const QItemSelection &)));
 
 	delete list;
+}
+
+/**
+ * Quote a string according to the requirements of font-config.
+ * See http://www.freedesktop.org/software/fontconfig/fontconfig-user.html
+ *
+ * The '\', '-', ':' and ',' characters in family names must be preceded
+ * by a '\' character to avoid having them misinterpreted. Similarly, values
+ * containing '\', '=', '_', ':' and ',' must also have them preceded by a
+ * '\' character. The '\' characters are stripped out of the family name and
+ * values as the font name is read.
+ *
+ * @param text unquoted string
+ * @return quoted text
+ */
+QString FontListDialog::quote(const QString& text)
+{
+	QString result = text;
+	result.replace('\\', "\\\\\\\\")
+		.replace('-', "\\\\-")
+		.replace(':', "\\\\:")
+		.replace(',', "\\\\,")
+		.replace('=', "\\\\=")
+		.replace('_', "\\\\_");
+	return result;
 }

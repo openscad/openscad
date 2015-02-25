@@ -42,7 +42,7 @@ class ColorModule : public AbstractModule
 public:
 	ColorModule();
 	virtual ~ColorModule();
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
 
 private:
 	boost::unordered_map<std::string, Color4f> webcolors;
@@ -198,14 +198,15 @@ ColorModule::ColorModule()
 	    ("white", Color4f(255, 255, 255))
 	    ("whitesmoke", Color4f(245, 245, 245))
 	    ("yellow", Color4f(255, 255, 0))
-	    ("yellowgreen", Color4f(154, 205, 50));
+	    ("yellowgreen", Color4f(154, 205, 50))
+		.convert_to_container<boost::unordered_map<std::string, Color4f> >();
 }
 
 ColorModule::~ColorModule()
 {
 }
 
-AbstractNode *ColorModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *ColorModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	ColorNode *node = new ColorNode(inst);
 
@@ -218,16 +219,17 @@ AbstractNode *ColorModule::instantiate(const Context *ctx, const ModuleInstantia
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);
+	inst->scope.apply(*evalctx);
 
-	Value v = c.lookup_variable("c");
-	if (v.type() == Value::VECTOR) {
+	ValuePtr v = c.lookup_variable("c");
+	if (v->type() == Value::VECTOR) {
 		for (size_t i = 0; i < 4; i++) {
-			node->color[i] = i < v.toVector().size() ? v.toVector()[i].toDouble() : 1.0;
+			node->color[i] = i < v->toVector().size() ? v->toVector()[i].toDouble() : 1.0;
 			if (node->color[i] > 1)
 				PRINTB_NOCACHE("WARNING: color() expects numbers between 0.0 and 1.0. Value of %.1f is too large.", node->color[i]);
 		}
-	} else if (v.type() == Value::STRING) {
-		std::string colorname = v.toString();
+	} else if (v->type() == Value::STRING) {
+		std::string colorname = v->toString();
 		boost::algorithm::to_lower(colorname);
 		Color4f color;
 		if (webcolors.find(colorname) != webcolors.end())	{
@@ -237,9 +239,9 @@ AbstractNode *ColorModule::instantiate(const Context *ctx, const ModuleInstantia
 			PRINT_NOCACHE("WARNING: http://en.wikipedia.org/wiki/Web_colors");
 		}
 	}
-	Value alpha = c.lookup_variable("alpha");
-	if (alpha.type() == Value::NUMBER) {
-		node->color[3] = alpha.toDouble();
+	ValuePtr alpha = c.lookup_variable("alpha");
+	if (alpha->type() == Value::NUMBER) {
+		node->color[3] = alpha->toDouble();
 	}
 
 	std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(evalctx);

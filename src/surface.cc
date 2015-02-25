@@ -52,7 +52,7 @@ class SurfaceModule : public AbstractModule
 {
 public:
 	SurfaceModule() { }
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
 };
 
 typedef boost::unordered_map<std::pair<int,int>,double> img_data_t;
@@ -80,7 +80,7 @@ private:
 	img_data_t read_png_or_dat(std::string filename) const;
 };
 
-AbstractNode *SurfaceModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *SurfaceModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	SurfaceNode *node = new SurfaceNode(inst);
 	node->center = false;
@@ -93,22 +93,22 @@ AbstractNode *SurfaceModule::instantiate(const Context *ctx, const ModuleInstant
 	Context c(ctx);
 	c.setVariables(args, evalctx);
 
-	Value fileval = c.lookup_variable("file");
-	node->filename = lookup_file(fileval.isUndefined() ? "" : fileval.toString(), inst->path(), c.documentPath());
+	ValuePtr fileval = c.lookup_variable("file");
+	node->filename = lookup_file(fileval->isUndefined() ? "" : fileval->toString(), inst->path(), c.documentPath());
 
-	Value center = c.lookup_variable("center", true);
-	if (center.type() == Value::BOOL) {
-		node->center = center.toBool();
+	ValuePtr center = c.lookup_variable("center", true);
+	if (center->type() == Value::BOOL) {
+		node->center = center->toBool();
 	}
 
-	Value convexity = c.lookup_variable("convexity", true);
-	if (convexity.type() == Value::NUMBER) {
-		node->convexity = (int)convexity.toDouble();
+	ValuePtr convexity = c.lookup_variable("convexity", true);
+	if (convexity->type() == Value::NUMBER) {
+		node->convexity = (int)convexity->toDouble();
 	}
 
-	Value invert = c.lookup_variable("invert", true);
-	if (invert.type() == Value::BOOL) {
-		node->invert = invert.toBool();
+	ValuePtr invert = c.lookup_variable("invert", true);
+	if (invert->type() == Value::BOOL) {
+		node->invert = invert->toBool();
 	}
 
 	return node;
@@ -116,31 +116,12 @@ AbstractNode *SurfaceModule::instantiate(const Context *ctx, const ModuleInstant
 
 void SurfaceNode::convert_image(img_data_t &data, std::vector<unsigned char> &img, unsigned int width, unsigned int height) const
 {
-	double z_min = 100000;
-	double z_max = 0;
-	for (unsigned long idx = 0;idx < img.size();idx += 4) {
-		// sRGB luminance, see http://en.wikipedia.org/wiki/Grayscale
-		double z = 0.2126 * img[idx] + 0.7152 * img[idx + 1] + 0.0722 * img[idx + 2];
-		if (z < z_min) {
-			z_min = z;
-		}
-		if (z > z_max) {
-			z_max = z;
-		}
-	}
-
-	double h = 100;
-	double scale = h / (z_max - z_min);
 	for (unsigned int y = 0;y < height;y++) {
 		for (unsigned int x = 0;x < width;x++) {
 			long idx = 4 * (y * width + x);
 			double pixel = 0.2126 * img[idx] + 0.7152 * img[idx + 1] + 0.0722 * img[idx + 2];
-			double z = scale * (pixel - z_min);
-			if (invert) {
-				z = h - z;
-			}
-			data[std::make_pair(height - y, x)] = z;
-			
+			double z = 100.0/255 * (invert ? 1 - pixel : pixel);
+			data[std::make_pair(height - 1 - y, x)] = z;
 		}
 	}
 }

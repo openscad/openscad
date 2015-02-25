@@ -30,6 +30,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
 
+#include "boosty.h"
 #include "FontCache.h"
 #include "PlatformUtils.h"
 #include "parsersettings.h"
@@ -80,7 +81,19 @@ const std::string &FontInfo::get_file() const
 }
 
 FontCache * FontCache::self = NULL;
-const std::string FontCache::DEFAULT_FONT("XXX");
+FontCache::InitHandlerFunc *FontCache::cb_handler = FontCache::defaultInitHandler;
+void *FontCache::cb_userdata = NULL;
+const std::string FontCache::DEFAULT_FONT("Liberation Sans:style=Regular");
+
+/**
+ * Default implementation for the font cache initialization. In case no other
+ * handler is registered, the cache build is just called synchronously in the
+ * current thread by this handler.
+ */
+void FontCache::defaultInitHandler(FontCacheInitializer *initializer, void *)
+{
+	initializer->run();
+}
 
 FontCache::FontCache()
 {
@@ -89,7 +102,7 @@ FontCache::FontCache()
 	// If we've got a bundled fonts.conf, initialize fontconfig with our own config
 	// by overriding the built-in fontconfig path.
 	// For system installs and dev environments, we leave this alone
-	fs::path fontdir(fs::path(PlatformUtils::resourcesPath()) / "fonts");
+	fs::path fontdir(PlatformUtils::resourcePath("fonts"));
 	if (fs::is_regular_file(fontdir / "fonts.conf")) {
 		PlatformUtils::setenv("FONTCONFIG_PATH", boosty::stringy(boosty::absolute(fontdir)).c_str(), 0);
 	}
@@ -97,12 +110,12 @@ FontCache::FontCache()
 	// Just load the configs. We'll build the fonts once all configs are loaded
 	this->config = FcInitLoadConfig();
 	if (!this->config) {
-		PRINT("Can't initialize fontconfig library, text() objects will not be rendered");
+		PRINT("WARNING: Can't initialize fontconfig library, text() objects will not be rendered");
 		return;
 	}
 
 	// Add the built-in fonts & config
-	fs::path builtinfontpath = fs::path(PlatformUtils::resourcesPath()) / "fonts";
+	fs::path builtinfontpath(PlatformUtils::resourcePath("fonts"));
 	if (fs::is_directory(builtinfontpath)) {
 		FcConfigParseAndLoad(this->config, reinterpret_cast<const FcChar8 *>(boosty::stringy(builtinfontpath).c_str()), false);
 		add_font_dir(boosty::stringy(boosty::canonical(builtinfontpath)));
@@ -130,8 +143,8 @@ FontCache::FontCache()
 		}
 	}
 
-	// FIXME: Caching happens here. This would be a good place to notify the user
-	FcConfigBuildFonts(this->config);
+	FontCacheInitializer initializer(this->config);
+	cb_handler(&initializer, cb_userdata);
 
 	// For use by LibraryInfo
 	FcStrList *dirs = FcConfigGetFontDirs(this->config);
@@ -142,7 +155,7 @@ FontCache::FontCache()
 
 	const FT_Error error = FT_Init_FreeType(&this->library);
 	if (error) {
-		PRINT("Can't initialize freetype library, text() objects will not be rendered");
+		PRINT("WARNING: Can't initialize freetype library, text() objects will not be rendered");
 		return;
 	}
 
@@ -159,6 +172,12 @@ FontCache * FontCache::instance()
 		self = new FontCache();
 	}
 	return self;
+}
+
+void FontCache::registerProgressHandler(InitHandlerFunc *handler, void *userdata)
+{
+	FontCache::cb_handler = handler;
+	FontCache::cb_userdata = userdata;
 }
 
 void FontCache::register_font_file(const std::string &path)

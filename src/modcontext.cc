@@ -24,8 +24,8 @@ void ModuleContext::evaluateAssignments(const AssignmentList &assignments)
 	// First, assign all simple variables
 	std::list<std::string> undefined_vars;
  	BOOST_FOREACH(const Assignment &ass, assignments) {
-		Value tmpval = ass.second->evaluate(this);
-		if (tmpval.isUndefined()) undefined_vars.push_back(ass.first);
+		ValuePtr tmpval = ass.second->evaluate(this);
+		if (tmpval->isUndefined()) undefined_vars.push_back(ass.first);
  		else this->set_variable(ass.first, tmpval);
  	}
 
@@ -46,12 +46,12 @@ void ModuleContext::evaluateAssignments(const AssignmentList &assignments)
 			boost::unordered_map<std::string, Expression *>::iterator found = tmpass.find(*curr);
 			if (found != tmpass.end()) {
 				const Expression *expr = found->second;
-				Value tmpval = expr->evaluate(this);
+				ValuePtr tmpval = expr->evaluate(this);
 				// FIXME: it's not enough to check for undefined;
 				// we need to check for any undefined variable in the subexpression
 				// For now, ignore this and revisit the validity and order of variable
 				// assignments later
-				if (!tmpval.isUndefined()) {
+				if (!tmpval->isUndefined()) {
 					changed = true;
 					this->set_variable(*curr, tmpval);
 					undefined_vars.erase(curr);
@@ -71,6 +71,7 @@ void ModuleContext::initializeModule(const class Module &module)
 	BOOST_FOREACH(const Assignment &ass, module.scope.assignments) {
 		this->set_variable(ass.first, ass.second->evaluate(this));
 	}
+
 // Experimental code. See issue #399
 //	evaluateAssignments(module.scope.assignments);
 }
@@ -89,7 +90,7 @@ void ModuleContext::registerBuiltin()
 		this->set_variable(ass.first, ass.second->evaluate(this));
 	}
 
-	this->set_constant("PI",Value(M_PI));
+	this->set_constant("PI", ValuePtr(M_PI));
 }
 
 const AbstractFunction *ModuleContext::findLocalFunction(const std::string &name) const
@@ -115,14 +116,15 @@ const AbstractModule *ModuleContext::findLocalModule(const std::string &name) co
 		}
 		std::string replacement = Builtins::instance()->isDeprecated(name);
 		if (!replacement.empty()) {
-			PRINT_DEPRECATION("DEPRECATED: The %s() module will be removed in future releases. Use %s() instead.", name % replacement);
+			PRINT_DEPRECATION("The %s() module will be removed in future releases. Use %s instead.", name % replacement);
 		}
 		return m;
 	}
 	return NULL;
 }
 
-Value ModuleContext::evaluate_function(const std::string &name, const EvalContext *evalctx) const
+ValuePtr ModuleContext::evaluate_function(const std::string &name, 
+																												 const EvalContext *evalctx) const
 {
 	const AbstractFunction *foundf = findLocalFunction(name);
 	if (foundf) return foundf->evaluate(this, evalctx);
@@ -130,7 +132,7 @@ Value ModuleContext::evaluate_function(const std::string &name, const EvalContex
 	return Context::evaluate_function(name, evalctx);
 }
 
-AbstractNode *ModuleContext::instantiate_module(const ModuleInstantiation &inst, const EvalContext *evalctx) const
+AbstractNode *ModuleContext::instantiate_module(const ModuleInstantiation &inst, EvalContext *evalctx) const
 {
 	const AbstractModule *foundm = this->findLocalModule(inst.name());
 	if (foundm) return foundm->instantiate(this, &inst, evalctx);
@@ -156,7 +158,7 @@ std::string ModuleContext::dump(const AbstractModule *mod, const ModuleInstantia
 			}
 		}
 	}
-	typedef std::pair<std::string, Value> ValueMapType;
+	typedef std::pair<std::string, ValuePtr> ValueMapType;
 	s << "  vars:";
 	BOOST_FOREACH(const ValueMapType &v, constants) {
 		s << boost::format("    %s = %s") % v.first % v.second;
@@ -177,9 +179,9 @@ FileContext::FileContext(const class FileModule &module, const Context *parent)
 	if (!module.modulePath().empty()) this->document_path = module.modulePath();
 }
 
-Value FileContext::sub_evaluate_function(const std::string &name, const EvalContext *evalctx,
-
-	FileModule *usedmod) const
+ValuePtr FileContext::sub_evaluate_function(const std::string &name, 
+																													 const EvalContext *evalctx,
+																													 FileModule *usedmod) const
 
 {
 	FileContext ctx(*usedmod, this->parent);
@@ -192,7 +194,8 @@ Value FileContext::sub_evaluate_function(const std::string &name, const EvalCont
 	return usedmod->scope.functions[name]->evaluate(&ctx, evalctx);
 }
 
-Value FileContext::evaluate_function(const std::string &name, const EvalContext *evalctx) const
+ValuePtr FileContext::evaluate_function(const std::string &name, 
+																											 const EvalContext *evalctx) const
 {
 	const AbstractFunction *foundf = findLocalFunction(name);
 	if (foundf) return foundf->evaluate(this, evalctx);
@@ -207,7 +210,7 @@ Value FileContext::evaluate_function(const std::string &name, const EvalContext 
 	return ModuleContext::evaluate_function(name, evalctx);
 }
 
-AbstractNode *FileContext::instantiate_module(const ModuleInstantiation &inst, const EvalContext *evalctx) const
+AbstractNode *FileContext::instantiate_module(const ModuleInstantiation &inst, EvalContext *evalctx) const
 {
 	const AbstractModule *foundm = this->findLocalModule(inst.name());
 	if (foundm) return foundm->instantiate(this, &inst, evalctx);

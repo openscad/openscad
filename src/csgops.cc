@@ -38,11 +38,12 @@ class CsgModule : public AbstractModule
 public:
 	OpenSCADOperator type;
 	CsgModule(OpenSCADOperator type) : type(type) { }
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
 };
 
-AbstractNode *CsgModule::instantiate(const Context*, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *CsgModule::instantiate(const Context*, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
+	inst->scope.apply(*evalctx);
 	CsgNode *node = new CsgNode(inst, type);
 	std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(evalctx);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());

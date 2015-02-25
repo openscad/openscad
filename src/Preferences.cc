@@ -31,6 +31,7 @@
 #include <QKeyEvent>
 #include <QSettings>
 #include <QStatusBar>
+#include <boost/algorithm/string.hpp>
 #include "GeometryCache.h"
 #include "AutoUpdater.h"
 #include "feature.h"
@@ -44,6 +45,68 @@ Preferences *Preferences::instance = NULL;
 
 const char * Preferences::featurePropertyName = "FeatureProperty";
 Q_DECLARE_METATYPE(Feature *);
+
+class SettingsReader : public Settings::Visitor
+{
+    QSettings settings;
+    const Value getValue(const Settings::SettingsEntry& entry, const std::string& value) const {
+	std::string trimmed_value(value);
+	boost::trim(trimmed_value);
+
+	if (trimmed_value.empty()) {
+		return entry.defaultValue();
+	}
+
+	try {
+		switch (entry.defaultValue().type()) {
+		case Value::STRING:
+			return Value(trimmed_value);
+		case Value::NUMBER:
+			return Value(boost::lexical_cast<int>(trimmed_value));
+		case Value::BOOL:
+			boost::to_lower(trimmed_value);
+			if ("false" == trimmed_value) {
+				return Value(false);
+			} else if ("true" == trimmed_value) {
+				return Value(true);
+			}
+			return Value(boost::lexical_cast<bool>(trimmed_value));
+		default:
+			assert(false && "invalid value type for settings");
+		}
+	} catch (const boost::bad_lexical_cast& e) {
+		return entry.defaultValue();
+	}
+    }
+
+    virtual void handle(Settings::SettingsEntry& entry) const {
+	Settings::Settings *s = Settings::Settings::inst();
+
+	std::string key = entry.category() + "/" + entry.name();
+	std::string value = settings.value(QString::fromStdString(key)).toString().toStdString();
+	const Value v = getValue(entry, value);
+	PRINTDB("SettingsReader R: %s = '%s' => '%s'", key.c_str() % value.c_str() % v.toString());
+	s->set(entry, v);
+    }
+};
+
+class SettingsWriter : public Settings::Visitor
+{
+    virtual void handle(Settings::SettingsEntry& entry) const {
+	Settings::Settings *s = Settings::Settings::inst();
+
+	QSettings settings;
+	QString key = QString::fromStdString(entry.category() + "/" + entry.name());
+	if (entry.is_default()) {
+	    settings.remove(key);
+	    PRINTDB("SettingsWriter D: %s", key.toStdString().c_str());
+	} else {
+	    Value value = s->get(entry);
+	    settings.setValue(key, QString::fromStdString(value.toString()));
+	    PRINTDB("SettingsWriter W: %s = '%s'", key.toStdString().c_str() % value.toString().c_str());
+	}
+    }
+};
 
 Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 {
@@ -108,6 +171,7 @@ void Preferences::init() {
 	this->defaultmap["advanced/undockableWindows"] = false;
 	this->defaultmap["advanced/reorderWindows"] = true;
 	this->defaultmap["launcher/showOnStartup"] = true;
+	this->defaultmap["advanced/localization"] = true;
 
 	// Toolbar
 	QActionGroup *group = new QActionGroup(this);
@@ -139,11 +203,28 @@ void Preferences::init() {
 #endif
 	this->polysetCacheSizeEdit->setValidator(validator);
 	this->opencsgLimitEdit->setValidator(validator);
+
+	initComboBox(this->comboBoxIndentUsing, Settings::Settings::indentStyle);
+	initComboBox(this->comboBoxLineWrap, Settings::Settings::lineWrap);
+	initComboBox(this->comboBoxLineWrapIndentationStyle, Settings::Settings::lineWrapIndentationStyle);
+	initComboBox(this->comboBoxLineWrapVisualizationEnd, Settings::Settings::lineWrapVisualizationEnd);
+	initComboBox(this->comboBoxLineWrapVisualizationStart, Settings::Settings::lineWrapVisualizationBegin);
+	initComboBox(this->comboBoxShowWhitespace, Settings::Settings::showWhitespace);
+	initComboBox(this->comboBoxTabKeyFunction, Settings::Settings::tabKeyFunction);
+	initSpinBox(this->spinBoxIndentationWidth, Settings::Settings::indentationWidth);
+	initSpinBox(this->spinBoxLineWrapIndentationIndent, Settings::Settings::lineWrapIndentation);
+	initSpinBox(this->spinBoxShowWhitespaceSize, Settings::Settings::showWhitespaceSize);
+	initSpinBox(this->spinBoxTabWidth, Settings::Settings::tabWidth);
+
+	SettingsReader settingsReader;
+	Settings::Settings::inst()->visit(settingsReader);
+	emit editorConfigChanged();
 }
 
 Preferences::~Preferences()
 {
 	removeDefaultSettings();
+	instance = NULL;
 }
 
 /**
@@ -379,6 +460,12 @@ void Preferences::on_opencsgLimitEdit_textChanged(const QString &text)
 	// FIXME: Set this globally?
 }
 
+void Preferences::on_localizationCheckBox_toggled(bool state)
+{
+	QSettings settings;
+	settings.setValue("advanced/localization", state);
+}
+
 void Preferences::on_forceGoldfeatherBox_toggled(bool state)
 {
 	QSettings settings;
@@ -392,11 +479,105 @@ void Preferences::on_mouseWheelZoomBox_toggled(bool state)
 	settings.setValue("editor/ctrlmousewheelzoom", state);
 }
 
-void
-Preferences::on_launcherBox_toggled(bool state)
+void Preferences::on_launcherBox_toggled(bool state)
 {
 	QSettings settings;
  	settings.setValue("launcher/showOnStartup", state);	
+}
+
+void Preferences::on_checkBoxShowWarningsIn3dView_toggled(bool val)
+{
+	Settings::Settings::inst()->set(Settings::Settings::showWarningsIn3dView, Value(val));
+	writeSettings();
+}
+
+void Preferences::on_spinBoxIndentationWidth_valueChanged(int val)
+{
+	Settings::Settings::inst()->set(Settings::Settings::indentationWidth, Value(val));
+	writeSettings();
+}
+
+void Preferences::on_spinBoxTabWidth_valueChanged(int val)
+{
+	Settings::Settings::inst()->set(Settings::Settings::tabWidth, Value(val));
+	writeSettings();
+}
+
+void Preferences::on_comboBoxLineWrap_activated(int val)
+{
+	applyComboBox(comboBoxLineWrap, val, Settings::Settings::lineWrap);
+}
+
+void Preferences::on_comboBoxLineWrapIndentationStyle_activated(int val)
+{
+	applyComboBox(comboBoxLineWrapIndentationStyle, val, Settings::Settings::lineWrapIndentationStyle);
+}
+
+void Preferences::on_spinBoxLineWrapIndentationIndent_valueChanged(int val)
+{
+	Settings::Settings::inst()->set(Settings::Settings::lineWrapIndentation, Value(val));
+	writeSettings();
+}
+
+void Preferences::on_comboBoxLineWrapVisualizationStart_activated(int val)
+{
+	applyComboBox(comboBoxLineWrapVisualizationStart, val, Settings::Settings::lineWrapVisualizationBegin);
+}
+
+void Preferences::on_comboBoxLineWrapVisualizationEnd_activated(int val)
+{
+	applyComboBox(comboBoxLineWrapVisualizationEnd, val, Settings::Settings::lineWrapVisualizationEnd);
+}
+
+void Preferences::on_comboBoxShowWhitespace_activated(int val)
+{
+	applyComboBox(comboBoxShowWhitespace, val, Settings::Settings::showWhitespace);
+}
+
+void Preferences::on_spinBoxShowWhitespaceSize_valueChanged(int val)
+{
+	Settings::Settings::inst()->set(Settings::Settings::showWhitespaceSize, Value(val));
+	writeSettings();
+}
+
+void Preferences::on_checkBoxAutoIndent_toggled(bool val)
+{
+	Settings::Settings::inst()->set(Settings::Settings::autoIndent, Value(val));
+	writeSettings();
+}
+
+void Preferences::on_comboBoxIndentUsing_activated(int val)
+{
+	applyComboBox(comboBoxIndentUsing, val, Settings::Settings::indentStyle);
+}
+
+void Preferences::on_comboBoxTabKeyFunction_activated(int val)
+{
+	applyComboBox(comboBoxTabKeyFunction, val, Settings::Settings::tabKeyFunction);
+}
+
+void Preferences::on_checkBoxHighlightCurrentLine_toggled(bool val)
+{
+	Settings::Settings::inst()->set(Settings::Settings::highlightCurrentLine, Value(val));
+	writeSettings();
+}
+
+void Preferences::on_checkBoxEnableBraceMatching_toggled(bool val)
+{
+	Settings::Settings::inst()->set(Settings::Settings::enableBraceMatching, Value(val));
+	writeSettings();
+}
+
+void Preferences::writeSettings()
+{
+	SettingsWriter settingsWriter;
+	Settings::Settings::inst()->visit(settingsWriter);
+	fireEditorConfigChanged();
+}
+
+void Preferences::fireEditorConfigChanged() const
+{
+	emit editorConfigChanged();
 }
 
 void Preferences::keyPressEvent(QKeyEvent *e)
@@ -485,12 +666,77 @@ void Preferences::updateGUI()
 	this->cgalCacheSizeEdit->setText(getValue("advanced/cgalCacheSize").toString());
 	this->polysetCacheSizeEdit->setText(getValue("advanced/polysetCacheSize").toString());
 	this->opencsgLimitEdit->setText(getValue("advanced/openCSGLimit").toString());
+	this->localizationCheckBox->setChecked(getValue("advanced/localization").toBool());
 	this->forceGoldfeatherBox->setChecked(getValue("advanced/forceGoldfeather").toBool());
 	this->mdiCheckBox->setChecked(getValue("advanced/mdi").toBool());
 	this->reorderCheckBox->setChecked(getValue("advanced/reorderWindows").toBool());
 	this->undockCheckBox->setChecked(getValue("advanced/undockableWindows").toBool());
 	this->undockCheckBox->setEnabled(this->reorderCheckBox->isChecked());
 	this->launcherBox->setChecked(getValue("launcher/showOnStartup").toBool());
+
+	Settings::Settings *s = Settings::Settings::inst();
+	updateComboBox(this->comboBoxLineWrap, Settings::Settings::lineWrap);
+	updateComboBox(this->comboBoxLineWrapIndentationStyle, Settings::Settings::lineWrapIndentationStyle);
+	updateComboBox(this->comboBoxLineWrapVisualizationStart, Settings::Settings::lineWrapVisualizationBegin);
+	updateComboBox(this->comboBoxLineWrapVisualizationEnd, Settings::Settings::lineWrapVisualizationEnd);
+	updateComboBox(this->comboBoxShowWhitespace, Settings::Settings::showWhitespace);
+	updateComboBox(this->comboBoxIndentUsing, Settings::Settings::indentStyle);
+	updateComboBox(this->comboBoxTabKeyFunction, Settings::Settings::tabKeyFunction);
+	this->spinBoxIndentationWidth->setValue(s->get(Settings::Settings::indentationWidth).toDouble());
+	this->spinBoxTabWidth->setValue(s->get(Settings::Settings::tabWidth).toDouble());
+	this->spinBoxLineWrapIndentationIndent->setValue(s->get(Settings::Settings::lineWrapIndentation).toDouble());
+	this->spinBoxShowWhitespaceSize->setValue(s->get(Settings::Settings::showWhitespaceSize).toDouble());
+	this->checkBoxAutoIndent->setChecked(s->get(Settings::Settings::autoIndent).toBool());
+	this->checkBoxHighlightCurrentLine->setChecked(s->get(Settings::Settings::highlightCurrentLine).toBool());
+	this->checkBoxEnableBraceMatching->setChecked(s->get(Settings::Settings::enableBraceMatching).toBool());
+	this->checkBoxShowWarningsIn3dView->setChecked(s->get(Settings::Settings::showWarningsIn3dView).toBool());
+}
+
+void Preferences::initComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry)
+{
+	comboBox->clear();
+	Value::VectorType vector = entry.range().toVector();
+	for (Value::VectorType::iterator it = vector.begin();it != vector.end();it++) {
+		QString val = QString::fromStdString((*it)[0].toString());
+		std::string text((*it)[1].toString());
+		QString qtext = QString::fromStdString(gettext(text.c_str()));
+		comboBox->addItem(qtext, val);
+	}
+}
+
+void Preferences::initSpinBox(QSpinBox *spinBox, const Settings::SettingsEntry& entry)
+{
+	Value::RangeType range = entry.range().toRange();
+	spinBox->setMinimum(range.begin_value());
+	spinBox->setMaximum(range.end_value());
+}
+
+void Preferences::updateComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry)
+{
+	Settings::Settings *s = Settings::Settings::inst();
+
+	Value value = s->get(entry);
+	QString text = QString::fromStdString(value.toString());
+	int idx = comboBox->findData(text);
+	if (idx >= 0) {
+		comboBox->setCurrentIndex(idx);
+	} else {
+		Value defaultValue = entry.defaultValue();
+		QString defaultText = QString::fromStdString(defaultValue.toString());
+		int defIdx = comboBox->findData(defaultText);
+		if (defIdx >= 0) {
+			comboBox->setCurrentIndex(defIdx);
+		} else {
+			comboBox->setCurrentIndex(0);
+		}
+	}
+}
+
+void Preferences::applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntry& entry)
+{
+	QString s = comboBox->itemData(val).toString();
+	Settings::Settings::inst()->set(entry, Value(s.toStdString()));
+	writeSettings();
 }
 
 void Preferences::apply() const
@@ -501,15 +747,19 @@ void Preferences::apply() const
 	emit syntaxHighlightChanged(getValue("editor/syntaxhighlight").toString());
 }
 
-void Preferences::create(QWidget *parent, QStringList colorSchemes)
+void Preferences::create(QStringList colorSchemes)
 {
+    if (instance != NULL) {
+	return;
+    }
+
     std::list<std::string> names = ColorMap::inst()->colorSchemeNames(true);
     QStringList renderColorSchemes;
     foreach (std::string name, names) {
 	renderColorSchemes << name.c_str();
     }
     
-    instance = new Preferences(parent);
+    instance = new Preferences();
     instance->syntaxHighlight->clear();
     instance->syntaxHighlight->addItems(colorSchemes);
     instance->colorSchemeChooser->clear();

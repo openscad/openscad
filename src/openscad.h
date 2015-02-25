@@ -34,3 +34,12 @@ extern std::string commandline_commands;
 // The CWD when application started. We shouldn't change CWD, but until we stop
 // doing this, use currentdir to get the original CWD.
 extern std::string currentdir;
+
+// Version number without the git suffix.
+extern std::string versionnumber;
+
+// Just the number (might have the git commit as suffix), e.g. 2014.12.23.
+extern std::string openscad_versionnumber;
+
+// The string "OpenSCAD " and the version number.
+extern std::string openscad_version;

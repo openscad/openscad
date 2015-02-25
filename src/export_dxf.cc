@@ -60,14 +60,16 @@ void export_dxf(const Polygon2d &poly, std::ostream &output)
 			output << "  0\n"
 						 << "LINE\n";
 			// Some importers (e.g. Inkscape) needs a layer to be specified
+      // The [X1 Y1 X2 Y2] order is the most common and can be parsed linearly.
+			// Some libraries, like the python libraries dxfgrabber and ezdxf, cannot open [X1 X2 Y1 Y2] order.
 			output << "  8\n"
 						 << "0\n"
 						 << " 10\n"
 						 << x1 << "\n"
-						 << " 11\n"
-						 << x2 << "\n"
 						 << " 20\n"
 						 << y1 << "\n"
+						 << " 11\n"
+						 << x2 << "\n"
 						 << " 21\n"
 						 << y2 << "\n";
 		}
@@ -95,7 +97,6 @@ void export_dxf(const Polygon2d &poly, std::ostream &output)
 void export_dxf(const shared_ptr<const Geometry> &geom, std::ostream &output)
 {
 	if (const GeometryList *geomlist = dynamic_cast<const GeometryList *>(geom.get())) {
-		assert(false && "Not implemented");
 		BOOST_FOREACH(const Geometry::GeometryItem &item, geomlist->getChildren()) {
 			export_dxf(item.second, output);
 		}
