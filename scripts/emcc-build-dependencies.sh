@@ -289,7 +289,7 @@ build_mpfr()
   cd mpfr-$version
   mkdir build
   cd build
-  EMCONFIGURE_JS=1 emconfigure ../configure --prefix=$DEPLOYDIR --with-gmp=$DEPLOYDIR
+  EMCONFIGURE_JS=1 emconfigure ../configure --prefix=$DEPLOYDIR --with-gmp=$DEPLOYDIR --build=none --host=none
   emmake make -j$NUMCPU
   emmake make install
   cd ..
@@ -322,8 +322,10 @@ build_boost()
     fi
   fi
   # We only need certain portions of boost
+  #rm ./bootstrap.sh
   if [ -e ./bootstrap.sh ]; then
-    BSTRAPBIN=./bootstrap.sh
+    #this builds the 'b2' binary natively, which in turn is used for building boost.
+    BSTRAPBIN="./bootstrap.sh"
   else
     BSTRAPBIN="emconfigure ./configure"
   fi
@@ -333,8 +335,22 @@ build_boost()
   elif [ -e ./bjam ]; then
     BJAMBIN=./bjam
   elif [ -e ./Makefile ]; then
-    BJAMBIN=emmake make
+    BJAMBIN=make
   fi
+  #okay, here's where we insert our emscripteny stuff
+  # need to create a user-config.jam that contains this stuff:
+  #using clang
+  #      : emscripten
+  #      : /home/minuti/Code/emsdk_portable/emscripten/master/em++
+  #      :       <root>/home/minuti/Code/emsdk_portable/emscripten/master
+  #              <archiver>/home/minuti/Code/emsdk_portable/emscripten/master/emar
+  #              <ranlib>/home/minuti/Code/emsdk_portable/emscripten/master/emranlib
+  #              <linker>/home/minuti/Code/emsdk_portable/emscripten/master/emlink
+  #              <cxxflags>" -std=c++11 "
+  #              <linkflags>"-lstdc++"
+  #
+  emmake $BJAMBIN -j$NUMCPU toolset=cc link=static threading=single runtime-link=static 
+
   if [ $CXX ]; then
     if [ $CXX = "clang++" ]; then
       $BJAMBIN -j$NUMCPU toolset=clang
@@ -342,6 +358,7 @@ build_boost()
   else
     $BJAMBIN -j$NUMCPU
   fi
+
   if [ $? = 0 ]; then
     $BJAMBIN install
   else
