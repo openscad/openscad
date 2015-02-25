@@ -172,7 +172,7 @@ void GLView::paintGL()
     // ...the axis lines need to follow the object translation.
     if (showaxes) GLView::showAxes(bgcontrast);
     // mark the scale along the axis lines
-    if (showscale) GLView::showScalemarkers(bgcontrast);
+    if (showaxes && showscale) GLView::showScalemarkers(bgcontrast);
   }
 
   glEnable(GL_LIGHTING);

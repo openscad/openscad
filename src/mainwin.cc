@@ -2270,9 +2270,11 @@ void MainWindow::viewModeShowEdges()
 
 void MainWindow::viewModeShowAxes()
 {
+	bool showaxes = viewActionShowAxes->isChecked();
 	QSettings settings;
-	settings.setValue("view/showAxes",viewActionShowAxes->isChecked());
-	this->qglview->setShowAxes(viewActionShowAxes->isChecked());
+	settings.setValue("view/showAxes", showaxes);
+	this->viewActionShowScaleProportional->setEnabled(showaxes);
+	this->qglview->setShowAxes(showaxes);
 	this->qglview->updateGL();
 }
 
