@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <algorithm>
 #include <QString>
 #include <QChar>
@@ -225,6 +226,15 @@ QColor ScintillaEditor::readColor(const boost::property_tree::ptree &pt, const s
 {
 	try {
 		const std::string val = pt.get<std::string>(name);
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+		if ((val.length() == 9) && (val.at(0) == '#')) {
+			const std::string rgb = std::string("#") + val.substr(3);
+			QColor qcol(rgb.c_str());
+			unsigned long alpha = std::strtoul(val.substr(1, 2).c_str(), 0, 16);
+			qcol.setAlpha(alpha);
+			return qcol;
+		}
+#endif
 		return QColor(val.c_str());
 	} catch (std::exception e) {
 		return defaultColor;
