@@ -55,7 +55,7 @@ LaunchingScreen::LaunchingScreen(QWidget *parent) : QDialog(parent)
 	}
 
 	connect(this->pushButtonNew, SIGNAL(clicked()), this, SLOT(accept()));
-	connect(this->pushButtonOpen, SIGNAL(clicked()), this, SLOT(openFile()));
+	connect(this->pushButtonOpen, SIGNAL(clicked()), this, SLOT(openUserFile()));
 	connect(this->pushButtonHelp, SIGNAL(clicked()), this, SLOT(openUserManualURL()));
 	connect(this->recentList->selectionModel(), SIGNAL(currentRowChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(enableRecentButton(const QModelIndex &, const QModelIndex &)));
 
@@ -73,9 +73,9 @@ LaunchingScreen::~LaunchingScreen()
 	LaunchingScreen::inst = NULL;
 }
 
-QString LaunchingScreen::selectedFile()
+QStringList LaunchingScreen::selectedFiles()
 {
-	return this->selection;
+	return this->files;
 }
 
 void LaunchingScreen::enableRecentButton(const QModelIndex &, const QModelIndex &)
@@ -118,15 +118,15 @@ void LaunchingScreen::checkOpen(const QVariant &data)
 		return;
 	}
     
-	this->selection = path;
+	this->files.append(path);
 	accept();
 }
 
-void LaunchingScreen::openFile()
+void LaunchingScreen::openUserFile()
 {
 	QFileInfo fileInfo = UIUtils::openFile(this);
 	if (fileInfo.exists()) {
-		this->selection = fileInfo.canonicalFilePath();
+		this->files.append(fileInfo.canonicalFilePath());
 		accept();
 	}
 }

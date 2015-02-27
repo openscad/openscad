@@ -707,7 +707,10 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 		int dialogResult = launcher->exec();
 		if (dialogResult == QDialog::Accepted) {
 			inputFiles.clear();
-			inputFiles.push_back(launcher->selectedFile().toStdString());
+			QStringList files = launcher->selectedFiles();
+			BOOST_FOREACH(const QString &f, files) {
+				inputFiles.push_back(f.toStdString());
+			}
 			delete launcher;
 		} else {
 			return 0;
