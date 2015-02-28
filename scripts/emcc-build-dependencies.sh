@@ -301,76 +301,24 @@ build_boost()
     echo "boost already installed. not building"
     return
   fi
-  version=$1
-  bversion=`echo $version | tr "." "_"`
-  echo "Building boost" $version "..."
+  
+  # Since boost has to be special and use its own build tools, and those
+  # don't know about emscripten, let's just get the cmake boost fork and use that.
   cd $BASEDIR/src
-  rm -rf boost_$bversion
-  if [ ! -f boost_$bversion.tar.bz2 ]; then
-    curl --insecure -LO http://downloads.sourceforge.net/project/boost/boost/$version/boost_$bversion.tar.bz2
-  fi
-  if [ ! $? -eq 0 ]; then
-    echo download failed. 
-    exit 1
-  fi
-  tar xjf boost_$bversion.tar.bz2
-  cd boost_$bversion
-  if [ "`gcc --version|grep 4.7`" ]; then
-    if [ "`echo $version | grep 1.47`" ]; then
-      echo gcc 4.7 incompatible with boost 1.47. edit boost version in $0
-      exit
-    fi
-  fi
-  # We only need certain portions of boost
-  #rm ./bootstrap.sh
-  if [ -e ./bootstrap.sh ]; then
-    #this builds the 'b2' binary natively, which in turn is used for building boost.
-    BSTRAPBIN="./bootstrap.sh"
-  else
-    BSTRAPBIN="emconfigure ./configure"
-  fi
-  $BSTRAPBIN --prefix=$DEPLOYDIR --with-libraries=thread,program_options,filesystem,system,regex
-	if [ -e ./b2 ]; then
-    BJAMBIN=./b2;
-  elif [ -e ./bjam ]; then
-    BJAMBIN=./bjam
-  elif [ -e ./Makefile ]; then
-    BJAMBIN=make
-  fi
-  #okay, here's where we insert our emscripteny stuff
-  # need to create a user-config.jam that contains this stuff:
-  #using clang
-  #      : emscripten
-  #      : /home/minuti/Code/emsdk_portable/emscripten/master/em++
-  #      :       <root>/home/minuti/Code/emsdk_portable/emscripten/master
-  #              <archiver>/home/minuti/Code/emsdk_portable/emscripten/master/emar
-  #              <ranlib>/home/minuti/Code/emsdk_portable/emscripten/master/emranlib
-  #              <linker>/home/minuti/Code/emsdk_portable/emscripten/master/emlink
-  #              <cxxflags>" -std=c++11 "
-  #              <linkflags>"-lstdc++"
-  #
-  emmake $BJAMBIN -j$NUMCPU toolset=cc link=static threading=single runtime-link=static 
+  rm -rf boost
+  git clone https://github.com/starseeker/boost.git
+  cd boost
+  #don't build locale -it fails when ICU isn't found, and it can't dynamically link to libicu anyways.
+  mv libs/locale/CMakeLists.txt libs/locale/CMakeLists.ignore
+  mkdir build && cd build
+  emconfigure cmake ../ -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR
 
-  if [ $CXX ]; then
-    if [ $CXX = "clang++" ]; then
-      $BJAMBIN -j$NUMCPU toolset=clang
-    fi
-  else
-    $BJAMBIN -j$NUMCPU
-  fi
+  emmake make -j$NUMCPU #might as well build all of them, it's not like the unused ones will get linked in.
+  #if I want to only build the parts we're actually going to use, then do this instead:
+  # emmake make -j$NUMCPU boost_thread boost_program_options boost_filesystem boost_system boost_regex
 
-  if [ $? = 0 ]; then
-    $BJAMBIN install
-  else
-    echo boost build failed
-    exit 1
-  fi
-  if [ "`ls $DEPLOYDIR/include/ | grep boost.[0-9]`" ]; then
-    if [ ! -e $DEPLOYDIR/include/boost ]; then
-      echo "boost is old, make a symlink to $DEPLOYDIR/include/boost & rerun"
-      exit 1
-    fi
-  fi
+  #now install it to our $DEPLOYDIR
+  emmake make install #probably could do without emmake, but just to be safe...
 }
 
 build_cgal()
