@@ -368,10 +368,13 @@ build_cgal()
   # finding the system libraries but OPENSCAD_LIBRARIES include paths
   FINDBOOST_CMAKE=$OPENSCAD_SCRIPTDIR/../tests/FindBoost.cmake
   cp $FINDBOOST_CMAKE ./cmake/modules/
+  #Also copy in our alternative CGAL_CheckCXXFileRuns.cmake
+  cp $OPENSCAD_SCRIPTDIR/../tests/CGAL_CheckCXXFileRuns.cmake ./cmake/modules/
+  #and CGAL_Macros.cmake
+  cp $OPENSCAD_SCRIPTDIR/../tests/CGAL_Macros.cmake ./cmake/modules
 
-  mkdir bin
-  cd bin
-  rm -rf ./*
+  mkdir bin &&  cd bin &&  rm -rf ./*
+  
   if [ "`uname -a| grep ppc64`" ]; then
     CGAL_BUILDTYPE="Release" # avoid assertion violation
   else
@@ -381,9 +384,9 @@ build_cgal()
   DEBUGBOOSTFIND=0 # for debugging FindBoost.cmake (not for debugging boost)
   Boost_NO_SYSTEM_PATHS=1
   if [ "`echo $2 | grep use-sys-libs`" ]; then
-    EMCONFIGURE_JS=1 emmake cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DCMAKE_BUILD_TYPE=$CGAL_BUILDTYPE -DBoost_DEBUG=$DEBUGBOOSTFIND ..
+    emconfigure cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DCMAKE_BUILD_TYPE=$CGAL_BUILDTYPE -DBoost_DEBUG=$DEBUGBOOSTFIND ..
   else
-    emmake cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.so -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.so -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.so -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DBOOST_LIBRARYDIR=$DEPLOYDIR/lib -DBOOST_INCLUDEDIR=$DEPLOYDIR/include -DCMAKE_BUILD_TYPE=$CGAL_BUILDTYPE -DBoost_DEBUG=$DEBUGBOOSTFIND -DBoost_NO_SYSTEM_PATHS=1 ..
+    EMCONFIGURE_JS=1 emconfigure cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.a -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.a -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.a -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DBOOST_LIBRARYDIR=$DEPLOYDIR/lib -DBOOST_INCLUDEDIR=$DEPLOYDIR/include -DCMAKE_BUILD_TYPE=$CGAL_BUILDTYPE -DBoost_DEBUG=$DEBUGBOOSTFIND -DBoost_NO_SYSTEM_PATHS=1 ..
   fi
   emmake make -j$NUMCPU
   emmake make install
