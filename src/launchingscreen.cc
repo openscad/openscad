@@ -14,6 +14,8 @@ LaunchingScreen *LaunchingScreen::getDialog() {
 	return LaunchingScreen::inst;
 }
 
+// Called (possibly multiple times) by EventFilter on MacOS, e.g.
+// when the user opens files from Finder.
 void LaunchingScreen::openFile(const QString &filename)
 {
 	QVariant v(filename);
