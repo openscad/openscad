@@ -94,4 +94,5 @@ private:
 	static const int indicatorNumber = 8; // first 8 are used by lexers
 	static const int markerNumber = 2;
 	ScadLexer *lexer;
+	QFont currentFont;
 };
