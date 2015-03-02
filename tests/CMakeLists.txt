@@ -694,7 +694,6 @@ set(CGAL_SOURCES
   ../src/cgalutils-tess.cc 
   ../src/cgalutils-polyhedron.cc 
   ../src/CGALCache.cc
-  ../src/CGAL_Nef_polyhedron_DxfData.cc
   ../src/Polygon2d-CGAL.cc
   ../src/svg.cc
   ../src/GeometryEvaluator.cc)
