@@ -167,7 +167,7 @@ qt_sysver()
       export QT_SELECT=5
       qtpath="`qtchooser -run-tool=qmake -qt=5 -query QT_INSTALL_HEADERS`"/QtCore/qglobal.h 
     fi
-    if [ ! -e $qtpath ]; then
+    if [ ! -e "$qtpath" ]; then
       if qtchooser -run-tool=qmake -qt=4 -v >/dev/null 2>&1 ; then
         export QT_SELECT=4
         qtpath="`qtchooser -run-tool=qmake -qt=4 -query QT_INSTALL_HEADERS`"/QtCore/qglobal.h 
@@ -193,10 +193,10 @@ qt_sysver()
       # netbsd
       qtpath=$1/qt4/include/QtCore/qglobal.h 
     fi
-    if [ ! -e $qtpath ]; then
-      unset QT_SELECT
-      return
-    fi
+  fi
+  if [ ! -e "$qtpath" ]; then
+    unset QT_SELECT
+    return
   fi
   qtver=`grep 'define  *QT_VERSION_STR  *' $qtpath | awk '{print $3}'`
   qtver=`echo $qtver | sed s/'"'//g`

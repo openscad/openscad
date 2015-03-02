@@ -13,10 +13,9 @@ module outline(wall = 1) {
 	}
 }
 
-// offsetting with a positive value and join_type = "round"
-// allows to create rounded corners easily
+// offsetting with a positive value allows to create rounded corners easily
 linear_extrude(height = foot_height, scale = 0.5) {
-  offset(10, join_type = "round") {
+  offset(10) {
     square(50, center = true);
   }
 }

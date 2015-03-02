@@ -57,10 +57,10 @@ namespace PolysetUtils {
 			else {
 				Polygons triangles;
 				bool err = GeometryUtils::tessellatePolygon(pgon, triangles);
-				if (triangles.empty()) {
-					degeneratePolygons++;
-				}
-				else {
+				// Empty triangles tend to happen quite often,
+				// probably due to previous floating point conversion, so
+				// we don't issue any warnings.
+				if (!triangles.empty()) {
 					// ..and pass to the output polyhedron
 					BOOST_FOREACH(const Polygon &t, triangles) {
 						outps.append_poly();

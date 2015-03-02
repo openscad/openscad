@@ -604,7 +604,7 @@ void MainWindow::loadViewSettings(){
 		viewActionShowEdges->setChecked(true);
 		viewModeShowEdges();
 	}
-	if (settings.value("view/showAxes").toBool()) {
+	if (settings.value("view/showAxes", true).toBool()) {
 		viewActionShowAxes->setChecked(true);
 		viewModeShowAxes();
 	}
@@ -612,7 +612,7 @@ void MainWindow::loadViewSettings(){
 		viewActionShowCrosshairs->setChecked(true);
 		viewModeShowCrosshairs();
 	}
-    if (settings.value("view/showScaleProportional").toBool()) {
+	if (settings.value("view/showScaleProportional", true).toBool()) {
         viewActionShowScaleProportional->setChecked(true);
         viewModeShowScaleProportional();
     }
@@ -635,7 +635,7 @@ void MainWindow::loadViewSettings(){
 void MainWindow::loadDesignSettings()
 {
 	QSettings settings;
-	if (settings.value("design/autoReload").toBool()) {
+	if (settings.value("design/autoReload", true).toBool()) {
 		designActionAutoReload->setChecked(true);
 	}
 	uint polySetCacheSize = Preferences::inst()->getValue("advanced/polysetCacheSize").toUInt();
@@ -2270,9 +2270,11 @@ void MainWindow::viewModeShowEdges()
 
 void MainWindow::viewModeShowAxes()
 {
+	bool showaxes = viewActionShowAxes->isChecked();
 	QSettings settings;
-	settings.setValue("view/showAxes",viewActionShowAxes->isChecked());
-	this->qglview->setShowAxes(viewActionShowAxes->isChecked());
+	settings.setValue("view/showAxes", showaxes);
+	this->viewActionShowScaleProportional->setEnabled(showaxes);
+	this->qglview->setShowAxes(showaxes);
 	this->qglview->updateGL();
 }
 
@@ -2641,18 +2643,21 @@ void MainWindow::consoleOutput(const std::string &msg, void *userdata)
 	// Invoke the method in the main thread in case the output
 	// originates in a worker thread.
 	MainWindow *thisp = static_cast<MainWindow*>(userdata);
-	QMetaObject::invokeMethod(thisp, "consoleOutput", Q_ARG(std::string, msg));
+	QMetaObject::invokeMethod(thisp, "consoleOutput", Q_ARG(QString, QString::fromStdString(msg)));
 }
 
-void MainWindow::consoleOutput(const std::string &msg)
+void MainWindow::consoleOutput(const QString &msg)
 {
-	QString qmsg = QString::fromUtf8(msg.c_str());
-	if (qmsg.startsWith("WARNING:") || qmsg.startsWith("DEPRECATED:")) {
+	QString qmsg;
+	if (msg.startsWith("WARNING:") || msg.startsWith("DEPRECATED:")) {
 		this->compileWarnings++;
-		qmsg = "<html><span style=\"color: black; background-color: #ffffb0;\">" + qmsg + "</span></html>\n";
-	} else if (qmsg.startsWith("ERROR:")) {
+		qmsg = "<html><span style=\"color: black; background-color: #ffffb0;\">" + msg + "</span></html>\n";
+	} else if (msg.startsWith("ERROR:")) {
 		this->compileErrors++;
-		qmsg = "<html><span style=\"color: black; background-color: #ffb0b0;\">" + qmsg + "</span></html>\n";
+		qmsg = "<html><span style=\"color: black; background-color: #ffb0b0;\">" + msg + "</span></html>\n";
+	}
+	else {
+		qmsg = msg;
 	}
 	QTextCursor c = this->console->textCursor();
 	c.movePosition(QTextCursor::End);

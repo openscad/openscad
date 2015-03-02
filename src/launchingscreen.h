@@ -15,7 +15,7 @@ public:
 	static LaunchingScreen *getDialog();
 	explicit LaunchingScreen(QWidget *parent = 0);
 	virtual ~LaunchingScreen();
-	QString selectedFile();
+	QStringList selectedFiles();
 
 public slots:
 	void openFile(const QString &filename);
@@ -24,7 +24,7 @@ private slots:
 	void checkboxState(bool state);
 	void enableRecentButton(const QModelIndex &current, const QModelIndex &previous);
 	void enableExampleButton(QTreeWidgetItem *current, QTreeWidgetItem *previous);
-	void openFile();
+	void openUserFile();
 	void openRecent();
 	void openExample();
 	void openUserManualURL();
@@ -32,6 +32,6 @@ private slots:
 private:
 	void checkOpen(const QVariant &data);
   
-	QString selection;
+	QStringList files;
   static LaunchingScreen *inst;
 };

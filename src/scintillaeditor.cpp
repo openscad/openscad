@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <algorithm>
 #include <QString>
 #include <QChar>
@@ -225,6 +226,15 @@ QColor ScintillaEditor::readColor(const boost::property_tree::ptree &pt, const s
 {
 	try {
 		const std::string val = pt.get<std::string>(name);
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+		if ((val.length() == 9) && (val.at(0) == '#')) {
+			const std::string rgb = std::string("#") + val.substr(3);
+			QColor qcol(rgb.c_str());
+			unsigned long alpha = std::strtoul(val.substr(1, 2).c_str(), 0, 16);
+			qcol.setAlpha(alpha);
+			return qcol;
+		}
+#endif
 		return QColor(val.c_str());
 	} catch (std::exception e) {
 		return defaultColor;
@@ -256,7 +266,7 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 	const boost::property_tree::ptree & pt = colorScheme->propertyTree();
 
 	try {
-		QFont font = lexer->font(lexer->defaultStyle());
+          QFont font = lexer->font(lexer->defaultStyle());
 		const QColor textColor(pt.get<std::string>("text").c_str());
 		const QColor paperColor(pt.get<std::string>("paper").c_str());
 
@@ -281,6 +291,8 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 		l->setFont(font);
 		l->setColor(textColor);
 		l->setPaper(paperColor);
+                // Somehow, the margin font got lost when we deleted the old lexer
+                qsci->setMarginsFont(font);
 
 		const boost::property_tree::ptree& colors = pt.get_child("colors");
 		l->setColor(readColor(colors, "keyword1", textColor), QsciLexerCPP::Keyword);
@@ -307,14 +319,14 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 		qsci->setWhitespaceForegroundColor(readColor(colors, "whitespace-foreground", textColor));
 		qsci->setMarginsBackgroundColor(readColor(colors, "margin-background", paperColor));
 		qsci->setMarginsForegroundColor(readColor(colors, "margin-foreground", textColor));
+		qsci->setFoldMarginColors(readColor(colors, "margin-background", paperColor),
+                                          readColor(colors, "margin-background", paperColor));
 		qsci->setMatchedBraceBackgroundColor(readColor(colors, "matched-brace-background", paperColor));
 		qsci->setMatchedBraceForegroundColor(readColor(colors, "matched-brace-foreground", textColor));
 		qsci->setUnmatchedBraceBackgroundColor(readColor(colors, "unmatched-brace-background", paperColor));
 		qsci->setUnmatchedBraceForegroundColor(readColor(colors, "unmatched-brace-foreground", textColor));
 		qsci->setSelectionForegroundColor(readColor(colors, "selection-foreground", paperColor));
 		qsci->setSelectionBackgroundColor(readColor(colors, "selection-background", textColor));
-		qsci->setFoldMarginColors(readColor(colors, "margin-foreground", textColor),
-			readColor(colors, "margin-background", paperColor));
 		qsci->setEdgeColor(readColor(colors, "edge", textColor));
 	} catch (std::exception e) {
 		noColor();
@@ -342,7 +354,7 @@ void ScintillaEditor::noColor()
 	qsci->setUnmatchedBraceForegroundColor(Qt::black);
 	qsci->setMarginsBackgroundColor(Qt::lightGray);
 	qsci->setMarginsForegroundColor(Qt::black);
-	qsci->setFoldMarginColors(Qt::black, Qt::lightGray);
+	qsci->setFoldMarginColors(Qt::lightGray, Qt::lightGray);
 	qsci->setEdgeColor(Qt::black);
 }
 
@@ -459,19 +471,17 @@ void ScintillaEditor::zoomOut()
 
 void ScintillaEditor::initFont(const QString& fontName, uint size)
 {
-	QFont font(fontName, size);
-	font.setFixedPitch(true);
-	lexer->setFont(font);
+  QFont font(fontName, size);
+  font.setFixedPitch(true);
+  lexer->setFont(font);
+  qsci->setMarginsFont(font);
+  onTextChanged(); // Update margin width
 }
 
 void ScintillaEditor::initMargin()
 {
-	QFontMetrics fontmetrics = QFontMetrics(qsci->font());
-	qsci->setMarginsFont(qsci->font());
-	qsci->setMarginWidth(1, fontmetrics.width(QString::number(qsci->lines())) + 6);
-	qsci->setMarginLineNumbers(1, true);
-
-	connect(qsci, SIGNAL(textChanged()), this, SLOT(onTextChanged()));
+  qsci->setMarginLineNumbers(1, true);
+  connect(qsci, SIGNAL(textChanged()), this, SLOT(onTextChanged()));
 }
 
 void ScintillaEditor::onTextChanged()
