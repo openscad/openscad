@@ -1,0 +1,51 @@
+{
+  "Basics": [
+    "logo.scad",
+    "LetterBlock.scad",
+    "CSG.scad",
+    "CSG-modules.scad",
+    "logo_and_text.scad",
+    "children.scad",
+    "children_indexed.scad",
+    "linear_extrude.scad",
+    "rotate_extrude.scad",
+    "surface_image.scad",
+    "text_on_cube.scad",
+    "projection.scad",
+    "surface.scad",
+    "translate.scad",
+    "union.scad"
+  ],
+  "Functions": [
+    "functions.scad",
+    "recursion.scad"
+  ],
+  "Shapes": [
+    "chopped_blocks.scad",
+    "fence.scad",
+    "flat_body.scad",
+    "polyhedron.scad",
+    "rounded_box.scad",
+    "sphere.scad",
+    "tripod.scad"
+  ],
+  "Extrusion": [
+    "cut_view.scad",
+    "fan_view.scad",
+    "text.scad"
+  ],
+  "Advanced": [
+    "advance_intersection.scad",
+    "animation.scad",
+    "demo_cut.scad",
+    "difference.scad",
+    "fractal.scad",
+    "GEB.scad",
+    "intersecting.scad",
+    "iteration.scad",
+    "module_recursion.scad",
+    "offset.scad",
+    "search.scad",
+    "translation.scad"
+  ]
+}
