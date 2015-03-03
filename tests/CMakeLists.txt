@@ -1553,27 +1553,27 @@ add_cmdline_test(openscad-cameyeortho-viewall EXE ${OPENSCAD_BINPATH}
 add_cmdline_test(openscad-colorscheme-cornfield EXE ${OPENSCAD_BINPATH}
                  ARGS --colorscheme=Cornfield -o 
                  SUFFIX png 
-                 FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/difference_cube.scad)
+                 FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/logo.scad)
 add_cmdline_test(openscad-colorscheme-metallic EXE ${OPENSCAD_BINPATH}
                  ARGS --colorscheme=Metallic -o 
                  SUFFIX png 
-                 FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/difference_cube.scad)
-add_cmdline_test(openscad-colorscheme-metallic-render EXE ${OPENSCAD_BINPATH}
-                 ARGS --colorscheme=Metallic --render -o 
-                 SUFFIX png 
-                 FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/difference_cube.scad)
+                 FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/logo.scad)
 add_cmdline_test(openscad-colorscheme-sunset EXE ${OPENSCAD_BINPATH}
                  ARGS --colorscheme=Sunset -o 
                  SUFFIX png 
-                 FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/difference_cube.scad)
+                 FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/logo.scad)
 add_cmdline_test(openscad-colorscheme-starnight EXE ${OPENSCAD_BINPATH}
                  ARGS --colorscheme=Starnight -o 
                  SUFFIX png 
-                 FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/difference_cube.scad)
+                 FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/logo.scad)
 add_cmdline_test(openscad-colorscheme-monotone EXE ${OPENSCAD_BINPATH}
                  ARGS --colorscheme=Monotone -o 
                  SUFFIX png 
-                 FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/difference_cube.scad)
+                 FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/logo.scad)
+add_cmdline_test(openscad-colorscheme-metallic-render EXE ${OPENSCAD_BINPATH}
+                 ARGS --colorscheme=Metallic --render -o 
+                 SUFFIX png 
+                 FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/CSG.scad)
 
 #message("Available test configurations: ${TEST_CONFIGS}")
 #foreach(CONF ${TEST_CONFIGS})
