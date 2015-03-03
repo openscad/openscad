@@ -960,6 +960,10 @@ ValuePtr builtin_cross(const Context *, const EvalContext *evalctx)
 	
 	Value::VectorType v0 = arg0->toVector();
 	Value::VectorType v1 = arg1->toVector();
+	if ((v0.size() == 2) && (v1.size() == 2)) {
+		return ValuePtr(Value(v0[0].toDouble() * v1[1].toDouble() - v0[1].toDouble() * v1[0].toDouble()));
+	}
+
 	if ((v0.size() != 3) || (v1.size() != 3)) {
 		PRINT("WARNING: Invalid vector size of parameter for cross()");
 		return ValuePtr::undefined;
