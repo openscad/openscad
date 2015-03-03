@@ -498,7 +498,6 @@ SOURCES += src/cgalutils.cc \
            src/CGALCache.cc \
            src/CGALRenderer.cc \
            src/CGAL_Nef_polyhedron.cc \
-           src/CGAL_Nef_polyhedron_DxfData.cc \
            src/cgalworker.cc \
            src/Polygon2d-CGAL.cc
 }

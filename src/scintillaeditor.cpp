@@ -344,17 +344,15 @@ void ScintillaEditor::noColor()
 	qsci->setIndicatorOutlineColor(QColor(0, 0, 0, 255), indicatorNumber); // only alpha part is used
 	qsci->setCaretLineBackgroundColor(Qt::white);
 	qsci->setWhitespaceForegroundColor(Qt::black);
-	qsci->setMarginsBackgroundColor(Qt::white);
-	qsci->setMarginsForegroundColor(Qt::black);
-	qsci->setSelectionForegroundColor(Qt::white);
-	qsci->setSelectionBackgroundColor(Qt::black);
-	qsci->setMatchedBraceBackgroundColor(Qt::white);
+	qsci->setSelectionForegroundColor(Qt::black);
+	qsci->setSelectionBackgroundColor(QColor("LightSkyBlue"));
+	qsci->setMatchedBraceBackgroundColor(QColor("LightBlue"));
 	qsci->setMatchedBraceForegroundColor(Qt::black);
-	qsci->setUnmatchedBraceBackgroundColor(Qt::white);
+	qsci->setUnmatchedBraceBackgroundColor(QColor("pink"));
 	qsci->setUnmatchedBraceForegroundColor(Qt::black);
-	qsci->setMarginsBackgroundColor(Qt::lightGray);
-	qsci->setMarginsForegroundColor(Qt::black);
-	qsci->setFoldMarginColors(Qt::lightGray, Qt::lightGray);
+	qsci->setMarginsBackgroundColor(QColor("whiteSmoke"));
+	qsci->setMarginsForegroundColor(QColor("gray"));
+	qsci->setFoldMarginColors(QColor("whiteSmoke"), QColor("whiteSmoke"));
 	qsci->setEdgeColor(Qt::black);
 }
 
@@ -471,10 +469,10 @@ void ScintillaEditor::zoomOut()
 
 void ScintillaEditor::initFont(const QString& fontName, uint size)
 {
-  QFont font(fontName, size);
-  font.setFixedPitch(true);
-  lexer->setFont(font);
-  qsci->setMarginsFont(font);
+  this->currentFont = QFont(fontName, size);
+  this->currentFont.setFixedPitch(true);
+  lexer->setFont(this->currentFont);
+  qsci->setMarginsFont(this->currentFont);
   onTextChanged(); // Update margin width
 }
 
@@ -486,8 +484,8 @@ void ScintillaEditor::initMargin()
 
 void ScintillaEditor::onTextChanged()
 {
-	QFontMetrics fontmetrics = qsci->fontMetrics();
-	qsci->setMarginWidth(1, fontmetrics.width(QString::number(qsci->lines())) + 6);
+  QFontMetrics fontmetrics(this->currentFont);
+  qsci->setMarginWidth(1, QString(trunc(log10(qsci->lines())+2), '0'));
 }
 
 bool ScintillaEditor::find(const QString &expr, bool findNext, bool findBackwards)

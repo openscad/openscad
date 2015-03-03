@@ -42,4 +42,11 @@ group() {
 			cylinder($fn = 0, $fa = 12, $fs = 2, h = 20, r1 = 10, r2 = 0, center = false);
 		}
 	}
+	multmatrix([[1, 0, 0, -25], [0, 1, 0, -40], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		multmatrix([[0.5, 0, 0, 0], [0, 0.5, 0, 0], [0, 0, 0.5, 0], [0, 0, 0, 1]]) {
+			group() {
+				cylinder($fn = 0, $fa = 12, $fs = 2, h = 20, r1 = 10, r2 = 0, center = false);
+			}
+		}
+	}
 }
