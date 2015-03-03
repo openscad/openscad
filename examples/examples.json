@@ -5,19 +5,15 @@
     "CSG.scad",
     "CSG-modules.scad",
     "logo_and_text.scad",
-    "children.scad",
-    "children_indexed.scad",
     "linear_extrude.scad",
     "rotate_extrude.scad",
-    "surface_image.scad",
     "text_on_cube.scad",
     "projection.scad",
-    "surface.scad",
-    "translate.scad",
-    "union.scad"
+    "surface.scad"
   ],
   "Functions": [
     "functions.scad",
+    "list_comprehensions.scad",
     "recursion.scad"
   ],
   "Shapes": [
@@ -35,6 +31,9 @@
     "text.scad"
   ],
   "Advanced": [
+    "surface_image.scad",
+    "children.scad",
+    "children_indexed.scad",
     "advance_intersection.scad",
     "animation.scad",
     "demo_cut.scad",
