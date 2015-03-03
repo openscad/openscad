@@ -1049,8 +1049,19 @@ file(GLOB SCAD_DXF_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/dxf/*.scad)
 file(GLOB FUNCTION_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/*.scad)
 file(GLOB_RECURSE EXAMPLE_3D_FILES ${CMAKE_SOURCE_DIR}/../examples/*.scad)
 
-list(REMOVE_ITEM EXAMPLE_3D_FILES ${CMAKE_SOURCE_DIR}/../examples/Shapes/flat_body.scad)
-list(APPEND EXAMPLE_2D_FILES ${CMAKE_SOURCE_DIR}/../examples/Shapes/flat_body.scad)
+list(REMOVE_ITEM EXAMPLE_3D_FILES
+                  ${CMAKE_SOURCE_DIR}/../examples/Old/example015.scad
+                  ${CMAKE_SOURCE_DIR}/../examples/Advanced/module_recursion.scad
+                  ${CMAKE_SOURCE_DIR}/../examples/Functions/list_comprehensions.scad
+                  ${CMAKE_SOURCE_DIR}/../examples/Functions/polygon_areas.scad
+                  ${CMAKE_SOURCE_DIR}/../examples/Functions/recursion.scad)
+
+list(APPEND EXAMPLE_2D_FILES
+                  ${CMAKE_SOURCE_DIR}/../examples/Old/example015.scad
+                  ${CMAKE_SOURCE_DIR}/../examples/Advanced/module_recursion.scad
+                  ${CMAKE_SOURCE_DIR}/../examples/Functions/list_comprehensions.scad
+                  ${CMAKE_SOURCE_DIR}/../examples/Functions/polygon_areas.scad
+                  ${CMAKE_SOURCE_DIR}/../examples/Functions/recursion.scad)
 
 list(APPEND EXAMPLE_FILES ${EXAMPLE_3D_FILES} ${EXAMPLE_2D_FILES})
 
@@ -1135,7 +1146,6 @@ set_test_config(Bugs dxfpngtest_text-font-direction-tests
                      csgpngtest_text-font-direction-tests
                      throwntogethertest_text-font-direction-tests)
 
-list(APPEND EXPORT3D_CGALCGAL_TEST_FILES ${EXAMPLE_3D_FILES})
 list(APPEND EXPORT3D_CGALCGAL_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/polyhedron-nonplanar-tests.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/rotate_extrude-tests.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/union-coincident-test.scad
@@ -1340,6 +1350,10 @@ foreach(FILE ${EXAMPLE_FILES})
   get_test_fullname(offpngtest ${FILE} TEST_FULLNAME)
   set_test_config(Examples ${TEST_FULLNAME})
   get_test_fullname(offcgalpngtest ${FILE} TEST_FULLNAME)
+  set_test_config(Examples ${TEST_FULLNAME})
+endforeach()
+foreach(FILE ${EXAMPLE_2D_FILES})
+  get_test_fullname(dxfpngtest ${FILE} TEST_FULLNAME)
   set_test_config(Examples ${TEST_FULLNAME})
 endforeach()
 

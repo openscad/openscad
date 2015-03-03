@@ -10,9 +10,7 @@
 // some time when OpenSCAD detects the endless recursive call.
 function factorial(n) = n == 0 ? 1 : factorial(n - 1) * n;
 
-color("cyan")
-        linear_extrude(height = 1)
-            text(str("6! = ", factorial(6)), halign = "center");
+color("cyan") text(str("6! = ", factorial(6)), halign = "center");
 
 echo(version=version());
 // Written in 2015 by Torsten Paul <Torsten.Paul@gmx.de>

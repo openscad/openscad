@@ -1,5 +1,3 @@
-echo(version=version());
-
 // Recursive calls of modules can generate complex geometry, especially
 // fractal style objects.
 // The example uses a recursive module to generate a random tree as
@@ -28,10 +26,9 @@ function mt(x, y) = [ [ 1, 0, 0, x ], [ 0, 1, 0, y ], [ 0, 0, 1, 0 ], [ 0, 0, 0,
 function mr(a) = [ [ cos(a), -sin(a), 0, 0 ], [ sin(a), cos(a), 0, 0 ], [ 0, 0, 1, 0 ], [ 0, 0, 0, 1 ] ];
 
 module tree(length, thickness, count, m = identity, r = 1) {
-    echo(r);
     color([0, 1 - (0.8 / levels * count), 0])
         multmatrix(m)
-            cube([thickness, length, thickness]);
+            square([thickness, length]);
 
     if (count > 0) {
         tree(rnd(0.6, 0.8, r) * length, 0.8 * thickness, count - 1, m * mt(0, length) * mr(rnd(20, 35, r + 1)), 8 * r);
@@ -41,8 +38,7 @@ module tree(length, thickness, count, m = identity, r = 1) {
 
 tree(len, thickness, levels);
 
-
-
+echo(version=version());
 // Written in 2015 by Torsten Paul <Torsten.Paul@gmx.de>
 //
 // To the extent possible under law, the author(s) have dedicated all
