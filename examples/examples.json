@@ -14,7 +14,8 @@
   "Functions": [
     "functions.scad",
     "list_comprehensions.scad",
-    "recursion.scad"
+    "recursion.scad",
+    "polygon_areas.scad"
   ],
   "Shapes": [
     "chopped_blocks.scad",
