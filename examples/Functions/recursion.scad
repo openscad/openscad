@@ -1,4 +1,4 @@
-echo(version=version());
+// recursionscad:  Basic recursion example 
 
 // Recursive functions are very powerful for calculating values.
 // A good number of algorithms make use of recursive definitions,
@@ -11,27 +11,10 @@ echo(version=version());
 function factorial(n) = n == 0 ? 1 : factorial(n - 1) * n;
 
 color("cyan")
-    translate([0, -30, 0])
         linear_extrude(height = 1)
             text(str("6! = ", factorial(6)), halign = "center");
 
-// With recursive functions very complex results can be generated,
-// e.g. calculating the outline of a star shaped polygon. Using
-// default parameters can help with simplifying the usage of functions
-// that have multiple parameters.
-function point(angle) = [ sin(angle), cos(angle) ];
-function radius(i, r1, r2) = (i % 2) == 0 ? r1 : r2;
-function star(count, r1, r2, i = 0, result = []) = i < count
-    ? star(count, r1, r2, i + 1, concat(result, [ radius(i, r1, r2) * point(360 / count * i) ]))
-    : result;
-
-color("yellow")
-    translate([0, 50, 0])
-        linear_extrude(height = 1)
-            polygon(star(30, 40, 10));
-
-
-
+echo(version=version());
 // Written in 2015 by Torsten Paul <Torsten.Paul@gmx.de>
 //
 // To the extent possible under law, the author(s) have dedicated all
