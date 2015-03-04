@@ -173,7 +173,7 @@ bool MainWindow::reorderMode = false;
 QProgressDialog *MainWindow::fontCacheDialog = NULL;
 
 MainWindow::MainWindow(const QString &filename)
-	: root_inst("group"), library_info_dialog(NULL), font_list_dialog(NULL), tempFile(NULL), progresswidget(NULL), contentschanged(false)
+	: root_inst("group"), library_info_dialog(NULL), font_list_dialog(NULL), procevents(false), tempFile(NULL), progresswidget(NULL), contentschanged(false)
 {
 	setupUi(this);
 
@@ -923,6 +923,7 @@ void MainWindow::compile(bool reload, bool forcedone)
 		if (this->root_module->hasIncludes() ||
 				this->root_module->usesLibraries()) {
 			this->waitAfterReloadTimer->start();
+			this->procevents = false;
 			return;
 		}
 	}
