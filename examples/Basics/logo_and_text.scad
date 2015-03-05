@@ -11,18 +11,18 @@ logosize = 120;
 
 
 translate([110, 0, 80]) {
-	translate([0, 0, 30]) rotate([25, 25, -40]) Logo(logosize);
-	translate([100, 0, 40]) green() t("Open", 42, ":style=Bold");
-	translate([247, 0, 40]) black() t("SCAD", 42, ":style=Bold");
-	translate([100, 0, 0]) black() t("The Programmers");
-	translate([160, 0, -30]) black() t("Solid 3D CAD Modeller");
+  translate([0, 0, 30]) rotate([25, 25, -40]) Logo(logosize);
+  translate([100, 0, 40]) green() t("Open", 42, ":style=Bold");
+  translate([247, 0, 40]) black() t("SCAD", 42, ":style=Bold");
+  translate([100, 0, 0]) black() t("The Programmers");
+  translate([160, 0, -30]) black() t("Solid 3D CAD Modeller");
 }
 
 // Helper to create 3D text with correct font and orientation
 module t(t, s = 18, style = "") {
-	rotate([90, 0, 0])
-		linear_extrude(height = 1)
-			text(t, size = s, font = str("Liberation Sans", style), $fn = 16);
+  rotate([90, 0, 0])
+    linear_extrude(height = 1)
+      text(t, size = s, font = str("Liberation Sans", style), $fn = 16);
 }
 
 // Color helpers

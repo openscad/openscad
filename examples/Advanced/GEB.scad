@@ -8,15 +8,15 @@ $fn=64;
 
 module GEB() {
 intersection()
-	{
-		linear_extrude(height = 20, convexity = 3, center=true) B();
-		
-		rotate([90, 0, 0])
-		linear_extrude(height = 20, convexity = 3, center=true) E();
-		
-		rotate([90, 0, 90])
-		linear_extrude(height = 20, convexity = 3, center=true) G();
-	}
+  {
+    linear_extrude(height = 20, convexity = 3, center=true) B();
+    
+    rotate([90, 0, 0])
+    linear_extrude(height = 20, convexity = 3, center=true) E();
+    
+    rotate([90, 0, 90])
+    linear_extrude(height = 20, convexity = 3, center=true) G();
+  }
 }
 
 color("Ivory") GEB();
