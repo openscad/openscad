@@ -2,6 +2,10 @@ OpenSCAD Release Checklist
 --------------------------
 
 o Pre-release preparations
+  - Update translations:
+    - Send emails to translation managers, see .po files:
+      https://github.com/openscad/openscad/tree/master/locale
+  - Update src/AboutDialog.html with new contributors etc.
   - Merge MCAD
     o In MCAD clone:
       $ git fetch upstream
