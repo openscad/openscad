@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: OpenSCAD 2015.02.01\n"
+"Project-Id-Version: OpenSCAD 2015.03.05\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-02-01 19:40+0100\n"
+"POT-Creation-Date: 2015-03-05 14:54-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -67,46 +67,6 @@ msgid ""
 "right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-"
 "family:'Courier New,courier';\">  text(t = &quot;OpenSCAD&quot;, font = "
 "&quot;Liberation Sans:style=Italic&quot;);</span></pre></body></html>"
-msgstr ""
-
-#: objects/ui_launchingscreen.h:294
-msgid "Welcome to OpenSCAD"
-msgstr ""
-
-#: objects/ui_launchingscreen.h:295
-msgid "New"
-msgstr ""
-
-#: objects/ui_launchingscreen.h:296
-msgid "Open"
-msgstr ""
-
-#: objects/ui_launchingscreen.h:297
-msgid "Help"
-msgstr ""
-
-#: objects/ui_launchingscreen.h:298
-msgid "Recents"
-msgstr ""
-
-#: objects/ui_launchingscreen.h:299
-msgid "Open Recent"
-msgstr ""
-
-#: objects/ui_launchingscreen.h:300 objects/ui_launchingscreen.h:302
-msgid "Examples"
-msgstr ""
-
-#: objects/ui_launchingscreen.h:303
-msgid "Open Example"
-msgstr ""
-
-#: objects/ui_launchingscreen.h:312
-msgid "Don't show again"
-msgstr ""
-
-#: objects/ui_launchingscreen.h:313
-msgid "Version"
 msgstr ""
 
 #: objects/ui_LibraryInfoDialog.h:75
@@ -719,11 +679,11 @@ msgstr ""
 msgid "3D View"
 msgstr ""
 
-#: objects/ui_Preferences.h:1063 src/UIUtils.cc:86
+#: objects/ui_Preferences.h:1063 src/UIUtils.cc:109
 msgid "Advanced"
 msgstr ""
 
-#: objects/ui_Preferences.h:1064 src/mainwin.cc:2418
+#: objects/ui_Preferences.h:1064 src/mainwin.cc:2422
 msgid "Editor"
 msgstr ""
 
@@ -989,111 +949,51 @@ msgstr ""
 msgid "%v / %m"
 msgstr ""
 
+#: objects/ui_launchingscreen.h:294
+msgid "Welcome to OpenSCAD"
+msgstr ""
+
+#: objects/ui_launchingscreen.h:295
+msgid "New"
+msgstr ""
+
+#: objects/ui_launchingscreen.h:296
+msgid "Open"
+msgstr ""
+
+#: objects/ui_launchingscreen.h:297
+msgid "Help"
+msgstr ""
+
+#: objects/ui_launchingscreen.h:298
+msgid "Recents"
+msgstr ""
+
+#: objects/ui_launchingscreen.h:299
+msgid "Open Recent"
+msgstr ""
+
+#: objects/ui_launchingscreen.h:300 objects/ui_launchingscreen.h:302
+msgid "Examples"
+msgstr ""
+
+#: objects/ui_launchingscreen.h:303
+msgid "Open Example"
+msgstr ""
+
+#: objects/ui_launchingscreen.h:312
+msgid "Don't show again"
+msgstr ""
+
+#: objects/ui_launchingscreen.h:313
+msgid "Version"
+msgstr ""
+
 #: src/Camera.cc:126
 #, c-format
 msgid ""
 "Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], "
 "distance = %.2f"
-msgstr ""
-
-#: src/mainwin.cc:778 src/mainwin.cc:1354
-msgid "Untitled.scad"
-msgstr ""
-
-#: src/mainwin.cc:971
-msgid "Compile error."
-msgstr ""
-
-#: src/mainwin.cc:974
-msgid "Error while compiling '%1'."
-msgstr ""
-
-#: src/mainwin.cc:978
-msgid "Compilation generated %1 warning."
-msgid_plural "Compilation generated %1 warnings."
-msgstr[0] ""
-msgstr[1] ""
-
-#: src/mainwin.cc:988
-msgid " For details see <a href=\"#console\">console window</a>."
-msgstr ""
-
-#: src/mainwin.cc:1353
-msgid "Save File"
-msgstr ""
-
-#: src/mainwin.cc:1355
-msgid "OpenSCAD Designs (*.scad)"
-msgstr ""
-
-#: src/mainwin.cc:1365
-msgid ""
-"%1 already exists.\n"
-"Do you want to replace it?"
-msgstr ""
-
-#: src/mainwin.cc:1684
-msgid "Application"
-msgstr ""
-
-#: src/mainwin.cc:1685
-msgid ""
-"The document has been modified.\n"
-"Do you really want to reload the file?"
-msgstr ""
-
-#: src/mainwin.cc:2038 src/mainwin.cc:2094
-msgid "Export %1 File"
-msgstr ""
-
-#: src/mainwin.cc:2039 src/mainwin.cc:2098
-msgid "%1 Files (*%2)"
-msgstr ""
-
-#: src/mainwin.cc:2040
-msgid "Untitled"
-msgstr ""
-
-#: src/mainwin.cc:2096
-msgid "Untitled%1"
-msgstr ""
-
-#: src/mainwin.cc:2147
-msgid "Export CSG File"
-msgstr ""
-
-#: src/mainwin.cc:2148
-msgid "Untitled.csg"
-msgstr ""
-
-#: src/mainwin.cc:2149
-msgid "CSG Files (*.csg)"
-msgstr ""
-
-#: src/mainwin.cc:2175
-msgid "Export Image"
-msgstr ""
-
-#: src/mainwin.cc:2175
-msgid "PNG Files (*.png)"
-msgstr ""
-
-#: src/mainwin.cc:2423
-msgid "Console"
-msgstr ""
-
-#: src/mainwin.cc:2560
-msgid "The document has been modified."
-msgstr ""
-
-#: src/mainwin.cc:2561
-msgid "Do you want to save your changes?"
-msgstr ""
-
-#: src/openscad.cc:604
-msgid ""
-"Fontconfig needs to update its font cache.\n"
-"This can take up to a couple of minutes."
 msgstr ""
 
 #: src/QGLView.cc:129
@@ -1124,18 +1024,126 @@ msgid ""
 "OpenGL version %s\n"
 msgstr ""
 
-#: src/settings.cc:132
-msgid "After indentation"
-msgstr ""
-
-#: src/UIUtils.cc:86
+#: src/UIUtils.cc:109
 msgid "Basics"
 msgstr ""
 
-#: src/UIUtils.cc:86
+#: src/UIUtils.cc:109
+msgid "Functions"
+msgstr ""
+
+#: src/UIUtils.cc:109
 msgid "Shapes"
 msgstr ""
 
-#: src/UIUtils.cc:86
+#: src/UIUtils.cc:109
 msgid "Extrusion"
+msgstr ""
+
+#: src/UIUtils.cc:109
+msgid "Old"
+msgstr ""
+
+#: src/mainwin.cc:779 src/mainwin.cc:1356
+msgid "Untitled.scad"
+msgstr ""
+
+#: src/mainwin.cc:973
+msgid "Compile error."
+msgstr ""
+
+#: src/mainwin.cc:976
+msgid "Error while compiling '%1'."
+msgstr ""
+
+#: src/mainwin.cc:980
+msgid "Compilation generated %1 warning."
+msgid_plural "Compilation generated %1 warnings."
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/mainwin.cc:990
+msgid " For details see <a href=\"#console\">console window</a>."
+msgstr ""
+
+#: src/mainwin.cc:1355
+msgid "Save File"
+msgstr ""
+
+#: src/mainwin.cc:1357
+msgid "OpenSCAD Designs (*.scad)"
+msgstr ""
+
+#: src/mainwin.cc:1367
+msgid ""
+"%1 already exists.\n"
+"Do you want to replace it?"
+msgstr ""
+
+#: src/mainwin.cc:1686
+msgid "Application"
+msgstr ""
+
+#: src/mainwin.cc:1687
+msgid ""
+"The document has been modified.\n"
+"Do you really want to reload the file?"
+msgstr ""
+
+#: src/mainwin.cc:2040 src/mainwin.cc:2096
+msgid "Export %1 File"
+msgstr ""
+
+#: src/mainwin.cc:2041 src/mainwin.cc:2100
+msgid "%1 Files (*%2)"
+msgstr ""
+
+#: src/mainwin.cc:2042
+msgid "Untitled"
+msgstr ""
+
+#: src/mainwin.cc:2098
+msgid "Untitled%1"
+msgstr ""
+
+#: src/mainwin.cc:2149
+msgid "Export CSG File"
+msgstr ""
+
+#: src/mainwin.cc:2150
+msgid "Untitled.csg"
+msgstr ""
+
+#: src/mainwin.cc:2151
+msgid "CSG Files (*.csg)"
+msgstr ""
+
+#: src/mainwin.cc:2177
+msgid "Export Image"
+msgstr ""
+
+#: src/mainwin.cc:2177
+msgid "PNG Files (*.png)"
+msgstr ""
+
+#: src/mainwin.cc:2427
+msgid "Console"
+msgstr ""
+
+#: src/mainwin.cc:2564
+msgid "The document has been modified."
+msgstr ""
+
+#: src/mainwin.cc:2565
+msgid "Do you want to save your changes?"
+msgstr ""
+
+#: src/mainwin.cc:2697
+msgid ""
+"Fontconfig needs to update its font cache.\n"
+"This can take up to a couple of minutes."
+msgstr ""
+
+#: src/settings.cc:132
+msgid "After indentation"
 msgstr ""
