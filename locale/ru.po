@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2014.01.05\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-05 14:54-0500\n"
+"POT-Creation-Date: 2015-03-05 16:09-0500\n"
 "PO-Revision-Date: 2013-02-24 17:50+0100\n"
 "Last-Translator:  <soniczerops@gmail.com>\n"
 "Language-Team: Russian\n"
@@ -300,7 +300,7 @@ msgstr "F10"
 
 #: objects/ui_MainWindow.h:889
 msgid "Wireframe"
-msgstr ""
+msgstr "Каркас"
 
 #: objects/ui_MainWindow.h:890
 msgid "F11"
@@ -349,7 +349,7 @@ msgstr "Анимация"
 
 #: objects/ui_MainWindow.h:901
 msgid "&Top"
-msgstr ""
+msgstr "&Сверху"
 
 #: objects/ui_MainWindow.h:902
 msgid "Ctrl+4"
@@ -393,7 +393,7 @@ msgstr "Ctrl+8"
 
 #: objects/ui_MainWindow.h:911
 msgid "Bac&k"
-msgstr ""
+msgstr "Назад"
 
 #: objects/ui_MainWindow.h:912
 msgid "Ctrl+9"
@@ -579,7 +579,7 @@ msgstr "Ctrl+["
 #: objects/ui_MainWindow.h:951
 #, fuzzy
 msgid "View All"
-msgstr "&Вид"
+msgstr "&Показать все"
 
 #: objects/ui_MainWindow.h:952
 #, fuzzy
@@ -694,7 +694,7 @@ msgstr "Все"
 
 #: objects/ui_OpenCSGWarningDialog.h:86
 msgid "OpenGL Warning"
-msgstr ""
+msgstr "Предупреждение OpenGL"
 
 #: objects/ui_OpenCSGWarningDialog.h:87
 msgid ""
@@ -713,11 +713,11 @@ msgstr ""
 #: objects/ui_OpenCSGWarningDialog.h:92
 #, fuzzy
 msgid "Enable OpenCSG"
-msgstr "Включить для OpenGL 1.x"
+msgstr "Включить OpenCSG"
 
 #: objects/ui_OpenCSGWarningDialog.h:93
 msgid "Show this message again"
-msgstr ""
+msgstr "Показывать снова"
 
 #: objects/ui_OpenCSGWarningDialog.h:94
 msgid "Close"
@@ -725,7 +725,7 @@ msgstr "Закрыть"
 
 #: objects/ui_Preferences.h:1061
 msgid "Preferences"
-msgstr "Настройки"
+msgstr "Свойства"
 
 #: objects/ui_Preferences.h:1062
 msgid "3D View"
@@ -771,7 +771,7 @@ msgstr "Простой редактор"
 
 #: objects/ui_Preferences.h:1076
 msgid "QScintilla Editor"
-msgstr ""
+msgstr "Редактор QScintilla"
 
 #: objects/ui_Preferences.h:1078
 msgid "(requires restart)"
@@ -792,7 +792,7 @@ msgstr "Ctrl/Cmd-Колесико-мыши увеличивает текст"
 #: objects/ui_Preferences.h:1082
 #, fuzzy
 msgid "Indentation"
-msgstr "Документация"
+msgstr "Отступ"
 
 #: objects/ui_Preferences.h:1083
 #, fuzzy
@@ -811,7 +811,7 @@ msgstr "Поверхности CGAL"
 
 #: objects/ui_Preferences.h:1088 src/settings.cc:135
 msgid "Tabs"
-msgstr ""
+msgstr "Табуляция"
 
 #: objects/ui_Preferences.h:1090
 msgid "Indentation width"
@@ -931,8 +931,9 @@ msgstr "Граница"
 
 #: objects/ui_Preferences.h:1132 objects/ui_Preferences.h:1140
 #: src/settings.cc:130 src/settings.cc:131
+#, fuzzy
 msgid "Margin"
-msgstr ""
+msgstr "Край"
 
 #: objects/ui_Preferences.h:1134
 msgid "End"
@@ -1012,12 +1013,12 @@ msgstr "Включить локализацию интерфейса (необх
 
 #: objects/ui_ProgressWidget.h:72
 msgid "%v / %m"
-msgstr ""
+msgstr "%v / %m"
 
 #: objects/ui_launchingscreen.h:294
 #, fuzzy
 msgid "Welcome to OpenSCAD"
-msgstr "О программе OpenSCAD"
+msgstr "Добро пожаловать в OpenSCAD"
 
 #: objects/ui_launchingscreen.h:295
 #, fuzzy
@@ -1050,7 +1051,7 @@ msgstr "Примеры"
 #: objects/ui_launchingscreen.h:303
 #, fuzzy
 msgid "Open Example"
-msgstr "Примеры"
+msgstr "Открыть пример"
 
 #: objects/ui_launchingscreen.h:312
 msgid "Don't show again"
@@ -1066,6 +1067,8 @@ msgid ""
 "Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], "
 "distance = %.2f"
 msgstr ""
+"Обзор: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], distance "
+"= %.2f"
 
 #: src/QGLView.cc:129
 msgid ""
@@ -1102,6 +1105,9 @@ msgid ""
 "%s (%s)\n"
 "OpenGL version %s\n"
 msgstr ""
+"Версия GLEW %s\n"
+"%s (%s)\n"
+"Версия OpenGL %s\n"
 
 #: src/UIUtils.cc:109
 msgid "Basics"
@@ -1182,7 +1188,7 @@ msgstr "Экспортировать в DXF..."
 
 #: src/mainwin.cc:2041 src/mainwin.cc:2100
 msgid "%1 Files (*%2)"
-msgstr ""
+msgstr "%1 Файлов (*%2)"
 
 #: src/mainwin.cc:2042
 #, fuzzy
@@ -1221,16 +1227,12 @@ msgstr "Консоль"
 #: src/mainwin.cc:2564
 #, fuzzy
 msgid "The document has been modified."
-msgstr ""
-"Документ был изменен.\n"
-"Сохранить изменения?"
+msgstr "Документ был изменен."
 
 #: src/mainwin.cc:2565
 #, fuzzy
 msgid "Do you want to save your changes?"
-msgstr ""
-"Документ был изменен.\n"
-"Сохранить изменения?"
+msgstr "Сохранить изменения?"
 
 #: src/mainwin.cc:2697
 msgid ""

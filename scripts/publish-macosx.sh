@@ -1,7 +1,4 @@
 #!/bin/sh
-# NB! To build a release build, the VERSION and VERSIONDATE environment variables needs to be set.
-# See doc/release-checklist.txt
-
 #
 # Usage:
 #   ./scripts/publish-macosx.sh [buildonly]
