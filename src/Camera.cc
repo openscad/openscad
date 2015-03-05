@@ -3,7 +3,7 @@
 #include "printutils.h"
 
 Camera::Camera(enum CameraType camtype) :
-	type(camtype), projection(Camera::PERSPECTIVE), fov(45), viewall(false), height(60)
+	type(camtype), projection(Camera::PERSPECTIVE), fov(22.5), viewall(false), height(60)
 {
 	PRINTD("Camera()");
 	if (this->type == Camera::GIMBAL) {
@@ -48,10 +48,8 @@ void Camera::gimbalDefaultTranslate()
 
 /*!
 	Moves camera so that the given bbox is fully visible.
-	FIXME: The scalefactor is a temporary hack to be compatible with
-	earlier ways of showing the whole scene.
 */
-void Camera::viewAll(const BoundingBox &bbox, float scalefactor)
+void Camera::viewAll(const BoundingBox &bbox)
 {
 	if (this->type == Camera::NONE) {
 		this->type = Camera::VECTOR;
@@ -75,15 +73,17 @@ void Camera::viewAll(const BoundingBox &bbox, float scalefactor)
 	case Camera::ORTHOGONAL:
 		this->height = this->viewer_distance = bbox.diagonal().norm();
 		break;
-	case Camera::PERSPECTIVE: {
-		double radius = bbox.diagonal().norm()/2;
+	case Camera::PERSPECTIVE: {	
+		double bboxRadius = bbox.diagonal().norm()/2;
+		double radius = (bbox.center()-this->center).norm() + bboxRadius;
+		double distance = radius / sin(this->fov*M_PI/360);
 		switch (this->type) {
 		case Camera::GIMBAL:
-			this->height = this->viewer_distance = radius / tan(this->fov*M_PI/360);
+			this->height = this->viewer_distance = distance;
 			break;
 		case Camera::VECTOR: {
 			Vector3d cameradir = (this->center - this->eye).normalized();
-			this->eye = this->center - radius*scalefactor*cameradir;
+			this->eye = this->center - distance*cameradir;
 			break;
 		}
 		default:
