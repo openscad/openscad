@@ -345,7 +345,7 @@ msgstr "Показать метки масштаба"
 
 #: objects/ui_MainWindow.h:900
 msgid "Animate"
-msgstr "Анимация"
+msgstr "Анимировать"
 
 #: objects/ui_MainWindow.h:901
 msgid "&Top"
@@ -421,7 +421,7 @@ msgstr "Перспектива"
 #: objects/ui_MainWindow.h:917
 #, fuzzy
 msgid "&Orthogonal"
-msgstr "Прямоугольная проекция"
+msgstr "Ортогональная проекция"
 
 #: objects/ui_MainWindow.h:918
 #, fuzzy
@@ -473,7 +473,7 @@ msgstr "Ctrl+F"
 #: objects/ui_MainWindow.h:928
 #, fuzzy
 msgid "Fin&d and Replace..."
-msgstr "Найти и замена..."
+msgstr "Поиск и замена..."
 
 #: objects/ui_MainWindow.h:929
 msgid "Ctrl+Alt+F"
@@ -543,7 +543,7 @@ msgstr "Открыть каталог библиотек..."
 
 #: objects/ui_MainWindow.h:943
 msgid "Reset View"
-msgstr "Сбросить настройки вида"
+msgstr "Сбросить вид"
 
 #: objects/ui_MainWindow.h:944
 #, fuzzy
@@ -614,7 +614,7 @@ msgstr "Время:"
 
 #: objects/ui_MainWindow.h:961
 msgid "FPS:"
-msgstr "Кадров в секунду:"
+msgstr "FPS:"
 
 #: objects/ui_MainWindow.h:962
 msgid "Steps:"
@@ -669,7 +669,7 @@ msgstr "Заменить"
 
 #: objects/ui_MainWindow.h:977
 msgid "Search string"
-msgstr "Строка поиска"
+msgstr "Искать строчку"
 
 #: objects/ui_MainWindow.h:978
 msgid "<"
@@ -686,7 +686,6 @@ msgstr "Готово"
 #: objects/ui_MainWindow.h:981
 #, fuzzy
 msgid "Replacement string"
-msgstr "элементах"
 
 #: objects/ui_MainWindow.h:983
 msgid "All"
@@ -882,11 +881,13 @@ msgstr "Нет"
 
 #: objects/ui_Preferences.h:1113 src/settings.cc:127
 msgid "Wrap at character boundaries"
-msgstr ""
+#, fuzzy
+msgstr "Перенос с раницы символа"
 
 #: objects/ui_Preferences.h:1114 src/settings.cc:127
 msgid "Wrap at word boundaries"
-msgstr ""
+#, fuzzy
+msgstr "Перенос с границы слова"
 
 #: objects/ui_Preferences.h:1116
 msgid "Line wrap indentation"
@@ -977,7 +978,7 @@ msgstr "элементах"
 
 #: objects/ui_Preferences.h:1153
 msgid "Force Goldfeather"
-msgstr "Принудительно использовать алгоритм Goldfeather («Золотое перо»)"
+msgstr "Принудительно использовать Goldfeather"
 
 #: objects/ui_Preferences.h:1154
 msgid "CGAL Cache size"
@@ -1115,7 +1116,7 @@ msgstr "Примитивы"
 
 #: src/UIUtils.cc:109
 msgid "Functions"
-msgstr ""
+msgstr "Функции"
 
 #: src/UIUtils.cc:109
 msgid "Shapes"
@@ -1127,7 +1128,7 @@ msgstr "Выдавливание"
 
 #: src/UIUtils.cc:109
 msgid "Old"
-msgstr ""
+msgstr "Старый"
 
 #: src/mainwin.cc:779 src/mainwin.cc:1356
 msgid "Untitled.scad"
@@ -1198,7 +1199,7 @@ msgstr "Безымянный.scad"
 #: src/mainwin.cc:2098
 #, fuzzy
 msgid "Untitled%1"
-msgstr "Безымянный.scad"
+msgstr "Безымянный%1.scad"
 
 #: src/mainwin.cc:2149
 msgid "Export CSG File"
@@ -1206,7 +1207,7 @@ msgstr "Экспортировать файл CSG"
 
 #: src/mainwin.cc:2150
 msgid "Untitled.csg"
-msgstr "Безимянный.csg"
+msgstr "Безымянный.csg"
 
 #: src/mainwin.cc:2151
 msgid "CSG Files (*.csg)"
@@ -1259,7 +1260,7 @@ msgstr "После отступа"
 #~ msgstr "Проверить обновления..."
 
 #~ msgid "Off"
-#~ msgstr "Выключить"
+#~ msgstr "Выкл."
 
 #~ msgid "For Light Background"
 #~ msgstr "Для светлого фона"
