@@ -3,7 +3,9 @@ group() {
 		multmatrix([[1, 0, 0, -100], [0, 1, 0, -20], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 			group() {
 				group() {
-					text(text = "Nothing...", size = 6, spacing = 1, font = "", direction = "ltr", language = "en", script = "latin", halign = "center", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
+					linear_extrude(height = 1, center = true, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
+						text(text = "Nothing...", size = 6, spacing = 1, font = "", direction = "ltr", language = "en", script = "latin", halign = "center", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
+					}
 				}
 			}
 		}
@@ -12,7 +14,9 @@ group() {
 		multmatrix([[1, 0, 0, -50], [0, 1, 0, -20], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 			group() {
 				group() {
-					text(text = "one object", size = 6, spacing = 1, font = "", direction = "ltr", language = "en", script = "latin", halign = "center", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
+					linear_extrude(height = 1, center = true, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
+						text(text = "one object", size = 6, spacing = 1, font = "", direction = "ltr", language = "en", script = "latin", halign = "center", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
+					}
 					group() {
 						group() {
 							multmatrix([[1, 0, 0, 0], [0, 1, 0, 40], [0, 0, 1, 0], [0, 0, 0, 1]]) {
@@ -30,7 +34,9 @@ group() {
 		multmatrix([[1, 0, 0, 0], [0, 1, 0, -20], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 			group() {
 				group() {
-					text(text = "2 objects ", size = 6, spacing = 1, font = "", direction = "ltr", language = "en", script = "latin", halign = "center", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
+					linear_extrude(height = 1, center = true, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
+						text(text = "2 objects ", size = 6, spacing = 1, font = "", direction = "ltr", language = "en", script = "latin", halign = "center", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
+					}
 					group() {
 						group() {
 							multmatrix([[1, 0, 0, -7.5], [0, 1, 0, 40], [0, 0, 1, 0], [0, 0, 0, 1]]) {
@@ -65,7 +71,9 @@ group() {
 		multmatrix([[1, 0, 0, 50], [0, 1, 0, -20], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 			group() {
 				group() {
-					text(text = "3 objects ", size = 6, spacing = 1, font = "", direction = "ltr", language = "en", script = "latin", halign = "center", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
+					linear_extrude(height = 1, center = true, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
+						text(text = "3 objects ", size = 6, spacing = 1, font = "", direction = "ltr", language = "en", script = "latin", halign = "center", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
+					}
 					group() {
 						group() {
 							multmatrix([[1, 0, 0, -15], [0, 1, 0, 40], [0, 0, 1, 0], [0, 0, 0, 1]]) {
