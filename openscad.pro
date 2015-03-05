@@ -39,7 +39,7 @@ isEmpty(QT_VERSION) {
   }
 }
 
-# Populate VERSION, VERSION_YEAR, VERSION_MONTH, VERSION_DATE from system date
+# If VERSION is not set, populate VERSION, VERSION_YEAR, VERSION_MONTH from system date
 include(version.pri)
 
 debug: DEFINES += DEBUG
