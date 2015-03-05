@@ -9,7 +9,6 @@ function get_cylinder_h(p) = lookup(p, [
 
 echo(version=version());
 for (i = [-100:5:+100]) {
-  // echo(i, get_cylinder_h(i));
   translate([ i, 0, -30 ]) cylinder(r1 = 6, r2 = 2, h = get_cylinder_h(i)*3);
 }
 

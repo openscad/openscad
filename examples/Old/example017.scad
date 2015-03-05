@@ -34,8 +34,7 @@ module shape_tripod()
   y5 = y3 + total_height - 3*thickness;
   y6 = y5 + thickness;
   
-  union()
-  {
+  union() {
     difference() {
       polygon([
         [ x1, y2 ], [ x2, y2 ],
@@ -52,8 +51,7 @@ module shape_tripod()
       translate([ x5 + thickness, y4 ]) circle(thickness);
     }
   
-    translate([ x5, y1 ])
-    square([ boltlen - thickness, thickness*2 ]);
+    translate([ x5, y1 ]) square([ boltlen - thickness, thickness*2 ]);
   
     translate([ x5 + boltlen - thickness, y2 ]) circle(thickness);
   
@@ -73,8 +71,9 @@ module shape_inner_disc()
 {
   difference() {
     circle(midhole + boltlen + 2*thickness + locklen2);
-    for (alpha = [ 0, 120, 240 ])
+    for (alpha = [ 0, 120, 240 ]) {
       rotate(alpha) translate([ 0, midhole + boltlen + thickness + locklen2/2 ]) square([ thickness, locklen2 ], true);
+    }
     circle(midhole + boltlen);
   }
 }
@@ -83,8 +82,9 @@ module shape_outer_disc()
 {
   difference() {
     circle(midhole + boltlen + inner1_to_inner2 + 2*thickness + locklen1);
-    for (alpha = [ 0, 120, 240 ])
+    for (alpha = [ 0, 120, 240 ]) {
       rotate(alpha) translate([ 0, midhole + boltlen + inner1_to_inner2 + thickness + locklen1/2 ]) square([ thickness, locklen1 ], true);
+    }
     circle(midhole + boltlen + inner1_to_inner2);
   }
 }
@@ -97,8 +97,9 @@ module parts()
   shape_inner_disc();
   shape_outer_disc();
 
-  for (s = [ [1,1], [-1,1], [1,-1] ])
+  for (s = [ [1,1], [-1,1], [1,-1] ]) {
     scale(s) translate([ tripod_x_off, -tripod_y_off ]) shape_tripod();
+  }
 }
 
 module exploded()
@@ -106,9 +107,12 @@ module exploded()
   translate([ 0, 0, total_height + 2*thickness ]) linear_extrude(height = thickness, convexity = 4) shape_inner_disc();
   linear_extrude(height = thickness, convexity = 4) shape_outer_disc();
 
-  color([ 0.7, 0.7, 1 ]) for (alpha = [ 0, 120, 240 ])
-    rotate(alpha) translate([ 0, thickness*2 + locklen1 + inner1_to_inner2 + boltlen + midhole, 1.5*thickness ])
-      rotate([ 90, 0, -90 ]) linear_extrude(height = thickness, convexity = 10, center = true) shape_tripod();
+  color([ 0.7, 0.7, 1 ]) for (alpha = [ 0, 120, 240 ]) {
+    rotate(alpha)
+      translate([ 0, thickness*2 + locklen1 + inner1_to_inner2 + boltlen + midhole, 1.5*thickness ])
+        rotate([ 90, 0, -90 ])
+          linear_extrude(height = thickness, convexity = 10, center = true) shape_tripod();
+  }
 }
 
 module bottle()
@@ -116,20 +120,20 @@ module bottle()
   r = boltlen + midhole;
   h = total_height - thickness*2;
 
-  rotate_extrude(convexity = 2)
-  {
+  rotate_extrude(convexity = 2) {
     square([ r, h ]);
 
-    translate([ 0, h ])
-    intersection() {
-      square([ r, r ]);
-      scale([ 1, 0.7 ]) circle(r);
+    translate([ 0, h ]) {
+      intersection() {
+        square([ r, r ]);
+        scale([ 1, 0.7 ]) circle(r);
+      }
     }
-
-    translate([ 0, h+r ])
-    intersection() {
-      translate([ 0, -r/2 ]) square([ r/2, r ]);
-      circle(r/2);
+    translate([ 0, h+r ]) {
+      intersection() {
+        translate([ 0, -r/2 ]) square([ r/2, r ]);
+        circle(r/2);
+      }
     }
   }
 }
@@ -139,23 +143,23 @@ module assembled()
   translate([ 0, 0, total_height - thickness ]) linear_extrude(height = thickness, convexity = 4) shape_inner_disc();
   linear_extrude(height = thickness, convexity = 4) shape_outer_disc();
 
-  color([ 0.7, 0.7, 1 ]) for (alpha = [ 0, 120, 240 ])
-    rotate(alpha) translate([ 0, thickness*2 + locklen1 + inner1_to_inner2 + boltlen + midhole, 0 ])
-      rotate([ 90, 0, -90 ]) linear_extrude(height = thickness, convexity = 10, center = true) shape_tripod();
+  color([ 0.7, 0.7, 1 ]) for (alpha = [ 0, 120, 240 ]) {
+    rotate(alpha)
+      translate([ 0, thickness*2 + locklen1 + inner1_to_inner2 + boltlen + midhole, 0 ])
+        rotate([ 90, 0, -90 ])
+          linear_extrude(height = thickness, convexity = 10, center = true) shape_tripod();
+  }
 
   % translate([ 0, 0, thickness*2]) bottle();
 }
 
 echo(version=version());
 
-if (mode == "parts")
-  parts();
+if (mode == "parts") parts();
 
-if (mode == "exploded")
-  exploded();
+if (mode == "exploded") exploded();
 
-if (mode == "assembled")
-  assembled();
+if (mode == "assembled") assembled();
 
 // Written by Clifford Wolf <clifford@clifford.at> and Marius
 // Kintel <marius@kintel.net>

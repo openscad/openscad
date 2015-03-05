@@ -14,8 +14,7 @@ module example006()
     }
   }
 
-  difference()
-  {
+  difference() {
     cube(100, center = true);
     for (rot = [ [0, 0, 0], [1, 0, 0], [0, 1, 0] ]) {
       rotate(90, rot)
@@ -33,9 +32,12 @@ module example006()
       [ 0, 90, [ [-25, -25], [0, 0], [+25, +25] ] ],
       [ 0, -90, [ [-25, -25], [+25, -25], [-25, +25], [+25, +25] ] ]
     ]) {
-      rotate(i[0], [0, 0, 1]) rotate(i[1], [1, 0, 0]) translate([0, -50, 0])
-        for (j = i[2])
-          translate([j[0], 0, j[1]]) sphere(10);
+    rotate(i[0], [0, 0, 1])
+      rotate(i[1], [1, 0, 0])
+        translate([0, -50, 0])
+          for (j = i[2]) {
+            translate([j[0], 0, j[1]]) sphere(10);
+          }
     }
   }
 }

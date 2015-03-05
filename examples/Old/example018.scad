@@ -1,16 +1,15 @@
 
 module step(len, mod)
 {
-  for (i = [0:$children-1])
+  for (i = [0:$children-1]) {
     translate([ len*(i - ($children-1)/2), 0, 0 ]) children((i+mod) % $children);
+  }
 }
 
 echo(version=version());
 
-for (i = [1:4])
-{
-  translate([0, -250+i*100, 0]) step(100, i)
-  {
+for (i = [1:4]) {
+  translate([0, -250+i*100, 0]) step(100, i) {
     sphere(30);
     cube(60, true);
     cylinder(r = 30, h = 50, center = true);

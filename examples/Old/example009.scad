@@ -10,15 +10,13 @@ fanrot = dxf_dim(file = "example009.dxf", name = "fanrot");
   import(file = "example009.dxf", layer = "body");
 
 % for (z = [+(bodywidth/2 + platewidth/2),
-    -(bodywidth/2 + platewidth/2)])
-{
+    -(bodywidth/2 + platewidth/2)]) {
   translate([0, 0, z])
-  linear_extrude(height = platewidth, center = true, convexity = 10)
-    import(file = "example009.dxf", layer = "plate");
+    linear_extrude(height = platewidth, center = true, convexity = 10)
+      import(file = "example009.dxf", layer = "plate");
 }
 
-intersection()
-{
+intersection() {
   linear_extrude(height = fanwidth, center = true, convexity = 10, twist = -fanrot)
     import(file = "example009.dxf", layer = "fan_top");
     
@@ -26,7 +24,7 @@ intersection()
   // layer contains an open polyline, which is not yet supported
   // by the import() module.
   rotate_extrude(file = "example009.dxf", layer = "fan_side",
-    origin = fan_side_center, convexity = 10);
+                 origin = fan_side_center, convexity = 10);
 }
 
 // Written by Clifford Wolf <clifford@clifford.at> and Marius

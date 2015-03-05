@@ -7,8 +7,7 @@ module blk1() {
 
 module blk2() {
   difference() {
-    translate([ 0, 0, 7.5 ])
-      cube([ 60, 28, 14 ], center = true);
+    translate([ 0, 0, 7.5 ]) cube([ 60, 28, 14 ], center = true);
     cube([ 8, 32, 32 ], center = true);
   }
 }
@@ -23,11 +22,12 @@ echo(version=version());
 difference() {
   blk1();
   for (alpha = [0, 90, 180, 270]) {
-    rotate(alpha, [ 1, 0, 0]) render(convexity = 12)
-      difference() {
-        blk2();
-        chop();
-      }
+    rotate(alpha, [ 1, 0, 0])
+      render(convexity = 12)
+        difference() {
+          blk2();
+          chop();
+        }
   }
 }
 
