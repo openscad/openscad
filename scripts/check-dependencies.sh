@@ -636,7 +636,7 @@ checkargs()
 
 main()
 {
-  deps="qt qscintilla2 cgal gmp mpfr boost opencsg glew eigen glib2 fontconfig freetype2 harfbuzz gcc bison flex make"
+  deps="qt qscintilla2 cgal gmp mpfr boost opencsg glew eigen glib2 fontconfig freetype2 harfbuzz bison flex make"
   #deps="$deps curl git" # not technically necessary for build
   #deps="$deps python cmake imagemagick" # only needed for tests
   #deps="cgal"
