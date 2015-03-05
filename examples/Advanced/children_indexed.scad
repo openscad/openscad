@@ -34,7 +34,8 @@ color("green")
 module align_in_grid_and_add_text()
 {
     if ($children == 0) {
-        text("Nothing...", 6, halign = "center");
+        linear_extrude(height = 1, center = true)
+          text("Nothing...", 6, halign = "center");
     } else {
         t = $children == 1 ? "one object" : str($children, " objects ");
         linear_extrude(height = 1, center = true)
