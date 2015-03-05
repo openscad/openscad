@@ -145,7 +145,7 @@ mpfr_sysver()
 
 gmp_sysver()
 {
-  gmppaths="`find $1 -name 'gmp.h' -o -name 'gmp-*.h' 2>/dev/null`"
+  gmppaths="`find $1/include -name 'gmp.h' -o -name 'gmp-*.h' 2>/dev/null`"
   if [ ! "$gmppaths" ]; then
     debug "gmp_sysver no gmp.h beneath $1"
     return
@@ -211,10 +211,14 @@ qscintilla2_sysver()
   elif [ "`command -v qmake-qt4`" ]; then
     QMAKE=qmake-qt4
   fi
-  
+  debug using qmake: $QMAKE
+
   qtincdir="`$QMAKE -query QT_INSTALL_HEADERS`"
   qscipath="$qtincdir/Qsci/qsciglobal.h"
+  debug using qtincdir: $qtincdir
+  debug using qscipath: $qscipath
   if [ ! -e $qscipath ]; then
+    debug qscipath doesnt exist. giving up on version.
     return
   fi
 
@@ -636,7 +640,7 @@ checkargs()
 
 main()
 {
-  deps="qt qscintilla2 cgal gmp mpfr boost opencsg glew eigen glib2 fontconfig freetype2 harfbuzz gcc bison flex make"
+  deps="qt qscintilla2 cgal gmp mpfr boost opencsg glew eigen glib2 fontconfig freetype2 harfbuzz bison flex make"
   #deps="$deps curl git" # not technically necessary for build
   #deps="$deps python cmake imagemagick" # only needed for tests
   #deps="cgal"

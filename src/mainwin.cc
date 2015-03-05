@@ -173,12 +173,12 @@ bool MainWindow::reorderMode = false;
 QProgressDialog *MainWindow::fontCacheDialog = NULL;
 
 MainWindow::MainWindow(const QString &filename)
-	: root_inst("group"), library_info_dialog(NULL), font_list_dialog(NULL), tempFile(NULL), progresswidget(NULL), contentschanged(false)
+	: root_inst("group"), library_info_dialog(NULL), font_list_dialog(NULL), procevents(false), tempFile(NULL), progresswidget(NULL), contentschanged(false)
 {
 	setupUi(this);
 
 	editorDockTitleWidget = new QWidget();
-        consoleDockTitleWidget = new QWidget();
+	consoleDockTitleWidget = new QWidget();
 
 	this->editorDock->setConfigKey("view/hideEditor");
 	this->editorDock->setAction(this->viewActionHideEditor);
@@ -195,11 +195,10 @@ MainWindow::MainWindow(const QString &filename)
 #ifdef USE_SCINTILLA_EDITOR
 	if (useScintilla) {
 		 editor = new ScintillaEditor(editorDockContents);
-
 	}
 	else
 #endif
-	    editor = new LegacyEditor(editorDockContents);
+		editor = new LegacyEditor(editorDockContents);
 
 	Preferences::create(editor->colorSchemes());
 
@@ -783,7 +782,7 @@ void MainWindow::setFileName(const QString &filename)
 	} else {
 		QFileInfo fileinfo(filename);
 		this->fileName = fileinfo.exists() ? fileinfo.absoluteFilePath() : fileinfo.fileName();
-        QString fn =fileinfo.absoluteFilePath();
+		QString fn =fileinfo.absoluteFilePath();
 		setWindowFilePath(fn);
 
 		QDir::setCurrent(fileinfo.dir().absolutePath());
@@ -923,6 +922,7 @@ void MainWindow::compile(bool reload, bool forcedone)
 		if (this->root_module->hasIncludes() ||
 				this->root_module->usesLibraries()) {
 			this->waitAfterReloadTimer->start();
+			this->procevents = false;
 			return;
 		}
 	}
