@@ -2,8 +2,6 @@
 
 # This is run as part of the checklist in docs/release-checklist.txt
 #
-# Set this if we're doing a release build. Comment it out for development builds
-#VERSION=2011.12
 
 if test -z "$VERSION"; then
   VERSION=`date "+%Y.%m.%d"`
@@ -48,6 +46,6 @@ echo
 echo "Then copy/paste these commands into your shell:"
 echo
 
-# Update snapshot filename on wab page
+# Update snapshot filename on web page
 echo ./scripts/update-web.sh OpenSCAD-$VERSION.zip
 echo ./scripts/update-web.sh OpenSCAD-$VERSION-Installer.exe
