@@ -112,6 +112,16 @@ scp OpenSCAD-$VERSION.dmg openscad@files.openscad.org:www/snapshots
 if [[ $? != 0 ]]; then
   exit 1
 fi
+scp $APPCASTFILE openscad@files.openscad.org:www/
+if [[ $? != 0 ]]; then
+  exit 1
+fi
+if [[ $VERSION == $VERSIONDATE ]]; then
+  scp $APPCASTFILE openscad@files.openscad.org:www/appcast-snapshots.xml
+  if [[ $? != 0 ]]; then
+    exit 1
+  fi
+fi
 
 # Update snapshot filename on web page
 update_www_download_links version=$VERSION packagefile=OpenSCAD-$VERSION.dmg filesize=$FILESIZE
