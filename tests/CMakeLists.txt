@@ -1205,6 +1205,9 @@ disable_tests(
   offpngtest_fractal
   stlpngtest_logo_and_text
   offpngtest_logo_and_text
+
+  # Has floating point rounding issues
+  dumptest-examples_module_recursion
 )
 
 # 2D tests
