@@ -686,6 +686,7 @@ msgstr "Готово"
 #: objects/ui_MainWindow.h:981
 #, fuzzy
 msgid "Replacement string"
+msgstr "элементах"
 
 #: objects/ui_MainWindow.h:983
 msgid "All"
@@ -881,12 +882,10 @@ msgstr "Нет"
 
 #: objects/ui_Preferences.h:1113 src/settings.cc:127
 msgid "Wrap at character boundaries"
-#, fuzzy
 msgstr "Перенос с раницы символа"
 
 #: objects/ui_Preferences.h:1114 src/settings.cc:127
 msgid "Wrap at word boundaries"
-#, fuzzy
 msgstr "Перенос с границы слова"
 
 #: objects/ui_Preferences.h:1116
