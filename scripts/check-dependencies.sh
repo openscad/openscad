@@ -211,10 +211,14 @@ qscintilla2_sysver()
   elif [ "`command -v qmake-qt4`" ]; then
     QMAKE=qmake-qt4
   fi
-  
+  debug using qmake: $QMAKE
+
   qtincdir="`$QMAKE -query QT_INSTALL_HEADERS`"
   qscipath="$qtincdir/Qsci/qsciglobal.h"
+  debug using qtincdir: $qtincdir
+  debug using qscipath: $qscipath
   if [ ! -e $qscipath ]; then
+    debug qscipath doesnt exist. giving up on version.
     return
   fi
 
