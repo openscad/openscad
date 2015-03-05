@@ -14,7 +14,7 @@ module LetterBlock(letter, size=30) {
             linear_extrude(height=size, convexity=4)
                 text(letter, 
                      size=size*22/30,
-                     font="Tahoma",
+                     font="Bitstream Vera Sans",
                      halign="center",
                      valign="center");
         }
