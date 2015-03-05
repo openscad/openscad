@@ -1504,22 +1504,22 @@ add_cmdline_test(openscad-imgstretch2 EXE ${OPENSCAD_BINPATH}
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
 # Perspective gimbal cam
 add_cmdline_test(openscad-camdist EXE ${OPENSCAD_BINPATH} 
-                 ARGS --imgsize=500,500 --camera=0,0,0,90,0,90,100 -o
+                 ARGS --imgsize=500,500 --camera=0,0,0,90,0,90,200 -o
                  SUFFIX png
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
 # Perspective gimbal cam
 add_cmdline_test(openscad-camrot EXE ${OPENSCAD_BINPATH}
-                 ARGS --imgsize=500,500 --camera=0,0,0,440,337.5,315,100 -o
+                 ARGS --imgsize=500,500 --camera=0,0,0,440,337.5,315,200 -o
                  SUFFIX png
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
 # Perspective gimbal cam
 add_cmdline_test(openscad-camtrans EXE ${OPENSCAD_BINPATH}
-                 ARGS --imgsize=500,500 --camera=100,-20,-10,90,0,90,100 -o
+                 ARGS --imgsize=500,500 --camera=100,-20,-10,90,0,90,200 -o
                  SUFFIX png
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
 # Perspective gimbal cam, viewall
 add_cmdline_test(openscad-camtrans-viewall EXE ${OPENSCAD_BINPATH}
-                 ARGS --imgsize=500,500 --camera=100,-20,-10,90,0,90,3000 --viewall -o
+                 ARGS --imgsize=500,500 --camera=100,-20,-10,90,0,90,6000 --viewall -o
                  SUFFIX png
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
 # Orthographic gimbal cam
@@ -1534,7 +1534,7 @@ add_cmdline_test(openscad-camortho-viewall EXE ${OPENSCAD_BINPATH}
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
 # Perspective vector cam
 add_cmdline_test(openscad-cameye EXE ${OPENSCAD_BINPATH}
-                 ARGS --imgsize=500,500 --camera=60,40,30,0,0,0 -o
+                 ARGS --imgsize=500,500 --camera=120,80,60,0,0,0 -o
                  SUFFIX png
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
 # Perspective vector cam
@@ -1544,7 +1544,7 @@ add_cmdline_test(openscad-cameye2 EXE ${OPENSCAD_BINPATH}
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
 # Perspective vector cam
 add_cmdline_test(openscad-camcenter EXE ${OPENSCAD_BINPATH}
-                 ARGS --imgsize=500,500 --camera=60,40,30,20,10,30  -o
+                 ARGS --imgsize=500,500 --camera=100,60,30,20,10,30  -o
                  SUFFIX png
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
 # Perspective vector cam viewall
