@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2013.02.24\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-05 14:54-0500\n"
-"PO-Revision-Date: 2015-02-01 20:54+0100\n"
+"POT-Creation-Date: 2015-03-05 16:09-0500\n"
+"PO-Revision-Date: 2015-03-06 10:27+0100\n"
 "Last-Translator: Miro Hrončok <miro@hroncok.cz>\n"
 "Language-Team: Czech <miro@hroncok.cz>\n"
 "Language: cs\n"
@@ -1051,7 +1051,7 @@ msgstr "Základy"
 
 #: src/UIUtils.cc:109
 msgid "Functions"
-msgstr ""
+msgstr "Funkce"
 
 #: src/UIUtils.cc:109
 msgid "Shapes"
@@ -1063,7 +1063,7 @@ msgstr "Vytažení"
 
 #: src/UIUtils.cc:109
 msgid "Old"
-msgstr ""
+msgstr "Staré"
 
 #: src/mainwin.cc:779 src/mainwin.cc:1356
 msgid "Untitled.scad"
