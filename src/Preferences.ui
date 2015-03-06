@@ -27,7 +27,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="page3DView">
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -108,7 +108,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>605</width>
+             <width>634</width>
              <height>662</height>
             </rect>
            </property>
@@ -386,6 +386,9 @@
                 <widget class="QCheckBox" name="checkBoxAutoIndent">
                  <property name="text">
                   <string>Auto Indent</string>
+                 </property>
+                 <property name="checked">
+                  <bool>true</bool>
                  </property>
                 </widget>
                </item>
