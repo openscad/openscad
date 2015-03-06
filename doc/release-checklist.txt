@@ -20,28 +20,20 @@ o Pre-release preparations
 
 (See bottom of this file for how to build release binaries)
 
-o Set VERSION and VERSIONDATE environment variable
-  (VERSIONDATE is new and used to identify releases. VERSION is for humans.
-   For development builds, set VERSION and VERSIONDATE to the same value)
-
-  export VERSION=2013.01
-  export VERSIONDATE=2013.01.17
-
-  It will be used by the commands below, as well as these files: 
-
-  scripts/release-common.sh
-  scripts/publish-macosx.sh
-  scripts/publish-mingw-x.sh
-
 o Update manpage: doc/openscad.1
 o Update releases/$VERSION.md
 o scripts/makereleasenotes.sh
 
 o Update version number in doc/openscad.1
 o Update copyright year in AboutDialog.html and mainwin.cc
+o Add VERSION and VERSIONDATE in openscad.pro, scripts/publish-macosx.sh, scripts/release-common.sh
+o Add VERSION in scripts/publish-mingw-x.sh
 
 o Tag release
   git tag "openscad-$VERSION"
+
+o Revert VERSION and VERSIONDATE in
+  openscad.pro, scripts/publish-macosx.sh, scripts/release-common.sh, scripts/publish-mingw-x.sh
 
 o build source package
   scripts/git-archive-all.py --prefix=openscad-$VERSION/ openscad-$VERSION.src.tar.gz
@@ -52,9 +44,6 @@ o git push --tags master
 
 o Upload Source package
   $ scp openscad-$VERSION.src.tar.gz openscad@files.openscad.org:www
-
-o Remove VERSION environment variable
-  $ unset VERSION
 
 o Build binaries for all platforms and wait for upload
 
