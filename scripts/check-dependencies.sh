@@ -50,7 +50,7 @@ opencsg_sysver()
 {
   debug opencsg_sysver
   if [ ! -e $1/include/opencsg.h ]; then return; fi
-  ocsgver=`grep "define  *OPENCSG_VERSION_STRING *[0-9x]*" $1/include/opencsg.h`
+  ocsgver=`grep -a "define  *OPENCSG_VERSION_STRING *[0-9x]*" $1/include/opencsg.h`
   ocsgver=`echo $ocsgver | awk '{print $4}' | sed s/'"'//g | sed s/[^1-9.]//g`
   opencsg_sysver_result=$ocsgver
 }
