@@ -40,6 +40,7 @@ testdata/scad/misc/use-tests.scad
 /openscad.pro.user
 /openscad
 /locale/*/*/*.mo
+/locale/*.mo
 /locale/POTFILES
 /tmp
 /nbproject
