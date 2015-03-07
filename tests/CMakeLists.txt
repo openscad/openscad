@@ -1139,13 +1139,6 @@ list(APPEND THROWNTOGETHERTEST_FILES ${OPENCSGTEST_FILES})
 
 list(APPEND CGALSTLSANITYTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/normal-nan.scad)
 
-# Issue #899
-set_test_config(Bugs dxfpngtest_text-font-direction-tests
-                     cgalpngtest_text-font-direction-tests
-                     opencsgtest_text-font-direction-tests
-                     csgpngtest_text-font-direction-tests
-                     throwntogethertest_text-font-direction-tests)
-
 list(APPEND EXPORT3D_CGALCGAL_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/polyhedron-nonplanar-tests.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/rotate_extrude-tests.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/union-coincident-test.scad
