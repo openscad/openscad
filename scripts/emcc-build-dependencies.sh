@@ -311,18 +311,25 @@ build_boost()
   #don't build locale -it fails when ICU isn't found, and it can't dynamically link to libicu anyways.
   mv libs/locale/CMakeLists.txt libs/locale/CMakeLists.ignore
   mkdir build && cd build
-  emconfigure cmake ../ -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR
+
+#  #old way that works but isn't as versatile ---------
+#  emconfigure cmake ../ -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR
+#
+#  emmake make -j$NUMCPU #might as well build all of them, it's not like the unused ones will get linked in.
+#  #if I want to only build the parts we're actually going to use, then do this instead:
+#  # emmake make -j$NUMCPU boost_thread boost_program_options boost_filesystem boost_system boost_regex
+#
+#  #now install it to our $DEPLOYDIR
+#  emmake make install #probably could do without emmake, but just to be safe...
+#  #End old way -----------
+
   #This way might be better, since it teaches cmake that we're cross-compiling, and it works:
-  #cmake -DCMAKE_TOOLCHAIN_FILE=$EMSCRIPTEN/cmake/Modules/Platform/Emscripten.cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DENABLE_SINGLE_THREADED=ON ../
-  #make -j$NUMCPU
-  #make install
-
-  emmake make -j$NUMCPU #might as well build all of them, it's not like the unused ones will get linked in.
+  cmake -DCMAKE_TOOLCHAIN_FILE=$EMSCRIPTEN/cmake/Modules/Platform/Emscripten.cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DENABLE_SINGLE_THREADED=ON ../
+  make -j$NUMCPU
   #if I want to only build the parts we're actually going to use, then do this instead:
-  # emmake make -j$NUMCPU boost_thread boost_program_options boost_filesystem boost_system boost_regex
+  #make -j$NUMCPU boost_thread boost_program_options boost_filesystem boost_system boost_regex
+  make install
 
-  #now install it to our $DEPLOYDIR
-  emmake make install #probably could do without emmake, but just to be safe...
 }
 
 build_cgal()
