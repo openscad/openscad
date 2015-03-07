@@ -1244,7 +1244,6 @@ set_test_config(Heavy cgalpngtest_rotate_extrude-tests
                       cgalpngtest_for-nested-tests
                       csgpngtest_for-nested-tests
                       cgalpngtest_resize-tests
-                      cgalpngtest_text-search-test
                       cgalpngtest_fractal
                       csgpngtest_fractal
                       cgalpngtest_iteration
@@ -1527,7 +1526,7 @@ add_cmdline_test(openscad-camtrans-viewall EXE ${OPENSCAD_BINPATH}
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
 # Orthographic gimbal cam
 add_cmdline_test(openscad-camortho EXE ${OPENSCAD_BINPATH}
-                 ARGS --imgsize=500,500 --camera=100,-20,-20,90,0,90,90 --projection=o -o
+                 ARGS --imgsize=500,500 --camera=100,-20,-20,90,0,90,220 --projection=o -o
                  SUFFIX png
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
 # Orthographic gimbal cam viewall
@@ -1557,7 +1556,7 @@ add_cmdline_test(openscad-camcenter-viewall EXE ${OPENSCAD_BINPATH}
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
 # Orthographic vector cam
 add_cmdline_test(openscad-cameyeortho EXE ${OPENSCAD_BINPATH}
-                 ARGS --imgsize=500,500 --camera=160,140,130,0,0,0 --projection=o -o 
+                 ARGS --imgsize=500,500 --camera=90,80,75,0,0,0 --projection=o -o 
                  SUFFIX png
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
 # Orthographic vector cam viewall
