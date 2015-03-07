@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: OpenSCAD 2014.01.05\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-03-05 14:54-0500\n"
-"PO-Revision-Date: 2015-02-01 19:39+0100\n"
+"PO-Revision-Date: 2015-03-06 23:32+0100\n"
 "Last-Translator: Torsten Paul <Torsten.Paul@gmx.de>\n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -1073,7 +1073,7 @@ msgstr "Grundlagen"
 
 #: src/UIUtils.cc:109
 msgid "Functions"
-msgstr ""
+msgstr "Funktionen"
 
 #: src/UIUtils.cc:109
 msgid "Shapes"
@@ -1085,7 +1085,7 @@ msgstr "Extrusion"
 
 #: src/UIUtils.cc:109
 msgid "Old"
-msgstr ""
+msgstr "Frühere"
 
 #: src/mainwin.cc:779 src/mainwin.cc:1356
 msgid "Untitled.scad"
