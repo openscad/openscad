@@ -312,8 +312,8 @@ build_boost()
   mv libs/locale/CMakeLists.txt libs/locale/CMakeLists.ignore
   mkdir build && cd build
   emconfigure cmake ../ -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR
-  #This way might be better, since it teaches cmake that we're cross-compiling:
-  #cmake -DCMAKE_TOOLCHAIN_FILE=$EMSCRIPTEN/cmake/Modules/Platform/Emscripten.cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR ../
+  #This way might be better, since it teaches cmake that we're cross-compiling, and it works:
+  #cmake -DCMAKE_TOOLCHAIN_FILE=$EMSCRIPTEN/cmake/Modules/Platform/Emscripten.cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DENABLE_SINGLE_THREADED=ON ../
   #make -j$NUMCPU
   #make install
 
