@@ -233,6 +233,8 @@ FORMS   += src/MainWindow.ui \
            src/AboutDialog.ui \
            src/FontListDialog.ui \
            src/ProgressWidget.ui \
+           src/ParameterWidget.ui \
+           src/ParameterEntryWidget.ui \
            src/launchingscreen.ui \
            src/LibraryInfoDialog.ui
 
@@ -250,6 +252,8 @@ HEADERS += src/typedefs.h \
            src/QGLView.h \
            src/GLView.h \
            src/MainWindow.h \
+           src/ParameterWidget.h \
+           src/ParameterEntryWidget.h \
            src/Preferences.h \
            src/OpenCSGWarningDialog.h \
            src/AboutDialog.h \
@@ -428,6 +432,8 @@ SOURCES += src/version_check.cc \
            \
            src/openscad.cc \
            src/mainwin.cc \
+           src/ParameterWidget.cc \
+           src/ParameterEntryWidget.cc \
            src/UIUtils.cc \
            src/Dock.cc \
            src/FontListDialog.cc \

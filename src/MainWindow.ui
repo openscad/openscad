@@ -554,7 +554,19 @@
    <attribute name="dockWidgetArea">
     <number>2</number>
    </attribute>
-   <widget class="QWidget" name="dockWidgetContents"/>
+   <widget class="QWidget" name="dockWidgetContents">
+    <layout class="QGridLayout" name="gridLayout_2">
+     <property name="margin">
+      <number>0</number>
+     </property>
+     <property name="spacing">
+      <number>0</number>
+     </property>
+     <item row="0" column="0">
+      <widget class="ParameterWidget" name="parameterWidget" native="true"/>
+     </item>
+    </layout>
+   </widget>
   </widget>
   <action name="fileActionNew">
    <property name="icon">
@@ -1301,6 +1313,12 @@
    <class>Dock</class>
    <extends>QDockWidget</extends>
    <header>Dock.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ParameterWidget</class>
+   <extends>QWidget</extends>
+   <header>ParameterWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

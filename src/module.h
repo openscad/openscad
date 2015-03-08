@@ -13,6 +13,7 @@
 #include "typedefs.h"
 #include "localscope.h"
 #include "feature.h"
+#include "context.h"
 
 class ModuleInstantiation
 {
@@ -111,6 +112,7 @@ public:
 	bool hasIncludes() const { return !this->includes.empty(); }
 	bool usesLibraries() const { return !this->usedlibs.empty(); }
 	bool isHandlingDependencies() const { return this->is_handling_dependencies; }
+        void set_variable(const std::string name, Value value);
         ValuePtr lookup_variable(const std::string &name) const;
 
 	typedef boost::unordered_set<std::string> ModuleContainer;
