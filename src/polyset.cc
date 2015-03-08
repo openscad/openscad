@@ -242,7 +242,6 @@ static void gl_draw_triangle(GLint *shaderinfo, const Vector3d &p0, const Vector
 		double e1f = e1 ? 2.0 : -1.0;
 		double e2f = e2 ? 2.0 : -1.0;
 		draw_triangle(shaderinfo, p0, p1, p2, e0f, e1f, e2f, z, mirrored);
-		}
 	}
 	else
 #endif
