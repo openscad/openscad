@@ -106,7 +106,7 @@ QStringList UIUtils::exampleCategories()
 {
 	// categories in File menu item - Examples
 	QStringList categories;
-  categories << N_("Basics") << N_("Functions") << N_("Shapes") << N_("Extrusion") << N_("Advanced") << N_("Old");
+  categories << N_("Basics") << N_("Functions") << N_("Shapes") << N_("Extrusion") << N_("Advanced") << N_("Parametric") << N_("Old");
   
 	return categories;
 }
