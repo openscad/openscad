@@ -29,6 +29,7 @@
 #include "linalg.h"
 #include "printutils.h"
 #include "grid.h"
+#include "polyset.cc"
 
 #include <Eigen/LU>
 #include <boost/foreach.hpp>
@@ -240,40 +241,12 @@ static void gl_draw_triangle(GLint *shaderinfo, const Vector3d &p0, const Vector
 		double e0f = e0 ? 2.0 : -1.0;
 		double e1f = e1 ? 2.0 : -1.0;
 		double e2f = e2 ? 2.0 : -1.0;
-		glVertexAttrib3d(shaderinfo[3], e0f, e1f, e2f);
-		glVertexAttrib3d(shaderinfo[4], p1[0], p1[1], p1[2] + z);
-		glVertexAttrib3d(shaderinfo[5], p2[0], p2[1], p2[2] + z);
-		glVertexAttrib3d(shaderinfo[6], 0.0, 1.0, 0.0);
-		glVertex3d(p0[0], p0[1], p0[2] + z);
-		if (!mirrored) {
-			glVertexAttrib3d(shaderinfo[3], e0f, e1f, e2f);
-			glVertexAttrib3d(shaderinfo[4], p0[0], p0[1], p0[2] + z);
-			glVertexAttrib3d(shaderinfo[5], p2[0], p2[1], p2[2] + z);
-			glVertexAttrib3d(shaderinfo[6], 0.0, 0.0, 1.0);
-			glVertex3d(p1[0], p1[1], p1[2] + z);
-		}
-		glVertexAttrib3d(shaderinfo[3], e0f, e1f, e2f);
-		glVertexAttrib3d(shaderinfo[4], p0[0], p0[1], p0[2] + z);
-		glVertexAttrib3d(shaderinfo[5], p1[0], p1[1], p1[2] + z);
-		glVertexAttrib3d(shaderinfo[6], 1.0, 0.0, 0.0);
-		glVertex3d(p2[0], p2[1], p2[2] + z);
-		if (mirrored) {
-			glVertexAttrib3d(shaderinfo[3], e0f, e1f, e2f);
-			glVertexAttrib3d(shaderinfo[4], p0[0], p0[1], p0[2] + z);
-			glVertexAttrib3d(shaderinfo[5], p2[0], p2[1], p2[2] + z);
-			glVertexAttrib3d(shaderinfo[6], 0.0, 0.0, 1.0);
-			glVertex3d(p1[0], p1[1], p1[2] + z);
-		}
+		draw_triangle(shaderinfo, p0, p1, p2, e0f, e1f, e2f, z, mirrored);
 	}
 	else
 #endif
 	{
-		glVertex3d(p0[0], p0[1], p0[2] + z);
-		if (!mirrored)
-			glVertex3d(p1[0], p1[1], p1[2] + z);
-		glVertex3d(p2[0], p2[1], p2[2] + z);
-		if (mirrored)
-			glVertex3d(p1[0], p1[1], p1[2] + z);
+		draw_tri(p0, p1, p2, z, mirrored);
 	}
 }
 
