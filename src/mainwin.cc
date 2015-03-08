@@ -114,6 +114,7 @@
 
 #include "boosty.h"
 #include "FontCache.h"
+#include "ParameterEntryWidget.h"
 
 // Keeps track of open window
 QSet<MainWindow*> *MainWindow::windows = NULL;
@@ -281,6 +282,7 @@ MainWindow::MainWindow(const QString &filename)
 	waitAfterReloadTimer->setInterval(200);
 	connect(waitAfterReloadTimer, SIGNAL(timeout()), this, SLOT(waitAfterReload()));
 
+	connect(this->parameterWidget, SIGNAL(previewRequested()), this, SLOT(actionRenderPreview()));
 	connect(this->e_tval, SIGNAL(textChanged(QString)), this, SLOT(actionRenderPreview()));
 	connect(this->e_fps, SIGNAL(textChanged(QString)), this, SLOT(updatedFps()));
 
@@ -1653,37 +1655,6 @@ bool MainWindow::fileChangedOnDisk()
 	return false;
 }
 
-static void dump_parameters(const Module *module)
-{
-	if (module == NULL) {
-		return;
-	}
-
-	ModuleContext ctx;
-
-	foreach(Assignment assignment, module->scope.assignments)
-	{
-		const Annotation *param = assignment.annotation("Parameter");
-		if (!param) {
-			continue;
-		}
-
-		const std::string name = assignment.first;
-		const ValuePtr values = param->evaluate(&ctx, "values");
-		std::cout << "Parameter name: " << name << std::endl
-			<< "  - default value: " << *assignment.second.get()->evaluate(&ctx) << std::endl
-			<< "  - values: " << *values << std::endl;
-
-		const Annotation *desc = assignment.annotation("Description");
-		if (desc) {
-			const ValuePtr v = desc->evaluate(&ctx, "text");
-			if (v->type() == Value::STRING) {
-				std::cout << "  - description: " << v->toString() << std::endl;
-			}
-		}
-	}
-}
-
 /*!
 	Returns true if anything was compiled.
 */
@@ -1705,7 +1676,8 @@ void MainWindow::compileTopLevelDocument()
 		this->fileName.isEmpty() ? "" :
 		QFileInfo(this->fileName).absolutePath().toLocal8Bit(), false);
 
-	dump_parameters(this->root_module);
+	this->parameterWidget->applyParameters(this->root_module);
+	this->parameterWidget->setParameters(this->root_module);
 }
 
 void MainWindow::checkAutoReload()

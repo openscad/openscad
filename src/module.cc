@@ -369,6 +369,13 @@ AbstractNode *FileModule::instantiate(const Context *ctx, const ModuleInstantiat
 	return node;
 }
 
+void FileModule::set_variable(const std::string name, Value value)
+{
+	if (this->context) {
+		this->context->set_variable(name, value);
+	}
+}
+
 ValuePtr FileModule::lookup_variable(const std::string &name) const
 {
 	if (!context) {
