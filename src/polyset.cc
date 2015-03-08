@@ -47,11 +47,11 @@
 
  */
 
-PolySet::PolySet(unsigned int dim, boost::tribool convex) : dim(dim), convex(convex)
+PolySet::PolySet(unsigned int dim, boost::tribool convex) : dim(dim), convex(convex), dirty(false)
 {
 }
 
-PolySet::PolySet(const Polygon2d &origin) : polygon(origin), dim(2), convex(unknown)
+PolySet::PolySet(const Polygon2d &origin) : polygon(origin), dim(2), convex(unknown), dirty(false)
 {
 }
 
@@ -87,6 +87,11 @@ void PolySet::append_poly()
 	polygons.push_back(Polygon());
 }
 
+void PolySet::append_poly(const Polygon &poly)
+{
+	polygons.push_back(poly);
+}
+
 void PolySet::append_vertex(double x, double y, double z)
 {
 	append_vertex(Vector3d(x, y, z));
@@ -95,11 +100,12 @@ void PolySet::append_vertex(double x, double y, double z)
 void PolySet::append_vertex(const Vector3d &v)
 {
 	polygons.back().push_back(v);
+	this->dirty = true;
 }
 
 void PolySet::append_vertex(const Vector3f &v)
 {
-	polygons.back().push_back(v.cast<double>());
+	append_vertex((const Vector3d &)v.cast<double>());
 }
 
 void PolySet::insert_vertex(double x, double y, double z)
@@ -110,24 +116,26 @@ void PolySet::insert_vertex(double x, double y, double z)
 void PolySet::insert_vertex(const Vector3d &v)
 {
 	polygons.back().insert(polygons.back().begin(), v);
+	this->dirty = true;
 }
 
 void PolySet::insert_vertex(const Vector3f &v)
 {
-	polygons.back().insert(polygons.back().begin(), v.cast<double>());
+	insert_vertex((const Vector3d &)v.cast<double>());
 }
 
 BoundingBox PolySet::getBoundingBox() const
 {
-	BoundingBox bbox;
-	for (size_t i = 0; i < polygons.size(); i++) {
-		const Polygon &poly = polygons[i];
-		for (size_t j = 0; j < poly.size(); j++) {
-			const Vector3d &p = poly[j];
-			bbox.extend(p);
+	if (this->dirty) {
+		this->bbox.setNull();
+		BOOST_FOREACH(const Polygon &poly, polygons) {
+			BOOST_FOREACH(const Vector3d &p, poly) {
+				this->bbox.extend(p);
+			}
 		}
+		this->dirty = false;
 	}
-	return bbox;
+	return this->bbox;
 }
 
 size_t PolySet::memsize() const
@@ -142,6 +150,9 @@ size_t PolySet::memsize() const
 void PolySet::append(const PolySet &ps)
 {
 	this->polygons.insert(this->polygons.end(), ps.polygons.begin(), ps.polygons.end());
+	if (!dirty && !this->bbox.isNull()) {
+		this->bbox.extend(ps.getBoundingBox());
+	}
 }
 
 void PolySet::transform(const Transform3d &mat)
@@ -154,6 +165,11 @@ void PolySet::transform(const Transform3d &mat)
 			v = mat * v;
 		}
 		if (mirrored) std::reverse(p.begin(), p.end());
+	}
+
+	if (!dirty && !this->bbox.isNull()) {
+		this->bbox.min() = mat * this->bbox.min();
+		this->bbox.max() = mat * this->bbox.max();
 	}
 }
 
