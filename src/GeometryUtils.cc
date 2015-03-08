@@ -418,6 +418,7 @@ bool GeometryUtils::tessellatePolygonWithHoles(const Vector3f *vertices,
 
 /*!
 	Tessellates a single contour. Non-indexed version.
+	Appends resulting triangles to triangles.
 */
 bool GeometryUtils::tessellatePolygon(const Polygon &polygon, Polygons &triangles,
 																			const Vector3f *normal)
