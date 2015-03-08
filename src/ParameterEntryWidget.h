@@ -33,10 +33,11 @@ class ParameterEntryWidget : public QWidget, public Ui::ParameterEntryWidget
 {
 	Q_OBJECT
 
-        typedef enum { UNDEFINED, COMBOBOX, SLIDER, CHECKBOX, TEXT } parameter_type_t;
+        typedef enum { UNDEFINED, COMBOBOX, SLIDER, CHECKBOX, TEXT, NUMBER, VECTOR } parameter_type_t;
 
         ValuePtr value;
         ValuePtr values;
+        ValuePtr defaultValue;
 	Value::ValueType vt;
 	Value::ValueType dvt;
         parameter_type_t target;
@@ -46,6 +47,7 @@ public:
 	virtual ~ParameterEntryWidget();
 
         ValuePtr getValue();
+        bool isDefaultValue();
         void setAssignment(class Context *context, const class Assignment *assignment, const ValuePtr defaultValue);
         void applyParameter(class Assignment *assignment);
 
@@ -54,11 +56,15 @@ protected slots:
         void on_slider_valueChanged(int);
         void on_lineEdit_editingFinished();
         void on_checkBox_toggled();
+        void on_doubleSpinBox1_valueChanged(double);
+        void on_doubleSpinBox2_valueChanged(double);
+        void on_doubleSpinBox3_valueChanged(double);
  
 signals:
         void changed();
 
 protected:
+        void updateVectorValue();
         void setName(const QString& name);
         void setValue(const class ValuePtr defaultValue, const class ValuePtr values);
         void setDescription(const QString& description);

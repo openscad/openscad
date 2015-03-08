@@ -181,6 +181,17 @@ void Module::add_annotations(AnnotationList *annotations)
 	}
 }
 
+bool Module::has_annotations() const
+{
+	return !annotations.empty();
+}
+
+const Annotation * Module::annotation(const std::string &name) const
+{
+	AnnotationMap::const_iterator it = annotations.find(name);
+	return it == annotations.end() ? NULL : (*it).second;
+}
+
 AbstractNode *Module::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	if (StackCheck::inst()->check()) {

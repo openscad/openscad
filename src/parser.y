@@ -195,6 +195,10 @@ statement:
                 free($2);
                 delete $4;
             }
+          statement
+            {
+                scope_stack.pop();
+            }
         | annotations TOK_MODULE TOK_ID '(' arguments_decl optional_commas ')'
             {
                 Module *newmodule = new Module();
@@ -545,11 +549,25 @@ arguments_decl:
                 $$->push_back(*$1);
                 delete $1;
             }
+        | annotations argument_decl
+            {
+                $$ = new AssignmentList();
+                $2->add_annotations($1);
+                $$->push_back(*$2);
+                delete $2;
+            }
         | arguments_decl ',' optional_commas argument_decl
             {
                 $$ = $1;
                 $$->push_back(*$4);
                 delete $4;
+            }
+        | arguments_decl ',' optional_commas annotations argument_decl
+            {
+                $$ = $1;
+                $5->add_annotations($4);
+                $$->push_back(*$5);
+                delete $5;
             }
         ;
 

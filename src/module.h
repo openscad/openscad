@@ -82,6 +82,8 @@ public:
 	virtual ~Module();
 
         virtual void add_annotations(AnnotationList *annotations);
+        virtual bool has_annotations() const;
+        virtual const Annotation * annotation(const std::string &name) const;
 
 	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx = NULL) const;
 	virtual std::string dump(const std::string &indent, const std::string &name) const;

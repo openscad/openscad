@@ -55,7 +55,15 @@ void ParameterEntryWidget::on_slider_valueChanged(int)
 
 void ParameterEntryWidget::on_lineEdit_editingFinished()
 {
-	value = ValuePtr(lineEdit->text().toStdString());
+	if (dvt == Value::NUMBER) {
+		try {
+			value = ValuePtr(boost::lexical_cast<double>(lineEdit->text().toStdString()));
+		} catch (const boost::bad_lexical_cast& e) {
+			lineEdit->setText(QString::fromStdString(defaultValue->toString()));
+		}
+	} else {
+		value = ValuePtr(lineEdit->text().toStdString());
+	}
 	emit changed();
 }
 
@@ -65,9 +73,52 @@ void ParameterEntryWidget::on_checkBox_toggled()
 	emit changed();
 }
 
+void ParameterEntryWidget::on_doubleSpinBox1_valueChanged(double)
+{
+	updateVectorValue();
+}
+
+void ParameterEntryWidget::on_doubleSpinBox2_valueChanged(double)
+{
+	updateVectorValue();
+}
+
+void ParameterEntryWidget::on_doubleSpinBox3_valueChanged(double)
+{
+	updateVectorValue();
+}
+
+void ParameterEntryWidget::updateVectorValue()
+{
+	if (target == NUMBER) {
+		value = ValuePtr(doubleSpinBox1->value());
+	} else {
+		Value::VectorType vt;
+
+		vt.push_back(this->doubleSpinBox1->value());
+		if (!this->doubleSpinBox2->isReadOnly()) {
+			vt.push_back(this->doubleSpinBox2->value());
+		}
+		if (!this->doubleSpinBox3->isReadOnly()) {
+			vt.push_back(this->doubleSpinBox3->value());
+		}
+		if (!this->doubleSpinBox4->isReadOnly()) {
+			vt.push_back(this->doubleSpinBox4->value());
+		}
+
+		value = ValuePtr(vt);
+	}
+	emit changed();
+}
+
 ValuePtr ParameterEntryWidget::getValue()
 {
 	return value;
+}
+
+bool ParameterEntryWidget::isDefaultValue()
+{
+	return value == defaultValue;
 }
 
 void ParameterEntryWidget::applyParameter(Assignment *assignment)
@@ -104,12 +155,17 @@ void ParameterEntryWidget::setValue(const ValuePtr defaultValue, const ValuePtr 
 {
 	this->values = values;
 	this->value = defaultValue;
+	this->defaultValue = defaultValue;
 
 	vt = values->type();
 	dvt = defaultValue->type();
 
 	if (dvt == Value::BOOL) {
 		target = CHECKBOX;
+	} else if (dvt == Value::NUMBER) {
+		target = NUMBER;
+	} else if ((dvt == Value::VECTOR) && (defaultValue->toVector().size() <= 4)) {
+		target = VECTOR;
 	} else if ((vt == Value::VECTOR) && ((dvt == Value::NUMBER) || (dvt == Value::STRING))) {
 		target = COMBOBOX;
 	} else if ((vt == Value::RANGE) && (dvt == Value::NUMBER)) {
@@ -140,15 +196,58 @@ void ParameterEntryWidget::setValue(const ValuePtr defaultValue, const ValuePtr 
 		break;
 	}
 	case CHECKBOX:
+	{
 		this->stackedWidget->setCurrentWidget(this->pageCheckBox);
 		this->checkBox->setChecked(value->toBool());
 		break;
+	}
 	case SLIDER:
+	{
 		this->stackedWidget->setCurrentWidget(this->pageSlider);
 		this->slider->setMaximum(values->toRange().end_value());
 		this->slider->setValue(value->toDouble());
 		this->slider->setMinimum(values->toRange().begin_value());
 		break;
+	}
+	case NUMBER:
+	{
+		this->stackedWidget->setCurrentWidget(this->pageVector);
+		this->doubleSpinBox1->setValue(value->toDouble());
+		this->doubleSpinBox2->hide();
+		this->doubleSpinBox3->hide();
+		this->doubleSpinBox4->hide();
+		break;
+	}
+	case VECTOR:
+	{
+		this->stackedWidget->setCurrentWidget(this->pageVector);
+		Value::VectorType vec = defaultValue->toVector();
+		if (vec.size() < 4) {
+			this->doubleSpinBox4->hide();
+			this->doubleSpinBox4->setReadOnly(true);
+		}
+		if (vec.size() < 3) {
+			this->doubleSpinBox3->hide();
+			this->doubleSpinBox3->setReadOnly(true);
+		}
+		if (vec.size() < 2) {
+			this->doubleSpinBox2->hide();
+			this->doubleSpinBox2->setReadOnly(true);
+		}
+		this->doubleSpinBox1->setValue(vec.at(0).toDouble());
+		if (vec.size() > 1) {
+			this->doubleSpinBox2->setValue(vec.at(1).toDouble());
+			this->doubleSpinBox2->setReadOnly(false);
+		}
+		if (vec.size() > 2) {
+			this->doubleSpinBox3->setValue(vec.at(2).toDouble());
+			this->doubleSpinBox3->setReadOnly(false);
+		}
+		if (vec.size() > 3) {
+			this->doubleSpinBox4->setValue(vec.at(3).toDouble());
+			this->doubleSpinBox4->setReadOnly(false);
+		}
+	}
 	}
 }
 
