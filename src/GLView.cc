@@ -95,22 +95,21 @@ void GLView::setupCamera()
 
 	switch (this->cam.type) {
 	case Camera::GIMBAL: {
-		double eyeY = 0.0;
+		double dist = cam.zoomValue();
 		switch (this->cam.projection) {
 		case Camera::PERSPECTIVE: {
-			eyeY = cam.zoomValue();
-			gluPerspective(cam.fov, aspectratio, 0.1 * eyeY, 100 * eyeY);
+			gluPerspective(cam.fov, aspectratio, 0.1*dist, 100*dist);
 			break;
 		}
 		case Camera::ORTHOGONAL: {
-			eyeY = cam.zoomValue();
-			glOrtho(-eyeY/2*aspectratio, eyeY*aspectratio/2,
-							-eyeY/2, eyeY/2,
+			double height = dist * tan(cam.fov/2*M_PI/180);
+			glOrtho(-height*aspectratio, height*aspectratio,
+							-height, height,
 							-far_far_away, +far_far_away);
 			break;
 		}
 		}
-		gluLookAt(0.0, -eyeY, 0.0,
+		gluLookAt(0.0, -dist, 0.0,
 							0.0, 0.0, 0.0,
 							0.0, 0.0, 1.0);
 		glMatrixMode(GL_MODELVIEW);
@@ -121,16 +120,16 @@ void GLView::setupCamera()
 		break;
 	}
 	case Camera::VECTOR: {
+		double dist = (cam.center - cam.eye).norm();
 		switch (this->cam.projection) {
 		case Camera::PERSPECTIVE: {
-			double dist = (cam.center - cam.eye).norm();
 			gluPerspective(cam.fov, aspectratio, 0.1*dist, 100*dist);
 			break;
 		}
 		case Camera::ORTHOGONAL: {
-			double height = cam.zoomValue();
-			glOrtho(-height/2*aspectratio, height*aspectratio/2,
-							-height/2, height/2,
+			double height = dist * tan(cam.fov/2*M_PI/180);
+			glOrtho(-height*aspectratio, height*aspectratio,
+							-height, height,
 							-far_far_away, +far_far_away);
 			break;
 		}
