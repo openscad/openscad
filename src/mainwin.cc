@@ -114,7 +114,6 @@
 
 #include "boosty.h"
 #include "FontCache.h"
-#include "ParameterEntryWidget.h"
 
 // Keeps track of open window
 QSet<MainWindow*> *MainWindow::windows = NULL;
@@ -181,6 +180,7 @@ MainWindow::MainWindow(const QString &filename)
 	editorDockTitleWidget = new QWidget();
         consoleDockTitleWidget = new QWidget();
         parameterDockTitleWidget = new QWidget();
+        libraryDockTitleWidget = new QWidget();
 
 	this->editorDock->setConfigKey("view/hideEditor");
 	this->editorDock->setAction(this->viewActionHideEditor);
@@ -188,6 +188,8 @@ MainWindow::MainWindow(const QString &filename)
 	this->consoleDock->setAction(this->viewActionHideConsole);
 	this->parameterDock->setConfigKey("view/hideParameters");
 	this->parameterDock->setAction(this->viewActionHideParameters);
+	this->libraryDock->setConfigKey("view/hideLibrary");
+	this->libraryDock->setAction(this->viewActionHideLibrary);
 
 	this->versionLabel = NULL; // must be initialized before calling updateStatusBar()
 	updateStatusBar(NULL);
@@ -409,6 +411,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->viewActionHideEditor, SIGNAL(triggered()), this, SLOT(hideEditor()));
 	connect(this->viewActionHideConsole, SIGNAL(triggered()), this, SLOT(hideConsole()));
 	connect(this->viewActionHideParameters, SIGNAL(triggered()), this, SLOT(hideParameters()));
+	connect(this->viewActionHideLibrary, SIGNAL(triggered()), this, SLOT(hideLibrary()));
 
 	// Help menu
 	connect(this->helpActionAbout, SIGNAL(triggered()), this, SLOT(helpAbout()));
@@ -562,6 +565,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->editorDock, SIGNAL(topLevelChanged(bool)), this, SLOT(editorTopLevelChanged(bool)));
 	connect(this->consoleDock, SIGNAL(topLevelChanged(bool)), this, SLOT(consoleTopLevelChanged(bool)));
 	connect(this->parameterDock, SIGNAL(topLevelChanged(bool)), this, SLOT(parameterTopLevelChanged(bool)));
+	connect(this->libraryDock, SIGNAL(topLevelChanged(bool)), this, SLOT(libraryTopLevelChanged(bool)));
 	
 	// display this window and check for OpenGL 2.0 (OpenCSG) support
 	viewModeThrownTogether();
@@ -631,6 +635,8 @@ void MainWindow::loadViewSettings(){
 	hideConsole();
 	viewActionHideParameters->setChecked(settings.value("view/hideParameters").toBool());
 	hideParameters();
+	viewActionHideLibrary->setChecked(settings.value("view/hideLibrary").toBool());
+	hideLibrary();
 	viewActionHideEditor->setChecked(settings.value("view/hideEditor").toBool());
 	hideEditor();
 	viewActionHideToolBars->setChecked(settings.value("view/hideToolbar").toBool());
@@ -666,6 +672,7 @@ void MainWindow::updateUndockMode(bool undockMode)
 		editorDock->setFeatures(editorDock->features() | QDockWidget::DockWidgetFloatable);
 		consoleDock->setFeatures(consoleDock->features() | QDockWidget::DockWidgetFloatable);
 		parameterDock->setFeatures(parameterDock->features() | QDockWidget::DockWidgetFloatable);
+		libraryDock->setFeatures(libraryDock->features() | QDockWidget::DockWidgetFloatable);
 	} else {
 		if (editorDock->isFloating()) {
 			editorDock->setFloating(false);
@@ -679,6 +686,10 @@ void MainWindow::updateUndockMode(bool undockMode)
 			parameterDock->setFloating(false);
 		}
 		parameterDock->setFeatures(parameterDock->features() & ~QDockWidget::DockWidgetFloatable);
+		if (libraryDock->isFloating()) {
+			libraryDock->setFloating(false);
+		}
+		libraryDock->setFeatures(libraryDock->features() & ~QDockWidget::DockWidgetFloatable);
 	}
 }
 
@@ -688,6 +699,7 @@ void MainWindow::updateReorderMode(bool reorderMode)
 	editorDock->setTitleBarWidget(reorderMode ? 0 : editorDockTitleWidget);
 	consoleDock->setTitleBarWidget(reorderMode ? 0 : consoleDockTitleWidget);
 	parameterDock->setTitleBarWidget(reorderMode ? 0 : parameterDockTitleWidget);
+	libraryDock->setTitleBarWidget(reorderMode ? 0 : libraryDockTitleWidget);
 }
 
 MainWindow::~MainWindow()
@@ -806,6 +818,7 @@ void MainWindow::setFileName(const QString &filename)
 	editorTopLevelChanged(editorDock->isFloating());
 	consoleTopLevelChanged(consoleDock->isFloating());
 	parameterTopLevelChanged(parameterDock->isFloating());
+	libraryTopLevelChanged(libraryDock->isFloating());
 }
 
 void MainWindow::updateRecentFiles()
@@ -1015,6 +1028,9 @@ void MainWindow::compileDone(bool didchange)
 		instantiateRoot();
 		updateCamera();
 		updateCompileResult();
+		this->libraryWidget->setParameters(this->root_module);
+		this->parameterWidget->applyParameters(this->root_module);
+		this->parameterWidget->setParameters(this->root_module);
 		callslot = afterCompileSlot;
 	}
 	else {
@@ -1675,9 +1691,6 @@ void MainWindow::compileTopLevelDocument()
 	this->root_module = parse(fulltext.c_str(),
 		this->fileName.isEmpty() ? "" :
 		QFileInfo(this->fileName).absolutePath().toLocal8Bit(), false);
-
-	this->parameterWidget->applyParameters(this->root_module);
-	this->parameterWidget->setParameters(this->root_module);
 }
 
 void MainWindow::checkAutoReload()
@@ -2441,6 +2454,11 @@ void MainWindow::on_parameterDock_visibilityChanged(bool)
 	consoleTopLevelChanged(consoleDock->isFloating());
 }
 
+void MainWindow::on_libraryDock_visibilityChanged(bool)
+{
+	consoleTopLevelChanged(consoleDock->isFloating());
+}
+
 void MainWindow::editorTopLevelChanged(bool topLevel)
 {
 	setDockWidgetTitle(editorDock, QString(_("Editor")), topLevel);
@@ -2454,6 +2472,11 @@ void MainWindow::consoleTopLevelChanged(bool topLevel)
 void MainWindow::parameterTopLevelChanged(bool topLevel)
 {
 	setDockWidgetTitle(parameterDock, QString(_("Parameters")), topLevel);
+}
+
+void MainWindow::libraryTopLevelChanged(bool topLevel)
+{
+	setDockWidgetTitle(libraryDock, QString(_("Library")), topLevel);
 }
 
 void MainWindow::setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel)
@@ -2512,6 +2535,15 @@ void MainWindow::hideParameters()
 		parameterDock->hide();
 	} else {
 		parameterDock->show();
+	}
+}
+
+void MainWindow::hideLibrary()
+{
+	if (viewActionHideLibrary->isChecked()) {
+		libraryDock->hide();
+	} else {
+		libraryDock->show();
 	}
 }
 
