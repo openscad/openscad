@@ -40,7 +40,6 @@ if(NOT(${CMAKE_SYSTEM_NAME} STREQUAL "Emscripten"))
   MESSAGE(STATUS "No Emscripten detected")
 
   # Try to compile and run the test
-  MESSAGE(STATUS "Performing Test ${TEST}")
   TRY_RUN(${VAR} ${VAR}_COMPILED
           "${CMAKE_BINARY_DIR}"
           "${FILE}"
@@ -50,8 +49,6 @@ if(NOT(${CMAKE_SYSTEM_NAME} STREQUAL "Emscripten"))
           "${CHECK_CXX_SOURCE_COMPILES_ADD_INCLUDES}"
           OUTPUT_VARIABLE OUTPUT)
 
-  MESSAGE(STATUS "TRY_RUN compile: ${VAR}_COMPILED")
-  MESSAGE(STATUS "TRY_RUN compile: ${VAR}")
 else()
 #That try_run stuff fails because cmake doesn't know to run the output with nodejs. We can't actually fix try_run, but we can do the parts separately - compile then run.
 
@@ -65,22 +62,19 @@ else()
           "${CHECK_CXX_SOURCE_COMPILES_ADD_INCLUDES}"
           COPY_FILE VAR_EXE)
 
-  EXECUTE_PROCESS(COMMAND nodejs "${VAR_EXE}"
+  #if we have an output variable:
+ # if(OUTPUT)
+ MESSAGE(STATUS "Var_exe is: ${VAR_EXE}")
+  MESSAGE(STATUS "Var is: ${VAR}")
+    EXECUTE_PROCESS(COMMAND nodejs "${VAR_EXE}"
           RESULT_VARIABLE ${VAR}
-          OUTPUT_VARIABLE ${OUTPUT})
+          OUTPUT_VARIABLE OUTPUT)
+ # else()
+ #   EXECUTE_PROCESS(COMMAND nodejs "${VAR_EXE}""
+ #         RESULT_VARIABLE ${VAR})
+ # endif()
 endif()
   
-#execute_process(COMMAND <cmd1> [args1...]]
-#                [COMMAND <cmd2> [args2...] [...]]
-#                [WORKING_DIRECTORY <directory>]
-#                [TIMEOUT <seconds>]
-#                [RESULT_VARIABLE <variable>]
-#                [OUTPUT_VARIABLE <variable>]
-#                [ERROR_VARIABLE <variable>]
-#                [INPUT_FILE <file>]
-#                [OUTPUT_FILE <file>])
-
-
 
  
   # if it did not compile make the return value fail code of 1
