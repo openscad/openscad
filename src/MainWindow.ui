@@ -372,6 +372,7 @@
     <addaction name="viewActionHideToolBars"/>
     <addaction name="viewActionHideEditor"/>
     <addaction name="viewActionHideConsole"/>
+    <addaction name="viewActionHideParameters"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -546,6 +547,12 @@
      </item>
     </layout>
    </widget>
+  </widget>
+  <widget class="Dock" name="parameterDock">
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents"/>
   </widget>
   <action name="fileActionNew">
    <property name="icon">
@@ -1259,6 +1266,17 @@
   <action name="helpActionCheatSheet">
    <property name="text">
     <string>&amp;Cheat Sheet</string>
+   </property>
+  </action>
+  <action name="viewActionHideParameters">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Hide parameters</string>
    </property>
   </action>
  </widget>
