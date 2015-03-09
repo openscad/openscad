@@ -114,9 +114,6 @@ QStringList UIUtils::exampleCategories()
 			categories << QString::fromStdString(v.first);
 		}
 	}
-
-	// FIXME: How do we get these translated if we read them from JSON?
-  // categories << N_("Basics") << N_("Functions") << N_("Shapes") << N_("Extrusion") << N_("Advanced");
   
 	return categories;
 }
