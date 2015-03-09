@@ -90,6 +90,7 @@ void PolySet::append_poly()
 void PolySet::append_poly(const Polygon &poly)
 {
 	polygons.push_back(poly);
+	this->dirty = true;
 }
 
 void PolySet::append_vertex(double x, double y, double z)
