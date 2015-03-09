@@ -37,7 +37,7 @@
 
 **Deprecations:**
 * polyhedron() now takes a faces= argument rather than triangles=
-
+* assign() is no longer needed. Local variables can be created in any scope
 # OpenSCAD 2014.03
 
 **Language Features:**
