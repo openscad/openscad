@@ -15,6 +15,7 @@ fi
 # opencsgtest_rotate_extrude-tests - Fails on Ubuntu 12.04 using Gallium 0.4 drivers
 # opencsgtest_text-font-direction-tests - Fails due to old freetype (issue #899)
 # throwntogethertest_issue964 - Fails due to non-planar quad being tessellated slightly different
+# opencsgtest_issue1165 - z buffer tearing
 ctest -j8 -E "\
 opencsgtest_rotate_extrude-tests|\
 opencsgtest_render-tests|\
@@ -32,7 +33,8 @@ cgalpngtest_text-font-direction-tests|\
 opencsgtest_text-font-direction-tests|\
 csgpngtest_text-font-direction-tests|\
 throwntogethertest_text-font-direction-tests|\
-throwntogethertest_issue964\
+throwntogethertest_issue964|\
+opencsgtest_issue1165\
 "
 if [[ $? != 0 ]]; then
   echo "Test failure"
