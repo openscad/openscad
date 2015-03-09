@@ -29,7 +29,7 @@
 * Performance improvement: 2D (clipper), preview, hull, minkowski, surface
 * Performance improvement: Reduce duplicate evaluation of identical expressions
 * Better recursion behavior
-* STL export and import is noew more robust
+* STL export and import is now more robust
 * Internal cavities are better supported
 * New examples
 * Windows cmd-line behaves better
