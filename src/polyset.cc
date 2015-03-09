@@ -167,11 +167,7 @@ void PolySet::transform(const Transform3d &mat)
 		}
 		if (mirrored) std::reverse(p.begin(), p.end());
 	}
-
-	if (!dirty && !this->bbox.isNull()) {
-		this->bbox.min() = mat * this->bbox.min();
-		this->bbox.max() = mat * this->bbox.max();
-	}
+	this->dirty = true;
 }
 
 bool PolySet::is_convex() const {
