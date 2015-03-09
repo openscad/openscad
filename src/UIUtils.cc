@@ -106,7 +106,17 @@ QStringList UIUtils::exampleCategories()
 {
 	// categories in File menu item - Examples
 	QStringList categories;
-  categories << N_("Basics") << N_("Functions") << N_("Shapes") << N_("Extrusion") << N_("Advanced") << N_("Old");
+	ptree *pt = examplesTree();
+	if (pt) {
+		BOOST_FOREACH(const ptree::value_type &v, *pt) {
+			// v.first is the name of the child.
+			// v.second is the child tree.
+			categories << QString::fromStdString(v.first);
+		}
+	}
+
+	// FIXME: How do we get these translated if we read them from JSON?
+  // categories << N_("Basics") << N_("Functions") << N_("Shapes") << N_("Extrusion") << N_("Advanced");
   
 	return categories;
 }
