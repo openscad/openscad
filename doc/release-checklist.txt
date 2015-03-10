@@ -59,6 +59,7 @@ o Write to mailing list
 o Tweet as OpenSCAD
 o Notify package managers
   - Debian/Ubuntu: https://launchpad.net/~chrysn
+  - Ubuntu PPA: https://github.com/hyperair
   - Fedora: Miro Hrončok <miro@hroncok.cz> or <mhroncok@redhat.com>
   - OpenSUSE: Pavol Rusnak <prusnak@opensuse.org>
   - Arch Linux: Kyle Keen <keenerd@gmail.com>
