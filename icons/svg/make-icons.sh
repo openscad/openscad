@@ -1,18 +1,27 @@
 #!/bin/bash
 
-O=../../openscad
-T=`mktemp`.echo
+set -x 
 
-"$O" -o "$T" icons.scad
+if [[ "$OSTYPE" =~ "darwin" ]]; then
+  EXE=OpenSCAD.app/Contents/MacOS/OpenSCAD
+else
+  EXE=openscad
+fi
+OPENSCAD=../../$EXE
+T=`mktemp icons-XXXX`
+rm $T
+ECHO=$T.echo
 
-for i in `cat "$T" | sed -e 's/ECHO: icon = //;' | tr -d '"'`
+"$OPENSCAD" -o "$ECHO" icons.scad
+
+for i in `cat "$ECHO" | sed -e 's/ECHO: icon = //;' | tr -d '"'`
 do
-	SVG=`mktemp`.svg
 	echo "Generating $i icon..."
-	"$O" -o "$SVG" -Dicon="\"$i\"" icons.scad 2>/dev/null
+        SVG="$i.svg"
+	"$OPENSCAD" -o "$SVG" -Dicon="\"$i\"" icons.scad 2>/dev/null
 
-	sed -e 's/fill="lightgray"/fill="black"/' "$SVG" > "$i.svg"
 	sed -e 's/stroke="black" fill="lightgray"/stroke="white" fill="white"/' "$SVG" > "$i-white.svg"
-	rm -f "$SVG"
+	sed -i '' -e 's/fill="lightgray"/fill="black"/' "$SVG"
 done
+rm "$ECHO"
 echo "Done."
