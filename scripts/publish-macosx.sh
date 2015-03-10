@@ -3,8 +3,6 @@
 # Usage:
 #   ./scripts/publish-macosx.sh [buildonly]
 #
-VERSION=2015.03
-VERSIONDATE=2015.03.06
 
 export NUMCPU=$(sysctl -n hw.ncpu)
 
