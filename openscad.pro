@@ -88,7 +88,12 @@ FULLNAME = openscad$${SUFFIX}
 !isEmpty(SUFFIX): DEFINES += INSTALL_SUFFIX="\"\\\"$${SUFFIX}\\\"\""
 
 macx {
-  ICON = icons/OpenSCAD.icns
+  snapshot {
+    ICON = icons/icon-nightly.icns
+  }
+  else {
+    ICON = icons/OpenSCAD.icns
+  }
   QMAKE_INFO_PLIST = Info.plist
   APP_RESOURCES.path = Contents/Resources
   APP_RESOURCES.files = OpenSCAD.sdef dsa_pub.pem icons/SCAD.icns
