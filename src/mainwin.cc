@@ -475,19 +475,15 @@ MainWindow::MainWindow(const QString &filename)
 	addKeyboardShortCut(this->viewerToolBar->actions());
 	addKeyboardShortCut(this->editortoolbar->actions());
 
-	
-	viewerToolBar->setAutoFillBackground(true);
-	viewerToolBar->setStyleSheet("QToolBar { background-color: blue; border: 1px solid black; }");
-	
 	initActionIcon(fileActionNew, ":/icons/svg/new.svg", ":/icons/svg/new-white.svg");
 	initActionIcon(fileActionOpen, ":/icons/svg/open.svg", ":/icons/svg/open-white.svg");
 	initActionIcon(fileActionSave, ":/icons/svg/save.svg", ":/icons/svg/save-white.svg");
-	initActionIcon(fileActionExportSTL, ":/images/STL.png", ":/images/STL-white.png");
-	initActionIcon(fileActionExportAMF, ":/images/AMF.png", ":/images/AMF-white.png");
-	initActionIcon(fileActionExportOFF, ":/images/OFF.png", ":/images/OFF-white.png");
-	initActionIcon(fileActionExportDXF, ":/images/DXF.png", ":/images/DXF-white.png");
-	initActionIcon(fileActionExportSVG, ":/images/SVG.png", ":/images/SVG-white.png");
-	initActionIcon(fileActionExportCSG, ":/images/CSG.png", ":/images/CSG-white.png");
+	initActionIcon(fileActionExportSTL, ":/icons/svg/export-stl.svg", ":/icons/svg/export-stl-white.svg");
+	initActionIcon(fileActionExportAMF, ":/icons/svg/export-amf.svg", ":/icons/svg/export-amf-white.svg");
+	initActionIcon(fileActionExportOFF, ":/icons/svg/export-off.svg", ":/icons/svg/export-off-white.svg");
+	initActionIcon(fileActionExportDXF, ":/icons/svg/export-dxf.svg", ":/icons/svg/export-dxf-white.svg");
+	initActionIcon(fileActionExportSVG, ":/icons/svg/export-svg.svg", ":/icons/svg/export-svg-white.svg");
+	initActionIcon(fileActionExportCSG, ":/icons/svg/export-csg.svg", ":/icons/svg/export-csg-white.svg");
 	initActionIcon(fileActionExportImage, ":/images/PNG.png", ":/images/PNG-white.png");
 
 	initActionIcon(editActionZoomTextIn, ":/images/zoom-text-in.png", ":/images/zoom-text-in-white.png");
@@ -497,8 +493,8 @@ MainWindow::MainWindow(const QString &filename)
 	initActionIcon(editActionUnindent, ":/icons/svg/indent.svg", ":/icons/svg/indent-white.svg");
 	initActionIcon(editActionIndent, ":/icons/svg/unindent.svg", ":/icons/svg/unindent-white.svg");
 
-	initActionIcon(designActionPreview, ":/images/preview-32.png", ":/images/preview-32-white.png");
-	initActionIcon(designActionRender, ":/images/render-32.png", ":/images/render-32-white.png");
+	initActionIcon(designActionPreview, ":/icons/svg/preview.svg", ":/icons/svg/preview-white.svg");
+	initActionIcon(designActionRender, ":/icons/svg/render.svg", ":/icons/svg/render-white.svg");
 
 	initActionIcon(viewActionShowAxes, ":/images/blackaxes.png", ":/images/axes.png");
 	initActionIcon(viewActionShowEdges, ":/images/Rotation-32.png", ":/images/grid.png");

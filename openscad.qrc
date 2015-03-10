@@ -6,18 +6,18 @@
     <file>icons/svg/open-white.svg</file>
     <file>icons/svg/save.svg</file>
     <file>icons/svg/save-white.svg</file>
-    <file>images/STL.png</file>
-    <file>images/STL-white.png</file>
-    <file>images/AMF.png</file>
-    <file>images/AMF-white.png</file>
-    <file>images/OFF.png</file>
-    <file>images/OFF-white.png</file>
-    <file>images/DXF.png</file>
-    <file>images/DXF-white.png</file>
-    <file>images/SVG.png</file>
-    <file>images/SVG-white.png</file>
-    <file>images/CSG.png</file>
-    <file>images/CSG-white.png</file>
+    <file>icons/svg/export-stl.svg</file>
+    <file>icons/svg/export-stl-white.svg</file>
+    <file>icons/svg/export-amf.svg</file>
+    <file>icons/svg/export-amf-white.svg</file>
+    <file>icons/svg/export-off.svg</file>
+    <file>icons/svg/export-off-white.svg</file>
+    <file>icons/svg/export-dxf.svg</file>
+    <file>icons/svg/export-dxf-white.svg</file>
+    <file>icons/svg/export-svg.svg</file>
+    <file>icons/svg/export-svg-white.svg</file>
+    <file>icons/svg/export-csg.svg</file>
+    <file>icons/svg/export-csg-white.svg</file>
     <file>images/PNG.png</file>
     <file>images/PNG-white.png</file>
 
@@ -34,10 +34,10 @@
     <file>icons/svg/unindent.svg</file>
     <file>icons/svg/unindent-white.svg</file>
 
-    <file>images/preview-32.png</file>
-    <file>images/preview-32-white.png</file>
-    <file>images/render-32.png</file>
-    <file>images/render-32-white.png</file>
+    <file>icons/svg/preview.svg</file>
+    <file>icons/svg/preview-white.svg</file>
+    <file>icons/svg/render.svg</file>
+    <file>icons/svg/render-white.svg</file>
 
     <file>images/Command-Reset-32-white.png</file>
     <file>images/Command-Reset-32.png</file>
