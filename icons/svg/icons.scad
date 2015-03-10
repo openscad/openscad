@@ -24,6 +24,7 @@ icons = [
     ["indent"],
     ["unindent"],
     ["new"],
+    ["save"],
 ];
 
 module outline(w) {
@@ -199,6 +200,20 @@ module new() {
     translate([width / 2, 2 * height / 5]) cross();
 }
 
+module save() {
+	u = height/32;
+	difference() {
+		square(32*[u,u]);
+		translate([4,2]*u) square([24,14]*u);
+		translate([8,19]*u) square([16, 23]*u);
+		translate([100,100]) rotate(45) square([8,8]*u, center=true);
+	}
+	translate([18,21]*u) square([4,9]*u);
+	translate([6,4]*u) square([20,2]*u);
+	translate([6,8]*u) square([20,2]*u);
+	translate([6,12]*u) square([20,2]*u);
+}
+
 module icon_translate(idx, icon, cols) {
     f = icon == "all" ? 200 : 0;
     show = let(i = search([icon], icons)[0]) icon == "all" || i == idx + 1;
@@ -226,6 +241,7 @@ module icon(icon) {
     icon_translate(12, icon, cols) indent();
     icon_translate(13, icon, cols) unindent();
     icon_translate(14, icon, cols) new();
+    icon_translate(15, icon, cols) save();
 }
 
 icon = "all";

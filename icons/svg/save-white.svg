@@ -1,13 +1,13 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Generator: Adobe Illustrator 16.0.4, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<?xml version="1.0" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 width="32px" height="32px" viewBox="0 0 32 32" enable-background="new 0 0 32 32" xml:space="preserve">
-<g fill="white">
-	<path d="M26,0h-2v13H8V0H0v32h32V6L26,0z M28,30H4V16h24V30z"/>
-	<rect x="6" y="18" width="20" height="2"/>
-	<rect x="6" y="22" width="20" height="2"/>
-	<rect x="6" y="26" width="20" height="2"/>
-	<rect x="18" y="2" width="4" height="9"/>
-</g>
-</svg>
+<svg width="100" height="100" viewBox="0 -100 100 100" xmlns="http://www.w3.org/2000/svg" version="1.1">
+<title>OpenSCAD Model</title>
+<path d="
+M 100,-82.3223 L 82.3223,-100 L 75,-100 L 75,-59.375 L 25,-59.375 L 25,-100
+ L 0,-100 L 0,-0 L 100,-0 z
+M 12.5,-6.25 L 12.5,-50 L 87.5,-50 L 87.5,-6.25 z
+M 81.25,-43.75 L 18.75,-43.75 L 18.75,-37.5 L 81.25,-37.5 z
+M 81.25,-31.25 L 18.75,-31.25 L 18.75,-25 L 81.25,-25 z
+M 81.25,-18.75 L 18.75,-18.75 L 18.75,-12.5 L 81.25,-12.5 z
+M 68.75,-93.75 L 56.25,-93.75 L 56.25,-65.625 L 68.75,-65.625 z
+" stroke="white" fill="white" stroke-width="0.5"/></svg>
