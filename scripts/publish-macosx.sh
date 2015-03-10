@@ -105,7 +105,11 @@ if [[ $VERSION == $VERSIONDATE ]]; then
 fi
 
 echo "Uploading..."
-scp OpenSCAD-$VERSION.dmg openscad@files.openscad.org:www/snapshots
+if [[ $VERSION == $VERSIONDATE ]]; then
+  scp OpenSCAD-$VERSION.dmg openscad@files.openscad.org:www/snapshots
+else
+  scp OpenSCAD-$VERSION.dmg openscad@files.openscad.org:www
+fi
 if [[ $? != 0 ]]; then
   exit 1
 fi
