@@ -129,47 +129,49 @@ static std::string detectDistribution()
     return "";
 }
 
-std::string PlatformUtils::sysinfo()
+std::string PlatformUtils::sysinfo(bool extended)
 {
     std::string result;
     
     struct utsname osinfo;
     if (uname(&osinfo) == 0) {
-	result += osinfo.sysname;
-	result += " ";
-	result += osinfo.release;
-	result += " ";
-	result += osinfo.version;
-	result += " ";
-	result += osinfo.machine;
+			result += osinfo.sysname;
+			result += " ";
+			result += osinfo.release;
+			result += " ";
+			result += osinfo.version;
+			result += " ";
+			result += osinfo.machine;
     } else {
-        result += "Unknown Linux";
+			result += "Unknown Linux";
     }
     
-    long numcpu = sysconf(_SC_NPROCESSORS_ONLN);
-    if (numcpu > 0) {
-	result += " ";
-	result += boost::lexical_cast<std::string>(numcpu);
-	result += " CPU";
-	if (numcpu > 1) {
-	    result += "s";
-	}
-    }
-    
-    long pages = sysconf(_SC_PHYS_PAGES);
-    long pagesize = sysconf(_SC_PAGE_SIZE);
-    if ((pages > 0) && (pagesize > 0)) {
-	result += " ";
-	result += PlatformUtils::toMemorySizeString(pages * pagesize, 2);
-	result += " RAM";
-    }
-
     std::string distribution = detectDistribution();
     if (!distribution.empty()) {
-        result += " ";
-	result += distribution;
+			result += " ";
+			result += distribution;
     }
 
+		if (extended) {
+			long numcpu = sysconf(_SC_NPROCESSORS_ONLN);
+			if (numcpu > 0) {
+				result += " ";
+				result += boost::lexical_cast<std::string>(numcpu);
+				result += " CPU";
+				if (numcpu > 1) {
+					result += "s";
+				}
+			}
+			
+			long pages = sysconf(_SC_PHYS_PAGES);
+			long pagesize = sysconf(_SC_PAGE_SIZE);
+			if ((pages > 0) && (pagesize > 0)) {
+				result += " ";
+				result += PlatformUtils::toMemorySizeString(pages * pagesize, 2);
+				result += " RAM";
+			}
+		}
+		
     return result;
 }
 

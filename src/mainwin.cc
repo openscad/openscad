@@ -173,12 +173,12 @@ bool MainWindow::reorderMode = false;
 QProgressDialog *MainWindow::fontCacheDialog = NULL;
 
 MainWindow::MainWindow(const QString &filename)
-	: root_inst("group"), library_info_dialog(NULL), font_list_dialog(NULL), tempFile(NULL), progresswidget(NULL), contentschanged(false)
+	: root_inst("group"), library_info_dialog(NULL), font_list_dialog(NULL), procevents(false), tempFile(NULL), progresswidget(NULL), contentschanged(false)
 {
 	setupUi(this);
 
 	editorDockTitleWidget = new QWidget();
-        consoleDockTitleWidget = new QWidget();
+	consoleDockTitleWidget = new QWidget();
 
 	this->editorDock->setConfigKey("view/hideEditor");
 	this->editorDock->setAction(this->viewActionHideEditor);
@@ -195,11 +195,10 @@ MainWindow::MainWindow(const QString &filename)
 #ifdef USE_SCINTILLA_EDITOR
 	if (useScintilla) {
 		 editor = new ScintillaEditor(editorDockContents);
-
 	}
 	else
 #endif
-	    editor = new LegacyEditor(editorDockContents);
+		editor = new LegacyEditor(editorDockContents);
 
 	Preferences::create(editor->colorSchemes());
 
@@ -790,7 +789,7 @@ void MainWindow::setFileName(const QString &filename)
 	} else {
 		QFileInfo fileinfo(filename);
 		this->fileName = fileinfo.exists() ? fileinfo.absoluteFilePath() : fileinfo.fileName();
-        QString fn =fileinfo.absoluteFilePath();
+		QString fn =fileinfo.absoluteFilePath();
 		setWindowFilePath(fn);
 
 		QDir::setCurrent(fileinfo.dir().absolutePath());
@@ -930,6 +929,7 @@ void MainWindow::compile(bool reload, bool forcedone)
 		if (this->root_module->hasIncludes() ||
 				this->root_module->usesLibraries()) {
 			this->waitAfterReloadTimer->start();
+			this->procevents = false;
 			return;
 		}
 	}
@@ -1253,25 +1253,25 @@ void MainWindow::updateRecentFileActions()
 
 void MainWindow::show_examples()
 {
-        bool found_example = false;
-
-        foreach (const QString &cat, UIUtils::exampleCategories()) {
+	bool found_example = false;
+	
+	foreach (const QString &cat, UIUtils::exampleCategories()) {
 		QFileInfoList examples = UIUtils::exampleFiles(cat);
-                QMenu *menu = this->menuExamples->addMenu(gettext(cat.toStdString().c_str()));
-
-                foreach(const QFileInfo &ex, examples) {
-                        QAction *openAct = new QAction(ex.fileName(), this);
-                        connect(openAct, SIGNAL(triggered()), this, SLOT(actionOpenExample()));
-                        menu->addAction(openAct);
-                        openAct->setData(ex.canonicalFilePath());
-                        found_example = true;
-                }
-        }
-
-        if (!found_example) {
-                delete this->menuExamples;
-                this->menuExamples = NULL;
-        }
+		QMenu *menu = this->menuExamples->addMenu(gettext(cat.toStdString().c_str()));
+		
+		foreach(const QFileInfo &ex, examples) {
+			QAction *openAct = new QAction(ex.fileName(), this);
+			connect(openAct, SIGNAL(triggered()), this, SLOT(actionOpenExample()));
+			menu->addAction(openAct);
+			openAct->setData(ex.canonicalFilePath());
+			found_example = true;
+		}
+	}
+	
+	if (!found_example) {
+		delete this->menuExamples;
+		this->menuExamples = NULL;
+	}
 }
 
 void MainWindow::actionOpenExample()
@@ -2277,9 +2277,11 @@ void MainWindow::viewModeShowEdges()
 
 void MainWindow::viewModeShowAxes()
 {
+	bool showaxes = viewActionShowAxes->isChecked();
 	QSettings settings;
-	settings.setValue("view/showAxes",viewActionShowAxes->isChecked());
-	this->qglview->setShowAxes(viewActionShowAxes->isChecked());
+	settings.setValue("view/showAxes", showaxes);
+	this->viewActionShowScaleProportional->setEnabled(showaxes);
+	this->qglview->setShowAxes(showaxes);
 	this->qglview->updateGL();
 }
 

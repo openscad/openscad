@@ -37,11 +37,11 @@ PACKAGES=(
     "gmp 5.1.3"
     "mpfr 3.1.2"
     "boost 1.57.0"
-    "qt5 5.4.0"
+    "qt5 5.4.1"
     "qscintilla 2.8.4"
     # NB! For eigen, also update the path in the function
     # NB! For CGAL, also update the actual download URL in the function
-    "cgal 4.5.1"
+    "cgal 4.5.2"
     "glew 1.12.0"
     "gettext 0.19.4"
     "libffi 3.2.1"
@@ -460,8 +460,9 @@ build_cgal()
   cd $BASEDIR/src
   rm -rf CGAL-$version
   if [ ! -f CGAL-$version.tar.gz ]; then
-    # 4.5.1
-    curl -O https://gforge.inria.fr/frs/download.php/file/34400/CGAL-$version.tar.gz
+    # 4.5.2
+    curl -O https://gforge.inria.fr/frs/download.php/file/34512/CGAL-$version.tar.gz
+    # 4.5.1 curl -O https://gforge.inria.fr/frs/download.php/file/34400/CGAL-$version.tar.gz
     # 4.5 curl -O https://gforge.inria.fr/frs/download.php/file/34149/CGAL-$version.tar.gz
     # 4.4 curl -O https://gforge.inria.fr/frs/download.php/file/33525/CGAL-$version.tar.gz
     # 4.3 curl -O https://gforge.inria.fr/frs/download.php/32994/CGAL-$version.tar.gz
@@ -893,9 +894,6 @@ fi
 
 if $OPTION_DEPLOY; then
   echo "Building deployment version of libraries"
-  OPTION_32BIT=true
-else
-  OPTION_32BIT=false
 fi
 
 if $OPTION_32BIT; then

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2014.01.05\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-02-01 18:03+0100\n"
+"POT-Creation-Date: 2015-03-05 16:09-0500\n"
 "PO-Revision-Date: 2013-02-24 17:50+0100\n"
 "Last-Translator:  <soniczerops@gmail.com>\n"
 "Language-Team: Russian\n"
@@ -69,52 +69,6 @@ msgid ""
 "family:'Courier New,courier';\">  text(t = &quot;OpenSCAD&quot;, font = "
 "&quot;Liberation Sans:style=Italic&quot;);</span></pre></body></html>"
 msgstr ""
-
-#: objects/ui_launchingscreen.h:294
-#, fuzzy
-msgid "Welcome to OpenSCAD"
-msgstr "О программе OpenSCAD"
-
-#: objects/ui_launchingscreen.h:295
-#, fuzzy
-msgid "New"
-msgstr "&Создать"
-
-#: objects/ui_launchingscreen.h:296
-#, fuzzy
-msgid "Open"
-msgstr "&Открыть..."
-
-#: objects/ui_launchingscreen.h:297
-#, fuzzy
-msgid "Help"
-msgstr "&Справка"
-
-#: objects/ui_launchingscreen.h:298
-#, fuzzy
-msgid "Recents"
-msgstr "Открыть файл"
-
-#: objects/ui_launchingscreen.h:299
-msgid "Open Recent"
-msgstr "Открыть недавние"
-
-#: objects/ui_launchingscreen.h:300 objects/ui_launchingscreen.h:302
-msgid "Examples"
-msgstr "Примеры"
-
-#: objects/ui_launchingscreen.h:303
-#, fuzzy
-msgid "Open Example"
-msgstr "Примеры"
-
-#: objects/ui_launchingscreen.h:312
-msgid "Don't show again"
-msgstr "Не показывать снова"
-
-#: objects/ui_launchingscreen.h:313
-msgid "Version"
-msgstr "Версия"
 
 #: objects/ui_LibraryInfoDialog.h:75
 msgid "Lib & Build Info"
@@ -346,7 +300,7 @@ msgstr "F10"
 
 #: objects/ui_MainWindow.h:889
 msgid "Wireframe"
-msgstr ""
+msgstr "Каркас"
 
 #: objects/ui_MainWindow.h:890
 msgid "F11"
@@ -391,11 +345,11 @@ msgstr "Показать метки масштаба"
 
 #: objects/ui_MainWindow.h:900
 msgid "Animate"
-msgstr "Анимация"
+msgstr "Анимировать"
 
 #: objects/ui_MainWindow.h:901
 msgid "&Top"
-msgstr ""
+msgstr "&Сверху"
 
 #: objects/ui_MainWindow.h:902
 msgid "Ctrl+4"
@@ -439,7 +393,7 @@ msgstr "Ctrl+8"
 
 #: objects/ui_MainWindow.h:911
 msgid "Bac&k"
-msgstr ""
+msgstr "Назад"
 
 #: objects/ui_MainWindow.h:912
 msgid "Ctrl+9"
@@ -467,7 +421,7 @@ msgstr "Перспектива"
 #: objects/ui_MainWindow.h:917
 #, fuzzy
 msgid "&Orthogonal"
-msgstr "Прямоугольная проекция"
+msgstr "Ортогональная проекция"
 
 #: objects/ui_MainWindow.h:918
 #, fuzzy
@@ -519,7 +473,7 @@ msgstr "Ctrl+F"
 #: objects/ui_MainWindow.h:928
 #, fuzzy
 msgid "Fin&d and Replace..."
-msgstr "Найти и замена..."
+msgstr "Поиск и замена..."
 
 #: objects/ui_MainWindow.h:929
 msgid "Ctrl+Alt+F"
@@ -589,7 +543,7 @@ msgstr "Открыть каталог библиотек..."
 
 #: objects/ui_MainWindow.h:943
 msgid "Reset View"
-msgstr "Сбросить настройки вида"
+msgstr "Сбросить вид"
 
 #: objects/ui_MainWindow.h:944
 #, fuzzy
@@ -625,7 +579,7 @@ msgstr "Ctrl+["
 #: objects/ui_MainWindow.h:951
 #, fuzzy
 msgid "View All"
-msgstr "&Вид"
+msgstr "&Показать все"
 
 #: objects/ui_MainWindow.h:952
 #, fuzzy
@@ -660,7 +614,7 @@ msgstr "Время:"
 
 #: objects/ui_MainWindow.h:961
 msgid "FPS:"
-msgstr "Кадров в секунду:"
+msgstr "FPS:"
 
 #: objects/ui_MainWindow.h:962
 msgid "Steps:"
@@ -715,7 +669,7 @@ msgstr "Заменить"
 
 #: objects/ui_MainWindow.h:977
 msgid "Search string"
-msgstr "Строка поиска"
+msgstr "Искать строчку"
 
 #: objects/ui_MainWindow.h:978
 msgid "<"
@@ -740,7 +694,7 @@ msgstr "Все"
 
 #: objects/ui_OpenCSGWarningDialog.h:86
 msgid "OpenGL Warning"
-msgstr ""
+msgstr "Предупреждение OpenGL"
 
 #: objects/ui_OpenCSGWarningDialog.h:87
 msgid ""
@@ -759,11 +713,11 @@ msgstr ""
 #: objects/ui_OpenCSGWarningDialog.h:92
 #, fuzzy
 msgid "Enable OpenCSG"
-msgstr "Включить для OpenGL 1.x"
+msgstr "Включить OpenCSG"
 
 #: objects/ui_OpenCSGWarningDialog.h:93
 msgid "Show this message again"
-msgstr ""
+msgstr "Показывать снова"
 
 #: objects/ui_OpenCSGWarningDialog.h:94
 msgid "Close"
@@ -771,17 +725,17 @@ msgstr "Закрыть"
 
 #: objects/ui_Preferences.h:1061
 msgid "Preferences"
-msgstr "Настройки"
+msgstr "Свойства"
 
 #: objects/ui_Preferences.h:1062
 msgid "3D View"
 msgstr "3D Вид"
 
-#: objects/ui_Preferences.h:1063 src/UIUtils.cc:86
+#: objects/ui_Preferences.h:1063 src/UIUtils.cc:109
 msgid "Advanced"
 msgstr "Дополнительные"
 
-#: objects/ui_Preferences.h:1064 src/mainwin.cc:2418
+#: objects/ui_Preferences.h:1064 src/mainwin.cc:2422
 msgid "Editor"
 msgstr "Редактор"
 
@@ -817,7 +771,7 @@ msgstr "Простой редактор"
 
 #: objects/ui_Preferences.h:1076
 msgid "QScintilla Editor"
-msgstr ""
+msgstr "Редактор QScintilla"
 
 #: objects/ui_Preferences.h:1078
 msgid "(requires restart)"
@@ -838,7 +792,7 @@ msgstr "Ctrl/Cmd-Колесико-мыши увеличивает текст"
 #: objects/ui_Preferences.h:1082
 #, fuzzy
 msgid "Indentation"
-msgstr "Документация"
+msgstr "Отступ"
 
 #: objects/ui_Preferences.h:1083
 #, fuzzy
@@ -857,7 +811,7 @@ msgstr "Поверхности CGAL"
 
 #: objects/ui_Preferences.h:1088 src/settings.cc:135
 msgid "Tabs"
-msgstr ""
+msgstr "Табуляция"
 
 #: objects/ui_Preferences.h:1090
 msgid "Indentation width"
@@ -928,11 +882,11 @@ msgstr "Нет"
 
 #: objects/ui_Preferences.h:1113 src/settings.cc:127
 msgid "Wrap at character boundaries"
-msgstr ""
+msgstr "Перенос с раницы символа"
 
 #: objects/ui_Preferences.h:1114 src/settings.cc:127
 msgid "Wrap at word boundaries"
-msgstr ""
+msgstr "Перенос с границы слова"
 
 #: objects/ui_Preferences.h:1116
 msgid "Line wrap indentation"
@@ -977,8 +931,9 @@ msgstr "Граница"
 
 #: objects/ui_Preferences.h:1132 objects/ui_Preferences.h:1140
 #: src/settings.cc:130 src/settings.cc:131
+#, fuzzy
 msgid "Margin"
-msgstr ""
+msgstr "Край"
 
 #: objects/ui_Preferences.h:1134
 msgid "End"
@@ -1022,7 +977,7 @@ msgstr "элементах"
 
 #: objects/ui_Preferences.h:1153
 msgid "Force Goldfeather"
-msgstr "Принудительно использовать алгоритм Goldfeather («Золотое перо»)"
+msgstr "Принудительно использовать Goldfeather"
 
 #: objects/ui_Preferences.h:1154
 msgid "CGAL Cache size"
@@ -1058,7 +1013,53 @@ msgstr "Включить локализацию интерфейса (необх
 
 #: objects/ui_ProgressWidget.h:72
 msgid "%v / %m"
-msgstr ""
+msgstr "%v / %m"
+
+#: objects/ui_launchingscreen.h:294
+#, fuzzy
+msgid "Welcome to OpenSCAD"
+msgstr "Добро пожаловать в OpenSCAD"
+
+#: objects/ui_launchingscreen.h:295
+#, fuzzy
+msgid "New"
+msgstr "&Создать"
+
+#: objects/ui_launchingscreen.h:296
+#, fuzzy
+msgid "Open"
+msgstr "&Открыть..."
+
+#: objects/ui_launchingscreen.h:297
+#, fuzzy
+msgid "Help"
+msgstr "&Справка"
+
+#: objects/ui_launchingscreen.h:298
+#, fuzzy
+msgid "Recents"
+msgstr "Открыть файл"
+
+#: objects/ui_launchingscreen.h:299
+msgid "Open Recent"
+msgstr "Открыть недавние"
+
+#: objects/ui_launchingscreen.h:300 objects/ui_launchingscreen.h:302
+msgid "Examples"
+msgstr "Примеры"
+
+#: objects/ui_launchingscreen.h:303
+#, fuzzy
+msgid "Open Example"
+msgstr "Открыть пример"
+
+#: objects/ui_launchingscreen.h:312
+msgid "Don't show again"
+msgstr "Не показывать снова"
+
+#: objects/ui_launchingscreen.h:313
+msgid "Version"
+msgstr "Версия"
 
 #: src/Camera.cc:126
 #, c-format
@@ -1066,123 +1067,8 @@ msgid ""
 "Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], "
 "distance = %.2f"
 msgstr ""
-
-#: src/mainwin.cc:778 src/mainwin.cc:1354
-msgid "Untitled.scad"
-msgstr "Безымянный.scad"
-
-#: src/mainwin.cc:971
-#, fuzzy
-msgid "Compile error."
-msgstr "&Компилировать"
-
-#: src/mainwin.cc:974
-msgid "Error while compiling '%1'."
-msgstr "Ошибка во время компиляции '%1'."
-
-#: src/mainwin.cc:978
-msgid "Compilation generated %1 warning."
-msgid_plural "Compilation generated %1 warnings."
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-
-#: src/mainwin.cc:988
-msgid " For details see <a href=\"#console\">console window</a>."
-msgstr "Для подробностей смотреть <a href=\"#console\">окно консоли</a>."
-
-#: src/mainwin.cc:1353
-msgid "Save File"
-msgstr "Сохранить файл"
-
-#: src/mainwin.cc:1355
-msgid "OpenSCAD Designs (*.scad)"
-msgstr "Модели OpenSCAD (*.scad)"
-
-#: src/mainwin.cc:1365
-msgid ""
-"%1 already exists.\n"
-"Do you want to replace it?"
-msgstr ""
-"%1 уже существует.\n"
-"Перезаписать?"
-
-#: src/mainwin.cc:1684
-msgid "Application"
-msgstr "Приложение"
-
-#: src/mainwin.cc:1685
-msgid ""
-"The document has been modified.\n"
-"Do you really want to reload the file?"
-msgstr ""
-"Документ был изменен.\n"
-"Хотите перезагрузить документ?"
-
-#: src/mainwin.cc:2038 src/mainwin.cc:2094
-#, fuzzy
-msgid "Export %1 File"
-msgstr "Экспортировать в DXF..."
-
-#: src/mainwin.cc:2039 src/mainwin.cc:2098
-msgid "%1 Files (*%2)"
-msgstr ""
-
-#: src/mainwin.cc:2040
-#, fuzzy
-msgid "Untitled"
-msgstr "Безымянный.scad"
-
-#: src/mainwin.cc:2096
-#, fuzzy
-msgid "Untitled%1"
-msgstr "Безымянный.scad"
-
-#: src/mainwin.cc:2147
-msgid "Export CSG File"
-msgstr "Экспортировать файл CSG"
-
-#: src/mainwin.cc:2148
-msgid "Untitled.csg"
-msgstr "Безимянный.csg"
-
-#: src/mainwin.cc:2149
-msgid "CSG Files (*.csg)"
-msgstr "Файлы CSG (*.csg)"
-
-#: src/mainwin.cc:2175
-msgid "Export Image"
-msgstr "Экспортировать изображение"
-
-#: src/mainwin.cc:2175
-msgid "PNG Files (*.png)"
-msgstr "Файлы PNG (*.png)"
-
-#: src/mainwin.cc:2423
-msgid "Console"
-msgstr "Консоль"
-
-#: src/mainwin.cc:2560
-#, fuzzy
-msgid "The document has been modified."
-msgstr ""
-"Документ был изменен.\n"
-"Сохранить изменения?"
-
-#: src/mainwin.cc:2561
-#, fuzzy
-msgid "Do you want to save your changes?"
-msgstr ""
-"Документ был изменен.\n"
-"Сохранить изменения?"
-
-#: src/openscad.cc:604
-msgid ""
-"Fontconfig needs to update its font cache.\n"
-"This can take up to a couple of minutes."
-msgstr ""
-"Fontconfig требуется обновить кеш шрифтов.\n"
-"Это может занять пару минут."
+"Обзор: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], distance "
+"= %.2f"
 
 #: src/QGLView.cc:129
 msgid ""
@@ -1219,22 +1105,146 @@ msgid ""
 "%s (%s)\n"
 "OpenGL version %s\n"
 msgstr ""
+"Версия GLEW %s\n"
+"%s (%s)\n"
+"Версия OpenGL %s\n"
+
+#: src/UIUtils.cc:109
+msgid "Basics"
+msgstr "Примитивы"
+
+#: src/UIUtils.cc:109
+msgid "Functions"
+msgstr "Функции"
+
+#: src/UIUtils.cc:109
+msgid "Shapes"
+msgstr "Формы"
+
+#: src/UIUtils.cc:109
+msgid "Extrusion"
+msgstr "Выдавливание"
+
+#: src/UIUtils.cc:109
+msgid "Old"
+msgstr "Старый"
+
+#: src/mainwin.cc:779 src/mainwin.cc:1356
+msgid "Untitled.scad"
+msgstr "Безымянный.scad"
+
+#: src/mainwin.cc:973
+#, fuzzy
+msgid "Compile error."
+msgstr "&Компилировать"
+
+#: src/mainwin.cc:976
+msgid "Error while compiling '%1'."
+msgstr "Ошибка во время компиляции '%1'."
+
+#: src/mainwin.cc:980
+msgid "Compilation generated %1 warning."
+msgid_plural "Compilation generated %1 warnings."
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#: src/mainwin.cc:990
+msgid " For details see <a href=\"#console\">console window</a>."
+msgstr "Для подробностей смотреть <a href=\"#console\">окно консоли</a>."
+
+#: src/mainwin.cc:1355
+msgid "Save File"
+msgstr "Сохранить файл"
+
+#: src/mainwin.cc:1357
+msgid "OpenSCAD Designs (*.scad)"
+msgstr "Модели OpenSCAD (*.scad)"
+
+#: src/mainwin.cc:1367
+msgid ""
+"%1 already exists.\n"
+"Do you want to replace it?"
+msgstr ""
+"%1 уже существует.\n"
+"Перезаписать?"
+
+#: src/mainwin.cc:1686
+msgid "Application"
+msgstr "Приложение"
+
+#: src/mainwin.cc:1687
+msgid ""
+"The document has been modified.\n"
+"Do you really want to reload the file?"
+msgstr ""
+"Документ был изменен.\n"
+"Хотите перезагрузить документ?"
+
+#: src/mainwin.cc:2040 src/mainwin.cc:2096
+#, fuzzy
+msgid "Export %1 File"
+msgstr "Экспортировать в DXF..."
+
+#: src/mainwin.cc:2041 src/mainwin.cc:2100
+msgid "%1 Files (*%2)"
+msgstr "%1 Файлов (*%2)"
+
+#: src/mainwin.cc:2042
+#, fuzzy
+msgid "Untitled"
+msgstr "Безымянный.scad"
+
+#: src/mainwin.cc:2098
+#, fuzzy
+msgid "Untitled%1"
+msgstr "Безымянный%1.scad"
+
+#: src/mainwin.cc:2149
+msgid "Export CSG File"
+msgstr "Экспортировать файл CSG"
+
+#: src/mainwin.cc:2150
+msgid "Untitled.csg"
+msgstr "Безымянный.csg"
+
+#: src/mainwin.cc:2151
+msgid "CSG Files (*.csg)"
+msgstr "Файлы CSG (*.csg)"
+
+#: src/mainwin.cc:2177
+msgid "Export Image"
+msgstr "Экспортировать изображение"
+
+#: src/mainwin.cc:2177
+msgid "PNG Files (*.png)"
+msgstr "Файлы PNG (*.png)"
+
+#: src/mainwin.cc:2427
+msgid "Console"
+msgstr "Консоль"
+
+#: src/mainwin.cc:2564
+#, fuzzy
+msgid "The document has been modified."
+msgstr "Документ был изменен."
+
+#: src/mainwin.cc:2565
+#, fuzzy
+msgid "Do you want to save your changes?"
+msgstr "Сохранить изменения?"
+
+#: src/mainwin.cc:2697
+msgid ""
+"Fontconfig needs to update its font cache.\n"
+"This can take up to a couple of minutes."
+msgstr ""
+"Fontconfig требуется обновить кеш шрифтов.\n"
+"Это может занять пару минут."
 
 #: src/settings.cc:132
 msgid "After indentation"
 msgstr "После отступа"
-
-#: src/UIUtils.cc:86
-msgid "Basics"
-msgstr "Примитивы"
-
-#: src/UIUtils.cc:86
-msgid "Shapes"
-msgstr "Формы"
-
-#: src/UIUtils.cc:86
-msgid "Extrusion"
-msgstr "Выдавливание"
 
 #~ msgid "Top"
 #~ msgstr "Сверху"
@@ -1249,7 +1259,7 @@ msgstr "Выдавливание"
 #~ msgstr "Проверить обновления..."
 
 #~ msgid "Off"
-#~ msgstr "Выключить"
+#~ msgstr "Выкл."
 
 #~ msgid "For Light Background"
 #~ msgstr "Для светлого фона"

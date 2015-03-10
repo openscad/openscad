@@ -123,7 +123,7 @@ Visitor::~Visitor()
  */
 SettingsEntry Settings::showWarningsIn3dView("3dview", "showWarningsIn3dView", Value(true), Value(true));
 SettingsEntry Settings::indentationWidth("editor", "indentationWidth", Value(Value::RangeType(1, 16)), Value(4));
-SettingsEntry Settings::tabWidth("editor", "tabWidth", Value(Value::RangeType(1, 16)), Value(8));
+SettingsEntry Settings::tabWidth("editor", "tabWidth", Value(Value::RangeType(1, 16)), Value(4));
 SettingsEntry Settings::lineWrap("editor", "lineWrap", values("None", _("None"), "Char", _("Wrap at character boundaries"), "Word", _("Wrap at word boundaries")), Value("Word"));
 SettingsEntry Settings::lineWrapIndentationStyle("editor", "lineWrapIndentationStyle", values("Fixed", _("Fixed"), "Same", _("Same"), "Indented", _("Indented")), Value("Fixed"));
 SettingsEntry Settings::lineWrapIndentation("editor", "lineWrapIndentation", Value(Value::RangeType(0, 999)), Value(4));

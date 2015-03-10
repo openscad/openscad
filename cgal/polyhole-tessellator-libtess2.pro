@@ -28,6 +28,7 @@ macx:isEmpty(OPENSCAD_LIBDIR) {
 }
 
 TARGET = polyhole-tessellator-libtess2
+CONFIG -= qt
 mac {
   CONFIG -= app_bundle
 }

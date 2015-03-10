@@ -149,12 +149,6 @@ void Preferences::init() {
 		}
 	}
 
-	connect(this->fontSize, SIGNAL(currentIndexChanged(const QString&)),
-					this, SLOT(on_fontSize_editTextChanged(const QString &)));
-
-	connect(this->editorType, SIGNAL(currentIndexChanged(const QString&)),
-					this, SLOT(on_editorType_editTextChanged(const QString &)));
-
 	// reset GUI fontsize if fontSize->addItem emitted signals that changed it.
 	this->fontSize->setEditText( QString("%1").arg( savedsize ) );
 	
@@ -340,7 +334,7 @@ void Preferences::on_fontChooser_activated(const QString &family)
 	emit fontChanged(family, getValue("editor/fontsize").toUInt());
 }
 
-void Preferences::on_fontSize_editTextChanged(const QString &size)
+void Preferences::on_fontSize_currentIndexChanged(const QString &size)
 {
 	uint intsize = size.toUInt();
 	QSettings settings;
@@ -348,7 +342,7 @@ void Preferences::on_fontSize_editTextChanged(const QString &size)
 	emit fontChanged(getValue("editor/fontfamily").toString(), intsize);
 }
 
-void Preferences::on_editorType_editTextChanged(const QString &type)
+void Preferences::on_editorType_currentIndexChanged(const QString &type)
 {
 	QSettings settings;
 	settings.setValue("editor/editortype", type);

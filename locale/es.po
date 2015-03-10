@@ -1,27 +1,24 @@
 # Spanish translations for OpenSCAD package.
-# Copyright (C) 2015 THE OpenSCAD'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the OpenSCAD package.
 # bazza <bazza@riseup.net>, 2015.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: OpenSCAD 2015.01.21\n"
+"Project-Id-Version: OpenSCAD 2015.03\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-02-01 18:03+0100\n"
-"PO-Revision-Date: 2015-01-21 22:36-0300\n"
+"POT-Creation-Date: 2015-03-10 10:38-0400\n"
+"PO-Revision-Date: 2015-03-10 05:21-0300\n"
 "Last-Translator: Ernesto Bazzano <bazza@riseup.net>\n"
 "Language-Team: Español\n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Poedit-SourceCharset: UTF-8\n"
 "X-Generator: Poedit 1.5.4\n"
 
 #: objects/ui_AboutDialog.h:103 src/AboutDialog.h:13
 msgid "About OpenSCAD"
-msgstr "acerca de OpenSCAD"
+msgstr "Acerca de OpenSCAD"
 
 #: objects/ui_AboutDialog.h:105 objects/ui_launchingscreen.h:305
 msgid ""
@@ -42,15 +39,14 @@ msgstr ""
 "style=\"color: green;\">Open</span>SCAD</p>\n"
 "<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-"
 "weight: normal; font-size: 14pt; padding-top: 0; margin-top: 0; margin-left: "
-"2em;\">Le modeleur CAD 3D des programmeurs</p>\n"
+"2em;\">Los programadores de modelado 3D CAD</p>\n"
 "</body></html>\n"
 "\n"
 "\n"
 
 #: objects/ui_AboutDialog.h:112
-#, fuzzy
 msgid "OK"
-msgstr "&Aceptar"
+msgstr "Aceptar"
 
 #: objects/ui_FontListDialog.h:105
 msgid "OpenSCAD Font List"
@@ -81,7 +77,7 @@ msgid ""
 "&quot;Liberation Sans:style=Italic&quot;);</span></pre></body></html>"
 msgstr ""
 "<html><head/><body><p>Esta lista muestra los tipos de letra registrados "
-"actualmente en OpenSCAD</p><p>Ejemplo:</p><pre style=\" margin-top:12px; "
+"actualmente en OpenSCAD.</p><p>Ejemplo:</p><pre style=\" margin-top:12px; "
 "margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; "
 "text-indent:0px;\"><span style=\" font-family:'Courier New,courier';\">  "
 "text(t = &quot;OpenSCAD&quot;, font = &quot;DejaVu Sans&quot;);</span></"
@@ -89,47 +85,6 @@ msgstr ""
 "margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-"
 "family:'Courier New,courier';\">  text(t = &quot;OpenSCAD&quot;, font = "
 "&quot;Liberation Sans:style=Italic&quot;);</span></pre></body></html>"
-
-#: objects/ui_launchingscreen.h:294
-msgid "Welcome to OpenSCAD"
-msgstr "Bienvenido a OpenSCAD"
-
-#: objects/ui_launchingscreen.h:295
-msgid "New"
-msgstr "Nuevo"
-
-#: objects/ui_launchingscreen.h:296
-msgid "Open"
-msgstr "Abrir"
-
-#: objects/ui_launchingscreen.h:297
-msgid "Help"
-msgstr "Ayuda"
-
-#: objects/ui_launchingscreen.h:298
-msgid "Recents"
-msgstr "Recientes"
-
-#: objects/ui_launchingscreen.h:299
-msgid "Open Recent"
-msgstr "Abrir recientes"
-
-#: objects/ui_launchingscreen.h:300 objects/ui_launchingscreen.h:302
-msgid "Examples"
-msgstr "Ejemplos"
-
-#: objects/ui_launchingscreen.h:303
-msgid "Open Example"
-msgstr "Abrir ejemplos"
-
-#: objects/ui_launchingscreen.h:312
-msgid "Don't show again"
-msgstr "No mostrar de nuevo"
-
-#: objects/ui_launchingscreen.h:313
-#, fuzzy
-msgid "Version"
-msgstr "Extrusión"
 
 #: objects/ui_LibraryInfoDialog.h:75
 msgid "Lib & Build Info"
@@ -227,7 +182,6 @@ msgstr "&Pegar"
 msgid "Ctrl+V"
 msgstr "Ctrl+V"
 
-# no se que es
 #: objects/ui_MainWindow.h:859
 msgid "&Indent"
 msgstr "&Indenter"
@@ -397,7 +351,7 @@ msgstr "Ctrl+3"
 
 #: objects/ui_MainWindow.h:899
 msgid "Show Scale Markers"
-msgstr ""
+msgstr "Mostar escala"
 
 #: objects/ui_MainWindow.h:900
 msgid "Animate"
@@ -659,7 +613,7 @@ msgstr ""
 
 #: objects/ui_MainWindow.h:957
 msgid "Message"
-msgstr ""
+msgstr "Mensaje"
 
 #: objects/ui_MainWindow.h:960
 msgid "Time:"
@@ -784,290 +738,278 @@ msgstr "Mostrar el mensaje de nuevo"
 msgid "Close"
 msgstr "Cerrar"
 
-#: objects/ui_Preferences.h:1061
+#: objects/ui_Preferences.h:1062
 msgid "Preferences"
 msgstr "Preferencias"
 
-#: objects/ui_Preferences.h:1062
+#: objects/ui_Preferences.h:1063
 msgid "3D View"
 msgstr "Vista 3D"
 
-#: objects/ui_Preferences.h:1063 src/UIUtils.cc:86
+#: objects/ui_Preferences.h:1064 examples/examples.json:19
 msgid "Advanced"
 msgstr "Advertencia"
 
-#: objects/ui_Preferences.h:1064 src/mainwin.cc:2418
+#: objects/ui_Preferences.h:1065 src/mainwin.cc:2422
 msgid "Editor"
 msgstr "Editar"
 
-#: objects/ui_Preferences.h:1065
+#: objects/ui_Preferences.h:1066
 msgid "Update"
 msgstr "Actualizar"
 
-#: objects/ui_Preferences.h:1066 objects/ui_Preferences.h:1147
+#: objects/ui_Preferences.h:1067 objects/ui_Preferences.h:1148
 msgid "Features"
 msgstr "Mejoras"
 
-#: objects/ui_Preferences.h:1068
+#: objects/ui_Preferences.h:1069
 msgid "Enable/Disable experimental features"
 msgstr "Activar/Desactivar mejoras experimentales"
 
-#: objects/ui_Preferences.h:1070
+#: objects/ui_Preferences.h:1071
 msgid "Color scheme:"
 msgstr "Paleta de colores:"
 
-#: objects/ui_Preferences.h:1071
+#: objects/ui_Preferences.h:1072
 msgid "Show Warnings and Errors in 3D View"
 msgstr ""
 
-#: objects/ui_Preferences.h:1072
+#: objects/ui_Preferences.h:1073
 msgid "Editor Type"
 msgstr "Editor de texto"
 
-#: objects/ui_Preferences.h:1075
+#: objects/ui_Preferences.h:1076
 msgid "Simple Editor"
 msgstr "Editor simple"
 
-#: objects/ui_Preferences.h:1076
+#: objects/ui_Preferences.h:1077
 msgid "QScintilla Editor"
 msgstr "Editor QScintilla"
 
-#: objects/ui_Preferences.h:1078
+#: objects/ui_Preferences.h:1079
 msgid "(requires restart)"
 msgstr "(necesita reiniciar)"
 
-#: objects/ui_Preferences.h:1079
+#: objects/ui_Preferences.h:1080
 msgid "Font"
 msgstr "Fuente"
 
-#: objects/ui_Preferences.h:1080
+#: objects/ui_Preferences.h:1081
 msgid "Color syntax highlighting"
 msgstr "Colorear sintaxis"
 
-#: objects/ui_Preferences.h:1081
-#, fuzzy
-msgid "Ctrl/Cmd-Mouse-wheel zooms text"
-msgstr "Use ctrl/cmd + rueda del mouse para hacer zoom al texto"
-
 #: objects/ui_Preferences.h:1082
-#, fuzzy
-msgid "Indentation"
-msgstr "Documentación"
+msgid "Ctrl/Cmd-Mouse-wheel zooms text"
+msgstr "ctrl/cmd + la rueda del mouse para hacer zoom al texto"
 
-# no se que es
 #: objects/ui_Preferences.h:1083
-#, fuzzy
-msgid "Auto Indent"
-msgstr "&Indenter"
+msgid "Indentation"
+msgstr "Identificación"
 
-# no se que es
 #: objects/ui_Preferences.h:1084
-#, fuzzy
-msgid "Indent using"
-msgstr "&Indenter"
+msgid "Auto Indent"
+msgstr "sangría automática"
 
-#: objects/ui_Preferences.h:1087 src/settings.cc:135
-#, fuzzy
-msgid "Spaces"
-msgstr "Superficie"
+#: objects/ui_Preferences.h:1085
+msgid "Indent using"
+msgstr "usar sangría"
 
 #: objects/ui_Preferences.h:1088 src/settings.cc:135
-msgid "Tabs"
-msgstr ""
+msgid "Spaces"
+msgstr "Espacio"
 
-#: objects/ui_Preferences.h:1090
-msgid "Indentation width"
-msgstr ""
+#: objects/ui_Preferences.h:1089 src/settings.cc:135
+msgid "Tabs"
+msgstr "Pestañas"
 
 #: objects/ui_Preferences.h:1091
-msgid "Tab width"
-msgstr ""
+msgid "Indentation width"
+msgstr "Ancho de sangría"
 
 #: objects/ui_Preferences.h:1092
+msgid "Tab width"
+msgstr "Ancho de la pestaña"
+
+#: objects/ui_Preferences.h:1093
 msgid "Tab key function"
-msgstr ""
+msgstr "Atajo de pestaña"
 
-# no se que es
-#: objects/ui_Preferences.h:1095 objects/ui_Preferences.h:1125
+#: objects/ui_Preferences.h:1096 objects/ui_Preferences.h:1126
 #: src/settings.cc:136
-#, fuzzy
 msgid "Indent"
-msgstr "&Indenter"
+msgstr "Sangría"
 
-#: objects/ui_Preferences.h:1096 src/settings.cc:136
+#: objects/ui_Preferences.h:1097 src/settings.cc:136
 msgid "Insert Tab"
-msgstr ""
+msgstr "Insertar pestaña"
 
-#: objects/ui_Preferences.h:1098
+#: objects/ui_Preferences.h:1099
 msgid "Show whitespace"
-msgstr ""
-
-#: objects/ui_Preferences.h:1101 src/settings.cc:132
-msgid "Never"
-msgstr ""
+msgstr "Mostrar espacios en blanco"
 
 #: objects/ui_Preferences.h:1102 src/settings.cc:132
+msgid "Never"
+msgstr "Nunca"
+
+#: objects/ui_Preferences.h:1103 src/settings.cc:132
 msgid "Always"
-msgstr ""
+msgstr "Siempre"
 
-#: objects/ui_Preferences.h:1103
+#: objects/ui_Preferences.h:1104
 msgid "Only after indentation"
-msgstr ""
-
-#: objects/ui_Preferences.h:1105
-msgid "Size"
-msgstr ""
+msgstr "Sólo después de la sandría"
 
 #: objects/ui_Preferences.h:1106
-#, fuzzy
-msgid "Display"
-msgstr "Mostrar &AST..."
+msgid "Size"
+msgstr "Tamaño"
 
 #: objects/ui_Preferences.h:1107
-msgid "Enable brace matching"
-msgstr ""
+msgid "Display"
+msgstr "Mostrar"
 
 #: objects/ui_Preferences.h:1108
+msgid "Enable brace matching"
+msgstr "Habilita emparejando"
+
+#: objects/ui_Preferences.h:1109
 msgid "Highlight current line"
-msgstr ""
+msgstr "Marcar linea actual"
 
-#: objects/ui_Preferences.h:1109 objects/ui_Preferences.h:1142
+#: objects/ui_Preferences.h:1110 objects/ui_Preferences.h:1143
 msgid "Line wrap"
-msgstr ""
+msgstr "Quiebre de linea"
 
-#: objects/ui_Preferences.h:1112 objects/ui_Preferences.h:1129
-#: objects/ui_Preferences.h:1137 src/settings.cc:127 src/settings.cc:130
+#: objects/ui_Preferences.h:1113 objects/ui_Preferences.h:1130
+#: objects/ui_Preferences.h:1138 src/settings.cc:127 src/settings.cc:130
 #: src/settings.cc:131
 msgid "None"
-msgstr ""
-
-#: objects/ui_Preferences.h:1113 src/settings.cc:127
-msgid "Wrap at character boundaries"
-msgstr ""
+msgstr "Nada"
 
 #: objects/ui_Preferences.h:1114 src/settings.cc:127
-msgid "Wrap at word boundaries"
-msgstr ""
+msgid "Wrap at character boundaries"
+msgstr "Salta en los límites de caracteres"
 
-#: objects/ui_Preferences.h:1116
-msgid "Line wrap indentation"
-msgstr ""
+#: objects/ui_Preferences.h:1115 src/settings.cc:127
+msgid "Wrap at word boundaries"
+msgstr "Salta en límites de las palabras"
 
 #: objects/ui_Preferences.h:1117
-msgid "Line wrap visualization"
-msgstr ""
+msgid "Line wrap indentation"
+msgstr "Salto de línea en el sangrado"
 
 #: objects/ui_Preferences.h:1118
-msgid "Style"
-msgstr ""
+msgid "Line wrap visualization"
+msgstr "Salto de línea visible"
 
-#: objects/ui_Preferences.h:1121 src/settings.cc:128
-msgid "Fixed"
-msgstr ""
+#: objects/ui_Preferences.h:1119
+msgid "Style"
+msgstr "Estilo"
 
 #: objects/ui_Preferences.h:1122 src/settings.cc:128
-msgid "Same"
-msgstr ""
+msgid "Fixed"
+msgstr "Ajustar"
 
-# no se que es
 #: objects/ui_Preferences.h:1123 src/settings.cc:128
-#, fuzzy
+msgid "Same"
+msgstr "Mismo"
+
+#: objects/ui_Preferences.h:1124 src/settings.cc:128
 msgid "Indented"
-msgstr "&Indenter"
+msgstr "Sangrado"
 
-#: objects/ui_Preferences.h:1126
+#: objects/ui_Preferences.h:1127
 msgid "Start"
-msgstr ""
-
-#: objects/ui_Preferences.h:1130 objects/ui_Preferences.h:1138
-#: src/settings.cc:130 src/settings.cc:131
-msgid "Text"
-msgstr ""
+msgstr "Inicio"
 
 #: objects/ui_Preferences.h:1131 objects/ui_Preferences.h:1139
 #: src/settings.cc:130 src/settings.cc:131
-msgid "Border"
-msgstr ""
+msgid "Text"
+msgstr "Texto"
 
 #: objects/ui_Preferences.h:1132 objects/ui_Preferences.h:1140
 #: src/settings.cc:130 src/settings.cc:131
+msgid "Border"
+msgstr "Borde"
+
+#: objects/ui_Preferences.h:1133 objects/ui_Preferences.h:1141
+#: src/settings.cc:130 src/settings.cc:131
 msgid "Margin"
-msgstr ""
+msgstr "Margen"
 
-#: objects/ui_Preferences.h:1134
+#: objects/ui_Preferences.h:1135
 msgid "End"
-msgstr ""
+msgstr "Final"
 
-#: objects/ui_Preferences.h:1143
+#: objects/ui_Preferences.h:1144
 msgid "Automatically check for updates"
 msgstr "Comprobar actualización automáticamente"
 
-#: objects/ui_Preferences.h:1144
+#: objects/ui_Preferences.h:1145
 msgid "Include development snapshots"
 msgstr "Incluir las versiones en desarrollo"
 
-#: objects/ui_Preferences.h:1145
+#: objects/ui_Preferences.h:1146
 msgid "Check Now"
 msgstr "Chequear ahora"
 
-#: objects/ui_Preferences.h:1146
+#: objects/ui_Preferences.h:1147
 msgid "Last checked: "
 msgstr "Último chequeo:"
 
-#: objects/ui_Preferences.h:1148
+#: objects/ui_Preferences.h:1149
 msgid "OpenCSG"
 msgstr "OpenCSG"
 
-#: objects/ui_Preferences.h:1149
+#: objects/ui_Preferences.h:1150
 msgid "Show capability warning"
 msgstr "Advertir incapacidad"
 
-#: objects/ui_Preferences.h:1150
+#: objects/ui_Preferences.h:1151
 msgid "Enable for OpenGL 1.x"
 msgstr "Activar OpenGL 1.x"
 
-#: objects/ui_Preferences.h:1151
+#: objects/ui_Preferences.h:1152
 msgid "Turn off rendering at "
 msgstr "Desactivar el render de"
 
-#: objects/ui_Preferences.h:1152
+#: objects/ui_Preferences.h:1153
 msgid "elements"
 msgstr "elementos"
 
-#: objects/ui_Preferences.h:1153
+#: objects/ui_Preferences.h:1154
 msgid "Force Goldfeather"
 msgstr "Forzar Goldfeather"
 
-#: objects/ui_Preferences.h:1154
+#: objects/ui_Preferences.h:1155
 msgid "CGAL Cache size"
 msgstr "Tamaño de cache de CGAL"
 
-#: objects/ui_Preferences.h:1155 objects/ui_Preferences.h:1157
+#: objects/ui_Preferences.h:1156 objects/ui_Preferences.h:1158
 msgid "bytes"
 msgstr "bytes"
 
-#: objects/ui_Preferences.h:1156
+#: objects/ui_Preferences.h:1157
 msgid "PolySet Cache size"
 msgstr "Tamaño de cache de PolySet"
 
-#: objects/ui_Preferences.h:1158
+#: objects/ui_Preferences.h:1159
 msgid "Allow to open multiple documents"
 msgstr "Permitir a abrir varios documentos"
 
-#: objects/ui_Preferences.h:1159
+#: objects/ui_Preferences.h:1160
 msgid "Enable docking of Editor and Console in different places"
 msgstr "Habilitar soporte de editor y consola en diferentes lugares"
 
-#: objects/ui_Preferences.h:1160
+#: objects/ui_Preferences.h:1161
 msgid "Enable undocking of Editor and Console to separate windows"
 msgstr ""
 "Habilitar el desacoplamiento de editor y consola para separar las ventanas"
 
-#: objects/ui_Preferences.h:1161
+#: objects/ui_Preferences.h:1162
 msgid "Show Welcome Screen"
 msgstr "Pantalla de bienvenida"
 
-#: objects/ui_Preferences.h:1162
+#: objects/ui_Preferences.h:1163
 msgid "Enable user interface localization (requires restart of OpenSCAD)"
 msgstr ""
 "Habilitar interfaz de usuario localización (requiere reiniciar OpenSCAD)"
@@ -1076,118 +1018,54 @@ msgstr ""
 msgid "%v / %m"
 msgstr "%v / %m"
 
-#: src/Camera.cc:126
+#: objects/ui_launchingscreen.h:294
+msgid "Welcome to OpenSCAD"
+msgstr "Bienvenido a OpenSCAD"
+
+#: objects/ui_launchingscreen.h:295
+msgid "New"
+msgstr "Nuevo"
+
+#: objects/ui_launchingscreen.h:296
+msgid "Open"
+msgstr "Abrir"
+
+#: objects/ui_launchingscreen.h:297
+msgid "Help"
+msgstr "Ayuda"
+
+#: objects/ui_launchingscreen.h:298
+msgid "Recents"
+msgstr "Recientes"
+
+#: objects/ui_launchingscreen.h:299
+msgid "Open Recent"
+msgstr "Abrir recientes"
+
+#: objects/ui_launchingscreen.h:300 objects/ui_launchingscreen.h:302
+msgid "Examples"
+msgstr "Ejemplos"
+
+#: objects/ui_launchingscreen.h:303
+msgid "Open Example"
+msgstr "Abrir ejemplos"
+
+#: objects/ui_launchingscreen.h:312
+msgid "Don't show again"
+msgstr "No mostrar de nuevo"
+
+#: objects/ui_launchingscreen.h:313
+msgid "Version"
+msgstr "Versión"
+
+#: src/Camera.cc:118
 #, c-format
 msgid ""
 "Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], "
 "distance = %.2f"
 msgstr ""
-"Marco:  posición = [ %.2f %.2f %.2f ], rotación = [ %.2f %.2f %.2f ], "
+"Marco: translado = [ %.2f %.2f %.2f ], rotación = [ %.2f %.2f %.2f ], "
 "distancia = %.2f"
-
-#: src/mainwin.cc:778 src/mainwin.cc:1354
-msgid "Untitled.scad"
-msgstr "Sintitulo.scad"
-
-#: src/mainwin.cc:971
-msgid "Compile error."
-msgstr ""
-
-#: src/mainwin.cc:974
-msgid "Error while compiling '%1'."
-msgstr ""
-
-#: src/mainwin.cc:978
-msgid "Compilation generated %1 warning."
-msgid_plural "Compilation generated %1 warnings."
-msgstr[0] ""
-msgstr[1] ""
-
-#: src/mainwin.cc:988
-msgid " For details see <a href=\"#console\">console window</a>."
-msgstr ""
-
-#: src/mainwin.cc:1353
-msgid "Save File"
-msgstr "Salver archivo"
-
-#: src/mainwin.cc:1355
-msgid "OpenSCAD Designs (*.scad)"
-msgstr "Diseño OpenSCAD (*.scad)"
-
-#: src/mainwin.cc:1365
-msgid ""
-"%1 already exists.\n"
-"Do you want to replace it?"
-msgstr ""
-"%1 existe.\n"
-"Deseas reemplazarlo?"
-
-#: src/mainwin.cc:1684
-msgid "Application"
-msgstr "Aplicación"
-
-#: src/mainwin.cc:1685
-msgid ""
-"The document has been modified.\n"
-"Do you really want to reload the file?"
-msgstr ""
-"El documento ha sido modificado.\n"
-"¿Realmente desea volver a cargar el archivo ?"
-
-#: src/mainwin.cc:2038 src/mainwin.cc:2094
-msgid "Export %1 File"
-msgstr "Exportar %1 Archivo"
-
-#: src/mainwin.cc:2039 src/mainwin.cc:2098
-msgid "%1 Files (*%2)"
-msgstr "%1 Archivo (*%2)"
-
-#: src/mainwin.cc:2040
-msgid "Untitled"
-msgstr "Sin titulo"
-
-#: src/mainwin.cc:2096
-msgid "Untitled%1"
-msgstr "Sintitulo%1"
-
-#: src/mainwin.cc:2147
-msgid "Export CSG File"
-msgstr "Exportar archivo CSG"
-
-#: src/mainwin.cc:2148
-msgid "Untitled.csg"
-msgstr "Sintitulo.csg"
-
-#: src/mainwin.cc:2149
-msgid "CSG Files (*.csg)"
-msgstr "Archivo CSG (*.csg)"
-
-#: src/mainwin.cc:2175
-msgid "Export Image"
-msgstr "Exportar una imagen"
-
-#: src/mainwin.cc:2175
-msgid "PNG Files (*.png)"
-msgstr "Archivo PNG (*.png)"
-
-#: src/mainwin.cc:2423
-msgid "Console"
-msgstr "Consola"
-
-#: src/mainwin.cc:2560
-msgid "The document has been modified."
-msgstr "El documento ha sido modificado."
-
-#: src/mainwin.cc:2561
-msgid "Do you want to save your changes?"
-msgstr "¿Quieres guardar los cambios ?"
-
-#: src/openscad.cc:604
-msgid ""
-"Fontconfig needs to update its font cache.\n"
-"This can take up to a couple of minutes."
-msgstr ""
 
 #: src/QGLView.cc:129
 msgid ""
@@ -1228,27 +1106,145 @@ msgstr ""
 "%s (%s)\n"
 "Versión OpenGL %s\n"
 
+#: src/mainwin.cc:779 src/mainwin.cc:1356
+msgid "Untitled.scad"
+msgstr "Sintitulo.scad"
+
+#: src/mainwin.cc:973
+msgid "Compile error."
+msgstr "Error de compilación"
+
+#: src/mainwin.cc:976
+msgid "Error while compiling '%1'."
+msgstr "Error de compilación '%1'."
+
+#: src/mainwin.cc:980
+#, fuzzy
+msgid "Compilation generated %1 warning."
+msgid_plural "Compilation generated %1 warnings."
+msgstr[0] "Advertencias %1"
+msgstr[1] "Advertencias %1"
+
+#: src/mainwin.cc:990
+msgid " For details see <a href=\"#console\">console window</a>."
+msgstr " Para más detalles <a href=\"#console\">ventana de consola</a>."
+
+#: src/mainwin.cc:1355
+msgid "Save File"
+msgstr "Salvar archivo"
+
+#: src/mainwin.cc:1357
+msgid "OpenSCAD Designs (*.scad)"
+msgstr "Diseño OpenSCAD (*.scad)"
+
+#: src/mainwin.cc:1367
+msgid ""
+"%1 already exists.\n"
+"Do you want to replace it?"
+msgstr ""
+"%1 existe.\n"
+"Deseas reemplazarlo?"
+
+#: src/mainwin.cc:1686
+msgid "Application"
+msgstr "Aplicación"
+
+#: src/mainwin.cc:1687
+msgid ""
+"The document has been modified.\n"
+"Do you really want to reload the file?"
+msgstr ""
+"El documento ha sido modificado.\n"
+"¿Realmente desea volver a cargar el archivo ?"
+
+#: src/mainwin.cc:2040 src/mainwin.cc:2096
+msgid "Export %1 File"
+msgstr "Exportar %1 Archivo"
+
+#: src/mainwin.cc:2041 src/mainwin.cc:2100
+msgid "%1 Files (*%2)"
+msgstr "%1 Archivo (*%2)"
+
+#: src/mainwin.cc:2042
+msgid "Untitled"
+msgstr "Sin titulo"
+
+#: src/mainwin.cc:2098
+msgid "Untitled%1"
+msgstr "Sintitulo%1"
+
+#: src/mainwin.cc:2149
+msgid "Export CSG File"
+msgstr "Exportar archivo CSG"
+
+#: src/mainwin.cc:2150
+msgid "Untitled.csg"
+msgstr "Sintitulo.csg"
+
+#: src/mainwin.cc:2151
+msgid "CSG Files (*.csg)"
+msgstr "Archivo CSG (*.csg)"
+
+#: src/mainwin.cc:2177
+msgid "Export Image"
+msgstr "Exportar una imagen"
+
+#: src/mainwin.cc:2177
+msgid "PNG Files (*.png)"
+msgstr "Archivo PNG (*.png)"
+
+#: src/mainwin.cc:2427
+msgid "Console"
+msgstr "Consola"
+
+#: src/mainwin.cc:2564
+msgid "The document has been modified."
+msgstr "El documento ha sido modificado."
+
+#: src/mainwin.cc:2565
+msgid "Do you want to save your changes?"
+msgstr "¿Quieres guardar los cambios ?"
+
+#: src/mainwin.cc:2697
+msgid ""
+"Fontconfig needs to update its font cache.\n"
+"This can take up to a couple of minutes."
+msgstr ""
+"Fontconfig necesita actualizar su caché de la fuente.\n"
+"Esto puede tardar hasta un par de minutos."
+
 #: src/settings.cc:132
 msgid "After indentation"
 msgstr ""
+"Marco:  posición = [ %.2f %.2f %.2f ], rotación = [ %.2f %.2f %.2f ], "
+"distancia = %.2f"
 
-#: src/UIUtils.cc:86
+#: examples/examples.json:2
 msgid "Basics"
 msgstr "Básico"
 
-#: src/UIUtils.cc:86
-msgid "Shapes"
-msgstr "Formas"
+#: examples/examples.json:13
+msgid "Functions"
+msgstr ""
 
-#: src/UIUtils.cc:86
-msgid "Extrusion"
-msgstr "Extrusión"
+#: examples/examples.json:28
+msgid "Old"
+msgstr ""
 
 #~ msgid "Top"
 #~ msgstr "Arriba"
 
 #~ msgid "Back"
 #~ msgstr "Atrás"
+
+#~ msgid "Hide parameters"
+#~ msgstr "Ocultar parámetros"
+
+#~ msgid "Hide library"
+#~ msgstr "Ocultar librerías"
+
+#~ msgid "Libraries"
+#~ msgstr "Librerias"
 
 #~ msgid "toolBar"
 #~ msgstr "barra de herramientas"
@@ -1265,14 +1261,8 @@ msgstr "Extrusión"
 #~ "Utilizar QGLWidget\n"
 #~ "\n"
 
-#~ msgid "Paste font selector to Editor Window"
-#~ msgstr "Coller le sélecteur de polices dans l'éditeur de fenêtres"
+#~ msgid "Shapes"
+#~ msgstr "Formas"
 
-#~ msgid "About OpenSCAD "
-#~ msgstr "À propos de OpenSCAD"
-
-#~ msgid "Check for Update.."
-#~ msgstr "Vérifier les mises à jours"
-
-#~ msgid "OpenGL Info"
-#~ msgstr "Information OpenGL"
+#~ msgid "Extrusion"
+#~ msgstr "Extrusión"

@@ -39,7 +39,7 @@ isEmpty(QT_VERSION) {
   }
 }
 
-# Populate VERSION, VERSION_YEAR, VERSION_MONTH, VERSION_DATE from system date
+# If VERSION is not set, populate VERSION, VERSION_YEAR, VERSION_MONTH from system date
 include(version.pri)
 
 debug: DEFINES += DEBUG
@@ -498,7 +498,6 @@ SOURCES += src/cgalutils.cc \
            src/CGALCache.cc \
            src/CGALRenderer.cc \
            src/CGAL_Nef_polyhedron.cc \
-           src/CGAL_Nef_polyhedron_DxfData.cc \
            src/cgalworker.cc \
            src/Polygon2d-CGAL.cc
 }
