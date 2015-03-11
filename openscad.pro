@@ -39,7 +39,7 @@ isEmpty(QT_VERSION) {
   }
 }
 
-# Populate VERSION, VERSION_YEAR, VERSION_MONTH, VERSION_DATE from system date
+# If VERSION is not set, populate VERSION, VERSION_YEAR, VERSION_MONTH from system date
 include(version.pri)
 
 debug: DEFINES += DEBUG
@@ -88,7 +88,12 @@ FULLNAME = openscad$${SUFFIX}
 !isEmpty(SUFFIX): DEFINES += INSTALL_SUFFIX="\"\\\"$${SUFFIX}\\\"\""
 
 macx {
-  ICON = icons/OpenSCAD.icns
+  snapshot {
+    ICON = icons/icon-nightly.icns
+  }
+  else {
+    ICON = icons/OpenSCAD.icns
+  }
   QMAKE_INFO_PLIST = Info.plist
   APP_RESOURCES.path = Contents/Resources
   APP_RESOURCES.files = OpenSCAD.sdef dsa_pub.pem icons/SCAD.icns
@@ -480,7 +485,6 @@ SOURCES += src/cgalutils.cc \
            src/CGALCache.cc \
            src/CGALRenderer.cc \
            src/CGAL_Nef_polyhedron.cc \
-           src/CGAL_Nef_polyhedron_DxfData.cc \
            src/cgalworker.cc \
            src/Polygon2d-CGAL.cc
 }

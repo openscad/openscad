@@ -39,7 +39,7 @@ PACKAGES=(
     "gmp 5.1.3"
     "mpfr 3.1.2"
     "boost 1.57.0"
-    "qt5 5.4.0"
+    "qt5 5.4.1"
     "qscintilla 2.8.4"
     # NB! For eigen, also update the path in the function
     # NB! For CGAL, also update the actual download URL in the function

@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 
 #
-# Simple tool to validate if an STL has non-manifold (dangling) edges.
+# Simple tool to validate an STL.
+# It checks for:
+# o Any occurrence of "nan" or "inf" vertices or normals
+# o Any non-manifold (dangling) edges.
 #
 # Usage: validatestl.py <file.stl>
 #
@@ -17,14 +20,15 @@ import io
 import hashlib
 import os
 import subprocess
+import math
 from collections import Counter
 
 def read_stl(filename):
     triangles = list()
     with open(filename, "r") as fd:
         triangle = {
-            "facet": [0, 0, 0],
-            "points": list()
+            'normal': [0, 0, 0],
+            'points': list()
         }
         for line in fd:
             line = line.strip()
@@ -37,7 +41,7 @@ def read_stl(filename):
             elif line.startswith('facet'):
                 parts = line.split(' ')
                 for i in range(2, 5):
-                    triangle['facet'][i-2] = float(parts[i])
+                    triangle['normal'][i-2] = float(parts[i])
                 continue
             elif line.startswith('vertex'):
                 parts = line.split(' ')
@@ -51,7 +55,7 @@ def read_stl(filename):
             elif line.startswith('endfacet'):
                 triangles.append(triangle)
                 triangle = {
-                    "facet": [0, 0, 0],
+                    "normal": [0, 0, 0],
                     "points": list()
                 }
                 continue
@@ -64,7 +68,9 @@ class Mesh():
     def __init__(self, triangles):
         points = list()
         p_triangles = list()
+        p_normals = list()
         for triangle in triangles:
+            p_normals.append(triangle['normal'])
             p_triangle = list()
             for point in triangle['points']:
                 if point not in points:
@@ -75,10 +81,20 @@ class Mesh():
             p_triangles.append(p_triangle)
         self.points = points
         self.triangles = p_triangles
+        self.normals = p_normals
 
 
 def validateSTL(filename):
     mesh = read_stl(filename);
+    
+    if len([n[i] for i in range(0,3) for n in mesh.points if math.isinf(n[i]) or math.isnan(n[i])]):
+        print "NaN of Inf vertices found"
+        return False
+
+    if len([n[i] for i in range(0,3) for n in mesh.normals if math.isinf(n[i]) or math.isnan(n[i])]):
+        print "NaN of Inf normals found"
+        return False
+
     edges = Counter((t[i], t[(i+1)%3]) for i in range(0,3) for t in mesh.triangles)
     reverse_edges = Counter((t[(i+1)%3], t[i]) for i in range(0,3) for t in mesh.triangles)
     edges.subtract(reverse_edges)

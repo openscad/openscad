@@ -168,12 +168,16 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 	{
 		ValuePtr v = c.lookup_variable("m");
 		if (v->type() == Value::VECTOR) {
+			Matrix4d rawmatrix = Matrix4d::Identity();
 			for (int i = 0; i < 16; i++) {
 				size_t x = i / 4, y = i % 4;
 				if (y < v->toVector().size() && v->toVector()[y].type() == 
 						Value::VECTOR && x < v->toVector()[y].toVector().size())
-					v->toVector()[y].toVector()[x].getDouble(node->matrix(y, x));
+					v->toVector()[y].toVector()[x].getDouble(rawmatrix(y, x));
 			}
+			double w = rawmatrix(3,3);
+			if (w != 1.0) node->matrix = rawmatrix / w;
+			else node->matrix = rawmatrix;
 		}
 	}
 
