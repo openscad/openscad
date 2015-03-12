@@ -16,7 +16,7 @@ do
         done
 done
 
-for src in src/*.h src/*.cc
+for src in src/*.h src/*.cc src/*.cpp src/*.mm
 do
 	echo $src
 done

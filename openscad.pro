@@ -39,7 +39,7 @@ isEmpty(QT_VERSION) {
   }
 }
 
-# Populate VERSION, VERSION_YEAR, VERSION_MONTH, VERSION_DATE from system date
+# If VERSION is not set, populate VERSION, VERSION_YEAR, VERSION_MONTH from system date
 include(version.pri)
 
 debug: DEFINES += DEBUG
@@ -88,7 +88,12 @@ FULLNAME = openscad$${SUFFIX}
 !isEmpty(SUFFIX): DEFINES += INSTALL_SUFFIX="\"\\\"$${SUFFIX}\\\"\""
 
 macx {
-  ICON = icons/OpenSCAD.icns
+  snapshot {
+    ICON = icons/icon-nightly.icns
+  }
+  else {
+    ICON = icons/OpenSCAD.icns
+  }
   QMAKE_INFO_PLIST = Info.plist
   APP_RESOURCES.path = Contents/Resources
   APP_RESOURCES.files = OpenSCAD.sdef dsa_pub.pem icons/SCAD.icns
@@ -299,6 +304,7 @@ HEADERS += src/typedefs.h \
            src/Geometry.h \
            src/Polygon2d.h \
            src/clipper-utils.h \
+           src/GeometryUtils.h \
            src/polyset-utils.h \
            src/polyset.h \
            src/printutils.h \
@@ -367,6 +373,7 @@ SOURCES += src/version_check.cc \
            src/Polygon2d.cc \
            src/clipper-utils.cc \
            src/polyset-utils.cc \
+           src/GeometryUtils.cc \
            src/polyset.cc \
            src/csgops.cc \
            src/transform.cc \
@@ -413,6 +420,7 @@ SOURCES += src/version_check.cc \
            src/QGLView.cc \
            src/AutoUpdater.cc \
            \
+           src/grid.cc \
            src/builtin.cc \
            src/calc.cc \
            src/export.cc \
@@ -442,6 +450,24 @@ SOURCES += src/version_check.cc \
 # ClipperLib
 SOURCES += src/polyclipping/clipper.cpp
 HEADERS += src/polyclipping/clipper.hpp
+
+# libtess2
+INCLUDEPATH += src/libtess2/Include
+SOURCES += src/libtess2/Source/bucketalloc.c \
+           src/libtess2/Source/dict.c \
+           src/libtess2/Source/geom.c \
+           src/libtess2/Source/mesh.c \
+           src/libtess2/Source/priorityq.c \
+           src/libtess2/Source/sweep.c \
+           src/libtess2/Source/tess.c
+HEADERS += src/libtess2/Include/tesselator.h \
+           src/libtess2/Source/bucketalloc.h \
+           src/libtess2/Source/dict.h \
+           src/libtess2/Source/geom.h \
+           src/libtess2/Source/mesh.h \
+           src/libtess2/Source/priorityq.h \
+           src/libtess2/Source/sweep.h \
+           src/libtess2/Source/tess.h
 
 unix:!macx {
   SOURCES += src/imageutils-lodepng.cc
@@ -477,11 +503,9 @@ HEADERS += src/cgal.h \
 SOURCES += src/cgalutils.cc \
            src/cgalutils-tess.cc \
            src/cgalutils-polyhedron.cc \
-           src/cgalutils-tess-old.cc \
            src/CGALCache.cc \
            src/CGALRenderer.cc \
            src/CGAL_Nef_polyhedron.cc \
-           src/CGAL_Nef_polyhedron_DxfData.cc \
            src/cgalworker.cc \
            src/Polygon2d-CGAL.cc
 }
@@ -498,6 +522,7 @@ unix:!macx {
   SOURCES += src/PlatformUtils-posix.cc
 }
 win* {
+  HEADERS += src/findversion.h
   SOURCES += src/PlatformUtils-win.cc
 }
 

@@ -210,15 +210,15 @@ public:
     tmp << op1;
     std::string tmpstr = tmp.str();
     size_t endpos = tmpstr.find_last_not_of('0');
-    if (endpos >= 0 && tmpstr[endpos] == '.') endpos--;
+    if (tmpstr[endpos] == '.') endpos--;
     tmpstr = tmpstr.substr(0, endpos+1);
     size_t dotpos = tmpstr.find('.');
     if (dotpos != std::string::npos) {
       if (tmpstr.size() - dotpos > 12) tmpstr.erase(dotpos + 12);
       while (tmpstr[tmpstr.size()-1] == '0') tmpstr.erase(tmpstr.size()-1);
     }
-    if ( tmpstr.compare("-0") == 0 ) tmpstr = "0";
-    tmpstr = two_digit_exp_format( tmpstr );
+    if (tmpstr.compare("-0") == 0) tmpstr = "0";
+    tmpstr = two_digit_exp_format(tmpstr);
     return tmpstr;
 #else
     // attempt to emulate Qt's QString.sprintf("%g"); from old OpenSCAD.
@@ -707,7 +707,7 @@ Value Value::operator[](const Value &v) const
 void Value::RangeType::normalize() {
   if ((step_val>0) && (end_val < begin_val)) {
     std::swap(begin_val,end_val);
-    printDeprecation("DEPRECATED: Using ranges of the form [begin:end] with begin value greater than the end value is deprecated.");
+    printDeprecation("Using ranges of the form [begin:end] with begin value greater than the end value is deprecated.");
   }
 }
 

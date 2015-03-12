@@ -169,7 +169,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 
 	switch (this->type) {
 	case CHILD:	{
-		printDeprecation("DEPRECATED: child() will be removed in future releases. Use children() instead.");
+		printDeprecation("child() will be removed in future releases. Use children() instead.");
 		int n = 0;
 		if (evalctx->numArgs() > 0) {
 			double v;

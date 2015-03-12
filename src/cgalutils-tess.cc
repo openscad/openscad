@@ -108,6 +108,8 @@ namespace CGALUtils {
 			// Calculate best guess at face normal using Newell's method
 			CGAL::normal_vector_newell_3(polygons.front().begin(), polygons.front().end(), normalvec);
 		}
+		double sqrl = normalvec.squared_length();
+		if (sqrl > 0.0) normalvec = normalvec / sqrt(sqrl);
 
 		// Pass the normal vector to the (undocumented)
 		// CGAL::Triangulation_2_filtered_projection_traits_3. This
@@ -163,6 +165,8 @@ namespace CGALUtils {
 			// Calculate best guess at face normal using Newell's method
 			CGAL::normal_vector_newell_3(polygon.begin(), polygon.end(), normalvec);
 		}
+		double sqrl = normalvec.squared_length();
+		if (sqrl > 0.0) normalvec = normalvec / sqrt(sqrl);
 		
 		// Pass the normal vector to the (undocumented)
 		// CGAL::Triangulation_2_filtered_projection_traits_3. This

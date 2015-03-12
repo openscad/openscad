@@ -16,8 +16,8 @@
 #include <CGAL/config.h> 
 #include <CGAL/version.h> 
 
-// Apply CGAL bugfix. Note: If using CGAL < 4.3, hull() might be buggy
-#if CGAL_VERSION_NR > CGAL_VERSION_NUMBER(4,5,1) || CGAL_VERSION_NR < CGAL_VERSION_NUMBER(4,3,0) 
+// Apply CGAL bugfix for CGAL-4.5.x
+#if CGAL_VERSION_NR > CGAL_VERSION_NUMBER(4,5,1) || CGAL_VERSION_NR < CGAL_VERSION_NUMBER(4,5,0) 
 #include <CGAL/convex_hull_3.h>
 #else
 #include "convex_hull_3_bugfix.h"
@@ -25,19 +25,12 @@
 
 #include "svg.h"
 #include "Reindexer.h"
+#include "GeometryUtils.h"
 
 #include <map>
 #include <queue>
 #include <boost/foreach.hpp>
 #include <boost/unordered_set.hpp>
-
-namespace Eigen {
-		size_t hash_value(Vector3d const &v) {
-			size_t seed = 0;
-			for (int i=0;i<3;i++) boost::hash_combine(seed, v[i]);
-			return seed;
-		}
-}
 
 namespace /* anonymous */ {
 	template<typename Result, typename V>
@@ -60,12 +53,13 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 	if (ps_tri.is_convex()) {
 		typedef CGAL::Epick K;
 		// Collect point cloud
+		// FIXME: Use unordered container (need hash)
 		// NB! CGAL's convex_hull_3() doesn't like std::set iterators, so we use a list
 		// instead.
 		std::list<K::Point_3> points;
-		for (int i = 0; i < ps.polygons.size(); i++) {
-			for (int j = 0; j < ps.polygons[i].size(); j++) {
-				points.push_back(vector_convert<K::Point_3>(ps.polygons[i][j]));
+		BOOST_FOREACH(const Polygon &poly, psq.polygons) {
+			BOOST_FOREACH(const Vector3d &p, poly) {
+				points.push_back(vector_convert<K::Point_3>(p));
 			}
 		}
 
@@ -84,7 +78,7 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 	try {
 		CGAL_Polyhedron P;
-		bool err = CGALUtils::createPolyhedronFromPolySet(ps, P);
+		bool err = CGALUtils::createPolyhedronFromPolySet(psq, P);
 		 if (!err) {
 		 	PRINTDB("Polyhedron is closed: %d", P.is_closed());
 		 	PRINTDB("Polyhedron is valid: %d", P.is_valid(false, 0));
@@ -122,6 +116,54 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolygon2d(const Polygon2d &po
 	shared_ptr<PolySet> ps(polygon.tessellate());
 	return createNefPolyhedronFromPolySet(*ps);
 }
+
+/*
+
+ZRemover
+
+This class converts one or more Nef3 polyhedra into a Nef2 polyhedron by
+stripping off the 'z' coordinates from the vertices. The resulting Nef2
+poly is accumulated in the 'output_nefpoly2d' member variable.
+
+The 'z' coordinates will either be all 0s, for an xy-plane intersected Nef3,
+or, they will be a mixture of -eps and +eps, for a thin-box intersected Nef3.
+
+Notes on CGAL's Nef Polyhedron2:
+
+1. The 'mark' on a 2d Nef face is important when doing unions/intersections.
+ If the 'mark' of a face is wrong the resulting nef2 poly will be unexpected.
+2. The 'mark' can be dependent on the points fed to the Nef2 constructor.
+ This is why we iterate through the 3d faces using the halfedge cycle
+ source()->target() instead of the ordinary source()->source(). The
+ the latter can generate sequences of points that will fail the
+ the CGAL::is_simple_2() test, resulting in improperly marked nef2 polys.
+3. 3d facets have 'two sides'. we throw out the 'down' side to prevent dups.
+
+The class uses the 'visitor' pattern from the CGAL manual. See also
+http://www.cgal.org/Manual/latest/doc_html/cgal_manual/Nef_3/Chapter_main.html
+http://www.cgal.org/Manual/latest/doc_html/cgal_manual/Nef_3_ref/Class_Nef_polyhedron3.html
+OGL_helper.h
+*/
+
+class ZRemover {
+public:
+	CGAL_Nef_polyhedron2::Boundary boundary;
+	boost::shared_ptr<CGAL_Nef_polyhedron2> tmpnef2d;
+	boost::shared_ptr<CGAL_Nef_polyhedron2> output_nefpoly2d;
+	CGAL::Direction_3<CGAL_Kernel3> up;
+	ZRemover()
+	{
+		output_nefpoly2d.reset( new CGAL_Nef_polyhedron2() );
+		boundary = CGAL_Nef_polyhedron2::INCLUDED;
+		up = CGAL::Direction_3<CGAL_Kernel3>(0,0,1);
+	}
+	void visit( CGAL_Nef_polyhedron3::Vertex_const_handle ) {}
+	void visit( CGAL_Nef_polyhedron3::Halfedge_const_handle ) {}
+	void visit( CGAL_Nef_polyhedron3::SHalfedge_const_handle ) {}
+	void visit( CGAL_Nef_polyhedron3::SHalfloop_const_handle ) {}
+	void visit( CGAL_Nef_polyhedron3::SFace_const_handle ) {}
+	void visit( CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet );
+};
 
 namespace CGALUtils {
 
@@ -213,6 +255,9 @@ namespace CGALUtils {
 		return visited.size() == p.size_of_facets();
 	}
 
+	/*!
+		children cannot contain NULL objects
+	*/
 	Geometry const * applyMinkowski(const Geometry::ChildList &children)
 	{
 		CGAL::Timer t,t_tot;
@@ -257,6 +302,7 @@ namespace CGALUtils {
 							decomposed_nef = *nef->p3;
 						}
 
+						t.start();
 						CGAL::convex_decomposition_3(decomposed_nef);
 
 						// the first volume is the outer volume, which ignored in the decomposition
@@ -271,14 +317,16 @@ namespace CGALUtils {
 
 
 						PRINTDB("Minkowski: decomposed into %d convex parts", P[i].size());
+						t.stop();
+						PRINTDB("Minkowski: decomposition took %f s", t.time());
 					}
 				}
 
 				std::vector<Hull_kernel::Point_3> points[2];
 				std::vector<Hull_kernel::Point_3> minkowski_points;
 
-				for (int i = 0; i < P[0].size(); i++) {
-					for (int j = 0; j < P[1].size(); j++) {
+				for (size_t i = 0; i < P[0].size(); i++) {
+					for (size_t j = 0; j < P[1].size(); j++) {
 						t.start();
 						points[0].clear();
 						points[1].clear();
@@ -481,7 +529,7 @@ namespace CGALUtils {
 		}
 	// union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad and testdata/scad/bugs/issue204.scad
 		catch (const CGAL::Failure_exception &e) {
-			std::string opstr = op == OPENSCAD_INTERSECTION ? "intersection" : op == OPENSCAD_DIFFERENCE ? "difference" : op == OPENSCAD_MINKOWSKI ? "minkowski" : "UNKNOWN";
+			std::string opstr = op == OPENSCAD_INTERSECTION ? "intersection" : op == OPENSCAD_DIFFERENCE ? "difference" : op == OPENSCAD_UNION ? "union" : "UNKNOWN";
 			PRINTB("ERROR: CGAL error in CGALUtils::applyBinaryOperator %s: %s", opstr % e.what());
 		}
 		CGAL::set_error_behaviour(old_behaviour);
@@ -895,7 +943,72 @@ namespace CGALUtils {
 		return err;
 	}
 #endif
-#if 1
+#if 0
+	bool createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3 &N, PolySet &ps)
+	{
+		bool err = false;
+		// Grid all vertices in a Nef polyhedron to merge close vertices.
+		Grid3d<int> grid(GRID_FINE);
+		CGAL_Nef_polyhedron3::Halffacet_const_iterator hfaceti;
+		CGAL_forall_halffacets(hfaceti, N) {
+			CGAL::Plane_3<CGAL_Kernel3> plane(hfaceti->plane());
+			PolyholeK polyholes;
+			// the 0-mark-volume is the 'empty' volume of space. skip it.
+			if (hfaceti->incident_volume()->mark()) continue;
+			CGAL_Nef_polyhedron3::Halffacet_cycle_const_iterator cyclei;
+			CGAL_forall_facet_cycles_of(cyclei, hfaceti) {
+				CGAL_Nef_polyhedron3::SHalfedge_around_facet_const_circulator c1(cyclei);
+				CGAL_Nef_polyhedron3::SHalfedge_around_facet_const_circulator c2(c1);
+				PolygonK polygon;
+				std::vector<int> indices; // Vertex indices in one polygon
+				CGAL_For_all(c1, c2) {
+					CGAL_Point_3 p = c1->source()->center_vertex()->point();
+					Vector3d v = vector_convert<Vector3d>(p);
+					indices.push_back(grid.align(v));
+					polygon.push_back(Vertex3K(v[0], v[1], v[2]));
+				}
+				// Remove consecutive duplicate vertices
+				PolygonK::iterator currp = polygon.begin();
+				for (int i=0;i<indices.size();i++) {
+					if (indices[i] != indices[(i+1)%indices.size()]) {
+						(*currp++) = polygon[i];
+					}
+				}
+				polygon.erase(currp, polygon.end());
+				if (polygon.size() >= 3) polyholes.push_back(polygon);
+			}
+
+			/* at this stage, we have a sequence of polygons. the first
+				 is the "outside edge' or 'body' or 'border', and the rest of the
+				 polygons are 'holes' within the first. there are several
+				 options here to get rid of the holes. we choose to go ahead
+				 and let the tessellater deal with the holes, and then
+				 just output the resulting 3d triangles*/
+
+			// We cannot trust the plane from Nef polyhedron to be correct.
+			// Passing an incorrect normal vector can cause a crash in the constrained delaunay triangulator
+      // See http://cgal-discuss.949826.n4.nabble.com/Nef3-Wrong-normal-vector-reported-causes-triangulator-crash-tt4660282.html
+			// CGAL::Vector_3<CGAL_Kernel3> nvec = plane.orthogonal_vector();
+			// K::Vector_3 normal(CGAL::to_double(nvec.x()), CGAL::to_double(nvec.y()), CGAL::to_double(nvec.z()));
+			std::vector<Polygon> triangles;
+			bool err = CGALUtils::tessellatePolygonWithHolesNew(polyholes, triangles, NULL);
+			if (!err) {
+				BOOST_FOREACH(const Polygon &p, triangles) {
+					if (p.size() != 3) {
+						PRINT("WARNING: triangle doesn't have 3 points. skipping");
+						continue;
+					}
+					ps.append_poly();
+					ps.append_vertex(p[0].x(), p[0].y(), p[0].z());
+					ps.append_vertex(p[1].x(), p[1].y(), p[1].z());
+					ps.append_vertex(p[2].x(), p[2].y(), p[2].z());
+				}
+			}
+		}
+		return err;
+	}
+#endif
+#if 0
 	bool createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3 &N, PolySet &ps)
 	{
 		bool err = false;
@@ -912,10 +1025,20 @@ namespace CGALUtils {
 				PolygonK polygon;
 				CGAL_For_all(c1, c2) {
 					CGAL_Point_3 p = c1->source()->center_vertex()->point();
-					polygon.push_back(Vertex3K(CGAL::to_double(p.x()), CGAL::to_double(p.y()), CGAL::to_double(p.z())));
+					float v[3] = { CGAL::to_double(p.x()), CGAL::to_double(p.y()), CGAL::to_double(p.z()) };
+					polygon.push_back(Vertex3K(v[0], v[1], v[2]));
 				}
 				polyholes.push_back(polygon);
 			}
+
+			std::cout << "---\n";
+			BOOST_FOREACH(const PolygonK &poly, polyholes) {
+				BOOST_FOREACH(const Vertex3K &v, poly) {
+					std::cout << v.x() << "," << v.y() << "," << v.z() << "\n";
+				}
+				std::cout << "\n";
+			}
+			std::cout << "-\n";
 
 			/* at this stage, we have a sequence of polygons. the first
 				 is the "outside edge' or 'body' or 'border', and the rest of the
@@ -924,10 +1047,13 @@ namespace CGALUtils {
 				 and let the tessellater deal with the holes, and then
 				 just output the resulting 3d triangles*/
 
-			CGAL::Vector_3<CGAL_Kernel3> nvec = plane.orthogonal_vector();
-			K::Vector_3 normal(CGAL::to_double(nvec.x()), CGAL::to_double(nvec.y()), CGAL::to_double(nvec.z()));
+			// We cannot trust the plane from Nef polyhedron to be correct.
+			// Passing an incorrect normal vector can cause a crash in the constrained delaunay triangulator
+      // See http://cgal-discuss.949826.n4.nabble.com/Nef3-Wrong-normal-vector-reported-causes-triangulator-crash-tt4660282.html
+			// CGAL::Vector_3<CGAL_Kernel3> nvec = plane.orthogonal_vector();
+			// K::Vector_3 normal(CGAL::to_double(nvec.x()), CGAL::to_double(nvec.y()), CGAL::to_double(nvec.z()));
 			std::vector<Polygon> triangles;
-			bool err = CGALUtils::tessellatePolygonWithHoles(polyholes, triangles, &normal);
+			bool err = CGALUtils::tessellatePolygonWithHolesNew(polyholes, triangles, NULL);
 			if (!err) {
 				BOOST_FOREACH(const Polygon &p, triangles) {
 					if (p.size() != 3) {
@@ -938,9 +1064,213 @@ namespace CGALUtils {
 					ps.append_vertex(p[0].x(), p[0].y(), p[0].z());
 					ps.append_vertex(p[1].x(), p[1].y(), p[1].z());
 					ps.append_vertex(p[2].x(), p[2].y(), p[2].z());
+					// std::cout << p[0].x() << "," << p[0].y() << "," << p[0].z() << "\n";
+					// std::cout << p[1].x() << "," << p[1].y() << "," << p[1].z() << "\n";
+					// std::cout << p[2].x() << "," << p[2].y() << "," << p[2].z() << "\n\n";
 				}
 			}
 		}
+		return err;
+	}
+#endif
+#if 0
+	bool createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3 &N, PolySet &ps)
+	{
+		bool err = false;
+		CGAL_Nef_polyhedron3::Halffacet_const_iterator hfaceti;
+		CGAL_forall_halffacets(hfaceti, N) {
+			CGAL::Plane_3<CGAL_Kernel3> plane(hfaceti->plane());
+			// Since we're downscaling to float, vertices might merge during this conversion.
+			// To avoid passing equal vertices to the tessellator, we remove consecutively identical
+			// vertices.
+			Reindexer<Vector3f> uniqueVertices;
+			IndexedPolygons polyhole;
+			// the 0-mark-volume is the 'empty' volume of space. skip it.
+			if (hfaceti->incident_volume()->mark()) continue;
+			CGAL_Nef_polyhedron3::Halffacet_cycle_const_iterator cyclei;
+			CGAL_forall_facet_cycles_of(cyclei, hfaceti) {
+				CGAL_Nef_polyhedron3::SHalfedge_around_facet_const_circulator c1(cyclei);
+				CGAL_Nef_polyhedron3::SHalfedge_around_facet_const_circulator c2(c1);
+				polyhole.faces.push_back(IndexedFace());
+				IndexedFace &currface = polyhole.faces.back();
+				CGAL_For_all(c1, c2) {
+					CGAL_Point_3 p = c1->source()->center_vertex()->point();
+					// Create vertex indices and remove consecutive duplicate vertices
+					int idx = uniqueVertices.lookup(vector_convert<Vector3f>(p));
+					if (currface.empty() || idx != currface.back()) currface.push_back(idx);
+				}
+				if (currface.front() == currface.back()) currface.pop_back();
+				if (currface.size() < 3) polyhole.faces.pop_back(); // Cull empty triangles
+			}
+			uniqueVertices.copy(std::back_inserter(polyhole.vertices));
+
+#if 0 // For debugging
+			std::cerr << "---\n";
+			std::cerr.precision(20);
+			BOOST_FOREACH(const IndexedFace &poly, polyhole.faces) {
+				BOOST_FOREACH(int i, poly) {
+					std::cerr << polyhole.vertices[i][0] << "," << polyhole.vertices[i][1] << "," << polyhole.vertices[i][2] << "\n";
+				}
+				std::cerr << "\n";
+			}
+			std::cerr << "-\n";
+#endif
+
+			/* at this stage, we have a sequence of polygons. the first
+				 is the "outside edge' or 'body' or 'border', and the rest of the
+				 polygons are 'holes' within the first. there are several
+				 options here to get rid of the holes. we choose to go ahead
+				 and let the tessellater deal with the holes, and then
+				 just output the resulting 3d triangles*/
+
+			// We cannot trust the plane from Nef polyhedron to be correct.
+			// Passing an incorrect normal vector can cause a crash in the constrained delaunay triangulator
+      // See http://cgal-discuss.949826.n4.nabble.com/Nef3-Wrong-normal-vector-reported-causes-triangulator-crash-tt4660282.html
+			// CGAL::Vector_3<CGAL_Kernel3> nvec = plane.orthogonal_vector();
+			// K::Vector_3 normal(CGAL::to_double(nvec.x()), CGAL::to_double(nvec.y()), CGAL::to_double(nvec.z()));
+			std::vector<IndexedTriangle> triangles;
+			bool err = GeometryUtils::tessellatePolygonWithHoles(polyhole, triangles, NULL);
+			const Vector3f *verts = &polyhole.vertices.front();
+			if (!err) {
+				BOOST_FOREACH(const Vector3i &t, triangles) {
+					ps.append_poly();
+					ps.append_vertex(verts[t[0]]);
+					ps.append_vertex(verts[t[1]]);
+					ps.append_vertex(verts[t[2]]);
+				}
+			}
+		}
+	}
+#endif
+#if 1
+	bool createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3 &N, PolySet &ps)
+	{
+		// 1. Build Indexed PolyMesh
+		// 2. Validate mesh (manifoldness)
+		// 3. Triangulate each face
+		//    -> IndexedTriangleMesh
+		// 4. Validate mesh (manifoldness)
+		// 5. Create PolySet
+
+		bool err = false;
+
+		// 1. Build Indexed PolyMesh
+		Reindexer<Vector3f> allVertices;
+		std::vector<std::vector<IndexedFace> > polygons;
+
+		CGAL_Nef_polyhedron3::Halffacet_const_iterator hfaceti;
+		CGAL_forall_halffacets(hfaceti, N) {
+			CGAL::Plane_3<CGAL_Kernel3> plane(hfaceti->plane());
+			// Since we're downscaling to float, vertices might merge during this conversion.
+			// To avoid passing equal vertices to the tessellator, we remove consecutively identical
+			// vertices.
+			polygons.push_back(std::vector<IndexedFace>());
+			std::vector<IndexedFace> &faces = polygons.back();
+			// the 0-mark-volume is the 'empty' volume of space. skip it.
+			if (!hfaceti->incident_volume()->mark()) {
+				CGAL_Nef_polyhedron3::Halffacet_cycle_const_iterator cyclei;
+				CGAL_forall_facet_cycles_of(cyclei, hfaceti) {
+					CGAL_Nef_polyhedron3::SHalfedge_around_facet_const_circulator c1(cyclei);
+					CGAL_Nef_polyhedron3::SHalfedge_around_facet_const_circulator c2(c1);
+					faces.push_back(IndexedFace());
+					IndexedFace &currface = faces.back();
+					CGAL_For_all(c1, c2) {
+						CGAL_Point_3 p = c1->source()->center_vertex()->point();
+						// Create vertex indices and remove consecutive duplicate vertices
+						int idx = allVertices.lookup(vector_convert<Vector3f>(p));
+						if (currface.empty() || idx != currface.back()) currface.push_back(idx);
+					}
+					if (currface.front() == currface.back()) currface.pop_back();
+					if (currface.size() < 3) faces.pop_back(); // Cull empty triangles
+				}
+			}
+			if (faces.empty()) polygons.pop_back(); // Cull empty faces
+		}
+
+		// 2. Validate mesh (manifoldness)
+		int unconnected = GeometryUtils::findUnconnectedEdges(polygons);
+		if (unconnected > 0) {
+			PRINTB("Error: Non-manifold mesh encountered: %d unconnected edges", unconnected);
+		}
+		// 3. Triangulate each face
+		const Vector3f *verts = allVertices.getArray();
+		std::vector<IndexedTriangle> allTriangles;
+		BOOST_FOREACH(const std::vector<IndexedFace> &faces, polygons) {
+#if 0 // For debugging
+			std::cerr << "---\n";
+			BOOST_FOREACH(const IndexedFace &poly, faces) {
+				BOOST_FOREACH(int i, poly) {
+					std::cerr << i << " ";
+				}
+				std::cerr << "\n";
+			}
+#if 0
+			std::cerr.precision(20);
+			BOOST_FOREACH(const IndexedFace &poly, faces) {
+				BOOST_FOREACH(int i, poly) {
+					std::cerr << verts[i][0] << "," << verts[i][1] << "," << verts[i][2] << "\n";
+				}
+				std::cerr << "\n";
+			}
+#endif
+			std::cerr << "-\n";
+#endif
+#if 0 // For debugging
+		std::cerr.precision(20);
+		for (int i=0;i<allVertices.size();i++) {
+			std::cerr << verts[i][0] << ", " << verts[i][1] << ", " << verts[i][2] << "\n";
+		}		
+#endif
+
+			/* at this stage, we have a sequence of polygons. the first
+				 is the "outside edge' or 'body' or 'border', and the rest of the
+				 polygons are 'holes' within the first. there are several
+				 options here to get rid of the holes. we choose to go ahead
+				 and let the tessellater deal with the holes, and then
+				 just output the resulting 3d triangles*/
+
+			// We cannot trust the plane from Nef polyhedron to be correct.
+			// Passing an incorrect normal vector can cause a crash in the constrained delaunay triangulator
+      // See http://cgal-discuss.949826.n4.nabble.com/Nef3-Wrong-normal-vector-reported-causes-triangulator-crash-tt4660282.html
+			// CGAL::Vector_3<CGAL_Kernel3> nvec = plane.orthogonal_vector();
+			// K::Vector_3 normal(CGAL::to_double(nvec.x()), CGAL::to_double(nvec.y()), CGAL::to_double(nvec.z()));
+			std::vector<IndexedTriangle> triangles;
+			bool err = GeometryUtils::tessellatePolygonWithHoles(verts, faces, triangles, NULL);
+			if (!err) {
+				BOOST_FOREACH(const IndexedTriangle &t, triangles) {
+					assert(t[0] >= 0 && t[0] < allVertices.size());
+					assert(t[1] >= 0 && t[1] < allVertices.size());
+					assert(t[2] >= 0 && t[2] < allVertices.size());
+					allTriangles.push_back(t);
+				}
+			}
+		}
+
+#if 0 // For debugging
+		BOOST_FOREACH(const IndexedTriangle &t, allTriangles) {
+			std::cerr << t[0] << " " << t[1] << " " << t[2] << "\n";
+		}
+#endif
+		// 4. Validate mesh (manifoldness)
+		int unconnected2 = GeometryUtils::findUnconnectedEdges(allTriangles);
+		if (unconnected2 > 0) {
+			PRINTB("Error: Non-manifold triangle mesh created: %d unconnected edges", unconnected2);
+		}
+
+		BOOST_FOREACH(const IndexedTriangle &t, allTriangles) {
+			ps.append_poly();
+			ps.append_vertex(verts[t[0]]);
+			ps.append_vertex(verts[t[1]]);
+			ps.append_vertex(verts[t[2]]);
+		}
+
+#if 0 // For debugging
+		std::cerr.precision(20);
+		for (int i=0;i<allVertices.size();i++) {
+			std::cerr << verts[i][0] << ", " << verts[i][1] << ", " << verts[i][2] << "\n";
+		}		
+#endif
+
 		return err;
 	}
 #endif

@@ -2,6 +2,9 @@
 #include "polyset.h"
 #include "Polygon2d.h"
 #include "printutils.h"
+#include "GeometryUtils.h"
+#include "Reindexer.h"
+#include "grid.h"
 #ifdef ENABLE_CGAL
 #include "cgalutils.h"
 #endif
@@ -46,42 +49,58 @@ namespace PolysetUtils {
 	 polyset has simple polygon faces with no holes.
 	 The tessellation will be robust wrt. degenerate and self-intersecting
 */
-	void tessellate_faces(const PolySet &inps, PolySet &outps) {
-#ifdef ENABLE_CGAL
+	void tessellate_faces(const PolySet &inps, PolySet &outps)
+	{
 		int degeneratePolygons = 0;
-		for (size_t i = 0; i < inps.polygons.size(); i++) {
-			const Polygon pgon = inps.polygons[i];
+
+		// Build Indexed PolyMesh
+		Reindexer<Vector3f> allVertices;
+		std::vector<std::vector<IndexedFace> > polygons;
+
+		BOOST_FOREACH(const Polygon &pgon, inps.polygons) {
 			if (pgon.size() < 3) {
 				degeneratePolygons++;
 				continue;
 			}
-			std::vector<Polygon> triangles;
-			if (pgon.size() == 3) {
-				triangles.push_back(pgon);
+			if (pgon.size() == 3) { // Short-circuit
+				outps.append_poly(pgon);
+				continue;
+			}
+			
+			polygons.push_back(std::vector<IndexedFace>());
+			std::vector<IndexedFace> &faces = polygons.back();
+			faces.push_back(IndexedFace());
+			IndexedFace &currface = faces.back();
+			BOOST_FOREACH (const Vector3d &v, pgon) {
+				// Create vertex indices and remove consecutive duplicate vertices
+				int idx = allVertices.lookup(v.cast<float>());
+				if (currface.empty() || idx != currface.back()) currface.push_back(idx);
+			}
+			if (currface.front() == currface.back()) currface.pop_back();
+			if (currface.size() < 3) faces.pop_back(); // Cull empty triangles
+		}
+
+		// Tessellate indexed mesh
+		const Vector3f *verts = allVertices.getArray();
+		std::vector<IndexedTriangle> allTriangles;
+		BOOST_FOREACH(const std::vector<IndexedFace> &faces, polygons) {
+			std::vector<IndexedTriangle> triangles;
+			if (faces[0].size() == 3) {
+				triangles.push_back(IndexedTriangle(faces[0][0], faces[0][1], faces[0][2]));
 			}
 			else {
-				// Build a data structure that CGAL accepts
-				PolygonK cgalpoints;
-				BOOST_FOREACH(const Vector3d &v, pgon) {
-					cgalpoints.push_back(Vertex3K(v[0], v[1], v[2]));
+				bool err = GeometryUtils::tessellatePolygonWithHoles(verts, faces, triangles, NULL);
+				if (!err) {
+					BOOST_FOREACH(const IndexedTriangle &t, triangles) {
+						outps.append_poly();
+						outps.append_vertex(verts[t[0]]);
+						outps.append_vertex(verts[t[1]]);
+						outps.append_vertex(verts[t[2]]);
+					}
 				}
-
-				bool err = CGALUtils::tessellatePolygon(cgalpoints, triangles);
-			}
-
-			// ..and pass to the output polyhedron
-			for (size_t j=0;j<triangles.size();j++) {
-				Polygon t = triangles[j];
-				outps.append_poly();
-				outps.append_vertex(t[0].x(),t[0].y(),t[0].z());
-				outps.append_vertex(t[1].x(),t[1].y(),t[1].z());
-				outps.append_vertex(t[2].x(),t[2].y(),t[2].z());
 			}
 		}
 		if (degeneratePolygons > 0) PRINT("WARNING: PolySet has degenerate polygons");
-#else
-		assert(false);
-#endif
 	}
 
 	bool is_approximately_convex(const PolySet &ps) {

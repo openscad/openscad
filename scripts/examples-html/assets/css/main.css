@@ -1,0 +1,58 @@
+.green {
+    color:#518e04;
+}
+
+#wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width:100%;
+    height: 100%;
+}
+
+#content {
+    position: absolute;
+    top: 65px;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    border-width: 1px;
+    border-style: groove;
+    overflow: auto;
+    background: #fdf6e3;
+}
+
+#logo {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+}
+
+#logo h1 {
+    position: absolute;
+    top: 2px;
+    left: 80px;
+    width: 20em;
+    margin: 0px;
+    font-family: "Open Sans", sans-serif;
+    font-size: 22px;
+}
+
+#logo img {
+    width: 60px;
+    height: 60px;
+}
+
+#image {
+    position: absolute;
+    z-index: 50;
+    top: 80px;
+    right: 30px;
+}
+
+#image img {
+    width: 200px;
+    height: 150px;
+    border-width: 1px;
+    border-style: groove;
+}

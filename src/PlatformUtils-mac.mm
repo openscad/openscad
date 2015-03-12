@@ -39,7 +39,7 @@ unsigned long PlatformUtils::stackLimit()
   return STACK_LIMIT_DEFAULT;
 }
 
-std::string PlatformUtils::sysinfo()
+std::string PlatformUtils::sysinfo(bool extended)
 {
   std::string result;
   
@@ -54,15 +54,27 @@ std::string PlatformUtils::sysinfo()
   sysctlbyname("hw.memsize", &physical_memory, &length64, NULL, 0);
   sysctlbyname("hw.physicalcpu", &numcpu, &length32, NULL, 0);
   
-  result += " ";
-  result += boost::lexical_cast<std::string>(numcpu);
-  result += " CPU";
-  if (numcpu > 1) result += "s";
+  size_t modellen = 0;
+  sysctlbyname("hw.model", NULL, &modellen, NULL, 0);
+  if (modellen) {
+    char *model = (char *)malloc(modellen*sizeof(char));
+    sysctlbyname("hw.model", model, &modellen, NULL, 0);
+    result += " ";
+    result += model;
+    free(model);
+  }
+
+  if (extended) {
+    result += " ";
+    result += boost::lexical_cast<std::string>(numcpu);
+    result += " CPU";
+    if (numcpu > 1) result += "s";
   
-  result += " ";
-  result += PlatformUtils::toMemorySizeString(physical_memory, 2);
-  result += " RAM";
-  
+    result += " ";
+    result += PlatformUtils::toMemorySizeString(physical_memory, 2);
+    result += " RAM ";
+  }
+
   return result;
 }
 

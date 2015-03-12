@@ -47,11 +47,11 @@
 
  */
 
-PolySet::PolySet(unsigned int dim, boost::tribool convex) : dim(dim), convex(convex)
+PolySet::PolySet(unsigned int dim, boost::tribool convex) : dim(dim), convex(convex), dirty(false)
 {
 }
 
-PolySet::PolySet(const Polygon2d &origin) : polygon(origin), dim(2), convex(unknown)
+PolySet::PolySet(const Polygon2d &origin) : polygon(origin), dim(2), convex(unknown), dirty(false)
 {
 }
 
@@ -87,14 +87,26 @@ void PolySet::append_poly()
 	polygons.push_back(Polygon());
 }
 
+void PolySet::append_poly(const Polygon &poly)
+{
+	polygons.push_back(poly);
+	this->dirty = true;
+}
+
 void PolySet::append_vertex(double x, double y, double z)
 {
 	append_vertex(Vector3d(x, y, z));
 }
 
-void PolySet::append_vertex(Vector3d v)
+void PolySet::append_vertex(const Vector3d &v)
 {
 	polygons.back().push_back(v);
+	this->dirty = true;
+}
+
+void PolySet::append_vertex(const Vector3f &v)
+{
+	append_vertex((const Vector3d &)v.cast<double>());
 }
 
 void PolySet::insert_vertex(double x, double y, double z)
@@ -102,22 +114,29 @@ void PolySet::insert_vertex(double x, double y, double z)
 	insert_vertex(Vector3d(x, y, z));
 }
 
-void PolySet::insert_vertex(Vector3d v)
+void PolySet::insert_vertex(const Vector3d &v)
 {
 	polygons.back().insert(polygons.back().begin(), v);
+	this->dirty = true;
+}
+
+void PolySet::insert_vertex(const Vector3f &v)
+{
+	insert_vertex((const Vector3d &)v.cast<double>());
 }
 
 BoundingBox PolySet::getBoundingBox() const
 {
-	BoundingBox bbox;
-	for (size_t i = 0; i < polygons.size(); i++) {
-		const Polygon &poly = polygons[i];
-		for (size_t j = 0; j < poly.size(); j++) {
-			const Vector3d &p = poly[j];
-			bbox.extend(p);
+	if (this->dirty) {
+		this->bbox.setNull();
+		BOOST_FOREACH(const Polygon &poly, polygons) {
+			BOOST_FOREACH(const Vector3d &p, poly) {
+				this->bbox.extend(p);
+			}
 		}
+		this->dirty = false;
 	}
-	return bbox;
+	return this->bbox;
 }
 
 size_t PolySet::memsize() const
@@ -132,15 +151,23 @@ size_t PolySet::memsize() const
 void PolySet::append(const PolySet &ps)
 {
 	this->polygons.insert(this->polygons.end(), ps.polygons.begin(), ps.polygons.end());
+	if (!dirty && !this->bbox.isNull()) {
+		this->bbox.extend(ps.getBoundingBox());
+	}
 }
 
 void PolySet::transform(const Transform3d &mat)
 {
+	// If mirroring transform, flip faces to avoid the object to end up being inside-out
+	bool mirrored = mat.matrix().determinant() < 0;
+
 	BOOST_FOREACH(Polygon &p, this->polygons) {
 		BOOST_FOREACH(Vector3d &v, p) {
 			v = mat * v;
 		}
+		if (mirrored) std::reverse(p.begin(), p.end());
 	}
+	this->dirty = true;
 }
 
 bool PolySet::is_convex() const {
@@ -176,13 +203,35 @@ void PolySet::resize(Vector3d newsize, const Eigen::Matrix<bool,3,1> &autosize)
 	this->transform(t);
 }
 
+/*!
+	Quantizes vertices by gridding them as well as merges close vertices belonging to
+	neighboring grids.
+	May reduce the number of polygons if polygons collapse into < 3 vertices.
+*/
 void PolySet::quantizeVertices()
 {
 	Grid3d<int> grid(GRID_FINE);
-	BOOST_FOREACH(Polygon &p, this->polygons) {
-		BOOST_FOREACH(Vector3d &v, p) {
-			// align v to the grid
-			if (!grid.has(v)) grid.align(v);
+	int numverts = 0;
+	std::vector<int> indices; // Vertex indices in one polygon
+	for (std::vector<Polygon>::iterator iter = this->polygons.begin(); iter != this->polygons.end();) {
+		Polygon &p = *iter;
+		indices.resize(p.size());
+		// Quantize all vertices. Build index list
+		for (int i=0;i<p.size();i++) indices[i] = grid.align(p[i]);
+		// Remove consequtive duplicate vertices
+		Polygon::iterator currp = p.begin();
+		for (int i=0;i<indices.size();i++) {
+			if (indices[i] != indices[(i+1)%indices.size()]) {
+				(*currp++) = p[i];
+			}
+		}
+		p.erase(currp, p.end());
+		if (p.size() < 3) {
+			PRINTD("Removing collapsed polygon due to quantizing");
+			this->polygons.erase(iter);
+		}
+		else {
+			iter++;
 		}
 	}
 }

@@ -1,2 +1,0 @@
-ERROR: Recursion detected calling function 'crash'
-ERROR: Recursion detected calling module 'crash'

@@ -2,6 +2,8 @@
 /*.a
 /*-output
 /*.scad
+/*.png
+/*.pyc
 out.*
 /CMakeFiles
 /CMakeCache.txt
@@ -18,3 +20,9 @@ out.*
 /sysinfo.txt
 /CTestCustom.cmake
 /openscad_nogui
+/openscad_nogui
+/diffpng
+/test_pretty_print.log.txt
+/csgtermtest
+/echotest
+/dumptest

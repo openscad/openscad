@@ -54,7 +54,7 @@ private:
 	};
 
 	void smartCacheInsert(const AbstractNode &node, const shared_ptr<const Geometry> &geom);
-	shared_ptr<const Geometry> smartCacheGet(const AbstractNode &node, bool preferNef = false);
+	shared_ptr<const Geometry> smartCacheGet(const AbstractNode &node, bool preferNef);
 	bool isSmartCached(const AbstractNode &node);
 	std::vector<const class Polygon2d *> collectChildren2D(const AbstractNode &node);
 	Geometry::ChildList collectChildren3D(const AbstractNode &node);

@@ -2,6 +2,10 @@ OpenSCAD Release Checklist
 --------------------------
 
 o Pre-release preparations
+  - Update translations:
+    - Send emails to translation managers, see .po files:
+      https://github.com/openscad/openscad/tree/master/locale
+  - Update src/AboutDialog.html with new contributors etc.
   - Merge MCAD
     o In MCAD clone:
       $ git fetch upstream
@@ -16,28 +20,20 @@ o Pre-release preparations
 
 (See bottom of this file for how to build release binaries)
 
-o Set VERSION and VERSIONDATE environment variable
-  (VERSIONDATE is new and used to identify releases. VERSION is for humans.
-   For development builds, set VERSION and VERSIONDATE to the same value)
-
-  export VERSION=2013.01
-  export VERSIONDATE=2013.01.17
-
-  It will be used by the commands below, as well as these files: 
-
-  scripts/release-common.sh
-  scripts/publish-macosx.sh
-  scripts/publish-mingw-x.sh
-
 o Update manpage: doc/openscad.1
 o Update releases/$VERSION.md
 o scripts/makereleasenotes.sh
 
 o Update version number in doc/openscad.1
 o Update copyright year in AboutDialog.html and mainwin.cc
+o Add VERSION and VERSIONDATE in openscad.pro, scripts/publish-macosx.sh, scripts/release-common.sh
+o Add VERSION in tests/CMakeLists.txt, scripts/publish-mingw-x.sh
 
 o Tag release
   git tag "openscad-$VERSION"
+
+o Revert VERSION and VERSIONDATE in
+  openscad.pro, scripts/publish-macosx.sh, scripts/release-common.sh, scripts/publish-mingw-x.sh
 
 o build source package
   scripts/git-archive-all.py --prefix=openscad-$VERSION/ openscad-$VERSION.src.tar.gz
@@ -48,9 +44,6 @@ o git push --tags master
 
 o Upload Source package
   $ scp openscad-$VERSION.src.tar.gz openscad@files.openscad.org:www
-
-o Remove VERSION environment variable
-  $ unset VERSION
 
 o Build binaries for all platforms and wait for upload
 
@@ -65,17 +58,19 @@ o Update external resources:
 o Write to mailing list
 o Tweet as OpenSCAD
 o Notify package managers
-  - Ubuntu: https://launchpad.net/~chrysn
+  - Debian/Ubuntu: https://launchpad.net/~chrysn
+  - Ubuntu PPA: https://github.com/hyperair
   - Fedora: Miro Hrončok <miro@hroncok.cz> or <mhroncok@redhat.com>
   - OpenSUSE: Pavol Rusnak <prusnak@opensuse.org>
-  - MacPorts: Frank Schima <macports2000@gmail.com>
   - Arch Linux: Kyle Keen <keenerd@gmail.com>
+  - MacPorts: https://svn.macports.org/repository/macports/trunk/dports/science/openscad/Portfile
+  - Homebrew: https://github.com/caskroom/homebrew-cask/blob/master/Casks/openscad.rb
+o Update dev version to release version in documentation
+  - https://en.wikibooks.org/wiki/OpenSCAD_User_Manual
 
 Build and Upload Release Binaries
 ---------------------------------
 
-$ export VERSIONDATE=<date of release in YYYY.MM.DD format, e.g. 2013.01.17>
-$ export VERSION=<openscad version, e.g. 2013.01> # If development snapshot, you don't need version is the same as VERSIONDATE
 $ tar xzf openscad-$VERSION.src.tar.gz
 $ cd openscad-$VERSION
 
@@ -89,7 +84,7 @@ Linux:
 
     $ ./scripts/release-common.sh -> openscad-$VERSION.x86-ARCH.tar.gz
     (where ARCH will be detected and set to 32 or 64)
-    $ ./scripts/googlecode_upload.py -s 'Linux Binaries' -p openscad openscad-$VERSION.x86-ARCH.tar.gz -l Featured,OpSys-Linux,Type-Archive openscad-$VERSION.x86-ARCH.tar.gz
+    $ scp openscad-$VERSION.x86-ARCH.tar.gz openscad@files.openscad.org:www
     o Update web page with download links
 
 Windows mingw cross-build:

@@ -112,8 +112,12 @@ def compare_default(resultfilename):
     actual_text = get_normalized_text(resultfilename)
     if not expected_text == actual_text:
 	if resultfilename: 
-            differences = difflib.unified_diff(expected_text.splitlines(1), actual_text.splitlines(1))
-            for line in differences: sys.stderr.write(line)
+            differences = difflib.unified_diff(
+                [line.strip() for line in expected_text.splitlines()],
+                [line.strip() for line in actual_text.splitlines()])
+            line = None
+            for line in differences: sys.stderr.write(line + '\n')
+            if not line: return True
         return False
     return True
 

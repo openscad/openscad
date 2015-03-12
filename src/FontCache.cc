@@ -83,7 +83,7 @@ const std::string &FontInfo::get_file() const
 FontCache * FontCache::self = NULL;
 FontCache::InitHandlerFunc *FontCache::cb_handler = FontCache::defaultInitHandler;
 void *FontCache::cb_userdata = NULL;
-const std::string FontCache::DEFAULT_FONT("XXX");
+const std::string FontCache::DEFAULT_FONT("Liberation Sans:style=Regular");
 
 /**
  * Default implementation for the font cache initialization. In case no other

@@ -156,7 +156,7 @@ AbstractNode *ModuleInstantiation::evaluate(const Context *ctx) const
 	try {
 		AbstractNode *node = ctx->instantiate_module(*this, &c); // Passes c as evalctx
 		return node;
-	} catch (RecursionException &e) {
+	} catch (const RecursionException &e) {
 		PRINT(e.what());
 		return NULL;
 	}
@@ -181,7 +181,7 @@ Module::~Module()
 AbstractNode *Module::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	if (StackCheck::inst()->check()) {
-		throw RecursionException("module", inst->name());
+		throw RecursionException::create("module", inst->name());
 		return NULL;
 	}
 
@@ -349,15 +349,16 @@ AbstractNode *FileModule::instantiate(const Context *ctx, const ModuleInstantiat
 	
 	delete context;
 	context = new FileContext(*this, ctx);
-	context->initializeModule(*this);
+	AbstractNode *node = new AbstractNode(inst);
+
+	try {
+		context->initializeModule(*this);
 
 	// FIXME: Set document path to the path of the module
 #if 0 && DEBUG
-	c.dump(this, inst);
+		c.dump(this, inst);
 #endif
 
-	AbstractNode *node = new AbstractNode(inst);
-	try {
 		std::vector<AbstractNode *> instantiatednodes = this->scope.instantiateChildren(context);
 		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 	}

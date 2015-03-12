@@ -49,6 +49,8 @@ namespace fs = boost::filesystem;
 
 #include "boosty.h"
 
+#define YYMAXDEPTH 20000
+
 int parser_error_pos = -1;
 
 int parserlex(void);
@@ -560,7 +562,7 @@ int parserlex(void)
 void yyerror (char const *s)
 {
   // FIXME: We leak memory on parser errors...
-  PRINTB("Parser error in line %d: %s\n", lexerget_lineno() % s);
+  PRINTB("ERROR: Parser error in line %d: %s\n", lexerget_lineno() % s);
 }
 
 FileModule *parse(const char *text, const char *path, int debug)

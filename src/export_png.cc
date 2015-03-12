@@ -12,11 +12,11 @@
 #include "cgalutils.h"
 #include "CGAL_Nef_polyhedron.h"
 
-static void setupCamera(Camera &cam, const BoundingBox &bbox, float scalefactor)
+static void setupCamera(Camera &cam, const BoundingBox &bbox)
 {
 	PRINTDB("setupCamera() %i",cam.type);
 	if (cam.type == Camera::NONE) cam.viewall = true;
-	if (cam.viewall) cam.viewAll(bbox, scalefactor);
+	if (cam.viewall) cam.viewAll(bbox);
 }
 
 void export_png(shared_ptr<const Geometry> root_geom, Camera &cam, std::ostream &output)
@@ -32,7 +32,7 @@ void export_png(shared_ptr<const Geometry> root_geom, Camera &cam, std::ostream 
 	CGALRenderer cgalRenderer(root_geom);
 
 	BoundingBox bbox = cgalRenderer.getBoundingBox();
-	setupCamera(cam, bbox, 3);
+	setupCamera(cam, bbox);
 
 	glview->setCamera(cam);
 	glview->setRenderer(&cgalRenderer);
@@ -75,7 +75,7 @@ void export_png_preview_common(Tree &tree, Camera &cam, std::ostream &output, Pr
 		csgInfo.glview->setRenderer(&thrownTogetherRenderer);
 #ifdef ENABLE_OPENCSG
 	BoundingBox bbox = csgInfo.glview->getRenderer()->getBoundingBox();
-	setupCamera(cam, bbox, 2.7);
+	setupCamera(cam, bbox);
 
 	csgInfo.glview->setCamera(cam);
 	OpenCSG::setContext(0);

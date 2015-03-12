@@ -161,7 +161,7 @@ build_ragel()
   cd "$BASEDIR"/src
   rm -rf "ragel-$version"
   if [ ! -f "ragel-$version.tar.gz" ]; then
-    curl --insecure -LO "http://www.complang.org/ragel/ragel-$version.tar.gz"
+    curl --insecure -LO "http://www.colm.net/files/ragel/ragel-$version.tar.gz"
   fi
   tar xzf "ragel-$version.tar.gz"
   cd "ragel-$version"

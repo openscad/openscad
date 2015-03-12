@@ -78,6 +78,9 @@ public:
 	QString editortype;	
 	bool useScintilla;
 
+        int compileErrors;
+        int compileWarnings;
+
 	MainWindow(const QString &filename);
 	~MainWindow();
 
@@ -95,7 +98,10 @@ private slots:
 	void setColorScheme(const QString &cs);
 	void showProgress();
 	void openCSGSettingsChanged();
+	void consoleOutput(const QString &msg);
+
 private:
+        void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
 	void openFile(const QString &filename);
         void handleFileDrop(const QString &filename);
 	void refreshDocument();
@@ -103,6 +109,7 @@ private:
 	void updateTemporalVariables();
 	bool fileChangedOnDisk();
 	void compileTopLevelDocument();
+        void updateCompileResult();
 	void compile(bool reload, bool forcedone = false);
 	void compileCSG(bool procevents);
 	bool maybeSave();
@@ -149,6 +156,7 @@ private slots:
 	void hideToolbars();
 	void hideEditor();
 	void hideConsole();
+	void showConsole();
 
 private slots:
 	void selectFindType(int);
@@ -200,6 +208,7 @@ public slots:
 	void actionReloadRenderPreview();
         void on_editorDock_visibilityChanged(bool);
         void on_consoleDock_visibilityChanged(bool);
+        void on_toolButtonCompileResultClose_clicked();
         void editorTopLevelChanged(bool);
         void consoleTopLevelChanged(bool);
 #ifdef ENABLE_OPENCSG
@@ -213,6 +222,7 @@ public slots:
 	void viewModeShowEdges();
 	void viewModeShowAxes();
 	void viewModeShowCrosshairs();
+	void viewModeShowScaleProportional();
 	void viewModeAnimate();
 	void viewAngleTop();
 	void viewAngleBottom();
@@ -233,6 +243,7 @@ public slots:
 	void helpAbout();
 	void helpHomepage();
 	void helpManual();
+	void helpCheatSheet();
 	void helpLibrary();
 	void helpFontInfo();
 	void quit();
@@ -240,6 +251,8 @@ public slots:
 	void waitAfterReload();
 	void autoReloadSet(bool);
 	void setContentsChanged();
+	void showFontCacheDialog();
+	void hideFontCacheDialog();
 
 private:
 	static void report_func(const class AbstractNode*, void *vp, int mark);
@@ -247,6 +260,7 @@ private:
 	static bool undockMode;
 	static bool reorderMode;
 	static QSet<MainWindow*> *windows;
+	static class QProgressDialog *fontCacheDialog;
 
 	char const * afterCompileSlot;
 	bool procevents;

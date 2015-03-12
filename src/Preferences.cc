@@ -31,6 +31,7 @@
 #include <QKeyEvent>
 #include <QSettings>
 #include <QStatusBar>
+#include <boost/algorithm/string.hpp>
 #include "GeometryCache.h"
 #include "AutoUpdater.h"
 #include "feature.h"
@@ -49,18 +50,27 @@ class SettingsReader : public Settings::Visitor
 {
     QSettings settings;
     const Value getValue(const Settings::SettingsEntry& entry, const std::string& value) const {
-	if (value.empty()) {
+	std::string trimmed_value(value);
+	boost::trim(trimmed_value);
+
+	if (trimmed_value.empty()) {
 		return entry.defaultValue();
 	}
 
 	try {
 		switch (entry.defaultValue().type()) {
 		case Value::STRING:
-			return Value(value);
+			return Value(trimmed_value);
 		case Value::NUMBER:
-			return Value(boost::lexical_cast<int>(value));
+			return Value(boost::lexical_cast<int>(trimmed_value));
 		case Value::BOOL:
-			return Value(boost::lexical_cast<bool>(value));
+			boost::to_lower(trimmed_value);
+			if ("false" == trimmed_value) {
+				return Value(false);
+			} else if ("true" == trimmed_value) {
+				return Value(true);
+			}
+			return Value(boost::lexical_cast<bool>(trimmed_value));
 		default:
 			assert(false && "invalid value type for settings");
 		}
@@ -74,7 +84,9 @@ class SettingsReader : public Settings::Visitor
 
 	std::string key = entry.category() + "/" + entry.name();
 	std::string value = settings.value(QString::fromStdString(key)).toString().toStdString();
-	s->set(entry, getValue(entry, value));
+	const Value v = getValue(entry, value);
+	PRINTDB("SettingsReader R: %s = '%s' => '%s'", key.c_str() % value.c_str() % v.toString());
+	s->set(entry, v);
     }
 };
 
@@ -87,9 +99,11 @@ class SettingsWriter : public Settings::Visitor
 	QString key = QString::fromStdString(entry.category() + "/" + entry.name());
 	if (entry.is_default()) {
 	    settings.remove(key);
+	    PRINTDB("SettingsWriter D: %s", key.toStdString().c_str());
 	} else {
 	    Value value = s->get(entry);
 	    settings.setValue(key, QString::fromStdString(value.toString()));
+	    PRINTDB("SettingsWriter W: %s = '%s'", key.toStdString().c_str() % value.toString().c_str());
 	}
     }
 };
@@ -134,12 +148,6 @@ void Preferences::init() {
 			this->fontSize->setCurrentIndex(this->fontSize->count()-1);
 		}
 	}
-
-	connect(this->fontSize, SIGNAL(currentIndexChanged(const QString&)),
-					this, SLOT(on_fontSize_editTextChanged(const QString &)));
-
-	connect(this->editorType, SIGNAL(currentIndexChanged(const QString&)),
-					this, SLOT(on_editorType_editTextChanged(const QString &)));
 
 	// reset GUI fontsize if fontSize->addItem emitted signals that changed it.
 	this->fontSize->setEditText( QString("%1").arg( savedsize ) );
@@ -326,7 +334,7 @@ void Preferences::on_fontChooser_activated(const QString &family)
 	emit fontChanged(family, getValue("editor/fontsize").toUInt());
 }
 
-void Preferences::on_fontSize_editTextChanged(const QString &size)
+void Preferences::on_fontSize_currentIndexChanged(const QString &size)
 {
 	uint intsize = size.toUInt();
 	QSettings settings;
@@ -334,7 +342,7 @@ void Preferences::on_fontSize_editTextChanged(const QString &size)
 	emit fontChanged(getValue("editor/fontfamily").toString(), intsize);
 }
 
-void Preferences::on_editorType_editTextChanged(const QString &type)
+void Preferences::on_editorType_currentIndexChanged(const QString &type)
 {
 	QSettings settings;
 	settings.setValue("editor/editortype", type);
@@ -469,6 +477,12 @@ void Preferences::on_launcherBox_toggled(bool state)
 {
 	QSettings settings;
  	settings.setValue("launcher/showOnStartup", state);	
+}
+
+void Preferences::on_checkBoxShowWarningsIn3dView_toggled(bool val)
+{
+	Settings::Settings::inst()->set(Settings::Settings::showWarningsIn3dView, Value(val));
+	writeSettings();
 }
 
 void Preferences::on_spinBoxIndentationWidth_valueChanged(int val)
@@ -669,6 +683,7 @@ void Preferences::updateGUI()
 	this->checkBoxAutoIndent->setChecked(s->get(Settings::Settings::autoIndent).toBool());
 	this->checkBoxHighlightCurrentLine->setChecked(s->get(Settings::Settings::highlightCurrentLine).toBool());
 	this->checkBoxEnableBraceMatching->setChecked(s->get(Settings::Settings::enableBraceMatching).toBool());
+	this->checkBoxShowWarningsIn3dView->setChecked(s->get(Settings::Settings::showWarningsIn3dView).toBool());
 }
 
 void Preferences::initComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry)
@@ -677,8 +692,9 @@ void Preferences::initComboBox(QComboBox *comboBox, const Settings::SettingsEntr
 	Value::VectorType vector = entry.range().toVector();
 	for (Value::VectorType::iterator it = vector.begin();it != vector.end();it++) {
 		QString val = QString::fromStdString((*it)[0].toString());
-		QString text = QString::fromStdString((*it)[1].toString());
-		comboBox->addItem(text, val);
+		std::string text((*it)[1].toString());
+		QString qtext = QString::fromStdString(gettext(text.c_str()));
+		comboBox->addItem(qtext, val);
 	}
 }
 

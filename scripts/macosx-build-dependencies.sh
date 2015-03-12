@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/bash
 #
 # This script builds all library dependencies of OpenSCAD for Mac OS X.
 # The libraries will be build in 64-bit (and optionally 32-bit mode) mode
@@ -6,18 +6,18 @@
 # 
 # This script must be run from the OpenSCAD source root directory
 #
-# Usage: macosx-build-dependencies.sh [-6lcd]
+# Usage: macosx-build-dependencies.sh [-6lcd] [<package>]
 #  -6   Build only 64-bit binaries
 #  -l   Force use of LLVM compiler
 #  -c   Force use of clang compiler
 #  -d   Build for deployment (if not specified, e.g. Sparkle won't be built)
+#  -f   Force build even if package is installed
 #
 # Prerequisites:
 # - MacPorts: curl, cmake
 #
 # FIXME:
 # o Verbose option
-# o Force rebuild vs. only rebuild changes
 #
 
 BASEDIR=$PWD/../libraries
@@ -30,16 +30,115 @@ OPTION_LLVM=false
 OPTION_CLANG=false
 OPTION_GCC=false
 OPTION_DEPLOY=false
+OPTION_FORCE=0
+
+PACKAGES=(
+    "eigen 3.2.4"
+    "gmp 5.1.3"
+    "mpfr 3.1.2"
+    "boost 1.57.0"
+    "qt5 5.4.1"
+    "qscintilla 2.8.4"
+    # NB! For eigen, also update the path in the function
+    # NB! For CGAL, also update the actual download URL in the function
+    "cgal 4.5.2"
+    "glew 1.12.0"
+    "gettext 0.19.4"
+    "libffi 3.2.1"
+    "glib2 2.42.1"
+    "opencsg 1.4.0"
+    "freetype 2.5.5"
+    "ragel 6.9"
+    "harfbuzz 0.9.37"
+    "libxml2 2.9.2"
+    "fontconfig 2.11.1"
+)
+DEPLOY_PACKAGES=(
+    "sparkle Cocoanetics:1e7dcb1a48b96d1a8c62100b5864bd50211cbae1"
+)
 
 printUsage()
 {
-  echo "Usage: $0 [-6lcd]"
+  echo "Usage: $0 [-6lcd] [<package>]"
   echo
   echo "  -6   Build only 64-bit binaries"
   echo "  -l   Force use of LLVM compiler"
   echo "  -c   Force use of clang compiler"
   echo "  -d   Build for deployment"
+  echo "  -f   Force build even if package is installed"
+  echo
+  echo "  If <package> is not specified, builds all packages"
 }
+
+# Outputs all package names
+all_packages()
+{
+    for i in $(seq 0 $(( ${#PACKAGES[@]} - 1 )) ); do
+        local p=${PACKAGES[$i]}
+        echo -n "${p%%\ *} " # Cut at first space
+    done
+}
+
+# Usage: package_version <package>
+# Outputs the package version for the given package
+package_version()
+{
+    for i in $(seq 0 $(( ${#PACKAGES[@]} - 1 )) ); do
+        local p=${PACKAGES[$i]}
+        if [ "$1" = "${p%%\ *}" ]; then
+            echo "${p#*\ }" # cut until first space
+            return 0
+        fi
+    done
+    return 1
+}
+
+# Usage: build <package> <version>
+build()
+{
+    local package=$1
+    local version=$2
+
+    local should_install=$(( $OPTION_FORCE == 1 ))
+    if [[ $should_install == 0 ]]; then
+        is_installed $package $version
+        should_install=$?
+    fi
+    if [[ $should_install == 1 ]]; then
+        set -e
+        build_$package $version
+        set +e
+    fi
+    
+}
+
+# Usage: is_installed <package> [<version>]
+# Returns success (0) if the/a version of the package is already installed
+is_installed()
+{
+    if check_$1 $2; then
+      echo "$1 already installed - not building"
+      return 0
+    fi
+    return 1
+}
+
+# Usage: check_dir <dir>
+# Checks if $DEPLOYDIR/<dir> exists and is a folder
+# Returns success (0) if the folder exists
+check_dir()
+{
+    test -d "$DEPLOYDIR/$1"
+}
+
+# Usage: check_file <file>
+# Checks if $DEPLOYDIR/<file> exists and is a file
+# Returns success (0) if the file exists
+check_file()
+{
+    test -f "$DEPLOYDIR/$1"
+}
+
 
 patch_qt_disable_core_wlan()
 {
@@ -104,14 +203,14 @@ build_qt()
   make -j"$NUMCPU" install
 }
 
+check_qt5()
+{
+    check_dir lib/QtCore.framework
+}
+
 build_qt5()
 {
   version=$1
-
-  if [ -d $DEPLOYDIR/lib/QtCore.framework ]; then
-    echo "Qt5 already installed. not building"
-    return
-  fi
 
   echo "Building Qt" $version "..."
   cd $BASEDIR/src
@@ -133,6 +232,11 @@ build_qt5()
   make -j"$NUMCPU" install
 }
 
+check_qscintilla()
+{
+    check_file include/Qsci/qsciscintilla.h 
+}
+
 build_qscintilla()
 {
   version=$1
@@ -149,17 +253,17 @@ build_qscintilla()
   install_name_tool -id $DEPLOYDIR/lib/libqscintilla2.dylib $DEPLOYDIR/lib/libqscintilla2.dylib
 }
 
+check_gmp()
+{
+    check_file lib/libgmp.dylib
+}
+
 # Hack warning: gmplib is built separately in 32-bit and 64-bit mode
 # and then merged afterwards. gmplib's header files are dependent on
 # the CPU architecture on which configure was run and will be patched accordingly.
 build_gmp()
 {
   version=$1
-
-  if [ -f $DEPLOYDIR/lib/libgmp.dylib ]; then
-    echo "gmp already installed. not building"
-    return
-  fi
 
   echo "Building gmp" $version "..."
   cd $BASEDIR/src
@@ -252,16 +356,16 @@ EOF
   cp x86_64/include/gmpxx.h include/
 }
 
+check_mpfr()
+{
+    check_file include/mpfr.h
+}
+
 # As with gmplib, mpfr is built separately in 32-bit and 64-bit mode and then merged
 # afterwards.
 build_mpfr()
 {
   version=$1
-
-  if [ -f $DEPLOYDIR/include/mpfr.h ]; then
-    echo "mpfr already installed. not building"
-    return
-  fi
 
   echo "Building mpfr" $version "..."
   cd $BASEDIR/src
@@ -300,14 +404,14 @@ build_mpfr()
   cp x86_64/include/mpf2mpfr.h include/
 }
 
+check_boost()
+{
+    check_file lib/libboost_system.dylib
+}
+
 build_boost()
 {
   version=$1
-
-  if [ -f $DEPLOYDIR/lib/libboost_system.dylib ]; then
-    echo "boost already installed. not building"
-    return
-  fi
 
   bversion=`echo $version | tr "." "_"`
   echo "Building boost" $version "..."
@@ -343,21 +447,22 @@ build_boost()
 
 }
 
+check_cgal()
+{
+    check_file lib/libCGAL.dylib
+}
+
 build_cgal()
 {
   version=$1
-
-  if [ -f $DEPLOYDIR/lib/libCGAL.dylib ]; then
-    echo "cgal already installed. not building"
-    return
-  fi
 
   echo "Building CGAL" $version "..."
   cd $BASEDIR/src
   rm -rf CGAL-$version
   if [ ! -f CGAL-$version.tar.gz ]; then
-    # 4.5.1
-    curl -O https://gforge.inria.fr/frs/download.php/file/34400/CGAL-$version.tar.gz
+    # 4.5.2
+    curl -O https://gforge.inria.fr/frs/download.php/file/34512/CGAL-$version.tar.gz
+    # 4.5.1 curl -O https://gforge.inria.fr/frs/download.php/file/34400/CGAL-$version.tar.gz
     # 4.5 curl -O https://gforge.inria.fr/frs/download.php/file/34149/CGAL-$version.tar.gz
     # 4.4 curl -O https://gforge.inria.fr/frs/download.php/file/33525/CGAL-$version.tar.gz
     # 4.3 curl -O https://gforge.inria.fr/frs/download.php/32994/CGAL-$version.tar.gz
@@ -383,14 +488,14 @@ build_cgal()
   install_name_tool -change $PWD/lib/libCGAL.9.dylib $DEPLOYDIR/lib/libCGAL.dylib $DEPLOYDIR/lib/libCGAL_Core.dylib
 }
 
+check_glew()
+{
+    check_file lib/libGLEW.dylib
+}
+
 build_glew()
 {
   version=$1
-
-  if [ -f $DEPLOYDIR/lib/libGLEW.dylib ]; then
-    echo "glew already installed. not building"
-    return
-  fi
 
   echo "Building GLEW" $version "..."
   cd $BASEDIR/src
@@ -407,14 +512,14 @@ build_glew()
   make GLEW_DEST=$DEPLOYDIR CC=$CC CFLAGS.EXTRA="-no-cpp-precomp -dynamic -fno-common -mmacosx-version-min=$MAC_OSX_VERSION_MIN $GLEW_EXTRA_FLAGS -arch x86_64" LDFLAGS.EXTRA="-mmacosx-version-min=$MAC_OSX_VERSION_MIN $GLEW_EXTRA_FLAGS -arch x86_64" STRIP= install
 }
 
+check_opencsg()
+{
+    check_file lib/libopencsg.dylib
+}
+
 build_opencsg()
 {
   version=$1
-
-  if [ -f $DEPLOYDIR/lib/libopencsg.dylib ]; then
-    echo "opencsg already installed. not building"
-    return
-  fi
 
   echo "Building OpenCSG" $version "..."
   cd $BASEDIR/src
@@ -432,14 +537,22 @@ build_opencsg()
   make install
 }
 
+# Usage: func [<version>]
+check_eigen()
+{
+    # To check version:
+    # include/eigen3/Eigen/src/Core/util/Macros.h:
+    #  #define EIGEN_WORLD_VERSION 3
+    #  #define EIGEN_MAJOR_VERSION 2
+    #  #define EIGEN_MINOR_VERSION 3
+
+    check_dir include/eigen3
+}
+
+# Usage: func <version>
 build_eigen()
 {
   version=$1
-
-  if [ -d $DEPLOYDIR/include/eigen3 ]; then
-    echo "eigen3 already installed. not building"
-    return
-  fi
 
   echo "Building eigen" $version "..."
   cd $BASEDIR/src
@@ -453,6 +566,7 @@ build_eigen()
   elif [ $version = "3.2.1" ]; then EIGENDIR=eigen-eigen-6b38706d90a9;
   elif [ $version = "3.2.2" ]; then EIGENDIR=eigen-eigen-1306d75b4a21;
   elif [ $version = "3.2.3" ]; then EIGENDIR=eigen-eigen-36fd1ba04c12;
+  elif [ $version = "3.2.4" ]; then EIGENDIR=eigen-eigen-10219c95fe65;
   fi
 
   if [ $EIGENDIR = "none" ]; then
@@ -473,19 +587,28 @@ build_eigen()
   if $OPTION_32BIT; then
     EIGEN_EXTRA_FLAGS=";i386"
   fi
-  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DEIGEN_BUILD_LIB=ON -DBUILD_SHARED_LIBS=FALSE -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="x86_64$EIGEN_EXTRA_FLAGS" ..
+  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DEIGEN_TEST_NOQT=TRUE -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="x86_64$EIGEN_EXTRA_FLAGS" ..
   make -j"$NUMCPU" install
-  make install
 }
 
+check_sparkle()
+{
+    check_file lib/Sparkle.framework/Sparkle
+}
+
+# Usage: build_sparkle <githubuser>:<commitID>
 build_sparkle()
 {
+  v=$1
+  github=${1%%:*}  # Cut at first colon
+  version=${1#*:}  # cut until first colon
+
+  echo "Building Sparkle" $version "..."
+
   # Let Sparkle use the default compiler
   unset CC
   unset CXX
-  github=$1
-  version=$2
-  echo "Building Sparkle" $version "..."
+
   cd $BASEDIR/src
   rm -rf Sparkle-$version
   if [ ! -f Sparkle-$version.zip ]; then
@@ -504,15 +627,15 @@ build_sparkle()
   install_name_tool -id $DEPLOYDIR/lib/Sparkle.framework/Versions/A/Sparkle $DEPLOYDIR/lib/Sparkle.framework/Sparkle
 }
 
+check_freetype()
+{
+    check_file lib/libfreetype.dylib
+}
+
 build_freetype()
 {
   version="$1"
-  extra_config_flags="$2"
-
-  if [ -f $DEPLOYDIR/lib/libfreetype.dylib ]; then
-    echo "freetype already installed. not building"
-    return
-  fi
+  extra_config_flags="--without-png"
 
   echo "Building freetype $version..."
   cd "$BASEDIR"/src
@@ -522,19 +645,22 @@ build_freetype()
   fi
   tar xzf "freetype-$version.tar.gz"
   cd "freetype-$version"
+
+  export FREETYPE_CFLAGS="-I$DEPLOYDIR/include -I$DEPLOYDIR/include/freetype2"
+  export FREETYPE_LIBS="-L$DEPLOYDIR/lib -lfreetype"
   PKG_CONFIG_LIBDIR="$DEPLOYDOR/lib/pkgconfig" ./configure --prefix="$DEPLOYDIR" CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN $extra_config_flags
   make -j"$NUMCPU"
   make install
 }
  
+check_libxml2()
+{
+    check_file lib/libxml2.dylib
+}
+
 build_libxml2()
 {
   version="$1"
-
-  if [ -f $DEPLOYDIR/lib/libxml2.dylib ]; then
-    echo "libxml2 already installed. not building"
-    return
-  fi
 
   echo "Building libxml2 $version..."
   cd "$BASEDIR"/src
@@ -549,14 +675,14 @@ build_libxml2()
   make install
 }
 
+check_fontconfig()
+{
+    check_file lib/libfontconfig.dylib
+}
+
 build_fontconfig()
 {
   version=$1
-
-  if [ -f $DEPLOYDIR/lib/libfontconfig.dylib ]; then
-    echo "fontconfig already installed. not building"
-    return
-  fi
 
   echo "Building fontconfig $version..."
   cd "$BASEDIR"/src
@@ -573,14 +699,14 @@ build_fontconfig()
   make install
 }
 
+check_libffi()
+{
+    check_file lib/libffi.dylib
+}
+
 build_libffi()
 {
   version="$1"
-
-  if [ -f $DEPLOYDIR/lib/libffi.dylib ]; then
-    echo "libffi already installed. not building"
-    return
-  fi
 
   echo "Building libffi $version..."
   cd "$BASEDIR"/src
@@ -595,14 +721,14 @@ build_libffi()
   make install
 }
 
+check_gettext()
+{
+    check_file lib/libgettextlib.dylib
+}
+
 build_gettext()
 {
   version="$1"
-
-  if [ -f $DEPLOYDIR/lib/libgettextlib.dylib ]; then
-    echo "gettext already installed. not building"
-    return
-  fi
 
   echo "Building gettext $version..."
   cd "$BASEDIR"/src
@@ -618,14 +744,14 @@ build_gettext()
   make install
 }
 
+check_glib2()
+{
+    check_file lib/libglib-2.0.dylib
+}
+
 build_glib2()
 {
   version="$1"
-
-  if [ -f $DEPLOYDIR/lib/libglib-2.0.dylib ]; then
-    echo "glib2 already installed. not building"
-    return
-  fi
 
   echo "Building glib2 $version..."
 
@@ -645,14 +771,14 @@ build_glib2()
   make install
 }
 
+check_ragel()
+{
+    check_file bin/ragel
+}
+
 build_ragel()
 {
   version=$1
-
-  if [ -f $DEPLOYDIR/bin/ragel ]; then
-    echo "ragel already installed. not building"
-    return
-  fi
 
   echo "Building ragel $version..."
   cd "$BASEDIR"/src
@@ -668,15 +794,15 @@ build_ragel()
   make install
 }
 
+check_harfbuzz()
+{
+    check_file lib/libharfbuzz.dylib
+}
+
 build_harfbuzz()
 {
   version=$1
-  extra_config_flags="$2"
-
-  if [ -f $DEPLOYDIR/lib/libharfbuzz.dylib ]; then
-    echo "harfbuzz already installed. not building"
-    return
-  fi
+  extra_config_flags="--with-coretext=auto --with-glib=no"
 
   echo "Building harfbuzz $version..."
   cd "$BASEDIR"/src
@@ -700,19 +826,27 @@ if [ ! -f $OPENSCADDIR/openscad.pro ]; then
 fi
 OPENSCAD_SCRIPTDIR=$PWD/scripts
 
-while getopts '6lcd' c
+while getopts '6lcdf' c
 do
   case $c in
     6) OPTION_32BIT=false;;
     l) OPTION_LLVM=true;;
     c) OPTION_CLANG=true;;
     d) OPTION_DEPLOY=true;;
+    f) OPTION_FORCE=1;;
+    *) printUsage;exit 1;;
   esac
 done
 
+OPTION_PACKAGES="${@:$OPTIND}"
+
 OSX_VERSION=`sw_vers -productVersion | cut -d. -f2`
-if (( $OSX_VERSION >= 8 )); then
-  echo "Detected Mountain Lion (10.8) or later"
+if (( $OSX_VERSION >= 10 )); then
+  echo "Detected Yosemite (10.10) or later"
+elif (( $OSX_VERSION >= 9 )); then
+  echo "Detected Mavericks (10.9)"
+elif (( $OSX_VERSION >= 8 )); then
+  echo "Detected Mountain Lion (10.8)"
 elif (( $OSX_VERSION >= 7 )); then
   echo "Detected Lion (10.7)"
 else
@@ -760,9 +894,6 @@ fi
 
 if $OPTION_DEPLOY; then
   echo "Building deployment version of libraries"
-  OPTION_32BIT=true
-else
-  OPTION_32BIT=false
 fi
 
 if $OPTION_32BIT; then
@@ -771,30 +902,32 @@ else
   echo "Building 64-bit binaries"
 fi
 
+if (( $OPTION_FORCE )); then
+  echo "Forcing rebuild"
+fi
+
 echo "Using basedir:" $BASEDIR
 mkdir -p $SRCDIR $DEPLOYDIR
-build_qt5 5.4.0
-build_qscintilla 2.8.4
-# NB! For eigen, also update the path in the function
-build_eigen 3.2.3
-build_gmp 5.1.3
-build_mpfr 3.1.2
-build_boost 1.57.0
-# NB! For CGAL, also update the actual download URL in the function
-build_cgal 4.5.1
-build_glew 1.11.0
-build_gettext 0.19.4
-build_libffi 3.2.1
-build_glib2 2.42.1
-build_opencsg 1.4.0
-build_freetype 2.5.4 --without-png
-build_ragel 6.9
-build_harfbuzz 0.9.37 "--with-coretext=auto --with-glib=no"
-export FREETYPE_CFLAGS="-I$DEPLOYDIR/include -I$DEPLOYDIR/include/freetype2"
-export FREETYPE_LIBS="-L$DEPLOYDIR/lib -lfreetype"
-build_libxml2 2.9.2
-build_fontconfig 2.11.1
+
+# Only build deploy packages in deploy mode
 if $OPTION_DEPLOY; then
-#  build_sparkle andymatuschak 0ed83cf9f2eeb425d4fdd141c01a29d843970c20
-  build_sparkle Cocoanetics 1e7dcb1a48b96d1a8c62100b5864bd50211cbae1
+  # Array concatenation
+  PACKAGES=("${PACKAGES[@]}" "${DEPLOY_PACKAGES[@]}")
 fi
+
+# Build specified (or all) packages
+ALL_PACKAGES=$(all_packages)
+if [ -z "$OPTION_PACKAGES" ]; then
+  OPTION_PACKAGES=$ALL_PACKAGES
+fi
+
+echo "Building packages: $OPTION_PACKAGES"
+echo
+
+for package in $OPTION_PACKAGES; do
+  if [[ $ALL_PACKAGES =~ $package ]]; then
+    build $package $(package_version $package)
+  else
+    echo "Skipping unknown package $package"
+  fi
+done

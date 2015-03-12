@@ -60,12 +60,48 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "../openscad/cube.scad"
+            argument = "/Users/kintel/code/OpenSCAD/statistics-scripts/unpacked/130629/Customizable_Stone_Turret/turret.scad -o out.png"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "falsetest.scad -o out.echo"
+            argument = " testdata/scad/misc/bad-stl-tardis.scad -o out.off --render=cgal"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "testdata/scad/3D/issues/issue1061.scad -o out.png"
             isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "testdata/scad/3D/issues/minkowski-thin-cylinder.scad -o out.png"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "spheres.scad -o out.png"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "non-manifold2.scad -o non-manifold2.stl --debug=GeometryUtils"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "issue925.scad -o out.stl --debug=GeometryUtils"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "testdata/scad/bugs/issue1225.scad -o out.stl --debug=export"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "testdata/scad/misc/bad-stl-wing.scad -o out.stl --render=cgal --debug=GeometryUtils"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "testdata/scad/misc/bad-stl-wing.scad -o out.off"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "testdata/scad/2D/features/text-font-tests.scad "
+            isEnabled = "NO">
          </CommandLineArgument>
       </CommandLineArguments>
       <AdditionalOptions>
