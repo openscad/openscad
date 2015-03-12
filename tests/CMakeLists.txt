@@ -945,12 +945,9 @@ function(add_cmdline_test TESTCMD_BASENAME)
       set(EXPERIMENTAL_OPTION "")
       string(REGEX MATCH "csgtexttest" match_result1 ${TEST_FULLNAME})
       string(REGEX MATCH "cgalstlsanity" match_result2 ${TEST_FULLNAME})
-      string(REGEX MATCH "dumptest" match_result3 ${TEST_FULLNAME})
       if( "${match_result1}" STREQUAL "" )
        if( "${match_result2}" STREQUAL "" )
-        if( "${match_result3}" STREQUAL "" )
-         set(EXPERIMENTAL_OPTION "")
-        endif()
+         set(EXPERIMENTAL_OPTION "--enable=trace")
        endif()
       endif()
 
@@ -1476,6 +1473,8 @@ add_failing_test(offfailedtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DI
 #
 # Add experimental tests
 #
+
+
 
 # Tests using the actual OpenSCAD binary
 
