@@ -491,7 +491,7 @@ Response GeometryEvaluator::visit(State &state, const TextNode &node)
 	if (state.isPrefix()) {
 		shared_ptr<const Geometry> geom;
 		if (!isSmartCached(node)) {
-			std::vector<const Geometry *> geometrylist = node.createGeometryList();
+			std::vector<Geometry *> geometrylist = node.createGeometryList();
 			std::vector<const Polygon2d *> polygonlist;
 			BOOST_FOREACH(const Geometry *geometry, geometrylist) {
 				const Polygon2d *polygon = dynamic_cast<const Polygon2d*>(geometry);

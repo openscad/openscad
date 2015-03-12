@@ -83,7 +83,7 @@ AbstractNode *TraceModule::instantiate(const Context *ctx, const ModuleInstantia
 	return node;
 }
 
-const Geometry * TraceNode::createGeometry() const
+Geometry *TraceNode::createGeometry() const
 {
 	std::vector<unsigned char> png;
 	lodepng::load_file(png, fullpath);
@@ -120,7 +120,7 @@ void register_builtin_trace()
 
 #ifdef HAVE_POTRACE
 
-const Geometry * TraceNode::traceBitmap(std::vector<unsigned char> &img, unsigned int width, unsigned int height) const
+Geometry *TraceNode::traceBitmap(std::vector<unsigned char> &img, unsigned int width, unsigned int height) const
 {
 	int N = 8 * sizeof(potrace_word);
 	potrace_bitmap_t bitmap;
@@ -197,7 +197,7 @@ const Geometry * TraceNode::traceBitmap(std::vector<unsigned char> &img, unsigne
 
 #else
 
-const Geometry * TraceNode::createDummyGeometry(std::vector<unsigned char> &, unsigned int width, unsigned int height) const
+Geometry *TraceNode::createDummyGeometry(std::vector<unsigned char> &, unsigned int width, unsigned int height) const
 {
 	PRINTB("WARNING: Creating dummy geometry for file '%s' because trace() is not enabled.", fullpath);
 	Polygon2d *p = new Polygon2d();

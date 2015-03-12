@@ -59,7 +59,7 @@ void DrawingCallback::finish_glyph()
 	if (this->polygon) this->polygons.push_back(this->polygon);
 }
 
-std::vector<const Geometry *> DrawingCallback::get_result()
+std::vector<Geometry *> DrawingCallback::get_result()
 {
 	return this->polygons;
 }

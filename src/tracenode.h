@@ -12,11 +12,11 @@ public:
 	}
 	virtual std::string toString() const;
 	virtual std::string name() const { return "trace"; }
-	virtual const class Geometry *createGeometry() const;
+	virtual class Geometry *createGeometry() const;
 
 	double fn, fs, fa, threshold;
         std::string file, fullpath;
 private:
-        const Geometry * traceBitmap(std::vector<unsigned char> &img, unsigned int width, unsigned int height) const;
-        const Geometry * createDummyGeometry(std::vector<unsigned char> &img, unsigned int width, unsigned int height) const;
+	Geometry *traceBitmap(std::vector<unsigned char> &img, unsigned int width, unsigned int height) const;
+	Geometry *createDummyGeometry(std::vector<unsigned char> &img, unsigned int width, unsigned int height) const;
 };
