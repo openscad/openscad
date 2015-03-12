@@ -1,22 +1,15 @@
-group();
 multmatrix([[1, 0, 0, 110], [0, 1, 0, 0], [0, 0, 1, 80], [0, 0, 0, 1]]) {
 	multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 30], [0, 0, 0, 1]]) {
 		multmatrix([[0.69427204401, 0.71938369937, 0.02175826214, 0], [-0.58256341607, 0.57946619475, -0.56994630922, 0], [-0.42261826174, 0.38302222155, 0.82139380484, 0], [0, 0, 0, 1]]) {
 			group() {
 				difference() {
-					sphere($fn = 120, $fa = 12, $fs = 2, r = 60);
-					group() {
-						cylinder($fn = 60, $fa = 12, $fs = 2, h = 150, r1 = 30, r2 = 30, center = true);
+					sphere($fn = 100, $fa = 12, $fs = 2, r = 60);
+					cylinder($fn = 100, $fa = 12, $fs = 2, h = 150, r1 = 30, r2 = 30, center = true);
+#					multmatrix([[1, 0, 0, 0], [0, 0, -1, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
+						cylinder($fn = 100, $fa = 12, $fs = 2, h = 150, r1 = 30, r2 = 30, center = true);
 					}
 					multmatrix([[0, 0, 1, 0], [0, 1, 0, 0], [-1, 0, 0, 0], [0, 0, 0, 1]]) {
-						group() {
-							cylinder($fn = 60, $fa = 12, $fs = 2, h = 150, r1 = 30, r2 = 30, center = true);
-						}
-					}
-#					multmatrix([[1, 0, 0, 0], [0, 0, -1, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
-						group() {
-							cylinder($fn = 60, $fa = 12, $fs = 2, h = 150, r1 = 30, r2 = 30, center = true);
-						}
+						cylinder($fn = 100, $fa = 12, $fs = 2, h = 150, r1 = 30, r2 = 30, center = true);
 					}
 				}
 			}
@@ -29,7 +22,7 @@ multmatrix([[1, 0, 0, 110], [0, 1, 0, 0], [0, 0, 1, 80], [0, 0, 0, 1]]) {
 					group() {
 						multmatrix([[1, 0, 0, 0], [0, 0, -1, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
 							linear_extrude(height = 1, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-								text(text = "Open", size = 42, spacing = 1, font = "Liberation Serif:style=Bold", direction = "ltr", language = "en", script = "latin", halign = "left", valign = "baseline", $fn = 16, $fa = 12, $fs = 2);
+								text(text = "Open", size = 42, spacing = 1, font = "Liberation Sans:style=Bold", direction = "ltr", language = "en", script = "latin", halign = "left", valign = "baseline", $fn = 16, $fa = 12, $fs = 2);
 							}
 						}
 					}
@@ -37,14 +30,14 @@ multmatrix([[1, 0, 0, 110], [0, 1, 0, 0], [0, 0, 1, 80], [0, 0, 0, 1]]) {
 			}
 		}
 	}
-	multmatrix([[1, 0, 0, 242], [0, 1, 0, 0], [0, 0, 1, 40], [0, 0, 0, 1]]) {
+	multmatrix([[1, 0, 0, 247], [0, 1, 0, 0], [0, 0, 1, 40], [0, 0, 0, 1]]) {
 		group() {
 			color([0, 0, 0, 1]) {
 				group() {
 					group() {
 						multmatrix([[1, 0, 0, 0], [0, 0, -1, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
 							linear_extrude(height = 1, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-								text(text = "SCAD", size = 42, spacing = 1, font = "Liberation Serif:style=Bold", direction = "ltr", language = "en", script = "latin", halign = "left", valign = "baseline", $fn = 16, $fa = 12, $fs = 2);
+								text(text = "SCAD", size = 42, spacing = 1, font = "Liberation Sans:style=Bold", direction = "ltr", language = "en", script = "latin", halign = "left", valign = "baseline", $fn = 16, $fa = 12, $fs = 2);
 							}
 						}
 					}
@@ -52,14 +45,14 @@ multmatrix([[1, 0, 0, 110], [0, 1, 0, 0], [0, 0, 1, 80], [0, 0, 0, 1]]) {
 			}
 		}
 	}
-	multmatrix([[1, 0, 0, 100], [0, 1, 0, 0], [0, 0, 1, -10], [0, 0, 0, 1]]) {
+	multmatrix([[1, 0, 0, 100], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 		group() {
 			color([0, 0, 0, 1]) {
 				group() {
 					group() {
 						multmatrix([[1, 0, 0, 0], [0, 0, -1, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
 							linear_extrude(height = 1, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-								text(text = "The Programmers", size = 18, spacing = 1, font = "Liberation Serif", direction = "ltr", language = "en", script = "latin", halign = "left", valign = "baseline", $fn = 16, $fa = 12, $fs = 2);
+								text(text = "The Programmers", size = 18, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "latin", halign = "left", valign = "baseline", $fn = 16, $fa = 12, $fs = 2);
 							}
 						}
 					}
@@ -67,14 +60,14 @@ multmatrix([[1, 0, 0, 110], [0, 1, 0, 0], [0, 0, 1, 80], [0, 0, 0, 1]]) {
 			}
 		}
 	}
-	multmatrix([[1, 0, 0, 160], [0, 1, 0, 0], [0, 0, 1, -40], [0, 0, 0, 1]]) {
+	multmatrix([[1, 0, 0, 160], [0, 1, 0, 0], [0, 0, 1, -30], [0, 0, 0, 1]]) {
 		group() {
 			color([0, 0, 0, 1]) {
 				group() {
 					group() {
 						multmatrix([[1, 0, 0, 0], [0, 0, -1, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
 							linear_extrude(height = 1, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-								text(text = "Solid 3D CAD Modeller", size = 18, spacing = 1, font = "Liberation Serif", direction = "ltr", language = "en", script = "latin", halign = "left", valign = "baseline", $fn = 16, $fa = 12, $fs = 2);
+								text(text = "Solid 3D CAD Modeller", size = 18, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "latin", halign = "left", valign = "baseline", $fn = 16, $fa = 12, $fs = 2);
 							}
 						}
 					}
@@ -83,3 +76,4 @@ multmatrix([[1, 0, 0, 110], [0, 1, 0, 0], [0, 0, 1, 80], [0, 0, 0, 1]]) {
 		}
 	}
 }
+group();

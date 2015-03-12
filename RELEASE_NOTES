@@ -1,4 +1,43 @@
 
+# OpenSCAD 2015.03
+
+**Language Features:**
+* Added text() module for 2D text
+* Added offset() module for 2D offsets
+* Added list comprehensions and let()
+* Added concat() function
+* Added chr() function
+* surface() can now take PNG images as input
+* min() and max() can now take a vector argument
+* 2D minkowski can now handle polygons with holes
+* Variables can now be assigned in local blocks without using assign()
+
+**Program Features:**
+* Added Toolbar icons
+* New code editor based on QScintilla
+* Added Splash screen
+* Added SVG export
+* Added AMF export
+* Added --viewall and --autocenter cmd-line parameters
+* GUI is now translated into German, Czech, Spanish, French and Russian
+* MDI (Multiple Document Interface) is now available on all platforms
+* Color schemes for viewer and editor can be user-edited using JSON files
+* GUI components are now dockable
+* Added Tickmarks on axes
+
+**Bugfixes/improvements:**
+* Performance improvement: 2D (clipper), preview, hull, minkowski, surface
+* Performance improvement: Reduce duplicate evaluation of identical expressions
+* Better recursion behavior
+* STL export and import is now more robust
+* Internal cavities are better supported
+* New examples
+* Windows cmd-line behaves better
+* Better mirror() and scale() behavior when using negative factors
+
+**Deprecations:**
+* polyhedron() now takes a faces= argument rather than triangles=
+* assign() is no longer needed. Local variables can be created in any scope
 # OpenSCAD 2014.03
 
 **Language Features:**
@@ -99,6 +138,7 @@
 **Known Bugs:**
 * Linux: command-line png rendering on Gallium is flaky. 
   Workaround: use CGAL --render or hardware rendering.
+
 # OpenSCAD 2013.01
 
 **Features:**
@@ -178,6 +218,7 @@
 * import_dxf(), import_stl() and import_off() are now deprecated. Use import() instead.
 * When exporting geometry from the cmd-line, use the universal -o option. It will export to the correct file format based on the given suffix (dxf, stl, off). The -x and -s parameters are still working but deprecated.
 * F2 and F3 for Save and Reload is now deprecated
+
 # OpenSCAD 2011.06
 
 * Added "Export as Image" menu.
@@ -189,6 +230,7 @@
 * DXF output couldn't be imported into e.g. AutoCAD and Solidworks after updating
   to using the AutoCAD 2000 (AC1015) format. Reverted to the old entity-only output,
   causing LWPOLYLINES to not exported allowed anymore.
+
 # OpenSCAD 2011.04
 
 * Added hull() for convex hulls (2D object only)
@@ -200,6 +242,7 @@
 * DXF: output LWPOLYLINE instead of just LINE entities
 * Bugfixes: More robust DXF export, setting $fs/$fa to 0 caused a crash
 * Some bugs fixed, maybe some new bugs added
+
 # OpenSCAD 2010.05
 
 * Added functions and statements
@@ -209,6 +252,7 @@
 * Added 'include <filename>' and 'use <filename>' statements
   * Old implicit '<filename>' include statement is now obsolete
 * Some bugs fixed, maybe some new bugs added
+
 # OpenSCAD 2010.02
 
 * Added functions and statements
@@ -225,6 +269,7 @@
 * Now using eigen2 for linear algebra
 * Reorganisation of the source tree
 * Some bugs fixed, maybe some new bugs added
+
 # OpenSCAD 2010.01
 
 * Added functions and statements

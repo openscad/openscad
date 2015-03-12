@@ -1,21 +1,27 @@
-echo(version=version());
+// LetterBlock.scad - Basic usage of text() and linear_extrude()
 
+// Module instantiation
+LetterBlock("M");
+
+// Module definition.
+// size=30 defines an optional parameter with a default value.
 module LetterBlock(letter, size=30) {
     difference() {
-        translate([0,0,size/4])
-          cube([size,size,size/2], center=true);
-        translate([0,0,size/6])
-            linear_extrude(height=size, convexity=3)
+        translate([0,0,size/4]) cube([size,size,size/2], center=true);
+        translate([0,0,size/6]) {
+            // convexity is needed for correct preview
+            // since characters can be highly concave
+            linear_extrude(height=size, convexity=4)
                 text(letter, 
                      size=size*22/30,
-                     font="Tahoma",
+                     font="Bitstream Vera Sans",
                      halign="center",
                      valign="center");
+        }
     }
 }
 
-LetterBlock("M");
-
+echo(version=version());
 // Written by Marius Kintel <marius@kintel.net>
 //
 // To the extent possible under law, the author(s) have dedicated all
