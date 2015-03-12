@@ -54,7 +54,7 @@ namespace fs = boost::filesystem;
 class TraceModule : public AbstractModule
 {
 public:
-	TraceModule() { }
+	TraceModule() : AbstractModule(Feature::ExperimentalTraceModule) { }
 	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
 };
 

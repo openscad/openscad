@@ -13,6 +13,8 @@
 Feature::map_t Feature::feature_map;
 Feature::list_t Feature::feature_list;
 
+const Feature Feature::ExperimentalTraceModule("trace", "Enable the <code>trace()</code> module.");
+
 /*
  * List of features, the names given here are used in both command line
  * argument to enable the option and for saving the option value in GUI
