@@ -20,11 +20,8 @@ intersection() {
   linear_extrude(height = fanwidth, center = true, convexity = 10, twist = -fanrot)
     import(file = "example009.dxf", layer = "fan_top");
     
-  // NB! We have to use the deprecated module here since the "fan_side"
-  // layer contains an open polyline, which is not yet supported
-  // by the import() module.
-  rotate_extrude(file = "example009.dxf", layer = "fan_side",
-                 origin = fan_side_center, convexity = 10);
+  rotate_extrude(convexity = 10)
+    import(file = "example009.dxf", layer = "fan_side", origin = [0, -40]);
 }
 
 // Written by Clifford Wolf <clifford@clifford.at> and Marius
