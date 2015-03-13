@@ -127,6 +127,8 @@ setenv_msys2_x86_64_clang()
  export CXX=clang++
  echo CC has been modified: $CC
  echo CXX has been modified: $CXX
+ echo if you haven't installed clang try this:
+ echo   pacman -Sy mingw-w64-x86_64-clang
 }
 
 setenv_msys2_i686()
@@ -136,6 +138,8 @@ setenv_msys2_i686()
  export CXX=clang++
  echo CC has been modified: $CC
  echo CXX has been modified: $CXX
+ echo if you haven't installed clang try this:
+ echo   pacman -Sy mingw-w64-i686-clang
 }
 
 clean_note()
