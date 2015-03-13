@@ -418,7 +418,7 @@ MainWindow::MainWindow(const QString &filename)
 
 	setCurrentOutput();
 
-	std::string helptitle = openscad_version +  "\nhttp://www.openscad.org\n\n";
+	std::string helptitle = "OpenSCAD " + openscad_versionnumber +  "\nhttp://www.openscad.org\n\n";
 	PRINT(helptitle);
 	PRINT(copyrighttext);
 	PRINT("");
@@ -1890,7 +1890,7 @@ void MainWindow::updateStatusBar(ProgressWidget *progressWidget)
 			this->progresswidget = NULL;
 		}
 		if (versionLabel == NULL) {
-			versionLabel = new QLabel(openscad_version.c_str());
+			versionLabel = new QLabel("OpenSCAD " + QString::fromStdString(openscad_displayversionnumber));
 			sb->addPermanentWidget(this->versionLabel);
 		}
 	} else {
