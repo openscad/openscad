@@ -70,6 +70,9 @@ get_msys2_x86_64_deps()
 {
  # for Windows(TM), see http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Microsoft_Windows
  pacman -Sy
+ pacman -S --noconfirm mingw-w64-x86_64-freetype
+ pacman -S --noconfirm mingw-w64-x86_64-fontconfig
+ pacman -S --noconfirm mingw-w64-x86_64-harfbuzz
  pacman -S --noconfirm mingw-w64-x86_64-qt-creator
  pacman -S --noconfirm mingw-w64-x86_64-gdb
  pacman -S --noconfirm mingw-w64-x86_64-boost
@@ -87,6 +90,9 @@ get_msys2_i686_deps()
 {
  # for Windows(TM), see http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Microsoft_Windows
  pacman -Sy
+ pacman -S --noconfirm mingw-w64-i686-freetype
+ pacman -S --noconfirm mingw-w64-i686-fontconfig
+ pacman -S --noconfirm mingw-w64-i686-harfbuzz
  pacman -S --noconfirm mingw-w64-i686-qt-creator
  pacman -S --noconfirm mingw-w64-i686-gdb
  pacman -S --noconfirm mingw-w64-i686-boost
