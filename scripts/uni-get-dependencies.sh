@@ -66,13 +66,49 @@ get_debian_deps()
   libharfbuzz-dev gtk-doc-tools libglib2.0-dev gettext
 }
 
+get_msys2_x86_64_deps()
+{
+ # for Windows(TM), see http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Microsoft_Windows
+ pacman -Sy
+ pacman -S mingw-w64-x86_64-qt-creator
+ pacman -S mingw-w64-x86_64-gdb
+ pacman -S mingw-w64-x86_64-boost
+ pacman -S mingw-w64-x86_64-cgal
+ pacman -S mingw-w64-x86_64-eigen3
+ pacman -S mingw-w64-x86_64-glew
+ pacman -S mingw-w64-x86_64-qscintilla
+ pacman -S mingw-w64-x86_64-opencsg
+ pacman -S mingw-w64-x86_64-bison
+ pacman -S mingw-w64-x86_64-pkg-config
+ pacman -S git
+}
+
+get_msys2_i686_deps()
+{
+ # for Windows(TM), see http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Microsoft_Windows
+ pacman -Sy
+ pacman -S mingw-w64-i686-qt-creator
+ pacman -S mingw-w64-i686-gdb
+ pacman -S mingw-w64-i686-boost
+ pacman -S mingw-w64-i686-cgal
+ pacman -S mingw-w64-i686-eigen3
+ pacman -S mingw-w64-i686-glew
+ pacman -S mingw-w64-i686-qscintilla
+ pacman -S mingw-w64-i686-opencsg
+ pacman -S mingw-w64-i686-bison
+ pacman -S mingw-w64-i686-pkg-config
+ pacman -S git
+}
+
 unknown()
 {
  echo "Unknown system type. Please install the dependency packages listed"
  echo "in README.md using your system's package manager."
 }
 
-if [ -e /etc/issue ]; then
+
+try_using_etc_issue()
+{
  if [ "`grep -i ubuntu /etc/issue`" ]; then
   get_debian_deps
  elif [ "`grep -i debian /etc/issue`" ]; then
@@ -91,18 +127,41 @@ if [ -e /etc/issue ]; then
   get_mageia_deps
  elif [ "`grep -i qomo /etc/issue`" ]; then
   get_qomo_deps
- elif [ "`command -v rpm`" ]; then
-  if [ "`rpm -qa | grep altlinux`" ]; then
-   get_altlinux_deps
-  fi
  else
   unknown
  fi
-elif [ "`uname | grep -i freebsd `" ]; then
- get_freebsd_deps
-elif [ "`uname | grep -i netbsd`" ]; then
- get_netbsd_deps
+}
+
+try_using_uname()
+{
+ if [ "`uname -a | grep -i x86_64.*Msys`" ]; then
+  get_msys2_x86_64_deps
+ elif [ "`uname -a | grep -i i686.*Msys`" ]; then
+  get_msys2_i686_deps
+ elif [ "`uname | grep -i freebsd `" ]; then
+  get_freebsd_deps
+ elif [ "`uname | grep -i netbsd`" ]; then
+  get_netbsd_deps
+ else
+  unknown
+ fi
+}
+
+try_using_rpm()
+{
+ if [ "`rpm -qa | grep altlinux`" ]; then
+  get_altlinux_deps
+ else
+  unknown
+ fi
+}
+
+if [ -e /etc/issue ]; then
+ try_using_etc_issue
+elif [ "`command -v uname`" ]; then
+ try_using_uname
+elif [ "`command -v rpm`" ]; then
+ try_using_uname
 else
  unknown
 fi
-
