@@ -108,6 +108,18 @@ setenv_netbsd_clang()
  echo QMAKESPEC has been modified: $QMAKESPEC
 }
 
+setenv_msys2_x86_64()
+{
+ PATH=/mingw64/bin:$PATH
+ echo PATH prepended with /mingw64/bin - new path is $PATH
+}
+
+setenv_msys2_i686()
+{
+ PATH=/mingw32/bin:$PATH
+ echo PATH prepended with /mingw32/bin - new path is $PATH
+}
+
 clean_note()
 {
  if [ "`command -v qmake-qt4`" ]; then
@@ -118,7 +130,11 @@ clean_note()
  echo "Please re-run" $QMAKEBIN "and run 'make clean' if necessary"
 }
 
-if [ "`uname | grep -i 'linux\|debian'`" ]; then
+if [ "`uname -a | grep -i x86_64.*Msys`" ]; then
+ setenv_msys2_x86_64
+elif [ "`uname -a | grep -i i686.*Msys`" ]; then
+ setenv_msys2_x86_64
+elif [ "`uname | grep -i 'linux\|debian'`" ]; then
  setenv_common
  if [ "`echo $* | grep clang`" ]; then
   setenv_linux_clang

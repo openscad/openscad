@@ -70,6 +70,8 @@ get_msys2_x86_64_deps()
 {
  # for Windows(TM), see http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Microsoft_Windows
  pacman -Sy
+ pacman -S --noconfirm git
+ pacman -S --noconfirm make
  pacman -S --noconfirm mingw-w64-x86_64-freetype
  pacman -S --noconfirm mingw-w64-x86_64-fontconfig
  pacman -S --noconfirm mingw-w64-x86_64-harfbuzz
@@ -83,13 +85,14 @@ get_msys2_x86_64_deps()
  pacman -S --noconfirm mingw-w64-x86_64-opencsg
  pacman -S --noconfirm mingw-w64-x86_64-bison
  pacman -S --noconfirm mingw-w64-x86_64-pkg-config
- pacman -S --noconfirm git
 }
 
 get_msys2_i686_deps()
 {
  # for Windows(TM), see http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Microsoft_Windows
  pacman -Sy
+ pacman -S --noconfirm git
+ pacman -S --noconfirm make
  pacman -S --noconfirm mingw-w64-i686-freetype
  pacman -S --noconfirm mingw-w64-i686-fontconfig
  pacman -S --noconfirm mingw-w64-i686-harfbuzz
@@ -103,7 +106,6 @@ get_msys2_i686_deps()
  pacman -S --noconfirm mingw-w64-i686-opencsg
  pacman -S --noconfirm mingw-w64-i686-bison
  pacman -S --noconfirm mingw-w64-i686-pkg-config
- pacman -S --noconfirm git
 }
 
 unknown()
