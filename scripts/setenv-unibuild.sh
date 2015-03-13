@@ -114,7 +114,7 @@ setenv_msys2_x86_64()
  echo PATH prepended with /mingw64/bin - new path is $PATH
 }
 
-setenv_msys2_i686()
+setenv_msys2_w64_i686()
 {
  PATH=/mingw32/bin:$PATH
  echo PATH prepended with /mingw32/bin - new path is $PATH
@@ -127,18 +127,18 @@ setenv_msys2_x86_64_clang()
  export CXX=clang++
  echo CC has been modified: $CC
  echo CXX has been modified: $CXX
- echo if you haven't installed clang try this:
+ echo if you have not installed clang try this:
  echo   pacman -Sy mingw-w64-x86_64-clang
 }
 
-setenv_msys2_i686()
+setenv_msys2_w64_i686()
 {
- setenv_msys2_i686
+ setenv_msys2_w64_i686
  export CC=clang
  export CXX=clang++
  echo CC has been modified: $CC
  echo CXX has been modified: $CXX
- echo if you haven't installed clang try this:
+ echo if you have not installed clang try this:
  echo   pacman -Sy mingw-w64-i686-clang
 }
 
@@ -153,9 +153,17 @@ clean_note()
 }
 
 if [ "`uname -a | grep -i x86_64.*Msys`" ]; then
- setenv_msys2_x86_64
+ if [ "`echo $* | grep clang`" ]; then
+  setenv_msys2_x86_64_clang
+ else
+  setenv_msys2_x86_64
+ fi
 elif [ "`uname -a | grep -i i686.*Msys`" ]; then
- setenv_msys2_x86_64
+ if [ "`echo $* | grep clang`" ]; then
+  setenv_msys2_w64_i686_clang
+ else
+  setenv_msys2_w64_i686
+ fi
 elif [ "`uname | grep -i 'linux\|debian'`" ]; then
  setenv_common
  if [ "`echo $* | grep clang`" ]; then
