@@ -60,19 +60,12 @@ else()
           CMAKE_FLAGS -DCOMPILE_DEFINITIONS:STRING=${MACRO_CHECK_FUNCTION_DEFINITIONS}
           "${CHECK_CXX_SOURCE_COMPILES_ADD_LIBRARIES}"
           "${CHECK_CXX_SOURCE_COMPILES_ADD_INCLUDES}"
-          COPY_FILE VAR_EXE)
+          COPY_FILE ${VAR}_EXE)
 
-  #if we have an output variable:
- # if(OUTPUT)
- MESSAGE(STATUS "Var_exe is: ${VAR_EXE}")
-  MESSAGE(STATUS "Var is: ${VAR}")
-    EXECUTE_PROCESS(COMMAND nodejs "${VAR_EXE}"
+    EXECUTE_PROCESS(COMMAND nodejs "${VAR}_EXE"
           RESULT_VARIABLE ${VAR}
           OUTPUT_VARIABLE OUTPUT)
- # else()
- #   EXECUTE_PROCESS(COMMAND nodejs "${VAR_EXE}""
- #         RESULT_VARIABLE ${VAR})
- # endif()
+
 endif()
   
 

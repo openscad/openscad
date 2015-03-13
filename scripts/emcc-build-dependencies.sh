@@ -385,18 +385,25 @@ build_cgal()
   #Also copy in our alternative CGAL_CheckCXXFileRuns.cmake
   cp $OPENSCAD_SCRIPTDIR/../tests/CGAL_CheckCXXFileRuns.cmake ./cmake/modules/
   #and CGAL_Macros.cmake
-  cp $OPENSCAD_SCRIPTDIR/../tests/CGAL_Macros.cmake ./cmake/modules
+  cp $OPENSCAD_SCRIPTDIR/../tests/CGAL_Macros.cmake ./cmake/modules/
+  #and CMakeLists.txt?
+  cp $OPENSCAD_SCRIPTDIR/../tests/CGAL_SetupBoost.cmake ./cmake/modules/
+  #and move the tests that are going to fail
+  mv config/testfiles/CGAL_CFG_NO_NEXTAFTER.cpp config/testfiles/CGAL_CFG_NO_NEXTAFTER.cpp.ignore
+  mv config/testfiles/CGAL_CFG_NESTED_CLASS_FRIEND_DECLARATION_BUG.cpp config/testfiles/CGAL_CFG_NESTED_CLASS_FRIEND_DECLARATION_BUG.cpp.ignore
+  mv config/testfiles/CGAL_CFG_BOOST_VARIANT_SWAP_BUG.cpp config/testfiles/CGAL_CFG_BOOST_VARIANT_SWAP_BUG.cpp.ignore
 
-  mkdir bin &&  cd bin &&  rm -rf ./*
+  cp $OPENSCAD_SCRIPTDIR/../tests/CGAL_config.h include/CGAL/config.h
+
+  mkdir bin 
+  cd bin &&   rm -rf ./*
   
   if [ "`uname -a| grep ppc64`" ]; then
     CGAL_BUILDTYPE="Release" # avoid assertion violation
   else
     CGAL_BUILDTYPE="Debug"
   fi
-  #-DBoost_USE_MULTITHREADED=OFF
-  #-DBoost_INCLUDE_DIR=$DEPLOYDIR/include/boost
- #-DBOOST_INCLUDE_DIRS=/path/to/boost/headers -DBoost_LIBRARY_DIRS=/path/to/boost/libs
+
   DEBUGBOOSTFIND=1 # for debugging FindBoost.cmake (not for debugging boost)
   Boost_NO_SYSTEM_PATHS=1
   if [ "`echo $2 | grep use-sys-libs`" ]; then
@@ -405,26 +412,26 @@ build_cgal()
     #Gargh why is it so bad at finding boost?!
     EMCONFIGURE_JS=1 cmake \
       -DCMAKE_TOOLCHAIN_FILE=$EMSCRIPTEN/cmake/Modules/Platform/Emscripten.cmake \
-      -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DGMP_INCLUDE_DIR=$DEPLOYDIR/include \
-      -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.a -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.a \
-      -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include \
-      -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.a -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF \
-      -DWITH_CGAL_ImageIO=OFF -DCMAKE_BUILD_TYPE=$CGAL_BUILDTYPE \
-      -DBOOST_LIBRARYDIR=$DEPLOYDIR/lib/boost -DBoost_LIBRARY_DIR=$DEPLOYDIR/lib/boost \
-      -DBOOST_INCLUDEDIR=$DEPLOYDIR/include -DBoost_INCLUDE_DIR=$DEPLOYDIR/include \
-      -DBoost_DEBUG=$DEBUGBOOSTFIND -DBoost_USE_MULTITHREADED=OFF \
-      -DBoost_LIBRARIES=$DEPLOYDIR/lib \
-      -DBoost_NO_SYSTEM_PATHS=1 ..
-
-
-   #for whatever stupid reason, Boost_DIR doesn't seem to work...
-   # EMCONFIGURE_JS=1  cmake -DCMAKE_TOOLCHAIN_FILE=$EMSCRIPTEN/cmake/Modules/Platform/Emscripten.cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.a -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.a -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.a -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DBoost_DIR=$DEPLOYDIR/share/boost/cmake/BoostConfig.cmake -DCMAKE_BUILD_TYPE=$CGAL_BUILDTYPE -DBoost_DEBUG=$DEBUGBOOSTFIND -DBoost_USE_MULTITHREADED=OFF -DBoost_NO_SYSTEM_PATHS=1 ..
-
-   # cmake -DCMAKE_TOOLCHAIN_FILE=$EMSCRIPTEN/cmake/Modules/Platform/Emscripten.cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.a -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.a -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.a -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DBOOST_LIBRARYDIR=$DEPLOYDIR/lib -DBOOST_INCLUDEDIR=$DEPLOYDIR/include -DCMAKE_BUILD_TYPE=$CGAL_BUILDTYPE -DBoost_DEBUG=$DEBUGBOOSTFIND -DBoost_NO_SYSTEM_PATHS=1 ..
-   #EMCONFIGURE_JS=1 emconfigure cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.a -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.a -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.a -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DBOOST_LIBRARYDIR=$DEPLOYDIR/lib -DBOOST_INCLUDEDIR=$DEPLOYDIR/include -DCMAKE_BUILD_TYPE=$CGAL_BUILDTYPE -DBoost_DEBUG=$DEBUGBOOSTFIND -DBoost_NO_SYSTEM_PATHS=1 ..
+      -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR \
+      -DGMP_INCLUDE_DIR=$DEPLOYDIR/include \
+      -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.a \
+      -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.a \
+      -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include \
+      -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include \
+      -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.a \
+      -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF \
+      -DCMAKE_BUILD_TYPE=$CGAL_BUILDTYPE \
+      -DBoost_DEBUG=$DEBUGBOOSTFIND \
+      -DBoost_NO_SYSTEM_PATHS=1 \
+      -DBOOST_LIBRARYDIR=$DEPLOYDIR/lib/boost \
+      -DBoost_LIBRARIES=$DEPLOYDIR/lib/boost/libboost_system.a \
+      -DBoost_INCLUDE_DIR=$DEPLOYDIR/include \
+      -DBoost_USE_MULTITHREADED=OFF \
+      -G "Unix Makefiles" \
+      ..
   fi
-  emmake make -j$NUMCPU
-  emmake make install
+  make
+  make install
 }
 
 build_glew()
