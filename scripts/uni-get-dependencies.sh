@@ -70,34 +70,34 @@ get_msys2_x86_64_deps()
 {
  # for Windows(TM), see http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Microsoft_Windows
  pacman -Sy
- pacman -S mingw-w64-x86_64-qt-creator
- pacman -S mingw-w64-x86_64-gdb
- pacman -S mingw-w64-x86_64-boost
- pacman -S mingw-w64-x86_64-cgal
- pacman -S mingw-w64-x86_64-eigen3
- pacman -S mingw-w64-x86_64-glew
- pacman -S mingw-w64-x86_64-qscintilla
- pacman -S mingw-w64-x86_64-opencsg
- pacman -S mingw-w64-x86_64-bison
- pacman -S mingw-w64-x86_64-pkg-config
- pacman -S git
+ pacman -S --noconfirm mingw-w64-x86_64-qt-creator
+ pacman -S --noconfirm mingw-w64-x86_64-gdb
+ pacman -S --noconfirm mingw-w64-x86_64-boost
+ pacman -S --noconfirm mingw-w64-x86_64-cgal
+ pacman -S --noconfirm mingw-w64-x86_64-eigen3
+ pacman -S --noconfirm mingw-w64-x86_64-glew
+ pacman -S --noconfirm mingw-w64-x86_64-qscintilla
+ pacman -S --noconfirm mingw-w64-x86_64-opencsg
+ pacman -S --noconfirm mingw-w64-x86_64-bison
+ pacman -S --noconfirm mingw-w64-x86_64-pkg-config
+ pacman -S --noconfirm git
 }
 
 get_msys2_i686_deps()
 {
  # for Windows(TM), see http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Microsoft_Windows
  pacman -Sy
- pacman -S mingw-w64-i686-qt-creator
- pacman -S mingw-w64-i686-gdb
- pacman -S mingw-w64-i686-boost
- pacman -S mingw-w64-i686-cgal
- pacman -S mingw-w64-i686-eigen3
- pacman -S mingw-w64-i686-glew
- pacman -S mingw-w64-i686-qscintilla
- pacman -S mingw-w64-i686-opencsg
- pacman -S mingw-w64-i686-bison
- pacman -S mingw-w64-i686-pkg-config
- pacman -S git
+ pacman -S --noconfirm mingw-w64-i686-qt-creator
+ pacman -S --noconfirm mingw-w64-i686-gdb
+ pacman -S --noconfirm mingw-w64-i686-boost
+ pacman -S --noconfirm mingw-w64-i686-cgal
+ pacman -S --noconfirm mingw-w64-i686-eigen3
+ pacman -S --noconfirm mingw-w64-i686-glew
+ pacman -S --noconfirm mingw-w64-i686-qscintilla
+ pacman -S --noconfirm mingw-w64-i686-opencsg
+ pacman -S --noconfirm mingw-w64-i686-bison
+ pacman -S --noconfirm mingw-w64-i686-pkg-config
+ pacman -S --noconfirm git
 }
 
 unknown()
