@@ -197,7 +197,7 @@ std::vector<Geometry *> FreetypeRenderer::render(const FreetypeRenderer::Params 
 			PRINTB("Could not get glyph %u for char at index %u in text '%s'", glyph_index % idx % params.text);
 			continue;
 		}
-		const GlyphData *glyph_data = new GlyphData(glyph, idx, &glyph_info[idx], &glyph_pos[idx]);
+		const GlyphData *glyph_data = new GlyphData(glyph, idx, &glyph_pos[idx]);
 		glyph_array.push_back(glyph_data);
 	}
 
