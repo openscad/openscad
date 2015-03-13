@@ -1165,13 +1165,15 @@ set_test_config(Bugs
                      offpngtest_bad-stl-wing
                      offcgalpngtest_issue1105b
                      offcgalpngtest_issue1105c
-                     offcgalpngtest_issue1215b)
+                     offcgalpngtest_issue1215b
+                     offcgalpngtest_issue1258)
 
 list(APPEND EXPORT3D_CGAL_TEST_FILES 
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/polyhedron-tests.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1105b.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1105c.scad
-                                ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1215b.scad)
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1215b.scad
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1258.scad)
 
 list(APPEND EXPORT3D_TEST_FILES 
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/nonmanifold-polyhedron.scad
@@ -1227,7 +1229,14 @@ disable_tests(throwntogethertest_minkowski3-erosion)
 # as currently inf/nan is written directly to the CSG file (e.g. r = inf)
 # which is not valid or even misleading in case a variable inf exists.
 # FIXME: define export behavior for inf/nan when exporting CSG files
-disable_tests(csgpngtest_primitive-inf-tests csgpngtest_transform-nan-inf-tests)
+disable_tests(csgpngtest_primitive-inf-tests
+              csgpngtest_transform-nan-inf-tests
+              csgpngtest_primitive-inf-tests
+              csgpngtest_transform-nan-inf-tests
+              # Triggers a floating point accuracy issue causing loaded .csg to
+              # render slightly differently
+              csgpngtest_issue1258
+)
 
 # Test config handling
 
@@ -1280,8 +1289,7 @@ list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue13.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue945e.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1223.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1223b.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1246.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1258.scad)
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1246.scad)
 
 # We know that we cannot import weakly manifold files into CGAL, so to make tests easier
 # to manage, don't try. Once we improve import, we can reenable this
