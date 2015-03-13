@@ -120,6 +120,24 @@ setenv_msys2_i686()
  echo PATH prepended with /mingw32/bin - new path is $PATH
 }
 
+setenv_msys2_x86_64_clang()
+{
+ setenv_msys2_x86_64
+ export CC=clang
+ export CXX=clang++
+ echo CC has been modified: $CC
+ echo CXX has been modified: $CXX
+}
+
+setenv_msys2_i686()
+{
+ setenv_msys2_i686
+ export CC=clang
+ export CXX=clang++
+ echo CC has been modified: $CC
+ echo CXX has been modified: $CXX
+}
+
 clean_note()
 {
  if [ "`command -v qmake-qt4`" ]; then
