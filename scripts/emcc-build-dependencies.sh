@@ -84,6 +84,7 @@ detect_glu()
   if [ -e /usr/include/GL/glu.h ]; then detect_glu_result=1; fi
   if [ -e /usr/local/include/GL/glu.h ]; then detect_glu_result=1; fi
   if [ -e /usr/pkg/X11R7/include/GL/glu.h ]; then detect_glu_result=1; fi
+  if [ -e $EMSCRIPTEN/system/include/GL/glu.h ]; then detect_glu_result=1; fi
   return
 }
 
@@ -461,26 +462,30 @@ build_glew()
   # Glew's makefile is not built for Linux Multiarch. We aren't trying
   # to fix everything here, just the test machines OScad normally runs on
 
-  # Fedora 64-bit
-  if [ "`uname -m | grep 64`" ]; then
-    if [ -e /usr/lib64/libXmu.so.6 ]; then
-      sed -ibak s/"\-lXmu"/"\-L\/usr\/lib64\/libXmu.so.6"/ config/Makefile.linux
-    fi
+ # # Fedora 64-bit
+ # if [ "`uname -m | grep 64`" ]; then
+ #   if [ -e /usr/lib64/libXmu.so.6 ]; then
+ #     sed -ibak s/"\-lXmu"/"\-L\/usr\/lib64\/libXmu.so.6"/ config/Makefile.linux
+ #   fi
+# # fi
+#
+# # # debian hurd i386
+# # if [ "`uname -m | grep 386`" ]; then
+# #   if [ -e /usr/lib/i386-gnu/libXi.so.6 ]; then
+# #     sed -ibak s/"-lXi"/"\-L\/usr\/lib\/i386-gnu\/libXi.so.6"/ config/Makefile.gnu
+# #   fi
+# # fi
+#
+#  # clang linux
+#  if [ $CC ]; then
+#    sed -ibak s/"CC = cc"/"# CC = cc"/ config/Makefile.linux
+#  fi
+#
+  if [ $EMSCRIPTEN ]; then
+    sed -ibak s/"CC = cc"/"CC = emcc"/ config/Makefile.linux
   fi
 
-  # debian hurd i386
-  if [ "`uname -m | grep 386`" ]; then
-    if [ -e /usr/lib/i386-gnu/libXi.so.6 ]; then
-      sed -ibak s/"-lXi"/"\-L\/usr\/lib\/i386-gnu\/libXi.so.6"/ config/Makefile.gnu
-    fi
-  fi
-
-  # clang linux
-  if [ $CC ]; then
-    sed -ibak s/"CC = cc"/"# CC = cc"/ config/Makefile.linux
-  fi
-
-  MAKER=emmake make
+  MAKER="emmake make"
   if [ "`uname | grep BSD`" ]; then
     if [ "`command -v gmake`" ]; then
       MAKER=gmake
@@ -525,12 +530,12 @@ build_opencsg()
   #else
   #  echo qmake not found... using standard OpenCSG makefiles
     echo not using qmake because reasons
-    OPENCSG_QMAKE=emmake make
+    OPENCSG_QMAKE="emmake make"
     cp Makefile Makefile.bak
     cp src/Makefile src/Makefile.bak
 
     cat Makefile.bak | sed s/example// |sed s/glew// > Makefile
-    cat src/Makefile.bak | sed s@^INCPATH.*@INCPATH\ =\ -I$BASEDIR/include\ -I../include\ -I..\ -I.@ > src/Makefile
+    cat src/Makefile.bak | sed s@^INCPATH.*@INCPATH\ =\ -I$BASEDIR/include\ -I../include\ -I$EMSCRIPTEN/include/\ -I.@ > src/Makefile
     cp src/Makefile src/Makefile.bak2
     #cat src/Makefile.bak2 | sed s@^LIBS.*@LIBS\ =\ -L$BASEDIR/lib\ -L/usr/X11R6/lib\ -lGLU\ -lGL@ > src/Makefile
     cat src/Makefile.bak2 | sed s@^LIBS.*@LIBS\ =\ -L$BASEDIR/lib\ -lGLU\ -lGL@ > src/Makefile
@@ -543,6 +548,9 @@ build_opencsg()
   #fi
 
   cd $BASEDIR/src/OpenCSG-$version/src
+  #RenderTexture is in the folder above pwd, so let's fix the file.
+  mv pBufferTexture.cpp pBufferTexture.cpp.bak
+  cat pBufferTexture.cpp.bak | sed 's/RenderTexture\/RenderTexture\.h/\.\.\/RenderTexture\/RenderTexture\.h/' > pBufferTexture.cpp
   $OPENCSG_QMAKE
 
   cd $BASEDIR/src/OpenCSG-$version
@@ -719,7 +727,7 @@ fi
 check_env
 
 . $OPENSCAD_SCRIPTDIR/setenv-emscriptenbuild.sh # '.' is equivalent to 'source'
-. $OPENSCAD_SCRIPTDIR/common-build-dependencies.sh
+#?. $OPENSCAD_SCRIPTDIR/common-build-dependencies.sh
 SRCDIR=$BASEDIR/src
 
 if [ ! $NUMCPU ]; then
@@ -873,7 +881,9 @@ build_gettext()
   tar xzf "gettext-$version.tar.gz"
   cd "gettext-$version"
 
-  emconfigure ./configure --prefix="$DEPLOYDIR" --disable-java --disable-native-java
+# ./autogen.sh --prefix="$DEPLOYDIR" --disable-java --disable-native-java
+#-D_OBSTACK_SIZE_T=size_t
+  EMCONFGIURE_JS=1 emconfigure ./configure --prefix="$DEPLOYDIR" --disable-nls --disable-java --disable-native-java CPPFLAGS="$CPPFLAGS -D_OBSTACK_SIZE_T=size_t"
   emmake make -j$NUMCPU
   emmake make install
 }
@@ -1075,7 +1085,7 @@ build_mpfr 3.1.1
 build_boost 1.56.0
 # NB! For CGAL, also update the actual download URL in the function
 build_cgal 4.4
-build_glew 1.9.0
+#build_glew 1.9.0
 build_opencsg 1.3.2
 build_gettext 0.18.3.1
 build_glib2 2.38.2
