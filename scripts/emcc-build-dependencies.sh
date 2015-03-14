@@ -387,7 +387,7 @@ build_cgal()
   cp $OPENSCAD_SCRIPTDIR/../tests/CGAL_CheckCXXFileRuns.cmake ./cmake/modules/
   #and CGAL_Macros.cmake
   cp $OPENSCAD_SCRIPTDIR/../tests/CGAL_Macros.cmake ./cmake/modules/
-  #and CMakeLists.txt?
+  #and CGAL_SetupBoost.cmake
   cp $OPENSCAD_SCRIPTDIR/../tests/CGAL_SetupBoost.cmake ./cmake/modules/
   #and move the tests that are going to fail
   mv config/testfiles/CGAL_CFG_NO_NEXTAFTER.cpp config/testfiles/CGAL_CFG_NO_NEXTAFTER.cpp.ignore
@@ -675,7 +675,7 @@ build_libffi()
     exit 1
   fi
   patch -Np1 -i ../libffi-3.0.13-includedir-1.patch
-  emconfigure ./configure --prefix="$DEPLOYDIR"
+  emconfigure ./configure --prefix="$DEPLOYDIR" --build=none --host=none
   emmake make -j$NUMCPU
   emmake make install
 }
@@ -789,9 +789,30 @@ build_freetype()
   fi
   tar xzf "freetype-$version.tar.gz"
   cd "freetype-$version"
-  emconfigure ./configure --prefix="$DEPLOYDIR" $extra_config_flags
+  EMCONFIGURE_JS=1 emconfigure ./configure --prefix="$DEPLOYDIR" $extra_config_flags
   emmake make -j"$NUMCPU"
   emmake make install
+}
+
+#Might be a good idea to use the freetype bundled with emscripten.
+#currently version 2.4.4
+build_freetype_emscripten()
+{
+  version="$1"
+  extra_config_flags="$2"
+
+  if [ -e "$DEPLOYDIR/include/freetype2" ]; then
+    echo "freetype already installed. not building"
+    return
+  fi
+
+  echo "Building freetype (bundled with emscripten)..."
+  cd "$BASEDIR"/src
+  cp -r $EMSCRIPTEN/tests/freetype ./
+  cd freetype
+  EMCONFIGURE_JS=1 emconfigure ./configure --prefix="$DEPLOYDIR" $extra_config_flags
+  emmake make -j"$NUMCPU"
+  make install
 }
  
 build_libxml2()
@@ -813,7 +834,7 @@ build_libxml2()
   cd "libxml2-$version"
   emconfigure ./configure --prefix="$DEPLOYDIR" --without-ftp --without-http --without-python
   emmake make -j$NUMCPU
-  emmake make install
+  make install
 }
 
 build_fontconfig()
@@ -834,11 +855,9 @@ build_fontconfig()
   fi
   tar xzf "fontconfig-$version.tar.gz"
   cd "fontconfig-$version"
-  export PKG_CONFIG_PATH="$DEPLOYDIR/lib/pkgconfig"
-  emconfigure ./configure --prefix=/ --enable-libxml2 --disable-docs $extra_config_flags
-  unset PKG_CONFIG_PATH
-  DESTDIR="$DEPLOYDIR" emmake make -j$NUMCPU
-  DESTDIR="$DEPLOYDIR" emmake make install
+  emconfigure ./configure --prefix=/ --enable-libxml2 --disable-docs PKG_CONFIG_PATH="$DEPLOYDIR/lib/pkgconfig" $extra_config_flags
+  DESTDIR="$DEPLOYDIR" emmake make -j"$NUMCPU"
+  DESTDIR="$DEPLOYDIR" make install
 }
 
 build_libffi()
@@ -858,8 +877,8 @@ build_libffi()
   fi
   tar xzf "libffi-$version.tar.gz"
   cd "libffi-$version"
-  emconfigure ./configure --prefix="$DEPLOYDIR"
-  emmake make -j$NUMCPU
+  emconfigure ./configure --prefix="$DEPLOYDIR" --disable-libtool
+  emmake make -j"$NUMCPU"
   emmake make install
 }
 
@@ -933,8 +952,8 @@ build_ragel()
   cd "ragel-$version"
   sed -e "s/setiosflags(ios::right)/std::&/g" ragel/javacodegen.cpp > ragel/javacodegen.cpp.new && mv ragel/javacodegen.cpp.new ragel/javacodegen.cpp
   emconfigure ./configure --prefix="$DEPLOYDIR"
-  emmake make -j$NUMCPU
-  emmake make install
+  emmake make -j"$NUMCPU"
+  make install
 }
 
 build_harfbuzz()
@@ -958,7 +977,7 @@ build_harfbuzz()
   # disable doc directories as they make problems on Mac OS Build
   sed -e "s/SUBDIRS = src util test docs/SUBDIRS = src util test/g" Makefile.am > Makefile.am.bak && mv Makefile.am.bak Makefile.am
   sed -e "s/^docs.*$//" configure.ac > configure.ac.bak && mv configure.ac.bak configure.ac
-  ./autogen.sh --prefix="$DEPLOYDIR" --with-freetype=yes --with-gobject=no --with-cairo=no --with-icu=no $extra_config_flags
+  emconfigure ./autogen.sh --prefix="$DEPLOYDIR" --with-freetype=yes --with-gobject=no --with-cairo=no --with-icu=no $extra_config_flags
   emmake make -j$NUMCPU
   emmake make install
 }
@@ -970,12 +989,12 @@ if [ $1 ]; then
     exit $?
   fi
   if [ $1 = "cgal" ]; then
-    #immediate failure in configure
+    #THIS ONE COMPILES!!!
     build_cgal 4.4 use-sys-libs
     exit $?
   fi
   if [ $1 = "opencsg" ]; then
-    #errors with GL required
+    #THIS ONE COMPILES!!!
     build_opencsg 1.3.2
     exit $?
   fi
@@ -990,8 +1009,6 @@ if [ $1 ]; then
     exit $?
   fi
   if [ $1 = "glu" ]; then
-    # Mesa and GLU split in late 2012, so it's not on some systems
-    #build fails for GL
     build_glu 9.0.0
     exit $?
   fi
@@ -1052,7 +1069,7 @@ if [ $1 ]; then
     exit $?
   fi
   if [ $1 = "fontconfig" ]; then
-    #Can't find freetype
+    #variable has incomplete type 'struct random_data'
     build_fontconfig 2.11.0 --with-add-fonts=/usr/X11R6/lib/X11/fonts,/usr/local/share/fonts
     exit $?
   fi
@@ -1091,7 +1108,7 @@ build_gettext 0.18.3.1
 build_glib2 2.38.2
 
 # the following are only needed for text()
-build_freetype 2.5.0.1 --without-png
+build_freetype_emscripten 2.5.0.1 --without-png
 build_libxml2 2.9.1
 build_fontconfig 2.11.0 --with-add-fonts=/usr/X11R6/lib/X11/fonts,/usr/local/share/fonts
 build_ragel 6.9
