@@ -32,8 +32,8 @@
 #
 # If your system lacks qt4, build like this:
 #
-#   ./scripts/uemcc-build-dependencies.sh qt4
-#   . ./scripts/setenv-unibuild.sh #(Rerun to re-detect qt4)
+#   ./scripts/emcc-build-dependencies.sh qt4
+#   . ./scripts/setenv-emscriptenbuild.sh #(Rerun to re-detect qt4)
 #
 # If your system lacks glu, gettext, or glib2, you can build them as well:
 #
@@ -330,9 +330,11 @@ build_boost()
   #if I want to only build the parts we're actually going to use, then do this instead:
   #make -j$NUMCPU boost_thread boost_program_options boost_filesystem boost_system boost_regex
   make install
-  #FindBoost.cmake is awful at doing its job, so we might have to make it easier to specify where boost is for CGAL:
-  #cd $DEPLOYDIR/share
-  #ln -s boost* ./boost
+  #FindBoost.cmake is awful at doing its job, so we should make it easy to specify where boost is for CGAL:
+  cd $DEPLOYDIR/include
+  ln -s boost* ./boost
+  cd $DEPLOYDIR/lib
+  ln -s boost* ./boost
   
 }
 
@@ -426,7 +428,7 @@ build_cgal()
       -DBoost_NO_SYSTEM_PATHS=1 \
       -DBOOST_LIBRARYDIR=$DEPLOYDIR/lib/boost \
       -DBoost_LIBRARIES=$DEPLOYDIR/lib/boost/libboost_system.a \
-      -DBoost_INCLUDE_DIR=$DEPLOYDIR/include \
+      -DBoost_INCLUDE_DIR=$DEPLOYDIR/include/boost \
       -DBoost_USE_MULTITHREADED=OFF \
       -G "Unix Makefiles" \
       ..
@@ -667,6 +669,7 @@ build_libffi()
   if [ ! -f "libffi-$version.tar.gz" ]; then
     curl --insecure -LO "ftp://sourceware.org/pub/libffi/libffi-$version.tar.gz"
     curl --insecure -LO "http://www.linuxfromscratch.org/patches/blfs/svn/libffi-$version-includedir-1.patch"
+    #http://www.linuxfromscratch.org/patches/downloads/libffi/libffi-3.0.13-includedir-1.patch
   fi
   tar xzf "libffi-$version.tar.gz"
   cd "libffi-$version"
@@ -990,7 +993,7 @@ if [ $1 ]; then
   fi
   if [ $1 = "cgal" ]; then
     #THIS ONE COMPILES!!!
-    build_cgal 4.4 use-sys-libs
+    build_cgal 4.4
     exit $?
   fi
   if [ $1 = "opencsg" ]; then
