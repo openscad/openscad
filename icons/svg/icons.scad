@@ -1,8 +1,9 @@
 $fn = 60;
 width = 70;
 height = 100;
-thickness = 5;
-edge_rounding = 2;
+thin = 5;
+thick = 10;
+rounding = 2;
 corner_size = 30;
 
 font = "Open Sans:style=Bold";
@@ -25,6 +26,7 @@ icons = [
     ["unindent"],
     ["new"],
     ["save"],
+    ["open"],
 ];
 
 module outline(w) {
@@ -42,15 +44,15 @@ module inset(w) {
 }
 
 module paper() {
-    w = edge_rounding + thickness;
-    offset(edge_rounding)
+    w = rounding + thin;
+    offset(rounding)
         translate([w, w])
             square([width - 2 * w, height - 2 * w]);
 }
 
 module export_paper() {
     difference() {
-        outline(thickness) paper();
+        outline(thin) paper();
         translate([-1, height - corner_size + 1]) square([corner_size, corner_size]);
     }
     export_paper_corner();
@@ -61,7 +63,7 @@ module export_paper_corner() {
         rotate(90) {
             hull() {
                 intersection() {
-                    outline(thickness) paper();
+                    outline(thin) paper();
                     translate([-1, -1]) square([corner_size + 1, corner_size + 1]);
                 }
             }
@@ -141,16 +143,16 @@ module zoom() {
             circle(r = 40);
             rotate(45)
                 translate([0, -50])
-                    offset(thickness)
+                    offset(thin)
                         square([8, 80], center = true);
         }
-        circle(r = 40 - thickness);
+        circle(r = 40 - thin);
     }
 }
 
 module cross() {
-    square([10, 35], center = true);
-    square([35, 10], center = true);
+    square([thick, 35], center = true);
+    square([35, thick], center = true);
 }
 
 module zoom_in() {
@@ -182,7 +184,7 @@ module redo() {
 module indent_document() {
     for (a = [ 0 : 3 ]) {
         x = abs(a - 1.5) < 1 ? 30 : 0;
-        translate([x, 20 * a]) square([80 - x, 10]);
+        translate([x, 20 * a]) square([80 - x, thick]);
     }
     offset(2) children();
 }
@@ -198,6 +200,28 @@ module unindent() {
 module new() {
     export_paper();
     translate([width / 2, 2 * height / 5]) cross();
+}
+
+module open() {
+    module small_paper() translate([4.5,5]*u) scale(0.77) export_paper();
+    module folder() {
+        square([20,22]*u-[w,w]);
+        translate([5.5,0]*u) square([20,19]*u-[w,w]);
+    }
+    module flap() translate([rounding,rounding]) offset(r=rounding) polygon([[3,0]*u, [24,0]*u, [30,12]*u, [9,12]*u]);
+
+    u = height/32;
+    w = rounding + thin;
+    difference() {
+      translate([rounding, rounding]) offset(r=rounding) folder();
+      translate([rounding, rounding]) offset(r=rounding) offset(-w) folder();
+      offset(r=rounding) hull() small_paper();
+    }
+    difference() {
+      small_paper();
+      offset(r=rounding) flap();
+    }
+    flap();
 }
 
 module save() {
@@ -242,6 +266,7 @@ module icon(icon) {
     icon_translate(13, icon, cols) unindent();
     icon_translate(14, icon, cols) new();
     icon_translate(15, icon, cols) save();
+    icon_translate(16, icon, cols) open();
 }
 
 icon = "all";
