@@ -263,6 +263,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this, SIGNAL(unhighlightLastError()), editor, SLOT(unhighlightLastError()));
 
 	this->qglview->statusLabel = new QLabel(this);
+	this->qglview->statusLabel->setMinimumWidth(100);
 	statusBar()->addWidget(this->qglview->statusLabel);
 
 	animate_timer = new QTimer(this);
