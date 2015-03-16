@@ -1,0 +1,23 @@
+How to build OpenSCAD with Emscripten
+=====================================
+
+
+Step 0 - Install Emscripten and set environment variables.
+	Follow the instructions at http://kripken.github.io/emscripten-site/docs/getting_started/downloads.html
+	If you haven't already, `source emsdk_env.sh` as usual.
+
+Step 1 - Make a directory for doing out-of-source build.
+	`mkdir build && cd build`
+
+Step 2 - Get the build dependencies for the host system (note: might not be necessary, but it's safe!)
+	`sudo /PATH/TO/OPENSCAD/scripts/uni-get-dependencies.sh`
+
+Step 3 - Set the environment variables
+	`. /PATH/TO/OPENSCAD/scripts/setenv-emscriptenbuild.sh`
+
+Step 4 - Begin building!
+	`. /PATH/TO/OPENSCAD/scripts/emcc-build-dependencies.sh`
+
+Step 5 - Continue building as usual?
+	`qmake`
+	`make`
