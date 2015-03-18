@@ -19,9 +19,9 @@ CGALWorker::~CGALWorker()
 	delete this->thread;
 }
 
-void CGALWorker::start(const Tree &tree)
+void CGALWorker::start(const shared_ptr<Tree> &tree)
 {
-	this->tree = &tree;
+	this->tree = tree;
 	this->thread->start();
 }
 
