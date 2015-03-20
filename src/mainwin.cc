@@ -704,6 +704,11 @@ void MainWindow::showProgress()
 void MainWindow::report_func(const class AbstractNode*, void *vp, int mark)
 {
 	MainWindow *thisp = static_cast<MainWindow*>(vp);
+	if (!MainWindow::getWindows()->contains(thisp)) {
+		// Window was closed during processing -> cancel
+		throw ProgressCancelException();
+	}
+
 	int v = (int)((mark*1000.0) / progress_report_count);
 	int permille = v < 1000 ? v : 999;
 	if (permille > thisp->progresswidget->value()) {
