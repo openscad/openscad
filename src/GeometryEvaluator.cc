@@ -385,6 +385,7 @@ Response GeometryEvaluator::visit(State &state, const AbstractNode &node)
 			geom = smartCacheGet(node, state.preferNef());
 		}
 		addToParent(state, node, geom);
+		node.progress_report();
 	}
 	return ContinueTraversal;
 }
