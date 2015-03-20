@@ -263,6 +263,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this, SIGNAL(unhighlightLastError()), editor, SLOT(unhighlightLastError()));
 
 	this->qglview->statusLabel = new QLabel(this);
+	this->qglview->statusLabel->setMinimumWidth(100);
 	statusBar()->addWidget(this->qglview->statusLabel);
 
 	animate_timer = new QTimer(this);
@@ -418,7 +419,7 @@ MainWindow::MainWindow(const QString &filename)
 
 	setCurrentOutput();
 
-	std::string helptitle = openscad_version +  "\nhttp://www.openscad.org\n\n";
+	std::string helptitle = "OpenSCAD " + openscad_versionnumber +  "\nhttp://www.openscad.org\n\n";
 	PRINT(helptitle);
 	PRINT(copyrighttext);
 	PRINT("");
@@ -1890,7 +1891,7 @@ void MainWindow::updateStatusBar(ProgressWidget *progressWidget)
 			this->progresswidget = NULL;
 		}
 		if (versionLabel == NULL) {
-			versionLabel = new QLabel(openscad_version.c_str());
+			versionLabel = new QLabel("OpenSCAD " + QString::fromStdString(openscad_displayversionnumber));
 			sb->addPermanentWidget(this->versionLabel);
 		}
 	} else {

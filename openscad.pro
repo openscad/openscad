@@ -77,6 +77,7 @@ deploy {
   DEFINES += OPENSCAD_DEPLOY
   macx: CONFIG += sparkle
 }
+snapshot: DEFINES += OPENSCAD_SNAPSHOT
 
 macx {
   TARGET = OpenSCAD
