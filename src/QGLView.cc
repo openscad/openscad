@@ -135,14 +135,11 @@ void QGLView::display_opencsg_warning_dialog()
   message += _("It is highly recommended to use OpenSCAD on a system with "
     "OpenGL 2.0 or later.\n"
     "Your renderer information is as follows:\n");
-  QString rendererinfo;
-  rendererinfo.sprintf(_("GLEW version %s\n"
-                       "%s (%s)\n"
-                       "OpenGL version %s\n"),
-                       glewGetString(GLEW_VERSION),
-                       glGetString(GL_RENDERER), glGetString(GL_VENDOR),
-                       glGetString(GL_VERSION));
-  message += rendererinfo;
+  QString rendererinfo(_("GLEW version %1\n%2 (%3)\nOpenGL version %4\n"));
+  message += rendererinfo.arg((const char *)glewGetString(GLEW_VERSION),
+                       (const char *)glGetString(GL_RENDERER),
+                       (const char *)glGetString(GL_VENDOR),
+                       (const char *)glGetString(GL_VERSION));
 
   dialog->setText(message);
   dialog->enableOpenCSGBox->setChecked(Preferences::inst()->getValue("advanced/enable_opencsg_opengl1x").toBool());

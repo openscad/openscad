@@ -24,13 +24,13 @@
  *
  */
 
+#include "mathc99.h"
 #include "function.h"
 #include "expression.h"
 #include "evalcontext.h"
 #include "builtin.h"
 #include <sstream>
 #include <ctime>
-#include "mathc99.h"
 #include <limits>
 #include <algorithm>
 #include "stl-utils.h"

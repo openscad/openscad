@@ -216,7 +216,7 @@ void GLView::enable_opencsg_shaders()
     else if (GLEW_EXT_framebuffer_object && GLEW_EXT_packed_depth_stencil) {
       this->is_opencsg_capable = true;
     }
-#ifdef WIN32
+#ifdef _WIN32
     else if (WGLEW_ARB_pbuffer && WGLEW_ARB_pixel_format) this->is_opencsg_capable = true;
 #elif !defined(__APPLE__)
     else if (GLXEW_SGIX_pbuffer && GLXEW_SGIX_fbconfig) this->is_opencsg_capable = true;
