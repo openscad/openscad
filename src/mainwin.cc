@@ -1431,7 +1431,7 @@ void MainWindow::find()
 
 void MainWindow::findString(QString textToFind)
 {
-	editor->find(textToFind, false, false);
+	editor->find(textToFind);
 }
 
 void MainWindow::findAndReplace()
@@ -1462,9 +1462,7 @@ void MainWindow::replace()
 
 void MainWindow::replaceAll()
 {
-	while (this->editor->find(this->findInputField->text(), true)) {
-		this->editor->replaceSelectedText(this->replaceInputField->text());
-	}
+	this->editor->replaceAll(this->findInputField->text(), this->replaceInputField->text());
 }
 
 void MainWindow::convertTabsToSpaces()
@@ -1488,7 +1486,7 @@ void MainWindow::convertTabsToSpaces()
 	}
 	cnt--;
     }
-    this->editor->replaceAll(converted);
+    this->editor->setText(converted);
 }
 
 void MainWindow::findNext()

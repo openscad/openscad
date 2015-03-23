@@ -426,7 +426,7 @@ void ScintillaEditor::insert(const QString &text)
 	qsci->insert(text);
 }
 
-void ScintillaEditor::replaceAll(const QString &text)
+void ScintillaEditor::setText(const QString &text)
 {
 	qsci->selectAll(true);
 	qsci->replaceSelectedText(text);
@@ -508,6 +508,28 @@ bool ScintillaEditor::find(const QString &expr, bool findNext, bool findBackward
 void ScintillaEditor::replaceSelectedText(const QString &newText)
 {
 	if (qsci->selectedText() != newText) qsci->replaceSelectedText(newText);
+}
+
+void ScintillaEditor::replaceAll(const QString &findText, const QString &replaceText)
+{
+  // We need to issue a Select All first due to a bug in QScintilla:
+  // It doesn't update the find range when just doing findFirst() + findNext() causing the search
+  // to end prematurely if the replaced string is larger than the selected string.
+  qsci->selectAll();
+  if (qsci->findFirstInSelection(findText, 
+                      false /*re*/, false /*cs*/, false /*wo*/, 
+                      false /*wrap*/, true /*forward*/)) {
+    qsci->replace(replaceText);
+    while (qsci->findNext()) {
+      int lineFrom, indexFrom, lineTo, indexTo;
+      qsci->getSelection(&lineFrom, &indexFrom, &lineTo, &indexTo);
+      PRINTDB("replacing selection at line %d-%d, index %d-%d", lineFrom % lineTo % indexFrom % indexTo);
+      qsci->replace(replaceText);
+    }
+    int lineFrom, indexFrom, lineTo, indexTo;
+    qsci->getSelection(&lineFrom, &indexFrom, &lineTo, &indexTo);
+    PRINTDB("Last: %d-%d, index %d-%d", lineFrom % lineTo % indexFrom % indexTo);
+  }
 }
 
 void ScintillaEditor::getRange(int *lineFrom, int *lineTo)
