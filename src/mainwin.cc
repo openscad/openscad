@@ -832,7 +832,7 @@ void MainWindow::updateTVal()
 	double fps = this->e_fps->text().toDouble(&fps_ok);
 	if (fps_ok) {
 		if (fps <= 0) {
-			actionRenderPreview();
+			actionReloadRenderPreview();
 		} else {
 			double s = this->e_fsteps->text().toDouble();
 			double t = this->e_tval->text().toDouble() + 1/s;
@@ -997,6 +997,7 @@ void MainWindow::compileDone(bool didchange)
 {
 	const char *callslot;
 	if (didchange) {
+		updateTemporalVariables();
 		instantiateRoot();
 		updateCamera();
 		updateCompileResult();
@@ -1643,7 +1644,6 @@ bool MainWindow::fileChangedOnDisk()
 */
 void MainWindow::compileTopLevelDocument()
 {
-	updateTemporalVariables();
 	resetPrintedDeprecations();
 
 	this->last_compiled_doc = editor->toPlainText();
