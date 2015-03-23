@@ -1,6 +1,8 @@
 #pragma once
 
-#ifdef WIN32
+#if defined(_MSC_VER)
+
+// only for native windows builds, not MXE
 
 #include <cmath>
 //for native win32 builds we need to provide C99 math functions by ourselves
@@ -11,6 +13,7 @@ float fmax(float a, float b);
 
 #else
 
+#define _USE_MATH_DEFINES
 #include <math.h>
 
 #endif
