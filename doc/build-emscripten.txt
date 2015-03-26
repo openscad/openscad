@@ -16,7 +16,7 @@ Step 3 - Set the environment variables
 	`. /PATH/TO/OPENSCAD/scripts/setenv-emscriptenbuild.sh`
 
 Step 4 - Begin building!
-	`. /PATH/TO/OPENSCAD/scripts/emcc-build-dependencies.sh`
+	`/PATH/TO/OPENSCAD/scripts/emcc-build-dependencies.sh`
 
 Step 5 - Continue building as usual?
 	`qmake`
