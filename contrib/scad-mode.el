@@ -193,6 +193,7 @@ Key bindings:
   ;; (setq local-abbrev-table scad-mode-abbrev-table
   ;; 	abbrev-mode t)
   (use-local-map scad-mode-map)
+  (c-set-offset (quote cpp-macro) 0 nil)
   (c-basic-common-init 'scad-mode (or scad-indent-style "k&r"))
   (c-font-lock-init)
   (c-run-mode-hooks 'c-mode-common-hook 'scad-mode-hook)
