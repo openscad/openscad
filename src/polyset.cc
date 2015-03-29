@@ -249,8 +249,8 @@ static void gl_draw_triangle(GLint *shaderinfo, const Vector3d &p0, const Vector
 	}
 }
 
-PolySet::render_surface(csgmode,&m, *shaderinfo)
-PolySet::render_edges(csgmode)
+PolySet::render_surface(csgmode, &m, *shaderinfo);
+PolySet::render_edges(csgmode);
 
 #else //NULLGL
 static void gl_draw_triangle(GLint *shaderinfo, const Vector3d &p0, const Vector3d &p1, const Vector3d &p2, bool e0, bool e1, bool e2, double z, bool mirrored) {}
