@@ -2488,7 +2488,7 @@ void MainWindow::clippingPlaneChanged()
     int mu = clipSlider->value();
     int lo = clipSlider->minimum();
     int hi = clipSlider->maximum();
-    double param = (mu-lo)/(double)(hi-lo);
+    double clipValue = (mu-lo)/(double)(hi-lo);
 
     GLView::ClipMode clipMode =
         0==mu                         ? GLView::kClipN :
@@ -2498,7 +2498,10 @@ void MainWindow::clippingPlaneChanged()
         clipRadioButtonV->isChecked() ? GLView::kClipV :
                                         GLView::kClipN
         ;
-    printf("%.20f %d\n", param, (int)clipMode);
+
+    qglview->clipMode = clipMode;
+    qglview->clipPosition = clipValue;
+    qglview->updateGL();
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent *event)

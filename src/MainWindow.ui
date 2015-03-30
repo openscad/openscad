@@ -209,6 +209,13 @@
         <widget class="QWidget" name="clippingPlaneBar" native="true">
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
+           <widget class="QLabel" name="label_4">
+            <property name="text">
+             <string>Clip</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QRadioButton" name="clipRadioButtonX">
             <property name="text">
              <string>X</string>
