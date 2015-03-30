@@ -42,29 +42,6 @@ void draw_tri(const Vector3d &p0, const Vector3d &p1, const Vector3d &p2, double
 
 }
 
-static void gl_draw_triangle(GLint *shaderinfo, const Vector3d &p0, const Vector3d &p1, const Vector3d &p2, bool e0, bool e1, bool e2, double z, bool mirrored)
-{
-	double ax = p1[0] - p0[0], bx = p1[0] - p2[0];
-	double ay = p1[1] - p0[1], by = p1[1] - p2[1];
-	double az = p1[2] - p0[2], bz = p1[2] - p2[2];
-	double nx = ay*bz - az*by;
-	double ny = az*bx - ax*bz;
-	double nz = ax*by - ay*bx;
-	double nl = sqrt(nx*nx + ny*ny + nz*nz);
-	glNormal3d(nx / nl, ny / nl, nz / nl);
-#ifdef ENABLE_OPENCSG
-	if (shaderinfo) {
-		double e0f = e0 ? 2.0 : -1.0;
-		double e1f = e1 ? 2.0 : -1.0;
-		double e2f = e2 ? 2.0 : -1.0;
-		draw_triangle(shaderinfo, p0, p1, p2, e0f, e1f, e2f, z, mirrored);
-	}
-	else
-#endif
-	{
-		draw_tri(p0, p1, p2, z, mirrored);
-	}
-}
 
 void PolySet::render_surface(Renderer::csgmode_e csgmode, const Transform3d &m, GLint *shaderinfo) const
 {
