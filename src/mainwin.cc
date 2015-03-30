@@ -238,6 +238,8 @@ MainWindow::MainWindow(const QString &filename)
 	this->opencsgRenderer = NULL;
 #endif
 	this->thrownTogetherRenderer = NULL;
+	this->clipSlider->setValue(10000);
+        this->qglview->clipMode = GLView::kClipN;
 
 	highlights_chain = NULL;
 	background_chain = NULL;
@@ -2491,13 +2493,15 @@ void MainWindow::clippingPlaneChanged()
     double clipValue = (mu-lo)/(double)(hi-lo);
 
     GLView::ClipMode clipMode =
-        0==mu                         ? GLView::kClipN :
+        hi==mu                        ? GLView::kClipN :
         clipRadioButtonX->isChecked() ? GLView::kClipX :
         clipRadioButtonY->isChecked() ? GLView::kClipY :
         clipRadioButtonZ->isChecked() ? GLView::kClipZ :
         clipRadioButtonV->isChecked() ? GLView::kClipV :
                                         GLView::kClipN
         ;
+
+printf("MODE:%d\n",(int)clipMode);
 
     qglview->clipMode = clipMode;
     qglview->clipPosition = clipValue;
