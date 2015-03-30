@@ -163,6 +163,7 @@ void GLView::paintGL()
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
   setupCamera();
+
   if (this->cam.type) {
     // Only for GIMBAL cam
     // The crosshair should be fixed at the center of the viewport...
@@ -182,11 +183,62 @@ void GLView::paintGL()
   glColor3d(1.0, 0.0, 0.0);
 
   if (this->renderer) {
+
+    if(kClipN!=clipMode) {
+
+        glEnable(GL_CLIP_PLANE0);
+
+        double eqn[4];
+        BoundingBox box = this->renderer->getBoundingBox();
+
+        double lo = -1000.0;
+        double hi =  1000.0;
+        switch(clipMode) {
+            case kClipX:
+                eqn[0] = -1.0;
+                eqn[1] =  0.0;
+                eqn[2] =  0.0;
+                lo = box.min()[0];
+                hi = box.max()[0];
+                break;
+            case kClipY:
+                eqn[0] =  0.0;
+                eqn[1] = -1.0;
+                eqn[2] =  0.0;
+                lo = box.min()[1];
+                hi = box.max()[1];
+                break;
+            case kClipZ:
+                eqn[0] =  0.0;
+                eqn[1] =  0.0;
+                eqn[2] = -1.0;
+                lo = box.min()[2];
+                hi = box.max()[2];
+                break;
+            case kClipV:  // TODO
+                eqn[0] = -1.0;
+                eqn[1] = -1.0;
+                eqn[2] = -1.0;
+                break;
+            case kClipN:
+                break;
+        }
+
+        lo -= 0.01*(hi-lo);
+        hi += 0.01*(hi-lo);
+        eqn[3] = lo + clipPosition*(hi-lo);
+        glClipPlane(GL_CLIP_PLANE0, eqn);
+    }
+
 #if defined(ENABLE_OPENCSG)
     // FIXME: This belongs in the OpenCSG renderer, but it doesn't know about this ID yet
     OpenCSG::setContext(this->opencsg_id);
 #endif
     this->renderer->draw(showfaces, showedges);
+
+    if(kClipN!=clipMode) {
+        glDisable(GL_CLIP_PLANE0);
+    }
   }
 
   // Only for GIMBAL

@@ -152,6 +152,7 @@ private slots:
 private slots:
 	void pasteViewportTranslation();
 	void pasteViewportRotation();
+        void clippingPlaneChanged();
 	void preferences();
 	void hideToolbars();
 	void hideEditor();
