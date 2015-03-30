@@ -1,6 +1,6 @@
 
 // all GL functions grouped together here
-#ifndef NULLGL
+
 
 void draw_triangle(GLint *shaderinfo, const Vector3d &p0, const Vector3d &p1, const Vector3d &p2, double e0f, double e1f, double e2f, double z,
 bool mirror)
