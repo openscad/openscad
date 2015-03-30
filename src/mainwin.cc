@@ -405,6 +405,13 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->viewActionHideEditor, SIGNAL(triggered()), this, SLOT(hideEditor()));
 	connect(this->viewActionHideConsole, SIGNAL(triggered()), this, SLOT(hideConsole()));
 
+        // Clipping plane bar
+	connect(this->clipRadioButtonX, SIGNAL(clicked()), this, SLOT(clippingPlaneChanged()));
+	connect(this->clipRadioButtonY, SIGNAL(clicked()), this, SLOT(clippingPlaneChanged()));
+	connect(this->clipRadioButtonZ, SIGNAL(clicked()), this, SLOT(clippingPlaneChanged()));
+	connect(this->clipRadioButtonV, SIGNAL(clicked()), this, SLOT(clippingPlaneChanged()));
+	connect(this->clipSlider, SIGNAL(valueChanged(int)), this, SLOT(clippingPlaneChanged()));
+
 	// Help menu
 	connect(this->helpActionAbout, SIGNAL(triggered()), this, SLOT(helpAbout()));
 	connect(this->helpActionHomepage, SIGNAL(triggered()), this, SLOT(helpHomepage()));
@@ -2474,6 +2481,24 @@ void MainWindow::hideConsole()
 	} else {
 		consoleDock->show();
 	}
+}
+
+void MainWindow::clippingPlaneChanged()
+{
+    int mu = clipSlider->value();
+    int lo = clipSlider->minimum();
+    int hi = clipSlider->maximum();
+    double param = (mu-lo)/(double)(hi-lo);
+
+    GLView::ClipMode clipMode =
+        0==mu                         ? GLView::kClipN :
+        clipRadioButtonX->isChecked() ? GLView::kClipX :
+        clipRadioButtonY->isChecked() ? GLView::kClipY :
+        clipRadioButtonZ->isChecked() ? GLView::kClipZ :
+        clipRadioButtonV->isChecked() ? GLView::kClipV :
+                                        GLView::kClipN
+        ;
+    printf("%.20f %d\n", param, (int)clipMode);
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent *event)
