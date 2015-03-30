@@ -107,7 +107,10 @@ static shared_ptr<CSGTerm> evaluate_csg_term_from_geometry(const State &state,
 		else {
 			// We cannot render concave polygons, so tessellate any 3D PolySets
 			shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(geom);
-			if (ps) {
+			// Since is_convex() doesn't handle non-planar faces, we need to tessellate
+			// also in the indeterminate state so we cannot just use a boolean comparison. See #1061
+			bool convex = ps->convexValue();
+			if (ps && !convex) {
 				assert(ps->getDimension() == 3);
 				PolySet *ps_tri = new PolySet(3, ps->convexValue());
 				ps_tri->setConvexity(ps->getConvexity());

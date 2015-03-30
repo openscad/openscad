@@ -1180,7 +1180,7 @@ namespace CGALUtils {
 						int idx = allVertices.lookup(vector_convert<Vector3f>(p));
 						if (currface.empty() || idx != currface.back()) currface.push_back(idx);
 					}
-					if (currface.front() == currface.back()) currface.pop_back();
+					if (!currface.empty() && currface.front() == currface.back()) currface.pop_back();
 					if (currface.size() < 3) faces.pop_back(); // Cull empty triangles
 				}
 			}

@@ -33,7 +33,7 @@ static std::string lookupResourcesPath()
 	    NULL
 	};
 #else
-#ifdef WIN32
+#ifdef _WIN32
     const char *searchpath[] = {
         ".", // Release location
         RESOURCE_FOLDER("../share/openscad"), // MSYS2 location
@@ -185,7 +185,7 @@ fs::path PlatformUtils::resourcePath(const std::string &resource)
 
 int PlatformUtils::setenv(const char *name, const char *value, int overwrite)
 {
-#if defined(WIN32)
+#if defined(_WIN32)
     const char *ptr = getenv(name);
     if ((overwrite == 0) && (ptr != NULL)) {
 	return 0;

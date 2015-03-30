@@ -85,7 +85,7 @@ if [ "`echo $* | grep mingw64`" ]; then
 fi
 
 if [ "`echo $* | grep snapshot`" ]; then
-  CONFIG="$CONFIG experimental"
+  CONFIG="$CONFIG snapshot experimental"
   OPENSCAD_COMMIT=`git log -1 --pretty=format:"%h"`
 fi
 

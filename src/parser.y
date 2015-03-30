@@ -49,6 +49,8 @@ namespace fs = boost::filesystem;
 
 #include "boosty.h"
 
+#define YYMAXDEPTH 20000
+
 int parser_error_pos = -1;
 
 int parserlex(void);

@@ -65,6 +65,22 @@ if(CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-strict-aliasing")
 endif()
 
+#
+# Handle C++11.
+# Usage: cmake -DCXX11=1 .
+#
+if (CXX11)
+  message("Using C++11")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+  if(APPLE)
+    set(LIBCXX11 1)
+  endif()
+endif()
+if(APPLE AND LIBCXX11)
+  message("Using libc++")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+endif()
+
 if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DDEBUG")
 else()
@@ -576,13 +592,15 @@ if ("$ENV{VERSION}" STREQUAL "")
   if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" VERSION_GREATER 2.8.10)
     string(TIMESTAMP VERSION "%Y.%m.%d")
   else()
-    set(VERSION "2013.06")
+    set(VERSION "2015.03")
   endif()
 else()
   set(VERSION $ENV{VERSION})
 endif()
 message(STATUS "OpenSCAD version: ${VERSION}")
-string(REGEX MATCHALL "^[0-9]+|[0-9]+|[0-9]+$" MYLIST "${VERSION}")
+string(REPLACE "-" ";" SPLITVERSION ${VERSION})
+list(GET SPLITVERSION 0 OPENSCAD_SHORTVERSION)
+string(REGEX MATCHALL "^[0-9]+|[0-9]+|[0-9]+$" MYLIST "${OPENSCAD_SHORTVERSION}")
 list(GET MYLIST 0 OPENSCAD_YEAR)
 list(GET MYLIST 1 OPENSCAD_MONTH)
 math(EXPR OPENSCAD_MONTH ${OPENSCAD_MONTH}) # get rid of leading zero
@@ -592,7 +610,7 @@ if (${VERSIONLEN} EQUAL 3)
   math(EXPR OPENSCAD_DAY ${OPENSCAD_DAY}) # get rid of leading zero
 endif()
 
-add_definitions(-DOPENSCAD_VERSION=${VERSION} -DOPENSCAD_YEAR=${OPENSCAD_YEAR} -DOPENSCAD_MONTH=${OPENSCAD_MONTH})
+add_definitions(-DOPENSCAD_VERSION=${VERSION} -DOPENSCAD_SHORTVERSION=${OPENSCAD_SHORTVERSION} -DOPENSCAD_YEAR=${OPENSCAD_YEAR} -DOPENSCAD_MONTH=${OPENSCAD_MONTH})
 if (DEFINED OPENSCAD_DAY)
   add_definitions(-DOPENSCAD_DAY=${OPENSCAD_DAY})
 endif()
@@ -1165,13 +1183,15 @@ set_test_config(Bugs
                      offpngtest_bad-stl-wing
                      offcgalpngtest_issue1105b
                      offcgalpngtest_issue1105c
-                     offcgalpngtest_issue1215b)
+                     offcgalpngtest_issue1215b
+                     offcgalpngtest_issue1258)
 
 list(APPEND EXPORT3D_CGAL_TEST_FILES 
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/polyhedron-tests.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1105b.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1105c.scad
-                                ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1215b.scad)
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1215b.scad
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1258.scad)
 
 list(APPEND EXPORT3D_TEST_FILES 
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/nonmanifold-polyhedron.scad
@@ -1227,7 +1247,14 @@ disable_tests(throwntogethertest_minkowski3-erosion)
 # as currently inf/nan is written directly to the CSG file (e.g. r = inf)
 # which is not valid or even misleading in case a variable inf exists.
 # FIXME: define export behavior for inf/nan when exporting CSG files
-disable_tests(csgpngtest_primitive-inf-tests csgpngtest_transform-nan-inf-tests)
+disable_tests(csgpngtest_primitive-inf-tests
+              csgpngtest_transform-nan-inf-tests
+              csgpngtest_primitive-inf-tests
+              csgpngtest_transform-nan-inf-tests
+              # Triggers a floating point accuracy issue causing loaded .csg to
+              # render slightly differently
+              csgpngtest_issue1258
+)
 
 # Test config handling
 

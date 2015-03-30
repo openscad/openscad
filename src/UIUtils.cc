@@ -106,7 +106,14 @@ QStringList UIUtils::exampleCategories()
 {
 	// categories in File menu item - Examples
 	QStringList categories;
-  categories << N_("Basics") << N_("Functions") << N_("Shapes") << N_("Extrusion") << N_("Advanced") << N_("Parametric") << N_("Old");
+	ptree *pt = examplesTree();
+	if (pt) {
+		BOOST_FOREACH(const ptree::value_type &v, *pt) {
+			// v.first is the name of the child.
+			// v.second is the child tree.
+			categories << QString::fromStdString(v.first);
+		}
+	}
   
 	return categories;
 }
@@ -131,7 +138,7 @@ void UIUtils::openHomepageURL()
 
 static void openVersionedURL(QString url)
 {
-    QDesktopServices::openUrl(QUrl(url.arg(versionnumber.c_str())));
+    QDesktopServices::openUrl(QUrl(url.arg(openscad_shortversionnumber.c_str())));
 }
 
 void UIUtils::openUserManualURL()

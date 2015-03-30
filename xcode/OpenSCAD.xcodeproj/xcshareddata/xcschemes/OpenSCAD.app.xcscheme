@@ -60,39 +60,47 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "minkowskitest.scad -o out.png --debug=cgalutils"
+            argument = "/Users/kintel/code/OpenSCAD/statistics-scripts/unpacked/130629/Customizable_Stone_Turret/turret.scad -o out.png"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "import-hullcrash_off.scad -o out.png --debug=cgalutils"
+            argument = " testdata/scad/misc/bad-stl-tardis.scad -o out.off --render=cgal"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "issue1090.scad -o out.png --render"
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "issue1105C.scad -o out.stl"
+            argument = "testdata/scad/3D/issues/issue1061.scad -o out.png"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "degenerate.scad -o out.png --debug=cgalutils --render=cgal"
+            argument = "testdata/scad/3D/issues/minkowski-thin-cylinder.scad -o out.png"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "import-out.scad"
+            argument = "spheres.scad -o out.png"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "issue1069.scad -o out.png --debug=cgalutils"
+            argument = "non-manifold2.scad -o non-manifold2.stl --debug=GeometryUtils"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "testdata/scad/3D/features/cube-tests.scad -o out.png --preview"
+            argument = "issue925.scad -o out.stl --debug=GeometryUtils"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "issue803-performance.scad"
+            argument = "testdata/scad/bugs/issue1225.scad -o out.stl --debug=export"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "testdata/scad/misc/bad-stl-wing.scad -o out.stl --render=cgal --debug=GeometryUtils"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "testdata/scad/misc/bad-stl-wing.scad -o out.off"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "testdata/scad/2D/features/text-font-tests.scad "
             isEnabled = "NO">
          </CommandLineArgument>
       </CommandLineArguments>

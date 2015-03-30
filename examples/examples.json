@@ -16,10 +16,6 @@
     "recursion.scad",
     "polygon_areas.scad"
   ],
-  "Shapes": [
-  ],
-  "Extrusion": [
-  ],
   "Advanced": [
     "offset.scad",
     "surface_image.scad",

@@ -269,6 +269,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this, SIGNAL(unhighlightLastError()), editor, SLOT(unhighlightLastError()));
 
 	this->qglview->statusLabel = new QLabel(this);
+	this->qglview->statusLabel->setMinimumWidth(100);
 	statusBar()->addWidget(this->qglview->statusLabel);
 
 	animate_timer = new QTimer(this);
@@ -427,7 +428,7 @@ MainWindow::MainWindow(const QString &filename)
 
 	setCurrentOutput();
 
-	std::string helptitle = openscad_version +  "\nhttp://www.openscad.org\n\n";
+	std::string helptitle = "OpenSCAD " + openscad_versionnumber +  "\nhttp://www.openscad.org\n\n";
 	PRINT(helptitle);
 	PRINT(copyrighttext);
 	PRINT("");
@@ -860,7 +861,7 @@ void MainWindow::updateTVal()
 	double fps = this->e_fps->text().toDouble(&fps_ok);
 	if (fps_ok) {
 		if (fps <= 0) {
-			actionRenderPreview();
+			actionReloadRenderPreview();
 		} else {
 			double s = this->e_fsteps->text().toDouble();
 			double t = this->e_tval->text().toDouble() + 1/s;
@@ -1025,6 +1026,7 @@ void MainWindow::compileDone(bool didchange)
 {
 	const char *callslot;
 	if (didchange) {
+		updateTemporalVariables();
 		instantiateRoot();
 		updateCamera();
 		updateCompileResult();
@@ -1460,7 +1462,7 @@ void MainWindow::find()
 
 void MainWindow::findString(QString textToFind)
 {
-	editor->find(textToFind, false, false);
+	editor->find(textToFind);
 }
 
 void MainWindow::findAndReplace()
@@ -1491,9 +1493,7 @@ void MainWindow::replace()
 
 void MainWindow::replaceAll()
 {
-	while (this->editor->find(this->findInputField->text(), true)) {
-		this->editor->replaceSelectedText(this->replaceInputField->text());
-	}
+	this->editor->replaceAll(this->findInputField->text(), this->replaceInputField->text());
 }
 
 void MainWindow::convertTabsToSpaces()
@@ -1517,7 +1517,7 @@ void MainWindow::convertTabsToSpaces()
 	}
 	cnt--;
     }
-    this->editor->replaceAll(converted);
+    this->editor->setText(converted);
 }
 
 void MainWindow::findNext()
@@ -1674,7 +1674,6 @@ bool MainWindow::fileChangedOnDisk()
 */
 void MainWindow::compileTopLevelDocument()
 {
-	updateTemporalVariables();
 	resetPrintedDeprecations();
 
 	this->last_compiled_doc = editor->toPlainText();
@@ -1923,7 +1922,7 @@ void MainWindow::updateStatusBar(ProgressWidget *progressWidget)
 			this->progresswidget = NULL;
 		}
 		if (versionLabel == NULL) {
-			versionLabel = new QLabel(openscad_version.c_str());
+			versionLabel = new QLabel("OpenSCAD " + QString::fromStdString(openscad_displayversionnumber));
 			sb->addPermanentWidget(this->versionLabel);
 		}
 	} else {
