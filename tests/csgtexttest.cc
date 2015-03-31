@@ -90,7 +90,7 @@ int main(int argc, char **argv)
 
 	FileModule *root_module;
 	ModuleInstantiation root_inst("group");
-	AbstractNode *root_node;
+	shared_ptr<AbstractNode> root_node;
 
 	root_module = parsefile(filename);
 	if (!root_module) {
@@ -102,10 +102,11 @@ int main(int argc, char **argv)
 	}
 
 	AbstractNode::resetIndexCounter();
-	root_node = root_module->instantiate(&top_ctx, &root_inst);
+	root_node.reset(root_module->instantiate(&top_ctx, &root_inst));
 
 	Tree tree;
 	tree.setRoot(root_node);
+	tree.setFocus(root_node.get());
 	CSGTextCache csgcache(tree);
 
 	csgTree(csgcache, *root_node);
@@ -117,7 +118,6 @@ int main(int argc, char **argv)
 	outfile << csgcache[*root_node] << "\n";
 	outfile.close();
 
-	delete root_node;
 	delete root_module;
 
 	Builtins::instance(true);

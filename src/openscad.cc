@@ -376,8 +376,8 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 
 	FileModule *root_module;
 	ModuleInstantiation root_inst("group");
-	shared_ptr<AbstractNode> root_node;
 	shared_ptr<AbstractNode> absolute_root_node;
+	const AbstractNode *root_node;
 	shared_ptr<const Geometry> root_geom;
 
 	handle_dep(filename.c_str());
@@ -407,11 +407,12 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	absolute_root_node.reset(root_module->instantiate(&top_ctx, &root_inst, NULL));
 
 	// Do we have an explicit root node (! modifier)?
-	root_node.reset(find_root_tag(absolute_root_node.get()));
-	if (!root_node) root_node = absolute_root_node;
+	root_node = find_root_tag(absolute_root_node.get());
+	if (!root_node) root_node = absolute_root_node.get();
 
 	Tree tree;
-	tree.setRoot(root_node);
+	tree.setRoot(absolute_root_node);
+	tree.setFocus(root_node);
 #ifdef ENABLE_CGAL
 	GeometryEvaluator geomevaluator(tree);
 #endif
@@ -467,7 +468,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 				(renderer==Render::OPENCSG || renderer==Render::THROWNTOGETHER)) {
 			// echo or OpenCSG png -> don't necessarily need geometry evaluation
 		} else {
-			root_geom = geomevaluator.evaluateGeometry(*tree.root(), true);
+			root_geom = geomevaluator.evaluateGeometry(*tree.focus(), true);
 			if (!root_geom) root_geom.reset(new CGAL_Nef_polyhedron());
 			if (renderer == Render::CGAL && root_geom->getDimension() == 3) {
 				const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron*>(root_geom.get());

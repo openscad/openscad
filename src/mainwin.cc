@@ -1044,7 +1044,7 @@ void MainWindow::instantiateRoot()
 	delete this->background_chain;
 	this->background_chain = NULL;
 
-	this->root_node.reset();
+	this->root_node = NULL;
 	this->tree.reset(new Tree);
 
 	if (this->root_module) {
@@ -1062,9 +1062,10 @@ void MainWindow::instantiateRoot()
 
 		if (this->absolute_root_node) {
 			// Do we have an explicit root node (! modifier)?
-			this->root_node.reset(find_root_tag(this->absolute_root_node.get()));
-			if (!this->root_node) this->root_node = this->absolute_root_node;
-			this->tree->setRoot(this->root_node);
+			this->root_node = find_root_tag(this->absolute_root_node.get());
+			if (!this->root_node) this->root_node = this->absolute_root_node.get();
+			this->tree->setRoot(this->absolute_root_node);
+			this->tree->setFocus(this->root_node);
 			// Dump the tree (to initialize caches).
 			// FIXME: We shouldn't really need to do this explicitly..
 			this->tree->getString(*this->root_node);
@@ -1095,7 +1096,7 @@ void MainWindow::compileCSG(bool procevents)
 	this->progresswidget = new ProgressWidget(this);
 	connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
 
-	progress_report_prep(this->root_node.get(), report_func, this);
+	progress_report_prep(this->root_node, report_func, this);
 	try {
 #ifdef ENABLE_CGAL
 		GeometryEvaluator geomevaluator(*this->tree);
@@ -1801,7 +1802,7 @@ void MainWindow::cgalRender()
 	this->progresswidget = new ProgressWidget(this);
 	connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
 
-	progress_report_prep(this->root_node.get(), report_func, this);
+	progress_report_prep(this->root_node, report_func, this);
 
 	this->cgalworker->start(this->tree);
 }

@@ -89,7 +89,7 @@ std::string AbstractIntersectionNode::name() const
 	return "intersection";
 }
 
-void AbstractNode::progress_prepare()
+void AbstractNode::progress_prepare() const
 {
 	std::for_each(this->children.begin(), this->children.end(), std::mem_fun(&AbstractNode::progress_prepare));
 	this->progress_mark = ++progress_report_count;

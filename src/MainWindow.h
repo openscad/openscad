@@ -47,7 +47,7 @@ public:
 	FileModule *root_module;      // Result of parsing
 	ModuleInstantiation root_inst;    // Top level instance
 	shared_ptr<AbstractNode> absolute_root_node; // Result of tree evaluation
-	shared_ptr<AbstractNode> root_node;          // Root if the root modifier (!) is used
+	const AbstractNode *root_node;          // Root if the root modifier (!) is used
 	shared_ptr<Tree> tree;
 
 	shared_ptr<class CSGTerm> root_raw_term;           // Result of CSG term rendering

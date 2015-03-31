@@ -48,8 +48,8 @@ public:
 
 	// progress_mark is a running number used for progress indication
 	// FIXME: Make all progress handling external, put it in the traverser class?
-	int progress_mark;
-	void progress_prepare();
+	mutable int progress_mark;
+	void progress_prepare() const;
 	void progress_report() const;
 
 	int idx; // Node index (unique per tree)

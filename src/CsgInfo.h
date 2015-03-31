@@ -33,7 +33,7 @@ public:
 
 	bool compile_chains( const Tree &tree )
 	{
-		const AbstractNode *root_node = tree.root();
+		const AbstractNode *root_node = tree.focus();
 		GeometryEvaluator geomevaluator(tree);
 		CSGTermEvaluator evaluator(tree, &geomevaluator);
 		boost::shared_ptr<CSGTerm> root_raw_term = evaluator.evaluateCSGTerm( *root_node, this->highlight_terms, this->background_terms );
