@@ -6,6 +6,7 @@
 #include "mathc99.h"
 #include "printutils.h"
 #include "renderer.h"
+#include "glQuickText.h"
 
 #ifdef _WIN32
 #include <GL/wglew.h>
@@ -27,6 +28,8 @@ GLView::GLView()
   showcrosshairs = false;
   showscale = false;
   renderer = NULL;
+  clipMode = kClipN;
+  clipChanging = false;
   colorscheme = &ColorMap::inst()->defaultColorScheme();
   cam = Camera();
   far_far_away = RenderSettings::inst()->far_gl_clip_limit;
@@ -163,6 +166,7 @@ void GLView::paintGL()
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
   setupCamera();
+
   if (this->cam.type) {
     // Only for GIMBAL cam
     // The crosshair should be fixed at the center of the viewport...
@@ -181,12 +185,93 @@ void GLView::paintGL()
   glLineWidth(2);
   glColor3d(1.0, 0.0, 0.0);
 
+  int clipIndx = 0;
+  int clipChar = ' ';
+  double clipAbsPosition = 0.0;
   if (this->renderer) {
+
+    if(kClipN!=clipMode) {
+
+        glEnable(GL_CLIP_PLANE0);
+
+
+        switch(clipMode) {
+            case kClipX:
+                clipIndx = 0;
+                break;
+            case kClipY:
+                clipIndx = 1;
+                break;
+            case kClipZ:
+                clipIndx = 2;
+                break;
+            case kClipV:  // TODO
+                break;
+            case kClipN:
+                break;
+        }
+
+        double eqn[4];
+        eqn[0] = 0.0;
+        eqn[1] = 0.0;
+        eqn[2] = 0.0;
+        eqn[clipIndx] = -1.0;
+
+        BoundingBox box = this->renderer->getBoundingBox();
+        double lo = box.min()[clipIndx];
+        double hi = box.max()[clipIndx];
+        clipChar = 'X' + clipIndx;
+
+        double fatLo = lo - 0.01*(hi-lo);
+        double fatHi = hi + 0.01*(hi-lo);
+        if(fabs(fatLo-fatHi)<1e-10) {
+            fatLo -= 1.0;
+            fatHi += 1.0;
+        }
+
+        clipAbsPosition = eqn[3] = (fatLo + clipPosition*(fatHi-fatLo));
+        glClipPlane(GL_CLIP_PLANE0, eqn);
+        if(clipAbsPosition<lo) {
+            clipAbsPosition = lo;
+        }
+        if(hi<clipAbsPosition) {
+            clipAbsPosition = hi;
+        }
+    }
+
 #if defined(ENABLE_OPENCSG)
     // FIXME: This belongs in the OpenCSG renderer, but it doesn't know about this ID yet
     OpenCSG::setContext(this->opencsg_id);
 #endif
+
     this->renderer->draw(showfaces, showedges);
+
+        if(kClipN!=clipMode) {
+            glDisable(GL_CLIP_PLANE0);
+            if(clipChanging) {
+                glPushMatrix();
+
+                    if(0==clipIndx) {
+                        glRotated(90.0, 1.0, 0.0, 0.0);
+                    } else if(1==clipIndx) {
+                        glRotated(90.0, 0.0, 0.0, 1.0);
+                    } else if(2==clipIndx) {
+                        glRotated(-90.0, 0.0, 1.0, 0.0);
+                    }
+
+                    glColor3ub(0x0, 0x0, 0x0);
+                    glQuickText::printfAt(
+                        clipAbsPosition,
+                        0.0,
+                        0.0,
+                        0.1,
+                        "Clip at %c = %.5f",
+                        clipChar,
+                        clipAbsPosition
+                    );
+                glPopMatrix();
+            }
+        }
   }
 
   // Only for GIMBAL
