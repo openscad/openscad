@@ -11,6 +11,12 @@ extern void *progress_report_vp;
 void progress_report_prep(AbstractNode *root, void (*f)(const class AbstractNode *node, void *vp, int mark), void *vp);
 void progress_report_fin();
 
+enum NodeFlags {
+	ROOT_MODIFIER = 0x01,
+	HIGHLIGHT_MODIFIER = 0x02,
+	BACKGROUND_MODIFIER = 0x04
+};
+
 /*!  
 
 	The node tree is the result of evaluation of a module instantiation
@@ -42,9 +48,16 @@ public:
 
 	static void resetIndexCounter() { idx_counter = 1; }
 
+	void setBackground() { this->flags |= BACKGROUND_MODIFIER; }
+	void setHighlight() { this->flags |= HIGHLIGHT_MODIFIER; }
+	void setRoot() { this->flags |= ROOT_MODIFIER; }
+	bool isBackground() const { return this->flags & BACKGROUND_MODIFIER; }
+	bool isHighlight() const { return this->flags & HIGHLIGHT_MODIFIER; }
+	bool isRoot() const { return this->flags & ROOT_MODIFIER; }
+
 	// FIXME: Make protected
 	std::vector<AbstractNode*> children;
-	const ModuleInstantiation *modinst;
+	uint32_t flags;
 
 	// progress_mark is a running number used for progress indication
 	// FIXME: Make all progress handling external, put it in the traverser class?
