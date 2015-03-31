@@ -71,6 +71,7 @@ public:
             kClipZ,
             kClipV,
         } clipMode;
+        bool clipChanging;
         double clipPosition;
 
 #ifdef ENABLE_OPENCSG

@@ -412,7 +412,10 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->clipRadioButtonY, SIGNAL(clicked()), this, SLOT(clippingPlaneChanged()));
 	connect(this->clipRadioButtonZ, SIGNAL(clicked()), this, SLOT(clippingPlaneChanged()));
 	connect(this->clipRadioButtonV, SIGNAL(clicked()), this, SLOT(clippingPlaneChanged()));
+
 	connect(this->clipSlider, SIGNAL(valueChanged(int)), this, SLOT(clippingPlaneChanged()));
+	connect(this->clipSlider, SIGNAL(sliderPressed()), this, SLOT(clippingPlaneChangeStart()));
+	connect(this->clipSlider, SIGNAL(sliderReleased()), this, SLOT(clippingPlaneChangeEnd()));
 
 	// Help menu
 	connect(this->helpActionAbout, SIGNAL(triggered()), this, SLOT(helpAbout()));
@@ -2485,6 +2488,14 @@ void MainWindow::hideConsole()
 	}
 }
 
+void MainWindow::clippingPlaneChangeStart() {
+    qglview->clipChanging = true;
+}
+
+void MainWindow::clippingPlaneChangeEnd() {
+    qglview->clipChanging = false;
+}
+
 void MainWindow::clippingPlaneChanged()
 {
     int mu = clipSlider->value();
@@ -2500,8 +2511,6 @@ void MainWindow::clippingPlaneChanged()
         clipRadioButtonV->isChecked() ? GLView::kClipV :
                                         GLView::kClipN
         ;
-
-printf("MODE:%d\n",(int)clipMode);
 
     qglview->clipMode = clipMode;
     qglview->clipPosition = clipValue;
