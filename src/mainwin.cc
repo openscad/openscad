@@ -2490,10 +2490,12 @@ void MainWindow::hideConsole()
 
 void MainWindow::clippingPlaneChangeStart() {
     qglview->clipChanging = true;
+    qglview->updateGL();
 }
 
 void MainWindow::clippingPlaneChangeEnd() {
     qglview->clipChanging = false;
+    qglview->updateGL();
 }
 
 void MainWindow::clippingPlaneChanged()

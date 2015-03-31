@@ -185,6 +185,7 @@ void GLView::paintGL()
   glLineWidth(2);
   glColor3d(1.0, 0.0, 0.0);
 
+  int clipIndx = 0;
   int clipChar = ' ';
   double clipAbsPosition = 0.0;
   if (this->renderer) {
@@ -193,48 +194,41 @@ void GLView::paintGL()
 
         glEnable(GL_CLIP_PLANE0);
 
-        double eqn[4];
-        BoundingBox box = this->renderer->getBoundingBox();
 
-        double lo = -1000.0;
-        double hi =  1000.0;
         switch(clipMode) {
             case kClipX:
-                eqn[0] = -1.0;
-                eqn[1] =  0.0;
-                eqn[2] =  0.0;
-                clipChar = 'X';
-                lo = box.min()[0];
-                hi = box.max()[0];
+                clipIndx = 0;
                 break;
             case kClipY:
-                eqn[0] =  0.0;
-                eqn[1] = -1.0;
-                eqn[2] =  0.0;
-                clipChar = 'Y';
-                lo = box.min()[1];
-                hi = box.max()[1];
+                clipIndx = 1;
                 break;
             case kClipZ:
-                eqn[0] =  0.0;
-                eqn[1] =  0.0;
-                eqn[2] = -1.0;
-                clipChar = 'Z';
-                lo = box.min()[2];
-                hi = box.max()[2];
+                clipIndx = 2;
                 break;
             case kClipV:  // TODO
-                clipChar = 'V';
-                eqn[0] = -1.0;
-                eqn[1] = -1.0;
-                eqn[2] = -1.0;
                 break;
             case kClipN:
                 break;
         }
 
+        double eqn[4];
+        eqn[0] = 0.0;
+        eqn[1] = 0.0;
+        eqn[2] = 0.0;
+        eqn[clipIndx] = -1.0;
+
+        BoundingBox box = this->renderer->getBoundingBox();
+        double lo = box.min()[clipIndx];
+        double hi = box.max()[clipIndx];
+        clipChar = 'X' + clipIndx;
+
         double fatLo = lo - 0.01*(hi-lo);
         double fatHi = hi + 0.01*(hi-lo);
+        if(fabs(fatLo-fatHi)<1e-10) {
+            fatLo -= 1.0;
+            fatHi += 1.0;
+        }
+
         clipAbsPosition = eqn[3] = (fatLo + clipPosition*(fatHi-fatLo));
         glClipPlane(GL_CLIP_PLANE0, eqn);
         if(clipAbsPosition<lo) {
@@ -249,21 +243,33 @@ void GLView::paintGL()
     // FIXME: This belongs in the OpenCSG renderer, but it doesn't know about this ID yet
     OpenCSG::setContext(this->opencsg_id);
 #endif
+
     this->renderer->draw(showfaces, showedges);
 
         if(kClipN!=clipMode) {
             glDisable(GL_CLIP_PLANE0);
             if(clipChanging) {
-                glColor3ub(0xC0, 0xC0, 0xC0);
-                glQuickText::printfAt(
-                    10.,
-                    10.,
-                    10.,
-                    0.5,
-                    "Clip at %c = %.5f",
-                    clipChar,
-                    clipAbsPosition
-                );
+                glPushMatrix();
+
+                    if(0==clipIndx) {
+                        glRotated(90.0, 1.0, 0.0, 0.0);
+                    } else if(1==clipIndx) {
+                        glRotated(90.0, 0.0, 0.0, 1.0);
+                    } else if(2==clipIndx) {
+                        glRotated(-90.0, 0.0, 1.0, 0.0);
+                    }
+
+                    glColor3ub(0x0, 0x0, 0x0);
+                    glQuickText::printfAt(
+                        clipAbsPosition,
+                        0.0,
+                        0.0,
+                        0.1,
+                        "Clip at %c = %.5f",
+                        clipChar,
+                        clipAbsPosition
+                    );
+                glPopMatrix();
             }
         }
   }
