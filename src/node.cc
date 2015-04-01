@@ -36,7 +36,7 @@
 
 size_t AbstractNode::idx_counter;
 
-AbstractNode::AbstractNode(const ModuleInstantiation *mi)
+AbstractNode::AbstractNode(const ModuleInstantiation *mi) : flags(0)
 {
 	if (mi->isBackground()) this->setBackground();
 	if (mi->isHighlight()) this->setHighlight();
