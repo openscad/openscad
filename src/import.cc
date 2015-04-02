@@ -41,7 +41,6 @@
 #endif
 
 #include <sys/types.h>
-#include <fstream>
 #include <sstream>
 #include <assert.h>
 #include <boost/algorithm/string.hpp>
@@ -55,6 +54,7 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 
 #include <boost/detail/endian.hpp>
 #include <boost/cstdint.hpp>
+#include <nowide/fstream.hpp>
 
 class ImportModule : public AbstractModule
 {
@@ -170,7 +170,7 @@ void uint32_byte_swap( uint32_t &x )
 #endif
 }
 
-void read_stl_facet( std::ifstream &f, stl_facet &facet )
+void read_stl_facet( nowide::ifstream &f, stl_facet &facet )
 {
 	f.read( (char*)facet.data8, STL_FACET_NUMBYTES );
 #ifdef BOOST_BIG_ENDIAN
@@ -193,11 +193,11 @@ Geometry *ImportNode::createGeometry() const
 		PolySet *p = new PolySet(3);
 		g = p;
 
-		handle_dep((std::string)this->filename);
+		handle_dep(this->filename);
 		// Open file and position at the end
-		std::ifstream f(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+		nowide::ifstream f(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
 		if (!f.good()) {
-			PRINTB("WARNING: Can't open import file '%s'.", this->filename);
+		  PRINTB("WARNING: Can't open import file '%s'", this->filename.c_str());
 			return g;
 		}
 
@@ -279,7 +279,7 @@ Geometry *ImportNode::createGeometry() const
 		g = p;
 #ifdef ENABLE_CGAL
 		CGAL_Polyhedron poly;
-		std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary);
+		nowide::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary);
 		if (!file.good()) {
 			PRINTB("WARNING: Can't open import file '%s'.", this->filename);
 		}

@@ -46,7 +46,6 @@
 #include "boosty.h"
 #include "Polygon2d.h"
 
-#include <nowide/iostream.hpp>
 #include <nowide/fstream.hpp>
 
 /*! \class DxfData
