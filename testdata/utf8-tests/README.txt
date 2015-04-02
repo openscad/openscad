@@ -35,19 +35,19 @@
 
 
 Results:        2014.03         2015.03         master
-                XP 8            XP 8            XP 8
+                XP 8.1          XP 8.1          XP 8.1
 1a1             o               X Console issue
 1a2 = 1a1
 1b1             X cwd must be install dir
                                 X Console issue
 1b2 = 1b1
-1c
-1d1
-1d2
-1e1
-1e2
-1f1
-1f2
+1c                 o               X Console issue
+1d1                o               X Console issue
+1d2                o               X Console issue
+1e1             N/A                X title wrong, cannot open file  
+1e2             N/A                X title wrong, cannot open file  
+1f1                o               X Console issue
+1f2                o               X Console issue
 2
 3
 4
