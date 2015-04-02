@@ -850,13 +850,13 @@ void MainWindow::refreshDocument()
 		QFile file(this->fileName);
 		if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
 			PRINTB("Failed to open file %s: %s",
-						 this->fileName.toLocal8Bit().constData() % file.errorString().toLocal8Bit().constData());
+			       this->fileName.toStdString() % file.errorString().toLocal8Bit().constData());
 		}
 		else {
 			QTextStream reader(&file);
 			reader.setCodec("UTF-8");
 			QString text = reader.readAll();
-			PRINTB("Loaded design '%s'.", this->fileName.toLocal8Bit().constData());
+			PRINTB("Loaded design '%s'.", this->fileName.toStdString());
 			if (editor->toPlainText() != text) {
 				editor->setPlainText(text);
 				this->contentschanged = true;
