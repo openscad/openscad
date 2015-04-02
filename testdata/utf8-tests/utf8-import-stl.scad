@@ -1,1 +1,1 @@
-import("utf8-ö.stl");
+import("utf8-æ.stl");
