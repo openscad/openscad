@@ -725,7 +725,10 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 			if (!files.empty()) {
 				inputFiles.clear();
 				BOOST_FOREACH(const QString &f, files) {
-					inputFiles.push_back(f.toStdString());
+					// FIXME: We expect inputFiles to be in the local 8-bit encoding
+					// as the cmd-line may pass non-utf-8 data, especially on Windows.
+					// We should rather clean this up and store utf-8.
+					inputFiles.push_back(f.toLocal8Bit().constData());
 				}
 			}
 			delete launcher;
