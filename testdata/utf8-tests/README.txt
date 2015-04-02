@@ -46,6 +46,8 @@ Results:        2014.03         2015.03         master
 1d2                o               X Console issue
 1e1             N/A                X title wrong, cannot open file  
 1e2             N/A                X title wrong, cannot open file  
+1e1                                             X Console issue
+1e2                                             X Console issue
 1f1                o               X Console issue
 1f2                o               X Console issue
 2
