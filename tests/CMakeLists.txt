@@ -713,7 +713,10 @@ set(COMMON_SOURCES
   ../src/libtess2/Source/mesh.c
   ../src/libtess2/Source/priorityq.c
   ../src/libtess2/Source/sweep.c
-  ../src/libtess2/Source/tess.c)
+  ../src/libtess2/Source/tess.c
+  ../src/nowide_standalone/src/iostream.cpp)
+
+include_directories(../src/nowide_standalone)
 
 #
 # Offscreen OpenGL context source code

@@ -46,6 +46,9 @@
 #include "boosty.h"
 #include "Polygon2d.h"
 
+#include <nowide/iostream.hpp>
+#include <nowide/fstream.hpp>
+
 /*! \class DxfData
 
 	The DxfData class fulfils multiple tasks, partially for historical reasons.
@@ -79,7 +82,7 @@ DxfData::DxfData(double fn, double fs, double fa,
 {
 	handle_dep(filename); // Register ourselves as a dependency
 
-	std::ifstream stream(filename.c_str());
+	nowide::ifstream stream(filename.c_str());
 	if (!stream.good()) {
 		PRINTB("WARNING: Can't open DXF file '%s'.", filename);
 		return;

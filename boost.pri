@@ -77,4 +77,23 @@ boost {
 
   LIBS += $$BOOST_LINK_FLAGS
 
+  # Nowide, from http://cppcms.com/files/nowide/html/
+  SOURCES += src/nowide_standalone/src/iostream.cpp
+  INCLUDEPATH += src/nowide_standalone/
+  HEADERS += src/nowide_standalone/nowide/args.hpp \
+             src/nowide_standalone/nowide/cenv.hpp \
+             src/nowide_standalone/nowide/config.hpp \
+             src/nowide_standalone/nowide/convert.hpp \
+             src/nowide_standalone/nowide/cstdio.hpp \
+             src/nowide_standalone/nowide/cstdlib.hpp \
+             src/nowide_standalone/nowide/encoding_errors.hpp \
+             src/nowide_standalone/nowide/encoding_utf.hpp \
+             src/nowide_standalone/nowide/filebuf.hpp \
+             src/nowide_standalone/nowide/fstream.hpp \
+             src/nowide_standalone/nowide/iostream.hpp \
+             src/nowide_standalone/nowide/scoped_ptr.hpp \
+             src/nowide_standalone/nowide/stackstring.hpp \
+             src/nowide_standalone/nowide/system.hpp \
+             src/nowide_standalone/nowide/utf.hpp \
+             src/nowide_standalone/nowide/windows.hpp
 }
