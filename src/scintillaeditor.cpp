@@ -295,11 +295,11 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
                 qsci->setMarginsFont(font);
 
 		const boost::property_tree::ptree& colors = pt.get_child("colors");
-		l->setColor(readColor(colors, "keyword1", textColor), QsciLexerCPP::Keyword);
-		l->setColor(readColor(colors, "keyword2", textColor), QsciLexerCPP::KeywordSet2);
-		l->setColor(readColor(colors, "keyword3", textColor), QsciLexerCPP::GlobalClass);
-		l->setColor(readColor(colors, "number", textColor), QsciLexerCPP::Number);
-		l->setColor(readColor(colors, "string", textColor), QsciLexerCPP::SingleQuotedString);
+		l->setColor(readColor(colors, "keyword1", textColor), ScadLexer::Keyword);
+		l->setColor(readColor(colors, "keyword2", textColor), ScadLexer::KeywordSet2);
+		/*l->setColor(readColor(colors, "keyword3", textColor), QsciLexerCPP::GlobalClass);*/
+		l->setColor(readColor(colors, "number", textColor), ScadLexer::Number);
+/*		l->setColor(readColor(colors, "string", textColor), QsciLexerCPP::SingleQuotedString);
 		l->setColor(readColor(colors, "string", textColor), QsciLexerCPP::DoubleQuotedString);
 		l->setColor(readColor(colors, "operator", textColor), QsciLexerCPP::Operator);
 		l->setColor(readColor(colors, "comment", textColor), QsciLexerCPP::Comment);
@@ -307,7 +307,7 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 		l->setColor(readColor(colors, "commentdoc", textColor), QsciLexerCPP::CommentDoc);
 		l->setColor(readColor(colors, "commentdoc", textColor), QsciLexerCPP::CommentLineDoc);
 		l->setColor(readColor(colors, "commentdockeyword", textColor), QsciLexerCPP::CommentDocKeyword);
-
+*/
 		const boost::property_tree::ptree& caret = pt.get_child("caret");
 		qsci->setCaretWidth(readInt(caret, "width", 1));
 		qsci->setCaretForegroundColor(readColor(caret, "foreground", textColor));
