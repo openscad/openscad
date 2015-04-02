@@ -24,7 +24,8 @@
 3) use
 4) font
 5) import
-  - All file formats
+  a) dxf
+  b) stl
 6) surface
 7) export
   a) GUI
@@ -32,6 +33,9 @@
 8) save
 9) save as
 10) echo
+  a) in GUI
+  b) in DOS prompt
+  c) in bash
 
 
 Results:        2014.03         2015.03         master
@@ -53,10 +57,13 @@ Results:        2014.03         2015.03         master
 2
 3
 4
-5
+5a
+5b
 6
 7a
 7b
 8
 9
-10
+10a
+10b
+10c
