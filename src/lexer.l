@@ -39,6 +39,7 @@
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 #include "boosty.h"
+#include <nowide/cstdio.hpp>
 
 //isatty for visual c++ and mingw-cross-env
 #if defined __WIN32__ && ! defined _MSC_VER
@@ -260,7 +261,7 @@ void includefile()
   }
   else {
     rootmodule->registerInclude(boosty::stringy(localpath), boosty::stringy(localpath));
-    PRINTB("WARNING: Can't open include file '%s'.", boosty::stringy(localpath));
+    PRINTB("WARNING: Can't find include file '%s'.", boosty::stringy(localpath));
     return;
   };
 
@@ -271,7 +272,7 @@ void includefile()
 
   handle_dep(fullname);
 
-  yyin = fopen(fullname.c_str(), "r");
+  yyin = nowide::fopen(fullname.c_str(), "r");
   if (!yyin) {
     PRINTB("WARNING: Can't open include file '%s'.", boosty::stringy(localpath));
     path_stack.pop_back();

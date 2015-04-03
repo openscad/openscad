@@ -63,6 +63,7 @@
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
+#include <boost/locale.hpp>
 #include "boosty.h"
 
 #ifdef __APPLE__
@@ -777,6 +778,10 @@ int main(int argc, char **argv)
 	PlatformUtils::ensureStdIO();
 #endif
 
+    // Create and install global locale
+	    std::locale::global(boost::locale::generator().generate(""));
+    // Make boost.filesystem use it
+	    fs::path::imbue(std::locale());
 #ifdef ENABLE_CGAL
 	// Causes CGAL errors to abort directly instead of throwing exceptions
 	// (which we don't catch). This gives us stack traces without rerunning in gdb.
