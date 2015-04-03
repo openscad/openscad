@@ -26,6 +26,7 @@
 5) import
   a) dxf
   b) stl
+  c) off
 6) surface
 7) export
   a) GUI
@@ -58,7 +59,8 @@ Results:        2014.03         2015.03         master
 3
 4
 5a              X               X               o
-5b
+5b              X               X               o
+5c              X               X               o
 6
 7a
 7b

@@ -1,2 +1,2 @@
-echo("utf8-1a-öøäæ");
+echo("utf8-a-öøäæ");
 sphere(10);
