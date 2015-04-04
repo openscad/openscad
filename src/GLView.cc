@@ -185,6 +185,7 @@ void GLView::paintGL()
   glLineWidth(2);
   glColor3d(1.0, 0.0, 0.0);
 
+  double eqn[4];
   int clipIndx = 0;
   int clipChar = ' ';
   double clipAbsPosition = 0.0;
@@ -192,35 +193,15 @@ void GLView::paintGL()
 
     if(kClipN!=clipMode) {
 
-        glEnable(GL_CLIP_PLANE0);
-
-
-        switch(clipMode) {
-            case kClipX:
-                clipIndx = 0;
-                break;
-            case kClipY:
-                clipIndx = 1;
-                break;
-            case kClipZ:
-                clipIndx = 2;
-                break;
-            case kClipV:  // TODO
-                break;
-            case kClipN:
-                break;
-        }
-
-        double eqn[4];
         eqn[0] = 0.0;
         eqn[1] = 0.0;
         eqn[2] = 0.0;
-        eqn[clipIndx] = -1.0;
+        eqn[(int)clipMode] = -1.0;
 
         BoundingBox box = this->renderer->getBoundingBox();
-        double lo = box.min()[clipIndx];
-        double hi = box.max()[clipIndx];
-        clipChar = 'X' + clipIndx;
+        double lo = box.min()[(int)clipMode];
+        double hi = box.max()[(int)clipMode];
+        clipChar = 'X' + (int)clipMode;
 
         double fatLo = lo - 0.01*(hi-lo);
         double fatHi = hi + 0.01*(hi-lo);
@@ -230,7 +211,6 @@ void GLView::paintGL()
         }
 
         clipAbsPosition = eqn[3] = (fatLo + clipPosition*(fatHi-fatLo));
-        glClipPlane(GL_CLIP_PLANE0, eqn);
         if(clipAbsPosition<lo) {
             clipAbsPosition = lo;
         }
@@ -244,34 +224,33 @@ void GLView::paintGL()
     OpenCSG::setContext(this->opencsg_id);
 #endif
 
-    this->renderer->draw(showfaces, showedges);
+    this->renderer->draw(
+        showfaces,
+        showedges,
+        (kClipN!=clipMode ? eqn : 0)
+    );
 
-        if(kClipN!=clipMode) {
-            glDisable(GL_CLIP_PLANE0);
-            if(clipChanging) {
-                glPushMatrix();
-
-                    if(0==clipIndx) {
-                        glRotated(90.0, 1.0, 0.0, 0.0);
-                    } else if(1==clipIndx) {
-                        glRotated(90.0, 0.0, 0.0, 1.0);
-                    } else if(2==clipIndx) {
-                        glRotated(-90.0, 0.0, 1.0, 0.0);
-                    }
-
-                    glColor3ub(0x0, 0x0, 0x0);
-                    glQuickText::printfAt(
-                        clipAbsPosition,
-                        0.0,
-                        0.0,
-                        0.1,
-                        "Clip at %c = %.5f",
-                        clipChar,
-                        clipAbsPosition
-                    );
-                glPopMatrix();
+    if(kClipN!=clipMode && clipChanging) {
+        glPushMatrix();
+            if(kClipX==clipMode) {
+                glRotated(90.0, 1.0, 0.0, 0.0);
+            } else if(kClipY==clipMode) {
+                glRotated(90.0, 0.0, 0.0, 1.0);
+            } else if(kClipZ==clipMode) {
+                glRotated(-90.0, 0.0, 1.0, 0.0);
             }
-        }
+            glColor3ub(0x0, 0x0, 0x0);
+            glQuickText::printfAt(
+                clipAbsPosition,
+                0.0,
+                0.0,
+                0.1,
+                "Clip at %c = %.5f",
+                clipChar,
+                clipAbsPosition
+            );
+        glPopMatrix();
+    }
   }
 
   // Only for GIMBAL

@@ -65,11 +65,11 @@ public:
 	bool showscale;
 
         enum ClipMode {
-            kClipN,
-            kClipX,
-            kClipY,
-            kClipZ,
-            kClipV,
+            kClipX = 0,
+            kClipY = 1,
+            kClipZ = 2,
+            kClipV = 3,
+            kClipN = 4,
         } clipMode;
         bool clipChanging;
         double clipPosition;

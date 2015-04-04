@@ -94,7 +94,7 @@ void CGALRenderer::setColorScheme(const ColorScheme &cs)
 	PRINTD("setColorScheme done");
 }
 
-void CGALRenderer::draw(bool showfaces, bool showedges) const
+void CGALRenderer::draw(bool showfaces, bool showedges, const double *clippingPlane) const
 {
 	PRINTD("draw()");
 	if (this->polyset) {
