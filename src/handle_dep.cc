@@ -16,6 +16,7 @@ void handle_dep(const std::string &filename)
 {
 	fs::path filepath(filename);
 	std::string dep;
+	int err;
 	if (boosty::is_absolute(filepath)) dep = filename;
 	else dep = (fs::current_path() / filepath).string();
 	dependencies.insert(boost::regex_replace(filename, boost::regex("\\ "), "\\\\ "));
@@ -23,7 +24,14 @@ void handle_dep(const std::string &filename)
 	if (!fs::exists(filepath) && make_command) {
 		std::stringstream buf;
 		buf << make_command << " '" << boost::regex_replace(filename, boost::regex("'"), "'\\''") << "'";
-		system(buf.str().c_str()); // FIXME: Handle error
+		int err = system(buf.str().c_str());
+		if (err < 0) {
+			fprintf(stderr,"Child process could not be created for executing `%s' on the shell\n", buf.str().c_str());
+		} else if (err == 0) {
+			fprintf(stderr,"\nInvalid command to be executed on the shell");
+		} {
+			fprintf(stderr,"\nUnable to execute `%s' since there is no shell available", buf.str().c_str());
+		}
 	}
 }
 
