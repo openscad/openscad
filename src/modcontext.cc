@@ -199,7 +199,8 @@ ValuePtr FileContext::evaluate_function(const std::string &name,
 																											 const EvalContext *evalctx) const
 {
 	const AbstractFunction *foundf = findLocalFunction(name);
-	if (foundf) return foundf->evaluate(this, evalctx);
+	if (foundf)//returns a null pointer
+		return ValuePtr::undefined;
 
 	BOOST_FOREACH(const FileModule::ModuleContainer::value_type &m, this->usedlibs) {
 		// usedmod is NULL if the library wasn't be compiled (error or file-not-found)
