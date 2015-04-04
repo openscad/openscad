@@ -23,7 +23,7 @@ LegacyEditor::LegacyEditor(QWidget *parent) : EditorInterface(parent)
 
 void LegacyEditor::indentSelection()
 {	
-	QTextCursor cursor = textedit->textCursor();
+	QTextCursor cursor = this->textedit->textCursor();
 	int p1 = cursor.selectionStart();
 	QString txt = cursor.selectedText();
 
@@ -36,12 +36,12 @@ void LegacyEditor::indentSelection()
 	int p2 = cursor.position();
 	cursor.setPosition(p1, QTextCursor::MoveAnchor);
 	cursor.setPosition(p2, QTextCursor::KeepAnchor);
-	textedit->setTextCursor(cursor);
+	this->textedit->setTextCursor(cursor);
 }
 
 void LegacyEditor::unindentSelection()
 {
-	QTextCursor cursor = textedit->textCursor();
+	QTextCursor cursor = this->textedit->textCursor();
 	int p1 = cursor.selectionStart();
 	QString txt = cursor.selectedText();
 
@@ -53,12 +53,12 @@ void LegacyEditor::unindentSelection()
 	int p2 = cursor.position();
 	cursor.setPosition(p1, QTextCursor::MoveAnchor);
 	cursor.setPosition(p2, QTextCursor::KeepAnchor);
-	textedit->setTextCursor(cursor);
+	this->textedit->setTextCursor(cursor);
 }
 
 void LegacyEditor::commentSelection()
 {
-	QTextCursor cursor = textedit->textCursor();
+	QTextCursor cursor = this->textedit->textCursor();
 	int p1 = cursor.selectionStart();
 	QString txt = cursor.selectedText();
 
@@ -71,13 +71,13 @@ void LegacyEditor::commentSelection()
 	int p2 = cursor.position();
 	cursor.setPosition(p1, QTextCursor::MoveAnchor);
 	cursor.setPosition(p2, QTextCursor::KeepAnchor);
-	textedit->setTextCursor(cursor);
+	this->textedit->setTextCursor(cursor);
 
 }
 
 void LegacyEditor::uncommentSelection()
 {
-	QTextCursor cursor = textedit->textCursor();
+	QTextCursor cursor = this->textedit->textCursor();
 	int p1 = cursor.selectionStart();
 	QString txt = cursor.selectedText();
 
@@ -89,49 +89,49 @@ void LegacyEditor::uncommentSelection()
 	int p2 = cursor.position();
 	cursor.setPosition(p1, QTextCursor::MoveAnchor);
 	cursor.setPosition(p2, QTextCursor::KeepAnchor);
-	textedit->setTextCursor(cursor);
+	this->textedit->setTextCursor(cursor);
 }
 
 void LegacyEditor::zoomIn()
 {
 	// See also QT's implementation in QLegacyEditor.cpp
 	QSettings settings;
-	QFont tmp_font = this->font() ;
+	QFont tmp_font = this->textedit->font() ;
 	if (font().pointSize() >= 1)
 		tmp_font.setPointSize(1 + font().pointSize());
 	else
 		tmp_font.setPointSize(1);
 	settings.setValue("editor/fontsize", tmp_font.pointSize());
-	this->setFont(tmp_font);
+	this->textedit->setFont(tmp_font);
 }
 
 void LegacyEditor::zoomOut()
 {
 
 	QSettings settings;
-	QFont tmp_font = this->font();
+	QFont tmp_font = this->textedit->font();
 	if (font().pointSize() >= 2)
 		tmp_font.setPointSize(-1 + font().pointSize());
 	else
 		tmp_font.setPointSize(1);
 	settings.setValue("editor/fontsize", tmp_font.pointSize());
-	this->setFont(tmp_font);
+	this->textedit->setFont(tmp_font);
 
 }
 
 void LegacyEditor::setPlainText(const QString &text)
 {
 
-	int y = textedit->verticalScrollBar()->sliderPosition();
+	int y = this->textedit->verticalScrollBar()->sliderPosition();
 	// Save current cursor position
-	QTextCursor cursor = textedit->textCursor();
+	QTextCursor cursor = this->textedit->textCursor();
 	int n = cursor.position();
-	textedit->setPlainText(text);
+	this->textedit->setPlainText(text);
 	// Restore cursor position
 	if (n < text.length()) {
 		cursor.setPosition(n);
-		textedit->setTextCursor(cursor);
-		textedit->verticalScrollBar()->setSliderPosition(y);
+		this->textedit->setTextCursor(cursor);
+		this->textedit->verticalScrollBar()->setSliderPosition(y);
 	}
 }
 
@@ -158,7 +158,7 @@ void LegacyEditor::setHighlightScheme(const QString &name)
 QSize LegacyEditor::sizeHint() const
 {
 	if (initialSizeHint.width() <= 0) {
-		return textedit->sizeHint();
+		return this->textedit->sizeHint();
 	} else {
 		return initialSizeHint;
 	}
@@ -171,43 +171,43 @@ void LegacyEditor::setInitialSizeHint(const QSize &size)
  
 QString LegacyEditor::toPlainText()
 {
-	return textedit->toPlainText();
+	return this->textedit->toPlainText();
 }
 
 void LegacyEditor::insert(const QString &text)
 {
-	textedit->insertPlainText(text);
+	this->textedit->insertPlainText(text);
 }
 
-void LegacyEditor::replaceAll(const QString &text)
+void LegacyEditor::setText(const QString &text)
 {
-	textedit->selectAll();
-	textedit->insertPlainText(text);
+	this->textedit->selectAll();
+	this->textedit->insertPlainText(text);
 }
 
 void LegacyEditor::undo()
 {
-	textedit->undo();
+	this->textedit->undo();
 }
 
 void LegacyEditor::redo()
 {
-	textedit->redo();
+	this->textedit->redo();
 }
 
 void LegacyEditor::cut()
 {
-	textedit->cut();
+	this->textedit->cut();
 }
 
 void LegacyEditor::copy()
 {
-	textedit->copy();
+	this->textedit->copy();
 }
 
 void LegacyEditor::paste()
 {
-	textedit->paste();
+	this->textedit->paste();
 }
 
 LegacyEditor::~LegacyEditor()
@@ -223,9 +223,21 @@ void LegacyEditor::replaceSelectedText(const QString &newText)
 	}
 }
 
+void LegacyEditor::replaceAll(const QString &findText, const QString &replaceText)
+{
+	QTextCursor cursor(this->textedit->textCursor());
+	cursor.setPosition(0);
+	this->textedit->setTextCursor(cursor);
+	this->textedit->find(findText);
+	while (this->textedit->textCursor().hasSelection()){
+		this->textedit->textCursor().insertText(replaceText);
+		this->textedit->find(findText);
+	}
+}
+
 bool LegacyEditor::findString(const QString & exp, bool findBackwards) const
 {
-	return textedit->find(exp, findBackwards ? QTextDocument::FindBackward : QTextDocument::FindFlags(0));
+	return this->textedit->find(exp, findBackwards ? QTextDocument::FindBackward : QTextDocument::FindFlags(0));
 }
 
 bool LegacyEditor::find(const QString &newText, bool findNext, bool findBackwards)
@@ -253,7 +265,7 @@ void LegacyEditor::initFont(const QString& family, uint size)
 	else font.setFixedPitch(true);
 	if (size > 0)	font.setPointSize(size);
 	font.setStyleHint(QFont::TypeWriter);
-	this->setFont(font);
+	this->textedit->setFont(font);
 
 }
 
@@ -264,7 +276,7 @@ QString LegacyEditor::selectedText()
 
 void LegacyEditor::setContentModified(bool y)
 {
-	textedit->document()->setModified(y);
+	this->textedit->document()->setModified(y);
 }
 
 bool LegacyEditor::isContentModified()

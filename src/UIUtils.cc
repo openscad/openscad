@@ -36,6 +36,10 @@
 #include "PlatformUtils.h"
 #include "openscad.h"
 
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
+#include <boost/foreach.hpp>
+
 QFileInfo UIUtils::openFile(QWidget *parent)
 {
     QSettings settings;
@@ -79,24 +83,52 @@ QStringList UIUtils::recentFiles()
     return files;
 }
 
+using namespace boost::property_tree;
+
+static ptree *examples_tree = NULL;
+static ptree *examplesTree()
+{
+	if (!examples_tree) {
+		std::string path = (PlatformUtils::resourcePath("examples") / "examples.json").string();
+		try {
+			examples_tree = new ptree;
+			read_json(path, *examples_tree);
+		} catch (const std::exception & e) {
+			PRINTB("Error reading examples.json: %s", e.what());
+			delete examples_tree;
+			examples_tree = NULL;
+		}
+	}
+	return examples_tree;
+}
+
 QStringList UIUtils::exampleCategories()
 {
-    QStringList categories;
-    //categories in File menu item - Examples
-    categories << N_("Basics") << N_("Shapes") << N_("Extrusion") << N_("Advanced");
-    
-    return categories;
+	// categories in File menu item - Examples
+	QStringList categories;
+	ptree *pt = examplesTree();
+	if (pt) {
+		BOOST_FOREACH(const ptree::value_type &v, *pt) {
+			// v.first is the name of the child.
+			// v.second is the child tree.
+			categories << QString::fromStdString(v.first);
+		}
+	}
+  
+	return categories;
 }
 
 QFileInfoList UIUtils::exampleFiles(const QString &category)
 {
-    QDir dir(QString::fromStdString(PlatformUtils::resourcePath("examples").string()));
-    if (!dir.cd(category)) {
-	return QFileInfoList();
-    }
-
-    QFileInfoList examples = dir.entryInfoList(QStringList("*.scad"), QDir::Files | QDir::Readable, QDir::Name);
-    return examples;
+	QFileInfoList examples;
+	ptree *pt = examplesTree();
+	if (pt) {
+		fs::path examplesPath = PlatformUtils::resourcePath("examples") / category.toStdString();
+		BOOST_FOREACH(const ptree::value_type &v, pt->get_child(category.toStdString())) {
+			examples << QFileInfo(QString::fromStdString((examplesPath / v.second.data()).string()));
+		}
+	}
+	return examples;
 }
 
 void UIUtils::openHomepageURL()
@@ -106,7 +138,7 @@ void UIUtils::openHomepageURL()
 
 static void openVersionedURL(QString url)
 {
-    QDesktopServices::openUrl(QUrl(url.arg(versionnumber.c_str())));
+    QDesktopServices::openUrl(QUrl(url.arg(openscad_shortversionnumber.c_str())));
 }
 
 void UIUtils::openUserManualURL()

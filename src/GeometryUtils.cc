@@ -6,6 +6,7 @@
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/unordered_map.hpp>
+#include <boost/math/special_functions/fpclassify.hpp>
 
 static void *stdAlloc(void* userData, unsigned int size) {
 	TESS_NOTUSED(userData);
@@ -218,7 +219,16 @@ bool GeometryUtils::tessellatePolygonWithHoles(const Vector3f *vertices,
 				i--;
 			}
 			else {
-				i++;
+				// Filter away inf and nan vertices as they cause libtess2 to crash
+				const Vector3f &v = vertices[face[i]];
+				int k;
+				for (k=0;k<3;k++) {
+					if (boost::math::isnan(v[k]) || boost::math::isinf(v[k])) {
+						face.erase(face.begin()+i);
+						break;
+					}
+				}
+				if (k == 3) i++;
 			}
 		}
 	}
@@ -408,6 +418,7 @@ bool GeometryUtils::tessellatePolygonWithHoles(const Vector3f *vertices,
 
 /*!
 	Tessellates a single contour. Non-indexed version.
+	Appends resulting triangles to triangles.
 */
 bool GeometryUtils::tessellatePolygon(const Polygon &polygon, Polygons &triangles,
 																			const Vector3f *normal)

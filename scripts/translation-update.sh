@@ -19,6 +19,12 @@ updatepot()
    exit 1
  fi
 
+ # extract example names from the index JSON file
+ cat -n examples/examples.json \
+	| grep '\[$' | sed -e 's/^[ \ŧ]*//; s/:.*//' \
+	| awk '{ printf "#: examples/examples.json:%d\nmsgid %s\nmsgstr \"\"\n\n", $1, $2 }' \
+	> ./locale/json-strings.pot
+
  VER=`date +"%Y.%m.%d"`
  OPTS=
  OPTS=$OPTS' --package-name=OpenSCAD'
@@ -27,14 +33,24 @@ updatepot()
  OPTS=$OPTS' --keyword=_'
  OPTS=$OPTS' --keyword=N_'
  OPTS=$OPTS' --files-from=./locale/POTFILES'
- cmd="${GETTEXT_PATH}xgettext "$OPTS' -o ./locale/openscad.pot'
+ cmd="${GETTEXT_PATH}xgettext "$OPTS' -o ./locale/openscad-tmp.pot'
  echo $cmd
  $cmd
  if [ ! $? = 0 ]; then
   echo error running xgettext
   exit 1
  fi
+
+ cmd="${GETTEXT_PATH}msgcat -o ./locale/openscad.pot ./locale/openscad-tmp.pot ./locale/json-strings.pot"
+ echo $cmd
+ $cmd
+ if [ ! $? = 0 ]; then
+  echo error running msgcat
+  exit 1
+ fi
+
  sed -e s/"CHARSET"/"UTF-8"/g ./locale/openscad.pot > ./locale/openscad.pot.new && mv ./locale/openscad.pot.new ./locale/openscad.pot
+ rm -f ./locale/json-strings.pot ./locale/openscad-tmp.pot
 }
 
 updatepo()
