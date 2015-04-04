@@ -54,6 +54,7 @@ using std::string;
 
 void handle_dep(QString filename)
 {
+	int err; 
 	if (filename.startsWith("/"))
 		dependencies.insert(filename);
 	else
@@ -61,7 +62,14 @@ void handle_dep(QString filename)
 	if (!QFile(filename).exists() && make_command) {
 		char buffer[4096];
 		snprintf(buffer, 4096, "%s '%s'", make_command, filename.replace("'", "'\\''").toUtf8().data());
-		system(buffer); // FIXME: Handle error
+		err = system(buffer);
+		if (err < 0) {
+			fprintf(stderr,"Child process could not be created for executing `%s' on the shell\n", buffer);
+		} else if (err == 0) {
+			fprintf(stderr,"\nInvalid command to be executed on the shell");
+		} else {
+			fprintf(stderr,"\nUnable to execute `%s' since there is no shell available", buffer);
+		}
 	}
 }
 
