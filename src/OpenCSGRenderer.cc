@@ -82,11 +82,11 @@ void OpenCSGRenderer::draw(
 
 static Geometry *makeClipCube() {
 
-    double x1 = -1.0;
+    double x1 =  0.0;
     double y1 = -1.0;
     double z1 = -1.0;
 
-    double x2 =  1.0;
+    double x2 =  2.0;
     double y2 =  1.0;
     double z2 =  1.0;
 
@@ -139,9 +139,72 @@ static Geometry *makeClipCube() {
 
 static boost::shared_ptr<const Geometry> kClipCubeGeometry(makeClipCube());
 
-void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo, 
-																		 bool highlight, bool background) const
-{
+static Eigen::Quaterniond getRotationTo(
+    const Eigen::Vector3d &dst,
+    const Eigen::Vector3d &src
+) {
+
+    Eigen::Vector3d v0 = src;
+    Eigen::Vector3d v1 = dst;
+    v0.normalize();
+    v1.normalize();
+
+    Eigen::Quaterniond q;
+    double d = v0.dot(v1);
+    if((1.0 - 1e-6)<=d) {
+        q.setIdentity();
+    } else if(d<((-1.0 + 1e-6))) {
+        Eigen::Vector3d axis = Vector3d(1.0, 0.0, 0.0).cross(src);
+        if(axis.norm()<1e-6) {
+            axis = Vector3d(0.0, 1.0, 0.0).cross(src);
+        }
+        axis.normalize();
+
+        Eigen::AngleAxisd angleAxis(M_PI, axis);
+        q = Eigen::Quaterniond(angleAxis);
+    } else {
+        double s = sqrt((1.0+d)*2.0);
+        double is = 1.0/s;
+
+        Eigen::Vector3d c = v0.cross(v1);
+        q.x() = c[0] * is;
+        q.y() = c[1] * is;
+        q.z() = c[2] * is;
+        q.w() =  0.5 * s;
+    }
+
+    q.normalize();
+    return q;
+}
+
+void OpenCSGRenderer::renderCSGChain(
+    CSGChain *chain,
+    GLint *shaderinfo, 
+    bool highlight,
+    bool background
+) const {
+
+    Transform3d tClip = Transform3d::Identity();
+    if(0!=clippingPlane) {
+
+        BoundingBox box = getBoundingBox();
+        double diag = box.diagonal().norm();
+
+        Transform3d s = Transform3d::Identity();
+        s.scale(Vector3d(diag, diag, diag));
+
+        Transform3d t = Transform3d::Identity();
+        t.translate(Vector3d(clippingPlane[3], 0.0, 0.0));
+
+        Vector3d x(1, 0, 0);
+        Vector3d v(clippingPlane[0], clippingPlane[1], clippingPlane[2]);
+        Eigen::Quaterniond q = getRotationTo(v, x);
+        Eigen::Matrix3d tmp = q.toRotationMatrix();
+        Transform3d r(tmp);
+
+        tClip = (r*t*s);
+    }
+
 	std::vector<OpenCSG::Primitive*> primitives;
 	size_t j = 0;
 	for (size_t i = 0;; i++) {
@@ -152,15 +215,8 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo,
                         OpenCSGPrim *clipCube = 0;
                         if(0<primitives.size() && 0!=clippingPlane) {
 
-                            Transform3d s = Transform3d::Identity();
-                            s.scale(Vector3d(50.0, 100.0 , 30.0));
-
-                            double clipZ = clippingPlane[3];
-                            Transform3d t = Transform3d::Identity();
-                            t.translate(Vector3d(clipZ-50.0, 0.0 , 0.0));
-
                             clipCube = new OpenCSGPrim(OpenCSG::Subtraction, 2);
-                            clipCube->m = (t * s);
+                            clipCube->m = tClip;
                             clipCube->geom = kClipCubeGeometry;
                             clipCube->csgmode = csgmode_e(CSGMODE_NORMAL | CSGMODE_DIFFERENCE);
                             primitives.push_back(clipCube);
@@ -218,6 +274,7 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo,
 
                         if(0!=clipCube) {
                             glDepthFunc(GL_EQUAL);
+                            //glDepthFunc(GL_LEQUAL);
                             glPushMatrix();
                                 Color4f clip(0x7F, 0x7F, 0xFF, 0xFF);
                                 setColor(COLORMODE_CUTOUT, clip.data(), shaderinfo);

@@ -240,13 +240,6 @@
            </widget>
           </item>
           <item>
-           <widget class="QRadioButton" name="clipRadioButtonV">
-            <property name="text">
-             <string>V</string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QSlider" name="clipSlider">
             <property name="maximum">
              <number>10000</number>

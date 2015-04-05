@@ -186,7 +186,6 @@ void GLView::paintGL()
   glColor3d(1.0, 0.0, 0.0);
 
   double eqn[4];
-  int clipIndx = 0;
   int clipChar = ' ';
   double clipAbsPosition = 0.0;
   if (this->renderer) {
@@ -196,7 +195,8 @@ void GLView::paintGL()
         eqn[0] = 0.0;
         eqn[1] = 0.0;
         eqn[2] = 0.0;
-        eqn[(int)clipMode] = -1.0;
+        eqn[3] = 0.0;
+        eqn[(int)clipMode] = 1.0;
 
         BoundingBox box = this->renderer->getBoundingBox();
         double lo = box.min()[(int)clipMode];
@@ -231,26 +231,41 @@ void GLView::paintGL()
     );
 
     if(kClipN!=clipMode && clipChanging) {
+
+        glDepthFunc(GL_ALWAYS);
+        glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
-            if(kClipX==clipMode) {
-                glRotated(90.0, 1.0, 0.0, 0.0);
-            } else if(kClipY==clipMode) {
-                glRotated(90.0, 0.0, 0.0, 1.0);
-            } else if(kClipZ==clipMode) {
-                glRotated(-90.0, 0.0, 1.0, 0.0);
-            }
-            glColor3ub(0x0, 0x0, 0x0);
-            glQuickText::printfAt(
-                clipAbsPosition,
-                0.0,
-                0.0,
-                0.1,
-                "Clip at %c = %.5f",
-                clipChar,
-                clipAbsPosition
-            );
+            glLoadIdentity();
+
+            glMatrixMode(GL_PROJECTION);
+            glPushMatrix();
+                glLoadIdentity();
+
+                GLint viewport[4];
+                glGetIntegerv(GL_VIEWPORT, viewport);
+                glOrtho(
+                    viewport[0], viewport[0] + viewport[2],
+                    viewport[1], viewport[1] + viewport[3],
+                    -1.0,  1.0
+                );
+
+                glColor3ub(0x0, 0x0, 0x0);
+                glQuickText::printfAt(
+                    10.0,
+                    10.0,
+                    0.0,
+                    1.0,
+                    "Clip at %c = %.5f",
+                    clipChar,
+                    clipAbsPosition
+                );
+            glMatrixMode(GL_PROJECTION);
+            glPopMatrix();
+
+        glMatrixMode(GL_MODELVIEW);
         glPopMatrix();
     }
+
   }
 
   // Only for GIMBAL

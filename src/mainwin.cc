@@ -411,7 +411,6 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->clipRadioButtonX, SIGNAL(clicked()), this, SLOT(clippingPlaneChanged()));
 	connect(this->clipRadioButtonY, SIGNAL(clicked()), this, SLOT(clippingPlaneChanged()));
 	connect(this->clipRadioButtonZ, SIGNAL(clicked()), this, SLOT(clippingPlaneChanged()));
-	connect(this->clipRadioButtonV, SIGNAL(clicked()), this, SLOT(clippingPlaneChanged()));
 
 	connect(this->clipSlider, SIGNAL(valueChanged(int)), this, SLOT(clippingPlaneChanged()));
 	connect(this->clipSlider, SIGNAL(sliderPressed()), this, SLOT(clippingPlaneChangeStart()));
@@ -2510,7 +2509,6 @@ void MainWindow::clippingPlaneChanged()
         clipRadioButtonX->isChecked() ? GLView::kClipX :
         clipRadioButtonY->isChecked() ? GLView::kClipY :
         clipRadioButtonZ->isChecked() ? GLView::kClipZ :
-        clipRadioButtonV->isChecked() ? GLView::kClipV :
                                         GLView::kClipN
         ;
 
