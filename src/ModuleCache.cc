@@ -45,15 +45,14 @@ bool ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 	if (lib_mod && lib_mod->isHandlingDependencies()) return false;
 
 	// Create cache ID
-	struct stat st;
-	memset(&st, 0, sizeof(struct stat));
-	bool valid = (stat(filename.c_str(), &st) == 0);
-
+	fs::path fpath(filename);
 	// If file isn't there, just return and let the cache retain the old module
-	if (!valid) return false;
+	if (!fs::exists(fpath)) return false;
 
 	// If the file is present, we'll always cache some result
-	std::string cache_id = str(boost::format("%x.%x") % st.st_mtime % st.st_size);
+	std::time_t mtime = fs::last_write_time(fpath);
+	uintmax_t size = fs::file_size(fpath);
+	std::string cache_id = str(boost::format("%x.%x") % mtime % size);
 
 	cache_entry &entry = this->entries[filename];
 	// Initialize entry, if new
