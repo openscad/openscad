@@ -7,6 +7,7 @@
 #include <boost/format.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
+#include <nowide/fstream.hpp>
 
 #include <stdio.h>
 #include <fstream>
@@ -99,7 +100,7 @@ bool ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 
 		std::stringstream textbuf;
 		{
-			std::ifstream ifs(filename.c_str());
+			nowide::ifstream ifs(filename.c_str());
 			if (!ifs.is_open()) {
 				PRINTB("WARNING: Can't open library file '%s'\n", filename);
 				return false;
