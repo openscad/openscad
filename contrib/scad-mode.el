@@ -1,9 +1,9 @@
-;;; scad-mode.el --- Major mode for editing SCAD files
+;;; scad-mode.el --- A major mode for editing OpenSCAD code
 
-;; Author:     Len Trigg
+;; Author:     Len Trigg, Łukasz Stelmach
 ;; Maintainer: Len Trigg <lenbok@gmail.com>
 ;; Created:    March 2010
-;; Modified:   24 May 2014
+;; Modified:   28 Mar 2015
 ;; Keywords:   languages
 ;; URL:        https://raw.github.com/openscad/openscad/master/contrib/scad-mode.el
 ;; Version:    91.0
@@ -26,11 +26,11 @@
 ;;; Commentary:
 ;;
 ;; This is a major-mode to implement the SCAD constructs and
-;; font-locking for openscad
+;; font-locking for OpenSCAD
 ;;
 ;; If installing manually, insert the following into your emacs startup:
 ;;
-;; (autoload 'scad-mode "scad-mode" "Major mode for editing SCAD code." t)
+;; (autoload 'scad-mode "scad-mode" "A major mode for editing OpenSCAD code." t)
 ;; (add-to-list 'auto-mode-alist '("\\.scad$" . scad-mode))
 ;;
 ;; or
@@ -47,6 +47,8 @@
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.scad$" . scad-mode))
+
+(require 'cc-mode)
 
 (defcustom scad-command
   '"openscad"
@@ -68,27 +70,38 @@
     "str" 
     "lookup" "version" "version_num" "len" "search"
     "dxf_dim" "dxf_cross"                                               ;;dxfdim.cc
+    "norm" "cross"                                                      ;;2014.03
+    "concat" "chr"                                                      ;;2015.03
     )
   "SCAD functions."
   :type 'list
   :group 'scad-font-lock)
 
 (defcustom scad-modules
-  '("child" "children" "echo" "assign" "for" "intersection_for" "if" "else"        ;;control.cc
+  '("children" "echo" "for" "intersection_for" "if" "else"              ;;control.cc
     "cube" "sphere" "cylinder" "polyhedron" "square" "circle" "polygon" ;;primitives.cc
     "scale" "rotate" "translate" "mirror" "multmatrix"                  ;;transform.cc
     "union" "difference" "intersection"                                 ;;csgops.cc
     "render"                                                            ;;render.cc
     "color"                                                             ;;color.cc
     "surface"                                                           ;;surface.cc
-    "dxf_linear_extrude" "linear_extrude"                               ;;linearextrude.cc
-    "dxf_rotate_extrude" "rotate_extrude"                               ;;rotateextrude.cc
-    "import_stl" "import_off" "import_dxf" "import"                     ;;import.cc
+    "linear_extrude"                                                    ;;linearextrude.cc
+    "rotate_extrude"                                                    ;;rotateextrude.cc
+    "import"                                                            ;;import.cc
     "group"                                                             ;;builtin.cc
     "projection"                                                        ;;projection.cc
     "minkowski" "glide" "subdiv" "hull" "resize"                        ;;cgaladv.cc
+    "parent_module"                                                     ;;2014.03
+    "let" "offset" "text"                                               ;;2015.03
     )
   "SCAD modules."
+  :type 'list
+  :group 'scad-font-lock)
+
+(defcustom scad-deprecated
+  '("child" "assign" "dxf_linear_extrude" "dxf_rotate_extrude" 
+    "import_stl" "import_off" "import_dxf")
+  "SCAD deprecated modules and functions."
   :type 'list
   :group 'scad-font-lock)
 
@@ -103,9 +116,9 @@
 
 (defvar scad-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map "\t" 'scad-indent-line)
     (define-key map [(control c) (control o)] 'scad-open-current-buffer)
-    (define-key map [return] 'newline-and-indent) 
+    (define-key map [return] 'newline-and-indent)
+    ;;(define-key map [(control c) (control s)] 'c-show-syntactic-information) ;; Debugging info
     map)
   "Keymap for `scad-mode'.")
 
@@ -138,6 +151,7 @@
 (defvar scad-keywords-regexp (regexp-opt scad-keywords 'words))
 (defvar scad-modules-regexp (regexp-opt scad-modules 'words))
 (defvar scad-functions-regexp (regexp-opt scad-functions 'words))
+(defvar scad-deprecated-regexp (regexp-opt scad-deprecated 'words))
 (defvar scad-operators-regexp (regexp-opt scad-operators))
 
 (defvar scad-font-lock-keywords
@@ -149,30 +163,41 @@
     (,scad-keywords-regexp . font-lock-keyword-face)
     (,scad-modules-regexp .  font-lock-builtin-face)
     (,scad-functions-regexp .  font-lock-function-name-face)
+    (,scad-deprecated-regexp .  font-lock-warning-face)
     ;(,scad-operators-regexp .  font-lock-operator-face) ;; This actually looks pretty ugly
     ;("\\(\\<\\S +\\>\\)\\s *(" 1 font-lock-function-name-face t) ;; Seems to override other stuff (e.g. in comments and builtins)
     )
   "Keyword highlighting specification for `scad-mode'.")
+(defconst scad-font-lock-keywords-1 scad-font-lock-keywords)
+(defconst scad-font-lock-keywords-2 scad-font-lock-keywords)
+(defconst scad-font-lock-keywords-3 scad-font-lock-keywords)
 
-;(defvar scad-imenu-generic-expression ...)
-;(defvar scad-outline-regexp ...)
+(defvar scad-indent-style nil
+  "The style of indentation for scad-mode. Defaults to \"k&r\" if
+  nil. If you want to set the style with file local variables use
+  the `c-file-style' variable")
 
+(put 'scad-mode 'c-mode-prefix "scad-")
 ;;;###autoload
-(define-derived-mode scad-mode fundamental-mode "SCAD"
-  "A major mode for editing SCAD files."
-  :syntax-table scad-mode-syntax-table
-  (set (make-local-variable 'font-lock-defaults) '(scad-font-lock-keywords))
-  (set (make-local-variable 'indent-line-function) 'scad-indent-line)
-                                        ;(set (make-local-variable 'imenu-generic-expression) scad-imenu-generic-expression)
-                                        ;(set (make-local-variable 'outline-regexp) scad-outline-regexp)
-  ;; set comment styles for scad mode
-  (set (make-local-variable 'comment-start) "//")
-  (set (make-local-variable 'comment-end) "")
-  (set (make-local-variable 'block-comment-start) "/*")
-  (set (make-local-variable 'block-comment-end) "*/")
-  
-  )
+(define-derived-mode scad-mode prog-mode "SCAD"
+  "Major mode for editing OpenSCAD code.
 
+To see what version of CC Mode you are running, enter `\\[c-version]'.
+
+The hook `c-mode-common-hook' is run with no args at mode
+initialization, then `scad-mode-hook'.
+
+Key bindings:
+\\{scad-mode-map}"
+  (c-initialize-cc-mode)
+  ;; (setq local-abbrev-table scad-mode-abbrev-table
+  ;; 	abbrev-mode t)
+  (use-local-map scad-mode-map)
+  (c-set-offset (quote cpp-macro) 0 nil)
+  (c-basic-common-init 'scad-mode (or scad-indent-style "k&r"))
+  (c-font-lock-init)
+  (c-run-mode-hooks 'c-mode-common-hook 'scad-mode-hook)
+  (c-update-modeline))
 
 ;; From: http://stackoverflow.com/questions/14520073/add-words-for-dynamic-expansion-to-emacs-mode
 (defun scad-prime-dabbrev ()
@@ -181,65 +206,8 @@
     (with-current-buffer (get-buffer-create " *scad words*")
       (scad-mode)
       (insert "module function use include")  ; Explicitly add these -- they're not in the below vars
-      (insert (mapconcat 'identity (append scad-keywords scad-functions scad-modules) " ")))))
+      (insert (mapconcat 'identity (append scad-keywords scad-functions scad-modules scad-deprecated) " ")))))
 (add-hook 'scad-mode-hook 'scad-prime-dabbrev)
-
-
-;;; Indentation, based on http://www.emacswiki.org/emacs/download/actionscript-mode-haas-7.0.el
-
-(defun scad-indent-line ()
-  "Indent current line of SCAD code."
-  (interactive)
-  (let ((savep (> (current-column) (current-indentation)))
-        (indent (max (scad-calculate-indentation) 0)))
-    (if savep
-        (save-excursion (indent-line-to indent))
-      (indent-line-to indent))))
-
-(defun scad-calculate-indentation ()
-  "Return the column to which the current line should be indented."
-  (save-excursion
-    (scad-maybe-skip-leading-close-delim)
-    (let ((pos (point)))
-      (beginning-of-line)
-      (if (not (search-backward-regexp "[^\n\t\r ]" 1 0))
-          0
-        (progn
-          (scad-maybe-skip-leading-close-delim)
-          (+ (current-indentation) (* standard-indent (scad-count-scope-depth (point) pos))))))))
-
-(defun scad-maybe-skip-leading-close-delim ()
-  (beginning-of-line)
-  (forward-to-indentation 0)
-  (if (looking-at "\\s)")
-      (forward-char)
-    (beginning-of-line)))
-
-(defun scad-face-at-point (pos)
-  "Return face descriptor for char at point."
-  (plist-get (text-properties-at pos) 'face))
-
-(defun scad-count-scope-depth (rstart rend)
-  "Return difference between open and close scope delimeters."
-  (save-excursion
-    (goto-char rstart)
-    (let ((open-count 0)
-          (close-count 0)
-          opoint)
-      (while (and (< (point) rend)
-                  (progn (setq opoint (point))
-                         (re-search-forward "\\s)\\|\\s(" rend t)))
-        (if (= opoint (point))
-            (forward-char 1)
-          (cond
-           ;; Don't count if in string or comment.
-           ((scad-face-at-point (- (point) 1)))
-           ((looking-back "\\s)")
-            (setq close-count (+ close-count 1)))
-           ((looking-back "\\s(")
-            (setq open-count (+ open-count 1)))
-           )))
-      (- open-count close-count))))
 
 (defun scad-open-current-buffer ()
   (interactive)
