@@ -96,6 +96,16 @@ void CGALRenderer::setColorScheme(const ColorScheme &cs)
 
 void CGALRenderer::draw(bool showfaces, bool showedges, const double *clippingPlane) const
 {
+    if(clippingPlane) {
+        glEnable(GL_CLIP_PLANE0);
+
+        double eqn[4];
+        eqn[0] = -clippingPlane[0];
+        eqn[1] = -clippingPlane[1];
+        eqn[2] = -clippingPlane[2];
+        eqn[3] =  clippingPlane[3];
+        glClipPlane(GL_CLIP_PLANE0, eqn);
+    }
 	PRINTD("draw()");
 	if (this->polyset) {
 		PRINTD("draw() polyset");
@@ -140,6 +150,10 @@ void CGALRenderer::draw(bool showfaces, bool showedges, const double *clippingPl
         }
 	}
 	PRINTD("draw() end");
+
+    if(clippingPlane) {
+        glDisable(GL_CLIP_PLANE0);
+    }
 }
 
 BoundingBox CGALRenderer::getBoundingBox() const
@@ -160,3 +174,4 @@ BoundingBox CGALRenderer::getBoundingBox() const
 	}
 	return bbox;
 }
+
