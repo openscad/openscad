@@ -50,8 +50,15 @@ bool ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 	if (!fs::exists(fpath)) return false;
 
 	// If the file is present, we'll always cache some result
-	std::time_t mtime = fs::last_write_time(fpath);
-	uintmax_t size = fs::file_size(fpath);
+	std::time_t mtime = 0;
+	uintmax_t size = 0;
+	try {
+		mtime = fs::last_write_time(fpath);
+		size = fs::file_size(fpath);
+	}
+	catch (fs::filesystem_error &e) {
+		// Just ignore the error as we cache 0 values
+	}
 	std::string cache_id = str(boost::format("%x.%x") % mtime % size);
 
 	cache_entry &entry = this->entries[filename];
