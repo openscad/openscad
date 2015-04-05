@@ -423,7 +423,7 @@ build_boost()
   tar xjf boost_$bversion.tar.bz2
   cd boost_$bversion
   # We only need the thread and program_options libraries
-  ./bootstrap.sh --prefix=$DEPLOYDIR --with-libraries=thread,program_options,filesystem,chrono,system,regex
+  ./bootstrap.sh --prefix=$DEPLOYDIR --with-libraries=thread,program_options,filesystem,chrono,system,regex,locale
   if $OPTION_32BIT; then
     BOOST_EXTRA_FLAGS="-arch i386"
   fi
@@ -443,8 +443,8 @@ build_boost()
   install_name_tool -change libboost_system.dylib $DEPLOYDIR/lib/libboost_system.dylib $DEPLOYDIR/lib/libboost_filesystem.dylib 
   install_name_tool -id $DEPLOYDIR/lib/libboost_system.dylib $DEPLOYDIR/lib/libboost_system.dylib 
   install_name_tool -id $DEPLOYDIR/lib/libboost_regex.dylib $DEPLOYDIR/lib/libboost_regex.dylib 
-
-
+  install_name_tool -id $DEPLOYDIR/lib/libboost_locale.dylib $DEPLOYDIR/lib/libboost_locale.dylib 
+  install_name_tool -change libboost_system.dylib $DEPLOYDIR/lib/libboost_system.dylib $DEPLOYDIR/lib/libboost_locale.dylib 
 }
 
 check_cgal()

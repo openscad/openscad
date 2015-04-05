@@ -224,7 +224,7 @@ if (NOT $ENV{BOOSTDIR} STREQUAL "")
   message(STATUS "BOOST_ROOT: " ${BOOST_ROOT})
 endif()
 
-find_package( Boost 1.35.0 COMPONENTS thread program_options filesystem system regex REQUIRED)
+find_package( Boost 1.35.0 COMPONENTS thread program_options filesystem system regex locale REQUIRED)
 message(STATUS "Boost ${Boost_VERSION} includes found: " ${Boost_INCLUDE_DIRS})
 message(STATUS "Boost libraries found:")
 foreach(boostlib ${Boost_LIBRARIES})
