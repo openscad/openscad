@@ -86,6 +86,8 @@ DxfData::DxfData(double fn, double fs, double fa,
 		PRINTB("WARNING: Can't open DXF file '%s'.", filename);
 		return;
 	}
+	// Make sure locale doesn't influence parsing
+	std::locale oldloc = std::locale::global(std::locale::classic());
 
 	Grid2d< std::vector<int> > grid(GRID_COARSE);
 	std::vector<Line> lines;                       // Global lines
@@ -515,6 +517,8 @@ DxfData::DxfData(double fn, double fs, double fa,
 	printf("--------------------\n");
 	fflush(stdout);
 #endif
+
+	std::locale::global(oldloc);
 }
 
 /*!
