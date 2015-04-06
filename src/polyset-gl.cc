@@ -1,4 +1,4 @@
-#include "polyset.h"
+#include "polyset-gl.h"
 #include "polyset-utils.h"
 #include "linalg.h"
 #include "printutils.h"

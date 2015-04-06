@@ -47,8 +47,8 @@ public:
 	bool is_convex() const;
 	boost::tribool convexValue() const { return this->convex; }
 
-//	void render_surface(Renderer::csgmode_e csgmode, const Transform3d &m, GLint *shaderinfo = NULL) const;
-//	void render_edges(Renderer::csgmode_e csgmode) const;
+	void render_surface(Renderer::csgmode_e csgmode, const Transform3d &m, GLint *shaderinfo = NULL) const;
+	void render_edges(Renderer::csgmode_e csgmode) const;
 private:
 	Polygon2d polygon;
 	unsigned int dim;
