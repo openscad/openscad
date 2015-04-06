@@ -32,6 +32,7 @@
 // dxfdata.h must come first for Eigen SIMD alignment issues
 #include "dxfdata.h"
 #include "polyset.h"
+#include "polyset-gl.h"
 #include "polyset-utils.h"
 #include "printutils.h"
 
