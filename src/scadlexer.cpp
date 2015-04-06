@@ -59,13 +59,13 @@ void ScadLexer::styleText(int start, int end)
     if(source.isEmpty())
         return;
 
-//	paintComments(source, start);
     highlightKeywords(source, start);
     highlightTransformations(source, start);
     highlightBooleans(source, start);
     highlightFunctions(source, start);
     highlightModels(source, start);
 }
+
 QColor ScadLexer::defaultColor(int style) const
 {
     switch(style) {
@@ -238,122 +238,3 @@ const char *ScadLexer::keywords(int set) const
 }
 
 
-QStringList ScadLexer::autoCompletionWordSeparators() const
-{
-	QStringList wl;
-	wl << "::" << "->" << ".";
-
-	return wl;
-}
-
-const char *ScadLexer::blockStartKeyword(int *style) const
-{
-	return 0;
-}
-
-const char *ScadLexer::blockStart(int *style) const
-{
-	return 0;
-}
-
-const char *ScadLexer::blockEnd(int *style) const
-{
-	return 0;
-}
-
-int ScadLexer::braceStyle() const
-{
-	return 0;
-}
-
-const char *ScadLexer::wordCharacters() const
-{
-
-	return 0;
-}
-
-bool ScadLexer::defaultEolFill(int style) const
-{
-	return 0;
-}
-
-QFont ScadLexer::defaultFont(int style) const
-{
-	return QFont("Courier New",10);
-}
-
-QColor ScadLexer::defaultPaper(int style) const
-{
-	return Qt::blue;
-}
-
-void ScadLexer::refreshProperties()
-{
-}
-
-bool ScadLexer::readProperties(QSettings &qs, const QString &prefix)
-{
-	return 0;
-}
-
-bool ScadLexer::writeProperties(QSettings &qs, const QString &prefix) const
-{
-	return 0;
-
-}
-
-void ScadLexer::setFoldAtElse(bool fold)
-{
-}
-
-void ScadLexer::setAtElseProp()
-{
-}
-
-void ScadLexer::setFoldComments(bool fold)
-{
-}
-
-void ScadLexer::setCommentProp()
-{
-}
-
-void ScadLexer::setFoldCompact(bool fold)
-{
-}
-
-void ScadLexer::setCompactProp()
-{
-}
-
-void ScadLexer::setFoldPreprocessor(bool fold)
-{
-}
-
-void ScadLexer::setPreprocProp()
-{
-}
-
-void ScadLexer::setStylePreprocessor(bool style)
-{
-}
-
-void ScadLexer::setStylePreprocProp()
-{
-}
-
-void ScadLexer::setDollarsAllowed(bool allowed)
-{
-}
-
-void ScadLexer::setDollarsProp()
-{
-}
-
-void ScadLexer::setHighlightTripleQuotedStrings(bool enabled)
-{
-}
-
-void ScadLexer::setHighlightHashProp()
-{
-}
