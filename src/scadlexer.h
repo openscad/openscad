@@ -41,11 +41,7 @@ public:
 
         QString description(int style) const;
 
-	void highlightKeywords(const QString &source, int start);
-	void highlightTransformations(const QString &source, int start);
-	void highlightBooleans(const QString &source, int start);
-	void highlightFunctions(const QString &source, int start);
-	void highlightModels(const QString &source, int start);
+	void highlightKeywords(const QString &source, int start, QStringList&, int);
 
 private:
 

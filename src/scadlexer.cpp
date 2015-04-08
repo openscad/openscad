@@ -59,11 +59,11 @@ void ScadLexer::styleText(int start, int end)
     if(source.isEmpty())
         return;
 
-    highlightKeywords(source, start);
-    highlightTransformations(source, start);
-    highlightBooleans(source, start);
-    highlightFunctions(source, start);
-    highlightModels(source, start);
+    highlightKeywords(source, start, keywordsList, Keyword);
+    highlightKeywords(source, start, transformationsList, Transformation);
+    highlightKeywords(source, start, booleansList, Boolean);
+    highlightKeywords(source, start, functionsList, Function);
+    highlightKeywords(source, start, modelsList, Model);
 }
 
 QColor ScadLexer::defaultColor(int style) const
@@ -114,9 +114,9 @@ QString ScadLexer::description(int style) const
 }
 
 
-void ScadLexer::highlightKeywords(const QString &source, int start)
+void ScadLexer::highlightKeywords(const QString &source, int start, QStringList &List, int style )
 {
-    foreach(QString word, keywordsList) { 
+    foreach(QString word, List) { 
         if(source.contains(word)) {
             int p = source.count(word); 
             int index = 0; 
@@ -125,83 +125,7 @@ void ScadLexer::highlightKeywords(const QString &source, int start)
                 index = begin+1; 
 
                 startStyling(start + begin); 
-                setStyling(word.length(), Keyword); 
-                startStyling(start + begin); 
-
-                p--;
-            }
-        }
-    }
-}
-void ScadLexer::highlightTransformations(const QString &source, int start)
-{
-    foreach(QString word, transformationsList) { 
-        if(source.contains(word)) {
-            int p = source.count(word); 
-            int index = 0; 
-            while(p != 0) {
-                int begin = source.indexOf(word, index); 
-                index = begin+1; 
-
-                startStyling(start + begin); 
-                setStyling(word.length(), Transformation); 
-                startStyling(start + begin); 
-
-                p--;
-            }
-        }
-    }
-}
-void ScadLexer::highlightBooleans(const QString &source, int start)
-{
-    foreach(QString word, booleansList) { 
-        if(source.contains(word)) {
-            int p = source.count(word); 
-            int index = 0; 
-            while(p != 0) {
-                int begin = source.indexOf(word, index); 
-                index = begin+1; 
-
-                startStyling(start + begin); 
-                setStyling(word.length(), Boolean); 
-                startStyling(start + begin); 
-
-                p--;
-            }
-        }
-    }
-}
-void ScadLexer::highlightFunctions(const QString &source, int start)
-{
-    foreach(QString word, functionsList) { 
-        if(source.contains(word)) {
-            int p = source.count(word); 
-            int index = 0; 
-            while(p != 0) {
-                int begin = source.indexOf(word, index); 
-                index = begin+1; 
-
-                startStyling(start + begin); 
-                setStyling(word.length(), Function); 
-                startStyling(start + begin); 
-
-                p--;
-            }
-        }
-    }
-}
-void ScadLexer::highlightModels(const QString &source, int start)
-{
-    foreach(QString word, modelsList) { 
-        if(source.contains(word)) {
-            int p = source.count(word); 
-            int index = 0; 
-            while(p != 0) {
-                int begin = source.indexOf(word, index); 
-                index = begin+1; 
-
-                startStyling(start + begin); 
-                setStyling(word.length(), Model); 
+                setStyling(word.length(), style); 
                 startStyling(start + begin); 
 
                 p--;
