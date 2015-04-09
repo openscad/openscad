@@ -32,6 +32,7 @@
 
 #include <boost/foreach.hpp>
 #include <boost/algorithm/string.hpp>
+#include <nowide/fstream.hpp>
 
 #define QUOTE(x__) # x__
 #define QUOTED(x__) QUOTE(x__)
@@ -102,9 +103,9 @@ void exportFile(const class Geometry *root_geom, std::ostream &output, FileForma
 }
 
 void exportFileByName(const class Geometry *root_geom, FileFormat format,
-	const char *name2open, const char *name2display)
+		      const std::string &name2open, const std::string &name2display)
 {
-	std::ofstream fstream(name2open);
+	nowide::ofstream fstream(name2open.c_str());
 	if (!fstream.is_open()) {
 		PRINTB("Can't open file \"%s\" for export", name2display);
 	} else {

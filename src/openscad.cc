@@ -65,6 +65,8 @@
 #include <boost/foreach.hpp>
 #include <boost/locale.hpp>
 #include "boosty.h"
+#include <nowide/args.hpp>
+#include <nowide/fstream.hpp>
 
 #ifdef __APPLE__
 #include "AppleEvents.h"
@@ -320,15 +322,14 @@ void set_render_color_scheme(const std::string color_scheme, const bool exit_if_
 int cmdline(const char *deps_output_file, const std::string &filename, Camera &camera, const char *output_file, const fs::path &original_path, Render::type renderer, int argc, char ** argv )
 {
 #ifdef OPENSCAD_QTGUI
-	QCoreApplication app(argc, argv);
-	const std::string application_path = QApplication::instance()->applicationDirPath().toLocal8Bit().constData();
+	QCoreApplication app(argc, argv); 
+	const std::string application_path = QApplication::instance()->applicationDirPath().toStdString();
 #else
-	const std::string application_path = boosty::stringy(boosty::absolute(boost::filesystem::path(argv[0]).parent_path()));
+	const std::string application_path = boosty::stringy(boosty::absolute(fs::path(argv[0]).parent_path()));
 #endif	
 	PlatformUtils::registerApplicationPath(application_path);
 	parser_init();
 	localization_init();
-
 	Tree tree;
 #ifdef ENABLE_CGAL
 	GeometryEvaluator geomevaluator(tree);
@@ -386,7 +387,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 
 	handle_dep(filename.c_str());
 
-	std::ifstream ifs(filename.c_str());
+	nowide::ifstream ifs(filename.c_str());
 	if (!ifs.is_open()) {
 		PRINTB("Can't open input file '%s'!\n", filename.c_str());
 		return 1;
@@ -415,10 +416,9 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		root_node = absolute_root_node;
 
 	tree.setRoot(root_node);
-
 	if (csg_output_file) {
 		fs::current_path(original_path);
-		std::ofstream fstream(csg_output_file);
+		nowide::ofstream fstream(csg_output_file);
 		if (!fstream.is_open()) {
 			PRINTB("Can't open file \"%s\" for export", csg_output_file);
 		}
@@ -430,7 +430,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	}
 	else if (ast_output_file) {
 		fs::current_path(original_path);
-		std::ofstream fstream(ast_output_file);
+		nowide::ofstream fstream(ast_output_file);
 		if (!fstream.is_open()) {
 			PRINTB("Can't open file \"%s\" for export", ast_output_file);
 		}
@@ -448,7 +448,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		shared_ptr<CSGTerm> root_raw_term = csgRenderer.evaluateCSGTerm(*root_node, highlight_terms, background_terms);
 
 		fs::current_path(original_path);
-		std::ofstream fstream(term_output_file);
+		nowide::ofstream fstream(term_output_file);
 		if (!fstream.is_open()) {
 			PRINTB("Can't open file \"%s\" for export", term_output_file);
 		}
@@ -528,7 +528,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		}
 
 		if (png_output_file) {
-			std::ofstream fstream(png_output_file,std::ios::out|std::ios::binary);
+			nowide::ofstream fstream(png_output_file,std::ios::out|std::ios::binary);
 			if (!fstream.is_open()) {
 				PRINTB("Can't open file \"%s\" for export", png_output_file);
 			}
@@ -581,10 +581,10 @@ Q_DECLARE_METATYPE(shared_ptr<const Geometry>);
 static QString assemblePath(const fs::path& absoluteBaseDir,
                             const string& fileName) {
   if (fileName.empty()) return "";
-  QString qsDir = QString::fromLocal8Bit( boosty::stringy( absoluteBaseDir ).c_str() );
-  QString qsFile = QString::fromLocal8Bit( fileName.c_str() );
+  QString qsDir = QString::fromStdString(boosty::stringy(absoluteBaseDir));
+  QString qsFile = QString::fromStdString(fileName);
   // if qsfile is absolute, dir is ignored. (see documentation of QFileInfo)
-  QFileInfo info( qsDir, qsFile );
+  QFileInfo info(qsDir, qsFile);
   return info.absoluteFilePath();
 }
 
@@ -666,7 +666,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	qRegisterMetaType<shared_ptr<const Geometry> >();
 	
 	const QString &app_path = app.applicationDirPath();
-	PlatformUtils::registerApplicationPath(app_path.toLocal8Bit().constData());
+	PlatformUtils::registerApplicationPath(app_path.toStdString());
 
 	FontCache::registerProgressHandler(dialogInitHandler);
 
@@ -727,10 +727,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 			if (!files.empty()) {
 				inputFiles.clear();
 				BOOST_FOREACH(const QString &f, files) {
-					// FIXME: We expect inputFiles to be in the local 8-bit encoding
-					// as the cmd-line may pass non-utf-8 data, especially on Windows.
-					// We should rather clean this up and store utf-8.
-					inputFiles.push_back(f.toLocal8Bit().constData());
+				  inputFiles.push_back(f.toStdString());
 				}
 			}
 			delete launcher;
@@ -768,6 +765,8 @@ int gui(const vector<string> &inputFiles, const fs::path &original_path, int arg
 
 int main(int argc, char **argv)
 {
+	nowide::args a(argc, argv); // Fix arguments - make them UTF-8
+
 	int rc = 0;
 	bool isGuiLaunched = getenv("GUI_LAUNCHED") != 0;
 	StackCheck::inst()->init();
@@ -778,10 +777,10 @@ int main(int argc, char **argv)
 	PlatformUtils::ensureStdIO();
 #endif
 
-    // Create and install global locale
-	    std::locale::global(boost::locale::generator().generate(""));
-    // Make boost.filesystem use it
-	    fs::path::imbue(std::locale());
+	// Create and install global locale
+	std::locale::global(boost::locale::generator().generate(""));
+	// Make boost.filesystem use it
+	fs::path::imbue(std::locale());
 #ifdef ENABLE_CGAL
 	// Causes CGAL errors to abort directly instead of throwing exceptions
 	// (which we don't catch). This gives us stack traces without rerunning in gdb.

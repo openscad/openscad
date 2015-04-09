@@ -42,7 +42,7 @@ public:
 #if QT_VERSION >= 0x050100
 	float getDPI() { return this->devicePixelRatio(); }
 #endif
-	bool save(const char *filename);
+	bool save(const std::string &filename);
 	void resetView();
 	void viewAll();
 

@@ -787,7 +787,7 @@ void MainWindow::setFileName(const QString &filename)
 		setWindowFilePath(fn);
 
 		QDir::setCurrent(fileinfo.dir().absolutePath());
-		this->top_ctx.setDocumentPath(fileinfo.dir().absolutePath().toLocal8Bit().constData());
+		this->top_ctx.setDocumentPath(fileinfo.dir().absolutePath().toStdString());
 	}
 	editorTopLevelChanged(editorDock->isFloating());
 	consoleTopLevelChanged(consoleDock->isFloating());
@@ -850,7 +850,7 @@ void MainWindow::refreshDocument()
 		QFile file(this->fileName);
 		if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
 			PRINTB("Failed to open file %s: %s",
-			       this->fileName.toStdString() % file.errorString().toLocal8Bit().constData());
+			       this->fileName.toStdString() % file.errorString().toStdString());
 		}
 		else {
 			QTextStream reader(&file);
@@ -1301,7 +1301,7 @@ void MainWindow::saveBackup()
 		return;
 	}
 
-    QString backupPath = QString::fromLocal8Bit(path.c_str());
+    QString backupPath = QString::fromStdString(path);
 	if (!backupPath.endsWith("/")) backupPath.append("/");
 
 	QString basename = "unsaved";
@@ -1336,7 +1336,7 @@ void MainWindow::actionSave()
 		QFile file(this->fileName);
 		if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
 			PRINTB("Failed to open file for writing: %s (%s)", 
-			this->fileName.toLocal8Bit().constData() % file.errorString().toLocal8Bit().constData());
+			this->fileName.toStdString() % file.errorString().toStdString());
 			QMessageBox::warning(this, windowTitle(), tr("Failed to open file for writing:\n %1 (%2)")
 					.arg(this->fileName).arg(file.errorString()));
 		}
@@ -1344,7 +1344,7 @@ void MainWindow::actionSave()
 			QTextStream writer(&file);
 			writer.setCodec("UTF-8");
 			writer << this->editor->toPlainText();
-			PRINTB("Saved design '%s'.", this->fileName.toLocal8Bit().constData());
+			PRINTB("Saved design '%s'.", this->fileName.toStdString());
 			this->editor->setContentModified(false);
 		}
 		clearCurrentOutput();
@@ -1625,7 +1625,8 @@ bool MainWindow::fileChangedOnDisk()
 	if (!this->fileName.isEmpty()) {
 		struct stat st;
 		memset(&st, 0, sizeof(struct stat));
-		bool valid = (stat(this->fileName.toLocal8Bit(), &st) == 0);
+		// FIXME: Don't use stat()
+		bool valid = (stat(this->fileName.toStdString().c_str(), &st) == 0);
 		// If file isn't there, just return and use current editor text
 		if (!valid) return false;
 
@@ -1657,7 +1658,7 @@ void MainWindow::compileTopLevelDocument()
 
 	this->root_module = parse(fulltext.c_str(),
 	this->fileName.isEmpty() ? "" :
-	QFileInfo(this->fileName).absolutePath().toLocal8Bit(), false);
+				  QFileInfo(this->fileName).absolutePath().toStdString().c_str(), false);
 }
 
 void MainWindow::checkAutoReload()
@@ -2054,8 +2055,9 @@ void MainWindow::actionExport(export_type_e, QString, QString)
 		assert(false && "Unknown export type");
 		break;
 	}
-	exportFileByName(this->root_geom.get(), format, export_filename.toUtf8(),
-		export_filename.toLocal8Bit().constData());
+	exportFileByName(this->root_geom.get(), format, 
+			 export_filename.toStdString(),
+			 export_filename.toStdString());
 	PRINTB("%s export finished.", type_name);
 
 	clearCurrentOutput();
@@ -2114,8 +2116,8 @@ void MainWindow::actionExportDXF()
 	if (dxf_filename.isEmpty()) {
 		return;
 	}
-	exportFileByName(this->root_geom.get(), OPENSCAD_DXF, dxf_filename.toUtf8(),
-		dxf_filename.toLocal8Bit().constData());
+	exportFileByName(this->root_geom.get(), OPENSCAD_DXF, dxf_filename.toStdString(),
+		dxf_filename.toStdString());
 	PRINT("DXF export finished.");
 
 	clearCurrentOutput();
@@ -2128,8 +2130,8 @@ void MainWindow::actionExportSVG()
 	if (svg_filename.isEmpty()) {
 		return;
 	}
-	exportFileByName(this->root_geom.get(), OPENSCAD_SVG, svg_filename.toUtf8(),
-		svg_filename.toLocal8Bit().constData());
+	exportFileByName(this->root_geom.get(), OPENSCAD_SVG, svg_filename.toStdString(),
+		svg_filename.toStdString());
 	PRINT("SVG export finished.");
 
 	clearCurrentOutput();
@@ -2155,9 +2157,9 @@ void MainWindow::actionExportCSG()
 		return;
 	}
 
-	std::ofstream fstream(csg_filename.toLocal8Bit());
+	std::ofstream fstream(csg_filename.toStdString().c_str());
 	if (!fstream.is_open()) {
-		PRINTB("Can't open file \"%s\" for export", csg_filename.toLocal8Bit().constData());
+		PRINTB("Can't open file \"%s\" for export", csg_filename.toStdString());
 	}
 	else {
 		fstream << this->tree.getString(*this->root_node) << "\n";
@@ -2177,7 +2179,7 @@ void MainWindow::actionExportImage()
 	if (img_filename.isEmpty()) {
 		PRINT("No filename specified. Image export aborted.");
 	} else {
-		qglview->save(img_filename.toLocal8Bit().constData());
+	  qglview->save(img_filename.toStdString());
 	}
 	clearCurrentOutput();
 	return;

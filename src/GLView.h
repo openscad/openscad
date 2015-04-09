@@ -38,7 +38,6 @@ public:
 	void initializeGL();
 	void resizeGL(int w, int h);
 	virtual void paintGL();
-
 	void setCamera(const Camera &cam);
 	void setupCamera();
 
@@ -46,7 +45,7 @@ public:
 	void setColorScheme(const std::string &cs);
 	void updateColorScheme();
 
-	virtual bool save(const char *filename) = 0;
+	virtual bool save(const std::string &filename) = 0;
 	virtual std::string getRendererInfo() const = 0;
 	virtual float getDPI() { return 1.0f; }
 

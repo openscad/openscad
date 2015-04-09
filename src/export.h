@@ -17,7 +17,7 @@ enum FileFormat {
 
 // void exportFile(const class Geometry *root_geom, std::ostream &output, FileFormat format);
 void exportFileByName(const class Geometry *root_geom, FileFormat format,
-	const char *name2open, const char *name2display);
+		      const std::string &name2open, const std::string &name2display);
 void export_png(shared_ptr<const class Geometry> root_geom, Camera &c, std::ostream &output);
 
 void export_stl(const class CGAL_Nef_polyhedron *root_N, std::ostream &output);
