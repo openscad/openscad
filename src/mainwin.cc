@@ -98,6 +98,7 @@
 #include <algorithm>
 #include <boost/version.hpp>
 #include <boost/foreach.hpp>
+#include <nowide/fstream.hpp>
 #include <sys/stat.h>
 
 #ifdef ENABLE_CGAL
@@ -2157,7 +2158,7 @@ void MainWindow::actionExportCSG()
 		return;
 	}
 
-	std::ofstream fstream(csg_filename.toStdString().c_str());
+	nowide::ofstream fstream(csg_filename.toStdString().c_str());
 	if (!fstream.is_open()) {
 		PRINTB("Can't open file \"%s\" for export", csg_filename.toStdString());
 	}
