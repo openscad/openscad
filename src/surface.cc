@@ -116,31 +116,12 @@ AbstractNode *SurfaceModule::instantiate(const Context *ctx, const ModuleInstant
 
 void SurfaceNode::convert_image(img_data_t &data, std::vector<unsigned char> &img, unsigned int width, unsigned int height) const
 {
-	double z_min = 100000;
-	double z_max = 0;
-	for (unsigned long idx = 0;idx < img.size();idx += 4) {
-		// sRGB luminance, see http://en.wikipedia.org/wiki/Grayscale
-		double z = 0.2126 * img[idx] + 0.7152 * img[idx + 1] + 0.0722 * img[idx + 2];
-		if (z < z_min) {
-			z_min = z;
-		}
-		if (z > z_max) {
-			z_max = z;
-		}
-	}
-
-	double h = 100;
-	double scale = h / (z_max - z_min);
 	for (unsigned int y = 0;y < height;y++) {
 		for (unsigned int x = 0;x < width;x++) {
 			long idx = 4 * (y * width + x);
 			double pixel = 0.2126 * img[idx] + 0.7152 * img[idx + 1] + 0.0722 * img[idx + 2];
-			double z = scale * (pixel - z_min);
-			if (invert) {
-				z = h - z;
-			}
-			data[std::make_pair(height - y, x)] = z;
-			
+			double z = 100.0/255 * (invert ? 1 - pixel : pixel);
+			data[std::make_pair(height - 1 - y, x)] = z;
 		}
 	}
 }
@@ -239,7 +220,7 @@ Geometry *SurfaceNode::createGeometry() const
 	
 	int lines = 0;
 	int columns = 0;
-	double min_val = std::numeric_limits<double>::max();
+	double min_val = 0;
 	for (img_data_t::iterator it = data.begin();it != data.end();it++) {
 		lines = std::max(lines, (*it).first.first + 1);
 		columns = std::max(columns, (*it).first.second + 1);

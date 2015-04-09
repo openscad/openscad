@@ -1,0 +1,54 @@
+{
+  "Basics": [
+    "CSG.scad",
+    "CSG-modules.scad",
+    "logo.scad",
+    "LetterBlock.scad",
+    "logo_and_text.scad",
+    "linear_extrude.scad",
+    "rotate_extrude.scad",
+    "text_on_cube.scad",
+    "projection.scad"
+  ],
+  "Functions": [
+    "functions.scad",
+    "list_comprehensions.scad",
+    "recursion.scad",
+    "polygon_areas.scad"
+  ],
+  "Advanced": [
+    "offset.scad",
+    "surface_image.scad",
+    "children.scad",
+    "children_indexed.scad",
+    "GEB.scad",
+    "animation.scad",
+    "module_recursion.scad"
+  ],
+  "Old": [
+    "example001.scad",
+    "example002.scad",
+    "example003.scad",
+    "example004.scad",
+    "example005.scad",
+    "example006.scad",
+    "example007.scad",
+    "example008.scad",
+    "example009.scad",
+    "example010.scad",
+    "example011.scad",
+    "example012.scad",
+    "example013.scad",
+    "example014.scad",
+    "example015.scad",
+    "example016.scad",
+    "example017.scad",
+    "example018.scad",
+    "example019.scad",
+    "example020.scad",
+    "example021.scad",
+    "example022.scad",
+    "example023.scad",
+    "example024.scad"
+  ]
+}

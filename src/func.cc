@@ -24,13 +24,13 @@
  *
  */
 
+#include "mathc99.h"
 #include "function.h"
 #include "expression.h"
 #include "evalcontext.h"
 #include "builtin.h"
 #include <sstream>
 #include <ctime>
-#include "mathc99.h"
 #include <limits>
 #include <algorithm>
 #include "stl-utils.h"
@@ -156,7 +156,7 @@ ValuePtr FunctionTailRecursion::evaluate(const Context *ctx, const EvalContext *
 		tmp.setVariables(definition_arguments, &ec);
 		c.apply_variables(tmp);
 
-		if (counter++ == 1000000) throw RecursionException("function", this->name);
+		if (counter++ == 1000000) throw RecursionException::create("function", this->name);
 	}
 
 	ValuePtr result = endexpr->evaluate(&c);
@@ -960,6 +960,10 @@ ValuePtr builtin_cross(const Context *, const EvalContext *evalctx)
 	
 	Value::VectorType v0 = arg0->toVector();
 	Value::VectorType v1 = arg1->toVector();
+	if ((v0.size() == 2) && (v1.size() == 2)) {
+		return ValuePtr(Value(v0[0].toDouble() * v1[1].toDouble() - v0[1].toDouble() * v1[0].toDouble()));
+	}
+
 	if ((v0.size() != 3) || (v1.size() != 3)) {
 		PRINT("WARNING: Invalid vector size of parameter for cross()");
 		return ValuePtr::undefined;

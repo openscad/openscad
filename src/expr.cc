@@ -473,7 +473,7 @@ ExpressionFunctionCall::ExpressionFunctionCall(const std::string &funcname,
 ValuePtr ExpressionFunctionCall::evaluate(const Context *context) const
 {
 	if (StackCheck::inst()->check()) {
-		throw RecursionException("function", funcname);
+		throw RecursionException::create("function", funcname);
 	}
     
 	EvalContext c(context, this->call_arguments);

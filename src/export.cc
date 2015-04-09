@@ -150,9 +150,16 @@ void export_stl(const PolySet &ps, std::ostream &output)
 			// so the default value of "1 0 0" can be used. If the vertices are not
 			// collinear then the unit normal must be calculated from the
 			// components.
+			output << "  facet normal ";
+
 			Vector3d normal = (p[1] - p[0]).cross(p[2] - p[0]);
 			normal.normalize();
-			output << "  facet normal " << normal[0] << " " << normal[1] << " " << normal[2] << "\n";
+			if (is_finite(normal) && !is_nan(normal)) {
+				output << normal[0] << " " << normal[1] << " " << normal[2] << "\n";
+			}
+			else {
+				output << "0 0 0\n";
+			}
 			output << "    outer loop\n";
 		
 			BOOST_FOREACH(const Vector3d &v, p) {
@@ -297,7 +304,12 @@ void export_off(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
 	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 	try {
 		CGAL_Polyhedron P;
-		root_N->p3->convert_to_Polyhedron(P);
+		//root_N->p3->convert_to_Polyhedron(P);
+		bool err = nefworkaround::convert_to_Polyhedron<CGAL_Kernel3>(*(root_N->p3), P);
+		if (err) {
+			PRINT("ERROR: CGAL NefPolyhedron->Polyhedron conversion failed");
+			return;
+		}
 		output << P;
 	}
 	catch (const CGAL::Assertion_exception &e) {
@@ -327,7 +339,12 @@ void export_amf(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
 	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 	try {
 		CGAL_Polyhedron P;
-		root_N->p3->convert_to_Polyhedron(P);
+		//root_N->p3->convert_to_Polyhedron(P);
+		bool err = nefworkaround::convert_to_Polyhedron<CGAL_Kernel3>(*(root_N->p3), P);
+		if (err) {
+			PRINT("ERROR: CGAL NefPolyhedron->Polyhedron conversion failed");
+			return;
+		}
 
 		typedef CGAL_Polyhedron::Vertex Vertex;
 		typedef CGAL_Polyhedron::Vertex_const_iterator VCI;

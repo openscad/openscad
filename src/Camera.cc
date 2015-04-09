@@ -3,7 +3,7 @@
 #include "printutils.h"
 
 Camera::Camera(enum CameraType camtype) :
-	type(camtype), projection(Camera::PERSPECTIVE), fov(45), viewall(false), height(60)
+	type(camtype), projection(Camera::PERSPECTIVE), fov(22.5), viewall(false)
 {
 	PRINTD("Camera()");
 	if (this->type == Camera::GIMBAL) {
@@ -26,7 +26,7 @@ void Camera::setup(std::vector<double> params)
 		type = Camera::GIMBAL;
 		object_trans << params[0], params[1], params[2];
 		object_rot << params[3], params[4], params[5];
-		height = viewer_distance = params[6];
+		viewer_distance = params[6];
 	} else if (params.size() == 6) {
 		type = Camera::VECTOR;
 		eye << params[0], params[1], params[2];
@@ -48,10 +48,8 @@ void Camera::gimbalDefaultTranslate()
 
 /*!
 	Moves camera so that the given bbox is fully visible.
-	FIXME: The scalefactor is a temporary hack to be compatible with
-	earlier ways of showing the whole scene.
 */
-void Camera::viewAll(const BoundingBox &bbox, float scalefactor)
+void Camera::viewAll(const BoundingBox &bbox)
 {
 	if (this->type == Camera::NONE) {
 		this->type = Camera::VECTOR;
@@ -71,26 +69,20 @@ void Camera::viewAll(const BoundingBox &bbox, float scalefactor)
         }
 	}
 
-	switch (this->projection) {
-	case Camera::ORTHOGONAL:
-		this->height = this->viewer_distance = bbox.diagonal().norm();
+	double bboxRadius = bbox.diagonal().norm()/2;
+	double radius = (bbox.center()-this->center).norm() + bboxRadius;
+	double distance = radius / sin(this->fov/2*M_PI/180);
+	switch (this->type) {
+	case Camera::GIMBAL:
+		this->viewer_distance = distance;
 		break;
-	case Camera::PERSPECTIVE: {
-		double radius = bbox.diagonal().norm()/2;
-		switch (this->type) {
-		case Camera::GIMBAL:
-			this->height = this->viewer_distance = radius / tan(this->fov*M_PI/360);
-			break;
-		case Camera::VECTOR: {
-			Vector3d cameradir = (this->center - this->eye).normalized();
-			this->eye = this->center - radius*scalefactor*cameradir;
-			break;
-		}
-		default:
-			assert(false && "Camera type not specified");
-		}
+	case Camera::VECTOR: {
+		Vector3d cameradir = (this->center - this->eye).normalized();
+		this->eye = this->center - distance*cameradir;
+		break;
 	}
-		break;
+	default:
+		assert(false && "Camera type not specified");
 	}
 	PRINTDB("modified center x y z %f %f %f",center.x() % center.y() % center.z());
 	PRINTDB("modified eye    x y z %f %f %f",eye.x() % eye.y() % eye.z());
@@ -100,7 +92,7 @@ void Camera::viewAll(const BoundingBox &bbox, float scalefactor)
 
 void Camera::zoom(int delta)
 {
-	this->height = this->viewer_distance *= pow(0.9, delta / 120.0);
+	this->viewer_distance *= pow(0.9, delta / 120.0);
 }
 
 void Camera::setProjection(ProjectionType type)
@@ -113,12 +105,12 @@ void Camera::resetView()
 	type = Camera::GIMBAL;
 	object_rot << 35, 0, -25;
 	object_trans << 0, 0, 0;
-	height = viewer_distance = 140;
+	viewer_distance = 140;
 }
 
 double Camera::zoomValue()
 {
-	return this->projection == PERSPECTIVE ? viewer_distance : height;
+	return viewer_distance;
 }
 
 std::string Camera::statusText()
@@ -126,6 +118,6 @@ std::string Camera::statusText()
 	boost::format fmt(_("Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], distance = %.2f"));
 	fmt % object_trans.x() % object_trans.y() % object_trans.z()
 		% object_rot.x() % object_rot.y() % object_rot.z()
-		% (this->projection == PERSPECTIVE ? viewer_distance : height);
+		% viewer_distance;
 	return fmt.str();
 }

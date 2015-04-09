@@ -23,7 +23,7 @@
         "selection-foreground" : "#ffffff",
         "selection-background" : "#4a90d9",
         "margin-background" : "#f8f8f8",
-        "margin-foreground" : "#000000",
+        "margin-foreground" : "Gray",
         "matched-brace-background" : "#c7f6cb",
         "matched-brace-foreground" : "Blue",
         "unmatched-brace-background" : "#ffcdcc",

@@ -56,8 +56,4 @@ private:
 	std::vector<const class Geometry *> polygons;
     
     void add_vertex(Vector2d v);
-    
-    inline double t(double t, int exp) const {
-	return pow(1.0 - t, exp);
-    }
 };

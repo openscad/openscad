@@ -173,12 +173,12 @@ bool MainWindow::reorderMode = false;
 QProgressDialog *MainWindow::fontCacheDialog = NULL;
 
 MainWindow::MainWindow(const QString &filename)
-	: root_inst("group"), library_info_dialog(NULL), font_list_dialog(NULL), tempFile(NULL), progresswidget(NULL), contentschanged(false)
+	: root_inst("group"), library_info_dialog(NULL), font_list_dialog(NULL), procevents(false), tempFile(NULL), progresswidget(NULL), contentschanged(false)
 {
 	setupUi(this);
 
 	editorDockTitleWidget = new QWidget();
-        consoleDockTitleWidget = new QWidget();
+	consoleDockTitleWidget = new QWidget();
 
 	this->editorDock->setConfigKey("view/hideEditor");
 	this->editorDock->setAction(this->viewActionHideEditor);
@@ -195,11 +195,10 @@ MainWindow::MainWindow(const QString &filename)
 #ifdef USE_SCINTILLA_EDITOR
 	if (useScintilla) {
 		 editor = new ScintillaEditor(editorDockContents);
-
 	}
 	else
 #endif
-	    editor = new LegacyEditor(editorDockContents);
+		editor = new LegacyEditor(editorDockContents);
 
 	Preferences::create(editor->colorSchemes());
 
@@ -264,6 +263,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this, SIGNAL(unhighlightLastError()), editor, SLOT(unhighlightLastError()));
 
 	this->qglview->statusLabel = new QLabel(this);
+	this->qglview->statusLabel->setMinimumWidth(100);
 	statusBar()->addWidget(this->qglview->statusLabel);
 
 	animate_timer = new QTimer(this);
@@ -419,7 +419,7 @@ MainWindow::MainWindow(const QString &filename)
 
 	setCurrentOutput();
 
-	std::string helptitle = openscad_version +  "\nhttp://www.openscad.org\n\n";
+	std::string helptitle = "OpenSCAD " + openscad_versionnumber +  "\nhttp://www.openscad.org\n\n";
 	PRINT(helptitle);
 	PRINT(copyrighttext);
 	PRINT("");
@@ -604,7 +604,7 @@ void MainWindow::loadViewSettings(){
 		viewActionShowEdges->setChecked(true);
 		viewModeShowEdges();
 	}
-	if (settings.value("view/showAxes").toBool()) {
+	if (settings.value("view/showAxes", true).toBool()) {
 		viewActionShowAxes->setChecked(true);
 		viewModeShowAxes();
 	}
@@ -612,7 +612,7 @@ void MainWindow::loadViewSettings(){
 		viewActionShowCrosshairs->setChecked(true);
 		viewModeShowCrosshairs();
 	}
-    if (settings.value("view/showScaleProportional").toBool()) {
+	if (settings.value("view/showScaleProportional", true).toBool()) {
         viewActionShowScaleProportional->setChecked(true);
         viewModeShowScaleProportional();
     }
@@ -635,7 +635,7 @@ void MainWindow::loadViewSettings(){
 void MainWindow::loadDesignSettings()
 {
 	QSettings settings;
-	if (settings.value("design/autoReload").toBool()) {
+	if (settings.value("design/autoReload", true).toBool()) {
 		designActionAutoReload->setChecked(true);
 	}
 	uint polySetCacheSize = Preferences::inst()->getValue("advanced/polysetCacheSize").toUInt();
@@ -783,7 +783,7 @@ void MainWindow::setFileName(const QString &filename)
 	} else {
 		QFileInfo fileinfo(filename);
 		this->fileName = fileinfo.exists() ? fileinfo.absoluteFilePath() : fileinfo.fileName();
-        QString fn =fileinfo.absoluteFilePath();
+		QString fn =fileinfo.absoluteFilePath();
 		setWindowFilePath(fn);
 
 		QDir::setCurrent(fileinfo.dir().absolutePath());
@@ -832,7 +832,7 @@ void MainWindow::updateTVal()
 	double fps = this->e_fps->text().toDouble(&fps_ok);
 	if (fps_ok) {
 		if (fps <= 0) {
-			actionRenderPreview();
+			actionReloadRenderPreview();
 		} else {
 			double s = this->e_fsteps->text().toDouble();
 			double t = this->e_tval->text().toDouble() + 1/s;
@@ -923,6 +923,7 @@ void MainWindow::compile(bool reload, bool forcedone)
 		if (this->root_module->hasIncludes() ||
 				this->root_module->usesLibraries()) {
 			this->waitAfterReloadTimer->start();
+			this->procevents = false;
 			return;
 		}
 	}
@@ -996,6 +997,7 @@ void MainWindow::compileDone(bool didchange)
 {
 	const char *callslot;
 	if (didchange) {
+		updateTemporalVariables();
 		instantiateRoot();
 		updateCamera();
 		updateCompileResult();
@@ -1246,25 +1248,25 @@ void MainWindow::updateRecentFileActions()
 
 void MainWindow::show_examples()
 {
-        bool found_example = false;
-
-        foreach (const QString &cat, UIUtils::exampleCategories()) {
+	bool found_example = false;
+	
+	foreach (const QString &cat, UIUtils::exampleCategories()) {
 		QFileInfoList examples = UIUtils::exampleFiles(cat);
-                QMenu *menu = this->menuExamples->addMenu(gettext(cat.toStdString().c_str()));
-
-                foreach(const QFileInfo &ex, examples) {
-                        QAction *openAct = new QAction(ex.fileName(), this);
-                        connect(openAct, SIGNAL(triggered()), this, SLOT(actionOpenExample()));
-                        menu->addAction(openAct);
-                        openAct->setData(ex.canonicalFilePath());
-                        found_example = true;
-                }
-        }
-
-        if (!found_example) {
-                delete this->menuExamples;
-                this->menuExamples = NULL;
-        }
+		QMenu *menu = this->menuExamples->addMenu(gettext(cat.toStdString().c_str()));
+		
+		foreach(const QFileInfo &ex, examples) {
+			QAction *openAct = new QAction(ex.fileName(), this);
+			connect(openAct, SIGNAL(triggered()), this, SLOT(actionOpenExample()));
+			menu->addAction(openAct);
+			openAct->setData(ex.canonicalFilePath());
+			found_example = true;
+		}
+	}
+	
+	if (!found_example) {
+		delete this->menuExamples;
+		this->menuExamples = NULL;
+	}
 }
 
 void MainWindow::actionOpenExample()
@@ -1430,7 +1432,7 @@ void MainWindow::find()
 
 void MainWindow::findString(QString textToFind)
 {
-	editor->find(textToFind, false, false);
+	editor->find(textToFind);
 }
 
 void MainWindow::findAndReplace()
@@ -1461,9 +1463,7 @@ void MainWindow::replace()
 
 void MainWindow::replaceAll()
 {
-	while (this->editor->find(this->findInputField->text(), true)) {
-		this->editor->replaceSelectedText(this->replaceInputField->text());
-	}
+	this->editor->replaceAll(this->findInputField->text(), this->replaceInputField->text());
 }
 
 void MainWindow::convertTabsToSpaces()
@@ -1487,7 +1487,7 @@ void MainWindow::convertTabsToSpaces()
 	}
 	cnt--;
     }
-    this->editor->replaceAll(converted);
+    this->editor->setText(converted);
 }
 
 void MainWindow::findNext()
@@ -1644,7 +1644,6 @@ bool MainWindow::fileChangedOnDisk()
 */
 void MainWindow::compileTopLevelDocument()
 {
-	updateTemporalVariables();
 	resetPrintedDeprecations();
 
 	this->last_compiled_doc = editor->toPlainText();
@@ -1890,7 +1889,7 @@ void MainWindow::updateStatusBar(ProgressWidget *progressWidget)
 			this->progresswidget = NULL;
 		}
 		if (versionLabel == NULL) {
-			versionLabel = new QLabel(openscad_version.c_str());
+			versionLabel = new QLabel("OpenSCAD " + QString::fromStdString(openscad_displayversionnumber));
 			sb->addPermanentWidget(this->versionLabel);
 		}
 	} else {
@@ -2270,9 +2269,11 @@ void MainWindow::viewModeShowEdges()
 
 void MainWindow::viewModeShowAxes()
 {
+	bool showaxes = viewActionShowAxes->isChecked();
 	QSettings settings;
-	settings.setValue("view/showAxes",viewActionShowAxes->isChecked());
-	this->qglview->setShowAxes(viewActionShowAxes->isChecked());
+	settings.setValue("view/showAxes", showaxes);
+	this->viewActionShowScaleProportional->setEnabled(showaxes);
+	this->qglview->setShowAxes(showaxes);
 	this->qglview->updateGL();
 }
 
@@ -2641,18 +2642,21 @@ void MainWindow::consoleOutput(const std::string &msg, void *userdata)
 	// Invoke the method in the main thread in case the output
 	// originates in a worker thread.
 	MainWindow *thisp = static_cast<MainWindow*>(userdata);
-	QMetaObject::invokeMethod(thisp, "consoleOutput", Q_ARG(std::string, msg));
+	QMetaObject::invokeMethod(thisp, "consoleOutput", Q_ARG(QString, QString::fromStdString(msg)));
 }
 
-void MainWindow::consoleOutput(const std::string &msg)
+void MainWindow::consoleOutput(const QString &msg)
 {
-	QString qmsg = QString::fromUtf8(msg.c_str());
-	if (qmsg.startsWith("WARNING:") || qmsg.startsWith("DEPRECATED:")) {
+	QString qmsg;
+	if (msg.startsWith("WARNING:") || msg.startsWith("DEPRECATED:")) {
 		this->compileWarnings++;
-		qmsg = "<html><span style=\"color: black; background-color: #ffffb0;\">" + qmsg + "</span></html>\n";
-	} else if (qmsg.startsWith("ERROR:")) {
+		qmsg = "<html><span style=\"color: black; background-color: #ffffb0;\">" + msg + "</span></html>\n";
+	} else if (msg.startsWith("ERROR:")) {
 		this->compileErrors++;
-		qmsg = "<html><span style=\"color: black; background-color: #ffb0b0;\">" + qmsg + "</span></html>\n";
+		qmsg = "<html><span style=\"color: black; background-color: #ffb0b0;\">" + msg + "</span></html>\n";
+	}
+	else {
+		qmsg = msg;
 	}
 	QTextCursor c = this->console->textCursor();
 	c.movePosition(QTextCursor::End);

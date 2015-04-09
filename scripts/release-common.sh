@@ -85,7 +85,7 @@ if [ "`echo $* | grep mingw64`" ]; then
 fi
 
 if [ "`echo $* | grep snapshot`" ]; then
-  CONFIG="$CONFIG experimental"
+  CONFIG="$CONFIG snapshot experimental"
   OPENSCAD_COMMIT=`git log -1 --pretty=format:"%h"`
 fi
 
@@ -361,9 +361,11 @@ fi
 if [ -n $FONTDIR ]; then
   echo $FONTDIR
   mkdir -p $FONTDIR
-  cp -a fonts/* $FONTDIR
+  cp -a fonts/10-liberation.conf $FONTDIR
+  cp -a fonts/Liberation-2.00.1 $FONTDIR
   case $OS in
     MACOSX) 
+      cp -a fonts/05-osx-fonts.conf $FONTDIR
       cp -a fonts-osx/* $FONTDIR
       ;;
     UNIX_CROSS_WIN)

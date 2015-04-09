@@ -30,10 +30,10 @@ public:
 	void gimbalDefaultTranslate();
 	void setProjection(ProjectionType type);
 	void zoom(int delta);
-        double zoomValue();
-        void resetView();
-	void viewAll(const BoundingBox &bbox, float scalefactor = 1.0f);
-        std::string statusText();
+	double zoomValue();
+	void resetView();
+	void viewAll(const BoundingBox &bbox);
+	std::string statusText();
 
 	// Vectorcam
 	Eigen::Vector3d eye;

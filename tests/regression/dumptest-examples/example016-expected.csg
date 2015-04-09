@@ -1,0 +1,86 @@
+group() {
+	group();
+	difference() {
+		group() {
+			cube(size = [65, 28, 28], center = true);
+		}
+		group() {
+			multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				render(convexity = 12) {
+					difference() {
+						group() {
+							difference() {
+								multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 7.5], [0, 0, 0, 1]]) {
+									cube(size = [60, 28, 14], center = true);
+								}
+								cube(size = [8, 32, 32], center = true);
+							}
+						}
+						group() {
+							multmatrix([[1, 0, 0, -18], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+								import(file = "example016.stl", layer = "", origin = [0, 0], scale = 1, convexity = 12, $fn = 0, $fa = 12, $fs = 2);
+							}
+						}
+					}
+				}
+			}
+			multmatrix([[1, 0, 0, 0], [0, 0, -1, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
+				render(convexity = 12) {
+					difference() {
+						group() {
+							difference() {
+								multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 7.5], [0, 0, 0, 1]]) {
+									cube(size = [60, 28, 14], center = true);
+								}
+								cube(size = [8, 32, 32], center = true);
+							}
+						}
+						group() {
+							multmatrix([[1, 0, 0, -18], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+								import(file = "example016.stl", layer = "", origin = [0, 0], scale = 1, convexity = 12, $fn = 0, $fa = 12, $fs = 2);
+							}
+						}
+					}
+				}
+			}
+			multmatrix([[1, 0, 0, 0], [0, -1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]]) {
+				render(convexity = 12) {
+					difference() {
+						group() {
+							difference() {
+								multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 7.5], [0, 0, 0, 1]]) {
+									cube(size = [60, 28, 14], center = true);
+								}
+								cube(size = [8, 32, 32], center = true);
+							}
+						}
+						group() {
+							multmatrix([[1, 0, 0, -18], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+								import(file = "example016.stl", layer = "", origin = [0, 0], scale = 1, convexity = 12, $fn = 0, $fa = 12, $fs = 2);
+							}
+						}
+					}
+				}
+			}
+			multmatrix([[1, 0, 0, 0], [0, 0, 1, 0], [0, -1, 0, 0], [0, 0, 0, 1]]) {
+				render(convexity = 12) {
+					difference() {
+						group() {
+							difference() {
+								multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 7.5], [0, 0, 0, 1]]) {
+									cube(size = [60, 28, 14], center = true);
+								}
+								cube(size = [8, 32, 32], center = true);
+							}
+						}
+						group() {
+							multmatrix([[1, 0, 0, -18], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+								import(file = "example016.stl", layer = "", origin = [0, 0], scale = 1, convexity = 12, $fn = 0, $fa = 12, $fs = 2);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}

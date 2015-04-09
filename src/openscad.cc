@@ -93,15 +93,23 @@ static std::string arg_colorscheme;
 #define QUOTE(x__) # x__
 #define QUOTED(x__) QUOTE(x__)
 
-std::string versionnumber = QUOTED(OPENSCAD_VERSION);
+std::string openscad_shortversionnumber = QUOTED(OPENSCAD_SHORTVERSION);
+std::string openscad_versionnumber = QUOTED(OPENSCAD_VERSION);
 
-std::string openscad_versionnumber = QUOTED(OPENSCAD_VERSION)
+std::string openscad_displayversionnumber = 
 #ifdef OPENSCAD_COMMIT
-	" (git " QUOTED(OPENSCAD_COMMIT) ")"
+  QUOTED(OPENSCAD_VERSION)
+  " (git " QUOTED(OPENSCAD_COMMIT) ")";
+#else
+  QUOTED(OPENSCAD_SHORTVERSION);
 #endif
-;
 
-std::string openscad_version = "OpenSCAD " + openscad_versionnumber;
+std::string openscad_detailedversionnumber =
+#ifdef OPENSCAD_COMMIT
+  openscad_displayversionnumber;
+#else
+  openscad_versionnumber;
+#endif
 
 class Echostream : public std::ofstream
 {
@@ -642,8 +650,14 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	QCoreApplication::setApplicationVersion(TOSTRING(OPENSCAD_VERSION));
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 	QGuiApplication::setApplicationDisplayName("OpenSCAD");
+	QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 #else
 	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
+#endif
+#ifdef OPENSCAD_SNAPSHOT
+	app.setWindowIcon(QIcon(":/icons/openscad-nightly.png"));
+#else
+	app.setWindowIcon(QIcon(":/icons/openscad.png"));
 #endif
 	
 	// Other global settings
@@ -705,8 +719,15 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 		LaunchingScreen *launcher = new LaunchingScreen();
 		int dialogResult = launcher->exec();
 		if (dialogResult == QDialog::Accepted) {
-			inputFiles.clear();
-			inputFiles.push_back(launcher->selectedFile().toStdString());
+			QStringList files = launcher->selectedFiles();
+			// If nothing is selected in the launching screen, leave
+			// the "" dummy in inputFiles to open an empty MainWindow.
+			if (!files.empty()) {
+				inputFiles.clear();
+				BOOST_FOREACH(const QString &f, files) {
+					inputFiles.push_back(f.toStdString());
+				}
+			}
 			delete launcher;
 		} else {
 			return 0;

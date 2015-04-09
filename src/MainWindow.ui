@@ -348,8 +348,8 @@
     <addaction name="separator"/>
     <addaction name="viewActionShowEdges"/>
     <addaction name="viewActionShowAxes"/>
-    <addaction name="viewActionShowCrosshairs"/>
     <addaction name="viewActionShowScaleProportional"/>
+    <addaction name="viewActionShowCrosshairs"/>
     <addaction name="viewActionAnimate"/>
     <addaction name="separator"/>
     <addaction name="viewActionTop"/>

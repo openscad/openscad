@@ -31,6 +31,7 @@ public:
 	void quantizeVertices();
 	size_t numPolygons() const { return polygons.size(); }
 	void append_poly();
+	void append_poly(const Polygon &poly);
 	void append_vertex(double x, double y, double z = 0.0);
 	void append_vertex(const Vector3d &v);
 	void append_vertex(const Vector3f &v);
@@ -52,4 +53,6 @@ private:
 	Polygon2d polygon;
 	unsigned int dim;
 	mutable boost::tribool convex;
+	mutable BoundingBox bbox;
+	mutable bool dirty;
 };

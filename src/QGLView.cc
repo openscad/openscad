@@ -135,14 +135,11 @@ void QGLView::display_opencsg_warning_dialog()
   message += _("It is highly recommended to use OpenSCAD on a system with "
     "OpenGL 2.0 or later.\n"
     "Your renderer information is as follows:\n");
-  QString rendererinfo;
-  rendererinfo.sprintf(_("GLEW version %s\n"
-                       "%s (%s)\n"
-                       "OpenGL version %s\n"),
-                       glewGetString(GLEW_VERSION),
-                       glGetString(GL_RENDERER), glGetString(GL_VENDOR),
-                       glGetString(GL_VERSION));
-  message += rendererinfo;
+  QString rendererinfo(_("GLEW version %1\n%2 (%3)\nOpenGL version %4\n"));
+  message += rendererinfo.arg((const char *)glewGetString(GLEW_VERSION),
+                       (const char *)glGetString(GL_RENDERER),
+                       (const char *)glGetString(GL_VENDOR),
+                       (const char *)glGetString(GL_VERSION));
 
   dialog->setText(message);
   dialog->enableOpenCSGBox->setChecked(Preferences::inst()->getValue("advanced/enable_opencsg_opengl1x").toBool());
@@ -177,6 +174,7 @@ void QGLView::mousePressEvent(QMouseEvent *event)
 }
 
 void QGLView::mouseDoubleClickEvent (QMouseEvent *event) {
+
 	setupCamera();
 
 	int viewport[4];
@@ -187,8 +185,8 @@ void QGLView::mouseDoubleClickEvent (QMouseEvent *event) {
 	glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
 	glGetDoublev(GL_PROJECTION_MATRIX, projection);
 
-	double x = event->pos().x();
-	double y = viewport[3] - event->pos().y();
+	double x = event->pos().x() * this->getDPI();
+	double y = viewport[3] - event->pos().y() * this->getDPI();
 	GLfloat z = 0;
 
 	glReadPixels(x, y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &z);
@@ -200,9 +198,7 @@ void QGLView::mouseDoubleClickEvent (QMouseEvent *event) {
 	GLint success = gluUnProject(x, y, z, modelview, projection, viewport, &px, &py, &pz);
 
 	if (success == GL_TRUE) {
-		cam.object_trans.x() = -px;
-		cam.object_trans.y() = -py;
-		cam.object_trans.z() = -pz;
+            cam.object_trans -= Vector3d(px, py, pz);
 		updateGL();
 		emit doAnimateUpdate();
 	}
@@ -308,7 +304,11 @@ bool QGLView::save(const char *filename)
 
 void QGLView::wheelEvent(QWheelEvent *event)
 {
+#if QT_VERSION >= 0x050000
+	this->cam.zoom(event->angleDelta().y());
+#else
 	this->cam.zoom(event->delta());
+#endif
   updateGL();
 }
 

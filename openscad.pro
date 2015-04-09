@@ -39,7 +39,7 @@ isEmpty(QT_VERSION) {
   }
 }
 
-# Populate VERSION, VERSION_YEAR, VERSION_MONTH, VERSION_DATE from system date
+# If VERSION is not set, populate VERSION, VERSION_YEAR, VERSION_MONTH from system date
 include(version.pri)
 
 debug: DEFINES += DEBUG
@@ -77,6 +77,7 @@ deploy {
   DEFINES += OPENSCAD_DEPLOY
   macx: CONFIG += sparkle
 }
+snapshot: DEFINES += OPENSCAD_SNAPSHOT
 
 macx {
   TARGET = OpenSCAD
@@ -88,31 +89,19 @@ FULLNAME = openscad$${SUFFIX}
 !isEmpty(SUFFIX): DEFINES += INSTALL_SUFFIX="\"\\\"$${SUFFIX}\\\"\""
 
 macx {
-  ICON = icons/OpenSCAD.icns
+  snapshot {
+    ICON = icons/icon-nightly.icns
+  }
+  else {
+    ICON = icons/OpenSCAD.icns
+  }
   QMAKE_INFO_PLIST = Info.plist
   APP_RESOURCES.path = Contents/Resources
   APP_RESOURCES.files = OpenSCAD.sdef dsa_pub.pem icons/SCAD.icns
   QMAKE_BUNDLE_DATA += APP_RESOURCES
   LIBS += -framework Cocoa -framework ApplicationServices
-
-  # Mac needs special care to link against the correct C++ library
-  # We attempt to auto-detect it by inspecting Boost
-  dirs = $${BOOSTDIR} $${QMAKE_LIBDIR}
-  for(dir, dirs) {
-    system(grep -q __112basic_string $${dir}/libboost_thread* >& /dev/null) {
-      message("Detected libc++-linked boost in $${dir}")
-      CONFIG += libc++
-    }
-  }
-
-  libc++ {
-    QMAKE_CXXFLAGS += -stdlib=libc++
-    QMAKE_LFLAGS += -stdlib=libc++
-    QMAKE_OBJECTIVE_CFLAGS += -stdlib=libc++
-    # libc++ on requires Mac OS X 10.7+
-    QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.7
-  }
 }
+
 
 win* {
   RC_FILE = openscad_win32.rc
@@ -141,7 +130,6 @@ netbsd* {
    QMAKE_LFLAGS += -L/usr/X11R7/lib
    QMAKE_LFLAGS += -Wl,-R/usr/X11R7/lib
    QMAKE_LFLAGS += -Wl,-R/usr/pkg/lib
-   !clang: { QMAKE_CXXFLAGS += -std=c++0x }
    # FIXME: Can the lines below be removed in favour of the OPENSCAD_LIBDIR handling above?
    !isEmpty(OPENSCAD_LIBDIR) {
      QMAKE_CFLAGS = -I$$OPENSCAD_LIBDIR/include $$QMAKE_CFLAGS
@@ -175,7 +163,6 @@ netbsd* {
   QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-parameter
   QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-variable
   QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-function
-  QMAKE_CXXFLAGS_WARN_ON += -Wno-c++11-extensions
   # gettext
   QMAKE_CXXFLAGS_WARN_ON += -Wno-format-security
   # might want to actually turn this on once in a while
@@ -189,6 +176,7 @@ CONFIG(skip-version-check) {
 
 # Application configuration
 macx:CONFIG += mdi
+#CONFIG += c++11
 CONFIG += cgal
 CONFIG += opencsg
 CONFIG += boost
@@ -500,7 +488,6 @@ SOURCES += src/cgalutils.cc \
            src/CGALCache.cc \
            src/CGALRenderer.cc \
            src/CGAL_Nef_polyhedron.cc \
-           src/CGAL_Nef_polyhedron_DxfData.cc \
            src/cgalworker.cc \
            src/Polygon2d-CGAL.cc
 }
@@ -577,7 +564,7 @@ appdata.extra = cp -f openscad.appdata.xml \"\$(INSTALL_ROOT)$${appdata.path}/$$
 INSTALLS += appdata
 
 icons.path = $$PREFIX/share/pixmaps
-icons.extra = cp -f icons/openscad.png \"\$(INSTALL_ROOT)$${icons.path}/$${FULLNAME}.png\"
+icons.extra = test -f icons/$${FULLNAME}.png && cp -f icons/$${FULLNAME}.png \"\$(INSTALL_ROOT)$${icons.path}/\" || cp -f icons/openscad.png \"\$(INSTALL_ROOT)$${icons.path}/$${FULLNAME}.png\"
 INSTALLS += icons
 
 man.path = $$PREFIX/share/man/man1

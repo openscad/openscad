@@ -98,7 +98,7 @@ private slots:
 	void setColorScheme(const QString &cs);
 	void showProgress();
 	void openCSGSettingsChanged();
-	void consoleOutput(const std::string &msg);
+	void consoleOutput(const QString &msg);
 
 private:
         void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);

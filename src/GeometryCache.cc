@@ -14,7 +14,7 @@ shared_ptr<const Geometry> GeometryCache::get(const std::string &id) const
 {
 	const shared_ptr<const Geometry> &geom = this->cache[id]->geom;
 #ifdef DEBUG
-	PRINTB("Geometry Cache hit: %s (%d bytes)", id.substr(0, 40) % (geom ? geom->memsize() : 0));
+	PRINTDB("Geometry Cache hit: %s (%d bytes)", id.substr(0, 40) % (geom ? geom->memsize() : 0));
 #endif
 	return geom;
 }
@@ -24,9 +24,9 @@ bool GeometryCache::insert(const std::string &id, const shared_ptr<const Geometr
 	bool inserted = this->cache.insert(id, new cache_entry(geom), geom ? geom->memsize() : 0);
 #ifdef DEBUG
 	assert(!dynamic_cast<const CGAL_Nef_polyhedron*>(geom.get()));
-	if (inserted) PRINTB("Geometry Cache insert: %s (%d bytes)", 
+	if (inserted) PRINTDB("Geometry Cache insert: %s (%d bytes)", 
                          id.substr(0, 40) % (geom ? geom->memsize() : 0));
-	else PRINTB("Geometry Cache insert failed: %s (%d bytes)",
+	else PRINTDB("Geometry Cache insert failed: %s (%d bytes)",
                 id.substr(0, 40) % (geom ? geom->memsize() : 0));
 #endif
 	return inserted;

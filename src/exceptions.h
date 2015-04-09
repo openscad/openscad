@@ -1,16 +1,14 @@
 #include <exception>
 
-class RecursionException: public std::exception {
+class RecursionException: public std::runtime_error {
 public:
-	RecursionException(const char *recursiontype, const std::string &name)
-		: rectype(recursiontype), name(name) {}
-	virtual ~RecursionException() throw() {}
-	virtual const char *what() const throw() {
+	static RecursionException create(const char *recursiontype, const std::string &name) {
 		std::stringstream out;
-		out << "ERROR: Recursion detected calling " << this->rectype << " '" << this->name << "'";
-		return out.str().c_str();
-  }
+		out << "ERROR: Recursion detected calling " << recursiontype << " '" << name << "'";
+		return RecursionException(out.str());
+	}
+	virtual ~RecursionException() throw() {}
+
 private:
-	const char *rectype;
-	const std::string name;
+	RecursionException(const std::string &what_arg) : std::runtime_error(what_arg) {}
 };
