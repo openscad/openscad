@@ -114,10 +114,10 @@ std::string openscad_detailedversionnumber =
   openscad_versionnumber;
 #endif
 
-class Echostream : public std::ofstream
+class Echostream : public nowide::ofstream
 {
 public:
-	Echostream( const char * filename ) : std::ofstream( filename ) {
+	Echostream( const char * filename ) : nowide::ofstream( filename ) {
 		set_output_handler( &Echostream::output, this );
 	}
 	static void output( const std::string &msg, void *userdata ) {
