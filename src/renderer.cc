@@ -1,7 +1,7 @@
 #include "renderer.h"
 #include "rendersettings.h"
 #include "Geometry.h"
-#include "polyset-gl.h"
+#include "polyset.h"
 #include "Polygon2d.h"
 #include "colormap.h"
 #include "printutils.h"
