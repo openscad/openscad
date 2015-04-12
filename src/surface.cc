@@ -140,12 +140,26 @@ bool SurfaceNode::is_png(std::vector<unsigned char> &png) const
 		&& (png[7] == 0x0a);
 }
 
+static void load_png_file(std::vector<unsigned char>& buffer, const std::string& filename)
+{
+  nowide::ifstream file(filename.c_str(), std::ios::in|std::ios::binary|std::ios::ate);
+
+  /*get filesize*/
+  std::streamsize size = 0;
+  if(file.seekg(0, std::ios::end).good()) size = file.tellg();
+  if(file.seekg(0, std::ios::beg).good()) size -= file.tellg();
+
+  /*read contents of the file into the vector*/
+  buffer.resize(size_t(size));
+  if(size > 0) file.read((char*)(&buffer[0]), size);
+}
+
 img_data_t SurfaceNode::read_png_or_dat(std::string filename) const
 {
 	img_data_t data;
 	std::vector<unsigned char> png;
 	
-	lodepng::load_file(png, filename);
+	load_png_file(png, filename);
 	
 	if (!is_png(png)) {
 		png.clear();
