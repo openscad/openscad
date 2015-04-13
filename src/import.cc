@@ -195,7 +195,11 @@ Geometry *ImportNode::createGeometry() const
 
 		handle_dep(this->filename);
 		// Open file and position at the end
-		nowide::ifstream f(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+		// std::ifstream f(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+		// nowide doesn't support ios::ate, so we do this manually
+		// See http://sourceforge.net/p/cppcms/bugs/140/
+		nowide::ifstream f(this->filename.c_str(), std::ios::in | std::ios::binary);
+		f.seekg(0, std::ios::end);
 		if (!f.good()) {
 		  PRINTB("WARNING: Can't open import file '%s'", this->filename.c_str());
 			return g;
