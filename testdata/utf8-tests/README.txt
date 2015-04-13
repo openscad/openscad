@@ -81,10 +81,10 @@ Results:        2014.03         2015.03         master
 3b						d
 4
 5a              X               X               d
-5b              X               X               e
+5b              X               X               -
 5c              X               X               -
 6a						-
-6b						f
+6b						-
 7a						-
 7b						-
 7c						-
