@@ -1612,7 +1612,6 @@ void MainWindow::updateCamera()
 		params.push_back(d);
 		qglview->cam.setup(params);
 		qglview->cam.gimbalDefaultTranslate();
-		qglview->updateGL();
 	}
 }
 
