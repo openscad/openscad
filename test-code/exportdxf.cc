@@ -63,12 +63,10 @@ void handle_dep(QString filename)
 		char buffer[4096];
 		snprintf(buffer, 4096, "%s '%s'", make_command, filename.replace("'", "'\\''").toUtf8().data());
 		err = system(buffer);
-		if (err < 0) {
-			fprintf(stderr,"Child process could not be created for executing `%s' on the shell\n", buffer);
+		if (err == -1) {
+			fprintf(stderr,"Failed to create child process to execute `%s' on the shell\n", buf.str().c_str());
 		} else if (err == 0) {
-			fprintf(stderr,"\nInvalid command to be executed on the shell");
-		} else {
-			fprintf(stderr,"\nUnable to execute `%s' since there is no shell available", buffer);
+			fprintf(stderr,"\nUnable to execute `%s' since there is no shell available", buf.str().c_str());
 		}
 	}
 }
