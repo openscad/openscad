@@ -356,6 +356,7 @@ SOURCES += src/version_check.cc \
            src/polyset-utils.cc \
            src/GeometryUtils.cc \
            src/polyset.cc \
+	   src/polyset-gl.cc \
            src/csgops.cc \
            src/transform.cc \
            src/color.cc \
