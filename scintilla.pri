@@ -1,7 +1,6 @@
 scintilla {
   HEADERS += src/scintillaeditor.h src/scadlexer.h
   SOURCES += src/scintillaeditor.cpp src/scadlexer.cpp
-
   DEFINES += USE_SCINTILLA_EDITOR
 
   # The qscintilla2.prf which ships with QScintilla is broken for Mac/Windows
