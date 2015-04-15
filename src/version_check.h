@@ -18,7 +18,7 @@ a time, to avoid confusion.
 
 #ifndef OPENSCAD_SKIP_VERSION_CHECK
 
-
+#include <stddef.h> // Needed by gmp.h under OS X 10.10
 #include <gmp.h>
 // set minimum numbers here.
 #define GMPMAJOR 5
