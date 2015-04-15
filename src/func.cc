@@ -855,7 +855,6 @@ ValuePtr builtin_search(const Context *, const EvalContext *evalctx)
 			}
 		}
 	} else {
-		PRINTB("  WARNING: search: none performed on input %s", findThis);
 		return ValuePtr::undefined;
 	}
 	return ValuePtr(returnvec);
