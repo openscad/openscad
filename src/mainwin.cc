@@ -2171,6 +2171,8 @@ void MainWindow::actionExportImage()
 {
 	setCurrentOutput();
 
+  // Grab first to make sure dialog box isn't part of the grabbed image
+	qglview->grabFrame();
 	QString img_filename = QFileDialog::getSaveFileName(this,
 			_("Export Image"), "", _("PNG Files (*.png)"));
 	if (img_filename.isEmpty()) {

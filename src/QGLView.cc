@@ -297,12 +297,16 @@ void QGLView::mouseReleaseEvent(QMouseEvent*)
   releaseMouse();
 }
 
-bool QGLView::save(const char *filename)
+void QGLView::grabFrame()
 {
 	// Force reading from front buffer. Some configurations will read from the back buffer here.
 	glReadBuffer(GL_FRONT);
-  QImage img = grabFrameBuffer();
-  return img.save(filename, "PNG");
+	this->frame = grabFrameBuffer();
+}
+
+bool QGLView::save(const char *filename)
+{
+  return this->frame.save(filename, "PNG");
 }
 
 void QGLView::wheelEvent(QWheelEvent *event)
