@@ -740,7 +740,6 @@ static Value::VectorType search(const std::string &find, const std::string &tabl
 		if (matchCount == 0) {
 			gchar utf8_of_cp[6] = ""; //A buffer for a single unicode character to be copied into
 			if (ptr_ft) g_utf8_strncpy(utf8_of_cp, ptr_ft, 1);
-			PRINTB("  WARNING: search term not found: \"%s\"", utf8_of_cp);
 		}
 		if (num_returns_per_match == 0 || num_returns_per_match > 1) {
 			returnvec.push_back(Value(resultvec));
@@ -850,12 +849,6 @@ ValuePtr builtin_search(const Context *, const EvalContext *evalctx)
 		    }
 		  }
 		  if (num_returns_per_match == 1 && matchCount == 0) {
-		    if (findThis->toVector()[i].type() == Value::NUMBER) {
-					PRINTB("  WARNING: search term not found: %s",findThis->toVector()[i].toDouble());
-				}
-		    else if (findThis->toVector()[i].type() == Value::STRING) {
-					PRINTB("  WARNING: search term not found: \"%s\"",findThis->toVector()[i].toString());
-				}
 		    returnvec.push_back(resultvec);
 		  }
 		  if (num_returns_per_match == 0 || num_returns_per_match > 1) {
@@ -863,7 +856,6 @@ ValuePtr builtin_search(const Context *, const EvalContext *evalctx)
 			}
 		}
 	} else {
-		PRINTB("  WARNING: search: none performed on input %s", findThis);
 		return ValuePtr::undefined;
 	}
 	return ValuePtr(returnvec);
