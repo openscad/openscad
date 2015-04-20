@@ -711,82 +711,78 @@ ValuePtr builtin_lookup(const Context *, const EvalContext *evalctx)
 
 */
 
-static Value::VectorType search(const std::string &find, const std::string &table,
-																unsigned int num_returns_per_match)
+static Value::VectorType search(const std::string &find, const std::string &table)
 {
 	Value::VectorType returnvec;
 	//Unicode glyph count for the length
 	size_t findThisSize = g_utf8_strlen(find.c_str(), find.size());
 	size_t searchTableSize = g_utf8_strlen(table.c_str(), table.size());
-	for (size_t i = 0; i < findThisSize; i++) {
+	for (size_t i = 0; i < searchTableSize-findThisSize+1; i++) {
 		unsigned int matchCount = 0;
-		Value::VectorType resultvec;
-		const gchar *ptr_ft = g_utf8_offset_to_pointer(find.c_str(), i);
-		for (size_t j = 0; j < searchTableSize; j++) {
-			const gchar *ptr_st = g_utf8_offset_to_pointer(table.c_str(), j);
-			if (ptr_ft && ptr_st && (g_utf8_get_char(ptr_ft) == g_utf8_get_char(ptr_st)) ) {
-				matchCount++;
-				if (num_returns_per_match == 1) {
-					returnvec.push_back(Value(double(j)));
-					break;
-				} else {
-					resultvec.push_back(Value(double(j)));
-				}
-				if (num_returns_per_match > 1 && matchCount >= num_returns_per_match) {
-					break;
-				}
-			}
-		}
-		if (matchCount == 0) {
-			gchar utf8_of_cp[6] = ""; //A buffer for a single unicode character to be copied into
-			if (ptr_ft) g_utf8_strncpy(utf8_of_cp, ptr_ft, 1);
-		}
-		if (num_returns_per_match == 0 || num_returns_per_match > 1) {
-			returnvec.push_back(Value(resultvec));
-		}
+		// Value::VectorType resultvec;
+		const gchar *ptr_ft = g_utf8_offset_to_pointer(find.c_str(), 0);
+		const gchar *ptr_st = g_utf8_offset_to_pointer(table.c_str(), i);
+        if (ptr_ft && ptr_st && (g_utf8_get_char(ptr_ft) == g_utf8_get_char(ptr_st)) ) {
+            matchCount++;
+            for (size_t j = 1; j < findThisSize; j++) {
+                ptr_ft = g_utf8_offset_to_pointer(find.c_str(), j);
+                ptr_st = g_utf8_offset_to_pointer(table.c_str(), i+j);
+                if (ptr_ft && ptr_st && (g_utf8_get_char(ptr_ft) == g_utf8_get_char(ptr_st)) ) {
+                    matchCount++;
+                    // continue
+                } else {
+                    break;
+                }
+            }
+            if (matchCount==findThisSize) {
+                returnvec.push_back(Value(double(i)));
+            }
+        }
 	}
 	return returnvec;
 }
 
-static Value::VectorType search(const std::string &find, const Value::VectorType &table,
-																unsigned int num_returns_per_match, unsigned int index_col_num)
+static Value::VectorType search(const std::string &find, const Value::VectorType &table
+																, unsigned int index_col_num)
 {
 	Value::VectorType returnvec;
 	//Unicode glyph count for the length
 	unsigned int findThisSize =  g_utf8_strlen(find.c_str(), find.size());
 	unsigned int searchTableSize = table.size();
-	for (size_t i = 0; i < findThisSize; i++) {
+	for (size_t i = 0; i < searchTableSize; i++) {
 		unsigned int matchCount = 0;
-		Value::VectorType resultvec;
-		const gchar *ptr_ft = g_utf8_offset_to_pointer(find.c_str(), i);
-		for (size_t j = 0; j < searchTableSize; j++) {
-			Value::VectorType entryVec = table[j].toVector();
-			if (entryVec.size() <= index_col_num) {
-				PRINTB("WARNING: Invalid entry in search vector at index %d, required number of values in the entry: %d. Invalid entry: %s", j % (index_col_num + 1) % table[j]);
-				return Value::VectorType();
+		// Value::VectorType resultvec;
+		const gchar *ptr_ft = g_utf8_offset_to_pointer(find.c_str(), 0);
+        Value tableEntry=table[i];
+        Value entryVal;
+        if( index_col_num > tableEntry.toVector().size()-1 ) {
+            PRINTB("WARNING: search column index (%d) out of bounds",index_col_num);
+            return returnvec;
+        }
+        if( tableEntry.type() == Value::STRING ) {
+            entryVal = tableEntry;
+        } else if( tableEntry.type() == Value::VECTOR ) {
+            entryVal = tableEntry.toVector()[index_col_num];
+        }
+		const gchar *ptr_st;
+        if( entryVal.type() == Value::STRING && g_utf8_strlen(entryVal.toString().c_str(), entryVal.toString().size()) == findThisSize ) {
+	        ptr_st = g_utf8_offset_to_pointer(entryVal.toString().c_str(), 0);
+	        if( ptr_ft && ptr_st && (g_utf8_get_char(ptr_ft) == g_utf8_get_char(ptr_st)) ) {
+	            matchCount++;
+			    for (size_t j = 1; j < findThisSize; j++) {
+			        ptr_ft = g_utf8_offset_to_pointer(find.c_str(), j);
+			        ptr_st = g_utf8_offset_to_pointer(entryVal.toString().c_str(), j);
+	                if (ptr_ft && ptr_st && (g_utf8_get_char(ptr_ft) == g_utf8_get_char(ptr_st)) ) {
+	                    matchCount++;
+	                } else {
+	                    break;
+	                }
+	            }
+	            if( matchCount == findThisSize ) {
+	                returnvec.push_back(Value(double(i)));
+	            }
 			}
-			const gchar *ptr_st = g_utf8_offset_to_pointer(entryVec[index_col_num].toString().c_str(), 0);
-			if (ptr_ft && ptr_st && (g_utf8_get_char(ptr_ft) == g_utf8_get_char(ptr_st)) ) {
-				matchCount++;
-				if (num_returns_per_match == 1) {
-					returnvec.push_back(Value(double(j)));
-					break;
-				} else {
-					resultvec.push_back(Value(double(j)));
-				}
-				if (num_returns_per_match > 1 && matchCount >= num_returns_per_match) {
-					break;
-				}
-			}
-		}
-		if (matchCount == 0) {
-			gchar utf8_of_cp[6] = ""; //A buffer for a single unicode character to be copied into
-			if (ptr_ft) g_utf8_strncpy(utf8_of_cp, ptr_ft, 1);
-			PRINTB("  WARNING: search term not found: \"%s\"", utf8_of_cp);
-		}
-		if (num_returns_per_match == 0 || num_returns_per_match > 1) {
-			returnvec.push_back(Value(resultvec));
-		}
+        }
 	}
 	return returnvec;
 }
@@ -797,8 +793,7 @@ ValuePtr builtin_search(const Context *, const EvalContext *evalctx)
 
 	ValuePtr findThis = evalctx->getArgValue(0);
 	ValuePtr searchTable = evalctx->getArgValue(1);
-	unsigned int num_returns_per_match = (evalctx->numArgs() > 2) ? evalctx->getArgValue(2)->toDouble() : 1;
-	unsigned int index_col_num = (evalctx->numArgs() > 3) ? evalctx->getArgValue(3)->toDouble() : 0;
+	unsigned int index_col_num = (evalctx->numArgs() > 2) ? evalctx->getArgValue(2)->toDouble() : 0;
 
 	Value::VectorType returnvec;
 
@@ -813,52 +808,25 @@ ValuePtr builtin_search(const Context *, const EvalContext *evalctx)
 					*findThis      == search_element.toVector()[index_col_num])) {
 				returnvec.push_back(Value(double(j)));
 				matchCount++;
-				if (num_returns_per_match != 0 && matchCount >= num_returns_per_match) break;
 			}
 		}
 	} else if (findThis->type() == Value::STRING) {
 		if (searchTable->type() == Value::STRING) {
-			returnvec = search(findThis->toString(), searchTable->toString(), num_returns_per_match);
+			returnvec = search(findThis->toString(), searchTable->toString() );
 		}
 		else {
-			returnvec = search(findThis->toString(), searchTable->toVector(), num_returns_per_match, index_col_num);
+			returnvec = search(findThis->toString(), searchTable->toVector(), index_col_num);
 		}
-	} else if (findThis->type() == Value::VECTOR) {
-		for (size_t i = 0; i < findThis->toVector().size(); i++) {
-		  unsigned int matchCount = 0;
-			Value::VectorType resultvec;
-
-			Value const& find_value = findThis->toVector()[i];
-
-			for (size_t j = 0; j < searchTable->toVector().size(); j++) {
-
-				Value const& search_element = searchTable->toVector()[j];
-
-				if ((index_col_num == 0 && find_value == search_element) ||
-					(index_col_num < search_element.toVector().size() &&
-					find_value    == search_element.toVector()[index_col_num])) {
-					Value resultValue((double(j)));
-		      matchCount++;
-		      if (num_returns_per_match == 1) {
-						returnvec.push_back(resultValue);
-						break;
-		      } else {
-						resultvec.push_back(resultValue);
-		      }
-		      if (num_returns_per_match > 1 && matchCount >= num_returns_per_match) break;
-		    }
-		  }
-		  if (num_returns_per_match == 1 && matchCount == 0) {
-		    returnvec.push_back(resultvec);
-		  }
-		  if (num_returns_per_match == 0 || num_returns_per_match > 1) {
-				returnvec.push_back(resultvec);
-			}
-		}
+    } else if ( findThis->type() == Value::VECTOR ) {
+        PRINTB("WARNING: Vector search values syntax deprecated '%s'",findThis->toString());
 	} else {
 		return ValuePtr::undefined;
 	}
-	return ValuePtr(returnvec);
+    if( returnvec.size() == 0 ) {
+        return ValuePtr::undefined;
+    } else {
+	    return ValuePtr(returnvec);
+    }
 }
 
 #define QUOTE(x__) # x__
