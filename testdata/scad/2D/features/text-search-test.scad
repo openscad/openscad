@@ -17,13 +17,13 @@ for(i=[0:len(theseIndicies)-1]) translate([i*x_shift-len(theseIndicies)*x_shift/
   polygon(points=thisFont[2][theseIndicies[i]][6][0],paths=thisFont[2][theseIndicies[i]][6][1]);
 }
 
-theseIndicies2=search("ABC",thisFont[2],1,1);
+theseIndicies2=search_vector_one("ABC",thisFont[2],1);
 // outline_2d() example
 for(i=[0:len(theseIndicies2)-1]) translate([i*x_shift-len(theseIndicies2)*x_shift,-y_shift]) {
   outline_2d(outline=true,points=thisFont[2][theseIndicies2[i]][6][0],paths=thisFont[2][theseIndicies2[i]][6][1],width=0.25);
 }
 
-theseIndicies3=search("123",thisFont[2],1,1);
+theseIndicies3=search_vector_one("123",thisFont[2],1);
 // bold_2d() outline_2d(false) example
 for(i=[0:len(theseIndicies3)-1]) translate([i*x_shift,-2*y_shift]) {
   bold_2d(bold=true,width=0.25,resolution=8)
