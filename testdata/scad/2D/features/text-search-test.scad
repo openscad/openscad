@@ -1,11 +1,13 @@
 // fonts test
 
 use <MCAD/fonts.scad>
+function search_vector_one(vec,table,col=0) = [for(i=[0:len(vec)-1]) search(vec[i],table,col)[0]];
+
 
 thisFont=8bit_polyfont();
 thisText="OpenSCAD Rocks!";
 // Find one letter matches from 2nd column (index 1)
-theseIndicies=search(thisText,thisFont[2],1,1);
+theseIndicies=search_vector_one(thisText,thisFont[2],1);
 // Letter spacing, x direction.
 x_shift=thisFont[0][0];
 y_shift=thisFont[0][1];
