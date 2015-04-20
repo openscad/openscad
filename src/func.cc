@@ -664,50 +664,42 @@ ValuePtr builtin_lookup(const Context *, const EvalContext *evalctx)
 /*
  Pattern:
 
-  "search" "(" ( match_value | list_of_match_values ) "," vector_of_vectors
-        ("," num_returns_per_match
-          ("," index_col_num )? )?
+  "search" "(" match_value  "," string_or_vector_or_table
+          ("," index_col_num )?
         ")";
   match_value : ( Value::NUMBER | Value::STRING );
-  list_of_values : "[" match_value ("," match_value)* "]";
-  vector_of_vectors : "[" ("[" Value ("," Value)* "]")+ "]";
-  num_returns_per_match : int;
+  string_or_vector_or_table : ( Value::STRING | "[" Value ("," Value)* "]" |  "[" ("[" Value ("," Value)* "]")+ "]" );
   index_col_num : int;
 
  The search string and searched strings can be unicode strings.
  Examples:
   Index values return as list:
     search("a","abcdabcd");
-        - returns [0]
+        - returns [0,4]
     search("Л","Л");  //A unicode string
         - returns [0]
-    search("🂡aЛ","a🂡Л🂡a🂡Л🂡a",0);
-        - returns [[1,3,5,7],[0,4,8],[2,6]]
-    search("a","abcdabcd",0); //Search up to all matches
-        - returns [[0,4]]
-    search("a","abcdabcd",1);
-        - returns [0]
-    search("e","abcdabcd",1);
-        - returns []
+    search("a","a🂡Л🂡a🂡Л🂡a");
+        - returns [0,4,8]
+    search("a","abcdabcd");
+        - returns [0,4]
+    search("e","abcdabcd");
+        - returns undef
+        
+  Search a vector of values for a string:
+    search("c",["a",0,"b",1,"c",2])
+    	- returns [4]
+    	
+  Search a vector of values for a number:
+    search(1,["a",0,"b",1,"c",2])
+    	- returns [3]
+    	
+  Search a table in the first column:
     search("a",[ ["a",1],["b",2],["c",3],["d",4],["a",5],["b",6],["c",7],["d",8],["e",9] ]);
         - returns [0,4]
 
-  Search on different column; return Index values:
-    search(3,[ ["a",1],["b",2],["c",3],["d",4],["a",5],["b",6],["c",7],["d",8],["e",3] ], 0, 1);
+  Search a table in second column (index 1):
+    search(3,[ ["a",1],["b",2],["c",3],["d",4],["a",5],["b",6],["c",7],["d",8],["e",3] ], 1);
         - returns [0,8]
-
-  Search on list of values:
-    Return all matches per search vector element:
-      search("abc",[ ["a",1],["b",2],["c",3],["d",4],["a",5],["b",6],["c",7],["d",8],["e",9] ], 0);
-        - returns [[0,4],[1,5],[2,6]]
-
-    Return first match per search vector element; special case return vector:
-      search("abc",[ ["a",1],["b",2],["c",3],["d",4],["a",5],["b",6],["c",7],["d",8],["e",9] ], 1);
-        - returns [0,1,2]
-
-    Return first two matches per search vector element; vector of vectors:
-      search("abce",[ ["a",1],["b",2],["c",3],["d",4],["a",5],["b",6],["c",7],["d",8],["e",9] ], 2);
-        - returns [[0,4],[1,5],[2,6],[8]]
 
 */
 
