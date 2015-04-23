@@ -28,6 +28,16 @@ class MainWindow : public QMainWindow, public Ui::MainWindow
 	Q_OBJECT
 
 public:
+
+    QList<QFileInfo> knownFiles ;
+
+      QList<QFileInfo> get(){
+            return knownFiles;
+        }
+
+        void set(QFileInfo var){
+            knownFiles << var;
+        }
 	static void requestOpenFile(const QString &filename);
 
 	QString fileName;

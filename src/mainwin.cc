@@ -1200,17 +1200,29 @@ void MainWindow::actionNew()
 
 void MainWindow::actionOpen()
 {
-	QFileInfo fileInfo = UIUtils::openFile(this);
-	if (!fileInfo.exists()) {
-	    return;
-	}
+    QFileInfo fileInfo = UIUtils::openFile(this);
+    if (!fileInfo.exists()) {
+        return;
+    }
 
-	if (!MainWindow::mdiMode && !maybeSave()) {
-	    return;
-	}
-	
-	openFile(fileInfo.filePath());
-}
+    if (!MainWindow::mdiMode && !maybeSave()) {
+        return;
+    }
+
+    bool fileIsKnown = false;
+        for(qint64 i=0; i<knownFiles.length(); i++)
+          if(knownFiles.at(i) == fileInfo)
+          {
+            fileIsKnown = true;
+            break;
+          }
+        if(!fileIsKnown)
+        {
+          knownFiles << fileInfo;
+          openFile(fileInfo.filePath());
+        }
+    }
+
 
 void MainWindow::actionOpenRecent()
 {
