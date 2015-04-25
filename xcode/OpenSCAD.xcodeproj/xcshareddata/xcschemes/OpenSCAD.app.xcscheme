@@ -49,7 +49,8 @@
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
       allowLocationSimulation = "YES">
-      <BuildableProductRunnable>
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E0034E3D19AA8651009F0BD0"
@@ -69,15 +70,15 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "testdata/scad/3D/issues/issue1061.scad -o out.png"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "testdata/scad/3D/issues/minkowski-thin-cylinder.scad -o out.png"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "spheres.scad -o out.png"
-            isEnabled = "NO">
+            argument = "issue1276.scad"
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "non-manifold2.scad -o non-manifold2.stl --debug=GeometryUtils"
@@ -113,7 +114,8 @@
       useCustomWorkingDirectory = "NO"
       buildConfiguration = "Release"
       debugDocumentVersioning = "YES">
-      <BuildableProductRunnable>
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E0034E3D19AA8651009F0BD0"

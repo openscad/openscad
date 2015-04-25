@@ -56,7 +56,7 @@ if test -z "$VERSION"; then
   VERSION=$VERSIONDATE
   SNAPSHOT=snapshot
 fi
-SHORTVERSION=${VERSION##-}
+SHORTVERSION=${VERSION%%-*}
 
 # Turn off ccache, just for safety
 PATH=${PATH//\/opt\/local\/libexec\/ccache:}
