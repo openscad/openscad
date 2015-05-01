@@ -138,22 +138,25 @@ void ScadLexer::highlightKeywords(const QString &source, int start, QStringList 
 
 void ScadLexer::highlightComments(const QString &source, int start, int style)
 {
-	int p = 0;
-	if(source.contains("//")) {
-		p = source.count("//");
-	}
-	int index = 0;
-	while(p!=0){
-		int length = 0;
-                int begin = source.indexOf("//", index); 
-		int endline = source.indexOf('\n', begin);
-		index = begin + 1;
-		length = endline - begin;
-                startStyling(start + begin); 
-                setStyling(length, style);
-                startStyling(start + begin); 
-	p--;
-	}
+
+    int p = source.count("//"); 
+    if(p == 0)
+        return;
+    int index = 0; 
+    while(p != 0) {
+        int begin = source.indexOf("//", index); 
+        int length=0; 
+        index = begin+1; 
+
+        for(int k = begin; source[k] != '\0'; k++) 
+            length++;
+
+        startStyling(start + begin); 
+        setStyling(length, Comment); 
+        startStyling(start + begin); 
+
+        p--;
+    }
 }
 const char *ScadLexer::language() const
 {
