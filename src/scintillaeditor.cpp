@@ -301,6 +301,7 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 		l->setColor(readColor(colors, "number", textColor), ScadLexer::Boolean);
 		l->setColor(readColor(colors, "string", textColor), ScadLexer::Function);
 		l->setColor(readColor(colors, "operator", textColor), ScadLexer::Model);
+		l->setColor(readColor(colors, "comment", textColor), ScadLexer::Comment);
 /*		l->setColor(readColor(colors, "operator", textColor), QsciLexerCPP::Operator);
 		l->setColor(readColor(colors, "comment", textColor), QsciLexerCPP::Comment);
 		l->setColor(readColor(colors, "commentline", textColor), QsciLexerCPP::CommentLine);

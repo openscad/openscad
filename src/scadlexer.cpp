@@ -1,7 +1,7 @@
 #include <boost/algorithm/string.hpp>
 #include <Qsci/qsciscintilla.h>
 #include "scadlexer.h"
-
+#include <iostream>
 ScadLexer::ScadLexer(QObject *parent) : QsciLexerCustom(parent)
 {
 	
@@ -10,7 +10,7 @@ ScadLexer::ScadLexer(QObject *parent) : QsciLexerCustom(parent)
 
 	transformationsList << "translate" << "rotate" << "scale" << "resize" << "mirror" << "multmatrix" << "color" << "offset" << "hull" <<"minkowski";
 
-	booleansList << "union" << "difference" << "intersection";
+	booleansList << "union" << "difference" << "intersection" <<"true"<<"false";
 
 	functionsList << "abs" << "sign" << "rands" << "min" << "max" << "sin" << "cos" <<  "asin" << "acos" << "tan" << "atan" << "atan2" <<"round" << "ceil" << "floor" << "pow" << "sqrt" << "exp" << "len" << "log" << "ln" << "str" << "chr" << "concat" << "lookup" << "search" << "version" << "version_num" << "norm" << "cross parent_module";
 
@@ -57,13 +57,14 @@ void ScadLexer::styleText(int start, int end)
     QString source(data);
     delete [] data;
     if(source.isEmpty())
-        return;
+        return;	
 
     highlightKeywords(source, start, keywordsList, Keyword);
     highlightKeywords(source, start, transformationsList, Transformation);
     highlightKeywords(source, start, booleansList, Boolean);
     highlightKeywords(source, start, functionsList, Function);
     highlightKeywords(source, start, modelsList, Model);
+    highlightComments(source, start, Comment);
 }
 
 QColor ScadLexer::defaultColor(int style) const
@@ -116,22 +117,43 @@ QString ScadLexer::description(int style) const
 
 void ScadLexer::highlightKeywords(const QString &source, int start, QStringList &List, int style )
 {
-    foreach(QString word, List) { 
+
+    foreach(QString word, List) {
         if(source.contains(word)) {
             int p = source.count(word); 
-            int index = 0; 
-            while(p != 0) {
+		int index = 0; 
+		while(p != 0) {
+		
                 int begin = source.indexOf(word, index); 
                 index = begin+1; 
-
-                startStyling(start + begin); 
-                setStyling(word.length(), style); 
                 startStyling(start + begin); 
 
-                p--;
+                setStyling(word.length(), style);
+                startStyling(start + begin); 
+                p--;	
             }
         }
     }
+}
+
+void ScadLexer::highlightComments(const QString &source, int start, int style)
+{
+	int p = 0;
+	if(source.contains("//")) {
+		p = source.count("//");
+	}
+	int index = 0;
+	while(p!=0){
+		int length = 0;
+                int begin = source.indexOf("//", index); 
+		int endline = source.indexOf('\n', begin);
+		index = begin + 1;
+		length = endline - begin;
+                startStyling(start + begin); 
+                setStyling(length, style);
+                startStyling(start + begin); 
+	p--;
+	}
 }
 const char *ScadLexer::language() const
 {
