@@ -147,10 +147,16 @@ void ScadLexer::highlightComments(const QString &source, int start, int style)
         int begin = source.indexOf("//", index); 
         int length=0; 
         index = begin+1; 
-
+	if(source.contains('\n')) {
+		int endline = source.indexOf('\n', index);
+		if (begin < endline){
+			for(int k = begin; source[k] != '\n'; k++)
+			    length++;
+		}
+	} else {
         for(int k = begin; source[k] != '\0'; k++) 
             length++;
-
+	}
         startStyling(start + begin); 
         setStyling(length, Comment); 
         startStyling(start + begin); 
