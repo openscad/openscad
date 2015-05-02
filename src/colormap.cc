@@ -67,7 +67,7 @@ RenderColorScheme::RenderColorScheme(fs::path path) : _path(path)
 	addColor(CGAL_EDGE_2D_COLOR, "cgal-edge-2d");
 	addColor(CROSSHAIR_COLOR, "crosshair");
     } catch (const std::exception & e) {
-	PRINTB("Error reading color scheme file '%s': %s", path.c_str() % e.what());
+			PRINTB("Error reading color scheme file '%s': %s", boosty::stringy(path).c_str() % e.what());
 	_error = e.what();
 	_name = "";
 	_index = 0;
@@ -261,7 +261,7 @@ void ColorMap::enumerateColorSchemesInPath(colorscheme_set_t &result_set, const 
 {
     const fs::path color_schemes = basePath / "color-schemes" / "render";
 
-    PRINTDB("Enumerating color schemes from '%s'", color_schemes.string().c_str());
+    PRINTDB("Enumerating color schemes from '%s'", boosty::stringy(color_schemes).c_str());
     
     fs::directory_iterator end_iter;
     
@@ -272,7 +272,7 @@ void ColorMap::enumerateColorSchemesInPath(colorscheme_set_t &result_set, const 
 	    }
 	    
 	    const fs::path path = (*dir_iter).path();
-	    if (!(path.extension().string() == ".json")) {
+	    if (!(path.extension() == ".json")) {
 		continue;
 	    }
 	    

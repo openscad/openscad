@@ -23,7 +23,7 @@ const char *PlatformUtils::OPENSCAD_FOLDER_NAME = "OpenSCAD";
 static std::string lookupResourcesPath()
 {
 	fs::path resourcedir(applicationpath);
-	PRINTDB("Looking up resource folder with application path '%s'", resourcedir.c_str());
+	PRINTDB("Looking up resource folder with application path '%s'", boosty::stringy(resourcedir).c_str());
 	
 #ifdef __APPLE__
 	const char *searchpath[] = {
@@ -57,11 +57,11 @@ static std::string lookupResourcesPath()
 	    tmpdir = resourcedir / searchpath[a];
 	    
 	    const fs::path checkdir = tmpdir / "libraries";
-	    PRINTDB("Checking '%s'", checkdir.c_str());
+	    PRINTDB("Checking '%s'", boosty::stringy(checkdir).c_str());
 
 	    if (is_directory(checkdir)) {
 		resourcedir = tmpdir;
-		PRINTDB("Found resource folder '%s'", tmpdir.c_str());
+		PRINTDB("Found resource folder '%s'", boosty::stringy(tmpdir).c_str());
 		break;
 	    }
 	}
