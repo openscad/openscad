@@ -144,6 +144,8 @@ void ScadLexer::highlightComments(const QString &source, int start, int style)
         return;
     int index = 0; 
     while(p != 0) {
+	
+	int srcLen = source.length();
         int begin = source.indexOf("//", index); 
         int length=0; 
         index = begin+1; 
@@ -154,16 +156,18 @@ void ScadLexer::highlightComments(const QString &source, int start, int style)
 			    length++;
 		}
 	} else {
-        for(int k = begin; source[k] != '\0'; k++) 
-            length++;
-	}
-        startStyling(start + begin); 
+		int len = srcLen - begin;
+		QString substr = source.mid(begin, len);
+		length = substr.count(); 
+        }
+	startStyling(start + begin); 
         setStyling(length, Comment); 
         startStyling(start + begin); 
 
         p--;
     }
 }
+
 const char *ScadLexer::language() const
 {
 	return "SCAD";
