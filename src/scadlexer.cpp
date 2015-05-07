@@ -123,15 +123,21 @@ void ScadLexer::highlightKeywords(const QString &source, int start, QStringList 
             int p = source.count(word); 
 		int index = 0; 
 		while(p != 0) {
-		
-                int begin = source.indexOf(word, index); 
-                index = begin+1; 
-                startStyling(start + begin); 
-
+                int begin = source.indexOf(word, index);
+		int pos = begin-1;
+		int len = word.length();
+		int posEnd = begin + len;
+                index = begin+1;
+                const QChar *data = source.data();
+		if(((pos == -1) || (data[pos] == ' ') || (data[pos] == '\t') || (data[pos] == '(') || (data[pos] == '=') || (data[pos] == '\n'))
+			&& ((data[posEnd] == ' ') || (data[posEnd] == '(') || (data[posEnd] == '=') || (data[posEnd] == ')') || (data[posEnd] == ';'))){
+		startStyling(start + begin); 
                 setStyling(word.length(), style);
+		}
                 startStyling(start + begin); 
                 p--;	
-            }
+              
+	  }
         }
     }
 }
@@ -161,7 +167,7 @@ void ScadLexer::highlightComments(const QString &source, int start, int style)
 		length = substr.count(); 
         }
 	startStyling(start + begin); 
-        setStyling(length, Comment); 
+        setStyling(length, style); 
         startStyling(start + begin); 
 
         p--;
