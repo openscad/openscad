@@ -37,7 +37,7 @@ RenderColorScheme::RenderColorScheme() : _path("")
 	_show_in_gui = true;
 
 	_color_scheme.insert(ColorScheme::value_type(BACKGROUND_COLOR, Color4f(0xff, 0xff, 0xe5)));
-	_color_scheme.insert(ColorScheme::value_type(AXES_COLOR, Color4f(0x00, 0x00, 0xff)));
+	_color_scheme.insert(ColorScheme::value_type(AXES_COLOR, Color4f(0x00, 0x00, 0x7f)));
 	_color_scheme.insert(ColorScheme::value_type(OPENCSG_FACE_FRONT_COLOR, Color4f(0xf9, 0xd7, 0x2c)));
 	_color_scheme.insert(ColorScheme::value_type(OPENCSG_FACE_BACK_COLOR, Color4f(0x9d, 0xcb, 0x51)));
 	_color_scheme.insert(ColorScheme::value_type(CGAL_FACE_FRONT_COLOR, Color4f(0xf9, 0xd7, 0x2c)));
