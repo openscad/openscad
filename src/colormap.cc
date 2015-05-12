@@ -58,6 +58,7 @@ RenderColorScheme::RenderColorScheme(fs::path path) : _path(path)
 	_show_in_gui = pt.get<bool>("show-in-gui");
 	
 	addColor(BACKGROUND_COLOR, "background");
+	addColor(AXES_COLOR, "axes-color");
 	addColor(OPENCSG_FACE_FRONT_COLOR, "opencsg-face-front");
 	addColor(OPENCSG_FACE_BACK_COLOR, "opencsg-face-back");
 	addColor(CGAL_FACE_FRONT_COLOR, "cgal-face-front");
