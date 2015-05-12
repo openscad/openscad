@@ -43,7 +43,7 @@ public:
 	float getDPI() { return this->devicePixelRatio(); }
 #endif
 	
-	void grabFrame();
+	const QImage & grabFrame();
 	bool save(const char *filename);
 	void resetView();
 	void viewAll();

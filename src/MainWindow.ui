@@ -274,6 +274,7 @@
      <addaction name="fileActionExportCSG"/>
      <addaction name="separator"/>
      <addaction name="fileActionExportImage"/>
+     <addaction name="fileActionExportClipboard"/>
     </widget>
     <addaction name="fileActionNew"/>
     <addaction name="fileActionOpen"/>
@@ -1259,6 +1260,11 @@
   <action name="helpActionCheatSheet">
    <property name="text">
     <string>&amp;Cheat Sheet</string>
+   </property>
+  </action>
+  <action name="fileActionExportClipboard">
+   <property name="text">
+    <string>Export to Clipboard</string>
    </property>
   </action>
  </widget>

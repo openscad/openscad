@@ -362,6 +362,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->fileActionExportSVG, SIGNAL(triggered()), this, SLOT(actionExportSVG()));
 	connect(this->fileActionExportCSG, SIGNAL(triggered()), this, SLOT(actionExportCSG()));
 	connect(this->fileActionExportImage, SIGNAL(triggered()), this, SLOT(actionExportImage()));
+	connect(this->fileActionExportClipboard, SIGNAL(triggered()), this, SLOT(actionExportToClipboard()));
 	connect(this->designActionFlushCaches, SIGNAL(triggered()), this, SLOT(actionFlushCaches()));
 
 	// View menu
@@ -2182,6 +2183,13 @@ void MainWindow::actionExportImage()
 	}
 	clearCurrentOutput();
 	return;
+}
+
+void MainWindow::actionExportToClipboard()
+{
+	const QImage & image = qglview->grabFrame();
+	QClipboard *clipboard = QApplication::clipboard();
+	clipboard->setImage(image);
 }
 
 void MainWindow::actionFlushCaches()

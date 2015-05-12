@@ -196,6 +196,7 @@ private slots:
 	void actionExportSVG();
 	void actionExportCSG();
 	void actionExportImage();
+	void actionExportToClipboard();
 	void actionFlushCaches();
 
 public:
