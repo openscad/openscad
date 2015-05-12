@@ -43,6 +43,7 @@ public:
 
 	void highlightKeywords(const QString &source, int start, QStringList&, int);
 	void highlightComments(const QString &source, int, int);
+	void highlightMultiComments(const QString &source, int, int);
 	int state = 0;
 
 private:

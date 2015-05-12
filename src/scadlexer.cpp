@@ -65,6 +65,7 @@ void ScadLexer::styleText(int start, int end)
     highlightKeywords(source, start, functionsList, Function);
     highlightKeywords(source, start, modelsList, Model);
     highlightComments(source, start, Comment);
+    highlightMultiComments(source, start, Comment);
 }
 
 QColor ScadLexer::defaultColor(int style) const
@@ -130,7 +131,7 @@ void ScadLexer::highlightKeywords(const QString &source, int start, QStringList 
                 index = begin+1;
                 const QChar *data = source.data();
 		if(((pos == -1) || (data[pos] == ' ') || (data[pos] == '\t') || (data[pos] == '(') || (data[pos] == '=') || (data[pos] == '\n'))
-			&& ((data[posEnd] == ' ') || (data[posEnd] == '(') || (data[posEnd] == '=') || (data[posEnd] == ')') || (data[posEnd] == ';'))){
+			&& ((data[posEnd] == ' ') || (data[posEnd] == '\n') || (data[posEnd] == '(') || (data[posEnd] == '=') || (data[posEnd] == ')') || (data[posEnd] == ';'))){
 		startStyling(start + begin); 
                 setStyling(word.length(), style);
 		}
@@ -172,6 +173,34 @@ void ScadLexer::highlightComments(const QString &source, int start, int style)
 
         p--;
     }
+}
+
+void ScadLexer::highlightMultiComments(const QString &source, int start, int style)
+{
+	int p = source.count("/*");
+	if(p == 0)
+	    return;
+	int index = 0;
+	
+	while(p != 0) {
+		int srcLen = source.length();
+		int begin = source.indexOf("/*", index);
+		int length = 0;
+		index = begin + 1;
+			if(source.contains("*/")){
+				length = source.indexOf("*/", begin);
+			} else {
+				int len = srcLen - begin;
+				QString substr = source.mid(begin, len);
+				length = substr.count();
+			}
+		
+		startStyling(start + begin);
+		setStyling(length, style);
+		startStyling(start + begin);
+
+		p--;
+	}
 }
 
 const char *ScadLexer::language() const
