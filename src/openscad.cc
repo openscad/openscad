@@ -836,6 +836,9 @@ int main(int argc, char **argv)
 		OpenSCAD::debug = vm["debug"].as<string>();
 		PRINTB("Debug on. --debug=%s",OpenSCAD::debug);
 	}
+	if (vm.count("quiet")) {
+		OpenSCAD::quiet = true;
+	}
 	if (vm.count("help")) help(argv[0]);
 	if (vm.count("version")) version();
 	if (vm.count("info")) arg_info = true;
