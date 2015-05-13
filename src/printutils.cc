@@ -64,7 +64,7 @@ void PRINT_NOCACHE(const std::string &msg)
 		else lastmessages.push_back(msg);
 	}
 
-	if (!OpenSCAD::quiet) {
+	if (!OpenSCAD::quiet || boost::starts_with(msg, "ERROR")) {
 		if (!outputhandler) {
 			fprintf(stderr, "%s\n", msg.c_str());
 		} else {
