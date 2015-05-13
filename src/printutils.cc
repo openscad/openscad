@@ -64,10 +64,12 @@ void PRINT_NOCACHE(const std::string &msg)
 		else lastmessages.push_back(msg);
 	}
 
-	if (!outputhandler) {
-		fprintf(stderr, "%s\n", msg.c_str());
-	} else {
-		outputhandler(msg, outputhandler_data);
+	if (!OpenSCAD::quiet) {
+		if (!outputhandler) {
+			fprintf(stderr, "%s\n", msg.c_str());
+		} else {
+			outputhandler(msg, outputhandler_data);
+		}
 	}
 }
 
