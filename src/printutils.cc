@@ -12,6 +12,7 @@ std::list<std::string> print_messages_stack;
 OutputHandlerFunc *outputhandler = NULL;
 void *outputhandler_data = NULL;
 std::string OpenSCAD::debug("");
+bool OpenSCAD::quiet = false;
 
 boost::circular_buffer<std::string> lastmessages(5);
 
