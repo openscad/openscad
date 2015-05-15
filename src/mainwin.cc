@@ -490,8 +490,8 @@ MainWindow::MainWindow(const QString &filename)
 	initActionIcon(editActionZoomTextOut, ":/images/zoom-text-out.png", ":/images/zoom-text-out-white.png");
 	initActionIcon(editActionUndo, ":/icons/svg/undo.svg", ":/icons/svg/undo-white.svg");
 	initActionIcon(editActionRedo, ":/icons/svg/redo.svg", ":/icons/svg/redo-white.svg");
-	initActionIcon(editActionUnindent, ":/icons/svg/indent.svg", ":/icons/svg/indent-white.svg");
-	initActionIcon(editActionIndent, ":/icons/svg/unindent.svg", ":/icons/svg/unindent-white.svg");
+	initActionIcon(editActionUnindent, ":/icons/svg/unindent.svg", ":/icons/svg/unindent-white.svg");
+	initActionIcon(editActionIndent, ":/icons/svg/indent.svg", ":/icons/svg/indent-white.svg");
 
 	initActionIcon(designActionPreview, ":/icons/svg/preview.svg", ":/icons/svg/preview-white.svg");
 	initActionIcon(designActionRender, ":/icons/svg/render.svg", ":/icons/svg/render-white.svg");
