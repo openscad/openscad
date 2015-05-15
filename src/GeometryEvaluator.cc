@@ -956,6 +956,8 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 						// Add correctly winded polygons to the main clipper
 						sumclipper.AddPaths(result, ClipperLib::ptSubject, true);
 					}
+
+					delete poly;
 				}
 				ClipperLib::PolyTree sumresult;
 				// This is key - without StrictlySimple, we tend to get self-intersecting results
