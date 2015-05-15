@@ -5,17 +5,21 @@
 ScadLexer::ScadLexer(QObject *parent) : QsciLexerCustom(parent)
 {
 	
-    	keywordsList << "var" << "module" << "function" << "use"  <<
-                    "include";
+    	keywordsList << "var" << "module" << "function" << "use"  << "echo" <<
+                    "include" << "import" << "group" << "projection" << "render" << "surface" <<
+		    "def" << "enum" <<"struct" << "def"<< "fn" << "typedef" << "file" << "namespace" << "package" <<
+		    "interface" << "param" << "see" << "return" << "class" << "brief" <<
+		    "if" << "else" << "let" << "for" << "undef";
 
-	transformationsList << "translate" << "rotate" << "scale" << "resize" << "mirror" << "multmatrix" << "color" << "offset" << "hull" <<"minkowski";
+	transformationsList << "translate" << "rotate" << "child" << "scale" << "linear_extrude" << "rotate_extrude" << "resize" << "mirror" << "multmatrix" << "color" << "offset" << "hull" <<"minkowski";
 
 	booleansList << "union" << "difference" << "intersection" <<"true"<<"false";
 
-	functionsList << "abs" << "sign" << "rands" << "min" << "max" << "sin" << "cos" <<  "asin" << "acos" << "tan" << "atan" << "atan2" <<"round" << "ceil" << "floor" << "pow" << "sqrt" << "exp" << "len" << "log" << "ln" << "str" << "chr" << "concat" << "lookup" << "search" << "version" << "version_num" << "norm" << "cross parent_module";
+	functionsList << "abs" << "sign" << "rands" << "min" << "max" << "sin" << "cos" <<  "asin" << "acos" << "tan" << "atan" << "atan2" <<"round" << "ceil" << "floor" << "pow" << "sqrt" << "exp" << "len" << "log" << "ln" << "str" << "chr" << "concat" << "lookup" << "search" << "version" << "version_num" << "norm" << "cross" << "parent_module" << "dxf_dim" << "dxf_cross";
 
 	modelsList << "sphere" << "cube" << "cylinder" << "polyhedron" << "square" << "polygon" << "text" << "circle";
-		"dxf_dim dxf_cross";
+
+	numbers << "0" << "1" << "2" << "3" << "4" << "5" << "6" << "7" << "8" << "9" << ".";
 	// -> Style: Keyword (lexer.l)
 	keywordSet[0] =
 		"if else let for module function true false undef "
@@ -64,6 +68,7 @@ void ScadLexer::styleText(int start, int end)
     highlightKeywords(source, start, booleansList, Boolean);
     highlightKeywords(source, start, functionsList, Function);
     highlightKeywords(source, start, modelsList, Model);
+    highlightNumbers(source, start, numbers, Number);
     highlightComments(source, start, Comment);
     highlightMultiComments(source, start, Comment);
 }
@@ -130,8 +135,8 @@ void ScadLexer::highlightKeywords(const QString &source, int start, QStringList 
 		int posEnd = begin + len;
                 index = begin+1;
                 const QChar *data = source.data();
-		if(((pos == -1) || (data[pos] == ' ') || (data[pos] == '\t') || (data[pos] == '(') || (data[pos] == '=') || (data[pos] == '\n'))
-			&& ((data[posEnd] == ' ') || (data[posEnd] == '\n') || (data[posEnd] == '(') || (data[posEnd] == '=') || (data[posEnd] == ')') || (data[posEnd] == ';'))){
+		if(((pos == -1) || (data[pos] == ' ') || (data[pos] == '[') || (data[pos] == ',') || (data[pos] == '\t') || (data[pos] == '(') || (data[pos] == '=') || (data[pos] == '\n'))
+			&& ((data[posEnd] == ' ') || (data[posEnd] == '\n') || (data[posEnd] == '(') || (data[posEnd] == '=') || (data[posEnd] == ')') ||(data[posEnd] == ']') || (data[posEnd] == ',') || (data[posEnd] == ';'))){
 		startStyling(start + begin); 
                 setStyling(word.length(), style);
 		}
@@ -143,6 +148,24 @@ void ScadLexer::highlightKeywords(const QString &source, int start, QStringList 
     }
 }
 
+void ScadLexer::highlightNumbers(const QString &source, int start, QStringList &List, int style) 
+{
+    foreach(QString word, List){
+        if(source.contains(word)) {
+            int p = source.count(word); 
+		int index = 0; 
+		while(p != 0) {
+                int begin = source.indexOf(word, index);
+                index = begin+1;
+		startStyling(start + begin); 
+                setStyling(word.length(), style);
+                startStyling(start + begin); 
+                p--;	
+              
+	  }
+        }
+    }
+}
 void ScadLexer::highlightComments(const QString &source, int start, int style)
 {
 
@@ -202,6 +225,7 @@ void ScadLexer::highlightMultiComments(const QString &source, int start, int sty
 		p--;
 	}
 }
+
 
 const char *ScadLexer::language() const
 {

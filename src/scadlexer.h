@@ -44,6 +44,7 @@ public:
 	void highlightKeywords(const QString &source, int start, QStringList&, int);
 	void highlightComments(const QString &source, int, int);
 	void highlightMultiComments(const QString &source, int, int);
+	void highlightNumbers(const QString &source, int, QStringList&, int); 
 	int state = 0;
 
 private:
@@ -58,4 +59,5 @@ private:
 	QStringList booleansList; 
 	QStringList functionsList;
 	QStringList modelsList;
+	QStringList numbers;
 };
