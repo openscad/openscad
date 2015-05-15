@@ -241,6 +241,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
                                 boost::uint32_t steps = range.nbsteps();
 				if (steps >= 10000) {
 					PRINTB("WARNING: Bad range parameter for children: too many elements (%lu).", steps);
+					delete node;
 					return NULL;
 				}
                                 for (Value::RangeType::iterator it = range.begin();it != range.end();it++) {
