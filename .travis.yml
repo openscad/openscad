@@ -13,7 +13,7 @@ notifications:
 before_install:
  - echo 'yes' | sudo add-apt-repository ppa:chrysn/openscad
  - sudo apt-get update -qq
- - sudo apt-get install -qq build-essential libqt4-dev libqt4-opengl-dev libxmu-dev cmake bison flex git-core libboost-all-dev libXi-dev libmpfr-dev libboost-dev libglew-dev libeigen3-dev libcgal-dev libgmp3-dev libgmp-dev curl imagemagick libfontconfig-dev libqscintilla2-dev libopencsg-dev
+ - sudo apt-get install -qq build-essential libqt4-dev libqt4-opengl-dev libxmu-dev cmake bison flex git-core libboost-all-dev libXi-dev libmpfr-dev libboost-dev libglew-dev libeigen3-dev libcgal-dev libgmp3-dev libgmp-dev curl imagemagick libfontconfig-dev libopencsg-dev
  - echo 'yes' | sudo add-apt-repository ppa:mapnik/nightly-trunk
  - sudo apt-get update -qq
  - sudo apt-get install -qq libharfbuzz-dev
@@ -31,7 +31,7 @@ before_script:
  - base64 --decode --ignore-garbage ~/.ssh/openscad_rsa_base64 > ~/.ssh/id_rsa
  - chmod 600 ~/.ssh/id_rsa
 
-script: if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then qmake && make ; fi
+script: RET=$? ; if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then ./scripts/travis-ci.sh ; else exit $RET ; fi
 
 env:
  global:
