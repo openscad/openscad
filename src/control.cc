@@ -236,15 +236,14 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 				return node;
 			}
 			else if (value->type() == Value::RANGE) {
-				AbstractNode* node = new AbstractNode(inst);
 				Value::RangeType range = value->toRange();
-                                boost::uint32_t steps = range.nbsteps();
+				boost::uint32_t steps = range.nbsteps();
 				if (steps >= 10000) {
 					PRINTB("WARNING: Bad range parameter for children: too many elements (%lu).", steps);
-					delete node;
 					return NULL;
 				}
-                                for (Value::RangeType::iterator it = range.begin();it != range.end();it++) {
+				AbstractNode* node = new AbstractNode(inst);
+				for (Value::RangeType::iterator it = range.begin();it != range.end();it++) {
 					AbstractNode* childnode = getChild(Value(*it),modulectx); // with error cases
 					if (childnode==NULL) continue; // error
 					node->children.push_back(childnode);
