@@ -122,7 +122,6 @@ bool ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 	module = lib_mod;
 	bool depschanged = lib_mod ? lib_mod->handleDependencies() : false;
 
-	delete entry;
 	return shouldCompile || depschanged;
 }
 
