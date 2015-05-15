@@ -56,7 +56,9 @@ static std::string lookupResourcesPath()
 	for (int a = 0;searchpath[a] != NULL;a++) {
 	    tmpdir = resourcedir / searchpath[a];
 	    
-	    const fs::path checkdir = tmpdir / "libraries";
+			// The resource folder is the folder which contains "color-schemes" (as well as 
+			// "examples" and "locale", and optionally "libraries" and "fonts")
+	    const fs::path checkdir = tmpdir / "color-schemes";
 	    PRINTDB("Checking '%s'", boosty::stringy(checkdir).c_str());
 
 	    if (is_directory(checkdir)) {
