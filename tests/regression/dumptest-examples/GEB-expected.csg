@@ -5,7 +5,7 @@ group() {
 				linear_extrude(height = 20, center = true, convexity = 3, scale = [1, 1], $fn = 64, $fa = 12, $fs = 2) {
 					group() {
 						offset(r = 0.5, $fn = 64, $fa = 12, $fs = 2) {
-							text(text = "B", size = 10, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "latin", halign = "center", valign = "center", $fn = 64, $fa = 12, $fs = 2);
+							text(text = "B", size = 10, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "center", $fn = 64, $fa = 12, $fs = 2);
 						}
 					}
 				}
@@ -13,7 +13,7 @@ group() {
 					linear_extrude(height = 20, center = true, convexity = 3, scale = [1, 1], $fn = 64, $fa = 12, $fs = 2) {
 						group() {
 							offset(r = 0.3, $fn = 64, $fa = 12, $fs = 2) {
-								text(text = "E", size = 10, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "latin", halign = "center", valign = "center", $fn = 64, $fa = 12, $fs = 2);
+								text(text = "E", size = 10, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "center", $fn = 64, $fa = 12, $fs = 2);
 							}
 						}
 					}
@@ -22,7 +22,7 @@ group() {
 					linear_extrude(height = 20, center = true, convexity = 3, scale = [1, 1], $fn = 64, $fa = 12, $fs = 2) {
 						group() {
 							offset(r = 0.3, $fn = 64, $fa = 12, $fs = 2) {
-								text(text = "G", size = 10, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "latin", halign = "center", valign = "center", $fn = 64, $fa = 12, $fs = 2);
+								text(text = "G", size = 10, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "center", $fn = 64, $fa = 12, $fs = 2);
 							}
 						}
 					}
@@ -41,7 +41,7 @@ group() {
 								linear_extrude(height = 20, center = true, convexity = 3, scale = [1, 1], $fn = 64, $fa = 12, $fs = 2) {
 									group() {
 										offset(r = 0.5, $fn = 64, $fa = 12, $fs = 2) {
-											text(text = "B", size = 10, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "latin", halign = "center", valign = "center", $fn = 64, $fa = 12, $fs = 2);
+											text(text = "B", size = 10, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "center", $fn = 64, $fa = 12, $fs = 2);
 										}
 									}
 								}
@@ -49,7 +49,7 @@ group() {
 									linear_extrude(height = 20, center = true, convexity = 3, scale = [1, 1], $fn = 64, $fa = 12, $fs = 2) {
 										group() {
 											offset(r = 0.3, $fn = 64, $fa = 12, $fs = 2) {
-												text(text = "E", size = 10, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "latin", halign = "center", valign = "center", $fn = 64, $fa = 12, $fs = 2);
+												text(text = "E", size = 10, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "center", $fn = 64, $fa = 12, $fs = 2);
 											}
 										}
 									}
@@ -58,7 +58,7 @@ group() {
 									linear_extrude(height = 20, center = true, convexity = 3, scale = [1, 1], $fn = 64, $fa = 12, $fs = 2) {
 										group() {
 											offset(r = 0.3, $fn = 64, $fa = 12, $fs = 2) {
-												text(text = "G", size = 10, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "latin", halign = "center", valign = "center", $fn = 64, $fa = 12, $fs = 2);
+												text(text = "G", size = 10, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "center", $fn = 64, $fa = 12, $fs = 2);
 											}
 										}
 									}
@@ -85,7 +85,7 @@ group() {
 										linear_extrude(height = 20, center = true, convexity = 3, scale = [1, 1], $fn = 64, $fa = 12, $fs = 2) {
 											group() {
 												offset(r = 0.5, $fn = 64, $fa = 12, $fs = 2) {
-													text(text = "B", size = 10, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "latin", halign = "center", valign = "center", $fn = 64, $fa = 12, $fs = 2);
+													text(text = "B", size = 10, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "center", $fn = 64, $fa = 12, $fs = 2);
 												}
 											}
 										}
@@ -93,7 +93,7 @@ group() {
 											linear_extrude(height = 20, center = true, convexity = 3, scale = [1, 1], $fn = 64, $fa = 12, $fs = 2) {
 												group() {
 													offset(r = 0.3, $fn = 64, $fa = 12, $fs = 2) {
-														text(text = "E", size = 10, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "latin", halign = "center", valign = "center", $fn = 64, $fa = 12, $fs = 2);
+														text(text = "E", size = 10, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "center", $fn = 64, $fa = 12, $fs = 2);
 													}
 												}
 											}
@@ -102,7 +102,7 @@ group() {
 											linear_extrude(height = 20, center = true, convexity = 3, scale = [1, 1], $fn = 64, $fa = 12, $fs = 2) {
 												group() {
 													offset(r = 0.3, $fn = 64, $fa = 12, $fs = 2) {
-														text(text = "G", size = 10, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "latin", halign = "center", valign = "center", $fn = 64, $fa = 12, $fs = 2);
+														text(text = "G", size = 10, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "center", $fn = 64, $fa = 12, $fs = 2);
 													}
 												}
 											}
@@ -131,7 +131,7 @@ group() {
 										linear_extrude(height = 20, center = true, convexity = 3, scale = [1, 1], $fn = 64, $fa = 12, $fs = 2) {
 											group() {
 												offset(r = 0.5, $fn = 64, $fa = 12, $fs = 2) {
-													text(text = "B", size = 10, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "latin", halign = "center", valign = "center", $fn = 64, $fa = 12, $fs = 2);
+													text(text = "B", size = 10, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "center", $fn = 64, $fa = 12, $fs = 2);
 												}
 											}
 										}
@@ -139,7 +139,7 @@ group() {
 											linear_extrude(height = 20, center = true, convexity = 3, scale = [1, 1], $fn = 64, $fa = 12, $fs = 2) {
 												group() {
 													offset(r = 0.3, $fn = 64, $fa = 12, $fs = 2) {
-														text(text = "E", size = 10, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "latin", halign = "center", valign = "center", $fn = 64, $fa = 12, $fs = 2);
+														text(text = "E", size = 10, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "center", $fn = 64, $fa = 12, $fs = 2);
 													}
 												}
 											}
@@ -148,7 +148,7 @@ group() {
 											linear_extrude(height = 20, center = true, convexity = 3, scale = [1, 1], $fn = 64, $fa = 12, $fs = 2) {
 												group() {
 													offset(r = 0.3, $fn = 64, $fa = 12, $fs = 2) {
-														text(text = "G", size = 10, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "latin", halign = "center", valign = "center", $fn = 64, $fa = 12, $fs = 2);
+														text(text = "G", size = 10, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "center", $fn = 64, $fa = 12, $fs = 2);
 													}
 												}
 											}

@@ -6,7 +6,8 @@
 # 
 # This script must be run from the OpenSCAD source root directory
 #
-# Usage: macosx-build-dependencies.sh [-6lcd] [<package>]
+# Usage: macosx-build-dependencies.sh [-16lcdf] [<package>]
+#  -3   Build using C++03 and libstdc++
 #  -6   Build only 64-bit binaries
 #  -l   Force use of LLVM compiler
 #  -c   Force use of clang compiler
@@ -31,12 +32,13 @@ OPTION_CLANG=false
 OPTION_GCC=false
 OPTION_DEPLOY=false
 OPTION_FORCE=0
+OPTION_CXX11=true
 
 PACKAGES=(
     "eigen 3.2.4"
     "gmp 5.1.3"
     "mpfr 3.1.2"
-    "boost 1.57.0"
+    "boost 1.58.0"
     "qt5 5.4.1"
     "qscintilla 2.8.4"
     # NB! For eigen, also update the path in the function
@@ -60,8 +62,9 @@ DEPLOY_PACKAGES=(
 
 printUsage()
 {
-  echo "Usage: $0 [-6lcd] [<package>]"
+  echo "Usage: $0 [-36lcdf] [<package>]"
   echo
+  echo "  -3   Build using C++03 and libstdc++"
   echo "  -6   Build only 64-bit binaries"
   echo "  -l   Force use of LLVM compiler"
   echo "  -c   Force use of clang compiler"
@@ -222,9 +225,9 @@ build_qt5()
   fi
   tar xzf qt-everywhere-opensource-src-$version.tar.gz
   cd qt-everywhere-opensource-src-$version
-  ./configure -prefix $DEPLOYDIR -release -opensource -confirm-license \
+  CXXFLAGS="$CXXSTDFLAGS" ./configure -prefix $DEPLOYDIR -release -opensource -confirm-license \
 		-nomake examples -nomake tests \
-		-no-xcb -no-c++11 -no-glib -no-harfbuzz -no-sql-db2 -no-sql-ibase -no-sql-mysql -no-sql-oci -no-sql-odbc \
+		-no-xcb -no-glib -no-harfbuzz -no-sql-db2 -no-sql-ibase -no-sql-mysql -no-sql-oci -no-sql-odbc \
 		-no-sql-psql -no-sql-sqlite2 -no-sql-tds -no-cups -no-qml-debug \
 		-skip activeqt -skip connectivity -skip declarative -skip doc \
 		-skip enginio -skip graphicaleffects -skip location -skip multimedia \
@@ -249,7 +252,7 @@ build_qscintilla()
   fi
   tar xzf QScintilla-gpl-$version.tar.gz
   cd QScintilla-gpl-$version/Qt4Qt5
-  qmake qscintilla.pro
+  qmake QMAKE_CXXFLAGS+="$CXXSTDFLAGS" QMAKE_LFLAGS+="$CXXSTDFLAGS" qscintilla.pro
   make -j6 install
   install_name_tool -id $DEPLOYDIR/lib/libqscintilla2.dylib $DEPLOYDIR/lib/libqscintilla2.dylib
 }
@@ -270,7 +273,7 @@ build_gmp()
   cd $BASEDIR/src
   rm -rf gmp-$version
   if [ ! -f gmp-$version.tar.bz2 ]; then
-    curl -O ftp://ftp.gmplib.org/pub/gmp-$version/gmp-$version.tar.bz2
+    curl -O https://gmplib.org/download/gmp/gmp-$version.tar.bz2
   fi
   tar xjf gmp-$version.tar.bz2
   cd gmp-$version
@@ -322,7 +325,7 @@ EOF
   if $OPTION_32BIT; then
     mkdir build-i386
     cd build-i386
-    ../configure --prefix=$DEPLOYDIR/i386 "CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch i386" LDFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch i386" ABI=32 --enable-cxx
+    ../configure --prefix=$DEPLOYDIR/i386 CXXFLAGS="$CXXSTDFLAGS" CFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch i386" LDFLAGS="$LDSTDFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch i386" ABI=32 --enable-cxx
     make install
     cd ..
   fi
@@ -330,7 +333,7 @@ EOF
   # 64-bit version
   mkdir build-x86_64
   cd build-x86_64
-  ../configure --prefix=$DEPLOYDIR/x86_64 "CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64" LDFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64" ABI=64 --enable-cxx
+  ../configure --prefix=$DEPLOYDIR/x86_64 CXXFLAGS="$CXXSTDFLAGS" CFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64" LDFLAGS="$LDSTDFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64" ABI=64 --enable-cxx
   make install
 
   # merge
@@ -435,7 +438,7 @@ build_boost()
     BOOST_TOOLSET="toolset=clang"
     echo "using clang ;" >> tools/build/user-config.jam 
   fi
-  ./b2 -j"$NUMCPU" -d+2 $BOOST_TOOLSET cflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64 $BOOST_EXTRA_FLAGS" linkflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64 $BOOST_EXTRA_FLAGS -headerpad_max_install_names" install
+  ./b2 -j"$NUMCPU" -d+2 $BOOST_TOOLSET cflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64 $BOOST_EXTRA_FLAGS $CXXSTDFLAGS" linkflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64 $BOOST_EXTRA_FLAGS $LDSTDFLAGS -headerpad_max_install_names" install
   install_name_tool -id $DEPLOYDIR/lib/libboost_thread.dylib $DEPLOYDIR/lib/libboost_thread.dylib 
   install_name_tool -change libboost_system.dylib $DEPLOYDIR/lib/libboost_system.dylib $DEPLOYDIR/lib/libboost_thread.dylib 
   install_name_tool -change libboost_chrono.dylib $DEPLOYDIR/lib/libboost_chrono.dylib $DEPLOYDIR/lib/libboost_thread.dylib 
@@ -481,7 +484,7 @@ build_cgal()
   if $OPTION_32BIT; then
     CGAL_EXTRA_FLAGS=";i386"
   fi
-  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.dylib -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.dylib -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.dylib -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DBUILD_SHARED_LIBS=TRUE -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="x86_64$CGAL_EXTRA_FLAGS" -DBOOST_ROOT=$DEPLOYDIR -DBoost_USE_MULTITHREADED=false
+  CXXFLAGS="$CXXSTDFLAGS" cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.dylib -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.dylib -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.dylib -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DBUILD_SHARED_LIBS=TRUE -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="x86_64$CGAL_EXTRA_FLAGS" -DBOOST_ROOT=$DEPLOYDIR -DBoost_USE_MULTITHREADED=false
   make -j"$NUMCPU" install
   make install
   install_name_tool -id $DEPLOYDIR/lib/libCGAL.dylib $DEPLOYDIR/lib/libCGAL.dylib
@@ -534,7 +537,7 @@ build_opencsg()
   if $OPTION_32BIT; then
     OPENCSG_EXTRA_FLAGS="x86"
   fi
-  qmake -r QMAKE_CXXFLAGS+="-I$DEPLOYDIR/include" QMAKE_LFLAGS+="-L$DEPLOYDIR/lib" CONFIG+="x86_64 $OPENCSG_EXTRA_FLAGS" DESTDIR=$DEPLOYDIR
+  qmake -r QMAKE_CXXFLAGS+="-I$DEPLOYDIR/include $CXXSTDFLAGS" QMAKE_LFLAGS+="-L$DEPLOYDIR/lib $LDSTDFLAGS" CONFIG+="x86_64 $OPENCSG_EXTRA_FLAGS" DESTDIR=$DEPLOYDIR
   make install
 }
 
@@ -588,7 +591,7 @@ build_eigen()
   if $OPTION_32BIT; then
     EIGEN_EXTRA_FLAGS=";i386"
   fi
-  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DEIGEN_TEST_NOQT=TRUE -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="x86_64$EIGEN_EXTRA_FLAGS" ..
+  CXXFLAGS="$CXXSTDFLAGS" cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DEIGEN_TEST_NOQT=TRUE -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="x86_64$EIGEN_EXTRA_FLAGS" ..
   make -j"$NUMCPU" install
 }
 
@@ -777,6 +780,7 @@ check_ragel()
     check_file bin/ragel
 }
 
+set -x
 build_ragel()
 {
   version=$1
@@ -816,7 +820,7 @@ build_harfbuzz()
   # disable doc directories as they make problems on Mac OS Build
   sed -e "s/SUBDIRS = src util test docs/SUBDIRS = src util test/g" Makefile.am > Makefile.am.bak && mv Makefile.am.bak Makefile.am
   sed -e "s/^docs.*$//" configure.ac > configure.ac.bak && mv configure.ac.bak configure.ac
-  PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" ./autogen.sh --prefix="$DEPLOYDIR" --with-freetype=yes --with-gobject=no --with-cairo=no --with-icu=no CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN CXXFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN $extra_config_flags
+  PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" ./autogen.sh --prefix="$DEPLOYDIR" --with-freetype=yes --with-gobject=no --with-cairo=no --with-icu=no CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN CXXFLAGS="$CXXFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="$CXXFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN" $extra_config_flags
   make -j$NUMCPU
   make install
 }
@@ -849,9 +853,10 @@ if [ ! -f $OPENSCADDIR/openscad.pro ]; then
 fi
 OPENSCAD_SCRIPTDIR=$PWD/scripts
 
-while getopts '6lcdf' c
+while getopts '36lcdf' c
 do
   case $c in
+    3) USING_CXX11=false;;
     6) OPTION_32BIT=false;;
     l) OPTION_LLVM=true;;
     c) OPTION_CLANG=true;;
@@ -908,6 +913,11 @@ elif $USING_CLANG; then
   export CXX=clang++
 fi
 
+if $USING_CXX11; then
+  export CXXSTDFLAGS="-std=c++11 -stdlib=libc++"
+  export LDSTDFLAGS="-stdlib=libc++"
+fi
+
 echo "Building for $MAC_OSX_VERSION_MIN or later"
 
 if [ ! $NUMCPU ]; then
@@ -940,6 +950,7 @@ fi
 
 # Build specified (or all) packages
 ALL_PACKAGES=$(all_packages)
+echo $ALL_PACKAGES
 if [ -z "$OPTION_PACKAGES" ]; then
   OPTION_PACKAGES=$ALL_PACKAGES
 fi

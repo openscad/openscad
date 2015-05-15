@@ -158,7 +158,7 @@ void GLView::paintGL()
   glDisable(GL_LIGHTING);
 
   Color4f bgcol = ColorMap::getColor(*this->colorscheme, BACKGROUND_COLOR);
-  Color4f bgcontrast = ColorMap::getContrastColor(bgcol);
+  Color4f axescolor = ColorMap::getColor(*this->colorscheme, AXES_COLOR);
   glClearColor(bgcol[0], bgcol[1], bgcol[2], 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
@@ -169,9 +169,9 @@ void GLView::paintGL()
     if (showcrosshairs) GLView::showCrosshairs();
     glTranslated(cam.object_trans.x(), cam.object_trans.y(), cam.object_trans.z());
     // ...the axis lines need to follow the object translation.
-    if (showaxes) GLView::showAxes(bgcontrast);
+    if (showaxes) GLView::showAxes(axescolor);
     // mark the scale along the axis lines
-    if (showaxes && showscale) GLView::showScalemarkers(bgcontrast);
+    if (showaxes && showscale) GLView::showScalemarkers(axescolor);
   }
 
   glEnable(GL_LIGHTING);
@@ -191,7 +191,7 @@ void GLView::paintGL()
 
   // Only for GIMBAL
   glDisable(GL_LIGHTING);
-  if (showaxes) GLView::showSmallaxes(bgcontrast);
+  if (showaxes) GLView::showSmallaxes(axescolor);
 }
 
 #ifdef ENABLE_OPENCSG
@@ -216,7 +216,7 @@ void GLView::enable_opencsg_shaders()
     else if (GLEW_EXT_framebuffer_object && GLEW_EXT_packed_depth_stencil) {
       this->is_opencsg_capable = true;
     }
-#ifdef WIN32
+#ifdef _WIN32
     else if (WGLEW_ARB_pbuffer && WGLEW_ARB_pixel_format) this->is_opencsg_capable = true;
 #elif !defined(__APPLE__)
     else if (GLXEW_SGIX_pbuffer && GLXEW_SGIX_fbconfig) this->is_opencsg_capable = true;

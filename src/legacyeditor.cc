@@ -179,7 +179,7 @@ void LegacyEditor::insert(const QString &text)
 	this->textedit->insertPlainText(text);
 }
 
-void LegacyEditor::replaceAll(const QString &text)
+void LegacyEditor::setText(const QString &text)
 {
 	this->textedit->selectAll();
 	this->textedit->insertPlainText(text);
@@ -220,6 +220,18 @@ void LegacyEditor::replaceSelectedText(const QString &newText)
 	QTextCursor cursor = this->textedit->textCursor();
 	if (cursor.selectedText() != newText) {
 		cursor.insertText(newText);
+	}
+}
+
+void LegacyEditor::replaceAll(const QString &findText, const QString &replaceText)
+{
+	QTextCursor cursor(this->textedit->textCursor());
+	cursor.setPosition(0);
+	this->textedit->setTextCursor(cursor);
+	this->textedit->find(findText);
+	while (this->textedit->textCursor().hasSelection()){
+		this->textedit->textCursor().insertText(replaceText);
+		this->textedit->find(findText);
 	}
 }
 

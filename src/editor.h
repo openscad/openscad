@@ -20,7 +20,8 @@ public:
 	virtual QTextDocument *document(){QTextDocument *t = new QTextDocument; return t;}
 	virtual QString selectedText() = 0;
 	virtual bool find(const QString &, bool findNext = false, bool findBackwards = false) = 0;
-	virtual void replaceSelectedText(const QString &) = 0;
+	virtual void replaceSelectedText(const QString &newText) = 0;
+	virtual void replaceAll(const QString &findText, const QString &replaceText) = 0;
 	virtual QStringList colorSchemes() = 0;
 
 signals:
@@ -41,7 +42,7 @@ public slots:
 	virtual void unhighlightLastError() = 0;
 	virtual void setHighlightScheme(const QString&) = 0;
 	virtual void insert(const QString&) = 0;
-        virtual void replaceAll(const QString&) = 0;
+	virtual void setText(const QString&) = 0;
 	virtual void undo() = 0;
 	virtual void redo() = 0;
 	virtual void cut() = 0;

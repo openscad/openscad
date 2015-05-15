@@ -52,6 +52,7 @@ public:
 	QString selectedText();
 	bool find(const QString &, bool findNext = false, bool findBackwards = false);
 	void replaceSelectedText(const QString&);
+	void replaceAll(const QString &findText, const QString &replaceText);
 	QStringList colorSchemes();
         
 private:
@@ -77,7 +78,7 @@ public slots:
 	void commentSelection();
 	void uncommentSelection();
 	void insert(const QString&);
-        void replaceAll(const QString&);
+	void setText(const QString&);
 	void undo();
 	void redo();
 	void cut();
