@@ -186,7 +186,6 @@ CONFIG += harfbuzz
 CONFIG += freetype
 CONFIG += fontconfig
 CONFIG += gettext
-CONFIG += potrace
 
 #Uncomment the following line to enable the QScintilla editor
 CONFIG += scintilla
@@ -194,6 +193,7 @@ CONFIG += scintilla
 # Make experimental features available
 experimental {
   DEFINES += ENABLE_EXPERIMENTAL
+  CONFIG += potrace
 }
 
 mdi {
