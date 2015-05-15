@@ -151,6 +151,9 @@ Geometry *TraceNode::traceBitmap(std::vector<unsigned char> &img, unsigned int w
 	}
 
 	potrace_param_t * param = potrace_param_default();
+	// Some temporary, but decent defaults
+	param->alphamax = 0; // Turn off smoothing
+	param->turdsize = 5; // Kill small details
 	potrace_state_t * trace_state = potrace_trace(param, &bitmap);
 	potrace_param_free(param);
 	delete[] bitmap.map;
