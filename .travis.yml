@@ -31,7 +31,7 @@ before_script:
  - base64 --decode --ignore-garbage ~/.ssh/openscad_rsa_base64 > ~/.ssh/id_rsa
  - chmod 600 ~/.ssh/id_rsa
 
-script: if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then ./scripts/travis-ci.sh ; fi
+script: if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then qmake && make ; fi
 
 env:
  global:
