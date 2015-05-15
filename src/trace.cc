@@ -74,8 +74,7 @@ AbstractNode *TraceModule::instantiate(const Context *ctx, const ModuleInstantia
 	node->fa = c.lookup_variable("$fa")->toDouble();
 
 	ValuePtr fileval = c.lookup_variable("file");
-	node->file = fileval->toString();
-	node->fullpath = lookup_file(fileval->isUndefined() ? "" : fileval->toString(), inst->path(), c.documentPath());
+	node->filename = lookup_file(fileval->isUndefined() ? "" : fileval->toString(), inst->path(), c.documentPath());
 
 	ValuePtr threshold = c.lookup_variable("threshold", false);
 	node->threshold = threshold->type() == Value::NUMBER ? threshold->toDouble() : 0.5;
@@ -86,13 +85,13 @@ AbstractNode *TraceModule::instantiate(const Context *ctx, const ModuleInstantia
 Geometry *TraceNode::createGeometry() const
 {
 	std::vector<unsigned char> png;
-	lodepng::load_file(png, fullpath);
+	lodepng::load_file(png, this->filename);
 
 	unsigned int width, height;
 	std::vector<unsigned char> img;
 	unsigned error = lodepng::decode(img, width, height, png);
 	if (error) {
-		PRINTB("ERROR: Can't read PNG image '%s'", fullpath);
+		PRINTB("ERROR: Can't read PNG image '%s'", this->filename);
 		return new Polygon2d();
 	}
 
@@ -102,13 +101,15 @@ Geometry *TraceNode::createGeometry() const
 std::string TraceNode::toString() const
 {
 	std::stringstream stream;
+	fs::path path((std::string)this->filename);
 
 	stream  << this->name() << "("
-	        << "file = \"" << this->file
-	        << "\", threshold = " << this->threshold
+	        << "file = " << this->filename
+	        << ", threshold = " << this->threshold
 	        << ", $fn = " << this->fn
-		<< ", $fa = " << this->fa
-		<< ", $fs = " << this->fs << ")";
+					<< ", $fa = " << this->fa
+					<< ", $fs = " << this->fs
+					<< ")";
 
 	return stream.str();
 }
@@ -199,7 +200,7 @@ Geometry *TraceNode::traceBitmap(std::vector<unsigned char> &img, unsigned int w
 
 Geometry *TraceNode::createDummyGeometry(std::vector<unsigned char> &, unsigned int width, unsigned int height) const
 {
-	PRINTB("WARNING: Creating dummy geometry for file '%s' because trace() is not enabled.", fullpath);
+	PRINTB("WARNING: Creating dummy geometry for file '%s' because trace() is not enabled.", this->filename);
 	Polygon2d *p = new Polygon2d();
 	Outline2d outline;
 	outline.vertices.push_back(Vector2d(0, 0));
