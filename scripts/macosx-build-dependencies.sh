@@ -52,7 +52,7 @@ PACKAGES=(
     "harfbuzz 0.9.37"
     "libxml2 2.9.2"
     "fontconfig 2.11.1"
-    "potrace 1.11"
+    "potrace 1.12"
 )
 DEPLOY_PACKAGES=(
     "sparkle Cocoanetics:1e7dcb1a48b96d1a8c62100b5864bd50211cbae1"
@@ -834,7 +834,7 @@ build_potrace()
   cd "$BASEDIR"/src
   rm -rf "potrace-$version"
   if [ ! -f "potrace-$version.tar.gz" ]; then
-    curl --insecure -LO "http://potrace.sourceforge.net/download/potrace-$version.tar.gz"
+    curl --insecure -LO "http://potrace.sourceforge.net/download/$version/potrace-$version.tar.gz"
   fi
   tar xzf "potrace-$version.tar.gz"
   cd "potrace-$version"
