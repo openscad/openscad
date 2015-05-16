@@ -325,6 +325,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->editActionCut, SIGNAL(triggered()), editor, SLOT(cut()));
 	connect(this->editActionCopy, SIGNAL(triggered()), editor, SLOT(copy()));
 	connect(this->editActionPaste, SIGNAL(triggered()), editor, SLOT(paste()));
+	connect(this->editActionCopyViewport, SIGNAL(triggered()), this, SLOT(actionCopyViewport()));
 	connect(this->editActionIndent, SIGNAL(triggered()), editor, SLOT(indentSelection()));
 	connect(this->editActionUnindent, SIGNAL(triggered()), editor, SLOT(unindentSelection()));
 	connect(this->editActionComment, SIGNAL(triggered()), editor, SLOT(commentSelection()));
@@ -362,7 +363,6 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->fileActionExportSVG, SIGNAL(triggered()), this, SLOT(actionExportSVG()));
 	connect(this->fileActionExportCSG, SIGNAL(triggered()), this, SLOT(actionExportCSG()));
 	connect(this->fileActionExportImage, SIGNAL(triggered()), this, SLOT(actionExportImage()));
-	connect(this->fileActionExportClipboard, SIGNAL(triggered()), this, SLOT(actionExportToClipboard()));
 	connect(this->designActionFlushCaches, SIGNAL(triggered()), this, SLOT(actionFlushCaches()));
 
 	// View menu
@@ -2185,7 +2185,7 @@ void MainWindow::actionExportImage()
 	return;
 }
 
-void MainWindow::actionExportToClipboard()
+void MainWindow::actionCopyViewport()
 {
 	const QImage & image = qglview->grabFrame();
 	QClipboard *clipboard = QApplication::clipboard();

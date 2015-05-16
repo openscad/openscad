@@ -274,7 +274,6 @@
      <addaction name="fileActionExportCSG"/>
      <addaction name="separator"/>
      <addaction name="fileActionExportImage"/>
-     <addaction name="fileActionExportClipboard"/>
     </widget>
     <addaction name="fileActionNew"/>
     <addaction name="fileActionOpen"/>
@@ -302,6 +301,8 @@
     <addaction name="editActionCut"/>
     <addaction name="editActionCopy"/>
     <addaction name="editActionPaste"/>
+    <addaction name="separator"/>
+    <addaction name="editActionCopyViewport"/>
     <addaction name="separator"/>
     <addaction name="editActionIndent"/>
     <addaction name="editActionUnindent"/>
@@ -1262,9 +1263,12 @@
     <string>&amp;Cheat Sheet</string>
    </property>
   </action>
-  <action name="fileActionExportClipboard">
+  <action name="editActionCopyViewport">
    <property name="text">
-    <string>Export to Clipboard</string>
+    <string>Copy Viewport</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+C</string>
    </property>
   </action>
  </widget>
