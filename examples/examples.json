@@ -8,7 +8,8 @@
     "linear_extrude.scad",
     "rotate_extrude.scad",
     "text_on_cube.scad",
-    "projection.scad"
+    "projection.scad",
+    "hull.scad"
   ],
   "Functions": [
     "functions.scad",
