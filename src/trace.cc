@@ -125,6 +125,13 @@ void register_builtin_trace()
 
 #ifdef HAVE_POTRACE
 
+static double col(int component, double factor)
+{
+	double gamma = 1;
+	double val = component / 256.0;
+	return factor * std::pow(val, gamma);
+}
+
 Geometry *TraceNode::traceBitmap(std::vector<unsigned char> &img, unsigned int width, unsigned int height) const
 {
 	int N = 8 * sizeof(potrace_word);
@@ -141,8 +148,11 @@ Geometry *TraceNode::traceBitmap(std::vector<unsigned char> &img, unsigned int w
 		for (unsigned int x = 0;x < width;x++) {
 			int idx = 4 * width * y + 4 * x;
 			// sRGB luminance, see http://en.wikipedia.org/wiki/Grayscale
-			double z = (0.2126 * img[idx] + 0.7152 * img[idx + 1] + 0.0722 * img[idx + 2]) / 256.0;
-			if (z < threshold) {
+			// 0.2989 * R + 0.5870 * G + 0.1140 * B
+			double Y = 1 - col(img[idx], 0.2126) - col(img[idx + 1], 0.7152) - col(img[idx + 2], 0.0722);
+			// apply transparency value
+			double Ya = Y * (img[idx + 3] / 256.0);
+			if (Ya > threshold) {
 				potrace_word w = 1;
 				w <<= N - 1 - (x % N);
 				bitmap.map[y * bitmap.dy + x / N] |= w;
@@ -151,9 +161,9 @@ Geometry *TraceNode::traceBitmap(std::vector<unsigned char> &img, unsigned int w
 	}
 
 	potrace_param_t * param = potrace_param_default();
-	// Some temporary, but decent defaults
-	param->alphamax = 0; // Turn off smoothing
-	param->turdsize = 5; // Kill small details
+	// Kill small details
+	param->turdsize = std::max(2u, std::min(width, height) / 50);
+
 	potrace_state_t * trace_state = potrace_trace(param, &bitmap);
 	potrace_param_free(param);
 	delete[] bitmap.map;
@@ -174,7 +184,7 @@ Geometry *TraceNode::traceBitmap(std::vector<unsigned char> &img, unsigned int w
 	}
 
 	int n = Calc::get_fragments_from_r(10, fn, fs, fa); // FIXME: determine size value
-	DrawingCallback callback(n);
+	DrawingCallback callback(this->filename, n);
 
 	callback.start_glyph();
 	for (potrace_path_t *path = trace_state->plist;path != NULL;path = path->next) {

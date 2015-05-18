@@ -1,0 +1,3 @@
+group() {
+	trace(file = "../../../image/OpenClipArt-Black_Cat_by_Jsajana.png", threshold = 0.5, $fn = 0, $fa = 12, $fs = 2);
+}

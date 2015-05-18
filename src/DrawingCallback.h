@@ -32,7 +32,7 @@
 
 class DrawingCallback {
 public:
-    DrawingCallback(unsigned long fn);
+    DrawingCallback(const std::string &context, unsigned long fn);
     virtual ~DrawingCallback();
     
     void start_glyph();
@@ -46,6 +46,7 @@ public:
     void curve_to(Vector2d c1, Vector2d to);
     void curve_to(Vector2d c1, Vector2d c2, Vector2d to);
 private:
+    std::string context;
     unsigned long fn;
     Vector2d pen;
     Vector2d offset;

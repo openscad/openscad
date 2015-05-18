@@ -1,0 +1,1 @@
+trace("../../../image/OpenClipArt-Black_Cat_by_Jsajana.png");

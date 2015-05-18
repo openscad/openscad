@@ -197,7 +197,7 @@ std::vector<Geometry *> FreetypeRenderer::render(const FreetypeRenderer::Params 
 {
 	FT_Face face;
 	FT_Error error;
-	DrawingCallback callback(params.segments);
+	DrawingCallback callback(params.text, params.segments);
 	
 	FontCache *cache = FontCache::instance();
 	if (!cache->is_init_ok()) {
