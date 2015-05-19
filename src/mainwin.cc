@@ -325,6 +325,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->editActionCut, SIGNAL(triggered()), editor, SLOT(cut()));
 	connect(this->editActionCopy, SIGNAL(triggered()), editor, SLOT(copy()));
 	connect(this->editActionPaste, SIGNAL(triggered()), editor, SLOT(paste()));
+	connect(this->editActionCopyViewport, SIGNAL(triggered()), this, SLOT(actionCopyViewport()));
 	connect(this->editActionIndent, SIGNAL(triggered()), editor, SLOT(indentSelection()));
 	connect(this->editActionUnindent, SIGNAL(triggered()), editor, SLOT(unindentSelection()));
 	connect(this->editActionComment, SIGNAL(triggered()), editor, SLOT(commentSelection()));
@@ -2182,6 +2183,13 @@ void MainWindow::actionExportImage()
 	}
 	clearCurrentOutput();
 	return;
+}
+
+void MainWindow::actionCopyViewport()
+{
+	const QImage & image = qglview->grabFrame();
+	QClipboard *clipboard = QApplication::clipboard();
+	clipboard->setImage(image);
 }
 
 void MainWindow::actionFlushCaches()
