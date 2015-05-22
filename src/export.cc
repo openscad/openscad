@@ -219,7 +219,7 @@ static bool rayCastPolySet(
 
         printf(
 
-            "%d %d %.20f %.20f %.20f %.20f %.20f %.20f %.20f\n",
+            "RAY:[%d, %d, %.20f, %.20f, %.20f, %.20f, %.20f, %.20f, %.20f]\n",
 
             count++,
             int(p.tId),
