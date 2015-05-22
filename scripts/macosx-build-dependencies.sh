@@ -7,7 +7,7 @@
 # This script must be run from the OpenSCAD source root directory
 #
 # Usage: macosx-build-dependencies.sh [-16lcdf] [<package>]
-#  -1   Build using C++11
+#  -3   Build using C++03 and libstdc++
 #  -6   Build only 64-bit binaries
 #  -l   Force use of LLVM compiler
 #  -c   Force use of clang compiler
@@ -38,7 +38,7 @@ PACKAGES=(
     "eigen 3.2.4"
     "gmp 5.1.3"
     "mpfr 3.1.2"
-    "boost 1.57.0"
+    "boost 1.58.0"
     "qt5 5.4.1"
     "qscintilla 2.8.4"
     # NB! For eigen, also update the path in the function
@@ -61,9 +61,9 @@ DEPLOY_PACKAGES=(
 
 printUsage()
 {
-  echo "Usage: $0 [-16lcdf] [<package>]"
+  echo "Usage: $0 [-36lcdf] [<package>]"
   echo
-  echo "  -1   Build using C++11"
+  echo "  -3   Build using C++03 and libstdc++"
   echo "  -6   Build only 64-bit binaries"
   echo "  -l   Force use of LLVM compiler"
   echo "  -c   Force use of clang compiler"
@@ -272,7 +272,7 @@ build_gmp()
   cd $BASEDIR/src
   rm -rf gmp-$version
   if [ ! -f gmp-$version.tar.bz2 ]; then
-    curl -O ftp://ftp.gmplib.org/pub/gmp-$version/gmp-$version.tar.bz2
+    curl -O https://gmplib.org/download/gmp/gmp-$version.tar.bz2
   fi
   tar xjf gmp-$version.tar.bz2
   cd gmp-$version
@@ -830,10 +830,10 @@ if [ ! -f $OPENSCADDIR/openscad.pro ]; then
 fi
 OPENSCAD_SCRIPTDIR=$PWD/scripts
 
-while getopts '16lcdf' c
+while getopts '36lcdf' c
 do
   case $c in
-    1) OPTION_CXX11=true;;
+    3) USING_CXX11=false;;
     6) OPTION_32BIT=false;;
     l) OPTION_LLVM=true;;
     c) OPTION_CLANG=true;;

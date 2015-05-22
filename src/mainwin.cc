@@ -327,6 +327,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->editActionCut, SIGNAL(triggered()), editor, SLOT(cut()));
 	connect(this->editActionCopy, SIGNAL(triggered()), editor, SLOT(copy()));
 	connect(this->editActionPaste, SIGNAL(triggered()), editor, SLOT(paste()));
+	connect(this->editActionCopyViewport, SIGNAL(triggered()), this, SLOT(actionCopyViewport()));
 	connect(this->editActionIndent, SIGNAL(triggered()), editor, SLOT(indentSelection()));
 	connect(this->editActionUnindent, SIGNAL(triggered()), editor, SLOT(unindentSelection()));
 	connect(this->editActionComment, SIGNAL(triggered()), editor, SLOT(commentSelection()));
@@ -1623,7 +1624,6 @@ void MainWindow::updateCamera()
 		params.push_back(d);
 		qglview->cam.setup(params);
 		qglview->cam.gimbalDefaultTranslate();
-		qglview->updateGL();
 	}
 }
 
@@ -2183,6 +2183,8 @@ void MainWindow::actionExportImage()
 {
 	setCurrentOutput();
 
+  // Grab first to make sure dialog box isn't part of the grabbed image
+	qglview->grabFrame();
 	QString img_filename = QFileDialog::getSaveFileName(this,
 			_("Export Image"), "", _("PNG Files (*.png)"));
 	if (img_filename.isEmpty()) {
@@ -2192,6 +2194,13 @@ void MainWindow::actionExportImage()
 	}
 	clearCurrentOutput();
 	return;
+}
+
+void MainWindow::actionCopyViewport()
+{
+	const QImage & image = qglview->grabFrame();
+	QClipboard *clipboard = QApplication::clipboard();
+	clipboard->setImage(image);
 }
 
 void MainWindow::actionFlushCaches()
