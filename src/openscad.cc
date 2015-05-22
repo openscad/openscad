@@ -137,6 +137,7 @@ static void help(const char *progname, bool failure = false)
          "%2%[ -m make_command ] [ -D var=val [..] ] \\\n"
 	 "%2%[ --help ] print this help message and exit \\\n"
          "%2%[ --version ] [ --info ] \\\n"
+         "%2%[ --raycast=x,y,z,vx,vy,vz | \\\n"
          "%2%[ --camera=translatex,y,z,rotx,y,z,dist | \\\n"
          "%2%  --camera=eyex,y,z,centerx,y,z ] \\\n"
          "%2%[ --autocenter ] \\\n"
@@ -199,6 +200,51 @@ void localization_init() {
 	} else {
 		PRINT("Could not initialize localization.");
 	}
+}
+
+struct Ray {
+    double o[3];
+    double v[3];
+};
+
+bool getRay(
+    Ray &ray,
+    po::variables_map &vm
+) {
+
+    bool ok = false;
+    if(vm.count("raycast")) {
+
+        vector<string> strings;
+        vector<double> rayParameters;
+        split(strings, vm["raycast"].as<string>(), is_any_of(","));
+
+        if(6==strings.size()) {
+            try {
+
+                BOOST_FOREACH(string &str, strings) {
+                    rayParameters.push_back(lexical_cast<double>(str));
+                }
+
+                ray.o[0] = rayParameters[0];
+                ray.o[1] = rayParameters[1];
+                ray.o[2] = rayParameters[2];
+                ray.v[0] = rayParameters[3];
+                ray.v[1] = rayParameters[4];
+                ray.v[2] = rayParameters[5];
+                ok = true;
+
+            } catch (bad_lexical_cast &) {
+                PRINT("Ray casting requires numbers as parameters");
+                exit(1);
+            }
+        } else {
+            PRINT("Ray casting requires 6 numbers as parameters");
+            exit(1);
+        }
+    }
+
+    return ok;
 }
 
 Camera get_camera(po::variables_map vm)
@@ -294,6 +340,25 @@ static bool checkAndExport(shared_ptr<const Geometry> root_geom, unsigned nd,
 	return true;
 }
 
+static bool rayCast(
+    const Ray *ray,
+    shared_ptr<const Geometry> rootGeom
+) {
+    if(3!=rootGeom->getDimension()) {
+        PRINTB("Current top level object is not a %D object.", 3);
+        return false;
+    }
+    if(rootGeom->isEmpty()) {
+        PRINT("Current top level object is empty.");
+        return false;
+    }
+    return rayCastGeometry(
+        ray->o,
+        ray->v,
+        rootGeom.get()
+    );
+}
+
 void set_render_color_scheme(const std::string color_scheme, const bool exit_if_not_found)
 {
 	if (color_scheme.empty()) {
@@ -316,7 +381,7 @@ void set_render_color_scheme(const std::string color_scheme, const bool exit_if_
 	}
 }
 
-int cmdline(const char *deps_output_file, const std::string &filename, Camera &camera, const char *output_file, const fs::path &original_path, Render::type renderer, int argc, char ** argv )
+int cmdline(const char *deps_output_file, const std::string &filename, Camera &camera, const char *output_file, const fs::path &original_path, Render::type renderer, int argc, char ** argv, const Ray *ray)
 {
 #ifdef OPENSCAD_QTGUI
 	QCoreApplication app(argc, argv);
@@ -347,23 +412,26 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	const char *term_output_file = NULL;
 	const char *echo_output_file = NULL;
 
-	std::string suffix = boosty::extension_str( output_file );
-	boost::algorithm::to_lower( suffix );
+        if(0==ray) {
 
-	if (suffix == ".stl") stl_output_file = output_file;
-	else if (suffix == ".off") off_output_file = output_file;
-	else if (suffix == ".amf") amf_output_file = output_file;
-	else if (suffix == ".dxf") dxf_output_file = output_file;
-	else if (suffix == ".svg") svg_output_file = output_file;
-	else if (suffix == ".csg") csg_output_file = output_file;
-	else if (suffix == ".png") png_output_file = output_file;
-	else if (suffix == ".ast") ast_output_file = output_file;
-	else if (suffix == ".term") term_output_file = output_file;
-	else if (suffix == ".echo") echo_output_file = output_file;
-	else {
-		PRINTB("Unknown suffix for output file %s\n", output_file);
-		return 1;
-	}
+            std::string suffix = boosty::extension_str( output_file );
+            boost::algorithm::to_lower( suffix );
+
+            if (suffix == ".stl") stl_output_file = output_file;
+            else if (suffix == ".off") off_output_file = output_file;
+            else if (suffix == ".amf") amf_output_file = output_file;
+            else if (suffix == ".dxf") dxf_output_file = output_file;
+            else if (suffix == ".svg") svg_output_file = output_file;
+            else if (suffix == ".csg") csg_output_file = output_file;
+            else if (suffix == ".png") png_output_file = output_file;
+            else if (suffix == ".ast") ast_output_file = output_file;
+            else if (suffix == ".term") term_output_file = output_file;
+            else if (suffix == ".echo") echo_output_file = output_file;
+            else {
+                    PRINTB("Unknown suffix for output file %s\n", output_file);
+                    return 1;
+            }
+        }
 
 	set_render_color_scheme(arg_colorscheme, true);
 	
@@ -500,6 +568,12 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 				return 1;
 			}
 		}
+
+                if(0!=ray) {
+                    if(!rayCast(ray, root_geom)) {
+                        return 1;
+                    }
+                }
 
 		if (stl_output_file) {
 			if (!checkAndExport(root_geom, 3, OPENSCAD_STL, stl_output_file))
@@ -793,6 +867,7 @@ int main(int argc, char **argv)
 		("render", po::value<string>()->implicit_value(""), "if exporting a png image, do a full geometry evaluation")
 		("preview", po::value<string>()->implicit_value(""), "if exporting a png image, do an OpenCSG(default) or ThrownTogether preview")
 		("csglimit", po::value<unsigned int>(), "if exporting a png image, stop rendering at the given number of CSG elements")
+		("raycast", po::value<string>(), "ray origin and direction when casting a ray")
 		("camera", po::value<string>(), "parameters for camera when exporting png")
 		("autocenter", "adjust camera to look at object center")
 		("viewall", "adjust camera to fit object")
@@ -903,6 +978,12 @@ int main(int argc, char **argv)
 		arg_colorscheme = vm["colorscheme"].as<string>();
 	}
 
+        Ray ray;
+        bool rayCastMode = false;
+	if (vm.count("raycast")) {
+            rayCastMode = getRay(ray, vm);
+	}
+
 	currentdir = boosty::stringy(fs::current_path());
 
 	Camera camera = get_camera(vm);
@@ -917,9 +998,9 @@ int main(int argc, char **argv)
 		if (!inputFiles.size()) help(argv[0], true);
 	}
 
-	if (arg_info || cmdlinemode) {
+	if (arg_info || cmdlinemode || rayCastMode) {
 		if (inputFiles.size() > 1) help(argv[0], true);
-		rc = cmdline(deps_output_file, inputFiles[0], camera, output_file, original_path, renderer, argc, argv);
+		rc = cmdline(deps_output_file, inputFiles[0], camera, output_file, original_path, renderer, argc, argv, rayCastMode ? &ray : 0);
 	}
 	else if (QtUseGUI()) {
 		rc = gui(inputFiles, original_path, argc, argv);

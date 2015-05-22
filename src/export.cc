@@ -101,6 +101,177 @@ void exportFile(const class Geometry *root_geom, std::ostream &output, FileForma
 	}
 }
 
+struct Intersection {
+
+    uint64_t tId;
+    CGAL::Point_3<CGAL_Kernel3> point;
+    CGAL::Vector_3<CGAL_Kernel3> normal;
+
+    Intersection(
+        uint64_t                     _tId,
+        CGAL::Point_3<CGAL_Kernel3>  _point,
+        CGAL::Vector_3<CGAL_Kernel3> _normal
+    )   :   tId(_tId),
+            point(_point),
+            normal(_normal)
+    {
+    }
+};
+
+struct IntersectionSorter {
+
+    CGAL::Point_3<CGAL_Kernel3> rayOrigin; 
+
+    IntersectionSorter(
+        const CGAL::Point_3<CGAL_Kernel3> &_rayOrigin
+    )
+        :   rayOrigin(_rayOrigin)
+    {
+    }
+
+    bool operator()(
+        const Intersection &a,
+        const Intersection &b
+    ) const {
+        CGAL_Kernel3::FT da2 = CGAL::squared_distance(a.point, rayOrigin);
+        CGAL_Kernel3::FT db2 = CGAL::squared_distance(b.point, rayOrigin);
+        return (da2 < db2);
+    }
+};
+
+typedef std::set<
+    Intersection,
+    IntersectionSorter
+> IntersectionSet;
+
+static int rayTriangleIntersect(
+    uint64_t                             tId,
+    IntersectionSet                      &set,
+    const CGAL::Ray_3<CGAL_Kernel3>      &ray,
+    const CGAL::Vector_3<CGAL_Kernel3>   &normal,
+    const CGAL::Triangle_3<CGAL_Kernel3> &triangle
+) {
+    CGAL::Point_3<CGAL_Kernel3> point; 
+    CGAL::Segment_3<CGAL_Kernel3> segment; 
+    CGAL::Object result = intersection(ray, triangle);
+    if(CGAL::assign(point, result)) {
+        set.insert(Intersection(tId, point, normal));
+        return 0;
+    } else if(CGAL::assign(segment, result)) {
+        set.insert(Intersection(tId, segment.vertex(0), normal));
+        set.insert(Intersection(tId, segment.vertex(1), normal));
+        return 1;
+    } else {
+        return 2;
+    }
+}
+
+static bool rayCastPolySet(
+    const double  *o,
+    const double  *v,
+    const PolySet &polySet
+) {
+    CGAL::Vector_3<CGAL_Kernel3> direction(v[0], v[1], v[2]);
+    CGAL::Point_3<CGAL_Kernel3> origin(o[0], o[1], o[2]);
+    CGAL::Ray_3<CGAL_Kernel3> ray(origin, direction);
+
+    IntersectionSorter sorter(origin);
+    IntersectionSet set(sorter);
+
+    uint64_t tId = 0;
+    PolySet triangulated(3);
+    PolysetUtils::tessellate_faces(polySet, triangulated);
+    BOOST_FOREACH(const Polygon &p, triangulated.polygons) {
+
+        assert(3==p.size());
+        CGAL::Point_3<CGAL_Kernel3> p0(p[0][0], p[0][1], p[0][2]);
+        CGAL::Point_3<CGAL_Kernel3> p1(p[1][0], p[1][1], p[1][2]);
+        CGAL::Point_3<CGAL_Kernel3> p2(p[2][0], p[2][1], p[2][2]);
+
+        Vector3d eigenNormal = (p[1] - p[0]).cross(p[2] - p[0]);
+        eigenNormal.normalize();
+
+        CGAL::Vector_3<CGAL_Kernel3> normal(
+            eigenNormal.data()[0],
+            eigenNormal.data()[1],
+            eigenNormal.data()[2]
+        );
+
+        CGAL::Triangle_3<CGAL_Kernel3> triangle(p0, p1, p2);
+        rayTriangleIntersect(
+            tId++,
+            set,
+            ray,
+            normal,
+            triangle
+        );
+    }
+
+    int count = 0;
+    BOOST_FOREACH(const Intersection &p, set) {
+
+        double dist = CGAL::to_double(
+            CGAL::squared_distance(
+                origin,
+                p.point
+            )
+        );
+
+        printf(
+
+            "%d %d %.20f %.20f %.20f %.20f %.20f %.20f %.20f\n",
+
+            count++,
+            int(p.tId),
+            sqrt(dist),
+
+            CGAL::to_double(p.point.x()),
+            CGAL::to_double(p.point.y()),
+            CGAL::to_double(p.point.z()),
+
+            CGAL::to_double(p.normal.x()),
+            CGAL::to_double(p.normal.y()),
+            CGAL::to_double(p.normal.z())
+        );
+    }
+
+    return true;
+}
+
+static bool rayCastCGALNef(
+    const double              *o,
+    const double              *v,
+    const CGAL_Nef_polyhedron *nef
+) {
+    PolySet polySet(3);
+    bool err = CGALUtils::createPolySetFromNefPolyhedron3(*(nef->p3), polySet);
+    if(err) {
+        PRINT("ERROR: Nef->PolySet failed");
+        exit(1);
+    }
+    return rayCastPolySet(o, v, polySet);
+}
+
+bool rayCastGeometry(
+    const double         *o,
+    const double         *v,
+    const class Geometry *geometry
+) {
+
+    const CGAL_Nef_polyhedron *cgalNef = dynamic_cast<const CGAL_Nef_polyhedron*>(geometry);
+    if(cgalNef) {
+        return rayCastCGALNef(o, v, cgalNef);
+    }
+
+    const PolySet *polySet = dynamic_cast<const PolySet*>(geometry);
+    if(polySet) {
+        return rayCastPolySet(o, v, *polySet);
+    }
+
+    PRINT("geometry isn't in a format I can handle\n");
+    return false;
+}
+
 void exportFileByName(const class Geometry *root_geom, FileFormat format,
 	const char *name2open, const char *name2display)
 {
