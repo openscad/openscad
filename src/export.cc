@@ -166,6 +166,26 @@ static int rayTriangleIntersect(
     }
 }
 
+static inline void minUpdate(
+          CGAL::Point_3<CGAL_Kernel3> &minPoint,
+    const CGAL::Point_3<CGAL_Kernel3> &newPoint
+) {
+    CGAL_Kernel3::FT newX = std::min(minPoint.x(), newPoint.x());
+    CGAL_Kernel3::FT newY = std::min(minPoint.y(), newPoint.y());
+    CGAL_Kernel3::FT newZ = std::min(minPoint.z(), newPoint.z());
+    minPoint = CGAL::Point_3<CGAL_Kernel3>(newX, newY, newZ);
+}
+
+static inline void maxUpdate(
+          CGAL::Point_3<CGAL_Kernel3> &maxPoint,
+    const CGAL::Point_3<CGAL_Kernel3> &newPoint
+) {
+    CGAL_Kernel3::FT newX = std::max(maxPoint.x(), newPoint.x());
+    CGAL_Kernel3::FT newY = std::max(maxPoint.y(), newPoint.y());
+    CGAL_Kernel3::FT newZ = std::max(maxPoint.z(), newPoint.z());
+    maxPoint = CGAL::Point_3<CGAL_Kernel3>(newX, newY, newZ);
+}
+
 static bool rayCastPolySet(
     const double  *o,
     const double  *v,
@@ -174,6 +194,9 @@ static bool rayCastPolySet(
     CGAL::Vector_3<CGAL_Kernel3> direction(v[0], v[1], v[2]);
     CGAL::Point_3<CGAL_Kernel3> origin(o[0], o[1], o[2]);
     CGAL::Ray_3<CGAL_Kernel3> ray(origin, direction);
+    CGAL::Point_3<CGAL_Kernel3> minPoint;
+    CGAL::Point_3<CGAL_Kernel3> maxPoint;
+    bool boxInitialized = false;
 
     IntersectionSorter sorter(origin);
     IntersectionSet set(sorter);
@@ -187,6 +210,20 @@ static bool rayCastPolySet(
         CGAL::Point_3<CGAL_Kernel3> p0(p[0][0], p[0][1], p[0][2]);
         CGAL::Point_3<CGAL_Kernel3> p1(p[1][0], p[1][1], p[1][2]);
         CGAL::Point_3<CGAL_Kernel3> p2(p[2][0], p[2][1], p[2][2]);
+
+        if(false==boxInitialized) {
+            boxInitialized = true;
+            minPoint = p0;
+            maxPoint = p0;
+        }
+
+        minUpdate(minPoint, p0);
+        minUpdate(minPoint, p1);
+        minUpdate(minPoint, p2);
+
+        maxUpdate(maxPoint, p0);
+        maxUpdate(maxPoint, p1);
+        maxUpdate(maxPoint, p2);
 
         Vector3d eigenNormal = (p[1] - p[0]).cross(p[2] - p[0]);
         eigenNormal.normalize();
@@ -234,6 +271,19 @@ static bool rayCastPolySet(
             CGAL::to_double(p.normal.z())
         );
     }
+
+    printf(
+
+        "BOX:[%.20f, %.20f, %.20f, %.20f, %.20f, %.20f]\n",
+
+        CGAL::to_double(minPoint.x()),
+        CGAL::to_double(minPoint.y()),
+        CGAL::to_double(minPoint.z()),
+
+        CGAL::to_double(maxPoint.x()),
+        CGAL::to_double(maxPoint.y()),
+        CGAL::to_double(maxPoint.z())
+    );
 
     return true;
 }
