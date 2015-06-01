@@ -295,8 +295,8 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
                 qsci->setMarginsFont(font);
 
 		const boost::property_tree::ptree& colors = pt.get_child("colors");
-		/*l->setColor(readColor(colors, "keyword1", textColor), ScadLexer::Keyword);
-		l->setColor(readColor(colors, "keyword2", textColor), ScadLexer::KeywordSet2);
+		l->setColor(readColor(colors, "keyword1", textColor), ScadLexer::Keyword);
+		/*l->setColor(readColor(colors, "keyword2", textColor), ScadLexer::KeywordSet2);
 		l->setColor(readColor(colors, "keyword3", textColor), ScadLexer::Transformation);
 		l->setColor(readColor(colors, "number", textColor), ScadLexer::Boolean);
 		l->setColor(readColor(colors, "string", textColor), ScadLexer::Function);

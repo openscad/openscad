@@ -68,7 +68,7 @@ void ScadLexer::styleText(int start, int end)
 	std::string input(source.toStdString());
 	lexertl::smatch results (input.begin(), input.end());
 	lexertl::lookup(sm, results);	
-	int pos;
+	int pos, index = 0;
 	QString word;
 	std::string token;
 	while(results.id != 0)
@@ -80,11 +80,17 @@ void ScadLexer::styleText(int start, int end)
 //		std::cout << "ID: "<< results.id << "\tToken: "<< results.str() << std::endl;
 		lexertl::lookup(sm, results);
 	}
-		  word = QString::fromStdString(sword); 
-		  pos = source.indexOf(word, 0);
+		  word = QString::fromStdString(token);
+		int p = source.count(word);
+		while (p != 0){ 
+		  pos = source.indexOf(word, index);
+		  index = pos +1;
 		  std::cout << "position = " <<pos;
-		startStyling(0);
+		startStyling(pos);
 		setStyling(word.length(), Keyword); 
+		startStyling(pos);
+		p--;
+		}
     delete [] data;
     if(source.isEmpty())
         return;
