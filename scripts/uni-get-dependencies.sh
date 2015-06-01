@@ -4,12 +4,21 @@
 # this assumes you have sudo installed and running, or are running as root.
 #
 
-get_fedora_deps()
+get_fedora_deps_yum()
 {
  yum -y install qt5-qtbase-devel bison flex eigen3-devel harfbuzz-devel \
   fontconfig-devel freetype-devel \
   boost-devel mpfr-devel gmp-devel glew-devel CGAL-devel gcc gcc-c++ pkgconfig \
   opencsg-devel git libXmu-devel curl imagemagick ImageMagick glib2-devel make \
+  xorg-x11-server-Xvfb gettext
+}
+
+get_fedora_deps_dnf()
+{
+ dnf -y install qt5-qtbase-devel bison flex eigen3-devel harfbuzz-devel \
+  fontconfig-devel freetype-devel \
+  boost-devel mpfr-devel gmp-devel glew-devel CGAL-devel gcc gcc-c++ pkgconfig \
+  opencsg-devel git libXmu-devel curl ImageMagick glib2-devel make \
   xorg-x11-server-Xvfb gettext
 }
 
@@ -83,8 +92,14 @@ if [ -e /etc/issue ]; then
   get_debian_deps
  elif [ "`grep -i suse /etc/issue`" ]; then
   get_opensuse_deps
+ elif [ "`grep -i fedora.release.2[2-9] /etc/issue`" ]; then
+  get_fedora_deps_dnf
+ elif [ "`grep -i fedora.release.[3-9][2-9] /etc/issue`" ]; then
+  get_fedora_deps_dnf
+ elif [ "`grep -i fedora.release.2[0-1] /etc/issue`" ]; then
+  get_fedora_deps_yum
  elif [ "`grep -i fedora /etc/issue`" ]; then
-  get_fedora_deps
+  get_fedora_deps_yum
  elif [ "`grep -i red.hat /etc/issue`" ]; then
   get_fedora_deps
  elif [ "`grep -i mageia /etc/issue`" ]; then
