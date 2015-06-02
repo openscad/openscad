@@ -10,7 +10,7 @@ get_fedora_deps_yum()
   fontconfig-devel freetype-devel \
   boost-devel mpfr-devel gmp-devel glew-devel CGAL-devel gcc gcc-c++ pkgconfig \
   opencsg-devel git libXmu-devel curl imagemagick ImageMagick glib2-devel make \
-  xorg-x11-server-Xvfb gettext qscintilla-devel
+  xorg-x11-server-Xvfb gettext qscintilla-devel qscintilla-qt5-devel
 }
 
 get_fedora_deps_dnf()
@@ -19,7 +19,7 @@ get_fedora_deps_dnf()
   fontconfig-devel freetype-devel \
   boost-devel mpfr-devel gmp-devel glew-devel CGAL-devel gcc gcc-c++ pkgconfig \
   opencsg-devel git libXmu-devel curl ImageMagick glib2-devel make \
-  xorg-x11-server-Xvfb gettext qscintilla-devel
+  xorg-x11-server-Xvfb gettext qscintilla-devel qscintilla-qt5-devel
 }
 
 get_qomo_deps()
