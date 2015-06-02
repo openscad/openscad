@@ -12,6 +12,7 @@
 #include <boost/foreach.hpp>
 
 #undef GEN_SURFACE_DEBUG
+namespace /* anonymous */ {
 
 	template <typename Polyhedron>
 	class CGAL_Build_PolySet : public CGAL::Modifier_base<typename Polyhedron::HalfedgeDS>

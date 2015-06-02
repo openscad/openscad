@@ -18,7 +18,6 @@ namespace /* anonymous */ {
        	}
 }
 
-
 namespace CGALUtils {
 	bool applyHull(const Geometry::ChildList &children, PolySet &P);
 	CGAL_Nef_polyhedron *applyOperator(const Geometry::ChildList &children, OpenSCADOperator op);
