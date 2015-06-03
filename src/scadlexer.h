@@ -31,7 +31,6 @@ public:
 			CommentLineDoc = 15,
 			CommentDocKeyword = 16 
         };
-//	enum calc_id { enumber, ekeyword };
 	ScadLexer(QObject *parent);
 	virtual ~ScadLexer();
 	const char *language() const;
@@ -40,11 +39,10 @@ public:
     	void styleText(int start, int end);
         void setKeywords(int set, const std::string& keywords);
 
-	//void reduce(std::stack<int>&, std::stack<char>&);
-	//void calc(const std::string&, const lexertl::state_machine&, int&);
         QColor defaultColor(int style) const;
 
-//	void highlightKeywords(const QString&, int, QStringList&, int);
+	void defineRules(QStringList&, int);
+	void highlighting(int, const std::string&, lexertl::smatch, int);
         QString description(int style) const;
 private:
         std::string keywordSet[4];
@@ -56,4 +54,7 @@ private:
 	QStringList functionsList;
 	QStringList modelsList;
 	QStringList numbers;
+	lexertl::rules rules_;
+	lexertl::state_machine sm;
+	std::string token;
 };

@@ -296,7 +296,7 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 
 		const boost::property_tree::ptree& colors = pt.get_child("colors");
 		l->setColor(readColor(colors, "keyword1", textColor), ScadLexer::Keyword);
-		/*l->setColor(readColor(colors, "keyword2", textColor), ScadLexer::KeywordSet2);
+		//l->setColor(readColor(colors, "keyword2", textColor), ScadLexer::KeywordSet2);
 		l->setColor(readColor(colors, "keyword3", textColor), ScadLexer::Transformation);
 		l->setColor(readColor(colors, "number", textColor), ScadLexer::Boolean);
 		l->setColor(readColor(colors, "string", textColor), ScadLexer::Function);
@@ -308,7 +308,7 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 		//l->setColor(readColor(colors, "commentdoc", textColor), QsciLexerCPP::CommentDoc);
 		//l->setColor(readColor(colors, "commentdoc", textColor), QsciLexerCPP::CommentLineDoc);
 		//l->setColor(readColor(colors, "commentdockeyword", textColor), QsciLexerCPP::CommentDocKeyword);
-*/
+
 		const boost::property_tree::ptree& caret = pt.get_child("caret");
 		qsci->setCaretWidth(readInt(caret, "width", 1));
 		qsci->setCaretForegroundColor(readColor(caret, "foreground", textColor));
