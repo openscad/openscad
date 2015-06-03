@@ -18,6 +18,7 @@ ScadLexer::ScadLexer(QObject *parent) : QsciLexerCustom(parent)
 
 	modelsList << "sphere" << "cube" << "cylinder" << "polyhedron" << "square" << "polygon" << "text" << "circle";
 	// -> Style: Keyword (lexer.l)
+	operatorsList << "<=" << ">=" << "==" << "!=" << "&&";
 	keywordSet[0] =
 		"if else let for module function true false undef "
 		"include use";
@@ -54,11 +55,14 @@ void ScadLexer::styleText(int start, int end)
 	defineRules(keywordsList, 3);
 	defineRules(transformationsList, 4);
 	defineRules(modelsList, 5);
+	defineRules(operatorsList, 5);
 	defineRules(booleansList, 6);
 	defineRules(functionsList, 7);
-	
 	rules_.push( "[0-9]+", 1);	
+	rules_.push("[a-zA-Z0-9_]+", 8);
 	rules_.push( "[a-z]+", 2);
+	rules_.push("[^'$'a-zA-Z0-9_]+", 6); 
+	rules_.push("['$'A-Za-z0-9_]+", 7);
 	lexertl::generator::build(rules_, sm);
 
 
@@ -98,6 +102,14 @@ void ScadLexer::styleText(int start, int end)
 		  	 highlighting(start, input, results, Boolean);
 			 break;
 			
+			case 7:
+			 token = results.str();
+			 highlighting(start, input, results, Function);
+			break;
+
+			case 8:
+			 token = results.str();
+			 highlighting(start, input, results, Comment);
 	       }
 		lexertl::lookup(sm, results);
 	}

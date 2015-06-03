@@ -54,6 +54,7 @@ private:
 	QStringList functionsList;
 	QStringList modelsList;
 	QStringList numbers;
+	QStringList operatorsList;
 	lexertl::rules rules_;
 	lexertl::state_machine sm;
 	std::string token;
