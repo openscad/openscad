@@ -319,10 +319,7 @@ std::string ImportNode::toString() const
 		"scale = " << this->scale << ", "
 		"convexity = " << this->convexity << ", "
 		"$fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs
-#ifndef OPENSCAD_TESTING
-  // timestamp is needed for caching, but disturbs the test framework
 				 << ", " "timestamp = " << (fs::exists(path) ? fs::last_write_time(path) : 0)
-#endif
 				 << ")";
 
 

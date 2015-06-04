@@ -102,9 +102,7 @@ void parser_init()
 		}
 	}
 
-#ifndef OPENSCAD_TESTING
 	add_librarydir(PlatformUtils::userLibraryPath());
-#endif
 
 	add_librarydir(boosty::absolute(PlatformUtils::resourcePath("libraries")).string());
 }
