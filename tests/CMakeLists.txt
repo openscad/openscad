@@ -505,7 +505,7 @@ if(${CMAKE_CXX_COMPILER} MATCHES ".*clang.*" AND NOT ${CGAL_CXX_FLAGS_INIT} STRE
   # clang fails to build several included standard C++ libs on some
   # machines when FORTIFY_SOURCE is enabled.
   message(STATUS "disabling FORTIFY_SOURCE: https://bugzilla.redhat.com/show_bug.cgi?id=1188075")
-  string(REPLACE "FORTIFY_SOURCE=2" "FORTIFY_SOURCE=0" CGAL_CXX_FLAGS_INI$
+  string(REPLACE "FORTIFY_SOURCE=2" "FORTIFY_SOURCE=0" CGAL_CXX_FLAGS_INIT ${CGAL_CXX_FLAGS_INIT})
 endif()
 
 # GLib2
