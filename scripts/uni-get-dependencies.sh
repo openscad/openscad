@@ -74,7 +74,8 @@ get_debian_deps()
   libXi-dev libmpfr-dev libboost-dev libglew-dev \
   libeigen3-dev libcgal-dev libopencsg-dev libgmp3-dev libgmp-dev \
   imagemagick libfontconfig-dev libfreetype6-dev \
-  libharfbuzz-dev gtk-doc-tools libglib2.0-dev gettext
+  libharfbuzz-dev gtk-doc-tools libglib2.0-dev gettext \
+  xvfb
 }
 
 unknown()
