@@ -162,8 +162,8 @@ public:
 
 private:
   static Value multvecnum(const Value &vecval, const Value &numval);
-  static Value multmatvec(const Value &matrixval, const Value &vectorval);
-  static Value multvecmat(const Value &vectorval, const Value &matrixval);
+  static Value multmatvec(const VectorType &matrixvec, const VectorType &vectorvec);
+  static Value multvecmat(const VectorType &vectorvec, const VectorType &matrixvec);
 
   Variant value;
 };
