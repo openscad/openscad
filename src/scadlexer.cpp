@@ -42,6 +42,26 @@ ScadLexer::ScadLexer(QObject *parent) : QsciLexerCustom(parent)
 		"intersection linear_extrude rotate_extrude import group  "
 		"projection render surface scale rotate mirror translate "
 		"multmatrix color offset ";
+
+    	rules_.push_state("COMMENT");
+
+        rules_.push("INITIAL", "\"/*\"", "COMMENT");
+        rules_.push("COMMENT", "[^*]+|.", ".");
+        rules_.push("COMMENT", "\"*/\"", 1, "INITIAL");
+	defineRules(keywordsList, 2);
+	defineRules(transformationsList, 3);
+	defineRules(modelsList, 4);
+	defineRules(operatorsList, 5);
+	defineRules(booleansList, 6);
+	defineRules(functionsList, 7);
+	rules_.push( "[0-9]+", 8);	
+	rules_.push("[a-zA-Z0-9_]+", 9);
+	rules_.push( "[a-z]+", 10);
+//	rules_.push("[//][^\n]+", 1);
+	rules_.push("[$][a-zA-Z0-9_]+", 11);
+
+ 
+	lexertl::generator::build(rules_, sm);
 }
 
 ScadLexer::~ScadLexer()
@@ -52,18 +72,6 @@ void ScadLexer::styleText(int start, int end)
 {
     if(!editor())
         return;
-	defineRules(keywordsList, 3);
-	defineRules(transformationsList, 4);
-	defineRules(modelsList, 5);
-	defineRules(operatorsList, 5);
-	defineRules(booleansList, 6);
-	defineRules(functionsList, 7);
-	rules_.push( "[0-9]+", 1);	
-	rules_.push("[a-zA-Z0-9_]+", 8);
-	rules_.push( "[a-z]+", 2);
-	rules_.push("[^'$'a-zA-Z0-9_]+", 6); 
-	rules_.push("['$'A-Za-z0-9_]+", 7);
-	lexertl::generator::build(rules_, sm);
 
 
     char * data = new char[end - start + 1];
@@ -77,26 +85,31 @@ void ScadLexer::styleText(int start, int end)
 	{
 		switch(results.id)
 		{
-			case 3:
+			case 2:
 		 	 token = results.str();
 		  	 highlighting(start, input, results, Keyword);
 		 	 break;
 		
 			case 1:
 		  	 token = results.str();
-		  	 highlighting(start, input, results, Number);
+		  	 highlighting(start, input, results, Comment);
 			 break;
 			
-			case 4:
+			case 3:
 		  	 token = results.str();
 		  	 highlighting(start, input, results, Transformation);
 			 break;
 
-			case 5:
+			case 4:
 		  	 token = results.str();
 		  	 highlighting(start, input, results, Model);
 			 break;
 			
+			case 5:
+		  	 token = results.str();
+		  	 highlighting(start, input, results, Operator);
+			 break;
+
 			case 6:
 		  	 token = results.str();
 		  	 highlighting(start, input, results, Boolean);
@@ -109,7 +122,11 @@ void ScadLexer::styleText(int start, int end)
 
 			case 8:
 			 token = results.str();
-			 highlighting(start, input, results, Comment);
+			 highlighting(start, input, results, Number);
+
+			case 11:
+			 token = results.str();
+			 highlighting(start, input, results, Variable);
 	       }
 		lexertl::lookup(sm, results);
 	}
