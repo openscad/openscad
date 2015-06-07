@@ -51,7 +51,7 @@ PACKAGES=(
     "opencsg 1.4.0"
     "freetype 2.5.5"
     "ragel 6.9"
-    "harfbuzz 0.9.37"
+    "harfbuzz 0.9.40"
     "libxml2 2.9.2"
     "fontconfig 2.11.1"
 )
