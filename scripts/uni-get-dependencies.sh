@@ -54,8 +54,13 @@ get_netbsd_deps()
 get_opensuse_deps()
 {
  zypper install libeigen3-devel mpfr-devel gmp-devel boost-devel \
-  libqt4-devel glew-devel cmake git bison flex cgal-devel opencsg-devel curl \
-  glib2-devel gettext
+  libqt4-devel glew-devel cmake git bison flex cgal-devel curl \
+  glib2-devel gettext freetype-devel harfbuzz-devel libqscintilla-devel \
+  xvfb-run imagemagick opencsg-devel
+  echo if you are missing opencsg, please add the -graphics- repository
+  echo find your version from cat /etc/issue, then replace it below, then run
+  echo " zypper ar -f http://download.opensuse.org/repositories/graphics/openSUSE_13.2 graphics"
+  echo " zypper install opencsg-devel"
 }
 
 get_mageia_deps()
