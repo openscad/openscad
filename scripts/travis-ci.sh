@@ -1,6 +1,6 @@
 #!/bin/bash
 
-qmake CONFIG+=experimental DEFINES+=OPENSCAD_NOGUI
+qmake CONFIG+=experimental CONFIG+=nogui
 make
 
 cd tests
