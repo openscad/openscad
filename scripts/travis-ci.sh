@@ -1,5 +1,8 @@
 #!/bin/bash
 
+qmake CONFIG+=experimental DEFINES+=OPENSCAD_NOGUI
+make
+
 cd tests
 cmake . 
 if [[ $? != 0 ]]; then
