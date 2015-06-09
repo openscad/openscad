@@ -94,6 +94,12 @@ get_debian_7_deps()
   apt-get -y install libqt4-dev libqscintilla2-dev
 }
 
+get_ubuntu_14_deps()
+{
+  get_debian_8_deps
+  apt-get -y install qt5-qmake
+}
+
 unknown()
 {
  echo "Unknown system type. Please install the dependency packages listed"
@@ -101,7 +107,9 @@ unknown()
 }
 
 if [ -e /etc/issue ]; then
- if [ "`grep -i ubuntu /etc/issue`" ]; then
+ if [ "`grep -i ubuntu.1[4-9] /etc/issue`" ]; then
+  get_ubuntu_14_deps
+ elif [ "`grep -i ubuntu /etc/issue`" ]; then
   get_debian_deps
  elif [ "`grep -i debian.GNU.Linux.7 /etc/issue`" ]; then
   get_debian_7_deps
