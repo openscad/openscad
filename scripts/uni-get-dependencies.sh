@@ -123,7 +123,7 @@ if [ -e /etc/issue ]; then
   get_opensuse_deps
  elif [ "`grep -i fedora.release.2[2-9] /etc/issue`" ]; then
   get_fedora_deps_dnf
- elif [ "`grep -i fedora.release.[3-9][2-9] /etc/issue`" ]; then
+ elif [ "`grep -i fedora.release.[3-9][0-9] /etc/issue`" ]; then
   get_fedora_deps_dnf
  elif [ "`grep -i fedora.release.2[0-1] /etc/issue`" ]; then
   get_fedora_deps_yum
