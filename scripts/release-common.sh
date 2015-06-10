@@ -443,8 +443,8 @@ case $OS in
         cd $DEPLOYDIR/openscad-$VERSION
         NSISDEBUG=-V2
         # NSISDEBUG=      # leave blank for full log
-        echo $MAKENSIS $NSISDEBUG installer.nsi
-        $MAKENSIS $NSISDEBUG installer.nsi
+        echo $MAKENSIS $NSISDEBUG "-DVERSION=$VERSION" installer.nsi
+        $MAKENSIS $NSISDEBUG "-DVERSION=$VERSION" installer.nsi
         cp $DEPLOYDIR/openscad-$VERSION/openscad_setup.exe $INSTFILE
         cd $OPENSCADDIR
 

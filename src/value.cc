@@ -501,11 +501,8 @@ Value Value::multvecnum(const Value &vecval, const Value &numval)
   return Value(dstv);
 }
 
-Value Value::multmatvec(const Value &matrixval, const Value &vectorval)
+Value Value::multmatvec(const VectorType &matrixvec, const VectorType &vectorvec)
 {
-  const VectorType &matrixvec = matrixval.toVector();
-  const VectorType &vectorvec = vectorval.toVector();
-
   // Matrix * Vector
   VectorType dstv;
   for (size_t i=0;i<matrixvec.size();i++) {
@@ -525,10 +522,8 @@ Value Value::multmatvec(const Value &matrixval, const Value &vectorval)
   return Value(dstv);
 }
 
-Value Value::multvecmat(const Value &vectorval, const Value &matrixval)
+Value Value::multvecmat(const VectorType &vectorvec, const VectorType &matrixvec)
 {
-  const VectorType &vectorvec = vectorval.toVector();
-  const VectorType &matrixvec = matrixval.toVector();
   assert(vectorvec.size() == matrixvec.size());
   // Vector * Matrix
   VectorType dstv;
@@ -583,7 +578,9 @@ Value Value::operator*(const Value &v) const
       // Matrix * Matrix
       VectorType dstv;
       BOOST_FOREACH(const Value &srcrow, vec1) {
-        dstv.push_back(multvecmat(srcrow, vec2));
+          const VectorType &srcrowvec = srcrow.toVector();
+          if (srcrowvec.size() != vec2.size()) return Value::undefined;
+          dstv.push_back(multvecmat(srcrowvec, vec2));
       }
       return Value(dstv);
     }
