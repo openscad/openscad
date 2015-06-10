@@ -54,8 +54,13 @@ get_netbsd_deps()
 get_opensuse_deps()
 {
  zypper install libeigen3-devel mpfr-devel gmp-devel boost-devel \
-  libqt4-devel glew-devel cmake git bison flex cgal-devel opencsg-devel curl \
-  glib2-devel gettext
+  libqt4-devel glew-devel cmake git bison flex cgal-devel curl \
+  glib2-devel gettext freetype-devel harfbuzz-devel libqscintilla-devel \
+  xvfb-run imagemagick opencsg-devel
+  echo if you are missing opencsg, please add the -graphics- repository
+  echo find your version from cat /etc/issue, then replace it below, then run
+  echo " zypper ar -f http://download.opensuse.org/repositories/graphics/openSUSE_13.2 graphics"
+  echo " zypper install opencsg-devel"
 }
 
 get_mageia_deps()
@@ -69,12 +74,30 @@ get_mageia_deps()
 get_debian_deps()
 {
  apt-get -y install \
-  build-essential curl libffi-dev qtbase5-dev libqt5scintilla2-dev \
+  build-essential curl libffi-dev \
   libxmu-dev cmake bison flex git-core libboost-all-dev \
   libXi-dev libmpfr-dev libboost-dev libglew-dev \
   libeigen3-dev libcgal-dev libopencsg-dev libgmp3-dev libgmp-dev \
   imagemagick libfontconfig-dev libfreetype6-dev \
-  libharfbuzz-dev gtk-doc-tools libglib2.0-dev gettext
+  gtk-doc-tools libglib2.0-dev gettext xvfb pkg-config ragel
+}
+
+get_debian_8_deps()
+{
+  get_debian_deps
+  apt-get -y install libharfbuzz-dev qtbase5-dev libqt5scintilla2-dev
+}
+
+get_debian_7_deps()
+{
+  get_debian_deps
+  apt-get -y install libqt4-dev libqscintilla2-dev
+}
+
+get_ubuntu_14_deps()
+{
+  get_debian_8_deps
+  apt-get -y install qt5-qmake
 }
 
 unknown()
@@ -84,10 +107,14 @@ unknown()
 }
 
 if [ -e /etc/issue ]; then
- if [ "`grep -i ubuntu /etc/issue`" ]; then
+ if [ "`grep -i ubuntu.1[4-9] /etc/issue`" ]; then
+  get_ubuntu_14_deps
+ elif [ "`grep -i ubuntu /etc/issue`" ]; then
   get_debian_deps
+ elif [ "`grep -i debian.GNU.Linux.7 /etc/issue`" ]; then
+  get_debian_7_deps
  elif [ "`grep -i debian /etc/issue`" ]; then
-  get_debian_deps
+  get_debian_8_deps
  elif [ "`grep -i raspbian /etc/issue`" ]; then
   get_debian_deps
  elif [ "`grep -i mint /etc/issue`" ]; then
