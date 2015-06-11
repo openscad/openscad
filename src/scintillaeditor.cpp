@@ -76,7 +76,7 @@ EditorColorScheme::EditorColorScheme(fs::path path) : path(path)
 		_name = QString(pt.get<std::string>("name").c_str());
 		_index = pt.get<int>("index");
 	} catch (const std::exception & e) {
-		PRINTB("Error reading color scheme file '%s': %s", path.c_str() % e.what());
+		PRINTB("Error reading color scheme file '%s': %s", boosty::stringy(path).c_str() % e.what());
 		_name = "";
 		_index = 0;
 	}
@@ -369,7 +369,7 @@ void ScintillaEditor::enumerateColorSchemesInPath(ScintillaEditor::colorscheme_s
 			}
 
 			const fs::path path = (*dir_iter).path();
-			if (!(path.extension().string() == ".json")) {
+			if (!(path.extension() == ".json")) {
 				continue;
 			}
 
@@ -426,7 +426,7 @@ void ScintillaEditor::insert(const QString &text)
 	qsci->insert(text);
 }
 
-void ScintillaEditor::replaceAll(const QString &text)
+void ScintillaEditor::setText(const QString &text)
 {
 	qsci->selectAll(true);
 	qsci->replaceSelectedText(text);
@@ -508,6 +508,29 @@ bool ScintillaEditor::find(const QString &expr, bool findNext, bool findBackward
 void ScintillaEditor::replaceSelectedText(const QString &newText)
 {
 	if (qsci->selectedText() != newText) qsci->replaceSelectedText(newText);
+}
+
+void ScintillaEditor::replaceAll(const QString &findText, const QString &replaceText)
+{
+  // We need to issue a Select All first due to a bug in QScintilla:
+  // It doesn't update the find range when just doing findFirst() + findNext() causing the search
+  // to end prematurely if the replaced string is larger than the selected string.
+#if QSCINTILLA_VERSION >= 0x020700
+  qsci->selectAll();
+  if (qsci->findFirstInSelection(findText, 
+                      false /*re*/, false /*cs*/, false /*wo*/, 
+                      false /*wrap*/, true /*forward*/)) {
+#else
+    // findFirstInSelection() was introduced in QScintilla 2.7
+  if (qsci->findFirst(findText, 
+                      false /*re*/, false /*cs*/, false /*wo*/, 
+                      false /*wrap*/, true /*forward*/, 0, 0)) {
+#endif
+    qsci->replace(replaceText);
+    while (qsci->findNext()) {
+      qsci->replace(replaceText);
+    }
+  }
 }
 
 void ScintillaEditor::getRange(int *lineFrom, int *lineTo)

@@ -42,6 +42,8 @@ public:
 #if QT_VERSION >= 0x050100
 	float getDPI() { return this->devicePixelRatio(); }
 #endif
+	
+	const QImage & grabFrame();
 	bool save(const char *filename);
 	void resetView();
 	void viewAll();
@@ -58,6 +60,7 @@ private:
 
 	bool mouse_drag_active;
 	QPoint last_mouse;
+	QImage frame; // Used by grabFrame() and save()
 
 	void wheelEvent(QWheelEvent *event);
 	void mousePressEvent(QMouseEvent *event);

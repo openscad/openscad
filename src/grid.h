@@ -3,7 +3,7 @@
 #include "mathc99.h"
 #include "linalg.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 typedef __int64 int64_t;
 #else
 #include <stdint.h>

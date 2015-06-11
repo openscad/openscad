@@ -82,7 +82,9 @@ bool report_glerror(const char * function)
 {
   GLenum tGLErr = glGetError();
   if (tGLErr != GL_NO_ERROR) {
-    cerr << "OpenGL error 0x" << hex << tGLErr << ": " << gluErrorString(tGLErr) << " after " << function << endl;
+    std::ostringstream hexErr;
+    hexErr << hex << tGLErr;
+    cerr << "OpenGL error 0x" << hexErr.str() << ": " << gluErrorString(tGLErr) << " after " << function << endl;
     return true;
   }
   return false;

@@ -1,3 +1,4 @@
+#include "mathc99.h"
 #include "modcontext.h"
 #include "module.h"
 #include "expression.h"

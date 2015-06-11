@@ -56,6 +56,7 @@ if test -z "$VERSION"; then
   VERSION=$VERSIONDATE
   SNAPSHOT=snapshot
 fi
+SHORTVERSION=${VERSION%%-*}
 
 # Turn off ccache, just for safety
 PATH=${PATH//\/opt\/local\/libexec\/ccache:}
@@ -85,10 +86,6 @@ if [[ $? != 0 ]]; then
   exit 1
 fi
 
-if [ ! $DOUPLOAD ]; then
-  exit 0
-fi
-
 SIGNATURE=$(openssl dgst -sha1 -binary < OpenSCAD-$VERSION.dmg  | openssl dgst -dss1 -sign $HOME/.ssh/openscad-appcast.pem | openssl enc -base64)
 
 if [[ $VERSION == $VERSIONDATE ]]; then
@@ -98,10 +95,14 @@ else
 fi
 echo "Creating appcast $APPCASTFILE..."
 FILESIZE=$(stat -f "%z" OpenSCAD-$VERSION.dmg)
-sed -e "s,@VERSION@,$VERSION,g" -e "s,@VERSIONDATE@,$VERSIONDATE,g" -e "s,@DSASIGNATURE@,$SIGNATURE,g" -e "s,@FILESIZE@,$FILESIZE,g" $APPCASTFILE.in > $APPCASTFILE
+sed -e "s,@VERSION@,$VERSION,g" -e "s,@SHORTVERSION@,$SHORTVERSION,g" -e "s,@VERSIONDATE@,$VERSIONDATE,g" -e "s,@DSASIGNATURE@,$SIGNATURE,g" -e "s,@FILESIZE@,$FILESIZE,g" $APPCASTFILE.in > $APPCASTFILE
 cp $APPCASTFILE ../openscad.github.com
 if [[ $VERSION == $VERSIONDATE ]]; then
   cp $APPCASTFILE ../openscad.github.com/appcast-snapshots.xml
+fi
+
+if [ ! $DOUPLOAD ]; then
+  exit 0
 fi
 
 echo "Uploading..."

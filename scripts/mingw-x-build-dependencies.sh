@@ -53,13 +53,13 @@ if [ ! -e $MXEDIR ]; then
 	mkdir -p $MXEDIR
 	cd $MXEDIR/..
 	echo "Downloading MXE into " $PWD
-	git clone git://github.com/mxe/mxe.git $MXEDIR
+	git clone git://github.com/openscad/mxe.git $MXEDIR
 fi
 
 echo "entering" $MXEDIR
 cd $MXEDIR
-echo 'checkout master branch'
-git checkout master
+echo 'checkout openscad-snapshot-build branch'
+git checkout openscad-snapshot-build
 if [ "`echo $* | grep 64`" ]; then
  MXE_TARGETS='x86_64-w64-mingw32.static'
  if [ "`echo $* | grep download`" ]; then

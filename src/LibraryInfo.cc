@@ -7,6 +7,7 @@
 
 #include "version_check.h"
 #include "PlatformUtils.h"
+#include "openscad.h"
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 
@@ -87,9 +88,9 @@ std::string LibraryInfo::info()
 	const char *env_path = getenv("OPENSCADPATH");
 	const char *env_font_path = getenv("OPENSCAD_FONT_PATH");
 	
-	s << "OpenSCAD Version: " << TOSTRING(OPENSCAD_VERSION)
+	s << "OpenSCAD Version: " << openscad_detailedversionnumber
 	  << "\nSystem information: " << PlatformUtils::sysinfo()
-          << "\nCompiler, build date: " << compiler_info << ", " << __DATE__
+		<< "\nCompiler: " << compiler_info
 	  << "\nBoost version: " << BOOST_LIB_VERSION
 	  << "\nEigen version: " << EIGEN_WORLD_VERSION << "." << EIGEN_MAJOR_VERSION << "." << EIGEN_MINOR_VERSION
 	  << "\nCGAL version, kernels: " << TOSTRING(CGAL_VERSION) << ", " << cgal_3d_kernel << ", " << cgal_2d_kernel << ", " << cgal_2d_kernelEx

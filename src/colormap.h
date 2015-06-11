@@ -13,6 +13,7 @@ namespace fs = boost::filesystem;
 
 enum RenderColor {
 	BACKGROUND_COLOR,
+	AXES_COLOR,
 	OPENCSG_FACE_FRONT_COLOR,
 	OPENCSG_FACE_BACK_COLOR,
 	CGAL_FACE_FRONT_COLOR,

@@ -93,15 +93,23 @@ static std::string arg_colorscheme;
 #define QUOTE(x__) # x__
 #define QUOTED(x__) QUOTE(x__)
 
-std::string versionnumber = QUOTED(OPENSCAD_VERSION);
+std::string openscad_shortversionnumber = QUOTED(OPENSCAD_SHORTVERSION);
+std::string openscad_versionnumber = QUOTED(OPENSCAD_VERSION);
 
-std::string openscad_versionnumber = QUOTED(OPENSCAD_VERSION)
+std::string openscad_displayversionnumber = 
 #ifdef OPENSCAD_COMMIT
-	" (git " QUOTED(OPENSCAD_COMMIT) ")"
+  QUOTED(OPENSCAD_VERSION)
+  " (git " QUOTED(OPENSCAD_COMMIT) ")";
+#else
+  QUOTED(OPENSCAD_SHORTVERSION);
 #endif
-;
 
-std::string openscad_version = "OpenSCAD " + openscad_versionnumber;
+std::string openscad_detailedversionnumber =
+#ifdef OPENSCAD_COMMIT
+  openscad_displayversionnumber;
+#else
+  openscad_versionnumber;
+#endif
 
 class Echostream : public std::ofstream
 {
@@ -646,6 +654,11 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 #else
 	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
 #endif
+#ifdef OPENSCAD_SNAPSHOT
+	app.setWindowIcon(QIcon(":/icons/openscad-nightly.png"));
+#else
+	app.setWindowIcon(QIcon(":/icons/openscad.png"));
+#endif
 	
 	// Other global settings
 	qRegisterMetaType<shared_ptr<const Geometry> >();
@@ -787,6 +800,7 @@ int main(int argc, char **argv)
 		("projection", po::value<string>(), "(o)rtho or (p)erspective when exporting png")
 		("colorscheme", po::value<string>(), "colorscheme")
 		("debug", po::value<string>(), "special debug info")
+		("quiet,q", "quiet mode (don't print anything *except* errors)")
 		("o,o", po::value<string>(), "out-file")
 		("s,s", po::value<string>(), "stl-file")
 		("x,x", po::value<string>(), "dxf-file")
@@ -821,6 +835,9 @@ int main(int argc, char **argv)
 	if (vm.count("debug")) {
 		OpenSCAD::debug = vm["debug"].as<string>();
 		PRINTB("Debug on. --debug=%s",OpenSCAD::debug);
+	}
+	if (vm.count("quiet")) {
+		OpenSCAD::quiet = true;
 	}
 	if (vm.count("help")) help(argv[0]);
 	if (vm.count("version")) version();
