@@ -93,6 +93,16 @@
 #include <QClipboard>
 #include <QDesktopWidget>
 
+#if (QT_VERSION < QT_VERSION_CHECK(5, 1, 0))
+// Set dummy for Qt versions that do not have QSaveFile
+#define QT_FILE_SAVE_CLASS QFile
+#define QT_FILE_SAVE_COMMIT true
+#else
+#include <QSaveFile>
+#define QT_FILE_SAVE_CLASS QSaveFile
+#define QT_FILE_SAVE_COMMIT if (saveOk) { saveOk = file.commit(); } else { file.cancelWriting(); }
+#endif
+
 #include <fstream>
 
 #include <algorithm>
@@ -1321,6 +1331,16 @@ void MainWindow::saveBackup()
 	return writeBackup(this->tempFile);
 }
 
+void MainWindow::saveError(const QIODevice &file, const std::string &msg) {
+	const std::string messageFormat = msg + " %s (%s)";
+	const char *fileName = this->fileName.toLocal8Bit().constData();
+	PRINTB(messageFormat.c_str(), fileName % file.errorString().toLocal8Bit().constData());
+
+	const std::string dialogFormatStr = msg + "\n\"%1\"\n(%2)";
+	const QString dialogFormat(dialogFormatStr.c_str());
+	QMessageBox::warning(this, windowTitle(), dialogFormat.arg(this->fileName).arg(file.errorString()));
+}
+
 /*!
 	Save current document.
 	Should _always_ write to disk, since this is called by SaveAs - i.e. don't try to be
@@ -1330,26 +1350,37 @@ void MainWindow::actionSave()
 {
 	if (this->fileName.isEmpty()) {
 		actionSaveAs();
+		return;
+	}
+
+	setCurrentOutput();
+
+	// If available (>= Qt 5.1), use QSaveFile to ensure the file is not
+	// destroyed if the device is full. Unfortunately this is not working
+	// as advertised (at least in Qt 5.3) as it does not detect the device
+	// full properly and happily commits a 0 byte file.
+	// Checking the QTextStream status flag after flush() seems to catch
+	// this condition.
+	QT_FILE_SAVE_CLASS file(this->fileName);
+	if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
+		saveError(file, _("Failed to open file for writing"));
 	}
 	else {
-		setCurrentOutput();
-		QFile file(this->fileName);
-		if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
-			PRINTB("Failed to open file for writing: %s (%s)", 
-			this->fileName.toLocal8Bit().constData() % file.errorString().toLocal8Bit().constData());
-			QMessageBox::warning(this, windowTitle(), tr("Failed to open file for writing:\n %1 (%2)")
-					.arg(this->fileName).arg(file.errorString()));
-		}
-		else {
-			QTextStream writer(&file);
-			writer.setCodec("UTF-8");
-			writer << this->editor->toPlainText();
-			PRINTB("Saved design '%s'.", this->fileName.toLocal8Bit().constData());
+		QTextStream writer(&file);
+		writer.setCodec("UTF-8");
+		writer << this->editor->toPlainText();
+		writer.flush();
+		bool saveOk = writer.status() == QTextStream::Ok;
+		QT_FILE_SAVE_COMMIT;
+		if (saveOk) {
+			PRINTB(_("Saved design '%s'."), this->fileName.toLocal8Bit().constData());
 			this->editor->setContentModified(false);
+		} else {
+			saveError(file, _("Error saving design"));
 		}
-		clearCurrentOutput();
-		updateRecentFiles();
 	}
+	clearCurrentOutput();
+	updateRecentFiles();
 }
 
 void MainWindow::actionSaveAs()

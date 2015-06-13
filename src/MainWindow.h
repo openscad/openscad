@@ -15,6 +15,7 @@
 #include <QMutex>
 #include <QSet>
 #include <QTime>
+#include <QIODevice>
 
 enum export_type_e {
 	EXPORT_TYPE_UNKNOWN,
@@ -113,6 +114,7 @@ private:
 	void compile(bool reload, bool forcedone = false);
 	void compileCSG(bool procevents);
 	bool maybeSave();
+        void saveError(const QIODevice &file, const std::string &msg);
 	bool checkEditorModified();
 	QString dumpCSGTree(AbstractNode *root);
 	static void consoleOutput(const std::string &msg, void *userdata);
