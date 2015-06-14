@@ -2054,8 +2054,9 @@ void MainWindow::actionExport(export_type_e, QString, QString)
 		assert(false && "Unknown export type");
 		break;
 	}
-	exportFileByName(this->root_geom.get(), format, export_filename.toUtf8(),
-		export_filename.toLocal8Bit().constData());
+	exportFileByName(this->root_geom.get(), format,
+		export_filename.toLocal8Bit().constData(),
+		export_filename.toUtf8());
 	PRINTB("%s export finished.", type_name);
 
 	clearCurrentOutput();
