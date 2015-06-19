@@ -71,13 +71,6 @@ AbstractFunction::~AbstractFunction()
 {
 }
 
-// FIXME: Is this needed?
-ValuePtr AbstractFunction::evaluate(const Context*, const EvalContext *evalctx) const
-{
-	(void)evalctx; // unusued parameter
-	return ValuePtr::undefined;
-}
-
 std::string AbstractFunction::dump(const std::string &indent, const std::string &name) const
 {
 	std::stringstream dump;
