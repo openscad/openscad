@@ -76,7 +76,7 @@ EditorColorScheme::EditorColorScheme(fs::path path) : path(path)
 		_name = QString(pt.get<std::string>("name").c_str());
 		_index = pt.get<int>("index");
 	} catch (const std::exception & e) {
-		PRINTB("Error reading color scheme file '%s': %s", path.c_str() % e.what());
+		PRINTB("Error reading color scheme file '%s': %s", boosty::stringy(path).c_str() % e.what());
 		_name = "";
 		_index = 0;
 	}
@@ -369,7 +369,7 @@ void ScintillaEditor::enumerateColorSchemesInPath(ScintillaEditor::colorscheme_s
 			}
 
 			const fs::path path = (*dir_iter).path();
-			if (!(path.extension().string() == ".json")) {
+			if (!(path.extension() == ".json")) {
 				continue;
 			}
 

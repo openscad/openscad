@@ -107,7 +107,7 @@ void exportFileByName(const class Geometry *root_geom, FileFormat format,
 {
 	nowide::ofstream fstream(name2open.c_str());
 	if (!fstream.is_open()) {
-		PRINTB("Can't open file \"%s\" for export", name2display);
+		PRINTB(_("Can't open file \"%s\" for export"), name2display);
 	} else {
 		bool onerror = false;
 		fstream.exceptions(std::ios::badbit|std::ios::failbit);
@@ -122,7 +122,7 @@ void exportFileByName(const class Geometry *root_geom, FileFormat format,
 			onerror = true;
 		}
 		if (onerror) {
-			PRINTB("ERROR: \"%s\" write error. (Disk full?)", name2display);
+			PRINTB(_("ERROR: \"%s\" write error. (Disk full?)"), name2display);
 		}
 	}
 }
@@ -425,6 +425,7 @@ void export_amf(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
 			coords = strtok(NULL, " ");
 			output << "     <z>" << coords << "</z>\r\n";
 			output << "    </coordinates></vertex>\r\n";
+			delete[] chrs;
 		}
 		output << "   </vertices>\r\n";
 		output << "   <volume>\r\n";

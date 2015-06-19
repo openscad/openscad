@@ -302,6 +302,8 @@
     <addaction name="editActionCopy"/>
     <addaction name="editActionPaste"/>
     <addaction name="separator"/>
+    <addaction name="editActionCopyViewport"/>
+    <addaction name="separator"/>
     <addaction name="editActionIndent"/>
     <addaction name="editActionUnindent"/>
     <addaction name="editActionComment"/>
@@ -1259,6 +1261,14 @@
   <action name="helpActionCheatSheet">
    <property name="text">
     <string>&amp;Cheat Sheet</string>
+   </property>
+  </action>
+  <action name="editActionCopyViewport">
+   <property name="text">
+    <string>Copy Viewport</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+C</string>
    </property>
   </action>
  </widget>

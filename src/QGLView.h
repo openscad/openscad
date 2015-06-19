@@ -43,6 +43,7 @@ public:
 	float getDPI() { return this->devicePixelRatio(); }
 #endif
 	bool save(const std::string &filename);
+	const QImage & grabFrame();
 	void resetView();
 	void viewAll();
 
@@ -58,6 +59,7 @@ private:
 
 	bool mouse_drag_active;
 	QPoint last_mouse;
+	QImage frame; // Used by grabFrame() and save()
 
 	void wheelEvent(QWheelEvent *event);
 	void mousePressEvent(QMouseEvent *event);

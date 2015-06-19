@@ -93,6 +93,16 @@
 #include <QClipboard>
 #include <QDesktopWidget>
 
+#if (QT_VERSION < QT_VERSION_CHECK(5, 1, 0))
+// Set dummy for Qt versions that do not have QSaveFile
+#define QT_FILE_SAVE_CLASS QFile
+#define QT_FILE_SAVE_COMMIT true
+#else
+#include <QSaveFile>
+#define QT_FILE_SAVE_CLASS QSaveFile
+#define QT_FILE_SAVE_COMMIT if (saveOk) { saveOk = file.commit(); } else { file.cancelWriting(); }
+#endif
+
 #include <fstream>
 
 #include <algorithm>
@@ -326,6 +336,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->editActionCut, SIGNAL(triggered()), editor, SLOT(cut()));
 	connect(this->editActionCopy, SIGNAL(triggered()), editor, SLOT(copy()));
 	connect(this->editActionPaste, SIGNAL(triggered()), editor, SLOT(paste()));
+	connect(this->editActionCopyViewport, SIGNAL(triggered()), this, SLOT(actionCopyViewport()));
 	connect(this->editActionIndent, SIGNAL(triggered()), editor, SLOT(indentSelection()));
 	connect(this->editActionUnindent, SIGNAL(triggered()), editor, SLOT(unindentSelection()));
 	connect(this->editActionComment, SIGNAL(triggered()), editor, SLOT(commentSelection()));
@@ -1322,6 +1333,15 @@ void MainWindow::saveBackup()
 	return writeBackup(this->tempFile);
 }
 
+void MainWindow::saveError(const QIODevice &file, const std::string &msg) {
+	const std::string messageFormat = msg + " %s (%s)";
+	PRINTB(messageFormat.c_str(), fileName.toStdString() % file.errorString().toStdString());
+
+	const std::string dialogFormatStr = msg + "\n\"%1\"\n(%2)";
+	const QString dialogFormat(dialogFormatStr.c_str());
+	QMessageBox::warning(this, windowTitle(), dialogFormat.arg(this->fileName).arg(file.errorString()));
+}
+
 /*!
 	Save current document.
 	Should _always_ write to disk, since this is called by SaveAs - i.e. don't try to be
@@ -1331,26 +1351,37 @@ void MainWindow::actionSave()
 {
 	if (this->fileName.isEmpty()) {
 		actionSaveAs();
+		return;
+	}
+
+	setCurrentOutput();
+
+	// If available (>= Qt 5.1), use QSaveFile to ensure the file is not
+	// destroyed if the device is full. Unfortunately this is not working
+	// as advertised (at least in Qt 5.3) as it does not detect the device
+	// full properly and happily commits a 0 byte file.
+	// Checking the QTextStream status flag after flush() seems to catch
+	// this condition.
+	QT_FILE_SAVE_CLASS file(this->fileName);
+	if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
+		saveError(file, _("Failed to open file for writing"));
 	}
 	else {
-		setCurrentOutput();
-		QFile file(this->fileName);
-		if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
-			PRINTB("Failed to open file for writing: %s (%s)", 
-			this->fileName.toStdString() % file.errorString().toStdString());
-			QMessageBox::warning(this, windowTitle(), tr("Failed to open file for writing:\n %1 (%2)")
-					.arg(this->fileName).arg(file.errorString()));
-		}
-		else {
-			QTextStream writer(&file);
-			writer.setCodec("UTF-8");
-			writer << this->editor->toPlainText();
-			PRINTB("Saved design '%s'.", this->fileName.toStdString());
+		QTextStream writer(&file);
+		writer.setCodec("UTF-8");
+		writer << this->editor->toPlainText();
+		writer.flush();
+		bool saveOk = writer.status() == QTextStream::Ok;
+		QT_FILE_SAVE_COMMIT;
+		if (saveOk) {
+			PRINTB(_("Saved design '%s'."), this->fileName.toStdString());
 			this->editor->setContentModified(false);
+		} else {
+			saveError(file, _("Error saving design"));
 		}
-		clearCurrentOutput();
-		updateRecentFiles();
 	}
+	clearCurrentOutput();
+	updateRecentFiles();
 }
 
 void MainWindow::actionSaveAs()
@@ -1613,7 +1644,6 @@ void MainWindow::updateCamera()
 		params.push_back(d);
 		qglview->cam.setup(params);
 		qglview->cam.gimbalDefaultTranslate();
-		qglview->updateGL();
 	}
 }
 
@@ -2175,6 +2205,8 @@ void MainWindow::actionExportImage()
 {
 	setCurrentOutput();
 
+  // Grab first to make sure dialog box isn't part of the grabbed image
+	qglview->grabFrame();
 	QString img_filename = QFileDialog::getSaveFileName(this,
 			_("Export Image"), "", _("PNG Files (*.png)"));
 	if (img_filename.isEmpty()) {
@@ -2184,6 +2216,13 @@ void MainWindow::actionExportImage()
 	}
 	clearCurrentOutput();
 	return;
+}
+
+void MainWindow::actionCopyViewport()
+{
+	const QImage & image = qglview->grabFrame();
+	QClipboard *clipboard = QApplication::clipboard();
+	clipboard->setImage(image);
 }
 
 void MainWindow::actionFlushCaches()

@@ -11,11 +11,13 @@ y_shift=thisFont[0][1];
 hours=["one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve"];
 
 module clock_hour_words(word_offset=20.0,word_height=2.0) {
-  for(i=[0:(len(hours)-1)]) assign( hourHandAngle=(i+1)*360/len(hours), theseIndicies=search(hours[i],thisFont[2],1,1) ) {
+  for(i=[0:(len(hours)-1)]) {
+    hourHandAngle=(i+1)*360/len(hours);
+    theseIndicies=search(hours[i],thisFont[2],1,1);
     rotate(90-hourHandAngle) translate([word_offset,0])
-      for( j=[0:(len(theseIndicies)-1)] ) translate([j*x_shift,-y_shift/2]) {
-        linear_extrude(height=word_height) polygon(points=thisFont[2][theseIndicies[j]][6][0],paths=thisFont[2][theseIndicies[j]][6][1]);
-      }
+    for( j=[0:(len(theseIndicies)-1)] ) translate([j*x_shift,-y_shift/2]) {
+      linear_extrude(height=word_height) polygon(points=thisFont[2][theseIndicies[j]][6][0],paths=thisFont[2][theseIndicies[j]][6][1]);
+    }
   }
 }
 

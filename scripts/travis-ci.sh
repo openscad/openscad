@@ -1,5 +1,8 @@
 #!/bin/bash
 
+qmake CONFIG+=experimental CONFIG+=nogui
+make
+
 cd tests
 cmake . 
 if [[ $? != 0 ]]; then

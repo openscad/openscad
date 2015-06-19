@@ -29,7 +29,7 @@ template<typename Derived> bool is_finite(const Eigen::MatrixBase<Derived>& x) {
 }
 
 template<typename Derived> bool is_nan(const Eigen::MatrixBase<Derived>& x) {
-   return ((x.array() == x.array())).all();
+   return !((x.array() == x.array())).all();
 }
 
 BoundingBox operator*(const Transform3d &m, const BoundingBox &box);

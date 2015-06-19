@@ -740,6 +740,7 @@ Response GeometryEvaluator::visit(State &state, const LinearExtrudeNode &node)
 
 				Polygon2d *p2d = dxf.toPolygon2d();
 				if (p2d) geometry = ClipperUtils::sanitize(*p2d);
+				delete p2d;
 			}
 			else {
 				geometry = applyToChildren2D(node, OPENSCAD_UNION);
@@ -849,6 +850,7 @@ Response GeometryEvaluator::visit(State &state, const RotateExtrudeNode &node)
 				DxfData dxf(node.fn, node.fs, node.fa, node.filename, node.layername, node.origin_x, node.origin_y, node.scale);
 				Polygon2d *p2d = dxf.toPolygon2d();
 				if (p2d) geometry = ClipperUtils::sanitize(*p2d);
+				delete p2d;
 			}
 			else {
 				geometry = applyToChildren2D(node, OPENSCAD_UNION);
@@ -954,6 +956,8 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 						// Add correctly winded polygons to the main clipper
 						sumclipper.AddPaths(result, ClipperLib::ptSubject, true);
 					}
+
+					delete poly;
 				}
 				ClipperLib::PolyTree sumresult;
 				// This is key - without StrictlySimple, we tend to get self-intersecting results

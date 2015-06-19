@@ -77,7 +77,10 @@ namespace PolysetUtils {
 				if (currface.empty() || idx != currface.back()) currface.push_back(idx);
 			}
 			if (currface.front() == currface.back()) currface.pop_back();
-			if (currface.size() < 3) faces.pop_back(); // Cull empty triangles
+                    if (currface.size() < 3) {
+                        faces.pop_back(); // Cull empty triangles
+                        if (faces.empty()) polygons.pop_back(); // All faces were culled
+                    }
 		}
 
 		// Tessellate indexed mesh
