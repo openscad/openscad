@@ -153,13 +153,9 @@ AbstractNode *ModuleInstantiation::evaluate(const Context *ctx) const
 	PRINT("New eval ctx:");
 	c.dump(NULL, this);
 #endif
-	try {
-		AbstractNode *node = ctx->instantiate_module(*this, &c); // Passes c as evalctx
-		return node;
-	} catch (const RecursionException &e) {
-		PRINT(e.what());
-		return NULL;
-	}
+
+	AbstractNode *node = ctx->instantiate_module(*this, &c); // Passes c as evalctx
+	return node;
 }
 
 std::vector<AbstractNode*> ModuleInstantiation::instantiateChildren(const Context *evalctx) const

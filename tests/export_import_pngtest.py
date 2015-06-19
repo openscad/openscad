@@ -116,7 +116,7 @@ if args.format != 'csg':
 create_png_cmd = [args.openscad, newscadfile, '-o', pngfile] + remaining_args
 print >> sys.stderr, 'Running OpenSCAD #2:'
 print >> sys.stderr, ' '.join(create_png_cmd)
-fontdir =  os.path.join(os.path.dirname(args.openscad), "..", "testdata");
+fontdir =  os.path.join(os.path.dirname(__file__), "..", "testdata");
 fontenv = os.environ.copy();
 fontenv["OPENSCAD_FONT_PATH"] = fontdir;
 result = subprocess.call(create_png_cmd, env = fontenv);

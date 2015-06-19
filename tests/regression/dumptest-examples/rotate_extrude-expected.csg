@@ -10,7 +10,7 @@ group() {
 	color([0, 1, 1, 1]) {
 		multmatrix([[1, 0, 0, 40], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 			rotate_extrude(convexity = 2, $fn = 80, $fa = 12, $fs = 2) {
-				text(text = "  J", size = 10, spacing = 1, font = "", direction = "ltr", language = "en", script = "latin", halign = "left", valign = "baseline", $fn = 80, $fa = 12, $fs = 2);
+				text(text = "  J", size = 10, spacing = 1, font = "", direction = "ltr", language = "en", script = "Latn", halign = "left", valign = "baseline", $fn = 80, $fa = 12, $fs = 2);
 			}
 		}
 	}

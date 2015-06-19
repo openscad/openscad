@@ -20,6 +20,8 @@ import re
 
 DEBUG = False
 
+cxxlib = None
+
 def usage():
     print >> sys.stderr, "Usage: " + sys.argv[0] + " <executable>"
     sys.exit(1)
@@ -62,12 +64,17 @@ def find_dependencies(file):
         return None
     deps = output.split('\n')
     for dep in deps:
-        #print dep
-        # Fail if anything is linked with libc++, as that's not backwards compatible
-        # with Mac OS X 10.6
-        if re.search("libc\+\+", dep):
-            print "Error: clang's libc++ is used by " + file
-            return None
+        # print dep
+        # Fail if libstc++ and libc++ was mixed
+        global cxxlib
+        match = re.search("lib(std)?c\+\+", dep)
+        if match:
+            if not cxxlib:
+                cxxlib = match.group(0)
+            else:
+                if cxxlib != match.group(0):
+                    print "Error: Mixing libc++ and libstdc++"
+                    return None
         dep = re.sub(".*:$", "", dep) # Take away header line
         dep = re.sub("^\t", "", dep) # Remove initial tabs
         dep = re.sub(" \(.*\)$", "", dep) # Remove trailing parentheses

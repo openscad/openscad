@@ -9,7 +9,7 @@ group() {
 				multmatrix([[1, 0, 0, 0], [0, 0, -1, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
 					group() {
 						linear_extrude(height = 5, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-							text(text = "C", size = 50, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "latin", halign = "center", valign = "center", $fn = 16, $fa = 12, $fs = 2);
+							text(text = "C", size = 50, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "center", $fn = 16, $fa = 12, $fs = 2);
 						}
 					}
 				}
@@ -18,7 +18,7 @@ group() {
 				multmatrix([[0, 0, 1, 0], [1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
 					group() {
 						linear_extrude(height = 5, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-							text(text = "U", size = 50, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "latin", halign = "center", valign = "center", $fn = 16, $fa = 12, $fs = 2);
+							text(text = "U", size = 50, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "center", $fn = 16, $fa = 12, $fs = 2);
 						}
 					}
 				}
@@ -27,7 +27,7 @@ group() {
 				multmatrix([[-1, 0, 0, 0], [0, 0, 1, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
 					group() {
 						linear_extrude(height = 5, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-							text(text = "B", size = 50, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "latin", halign = "center", valign = "center", $fn = 16, $fa = 12, $fs = 2);
+							text(text = "B", size = 50, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "center", $fn = 16, $fa = 12, $fs = 2);
 						}
 					}
 				}
@@ -36,7 +36,7 @@ group() {
 				multmatrix([[0, 0, -1, 0], [-1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
 					group() {
 						linear_extrude(height = 5, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-							text(text = "E", size = 50, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "latin", halign = "center", valign = "center", $fn = 16, $fa = 12, $fs = 2);
+							text(text = "E", size = 50, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "center", $fn = 16, $fa = 12, $fs = 2);
 						}
 					}
 				}
@@ -45,14 +45,14 @@ group() {
 		multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 27.5], [0, 0, 0, 1]]) {
 			group() {
 				linear_extrude(height = 5, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-					text(text = "☺", size = 50, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "latin", halign = "center", valign = "center", $fn = 16, $fa = 12, $fs = 2);
+					text(text = "☺", size = 50, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", halign = "center", valign = "center", $fn = 16, $fa = 12, $fs = 2);
 				}
 			}
 		}
 		multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, -32.5], [0, 0, 0, 1]]) {
 			group() {
 				linear_extrude(height = 5, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-					text(text = "☼", size = 50, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "latin", halign = "center", valign = "center", $fn = 16, $fa = 12, $fs = 2);
+					text(text = "☼", size = 50, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", halign = "center", valign = "center", $fn = 16, $fa = 12, $fs = 2);
 				}
 			}
 		}

@@ -237,6 +237,7 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
 		// this call alters ctx->xDisplay and ctx->openGLContext 
 		//  and ctx->xwindow if successfull
 		if (!create_glx_dummy_context( *ctx )) {
+			delete ctx;
 			return NULL;
 		}
 
