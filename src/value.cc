@@ -201,33 +201,12 @@ public:
     if (op1 == 0) {
       return "0"; // Don't return -0 (exactly -0 and 0 equal 0)
     }
-#ifdef OPENSCAD_TESTING
-    // Quick and dirty hack to work around floating point rounding differences
-    // across platforms for testing purposes.
-    std::stringstream tmp;
-    tmp.precision(12);
-    tmp.setf(std::ios_base::fixed);
-    tmp << op1;
-    std::string tmpstr = tmp.str();
-    size_t endpos = tmpstr.find_last_not_of('0');
-    if (tmpstr[endpos] == '.') endpos--;
-    tmpstr = tmpstr.substr(0, endpos+1);
-    size_t dotpos = tmpstr.find('.');
-    if (dotpos != std::string::npos) {
-      if (tmpstr.size() - dotpos > 12) tmpstr.erase(dotpos + 12);
-      while (tmpstr[tmpstr.size()-1] == '0') tmpstr.erase(tmpstr.size()-1);
-    }
-    if (tmpstr.compare("-0") == 0) tmpstr = "0";
-    tmpstr = two_digit_exp_format(tmpstr);
-    return tmpstr;
-#else
     // attempt to emulate Qt's QString.sprintf("%g"); from old OpenSCAD.
     // see https://github.com/openscad/openscad/issues/158
     std::stringstream tmp;
     tmp.unsetf(std::ios::floatfield);
     tmp << op1;
     return tmp.str();
-#endif
   }
 
   std::string operator()(const boost::blank &) const {
