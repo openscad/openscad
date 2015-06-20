@@ -288,32 +288,42 @@ set(OPENSCAD_LIBDIR "$ENV{OPENSCAD_LIBRARIES}")
 
 if (EIGEN_DIR)
   set(EIGHINT ${EIGEN_DIR}/include/eigen3 ${EIGEN_DIR})
-  find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS ${EIGHINT})
+  find_path(EIGEN_INCLUDE_DIRS Eigen/Core HINTS ${EIGHINT})
 endif()
 
-if (NOT EIGEN_INCLUDE_DIR)
+if (NOT EIGEN_INCLUDE_DIRS)
   # The NO_CMAKE_SYSTEM_PATH is necessary to avoid OS X from picking up 
   # a stray Eigen from /Library/Framework
-  find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS ${OPENSCAD_LIBDIR}/include/eigen3 NO_CMAKE_SYSTEM_PATH)
+  find_path(EIGEN_INCLUDE_DIRS Eigen/Core HINTS ${OPENSCAD_LIBDIR}/include/eigen3 NO_CMAKE_SYSTEM_PATH)
 endif()
 
-if (NOT EIGEN_INCLUDE_DIR)
+if (NOT EIGEN_INCLUDE_DIRS)
   if (${CMAKE_SYSTEM_NAME} MATCHES "^FreeBSD")
-    find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS /usr/local/include/eigen3)
+    find_path(EIGEN_INCLUDE_DIRS Eigen/Core HINTS /usr/local/include/eigen3)
   elseif (${CMAKE_SYSTEM_NAME} MATCHES "NetBSD")
-    find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS /usr/pkg/include/eigen3)
+    find_path(EIGEN_INCLUDE_DIRS Eigen/Core HINTS /usr/pkg/include/eigen3)
   elseif (APPLE)
-    find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS /opt/local/include/eigen3)
+    find_path(EIGEN_INCLUDE_DIRS Eigen/Core HINTS /opt/local/include/eigen3)
   else()
-    find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS /usr/include/eigen3)
+    find_path(EIGEN_INCLUDE_DIRS Eigen/Core HINTS /usr/include/eigen3)
   endif()
 endif()
 
-if (NOT EIGEN_INCLUDE_DIR)
+if (MSYS)
+  find_package(PkgConfig REQUIRED)
+  include(PkgConfigTools.cmake)
+  save_pkg_config_env()
+  pkg_check_modules(EIGEN REQUIRED eigen3)
+  add_definitions($EIGEN_CFLAGS})
+  restore_pkg_config_env()
+  add_definitions(${EIGEN_CFLAGS})
+endif()
+
+if (NOT EIGEN_INCLUDE_DIRS)
   message(STATUS "Eigen not found")
 else()
-  message(STATUS "Eigen found in " ${EIGEN_INCLUDE_DIR})
-  inclusion(EIGEN_DIR EIGEN_INCLUDE_DIR)
+  message(STATUS "Eigen found in " ${EIGEN_INCLUDE_DIRS})
+  inclusion(EIGEN_DIR EIGEN_INCLUDE_DIRS)
 endif()
 
 ###### NULLGL wraps all OpenGL(TM) items (GL, Glew, OpenCSG)
@@ -364,44 +374,43 @@ if(WIN32_STATIC_BUILD)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGLEW_STATIC")
 endif()
 
-set(GLEW_FOUND 0)
 if (NOT $ENV{GLEWDIR} STREQUAL "")
   set(GLEW_DIR "$ENV{GLEWDIR}")
 elseif (NOT $ENV{OPENSCAD_LIBRARIES} STREQUAL "")
   set(GLEW_DIR "$ENV{OPENSCAD_LIBRARIES}")
 endif()
 if (GLEW_DIR)
-  find_path(GLEW_INCLUDE_DIR
+  find_path(GLEW_INCLUDE_DIRS
             GL/glew.h
             HINTS ${GLEW_DIR}/include
 	    NO_DEFAULT_PATH)
-  find_library(GLEW_LIBRARY
+  find_library(GLEW_LIBRARIES
                NAMES GLEW glew
                HINTS ${GLEW_DIR}/lib ${GLEW_DIR}/lib64
 	       NO_DEFAULT_PATH)
-  if (GLEW_INCLUDE_DIR AND GLEW_LIBRARY)
-    if (NOT "${GLEW_LIBRARY}" STREQUAL "GLEW_LIBRARY-NOTFOUND")
-      set(GLEW_FOUND 1)
-    endif()
+  if (GLEW_INCLUDE_DIRS AND GLEW_LIBRARIES)
+    set(GLEW_FOUND 1)
   endif()
 endif()
 
-message(STATUS "glew found ${GLEW_FOUND}")
 if (NOT GLEW_FOUND)
   find_package(GLEW REQUIRED)
 endif()
 
-if (NOT GLEW_FOUND)
-  pkg_check_modules(GLEW REQUIRED)
-  if (GLEW_VERSION)
-    message(STATUS "GLEW ${GLEW_VERSION} found: ${GLEW_INCLUDE_DIRS}")
-  endif()
+if (MSYS)
+  find_package(PkgConfig REQUIRED)
+  include(PkgConfigTools.cmake)
+  save_pkg_config_env()
+  pkg_check_modules(GLEW REQUIRED glew)
+  add_definitions($GLEW_CFLAGS})
+  restore_pkg_config_env()
+  add_definitions(${GLEW_CFLAGS})
 endif()
 
-message(STATUS "GLEW include: " ${GLEW_INCLUDE_DIR})
-message(STATUS "GLEW library: " ${GLEW_LIBRARY})
+message(STATUS "GLEW includes: " ${GLEW_INCLUDE_DIRS})
+message(STATUS "GLEW libraries: " ${GLEW_LIBRARIES})
 
-inclusion(GLEW_DIR GLEW_INCLUDE_DIR)
+inclusion(GLEW_DIR GLEW_INCLUDE_DIRS)
 
 endif() ########## NULLGL ENDIF
 
@@ -540,6 +549,7 @@ restore_pkg_config_env()
 add_definitions(${FONTCONFIG_CFLAGS})
 add_definitions(${FREETYPE_CFLAGS})
 add_definitions(${HARFBUZZ_CFLAGS})
+
 
 # Image comparison - expected test image vs actual generated image
 
@@ -810,27 +820,27 @@ set_target_properties(tests-offscreen PROPERTIES COMPILE_FLAGS "${ENABLE_OPENCSG
 # modulecachetest
 #
 add_executable(modulecachetest modulecachetest.cc)
-target_link_libraries(modulecachetest tests-nocgal ${GLEW_LIBRARY} ${OPENCSG_LIBRARY} ${APP_SERVICES_LIBRARY})
+target_link_libraries(modulecachetest tests-nocgal ${GLEW_LIBRARIES} ${OPENCSG_LIBRARY} ${APP_SERVICES_LIBRARY})
 
 #
 # csgtexttest
 #
 add_executable(csgtexttest csgtexttest.cc CSGTextRenderer.cc CSGTextCache.cc)
-target_link_libraries(csgtexttest tests-nocgal ${GLEW_LIBRARY} ${OPENCSG_LIBRARY} ${APP_SERVICES_LIBRARY})
+target_link_libraries(csgtexttest tests-nocgal ${GLEW_LIBRARIES} ${OPENCSG_LIBRARY} ${APP_SERVICES_LIBRARY})
 
 #
 # cgalcachetest
 #
 add_executable(cgalcachetest cgalcachetest.cc)
 set_target_properties(cgalcachetest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
-target_link_libraries(cgalcachetest tests-cgal ${GLEW_LIBRARY} ${OPENCSG_LIBRARY} ${APP_SERVICES_LIBRARY})
+target_link_libraries(cgalcachetest tests-cgal ${GLEW_LIBRARIES} ${OPENCSG_LIBRARY} ${APP_SERVICES_LIBRARY})
 
 #
 # openscad no-qt
 #
 add_executable(openscad_nogui ../src/openscad.cc)
 set_target_properties(openscad_nogui PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing -DEIGEN_DONT_ALIGN ${ENABLE_OPENCSG_FLAG} -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
-target_link_libraries(openscad_nogui tests-offscreen tests-cgal ${GLEW_LIBRARY} ${OPENCSG_LIBRARY} ${APP_SERVICES_LIBRARY})
+target_link_libraries(openscad_nogui tests-offscreen tests-cgal ${GLEW_LIBRARIES} ${OPENCSG_LIBRARY} ${APP_SERVICES_LIBRARY})
 
 # also run translation compilation to verify the files are without syntax errors
 add_custom_target(locale_files ALL COMMAND ${CMAKE_SOURCE_DIR}/../scripts/translation-make.sh)
