@@ -7,8 +7,7 @@
 
 #include <Qsci/qsciscintilla.h>
 #include <boost/algorithm/string.hpp>
-#include "lexertl/generator.hpp"
-#include "lexertl/lookup.hpp"
+#include "lex.h"
 class ScadLexer : public QsciLexerCustom
 {
 public:
@@ -32,6 +31,7 @@ public:
 			CommentLineDoc = 15,
 			CommentDocKeyword = 16 
         };
+	Lex *l;	
 	ScadLexer(QObject *parent);
 	virtual ~ScadLexer();
 	const char *language() const;
@@ -43,6 +43,7 @@ public:
         QColor defaultColor(int style) const;
 
 	void defineRules(QStringList&, int);
+	void highlightComments(int, const std::string&, lexertl::smatch, int);
 	void highlighting(int, const std::string&, lexertl::smatch, int);
         QString description(int style) const;
 private:
@@ -56,7 +57,4 @@ private:
 	QStringList modelsList;
 	QStringList numbers;
 	QStringList operatorsList;
-	lexertl::rules rules_;
-	lexertl::state_machine sm;
-	std::string token;
 };

@@ -1,6 +1,6 @@
 scintilla {
-  HEADERS += src/scintillaeditor.h src/scadlexer.h
-  SOURCES += src/scintillaeditor.cpp src/scadlexer.cpp
+  HEADERS += src/scintillaeditor.h src/scadlexer.h src/lex.h
+  SOURCES += src/scintillaeditor.cpp src/scadlexer.cpp src/lex.cc
 
   DEFINES += USE_SCINTILLA_EDITOR
 
