@@ -364,6 +364,7 @@ if(WIN32_STATIC_BUILD)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGLEW_STATIC")
 endif()
 
+set(GLEW_FOUND 0)
 if (NOT $ENV{GLEWDIR} STREQUAL "")
   set(GLEW_DIR "$ENV{GLEWDIR}")
 elseif (NOT $ENV{OPENSCAD_LIBRARIES} STREQUAL "")
@@ -379,12 +380,22 @@ if (GLEW_DIR)
                HINTS ${GLEW_DIR}/lib ${GLEW_DIR}/lib64
 	       NO_DEFAULT_PATH)
   if (GLEW_INCLUDE_DIR AND GLEW_LIBRARY)
-    set(GLEW_FOUND 1)
+    if (NOT "${GLEW_LIBRARY}" STREQUAL "GLEW_LIBRARY-NOTFOUND")
+      set(GLEW_FOUND 1)
+    endif()
   endif()
 endif()
 
+message(STATUS "glew found ${GLEW_FOUND}")
 if (NOT GLEW_FOUND)
   find_package(GLEW REQUIRED)
+endif()
+
+if (NOT GLEW_FOUND)
+  pkg_check_modules(GLEW REQUIRED)
+  if (GLEW_VERSION)
+    message(STATUS "GLEW ${GLEW_VERSION} found: ${GLEW_INCLUDE_DIRS}")
+  endif()
 endif()
 
 message(STATUS "GLEW include: " ${GLEW_INCLUDE_DIR})
@@ -532,15 +543,6 @@ add_definitions(${HARFBUZZ_CFLAGS})
 
 # Image comparison - expected test image vs actual generated image
 
-if (DIFFPNG)
-  # How to set cflags to optimize the executable?
-  set(IMAGE_COMPARE_EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/diffpng)
-  set(COMPARATOR "diffpng")
-  add_executable(diffpng diffpng.cpp ../src/lodepng.cpp)
-  set(SKIP_IMAGEMAGICK 1)
-  message(STATUS "using diffpng for image comparison")
-endif()
-
 if (SKIP_IMAGEMAGICK)
   if (NOT DIFFPNG)
     # cross-building depends on this
@@ -551,10 +553,14 @@ else()
   if (ImageMagick_convert_FOUND)
     message(STATUS "ImageMagick convert executable found: " ${ImageMagick_convert_EXECUTABLE})
     set(IMAGE_COMPARE_EXECUTABLE ${ImageMagick_convert_EXECUTABLE})
+    set(COMPARE_METHOD "IMAGEMAGICK")
   else()
     message(STATUS "Couldn't find imagemagick 'convert' program")
-    set(DIFFPNG 1)
+    set(COMPARE_METHOD "DIFFPNG")
   endif()
+endif()
+
+if (${COMPARE_METHOD} STREQUAL "IMAGEMAGICK")
   if ( "${ImageMagick_VERSION_STRING}" VERSION_LESS "6.5.9.4" )
     message(STATUS "ImageMagick version less than 6.5.9.4, cannot use -morphology comparison")
     message(STATUS "ImageMagick Using older image comparison method")
@@ -580,7 +586,20 @@ else()
     message(STATUS "Using alternative image comparison")
     set(DIFFPNG 1)
   endif()
+else()
+  set(DIFFPNG 1)
 endif()
+
+# alternative non-imagemagick image comparison program
+if (DIFFPNG)
+  # How to set cflags to optimize the executable?
+  set(IMAGE_COMPARE_EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/diffpng)
+  set(COMPARATOR "diffpng")
+  add_executable(diffpng diffpng.cpp ../src/lodepng.cpp)
+  set(SKIP_IMAGEMAGICK 1)
+  message(STATUS "using diffpng for image comparison")
+endif()
+
 
 # Internal includes
 include_directories(../src ../src/libtess2/Include)
