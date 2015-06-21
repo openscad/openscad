@@ -50,6 +50,7 @@ files.
    $ make clean && qmake && make
 
 Then run the script to scan the source files, and regenerate .pot & .po files.
+You'll need itstool (http://itstool.org/) installed.
 
    $ ./scripts/translation-update.sh
 
