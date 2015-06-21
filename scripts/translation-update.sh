@@ -98,7 +98,7 @@ updatemo()
    unlink ./locale/$LANGCODE/LC_MESSAGES/$LANGCODE.mo
   done
  else
-  if [ x"$(uname -s)" == x"Linux" ]; then
+  if [ x"$(uname -s)" = x"Linux" ]; then
    echo "itstool missing, won't apply translations to openscad.appdata.xml"
   fi
   cp -f ./openscad.appdata.xml.in ./openscad.appdata.xml
