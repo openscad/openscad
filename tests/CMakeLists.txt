@@ -800,6 +800,10 @@ add_executable(csgtexttest csgtexttest.cc CSGTextRenderer.cc CSGTextCache.cc)
 target_link_libraries(csgtexttest tests-nocgal ${GLEW_LIBRARY} ${OPENCSG_LIBRARY} ${APP_SERVICES_LIBRARY})
 
 #
+# lexertest
+#
+add_executable(lexertest lexertest.cc ../src/lex.cc)
+#
 # cgalcachetest
 #
 add_executable(cgalcachetest cgalcachetest.cc)

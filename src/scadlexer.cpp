@@ -4,21 +4,8 @@
 ScadLexer::ScadLexer(QObject *parent) : QsciLexerCustom(parent)
 {
 	l = new Lex();
-    	keywordsList << "var" << "module" << "function" << "use"  << "echo" <<
-                    "include" << "import" << "group" << "projection" << "render" << "surface" <<
-		    "def" << "enum" <<"struct" << "def"<< "fn" << "typedef" << "file" << "namespace" << "package" <<
-		    "interface" << "param" << "see" << "return" << "class" << "brief" <<
-		    "if" << "else" << "let" << "for" << "undef";
+	l->rules();
 
-	transformationsList << "translate" << "rotate" << "child" << "scale" << "linear_extrude" << "rotate_extrude" << "resize" << "mirror" << "multmatrix" << "color" << "offset" << "hull" <<"minkowski";
-
-	booleansList << "union" << "difference" << "intersection" <<"true"<<"false";
-
-	functionsList << "abs" << "sign" << "rands" << "min" << "max" << "sin" << "cos" <<  "asin" << "acos" << "tan" << "atan" << "atan2" <<"round" << "ceil" << "floor" << "pow" << "sqrt" << "exp" << "len" << "log" << "ln" << "str" << "chr" << "concat" << "lookup" << "search" << "version" << "version_num" << "norm" << "cross" << "parent_module" << "dxf_dim" << "dxf_cross";
-
-	modelsList << "sphere" << "cube" << "cylinder" << "polyhedron" << "square" << "polygon" << "text" << "circle";
-	// -> Style: Keyword (lexer.l)
-	operatorsList << "<=" << ">=" << "==" << "!=" << "&&";
 	keywordSet[0] =
 		"if else let for module function true false undef "
 		"include use";
@@ -42,17 +29,6 @@ ScadLexer::ScadLexer(QObject *parent) : QsciLexerCustom(parent)
 		"intersection linear_extrude rotate_extrude import group  "
 		"projection render surface scale rotate mirror translate "
 		"multmatrix color offset ";
-
- //   	rules_.push_state("COMMENT");
-
-	defineRules(keywordsList, 2);
-	defineRules(transformationsList, 3);
-	defineRules(modelsList, 4);
-	defineRules(operatorsList, 5);
-	defineRules(booleansList, 6);
-	defineRules(functionsList, 7);
- 
-	lexertl::generator::build(l->rules_, l->sm);
 }
 
 ScadLexer::~ScadLexer()
@@ -61,9 +37,9 @@ ScadLexer::~ScadLexer()
 
 void ScadLexer::styleText(int start, int end)
 {
+	
     if(!editor())
         return;
-	start = 0;
 
     char * data = new char[end - start + 1];
 
@@ -77,56 +53,46 @@ void ScadLexer::styleText(int start, int end)
 		switch(results.id)
 		{
 			case 2:
-			std::cout << " 2 ";
-		 	l->token = results.str();
+		 	token = results.str();
 		  	 highlighting(start, input, results, Keyword);
 		 	 break;
 		
 			case 1:
-			std::cout << " 1 ";
-		  	l->token = results.str();
-		  	 highlightComments(start, input, results, Comment);
+		  	token = results.str();
+		  	 highlighting(start, input, results, Comment);
 			 break;
 			
 			case 3:
-			std::cout << " 3 ";
-		  	l->token = results.str();
+		  	token = results.str();
 		  	 highlighting(start, input, results, Transformation);
 			 break;
 
 			case 4:
-			std::cout << " 4 ";
-		  	l->token = results.str();
+		  	token = results.str();
 		  	 highlighting(start, input, results, Model);
 			 break;
 			
 			case 5:
-			std::cout << " 5 ";
-		  	l->token = results.str();
+		  	token = results.str();
 		  	 highlighting(start, input, results, Operator);
 			 break;
 
 			case 6:
-			std::cout << " 6 ";
-		  	l->token = results.str();
+		  	token = results.str();
 		  	 highlighting(start, input, results, Boolean);
 			 break;
 			
 			case 7:
-			std::cout << " 7 ";
-			l->token = results.str();
+			token = results.str();
 			 highlighting(start, input, results, Function);
 			break;
 
 			case 8:
-			std::cout << " 8 ";
-			l->token = results.str();
-			std::cout << "shaina";
+			token = results.str();
 			 highlighting(start, input, results, Number);
 
 			case 11:
-			std::cout << " 11 ";
-			l->token = results.str();
+			token = results.str();
 			highlighting(start, input, results, Variable);
 	       }
 		lexertl::lookup(l->sm, results);
@@ -136,23 +102,9 @@ void ScadLexer::styleText(int start, int end)
         return;
 }
 
-void ScadLexer::defineRules(QStringList &List, int id)
-{
-	foreach(QString tok_, List){
-	 std::string token = tok_.toStdString();
-	l->rules_.push(token, id);
-	}
-}
-
-void ScadLexer::highlightComments(int start, const std::string& input, lexertl::smatch results, int style)
-{
-	  QString word = QString::fromStdString(l->token);
-	  startStyling(start + std::distance(input.begin(), results.start));
-	  setStyling(word.length(), style);
-}
 void ScadLexer::highlighting(int start, const std::string& input, lexertl::smatch results, int style)
 {
-	  QString word = QString::fromStdString(l->token);
+	  QString word = QString::fromStdString(token);
 	  startStyling(start + std::distance(input.begin(), results.start));
 	  setStyling(word.length(), style); 
 }

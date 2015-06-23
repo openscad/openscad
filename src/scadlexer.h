@@ -42,8 +42,6 @@ public:
 
         QColor defaultColor(int style) const;
 
-	void defineRules(QStringList&, int);
-	void highlightComments(int, const std::string&, lexertl::smatch, int);
 	void highlighting(int, const std::string&, lexertl::smatch, int);
         QString description(int style) const;
 private:
@@ -57,4 +55,5 @@ private:
 	QStringList modelsList;
 	QStringList numbers;
 	QStringList operatorsList;
+	std::string token;
 };
