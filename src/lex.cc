@@ -50,3 +50,59 @@ void Lex::defineRules(std::string words[], int size, int id){
 		rules_.push(words[it], id);	
 	}
 }
+
+void Lex::lex_results(const std::string input){
+	
+	lexertl::smatch results (input.begin(), input.end());
+	lexertl::lookup(sm, results);	
+
+	while(results.id != 0)
+	{
+		switch(results.id)
+		{
+			case 2:
+		 	token = results.str();
+	//	  	 highlighting(start, input, results, Keyword);
+		 	 break;
+		
+			case 1:
+		  	token = results.str();
+	//	  	 highlighting(start, input, results, Comment);
+			 break;
+			
+			case 3:
+		  	token = results.str();
+	//	  	 highlighting(start, input, results, Transformation);
+			 break;
+
+			case 4:
+		  	token = results.str();
+	//	  	 highlighting(start, input, results, Model);
+			 break;
+			
+			case 5:
+		  	token = results.str();
+	//	  	 highlighting(start, input, results, Operator);
+			 break;
+
+			case 6:
+		  	token = results.str();
+	//	  	 highlighting(start, input, results, Boolean);
+			 break;
+			
+			case 7:
+			token = results.str();
+	//		 highlighting(start, input, results, Function);
+			break;
+
+			case 8:
+			token = results.str();
+	//		 highlighting(start, input, results, Number);
+
+			case 11:
+			token = results.str();
+	//		highlighting(start, input, results, Variable);
+	       }
+		lexertl::lookup(sm, results);
+	}
+}

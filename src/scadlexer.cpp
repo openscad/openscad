@@ -45,8 +45,10 @@ void ScadLexer::styleText(int start, int end)
 
     editor()->SendScintilla(QsciScintilla::SCI_GETTEXTRANGE, start, end, data);
     QString source(data);
+
 	const std::string input(source.toStdString());
-	lexertl::smatch results (input.begin(), input.end());
+	l->lex_results(input);
+/*	lexertl::smatch results (input.begin(), input.end());
 	lexertl::lookup(l->sm, results);	
 	while(results.id != 0)
 	{
@@ -96,7 +98,7 @@ void ScadLexer::styleText(int start, int end)
 			highlighting(start, input, results, Variable);
 	       }
 		lexertl::lookup(l->sm, results);
-	}
+	}*/
     delete [] data;
     if(source.isEmpty())
         return;
