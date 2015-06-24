@@ -51,7 +51,7 @@ void Lex::defineRules(std::string words[], int size, int id){
 	}
 }
 
-void Lex::lex_results(const std::string input, int start, LexInterface* const obj){
+void Lex::lex_results(const std::string& input, int start, LexInterface* const obj){
 	
 	lexertl::smatch results (input.begin(), input.end());
 	lexertl::lookup(sm, results);	
@@ -62,46 +62,46 @@ void Lex::lex_results(const std::string input, int start, LexInterface* const ob
 		{
 			case 2:
 		 	token = results.str();
-		 	 obj->highlighting(start, input, results, 2);
+		 	 obj->highlighting(start, input, results, results.id);
 		 	 break;
 		
 			case 1:
 		  	token = results.str();
-	//	  	 highlighting(start, input, results, Comment);
+		  	 obj->highlighting(start, input, results, results.id);
 			 break;
 			
 			case 3:
 		  	token = results.str();
-	//	  	 highlighting(start, input, results, Transformation);
+		  	 obj->highlighting(start, input, results, results.id);
 			 break;
 
 			case 4:
 		  	token = results.str();
-	//	  	 highlighting(start, input, results, Model);
+		  	 obj->highlighting(start, input, results, results.id);
 			 break;
 			
 			case 5:
 		  	token = results.str();
-	//	  	 highlighting(start, input, results, Operator);
+		  	 obj->highlighting(start, input, results, results.id);
 			 break;
 
 			case 6:
 		  	token = results.str();
-	//	  	 highlighting(start, input, results, Boolean);
+		  	 obj->highlighting(start, input, results, results.id);
 			 break;
 			
 			case 7:
 			token = results.str();
-	//		 highlighting(start, input, results, Function);
+			 obj->highlighting(start, input, results, results.id);
 			break;
 
 			case 8:
 			token = results.str();
-	//		 highlighting(start, input, results, Number);
+			 obj->highlighting(start, input, results, results.id);
 
 			case 11:
 			token = results.str();
-	//		highlighting(start, input, results, Variable);
+			obj->highlighting(start, input, results, results.id);
 	       }
 		lexertl::lookup(sm, results);
 	}

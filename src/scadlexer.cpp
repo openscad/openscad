@@ -48,57 +48,6 @@ void ScadLexer::styleText(int start, int end)
 
 	const std::string input(source.toStdString());
 	l->lex_results(input, start, this);
-/*	lexertl::smatch results (input.begin(), input.end());
-	lexertl::lookup(l->sm, results);	
-	while(results.id != 0)
-	{
-		switch(results.id)
-		{
-			case 2:
-		 	token = results.str();
-		  	 highlighting(start, input, results, Keyword);
-		 	 break;
-		
-			case 1:
-		  	token = results.str();
-		  	 highlighting(start, input, results, Comment);
-			 break;
-			
-			case 3:
-		  	token = results.str();
-		  	 highlighting(start, input, results, Transformation);
-			 break;
-
-			case 4:
-		  	token = results.str();
-		  	 highlighting(start, input, results, Model);
-			 break;
-			
-			case 5:
-		  	token = results.str();
-		  	 highlighting(start, input, results, Operator);
-			 break;
-
-			case 6:
-		  	token = results.str();
-		  	 highlighting(start, input, results, Boolean);
-			 break;
-			
-			case 7:
-			token = results.str();
-			 highlighting(start, input, results, Function);
-			break;
-
-			case 8:
-			token = results.str();
-			 highlighting(start, input, results, Number);
-
-			case 11:
-			token = results.str();
-			highlighting(start, input, results, Variable);
-	       }
-		lexertl::lookup(l->sm, results);
-	}*/
     delete [] data;
     if(source.isEmpty())
         return;
@@ -106,8 +55,7 @@ void ScadLexer::styleText(int start, int end)
 
 void ScadLexer::highlighting(int start, const std::string& input, lexertl::smatch results, int style)
 {
-	  QString word = QString::fromStdString(token);
-	std::cout << token;
+	  QString word = QString::fromStdString(l->token);
 	  startStyling(start + std::distance(input.begin(), results.start));
 	  setStyling(word.length(), style); 
 }

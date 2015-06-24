@@ -1,5 +1,10 @@
 #pragma once
 
+#include <boost/algorithm/string.hpp>
+#include <Qsci/qsciglobal.h>
+#include <Qsci/qscilexercustom.h>
+
+#include <Qsci/qsciscintilla.h>
 #include <qobject.h>
 #include <stack>
 #include "lex.h"
@@ -50,5 +55,4 @@ private:
 	QStringList modelsList;
 	QStringList numbers;
 	QStringList operatorsList;
-	std::string token;
 };
