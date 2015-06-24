@@ -2,13 +2,8 @@
 
 #include <qobject.h>
 #include <stack>
-#include <Qsci/qsciglobal.h>
-#include <Qsci/qscilexercustom.h>
-
-#include <Qsci/qsciscintilla.h>
-#include <boost/algorithm/string.hpp>
 #include "lex.h"
-class ScadLexer : public QsciLexerCustom
+class ScadLexer : public QsciLexerCustom, public LexInterface
 {
 public:
         enum {

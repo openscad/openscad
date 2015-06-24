@@ -51,7 +51,7 @@ void Lex::defineRules(std::string words[], int size, int id){
 	}
 }
 
-void Lex::lex_results(const std::string input){
+void Lex::lex_results(const std::string input, int start, LexInterface* const obj){
 	
 	lexertl::smatch results (input.begin(), input.end());
 	lexertl::lookup(sm, results);	
@@ -62,7 +62,7 @@ void Lex::lex_results(const std::string input){
 		{
 			case 2:
 		 	token = results.str();
-	//	  	 highlighting(start, input, results, Keyword);
+		 	 obj->highlighting(start, input, results, 2);
 		 	 break;
 		
 			case 1:

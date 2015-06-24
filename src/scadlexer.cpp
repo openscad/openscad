@@ -1,7 +1,7 @@
 #include <iostream>
 #include "scadlexer.h"
 
-ScadLexer::ScadLexer(QObject *parent) : QsciLexerCustom(parent)
+ScadLexer::ScadLexer(QObject *parent) : QsciLexerCustom(parent), LexInterface()
 {
 	l = new Lex();
 	l->rules();
@@ -47,7 +47,7 @@ void ScadLexer::styleText(int start, int end)
     QString source(data);
 
 	const std::string input(source.toStdString());
-	l->lex_results(input);
+	l->lex_results(input, start, this);
 /*	lexertl::smatch results (input.begin(), input.end());
 	lexertl::lookup(l->sm, results);	
 	while(results.id != 0)
@@ -107,6 +107,7 @@ void ScadLexer::styleText(int start, int end)
 void ScadLexer::highlighting(int start, const std::string& input, lexertl::smatch results, int style)
 {
 	  QString word = QString::fromStdString(token);
+	std::cout << token;
 	  startStyling(start + std::distance(input.begin(), results.start));
 	  setStyling(word.length(), style); 
 }
