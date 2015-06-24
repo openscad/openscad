@@ -142,10 +142,7 @@ std::string LinearExtrudeNode::toString() const
 			"file = " << this->filename << ", "
 			"layer = " << QuotedString(this->layername) << ", "
 			"origin = [" << this->origin_x << ", " << this->origin_y << "], "
-#ifndef OPENSCAD_TESTING
-			// timestamp is needed for caching, but disturbs the test framework
 			<< "timestamp = " << (fs::exists(path) ? fs::last_write_time(path) : 0) << ", "
-#endif
 			;
 	}
 	stream <<

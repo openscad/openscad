@@ -4,13 +4,24 @@
 # this assumes you have sudo installed and running, or are running as root.
 #
 
-get_fedora_deps()
+get_fedora_deps_yum()
 {
  yum -y install qt5-qtbase-devel bison flex eigen3-devel harfbuzz-devel \
   fontconfig-devel freetype-devel \
   boost-devel mpfr-devel gmp-devel glew-devel CGAL-devel gcc gcc-c++ pkgconfig \
   opencsg-devel git libXmu-devel curl imagemagick ImageMagick glib2-devel make \
-  xorg-x11-server-Xvfb gettext
+  xorg-x11-server-Xvfb gettext qscintilla-devel qscintilla-qt5-devel \
+  mesa-dri-drivers
+}
+
+get_fedora_deps_dnf()
+{
+ dnf -y install qt5-qtbase-devel bison flex eigen3-devel harfbuzz-devel \
+  fontconfig-devel freetype-devel \
+  boost-devel mpfr-devel gmp-devel glew-devel CGAL-devel gcc gcc-c++ pkgconfig \
+  opencsg-devel git libXmu-devel curl ImageMagick glib2-devel make \
+  xorg-x11-server-Xvfb gettext qscintilla-devel qscintilla-qt5-devel \
+  mesa-dri-drivers
 }
 
 get_qomo_deps()
@@ -43,8 +54,13 @@ get_netbsd_deps()
 get_opensuse_deps()
 {
  zypper install libeigen3-devel mpfr-devel gmp-devel boost-devel \
-  libqt4-devel glew-devel cmake git bison flex cgal-devel opencsg-devel curl \
-  glib2-devel gettext
+  libqt4-devel glew-devel cmake git bison flex cgal-devel curl \
+  glib2-devel gettext freetype-devel harfbuzz-devel libqscintilla-devel \
+  xvfb-run imagemagick opencsg-devel
+  echo if you are missing opencsg, please add the -graphics- repository
+  echo find your version from cat /etc/issue, then replace it below, then run
+  echo " zypper ar -f http://download.opensuse.org/repositories/graphics/openSUSE_13.2 graphics"
+  echo " zypper install opencsg-devel"
 }
 
 get_mageia_deps()
@@ -58,12 +74,30 @@ get_mageia_deps()
 get_debian_deps()
 {
  apt-get -y install \
-  build-essential curl libffi-dev qtbase5-dev libqt5scintilla2-dev \
+  build-essential curl libffi-dev \
   libxmu-dev cmake bison flex git-core libboost-all-dev \
   libXi-dev libmpfr-dev libboost-dev libglew-dev \
   libeigen3-dev libcgal-dev libopencsg-dev libgmp3-dev libgmp-dev \
   imagemagick libfontconfig-dev libfreetype6-dev \
-  libharfbuzz-dev gtk-doc-tools libglib2.0-dev gettext
+  gtk-doc-tools libglib2.0-dev gettext xvfb pkg-config ragel
+}
+
+get_debian_8_deps()
+{
+  get_debian_deps
+  apt-get -y install libharfbuzz-dev qtbase5-dev libqt5scintilla2-dev
+}
+
+get_debian_7_deps()
+{
+  get_debian_deps
+  apt-get -y install libqt4-dev libqscintilla2-dev
+}
+
+get_ubuntu_14_deps()
+{
+  get_debian_8_deps
+  apt-get -y install qt5-qmake
 }
 
 get_msys2_x86_64_deps()
@@ -116,62 +150,3 @@ unknown()
  echo "in README.md using your system's package manager."
 }
 
-
-try_using_etc_issue()
-{
- if [ "`grep -i ubuntu /etc/issue`" ]; then
-  get_debian_deps
- elif [ "`grep -i debian /etc/issue`" ]; then
-  get_debian_deps
- elif [ "`grep -i raspbian /etc/issue`" ]; then
-  get_debian_deps
- elif [ "`grep -i mint /etc/issue`" ]; then
-  get_debian_deps
- elif [ "`grep -i suse /etc/issue`" ]; then
-  get_opensuse_deps
- elif [ "`grep -i fedora /etc/issue`" ]; then
-  get_fedora_deps
- elif [ "`grep -i red.hat /etc/issue`" ]; then
-  get_fedora_deps
- elif [ "`grep -i mageia /etc/issue`" ]; then
-  get_mageia_deps
- elif [ "`grep -i qomo /etc/issue`" ]; then
-  get_qomo_deps
- else
-  unknown
- fi
-}
-
-try_using_uname()
-{
- if [ "`uname -a | grep -i x86_64.*Msys`" ]; then
-  get_msys2_x86_64_deps
- elif [ "`uname -a | grep -i i686.*Msys`" ]; then
-  get_msys2_i686_deps
- elif [ "`uname | grep -i freebsd `" ]; then
-  get_freebsd_deps
- elif [ "`uname | grep -i netbsd`" ]; then
-  get_netbsd_deps
- else
-  unknown
- fi
-}
-
-try_using_rpm()
-{
- if [ "`rpm -qa | grep altlinux`" ]; then
-  get_altlinux_deps
- else
-  unknown
- fi
-}
-
-if [ -e /etc/issue ]; then
- try_using_etc_issue
-elif [ "`command -v uname`" ]; then
- try_using_uname
-elif [ "`command -v rpm`" ]; then
- try_using_uname
-else
- unknown
-fi

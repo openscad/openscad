@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<application>
- <id type="desktop">openscad.desktop</id>
- <licence>CC0</licence>
+<component type="desktop">
+ <id>openscad.desktop</id>
+ <metadata_license>CC0-1.0</metadata_license>
+ <project_license>GPL-2.0+ and CC0-1.0</project_license>
+ <name>OpenSCAD</name>
  <summary>The Programmers Solid 3D CAD Modeller</summary>
  <description>
   <p>OpenSCAD is a software for creating solid 3D CAD models. Unlike most free software for creating 3D models (such as Blender) it does not focus on the artistic aspects of 3D modelling but instead on the CAD aspects. Thus it might be the application you are looking for when you are planning to create 3D models of machine parts but pretty sure is not what you are looking for when you are more interested in creating computer-animated movies.</p>
@@ -9,8 +11,12 @@
   <p>OpenSCAD provides two main modelling techniques: First there is constructive solid geometry (aka CSG) and second there is extrusion of 2D outlines. As data exchange format format for this 2D outlines Autocad DXF files are used. In addition to 2D paths for extrusion it is also possible to read design parameters from DXF files. Besides DXF files OpenSCAD can read and create 3D models in the STL and OFF file formats.</p>
  </description>
  <screenshots>
-  <screenshot type="default" width="800" height="437">http://www.openscad.org/images/appdata-screenshot-1.png</screenshot>
-  <screenshot width="800" height="465">http://www.openscad.org/images/appdata-screenshot-2.png</screenshot>
+  <screenshot type="default">
+   <image>http://www.openscad.org/images/appdata-screenshot-1.png</image>
+  </screenshot>
+  <screenshot>
+   <image>http://www.openscad.org/images/appdata-screenshot-2.png</image>
+  </screenshot>
  </screenshots>
  <url type="homepage">http://www.openscad.org/</url>
-</application>
+</component>

@@ -188,11 +188,17 @@ CONFIG += fontconfig
 CONFIG += gettext
 
 #Uncomment the following line to enable the QScintilla editor
-CONFIG += scintilla
+!nogui {
+  CONFIG += scintilla
+}
 
 # Make experimental features available
 experimental {
   DEFINES += ENABLE_EXPERIMENTAL
+}
+
+nogui {
+  DEFINES += OPENSCAD_NOGUI
 }
 
 mdi {
@@ -482,6 +488,8 @@ HEADERS += src/cgal.h \
            src/Polygon2d-CGAL.h
 
 SOURCES += src/cgalutils.cc \
+           src/cgalutils-applyops.cc \
+           src/cgalutils-project.cc \
            src/cgalutils-tess.cc \
            src/cgalutils-polyhedron.cc \
            src/CGALCache.cc \
