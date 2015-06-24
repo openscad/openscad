@@ -147,6 +147,82 @@ get_msys2_i686_deps()
 unknown()
 {
  echo "Unknown system type. Please install the dependency packages listed"
- echo "in README.md using your system's package manager."
+ echo "in README.md using your system's package manager"
 }
 
+try_using_etc_issue()
+{
+ if [ ! -e /etc/issue ]; then
+  try_result=0
+ elif [ "`grep -i ubuntu.1[4-9] /etc/issue`" ]; then
+  get_ubuntu_14_deps
+ elif [ "`grep -i ubuntu /etc/issue`" ]; then
+  get_debian_deps
+ elif [ "`grep -i debian.GNU.Linux.7 /etc/issue`" ]; then
+  get_debian_7_deps
+ elif [ "`grep -i debian /etc/issue`" ]; then
+  get_debian_8_deps
+ elif [ "`grep -i raspbian /etc/issue`" ]; then
+  get_debian_deps
+ elif [ "`grep -i mint /etc/issue`" ]; then
+  get_debian_deps
+ elif [ "`grep -i suse /etc/issue`" ]; then
+  get_opensuse_deps
+ elif [ "`grep -i fedora.release.2[2-9] /etc/issue`" ]; then
+  get_fedora_deps_dnf
+ elif [ "`grep -i fedora.release.[3-9][0-9] /etc/issue`" ]; then
+  get_fedora_deps_dnf
+ elif [ "`grep -i fedora.release.2[0-1] /etc/issue`" ]; then
+  get_fedora_deps_yum
+ elif [ "`grep -i fedora /etc/issue`" ]; then
+  get_fedora_deps_yum
+ elif [ "`grep -i red.hat /etc/issue`" ]; then
+  get_fedora_deps
+ elif [ "`grep -i mageia /etc/issue`" ]; then
+  get_mageia_deps
+ elif [ "`grep -i qomo /etc/issue`" ]; then
+  get_qomo_deps
+ else
+  try_result=0
+ fi
+}
+
+try_using_uname()
+{
+ if [ ! "`command -v uname`" ]; then
+  try_result=0
+ elif [ "`uname -a | grep -i x86_64.*Msys`" ]; then
+  get_msys2_x86_64_deps
+ elif [ "`uname -a | grep -i i686.*Msys`" ]; then
+  get_msys2_i686_deps
+ elif [ "`uname | grep -i freebsd `" ]; then
+  get_freebsd_deps
+ elif [ "`uname | grep -i netbsd`" ]; then
+  get_netbsd_deps
+ else
+  try_result=0
+ fi
+}
+
+try_using_rpm()
+{
+ if [ ! "`command -v rpm`" ]; then
+  try_result=0
+ elif [ "`rpm -qa | grep altlinux`" ]; then
+  get_altlinux_deps
+ else
+  try_result=0
+ fi
+}
+
+try_result=1
+try_using_etc_issue
+if [ $try_result -eq 0 ]; then
+ try_using_uname
+fi
+if [ $try_result -eq 0 ]; then
+ try_using_rpm
+fi
+if [ $try_result -eq 0 ]; then
+ unknown
+fi

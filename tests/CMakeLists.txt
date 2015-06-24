@@ -863,6 +863,11 @@ target_link_libraries(cgalcachetest tests-cgal ${GLEW_LIBRARIES} ${OPENCSG_LIBRA
 # Enabled by using -DNOGUI=1 as a cmake parameter. Only kept for backwards compatibility and in case
 # someone needs that binary.
 #
+if (NOGUI)
+ add_executable(openscad_nogui ../src/openscad.cc)
+ set_target_properties(openscad_nogui PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing -DEIGEN_DONT_ALIGN ${ENABLE_OPENCSG_FLAG} -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
+ target_link_libraries(openscad_nogui tests-offscreen tests-cgal ${GLEW_LIBRARY} ${OPENCSG_LIBRARY} ${APP_SERVICES_LIBRARY})
+endif()
 
 #
 # GUI binary tests
@@ -871,8 +876,11 @@ if(APPLE)
   set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../OpenSCAD.app/Contents/MacOS/OpenSCAD")
 elseif (MINGW_CROSS_ENV_DIR) 
   set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../mingw32/release/openscad.exe")
-elseif(WIN32)
+elseif(WIN32) # also should work for msys2 / win64
   set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../Release/openscad.exe")
+elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../bin/openscad")
+  # linux/bsd -> if 'bin' subdir has been created for testing build system
+  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../bin/openscad")
 else()
   set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../openscad")
 endif()
