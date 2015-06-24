@@ -113,8 +113,14 @@ else()
 endif()
 
 #
-# Windows
-#
+# Windows(TM)
+# Note - if(WIN32) will also detect 64-bit Win
+
+if(WIN32)
+  # Unicode in Windows(TM) API, Windows Data Types for Strings
+  # https://msdn.microsoft.com/en-us/library/windows/desktop/dd374131(v=vs.85).aspx
+  add_definitions( -DUNICODE )
+endif()
 
 if(WIN32 AND MSVC)
   set(WIN32_STATIC_BUILD "True")

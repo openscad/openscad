@@ -57,17 +57,20 @@ static const std::string getFolderPath(int nFolder)
 	HWND hwndOwner = 0;
 	HANDLE hToken = NULL;
 	DWORD dwFlags = SHGFP_TYPE_CURRENT;
+	// note - we #define UNICODE in the makefile
+	// so LPTSTR is a wchar * 
+	// see http://msdn.microsoft.com/en-us/library/windows/desktop/aa383751
 	LPTSTR pszPath = &path[0];
 
 	int result = SHGetFolderPathW( hwndOwner, nFolder, hToken, dwFlags, pszPath );
 
 	if (result == S_OK) {
-        path = std::wstring( path.c_str() ); // strip extra NULLs
-        // Use boost::filesystem to decide how to convert from wstring
-        // to string. Normally the path encoding is system local and
-        // we don't want to force conversion to UTF-8.
-        fs::path p(path);
-        return p.string();
+		path = std::wstring( path.c_str() ); // strip extra NULLs
+		// Use boost::filesystem to decide how to convert from wstring
+		// to string. Normally the path encoding is system local and
+		// we don't want to force conversion to UTF-8.
+		fs::path p(path);
+		return p.string();
 	}
 	return "";
 }
@@ -204,7 +207,7 @@ std::string PlatformUtils::sysinfo(bool extended)
 			result += PlatformUtils::toMemorySizeString(memoryinfo.ullTotalPhys, 2);
 			result += " RAM";
 		}
-  }
+	}
 
 	return result;
 }
