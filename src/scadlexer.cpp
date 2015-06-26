@@ -1,4 +1,3 @@
-#include <iostream>
 #include "scadlexer.h"
 
 ScadLexer::ScadLexer(QObject *parent) : QsciLexerCustom(parent), LexInterface()
@@ -33,6 +32,7 @@ ScadLexer::ScadLexer(QObject *parent) : QsciLexerCustom(parent), LexInterface()
 
 ScadLexer::~ScadLexer()
 {
+	delete l;
 }
 
 void ScadLexer::styleText(int start, int end)

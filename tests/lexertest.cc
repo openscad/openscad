@@ -2,7 +2,6 @@
 #include <fstream>
 #include <sstream>
 #include <string>
-#include <vector>
 #include "../src/lex.h"
 
 using namespace std;
@@ -16,6 +15,9 @@ class lexer : public LexInterface
 	lexer(){
 		lex = new Lex();	
 		lex->rules();
+	}
+	~lexer(){
+		delete lex;
 	}
 	void highlighting(int start, const std::string& input, lexertl::smatch results, int style)
 	{
