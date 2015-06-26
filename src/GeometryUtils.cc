@@ -8,6 +8,8 @@
 #include <boost/unordered_map.hpp>
 #include <boost/math/special_functions/fpclassify.hpp>
 
+using namespace GeometryUtils;
+
 static void *stdAlloc(void* userData, unsigned int size) {
 	TESS_NOTUSED(userData);
 	return malloc(size);
