@@ -3,47 +3,44 @@ Running regression tests:
 
 0) Prerequisites
 
-Install the prerequisite helper programs on your system:
+For Linux, BSD, and Mac, install the prerequisite helper programs on 
+your system:
 
      cmake, python2 (not 3), ImageMagick 6.5.9.3 or newer, diff
 
-There are binary installer packages of these tools available for Mac, 
-Win, Linux, BSD, and other systems. (except maybe diff for Win)
+There are binary installer packages of these tools available on the internet.
 
-Next, get a working qmake GUI build of the main openscad binary working. 
-For Windows(TM) this means get a cross-build working from within linux. 
+For Windows(TM) install only the MSYS2 system.
+
+1) GUI Binary
+
+Get a working qmake GUI build of the main openscad binary working. 
 See README.md for how to do this.
 
-Then, install MCAD under openscad/libraries.
+2) MCAD
 
-$ cd openscad
-$ git submodule update --init
+Install MCAD under openscad/libraries.
+
+    $ cd openscad
+    $ git submodule update --init
 
 A) Building test environment
 
-Linux, Mac:
+Linux, Mac, BSD:
 
     $ cd tests
     $ cmake .
     $ make
 
-Windows(TM):
+Windows(TM) under MSYS2:
 
-Cross-build from within linux:
-
-64-bit:
-    $ source ./scripts/setenv-mingw-xbuild.sh 64
-    $ ./scripts/release-common.sh mingw64 tests
-    $ # result is .zip file under ./mingw64/
-
-32-bit: 
-    $ source ./scripts/setenv-mingw-xbuild.sh 32
-    $ ./scripts/release-common.sh mingw32 tests
-    $ # result is .zip file under ./mingw32/
+    $ cd tests
+    $ cmake -G "MSYS Makefiles" .
+    $ make
 
 B) Running tests
 
-Linux, Mac:
+Linux, Mac, BSD, Win:
 
 $ ctest               Runs tests enabled by default
 $ ctest -R <regex>    Runs only matching tests, e.g. ctest -R dxf
@@ -55,12 +52,6 @@ $ ctest -C <configs>  Adds extended tests belonging to configs.
                       Bugs     - test known bugs (tests will fail)
                       All      - test everything
 
-Win:
-
-Unzip the OpenSCAD-Tests-YYYY.MM.DD file onto a Windows(TM) machine. 
-There will be a script called OpenSCAD-Test-Console.py in the parent folder.
-Double-click it, and it will open a console, from which you can type the ctest
-commands listed above.
 
 C) Automatically upload test results (experimental)
 
@@ -113,7 +104,9 @@ or
 
 $ xvfb-run ctest
 
-Some versions of Xvfb may fail, however. 
+It is required that the Xvfb / Xvnc have OpenGL support enabled. For example
+on some Fedora Linux systems, it is necessary to install the mesa-dri-drivers
+package as root to get Xvfb to enable OpenGL.
 
 1. Trouble finding libraries on unix
 

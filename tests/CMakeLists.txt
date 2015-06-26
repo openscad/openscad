@@ -824,7 +824,8 @@ target_link_libraries(tests-common tests-core)
 
 add_library(tests-cgal STATIC ${CGAL_SOURCES})
 set_target_properties(tests-cgal PROPERTIES COMPILE_FLAGS "${ENABLE_OPENCSG_FLAG} -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
-target_link_libraries(tests-cgal tests-common ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${GMP_LIBRARIES} ${MPFR_LIBRARIES})
+target_link_libraries(tests-cgal tests-common ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${MPFR_LIBRARIES} ${GMP_LIBRARIES} )
+# GMP must come after MPFR to prevent link errors, see MPFR FAQ 
 
 #
 # Create non-CGAL tests
@@ -872,17 +873,26 @@ endif()
 #
 # GUI binary tests
 #
-if(APPLE)
-  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../OpenSCAD.app/Contents/MacOS/OpenSCAD")
-elseif (MINGW_CROSS_ENV_DIR) 
-  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../mingw32/release/openscad.exe")
-elseif(WIN32) # also should work for msys2 / win64
-  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../Release/openscad.exe")
-elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../bin/openscad")
-  # linux/bsd -> if 'bin' subdir has been created for testing build system
-  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../bin/openscad")
-else()
-  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../openscad")
+set(APPLEBIN "${CMAKE_CURRENT_SOURCE_DIR}/../OpenSCAD.app/Contents/MacOS/OpenSCAD")
+set(MINGXBIN "${CMAKE_CURRENT_SOURCE_DIR}/../mingw32/release/openscad.exe")
+set(WIN32BIN "${CMAKE_CURRENT_SOURCE_DIR}/../Release/openscad.exe")
+set(UNXBIN "${CMAKE_CURRENT_SOURCE_DIR}/../openscad") # linux, bsd
+# BWORKBIN is for working on the build system, by using out-of-tree build
+set(BWORKBIN1 "${CMAKE_CURRENT_SOURCE_DIR}/../bin/openscad")
+set(BWORKBIN2 "${CMAKE_CURRENT_SOURCE_DIR}/../bin/release/openscad.exe")
+
+if(APPLE AND EXISTS "${APPLEBIN}")
+  set(OPENSCAD_BINPATH "${APPLEBIN}") 
+elseif(MINGW_CROSS_ENV_DIR AND EXISTS "${MINGXBIN}") 
+  set(OPENSCAD_BINPATH "${MINGXBIN}") 
+elseif(WIN32 AND EXISTS "${WIN32BIN}")
+  set(OPENSCAD_BINPATH "${WIN32BIN}") 
+elseif(EXISTS "${UNXBIN}")
+  set(OPENSCAD_BINPATH "${UNXBIN}")
+elseif(EXISTS "${BWORKBIN1}")
+  set(OPENSCAD_BINPATH "${BWORKBIN1}")
+elseif(EXISTS "${BWORKBIN2}")
+  set(OPENSCAD_BINPATH "${BWORKBIN2}")
 endif()
 
 if(EXISTS "${OPENSCAD_BINPATH}")
