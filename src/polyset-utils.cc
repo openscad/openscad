@@ -11,6 +11,8 @@
 
 #include <boost/foreach.hpp>
 
+using namespace GeometryUtils;
+
 namespace PolysetUtils {
 
 	// Project all polygons (also back-facing) into a Polygon2d instance.

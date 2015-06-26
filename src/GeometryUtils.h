@@ -3,6 +3,8 @@
 #include "linalg.h"
 #include <vector>
 
+namespace GeometryUtils {
+
 typedef std::vector<Vector3d> Polygon;
 typedef std::vector<Polygon> Polygons;
 
@@ -25,7 +27,6 @@ struct IndexedPolyMesh {
 	std::vector<std::vector<IndexedFace> > polygons;
 };
 
-namespace GeometryUtils {
 	bool tessellatePolygon(const Polygon &polygon,
 												 Polygons &triangles,
 												 const Vector3f *normal = NULL);

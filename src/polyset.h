@@ -12,6 +12,8 @@
 #include <boost/logic/tribool.hpp>
 BOOST_TRIBOOL_THIRD_STATE(unknown)
 
+using namespace GeometryUtils;
+
 class PolySet : public Geometry
 {
 public:

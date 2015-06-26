@@ -35,6 +35,8 @@
 #include <boost/foreach.hpp>
 #include <boost/unordered_set.hpp>
 
+using namespace GeometryUtils;
+
 static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 {
 	if (ps.isEmpty()) return new CGAL_Nef_polyhedron();

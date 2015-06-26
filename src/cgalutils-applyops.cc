@@ -35,6 +35,8 @@
 #include <boost/foreach.hpp>
 #include <boost/unordered_set.hpp>
 
+using namespace GeometryUtils;
+
 namespace CGALUtils {
 
 	template<typename Polyhedron>

@@ -35,6 +35,7 @@
 #include <boost/foreach.hpp>
 #include <boost/unordered_set.hpp>
 
+using namespace GeometryUtils;
 
 static void add_outline_to_poly(CGAL_Nef_polyhedron2::Explorer &explorer,
 								CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator circ,
