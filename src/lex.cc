@@ -39,7 +39,8 @@ void Lex::rules(){
 	rules_.push(".", 3);
 	rules_.push("\n",3);
 	rules_.push("INITIAL", "\"/*\"", "COMMENT");
-	rules_.push("COMMENT", "[^*]+|.",1, ".");
+	rules_.push("COMMENT", "[^*]+|.", ".");
+	rules_.push("COMMENT", "\"*/\"", 1, "INITIAL");
 	rules_.push("[/][/].*$", 1);
 	lexertl::generator::build(rules_, sm);
 }
