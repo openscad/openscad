@@ -9,7 +9,6 @@ using namespace std;
 class lexer : public LexInterface
 {
 	public:
-	string token;
 	Lex *lex;
 	ofstream output;
 	lexer(){
@@ -21,7 +20,12 @@ class lexer : public LexInterface
 	}
 	void highlighting(int start, const std::string& input, lexertl::smatch results, int style)
 	{
-		output<< "<"<<results.id<<">"<< results.str()<<"</"<<results.id<<">";
+			int pointer = output.tellp();
+			if(pointer >= start){
+				output << "<" << results.id << ">" << lex->token <<"</"<< results.id<<">";
+			} else {
+				output << lex->token;
+			}
 	}
 };
 int main(int argv, char* argc[]){
