@@ -20,12 +20,7 @@ class lexer : public LexInterface
 	}
 	void highlighting(int start, const std::string& input, lexertl::smatch results, int style)
 	{
-			int pointer = output.tellp();
-			if(pointer >= start){
 				output << "<" << results.id << ">" << lex->token <<"</"<< results.id<<">";
-			} else {
-				output << lex->token;
-			}
 	}
 };
 int main(int argv, char* argc[]){
@@ -36,7 +31,8 @@ int main(int argv, char* argc[]){
 	stringstream buffer;
 	buffer << newfile.rdbuf();
 	const string line = buffer.str();
+	const string subline = line.substr(228, string::npos);
 	int start = 0;
-	l.lex->lex_results(line, start ,&l);
+	l.lex->lex_results(subline, start ,&l);
 	newfile.close();
 }	
