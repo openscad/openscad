@@ -186,6 +186,19 @@ bool Value::getDouble(double &v) const
   return false;
 }
 
+bool Value::getFiniteDouble(double &v) const
+{
+  double result;
+  if (!getDouble(result)) {
+    return false;
+  }
+  bool valid = boost::math::isfinite(result);
+  if (valid) {
+    v = result;
+  }
+  return valid;
+}
+
 class tostring_visitor : public boost::static_visitor<std::string>
 {
 public:
@@ -299,14 +312,25 @@ const Value::VectorType &Value::toVector() const
   else return empty;
 }
 
-bool Value::getVec2(double &x, double &y) const
+bool Value::getVec2(double &x, double &y, bool ignoreInfinite) const
 {
   if (this->type() != VECTOR) return false;
 
   const VectorType &v = toVector();
   
   if (v.size() != 2) return false;
-  return (v[0].getDouble(x) && v[1].getDouble(y));
+
+  double rx, ry;
+  bool valid = ignoreInfinite
+	  ? v[0].getFiniteDouble(rx) && v[1].getFiniteDouble(ry)
+	  : v[0].getDouble(rx) && v[1].getDouble(ry);
+
+  if (valid) {
+    x = rx;
+    y = ry;
+  }
+
+  return valid;
 }
 
 bool Value::getVec3(double &x, double &y, double &z, double defaultval) const
