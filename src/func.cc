@@ -503,6 +503,7 @@ ValuePtr builtin_chr(const Context *, const EvalContext *evalctx)
 ValuePtr builtin_asc(const Context *, const EvalContext *evalctx)
 {
 	Value::VectorType result;
+	ValuePtr emptyResult = ValuePtr::undefined;
 	for (size_t i = 0; i < evalctx->numArgs(); i++) {
 		const ValuePtr v = evalctx->getArgValue(i);
 		if (v->type() != Value::STRING) {
@@ -517,6 +518,7 @@ ValuePtr builtin_asc(const Context *, const EvalContext *evalctx)
 			continue;
 		}
 
+		emptyResult = ValuePtr(0.0);
 		const glong len = g_utf8_strlen(ptr, -1);
 		for (;*ptr && len > 0;ptr = g_utf8_next_char(ptr)) {
 			const gunichar c = g_utf8_get_char(ptr);
@@ -525,7 +527,7 @@ ValuePtr builtin_asc(const Context *, const EvalContext *evalctx)
 	}
 
 	if (result.empty()) {
-		return ValuePtr::undefined;
+		return emptyResult;
 	} else if (result.size() == 1) {
 		return ValuePtr(result[0]);
 	} else {
