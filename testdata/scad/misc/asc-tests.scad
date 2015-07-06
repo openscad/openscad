@@ -15,6 +15,10 @@ echo(text = a2, codepoints = asc(a2));
 echo(text = u1, codepoints = asc(u1));
 echo(text = u2, codepoints = asc(u2));
 
+echo(empty_string = asc(""));
+echo(empty_strings = asc("", "", ""));
+echo(empty_string_and_undef = asc(undef, ""));
+
 echo(multiple_args = asc("a", "b", "", undef, "123"));
 
 ra1 = chr(asc(a1));
@@ -22,13 +26,13 @@ ra2 = chr(asc(a2));
 echo(equals = a1 == ra1, len_input = len(a1), len_output = len(ra1));
 echo(equals = a2 == ra2, len_input = len(a2), len_output = len(ra2));
 
-
 ru1 = chr(asc(u1));
 ru2 = chr(asc(u2));
 echo(equals = u1 == ru1, len_input = len(u1), len_output = len(ru1));
 echo(equals = u2 == ru2, len_input = len(u2), len_output = len(ru2));
 
 echo(asc(undef));
+echo(asc(undef, undef));
 echo(asc(1/0));
 echo(asc(-1/0));
 echo(asc(0/0));
