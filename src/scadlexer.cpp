@@ -59,6 +59,20 @@ void ScadLexer::highlighting(int start, const std::string& input, lexertl::smatc
 	  startStyling(start + std::distance(input.begin(), results.start));
 	  setStyling(word.length(), style); 
 }
+
+void ScadLexer::multilineComment(int start, const std::string& input, lexertl::smatch results, int style)
+{
+	int len = distance(input.begin(), results.start);
+	int index = len + start;
+//	std::cout << "l: "<< index<< std::endl;
+	while(start != 0){
+		index--;
+//		std::cout <<"index: "<<index;
+		start--;
+		index = len+start;
+	}
+}
+
 QColor ScadLexer::defaultColor(int style) const
 {
     switch(style) {

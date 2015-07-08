@@ -43,6 +43,7 @@ public:
         QColor defaultColor(int style) const;
 
 	void highlighting(int, const std::string&, lexertl::smatch, int);
+	void multilineComment(int, const std::string&, lexertl::smatch, int);
         QString description(int style) const;
 private:
         std::string keywordSet[4];

@@ -11,10 +11,10 @@ void Lex::rules(){
 	std::string keywords[] = {"var", "module", "function", "use", "echo", "include", "import", "group", "projection", "render", "surface","def", "enum", "struct", "fn", "typedef", "file", "namespace", "package", "interface", "param", "see","return", "class", "brief", "if", "else", "let", "for", "undef"};
 	int keywords_count = (sizeof(keywords)/s_size);
 
-	std::string transformations[] = {"translate", "rotate", "child", "scale", "linear_extrude", "rotate_extrude", "resize", "mirror", "multmatrix", "color", "offset", "hull", "minkowsi"};
+	std::string transformations[] = {"translate", "rotate", "child", "scale", "linear_extrude", "rotate_extrude", "resize", "mirror", "multmatrix", "color", "offset", "hull", "minkowski", "children", "assign", "intersection_for"};
 	int transformations_count = (sizeof(transformations)/s_size);
 
-	 std::string booleans[] = {"union", "difference", "interaction", "true", "false"};
+	 std::string booleans[] = {"union", "difference", "intersection", "true", "false"};
 	int booleans_count = (sizeof(booleans)/s_size);
 
 	std::string functions[] = {"abs", "sign", "rands", "min", "max", "sin", "cos", "asin", "acos", "tan", "atan", "atan2", "round", "ceil", "floor", "pow", "sqrt", "exp", "len", "log", "ln", "str", "chr", "concat", "lookup", "search", "version", "version_num", "norm", "cross", "parent_module", "dxf_dim", "dxf_cross"};
@@ -26,6 +26,9 @@ void Lex::rules(){
 	 std::string operators[] = {"<=", ">=", "==", "!=", "&&"};
 	int operators_count = (sizeof(operators)/s_size);
 
+	 std::string modifiers[] = {"!", "#", "%"};
+	int modifiers_count = (sizeof(modifiers)/s_size);
+
 	rules_.push_state("COMMENT");
 	defineRules(keywords, keywords_count, 2);
 	defineRules(transformations, transformations_count, 3);
@@ -33,14 +36,17 @@ void Lex::rules(){
 	defineRules(functions, functions_count, 7); 
 	defineRules(models, models_count, 4);
 	defineRules(operators, operators_count, 5);
+	defineRules(modifiers, modifiers_count, 10);
  
 	rules_.push("[0-9]+", 8);
 	rules_.push("[a-zA-Z0-9_]+", 9);
-	rules_.push(".", 3);
-	rules_.push("\n",3);
+	rules_.push(".", 1);
+	rules_.push("\n",1);
 	rules_.push("INITIAL", "\"/*\"", "COMMENT");
 	rules_.push("COMMENT", "[^*]+|.", ".");
 	rules_.push("COMMENT", "\"*/\"", 1, "INITIAL");
+	rules_.push("[*]", 10);
+	rules_.push("[$][a-zA-Z0-9_]+", 11);
 	rules_.push("[/][/].*$", 1);
 	lexertl::generator::build(rules_, sm);
 }
@@ -99,6 +105,14 @@ void Lex::lex_results(const std::string& input, int start, LexInterface* const o
 			case 8:
 			token = results.str();
 			 obj->highlighting(start, input, results, results.id);
+		
+			case 9:
+			token = results.str();
+			 obj->highlighting(start, input, results, results.id);
+			
+			case 10:
+			token = results.str();
+			  obj->multilineComment(start, input, results, results.id);
 
 			case 11:
 			token = results.str();
