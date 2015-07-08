@@ -22,6 +22,10 @@ class lexer : public LexInterface
 	{
 				output << "<" << results.id << ">" << lex->token <<"</"<< results.id<<">";
 	}
+	void multilineComment(int, const std::string&, lexertl::smatch, int)
+	{
+
+	}
 };
 int main(int argv, char* argc[]){
 

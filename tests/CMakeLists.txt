@@ -1464,7 +1464,8 @@ add_cmdline_test(dumptest-examples EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX csg FI
 add_cmdline_test(cgalpngtest EXE ${OPENSCAD_BINPATH} ARGS --render -o SUFFIX png FILES ${CGALPNGTEST_FILES})
 add_cmdline_test(lexertest EXE ${CMAKE_SOURCE_DIR}/../tests/lexertest SUFFIX txt FILES 
 			${CMAKE_SOURCE_DIR}/../testdata/lexer/lexerinput.scad
-			${CMAKE_SOURCE_DIR}/../testdata/lexer/LetterBlockexample.scad)
+			${CMAKE_SOURCE_DIR}/../testdata/lexer/LetterBlockexample.scad
+			${CMAKE_SOURCE_DIR}/../testdata/lexer/syntaxtest.scad)
 add_cmdline_test(opencsgtest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX png FILES ${OPENCSGTEST_FILES})
 add_cmdline_test(csgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=csg --render EXPECTEDDIR cgalpngtest SUFFIX png FILES ${CGALPNGTEST_FILES})
 add_cmdline_test(throwntogethertest EXE ${OPENSCAD_BINPATH} ARGS --preview=throwntogether -o SUFFIX png FILES ${THROWNTOGETHERTEST_FILES})
