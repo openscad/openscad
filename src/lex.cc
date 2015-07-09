@@ -44,7 +44,7 @@ void Lex::rules(){
 	rules_.push("\n",1);
 	rules_.push("INITIAL", "\"/*\"", "COMMENT");
 	rules_.push("COMMENT", "[^*]+|.", ".");
-	rules_.push("COMMENT", "\"*/\"", 1, "INITIAL");
+	rules_.push("COMMENT", "\"*/\"", 1 , "INITIAL");
 	rules_.push("[*]", 10);
 	rules_.push("[$][a-zA-Z0-9_]+", 11);
 	rules_.push("[/][/].*$", 1);
@@ -112,7 +112,7 @@ void Lex::lex_results(const std::string& input, int start, LexInterface* const o
 			
 			case 10:
 			token = results.str();
-			  obj->multilineComment(start, input, results, results.id);
+			  obj->highlighting(start, input, results, results.id);
 
 			case 11:
 			token = results.str();

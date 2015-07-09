@@ -45,9 +45,11 @@ void ScadLexer::styleText(int start, int end)
 
     editor()->SendScintilla(QsciScintilla::SCI_GETTEXTRANGE, start, end, data);
     QString source(data);
-
 	const std::string input(source.toStdString());
+    	pos = editor()->SendScintilla(QsciScintilla::SCI_GETCURRENTPOS);
+	styleNum = editor()->SendScintilla(QsciScintilla::SCI_GETSTYLEAT, pos);
 	l->lex_results(input, start, this);
+
     delete [] data;
     if(source.isEmpty())
         return;
@@ -55,22 +57,19 @@ void ScadLexer::styleText(int start, int end)
 
 void ScadLexer::highlighting(int start, const std::string& input, lexertl::smatch results, int style)
 {
-	  QString word = QString::fromStdString(l->token);
-	  startStyling(start + std::distance(input.begin(), results.start));
-	  setStyling(word.length(), style); 
+	int flag = 0;
+	QString word = QString::fromStdString(l->token);
+	startStyling(start + std::distance(input.begin(), results.start));
+	int len = word.length();
+	//std::cout << pos << " = "<<styleNum << " : "<<style <<std::endl;
+	if(styleNum == 1 && style != 1){
+		setStyling(len, 1);
+	}
+		setStyling(len, style);
 }
 
 void ScadLexer::multilineComment(int start, const std::string& input, lexertl::smatch results, int style)
 {
-	int len = distance(input.begin(), results.start);
-	int index = len + start;
-//	std::cout << "l: "<< index<< std::endl;
-	while(start != 0){
-		index--;
-//		std::cout <<"index: "<<index;
-		start--;
-		index = len+start;
-	}
 }
 
 QColor ScadLexer::defaultColor(int style) const
