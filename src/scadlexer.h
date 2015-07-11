@@ -58,4 +58,5 @@ private:
 	QStringList operatorsList;
 	int styleNum;
 	int pos;
+	int lastPos;
 };

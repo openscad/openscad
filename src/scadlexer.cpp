@@ -40,9 +40,9 @@ void ScadLexer::styleText(int start, int end)
 	
     if(!editor())
         return;
-
+    std::cout <<"styleText() :"<<start <<", "<<end<<std::endl;
     char * data = new char[end - start + 1];
-
+    lastPos = end;
     editor()->SendScintilla(QsciScintilla::SCI_GETTEXTRANGE, start, end, data);
     QString source(data);
 	const std::string input(source.toStdString());
@@ -57,15 +57,31 @@ void ScadLexer::styleText(int start, int end)
 
 void ScadLexer::highlighting(int start, const std::string& input, lexertl::smatch results, int style)
 {
-	int flag = 0;
-	QString word = QString::fromStdString(l->token);
-	startStyling(start + std::distance(input.begin(), results.start));
-	int len = word.length();
-	//std::cout << pos << " = "<<styleNum << " : "<<style <<std::endl;
-	if(styleNum == 1 && style != 1){
+	if(styleNum == 1){
+		while(pos <= lastPos){
+	 		char ch = editor()->SendScintilla(QsciScintilla::SCI_GETCHARAT, pos);
+			char chNext = editor()->SendScintilla(QsciScintilla::SCI_GETCHARAT, pos+1);
+				if((ch == '*') && (chNext == '/')){
+				  break;
+			         } else {
+				  pos++;
+				}		
+		}
+		int len = pos - start;
+		startStyling(start);
 		setStyling(len, 1);
+
+	 	char a = editor()->SendScintilla(QsciScintilla::SCI_GETCHARAT, start);
+	 	char b = editor()->SendScintilla(QsciScintilla::SCI_GETCHARAT, pos);
+		std::cout <<"style: "<<styleNum<<", start: "<<start <<": "<<a<<", pos: "<<pos<<": "<<b<<", lastPos: "<<lastPos<<std::endl;
+
+	} else {
+
+		QString word = QString::fromStdString(l->token);
+		startStyling(start + std::distance(input.begin(), results.start));
+		setStyling(word.length(), style);
 	}
-		setStyling(len, style);
+
 }
 
 void ScadLexer::multilineComment(int start, const std::string& input, lexertl::smatch results, int style)
