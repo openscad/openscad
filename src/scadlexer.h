@@ -56,7 +56,5 @@ private:
 	QStringList modelsList;
 	QStringList numbers;
 	QStringList operatorsList;
-	int styleNum;
 	int pos;
-	int lastPos;
 };

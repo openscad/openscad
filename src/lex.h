@@ -18,5 +18,5 @@ class Lex
 	Lex();
 	void rules();
 	void defineRules(std::string words[], int, int);
-	void lex_results(const std::string& input, int start, LexInterface* const obj);
+	void lex_results(const std::string& input, int start, LexInterface* const obj, int startState, int posState);
 };

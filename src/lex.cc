@@ -40,8 +40,8 @@ void Lex::rules(){
  
 	rules_.push("[0-9]+", 8);
 	rules_.push("[a-zA-Z0-9_]+", 9);
-	rules_.push(".", 1);
-	rules_.push("\n",1);
+	rules_.push(".", 10);
+	rules_.push("\n",10);
 	rules_.push("INITIAL", "\"/*\"", "COMMENT");
 	rules_.push("COMMENT", "[^*]+|.", ".");
 	rules_.push("COMMENT", "\"*/\"", 1 , "INITIAL");
@@ -58,9 +58,12 @@ void Lex::defineRules(std::string words[], int size, int id){
 	}
 }
 
-void Lex::lex_results(const std::string& input, int start, LexInterface* const obj){
+void Lex::lex_results(const std::string& input, int start, LexInterface* const obj, int startState, int posState){
 	
 	lexertl::smatch results (input.begin(), input.end());
+	if((posState == 1) || (startState == 1)){
+		results.state = 1;
+	}
 	lexertl::lookup(sm, results);	
 
 	while(results.id != 0)
@@ -105,18 +108,22 @@ void Lex::lex_results(const std::string& input, int start, LexInterface* const o
 			case 8:
 			token = results.str();
 			 obj->highlighting(start, input, results, results.id);
+			break;
 		
 			case 9:
 			token = results.str();
 			 obj->highlighting(start, input, results, results.id);
+			break;
 			
 			case 10:
 			token = results.str();
 			  obj->highlighting(start, input, results, results.id);
+			break;
 
 			case 11:
 			token = results.str();
 			obj->highlighting(start, input, results, results.id);
+			break;
 	       }
 		lexertl::lookup(sm, results);
 	}
