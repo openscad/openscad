@@ -43,6 +43,7 @@ GeometryEvaluator::GeometryEvaluator(const class Tree &tree):
 shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNode &node, 
 																															 bool allownef)
 {
+	std::cout << "geom eval allownef = "<<allownef<<std::endl;
 	if (!GeometryCache::instance()->contains(this->tree.getIdString(node))) {
 		shared_ptr<const CGAL_Nef_polyhedron> N;
 		if (CGALCache::instance()->contains(this->tree.getIdString(node))) {
