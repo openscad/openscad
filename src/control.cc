@@ -358,6 +358,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
                 std::cout << "probe nb=" << evalctx->numChildren()<<std::endl;
                 AbstractNode *nc;
 
+
                 for(unsigned int k=0;k<evalctx->numChildren();k++) {
                         std::cout << "eval child "<<k<<std::endl;
                         nc = evalctx->getChild(k)->evaluate(&c);
