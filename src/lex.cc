@@ -1,4 +1,5 @@
 #include "lex.h"
+#include <fstream>
 #include <iostream>
 Lex::Lex()
 {
@@ -26,29 +27,34 @@ void Lex::rules(){
 	 std::string operators[] = {"<=", ">=", "==", "!=", "&&"};
 	int operators_count = (sizeof(operators)/s_size);
 
-	 std::string modifiers[] = {"!", "#", "%"};
-	int modifiers_count = (sizeof(modifiers)/s_size);
 
 	rules_.push_state("COMMENT");
+	rules_.push_state("MODIFIER");
+	rules_.push("[/][/].*$", 1);
 	defineRules(keywords, keywords_count, 2);
 	defineRules(transformations, transformations_count, 3);
 	defineRules(booleans, booleans_count, 6);
 	defineRules(functions, functions_count, 7); 
 	defineRules(models, models_count, 4);
 	defineRules(operators, operators_count, 5);
-	defineRules(modifiers, modifiers_count, 10);
  
-	rules_.push("[0-9]+", 8);
+	//rules_.push("[0-9]+", 8);
 	rules_.push("[a-zA-Z0-9_]+", 9);
-	rules_.push(".", 10);
-	rules_.push("\n",10);
-	rules_.push("INITIAL", "\"/*\"", "COMMENT");
-	rules_.push("COMMENT", "[^*]+|.", ".");
-	rules_.push("COMMENT", "\"*/\"", 1 , "INITIAL");
+	
+	rules_.push(".", 8);
+	rules_.push("\n",8);
 	rules_.push("[*]", 10);
 	rules_.push("[$][a-zA-Z0-9_]+", 11);
-	rules_.push("[/][/].*$", 1);
+
+	rules_.push("INITIAL", "#", 8, "MODIFIER");
+	rules_.push("MODIFIER","[^;]+|.",8, ".");
+	rules_.push("MODIFIER", ";", 8, "INITIAL");	
+
+	rules_.push("INITIAL", "\"/*\"", 1,"COMMENT");
+	rules_.push("COMMENT", "[^*]+|.", 1, ".");
+	rules_.push("COMMENT", "\"*/\"", 1 , "INITIAL");
 	lexertl::generator::build(rules_, sm);
+
 }
 
 void Lex::defineRules(std::string words[], int size, int id){
