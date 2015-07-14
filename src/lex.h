@@ -1,4 +1,5 @@
 #include "lexertl/debug.hpp"
+#include "lexertl/dot.hpp"
 #include "lexertl/generator.hpp"
 #include "lexertl/lookup.hpp"
 #include <string>
@@ -13,7 +14,8 @@ class Lex
 {
 	public:
 	lexertl::state_machine sm;
-	lexertl::rules rules_;
+        typedef lexertl::basic_rules<char_type, char_type, id_type> rules_;
+	//lexertl::rules rules_;
 	std::string token;
 
 	Lex();

@@ -41,19 +41,19 @@ void Lex::rules(){
 	//rules_.push("[0-9]+", 8);
 	rules_.push("[a-zA-Z0-9_]+", 9);
 	
-	rules_.push(".", 8);
-	rules_.push("\n",8);
-	rules_.push("[*]", 10);
+	rules_.push(".|\n", 10);
 	rules_.push("[$][a-zA-Z0-9_]+", 11);
 
 	rules_.push("INITIAL", "#", 8, "MODIFIER");
-	rules_.push("MODIFIER","[^;]+|.",8, ".");
+	rules_.push("MODIFIER","[^;]+",8, ".");
 	rules_.push("MODIFIER", ";", 8, "INITIAL");	
 
 	rules_.push("INITIAL", "\"/*\"", 1,"COMMENT");
 	rules_.push("COMMENT", "[^*]+|.", 1, ".");
 	rules_.push("COMMENT", "\"*/\"", 1 , "INITIAL");
 	lexertl::generator::build(rules_, sm);
+	std::ofstream fout("file1.txt");
+	lexertl::debug::dump(sm, fout);
 
 }
 
