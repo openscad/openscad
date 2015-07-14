@@ -333,39 +333,46 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 	}
 		break;
 	case PROBE: {
-		std::cout << "probe!" << std::endl;
-
+		//
+		// render first children, then compute the bounding box.
+		// set the following 4 vector variables and 1 bool variable:
+		//    bbempty = true/false, state if there was any usable geometry.
+		//              when bbempty is false, the next variables are undef
+		//    bbmin = [xmin,ymin,zmin], the minimum of the bounding box
+		//    bbmax = [xmax,ymax,zmax], the maximum of the bounding box
+		//    bbsize = [xmax-xmin,...], the size of the bounding box
+		//    bbcenter = [(xmax+xmin)/2, ...], the center of the bounding box
+		//
+		// the only parameter that probe takes is $exact=true/false
+		// it is generaly set to true, but with false the rendering will not be Nef (so its faster).
+		// any other parameter will be treated just like assign() (i.e. passed inside)
+		//
 		node = new AbstractNode(inst);
 		Context c(evalctx);
 
 		// les parametres.. au cas ou on fera $exact=1
 		for (size_t i = 0; i < evalctx->numArgs(); i++) {
 			if (!evalctx->getArgName(i).empty()) {
-				std::cout << "param "<<evalctx->getArgName(i) <<std::endl;
 				c.set_variable(evalctx->getArgName(i), evalctx->getArgValue(i));
 			}
 		}
 
+		// not sure how to set the default value to true... for now its false.
         	bool exact = c.lookup_variable("$exact")->toBool();
-		std::cout << "probe: exact="<<exact<<std::endl;
 
 		// Let any local variables override the parameters
 		inst->scope.apply(c);
 
 		// instantiate children one by one...
                 std::vector<AbstractNode*> childnodes;
-                std::cout << "probe nbchildren=" << node->children.size()<<std::endl;
-                std::cout << "probe nb=" << evalctx->numChildren()<<std::endl;
                 AbstractNode *nc;
 
+		double xmin,ymin,zmin,xmax,ymax,zmax;
 
                 for(unsigned int k=0;k<evalctx->numChildren();k++) {
-                        std::cout << "eval child "<<k<<std::endl;
                         nc = evalctx->getChild(k)->evaluate(&c);
-                        // check render bbox
+                        // first child? then we render and set the bbox variables
                         if( k==0 && nc!=NULL ) {
-				std::cout << "process child 0" << std::endl;
-
                                 Tree tree;
                                 tree.setRoot(nc);
                                 GeometryEvaluator geomEvaluator(tree);
@@ -374,152 +381,74 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 				shared_ptr<const CGAL_Nef_polyhedron> N;
 				shared_ptr<const Geometry> geom;
 
-				//shared_ptr<const Geometry> geom; 
+				bool empty=true;
+
 				geom=geomEvaluator.evaluateGeometry(*nc,exact); // false-> no NEF, true= ok NEF
 				G = dynamic_pointer_cast<const PolySet>(geom);
-				if( G==NULL ) {
-					std::cout << "G is NULL!"<<std::endl;
+				// we assueme that we will get either CSG or CGAL, but not both
+				if( G!=NULL ) {
+					// we obtained a fast CSG geometry instead of a Nef polyhedron.
+					empty=G->isEmpty();
+					if( !empty ) {
+						BoundingBox bb = G->getBoundingBox();
+						xmin=bb.min().x();
+						ymin=bb.min().y();
+						zmin=bb.min().z();
+						xmax=bb.max().x();
+						ymax=bb.max().y();
+						zmax=bb.max().z();
+					}
 				}else{
-				    c.set_variable("empty",Value(G->isEmpty()));
-				    if( !G->isEmpty() ) {
-					std::cout << "G empty = "<<G->isEmpty() <<std::endl;
-					BoundingBox bb = G->getBoundingBox();
-					double xmin=bb.min().x();
-					double ymin=bb.min().y();
-					double zmin=bb.min().z();
-					double xmax=bb.max().x();
-					double ymax=bb.max().y();
-					double zmax=bb.max().z();
-
-					std::cout << "X " << xmin << "..." << xmax << std::endl;
-					std::cout << "Y " << ymin << "..." << ymax << std::endl;
-					std::cout << "Z " << zmin << "..." << zmax << std::endl;
-
-                                        c.set_variable("xmin",Value(xmin));
-                                        c.set_variable("ymin",Value(ymin));
-                                        c.set_variable("zmin",Value(zmin));
-                                        c.set_variable("xmax",Value(xmax));
-                                        c.set_variable("ymax",Value(ymax));
-                                        c.set_variable("zmax",Value(zmax));
-
-                                        Value::VectorType center;
-                                        center.push_back((xmin+xmax)/2.0);
-                                        center.push_back((ymin+ymax)/2.0);
-                                        center.push_back((zmin+zmax)/2.0);
-                                        c.set_variable("center",Value(center));
-
-                                        Value::VectorType boxsize;
-                                        boxsize.push_back(xmax-xmin);
-                                        boxsize.push_back(ymax-ymin);
-                                        boxsize.push_back(zmax-zmin);
-                                        c.set_variable("boxsize",Value(boxsize));
-				    }
-				}
-
 #ifdef ENABLE_CGAL
-				N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom);
-				if( N==NULL ) {
-					std::cout << "N is NULL!"<<std::endl;
-				}else{
-				    c.set_variable("empty",Value(N->isEmpty()));
-				    std::cout << "N empty = "<<N->isEmpty() <<std::endl;
-				    if( !N->isEmpty() ) {
-                                        CGAL_Iso_cuboid_3 bb;
-                                        bb = CGALUtils::boundingBox( *(N->p3) );
-                                        double xmin=CGAL::to_double(bb.xmin());
-                                        double ymin=CGAL::to_double(bb.ymin());
-                                        double zmin=CGAL::to_double(bb.zmin());
-                                        double xmax=CGAL::to_double(bb.xmax());
-                                        double ymax=CGAL::to_double(bb.ymax());
-                                        double zmax=CGAL::to_double(bb.zmax());
-
-					std::cout << "X " << xmin << "..." << xmax << std::endl;
-					std::cout << "Y " << ymin << "..." << ymax << std::endl;
-					std::cout << "Z " << zmin << "..." << zmax << std::endl;
-
-                                        c.set_variable("xmin",Value(xmin));
-                                        c.set_variable("ymin",Value(ymin));
-                                        c.set_variable("zmin",Value(zmin));
-                                        c.set_variable("xmax",Value(xmax));
-                                        c.set_variable("ymax",Value(ymax));
-                                        c.set_variable("zmax",Value(zmax));
-
-                                        Value::VectorType center;
-                                        center.push_back((xmin+xmax)/2.0);
-                                        center.push_back((ymin+ymax)/2.0);
-                                        center.push_back((zmin+zmax)/2.0);
-                                        c.set_variable("center",Value(center));
-
-                                        Value::VectorType boxsize;
-                                        boxsize.push_back(xmax-xmin);
-                                        boxsize.push_back(ymax-ymin);
-                                        boxsize.push_back(zmax-zmin);
-                                        c.set_variable("boxsize",Value(boxsize));
-				    }
-				}
-/*
-				if( true ) {
-                                        CGAL_Iso_cuboid_3 bb;
-                                        bb = CGALUtils::boundingBox( *(N->p3) );
-                                        std::cout << "**** bounding xmin=" << bb.xmin() << std::endl;
-                                        std::cout << "**** bounding xmax=" << bb.xmax() << std::endl;
-                                        std::cout << "**** bounding ymin=" << bb.ymin() << std::endl;
-                                        std::cout << "**** bounding ymax=" << bb.ymax() << std::endl;
-                                        std::cout << "**** bounding zmin=" << bb.zmin() << std::endl;
-                                        std::cout << "**** bounding zmax=" << bb.zmax() << std::endl;
-				}else{
-					std::cout << "empty!" << std::endl;
-				}
-*/
-
-/*
-                                Tree tree;
-                                tree.setRoot(nc);
-                                CGALEvaluator cgalevaluator(tree);
-
-                                CGAL_Nef_polyhedron N=cgalevaluator.evaluateCGALMesh(*nc);
-                                if( !N.isNull() && ! N.isEmpty() ) {
-                                        CGAL_Iso_cuboid_3 bb;
-                                        bb = bounding_box( *N.p3 );
-                                        std::cout << "**** bounding xmin=" << bb.xmin() << std::endl;
-                                        std::cout << "**** bounding xmax=" << bb.xmax() << std::endl;
-                                        std::cout << "**** bounding ymin=" << bb.ymin() << std::endl;
-                                        std::cout << "**** bounding ymax=" << bb.ymax() << std::endl;
-                                        std::cout << "**** bounding zmin=" << bb.zmin() << std::endl;
-                                        std::cout << "**** bounding zmax=" << bb.zmax() << std::endl;
-                                        double xmin=CGAL::to_double(bb.xmin());
-                                        double ymin=CGAL::to_double(bb.ymin());
-                                        double zmin=CGAL::to_double(bb.zmin());
-                                        double xmax=CGAL::to_double(bb.xmax());
-                                        double ymax=CGAL::to_double(bb.ymax());
-                                        double zmax=CGAL::to_double(bb.zmax());
-
-                                        c.set_variable("xmin",xmin);
-                                        c.set_variable("xmax",xmax);
-                                        c.set_variable("ymin",ymin);
-                                        c.set_variable("ymax",ymax);
-                                        c.set_variable("zmin",zmin);
-                                        c.set_variable("zmax",zmax);
-
-                                        Value::VectorType center;
-                                        center.push_back((xmin+xmax)/2.0);
-                                        center.push_back((ymin+ymax)/2.0);
-                                        center.push_back((zmin+zmax)/2.0);
-                                        c.set_variable("center",center);
-
-                                        Value::VectorType boxsize;
-                                        boxsize.push_back(xmax-xmin);
-                                        boxsize.push_back(ymax-ymin);
-                                        boxsize.push_back(zmax-zmin);
-                                        c.set_variable("boxsize",boxsize);
-                                }
-*/
+					N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom);
+					if( N!=NULL ) {
+					    empty=N->isEmpty();
+					    if( !empty ) {
+						CGAL_Iso_cuboid_3 bb;
+						bb = CGALUtils::boundingBox( *(N->p3) );
+						xmin=CGAL::to_double(bb.xmin());
+						ymin=CGAL::to_double(bb.ymin());
+						zmin=CGAL::to_double(bb.zmin());
+						xmax=CGAL::to_double(bb.xmax());
+						ymax=CGAL::to_double(bb.ymax());
+						zmax=CGAL::to_double(bb.zmax());
+					    }
+					}
 #endif
+				}
+			        c.set_variable("bbempty",Value(empty));
+				if( !empty ) {
+					// define the variables
+                                        Value::VectorType bbmin;
+					bbmin.push_back(xmin);
+					bbmin.push_back(ymin);
+					bbmin.push_back(zmin);
+                                        c.set_variable("bbmin",Value(bbmin));
 
+                                        Value::VectorType bbmax;
+					bbmax.push_back(xmax);
+					bbmax.push_back(ymax);
+					bbmax.push_back(zmax);
+                                        c.set_variable("bbmax",Value(bbmax));
+
+                                        Value::VectorType bbcenter;
+                                        bbcenter.push_back((xmin+xmax)/2.0);
+                                        bbcenter.push_back((ymin+ymax)/2.0);
+                                        bbcenter.push_back((zmin+zmax)/2.0);
+                                        c.set_variable("bbcenter",Value(bbcenter));
+
+                                        Value::VectorType bbsize;
+                                        bbsize.push_back(xmax-xmin);
+                                        bbsize.push_back(ymax-ymin);
+                                        bbsize.push_back(zmax-zmin);
+                                        c.set_variable("bbsize",Value(bbsize));
+				}
+				// this node is not added to the final rendering.
 				delete nc;
-				continue;
+			}else{
+				// add the node to the final rendering
+				if( nc!=NULL ) node->children.push_back(nc);
 			}
-			if( nc!=NULL ) node->children.push_back(nc);
 		}
 
 		//std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(&c);
