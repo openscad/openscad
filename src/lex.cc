@@ -30,6 +30,7 @@ void Lex::rules(){
 
 	rules_.push_state("COMMENT");
 	rules_.push_state("MODIFIER");
+	rules_.push_state("BLOCK");
 	rules_.push("[/][/].*$", 1);
 	defineRules(keywords, keywords_count, 2);
 	defineRules(transformations, transformations_count, 3);
@@ -41,18 +42,22 @@ void Lex::rules(){
 	//rules_.push("[0-9]+", 8);
 	rules_.push("[a-zA-Z0-9_]+", 9);
 	
-	rules_.push(".|\n", 10);
 	rules_.push("[$][a-zA-Z0-9_]+", 11);
 
-	rules_.push("INITIAL", "#", 8, "MODIFIER");
-	rules_.push("MODIFIER","[^;]+",8, ".");
-	rules_.push("MODIFIER", ";", 8, "INITIAL");	
+	rules_.push("INITIAL", "#", "MODIFIER");
+	rules_.push("MODIFIER","[{]", "BLOCK");
+	rules_.push("MODIFIER","[^;]+", "MODIFIER");
+	rules_.push("BLOCK", "[^\\}]+|." , "BLOCK");	
+	rules_.push("BLOCK", "[}]", 8, "INITIAL");
+	rules_.push("MODIFIER", ";", 8, "INITIAL");
 
-	rules_.push("INITIAL", "\"/*\"", 1,"COMMENT");
-	rules_.push("COMMENT", "[^*]+|.", 1, ".");
+	rules_.push("INITIAL", "\"/*\"",  "COMMENT");
+	rules_.push("COMMENT", "[^*]+|.",  "COMMENT");
 	rules_.push("COMMENT", "\"*/\"", 1 , "INITIAL");
+
+	rules_.push(".|\n", 10);
 	lexertl::generator::build(rules_, sm);
-	std::ofstream fout("file1.txt");
+	std::ofstream fout("file1.txt", std::fstream::trunc);
 	lexertl::debug::dump(sm, fout);
 
 }
@@ -69,6 +74,8 @@ void Lex::lex_results(const std::string& input, int start, LexInterface* const o
 	lexertl::smatch results (input.begin(), input.end());
 	if((posState == 1) || (startState == 1)){
 		results.state = 1;
+	} else if((posState == 8) || (startState == 8)){
+		results.state = 2;
 	}
 	lexertl::lookup(sm, results);	
 

@@ -47,6 +47,7 @@ void ScadLexer::styleText(int start, int end)
     	pos = editor()->SendScintilla(QsciScintilla::SCI_GETCURRENTPOS);
 	int startStyle = editor()->SendScintilla(QsciScintilla::SCI_GETSTYLEAT, start);
 	int posStyle = editor()->SendScintilla(QsciScintilla::SCI_GETSTYLEAT, pos);
+	std::cout<<"style: "<<posStyle<<std::endl;
 	l->lex_results(input, start, this, startStyle, posStyle);
 
     delete [] data;
@@ -56,9 +57,10 @@ void ScadLexer::styleText(int start, int end)
 
 void ScadLexer::highlighting(int start, const std::string& input, lexertl::smatch results, int style)
 {
-		QString word = QString::fromStdString(l->token);
-		startStyling(start + std::distance(input.begin(), results.start));
-		setStyling(word.length(), style);
+//	std::cout << results.id <<std::endl;
+	QString word = QString::fromStdString(l->token);
+	startStyling(start + std::distance(input.begin(), results.start));
+	setStyling(word.length(), style);
 }
 
 void ScadLexer::multilineComment(int start, const std::string& input, lexertl::smatch results, int style)
