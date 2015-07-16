@@ -16,8 +16,8 @@
 	"models" : "#4074ba",
 	"operators" : "#e8b609",
 	"numbers" : "#ff0000",
-	"variables" : "#e6db74",
-	"special-variables" : "#6c71c4",
+	"variables" : "",
+	"special-variables" : "#e6db74",
 	"modifiers" : "#6c71c4",
         "comments" : "#808080",
 

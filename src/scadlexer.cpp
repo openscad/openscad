@@ -78,9 +78,9 @@ QColor ScadLexer::defaultColor(int style) const
 	case Transformation:
 	    return "#f32222";
 	case Boolean:
-	    return "22f322";
+	    return "#22f322";
 	case Function:
-	    return "2222f3";
+	    return "#2222f3";
 	case Model:
 	    return Qt::red;
 	case Default:

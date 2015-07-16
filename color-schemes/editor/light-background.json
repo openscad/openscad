@@ -16,8 +16,8 @@
 	"models" : "#4074ba",
 	"operators" : "Blue",
 	"numbers" : "DarkRed",
-	"variables" : "DarkMagenta",
-	"special-variables" : "#6c71c4",
+	"variables" : "",
+	"special-variables" : "DarkMagenta",
 	"modifiers" : "#6c71c4",
         "comments" : "DarkCyan",
         

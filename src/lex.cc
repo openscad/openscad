@@ -46,8 +46,8 @@ void Lex::rules(){
 	rules_.push("MODIFIER","[^;\\{]+", "MODIFIER");
 	rules_.push("MODIFIER","[{]", "BLOCK");
 	rules_.push("BLOCK", "[^\\}]+" , "BLOCK");	
-	rules_.push("BLOCK", "[}]", 11, "INITIAL");
-	rules_.push("MODIFIER", ";", 12, "INITIAL");
+	rules_.push("BLOCK", "[}]", 12, "INITIAL");
+	rules_.push("MODIFIER", ";", 13, "INITIAL");
 
 	rules_.push("INITIAL", "\"/*\"",  "COMMENT");
 	rules_.push("COMMENT", "[^*]+|.",  "COMMENT");
@@ -73,9 +73,9 @@ void Lex::lex_results(const std::string& input, int start, LexInterface* const o
 	lexertl::smatch results (input.begin(), input.end());
 	if((posState == 10) || (startState == 10)){
 		results.state = 1;
-	} else if((posState == 11) || (startState == 11)){
-		results.state = 2;
 	} else if((posState == 12) || (startState == 12)){
+		results.state = 2;
+	} else if((posState == 13) || (startState == 13)){
 		results.state = 3;
 	}
 	lexertl::lookup(sm, results);	
