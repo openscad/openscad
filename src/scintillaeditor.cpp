@@ -295,15 +295,16 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
                 qsci->setMarginsFont(font);
 
 		const boost::property_tree::ptree& colors = pt.get_child("colors");
-		l->setColor(readColor(colors, "keyword1", textColor), ScadLexer::Keyword);
-		l->setColor(readColor(colors, "keyword2", textColor), ScadLexer::Transformation);
-		l->setColor(readColor(colors, "keyword3", textColor), ScadLexer::Boolean);
-		l->setColor(readColor(colors, "string", textColor), ScadLexer::Function);
-		l->setColor(readColor(colors, "operator", textColor), ScadLexer::Model);
-		l->setColor(readColor(colors, "operator", textColor), ScadLexer::Operator);
-		l->setColor(readColor(colors, "comment", textColor), ScadLexer::Comment);
-		l->setColor(readColor(colors, "number", textColor), ScadLexer::Number);
-		l->setColor(readColor(colors, "commentdockeyword", textColor), ScadLexer::Variable);
+		l->setColor(readColor(colors, "keywords", textColor), ScadLexer::Keyword);
+		l->setColor(readColor(colors, "transformations", textColor), ScadLexer::Transformation);
+		l->setColor(readColor(colors, "booleans", textColor), ScadLexer::Boolean);
+		l->setColor(readColor(colors, "functions", textColor), ScadLexer::Function);
+		l->setColor(readColor(colors, "models", textColor), ScadLexer::Model);
+		l->setColor(readColor(colors, "operators", textColor), ScadLexer::Operator);
+		l->setColor(readColor(colors, "comments", textColor), ScadLexer::Comment);
+		l->setColor(readColor(colors, "numbers", textColor), ScadLexer::Number);	
+		l->setColor(readColor(colors, "variables", textColor), ScadLexer::Variable);
+		l->setColor(readColor(colors, "special-variables", textColor), ScadLexer::SpecialVariable);
 
 		const boost::property_tree::ptree& caret = pt.get_child("caret");
 		qsci->setCaretWidth(readInt(caret, "width", 1));

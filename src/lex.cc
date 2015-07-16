@@ -31,31 +31,30 @@ void Lex::rules(){
 	rules_.push_state("COMMENT");
 	rules_.push_state("MODIFIER");
 	rules_.push_state("BLOCK");
-	rules_.push("[/][/].*$", 1);
-	defineRules(keywords, keywords_count, 2);
-	defineRules(transformations, transformations_count, 3);
-	defineRules(booleans, booleans_count, 6);
-	defineRules(functions, functions_count, 7); 
-	defineRules(models, models_count, 4);
-	defineRules(operators, operators_count, 5);
+	defineRules(keywords, keywords_count, ekeyword);
+	defineRules(transformations, transformations_count, etransformation);
+	defineRules(booleans, booleans_count, eboolean);
+	defineRules(functions, functions_count, efunction); 
+	defineRules(models, models_count, emodel);
+	defineRules(operators, operators_count, eoperator);
  
-	//rules_.push("[0-9]+", 8);
-	rules_.push("[a-zA-Z0-9_]+", 9);
-	
-	rules_.push("[$][a-zA-Z0-9_]+", 11);
+	rules_.push("[0-9]+", enumber);
+	rules_.push("[a-zA-Z0-9_]+", evariable);
+	rules_.push("[$][a-zA-Z0-9_]+", especialVariable);
 
 	rules_.push("INITIAL", "#", "MODIFIER");
+	rules_.push("MODIFIER","[^;\\{]+", "MODIFIER");
 	rules_.push("MODIFIER","[{]", "BLOCK");
-	rules_.push("MODIFIER","[^;]+", "MODIFIER");
-	rules_.push("BLOCK", "[^\\}]+|." , "BLOCK");	
-	rules_.push("BLOCK", "[}]", 8, "INITIAL");
-	rules_.push("MODIFIER", ";", 8, "INITIAL");
+	rules_.push("BLOCK", "[^\\}]+" , "BLOCK");	
+	rules_.push("BLOCK", "[}]", 11, "INITIAL");
+	rules_.push("MODIFIER", ";", 12, "INITIAL");
 
 	rules_.push("INITIAL", "\"/*\"",  "COMMENT");
 	rules_.push("COMMENT", "[^*]+|.",  "COMMENT");
-	rules_.push("COMMENT", "\"*/\"", 1 , "INITIAL");
+	rules_.push("COMMENT", "\"*/\"", ecomment , "INITIAL");
 
-	rules_.push(".|\n", 10);
+	rules_.push("[/][/].*$", ecomment);
+	rules_.push(".|\n", etext);
 	lexertl::generator::build(rules_, sm);
 	std::ofstream fout("file1.txt", std::fstream::trunc);
 	lexertl::debug::dump(sm, fout);
@@ -72,27 +71,29 @@ void Lex::defineRules(std::string words[], int size, int id){
 void Lex::lex_results(const std::string& input, int start, LexInterface* const obj, int startState, int posState){
 	
 	lexertl::smatch results (input.begin(), input.end());
-	if((posState == 1) || (startState == 1)){
+	if((posState == 10) || (startState == 10)){
 		results.state = 1;
-	} else if((posState == 8) || (startState == 8)){
+	} else if((posState == 11) || (startState == 11)){
 		results.state = 2;
+	} else if((posState == 12) || (startState == 12)){
+		results.state = 3;
 	}
 	lexertl::lookup(sm, results);	
 
-	while(results.id != 0)
+	while(results.id != eEOF)
 	{
 		switch(results.id)
 		{
-			case 2:
-		 	token = results.str();
-		 	 obj->highlighting(start, input, results, results.id);
-		 	 break;
-		
 			case 1:
 		  	token = results.str();
 		  	 obj->highlighting(start, input, results, results.id);
 			 break;
-			
+
+			case 2:
+		 	token = results.str();
+		 	 obj->highlighting(start, input, results, results.id);
+		 	 break;
+					
 			case 3:
 		  	token = results.str();
 		  	 obj->highlighting(start, input, results, results.id);

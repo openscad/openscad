@@ -8,7 +8,6 @@ class LexInterface
 {
 	public:
 	virtual void highlighting(int, const std::string&, lexertl::smatch, int) = 0;
-	virtual void multilineComment(int, const std::string&, lexertl::smatch, int) = 0;
 };
 class Lex 
 {
@@ -17,6 +16,7 @@ class Lex
         //typedef lexertl::basic_rules<char_type, char_type, id_type> rules_;
 	lexertl::rules rules_;
 	std::string token;
+	enum { eEOF, ekeyword, etransformation, eboolean, efunction, emodel, eoperator, enumber, evariable, especialVariable, ecomment, etext };
 
 	Lex();
 	void rules();

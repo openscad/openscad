@@ -47,7 +47,8 @@ void ScadLexer::styleText(int start, int end)
     	pos = editor()->SendScintilla(QsciScintilla::SCI_GETCURRENTPOS);
 	int startStyle = editor()->SendScintilla(QsciScintilla::SCI_GETSTYLEAT, start);
 	int posStyle = editor()->SendScintilla(QsciScintilla::SCI_GETSTYLEAT, pos);
-	std::cout<<"style: "<<posStyle<<std::endl;
+	char ch = editor()->SendScintilla(QsciScintilla::SCI_GETCHARAT, pos);
+	std::cout<<"style: "<<posStyle<<"token: "<< ch<<std::endl;
 	l->lex_results(input, start, this, startStyle, posStyle);
 
     delete [] data;
@@ -63,9 +64,6 @@ void ScadLexer::highlighting(int start, const std::string& input, lexertl::smatc
 	setStyling(word.length(), style);
 }
 
-void ScadLexer::multilineComment(int start, const std::string& input, lexertl::smatch results, int style)
-{
-}
 
 QColor ScadLexer::defaultColor(int style) const
 {
@@ -98,20 +96,22 @@ QString ScadLexer::description(int style) const
             return "Default";
         case Keyword:
             return "Keyword";
-	case Comment:
-	    return "Comment";
-	case KeywordSet2:
-	    return "KeywordSet2";
-	case Number:
-	    return tr("Number");
 	case Transformation:
 	    return "Transformation";
 	case Boolean:
 	    return "Boolean";
 	case Function:
 	    return "Function";
-	case Model:
-	    return "Model";
+	case Operator:
+	    return "Operator";
+	case Number:
+	    return tr("Number");
+	case Variable:
+	    return "Variable";
+	case SpecialVariable:
+	    return "SpecialVariable";
+	case Comment:
+	    return "Comment";
     }
    return QString(style);
 }

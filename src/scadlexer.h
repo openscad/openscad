@@ -13,24 +13,18 @@ class ScadLexer : public QsciLexerCustom, public LexInterface
 public:
         enum {
             Default = 0,
-            Comment = 1,
-            Keyword = 2,
-	    Transformation = 3,
-	    Boolean = 4,
-	    Operator = 5,
-	    Function = 6,
-	    Model = 7,
-	    Number = 8, 
-	    Variable = 11,
-			KeywordSet2 = 17,
-			GlobalClass = 12,
-			SingleQuotedString = 9,
-			DoubleQuotedString = 10,
-			CommentLine = 13,
-			CommentDoc = 14,
-			CommentLineDoc = 15,
-			CommentDocKeyword = 16 
+            Keyword = 1,
+	    Transformation = 2,
+	    Boolean = 3,
+	    Function = 4,
+	    Model = 5,
+	    Operator = 6,
+	    Number = 7, 
+	    Variable = 8,
+	    SpecialVariable = 9,
+	    Comment = 10
         };
+
 	Lex *l;	
 	ScadLexer(QObject *parent);
 	virtual ~ScadLexer();
@@ -43,7 +37,6 @@ public:
         QColor defaultColor(int style) const;
 
 	void highlighting(int, const std::string&, lexertl::smatch, int);
-	void multilineComment(int, const std::string&, lexertl::smatch, int);
         QString description(int style) const;
 private:
         std::string keywordSet[4];
