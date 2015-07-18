@@ -21,7 +21,13 @@ HIDAPI_DIR = $$(HIDAPIDIR)
   }
 }
 
-!win*: {
+win*: {
+  # Use included HIDAPI on MXE/Windows build.
+  HIDAPI_CFLAGS = -I../src/hidapi
+  HIDAPI_LIBS = -lsetupapi
+  HEADERS += src/hidapi/hidapi.h
+  SOURCES += src/hidapi/hid.c
+} else {
   isEmpty(HIDAPI_INCLUDEPATH) {
     HIDAPI_CFLAGS = $$system("pkg-config --silence-errors --cflags hidapi-libusb")
   } else {

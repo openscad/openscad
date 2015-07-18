@@ -44,14 +44,6 @@ struct device_id {
     const char *name;
 };
 
-static void
-sleep_iter(void)
-{
-    struct timespec schnarch = {1, 0};
-    while (nanosleep(&schnarch, &schnarch) < 0) {
-    };
-}
-
 HidApiInputDriver::HidApiInputDriver() : hid_dev(0)
 {
 
@@ -64,9 +56,7 @@ HidApiInputDriver::~HidApiInputDriver()
 
 void HidApiInputDriver::run()
 {
-    for (;;sleep_iter()) {
-        hidapi_input(hid_dev);
-    }
+    hidapi_input(hid_dev);
 }
 
 void HidApiInputDriver::hidapi_input(hid_device* hid_dev)
