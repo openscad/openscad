@@ -21,18 +21,20 @@ SPNAV_DIR = $$(SPNAVDIR)
   }
 }
 
-isEmpty(SPNAV_INCLUDEPATH) {
-  exists(/usr/include/spnav.h) {
-    SPNAV_INCLUDEPATH = /usr/include
-    SPNAV_LIBPATH = /usr/lib
-  }
-  exists(/usr/local/include/spnav.h) {
-    SPNAV_INCLUDEPATH = /usr/local/include
-    SPNAV_LIBPATH = /usr/local/lib
-  }
-  exists(/opt/include/spnav.h) {
-    SPNAV_INCLUDEPATH = /opt/include
-    SPNAV_LIBPATH = /opt/lib
+!win*: {
+  isEmpty(SPNAV_INCLUDEPATH) {
+    exists(/usr/include/spnav.h) {
+      SPNAV_INCLUDEPATH = /usr/include
+      SPNAV_LIBPATH = /usr/lib
+    }
+    exists(/usr/local/include/spnav.h) {
+      SPNAV_INCLUDEPATH = /usr/local/include
+      SPNAV_LIBPATH = /usr/local/lib
+    }
+    exists(/opt/include/spnav.h) {
+      SPNAV_INCLUDEPATH = /opt/include
+      SPNAV_LIBPATH = /opt/lib
+    }
   }
 }
 

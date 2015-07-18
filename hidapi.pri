@@ -21,16 +21,18 @@ HIDAPI_DIR = $$(HIDAPIDIR)
   }
 }
 
-isEmpty(HIDAPI_INCLUDEPATH) {
-  HIDAPI_CFLAGS = $$system("pkg-config --silence-errors --cflags hidapi-libusb")
-} else {
-  HIDAPI_CFLAGS = -I$$HIDAPI_INCLUDEPATH
-}
+!win*: {
+  isEmpty(HIDAPI_INCLUDEPATH) {
+    HIDAPI_CFLAGS = $$system("pkg-config --silence-errors --cflags hidapi-libusb")
+  } else {
+    HIDAPI_CFLAGS = -I$$HIDAPI_INCLUDEPATH
+  }
 
-isEmpty(HIDAPI_LIBPATH) {
-  HIDAPI_LIBS = $$system("pkg-config --silence-errors --libs hidapi-libusb")
-} else {
-  HIDAPI_LIBS = -L$$HIDAPI_LIBPATH -lhidapi-libusb
+  isEmpty(HIDAPI_LIBPATH) {
+    HIDAPI_LIBS = $$system("pkg-config --silence-errors --libs hidapi-libusb")
+  } else {
+    HIDAPI_LIBS = -L$$HIDAPI_LIBPATH -lhidapi-libusb
+  }
 }
 
 !isEmpty(HIDAPI_CFLAGS) {
