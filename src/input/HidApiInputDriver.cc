@@ -34,12 +34,15 @@
 #include "input/HidApiInputDriver.h"
 #include "input/InputDriverManager.h"
 
-#define	WSTRLEN		256
-#define	BUFLEN		16
-#define	VENDOR_ID	0x046d
-#define	PRODUCT_ID	0xc626
+static const int BUFLEN = 16;
 
 using namespace std;
+
+struct device_id {
+    int vendor_id;
+    int product_id;
+    const char *name;
+};
 
 static void
 sleep_iter(void)
@@ -68,7 +71,7 @@ void HidApiInputDriver::run()
 
 void HidApiInputDriver::hidapi_input(hid_device* hid_dev)
 {
-    unsigned char buf[ BUFLEN];
+    unsigned char buf[BUFLEN];
     int len;
     uint16_t buttons = 0;
     while ((len = hid_read(hid_dev, buf, BUFLEN)) > 0) {
@@ -115,13 +118,32 @@ bool HidApiInputDriver::open()
         PRINTD("Can't hid_init().\n");
         return false;
     }
-    // Try a list of product IDs. But up to now I know of only one.
-    hid_dev = hid_open(VENDOR_ID, PRODUCT_ID, NULL);
-    if (hid_dev == NULL) {
-        return false;
+
+    // see http://www.linux-usb.org/usb.ids
+    struct device_id device_ids[] = {
+        { 0x046d, 0xc603, "3Dconnexion Spacemouse Plus XT"},
+        { 0x046d, 0xc605, "3Dconnexion CADman"},
+        { 0x046d, 0xc606, "3Dconnexion Spacemouse Classic"},
+        { 0x046d, 0xc621, "3Dconnexion Spaceball 5000"},
+        { 0x046d, 0xc623, "3Dconnexion Space Traveller 3D Mouse"},
+        { 0x046d, 0xc625, "3Dconnexion Space Pilot 3D Mouse"},
+        { 0x046d, 0xc626, "3Dconnexion Space Navigator 3D Mouse"},
+        { 0x046d, 0xc627, "3Dconnexion Space Explorer 3D Mouse"},
+        { 0x046d, 0xc628, "3Dconnexion Space Navigator for Notebooks"},
+        { 0x046d, 0xc629, "3Dconnexion SpacePilot Pro 3D Mouse"},
+        { 0x046d, 0xc62b, "3Dconnexion Space Mouse Pro"},
+        { 0x256f, 0xc62e, "3Dconnexion Space Mouse Wireless"},
+        { -1, -1, NULL},
+    };
+
+    for (int idx = 0;device_ids[idx].name != NULL;idx++) {
+        hid_dev = hid_open(device_ids[idx].vendor_id, device_ids[idx].product_id, NULL);
+        if (hid_dev != NULL) {
+            start();
+            return true;
+        }
     }
-    start();
-    return true;
+    return false;
 }
 
 void HidApiInputDriver::close()
