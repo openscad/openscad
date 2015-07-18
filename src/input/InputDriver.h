@@ -25,8 +25,6 @@
  */
 #pragma once
 
-#include <stdint.h>
-
 #include <QEvent>
 #include <QThread>
 
