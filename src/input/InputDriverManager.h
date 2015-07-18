@@ -35,8 +35,9 @@ class InputDriverManager : public QObject
 {
     Q_OBJECT
 private:
-    std::list<InputDriver *> drivers;
-    std::list<MainWindow *> windows;
+    typedef std::list<InputDriver *> drivers_t;
+
+    drivers_t drivers;
 
     MainWindow *currentWindow;
 
@@ -48,6 +49,7 @@ public:
 
     void postEvent(InputEvent *event, bool activeOnly = true);
 
+    void init();
     void registerDriver(InputDriver *driver);
     void unregisterDriver(InputDriver *driver);
 

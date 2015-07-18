@@ -121,6 +121,8 @@ public:
     InputDriver();
     virtual ~InputDriver();
 
-    virtual void open() = 0;
+    virtual const std::string & get_name() const = 0;
+
+    virtual bool open() = 0;
     virtual void close() = 0;
 };
