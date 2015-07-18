@@ -25,6 +25,8 @@
  */
 #include "InputDriverManager.h"
 
+#include "printutils.h"
+
 InputDriverManager * InputDriverManager::self = 0;
 
 InputDriverManager::InputDriverManager()
@@ -49,13 +51,22 @@ InputDriverManager * InputDriverManager::instance()
 void InputDriverManager::registerDriver(InputDriver *driver)
 {
     this->drivers.push_back(driver);
-    driver->open();
 }
 
 void InputDriverManager::unregisterDriver(InputDriver *driver)
 {
-    driver->close();
     this->drivers.remove(driver);
+}
+
+void InputDriverManager::init()
+{
+    for (drivers_t::iterator it = drivers.begin();it != drivers.end();it++) {
+        PRINTB("trying to open %s\n", (*it)->get_name().c_str());
+        if ((*it)->open()) {
+            PRINTB("using %s\n", (*it)->get_name().c_str());
+            break;
+        }
+    }
 }
 
 void InputDriverManager::postEvent(InputEvent *event, bool activeOnly)

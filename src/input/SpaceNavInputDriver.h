@@ -38,8 +38,10 @@ public:
     SpaceNavInputDriver();
     virtual ~SpaceNavInputDriver();
     virtual void run();
-    virtual void open();
+    virtual bool open();
     virtual void close();
+
+    virtual const std::string & get_name() const;
 
 private:
     void spnav_input();

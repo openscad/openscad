@@ -61,10 +61,8 @@ SpaceNavInputDriver::~SpaceNavInputDriver()
 
 void SpaceNavInputDriver::run()
 {
-    for (;; sleep_iter()) {
-        if (spnav_open() >= 0) {
-            spnav_input();
-        }
+    for (;;sleep_iter()) {
+        spnav_input();
     }
 }
 
@@ -96,12 +94,22 @@ void SpaceNavInputDriver::spnav_input(void)
     spnav_close();
 }
 
-void SpaceNavInputDriver::open()
+bool SpaceNavInputDriver::open()
 {
+    if (spnav_open() < 0) {
+        return false;
+    }
     start();
+    return true;
 }
 
 void SpaceNavInputDriver::close()
 {
 
+}
+
+const std::string & SpaceNavInputDriver::get_name() const
+{
+    static std::string name = "SpaceNavInputDriver";
+    return name;
 }

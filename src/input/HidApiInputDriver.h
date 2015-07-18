@@ -40,8 +40,10 @@ public:
     HidApiInputDriver();
     virtual ~HidApiInputDriver();
     virtual void run();
-    virtual void open();
+    virtual bool open();
     virtual void close();
+
+    virtual const std::string & get_name() const;
 
 private:
     void hidapi_input(hid_device* hid_dev);

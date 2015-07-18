@@ -758,6 +758,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
         InputDriverManager::instance()->registerDriver(new HidApiInputDriver());
         InputDriverManager::instance()->registerDriver(new SpaceNavInputDriver());
+        InputDriverManager::instance()->init();
 	int rc = app.exec();
 	for(auto &mainw : scadApp->windowManager.getWindows()) delete mainw;
 	return rc;

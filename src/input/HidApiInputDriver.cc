@@ -61,17 +61,8 @@ HidApiInputDriver::~HidApiInputDriver()
 
 void HidApiInputDriver::run()
 {
-    if (hid_init() < 0) {
-        PRINTD("Can't hid_init().\n");
-        return;
-    }
-    for (;; sleep_iter()) {
-        // Try a list of product IDs. But up to now I know of only one.
-        hid_device* hid_dev;
-        hid_dev = hid_open(VENDOR_ID, PRODUCT_ID, NULL);
-        if (hid_dev != NULL) {
-            hidapi_input(hid_dev);
-        }
+    for (;;sleep_iter()) {
+        hidapi_input(hid_dev);
     }
 }
 
@@ -118,12 +109,28 @@ void HidApiInputDriver::hidapi_input(hid_device* hid_dev)
     hid_close(hid_dev);
 }
 
-void HidApiInputDriver::open()
+bool HidApiInputDriver::open()
 {
+    if (hid_init() < 0) {
+        PRINTD("Can't hid_init().\n");
+        return false;
+    }
+    // Try a list of product IDs. But up to now I know of only one.
+    hid_dev = hid_open(VENDOR_ID, PRODUCT_ID, NULL);
+    if (hid_dev == NULL) {
+        return false;
+    }
     start();
+    return true;
 }
 
 void HidApiInputDriver::close()
 {
 
+}
+
+const std::string & HidApiInputDriver::get_name() const
+{
+    static std::string name = "HidApiInputDriver";
+    return name;
 }
