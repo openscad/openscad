@@ -22,7 +22,15 @@ public:
 	    Number = 7, 
 	    Variable = 8,
 	    SpecialVariable = 9,
-	    Comment = 10
+	    Comment = 10,
+	    Modifier1 = 12,
+	    Block1 = 13,
+	    Modifier2 = 14,
+	    Block2 = 15,
+            Modifier3 = 16,
+	    Block3 = 17,
+	    Modifier4= 18,
+	    Block4 = 19
         };
 
 	Lex *l;	

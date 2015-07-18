@@ -305,6 +305,14 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 		l->setColor(readColor(colors, "numbers", textColor), ScadLexer::Number);	
 		l->setColor(readColor(colors, "variables", textColor), ScadLexer::Variable);
 		l->setColor(readColor(colors, "special-variables", textColor), ScadLexer::SpecialVariable);
+		l->setColor(readColor(colors, "modifier1", textColor), ScadLexer::Modifier1);
+		l->setColor(readColor(colors, "block1", textColor), ScadLexer::Block1);
+		l->setColor(readColor(colors, "modifier2", textColor), ScadLexer::Modifier2);
+		l->setColor(readColor(colors, "block2", textColor), ScadLexer::Block2);
+		l->setColor(readColor(colors, "modifier3", textColor), ScadLexer::Modifier3);
+		l->setColor(readColor(colors, "block3", textColor), ScadLexer::Block3);
+		l->setColor(readColor(colors, "modifier4", textColor), ScadLexer::Modifier4);
+		l->setColor(readColor(colors, "block4", textColor), ScadLexer::Block4);
 
 		const boost::property_tree::ptree& caret = pt.get_child("caret");
 		qsci->setCaretWidth(readInt(caret, "width", 1));

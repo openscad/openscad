@@ -24,13 +24,19 @@ void Lex::rules(){
 	std::string models[] = {"sphere", "cube", "cylinder", "polyhedron", "square", "polygon", "text", "circle"};
 	int models_count = (sizeof(models)/s_size);
 
-	 std::string operators[] = {"<=", ">=", "==", "!=", "&&"};
+	 std::string operators[] = {"<=", ">=", "==", "!=", "&&", "="};
 	int operators_count = (sizeof(operators)/s_size);
 
 
 	rules_.push_state("COMMENT");
 	rules_.push_state("MODIFIER");
+	rules_.push_state("MODIFIER2");
+	rules_.push_state("MODIFIER3");
+	rules_.push_state("MODIFIER4");
 	rules_.push_state("BLOCK");
+	rules_.push_state("BLOCK2");
+	rules_.push_state("BLOCK3");
+	rules_.push_state("BLOCK4");
 	defineRules(keywords, keywords_count, ekeyword);
 	defineRules(transformations, transformations_count, etransformation);
 	defineRules(booleans, booleans_count, eboolean);
@@ -48,6 +54,27 @@ void Lex::rules(){
 	rules_.push("BLOCK", "[^\\}]+" , "BLOCK");	
 	rules_.push("BLOCK", "[}]", 12, "INITIAL");
 	rules_.push("MODIFIER", ";", 13, "INITIAL");
+
+	rules_.push("INITIAL", "!", "MODIFIER2");
+	rules_.push("MODIFIER2","[^;\\{]+", "MODIFIER2");
+	rules_.push("MODIFIER2","[{]", "BLOCK2");
+	rules_.push("BLOCK2", "[^\\}]+" , "BLOCK2");	
+	rules_.push("BLOCK2", "[}]", 14, "INITIAL");
+	rules_.push("MODIFIER2", ";", 15, "INITIAL");
+
+	//rules_.push("INITIAL", "*", "MODIFIER3");
+	rules_.push("MODIFIER3","[^;\\{]+", "MODIFIER3");
+	rules_.push("MODIFIER3","[{]", "BLOCK3");
+	rules_.push("BLOCK3", "[^\\}]+" , "BLOCK3");	
+	rules_.push("BLOCK3", "[}]", 16, "INITIAL");
+	rules_.push("MODIFIER3", ";", 17, "INITIAL");
+
+	rules_.push("INITIAL", "%", "MODIFIER4");
+	rules_.push("MODIFIER4","[^;\\{]+", "MODIFIER4");
+	rules_.push("MODIFIER4","[{]", "BLOCK4");
+	rules_.push("BLOCK4", "[^\\}]+" , "BLOCK4");	
+	rules_.push("BLOCK4", "[}]", 18, "INITIAL");
+	rules_.push("MODIFIER4", ";", 19, "INITIAL");
 
 	rules_.push("INITIAL", "\"/*\"",  "COMMENT");
 	rules_.push("COMMENT", "[^*]+|.",  "COMMENT");
@@ -71,13 +98,16 @@ void Lex::defineRules(std::string words[], int size, int id){
 void Lex::lex_results(const std::string& input, int start, LexInterface* const obj, int startState, int posState){
 	
 	lexertl::smatch results (input.begin(), input.end());
-	if((posState == 10) || (startState == 10)){
-		results.state = 1;
-	} else if((posState == 12) || (startState == 12)){
-		results.state = 2;
-	} else if((posState == 13) || (startState == 13)){
-		results.state = 3;
-	}
+	if((posState == 10) || (startState == 10)){ results.state = 1; } 
+ 	else if((posState == 12) || (startState == 12)){ results.state = 2; }
+	else if((posState == 13) || (startState == 13)){ results.state = 6; }
+	else if((posState == 14) || (startState == 14)){ results.state = 3; } 
+	else if((posState == 15) || (startState == 15)){ results.state = 7; }
+	else if((posState == 16) || (startState == 16)){ results.state = 4; }
+	else if((posState == 17) || (startState == 17)){ results.state = 8; }
+	else if((posState == 18) || (startState == 18)){ results.state = 5; }
+	else if((posState == 19) || (startState == 19)){ results.state = 9; }
+	
 	lexertl::lookup(sm, results);	
 
 	while(results.id != eEOF)
@@ -86,59 +116,82 @@ void Lex::lex_results(const std::string& input, int start, LexInterface* const o
 		{
 			case 1:
 		  	token = results.str();
-		  	 obj->highlighting(start, input, results, results.id);
 			 break;
 
 			case 2:
 		 	token = results.str();
-		 	 obj->highlighting(start, input, results, results.id);
 		 	 break;
 					
 			case 3:
 		  	token = results.str();
-		  	 obj->highlighting(start, input, results, results.id);
 			 break;
 
 			case 4:
 		  	token = results.str();
-		  	 obj->highlighting(start, input, results, results.id);
 			 break;
 			
 			case 5:
 		  	token = results.str();
-		  	 obj->highlighting(start, input, results, results.id);
 			 break;
 
 			case 6:
 		  	token = results.str();
-		  	 obj->highlighting(start, input, results, results.id);
 			 break;
 			
 			case 7:
 			token = results.str();
-			 obj->highlighting(start, input, results, results.id);
 			break;
 
 			case 8:
 			token = results.str();
-			 obj->highlighting(start, input, results, results.id);
 			break;
 		
 			case 9:
 			token = results.str();
-			 obj->highlighting(start, input, results, results.id);
 			break;
 			
 			case 10:
 			token = results.str();
-			  obj->highlighting(start, input, results, results.id);
 			break;
 
 			case 11:
 			token = results.str();
-			obj->highlighting(start, input, results, results.id);
+			break;
+
+			case 12:
+		  	token = results.str();
+			 break;
+			
+			case 13:
+			token = results.str();
+			break;
+
+			case 14:
+			token = results.str();
+			break;
+		
+			case 15:
+			token = results.str();
+			break;
+			
+			case 16:
+			token = results.str();
+			break;
+
+			case 17:
+			token = results.str();
+			break;
+
+			case 18:
+			token = results.str();
+			break;
+
+			case 19:
+			token = results.str();
 			break;
 	       }
+
+		obj->highlighting(start, input, results, results.id);
 		lexertl::lookup(sm, results);
 	}
 }
