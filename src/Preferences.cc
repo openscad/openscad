@@ -171,6 +171,7 @@ void Preferences::init() {
 	QActionGroup *group = new QActionGroup(this);
 	addPrefPage(group, prefsAction3DView, page3DView);
 	addPrefPage(group, prefsActionEditor, pageEditor);
+	addPrefPage(group, prefsActionIcons, pageIcons);
 #ifdef OPENSCAD_UPDATER
 	addPrefPage(group, prefsActionUpdate, pageUpdate);
 #else
@@ -752,12 +753,16 @@ void Preferences::create(QStringList colorSchemes)
     foreach (std::string name, names) {
 	renderColorSchemes << name.c_str();
     }
+   
+    QStringList iconSets;
+    iconSets << "FlatIcons" << "3DIcons";
     
     instance = new Preferences();
     instance->syntaxHighlight->clear();
     instance->syntaxHighlight->addItems(colorSchemes);
     instance->colorSchemeChooser->clear();
     instance->colorSchemeChooser->addItems(renderColorSchemes);
+    instance->iconsList->addItems(iconSets);
     instance->init();
     instance->setupFeaturesPage();
     instance->updateGUI();

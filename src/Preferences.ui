@@ -27,11 +27,20 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="page3DView">
        <layout class="QVBoxLayout" name="verticalLayout_4">
-        <property name="margin">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
          <number>0</number>
         </property>
         <item>
@@ -95,7 +104,16 @@
         <property name="spacing">
          <number>0</number>
         </property>
-        <property name="margin">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
          <number>0</number>
         </property>
         <item>
@@ -108,8 +126,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>634</width>
-             <height>662</height>
+             <width>639</width>
+             <height>625</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_5">
@@ -226,7 +244,7 @@
                  <widget class="QFontComboBox" name="fontChooser">
                   <property name="currentFont">
                    <font>
-                    <family>Helvetica</family>
+                    <family>Nimbus Sans L</family>
                     <pointsize>12</pointsize>
                    </font>
                   </property>
@@ -980,6 +998,31 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="pageIcons">
+       <widget class="QListWidget" name="iconsList">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>30</y>
+          <width>181</width>
+          <height>311</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QLabel" name="icons">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>10</y>
+          <width>171</width>
+          <height>17</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Icon Sets</string>
+        </property>
+       </widget>
+      </widget>
       <widget class="QWidget" name="pageUpdate">
        <layout class="QVBoxLayout" name="verticalLayout_11">
         <item>
@@ -1126,7 +1169,16 @@
       </widget>
       <widget class="QWidget" name="pageFeatures">
        <layout class="QGridLayout" name="gridLayout_2">
-        <property name="margin">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
          <number>0</number>
         </property>
         <item row="0" column="0">
@@ -1163,8 +1215,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>98</width>
-               <height>36</height>
+               <width>655</width>
+               <height>368</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_10">
@@ -1198,7 +1250,16 @@
       </widget>
       <widget class="QWidget" name="pageAdvanced">
        <layout class="QVBoxLayout" name="verticalLayout_3">
-        <property name="margin">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
          <number>0</number>
         </property>
         <item>
@@ -1217,8 +1278,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>440</width>
-             <height>339</height>
+             <width>642</width>
+             <height>391</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_12">
@@ -1421,6 +1482,7 @@
    <addaction name="prefsActionUpdate"/>
    <addaction name="prefsActionFeatures"/>
    <addaction name="prefsActionAdvanced"/>
+   <addaction name="prefsActionIcons"/>
   </widget>
   <action name="prefsAction3DView">
    <property name="checkable">
@@ -1483,6 +1545,11 @@
    </property>
    <property name="toolTip">
     <string>Enable/Disable experimental features</string>
+   </property>
+  </action>
+  <action name="prefsActionIcons">
+   <property name="text">
+    <string>Icons</string>
    </property>
   </action>
  </widget>
