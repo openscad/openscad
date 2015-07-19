@@ -317,7 +317,11 @@ void QGLView::onTranslateEvent(const InputEventTranslate *event)
 
 void QGLView::onRotateEvent(const InputEventRotate *event)
 {
-    rotate(event->x, event->y, event->z, event->relative);
+    if (event->relative) {
+        rotate2(event->x, event->y, event->z);
+    } else {
+        rotate(event->x, event->y, event->z, event->relative);
+    }
 }
 
 void QGLView::onButtonEvent(const InputEventButton *event)
@@ -407,12 +411,59 @@ void QGLView::translate(double x, double y, double z, bool relative, bool viewPo
 void QGLView::rotate(double x, double y, double z, bool relative)
 {
     double f = relative ? 1 : 0;
-    cam.object_rot.x() = f *  cam.object_rot.x() + x;
-    cam.object_rot.y() = f *  cam.object_rot.y() + y;
-    cam.object_rot.z() = f *  cam.object_rot.z() + z;
+    cam.object_rot.x() = f * cam.object_rot.x() + x;
+    cam.object_rot.y() = f * cam.object_rot.y() + y;
+    cam.object_rot.z() = f * cam.object_rot.z() + z;
     normalizeAngle(cam.object_rot.x());
     normalizeAngle(cam.object_rot.y());
     normalizeAngle(cam.object_rot.z());
+    updateGL();
+    emit doAnimateUpdate();
+}
+
+void QGLView::rotate2(double x, double y, double z)
+{
+    // This vector describes the rotation.
+    // The direction of the vector is the angle around which to rotate, and
+    // the length of the vector is the angle by which to rotate
+    Vector3d rot = Vector3d(-x, -y, -z);
+
+    // get current rotation matrix
+    Matrix3d aax, aay, aaz, rmx;
+    aax = Eigen::AngleAxisd(-cam.object_rot.x() / 180 * M_PI, Vector3d::UnitX());
+    aay = Eigen::AngleAxisd(-cam.object_rot.y() / 180 * M_PI, Vector3d::UnitY());
+    aaz = Eigen::AngleAxisd(-cam.object_rot.z() / 180 * M_PI, Vector3d::UnitZ());
+    rmx = aaz * (aay * aax);
+
+    // rotate
+    rmx = rmx * Eigen::AngleAxisd(rot.norm() / 180. * M_PI, rot.normalized());
+
+    // back to euler
+    // see: http://staff.city.ac.uk/~sbbh653/publications/euler.pdf
+    double theta, psi, phi;
+    if (abs(rmx(2, 0)) != 1) {
+        theta = -asin(rmx(2, 0));
+        psi = atan2(rmx(2, 1) / cos(theta), rmx(2, 2) / cos(theta));
+        phi = atan2(rmx(1, 0) / cos(theta), rmx(0, 0) / cos(theta));
+    } else {
+        phi = 0;
+        if (rmx(2, 0) == -1) {
+            theta = M_PI / 2;
+            psi = phi + atan2(rmx(0, 1), rmx(0, 2));
+        } else {
+            theta = -M_PI / 2;
+            psi = -phi + atan2(-rmx(0, 1), -rmx(0, 2));
+        }
+    }
+
+    cam.object_rot.x() = -psi * 180. / M_PI;
+    cam.object_rot.y() = -theta * 180. / M_PI;
+    cam.object_rot.z() = -phi * 180. / M_PI;
+
+    normalizeAngle(cam.object_rot.x());
+    normalizeAngle(cam.object_rot.y());
+    normalizeAngle(cam.object_rot.z());
+
     updateGL();
     emit doAnimateUpdate();
 }
