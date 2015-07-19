@@ -33,21 +33,7 @@
 #include "input/InputDriverManager.h"
 
 #include <spnav.h>
-
-#define	WSTRLEN		256
-#define	BUFLEN		16
-#define	VENDOR_ID	0x046d
-#define	PRODUCT_ID	0xc626
-
-using namespace std;
-
-static void
-sleep_iter(void)
-{
-    struct timespec schnarch = {1, 0};
-    while (nanosleep(&schnarch, &schnarch) < 0) {
-    };
-}
+#include <unistd.h>
 
 SpaceNavInputDriver::SpaceNavInputDriver()
 {
@@ -61,37 +47,59 @@ SpaceNavInputDriver::~SpaceNavInputDriver()
 
 void SpaceNavInputDriver::run()
 {
-    for (;;sleep_iter()) {
+    while (true) {
+        QThread::msleep(20);
+        spnav_remove_events(SPNAV_EVENT_MOTION);
+
         spnav_input();
     }
 }
 
+/*
+ * Handle events from the spacenavd daemon. The method blocks until at least
+ * one event is available and then processes all events until the queue is
+ * empty.
+ */
 void SpaceNavInputDriver::spnav_input(void)
 {
-    spnav_event spn_ev;
-    while (spnav_wait_event(&spn_ev)) {
-        if (spn_ev.type == SPNAV_EVENT_MOTION) {
-            if (spn_ev.motion.x != 0 || spn_ev.motion.y != 0 || spn_ev.motion.z != 0) {
-                InputEvent *event = new InputEventTranslate(
-                    0.1 * spn_ev.motion.x, 0.1 * spn_ev.motion.z, 0.1 * spn_ev.motion.y);
-                InputDriverManager::instance()->postEvent(event);
-            }
-            if (spn_ev.motion.rx != 0 || spn_ev.motion.ry != 0 || spn_ev.motion.rz != 0) {
-                InputEvent *event = new InputEventRotate(
-                    0.01 * spn_ev.motion.rx, 0.01 * spn_ev.motion.rz, 0.01 * spn_ev.motion.ry);
-                InputDriverManager::instance()->postEvent(event);
-            }
-        } else {
-            if (spn_ev.button.press) {
-                InputEvent *event = new InputEventButton(spn_ev.button.bnum, true);
-                InputDriverManager::instance()->postEvent(event);
-            } else {
-                InputEvent*event = new InputEventButton(spn_ev.button.bnum, false);
-                InputDriverManager::instance()->postEvent(event);
-            }
-        }
+    spnav_event ev;
+
+    if (spnav_wait_event(&ev) == 0) {
+        return;
     }
-    spnav_close();
+
+    do {
+        if (ev.type == SPNAV_EVENT_MOTION) {
+            if (true) {
+                // dominant axis only
+                int m=ev.motion.x;
+                if (abs(m) < abs(ev.motion.y)) m=ev.motion.y;
+                if (abs(m) < abs(ev.motion.z)) m=ev.motion.z;
+                if (abs(m) < abs(ev.motion.rx)) m=ev.motion.rx;
+                if (abs(m) < abs(ev.motion.ry)) m=ev.motion.ry;
+                if (abs(m) < abs(ev.motion.rz)) m=ev.motion.rz;
+
+                if (ev.motion.x == m) {                ev.motion.y=0; ev.motion.z=0; ev.motion.rx=0; ev.motion.ry=0; ev.motion.rz=0; }
+                if (ev.motion.y == m) { ev.motion.x=0;                ev.motion.z=0; ev.motion.rx=0; ev.motion.ry=0; ev.motion.rz=0; }
+                if (ev.motion.z == m) { ev.motion.x=0; ev.motion.y=0;                ev.motion.rx=0; ev.motion.ry=0; ev.motion.rz=0; }
+                if (ev.motion.rx== m) { ev.motion.x=0; ev.motion.y=0; ev.motion.z=0;                 ev.motion.ry=0; ev.motion.rz=0; }
+                if (ev.motion.ry== m) { ev.motion.x=0; ev.motion.y=0; ev.motion.z=0; ev.motion.rx=0;                 ev.motion.rz=0; }
+                if (ev.motion.rz== m) { ev.motion.x=0; ev.motion.y=0; ev.motion.z=0; ev.motion.rx=0; ev.motion.ry=0;                 }
+            }
+
+            if (ev.motion.x != 0 || ev.motion.y != 0 || ev.motion.z != 0) {
+                InputEvent *event = new InputEventTranslate(0.1 * ev.motion.x, 0.1 * ev.motion.z, 0.1 * ev.motion.y);
+                InputDriverManager::instance()->postEvent(event);
+            }
+            if (ev.motion.rx != 0 || ev.motion.ry != 0 || ev.motion.rz != 0) {
+                InputEvent *event = new InputEventRotate(0.01 * ev.motion.rx, 0.01 * ev.motion.rz, 0.01 * ev.motion.ry);
+                InputDriverManager::instance()->postEvent(event);
+            }
+        } else if (ev.type == SPNAV_EVENT_BUTTON) {
+            InputEvent *event = new InputEventButton(ev.button.bnum, ev.button.press);
+            InputDriverManager::instance()->postEvent(event);
+        }
+    } while (spnav_poll_event(&ev));
 }
 
 bool SpaceNavInputDriver::open()
