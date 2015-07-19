@@ -47,11 +47,9 @@ SpaceNavInputDriver::~SpaceNavInputDriver()
 
 void SpaceNavInputDriver::run()
 {
-    while (true) {
+    while (spnav_input()) {
         QThread::msleep(20);
         spnav_remove_events(SPNAV_EVENT_MOTION);
-
-        spnav_input();
     }
 }
 
@@ -60,12 +58,12 @@ void SpaceNavInputDriver::run()
  * one event is available and then processes all events until the queue is
  * empty.
  */
-void SpaceNavInputDriver::spnav_input(void)
+bool SpaceNavInputDriver::spnav_input(void)
 {
     spnav_event ev;
 
     if (spnav_wait_event(&ev) == 0) {
-        return;
+        return false;
     }
 
     do {
@@ -100,6 +98,7 @@ void SpaceNavInputDriver::spnav_input(void)
             InputDriverManager::instance()->postEvent(event);
         }
     } while (spnav_poll_event(&ev));
+    return true;
 }
 
 bool SpaceNavInputDriver::open()

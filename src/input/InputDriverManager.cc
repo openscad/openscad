@@ -33,6 +33,7 @@ InputDriverManager::InputDriverManager()
 {
     currentWindow = 0;
     connect(QApplication::instance(), SIGNAL(focusChanged(QWidget *, QWidget *)), this, SLOT(onFocusChanged(QWidget *, QWidget *)));
+    timer = new QTimer(this);
 }
 
 InputDriverManager::~InputDriverManager()
@@ -60,11 +61,43 @@ void InputDriverManager::unregisterDriver(InputDriver *driver)
 
 void InputDriverManager::init()
 {
+    doOpen(true);
+    connect(timer, SIGNAL(timeout()), this, SLOT(onTimeout()));
+    timer->start(10 * 1000);
+}
+
+void InputDriverManager::onTimeout()
+{
+    for (drivers_t::iterator it = drivers.begin(); it != drivers.end(); it++) {
+        InputDriver *driver = (*it);
+        if (driver->openOnce()) {
+            continue;
+        }
+        if (driver->isOpen()) {
+            return;
+        }
+    }
+    doOpen(false);
+}
+
+void InputDriverManager::doOpen(bool firstOpen)
+{
     for (drivers_t::iterator it = drivers.begin();it != drivers.end();it++) {
-        PRINTB("trying to open %s\n", (*it)->get_name().c_str());
-        if ((*it)->open()) {
-            PRINTB("using %s\n", (*it)->get_name().c_str());
+        InputDriver *driver = (*it);
+        if (driver->openOnce()) {
+            continue;
+        }
+        if (driver->open()) {
             break;
+        }
+    }
+
+    if (firstOpen) {
+        for (drivers_t::iterator it = drivers.begin();it != drivers.end();it++) {
+            InputDriver *driver = (*it);
+            if (driver->openOnce()) {
+                driver->open();
+            }
         }
     }
 }
@@ -74,7 +107,11 @@ std::string InputDriverManager::listDrivers()
     std::stringstream stream;
     const char *sep = "";
     for (drivers_t::iterator it = drivers.begin();it != drivers.end();it++) {
-        stream << sep << (*it)->get_name();
+        InputDriver *driver = (*it);
+        stream << sep << driver->get_name();
+        if (driver->isOpen()) {
+            stream << "*";
+        }
         sep = ", ";
     }
     return stream.str();

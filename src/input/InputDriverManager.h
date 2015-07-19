@@ -27,6 +27,7 @@
 
 #include <QWidget>
 #include <QThread>
+#include <QTimer>
 
 #include "InputDriver.h"
 #include "MainWindow.h"
@@ -40,6 +41,8 @@ private:
     drivers_t drivers;
 
     MainWindow *currentWindow;
+
+    QTimer *timer;
 
     static InputDriverManager *self;
 
@@ -57,5 +60,7 @@ public:
     static InputDriverManager * instance();
 
 private slots:
+    void onTimeout();
+    void doOpen(bool firstOpen);
     void onFocusChanged(QWidget *, QWidget *);
 };
