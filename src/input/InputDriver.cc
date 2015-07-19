@@ -36,3 +36,13 @@ InputDriver::~InputDriver()
 {
 
 }
+
+bool InputDriver::isOpen()
+{
+    return isRunning();
+}
+
+bool InputDriver::openOnce()
+{
+    return false;
+}

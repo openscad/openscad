@@ -31,12 +31,16 @@ class DBusInputDriver : public InputDriver
 {
     Q_OBJECT
 
+    bool is_open;
+
 public:
     DBusInputDriver();
     virtual ~DBusInputDriver();
     virtual void run();
     virtual bool open();
     virtual void close();
+    virtual bool isOpen();
+    virtual bool openOnce();
 
     virtual const std::string & get_name() const;
 

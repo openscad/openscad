@@ -42,5 +42,5 @@ public:
     virtual const std::string & get_name() const;
 
 private:
-    void spnav_input();
+    bool spnav_input();
 };

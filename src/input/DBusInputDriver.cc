@@ -34,7 +34,7 @@ void DBusInputDriver::run()
 
 }
 
-DBusInputDriver::DBusInputDriver()
+DBusInputDriver::DBusInputDriver() : is_open(false)
 {
 
 }
@@ -44,8 +44,22 @@ DBusInputDriver::~DBusInputDriver()
 
 }
 
+bool DBusInputDriver::openOnce()
+{
+    return true;
+}
+
+bool DBusInputDriver::isOpen()
+{
+
+}
+
 bool DBusInputDriver::open()
 {
+    if (is_open) {
+        return true;
+    }
+
     if (!QDBusConnection::sessionBus().isConnected()) {
         return false;
     }
@@ -62,6 +76,7 @@ bool DBusInputDriver::open()
     connect(iface, SIGNAL(rotateTo(double, double, double)), this, SLOT(rotateTo(double, double, double)));
     connect(iface, SIGNAL(translate(double, double, double)), this, SLOT(translate(double, double, double)));
     connect(iface, SIGNAL(translateTo(double, double, double)), this, SLOT(translateTo(double, double, double)));
+    is_open = true;
     return true;
 }
 
