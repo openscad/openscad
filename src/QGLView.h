@@ -97,6 +97,7 @@ private:
 
         void zoom(double v, bool relative);
         void rotate(double x, double y, double z, bool relative);
+        void rotate2(double x, double y, double z);
         void translate(double x, double y, double z, bool relative, bool viewPortRelative = true);
 	void normalizeAngle(GLdouble& angle);
 
