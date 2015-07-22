@@ -6,7 +6,7 @@
 #include "qtgettext.h"
 #include "ui_Preferences.h"
 #include "settings.h"
-
+#include "toolbar.h"
 class Preferences : public QMainWindow, public Ui::Preferences
 {
 	Q_OBJECT;

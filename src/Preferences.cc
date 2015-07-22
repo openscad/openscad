@@ -753,9 +753,10 @@ void Preferences::create(QStringList colorSchemes)
     foreach (std::string name, names) {
 	renderColorSchemes << name.c_str();
     }
-   
-    QStringList iconSets;
-    iconSets << "FlatIcons" << "3DIcons";
+  
+     Toolbar *icon = new Toolbar;
+    QStringList iconSets = icon->iconSchemes();
+    //iconSets << "FlatIcons" << "3DIcons";
     
     instance = new Preferences();
     instance->syntaxHighlight->clear();

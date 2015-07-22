@@ -335,6 +335,7 @@ src/FontCache.h \
            src/AutoUpdater.h \
            src/launchingscreen.h \
            src/legacyeditor.h \
+	   src/toolbar.h \
            src/LibraryInfoDialog.h
 
 SOURCES += src/version_check.cc \
@@ -432,6 +433,7 @@ SOURCES += src/version_check.cc \
            src/FontListTableView.cc \
            src/launchingscreen.cc \
            src/legacyeditor.cc \
+	   src/toolbar.cc \
            src/LibraryInfoDialog.cc
 
 # ClipperLib
