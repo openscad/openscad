@@ -51,7 +51,7 @@ bool DBusInputDriver::openOnce()
 
 bool DBusInputDriver::isOpen()
 {
-
+    return is_open;
 }
 
 bool DBusInputDriver::open()
