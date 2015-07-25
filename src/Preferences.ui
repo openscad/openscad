@@ -1548,6 +1548,13 @@
    </property>
   </action>
   <action name="prefsActionIcons">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/icons/icons.png</normaloff>:/icons/icons.png</iconset>
+   </property>
    <property name="text">
     <string>Icons</string>
    </property>
