@@ -26,6 +26,7 @@ public slots:
 	void actionTriggered(class QAction *);
 	void featuresCheckBoxToggled(bool);
 	void on_colorSchemeChooser_itemSelectionChanged();
+	void on_iconsList_itemSelectionChanged();
 	void on_fontChooser_activated(const QString &);
 	void on_fontSize_currentIndexChanged(const QString &);
 	void on_syntaxHighlight_activated(const QString &);
@@ -78,6 +79,7 @@ signals:
 	void updateReorderMode(bool undockMode) const;
 	void fontChanged(const QString &family, uint size) const;
 	void colorSchemeChanged(const QString &scheme) const;
+	void iconSchemeChanged(const QString &scheme) const;
 	void openCSGSettingsChanged() const;
 	void syntaxHighlightChanged(const QString &s) const;
 	void editorTypeChanged(const QString &type);

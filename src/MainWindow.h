@@ -3,6 +3,7 @@
 #include "qtgettext.h"
 #include <QMainWindow>
 #include <QIcon>
+#include <string>
 #include "ui_MainWindow.h"
 #include "UIUtils.h"
 #include "openscad.h"
@@ -81,6 +82,7 @@ public:
 
         int compileErrors;
         int compileWarnings;
+	
 
 	MainWindow(const QString &filename);
 	~MainWindow();
@@ -97,12 +99,13 @@ private slots:
 	void setFileName(const QString &filename);
 	void setFont(const QString &family, uint size);
 	void setColorScheme(const QString &cs);
+	void setIconScheme(const QString &is);
 	void showProgress();
 	void openCSGSettingsChanged();
 	void consoleOutput(const QString &msg);
 
 private:
-        void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
+        void initActionIcon(QAction *action, const std::string darkResource, const std::string lightResource);
 	void openFile(const QString &filename);
         void handleFileDrop(const QString &filename);
 	void refreshDocument();

@@ -459,6 +459,9 @@ MainWindow::MainWindow(const QString &filename)
 					editor, SLOT(setHighlightScheme(const QString&)));
 	connect(Preferences::inst(), SIGNAL(colorSchemeChanged(const QString&)), 
 					this, SLOT(setColorScheme(const QString&)));
+
+	connect(Preferences::inst(), SIGNAL(iconSchemeChanged(const QString&)),
+					this, SLOT(setIconScheme(const QString&)));
 	Preferences::inst()->apply();
 
 	QString cs = Preferences::inst()->getValue("3dview/colorscheme").toString();
@@ -488,7 +491,7 @@ MainWindow::MainWindow(const QString &filename)
 	addKeyboardShortCut(this->editortoolbar->actions());
 	
 	initActionIcon(fileActionNew, ":/images/blackNew.png", ":/images/Document-New-128.png");
-	initActionIcon(fileActionOpen, ":/images/Open-32.png", ":/images/Open-128.png");
+	initActionIcon(fileActionOpen, ":/images/Open-32.png", ":/images/Open-32.png");
 	initActionIcon(fileActionSave, ":/images/Save-32.png", ":/images/Save-128.png");
 	initActionIcon(editActionZoomTextIn, ":/images/zoom-text-in.png", ":/images/zoom-text-in-white.png");
 	initActionIcon(editActionZoomTextOut, ":/images/zoom-text-out.png", ":/images/zoom-text-out-white.png");
@@ -584,10 +587,11 @@ MainWindow::MainWindow(const QString &filename)
 	clearCurrentOutput();
 }
 
-void MainWindow::initActionIcon(QAction *action, const char *darkResource, const char *lightResource)
+void MainWindow::initActionIcon(QAction *action, const std::string darkResource, const std::string lightResource)
 {
 	int defaultcolor = viewerToolBar->palette().background().color().lightness();
-        const char *resource = (defaultcolor > 165) ? darkResource : lightResource;
+        const std::string selected  = (defaultcolor > 165) ? darkResource : lightResource;
+	const QString &resource = QString::fromStdString(selected);
 	action->setIcon(QIcon(resource));
 }
 
@@ -2655,6 +2659,12 @@ void MainWindow::setColorScheme(const QString &scheme)
 	RenderSettings::inst()->colorscheme = scheme.toStdString();
 	this->qglview->setColorScheme(scheme.toStdString());
 	this->qglview->updateGL();
+}
+
+void MainWindow::setIconScheme(const QString &scheme)
+{
+	std::string set = scheme.toStdString();
+	initActionIcon(fileActionOpen, "images/" + set + "/Open-32.png", "images/" + set +"/Open-32.png");
 }
 
 void MainWindow::setFont(const QString &family, uint size)

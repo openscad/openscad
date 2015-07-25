@@ -328,6 +328,11 @@ void Preferences::on_colorSchemeChooser_itemSelectionChanged()
 	emit colorSchemeChanged( scheme );
 }
 
+void Preferences::on_iconsList_itemSelectionChanged()
+{
+	QString iconset = this->iconsList->currentItem()->text();
+	emit iconSchemeChanged(iconset);
+}
 void Preferences::on_fontChooser_activated(const QString &family)
 {
 	QSettings settings;
