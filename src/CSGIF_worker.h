@@ -3,12 +3,12 @@
 #include <QObject>
 #include "memory.h"
 
-class CGALWorker : public QObject
+class CSGIF_Worker : public QObject
 {
 	Q_OBJECT;
 public:
-	CGALWorker();
-	virtual ~CGALWorker();
+	CSGIF_Worker();
+	virtual ~CSGIF_Worker();
 
 public slots:
 	void start(const class Tree &tree);

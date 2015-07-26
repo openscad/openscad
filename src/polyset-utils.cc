@@ -108,7 +108,7 @@ namespace PolysetUtils {
 
 	bool is_approximately_convex(const PolySet &ps) {
 #ifdef ENABLE_CGAL
-		return CGALUtils::is_approximately_convex(ps);
+		return CSGIF_Utils::is_approximately_convex(ps);
 #else
 		return false;
 #endif

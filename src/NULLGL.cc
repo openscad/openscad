@@ -21,13 +21,13 @@ void ThrownTogetherRenderer::renderCSGChain(CSGChain *chain, bool
   highlight, bool background, bool showedges, bool fberror) const {}
 BoundingBox ThrownTogetherRenderer::getBoundingBox() const {assert(false && "not implemented");}
 
-#include "CGALRenderer.h"
+#include "CSGIF_Renderer.h"
 
-CGALRenderer::CGALRenderer(shared_ptr<const class Geometry> geom) {}
-CGALRenderer::~CGALRenderer() {}
-void CGALRenderer::draw(bool showfaces, bool showedges) const {}
-BoundingBox CGALRenderer::getBoundingBox() const {assert(false && "not implemented");}
-void CGALRenderer::setColorScheme(const ColorScheme &cs){assert(false && "not implemented");}
+CSGIF_Renderer::CSGIF_Renderer(shared_ptr<const class Geometry> geom) {}
+CSGIF_Renderer::~CSGIF_Renderer() {}
+void CSGIF_Renderer::draw(bool showfaces, bool showedges) const {}
+BoundingBox CSGIF_Renderer::getBoundingBox() const {assert(false && "not implemented");}
+void CSGIF_Renderer::setColorScheme(const ColorScheme &cs){assert(false && "not implemented");}
 
 
 #include "system-gl.h"

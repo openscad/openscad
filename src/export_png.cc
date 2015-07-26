@@ -6,11 +6,7 @@
 #include "polyset.h"
 #include "rendersettings.h"
 
-#ifdef ENABLE_CGAL
-#include "CGALRenderer.h"
-#include "cgal.h"
-#include "cgalutils.h"
-#include "CGAL_Nef_polyhedron.h"
+#include "CSGIF.h"
 
 static void setupCamera(Camera &cam, const BoundingBox &bbox)
 {
@@ -22,6 +18,7 @@ static void setupCamera(Camera &cam, const BoundingBox &bbox)
 void export_png(shared_ptr<const Geometry> root_geom, Camera &cam, std::ostream &output)
 {
 	PRINTD("export_png geom");
+#ifdef ENABLE_CSGIF
 	OffscreenView *glview;
 	try {
 		glview = new OffscreenView(cam.pixel_width, cam.pixel_height);
@@ -29,16 +26,19 @@ void export_png(shared_ptr<const Geometry> root_geom, Camera &cam, std::ostream 
 		fprintf(stderr,"Can't create OpenGL OffscreenView. Code: %i.\n", error);
 		return;
 	}
-	CGALRenderer cgalRenderer(root_geom);
+	CSGIF_Renderer csgifRenderer(root_geom);
 
-	BoundingBox bbox = cgalRenderer.getBoundingBox();
+	BoundingBox bbox = csgifRenderer.getBoundingBox();
 	setupCamera(cam, bbox);
 
 	glview->setCamera(cam);
-	glview->setRenderer(&cgalRenderer);
+	glview->setRenderer(&csgifRenderer);
 	glview->setColorScheme(RenderSettings::inst()->colorscheme);
 	glview->paintGL();
 	glview->save(output);
+#else
+    fprintf(stderr,"This openscad was built without CSG support\n");
+#endif // ENABLE_CSGIF
 }
 
 enum Previewer { OPENCSG, THROWNTOGETHER } previewer;
@@ -101,5 +101,3 @@ void export_png_with_throwntogether(Tree &tree, Camera &cam, std::ostream &outpu
 	PRINTD("export_png_w_thrown");
 	export_png_preview_common(tree, cam, output, THROWNTOGETHER);
 }
-
-#endif // ENABLE_CGAL

@@ -66,13 +66,13 @@ void handle_dep(QString filename)
 }
 
 // FIXME: enforce some maximum cache size (old version had 100K vertices as limit)
-QHash<std::string, CGAL_Nef_polyhedron> cache;
+QHash<std::string, CSGIF_polyhedron> cache;
 
 void cgalTree(Tree &tree)
 {
 	assert(tree.root());
 
-	CGALRenderer renderer(cache, tree);
+	CSGIF_Renderer renderer(cache, tree);
 	Traverser render(renderer, *tree.root(), Traverser::PRE_AND_POSTFIX);
 	render.execute();
 }
@@ -167,7 +167,7 @@ int main(int argc, char **argv)
 
 	cgalTree(tree);
 
-	CGAL_Nef_polyhedron N = cache[tree.getString(*root_node)];
+	CSGIF_polyhedron N = cache[tree.getString(*root_node)];
 
 	QDir::setCurrent(original_path.absolutePath());
 	QTextStream outstream(stdout);

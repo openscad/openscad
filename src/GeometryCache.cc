@@ -2,10 +2,9 @@
 #include "printutils.h"
 #include "Geometry.h"
 #ifdef DEBUG
-  #ifndef ENABLE_CGAL
-  #define ENABLE_CGAL
-  #endif
+  #ifdef ENABLE_CGAL
   #include "CGAL_Nef_polyhedron.h"
+  #endif
 #endif
 
 GeometryCache *GeometryCache::inst = NULL;
@@ -23,7 +22,9 @@ bool GeometryCache::insert(const std::string &id, const shared_ptr<const Geometr
 {
 	bool inserted = this->cache.insert(id, new cache_entry(geom), geom ? geom->memsize() : 0);
 #ifdef DEBUG
-	assert(!dynamic_cast<const CGAL_Nef_polyhedron*>(geom.get()));
+#ifdef ENABLE_CGAL
+	assert(!dynamic_cast<const CSGIF_polyhedron*>(geom.get()));
+#endif
 	if (inserted) PRINTDB("Geometry Cache insert: %s (%d bytes)", 
                          id.substr(0, 40) % (geom ? geom->memsize() : 0));
 	else PRINTDB("Geometry Cache insert failed: %s (%d bytes)",

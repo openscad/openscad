@@ -35,8 +35,8 @@
 #include "GeometryCache.h"
 #include "AutoUpdater.h"
 #include "feature.h"
-#ifdef ENABLE_CGAL
-#include "CGALCache.h"
+#ifdef ENABLE_CSGIF
+#include "CSGIF_Cache.h"
 #endif
 #include "colormap.h"
 #include "rendersettings.h"
@@ -156,8 +156,8 @@ void Preferences::init() {
 	this->defaultmap["advanced/opencsg_show_warning"] = true;
 	this->defaultmap["advanced/enable_opencsg_opengl1x"] = true;
 	this->defaultmap["advanced/polysetCacheSize"] = uint(GeometryCache::instance()->maxSize());
-#ifdef ENABLE_CGAL
-	this->defaultmap["advanced/cgalCacheSize"] = uint(CGALCache::instance()->maxSize());
+#ifdef ENABLE_CSGIF
+	this->defaultmap["advanced/cgalCacheSize"] = uint(CSGIF_Cache::instance()->maxSize());
 #endif
 	this->defaultmap["advanced/openCSGLimit"] = RenderSettings::inst()->openCSGTermLimit;
 	this->defaultmap["advanced/forceGoldfeather"] = false;
@@ -192,7 +192,7 @@ void Preferences::init() {
 
   // Advanced pane	
 	QValidator *validator = new QIntValidator(this);
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CSGIF_
 	this->cgalCacheSizeEdit->setValidator(validator);
 #endif
 	this->polysetCacheSizeEdit->setValidator(validator);
@@ -435,8 +435,8 @@ void Preferences::on_cgalCacheSizeEdit_textChanged(const QString &text)
 {
 	QSettings settings;
 	settings.setValue("advanced/cgalCacheSize", text);
-#ifdef ENABLE_CGAL
-	CGALCache::instance()->setMaxSize(text.toULong());
+#ifdef ENABLE_CSGIF_
+	CSGIF_Cache::instance()->setMaxSize(text.toULong());
 #endif
 }
 

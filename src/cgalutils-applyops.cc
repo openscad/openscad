@@ -72,14 +72,17 @@ namespace CGALUtils {
 
 		return visited.size() == p.size_of_facets();
 	}
+}
+
+namespace CSGIF_Utils {
 
 /*!
 	Applies op to all children and returns the result.
 	The child list should be guaranteed to contain non-NULL 3D or empty Geometry objects
 */
-	CGAL_Nef_polyhedron *applyOperator(const Geometry::ChildList &children, OpenSCADOperator op)
+	CSGIF_polyhedron *applyOperator(const Geometry::ChildList &children, OpenSCADOperator op)
 	{
-		CGAL_Nef_polyhedron *N = NULL;
+		CSGIF_polyhedron *N = NULL;
 		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 		try {
 			// Speeds up n-ary union operations significantly
@@ -88,11 +91,11 @@ namespace CGALUtils {
 			
 			BOOST_FOREACH(const Geometry::ChildItem &item, children) {
 				const shared_ptr<const Geometry> &chgeom = item.second;
-				shared_ptr<const CGAL_Nef_polyhedron> chN = 
-					dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
+				shared_ptr<const CSGIF_polyhedron> chN =
+					dynamic_pointer_cast<const CSGIF_polyhedron>(chgeom);
 				if (!chN) {
 					const PolySet *chps = dynamic_cast<const PolySet*>(chgeom.get());
-					if (chps) chN.reset(createNefPolyhedronFromGeometry(*chps));
+					if (chps) chN.reset(CSGIF_Utils::createCsgPolyhedronFromGeometry(*chps));
 				}
 				
 				if (op == OPENSCAD_UNION) {
@@ -106,7 +109,7 @@ namespace CGALUtils {
 				}
 				// Initialize N with first expected geometric object
 				if (!N) {
-					N = new CGAL_Nef_polyhedron(*chN);
+					N = new CSGIF_polyhedron(*chN);
 					continue;
 				}
 				
@@ -136,7 +139,7 @@ namespace CGALUtils {
 			}
 
 			if (op == OPENSCAD_UNION && nary_union_num_inserted > 0) {
-				N = new CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3(nary_union.get_union()));
+				N = new CSGIF_polyhedron(new CGAL_Nef_polyhedron3(nary_union.get_union()));
 			}
 		}
 	// union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad and testdata/scad/bugs/issue204.scad
@@ -160,7 +163,7 @@ namespace CGALUtils {
 
 		BOOST_FOREACH(const Geometry::ChildItem &item, children) {
 			const shared_ptr<const Geometry> &chgeom = item.second;
-			const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(chgeom.get());
+			const CSGIF_polyhedron *N = dynamic_cast<const CSGIF_polyhedron *>(chgeom.get());
 			if (N) {
 				if (!N->isEmpty()) {
 					for (CGAL_Nef_polyhedron3::Vertex_const_iterator i = N->p3->vertices_begin(); i != N->p3->vertices_end(); ++i) {
@@ -192,7 +195,7 @@ namespace CGALUtils {
                             PRINTDB("After hull facets: %d", r.size_of_facets());
                             PRINTDB("After hull closed: %d", r.is_closed());
                             PRINTDB("After hull valid: %d", r.is_valid());
-				success = !createPolySetFromPolyhedron(r, result);
+				success = !CGALUtils::createPolySetFromPolyhedron(r, result);
 			}
 			catch (const CGAL::Assertion_exception &e) {
 				PRINTB("ERROR: CGAL error in applyHull(): %s", e.what());
@@ -227,14 +230,14 @@ namespace CGALUtils {
 
 					const PolySet * ps = dynamic_cast<const PolySet *>(operands[i]);
 
-					const CGAL_Nef_polyhedron * nef = dynamic_cast<const CGAL_Nef_polyhedron *>(operands[i]);
+					const CSGIF_polyhedron * nef = dynamic_cast<const CSGIF_polyhedron *>(operands[i]);
 
 					if (ps) CGALUtils::createPolyhedronFromPolySet(*ps, poly);
 					else if (nef && nef->p3->is_simple()) nefworkaround::convert_to_Polyhedron<CGAL_Kernel3>(*nef->p3, poly);
 					else throw 0;
 
 					if ((ps && ps->is_convex()) ||
-							(!ps && is_weakly_convex(poly))) {
+							(!ps && CGALUtils::is_weakly_convex(poly))) {
 						PRINTDB("Minkowski: child %d is convex and %s",i % (ps?"PolySet":"Nef"));
 						P[i].push_back(poly);
 					} else {
@@ -242,7 +245,7 @@ namespace CGALUtils {
 
 						if (ps) {
 							PRINTDB("Minkowski: child %d is nonconvex PolySet, transforming to Nef and decomposing...", i);
-							CGAL_Nef_polyhedron *p = createNefPolyhedronFromGeometry(*ps);
+							CSGIF_polyhedron *p = CSGIF_Utils::createCsgPolyhedronFromGeometry(*ps);
 							if (!p->isEmpty()) decomposed_nef = *p->p3;
 							delete p;
 						} else {
@@ -370,7 +373,7 @@ namespace CGALUtils {
 
 				if (result_parts.size() == 1) {
 					PolySet *ps = new PolySet(3,true);
-					createPolySetFromPolyhedron(*result_parts.begin(), *ps);
+					CGALUtils::createPolySetFromPolyhedron(*result_parts.begin(), *ps);
 					operands[0] = ps;
 				} else if (!result_parts.empty()) {
 					t.start();
@@ -378,11 +381,11 @@ namespace CGALUtils {
 					Geometry::ChildList fake_children;
 					for (std::list<CGAL::Polyhedron_3<Hull_kernel> >::iterator i = result_parts.begin(); i != result_parts.end(); ++i) {
 						PolySet ps(3,true);
-						createPolySetFromPolyhedron(*i, ps);
+						CGALUtils::createPolySetFromPolyhedron(*i, ps);
 						fake_children.push_back(std::make_pair((const AbstractNode*)NULL,
-															   shared_ptr<const Geometry>(createNefPolyhedronFromGeometry(ps))));
+															   shared_ptr<const Geometry>(CSGIF_Utils::createCsgPolyhedronFromGeometry(ps))));
 					}
-					CGAL_Nef_polyhedron *N = CGALUtils::applyOperator(fake_children, OPENSCAD_UNION);
+					CSGIF_polyhedron *N = CSGIF_Utils::applyOperator(fake_children, OPENSCAD_UNION);
 					// FIXME: This hould really never throw.
 					// Assert once we figured out what went wrong with issue #1069?
 					if (!N) throw 0;
@@ -391,7 +394,7 @@ namespace CGALUtils {
 					t.reset();
 					operands[0] = N;
 				} else {
-                    operands[0] = new CGAL_Nef_polyhedron();
+                    operands[0] = new CSGIF_polyhedron();
 				}
 			}
 
@@ -404,11 +407,11 @@ namespace CGALUtils {
 			// If anything throws we simply fall back to Nef Minkowski
 			PRINTD("Minkowski: Falling back to Nef Minkowski");
 
-			CGAL_Nef_polyhedron *N = applyOperator(children, OPENSCAD_MINKOWSKI);
+			CSGIF_polyhedron *N = applyOperator(children, OPENSCAD_MINKOWSKI);
 			return N;
 		}
 	}
-}; // namespace CGALUtils
+}; // namespace CSGIF_Utils
 
 
 #endif // ENABLE_CGAL

@@ -1,5 +1,5 @@
 cgal {
-  DEFINES += ENABLE_CGAL
+  DEFINES += ENABLE_CSGIF ENABLE_CGAL ENABLE_CGAL_2D
 
   # Optionally specify location of CGAL using the 
   # CGALDIR env. variable

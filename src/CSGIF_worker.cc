@@ -1,4 +1,4 @@
-#include "cgalworker.h"
+#include "CSGIF_worker.h"
 #include <QThread>
 
 #include "Tree.h"
@@ -6,7 +6,7 @@
 #include "progress.h"
 #include "printutils.h"
 
-CGALWorker::CGALWorker()
+CSGIF_Worker::CSGIF_Worker()
 {
 	this->thread = new QThread();
 	if (this->thread->stackSize() < 1024*1024) this->thread->setStackSize(1024*1024);
@@ -14,18 +14,18 @@ CGALWorker::CGALWorker()
 	moveToThread(this->thread);
 }
 
-CGALWorker::~CGALWorker()
+CSGIF_Worker::~CSGIF_Worker()
 {
 	delete this->thread;
 }
 
-void CGALWorker::start(const Tree &tree)
+void CSGIF_Worker::start(const Tree &tree)
 {
 	this->tree = &tree;
 	this->thread->start();
 }
 
-void CGALWorker::work()
+void CSGIF_Worker::work()
 {
 	shared_ptr<const Geometry> root_geom;
 	try {

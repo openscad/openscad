@@ -147,7 +147,7 @@ int main(int argc, char *argv[])
 {
 
   OpenSCAD::debug = "export_nef";
-  CGAL_Nef_polyhedron *N = NULL;
+  CSGIF_polyhedron *N = NULL;
 
   PolySet *ps = NULL;
   if (argc == 2) {
@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
       std::cerr << "Imported " << ps->numPolygons() << " polygons" << std::endl;
     }
     else if (suffix == ".nef3") {
-      N = new CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3);
+      N = new CSGIF_polyhedron(new CGAL_Nef_polyhedron3);
       std::ifstream stream(filename.c_str());
       stream >> *N->p3;
       std::cerr << "Imported Nef polyhedron" << std::endl;

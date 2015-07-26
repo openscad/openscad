@@ -5,51 +5,51 @@
 #include "polyset.h"
 #include "svg.h"
 
-CGAL_Nef_polyhedron::CGAL_Nef_polyhedron(CGAL_Nef_polyhedron3 *p)
+CSGIF_polyhedron::CSGIF_polyhedron(CGAL_Nef_polyhedron3 *p)
 {
 	if (p) p3.reset(p);
 }
 
 // Copy constructor
-CGAL_Nef_polyhedron::CGAL_Nef_polyhedron(const CGAL_Nef_polyhedron &src)
+CSGIF_polyhedron::CSGIF_polyhedron(const CSGIF_polyhedron &src)
 {
 	if (src.p3) this->p3.reset(new CGAL_Nef_polyhedron3(*src.p3));
 }
 
-CGAL_Nef_polyhedron& CGAL_Nef_polyhedron::operator+=(const CGAL_Nef_polyhedron &other)
+CSGIF_polyhedron& CSGIF_polyhedron::operator+=(const CSGIF_polyhedron &other)
 {
 	(*this->p3) += (*other.p3);
 	return *this;
 }
 
-CGAL_Nef_polyhedron& CGAL_Nef_polyhedron::operator*=(const CGAL_Nef_polyhedron &other)
+CSGIF_polyhedron& CSGIF_polyhedron::operator*=(const CSGIF_polyhedron &other)
 {
 	(*this->p3) *= (*other.p3);
 	return *this;
 }
 
-CGAL_Nef_polyhedron& CGAL_Nef_polyhedron::operator-=(const CGAL_Nef_polyhedron &other)
+CSGIF_polyhedron& CSGIF_polyhedron::operator-=(const CSGIF_polyhedron &other)
 {
 	(*this->p3) -= (*other.p3);
 	return *this;
 }
 
-CGAL_Nef_polyhedron &CGAL_Nef_polyhedron::minkowski(const CGAL_Nef_polyhedron &other)
+CSGIF_polyhedron &CSGIF_polyhedron::minkowski(const CSGIF_polyhedron &other)
 {
 	(*this->p3) = CGAL::minkowski_sum_3(*this->p3, *other.p3);
 	return *this;
 }
 
-size_t CGAL_Nef_polyhedron::memsize() const
+size_t CSGIF_polyhedron::memsize() const
 {
 	if (this->isEmpty()) return 0;
 
-	size_t memsize = sizeof(CGAL_Nef_polyhedron);
+	size_t memsize = sizeof(CSGIF_polyhedron);
 	memsize += this->p3->bytes();
 	return memsize;
 }
 
-bool CGAL_Nef_polyhedron::isEmpty() const
+bool CSGIF_polyhedron::isEmpty() const
 {
 	return !this->p3 || this->p3->is_empty();
 }
@@ -61,7 +61,7 @@ bool CGAL_Nef_polyhedron::isEmpty() const
 */
 // FIXME: Deprecated by CGALUtils::createPolySetFromNefPolyhedron3
 #if 0
-PolySet *CGAL_Nef_polyhedron::convertToPolyset() const
+PolySet *CSGIF_polyhedron::convertToPolyset() const
 {
 	if (this->isEmpty()) return new PolySet(3);
 	PolySet *ps = NULL;
@@ -93,7 +93,7 @@ PolySet *CGAL_Nef_polyhedron::convertToPolyset() const
 }
 #endif
 
-void CGAL_Nef_polyhedron::resize(Vector3d newsize, 
+void CSGIF_polyhedron::resize(Vector3d newsize,
 																 const Eigen::Matrix<bool,3,1> &autosize)
 {
 	// Based on resize() in Giles Bathgate's RapCAD (but not exactly)
@@ -137,13 +137,13 @@ void CGAL_Nef_polyhedron::resize(Vector3d newsize,
 	this->transform(Transform3d(t));
 }
 
-std::string CGAL_Nef_polyhedron::dump() const
+std::string CSGIF_polyhedron::dump() const
 {
 	return OpenSCAD::dump_svg( *this->p3 );
 }
 
 
-void CGAL_Nef_polyhedron::transform( const Transform3d &matrix )
+void CSGIF_polyhedron::transform( const Transform3d &matrix )
 {
 	if (!this->isEmpty()) {
 		if (matrix.matrix().determinant() == 0) {

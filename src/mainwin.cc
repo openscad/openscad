@@ -110,17 +110,7 @@
 #include <boost/foreach.hpp>
 #include <sys/stat.h>
 
-#ifdef ENABLE_CGAL
-
-#include "CGALCache.h"
-#include "GeometryEvaluator.h"
-#include "CGALRenderer.h"
-#include "CGAL_Nef_polyhedron.h"
-#include "cgal.h"
-#include "cgalworker.h"
-#include "cgalutils.h"
-
-#endif // ENABLE_CGAL
+#include "CSGIF.h"
 
 #include "boosty.h"
 #include "FontCache.h"
@@ -230,9 +220,9 @@ MainWindow::MainWindow(const QString &filename)
 
 	MainWindow::getWindows()->insert(this);
 
-#ifdef ENABLE_CGAL
-	this->cgalworker = new CGALWorker();
-	connect(this->cgalworker, SIGNAL(done(shared_ptr<const Geometry>)), 
+#ifdef ENABLE_CSGIF
+	this->csgifworker = new CSGIF_Worker();
+	connect(this->csgifworker, SIGNAL(done(shared_ptr<const Geometry>)),
 					this, SLOT(actionRenderDone(shared_ptr<const Geometry>)));
 #endif
 
@@ -241,8 +231,8 @@ MainWindow::MainWindow(const QString &filename)
 	root_module = NULL;
 	absolute_root_node = NULL;
 	this->root_chain = NULL;
-#ifdef ENABLE_CGAL
-	this->cgalRenderer = NULL;
+#ifdef ENABLE_CSGIF
+	this->csgifRenderer = NULL;
 #endif
 #ifdef ENABLE_OPENCSG
 	this->opencsgRenderer = NULL;
@@ -357,7 +347,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->designActionAutoReload, SIGNAL(toggled(bool)), this, SLOT(autoReloadSet(bool)));
 	connect(this->designActionReloadAndPreview, SIGNAL(triggered()), this, SLOT(actionReloadRenderPreview()));
 	connect(this->designActionPreview, SIGNAL(triggered()), this, SLOT(actionRenderPreview()));
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CSGIF
 	connect(this->designActionRender, SIGNAL(triggered()), this, SLOT(actionRender()));
 #else
 	this->designActionRender->setVisible(false);
@@ -385,7 +375,7 @@ MainWindow::MainWindow(const QString &filename)
 	}
 #endif
 
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CSGIF
 	connect(this->viewActionSurfaces, SIGNAL(triggered()), this, SLOT(viewModeSurface()));
 	connect(this->viewActionWireframe, SIGNAL(triggered()), this, SLOT(viewModeWireframe()));
 #else
@@ -651,9 +641,9 @@ void MainWindow::loadDesignSettings()
 	}
 	uint polySetCacheSize = Preferences::inst()->getValue("advanced/polysetCacheSize").toUInt();
 	GeometryCache::instance()->setMaxSize(polySetCacheSize);
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CSGIF
 	uint cgalCacheSize = Preferences::inst()->getValue("advanced/cgalCacheSize").toUInt();
-	CGALCache::instance()->setMaxSize(cgalCacheSize);
+	CSGIF_Cache::instance()->setMaxSize(cgalCacheSize);
 #endif
 }
 
@@ -692,9 +682,9 @@ MainWindow::~MainWindow()
 	if (root_module) delete root_module;
 	if (root_node) delete root_node;
 	if (root_chain) delete root_chain;
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CSGIF
 	this->root_geom.reset();
-	delete this->cgalRenderer;
+	delete this->csgifRenderer;
 #endif
 #ifdef ENABLE_OPENCSG
 	delete this->opencsgRenderer;
@@ -1113,17 +1103,17 @@ void MainWindow::compileCSG(bool procevents)
 
 	progress_report_prep(this->root_node, report_func, this);
 	try {
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CSGIF
 		GeometryEvaluator geomevaluator(this->tree);
-#else
-		// FIXME: Will we support this?
-#endif
 		CSGTermEvaluator csgrenderer(this->tree, &geomevaluator);
+#else
+		CSGTermEvaluator csgrenderer(this->tree);
+#endif
 		if (procevents) QApplication::processEvents();
 		this->root_raw_term = csgrenderer.evaluateCSGTerm(*root_node, highlight_terms, background_terms);
 		GeometryCache::instance()->print();
-#ifdef ENABLE_CGAL
-		CGALCache::instance()->print();
+#ifdef ENABLE_CSGIF
+		CSGIF_Cache::instance()->print();
 #endif
 		if (procevents) QApplication::processEvents();
 	}
@@ -1801,7 +1791,7 @@ void MainWindow::csgRender()
 	compileEnded();
 }
 
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CSGIF
 
 void MainWindow::actionRender()
 {
@@ -1825,8 +1815,8 @@ void MainWindow::cgalRender()
 	}
 
 	this->qglview->setRenderer(NULL);
-	delete this->cgalRenderer;
-	this->cgalRenderer = NULL;
+	delete this->csgifRenderer;
+	this->csgifRenderer = NULL;
 	this->root_geom.reset();
 
 	PRINT("Rendering Polygon Mesh using CGAL...");
@@ -1836,7 +1826,7 @@ void MainWindow::cgalRender()
 
 	progress_report_prep(this->root_node, report_func, this);
 
-	this->cgalworker->start(this->tree);
+	this->csgifworker->start(this->tree);
 }
 
 void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
@@ -1845,15 +1835,14 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 
 	if (root_geom) {
 		GeometryCache::instance()->print();
-#ifdef ENABLE_CGAL
-		CGALCache::instance()->print();
-#endif
+		CSGIF_Cache::instance()->print();
 
 		int s = this->renderingTime.elapsed() / 1000;
 		PRINTB("Total rendering time: %d hours, %d minutes, %d seconds", (s / (60*60)) % ((s / 60) % 60) % (s % 60));
 			
+#ifdef ENABLE_CGAL
 		if (root_geom && !root_geom->isEmpty()) {
-			if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(root_geom.get())) {
+			if (const CSGIF_polyhedron *N = dynamic_cast<const CSGIF_polyhedron *>(root_geom.get())) {
 				if (N->getDimension() == 3) {
 					bool simple = N->p3->is_simple();
 					PRINT("   Top level object is a 3D object:");
@@ -1880,10 +1869,11 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 				assert(false && "Unknown geometry type");
 			}
 		}
+#endif
 		PRINT("Rendering finished.");
 
 		this->root_geom = root_geom;
-		this->cgalRenderer = new CGALRenderer(root_geom);
+		this->csgifRenderer = new CSGIF_Renderer(root_geom);
 		// Go to CGAL view mode
 		if (viewActionWireframe->isChecked()) viewModeWireframe();
 		else viewModeSurface();
@@ -1993,7 +1983,7 @@ void MainWindow::actionDisplayCSGProducts()
 void MainWindow::actionCheckValidity() {
 	if (GuiLocker::isLocked()) return;
 	GuiLocker lock;
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CSGIF
 	setCurrentOutput();
 
 	if (!this->root_geom) {
@@ -2008,28 +1998,26 @@ void MainWindow::actionCheckValidity() {
 		return;
 	}
 
+#ifdef ENABLE_CGAL
 	bool valid = false;
-	shared_ptr<const CGAL_Nef_polyhedron> N;
+	shared_ptr<const CSGIF_polyhedron> N;
 	if (const PolySet *ps = dynamic_cast<const PolySet *>(this->root_geom.get())) {
-		N.reset(CGALUtils::createNefPolyhedronFromGeometry(*ps));
+		N.reset(CSGIF_Utils::createCsgPolyhedronFromGeometry(*ps));
 	}
-	if (N || (N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(this->root_geom))) {
+	if (N || (N = dynamic_pointer_cast<const CSGIF_polyhedron>(this->root_geom))) {
             valid = N->p3 ? N->p3->is_valid() : false;
 	}
 	PRINTB("   Valid:      %6s", (valid ? "yes" : "no"));
+#endif // ENABLE_CGAL
 	clearCurrentOutput();
-#endif /* ENABLE_CGAL */
+#endif // ENABLE_CSGIF
 }
 
-#ifdef ENABLE_CGAL
 void MainWindow::actionExport(export_type_e export_type, const char *type_name, const char *suffix)
-#else
-void MainWindow::actionExport(export_type_e, QString, QString)
-#endif
 {
 	if (GuiLocker::isLocked()) return;
 	GuiLocker lock;
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CSGIF
 	setCurrentOutput();
 
 	if (!this->root_geom) {
@@ -2062,11 +2050,12 @@ void MainWindow::actionExport(export_type_e, QString, QString)
 		return;
 	}
 
-	const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(this->root_geom.get());
+#ifdef ENABLE_CGAL
+	const CSGIF_polyhedron *N = dynamic_cast<const CSGIF_polyhedron *>(this->root_geom.get());
 	if (N && !N->p3->is_simple()) {
 	 	PRINT("WARNING: Object may not be a valid 2-manifold and may need repair! See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
 	}
-
+#endif // ENABLE_CGAL
 	QString title = QString(_("Export %1 File")).arg(type_name);
 	QString filter = QString(_("%1 Files (*%2)")).arg(type_name, suffix);
 	QString filename = this->fileName.isEmpty() ? QString(_("Untitled")) + suffix : QFileInfo(this->fileName).baseName() + suffix;
@@ -2112,6 +2101,7 @@ void MainWindow::actionExportAMF()
 QString MainWindow::get2dExportFilename(QString format, QString extension) {
 	setCurrentOutput();
 
+#ifdef ENABLE_CSGIF
 	if (!this->root_geom) {
 		PRINT("WARNING: Nothing to export! Try building first (press F6).");
 		clearCurrentOutput();
@@ -2137,6 +2127,11 @@ QString MainWindow::get2dExportFilename(QString format, QString extension) {
 	}
 	
 	return exportFilename;
+#else
+	PRINT("Needs CGAL.");
+
+	return QString();
+#endif /* ENABLE_CGAL */
 }
 
 void MainWindow::actionExportDXF()
@@ -2156,6 +2151,7 @@ void MainWindow::actionExportDXF()
 
 void MainWindow::actionExportSVG()
 {
+#ifdef ENABLE_CGAL
 	QString svg_filename = get2dExportFilename("SVG", ".svg");
 	if (svg_filename.isEmpty()) {
 		return;
@@ -2165,6 +2161,7 @@ void MainWindow::actionExportSVG()
 	PRINT("SVG export finished.");
 
 	clearCurrentOutput();
+#endif /* ENABLE_CGAL */
 }
 
 void MainWindow::actionExportCSG()
@@ -2227,8 +2224,8 @@ void MainWindow::actionCopyViewport()
 void MainWindow::actionFlushCaches()
 {
 	GeometryCache::instance()->clear();
-#ifdef ENABLE_CGAL
-	CGALCache::instance()->clear();
+#ifdef ENABLE_CSGIF
+	CSGIF_Cache::instance()->clear();
 #endif
 	dxf_dim_cache.clear();
 	dxf_cross_cache.clear();
@@ -2239,7 +2236,7 @@ void MainWindow::actionFlushCaches()
 void MainWindow::viewModeActionsUncheck()
 {
 	viewActionPreview->setChecked(false);
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CSGIF
 	viewActionSurfaces->setChecked(false);
 	viewActionWireframe->setChecked(false);
 #endif
@@ -2267,14 +2264,14 @@ void MainWindow::viewModePreview()
 
 #endif /* ENABLE_OPENCSG */
 
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CSGIF
 
 void MainWindow::viewModeSurface()
 {
 	viewModeActionsUncheck();
 	viewActionSurfaces->setChecked(true);
 	this->qglview->setShowFaces(true);
-	this->qglview->setRenderer(this->cgalRenderer);
+	this->qglview->setRenderer(this->csgifRenderer);
 	this->qglview->updateColorScheme();
 	this->qglview->updateGL();
 }
@@ -2284,12 +2281,12 @@ void MainWindow::viewModeWireframe()
 	viewModeActionsUncheck();
 	viewActionWireframe->setChecked(true);
 	this->qglview->setShowFaces(false);
-	this->qglview->setRenderer(this->cgalRenderer);
+	this->qglview->setRenderer(this->csgifRenderer);
 	this->qglview->updateColorScheme();
 	this->qglview->updateGL();
 }
 
-#endif /* ENABLE_CGAL */
+#endif /* ENABLE_CSGIF */
 
 void MainWindow::viewModeThrownTogether()
 {

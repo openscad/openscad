@@ -35,9 +35,9 @@
 #include <boost/foreach.hpp>
 #include <boost/unordered_set.hpp>
 
-static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
+static CSGIF_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 {
-	if (ps.isEmpty()) return new CGAL_Nef_polyhedron();
+	if (ps.isEmpty()) return new CSGIF_polyhedron();
 	assert(ps.getDimension() == 3);
 
 	// Since is_convex doesn't work well with non-planar faces,
@@ -59,14 +59,14 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 			}
 		}
 
-		if (points.size() <= 3) return new CGAL_Nef_polyhedron();;
+		if (points.size() <= 3) return new CSGIF_polyhedron();;
 
 		// Apply hull
 		CGAL::Polyhedron_3<K> r;
 		CGAL::convex_hull_3(points.begin(), points.end(), r);
 		CGAL_Polyhedron r_exact;
 		CGALUtils::copyPolyhedron(r, r_exact);
-		return new CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3(r_exact));
+		return new CSGIF_polyhedron(new CGAL_Nef_polyhedron3(r_exact));
 	}
 
 	CGAL_Nef_polyhedron3 *N = NULL;
@@ -104,10 +104,10 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 			PRINTB("ERROR: Alternate construction failed. CGAL error in CGAL_Nef_polyhedron3(): %s", e.what());
 		}
 	CGAL::set_error_behaviour(old_behaviour);
-	return new CGAL_Nef_polyhedron(N);
+	return new CSGIF_polyhedron(N);
 }
 
-static CGAL_Nef_polyhedron *createNefPolyhedronFromPolygon2d(const Polygon2d &polygon)
+static CSGIF_polyhedron *createNefPolyhedronFromPolygon2d(const Polygon2d &polygon)
 {
 	shared_ptr<PolySet> ps(polygon.tessellate());
 	return createNefPolyhedronFromPolySet(*ps);
@@ -126,6 +126,10 @@ namespace CGALUtils {
 		if (points.size()) result = CGAL::bounding_box(points.begin(), points.end());
 		return result;
 	}
+}
+
+
+namespace CSGIF_Utils {
 
 	namespace {
 
@@ -238,7 +242,7 @@ namespace CGALUtils {
 	}
 
 
-	CGAL_Nef_polyhedron *createNefPolyhedronFromGeometry(const Geometry &geom)
+	CSGIF_polyhedron *createCsgPolyhedronFromGeometry(const Geometry &geom)
 	{
 		const PolySet *ps = dynamic_cast<const PolySet*>(&geom);
 		if (ps) {
@@ -251,6 +255,15 @@ namespace CGALUtils {
 		assert(false && "createNefPolyhedronFromGeometry(): Unsupported geometry type");
 		return NULL;
 	}
+
+    bool createPolySetFromCsgPolyhedron(const CSGIF_polyhedron &N, PolySet &ps)
+	{
+	    return CGALUtils::createPolySetFromNefPolyhedron3(*N.p3, ps);
+	}
+
+}; // namespace CSGIF_Utils
+
+namespace CGALUtils {
 
 /*
 	Create a PolySet from a Nef Polyhedron 3. return false on success, 

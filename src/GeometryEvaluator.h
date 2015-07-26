@@ -4,6 +4,8 @@
 #include "enums.h"
 #include "memory.h"
 #include "Geometry.h"
+#include "state.h"
+#include "Polygon2d.h"
 
 #include <utility>
 #include <list>
@@ -58,10 +60,12 @@ private:
 	bool isSmartCached(const AbstractNode &node);
 	std::vector<const class Polygon2d *> collectChildren2D(const AbstractNode &node);
 	Geometry::ChildList collectChildren3D(const AbstractNode &node);
+#ifdef ENABLE_CGAL
+	Geometry *applyHull3D(const AbstractNode &node);
+	void applyResize3D(class CSGIF_polyhedron &N, const Vector3d &newsize, const Eigen::Matrix<bool,3,1> &autosize);
+#endif
 	Polygon2d *applyMinkowski2D(const AbstractNode &node);
 	Polygon2d *applyHull2D(const AbstractNode &node);
-	Geometry *applyHull3D(const AbstractNode &node);
-	void applyResize3D(class CGAL_Nef_polyhedron &N, const Vector3d &newsize, const Eigen::Matrix<bool,3,1> &autosize);
 	Polygon2d *applyToChildren2D(const AbstractNode &node, OpenSCADOperator op);
 	ResultObject applyToChildren3D(const AbstractNode &node, OpenSCADOperator op);
 	ResultObject applyToChildren(const AbstractNode &node, OpenSCADOperator op);

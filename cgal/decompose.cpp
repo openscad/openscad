@@ -290,7 +290,7 @@ Geometry const * minkowskitest(const Geometry::ChildList &children)
       std::list<PolyhedronK> result_parts;
 
       for (int i = 0; i < 2; i++) {
-        shared_ptr<const CGAL_Nef_polyhedron> N;
+        shared_ptr<const CSGIF_polyhedron> N;
         if (const PolySet *ps = dynamic_cast<const PolySet *>(operands[i])) {
           if (ps->is_convex()) {
             PRINTDB("Minkowski: child %d is convex and PolySet", i);
@@ -303,7 +303,7 @@ Geometry const * minkowskitest(const Geometry::ChildList &children)
             N.reset(createNefPolyhedronFromGeometry(*ps));
           }
         }
-        else if (const CGAL_Nef_polyhedron *n = dynamic_cast<const CGAL_Nef_polyhedron *>(operands[i])) {
+        else if (const CSGIF_polyhedron *n = dynamic_cast<const CSGIF_polyhedron *>(operands[i])) {
           CGAL_Polyhedron poly;
           if (n->p3->is_simple()) {
             nefworkaround::convert_to_Polyhedron<CGAL_Kernel3>(*n->p3, poly);
@@ -424,14 +424,14 @@ Geometry const * minkowskitest(const Geometry::ChildList &children)
           fake_children.push_back(std::make_pair((const AbstractNode*)NULL,
                                                  shared_ptr<const Geometry>(createNefPolyhedronFromGeometry(ps))));
         }
-        CGAL_Nef_polyhedron *N = CGALUtils::applyOperator(fake_children, OPENSCAD_UNION);
+        CSGIF_polyhedron *N = CGALUtils::applyOperator(fake_children, OPENSCAD_UNION);
         t.stop();
         if (N) PRINTDB("Minkowski: Union done: %f s",t.time());
         else PRINTDB("Minkowski: Union failed: %f s",t.time());
         t.reset();
         operands[0] = N;
       } else {
-        operands[0] = new CGAL_Nef_polyhedron();
+        operands[0] = new CSGIF_polyhedron();
       }
     }
     
@@ -444,7 +444,7 @@ Geometry const * minkowskitest(const Geometry::ChildList &children)
     // If anything throws we simply fall back to Nef Minkowski
     PRINTD("Minkowski: Falling back to Nef Minkowski");
     
-    CGAL_Nef_polyhedron *N = applyOperator(children, OPENSCAD_MINKOWSKI);
+    CSGIF_polyhedron *N = applyOperator(children, OPENSCAD_MINKOWSKI);
     return N;
   }
 }
@@ -643,7 +643,7 @@ int main(int argc, char *argv[])
 
   Geometry::ChildList children;
 
-  CGAL_Nef_polyhedron *N = createNefPolyhedronFromGeometry(*ps);
+  CSGIF_polyhedron *N = createNefPolyhedronFromGeometry(*ps);
 
   std::vector<PolyhedronK> result;
   decompose(N->p3.get(), std::back_inserter(result));

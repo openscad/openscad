@@ -182,14 +182,14 @@ void ZRemover::visit(CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet)
 
 
 
-namespace CGALUtils {
+namespace CSGIF_Utils {
 
-	Polygon2d *project(const CGAL_Nef_polyhedron &N, bool cut)
+	Polygon2d *project(const CSGIF_polyhedron &N, bool cut)
 	{
 		Polygon2d *poly = NULL;
 		if (N.getDimension() != 3) return poly;
 
-		CGAL_Nef_polyhedron newN;
+		CSGIF_polyhedron newN;
 		if (cut) {
 			CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 			try {

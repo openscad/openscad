@@ -102,7 +102,9 @@ static shared_ptr<CSGTerm> evaluate_csg_term_from_geometry(const State &state,
 	if (!g->isEmpty()) {
 		shared_ptr<const Polygon2d> p2d = dynamic_pointer_cast<const Polygon2d>(geom);
 		if (p2d) {
+#ifdef ENABLE_CGAL
 			g.reset(p2d->tessellate());
+#endif
 		}
 		else {
 			// We cannot render concave polygons, so tessellate any 3D PolySets
@@ -137,12 +139,14 @@ Response CSGTermEvaluator::visit(State &state, const AbstractPolyNode &node)
 	if (state.isPostfix()) {
 		shared_ptr<CSGTerm> t1;
 		if (this->geomevaluator) {
+#ifdef ENABLE_CSGIF
 			shared_ptr<const Geometry> geom = this->geomevaluator->evaluateGeometry(node, false);
 			if (geom) {
 				t1 = evaluate_csg_term_from_geometry(state, this->highlights, this->background, 
 																						 geom, node.modinst, node);
 			}
 			node.progress_report();
+#endif // ENABLE_CSGIF
 		}
 		this->stored_term[node.index()] = t1;
 		addToParent(state, node);
@@ -204,12 +208,14 @@ Response CSGTermEvaluator::visit(State &state, const RenderNode &node)
 		shared_ptr<CSGTerm> t1;
 		shared_ptr<const Geometry> geom;
 		if (this->geomevaluator) {
+#ifdef ENABLE_CSGIF
 			geom = this->geomevaluator->evaluateGeometry(node, false);
 			if (geom) {
 				t1 = evaluate_csg_term_from_geometry(state, this->highlights, this->background, 
 																						 geom, node.modinst, node);
 			}
 			node.progress_report();
+#endif // ENABLE_CSGIF
 		}
 		this->stored_term[node.index()] = t1;
 		addToParent(state, node);
@@ -224,12 +230,14 @@ Response CSGTermEvaluator::visit(State &state, const CgaladvNode &node)
     // FIXME: Calling evaluator directly since we're not a PolyNode. Generalize this.
 		shared_ptr<const Geometry> geom;
 		if (this->geomevaluator) {
+#ifdef ENABLE_CSGIF
 			geom = this->geomevaluator->evaluateGeometry(node, false);
 			if (geom) {
 				t1 = evaluate_csg_term_from_geometry(state, this->highlights, this->background, 
 																						 geom, node.modinst, node);
 			}
 			node.progress_report();
+#endif // ENABLE_CSGIF
 		}
 		this->stored_term[node.index()] = t1;
 		addToParent(state, node);

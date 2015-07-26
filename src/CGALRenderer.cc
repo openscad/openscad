@@ -24,6 +24,8 @@
  *
  */
 
+#ifdef ENABLE_CGAL
+
 #ifdef _MSC_VER 
 // Boost conflicts with MPFR under MSVC (google it)
 #include <mpfr.h>
@@ -42,7 +44,7 @@
 
 //#include "Preferences.h"
 
-CGALRenderer::CGALRenderer(shared_ptr<const class Geometry> geom)
+CSGIF_Renderer::CSGIF_Renderer(shared_ptr<const class Geometry> geom)
 {
 	if (shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(geom)) {
 		assert(ps->getDimension() == 3);
@@ -56,7 +58,7 @@ CGALRenderer::CGALRenderer(shared_ptr<const class Geometry> geom)
 	else if (shared_ptr<const Polygon2d> poly = dynamic_pointer_cast<const Polygon2d>(geom)) {
 		this->polyset.reset(poly->tessellate());
 	}
-	else if (shared_ptr<const CGAL_Nef_polyhedron> new_N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+	else if (shared_ptr<const CSGIF_polyhedron> new_N = dynamic_pointer_cast<const CSGIF_polyhedron>(geom)) {
 		assert(new_N->getDimension() == 3);
 		if (!new_N->isEmpty()) {
 			this->N = new_N;
@@ -64,17 +66,17 @@ CGALRenderer::CGALRenderer(shared_ptr<const class Geometry> geom)
 	}
 }
 
-CGALRenderer::~CGALRenderer()
+CSGIF_Renderer::~CSGIF_Renderer()
 {
 }
 
-shared_ptr<class CGAL_OGL_Polyhedron> CGALRenderer::getPolyhedron() const
+shared_ptr<class CGAL_OGL_Polyhedron> CSGIF_Renderer::getPolyhedron() const
 {
 	if (this->N && !this->polyhedron) buildPolyhedron();
 	return this->polyhedron;
 }
 
-void CGALRenderer::buildPolyhedron() const
+void CSGIF_Renderer::buildPolyhedron() const
 {
 	PRINTD("buildPolyhedron");
 	this->polyhedron.reset(new CGAL_OGL_Polyhedron(*this->colorscheme));
@@ -86,7 +88,7 @@ void CGALRenderer::buildPolyhedron() const
 }
 
 // Overridden from Renderer
-void CGALRenderer::setColorScheme(const ColorScheme &cs)
+void CSGIF_Renderer::setColorScheme(const ColorScheme &cs)
 {
 	PRINTD("setColorScheme");
 	Renderer::setColorScheme(cs);
@@ -94,7 +96,7 @@ void CGALRenderer::setColorScheme(const ColorScheme &cs)
 	PRINTD("setColorScheme done");
 }
 
-void CGALRenderer::draw(bool showfaces, bool showedges) const
+void CSGIF_Renderer::draw(bool showfaces, bool showedges) const
 {
 	PRINTD("draw()");
 	if (this->polyset) {
@@ -142,7 +144,7 @@ void CGALRenderer::draw(bool showfaces, bool showedges) const
 	PRINTD("draw() end");
 }
 
-BoundingBox CGALRenderer::getBoundingBox() const
+BoundingBox CSGIF_Renderer::getBoundingBox() const
 {
 	BoundingBox bbox;
 
@@ -160,3 +162,5 @@ BoundingBox CGALRenderer::getBoundingBox() const
 	}
 	return bbox;
 }
+
+#endif // ENABLE_CGAL
