@@ -16,6 +16,7 @@
 #include <QSet>
 #include <QTime>
 #include <QIODevice>
+#include "CSGIF_worker.h"
 
 enum export_type_e {
 	EXPORT_TYPE_UNKNOWN,

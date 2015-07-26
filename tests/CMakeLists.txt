@@ -730,7 +730,7 @@ set(CGAL_SOURCES
   ../src/cgalutils-project.cc 
   ../src/cgalutils-tess.cc 
   ../src/cgalutils-polyhedron.cc 
-  ../src/CGALCache.cc
+  ../src/CSGIF_Cache.cc
   ../src/Polygon2d-CGAL.cc
   ../src/svg.cc
   ../src/GeometryEvaluator.cc)
@@ -790,7 +790,7 @@ add_library(tests-common STATIC ${COMMON_SOURCES})
 target_link_libraries(tests-common tests-core)
 
 add_library(tests-cgal STATIC ${CGAL_SOURCES})
-set_target_properties(tests-cgal PROPERTIES COMPILE_FLAGS "${ENABLE_OPENCSG_FLAG} -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
+set_target_properties(tests-cgal PROPERTIES COMPILE_FLAGS "${ENABLE_OPENCSG_FLAG} -DENABLE_CSGIF -DENABLE_CGAL -DENABLE_CGAL_2D  ${CGAL_CXX_FLAGS_INIT}")
 target_link_libraries(tests-cgal tests-common ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${GMP_LIBRARIES} ${MPFR_LIBRARIES})
 
 #
@@ -803,7 +803,7 @@ if (NOT NULLGL)
 endif()
 
 add_library(tests-offscreen STATIC ${OFFSCREEN_SOURCES})
-set_target_properties(tests-offscreen PROPERTIES COMPILE_FLAGS "${ENABLE_OPENCSG_FLAG} -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
+set_target_properties(tests-offscreen PROPERTIES COMPILE_FLAGS "${ENABLE_OPENCSG_FLAG} -DENABLE_CSGIF -DENABLE_CGAL -DENABLE_CGAL_2D ${CGAL_CXX_FLAGS_INIT}")
 target_link_libraries(tests-offscreen ${OFFSCREEN_CTX_LIBRARIES})
 
 #
@@ -822,7 +822,7 @@ target_link_libraries(csgtexttest tests-nocgal ${GLEW_LIBRARY} ${OPENCSG_LIBRARY
 # cgalcachetest
 #
 add_executable(cgalcachetest cgalcachetest.cc)
-set_target_properties(cgalcachetest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
+set_target_properties(cgalcachetest PROPERTIES COMPILE_FLAGS "-DENABLE_CSGIF -DENABLE_CGAL -DENABLE_CGAL_2D ${CGAL_CXX_FLAGS_INIT}")
 target_link_libraries(cgalcachetest tests-cgal ${GLEW_LIBRARY} ${OPENCSG_LIBRARY} ${APP_SERVICES_LIBRARY})
 
 #
@@ -832,7 +832,7 @@ target_link_libraries(cgalcachetest tests-cgal ${GLEW_LIBRARY} ${OPENCSG_LIBRARY
 #
 if (NOGUI)
  add_executable(openscad_nogui ../src/openscad.cc)
- set_target_properties(openscad_nogui PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing -DEIGEN_DONT_ALIGN ${ENABLE_OPENCSG_FLAG} -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
+ set_target_properties(openscad_nogui PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing -DEIGEN_DONT_ALIGN ${ENABLE_OPENCSG_FLAG} -DENABLE_CSGIF -DENABLE_CGAL -DENABLE_CGAL_2D ${CGAL_CXX_FLAGS_INIT}")
  target_link_libraries(openscad_nogui tests-offscreen tests-cgal ${GLEW_LIBRARY} ${OPENCSG_LIBRARY} ${APP_SERVICES_LIBRARY})
 endif()
 

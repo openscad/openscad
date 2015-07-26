@@ -30,7 +30,6 @@
 #include "GeometryEvaluator.h"
 
 #include "CSGIF_Cache.h"
-#include "CSGIF_worker.h"
 
 #endif // ENABLE_CSGIF
 
