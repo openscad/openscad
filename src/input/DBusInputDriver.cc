@@ -80,6 +80,7 @@ bool DBusInputDriver::open()
     connect(iface, SIGNAL(translate(double, double, double)), this, SLOT(translate(double, double, double)));
     connect(iface, SIGNAL(translateTo(double, double, double)), this, SLOT(translateTo(double, double, double)));
     connect(iface, SIGNAL(action(QString)), this, SLOT(action(QString)));
+    connect(iface, SIGNAL(buttonPress(uint)), this, SLOT(buttonPress(uint)));
     is_open = true;
     return true;
 }
@@ -122,6 +123,12 @@ void DBusInputDriver::translateTo(double x, double y, double z)
 void DBusInputDriver::action(QString name)
 {
     InputDriverManager::instance()->sendEvent(new InputEventAction(name.toStdString(), false));
+}
+
+void DBusInputDriver::buttonPress(uint idx)
+{
+    InputDriverManager::instance()->sendEvent(new InputEventButtonChanged(idx, true, false));
+    InputDriverManager::instance()->sendEvent(new InputEventButtonChanged(idx, false, false));
 }
 
 const std::string & DBusInputDriver::get_name() const

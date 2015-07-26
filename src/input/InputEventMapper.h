@@ -36,9 +36,13 @@ class InputEventMapper : public QObject, public InputEventHandler
 
 private:
     QTimer *timer;
-    double axis[10];
+    double axisValue[10];
+    QString actions[10];
+    int translate[3];
+    int rotate[3];
 
     double scale(double val);
+    double getAxisValue(int config);
 
 public:
     InputEventMapper();

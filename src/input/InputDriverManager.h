@@ -37,11 +37,11 @@ class InputDriverManager : public QObject
 {
     Q_OBJECT
 private:
-    typedef std::list<QAction *> actions_t;
     typedef std::list<InputDriver *> drivers_t;
 
-    actions_t actions;
     drivers_t drivers;
+
+    QStringList actions;
 
     InputEventMapper mapper;
 
@@ -63,7 +63,7 @@ public:
     std::string listDrivers();
     void registerDriver(InputDriver *driver);
     void unregisterDriver(InputDriver *driver);
-    void registerActions(const QList<QAction *> &actions, const int level = 0);
+    void registerActions(const QList<QAction *> &actions);
 
     static InputDriverManager * instance();
 

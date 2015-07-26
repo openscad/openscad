@@ -54,4 +54,5 @@ private slots:
     void translate(double x, double y, double z);
     void translateTo(double x, double y, double z);
     void action(QString action);
+    void buttonPress(uint idx);
 };
