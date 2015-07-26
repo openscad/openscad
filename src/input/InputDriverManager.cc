@@ -59,20 +59,14 @@ void InputDriverManager::unregisterDriver(InputDriver *driver)
     this->drivers.remove(driver);
 }
 
-void InputDriverManager::registerActions(const QList<QAction *> &actions, const int level)
+void InputDriverManager::registerActions(const QList<QAction *> &actions)
 {
     foreach(QAction *action, actions) {
         if (!action->objectName().isEmpty()) {
-            for (int a = 0;a < level;a++) {
-                printf("  ");
-            }
-            printf("%s - %s - %d\n",
-                action->toolTip().toStdString().c_str(),
-                action->objectName().toStdString().c_str(),
-                action->menu() ? action->menu()->actions().size() : 0);
+            this->actions.append(action->objectName());
         }
         if (action->menu()) {
-            registerActions(action->menu()->actions(), level + 1);
+            registerActions(action->menu()->actions());
         }
     }
 }

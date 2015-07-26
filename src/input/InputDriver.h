@@ -90,10 +90,10 @@ public:
 class InputEventButtonChanged : public GenericInputEvent
 {
 public:
-    const int button;
+    const unsigned int button;
     const bool down;
 
-    InputEventButtonChanged(const int button, const bool down, const bool activeOnly = true) : GenericInputEvent(activeOnly), button(button), down(down) { }
+    InputEventButtonChanged(const unsigned int button, const bool down, const bool activeOnly = true) : GenericInputEvent(activeOnly), button(button), down(down) { }
 
     void deliver(InputEventHandler *receiver)
     {
