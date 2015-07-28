@@ -8,6 +8,7 @@ class LexInterface
 {
 	public:
 	virtual void highlighting(int, const std::string&, lexertl::smatch, int) = 0;
+	virtual int getStyleAt(int);
 };
 class Lex 
 {

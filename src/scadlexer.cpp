@@ -56,6 +56,12 @@ void ScadLexer::styleText(int start, int end)
         return;
 }
 
+int ScadLexer::getStyleAt(int pos)
+{
+	int sstyle = editor()->SendScintilla(QsciScintilla::SCI_GETSTYLEAT, pos);
+	return sstyle;
+}
+
 void ScadLexer::highlighting(int start, const std::string& input, lexertl::smatch results, int style)
 {
 //	std::cout << results.id <<std::endl;

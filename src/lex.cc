@@ -62,7 +62,7 @@ void Lex::rules(){
 	rules_.push("BLOCK2", "[}]", 14, "INITIAL");
 	rules_.push("MODIFIER2", ";", 15, "INITIAL");
 
-	//rules_.push("INITIAL", "*", "MODIFIER3");
+	rules_.push("INITIAL", "[*]", "MODIFIER3");
 	rules_.push("MODIFIER3","[^;\\{]+", "MODIFIER3");
 	rules_.push("MODIFIER3","[{]", "BLOCK3");
 	rules_.push("BLOCK3", "[^\\}]+" , "BLOCK3");	
@@ -76,8 +76,8 @@ void Lex::rules(){
 	rules_.push("BLOCK4", "[}]", 18, "INITIAL");
 	rules_.push("MODIFIER4", ";", 19, "INITIAL");
 
-	rules_.push("INITIAL", "\"/*\"",  "COMMENT");
-	rules_.push("COMMENT", "[^*]+|.",  "COMMENT");
+	rules_.push("INITIAL", "\"/*\"",  ecomment, "COMMENT");
+	rules_.push("COMMENT", "[^*]+|.", ecomment,  "COMMENT");
 	rules_.push("COMMENT", "\"*/\"", ecomment , "INITIAL");
 
 	rules_.push("[/][/].*$", ecomment);
@@ -96,10 +96,11 @@ void Lex::defineRules(std::string words[], int size, int id){
 }
 
 void Lex::lex_results(const std::string& input, int start, LexInterface* const obj, int startState, int posState){
-	
+
 	lexertl::smatch results (input.begin(), input.end());
-	if((posState == 10) || (startState == 10)){ results.state = 1; } 
- 	else if((posState == 12) || (startState == 12)){ results.state = 2; }
+	if(obj->getStyleAt(start-1) == ecomment)
+		results.state = 1;	
+ 	if((posState == 12) || (startState == 12)){ results.state = 2; }
 	else if((posState == 13) || (startState == 13)){ results.state = 6; }
 	else if((posState == 14) || (startState == 14)){ results.state = 3; } 
 	else if((posState == 15) || (startState == 15)){ results.state = 7; }

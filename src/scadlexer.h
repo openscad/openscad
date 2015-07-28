@@ -40,6 +40,7 @@ public:
 	const char *keywords(int set) const;	
 
     	void styleText(int start, int end);
+	int getStyleAt(int pos);
         void setKeywords(int set, const std::string& keywords);
 
         QColor defaultColor(int style) const;
