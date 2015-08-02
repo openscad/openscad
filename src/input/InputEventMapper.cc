@@ -40,6 +40,18 @@ InputEventMapper::InputEventMapper()
     timer->start(30);
 
     QSettings settings;
+
+    if (settings.value("InputDriver/button/1").toString().isEmpty()) {
+        settings.setValue("InputDriver/button/1", "viewActionResetView");
+        settings.setValue("InputDriver/button/2", "viewActionViewAll");
+        settings.setValue("InputDriver/axis/translateX", "+1");
+        settings.setValue("InputDriver/axis/translateY", "-2");
+        settings.setValue("InputDriver/axis/translateZ", "-3");
+        settings.setValue("InputDriver/axis/rotateX", "+4");
+        settings.setValue("InputDriver/axis/rotateY", "-5");
+        settings.setValue("InputDriver/axis/rotateZ", "-6");
+    }
+
     for (int a = 0;a < 10;a++) {
         QString key = QString("InputDriver/button/%1").arg(a + 1);
         actions[a] = settings.value(key).toString();
@@ -61,7 +73,7 @@ double InputEventMapper::scale(double val)
 {
     double x = 4 * val;
     double xx = x < 0 ? -exp(-x) + 1 : exp(x) - 1;
-    return xx / 6.0;
+    return xx / 5.0;
 }
 
 double InputEventMapper::getAxisValue(int config)
