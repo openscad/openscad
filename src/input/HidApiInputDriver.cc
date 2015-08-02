@@ -29,6 +29,8 @@
  *  Public Domain.
  */
 
+#include <iomanip>
+#include <iostream>
 #include <hidapi.h>
 
 #include "input/HidApiInputDriver.h"
@@ -58,7 +60,7 @@ static const struct device_id device_ids[] = {
 
 HidApiInputDriver::HidApiInputDriver() : buttons(0), hid_dev(0), dev(0)
 {
-
+    name = "HidApiInputDriver";
 }
 
 HidApiInputDriver::~HidApiInputDriver()
@@ -122,19 +124,6 @@ void HidApiInputDriver::hidapi_decode_button1(const unsigned char *buf, unsigned
 }
 
 /*
- * Use (base-e) exponential function make the controller response more
- * stable for small values. The controller output is scaled to values
- * of about +/- 4 and the final result is scaled down to +/- 20.
- */
-double HidApiInputDriver::calc2(const unsigned char b1, const unsigned char b2)
-{
-    int16_t val = b1 | (b2 << 8);
-    double x = (double)val / 86.0;
-    double xx = x < 0 ? -exp(-x) + 1 : exp(x) - 1;
-    return xx / 3.0;
-}
-
-/*
  * Handle button events for Space Mouse Wireless. This device reports all
  * 6 axis is a single 13 byte HID message.
  * The axis value range is +/- 350 for all axis.
@@ -145,21 +134,13 @@ void HidApiInputDriver::hidapi_decode_axis2(const unsigned char *buf, unsigned i
         return;
     }
 
-    const double threshold = 0.2;
-
-    double tx = calc2(buf[1], buf[2]);
-    double ty = calc2(buf[3], buf[4]);
-    double tz = calc2(buf[5], buf[6]);
-    double rx = calc2(buf[7], buf[8]);
-    double ry = calc2(buf[9], buf[10]);
-    double rz = calc2(buf[11], buf[12]);
-    if ((fabs(tx) > threshold) || (fabs(ty) > threshold) || (fabs(tz) > threshold)) {
-        InputEvent *event = new InputEventTranslate(tx, -ty, -tz);
-        InputDriverManager::instance()->sendEvent(event);
-    }
-    if ((fabs(rx) > threshold) || (fabs(ry) > threshold) || (fabs(rz) > threshold)) {
-        InputEvent *event = new InputEventRotate(rx, -ry, -rz);
-        InputDriverManager::instance()->sendEvent(event);
+    for (int a = 0;a < 6;a++) {
+        int16_t i = buf[2 * a + 1] | (buf[2 * a + 2] << 8);
+        double val = (double)i / 350.0;
+        if (fabs(val) > 0.01) {
+            InputEvent *event = new InputEventAxisChanged(a, val);
+            InputDriverManager::instance()->sendEvent(event);
+        }
     }
 }
 
@@ -209,6 +190,13 @@ bool HidApiInputDriver::open()
         hid_dev = hid_open(device_ids[idx].vendor_id, device_ids[idx].product_id, NULL);
         if (hid_dev != NULL) {
             dev = &device_ids[idx];
+            std::stringstream sstream;
+            sstream << std::setfill('0') << std::setw(4) << std::hex
+                << "HidApiInputDriver ("
+                << dev->vendor_id << ":" << dev->product_id
+                 << " - " << dev->name
+                << ")";
+            name = sstream.str();
             start();
             return true;
         }
@@ -223,6 +211,5 @@ void HidApiInputDriver::close()
 
 const std::string & HidApiInputDriver::get_name() const
 {
-    static std::string name = "HidApiInputDriver";
     return name;
 }
