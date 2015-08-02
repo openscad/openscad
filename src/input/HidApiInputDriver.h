@@ -34,6 +34,7 @@ class HidApiInputDriver : public InputDriver
 {
     Q_OBJECT
 
+    std::string name;
     unsigned int buttons;
     hid_device* hid_dev;
     const struct device_id *dev;
@@ -54,7 +55,6 @@ public:
 
 private:
     void hidapi_input(hid_device* hid_dev);
-    double calc2(const unsigned char b1, const unsigned char b2);
 };
 
 struct device_id {
