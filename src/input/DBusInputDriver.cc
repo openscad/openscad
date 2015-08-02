@@ -36,7 +36,7 @@ void DBusInputDriver::run()
 
 DBusInputDriver::DBusInputDriver() : is_open(false)
 {
-
+    name = "DBusInputDriver";
 }
 
 DBusInputDriver::~DBusInputDriver()
