@@ -18,13 +18,15 @@ class lexer : public LexInterface
 	~lexer(){
 		delete lex;
 	}
-	void highlighting(int start, const std::string& input, lexertl::smatch results, int style)
+	void highlighting(int start, const std::string& input, lexertl::smatch results)
 	{
-				output << "<" << results.id << ">" << lex->token <<"</"<< results.id<<">";
+		output << "<" << results.state << ">" << results.str() <<"</"<< results.state<<">";
 	}
-	void multilineComment(int, const std::string&, lexertl::smatch, int)
-	{
 
+	int getStyleAt(int pos)
+	{
+	 	//int sstyle = editor()->SendScintilla(QsciScintilla::SCI_GETSTYLEAT, pos);
+		return 0;
 	}
 };
 int main(int argv, char* argc[]){
@@ -35,7 +37,7 @@ int main(int argv, char* argc[]){
 	stringstream buffer;
 	buffer << newfile.rdbuf();
 	const string line = buffer.str();
-	const string subline = line.substr(228, string::npos);
+	const string subline = line.substr(0, string::npos);
 	int start = 0;
 	l.lex->lex_results(subline, start ,&l);
 	newfile.close();

@@ -7,8 +7,8 @@
 class LexInterface
 {
 	public:
-	virtual void highlighting(int, const std::string&, lexertl::smatch, int) = 0;
-	virtual int getStyleAt(int);
+	virtual void highlighting(int, const std::string&, lexertl::smatch) = 0;
+	virtual int getStyleAt(int) = 0;
 };
 class Lex 
 {
@@ -16,11 +16,10 @@ class Lex
 	lexertl::state_machine sm;
         //typedef lexertl::basic_rules<char_type, char_type, id_type> rules_;
 	lexertl::rules rules_;
-	std::string token;
 	enum { eEOF, ekeyword, etransformation, eboolean, efunction, emodel, eoperator, enumber, evariable, especialVariable, ecomment, etext };
 
 	Lex();
 	void rules();
 	void defineRules(std::string words[], int, int);
-	void lex_results(const std::string& input, int start, LexInterface* const obj, int startState, int posState);
+	void lex_results(const std::string& input, int start, LexInterface* const obj);
 };

@@ -45,11 +45,7 @@ void ScadLexer::styleText(int start, int end)
     QString source(data);
 	const std::string input(source.toStdString());
     	pos = editor()->SendScintilla(QsciScintilla::SCI_GETCURRENTPOS);
-	int startStyle = editor()->SendScintilla(QsciScintilla::SCI_GETSTYLEAT, start);
-	int posStyle = editor()->SendScintilla(QsciScintilla::SCI_GETSTYLEAT, pos);
-	char ch = editor()->SendScintilla(QsciScintilla::SCI_GETCHARAT, pos);
-	std::cout<<"style: "<<posStyle<<"token: "<< ch<<std::endl;
-	l->lex_results(input, start, this, startStyle, posStyle);
+	l->lex_results(input, start, this);
 
     delete [] data;
     if(source.isEmpty())
@@ -62,10 +58,11 @@ int ScadLexer::getStyleAt(int pos)
 	return sstyle;
 }
 
-void ScadLexer::highlighting(int start, const std::string& input, lexertl::smatch results, int style)
+void ScadLexer::highlighting(int start, const std::string& input, lexertl::smatch results)
 {
-//	std::cout << results.id <<std::endl;
-	QString word = QString::fromStdString(l->token);
+	std::string token = results.str();
+	int style = results.id;
+	QString word = QString::fromStdString(token);
 	startStyling(start + std::distance(input.begin(), results.start));
 	setStyling(word.length(), style);
 }

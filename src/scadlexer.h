@@ -45,7 +45,7 @@ public:
 
         QColor defaultColor(int style) const;
 
-	void highlighting(int, const std::string&, lexertl::smatch, int);
+	void highlighting(int, const std::string&, lexertl::smatch);
         QString description(int style) const;
 private:
         std::string keywordSet[4];

@@ -48,38 +48,39 @@ void Lex::rules(){
 	rules_.push("[a-zA-Z0-9_]+", evariable);
 	rules_.push("[$][a-zA-Z0-9_]+", especialVariable);
 
-	rules_.push("INITIAL", "#", "MODIFIER");
-	rules_.push("MODIFIER","[^;\\{]+", "MODIFIER");
-	rules_.push("MODIFIER","[{]", "BLOCK");
-	rules_.push("BLOCK", "[^\\}]+" , "BLOCK");	
-	rules_.push("BLOCK", "[}]", 12, "INITIAL");
-	rules_.push("MODIFIER", ";", 13, "INITIAL");
+	rules_.push("INITIAL", "#", 12, "MODIFIER");
+	rules_.push("MODIFIER","[^;\\{]+",12,  ".");
+	rules_.push("MODIFIER","\\{", 13, "BLOCK");
+	rules_.push("BLOCK", "[^\\}]+",13,".");	
+	rules_.push("BLOCK", "\\}", 13, "INITIAL");
+	rules_.push("MODIFIER", ";", 12, "INITIAL");
 
-	rules_.push("INITIAL", "!", "MODIFIER2");
-	rules_.push("MODIFIER2","[^;\\{]+", "MODIFIER2");
-	rules_.push("MODIFIER2","[{]", "BLOCK2");
-	rules_.push("BLOCK2", "[^\\}]+" , "BLOCK2");	
-	rules_.push("BLOCK2", "[}]", 14, "INITIAL");
-	rules_.push("MODIFIER2", ";", 15, "INITIAL");
+	rules_.push("INITIAL", "!", 14,"MODIFIER2");
+	rules_.push("MODIFIER2","[^;\\{]+",14, ".");
+	rules_.push("MODIFIER2","[\\{]", 15, "BLOCK2");
+	rules_.push("BLOCK2", "[^\\}]+",15, ".");	
+	rules_.push("BLOCK2", "[\\}]", 15, "INITIAL");
+	rules_.push("MODIFIER2", ";", 14, "INITIAL");
 
-	rules_.push("INITIAL", "[*]", "MODIFIER3");
-	rules_.push("MODIFIER3","[^;\\{]+", "MODIFIER3");
-	rules_.push("MODIFIER3","[{]", "BLOCK3");
-	rules_.push("BLOCK3", "[^\\}]+" , "BLOCK3");	
-	rules_.push("BLOCK3", "[}]", 16, "INITIAL");
-	rules_.push("MODIFIER3", ";", 17, "INITIAL");
+	rules_.push("INITIAL", "[*]", 16,"MODIFIER3");
+	rules_.push("MODIFIER3","[^;\\{]+", 16,"MODIFIER3");
+	rules_.push("MODIFIER3","[\\{]", 17,"BLOCK3");
+	rules_.push("BLOCK3", "[^\\}]+" , 17,"BLOCK3");	
+	rules_.push("BLOCK3", "[\\}]", 17, "INITIAL");
+	rules_.push("MODIFIER3", ";", 16, "INITIAL");
 
-	rules_.push("INITIAL", "%", "MODIFIER4");
-	rules_.push("MODIFIER4","[^;\\{]+", "MODIFIER4");
-	rules_.push("MODIFIER4","[{]", "BLOCK4");
-	rules_.push("BLOCK4", "[^\\}]+" , "BLOCK4");	
-	rules_.push("BLOCK4", "[}]", 18, "INITIAL");
-	rules_.push("MODIFIER4", ";", 19, "INITIAL");
+	rules_.push("INITIAL", "%", 18,"MODIFIER4");
+	rules_.push("MODIFIER4","[^;\\{]+", 18,"MODIFIER4");
+	rules_.push("MODIFIER4","[\\{]", 19,"BLOCK4");
+	rules_.push("BLOCK4", "[^\\}]+" , 19,"BLOCK4");	
+	rules_.push("BLOCK4", "[\\}]", 19, "INITIAL");
+	rules_.push("MODIFIER4", ";", 18, "INITIAL");
 
 	rules_.push("INITIAL", "\"/*\"",  ecomment, "COMMENT");
 	rules_.push("COMMENT", "[^*]+|.", ecomment,  "COMMENT");
 	rules_.push("COMMENT", "\"*/\"", ecomment , "INITIAL");
 
+	//rules_.push("INITIAL", ";", ecomment, "COMMENT");
 	rules_.push("[/][/].*$", ecomment);
 	rules_.push(".|\n", etext);
 	lexertl::generator::build(rules_, sm);
@@ -95,104 +96,56 @@ void Lex::defineRules(std::string words[], int size, int id){
 	}
 }
 
-void Lex::lex_results(const std::string& input, int start, LexInterface* const obj, int startState, int posState){
+void Lex::lex_results(const std::string& input, int start, LexInterface* const obj){
 
 	lexertl::smatch results (input.begin(), input.end());
-	if(obj->getStyleAt(start-1) == ecomment)
-		results.state = 1;	
- 	if((posState == 12) || (startState == 12)){ results.state = 2; }
-	else if((posState == 13) || (startState == 13)){ results.state = 6; }
-	else if((posState == 14) || (startState == 14)){ results.state = 3; } 
-	else if((posState == 15) || (startState == 15)){ results.state = 7; }
-	else if((posState == 16) || (startState == 16)){ results.state = 4; }
-	else if((posState == 17) || (startState == 17)){ results.state = 8; }
-	else if((posState == 18) || (startState == 18)){ results.state = 5; }
-	else if((posState == 19) || (startState == 19)){ results.state = 9; }
+
+	int isstyle = obj->getStyleAt(start-1);
+	switch(isstyle)
+	{
+		case 10:
+		 results.state = 1;
+		break;
+
+		case 14:
+		 results.state = 3;
+		break;
+
+		case 15:
+		 results.state = 7;
+		break;
+
+		case 12:
+		 results.state = 2;
+		break;
+
+		case 13:
+		 results.state = 6;
+		break;
 	
+		case 16:
+		 results.state = 4;
+		break;
+
+		case 17:
+		 results.state = 8;
+		break;
+
+		case 18:
+		 results.state = 5;
+		break;
+
+		case 19:
+		 results.state = 9;
+		break;
+
+	}
 	lexertl::lookup(sm, results);	
+	std::cout << "new state: "<< results.state	<<std::endl;
 
 	while(results.id != eEOF)
 	{
-		switch(results.id)
-		{
-			case 1:
-		  	token = results.str();
-			 break;
-
-			case 2:
-		 	token = results.str();
-		 	 break;
-					
-			case 3:
-		  	token = results.str();
-			 break;
-
-			case 4:
-		  	token = results.str();
-			 break;
-			
-			case 5:
-		  	token = results.str();
-			 break;
-
-			case 6:
-		  	token = results.str();
-			 break;
-			
-			case 7:
-			token = results.str();
-			break;
-
-			case 8:
-			token = results.str();
-			break;
-		
-			case 9:
-			token = results.str();
-			break;
-			
-			case 10:
-			token = results.str();
-			break;
-
-			case 11:
-			token = results.str();
-			break;
-
-			case 12:
-		  	token = results.str();
-			 break;
-			
-			case 13:
-			token = results.str();
-			break;
-
-			case 14:
-			token = results.str();
-			break;
-		
-			case 15:
-			token = results.str();
-			break;
-			
-			case 16:
-			token = results.str();
-			break;
-
-			case 17:
-			token = results.str();
-			break;
-
-			case 18:
-			token = results.str();
-			break;
-
-			case 19:
-			token = results.str();
-			break;
-	       }
-
-		obj->highlighting(start, input, results, results.id);
+		obj->highlighting(start, input, results);
 		lexertl::lookup(sm, results);
 	}
 }
