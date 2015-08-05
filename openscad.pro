@@ -560,6 +560,10 @@ colorschemes.path = "$$PREFIX/share/$${FULLNAME}/color-schemes/"
 colorschemes.files = color-schemes/*
 INSTALLS += colorschemes
 
+iconset.path = "$$PREFIX/share/$${FULLNAME}/images/"
+iconset.files = iconset/*
+INSTALLS += iconset
+
 applications.path = $$PREFIX/share/applications
 applications.extra = cat icons/openscad.desktop | sed -e \"'s/^Icon=openscad/Icon=$${FULLNAME}/; s/^Exec=openscad/Exec=$${FULLNAME}/'\" > \"\$(INSTALL_ROOT)$${applications.path}/$${FULLNAME}.desktop\"
 INSTALLS += applications

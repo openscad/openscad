@@ -493,44 +493,6 @@ MainWindow::MainWindow(const QString &filename)
 	addKeyboardShortCut(this->viewerToolBar->actions());
 	addKeyboardShortCut(this->editortoolbar->actions());
 	
-	initActionIcon(fileActionNew, ":/images/flaticons/dark/New.png", ":/images/flaticons/light/New.png");
-	initActionIcon(fileActionOpen, ":/images/flaticons/dark/Open.png", ":/images/flaticons/light/Open.png");
-	initActionIcon(fileActionSave, ":/images/flaticons/dark/Save.png", ":/images/flaticons/light/Save.png");
-	initActionIcon(editActionZoomTextIn, ":/images/flaticons/dark/ZoomTextIn.png", ":/images/flaticons/light/ZoomTextIn.png");
-	initActionIcon(editActionZoomTextOut, ":/images/flaticons/dark/ZoomTextOut.png", ":/images/flaticons/light/ZoomTextOut-white.png");
-	initActionIcon(designActionRender, ":/images/flaticons/dark/Render.png", ":/images/flaticons/light/Render.png");
-	initActionIcon(viewActionShowAxes, ":/images/flaticons/dark/ShowAxes.png", ":/images/flaticons/light/ShowAxes.png");
-	initActionIcon(viewActionShowEdges, ":/images/flaticons/dark/ShowEdges.png", ":/images/flaticons/light/ShowEdges.png");
-	initActionIcon(viewActionZoomIn, ":/images/flaticons/dark/ZoomIn.png", ":/images/flaticons/light/ZoomIn.png");
-	initActionIcon(viewActionZoomOut, ":/images/flaticons/dark/ZoomOut.png", ":/images/flaticons/light/ZoomOut.png");
-	initActionIcon(viewActionTop, ":/images/flaticons/dark/Top.png", ":/images/flaticons/light/Top.png");
-	initActionIcon(viewActionBottom, ":/images/flaticons/dark/Bottom.png", ":/images/flaticons/light/Bottom.png");
-	initActionIcon(viewActionLeft, ":/images/flaticons/dark/Left.png", ":/images/flaticons/light/Left.png");
-	initActionIcon(viewActionRight, ":/images/flaticons/dark/Right.png", ":/images/flaticons/light/Right.png");
-	initActionIcon(viewActionFront, ":/images/flaticons/dark/Front.png", ":/images/flaticons/light/Front.png");
-	initActionIcon(viewActionBack, ":/images/flaticons/dark/Back.png", ":/images/flaticons/light/Back.png");
-	initActionIcon(viewActionSurfaces, ":/images/flaticons/dark/Surfaces.png", ":/images/flaticons/light/Surfaces.png");
-	initActionIcon(viewActionWireframe, ":/images/flaticons/dark/Wireframe.png", ":/images/flaticons/light/Wireframe.png");
-	initActionIcon(viewActionShowCrosshairs, ":/images/flaticons/dark/ShowCrosshairs.png", ":/images/flaticons/light/ShowCrosshairs.png");
-	initActionIcon(viewActionPerspective, ":/images/flaticons/dark/Perspective.png", ":/images/flaticons/light/Perspective.png");
-	initActionIcon(viewActionOrthogonal, ":/images/flaticons/dark/Orthogonal.png", ":/images/flaticons/light/Orthogonal.png");
-	initActionIcon(designActionPreview, ":/images/flaticons/dark/Preview.png", ":/images/flaticons/light/Preview.png");
-	initActionIcon(viewActionAnimate, ":/images/flaticons/dark/Animate.png", ":/images/flaticons/light/Animate.png");
-	initActionIcon(fileActionExportSTL, ":/images/flaticons/dark/ExportSTL.png", ":/images/flaticons/light/ExportSTL.png");
-	initActionIcon(fileActionExportAMF, ":/images/flaticons/dark/ExportAMF.png", ":/images/flaticons/light/ExportAMF.png");
-	initActionIcon(fileActionExportOFF, ":/images/flaticons/dark/ExportOFF.png", ":/images/flaticons/light/ExportOFF.png");
-	initActionIcon(fileActionExportDXF, ":/images/flaticons/dark/ExportDXF.png", ":/images/flaticons/light/ExportDXF.png");
-	initActionIcon(fileActionExportSVG, ":/images/flaticons/dark/ExportSVG.png", ":/images/flaticons/light/ExportSVG.png");
-	initActionIcon(fileActionExportCSG, ":/images/flaticons/dark/ExportCSG.png", ":/images/flaticons/light/ExportCSG.png");
-	initActionIcon(fileActionExportImage, ":/images/flaticons/dark/ExportImage.png", ":/images/flaticons/light/ExportImage.png");
-	initActionIcon(viewActionViewAll, ":/images/flaticons/dark/ViewAll.png", ":/images/flaticons/light/ViewAll.png");
-	initActionIcon(editActionUndo, ":/images/flaticons/dark/Undo.png", ":/images/flaticons/light/Undo.png");
-	initActionIcon(editActionRedo, ":/images/flaticons/dark/Redo.png", ":/images/flaticons/light/Redo.png");
-	initActionIcon(editActionUnindent, ":/images/flaticons/dark/Unindent.png", ":/images/flaticons/light/Unindent.png");
-	initActionIcon(editActionIndent, ":/images/flaticons/dark/Indent.png", ":/images/flaticons/light/Indent.png");
-	initActionIcon(viewActionResetView, ":/images/flaticons/dark/ResetView.png", ":/images/flaticons/light/ResetView.png");
-	initActionIcon(viewActionShowScaleProportional, ":/images/flaticons/dark/ShowScaleProportional.png", ":/images/flaticons/light/ShowScaleProportional.png");
-	
 	// make sure it looks nice..
 	QByteArray windowState = settings.value("window/state", QByteArray()).toByteArray();
 	restoreState(windowState);
