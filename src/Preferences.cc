@@ -191,6 +191,9 @@ void Preferences::init() {
 	// 3D View pane
 	this->defaultmap["3dview/colorscheme"] = "Cornfield";
 
+	// Icon Set
+	this->defaultmap["iconset"] = "flaticons";
+
   // Advanced pane	
 	QValidator *validator = new QIntValidator(this);
 #ifdef ENABLE_CGAL
@@ -331,6 +334,8 @@ void Preferences::on_colorSchemeChooser_itemSelectionChanged()
 void Preferences::on_iconsList_itemSelectionChanged()
 {
 	QString iconset = this->iconsList->currentItem()->text();
+	QSettings settings;
+	settings.setValue("iconset", iconset);
 	emit iconSchemeChanged(iconset);
 }
 void Preferences::on_fontChooser_activated(const QString &family)
@@ -623,6 +628,11 @@ void Preferences::updateGUI()
 																				Qt::MatchExactly);
 	if (!found.isEmpty()) this->colorSchemeChooser->setCurrentItem(found.first());
 
+	QList<QListWidgetItem *> iconfound = 
+		this->iconsList->findItems(getValue("iconset").toString(),
+																				Qt::MatchExactly);
+	if (!iconfound.isEmpty()) this->iconsList->setCurrentItem(iconfound.first());
+
 	QString fontfamily = getValue("editor/fontfamily").toString();
 	int fidx = this->fontChooser->findText(fontfamily,Qt::MatchContains);
 	if (fidx >= 0) {
@@ -768,6 +778,7 @@ void Preferences::create(QStringList colorSchemes)
     instance->syntaxHighlight->addItems(colorSchemes);
     instance->colorSchemeChooser->clear();
     instance->colorSchemeChooser->addItems(renderColorSchemes);
+    instance->iconsList->clear();
     instance->iconsList->addItems(iconSets);
     instance->init();
     instance->setupFeaturesPage();

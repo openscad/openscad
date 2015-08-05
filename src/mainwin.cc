@@ -467,6 +467,9 @@ MainWindow::MainWindow(const QString &filename)
 	QString cs = Preferences::inst()->getValue("3dview/colorscheme").toString();
 	this->setColorScheme(cs);
 
+	QString is = Preferences::inst()->getValue("iconset").toString();
+	this->setIconScheme(is);
+
 	//find and replace panel
 	connect(this->findTypeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(selectFindType(int)));
 	connect(this->findInputField, SIGNAL(textChanged(QString)), this, SLOT(findString(QString)));
