@@ -40,7 +40,8 @@ static const int BUFLEN = 16;
 
 using namespace std;
 
-// see http://www.linux-usb.org/usb.ids
+// http://www.linux-usb.org/usb.ids
+// http://www.3dconnexion.eu/nc/service/faq/show_faq/7ece50ed-0b39-b57e-d3b2-4afd9420604e.html
 static const struct device_id device_ids[] = {
     { 0x046d, 0xc603, &HidApiInputDriver::hidapi_decode_axis1, &HidApiInputDriver::hidapi_decode_button1, "3Dconnexion Spacemouse Plus XT"},
     { 0x046d, 0xc605, &HidApiInputDriver::hidapi_decode_axis1, &HidApiInputDriver::hidapi_decode_button1, "3Dconnexion CADman"},
@@ -53,8 +54,10 @@ static const struct device_id device_ids[] = {
     { 0x046d, 0xc628, &HidApiInputDriver::hidapi_decode_axis1, &HidApiInputDriver::hidapi_decode_button1, "3Dconnexion Space Navigator for Notebooks"},
     { 0x046d, 0xc629, &HidApiInputDriver::hidapi_decode_axis1, &HidApiInputDriver::hidapi_decode_button1, "3Dconnexion SpacePilot Pro 3D Mouse"},
     { 0x046d, 0xc62b, &HidApiInputDriver::hidapi_decode_axis1, &HidApiInputDriver::hidapi_decode_button1, "3Dconnexion Space Mouse Pro"},
-    { 0x256f, 0xc62e, &HidApiInputDriver::hidapi_decode_axis2, &HidApiInputDriver::hidapi_decode_button2, "3Dconnexion Space Mouse Wireless"},
+    { 0x256f, 0xc62e, &HidApiInputDriver::hidapi_decode_axis2, &HidApiInputDriver::hidapi_decode_button2, "3Dconnexion Space Mouse Wireless (cabled)"},
     { 0x256f, 0xc62f, &HidApiInputDriver::hidapi_decode_axis2, &HidApiInputDriver::hidapi_decode_button2, "3Dconnexion Space Mouse Wireless"},
+    { 0x256f, 0xc631, &HidApiInputDriver::hidapi_decode_axis2, &HidApiInputDriver::hidapi_decode_button2, "3Dconnexion Space Mouse Pro Wireless (cabled)"},
+    { 0x256f, 0xc632, &HidApiInputDriver::hidapi_decode_axis2, &HidApiInputDriver::hidapi_decode_button2, "3Dconnexion Space Mouse Pro Wireless"},
     { -1, -1, NULL, NULL, NULL},
 };
 
