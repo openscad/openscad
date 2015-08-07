@@ -41,6 +41,7 @@ public:
 
     	void styleText(int start, int end);
 	int getStyleAt(int pos);
+	void fold(int, int);
         void setKeywords(int set, const std::string& keywords);
 
         QColor defaultColor(int style) const;

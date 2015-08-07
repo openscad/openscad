@@ -37,7 +37,7 @@ ScadLexer::~ScadLexer()
 
 void ScadLexer::styleText(int start, int end)
 {
-	
+	int MARGIN_SCRIPT_FOLD_INDEX = 1;	
     if(!editor())
         return;
     char * data = new char[end - start + 1];
@@ -46,10 +46,66 @@ void ScadLexer::styleText(int start, int end)
 	const std::string input(source.toStdString());
     	pos = editor()->SendScintilla(QsciScintilla::SCI_GETCURRENTPOS);
 	l->lex_results(input, start, this);
+	this->fold(start, end);
+    editor()->SendScintilla(QsciScintilla::SCI_SETMARGINTYPEN,  MARGIN_SCRIPT_FOLD_INDEX, QsciScintilla::SC_MARGIN_SYMBOL);
+    //editor()->SendScintilla(QsciScintilla::SCI_SETMARGINMASKN, MARGIN_SCRIPT_FOLD_INDEX, QsciScintilla::SC_MASK_FOLDERS);
+    editor()->SendScintilla(QsciScintilla::SCI_SETMARGINWIDTHN, MARGIN_SCRIPT_FOLD_INDEX, 20);
+    editor()->SendScintilla(QsciScintilla::SCI_SETMARGINSENSITIVEN, MARGIN_SCRIPT_FOLD_INDEX, 1);
+
+  editor()->SendScintilla(QsciScintilla::SCI_MARKERDEFINE, QsciScintilla::SC_MARKNUM_FOLDER, QsciScintilla::SC_MARK_BOXPLUS);
+  editor()->SendScintilla(QsciScintilla::SCI_MARKERDEFINE, QsciScintilla::SC_MARKNUM_FOLDEROPEN, QsciScintilla::SC_MARK_BOXMINUS);
+  editor()->SendScintilla(QsciScintilla::SCI_MARKERDEFINE, QsciScintilla::SC_MARKNUM_FOLDEREND, QsciScintilla::SC_MARK_EMPTY);
+  editor()->SendScintilla(QsciScintilla::SCI_MARKERDEFINE, QsciScintilla::SC_MARKNUM_FOLDERMIDTAIL, QsciScintilla::SC_MARK_EMPTY);
+  editor()->SendScintilla(QsciScintilla::SCI_MARKERDEFINE, QsciScintilla::SC_MARKNUM_FOLDEROPENMID, QsciScintilla::SC_MARK_EMPTY);
+  editor()->SendScintilla(QsciScintilla::SCI_MARKERDEFINE, QsciScintilla::SC_MARKNUM_FOLDERSUB, QsciScintilla::SC_MARK_EMPTY);
+  editor()->SendScintilla(QsciScintilla::SCI_MARKERDEFINE, QsciScintilla::SC_MARKNUM_FOLDERTAIL, QsciScintilla::SC_MARK_EMPTY);
+  //editor()->SendScintilla(QsciScintilla::SCI_SETFOLDFLAGS, 16, 0); // 16  	Draw line below if not expanded
+
 
     delete [] data;
     if(source.isEmpty())
         return;
+}
+void ScadLexer::fold(int start, int end)
+{
+    char chNext = editor()->SendScintilla(QsciScintilla::SCI_GETCHARAT, start);
+    int lineCurrent = editor()->SendScintilla(QsciScintilla::SCI_LINEFROMPOSITION, start);
+    int levelPrev = editor()->SendScintilla(QsciScintilla::SCI_GETFOLDLEVEL, lineCurrent) & QsciScintilla::SC_FOLDLEVELNUMBERMASK;
+    int levelCurrent = levelPrev;
+    char ch;
+    bool atEOL;
+
+    for (int i = start; i < end; i++)
+    {
+	ch = chNext;
+	chNext = editor()->SendScintilla(QsciScintilla::SCI_GETCHARAT, i+1);
+
+	atEOL = ((ch == '\r' && chNext != '\n') || (ch == '\n'));
+
+	if (ch == '{') {
+	std::cout << "open" <<std::endl;
+		levelCurrent++;
+	}
+	if (ch == '}') {
+	std::cout << "closed" <<std::endl;
+		levelCurrent--;
+	}
+	if (atEOL || (i == (end-1))) {
+		int lev = levelPrev;
+	
+		if (levelCurrent > levelPrev) {
+		  lev |= QsciScintilla::SC_FOLDLEVELHEADERFLAG;
+		}
+
+		if ( lev != editor()->SendScintilla(QsciScintilla::SCI_GETFOLDLEVEL, lineCurrent)) {
+		  editor()->SendScintilla(QsciScintilla::SCI_GETFOLDLEVEL, lineCurrent , lev );
+			std::cout << "line: "<<lineCurrent<<" lev: "<<lev<<std::endl;
+		}
+
+		lineCurrent++;
+		levelPrev = levelCurrent ;
+	}
+     }
 }
 
 int ScadLexer::getStyleAt(int pos)
@@ -65,6 +121,23 @@ void ScadLexer::highlighting(int start, const std::string& input, lexertl::smatc
 	QString word = QString::fromStdString(token);
 	startStyling(start + std::distance(input.begin(), results.start));
 	setStyling(word.length(), style);
+    
+/*	editor()->SendScintilla(QsciScintilla::SCI_SETPROPERTY, "fold", "1");
+    editor()->SendScintilla(QsciScintilla::SCI_SETPROPERTY, "fold.compact", "0");
+    editor()->SendScintilla(QsciScintilla::SCI_SETPROPERTY, "fold.comment", "1");
+    editor()->SendScintilla(QsciScintilla::SCI_SETPROPERTY, "fold.preprocessor", "1");
+    editor()->SendScintilla(QsciScintilla::SCI_SETMARGINTYPEN,  MARGIN_SCRIPT_FOLD_INDEX, QsciScintilla::SC_MARGIN_SYMBOL);
+    editor()->SendScintilla(QsciScintilla::SCI_SETMARGINMASKN, MARGIN_SCRIPT_FOLD_INDEX, QsciScintilla::SC_MASK_FOLDERS);
+    editor()->SendScintilla(QsciScintilla::SCI_SETMARGINWIDTHN, MARGIN_SCRIPT_FOLD_INDEX, 20);
+    editor()->SendScintilla(QsciScintilla::SCI_MARKERDEFINE, QsciScintilla::SC_MARKNUM_FOLDER, QsciScintilla::SC_MARK_PLUS);
+
+  editor()->SendScintilla(QsciScintilla::SCI_MARKERDEFINE, QsciScintilla::SC_MARKNUM_FOLDEROPEN, QsciScintilla::SC_MARK_MINUS);
+  editor()->SendScintilla(QsciScintilla::SCI_MARKERDEFINE, QsciScintilla::SC_MARKNUM_FOLDEREND, QsciScintilla::SC_MARK_EMPTY);
+  editor()->SendScintilla(QsciScintilla::SCI_MARKERDEFINE, QsciScintilla::SC_MARKNUM_FOLDERMIDTAIL, QsciScintilla::SC_MARK_EMPTY);
+  editor()->SendScintilla(QsciScintilla::SCI_MARKERDEFINE, QsciScintilla::SC_MARKNUM_FOLDEROPENMID, QsciScintilla::SC_MARK_EMPTY);
+  editor()->SendScintilla(QsciScintilla::SCI_MARKERDEFINE, QsciScintilla::SC_MARKNUM_FOLDERSUB, QsciScintilla::SC_MARK_EMPTY);
+  editor()->SendScintilla(QsciScintilla::SCI_MARKERDEFINE, QsciScintilla::SC_MARKNUM_FOLDERTAIL, QsciScintilla::SC_MARK_EMPTY);
+*/
 }
 
 
