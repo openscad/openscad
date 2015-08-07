@@ -80,7 +80,6 @@ void Lex::rules(){
 	rules_.push("COMMENT", "[^*]+|.", ecomment,  "COMMENT");
 	rules_.push("COMMENT", "\"*/\"", ecomment , "INITIAL");
 
-	//rules_.push("INITIAL", ";", ecomment, "COMMENT");
 	rules_.push("[/][/].*$", ecomment);
 	rules_.push(".|\n", etext);
 	lexertl::generator::build(rules_, sm);
@@ -141,7 +140,6 @@ void Lex::lex_results(const std::string& input, int start, LexInterface* const o
 
 	}
 	lexertl::lookup(sm, results);	
-	std::cout << "new state: "<< results.state	<<std::endl;
 
 	while(results.id != eEOF)
 	{

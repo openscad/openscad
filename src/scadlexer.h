@@ -44,6 +44,9 @@ public:
 	void fold(int, int);
         void setKeywords(int set, const std::string& keywords);
 
+    	const char *blockEnd(int *style = 0) const;
+	const char *blockStart(int *style = 0) const;
+
         QColor defaultColor(int style) const;
 
 	void highlighting(int, const std::string&, lexertl::smatch);

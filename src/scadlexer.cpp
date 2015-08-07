@@ -79,9 +79,6 @@ void ScadLexer::fold(int start, int end)
 	
 		if (levelCurrent > levelPrev) {
 		  lev |= QsciScintilla::SC_FOLDLEVELHEADERFLAG;
-		  editor()->SendScintilla(QsciScintilla::SCI_SETLINEINDENTATION, lineCurrent, 4);
-		} else {
-		  editor()->SendScintilla(QsciScintilla::SCI_SETLINEINDENTATION, lineCurrent, 1);
 		}
 
 		if ( lev != editor()->SendScintilla(QsciScintilla::SCI_GETFOLDLEVEL, lineCurrent)) {
@@ -94,8 +91,22 @@ void ScadLexer::fold(int start, int end)
      }
         int flagsNext = editor()->SendScintilla(QsciScintilla::SCI_GETFOLDLEVEL, lineCurrent) & QsciScintilla::SC_FOLDLEVELNUMBERMASK;
 	editor()->SendScintilla(QsciScintilla::SCI_SETFOLDLEVEL, lineCurrent, levelPrev | flagsNext);
-			 
 
+}
+
+const char *ScadLexer::blockStart(int *style) const
+{
+    if (style)
+        *style = 11;
+    return "{";
+}
+
+
+const char *ScadLexer::blockEnd(int *style) const
+{
+    if (style)
+        *style = 11;
+    return "}";
 }
 
 int ScadLexer::getStyleAt(int pos)
