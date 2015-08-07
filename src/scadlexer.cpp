@@ -98,7 +98,7 @@ void ScadLexer::fold(int start, int end)
 		}
 
 		if ( lev != editor()->SendScintilla(QsciScintilla::SCI_GETFOLDLEVEL, lineCurrent)) {
-		  editor()->SendScintilla(QsciScintilla::SCI_GETFOLDLEVEL, lineCurrent , lev );
+		  editor()->SendScintilla(QsciScintilla::SCI_SETFOLDLEVEL, lineCurrent , lev );
 			std::cout << "line: "<<lineCurrent<<" lev: "<<lev<<std::endl;
 		}
 
@@ -122,22 +122,6 @@ void ScadLexer::highlighting(int start, const std::string& input, lexertl::smatc
 	startStyling(start + std::distance(input.begin(), results.start));
 	setStyling(word.length(), style);
     
-/*	editor()->SendScintilla(QsciScintilla::SCI_SETPROPERTY, "fold", "1");
-    editor()->SendScintilla(QsciScintilla::SCI_SETPROPERTY, "fold.compact", "0");
-    editor()->SendScintilla(QsciScintilla::SCI_SETPROPERTY, "fold.comment", "1");
-    editor()->SendScintilla(QsciScintilla::SCI_SETPROPERTY, "fold.preprocessor", "1");
-    editor()->SendScintilla(QsciScintilla::SCI_SETMARGINTYPEN,  MARGIN_SCRIPT_FOLD_INDEX, QsciScintilla::SC_MARGIN_SYMBOL);
-    editor()->SendScintilla(QsciScintilla::SCI_SETMARGINMASKN, MARGIN_SCRIPT_FOLD_INDEX, QsciScintilla::SC_MASK_FOLDERS);
-    editor()->SendScintilla(QsciScintilla::SCI_SETMARGINWIDTHN, MARGIN_SCRIPT_FOLD_INDEX, 20);
-    editor()->SendScintilla(QsciScintilla::SCI_MARKERDEFINE, QsciScintilla::SC_MARKNUM_FOLDER, QsciScintilla::SC_MARK_PLUS);
-
-  editor()->SendScintilla(QsciScintilla::SCI_MARKERDEFINE, QsciScintilla::SC_MARKNUM_FOLDEROPEN, QsciScintilla::SC_MARK_MINUS);
-  editor()->SendScintilla(QsciScintilla::SCI_MARKERDEFINE, QsciScintilla::SC_MARKNUM_FOLDEREND, QsciScintilla::SC_MARK_EMPTY);
-  editor()->SendScintilla(QsciScintilla::SCI_MARKERDEFINE, QsciScintilla::SC_MARKNUM_FOLDERMIDTAIL, QsciScintilla::SC_MARK_EMPTY);
-  editor()->SendScintilla(QsciScintilla::SCI_MARKERDEFINE, QsciScintilla::SC_MARKNUM_FOLDEROPENMID, QsciScintilla::SC_MARK_EMPTY);
-  editor()->SendScintilla(QsciScintilla::SCI_MARKERDEFINE, QsciScintilla::SC_MARKNUM_FOLDERSUB, QsciScintilla::SC_MARK_EMPTY);
-  editor()->SendScintilla(QsciScintilla::SCI_MARKERDEFINE, QsciScintilla::SC_MARKNUM_FOLDERTAIL, QsciScintilla::SC_MARK_EMPTY);
-*/
 }
 
 
