@@ -39,20 +39,20 @@ void ScadLexer::styleText(int start, int end)
 {
     if(!editor())
         return;
-	this->fold(start, end);
+
     char * data = new char[end - start + 1];
     editor()->SendScintilla(QsciScintilla::SCI_GETTEXTRANGE, start, end, data);
     QString source(data);
-	const std::string input(source.toStdString());
-    	pos = editor()->SendScintilla(QsciScintilla::SCI_GETCURRENTPOS);
-	l->lex_results(input, start, this);
-	std::cout << start;
+    const std::string input(source.toStdString());
+    pos = editor()->SendScintilla(QsciScintilla::SCI_GETCURRENTPOS);
+
+    l->lex_results(input, start, this);
+    this->fold(start, end);
 
     delete [] data;
     if(source.isEmpty())
         return;
 }
-
 void ScadLexer::fold(int start, int end)
 {
     char chNext = editor()->SendScintilla(QsciScintilla::SCI_GETCHARAT, start);
@@ -71,8 +71,7 @@ void ScadLexer::fold(int start, int end)
 
 	if (ch == '{') {
 		levelCurrent++;
-	}
-	if (ch == '}') {
+	} else 	if (ch == '}') {
 		levelCurrent--;
 	}
 	if (atEOL || (i == (end-1))) {
@@ -90,6 +89,9 @@ void ScadLexer::fold(int start, int end)
 		levelPrev = levelCurrent ;
 	}
      }
+        int flagsNext = editor()->SendScintilla(QsciScintilla::SCI_GETFOLDLEVEL, lineCurrent) & QsciScintilla::SC_FOLDLEVELNUMBERMASK;
+	editor()->SendScintilla(QsciScintilla::SCI_SETFOLDLEVEL, lineCurrent, levelPrev | flagsNext);
+
 }
 
 int ScadLexer::getStyleAt(int pos)
