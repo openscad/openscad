@@ -141,7 +141,7 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator, indicatorNumber);
 	qsci->markerDefine(QsciScintilla::Circle, markerNumber);
 	qsci->setUtf8(true);
-	//qsci->setFolding(QsciScintilla::BoxedTreeFoldStyle, 4);
+	qsci->setFolding(QsciScintilla::BoxedTreeFoldStyle, 4);
 
 	lexer = new ScadLexer(this);
 	qsci->setLexer(lexer);
@@ -325,8 +325,8 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 		qsci->setWhitespaceForegroundColor(readColor(colors, "whitespace-foreground", textColor));
 		qsci->setMarginsBackgroundColor(readColor(colors, "margin-background", paperColor));
 		qsci->setMarginsForegroundColor(readColor(colors, "margin-foreground", textColor));
-		//qsci->setFoldMarginColors(readColor(colors, "margin-background", paperColor),
-                  //                        readColor(colors, "margin-background", paperColor));
+		qsci->setFoldMarginColors(readColor(colors, "margin-background", paperColor),
+                                          readColor(colors, "margin-background", paperColor));
 		qsci->setMatchedBraceBackgroundColor(readColor(colors, "matched-brace-background", paperColor));
 		qsci->setMatchedBraceForegroundColor(readColor(colors, "matched-brace-foreground", textColor));
 		qsci->setUnmatchedBraceBackgroundColor(readColor(colors, "unmatched-brace-background", paperColor));
@@ -358,7 +358,7 @@ void ScintillaEditor::noColor()
 	qsci->setUnmatchedBraceForegroundColor(Qt::black);
 	qsci->setMarginsBackgroundColor(QColor("whiteSmoke"));
 	qsci->setMarginsForegroundColor(QColor("gray"));
-	//qsci->setFoldMarginColors(QColor("whiteSmoke"), QColor("whiteSmoke"));
+	qsci->setFoldMarginColors(QColor("whiteSmoke"), QColor("whiteSmoke"));
 	qsci->setEdgeColor(Qt::black);
 }
 

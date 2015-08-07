@@ -37,35 +37,22 @@ ScadLexer::~ScadLexer()
 
 void ScadLexer::styleText(int start, int end)
 {
-	int MARGIN_SCRIPT_FOLD_INDEX = 1;	
     if(!editor())
         return;
+	this->fold(start, end);
     char * data = new char[end - start + 1];
     editor()->SendScintilla(QsciScintilla::SCI_GETTEXTRANGE, start, end, data);
     QString source(data);
 	const std::string input(source.toStdString());
     	pos = editor()->SendScintilla(QsciScintilla::SCI_GETCURRENTPOS);
 	l->lex_results(input, start, this);
-	this->fold(start, end);
-    editor()->SendScintilla(QsciScintilla::SCI_SETMARGINTYPEN,  MARGIN_SCRIPT_FOLD_INDEX, QsciScintilla::SC_MARGIN_SYMBOL);
-    //editor()->SendScintilla(QsciScintilla::SCI_SETMARGINMASKN, MARGIN_SCRIPT_FOLD_INDEX, QsciScintilla::SC_MASK_FOLDERS);
-    editor()->SendScintilla(QsciScintilla::SCI_SETMARGINWIDTHN, MARGIN_SCRIPT_FOLD_INDEX, 20);
-    editor()->SendScintilla(QsciScintilla::SCI_SETMARGINSENSITIVEN, MARGIN_SCRIPT_FOLD_INDEX, 1);
-
-  editor()->SendScintilla(QsciScintilla::SCI_MARKERDEFINE, QsciScintilla::SC_MARKNUM_FOLDER, QsciScintilla::SC_MARK_BOXPLUS);
-  editor()->SendScintilla(QsciScintilla::SCI_MARKERDEFINE, QsciScintilla::SC_MARKNUM_FOLDEROPEN, QsciScintilla::SC_MARK_BOXMINUS);
-  editor()->SendScintilla(QsciScintilla::SCI_MARKERDEFINE, QsciScintilla::SC_MARKNUM_FOLDEREND, QsciScintilla::SC_MARK_EMPTY);
-  editor()->SendScintilla(QsciScintilla::SCI_MARKERDEFINE, QsciScintilla::SC_MARKNUM_FOLDERMIDTAIL, QsciScintilla::SC_MARK_EMPTY);
-  editor()->SendScintilla(QsciScintilla::SCI_MARKERDEFINE, QsciScintilla::SC_MARKNUM_FOLDEROPENMID, QsciScintilla::SC_MARK_EMPTY);
-  editor()->SendScintilla(QsciScintilla::SCI_MARKERDEFINE, QsciScintilla::SC_MARKNUM_FOLDERSUB, QsciScintilla::SC_MARK_EMPTY);
-  editor()->SendScintilla(QsciScintilla::SCI_MARKERDEFINE, QsciScintilla::SC_MARKNUM_FOLDERTAIL, QsciScintilla::SC_MARK_EMPTY);
-  //editor()->SendScintilla(QsciScintilla::SCI_SETFOLDFLAGS, 16, 0); // 16  	Draw line below if not expanded
-
+	std::cout << start;
 
     delete [] data;
     if(source.isEmpty())
         return;
 }
+
 void ScadLexer::fold(int start, int end)
 {
     char chNext = editor()->SendScintilla(QsciScintilla::SCI_GETCHARAT, start);
@@ -83,11 +70,9 @@ void ScadLexer::fold(int start, int end)
 	atEOL = ((ch == '\r' && chNext != '\n') || (ch == '\n'));
 
 	if (ch == '{') {
-	std::cout << "open" <<std::endl;
 		levelCurrent++;
 	}
 	if (ch == '}') {
-	std::cout << "closed" <<std::endl;
 		levelCurrent--;
 	}
 	if (atEOL || (i == (end-1))) {
@@ -99,7 +84,6 @@ void ScadLexer::fold(int start, int end)
 
 		if ( lev != editor()->SendScintilla(QsciScintilla::SCI_GETFOLDLEVEL, lineCurrent)) {
 		  editor()->SendScintilla(QsciScintilla::SCI_SETFOLDLEVEL, lineCurrent , lev );
-			std::cout << "line: "<<lineCurrent<<" lev: "<<lev<<std::endl;
 		}
 
 		lineCurrent++;
