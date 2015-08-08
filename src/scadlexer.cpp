@@ -61,6 +61,7 @@ void ScadLexer::fold(int start, int end)
     int levelCurrent = levelPrev;
     char ch;
     bool atEOL;
+    bool style, startstyle;
 
     for (int i = start; i < end; i++)
     {
@@ -69,11 +70,15 @@ void ScadLexer::fold(int start, int end)
 
 	atEOL = ((ch == '\r' && chNext != '\n') || (ch == '\n'));
 
-	if (ch == '{') {
+	style = (editor()->SendScintilla(QsciScintilla::SCI_GETSTYLEAT, i-1) == 10);
+	startstyle = (editor()->SendScintilla(QsciScintilla::SCI_GETSTYLEAT, i) == 10);
+
+	if ((ch == '{') || (ch == '[') || ((!style) && (startstyle))) {
 		levelCurrent++;
-	} else 	if (ch == '}') {
+	} else 	if ((ch == '}') || (ch == ']') || ((style) && (!startstyle))) {
 		levelCurrent--;
 	}
+        
 	if (atEOL || (i == (end-1))) {
 		int lev = levelPrev;
 	
@@ -122,7 +127,7 @@ void ScadLexer::highlighting(int start, const std::string& input, lexertl::smatc
 	QString word = QString::fromStdString(token);
 	startStyling(start + std::distance(input.begin(), results.start));
 	setStyling(word.length(), style);
-    
+ 	std::cout << "style: "<<style<<std::endl;   
 }
 
 
