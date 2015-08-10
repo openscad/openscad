@@ -62,17 +62,18 @@ void ScadLexer::fold(int start, int end)
     char ch;
     bool atEOL;
     bool style, startstyle;
-
+    int line;
     for (int i = start; i < end; i++)
     {
 	ch = chNext;
 	chNext = editor()->SendScintilla(QsciScintilla::SCI_GETCHARAT, i+1);
-
+	
 	atEOL = ((ch == '\r' && chNext != '\n') || (ch == '\n'));
 
 	style = (editor()->SendScintilla(QsciScintilla::SCI_GETSTYLEAT, i-1) == 10);
 	startstyle = (editor()->SendScintilla(QsciScintilla::SCI_GETSTYLEAT, i) == 10);
 
+        line = editor()->SendScintilla(QsciScintilla::SCI_LINEFROMPOSITION, i);
 	if ((ch == '{') || (ch == '[') || ((!style) && (startstyle))) {
 		levelCurrent++;
 	} else 	if ((ch == '}') || (ch == ']') || ((style) && (!startstyle))) {
@@ -92,18 +93,26 @@ void ScadLexer::fold(int start, int end)
 
 		lineCurrent++;
 		levelPrev = levelCurrent ;
+
+		int indent = editor()->SendScintilla(QsciScintilla::SCI_GETLINEINDENTATION, line-1);
+		if(indent >= 1 && ch == ']'){
+			editor()->SendScintilla(QsciScintilla::SCI_SETLINEINDENTATION, line, 0.1);
+		}
+
 	}
      }
         int flagsNext = editor()->SendScintilla(QsciScintilla::SCI_GETFOLDLEVEL, lineCurrent) & QsciScintilla::SC_FOLDLEVELNUMBERMASK;
 	editor()->SendScintilla(QsciScintilla::SCI_SETFOLDLEVEL, lineCurrent, levelPrev | flagsNext);
+	
 
 }
+
 
 const char *ScadLexer::blockStart(int *style) const
 {
     if (style)
         *style = 11;
-    return "{";
+    return "{ [";
 }
 
 
