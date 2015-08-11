@@ -6,3 +6,4 @@ Icon=openscad
 Exec=openscad %f
 MimeType=application/x-openscad;
 Categories=Graphics;3DGraphics;Engineering;
+Keywords=3d;solid;geometry;csg;model;stl;
