@@ -993,7 +993,7 @@ msgid "PolySet Cache size"
 msgstr "Tamaño de cache de PolySet"
 
 #: objects/ui_Preferences.h:1159
-msgid "Allow to open multiple documents"
+msgid "Allow opening multiple documents"
 msgstr "Permitir a abrir varios documentos"
 
 #: objects/ui_Preferences.h:1160
