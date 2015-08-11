@@ -53,6 +53,12 @@ void ScadLexer::styleText(int start, int end)
     if(source.isEmpty())
         return;
 }
+
+void ScadLexer::autoScroll(int line)
+{
+    editor()->SendScintilla(QsciScintilla::SCI_LINESCROLL, 1, line);
+    
+}
 void ScadLexer::fold(int start, int end)
 {
     char chNext = editor()->SendScintilla(QsciScintilla::SCI_GETCHARAT, start);

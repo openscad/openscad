@@ -211,6 +211,7 @@ void ScintillaEditor::highlightError(int error_pos)
 	qsci->lineIndexFromPosition(error_pos, &line, &index);
 	qsci->fillIndicatorRange(line, index, line, index + 1, indicatorNumber);
 	qsci->markerAdd(line, markerNumber);
+	lexer->autoScroll(line);
 }
 
 void ScintillaEditor::unhighlightLastError()
