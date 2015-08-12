@@ -54,10 +54,10 @@ void ScadLexer::styleText(int start, int end)
         return;
 }
 
-void ScadLexer::autoScroll(int line)
+void ScadLexer::autoScroll(int error_pos)
 {
-    editor()->SendScintilla(QsciScintilla::SCI_LINESCROLL, 1, line);
-    
+    editor()->SendScintilla(QsciScintilla::SCI_GOTOPOS, error_pos);
+    editor()->SendScintilla(QsciScintilla::SCI_SCROLLCARET);
 }
 void ScadLexer::fold(int start, int end)
 {
@@ -99,12 +99,6 @@ void ScadLexer::fold(int start, int end)
 
 		lineCurrent++;
 		levelPrev = levelCurrent ;
-
-		int indent = editor()->SendScintilla(QsciScintilla::SCI_GETLINEINDENTATION, line-1);
-		if(indent >= 1 && ch == ']'){
-			editor()->SendScintilla(QsciScintilla::SCI_SETLINEINDENTATION, line, 0.1);
-		}
-
 	}
      }
         int flagsNext = editor()->SendScintilla(QsciScintilla::SCI_GETFOLDLEVEL, lineCurrent) & QsciScintilla::SC_FOLDLEVELNUMBERMASK;

@@ -40,7 +40,7 @@ public:
 	const char *keywords(int set) const;	
 
     	void styleText(int start, int end);
-	void autoScroll(int line);
+	void autoScroll(int error_pos);
 	int getStyleAt(int pos);
 	void fold(int, int);
         void setKeywords(int set, const std::string& keywords);
