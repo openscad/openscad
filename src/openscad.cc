@@ -381,17 +381,24 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	AbstractNode *absolute_root_node;
 	shared_ptr<const Geometry> root_geom;
 
-	handle_dep(filename.c_str());
+	std::string text, parentpath;
+	if (filename != "-") {
+	  handle_dep(filename);
 
-	std::ifstream ifs(filename.c_str());
-	if (!ifs.is_open()) {
-		PRINTB("Can't open input file '%s'!\n", filename.c_str());
-		return 1;
+	  std::ifstream ifs(filename.c_str());
+	  if (!ifs.is_open()) {
+	    PRINTB("Can't open input file '%s'!\n", filename.c_str());
+	    return 1;
+	  }
+	  text = std::string((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+	  fs::path abspath = boosty::absolute(filename);
+	  parentpath = boosty::stringy(abspath.parent_path());
+	}else{
+	  text = std::string((std::istreambuf_iterator<char>(std::cin)), std::istreambuf_iterator<char>());
+	  parentpath = boosty::stringy(original_path);
 	}
-	std::string text((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 	text += "\n" + commandline_commands;
-	fs::path abspath = boosty::absolute(filename);
-	std::string parentpath = boosty::stringy(abspath.parent_path());
+
 	root_module = parse(text.c_str(), parentpath.c_str(), false);
 	if (!root_module) {
 		PRINTB("Can't parse file '%s'!\n", filename.c_str());
