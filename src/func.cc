@@ -988,50 +988,50 @@ ValuePtr builtin_cross(const Context *, const EvalContext *evalctx)
 	return ValuePtr(result);
 }
 
-ValuePtr builtin_unit(const Context *, const EvalContext *evalctx)
+ValuePtr builtin_unit_vector(const Context *, const EvalContext *evalctx)
 {
-    if (evalctx->numArgs() == 1) {
-        ValuePtr val = evalctx->getArgValue(0);
-        if (val->type() == Value::VECTOR) {
-            double sum = 0;
-            Value::VectorType v = val->toVector();
-            size_t n = v.size();
-            if (n==0) {
-                PRINT("WARNING: Incorrect arguments to unit(): vector has no dimension");
-                return ValuePtr::undefined;
-            }
-            for (size_t i = 0; i < n; i++) {
-                if (v[i].type() == Value::NUMBER) {
-                    // sum += pow(v[i].toDouble(),2);
-                    register double x = v[i].toDouble();
-                    sum += x*x;
-                } else {
-                    PRINT("WARNING: Incorrect arguments to unit(): not a number");
-                    return ValuePtr::undefined;
-                }
-            }
-            if (sum==0.0) { // return a vector with the first value as 1 and the rest as 0
-                Value::VectorType result;
-                result.push_back(Value(1.0));
-                for (size_t i = 1; i < n; i++)
-                    result.push_back(Value(0.0));
-                return ValuePtr(result);
-            }
-            double length = sqrt(sum);
-            Value::VectorType result;
-            for (size_t i = 0; i < n; i++) {
-                double x = v[i].toDouble()/length;
-                result.push_back(Value(x));
-            }
-            return ValuePtr(result);
-        } else {
-            PRINT("WARNING: Invalid parameter type for unit(): expected vector");
-            return ValuePtr::undefined;
-        }
-    } else {
-        PRINT("WARNING: Invalid number of parameters for unit()");
-        return ValuePtr::undefined;
-    }
+	if (evalctx->numArgs() == 1) {
+		ValuePtr val = evalctx->getArgValue(0);
+		if (val->type() == Value::VECTOR) {
+			double sum = 0;
+			Value::VectorType v = val->toVector();
+			size_t n = v.size();
+			if (n==0) {
+				PRINT("WARNING: Incorrect arguments to unit_vector(): vector has no dimension");
+				return ValuePtr::undefined;
+			}
+			for (size_t i = 0; i < n; i++) {
+				if (v[i].type() == Value::NUMBER) {
+					// sum += pow(v[i].toDouble(),2);
+					register double x = v[i].toDouble();
+					sum += x*x;
+				} else {
+					PRINT("WARNING: Incorrect arguments to unit_vector(): not a number");
+					return ValuePtr::undefined;
+				}
+			}
+			if (sum==0.0) { // return a vector with the first value as 1 and the rest as 0
+				Value::VectorType result;
+				result.push_back(Value(1.0));
+				for (size_t i = 1; i < n; i++)
+					result.push_back(Value(0.0));
+				return ValuePtr(result);
+			}
+			double length = sqrt(sum);
+			Value::VectorType result;
+			for (size_t i = 0; i < n; i++) {
+				double x = v[i].toDouble()/length;
+				result.push_back(Value(x));
+			}
+			return ValuePtr(result);
+		} else {
+			PRINT("WARNING: Invalid parameter type for unit_vector(): expected vector");
+			return ValuePtr::undefined;
+		}
+	} else {
+		PRINT("WARNING: Invalid number of parameters for unit_vector()");
+		return ValuePtr::undefined;
+	}
 }
 
 void register_builtin_functions()
@@ -1066,6 +1066,6 @@ void register_builtin_functions()
 	Builtins::init("version_num", new BuiltinFunction(&builtin_version_num));
 	Builtins::init("norm", new BuiltinFunction(&builtin_norm));
 	Builtins::init("cross", new BuiltinFunction(&builtin_cross));
-    Builtins::init("unit", new BuiltinFunction(&builtin_unit));
-    Builtins::init("parent_module", new BuiltinFunction(&builtin_parent_module));
+	Builtins::init("unit_vector", new BuiltinFunction(&builtin_unit_vector));
+	Builtins::init("parent_module", new BuiltinFunction(&builtin_parent_module));
 }
