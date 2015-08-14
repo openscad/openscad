@@ -29,14 +29,6 @@ void Lex::rules(){
 
 
 	rules_.push_state("COMMENT");
-	rules_.push_state("MODIFIER");
-	rules_.push_state("MODIFIER2");
-	rules_.push_state("MODIFIER3");
-	rules_.push_state("MODIFIER4");
-	rules_.push_state("BLOCK");
-	rules_.push_state("BLOCK2");
-	rules_.push_state("BLOCK3");
-	rules_.push_state("BLOCK4");
 	defineRules(keywords, keywords_count, ekeyword);
 	defineRules(transformations, transformations_count, etransformation);
 	defineRules(booleans, booleans_count, eboolean);
@@ -47,34 +39,6 @@ void Lex::rules(){
 	rules_.push("[0-9]+", enumber);
 	rules_.push("[a-zA-Z0-9_]+", evariable);
 	rules_.push("[$][a-zA-Z0-9_]+", especialVariable);
-
-	rules_.push("INITIAL", "#", 12, "MODIFIER");
-	rules_.push("MODIFIER","[^;\\{]+",12,  ".");
-	rules_.push("MODIFIER","\\{", 13, "BLOCK");
-	rules_.push("BLOCK", "[^\\}]+",13,".");	
-	rules_.push("BLOCK", "\\}", 13, "INITIAL");
-	rules_.push("MODIFIER", ";", 12, "INITIAL");
-
-	rules_.push("INITIAL", "!", 14,"MODIFIER2");
-	rules_.push("MODIFIER2","[^;\\{]+",14, ".");
-	rules_.push("MODIFIER2","[\\{]", 15, "BLOCK2");
-	rules_.push("BLOCK2", "[^\\}]+",15, ".");	
-	rules_.push("BLOCK2", "[\\}]", 15, "INITIAL");
-	rules_.push("MODIFIER2", ";", 14, "INITIAL");
-
-	rules_.push("INITIAL", "[*]", 16,"MODIFIER3");
-	rules_.push("MODIFIER3","[^;\\{]+", 16,"MODIFIER3");
-	rules_.push("MODIFIER3","[\\{]", 17,"BLOCK3");
-	rules_.push("BLOCK3", "[^\\}]+" , 17,"BLOCK3");	
-	rules_.push("BLOCK3", "[\\}]", 17, "INITIAL");
-	rules_.push("MODIFIER3", ";", 16, "INITIAL");
-
-	rules_.push("INITIAL", "%", 18,"MODIFIER4");
-	rules_.push("MODIFIER4","[^;\\{]+", 18,"MODIFIER4");
-	rules_.push("MODIFIER4","[\\{]", 19,"BLOCK4");
-	rules_.push("BLOCK4", "[^\\}]+" , 19,"BLOCK4");	
-	rules_.push("BLOCK4", "[\\}]", 19, "INITIAL");
-	rules_.push("MODIFIER4", ";", 18, "INITIAL");
 
 	rules_.push("INITIAL", "\"/*\"",  ecomment, "COMMENT");
 	rules_.push("COMMENT", "[^*]+|.", ecomment,  "COMMENT");
@@ -100,43 +64,9 @@ void Lex::lex_results(const std::string& input, int start, LexInterface* const o
 	lexertl::smatch results (input.begin(), input.end());
 
 	int isstyle = obj->getStyleAt(start-1);
-	switch(isstyle)
+	if(isstyle == 10)
 	{
-		case 10:
 		 results.state = 1;
-		break;
-
-		case 14:
-		 results.state = 3;
-		break;
-
-		case 15:
-		 results.state = 7;
-		break;
-
-		case 12:
-		 results.state = 2;
-		break;
-
-		case 13:
-		 results.state = 6;
-		break;
-	
-		case 16:
-		 results.state = 4;
-		break;
-
-		case 17:
-		 results.state = 8;
-		break;
-
-		case 18:
-		 results.state = 5;
-		break;
-
-		case 19:
-		 results.state = 9;
-		break;
 
 	}
 	lexertl::lookup(sm, results);	

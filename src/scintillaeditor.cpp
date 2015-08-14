@@ -276,13 +276,6 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 		// Keywords must be set before the lexer is attached to QScintilla
 		// as they seem to be read and cached at attach time.
 		boost::optional<const boost::property_tree::ptree&> keywords = pt.get_child_optional("keywords");
-		if (keywords.is_initialized()) {
-			l->setKeywords(1, readString(keywords.get(), "keyword-set1", ""));
-			l->setKeywords(2, readString(keywords.get(), "keyword-set2", ""));
-			l->setKeywords(3, readString(keywords.get(), "keyword-set-doc", ""));
-			l->setKeywords(4, readString(keywords.get(), "keyword-set3", ""));
-		}
-
 		qsci->setLexer(l);
 		delete lexer;
 		lexer = l;

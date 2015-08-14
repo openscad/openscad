@@ -4,30 +4,6 @@ ScadLexer::ScadLexer(QObject *parent) : QsciLexerCustom(parent), LexInterface()
 {
 	l = new Lex();
 	l->rules();
-
-	keywordSet[0] =
-		"if else let for module function true false undef "
-		"include use";
-
-	// -> Style: KeywordSet2 (func.cc)
-	keywordSet[1] =
-		"abs sign rands min max sin cos asin acos tan atan atan2 "
-		"round ceil floor pow sqrt exp len log ln str chr concat "
-		"lookup search version version_num norm cross parent_module "
-		"dxf_dim dxf_cross";
-
-	// -> used in comments only like /*! \cube */
-	keywordSet[2] =
-		"struct union enum fn var def typedef file namespace package "
-		"interface param see return class brief";
-
-	// -> Style: GlobalClass
-	keywordSet[3] =
-		"cube sphere cylinder polyhedron square circle polygon text "
-		"minkowski hull resize child echo union difference "
-		"intersection linear_extrude rotate_extrude import group  "
-		"projection render surface scale rotate mirror translate "
-		"multmatrix color offset ";
 }
 
 ScadLexer::~ScadLexer()
@@ -68,7 +44,6 @@ void ScadLexer::fold(int start, int end)
     char ch;
     bool atEOL;
     bool style, startstyle;
-    int line;
     for (int i = start; i < end; i++)
     {
 	ch = chNext;
@@ -79,7 +54,6 @@ void ScadLexer::fold(int start, int end)
 	style = (editor()->SendScintilla(QsciScintilla::SCI_GETSTYLEAT, i-1) == 10);
 	startstyle = (editor()->SendScintilla(QsciScintilla::SCI_GETSTYLEAT, i) == 10);
 
-        line = editor()->SendScintilla(QsciScintilla::SCI_LINEFROMPOSITION, i);
 	if ((ch == '{') || (ch == '[') || ((!style) && (startstyle))) {
 		levelCurrent++;
 	} else 	if ((ch == '}') || (ch == ']') || ((style) && (!startstyle))) {
@@ -136,7 +110,6 @@ void ScadLexer::highlighting(int start, const std::string& input, lexertl::smatc
 	QString word = QString::fromStdString(token);
 	startStyling(start + std::distance(input.begin(), results.start));
 	setStyling(word.length(), style);
- 	std::cout << "style: "<<style<<std::endl;   
 }
 
 
@@ -193,27 +166,4 @@ QString ScadLexer::description(int style) const
 const char *ScadLexer::language() const
 {
 	return "SCAD";
-}
-
-void ScadLexer::setKeywords(int set, const std::string& keywords)
-{
-	if ((set < 1) || (set > 4)) {
-		return;
-	}
-
-	std::string trimmedKeywords(keywords);
-        boost::algorithm::trim(trimmedKeywords);
-	if (trimmedKeywords.empty()) {
-		return;
-	}
-
-	keywordSet[set - 1] = trimmedKeywords;
-}
-
-const char *ScadLexer::keywords(int set) const
-{
-	if ((set < 1) || (set > 4)) {
-		return 0;
-	}
-	return keywordSet[set - 1].c_str();
 }

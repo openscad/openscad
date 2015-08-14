@@ -37,13 +37,11 @@ public:
 	ScadLexer(QObject *parent);
 	virtual ~ScadLexer();
 	const char *language() const;
-	const char *keywords(int set) const;	
 
     	void styleText(int start, int end);
 	void autoScroll(int error_pos);
 	int getStyleAt(int pos);
 	void fold(int, int);
-        void setKeywords(int set, const std::string& keywords);
 
     	const char *blockEnd(int *style = 0) const;
 	const char *blockStart(int *style = 0) const;
@@ -53,7 +51,6 @@ public:
 	void highlighting(int, const std::string&, lexertl::smatch);
         QString description(int style) const;
 private:
-        std::string keywordSet[4];
 	ScadLexer(const ScadLexer &);
 	ScadLexer &operator=(const ScadLexer &);
 	QStringList keywordsList;
