@@ -20,12 +20,11 @@ class lexer : public LexInterface
 	}
 	void highlighting(int start, const std::string& input, lexertl::smatch results)
 	{
-		output << "<" << results.state << ">" << results.str() <<"</"<< results.state<<">";
+		output << "<" << results.id << ">" << results.str() <<"</"<< results.id<<">";
 	}
 
 	int getStyleAt(int pos)
 	{
-	 	//int sstyle = editor()->SendScintilla(QsciScintilla::SCI_GETSTYLEAT, pos);
 		return 0;
 	}
 };
