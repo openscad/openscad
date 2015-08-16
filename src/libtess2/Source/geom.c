@@ -196,7 +196,10 @@ double Interpolate( double a, double x, double b, double y)
 
 #endif
 
-#define Swap(a,b)	if (1) { TESSvertex *t = a; a = b; b = t; } else
+void VSwap( TESSvertex *a, TESSvertex *b )
+{
+	TESSvertex *t = a; a = b; b = t;
+}
 
 void tesedgeIntersect( TESSvertex *o1, TESSvertex *d1,
 					  TESSvertex *o2, TESSvertex *d2,
@@ -216,9 +219,9 @@ void tesedgeIntersect( TESSvertex *o1, TESSvertex *d1,
 	* using the TransLeq ordering to find the intersection t-value.
 	*/
 
-	if( ! VertLeq( o1, d1 )) { Swap( o1, d1 ); }
-	if( ! VertLeq( o2, d2 )) { Swap( o2, d2 ); }
-	if( ! VertLeq( o1, o2 )) { Swap( o1, o2 ); Swap( d1, d2 ); }
+	if( ! VertLeq( o1, d1 )) { VSwap( o1, d1 ); }
+	if( ! VertLeq( o2, d2 )) { VSwap( o2, d2 ); }
+	if( ! VertLeq( o1, o2 )) { VSwap( o1, o2 ); VSwap( d1, d2 ); }
 
 	if( ! VertLeq( o2, d1 )) {
 		/* Technically, no intersection -- do our best */
@@ -239,9 +242,9 @@ void tesedgeIntersect( TESSvertex *o1, TESSvertex *d1,
 
 	/* Now repeat the process for t */
 
-	if( ! TransLeq( o1, d1 )) { Swap( o1, d1 ); }
-	if( ! TransLeq( o2, d2 )) { Swap( o2, d2 ); }
-	if( ! TransLeq( o1, o2 )) { Swap( o1, o2 ); Swap( d1, d2 ); }
+	if( ! TransLeq( o1, d1 )) { VSwap( o1, d1 ); }
+	if( ! TransLeq( o2, d2 )) { VSwap( o2, d2 ); }
+	if( ! TransLeq( o1, o2 )) { VSwap( o1, o2 ); VSwap( d1, d2 ); }
 
 	if( ! TransLeq( o2, d1 )) {
 		/* Technically, no intersection -- do our best */
