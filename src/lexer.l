@@ -41,10 +41,10 @@ namespace fs = boost::filesystem;
 #include "boosty.h"
 
 //isatty for visual c++ and mingw-cross-env
-#if defined __WIN32__ && ! defined _MSC_VER
-#include "unistd.h"
-#endif
-#if defined __WIN32__ || defined _MSC_VER
+//#if defined __MINGW32__ && ! defined _MSC_VER
+//#include "unistd.h"
+//#endif
+#if defined _MSC_VER
 extern "C" int __cdecl _isatty(int _FileHandle);
 #define isatty _isatty
 #endif
