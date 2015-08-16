@@ -31,6 +31,7 @@
 #include <assert.h>
 #include <sstream>
 #include <boost/foreach.hpp>
+#include <boost/numeric/conversion/cast.hpp>
 #include <boost/variant/apply_visitor.hpp>
 #include <boost/variant/static_visitor.hpp>
 #include <boost/format.hpp>
@@ -43,6 +44,20 @@
 
 Value Value::undefined;
 ValuePtr ValuePtr::undefined;
+
+static boost::uint32_t convert_to_uint32(const double d) {
+    boost::uint32_t ret = std::numeric_limits<boost::uint32_t>::max();
+
+    if (boost::math::isfinite(d)) {
+        try {
+            ret = boost::numeric_cast<boost::uint32_t>(d);
+        } catch (boost::bad_numeric_cast) {
+            // ignore, leaving the default max() value
+        }
+    }
+
+    return ret;
+}
 
 std::ostream &operator<<(std::ostream &stream, const Filename &filename)
 {
@@ -657,10 +672,10 @@ class bracket_visitor : public boost::static_visitor<Value>
 {
 public:
   Value operator()(const std::string &str, const double &idx) const {
-    int i = int(idx);
     Value v;
-    //Check that the index is positive and less than the size in bytes
-    if ((i >= 0) && (i < (int)str.size())) {
+
+    const boost::uint32_t i = convert_to_uint32(idx);
+    if (i < str.size()) {
 	  //Ensure character (not byte) index is inside the character/glyph array
 	  if( (unsigned) i < g_utf8_strlen( str.c_str(), str.size() ) )	{
 		  gchar utf8_of_cp[6] = ""; //A buffer for a single unicode character to be copied into
@@ -670,19 +685,19 @@ public:
 		  }
 		  v = std::string(utf8_of_cp);
 	  }
-      //      std::cout << "bracket_visitor: " <<  v << "\n";
     }
     return v;
   }
 
   Value operator()(const Value::VectorType &vec, const double &idx) const {
-    int i = int(idx);
-    if ((i >= 0) && (i < (int)vec.size())) return vec[int(idx)];
+    const boost::uint32_t i = convert_to_uint32(idx);
+    if (i < vec.size()) return vec[i];
     return Value::undefined;
   }
 
   Value operator()(const Value::RangeType &range, const double &idx) const {
-    switch(int(idx)) {
+    const boost::uint32_t i = convert_to_uint32(idx);
+    switch(i) {
     case 0: return Value(range.begin_val);
     case 1: return Value(range.step_val);
     case 2: return Value(range.end_val);
