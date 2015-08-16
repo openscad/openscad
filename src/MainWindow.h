@@ -91,6 +91,7 @@ protected:
 private slots:
 	void updatedFps();
 	void updateTVal();
+	void updateTVal(bool reverse);
         void updateMdiMode(bool mdi);
         void updateUndockMode(bool undockMode);
         void updateReorderMode(bool reorderMode);
@@ -227,6 +228,8 @@ public slots:
 	void viewModeShowCrosshairs();
 	void viewModeShowScaleProportional();
 	void viewModeAnimate();
+	void viewAnimateBack();
+	void viewAnimateFwd();
 	void viewAngleTop();
 	void viewAngleBottom();
 	void viewAngleLeft();
