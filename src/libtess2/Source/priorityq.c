@@ -334,7 +334,7 @@ void pqDeletePriorityQ( TESSalloc* alloc, PriorityQ *pq )
 
 #define LT(x,y)     (! LEQ(y,x))
 #define GT(x,y)     (! LEQ(x,y))
-void Swap(a,b)
+void Swap(PQkey **a, PQkey **b)
 {
 	PQkey *tmp = *a; *a = *b; *b = tmp;
 }
