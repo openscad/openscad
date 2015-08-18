@@ -80,7 +80,7 @@ if [ -e /etc/issue ]; then
  elif [ "`grep -i raspbian /etc/issue`" ]; then
   get_debian_deps
  elif [ "`grep -i mint /etc/issue`" ]; then
-  get_debian_deps
+  get_debian_7_deps
  elif [ "`grep -i suse /etc/issue`" ]; then
   get_opensuse_deps
  elif [ "`grep -i fedora /etc/issue`" ]; then
