@@ -51,13 +51,22 @@ public:
 
 OpenCSGRenderer::OpenCSGRenderer(CSGChain *root_chain, CSGChain *highlights_chain,
 																 CSGChain *background_chain, GLint *shaderinfo)
-	: root_chain(root_chain), highlights_chain(highlights_chain), 
-		background_chain(background_chain), shaderinfo(shaderinfo)
+	:   root_chain(root_chain),
+            highlights_chain(highlights_chain), 
+            background_chain(background_chain),
+            clippingPlane(0),
+            shaderinfo(shaderinfo)
 {
 }
 
-void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges) const
+void OpenCSGRenderer::draw(
+    bool         /*showfaces*/,
+    bool         showedges,
+    const double *_clippingPlane
+) const
 {
+        clippingPlane = _clippingPlane;
+
 	GLint *shaderinfo = this->shaderinfo;
 	if (!shaderinfo[0]) shaderinfo = NULL;
 	if (this->root_chain) {
@@ -71,20 +80,157 @@ void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges) const
 	}
 }
 
-void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo, 
-																		 bool highlight, bool background) const
-{
+static Geometry *makeClipCube() {
+
+    double x1 =  0.0;
+    double y1 = -1.0;
+    double z1 = -1.0;
+
+    double x2 =  2.0;
+    double y2 =  1.0;
+    double z2 =  1.0;
+
+    PolySet *p = new PolySet(3, true);
+
+    // top
+    p->append_poly();
+    p->append_vertex(x1, y1, z2);
+    p->append_vertex(x2, y1, z2);
+    p->append_vertex(x2, y2, z2);
+    p->append_vertex(x1, y2, z2);
+
+    // bottom
+    p->append_poly();
+    p->append_vertex(x1, y2, z1);
+    p->append_vertex(x2, y2, z1);
+    p->append_vertex(x2, y1, z1);
+    p->append_vertex(x1, y1, z1);
+
+    // side1
+    p->append_poly();
+    p->append_vertex(x1, y1, z1);
+    p->append_vertex(x2, y1, z1);
+    p->append_vertex(x2, y1, z2);
+    p->append_vertex(x1, y1, z2);
+
+    // side2
+    p->append_poly();
+    p->append_vertex(x2, y1, z1);
+    p->append_vertex(x2, y2, z1);
+    p->append_vertex(x2, y2, z2);
+    p->append_vertex(x2, y1, z2);
+
+    // side3
+    p->append_poly();
+    p->append_vertex(x2, y2, z1);
+    p->append_vertex(x1, y2, z1);
+    p->append_vertex(x1, y2, z2);
+    p->append_vertex(x2, y2, z2);
+
+    // side4
+    p->append_poly();
+    p->append_vertex(x1, y2, z1);
+    p->append_vertex(x1, y1, z1);
+    p->append_vertex(x1, y1, z2);
+    p->append_vertex(x1, y2, z2);
+
+    return p;
+}
+
+static boost::shared_ptr<const Geometry> kClipCubeGeometry(makeClipCube());
+
+static Eigen::Quaterniond getRotationTo(
+    const Eigen::Vector3d &dst,
+    const Eigen::Vector3d &src
+) {
+
+    Eigen::Vector3d v0 = src;
+    Eigen::Vector3d v1 = dst;
+    v0.normalize();
+    v1.normalize();
+
+    Eigen::Quaterniond q;
+    double d = v0.dot(v1);
+    if((1.0 - 1e-6)<=d) {
+        q.setIdentity();
+    } else if(d<((-1.0 + 1e-6))) {
+        Eigen::Vector3d axis = Vector3d(1.0, 0.0, 0.0).cross(src);
+        if(axis.norm()<1e-6) {
+            axis = Vector3d(0.0, 1.0, 0.0).cross(src);
+        }
+        axis.normalize();
+
+        Eigen::AngleAxisd angleAxis(M_PI, axis);
+        q = Eigen::Quaterniond(angleAxis);
+    } else {
+        double s = sqrt((1.0+d)*2.0);
+        double is = 1.0/s;
+
+        Eigen::Vector3d c = v0.cross(v1);
+        q.x() = c[0] * is;
+        q.y() = c[1] * is;
+        q.z() = c[2] * is;
+        q.w() =  0.5 * s;
+    }
+
+    q.normalize();
+    return q;
+}
+
+void OpenCSGRenderer::renderCSGChain(
+    CSGChain *chain,
+    GLint *shaderinfo, 
+    bool highlight,
+    bool background
+) const {
+
+    Transform3d tClip = Transform3d::Identity();
+    if(0!=clippingPlane) {
+
+        BoundingBox box = getBoundingBox();
+        double diag = box.diagonal().norm();
+
+        Transform3d s = Transform3d::Identity();
+        s.scale(Vector3d(diag, diag, diag));
+
+        Transform3d t = Transform3d::Identity();
+        t.translate(Vector3d(clippingPlane[3], 0.0, 0.0));
+
+        Vector3d x(1, 0, 0);
+        Vector3d v(clippingPlane[0], clippingPlane[1], clippingPlane[2]);
+        Eigen::Quaterniond q = getRotationTo(v, x);
+        Eigen::Matrix3d tmp = q.toRotationMatrix();
+        Transform3d r(tmp);
+
+        tClip = (r*t*s);
+    }
+
 	std::vector<OpenCSG::Primitive*> primitives;
 	size_t j = 0;
 	for (size_t i = 0;; i++) {
 		bool last = i == chain->objects.size();
 		const CSGChainObject &i_obj = last ? chain->objects[i-1] : chain->objects[i];
 		if (last || i_obj.type == CSGTerm::TYPE_UNION) {
-			if (j+1 != i) {
-				 OpenCSG::render(primitives);
-				glDepthFunc(GL_EQUAL);
+
+                        OpenCSGPrim *clipCube = 0;
+                        if(0<primitives.size() && 0!=clippingPlane) {
+
+                            clipCube = new OpenCSGPrim(OpenCSG::Subtraction, 2);
+                            clipCube->m = tClip;
+                            clipCube->geom = kClipCubeGeometry;
+                            clipCube->csgmode = csgmode_e(CSGMODE_NORMAL | CSGMODE_DIFFERENCE);
+                            primitives.push_back(clipCube);
+                        }
+
+			if (j+1!=i || 0!=clippingPlane) {
+                            OpenCSG::render(primitives);
+                            glDepthFunc(GL_EQUAL);
 			}
-			if (shaderinfo) glUseProgram(shaderinfo[0]);
+
+			if (shaderinfo) {
+                            glUseProgram(shaderinfo[0]);
+                        }
+
 			for (; j < i; j++) {
 				const CSGChainObject &j_obj = chain->objects[j];
 				const Color4f &c = j_obj.color;
@@ -125,6 +271,23 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo,
 				render_surface(j_obj.geom, csgmode, j_obj.matrix, shaderinfo);
 				glPopMatrix();
 			}
+
+                        if(0!=clipCube) {
+                            glDepthFunc(GL_EQUAL);
+                            //glDepthFunc(GL_LEQUAL);
+                            glPushMatrix();
+                                Color4f clip(0x7F, 0x7F, 0xFF, 0xFF);
+                                setColor(COLORMODE_CUTOUT, clip.data(), shaderinfo);
+                                glMultMatrixd(clipCube->m.data());
+                                render_surface(
+                                    clipCube->geom,
+                                    clipCube->csgmode,
+                                    clipCube->m,
+                                    shaderinfo
+                                );
+                            glPopMatrix();
+                        }
+
 			if (shaderinfo) glUseProgram(0);
 			for (unsigned int k = 0; k < primitives.size(); k++) {
 				delete primitives[k];

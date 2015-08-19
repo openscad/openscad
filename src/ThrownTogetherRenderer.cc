@@ -42,7 +42,7 @@ ThrownTogetherRenderer::ThrownTogetherRenderer(CSGChain *root_chain,
 {
 }
 
-void ThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges) const
+void ThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges, const double *clippingPlane) const
 {
 	PRINTD("Thrown draw");
 	if (this->root_chain) {

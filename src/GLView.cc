@@ -6,6 +6,7 @@
 #include "mathc99.h"
 #include "printutils.h"
 #include "renderer.h"
+#include "glQuickText.h"
 
 #ifdef _WIN32
 #include <GL/wglew.h>
@@ -27,6 +28,8 @@ GLView::GLView()
   showcrosshairs = false;
   showscale = false;
   renderer = NULL;
+  clipMode = kClipN;
+  clipChanging = false;
   colorscheme = &ColorMap::inst()->defaultColorScheme();
   cam = Camera();
   far_far_away = RenderSettings::inst()->far_gl_clip_limit;
@@ -163,6 +166,7 @@ void GLView::paintGL()
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
   setupCamera();
+
   if (this->cam.type) {
     // Only for GIMBAL cam
     // The crosshair should be fixed at the center of the viewport...
@@ -181,12 +185,87 @@ void GLView::paintGL()
   glLineWidth(2);
   glColor3d(1.0, 0.0, 0.0);
 
+  double eqn[4];
+  int clipChar = ' ';
+  double clipAbsPosition = 0.0;
   if (this->renderer) {
+
+    if(kClipN!=clipMode) {
+
+        eqn[0] = 0.0;
+        eqn[1] = 0.0;
+        eqn[2] = 0.0;
+        eqn[3] = 0.0;
+        eqn[(int)clipMode] = 1.0;
+
+        BoundingBox box = this->renderer->getBoundingBox();
+        double lo = box.min()[(int)clipMode];
+        double hi = box.max()[(int)clipMode];
+        clipChar = 'X' + (int)clipMode;
+
+        double fatLo = lo - 0.01*(hi-lo);
+        double fatHi = hi + 0.01*(hi-lo);
+        if(fabs(fatLo-fatHi)<1e-10) {
+            fatLo -= 1.0;
+            fatHi += 1.0;
+        }
+
+        clipAbsPosition = eqn[3] = (fatLo + clipPosition*(fatHi-fatLo));
+        if(clipAbsPosition<lo) {
+            clipAbsPosition = lo;
+        }
+        if(hi<clipAbsPosition) {
+            clipAbsPosition = hi;
+        }
+    }
+
 #if defined(ENABLE_OPENCSG)
     // FIXME: This belongs in the OpenCSG renderer, but it doesn't know about this ID yet
     OpenCSG::setContext(this->opencsg_id);
 #endif
-    this->renderer->draw(showfaces, showedges);
+
+    this->renderer->draw(
+        showfaces,
+        showedges,
+        (kClipN!=clipMode ? eqn : 0)
+    );
+
+    if(kClipN!=clipMode && clipChanging) {
+
+        glDepthFunc(GL_ALWAYS);
+        glMatrixMode(GL_MODELVIEW);
+        glPushMatrix();
+            glLoadIdentity();
+
+            glMatrixMode(GL_PROJECTION);
+            glPushMatrix();
+                glLoadIdentity();
+
+                GLint viewport[4];
+                glGetIntegerv(GL_VIEWPORT, viewport);
+                glOrtho(
+                    viewport[0], viewport[0] + viewport[2],
+                    viewport[1], viewport[1] + viewport[3],
+                    -1.0,  1.0
+                );
+
+                glColor3ub(0x0, 0x0, 0x0);
+                glQuickText::printfAt(
+                    10.0,
+                    10.0,
+                    0.0,
+                    1.0,
+                    "Clip at %c = %.5f",
+                    clipChar,
+                    clipAbsPosition
+                );
+            glMatrixMode(GL_PROJECTION);
+            glPopMatrix();
+
+        glMatrixMode(GL_MODELVIEW);
+        glPopMatrix();
+    }
+
   }
 
   // Only for GIMBAL

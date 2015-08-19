@@ -6,16 +6,15 @@
 class OpenCSGRenderer : public Renderer
 {
 public:
-	OpenCSGRenderer(class CSGChain *root_chain, CSGChain *highlights_chain, 
-									CSGChain *background_chain, GLint *shaderinfo);
-	virtual void draw(bool showfaces, bool showedges) const;
+	OpenCSGRenderer(class CSGChain *root_chain, CSGChain *highlights_chain, CSGChain *background_chain, GLint *shaderinfo);
+	virtual void draw(bool showfaces, bool showedges, const double *clippingPlane) const;
 	virtual BoundingBox getBoundingBox() const;
 private:
-	void renderCSGChain(class CSGChain *chain, GLint *shaderinfo, 
-											bool highlight, bool background) const;
+	void renderCSGChain(class CSGChain *chain, GLint *shaderinfo, bool highlight, bool background) const;
 
 	CSGChain *root_chain;
 	CSGChain *highlights_chain;
 	CSGChain *background_chain;
+        mutable const double *clippingPlane;
 	GLint *shaderinfo;
 };

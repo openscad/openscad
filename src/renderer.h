@@ -14,7 +14,7 @@ class Renderer
 public:
 	Renderer();
 	virtual ~Renderer() {}
-	virtual void draw(bool showfaces, bool showedges) const = 0;
+	virtual void draw(bool showfaces, bool showedges, const double *clippingPlane) const = 0;
 	virtual BoundingBox getBoundingBox() const = 0;
 	
 #define CSGMODE_DIFFERENCE_FLAG 0x10

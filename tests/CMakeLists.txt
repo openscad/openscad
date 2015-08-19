@@ -756,6 +756,7 @@ set(COMMON_SOURCES
 
 set(OFFSCREEN_SOURCES
   ../src/GLView.cc
+  ../src/glQuickText.cpp
   ../src/OffscreenView.cc
   ../src/${OFFSCREEN_CTX_SOURCE}
   ../src/${OFFSCREEN_IMGUTILS_SOURCE}
