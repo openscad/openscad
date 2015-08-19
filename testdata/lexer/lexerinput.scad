@@ -1,3 +1,4 @@
+start 100
 // difference_cube.scad - Example for difference() usage in OpenSCAD
 
 echo(version=version());
