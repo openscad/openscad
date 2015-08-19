@@ -186,6 +186,19 @@ bool Value::getDouble(double &v) const
   return false;
 }
 
+bool Value::getFiniteDouble(double &v) const
+{
+  double result;
+  if (!getDouble(result)) {
+    return false;
+  }
+  bool valid = boost::math::isfinite(result);
+  if (valid) {
+    v = result;
+  }
+  return valid;
+}
+
 class tostring_visitor : public boost::static_visitor<std::string>
 {
 public:
@@ -201,33 +214,12 @@ public:
     if (op1 == 0) {
       return "0"; // Don't return -0 (exactly -0 and 0 equal 0)
     }
-#ifdef OPENSCAD_TESTING
-    // Quick and dirty hack to work around floating point rounding differences
-    // across platforms for testing purposes.
-    std::stringstream tmp;
-    tmp.precision(12);
-    tmp.setf(std::ios_base::fixed);
-    tmp << op1;
-    std::string tmpstr = tmp.str();
-    size_t endpos = tmpstr.find_last_not_of('0');
-    if (tmpstr[endpos] == '.') endpos--;
-    tmpstr = tmpstr.substr(0, endpos+1);
-    size_t dotpos = tmpstr.find('.');
-    if (dotpos != std::string::npos) {
-      if (tmpstr.size() - dotpos > 12) tmpstr.erase(dotpos + 12);
-      while (tmpstr[tmpstr.size()-1] == '0') tmpstr.erase(tmpstr.size()-1);
-    }
-    if (tmpstr.compare("-0") == 0) tmpstr = "0";
-    tmpstr = two_digit_exp_format(tmpstr);
-    return tmpstr;
-#else
     // attempt to emulate Qt's QString.sprintf("%g"); from old OpenSCAD.
     // see https://github.com/openscad/openscad/issues/158
     std::stringstream tmp;
     tmp.unsetf(std::ios::floatfield);
     tmp << op1;
     return tmp.str();
-#endif
   }
 
   std::string operator()(const boost::blank &) const {
@@ -320,14 +312,25 @@ const Value::VectorType &Value::toVector() const
   else return empty;
 }
 
-bool Value::getVec2(double &x, double &y) const
+bool Value::getVec2(double &x, double &y, bool ignoreInfinite) const
 {
   if (this->type() != VECTOR) return false;
 
   const VectorType &v = toVector();
   
   if (v.size() != 2) return false;
-  return (v[0].getDouble(x) && v[1].getDouble(y));
+
+  double rx, ry;
+  bool valid = ignoreInfinite
+	  ? v[0].getFiniteDouble(rx) && v[1].getFiniteDouble(ry)
+	  : v[0].getDouble(rx) && v[1].getDouble(ry);
+
+  if (valid) {
+    x = rx;
+    y = ry;
+  }
+
+  return valid;
 }
 
 bool Value::getVec3(double &x, double &y, double &z, double defaultval) const
@@ -501,11 +504,8 @@ Value Value::multvecnum(const Value &vecval, const Value &numval)
   return Value(dstv);
 }
 
-Value Value::multmatvec(const Value &matrixval, const Value &vectorval)
+Value Value::multmatvec(const VectorType &matrixvec, const VectorType &vectorvec)
 {
-  const VectorType &matrixvec = matrixval.toVector();
-  const VectorType &vectorvec = vectorval.toVector();
-
   // Matrix * Vector
   VectorType dstv;
   for (size_t i=0;i<matrixvec.size();i++) {
@@ -525,10 +525,8 @@ Value Value::multmatvec(const Value &matrixval, const Value &vectorval)
   return Value(dstv);
 }
 
-Value Value::multvecmat(const Value &vectorval, const Value &matrixval)
+Value Value::multvecmat(const VectorType &vectorvec, const VectorType &matrixvec)
 {
-  const VectorType &vectorvec = vectorval.toVector();
-  const VectorType &matrixvec = matrixval.toVector();
   assert(vectorvec.size() == matrixvec.size());
   // Vector * Matrix
   VectorType dstv;
@@ -583,7 +581,9 @@ Value Value::operator*(const Value &v) const
       // Matrix * Matrix
       VectorType dstv;
       BOOST_FOREACH(const Value &srcrow, vec1) {
-        dstv.push_back(multvecmat(srcrow, vec2));
+          const VectorType &srcrowvec = srcrow.toVector();
+          if (srcrowvec.size() != vec2.size()) return Value::undefined;
+          dstv.push_back(multvecmat(srcrowvec, vec2));
       }
       return Value(dstv);
     }

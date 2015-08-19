@@ -37,4 +37,9 @@ echo(str("Testing alternate asymmetric matrix * matrix: ",mb5*ma5));
 
 echo(str("  Bounds check: ",ma5*ma4));
 
+ma6=[ [ 1, 2 ], undef ];
+mb6=[ [ 4 ], [ 5 ] ];
+echo(str("Testing matrix * matrix with undef elements: ",ma6*mb6));
+
+
 cube(1.0);

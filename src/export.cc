@@ -327,7 +327,7 @@ void exportFileByName(const class Geometry *root_geom, FileFormat format,
 {
 	std::ofstream fstream(name2open);
 	if (!fstream.is_open()) {
-		PRINTB("Can't open file \"%s\" for export", name2display);
+		PRINTB(_("Can't open file \"%s\" for export"), name2display);
 	} else {
 		bool onerror = false;
 		fstream.exceptions(std::ios::badbit|std::ios::failbit);
@@ -342,7 +342,7 @@ void exportFileByName(const class Geometry *root_geom, FileFormat format,
 			onerror = true;
 		}
 		if (onerror) {
-			PRINTB("ERROR: \"%s\" write error. (Disk full?)", name2display);
+			PRINTB(_("ERROR: \"%s\" write error. (Disk full?)"), name2display);
 		}
 	}
 }

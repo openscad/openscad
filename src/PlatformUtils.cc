@@ -113,7 +113,9 @@ std::string PlatformUtils::userLibraryPath()
 	try {
 		std::string pathstr = PlatformUtils::documentsPath();
 		if (pathstr=="") return "";
-		path = boosty::canonical(fs::path( pathstr ));
+		path = fs::path( pathstr );
+		if (!fs::exists(path)) return "";
+		path = boosty::canonical( path );
 		//PRINTB("path size %i",boosty::stringy(path).size());
 		//PRINTB("lib path found: [%s]", path );
 		if (path.empty()) return "";
@@ -134,7 +136,9 @@ std::string PlatformUtils::backupPath()
 	try {
 		std::string pathstr = PlatformUtils::documentsPath();
 		if (pathstr=="") return "";
-		path = boosty::canonical(fs::path( pathstr ));
+		path = fs::path( pathstr );
+		if (!fs::exists(path)) return "";
+		path = boosty::canonical( path );
 		if (path.empty()) return "";
 		path /= OPENSCAD_FOLDER_NAME;
 		path /= "backups";

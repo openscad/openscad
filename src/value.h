@@ -127,11 +127,12 @@ public:
 
   double toDouble() const;
   bool getDouble(double &v) const;
+  bool getFiniteDouble(double &v) const;
   bool toBool() const;
   std::string toString() const;
   std::string chrString() const;
   const VectorType &toVector() const;
-  bool getVec2(double &x, double &y) const;
+  bool getVec2(double &x, double &y, bool ignoreInfinite = false) const;
   bool getVec3(double &x, double &y, double &z, double defaultval = 0.0) const;
   RangeType toRange() const;
 
@@ -162,8 +163,8 @@ public:
 
 private:
   static Value multvecnum(const Value &vecval, const Value &numval);
-  static Value multmatvec(const Value &matrixval, const Value &vectorval);
-  static Value multvecmat(const Value &vectorval, const Value &matrixval);
+  static Value multmatvec(const VectorType &matrixvec, const VectorType &vectorvec);
+  static Value multvecmat(const VectorType &vectorvec, const VectorType &matrixvec);
 
   Variant value;
 };

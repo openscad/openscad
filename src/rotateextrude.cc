@@ -104,10 +104,7 @@ std::string RotateExtrudeNode::toString() const
 			"layer = " << QuotedString(this->layername) << ", "
 			"origin = [" << std::dec << this->origin_x << ", " << this->origin_y << "], "
 			"scale = " << this->scale << ", "
-#ifndef OPENSCAD_TESTING
-			// timestamp is needed for caching, but disturbs the test framework
 			<< "timestamp = " << (fs::exists(path) ? fs::last_write_time(path) : 0) << ", "
-#endif
 			;
 	}
 	stream <<
