@@ -248,6 +248,8 @@ MainWindow::MainWindow(const QString &filename)
 	this->opencsgRenderer = NULL;
 #endif
 	this->thrownTogetherRenderer = NULL;
+	this->clipSlider->setValue(10000);
+        this->qglview->clipMode = GLView::kClipN;
 
 	highlights_chain = NULL;
 	background_chain = NULL;
@@ -415,6 +417,15 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->viewActionHideToolBars, SIGNAL(triggered()), this, SLOT(hideToolbars()));
 	connect(this->viewActionHideEditor, SIGNAL(triggered()), this, SLOT(hideEditor()));
 	connect(this->viewActionHideConsole, SIGNAL(triggered()), this, SLOT(hideConsole()));
+
+        // Clipping plane bar
+	connect(this->clipRadioButtonX, SIGNAL(clicked()), this, SLOT(clippingPlaneChanged()));
+	connect(this->clipRadioButtonY, SIGNAL(clicked()), this, SLOT(clippingPlaneChanged()));
+	connect(this->clipRadioButtonZ, SIGNAL(clicked()), this, SLOT(clippingPlaneChanged()));
+
+	connect(this->clipSlider, SIGNAL(valueChanged(int)), this, SLOT(clippingPlaneChanged()));
+	connect(this->clipSlider, SIGNAL(sliderPressed()), this, SLOT(clippingPlaneChangeStart()));
+	connect(this->clipSlider, SIGNAL(sliderReleased()), this, SLOT(clippingPlaneChangeEnd()));
 
 	// Help menu
 	connect(this->helpActionAbout, SIGNAL(triggered()), this, SLOT(helpAbout()));
@@ -2515,6 +2526,36 @@ void MainWindow::hideConsole()
 	} else {
 		consoleDock->show();
 	}
+}
+
+void MainWindow::clippingPlaneChangeStart() {
+    qglview->clipChanging = true;
+    qglview->updateGL();
+}
+
+void MainWindow::clippingPlaneChangeEnd() {
+    qglview->clipChanging = false;
+    qglview->updateGL();
+}
+
+void MainWindow::clippingPlaneChanged()
+{
+    int mu = clipSlider->value();
+    int lo = clipSlider->minimum();
+    int hi = clipSlider->maximum();
+    double clipValue = (mu-lo)/(double)(hi-lo);
+
+    GLView::ClipMode clipMode =
+        hi==mu                        ? GLView::kClipN :
+        clipRadioButtonX->isChecked() ? GLView::kClipX :
+        clipRadioButtonY->isChecked() ? GLView::kClipY :
+        clipRadioButtonZ->isChecked() ? GLView::kClipZ :
+                                        GLView::kClipN
+        ;
+
+    qglview->clipMode = clipMode;
+    qglview->clipPosition = clipValue;
+    qglview->updateGL();
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent *event)
