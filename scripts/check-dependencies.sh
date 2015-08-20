@@ -108,6 +108,9 @@ fontconfig_sysver()
 freetype2_sysver()
 {
   freetype2path=$1/include/freetype2/freetype/freetype.h
+  if [ ! -e $freetype2path ]; then
+   freetype2path=$1/include/freetype2/freetype.h
+  fi
   if [ ! -e $freetype2path ]; then return; fi
   ftmajor=`grep "define  *FREETYPE_MAJOR  *[0-9.]*" $freetype2path | awk '{print $3}'`
   ftminor=`grep "define  *FREETYPE_MINOR  *[0-9.]*" $freetype2path | awk '{print $3}'`

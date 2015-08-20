@@ -102,8 +102,8 @@ get_ubuntu_14_deps()
 
 pacinstall()
 {
- # support for MSYS2 Windows(TM) install. Install packages but skip
- # packages that are already installed. 
+ # support function for MSYS2 Windows(TM) installs, see below. 
+ # Install $1 package but skip if it's already installed. 
  if [ ! "`pacman -Qs $1`" ]; then
   pacman -S --noconfirm $1
  #else
