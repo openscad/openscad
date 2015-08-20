@@ -152,6 +152,7 @@ unknown()
 
 try_using_etc_issue()
 {
+ try_result=1
  if [ ! -e /etc/issue ]; then
   try_result=0
  elif [ "`grep -i ubuntu.1[4-9] /etc/issue`" ]; then
@@ -189,6 +190,7 @@ try_using_etc_issue()
 
 try_using_uname()
 {
+ try_result=1
  if [ ! "`command -v uname`" ]; then
   try_result=0
  elif [ "`uname -a | grep -i x86_64.*Msys`" ]; then
@@ -206,6 +208,7 @@ try_using_uname()
 
 try_using_rpm()
 {
+ try_result=1
  if [ ! "`command -v rpm`" ]; then
   try_result=0
  elif [ "`rpm -qa | grep altlinux`" ]; then
