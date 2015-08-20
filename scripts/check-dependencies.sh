@@ -212,6 +212,10 @@ qscintilla2_sysver()
     QMAKE=qmake-qt4
   fi
   debug using qmake: $QMAKE
+  if [ ! $QMAKE ]; then
+    debug cant find QMAKE: $QMAKE, giving up on version.
+    return
+  fi
 
   qtincdir="`$QMAKE -query QT_INSTALL_HEADERS`"
   qscipath="$qtincdir/Qsci/qsciglobal.h"
