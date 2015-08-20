@@ -619,6 +619,11 @@ check_misc()
     echo "NetBSD: Please manually verify the X Sets have been installed"
   fi
 
+  if [ "`echo $MSYSTEM|grep MSYS`" ]; then
+    echo "On MSYS please use a MINGW64 or MINGW32 shell, not MSYS shell"
+    echo "Look under All Programs/All Apps, MSYS2"
+  fi
+
   if [ "`uname -a|grep -i darwin`" ]; then
 	sparkle=
 	libs="~/Library /Library"
