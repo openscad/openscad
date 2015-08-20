@@ -146,8 +146,10 @@ get_msys2_i686_deps()
 
 unknown()
 {
- echo "Unknown system type. Please install the dependency packages listed"
- echo "in README.md using your system's package manager"
+ echo $0
+ echo " Unable to detect the OS of this system. Cannot run script to"
+ echo " install dependency packages. Please check OpenSCAD's README.md"
+ echo " and install packages using your system's package manager" 
 }
 
 try_using_etc_issue()
