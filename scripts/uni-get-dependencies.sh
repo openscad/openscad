@@ -100,48 +100,41 @@ get_ubuntu_14_deps()
   apt-get -y install qt5-qmake
 }
 
+pacinstall()
+{
+ # support for MSYS2 Windows(TM) install. Install packages but skip
+ # packages that are already installed. 
+ if [ ! "`pacman -Qs $1`" ]; then
+  pacman -S --noconfirm $1
+ #else
+  #echo pacman -Qs $1 reports package already installed, skipping   
+ fi
+}
+
 get_msys2_x86_64_deps()
 {
  # for Windows(TM), see http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Microsoft_Windows
  pacman -Sy
- pacman -S --noconfirm git
- pacman -S --noconfirm make
- pacman -S --noconfirm mingw-w64-x86_64-freetype
- pacman -S --noconfirm mingw-w64-x86_64-fontconfig
- pacman -S --noconfirm mingw-w64-x86_64-harfbuzz
- pacman -S --noconfirm mingw-w64-x86_64-qt-creator
- pacman -S --noconfirm mingw-w64-x86_64-gdb
- pacman -S --noconfirm mingw-w64-x86_64-boost
- pacman -S --noconfirm mingw-w64-x86_64-cgal
- pacman -S --noconfirm mingw-w64-x86_64-eigen3
- pacman -S --noconfirm mingw-w64-x86_64-glew
- pacman -S --noconfirm mingw-w64-x86_64-qscintilla
- pacman -S --noconfirm mingw-w64-x86_64-opencsg
- pacman -S --noconfirm mingw-w64-x86_64-bison
- pacman -S --noconfirm mingw-w64-x86_64-pkg-config
- pacman -S --noconfirm mingw-w64-x86_64-cmake
+ for i in git make bison flex; do
+  pacinstall $i
+ done
+ for i in freetype fontconfig harfbuzz qt5 qt-creator boost cgal eigen3 \
+          glew qscintilla opencsg pkg-config cmake gdb; do
+   pacinstall mingw-w64-x86_64-$i
+ done
 }
 
 get_msys2_i686_deps()
 {
  # for Windows(TM), see http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Microsoft_Windows
  pacman -Sy
- pacman -S --noconfirm git
- pacman -S --noconfirm make
- pacman -S --noconfirm mingw-w64-i686-freetype
- pacman -S --noconfirm mingw-w64-i686-fontconfig
- pacman -S --noconfirm mingw-w64-i686-harfbuzz
- pacman -S --noconfirm mingw-w64-i686-qt-creator
- pacman -S --noconfirm mingw-w64-i686-gdb
- pacman -S --noconfirm mingw-w64-i686-boost
- pacman -S --noconfirm mingw-w64-i686-cgal
- pacman -S --noconfirm mingw-w64-i686-eigen3
- pacman -S --noconfirm mingw-w64-i686-glew
- pacman -S --noconfirm mingw-w64-i686-qscintilla
- pacman -S --noconfirm mingw-w64-i686-opencsg
- pacman -S --noconfirm mingw-w64-i686-bison
- pacman -S --noconfirm mingw-w64-i686-pkg-config
- pacman -S --noconfirm mingw-w64-i686-cmake
+ for i in git make bison flex; do
+  pacinstall $i
+ done
+ for i in freetype fontconfig harfbuzz qt5 qt-creator boost cgal eigen3 \
+          glew qscintilla opencsg pkg-config cmake gdb; do
+   pacinstall mingw-w64-i686-$i
+ done
 }
 
 unknown()

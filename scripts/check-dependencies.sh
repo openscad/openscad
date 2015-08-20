@@ -556,7 +556,7 @@ find_installed_version()
   # try to find/parse headers and/or binary output
   # break on the first match. (change the order to change precedence)
   if [ ! $fsv_tmp ]; then
-    for syspath in $OPENSCAD_LIBRARIES "/usr/local" "/opt/local" "/usr/pkg" "/usr"; do
+    for syspath in $OPENSCAD_LIBRARIES "/usr/local" "/opt/local" "/usr/pkg" "/usr" "/mingw64"; do
       if [ -e $syspath ]; then
         debug $depname"_sysver" $syspath
         eval $depname"_sysver" $syspath
