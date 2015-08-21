@@ -26,6 +26,22 @@ CONFIG(debug, debug|release) {
 	LIBS += -lqscintilla2
     } else {
 	win32: {
+            # for DEBUG build on MSYS2, check that we actually have debug
+            # version of qscintilla2 available. note the \msys64 prefix
+            # and \ slashes (/ wont work)
+            _MSYSTEM = $$(MSYSTEM)
+            contains( _MSYSTEM, MINGW64 ) {
+               dblib = \msys64\mingw64\bin\qscintilla2d.dll
+               !exists( $$dblib ) {
+                  error("cant find $$dblib (debug lib)")
+               }
+            }
+            contains( _MSYSTEM, MINGW32 ) {
+               dblib = \msys64\mingw32\bin\qscintilla2d.dll
+               !exists( $$dblib ) {
+                  error("cant find $$dblib (debug lib)")
+               }
+            }
 	    LIBS += -lqscintilla2d
 	} else {
 	    greaterThan(QT_MAJOR_VERSION, 4) {
