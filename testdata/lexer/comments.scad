@@ -1,6 +1,4 @@
-start 50
-// this is a comment
-
+start 0
 /* this
 is a
 multiline 
@@ -9,3 +7,5 @@ comment */
 /*
 also a comment
 */
+
+// this is a comment

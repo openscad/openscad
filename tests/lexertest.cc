@@ -43,7 +43,7 @@ int main(int argv, char* argc[]){
 	const string line = buffer.str();
 	const string subline = line.substr(0, string::npos);
 	string word = line.substr(6, '\n');
-	int start = atoi(word.c_str()) + 6;
+	int start = atoi(word.c_str()) + 8;
 	l.lex->lex_results(subline, start ,&l);
 	newfile.close();
 }	
