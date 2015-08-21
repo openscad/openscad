@@ -20,24 +20,8 @@ class lexer : public LexInterface
 	}
 	void highlighting(int start, const std::string& input, lexertl::smatch results)
 	{
-		int s = std::distance(input.begin(), results.start);
-		static int p = 0;
-		static bool flag = 0;
-		if (s == 0 && results.str() == "start"){
-			p = 6;
-			flag = 1;
-			std::cout << "ppp: "<<results.str()<<std::endl;
-		}
-			std::cout << "flag: "<< flag<<std::endl;
-			if(flag && s == 6){
-				std::cout<<s<<'\t'<<results.str()<<std::endl;
-				p = atoi(results.str().c_str());
-				std::cout << "sss:"<<p <<std::endl;
-				
-		}
-				std::cout << "ooo:"<<p <<std::endl;
-	
-		if(s >= p){
+		int token_pos = std::distance(input.begin(), results.start);
+		if(token_pos >= start){
 			output << "<" << results.id << ">" << results.str() <<"</"<< results.id<<">";
 		 } else {
 			output << results.str();
@@ -58,7 +42,8 @@ int main(int argv, char* argc[]){
 	buffer << newfile.rdbuf();
 	const string line = buffer.str();
 	const string subline = line.substr(0, string::npos);
-	int start = 50;
+	string word = line.substr(6, '\n');
+	int start = atoi(word.c_str()) + 6;
 	l.lex->lex_results(subline, start ,&l);
 	newfile.close();
 }	
