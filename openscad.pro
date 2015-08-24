@@ -521,7 +521,17 @@ target.path = $$PREFIX/bin/
 INSTALLS += target
 
 # Run translation update scripts as last step after linking the target
-QMAKE_POST_LINK += "$$_PRO_FILE_PWD_/scripts/translation-make.sh"
+POST_LINK_CMD = "$$_PRO_FILE_PWD_/scripts/translation-make.sh"
+win32 {
+  # on MSYS2, handle spaces in pathnames (ex if username is "Emmy Noether")
+  _MSYSTEM = $$(MSYSTEM)
+  contains(_MSYSTEM,MSYS) | contains(_MSYSTEM,MINGW64) | contains(_MSYSTEM,MINGW32) {
+    POST_LINK_CMD = ___QUOTE___"$$POST_LINK_CMD"___QUOTE___
+    POST_LINK_CMD = $$replace(POST_LINK_CMD,"___QUOTE___","\"")
+    POST_LINK_CMD = $$shell_path($$POST_LINK_CMD)
+  }
+}
+QMAKE_POST_LINK += $$POST_LINK_CMD
 
 # Create install targets for the languages defined in LINGUAS
 LINGUAS = $$cat(locale/LINGUAS)

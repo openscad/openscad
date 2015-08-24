@@ -108,6 +108,9 @@ fontconfig_sysver()
 freetype2_sysver()
 {
   freetype2path=$1/include/freetype2/freetype/freetype.h
+  if [ ! -e $freetype2path ]; then
+   freetype2path=$1/include/freetype2/freetype.h
+  fi
   if [ ! -e $freetype2path ]; then return; fi
   ftmajor=`grep "define  *FREETYPE_MAJOR  *[0-9.]*" $freetype2path | awk '{print $3}'`
   ftminor=`grep "define  *FREETYPE_MINOR  *[0-9.]*" $freetype2path | awk '{print $3}'`
@@ -212,6 +215,10 @@ qscintilla2_sysver()
     QMAKE=qmake-qt4
   fi
   debug using qmake: $QMAKE
+  if [ ! $QMAKE ]; then
+    debug cant find QMAKE: $QMAKE, giving up on version.
+    return
+  fi
 
   qtincdir="`$QMAKE -query QT_INSTALL_HEADERS`"
   qscipath="$qtincdir/Qsci/qsciglobal.h"
@@ -552,7 +559,7 @@ find_installed_version()
   # try to find/parse headers and/or binary output
   # break on the first match. (change the order to change precedence)
   if [ ! $fsv_tmp ]; then
-    for syspath in $OPENSCAD_LIBRARIES "/usr/local" "/opt/local" "/usr/pkg" "/usr"; do
+    for syspath in $OPENSCAD_LIBRARIES "/usr/local" "/opt/local" "/usr/pkg" "/usr" "/mingw64"; do
       if [ -e $syspath ]; then
         debug $depname"_sysver" $syspath
         eval $depname"_sysver" $syspath
@@ -610,6 +617,11 @@ check_misc()
 {
   if [ "`uname -a|grep -i netbsd`" ]; then
     echo "NetBSD: Please manually verify the X Sets have been installed"
+  fi
+
+  if [ "`echo $MSYSTEM|grep MSYS`" ]; then
+    echo "On MSYS please use a MINGW64 or MINGW32 shell, not MSYS shell"
+    echo "Look under All Programs/All Apps, MSYS2"
   fi
 
   if [ "`uname -a|grep -i darwin`" ]; then

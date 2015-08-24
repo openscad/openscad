@@ -100,62 +100,54 @@ get_ubuntu_14_deps()
   apt-get -y install qt5-qmake
 }
 
+pacinstall()
+{
+ # support function for MSYS2 Windows(TM) installs, see below. 
+ # Install $1 package but skip if it's already installed. 
+ if [ ! "`pacman -Qs $1`" ]; then
+  pacman -S --noconfirm $1
+ #else
+  #echo pacman -Qs $1 reports package already installed, skipping   
+ fi
+}
+
 get_msys2_x86_64_deps()
 {
  # for Windows(TM), see http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Microsoft_Windows
  pacman -Sy
- pacman -S --noconfirm git
- pacman -S --noconfirm make
- pacman -S --noconfirm mingw-w64-x86_64-freetype
- pacman -S --noconfirm mingw-w64-x86_64-fontconfig
- pacman -S --noconfirm mingw-w64-x86_64-harfbuzz
- pacman -S --noconfirm mingw-w64-x86_64-qt-creator
- pacman -S --noconfirm mingw-w64-x86_64-gdb
- pacman -S --noconfirm mingw-w64-x86_64-boost
- pacman -S --noconfirm mingw-w64-x86_64-cgal
- pacman -S --noconfirm mingw-w64-x86_64-eigen3
- pacman -S --noconfirm mingw-w64-x86_64-glew
- pacman -S --noconfirm mingw-w64-x86_64-qscintilla
- pacman -S --noconfirm mingw-w64-x86_64-opencsg
- pacman -S --noconfirm mingw-w64-x86_64-bison
- pacman -S --noconfirm mingw-w64-x86_64-pkg-config
- pacman -S --noconfirm mingw-w64-x86_64-cmake
- pacman -S --noconfirm mingw-w64-x86_64-imagemagick
- pacman -S --noconfirm mingw-w64-x86_64-python2
+ for i in git make bison flex; do
+  pacinstall $i
+ done
+ for i in freetype fontconfig harfbuzz qt5 qt-creator boost cgal eigen3 \
+          glew qscintilla opencsg pkg-config cmake gdb; do
+   pacinstall mingw-w64-x86_64-$i
+ done
 }
 
 get_msys2_i686_deps()
 {
  # for Windows(TM), see http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Microsoft_Windows
  pacman -Sy
- pacman -S --noconfirm git
- pacman -S --noconfirm make
- pacman -S --noconfirm mingw-w64-i686-freetype
- pacman -S --noconfirm mingw-w64-i686-fontconfig
- pacman -S --noconfirm mingw-w64-i686-harfbuzz
- pacman -S --noconfirm mingw-w64-i686-qt-creator
- pacman -S --noconfirm mingw-w64-i686-gdb
- pacman -S --noconfirm mingw-w64-i686-boost
- pacman -S --noconfirm mingw-w64-i686-cgal
- pacman -S --noconfirm mingw-w64-i686-eigen3
- pacman -S --noconfirm mingw-w64-i686-glew
- pacman -S --noconfirm mingw-w64-i686-qscintilla
- pacman -S --noconfirm mingw-w64-i686-opencsg
- pacman -S --noconfirm mingw-w64-i686-bison
- pacman -S --noconfirm mingw-w64-i686-pkg-config
- pacman -S --noconfirm mingw-w64-i686-cmake
- pacman -S --noconfirm mingw-w64-i686-imagemagick
- pacman -S --noconfirm mingw-w64-i686-python2
+ for i in git make bison flex; do
+  pacinstall $i
+ done
+ for i in freetype fontconfig harfbuzz qt5 qt-creator boost cgal eigen3 \
+          glew qscintilla opencsg pkg-config cmake gdb; do
+   pacinstall mingw-w64-i686-$i
+ done
 }
 
 unknown()
 {
- echo "Unknown system type. Please install the dependency packages listed"
- echo "in README.md using your system's package manager"
+ echo $0
+ echo " Unable to detect the OS of this system. Cannot run script to"
+ echo " install dependency packages. Please check OpenSCAD's README.md"
+ echo " and install packages using your system's package manager" 
 }
 
 try_using_etc_issue()
 {
+ try_result=1
  if [ ! -e /etc/issue ]; then
   try_result=0
  elif [ "`grep -i ubuntu.1[4-9] /etc/issue`" ]; then
@@ -193,6 +185,7 @@ try_using_etc_issue()
 
 try_using_uname()
 {
+ try_result=1
  if [ ! "`command -v uname`" ]; then
   try_result=0
  elif [ "`uname -a | grep -i x86_64.*Msys`" ]; then
@@ -210,6 +203,7 @@ try_using_uname()
 
 try_using_rpm()
 {
+ try_result=1
  if [ ! "`command -v rpm`" ]; then
   try_result=0
  elif [ "`rpm -qa | grep altlinux`" ]; then
