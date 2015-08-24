@@ -120,6 +120,8 @@ get_msys2_x86_64_deps()
  pacman -S --noconfirm mingw-w64-x86_64-bison
  pacman -S --noconfirm mingw-w64-x86_64-pkg-config
  pacman -S --noconfirm mingw-w64-x86_64-cmake
+ pacman -S --noconfirm mingw-w64-x86_64-imagemagick
+ pacman -S --noconfirm mingw-w64-x86_64-python2
 }
 
 get_msys2_i686_deps()
@@ -142,6 +144,8 @@ get_msys2_i686_deps()
  pacman -S --noconfirm mingw-w64-i686-bison
  pacman -S --noconfirm mingw-w64-i686-pkg-config
  pacman -S --noconfirm mingw-w64-i686-cmake
+ pacman -S --noconfirm mingw-w64-i686-imagemagick
+ pacman -S --noconfirm mingw-w64-i686-python2
 }
 
 unknown()

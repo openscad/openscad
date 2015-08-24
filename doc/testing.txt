@@ -10,7 +10,7 @@ your system:
 
 There are binary installer packages of these tools available on the internet.
 
-For Windows(TM) install only the MSYS2 system.
+For Windows(TM) install only the MSYS2 system as per the README.md
 
 1) GUI Binary
 
@@ -39,8 +39,6 @@ Windows(TM) under MSYS2:
     $ make
 
 B) Running tests
-
-Linux, Mac, BSD, Win:
 
 $ ctest               Runs tests enabled by default
 $ ctest -R <regex>    Runs only matching tests, e.g. ctest -R dxf
