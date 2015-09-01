@@ -253,9 +253,8 @@ MainWindow::MainWindow(const QString &filename)
 	background_chain = NULL;
 	root_node = NULL;
 
-	tval = 0;
-	fps = 0;
-	fsteps = 1;
+	this->anim_step = 0;
+	this->anim_numsteps = 0;
 
 	const QString importStatement = "import(\"%1\");\n";
 	const QString surfaceStatement = "surface(\"%1\");\n";
@@ -290,7 +289,8 @@ MainWindow::MainWindow(const QString &filename)
 	connect(waitAfterReloadTimer, SIGNAL(timeout()), this, SLOT(waitAfterReload()));
 
 	connect(this->e_tval, SIGNAL(textChanged(QString)), this, SLOT(actionRenderPreview()));
-	connect(this->e_fps, SIGNAL(textChanged(QString)), this, SLOT(updatedFps()));
+	connect(this->e_fps, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimFps()));
+	connect(this->e_fsteps, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimSteps()));
 
 	animate_panel->hide();
 	find_panel->hide();
@@ -824,32 +824,40 @@ void MainWindow::updateRecentFiles()
 	}
 }
 
-void MainWindow::updatedFps()
+void MainWindow::updatedAnimFps()
 {
 	bool fps_ok;
 	double fps = this->e_fps->text().toDouble(&fps_ok);
 	animate_timer->stop();
 	if (fps_ok && fps > 0) {
+		this->anim_step = this->e_tval->text().toDouble() * this->anim_numsteps;
 		animate_timer->setSingleShot(false);
-		animate_timer->setInterval(int(1000 / this->e_fps->text().toDouble()));
+		animate_timer->setInterval(int(1000 / fps));
 		animate_timer->start();
 	}
 }
 
+void MainWindow::updatedAnimSteps()
+{
+	bool steps_ok;
+	int numsteps = this->e_fsteps->text().toInt(&steps_ok);
+	if (steps_ok) {
+		this->anim_numsteps = numsteps;
+	}
+	else {
+		this->anim_numsteps = 0;
+	}
+}
+
+// Only called from animate_timer
 void MainWindow::updateTVal()
 {
-	bool fps_ok;
-	double fps = this->e_fps->text().toDouble(&fps_ok);
-	if (fps_ok) {
-		if (fps <= 0) {
-			actionReloadRenderPreview();
-		} else {
-			double s = this->e_fsteps->text().toDouble();
-			double t = this->e_tval->text().toDouble() + 1/s;
-			QString txt;
-			txt.sprintf("%.5f", t >= 1.0 ? 0.0 : t);
-			this->e_tval->setText(txt);
-		}
+	if (this->anim_numsteps > 0) {
+		this->anim_step = (this->anim_step + 1) % this->anim_numsteps;
+		double t = 1.0 * this->anim_step / this->anim_numsteps;
+		QString txt;
+		txt.sprintf("%.5f", t >= 1.0 ? 0.0 : t);
+		this->e_tval->setText(txt);
 	}
 }
 
@@ -1786,14 +1794,12 @@ void MainWindow::csgRender()
 #endif
 	}
 
-	if (viewActionAnimate->isChecked() && e_dump->isChecked()) {
+	if (e_dump->isChecked() && animate_timer->isActive()) {
 		// Force reading from front buffer. Some configurations will read from the back buffer here.
 		glReadBuffer(GL_FRONT);
 		QImage img = this->qglview->grabFrameBuffer();
 		QString filename;
-		double s = this->e_fsteps->text().toDouble();
-		double t = this->e_tval->text().toDouble();
-		filename.sprintf("frame%05d.png", int(round(s*t)));
+		filename.sprintf("frame%05d.png", this->anim_step);
 		img.save(filename, "PNG");
 	}
 
@@ -2330,7 +2336,7 @@ void MainWindow::viewModeAnimate()
 	if (viewActionAnimate->isChecked()) {
 		animate_panel->show();
 		actionRenderPreview();
-		updatedFps();
+		updatedAnimFps();
 	} else {
 		animate_panel->hide();
 		animate_timer->stop();
