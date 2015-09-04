@@ -1604,15 +1604,15 @@ void MainWindow::updateTemporalVariables()
 	this->top_ctx.set_variable("$t", ValuePtr(this->anim_tval));
 
 	Value::VectorType vpt;
-	vpt.push_back(Value(-qglview->cam.object_trans.x()));
-	vpt.push_back(Value(-qglview->cam.object_trans.y()));
-	vpt.push_back(Value(-qglview->cam.object_trans.z()));
+	vpt.push_back(ValuePtr(-qglview->cam.object_trans.x()));
+	vpt.push_back(ValuePtr(-qglview->cam.object_trans.y()));
+	vpt.push_back(ValuePtr(-qglview->cam.object_trans.z()));
 	this->top_ctx.set_variable("$vpt", Value(vpt));
 
 	Value::VectorType vpr;
-	vpr.push_back(Value(fmodf(360 - qglview->cam.object_rot.x() + 90, 360)));
-	vpr.push_back(Value(fmodf(360 - qglview->cam.object_rot.y(), 360)));
-	vpr.push_back(Value(fmodf(360 - qglview->cam.object_rot.z(), 360)));
+	vpr.push_back(ValuePtr(fmodf(360 - qglview->cam.object_rot.x() + 90, 360)));
+	vpr.push_back(ValuePtr(fmodf(360 - qglview->cam.object_rot.y(), 360)));
+	vpr.push_back(ValuePtr(fmodf(360 - qglview->cam.object_rot.z(), 360)));
 	top_ctx.set_variable("$vpr", ValuePtr(vpr));
 
 	top_ctx.set_variable("$vpd", ValuePtr(qglview->cam.zoomValue()));

@@ -691,8 +691,8 @@ void Preferences::initComboBox(QComboBox *comboBox, const Settings::SettingsEntr
 	comboBox->clear();
 	Value::VectorType vector = entry.range().toVector();
 	for (Value::VectorType::iterator it = vector.begin();it != vector.end();it++) {
-		QString val = QString::fromStdString((*it)[0].toString());
-		std::string text((*it)[1].toString());
+		QString val = QString::fromStdString((*it)[0]->toString());
+		std::string text((*it)[1]->toString());
 		QString qtext = QString::fromStdString(gettext(text.c_str()));
 		comboBox->addItem(qtext, val);
 	}
@@ -700,7 +700,7 @@ void Preferences::initComboBox(QComboBox *comboBox, const Settings::SettingsEntr
 
 void Preferences::initSpinBox(QSpinBox *spinBox, const Settings::SettingsEntry& entry)
 {
-	Value::RangeType range = entry.range().toRange();
+	RangeType range = entry.range().toRange();
 	spinBox->setMinimum(range.begin_value());
 	spinBox->setMaximum(range.end_value());
 }
