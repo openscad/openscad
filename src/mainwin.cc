@@ -255,6 +255,9 @@ MainWindow::MainWindow(const QString &filename)
 
 	this->anim_step = 0;
 	this->anim_numsteps = 0;
+	this->anim_tval = 0.0;
+	this->anim_dumping = false;
+	this->anim_dump_start_step = 0;
 
 	const QString importStatement = "import(\"%1\");\n";
 	const QString surfaceStatement = "surface(\"%1\");\n";
@@ -288,9 +291,10 @@ MainWindow::MainWindow(const QString &filename)
 	waitAfterReloadTimer->setInterval(200);
 	connect(waitAfterReloadTimer, SIGNAL(timeout()), this, SLOT(waitAfterReload()));
 
-	connect(this->e_tval, SIGNAL(textChanged(QString)), this, SLOT(actionRenderPreview()));
+	connect(this->e_tval, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimTval()));
 	connect(this->e_fps, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimFps()));
 	connect(this->e_fsteps, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimSteps()));
+	connect(this->e_dump, SIGNAL(toggled(bool)), this, SLOT(updatedAnimDump(bool)));
 
 	animate_panel->hide();
 	find_panel->hide();
@@ -824,13 +828,27 @@ void MainWindow::updateRecentFiles()
 	}
 }
 
+void MainWindow::updatedAnimTval()
+{
+	bool t_ok;
+	double t = this->e_tval->text().toDouble(&t_ok);
+	// Clamp t to 0-1
+	if (t_ok) {
+		this->anim_tval = t < 0 ? 0.0 : ((t > 1.0) ? 1.0 : t);
+	}
+	else {
+		this->anim_tval = 0.0;
+	}
+	actionRenderPreview();
+}
+
 void MainWindow::updatedAnimFps()
 {
 	bool fps_ok;
 	double fps = this->e_fps->text().toDouble(&fps_ok);
 	animate_timer->stop();
 	if (fps_ok && fps > 0) {
-		this->anim_step = this->e_tval->text().toDouble() * this->anim_numsteps;
+		this->anim_step = this->anim_tval * this->anim_numsteps;
 		animate_timer->setSingleShot(false);
 		animate_timer->setInterval(int(1000 / fps));
 		animate_timer->start();
@@ -849,14 +867,19 @@ void MainWindow::updatedAnimSteps()
 	}
 }
 
+void MainWindow::updatedAnimDump(bool checked)
+{
+	if (!checked) this->anim_dumping = false;
+}
+
 // Only called from animate_timer
 void MainWindow::updateTVal()
 {
 	if (this->anim_numsteps > 0) {
 		this->anim_step = (this->anim_step + 1) % this->anim_numsteps;
-		double t = 1.0 * this->anim_step / this->anim_numsteps;
+		this->anim_tval = 1.0 * this->anim_step / this->anim_numsteps;
 		QString txt;
-		txt.sprintf("%.5f", t >= 1.0 ? 0.0 : t);
+		txt.sprintf("%.5f", this->anim_tval);
 		this->e_tval->setText(txt);
 	}
 }
@@ -1577,7 +1600,7 @@ bool MainWindow::eventFilter(QObject* obj, QEvent *event)
 
 void MainWindow::updateTemporalVariables()
 {
-	this->top_ctx.set_variable("$t", ValuePtr(this->e_tval->text().toDouble()));
+	this->top_ctx.set_variable("$t", ValuePtr(this->anim_tval));
 
 	Value::VectorType vpt;
 	vpt.push_back(Value(-qglview->cam.object_trans.x()));
@@ -1795,12 +1818,21 @@ void MainWindow::csgRender()
 	}
 
 	if (e_dump->isChecked() && animate_timer->isActive()) {
-		// Force reading from front buffer. Some configurations will read from the back buffer here.
-		glReadBuffer(GL_FRONT);
-		QImage img = this->qglview->grabFrameBuffer();
-		QString filename;
-		filename.sprintf("frame%05d.png", this->anim_step);
-		img.save(filename, "PNG");
+		if (anim_dumping && anim_dump_start_step == anim_step) {
+			anim_dumping=false;
+			e_dump->setChecked(false);
+		} else {
+			if (!anim_dumping) {
+				anim_dumping = true;
+				anim_dump_start_step = anim_step;
+			}
+			// Force reading from front buffer. Some configurations will read from the back buffer here.
+			glReadBuffer(GL_FRONT);
+			QImage img = this->qglview->grabFrameBuffer();
+			QString filename;
+			filename.sprintf("frame%05d.png", this->anim_step);
+			img.save(filename, "PNG");
+		}
 	}
 
 	compileEnded();
