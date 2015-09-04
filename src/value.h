@@ -29,75 +29,113 @@ public:
 };
 std::ostream &operator<<(std::ostream &stream, const Filename &filename);
 
-class Value
-{
+class RangeType {
+private:
+	double begin_val;
+	double step_val;
+	double end_val;
+	
+	/// inverse begin/end if begin is upper than end
+	void normalize();
+	
 public:
-  class RangeType {
-  private:
-    double begin_val;
-    double step_val;
-    double end_val;
- 
-    /// inverse begin/end if begin is upper than end
-    void normalize();
-
-  public:
-    typedef enum { RANGE_TYPE_BEGIN, RANGE_TYPE_RUNNING, RANGE_TYPE_END } type_t;
+	typedef enum { RANGE_TYPE_BEGIN, RANGE_TYPE_RUNNING, RANGE_TYPE_END } type_t;
+  
+	class iterator {
+	public:
+		typedef iterator self_type;
+		typedef double value_type;
+		typedef double& reference;
+		typedef double* pointer;
+		typedef std::forward_iterator_tag iterator_category;
+		typedef double difference_type;
+		iterator(RangeType &range, type_t type);
+		self_type operator++();
+		self_type operator++(int junk);
+		reference operator*();
+		pointer operator->();
+		bool operator==(const self_type& other) const;
+		bool operator!=(const self_type& other) const;
+	private:
+		RangeType &range;
+		double val;
+		type_t type;
     
-    class iterator {
-    public:
-        typedef iterator self_type;
-        typedef double value_type;
-        typedef double& reference;
-        typedef double* pointer;
-        typedef std::forward_iterator_tag iterator_category;
-        typedef double difference_type;
-        iterator(RangeType &range, type_t type);
-        self_type operator++();
-        self_type operator++(int junk);
-        reference operator*();
-        pointer operator->();
-        bool operator==(const self_type& other) const;
-        bool operator!=(const self_type& other) const;
-    private:
-      RangeType &range;
-      double val;
-      type_t type;
-      
-      void update_type();
-    };
-        
-    RangeType(double begin, double end)
-      : begin_val(begin), step_val(1.0), end_val(end)
+		void update_type();
+	};
+  
+	RangeType(double begin, double end)
+		: begin_val(begin), step_val(1.0), end_val(end)
     {
       normalize();
     }
+	
+	RangeType(double begin, double step, double end)
+		: begin_val(begin), step_val(step), end_val(end) {}
+	
+	bool operator==(const RangeType &other) const {
+		return this->begin_val == other.begin_val &&
+			this->step_val == other.step_val &&
+			this->end_val == other.end_val;
+	}
+	
+	double begin_value() { return begin_val; }
+	double step_value() { return step_val; }
+	double end_value() { return end_val; }
+	
+	iterator begin() { return iterator(*this, RANGE_TYPE_BEGIN); }
+	iterator end() { return iterator(*this, RANGE_TYPE_END); }
+	
+	/// return number of steps, max uint32_t value if step is 0
+	boost::uint32_t nbsteps() const;
+  
+	friend class chr_visitor;
+	friend class tostring_visitor;
+	friend class bracket_visitor;
+};
 
-    RangeType(double begin, double step, double end)
-      : begin_val(begin), step_val(step), end_val(end) {}
+class ValuePtr : public shared_ptr<const class Value>
+{
+public:
+  static ValuePtr undefined;
 
-    bool operator==(const RangeType &other) const {
-      return this->begin_val == other.begin_val &&
-        this->step_val == other.step_val &&
-        this->end_val == other.end_val;
-    }
+	ValuePtr();
+	explicit ValuePtr(const Value &v);
+  ValuePtr(bool v);
+  ValuePtr(int v);
+  ValuePtr(double v);
+  ValuePtr(const std::string &v);
+  ValuePtr(const char *v);
+  ValuePtr(const char v);
+  ValuePtr(const class std::vector<ValuePtr> &v);
+  ValuePtr(const class RangeType &v);
 
-    double begin_value() { return begin_val; }
-    double step_value() { return step_val; }
-    double end_value() { return end_val; }
+	operator bool() const;
 
-    iterator begin() { return iterator(*this, RANGE_TYPE_BEGIN); }
-    iterator end() { return iterator(*this, RANGE_TYPE_END); }
+  bool operator==(const ValuePtr &v) const;
+  bool operator!=(const ValuePtr &v) const;
+  bool operator<(const ValuePtr &v) const;
+  bool operator<=(const ValuePtr &v) const;
+  bool operator>=(const ValuePtr &v) const;
+  bool operator>(const ValuePtr &v) const;
+  ValuePtr operator-() const;
+  ValuePtr operator!() const;
+  ValuePtr operator[](const ValuePtr &v) const;
+  ValuePtr operator+(const ValuePtr &v) const;
+  ValuePtr operator-(const ValuePtr &v) const;
+  ValuePtr operator*(const ValuePtr &v) const;
+  ValuePtr operator/(const ValuePtr &v) const;
+  ValuePtr operator%(const ValuePtr &v) const;
 
-    /// return number of steps, max uint32_t value if step is 0
-    boost::uint32_t nbsteps() const;
-    
-    friend class chr_visitor;
-    friend class tostring_visitor;
-    friend class bracket_visitor;
-  };
+  const Value &operator*() const;
 
-  typedef std::vector<Value> VectorType;
+private:
+};
+
+class Value
+{
+public:
+	typedef std::vector<ValuePtr> VectorType;
 
   enum ValueType {
     UNDEFINED,
@@ -169,40 +207,3 @@ private:
   Variant value;
 };
 
-class ValuePtr : public shared_ptr<const Value>
-{
-public:
-  static ValuePtr undefined;
-
-	ValuePtr();
-	explicit ValuePtr(const Value &v);
-  ValuePtr(bool v);
-  ValuePtr(int v);
-  ValuePtr(double v);
-  ValuePtr(const std::string &v);
-  ValuePtr(const char *v);
-  ValuePtr(const char v);
-  ValuePtr(const Value::VectorType &v);
-  ValuePtr(const Value::RangeType &v);
-
-	operator bool() const { return **this; }
-
-  bool operator==(const ValuePtr &v) const;
-  bool operator!=(const ValuePtr &v) const;
-  bool operator<(const ValuePtr &v) const;
-  bool operator<=(const ValuePtr &v) const;
-  bool operator>=(const ValuePtr &v) const;
-  bool operator>(const ValuePtr &v) const;
-  ValuePtr operator-() const;
-  ValuePtr operator!() const;
-  ValuePtr operator[](const ValuePtr &v) const;
-  ValuePtr operator+(const ValuePtr &v) const;
-  ValuePtr operator-(const ValuePtr &v) const;
-  ValuePtr operator*(const ValuePtr &v) const;
-  ValuePtr operator/(const ValuePtr &v) const;
-  ValuePtr operator%(const ValuePtr &v) const;
-
-  const Value &operator*() const { return *this->get(); }
-
-private:
-};

@@ -200,8 +200,8 @@ ValuePtr builtin_dxf_cross(const Context *ctx, const EvalContext *evalctx)
 			double x = x1 + ua*(x2 - x1);
 			double y = y1 + ua*(y2 - y1);
 			Value::VectorType ret;
-			ret.push_back(Value(x));
-			ret.push_back(Value(y));
+			ret.push_back(ValuePtr(x));
+			ret.push_back(ValuePtr(y));
 			return dxf_cross_cache[key] = ValuePtr(ret);
 		}
 	}

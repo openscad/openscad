@@ -45,25 +45,25 @@ bool SettingsEntry::is_default() const
 
 static Value value(std::string s1, std::string s2) {
 	Value::VectorType v;
-	v += Value(s1), Value(s2);
+	v += ValuePtr(s1), ValuePtr(s2);
 	return v;
 }
 
 static Value values(std::string s1, std::string s1disp, std::string s2, std::string s2disp) {
 	Value::VectorType v;
-	v += value(s1, s1disp), value(s2, s2disp);
+	v += ValuePtr(value(s1, s1disp)), ValuePtr(value(s2, s2disp));
 	return v;
 }
 
 static Value values(std::string s1, std::string s1disp, std::string s2, std::string s2disp, std::string s3, std::string s3disp) {
 	Value::VectorType v;
-	v += value(s1, s1disp), value(s2, s2disp), value(s3, s3disp);
+	v += ValuePtr(value(s1, s1disp)), ValuePtr(value(s2, s2disp)), ValuePtr(value(s3, s3disp));
 	return v;
 }
 
 static Value values(std::string s1, std::string s1disp, std::string s2, std::string s2disp, std::string s3, std::string s3disp, std::string s4, std::string s4disp) {
 	Value::VectorType v;
-	v += value(s1, s1disp), value(s2, s2disp), value(s3, s3disp), value(s4, s4disp);
+	v += ValuePtr(value(s1, s1disp)), ValuePtr(value(s2, s2disp)), ValuePtr(value(s3, s3disp)), ValuePtr(value(s4, s4disp));
 	return v;
 }
 
@@ -122,15 +122,15 @@ Visitor::~Visitor()
  * can be translated.
  */
 SettingsEntry Settings::showWarningsIn3dView("3dview", "showWarningsIn3dView", Value(true), Value(true));
-SettingsEntry Settings::indentationWidth("editor", "indentationWidth", Value(Value::RangeType(1, 16)), Value(4));
-SettingsEntry Settings::tabWidth("editor", "tabWidth", Value(Value::RangeType(1, 16)), Value(4));
+SettingsEntry Settings::indentationWidth("editor", "indentationWidth", Value(RangeType(1, 16)), Value(4));
+SettingsEntry Settings::tabWidth("editor", "tabWidth", Value(RangeType(1, 16)), Value(4));
 SettingsEntry Settings::lineWrap("editor", "lineWrap", values("None", _("None"), "Char", _("Wrap at character boundaries"), "Word", _("Wrap at word boundaries")), Value("Word"));
 SettingsEntry Settings::lineWrapIndentationStyle("editor", "lineWrapIndentationStyle", values("Fixed", _("Fixed"), "Same", _("Same"), "Indented", _("Indented")), Value("Fixed"));
-SettingsEntry Settings::lineWrapIndentation("editor", "lineWrapIndentation", Value(Value::RangeType(0, 999)), Value(4));
+SettingsEntry Settings::lineWrapIndentation("editor", "lineWrapIndentation", Value(RangeType(0, 999)), Value(4));
 SettingsEntry Settings::lineWrapVisualizationBegin("editor", "lineWrapVisualizationBegin", values("None", _("None"), "Text", _("Text"), "Border", _("Border"), "Margin", _("Margin")), Value("None"));
 SettingsEntry Settings::lineWrapVisualizationEnd("editor", "lineWrapVisualizationEnd", values("None", _("None"), "Text", _("Text"), "Border", _("Border"), "Margin", _("Margin")), Value("Border"));
 SettingsEntry Settings::showWhitespace("editor", "showWhitespaces", values("Never", _("Never"), "Always", _("Always"), "AfterIndentation", _("After indentation")), Value("Never"));
-SettingsEntry Settings::showWhitespaceSize("editor", "showWhitespacesSize", Value(Value::RangeType(1, 16)), Value(2));
+SettingsEntry Settings::showWhitespaceSize("editor", "showWhitespacesSize", Value(RangeType(1, 16)), Value(2));
 SettingsEntry Settings::autoIndent("editor", "autoIndent", Value(true), Value(true));
 SettingsEntry Settings::indentStyle("editor", "indentStyle", values("Spaces", _("Spaces"), "Tabs", _("Tabs")), Value("Spaces"));
 SettingsEntry Settings::tabKeyFunction("editor", "tabKeyFunction", values("Indent", _("Indent"), "InsertTab", _("Insert Tab")), Value("Indent"));
