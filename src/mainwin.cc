@@ -1607,7 +1607,7 @@ void MainWindow::updateTemporalVariables()
 	vpt.push_back(ValuePtr(-qglview->cam.object_trans.x()));
 	vpt.push_back(ValuePtr(-qglview->cam.object_trans.y()));
 	vpt.push_back(ValuePtr(-qglview->cam.object_trans.z()));
-	this->top_ctx.set_variable("$vpt", Value(vpt));
+	this->top_ctx.set_variable("$vpt", ValuePtr(vpt));
 
 	Value::VectorType vpr;
 	vpr.push_back(ValuePtr(fmodf(360 - qglview->cam.object_rot.x() + 90, 360)));

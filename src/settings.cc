@@ -94,12 +94,17 @@ void Settings::visit(Visitor& visitor)
 	}
 }
 
-Value Settings::get(const SettingsEntry& entry)
+const Value &Settings::defaultValue(const SettingsEntry& entry)
+{
+    return entry._default;
+}
+
+const Value &Settings::get(const SettingsEntry& entry)
 {
     return entry._value;
 }
 
-void Settings::set(SettingsEntry& entry, const Value val)
+void Settings::set(SettingsEntry& entry, const Value &val)
 {
     entry._value = val;
 }
