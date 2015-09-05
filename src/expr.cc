@@ -357,7 +357,7 @@ ExpressionConst::ExpressionConst(const ValuePtr &val) : const_value(val)
 
 ValuePtr ExpressionConst::evaluate(const class Context *) const
 {
-	return ValuePtr(this->const_value);
+	return this->const_value;
 }
 
 void ExpressionConst::print(std::ostream &stream) const

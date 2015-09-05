@@ -285,11 +285,11 @@ ValuePtr builtin_min(const Context *, const EvalContext *evalctx)
 		ValuePtr v0 = evalctx->getArgValue(0);
 
 		if (n == 1 && v0->type() == Value::VECTOR && !v0->toVector().empty()) {
-			Value min = *v0->toVector()[0];
+			ValuePtr min = v0->toVector()[0];
 			for (size_t i = 1; i < v0->toVector().size(); i++) {
-				if (*v0->toVector()[i] < min) min = *v0->toVector()[i];
+				if (v0->toVector()[i] < min) min = v0->toVector()[i];
 			}
-			return ValuePtr(min);
+			return min;
 		}
 		if (v0->type() == Value::NUMBER) {
 			double val = v0->toDouble();
@@ -317,11 +317,11 @@ ValuePtr builtin_max(const Context *, const EvalContext *evalctx)
 		ValuePtr v0 = evalctx->getArgValue(0);
 
 		if (n == 1 && v0->type() == Value::VECTOR && !v0->toVector().empty()) {
-			Value max = *v0->toVector()[0];
+			ValuePtr max = v0->toVector()[0];
 			for (size_t i = 1; i < v0->toVector().size(); i++) {
-				if (*v0->toVector()[i] > max) max = *v0->toVector()[i];
+				if (v0->toVector()[i] > max) max = v0->toVector()[i];
 			}
-			return ValuePtr(max);
+			return max;
 		}
 		if (v0->type() == Value::NUMBER) {
 			double val = v0->toDouble();
@@ -614,14 +614,13 @@ ValuePtr builtin_concat(const Context *, const EvalContext *evalctx)
 	Value::VectorType result;
 
 	for (size_t i = 0; i < evalctx->numArgs(); i++) {
-		ValuePtr v = evalctx->getArgValue(i);
-		if (v->type() == Value::VECTOR) {
-			Value::VectorType vec = v->toVector();
-			for (Value::VectorType::const_iterator it = vec.begin(); it != vec.end(); it++) {
-				result.push_back(*it);
+		ValuePtr val = evalctx->getArgValue(i);
+		if (val->type() == Value::VECTOR) {
+			BOOST_FOREACH(const ValuePtr &v, val->toVector()) { 
+				result.push_back(v);
 			}
 		} else {
-			result.push_back(v);
+			result.push_back(val);
 		}
 	}
 	return ValuePtr(result);
@@ -761,7 +760,7 @@ static Value::VectorType search(const std::string &find, const Value::VectorType
 		Value::VectorType resultvec;
 		const gchar *ptr_ft = g_utf8_offset_to_pointer(find.c_str(), i);
 		for (size_t j = 0; j < searchTableSize; j++) {
-			Value::VectorType entryVec = table[j]->toVector();
+			const Value::VectorType &entryVec = table[j]->toVector();
 			if (entryVec.size() <= index_col_num) {
 				PRINTB("WARNING: Invalid entry in search vector at index %d, required number of values in the entry: %d. Invalid entry: %s", j % (index_col_num + 1) % table[j]);
 				return Value::VectorType();
@@ -807,7 +806,7 @@ ValuePtr builtin_search(const Context *, const EvalContext *evalctx)
 		unsigned int matchCount = 0;
 
 		for (size_t j = 0; j < searchTable->toVector().size(); j++) {
-			ValuePtr search_element = searchTable->toVector()[j];
+			const ValuePtr &search_element = searchTable->toVector()[j];
 
 			if ((index_col_num == 0 && findThis == search_element) ||
 					(index_col_num < search_element->toVector().size() &&
@@ -829,11 +828,11 @@ ValuePtr builtin_search(const Context *, const EvalContext *evalctx)
 		  unsigned int matchCount = 0;
 			Value::VectorType resultvec;
 
-			ValuePtr find_value = findThis->toVector()[i];
+			const ValuePtr &find_value = findThis->toVector()[i];
 
 			for (size_t j = 0; j < searchTable->toVector().size(); j++) {
 
-				ValuePtr search_element = searchTable->toVector()[j];
+				const ValuePtr &search_element = searchTable->toVector()[j];
 
 				if ((index_col_num == 0 && find_value == search_element) ||
 						(index_col_num < search_element->toVector().size() &&
@@ -921,7 +920,7 @@ ValuePtr builtin_norm(const Context *, const EvalContext *evalctx)
 		 ValuePtr val = evalctx->getArgValue(0);
 		if (val->type() == Value::VECTOR) {
 			double sum = 0;
-			Value::VectorType v = val->toVector();
+			const Value::VectorType &v = val->toVector();
 			size_t n = v.size();
 			for (size_t i = 0; i < n; i++)
 				if (v[i]->type() == Value::NUMBER) {
@@ -952,8 +951,8 @@ ValuePtr builtin_cross(const Context *, const EvalContext *evalctx)
 		return ValuePtr::undefined;
 	}
 	
-	Value::VectorType v0 = arg0->toVector();
-	Value::VectorType v1 = arg1->toVector();
+	const Value::VectorType &v0 = arg0->toVector();
+	const Value::VectorType &v1 = arg1->toVector();
 	if ((v0.size() == 2) && (v1.size() == 2)) {
 		return ValuePtr(v0[0]->toDouble() * v1[1]->toDouble() - v0[1]->toDouble() * v1[0]->toDouble());
 	}
