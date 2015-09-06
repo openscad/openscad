@@ -839,7 +839,9 @@ endif()
 #
 # GUI binary tests
 #
-if(APPLE)
+if(EXISTS "$ENV{OPENSCAD_BINARY}")
+  set(OPENSCAD_BINPATH "$ENV{OPENSCAD_BINARY}")
+elseif(APPLE)
   set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../OpenSCAD.app/Contents/MacOS/OpenSCAD")
 elseif (MINGW_CROSS_ENV_DIR) 
   set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../mingw32/release/openscad.exe")
