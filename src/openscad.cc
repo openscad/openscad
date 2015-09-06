@@ -381,7 +381,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	AbstractNode *absolute_root_node;
 	shared_ptr<const Geometry> root_geom;
 
-	handle_dep(filename.c_str());
+	handle_dep(filename);
 
 	std::ifstream ifs(filename.c_str());
 	if (!ifs.is_open()) {
