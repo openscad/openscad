@@ -1468,7 +1468,8 @@ add_cmdline_test(lexertest EXE ${CMAKE_SOURCE_DIR}/../tests/lexertest SUFFIX txt
 			${CMAKE_SOURCE_DIR}/../testdata/lexer/syntaxtest.scad
 			${CMAKE_SOURCE_DIR}/../testdata/lexer/comments.scad
 			${CMAKE_SOURCE_DIR}/../testdata/lexer/list_comprehensions.scad
-			${CMAKE_SOURCE_DIR}/../testdata/lexer/test.scad)
+			${CMAKE_SOURCE_DIR}/../testdata/lexer/test.scad
+			${CMAKE_SOURCE_DIR}/../testdata/lexer/comment.test)
 add_cmdline_test(opencsgtest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX png FILES ${OPENCSGTEST_FILES})
 add_cmdline_test(csgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=csg --render EXPECTEDDIR cgalpngtest SUFFIX png FILES ${CGALPNGTEST_FILES})
 add_cmdline_test(throwntogethertest EXE ${OPENSCAD_BINPATH} ARGS --preview=throwntogether -o SUFFIX png FILES ${THROWNTOGETHERTEST_FILES})

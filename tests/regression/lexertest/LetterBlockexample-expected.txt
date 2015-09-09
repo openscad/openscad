@@ -1,5 +1,5 @@
-
-// LetterBlock.scad - Basic usage of text() and linear_extrude()<11>
+<11>
+</11><10>// LetterBlock.scad - Basic usage of text() and linear_extrude()</10><11>
 </11><11>
 </11><10>// Module instantiation</10><11>
 </11><8>LetterBlock</8><11>(</11><11>"</11><8>M</8><11>"</11><11>)</11><11>;</11><11>

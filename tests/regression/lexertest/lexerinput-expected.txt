@@ -1,9 +1,8 @@
-start 100
-// difference_cube.scad - Example for difference() usage in OpenSCAD
-
-echo(version=version());
-
-module<11> </11><8>difference_cube</8><11>(</11><11>)</11><11>
+<10>// difference_cube.scad - Example for difference() usage in OpenSCAD</10><11>
+</11><11>
+</11><1>echo</1><11>(</11><4>version</4><6>=</6><4>version</4><11>(</11><11>)</11><11>)</11><11>;</11><11>
+</11><11>
+</11><1>module</1><11> </11><8>difference_cube</8><11>(</11><11>)</11><11>
 </11><11>{</11><11>
 </11><11>	</11><3>difference</3><11>(</11><11>)</11><11> </11><11>{</11><11>
 </11><11>	</11><11>	</11><5>cube</5><11>(</11><7>30</7><11>,</11><11> </11><8>center</8><11> </11><6>=</6><11> </11><3>true</3><11>)</11><11>;</11><11>

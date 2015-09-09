@@ -36,14 +36,25 @@ class lexer : public LexInterface
 int main(int argv, char* argc[]){
 
 	ifstream newfile(argc[1]);
+	std::string extension;
 	lexer l;
+	int start;
+	const std::string  &fileName = argc[1];
+	if(fileName.find_last_of(".") != std::string::npos) {
+		extension =  fileName.substr(fileName.find_last_of(".")+1);
+	}
 	l.output.open(argc[2]);
 	stringstream buffer;
 	buffer << newfile.rdbuf();
 	const string line = buffer.str();
 	const string subline = line.substr(0, string::npos);
 	string word = line.substr(6, '\n');
-	int start = atoi(word.c_str()) + 8;
+	if(extension == "scad") {
+		start = 0;
+	}
+	else if(extension == "test") {
+		start = atoi(word.c_str()) + 8;
+	}
 	l.lex->lex_results(subline, start ,&l);
 	newfile.close();
 }	

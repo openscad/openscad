@@ -1,4 +1,3 @@
-start 100
 // list_comprehensions.scad - Examples of list comprehension usage
 
 // Basic list comprehension:

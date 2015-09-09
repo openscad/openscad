@@ -1,8 +1,7 @@
-start 100
-// list_comprehensions.scad - Examples of list comprehension usage
-
-// Basic list comprehension:
-// Returns a 2D vertex per iteration of the for loop<11>
+<10>// list_comprehensions.scad - Examples of list comprehension usage</10><11>
+</11><11>
+</11><10>// Basic list comprehension:</10><11>
+</11><10>// Returns a 2D vertex per iteration of the for loop</10><11>
 </11><10>// Note: subsequent assignments inside the for loop is allowed</10><11>
 </11><1>module</1><11> </11><8>ngon</8><11>(</11><8>num</8><11>,</11><11> </11><8>r</8><11>)</11><11> </11><11>{</11><11>
 </11><11> </11><11> </11><5>polygon</5><11>(</11><11>[</11><1>for</1><11> </11><11>(</11><8>i</8><6>=</6><11>[</11><7>0</7><11>:</11><8>num</8><11>-</11><7>1</7><11>]</11><11>,</11><11> </11><8>a</8><6>=</6><8>i</8><11>*</11><7>360</7><11>/</11><8>num</8><11>)</11><11> </11><11>[</11><11> </11><8>r</8><11>*</11><4>cos</4><11>(</11><8>a</8><11>)</11><11>,</11><11> </11><8>r</8><11>*</11><4>sin</4><11>(</11><8>a</8><11>)</11><11> </11><11>]</11><11>]</11><11>)</11><11>;</11><11>
