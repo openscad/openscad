@@ -105,15 +105,15 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 			Eigen::AngleAxisd rotz(0, Vector3d::UnitZ());
 			double a;
 			if (val_a->toVector().size() > 0) {
-				val_a->toVector()[0].getDouble(a);
+				val_a->toVector()[0]->getDouble(a);
 				rotx = Eigen::AngleAxisd(a*M_PI/180, Vector3d::UnitX());
 			}
 			if (val_a->toVector().size() > 1) {
-				val_a->toVector()[1].getDouble(a);
+				val_a->toVector()[1]->getDouble(a);
 				roty = Eigen::AngleAxisd(a*M_PI/180, Vector3d::UnitY());
 			}
 			if (val_a->toVector().size() > 2) {
-				val_a->toVector()[2].getDouble(a);
+				val_a->toVector()[2]->getDouble(a);
 				rotz = Eigen::AngleAxisd(a*M_PI/180, Vector3d::UnitZ());
 			}
 			node->matrix.rotate(rotz * roty * rotx);
@@ -171,9 +171,9 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 			Matrix4d rawmatrix = Matrix4d::Identity();
 			for (int i = 0; i < 16; i++) {
 				size_t x = i / 4, y = i % 4;
-				if (y < v->toVector().size() && v->toVector()[y].type() == 
-						Value::VECTOR && x < v->toVector()[y].toVector().size())
-					v->toVector()[y].toVector()[x].getDouble(rawmatrix(y, x));
+				if (y < v->toVector().size() && v->toVector()[y]->type() == 
+						Value::VECTOR && x < v->toVector()[y]->toVector().size())
+					v->toVector()[y]->toVector()[x]->getDouble(rawmatrix(y, x));
 			}
 			double w = rawmatrix(3,3);
 			if (w != 1.0) node->matrix = rawmatrix / w;
