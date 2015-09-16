@@ -44,16 +44,31 @@ int main(int argv, char* argc[]){
 		extension =  fileName.substr(fileName.find_last_of(".")+1);
 	}
 	l.output.open(argc[2]);
+	string newline;
+	string newword;
 	stringstream buffer;
+	while(!newfile.eof())
+	{
+		std::getline(newfile, newline);
+		string startword = newline.substr(0, 5);
+		if(startword == "start")
+		{
+			newword = newline.substr(6, '\n');
+		}
+		else 
+		{
+			buffer << newline << endl;
+			break;	
+		}
+	}
 	buffer << newfile.rdbuf();
 	const string line = buffer.str();
 	const string subline = line.substr(0, string::npos);
-	string word = line.substr(6, '\n');
 	if(extension == "scad") {
 		start = 0;
 	}
 	else if(extension == "test") {
-		start = atoi(word.c_str()) + 8;
+		start = atoi(newword.c_str());
 	}
 	l.lex->lex_results(subline, start ,&l);
 	newfile.close();
