@@ -50,6 +50,7 @@ using boost::math::isinf;
  auto/bind()s for random function objects, but we are supporting older systems.
 */
 
+#include"boost-utils.h"
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_real.hpp>
 /*Unicode support for string lengths and array accesses*/
@@ -230,6 +231,33 @@ ValuePtr builtin_sign(const Context *, const EvalContext *evalctx)
 	return ValuePtr::undefined;
 }
 
+/*
+This function creates an uint32 seed for boost's mt19937 pseudorandom number
+generator given a C++ double input. The goals are as follows:
+
+1. produce different integer seeds for doubles that are very small or close
+   together (0.0001, 0.2, 3.5, 3.6 should all give different outputs)
+2. keep backwards compatability with existing .scad files on the internet.
+   pass any positive integer inputs through unchanged.
+3. behave exactly the same across all platforms.
+   avoid using bit representation or undefined behaviors.
+
+See also github issue 452.
+*/
+uint32_t make_uint32seed ( double seed ) {
+	uint32_t result;
+	while (round(seed)!=seed) {
+		PRINTDB("seed shifting %f",seed);
+		seed *= 2;
+	}
+	long long tmp = boost_numeric_cast<long long, double>(seed);
+	PRINTDB("seed pre  chopping %u",tmp);
+	tmp = tmp % UINT32_MAX;
+	PRINTDB("seed post chopping %u",tmp);
+	result = static_cast<uint32_t>(tmp);
+	return result;
+}
+
 ValuePtr builtin_rands(const Context *, const EvalContext *evalctx)
 {
 	size_t n = evalctx->numArgs();
@@ -237,25 +265,44 @@ ValuePtr builtin_rands(const Context *, const EvalContext *evalctx)
 		ValuePtr v0 = evalctx->getArgValue(0);
 		if (v0->type() != Value::NUMBER) goto quit;
 		double min = v0->toDouble();
-
+		if (boost::math::isinf(min)) {
+			PRINT("WARNING: rands() range cannot be -infinity");
+			min = std::numeric_limits<long long>::min();
+			PRINTB("WARNING: resetting to %f",min);
+		}
 		ValuePtr v1 = evalctx->getArgValue(1);
 		if (v1->type() != Value::NUMBER) goto quit;
 		double max = v1->toDouble();
+		if (boost::math::isinf(max)) {
+			PRINT("WARNING: rands() max cannot be infinity");
+			max = std::numeric_limits<long long>::max();
+			PRINTB("WARNING: resetting to %f",max);
+		}
 		if (max < min) {
 			register double tmp = min; min = max; max = tmp;
 		}
+
 		ValuePtr v2 = evalctx->getArgValue(2);
 		if (v2->type() != Value::NUMBER) goto quit;
-		size_t numresults = std::max(0, static_cast<int>(v2->toDouble()));
+		double numresultsd = std::abs( v2->toDouble() );
+		if (boost::math::isinf(numresultsd)) {
+			PRINT("WARNING: rands() cannot create an infinite number of results");
+			PRINT("WARNING: resetting number of results to 1");
+			numresultsd = 1;
+		}
+		size_t numresults = boost_numeric_cast<size_t,double>( numresultsd );
 
 		bool deterministic = false;
 		if (n > 3) {
 			ValuePtr v3 = evalctx->getArgValue(3);
 			if (v3->type() != Value::NUMBER) goto quit;
-			deterministic_rng.seed((unsigned int) v3->toDouble());
+			PRINTDB("rands() seed (double): %f",v3->toDouble() );
+			uint32_t seedui = make_uint32seed ( v3->toDouble() );
+			deterministic_rng.seed( seedui );
 			deterministic = true;
 		}
 		Value::VectorType vec;
+		PRINTDB("rands() min %f max %f nr %d ",min % max % numresults );
 		if (min==max) { // Boost doesn't allow min == max
 			for (size_t i=0; i < numresults; i++)
 				vec.push_back(ValuePtr(min));
