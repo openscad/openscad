@@ -45,6 +45,7 @@
 
 #include <string>
 #include <vector>
+#include <istream>
 #include <fstream>
 
 #ifdef ENABLE_CGAL
@@ -381,14 +382,17 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	AbstractNode *absolute_root_node;
 	shared_ptr<const Geometry> root_geom;
 
-	handle_dep(filename);
-
-	std::ifstream ifs(filename.c_str());
-	if (!ifs.is_open()) {
+	std::ifstream ifs;
+	if (filename != "-") {
+		ifs.open(filename.c_str());
+		handle_dep(filename);
+	}
+	std::istream& is = filename == "-" ? std::cin : ifs;
+	if (!is) {
 		PRINTB("Can't open input file '%s'!\n", filename.c_str());
 		return 1;
 	}
-	std::string text((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+	std::string text((std::istreambuf_iterator<char>(is)), std::istreambuf_iterator<char>());
 	text += "\n" + commandline_commands;
 	fs::path abspath = boosty::absolute(filename);
 	std::string parentpath = boosty::stringy(abspath.parent_path());
