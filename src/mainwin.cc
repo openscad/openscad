@@ -866,6 +866,7 @@ void MainWindow::updatedAnimSteps()
 	else {
 		this->anim_numsteps = 0;
 	}
+	anim_dumping=false;
 }
 
 void MainWindow::updatedAnimDump(bool checked)
