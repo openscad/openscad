@@ -802,25 +802,18 @@ add_custom_target(locale_files ALL COMMAND ${CMAKE_SOURCE_DIR}/../scripts/transl
 #
 # GUI binary tests
 #
-#if(APPLE)
+#if(EXISTS "$ENV{OPENSCAD_BINARY}")
+#  set(OPENSCAD_BINPATH "$ENV{OPENSCAD_BINARY}")
+#elseif(APPLE)
 #  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../OpenSCAD.app/Contents/MacOS/OpenSCAD")
 #elseif (MINGW_CROSS_ENV_DIR) 
 #  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../mingw32/release/openscad.exe")
 #elseif(WIN32)
 #  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../Release/openscad.exe")
-#else()
+#elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR/../openscad}")
 #  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../openscad")
-#endif()
-
-#if(EXISTS "${CMAKE_CURRENT_BINARY_DIR}/openscad")
-#  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_BINARY_DIR}/openscad")
-#endif()
-
-#if(EXISTS "${OPENSCAD_BINPATH}")
-#  message(STATUS "Found OpenSCAD binary: ${OPENSCAD_BINPATH}")
-#else()
-#  message(STATUS "Couldn't find the OpenSCAD binary: ${OPENSCAD_BINPATH}")
-#  message(FATAL_ERROR "Please build the OpenSCAD binary and place it here: ${OPENSCAD_BINPATH}" )
+#elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR/../bin/openscad}")
+#  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/bin/openscad")
 #endif()
 
 if(WIN32)
