@@ -256,7 +256,6 @@ ValuePtr builtin_rands(const Context *, const EvalContext *evalctx)
 		if (max < min) {
 			register double tmp = min; min = max; max = tmp;
 		}
-
 		ValuePtr v2 = evalctx->getArgValue(2);
 		if (v2->type() != Value::NUMBER) goto quit;
 		double numresultsd = std::abs( v2->toDouble() );
@@ -276,7 +275,6 @@ ValuePtr builtin_rands(const Context *, const EvalContext *evalctx)
 			deterministic = true;
 		}
 		Value::VectorType vec;
-		PRINTDB("rands() min %f max %f nr %d ",min % max % numresults );
 		if (min==max) { // Boost doesn't allow min == max
 			for (size_t i=0; i < numresults; i++)
 				vec.push_back(ValuePtr(min));
