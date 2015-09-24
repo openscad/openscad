@@ -35,6 +35,13 @@ v = rands(1,1,4);
 
 echo( v );
 
+echo( rands(1,2,3,4.1) );
+echo( rands(1,2,3,-4.1) );
+echo( rands(1,2,3,-4.1e100) );
+echo( rands(1,2,3,4.1e100) );
+echo( rands(1,2,3,-4.1e-100) );
+echo( rands(1,2,3,4.1e-100) );
+
 // part 2 - verify seeded rands() behavior with bizarro infinite inputs
 echo("rands(1/0,1/0,1/0,1/0)", rands(1/0,1/0,1/0,1/0));
 echo("rands(1/0,1/0,1/0,-1/0)", rands(1/0,1/0,1/0,-1/0));
