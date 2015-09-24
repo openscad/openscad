@@ -3,10 +3,6 @@
 #include <stdio.h>
 #include <iostream>
 
-#include <boost/numeric/conversion/cast.hpp>
-#include <sstream>
-#include <math.h>
-
 // If the given (absolute) path is relative to the relative_to path, return a new
 // relative path. Will normalize the given path first
 fs::path boostfs_relative_path(const fs::path &path, const fs::path &relative_to)
