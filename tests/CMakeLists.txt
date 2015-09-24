@@ -811,9 +811,9 @@ add_custom_target(locale_files ALL COMMAND ${CMAKE_SOURCE_DIR}/../scripts/transl
 #elseif(WIN32)
 #  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../Release/openscad.exe")
 #elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR/../openscad}")
-#  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../openscad")
+#  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../bin/openscad")
 #elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR/../bin/openscad}")
-#  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/bin/openscad")
+#  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../openscad")
 #endif()
 
 if(WIN32)
