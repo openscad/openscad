@@ -92,6 +92,10 @@ get_debian_7_deps()
 {
   get_debian_deps
   apt-get -y install libqt4-dev libqscintilla2-dev
+  echo "debian 7 detected"
+  echo "please build harfbuzz & see the README on building dependencies"
+  echo ". ./scripts/setenv-unibuild.sh"
+  echo "./scripts/uni-build-dependencies.sh harfbuzz"
 }
 
 get_ubuntu_14_deps()
