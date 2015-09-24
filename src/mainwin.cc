@@ -849,7 +849,7 @@ void MainWindow::updatedAnimFps()
 	double fps = this->e_fps->text().toDouble(&fps_ok);
 	animate_timer->stop();
 	if (fps_ok && fps > 0) {
-		this->anim_step = this->anim_tval * this->anim_numsteps;
+		this->anim_step = this->anim_tval * (this->anim_numsteps - 1);
 		animate_timer->setSingleShot(false);
 		animate_timer->setInterval(int(1000 / fps));
 		animate_timer->start();
@@ -877,13 +877,19 @@ void MainWindow::updatedAnimDump(bool checked)
 // Only called from animate_timer
 void MainWindow::updateTVal()
 {
-	if (this->anim_numsteps > 0) {
+	if (this->anim_numsteps == 0) return;
+
+	if (this->anim_numsteps > 1) {
 		this->anim_step = (this->anim_step + 1) % this->anim_numsteps;
-		this->anim_tval = 1.0 * this->anim_step / this->anim_numsteps;
-		QString txt;
-		txt.sprintf("%.5f", this->anim_tval);
-		this->e_tval->setText(txt);
+		this->anim_tval = 1.0 * this->anim_step / (this->anim_numsteps - 1);
 	}
+	else if (this->anim_numsteps > 0) {
+		this->anim_step = 0;
+		this->anim_tval = 0.0;
+	}
+	QString txt;
+	txt.sprintf("%.5f", this->anim_tval);
+	this->e_tval->setText(txt);
 }
 
 void MainWindow::refreshDocument()
