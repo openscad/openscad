@@ -55,6 +55,8 @@ using boost::math::isinf;
 #include <boost/random/uniform_real.hpp>
 /*Unicode support for string lengths and array accesses*/
 #include <glib.h>
+// hash double
+#include "linalg.h"
 
 #ifdef __WIN32__
 #include <process.h>
@@ -231,63 +233,6 @@ ValuePtr builtin_sign(const Context *, const EvalContext *evalctx)
 	return ValuePtr::undefined;
 }
 
-/*
-This function creates an uint32 seed for boost's mt19937 pseudorandom
-number generator given a C++ double input. Basically it's a hash function.
-The goals are as follows:
-
-1. produce different integer seeds for doubles that are very small or close
-   together (0.0001, 0.2, 3.5, 3.6 should all give different outputs)
-2. keep backwards compatability with existing .scad files on the internet.
-   pass any 32-bit positive integer inputs through unchanged.
-3. behave exactly the same across all platforms.
-   avoid using bit representation or undefined behaviors.
-
-See also github issue 452.
-*/
-uint32_t make_uint32_seed ( double seed ) {
-	uint32_t result = 0;
-	if (round(seed)==seed && seed>0 && seed<UINT32_MAX) {
-		// preserve positive integer seeds for backwards compatability
-		result = boost_numeric_cast<uint32_t,double>(seed);
-	} else {
-		// split the mantissa into two 32 bit chunks, and along with
-		// the exponent, form 3 inputs for a sdbm-style hash.
-		// note c++ rules about undefined behavior for signed overflow.
-		uint32_t hash = 0;
-		double mantissa = 0;
-		int exp = 0;
-		mantissa = frexp( seed, &exp );
-		PRINTD("1");
-		while(round(mantissa)!=mantissa) mantissa *= 2;
-		int64_t tmp = boost_numeric_cast<int64_t,double>(mantissa);
-		uint64_t tmp0 = 0;
-		PRINTD("2");
-		if (tmp<0) {
-			PRINTD("2.1");
-			tmp = tmp + UINT64_MAX/2+1;
-			tmp0 = boost_numeric_cast<uint64_t,int64_t>(tmp);
-		} else {
-			PRINTD("2.2");
-			tmp0 = boost_numeric_cast<uint64_t,int64_t>(tmp);
-			tmp0 = tmp0 + UINT64_MAX/2+1;
-		}
-		PRINTD("3");
-		uint64_t tmp1 = tmp0 >> 32;
-		uint64_t tmp2 = tmp0 & 0x00000000FFFFFFFF;
-		uint32_t c1 = boost_numeric_cast<uint32_t,uint64_t>(tmp1);
-		uint32_t c2 = boost_numeric_cast<uint32_t,uint64_t>(tmp2);
-		uint32_t c3 = boost_numeric_cast<uint32_t,uint64_t>(exp);
-		PRINTD("4");
-		hash = c1 + 65599 * hash;
-		hash = c2 + 65599 * hash;
-		hash = c3 + 65599 * hash;
-		result = hash;
-	}
-	PRINTDB("seed input: %f, output: %u",seed % result);
-        return result;
-}
-
 ValuePtr builtin_rands(const Context *, const EvalContext *evalctx)
 {
 	size_t n = evalctx->numArgs();
@@ -296,16 +241,16 @@ ValuePtr builtin_rands(const Context *, const EvalContext *evalctx)
 		if (v0->type() != Value::NUMBER) goto quit;
 		double min = v0->toDouble();
 		if (boost::math::isinf(min)) {
-			PRINT("WARNING: rands() range cannot be -infinity");
-			min = std::numeric_limits<uint64_t>::min();
+			PRINT("WARNING: rands() range min cannot be infinite");
+			min = -std::numeric_limits<double>::max()/2;
 			PRINTB("WARNING: resetting to %f",min);
 		}
 		ValuePtr v1 = evalctx->getArgValue(1);
 		if (v1->type() != Value::NUMBER) goto quit;
 		double max = v1->toDouble();
 		if (boost::math::isinf(max)) {
-			PRINT("WARNING: rands() max cannot be infinity");
-			max = std::numeric_limits<uint64_t>::max();
+			PRINT("WARNING: rands() range max cannot be infinite");
+			max = std::numeric_limits<double>::max()/2;
 			PRINTB("WARNING: resetting to %f",max);
 		}
 		if (max < min) {
@@ -326,8 +271,8 @@ ValuePtr builtin_rands(const Context *, const EvalContext *evalctx)
 		if (n > 3) {
 			ValuePtr v3 = evalctx->getArgValue(3);
 			if (v3->type() != Value::NUMBER) goto quit;
-			uint32_t seedui = make_uint32_seed ( v3->toDouble() );
-			deterministic_rng.seed( seedui );
+			uint32_t seed = static_cast<uint32_t>(hash_floating_point( v3->toDouble() ));
+			deterministic_rng.seed( seed );
 			deterministic = true;
 		}
 		Value::VectorType vec;
