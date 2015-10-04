@@ -149,7 +149,7 @@ For the adventurous, it might be possible to build OpenSCAD using _MacPorts_ or 
 
     ```sudo port install opencsg qscintilla boost cgal pkgconfig eigen3 harfbuzz fontconfig```
 
-1. **Homebrew** (assumes [Homebrew](http://brew.sh)) is already installed)
+1. **Homebrew** (assumes [Homebrew](http://brew.sh) is already installed)
 
     NB! Homebrew's ```qscintilla2``` component doesn't support Qt5, so using Qt4 is currently necessary.
     However, Homebrew's Qt4 has a broken ```moc``` command, causing OpenSCAD compilation to
