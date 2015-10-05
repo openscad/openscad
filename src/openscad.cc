@@ -42,6 +42,7 @@
 #include "stackcheck.h"
 #include "CocoaUtils.h"
 #include "FontCache.h"
+#include "memory.h"
 
 #include <string>
 #include <vector>
@@ -326,10 +327,6 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	parser_init();
 	localization_init();
 
-	Tree tree;
-#ifdef ENABLE_CGAL
-	GeometryEvaluator geomevaluator(tree);
-#endif
 	if (arg_info) {
 	    info();
 	}
@@ -377,8 +374,8 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 
 	FileModule *root_module;
 	ModuleInstantiation root_inst("group");
-	AbstractNode *root_node;
-	AbstractNode *absolute_root_node;
+	shared_ptr<AbstractNode> absolute_root_node;
+	const AbstractNode *root_node;
 	shared_ptr<const Geometry> root_geom;
 
 	handle_dep(filename);
@@ -405,13 +402,18 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	top_ctx.setDocumentPath(fparent.string());
 
 	AbstractNode::resetIndexCounter();
-	absolute_root_node = root_module->instantiate(&top_ctx, &root_inst, NULL);
+	absolute_root_node.reset(root_module->instantiate(&top_ctx, &root_inst, NULL));
 
 	// Do we have an explicit root node (! modifier)?
-	if (!(root_node = find_root_tag(absolute_root_node)))
-		root_node = absolute_root_node;
+	root_node = find_root_tag(absolute_root_node.get());
+	if (!root_node) root_node = absolute_root_node.get();
 
-	tree.setRoot(root_node);
+	Tree tree;
+	tree.setRoot(absolute_root_node);
+	tree.setFocus(root_node);
+#ifdef ENABLE_CGAL
+	GeometryEvaluator geomevaluator(tree);
+#endif
 
 	if (csg_output_file) {
 		fs::current_path(original_path);
@@ -464,7 +466,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 				(renderer==Render::OPENCSG || renderer==Render::THROWNTOGETHER)) {
 			// echo or OpenCSG png -> don't necessarily need geometry evaluation
 		} else {
-			root_geom = geomevaluator.evaluateGeometry(*tree.root(), true);
+			root_geom = geomevaluator.evaluateGeometry(*tree.focus(), true);
 			if (!root_geom) root_geom.reset(new CGAL_Nef_polyhedron());
 			if (renderer == Render::CGAL && root_geom->getDimension() == 3) {
 				const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron*>(root_geom.get());
@@ -545,7 +547,6 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		return 1;
 #endif
 	}
-	delete root_node;
 	return 0;
 }
 

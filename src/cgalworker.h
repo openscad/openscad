@@ -11,7 +11,7 @@ public:
 	virtual ~CGALWorker();
 
 public slots:
-	void start(const class Tree &tree);
+	void start(const shared_ptr<class Tree> &tree);
 
 protected slots:
 	void work();
@@ -22,5 +22,5 @@ signals:
 protected:
 
 	class QThread *thread;
-	const class Tree *tree;
+	shared_ptr<Tree> tree;
 };

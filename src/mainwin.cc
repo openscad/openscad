@@ -239,7 +239,6 @@ MainWindow::MainWindow(const QString &filename)
 	top_ctx.registerBuiltin();
 
 	root_module = NULL;
-	absolute_root_node = NULL;
 	this->root_chain = NULL;
 #ifdef ENABLE_CGAL
 	this->cgalRenderer = NULL;
@@ -251,7 +250,7 @@ MainWindow::MainWindow(const QString &filename)
 
 	highlights_chain = NULL;
 	background_chain = NULL;
-	root_node = NULL;
+	this->tree.reset(new Tree);
 
 	this->anim_step = 0;
 	this->anim_numsteps = 0;
@@ -693,8 +692,8 @@ void MainWindow::updateReorderMode(bool reorderMode)
 
 MainWindow::~MainWindow()
 {
+	clearCurrentOutput();
 	if (root_module) delete root_module;
-	if (root_node) delete root_node;
 	if (root_chain) delete root_chain;
 #ifdef ENABLE_CGAL
 	this->root_geom.reset();
@@ -720,6 +719,11 @@ void MainWindow::showProgress()
 void MainWindow::report_func(const class AbstractNode*, void *vp, int mark)
 {
 	MainWindow *thisp = static_cast<MainWindow*>(vp);
+	if (!MainWindow::getWindows()->contains(thisp)) {
+		// Window was closed during processing -> cancel
+		throw ProgressCancelException();
+	}
+
 	int v = (int)((mark*1000.0) / progress_report_count);
 	int permille = v < 1000 ? v : 999;
 	if (permille > thisp->progresswidget->value()) {
@@ -1079,8 +1083,7 @@ void MainWindow::instantiateRoot()
 	this->thrownTogetherRenderer = NULL;
 
 	// Remove previous CSG tree
-	delete this->absolute_root_node;
-	this->absolute_root_node = NULL;
+	this->absolute_root_node.reset();
 
 	this->root_raw_term.reset();
 	this->root_norm_term.reset();
@@ -1097,7 +1100,7 @@ void MainWindow::instantiateRoot()
 	this->background_chain = NULL;
 
 	this->root_node = NULL;
-	this->tree.setRoot(NULL);
+	this->tree.reset(new Tree);
 
 	if (this->root_module) {
 		// Evaluate CSG tree
@@ -1110,18 +1113,17 @@ void MainWindow::instantiateRoot()
 		ModuleInstantiation mi = ModuleInstantiation( "group" );
 		this->root_inst = mi;
 
-		this->absolute_root_node = this->root_module->instantiate(&top_ctx, &this->root_inst, NULL);
+		this->absolute_root_node.reset(this->root_module->instantiate(&top_ctx, &this->root_inst, NULL));
 
 		if (this->absolute_root_node) {
 			// Do we have an explicit root node (! modifier)?
-			if (!(this->root_node = find_root_tag(this->absolute_root_node))) {
-				this->root_node = this->absolute_root_node;
-			}
-			// FIXME: Consider giving away ownership of root_node to the Tree, or use reference counted pointers
-			this->tree.setRoot(this->root_node);
+			this->root_node = find_root_tag(this->absolute_root_node.get());
+			if (!this->root_node) this->root_node = this->absolute_root_node.get();
+			this->tree->setRoot(this->absolute_root_node);
+			this->tree->setFocus(this->root_node);
 			// Dump the tree (to initialize caches).
 			// FIXME: We shouldn't really need to do this explicitly..
-			this->tree.getString(*this->root_node);
+			this->tree->getString(*this->root_node);
 		}
 	}
 
@@ -1152,11 +1154,11 @@ void MainWindow::compileCSG(bool procevents)
 	progress_report_prep(this->root_node, report_func, this);
 	try {
 #ifdef ENABLE_CGAL
-		GeometryEvaluator geomevaluator(this->tree);
+		GeometryEvaluator geomevaluator(*this->tree);
 #else
 		// FIXME: Will we support this?
 #endif
-		CSGTermEvaluator csgrenderer(this->tree, &geomevaluator);
+		CSGTermEvaluator csgrenderer(*this->tree, &geomevaluator);
 		if (procevents) QApplication::processEvents();
 		this->root_raw_term = csgrenderer.evaluateCSGTerm(*root_node, highlight_terms, background_terms);
 		GeometryCache::instance()->print();
@@ -2005,7 +2007,7 @@ void MainWindow::actionDisplayCSGTree()
 	e->setWindowTitle("CSG Tree Dump");
 	e->setReadOnly(true);
 	if (this->root_node) {
-		e->setPlainText(QString::fromUtf8(this->tree.getString(*this->root_node).c_str()));
+		e->setPlainText(QString::fromUtf8(this->tree->getString(*this->root_node).c_str()));
 	} else {
 		e->setPlainText("No CSG to dump. Please try compiling first...");
 	}
@@ -2237,7 +2239,7 @@ void MainWindow::actionExportCSG()
 		PRINTB("Can't open file \"%s\" for export", csg_filename.toLocal8Bit().constData());
 	}
 	else {
-		fstream << this->tree.getString(*this->root_node) << "\n";
+		fstream << this->tree->getString(*this->root_node) << "\n";
 		fstream.close();
 		PRINT("CSG export finished.");
 	}

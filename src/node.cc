@@ -36,9 +36,12 @@
 
 size_t AbstractNode::idx_counter;
 
-AbstractNode::AbstractNode(const ModuleInstantiation *mi)
+AbstractNode::AbstractNode(const ModuleInstantiation *mi) : flags(0)
 {
-	modinst = mi;
+	if (mi->isBackground()) this->setBackground();
+	if (mi->isHighlight()) this->setHighlight();
+	if (mi->isRoot()) this->setRoot();
+	
 	idx = idx_counter++;
 }
 
@@ -89,7 +92,7 @@ std::string AbstractIntersectionNode::name() const
 	return "intersection";
 }
 
-void AbstractNode::progress_prepare()
+void AbstractNode::progress_prepare() const
 {
 	std::for_each(this->children.begin(), this->children.end(), std::mem_fun(&AbstractNode::progress_prepare));
 	this->progress_mark = ++progress_report_count;
@@ -110,7 +113,7 @@ std::ostream &operator<<(std::ostream &stream, const AbstractNode &node)
 AbstractNode *find_root_tag(AbstractNode *n)
 {
   BOOST_FOREACH(AbstractNode *v, n->children) {
-    if (v->modinst->tag_root) return v;
+    if (v->isRoot()) return v;
     if (AbstractNode *vroot = find_root_tag(v)) return vroot;
   }
   return NULL;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "nodecache.h"
+#include "memory.h"
 
 /*!  
 	For now, just an abstraction of the node tree which keeps a dump
@@ -11,17 +12,21 @@
 class Tree
 {
 public:
-	Tree(const AbstractNode *root = NULL) : root_node(root) {}
+	Tree() {}
 	~Tree();
 
-	void setRoot(const AbstractNode *root);
-	const AbstractNode *root() const { return this->root_node; }
+	void setRoot(const shared_ptr<AbstractNode> &root);
+	const AbstractNode *root() const { return this->root_node.get(); }
+
+	void setFocus(const AbstractNode *node) { this->focus_node = node; }
+	const AbstractNode *focus() const { return this->focus_node; }
 
 	const std::string &getString(const AbstractNode &node) const;
 	const std::string &getIdString(const AbstractNode &node) const;
 
 private:
-	const AbstractNode *root_node;
+	shared_ptr<AbstractNode> root_node;
+	const AbstractNode *focus_node;
   mutable NodeCache nodecache;
   mutable NodeCache nodeidcache;
 };

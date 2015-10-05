@@ -62,7 +62,7 @@ void CSGTextRenderer::applyToChildren(const AbstractNode &node, OpenSCADOperator
 			const AbstractNode *chnode = *iter;
 			assert(this->cache.contains(*chnode));
 			// FIXME: Don't use deep access to modinst members
-			if (chnode->modinst->tag_background) continue;
+			if (chnode->isBackground()) continue;
 			if (first) {
 				N += "(" + this->cache[*chnode];
 // 				if (N.dim != 0) first = false; // FIXME: when can this happen?

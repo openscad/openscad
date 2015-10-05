@@ -139,12 +139,15 @@ int main(int argc, char **argv)
 	}
 
 	AbstractNode::resetIndexCounter();
-	AbstractNode *absolute_root_node = root_module->instantiate(&top_ctx, &root_inst);
-	AbstractNode *root_node;
+	shared_ptr<AbstractNode> absolute_root_node(root_module->instantiate(&top_ctx, &root_inst));
+	const AbstractNode *root_node;
 	// Do we have an explicit root node (! modifier)?
-	if (!(root_node = find_root_tag(absolute_root_node))) root_node = absolute_root_node;
+	root_node = find_root_tag(absolute_root_node.get());
+	if (!root_node) root_node = absolute_root_node.get();
 
-	Tree tree(root_node);
+	Tree tree;
+	tree.setRoot(absolute_root_node);
+	tree.setFocus(root_node);
 
 	GeometryEvaluator geomevaluator(tree);
 

@@ -48,8 +48,8 @@ std::string NodeDumper::dumpChildren(const AbstractNode &node)
 				 iter != this->visitedchildren[node.index()].end();
 				 iter++) {
 			assert(isCached(**iter));
-			if ((*iter)->modinst->isBackground()) dump << "%";
-			if ((*iter)->modinst->isHighlight()) dump << "#";
+			if ((*iter)->isBackground()) dump << "%";
+			if ((*iter)->isHighlight()) dump << "#";
 			dump << this->cache[**iter] << "\n";
 		}
 		

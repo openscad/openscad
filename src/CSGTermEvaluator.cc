@@ -58,11 +58,11 @@ void CSGTermEvaluator::applyToChildren(const AbstractNode &node, CSGTermEvaluato
 			}
 		}
 	}
-	if (t1 && node.modinst->isHighlight()) {
+	if (t1 && node.isHighlight()) {
 		t1->flag = CSGTerm::FLAG_HIGHLIGHT;
 		this->highlights.push_back(t1);
 	}
-	if (t1 && node.modinst->isBackground()) {
+	if (t1 && node.isBackground()) {
 		this->background.push_back(t1);
 		t1.reset(); // don't propagate background tagged nodes
 	}
@@ -91,7 +91,6 @@ static shared_ptr<CSGTerm> evaluate_csg_term_from_geometry(const State &state,
 																					std::vector<shared_ptr<CSGTerm> > &highlights, 
 																					std::vector<shared_ptr<CSGTerm> > &background, 
 																					const shared_ptr<const Geometry> &geom,
-																					const ModuleInstantiation *modinst, 
 																					const AbstractNode &node)
 {
 	std::stringstream stream;
@@ -121,11 +120,11 @@ static shared_ptr<CSGTerm> evaluate_csg_term_from_geometry(const State &state,
 	}
 
 	shared_ptr<CSGTerm> t(new CSGTerm(g, state.matrix(), state.color(), stream.str()));
-	if (modinst->isHighlight()) {
+	if (node.isHighlight()) {
 		t->flag = CSGTerm::FLAG_HIGHLIGHT;
 		highlights.push_back(t);
 	}
-	if (modinst->isBackground()) {
+	if (node.isBackground()) {
 		background.push_back(t);
 		t.reset();
 	}
@@ -140,7 +139,7 @@ Response CSGTermEvaluator::visit(State &state, const AbstractPolyNode &node)
 			shared_ptr<const Geometry> geom = this->geomevaluator->evaluateGeometry(node, false);
 			if (geom) {
 				t1 = evaluate_csg_term_from_geometry(state, this->highlights, this->background, 
-																						 geom, node.modinst, node);
+																						 geom, node);
 			}
 			node.progress_report();
 		}
@@ -207,7 +206,7 @@ Response CSGTermEvaluator::visit(State &state, const RenderNode &node)
 			geom = this->geomevaluator->evaluateGeometry(node, false);
 			if (geom) {
 				t1 = evaluate_csg_term_from_geometry(state, this->highlights, this->background, 
-																						 geom, node.modinst, node);
+																						 geom, node);
 			}
 			node.progress_report();
 		}
@@ -227,7 +226,7 @@ Response CSGTermEvaluator::visit(State &state, const CgaladvNode &node)
 			geom = this->geomevaluator->evaluateGeometry(node, false);
 			if (geom) {
 				t1 = evaluate_csg_term_from_geometry(state, this->highlights, this->background, 
-																						 geom, node.modinst, node);
+																						 geom, node);
 			}
 			node.progress_report();
 		}
