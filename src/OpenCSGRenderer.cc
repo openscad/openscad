@@ -29,69 +29,122 @@
 #include "polyset.h"
 #include "csgterm.h"
 #include "stl-utils.h"
-#ifdef ENABLE_OPENCSG
-#  include <opencsg.h>
-#endif
 
-class OpenCSGPrim : public OpenCSG::Primitive
+GeometryPrimitive::~GeometryPrimitive()
 {
-public:
-	OpenCSGPrim(OpenCSG::Operation operation, unsigned int convexity) :
-			OpenCSG::Primitive(operation, convexity) { }
-	shared_ptr<const Geometry> geom;
-	Transform3d m;
-	Renderer::csgmode_e csgmode;
-	virtual void render() {
-		glPushMatrix();
-		glMultMatrixd(m.data());
-		Renderer::render_surface(geom, csgmode, m);
-		glPopMatrix();
+	if(id_ && built_) {
+		glDeleteLists(id_, 1);
 	}
-};
+}
 
-OpenCSGRenderer::OpenCSGRenderer(CSGChain *root_chain, CSGChain *highlights_chain,
-																 CSGChain *background_chain, GLint *shaderinfo)
-	: root_chain(root_chain), highlights_chain(highlights_chain), 
-		background_chain(background_chain), shaderinfo(shaderinfo)
+void GeometryPrimitive::render()
 {
+	if (!built_) {
+		id_ = glGenLists(1);
+		glNewList(id_, GL_COMPILE);
+			Renderer::render_surface(geom_, csgmode_, m_);
+		glEndList();
+		built_ = true;
+	}
+
+	glPushMatrix();
+	glMultMatrixd(m_.data());
+		glCallList(id_);
+	glPopMatrix();
+}
+
+OpenCSGRenderer::OpenCSGRenderer(CSGChain *root_chain, CSGChain *highlights_chain, CSGChain *background_chain, GLint *shaderinfo)
+	: root_chain_(root_chain), highlights_chain_(highlights_chain),
+	  background_chain_(background_chain), shaderinfo_(shaderinfo),
+	  root_chain_built_(false), highlights_chain_built_(false), background_chain_built_(false)
+{
+}
+
+OpenCSGRenderer::~OpenCSGRenderer()
+{
+	if (root_chain_built_){
+		for (size_t i = 0; i < root_chain_primitives_.size(); i++) {
+			std::for_each(root_chain_primitives_[i].begin(), root_chain_primitives_[i].end(), del_fun<OpenCSG::Primitive>());
+		}
+		for (size_t i = 0; i < root_chain_list_ids_.size(); i++) {
+			glDeleteLists(root_chain_list_ids_[i],1);
+		}
+	}
+	if (highlights_chain_built_){
+		for (size_t i = 0; i < highlights_chain_primitives_.size(); i++) {
+			std::for_each(highlights_chain_primitives_[i].begin(), highlights_chain_primitives_[i].end(), del_fun<OpenCSG::Primitive>());
+		}
+		for (size_t i = 0; i < highlights_chain_list_ids_.size(); i++) {
+			glDeleteLists(highlights_chain_list_ids_[i],1);
+		}
+	}
+	if (background_chain_built_){
+		for (size_t i = 0; i < background_chain_primitives_.size(); i++) {
+			std::for_each(background_chain_primitives_[i].begin(), background_chain_primitives_[i].end(), del_fun<OpenCSG::Primitive>());
+		}
+		for (size_t i = 0; i < background_chain_list_ids_.size(); i++) {
+			glDeleteLists(background_chain_list_ids_[i],1);
+		}
+	}
 }
 
 void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges) const
 {
-	GLint *shaderinfo = this->shaderinfo;
+	GLint *shaderinfo = shaderinfo_;
 	if (!shaderinfo[0]) shaderinfo = NULL;
-	if (this->root_chain) {
-		renderCSGChain(this->root_chain, showedges ? shaderinfo : NULL, false, false);
+	if (root_chain_) {
+		renderCSGChain(root_chain_, showedges ? shaderinfo : NULL, false, false);
 	}
-	if (this->background_chain) {
-		renderCSGChain(this->background_chain, showedges ? shaderinfo : NULL, false, true);
+	if (background_chain_) {
+		renderCSGChain(background_chain_, showedges ? shaderinfo : NULL, false, true);
 	}
-	if (this->highlights_chain) {
-		renderCSGChain(this->highlights_chain, showedges ? shaderinfo : NULL, true, false);
+	if (highlights_chain_) {
+		renderCSGChain(highlights_chain_, showedges ? shaderinfo : NULL, true, false);
 	}
 }
 
-void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo, 
-																		 bool highlight, bool background) const
+void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo, bool highlight, bool background) const
 {
-	std::vector<OpenCSG::Primitive*> primitives;
+	std::vector<OpenCSG::Primitive *> primitives;
+	std::vector<std::vector<OpenCSG::Primitive *> > *chain_primitives;
+	std::vector<unsigned int> *chain_lists;
+	bool built;
+
+	if (highlight && !background) {
+		chain_primitives = const_cast<std::vector<std::vector<OpenCSG::Primitive *> > *>(&highlights_chain_primitives_);
+		chain_lists = const_cast<std::vector<unsigned int>*>(&highlights_chain_list_ids_);
+		built = highlights_chain_built_;
+	} else if (!highlight && background) {
+		chain_primitives = const_cast<std::vector<std::vector<OpenCSG::Primitive *> > *>(&background_chain_primitives_);
+		chain_lists = const_cast<std::vector<unsigned int>*>(&background_chain_list_ids_);
+		built = background_chain_built_;
+	} else {
+		chain_primitives = const_cast<std::vector<std::vector<OpenCSG::Primitive *> > *>(&root_chain_primitives_);
+		chain_lists = const_cast<std::vector<unsigned int>*>(&root_chain_list_ids_);
+		built = root_chain_built_;
+	}
+
 	size_t j = 0;
+	size_t l = 0;
+	size_t m = 0;
 	for (size_t i = 0;; i++) {
 		bool last = i == chain->objects.size();
 		const CSGChainObject &i_obj = last ? chain->objects[i-1] : chain->objects[i];
 		if (last || i_obj.type == CSGTerm::TYPE_UNION) {
 			if (j+1 != i) {
-				 OpenCSG::render(primitives);
+				if (!built) {
+					chain_primitives->push_back(primitives);
+				}
+				OpenCSG::render((*chain_primitives)[l]);
 				glDepthFunc(GL_EQUAL);
+				l++;
 			}
 			if (shaderinfo) glUseProgram(shaderinfo[0]);
 			for (; j < i; j++) {
 				const CSGChainObject &j_obj = chain->objects[j];
 				const Color4f &c = j_obj.color;
-				glPushMatrix();
-				glMultMatrixd(j_obj.matrix.data());
 				csgmode_e csgmode = csgmode_e(
-					(highlight ? 
+					(highlight ?
 					 CSGMODE_HIGHLIGHT :
 					 (background ? CSGMODE_BACKGROUND : CSGMODE_NORMAL)) |
 					(j_obj.type == CSGTerm::TYPE_DIFFERENCE ? CSGMODE_DIFFERENCE : 0));
@@ -120,44 +173,68 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo,
 					}
 				}
 
-				setColor(colormode, c.data(), shaderinfo);
 
-				render_surface(j_obj.geom, csgmode, j_obj.matrix, shaderinfo);
+				if (!built) {
+					chain_lists->push_back(glGenLists(1));
+					glNewList(chain_lists->back(), GL_COMPILE);
+					render_surface(j_obj.geom, csgmode, j_obj.matrix, shaderinfo);
+					glEndList();
+				}
+
+				glPushMatrix();
+				glMultMatrixd(j_obj.matrix.data());
+
+				setColor(colormode, c.data(), shaderinfo);
+				glCallList((*chain_lists)[m]);
 				glPopMatrix();
+
+				m++;
 			}
 			if (shaderinfo) glUseProgram(0);
-			for (unsigned int k = 0; k < primitives.size(); k++) {
+/*			for (unsigned int k = 0; k < primitives.size(); k++) {
 				delete primitives[k];
-			}
+			}*/
 			glDepthFunc(GL_LEQUAL);
-			primitives.clear();
+			if (!built) {
+				primitives.clear();
+			}
 		}
 
 		if (last) break;
 
 		if (i_obj.geom) {
-			OpenCSGPrim *prim = new OpenCSGPrim(i_obj.type == CSGTerm::TYPE_DIFFERENCE ?
-																					OpenCSG::Subtraction : OpenCSG::Intersection, i_obj.geom->getConvexity());
-			
-			prim->geom = i_obj.geom;
-			prim->m = i_obj.matrix;
-			prim->csgmode = csgmode_e(
-				(highlight ? 
-				 CSGMODE_HIGHLIGHT :
-				 (background ? CSGMODE_BACKGROUND : CSGMODE_NORMAL)) |
-				(i_obj.type == CSGTerm::TYPE_DIFFERENCE ? CSGMODE_DIFFERENCE : 0));
+			if (!built) {
+				csgmode_e csgmode = csgmode_e((highlight ?
+								CSGMODE_HIGHLIGHT :
+								(background ? CSGMODE_BACKGROUND : CSGMODE_NORMAL)) |
+								(i_obj.type == CSGTerm::TYPE_DIFFERENCE ? CSGMODE_DIFFERENCE : 0));
 
-			primitives.push_back(prim);
+				GeometryPrimitive *prim = new GeometryPrimitive(i_obj.geom, i_obj.matrix, csgmode,
+										i_obj.type == CSGTerm::TYPE_DIFFERENCE ?
+										OpenCSG::Subtraction : OpenCSG::Intersection, i_obj.geom->getConvexity());
+
+				primitives.push_back(prim);
+			}
 		}
 	}
-	std::for_each(primitives.begin(), primitives.end(), del_fun<OpenCSG::Primitive>());
+	//std::for_each(primitives.begin(), primitives.end(), del_fun<OpenCSG::Primitive>());
+
+	if ((!highlight && !background) && !root_chain_built_) {
+		const_cast<OpenCSGRenderer *>(this)->root_chain_built_ = true;
+	}
+	if ((highlight && !background) && !highlights_chain_built_) {
+		const_cast<OpenCSGRenderer *>(this)->highlights_chain_built_ = true;
+	}
+	if ((!highlight && background) && !background_chain_built_) {
+		const_cast<OpenCSGRenderer *>(this)->background_chain_built_ = true;
+	}
 }
 
 BoundingBox OpenCSGRenderer::getBoundingBox() const
 {
 	BoundingBox bbox;
-	if (this->root_chain) bbox = this->root_chain->getBoundingBox();
-	if (this->background_chain) bbox.extend(this->background_chain->getBoundingBox());
+	if (root_chain_) bbox = root_chain_->getBoundingBox();
+	if (background_chain_) bbox.extend(background_chain_->getBoundingBox());
 
 	return bbox;
 }
