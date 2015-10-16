@@ -848,7 +848,7 @@ void MainWindow::updatedAnimFps()
 	double fps = this->e_fps->text().toDouble(&fps_ok);
 	animate_timer->stop();
 	if (fps_ok && fps > 0) {
-		this->anim_step = this->anim_tval * (this->anim_numsteps - 1);
+		this->anim_step = int(this->anim_tval * this->anim_numsteps) % this->anim_numsteps;
 		animate_timer->setSingleShot(false);
 		animate_timer->setInterval(int(1000 / fps));
 		animate_timer->start();
@@ -880,7 +880,7 @@ void MainWindow::updateTVal()
 
 	if (this->anim_numsteps > 1) {
 		this->anim_step = (this->anim_step + 1) % this->anim_numsteps;
-		this->anim_tval = 1.0 * this->anim_step / (this->anim_numsteps - 1);
+		this->anim_tval = 1.0 * this->anim_step / this->anim_numsteps;
 	}
 	else if (this->anim_numsteps > 0) {
 		this->anim_step = 0;
