@@ -43,7 +43,7 @@ PACKAGES=(
     "qscintilla 2.8.4"
     # NB! For eigen, also update the path in the function
     # NB! For CGAL, also update the actual download URL in the function
-    "cgal 4.5.2"
+    "cgal 4.6.3"
     "glew 1.12.0"
     "gettext 0.19.4"
     "libffi 3.2.1"
@@ -463,8 +463,9 @@ build_cgal()
   cd $BASEDIR/src
   rm -rf CGAL-$version
   if [ ! -f CGAL-$version.tar.gz ]; then
-    # 4.5.2
-    curl -O https://gforge.inria.fr/frs/download.php/file/34512/CGAL-$version.tar.gz
+    # 4.6.3
+    curl -O https://gforge.inria.fr/frs/download.php/file/35138/CGAL-$version.tar.gz
+    # 4.5.2 curl -O https://gforge.inria.fr/frs/download.php/file/34512/CGAL-$version.tar.gz
     # 4.5.1 curl -O https://gforge.inria.fr/frs/download.php/file/34400/CGAL-$version.tar.gz
     # 4.5 curl -O https://gforge.inria.fr/frs/download.php/file/34149/CGAL-$version.tar.gz
     # 4.4 curl -O https://gforge.inria.fr/frs/download.php/file/33525/CGAL-$version.tar.gz
