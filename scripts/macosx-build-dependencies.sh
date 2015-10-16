@@ -35,23 +35,23 @@ OPTION_FORCE=0
 OPTION_CXX11=true
 
 PACKAGES=(
-    "eigen 3.2.4"
-    "gmp 5.1.3"
-    "mpfr 3.1.2"
-    "boost 1.58.0"
-    "qt5 5.4.1"
-    "qscintilla 2.8.4"
     # NB! For eigen, also update the path in the function
+    "eigen 3.2.6"
+    "gmp 5.1.3"
+    "mpfr 3.1.3"
+    "boost 1.59.0"
+    "qt5 5.4.1"
+    "qscintilla 2.9"
     # NB! For CGAL, also update the actual download URL in the function
     "cgal 4.6.3"
-    "glew 1.12.0"
-    "gettext 0.19.4"
+    "glew 1.13.0"
+    "gettext 0.19.6"
     "libffi 3.2.1"
-    "glib2 2.42.1"
+    "glib2 2.46.1"
     "opencsg 1.4.0"
-    "freetype 2.5.5"
+    "freetype 2.6.1"
     "ragel 6.9"
-    "harfbuzz 0.9.40"
+    "harfbuzz 1.0.6"
     "libxml2 2.9.2"
     "fontconfig 2.11.1"
 )
@@ -571,6 +571,7 @@ build_eigen()
   elif [ $version = "3.2.2" ]; then EIGENDIR=eigen-eigen-1306d75b4a21;
   elif [ $version = "3.2.3" ]; then EIGENDIR=eigen-eigen-36fd1ba04c12;
   elif [ $version = "3.2.4" ]; then EIGENDIR=eigen-eigen-10219c95fe65;
+  elif [ $version = "3.2.6" ]; then EIGENDIR=eigen-eigen-c58038c56923;
   fi
 
   if [ $EIGENDIR = "none" ]; then
