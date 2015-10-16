@@ -1,17 +1,17 @@
 module object() {
      difference() {
-          translate ([0, 0, 12]) cube(30, center=true);
-          translate ([0, 0, 12]) cube ([20, 10, 10], center=true);
-          translate ([0, 0, 3])  cylinder ( h=10, r1=8, r2=8, center=true);
+          cube(5);
+          cube(3);
+          translate ([0, 0, 2]) cube (2);
      }
-     
+
      difference() {
-          translate ([0, 0, 0])  cube ([18,18,25], center=true);
-          translate ([0, 0, 12]) cube ([20, 10, 10], center=true);
+          cube (5);
+          cube (3);
      }
 }
 
 minkowski() {
-     object(); 
-     cube(2);
+     object();
+     cube();
 }
