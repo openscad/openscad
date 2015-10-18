@@ -64,6 +64,15 @@ public:
 	bool showcrosshairs;
 	bool showscale;
 
+        enum ClipMode {
+            kClipX = 0,
+            kClipY = 1,
+            kClipZ = 2,
+            kClipN = 3,
+        } clipMode;
+        bool clipChanging;
+        double clipPosition;
+
 #ifdef ENABLE_OPENCSG
 	GLint shaderinfo[11];
 	bool is_opencsg_capable;

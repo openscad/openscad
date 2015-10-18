@@ -248,6 +248,7 @@ HEADERS += src/typedefs.h \
            src/CGAL_OGL_Polyhedron.h \
            src/OGL_helper.h \
            src/QGLView.h \
+           src/glQuickText.h \
            src/GLView.h \
            src/MainWindow.h \
            src/Preferences.h \
@@ -405,6 +406,7 @@ SOURCES += src/version_check.cc \
            src/editor.cc \
            src/GLView.cc \
            src/QGLView.cc \
+           src/glQuickText.cpp \
            src/AutoUpdater.cc \
            \
            src/grid.cc \

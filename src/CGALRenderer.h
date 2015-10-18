@@ -8,7 +8,7 @@ class CGALRenderer : public Renderer
 public:
 	CGALRenderer(shared_ptr<const class Geometry> geom);
 	~CGALRenderer();
-	virtual void draw(bool showfaces, bool showedges) const;
+	virtual void draw(bool showfaces, bool showedges, const double *clippingPlane) const;
 	virtual void setColorScheme(const ColorScheme &cs);
 	virtual BoundingBox getBoundingBox() const;
 

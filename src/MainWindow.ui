@@ -206,6 +206,62 @@
         </widget>
        </item>
        <item>
+        <widget class="QWidget" name="clippingPlaneBar" native="true">
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <item>
+           <widget class="QLabel" name="label_4">
+            <property name="text">
+             <string>Clip</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="clipRadioButtonX">
+            <property name="text">
+             <string>X</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="clipRadioButtonY">
+            <property name="text">
+             <string>Y</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="clipRadioButtonZ">
+            <property name="text">
+             <string>Z</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSlider" name="clipSlider">
+            <property name="maximum">
+             <number>10000</number>
+            </property>
+            <property name="singleStep">
+             <number>1</number>
+            </property>
+            <property name="pageStep">
+             <number>10</number>
+            </property>
+            <property name="value">
+             <number>10000</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
         <widget class="QToolBar" name="viewerToolBar">
          <addaction name="designActionPreview"/>
          <addaction name="designActionRender"/>
@@ -235,6 +291,7 @@
       <zorder>qglview</zorder>
       <zorder>viewerToolBar</zorder>
       <zorder>frameCompileResult</zorder>
+      <zorder>clippingPlaneBar</zorder>
      </widget>
     </item>
    </layout>
@@ -245,7 +302,7 @@
      <x>0</x>
      <y>0</y>
      <width>1118</width>
-     <height>22</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">

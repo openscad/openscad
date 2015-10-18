@@ -7,7 +7,7 @@ class ThrownTogetherRenderer : public Renderer
 public:
 	ThrownTogetherRenderer(class CSGChain *root_chain,
 												 CSGChain *highlights_chain, CSGChain *background_chain);
-	virtual void draw(bool showfaces, bool showedges) const;
+	virtual void draw(bool showfaces, bool showedges, const double *clippingPlane) const;
 	virtual BoundingBox getBoundingBox() const;
 private:
 	void renderCSGChain(CSGChain *chain, bool highlight, bool background, bool showedges, 
