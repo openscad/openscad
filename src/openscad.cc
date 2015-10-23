@@ -690,6 +690,9 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	updater->init();
 #endif
 
+#if !(QT_VERSION >= 0x050400)
+	// This workaround appears to only be needed when QGLWidget is used QOpenGLWidget
+	// available in Qt 5.4 is much better.
 	QGLFormat fmt;
 #if 0 /*** disabled by clifford wolf: adds rendering artefacts with OpenCSG ***/
 	// turn on anti-aliasing
@@ -703,6 +706,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	// (see https://bugreports.qt-project.org/browse/QTBUG-39370
 	fmt.setSwapInterval(0);
 	QGLFormat::setDefaultFormat(fmt);
+#endif
 
 	set_render_color_scheme(arg_colorscheme, false);
 	

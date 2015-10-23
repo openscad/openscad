@@ -1,7 +1,13 @@
 #pragma once
 
 #include "system-gl.h"
+#include <QtGlobal>
+
+#if QT_VERSION >= 0x050400
+#include <QOpenGLWidget>
+#else
 #include <QGLWidget>
+#endif
 #include <QLabel>
 
 #include <Eigen/Core>
@@ -9,7 +15,13 @@
 #include "GLView.h"
 #include "renderer.h"
 
-class QGLView : public QGLWidget, public GLView
+class QGLView :
+#if QT_VERSION >= 0x050400
+		public QOpenGLWidget,
+#else
+		public QGLWidget,
+#endif
+		public GLView
 {
 	Q_OBJECT
 	Q_PROPERTY(bool showFaces READ showFaces WRITE setShowFaces);
@@ -53,7 +65,10 @@ public slots:
 
 public:
 	QLabel *statusLabel;
-
+#if QT_VERSION >= 0x050400
+	inline void updateGL() { update(); }
+	inline QImage grabFrameBuffer() { return grabFramebuffer(); }
+#endif
 private:
 	void init();
 

@@ -50,12 +50,19 @@
 #  include <opencsg.h>
 #endif
 
-QGLView::QGLView(QWidget *parent) : QGLWidget(parent)
+QGLView::QGLView(QWidget *parent) :
+#if QT_VERSION >= 0x050400
+	QOpenGLWidget(parent)
+#else
+	QGLWidget(parent)
+#endif
 {
   init();
 }
 
+#if !(QT_VERSION >= 0x050400)
 static bool running_under_wine = false;
+#endif
 
 void QGLView::init()
 {
@@ -159,7 +166,9 @@ void QGLView::paintGL()
     statusLabel->setText(QString::fromStdString(nc.statusText()));
   }
 
+#if !(QT_VERSION >= 0x050400)
   if (running_under_wine) swapBuffers();
+#endif
 }
 
 void QGLView::mousePressEvent(QMouseEvent *event)
