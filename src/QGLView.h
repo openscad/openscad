@@ -21,7 +21,6 @@ class QGLView : public QGLWidget, public GLView
 
 public:
 	QGLView(QWidget *parent = NULL);
-	QGLView(const QGLFormat & format, QWidget *parent = NULL);
 #ifdef ENABLE_OPENCSG
 	bool hasOpenCSGSupport() { return this->opencsg_support; }
 #endif

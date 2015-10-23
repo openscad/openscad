@@ -55,11 +55,6 @@ QGLView::QGLView(QWidget *parent) : QGLWidget(parent)
   init();
 }
 
-QGLView::QGLView(const QGLFormat & format, QWidget *parent) : QGLWidget(format, parent)
-{
-  init();
-}
-
 static bool running_under_wine = false;
 
 void QGLView::init()
