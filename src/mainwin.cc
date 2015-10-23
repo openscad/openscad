@@ -1073,8 +1073,10 @@ void MainWindow::instantiateRoot()
 
   // Invalidate renderers before we kill the CSG tree
 	this->qglview->setRenderer(NULL);
+#ifdef ENABLE_OPENCSG
 	delete this->opencsgRenderer;
 	this->opencsgRenderer = NULL;
+#endif
 	delete this->thrownTogetherRenderer;
 	this->thrownTogetherRenderer = NULL;
 
@@ -1156,9 +1158,11 @@ void MainWindow::compileCSG(bool procevents)
 #else
 		// FIXME: Will we support this?
 #endif
+#ifdef ENABLE_OPENCSG
 		CSGTermEvaluator csgrenderer(this->tree, &geomevaluator);
 		if (procevents) QApplication::processEvents();
 		this->root_raw_term = csgrenderer.evaluateCSGTerm(*root_node, highlight_terms, background_terms);
+#endif
 		GeometryCache::instance()->print();
 #ifdef ENABLE_CGAL
 		CGALCache::instance()->print();
@@ -1218,6 +1222,7 @@ void MainWindow::compileCSG(bool procevents)
 		PRINTB("WARNING: Normalized tree has %d elements!", this->root_chain->objects.size());
 		PRINT("WARNING: OpenCSG rendering has been disabled.");
 	}
+#ifdef ENABLE_OPENCSG
 	else {
 		PRINTB("Normalized CSG tree has %d elements",
 					 (this->root_chain ? this->root_chain->objects.size() : 0));
@@ -1226,6 +1231,7 @@ void MainWindow::compileCSG(bool procevents)
 																								this->background_chain,
 																								this->qglview->shaderinfo);
 	}
+#endif
 	this->thrownTogetherRenderer = new ThrownTogetherRenderer(this->root_chain,
 																														this->highlights_chain,
 																														this->background_chain);
