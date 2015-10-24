@@ -1,7 +1,6 @@
-Given:
- VERSION (e.g. 2015.03-1)
+Given a version, e.g. 2015.03, and a patchlevel release, e.g. 2015.03-1
 
-o Make sure we have a $VERSION branch. If not, create one
+o Make sure we have an "openscad-$VERSION-branch" branch. If not, create one
 
 o Update VERSION and VERSIONDATE in
   openscad.pro
