@@ -12,14 +12,13 @@ fs::path boostfs_uncomplete(fs::path const p, fs::path const base);
 #include <boost/cast.hpp>
 #include <sstream>
 
-/* Convert number types (for example double to int) but print WARNING
- for failures during conversion. This is useful for situations where it
- is important to not fail silently during casting or conversion. (For 
- example, accidentally converting 64 bit types to 32 bit types, float to
- int, etc).   
- For positive overflow, return max of Tout template type
- For negative overflow, return min of Tout template type
- On other failures, return 0. */
+/* Convert number types but print WARNING for failures during 
+conversion. This is useful for situations where it is important to not 
+fail silently during casting or conversion. (For example, accidentally 
+converting 64 bit types to 32 bit types, float to int, etc).
+For positive overflow, return max of Tout template type
+For negative overflow, return min of Tout template type
+On other conversion failures, return 0. */
 template <class Tout,class Tin> Tout boost_numeric_cast( Tin input )
 {
 	Tout result = 0;
