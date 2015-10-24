@@ -240,6 +240,7 @@ ValuePtr builtin_rands(const Context *, const EvalContext *evalctx)
 		ValuePtr v0 = evalctx->getArgValue(0);
 		if (v0->type() != Value::NUMBER) goto quit;
 		double min = v0->toDouble();
+
 		if (boost::math::isinf(min)) {
 			PRINT("WARNING: rands() range min cannot be infinite");
 			min = -std::numeric_limits<double>::max()/2;
