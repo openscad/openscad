@@ -47,33 +47,16 @@ bool matrix_contains_nan( const Transform3d &m )
 	return false;
 }
 
-/* Hash a floating point number, copied almost line by line from
-Python's pyhash.c, originally by the python team, Mark Dickinson, etc.
-License is under ../doc/Python-LICENSE.TXT. Changes include
+/* Hash a floating point number, copied almost line by line from 
+Python's pyhash.c, originally by the Python team, Mark Dickinson, et al. 
+The copyright License for this code can be found in under 
+../doc/Python-LICENSE.TXT. Changes from the original code include 
 de-scattering typedefs, and removing the -1 special return case.
 
-Why use this?
+This is designed so srand() will work better with floating point 
+numbers. An oversimplified explanation is that the code calculates the 
+Remainder of the input divided by 2^31, in a very portable way. See also:
 
-srand(): we need a hash for doubles that won't round them to ints first.
-
-Backwards compatability: hash(x)==x if x is an signed integer with absolute
-value less than _PyHASH_MODULUS.
-
-Portability: It should behave the same across all platforms, independent
-of internal bit representations &c. This code can be easily extended for
-additional types in input and output if needed by modifying the bit
-values and typedefs.
-
-Speed: The loop only executes a couple of times at most.
-
-How does it work?
-
-It calculates the Remainder of the input divided by 2^31. Aka it finds
-(input % 2^31), aka 'reduction modulo 2^31' where input can be a huge
-floating point number like 3*2^90. It uses modular arithmetic and clever
-programming. For example: (x*2^n)%z can be rewritten ( x%z * (2^n)%z ) % z
-
-See also:
 http://bob.ippoli.to/archives/2010/03/23/py3k-unified-numeric-hash/
 https://github.com/python/cpython/blob/master/Python/pyhash.c
 https://github.com/python/cpython/blob/master/Include/pyhash.h
