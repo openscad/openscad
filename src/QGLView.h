@@ -62,11 +62,13 @@ public:
 public slots:
 	void ZoomIn(void);
 	void ZoomOut(void);
+#if QT_VERSION >= 0x050400
+	inline void updateGL() { update(); }
+#endif
 
 public:
 	QLabel *statusLabel;
 #if QT_VERSION >= 0x050400
-	inline void updateGL() { update(); }
 	inline QImage grabFrameBuffer() { return grabFramebuffer(); }
 #endif
 private:
