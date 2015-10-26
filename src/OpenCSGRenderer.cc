@@ -31,7 +31,6 @@
 #include "stl-utils.h"
 #ifdef ENABLE_OPENCSG
 #  include <opencsg.h>
-#endif
 
 class OpenCSGPrim : public OpenCSG::Primitive
 {
@@ -48,6 +47,8 @@ public:
 		glPopMatrix();
 	}
 };
+
+#endif
 
 OpenCSGRenderer::OpenCSGRenderer(CSGChain *root_chain, CSGChain *highlights_chain,
 																 CSGChain *background_chain, GLint *shaderinfo)
@@ -74,6 +75,7 @@ void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges) const
 void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo, 
 																		 bool highlight, bool background) const
 {
+#ifdef ENABLE_OPENCSG
 	std::vector<OpenCSG::Primitive*> primitives;
 	size_t j = 0;
 	for (size_t i = 0;; i++) {
@@ -151,6 +153,7 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo,
 		}
 	}
 	std::for_each(primitives.begin(), primitives.end(), del_fun<OpenCSG::Primitive>());
+#endif
 }
 
 BoundingBox OpenCSGRenderer::getBoundingBox() const
