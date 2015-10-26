@@ -848,7 +848,9 @@ done
 OPTION_PACKAGES="${@:$OPTIND}"
 
 OSX_VERSION=`sw_vers -productVersion | cut -d. -f2`
-if (( $OSX_VERSION >= 10 )); then
+if (( $OSX_VERSION >= 11 )); then
+  echo "Detected El Capitan (10.11) or later"
+elif (( $OSX_VERSION >= 10 )); then
   echo "Detected Yosemite (10.10) or later"
 elif (( $OSX_VERSION >= 9 )); then
   echo "Detected Mavericks (10.9)"
