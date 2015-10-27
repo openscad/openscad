@@ -345,6 +345,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	const char *term_output_file = NULL;
 	const char *echo_output_file = NULL;
 	const char *nefdbg_output_file = NULL;
+	const char *nef3_output_file = NULL;
 
 	std::string suffix = boosty::extension_str( output_file );
 	boost::algorithm::to_lower( suffix );
@@ -360,6 +361,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	else if (suffix == ".term") term_output_file = output_file;
 	else if (suffix == ".echo") echo_output_file = output_file;
 	else if (suffix == ".nefdbg") nefdbg_output_file = output_file;
+	else if (suffix == ".nef3") nef3_output_file = output_file;
 	else {
 		PRINTB("Unknown suffix for output file %s\n", output_file);
 		return 1;
@@ -545,6 +547,11 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 
 		if (nefdbg_output_file) {
 			if (!checkAndExport(root_geom, 3, OPENSCAD_NEFDBG, nefdbg_output_file))
+				return 1;
+		}
+
+		if (nef3_output_file) {
+			if (!checkAndExport(root_geom, 3, OPENSCAD_NEF3, nef3_output_file))
 				return 1;
 		}
 #else

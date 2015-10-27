@@ -40,6 +40,7 @@
 #include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"
 #include "cgalutils.h"
+#include <CGAL/IO/Nef_polyhedron_iostream_3.h> // for dumping .nef3
 
 struct triangle {
     std::string vs1;
@@ -67,6 +68,9 @@ void exportFile(const class Geometry *root_geom, std::ostream &output, FileForma
 		case OPENSCAD_NEFDBG:
 			output << N->dump();
 			break;
+		case OPENSCAD_NEF3:
+			output << *(N->p3);
+			break;
 		default:
 			assert(false && "Unknown file format");
 		}
@@ -84,7 +88,10 @@ void exportFile(const class Geometry *root_geom, std::ostream &output, FileForma
 				export_amf(*ps, output);
 				break;
 			case OPENSCAD_NEFDBG:
-				PRINT("Not a CGALNefPoly. Add some CSG ops.");
+				PRINT("Not a CGALNefPoly. Add some CSG ops?");
+				break;
+			case OPENSCAD_NEF3:
+				PRINT("Not a CGALNefPoly. Add some CSG ops?");
 				break;
 			default:
 				assert(false && "Unsupported file format");
