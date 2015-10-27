@@ -64,6 +64,9 @@ void exportFile(const class Geometry *root_geom, std::ostream &output, FileForma
 		case OPENSCAD_DXF:
 			assert(false && "Export Nef polyhedron as DXF not supported");
 			break;
+		case OPENSCAD_NEFDBG:
+			output << N->dump();
+			break;
 		default:
 			assert(false && "Unknown file format");
 		}
@@ -79,6 +82,9 @@ void exportFile(const class Geometry *root_geom, std::ostream &output, FileForma
 				break;
 			case OPENSCAD_AMF:
 				export_amf(*ps, output);
+				break;
+			case OPENSCAD_NEFDBG:
+				PRINT("Not a CGALNefPoly. Add some CSG ops.");
 				break;
 			default:
 				assert(false && "Unsupported file format");
