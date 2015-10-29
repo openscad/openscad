@@ -12,6 +12,8 @@
 #  -d       Version date (e.g. -d 2010.01.23)
 #  -mingw32 Cross-compile for win32 using MXE
 #  -mingw64 Cross-compile for win64 using MXE
+#  -msys64  Build 64bit for MSYS2 on Windows(TM) 
+#  -msys32  Build 32bit for MSYS2 on Windows(TM) 
 #  -snapshot Build a snapshot binary (make e.g. experimental features available, build with commit info)
 #  -tests   Build additional package containing the regression tests
 #
@@ -82,6 +84,18 @@ if [ "`echo $* | grep mingw64`" ]; then
   OS=UNIX_CROSS_WIN
   ARCH=64
   echo Mingw-cross build using ARCH=64
+fi
+
+if [ "`echo $* | grep msys32`" ]; then
+  OS=WIN
+  ARCH=32
+  echo MSYS2 build using ARCH=32
+fi
+
+if [ "`echo $* | grep msys64`" ]; then
+  OS=WIN
+  ARCH=64
+  echo MSYS2 build using ARCH=64
 fi
 
 if [ "`echo $* | grep snapshot`" ]; then
@@ -180,12 +194,14 @@ case $OS in
         export QT_SELECT
         ;;
     WIN) 
-        export QTDIR=/c/devmingw/qt2009.03
-        export QTMAKESPEC=win32-g++
-        export PATH=$PATH:/c/devmingw/qt2009.03/bin:/c/devmingw/qt2009.03/qt/bin
-        ZIP="/c/Program Files/7-Zip/7z.exe"
-        ZIPARGS="a -tzip"
+        #export QTDIR=/c/devmingw/qt2009.03
+        #export QTMAKESPEC=win32-g++
+        #export PATH=$PATH:/c/devmingw/qt2009.03/bin:/c/devmingw/qt2009.03/qt/bin
+        #ZIP="/c/Program Files/7-Zip/7z.exe"
+        #ZIPARGS="a -tzip"
         TARGET=release
+        ZIP="zip"
+        ZIPARGS="-r -q"
         ;;
     UNIX_CROSS_WIN) 
         . ./scripts/setenv-mingw-xbuild.sh $ARCH
@@ -198,7 +214,15 @@ esac
 
 case $OS in
     UNIX_CROSS_WIN)
-        cd $DEPLOYDIR && qmake VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+="$CONFIG" CONFIG+=mingw-cross-env CONFIG-=debug ../openscad.pro
+        cd $DEPLOYDIR
+        qmake VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+="$CONFIG" CONFIG+=mingw-cross-env CONFIG-=debug ../openscad.pro
+        cd $OPENSCADDIR
+    ;;
+    WIN)
+        cd $DEPLOYDIR
+        echo cd $DEPLOYDIR
+        echo qmake VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+="$CONFIG" CONFIG-=debug ../openscad.pro
+        qmake VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+="$CONFIG" CONFIG-=debug ../openscad.pro
         cd $OPENSCADDIR
     ;;
     *)
@@ -218,7 +242,7 @@ case $OS in
         cd $OPENSCADDIR
     ;;
     *)
-        make -s clean
+        #make -s clean
     ;;
 esac
 
@@ -226,11 +250,11 @@ case $OS in
     MACOSX) 
         rm -rf OpenSCAD.app
         ;;
-    WIN)
-        #if the following files are missing their tried removal stops the build process on msys
-        touch -t 200012121010 parser_yacc.h parser_yacc.cpp lexer_lex.cpp
-        ;;
-    UNIX_CROSS_WIN)
+    #WIN)
+    #    #if the following files are missing their tried removal stops the build process on msys
+    #    touch -t 200012121010 parser_yacc.h parser_yacc.cpp lexer_lex.cpp
+    #    ;;
+    UNIX_CROSS_WIN|WIN)
         # kludge to enable paralell make
         touch -t 200012121010 $OPENSCADDIR/src/parser_yacc.h
         touch -t 200012121010 $OPENSCADDIR/src/parser_yacc.cpp
@@ -242,7 +266,7 @@ esac
 echo "Building GUI binary..."
 
 case $OS in
-    UNIX_CROSS_WIN)
+    UNIX_CROSS_WIN|WIN)
         # make main openscad.exe
         cd $DEPLOYDIR
         if [ $FAKEMAKE ]; then
@@ -256,7 +280,7 @@ case $OS in
         fi
         # make console pipe-able openscad.com - see winconsole.pro for info
         qmake ../winconsole/winconsole.pro
-        make
+        make $TARGET
         if [ ! -e $TARGET/openscad.com ]; then
             echo "cant find $TARGET/openscad.com. build failed. stopping."
             exit
@@ -270,6 +294,7 @@ case $OS in
             make $TARGET -j$NUMCPU
         fi
     ;;
+
     *)
         make -j$NUMCPU $TARGET
     ;;
@@ -328,7 +353,7 @@ case $OS in
         TRANSLATIONDIR=OpenSCAD.app/Contents/Resources/locale
         COLORSCHEMESDIR=OpenSCAD.app/Contents/Resources/color-schemes
     ;;
-    UNIX_CROSS_WIN)
+    UNIX_CROSS_WIN|WIN)
         cd $OPENSCADDIR
         EXAMPLESDIR=$DEPLOYDIR/openscad-$VERSION/examples/
         LIBRARYDIR=$DEPLOYDIR/openscad-$VERSION/libraries/
@@ -368,7 +393,7 @@ if [ -n $FONTDIR ]; then
       cp -a fonts/05-osx-fonts.conf $FONTDIR
       cp -a fonts-osx/* $FONTDIR
       ;;
-    UNIX_CROSS_WIN)
+    UNIX_CROSS_WIN|WIN)
       cp -a "$DEPLOYDIR"/mingw-cross-env/etc/fonts/. "$FONTDIR"
       ;;
   esac
@@ -409,14 +434,27 @@ case $OS in
         echo "Binary created: OpenSCAD-$VERSION.dmg"
     ;;
     WIN)
+        cd $OPENSCADDIR
+        cd $DEPLOYDIR
+        BINFILE=$DEPLOYDIR/OpenSCAD-$VERSION-x86-$ARCH.zip
+        INSTFILE=$DEPLOYDIR/OpenSCAD-$VERSION-x86-$ARCH-Installer.exe
+
         #package
-        cp win32deps/* openscad-$VERSION
+        echo "Creating binary zip package"
         cp $TARGET/openscad.exe openscad-$VERSION
         cp $TARGET/openscad.com openscad-$VERSION
-        rm -f openscad-$VERSION.x86-$ARCH.zip
-        "$ZIP" $ZIPARGS openscad-$VERSION.x86-$ARCH.zip openscad-$VERSION
-        rm -rf openscad-$VERSION
-        echo "Binary created: openscad-$VERSION.zip"
+        rm -f OpenSCAD-$VERSION.x86-$ARCH.zip
+        "$ZIP" $ZIPARGS $BINFILE openscad-$VERSION
+        cd $OPENSCADDIR
+        echo "Binary zip package created"
+        #package
+        #cp win32deps/* openscad-$VERSION
+        #cp $TARGET/openscad.exe openscad-$VERSION
+        #cp $TARGET/openscad.com openscad-$VERSION
+        #rm -f openscad-$VERSION.x86-$ARCH.zip
+        #"$ZIP" $ZIPARGS openscad-$VERSION.x86-$ARCH.zip openscad-$VERSION
+        #rm -rf openscad-$VERSION
+        #echo "Binary created: openscad-$VERSION.zip"
         ;;
     UNIX_CROSS_WIN)
         cd $OPENSCADDIR
