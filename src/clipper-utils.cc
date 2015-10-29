@@ -1,4 +1,5 @@
 #include "clipper-utils.h"
+#include "printutils.h"
 #include <boost/foreach.hpp>
 
 namespace ClipperUtils {
@@ -30,7 +31,15 @@ namespace ClipperUtils {
 	ClipperLib::PolyTree sanitize(const ClipperLib::Paths &paths) {
 		ClipperLib::PolyTree result;
 		ClipperLib::Clipper clipper;
-		clipper.AddPaths(paths, ClipperLib::ptSubject, true);
+		try {
+			clipper.AddPaths(paths, ClipperLib::ptSubject, true);
+		}
+		catch(...) {
+		  // Most likely caught a RangeTest exception from clipper
+		  // Note that Clipper up to v6.2.1 incorrectly throws
+                  // an exception of type char* rather than a clipperException()
+		  PRINT("WARNING: Range check failed for polygon. skipping");
+		}
 		clipper.Execute(ClipperLib::ctUnion, result, ClipperLib::pftEvenOdd);
 		return result;
 	}

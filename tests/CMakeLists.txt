@@ -873,26 +873,18 @@ endif()
 #
 # GUI binary tests
 #
-set(APPLEBIN "${CMAKE_CURRENT_SOURCE_DIR}/../OpenSCAD.app/Contents/MacOS/OpenSCAD")
-set(MINGXBIN "${CMAKE_CURRENT_SOURCE_DIR}/../mingw32/release/openscad.exe")
-set(WIN32BIN "${CMAKE_CURRENT_SOURCE_DIR}/../Release/openscad.exe")
-set(UNXBIN "${CMAKE_CURRENT_SOURCE_DIR}/../openscad") # linux, bsd
-# BWORKBIN is for working on the build system, by using out-of-tree build
-set(BWORKBIN1 "${CMAKE_CURRENT_SOURCE_DIR}/../bin/openscad")
-set(BWORKBIN2 "${CMAKE_CURRENT_SOURCE_DIR}/../bin/release/openscad.exe")
-
-if(APPLE AND EXISTS "${APPLEBIN}")
-  set(OPENSCAD_BINPATH "${APPLEBIN}") 
-elseif(MINGW_CROSS_ENV_DIR AND EXISTS "${MINGXBIN}") 
-  set(OPENSCAD_BINPATH "${MINGXBIN}") 
-elseif(WIN32 AND EXISTS "${WIN32BIN}")
-  set(OPENSCAD_BINPATH "${WIN32BIN}") 
-elseif(EXISTS "${UNXBIN}")
-  set(OPENSCAD_BINPATH "${UNXBIN}")
-elseif(EXISTS "${BWORKBIN1}")
-  set(OPENSCAD_BINPATH "${BWORKBIN1}")
-elseif(EXISTS "${BWORKBIN2}")
-  set(OPENSCAD_BINPATH "${BWORKBIN2}")
+if(EXISTS "$ENV{OPENSCAD_BINARY}")
+  set(OPENSCAD_BINPATH "$ENV{OPENSCAD_BINARY}")
+elseif(APPLE)
+  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../OpenSCAD.app/Contents/MacOS/OpenSCAD")
+elseif (MINGW_CROSS_ENV_DIR) 
+  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../mingw32/release/openscad.exe")
+elseif(WIN32)
+  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../Release/openscad.exe")
+elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../bin/openscad")
+  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../bin/openscad")
+else()
+  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../openscad")
 endif()
 
 if(EXISTS "${OPENSCAD_BINPATH}")
@@ -1158,6 +1150,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/recursion-test-function.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/recursion-test-function2.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/recursion-test-module.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/recursion-test-vector.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/tail-recursion-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/value-reassignment-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/value-reassignment-tests2.scad
@@ -1231,6 +1224,7 @@ list(APPEND EXPORT3D_CGALCGAL_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1215c.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1221.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1225.scad)
+
 # Issue #910
 set_test_config(Bugs 
                      offcgalpngtest_polyhedron-tests
@@ -1364,7 +1358,8 @@ list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue13.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue945e.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1223.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1223b.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1246.scad)
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1246.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1455.scad)
 
 # We know that we cannot import weakly manifold files into CGAL, so to make tests easier
 # to manage, don't try. Once we improve import, we can reenable this

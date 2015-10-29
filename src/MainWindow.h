@@ -36,7 +36,11 @@ public:
 	class Preferences *prefs;
 
 	QTimer *animate_timer;
-	double tval, fps, fsteps;
+	int anim_step;
+	int anim_numsteps;
+	double anim_tval;
+	bool anim_dumping;
+	int anim_dump_start_step;
 
 	QTimer *autoReloadTimer;
 	std::string autoReloadId;
@@ -89,7 +93,10 @@ protected:
 	void closeEvent(QCloseEvent *event);
 
 private slots:
-	void updatedFps();
+	void updatedAnimTval();
+	void updatedAnimFps();
+	void updatedAnimSteps();
+	void updatedAnimDump(bool checked);
 	void updateTVal();
         void updateMdiMode(bool mdi);
         void updateUndockMode(bool undockMode);

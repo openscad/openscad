@@ -92,6 +92,10 @@ get_debian_7_deps()
 {
   get_debian_deps
   apt-get -y install libqt4-dev libqscintilla2-dev
+  echo "debian 7 detected"
+  echo "please build harfbuzz & see the README on building dependencies"
+  echo ". ./scripts/setenv-unibuild.sh"
+  echo "./scripts/uni-build-dependencies.sh harfbuzz"
 }
 
 get_ubuntu_14_deps()
@@ -161,7 +165,7 @@ try_using_etc_issue()
  elif [ "`grep -i raspbian /etc/issue`" ]; then
   get_debian_deps
  elif [ "`grep -i mint /etc/issue`" ]; then
-  get_debian_deps
+  get_debian_7_deps
  elif [ "`grep -i suse /etc/issue`" ]; then
   get_opensuse_deps
  elif [ "`grep -i fedora.release.2[2-9] /etc/issue`" ]; then

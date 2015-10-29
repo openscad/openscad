@@ -41,12 +41,12 @@ namespace {
 	Value::VectorType flatten(Value::VectorType const& vec) {
 		int n = 0;
 		for (unsigned int i = 0; i < vec.size(); i++) {
-			assert(vec[i].type() == Value::VECTOR);
-			n += vec[i].toVector().size();
+			assert(vec[i]->type() == Value::VECTOR);
+			n += vec[i]->toVector().size();
 		}
 		Value::VectorType ret; ret.reserve(n);
 		for (unsigned int i = 0; i < vec.size(); i++) {
-			std::copy(vec[i].toVector().begin(),vec[i].toVector().end(),std::back_inserter(ret));
+			std::copy(vec[i]->toVector().begin(),vec[i]->toVector().end(),std::back_inserter(ret));
 		}
 		return ret;
 	}
@@ -357,7 +357,7 @@ ExpressionConst::ExpressionConst(const ValuePtr &val) : const_value(val)
 
 ValuePtr ExpressionConst::evaluate(const class Context *) const
 {
-	return ValuePtr(this->const_value);
+	return this->const_value;
 }
 
 void ExpressionConst::print(std::ostream &stream) const
@@ -380,12 +380,12 @@ ValuePtr ExpressionRange::evaluate(const Context *context) const
 		ValuePtr v2 = this->second->evaluate(context);
 		if (v2->type() == Value::NUMBER) {
 			if (this->children.size() == 2) {
-				Value::RangeType range(v1->toDouble(), v2->toDouble());
+				RangeType range(v1->toDouble(), v2->toDouble());
 				return ValuePtr(range);
 			} else {
 				ValuePtr v3 = this->third->evaluate(context);
 				if (v3->type() == Value::NUMBER) {
-					Value::RangeType range(v1->toDouble(), v2->toDouble(), v3->toDouble());
+					RangeType range(v1->toDouble(), v2->toDouble(), v3->toDouble());
 					return ValuePtr(range);
 				}
 			}
@@ -409,7 +409,8 @@ ValuePtr ExpressionVector::evaluate(const Context *context) const
 {
 	Value::VectorType vec;
 	BOOST_FOREACH(const Expression *e, this->children) {
-		vec.push_back(*(e->evaluate(context)));
+		ValuePtr tmpval = e->evaluate(context);
+		vec.push_back(tmpval);
 	}
 	return ValuePtr(vec);
 }
@@ -545,7 +546,7 @@ ValuePtr ExpressionLc::evaluate(const Context *context) const
 			if (this->second->isListComprehension()) {
 				return this->second->evaluate(context);
 			} else {
-				vec.push_back((*this->second->evaluate(context)));
+				vec.push_back(this->second->evaluate(context));
 			}
 		}
 		return ValuePtr(vec);
@@ -561,26 +562,26 @@ ValuePtr ExpressionLc::evaluate(const Context *context) const
 		Context c(context);
 
 		if (it_values->type() == Value::RANGE) {
-			Value::RangeType range = it_values->toRange();
+			RangeType range = it_values->toRange();
 			boost::uint32_t steps = range.nbsteps();
 			if (steps >= 1000000) {
 				PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu).", steps);
 			} else {
-				for (Value::RangeType::iterator it = range.begin();it != range.end();it++) {
+				for (RangeType::iterator it = range.begin();it != range.end();it++) {
 					c.set_variable(it_name, ValuePtr(*it));
-					vec.push_back((*this->first->evaluate(&c)));
+					vec.push_back(this->first->evaluate(&c));
 				}
 			}
 		}
 		else if (it_values->type() == Value::VECTOR) {
 			for (size_t i = 0; i < it_values->toVector().size(); i++) {
 				c.set_variable(it_name, it_values->toVector()[i]);
-				vec.push_back((*this->first->evaluate(&c)));
+				vec.push_back(this->first->evaluate(&c));
 			}
 		}
 		else if (it_values->type() != Value::UNDEFINED) {
 			c.set_variable(it_name, it_values);
-			vec.push_back((*this->first->evaluate(&c)));
+			vec.push_back(this->first->evaluate(&c));
 		}
 		if (this->first->isListComprehension()) {
 			return ValuePtr(flatten(vec));

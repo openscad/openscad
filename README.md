@@ -2,6 +2,8 @@
 [![Coverity Status](https://scan.coverity.com/projects/2510/badge.svg)](https://scan.coverity.com/projects/2510)
 [![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/openscad/openscad/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
 
+[![Visit our IRC channel](https://kiwiirc.com/buttons/irc.freenode.net/openscad.png)](https://kiwiirc.com/client/irc.freenode.net/#openscad)
+
 # What is OpenSCAD?
 [![Flattr this git repo](http://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=openscad&url=http://openscad.org&title=OpenSCAD&language=&tags=github&category=software)
 
@@ -147,7 +149,7 @@ For the adventurous, it might be possible to build OpenSCAD using _MacPorts_ or 
 
     ```sudo port install opencsg qscintilla boost cgal pkgconfig eigen3 harfbuzz fontconfig```
 
-1. **Homebrew** (assumes [Homebrew](http://brew.sh)) is already installed)
+1. **Homebrew** (assumes [Homebrew](http://brew.sh) is already installed)
 
     NB! Homebrew's ```qscintilla2``` component doesn't support Qt5, so using Qt4 is currently necessary.
     However, Homebrew's Qt4 has a broken ```moc``` command, causing OpenSCAD compilation to

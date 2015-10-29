@@ -55,9 +55,9 @@ public:
 
     void visit(class Visitor& visitor);
 
-    Value defaultValue(const SettingsEntry& entry);
-    Value get(const SettingsEntry& entry);
-    void set(SettingsEntry& entry, const Value val);
+    const Value &defaultValue(const SettingsEntry& entry);
+    const Value &get(const SettingsEntry& entry);
+    void set(SettingsEntry& entry, const Value &val);
 
 private:
     Settings();
