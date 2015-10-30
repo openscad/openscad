@@ -89,14 +89,19 @@ fi
 if [ "`echo $* | grep msys32`" ]; then
   OS=WIN
   ARCH=32
-  echo MSYS2 build using ARCH=32
+  OPENSCADDIR=$PWD
+  DEPLOYDIR=$OPENSCADDIR/msys32
+  echo MSYS2 build using ARCH=$ARCH, in $DEPLOYDIR
 fi
 
 if [ "`echo $* | grep msys64`" ]; then
   OS=WIN
   ARCH=64
-  echo MSYS2 build using ARCH=64
+  OPENSCADDIR=$PWD
+  DEPLOYDIR=$OPENSCADDIR/msys64
+  echo MSYS2 build using ARCH=$ARCH, in $DEPLOYDIR
 fi
+
 
 if [ "`echo $* | grep snapshot`" ]; then
   CONFIG="$CONFIG snapshot experimental"
@@ -236,13 +241,13 @@ case $OS in
 esac
 
 case $OS in
-    UNIX_CROSS_WIN)
+    UNIX_CROSS_WIN|WIN)
         cd $DEPLOYDIR
         make clean ## comment out for test-run
         cd $OPENSCADDIR
     ;;
     *)
-        #make -s clean
+        make -s clean
     ;;
 esac
 
@@ -268,7 +273,8 @@ echo "Building GUI binary..."
 case $OS in
     UNIX_CROSS_WIN|WIN)
         # make main openscad.exe
-        cd $DEPLOYDIR
+        cd $DEPLOYDIR	
+        pwd
         if [ $FAKEMAKE ]; then
             echo "notexe. debugging build process" > $TARGET/openscad.exe
         else
@@ -360,6 +366,7 @@ case $OS in
         FONTDIR=$DEPLOYDIR/openscad-$VERSION/fonts/
         TRANSLATIONDIR=$DEPLOYDIR/openscad-$VERSION/locale/
         COLORSCHEMESDIR=$DEPLOYDIR/openscad-$VERSION/color-schemes/
+        QT5PLATFORMSDIR=$DEPLOYDIR/openscad-$VERSION/platforms
         rm -rf $DEPLOYDIR/openscad-$VERSION
         mkdir $DEPLOYDIR/openscad-$VERSION
     ;;
@@ -393,7 +400,7 @@ if [ -n $FONTDIR ]; then
       cp -a fonts/05-osx-fonts.conf $FONTDIR
       cp -a fonts-osx/* $FONTDIR
       ;;
-    UNIX_CROSS_WIN|WIN)
+    UNIX_CROSS_WIN)
       cp -a "$DEPLOYDIR"/mingw-cross-env/etc/fonts/. "$FONTDIR"
       ;;
   esac
@@ -436,17 +443,79 @@ case $OS in
     WIN)
         cd $OPENSCADDIR
         cd $DEPLOYDIR
+             
+        echo QT5 deployment, dll and other files copying...
+        windeployqt $TARGET/openscad.exe 
+
+        flprefix=/mingw$ARCH/bin/
+        echo MSYS2, dll copying... 
+        echo from $flprefix 
+        echo to $DEPLOYDIR/$TARGET
+        flist=
+        fl="$fl libboost_filesystem-mt.dll"
+        fl="$fl libboost_program_options-mt.dll"
+        fl="$fl libboost_regex-mt.dll"
+        fl="$fl libboost_system-mt.dll"
+        fl="$fl libboost_thread-mt.dll"
+        fl="$fl glew32.dll"
+        # fl="$fl opengl.dll"
+        fl="$fl qscintilla2.dll"
+        fl="$fl libgmp-10.dll"
+        fl="$fl libgmpxx-4.dll"
+        # fl="$fl libmpfr.dll"
+        fl="$fl libopencsg-1.dll"
+        fl="$fl libCGAL.dll"
+        fl="$fl libCGAL_Core.dll"
+        fl="$fl libharfbuzz-0.dll"
+        fl="$fl libharfbuzz-gobject-0.dll"
+        fl="$fl libglib-2.0-0.dll"
+        fl="$fl libfontconfig-1.dll"
+        fl="$fl libexpat-1.dll"
+        fl="$fl libbz2-1.dll"
+        fl="$fl libintl-8.dll"
+        fl="$fl libiconv-2.dll"
+        fl="$fl libfreetype-6.dll"
+        fl="$fl libpcre16-0.dll"
+        fl="$fl zlib1.dll"
+        fl="$fl libpng16-16.dll"
+        fl="$fl libicudt55.dll"
+        fl="$fl Qt5PrintSupport.dll"
+        for dllfile in $fl; do
+            if [ -e $flprefix/$dllfile ]; then
+                echo $flprefix/$dllfile
+                cp $flprefix/$dllfile $DEPLOYDIR/$TARGET/
+            else
+                echo cannot find $flprefix/$dllfile
+                echo stopping build.
+                exit 1
+            fi
+        done
+
         BINFILE=$DEPLOYDIR/OpenSCAD-$VERSION-x86-$ARCH.zip
         INSTFILE=$DEPLOYDIR/OpenSCAD-$VERSION-x86-$ARCH-Installer.exe
 
-        #package
-        echo "Creating binary zip package"
-        cp $TARGET/openscad.exe openscad-$VERSION
-        cp $TARGET/openscad.com openscad-$VERSION
+        echo
+        echo "Copying main binary .exe, .com, and dlls"
+        echo "from $DEPLOYDIR/$TARGET"
+        echo "to $DEPLOYDIR/openscad-$VERSION"
+        TMPTAR=$DEPLOYDIR/windeployqt.tar
+        cd $DEPLOYDIR
+        cd $TARGET
+        tar cvf $TMPTAR --exclude=winconsole.o .
+        cd $DEPLOYDIR
+        cd ./openscad-$VERSION
+        tar xvf $TMPTAR
+        cd $DEPLOYDIR
+        rm -f $TMPTAR
+        
+        echo "Creating zipfile..."
         rm -f OpenSCAD-$VERSION.x86-$ARCH.zip
         "$ZIP" $ZIPARGS $BINFILE openscad-$VERSION
         cd $OPENSCADDIR
-        echo "Binary zip package created"
+        echo "Binary zip package created:"
+        echo "  $BINFILE"
+        echo "Not creating installable .msi/.exe package"
+
         #package
         #cp win32deps/* openscad-$VERSION
         #cp $TARGET/openscad.exe openscad-$VERSION

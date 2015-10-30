@@ -10,7 +10,7 @@
   QMAKE_EXTRA_COMPILERS += bison
   bison_header.input = BISONSOURCES
   bison_header.output = ${QMAKE_FILE_PATH}/${QMAKE_FILE_BASE}_yacc.h
-  bison_header.commands = bison -d -p ${QMAKE_FILE_BASE} -o ${QMAKE_FILE_PATH}/${QMAKE_FILE_BASE}_yacc.cpp ${QMAKE_FILE_IN}
+  bison_header.commands = sleep 2 && bison -d -p ${QMAKE_FILE_BASE} -o ${QMAKE_FILE_PATH}/${QMAKE_FILE_BASE}_yacc.cpp ${QMAKE_FILE_IN}
   bison_header.commands += && if [ -e ${QMAKE_FILE_PATH}/${QMAKE_FILE_BASE}_yacc.hpp ]; then mv ${QMAKE_FILE_PATH}/${QMAKE_FILE_BASE}_yacc.hpp ${QMAKE_FILE_PATH}/${QMAKE_FILE_BASE}_yacc.h ; fi
   bison_header.CONFIG += target_predeps no_link
   silent:bison_header.commands = @echo Bison ${QMAKE_FILE_IN} && $$bison.commands

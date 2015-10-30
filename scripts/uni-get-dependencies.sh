@@ -123,7 +123,7 @@ get_msys2_x86_64_deps()
   pacinstall $i
  done
  for i in freetype fontconfig harfbuzz qt5 qt-creator boost cgal eigen3 \
-          glew qscintilla opencsg pkg-config cmake gdb; do
+          glew qscintilla opencsg pkg-config cmake gdb zip; do
    pacinstall mingw-w64-x86_64-$i
  done
 }
@@ -136,7 +136,7 @@ get_msys2_i686_deps()
   pacinstall $i
  done
  for i in freetype fontconfig harfbuzz qt5 qt-creator boost cgal eigen3 \
-          glew qscintilla opencsg pkg-config cmake gdb; do
+          glew qscintilla opencsg pkg-config cmake gdb zip; do
    pacinstall mingw-w64-i686-$i
  done
 }
