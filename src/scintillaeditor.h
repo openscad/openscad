@@ -63,6 +63,13 @@ private:
         QColor readColor(const boost::property_tree::ptree &pt, const std::string name, const QColor defaultColor);
         void enumerateColorSchemesInPath(colorscheme_set_t &result_set, const fs::path path);
         colorscheme_set_t enumerateColorSchemes();
+
+        virtual bool eventFilter(QObject* obj, QEvent *event);
+        void navigateOnNumber(int key);
+        void modifyNumber(int key);
+
+signals:
+	void previewRequest(void);
 	
 public slots:
 	void zoomIn();
