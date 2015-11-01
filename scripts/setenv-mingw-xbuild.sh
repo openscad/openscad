@@ -22,8 +22,8 @@ if [ ! $BASEDIR ]; then
 	BASEDIR=$HOME/openscad_deps
 fi
 
-DEPLOYDIR64=$OPENSCADDIR/mingw64
-DEPLOYDIR32=$OPENSCADDIR/mingw32
+DEPLOYDIR64=$OPENSCADDIR/mingw64.static
+DEPLOYDIR32=$OPENSCADDIR/mingw32.static
 
 if [ ! $DEPLOYDIR ]; then
 	if [ "`echo $* | grep 64 `" ]; then
@@ -38,6 +38,11 @@ if [ ! $MXEDIR ]; then
 		MXEDIR=$BASEDIR/mxe-w64
 	else
 		MXEDIR=$BASEDIR/mxe
+	fi
+	if [ ! -e $MXEDIR ]; then
+		if [ -e /opt/mxe ]; then
+			MXEDIR=/opt/mxe
+		fi
 	fi
 fi
 
