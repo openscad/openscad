@@ -72,16 +72,17 @@ elif [[ $OSTYPE == "linux-gnu" ]]; then
   echo "Detected build-machine ARCH: $ARCH"
 fi
 
-if [ "`echo $* | grep mingw32`" ]; then
+if [ "`echo $* | grep mingw`" ]; then
   OS=UNIX_CROSS_WIN
   ARCH=32
-  echo Mingw-cross build using ARCH=32
-fi
-
-if [ "`echo $* | grep mingw64`" ]; then
-  OS=UNIX_CROSS_WIN
-  ARCH=64
-  echo Mingw-cross build using ARCH=64
+  MXELIBTYPE=static
+  if [ "`echo $* | grep mingw64`" ]; then
+    ARCH=64
+  fi
+  if [ "`echo $* | grep shared`" ]; then
+    MXELIBTYPE=shared
+  fi
+  echo Mingw-cross build using ARCH=$ARCH MXELIBTYPE=$MXELIBTYPE
 fi
 
 if [ "`echo $* | grep snapshot`" ]; then
@@ -179,7 +180,7 @@ case $OS in
         QT_SELECT=5
         export QT_SELECT
         ;;
-    WIN) 
+    WIN)
         export QTDIR=/c/devmingw/qt2009.03
         export QTMAKESPEC=win32-g++
         export PATH=$PATH:/c/devmingw/qt2009.03/bin:/c/devmingw/qt2009.03/qt/bin
@@ -187,8 +188,8 @@ case $OS in
         ZIPARGS="a -tzip"
         TARGET=release
         ;;
-    UNIX_CROSS_WIN) 
-        . ./scripts/setenv-mingw-xbuild.sh $ARCH
+    UNIX_CROSS_WIN)
+        . ./scripts/setenv-mingw-xbuild.sh $ARCH $MXELIBTYPE
         TARGET=release
         ZIP="zip"
         ZIPARGS="-r -q"
@@ -198,7 +199,8 @@ esac
 
 case $OS in
     UNIX_CROSS_WIN)
-        cd $DEPLOYDIR && qmake VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+="$CONFIG" CONFIG+=mingw-cross-env CONFIG-=debug ../openscad.pro
+        cd $DEPLOYDIR
+        qmake VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+="$CONFIG" CONFIG+=mingw-cross-env CONFIG-=debug ../openscad.pro
         cd $OPENSCADDIR
     ;;
     *)
