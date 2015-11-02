@@ -66,7 +66,7 @@ private:
 
         virtual bool eventFilter(QObject* obj, QEvent *event);
         void navigateOnNumber(int key);
-        void modifyNumber(int key);
+        bool modifyNumber(int key);
 
 signals:
 	void previewRequest(void);

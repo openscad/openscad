@@ -606,6 +606,8 @@ QString ScintillaEditor::selectedText()
 
 bool ScintillaEditor::eventFilter(QObject* obj, QEvent *e)
 {
+	static bool wasChanged=false;
+
 	if (obj != qsci) return EditorInterface::eventFilter(obj, e);
 
 	if (	e->type()==QEvent::KeyPress
@@ -613,6 +615,7 @@ bool ScintillaEditor::eventFilter(QObject* obj, QEvent *e)
 		 ) {
 		QKeyEvent *ke = static_cast<QKeyEvent*>(e);
 
+		if (ke->key()==Qt::Key_Alt && ke->type()==QEvent::KeyRelease) wasChanged=false;
 		if (	ke->modifiers()==Qt::AltModifier )
 		{
 			switch (ke->key())
@@ -627,9 +630,15 @@ bool ScintillaEditor::eventFilter(QObject* obj, QEvent *e)
 				case Qt::Key_Up:
 				case Qt::Key_Down:
 					if (e->type()==QEvent::KeyPress) {
-						modifyNumber(ke->key());
+						if (modifyNumber(ke->key())) wasChanged=true;
 					}
 					return true;
+
+				case Qt::Key_Backspace:
+					if (e->type()==QEvent::KeyPress && wasChanged) {
+						QTimer::singleShot(0,this,SIGNAL(previewRequest()));
+					}
+					return false;
 			}
 		}
 	}
@@ -643,10 +652,10 @@ void ScintillaEditor::navigateOnNumber(int key)
 	qsci->getCursorPosition(&line, &index);
 	QString text=qsci->text(line);
 	QString left=text.left(index);
-	bool dotOnLeft=left.indexOf(QRegExp("\\.\\d*$"))>=0;
+	bool dotOnLeft=left.contains(QRegExp("\\.\\d*$"));
 	bool dotJustLeft=index>1 && text[index-2]=='.';
 	bool dotJustRight=text[index]=='.';
-	bool numOnLeft=left.indexOf(QRegExp("\\d\\.?$"))>=0 || left.endsWith("-.");
+	bool numOnLeft=left.contains(QRegExp("\\d\\.?$")) || left.endsWith("-.");
 	bool numOnRight=text.indexOf(QRegExp("\\.?\\d"),index)==index;
 
 	switch (key)
@@ -673,7 +682,7 @@ void ScintillaEditor::navigateOnNumber(int key)
 	}
 }
 
-void ScintillaEditor::modifyNumber(int key)
+bool ScintillaEditor::modifyNumber(int key)
 {
 	int line, index;
 	qsci->getCursorPosition(&line, &index);
@@ -687,15 +696,16 @@ void ScintillaEditor::modifyNumber(int key)
 	int end=text.indexOf(QRegExp("[^0-9.]"),index);
 	if (end<0) end=text.length();
 	QString nr=text.mid(begin,end-begin);
+	if ( !(nr.contains(QRegExp("^[-+]?\\d*\\.?\\d*$")) && nr.contains(QRegExp("\\d"))) ) return false;
 	bool sign=nr[0]=='+'||nr[0]=='-';
 	if (nr.endsWith('.')) nr=nr.left(nr.length()-1);
 	int curpos=index-begin;
 	int dotpos=nr.indexOf('.');
 	int decimals=dotpos<0?0:nr.length()-dotpos-1;
-	int number=(dotpos<0)?nr.toInt():(nr.left(dotpos)+nr.mid(dotpos+1)).toInt();
+	long long int number=(dotpos<0)?nr.toLongLong():(nr.left(dotpos)+nr.mid(dotpos+1)).toLongLong();
 	int tail=nr.length()-curpos;
 	int exponent=tail-((dotpos>=curpos)?1:0);
-	int step=1;
+	long long int step=1;
 	for (int i=exponent; i>0; i--) step*=10;
 
 	switch (key) {
@@ -724,4 +734,5 @@ void ScintillaEditor::modifyNumber(int key)
 	}
 	qsci->setCursorPosition(line, begin+newnr.length()-tail);
 	emit previewRequest();
+	return true;
 }
