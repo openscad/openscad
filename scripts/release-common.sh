@@ -200,7 +200,11 @@ esac
 case $OS in
     UNIX_CROSS_WIN)
         cd $DEPLOYDIR
-        qmake VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+="$CONFIG" CONFIG+=mingw-cross-env CONFIG-=debug ../openscad.pro
+        MINGWCONFIG=mingw-cross-env
+        if [ $MXELIBTYPE = "shared" ]; then
+          MINGWCONFIG=mingw-cross-env-shared
+        fi
+        qmake VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+="$CONFIG" CONFIG+=$MINGWCONFIG CONFIG-=debug ../openscad.pro
         cd $OPENSCADDIR
     ;;
     *)
@@ -427,9 +431,78 @@ case $OS in
         INSTFILE=$DEPLOYDIR/OpenSCAD-$VERSION-x86-$ARCH-Installer.exe
 
         #package
+        if [ $MXELIBTYPE = "shared" ]; then
+          flprefix=$DEPLOYDIR/mingw-cross-env/bin
+          echo Copying dlls for shared library build
+          echo from $flprefix
+          echo to $DEPLOYDIR/$TARGET
+          flist=
+          # fl="$fl opengl.dll" # use Windows version?
+          # fl="$fl libmpfr.dll" # does not exist
+          fl="$fl libgmp-10.dll"
+          fl="$fl libgmpxx-4.dll"
+          fl="$fl libboost_filesystem-mt.dll"
+          fl="$fl libboost_program_options-mt.dll"
+          fl="$fl libboost_regex-mt.dll"
+          fl="$fl libboost_chrono-mt.dll"
+          fl="$fl libboost_system-mt.dll"
+          fl="$fl libboost_thread_win32-mt.dll"
+          fl="$fl libCGAL.dll"
+          fl="$fl libCGAL_Core.dll"
+          fl="$fl GLEW.dll"
+          fl="$fl libglib-2.0-0.dll"
+          fl="$fl libopencsg-1.dll"
+          fl="$fl libharfbuzz-0.dll"
+          # fl="$fl libharfbuzz-gobject-0.dll" # ????
+          fl="$fl libfontconfig-1.dll"
+          fl="$fl libexpat-1.dll"
+          fl="$fl libbz2.dll"
+          fl="$fl libintl-8.dll"
+          fl="$fl libiconv-2.dll"
+          fl="$fl libfreetype-6.dll"
+          fl="$fl libpcre16-0.dll"
+          fl="$fl zlib1.dll"
+          fl="$fl libpng16-16.dll"
+          fl="$fl icudt54.dll"
+          fl="$fl icudt.dll"
+          fl="$fl icuin.dll"
+          fl="$fl libstdc++-6.dll"
+          fl="$fl ../qt5/lib/qscintilla2.dll"
+          fl="$fl ../qt5/bin/Qt5PrintSupport.dll"
+          fl="$fl ../qt5/bin/Qt5Core.dll"
+          fl="$fl ../qt5/bin/Qt5Gui.dll"
+          fl="$fl ../qt5/bin/Qt5OpenGL.dll"
+          #  fl="$fl ../qt5/bin/QtSvg4.dll" # why is this here?
+          fl="$fl ../qt5/bin/Qt5Widgets.dll"
+          fl="$fl ../qt5/bin/Qt5PrintSupport.dll"
+          fl="$fl ../qt5/bin/Qt5PrintSupport.dll"
+          for dllfile in $fl; do
+            if [ -e $flprefix/$dllfile ]; then
+                echo $flprefix/$dllfile
+                cp $flprefix/$dllfile $DEPLOYDIR/$TARGET/
+            else
+                echo cannot find $flprefix/$dllfile
+                echo stopping build.
+                exit 1
+            fi
+          done
+        fi
+
+        echo "Copying main binary .exe, .com, and dlls"
+        echo "from $DEPLOYDIR/$TARGET"
+        echo "to $DEPLOYDIR/openscad-$VERSION"
+        TMPTAR=$DEPLOYDIR/tmpmingw.$ARCH.$MXELIBTYPE.tar
+        cd $DEPLOYDIR
+        cd $TARGET
+        tar cvf $TMPTAR --exclude=winconsole.o .
+        cd $DEPLOYDIR
+        cd ./openscad-$VERSION
+        tar xvf $TMPTAR
+        cd $DEPLOYDIR
+        rm -f $TMPTAR
+
+
         echo "Creating binary zip package"
-        cp $TARGET/openscad.exe openscad-$VERSION
-        cp $TARGET/openscad.com openscad-$VERSION
         rm -f OpenSCAD-$VERSION.x86-$ARCH.zip
         "$ZIP" $ZIPARGS $BINFILE openscad-$VERSION
         cd $OPENSCADDIR
