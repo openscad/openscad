@@ -223,7 +223,8 @@ build_qt5()
      curl -O -L http://download.qt-project.org/official_releases/qt/${v[0]}.${v[1]}/$version/single/qt-everywhere-opensource-src-$version.tar.gz
   fi
   tar xzf qt-everywhere-opensource-src-$version.tar.gz
- cd qt-everywhere-opensource-src-$version
+  cd qt-everywhere-opensource-src-$version
+  patch -d qtbase -p1 < $OPENSCADDIR/patches/qt5/QTBUG-46846.patch
   if ! $USING_CXX11; then
     QT_EXTRA_FLAGS="-no-c++11"
   fi
