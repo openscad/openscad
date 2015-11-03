@@ -68,7 +68,7 @@ shared_ptr<CSGTerm> CSGTerm::createCSGTerm(type_e type, shared_ptr<CSGTerm> left
 		}
 	}
 
-  // Pruning the tree. For details, see:
+  // Pruning the tree. For details, see "Solid Modeling" by Goldfeather:
   // http://www.cc.gatech.edu/~turk/my_papers/pxpl_csg.pdf
 	const BoundingBox &leftbox = left->getBoundingBox();
 	const BoundingBox &rightbox = right->getBoundingBox();
