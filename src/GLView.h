@@ -38,9 +38,10 @@ public:
 	void initializeGL();
 	void resizeGL(int w, int h);
 	virtual void paintGL();
+    void paintGL_oneEye();
 
 	void setCamera(const Camera &cam);
-	void setupCamera();
+    void setupCamera(Vector3d eyeOffset=Vector3d());
 
 	void setColorScheme(const ColorScheme &cs);
 	void setColorScheme(const std::string &cs);
