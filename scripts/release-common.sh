@@ -221,6 +221,8 @@ case $OS in
     UNIX_CROSS_WIN)
         cd $DEPLOYDIR
         make clean ## comment out for test-run
+        rm -f ./release/*
+        rm -f ./debug/*
         cd $OPENSCADDIR
     ;;
     *)
@@ -439,6 +441,9 @@ case $OS in
           flist=
           # fl="$fl opengl.dll" # use Windows version?
           # fl="$fl libmpfr.dll" # does not exist
+          fl="$fl libgcc_s_seh-1.dll"
+          #fl="$fl libmpfr-4.dll" #mpfr doesnt have a shared lib. linked static
+          fl="$fl libpcre-1.dll"
           fl="$fl libgmp-10.dll"
           fl="$fl libgmpxx-4.dll"
           fl="$fl libboost_filesystem-mt.dll"

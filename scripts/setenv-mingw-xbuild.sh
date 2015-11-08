@@ -42,11 +42,6 @@ if [ ! $DEPLOYDIR ]; then
 fi
 
 if [ ! $MXEDIR ]; then
-	if [ "`echo $* | grep 64 `" ]; then
-		MXEDIR=$BASEDIR/mxe-w64
-	else
-		MXEDIR=$BASEDIR/mxe
-	fi
 	if [ ! -e $MXEDIR ]; then
 		if [ -e /opt/mxe ]; then
 			MXEDIR=/opt/mxe

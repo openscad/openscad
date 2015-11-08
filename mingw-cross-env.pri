@@ -26,8 +26,10 @@ CONFIG(mingw-cross-env) {
 CONFIG(mingw-cross-env-shared) {
   # on MXE, the shared library .dll files are under 'bin' not 'lib'.
   QMAKE_LFLAGS += -L./mingw-cross-env/bin
+  # there is no .dll for mpfr due to unusual coding issues
+  LIBS += mingw-cross-env/lib/libmpfr.a 
   LIBS += -lglew32 -lglut -lopengl32 -lGLEW -lglu32
-  LIBS += -lopencsg -lmpfr -lgmp -lCGAL 
+  LIBS += -lopencsg -lgmp -lCGAL 
   LIBS += -lfontconfig -lfreetype -lharfbuzz -lbz2 -lexpat -lintl -liconv
 }
 
