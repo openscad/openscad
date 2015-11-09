@@ -381,16 +381,16 @@ create_archive_mxe()
     fl="$fl ../qt5/bin/Qt5PrintSupport.dll"
     fl="$fl ../qt5/bin/Qt5PrintSupport.dll"
     for dllfile in $fl; do
-    if [ -e $flprefix/$dllfile ]; then
-    echo $flprefix/$dllfile
-    cp $flprefix/$dllfile $DEPLOYDIR/$MAKE_TARGET/
-    else
-    echo cannot find $flprefix/$dllfile
-    echo stopping build.
-    exit 1
-    fi
+      if [ -e $flprefix/$dllfile ]; then
+        echo $flprefix/$dllfile
+        cp $flprefix/$dllfile $DEPLOYDIR/$MAKE_TARGET/
+      else
+        echo cannot find $flprefix/$dllfile
+        echo stopping build.
+      exit 1
+      fi
     done
-  fi
+  fi # shared
 
   echo "Copying main binary .exe, .com, and other stuff"
   echo "from $DEPLOYDIR/$MAKE_TARGET"
