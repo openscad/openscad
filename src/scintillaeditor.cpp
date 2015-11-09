@@ -616,7 +616,7 @@ bool ScintillaEditor::eventFilter(QObject* obj, QEvent *e)
 		QKeyEvent *ke = static_cast<QKeyEvent*>(e);
 
 		if (ke->key()==Qt::Key_Alt && ke->type()==QEvent::KeyRelease) wasChanged=false;
-		if (	ke->modifiers()==Qt::AltModifier )
+		if ((ke->modifiers() & ~Qt::KeypadModifier) == Qt::AltModifier)
 		{
 			switch (ke->key())
 			{
