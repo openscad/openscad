@@ -4,12 +4,11 @@
 #
 # Usage:
 #
-#  source ./scripts/setenv-mingw-xbuild.sh           # 32 bit build
-#  source ./scripts/setenv-mingw-xbuild.sh shared    # 32 bit build, shared libs
-#  source ./scripts/setenv-mingw-xbuild.sh 64        # 64 bit build
+#  source ./scripts/setenv-mingw-xbuild.sh           # 32 bit build, static libs
+#  source ./scripts/setenv-mingw-xbuild.sh 32 shared # 32 bit build, shared libs
+#  source ./scripts/setenv-mingw-xbuild.sh 64        # 64 bit build, static libs
 #  source ./scripts/setenv-mingw-xbuild.sh 64 shared # 64 bit build, shared libs
 #  source ./scripts/setenv-mingw-xbuild.sh clean     # Clean up exported variables
-#  source ./scripts/setenv-mingw-xbuild.sh qt5       # use qt5 (experimental)
 #
 # Prerequisites:
 #
@@ -17,105 +16,116 @@
 #
 # Also see http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Cross-compiling_for_Windows_on_Linux_or_Mac_OS_X
 #
+# Note - this uses a lot of unpleasant global variables, take care if editing
 
-OPENSCADDIR=$PWD
+setup_base_mxe()
+{
+  if [ ! $BASEDIR ]; then
+    BASEDIR=$HOME/openscad_deps
+  fi
 
-if [ ! $BASEDIR ]; then
-	BASEDIR=$HOME/openscad_deps
-fi
+  if [ ! $MXEDIR ]; then
+    if [ -e /opt/mxe ]; then
+      MXEDIR=/opt/mxe
+    fi
+    if [ -e $BASEDIR/mxe ]; then
+      MXEDIR=$BASEDIR/mxe
+    fi
+    if [ ! -e $MXEDIR ]; then
+      echo mxe not found in $MXEDIR.
+      echo please set MXEDIR to base of mxe install
+      exit
+    fi
+  fi
+}
 
-MXELIBTYPE=static
-if [ "`echo $* | grep shared `" ]; then
-	MXELIBTYPE=shared
-fi
+setup_target()
+{
+  ARCH=i686
+  SUB=w64
+  SYS=mingw32
+  ABI=static
+  if [ "`echo $* | grep 64 `" ]; then ARCH=x86_64 ; fi
+  if [ "`echo $* | grep shared `" ]; then ABI=shared ; fi
+
+  MXE_TARGET=$ARCH-$SUB-$SYS.$ABI
+  MXE_TARGET_DIR=$MXEDIR/usr/$MXE_TARGET
+  MXE_TARGET_DIR_STATIC=$MXEDIR/usr/$ARCH-$SUB-$SYS.static
+  MXE_TARGET_DIR_SHARED=$MXEDIR/usr/$ARCH-$SUB-$SYS.shared
+  OPENSCAD_BUILD_TARGET=mxe
+  OPENSCAD_LIBRARIES=$MXE_TARGET_DIR
+}
+
+setup_path()
+{
+  if [ ! $MINGWX_SAVED_ORIGINAL_PATH ]; then
+    echo "current PATH saved in MINGWX_SAVED_ORIGINAL_PATH"
+    MINGWX_SAVED_ORIGINAL_PATH=$PATH
+  fi
+
+  PATH=$MXEDIR/usr/bin:$PATH
+
+  if [ "`echo $* | grep qt4 `" ]; then
+    PATH=$MXE_TARGET_DIR/qt/bin:$PATH
+  else
+    PATH=$MXE_TARGET_DIR/qt5/bin:$PATH
+  fi
+}
+
+setup_deploydir()
+{
+  DEPLOYDIR=$OPENSCADDIR/$MXE_TARGET
+  if [ ! -e $DEPLOYDIR ]; then
+    mkdir -p $DEPLOYDIR
+  fi
+}
 
 
-DEPLOYDIR64=$OPENSCADDIR/mingw64.$MXELIBTYPE
-DEPLOYDIR32=$OPENSCADDIR/mingw32.$MXELIBTYPE
+clean_variables()
+{
+  if [ $MINGWX_SAVED_ORIGINAL_PATH ]; then
+    PATH=$MINGWX_SAVED_ORIGINAL_PATH
+    echo "PATH restored from MINGWX_SAVED_ORIGINAL_PATH"
+  fi
+  for varname in $vl; do
+    eval $varname"="
+  done
+  echo "MXE cross build environment variables cleared"
+}
 
-if [ ! $DEPLOYDIR ]; then
-	if [ "`echo $* | grep 64 `" ]; then
-		DEPLOYDIR=$DEPLOYDIR64
-	else
-		DEPLOYDIR=$DEPLOYDIR32
-	fi
-fi
 
-if [ ! $MXEDIR ]; then
-	if [ ! -e $MXEDIR ]; then
-		if [ -e /opt/mxe ]; then
-			MXEDIR=/opt/mxe
-		fi
-	fi
-fi
+export_and_print_vars()
+{
+  for varname in $vl; do
+    export $varname
+    echo "$varname: `eval echo "$"$varname`"
+  done
+  echo PATH: $PATH
+}
 
-if [ ! $MXEQTSUBDIR ]; then
-	if [ "`echo $* | grep qt4 `" ]; then
-		# qt4 is just 'qt' in MXE, see http://mxe.cc
-		MXEQTSUBDIR=qt
-	else
-		# default is qt5 see issue #252
-		MXEQTSUBDIR=qt5
-	fi
-fi
+setup_variables()
+{
+  OPENSCADDIR=$PWD
+  setup_base_mxe $*
+  setup_target $*
+  setup_path $*
+  setup_deploydir $*
+  echo "MXE cross build environment variables setup.."
+}
 
-if [ ! -e $DEPLOYDIR ]; then
-  mkdir -p $DEPLOYDIR
-fi
-
-if [ "`echo $* | grep 64 `" ]; then
-	MXETARGETDIR=$MXEDIR/usr/x86_64-w64-mingw32.$MXELIBTYPE
-else
-	MXETARGETDIR=$MXEDIR/usr/i686-w64-mingw32.$MXELIBTYPE
-fi
-
-if [ ! $MINGWX_SAVED_ORIGINAL_PATH ]; then
-  MINGWX_SAVED_ORIGINAL_PATH=$PATH
-  echo current path saved
-fi
-
-PATH=$MXEDIR/usr/bin:$PATH
-PATH=$MXETARGETDIR/$MXEQTSUBDIR/bin:$PATH
-
-OPENSCAD_LIBRARIES=$MXETARGETDIR
-
+vl=
+vl="$vl OPENSCAD_BUILD_TARGET OPENSCAD_LIBRARIES BASEDIR MXEDIR"
+vl="$vl MXE_TARGET_DIR MXE_TARGET_DIR_SHARED MXE_TARGET_DIR_STATIC"
+vl="$vl DEPLOYDIR MINGWX_SAVED_ORIGINAL_PATH"
 if [ "`echo $* | grep clean`" ]; then
-  OPENSCAD_LIBRARIES=
-  BASEDIR=
-  MXEDIR=
-  MXETARGETDIR=
-  DEPLOYDIR=
-  PATH=$MINGWX_SAVED_ORIGINAL_PATH
-  MINGWX_SAVED_ORIGINAL_PATH=
-  MXEQTSUBDIR=
+  clean_variables
+  export_and_print_vars
 else
-  echo 'linking' $MXETARGETDIR
-  echo '     to' $DEPLOYDIR/mingw-cross-env
-  rm -f $DEPLOYDIR/mingw-cross-env
-  ln -s $MXETARGETDIR $DEPLOYDIR/mingw-cross-env
+  if [ $OPENSCAD_BUILD_TARGET ]; then
+    echo "OPENSCAD_BUILD_TARGET environment was previously setup"
+    echo "Please run this script with 'clean' before use, or logout/login"
+  else
+    setup_variables $*
+    export_and_print_vars
+  fi
 fi
-
-export OPENSCAD_LIBRARIES
-export BASEDIR
-export MXEDIR
-export MXETARGETDIR
-export MXELIBTYPE
-export DEPLOYDIR
-export PATH
-export MINGWX_SAVED_ORIGINAL_PATH
-export MXEQTSUBDIR
-
-echo OPENSCAD_LIBRARIES: $OPENSCAD_LIBRARIES
-echo BASEDIR: $BASEDIR
-echo MXEDIR: $MXEDIR
-echo MXETARGETDIR: $MXETARGETDIR
-echo MXELIBTYPE: $MXELIBTYPE
-echo DEPLOYDIR: $DEPLOYDIR
-echo MXEQTSUBDIR: $MXEQTSUBDIR
-if [ "`echo $* | grep clean`" ]; then
-  echo PATH restored to pre-setenv-mingw-x state
-else
-  echo PATH modified: $MXEDIR/usr/bin
-  echo PATH modified: $MXETARGETDIR/$MXEQTSUBDIR/bin
-fi
-
