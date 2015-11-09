@@ -52,7 +52,9 @@ setup_target()
   MXE_TARGET_DIR=$MXEDIR/usr/$MXE_TARGET
   MXE_TARGET_DIR_STATIC=$MXEDIR/usr/$ARCH-$SUB-$SYS.static
   MXE_TARGET_DIR_SHARED=$MXEDIR/usr/$ARCH-$SUB-$SYS.shared
-  OPENSCAD_BUILD_TARGET=mxe
+  OPENSCAD_BUILD_TARGET_OSTYPE=mxe
+  OPENSCAD_BUILD_TARGET_ARCH=$ARCH
+  OPENSCAD_BUILD_TARGET_ABI=$ABI
   OPENSCAD_LIBRARIES=$MXE_TARGET_DIR
 }
 
@@ -114,15 +116,17 @@ setup_variables()
 }
 
 vl=
-vl="$vl OPENSCAD_BUILD_TARGET OPENSCAD_LIBRARIES BASEDIR MXEDIR"
-vl="$vl MXE_TARGET_DIR MXE_TARGET_DIR_SHARED MXE_TARGET_DIR_STATIC"
+vl="$vl OPENSCAD_BUILD_TARGET_ARCH OPENSCAD_BUILD_TARGET_OSTYPE"
+vl="$vl OPENSCAD_BUILD_TARGET_ABI OPENSCAD_LIBRARIES BASEDIR MXEDIR"
+vl="$vl MXE_TARGET MXE_TARGET_DIR MXE_TARGET_DIR_SHARED MXE_TARGET_DIR_STATIC"
 vl="$vl DEPLOYDIR MINGWX_SAVED_ORIGINAL_PATH"
+
 if [ "`echo $* | grep clean`" ]; then
   clean_variables
   export_and_print_vars
 else
-  if [ $OPENSCAD_BUILD_TARGET ]; then
-    echo "OPENSCAD_BUILD_TARGET environment was previously setup"
+  if [ $OPENSCAD_BUILD_TARGET_OSTYPE ]; then
+    echo "OPENSCAD_BUILD_TARGET_OSTYPE environment was previously setup"
     echo "Please run this script with 'clean' before use, or logout/login"
   else
     setup_variables $*
