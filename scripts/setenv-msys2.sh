@@ -4,9 +4,12 @@
 #
 # Usage:
 #
-#  source ./scripts/setenv-msys2.sh 32        # 32 bit version
-#  source ./scripts/setenv-msys2.sh 64        # 64 bit version
+#  source ./scripts/setenv-msys2.sh           # Default build
+#  source ./scripts/setenv-msys2.sh clang     # Use clang compiler, not gcc
 #  source ./scripts/setenv-msys2.sh clean     # Clean up exported variables
+#
+# 32 or 64 bit is selected by starting the appropriate "MINGW64" or
+# "MINGW32" shell on the system and runnning these commands from within it.
 #
 # Prerequisites:
 #
@@ -20,7 +23,9 @@ setup_target()
   SUB=w64
   SYS=windows
   ABI=gnu
-  if [ "`echo $* | grep 64 `" ]; then ARCH=x86_64 ; fi
+  if [ "`uname -a | grep -i x86_64`" ]; then
+    ARCH=x86_64
+  fi
 
   OPENSCAD_BUILD_TARGET_OSTYPE=msys
   OPENSCAD_BUILD_TARGET_ARCH=$ARCH
@@ -35,8 +40,33 @@ setup_deploydir()
   fi
 }
 
+setup_path()
+{
+  if [ ! $MSYS2_SAVED_ORIGINAL_PATH ]; then
+    echo "current PATH saved in MSYS2_SAVED_ORIGINAL_PATH"
+    MSYS2_SAVED_ORIGINAL_PATH=$PATH
+  fi
+
+  MWBITS=32
+  if [ $ARCH = x86_64 ]; then MWBITS=64; fi
+  PATH=/mingw$MWBITS/bin:$PATH
+}
+
+setup_clang()
+{
+  CC=clang
+  CXX=clang++
+  echo if you have not already installed clang try this:
+  echo   pacman -Sy mingw-w64-x86_64-clang or
+  echo   pacman -Sy mingw-w64-i686-clang
+}
+
 clean_variables()
 {
+  if [ $MSYS2_SAVED_ORIGINAL_PATH ]; then
+    PATH=$MSYS2_SAVED_ORIGINAL_PATH
+    echo "PATH restored from MSYS2_SAVED_ORIGINAL_PATH"
+  fi
   for varname in $vl; do
     eval $varname"="
   done
@@ -54,6 +84,9 @@ export_and_print_vars()
 
 setup_variables()
 {
+  if [ "`echo $* | grep clang`" ]; then
+    setup_clang
+  fi
   OPENSCADDIR=$PWD
   setup_target $*
   setup_path $*
@@ -64,6 +97,7 @@ setup_variables()
 vl=
 vl="$vl OPENSCAD_BUILD_TARGET_ARCH OPENSCAD_BUILD_TARGET_OSTYPE"
 vl="$vl OPENSCAD_BUILD_TARGET_ABI OPENSCAD_BUILD_TARGET_TRIPLE DEPLOYDIR"
+vl="$vl CC CXX"
 
 if [ "`echo $* | grep clean`" ]; then
   clean_variables
