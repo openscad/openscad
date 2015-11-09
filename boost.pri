@@ -13,10 +13,12 @@ boost {
   macx: DEFINES += __ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES=0
 
   # MXE cross build
-  CONFIG(mingw-cross-env) {
-    DEFINES += BOOST_STATIC
+  CONFIG(mingw-cross-env)|CONFIG(mingw-cross-env-shared) {
     DEFINES += BOOST_THREAD_USE_LIB
-    DEFINES += Boost_USE_STATIC_LIBS
+    !CONFIG(mingw-cross-env-shared) {
+      DEFINES += BOOST_STATIC
+      DEFINES += Boost_USE_STATIC_LIBS
+    }
     BOOST_LINK_FLAGS = -lboost_thread_win32-mt -lboost_program_options-mt -lboost_filesystem-mt -lboost_system-mt -lboost_regex-mt -lboost_chrono-mt
   }
 

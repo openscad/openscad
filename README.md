@@ -177,59 +177,66 @@ script to help you:
 
 Take care that you don't have old local copies anywhere (/usr/local/). 
 If all dependencies are present and of a high enough version, skip ahead 
-to the Compilation instructions. 
-
-### Building for Linux/BSD on systems with older or missing dependencies
-
-If some of your system dependency libraries are missing or old, then you 
-can download and build newer versions into $HOME/openscad_deps by 
-following this process. First, run the script that sets up the 
-environment variables. 
-
-    source ./scripts/setenv-unibuild.sh
-
-Then run the script to compile all the prerequisite libraries above:
-
-    ./scripts/uni-build-dependencies.sh
-
-Note that huge dependencies like gcc, qt, or glib2 are not included 
-here, only the smaller ones (boost, CGAL, opencsg, etc). After the 
-build, again check dependencies.
-
-    ./scripts/check-dependencies.sh
-
-After that, follow the Compilation instructions below.
+to the Compilation instructions.
 
 ### Building for Windows
 
-OpenSCAD for Windows is usually cross-compiled from Linux. If you wish to
-attempt an MSVC build on Windows, please see this site:
-http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Windows
+OpenSCAD for Windows can be built using the MSYS2 system. First, 
+download and install MSYS2 from
 
-To cross-build, first make sure that you have development tools 
-installed to get GCC. Then after you've cloned this git repository, 
-start a new clean bash shell and run the script that sets up the environment 
-variables.
+     http://msys2.github.io
 
-    source ./scripts/setenv-mingw-xbuild.sh 32
+Now start a new clean bash shell and run the script that sets up the 
+environment variables.
+
+    source ./scripts/setenv-msys2.sh
 
 Then run the script to download & compile all the prerequisite libraries above:
 
-    ./scripts/mingw-x-build-dependencies.sh 32
+    ./scripts/msys2-get-dependencies.sh
 
-Note that this process can take several hours, as it uses the 
-http://mxe.cc system to cross-build many libraries. After it is 
-complete, build OpenSCAD and package it to an installer:
+Next, build OpenSCAD and package it to an installer and/or .zip archive:
 
-    ./scripts/release-common.sh mingw32
+    ./scripts/release-common.sh
 
-If you wish you can only build the openscad.exe binary:
+If you only want to build openscad.exe, not make a package, then
+skip ahead to the Compilation instructions. 
 
-    cd mingw32
-    qmake ../openscad.pro CONFIG+=mingw-cross-env
-    make
+### Building for Linux/BSD without dependencies, or without root access
 
-For a 64-bit Windows cross-build, replace 32 with 64 in the above instructions. 
+If some of your system dependency libraries are missing or old,
+or you dont have root and cannot install them by the standard methods,
+there are some helper scripts to attempt an alternative build.
+It will download and build dependencies into $HOME/openscad_deps.
+
+Fist run the script that sets up the environment variables.
+
+    source ./scripts/setenv-unibuild.sh
+
+Then run the script to download and compile all the prerequisite libraries.
+
+    ./scripts/uni-build-dependencies.sh
+
+This will build smaller dependencies like CGAL, boost, opencsg... if your
+system lacks major dependencies like gcc, qt, or glib2, you will need
+to install them yourself, typically configuring --prefix=$HOME/openscad_deps
+
+Now, run the helper script to see if the dependencies built properly.
+
+    ./scripts/check-dependencies.sh
+
+After that, skip ahead to the Compilation instructions below.
+
+### Cross-building for Windows from Linux
+
+This is how official releases are created. It uses the http://mxe.cc 
+cross-build system. See doc/win-cross-build.txt for more information.
+
+### Building with a Microsoft C++ compiler
+
+OpenSCAD has been built with MSVCC in the past, but the increased number
+of dependencies over time has broken the build. For more information please see
+http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Windows
 
 ### Compilation
 
@@ -245,3 +252,4 @@ If you had problems compiling from source, raise a new issue in the
 
 This site and it's subpages can also be helpful:
 http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_OpenSCAD_from_Sources
+

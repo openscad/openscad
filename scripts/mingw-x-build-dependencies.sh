@@ -5,14 +5,16 @@
 #
 # This script must be run from the OpenSCAD source root directory
 #
+# This script must be run after running the following:
+#
+#  source ./scripts/setenv-mingw-xbuild.sh
+#
+# It will create the build target (32/64 static/shared) as given to that script.
+#
 # Usage:
-#        ./scripts/mingw-x-build-dependencies.sh              # 32 bit
-#        ./scripts/mingw-x-build-dependencies.sh 64           # 64 bit
 #
-# If you just want to download, and build later:
-#
-#        ./scripts/mingw-x-build-dependencies.sh download     # 32 bit download
-#        ./scripts/mingw-x-build-dependencies.sh 64 download  # 64 bit download
+# ./scripts/mingw-x-build-dependencies.sh download # download only
+# ./scripts/mingw-x-build-dependencies.sh          # build targets from setenv
 #
 # Prerequisites:
 #
@@ -20,8 +22,8 @@
 #
 # Also see http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Cross-compiling_for_Windows_on_Linux_or_Mac_OS_X
 #
-# Also note the 64 bit is built on the branch of mxe by Tony Theodore
-# which hasnt been merged to official mxe as of writing
+# Shout out to Tony Theodore for updating MXE to 64 bit
+#
 
 OPENSCADDIR=$PWD
 if [ ! -f $OPENSCADDIR/openscad.pro ]; then
@@ -43,7 +45,10 @@ if [ ! $NUMJOBS ]; then
 	fi
 fi
 
-. ./scripts/setenv-mingw-xbuild.sh $*
+if [ ! $OPENSCAD_BUILD_TARGET_OSTYPE ]; then
+  echo "please run 'source ./scripts/setenv-mingw-xbuild.sh' first"
+  echo "please check the README.MD"
+fi
 
 if [ ! -e $BASEDIR ]; then
 	mkdir -p $BASEDIR
@@ -58,28 +63,21 @@ fi
 
 echo "entering" $MXEDIR
 cd $MXEDIR
-echo 'checkout openscad-snapshot-build branch'
-git checkout openscad-snapshot-build
-if [ "`echo $* | grep 64`" ]; then
- MXE_TARGETS='x86_64-w64-mingw32.static'
- if [ "`echo $* | grep download`" ]; then
-  PACKAGES='download-mpfr download-eigen download-opencsg download-cgal download-qtbase download-glib download-freetype download-fontconfig download-harfbuzz'
- else
-  PACKAGES='qtbase qscintilla2 mpfr eigen opencsg cgal glib freetype fontconfig harfbuzz'
- fi
-else
- MXE_TARGETS='i686-w64-mingw32.static'
- if [ "`echo $* | grep download`" ]; then
-  PACKAGES='download-mpfr download-eigen download-opencsg download-cgal download-qtbase download-nsis download-glib download-freetype download-fontconfig download-harfbuzz'
- else
-  PACKAGES='qtbase qscintilla2 mpfr eigen opencsg cgal nsis glib freetype fontconfig harfbuzz'
- fi
+plist=""
+plist="$plist qtbase qscintilla2 mpfr eigen opencsg cgal glib freetype"
+plist="$plist fontconfig harfbuzz nsis"
+if [ "`echo $* | grep download`" ]; then
+  plist2=
+  for pkg in $plist; do
+    plist2="$plist2 "$pkg"-download"
+  done
+  plist=$plist2
 fi
-echo make $PACKAGES MXE_TARGETS=$MXE_TARGETS -j $NUMCPU JOBS=$NUMJOBS
-make $PACKAGES MXE_TARGETS=$MXE_TARGETS -j $NUMCPU JOBS=$NUMJOBS
+cmd="make MXE_TARGETS=$MXE_TARGET -j $NUMCPU JOBS=$NUMJOBS $plist"
+echo $cmd
+eval $cmd
 
 echo "leaving" $MXEDIR
-
 echo "entering $OPENSCADDIR"
 cd $OPENSCADDIR
 

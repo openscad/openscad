@@ -1,0 +1,56 @@
+OpenSCAD for Windows can be cross-compiled from Linux. In fact that is 
+how the official releases are created.
+
+To cross-build, first make sure that you have development tools 
+installed to get GCC. You will also need to install pre-requisties for
+the mxe build system. See the following for more info:
+
+    http://mxe.cc 
+
+Once you have mxe dependencies, clone the openscad git repository.
+
+Now start a new clean bash shell and run the script that sets up the 
+environment variables. Set the target of your choice as well
+
+  source ./scripts/setenv-mingw-xbuild.sh 32         # 32 bit static link
+  source ./scripts/setenv-mingw-xbuild.sh 64         # 64 bit static link
+  source ./scripts/setenv-mingw-xbuild.sh 32 shared  # 32 bit shared dlls link
+  source ./scripts/setenv-mingw-xbuild.sh 64 shared  # 32 bit shared dlls link
+
+Note that to build Shared library versions, you need to first build the
+static versions. Shared depends on static (mostly due to mpfr).
+
+Now, make sure you have enough RAM+swap space. At least 2 gigabytes
+total is recommended (although if you kludge around you can get way with less)
+
+Now, run the script to download & compile all the prerequisite libraries
+which are listed in the README.md (cgal, opencsg, qt, etc)
+
+  ./scripts/mingw-x-build-dependencies.sh
+
+Note that this process can take dozens of hours and use tens of gigabytes
+of diskspace, depending on how many different targets you install
+and your processor number and speed, your disk system (SSD vs Rotational), etc.
+It is compiling all of the MXE dependencies from source code. QT, Glib, 
+gcc, binutils, all of it.
+
+Once MXE is built for your target, you can build and package OpenSCAD into an 
+Windows-style installer and/or .zip archive like so:
+
+    ./scripts/release-common.sh
+
+If you wish you can only build the raw openscad.exe binary. Here are a few
+examples how to do that.
+
+32 bit static link:
+
+    cd i686-w64-mingw32
+    qmake ../openscad.pro CONFIG+=mingw-cross-env
+    make
+
+64 bit dynamic / shared dll link:
+
+    cd x86_64-w64-mingw32
+    qmake ../openscad.pro CONFIG+=mingw-cross-env-shared
+    make
+
