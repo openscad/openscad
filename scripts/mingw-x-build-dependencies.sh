@@ -20,15 +20,11 @@
 #
 # Also see http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Cross-compiling_for_Windows_on_Linux_or_Mac_OS_X
 #
-# Notes:
-#
-# Originally this was based on Tony Theodore's branch of MXE, which is now
-# integrated into official MXE.
+# Shout out to Tony Theodore for updating MXE to 64 bit
 #
 # Targets:
 #
 # MXE allows 4 separate targets with the MXE_TARGETS environment variable.
-# As of 2015 shared are not guaranteed to work.
 #
 # 64 bit static linked libraries MXE_TARGETS=x86_64-w64-mingw32.static
 # 32 bit static linked libraries MXE_TARGETS=i686-w64-mingw32.static
@@ -71,8 +67,8 @@ fi
 
 echo "entering" $MXEDIR
 cd $MXEDIR
-echo 'checkout openscad-snapshot-build branch'
-git checkout openscad-snapshot-build
+# echo 'checkout openscad-snapshot-build branch'
+# git checkout openscad-snapshot-build
 if [ "`echo $* | grep 64`" ]; then
  MXE_TARGETS='x86_64-w64-mingw32.static'
  if [ "`echo $* | grep download`" ]; then

@@ -1,4 +1,4 @@
-# cross compilation unix->win32
+# cross compilation unix->win using the MXE system (mxe.cc)
 # To use mostly static lib linking, pass CONFIG+=mingw-cross-env to qmake
 # To use mostly shared lib DLL linking, pass CONFIG+=mingw-cross-env-shared
 
@@ -33,7 +33,7 @@ CONFIG(mingw-cross-env) {
 CONFIG(mingw-cross-env-shared) {
   # on MXE, the shared library .dll files are under 'bin' not 'lib'.
   QMAKE_LFLAGS += -L./$$(MXE_TARGET_DIR_SHARED)/bin
-  # there is no .dll for mpfr due to unusual coding issues. link statically.
+  # MPFR - there is no .dll due to unusual coding issues. link statically.
   LIBS += $$(MXE_TARGET_DIR_STATIC)/lib/libmpfr.a 
   LIBS += -lglew32 -lglut -lopengl32 -lGLEW -lglu32
   LIBS += -lopencsg -lgmp -lCGAL 
