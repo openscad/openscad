@@ -218,6 +218,7 @@ MainWindow::MainWindow(const QString &filename)
 		Preferences::inst()->fireEditorConfigChanged();
 	}
 #endif
+	connect(editor, SIGNAL(previewRequest()), this, SLOT(actionRenderPreview()));
 
 	editorDockContents->layout()->addWidget(editor);
 
@@ -1593,7 +1594,6 @@ void MainWindow::findBufferChanged() {
 	}
 }
 
-
 bool MainWindow::eventFilter(QObject* obj, QEvent *event)
 {
     if (obj == find_panel)
@@ -1803,9 +1803,13 @@ void MainWindow::csgReloadRender()
 
 void MainWindow::actionRenderPreview()
 {
+	static bool preview_requested;
+
+	preview_requested=true;
 	if (GuiLocker::isLocked()) return;
 	GuiLocker::lock();
 	autoReloadTimer->stop();
+	preview_requested=false;
 	setCurrentOutput();
 
 	PRINT("Parsing design (AST generation)...");
@@ -1813,6 +1817,12 @@ void MainWindow::actionRenderPreview()
 	this->afterCompileSlot = "csgRender";
 	this->procevents = !viewActionAnimate->isChecked();
 	compile(false);
+	if (preview_requested) {
+		// if the action was called when the gui was locked, we must request it one more time
+		// however, it's not possible to call it directly NOR make the loop
+		// it must be called from the mainloop
+		QTimer::singleShot(0, this, SLOT(actionRenderPreview()));
+	}
 }
 
 void MainWindow::csgRender()
