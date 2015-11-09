@@ -45,7 +45,7 @@ paralell_note()
 
 run()
 {
-  # run() calls function $1 specialized for our target $2. or the generic $1.
+  # run() calls function $1, possibly a specialized version for our target $2
   # see top of this file for some examples.
   # http://stackoverflow.com/questions/85880/determine-if-a-function-exists-in-bash
   runfunc1=`echo $1"_"$OPENSCAD_BUILD_TARGET_OSTYPE`
@@ -57,7 +57,7 @@ run()
     echo "calling $runfunc2"
     eval $runfunc2
   else
-    echo "$runfunc2 not defined for target $OPENSCAD_BUILD_TARGET_OSTYPE. skipping."
+    echo "neither $runfunc2 nor $runfunc1 were defined, skipping."
   fi
 }
 
@@ -136,6 +136,11 @@ setup_directories_mxe()
   COLORSCHEMESDIR=$DEPLOYDIR/openscad-$VERSION/color-schemes/
   rm -rf $DEPLOYDIR/openscad-$VERSION
   mkdir $DEPLOYDIR/openscad-$VERSION
+}
+
+setup_directories_msys()
+{
+  setup_directories_mxe
 }
 
 setup_directories_linux-gnu()
@@ -328,7 +333,7 @@ create_archive_mxe()
   INSTFILE=$DEPLOYDIR/OpenSCAD-$VERSION-$ARCH_INDICATOR-Installer.exe
 
   #package
-  if [ $MXELIBTYPE = "shared" ]; then
+  if [ $OPENSCAD_BUILD_TARGET_ABI = "shared" ]; then
     flprefix=$DEPLOYDIR/$MXE_TARGET_DIR/bin
     echo Copying dlls for shared library build
     echo from $flprefix
@@ -390,7 +395,7 @@ create_archive_mxe()
   echo "Copying main binary .exe, .com, and other stuff"
   echo "from $DEPLOYDIR/$MAKE_TARGET"
   echo "to $DEPLOYDIR/openscad-$VERSION"
-  TMPTAR=$DEPLOYDIR/tmpmingw.$OPENSCAD_BUILD_TARGET_ARCH.$MXELIBTYPE.tar
+  TMPTAR=$DEPLOYDIR/tmpmingw.$OPENSCAD_BUILD_TARGET_TRIPLE.tar
   cd $DEPLOYDIR
   cd $MAKE_TARGET
   tar cvf $TMPTAR --exclude=winconsole.o .
