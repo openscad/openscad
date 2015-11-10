@@ -1,4 +1,4 @@
-ECHO: undef
+XECHO: undef
 ECHO: "string"
 ECHO: "stringvar"
 ECHO: a = 1, b = 2, true, c = false
