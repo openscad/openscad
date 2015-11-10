@@ -251,35 +251,15 @@ create_archive_msys()
   echo MSYS2, dll copying...
   echo from $flprefix
   echo to $DEPLOYDIR/$TARGET
-  flist=
-  fl="$fl libboost_filesystem-mt.dll"
-  fl="$fl libboost_program_options-mt.dll"
-  fl="$fl libboost_regex-mt.dll"
-  fl="$fl libboost_system-mt.dll"
-  fl="$fl libboost_thread-mt.dll"
-  fl="$fl glew32.dll"
-  # fl="$fl opengl.dll"
-  fl="$fl qscintilla2.dll"
-  fl="$fl libgmp-10.dll"
-  fl="$fl libgmpxx-4.dll"
-  # fl="$fl libmpfr.dll"
-  fl="$fl libopencsg-1.dll"
-  fl="$fl libCGAL.dll"
-  fl="$fl libCGAL_Core.dll"
-  fl="$fl libharfbuzz-0.dll"
-  fl="$fl libharfbuzz-gobject-0.dll"
-  fl="$fl libglib-2.0-0.dll"
-  fl="$fl libfontconfig-1.dll"
-  fl="$fl libexpat-1.dll"
-  fl="$fl libbz2-1.dll"
-  fl="$fl libintl-8.dll"
-  fl="$fl libiconv-2.dll"
-  fl="$fl libfreetype-6.dll"
-  fl="$fl libpcre16-0.dll"
-  fl="$fl zlib1.dll"
-  fl="$fl libpng16-16.dll"
-  fl="$fl libicudt55.dll"
-  fl="$fl Qt5PrintSupport.dll"
+  fl=
+  boostlist="filesystem program_options regex system thread"
+  liblist="gmp-10 gmpxx-4 opencsg-1 harfbuzz-0 harfbuzz-gobject-0 glib-2.0-0"
+  liblist="$liblist CGAL CGAL_Core fontconfig-1 expat-1 bz2-1 intl-8 iconv-2"
+  liblist="$liblist pcre16-0 png16-16 icudt55 freetype-6"
+  dlist="glew32 opengl qscintilla2 zlib1 Qt5PrintSupport"
+  for file in $boostlist; do fl="$fl libboost"$file"-mt.dll"; done
+  for file in $liblist;   do fl="$fl lib"$file".dll"; done
+  for file in $dllist;    do fl="$fl "$file".dll"; done
   for dllfile in $fl; do
     if [ -e $flprefix/$dllfile ]; then
       echo $flprefix/$dllfile
