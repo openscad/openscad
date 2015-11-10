@@ -567,9 +567,11 @@ ValuePtr ExpressionLc::evaluate(const Context *context) const
 			if (steps >= 1000000) {
 				PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu).", steps);
 			} else {
-				for (RangeType::iterator it = range.begin();it != range.end();it++) {
-					c.set_variable(it_name, ValuePtr(*it));
-					vec.push_back(this->first->evaluate(&c));
+				if (steps > 0) {
+					for (RangeType::iterator it = range.begin();it != range.end();it++) {
+						c.set_variable(it_name, ValuePtr(*it));
+						vec.push_back(this->first->evaluate(&c));
+					}
 				}
 			}
 		}

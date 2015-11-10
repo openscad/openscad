@@ -731,7 +731,11 @@ void RangeType::normalize() {
 }
 
 boost::uint32_t RangeType::nbsteps() const {
-  if (boost::math::isnan(step_val) || boost::math::isinf(begin_val) || (boost::math::isinf(end_val))) {
+  if (boost::math::isnan(begin_val) || boost::math::isnan(end_val) || boost::math::isnan(step_val)) {
+		return 0;
+	}
+
+  if (boost::math::isinf(begin_val) || (boost::math::isinf(end_val))) {
     return std::numeric_limits<boost::uint32_t>::max();
   }
 
