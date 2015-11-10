@@ -217,6 +217,9 @@ setup_clang_linux()
 setup_varlist()
 {
   vl=
+  vl="$vl OPENSCAD_BUILD_TARGET_TRIPLE"
+  vl="$vl OPENSCAD_BUILD_TARGET_ARCH OPENSCAD_BUILD_TARGET_OSTYPE"
+  vl="$vl OPENSCAD_BUILD_TARGET_ABI"
   vl="$vl DEPLOYDIR BASEDIR LD_LIBRARY_PATH LD_RUN_PATH OPENSCAD_LIBRARIES"
   vl="$vl GLEWDIR QMAKESPEC QTDIR CC CXX"
 }
@@ -245,13 +248,25 @@ clean_variables()
     PATH=$SETENV_SAVED_ORIGINAL_PATH
     echo "PATH restored from SETENV_SAVED_ORIGINAL_PATH"
   fi
-  if [ $vl ]; then
+  if [ "`echo $vl`" ]; then
     for varname in $vl; do
       eval $varname"="
     done
   fi
   echo "SETENV cross build environment variables cleared"
 }
+
+export_and_print_vars()
+{
+  if [ "`echo $vl`" ]; then
+    for varname in $vl; do
+      export $varname
+      echo "$varname: "`eval echo "$"$varname`
+    done
+  fi
+  echo "PATH: $PATH"
+}
+
 
 run()
 {
@@ -286,6 +301,7 @@ detect_target_ostype()
     OPENSCAD_BUILD_TARGET_OSTYPE=msys
   fi
 }
+
 
 if [ "`echo $* | grep clean`" ]; then
   run clean_variables
