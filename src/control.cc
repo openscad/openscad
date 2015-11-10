@@ -79,15 +79,13 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 		Context c(ctx);
 		if (it_values->type() == Value::RANGE) {
 			RangeType range = it_values->toRange();
-			boost::uint32_t steps = range.nbsteps();
+			boost::uint32_t steps = range.numValues();
 			if (steps >= 10000) {
 				PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu).", steps);
 			} else {
-				if (steps > 0) {
-					for (RangeType::iterator it = range.begin();it != range.end();it++) {
-						c.set_variable(it_name, ValuePtr(*it));
-						for_eval(node, inst, l+1, &c, evalctx);
-					}
+				for (RangeType::iterator it = range.begin();it != range.end();it++) {
+					c.set_variable(it_name, ValuePtr(*it));
+					for_eval(node, inst, l+1, &c, evalctx);
 				}
 			}
 		}
@@ -239,7 +237,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 			}
 			else if (value->type() == Value::RANGE) {
 				RangeType range = value->toRange();
-				boost::uint32_t steps = range.nbsteps();
+				boost::uint32_t steps = range.numValues();
 				if (steps >= 10000) {
 					PRINTB("WARNING: Bad range parameter for children: too many elements (%lu).", steps);
 					return NULL;

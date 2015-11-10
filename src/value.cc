@@ -322,7 +322,7 @@ public:
 
 	std::string operator()(const RangeType &v) const
 	{
-		const boost::uint32_t steps = v.nbsteps();
+		const boost::uint32_t steps = v.numValues();
 		if (steps >= 10000) {
 			PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu).", steps);
 			return "";
@@ -751,7 +751,7 @@ void RangeType::normalize() {
   }
 }
 
-boost::uint32_t RangeType::nbsteps() const {
+boost::uint32_t RangeType::numValues() const {
   if (boost::math::isnan(begin_val) || boost::math::isnan(end_val) || boost::math::isnan(step_val)) {
 		return 0;
 	}
@@ -761,32 +761,31 @@ boost::uint32_t RangeType::nbsteps() const {
   }
 
   if ((begin_val == end_val) || boost::math::isinf(step_val)) {
-    return 0;
+    return 1;
   }
   
   if (step_val == 0) { 
     return std::numeric_limits<boost::uint32_t>::max();
   }
 
-  double steps;
+  double numvals;
   if (step_val < 0) {
     if (begin_val < end_val) {
       return 0;
     }
-    steps = (begin_val - end_val) / (-step_val);
+    numvals = (begin_val - end_val) / (-step_val) + 1;
   } else {
     if (begin_val > end_val) {
       return 0;
     }
-    steps = (end_val - begin_val) / step_val;
+    numvals = (end_val - begin_val) / step_val + 1;
   }
   
-  return steps;
+  return numvals;
 }
 
-RangeType::iterator::iterator(RangeType &range, type_t type) : range(range), val(range.begin_val)
+RangeType::iterator::iterator(RangeType &range, type_t type) : range(range), val(range.begin_val), type(type)
 {
-    this->type = type;
     update_type();
 }
 
@@ -803,6 +802,8 @@ void RangeType::iterator::update_type()
             type = RANGE_TYPE_END;
         }
     }
+
+		if (boost::math::isnan(range.begin_val) || boost::math::isnan(range.end_val) || boost::math::isnan(range.step_val)) type = RANGE_TYPE_END;
 }
 
 RangeType::iterator::reference RangeType::iterator::operator*()
