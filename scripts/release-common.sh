@@ -47,7 +47,7 @@ run()
 {
   # run() calls function $1, possibly a specialized version for our target $2
   # see top of this file for some examples.
-  # http://stackoverflow.com/questions/85880/determine-if-a-function-exists-in-bash
+  # stackoverflow.com/questions/85880/determine-if-a-function-exists-in-bash
   runfunc1=`echo $1"_"$OPENSCAD_BUILD_TARGET_OSTYPE`
   runfunc2=`echo $1`
   if [ "`type -t $runfunc1 | grep function`" ]; then
@@ -129,6 +129,9 @@ setup_directories_darwin()
 setup_directories_mxe()
 {
   cd $OPENSCADDIR
+  if [ ! -e $DEPLOYDIR ]; then
+    mkdir -p $DEPLOYDIR
+  fi
   EXAMPLESDIR=$DEPLOYDIR/openscad-$VERSION/examples/
   LIBRARYDIR=$DEPLOYDIR/openscad-$VERSION/libraries/
   FONTDIR=$DEPLOYDIR/openscad-$VERSION/fonts/
@@ -591,6 +594,9 @@ CONFIG=deploy
 
 if [ ! $OPENSCAD_BUILD_TARGET_OSTYPE ]; then
   OPENSCAD_BUILD_TARGET_OSTYPE=$OSTYPE
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    OPENSCAD_BUILD_TARGET_OSTYPE=darwin
+  fi
 fi
 if [ ! $OPENSCAD_BUILD_TARGET_ARCH ]; then
   OPENSCAD_BUILD_TARGET_ARCH=`uname -m`
