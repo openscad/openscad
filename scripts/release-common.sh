@@ -234,6 +234,23 @@ create_archive_darwin()
   echo "Binary created: OpenSCAD-$VERSION.dmg"
 }
 
+copy_dlls()
+{
+  _flprefix=$1
+  _flist=$2
+  _dest=$3
+  for dllfile in $_flist; do
+    if [ -e $_flprefix/$dllfile ]; then
+      echo $_flprefix/$dllfile
+      cp $_flprefix/$dllfile $_dest
+    else
+      echo cannot find $_flprefix/$dllfile
+      echo stopping build.
+      exit 1
+    fi
+  done
+}
+
 create_archive_msys()
 {
   cd $OPENSCADDIR
@@ -260,16 +277,7 @@ create_archive_msys()
   for file in $boostlist; do fl="$fl libboost"$file"-mt.dll"; done
   for file in $liblist;   do fl="$fl lib"$file".dll"; done
   for file in $dllist;    do fl="$fl "$file".dll"; done
-  for dllfile in $fl; do
-    if [ -e $flprefix/$dllfile ]; then
-      echo $flprefix/$dllfile
-      cp $flprefix/$dllfile $DEPLOYDIR/$TARGET/
-    else
-      echo cannot find $flprefix/$dllfile
-      echo stopping build.
-      exit 1
-    fi
-  done
+  copy_dlls $flprefix $fl $DEPLOYDIR/$TARGET/
 
   ARCH_INDICATOR=Msys2-x86-64
   if [ $OPENSCAD_BUILD_TARGET_ARCH = i686 ]; then
@@ -363,16 +371,7 @@ create_archive_mxe()
     fl="$fl ../qt5/bin/Qt5Widgets.dll"
     fl="$fl ../qt5/bin/Qt5PrintSupport.dll"
     fl="$fl ../qt5/bin/Qt5PrintSupport.dll"
-    for dllfile in $fl; do
-      if [ -e $flprefix/$dllfile ]; then
-        echo $flprefix/$dllfile
-        cp $flprefix/$dllfile $DEPLOYDIR/$MAKE_TARGET/
-      else
-        echo cannot find $flprefix/$dllfile
-        echo stopping build.
-      exit 1
-      fi
-    done
+    copy_dlls $flprefix $fl $DEPLOYDIR/$TARGET/
   fi # shared
 
   echo "Copying main binary .exe, .com, and other stuff"
