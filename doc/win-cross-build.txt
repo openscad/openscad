@@ -12,10 +12,10 @@ Once you have mxe dependencies, clone the openscad git repository.
 Now start a new clean bash shell and run the script that sets up the 
 environment variables. Set the target of your choice as well
 
-  source ./scripts/setenv-mingw-xbuild.sh 32         # 32 bit static link
-  source ./scripts/setenv-mingw-xbuild.sh 64         # 64 bit static link
-  source ./scripts/setenv-mingw-xbuild.sh 32 shared  # 32 bit shared dlls link
-  source ./scripts/setenv-mingw-xbuild.sh 64 shared  # 32 bit shared dlls link
+  source ./scripts/setenv.sh mxe 32         # 32 bit static link
+  source ./scripts/setenv.sh mxe 64         # 64 bit static link
+  source ./scripts/setenv.sh mxe 32 shared  # 32 bit shared dlls link
+  source ./scripts/setenv.sh mxe 64 shared  # 64 bit shared dlls link
 
 Note that to build Shared library versions, you need to first build the
 static versions. Shared depends on static (mostly due to mpfr).
@@ -42,15 +42,11 @@ Windows-style installer and/or .zip archive like so:
 If you wish you can only build the raw openscad.exe binary. Here are a few
 examples how to do that.
 
-32 bit static link:
-
-    cd i686-w64-mingw32
+    mkdir mxe32 && cd mxe32
     qmake ../openscad.pro CONFIG+=mingw-cross-env
     make
 
-64 bit dynamic / shared dll link:
-
-    cd x86_64-w64-mingw32
+    mkdir mxe64 && cd mxe64
     qmake ../openscad.pro CONFIG+=mingw-cross-env-shared
     make
 
