@@ -189,7 +189,7 @@ download and install MSYS2 from
 Now start a new clean bash shell and run the script that sets up the 
 environment variables.
 
-    source ./scripts/setenv-msys2.sh
+    source ./scripts/setenv.sh msys2
 
 Then run the script to download & compile all the prerequisite libraries above:
 
@@ -211,7 +211,7 @@ It will download and build dependencies into $HOME/openscad_deps.
 
 Fist run the script that sets up the environment variables.
 
-    source ./scripts/setenv-unibuild.sh
+    source ./scripts/setenv.sh
 
 Then run the script to download and compile all the prerequisite libraries.
 

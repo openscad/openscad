@@ -4,13 +4,12 @@
 #
 # Usage:
 #
-#  source ./scripts/setenv.sh               # standard linux/bsd build
+#  source ./scripts/setenv.sh               # standard linux/bsd/msys2 build
 #  source ./scripts/setenv.sh mxe           # mxe cross-build for Win, 32 bit
 #  source ./scripts/setenv.sh mxe shared    # mxe with shared libraries (DLLs)
 #  source ./scripts/setenv.sh mxe 64        # mxe 64 bit static link
 #  source ./scripts/setenv.sh mxe 64 shared # mxe 64 bit shared libraries (DLLs)
-#  source ./scripts/setenv.sh msys          # msys2 build on Windows(TM)
-#  source ./scripts/setenv.sh msys clang    # msys2 using clang compiler
+#  source ./scripts/setenv.sh clang         # build using clang compiler
 #  source ./scripts/setenv.sh clean         # Clean up exported variables
 #
 # Notes:
@@ -273,18 +272,18 @@ run()
 
 detect_target_ostype()
 {
-  if [ "`echo $1 | grep msys`" ]; then
-    OPENSCAD_BUILD_TARGET_OSTYPE=msys
-  elif [ "`echo $1 | grep mxe`" ]; then
+  if [ "`echo $1 | grep mxe`" ]; then
     OPENSCAD_BUILD_TARGET_OSTYPE=mxe
-  elif "`uname | grep -i linux`" ]; then
+  elif [ "`uname | grep -i linux`" ]; then
     OPENSCAD_BUILD_TARGET_OSTYPE=linux
-  elif "`uname | grep -i debian`" ]; then
+  elif [ "`uname | grep -i debian`" ]; then
     OPENSCAD_BUILD_TARGET_OSTYPE=linux
-  elif "`uname | grep -i freebsd`" ]; then
+  elif [ "`uname | grep -i freebsd`" ]; then
     OPENSCAD_BUILD_TARGET_OSTYPE=freebsd
-  elif "`uname | grep -i netbsd`" ]; then
+  elif [ "`uname | grep -i netbsd`" ]; then
     OPENSCAD_BUILD_TARGET_OSTYPE=netbsd
+  elif [ "`uname | grep -i msys`" ]; then
+    OPENSCAD_BUILD_TARGET_OSTYPE=msys
   fi
 }
 
