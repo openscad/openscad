@@ -330,47 +330,18 @@ create_archive_mxe()
     echo from $flprefix
     echo to $DEPLOYDIR/$MAKE_TARGET
     flist=
-    # fl="$fl opengl.dll" # use Windows version?
-    fl="$fl libgcc_s_seh-1.dll"
-    #fl="$fl libmpfr-4.dll" #mpfr doesnt have a shared lib. linked static
-    fl="$fl libpcre-1.dll"
-    fl="$fl libgmp-10.dll"
-    fl="$fl libgmpxx-4.dll"
-    fl="$fl libboost_filesystem-mt.dll"
-    fl="$fl libboost_program_options-mt.dll"
-    fl="$fl libboost_regex-mt.dll"
-    fl="$fl libboost_chrono-mt.dll"
-    fl="$fl libboost_system-mt.dll"
-    fl="$fl libboost_thread_win32-mt.dll"
-    fl="$fl libCGAL.dll"
-    fl="$fl libCGAL_Core.dll"
-    fl="$fl GLEW.dll"
-    fl="$fl libglib-2.0-0.dll"
-    fl="$fl libopencsg-1.dll"
-    fl="$fl libharfbuzz-0.dll"
-    # fl="$fl libharfbuzz-gobject-0.dll" # ????
-    fl="$fl libfontconfig-1.dll"
-    fl="$fl libexpat-1.dll"
-    fl="$fl libbz2.dll"
-    fl="$fl libintl-8.dll"
-    fl="$fl libiconv-2.dll"
-    fl="$fl libfreetype-6.dll"
-    fl="$fl libpcre16-0.dll"
-    fl="$fl zlib1.dll"
-    fl="$fl libpng16-16.dll"
-    fl="$fl icudt54.dll"
-    fl="$fl icudt.dll"
-    fl="$fl icuin.dll"
-    fl="$fl libstdc++-6.dll"
-    fl="$fl ../qt5/lib/qscintilla2.dll"
-    fl="$fl ../qt5/bin/Qt5PrintSupport.dll"
-    fl="$fl ../qt5/bin/Qt5Core.dll"
-    fl="$fl ../qt5/bin/Qt5Gui.dll"
-    fl="$fl ../qt5/bin/Qt5OpenGL.dll"
-    #  fl="$fl ../qt5/bin/QtSvg4.dll" # why is this here?
-    fl="$fl ../qt5/bin/Qt5Widgets.dll"
-    fl="$fl ../qt5/bin/Qt5PrintSupport.dll"
-    fl="$fl ../qt5/bin/Qt5PrintSupport.dll"
+  fl=
+    qtlist="PrintSupport Core Gui OpenGL Widgets"
+    boostlist="filesystem program_options regex system thread_win32 chrono"
+    liblist="stdc++-6 png16-16 pcre16-0 freetype-6 iconv-2 intl-8 bz2 expat-1"
+    liblist="$liblist fontconfig-1 harfbuzz-0 opencsg-1 glib-2.0-0"
+    liblist="$liblist CGAL_Core CGAL gmpxx-4 gmp-10 pcre-1 gcc_s_seh-1"
+    dlist="icuin icudt icudt54 zlib1 GLEW"
+    fl="../qt5/lib/qscintilla2.dll"
+    for file in $qtlist;    do fl="$fl ../qt5/bin/Qt5"$file".dll"; done
+    for file in $boostlist; do fl="$fl libboost"$file"-mt.dll"; done
+    for file in $liblist;   do fl="$fl lib"$file".dll"; done
+    for file in $dllist;    do fl="$fl "$file".dll"; done
     copy_dlls $flprefix $fl $DEPLOYDIR/$TARGET/
   fi # shared
 
