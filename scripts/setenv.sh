@@ -10,13 +10,13 @@
 #  source ./scripts/setenv.sh mxe 64        # mxe 64 bit static link
 #  source ./scripts/setenv.sh mxe 64 shared # mxe 64 bit shared libraries (DLLs)
 #  source ./scripts/setenv.sh clang         # build using clang compiler
-#  source ./scripts/setenv.sh clean         # Clean up exported variables
+#  source ./scripts/setenv.sh clean         # unset all exported variables
 #
 # Notes:
 #
 # Linux/BSD:
 #
-# Please see 'scripts/uni-build-dependencies.sh'
+#  Please see 'scripts/uni-build-dependencies.sh'
 #
 # MXE (Cross-build Linux->Windows):
 #
@@ -34,11 +34,11 @@
 # General:
 #
 #  This script works by using function naming and run() for portability.
-#  "default" is a generic linux/bsd build. _msys / _mxe etc are specialized.
+#  "_generic" is a generic linux/bsd build. _msys / _mxe etc are specialized.
 #  Only variables in the 'varexportlist' are exported.
 #  This script uses a lot of global variables, take care if editing.
 
-setup_target_default()
+setup_target_generic()
 {
   ARCH=`uname -m`
   OPENSCAD_BUILD_TARGET_ARCH=$ARCH
@@ -75,7 +75,7 @@ setup_target_msys()
   OPENSCAD_BUILD_TARGET_TRIPLE=$ARCH-$SUB-$SYS.$ABI
 }
 
-setup_dirs_default()
+setup_dirs_generic()
 {
   if [ ! $BASEDIR ]; then
     if [ -f openscad.pro ]; then
@@ -132,7 +132,7 @@ setup_dirs_mxe()
 
 setup_dirs_freebsd()
 {
-  setup_dirs_default
+  setup_dirs_generic
   QTDIR=/usr/local/share/qt4
   QMAKESPEC=freebsd-g++
   #QTDIR=/usr/local/share/qt5
@@ -141,12 +141,12 @@ setup_dirs_freebsd()
 
 setup_dirs_netbsd()
 {
-  setup_dirs_default
+  setup_dirs_generic
   QTDIR=/usr/pkg/qt4
   QMAKESPEC=netbsd-g++
 }
 
-save_path_default()
+save_path_generic()
 {
   if [ ! $SETENV_SAVED_ORIGINAL_PATH ]; then
     echo "current PATH saved in SETENV_SAVED_ORIGINAL_PATH"
@@ -154,7 +154,7 @@ save_path_default()
   fi
 }
 
-setup_path_default()
+setup_path_generic()
 {
   PATH=$BASEDIR/bin:$PATH
   LD_LIBRARY_PATH=$BASEDIR/lib:$BASEDIR/lib64
@@ -187,7 +187,7 @@ setup_path_netbsd()
   LD_LIBRARY_PATH=/usr/pkg/lib:$LD_LIBRARY_PATH
 }
 
-setup_clang_default()
+setup_clang_generic()
 {
   CC=clang
   CXX=clang++
@@ -195,7 +195,7 @@ setup_clang_default()
 
 setup_clang_msys()
 {
-  setup_clang_default
+  setup_clang_generic
   echo if you have not already installed clang try this:
   echo   pacman -Sy mingw-w64-x86_64-clang or
   echo   pacman -Sy mingw-w64-i686-clang
@@ -203,7 +203,7 @@ setup_clang_msys()
 
 setup_clang_linux()
 {
-  setup_clang_default
+  setup_clang_generic
   if [ $OPENSCAD_USEQT4 ]; then
     QMAKESPEC=unsupported/linux-clang
   else
@@ -213,7 +213,7 @@ setup_clang_linux()
 
 setup_clang_freebsd()
 {
-  setup_clang_default
+  setup_clang_generic
   QMAKESPEC=unsupported/freebsd-clang
 }
 
@@ -223,7 +223,7 @@ setup_varexportlist_common()
   vel="$vel SETENV_SAVED_ORIGINAL_PATH OPENSCAD_BUILD_TARGET_OSTYPE CC CXX"
 }
 
-setup_varexportlist_default()
+setup_varexportlist_generic()
 {
   setup_varexportlist_common
   vel="$vel OPENSCAD_BUILD_TARGET_TRIPLE"
@@ -250,7 +250,7 @@ setup_varexportlist_mxe()
   vel="$vel DEPLOYDIR"
 }
 
-clean_variables_default()
+clean_variables_generic()
 {
   if [ $SETENV_SAVED_ORIGINAL_PATH ]; then
     PATH=$SETENV_SAVED_ORIGINAL_PATH
@@ -264,7 +264,7 @@ clean_variables_default()
   echo "SETENV build environment variables cleared"
 }
 
-export_and_print_vars_default()
+export_and_print_vars_generic()
 {
   if [ "`echo $vel`" ]; then
     for varname in $vel; do
@@ -278,10 +278,10 @@ export_and_print_vars_default()
 
 run()
 {
-  # run() calls function $1_default, or a specialized version $1_$2 ($2=target)
+  # run() calls function $1_generic, or a specialized version $1_$ostype
   # stackoverflow.com/questions/85880/determine-if-a-function-exists-in-bash
   runfunc1=`echo $1"_"$OPENSCAD_BUILD_TARGET_OSTYPE`
-  runfunc2=`echo $1_default`
+  runfunc2=`echo $1_generic`
   if [ "`type -t $runfunc1 | grep function`" ]; then
     echo "calling $runfunc1"
     eval $runfunc1

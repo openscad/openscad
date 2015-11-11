@@ -29,9 +29,14 @@ isEmpty(QT_VERSION) {
   error("Please use qmake for Qt 4 or Qt 5 (probably qmake-qt4)")
 }
 
-mxetest=$$(MXE_TARGET)
-!isEmpty(mxetest) {
-  CONFIG += mingw-cross-env
+mxetarget=$$(MXE_TARGET)
+!isEmpty(mxetarget) {
+  mxeabi=$$(OPENSCAD_BUILD_TARGET_ABI)
+  contains(mxeabi,shared) {
+    CONFIG += mingw-cross-env-shared
+  } else {
+    CONFIG += mingw-cross-env
+  }
 }
 
 # Auto-include config_<variant>.pri if the VARIANT variable is give on the
@@ -215,11 +220,9 @@ include(common.pri)
 
 # mingw has to come after other items so OBJECT_DIRS will work properly
 
-mxetest {
+CONFIG(mingw-cross-env)|CONFIG(mingw-cross-env-shared) {
   include(mingw-cross-env.pri)
 }
-# |CONFIG(mingw-cross-env-shared) {
-# }
 
 win* {
   FLEXSOURCES = src/lexer.l

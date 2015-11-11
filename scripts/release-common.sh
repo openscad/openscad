@@ -2,20 +2,14 @@
 #
 # This script creates a binary release of OpenSCAD.
 #
-# By default, it builds a package for the same system it is run on. It
-# can also cross-build packages for other systems when the
-# OPENSCAD_BUILD_TARGET_OSTYPE environment variable is set.
+# On OSX / Darwin the script will create a file called
+# openscad-<versionstring>.<extension> in the current directory. For
+# other platforms, including cross-builds, the file will be under a
+# directory with the triple-name of the target system, for example
+# ./x86_64-w64-mingw32 or ./i686-linux-gnu, as setup by 'scripts/setenv.h'
 #
-# By default, the script will create a file called
-# openscad-<versionstring>.<extension> in the current directory. When
-# cross-building, the file will be under a directory with the triple-name
-# of the target system, for example ./x86_64-w64-mingw32
-#
-# Targets can have special functions via naming convetion and run().
-# example 1: If our target ostype is linux-gnu, and we call "run build", then
-# if build_linux-gnu() is defined, it is called, otherwise build() is called
-# example 2: If our target ostype is darwin, and we call "run clean", then
-# if clean_darwin() is defined, it is called, otherwise clean() is called
+# Portability works by using bash function naming and run().
+# "_generic" is a generic build, _darwin _linux, _msys, etc are specialized
 
 printUsage()
 {
@@ -25,6 +19,7 @@ printUsage()
   echo " -d  Version date (e.g. -d 2010.01.23)"
   echo " -snapshot Build a snapshot binary (make e.g. experimental features "
   echo "     available, build with commit info)"
+  echo " -fakebinary Debug the packaging process by skipping 'make' "
   echo
   echo "If no version string or version date is given, todays date will be used"
   echo "(YYYY-MM-DD) If only version date is given, it will be used also as"
@@ -45,11 +40,10 @@ paralell_note()
 
 run()
 {
-  # run() calls function $1, possibly a specialized version for our target $2
-  # see top of this file for some examples.
+  # run() calls function $1_generic, or a specialized version $1_$ostype
   # stackoverflow.com/questions/85880/determine-if-a-function-exists-in-bash
   runfunc1=`echo $1"_"$OPENSCAD_BUILD_TARGET_OSTYPE`
-  runfunc2=`echo $1`
+  runfunc2=`echo $1_generic`
   if [ "`type -t $runfunc1 | grep function`" ]; then
     echo "calling $runfunc1"
     eval $runfunc1
@@ -76,7 +70,7 @@ check_prereq_mxe()
   fi
 }
 
-update_mcad()
+update_mcad_generic()
 {
   if [ ! -e $OPENSCADDIR/libraries/MCAD/__init__.py ]; then
     echo "Downloading MCAD"
@@ -104,18 +98,13 @@ verify_binary_mxe()
   cd $OPENSCADDIR
 }
 
-verify_binary_linux-gnu()
+verify_binary_linux()
 {
   if [ ! -e $MAKE_TARGET/openscad ]; then
     echo "cant find $MAKE_TARGET/openscad. build failed. stopping."
     exit 1
   fi
 }
-
-if [ "`echo $* | grep snapshot`" ]; then
-  CONFIG="$CONFIG snapshot experimental"
-  OPENSCAD_COMMIT=`git log -1 --pretty=format:"%h"`
-fi
 
 setup_directories_darwin()
 {
@@ -146,7 +135,7 @@ setup_directories_msys()
   setup_directories_mxe
 }
 
-setup_directories_linux-gnu()
+setup_directories_linux()
 {
   EXAMPLESDIR=openscad-$VERSION/examples/
   LIBRARYDIR=openscad-$VERSION/libraries/
@@ -157,7 +146,7 @@ setup_directories_linux-gnu()
   mkdir openscad-$VERSION
 }
 
-copy_examples()
+copy_examples_generic()
 {
   echo $EXAMPLESDIR
   mkdir -p $EXAMPLESDIR
@@ -168,7 +157,7 @@ copy_examples()
   chmod -R 644 $EXAMPLESDIR/*/*
 }
 
-copy_fonts_common()
+copy_fonts_generic()
 {
   echo $FONTDIR
   mkdir -p $FONTDIR
@@ -176,32 +165,27 @@ copy_fonts_common()
   cp -a fonts/Liberation-2.00.1 $FONTDIR
 }
 
-copy_fonts()
-{
-  copy_fonts_common
-}
-
 copy_fonts_darwin()
 {
-  copy_fonts_common
+  copy_fonts_generic
   cp -a fonts/05-osx-fonts.conf $FONTDIR
   cp -a fonts-osx/* $FONTDIR
 }
 
 copy_fonts_mxe()
 {
-  copy_fonts_common
+  copy_fonts_generic
   cp -a $MXETARGETDIR/etc/fonts/ "$FONTDIR"
 }
 
-copy_colorschemes()
+copy_colorschemes_generic()
 {
   echo $COLORSCHEMESDIR
   mkdir -p $COLORSCHEMESDIR
   cp -a color-schemes/* $COLORSCHEMESDIR
 }
 
-copy_mcad()
+copy_mcad_generic()
 {
   echo $LIBRARYDIR
   mkdir -p $LIBRARYDIR
@@ -215,7 +199,7 @@ copy_mcad()
   chmod -R u=rwx,go=r,+X $LIBRARYDIR/*
 }
 
-copy_translations()
+copy_translations_generic()
 {
   echo $TRANSLATIONDIR
   mkdir -p $TRANSLATIONDIR
@@ -234,21 +218,20 @@ create_archive_darwin()
   echo "Binary created: OpenSCAD-$VERSION.dmg"
 }
 
-copy_dlls()
+copyfail()
 {
-  _flprefix=$1
-  _flist=$2
-  _dest=$3
-  for dllfile in $_flist; do
-    if [ -e $_flprefix/$dllfile ]; then
-      echo $_flprefix/$dllfile
-      cp $_flprefix/$dllfile $_dest
-    else
-      echo cannot find $_flprefix/$dllfile
-      echo stopping build.
-      exit 1
-    fi
-  done
+  if [ ! -e $1 ]; then
+    echo "$1 not found"
+    echo stopping build.
+    exit 1
+  fi
+  if [ ! -d $2 ]; then
+    echo "$2 not an existing directory"
+    echo stopping build.
+    exit 1
+  fi
+  echo $1 $2
+  cp $1 $2
 }
 
 create_archive_msys()
@@ -257,7 +240,7 @@ create_archive_msys()
   cd $DEPLOYDIR
 
   echo "QT5 deployment, dll and other files copying..."
-  windeployqt $TARGET/openscad.exe
+  windeployqt $MAKE_TARGET/openscad.exe
 
   bits=64
   if [ $OPENSCAD_BUILD_TARGET_ARCH = i686 ]; then
@@ -267,17 +250,21 @@ create_archive_msys()
   flprefix=/mingw$bits/bin/
   echo MSYS2, dll copying...
   echo from $flprefix
-  echo to $DEPLOYDIR/$TARGET
+  echo to $DEPLOYDIR/$MAKE_TARGET
   fl=
   boostlist="filesystem program_options regex system thread"
   liblist="gmp-10 gmpxx-4 opencsg-1 harfbuzz-0 harfbuzz-gobject-0 glib-2.0-0"
   liblist="$liblist CGAL CGAL_Core fontconfig-1 expat-1 bz2-1 intl-8 iconv-2"
   liblist="$liblist pcre16-0 png16-16 icudt55 freetype-6"
-  dlist="glew32 opengl qscintilla2 zlib1 Qt5PrintSupport"
-  for file in $boostlist; do fl="$fl libboost"$file"-mt.dll"; done
+  dlist="glew32 opengl qscintilla2 zlib1 jsiosdjfiosdjf Qt5PrintSupport"
+  for file in $boostlist; do fl="$fl libboost_"$file"-mt.dll"; done
   for file in $liblist;   do fl="$fl lib"$file".dll"; done
-  for file in $dllist;    do fl="$fl "$file".dll"; done
-  copy_dlls $flprefix $fl $DEPLOYDIR/$TARGET/
+  for file in $dlist;     do fl="$fl "$file".dll"; done
+
+  for dllfile in $fl; do
+    copyfail $flprefix/$dllfile /$DEPLOYDIR/$MAKE_TARGET/
+  done
+
 
   ARCH_INDICATOR=Msys2-x86-64
   if [ $OPENSCAD_BUILD_TARGET_ARCH = i686 ]; then
@@ -288,11 +275,11 @@ create_archive_msys()
 
   echo
   echo "Copying main binary .exe, .com, and dlls"
-  echo "from $DEPLOYDIR/$TARGET"
+  echo "from $DEPLOYDIR/$MAKE_TARGET"
   echo "to $DEPLOYDIR/openscad-$VERSION"
   TMPTAR=$DEPLOYDIR/windeployqt.tar
   cd $DEPLOYDIR
-  cd $TARGET
+  cd $MAKE_TARGET
   tar cvf $TMPTAR --exclude=winconsole.o .
   cd $DEPLOYDIR
   cd ./openscad-$VERSION
@@ -319,30 +306,43 @@ create_archive_mxe()
   if [ $OPENSCAD_BUILD_TARGET_ARCH = x86_64 ]; then
     ARCH_INDICATOR=MingW-x86-64
   fi
+  if [ $OPENSCAD_BUILD_TARGET_ABI = "shared" ]; then
+    ARCH_INDICTATOR=$ARCH_INDICATOR"-shared"
+  else
+    ARCH_INDICTATOR=$ARCH_INDICATOR"-static"
+  fi
 
   BINFILE=$DEPLOYDIR/OpenSCAD-$VERSION-$ARCH_INDICATOR.zip
   INSTFILE=$DEPLOYDIR/OpenSCAD-$VERSION-$ARCH_INDICATOR-Installer.exe
 
   #package
   if [ $OPENSCAD_BUILD_TARGET_ABI = "shared" ]; then
-    flprefix=$DEPLOYDIR/$MXE_TARGET_DIR/bin
+    flprefix=$MXE_SYS_DIR/bin
     echo Copying dlls for shared library build
     echo from $flprefix
     echo to $DEPLOYDIR/$MAKE_TARGET
     flist=
-  fl=
+    fl=
+
     qtlist="PrintSupport Core Gui OpenGL Widgets"
     boostlist="filesystem program_options regex system thread_win32 chrono"
+    dlist="icuin icudt icudt54 zlib1 GLEW ../qt5/lib/qscintilla2"
     liblist="stdc++-6 png16-16 pcre16-0 freetype-6 iconv-2 intl-8 bz2 expat-1"
     liblist="$liblist fontconfig-1 harfbuzz-0 opencsg-1 glib-2.0-0"
-    liblist="$liblist CGAL_Core CGAL gmpxx-4 gmp-10 pcre-1 gcc_s_seh-1"
-    dlist="icuin icudt icudt54 zlib1 GLEW"
-    fl="../qt5/lib/qscintilla2.dll"
+    liblist="$liblist CGAL_Core CGAL gmpxx-4 gmp-10 pcre-1"
+    if [ $OPENSCAD_BUILD_TARGET_ARCH = i686 ]; then
+      liblist="$liblist gcc_s_sjlj-1"
+    else
+      liblist="$liblist gcc_s_seh-1"
+    fi
+    fl=
     for file in $qtlist;    do fl="$fl ../qt5/bin/Qt5"$file".dll"; done
-    for file in $boostlist; do fl="$fl libboost"$file"-mt.dll"; done
+    for file in $boostlist; do fl="$fl libboost_"$file"-mt.dll"; done
     for file in $liblist;   do fl="$fl lib"$file".dll"; done
-    for file in $dllist;    do fl="$fl "$file".dll"; done
-    copy_dlls $flprefix $fl $DEPLOYDIR/$TARGET/
+    for file in $dlist;     do fl="$fl "$file".dll"; done
+    for dllfile in $fl; do
+      copyfail $flprefix/$dllfile /$DEPLOYDIR/$MAKE_TARGET/
+    done
   fi # shared
 
   echo "Copying main binary .exe, .com, and other stuff"
@@ -357,7 +357,6 @@ create_archive_mxe()
   tar xf $TMPTAR
   cd $DEPLOYDIR
   rm -f $TMPTAR
-
 
   echo "Creating binary zip package `basename $BINFILE`"
   rm -f $BINFILE
@@ -380,7 +379,7 @@ create_archive_mxe()
   cd $OPENSCADDIR
 }
 
-create_archive_linux-gnu()
+create_archive_linux()
 {
   # Do stuff from release-linux.sh
   mkdir openscad-$VERSION/bin
@@ -422,7 +421,7 @@ create_archive_linux-gnu()
   echo
 }
 
-setup_misc()
+setup_misc_generic()
 {
   MAKE_TARGET=
   # for QT4 set QT_SELECT=4
@@ -442,7 +441,7 @@ setup_misc_msys()
   setup_misc_mxe
 }
 
-qmaker()
+qmaker_generic()
 {
   QMAKE="`command -v qmake-qt5`"
   if [ ! -x "$QMAKE" ]; then
@@ -490,7 +489,7 @@ make_clean_darwin()
   rm -rf OpenSCAD.app
 }
 
-make_clean_linux-gnu()
+make_clean_linux()
 {
   make -s clean
 }
@@ -509,7 +508,7 @@ touch_parser_lexer_msys()
   touch_parser_lexer_mxe
 }
 
-build_gui_binary()
+build_gui_binary_generic()
 {
   make -j$NUMCPU $MAKE_TARGET
   if [[ $? != 0 ]]; then
@@ -518,8 +517,23 @@ build_gui_binary()
   fi
 }
 
+build_fake_gui_binary_mxe()
+{
+  # fake to speed debug of building process
+  cd $DEPLOYDIR
+  touch $MAKE_TARGET/openscad.exe
+  touch $MAKE_TARGET/openscad.com
+  cd $OPENSCADDIR
+}
+
+build_fake_gui_binary_msys()
+{
+  build_fake_gui_binary_mxe
+}
+
 build_gui_binary_mxe()
 {
+  if [ $FAKEMAKE ]; then build_fake_gui_binary_mxe ; return; fi
   # make main openscad.exe
   cd $DEPLOYDIR
   make $MAKE_TARGET -j$NUMCPU
@@ -531,7 +545,8 @@ build_gui_binary_mxe()
 
 build_gui_binary_msys()
 {
-  build_gui_binary_mxe()
+  if [ $FAKEMAKE ]; then build_fake_gui_binary_mxe ; return; fi
+  build_gui_binary_mxe
 }
 
 OPENSCADDIR=$PWD
@@ -542,25 +557,15 @@ fi
 
 CONFIG=deploy
 
-if [ ! $OPENSCAD_BUILD_TARGET_OSTYPE ]; then
-  OPENSCAD_BUILD_TARGET_OSTYPE=$OSTYPE
-  if [[ "$OSTYPE" == "darwin"* ]]; then
-    OPENSCAD_BUILD_TARGET_OSTYPE=darwin
-  fi
-fi
-if [ ! $OPENSCAD_BUILD_TARGET_ARCH ]; then
-  OPENSCAD_BUILD_TARGET_ARCH=`uname -m`
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  OPENSCAD_BUILD_TARGET_OSTYPE=darwin
+elif [ ! $SETENV_SAVED_ORIGINAL_PATH ]; then
+  echo "please run . ./scripts/setenv.sh first (note the  . )"
 fi
 
-case "$OPENSCAD_BUILD_TARGET_OSTYPE" in
-  msys|darwin|linux-gnu|mxe)
-    echo "build target ostype: $OPENSCAD_BUILD_TARGET_OSTYPE"
-    ;;
-  *)
-    echo "build target ostype not familiar. please edit $0"
-    exit
-    ;;
-esac
+if [ "`echo $* | grep fake`" ]; then
+  FAKEMAKE=1
+fi
 
 if [ "`echo $* | grep snapshot`" ]; then
   CONFIG="$CONFIG snapshot experimental"
