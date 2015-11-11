@@ -1,4 +1,6 @@
 # cross compilation unix->win32
+# To use static linking, pass CONFIG+=mingw-cross-env to qmake
+# To use shared linking, pass CONFIG+=mingw-cross-env-shared to qmake
 CONFIG(mingw-cross-env) {
   LIBS += mingw-cross-env/lib/libglew32s.a 
   LIBS += mingw-cross-env/lib/libglut.a 
@@ -19,6 +21,17 @@ CONFIG(mingw-cross-env) {
   LIBS += mingw-cross-env/lib/libexpat.a
   LIBS += mingw-cross-env/lib/libintl.a
   LIBS += mingw-cross-env/lib/libiconv.a
+}
+
+CONFIG(mingw-cross-env-shared) {
+  # on MXE, the shared library .dll files are under 'bin' not 'lib'.
+  QMAKE_LFLAGS += -L./mingw-cross-env/bin
+  LIBS += -lglew32 -lglut -lopengl32 -lGLEW -lglu32
+  LIBS += -lopencsg -lmpfr -lgmp -lCGAL 
+  LIBS += -lfontconfig -lfreetype -lharfbuzz -lbz2 -lexpat -lintl -liconv
+}
+
+CONFIG(mingw-cross-env)|CONFIG(mingw-cross-env-shared) {
   QMAKE_CXXFLAGS += -fpermissive
   WINSTACKSIZE = 8388608 # 8MB # github issue 116
   QMAKE_CXXFLAGS += -Wl,--stack,$$WINSTACKSIZE
