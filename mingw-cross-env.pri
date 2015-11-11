@@ -8,39 +8,39 @@
 # those DLLS at build time. Some other .a files are actual static libraries. 
 # use nm/objdump/ar to determine the difference.
 CONFIG(mingw-cross-env) {
-  LIBS += $$(MXE_TARGET_DIR_STATIC)/lib/libglew32s.a 
-  LIBS += $$(MXE_TARGET_DIR_STATIC)/lib/libglut.a 
-  LIBS += $$(MXE_TARGET_DIR_STATIC)/lib/libopengl32.a 
-  LIBS += $$(MXE_TARGET_DIR_STATIC)/lib/libGLEW.a 
-#  exists( $$(MXE_TARGET_DIR_STATIC)/lib/libglaux.a ) {
-#    LIBS += $$(MXE_TARGET_DIR_STATIC)/lib/libglaux.a
+  LIBS += $$(MXE_SYS_DIR_STATIC)/lib/libglew32s.a 
+  LIBS += $$(MXE_SYS_DIR_STATIC)/lib/libglut.a 
+  LIBS += $$(MXE_SYS_DIR_STATIC)/lib/libopengl32.a 
+  LIBS += $$(MXE_SYS_DIR_STATIC)/lib/libGLEW.a 
+#  exists( $$(MXE_SYS_DIR_STATIC)/lib/libglaux.a ) {
+#    LIBS += $$(MXE_SYS_DIR_STATIC)/lib/libglaux.a
 #  }
-  LIBS += $$(MXE_TARGET_DIR_STATIC)/lib/libglu32.a 
-  LIBS += $$(MXE_TARGET_DIR_STATIC)/lib/libopencsg.a 
-  LIBS += $$(MXE_TARGET_DIR_STATIC)/lib/libmpfr.a 
-  LIBS += $$(MXE_TARGET_DIR_STATIC)/lib/libgmp.a 
-  LIBS += $$(MXE_TARGET_DIR_STATIC)/lib/libCGAL.a
-  LIBS += $$(MXE_TARGET_DIR_STATIC)/lib/libfontconfig.a
-  LIBS += $$(MXE_TARGET_DIR_STATIC)/lib/libfreetype.a
-  LIBS += $$(MXE_TARGET_DIR_STATIC)/lib/libharfbuzz.a
-  LIBS += $$(MXE_TARGET_DIR_STATIC)/lib/libbz2.a
-  LIBS += $$(MXE_TARGET_DIR_STATIC)/lib/libexpat.a
-  LIBS += $$(MXE_TARGET_DIR_STATIC)/lib/libintl.a
-  LIBS += $$(MXE_TARGET_DIR_STATIC)/lib/libiconv.a
+  LIBS += $$(MXE_SYS_DIR_STATIC)/lib/libglu32.a 
+  LIBS += $$(MXE_SYS_DIR_STATIC)/lib/libopencsg.a 
+  LIBS += $$(MXE_SYS_DIR_STATIC)/lib/libmpfr.a 
+  LIBS += $$(MXE_SYS_DIR_STATIC)/lib/libgmp.a 
+  LIBS += $$(MXE_SYS_DIR_STATIC)/lib/libCGAL.a
+  LIBS += $$(MXE_SYS_DIR_STATIC)/lib/libfontconfig.a
+  LIBS += $$(MXE_SYS_DIR_STATIC)/lib/libfreetype.a
+  LIBS += $$(MXE_SYS_DIR_STATIC)/lib/libharfbuzz.a
+  LIBS += $$(MXE_SYS_DIR_STATIC)/lib/libbz2.a
+  LIBS += $$(MXE_SYS_DIR_STATIC)/lib/libexpat.a
+  LIBS += $$(MXE_SYS_DIR_STATIC)/lib/libintl.a
+  LIBS += $$(MXE_SYS_DIR_STATIC)/lib/libiconv.a
 }
 
 ## Mostly shared library link, to .dll files
 CONFIG(mingw-cross-env-shared) {
   # on MXE, the shared library .dll files are under 'bin' not 'lib'.
-  QMAKE_LFLAGS += -L./$$(MXE_TARGET_DIR_SHARED)/bin
+  QMAKE_LFLAGS += -L./$$(MXE_SYS_DIR_SHARED)/bin
   # MPFR - there is no .dll due to unusual coding issues. link statically.
-  LIBS += $$(MXE_TARGET_DIR_STATIC)/lib/libmpfr.a 
+  LIBS += $$(MXE_SYS_DIR_STATIC)/lib/libmpfr.a 
   LIBS += -lglew32 -lglut -lopengl32 -lGLEW -lglu32
   LIBS += -lopencsg -lgmp -lCGAL 
   LIBS += -lfontconfig -lfreetype -lharfbuzz -lbz2 -lexpat -lintl -liconv
 }
 
-CONFIG($$(MXE_TARGET_DIR))|CONFIG($$(MXE_TARGET_DIR)-shared) {
+CONFIG($$(MXE_SYS_DIR))|CONFIG($$(MXE_SYS_DIR)-shared) {
   QMAKE_CXXFLAGS += -fpermissive
   WINSTACKSIZE = 8388608 # 8MB # github issue 116
   QMAKE_CXXFLAGS += -Wl,--stack,$$WINSTACKSIZE

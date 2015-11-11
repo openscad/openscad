@@ -18,28 +18,34 @@
 #
 # Please see 'scripts/uni-build-dependencies.sh'
 #
-# MXE:
+# MXE (Cross-build Linux->Windows):
 #
-# Please see http://mxe.cc/#requirements
+#  Please see http://mxe.cc/#requirements
 #
-# Also see http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Cross-compiling_for_Windows_on_Linux_or_Mac_OS_X
+#  Also see http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Cross-compiling_for_Windows_on_Linux_or_Mac_OS_X
 #
-# Msys2:
+# Msys2 (WindowsTM):
 #
-# 32 or 64 bit is selected by starting the appropriate "MINGW64" or
-# "MINGW32" shell on the system and runnning these commands from within it.
+#  32 or 64 bit is selected by starting the appropriate "MINGW64" or
+#  "MINGW32" shell on the system and runnning these commands from within it.
 #
-# Please download and install msys2 from http://msys2.github.io
+#  Please download and install msys2 from http://msys2.github.io
 #
 # General:
 #
-# This script uses a lot of global variables, take care if editing
+#  This script works by using function naming and run() for portability.
+#  "default" is a generic linux/bsd build. _msys / _mxe etc are specialized.
+#  Only variables in the 'varexportlist' are exported.
+#  This script uses a lot of global variables, take care if editing.
 
-setup_target()
+setup_target_default()
 {
-  ARCH=`uname -a`
+  ARCH=`uname -m`
   OPENSCAD_BUILD_TARGET_ARCH=$ARCH
   OPENSCAD_BUILD_TARGET_TRIPLE=$ARCH-$OSTYPE
+  if [ "`echo $* | grep qt4`" ]; then
+    OPENSCAD_USEQT4=1
+  fi
 }
 
 setup_target_mxe()
@@ -50,15 +56,9 @@ setup_target_mxe()
   ABI=static
   if [ "`echo $* | grep 64 `" ]; then ARCH=x86_64 ; fi
   if [ "`echo $* | grep shared `" ]; then ABI=shared ; fi
-
-  MXE_TARGET=$ARCH-$SUB-$SYS.$ABI
-  MXE_TARGET_DIR=$MXEDIR/usr/$MXE_TARGET
-  MXE_TARGET_DIR_STATIC=$MXEDIR/usr/$ARCH-$SUB-$SYS.static
-  MXE_TARGET_DIR_SHARED=$MXEDIR/usr/$ARCH-$SUB-$SYS.shared
   OPENSCAD_BUILD_TARGET_ARCH=$ARCH
   OPENSCAD_BUILD_TARGET_ABI=$ABI
   OPENSCAD_BUILD_TARGET_TRIPLE=$MXE_TARGET
-  OPENSCAD_LIBRARIES=$MXE_TARGET_DIR
 }
 
 setup_target_msys()
@@ -70,12 +70,12 @@ setup_target_msys()
   if [ "`uname -a | grep -i x86_64`" ]; then
     ARCH=x86_64
   fi
-
+  MXE_TARGET=$ARCH-$SUB-$SYS.$ABI
   OPENSCAD_BUILD_TARGET_ARCH=$ARCH
   OPENSCAD_BUILD_TARGET_TRIPLE=$ARCH-$SUB-$SYS.$ABI
 }
 
-setup_base()
+setup_dirs_default()
 {
   if [ ! $BASEDIR ]; then
     if [ -f openscad.pro ]; then
@@ -88,14 +88,27 @@ setup_base()
       BASEDIR=$PWD/openscad_deps
     fi
   fi
+  OPENSCAD_LIBRARIES=$BASEDIR
+  GLEWDIR=$BASEDIR
+  if [ -e $BASEDIR/include/Qt ]; then
+    echo "Qt found under $BASEDIR ... "
+    QTDIR=$BASEDIR
+  fi
+  OPENSCADDIR=$PWD
+  DEPLOYDIR=$OPENSCADDIR/$OPENSCAD_BUILD_TARGET_TRIPLE
 }
 
-setup_base_mxe()
+setup_dirs_msys()
+{
+  OPENSCADDIR=$PWD
+  DEPLOYDIR=$OPENSCADDIR/$OPENSCAD_BUILD_TARGET_TRIPLE
+}
+
+setup_dirs_mxe()
 {
   if [ ! $BASEDIR ]; then
     BASEDIR=$HOME/openscad_deps
   fi
-
   if [ ! $MXEDIR ]; then
     if [ -e /opt/mxe ]; then
       MXEDIR=/opt/mxe
@@ -109,9 +122,31 @@ setup_base_mxe()
       exit
     fi
   fi
+  MXE_SYS_DIR=$MXEDIR/usr/$MXE_TARGET
+  MXE_SYS_DIR_STATIC=$MXEDIR/usr/$ARCH-$SUB-$SYS.static
+  MXE_SYS_DIR_SHARED=$MXEDIR/usr/$ARCH-$SUB-$SYS.shared
+  OPENSCAD_LIBRARIES=$MXE_SYS_DIR
+  OPENSCADDIR=$PWD
+  DEPLOYDIR=$OPENSCADDIR/$MXE_TARGET
 }
 
-save_path()
+setup_dirs_freebsd()
+{
+  setup_dirs_default
+  QTDIR=/usr/local/share/qt4
+  QMAKESPEC=freebsd-g++
+  #QTDIR=/usr/local/share/qt5
+  #QMAKESPEC=freebsd-clang
+}
+
+setup_dirs_netbsd()
+{
+  setup_dirs_default
+  QTDIR=/usr/pkg/qt4
+  QMAKESPEC=netbsd-g++
+}
+
+save_path_default()
 {
   if [ ! $SETENV_SAVED_ORIGINAL_PATH ]; then
     echo "current PATH saved in SETENV_SAVED_ORIGINAL_PATH"
@@ -119,88 +154,48 @@ save_path()
   fi
 }
 
-setup_path()
+setup_path_default()
 {
-  run save_path
   PATH=$BASEDIR/bin:$PATH
-}
-
-setup_path_mxe()
-{
-  run save_path
-  PATH=$MXEDIR/usr/bin:$PATH
-  if [ "`echo $* | grep qt4 `" ]; then
-    PATH=$MXE_TARGET_DIR/qt/bin:$PATH
-  else
-    PATH=$MXE_TARGET_DIR/qt5/bin:$PATH
-  fi
+  LD_LIBRARY_PATH=$BASEDIR/lib:$BASEDIR/lib64
+  LD_RUN_PATH=$BASEDIR/lib:$BASEDIR/lib64
 }
 
 setup_path_msys()
 {
-  run save_path
   MWBITS=32
   if [ $ARCH = x86_64 ]; then MWBITS=64; fi
   PATH=/mingw$MWBITS/bin:$PATH
 }
 
-setup_variables_common_unx()
+setup_path_mxe()
 {
-  LD_LIBRARY_PATH=$DEPLOYDIR/lib:$DEPLOYDIR/lib64
-  LD_RUN_PATH=$DEPLOYDIR/lib:$DEPLOYDIR/lib64
-  OPENSCAD_LIBRARIES=$DEPLOYDIR
-  GLEWDIR=$DEPLOYDIR
-  if [ -e $DEPLOYDIR/include/Qt ]; then
-    echo "Qt found under $DEPLOYDIR ... "
-    QTDIR=$DEPLOYDIR
+  PATH=$MXEDIR/usr/bin:$PATH
+  if [ $OPENSCAD_USEQT4 ]; then
+    PATH=$MXE_SYS_DIR/qt/bin:$PATH
+  else
+    PATH=$MXE_SYS_DIR/qt5/bin:$PATH
   fi
 }
 
-setup_variables_mxe()
+setup_path_netbsd()
 {
-  OPENSCADDIR=$PWD
-  DEPLOYDIR=$OPENSCADDIR/$MXE_TARGET
-  run setup_base
-  run setup_path
-}
-
-setup_variables_freebsd()
-{
-  #QMAKESPEC=freebsd-clang
-  #QTDIR=/usr/local/share/qt5
-  QMAKESPEC=freebsd-g++
-  QTDIR=/usr/local/share/qt4
-  DEPLOYDIR=$BASEDIR
-  setup_variables_common_unx
-}
-
-setup_variables_netbsd()
-{
-  run save_path
-  QMAKESPEC=netbsd-g++
-  QTDIR=/usr/pkg/qt4
+  setup_path
   PATH=/usr/pkg/qt4/bin:$PATH
   LD_LIBRARY_PATH=/usr/pkg/qt4/lib:$LD_LIBRARY_PATH
   LD_LIBRARY_PATH=/usr/X11R7/lib:$LD_LIBRARY_PATH
   LD_LIBRARY_PATH=/usr/pkg/lib:$LD_LIBRARY_PATH
-  DEPLOYDIR=$BASEDIR
-  setup_variables_common_unx
 }
 
-setup_variables_msys()
+setup_clang_default()
 {
-  if [ "`echo $* | grep clang`" ]; then
-    run setup_clang
-  fi
-  OPENSCADDIR=$PWD
-  DEPLOYDIR=$OPENSCADDIR/$OPENSCAD_BUILD_TARGET_TRIPLE
-  run setup_path
+  CC=clang
+  CXX=clang++
 }
 
 setup_clang_msys()
 {
-  CC=clang
-  CXX=clang++
+  setup_clang_default
   echo if you have not already installed clang try this:
   echo   pacman -Sy mingw-w64-x86_64-clang or
   echo   pacman -Sy mingw-w64-i686-clang
@@ -208,58 +203,71 @@ setup_clang_msys()
 
 setup_clang_linux()
 {
-  CC=clang
-  CXX=clang++
-  # for qt4 this would be unsupported/linux-clang
-  QMAKESPEC=linux-clang
+  setup_clang_default
+  if [ $OPENSCAD_USEQT4 ]; then
+    QMAKESPEC=unsupported/linux-clang
+  else
+    QMAKESPEC=linux-clang
+  fi
 }
 
-setup_varlist()
+setup_clang_freebsd()
 {
-  vl=
-  vl="$vl OPENSCAD_BUILD_TARGET_TRIPLE"
-  vl="$vl OPENSCAD_BUILD_TARGET_ARCH OPENSCAD_BUILD_TARGET_OSTYPE"
-  vl="$vl OPENSCAD_BUILD_TARGET_ABI"
-  vl="$vl DEPLOYDIR BASEDIR LD_LIBRARY_PATH LD_RUN_PATH OPENSCAD_LIBRARIES"
-  vl="$vl GLEWDIR QMAKESPEC QTDIR CC CXX"
+  setup_clang_default
+  QMAKESPEC=unsupported/freebsd-clang
 }
 
-setup_varlist_mxe()
+setup_varexportlist_common()
 {
-  vl=
-  vl="$vl OPENSCAD_BUILD_TARGET_TRIPLE"
-  vl="$vl OPENSCAD_BUILD_TARGET_ARCH OPENSCAD_BUILD_TARGET_OSTYPE"
-  vl="$vl OPENSCAD_BUILD_TARGET_ABI OPENSCAD_LIBRARIES BASEDIR MXEDIR"
-  vl="$vl MXE_TARGET MXE_TARGET_DIR MXE_TARGET_DIR_SHARED MXE_TARGET_DIR_STATIC"
-  vl="$vl DEPLOYDIR SETENV_SAVED_ORIGINAL_PATH"
+  vel=
+  vel="$vel SETENV_SAVED_ORIGINAL_PATH OPENSCAD_BUILD_TARGET_OSTYPE CC CXX"
 }
 
-setup_varlist_msys()
+setup_varexportlist_default()
 {
-  vl=
-  vl="$vl OPENSCAD_BUILD_TARGET_ARCH OPENSCAD_BUILD_TARGET_OSTYPE"
-  vl="$vl OPENSCAD_BUILD_TARGET_ABI OPENSCAD_BUILD_TARGET_TRIPLE DEPLOYDIR"
-  vl="$vl CC CXX"
+  setup_varexportlist_common
+  vel="$vel OPENSCAD_BUILD_TARGET_TRIPLE"
+  vel="$vel OPENSCAD_BUILD_TARGET_ARCH"
+  vel="$vel OPENSCAD_BUILD_TARGET_ABI"
+  vel="$vel DEPLOYDIR BASEDIR LD_LIBRARY_PATH LD_RUN_PATH OPENSCAD_LIBRARIES"
+  vel="$vel GLEWDIR QMAKESPEC QTDIR"
 }
 
-clean_variables()
+setup_varexportlist_msys()
+{
+  setup_varexportlist_common
+  vel="$vel OPENSCAD_BUILD_TARGET_ARCH"
+  vel="$vel OPENSCAD_BUILD_TARGET_ABI OPENSCAD_BUILD_TARGET_TRIPLE DEPLOYDIR"
+}
+
+setup_varexportlist_mxe()
+{
+  setup_varexportlist_common
+  vel="$vel OPENSCAD_BUILD_TARGET_TRIPLE"
+  vel="$vel OPENSCAD_BUILD_TARGET_ARCH"
+  vel="$vel OPENSCAD_BUILD_TARGET_ABI OPENSCAD_LIBRARIES BASEDIR MXEDIR"
+  vel="$vel MXE_TARGET MXE_SYS_DIR MXE_SYS_DIR_SHARED MXE_SYS_DIR_STATIC"
+  vel="$vel DEPLOYDIR"
+}
+
+clean_variables_default()
 {
   if [ $SETENV_SAVED_ORIGINAL_PATH ]; then
     PATH=$SETENV_SAVED_ORIGINAL_PATH
     echo "PATH restored from SETENV_SAVED_ORIGINAL_PATH"
   fi
-  if [ "`echo $vl`" ]; then
-    for varname in $vl; do
+  if [ "`echo $vel`" ]; then
+    for varname in $vel; do
       eval $varname"="
     done
   fi
-  echo "SETENV cross build environment variables cleared"
+  echo "SETENV build environment variables cleared"
 }
 
-export_and_print_vars()
+export_and_print_vars_default()
 {
-  if [ "`echo $vl`" ]; then
-    for varname in $vl; do
+  if [ "`echo $vel`" ]; then
+    for varname in $vel; do
       export $varname
       echo "$varname: "`eval echo "$"$varname`
     done
@@ -270,10 +278,10 @@ export_and_print_vars()
 
 run()
 {
-  # run() calls function $1, possibly a specialized version for our target $2
+  # run() calls function $1_default, or a specialized version $1_$2 ($2=target)
   # stackoverflow.com/questions/85880/determine-if-a-function-exists-in-bash
   runfunc1=`echo $1"_"$OPENSCAD_BUILD_TARGET_OSTYPE`
-  runfunc2=`echo $1`
+  runfunc2=`echo $1_default`
   if [ "`type -t $runfunc1 | grep function`" ]; then
     echo "calling $runfunc1"
     eval $runfunc1
@@ -299,21 +307,28 @@ detect_target_ostype()
     OPENSCAD_BUILD_TARGET_OSTYPE=netbsd
   elif [ "`uname | grep -i msys`" ]; then
     OPENSCAD_BUILD_TARGET_OSTYPE=msys
+  else
+    OPENSCAD_BUILD_TARGET_OSTYPE=unknownos
   fi
 }
 
-
+detect_target_ostype $*
+run setup_varexportlist
 if [ "`echo $* | grep clean`" ]; then
   run clean_variables
   run export_and_print_vars
 else
-  if [ $OPENSCAD_BUILD_TARGET_OSTYPE ]; then
-    echo "OPENSCAD_BUILD_TARGET_OSTYPE environment was previously setup"
+  if [ $SETENV_SAVED_ORIGINAL_PATH ]; then
+    echo "$OPENSCAD_BUILD_TARGET_OSTYPE environment was previously setup"
     echo "Please run this script with 'clean' before use, or logout/login"
   else
-    detect_target_ostype $*
     run setup_target
-    run setup_variables
+    run setup_dirs
+    run save_path
+    run setup_path
+    if [ "`echo $* | grep clang`" ]; then
+      run setup_clang
+    fi
     run export_and_print_vars
   fi
 fi
