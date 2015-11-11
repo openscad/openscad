@@ -84,6 +84,16 @@ update_mcad_generic()
   fi
 }
 
+verify_binary_generic()
+{
+  cd $DEPLOYDIR
+  if [ ! -e ./$MAKE_TARGET/openscad ]; then
+    echo "cant find ./$MAKE_TARGET/openscad. build failed. stopping."
+    exit 1
+  fi
+  cd $OPENSCADDIR
+}
+
 verify_binary_mxe()
 {
   cd $DEPLOYDIR
@@ -106,6 +116,20 @@ verify_binary_linux()
   fi
 }
 
+setup_directories_generic()
+{
+  bprefix=$DEPLOYDIR/openscad-$VERSION
+  EXAMPLESDIR=$bprefix/examples/
+  LIBRARYDIR=$bprefix/libraries/
+  FONTDIR=$bprefix/fonts/
+  TRANSLATIONDIR=$bprefix/locale/
+  COLORSCHEMESDIR=$bprefix/color-schemes/
+  if [ -e $bprefix ]; then
+    rm -rf $bprefix
+  fi
+  mkdir $bprefix
+}
+
 setup_directories_darwin()
 {
   EXAMPLESDIR=OpenSCAD.app/Contents/Resources/examples
@@ -115,43 +139,14 @@ setup_directories_darwin()
   COLORSCHEMESDIR=OpenSCAD.app/Contents/Resources/color-schemes
 }
 
-setup_directories_mxe()
-{
-  cd $OPENSCADDIR
-  if [ ! -e $DEPLOYDIR ]; then
-    mkdir -p $DEPLOYDIR
-  fi
-  EXAMPLESDIR=$DEPLOYDIR/openscad-$VERSION/examples/
-  LIBRARYDIR=$DEPLOYDIR/openscad-$VERSION/libraries/
-  FONTDIR=$DEPLOYDIR/openscad-$VERSION/fonts/
-  TRANSLATIONDIR=$DEPLOYDIR/openscad-$VERSION/locale/
-  COLORSCHEMESDIR=$DEPLOYDIR/openscad-$VERSION/color-schemes/
-  rm -rf $DEPLOYDIR/openscad-$VERSION
-  mkdir $DEPLOYDIR/openscad-$VERSION
-}
-
-setup_directories_msys()
-{
-  setup_directories_mxe
-}
-
-setup_directories_linux()
-{
-  EXAMPLESDIR=openscad-$VERSION/examples/
-  LIBRARYDIR=openscad-$VERSION/libraries/
-  FONTDIR=openscad-$VERSION/fonts/
-  TRANSLATIONDIR=openscad-$VERSION/locale/
-  COLORSCHEMESDIR=openscad-$VERSION/color-schemes/
-  rm -rf openscad-$VERSION
-  mkdir openscad-$VERSION
-}
-
 copy_examples_generic()
 {
+  cd $OPENSCADDIR
   echo $EXAMPLESDIR
   mkdir -p $EXAMPLESDIR
   rm -f examples.tar
   tar cf examples.tar examples
+  ls -l examples.tar
   cd $EXAMPLESDIR/.. && tar xf $OPENSCADDIR/examples.tar && cd $OPENSCADDIR
   rm -f examples.tar
   chmod -R 644 $EXAMPLESDIR/*/*
@@ -210,7 +205,6 @@ copy_translations_generic()
 
 create_archive_darwin()
 {
-
   /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $VERSIONDATE" OpenSCAD.app/Contents/Info.plist
   macdeployqt OpenSCAD.app -dmg -no-strip
   mv OpenSCAD.dmg OpenSCAD-$VERSION.dmg
@@ -379,8 +373,25 @@ create_archive_mxe()
   cd $OPENSCADDIR
 }
 
+create_archive_netbsd()
+{
+  cd $DEPLOYDIR
+  pkdir=openscad-$VERSION
+  mkdir $pkdir/bin
+  mkdir $pkdir/lib
+  cp ./$MAKE_TARGET/openscad $pkdir/bin/
+
+  chmod 755 -R openscad-$VERSION/
+  PACKAGEFILE=OpenSCAD-$VERSION.$OPENSCAD_BUILD_TARGET_TRIPLE.tar.gz
+  tar cf $PACKAGEFILE openscad-$VERSION
+  echo
+  echo "Binary created:" $PACKAGEFILE
+  echo
+}
+
 create_archive_linux()
 {
+  cd $DEPLOYDIR
   # Do stuff from release-linux.sh
   mkdir openscad-$VERSION/bin
   mkdir -p openscad-$VERSION/lib/openscad
@@ -414,7 +425,7 @@ create_archive_linux()
 	cp icons/openscad.{desktop,png,xml} openscad-$VERSION/share/appdata
   cp scripts/installer-linux.sh openscad-$VERSION/install.sh
   chmod 755 -R openscad-$VERSION/
-  PACKAGEFILE=openscad-$VERSION.$OPENSCAD_BUILD_TARGET_ARCH.tar.gz
+  PACKAGEFILE=OpenSCAD-$VERSION.$OPENSCAD_BUILD_TARGET_TRIPLE.tar.gz
   tar cz openscad-$VERSION > $PACKAGEFILE
   echo
   echo "Binary created:" $PACKAGEFILE
@@ -423,6 +434,10 @@ create_archive_linux()
 
 setup_misc_generic()
 {
+  cd $OPENSCADDIR
+  if [ ! -e $DEPLOYDIR ]; then
+    mkdir -p $DEPLOYDIR
+  fi
   MAKE_TARGET=
   # for QT4 set QT_SELECT=4
   QT_SELECT=5
@@ -443,6 +458,13 @@ setup_misc_msys()
 
 qmaker_generic()
 {
+  cd $DEPLOYDIR
+  qmake VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+="$CONFIG" CONFIG-=debug ../openscad.pro
+  cd $OPENSCADDIR
+}
+
+qmaker_darwin()
+{
   QMAKE="`command -v qmake-qt5`"
   if [ ! -x "$QMAKE" ]; then
     QMAKE=qmake
@@ -450,26 +472,7 @@ qmaker_generic()
   "$QMAKE" VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+="$CONFIG" CONFIG-=debug openscad.pro
 }
 
-qmaker_msys()
-{
-  cd $DEPLOYDIR
-  echo qmake VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+="$CONFIG" CONFIG-=debug ../openscad.pro
-  qmake VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+="$CONFIG" CONFIG-=debug ../openscad.pro
-  cd $OPENSCADDIR
-}
-
-qmaker_mxe()
-{
-  cd $DEPLOYDIR
-  MINGWCONFIG=mingw-cross-env
-  if [ $OPENSCAD_BUILD_TARGET_ABI = "shared" ]; then
-    MINGWCONFIG=mingw-cross-env-shared
-  fi
-  qmake VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+="$CONFIG" CONFIG+=$MINGWCONFIG CONFIG-=debug ../openscad.pro
-  cd $OPENSCADDIR
-}
-
-make_clean_mxe()
+make_clean_generic()
 {
   cd $DEPLOYDIR
   make clean
@@ -478,20 +481,10 @@ make_clean_mxe()
   cd $OPENSCADDIR
 }
 
-make_clean_msys()
-{
-  make_clean_mxe
-}
-
 make_clean_darwin()
 {
   make -s clean
   rm -rf OpenSCAD.app
-}
-
-make_clean_linux()
-{
-  make -s clean
 }
 
 touch_parser_lexer_mxe()
@@ -508,32 +501,21 @@ touch_parser_lexer_msys()
   touch_parser_lexer_mxe
 }
 
-build_gui_binary_generic()
+make_gui_binary_generic()
 {
+  cd $DEPLOYDIR
+  if [ $FAKEMAKE ]; then build_fake_gui_binary_generic ; return ; fi
   make -j$NUMCPU $MAKE_TARGET
   if [[ $? != 0 ]]; then
     echo "Error building OpenSCAD. Aborting."
     exit 1
   fi
-}
-
-build_fake_gui_binary_mxe()
-{
-  # fake to speed debug of building process
-  cd $DEPLOYDIR
-  touch $MAKE_TARGET/openscad.exe
-  touch $MAKE_TARGET/openscad.com
   cd $OPENSCADDIR
 }
 
-build_fake_gui_binary_msys()
+make_gui_binary_mxe()
 {
-  build_fake_gui_binary_mxe
-}
-
-build_gui_binary_mxe()
-{
-  if [ $FAKEMAKE ]; then build_fake_gui_binary_mxe ; return; fi
+  if [ $FAKEMAKE ]; then build_fake_gui_binary_mxe ; return ; fi
   # make main openscad.exe
   cd $DEPLOYDIR
   make $MAKE_TARGET -j$NUMCPU
@@ -543,10 +525,29 @@ build_gui_binary_mxe()
   cd $OPENSCADDIR
 }
 
-build_gui_binary_msys()
+make_gui_binary_msys()
 {
-  if [ $FAKEMAKE ]; then build_fake_gui_binary_mxe ; return; fi
-  build_gui_binary_mxe
+  make_gui_binary_mxe
+}
+
+build_fake_gui_binary_generic()
+{
+  cd $DEPLOYDIR
+  touch ./$MAKE_TARGET/openscad
+  cd $OPENSCADDIR
+}
+
+build_fake_gui_binary_mxe()
+{
+  cd $DEPLOYDIR
+  touch $MAKE_TARGET/openscad.exe
+  touch $MAKE_TARGET/openscad.com
+  cd $OPENSCADDIR
+}
+
+build_fake_gui_binary_msys()
+{
+  build_fake_gui_binary_mxe
 }
 
 OPENSCADDIR=$PWD
@@ -564,6 +565,7 @@ elif [ ! $SETENV_SAVED_ORIGINAL_PATH ]; then
 fi
 
 if [ "`echo $* | grep fake`" ]; then
+  echo faking binary build
   FAKEMAKE=1
 fi
 
@@ -599,7 +601,7 @@ run setup_misc
 run qmaker
 run make_clean
 run touch_parser_lexer
-run build_gui_binary
+run make_gui_binary
 run verify_binary
 run setup_directories
 if [ -n $EXAMPLESDIR ]; then run copy_examples ; fi

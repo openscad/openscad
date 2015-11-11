@@ -180,7 +180,7 @@ setup_path_mxe()
 
 setup_path_netbsd()
 {
-  setup_path
+  setup_path_generic
   PATH=/usr/pkg/qt4/bin:$PATH
   LD_LIBRARY_PATH=/usr/pkg/qt4/lib:$LD_LIBRARY_PATH
   LD_LIBRARY_PATH=/usr/X11R7/lib:$LD_LIBRARY_PATH
