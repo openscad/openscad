@@ -87,8 +87,8 @@ AbstractNode *RotateExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	if (node->scale <= 0)
 		node->scale = 1;
 
-	if (node->angle <= 0)
-		node->angle = 0;
+	if (node->angle <= -360)
+		node->angle = 360;
 	if (node->angle > 360)
 		node->angle = 360;
 

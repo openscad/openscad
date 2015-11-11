@@ -792,30 +792,11 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 {
 	PolySet *ps = new PolySet(3);
 	ps->setConvexity(node.convexity);
-	if (node.angle <= 0) return ps;
 
-	if (node.angle != 360) {
-		PolySet *ps_start = poly.tessellate(); // starting face
-		Transform3d rot(Eigen::AngleAxisd(M_PI/2, Vector3d::UnitX()));
-		ps_start->transform(rot);
-		// Flip vertex ordering for starting polygon
-		BOOST_FOREACH(Polygon &p, ps_start->polygons) {
-			std::reverse(p.begin(), p.end());
-		}
-		ps->append(*ps_start);
-		delete ps_start;
-
-		Polygon2d end_poly(poly);
-		PolySet *ps_end = end_poly.tessellate();
-		Transform3d rot2(Eigen::AngleAxisd(-node.angle*M_PI/180, Vector3d::UnitZ()) * Eigen::AngleAxisd(M_PI/2, Vector3d::UnitX()));
-		ps_end->transform(rot2);
-		ps->append(*ps_end);
-		delete ps_end;
-	}
-
+	double min_x = 0;
+	double max_x = 0;
+	int fragments = 0;
 	BOOST_FOREACH(const Outline2d &o, poly.outlines()) {
-		double min_x = 0;
-		double max_x = 0;
 		BOOST_FOREACH(const Vector2d &v, o.vertices) {
 			min_x = fmin(min_x, v[0]);
 			max_x = fmax(max_x, v[0]);
@@ -826,8 +807,52 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 				return NULL;
 			}
 		}
-		int fragments = Calc::get_fragments_from_r(max_x - min_x, node.fn, node.fs, node.fa) * node.angle / 360;
-		
+		fragments = Calc::get_fragments_from_r(max_x - min_x, node.fn, node.fs, node.fa) * std::abs(node.angle) / 360;
+	}
+
+	Polygon2d *poly2;
+	bool flip_faces = (min_x >= 0 && node.angle > 0) || (min_x < 0 && node.angle < 0);
+	// build a copy with reversed outlines
+	if (flip_faces) {
+		poly2 = new Polygon2d();
+		BOOST_FOREACH(const Outline2d &o, poly.outlines()) {
+			Outline2d o2;
+			o2.positive = o.positive;
+			BOOST_REVERSE_FOREACH(const Vector2d &v, o.vertices) {
+				o2.vertices.push_back(v);
+			}
+			poly2->addOutline(o2);
+		}
+	} else {
+		poly2 = new Polygon2d(poly);
+	}
+	
+	if (node.angle != 360) {
+		PolySet *ps_start = poly2->tessellate(); // starting face
+		Transform3d rot(Eigen::AngleAxisd(M_PI/2, Vector3d::UnitX()));
+		ps_start->transform(rot);
+		// Flip vertex ordering
+		if (!flip_faces) {
+			BOOST_FOREACH(Polygon &p, ps_start->polygons) {
+				std::reverse(p.begin(), p.end());
+			}
+		}
+		ps->append(*ps_start);
+		delete ps_start;
+
+		PolySet *ps_end = poly2->tessellate();
+		Transform3d rot2(Eigen::AngleAxisd(node.angle*M_PI/180, Vector3d::UnitZ()) * Eigen::AngleAxisd(M_PI/2, Vector3d::UnitX()));
+		ps_end->transform(rot2);
+		if (flip_faces) {
+			BOOST_FOREACH(Polygon &p, ps_end->polygons) {
+				std::reverse(p.begin(), p.end());
+			}
+		}
+		ps->append(*ps_end);
+		delete ps_end;
+	}
+
+	BOOST_FOREACH(const Outline2d &o, poly2->outlines()) {
 		std::vector<Vector3d> rings[2];
 		rings[0].resize(o.vertices.size());
 		rings[1].resize(o.vertices.size());
@@ -836,9 +861,9 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 		for (int j = 0; j < fragments; j++) {
 			double a;
 			if (node.angle == 360)
-			    a = ((j+1)%fragments*2*M_PI) / fragments + M_PI/2; // start on the X axis
+			    a = M_PI/2 - ((j+1)%fragments*2*M_PI) / fragments; // start on the X axis
 			else
-				a = (j+1)*(node.angle*M_PI/180) / fragments + M_PI/2; // start on the X axis
+				a = M_PI/2 - (j+1)*(node.angle*M_PI/180) / fragments; // start on the X axis
 			fill_ring(rings[(j+1)%2], o, a);
 
 			for (size_t i=0;i<o.vertices.size();i++) {
@@ -853,6 +878,8 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 			}
 		}
 	}
+	delete poly2;
+	
 	return ps;
 }
 
