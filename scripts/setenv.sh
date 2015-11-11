@@ -43,7 +43,7 @@ setup_target_default()
   ARCH=`uname -m`
   OPENSCAD_BUILD_TARGET_ARCH=$ARCH
   OPENSCAD_BUILD_TARGET_TRIPLE=$ARCH-$OSTYPE
-  if [ "`echo $* | grep qt4`" ]; then
+  if [ "`echo $ARGS | grep qt4`" ]; then
     OPENSCAD_USEQT4=1
   fi
 }
@@ -54,8 +54,9 @@ setup_target_mxe()
   SUB=w64
   SYS=mingw32
   ABI=static
-  if [ "`echo $* | grep 64 `" ]; then ARCH=x86_64 ; fi
-  if [ "`echo $* | grep shared `" ]; then ABI=shared ; fi
+  if [ "`echo $ARGS | grep 64 `" ]; then ARCH=x86_64 ; fi
+  if [ "`echo $ARGS | grep shared `" ]; then ABI=shared ; fi
+  MXE_TARGET=$ARCH-$SUB-$SYS.$ABI
   OPENSCAD_BUILD_TARGET_ARCH=$ARCH
   OPENSCAD_BUILD_TARGET_ABI=$ABI
   OPENSCAD_BUILD_TARGET_TRIPLE=$MXE_TARGET
@@ -70,7 +71,6 @@ setup_target_msys()
   if [ "`uname -a | grep -i x86_64`" ]; then
     ARCH=x86_64
   fi
-  MXE_TARGET=$ARCH-$SUB-$SYS.$ABI
   OPENSCAD_BUILD_TARGET_ARCH=$ARCH
   OPENSCAD_BUILD_TARGET_TRIPLE=$ARCH-$SUB-$SYS.$ABI
 }
@@ -312,9 +312,10 @@ detect_target_ostype()
   fi
 }
 
-detect_target_ostype $*
+ARGS=$*
+detect_target_ostype $ARGS
 run setup_varexportlist
-if [ "`echo $* | grep clean`" ]; then
+if [ "`echo $ARGS | grep clean`" ]; then
   run clean_variables
   run export_and_print_vars
 else
@@ -326,7 +327,7 @@ else
     run setup_dirs
     run save_path
     run setup_path
-    if [ "`echo $* | grep clang`" ]; then
+    if [ "`echo $ARGS | grep clang`" ]; then
       run setup_clang
     fi
     run export_and_print_vars

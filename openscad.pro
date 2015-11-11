@@ -29,6 +29,11 @@ isEmpty(QT_VERSION) {
   error("Please use qmake for Qt 4 or Qt 5 (probably qmake-qt4)")
 }
 
+mxetest=$$(MXE_TARGET)
+!isEmpty(mxetest) {
+  CONFIG += mingw-cross-env
+}
+
 # Auto-include config_<variant>.pri if the VARIANT variable is give on the
 # command-line, e.g. qmake VARIANT=mybuild
 !isEmpty(VARIANT) {
@@ -209,9 +214,12 @@ mdi {
 include(common.pri)
 
 # mingw has to come after other items so OBJECT_DIRS will work properly
-CONFIG(mingw-cross-env)|CONFIG(mingw-cross-env-shared) {
+
+mxetest {
   include(mingw-cross-env.pri)
 }
+# |CONFIG(mingw-cross-env-shared) {
+# }
 
 win* {
   FLEXSOURCES = src/lexer.l
