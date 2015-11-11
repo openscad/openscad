@@ -8,7 +8,7 @@
 # directory with the triple-name of the target system, for example
 # ./x86_64-w64-mingw32 or ./i686-linux-gnu, as setup by 'scripts/setenv.h'
 #
-# Portability works by using bash function naming and run().
+# Portability works by special naming of bash functions and the run() function.
 # "_generic" is a generic build, _darwin _linux, _msys, etc are specialized
 
 printUsage()
@@ -210,7 +210,6 @@ copy_translations_generic()
 
 create_archive_darwin()
 {
-
   /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $VERSIONDATE" OpenSCAD.app/Contents/Info.plist
   macdeployqt OpenSCAD.app -dmg -no-strip
   mv OpenSCAD.dmg OpenSCAD-$VERSION.dmg
@@ -302,14 +301,9 @@ create_archive_mxe()
   cd $DEPLOYDIR
 
   # try to use a package filename that is not confusing (i686-w64-mingw32 is)
-  ARCH_INDICATOR=MingW-x86-32
+  ARCH_INDICATOR=MingW-x86-32-$OPENSCAD_BUILD_TARGET_ABI
   if [ $OPENSCAD_BUILD_TARGET_ARCH = x86_64 ]; then
-    ARCH_INDICATOR=MingW-x86-64
-  fi
-  if [ $OPENSCAD_BUILD_TARGET_ABI = "shared" ]; then
-    ARCH_INDICTATOR=$ARCH_INDICATOR"-shared"
-  else
-    ARCH_INDICTATOR=$ARCH_INDICATOR"-static"
+    ARCH_INDICATOR=MingW-x86-64-$OPENSCAD_BUILD_TARGET_ABI
   fi
 
   BINFILE=$DEPLOYDIR/OpenSCAD-$VERSION-$ARCH_INDICATOR.zip
