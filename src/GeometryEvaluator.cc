@@ -799,9 +799,11 @@ static void fill_ring(std::vector<Vector3d> &ring, const Outline2d &o, double a,
 */
 static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &poly)
 {
+	if (node.angle == 0) return NULL; 
+
 	PolySet *ps = new PolySet(3);
 	ps->setConvexity(node.convexity);
-
+	
 	double min_x = 0;
 	double max_x = 0;
 	int fragments = 0;
@@ -816,7 +818,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 				return NULL;
 			}
 		}
-		fragments = Calc::get_fragments_from_r(max_x - min_x, node.fn, node.fs, node.fa) * std::abs(node.angle) / 360;
+		fragments = fmax(Calc::get_fragments_from_r(max_x - min_x, node.fn, node.fs, node.fa) * std::abs(node.angle) / 360, 1);
 	}
 
 	bool flip_faces = (min_x >= 0 && node.angle > 0) || (min_x < 0 && node.angle < 0);

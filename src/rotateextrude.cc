@@ -79,7 +79,8 @@ AbstractNode *RotateExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	node->convexity = (int)convexity->toDouble();
 	origin->getVec2(node->origin_x, node->origin_y);
 	node->scale = scale->toDouble();
-	node->angle = angle->isUndefined() ? 360 : angle->toDouble();
+	node->angle = 360;
+	angle->getFiniteDouble(node->angle);
 
 	if (node->convexity <= 0)
 		node->convexity = 2;
@@ -87,9 +88,7 @@ AbstractNode *RotateExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	if (node->scale <= 0)
 		node->scale = 1;
 
-	if (node->angle <= -360)
-		node->angle = 360;
-	if (node->angle > 360)
+	if ((node->angle <= -360) || (node->angle > 360))
 		node->angle = 360;
 
 	if (node->filename.empty()) {
