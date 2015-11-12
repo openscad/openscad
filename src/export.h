@@ -15,6 +15,12 @@ enum FileFormat {
 	OPENSCAD_SVG
 };
 
+bool rayCastGeometry(
+    const double         *o,
+    const double         *v,
+    const class Geometry *rootGeom
+);
+
 // void exportFile(const class Geometry *root_geom, std::ostream &output, FileFormat format);
 void exportFileByName(const class Geometry *root_geom, FileFormat format,
 	const char *name2open, const char *name2display);
