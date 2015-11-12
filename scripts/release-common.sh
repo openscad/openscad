@@ -1,12 +1,9 @@
 #!/usr/bin/env bash
 #
-# This script creates a binary release of OpenSCAD.
+# This script creates a binary release of OpenSCAD. It creates a file named
+# OpenSCAD-<versionstring>.<extension> in the current directory.
 #
-# On OSX / Darwin the script will create a file called
-# openscad-<versionstring>.<extension> in the current directory. For
-# other platforms, including cross-builds, the file will be under a
-# directory with the triple-name of the target system, for example
-# ./x86_64-w64-mingw32 or ./i686-linux-gnu, as setup by 'scripts/setenv.h'
+# Non-OSX systems require running 'scripts/setenv.sh' before building.
 #
 # Portability works by special naming of bash functions and the run() function.
 # "_generic" is a generic build, _darwin _linux, _msys, etc are specialized
@@ -284,6 +281,7 @@ create_archive_msys()
   echo "Creating zipfile..."
   rm -f OpenSCAD-$VERSION.x86-$ARCH.zip
   "$ZIP" $ZIPARGS $BINFILE openscad-$VERSION
+  mv $BINFILE $OPENSCADDIR/
   cd $OPENSCADDIR
   echo "Binary zip package created:"
   echo "  $BINFILE"
@@ -378,6 +376,9 @@ create_archive_mxe()
   $MAKENSIS $NSISDEBUG "-DVERSION=$VERSION" installer.nsi
   cp $DEPLOYDIR/openscad-$VERSION/openscad_setup.exe $INSTFILE
   cd $OPENSCADDIR
+
+  mv $BINFILE $OPENSCADDIR/
+  mv $INSTFILE $OPENSCADDIR/
 }
 
 create_archive_netbsd()
@@ -394,6 +395,7 @@ create_archive_netbsd()
   echo
   echo "Binary created:" $PACKAGEFILE
   echo
+  mv $PACKAGEFILE $OPENSCADDIR/
 }
 
 create_archive_linux()
@@ -434,6 +436,7 @@ create_archive_linux()
   chmod 755 -R openscad-$VERSION/
   PACKAGEFILE=OpenSCAD-$VERSION.$OPENSCAD_BUILD_TARGET_TRIPLE.tar.gz
   tar cz openscad-$VERSION > $PACKAGEFILE
+  mv $PACKAGEFILE $OPENSCADDIR/
   echo
   echo "Binary created:" $PACKAGEFILE
   echo
