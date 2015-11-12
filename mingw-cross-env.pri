@@ -28,14 +28,12 @@ CONFIG(mingw-cross-env): {
   LIBS += $$(MXE_SYS_DIR_STATIC)/lib/libiconv.a
 }
 
-## Mostly shared library link, to .dll files
-# (mpfr is not available as a .dll as of writing)
+## Shared library link, to .dll files
 CONFIG(mingw-cross-env-shared): {
   # on MXE, the shared library .dll files are under 'bin' not 'lib'.
   QMAKE_LFLAGS += -L./$$(MXE_SYS_DIR_SHARED)/bin
-  LIBS += $$(MXE_SYS_DIR_STATIC)/lib/libmpfr.a 
-  LIBS += -lglew32 -lglut -lopengl32 -lGLEW -lglu32
-  LIBS += -lopencsg -lgmp -lCGAL 
+  LIBS += -lgmp -lmpfr -lCGAL 
+  LIBS += -lopencsg -lglew32 -lglut -lopengl32 -lGLEW -lglu32
   LIBS += -lfontconfig -lfreetype -lharfbuzz -lbz2 -lexpat -lintl -liconv
 }
 

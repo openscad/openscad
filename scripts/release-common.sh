@@ -252,7 +252,7 @@ create_archive_msys()
   echo to $DEPLOYDIR/$MAKE_TARGET
   fl=
   boostlist="filesystem program_options regex system thread"
-  liblist="gmp-10 gmpxx-4 opencsg-1 harfbuzz-0 harfbuzz-gobject-0 glib-2.0-0"
+  liblist="mpfr-4 gmp-10 gmpxx-4 opencsg-1 harfbuzz-0 harfbuzz-gobject-0 glib-2.0-0"
   liblist="$liblist CGAL CGAL_Core fontconfig-1 expat-1 bz2-1 intl-8 iconv-2"
   liblist="$liblist pcre16-0 png16-16 icudt55 freetype-6"
   dlist="glew32 opengl qscintilla2 zlib1 jsiosdjfiosdjf Qt5PrintSupport"
@@ -323,7 +323,7 @@ create_archive_mxe()
     dlist="icuin icudt icudt54 zlib1 GLEW ../qt5/lib/qscintilla2"
     liblist="stdc++-6 png16-16 pcre16-0 freetype-6 iconv-2 intl-8 bz2 expat-1"
     liblist="$liblist fontconfig-1 harfbuzz-0 opencsg-1 glib-2.0-0"
-    liblist="$liblist CGAL_Core CGAL gmpxx-4 gmp-10 pcre-1"
+    liblist="$liblist CGAL_Core CGAL gmpxx-4 gmp-10 mpfr-4 pcre-1"
     if [ $OPENSCAD_BUILD_TARGET_ARCH = i686 ]; then
       liblist="$liblist gcc_s_sjlj-1"
     else
@@ -335,8 +335,20 @@ create_archive_mxe()
     for file in $liblist;   do fl="$fl lib"$file".dll"; done
     for file in $dlist;     do fl="$fl "$file".dll"; done
     for dllfile in $fl; do
-      copyfail $flprefix/$dllfile /$DEPLOYDIR/$MAKE_TARGET/
+      copyfail $flprefix/$dllfile $DEPLOYDIR/$MAKE_TARGET/
     done
+    # replicate windeployqt behavior. as of writing, theres no mxe windeployqt
+    dqt=$DEPLOYDIR/$MAKE_TARGET/
+    for subdir in platforms iconengines imageformats translations; do
+      echo mkdir $dqt/$subdir
+      mkdir $dqt/$subdir
+    done
+    copyfail $MXE_SYS_DIR/qt5/plugins/platforms/qwindows.dll $dqt/platforms/
+    copyfail $MXE_SYS_DIR/qt/plugins/iconengines/qsvgicon4.dll $dqt/iconengines/
+    for idll in `ls $MXE_SYS_DIR/qt/plugins/imageformats/`; do
+      copyfail $MXE_SYS_DIR/qt/plugins/imageformats/$idll $dqt/imageformats/
+    done
+    # dont know how windeployqt does these .qm files in 'translations'. skip it 
   fi # shared
 
   echo "Copying main binary .exe, .com, and other stuff"
