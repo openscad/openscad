@@ -20,6 +20,12 @@ unix:linux* {
     }
 }
 
+exists($$OPENSCAD_LIBDIR/lib/libqscintilla2.so) {
+    greaterThan(QT_MAJOR_VERSION, 4) {
+        QT5LIB=qscintilla2
+    }
+}
+
 CONFIG(debug, debug|release) {
     mac: {
 	#LIBS += -lqscintilla2_debug

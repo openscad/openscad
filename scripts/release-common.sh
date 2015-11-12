@@ -107,7 +107,7 @@ verify_binary_mxe()
 
 verify_binary_linux()
 {
-  if [ ! -e $MAKE_TARGET/openscad ]; then
+  if [ ! -e $DEPLOYDIR/$MAKE_TARGET/openscad ]; then
     echo "cant find $MAKE_TARGET/openscad. build failed. stopping."
     exit 1
   fi
