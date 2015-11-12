@@ -445,8 +445,11 @@ create_archive_linux()
 setup_misc_generic()
 {
   cd $OPENSCADDIR
-  if [ ! -e $DEPLOYDIR ]; then
+  if [ ! -d $DEPLOYDIR ]; then
     mkdir -p $DEPLOYDIR
+  fi
+  if [ ! -d $DEPLOYDIR ]; then
+    exit 1
   fi
   MAKE_TARGET=
   # for QT4 set QT_SELECT=4
