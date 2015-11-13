@@ -92,30 +92,65 @@ void GLView::setupCamera()
 {
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  auto dist = cam.zoomValue();
-  switch (this->cam.projection) {
-	case Camera::ProjectionType::PERSPECTIVE: {
-		gluPerspective(cam.fov, aspectratio, 0.1 * dist, 100 * dist);
+
+	switch (this->cam.type) {
+	case Camera::CameraType::GIMBAL: {
+		auto dist = cam.zoomValue();
+		switch (this->cam.projection) {
+		case Camera::ProjectionType::PERSPECTIVE: {
+			gluPerspective(cam.fov, aspectratio, 0.1*dist, 100*dist);
+			break;
+		}
+		case Camera::ProjectionType::ORTHOGONAL: {
+			auto height = dist * tan(cam.fov/2*M_PI/180);
+			glOrtho(-height*aspectratio, height*aspectratio,
+							-height, height,
+							-100*dist, +100*dist);
+			break;
+		}
+		}
+		gluLookAt(0.0, -dist, 0.0,
+							0.0, 0.0, 0.0,
+							0.0, 0.0, 1.0);
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+		glRotated(cam.object_rot.x(), 1.0, 0.0, 0.0);
+		glRotated(cam.object_rot.y(), 0.0, 1.0, 0.0);
+		glRotated(cam.object_rot.z(), 0.0, 0.0, 1.0);
+		break;
+	}
+	case Camera::CameraType::VECTOR: {
+		auto dist = (cam.center - cam.eye).norm();
+		switch (this->cam.projection) {
+		case Camera::ProjectionType::PERSPECTIVE: {
+			gluPerspective(cam.fov, aspectratio, 0.1*dist, 100*dist);
+			break;
+		}
+		case Camera::ProjectionType::ORTHOGONAL: {
+			auto height = dist * tan(cam.fov/2*M_PI/180);
+			glOrtho(-height*aspectratio, height*aspectratio,
+							-height, height,
+							-100*dist, +100*dist);
+			break;
+		}
+		}
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+
+		Vector3d dir(cam.eye - cam.center);
+		Vector3d up(0.0,0.0,1.0);
+		if (dir.cross(up).norm() < 0.001) { // View direction is ~parallel with up vector
+			up << 0.0,1.0,0.0;
+		}
+
+		gluLookAt(cam.eye[0], cam.eye[1], cam.eye[2],
+							cam.center[0], cam.center[1], cam.center[2],
+							up[0], up[1], up[2]);
 		break;
 	}
 	default:
-	case Camera::ProjectionType::ORTHOGONAL: {
-		auto height = dist * tan_degrees(cam.fov / 2);
-		glOrtho(-height * aspectratio, height * aspectratio,
-		        -height, height,
-		        -100 * dist, +100 * dist);
 		break;
 	}
-  }
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
-  gluLookAt(0.0, -dist, 0.0,      // eye
-            0.0, 0.0,   0.0,      // center
-            0.0, 0.0,   1.0);     // up
-
-  glRotated(cam.object_rot.x(), 1.0, 0.0, 0.0);
-  glRotated(cam.object_rot.y(), 0.0, 1.0, 0.0);
-  glRotated(cam.object_rot.z(), 0.0, 0.0, 1.0);
 }
 
 void GLView::paintGL()
@@ -125,7 +160,7 @@ void GLView::paintGL()
   auto bgcol = ColorMap::getColor(*this->colorscheme, RenderColor::BACKGROUND_COLOR);
   auto axescolor = ColorMap::getColor(*this->colorscheme, RenderColor::AXES_COLOR);
   auto crosshaircol = ColorMap::getColor(*this->colorscheme, RenderColor::CROSSHAIR_COLOR);
-  glClearColor(bgcol[0], bgcol[1], bgcol[2], 1.0);
+  glClearColor(bgcol[0], bgcol[1], bgcol[2], bgcol[3]);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
   setupCamera();

@@ -12,7 +12,7 @@ bool write_png(std::ostream &output, unsigned char *pixels, int width, int heigh
 	lodepng::State state;
 	state.encoder.auto_convert = false;
 	// some png renderers have different interpretations of alpha, so don't use it
-	state.info_png.color.colortype = LCT_RGB;
+	state.info_png.color.colortype = LCT_RGBA;
 	state.info_png.color.bitdepth = 8;
 	unsigned err = lodepng::encode(dataout, pixels, width, height, state);
 	if ( err ) return false;

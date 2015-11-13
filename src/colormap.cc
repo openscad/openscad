@@ -134,6 +134,15 @@ void RenderColorScheme::addColor(RenderColor colorKey, std::string key)
 	int g = (val >> 8) & 0xff;
 	int b = val & 0xff;
 	_color_scheme.insert(ColorScheme::value_type(colorKey, Color4f(r, g, b)));
+    } else if ((color.length() == 9) && (color.at(0) == '#')) {
+	char *endptr;
+	unsigned int val = strtol(color.substr(1).c_str(), &endptr, 16);
+	int r = (val >> 24) & 0xff;
+	int g = (val >> 16) & 0xff;
+	int b = (val >> 8) & 0xff;
+	int a = val & 0xff;
+	_color_scheme.insert(ColorScheme::value_type(colorKey, Color4f(r, g, b, a)));
+	
     } else {
 	throw std::invalid_argument(std::string("invalid color value for key '") + key + "': '" + color + "'");
     }
