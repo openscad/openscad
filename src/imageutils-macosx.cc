@@ -33,11 +33,10 @@ bool write_png(std::ostream &output, unsigned char *pixels, int width, int heigh
   size_t rowBytes = width * 4;
 //  CGColorSpaceRef colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
 	CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-  CGBitmapInfo bitmapInfo = kCGImageAlphaNoneSkipLast | kCGBitmapByteOrder32Big; // BGRA
+  CGBitmapInfo bitmapInfo = kCGImageAlphaLast | kCGBitmapByteOrder32Big; // BGRA
   int bitsPerComponent = 8;
   CGContextRef contextRef = CGBitmapContextCreate(pixels, width, height, 
-																									bitsPerComponent, rowBytes, 
-                                                  colorSpace, bitmapInfo);
+	bitsPerComponent, rowBytes, colorSpace, bitmapInfo);
   if (!contextRef) {
     std::cerr << "Unable to create CGContextRef.";
     return false;
