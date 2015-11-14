@@ -82,12 +82,6 @@ get_debian_deps()
   gtk-doc-tools libglib2.0-dev gettext xvfb pkg-config ragel
 }
 
-get_debian_8_deps()
-{
-  get_debian_deps
-  apt-get -y install libharfbuzz-dev qtbase5-dev libqt5scintilla2-dev
-}
-
 get_debian_7_deps()
 {
   get_debian_deps
@@ -98,10 +92,60 @@ get_debian_7_deps()
   echo "./scripts/uni-build-dependencies.sh harfbuzz"
 }
 
+get_qt4or5_deps_debian()
+{
+  # debian 8 can have both qt4 and qt5 installed... or neither. figure out which
+  # and cater to it.
+  useqt=5
+
+  if [ "`dpkg --list | grep qt5-default`" ]; then
+    useqt=5
+  elif [ "`dpkg --list | grep qt4-default`" ]; then
+    useqt=4
+  elif [ "`echo QT_SELECT | grep ^4`" ]; then
+    useqt=4
+  elif [ "`echo QT_SELECT | grep qt4`" ]; then
+    useqt=4
+  elif [ "`echo QT_SELECT | grep ^5`" ]; then
+    useqt=5
+  elif [ "`echo QT_SELECT | grep qt5`" ]; then
+    useqt=5
+  elif [ ! "`command -v qtchooser`" ]; then
+    useqt=5
+  elif [ "`qtchooser -l | grep qt5`" ]; then
+    useqt=5
+  elif [ ! "`qtchooser -l | grep qt4`" ]; then
+    useqt=5
+  elif [ ! "`command -v qmake`" ]; then
+    useqt=5
+  elif [ "`qmake --version | grep -i qt.version.4`" ]; then
+    useqt=4
+  fi
+
+  if [ $useqt = 5 ]; then
+    apt-get -y install qtbase5-dev libqt5scintilla2-dev libqt5opengl5-dev qt5-qmake
+  else
+    apt-get -y install libqt4-dev libqscintilla2-dev libqt4-opengl-dev
+  fi
+  if [ ! "`command -v qmake`" ]; then
+    apt-get -y install qt$useqt-default
+    echo "installed qt$useqt-default to enable qmake"
+  elif [ ! "`qmake --version | grep qmake.version`" ]; then
+    apt-get -y install qt$useqt-default
+    echo "installed qt$useqt-default to enable qmake"
+  fi
+}
+
+get_debian_8_deps()
+{
+  apt-get -y install libharfbuzz-dev
+  get_debian_deps
+  get_qt4or5_deps_debian
+}
+
 get_ubuntu_14_deps()
 {
   get_debian_8_deps
-  apt-get -y install qt5-qmake
 }
 
 unknown()
@@ -121,6 +165,10 @@ if [ -e /etc/issue ]; then
   get_debian_8_deps
  elif [ "`grep -i raspbian /etc/issue`" ]; then
   get_debian_deps
+ elif [ "`grep -i linux.mint.2 /etc/issue`" ]; then
+  get_ubuntu_14_deps
+ elif [ "`grep -i linux.mint.1[789] /etc/issue`" ]; then
+  get_ubuntu_14_deps
  elif [ "`grep -i mint /etc/issue`" ]; then
   get_debian_7_deps
  elif [ "`grep -i suse /etc/issue`" ]; then
