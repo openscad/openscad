@@ -57,6 +57,7 @@ OffscreenContext *create_offscreen_context(int w, int h)
                                    
   NSOpenGLPixelFormatAttribute attributes[] = {
     NSOpenGLPFANoRecovery,
+    NSOpenGLPFAAlphaSize, 8,
     NSOpenGLPFADepthSize, 24,
     NSOpenGLPFAStencilSize, 8,
 // Enable this to force software rendering
