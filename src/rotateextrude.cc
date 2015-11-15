@@ -52,7 +52,7 @@ AbstractNode *RotateExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	RotateExtrudeNode *node = new RotateExtrudeNode(inst);
 
 	AssignmentList args;
-	args += Assignment("file"), Assignment("layer"), Assignment("origin"), Assignment("scale"), Assignment("angle");
+	args += Assignment("file"), Assignment("layer"), Assignment("origin"), Assignment("scale");
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);
@@ -115,8 +115,8 @@ std::string RotateExtrudeNode::toString() const
 			;
 	}
 	stream <<
-		"convexity = " << this->convexity << ", "
 		"angle = " << this->angle << ", "
+		"convexity = " << this->convexity << ", "
 		"$fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs << ")";
 
 	return stream.str();
