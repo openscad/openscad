@@ -847,7 +847,7 @@ void MainWindow::updatedAnimFps()
 	bool fps_ok;
 	double fps = this->e_fps->text().toDouble(&fps_ok);
 	animate_timer->stop();
-	if (fps_ok && fps > 0) {
+	if (fps_ok && fps > 0 && this->anim_numsteps > 0) {
 		this->anim_step = int(this->anim_tval * this->anim_numsteps) % this->anim_numsteps;
 		animate_timer->setSingleShot(false);
 		animate_timer->setInterval(int(1000 / fps));
