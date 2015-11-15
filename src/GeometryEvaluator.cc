@@ -821,7 +821,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 		fragments = fmax(Calc::get_fragments_from_r(max_x - min_x, node.fn, node.fs, node.fa) * std::abs(node.angle) / 360, 1);
 	}
 
-	bool flip_faces = (min_x >= 0 && node.angle > 0) || (min_x < 0 && node.angle < 0);
+	bool flip_faces = (min_x >= 0 && node.angle > 0 && node.angle != 360) || (min_x < 0 && (node.angle < 0 || node.angle == 360));
 	
 	if (node.angle != 360) {
 		PolySet *ps_start = poly.tessellate(); // starting face
@@ -853,11 +853,11 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 		rings[0].resize(o.vertices.size());
 		rings[1].resize(o.vertices.size());
 
-		fill_ring(rings[0], o, M_PI/2, flip_faces); // first ring
+		fill_ring(rings[0], o, (node.angle == 360) ? -M_PI/2 : M_PI/2, flip_faces); // first ring
 		for (int j = 0; j < fragments; j++) {
 			double a;
 			if (node.angle == 360)
-			    a = M_PI/2 - ((j+1)%fragments*2*M_PI) / fragments; // start on the X axis
+			    a = -M_PI/2 + ((j+1)%fragments*2*M_PI) / fragments; // start on the -X axis, for legacy support
 			else
 				a = M_PI/2 - (j+1)*(node.angle*M_PI/180) / fragments; // start on the X axis
 			fill_ring(rings[(j+1)%2], o, a, flip_faces);
