@@ -28,7 +28,7 @@ color("green")
 // Positive angles create an arc starting from the X axis, going counter-clockwise.
 // Negative angles generate an arc in the clockwise direction.
 color("magenta") 
-  translate([-40,0]){
+  translate([40,40]){
     rotate_extrude(angle=180)
       translate([12.5,0])
         square(5);
