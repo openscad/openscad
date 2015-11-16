@@ -18,6 +18,8 @@ Camera::Camera(enum CameraType camtype) :
 	pixel_width = RenderSettings::inst()->img_width;
 	pixel_height = RenderSettings::inst()->img_height;
 	autocenter = false;
+	anaglyph=false;
+	eye_distance=DEFAULT_EYE_DISTANCE;
 }
 
 void Camera::setup(std::vector<double> params)
@@ -89,6 +91,12 @@ void Camera::viewAll(const BoundingBox &bbox)
 	PRINTDB("modified obj trans x y z %f %f %f",object_trans.x() % object_trans.y() % object_trans.z());
 	PRINTDB("modified obj rot   x y z %f %f %f",object_rot.x() % object_rot.y() % object_rot.z());
 }
+
+void Camera::zoomAnaglyph(int delta)
+{
+    this->eye_distance *= pow(0.95, -delta / 120.0);
+}
+
 
 void Camera::zoom(int delta)
 {

@@ -94,5 +94,6 @@
     <file>images/STL-white.png</file>
     <file>images/SVG.png</file>
     <file>images/SVG-white.png</file>
+    <file>images/Anaglyph-32.png</file>
   </qresource>
 </RCC>

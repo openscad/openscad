@@ -38,6 +38,7 @@ public:
 	void setOrthoMode(bool enabled);
 	bool showScaleProportional() const { return this->showscale; }
 	void setShowScaleProportional(bool enabled) { this->showscale = enabled; }
+	void setShowAnaglyph(bool enabled) { this->cam.anaglyph=enabled; }
 	std::string getRendererInfo() const;
 #if QT_VERSION >= 0x050100
 	float getDPI() { return this->devicePixelRatio(); }

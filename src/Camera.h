@@ -20,15 +20,19 @@ projection, Perspective and Orthogonal.
 #include <vector>
 #include <Eigen/Geometry>
 
+#define DEFAULT_EYE_DISTANCE 0.02f
+
 class Camera
 {
 public:
+	enum Eye { LEFT=-1, CENTER, RIGHT };
 	enum CameraType { NONE, GIMBAL, VECTOR } type;
 	enum ProjectionType { ORTHOGONAL, PERSPECTIVE } projection;
 	Camera(enum CameraType camtype = NONE);
 	void setup(std::vector<double> params);
 	void gimbalDefaultTranslate();
 	void setProjection(ProjectionType type);
+	void zoomAnaglyph(int delta);
 	void zoom(int delta);
 	double zoomValue();
 	void resetView();
@@ -57,6 +61,9 @@ public:
 
 	unsigned int pixel_width;
 	unsigned int pixel_height;
+
+	bool anaglyph;
+	float eye_distance;
 
 protected:
         // Perspective settings

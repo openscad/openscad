@@ -88,15 +88,15 @@ void GLView::setCamera(const Camera &cam)
   this->cam = cam;
 }
 
-void GLView::setupCamera(Vector3d eyeOffset)
+void GLView::setupCamera(Camera::Eye eye)
 {
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-    Vector3d currentEye(cam.eye+eyeOffset);
-	switch (this->cam.type) {
-	case Camera::GIMBAL: {
-		double dist = cam.zoomValue();
-		switch (this->cam.projection) {
+    switch (this->cam.type) {
+      case Camera::GIMBAL: {
+	double dist = cam.zoomValue();
+	Vector3d currentEye(cam.eye+Vector3d((float)eye*cam.eye_distance*dist,0.0,0.0));
+	switch (this->cam.projection) {
 		case Camera::PERSPECTIVE: {
 			gluPerspective(cam.fov, aspectratio, 0.1*dist, 100*dist);
 			break;
@@ -108,8 +108,8 @@ void GLView::setupCamera(Vector3d eyeOffset)
 							-100*dist, +100*dist);
 			break;
 		}
-		}
-        gluLookAt(eyeOffset[0], eyeOffset[1]-dist, eyeOffset[2],
+	}
+        gluLookAt(currentEye[0], -dist, 0.0,
 							0.0, 0.0, 0.0,
 							0.0, 0.0, 1.0);
 		glMatrixMode(GL_MODELVIEW);
@@ -120,8 +120,9 @@ void GLView::setupCamera(Vector3d eyeOffset)
 		break;
 	}
 	case Camera::VECTOR: {
-        double dist = (cam.center - currentEye).norm();
-		switch (this->cam.projection) {
+        double dist = (cam.center - cam.eye).norm();
+        Vector3d currentEye(cam.eye+Vector3d((float)eye*cam.eye_distance*dist,0.0,0.0));
+       	switch (this->cam.projection) {
 		case Camera::PERSPECTIVE: {
 			gluPerspective(cam.fov, aspectratio, 0.1*dist, 100*dist);
 			break;
@@ -155,7 +156,6 @@ void GLView::setupCamera(Vector3d eyeOffset)
 
 void GLView::paintGL()
 {
-    float eyeDistance=4;
     glDisable(GL_LIGHTING);
 
     Color4f bgcol = ColorMap::getColor(*this->colorscheme, BACKGROUND_COLOR);
@@ -164,16 +164,21 @@ void GLView::paintGL()
     glClearColor(bgcol[0], bgcol[1], bgcol[2], 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-    setupCamera(Vector3d(-eyeDistance/2,0.0,0.0));
-    glColorMask(true, false, false, false);
-    paintGL_oneEye();
+    if (cam.anaglyph) {
+        setupCamera(Camera::LEFT);
+        glColorMask(true, false, false, false);
+        paintGL_oneEye();
 
-    glClear(GL_DEPTH_BUFFER_BIT);
-    setupCamera(Vector3d(+eyeDistance/2,0.0,0.0));
-    glColorMask(false, true, true, false);
-    paintGL_oneEye();
+        glClear(GL_DEPTH_BUFFER_BIT);
+        setupCamera(Camera::RIGHT);
+        glColorMask(false, true, true, false);
+        paintGL_oneEye();
 
-    glColorMask(true, true, true, true);
+        glColorMask(true, true, true, true);
+    } else {
+        setupCamera();
+        paintGL_oneEye();
+    }
     // Only for GIMBAL
     glDisable(GL_LIGHTING);
     if (showaxes) GLView::showSmallaxes(axescolor);

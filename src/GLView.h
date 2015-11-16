@@ -41,7 +41,7 @@ public:
     void paintGL_oneEye();
 
 	void setCamera(const Camera &cam);
-    void setupCamera(Vector3d eyeOffset=Vector3d());
+    void setupCamera(Camera::Eye eye=Camera::CENTER);
 
 	void setColorScheme(const ColorScheme &cs);
 	void setColorScheme(const std::string &cs);

@@ -310,10 +310,15 @@ bool QGLView::save(const char *filename)
 void QGLView::wheelEvent(QWheelEvent *event)
 {
 #if QT_VERSION >= 0x050000
-	this->cam.zoom(event->angleDelta().y());
+  const int delta=event->angleDelta().y();
 #else
-	this->cam.zoom(event->delta());
+  const int delta=event->delta();
 #endif
+  if ((QApplication::keyboardModifiers() & Qt::ControlModifier) != 0) {
+    this->cam.zoomAnaglyph(delta);
+  } else {
+    this->cam.zoom(delta);
+  }
   updateGL();
 }
 
