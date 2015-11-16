@@ -607,6 +607,7 @@ QString ScintillaEditor::selectedText()
 bool ScintillaEditor::eventFilter(QObject* obj, QEvent *e)
 {
 	static bool wasChanged=false;
+	static bool previewAfterUndo=false;
 
 	if (obj != qsci) return EditorInterface::eventFilter(obj, e);
 
@@ -614,10 +615,7 @@ bool ScintillaEditor::eventFilter(QObject* obj, QEvent *e)
 		 || e->type()==QEvent::KeyRelease
 		 ) {
 		QKeyEvent *ke = static_cast<QKeyEvent*>(e);
-
-		if (ke->key()==Qt::Key_Alt && ke->type()==QEvent::KeyRelease) wasChanged=false;
-		if ((ke->modifiers() & ~Qt::KeypadModifier) == Qt::AltModifier)
-		{
+		if ((ke->modifiers() & ~Qt::KeypadModifier) == Qt::AltModifier) {
 			switch (ke->key())
 			{
 				case Qt::Key_Left:
@@ -630,15 +628,26 @@ bool ScintillaEditor::eventFilter(QObject* obj, QEvent *e)
 				case Qt::Key_Up:
 				case Qt::Key_Down:
 					if (e->type()==QEvent::KeyPress) {
-						if (modifyNumber(ke->key())) wasChanged=true;
+						if (!wasChanged) qsci->beginUndoAction();
+						if (modifyNumber(ke->key())) {
+							wasChanged=true;
+							previewAfterUndo=true;
+						}
+						if (!wasChanged) qsci->endUndoAction();
 					}
 					return true;
-
-				case Qt::Key_Backspace:
-					if (e->type()==QEvent::KeyPress && wasChanged) {
-						QTimer::singleShot(0,this,SIGNAL(previewRequest()));
-					}
-					return false;
+			}
+		}
+		if (previewAfterUndo && e->type()==QEvent::KeyPress) {
+			int k=ke->key() | ke->modifiers();
+			if (wasChanged) qsci->endUndoAction();
+			wasChanged=false;
+			QsciCommand *cmd=qsci->standardCommands()->boundTo(k);
+			if ( cmd && ( cmd->command()==QsciCommand::Undo || cmd->command()==QsciCommand::Redo ) )
+				QTimer::singleShot(0,this,SIGNAL(previewRequest()));
+			else if ( cmd || !ke->text().isEmpty() ) {
+				// any insert or command (but not undo/redo) cancels the preview after undo
+				previewAfterUndo=false;
 			}
 		}
 	}
