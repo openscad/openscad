@@ -1,6 +1,6 @@
 /*
- *   License: MIT License (http://opensource.org/licenses/MIT)
- *   See SparkleAutoUpdater.mm
+ * Copyright (C) 2008 Remko Troncon. BSD license
+ * Copyright (C) 2013 Marius Kintel. BSD license
  */
 #pragma once
 
