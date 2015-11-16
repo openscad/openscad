@@ -8,6 +8,8 @@ o Update VERSION and VERSIONDATE in
   scripts/release-common.sh
   scripts/publish-mingw-x.sh
   tests/CMakeLists.txt
+o Update releases/$VERSION.md (NB! File is major version, contains patchlevel release notes)
+o scripts/makereleasenotes.sh
   
 o git tag "openscad-$VERSION"
 o ./scripts/git-archive-all.py --prefix=openscad-$VERSION/ openscad-$VERSION.src.tar.gz
@@ -18,7 +20,6 @@ o Upload Source package
 o Revert VERSION and VERSIONDATE in openscad.pro scripts/publish-macosx.sh scripts/release-common.sh scripts/publish-mingw-x.sh tests/CMakeLists.txt
 
 o Announce:
-  - ./scripts/github-release.sh $VERSION
   - Write short release email to mailing list
   - Tweet as OpenSCAD
   - Notify package managers

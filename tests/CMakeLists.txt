@@ -68,6 +68,7 @@ endif()
 #
 # Handle C++11.
 # Usage: cmake -DCXX11=1 .
+# Note: Since Xcode 7, c++11 is default
 #
 if (CXX11)
   message("Using C++11")
@@ -76,9 +77,14 @@ if (CXX11)
     set(LIBCXX11 1)
   endif()
 endif()
-if(APPLE AND LIBCXX11)
-  message("Using libc++")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+if(APPLE)
+  if(LIBCXX11)
+    message("Using libc++")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+  else()
+    message("Using C++03 and libstdc++")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++03 -stdlib=libstdc++")
+  endif()
 endif()
 
 if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
@@ -240,6 +246,7 @@ if (NOT $ENV{BOOSTDIR} STREQUAL "")
   message(STATUS "BOOST_ROOT: " ${BOOST_ROOT})
 endif()
 
+set(Boost_DEBUG TRUE)
 find_package( Boost 1.35.0 COMPONENTS thread program_options filesystem system regex REQUIRED)
 message(STATUS "Boost ${Boost_VERSION} includes found: " ${Boost_INCLUDE_DIRS})
 message(STATUS "Boost libraries found:")
@@ -258,7 +265,11 @@ if(APPLE)
   execute_process(COMMAND grep -q __112basic_string ${Boost_LIBRARIES}
                   RESULT_VARIABLE BOOST_USE_STDLIBCPP)
   if (NOT BOOST_USE_STDLIBCPP)
+     message(STATUS "Found boost linked with libc++")
      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+  else()
+     message(STATUS "Found boost linked with libstdc++")
+     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libstdc++")
   endif()
 endif()
 
