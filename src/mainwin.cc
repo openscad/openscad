@@ -861,6 +861,7 @@ void MainWindow::updatedAnimSteps()
 	int numsteps = this->e_fsteps->text().toInt(&steps_ok);
 	if (steps_ok) {
 		this->anim_numsteps = numsteps;
+		updatedAnimFps(); // Make sure we start
 	}
 	else {
 		this->anim_numsteps = 0;
