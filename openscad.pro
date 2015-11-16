@@ -39,8 +39,6 @@ isEmpty(QT_VERSION) {
   }
 }
 
-VERSION = 2015.03-2
-VERSIONDATE = 2015.11.16
 # If VERSION is not set, populate VERSION, VERSION_YEAR, VERSION_MONTH from system date
 include(version.pri)
 

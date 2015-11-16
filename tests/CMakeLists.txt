@@ -571,7 +571,6 @@ include_directories(../src ../src/libtess2/Include)
 
 # Handle OpenSCAD version based on VERSION env. variable.
 # Use current timestamp if not specified (development builds)
-set(ENV{VERSION} "2015.03-2")
 if ("$ENV{VERSION}" STREQUAL "")
   # Timestamp is only available in cmake >= 2.8.11  
   if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" VERSION_GREATER 2.8.10)
