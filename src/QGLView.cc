@@ -303,15 +303,6 @@ const QImage & QGLView::grabFrame()
 	// Force reading from front buffer. Some configurations will read from the back buffer here.
 	glReadBuffer(GL_FRONT);
 	this->frame = grabFrameBuffer(true); // include alpha
-
-	// workaround for semi-transparent objects making the PNG semi-transparent (even on opaque background)
-	for (int h = 0; h < this->frame.height(); h++) {
-	    for (int w = 0; w < this->frame.width(); w++) {
-		uint pixel = this->frame.pixel(w,h); // ARGB
-		if (pixel & 0xFF000000) // if alpha channel is non-zero
-		    this->frame.setPixel(w,h,pixel | 0xFF000000); // set to fully opaque
-	    }
-	}
 	return this->frame;
 }
 

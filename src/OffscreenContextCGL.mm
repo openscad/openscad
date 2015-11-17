@@ -134,7 +134,6 @@ bool save_framebuffer(OffscreenContext *ctx, std::ostream &output)
     return 1;
   }
   flip_image(bufferData, flippedBuffer, samplesPerPixel, ctx->width, ctx->height);
-  fix_alpha(flippedBuffer, width, height);
 
   bool writeok = write_png(output, flippedBuffer, ctx->width, ctx->height);
 

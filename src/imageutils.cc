@@ -12,16 +12,6 @@ void flip_image(const unsigned char *src, unsigned char *dst, size_t pixelsize, 
   }
 }
 
-// workaround for semi-transparent objects making the PNG semi-transparent (even on opaque background)
-void fix_alpha(unsigned char *image, size_t width, size_t height) {
-  assert( image );
-  size_t totalBytes = 4 * width * height;
-  for (size_t i = 3 ; i < totalBytes ; i+=4) {
-    if (image[i] != 0)
-      image[i] = 0xFF;
-  }
-}
-
 bool write_png(const char *filename, unsigned char *pixels, int width, int height)
 {
   assert(filename && pixels);
