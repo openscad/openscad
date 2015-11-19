@@ -57,7 +57,7 @@ void Renderer::setColor(const float color[4], GLint *shaderinfo) const
 #endif
 }
 
-void Renderer::setColor(ColorMode colormode, const float color[4], GLint *shaderinfo) const
+bool Renderer::setColor(ColorMode colormode, const float color[4], GLint *shaderinfo) const
 {
 	PRINTD("setColor b");
 	Color4f basecol;
@@ -75,6 +75,7 @@ void Renderer::setColor(ColorMode colormode, const float color[4], GLint *shader
 								 color[3] >= 0 ? color[3] : basecol[3]};
 		}
 		setColor(basecol.data(), shaderinfo);
+		return basecol[3] == 1;
 	}
 }
 
