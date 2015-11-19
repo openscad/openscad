@@ -38,14 +38,15 @@ public:
 	void initializeGL();
 	void resizeGL(int w, int h);
 	virtual void paintGL();
-    void paintGL_oneEye();
+	void paintGL_oneEye();
 
 	void setCamera(const Camera &cam);
-    void setupCamera(Camera::Eye eye=Camera::CENTER);
+	void setupCamera(Camera::Eye eye=Camera::CENTER);
 
 	void setColorScheme(const ColorScheme &cs);
 	void setColorScheme(const std::string &cs);
 	void updateColorScheme();
+	void setColorSchemeBW(bool bw_mode);
 
 	virtual bool save(const char *filename) = 0;
 	virtual std::string getRendererInfo() const = 0;
@@ -53,6 +54,9 @@ public:
 
 	Renderer *renderer;
 	const ColorScheme *colorscheme;
+	const ColorScheme *colorschemeColor;
+	ColorScheme colorschemeBW;
+
 	Camera cam;
 	double far_far_away;
 	size_t width;

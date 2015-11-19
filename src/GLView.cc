@@ -57,6 +57,8 @@ Renderer attached to this GLView as well. */
 void GLView::setColorScheme(const ColorScheme &cs)
 {
   this->colorscheme = &cs;
+  this->colorschemeColor = &cs;
+  this->colorschemeBW=cs.toBlackAndWhite();
   this->updateColorScheme();
 }
 
@@ -69,6 +71,13 @@ void GLView::setColorScheme(const std::string &cs)
   else {
     PRINTB("WARNING: GLView: unknown colorscheme %s", cs);
   }
+}
+
+void GLView::setColorSchemeBW(bool bw_mode)
+{
+  const ColorScheme *cs=this->colorscheme;
+  this->colorscheme=(bw_mode)?&this->colorschemeBW:this->colorschemeColor;
+  if (cs!=this->colorscheme) this->updateColorScheme();
 }
 
 void GLView::resizeGL(int w, int h)
@@ -157,7 +166,7 @@ void GLView::setupCamera(Camera::Eye eye)
 void GLView::paintGL()
 {
     glDisable(GL_LIGHTING);
-
+    setColorSchemeBW(cam.anaglyph);
     Color4f bgcol = ColorMap::getColor(*this->colorscheme, BACKGROUND_COLOR);
     Color4f axescolor = ColorMap::getColor(*this->colorscheme, AXES_COLOR);
 

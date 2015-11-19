@@ -230,6 +230,17 @@ Color4f ColorMap::getColorHSV(const Color4f &col)
 	return Color4f(h, s, v, col[3]);
 }
 
+float ColorMap::getLuminance(const Color4f &col)
+{
+	return 0.2126f * col[0] + 0.7152f * col[1] + 0.0722f * col[2];
+}
+
+Color4f ColorMap::getBW(const Color4f &col)
+{
+	float Y = ColorMap::getLuminance(col);
+	return Color4f(Y,Y,Y,col[3]);
+}
+
 /**
  * Calculate contrast color. Based on the article 
  * http://gamedev.stackexchange.com/questions/38536/given-a-rgb-color-x-how-to-find-the-most-contrasting-color-y
@@ -240,7 +251,7 @@ Color4f ColorMap::getColorHSV(const Color4f &col)
 Color4f ColorMap::getContrastColor(const Color4f &col)
 {
 	Color4f hsv = ColorMap::getColorHSV(col);
-	float Y = 0.2126 * col[0] + 0.7152 * col[1] + 0.0722 * col[2];
+	float Y = ColorMap::getLuminance(col);
 	float S = hsv[1];
 
 	if (S < 0.5) {
@@ -303,3 +314,14 @@ ColorMap::colorscheme_set_t ColorMap::enumerateColorSchemes()
     
     return result_set;
 }
+
+ColorScheme ColorScheme::toBlackAndWhite(void) const
+{
+    ColorScheme bw;
+    const_iterator it;
+    for (it = begin(); it != end(); it++) {
+        bw[it->first]=ColorMap::getBW(it->second);
+    }
+    return bw;
+}
+

@@ -25,7 +25,11 @@ enum RenderColor {
 	CROSSHAIR_COLOR
 };
 
-typedef std::map<RenderColor, Color4f> ColorScheme;
+class ColorScheme: public std::map<RenderColor, Color4f>
+{
+public:
+        ColorScheme toBlackAndWhite(void) const;
+};
 
 class RenderColorScheme
 {
@@ -81,6 +85,8 @@ public:
 	static Color4f getColor(const ColorScheme &cs, const RenderColor rc);
         static Color4f getContrastColor(const Color4f &col);
 	static Color4f getColorHSV(const Color4f &col);
+	static float getLuminance(const Color4f &col);
+	static Color4f getBW(const Color4f &col);
 	
 private:
 	ColorMap();
