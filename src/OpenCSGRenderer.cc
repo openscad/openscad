@@ -107,7 +107,7 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo,
 						colormode = COLORMODE_BACKGROUND;
 					}
 				} else if (j_obj.type == CSGTerm::TYPE_DIFFERENCE) {
-					if (j_obj.flag & CSGTerm::FLAG_HIGHLIGHT) {
+					if (highlight && j_obj.flag & CSGTerm::FLAG_HIGHLIGHT) {
 						colormode = COLORMODE_HIGHLIGHT;
 					}
 					else {
