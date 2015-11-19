@@ -2,6 +2,9 @@
 #include <iostream>
 #include "imageutils.h"
 #include <assert.h>
+#ifdef ENABLE_OPENCSG
+#include <opencsg.h>
+#endif
 
 CGDataConsumerCallbacks dc_callbacks;
 
@@ -31,9 +34,16 @@ CGDataConsumerRef CGDataConsumerCreateWithOstream(std::ostream &output)
 bool write_png(std::ostream &output, unsigned char *pixels, int width, int height)
 {
   size_t rowBytes = width * 4;
-//  CGColorSpaceRef colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
-	CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+//CGColorSpaceRef colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
+  CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+  
+  // Prior to 1.4.0, OpenCSG uses Alpha channel for visibility computations
+  #if defined(ENABLE_OPENCSG) && OPENCSG_VERSION >= 0x0140 
   CGBitmapInfo bitmapInfo = kCGImageAlphaPremultipliedLast; // BGRA
+  #else
+  CGBitmapInfo bitmapInfo = kCGImageAlphaNoneSkipLast | kCGBitmapByteOrder32Big; // BGRA
+  #endif
+
   int bitsPerComponent = 8;
   CGContextRef contextRef = CGBitmapContextCreate(pixels, width, height, 
 	bitsPerComponent, rowBytes, colorSpace, bitmapInfo);
