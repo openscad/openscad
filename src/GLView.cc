@@ -105,7 +105,7 @@ void GLView::setupCamera()
 			double height = dist * tan(cam.fov/2*M_PI/180);
 			glOrtho(-height*aspectratio, height*aspectratio,
 							-height, height,
-							-far_far_away, +far_far_away);
+							-100*dist, +100*dist);
 			break;
 		}
 		}
@@ -130,7 +130,7 @@ void GLView::setupCamera()
 			double height = dist * tan(cam.fov/2*M_PI/180);
 			glOrtho(-height*aspectratio, height*aspectratio,
 							-height, height,
-							-far_far_away, +far_far_away);
+							-100*dist, +100*dist);
 			break;
 		}
 		}
