@@ -190,7 +190,11 @@ build_qt5scintilla2()
   tar xzf QScintilla-gpl-$version.tar.gz
   cd QScintilla-gpl-$version/Qt4Qt5/
   qmake CONFIG+=staticlib
-  make -j"$NUMCPU" install
+  tmpinstalldir=$DEPLOYDIR/tmp/qsci$version
+  INSTALL_ROOT=$tmpinstalldir make -j"$NUMCPU" install
+  cp -av $tmpinstalldir/usr/share $DEPLOYDIR/
+  cp -av $tmpinstalldir/usr/include $DEPLOYDIR/
+  cp -av $tmpinstalldir/usr/lib $DEPLOYDIR/
 }
 
 build_bison()
