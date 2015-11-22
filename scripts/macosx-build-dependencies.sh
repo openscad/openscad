@@ -235,7 +235,7 @@ build_qt5()
 		-skip activeqt -skip connectivity -skip declarative -skip doc \
 		-skip enginio -skip graphicaleffects -skip location -skip multimedia \
 		-skip quick1 -skip quickcontrols -skip script -skip sensors -skip serialport \
-		-skip svg -skip webkit -skip webkit-examples -skip websockets -skip xmlpatterns
+		-skip svg -skip webkit -skip webkit-examples -skip websockets -skip xmlpatterns -skip qtwebchannel
   make -j"$NUMCPU" install
 }
 
