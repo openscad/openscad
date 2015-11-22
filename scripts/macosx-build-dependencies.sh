@@ -236,7 +236,8 @@ build_qt5()
 		-skip enginio -skip graphicaleffects -skip location -skip multimedia \
 		-skip quick1 -skip quickcontrols -skip script -skip sensors -skip serialport \
 		-skip svg -skip webkit -skip webkit-examples -skip websockets -skip xmlpatterns -skip qtwebchannel
-  make -j"$NUMCPU" install
+  make -j"$NUMCPU" 
+  make install
 }
 
 check_qscintilla()
