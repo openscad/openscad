@@ -83,7 +83,7 @@ update_mcad_generic()
 
 verify_binary_generic()
 {
-  cd $DEPLOYDIR
+  cd $BUILDDIR
   if [ ! -e ./$MAKE_TARGET/openscad ]; then
     echo "cant find ./$MAKE_TARGET/openscad. build failed. stopping."
     exit 1
@@ -91,9 +91,19 @@ verify_binary_generic()
   cd $OPENSCADDIR
 }
 
+verify_binary_darwin()
+{
+  cd $BUILDDIR
+  if [ ! -f ./OpenSCAD.app/Contents/MacOS/OpenSCAD ]; then
+    echo "cant find ./OpenSCAD.app/Contents/MacOS/OpenSCAD. build failed. stopping."
+    exit 1
+  fi
+  cd $OPENSCADDIR
+}
+
 verify_binary_mxe()
 {
-  cd $DEPLOYDIR
+  cd $BUILDDIR
   if [ ! -e $MAKE_TARGET/openscad.com ]; then
     echo "cant find $MAKE_TARGET/openscad.com. build failed. stopping."
     exit 1
@@ -107,7 +117,7 @@ verify_binary_mxe()
 
 verify_binary_linux()
 {
-  if [ ! -e $DEPLOYDIR/$MAKE_TARGET/openscad ]; then
+  if [ ! -e $BUILDDIR/$MAKE_TARGET/openscad ]; then
     echo "cant find $MAKE_TARGET/openscad. build failed. stopping."
     exit 1
   fi
@@ -115,7 +125,7 @@ verify_binary_linux()
 
 setup_directories_generic()
 {
-  bprefix=$DEPLOYDIR/openscad-$VERSION
+  bprefix=$BUILDDIR/openscad-$VERSION
   EXAMPLESDIR=$bprefix/examples/
   LIBRARYDIR=$bprefix/libraries/
   FONTDIR=$bprefix/fonts/
@@ -228,7 +238,7 @@ copyfail()
 create_archive_msys()
 {
   cd $OPENSCADDIR
-  cd $DEPLOYDIR
+  cd $BUILDDIR
 
   echo "QT5 deployment, dll and other files copying..."
   windeployqt $MAKE_TARGET/openscad.exe
@@ -241,7 +251,7 @@ create_archive_msys()
   flprefix=/mingw$bits/bin/
   echo MSYS2, dll copying...
   echo from $flprefix
-  echo to $DEPLOYDIR/$MAKE_TARGET
+  echo to $BUILDDIR/$MAKE_TARGET
   fl=
   boostlist="filesystem program_options regex system thread"
   liblist="mpfr-4 gmp-10 gmpxx-4 opencsg-1 harfbuzz-0 harfbuzz-gobject-0 glib-2.0-0"
@@ -253,7 +263,7 @@ create_archive_msys()
   for file in $dlist;     do fl="$fl "$file".dll"; done
 
   for dllfile in $fl; do
-    copyfail $flprefix/$dllfile /$DEPLOYDIR/$MAKE_TARGET/
+    copyfail $flprefix/$dllfile /$BUILDDIR/$MAKE_TARGET/
   done
 
 
@@ -261,21 +271,21 @@ create_archive_msys()
   if [ $OPENSCAD_BUILD_TARGET_ARCH = i686 ]; then
     ARCH_INDICATOR=Msys2-x86-32
   fi
-  BINFILE=$DEPLOYDIR/OpenSCAD-$VERSION-$ARCH_INDICATOR.zip
-  INSTFILE=$DEPLOYDIR/OpenSCAD-$VERSION-$ARCH_INDICATOR-Installer.exe
+  BINFILE=$BUILDDIR/OpenSCAD-$VERSION-$ARCH_INDICATOR.zip
+  INSTFILE=$BUILDDIR/OpenSCAD-$VERSION-$ARCH_INDICATOR-Installer.exe
 
   echo
   echo "Copying main binary .exe, .com, and dlls"
-  echo "from $DEPLOYDIR/$MAKE_TARGET"
-  echo "to $DEPLOYDIR/openscad-$VERSION"
-  TMPTAR=$DEPLOYDIR/windeployqt.tar
-  cd $DEPLOYDIR
+  echo "from $BUILDDIR/$MAKE_TARGET"
+  echo "to $BUILDDIR/openscad-$VERSION"
+  TMPTAR=$BUILDDIR/windeployqt.tar
+  cd $BUILDDIR
   cd $MAKE_TARGET
   tar cvf $TMPTAR --exclude=winconsole.o .
-  cd $DEPLOYDIR
+  cd $BUILDDIR
   cd ./openscad-$VERSION
   tar xvf $TMPTAR
-  cd $DEPLOYDIR
+  cd $BUILDDIR
   rm -f $TMPTAR
 
   echo "Creating zipfile..."
@@ -291,7 +301,7 @@ create_archive_msys()
 create_archive_mxe()
 {
   cd $OPENSCADDIR
-  cd $DEPLOYDIR
+  cd $BUILDDIR
 
   # try to use a package filename that is not confusing (i686-w64-mingw32 is)
   ARCH_INDICATOR=MingW-x86-32-$OPENSCAD_BUILD_TARGET_ABI
@@ -299,15 +309,15 @@ create_archive_mxe()
     ARCH_INDICATOR=MingW-x86-64-$OPENSCAD_BUILD_TARGET_ABI
   fi
 
-  BINFILE=$DEPLOYDIR/OpenSCAD-$VERSION-$ARCH_INDICATOR.zip
-  INSTFILE=$DEPLOYDIR/OpenSCAD-$VERSION-$ARCH_INDICATOR-Installer.exe
+  BINFILE=$BUILDDIR/OpenSCAD-$VERSION-$ARCH_INDICATOR.zip
+  INSTFILE=$BUILDDIR/OpenSCAD-$VERSION-$ARCH_INDICATOR-Installer.exe
 
   #package
   if [ $OPENSCAD_BUILD_TARGET_ABI = "shared" ]; then
     flprefix=$MXE_SYS_DIR/bin
     echo Copying dlls for shared library build
     echo from $flprefix
-    echo to $DEPLOYDIR/$MAKE_TARGET
+    echo to $BUILDDIR/$MAKE_TARGET
     flist=
     fl=
 
@@ -328,10 +338,10 @@ create_archive_mxe()
     for file in $liblist;   do fl="$fl lib"$file".dll"; done
     for file in $dlist;     do fl="$fl "$file".dll"; done
     for dllfile in $fl; do
-      copyfail $flprefix/$dllfile $DEPLOYDIR/$MAKE_TARGET/
+      copyfail $flprefix/$dllfile $BUILDDIR/$MAKE_TARGET/
     done
     # replicate windeployqt behavior. as of writing, theres no mxe windeployqt
-    dqt=$DEPLOYDIR/$MAKE_TARGET/
+    dqt=$BUILDDIR/$MAKE_TARGET/
     for subdir in platforms iconengines imageformats translations; do
       echo mkdir $dqt/$subdir
       mkdir $dqt/$subdir
@@ -345,16 +355,16 @@ create_archive_mxe()
   fi # shared
 
   echo "Copying main binary .exe, .com, and other stuff"
-  echo "from $DEPLOYDIR/$MAKE_TARGET"
-  echo "to $DEPLOYDIR/openscad-$VERSION"
-  TMPTAR=$DEPLOYDIR/tmpmingw.$OPENSCAD_BUILD_TARGET_TRIPLE.tar
-  cd $DEPLOYDIR
+  echo "from $BUILDDIR/$MAKE_TARGET"
+  echo "to $BUILDDIR/openscad-$VERSION"
+  TMPTAR=$BUILDDIR/tmpmingw.$OPENSCAD_BUILD_TARGET_TRIPLE.tar
+  cd $BUILDDIR
   cd $MAKE_TARGET
   tar cvf $TMPTAR --exclude=winconsole.o .
-  cd $DEPLOYDIR
+  cd $BUILDDIR
   cd ./openscad-$VERSION
   tar xf $TMPTAR
-  cd $DEPLOYDIR
+  cd $BUILDDIR
   rm -f $TMPTAR
 
   echo "Creating binary zip package `basename $BINFILE`"
@@ -363,18 +373,18 @@ create_archive_mxe()
   cd $OPENSCADDIR
 
   echo "Creating installer `basename $INSTFILE`"
-  echo "Copying NSIS files to $DEPLOYDIR/openscad-$VERSION"
-  cp ./scripts/installer$OPENSCAD_BUILD_TARGET_ARCH.nsi $DEPLOYDIR/openscad-$VERSION/installer_arch.nsi
-  cp ./scripts/installer.nsi $DEPLOYDIR/openscad-$VERSION/
-  cp ./scripts/mingw-file-association.nsh $DEPLOYDIR/openscad-$VERSION/
-  cp ./scripts/x64.nsh $DEPLOYDIR/openscad-$VERSION/
-  cp ./scripts/LogicLib.nsh $DEPLOYDIR/openscad-$VERSION/
-  cd $DEPLOYDIR/openscad-$VERSION
+  echo "Copying NSIS files to $BUILDDIR/openscad-$VERSION"
+  cp ./scripts/installer$OPENSCAD_BUILD_TARGET_ARCH.nsi $BUILDDIR/openscad-$VERSION/installer_arch.nsi
+  cp ./scripts/installer.nsi $BUILDDIR/openscad-$VERSION/
+  cp ./scripts/mingw-file-association.nsh $BUILDDIR/openscad-$VERSION/
+  cp ./scripts/x64.nsh $BUILDDIR/openscad-$VERSION/
+  cp ./scripts/LogicLib.nsh $BUILDDIR/openscad-$VERSION/
+  cd $BUILDDIR/openscad-$VERSION
   NSISDEBUG=-V2
   # NSISDEBUG=    # leave blank for full log
   echo $MAKENSIS $NSISDEBUG "-DVERSION=$VERSION" installer.nsi
   $MAKENSIS $NSISDEBUG "-DVERSION=$VERSION" installer.nsi
-  cp $DEPLOYDIR/openscad-$VERSION/openscad_setup.exe $INSTFILE
+  cp $BUILDDIR/openscad-$VERSION/openscad_setup.exe $INSTFILE
   cd $OPENSCADDIR
 
   mv $BINFILE $OPENSCADDIR/
@@ -383,7 +393,7 @@ create_archive_mxe()
 
 create_archive_netbsd()
 {
-  cd $DEPLOYDIR
+  cd $BUILDDIR
   pkdir=openscad-$VERSION
   mkdir $pkdir/bin
   mkdir $pkdir/lib
@@ -400,7 +410,7 @@ create_archive_netbsd()
 
 create_archive_linux()
 {
-  cd $DEPLOYDIR
+  cd $BUILDDIR
   # Do stuff from release-linux.sh
   mkdir openscad-$VERSION/bin
   mkdir -p openscad-$VERSION/lib/openscad
@@ -442,12 +452,12 @@ create_archive_linux()
   echo
 }
 
-setup_deploydir()
+setup_BUILDDIR()
 {
-  if [ ! -d $DEPLOYDIR ]; then
-    mkdir -p $DEPLOYDIR
+  if [ ! -d $BUILDDIR ]; then
+    mkdir -p $BUILDDIR
   fi
-  if [ ! -d $DEPLOYDIR ]; then
+  if [ ! -d $BUILDDIR ]; then
     exit 1
   fi
 }
@@ -455,7 +465,7 @@ setup_deploydir()
 setup_misc_generic()
 {
   cd $OPENSCADDIR
-  setup_deploydir
+  setup_BUILDDIR
   MAKE_TARGET=
   # for QT4 set QT_SELECT=4
   QT_SELECT=5
@@ -464,7 +474,7 @@ setup_misc_generic()
 
 setup_misc_mxe()
 {
-  setup_deploydir
+  setup_BUILDDIR
   MAKE_TARGET=release
   ZIP="zip"
   ZIPARGS="-r -q"
@@ -477,7 +487,7 @@ setup_misc_msys()
 
 qmaker_generic()
 {
-  cd $DEPLOYDIR
+  cd $BUILDDIR
   qmake VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+="$CONFIG" CONFIG-=debug ../openscad.pro
   cd $OPENSCADDIR
 }
@@ -493,7 +503,7 @@ qmaker_darwin()
 
 make_clean_generic()
 {
-  cd $DEPLOYDIR
+  cd $BUILDDIR
   make clean
   rm -f ./release/*
   rm -f ./debug/*
@@ -502,6 +512,7 @@ make_clean_generic()
 
 make_clean_darwin()
 {
+  sed -i.bak s/.Volumes.Macintosh.HD//g Makefile
   make -s clean
   rm -rf OpenSCAD.app
 }
@@ -522,7 +533,7 @@ touch_parser_lexer_msys()
 
 make_gui_binary_generic()
 {
-  cd $DEPLOYDIR
+  cd $BUILDDIR
   if [ $FAKEMAKE ]; then build_fake_gui_binary_generic ; return ; fi
   make -j$NUMCPU $MAKE_TARGET
   if [[ $? != 0 ]]; then
@@ -536,7 +547,7 @@ make_gui_binary_mxe()
 {
   if [ $FAKEMAKE ]; then build_fake_gui_binary_mxe ; return ; fi
   # make main openscad.exe
-  cd $DEPLOYDIR
+  cd $BUILDDIR
   make $MAKE_TARGET -j$NUMCPU
   # make console pipe-able openscad.com - see winconsole.pro for info
   qmake ../winconsole/winconsole.pro
@@ -551,14 +562,14 @@ make_gui_binary_msys()
 
 build_fake_gui_binary_generic()
 {
-  cd $DEPLOYDIR
+  cd $BUILDDIR
   touch ./$MAKE_TARGET/openscad
   cd $OPENSCADDIR
 }
 
 build_fake_gui_binary_mxe()
 {
-  cd $DEPLOYDIR
+  cd $BUILDDIR
   touch $MAKE_TARGET/openscad.exe
   touch $MAKE_TARGET/openscad.com
   cd $OPENSCADDIR
@@ -579,6 +590,7 @@ CONFIG=deploy
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
   OPENSCAD_BUILD_TARGET_OSTYPE=darwin
+  BUILDDIR=$OPENSCADDIR
 elif [ ! $SETENV_SAVED_ORIGINAL_PATH ]; then
   echo "please run . ./scripts/setenv.sh first (note the  . )"
 fi
