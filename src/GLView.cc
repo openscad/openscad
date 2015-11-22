@@ -78,6 +78,7 @@ void GLView::setColorSchemeBW(bool bw_mode)
   const ColorScheme *cs=this->colorscheme;
   this->colorscheme=(bw_mode)?&this->colorschemeBW:this->colorschemeColor;
   if (cs!=this->colorscheme) this->updateColorScheme();
+  if (this->renderer) renderer->setBWmode(bw_mode);
 }
 
 void GLView::resizeGL(int w, int h)

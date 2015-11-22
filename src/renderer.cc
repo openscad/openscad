@@ -16,7 +16,7 @@ bool Renderer::getColor(Renderer::ColorMode colormode, Color4f &col) const
 	return false;
 }
 
-Renderer::Renderer() : colorscheme(NULL)
+Renderer::Renderer() : colorscheme(NULL), black_and_white_mode(false)
 {
 	PRINTD("Renderer() start");
 	// Setup default colors
@@ -43,12 +43,14 @@ void Renderer::setColor(const float color[4], GLint *shaderinfo) const
 	PRINTD("setColor a");
 	Color4f col;
 	getColor(COLORMODE_MATERIAL,col);
-	float c[4] = {color[0], color[1], color[2], color[3]};
+	Color4f c(color[0], color[1], color[2], color[3]);
 	if (c[0] < 0) c[0] = col[0];
 	if (c[1] < 0) c[1] = col[1];
 	if (c[2] < 0) c[2] = col[2];
 	if (c[3] < 0) c[3] = col[3];
-	glColor4fv(c);
+	if (black_and_white_mode) c=ColorMap::getBW(c);
+	float cf[4] = {c[0], c[1], c[2], c[3]};
+	glColor4fv(cf);
 #ifdef ENABLE_OPENCSG
 	if (shaderinfo) {
 		glUniform4f(shaderinfo[1], c[0], c[1], c[2], c[3]);
