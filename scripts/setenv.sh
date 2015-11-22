@@ -4,15 +4,19 @@
 #
 # Usage:
 #
-#  source ./scripts/setenv.sh               # standard linux/bsd/msys2 build
+#  source ./scripts/setenv.sh               # standard darwin/linux/msys2 build
 #  source ./scripts/setenv.sh mxe           # mxe cross-build for Win, 32 bit
 #  source ./scripts/setenv.sh mxe shared    # mxe with shared libraries (DLLs)
 #  source ./scripts/setenv.sh mxe 64        # mxe 64 bit static link
 #  source ./scripts/setenv.sh mxe 64 shared # mxe 64 bit shared libraries (DLLs)
-#  source ./scripts/setenv.sh clang         # build using clang compiler
+#  source ./scripts/setenv.sh clang         # build *nix using clang compiler
 #  source ./scripts/setenv.sh clean         # unset all exported variables
 #
 # Notes:
+#
+# Darwin/OSX:
+#
+#  It simply loads ./openscad/setenv_mac-qt5.sh
 #
 # Linux/BSD:
 #
@@ -73,6 +77,11 @@ setup_target_msys()
   fi
   OPENSCAD_BUILD_TARGET_ARCH=$ARCH
   OPENSCAD_BUILD_TARGET_TRIPLE=$ARCH-$SUB-$SYS.$ABI
+}
+
+setup_target_darwin()
+{
+  . ./setenv_mac-qt5.sh
 }
 
 setup_dirs_generic()
@@ -146,6 +155,12 @@ setup_dirs_netbsd()
   QMAKESPEC=netbsd-g++
 }
 
+setup_dirs_darwin()
+{
+  echo
+  # noop, already done in setup_target_darwin() (. ../setenv_mac-qt5.sh)
+}
+
 save_path_generic()
 {
   if [ ! $SETENV_SAVED_ORIGINAL_PATH ]; then
@@ -187,10 +202,22 @@ setup_path_netbsd()
   LD_LIBRARY_PATH=/usr/pkg/lib:$LD_LIBRARY_PATH
 }
 
+setup_path_darwin()
+{
+  echo
+  # noop, already done in setup_target_darwin() (. ../setenv_mac-qt5.sh)
+}
+
 setup_clang_generic()
 {
   CC=clang
   CXX=clang++
+}
+
+setup_clang_darwin()
+{
+  echo
+  # noop, already done in setup_target_darwin() (. ../setenv_mac-qt5.sh)
 }
 
 setup_clang_msys()
@@ -220,34 +247,32 @@ setup_clang_freebsd()
 setup_varexportlist_common()
 {
   vel=
-  vel="$vel SETENV_SAVED_ORIGINAL_PATH OPENSCAD_BUILD_TARGET_OSTYPE CC CXX"
+  vel="$vel SETENV_SAVED_ORIGINAL_PATH OPENSCAD_BUILD_TARGET_OSTYPE"
+  vel="$vel OPENSCAD_BUILD_TARGET_TRIPLE"
+  vel="$vel OPENSCAD_BUILD_TARGET_ARCH"
+  vel="$vel OPENSCAD_BUILD_TARGET_ABI"
+  vel="$vel BUILDDIR BASEDIR OPENSCAD_LIBRARIES"
 }
 
 setup_varexportlist_generic()
 {
   setup_varexportlist_common
-  vel="$vel OPENSCAD_BUILD_TARGET_TRIPLE"
-  vel="$vel OPENSCAD_BUILD_TARGET_ARCH"
-  vel="$vel OPENSCAD_BUILD_TARGET_ABI"
-  vel="$vel BUILDDIR BASEDIR LD_LIBRARY_PATH LD_RUN_PATH OPENSCAD_LIBRARIES"
+  vel="$vel LD_LIBRARY_PATH LD_RUN_PATH CC CXX"
   vel="$vel GLEWDIR QMAKESPEC QTDIR"
 }
 
-setup_varexportlist_msys()
+setup_varexportlist_darwin()
 {
-  setup_varexportlist_common
-  vel="$vel OPENSCAD_BUILD_TARGET_ARCH"
-  vel="$vel OPENSCAD_BUILD_TARGET_ABI OPENSCAD_BUILD_TARGET_TRIPLE BUILDDIR"
+  # dont use common list here. look at ../setenv_mac-qt5.sh
+  vel=
+  vel="DYLD_LIBRARY_PATH DYLD_FRAMEWORK_PATH QMAKESPEC CCACHE_BASEDIR"
 }
 
 setup_varexportlist_mxe()
 {
   setup_varexportlist_common
-  vel="$vel OPENSCAD_BUILD_TARGET_TRIPLE"
-  vel="$vel OPENSCAD_BUILD_TARGET_ARCH"
-  vel="$vel OPENSCAD_BUILD_TARGET_ABI OPENSCAD_LIBRARIES BASEDIR MXEDIR"
+  vel="$vel MXEDIR"
   vel="$vel MXE_TARGET MXE_SYS_DIR MXE_SYS_DIR_SHARED MXE_SYS_DIR_STATIC"
-  vel="$vel BUILDDIR"
 }
 
 clean_variables_generic()
@@ -297,6 +322,8 @@ detect_target_ostype()
 {
   if [ "`echo $1 | grep mxe`" ]; then
     OPENSCAD_BUILD_TARGET_OSTYPE=mxe
+  elif [ "`uname | grep -i darwin`" ]; then
+    OPENSCAD_BUILD_TARGET_OSTYPE=darwin
   elif [ "`uname | grep -i linux`" ]; then
     OPENSCAD_BUILD_TARGET_OSTYPE=linux
   elif [ "`uname | grep -i debian`" ]; then
