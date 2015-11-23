@@ -593,6 +593,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
   BUILDDIR=$OPENSCADDIR
 elif [ ! $SETENV_SAVED_ORIGINAL_PATH ]; then
   echo "please run . ./scripts/setenv.sh first (note the  . )"
+  exit 1
 fi
 
 if [ "`echo $* | grep fake`" ]; then
@@ -634,6 +635,7 @@ run make_clean
 run touch_parser_lexer
 run make_gui_binary
 run verify_binary
+exit
 run setup_directories
 if [ -n $EXAMPLESDIR ]; then run copy_examples ; fi
 if [ -n $FONTSDIR ]; then run copy_fonts ; fi

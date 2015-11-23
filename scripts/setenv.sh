@@ -332,7 +332,7 @@ detect_target_ostype()
     OPENSCAD_BUILD_TARGET_OSTYPE=freebsd
   elif [ "`uname | grep -i netbsd`" ]; then
     OPENSCAD_BUILD_TARGET_OSTYPE=netbsd
-  elif [ "`uname | grep -i msys`" ]; then
+  elif [ "`echo $OSTYPE | grep -i msys`" ]; then
     OPENSCAD_BUILD_TARGET_OSTYPE=msys
   else
     OPENSCAD_BUILD_TARGET_OSTYPE=unknownos
