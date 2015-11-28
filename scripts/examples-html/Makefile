@@ -25,7 +25,7 @@ assets :
 example-data.js :
 	( \
 	echo "openscad_examples = ["; \
-	for a in Basics Functions Shapes Extrusion Advanced; \
+	for a in `grep '\[' ../../examples/examples.json | tr -d ' \t":[]'`; \
 	do \
 		echo "  {"; \
 		echo "    name : \"$$a\","; \
