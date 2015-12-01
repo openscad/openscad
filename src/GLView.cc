@@ -100,11 +100,36 @@ void GLView::setCamera(const Camera &cam)
 
 void GLView::setupCamera(Camera::Eye eye)
 {
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-    switch (this->cam.type) {
-      case Camera::GIMBAL: {
-	double dist = cam.zoomValue();
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	switch (this->cam.type) {
+	case Camera::GIMBAL: {
+		double dist = cam.zoomValue();
+		switch (this->cam.projection) {
+		case Camera::PERSPECTIVE: {
+			gluPerspective(cam.fov, aspectratio, 0.1*dist, 100*dist);
+			break;
+		}
+		case Camera::ORTHOGONAL: {
+			double height = dist * tan(cam.fov/2*M_PI/180);
+			glOrtho(-height*aspectratio, height*aspectratio,
+							-height, height,
+							-100*dist, +100*dist);
+			break;
+		}
+		}
+		gluLookAt((float)eye*cam.eye_distance*dist, -dist, 0.0,
+							0.0, 0.0, 0.0,
+							0.0, 0.0, 1.0);
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+		glRotated(cam.object_rot.x(), 1.0, 0.0, 0.0);
+		glRotated(cam.object_rot.y(), 0.0, 1.0, 0.0);
+		glRotated(cam.object_rot.z(), 0.0, 0.0, 1.0);
+		break;
+	}
+	case Camera::VECTOR: {
+	double dist = (cam.center - cam.eye).norm();
 	Vector3d currentEye(cam.eye+Vector3d((float)eye*cam.eye_distance*dist,0.0,0.0));
 	switch (this->cam.projection) {
 		case Camera::PERSPECTIVE: {
@@ -118,45 +143,19 @@ void GLView::setupCamera(Camera::Eye eye)
 							-100*dist, +100*dist);
 			break;
 		}
-	}
-        gluLookAt(currentEye[0], -dist, 0.0,
-							0.0, 0.0, 0.0,
-							0.0, 0.0, 1.0);
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-		glRotated(cam.object_rot.x(), 1.0, 0.0, 0.0);
-		glRotated(cam.object_rot.y(), 0.0, 1.0, 0.0);
-		glRotated(cam.object_rot.z(), 0.0, 0.0, 1.0);
-		break;
-	}
-	case Camera::VECTOR: {
-        double dist = (cam.center - cam.eye).norm();
-        Vector3d currentEye(cam.eye+Vector3d((float)eye*cam.eye_distance*dist,0.0,0.0));
-       	switch (this->cam.projection) {
-		case Camera::PERSPECTIVE: {
-			gluPerspective(cam.fov, aspectratio, 0.1*dist, 100*dist);
-			break;
-		}
-		case Camera::ORTHOGONAL: {
-			double height = dist * tan(cam.fov/2*M_PI/180);
-			glOrtho(-height*aspectratio, height*aspectratio,
-							-height, height,
-							-100*dist, +100*dist);
-			break;
-		}
 		}
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 
-        Vector3d dir(currentEye - cam.center);
+		Vector3d dir(currentEye - cam.center);
 		Vector3d up(0.0,0.0,1.0);
 		if (dir.cross(up).norm() < 0.001) { // View direction is ~parallel with up vector
 			up << 0.0,1.0,0.0;
 		}
 
-        gluLookAt(currentEye[0], currentEye[1], currentEye[2],
-							cam.center[0], cam.center[1], cam.center[2],
-							up[0], up[1], up[2]);
+		gluLookAt(currentEye[0], currentEye[1], currentEye[2],
+			cam.center[0], cam.center[1], cam.center[2],
+			up[0], up[1], up[2]);
 		break;
 	}
 	default:
