@@ -11,6 +11,7 @@ public:
 		convexity = 0;
 		fn = fs = fa = 0;
 		origin_x = origin_y = scale = 0;
+        angle = 360;
 	}
   virtual Response accept(class State &state, Visitor &visitor) const {
 		return visitor.visit(state, *this);
@@ -20,7 +21,7 @@ public:
 
 	int convexity;
 	double fn, fs, fa;
-	double origin_x, origin_y, scale;
+	double origin_x, origin_y, scale, angle;
 	Filename filename;
 	std::string layername;
 };
