@@ -198,7 +198,7 @@ void GLView::paintGL_oneEye()
 {
     Color4f axescolor = ColorMap::getColor(*this->colorscheme, AXES_COLOR);
 
-  if (this->cam.type) {
+  if (this->cam.type == Camera::GIMBAL) {
     // Only for GIMBAL cam
     // The crosshair should be fixed at the center of the viewport...
     if (showcrosshairs) GLView::showCrosshairs();
