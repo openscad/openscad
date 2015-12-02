@@ -118,6 +118,12 @@ mingw* {
 CONFIG += qt
 QT += opengl concurrent
 
+qopenglwidget {
+  !lessThan(QT_VERSION, 5.4) {
+    DEFINES += USE_QOPENGLWIDGET
+  }
+}
+
 # see http://fedoraproject.org/wiki/UnderstandingDSOLinkChange
 # and https://github.com/openscad/openscad/pull/119
 # ( QT += opengl does not automatically link glu on some DSO systems. )

@@ -50,17 +50,19 @@
 #  include <opencsg.h>
 #endif
 
-QGLView::QGLView(QWidget *parent) : QGLWidget(parent)
+QGLView::QGLView(QWidget *parent) :
+#ifdef USE_QOPENGLWIDGET
+	QOpenGLWidget(parent)
+#else
+	QGLWidget(parent)
+#endif
 {
   init();
 }
 
-QGLView::QGLView(const QGLFormat & format, QWidget *parent) : QGLWidget(format, parent)
-{
-  init();
-}
-
+#if defined(_WIN32) && !defined(USE_QOPENGLWIDGET)
 static bool running_under_wine = false;
+#endif
 
 void QGLView::init()
 {
@@ -71,8 +73,10 @@ void QGLView::init()
 
   setMouseTracking(true);
 
+
+
+#if defined(_WIN32) && !defined(USE_QOPENGLWIDGET)
 // see paintGL() + issue160 + wine FAQ
-#ifdef _WIN32
 #include <windows.h>
   HMODULE hntdll = GetModuleHandle(L"ntdll.dll");
   if (hntdll)
@@ -164,7 +168,9 @@ void QGLView::paintGL()
     statusLabel->setText(QString::fromStdString(nc.statusText()));
   }
 
+#if defined(_WIN32) && !defined(USE_QOPENGLWIDGET)
   if (running_under_wine) swapBuffers();
+#endif
 }
 
 void QGLView::mousePressEvent(QMouseEvent *event)
