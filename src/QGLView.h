@@ -3,7 +3,7 @@
 #include "system-gl.h"
 #include <QtGlobal>
 
-#if QT_VERSION >= 0x050400
+#ifdef USE_QOPENGLWIDGET
 #include <QOpenGLWidget>
 #else
 #include <QGLWidget>
@@ -16,7 +16,7 @@
 #include "renderer.h"
 
 class QGLView :
-#if QT_VERSION >= 0x050400
+#ifdef USE_QOPENGLWIDGET
 		public QOpenGLWidget,
 #else
 		public QGLWidget,
@@ -62,13 +62,13 @@ public:
 public slots:
 	void ZoomIn(void);
 	void ZoomOut(void);
-#if QT_VERSION >= 0x050400
+#ifdef USE_QOPENGLWIDGET
 	inline void updateGL() { update(); }
 #endif
 
 public:
 	QLabel *statusLabel;
-#if QT_VERSION >= 0x050400
+#ifdef USE_QOPENGLWIDGET
 	inline QImage grabFrameBuffer() { return grabFramebuffer(); }
 #endif
 private:

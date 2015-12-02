@@ -51,7 +51,7 @@
 #endif
 
 QGLView::QGLView(QWidget *parent) :
-#if QT_VERSION >= 0x050400
+#if QT_VERSION >= 0x050400 && defined(USE_QOPENGLWIDGET)
 	QOpenGLWidget(parent)
 #else
 	QGLWidget(parent)
@@ -60,7 +60,7 @@ QGLView::QGLView(QWidget *parent) :
   init();
 }
 
-#if !(QT_VERSION >= 0x050400)
+#ifdef _WIN32
 static bool running_under_wine = false;
 #endif
 
@@ -166,7 +166,7 @@ void QGLView::paintGL()
     statusLabel->setText(QString::fromStdString(nc.statusText()));
   }
 
-#if !(QT_VERSION >= 0x050400)
+#ifdef _WIN32
   if (running_under_wine) swapBuffers();
 #endif
 }
