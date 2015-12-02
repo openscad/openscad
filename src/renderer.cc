@@ -74,7 +74,6 @@ void Renderer::setColor(ColorMode colormode, const float color[4], GLint *shader
 												color[2] >= 0 ? color[2] : basecol[2],
 												color[3] >= 0 ? color[3] : basecol[3]);
 		}
-		if (colormode == COLORMODE_CUTOUT) basecol[3] = 1;
 		setColor(basecol.data(), shaderinfo);
 	}
 }
