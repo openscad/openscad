@@ -7,7 +7,7 @@
 # This script must be run from the OpenSCAD source root directory
 #
 # Usage: macosx-build-dependencies.sh [-16lcdf] [<package>]
-#  -3   Build using C++03 and libstdc++
+#  -3   Build using C++03 and libstdc++ (default is C++11 and libc++)
 #  -6   Build only 64-bit binaries
 #  -l   Force use of LLVM compiler
 #  -c   Force use of clang compiler
