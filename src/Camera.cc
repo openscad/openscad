@@ -6,15 +6,17 @@ Camera::Camera(enum CameraType camtype) :
 	type(camtype), projection(Camera::PERSPECTIVE), fov(22.5), viewall(false)
 {
 	PRINTD("Camera()");
-	if (this->type == Camera::GIMBAL) {
-		object_trans << 0,0,0;
-		object_rot << 35,0,25;
-		viewer_distance = 500;
-	} else if (this->type == Camera::VECTOR) {
-		center << 0,0,0;
-		Eigen::Vector3d cameradir(1, 1, -0.5);
-		eye = center - 500 * cameradir;
-	}
+
+        // gimbal cam values
+        object_trans << 0,0,0;
+        object_rot << 35,0,25;
+        viewer_distance = 500;
+
+        // vector cam values
+        center << 0,0,0;
+        Eigen::Vector3d cameradir(1, 1, -0.5);
+        eye = center - 500 * cameradir;
+
 	pixel_width = RenderSettings::inst()->img_width;
 	pixel_height = RenderSettings::inst()->img_height;
 	autocenter = false;
