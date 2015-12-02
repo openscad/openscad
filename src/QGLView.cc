@@ -113,7 +113,13 @@ std::string QGLView::getRendererInfo() const
   std::string glewinfo = glew_dump();
   std::string glextlist = glew_extensions_dump();
 	// Don't translate as translated text in the Library Info dialog is not wanted
-  return glewinfo + std::string("\nUsing QGLWidget\n\n") + glextlist;
+  return glewinfo + 
+#ifdef USE_QOPENGLWIDGET
+		std::string("\nUsing QOpenGLWidget\n\n")
+#else
+		std::string("\nUsing QGLWidget\n\n")
+#endif
+		+ glextlist;
 }
 
 #ifdef ENABLE_OPENCSG
