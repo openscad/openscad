@@ -73,6 +73,8 @@ void QGLView::init()
 
   setMouseTracking(true);
 
+
+#if !(QT_VERSION >= 0x050400)
 // see paintGL() + issue160 + wine FAQ
 #ifdef _WIN32
 #include <windows.h>
@@ -80,6 +82,7 @@ void QGLView::init()
   if (hntdll)
     if ( (void *)GetProcAddress(hntdll, "wine_get_version") )
       running_under_wine = true;
+#endif
 #endif
 }
 
