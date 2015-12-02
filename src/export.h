@@ -12,7 +12,9 @@ enum FileFormat {
 	OPENSCAD_OFF,
 	OPENSCAD_AMF,
 	OPENSCAD_DXF,
-	OPENSCAD_SVG
+	OPENSCAD_SVG,
+	OPENSCAD_NEFDBG,
+	OPENSCAD_NEF3
 };
 
 // void exportFile(const class Geometry *root_geom, std::ostream &output, FileFormat format);

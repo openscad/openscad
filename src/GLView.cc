@@ -105,7 +105,7 @@ void GLView::setupCamera()
 			double height = dist * tan(cam.fov/2*M_PI/180);
 			glOrtho(-height*aspectratio, height*aspectratio,
 							-height, height,
-							-far_far_away, +far_far_away);
+							-100*dist, +100*dist);
 			break;
 		}
 		}
@@ -130,7 +130,7 @@ void GLView::setupCamera()
 			double height = dist * tan(cam.fov/2*M_PI/180);
 			glOrtho(-height*aspectratio, height*aspectratio,
 							-height, height,
-							-far_far_away, +far_far_away);
+							-100*dist, +100*dist);
 			break;
 		}
 		}
@@ -163,7 +163,7 @@ void GLView::paintGL()
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
   setupCamera();
-  if (this->cam.type) {
+  if (this->cam.type == Camera::GIMBAL) {
     // Only for GIMBAL cam
     // The crosshair should be fixed at the center of the viewport...
     if (showcrosshairs) GLView::showCrosshairs();

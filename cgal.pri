@@ -10,7 +10,7 @@ cgal {
     message("CGAL location: $$CGAL_DIR")
   }
 
-  CONFIG(mingw-cross-env) {
+  CONFIG(mingw-cross-env)|CONFIG(mingw-cross-env-shared) {
     LIBS += -lgmp -lmpfr -lCGAL
     QMAKE_CXXFLAGS += -frounding-math 
   } else {

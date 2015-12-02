@@ -68,6 +68,7 @@ endif()
 #
 # Handle C++11.
 # Usage: cmake -DCXX11=1 .
+# Note: Since Xcode 7, c++11 is default
 #
 if (CXX11)
   message("Using C++11")
@@ -76,9 +77,14 @@ if (CXX11)
     set(LIBCXX11 1)
   endif()
 endif()
-if(APPLE AND LIBCXX11)
-  message("Using libc++")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+if(APPLE)
+  if(LIBCXX11)
+    message("Using libc++")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+  else()
+    message("Using C++03 and libstdc++")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++03 -stdlib=libstdc++")
+  endif()
 endif()
 
 if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
@@ -167,7 +173,6 @@ if(${CMAKE_CXX_COMPILER} MATCHES ".*clang.*")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-function")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-sign-compare")
 endif()
-
 #
 # Build test apps
 #
@@ -258,7 +263,11 @@ if(APPLE)
   execute_process(COMMAND grep -q __112basic_string ${Boost_LIBRARIES}
                   RESULT_VARIABLE BOOST_USE_STDLIBCPP)
   if (NOT BOOST_USE_STDLIBCPP)
+     message(STATUS "Found boost linked with libc++")
      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+  else()
+     message(STATUS "Found boost linked with libstdc++")
+     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libstdc++")
   endif()
 endif()
 
@@ -847,6 +856,8 @@ elseif (MINGW_CROSS_ENV_DIR)
   set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../mingw32/release/openscad.exe")
 elseif(WIN32)
   set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../Release/openscad.exe")
+elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../bin/openscad")
+  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../bin/openscad")
 else()
   set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../openscad")
 endif()
@@ -1134,6 +1145,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-recursive-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/operators-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1472.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/empty-stl.scad)
 
 list(APPEND DUMPTEST_FILES ${FEATURES_2D_FILES} ${FEATURES_3D_FILES} ${DEPRECATED_3D_FILES})
