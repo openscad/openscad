@@ -337,6 +337,7 @@ MainWindow::MainWindow(const QString &filename)
 	// Edit menu
 	connect(this->editActionUndo, SIGNAL(triggered()), editor, SLOT(undo()));
 	connect(this->editActionRedo, SIGNAL(triggered()), editor, SLOT(redo()));
+	connect(this->editActionRedo_2, SIGNAL(triggered()), editor, SLOT(redo()));
 	connect(this->editActionCut, SIGNAL(triggered()), editor, SLOT(cut()));
 	connect(this->editActionCopy, SIGNAL(triggered()), editor, SLOT(copy()));
 	connect(this->editActionPaste, SIGNAL(triggered()), editor, SLOT(paste()));
