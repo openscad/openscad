@@ -65,28 +65,6 @@ if(CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-strict-aliasing")
 endif()
 
-#
-# Handle C++11.
-# Usage: cmake -DCXX11=1 .
-# Note: Since Xcode 7, c++11 is default
-#
-if (CXX11)
-  message("Using C++11")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-  if(APPLE)
-    set(LIBCXX11 1)
-  endif()
-endif()
-if(APPLE)
-  if(LIBCXX11)
-    message("Using libc++")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-  else()
-    message("Using C++03 and libstdc++")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++03 -stdlib=libstdc++")
-  endif()
-endif()
-
 if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DDEBUG")
 else()
@@ -264,10 +242,34 @@ if(APPLE)
                   RESULT_VARIABLE BOOST_USE_STDLIBCPP)
   if (NOT BOOST_USE_STDLIBCPP)
      message(STATUS "Found boost linked with libc++")
-     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+     set(LIBCXX11 TRUE)
   else()
      message(STATUS "Found boost linked with libstdc++")
-     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libstdc++")
+     set(LIBCXX11 FALSE)
+  endif()
+endif()
+
+#
+# Handle C++11.
+# Usage: cmake -DCXX11=1 .
+# Note: Since Xcode 7, c++11 is default
+# Note: We do this after looking for Boost, just to have a way of determining
+#       which C++ library to link with
+#
+if (CXX11)
+  message(STATUS "Using C++11")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+  if(APPLE)
+    set(LIBCXX11 1)
+  endif()
+endif()
+if(APPLE)
+  if(LIBCXX11)
+    message(STATUS "Using libc++")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+  else()
+    message(STATUS "Using C++03 and libstdc++")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++03 -stdlib=libstdc++")
   endif()
 endif()
 
