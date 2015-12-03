@@ -29,11 +29,8 @@
 #include "polyset.h"
 #include "csgterm.h"
 #include "stl-utils.h"
-<<<<<<< eba4a4f817553bf728c7b8af6e8493e8e0a68cc9
-
-=======
 #include <boost/foreach.hpp>
->>>>>>> Initial attempt at refactoring CSG product rendering
+
 #ifdef ENABLE_OPENCSG
 #  include <opencsg.h>
 
