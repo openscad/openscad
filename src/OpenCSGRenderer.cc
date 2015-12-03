@@ -29,8 +29,6 @@
 #include "polyset.h"
 #include "csgterm.h"
 #include "stl-utils.h"
-#include "printutils.h"
-#include <string>
 
 #ifdef ENABLE_OPENCSG
 #  include <opencsg.h>
@@ -90,7 +88,6 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo,
 				glDepthFunc(GL_EQUAL);
 			}
 			if (shaderinfo) glUseProgram(shaderinfo[0]);
-			std::string productstr = highlight ? "Highlights CSG rendering chain:" : (background ? "Background CSG rendering chain:" : "CSG rendering chain:");
 			const CSGChainObject &parent_obj = chain->objects[j];
 			for (; j < i; j++) {
 				const CSGChainObject &j_obj = chain->objects[j];
@@ -119,11 +116,8 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo,
 					glMultMatrixd(j_obj.matrix.data());
 					render_surface(j_obj.geom, csgmode, j_obj.matrix, shaderinfo);
 					glPopMatrix();
-
-					productstr += (j_obj.type == CSGTerm::TYPE_DIFFERENCE ? " -" : (CSGTerm::TYPE_UNION ? "+" : " *")) + j_obj.label;
 				}
 			}
-			PRINTD(productstr);
 			
 			if (shaderinfo) glUseProgram(0);
 			for (unsigned int k = 0; k < primitives.size(); k++) {
