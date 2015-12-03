@@ -58,6 +58,7 @@ public:
 	shared_ptr<class CSGTerm> root_raw_term;           // Result of CSG term rendering
 	shared_ptr<CSGTerm> root_norm_term;          // Normalized CSG products
 	class CSGChain *root_chain;
+	class CSGProducts *root_products;
 #ifdef ENABLE_CGAL
 	shared_ptr<const class Geometry> root_geom;
 	class CGALRenderer *cgalRenderer;

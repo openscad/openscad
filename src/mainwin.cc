@@ -1189,6 +1189,8 @@ void MainWindow::compileCSG(bool procevents)
 		if (this->root_norm_term) {
 			this->root_chain = new CSGChain();
 			this->root_chain->import(this->root_norm_term);
+			this->root_products = new CSGProducts();
+			this->root_products->import(this->root_norm_term);
 		}
 		else {
 			this->root_chain = NULL;
@@ -1229,7 +1231,7 @@ void MainWindow::compileCSG(bool procevents)
 	else {
 		PRINTB("Normalized CSG tree has %d elements",
 					 (this->root_chain ? this->root_chain->objects.size() : 0));
-		this->opencsgRenderer = new OpenCSGRenderer(this->root_chain,
+		this->opencsgRenderer = new OpenCSGRenderer(this->root_chain, this->root_products,
 																								this->highlights_chain,
 																								this->background_chain,
 																								this->qglview->shaderinfo);

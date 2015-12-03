@@ -29,7 +29,11 @@
 #include "polyset.h"
 #include "csgterm.h"
 #include "stl-utils.h"
+<<<<<<< eba4a4f817553bf728c7b8af6e8493e8e0a68cc9
 
+=======
+#include <boost/foreach.hpp>
+>>>>>>> Initial attempt at refactoring CSG product rendering
 #ifdef ENABLE_OPENCSG
 #  include <opencsg.h>
 
@@ -51,9 +55,16 @@ public:
 
 #endif
 
+OpenCSGRenderer::OpenCSGRenderer(CSGChain *root_chain, CSGProducts *root_products, CSGChain *highlights_chain,
+																 CSGChain *background_chain, GLint *shaderinfo)
+	: root_chain(root_chain), root_products(root_products), highlights_chain(highlights_chain), 
+		background_chain(background_chain), shaderinfo(shaderinfo)
+{
+}
+
 OpenCSGRenderer::OpenCSGRenderer(CSGChain *root_chain, CSGChain *highlights_chain,
-								 CSGChain *background_chain, GLint *shaderinfo)
-	: root_chain(root_chain), highlights_chain(highlights_chain), 
+																 CSGChain *background_chain, GLint *shaderinfo)
+	: root_chain(root_chain), root_products(NULL), highlights_chain(highlights_chain), 
 		background_chain(background_chain), shaderinfo(shaderinfo)
 {
 }
@@ -71,6 +82,101 @@ void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges) const
 	if (this->highlights_chain) {
 		renderCSGChain(this->highlights_chain, showedges ? shaderinfo : NULL, true, false);
 	}
+}
+
+OpenCSGPrim *OpenCSGRenderer::createCSGPrimitive(const CSGChainObject &csgobj, OpenCSG::Operation operation) const
+{
+	OpenCSGPrim *prim = new OpenCSGPrim(operation, csgobj.geom->getConvexity());
+	prim->geom = csgobj.geom;
+	prim->m = csgobj.matrix;
+	prim->csgmode = csgmode_e(csgobj.type == CSGTerm::TYPE_DIFFERENCE ? CSGMODE_DIFFERENCE : 0);
+	return prim;
+}
+
+void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shaderinfo, 
+																				bool highlight, bool background) const
+{
+#ifdef ENABLE_OPENCSG
+	std::vector<OpenCSG::Primitive*> primitives;
+	BOOST_FOREACH(const CSGProduct &product, products.products) {
+		BOOST_FOREACH(const CSGChainObject &csgobj, product.intersections) {
+			primitives.push_back(createCSGPrimitive(csgobj, OpenCSG::Intersection));
+		}
+		BOOST_FOREACH(const CSGChainObject &csgobj, product.subtractions) {
+			primitives.push_back(createCSGPrimitive(csgobj, OpenCSG::Subtraction));
+		}
+		OpenCSG::render(primitives);
+
+		glDepthFunc(GL_EQUAL);
+			if (shaderinfo) glUseProgram(shaderinfo[0]);
+
+		BOOST_FOREACH(const CSGChainObject &csgobj, product.intersections) {
+			const Color4f &c = csgobj.color;
+			glPushMatrix();
+			glMultMatrixd(csgobj.matrix.data());
+			csgmode_e csgmode = csgmode_e(
+				(highlight ? 
+				 CSGMODE_HIGHLIGHT :
+				 (background ? CSGMODE_BACKGROUND : CSGMODE_NORMAL)));
+			
+			ColorMode colormode = COLORMODE_NONE;
+			if (background) {
+				if (csgobj.flag & CSGTerm::FLAG_HIGHLIGHT) {
+					colormode = COLORMODE_HIGHLIGHT;
+				}
+				else {
+					colormode = COLORMODE_BACKGROUND;
+				}
+			} else if (csgobj.flag & CSGTerm::FLAG_HIGHLIGHT) {
+				colormode = COLORMODE_HIGHLIGHT;
+			}
+			else {
+				colormode = COLORMODE_MATERIAL;
+			}
+			
+			setColor(colormode, c.data(), shaderinfo);
+			
+			render_surface(csgobj.geom, csgmode, csgobj.matrix, shaderinfo);
+			glPopMatrix();
+		}
+		BOOST_FOREACH(const CSGChainObject &csgobj, product.subtractions) {
+			const Color4f &c = csgobj.color;
+			glPushMatrix();
+			glMultMatrixd(csgobj.matrix.data());
+			csgmode_e csgmode = csgmode_e(
+				(highlight ? 
+				 CSGMODE_HIGHLIGHT :
+				 (background ? CSGMODE_BACKGROUND : CSGMODE_NORMAL)) | CSGMODE_DIFFERENCE);
+			
+			ColorMode colormode = COLORMODE_NONE;
+			if (background) {
+				if (csgobj.flag & CSGTerm::FLAG_HIGHLIGHT) {
+					colormode = COLORMODE_HIGHLIGHT;
+				}
+				else {
+					colormode = COLORMODE_BACKGROUND;
+				}
+			} else {
+				if (csgobj.flag & CSGTerm::FLAG_HIGHLIGHT) {
+					colormode = COLORMODE_HIGHLIGHT;
+				}
+				else {
+					colormode = COLORMODE_CUTOUT;
+				}
+			}
+			
+			setColor(colormode, c.data(), shaderinfo);
+			
+			render_surface(csgobj.geom, csgmode, csgobj.matrix, shaderinfo);
+			glPopMatrix();
+		}
+
+		if (shaderinfo) glUseProgram(0);
+		BOOST_FOREACH(OpenCSG::Primitive *p, primitives) delete p;
+		primitives.clear();
+		glDepthFunc(GL_LEQUAL);
+	}
+#endif
 }
 
 void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo, 

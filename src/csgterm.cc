@@ -220,3 +220,74 @@ BoundingBox CSGChain::getBoundingBox() const
 	}
 	return bbox;
 }
+
+void CSGProducts::import(shared_ptr<CSGTerm> term, CSGTerm::type_e type, CSGTerm::Flag flag)
+{
+	CSGTerm::Flag newflag = (CSGTerm::Flag)(term->flag | flag);
+	if (term->type == CSGTerm::TYPE_PRIMITIVE) {
+		this->currentlist->push_back(CSGChainObject(term->geom, term->m, term->color, type, term->label, newflag));
+	} else {
+		assert(term->left && term->right);
+		switch(term->type) {
+		case CSGTerm::TYPE_DIFFERENCE:
+			import(term->left, type, newflag);
+			assert(this->currentproduct);
+			this->currentlist = &this->currentproduct->subtractions;
+			import(term->right, term->type, newflag);
+			break;
+		case CSGTerm::TYPE_INTERSECTION:
+			import(term->left, type, newflag);
+			import(term->right, term->type, newflag);
+			break;
+		default: // union or group
+			assert(this->currentproduct);
+			if (this->currentproduct->intersections.size() > 0) this->createProduct();
+			import(term->left, type, newflag);
+			this->createProduct();
+			import(term->right, term->type, newflag);
+			break;
+		}
+	}
+}
+
+std::string CSGProducts::dump(bool full)
+{
+	std::stringstream dump;
+
+/*
+	BOOST_FOREACH(const CSGChainObject &obj, this->objects) {
+		if (obj.type == CSGTerm::TYPE_UNION) {
+			if (&obj != &this->objects.front()) dump << "\n";
+			dump << "+";
+		}
+		else if (obj.type == CSGTerm::TYPE_DIFFERENCE)
+			dump << " -";
+		else if (obj.type == CSGTerm::TYPE_INTERSECTION)
+			dump << " *";
+		dump << obj.label;
+		if (full) {
+			dump << " polyset: \n" << obj.geom->dump() << "\n";
+			dump << " matrix: \n" << obj.matrix.matrix() << "\n";
+			dump << " color: \n" << obj.color << "\n";
+		}
+	}
+	dump << "\n";
+*/
+	return dump.str();
+}
+
+BoundingBox CSGProducts::getBoundingBox() const
+{
+	BoundingBox bbox;
+/*	BOOST_FOREACH(const CSGChainObject &obj, this->objects) {
+		if (obj.type != CSGTerm::TYPE_DIFFERENCE) {
+			if (obj.geom) {
+				BoundingBox psbox = obj.geom->getBoundingBox();
+				if (!psbox.isNull()) {
+					bbox.extend(obj.matrix * psbox);
+				}
+			}
+		}
+		} */
+	return bbox;
+}

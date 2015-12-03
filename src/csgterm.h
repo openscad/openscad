@@ -50,6 +50,7 @@ private:
 	Color4f color;
 
 	friend class CSGChain;
+	friend class CSGProducts;
 };
 
 class CSGChainObject
@@ -83,4 +84,40 @@ public:
 	std::string dump(bool full = false);
 
 	BoundingBox getBoundingBox() const;
+};
+
+class CSGProduct
+{
+public:
+	CSGProduct() {}
+	~CSGProduct() {}
+
+	std::vector<CSGChainObject> intersections;
+	std::vector<CSGChainObject> subtractions;
+};
+
+class CSGProducts
+{
+public:
+	CSGProducts() {
+    this->createProduct();
+	}
+	~CSGProducts() {}
+
+	void import(shared_ptr<CSGTerm> term, CSGTerm::type_e type = CSGTerm::TYPE_UNION,
+							CSGTerm::Flag flag = CSGTerm::FLAG_NONE);
+	std::string dump(bool full = false);
+	BoundingBox getBoundingBox() const;
+
+	std::vector<CSGProduct> products;
+
+private:
+	void createProduct() {
+		this->products.push_back(CSGProduct());
+		this->currentproduct = &this->products.back();
+    this->currentlist = &this->currentproduct->intersections;
+	}
+
+	std::vector<CSGChainObject> *currentlist;
+	CSGProduct *currentproduct;
 };
