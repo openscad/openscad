@@ -58,7 +58,7 @@ void CSGTermEvaluator::applyToChildren(const AbstractNode &node, CSGTermEvaluato
 			}
 		}
 	}
-	if (t1 && node.modinst->isHighlight()) {
+	if (t1 && (t1->flag == CSGTerm::FLAG_HIGHLIGHT || node.modinst->isHighlight())) {
 		t1->flag = CSGTerm::FLAG_HIGHLIGHT;
 		this->highlights.push_back(t1);
 	}

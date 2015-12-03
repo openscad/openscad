@@ -92,6 +92,9 @@ public:
 	CSGProduct() {}
 	~CSGProduct() {}
 
+	std::string dump(bool full = false) const;
+	BoundingBox getBoundingBox() const;
+
 	std::vector<CSGChainObject> intersections;
 	std::vector<CSGChainObject> subtractions;
 };
@@ -104,9 +107,8 @@ public:
 	}
 	~CSGProducts() {}
 
-	void import(shared_ptr<CSGTerm> term, CSGTerm::type_e type = CSGTerm::TYPE_UNION,
-							CSGTerm::Flag flag = CSGTerm::FLAG_NONE);
-	std::string dump(bool full = false);
+	void import(shared_ptr<CSGTerm> term, CSGTerm::type_e type = CSGTerm::TYPE_UNION, CSGTerm::Flag flag = CSGTerm::FLAG_NONE);
+	std::string dump(bool full = false) const;
 	BoundingBox getBoundingBox() const;
 
 	std::vector<CSGProduct> products;

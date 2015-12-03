@@ -34,18 +34,25 @@
 #include <boost/unordered_map.hpp>
 #include <boost/foreach.hpp>
 
-ThrownTogetherRenderer::ThrownTogetherRenderer(CSGChain *root_chain, 
+ThrownTogetherRenderer::ThrownTogetherRenderer(CSGChain *root_chain,
 																							 CSGChain *highlights_chain,
 																							 CSGChain *background_chain)
-	: root_chain(root_chain), highlights_chain(highlights_chain), 
-		background_chain(background_chain)
+	: root_chain(root_chain), highlights_chain(highlights_chain), background_chain(background_chain)
+{
+}
+
+ThrownTogetherRenderer::ThrownTogetherRenderer(CSGChain *root_chain, CSGProducts *root_products,
+																							 CSGChain *highlights_chain, CSGProducts *highlight_products,
+																							 CSGChain *background_chain, CSGProducts *background_products)
+	: root_chain(root_chain), highlights_chain(highlights_chain), background_chain(background_chain),
+		root_products(root_products), highlights_products(highlights_products), background_products(background_products)
 {
 }
 
 void ThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges) const
 {
 	PRINTD("Thrown draw");
-	if (this->root_chain) {
+ 	if (this->root_chain) {
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 		renderCSGChain(this->root_chain, false, false, showedges, false);

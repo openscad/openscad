@@ -70,7 +70,9 @@ public:
 
 	std::vector<shared_ptr<CSGTerm> > highlight_terms;
 	CSGChain *highlights_chain;
+	CSGProducts *highlights_products;
 	std::vector<shared_ptr<CSGTerm> > background_terms;
+	CSGProducts *background_products;
 	CSGChain *background_chain;
 	QString last_compiled_doc;
 

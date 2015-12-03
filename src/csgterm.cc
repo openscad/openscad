@@ -29,6 +29,7 @@
 #include "linalg.h"
 #include <sstream>
 #include <boost/foreach.hpp>
+#include <boost/range/iterator_range.hpp>
 
 /*!
 	\class CSGTerm
@@ -109,12 +110,14 @@ CSGTerm::CSGTerm(type_e type, shared_ptr<CSGTerm> left, shared_ptr<CSGTerm> righ
 	: type(type), left(left), right(right), flag(CSGTerm::FLAG_NONE), m(Transform3d::Identity())
 {
 	initBoundingBox();
+	if (this->type == TYPE_DIFFERENCE) this->flag = left->flag;
 }
 
 CSGTerm::CSGTerm(type_e type, CSGTerm *left, CSGTerm *right)
 	: type(type), left(left), right(right), flag(CSGTerm::FLAG_NONE), m(Transform3d::Identity())
 {
 	initBoundingBox();
+	if (this->type == TYPE_DIFFERENCE) this->flag = left->flag;
 }
 
 CSGTerm::~CSGTerm()
@@ -225,60 +228,73 @@ void CSGProducts::import(shared_ptr<CSGTerm> term, CSGTerm::type_e type, CSGTerm
 {
 	CSGTerm::Flag newflag = (CSGTerm::Flag)(term->flag | flag);
 	if (term->type == CSGTerm::TYPE_PRIMITIVE) {
+		if (type == CSGTerm::TYPE_UNION && this->currentproduct->intersections.size() > 0) {
+			this->createProduct();
+		}
+		else if (type == CSGTerm::TYPE_DIFFERENCE) {
+			this->currentlist = &this->currentproduct->subtractions;
+		}
 		this->currentlist->push_back(CSGChainObject(term->geom, term->m, term->color, type, term->label, newflag));
 	} else {
 		assert(term->left && term->right);
-		switch(term->type) {
-		case CSGTerm::TYPE_DIFFERENCE:
-			import(term->left, type, newflag);
-			assert(this->currentproduct);
-			this->currentlist = &this->currentproduct->subtractions;
-			import(term->right, term->type, newflag);
-			break;
-		case CSGTerm::TYPE_INTERSECTION:
-			import(term->left, type, newflag);
-			import(term->right, term->type, newflag);
-			break;
-		default: // union or group
-			assert(this->currentproduct);
-			if (this->currentproduct->intersections.size() > 0) this->createProduct();
-			import(term->left, type, newflag);
-			this->createProduct();
-			import(term->right, term->type, newflag);
-			break;
-		}
+		import(term->left, type, newflag);
+		import(term->right, term->type, newflag);
 	}
 }
 
-std::string CSGProducts::dump(bool full)
+std::string CSGProduct::dump(bool full) const
+{
+	std::stringstream dump;
+	dump << this->intersections.front().label;
+	BOOST_FOREACH(const CSGChainObject &csgobj,
+								boost::make_iterator_range(this->intersections.begin() + 1,
+																					 this->intersections.end())) {
+		dump << " *" << csgobj.label;
+	}
+	BOOST_FOREACH(const CSGChainObject &csgobj, this->subtractions) {
+		dump << " -" << csgobj.label;
+	}
+
+// FIXME:
+//		if (full) {
+//			dump << " polyset: \n" << obj.geom->dump() << "\n";
+//			dump << " matrix: \n" << obj.matrix.matrix() << "\n";
+//			dump << " color: \n" << obj.color << "\n";
+//		}
+
+	return dump.str();
+}
+
+BoundingBox CSGProduct::getBoundingBox() const
+{
+	BoundingBox bbox;
+	BOOST_FOREACH(const CSGChainObject &csgobj, this->intersections) {
+		if (csgobj.geom) {
+			BoundingBox psbox = csgobj.geom->getBoundingBox();
+			// FIXME: Should intersect rather than extend
+			if (!psbox.isEmpty()) bbox.extend(csgobj.matrix * psbox);
+		}
+	}
+	return bbox;
+}
+
+std::string CSGProducts::dump(bool full) const
 {
 	std::stringstream dump;
 
-/*
-	BOOST_FOREACH(const CSGChainObject &obj, this->objects) {
-		if (obj.type == CSGTerm::TYPE_UNION) {
-			if (&obj != &this->objects.front()) dump << "\n";
-			dump << "+";
-		}
-		else if (obj.type == CSGTerm::TYPE_DIFFERENCE)
-			dump << " -";
-		else if (obj.type == CSGTerm::TYPE_INTERSECTION)
-			dump << " *";
-		dump << obj.label;
-		if (full) {
-			dump << " polyset: \n" << obj.geom->dump() << "\n";
-			dump << " matrix: \n" << obj.matrix.matrix() << "\n";
-			dump << " color: \n" << obj.color << "\n";
-		}
+	BOOST_FOREACH(const CSGProduct &product, this->products) {
+		dump << "+" << product.dump(full) << "\n";
 	}
-	dump << "\n";
-*/
 	return dump.str();
 }
 
 BoundingBox CSGProducts::getBoundingBox() const
 {
 	BoundingBox bbox;
+	BOOST_FOREACH(const CSGProduct &product, this->products) {
+		bbox.extend(product.getBoundingBox());
+	}
+
 /*	BOOST_FOREACH(const CSGChainObject &obj, this->objects) {
 		if (obj.type != CSGTerm::TYPE_DIFFERENCE) {
 			if (obj.geom) {

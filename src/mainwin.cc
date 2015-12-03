@@ -242,6 +242,7 @@ MainWindow::MainWindow(const QString &filename)
 	root_module = NULL;
 	absolute_root_node = NULL;
 	this->root_chain = NULL;
+	this->root_products = NULL;
 #ifdef ENABLE_CGAL
 	this->cgalRenderer = NULL;
 #endif
@@ -252,6 +253,8 @@ MainWindow::MainWindow(const QString &filename)
 
 	highlights_chain = NULL;
 	background_chain = NULL;
+	highlights_products = NULL;
+	background_products = NULL;
 	root_node = NULL;
 
 	this->anim_step = 0;
@@ -698,6 +701,7 @@ MainWindow::~MainWindow()
 	if (root_module) delete root_module;
 	if (root_node) delete root_node;
 	if (root_chain) delete root_chain;
+	if (root_products) delete root_products;
 #ifdef ENABLE_CGAL
 	this->root_geom.reset();
 	delete this->cgalRenderer;
@@ -1092,12 +1096,18 @@ void MainWindow::instantiateRoot()
 
 	delete this->root_chain;
 	this->root_chain = NULL;
+	delete this->root_products;
+	this->root_products = NULL;
 
 	this->highlight_terms.clear();
 	delete this->highlights_chain;
 	this->highlights_chain = NULL;
+	delete this->highlights_products;
+	this->highlights_products = NULL;
 
 	this->background_terms.clear();
+	delete this->background_products;
+	this->background_products = NULL;
 	delete this->background_chain;
 	this->background_chain = NULL;
 
@@ -1194,6 +1204,7 @@ void MainWindow::compileCSG(bool procevents)
 		}
 		else {
 			this->root_chain = NULL;
+			this->root_products = NULL;
 			PRINT("WARNING: CSG normalization resulted in an empty tree");
 			if (procevents) QApplication::processEvents();
 		}
@@ -1203,10 +1214,12 @@ void MainWindow::compileCSG(bool procevents)
 		PRINTB("Compiling highlights (%d CSG Trees)...", highlight_terms.size());
 		if (procevents) QApplication::processEvents();
 		
+		highlights_products = new CSGProducts();
 		highlights_chain = new CSGChain();
 		for (unsigned int i = 0; i < highlight_terms.size(); i++) {
 			highlight_terms[i] = normalizer.normalize(highlight_terms[i]);
 			highlights_chain->import(highlight_terms[i]);
+			highlights_products->import(highlight_terms[i]);
 		}
 	}
 	
@@ -1215,12 +1228,15 @@ void MainWindow::compileCSG(bool procevents)
 		if (procevents) QApplication::processEvents();
 		
 		background_chain = new CSGChain();
+		background_products = new CSGProducts();
 		for (unsigned int i = 0; i < background_terms.size(); i++) {
 			background_terms[i] = normalizer.normalize(background_terms[i]);
 			background_chain->import(background_terms[i]);
+			background_products->import(background_terms[i]);
 		}
 	}
 
+	// FIXME: root_products
 	if (this->root_chain &&
 			(this->root_chain->objects.size() >
 			 Preferences::inst()->getValue("advanced/openCSGLimit").toUInt())) {
@@ -1232,14 +1248,14 @@ void MainWindow::compileCSG(bool procevents)
 		PRINTB("Normalized CSG tree has %d elements",
 					 (this->root_chain ? this->root_chain->objects.size() : 0));
 		this->opencsgRenderer = new OpenCSGRenderer(this->root_chain, this->root_products,
-																								this->highlights_chain,
-																								this->background_chain,
+																								this->highlights_chain, this->highlights_products,
+																								this->background_chain, this->background_products,
 																								this->qglview->shaderinfo);
 	}
 #endif
-	this->thrownTogetherRenderer = new ThrownTogetherRenderer(this->root_chain,
-																														this->highlights_chain,
-																														this->background_chain);
+	this->thrownTogetherRenderer = new ThrownTogetherRenderer(this->root_chain, this->root_products,
+																														this->highlights_chain, this->highlights_products,
+																														this->background_chain, this->background_products);
 	PRINT("Compile and preview finished.");
 	int s = this->renderingTime.elapsed() / 1000;
 	PRINTB("Total rendering time: %d hours, %d minutes, %d seconds", (s / (60*60)) % ((s / 60) % 60) % (s % 60));
@@ -2046,9 +2062,9 @@ void MainWindow::actionDisplayCSGProducts()
 									
 	.arg(root_raw_term ? QString::fromUtf8(root_raw_term->dump().c_str()) : "N/A",
 	root_norm_term ? QString::fromUtf8(root_norm_term->dump().c_str()) : "N/A",
-	this->root_chain ? QString::fromUtf8(this->root_chain->dump().c_str()) : "N/A",
-	highlights_chain ? QString::fromUtf8(highlights_chain->dump().c_str()) : "N/A",
-	background_chain ? QString::fromUtf8(background_chain->dump().c_str()) : "N/A"));
+	this->root_products ? QString::fromUtf8(this->root_products->dump().c_str()) : "N/A",
+	this->highlights_products ? QString::fromUtf8(this->highlights_products->dump().c_str()) : "N/A",
+	this->background_products ? QString::fromUtf8(this->background_products->dump().c_str()) : "N/A"));
 	
 	e->show();
 	e->resize(600, 400);
