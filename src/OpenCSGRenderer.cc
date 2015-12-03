@@ -29,6 +29,9 @@
 #include "polyset.h"
 #include "csgterm.h"
 #include "stl-utils.h"
+#include "printutils.h"
+#include <string>
+
 #ifdef ENABLE_OPENCSG
 #  include <opencsg.h>
 
@@ -51,7 +54,7 @@ public:
 #endif
 
 OpenCSGRenderer::OpenCSGRenderer(CSGChain *root_chain, CSGChain *highlights_chain,
-																 CSGChain *background_chain, GLint *shaderinfo)
+								 CSGChain *background_chain, GLint *shaderinfo)
 	: root_chain(root_chain), highlights_chain(highlights_chain), 
 		background_chain(background_chain), shaderinfo(shaderinfo)
 {
@@ -73,7 +76,7 @@ void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges) const
 }
 
 void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo, 
-																		 bool highlight, bool background) const
+									 bool highlight, bool background) const
 {
 #ifdef ENABLE_OPENCSG
 	std::vector<OpenCSG::Primitive*> primitives;
@@ -81,17 +84,17 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo,
 	for (size_t i = 0;; i++) {
 		bool last = i == chain->objects.size();
 		const CSGChainObject &i_obj = last ? chain->objects[i-1] : chain->objects[i];
-		if (last || i_obj.type == CSGTerm::TYPE_UNION) {
+		if ((last || i_obj.type == CSGTerm::TYPE_UNION) && (i != 0)) {
 			if (j+1 != i) {
 				 OpenCSG::render(primitives);
 				glDepthFunc(GL_EQUAL);
 			}
 			if (shaderinfo) glUseProgram(shaderinfo[0]);
+			std::string productstr = highlight ? "Highlights CSG rendering chain:" : (background ? "Background CSG rendering chain:" : "CSG rendering chain:");
+			const CSGChainObject &parent_obj = chain->objects[j];
 			for (; j < i; j++) {
 				const CSGChainObject &j_obj = chain->objects[j];
 				const Color4f &c = j_obj.color;
-				glPushMatrix();
-				glMultMatrixd(j_obj.matrix.data());
 				csgmode_e csgmode = csgmode_e(
 					(highlight ? 
 					 CSGMODE_HIGHLIGHT :
@@ -99,34 +102,29 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo,
 					(j_obj.type == CSGTerm::TYPE_DIFFERENCE ? CSGMODE_DIFFERENCE : 0));
 
 				ColorMode colormode = COLORMODE_NONE;
-				if (background) {
-					if (j_obj.flag & CSGTerm::FLAG_HIGHLIGHT) {
-						colormode = COLORMODE_HIGHLIGHT;
-					}
-					else {
-						colormode = COLORMODE_BACKGROUND;
-					}
+				if (highlight) {
+					colormode = COLORMODE_HIGHLIGHT;
+				} else if (background) {
+					colormode = COLORMODE_BACKGROUND;
 				} else if (j_obj.type == CSGTerm::TYPE_DIFFERENCE) {
-					if (highlight && j_obj.flag & CSGTerm::FLAG_HIGHLIGHT) {
-						colormode = COLORMODE_HIGHLIGHT;
-					}
-					else {
-						colormode = COLORMODE_CUTOUT;
-					}
+					colormode = COLORMODE_CUTOUT;
 				} else {
-					if (j_obj.flag & CSGTerm::FLAG_HIGHLIGHT) {
-						colormode = COLORMODE_HIGHLIGHT;
-					 }
-					else {
-						colormode = COLORMODE_MATERIAL;
-					}
+					colormode = COLORMODE_MATERIAL;
 				}
 
-				setColor(colormode, c.data(), shaderinfo);
+				if (highlight || !(parent_obj.flag & CSGTerm::FLAG_HIGHLIGHT)) {
+					setColor(colormode, c.data(), shaderinfo);
 
-				render_surface(j_obj.geom, csgmode, j_obj.matrix, shaderinfo);
-				glPopMatrix();
+					glPushMatrix();
+					glMultMatrixd(j_obj.matrix.data());
+					render_surface(j_obj.geom, csgmode, j_obj.matrix, shaderinfo);
+					glPopMatrix();
+
+					productstr += (j_obj.type == CSGTerm::TYPE_DIFFERENCE ? " -" : (CSGTerm::TYPE_UNION ? "+" : " *")) + j_obj.label;
+				}
 			}
+			PRINTD(productstr);
+			
 			if (shaderinfo) glUseProgram(0);
 			for (unsigned int k = 0; k < primitives.size(); k++) {
 				delete primitives[k];
@@ -139,7 +137,7 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo,
 
 		if (i_obj.geom) {
 			OpenCSGPrim *prim = new OpenCSGPrim(i_obj.type == CSGTerm::TYPE_DIFFERENCE ?
-																					OpenCSG::Subtraction : OpenCSG::Intersection, i_obj.geom->getConvexity());
+												OpenCSG::Subtraction : OpenCSG::Intersection, i_obj.geom->getConvexity());
 			
 			prim->geom = i_obj.geom;
 			prim->m = i_obj.matrix;
