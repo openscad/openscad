@@ -1110,6 +1110,10 @@ add_cmdline_test(openscad-colorscheme-transparent EXE ${OPENSCAD_BINPATH}
                  ARGS --colorscheme=Transparent\ Background -o 
                  SUFFIX png 
                  FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/logo.scad)
+add_cmdline_test(openscad-colorscheme-transparent EXE ${OPENSCAD_BINPATH}
+                 ARGS --colorscheme=Transparent\ Background -o 
+                 SUFFIX png 
+                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/highlight-and-background-modifier.scad)
 add_cmdline_test(openscad-colorscheme-metallic-render EXE ${OPENSCAD_BINPATH}
                  ARGS --colorscheme=Metallic --render -o 
                  SUFFIX png 
