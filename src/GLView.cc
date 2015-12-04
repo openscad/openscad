@@ -272,7 +272,7 @@ void GLView::enable_opencsg_shaders()
       "  vec3 normal, lightDir;\n"
       "  normal = normalize(gl_NormalMatrix * gl_Normal);\n"
       "  lightDir = normalize(vec3(gl_LightSource[0].position));\n"
-      "  shading = abs(dot(normal, lightDir));\n"
+      "  shading = 0.2 + abs(dot(normal, lightDir));\n"
       "}\n";
 
     /*
