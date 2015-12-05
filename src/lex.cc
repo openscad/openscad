@@ -61,6 +61,7 @@ void Lex::defineRules(std::string words[], int size, int id){
 
 void Lex::lex_results(const std::string& input, int start, LexInterface* const obj){
 
+	std::cout << "called lexer" <<std::endl;
 	lexertl::smatch results (input.begin(), input.end());
 
 	int isstyle = obj->getStyleAt(start-1);

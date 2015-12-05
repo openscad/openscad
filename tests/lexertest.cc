@@ -54,6 +54,7 @@ int main(int argv, char* argc[]){
 		if(startword == "start")
 		{
 			newword = newline.substr(6, '\n');
+			start = atoi(newword.c_str());
 		}
 		else 
 		{

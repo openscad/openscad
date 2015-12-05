@@ -13,6 +13,7 @@ ScadLexer::~ScadLexer()
 
 void ScadLexer::styleText(int start, int end)
 {
+	std::cout<< "start: "<<start<<std::endl;
     if(!editor())
         return;
 
@@ -21,7 +22,7 @@ void ScadLexer::styleText(int start, int end)
     QString source(data);
     const std::string input(source.toStdString());
     pos = editor()->SendScintilla(QsciScintilla::SCI_GETCURRENTPOS);
-
+	std::cout << "its being called" <<std::endl;
     l->lex_results(input, start, this);
     this->fold(start, end);
 
@@ -106,6 +107,7 @@ int ScadLexer::getStyleAt(int pos)
 void ScadLexer::highlighting(int start, const std::string& input, lexertl::smatch results)
 {
 	std::string token = results.str();
+	std::cout << "highlighting:" <<token<<std::endl;
 	int style = results.id;
 	QString word = QString::fromStdString(token);
 	startStyling(start + std::distance(input.begin(), results.start));
