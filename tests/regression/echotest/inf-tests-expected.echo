@@ -1,23 +1,35 @@
-ECHO: inf
-ECHO: -inf
-ECHO: nan
-ECHO: nan
-ECHO: nan
-ECHO: nan
-ECHO: nan
-ECHO: 90
-ECHO: -90
-ECHO: 135
-ECHO: inf
-ECHO: inf
-ECHO: undef
-ECHO: inf
-ECHO: inf
-ECHO: inf
-ECHO: -inf
-ECHO: inf
-ECHO: inf
-ECHO: 1
-ECHO: -1
-ECHO: inf
-ECHO: nan
+ECHO: "0/0", nan
+ECHO: "-0/0", nan
+ECHO: "0/-0", nan
+ECHO: "1/0", inf
+ECHO: "1/-0", -inf
+ECHO: "-1/0", -inf
+ECHO: "-1/-0", inf
+ECHO: "sin(1/0)", nan
+ECHO: "cos(1/0)", nan
+ECHO: "tan(1/0)", nan
+ECHO: "asin(1/0)", nan
+ECHO: "acos(1/0)", nan
+ECHO: "atan(1/0)", 90
+ECHO: "atan(-1/0)", -90
+ECHO: "atan2(1/0, -1/0)", 135
+ECHO: "ceil(-1/0)", -inf
+ECHO: "ceil(1/0)", inf
+ECHO: "floor(-1/0)", -inf
+ECHO: "floor(1/0)", inf
+ECHO: "exp(1/0)", inf
+ECHO: "exp(-1/0)", 0
+ECHO: "ln(1/0)", inf
+ECHO: "ln(-1/0)", nan
+ECHO: "log(1/0)", inf
+ECHO: "log(-1/0)", nan
+ECHO: "max(-1/0, 1/0)", inf
+ECHO: "min(-1/0, 1/0)", -inf
+ECHO: "pow(2, 1/0)", inf
+ECHO: "pow(2, -1/0)", 0
+ECHO: "round(1/0)", inf
+ECHO: "round(-1/0)", -inf
+ECHO: "sign(1/0)", 1
+ECHO: "sign(-1/0)", -1
+ECHO: "sqrt(1/0)", inf
+ECHO: "sqrt(-1/0)", nan

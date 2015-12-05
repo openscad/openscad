@@ -118,6 +118,12 @@ mingw* {
 CONFIG += qt
 QT += opengl concurrent
 
+qopenglwidget {
+  !lessThan(QT_VERSION, 5.4) {
+    DEFINES += USE_QOPENGLWIDGET
+  }
+}
+
 # see http://fedoraproject.org/wiki/UnderstandingDSOLinkChange
 # and https://github.com/openscad/openscad/pull/119
 # ( QT += opengl does not automatically link glu on some DSO systems. )
@@ -179,6 +185,7 @@ macx:CONFIG += mdi
 #CONFIG += c++11
 CONFIG += cgal
 CONFIG += opencsg
+CONFIG += glew
 CONFIG += boost
 CONFIG += eigen
 CONFIG += glib-2.0
@@ -188,11 +195,17 @@ CONFIG += fontconfig
 CONFIG += gettext
 
 #Uncomment the following line to enable the QScintilla editor
-CONFIG += scintilla
+!nogui {
+  CONFIG += scintilla
+}
 
 # Make experimental features available
 experimental {
   DEFINES += ENABLE_EXPERIMENTAL
+}
+
+nogui {
+  DEFINES += OPENSCAD_NOGUI
 }
 
 mdi {
@@ -202,7 +215,7 @@ mdi {
 include(common.pri)
 
 # mingw has to come after other items so OBJECT_DIRS will work properly
-CONFIG(mingw-cross-env) {
+CONFIG(mingw-cross-env)|CONFIG(mingw-cross-env-shared) {
   include(mingw-cross-env.pri)
 }
 
@@ -482,6 +495,8 @@ HEADERS += src/cgal.h \
            src/Polygon2d-CGAL.h
 
 SOURCES += src/cgalutils.cc \
+           src/cgalutils-applyops.cc \
+           src/cgalutils-project.cc \
            src/cgalutils-tess.cc \
            src/cgalutils-polyhedron.cc \
            src/CGALCache.cc \

@@ -25,6 +25,9 @@ updatepot()
 	| awk '{ printf "#: examples/examples.json:%d\nmsgid %s\nmsgstr \"\"\n\n", $1, $2 }' \
 	> ./locale/json-strings.pot
 
+ # extract strings from appdata file
+ itstool -o ./locale/appdata-strings.pot ./openscad.appdata.xml.in --its=./contrib/appdata.its
+
  VER=`date +"%Y.%m.%d"`
  OPTS=
  OPTS=$OPTS' --package-name=OpenSCAD'
@@ -41,7 +44,7 @@ updatepot()
   exit 1
  fi
 
- cmd="${GETTEXT_PATH}msgcat -o ./locale/openscad.pot ./locale/openscad-tmp.pot ./locale/json-strings.pot"
+ cmd="${GETTEXT_PATH}msgcat -o ./locale/openscad.pot ./locale/openscad-tmp.pot ./locale/json-strings.pot ./locale/appdata-strings.pot"
  echo $cmd
  $cmd
  if [ ! $? = 0 ]; then
@@ -50,7 +53,7 @@ updatepot()
  fi
 
  sed -e s/"CHARSET"/"UTF-8"/g ./locale/openscad.pot > ./locale/openscad.pot.new && mv ./locale/openscad.pot.new ./locale/openscad.pot
- rm -f ./locale/json-strings.pot ./locale/openscad-tmp.pot
+ rm -f ./locale/json-strings.pot ./locale/openscad-tmp.pot ./locale/appdata-strings.pot
 }
 
 updatepo()
@@ -80,6 +83,26 @@ updatemo()
    exit 1
   fi
  done
+
+ if which itstool > /dev/null 2>&1; then
+  # ugly workaround for bug https://bugs.freedesktop.org/show_bug.cgi?id=90937
+  for LANGCODE in `cat locale/LINGUAS | grep -v "#"`; do
+   ln -s openscad.mo ./locale/$LANGCODE/LC_MESSAGES/$LANGCODE.mo
+  done
+
+  # generate translated appdata file
+  itstool -j ./openscad.appdata.xml.in -o ./openscad.appdata.xml ./locale/*/LC_MESSAGES/[a-z][a-z].mo
+
+  # clean the mess
+  for LANGCODE in `cat locale/LINGUAS | grep -v "#"`; do
+   unlink ./locale/$LANGCODE/LC_MESSAGES/$LANGCODE.mo
+  done
+ else
+  if [ x"$(uname -s)" = x"Linux" ]; then
+   echo "itstool missing, won't apply translations to openscad.appdata.xml"
+  fi
+  cp -f ./openscad.appdata.xml.in ./openscad.appdata.xml
+ fi
 }
 
 GETTEXT_PATH=""

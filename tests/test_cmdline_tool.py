@@ -1,3 +1,4 @@
+#!/usr/bin/python
 #
 # Regression test driver for cmd-line tools
 #
@@ -93,12 +94,38 @@ def execute_and_redirect(cmd, params, outfile):
     if outfile == subprocess.PIPE: return (retval, out)
     else: return retval
 
+def normalize_string(s):
+    """Apply all modifications to an output string which would have been
+    applied if OPENSCAD_TESTING was defined at build time of the executable.
+
+    This truncates all floats, removes ', timestamp = ...' parts. The function
+    is idempotent.
+
+    This also normalizes away import paths from 'file = ' arguments."""
+
+    s = re.sub(', timestamp = [0-9]+', '', s)
+    def floatrep(match):
+        value = float(match.groups()[0])
+        if abs(value) < 10**-12:
+            return "0"
+        if abs(value) >= 10**6:
+            return "%d"%value
+        return "%.6g"%value
+    s = re.sub('(-?[0-9]+\\.[0-9]+(e[+-][0-9]+)?)', floatrep, s)
+
+    def pathrep(match):
+        return match.groups()[0] + match.groups()[2]
+    s = re.sub('(file = ")([^"/]*/)*([^"]*")', pathrep, s)
+
+    return s
+
 def get_normalized_text(filename):
     try: 
         f = open(filename)
         text = f.read()
     except: 
         text = ''
+    text = normalize_string(text)
     return text.strip("\r\n").replace("\r\n", "\n") + "\n"
 
 def compare_text(expected, actual):
@@ -204,7 +231,7 @@ def run_test(testname, cmd, args):
     try:
         cmdline = [cmd] + args + [outputname]
         print 'run_test() cmdline:',cmdline
-        fontdir =  os.path.join(os.path.dirname(cmd), "..", "testdata")
+        fontdir =  os.path.join(os.path.dirname(cmd), "testdata")
         fontenv = os.environ.copy()
         fontenv["OPENSCAD_FONT_PATH"] = fontdir
         print 'using font directory:', fontdir

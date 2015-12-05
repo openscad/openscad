@@ -20,8 +20,21 @@
 #
 # Also see http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Cross-compiling_for_Windows_on_Linux_or_Mac_OS_X
 #
-# Also note the 64 bit is built on the branch of mxe by Tony Theodore
-# which hasnt been merged to official mxe as of writing
+# Notes:
+#
+# Originally this was based on Tony Theodore's branch of MXE, which is now
+# integrated into official MXE.
+#
+# Targets:
+#
+# MXE allows 4 separate targets with the MXE_TARGETS environment variable.
+# As of 2015 shared are not guaranteed to work.
+#
+# 64 bit static linked libraries MXE_TARGETS=x86_64-w64-mingw32.static
+# 32 bit static linked libraries MXE_TARGETS=i686-w64-mingw32.static
+# 64 bit shared libraries        MXE_TARGETS=x86_64-w64-mingw32.shared
+# 32 bit shared libraries        MXE_TARGETS=i686-w64-mingw32.shared
+#
 
 OPENSCADDIR=$PWD
 if [ ! -f $OPENSCADDIR/openscad.pro ]; then
