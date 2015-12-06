@@ -29,7 +29,9 @@
 #include "polyset.h"
 #include "csgterm.h"
 #include "stl-utils.h"
-#include "printutils.h"
+
+#ifdef ENABLE_OPENCSG
+#  include <opencsg.h>
 
 GeometryPrimitive::~GeometryPrimitive()
 {
@@ -53,6 +55,7 @@ void GeometryPrimitive::render()
 		glCallList(id_);
 	glPopMatrix();
 }
+#endif
 
 OpenCSGRenderer::OpenCSGRenderer(CSGChain *root_chain, CSGChain *highlights_chain, CSGChain *background_chain, GLint *shaderinfo)
 	: root_chain_(root_chain), highlights_chain_(highlights_chain),
@@ -112,6 +115,7 @@ void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges) const
 
 void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo, bool highlight, bool background) const
 {
+#ifdef ENABLE_OPENCSG
 	std::vector<OpenCSG::Primitive *> primitives;
 	std::vector<std::vector<OpenCSG::Primitive *> > *chain_primitives;
 	std::vector<unsigned int> *chain_lists;
@@ -131,10 +135,6 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo, bool hi
 		built = root_chain_built_;
 	}
 
-	if (!built && chain_primitives->size() != 0) {
-		PRINT("Chain Primitives was not zero but not built either!!!!!!!!");
-	}
-
 	size_t j = 0;
 	size_t l = 0;
 	size_t m = 0;
@@ -142,7 +142,7 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo, bool hi
 		bool last = i == chain->objects.size();
 		bool primitives_added = false;
 		const CSGChainObject &i_obj = last ? chain->objects[i-1] : chain->objects[i];
-		if (last || i_obj.type == CSGTerm::TYPE_UNION) {
+		if ((last || i_obj.type == CSGTerm::TYPE_UNION) && (i != 0)) {
 			if (j+1 != i) {
 				if (!built) {
 					chain_primitives->push_back(primitives);
@@ -153,6 +153,7 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo, bool hi
 				l++;
 			}
 			if (shaderinfo) glUseProgram(shaderinfo[0]);
+			const CSGChainObject &parent_obj = chain->objects[j];
 			for (; j < i; j++) {
 				const CSGChainObject &j_obj = chain->objects[j];
 				const Color4f &c = j_obj.color;
@@ -163,29 +164,15 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo, bool hi
 					(j_obj.type == CSGTerm::TYPE_DIFFERENCE ? CSGMODE_DIFFERENCE : 0));
 
 				ColorMode colormode = COLORMODE_NONE;
-				if (background) {
-					if (j_obj.flag & CSGTerm::FLAG_HIGHLIGHT) {
-						colormode = COLORMODE_HIGHLIGHT;
-					}
-					else {
-						colormode = COLORMODE_BACKGROUND;
-					}
+				if (highlight) {
+					colormode = COLORMODE_HIGHLIGHT;
+				} else if (background) {
+					colormode = COLORMODE_BACKGROUND;
 				} else if (j_obj.type == CSGTerm::TYPE_DIFFERENCE) {
-					if (j_obj.flag & CSGTerm::FLAG_HIGHLIGHT) {
-						colormode = COLORMODE_HIGHLIGHT;
-					}
-					else {
-						colormode = COLORMODE_CUTOUT;
-					}
+					colormode = COLORMODE_CUTOUT;
 				} else {
-					if (j_obj.flag & CSGTerm::FLAG_HIGHLIGHT) {
-						colormode = COLORMODE_HIGHLIGHT;
-					 }
-					else {
-						colormode = COLORMODE_MATERIAL;
-					}
+					colormode = COLORMODE_MATERIAL;
 				}
-
 
 				if (!built) {
 					chain_lists->push_back(glGenLists(1));
@@ -203,6 +190,7 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo, bool hi
 
 				m++;
 			}
+
 			if (shaderinfo) glUseProgram(0);
 /*			for (unsigned int k = 0; k < primitives.size(); k++) {
 				delete primitives[k];
@@ -244,6 +232,7 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo, bool hi
 	if ((!highlight && background) && !background_chain_built_) {
 		const_cast<OpenCSGRenderer *>(this)->background_chain_built_ = true;
 	}
+#endif
 }
 
 BoundingBox OpenCSGRenderer::getBoundingBox() const

@@ -50,10 +50,13 @@ using boost::math::isinf;
  auto/bind()s for random function objects, but we are supporting older systems.
 */
 
+#include"boost-utils.h"
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_real.hpp>
 /*Unicode support for string lengths and array accesses*/
 #include <glib.h>
+// hash double
+#include "linalg.h"
 
 #ifdef __WIN32__
 #include <process.h>
@@ -238,21 +241,38 @@ ValuePtr builtin_rands(const Context *, const EvalContext *evalctx)
 		if (v0->type() != Value::NUMBER) goto quit;
 		double min = v0->toDouble();
 
+		if (boost::math::isinf(min)) {
+			PRINT("WARNING: rands() range min cannot be infinite");
+			min = -std::numeric_limits<double>::max()/2;
+			PRINTB("WARNING: resetting to %f",min);
+		}
 		ValuePtr v1 = evalctx->getArgValue(1);
 		if (v1->type() != Value::NUMBER) goto quit;
 		double max = v1->toDouble();
+		if (boost::math::isinf(max)) {
+			PRINT("WARNING: rands() range max cannot be infinite");
+			max = std::numeric_limits<double>::max()/2;
+			PRINTB("WARNING: resetting to %f",max);
+		}
 		if (max < min) {
 			register double tmp = min; min = max; max = tmp;
 		}
 		ValuePtr v2 = evalctx->getArgValue(2);
 		if (v2->type() != Value::NUMBER) goto quit;
-		size_t numresults = std::max(0, static_cast<int>(v2->toDouble()));
+		double numresultsd = std::abs( v2->toDouble() );
+		if (boost::math::isinf(numresultsd)) {
+			PRINT("WARNING: rands() cannot create an infinite number of results");
+			PRINT("WARNING: resetting number of results to 1");
+			numresultsd = 1;
+		}
+		size_t numresults = boost_numeric_cast<size_t,double>( numresultsd );
 
 		bool deterministic = false;
 		if (n > 3) {
 			ValuePtr v3 = evalctx->getArgValue(3);
 			if (v3->type() != Value::NUMBER) goto quit;
-			deterministic_rng.seed((unsigned int) v3->toDouble());
+			uint32_t seed = static_cast<uint32_t>(hash_floating_point( v3->toDouble() ));
+			deterministic_rng.seed( seed );
 			deterministic = true;
 		}
 		Value::VectorType vec;

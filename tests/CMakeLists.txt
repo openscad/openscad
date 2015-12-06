@@ -65,22 +65,6 @@ if(CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-strict-aliasing")
 endif()
 
-#
-# Handle C++11.
-# Usage: cmake -DCXX11=1 .
-#
-if (CXX11)
-  message("Using C++11")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-  if(APPLE)
-    set(LIBCXX11 1)
-  endif()
-endif()
-if(APPLE AND LIBCXX11)
-  message("Using libc++")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-endif()
-
 if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DDEBUG")
 else()
@@ -167,7 +151,6 @@ if(${CMAKE_CXX_COMPILER} MATCHES ".*clang.*")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-function")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-sign-compare")
 endif()
-
 #
 # Build test apps
 #
@@ -258,7 +241,35 @@ if(APPLE)
   execute_process(COMMAND grep -q __112basic_string ${Boost_LIBRARIES}
                   RESULT_VARIABLE BOOST_USE_STDLIBCPP)
   if (NOT BOOST_USE_STDLIBCPP)
-     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+     message(STATUS "Found boost linked with libc++")
+     set(LIBCXX11 TRUE)
+  else()
+     message(STATUS "Found boost linked with libstdc++")
+     set(LIBCXX11 FALSE)
+  endif()
+endif()
+
+#
+# Handle C++11.
+# Usage: cmake -DCXX11=1 .
+# Note: Since Xcode 7, c++11 is default
+# Note: We do this after looking for Boost, just to have a way of determining
+#       which C++ library to link with
+#
+if (CXX11)
+  message(STATUS "Using C++11")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+  if(APPLE)
+    set(LIBCXX11 1)
+  endif()
+endif()
+if(APPLE)
+  if(LIBCXX11)
+    message(STATUS "Using libc++")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+  else()
+    message(STATUS "Using C++03 and libstdc++")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++03 -stdlib=libstdc++")
   endif()
 endif()
 
@@ -847,6 +858,8 @@ elseif (MINGW_CROSS_ENV_DIR)
   set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../mingw32/release/openscad.exe")
 elseif(WIN32)
   set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../Release/openscad.exe")
+elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../bin/openscad")
+  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../bin/openscad")
 else()
   set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../openscad")
 endif()
@@ -1134,6 +1147,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-recursive-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/operators-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1472.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/empty-stl.scad)
 
 list(APPEND DUMPTEST_FILES ${FEATURES_2D_FILES} ${FEATURES_3D_FILES} ${DEPRECATED_3D_FILES})
@@ -1188,6 +1202,7 @@ list(APPEND EXPORT3D_CGALCGAL_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1215c.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1221.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1225.scad)
+
 # Issue #910
 set_test_config(Bugs 
                      offcgalpngtest_polyhedron-tests
@@ -1321,7 +1336,8 @@ list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue13.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue945e.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1223.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1223b.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1246.scad)
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1246.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1455.scad)
 
 # We know that we cannot import weakly manifold files into CGAL, so to make tests easier
 # to manage, don't try. Once we improve import, we can reenable this

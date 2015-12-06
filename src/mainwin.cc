@@ -218,6 +218,7 @@ MainWindow::MainWindow(const QString &filename)
 		Preferences::inst()->fireEditorConfigChanged();
 	}
 #endif
+	connect(editor, SIGNAL(previewRequest()), this, SLOT(actionRenderPreview()));
 
 	editorDockContents->layout()->addWidget(editor);
 
@@ -336,6 +337,7 @@ MainWindow::MainWindow(const QString &filename)
 	// Edit menu
 	connect(this->editActionUndo, SIGNAL(triggered()), editor, SLOT(undo()));
 	connect(this->editActionRedo, SIGNAL(triggered()), editor, SLOT(redo()));
+	connect(this->editActionRedo_2, SIGNAL(triggered()), editor, SLOT(redo()));
 	connect(this->editActionCut, SIGNAL(triggered()), editor, SLOT(cut()));
 	connect(this->editActionCopy, SIGNAL(triggered()), editor, SLOT(copy()));
 	connect(this->editActionPaste, SIGNAL(triggered()), editor, SLOT(paste()));
@@ -848,8 +850,8 @@ void MainWindow::updatedAnimFps()
 	bool fps_ok;
 	double fps = this->e_fps->text().toDouble(&fps_ok);
 	animate_timer->stop();
-	if (fps_ok && fps > 0) {
-		this->anim_step = this->anim_tval * (this->anim_numsteps - 1);
+	if (fps_ok && fps > 0 && this->anim_numsteps > 0) {
+		this->anim_step = int(this->anim_tval * this->anim_numsteps) % this->anim_numsteps;
 		animate_timer->setSingleShot(false);
 		animate_timer->setInterval(int(1000 / fps));
 		animate_timer->start();
@@ -862,6 +864,7 @@ void MainWindow::updatedAnimSteps()
 	int numsteps = this->e_fsteps->text().toInt(&steps_ok);
 	if (steps_ok) {
 		this->anim_numsteps = numsteps;
+		updatedAnimFps(); // Make sure we start
 	}
 	else {
 		this->anim_numsteps = 0;
@@ -881,7 +884,7 @@ void MainWindow::updateTVal()
 
 	if (this->anim_numsteps > 1) {
 		this->anim_step = (this->anim_step + 1) % this->anim_numsteps;
-		this->anim_tval = 1.0 * this->anim_step / (this->anim_numsteps - 1);
+		this->anim_tval = 1.0 * this->anim_step / this->anim_numsteps;
 	}
 	else if (this->anim_numsteps > 0) {
 		this->anim_step = 0;
@@ -1073,8 +1076,10 @@ void MainWindow::instantiateRoot()
 
   // Invalidate renderers before we kill the CSG tree
 	this->qglview->setRenderer(NULL);
+#ifdef ENABLE_OPENCSG
 	delete this->opencsgRenderer;
 	this->opencsgRenderer = NULL;
+#endif
 	delete this->thrownTogetherRenderer;
 	this->thrownTogetherRenderer = NULL;
 
@@ -1156,9 +1161,11 @@ void MainWindow::compileCSG(bool procevents)
 #else
 		// FIXME: Will we support this?
 #endif
+#ifdef ENABLE_OPENCSG
 		CSGTermEvaluator csgrenderer(this->tree, &geomevaluator);
 		if (procevents) QApplication::processEvents();
 		this->root_raw_term = csgrenderer.evaluateCSGTerm(*root_node, highlight_terms, background_terms);
+#endif
 		GeometryCache::instance()->print();
 #ifdef ENABLE_CGAL
 		CGALCache::instance()->print();
@@ -1230,6 +1237,7 @@ void MainWindow::compileCSG(bool procevents)
 		PRINTB("WARNING: Normalized tree has %d elements!", this->root_chain->objects.size());
 		PRINT("WARNING: OpenCSG rendering has been disabled.");
 	}
+#ifdef ENABLE_OPENCSG
 	else {
 		PRINTB("Normalized CSG tree has %d elements",
 					 (this->root_chain ? this->root_chain->objects.size() : 0));
@@ -1246,6 +1254,7 @@ void MainWindow::compileCSG(bool procevents)
 		delete this->thrownTogetherRenderer;
 		this->thrownTogetherRenderer = 0;
 	}
+#endif
 	this->thrownTogetherRenderer = new ThrownTogetherRenderer(this->root_chain,
 								  this->highlights_chain,
 								  this->background_chain);
@@ -1607,7 +1616,6 @@ void MainWindow::findBufferChanged() {
 	}
 }
 
-
 bool MainWindow::eventFilter(QObject* obj, QEvent *event)
 {
     if (obj == find_panel)
@@ -1817,9 +1825,13 @@ void MainWindow::csgReloadRender()
 
 void MainWindow::actionRenderPreview()
 {
+	static bool preview_requested;
+
+	preview_requested=true;
 	if (GuiLocker::isLocked()) return;
 	GuiLocker::lock();
 	autoReloadTimer->stop();
+	preview_requested=false;
 	setCurrentOutput();
 
 	PRINT("Parsing design (AST generation)...");
@@ -1827,6 +1839,12 @@ void MainWindow::actionRenderPreview()
 	this->afterCompileSlot = "csgRender";
 	this->procevents = !viewActionAnimate->isChecked();
 	compile(false);
+	if (preview_requested) {
+		// if the action was called when the gui was locked, we must request it one more time
+		// however, it's not possible to call it directly NOR make the loop
+		// it must be called from the mainloop
+		QTimer::singleShot(0, this, SLOT(actionRenderPreview()));
+	}
 }
 
 void MainWindow::csgRender()

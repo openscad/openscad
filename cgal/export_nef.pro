@@ -4,7 +4,7 @@ debug: DEFINES += DEBUG
 
 TEMPLATE = app
 
-INCLUDEPATH += ../src
+INCLUDEPATH += ../src ../src/libtess2/Include
 DEPENDPATH += ../src
 
 # Handle custom library location.
@@ -87,23 +87,42 @@ include(../common.pri)
 HEADERS += ../src/cgal.h \
            ../src/cgalutils.h \
            ../src/linalg.h \
+           ../src/grid.h \
            ../src/polyset.h \
            ../src/polyset-utils.h \
-           ../src/printutils.h
+           ../src/printutils.h \
+           ../src/GeometryUtils.h \
+           ../src/libtess2/Include/tesselator.h \
+           ../src/libtess2/Source/bucketalloc.h \
+           ../src/libtess2/Source/dict.h \
+           ../src/libtess2/Source/geom.h \
+           ../src/libtess2/Source/mesh.h \
+           ../src/libtess2/Source/priorityq.h \
+           ../src/libtess2/Source/sweep.h \
+           ../src/libtess2/Source/tess.h
 
 SOURCES += export_nef.cpp \
            ../src/polygon2d.cc \
            ../src/polygon2d-CGAL.cc \
            ../src/CGAL_Nef_polyhedron.cc \
-           ../src/CGAL_Nef_polyhedron_DxfData.cc \
            ../src/cgalutils.cc \
+           ../src/cgalutils-applyops.cc \
            ../src/cgalutils-tess.cc \
            ../src/cgalutils-polyhedron.cc \
            ../src/polyset.cc \
+           ../src/polyset-gl.cc \
+           ../src/GeometryUtils.cc \
            ../src/svg.cc \
+           ../src/grid.cc \
            ../src/node.cc \
            ../src/export.cc \
            ../src/polyset-utils.cc \
            ../src/progress.cc \
            ../src/printutils.cc \
-           ../src/grid.cc
+           ../src/libtess2/Source/bucketalloc.c \
+           ../src/libtess2/Source/dict.c \
+           ../src/libtess2/Source/geom.c \
+           ../src/libtess2/Source/mesh.c \
+           ../src/libtess2/Source/priorityq.c \
+           ../src/libtess2/Source/sweep.c \
+           ../src/libtess2/Source/tess.c

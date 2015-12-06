@@ -344,6 +344,8 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	const char *ast_output_file = NULL;
 	const char *term_output_file = NULL;
 	const char *echo_output_file = NULL;
+	const char *nefdbg_output_file = NULL;
+	const char *nef3_output_file = NULL;
 
 	std::string suffix = boosty::extension_str( output_file );
 	boost::algorithm::to_lower( suffix );
@@ -358,6 +360,8 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	else if (suffix == ".ast") ast_output_file = output_file;
 	else if (suffix == ".term") term_output_file = output_file;
 	else if (suffix == ".echo") echo_output_file = output_file;
+	else if (suffix == ".nefdbg") nefdbg_output_file = output_file;
+	else if (suffix == ".nef3") nef3_output_file = output_file;
 	else {
 		PRINTB("Unknown suffix for output file %s\n", output_file);
 		return 1;
@@ -540,6 +544,16 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 				fstream.close();
 			}
 		}
+
+		if (nefdbg_output_file) {
+			if (!checkAndExport(root_geom, 3, OPENSCAD_NEFDBG, nefdbg_output_file))
+				return 1;
+		}
+
+		if (nef3_output_file) {
+			if (!checkAndExport(root_geom, 3, OPENSCAD_NEF3, nef3_output_file))
+				return 1;
+		}
 #else
 		PRINT("OpenSCAD has been compiled without CGAL support!\n");
 		return 1;
@@ -690,6 +704,9 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	updater->init();
 #endif
 
+#if !(QT_VERSION >= 0x050400)
+	// This workaround appears to only be needed when QGLWidget is used QOpenGLWidget
+	// available in Qt 5.4 is much better.
 	QGLFormat fmt;
 #if 0 /*** disabled by clifford wolf: adds rendering artefacts with OpenCSG ***/
 	// turn on anti-aliasing
@@ -703,6 +720,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	// (see https://bugreports.qt-project.org/browse/QTBUG-39370
 	fmt.setSwapInterval(0);
 	QGLFormat::setDefaultFormat(fmt);
+#endif
 
 	set_render_color_scheme(arg_colorscheme, false);
 	

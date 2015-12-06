@@ -7,7 +7,7 @@
 # This script must be run from the OpenSCAD source root directory
 #
 # Usage: macosx-build-dependencies.sh [-16lcdf] [<package>]
-#  -3   Build using C++03 and libstdc++
+#  -3   Build using C++03 and libstdc++ (default is C++11 and libc++)
 #  -6   Build only 64-bit binaries
 #  -l   Force use of LLVM compiler
 #  -c   Force use of clang compiler
@@ -35,28 +35,28 @@ OPTION_FORCE=0
 OPTION_CXX11=true
 
 PACKAGES=(
-    "eigen 3.2.4"
-    "gmp 5.1.3"
-    "mpfr 3.1.2"
-    "boost 1.58.0"
-    "qt5 5.4.1"
-    "qscintilla 2.8.4"
     # NB! For eigen, also update the path in the function
+    "eigen 3.2.6"
+    "gmp 5.1.3"
+    "mpfr 3.1.3"
+    "boost 1.59.0"
+    "qt5 5.5.1"
+    "qscintilla 2.8.4"
     # NB! For CGAL, also update the actual download URL in the function
-    "cgal 4.5.2"
-    "glew 1.12.0"
-    "gettext 0.19.4"
+    "cgal 4.6.3"
+    "glew 1.13.0"
+    "gettext 0.19.6"
     "libffi 3.2.1"
-    "glib2 2.42.1"
+    "glib2 2.46.1"
     "opencsg 1.4.0"
-    "freetype 2.5.5"
+    "freetype 2.6.1"
     "ragel 6.9"
-    "harfbuzz 0.9.40"
+    "harfbuzz 1.0.6"
     "libxml2 2.9.2"
     "fontconfig 2.11.1"
 )
 DEPLOY_PACKAGES=(
-    "sparkle Cocoanetics:1e7dcb1a48b96d1a8c62100b5864bd50211cbae1"
+    "sparkle 1.11.0"
 )
 
 printUsage()
@@ -224,15 +224,20 @@ build_qt5()
   fi
   tar xzf qt-everywhere-opensource-src-$version.tar.gz
   cd qt-everywhere-opensource-src-$version
-  CXXFLAGS="$CXXSTDFLAGS" ./configure -prefix $DEPLOYDIR -release -opensource -confirm-license \
+  patch -d qtbase -p1 < $OPENSCADDIR/patches/qt5/QTBUG-46846.patch
+  if ! $USING_CXX11; then
+    QT_EXTRA_FLAGS="-no-c++11"
+  fi
+  CXXFLAGS="$CXXSTDFLAGS" ./configure -prefix $DEPLOYDIR $QT_EXTRA_FLAGS -release -opensource -confirm-license \
 		-nomake examples -nomake tests \
 		-no-xcb -no-glib -no-harfbuzz -no-sql-db2 -no-sql-ibase -no-sql-mysql -no-sql-oci -no-sql-odbc \
 		-no-sql-psql -no-sql-sqlite2 -no-sql-tds -no-cups -no-qml-debug \
 		-skip activeqt -skip connectivity -skip declarative -skip doc \
 		-skip enginio -skip graphicaleffects -skip location -skip multimedia \
 		-skip quick1 -skip quickcontrols -skip script -skip sensors -skip serialport \
-		-skip svg -skip webkit -skip webkit-examples -skip websockets -skip xmlpatterns
-  make -j"$NUMCPU" install
+		-skip svg -skip webkit -skip webkit-examples -skip websockets -skip xmlpatterns -skip qtwebchannel
+  make -j"$NUMCPU" 
+  make install
 }
 
 check_qscintilla()
@@ -463,8 +468,9 @@ build_cgal()
   cd $BASEDIR/src
   rm -rf CGAL-$version
   if [ ! -f CGAL-$version.tar.gz ]; then
-    # 4.5.2
-    curl -O https://gforge.inria.fr/frs/download.php/file/34512/CGAL-$version.tar.gz
+    # 4.6.3
+    curl -O https://gforge.inria.fr/frs/download.php/file/35138/CGAL-$version.tar.gz
+    # 4.5.2 curl -O https://gforge.inria.fr/frs/download.php/file/34512/CGAL-$version.tar.gz
     # 4.5.1 curl -O https://gforge.inria.fr/frs/download.php/file/34400/CGAL-$version.tar.gz
     # 4.5 curl -O https://gforge.inria.fr/frs/download.php/file/34149/CGAL-$version.tar.gz
     # 4.4 curl -O https://gforge.inria.fr/frs/download.php/file/33525/CGAL-$version.tar.gz
@@ -570,6 +576,7 @@ build_eigen()
   elif [ $version = "3.2.2" ]; then EIGENDIR=eigen-eigen-1306d75b4a21;
   elif [ $version = "3.2.3" ]; then EIGENDIR=eigen-eigen-36fd1ba04c12;
   elif [ $version = "3.2.4" ]; then EIGENDIR=eigen-eigen-10219c95fe65;
+  elif [ $version = "3.2.6" ]; then EIGENDIR=eigen-eigen-c58038c56923;
   fi
 
   if [ $EIGENDIR = "none" ]; then
@@ -599,35 +606,51 @@ check_sparkle()
     check_file lib/Sparkle.framework/Sparkle
 }
 
-# Usage: build_sparkle <githubuser>:<commitID>
+# Usage:
+#   build_sparkle <githubuser>:<commitID>
+#   build_sparkle <version>
+
 build_sparkle()
 {
-  v=$1
-  github=${1%%:*}  # Cut at first colon
-  version=${1#*:}  # cut until first colon
-
-  echo "Building Sparkle" $version "..."
-
-  # Let Sparkle use the default compiler
-  unset CC
-  unset CXX
-
+# Binary install:
+  version=$1
   cd $BASEDIR/src
   rm -rf Sparkle-$version
   if [ ! -f Sparkle-$version.zip ]; then
-      curl -o Sparkle-$version.zip https://nodeload.github.com/$github/Sparkle/zip/$version
+    curl -LO https://github.com/sparkle-project/Sparkle/releases/download/$version/Sparkle-$version.tar.bz2
   fi
-  unzip -q Sparkle-$version.zip
+  mkdir Sparkle-$version
   cd Sparkle-$version
-  patch -p1 < $OPENSCADDIR/patches/sparkle.patch
-  if $OPTION_32BIT; then
-    SPARKLE_EXTRA_FLAGS="-arch i386"
-  fi
-  xcodebuild clean
-  xcodebuild -arch x86_64 $SPARKLE_EXTRA_FLAGS
-  rm -rf $DEPLOYDIR/lib/Sparkle.framework
-  cp -Rf build/Release/Sparkle.framework $DEPLOYDIR/lib/ 
-  install_name_tool -id $DEPLOYDIR/lib/Sparkle.framework/Versions/A/Sparkle $DEPLOYDIR/lib/Sparkle.framework/Sparkle
+  tar xjf ../Sparkle-$version.tar.bz2
+  cp -Rf Sparkle.framework $DEPLOYDIR/lib/ 
+
+# Build from source:
+#  v=$1
+#  github=${1%%:*}  # Cut at first colon
+#  version=${1#*:}  # cut until first colon
+#
+#  echo "Building Sparkle" $version "..."
+#
+#  # Let Sparkle use the default compiler
+#  unset CC
+#  unset CXX
+#
+#  cd $BASEDIR/src
+#  rm -rf Sparkle-$version
+#  if [ ! -f Sparkle-$version.zip ]; then
+#      curl -o Sparkle-$version.zip https://nodeload.github.com/$github/Sparkle/zip/$version
+#  fi
+#  unzip -q Sparkle-$version.zip
+#  cd Sparkle-$version
+#  patch -p1 < $OPENSCADDIR/patches/sparkle.patch
+#  if $OPTION_32BIT; then
+#    SPARKLE_EXTRA_FLAGS="-arch i386"
+#  fi
+#  xcodebuild clean
+#  xcodebuild -arch x86_64 $SPARKLE_EXTRA_FLAGS
+#  rm -rf $DEPLOYDIR/lib/Sparkle.framework
+#  cp -Rf build/Release/Sparkle.framework $DEPLOYDIR/lib/ 
+#  Install_name_tool -id $DEPLOYDIR/lib/Sparkle.framework/Versions/A/Sparkle $DEPLOYDIR/lib/Sparkle.framework/Sparkle
 }
 
 check_freetype()
@@ -779,7 +802,6 @@ check_ragel()
     check_file bin/ragel
 }
 
-set -x
 build_ragel()
 {
   version=$1
@@ -846,7 +868,9 @@ done
 OPTION_PACKAGES="${@:$OPTIND}"
 
 OSX_VERSION=`sw_vers -productVersion | cut -d. -f2`
-if (( $OSX_VERSION >= 10 )); then
+if (( $OSX_VERSION >= 11 )); then
+  echo "Detected El Capitan (10.11) or later"
+elif (( $OSX_VERSION >= 10 )); then
   echo "Detected Yosemite (10.10) or later"
 elif (( $OSX_VERSION >= 9 )); then
   echo "Detected Mavericks (10.9)"
@@ -893,6 +917,9 @@ fi
 if $USING_CXX11; then
   export CXXSTDFLAGS="-std=c++11 -stdlib=libc++"
   export LDSTDFLAGS="-stdlib=libc++"
+else
+  export CXXSTDFLAGS="-std=c++03 -stdlib=libstdc++"
+  export LDSTDFLAGS="-stdlib=libstdc++"
 fi
 
 echo "Building for $MAC_OSX_VERSION_MIN or later"

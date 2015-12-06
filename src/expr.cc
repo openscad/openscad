@@ -563,7 +563,7 @@ ValuePtr ExpressionLc::evaluate(const Context *context) const
 
 		if (it_values->type() == Value::RANGE) {
 			RangeType range = it_values->toRange();
-			boost::uint32_t steps = range.nbsteps();
+			boost::uint32_t steps = range.numValues();
 			if (steps >= 1000000) {
 				PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu).", steps);
 			} else {

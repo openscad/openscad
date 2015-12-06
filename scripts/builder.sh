@@ -120,6 +120,17 @@ check_nsis()
 	fi
 }
 
+check_zip()
+	if [ ! "`command -v zip`" ]; then
+		echo the zip command was not found. please install zip
+		echo on debian, sudo apt-get install zip
+		exit 1
+	else
+		echo zip found.
+	fi
+}
+
+
 get_openscad_source_code()
 {
 	if [ -d openscad ]; then
@@ -251,7 +262,7 @@ upload_win32()
 	SUMMARY1="Windows x86-32 Snapshot Installer"
 	SUMMARY2="Windows x86-32 Snapshot Zipfile"
 	SUMMARY3="Windows x86-32 Snapshot Tests"
-	BASEDIR=./mingw32/
+	BASEDIR=./mingw32.static/
 	WIN32_PACKAGEFILE1=OpenSCAD-$DATECODE-x86-32-Installer.exe
 	WIN32_PACKAGEFILE2=OpenSCAD-$DATECODE-x86-32.zip
 	WIN32_PACKAGEFILE3=OpenSCAD-Tests-$DATECODE-x86-32.zip
@@ -277,7 +288,7 @@ upload_win64()
 	SUMMARY1="Windows x86-64 Snapshot Zipfile"
 	SUMMARY2="Windows x86-64 Snapshot Installer"
 	SUMMARY3="Windows x86-64 Snapshot Tests"
-	BASEDIR=./mingw64/
+	BASEDIR=./mingw64.static/
 	WIN64_PACKAGEFILE1=OpenSCAD-$DATECODE-x86-64-Installer.exe
 	WIN64_PACKAGEFILE2=OpenSCAD-$DATECODE-x86-64.zip
 	WIN64_PACKAGEFILE3=OpenSCAD-Tests-$DATECODE-x86-64.zip
@@ -409,6 +420,7 @@ main()
 	fi
 	check_starting_path
 	check_nsis
+	check_zip
 	read_username_from_user
 	read_password_from_user
 	get_openscad_source_code

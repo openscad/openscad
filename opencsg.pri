@@ -1,6 +1,5 @@
 opencsg {
   DEFINES += ENABLE_OPENCSG
-  CONFIG += glew
 
   # Optionally specify location of OpenCSG using the 
   # OPENCSGDIR env. variable

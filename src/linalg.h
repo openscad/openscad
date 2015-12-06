@@ -4,6 +4,7 @@
 #include <Eigen/Geometry>
 #include <Eigen/Dense>
 #include <Eigen/StdVector>
+#include <boost/cstdint.hpp>
 
 EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(Eigen::Vector2d)
 using Eigen::Vector2d;
@@ -23,6 +24,7 @@ using Eigen::Matrix4d;
 
 bool matrix_contains_infinity( const Transform3d &m );
 bool matrix_contains_nan( const Transform3d &m );
+int32_t hash_floating_point( double v );
 
 template<typename Derived> bool is_finite(const Eigen::MatrixBase<Derived>& x) {
    return ( (x - x).array() == (x - x).array()).all();
