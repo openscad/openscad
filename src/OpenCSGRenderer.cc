@@ -29,6 +29,7 @@
 #include "polyset.h"
 #include "csgterm.h"
 #include "stl-utils.h"
+#include "printutils.h"
 
 GeometryPrimitive::~GeometryPrimitive()
 {
@@ -130,16 +131,22 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo, bool hi
 		built = root_chain_built_;
 	}
 
+	if (!built && chain_primitives->size() != 0) {
+		PRINT("Chain Primitives was not zero but not built either!!!!!!!!");
+	}
+
 	size_t j = 0;
 	size_t l = 0;
 	size_t m = 0;
 	for (size_t i = 0;; i++) {
 		bool last = i == chain->objects.size();
+		bool primitives_added = false;
 		const CSGChainObject &i_obj = last ? chain->objects[i-1] : chain->objects[i];
 		if (last || i_obj.type == CSGTerm::TYPE_UNION) {
 			if (j+1 != i) {
 				if (!built) {
 					chain_primitives->push_back(primitives);
+					primitives_added = true;
 				}
 				OpenCSG::render((*chain_primitives)[l]);
 				glDepthFunc(GL_EQUAL);
@@ -202,6 +209,9 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo, bool hi
 			}*/
 			glDepthFunc(GL_LEQUAL);
 			if (!built) {
+				if (!primitives_added) {
+					for_each(primitives.begin(),primitives.end(),del_fun<OpenCSG::Primitive>());
+				}
 				primitives.clear();
 			}
 		}

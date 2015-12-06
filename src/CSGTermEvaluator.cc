@@ -29,8 +29,18 @@
 	with OpenCSG.
 */
 
-shared_ptr<CSGTerm> CSGTermEvaluator::evaluateCSGTerm(const AbstractNode &node, 
-																					 std::vector<shared_ptr<CSGTerm> > &highlights, 
+CSGTermEvaluator::~CSGTermEvaluator()
+{
+	for(std::map<int, shared_ptr<CSGTerm> >::iterator i = stored_term.begin(); i != stored_term.end(); i++) {
+		i->second.reset();
+	}
+
+	std::for_each(highlights.begin(), highlights.end(), reset_fun<shared_ptr<CSGTerm> >());
+	std::for_each(background.begin(), background.end(), reset_fun<shared_ptr<CSGTerm> >());
+}
+
+shared_ptr<CSGTerm> CSGTermEvaluator::evaluateCSGTerm(const AbstractNode &node,
+																					 std::vector<shared_ptr<CSGTerm> > &highlights,
 																					 std::vector<shared_ptr<CSGTerm> > &background)
 {
 	Traverser evaluate(*this, node, Traverser::PRE_AND_POSTFIX);
@@ -87,12 +97,12 @@ Response CSGTermEvaluator::visit(State &state, const AbstractIntersectionNode &n
 	return ContinueTraversal;
 }
 
-static shared_ptr<CSGTerm> evaluate_csg_term_from_geometry(const State &state, 
-																					std::vector<shared_ptr<CSGTerm> > &highlights, 
-																					std::vector<shared_ptr<CSGTerm> > &background, 
-																					const shared_ptr<const Geometry> &geom,
-																					const ModuleInstantiation *modinst, 
-																					const AbstractNode &node)
+static shared_ptr<CSGTerm> evaluate_csg_term_from_geometry(const State &state,
+								std::vector<shared_ptr<CSGTerm> > &highlights,
+								std::vector<shared_ptr<CSGTerm> > &background,
+								const shared_ptr<const Geometry> &geom,
+								const ModuleInstantiation *modinst,
+								const AbstractNode &node)
 {
 	std::stringstream stream;
 	stream << node.name() << node.index();
@@ -124,6 +134,7 @@ static shared_ptr<CSGTerm> evaluate_csg_term_from_geometry(const State &state,
 	if (modinst->isHighlight()) {
 		t->flag = CSGTerm::FLAG_HIGHLIGHT;
 		highlights.push_back(t);
+		t.reset();
 	}
 	if (modinst->isBackground()) {
 		background.push_back(t);
@@ -139,8 +150,7 @@ Response CSGTermEvaluator::visit(State &state, const AbstractPolyNode &node)
 		if (this->geomevaluator) {
 			shared_ptr<const Geometry> geom = this->geomevaluator->evaluateGeometry(node, false);
 			if (geom) {
-				t1 = evaluate_csg_term_from_geometry(state, this->highlights, this->background, 
-																						 geom, node.modinst, node);
+				t1 = evaluate_csg_term_from_geometry(state, this->highlights, this->background, geom, node.modinst, node);
 			}
 			node.progress_report();
 		}
@@ -206,7 +216,7 @@ Response CSGTermEvaluator::visit(State &state, const RenderNode &node)
 		if (this->geomevaluator) {
 			geom = this->geomevaluator->evaluateGeometry(node, false);
 			if (geom) {
-				t1 = evaluate_csg_term_from_geometry(state, this->highlights, this->background, 
+				t1 = evaluate_csg_term_from_geometry(state, this->highlights, this->background,
 																						 geom, node.modinst, node);
 			}
 			node.progress_report();
@@ -226,7 +236,7 @@ Response CSGTermEvaluator::visit(State &state, const CgaladvNode &node)
 		if (this->geomevaluator) {
 			geom = this->geomevaluator->evaluateGeometry(node, false);
 			if (geom) {
-				t1 = evaluate_csg_term_from_geometry(state, this->highlights, this->background, 
+				t1 = evaluate_csg_term_from_geometry(state, this->highlights, this->background,
 																						 geom, node.modinst, node);
 			}
 			node.progress_report();

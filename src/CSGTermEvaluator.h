@@ -6,6 +6,7 @@
 #include <cstddef>
 #include "visitor.h"
 #include "memory.h"
+#include "stl-utils.h"
 
 class CSGTermEvaluator : public Visitor
 {
@@ -13,9 +14,9 @@ public:
 	CSGTermEvaluator(const class Tree &tree, class GeometryEvaluator *geomevaluator = NULL)
 		: tree(tree), geomevaluator(geomevaluator) {
 	}
-  virtual ~CSGTermEvaluator() {}
+	virtual ~CSGTermEvaluator();
 
-  virtual Response visit(State &state, const class AbstractNode &node);
+	virtual Response visit(State &state, const class AbstractNode &node);
  	virtual Response visit(State &state, const class AbstractIntersectionNode &node);
  	virtual Response visit(State &state, const class AbstractPolyNode &node);
  	virtual Response visit(State &state, const class CsgNode &node);
@@ -25,16 +26,16 @@ public:
  	virtual Response visit(State &state, const class CgaladvNode &node);
 
 	shared_ptr<class CSGTerm> evaluateCSGTerm(const AbstractNode &node,
-																 std::vector<shared_ptr<CSGTerm> > &highlights, 
-																 std::vector<shared_ptr<CSGTerm> > &background);
+						  std::vector<shared_ptr<CSGTerm> > &highlights,
+						  std::vector<shared_ptr<CSGTerm> > &background);
 
 private:
 	enum CsgOp {CSGT_UNION, CSGT_INTERSECTION, CSGT_DIFFERENCE, CSGT_MINKOWSKI};
-  void addToParent(const State &state, const AbstractNode &node);
+	void addToParent(const State &state, const AbstractNode &node);
 	void applyToChildren(const AbstractNode &node, CSGTermEvaluator::CsgOp op);
 
-  const AbstractNode *root;
-  typedef std::list<const AbstractNode *> ChildList;
+	const AbstractNode *root;
+	typedef std::list<const AbstractNode *> ChildList;
 	std::map<int, ChildList> visitedchildren;
 
 public:
