@@ -66,25 +66,31 @@ OpenCSGRenderer::~OpenCSGRenderer()
 		for (size_t i = 0; i < root_chain_primitives_.size(); i++) {
 			std::for_each(root_chain_primitives_[i].begin(), root_chain_primitives_[i].end(), del_fun<OpenCSG::Primitive>());
 		}
+		root_chain_primitives_.clear();
 		for (size_t i = 0; i < root_chain_list_ids_.size(); i++) {
 			glDeleteLists(root_chain_list_ids_[i],1);
 		}
+		root_chain_list_ids_.clear();
 	}
 	if (highlights_chain_built_){
 		for (size_t i = 0; i < highlights_chain_primitives_.size(); i++) {
 			std::for_each(highlights_chain_primitives_[i].begin(), highlights_chain_primitives_[i].end(), del_fun<OpenCSG::Primitive>());
 		}
+		highlights_chain_primitives_.clear();
 		for (size_t i = 0; i < highlights_chain_list_ids_.size(); i++) {
 			glDeleteLists(highlights_chain_list_ids_[i],1);
 		}
+		highlights_chain_list_ids_.clear();
 	}
 	if (background_chain_built_){
 		for (size_t i = 0; i < background_chain_primitives_.size(); i++) {
 			std::for_each(background_chain_primitives_[i].begin(), background_chain_primitives_[i].end(), del_fun<OpenCSG::Primitive>());
 		}
+		background_chain_primitives_.clear();
 		for (size_t i = 0; i < background_chain_list_ids_.size(); i++) {
 			glDeleteLists(background_chain_list_ids_[i],1);
 		}
+		background_chain_list_ids_.clear();
 	}
 }
 
