@@ -53,7 +53,7 @@ void export_png_preview_common(Tree &tree, Camera &cam, std::ostream &output, Pr
 {
 	PRINTD("export_png_preview_common");
 	CsgInfo csgInfo = CsgInfo();
-    csgInfo.compile_chains(tree);
+    csgInfo.compile_products(tree);
 
 	try {
 		csgInfo.glview = new OffscreenView(cam.pixel_width, cam.pixel_height);
@@ -63,9 +63,9 @@ void export_png_preview_common(Tree &tree, Camera &cam, std::ostream &output, Pr
 	}
 
 #ifdef ENABLE_OPENCSG
-	OpenCSGRenderer openCSGRenderer(csgInfo.root_chain, csgInfo.highlights_chain, csgInfo.background_chain, csgInfo.glview->shaderinfo);
+	OpenCSGRenderer openCSGRenderer(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products, csgInfo.glview->shaderinfo);
 #endif
-	ThrownTogetherRenderer thrownTogetherRenderer(csgInfo.root_chain, csgInfo.highlights_chain, csgInfo.background_chain);
+	ThrownTogetherRenderer thrownTogetherRenderer(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products);
 
 #ifdef ENABLE_OPENCSG
 	if (previewer == OPENCSG)

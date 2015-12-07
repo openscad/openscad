@@ -241,7 +241,6 @@ MainWindow::MainWindow(const QString &filename)
 
 	root_module = NULL;
 	absolute_root_node = NULL;
-	this->root_chain = NULL;
 	this->root_products = NULL;
 #ifdef ENABLE_CGAL
 	this->cgalRenderer = NULL;
@@ -251,8 +250,6 @@ MainWindow::MainWindow(const QString &filename)
 #endif
 	this->thrownTogetherRenderer = NULL;
 
-	highlights_chain = NULL;
-	background_chain = NULL;
 	highlights_products = NULL;
 	background_products = NULL;
 	root_node = NULL;
@@ -700,7 +697,6 @@ MainWindow::~MainWindow()
 {
 	if (root_module) delete root_module;
 	if (root_node) delete root_node;
-	if (root_chain) delete root_chain;
 	if (root_products) delete root_products;
 #ifdef ENABLE_CGAL
 	this->root_geom.reset();
@@ -1094,22 +1090,14 @@ void MainWindow::instantiateRoot()
 	this->root_raw_term.reset();
 	this->root_norm_term.reset();
 
-	delete this->root_chain;
-	this->root_chain = NULL;
 	delete this->root_products;
 	this->root_products = NULL;
 
-	this->highlight_terms.clear();
-	delete this->highlights_chain;
-	this->highlights_chain = NULL;
 	delete this->highlights_products;
 	this->highlights_products = NULL;
 
-	this->background_terms.clear();
 	delete this->background_products;
 	this->background_products = NULL;
-	delete this->background_chain;
-	this->background_chain = NULL;
 
 	this->root_node = NULL;
 	this->tree.setRoot(NULL);
@@ -1164,8 +1152,6 @@ void MainWindow::compileCSG(bool procevents)
 	this->progresswidget = new ProgressWidget(this);
 	connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
 
-	progress_report_prep(this->root_node, report_func, this);
-	try {
 #ifdef ENABLE_CGAL
 		GeometryEvaluator geomevaluator(this->tree);
 #else
@@ -1173,8 +1159,13 @@ void MainWindow::compileCSG(bool procevents)
 #endif
 #ifdef ENABLE_OPENCSG
 		CSGTermEvaluator csgrenderer(this->tree, &geomevaluator);
+#endif
+
+	progress_report_prep(this->root_node, report_func, this);
+	try {
+#ifdef ENABLE_OPENCSG
 		if (procevents) QApplication::processEvents();
-		this->root_raw_term = csgrenderer.evaluateCSGTerm(*root_node, highlight_terms, background_terms);
+		this->root_raw_term = csgrenderer.evaluateCSGTerm(*root_node);
 #endif
 		GeometryCache::instance()->print();
 #ifdef ENABLE_CGAL
@@ -1197,65 +1188,59 @@ void MainWindow::compileCSG(bool procevents)
 	if (root_raw_term) {
 		this->root_norm_term = normalizer.normalize(this->root_raw_term);
 		if (this->root_norm_term) {
-			this->root_chain = new CSGChain();
-			this->root_chain->import(this->root_norm_term);
 			this->root_products = new CSGProducts();
 			this->root_products->import(this->root_norm_term);
 		}
 		else {
-			this->root_chain = NULL;
 			this->root_products = NULL;
 			PRINT("WARNING: CSG normalization resulted in an empty tree");
 			if (procevents) QApplication::processEvents();
 		}
 	}
 
+	const std::vector<shared_ptr<CSGNode> > &highlight_terms = csgrenderer.getHighlightTerms();
 	if (highlight_terms.size() > 0) {
 		PRINTB("Compiling highlights (%d CSG Trees)...", highlight_terms.size());
 		if (procevents) QApplication::processEvents();
 		
 		highlights_products = new CSGProducts();
-		highlights_chain = new CSGChain();
 		for (unsigned int i = 0; i < highlight_terms.size(); i++) {
-			highlight_terms[i] = normalizer.normalize(highlight_terms[i]);
-			highlights_chain->import(highlight_terms[i]);
-			highlights_products->import(highlight_terms[i]);
+			shared_ptr<CSGNode> nterm = normalizer.normalize(highlight_terms[i]);
+			highlights_products->import(nterm);
 		}
 	}
 	
+	const std::vector<shared_ptr<CSGNode> > &background_terms = csgrenderer.getBackgroundTerms();
 	if (background_terms.size() > 0) {
 		PRINTB("Compiling background (%d CSG Trees)...", background_terms.size());
 		if (procevents) QApplication::processEvents();
 		
-		background_chain = new CSGChain();
 		background_products = new CSGProducts();
 		for (unsigned int i = 0; i < background_terms.size(); i++) {
-			background_terms[i] = normalizer.normalize(background_terms[i]);
-			background_chain->import(background_terms[i]);
-			background_products->import(background_terms[i]);
+			shared_ptr<CSGNode> nterm = normalizer.normalize(background_terms[i]);
+			background_products->import(nterm);
 		}
 	}
 
-	// FIXME: root_products
-	if (this->root_chain &&
-			(this->root_chain->objects.size() >
+	if (this->root_products &&
+			(this->root_products->size() >
 			 Preferences::inst()->getValue("advanced/openCSGLimit").toUInt())) {
-		PRINTB("WARNING: Normalized tree has %d elements!", this->root_chain->objects.size());
+		PRINTB("WARNING: Normalized tree has %d elements!", this->root_products->size());
 		PRINT("WARNING: OpenCSG rendering has been disabled.");
 	}
 #ifdef ENABLE_OPENCSG
 	else {
 		PRINTB("Normalized CSG tree has %d elements",
-					 (this->root_chain ? this->root_chain->objects.size() : 0));
-		this->opencsgRenderer = new OpenCSGRenderer(this->root_chain, this->root_products,
-																								this->highlights_chain, this->highlights_products,
-																								this->background_chain, this->background_products,
+					 (this->root_products ? this->root_products->size() : 0));
+		this->opencsgRenderer = new OpenCSGRenderer(this->root_products,
+																								this->highlights_products,
+																								this->background_products,
 																								this->qglview->shaderinfo);
 	}
 #endif
-	this->thrownTogetherRenderer = new ThrownTogetherRenderer(this->root_chain, this->root_products,
-																														this->highlights_chain, this->highlights_products,
-																														this->background_chain, this->background_products);
+	this->thrownTogetherRenderer = new ThrownTogetherRenderer(this->root_products,
+																														this->highlights_products,
+																														this->background_products);
 	PRINT("Compile and preview finished.");
 	int s = this->renderingTime.elapsed() / 1000;
 	PRINTB("Total rendering time: %d hours, %d minutes, %d seconds", (s / (60*60)) % ((s / 60) % 60) % (s % 60));
