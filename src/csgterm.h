@@ -12,7 +12,7 @@ public:
 	enum Flag {
 		FLAG_NONE = 0x00,
 		FLAG_BACKGROUND = 0x01,
-		FLAG_HIGHLIGHT = 0x03
+		FLAG_HIGHLIGHT = 0x02
 	};
 
 
@@ -23,6 +23,8 @@ public:
 	Flag flag;
 
 	const BoundingBox &getBoundingBox() const { return this->bbox; }
+	bool isHighlight() const { return this->flag & FLAG_HIGHLIGHT; }
+	bool isBackground() const { return this->flag & FLAG_BACKGROUND; }
 
 	virtual std::string dump() = 0;
 protected:
