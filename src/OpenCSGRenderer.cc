@@ -76,7 +76,7 @@ void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges) const
 }
 
 // Primitive for rendering using OpenCSG
-OpenCSGPrim *OpenCSGRenderer::createCSGPrimitive(const CSGChainObject &csgobj, OpenCSG::Operation operation, bool highlight_mode, bool background_mode, CSGOperation::type_e type) const
+OpenCSGPrim *OpenCSGRenderer::createCSGPrimitive(const CSGChainObject &csgobj, OpenCSG::Operation operation, bool highlight_mode, bool background_mode, OpenSCADOperator type) const
 {
 	OpenCSGPrim *prim = new OpenCSGPrim(operation, csgobj.geom->getConvexity());
 	prim->geom = csgobj.geom;
@@ -85,7 +85,7 @@ OpenCSGPrim *OpenCSGRenderer::createCSGPrimitive(const CSGChainObject &csgobj, O
 		(highlight_mode ? 
 		 CSGMODE_HIGHLIGHT :
 		 (background_mode ? CSGMODE_BACKGROUND : CSGMODE_NORMAL)) |
-		(type == CSGOperation::TYPE_DIFFERENCE ? CSGMODE_DIFFERENCE : CSGMODE_NONE));
+		(type == OPENSCAD_DIFFERENCE ? CSGMODE_DIFFERENCE : CSGMODE_NONE));
 	return prim;
 }
 
@@ -96,10 +96,10 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 	BOOST_FOREACH(const CSGProduct &product, products.products) {
 		std::vector<OpenCSG::Primitive*> primitives;
 		BOOST_FOREACH(const CSGChainObject &csgobj, product.intersections) {
-			if (csgobj.geom) primitives.push_back(createCSGPrimitive(csgobj, OpenCSG::Intersection, highlight_mode, background_mode, CSGOperation::TYPE_INTERSECTION));
+			if (csgobj.geom) primitives.push_back(createCSGPrimitive(csgobj, OpenCSG::Intersection, highlight_mode, background_mode, OPENSCAD_INTERSECTION));
 		}
 		BOOST_FOREACH(const CSGChainObject &csgobj, product.subtractions) {
-			if (csgobj.geom) primitives.push_back(createCSGPrimitive(csgobj, OpenCSG::Subtraction, highlight_mode, background_mode, CSGOperation::TYPE_DIFFERENCE));
+			if (csgobj.geom) primitives.push_back(createCSGPrimitive(csgobj, OpenCSG::Subtraction, highlight_mode, background_mode, OPENSCAD_DIFFERENCE));
 		}
 		if (primitives.size() > 1) {
 			OpenCSG::render(primitives);

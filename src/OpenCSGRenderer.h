@@ -16,7 +16,7 @@ public:
 	virtual BoundingBox getBoundingBox() const;
 private:
 #ifdef ENABLE_OPENCSG
-	class OpenCSGPrim *createCSGPrimitive(const class CSGChainObject &csgobj, OpenCSG::Operation operation, bool highlight_mode, bool background_mode, CSGOperation::type_e type) const;
+	class OpenCSGPrim *createCSGPrimitive(const class CSGChainObject &csgobj, OpenCSG::Operation operation, bool highlight_mode, bool background_mode, OpenSCADOperator type) const;
 #endif
 	void renderCSGProducts(const class CSGProducts &products, GLint *shaderinfo, 
 											bool highlight_mode, bool background_mode) const;

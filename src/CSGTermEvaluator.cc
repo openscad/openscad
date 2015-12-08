@@ -47,15 +47,7 @@ void CSGTermEvaluator::applyToChildren(State &state, const AbstractNode &node, C
 		if (t2 && !t1) {
 			t1 = t2;
 		} else if (t2 && t1) {
-			if (op == CSGT_UNION) {
-				t1 = CSGOperation::createCSGNode(CSGOperation::TYPE_UNION, t1, t2);
-			} else if (op == CSGT_DIFFERENCE) {
-				CSGNode::Flag flag = t1->flag;
-				t1 = CSGOperation::createCSGNode(CSGOperation::TYPE_DIFFERENCE, t1, t2);
-				t1->flag = CSGNode::Flag(t1->flag | flag);
-			} else if (op == CSGT_INTERSECTION) {
-				t1 = CSGOperation::createCSGNode(CSGOperation::TYPE_INTERSECTION, t1, t2);
-			}
+			t1 = CSGOperation::createCSGNode(op, t1, t2);
 		}
 	}
 
@@ -81,7 +73,7 @@ void CSGTermEvaluator::applyToChildren(State &state, const AbstractNode &node, C
 Response CSGTermEvaluator::visit(State &state, const AbstractNode &node)
 {
 	if (state.isPostfix()) {
-		applyToChildren(state, node, CSGT_UNION);
+		applyToChildren(state, node, OPENSCAD_UNION);
 		addToParent(state, node);
 	}
 	return ContinueTraversal;
@@ -90,7 +82,7 @@ Response CSGTermEvaluator::visit(State &state, const AbstractNode &node)
 Response CSGTermEvaluator::visit(State &state, const AbstractIntersectionNode &node)
 {
 	if (state.isPostfix()) {
-		applyToChildren(state, node, CSGT_INTERSECTION);
+		applyToChildren(state, node, OPENSCAD_INTERSECTION);
 		addToParent(state, node);
 	}
 	return ContinueTraversal;
@@ -163,21 +155,7 @@ Response CSGTermEvaluator::visit(State &state, const AbstractPolyNode &node)
 Response CSGTermEvaluator::visit(State &state, const CsgNode &node)
 {
 	if (state.isPostfix()) {
-		CsgOp op = CSGT_UNION;
-		switch (node.type) {
-		case OPENSCAD_UNION:
-			op = CSGT_UNION;
-			break;
-		case OPENSCAD_DIFFERENCE:
-			op = CSGT_DIFFERENCE;
-			break;
-		case OPENSCAD_INTERSECTION:
-			op = CSGT_INTERSECTION;
-			break;
-		default:
-			assert(false);
-		}
-		applyToChildren(state, node, op);
+		applyToChildren(state, node, node.type);
 		addToParent(state, node);
 	}
 	return ContinueTraversal;
@@ -189,7 +167,7 @@ Response CSGTermEvaluator::visit(State &state, const TransformNode &node)
 		state.setMatrix(state.matrix() * node.matrix);
 	}
 	if (state.isPostfix()) {
-		applyToChildren(state, node, CSGT_UNION);
+		applyToChildren(state, node, OPENSCAD_UNION);
 		addToParent(state, node);
 	}
 	return ContinueTraversal;
@@ -201,7 +179,7 @@ Response CSGTermEvaluator::visit(State &state, const ColorNode &node)
 		if (!state.color().isValid()) state.setColor(node.color);
 	}
 	if (state.isPostfix()) {
-		applyToChildren(state, node, CSGT_UNION);
+		applyToChildren(state, node, OPENSCAD_UNION);
 		addToParent(state, node);
 	}
 	return ContinueTraversal;

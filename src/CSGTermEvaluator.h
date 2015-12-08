@@ -38,9 +38,8 @@ public:
 	}
 
 private:
-	enum CsgOp {CSGT_UNION, CSGT_INTERSECTION, CSGT_DIFFERENCE, CSGT_MINKOWSKI};
   void addToParent(const State &state, const AbstractNode &node);
-	void applyToChildren(State &state, const AbstractNode &node, CSGTermEvaluator::CsgOp op);
+	void applyToChildren(State &state, const AbstractNode &node, OpenSCADOperator op);
 	shared_ptr<CSGNode> evaluateCSGTermFromGeometry(State &state, 
 																									const shared_ptr<const class Geometry> &geom,
 																									const class ModuleInstantiation *modinst, 

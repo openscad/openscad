@@ -4,6 +4,7 @@
 #include <vector>
 #include "memory.h"
 #include "linalg.h"
+#include "enums.h"
 
 class CSGNode
 {
@@ -33,12 +34,6 @@ protected:
 class CSGOperation : public CSGNode
 {
 public:
-	enum type_e {
-		TYPE_UNION,
-		TYPE_INTERSECTION,
-		TYPE_DIFFERENCE
-	};
-
 	CSGOperation() {}
 	virtual ~CSGOperation() {}
 	virtual void initBoundingBox();
@@ -50,17 +45,17 @@ public:
 	}
 	virtual std::string dump();
 
-	static shared_ptr<CSGNode> createCSGNode(type_e type, shared_ptr<CSGNode> left, shared_ptr<CSGNode> right);
-	static shared_ptr<CSGNode> createCSGNode(type_e type, CSGNode *left, CSGNode *right) {
+	static shared_ptr<CSGNode> createCSGNode(OpenSCADOperator type, shared_ptr<CSGNode> left, shared_ptr<CSGNode> right);
+	static shared_ptr<CSGNode> createCSGNode(OpenSCADOperator type, CSGNode *left, CSGNode *right) {
 		return createCSGNode(type, shared_ptr<CSGNode>(left), shared_ptr<CSGNode>(right));
 	}
 
-	type_e type;
+	OpenSCADOperator type;
 	std::vector<shared_ptr<CSGNode> > children;
 
 private:
-	CSGOperation(type_e type, shared_ptr<CSGNode> left, shared_ptr<CSGNode> right);
-	CSGOperation(type_e type, CSGNode *left, CSGNode *right);
+	CSGOperation(OpenSCADOperator type, shared_ptr<CSGNode> left, shared_ptr<CSGNode> right);
+	CSGOperation(OpenSCADOperator type, CSGNode *left, CSGNode *right);
 
 };
 
@@ -118,7 +113,7 @@ public:
 	}
 	~CSGProducts() {}
 
-	void import(shared_ptr<CSGNode> term, CSGOperation::type_e type = CSGOperation::TYPE_UNION, CSGNode::Flag flag = CSGNode::FLAG_NONE);
+	void import(shared_ptr<CSGNode> term, OpenSCADOperator type = OPENSCAD_UNION, CSGNode::Flag flag = CSGNode::FLAG_NONE);
 	std::string dump(bool full = false) const;
 	BoundingBox getBoundingBox() const;
 

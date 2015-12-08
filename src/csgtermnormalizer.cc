@@ -6,7 +6,7 @@
 #if 0
 static bool validate_tree(const shared_ptr<CSGNode> &term)
 {
-	if (term->type == CSGOperation::TYPE_PRIMITIVE) return true;
+	if (term->type == OPENSCAD_PRIMITIVE) return true;
     if (!term->left() || !term->right()) return false;
     if (!validate_tree(term->left())) return false;
     if (!validate_tree(term->right())) return false;
@@ -63,7 +63,7 @@ shared_ptr<CSGNode> CSGTermNormalizer::cleanup_term(shared_ptr<CSGNode> &t)
 
 static bool isUnion(shared_ptr<CSGNode> term) {
 	shared_ptr<CSGOperation> op = dynamic_pointer_cast<CSGOperation>(term);
-	return op && op->type == CSGOperation::TYPE_UNION;
+	return op && op->type == OPENSCAD_UNION;
 }
 
 static bool hasRightLeaf(shared_ptr<CSGNode> term) {
@@ -124,11 +124,11 @@ shared_ptr<CSGNode> CSGTermNormalizer::collapse_null_terms(const shared_ptr<CSGN
 	shared_ptr<CSGOperation> op = dynamic_pointer_cast<CSGOperation>(term);
 	if (op) {
 		if (!op->right()) {
-			if (op->type == CSGOperation::TYPE_UNION || op->type == CSGOperation::TYPE_DIFFERENCE) return op->left();
+			if (op->type == OPENSCAD_UNION || op->type == OPENSCAD_DIFFERENCE) return op->left();
 			else return op->right();
 		}
 		if (!op->left()) {
-			if (op->type == CSGOperation::TYPE_UNION) return op->right();
+			if (op->type == OPENSCAD_UNION) return op->right();
 			else return op->left();
 		}
 	}
@@ -139,7 +139,7 @@ bool CSGTermNormalizer::match_and_replace(shared_ptr<CSGNode> &term)
 {
 	shared_ptr<CSGOperation> op = dynamic_pointer_cast<CSGOperation>(term);
 	if (!op) return false;
-	if (op->type == CSGOperation::TYPE_UNION) return false;
+	if (op->type == OPENSCAD_UNION) return false;
 
 	// Part A: The 'x . (y . z)' expressions
 
@@ -150,44 +150,44 @@ bool CSGTermNormalizer::match_and_replace(shared_ptr<CSGNode> &term)
 		shared_ptr<CSGNode> z = rightop->right();
 
 		// 1.  x - (y + z) -> (x - y) - z
-		if (op->type == CSGOperation::TYPE_DIFFERENCE && rightop->type == CSGOperation::TYPE_UNION) {
-			term = CSGOperation::createCSGNode(CSGOperation::TYPE_DIFFERENCE, 
-																				 CSGOperation::createCSGNode(CSGOperation::TYPE_DIFFERENCE, x, y),
+		if (op->type == OPENSCAD_DIFFERENCE && rightop->type == OPENSCAD_UNION) {
+			term = CSGOperation::createCSGNode(OPENSCAD_DIFFERENCE, 
+																				 CSGOperation::createCSGNode(OPENSCAD_DIFFERENCE, x, y),
 																				 z);
 			return true;
 		}
 		// 2.  x * (y + z) -> (x * y) + (x * z)
-		else if (op->type == CSGOperation::TYPE_INTERSECTION && rightop->type == CSGOperation::TYPE_UNION) {
-			term = CSGOperation::createCSGNode(CSGOperation::TYPE_UNION, 
-																		CSGOperation::createCSGNode(CSGOperation::TYPE_INTERSECTION, x, y), 
-																		CSGOperation::createCSGNode(CSGOperation::TYPE_INTERSECTION, x, z));
+		else if (op->type == OPENSCAD_INTERSECTION && rightop->type == OPENSCAD_UNION) {
+			term = CSGOperation::createCSGNode(OPENSCAD_UNION, 
+																		CSGOperation::createCSGNode(OPENSCAD_INTERSECTION, x, y), 
+																		CSGOperation::createCSGNode(OPENSCAD_INTERSECTION, x, z));
 			return true;
 		}
 		// 3.  x - (y * z) -> (x - y) + (x - z)
-		else if (op->type == CSGOperation::TYPE_DIFFERENCE && rightop->type == CSGOperation::TYPE_INTERSECTION) {
-			term = CSGOperation::createCSGNode(CSGOperation::TYPE_UNION, 
-																		CSGOperation::createCSGNode(CSGOperation::TYPE_DIFFERENCE, x, y), 
-																		CSGOperation::createCSGNode(CSGOperation::TYPE_DIFFERENCE, x, z));
+		else if (op->type == OPENSCAD_DIFFERENCE && rightop->type == OPENSCAD_INTERSECTION) {
+			term = CSGOperation::createCSGNode(OPENSCAD_UNION, 
+																		CSGOperation::createCSGNode(OPENSCAD_DIFFERENCE, x, y), 
+																		CSGOperation::createCSGNode(OPENSCAD_DIFFERENCE, x, z));
 			return true;
 		}
 		// 4.  x * (y * z) -> (x * y) * z
-		else if (op->type == CSGOperation::TYPE_INTERSECTION && rightop->type == CSGOperation::TYPE_INTERSECTION) {
-			term = CSGOperation::createCSGNode(CSGOperation::TYPE_INTERSECTION, 
-																		CSGOperation::createCSGNode(CSGOperation::TYPE_INTERSECTION, x, y),
+		else if (op->type == OPENSCAD_INTERSECTION && rightop->type == OPENSCAD_INTERSECTION) {
+			term = CSGOperation::createCSGNode(OPENSCAD_INTERSECTION, 
+																		CSGOperation::createCSGNode(OPENSCAD_INTERSECTION, x, y),
 																		z);
 			return true;
 		}
 		// 5.  x - (y - z) -> (x - y) + (x * z)
-		else if (op->type == CSGOperation::TYPE_DIFFERENCE && rightop->type == CSGOperation::TYPE_DIFFERENCE) {
-			term = CSGOperation::createCSGNode(CSGOperation::TYPE_UNION, 
-																		CSGOperation::createCSGNode(CSGOperation::TYPE_DIFFERENCE, x, y), 
-																		CSGOperation::createCSGNode(CSGOperation::TYPE_INTERSECTION, x, z));
+		else if (op->type == OPENSCAD_DIFFERENCE && rightop->type == OPENSCAD_DIFFERENCE) {
+			term = CSGOperation::createCSGNode(OPENSCAD_UNION, 
+																		CSGOperation::createCSGNode(OPENSCAD_DIFFERENCE, x, y), 
+																		CSGOperation::createCSGNode(OPENSCAD_INTERSECTION, x, z));
 			return true;
 		}
 		// 6.  x * (y - z) -> (x * y) - z
-		else if (op->type == CSGOperation::TYPE_INTERSECTION && rightop->type == CSGOperation::TYPE_DIFFERENCE) {
-			term = CSGOperation::createCSGNode(CSGOperation::TYPE_DIFFERENCE, 
-																		CSGOperation::createCSGNode(CSGOperation::TYPE_INTERSECTION, x, y),
+		else if (op->type == OPENSCAD_INTERSECTION && rightop->type == OPENSCAD_DIFFERENCE) {
+			term = CSGOperation::createCSGNode(OPENSCAD_DIFFERENCE, 
+																		CSGOperation::createCSGNode(OPENSCAD_INTERSECTION, x, y),
 																		z);
 			return true;
 		}
@@ -201,24 +201,24 @@ bool CSGTermNormalizer::match_and_replace(shared_ptr<CSGNode> &term)
 		shared_ptr<CSGNode> z = op->right();
 		
 		// 7. (x - y) * z  -> (x * z) - y
-		if (leftop->type == CSGOperation::TYPE_DIFFERENCE && op->type == CSGOperation::TYPE_INTERSECTION) {
-			term = CSGOperation::createCSGNode(CSGOperation::TYPE_DIFFERENCE, 
-																		CSGOperation::createCSGNode(CSGOperation::TYPE_INTERSECTION, x, z), 
+		if (leftop->type == OPENSCAD_DIFFERENCE && op->type == OPENSCAD_INTERSECTION) {
+			term = CSGOperation::createCSGNode(OPENSCAD_DIFFERENCE, 
+																		CSGOperation::createCSGNode(OPENSCAD_INTERSECTION, x, z), 
 																		y);
 			return true;
 		}
 		// 8. (x + y) - z  -> (x - z) + (y - z)
-		else if (leftop->type == CSGOperation::TYPE_UNION && op->type == CSGOperation::TYPE_DIFFERENCE) {
-			term = CSGOperation::createCSGNode(CSGOperation::TYPE_UNION, 
-																		CSGOperation::createCSGNode(CSGOperation::TYPE_DIFFERENCE, x, z), 
-																		CSGOperation::createCSGNode(CSGOperation::TYPE_DIFFERENCE, y, z));
+		else if (leftop->type == OPENSCAD_UNION && op->type == OPENSCAD_DIFFERENCE) {
+			term = CSGOperation::createCSGNode(OPENSCAD_UNION, 
+																		CSGOperation::createCSGNode(OPENSCAD_DIFFERENCE, x, z), 
+																		CSGOperation::createCSGNode(OPENSCAD_DIFFERENCE, y, z));
 			return true;
 		}
 		// 9. (x + y) * z  -> (x * z) + (y * z)
-		else if (leftop->type == CSGOperation::TYPE_UNION && op->type == CSGOperation::TYPE_INTERSECTION) {
-			term = CSGOperation::createCSGNode(CSGOperation::TYPE_UNION, 
-																		CSGOperation::createCSGNode(CSGOperation::TYPE_INTERSECTION, x, z), 
-																		CSGOperation::createCSGNode(CSGOperation::TYPE_INTERSECTION, y, z));
+		else if (leftop->type == OPENSCAD_UNION && op->type == OPENSCAD_INTERSECTION) {
+			term = CSGOperation::createCSGNode(OPENSCAD_UNION, 
+																		CSGOperation::createCSGNode(OPENSCAD_INTERSECTION, x, z), 
+																		CSGOperation::createCSGNode(OPENSCAD_INTERSECTION, y, z));
 			return true;
 		}
 	}

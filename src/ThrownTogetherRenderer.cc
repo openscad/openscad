@@ -58,7 +58,7 @@ void ThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges) const
 }
 
 void ThrownTogetherRenderer::renderChainObject(const CSGChainObject &csgobj, bool highlight_mode,
-																							 bool background_mode, bool showedges, bool fberror, CSGOperation::type_e type) const
+																							 bool background_mode, bool showedges, bool fberror, OpenSCADOperator type) const
 {
 	if (this->geomVisitMark[std::make_pair(csgobj.geom.get(), &csgobj.matrix)]++ > 0) return;
 	const Color4f &c = csgobj.color;
@@ -66,7 +66,7 @@ void ThrownTogetherRenderer::renderChainObject(const CSGChainObject &csgobj, boo
 		(highlight_mode ? 
 		 CSGMODE_HIGHLIGHT :
 		 (background_mode ? CSGMODE_BACKGROUND : CSGMODE_NORMAL)) |
-		(type == CSGOperation::TYPE_DIFFERENCE ? CSGMODE_DIFFERENCE : CSGMODE_NONE));
+		(type == OPENSCAD_DIFFERENCE ? CSGMODE_DIFFERENCE : CSGMODE_NONE));
 
 	ColorMode colormode = COLORMODE_NONE;
 	ColorMode edge_colormode = COLORMODE_NONE;
@@ -83,7 +83,7 @@ void ThrownTogetherRenderer::renderChainObject(const CSGChainObject &csgobj, boo
 		}
 		edge_colormode = COLORMODE_BACKGROUND_EDGES;
 	} else if (fberror) {
-	} else if (type == CSGOperation::TYPE_DIFFERENCE) {
+	} else if (type == OPENSCAD_DIFFERENCE) {
 		if (csgobj.flag & CSGNode::FLAG_HIGHLIGHT) {
 			colormode = COLORMODE_HIGHLIGHT;
 		}
@@ -125,10 +125,10 @@ void ThrownTogetherRenderer::renderCSGProducts(CSGProducts *products, bool highl
 
 	BOOST_FOREACH(const CSGProduct &product, products->products) {
 		BOOST_FOREACH(const CSGChainObject &csgobj, product.intersections) {
-			renderChainObject(csgobj, highlight_mode, background_mode, showedges, fberror, CSGOperation::TYPE_INTERSECTION);
+			renderChainObject(csgobj, highlight_mode, background_mode, showedges, fberror, OPENSCAD_INTERSECTION);
 		}
 		BOOST_FOREACH(const CSGChainObject &csgobj, product.subtractions) {
-			renderChainObject(csgobj, highlight_mode, background_mode, showedges, fberror, CSGOperation::TYPE_DIFFERENCE);
+			renderChainObject(csgobj, highlight_mode, background_mode, showedges, fberror, OPENSCAD_DIFFERENCE);
 		}
 	}
 }

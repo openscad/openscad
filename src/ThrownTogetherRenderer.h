@@ -16,7 +16,7 @@ private:
 	void renderCSGProducts(CSGProducts *products, bool highlight_mode, bool background_mode, bool showedges, 
 											bool fberror) const;
 	void renderChainObject(const class CSGChainObject &csgobj, bool highlight_mode,
-												 bool background_mode, bool showedges, bool fberror, CSGOperation::type_e type) const;
+												 bool background_mode, bool showedges, bool fberror, OpenSCADOperator type) const;
 
 	CSGProducts *root_products;
 	CSGProducts *highlight_products;
