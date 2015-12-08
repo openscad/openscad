@@ -66,12 +66,14 @@ void CSGTermEvaluator::applyToChildren(State &state, const AbstractNode &node, C
 			state.setHighlight(true);
 
 			// FIXME: If we remove the positive part of a difference, we cannot properly render the negative
-			t1.reset();
+//			t1.reset();
 		}
 	}
 	if (t1 && node.modinst->isBackground()) {
-		t1->flag = CSGNode::FLAG_BACKGROUND;
+//		t1->flag = CSGNode::FLAG_BACKGROUND;
+		this->background_terms.push_back(t1);
 		state.setBackground(true);
+		t1.reset();
 	}
 	this->stored_term[node.index()] = t1;
 }
@@ -133,7 +135,10 @@ shared_ptr<CSGNode> CSGTermEvaluator::evaluateCSGTermFromGeometry(
 		}
 	}
 	else if (modinst->isBackground()) {
-		t->flag = CSGNode::FLAG_BACKGROUND;
+//		t->flag = CSGNode::FLAG_BACKGROUND;
+		this->background_terms.push_back(t);
+		state.setBackground(true);
+		t.reset();
 	}
 	return t;
 }
