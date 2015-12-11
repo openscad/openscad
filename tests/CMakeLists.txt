@@ -1148,7 +1148,10 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-recursive-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/operators-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1472.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/empty-stl.scad)
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/empty-stl.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1516.scad)
+
+set_test_config(Bugs echotest_issue1516)
 
 list(APPEND DUMPTEST_FILES ${FEATURES_2D_FILES} ${FEATURES_3D_FILES} ${DEPRECATED_3D_FILES})
 list(APPEND DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.scad
