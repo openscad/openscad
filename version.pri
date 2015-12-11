@@ -1,7 +1,7 @@
 # get VERSION from system date
 
 isEmpty(VERSION) {
-  win32*:!mingw-cross-env {
+  win32*:!mingw-cross-env:!mingw-cross-env-shared {
     # 
     # Windows XP date command only has one argument, /t
     # and it can print the date in various localized formats. 
@@ -58,7 +58,7 @@ isEmpty(VERSION) {
 SHORTVERSION = $$section(VERSION, "-", 0, 0)
 
 # Split version into Year Month [Day]
-VERSION_SPLIT=$$split(DISPLAYVERSION, ".")
+VERSION_SPLIT=$$split(SHORTVERSION, ".")
 VERSION_YEAR=$$member(VERSION_SPLIT, 0)
 VERSION_MONTH=$$member(VERSION_SPLIT, 1)
 VERSION_DAY=$$member(VERSION_SPLIT, 2)

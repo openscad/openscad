@@ -1,6 +1,11 @@
 /*
- * Copyright (C) 2008 Remko Troncon. BSD license
- * Copyright (C) 2013 Marius Kintel. BSD license
+ * Copyright (C) 2008 Remko Troncon.
+ *   See https://github.com/remko/mixing-cocoa-and-qt
+ *       https://el-tramo.be/blog/mixing-cocoa-and-qt
+ *   License: BSD. Assuming 2-clause BSD reference by Sparke based on context:
+ *       https://github.com/sparkle-project/Sparkle/blob/master/LICENSE
+ * Copyright (C) 2013 Marius Kintel.
+ *   License: MIT License (http://opensource.org/licenses/MIT)
  */
 
 #include "SparkleAutoUpdater.h"

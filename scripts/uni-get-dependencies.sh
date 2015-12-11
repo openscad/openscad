@@ -4,13 +4,24 @@
 # this assumes you have sudo installed and running, or are running as root.
 #
 
-get_fedora_deps()
+get_fedora_deps_yum()
 {
  yum -y install qt5-qtbase-devel bison flex eigen3-devel harfbuzz-devel \
   fontconfig-devel freetype-devel \
   boost-devel mpfr-devel gmp-devel glew-devel CGAL-devel gcc gcc-c++ pkgconfig \
   opencsg-devel git libXmu-devel curl imagemagick ImageMagick glib2-devel make \
-  xorg-x11-server-Xvfb gettext
+  xorg-x11-server-Xvfb gettext qscintilla-devel qscintilla-qt5-devel \
+  mesa-dri-drivers
+}
+
+get_fedora_deps_dnf()
+{
+ dnf -y install qt5-qtbase-devel bison flex eigen3-devel harfbuzz-devel \
+  fontconfig-devel freetype-devel \
+  boost-devel mpfr-devel gmp-devel glew-devel CGAL-devel gcc gcc-c++ pkgconfig \
+  opencsg-devel git libXmu-devel curl ImageMagick glib2-devel make \
+  xorg-x11-server-Xvfb gettext qscintilla-devel qscintilla-qt5-devel \
+  mesa-dri-drivers
 }
 
 get_qomo_deps()
@@ -43,8 +54,13 @@ get_netbsd_deps()
 get_opensuse_deps()
 {
  zypper install libeigen3-devel mpfr-devel gmp-devel boost-devel \
-  libqt4-devel glew-devel cmake git bison flex cgal-devel opencsg-devel curl \
-  glib2-devel gettext
+  libqt4-devel glew-devel cmake git bison flex cgal-devel curl \
+  glib2-devel gettext freetype-devel harfbuzz-devel libqscintilla-devel \
+  xvfb-run imagemagick opencsg-devel
+  echo if you are missing opencsg, please add the -graphics- repository
+  echo find your version from cat /etc/issue, then replace it below, then run
+  echo " zypper ar -f http://download.opensuse.org/repositories/graphics/openSUSE_13.2 graphics"
+  echo " zypper install opencsg-devel"
 }
 
 get_mageia_deps()
@@ -58,12 +74,78 @@ get_mageia_deps()
 get_debian_deps()
 {
  apt-get -y install \
-  build-essential curl libffi-dev qtbase5-dev libqt5scintilla2-dev \
+  build-essential curl libffi-dev \
   libxmu-dev cmake bison flex git-core libboost-all-dev \
   libXi-dev libmpfr-dev libboost-dev libglew-dev \
   libeigen3-dev libcgal-dev libopencsg-dev libgmp3-dev libgmp-dev \
   imagemagick libfontconfig-dev libfreetype6-dev \
-  libharfbuzz-dev gtk-doc-tools libglib2.0-dev gettext
+  gtk-doc-tools libglib2.0-dev gettext xvfb pkg-config ragel
+}
+
+get_debian_7_deps()
+{
+  get_debian_deps
+  apt-get -y install libqt4-dev libqscintilla2-dev
+  echo "debian 7 detected"
+  echo "please build harfbuzz & see the README on building dependencies"
+  echo ". ./scripts/setenv-unibuild.sh"
+  echo "./scripts/uni-build-dependencies.sh harfbuzz"
+}
+
+get_qt4or5_deps_debian()
+{
+  # debian 8 can have both qt4 and qt5 installed... or neither. figure out which
+  # and cater to it.
+  useqt=5
+
+  if [ "`dpkg --list | grep qt5-default`" ]; then
+    useqt=5
+  elif [ "`dpkg --list | grep qt4-default`" ]; then
+    useqt=4
+  elif [ "`echo QT_SELECT | grep ^4`" ]; then
+    useqt=4
+  elif [ "`echo QT_SELECT | grep qt4`" ]; then
+    useqt=4
+  elif [ "`echo QT_SELECT | grep ^5`" ]; then
+    useqt=5
+  elif [ "`echo QT_SELECT | grep qt5`" ]; then
+    useqt=5
+  elif [ ! "`command -v qtchooser`" ]; then
+    useqt=5
+  elif [ "`qtchooser -l | grep qt5`" ]; then
+    useqt=5
+  elif [ ! "`qtchooser -l | grep qt4`" ]; then
+    useqt=5
+  elif [ ! "`command -v qmake`" ]; then
+    useqt=5
+  elif [ "`qmake --version | grep -i qt.version.4`" ]; then
+    useqt=4
+  fi
+
+  if [ $useqt = 5 ]; then
+    apt-get -y install qtbase5-dev libqt5scintilla2-dev libqt5opengl5-dev qt5-qmake
+  else
+    apt-get -y install libqt4-dev libqscintilla2-dev libqt4-opengl-dev
+  fi
+  if [ ! "`command -v qmake`" ]; then
+    apt-get -y install qt$useqt-default
+    echo "installed qt$useqt-default to enable qmake"
+  elif [ ! "`qmake --version | grep qmake.version`" ]; then
+    apt-get -y install qt$useqt-default
+    echo "installed qt$useqt-default to enable qmake"
+  fi
+}
+
+get_debian_8_deps()
+{
+  apt-get -y install libharfbuzz-dev
+  get_debian_deps
+  get_qt4or5_deps_debian
+}
+
+get_ubuntu_14_deps()
+{
+  get_debian_8_deps
 }
 
 unknown()
@@ -73,18 +155,32 @@ unknown()
 }
 
 if [ -e /etc/issue ]; then
- if [ "`grep -i ubuntu /etc/issue`" ]; then
+ if [ "`grep -i ubuntu.1[4-9] /etc/issue`" ]; then
+  get_ubuntu_14_deps
+ elif [ "`grep -i ubuntu /etc/issue`" ]; then
   get_debian_deps
+ elif [ "`grep -i debian.GNU.Linux.7 /etc/issue`" ]; then
+  get_debian_7_deps
  elif [ "`grep -i debian /etc/issue`" ]; then
-  get_debian_deps
+  get_debian_8_deps
  elif [ "`grep -i raspbian /etc/issue`" ]; then
   get_debian_deps
+ elif [ "`grep -i linux.mint.2 /etc/issue`" ]; then
+  get_ubuntu_14_deps
+ elif [ "`grep -i linux.mint.1[789] /etc/issue`" ]; then
+  get_ubuntu_14_deps
  elif [ "`grep -i mint /etc/issue`" ]; then
-  get_debian_deps
+  get_debian_7_deps
  elif [ "`grep -i suse /etc/issue`" ]; then
   get_opensuse_deps
+ elif [ "`grep -i fedora.release.2[2-9] /etc/issue`" ]; then
+  get_fedora_deps_dnf
+ elif [ "`grep -i fedora.release.[3-9][0-9] /etc/issue`" ]; then
+  get_fedora_deps_dnf
+ elif [ "`grep -i fedora.release.2[0-1] /etc/issue`" ]; then
+  get_fedora_deps_yum
  elif [ "`grep -i fedora /etc/issue`" ]; then
-  get_fedora_deps
+  get_fedora_deps_yum
  elif [ "`grep -i red.hat /etc/issue`" ]; then
   get_fedora_deps
  elif [ "`grep -i mageia /etc/issue`" ]; then

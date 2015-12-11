@@ -1333,7 +1333,7 @@
             <item>
              <widget class="QCheckBox" name="mdiCheckBox">
               <property name="text">
-               <string>Allow to open multiple documents</string>
+               <string>Allow opening multiple documents</string>
               </property>
              </widget>
             </item>

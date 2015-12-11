@@ -8,6 +8,9 @@
 #include "export.h"
 #include "polyset.h"
 #include "CGAL_Nef_polyhedron.h"
+#include "boosty.h"
+
+#include <CGAL/IO/Nef_polyhedron_iostream_3.h>
 
 using namespace CGALUtils;
 
@@ -16,6 +19,7 @@ using namespace CGALUtils;
 typedef CGAL::Epick K;
 typedef CGAL::Polyhedron_3<K> PolyhedronK;
 
+#include <boost/algorithm/string.hpp>
 #include <boost/assign/std/vector.hpp>
 #include <boost/assign/list_of.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
@@ -629,21 +633,30 @@ int main(int argc, char *argv[])
   OpenSCAD::debug = "decompose";
 
   PolySet *ps = NULL;
+  CGAL_Nef_polyhedron *N = NULL;
   if (argc == 2) {
-    if (!(ps = import_stl(argv[1]))) {
-      std::cerr << "Error importing STL " << argv[1] << std::endl;
-      exit(1);
+    std::string filename(argv[1]);
+    std::string suffix = boosty::extension_str(filename);
+    if (suffix == ".stl") {
+      if (!(ps = import_stl(filename))) {
+        std::cerr << "Error importing STL " << filename << std::endl;
+        exit(1);
+      }
+      std::cerr << "Imported " << ps->numPolygons() << " polygons" << std::endl;
     }
-    std::cerr << "Imported " << ps->numPolygons() << " polygons" << std::endl;
+    else if (suffix == ".nef3") {
+      N = new CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3);
+      std::ifstream stream(filename.c_str());
+      stream >> *N->p3;
+      std::cerr << "Imported Nef polyhedron" << std::endl;
+    }
   }
   else {
     std::cerr << "Usage: " << argv[0] << " <file.stl> <file.stl>" << std::endl;
     exit(1);
   }
 
-  Geometry::ChildList children;
-
-  CGAL_Nef_polyhedron *N = createNefPolyhedronFromGeometry(*ps);
+  if (ps && !N) N = createNefPolyhedronFromGeometry(*ps);
 
   std::vector<PolyhedronK> result;
   decompose(N->p3.get(), std::back_inserter(result));

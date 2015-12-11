@@ -936,7 +936,7 @@ msgid "PolySet Cache size"
 msgstr "Velikost PolySet cache"
 
 #: objects/ui_Preferences.h:1158
-msgid "Allow to open multiple documents"
+msgid "Allow opening multiple documents"
 msgstr "Povolit současné otevření více dokumentů"
 
 #: objects/ui_Preferences.h:1159
@@ -1086,7 +1086,7 @@ msgstr[2] "Kompilace vyvolala %1 varování."
 
 #: src/mainwin.cc:990
 msgid " For details see <a href=\"#console\">console window</a>."
-msgstr "Pro podrobnosti nahlédněte do <a href=\"#console\">konzole</a>."
+msgstr " Pro podrobnosti nahlédněte do <a href=\"#console\">konzole</a>."
 
 #: src/mainwin.cc:1355
 msgid "Save File"

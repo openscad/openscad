@@ -10,6 +10,16 @@ INCLUDEPATH += $$[QT_INSTALL_HEADERS]
 
 LIBS += -L$$[QT_INSTALL_LIBS]
 
+QT5LIB=qt5scintilla2
+
+unix:linux* {
+    FEDORA32LIBS=/usr/lib/libqscintilla2-qt5.so
+    FEDORA64LIBS=/usr/lib64/libqscintilla2-qt5.so
+    exists($$FEDORA32LIBS) | exists($$FEDORA64LIBS) {
+        QT5LIB=qscintilla2-qt5
+    }
+}
+
 CONFIG(debug, debug|release) {
     mac: {
 	#LIBS += -lqscintilla2_debug
@@ -19,7 +29,8 @@ CONFIG(debug, debug|release) {
 	    LIBS += -lqscintilla2d
 	} else {
 	    greaterThan(QT_MAJOR_VERSION, 4) {
-		LIBS += -lqt5scintilla2
+		message("Using $$QT5LIB as library name")
+		LIBS += -l$$QT5LIB
 	    } else {
 		LIBS += -lqscintilla2
 	    }
@@ -33,7 +44,8 @@ CONFIG(debug, debug|release) {
         LIBS += -lqscintilla2
       } else {
         greaterThan(QT_MAJOR_VERSION, 4) {
-	    LIBS += -lqt5scintilla2
+	    message("Using $$QT5LIB as library name")
+	    LIBS += -l$$QT5LIB
         } else {
 	    LIBS += -lqscintilla2
         }

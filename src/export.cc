@@ -40,6 +40,7 @@
 #include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"
 #include "cgalutils.h"
+#include <CGAL/IO/Nef_polyhedron_iostream_3.h> // for dumping .nef3
 
 struct triangle {
     std::string vs1;
@@ -64,6 +65,12 @@ void exportFile(const class Geometry *root_geom, std::ostream &output, FileForma
 		case OPENSCAD_DXF:
 			assert(false && "Export Nef polyhedron as DXF not supported");
 			break;
+		case OPENSCAD_NEFDBG:
+			output << N->dump();
+			break;
+		case OPENSCAD_NEF3:
+			output << *(N->p3);
+			break;
 		default:
 			assert(false && "Unknown file format");
 		}
@@ -79,6 +86,12 @@ void exportFile(const class Geometry *root_geom, std::ostream &output, FileForma
 				break;
 			case OPENSCAD_AMF:
 				export_amf(*ps, output);
+				break;
+			case OPENSCAD_NEFDBG:
+				PRINT("Not a CGALNefPoly. Add some CSG ops?");
+				break;
+			case OPENSCAD_NEF3:
+				PRINT("Not a CGALNefPoly. Add some CSG ops?");
 				break;
 			default:
 				assert(false && "Unsupported file format");
@@ -106,7 +119,7 @@ void exportFileByName(const class Geometry *root_geom, FileFormat format,
 {
 	std::ofstream fstream(name2open);
 	if (!fstream.is_open()) {
-		PRINTB("Can't open file \"%s\" for export", name2display);
+		PRINTB(_("Can't open file \"%s\" for export"), name2display);
 	} else {
 		bool onerror = false;
 		fstream.exceptions(std::ios::badbit|std::ios::failbit);
@@ -121,7 +134,7 @@ void exportFileByName(const class Geometry *root_geom, FileFormat format,
 			onerror = true;
 		}
 		if (onerror) {
-			PRINTB("ERROR: \"%s\" write error. (Disk full?)", name2display);
+			PRINTB(_("ERROR: \"%s\" write error. (Disk full?)"), name2display);
 		}
 	}
 }
@@ -424,6 +437,7 @@ void export_amf(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
 			coords = strtok(NULL, " ");
 			output << "     <z>" << coords << "</z>\r\n";
 			output << "    </coordinates></vertex>\r\n";
+			delete[] chrs;
 		}
 		output << "   </vertices>\r\n";
 		output << "   <volume>\r\n";

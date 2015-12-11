@@ -15,6 +15,7 @@
 #include <QMutex>
 #include <QSet>
 #include <QTime>
+#include <QIODevice>
 
 enum export_type_e {
 	EXPORT_TYPE_UNKNOWN,
@@ -35,7 +36,11 @@ public:
 	class Preferences *prefs;
 
 	QTimer *animate_timer;
-	double tval, fps, fsteps;
+	int anim_step;
+	int anim_numsteps;
+	double anim_tval;
+	bool anim_dumping;
+	int anim_dump_start_step;
 
 	QTimer *autoReloadTimer;
 	std::string autoReloadId;
@@ -88,7 +93,10 @@ protected:
 	void closeEvent(QCloseEvent *event);
 
 private slots:
-	void updatedFps();
+	void updatedAnimTval();
+	void updatedAnimFps();
+	void updatedAnimSteps();
+	void updatedAnimDump(bool checked);
 	void updateTVal();
         void updateMdiMode(bool mdi);
         void updateUndockMode(bool undockMode);
@@ -113,6 +121,7 @@ private:
 	void compile(bool reload, bool forcedone = false);
 	void compileCSG(bool procevents);
 	bool maybeSave();
+        void saveError(const QIODevice &file, const std::string &msg);
 	bool checkEditorModified();
 	QString dumpCSGTree(AbstractNode *root);
 	static void consoleOutput(const std::string &msg, void *userdata);
@@ -196,6 +205,7 @@ private slots:
 	void actionExportSVG();
 	void actionExportCSG();
 	void actionExportImage();
+	void actionCopyViewport();
 	void actionFlushCaches();
 
 public:
