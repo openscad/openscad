@@ -578,6 +578,8 @@ Value Value::operator*(const Value &v) const
   else if (this->type() == VECTOR && v.type() == VECTOR) {
     const VectorType &vec1 = this->toVector();
     const VectorType &vec2 = v.toVector();
+		if (vec1.size() == 0 || vec2.size() == 0) return Value::undefined;
+
     if (vec1[0]->type() == NUMBER && vec2[0]->type() == NUMBER &&
         vec1.size() == vec2.size()) { 
         // Vector dot product.
