@@ -33,26 +33,108 @@ shared_ptr<CSGNode> CSGTermEvaluator::evaluateCSGTerm(const AbstractNode &node)
 {
 	Traverser evaluate(*this, node, Traverser::PRE_AND_POSTFIX);
 	evaluate.execute();
-	this->root_term = this->stored_term[node.index()];
 	
-	return this->root_term;
-}
-
-void CSGTermEvaluator::applyToChildren(State &state, const AbstractNode &node, CSGTermEvaluator::CsgOp op)
-{
-	shared_ptr<CSGNode> t1;
-	BOOST_FOREACH(const AbstractNode *chnode, this->visitedchildren[node.index()]) {
-		shared_ptr<CSGNode> t2(this->stored_term[chnode->index()]);
-		this->stored_term.erase(chnode->index());
-		if (t2 && !t1) {
-			t1 = t2;
-		} else if (t2 && t1) {
-			t1 = CSGOperation::createCSGNode(op, t1, t2);
+	shared_ptr<CSGNode> t(this->stored_term[node.index()]);
+	if (t) {
+            if (t->isHighlight()) this->highlight_terms.push_back(t);
+		if (t->isBackground()) {
+			this->background_terms.push_back(t);
+			t.reset();
 		}
 	}
 
-	if (t1 && ((t1->flag & CSGNode::FLAG_HIGHLIGHT) || node.modinst->isHighlight())) {
-		t1->flag = CSGNode::FLAG_HIGHLIGHT;
+	return this->root_term = t;
+}
+
+void CSGTermEvaluator::applyBackgroundAndHighlight(State &state, const AbstractNode &node)
+{
+	BOOST_FOREACH(const AbstractNode *chnode, this->visitedchildren[node.index()]) {
+		shared_ptr<CSGNode> t(this->stored_term[chnode->index()]);
+		this->stored_term.erase(chnode->index());
+		if (t) {
+			if (t->isBackground()) this->background_terms.push_back(t);
+			if (t->isHighlight()) this->highlight_terms.push_back(t);
+		}
+	}
+}
+
+void CSGTermEvaluator::applyToChildren(State &state, const AbstractNode &node, OpenSCADOperator op)
+{
+	shared_ptr<CSGNode> t1;
+	const ModuleInstantiation *t1_modinst;
+	BOOST_FOREACH(const AbstractNode *chnode, this->visitedchildren[node.index()]) {
+		shared_ptr<CSGNode> t2(this->stored_term[chnode->index()]);
+		const ModuleInstantiation *t2_modinst = chnode->modinst;
+		this->stored_term.erase(chnode->index());
+		if (t2 && !t1) {
+			t1 = t2;
+			t1_modinst = t2_modinst;
+		} else if (t2 && t1) {
+
+			shared_ptr<CSGNode> t;
+			// Handle background
+			if (t1->isBackground() && 
+					// For difference, we inherit the flag from the positive object
+					(t2->isBackground() || op == OPENSCAD_DIFFERENCE)) {
+				t = CSGOperation::createCSGNode(op, t1, t2);
+				t->setBackground(true);
+			}
+			else if (t2->isBackground()) {
+				t = t1;
+				this->background_terms.push_back(t2);
+			}
+			else if (t1->isBackground()) {
+				t = t2;
+				this->background_terms.push_back(t1);
+			}
+			else {
+				t = CSGOperation::createCSGNode(op, t1, t2);
+			}
+			// Handle highlight
+#if 1
+				switch (op) {
+				case OPENSCAD_DIFFERENCE:
+					if (t != t1 && t1->isHighlight()) {
+						t->setHighlight(true);
+					}
+					else if (t != t2 && t2->isHighlight()) {
+						this->highlight_terms.push_back(t2);
+					}
+					break;
+				case OPENSCAD_INTERSECTION:
+					if (t != t1 && t != t2 &&
+							t1->isHighlight() && t2->isHighlight()) {
+						t->setHighlight(true);
+					}
+					else if (t != t1 && t1->isHighlight()) {
+						this->highlight_terms.push_back(t1);
+					}
+					else if (t != t2 && t2->isHighlight()) {
+						this->highlight_terms.push_back(t2);
+					}
+					break;
+				case OPENSCAD_UNION:
+					if (t != t1 && t != t2 &&
+                                            t1->isHighlight() && t2->isHighlight()) {
+						t->setHighlight(true);
+					}
+
+					// FIXME: How to deal with differences: (#A + B) - C
+					else if (t != t1 && t1->isHighlight()) {
+						this->highlight_terms.push_back(t1);
+					}
+					else if (t != t2 && t2->isHighlight()) {
+						this->highlight_terms.push_back(t2);
+					}
+					break;
+				}
+#endif
+			t1 = t;
+		}
+	}
+#if 0
+	if (t1 && ((t1->isHighlight()) || node.modinst->isHighlight())) {
+		t1->setHighlight(true);
 		if (!state.isHighlight()) {
 			this->highlight_terms.push_back(t1);
 			state.setHighlight(true);
@@ -67,7 +149,12 @@ void CSGTermEvaluator::applyToChildren(State &state, const AbstractNode &node, C
 		state.setBackground(true);
 		t1.reset();
 	}
-	this->stored_term[node.index()] = t1;
+#endif
+    if (t1) {
+        if (node.modinst->isBackground()) t1->setBackground(true);
+        if (node.modinst->isHighlight()) t1->setHighlight(true);
+    }
+    this->stored_term[node.index()] = t1;
 }
 
 Response CSGTermEvaluator::visit(State &state, const AbstractNode &node)
@@ -119,19 +206,8 @@ shared_ptr<CSGNode> CSGTermEvaluator::evaluateCSGTermFromGeometry(
 	}
 
 	shared_ptr<CSGNode> t(new CSGLeaf(g, state.matrix(), state.color(), stream.str()));
-	if (modinst->isHighlight()) {
-		t->flag = CSGNode::FLAG_HIGHLIGHT;
-		if (!state.isHighlight()) {
-			this->highlight_terms.push_back(t);
-			state.setHighlight(true);
-		}
-	}
-	else if (modinst->isBackground()) {
-//		t->flag = CSGNode::FLAG_BACKGROUND;
-		this->background_terms.push_back(t);
-		state.setBackground(true);
-		t.reset();
-	}
+	if (modinst->isHighlight()) t->setHighlight(true);
+	else if (modinst->isBackground()) t->setBackground(true);
 	return t;
 }
 
@@ -218,6 +294,7 @@ Response CSGTermEvaluator::visit(State &state, const CgaladvNode &node)
 			node.progress_report();
 		}
 		this->stored_term[node.index()] = t1;
+		applyBackgroundAndHighlight(state, node);
 		addToParent(state, node);
 	}
 	return ContinueTraversal;

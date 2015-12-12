@@ -166,9 +166,9 @@ std::string CSGOperation::dump()
 	return dump.str();
 }
 
-void CSGProducts::import(shared_ptr<CSGNode> term, OpenSCADOperator type, CSGNode::Flag flag)
+void CSGProducts::import(shared_ptr<CSGNode> term, OpenSCADOperator type, CSGNode::Flag flags)
 {
-	CSGNode::Flag newflag = (CSGNode::Flag)(term->flag | flag);
+	CSGNode::Flag newflags = (CSGNode::Flag)(term->flags | flags);
 
 	if (shared_ptr<CSGLeaf> leaf = dynamic_pointer_cast<CSGLeaf>(term)) {
 		if (type == OPENSCAD_UNION && this->currentproduct->intersections.size() > 0) {
@@ -177,11 +177,11 @@ void CSGProducts::import(shared_ptr<CSGNode> term, OpenSCADOperator type, CSGNod
 		else if (type == OPENSCAD_DIFFERENCE) {
 			this->currentlist = &this->currentproduct->subtractions;
 		}
-		this->currentlist->push_back(CSGChainObject(leaf->geom, leaf->m, leaf->color, leaf->label, newflag));
+		this->currentlist->push_back(CSGChainObject(leaf->geom, leaf->m, leaf->color, leaf->label, newflags));
 	} else if (shared_ptr<CSGOperation> op = dynamic_pointer_cast<CSGOperation>(term)) {
 		assert(op->left() && op->right());
-		import(op->left(), type, newflag);
-		import(op->right(), op->type, newflag);
+		import(op->left(), type, newflags);
+		import(op->right(), op->type, newflags);
 	}
 }
 

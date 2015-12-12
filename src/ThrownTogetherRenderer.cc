@@ -75,7 +75,7 @@ void ThrownTogetherRenderer::renderChainObject(const CSGChainObject &csgobj, boo
 		colormode = COLORMODE_HIGHLIGHT;
 		edge_colormode = COLORMODE_HIGHLIGHT_EDGES;
 	} else if (background_mode) {
-		if (csgobj.flag & CSGNode::FLAG_HIGHLIGHT) {
+		if (csgobj.flags & CSGNode::FLAG_HIGHLIGHT) {
 			colormode = COLORMODE_HIGHLIGHT;
 		}
 		else {
@@ -84,7 +84,7 @@ void ThrownTogetherRenderer::renderChainObject(const CSGChainObject &csgobj, boo
 		edge_colormode = COLORMODE_BACKGROUND_EDGES;
 	} else if (fberror) {
 	} else if (type == OPENSCAD_DIFFERENCE) {
-		if (csgobj.flag & CSGNode::FLAG_HIGHLIGHT) {
+		if (csgobj.flags & CSGNode::FLAG_HIGHLIGHT) {
 			colormode = COLORMODE_HIGHLIGHT;
 		}
 		else {
@@ -92,7 +92,7 @@ void ThrownTogetherRenderer::renderChainObject(const CSGChainObject &csgobj, boo
 		}
 		edge_colormode = COLORMODE_CUTOUT_EDGES;
 	} else {
-		if (csgobj.flag & CSGNode::FLAG_HIGHLIGHT) {
+		if (csgobj.flags & CSGNode::FLAG_HIGHLIGHT) {
 			colormode = COLORMODE_HIGHLIGHT;
 		}
 		else {

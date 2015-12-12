@@ -16,15 +16,17 @@ public:
 	};
 
 
-	CSGNode(Flag flag = FLAG_NONE) : flag(flag) {}
+	CSGNode(Flag flags = FLAG_NONE) : flags(flags) {}
 	virtual ~CSGNode() {}
 
 	BoundingBox bbox;
-	Flag flag;
+	unsigned int flags;
 
 	const BoundingBox &getBoundingBox() const { return this->bbox; }
-	bool isHighlight() const { return this->flag & FLAG_HIGHLIGHT; }
-	bool isBackground() const { return this->flag & FLAG_BACKGROUND; }
+	bool isHighlight() const { return this->flags & FLAG_HIGHLIGHT; }
+	bool isBackground() const { return this->flags & FLAG_BACKGROUND; }
+	void setHighlight(bool on) { on ? this->flags |= FLAG_HIGHLIGHT : this->flags &= ~FLAG_HIGHLIGHT; }
+	void setBackground(bool on) { on ? this->flags |= FLAG_BACKGROUND : this->flags &= ~FLAG_BACKGROUND; }
 
 	virtual std::string dump() = 0;
 protected:
@@ -84,14 +86,14 @@ public:
 								 const Transform3d &matrix,
 								 const Color4f &color,
 								 const std::string &label,
-								 CSGNode::Flag flag = CSGNode::FLAG_NONE)
-		: geom(geom), matrix(matrix), color(color), label(label), flag(flag) {}
+								 CSGNode::Flag flags = CSGNode::FLAG_NONE)
+		: geom(geom), matrix(matrix), color(color), label(label), flags(flags) {}
 
 	shared_ptr<const Geometry> geom;
 	Transform3d matrix;
 	Color4f color;
 	std::string label;
-	CSGNode::Flag flag;
+	CSGNode::Flag flags;
 };
 
 class CSGProduct
@@ -115,7 +117,7 @@ public:
 	}
 	~CSGProducts() {}
 
-	void import(shared_ptr<CSGNode> term, OpenSCADOperator type = OPENSCAD_UNION, CSGNode::Flag flag = CSGNode::FLAG_NONE);
+	void import(shared_ptr<CSGNode> term, OpenSCADOperator type = OPENSCAD_UNION, CSGNode::Flag flags = CSGNode::FLAG_NONE);
 	std::string dump(bool full = false) const;
 	BoundingBox getBoundingBox() const;
 

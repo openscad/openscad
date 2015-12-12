@@ -6,7 +6,7 @@
 #include <cstddef>
 #include "visitor.h"
 #include "memory.h"
-#include "CSGTerm.h"
+#include "csgterm.h"
 
 class CSGTermEvaluator : public Visitor
 {
@@ -44,6 +44,7 @@ private:
 																									const shared_ptr<const class Geometry> &geom,
 																									const class ModuleInstantiation *modinst, 
 																									const AbstractNode &node);
+	void applyBackgroundAndHighlight(State &state, const AbstractNode &node);
 
   const AbstractNode *root;
   typedef std::list<const AbstractNode *> ChildList;

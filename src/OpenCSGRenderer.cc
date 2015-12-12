@@ -124,7 +124,7 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 				colormode = COLORMODE_MATERIAL;
 			}
 			
-			if (highlight_mode || !(parent_obj.flag & CSGNode::FLAG_HIGHLIGHT) || !(csgobj.flag & CSGNode::FLAG_HIGHLIGHT) ) {
+			if (highlight_mode || !(parent_obj.flags & CSGNode::FLAG_HIGHLIGHT) || !(csgobj.flags & CSGNode::FLAG_HIGHLIGHT) ) {
 				setColor(colormode, c.data(), shaderinfo);
 				glPushMatrix();
 				glMultMatrixd(csgobj.matrix.data());
@@ -148,7 +148,7 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 				colormode = COLORMODE_CUTOUT;
 			}
 			
-			if (highlight_mode || !(parent_obj.flag & CSGNode::FLAG_HIGHLIGHT) || !(csgobj.flag & CSGNode::FLAG_HIGHLIGHT) ) {
+			if (highlight_mode || !(parent_obj.flags & CSGNode::FLAG_HIGHLIGHT) || !(csgobj.flags & CSGNode::FLAG_HIGHLIGHT) ) {
 				setColor(colormode, c.data(), shaderinfo);
 				glPushMatrix();
 				glMultMatrixd(csgobj.matrix.data());
