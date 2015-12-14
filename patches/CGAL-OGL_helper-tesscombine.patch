@@ -32,3 +32,11 @@
        gluTessCallback(tess_, GLenum(GLU_TESS_BEGIN),
  		      (GLvoid (CGAL_GLU_TESS_CALLBACK *)(CGAL_GLU_TESS_DOTS)) &beginCallback);
        gluTessCallback(tess_, GLenum(GLU_TESS_END),
+@@ -410,6 +429,7 @@
+       gluTessEndPolygon(tess_);
+       //      CGAL_NEF_TRACEN("End Polygon");
+       gluDeleteTess(tess_);
++      combineCallback(NULL, NULL, NULL, NULL);
+     }
+ 
+     void construct_axes() const
