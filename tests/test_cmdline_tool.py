@@ -246,6 +246,7 @@ def run_test(testname, cmd, args):
         outfile.close()
         if proc.returncode != 0:
             print >> sys.stderr, "Error: %s failed with return code %d" % (cmdname, proc.returncode)
+            return None
 
         return outputname
     except OSError, err:
