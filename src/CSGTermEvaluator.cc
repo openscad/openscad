@@ -134,7 +134,6 @@ static shared_ptr<CSGTerm> evaluate_csg_term_from_geometry(const State &state,
 	if (modinst->isHighlight()) {
 		t->flag = CSGTerm::FLAG_HIGHLIGHT;
 		highlights.push_back(t);
-		t.reset();
 	}
 	if (modinst->isBackground()) {
 		background.push_back(t);

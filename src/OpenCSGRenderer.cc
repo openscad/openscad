@@ -174,27 +174,26 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo, bool hi
 					colormode = COLORMODE_MATERIAL;
 				}
 
-				if (!built) {
-					chain_lists->push_back(glGenLists(1));
-					glNewList(chain_lists->back(), GL_COMPILE);
-					render_surface(j_obj.geom, csgmode, j_obj.matrix, shaderinfo);
-					glEndList();
+				if (highlight || !(parent_obj.flag & CSGTerm::FLAG_HIGHLIGHT)) {
+					if (!built) {
+						chain_lists->push_back(glGenLists(1));
+						glNewList(chain_lists->back(), GL_COMPILE);
+						render_surface(j_obj.geom, csgmode, j_obj.matrix, shaderinfo);
+						glEndList();
+					}
+
+					glPushMatrix();
+					glMultMatrixd(j_obj.matrix.data());
+
+					setColor(colormode, c.data(), shaderinfo);
+					glCallList((*chain_lists)[m]);
+					glPopMatrix();
+
+					m++;
 				}
-
-				glPushMatrix();
-				glMultMatrixd(j_obj.matrix.data());
-
-				setColor(colormode, c.data(), shaderinfo);
-				glCallList((*chain_lists)[m]);
-				glPopMatrix();
-
-				m++;
 			}
 
 			if (shaderinfo) glUseProgram(0);
-/*			for (unsigned int k = 0; k < primitives.size(); k++) {
-				delete primitives[k];
-			}*/
 			glDepthFunc(GL_LEQUAL);
 			if (!built) {
 				if (!primitives_added) {
@@ -221,7 +220,6 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo, bool hi
 			}
 		}
 	}
-	//std::for_each(primitives.begin(), primitives.end(), del_fun<OpenCSG::Primitive>());
 
 	if ((!highlight && !background) && !root_chain_built_) {
 		const_cast<OpenCSGRenderer *>(this)->root_chain_built_ = true;
