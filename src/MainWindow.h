@@ -55,9 +55,9 @@ public:
 	AbstractNode *root_node;          // Root if the root modifier (!) is used
 	Tree tree;
 
-	shared_ptr<class CSGTerm> root_raw_term;           // Result of CSG term rendering
-	shared_ptr<CSGTerm> root_norm_term;          // Normalized CSG products
-	class CSGChain *root_chain;
+	shared_ptr<class CSGNode> root_raw_term;           // Result of CSG term rendering
+	shared_ptr<CSGNode> root_norm_term;          // Normalized CSG products
+	class CSGProducts *root_products;
 #ifdef ENABLE_CGAL
 	shared_ptr<const class Geometry> root_geom;
 	class CGALRenderer *cgalRenderer;
@@ -67,10 +67,8 @@ public:
 #endif
 	class ThrownTogetherRenderer *thrownTogetherRenderer;
 
-	std::vector<shared_ptr<CSGTerm> > highlight_terms;
-	CSGChain *highlights_chain;
-	std::vector<shared_ptr<CSGTerm> > background_terms;
-	CSGChain *background_chain;
+	CSGProducts *highlights_products;
+	CSGProducts *background_products;
 	QString last_compiled_doc;
 
 	QAction *actionRecentFile[UIUtils::maxRecentFiles];

@@ -12,6 +12,7 @@
 #include "GeometryEvaluator.h"
 #include "polyset.h"
 #include "polyset-utils.h"
+#include "stl-utils.h"
 
 #include <string>
 #include <map>
@@ -25,56 +26,125 @@
 /*!
 	\class CSGTermEvaluator
 
-	A visitor responsible for creating a tree of CSGTerm nodes used for rendering
+	A visitor responsible for creating a binary tree of CSGNode nodes used for rendering
 	with OpenCSG.
 */
 
 CSGTermEvaluator::~CSGTermEvaluator()
 {
-	for(std::map<int, shared_ptr<CSGTerm> >::iterator i = stored_term.begin(); i != stored_term.end(); i++) {
+	for(std::map<int, shared_ptr<CSGNode> >::iterator i = stored_term.begin(); i != stored_term.end(); i++) {
 		i->second.reset();
 	}
 
-	std::for_each(highlights.begin(), highlights.end(), reset_fun<shared_ptr<CSGTerm> >());
-	std::for_each(background.begin(), background.end(), reset_fun<shared_ptr<CSGTerm> >());
+	std::for_each(highlight_terms.begin(), highlight_terms.end(), reset_fun<shared_ptr<CSGNode> >());
+	std::for_each(background_terms.begin(), background_terms.end(), reset_fun<shared_ptr<CSGNode> >());
 }
 
-shared_ptr<CSGTerm> CSGTermEvaluator::evaluateCSGTerm(const AbstractNode &node,
-																					 std::vector<shared_ptr<CSGTerm> > &highlights,
-																					 std::vector<shared_ptr<CSGTerm> > &background)
+shared_ptr<CSGNode> CSGTermEvaluator::evaluateCSGTerm(const AbstractNode &node)
 {
 	Traverser evaluate(*this, node, Traverser::PRE_AND_POSTFIX);
 	evaluate.execute();
-	highlights = this->highlights;
-	background = this->background;
-	return this->stored_term[node.index()];
+
+	shared_ptr<CSGNode> t(this->stored_term[node.index()]);
+	if (t) {
+            if (t->isHighlight()) this->highlight_terms.push_back(t);
+		if (t->isBackground()) {
+			this->background_terms.push_back(t);
+			t.reset();
+		}
+	}
+
+	return this->root_term = t;
 }
 
-void CSGTermEvaluator::applyToChildren(const AbstractNode &node, CSGTermEvaluator::CsgOp op)
+void CSGTermEvaluator::applyBackgroundAndHighlight(State &state, const AbstractNode &node)
 {
-	shared_ptr<CSGTerm> t1;
 	BOOST_FOREACH(const AbstractNode *chnode, this->visitedchildren[node.index()]) {
-		shared_ptr<CSGTerm> t2(this->stored_term[chnode->index()]);
+		shared_ptr<CSGNode> t(this->stored_term[chnode->index()]);
+		this->stored_term.erase(chnode->index());
+		if (t) {
+			if (t->isBackground()) this->background_terms.push_back(t);
+			if (t->isHighlight()) this->highlight_terms.push_back(t);
+		}
+	}
+}
+
+void CSGTermEvaluator::applyToChildren(State &state, const AbstractNode &node, OpenSCADOperator op)
+{
+	shared_ptr<CSGNode> t1;
+	const ModuleInstantiation *t1_modinst;
+	BOOST_FOREACH(const AbstractNode *chnode, this->visitedchildren[node.index()]) {
+		shared_ptr<CSGNode> t2(this->stored_term[chnode->index()]);
+		const ModuleInstantiation *t2_modinst = chnode->modinst;
 		this->stored_term.erase(chnode->index());
 		if (t2 && !t1) {
 			t1 = t2;
+			t1_modinst = t2_modinst;
 		} else if (t2 && t1) {
-			if (op == CSGT_UNION) {
-				t1 = CSGTerm::createCSGTerm(CSGTerm::TYPE_UNION, t1, t2);
-			} else if (op == CSGT_DIFFERENCE) {
-				t1 = CSGTerm::createCSGTerm(CSGTerm::TYPE_DIFFERENCE, t1, t2);
-			} else if (op == CSGT_INTERSECTION) {
-				t1 = CSGTerm::createCSGTerm(CSGTerm::TYPE_INTERSECTION, t1, t2);
+
+			shared_ptr<CSGNode> t;
+			// Handle background
+			if (t1->isBackground() &&
+					// For difference, we inherit the flag from the positive object
+					(t2->isBackground() || op == OPENSCAD_DIFFERENCE)) {
+				t = CSGOperation::createCSGNode(op, t1, t2);
+				t->setBackground(true);
 			}
+			// Background objects are simply moved to background_terms
+			else if (t2->isBackground()) {
+				t = t1;
+				this->background_terms.push_back(t2);
+			}
+			else if (t1->isBackground()) {
+				t = t2;
+				this->background_terms.push_back(t1);
+			}
+			else {
+				t = CSGOperation::createCSGNode(op, t1, t2);
+			}
+			// Handle highlight
+				switch (op) {
+				case OPENSCAD_DIFFERENCE:
+					if (t != t1 && t1->isHighlight()) {
+						t->setHighlight(true);
+					}
+					else if (t != t2 && t2->isHighlight()) {
+						this->highlight_terms.push_back(t2);
+					}
+					break;
+				case OPENSCAD_INTERSECTION:
+					if (t != t1 && t != t2 &&
+							t1->isHighlight() && t2->isHighlight()) {
+						t->setHighlight(true);
+					}
+					else if (t != t1 && t1->isHighlight()) {
+						this->highlight_terms.push_back(t1);
+					}
+					else if (t != t2 && t2->isHighlight()) {
+						this->highlight_terms.push_back(t2);
+					}
+					break;
+				case OPENSCAD_UNION:
+					if (t != t1 && t != t2 &&
+							t1->isHighlight() && t2->isHighlight()) {
+						t->setHighlight(true);
+					}
+					else if (t != t1 && t1->isHighlight()) {
+						this->highlight_terms.push_back(t1);
+						t = t2;
+					}
+					else if (t != t2 && t2->isHighlight()) {
+						this->highlight_terms.push_back(t2);
+						t = t1;
+					}
+					break;
+				}
+			t1 = t;
 		}
 	}
-	if (t1 && node.modinst->isHighlight()) {
-		t1->flag = CSGTerm::FLAG_HIGHLIGHT;
-		this->highlights.push_back(t1);
-	}
-	if (t1 && node.modinst->isBackground()) {
-		this->background.push_back(t1);
-		t1.reset(); // don't propagate background tagged nodes
+	if (t1) {
+		if (node.modinst->isBackground()) t1->setBackground(true);
+		if (node.modinst->isHighlight()) t1->setHighlight(true);
 	}
 	this->stored_term[node.index()] = t1;
 }
@@ -82,7 +152,7 @@ void CSGTermEvaluator::applyToChildren(const AbstractNode &node, CSGTermEvaluato
 Response CSGTermEvaluator::visit(State &state, const AbstractNode &node)
 {
 	if (state.isPostfix()) {
-		applyToChildren(node, CSGT_UNION);
+		applyToChildren(state, node, OPENSCAD_UNION);
 		addToParent(state, node);
 	}
 	return ContinueTraversal;
@@ -91,18 +161,15 @@ Response CSGTermEvaluator::visit(State &state, const AbstractNode &node)
 Response CSGTermEvaluator::visit(State &state, const AbstractIntersectionNode &node)
 {
 	if (state.isPostfix()) {
-		applyToChildren(node, CSGT_INTERSECTION);
+		applyToChildren(state, node, OPENSCAD_INTERSECTION);
 		addToParent(state, node);
 	}
 	return ContinueTraversal;
 }
 
-static shared_ptr<CSGTerm> evaluate_csg_term_from_geometry(const State &state,
-								std::vector<shared_ptr<CSGTerm> > &highlights,
-								std::vector<shared_ptr<CSGTerm> > &background,
-								const shared_ptr<const Geometry> &geom,
-								const ModuleInstantiation *modinst,
-								const AbstractNode &node)
+shared_ptr<CSGNode> CSGTermEvaluator::evaluateCSGTermFromGeometry(
+	State &state, const shared_ptr<const Geometry> &geom,
+	const ModuleInstantiation *modinst, const AbstractNode &node)
 {
 	std::stringstream stream;
 	stream << node.name() << node.index();
@@ -130,26 +197,20 @@ static shared_ptr<CSGTerm> evaluate_csg_term_from_geometry(const State &state,
 		}
 	}
 
-	shared_ptr<CSGTerm> t(new CSGTerm(g, state.matrix(), state.color(), stream.str()));
-	if (modinst->isHighlight()) {
-		t->flag = CSGTerm::FLAG_HIGHLIGHT;
-		highlights.push_back(t);
-	}
-	if (modinst->isBackground()) {
-		background.push_back(t);
-		t.reset();
-	}
+	shared_ptr<CSGNode> t(new CSGLeaf(g, state.matrix(), state.color(), stream.str()));
+	if (modinst->isHighlight()) t->setHighlight(true);
+	else if (modinst->isBackground()) t->setBackground(true);
 	return t;
 }
 
 Response CSGTermEvaluator::visit(State &state, const AbstractPolyNode &node)
 {
 	if (state.isPostfix()) {
-		shared_ptr<CSGTerm> t1;
+		shared_ptr<CSGNode> t1;
 		if (this->geomevaluator) {
 			shared_ptr<const Geometry> geom = this->geomevaluator->evaluateGeometry(node, false);
 			if (geom) {
-				t1 = evaluate_csg_term_from_geometry(state, this->highlights, this->background, geom, node.modinst, node);
+				t1 = evaluateCSGTermFromGeometry(state, geom, node.modinst, node);
 			}
 			node.progress_report();
 		}
@@ -162,21 +223,7 @@ Response CSGTermEvaluator::visit(State &state, const AbstractPolyNode &node)
 Response CSGTermEvaluator::visit(State &state, const CsgNode &node)
 {
 	if (state.isPostfix()) {
-		CsgOp op = CSGT_UNION;
-		switch (node.type) {
-		case OPENSCAD_UNION:
-			op = CSGT_UNION;
-			break;
-		case OPENSCAD_DIFFERENCE:
-			op = CSGT_DIFFERENCE;
-			break;
-		case OPENSCAD_INTERSECTION:
-			op = CSGT_INTERSECTION;
-			break;
-		default:
-			assert(false);
-		}
-		applyToChildren(node, op);
+		applyToChildren(state, node, node.type);
 		addToParent(state, node);
 	}
 	return ContinueTraversal;
@@ -188,7 +235,7 @@ Response CSGTermEvaluator::visit(State &state, const TransformNode &node)
 		state.setMatrix(state.matrix() * node.matrix);
 	}
 	if (state.isPostfix()) {
-		applyToChildren(node, CSGT_UNION);
+		applyToChildren(state, node, OPENSCAD_UNION);
 		addToParent(state, node);
 	}
 	return ContinueTraversal;
@@ -200,7 +247,7 @@ Response CSGTermEvaluator::visit(State &state, const ColorNode &node)
 		if (!state.color().isValid()) state.setColor(node.color);
 	}
 	if (state.isPostfix()) {
-		applyToChildren(node, CSGT_UNION);
+		applyToChildren(state, node, OPENSCAD_UNION);
 		addToParent(state, node);
 	}
 	return ContinueTraversal;
@@ -210,13 +257,12 @@ Response CSGTermEvaluator::visit(State &state, const ColorNode &node)
 Response CSGTermEvaluator::visit(State &state, const RenderNode &node)
 {
 	if (state.isPostfix()) {
-		shared_ptr<CSGTerm> t1;
+		shared_ptr<CSGNode> t1;
 		shared_ptr<const Geometry> geom;
 		if (this->geomevaluator) {
 			geom = this->geomevaluator->evaluateGeometry(node, false);
 			if (geom) {
-				t1 = evaluate_csg_term_from_geometry(state, this->highlights, this->background,
-																						 geom, node.modinst, node);
+				t1 = evaluateCSGTermFromGeometry(state, geom, node.modinst, node);
 			}
 			node.progress_report();
 		}
@@ -229,18 +275,18 @@ Response CSGTermEvaluator::visit(State &state, const RenderNode &node)
 Response CSGTermEvaluator::visit(State &state, const CgaladvNode &node)
 {
 	if (state.isPostfix()) {
-		shared_ptr<CSGTerm> t1;
+		shared_ptr<CSGNode> t1;
     // FIXME: Calling evaluator directly since we're not a PolyNode. Generalize this.
 		shared_ptr<const Geometry> geom;
 		if (this->geomevaluator) {
 			geom = this->geomevaluator->evaluateGeometry(node, false);
 			if (geom) {
-				t1 = evaluate_csg_term_from_geometry(state, this->highlights, this->background,
-																						 geom, node.modinst, node);
+				t1 = evaluateCSGTermFromGeometry(state, geom, node.modinst, node);
 			}
 			node.progress_report();
 		}
 		this->stored_term[node.index()] = t1;
+		applyBackgroundAndHighlight(state, node);
 		addToParent(state, node);
 	}
 	return ContinueTraversal;

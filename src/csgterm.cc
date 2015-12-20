@@ -29,6 +29,7 @@
 #include "linalg.h"
 #include <sstream>
 #include <boost/foreach.hpp>
+#include <boost/range/iterator_range.hpp>
 
 /*!
 	\class CSGTerm
@@ -54,18 +55,16 @@
  */
 
 
-shared_ptr<CSGTerm> CSGTerm::createCSGTerm(type_e type, shared_ptr<CSGTerm> left, shared_ptr<CSGTerm> right)
+shared_ptr<CSGNode> CSGOperation::createCSGNode(OpenSCADOperator type, shared_ptr<CSGNode> left, shared_ptr<CSGNode> right)
 {
-	if (type != TYPE_PRIMITIVE) {
-		// In case we're creating a CSG terms from a pruned tree, left/right can be NULL
-		if (!right) {
-			if (type == TYPE_UNION || type == TYPE_DIFFERENCE) return left;
-			else return right;
-		}
-		if (!left) {
-			if (type == TYPE_UNION) return right;
-			else return left;
-		}
+	// In case we're creating a CSG terms from a pruned tree, left/right can be NULL
+	if (!right) {
+		if (type == OPENSCAD_UNION || type == OPENSCAD_DIFFERENCE) return left;
+		else return right;
+	}
+	if (!left) {
+		if (type == OPENSCAD_UNION) return right;
+		else return left;
 	}
 
   // Pruning the tree. For details, see "Solid Modeling" by Goldfeather:
@@ -73,15 +72,15 @@ shared_ptr<CSGTerm> CSGTerm::createCSGTerm(type_e type, shared_ptr<CSGTerm> left
 	const BoundingBox &leftbox = left->getBoundingBox();
 	const BoundingBox &rightbox = right->getBoundingBox();
 	Vector3d newmin, newmax;
-	if (type == TYPE_INTERSECTION) {
+	if (type == OPENSCAD_INTERSECTION) {
 		newmin = leftbox.min().array().cwiseMax( rightbox.min().array() );
 		newmax = leftbox.max().array().cwiseMin( rightbox.max().array() );
 		BoundingBox newbox( newmin, newmax );
 		if (newbox.isNull()) {
-			return shared_ptr<CSGTerm>(); // Prune entire product
+			return shared_ptr<CSGNode>(); // Prune entire product
 		}
 	}
-	else if (type == TYPE_DIFFERENCE) {
+	else if (type == OPENSCAD_DIFFERENCE) {
 		newmin = leftbox.min().array().cwiseMax( rightbox.min().array() );
 		newmax = leftbox.max().array().cwiseMin( rightbox.max().array() );
 		BoundingBox newbox( newmin, newmax );
@@ -90,126 +89,157 @@ shared_ptr<CSGTerm> CSGTerm::createCSGTerm(type_e type, shared_ptr<CSGTerm> left
 		}
 	}
 
-	return shared_ptr<CSGTerm>(new CSGTerm(type, left, right));
+	return shared_ptr<CSGNode>(new CSGOperation(type, left, right));
 }
 
-shared_ptr<CSGTerm> CSGTerm::createCSGTerm(type_e type, CSGTerm *left, CSGTerm *right)
-{
-	return createCSGTerm(type, shared_ptr<CSGTerm>(left), shared_ptr<CSGTerm>(right));
-}
-
-CSGTerm::CSGTerm(const shared_ptr<const Geometry> &geom, const Transform3d &matrix, const Color4f &color, const std::string &label)
-	: type(TYPE_PRIMITIVE), label(label), flag(CSGTerm::FLAG_NONE), m(matrix), color(color)
+CSGLeaf::CSGLeaf(const shared_ptr<const Geometry> &geom, const Transform3d &matrix, const Color4f &color, const std::string &label)
+	: label(label), m(matrix), color(color)
 {
 	if (geom && !geom->isEmpty()) this->geom = geom;
 	initBoundingBox();
 }
 
-CSGTerm::CSGTerm(type_e type, shared_ptr<CSGTerm> left, shared_ptr<CSGTerm> right)
-	: type(type), left(left), right(right), flag(CSGTerm::FLAG_NONE), m(Transform3d::Identity())
+CSGOperation::CSGOperation(OpenSCADOperator type, shared_ptr<CSGNode> left, shared_ptr<CSGNode> right)
+	: type(type)
 {
+	this->children.push_back(left);
+	this->children.push_back(right);
 	initBoundingBox();
 }
 
-CSGTerm::CSGTerm(type_e type, CSGTerm *left, CSGTerm *right)
-	: type(type), left(left), right(right), flag(CSGTerm::FLAG_NONE), m(Transform3d::Identity())
+CSGOperation::CSGOperation(OpenSCADOperator type, CSGNode *left, CSGNode *right)
+	: type(type)
 {
+	this->children.push_back(shared_ptr<CSGNode>(left));
+	this->children.push_back(shared_ptr<CSGNode>(right));
 	initBoundingBox();
 }
 
-CSGTerm::~CSGTerm()
+void CSGLeaf::initBoundingBox()
 {
+	if (!this->geom) return;
+	this->bbox = this->m * this->geom->getBoundingBox();
 }
 
-void CSGTerm::initBoundingBox()
+void CSGOperation::initBoundingBox()
 {
-	if (this->type == TYPE_PRIMITIVE) {
-    if (!this->geom) return;
-		this->bbox = this->m * this->geom->getBoundingBox();
-	}
-	else {
-		const BoundingBox &leftbox = this->left->getBoundingBox();
-		const BoundingBox &rightbox = this->right->getBoundingBox();
-		Vector3d newmin, newmax;
-		switch (this->type) {
-		case TYPE_UNION:
-			newmin = leftbox.min().array().cwiseMin( rightbox.min().array() );
-			newmax = leftbox.max().array().cwiseMax( rightbox.max().array() );
-			this->bbox = this->m * BoundingBox( newmin, newmax );
-			break;
-		case TYPE_INTERSECTION:
-			newmin = leftbox.min().array().cwiseMax( rightbox.min().array() );
-			newmax = leftbox.max().array().cwiseMin( rightbox.max().array() );
-			this->bbox = this->m * BoundingBox( newmin, newmax );
-			break;
-		case TYPE_DIFFERENCE:
-			this->bbox = this->m * leftbox;
-			break;
-		case TYPE_PRIMITIVE:
-			break;
-		default:
-			assert(false);
-		}
+	const BoundingBox &leftbox = this->left()->getBoundingBox();
+	const BoundingBox &rightbox = this->right()->getBoundingBox();
+	Vector3d newmin, newmax;
+	switch (this->type) {
+	case OPENSCAD_UNION:
+		newmin = leftbox.min().array().cwiseMin( rightbox.min().array() );
+		newmax = leftbox.max().array().cwiseMax( rightbox.max().array() );
+		this->bbox = BoundingBox( newmin, newmax );
+		break;
+	case OPENSCAD_INTERSECTION:
+		newmin = leftbox.min().array().cwiseMax( rightbox.min().array() );
+		newmax = leftbox.max().array().cwiseMin( rightbox.max().array() );
+		this->bbox = BoundingBox( newmin, newmax );
+		break;
+	case OPENSCAD_DIFFERENCE:
+		this->bbox = leftbox;
+		break;
+	default:
+		assert(false);
 	}
 }
 
-std::string CSGTerm::dump()
+std::string CSGLeaf::dump()
+{
+	return this->label;
+}
+
+std::string CSGOperation::dump()
 {
 	std::stringstream dump;
 
-	if (type == TYPE_UNION)
-		dump << "(" << left->dump() << " + " << right->dump() << ")";
-	else if (type == TYPE_INTERSECTION)
-		dump << "(" << left->dump() << " * " << right->dump() << ")";
-	else if (type == TYPE_DIFFERENCE)
-		dump << "(" << left->dump() << " - " << right->dump() << ")";
+	if (type == OPENSCAD_UNION)
+		dump << "(" << left()->dump() << " + " << right()->dump() << ")";
+	else if (type == OPENSCAD_INTERSECTION)
+		dump << "(" << left()->dump() << " * " << right()->dump() << ")";
+	else if (type == OPENSCAD_DIFFERENCE)
+		dump << "(" << left()->dump() << " - " << right()->dump() << ")";
 	else 
-		dump << this->label;
+		assert(false);
 
 	return dump.str();
 }
 
-void CSGChain::import(shared_ptr<CSGTerm> term, CSGTerm::type_e type, CSGTerm::Flag flag)
+void CSGProducts::import(shared_ptr<CSGNode> term, OpenSCADOperator type, CSGNode::Flag flags)
 {
-	CSGTerm::Flag newflag = (CSGTerm::Flag)(term->flag | flag);
-	if (term->type == CSGTerm::TYPE_PRIMITIVE) {
-		this->objects.push_back(CSGChainObject(term->geom, term->m, term->color, type, term->label, newflag));
-	} else {
-		assert(term->left && term->right);
-		import(term->left, type, newflag);
-		import(term->right, term->type, newflag);
+	CSGNode::Flag newflags = (CSGNode::Flag)(term->flags | flags);
+
+	if (shared_ptr<CSGLeaf> leaf = dynamic_pointer_cast<CSGLeaf>(term)) {
+		if (type == OPENSCAD_UNION && this->currentproduct->intersections.size() > 0) {
+			this->createProduct();
+		}
+		else if (type == OPENSCAD_DIFFERENCE) {
+			this->currentlist = &this->currentproduct->subtractions;
+		}
+		this->currentlist->push_back(CSGChainObject(leaf->geom, leaf->m, leaf->color, leaf->label, newflags));
+	} else if (shared_ptr<CSGOperation> op = dynamic_pointer_cast<CSGOperation>(term)) {
+		assert(op->left() && op->right());
+		import(op->left(), type, newflags);
+		import(op->right(), op->type, newflags);
 	}
 }
 
-std::string CSGChain::dump(bool full)
+std::string CSGProduct::dump(bool full) const
 {
 	std::stringstream dump;
-
-	BOOST_FOREACH(const CSGChainObject &obj, this->objects) {
-		if (obj.type == CSGTerm::TYPE_UNION) {
-			if (&obj != &this->objects.front()) dump << "\n";
-			dump << "+";
-		}
-		else if (obj.type == CSGTerm::TYPE_DIFFERENCE)
-			dump << " -";
-		else if (obj.type == CSGTerm::TYPE_INTERSECTION)
-			dump << " *";
-		dump << obj.label;
-		if (full) {
-			dump << " polyset: \n" << obj.geom->dump() << "\n";
-			dump << " matrix: \n" << obj.matrix.matrix() << "\n";
-			dump << " color: \n" << obj.color << "\n";
-		}
+	dump << this->intersections.front().label;
+	BOOST_FOREACH(const CSGChainObject &csgobj,
+								boost::make_iterator_range(this->intersections.begin() + 1,
+																					 this->intersections.end())) {
+		dump << " *" << csgobj.label;
 	}
-	dump << "\n";
+	BOOST_FOREACH(const CSGChainObject &csgobj, this->subtractions) {
+		dump << " -" << csgobj.label;
+	}
+
+// FIXME:
+//		if (full) {
+//			dump << " polyset: \n" << obj.geom->dump() << "\n";
+//			dump << " matrix: \n" << obj.matrix.matrix() << "\n";
+//			dump << " color: \n" << obj.color << "\n";
+//		}
+
 	return dump.str();
 }
 
-BoundingBox CSGChain::getBoundingBox() const
+BoundingBox CSGProduct::getBoundingBox() const
 {
 	BoundingBox bbox;
-	BOOST_FOREACH(const CSGChainObject &obj, this->objects) {
-		if (obj.type != CSGTerm::TYPE_DIFFERENCE) {
+	BOOST_FOREACH(const CSGChainObject &csgobj, this->intersections) {
+		if (csgobj.geom) {
+			BoundingBox psbox = csgobj.geom->getBoundingBox();
+			// FIXME: Should intersect rather than extend
+			if (!psbox.isEmpty()) bbox.extend(csgobj.matrix * psbox);
+		}
+	}
+	return bbox;
+}
+
+std::string CSGProducts::dump(bool full) const
+{
+	std::stringstream dump;
+
+	BOOST_FOREACH(const CSGProduct &product, this->products) {
+		dump << "+" << product.dump(full) << "\n";
+	}
+	return dump.str();
+}
+
+BoundingBox CSGProducts::getBoundingBox() const
+{
+	BoundingBox bbox;
+	BOOST_FOREACH(const CSGProduct &product, this->products) {
+		bbox.extend(product.getBoundingBox());
+	}
+
+/*	BOOST_FOREACH(const CSGChainObject &obj, this->objects) {
+		if (obj.type != OPENSCAD_DIFFERENCE) {
 			if (obj.geom) {
 				BoundingBox psbox = obj.geom->getBoundingBox();
 				if (!psbox.isNull()) {
@@ -217,6 +247,15 @@ BoundingBox CSGChain::getBoundingBox() const
 				}
 			}
 		}
-	}
+		} */
 	return bbox;
+}
+
+size_t CSGProducts::size() const
+{
+	size_t count = 0;
+	BOOST_FOREACH(const CSGProduct &product, this->products) {
+		count += product.intersections.size() + product.subtractions.size();
+	}
+	return count;
 }
