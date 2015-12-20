@@ -124,13 +124,11 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 				colormode = COLORMODE_MATERIAL;
 			}
 			
-			if (highlight_mode || !(parent_obj.flags & CSGNode::FLAG_HIGHLIGHT) || !(csgobj.flags & CSGNode::FLAG_HIGHLIGHT) ) {
-				setColor(colormode, c.data(), shaderinfo);
-				glPushMatrix();
-				glMultMatrixd(csgobj.matrix.data());
-				render_surface(csgobj.geom, csgmode, csgobj.matrix, shaderinfo);
-				glPopMatrix();
-			}
+			setColor(colormode, c.data(), shaderinfo);
+			glPushMatrix();
+			glMultMatrixd(csgobj.matrix.data());
+			render_surface(csgobj.geom, csgmode, csgobj.matrix, shaderinfo);
+			glPopMatrix();
 		}
 		BOOST_FOREACH(const CSGChainObject &csgobj, product.subtractions) {
 			const Color4f &c = csgobj.color;
@@ -148,13 +146,11 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 				colormode = COLORMODE_CUTOUT;
 			}
 			
-			if (highlight_mode || !(parent_obj.flags & CSGNode::FLAG_HIGHLIGHT) || !(csgobj.flags & CSGNode::FLAG_HIGHLIGHT) ) {
-				setColor(colormode, c.data(), shaderinfo);
-				glPushMatrix();
-				glMultMatrixd(csgobj.matrix.data());
-				render_surface(csgobj.geom, csgmode, csgobj.matrix, shaderinfo);
-				glPopMatrix();
-			}
+			setColor(colormode, c.data(), shaderinfo);
+			glPushMatrix();
+			glMultMatrixd(csgobj.matrix.data());
+			render_surface(csgobj.geom, csgmode, csgobj.matrix, shaderinfo);
+			glPopMatrix();
 		}
 
 		if (shaderinfo) glUseProgram(0);
@@ -168,7 +164,7 @@ BoundingBox OpenCSGRenderer::getBoundingBox() const
 {
 	BoundingBox bbox;
 	if (this->root_products) bbox = this->root_products->getBoundingBox();
-//	if (this->highlights_products) bbox.extend(this->highlights_products->getBoundingBox());
+	if (this->highlights_products) bbox.extend(this->highlights_products->getBoundingBox());
 	if (this->background_products) bbox.extend(this->background_products->getBoundingBox());
 
 

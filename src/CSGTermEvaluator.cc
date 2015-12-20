@@ -79,6 +79,7 @@ void CSGTermEvaluator::applyToChildren(State &state, const AbstractNode &node, O
 				t = CSGOperation::createCSGNode(op, t1, t2);
 				t->setBackground(true);
 			}
+			// Background objects are simply moved to background_terms
 			else if (t2->isBackground()) {
 				t = t1;
 				this->background_terms.push_back(t2);
@@ -91,7 +92,6 @@ void CSGTermEvaluator::applyToChildren(State &state, const AbstractNode &node, O
 				t = CSGOperation::createCSGNode(op, t1, t2);
 			}
 			// Handle highlight
-#if 1
 				switch (op) {
 				case OPENSCAD_DIFFERENCE:
 					if (t != t1 && t1->isHighlight()) {
@@ -115,46 +115,27 @@ void CSGTermEvaluator::applyToChildren(State &state, const AbstractNode &node, O
 					break;
 				case OPENSCAD_UNION:
 					if (t != t1 && t != t2 &&
-                                            t1->isHighlight() && t2->isHighlight()) {
+							t1->isHighlight() && t2->isHighlight()) {
 						t->setHighlight(true);
 					}
-
-					// FIXME: How to deal with differences: (#A + B) - C
 					else if (t != t1 && t1->isHighlight()) {
 						this->highlight_terms.push_back(t1);
+						t = t2;
 					}
 					else if (t != t2 && t2->isHighlight()) {
 						this->highlight_terms.push_back(t2);
+						t = t1;
 					}
 					break;
 				}
-#endif
 			t1 = t;
 		}
 	}
-#if 0
-	if (t1 && ((t1->isHighlight()) || node.modinst->isHighlight())) {
-		t1->setHighlight(true);
-		if (!state.isHighlight()) {
-			this->highlight_terms.push_back(t1);
-			state.setHighlight(true);
-
-			// FIXME: If we remove the positive part of a difference, we cannot properly render the negative
-//			t1.reset();
-		}
+	if (t1) {
+		if (node.modinst->isBackground()) t1->setBackground(true);
+		if (node.modinst->isHighlight()) t1->setHighlight(true);
 	}
-	if (t1 && node.modinst->isBackground()) {
-//		t1->flag = CSGNode::FLAG_BACKGROUND;
-		this->background_terms.push_back(t1);
-		state.setBackground(true);
-		t1.reset();
-	}
-#endif
-    if (t1) {
-        if (node.modinst->isBackground()) t1->setBackground(true);
-        if (node.modinst->isHighlight()) t1->setHighlight(true);
-    }
-    this->stored_term[node.index()] = t1;
+	this->stored_term[node.index()] = t1;
 }
 
 Response CSGTermEvaluator::visit(State &state, const AbstractNode &node)

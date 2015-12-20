@@ -137,7 +137,7 @@ BoundingBox ThrownTogetherRenderer::getBoundingBox() const
 {
 	BoundingBox bbox;
 	if (this->root_products) bbox = this->root_products->getBoundingBox();
-//	if (this->highlight_products) bbox.extend(this->highlight_products->getBoundingBox());
+	if (this->highlight_products) bbox.extend(this->highlight_products->getBoundingBox());
 //	if (this->background_products) bbox.extend(this->background_products->getBoundingBox());
 	return bbox;
 }
