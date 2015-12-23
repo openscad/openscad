@@ -655,8 +655,9 @@ ValuePtr builtin_lookup(const Context *, const EvalContext *evalctx)
 
 	ValuePtr v1 = evalctx->getArgValue(1);
 	const Value::VectorType &vec = v1->toVector();
-	if (vec[0]->toVector().size() < 2) // Second must be a vector of vectors
-		return ValuePtr::undefined;
+	if (vec.empty()) return ValuePtr::undefined; // Second must be a vector
+	if (vec[0]->toVector().size() < 2) return ValuePtr::undefined; // ..of vectors
+
 	if (!vec[0]->getVec2(low_p, low_v) || !vec[0]->getVec2(high_p, high_v))
 		return ValuePtr::undefined;
 	for (size_t i = 1; i < vec.size(); i++) {
