@@ -1265,9 +1265,13 @@ disable_tests(opencsgtest_child-background)
 # These tests only makes sense in OpenCSG mode
 disable_tests(cgalpngtest_child-background
               cgalpngtest_highlight-and-background-modifier
+              cgalpngtest_highlight-modifier2
+              cgalpngtest_background-modifier2
               cgalpngtest_testcolornames
               csgpngtest_child-background
               csgpngtest_highlight-and-background-modifier
+              csgpngtest_highlight-modifier2
+              csgpngtest_background-modifier2
               csgpngtest_testcolornames
               throwntogethertest_testcolornames)
 
