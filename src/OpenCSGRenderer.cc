@@ -188,20 +188,17 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 			} else {
 				colormode = COLORMODE_MATERIAL;
 			}
-			if (highlight_mode || !(parent_obj.flags & CSGNode::FLAG_HIGHLIGHT) || !(csgobj.flags & CSGNode::FLAG_HIGHLIGHT) ) {
-				setColor(colormode, c.data(), shaderinfo);
-				if (!built) {
-					products_ids->push_back(glGenLists(1));
-					glNewList(products_ids->back(), GL_COMPILE);
-						render_surface(csgobj.geom, csgmode, csgobj.matrix, shaderinfo);
-					glEndList();
-
-				}
-				glPushMatrix();
-					glMultMatrixd(csgobj.matrix.data());
-					glCallList((*products_ids)[direct_ids_idx++]);
-				glPopMatrix();
+			setColor(colormode, c.data(), shaderinfo);
+			if (!built) {
+				products_ids->push_back(glGenLists(1));
+				glNewList(products_ids->back(), GL_COMPILE);
+				render_surface(csgobj.geom, csgmode, csgobj.matrix, shaderinfo);
+				glEndList();
 			}
+			glPushMatrix();
+			glMultMatrixd(csgobj.matrix.data());
+			glCallList((*products_ids)[direct_ids_idx++]);
+			glPopMatrix();
 		}
 		BOOST_FOREACH(const CSGChainObject &csgobj, product.subtractions) {
 			const Color4f &c = csgobj.color;
@@ -219,19 +216,17 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 				colormode = COLORMODE_CUTOUT;
 			}
 
-			if (highlight_mode || !(parent_obj.flags & CSGNode::FLAG_HIGHLIGHT) || !(csgobj.flags & CSGNode::FLAG_HIGHLIGHT) ) {
-				setColor(colormode, c.data(), shaderinfo);
-				if (!built) {
-					products_ids->push_back(glGenLists(1));
-					glNewList(products_ids->back(), GL_COMPILE);
-						render_surface(csgobj.geom, csgmode, csgobj.matrix, shaderinfo);
-					glEndList();
-				}
-				glPushMatrix();
-					glMultMatrixd(csgobj.matrix.data());
-					glCallList((*products_ids)[direct_ids_idx++]);
-				glPopMatrix();
+			setColor(colormode, c.data(), shaderinfo);
+			if (!built) {
+				products_ids->push_back(glGenLists(1));
+				glNewList(products_ids->back(), GL_COMPILE);
+				render_surface(csgobj.geom, csgmode, csgobj.matrix, shaderinfo);
+				glEndList();
 			}
+			glPushMatrix();
+			glMultMatrixd(csgobj.matrix.data());
+			glCallList((*products_ids)[direct_ids_idx++]);
+			glPopMatrix();
 		}
 
 		if (shaderinfo) glUseProgram(0);
