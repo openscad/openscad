@@ -347,10 +347,6 @@ expr:
             {
                 $$ = new ExpressionRange($2, $4, $6);
             }
-        | '[' list_comprehension_elements ']'
-            {
-                $$ = new ExpressionLcExpression($2);
-            }
         | '[' optional_commas ']'
             {
                 $$ = new ExpressionConst(ValuePtr(Value::VectorType()));
@@ -485,7 +481,11 @@ vector_expr:
             {
                 $$ = new ExpressionVector($1);
             }
-        | vector_expr ',' optional_commas expr
+        |  list_comprehension_elements
+            {
+                $$ = new ExpressionVector($1);
+            }
+        | vector_expr ',' optional_commas list_comprehension_elements_or_expr
             {
                 $$ = $1;
                 $$->children.push_back($4);

@@ -410,7 +410,14 @@ ValuePtr ExpressionVector::evaluate(const Context *context) const
 	Value::VectorType vec;
 	BOOST_FOREACH(const Expression *e, this->children) {
 		ValuePtr tmpval = e->evaluate(context);
-		vec.push_back(tmpval);
+		if (e->isListComprehension()) {
+			const Value::VectorType result = tmpval->toVector();
+			for (size_t i = 0;i < result.size();i++) {
+				vec.push_back(result[i]);
+			}
+		} else {
+			vec.push_back(tmpval);
+		}
 	}
 	return ValuePtr(vec);
 }
@@ -506,20 +513,6 @@ void ExpressionLet::print(std::ostream &stream) const
 	stream << "let(" << this->call_arguments << ") " << *first;
 }
 
-ExpressionLcExpression::ExpressionLcExpression(Expression *expr) : Expression(expr)
-{
-}
-
-ValuePtr ExpressionLcExpression::evaluate(const Context *context) const
-{
-	return this->first->evaluate(context);
-}
-
-void ExpressionLcExpression::print(std::ostream &stream) const
-{
-	stream << "[" << *this->first << "]";
-}
-
 ExpressionLc::ExpressionLc(const std::string &name, 
 													 const AssignmentList &arglist, Expression *expr)
 	: Expression(expr), name(name), call_arguments(arglist)
@@ -601,14 +594,19 @@ ValuePtr ExpressionLc::evaluate(const Context *context) const
 void ExpressionLc::print(std::ostream &stream) const
 {
 	stream << this->name;
+
+        Expression *expr;
 	if (this->name == "if") {
-		stream << "(" << *this->first << ") " << *this->second;
-	}
-	else if (this->name == "for" || this->name == "let") {
-		stream << "(" << this->call_arguments << ") " << *this->first;
+		stream << "(" << *this->first << ") ";
+                expr = this->second;
+	} else if (this->name == "let" || this->name == "for") {
+		stream << "(" << this->call_arguments << ") ";
+                expr = this->first;
 	} else {
 		assert(false && "Illegal list comprehension element");
 	}
+
+    stream << *expr;
 }
 
 std::ostream &operator<<(std::ostream &stream, const Expression &expr)

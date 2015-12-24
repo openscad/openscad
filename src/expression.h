@@ -231,14 +231,6 @@ private:
 	AssignmentList call_arguments;
 };
 
-class ExpressionLcExpression : public Expression
-{
-public:
-	ExpressionLcExpression(Expression *expr);
-	ValuePtr evaluate(const class Context *context) const;
-	virtual void print(std::ostream &stream) const;
-};
-
 class ExpressionLc : public Expression
 {
 	virtual bool isListComprehension() const;

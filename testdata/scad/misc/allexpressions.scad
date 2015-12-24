@@ -30,3 +30,4 @@ aa = k ? l : m;
 bb = n[o];
 cc = let(a=1) a;
 dd = [for (a=[0,1]) let(b=a) if (true) b];
+ee = ["abc", for (a=[0,1]) let(b=a) if (true) b, true, for(c=[1:3]) c, 3];
