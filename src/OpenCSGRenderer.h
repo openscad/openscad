@@ -10,7 +10,7 @@
 #ifdef ENABLE_OPENCSG
 #include <opencsg.h>
 #endif
-#include "csgterm.h"
+#include "csgnode.h"
 
 
 class OpenCSGPrim : public OpenCSG::Primitive

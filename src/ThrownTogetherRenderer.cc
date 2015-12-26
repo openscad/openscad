@@ -60,8 +60,8 @@ void ThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges) const
 void ThrownTogetherRenderer::renderChainObject(const CSGChainObject &csgobj, bool highlight_mode,
 																							 bool background_mode, bool showedges, bool fberror, OpenSCADOperator type) const
 {
-	if (this->geomVisitMark[std::make_pair(csgobj.geom.get(), &csgobj.matrix)]++ > 0) return;
-	const Color4f &c = csgobj.color;
+	if (this->geomVisitMark[std::make_pair(csgobj.leaf->geom.get(), &csgobj.leaf->matrix)]++ > 0) return;
+	const Color4f &c = csgobj.leaf->color;
 	csgmode_e csgmode = csgmode_e(
 		(highlight_mode ? 
 		 CSGMODE_HIGHLIGHT :
@@ -101,15 +101,15 @@ void ThrownTogetherRenderer::renderChainObject(const CSGChainObject &csgobj, boo
 		edge_colormode = COLORMODE_MATERIAL_EDGES;
 	}
 	
-	const Transform3d &m = csgobj.matrix;
+	const Transform3d &m = csgobj.leaf->matrix;
 	setColor(colormode, c.data());
 	glPushMatrix();
 	glMultMatrixd(m.data());
-	render_surface(csgobj.geom, csgmode, m);
+	render_surface(csgobj.leaf->geom, csgmode, m);
 	if (showedges) {
 		// FIXME? glColor4f((c[0]+1)/2, (c[1]+1)/2, (c[2]+1)/2, 1.0);
 		setColor(edge_colormode);
-		render_edges(csgobj.geom, csgmode);
+		render_edges(csgobj.leaf->geom, csgmode);
 	}
 	glPopMatrix();
 	

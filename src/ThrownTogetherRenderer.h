@@ -1,7 +1,7 @@
 #pragma once
 
 #include "renderer.h"
-#include "csgterm.h"
+#include "csgnode.h"
 #include <boost/unordered_map.hpp>
 
 class ThrownTogetherRenderer : public Renderer
