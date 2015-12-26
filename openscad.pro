@@ -267,8 +267,9 @@ HEADERS += src/typedefs.h \
            src/context.h \
            src/modcontext.h \
            src/evalcontext.h \
-           src/csgterm.h \
-           src/csgtermnormalizer.h \
+           src/csgops.h \
+           src/CSGTreeNormalizer.h \
+           src/CSGTreeEvaluator.h \
            src/dxfdata.h \
            src/dxfdim.h \
            src/export.h \
@@ -314,7 +315,6 @@ HEADERS += src/typedefs.h \
            src/ModuleCache.h \
            src/GeometryCache.h \
            src/GeometryEvaluator.h \
-           src/CSGTermEvaluator.h \
            src/Tree.h \
 src/DrawingCallback.h \
 src/FreetypeRenderer.h \
@@ -361,8 +361,9 @@ SOURCES += src/version_check.cc \
            src/context.cc \
            src/modcontext.cc \
            src/evalcontext.cc \
-           src/csgterm.cc \
-           src/csgtermnormalizer.cc \
+           src/csgnode.cc \
+           src/CSGTreeNormalizer.cc \
+           src/CSGTreeEvaluator.cc \
            src/Geometry.cc \
            src/Polygon2d.cc \
            src/clipper-utils.cc \
@@ -423,7 +424,6 @@ SOURCES += src/version_check.cc \
            src/renderer.cc \
            src/colormap.cc \
            src/ThrownTogetherRenderer.cc \
-           src/CSGTermEvaluator.cc \
            src/svg.cc \
            src/OffscreenView.cc \
            src/fbo.cc \

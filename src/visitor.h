@@ -21,7 +21,7 @@ public:
   virtual Response visit(class State &state, const class CgaladvNode &node) {
 		return visit(state, (const class AbstractNode &)node);
 	}
-  virtual Response visit(class State &state, const class CsgNode &node) {
+  virtual Response visit(class State &state, const class CsgOpNode &node) {
 		return visit(state, (const class AbstractNode &)node);
 	}
   virtual Response visit(class State &state, const class LinearExtrudeNode &node) {

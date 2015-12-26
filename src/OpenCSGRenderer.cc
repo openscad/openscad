@@ -27,7 +27,7 @@
 #include "system-gl.h"
 #include "OpenCSGRenderer.h"
 #include "polyset.h"
-#include "csgterm.h"
+#include "csgnode.h"
 #include "stl-utils.h"
 #include <boost/foreach.hpp>
 
@@ -78,9 +78,9 @@ void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges) const
 // Primitive for rendering using OpenCSG
 OpenCSGPrim *OpenCSGRenderer::createCSGPrimitive(const CSGChainObject &csgobj, OpenCSG::Operation operation, bool highlight_mode, bool background_mode, OpenSCADOperator type) const
 {
-	OpenCSGPrim *prim = new OpenCSGPrim(operation, csgobj.geom->getConvexity());
-	prim->geom = csgobj.geom;
-	prim->m = csgobj.matrix;
+	OpenCSGPrim *prim = new OpenCSGPrim(operation, csgobj.leaf->geom->getConvexity());
+	prim->geom = csgobj.leaf->geom;
+	prim->m = csgobj.leaf->matrix;
 	prim->csgmode = csgmode_e(
 		(highlight_mode ? 
 		 CSGMODE_HIGHLIGHT :
@@ -96,10 +96,10 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 	BOOST_FOREACH(const CSGProduct &product, products.products) {
 		std::vector<OpenCSG::Primitive*> primitives;
 		BOOST_FOREACH(const CSGChainObject &csgobj, product.intersections) {
-			if (csgobj.geom) primitives.push_back(createCSGPrimitive(csgobj, OpenCSG::Intersection, highlight_mode, background_mode, OPENSCAD_INTERSECTION));
+			if (csgobj.leaf->geom) primitives.push_back(createCSGPrimitive(csgobj, OpenCSG::Intersection, highlight_mode, background_mode, OPENSCAD_INTERSECTION));
 		}
 		BOOST_FOREACH(const CSGChainObject &csgobj, product.subtractions) {
-			if (csgobj.geom) primitives.push_back(createCSGPrimitive(csgobj, OpenCSG::Subtraction, highlight_mode, background_mode, OPENSCAD_DIFFERENCE));
+			if (csgobj.leaf->geom) primitives.push_back(createCSGPrimitive(csgobj, OpenCSG::Subtraction, highlight_mode, background_mode, OPENSCAD_DIFFERENCE));
 		}
 		if (primitives.size() > 1) {
 			OpenCSG::render(primitives);
@@ -109,7 +109,7 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 
 		const CSGChainObject &parent_obj = product.intersections[0];
 		BOOST_FOREACH(const CSGChainObject &csgobj, product.intersections) {
-			const Color4f &c = csgobj.color;
+			const Color4f &c = csgobj.leaf->color;
 				csgmode_e csgmode = csgmode_e(
 					highlight_mode ? 
 					CSGMODE_HIGHLIGHT :
@@ -126,12 +126,12 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 			
 			setColor(colormode, c.data(), shaderinfo);
 			glPushMatrix();
-			glMultMatrixd(csgobj.matrix.data());
-			render_surface(csgobj.geom, csgmode, csgobj.matrix, shaderinfo);
+			glMultMatrixd(csgobj.leaf->matrix.data());
+			render_surface(csgobj.leaf->geom, csgmode, csgobj.leaf->matrix, shaderinfo);
 			glPopMatrix();
 		}
 		BOOST_FOREACH(const CSGChainObject &csgobj, product.subtractions) {
-			const Color4f &c = csgobj.color;
+			const Color4f &c = csgobj.leaf->color;
 				csgmode_e csgmode = csgmode_e(
 					(highlight_mode ? 
 					 CSGMODE_HIGHLIGHT :
@@ -148,8 +148,8 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 			
 			setColor(colormode, c.data(), shaderinfo);
 			glPushMatrix();
-			glMultMatrixd(csgobj.matrix.data());
-			render_surface(csgobj.geom, csgmode, csgobj.matrix, shaderinfo);
+			glMultMatrixd(csgobj.leaf->matrix.data());
+			render_surface(csgobj.leaf->geom, csgmode, csgobj.leaf->matrix, shaderinfo);
 			glPopMatrix();
 		}
 

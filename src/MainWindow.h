@@ -55,8 +55,8 @@ public:
 	AbstractNode *root_node;          // Root if the root modifier (!) is used
 	Tree tree;
 
-	shared_ptr<class CSGNode> root_raw_term;           // Result of CSG term rendering
-	shared_ptr<CSGNode> root_norm_term;          // Normalized CSG products
+	shared_ptr<class CSGNode> csgRoot;           // Result of the CSGTreeEvaluator
+	shared_ptr<CSGNode> normalizedRoot;          // Normalized CSG tree
 	class CSGProducts *root_products;
 #ifdef ENABLE_CGAL
 	shared_ptr<const class Geometry> root_geom;

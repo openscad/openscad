@@ -689,7 +689,7 @@ set(CORE_SOURCES
   ../src/evalcontext.cc 
   ../src/feature.cc
   ../src/csgterm.cc 
-  ../src/csgtermnormalizer.cc 
+  ../src/CSGTreeNormalizer.cc 
   ../src/Geometry.cc 
   ../src/Polygon2d.cc 
   ../src/csgops.cc 
@@ -734,7 +734,7 @@ set(NOCGAL_SOURCES
 
 set(CGAL_SOURCES
   ${NOCGAL_SOURCES}
-  ../src/CSGTermEvaluator.cc 
+  ../src/CSGTreeEvaluator.cc 
   ../src/CGAL_Nef_polyhedron.cc 
   ../src/cgalutils.cc 
   ../src/cgalutils-applyops.cc 

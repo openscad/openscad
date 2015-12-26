@@ -24,7 +24,7 @@
  *
  */
 
-#include "csgterm.h"
+#include "csgnode.h"
 #include "Geometry.h"
 #include "linalg.h"
 #include <sstream>
@@ -32,27 +32,32 @@
 #include <boost/range/iterator_range.hpp>
 
 /*!
-	\class CSGTerm
+	\class CSGNode
 
-	A CSGTerm is either a "primitive" or a CSG operation with two
-	children terms. A primitive in this context is any Geometry, which
-	may or may not have a subtree which is already evaluated (e.g. using
-	the render() module).
+	CSG trees consiste of CSGNode instances; either a CSGLeaf node
+	containing geometry or a CSGOperation performing a basic CSG
+	operation on its operands.
 
 	Note: To distinguish between geometry evaluated to an empty volume
-	and non-geometric nodes (e.g. echo), a NULL CSGTerm is considered a
-	non-geometric node, while a CSGTerm with a NULL geometry is
+	and non-geometric nodes (e.g. echo), a NULL CSGLeaf is considered a
+	non-geometric node, while a CSGLeaf with a NULL geometry is
 	considered empty geometry. This is important when e.g. establishing
 	positive vs. negative volumes using the difference operator.
  */
 
 /*!
-	\class CSGChain
+	\class CSGProducts
 
-	A CSGChain is just a vector of primitives, each having a CSG type associated with it.
+	A CSGProducts is just a vector of CSGProduct nodes.
+primitives, each having a CSG type associated with it.
 	It's created by importing a CSGTerm tree.
 
  */
+/*!
+	\class CSGProduct
+
+	A CSGProduct is a vector of intersections and a vector of subtractions, used for CSG rendering.
+*/
 
 
 shared_ptr<CSGNode> CSGOperation::createCSGNode(OpenSCADOperator type, shared_ptr<CSGNode> left, shared_ptr<CSGNode> right)
@@ -93,7 +98,7 @@ shared_ptr<CSGNode> CSGOperation::createCSGNode(OpenSCADOperator type, shared_pt
 }
 
 CSGLeaf::CSGLeaf(const shared_ptr<const Geometry> &geom, const Transform3d &matrix, const Color4f &color, const std::string &label)
-	: label(label), m(matrix), color(color)
+	: label(label), matrix(matrix), color(color)
 {
 	if (geom && !geom->isEmpty()) this->geom = geom;
 	initBoundingBox();
@@ -118,7 +123,7 @@ CSGOperation::CSGOperation(OpenSCADOperator type, CSGNode *left, CSGNode *right)
 void CSGLeaf::initBoundingBox()
 {
 	if (!this->geom) return;
-	this->bbox = this->m * this->geom->getBoundingBox();
+	this->bbox = this->matrix * this->geom->getBoundingBox();
 }
 
 void CSGOperation::initBoundingBox()
@@ -166,36 +171,36 @@ std::string CSGOperation::dump()
 	return dump.str();
 }
 
-void CSGProducts::import(shared_ptr<CSGNode> term, OpenSCADOperator type, CSGNode::Flag flags)
+void CSGProducts::import(shared_ptr<CSGNode> csgnode, OpenSCADOperator type, CSGNode::Flag flags)
 {
-	CSGNode::Flag newflags = (CSGNode::Flag)(term->flags | flags);
+	CSGNode::Flag newflags = (CSGNode::Flag)(csgnode->getFlags() | flags);
 
-	if (shared_ptr<CSGLeaf> leaf = dynamic_pointer_cast<CSGLeaf>(term)) {
+	if (shared_ptr<CSGLeaf> leaf = dynamic_pointer_cast<CSGLeaf>(csgnode)) {
 		if (type == OPENSCAD_UNION && this->currentproduct->intersections.size() > 0) {
 			this->createProduct();
 		}
 		else if (type == OPENSCAD_DIFFERENCE) {
 			this->currentlist = &this->currentproduct->subtractions;
 		}
-		this->currentlist->push_back(CSGChainObject(leaf->geom, leaf->m, leaf->color, leaf->label, newflags));
-	} else if (shared_ptr<CSGOperation> op = dynamic_pointer_cast<CSGOperation>(term)) {
+		this->currentlist->push_back(CSGChainObject(leaf, newflags));
+	} else if (shared_ptr<CSGOperation> op = dynamic_pointer_cast<CSGOperation>(csgnode)) {
 		assert(op->left() && op->right());
 		import(op->left(), type, newflags);
-		import(op->right(), op->type, newflags);
+		import(op->right(), op->getType(), newflags);
 	}
 }
 
 std::string CSGProduct::dump(bool full) const
 {
 	std::stringstream dump;
-	dump << this->intersections.front().label;
+	dump << this->intersections.front().leaf->label;
 	BOOST_FOREACH(const CSGChainObject &csgobj,
 								boost::make_iterator_range(this->intersections.begin() + 1,
 																					 this->intersections.end())) {
-		dump << " *" << csgobj.label;
+		dump << " *" << csgobj.leaf->label;
 	}
 	BOOST_FOREACH(const CSGChainObject &csgobj, this->subtractions) {
-		dump << " -" << csgobj.label;
+		dump << " -" << csgobj.leaf->label;
 	}
 
 // FIXME:
@@ -212,10 +217,10 @@ BoundingBox CSGProduct::getBoundingBox() const
 {
 	BoundingBox bbox;
 	BOOST_FOREACH(const CSGChainObject &csgobj, this->intersections) {
-		if (csgobj.geom) {
-			BoundingBox psbox = csgobj.geom->getBoundingBox();
+		if (csgobj.leaf->geom) {
+			BoundingBox psbox = csgobj.leaf->geom->getBoundingBox();
 			// FIXME: Should intersect rather than extend
-			if (!psbox.isEmpty()) bbox.extend(csgobj.matrix * psbox);
+			if (!psbox.isEmpty()) bbox.extend(csgobj.leaf->matrix * psbox);
 		}
 	}
 	return bbox;

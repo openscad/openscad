@@ -2,11 +2,11 @@
 
 #include "memory.h"
 
-class CSGTermNormalizer
+class CSGTreeNormalizer
 {
 public:
-	CSGTermNormalizer(size_t limit) : limit(limit) {}
-	~CSGTermNormalizer() {}
+	CSGTreeNormalizer(size_t limit) : limit(limit) {}
+	~CSGTreeNormalizer() {}
 
 	shared_ptr<class CSGNode> normalize(const shared_ptr<CSGNode> &term);
 
