@@ -40,6 +40,8 @@
 
 #include FT_OUTLINE_H
 
+#define SCRIPT_UNTAG(tag)   ((uint8_t)((tag)>>24)) % ((uint8_t)((tag)>>16)) % ((uint8_t)((tag)>>8)) % ((uint8_t)(tag))
+
 static inline Vector2d get_scaled_vector(const FT_Vector *ft_vector, double scale) {
     return Vector2d(ft_vector->x / scale, ft_vector->y / scale);
 }
@@ -122,6 +124,75 @@ double FreetypeRenderer::calc_y_offset(std::string valign, double ascend, double
 	}
 }
 
+hb_direction_t FreetypeRenderer::get_direction(const FreetypeRenderer::Params &params, const hb_script_t script) const
+{
+	hb_direction_t param_direction = hb_direction_from_string(params.direction.c_str(), -1);
+	if (param_direction != HB_DIRECTION_INVALID) {
+		return param_direction;
+	}
+
+	hb_direction_t direction = hb_script_get_horizontal_direction(script);
+	PRINTDB("Detected direction '%s' for %s", hb_direction_to_string(direction) % params.text.c_str());
+	return direction;
+}
+
+bool FreetypeRenderer::is_ignored_script(const hb_script_t script) const
+{
+	switch (script) {
+	case HB_SCRIPT_COMMON:
+	case HB_SCRIPT_INHERITED:
+	case HB_SCRIPT_UNKNOWN:
+	case HB_SCRIPT_INVALID:
+		return true;
+	default:
+		return false;
+	}
+}
+
+hb_script_t FreetypeRenderer::get_script(const FreetypeRenderer::Params &params, hb_glyph_info_t *glyph_info, unsigned int glyph_count) const
+{
+	hb_script_t param_script = hb_script_from_string(params.script.c_str(), -1);
+	if (param_script != HB_SCRIPT_INVALID) {
+		return param_script;
+	}
+
+	hb_script_t script = HB_SCRIPT_INVALID;
+	for (unsigned int idx = 0;idx < glyph_count;idx++) {
+		hb_codepoint_t cp = glyph_info[idx].codepoint;
+		hb_script_t s = hb_unicode_script(hb_unicode_funcs_get_default(), cp);
+		if (!is_ignored_script(s)) {
+			if (script == HB_SCRIPT_INVALID) {
+				script = s;
+			} else if ((script != s) && (script != HB_SCRIPT_UNKNOWN)) {
+				script = HB_SCRIPT_UNKNOWN;
+			}
+		}
+	}
+	PRINTDB("Detected script '%c%c%c%c' for %s", SCRIPT_UNTAG(script) % params.text.c_str());
+	return script;
+}
+
+void FreetypeRenderer::detect_properties(FreetypeRenderer::Params &params) const
+{
+	hb_buffer_t *hb_buf = hb_buffer_create();
+	hb_buffer_add_utf8(hb_buf, params.text.c_str(), strlen(params.text.c_str()), 0, strlen(params.text.c_str()));
+
+	unsigned int glyph_count;
+        hb_glyph_info_t *glyph_info = hb_buffer_get_glyph_infos(hb_buf, &glyph_count);
+
+	hb_script_t script = get_script(params, glyph_info, glyph_count);
+	hb_buffer_destroy(hb_buf);
+
+	if (!is_ignored_script(script)) {
+		char script_buf[5] = { 0, };
+		hb_tag_to_string(hb_script_to_iso15924_tag(script), script_buf);
+		params.set_script(script_buf);
+	}
+
+	hb_direction_t direction = get_direction(params, script);
+	params.set_direction(hb_direction_to_string(direction));
+}
+
 std::vector<const Geometry *> FreetypeRenderer::render(const FreetypeRenderer::Params &params) const
 {
 	FT_Face face;
@@ -180,8 +251,8 @@ std::vector<const Geometry *> FreetypeRenderer::render(const FreetypeRenderer::P
 	
 	unsigned int glyph_count;
         hb_glyph_info_t *glyph_info = hb_buffer_get_glyph_infos(hb_buf, &glyph_count);
-        hb_glyph_position_t *glyph_pos = hb_buffer_get_glyph_positions(hb_buf, &glyph_count);	
-	
+        hb_glyph_position_t *glyph_pos = hb_buffer_get_glyph_positions(hb_buf, &glyph_count);
+
 	GlyphArray glyph_array;
 	for (unsigned int idx = 0;idx < glyph_count;idx++) {
 		FT_UInt glyph_index = glyph_info[idx].codepoint;
@@ -197,7 +268,7 @@ std::vector<const Geometry *> FreetypeRenderer::render(const FreetypeRenderer::P
 			PRINTB("Could not get glyph %u for char at index %u in text '%s'", glyph_index % idx % params.text);
 			continue;
 		}
-		const GlyphData *glyph_data = new GlyphData(glyph, idx, &glyph_info[idx], &glyph_pos[idx]);
+		const GlyphData *glyph_data = new GlyphData(glyph, idx, &glyph_pos[idx]);
 		glyph_array.push_back(glyph_data);
 	}
 

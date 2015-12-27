@@ -90,13 +90,13 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 
 	node->layername = layer->isUndefined() ? "" : layer->toString();
 	node->height = 100;
-	height->getDouble(node->height);
+	height->getFiniteDouble(node->height);
 	node->convexity = (int)convexity->toDouble();
-	origin->getVec2(node->origin_x, node->origin_y);
+	origin->getVec2(node->origin_x, node->origin_y, true);
 	node->scale_x = node->scale_y = 1;
-	scale->getDouble(node->scale_x);
-	scale->getDouble(node->scale_y);
-	scale->getVec2(node->scale_x, node->scale_y);
+	scale->getFiniteDouble(node->scale_x);
+	scale->getFiniteDouble(node->scale_y);
+	scale->getVec2(node->scale_x, node->scale_y, true);
 
 	if (center->type() == Value::BOOL)
 		node->center = center->toBool();
@@ -109,17 +109,17 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	if (node->scale_x < 0) node->scale_x = 0;
 	if (node->scale_y < 0) node->scale_y = 0;
 
-	if (slices->type() == Value::NUMBER) node->slices = (int)slices->toDouble();
+	double slicesVal = 0;
+	slices->getFiniteDouble(slicesVal);
+	node->slices = (int)slicesVal;
 
-	if (twist->type() == Value::NUMBER) {
-		node->twist = twist->toDouble();
-		if (node->twist != 0.0) {
-			if (node->slices == 0) {
-				node->slices = (int)fmax(2, fabs(Calc::get_fragments_from_r(node->height,
-																																		node->fn, node->fs, node->fa) * node->twist / 360));
-			}
-			node->has_twist = true;
+	node->twist = 0.0;
+	twist->getFiniteDouble(node->twist);
+	if (node->twist != 0.0) {
+		if (node->slices == 0) {
+			node->slices = (int)fmax(2, fabs(Calc::get_fragments_from_r(node->height, node->fn, node->fs, node->fa) * node->twist / 360));
 		}
+		node->has_twist = true;
 	}
 	node->slices = std::max(node->slices, 1);
 
@@ -142,10 +142,7 @@ std::string LinearExtrudeNode::toString() const
 			"file = " << this->filename << ", "
 			"layer = " << QuotedString(this->layername) << ", "
 			"origin = [" << this->origin_x << ", " << this->origin_y << "], "
-#ifndef OPENSCAD_TESTING
-			// timestamp is needed for caching, but disturbs the test framework
 			<< "timestamp = " << (fs::exists(path) ? fs::last_write_time(path) : 0) << ", "
-#endif
 			;
 	}
 	stream <<

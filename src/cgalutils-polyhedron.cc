@@ -11,13 +11,8 @@
 
 #include <boost/foreach.hpp>
 
-namespace /* anonymous */ {
-	template<typename Result, typename V>
-	Result vector_convert(V const& v) {
-		return Result(CGAL::to_double(v[0]),CGAL::to_double(v[1]),CGAL::to_double(v[2]));
-	}
-
 #undef GEN_SURFACE_DEBUG
+namespace /* anonymous */ {
 
 	template <typename Polyhedron>
 	class CGAL_Build_PolySet : public CGAL::Modifier_base<typename Polyhedron::HalfedgeDS>

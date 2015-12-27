@@ -63,7 +63,7 @@ public: // methods
 
 	static const EvalContext* getLastModuleCtx(const EvalContext *evalctx);
 	
-	static AbstractNode* getChild(const Value &value, const EvalContext* modulectx);
+	static AbstractNode* getChild(const ValuePtr &value, const EvalContext* modulectx);
 
 private: // data
 	Type type;
@@ -78,15 +78,15 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 		ValuePtr it_values = evalctx->getArgValue(l, ctx);
 		Context c(ctx);
 		if (it_values->type() == Value::RANGE) {
-			Value::RangeType range = it_values->toRange();
-                        boost::uint32_t steps = range.nbsteps();
-                        if (steps >= 10000) {
-                                PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu).", steps);
-                        } else {
-                            for (Value::RangeType::iterator it = range.begin();it != range.end();it++) {
-                                c.set_variable(it_name, ValuePtr(*it));
-                                for_eval(node, inst, l+1, &c, evalctx);
-                            }
+			RangeType range = it_values->toRange();
+			boost::uint32_t steps = range.numValues();
+			if (steps >= 10000) {
+				PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu).", steps);
+			} else {
+				for (RangeType::iterator it = range.begin();it != range.end();it++) {
+					c.set_variable(it_name, ValuePtr(*it));
+					for_eval(node, inst, l+1, &c, evalctx);
+				}
 			}
 		}
 		else if (it_values->type() == Value::VECTOR) {
@@ -133,17 +133,17 @@ const EvalContext* ControlModule::getLastModuleCtx(const EvalContext *evalctx)
 }
 
 // static
-AbstractNode* ControlModule::getChild(const Value& value, const EvalContext* modulectx)
+AbstractNode* ControlModule::getChild(const ValuePtr &value, const EvalContext* modulectx)
 {
-	if (value.type()!=Value::NUMBER) {
+	if (value->type()!=Value::NUMBER) {
 		// Invalid parameter
 		// (e.g. first child of difference is invalid)
-		PRINTB("WARNING: Bad parameter type (%s) for children, only accept: empty, number, vector, range.", value.toString());
+		PRINTB("WARNING: Bad parameter type (%s) for children, only accept: empty, number, vector, range.", value->toString());
 		return NULL;
 	}
 	double v;
-	if (!value.getDouble(v)) {
-		PRINTB("WARNING: Bad parameter type (%s) for children, only accept: empty, number, vector, range.", value.toString());
+	if (!value->getDouble(v)) {
+		PRINTB("WARNING: Bad parameter type (%s) for children, only accept: empty, number, vector, range.", value->toString());
 		return NULL;
 	}
 		
@@ -226,12 +226,12 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 			// one (or more ignored) parameter
 			ValuePtr value = evalctx->getArgValue(0);
 			if (value->type() == Value::NUMBER) {
-				return getChild(*value, modulectx);
+				return getChild(value, modulectx);
 			}
 			else if (value->type() == Value::VECTOR) {
 				AbstractNode* node = new CsgNode(inst, OPENSCAD_UNION);
 				const Value::VectorType& vect = value->toVector();
-				foreach (const Value::VectorType::value_type& vectvalue, vect) {
+				foreach (const ValuePtr &vectvalue, vect) {
 					AbstractNode* childnode = getChild(vectvalue,modulectx);
 					if (childnode==NULL) continue; // error
 					node->children.push_back(childnode);
@@ -240,14 +240,14 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 			}
 			else if (value->type() == Value::RANGE) {
 				AbstractNode* node = new CsgNode(inst, OPENSCAD_UNION);
-				Value::RangeType range = value->toRange();
-				boost::uint32_t steps = range.nbsteps();
+				RangeType range = value->toRange();
+				boost::uint32_t steps = range.numValues();
 				if (steps >= 10000) {
 					PRINTB("WARNING: Bad range parameter for children: too many elements (%lu).", steps);
 					return NULL;
 				}
-                                for (Value::RangeType::iterator it = range.begin();it != range.end();it++) {
-					AbstractNode* childnode = getChild(Value(*it),modulectx); // with error cases
+				for (RangeType::iterator it = range.begin();it != range.end();it++) {
+					AbstractNode* childnode = getChild(ValuePtr(*it),modulectx); // with error cases
 					if (childnode==NULL) continue; // error
 					node->children.push_back(childnode);
 				}

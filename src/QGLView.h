@@ -1,7 +1,13 @@
 #pragma once
 
 #include "system-gl.h"
+#include <QtGlobal>
+
+#ifdef USE_QOPENGLWIDGET
+#include <QOpenGLWidget>
+#else
 #include <QGLWidget>
+#endif
 #include <QLabel>
 
 #include <Eigen/Core>
@@ -9,7 +15,13 @@
 #include "GLView.h"
 #include "renderer.h"
 
-class QGLView : public QGLWidget, public GLView
+class QGLView :
+#ifdef USE_QOPENGLWIDGET
+		public QOpenGLWidget,
+#else
+		public QGLWidget,
+#endif
+		public GLView
 {
 	Q_OBJECT
 	Q_PROPERTY(bool showFaces READ showFaces WRITE setShowFaces);
@@ -21,7 +33,6 @@ class QGLView : public QGLWidget, public GLView
 
 public:
 	QGLView(QWidget *parent = NULL);
-	QGLView(const QGLFormat & format, QWidget *parent = NULL);
 #ifdef ENABLE_OPENCSG
 	bool hasOpenCSGSupport() { return this->opencsg_support; }
 #endif
@@ -42,6 +53,8 @@ public:
 #if QT_VERSION >= 0x050100
 	float getDPI() { return this->devicePixelRatio(); }
 #endif
+	
+	const QImage & grabFrame();
 	bool save(const char *filename);
 	void resetView();
 	void viewAll();
@@ -49,15 +62,21 @@ public:
 public slots:
 	void ZoomIn(void);
 	void ZoomOut(void);
+#ifdef USE_QOPENGLWIDGET
+	inline void updateGL() { update(); }
+#endif
 
 public:
 	QLabel *statusLabel;
-
+#ifdef USE_QOPENGLWIDGET
+	inline QImage grabFrameBuffer() { return grabFramebuffer(); }
+#endif
 private:
 	void init();
 
 	bool mouse_drag_active;
 	QPoint last_mouse;
+	QImage frame; // Used by grabFrame() and save()
 
 	void wheelEvent(QWheelEvent *event);
 	void mousePressEvent(QMouseEvent *event);

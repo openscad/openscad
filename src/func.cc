@@ -24,13 +24,13 @@
  *
  */
 
+#include "mathc99.h"
 #include "function.h"
 #include "expression.h"
 #include "evalcontext.h"
 #include "builtin.h"
 #include <sstream>
 #include <ctime>
-#include "mathc99.h"
 #include <limits>
 #include <algorithm>
 #include "stl-utils.h"
@@ -50,10 +50,13 @@ using boost::math::isinf;
  auto/bind()s for random function objects, but we are supporting older systems.
 */
 
+#include"boost-utils.h"
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_real.hpp>
 /*Unicode support for string lengths and array accesses*/
 #include <glib.h>
+// hash double
+#include "linalg.h"
 
 #ifdef __WIN32__
 #include <process.h>
@@ -238,34 +241,51 @@ ValuePtr builtin_rands(const Context *, const EvalContext *evalctx)
 		if (v0->type() != Value::NUMBER) goto quit;
 		double min = v0->toDouble();
 
+		if (boost::math::isinf(min)) {
+			PRINT("WARNING: rands() range min cannot be infinite");
+			min = -std::numeric_limits<double>::max()/2;
+			PRINTB("WARNING: resetting to %f",min);
+		}
 		ValuePtr v1 = evalctx->getArgValue(1);
 		if (v1->type() != Value::NUMBER) goto quit;
 		double max = v1->toDouble();
+		if (boost::math::isinf(max)) {
+			PRINT("WARNING: rands() range max cannot be infinite");
+			max = std::numeric_limits<double>::max()/2;
+			PRINTB("WARNING: resetting to %f",max);
+		}
 		if (max < min) {
 			register double tmp = min; min = max; max = tmp;
 		}
 		ValuePtr v2 = evalctx->getArgValue(2);
 		if (v2->type() != Value::NUMBER) goto quit;
-		size_t numresults = std::max(0, static_cast<int>(v2->toDouble()));
+		double numresultsd = std::abs( v2->toDouble() );
+		if (boost::math::isinf(numresultsd)) {
+			PRINT("WARNING: rands() cannot create an infinite number of results");
+			PRINT("WARNING: resetting number of results to 1");
+			numresultsd = 1;
+		}
+		size_t numresults = boost_numeric_cast<size_t,double>( numresultsd );
 
 		bool deterministic = false;
 		if (n > 3) {
 			ValuePtr v3 = evalctx->getArgValue(3);
 			if (v3->type() != Value::NUMBER) goto quit;
-			deterministic_rng.seed((unsigned int) v3->toDouble());
+			uint32_t seed = static_cast<uint32_t>(hash_floating_point( v3->toDouble() ));
+			deterministic_rng.seed( seed );
 			deterministic = true;
 		}
 		Value::VectorType vec;
 		if (min==max) { // Boost doesn't allow min == max
 			for (size_t i=0; i < numresults; i++)
-				vec.push_back( Value( min ) );
+				vec.push_back(ValuePtr(min));
 		} else {
 			boost::uniform_real<> distributor( min, max );
 			for (size_t i=0; i < numresults; i++) {
 				if ( deterministic ) {
-					vec.push_back(Value(distributor(deterministic_rng)));
+					vec.push_back(ValuePtr(distributor(deterministic_rng)));
 				} else {
-					vec.push_back(Value(distributor(lessdeterministic_rng)));
+					vec.push_back(ValuePtr(distributor(lessdeterministic_rng)));
 				}
 			}
 		}
@@ -285,11 +305,11 @@ ValuePtr builtin_min(const Context *, const EvalContext *evalctx)
 		ValuePtr v0 = evalctx->getArgValue(0);
 
 		if (n == 1 && v0->type() == Value::VECTOR && !v0->toVector().empty()) {
-			Value min = v0->toVector()[0];
+			ValuePtr min = v0->toVector()[0];
 			for (size_t i = 1; i < v0->toVector().size(); i++) {
 				if (v0->toVector()[i] < min) min = v0->toVector()[i];
 			}
-			return ValuePtr(min);
+			return min;
 		}
 		if (v0->type() == Value::NUMBER) {
 			double val = v0->toDouble();
@@ -317,11 +337,11 @@ ValuePtr builtin_max(const Context *, const EvalContext *evalctx)
 		ValuePtr v0 = evalctx->getArgValue(0);
 
 		if (n == 1 && v0->type() == Value::VECTOR && !v0->toVector().empty()) {
-			Value max = v0->toVector()[0];
+			ValuePtr max = v0->toVector()[0];
 			for (size_t i = 1; i < v0->toVector().size(); i++) {
 				if (v0->toVector()[i] > max) max = v0->toVector()[i];
 			}
-			return ValuePtr(max);
+			return max;
 		}
 		if (v0->type() == Value::NUMBER) {
 			double val = v0->toDouble();
@@ -614,14 +634,13 @@ ValuePtr builtin_concat(const Context *, const EvalContext *evalctx)
 	Value::VectorType result;
 
 	for (size_t i = 0; i < evalctx->numArgs(); i++) {
-		ValuePtr v = evalctx->getArgValue(i);
-		if (v->type() == Value::VECTOR) {
-			Value::VectorType vec = v->toVector();
-			for (Value::VectorType::const_iterator it = vec.begin(); it != vec.end(); it++) {
-				result.push_back(*it);
+		ValuePtr val = evalctx->getArgValue(i);
+		if (val->type() == Value::VECTOR) {
+			BOOST_FOREACH(const ValuePtr &v, val->toVector()) { 
+				result.push_back(v);
 			}
 		} else {
-			result.push_back(*v);
+			result.push_back(val);
 		}
 	}
 	return ValuePtr(result);
@@ -636,13 +655,14 @@ ValuePtr builtin_lookup(const Context *, const EvalContext *evalctx)
 
 	ValuePtr v1 = evalctx->getArgValue(1);
 	const Value::VectorType &vec = v1->toVector();
-	if (vec[0].toVector().size() < 2) // Second must be a vector of vectors
-		return ValuePtr::undefined;
-	if (!vec[0].getVec2(low_p, low_v) || !vec[0].getVec2(high_p, high_v))
+	if (vec.empty()) return ValuePtr::undefined; // Second must be a vector
+	if (vec[0]->toVector().size() < 2) return ValuePtr::undefined; // ..of vectors
+
+	if (!vec[0]->getVec2(low_p, low_v) || !vec[0]->getVec2(high_p, high_v))
 		return ValuePtr::undefined;
 	for (size_t i = 1; i < vec.size(); i++) {
 		double this_p, this_v;
-		if (vec[i].getVec2(this_p, this_v)) {
+		if (vec[i]->getVec2(this_p, this_v)) {
 			if (this_p <= p && (this_p > low_p || low_p > p)) {
 				low_p = this_p;
 				low_v = this_v;
@@ -727,10 +747,10 @@ static Value::VectorType search(const std::string &find, const std::string &tabl
 			if (ptr_ft && ptr_st && (g_utf8_get_char(ptr_ft) == g_utf8_get_char(ptr_st)) ) {
 				matchCount++;
 				if (num_returns_per_match == 1) {
-					returnvec.push_back(Value(double(j)));
+					returnvec.push_back(ValuePtr(double(j)));
 					break;
 				} else {
-					resultvec.push_back(Value(double(j)));
+					resultvec.push_back(ValuePtr(double(j)));
 				}
 				if (num_returns_per_match > 1 && matchCount >= num_returns_per_match) {
 					break;
@@ -740,10 +760,9 @@ static Value::VectorType search(const std::string &find, const std::string &tabl
 		if (matchCount == 0) {
 			gchar utf8_of_cp[6] = ""; //A buffer for a single unicode character to be copied into
 			if (ptr_ft) g_utf8_strncpy(utf8_of_cp, ptr_ft, 1);
-			PRINTB("  WARNING: search term not found: \"%s\"", utf8_of_cp);
 		}
 		if (num_returns_per_match == 0 || num_returns_per_match > 1) {
-			returnvec.push_back(Value(resultvec));
+			returnvec.push_back(ValuePtr(resultvec));
 		}
 	}
 	return returnvec;
@@ -761,19 +780,19 @@ static Value::VectorType search(const std::string &find, const Value::VectorType
 		Value::VectorType resultvec;
 		const gchar *ptr_ft = g_utf8_offset_to_pointer(find.c_str(), i);
 		for (size_t j = 0; j < searchTableSize; j++) {
-			Value::VectorType entryVec = table[j].toVector();
+			const Value::VectorType &entryVec = table[j]->toVector();
 			if (entryVec.size() <= index_col_num) {
 				PRINTB("WARNING: Invalid entry in search vector at index %d, required number of values in the entry: %d. Invalid entry: %s", j % (index_col_num + 1) % table[j]);
 				return Value::VectorType();
 			}
-			const gchar *ptr_st = g_utf8_offset_to_pointer(entryVec[index_col_num].toString().c_str(), 0);
+			const gchar *ptr_st = g_utf8_offset_to_pointer(entryVec[index_col_num]->toString().c_str(), 0);
 			if (ptr_ft && ptr_st && (g_utf8_get_char(ptr_ft) == g_utf8_get_char(ptr_st)) ) {
 				matchCount++;
 				if (num_returns_per_match == 1) {
-					returnvec.push_back(Value(double(j)));
+					returnvec.push_back(ValuePtr(double(j)));
 					break;
 				} else {
-					resultvec.push_back(Value(double(j)));
+					resultvec.push_back(ValuePtr(double(j)));
 				}
 				if (num_returns_per_match > 1 && matchCount >= num_returns_per_match) {
 					break;
@@ -786,7 +805,7 @@ static Value::VectorType search(const std::string &find, const Value::VectorType
 			PRINTB("  WARNING: search term not found: \"%s\"", utf8_of_cp);
 		}
 		if (num_returns_per_match == 0 || num_returns_per_match > 1) {
-			returnvec.push_back(Value(resultvec));
+			returnvec.push_back(ValuePtr(resultvec));
 		}
 	}
 	return returnvec;
@@ -807,12 +826,12 @@ ValuePtr builtin_search(const Context *, const EvalContext *evalctx)
 		unsigned int matchCount = 0;
 
 		for (size_t j = 0; j < searchTable->toVector().size(); j++) {
-			const Value &search_element = searchTable->toVector()[j];
+			const ValuePtr &search_element = searchTable->toVector()[j];
 
-			if ((index_col_num == 0 && *findThis == search_element) ||
-					(index_col_num < search_element.toVector().size() &&
-					*findThis      == search_element.toVector()[index_col_num])) {
-				returnvec.push_back(Value(double(j)));
+			if ((index_col_num == 0 && findThis == search_element) ||
+					(index_col_num < search_element->toVector().size() &&
+					 findThis      == search_element->toVector()[index_col_num])) {
+				returnvec.push_back(ValuePtr(double(j)));
 				matchCount++;
 				if (num_returns_per_match != 0 && matchCount >= num_returns_per_match) break;
 			}
@@ -829,16 +848,16 @@ ValuePtr builtin_search(const Context *, const EvalContext *evalctx)
 		  unsigned int matchCount = 0;
 			Value::VectorType resultvec;
 
-			Value const& find_value = findThis->toVector()[i];
+			const ValuePtr &find_value = findThis->toVector()[i];
 
 			for (size_t j = 0; j < searchTable->toVector().size(); j++) {
 
-				Value const& search_element = searchTable->toVector()[j];
+				const ValuePtr &search_element = searchTable->toVector()[j];
 
 				if ((index_col_num == 0 && find_value == search_element) ||
-					(index_col_num < search_element.toVector().size() &&
-					find_value    == search_element.toVector()[index_col_num])) {
-					Value resultValue((double(j)));
+						(index_col_num < search_element->toVector().size() &&
+						 find_value    == search_element->toVector()[index_col_num])) {
+					ValuePtr resultValue((double(j)));
 		      matchCount++;
 		      if (num_returns_per_match == 1) {
 						returnvec.push_back(resultValue);
@@ -850,20 +869,13 @@ ValuePtr builtin_search(const Context *, const EvalContext *evalctx)
 		    }
 		  }
 		  if (num_returns_per_match == 1 && matchCount == 0) {
-		    if (findThis->toVector()[i].type() == Value::NUMBER) {
-					PRINTB("  WARNING: search term not found: %s",findThis->toVector()[i].toDouble());
-				}
-		    else if (findThis->toVector()[i].type() == Value::STRING) {
-					PRINTB("  WARNING: search term not found: \"%s\"",findThis->toVector()[i].toString());
-				}
-		    returnvec.push_back(resultvec);
+		    returnvec.push_back(ValuePtr(resultvec));
 		  }
 		  if (num_returns_per_match == 0 || num_returns_per_match > 1) {
-				returnvec.push_back(resultvec);
+				returnvec.push_back(ValuePtr(resultvec));
 			}
 		}
 	} else {
-		PRINTB("  WARNING: search: none performed on input %s", findThis);
 		return ValuePtr::undefined;
 	}
 	return ValuePtr(returnvec);
@@ -927,12 +939,12 @@ ValuePtr builtin_norm(const Context *, const EvalContext *evalctx)
 		 ValuePtr val = evalctx->getArgValue(0);
 		if (val->type() == Value::VECTOR) {
 			double sum = 0;
-			Value::VectorType v = val->toVector();
+			const Value::VectorType &v = val->toVector();
 			size_t n = v.size();
 			for (size_t i = 0; i < n; i++)
-				if (v[i].type() == Value::NUMBER) {
+				if (v[i]->type() == Value::NUMBER) {
 					// sum += pow(v[i].toDouble(),2);
-					register double x = v[i].toDouble();
+					register double x = v[i]->toDouble();
 					sum += x*x;
 				} else {
 					PRINT("WARNING: Incorrect arguments to norm()");
@@ -958,10 +970,10 @@ ValuePtr builtin_cross(const Context *, const EvalContext *evalctx)
 		return ValuePtr::undefined;
 	}
 	
-	Value::VectorType v0 = arg0->toVector();
-	Value::VectorType v1 = arg1->toVector();
+	const Value::VectorType &v0 = arg0->toVector();
+	const Value::VectorType &v1 = arg1->toVector();
 	if ((v0.size() == 2) && (v1.size() == 2)) {
-		return ValuePtr(Value(v0[0].toDouble() * v1[1].toDouble() - v0[1].toDouble() * v1[0].toDouble()));
+		return ValuePtr(v0[0]->toDouble() * v1[1]->toDouble() - v0[1]->toDouble() * v1[0]->toDouble());
 	}
 
 	if ((v0.size() != 3) || (v1.size() != 3)) {
@@ -969,12 +981,12 @@ ValuePtr builtin_cross(const Context *, const EvalContext *evalctx)
 		return ValuePtr::undefined;
 	}
 	for (unsigned int a = 0;a < 3;a++) {
-		if ((v0[a].type() != Value::NUMBER) || (v1[a].type() != Value::NUMBER)) {
+		if ((v0[a]->type() != Value::NUMBER) || (v1[a]->type() != Value::NUMBER)) {
 			PRINT("WARNING: Invalid value in parameter vector for cross()");
 			return ValuePtr::undefined;
 		}
-		double d0 = v0[a].toDouble();
-		double d1 = v1[a].toDouble();
+		double d0 = v0[a]->toDouble();
+		double d1 = v1[a]->toDouble();
 		if (boost::math::isnan(d0) || boost::math::isnan(d1)) {
 			PRINT("WARNING: Invalid value (NaN) in parameter vector for cross()");
 			return ValuePtr::undefined;
@@ -985,14 +997,14 @@ ValuePtr builtin_cross(const Context *, const EvalContext *evalctx)
 		}
 	}
 	
-	double x = v0[1].toDouble() * v1[2].toDouble() - v0[2].toDouble() * v1[1].toDouble();
-	double y = v0[2].toDouble() * v1[0].toDouble() - v0[0].toDouble() * v1[2].toDouble();
-	double z = v0[0].toDouble() * v1[1].toDouble() - v0[1].toDouble() * v1[0].toDouble();
+	double x = v0[1]->toDouble() * v1[2]->toDouble() - v0[2]->toDouble() * v1[1]->toDouble();
+	double y = v0[2]->toDouble() * v1[0]->toDouble() - v0[0]->toDouble() * v1[2]->toDouble();
+	double z = v0[0]->toDouble() * v1[1]->toDouble() - v0[1]->toDouble() * v1[0]->toDouble();
 	
 	Value::VectorType result;
-	result.push_back(Value(x));
-	result.push_back(Value(y));
-	result.push_back(Value(z));
+	result.push_back(ValuePtr(x));
+	result.push_back(ValuePtr(y));
+	result.push_back(ValuePtr(z));
 	return ValuePtr(result);
 }
 

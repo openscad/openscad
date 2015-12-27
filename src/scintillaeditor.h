@@ -52,6 +52,7 @@ public:
 	QString selectedText();
 	bool find(const QString &, bool findNext = false, bool findBackwards = false);
 	void replaceSelectedText(const QString&);
+	void replaceAll(const QString &findText, const QString &replaceText);
 	QStringList colorSchemes();
         
 private:
@@ -62,6 +63,13 @@ private:
         QColor readColor(const boost::property_tree::ptree &pt, const std::string name, const QColor defaultColor);
         void enumerateColorSchemesInPath(colorscheme_set_t &result_set, const fs::path path);
         colorscheme_set_t enumerateColorSchemes();
+
+        virtual bool eventFilter(QObject* obj, QEvent *event);
+        void navigateOnNumber(int key);
+        bool modifyNumber(int key);
+
+signals:
+	void previewRequest(void);
 	
 public slots:
 	void zoomIn();
@@ -77,7 +85,7 @@ public slots:
 	void commentSelection();
 	void uncommentSelection();
 	void insert(const QString&);
-        void replaceAll(const QString&);
+	void setText(const QString&);
 	void undo();
 	void redo();
 	void cut();

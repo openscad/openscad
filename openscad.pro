@@ -77,6 +77,7 @@ deploy {
   DEFINES += OPENSCAD_DEPLOY
   macx: CONFIG += sparkle
 }
+snapshot: DEFINES += OPENSCAD_SNAPSHOT
 
 macx {
   TARGET = OpenSCAD
@@ -99,25 +100,8 @@ macx {
   APP_RESOURCES.files = OpenSCAD.sdef dsa_pub.pem icons/SCAD.icns
   QMAKE_BUNDLE_DATA += APP_RESOURCES
   LIBS += -framework Cocoa -framework ApplicationServices
-
-  # Mac needs special care to link against the correct C++ library
-  # We attempt to auto-detect it by inspecting Boost
-  dirs = $${BOOSTDIR} $${QMAKE_LIBDIR}
-  for(dir, dirs) {
-    system(grep -q __112basic_string $${dir}/libboost_thread* >& /dev/null) {
-      message("Detected libc++-linked boost in $${dir}")
-      CONFIG += libc++
-    }
-  }
-
-  libc++ {
-    QMAKE_CXXFLAGS += -stdlib=libc++
-    QMAKE_LFLAGS += -stdlib=libc++
-    QMAKE_OBJECTIVE_CFLAGS += -stdlib=libc++
-    # libc++ on requires Mac OS X 10.7+
-    QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.7
-  }
 }
+
 
 win* {
   RC_FILE = openscad_win32.rc
@@ -134,6 +118,12 @@ mingw* {
 CONFIG += qt
 QT += opengl concurrent
 
+qopenglwidget {
+  !lessThan(QT_VERSION, 5.4) {
+    DEFINES += USE_QOPENGLWIDGET
+  }
+}
+
 # see http://fedoraproject.org/wiki/UnderstandingDSOLinkChange
 # and https://github.com/openscad/openscad/pull/119
 # ( QT += opengl does not automatically link glu on some DSO systems. )
@@ -146,7 +136,6 @@ netbsd* {
    QMAKE_LFLAGS += -L/usr/X11R7/lib
    QMAKE_LFLAGS += -Wl,-R/usr/X11R7/lib
    QMAKE_LFLAGS += -Wl,-R/usr/pkg/lib
-   !clang: { QMAKE_CXXFLAGS += -std=c++0x }
    # FIXME: Can the lines below be removed in favour of the OPENSCAD_LIBDIR handling above?
    !isEmpty(OPENSCAD_LIBDIR) {
      QMAKE_CFLAGS = -I$$OPENSCAD_LIBDIR/include $$QMAKE_CFLAGS
@@ -180,7 +169,6 @@ netbsd* {
   QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-parameter
   QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-variable
   QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-function
-  QMAKE_CXXFLAGS_WARN_ON += -Wno-c++11-extensions
   # gettext
   QMAKE_CXXFLAGS_WARN_ON += -Wno-format-security
   # might want to actually turn this on once in a while
@@ -194,8 +182,10 @@ CONFIG(skip-version-check) {
 
 # Application configuration
 macx:CONFIG += mdi
+#CONFIG += c++11
 CONFIG += cgal
 CONFIG += opencsg
+CONFIG += glew
 CONFIG += boost
 CONFIG += eigen
 CONFIG += glib-2.0
@@ -205,11 +195,17 @@ CONFIG += fontconfig
 CONFIG += gettext
 
 #Uncomment the following line to enable the QScintilla editor
-CONFIG += scintilla
+!nogui {
+  CONFIG += scintilla
+}
 
 # Make experimental features available
 experimental {
   DEFINES += ENABLE_EXPERIMENTAL
+}
+
+nogui {
+  DEFINES += OPENSCAD_NOGUI
 }
 
 mdi {
@@ -219,7 +215,7 @@ mdi {
 include(common.pri)
 
 # mingw has to come after other items so OBJECT_DIRS will work properly
-CONFIG(mingw-cross-env) {
+CONFIG(mingw-cross-env)|CONFIG(mingw-cross-env-shared) {
   include(mingw-cross-env.pri)
 }
 
@@ -373,6 +369,7 @@ SOURCES += src/version_check.cc \
            src/polyset-utils.cc \
            src/GeometryUtils.cc \
            src/polyset.cc \
+           src/polyset-gl.cc \
            src/csgops.cc \
            src/transform.cc \
            src/color.cc \
@@ -503,6 +500,8 @@ HEADERS += src/cgal.h \
            src/Polygon2d-CGAL.h
 
 SOURCES += src/cgalutils.cc \
+           src/cgalutils-applyops.cc \
+           src/cgalutils-project.cc \
            src/cgalutils-tess.cc \
            src/cgalutils-polyhedron.cc \
            src/CGALCache.cc \
@@ -584,7 +583,7 @@ appdata.extra = cp -f openscad.appdata.xml \"\$(INSTALL_ROOT)$${appdata.path}/$$
 INSTALLS += appdata
 
 icons.path = $$PREFIX/share/pixmaps
-icons.extra = cp -f icons/openscad.png \"\$(INSTALL_ROOT)$${icons.path}/$${FULLNAME}.png\"
+icons.extra = test -f icons/$${FULLNAME}.png && cp -f icons/$${FULLNAME}.png \"\$(INSTALL_ROOT)$${icons.path}/\" || cp -f icons/openscad.png \"\$(INSTALL_ROOT)$${icons.path}/$${FULLNAME}.png\"
 INSTALLS += icons
 
 man.path = $$PREFIX/share/man/man1

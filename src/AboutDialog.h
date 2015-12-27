@@ -10,11 +10,9 @@ class AboutDialog : public QDialog, public Ui::AboutDialog
 public:
 	AboutDialog(QWidget *) {
 		setupUi(this);
-		this->setWindowTitle( QString(_("About OpenSCAD")) + " " + openscad_versionnumber.c_str());
-		QUrl flattr_qurl(":icons/flattr.png" );
-		this->aboutText->loadResource( QTextDocument::ImageResource, flattr_qurl );
+		this->setWindowTitle( QString(_("About OpenSCAD")) + " " + openscad_shortversionnumber.c_str());
 		QString tmp = this->aboutText->toHtml();
-		tmp.replace("__VERSION__", openscad_versionnumber.c_str());
+		tmp.replace("__VERSION__", openscad_detailedversionnumber.c_str());
 		this->aboutText->setHtml(tmp);
 	}
 

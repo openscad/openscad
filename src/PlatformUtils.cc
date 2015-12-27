@@ -23,7 +23,7 @@ const char *PlatformUtils::OPENSCAD_FOLDER_NAME = "OpenSCAD";
 static std::string lookupResourcesPath()
 {
 	fs::path resourcedir(applicationpath);
-	PRINTDB("Looking up resource folder with application path '%s'", resourcedir.c_str());
+	PRINTDB("Looking up resource folder with application path '%s'", boosty::stringy(resourcedir).c_str());
 	
 #ifdef __APPLE__
 	const char *searchpath[] = {
@@ -33,7 +33,7 @@ static std::string lookupResourcesPath()
 	    NULL
 	};
 #else
-#ifdef WIN32
+#ifdef _WIN32
     const char *searchpath[] = {
         ".", // Release location
         RESOURCE_FOLDER("../share/openscad"), // MSYS2 location
@@ -56,12 +56,14 @@ static std::string lookupResourcesPath()
 	for (int a = 0;searchpath[a] != NULL;a++) {
 	    tmpdir = resourcedir / searchpath[a];
 	    
-	    const fs::path checkdir = tmpdir / "libraries";
-	    PRINTDB("Checking '%s'", checkdir.c_str());
+			// The resource folder is the folder which contains "color-schemes" (as well as 
+			// "examples" and "locale", and optionally "libraries" and "fonts")
+	    const fs::path checkdir = tmpdir / "color-schemes";
+	    PRINTDB("Checking '%s'", boosty::stringy(checkdir).c_str());
 
 	    if (is_directory(checkdir)) {
 		resourcedir = tmpdir;
-		PRINTDB("Found resource folder '%s'", tmpdir.c_str());
+		PRINTDB("Found resource folder '%s'", boosty::stringy(tmpdir).c_str());
 		break;
 	    }
 	}
@@ -111,7 +113,9 @@ std::string PlatformUtils::userLibraryPath()
 	try {
 		std::string pathstr = PlatformUtils::documentsPath();
 		if (pathstr=="") return "";
-		path = boosty::canonical(fs::path( pathstr ));
+		path = fs::path( pathstr );
+		if (!fs::exists(path)) return "";
+		path = boosty::canonical( path );
 		//PRINTB("path size %i",boosty::stringy(path).size());
 		//PRINTB("lib path found: [%s]", path );
 		if (path.empty()) return "";
@@ -132,7 +136,9 @@ std::string PlatformUtils::backupPath()
 	try {
 		std::string pathstr = PlatformUtils::documentsPath();
 		if (pathstr=="") return "";
-		path = boosty::canonical(fs::path( pathstr ));
+		path = fs::path( pathstr );
+		if (!fs::exists(path)) return "";
+		path = boosty::canonical( path );
 		if (path.empty()) return "";
 		path /= OPENSCAD_FOLDER_NAME;
 		path /= "backups";
@@ -185,7 +191,7 @@ fs::path PlatformUtils::resourcePath(const std::string &resource)
 
 int PlatformUtils::setenv(const char *name, const char *value, int overwrite)
 {
-#if defined(WIN32)
+#if defined(_WIN32)
     const char *ptr = getenv(name);
     if ((overwrite == 0) && (ptr != NULL)) {
 	return 0;

@@ -50,6 +50,8 @@ private:
 
 ColorModule::ColorModule()
 {
+    // Colors extracted from https://drafts.csswg.org/css-color/ on 2015-08-02
+    // CSS Color Module Level 4 - Editor’s Draft, 29 May 2015
     webcolors = map_list_of
 	    ("aliceblue", Color4f(240, 248, 255))
 	    ("antiquewhite", Color4f(250, 235, 215))
@@ -170,6 +172,7 @@ ColorModule::ColorModule()
 	    ("plum", Color4f(221, 160, 221))
 	    ("powderblue", Color4f(176, 224, 230))
 	    ("purple", Color4f(128, 0, 128))
+	    ("rebeccapurple", Color4f(102, 51, 153))
 	    ("red", Color4f(255, 0, 0))
 	    ("rosybrown", Color4f(188, 143, 143))
 	    ("royalblue", Color4f(65, 105, 225))
@@ -191,7 +194,6 @@ ColorModule::ColorModule()
 	    ("teal", Color4f(0, 128, 128))
 	    ("thistle", Color4f(216, 191, 216))
 	    ("tomato", Color4f(255, 99, 71))
-	    ("transparent", Color4f(0, 0, 0, 0))
 	    ("turquoise", Color4f(64, 224, 208))
 	    ("violet", Color4f(238, 130, 238))
 	    ("wheat", Color4f(245, 222, 179))
@@ -199,6 +201,9 @@ ColorModule::ColorModule()
 	    ("whitesmoke", Color4f(245, 245, 245))
 	    ("yellow", Color4f(255, 255, 0))
 	    ("yellowgreen", Color4f(154, 205, 50))
+
+	    // additional OpenSCAD specific entry
+	    ("transparent", Color4f(0, 0, 0, 0))
 		.convert_to_container<boost::unordered_map<std::string, Color4f> >();
 }
 
@@ -224,7 +229,7 @@ AbstractNode *ColorModule::instantiate(const Context *ctx, const ModuleInstantia
 	ValuePtr v = c.lookup_variable("c");
 	if (v->type() == Value::VECTOR) {
 		for (size_t i = 0; i < 4; i++) {
-			node->color[i] = i < v->toVector().size() ? v->toVector()[i].toDouble() : 1.0;
+			node->color[i] = i < v->toVector().size() ? v->toVector()[i]->toDouble() : 1.0;
 			if (node->color[i] > 1)
 				PRINTB_NOCACHE("WARNING: color() expects numbers between 0.0 and 1.0. Value of %.1f is too large.", node->color[i]);
 		}

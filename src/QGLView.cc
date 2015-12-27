@@ -50,17 +50,19 @@
 #  include <opencsg.h>
 #endif
 
-QGLView::QGLView(QWidget *parent) : QGLWidget(parent)
+QGLView::QGLView(QWidget *parent) :
+#ifdef USE_QOPENGLWIDGET
+	QOpenGLWidget(parent)
+#else
+	QGLWidget(parent)
+#endif
 {
   init();
 }
 
-QGLView::QGLView(const QGLFormat & format, QWidget *parent) : QGLWidget(format, parent)
-{
-  init();
-}
-
+#if defined(_WIN32) && !defined(USE_QOPENGLWIDGET)
 static bool running_under_wine = false;
+#endif
 
 void QGLView::init()
 {
@@ -71,8 +73,10 @@ void QGLView::init()
 
   setMouseTracking(true);
 
+
+
+#if defined(_WIN32) && !defined(USE_QOPENGLWIDGET)
 // see paintGL() + issue160 + wine FAQ
-#ifdef _WIN32
 #include <windows.h>
   HMODULE hntdll = GetModuleHandle(L"ntdll.dll");
   if (hntdll)
@@ -109,7 +113,13 @@ std::string QGLView::getRendererInfo() const
   std::string glewinfo = glew_dump();
   std::string glextlist = glew_extensions_dump();
 	// Don't translate as translated text in the Library Info dialog is not wanted
-  return glewinfo + std::string("\nUsing QGLWidget\n\n") + glextlist;
+  return glewinfo + 
+#ifdef USE_QOPENGLWIDGET
+		std::string("\nUsing QOpenGLWidget\n\n")
+#else
+		std::string("\nUsing QGLWidget\n\n")
+#endif
+		+ glextlist;
 }
 
 #ifdef ENABLE_OPENCSG
@@ -135,14 +145,11 @@ void QGLView::display_opencsg_warning_dialog()
   message += _("It is highly recommended to use OpenSCAD on a system with "
     "OpenGL 2.0 or later.\n"
     "Your renderer information is as follows:\n");
-  QString rendererinfo;
-  rendererinfo.sprintf(_("GLEW version %s\n"
-                       "%s (%s)\n"
-                       "OpenGL version %s\n"),
-                       glewGetString(GLEW_VERSION),
-                       glGetString(GL_RENDERER), glGetString(GL_VENDOR),
-                       glGetString(GL_VERSION));
-  message += rendererinfo;
+  QString rendererinfo(_("GLEW version %1\n%2 (%3)\nOpenGL version %4\n"));
+  message += rendererinfo.arg((const char *)glewGetString(GLEW_VERSION),
+                       (const char *)glGetString(GL_RENDERER),
+                       (const char *)glGetString(GL_VENDOR),
+                       (const char *)glGetString(GL_VERSION));
 
   dialog->setText(message);
   dialog->enableOpenCSGBox->setChecked(Preferences::inst()->getValue("advanced/enable_opencsg_opengl1x").toBool());
@@ -167,7 +174,9 @@ void QGLView::paintGL()
     statusLabel->setText(QString::fromStdString(nc.statusText()));
   }
 
+#if defined(_WIN32) && !defined(USE_QOPENGLWIDGET)
   if (running_under_wine) swapBuffers();
+#endif
 }
 
 void QGLView::mousePressEvent(QMouseEvent *event)
@@ -297,12 +306,17 @@ void QGLView::mouseReleaseEvent(QMouseEvent*)
   releaseMouse();
 }
 
-bool QGLView::save(const char *filename)
+const QImage & QGLView::grabFrame()
 {
 	// Force reading from front buffer. Some configurations will read from the back buffer here.
 	glReadBuffer(GL_FRONT);
-  QImage img = grabFrameBuffer();
-  return img.save(filename, "PNG");
+	this->frame = grabFrameBuffer();
+	return this->frame;
+}
+
+bool QGLView::save(const char *filename)
+{
+  return this->frame.save(filename, "PNG");
 }
 
 void QGLView::wheelEvent(QWheelEvent *event)

@@ -10,7 +10,9 @@ enum FileFormat {
 	OPENSCAD_OFF,
 	OPENSCAD_AMF,
 	OPENSCAD_DXF,
-	OPENSCAD_SVG
+	OPENSCAD_SVG,
+	OPENSCAD_NEFDBG,
+	OPENSCAD_NEF3
 };
 
 void exportFileByName(const shared_ptr<const class Geometry> &root_geom, FileFormat format,
@@ -21,6 +23,8 @@ void export_off(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_amf(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_dxf(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_svg(const shared_ptr<const Geometry> &geom, std::ostream &output);
+void export_nefdbg(const shared_ptr<const Geometry> &geom, std::ostream &output);
+void export_nef3(const shared_ptr<const Geometry> &geom, std::ostream &output);
 
 // void exportFile(const class Geometry *root_geom, std::ostream &output, FileFormat format);
 

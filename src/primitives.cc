@@ -508,12 +508,12 @@ Geometry *PrimitiveNode::createGeometry() const
 		for (size_t i=0; i<this->faces->toVector().size(); i++)
 		{
 			p->append_poly();
-			const Value::VectorType &vec = this->faces->toVector()[i].toVector();
+			const Value::VectorType &vec = this->faces->toVector()[i]->toVector();
 			for (size_t j=0; j<vec.size(); j++) {
-				size_t pt = vec[j].toDouble();
+				size_t pt = vec[j]->toDouble();
 				if (pt < this->points->toVector().size()) {
 					double px, py, pz;
-					if (!this->points->toVector()[pt].getVec3(px, py, pz) ||
+					if (!this->points->toVector()[pt]->getVec3(px, py, pz) ||
 							isinf(px) || isinf(py) || isinf(pz)) {
 						PRINTB("ERROR: Unable to convert point at index %d to a vec3 of numbers", j);
 						return p;
@@ -572,7 +572,7 @@ Geometry *PrimitiveNode::createGeometry() const
 			double x,y;
 			const Value::VectorType &vec = this->points->toVector();
 			for (unsigned int i=0;i<vec.size();i++) {
-				const Value &val = vec[i];
+				const Value &val = *vec[i];
 				if (!val.getVec2(x, y) || isinf(x) || isinf(y)) {
 					PRINTB("ERROR: Unable to convert point %s at index %d to a vec2 of numbers", 
 								 val.toString() % i);
@@ -585,10 +585,10 @@ Geometry *PrimitiveNode::createGeometry() const
 				p->addOutline(outline);
 			}
 			else {
-				BOOST_FOREACH(const Value &polygon, this->paths->toVector()) {
+				BOOST_FOREACH(const ValuePtr &polygon, this->paths->toVector()) {
 					Outline2d curroutline;
-					BOOST_FOREACH(const Value &index, polygon.toVector()) {
-						unsigned int idx = index.toDouble();
+					BOOST_FOREACH(const ValuePtr &index, polygon->toVector()) {
+						unsigned int idx = index->toDouble();
 						if (idx < outline.vertices.size()) {
 							curroutline.vertices.push_back(outline.vertices[idx]);
 						}

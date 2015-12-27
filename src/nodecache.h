@@ -17,8 +17,8 @@ public:
   virtual ~NodeCache() { }
 
 	bool contains(const AbstractNode &node) const {
-    if (this->cache.size() > node.index()) return this->cache[node.index()];
- 		return false;
+		if (this->cache.size() > node.index()) return this->cache[node.index()].get();
+		return false;
 	}
 
   /*! Returns a reference to the cached string copy. NB! don't rely on
