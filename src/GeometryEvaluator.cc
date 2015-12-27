@@ -63,14 +63,12 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 				PolySet *ps = new PolySet(3);
 				ps->setConvexity(N->getConvexity());
 				this->root.reset(ps);
-                if (!N->isEmpty()) {
-                    bool err = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, *ps);
-                    if (err) {
-                        PRINT("ERROR: Nef->PolySet failed");
-                    }
-                }
-
-				smartCacheInsert(node, this->root);
+				if (!N->isEmpty()) {
+					bool err = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, *ps);
+					if (err) {
+						PRINT("ERROR: Nef->PolySet failed");
+					}
+				}
 			}
 		}
 		smartCacheInsert(node, this->root);
@@ -363,7 +361,7 @@ void GeometryEvaluator::addToParent(const State &state,
 	else {
 		// Root node
 		this->root = geom;
-        assert(this->visitedchildren.empty());
+		assert(this->visitedchildren.empty());
 	}
 }
 
