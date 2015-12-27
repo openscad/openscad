@@ -62,6 +62,17 @@ Response AbstractPolyNode::accept(class State &state, Visitor &visitor) const
 	return visitor.visit(state, *this);
 }
 
+Response GroupNode::accept(class State &state, Visitor &visitor) const
+{
+	return visitor.visit(state, *this);
+}
+
+Response RootNode::accept(class State &state, Visitor &visitor) const
+{
+	return visitor.visit(state, *this);
+}
+
+
 Response LeafNode::accept(class State &state, Visitor &visitor) const
 {
 	return visitor.visit(state, *this);
@@ -72,9 +83,14 @@ std::string AbstractNode::toString() const
 	return this->name() + "()";
 }
 
-std::string AbstractNode::name() const
+std::string GroupNode::name() const
 {
 	return "group";
+}
+
+std::string RootNode::name() const
+{
+	return "root";
 }
 
 std::string AbstractIntersectionNode::toString() const

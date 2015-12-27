@@ -27,6 +27,7 @@
 #include "module.h"
 #include "ModuleCache.h"
 #include "node.h"
+#include "builtin.h"
 #include "modcontext.h"
 #include "evalcontext.h"
 #include "expression.h"
@@ -48,11 +49,11 @@ AbstractModule::~AbstractModule()
 {
 }
 
-AbstractNode *AbstractModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
+AbstractNode *GroupModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	(void)ctx; // avoid unusued parameter warning
 
-	AbstractNode *node = new AbstractNode(inst);
+	AbstractNode *node = new GroupNode(inst);
 
 	node->children = inst->instantiateChildren(evalctx);
 
@@ -196,7 +197,7 @@ AbstractNode *Module::instantiate(const Context *ctx, const ModuleInstantiation 
 	c.dump(this, inst);
 #endif
 
-	AbstractNode *node = new AbstractNode(inst);
+	AbstractNode *node = new GroupNode(inst);
 	std::vector<AbstractNode *> instantiatednodes = this->scope.instantiateChildren(&c);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 	module_stack.pop_back();
@@ -345,16 +346,12 @@ AbstractNode *FileModule::instantiate(const Context *ctx, const ModuleInstantiat
 	
 	delete context;
 	context = new FileContext(*this, ctx);
-	AbstractNode *node = new AbstractNode(inst);
+	AbstractNode *node = new RootNode(inst);
 
 	try {
 		context->initializeModule(*this);
 
 	// FIXME: Set document path to the path of the module
-#if 0 && DEBUG
-		c.dump(this, inst);
-#endif
-
 		std::vector<AbstractNode *> instantiatednodes = this->scope.instantiateChildren(context);
 		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 	}
@@ -372,4 +369,9 @@ ValuePtr FileModule::lookup_variable(const std::string &name) const
 	}
 	
 	return context->lookup_variable(name, true);
+}
+
+void register_builtin_group()
+{
+	Builtins::init("group", new GroupModule());
 }
