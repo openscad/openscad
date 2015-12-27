@@ -6,9 +6,9 @@
 	Class for holding 2D geometry.
 	
 	This class will hold 2D geometry consisting of a number of closed
-	contours. A polygon can contain holes and islands, as well as
-	intersecting contours.
-
+	polygons. Each polygon can contain holes and islands. Both polygons,
+	holes and island contours may intersect each other.
+ 
 	We can store sanitized vs. unsanitized polygons. Sanitized polygons
 	will have opposite winding order for holes and is guaranteed to not
 	have intersecting geometry. The winding order will be counter-clockwise 
