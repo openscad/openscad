@@ -77,7 +77,7 @@ namespace CGALUtils {
 	Applies op to all children and returns the result.
 	The child list should be guaranteed to contain non-NULL 3D or empty Geometry objects
 */
-	CGAL_Nef_polyhedron *applyOperator(const Geometry::ChildList &children, OpenSCADOperator op)
+	CGAL_Nef_polyhedron *applyOperator(const Geometry::Geometries &children, OpenSCADOperator op)
 	{
 		CGAL_Nef_polyhedron *N = NULL;
 		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
@@ -86,7 +86,7 @@ namespace CGALUtils {
 			CGAL::Nef_nary_union_3<CGAL_Nef_polyhedron3> nary_union;
 			int nary_union_num_inserted = 0;
 			
-			BOOST_FOREACH(const Geometry::ChildItem &item, children) {
+			BOOST_FOREACH(const Geometry::GeometryItem &item, children) {
 				const shared_ptr<const Geometry> &chgeom = item.second;
 				shared_ptr<const CGAL_Nef_polyhedron> chN = 
 					dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
@@ -150,7 +150,7 @@ namespace CGALUtils {
 
 
 
-	bool applyHull(const Geometry::ChildList &children, PolySet &result)
+	bool applyHull(const Geometry::Geometries &children, PolySet &result)
 	{
 		typedef CGAL::Epick K;
 		// Collect point cloud
@@ -158,7 +158,7 @@ namespace CGALUtils {
 		// instead.
 		std::list<K::Point_3> points;
 
-		BOOST_FOREACH(const Geometry::ChildItem &item, children) {
+		BOOST_FOREACH(const Geometry::GeometryItem &item, children) {
 			const shared_ptr<const Geometry> &chgeom = item.second;
 			const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(chgeom.get());
 			if (N) {
@@ -206,11 +206,11 @@ namespace CGALUtils {
 	/*!
 		children cannot contain NULL objects
 	*/
-	Geometry const * applyMinkowski(const Geometry::ChildList &children)
+	Geometry const * applyMinkowski(const Geometry::Geometries &children)
 	{
 		CGAL::Timer t,t_tot;
 		assert(children.size() >= 2);
-		Geometry::ChildList::const_iterator it = children.begin();
+		Geometry::Geometries::const_iterator it = children.begin();
 		t_tot.start();
 		Geometry const* operands[2] = {it->second.get(), NULL};
 		try {
@@ -375,7 +375,7 @@ namespace CGALUtils {
 				} else if (!result_parts.empty()) {
 					t.start();
 					PRINTDB("Minkowski: Computing union of %d parts",result_parts.size());
-					Geometry::ChildList fake_children;
+					Geometry::Geometries fake_children;
 					for (std::list<CGAL::Polyhedron_3<Hull_kernel> >::iterator i = result_parts.begin(); i != result_parts.end(); ++i) {
 						PolySet ps(3,true);
 						createPolySetFromPolyhedron(*i, ps);
