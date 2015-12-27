@@ -1,3 +1,5 @@
+/*.scad
+**/out*.*
 *.dmg
 *~
 *.tar*
@@ -15,7 +17,6 @@ testdata/scad/misc/include-tests.scad
 testdata/scad/misc/use-tests.scad
 **/project.xcworkspace
 **/xcuserdata
-/*.scad
 /*.stl
 /*.dxf
 /*.off
