@@ -33,12 +33,6 @@
 #define QUOTE(x__) # x__
 #define QUOTED(x__) QUOTE(x__)
 
-struct triangle {
-    std::string vs1;
-    std::string vs2;
-    std::string vs3;
-};
-
 void exportFile(const shared_ptr<const Geometry> &root_geom, std::ostream &output, FileFormat format)
 {
 	switch (format) {
@@ -92,30 +86,3 @@ void exportFileByName(const shared_ptr<const Geometry> &root_geom, FileFormat fo
 		}
 	}
 }
-
-#ifdef ENABLE_CGAL
-#include "CGAL_Nef_polyhedron.h"
-#include "cgal.h"
-#include "cgalutils.h"
-#include <CGAL/IO/Nef_polyhedron_iostream_3.h> // for dumping .nef3
-
-void export_nefdbg(const shared_ptr<const Geometry> &geom, std::ostream &output)
-{
-	if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(geom.get())) {
-		output << N->dump();
-	}
-	else {
-		PRINT("Not a CGALNefPoly. Add some CSG ops?");
-	}
-}
-
-void export_nef3(const shared_ptr<const Geometry> &geom, std::ostream &output)
-{
-	if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(geom.get())) {
-		output << *(N->p3);
-	}
-	else {
-		PRINT("Not a CGALNefPoly. Add some CSG ops?");
-	}
-}
-#endif

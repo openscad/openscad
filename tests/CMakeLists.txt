@@ -726,8 +726,8 @@ set(NOCGAL_SOURCES
   ../src/import.cc
   ../src/export.cc
   ../src/export_stl.cc
-  ../src/export_off.cc
   ../src/export_amf.cc
+  ../src/export_off.cc
   ../src/export_dxf.cc
   ../src/export_svg.cc
   ../src/LibraryInfo.cc
@@ -740,6 +740,7 @@ set(CGAL_SOURCES
   ${NOCGAL_SOURCES}
   ../src/CSGTermEvaluator.cc 
   ../src/CGAL_Nef_polyhedron.cc 
+  ../src/export_nef.cc
   ../src/cgalutils.cc 
   ../src/cgalutils-applyops.cc 
   ../src/cgalutils-project.cc 
@@ -1289,14 +1290,18 @@ disable_tests(throwntogethertest_minkowski3-erosion)
 # as currently inf/nan is written directly to the CSG file (e.g. r = inf)
 # which is not valid or even misleading in case a variable inf exists.
 # FIXME: define export behavior for inf/nan when exporting CSG files
+# These tests return error code 1.
+# FIXME: We should have a way of running these and verify the return code
 disable_tests(csgpngtest_primitive-inf-tests
               csgpngtest_transform-nan-inf-tests
               csgpngtest_primitive-inf-tests
               csgpngtest_transform-nan-inf-tests
               # Triggers a floating point accuracy issue causing loaded .csg to
               # render slightly differently
-              csgpngtest_issue1258
-)
+              cgalpngtest_nothing-decimal-comma-separated
+              cgalpngtest_import-empty-tests
+              cgalpngtest_empty-shape-tests
+              csgpngtest_issue1258)
 
 # Test config handling
 

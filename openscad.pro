@@ -423,6 +423,7 @@ SOURCES += src/version_check.cc \
            src/export_off.cc \
            src/export_dxf.cc \
            src/export_svg.cc \
+           src/export_nef.cc \
            src/export_png.cc \
            src/import.cc \
            src/renderer.cc \
