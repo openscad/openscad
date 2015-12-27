@@ -725,6 +725,11 @@ set(NOCGAL_SOURCES
   ../src/builtin.cc 
   ../src/import.cc
   ../src/export.cc
+  ../src/export_stl.cc
+  ../src/export_amf.cc
+  ../src/export_off.cc
+  ../src/export_dxf.cc
+  ../src/export_svg.cc
   ../src/LibraryInfo.cc
   ../src/polyset.cc
   ../src/polyset-gl.cc
@@ -736,6 +741,7 @@ set(CGAL_SOURCES
   ${NOCGAL_SOURCES}
   ../src/CSGTermEvaluator.cc 
   ../src/CGAL_Nef_polyhedron.cc 
+  ../src/export_nef.cc
   ../src/cgalutils.cc 
   ../src/cgalutils-applyops.cc 
   ../src/cgalutils-project.cc 

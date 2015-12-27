@@ -19,7 +19,7 @@ static void setupCamera(Camera &cam, const BoundingBox &bbox)
 	if (cam.viewall) cam.viewAll(bbox);
 }
 
-void export_png(shared_ptr<const Geometry> root_geom, Camera &cam, std::ostream &output)
+void export_png(const shared_ptr<const Geometry> &root_geom, Camera &cam, std::ostream &output)
 {
 	PRINTD("export_png geom");
 	OffscreenView *glview;
