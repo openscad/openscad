@@ -976,7 +976,7 @@ Response GeometryEvaluator::visit(State &state, const RotateExtrudeNode &node)
 }
 
 /*!
-	Not in use
+	FIXME: Not in use
 */
 Response GeometryEvaluator::visit(State &state, const AbstractPolyNode &node)
 {

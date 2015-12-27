@@ -83,6 +83,7 @@ public:
 };
 
 /*!
+<<<<<<< HEAD
 	Used for organizing objects into lists which should not be grouped but merely
 	unpacked by the parent node.
  */
@@ -96,6 +97,8 @@ public:
 };
 
 /*!
+=======
+>>>>>>> origin/master
   Logically groups objects together. Used as a way of passing
 	objects around without having to perform unions on them.
  */

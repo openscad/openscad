@@ -26,7 +26,8 @@
 
 #include "module.h"
 #include "ModuleCache.h"
-#include "csgnode.h"
+#include "node.h"
+#include "builtin.h"
 #include "modcontext.h"
 #include "evalcontext.h"
 #include "builtin.h"
