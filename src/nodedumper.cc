@@ -16,7 +16,7 @@
 
 bool NodeDumper::isCached(const AbstractNode &node) const
 {
-	return !this->cache[node].empty();
+	return this->cache.contains(node);
 }
 
 /*!
