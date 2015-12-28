@@ -1515,7 +1515,8 @@ add_cmdline_test(cgalstlsanitytest EXE ${CMAKE_SOURCE_DIR}/cgalstlsanitytest SUF
 
 add_cmdline_test(monotonepngtest EXE ${OPENSCAD_BINPATH} ARGS --colorscheme=Monotone --render -o SUFFIX png FILES ${EXPORT3D_CGAL_TEST_FILES} ${EXPORT3D_CGALCGAL_TEST_FILES})
 
-add_cmdline_test(stlexport EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX stl FILES ${EXPORT_STL_TEST_FILES})
+# Disabled for now, needs implementation of #420 to be stable
+# add_cmdline_test(stlexport EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX stl FILES ${EXPORT_STL_TEST_FILES})
 
 # stlpngtest: direct STL output, preview rendering
 add_cmdline_test(stlpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=STL EXPECTEDDIR monotonepngtest SUFFIX png FILES ${EXPORT3D_TEST_FILES})
