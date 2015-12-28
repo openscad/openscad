@@ -290,15 +290,17 @@ Geometry *SurfaceNode::createGeometry() const
 		p->append_vertex(ox + i, oy + lines-1, min_val);
 	}
 
-	p->append_poly();
-	for (int i = 0; i < columns-1; i++)
-		p->insert_vertex(ox + i, oy + 0, min_val);
-	for (int i = 0; i < lines-1; i++)
-		p->insert_vertex(ox + columns-1, oy + i, min_val);
-	for (int i = columns-1; i > 0; i--)
-		p->insert_vertex(ox + i, oy + lines-1, min_val);
-	for (int i = lines-1; i > 0; i--)
-		p->insert_vertex(ox + 0, oy + i, min_val);
+	if (columns > 1 && lines > 1) {
+		p->append_poly();
+		for (int i = 0; i < columns-1; i++)
+			p->insert_vertex(ox + i, oy + 0, min_val);
+		for (int i = 0; i < lines-1; i++)
+			p->insert_vertex(ox + columns-1, oy + i, min_val);
+		for (int i = columns-1; i > 0; i--)
+			p->insert_vertex(ox + i, oy + lines-1, min_val);
+		for (int i = lines-1; i > 0; i--)
+			p->insert_vertex(ox + 0, oy + i, min_val);
+	}
 
 	return p;
 }

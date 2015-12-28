@@ -64,16 +64,15 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 				PolySet *ps = new PolySet(3);
 				ps->setConvexity(N->getConvexity());
 				this->root.reset(ps);
-                if (!N->isEmpty()) {
-                    bool err = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, *ps);
-                    if (err) {
-                        PRINT("ERROR: Nef->PolySet failed");
-                    }
-                }
-
-				smartCacheInsert(node, this->root);
+				if (!N->isEmpty()) {
+					bool err = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, *ps);
+					if (err) {
+						PRINT("ERROR: Nef->PolySet failed");
+					}
+				}
 			}
 		}
+		smartCacheInsert(node, this->root);
 		return this->root;
 	}
 	return GeometryCache::instance()->get(this->tree.getIdString(node));
@@ -82,7 +81,7 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const AbstractNode &node, OpenSCADOperator op)
 {
 	unsigned int dim = 0;
-	BOOST_FOREACH(const Geometry::ChildItem &item, this->visitedchildren[node.index()]) {
+	BOOST_FOREACH(const Geometry::GeometryItem &item, this->visitedchildren[node.index()]) {
 		if (!item.first->modinst->isBackground() && item.second) {
 			if (!dim) dim = item.second->getDimension();
 			else if (dim != item.second->getDimension()) {
@@ -107,7 +106,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const Abstrac
 */
 GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const AbstractNode &node, OpenSCADOperator op)
 {
-	Geometry::ChildList children = collectChildren3D(node);
+	Geometry::Geometries children = collectChildren3D(node);
 	if (children.size() == 0) return ResultObject();
 
 	if (op == OPENSCAD_HULL) {
@@ -125,8 +124,8 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 	if (children.size() == 1) return ResultObject(children.front().second);
 
 	if (op == OPENSCAD_MINKOWSKI) {
-		Geometry::ChildList actualchildren;
-		BOOST_FOREACH(const Geometry::ChildItem &item, children) {
+		Geometry::Geometries actualchildren;
+		BOOST_FOREACH(const Geometry::GeometryItem &item, children) {
 			if (!item.second->isEmpty()) actualchildren.push_back(item);
 		}
 		if (actualchildren.empty()) return ResultObject();
@@ -179,7 +178,7 @@ Polygon2d *GeometryEvaluator::applyHull2D(const AbstractNode &node)
 
 Geometry *GeometryEvaluator::applyHull3D(const AbstractNode &node)
 {
-	Geometry::ChildList children = collectChildren3D(node);
+	Geometry::Geometries children = collectChildren3D(node);
 
 	PolySet *P = new PolySet(3);
 	if (CGALUtils::applyHull(children, *P)) {
@@ -205,10 +204,9 @@ Polygon2d *GeometryEvaluator::applyMinkowski2D(const AbstractNode &node)
 std::vector<const class Polygon2d *> GeometryEvaluator::collectChildren2D(const AbstractNode &node)
 {
 	std::vector<const Polygon2d *> children;
-	BOOST_FOREACH(const Geometry::ChildItem &item, this->visitedchildren[node.index()]) {
+	BOOST_FOREACH(const Geometry::GeometryItem &item, this->visitedchildren[node.index()]) {
 		const AbstractNode *chnode = item.first;
 		const shared_ptr<const Geometry> &chgeom = item.second;
-		// FIXME: Don't use deep access to modinst members
 		if (chnode->modinst->isBackground()) continue;
 
 		// NB! We insert into the cache here to ensure that all children of
@@ -276,13 +274,12 @@ shared_ptr<const Geometry> GeometryEvaluator::smartCacheGet(const AbstractNode &
 	Returns a list of 3D Geometry children of the given node.
 	May return empty geometries, but not NULL objects
 */
-Geometry::ChildList GeometryEvaluator::collectChildren3D(const AbstractNode &node)
+Geometry::Geometries GeometryEvaluator::collectChildren3D(const AbstractNode &node)
 {
-	Geometry::ChildList children;
-	BOOST_FOREACH(const Geometry::ChildItem &item, this->visitedchildren[node.index()]) {
+	Geometry::Geometries children;
+	BOOST_FOREACH(const Geometry::GeometryItem &item, this->visitedchildren[node.index()]) {
 		const AbstractNode *chnode = item.first;
 		const shared_ptr<const Geometry> &chgeom = item.second;
-		// FIXME: Don't use deep access to modinst members
 		if (chnode->modinst->isBackground()) continue;
 
 		// NB! We insert into the cache here to ensure that all children of
@@ -346,7 +343,7 @@ Polygon2d *GeometryEvaluator::applyToChildren2D(const AbstractNode &node, OpenSC
 }
 
 /*!
-	Adds ourself to out parent's list of traversed children.
+	Adds ourself to our parent's list of traversed children.
 	Call this for _every_ node which affects output during traversal.
 	Usually, this should be called from the postfix stage, but for some nodes, 
 	we defer traversal letting other components (e.g. CGAL) render the subgraph, 
@@ -363,10 +360,9 @@ void GeometryEvaluator::addToParent(const State &state,
 		this->visitedchildren[state.parent()->index()].push_back(std::make_pair(&node, geom));
 	}
 	else {
-		// Root node, insert into cache
-		smartCacheInsert(node, geom);
+		// Root node
 		this->root = geom;
-        assert(this->visitedchildren.empty());
+		assert(this->visitedchildren.empty());
 	}
 }
 
@@ -390,6 +386,19 @@ Response GeometryEvaluator::visit(State &state, const AbstractNode &node)
 		addToParent(state, node, geom);
 	}
 	return ContinueTraversal;
+}
+
+/*!
+*/
+Response GeometryEvaluator::visit(State &state, const GroupNode &node)
+{
+	return visit(state, (const AbstractNode &)node);
+}
+
+Response GeometryEvaluator::visit(State &state, const RootNode &node)
+{
+	// Just union the top-level objects
+	return visit(state, (const GroupNode &)node);
 }
 
 Response GeometryEvaluator::visit(State &state, const OffsetNode &node)
@@ -918,7 +927,7 @@ Response GeometryEvaluator::visit(State &state, const RotateExtrudeNode &node)
 }
 
 /*!
-	Handles non-leaf PolyNodes; projection
+	FIXME: Not in use
 */
 Response GeometryEvaluator::visit(State &state, const AbstractPolyNode &node)
 {
@@ -942,7 +951,7 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 
 			if (!node.cut_mode) {
 				ClipperLib::Clipper sumclipper;
-				BOOST_FOREACH(const Geometry::ChildItem &item, this->visitedchildren[node.index()]) {
+				BOOST_FOREACH(const Geometry::GeometryItem &item, this->visitedchildren[node.index()]) {
 					const AbstractNode *chnode = item.first;
 					const shared_ptr<const Geometry> &chgeom = item.second;
 					// FIXME: Don't use deep access to modinst members

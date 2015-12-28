@@ -15,6 +15,12 @@ public:
   virtual Response visit(class State &state, const class AbstractPolyNode &node) {
 		return visit(state, (const class AbstractNode &)node);
 	}
+  virtual Response visit(class State &state, const class GroupNode &node) {
+		return visit(state, (const class AbstractNode &)node);
+	}
+  virtual Response visit(class State &state, const class RootNode &node) {
+		return visit(state, (const class GroupNode &)node);
+	}
   virtual Response visit(class State &state, const class LeafNode &node) {
 		return visit(state, (const class AbstractPolyNode &)node);
 	}

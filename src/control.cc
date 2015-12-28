@@ -211,7 +211,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 		// assert(filectx->evalctx);
 		if (evalctx->numArgs()<=0) {
 			// no parameters => all children
-			AbstractNode* node = new AbstractNode(inst);
+			AbstractNode* node = new GroupNode(inst);
 			for (int n = 0; n < (int)modulectx->numChildren(); ++n) {
 				AbstractNode* childnode = modulectx->getChild(n)->evaluate(modulectx);
 				if (childnode==NULL) continue; // error
@@ -226,7 +226,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 				return getChild(value, modulectx);
 			}
 			else if (value->type() == Value::VECTOR) {
-				AbstractNode* node = new AbstractNode(inst);
+				AbstractNode* node = new GroupNode(inst);
 				const Value::VectorType& vect = value->toVector();
 				foreach (const ValuePtr &vectvalue, vect) {
 					AbstractNode* childnode = getChild(vectvalue,modulectx);
@@ -242,7 +242,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 					PRINTB("WARNING: Bad range parameter for children: too many elements (%lu).", steps);
 					return NULL;
 				}
-				AbstractNode* node = new AbstractNode(inst);
+				AbstractNode* node = new GroupNode(inst);
 				for (RangeType::iterator it = range.begin();it != range.end();it++) {
 					AbstractNode* childnode = getChild(ValuePtr(*it),modulectx); // with error cases
 					if (childnode==NULL) continue; // error
@@ -262,7 +262,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 		break;
 
 	case ECHO: {
-		node = new AbstractNode(inst);
+		node = new GroupNode(inst);
 		std::stringstream msg;
 		msg << "ECHO: ";
 		for (size_t i = 0; i < inst->arguments.size(); i++) {
@@ -280,7 +280,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 		break;
 
 	case ASSIGN: {
-		node = new AbstractNode(inst);
+		node = new GroupNode(inst);
 		// We create a new context to avoid parameters from influencing each other
 		// -> parallel evaluation. This is to be backwards compatible.
 		Context c(evalctx);
@@ -296,7 +296,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 		break;
 
 	case FOR:
-		node = new AbstractNode(inst);
+		node = new GroupNode(inst);
 		for_eval(*node, *inst, 0, evalctx, evalctx);
 		break;
 
@@ -306,7 +306,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 		break;
 
 	case IF: {
-		node = new AbstractNode(inst);
+		node = new GroupNode(inst);
 		const IfElseModuleInstantiation *ifelse = dynamic_cast<const IfElseModuleInstantiation*>(inst);
 		if (evalctx->numArgs() > 0 && evalctx->getArgValue(0)->toBool()) {
 			inst->scope.apply(*evalctx);
