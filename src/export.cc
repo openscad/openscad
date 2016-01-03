@@ -49,6 +49,7 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 void exportFile(const shared_ptr<const Geometry> &root_geom, std::ostream &output, FileFormat format)
 {
 	switch (format) {
+#ifdef ENABLE_CGAL
 	case OPENSCAD_STL:
 		export_stl(root_geom, output);
 		break;
@@ -58,17 +59,18 @@ void exportFile(const shared_ptr<const Geometry> &root_geom, std::ostream &outpu
 	case OPENSCAD_AMF:
 		export_amf(root_geom, output);
 		break;
-	case OPENSCAD_DXF:
-		export_dxf(root_geom, output);
-		break;
-	case OPENSCAD_SVG:
-		export_svg(root_geom, output);
-		break;
 	case OPENSCAD_NEFDBG:
 		export_nefdbg(root_geom, output);
 		break;
 	case OPENSCAD_NEF3:
 		export_nef3(root_geom, output);
+		break;
+#endif
+	case OPENSCAD_DXF:
+		export_dxf(root_geom, output);
+		break;
+	case OPENSCAD_SVG:
+		export_svg(root_geom, output);
 		break;
 	default:
 		assert(false && "Unknown file format");
