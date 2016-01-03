@@ -127,7 +127,6 @@ AbstractNode *ExportModule::instantiate(const Context* ctx, const ModuleInstanti
         std::string filename =  lookup_file(file->toString(), inst->path(), ctx->documentPath());
  
         FileFormat format;
-	Tree tree;
 
        	std::string extraw = boosty::extension_str(fs::path(filename));
 	std::string ext = boost::algorithm::to_lower_copy(extraw);
@@ -140,6 +139,7 @@ AbstractNode *ExportModule::instantiate(const Context* ctx, const ModuleInstanti
 	else if (ext == ".nef3") format = OPENSCAD_NEF3;
   
 #ifdef ENABLE_CGAL
+	Tree tree;
 	GeometryEvaluator geomevaluator(tree);
 #else
         PRINTB(_("CGAL not enabled at compile time. Export will not work."),"")
@@ -149,8 +149,10 @@ AbstractNode *ExportModule::instantiate(const Context* ctx, const ModuleInstanti
 	std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(evalctx);
          
 	shared_ptr<const Geometry> geom;
-        
+        tree.setRoot((instantiatednodes[0]) ); 
+
 	geom = geomevaluator.evaluateGeometry(*(instantiatednodes[0]) , true);
+
 
         exportFileByName(geom,format,filename.c_str(),filename.c_str());
         return NULL;        

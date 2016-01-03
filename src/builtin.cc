@@ -44,6 +44,7 @@ extern void register_builtin_surface();
 extern void register_builtin_control();
 extern void register_builtin_render();
 extern void register_builtin_import();
+extern void register_builtin_export();
 extern void register_builtin_projection();
 extern void register_builtin_cgaladv();
 extern void register_builtin_offset();
@@ -70,6 +71,7 @@ void Builtins::initialize()
 	register_builtin_control();
 	register_builtin_render();
 	register_builtin_import();
+	register_builtin_export();
 	register_builtin_projection();
 	register_builtin_cgaladv();
 	register_builtin_offset();
