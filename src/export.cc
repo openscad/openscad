@@ -142,7 +142,7 @@ AbstractNode *ExportModule::instantiate(const Context* ctx, const ModuleInstanti
 	Tree tree;
 	GeometryEvaluator geomevaluator(tree);
 #else
-        PRINTB(_("CGAL not enabled at compile time. Export will not work."),"")
+        PRINTB(_("CGAL not enabled at compile time. Export will not work."),"");
         return NULL;
 #endif
          
