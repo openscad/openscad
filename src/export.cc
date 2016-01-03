@@ -25,8 +25,21 @@
  */
 
 #include "export.h"
+#include "evalcontext.h"
 #include "printutils.h"
 #include "Geometry.h"
+#include "GeometryEvaluator.h"
+#include "builtin.h"
+#include "typedefs.h"
+#include "fileutils.h"
+
+#include <boost/algorithm/string.hpp>
+#include <boost/regex.hpp>
+#include <boost/assign/std/vector.hpp>
+#include <boost/filesystem.hpp>
+
+using namespace boost::assign; // bring 'operator+=()' into scope
+#include "boosty.h"
 
 #include <fstream>
 
@@ -85,4 +98,65 @@ void exportFileByName(const shared_ptr<const Geometry> &root_geom, FileFormat fo
 			PRINTB(_("ERROR: \"%s\" write error. (Disk full?)"), name2display);
 		}
 	}
+}
+
+class ExportModule : public AbstractModule
+{
+public:
+        ExportModule() { }
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
+
+};
+
+AbstractNode *ExportModule::instantiate(const Context* ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
+{
+        AssignmentList args;
+
+        args += Assignment("file");
+
+	Context c(ctx);
+	c.setVariables(args, evalctx);
+	inst->scope.apply(*evalctx);
+
+	ValuePtr file = c.lookup_variable("file");
+        if (file->isUndefined()) {
+             PRINTB(_("Warning! no file name is given to export module!"),"");
+             return NULL; 
+        };
+    
+        std::string filename =  lookup_file(file->toString(), inst->path(), ctx->documentPath());
+ 
+        FileFormat format;
+	Tree tree;
+
+       	std::string extraw = boosty::extension_str(fs::path(filename));
+	std::string ext = boost::algorithm::to_lower_copy(extraw);
+	if (ext == ".stl") format=OPENSCAD_STL;
+	else if (ext == ".off") format = OPENSCAD_OFF;
+	else if (ext == ".amf") format = OPENSCAD_AMF;
+	else if (ext == ".dxf") format = OPENSCAD_DXF;
+	else if (ext == ".svg") format = OPENSCAD_SVG;
+	else if (ext == ".nefdbg") format = OPENSCAD_NEFDBG;
+	else if (ext == ".nef3") format = OPENSCAD_NEF3;
+  
+#ifdef ENABLE_CGAL
+	GeometryEvaluator geomevaluator(tree);
+#else
+        PRINTB(_("CGAL not enabled at compile time. Export will not work."),"")
+        return NULL;
+#endif
+         
+	std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(evalctx);
+         
+	shared_ptr<const Geometry> geom;
+        
+	geom = geomevaluator.evaluateGeometry(*(instantiatednodes[0]) , true);
+
+        exportFileByName(geom,format,filename.c_str(),filename.c_str());
+        return NULL;        
+}
+
+void register_builtin_export()
+{
+         Builtins::init("export", new ExportModule());
 }
