@@ -141,11 +141,7 @@ AbstractNode *ExportModule::instantiate(const Context* ctx, const ModuleInstanti
 #ifdef ENABLE_CGAL
 	Tree tree;
 	GeometryEvaluator geomevaluator(tree);
-#else
-        PRINTB(_("CGAL not enabled at compile time. Export will not work."),"");
-        return NULL;
-#endif
-         
+ 
 	std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(evalctx);
          
 	shared_ptr<const Geometry> geom;
@@ -156,7 +152,12 @@ AbstractNode *ExportModule::instantiate(const Context* ctx, const ModuleInstanti
 
         exportFileByName(geom,format,filename.c_str(),filename.c_str());
         return NULL;        
-}
+
+#else
+        PRINTB(_("CGAL not enabled at compile time. Export will not work."),"");
+        return NULL;
+#endif
+        }
 
 void register_builtin_export()
 {
