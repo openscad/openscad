@@ -725,6 +725,11 @@ set(NOCGAL_SOURCES
   ../src/builtin.cc 
   ../src/import.cc
   ../src/export.cc
+  ../src/export_stl.cc
+  ../src/export_amf.cc
+  ../src/export_off.cc
+  ../src/export_dxf.cc
+  ../src/export_svg.cc
   ../src/LibraryInfo.cc
   ../src/polyset.cc
   ../src/polyset-gl.cc
@@ -736,6 +741,7 @@ set(CGAL_SOURCES
   ${NOCGAL_SOURCES}
   ../src/CSGTreeEvaluator.cc 
   ../src/CGAL_Nef_polyhedron.cc 
+  ../src/export_nef.cc
   ../src/cgalutils.cc 
   ../src/cgalutils-applyops.cc 
   ../src/cgalutils-project.cc 
@@ -1187,6 +1193,8 @@ list(APPEND THROWNTOGETHERTEST_FILES ${OPENCSGTEST_FILES})
 
 list(APPEND CGALSTLSANITYTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/normal-nan.scad)
 
+list(APPEND EXPORT_STL_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/stl/stl-export.scad)
+
 list(APPEND EXPORT3D_CGALCGAL_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/polyhedron-nonplanar-tests.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/rotate_extrude-tests.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/union-coincident-test.scad
@@ -1282,14 +1290,18 @@ disable_tests(throwntogethertest_minkowski3-erosion)
 # as currently inf/nan is written directly to the CSG file (e.g. r = inf)
 # which is not valid or even misleading in case a variable inf exists.
 # FIXME: define export behavior for inf/nan when exporting CSG files
+# These tests return error code 1.
+# FIXME: We should have a way of running these and verify the return code
 disable_tests(csgpngtest_primitive-inf-tests
               csgpngtest_transform-nan-inf-tests
               csgpngtest_primitive-inf-tests
               csgpngtest_transform-nan-inf-tests
               # Triggers a floating point accuracy issue causing loaded .csg to
               # render slightly differently
-              csgpngtest_issue1258
-)
+              cgalpngtest_nothing-decimal-comma-separated
+              cgalpngtest_import-empty-tests
+              cgalpngtest_empty-shape-tests
+              csgpngtest_issue1258)
 
 # Test config handling
 
@@ -1343,7 +1355,8 @@ list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue13.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1223.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1223b.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1246.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1455.scad)
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1455.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1529.scad)
 
 # We know that we cannot import weakly manifold files into CGAL, so to make tests easier
 # to manage, don't try. Once we improve import, we can reenable this
@@ -1505,6 +1518,9 @@ add_cmdline_test(cgalstlsanitytest EXE ${CMAKE_SOURCE_DIR}/cgalstlsanitytest SUF
 #
 
 add_cmdline_test(monotonepngtest EXE ${OPENSCAD_BINPATH} ARGS --colorscheme=Monotone --render -o SUFFIX png FILES ${EXPORT3D_CGAL_TEST_FILES} ${EXPORT3D_CGALCGAL_TEST_FILES})
+
+# Disabled for now, needs implementation of #420 to be stable
+# add_cmdline_test(stlexport EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX stl FILES ${EXPORT_STL_TEST_FILES})
 
 # stlpngtest: direct STL output, preview rendering
 add_cmdline_test(stlpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=STL EXPECTEDDIR monotonepngtest SUFFIX png FILES ${EXPORT3D_TEST_FILES})

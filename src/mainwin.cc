@@ -2168,7 +2168,7 @@ void MainWindow::actionExport(export_type_e, QString, QString)
 		assert(false && "Unknown export type");
 		break;
 	}
-	exportFileByName(this->root_geom.get(), format,
+	exportFileByName(this->root_geom, format,
 		export_filename.toLocal8Bit().constData(),
 		export_filename.toUtf8());
 	PRINTB("%s export finished.", type_name);
@@ -2229,7 +2229,7 @@ void MainWindow::actionExportDXF()
 	if (dxf_filename.isEmpty()) {
 		return;
 	}
-	exportFileByName(this->root_geom.get(), OPENSCAD_DXF, dxf_filename.toUtf8(),
+	exportFileByName(this->root_geom, OPENSCAD_DXF, dxf_filename.toUtf8(),
 		dxf_filename.toLocal8Bit().constData());
 	PRINT("DXF export finished.");
 
@@ -2243,7 +2243,7 @@ void MainWindow::actionExportSVG()
 	if (svg_filename.isEmpty()) {
 		return;
 	}
-	exportFileByName(this->root_geom.get(), OPENSCAD_SVG, svg_filename.toUtf8(),
+	exportFileByName(this->root_geom, OPENSCAD_SVG, svg_filename.toUtf8(),
 		svg_filename.toLocal8Bit().constData());
 	PRINT("SVG export finished.");
 
