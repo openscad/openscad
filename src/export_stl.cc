@@ -42,7 +42,6 @@ static void append_stl(const PolySet &ps, std::ostream &output)
 	PolysetUtils::tessellate_faces(ps, triangulated);
 
 	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
-	output << "solid OpenSCAD_Model\n";
 	BOOST_FOREACH(const Polygon &p, triangulated.polygons) {
 		assert(p.size() == 3); // STL only allows triangles
 		std::stringstream stream;
@@ -78,7 +77,6 @@ static void append_stl(const PolySet &ps, std::ostream &output)
 			output << "  endfacet\n";
 		}
 	}
-	output << "endsolid OpenSCAD_Model\n";
 	setlocale(LC_NUMERIC, "");      // Set default locale
 }
 
@@ -185,7 +183,7 @@ static void append_stl(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 	}
 }
 
-void append_stl(const shared_ptr<const Geometry> &geom, std::ostream &output)
+static void append_stl(const shared_ptr<const Geometry> &geom, std::ostream &output)
 {
 	if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(geom.get())) {
 		append_stl(*N, output);
