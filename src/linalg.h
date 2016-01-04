@@ -3,16 +3,11 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <Eigen/Dense>
-#include <Eigen/StdVector>
 #include <boost/cstdint.hpp>
 
-EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(Eigen::Vector2d)
 using Eigen::Vector2d;
-EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(Eigen::Vector3d)
 using Eigen::Vector3d;
-EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(Eigen::Vector3f)
 using Eigen::Vector3f;
-EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(Eigen::Vector3i)
 using Eigen::Vector3i;
 
 typedef Eigen::AlignedBox<double, 3> BoundingBox;
