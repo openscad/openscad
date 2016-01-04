@@ -120,8 +120,8 @@ include[ \t\r\n>]*"<"	{ BEGIN(cond_include); filepath = filename = ""; }
 use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
 <cond_use>{
 [^\t\r\n>]+	{ filename = yytext; }
- ">"		{ 
-	BEGIN(INITIAL); 
+ ">"		{
+	BEGIN(INITIAL);
         fs::path fullpath = find_valid_path(sourcepath(), fs::path(filename), &openfilenames);
 	if (fullpath.empty()) {
           PRINTB("WARNING: Can't open library '%s'.", filename);
@@ -168,7 +168,7 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
 
 {UNICODE}+              { parser_error_pos -= strlen(yytext); return TOK_ERROR; }
 
-{D}+{E}? | 
+{D}+{E}? |
 {D}*\.{D}+{E}? |
 {D}+\.{D}*{E}?          {
                             try {
@@ -189,8 +189,8 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
 \\x[0-7]{H}             { unsigned long i = strtoul(lexertext + 2, NULL, 16); stringcontents += (i == 0 ? ' ' : (unsigned char)(i & 0xff)); }
 \\u{H}{4}|\\U{H}{6}     { char buf[8]; to_utf8(lexertext + 2, buf); stringcontents += buf; }
 [^\\\n\"]		{ stringcontents += lexertext; }
-\"			{ BEGIN(INITIAL); 
-			parserlval.text = strdup(stringcontents.c_str()); 
+\"			{ BEGIN(INITIAL);
+			parserlval.text = strdup(stringcontents.c_str());
 			return TOK_STRING; }
 }
 
@@ -240,7 +240,7 @@ void to_utf8(const char *str, char *out)
 fs::path sourcepath()
 {
   if (!path_stack.empty()) return path_stack.back();
-  
+
   return fs::path(parser_source_path);
 }
 
@@ -281,18 +281,18 @@ void includefile()
   openfiles.push_back(yyin);
   openfilenames.push_back(fullname);
   filename.clear();
-  
+
   yypush_buffer_state(yy_create_buffer(yyin, YY_BUF_SIZE));
 }
 
 /*!
-  In case of an error, this will make sure we clean up our custom data structures 
+  In case of an error, this will make sure we clean up our custom data structures
   and close all files.
 */
 void lexerdestroy()
 {
-  BOOST_FOREACH (FILE *f, openfiles) fclose(f);
-  openfiles.clear();
-  openfilenames.clear();
-  path_stack.clear();
+	BOOST_FOREACH (FILE *f, openfiles) fclose(f);
+	openfiles.clear();
+	openfilenames.clear();
+	path_stack.clear();
 }
