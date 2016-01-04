@@ -182,7 +182,7 @@ CONFIG(skip-version-check) {
 
 # Application configuration
 macx:CONFIG += mdi
-#CONFIG += c++11
+CONFIG += c++11
 CONFIG += cgal
 CONFIG += opencsg
 CONFIG += glew

@@ -251,26 +251,14 @@ endif()
 
 #
 # Handle C++11.
-# Usage: cmake -DCXX11=1 .
 # Note: Since Xcode 7, c++11 is default
-# Note: We do this after looking for Boost, just to have a way of determining
-#       which C++ library to link with
 #
-if (CXX11)
-  message(STATUS "Using C++11")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-  if(APPLE)
-    set(LIBCXX11 1)
-  endif()
-endif()
+message(STATUS "Using C++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 if(APPLE)
-  if(LIBCXX11)
-    message(STATUS "Using libc++")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-  else()
-    message(STATUS "Using C++03 and libstdc++")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++03 -stdlib=libstdc++")
-  endif()
+  set(LIBCXX11 1)
+  message(STATUS "Using libc++")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
 endif()
 
 # Mac OS X
