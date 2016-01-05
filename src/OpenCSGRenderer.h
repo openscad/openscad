@@ -32,23 +32,25 @@ class OpenCSGPrim : public OpenCSG::Primitive
 
 class OpenCSGRenderer : public Renderer
 {
-	public:
-		OpenCSGRenderer(class CSGProducts *root_products, CSGProducts *highlights_products,
-				CSGProducts *background_products, GLint *shaderinfo);
-		virtual ~OpenCSGRenderer();
-		virtual void draw(bool showfaces, bool showedges) const;
-		virtual BoundingBox getBoundingBox() const;
-	private:
+public:
+	OpenCSGRenderer(shared_ptr<class CSGProducts> root_products,
+									shared_ptr<CSGProducts> highlights_products,
+									shared_ptr<CSGProducts> background_products,
+									GLint *shaderinfo);
+	virtual ~OpenCSGRenderer();
+	virtual void draw(bool showfaces, bool showedges) const;
+	virtual BoundingBox getBoundingBox() const;
+private:
 #ifdef ENABLE_OPENCSG
 		class OpenCSGPrim *createCSGPrimitive(const class CSGChainObject &csgobj, OpenCSG::Operation operation, bool highlight_mode, bool background_mode, OpenSCADOperator type, GLint *shaderinfo) const;
 #endif
 		void renderCSGProducts(const class CSGProducts &products, GLint *shaderinfo,
 					bool highlight_mode, bool background_mode) const;
 
-		CSGProducts *root_products_;
-		CSGProducts *highlights_products_;
-		CSGProducts *background_products_;
-		GLint *shaderinfo_;
+	shared_ptr<CSGProducts> root_products;
+	shared_ptr<CSGProducts> highlights_products;
+	shared_ptr<CSGProducts> background_products;
+	GLint *shaderinfo;
 
 		bool root_products_built_;
 		bool highlights_products_built_;

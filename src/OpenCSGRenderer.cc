@@ -59,11 +59,13 @@ void OpenCSGPrim::render()
 }
 #endif
 
-OpenCSGRenderer::OpenCSGRenderer(CSGProducts *root_products, CSGProducts *highlights_products,
-				 CSGProducts *background_products, GLint *shaderinfo)
-	: root_products_(root_products),
-	  highlights_products_(highlights_products),
-	  background_products_(background_products), shaderinfo_(shaderinfo),
+OpenCSGRenderer::OpenCSGRenderer(shared_ptr<CSGProducts> root_products,
+																 shared_ptr<CSGProducts> highlights_products,
+																 shared_ptr<CSGProducts> background_products,
+																 GLint *shaderinfo)
+	: root_products(root_products), 
+		highlights_products(highlights_products), 
+		background_products(background_products), shaderinfo(shaderinfo),
 	  root_products_built_(false), highlights_products_built_(false), background_products_built_(false)
 {
 }
@@ -104,16 +106,16 @@ OpenCSGRenderer::~OpenCSGRenderer()
 
 void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges) const
 {
-	GLint *shaderinfo = shaderinfo_;
+	GLint *shaderinfo = shaderinfo;
 	if (!shaderinfo[0]) shaderinfo = NULL;
-	if (root_products_) {
-		renderCSGProducts(*root_products_, showedges ? shaderinfo : NULL, false, false);
+	if (root_products) {
+		renderCSGProducts(*root_products, showedges ? shaderinfo : NULL, false, false);
 	}
-	if (background_products_) {
-		renderCSGProducts(*background_products_, showedges ? shaderinfo : NULL, false, true);
+	if (background_products) {
+		renderCSGProducts(*background_products, showedges ? shaderinfo : NULL, false, true);
 	}
-	if (highlights_products_) {
-		renderCSGProducts(*highlights_products_, showedges ? shaderinfo : NULL, true, false);
+	if (highlights_products) {
+		renderCSGProducts(*highlights_products, showedges ? shaderinfo : NULL, true, false);
 	}
 }
 
@@ -248,9 +250,9 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 BoundingBox OpenCSGRenderer::getBoundingBox() const
 {
 	BoundingBox bbox;
-	if (root_products_) bbox = root_products_->getBoundingBox();
-	if (highlights_products_) bbox.extend(highlights_products_->getBoundingBox());
-	if (background_products_) bbox.extend(background_products_->getBoundingBox());
+	if (root_products) bbox = root_products->getBoundingBox();
+	if (highlights_products) bbox.extend(highlights_products->getBoundingBox());
+	if (background_products) bbox.extend(background_products->getBoundingBox());
 
 	return bbox;
 }

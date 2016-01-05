@@ -688,7 +688,7 @@ set(CORE_SOURCES
   ../src/modcontext.cc 
   ../src/evalcontext.cc 
   ../src/feature.cc
-  ../src/csgops.cc 
+  ../src/csgnode.cc 
   ../src/CSGTreeNormalizer.cc 
   ../src/Geometry.cc 
   ../src/Polygon2d.cc 
