@@ -190,7 +190,7 @@ void CSGProducts::import(shared_ptr<CSGNode> csgnode, OpenSCADOperator type, CSG
 	}
 }
 
-std::string CSGProduct::dump(bool full) const
+std::string CSGProduct::dump() const
 {
 	std::stringstream dump;
 	dump << this->intersections.front().leaf->label;
@@ -202,14 +202,6 @@ std::string CSGProduct::dump(bool full) const
 	BOOST_FOREACH(const CSGChainObject &csgobj, this->subtractions) {
 		dump << " -" << csgobj.leaf->label;
 	}
-
-// FIXME:
-//		if (full) {
-//			dump << " polyset: \n" << obj.geom->dump() << "\n";
-//			dump << " matrix: \n" << obj.matrix.matrix() << "\n";
-//			dump << " color: \n" << obj.color << "\n";
-//		}
-
 	return dump.str();
 }
 
@@ -226,12 +218,12 @@ BoundingBox CSGProduct::getBoundingBox() const
 	return bbox;
 }
 
-std::string CSGProducts::dump(bool full) const
+std::string CSGProducts::dump() const
 {
 	std::stringstream dump;
 
 	BOOST_FOREACH(const CSGProduct &product, this->products) {
-		dump << "+" << product.dump(full) << "\n";
+		dump << "+" << product.dump() << "\n";
 	}
 	return dump.str();
 }
@@ -242,17 +234,6 @@ BoundingBox CSGProducts::getBoundingBox() const
 	BOOST_FOREACH(const CSGProduct &product, this->products) {
 		bbox.extend(product.getBoundingBox());
 	}
-
-/*	BOOST_FOREACH(const CSGChainObject &obj, this->objects) {
-		if (obj.type != OPENSCAD_DIFFERENCE) {
-			if (obj.geom) {
-				BoundingBox psbox = obj.geom->getBoundingBox();
-				if (!psbox.isNull()) {
-					bbox.extend(obj.matrix * psbox);
-				}
-			}
-		}
-		} */
 	return bbox;
 }
 
