@@ -24,7 +24,7 @@
  *
  */
 
-%expect 1 /* Expect 1 shift/reduce conflict for ifelse_statement - "dangling else problem" */
+%expect 2 /* Expect 2 shift/reduce conflict for ifelse_statement - "dangling else problem" */
 
 %{
 
@@ -444,7 +444,7 @@ list_comprehension_elements:
              be parsed as an expression) */
           TOK_LET '(' arguments_call ')' list_comprehension_elements
             {
-              $$ = new ExpressionLc("let", *$3, $5);
+              $$ = new ExpressionLcLet(*$3, $5);
                 delete $3;
             }
         | TOK_FOR '(' arguments_call ')' list_comprehension_elements_or_expr
@@ -455,14 +455,18 @@ list_comprehension_elements:
                 for (int i = $3->size()-1; i >= 0; i--) {
                   AssignmentList arglist;
                   arglist.push_back((*$3)[i]);
-                  Expression *e = new ExpressionLc("for", arglist, $$);
+                  Expression *e = new ExpressionLcFor(arglist, $$);
                     $$ = e;
                 }
                 delete $3;
             }
         | TOK_IF '(' expr ')' list_comprehension_elements_or_expr
             {
-              $$ = new ExpressionLc("if", $3, $5);
+              $$ = new ExpressionLcIf($3, $5, 0);
+            }
+        | TOK_IF '(' expr ')' list_comprehension_elements_or_expr TOK_ELSE list_comprehension_elements_or_expr
+            {
+              $$ = new ExpressionLcIf($3, $5, $7);
             }
         ;
 

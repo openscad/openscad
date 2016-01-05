@@ -513,15 +513,12 @@ void ExpressionLet::print(std::ostream &stream) const
 	stream << "let(" << this->call_arguments << ") " << *first;
 }
 
-ExpressionLc::ExpressionLc(const std::string &name, 
-													 const AssignmentList &arglist, Expression *expr)
-	: Expression(expr), name(name), call_arguments(arglist)
+ExpressionLc::ExpressionLc(Expression *expr) : Expression(expr)
 {
 }
 
-ExpressionLc::ExpressionLc(const std::string &name, 
-													 Expression *expr1, Expression *expr2)
-	: Expression(expr1, expr2), name(name)
+ExpressionLc::ExpressionLc(Expression *expr1, Expression *expr2)
+    : Expression(expr1, expr2)
 {
 }
 
@@ -530,83 +527,102 @@ bool ExpressionLc::isListComprehension() const
 	return true;
 }
 
-ValuePtr ExpressionLc::evaluate(const Context *context) const
+ExpressionLcIf::ExpressionLcIf(Expression *cond, Expression *exprIf, Expression *exprElse)
+    : ExpressionLc(exprIf, exprElse), cond(cond)
+{
+}
+
+ValuePtr ExpressionLcIf::evaluate(const Context *context) const
+{
+    const Expression *expr = this->cond->evaluate(context) ? this->first : this->second;
+
+	Value::VectorType vec;
+    if (expr) {
+        if (expr->isListComprehension()) {
+            return expr->evaluate(context);
+        } else {
+           vec.push_back(expr->evaluate(context));
+        }
+    }
+
+    return ValuePtr(vec);
+}
+
+void ExpressionLcIf::print(std::ostream &stream) const
+{
+    stream << "if(" << *this->cond << ") " << *this->first;
+    if (this->second) {
+        stream << " else " << *this->second;
+    }
+}
+
+ExpressionLcFor::ExpressionLcFor(const AssignmentList &arglist, Expression *expr)
+    : ExpressionLc(expr), call_arguments(arglist)
+{
+}
+
+ValuePtr ExpressionLcFor::evaluate(const Context *context) const
 {
 	Value::VectorType vec;
 
-	if (this->name == "if") {
-		if (this->first->evaluate(context)) {
-			if (this->second->isListComprehension()) {
-				return this->second->evaluate(context);
-			} else {
-				vec.push_back(this->second->evaluate(context));
-			}
-		}
-		return ValuePtr(vec);
-	} else if (this->name == "for") {
-		EvalContext for_context(context, this->call_arguments);
+    EvalContext for_context(context, this->call_arguments);
 
-		Context assign_context(context);
+    Context assign_context(context);
 
-		// comprehension for statements are by the parser reduced to only contain one single element
-		const std::string &it_name = for_context.getArgName(0);
-		ValuePtr it_values = for_context.getArgValue(0, &assign_context);
+    // comprehension for statements are by the parser reduced to only contain one single element
+    const std::string &it_name = for_context.getArgName(0);
+    ValuePtr it_values = for_context.getArgValue(0, &assign_context);
 
-		Context c(context);
+    Context c(context);
 
-		if (it_values->type() == Value::RANGE) {
-			RangeType range = it_values->toRange();
-			boost::uint32_t steps = range.numValues();
-			if (steps >= 1000000) {
-				PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu).", steps);
-			} else {
-				for (RangeType::iterator it = range.begin();it != range.end();it++) {
-					c.set_variable(it_name, ValuePtr(*it));
-					vec.push_back(this->first->evaluate(&c));
-				}
-			}
-		}
-		else if (it_values->type() == Value::VECTOR) {
-			for (size_t i = 0; i < it_values->toVector().size(); i++) {
-				c.set_variable(it_name, it_values->toVector()[i]);
-				vec.push_back(this->first->evaluate(&c));
-			}
-		}
-		else if (it_values->type() != Value::UNDEFINED) {
-			c.set_variable(it_name, it_values);
-			vec.push_back(this->first->evaluate(&c));
-		}
-		if (this->first->isListComprehension()) {
-			return ValuePtr(flatten(vec));
-		} else {
-			return ValuePtr(vec);
-		}
-	} else if (this->name == "let") {
-		Context c(context);
-		evaluate_sequential_assignment(this->call_arguments, &c);
+    if (it_values->type() == Value::RANGE) {
+        RangeType range = it_values->toRange();
+        boost::uint32_t steps = range.numValues();
+        if (steps >= 1000000) {
+            PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu).", steps);
+        } else {
+            for (RangeType::iterator it = range.begin();it != range.end();it++) {
+                c.set_variable(it_name, ValuePtr(*it));
+                vec.push_back(this->first->evaluate(&c));
+            }
+        }
+    } else if (it_values->type() == Value::VECTOR) {
+        for (size_t i = 0; i < it_values->toVector().size(); i++) {
+            c.set_variable(it_name, it_values->toVector()[i]);
+            vec.push_back(this->first->evaluate(&c));
+        }
+    } else if (it_values->type() != Value::UNDEFINED) {
+        c.set_variable(it_name, it_values);
+        vec.push_back(this->first->evaluate(&c));
+    }
 
-		return this->first->evaluate(&c);
-	} else {
-		abort();
-	}
+    if (this->first->isListComprehension()) {
+        return ValuePtr(flatten(vec));
+    } else {
+        return ValuePtr(vec);
+    }
 }
 
-void ExpressionLc::print(std::ostream &stream) const
+void ExpressionLcFor::print(std::ostream &stream) const
 {
-	stream << this->name;
+    stream << "for(" << this->call_arguments << ") " << *this->first;
+}
 
-        Expression *expr;
-	if (this->name == "if") {
-		stream << "(" << *this->first << ") ";
-                expr = this->second;
-	} else if (this->name == "let" || this->name == "for") {
-		stream << "(" << this->call_arguments << ") ";
-                expr = this->first;
-	} else {
-		assert(false && "Illegal list comprehension element");
-	}
+ExpressionLcLet::ExpressionLcLet(const AssignmentList &arglist, Expression *expr)
+    : ExpressionLc(expr), call_arguments(arglist)
+{
+}
 
-    stream << *expr;
+ValuePtr ExpressionLcLet::evaluate(const Context *context) const
+{
+    Context c(context);
+    evaluate_sequential_assignment(this->call_arguments, &c);
+    return this->first->evaluate(&c);
+}
+
+void ExpressionLcLet::print(std::ostream &stream) const
+{
+    stream << "let(" << this->call_arguments << ") " << *this->first;
 }
 
 std::ostream &operator<<(std::ostream &stream, const Expression &expr)
