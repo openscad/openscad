@@ -259,6 +259,14 @@ private:
 	AssignmentList call_arguments;
 };
 
+class ExpressionLcEach : public ExpressionLc
+{
+public:
+	ExpressionLcEach(Expression *expr);
+	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
+};
+
 class ExpressionLcLet : public ExpressionLc
 {
 public:

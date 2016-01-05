@@ -556,6 +556,48 @@ void ExpressionLcIf::print(std::ostream &stream) const
     }
 }
 
+ExpressionLcEach::ExpressionLcEach(Expression *expr)
+    : ExpressionLc(expr)
+{
+}
+
+ValuePtr ExpressionLcEach::evaluate(const Context *context) const
+{
+	Value::VectorType vec;
+
+    ValuePtr v = this->first->evaluate(context);
+
+    if (v->type() == Value::RANGE) {
+        RangeType range = v->toRange();
+        boost::uint32_t steps = range.numValues();
+        if (steps >= 1000000) {
+            PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu).", steps);
+        } else {
+            for (RangeType::iterator it = range.begin();it != range.end();it++) {
+                vec.push_back(ValuePtr(*it));
+            }
+        }
+    } else if (v->type() == Value::VECTOR) {
+        Value::VectorType vector = v->toVector();
+        for (size_t i = 0; i < v->toVector().size(); i++) {
+            vec.push_back(vector[i]);
+        }
+    } else if (v->type() != Value::UNDEFINED) {
+        vec.push_back(v);
+    }
+
+    if (this->first->isListComprehension()) {
+        return ValuePtr(flatten(vec));
+    } else {
+        return ValuePtr(vec);
+    }
+}
+
+void ExpressionLcEach::print(std::ostream &stream) const
+{
+    stream << "each " << *this->first;
+}
+
 ExpressionLcFor::ExpressionLcFor(const AssignmentList &arglist, Expression *expr)
     : ExpressionLc(expr), call_arguments(arglist)
 {

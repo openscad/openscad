@@ -90,6 +90,7 @@ std::string parser_source_path;
 %token TOK_ELSE
 %token TOK_FOR
 %token TOK_LET
+%token TOK_EACH
 
 %token <text> TOK_ID
 %token <text> TOK_STRING
@@ -285,10 +286,11 @@ child_statement:
             }
         ;
 
-// "for" is a valid module identifier
+// "for" and "each" are a valid module identifier
 module_id:
           TOK_ID  { $$ = $1; }
         | TOK_FOR { $$ = strdup("for"); }
+        | TOK_EACH { $$ = strdup("each"); }
         ;
 
 single_module_instantiation:
@@ -446,6 +448,10 @@ list_comprehension_elements:
             {
               $$ = new ExpressionLcLet(*$3, $5);
                 delete $3;
+            }
+        | TOK_EACH list_comprehension_elements_or_expr
+            {
+              $$ = new ExpressionLcEach($2);
             }
         | TOK_FOR '(' arguments_call ')' list_comprehension_elements_or_expr
             {

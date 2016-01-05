@@ -32,3 +32,4 @@ cc = let(a=1) a;
 dd = [for (a=[0,1]) let(b=a) if (true) b];
 ee = ["abc", for (a=[0,1]) let(b=a) if (true) b, true, for(c=[1:3]) c, 3];
 ff = [for (a=[0,1]) if (a == 0) "A" else "B"];
+gg = [each [ "a", 0, false ]];
