@@ -688,8 +688,8 @@ set(CORE_SOURCES
   ../src/modcontext.cc 
   ../src/evalcontext.cc 
   ../src/feature.cc
-  ../src/csgterm.cc 
-  ../src/csgtermnormalizer.cc 
+  ../src/csgops.cc 
+  ../src/CSGTreeNormalizer.cc 
   ../src/Geometry.cc 
   ../src/Polygon2d.cc 
   ../src/csgops.cc 
@@ -734,7 +734,7 @@ set(NOCGAL_SOURCES
 
 set(CGAL_SOURCES
   ${NOCGAL_SOURCES}
-  ../src/CSGTermEvaluator.cc 
+  ../src/CSGTreeEvaluator.cc 
   ../src/CGAL_Nef_polyhedron.cc 
   ../src/cgalutils.cc 
   ../src/cgalutils-applyops.cc 
@@ -1149,9 +1149,8 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/operators-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1472.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/empty-stl.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1516.scad)
-
-set_test_config(Bugs echotest_issue1516)
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1516.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1528.scad)
 
 list(APPEND DUMPTEST_FILES ${FEATURES_2D_FILES} ${FEATURES_3D_FILES} ${DEPRECATED_3D_FILES})
 list(APPEND DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.scad
@@ -1266,9 +1265,13 @@ disable_tests(opencsgtest_child-background)
 # These tests only makes sense in OpenCSG mode
 disable_tests(cgalpngtest_child-background
               cgalpngtest_highlight-and-background-modifier
+              cgalpngtest_highlight-modifier2
+              cgalpngtest_background-modifier2
               cgalpngtest_testcolornames
               csgpngtest_child-background
               csgpngtest_highlight-and-background-modifier
+              csgpngtest_highlight-modifier2
+              csgpngtest_background-modifier2
               csgpngtest_testcolornames
               throwntogethertest_testcolornames)
 

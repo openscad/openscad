@@ -34,7 +34,7 @@
 #include "printutils.h"
 #include "node.h"
 #include "polyset.h"
-#include "csgterm.h"
+#include "csgnode.h"
 #include "highlighter.h"
 #include "export.h"
 #include "builtin.h"
@@ -51,13 +51,13 @@
 #include "FontListDialog.h"
 #include "LibraryInfoDialog.h"
 #ifdef ENABLE_OPENCSG
-#include "CSGTermEvaluator.h"
+#include "CSGTreeEvaluator.h"
 #include "OpenCSGRenderer.h"
 #include <opencsg.h>
 #endif
 #include "ProgressWidget.h"
 #include "ThrownTogetherRenderer.h"
-#include "csgtermnormalizer.h"
+#include "CSGTreeNormalizer.h"
 #include "QGLView.h"
 #ifdef Q_OS_MAC
 #include "CocoaUtils.h"
@@ -1087,8 +1087,8 @@ void MainWindow::instantiateRoot()
 	delete this->absolute_root_node;
 	this->absolute_root_node = NULL;
 
-	this->root_raw_term.reset();
-	this->root_norm_term.reset();
+	this->csgRoot.reset();
+	this->normalizedRoot.reset();
 
 	delete this->root_products;
 	this->root_products = NULL;
@@ -1158,14 +1158,14 @@ void MainWindow::compileCSG(bool procevents)
 		// FIXME: Will we support this?
 #endif
 #ifdef ENABLE_OPENCSG
-		CSGTermEvaluator csgrenderer(this->tree, &geomevaluator);
+		CSGTreeEvaluator csgrenderer(this->tree, &geomevaluator);
 #endif
 
 	progress_report_prep(this->root_node, report_func, this);
 	try {
 #ifdef ENABLE_OPENCSG
 		if (procevents) QApplication::processEvents();
-		this->root_raw_term = csgrenderer.evaluateCSGTerm(*root_node);
+		this->csgRoot = csgrenderer.buildCSGTree(*root_node);
 #endif
 		GeometryCache::instance()->print();
 #ifdef ENABLE_CGAL
@@ -1183,17 +1183,14 @@ void MainWindow::compileCSG(bool procevents)
 	if (procevents) QApplication::processEvents();
 
 	size_t normalizelimit = 2 * Preferences::inst()->getValue("advanced/openCSGLimit").toUInt();
-	CSGTermNormalizer normalizer(normalizelimit);
-
-	if (root_raw_term) {
-		this->root_norm_term = normalizer.normalize(this->root_raw_term);
-		if (this->root_norm_term) {
-			if (this->root_products) {
-				delete this->root_products;
-				this->root_products = 0;
-			}
+	CSGTreeNormalizer normalizer(normalizelimit);
+	
+	if (this->csgRoot) {
+		this->normalizedRoot = normalizer.normalize(this->csgRoot);
+		if (this->normalizedRoot) {
+			if (this->root_products) delete this->root_products;
 			this->root_products = new CSGProducts();
-			this->root_products->import(this->root_norm_term);
+			this->root_products->import(this->normalizedRoot);
 		}
 		else {
 			this->root_products = NULL;
@@ -1202,7 +1199,7 @@ void MainWindow::compileCSG(bool procevents)
 		}
 	}
 
-	const std::vector<shared_ptr<CSGNode> > &highlight_terms = csgrenderer.getHighlightTerms();
+	const std::vector<shared_ptr<CSGNode> > &highlight_terms = csgrenderer.getHighlightNodes();
 	if (highlight_terms.size() > 0) {
 		PRINTB("Compiling highlights (%d CSG Trees)...", highlight_terms.size());
 		if (procevents) QApplication::processEvents();
@@ -1217,8 +1214,8 @@ void MainWindow::compileCSG(bool procevents)
 			highlights_products->import(nterm);
 		}
 	}
-
-	const std::vector<shared_ptr<CSGNode> > &background_terms = csgrenderer.getBackgroundTerms();
+	
+	const std::vector<shared_ptr<CSGNode> > &background_terms = csgrenderer.getBackgroundNodes();
 	if (background_terms.size() > 0) {
 		PRINTB("Compiling background (%d CSG Trees)...", background_terms.size());
 		if (procevents) QApplication::processEvents();
@@ -2065,8 +2062,8 @@ void MainWindow::actionDisplayCSGProducts()
 	e->setReadOnly(true);
 	e->setPlainText(QString("\nCSG before normalization:\n%1\n\n\nCSG after normalization:\n%2\n\n\nCSG rendering chain:\n%3\n\n\nHighlights CSG rendering chain:\n%4\n\n\nBackground CSG rendering chain:\n%5\n")
 
-	.arg(root_raw_term ? QString::fromUtf8(root_raw_term->dump().c_str()) : "N/A",
-	root_norm_term ? QString::fromUtf8(root_norm_term->dump().c_str()) : "N/A",
+	.arg(this->csgRoot ? QString::fromUtf8(this->csgRoot->dump().c_str()) : "N/A",
+	this->normalizedRoot ? QString::fromUtf8(this->normalizedRoot->dump().c_str()) : "N/A",
 	this->root_products ? QString::fromUtf8(this->root_products->dump().c_str()) : "N/A",
 	this->highlights_products ? QString::fromUtf8(this->highlights_products->dump().c_str()) : "N/A",
 	this->background_products ? QString::fromUtf8(this->background_products->dump().c_str()) : "N/A"));

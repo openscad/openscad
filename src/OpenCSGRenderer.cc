@@ -27,7 +27,7 @@
 #include "system-gl.h"
 #include "OpenCSGRenderer.h"
 #include "polyset.h"
-#include "csgterm.h"
+#include "csgnode.h"
 #include "stl-utils.h"
 #include <boost/foreach.hpp>
 #include "printutils.h"
@@ -120,13 +120,13 @@ void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges) const
 // Primitive for rendering using OpenCSG
 OpenCSGPrim *OpenCSGRenderer::createCSGPrimitive(const CSGChainObject &csgobj, OpenCSG::Operation operation, bool highlight_mode, bool background_mode, OpenSCADOperator type, GLint *shaderinfo) const
 {
-	OpenCSGPrim *prim = new OpenCSGPrim(csgobj.geom, csgobj.matrix,
+	OpenCSGPrim *prim = new OpenCSGPrim(csgobj.leaf->geom, csgobj.leaf->matrix,
 					    csgmode_e(
 						(highlight_mode ?
 							CSGMODE_HIGHLIGHT :
 								(background_mode ? CSGMODE_BACKGROUND : CSGMODE_NORMAL)) |
 									(type == OPENSCAD_DIFFERENCE ? CSGMODE_DIFFERENCE : CSGMODE_NONE)),
-					    operation, csgobj.geom->getConvexity(), shaderinfo);
+					    operation, csgobj.leaf->geom->getConvexity(), shaderinfo);
 	return prim;
 }
 
@@ -158,10 +158,10 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 		std::vector<OpenCSG::Primitive*> primitives;
 		if (!built) {
 			BOOST_FOREACH(const CSGChainObject &csgobj, product.intersections) {
-				if (csgobj.geom) primitives.push_back(createCSGPrimitive(csgobj, OpenCSG::Intersection, highlight_mode, background_mode, OPENSCAD_INTERSECTION, shaderinfo));
+				if (csgobj.leaf->geom) primitives.push_back(createCSGPrimitive(csgobj, OpenCSG::Intersection, highlight_mode, background_mode, OPENSCAD_INTERSECTION, shaderinfo));
 			}
 			BOOST_FOREACH(const CSGChainObject &csgobj, product.subtractions) {
-				if (csgobj.geom) primitives.push_back(createCSGPrimitive(csgobj, OpenCSG::Subtraction, highlight_mode, background_mode, OPENSCAD_DIFFERENCE, shaderinfo));
+				if (csgobj.leaf->geom) primitives.push_back(createCSGPrimitive(csgobj, OpenCSG::Subtraction, highlight_mode, background_mode, OPENSCAD_DIFFERENCE, shaderinfo));
 			}
 			products_primitives->push_back(primitives);
 		}
@@ -174,7 +174,7 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 
 		const CSGChainObject &parent_obj = product.intersections[0];
 		BOOST_FOREACH(const CSGChainObject &csgobj, product.intersections) {
-			const Color4f &c = csgobj.color;
+			const Color4f &c = csgobj.leaf->color;
 				csgmode_e csgmode = csgmode_e(
 					highlight_mode ?
 					CSGMODE_HIGHLIGHT :
@@ -188,23 +188,20 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 			} else {
 				colormode = COLORMODE_MATERIAL;
 			}
-			if (highlight_mode || !(parent_obj.flags & CSGNode::FLAG_HIGHLIGHT) || !(csgobj.flags & CSGNode::FLAG_HIGHLIGHT) ) {
-				setColor(colormode, c.data(), shaderinfo);
-				if (!built) {
-					products_ids->push_back(glGenLists(1));
-					glNewList(products_ids->back(), GL_COMPILE);
-						render_surface(csgobj.geom, csgmode, csgobj.matrix, shaderinfo);
-					glEndList();
-
-				}
-				glPushMatrix();
-					glMultMatrixd(csgobj.matrix.data());
-					glCallList((*products_ids)[direct_ids_idx++]);
-				glPopMatrix();
+			setColor(colormode, c.data(), shaderinfo);
+			if (!built) {
+				products_ids->push_back(glGenLists(1));
+				glNewList(products_ids->back(), GL_COMPILE);
+				render_surface(csgobj.leaf->geom, csgmode, csgobj.leaf->matrix, shaderinfo);
+				glEndList();
 			}
+			glPushMatrix();
+			glMultMatrixd(csgobj.leaf->matrix.data());
+			glCallList((*products_ids)[direct_ids_idx++]);
+			glPopMatrix();
 		}
 		BOOST_FOREACH(const CSGChainObject &csgobj, product.subtractions) {
-			const Color4f &c = csgobj.color;
+			const Color4f &c = csgobj.leaf->color;
 				csgmode_e csgmode = csgmode_e(
 					(highlight_mode ?
 					CSGMODE_HIGHLIGHT :
@@ -219,19 +216,17 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 				colormode = COLORMODE_CUTOUT;
 			}
 
-			if (highlight_mode || !(parent_obj.flags & CSGNode::FLAG_HIGHLIGHT) || !(csgobj.flags & CSGNode::FLAG_HIGHLIGHT) ) {
-				setColor(colormode, c.data(), shaderinfo);
-				if (!built) {
-					products_ids->push_back(glGenLists(1));
-					glNewList(products_ids->back(), GL_COMPILE);
-						render_surface(csgobj.geom, csgmode, csgobj.matrix, shaderinfo);
-					glEndList();
-				}
-				glPushMatrix();
-					glMultMatrixd(csgobj.matrix.data());
-					glCallList((*products_ids)[direct_ids_idx++]);
-				glPopMatrix();
+			setColor(colormode, c.data(), shaderinfo);
+			if (!built) {
+				products_ids->push_back(glGenLists(1));
+				glNewList(products_ids->back(), GL_COMPILE);
+				render_surface(csgobj.leaf->geom, csgmode, csgobj.leaf->matrix, shaderinfo);
+				glEndList();
 			}
+			glPushMatrix();
+			glMultMatrixd(csgobj.leaf->matrix.data());
+			glCallList((*products_ids)[direct_ids_idx++]);
+			glPopMatrix();
 		}
 
 		if (shaderinfo) glUseProgram(0);
