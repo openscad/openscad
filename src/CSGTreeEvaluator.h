@@ -14,7 +14,7 @@ public:
 	CSGTreeEvaluator(const class Tree &tree, class GeometryEvaluator *geomevaluator = NULL)
 		: tree(tree), geomevaluator(geomevaluator) {
 	}
-	virtual ~CSGTreeEvaluator();
+	virtual ~CSGTreeEvaluator() {}
 
 	virtual Response visit(State &state, const class AbstractNode &node);
  	virtual Response visit(State &state, const class AbstractIntersectionNode &node);
