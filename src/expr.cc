@@ -650,6 +650,45 @@ void ExpressionLcFor::print(std::ostream &stream) const
     stream << "for(" << this->call_arguments << ") " << *this->first;
 }
 
+ExpressionLcForC::ExpressionLcForC(const AssignmentList &arglist, const AssignmentList &incrargs, Expression *cond, Expression *expr)
+    : ExpressionLc(cond, expr), call_arguments(arglist), incr_arguments(incrargs)
+{
+}
+
+ValuePtr ExpressionLcForC::evaluate(const Context *context) const
+{
+	Value::VectorType vec;
+
+    Context c(context);
+    evaluate_sequential_assignment(this->call_arguments, &c);
+
+	unsigned int counter = 0;
+    while (this->first->evaluate(&c)) {
+        vec.push_back(this->second->evaluate(&c));
+
+		if (counter++ == 1000000) throw RecursionException::create("for loop", "");
+
+        Context tmp(&c);
+        evaluate_sequential_assignment(this->incr_arguments, &tmp);
+        c.apply_variables(tmp);
+    }    
+
+    if (this->second->isListComprehension()) {
+        return ValuePtr(flatten(vec));
+    } else {
+        return ValuePtr(vec);
+    }
+}
+
+void ExpressionLcForC::print(std::ostream &stream) const
+{
+    stream
+        << "for(" << this->call_arguments
+        << ";" << *this->first
+        << ";" << this->incr_arguments
+        << ") " << *this->second;
+}
+
 ExpressionLcLet::ExpressionLcLet(const AssignmentList &arglist, Expression *expr)
     : ExpressionLc(expr), call_arguments(arglist)
 {
