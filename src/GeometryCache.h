@@ -6,8 +6,9 @@
 
 class GeometryCache
 {
-public:	
+public:
 	GeometryCache(size_t memorylimit = 100*1024*1024) : cache(memorylimit) {}
+	virtual ~GeometryCache();
 
 	static GeometryCache *instance() { if (!inst) inst = new GeometryCache; return inst; }
 

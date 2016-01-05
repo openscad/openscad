@@ -34,7 +34,7 @@
 #include "printutils.h"
 #include "node.h"
 #include "polyset.h"
-#include "csgterm.h"
+#include "csgnode.h"
 #include "highlighter.h"
 #include "export.h"
 #include "builtin.h"
@@ -51,13 +51,13 @@
 #include "FontListDialog.h"
 #include "LibraryInfoDialog.h"
 #ifdef ENABLE_OPENCSG
-#include "CSGTermEvaluator.h"
+#include "CSGTreeEvaluator.h"
 #include "OpenCSGRenderer.h"
 #include <opencsg.h>
 #endif
 #include "ProgressWidget.h"
 #include "ThrownTogetherRenderer.h"
-#include "csgtermnormalizer.h"
+#include "CSGTreeNormalizer.h"
 #include "QGLView.h"
 #ifdef Q_OS_MAC
 #include "CocoaUtils.h"
@@ -233,7 +233,7 @@ MainWindow::MainWindow(const QString &filename)
 
 #ifdef ENABLE_CGAL
 	this->cgalworker = new CGALWorker();
-	connect(this->cgalworker, SIGNAL(done(shared_ptr<const Geometry>)), 
+	connect(this->cgalworker, SIGNAL(done(shared_ptr<const Geometry>)),
 					this, SLOT(actionRenderDone(shared_ptr<const Geometry>)));
 #endif
 
@@ -241,7 +241,7 @@ MainWindow::MainWindow(const QString &filename)
 
 	root_module = NULL;
 	absolute_root_node = NULL;
-	this->root_chain = NULL;
+	this->root_products = NULL;
 #ifdef ENABLE_CGAL
 	this->cgalRenderer = NULL;
 #endif
@@ -250,8 +250,8 @@ MainWindow::MainWindow(const QString &filename)
 #endif
 	this->thrownTogetherRenderer = NULL;
 
-	highlights_chain = NULL;
-	background_chain = NULL;
+	highlights_products = NULL;
+	background_products = NULL;
 	root_node = NULL;
 
 	this->anim_step = 0;
@@ -269,7 +269,7 @@ MainWindow::MainWindow(const QString &filename)
 	knownFileExtensions["png"] = surfaceStatement;
 	knownFileExtensions["scad"] = "";
 	knownFileExtensions["csg"] = "";
-	
+
 	editActionZoomTextIn->setShortcuts(QList<QKeySequence>() << editActionZoomTextIn->shortcuts() << QKeySequence("CTRL+="));
 
 	connect(this, SIGNAL(highlightError(int)), editor, SLOT(highlightError(int)));
@@ -304,7 +304,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->labelCompileResultMessage, SIGNAL(linkActivated(QString)), SLOT(showConsole()));
 
 	// File menu
-	connect(this->fileActionNew, SIGNAL(triggered()), this, SLOT(actionNew())); 
+	connect(this->fileActionNew, SIGNAL(triggered()), this, SLOT(actionNew()));
 	connect(this->fileActionOpen, SIGNAL(triggered()), this, SLOT(actionOpen()));
 	connect(this->fileActionSave, SIGNAL(triggered()), this, SLOT(actionSave()));
 	connect(this->fileActionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs()));
@@ -457,13 +457,13 @@ MainWindow::MainWindow(const QString &filename)
 	connect(Preferences::inst(), SIGNAL(updateMdiMode(bool)), this, SLOT(updateMdiMode(bool)));
 	connect(Preferences::inst(), SIGNAL(updateReorderMode(bool)), this, SLOT(updateReorderMode(bool)));
 	connect(Preferences::inst(), SIGNAL(updateUndockMode(bool)), this, SLOT(updateUndockMode(bool)));
-	connect(Preferences::inst(), SIGNAL(fontChanged(const QString&,uint)), 
+	connect(Preferences::inst(), SIGNAL(fontChanged(const QString&,uint)),
 					editor, SLOT(initFont(const QString&,uint)));
 	connect(Preferences::inst(), SIGNAL(openCSGSettingsChanged()),
 					this, SLOT(openCSGSettingsChanged()));
 	connect(Preferences::inst(), SIGNAL(syntaxHighlightChanged(const QString&)),
 					editor, SLOT(setHighlightScheme(const QString&)));
-	connect(Preferences::inst(), SIGNAL(colorSchemeChanged(const QString&)), 
+	connect(Preferences::inst(), SIGNAL(colorSchemeChanged(const QString&)),
 					this, SLOT(setColorScheme(const QString&)));
 	Preferences::inst()->apply();
 
@@ -489,10 +489,10 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->replaceButton, SIGNAL(clicked()), this, SLOT(replace()));
 	connect(this->replaceAllButton, SIGNAL(clicked()), this, SLOT(replaceAll()));
 	connect(this->replaceInputField, SIGNAL(returnPressed()), this->replaceButton, SLOT(animateClick()));
-	
+
 	addKeyboardShortCut(this->viewerToolBar->actions());
 	addKeyboardShortCut(this->editortoolbar->actions());
-	
+
 	initActionIcon(fileActionNew, ":/images/blackNew.png", ":/images/Document-New-128.png");
 	initActionIcon(fileActionOpen, ":/images/Open-32.png", ":/images/Open-128.png");
 	initActionIcon(fileActionSave, ":/images/Save-32.png", ":/images/Save-128.png");
@@ -530,7 +530,7 @@ MainWindow::MainWindow(const QString &filename)
 	initActionIcon(editActionIndent, ":/images/Increase-Indent-32.png", ":/images/Increase-Indent-32-white.png");
 	initActionIcon(viewActionResetView, ":/images/Command-Reset-32.png", ":/images/Command-Reset-32-white.png");
 	initActionIcon(viewActionShowScaleProportional, ":/images/scalemarkers.png", ":/images/scalemarkers-white.png");
-	
+
 	// make sure it looks nice..
 	QByteArray windowState = settings.value("window/state", QByteArray()).toByteArray();
 	restoreState(windowState);
@@ -568,12 +568,12 @@ MainWindow::MainWindow(const QString &filename)
 		    move(windowRect.topLeft());
 		    resize(windowRect.size());
 		}
-#endif	    
+#endif
 	}
-	
+
 	connect(this->editorDock, SIGNAL(topLevelChanged(bool)), this, SLOT(editorTopLevelChanged(bool)));
 	connect(this->consoleDock, SIGNAL(topLevelChanged(bool)), this, SLOT(consoleTopLevelChanged(bool)));
-	
+
 	// display this window and check for OpenGL 2.0 (OpenCSG) support
 	viewModeThrownTogether();
 	show();
@@ -604,7 +604,7 @@ void MainWindow::addKeyboardShortCut(const QList<QAction *> &actions)
 	if (action->toolTip().contains("&nbsp;")) {
 	    continue;
 	}
-	
+
 	const QString shortCut(action->shortcut().toString(QKeySequence::NativeText));
 	if (shortCut.isEmpty()) {
 	    continue;
@@ -697,7 +697,7 @@ MainWindow::~MainWindow()
 {
 	if (root_module) delete root_module;
 	if (root_node) delete root_node;
-	if (root_chain) delete root_chain;
+	if (root_products) delete root_products;
 #ifdef ENABLE_CGAL
 	this->root_geom.reset();
 	delete this->cgalRenderer;
@@ -779,7 +779,7 @@ void MainWindow::openFile(const QString &new_filename)
 	const QString cmd = knownFileExtensions[suffix];
 	if (knownFileType && cmd.isEmpty()) {
 		setFileName(new_filename);
-		updateRecentFiles();		
+		updateRecentFiles();
 	} else {
 		setFileName("");
 		editor->setPlainText(cmd.arg(new_filename));
@@ -795,7 +795,7 @@ void MainWindow::setFileName(const QString &filename)
 	if (filename.isEmpty()) {
 		this->fileName.clear();
 		setWindowFilePath(_("Untitled.scad"));
-		
+
 		this->top_ctx.setDocumentPath(currentdir);
 	} else {
 		QFileInfo fileinfo(filename);
@@ -1087,19 +1087,17 @@ void MainWindow::instantiateRoot()
 	delete this->absolute_root_node;
 	this->absolute_root_node = NULL;
 
-	this->root_raw_term.reset();
-	this->root_norm_term.reset();
+	this->csgRoot.reset();
+	this->normalizedRoot.reset();
 
-	delete this->root_chain;
-	this->root_chain = NULL;
+	delete this->root_products;
+	this->root_products = NULL;
 
-	this->highlight_terms.clear();
-	delete this->highlights_chain;
-	this->highlights_chain = NULL;
+	delete this->highlights_products;
+	this->highlights_products = NULL;
 
-	this->background_terms.clear();
-	delete this->background_chain;
-	this->background_chain = NULL;
+	delete this->background_products;
+	this->background_products = NULL;
 
 	this->root_node = NULL;
 	this->tree.setRoot(NULL);
@@ -1154,17 +1152,20 @@ void MainWindow::compileCSG(bool procevents)
 	this->progresswidget = new ProgressWidget(this);
 	connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
 
-	progress_report_prep(this->root_node, report_func, this);
-	try {
 #ifdef ENABLE_CGAL
 		GeometryEvaluator geomevaluator(this->tree);
 #else
 		// FIXME: Will we support this?
 #endif
 #ifdef ENABLE_OPENCSG
-		CSGTermEvaluator csgrenderer(this->tree, &geomevaluator);
+		CSGTreeEvaluator csgrenderer(this->tree, &geomevaluator);
+#endif
+
+	progress_report_prep(this->root_node, report_func, this);
+	try {
+#ifdef ENABLE_OPENCSG
 		if (procevents) QApplication::processEvents();
-		this->root_raw_term = csgrenderer.evaluateCSGTerm(*root_node, highlight_terms, background_terms);
+		this->csgRoot = csgrenderer.buildCSGTree(*root_node);
 #endif
 		GeometryCache::instance()->print();
 #ifdef ENABLE_CGAL
@@ -1182,62 +1183,81 @@ void MainWindow::compileCSG(bool procevents)
 	if (procevents) QApplication::processEvents();
 
 	size_t normalizelimit = 2 * Preferences::inst()->getValue("advanced/openCSGLimit").toUInt();
-	CSGTermNormalizer normalizer(normalizelimit);
+	CSGTreeNormalizer normalizer(normalizelimit);
 	
-	if (root_raw_term) {
-		this->root_norm_term = normalizer.normalize(this->root_raw_term);
-		if (this->root_norm_term) {
-			this->root_chain = new CSGChain();
-			this->root_chain->import(this->root_norm_term);
+	if (this->csgRoot) {
+		this->normalizedRoot = normalizer.normalize(this->csgRoot);
+		if (this->normalizedRoot) {
+			if (this->root_products) delete this->root_products;
+			this->root_products = new CSGProducts();
+			this->root_products->import(this->normalizedRoot);
 		}
 		else {
-			this->root_chain = NULL;
+			this->root_products = NULL;
 			PRINT("WARNING: CSG normalization resulted in an empty tree");
 			if (procevents) QApplication::processEvents();
 		}
 	}
 
+	const std::vector<shared_ptr<CSGNode> > &highlight_terms = csgrenderer.getHighlightNodes();
 	if (highlight_terms.size() > 0) {
 		PRINTB("Compiling highlights (%d CSG Trees)...", highlight_terms.size());
 		if (procevents) QApplication::processEvents();
-		
-		highlights_chain = new CSGChain();
+
+		if (highlights_products) {
+			delete highlights_products;
+			highlights_products = 0;
+		}
+		highlights_products = new CSGProducts();
 		for (unsigned int i = 0; i < highlight_terms.size(); i++) {
-			highlight_terms[i] = normalizer.normalize(highlight_terms[i]);
-			highlights_chain->import(highlight_terms[i]);
+			shared_ptr<CSGNode> nterm = normalizer.normalize(highlight_terms[i]);
+			highlights_products->import(nterm);
 		}
 	}
 	
+	const std::vector<shared_ptr<CSGNode> > &background_terms = csgrenderer.getBackgroundNodes();
 	if (background_terms.size() > 0) {
 		PRINTB("Compiling background (%d CSG Trees)...", background_terms.size());
 		if (procevents) QApplication::processEvents();
-		
-		background_chain = new CSGChain();
+
+		if (background_products) {
+			delete background_products;
+			background_products = 0;
+		}
+		background_products = new CSGProducts();
 		for (unsigned int i = 0; i < background_terms.size(); i++) {
-			background_terms[i] = normalizer.normalize(background_terms[i]);
-			background_chain->import(background_terms[i]);
+			shared_ptr<CSGNode> nterm = normalizer.normalize(background_terms[i]);
+			background_products->import(nterm);
 		}
 	}
 
-	if (this->root_chain &&
-			(this->root_chain->objects.size() >
+	if (this->root_products &&
+			(this->root_products->size() >
 			 Preferences::inst()->getValue("advanced/openCSGLimit").toUInt())) {
-		PRINTB("WARNING: Normalized tree has %d elements!", this->root_chain->objects.size());
+		PRINTB("WARNING: Normalized tree has %d elements!", this->root_products->size());
 		PRINT("WARNING: OpenCSG rendering has been disabled.");
 	}
 #ifdef ENABLE_OPENCSG
 	else {
 		PRINTB("Normalized CSG tree has %d elements",
-					 (this->root_chain ? this->root_chain->objects.size() : 0));
-		this->opencsgRenderer = new OpenCSGRenderer(this->root_chain,
-																								this->highlights_chain,
-																								this->background_chain,
-																								this->qglview->shaderinfo);
+		(this->root_products ? this->root_products->size() : 0));
+		if (this->opencsgRenderer) {
+			delete this->opencsgRenderer;
+			this->opencsgRenderer = 0;
+		}
+		this->opencsgRenderer = new OpenCSGRenderer(this->root_products,
+							    this->highlights_products,
+							    this->background_products,
+							    this->qglview->shaderinfo);
 	}
 #endif
-	this->thrownTogetherRenderer = new ThrownTogetherRenderer(this->root_chain,
-																														this->highlights_chain,
-																														this->background_chain);
+	if (this->thrownTogetherRenderer) {
+		delete this->thrownTogetherRenderer;
+		this->thrownTogetherRenderer = 0;
+	}
+	this->thrownTogetherRenderer = new ThrownTogetherRenderer(this->root_products,
+								  this->highlights_products,
+								  this->background_products);
 	PRINT("Compile and preview finished.");
 	int s = this->renderingTime.elapsed() / 1000;
 	PRINTB("Total rendering time: %d hours, %d minutes, %d seconds", (s / (60*60)) % ((s / 60) % 60) % (s % 60));
@@ -1267,7 +1287,7 @@ void MainWindow::actionOpen()
 	if (!MainWindow::mdiMode && !maybeSave()) {
 	    return;
 	}
-	
+
 	openFile(fileInfo.filePath());
 }
 
@@ -1307,11 +1327,11 @@ void MainWindow::updateRecentFileActions()
 void MainWindow::show_examples()
 {
 	bool found_example = false;
-	
+
 	foreach (const QString &cat, UIUtils::exampleCategories()) {
 		QFileInfoList examples = UIUtils::exampleFiles(cat);
 		QMenu *menu = this->menuExamples->addMenu(gettext(cat.toStdString().c_str()));
-		
+
 		foreach(const QFileInfo &ex, examples) {
 			QAction *openAct = new QAction(ex.fileName(), this);
 			connect(openAct, SIGNAL(triggered()), this, SLOT(actionOpenExample()));
@@ -1320,7 +1340,7 @@ void MainWindow::show_examples()
 			found_example = true;
 		}
 	}
-	
+
 	if (!found_example) {
 		delete this->menuExamples;
 		this->menuExamples = NULL;
@@ -1550,7 +1570,7 @@ void MainWindow::convertTabsToSpaces()
     const QString text = this->editor->toPlainText();
 
     QString converted;
-    
+
     int cnt = 4;
     for (int idx = 0;idx < text.length();idx++) {
 	QChar c = text.at(idx);
@@ -1637,13 +1657,13 @@ void MainWindow::updateTemporalVariables()
 /*!
  * Update the viewport camera by evaluating the special variables. If they
  * are assigned on top-level, the values are used to change the camera
- * rotation, translation and distance. 
+ * rotation, translation and distance.
  */
 void MainWindow::updateCamera()
 {
 	if (!root_module)
 		return;
-	
+
 	bool camera_set = false;
 
 	Camera cam(qglview->cam);
@@ -1728,7 +1748,7 @@ void MainWindow::compileTopLevelDocument()
 	std::string fulltext =
 		std::string(this->last_compiled_doc.toUtf8().constData()) +
 		"\n" + commandline_commands;
-	
+
 	delete this->root_module;
 	this->root_module = NULL;
 
@@ -1914,7 +1934,7 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 
 		int s = this->renderingTime.elapsed() / 1000;
 		PRINTB("Total rendering time: %d hours, %d minutes, %d seconds", (s / (60*60)) % ((s / 60) % 60) % (s % 60));
-			
+
 		if (root_geom && !root_geom->isEmpty()) {
 			if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(root_geom.get())) {
 				if (N->getDimension() == 3) {
@@ -2041,13 +2061,13 @@ void MainWindow::actionDisplayCSGProducts()
 	e->setWindowTitle("CSG Products Dump");
 	e->setReadOnly(true);
 	e->setPlainText(QString("\nCSG before normalization:\n%1\n\n\nCSG after normalization:\n%2\n\n\nCSG rendering chain:\n%3\n\n\nHighlights CSG rendering chain:\n%4\n\n\nBackground CSG rendering chain:\n%5\n")
-									
-	.arg(root_raw_term ? QString::fromUtf8(root_raw_term->dump().c_str()) : "N/A",
-	root_norm_term ? QString::fromUtf8(root_norm_term->dump().c_str()) : "N/A",
-	this->root_chain ? QString::fromUtf8(this->root_chain->dump().c_str()) : "N/A",
-	highlights_chain ? QString::fromUtf8(highlights_chain->dump().c_str()) : "N/A",
-	background_chain ? QString::fromUtf8(background_chain->dump().c_str()) : "N/A"));
-	
+
+	.arg(this->csgRoot ? QString::fromUtf8(this->csgRoot->dump().c_str()) : "N/A",
+	this->normalizedRoot ? QString::fromUtf8(this->normalizedRoot->dump().c_str()) : "N/A",
+	this->root_products ? QString::fromUtf8(this->root_products->dump().c_str()) : "N/A",
+	this->highlights_products ? QString::fromUtf8(this->highlights_products->dump().c_str()) : "N/A",
+	this->background_products ? QString::fromUtf8(this->background_products->dump().c_str()) : "N/A"));
+
 	e->show();
 	e->resize(600, 400);
 	clearCurrentOutput();
@@ -2198,7 +2218,7 @@ QString MainWindow::get2dExportFilename(QString format, QString extension) {
 		clearCurrentOutput();
 		return QString();
 	}
-	
+
 	return exportFilename;
 }
 
@@ -2243,7 +2263,7 @@ void MainWindow::actionExportCSG()
 	QString csg_filename = QFileDialog::getSaveFileName(this, _("Export CSG File"),
 	    this->fileName.isEmpty() ? _("Untitled.csg") : QFileInfo(this->fileName).baseName()+".csg",
 	    _("CSG Files (*.csg)"));
-	
+
 	if (csg_filename.isEmpty()) {
 		PRINT("No filename specified. CSG export aborted.");
 		clearCurrentOutput();
@@ -2411,7 +2431,7 @@ void MainWindow::viewModeAnimate()
 
 void MainWindow::animateUpdateDocChanged()
 {
-	QString current_doc = editor->toPlainText(); 
+	QString current_doc = editor->toPlainText();
 	if (current_doc != last_compiled_doc)
 		animateUpdate();
 }
@@ -2593,7 +2613,7 @@ void MainWindow::dropEvent(QDropEvent *event)
 	for (int i = 0; i < urls.size(); i++) {
 		if (urls[i].scheme() != "file")
 			continue;
-		
+
 		handleFileDrop(urls[i].toLocalFile());
 	}
 	clearCurrentOutput();
@@ -2782,7 +2802,7 @@ void MainWindow::clearCurrentOutput()
 void MainWindow::openCSGSettingsChanged()
 {
 #ifdef ENABLE_OPENCSG
-	OpenCSG::setOption(OpenCSG::AlgorithmSetting, Preferences::inst()->getValue("advanced/forceGoldfeather").toBool() ? 
+	OpenCSG::setOption(OpenCSG::AlgorithmSetting, Preferences::inst()->getValue("advanced/forceGoldfeather").toBool() ?
 	OpenCSG::Goldfeather : OpenCSG::Automatic);
 #endif
 }
@@ -2794,7 +2814,7 @@ void MainWindow::setContentsChanged()
 
 void MainWindow::showFontCacheDialog()
 {
-	if (!MainWindow::fontCacheDialog) MainWindow::fontCacheDialog = new QProgressDialog;	
+	if (!MainWindow::fontCacheDialog) MainWindow::fontCacheDialog = new QProgressDialog;
 	QProgressDialog *dialog = MainWindow::fontCacheDialog;
 
 	dialog->setLabelText(_("Fontconfig needs to update its font cache.\nThis can take up to a couple of minutes."));

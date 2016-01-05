@@ -140,7 +140,11 @@ std::string parser_source_path;
 
 input:    /* empty */
         | TOK_USE
-            { rootmodule->registerUse(std::string($1)); }
+            {
+		rootmodule->registerUse(std::string($1));
+		free($1);
+		$1 = 0;
+            }
           input
         | statement input
         ;
@@ -160,6 +164,7 @@ statement:
                 scope_stack.top()->modules[$2] = newmodule;
                 scope_stack.push(&newmodule->scope);
                 free($2);
+                $2 = 0;
                 delete $4;
             }
           statement
@@ -171,6 +176,7 @@ statement:
                 Function *func = Function::create($2, *$4, $8);
                 scope_stack.top()->functions[$2] = func;
                 free($2);
+                $2 = 0;
                 delete $4;
             }
           ';'
@@ -196,6 +202,7 @@ assignment:
                     scope_stack.top()->assignments.push_back(Assignment($1, boost::shared_ptr<Expression>($3)));
                 }
                 free($1);
+                $1 = 0;
             }
         ;
 
@@ -295,6 +302,7 @@ single_module_instantiation:
                 $$->arguments = *$3;
                 $$->setPath(parser_source_path);
                 free($1);
+                $1 = 0;
                 delete $3;
             }
         ;
@@ -316,16 +324,19 @@ expr:
             {
                 $$ = new ExpressionLookup($1);
                 free($1);
+                $1 = 0;
             }
         | expr '.' TOK_ID
             {
               $$ = new ExpressionMember($1, $3);
                 free($3);
+                $3 = 0;
             }
         | TOK_STRING
             {
                 $$ = new ExpressionConst(ValuePtr(std::string($1)));
                 free($1);
+                $1 = 0;
             }
         | TOK_NUMBER
             {
@@ -436,6 +447,7 @@ expr:
             {
               $$ = new ExpressionFunctionCall($1, *$3);
                 free($1);
+                $1 = 0;
                 delete $3;
             }
         ;
@@ -513,11 +525,13 @@ argument_decl:
             {
                 $$ = new Assignment($1);
                 free($1);
+                $1 = 0;
             }
         | TOK_ID '=' expr
             {
                 $$ = new Assignment($1, boost::shared_ptr<Expression>($3));
                 free($1);
+                $1 = 0;
             }
         ;
 
@@ -549,6 +563,7 @@ argument_call:
             {
                 $$ = new Assignment($1, boost::shared_ptr<Expression>($3));
                 free($1);
+                $1 = 0;
             }
         ;
 
