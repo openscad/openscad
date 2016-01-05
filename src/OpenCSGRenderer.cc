@@ -106,7 +106,7 @@ OpenCSGRenderer::~OpenCSGRenderer()
 
 void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges) const
 {
-	GLint *shaderinfo = shaderinfo;
+	GLint *shaderinfo = this->shaderinfo;
 	if (!shaderinfo[0]) shaderinfo = NULL;
 	if (root_products) {
 		renderCSGProducts(*root_products, showedges ? shaderinfo : NULL, false, false);
