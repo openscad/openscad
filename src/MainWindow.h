@@ -55,9 +55,6 @@ public:
 	AbstractNode *root_node;          // Root if the root modifier (!) is used
 	Tree tree;
 
-	shared_ptr<class CSGNode> csgRoot;           // Result of the CSGTreeEvaluator
-	shared_ptr<CSGNode> normalizedRoot;          // Normalized CSG tree
-	class CSGProducts *root_products;
 #ifdef ENABLE_CGAL
 	shared_ptr<const class Geometry> root_geom;
 	class CGALRenderer *cgalRenderer;
@@ -67,8 +64,6 @@ public:
 #endif
 	class ThrownTogetherRenderer *thrownTogetherRenderer;
 
-	CSGProducts *highlights_products;
-	CSGProducts *background_products;
 	QString last_compiled_doc;
 
 	QAction *actionRecentFile[UIUtils::maxRecentFiles];
@@ -269,6 +264,12 @@ private:
 	static bool reorderMode;
 	static QSet<MainWindow*> *windows;
 	static class QProgressDialog *fontCacheDialog;
+
+	shared_ptr<class CSGNode> csgRoot;           // Result of the CSGTreeEvaluator
+	shared_ptr<CSGNode> normalizedRoot;          // Normalized CSG tree
+ 	shared_ptr<class CSGProducts> root_products;
+	shared_ptr<CSGProducts> highlights_products;
+	shared_ptr<CSGProducts> background_products;
 
 	char const * afterCompileSlot;
 	bool procevents;

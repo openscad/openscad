@@ -10,8 +10,10 @@
 class OpenCSGRenderer : public Renderer
 {
 public:
-	OpenCSGRenderer(class CSGProducts *root_products, CSGProducts *highlights_products, 
-									CSGProducts *background_products, GLint *shaderinfo);
+	OpenCSGRenderer(shared_ptr<class CSGProducts> root_products,
+									shared_ptr<CSGProducts> highlights_products,
+									shared_ptr<CSGProducts> background_products,
+									GLint *shaderinfo);
 	virtual void draw(bool showfaces, bool showedges) const;
 	virtual BoundingBox getBoundingBox() const;
 private:
@@ -21,8 +23,8 @@ private:
 	void renderCSGProducts(const class CSGProducts &products, GLint *shaderinfo, 
 											bool highlight_mode, bool background_mode) const;
 
-	CSGProducts *root_products;
-	CSGProducts *highlights_products;
-	CSGProducts *background_products;
+	shared_ptr<CSGProducts> root_products;
+	shared_ptr<CSGProducts> highlights_products;
+	shared_ptr<CSGProducts> background_products;
 	GLint *shaderinfo;
 };

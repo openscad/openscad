@@ -32,9 +32,9 @@
 
 #include <boost/foreach.hpp>
 
-ThrownTogetherRenderer::ThrownTogetherRenderer(CSGProducts *root_products,
-																							 CSGProducts *highlight_products,
-																							 CSGProducts *background_products)
+ThrownTogetherRenderer::ThrownTogetherRenderer(shared_ptr<CSGProducts> root_products,
+																							 shared_ptr<CSGProducts> highlight_products,
+																							 shared_ptr<CSGProducts> background_products)
 	: root_products(root_products), highlight_products(highlight_products), background_products(background_products)
 {
 }
@@ -45,16 +45,16 @@ void ThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges) const
  	if (this->root_products) {
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
-		renderCSGProducts(this->root_products, false, false, showedges, false);
+		renderCSGProducts(*this->root_products, false, false, showedges, false);
 		glCullFace(GL_FRONT);
 		glColor3ub(255, 0, 255);
-		renderCSGProducts(this->root_products, false, false, showedges, true);
+		renderCSGProducts(*this->root_products, false, false, showedges, true);
 		glDisable(GL_CULL_FACE);
 	}
 	if (this->background_products)
-	 	renderCSGProducts(this->background_products, false, true, showedges, false);
+	 	renderCSGProducts(*this->background_products, false, true, showedges, false);
 	if (this->highlight_products)
-	 	renderCSGProducts(this->highlight_products, true, false, showedges, false);
+	 	renderCSGProducts(*this->highlight_products, true, false, showedges, false);
 }
 
 void ThrownTogetherRenderer::renderChainObject(const CSGChainObject &csgobj, bool highlight_mode,
@@ -115,15 +115,15 @@ void ThrownTogetherRenderer::renderChainObject(const CSGChainObject &csgobj, boo
 	
 }
 
-void ThrownTogetherRenderer::renderCSGProducts(CSGProducts *products, bool highlight_mode,
-																						bool background_mode, bool showedges, 
-																						bool fberror) const
+void ThrownTogetherRenderer::renderCSGProducts(const CSGProducts &products, bool highlight_mode,
+																							 bool background_mode, bool showedges, 
+																							 bool fberror) const
 {
 	PRINTD("Thrown renderCSGProducts");
 	glDepthFunc(GL_LEQUAL);
 	this->geomVisitMark.clear();
 
-	BOOST_FOREACH(const CSGProduct &product, products->products) {
+	BOOST_FOREACH(const CSGProduct &product, products.products) {
 		BOOST_FOREACH(const CSGChainObject &csgobj, product.intersections) {
 			renderChainObject(csgobj, highlight_mode, background_mode, showedges, fberror, OPENSCAD_INTERSECTION);
 		}

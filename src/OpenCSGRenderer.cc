@@ -52,8 +52,10 @@ public:
 
 #endif
 
-OpenCSGRenderer::OpenCSGRenderer(CSGProducts *root_products, CSGProducts *highlights_products,
-																 CSGProducts *background_products, GLint *shaderinfo)
+OpenCSGRenderer::OpenCSGRenderer(shared_ptr<CSGProducts> root_products,
+																 shared_ptr<CSGProducts> highlights_products,
+																 shared_ptr<CSGProducts> background_products,
+																 GLint *shaderinfo)
 	: root_products(root_products), 
 		highlights_products(highlights_products), 
 		background_products(background_products), shaderinfo(shaderinfo)
