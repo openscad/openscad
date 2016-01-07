@@ -550,9 +550,9 @@ ValuePtr ExpressionLcIf::evaluate(const Context *context) const
 
 void ExpressionLcIf::print(std::ostream &stream) const
 {
-    stream << "if(" << *this->cond << ") " << *this->first;
+    stream << "if(" << *this->cond << ") (" << *this->first << ")";
     if (this->second) {
-        stream << " else " << *this->second;
+        stream << " else (" << *this->second << ")";
     }
 }
 
@@ -595,7 +595,7 @@ ValuePtr ExpressionLcEach::evaluate(const Context *context) const
 
 void ExpressionLcEach::print(std::ostream &stream) const
 {
-    stream << "each " << *this->first;
+    stream << "each (" << *this->first << ")";
 }
 
 ExpressionLcFor::ExpressionLcFor(const AssignmentList &arglist, Expression *expr)
@@ -647,7 +647,7 @@ ValuePtr ExpressionLcFor::evaluate(const Context *context) const
 
 void ExpressionLcFor::print(std::ostream &stream) const
 {
-    stream << "for(" << this->call_arguments << ") " << *this->first;
+    stream << "for(" << this->call_arguments << ") (" << *this->first << ")";
 }
 
 ExpressionLcLet::ExpressionLcLet(const AssignmentList &arglist, Expression *expr)
@@ -664,7 +664,7 @@ ValuePtr ExpressionLcLet::evaluate(const Context *context) const
 
 void ExpressionLcLet::print(std::ostream &stream) const
 {
-    stream << "let(" << this->call_arguments << ") " << *this->first;
+    stream << "let(" << this->call_arguments << ") (" << *this->first << ")";
 }
 
 std::ostream &operator<<(std::ostream &stream, const Expression &expr)
