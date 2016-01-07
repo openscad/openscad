@@ -889,6 +889,17 @@ macro(disable_tests)
 endmacro()
 
 #
+# Tags tests as experimental. This will add all the --enable=<feature>
+# options for the tagged tests.
+#
+macro(experimental_tests)
+  foreach (TESTNAME ${ARGN})
+#    message("Marking as experimental ${TESTNAME}")
+    list(APPEND EXPERIMENTAL_TESTS ${TESTNAME})
+  endforeach()
+endmacro()
+
+#
 # Tags the given tests as belonging to the given CONFIG, i.e. will
 # only be executed when run using ctest -C <CONFIG>
 #
@@ -981,16 +992,12 @@ function(add_cmdline_test TESTCMD_BASENAME)
 
     if (${DISABLED} EQUAL -1)
 
-      set(EXPERIMENTAL_OPTION "")
-      string(REGEX MATCH "csgtexttest" match_result1 ${TEST_FULLNAME})
-      string(REGEX MATCH "cgalstlsanity" match_result2 ${TEST_FULLNAME})
-      string(REGEX MATCH "dumptest" match_result3 ${TEST_FULLNAME})
-      if( "${match_result1}" STREQUAL "" )
-       if( "${match_result2}" STREQUAL "" )
-        if( "${match_result3}" STREQUAL "" )
-         set(EXPERIMENTAL_OPTION "")
-        endif()
-       endif()
+      list(FIND EXPERIMENTAL_TESTS ${TEST_FULLNAME} EXPERIMENTAL)
+
+      if (${EXPERIMENTAL} EQUAL -1)
+        set(EXPERIMENTAL_OPTION "")
+      else()
+        set(EXPERIMENTAL_OPTION "--enable=lc-each" "--enable=lc-else")
       endif()
 
       # 2D tests should be viewed from the top, not an angle.
@@ -1169,8 +1176,7 @@ list(APPEND DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allmodules.scad)
 
 list(APPEND CGALPNGTEST_2D_FILES ${FEATURES_2D_FILES} ${SCAD_DXF_FILES} ${EXAMPLE_2D_FILES})
-list(APPEND CGALPNGTEST_3D_FILES ${FEATURES_3D_FILES} ${DEPRECATED_3D_FILES} ${ISSUES_3D_FILES}
- ${EXAMPLE_3D_FILES})
+list(APPEND CGALPNGTEST_3D_FILES ${FEATURES_3D_FILES} ${DEPRECATED_3D_FILES} ${ISSUES_3D_FILES} ${EXAMPLE_3D_FILES})
 list(APPEND CGALPNGTEST_3D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/use-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/transform-nan-inf-tests.scad
@@ -1298,6 +1304,8 @@ disable_tests(csgpngtest_primitive-inf-tests
               cgalpngtest_import-empty-tests
               cgalpngtest_empty-shape-tests
               csgpngtest_issue1258)
+
+experimental_tests(echotest_list-comprehensions-experimental)
 
 # Test config handling
 

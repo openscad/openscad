@@ -33,6 +33,7 @@
 #include "printutils.h"
 #include "stackcheck.h"
 #include "exceptions.h"
+#include "feature.h"
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 
@@ -534,6 +535,10 @@ ExpressionLcIf::ExpressionLcIf(Expression *cond, Expression *exprIf, Expression 
 
 ValuePtr ExpressionLcIf::evaluate(const Context *context) const
 {
+    if (this->second) {
+    	ExperimentalFeatureException::check(Feature::ExperimentalElseExpression);
+    }
+
     const Expression *expr = this->cond->evaluate(context) ? this->first : this->second;
 
 	Value::VectorType vec;
@@ -563,6 +568,8 @@ ExpressionLcEach::ExpressionLcEach(Expression *expr)
 
 ValuePtr ExpressionLcEach::evaluate(const Context *context) const
 {
+	ExperimentalFeatureException::check(Feature::ExperimentalEachExpression);
+
 	Value::VectorType vec;
 
     ValuePtr v = this->first->evaluate(context);
