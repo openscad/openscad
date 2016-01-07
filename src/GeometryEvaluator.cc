@@ -91,6 +91,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const Abstrac
 	}
     if (dim == 2) {
         Polygon2d *p2d = applyToChildren2D(node, op);
+        p2d->color=node.color;
         assert(p2d);
         return ResultObject(p2d);
     }

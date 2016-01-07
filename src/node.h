@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include "traverser.h"
+#include "linalg.h"
 
 extern int progress_report_count;
 extern void (*progress_report_f)(const class AbstractNode*, void*, int);
@@ -26,6 +27,7 @@ class AbstractNode
 	// use smth. else to display node identifier in CSG tree output?
 	static size_t idx_counter;   // Node instantiation index
 public:
+	Color4f color;
 	AbstractNode(const class ModuleInstantiation *mi);
 	virtual ~AbstractNode();
   virtual Response accept(class State &state, class Visitor &visitor) const;
