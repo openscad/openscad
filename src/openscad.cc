@@ -705,7 +705,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	updater->init();
 #endif
 
-#if !(QT_VERSION >= 0x050400)
+#ifndef USE_QOPENGLWIDGET
 	// This workaround appears to only be needed when QGLWidget is used QOpenGLWidget
 	// available in Qt 5.4 is much better.
 	QGLFormat fmt;
