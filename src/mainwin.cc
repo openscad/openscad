@@ -241,7 +241,6 @@ MainWindow::MainWindow(const QString &filename)
 
 	root_module = NULL;
 	absolute_root_node = NULL;
-	this->root_products = NULL;
 #ifdef ENABLE_CGAL
 	this->cgalRenderer = NULL;
 #endif
@@ -250,8 +249,6 @@ MainWindow::MainWindow(const QString &filename)
 #endif
 	this->thrownTogetherRenderer = NULL;
 
-	highlights_products = NULL;
-	background_products = NULL;
 	root_node = NULL;
 
 	this->anim_step = 0;
@@ -697,7 +694,6 @@ MainWindow::~MainWindow()
 {
 	if (root_module) delete root_module;
 	if (root_node) delete root_node;
-	if (root_products) delete root_products;
 #ifdef ENABLE_CGAL
 	this->root_geom.reset();
 	delete this->cgalRenderer;
@@ -1089,15 +1085,7 @@ void MainWindow::instantiateRoot()
 
 	this->csgRoot.reset();
 	this->normalizedRoot.reset();
-
-	delete this->root_products;
-	this->root_products = NULL;
-
-	delete this->highlights_products;
-	this->highlights_products = NULL;
-
-	delete this->background_products;
-	this->background_products = NULL;
+	this->root_products.reset();
 
 	this->root_node = NULL;
 	this->tree.setRoot(NULL);
@@ -1188,12 +1176,11 @@ void MainWindow::compileCSG(bool procevents)
 	if (this->csgRoot) {
 		this->normalizedRoot = normalizer.normalize(this->csgRoot);
 		if (this->normalizedRoot) {
-			if (this->root_products) delete this->root_products;
-			this->root_products = new CSGProducts();
+			this->root_products.reset(new CSGProducts());
 			this->root_products->import(this->normalizedRoot);
 		}
 		else {
-			this->root_products = NULL;
+			this->root_products.reset();
 			PRINT("WARNING: CSG normalization resulted in an empty tree");
 			if (procevents) QApplication::processEvents();
 		}
@@ -1203,12 +1190,7 @@ void MainWindow::compileCSG(bool procevents)
 	if (highlight_terms.size() > 0) {
 		PRINTB("Compiling highlights (%d CSG Trees)...", highlight_terms.size());
 		if (procevents) QApplication::processEvents();
-
-		if (highlights_products) {
-			delete highlights_products;
-			highlights_products = 0;
-		}
-		highlights_products = new CSGProducts();
+		highlights_products.reset(new CSGProducts());
 		for (unsigned int i = 0; i < highlight_terms.size(); i++) {
 			shared_ptr<CSGNode> nterm = normalizer.normalize(highlight_terms[i]);
 			highlights_products->import(nterm);
@@ -1219,12 +1201,7 @@ void MainWindow::compileCSG(bool procevents)
 	if (background_terms.size() > 0) {
 		PRINTB("Compiling background (%d CSG Trees)...", background_terms.size());
 		if (procevents) QApplication::processEvents();
-
-		if (background_products) {
-			delete background_products;
-			background_products = 0;
-		}
-		background_products = new CSGProducts();
+		background_products.reset(new CSGProducts());
 		for (unsigned int i = 0; i < background_terms.size(); i++) {
 			shared_ptr<CSGNode> nterm = normalizer.normalize(background_terms[i]);
 			background_products->import(nterm);
@@ -2168,7 +2145,7 @@ void MainWindow::actionExport(export_type_e, QString, QString)
 		assert(false && "Unknown export type");
 		break;
 	}
-	exportFileByName(this->root_geom.get(), format,
+	exportFileByName(this->root_geom, format,
 		export_filename.toLocal8Bit().constData(),
 		export_filename.toUtf8());
 	PRINTB("%s export finished.", type_name);
@@ -2229,7 +2206,7 @@ void MainWindow::actionExportDXF()
 	if (dxf_filename.isEmpty()) {
 		return;
 	}
-	exportFileByName(this->root_geom.get(), OPENSCAD_DXF, dxf_filename.toUtf8(),
+	exportFileByName(this->root_geom, OPENSCAD_DXF, dxf_filename.toUtf8(),
 		dxf_filename.toLocal8Bit().constData());
 	PRINT("DXF export finished.");
 
@@ -2243,7 +2220,7 @@ void MainWindow::actionExportSVG()
 	if (svg_filename.isEmpty()) {
 		return;
 	}
-	exportFileByName(this->root_geom.get(), OPENSCAD_SVG, svg_filename.toUtf8(),
+	exportFileByName(this->root_geom, OPENSCAD_SVG, svg_filename.toUtf8(),
 		svg_filename.toLocal8Bit().constData());
 	PRINT("SVG export finished.");
 

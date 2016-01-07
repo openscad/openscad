@@ -97,7 +97,7 @@ public:
 	CSGProduct() {}
 	~CSGProduct() {}
 
-	std::string dump(bool full = false) const;
+	std::string dump() const;
 	BoundingBox getBoundingBox() const;
 
 	std::vector<CSGChainObject> intersections;
@@ -113,7 +113,7 @@ public:
 	~CSGProducts() {}
 
 	void import(shared_ptr<CSGNode> csgtree, OpenSCADOperator type = OPENSCAD_UNION, CSGNode::Flag flags = CSGNode::FLAG_NONE);
-	std::string dump(bool full = false) const;
+	std::string dump() const;
 	BoundingBox getBoundingBox() const;
 
 	std::vector<CSGProduct> products;

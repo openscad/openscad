@@ -170,15 +170,13 @@ static void info()
 {
 	std::cout << LibraryInfo::info() << "\n\n";
 
-	OffscreenView *glview;
 	try {
-		glview = new OffscreenView(512,512);
+		OffscreenView glview(512,512);
+		std::cout << glview.getRendererInfo() << "\n";
 	} catch (int error) {
 		PRINTB("Can't create OpenGL OffscreenView. Code: %i. Exiting.\n", error);
 		exit(1);
 	}
-
-	std::cout << glview->getRendererInfo() << "\n";
 
 	exit(0);
 }
@@ -289,7 +287,7 @@ static bool checkAndExport(shared_ptr<const Geometry> root_geom, unsigned nd,
 		PRINT("Current top level object is empty.");
 		return false;
 	}
-	exportFileByName(root_geom.get(), format, filename, filename);
+	exportFileByName(root_geom, format, filename, filename);
 	return true;
 }
 
@@ -466,6 +464,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 				(renderer==Render::OPENCSG || renderer==Render::THROWNTOGETHER)) {
 			// echo or OpenCSG png -> don't necessarily need geometry evaluation
 		} else {
+			// Force creation of CGAL objects (for testing)
 			root_geom = geomevaluator.evaluateGeometry(*tree.root(), true);
 			if (!root_geom) root_geom.reset(new CGAL_Nef_polyhedron());
 			if (renderer == Render::CGAL && root_geom->getDimension() == 3) {

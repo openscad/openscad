@@ -33,7 +33,7 @@ public:
 	/*! The 'OpenSCAD name' of this node, defaults to classname, but can be 
 	    overloaded to provide specialization for e.g. CSG nodes, primitive nodes etc.
 	    Used for human-readable output. */
-	virtual std::string name() const;
+	virtual std::string name() const = 0;
 
 	const std::vector<AbstractNode*> &getChildren() const { 
 		return this->children;
@@ -76,6 +76,31 @@ public:
 		RENDER_CGAL,
 		RENDER_OPENCSG
 	};
+};
+
+/*!
+  Logically groups objects together. Used as a way of passing
+	objects around without having to perform unions on them.
+ */
+class GroupNode : public AbstractNode
+{
+public:
+	GroupNode(const class ModuleInstantiation *mi) : AbstractNode(mi) { }
+	virtual ~GroupNode() { }
+  virtual Response accept(class State &state, class Visitor &visitor) const;
+	virtual std::string name() const;
+};
+
+/*!
+	Only instantiated once, for the top-level file.
+*/
+class RootNode : public GroupNode
+{
+public:
+	RootNode(const class ModuleInstantiation *mi) : GroupNode(mi) { }
+	virtual ~RootNode() { }
+  virtual Response accept(class State &state, class Visitor &visitor) const;
+	virtual std::string name() const;
 };
 
 class LeafNode : public AbstractPolyNode

@@ -1,21 +1,19 @@
 group() {
-	group() {
-		difference() {
-			sphere($fn = 0, $fa = 12, $fs = 2, r = 25);
-			group() {
-				multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-					cylinder($fn = 0, $fa = 12, $fs = 2, h = 62.5, r1 = 12.5, r2 = 12.5, center = true);
-				}
+	difference() {
+		sphere($fn = 0, $fa = 12, $fs = 2, r = 25);
+		group() {
+			multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				cylinder($fn = 0, $fa = 12, $fs = 2, h = 62.5, r1 = 12.5, r2 = 12.5, center = true);
 			}
-			group() {
-				multmatrix([[1, 0, 0, 0], [0, 0, -1, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
-					cylinder($fn = 0, $fa = 12, $fs = 2, h = 62.5, r1 = 12.5, r2 = 12.5, center = true);
-				}
+		}
+		group() {
+			multmatrix([[1, 0, 0, 0], [0, 6.12323e-17, -1, 0], [0, 1, 6.12323e-17, 0], [0, 0, 0, 1]]) {
+				cylinder($fn = 0, $fa = 12, $fs = 2, h = 62.5, r1 = 12.5, r2 = 12.5, center = true);
 			}
-			group() {
-				multmatrix([[0, 0, 1, 0], [0, 1, 0, 0], [-1, 0, 0, 0], [0, 0, 0, 1]]) {
-					cylinder($fn = 0, $fa = 12, $fs = 2, h = 62.5, r1 = 12.5, r2 = 12.5, center = true);
-				}
+		}
+		group() {
+			multmatrix([[6.12323e-17, 0, 1, 0], [0, 1, 0, 0], [-1, 0, 6.12323e-17, 0], [0, 0, 0, 1]]) {
+				cylinder($fn = 0, $fa = 12, $fs = 2, h = 62.5, r1 = 12.5, r2 = 12.5, center = true);
 			}
 		}
 	}

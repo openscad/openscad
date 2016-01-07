@@ -35,6 +35,7 @@ void Builtins::init(const char *name, class AbstractFunction *function)
 }
 
 extern void register_builtin_functions();
+extern void register_builtin_group();
 extern void register_builtin_csgops();
 extern void register_builtin_transform();
 extern void register_builtin_color();
@@ -60,8 +61,7 @@ void Builtins::initialize()
 	register_builtin_functions();
 	initialize_builtin_dxf_dim();
 
-	init("group", new AbstractModule());
-
+	register_builtin_group();
 	register_builtin_csgops();
 	register_builtin_transform();
 	register_builtin_color();

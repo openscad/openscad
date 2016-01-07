@@ -118,21 +118,9 @@ public:
 	bool remove(const Key &key);
 	T *take(const Key &key);
 
-	const std::vector<Key> keys();
-
 private:
 	void trim(int m);
 };
-
-template <class Key, class T>
-inline const std::vector<Key> Cache<Key,T>::keys()
-{
-	std::vector<Key> k;
-	for(iterator_type i = hash.begin(); i != hash.end(); ++i) {
-		k.push_back(i->first);
-	}
-	return k;
-}
 
 template <class Key, class T>
 inline bool Cache<Key,T>::remove(const Key &key)

@@ -30,16 +30,6 @@
 	with OpenCSG.
 */
 
-CSGTreeEvaluator::~CSGTreeEvaluator()
-{
-	for(std::map<int, shared_ptr<CSGNode> >::iterator i = stored_term.begin(); i != stored_term.end(); i++) {
-		i->second.reset();
-	}
-
-	std::for_each(highlightNodes.begin(), highlightNodes.end(), reset_fun<shared_ptr<CSGNode> >());
-	std::for_each(backgroundNodes.begin(), backgroundNodes.end(), reset_fun<shared_ptr<CSGNode> >());
-}
-
 shared_ptr<CSGNode> CSGTreeEvaluator::buildCSGTree(const AbstractNode &node)
 {
 	Traverser evaluate(*this, node, Traverser::PRE_AND_POSTFIX);

@@ -1,6 +1,4 @@
-group() {
-	surface(file = "surface-simple.dat", center = true, invert = false);
-	multmatrix([[1, 0, 0, 2], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		surface(file = "surface-simple2.dat", center = true, invert = false);
-	}
+surface(file = "surface-simple.dat", center = true, invert = false, timestamp = 1444756256);
+multmatrix([[1, 0, 0, 2], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	surface(file = "surface-simple2.dat", center = true, invert = false, timestamp = 1444756256);
 }
