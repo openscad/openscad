@@ -118,8 +118,13 @@ mingw* {
 CONFIG += qt
 QT += opengl concurrent
 
-qopenglwidget {
+# Prefer QOpenGLWidget for non-Windows platforms
+# To explicitly enable QOpenGLWidget: qmake CONFIG += qopenglwidget
+# To explicitly enable QGLWidget: qmake CONFIG += qglwidget
+!win*: CONFIG += qopenglwidget
+qopenglwidget:!qglwidget {
   !lessThan(QT_VERSION, 5.4) {
+    message("Using QOpenGLWidget")
     DEFINES += USE_QOPENGLWIDGET
   }
 }
