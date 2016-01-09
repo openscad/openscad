@@ -416,8 +416,10 @@ build_cgal()
 
   # older cmakes have buggy FindBoost that can result in
   # finding the system libraries but OPENSCAD_LIBRARIES include paths
-  FINDBOOST_CMAKE=$OPENSCAD_SCRIPTDIR/../tests/FindBoost.cmake
-  cp $FINDBOOST_CMAKE ./cmake/modules/
+  # NB! This was removed 2015-12-02 - if this problem resurfaces, fix it only for the relevant platforms as this
+  # messes up more recent installations of cmake and CGAL.
+  # FINDBOOST_CMAKE=$OPENSCAD_SCRIPTDIR/../tests/FindBoost.cmake
+  # cp $FINDBOOST_CMAKE ./cmake/modules/
 
   mkdir bin
   cd bin
