@@ -31,16 +31,13 @@
 #include "builtin.h"
 #include <sstream>
 #include <ctime>
+#include <cmath>
 #include <limits>
 #include <algorithm>
 #include "stl-utils.h"
 #include "printutils.h"
 #include "stackcheck.h"
 #include "exceptions.h"
-
-#include <boost/math/special_functions/fpclassify.hpp>
-using boost::math::isnan;
-using boost::math::isinf;
 
 /*
  Random numbers
@@ -240,7 +237,7 @@ ValuePtr builtin_rands(const Context *, const EvalContext *evalctx)
 		if (v0->type() != Value::NUMBER) goto quit;
 		double min = v0->toDouble();
 
-		if (boost::math::isinf(min)) {
+		if (std::isinf(min)) {
 			PRINT("WARNING: rands() range min cannot be infinite");
 			min = -std::numeric_limits<double>::max()/2;
 			PRINTB("WARNING: resetting to %f",min);
@@ -248,7 +245,7 @@ ValuePtr builtin_rands(const Context *, const EvalContext *evalctx)
 		ValuePtr v1 = evalctx->getArgValue(1);
 		if (v1->type() != Value::NUMBER) goto quit;
 		double max = v1->toDouble();
-		if (boost::math::isinf(max)) {
+		if (std::isinf(max)) {
 			PRINT("WARNING: rands() range max cannot be infinite");
 			max = std::numeric_limits<double>::max()/2;
 			PRINTB("WARNING: resetting to %f",max);
@@ -259,7 +256,7 @@ ValuePtr builtin_rands(const Context *, const EvalContext *evalctx)
 		ValuePtr v2 = evalctx->getArgValue(2);
 		if (v2->type() != Value::NUMBER) goto quit;
 		double numresultsd = std::abs( v2->toDouble() );
-		if (boost::math::isinf(numresultsd)) {
+		if (std::isinf(numresultsd)) {
 			PRINT("WARNING: rands() cannot create an infinite number of results");
 			PRINT("WARNING: resetting number of results to 1");
 			numresultsd = 1;
@@ -986,11 +983,11 @@ ValuePtr builtin_cross(const Context *, const EvalContext *evalctx)
 		}
 		double d0 = v0[a]->toDouble();
 		double d1 = v1[a]->toDouble();
-		if (boost::math::isnan(d0) || boost::math::isnan(d1)) {
+		if (std::isnan(d0) || std::isnan(d1)) {
 			PRINT("WARNING: Invalid value (NaN) in parameter vector for cross()");
 			return ValuePtr::undefined;
 		}
-		if (boost::math::isinf(d0) || boost::math::isinf(d1)) {
+		if (std::isinf(d0) || std::isinf(d1)) {
 			PRINT("WARNING: Invalid value (INF) in parameter vector for cross()");
 			return ValuePtr::undefined;
 		}

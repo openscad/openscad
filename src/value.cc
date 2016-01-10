@@ -28,6 +28,7 @@
 #include "printutils.h"
 #include <stdio.h>
 #include <math.h>
+#include <cmath>
 #include <assert.h>
 #include <sstream>
 #include <boost/numeric/conversion/cast.hpp>
@@ -39,15 +40,13 @@
 /*Unicode support for string lengths and array accesses*/
 #include <glib.h>
 
-#include <boost/math/special_functions/fpclassify.hpp>
-
 Value Value::undefined;
 ValuePtr ValuePtr::undefined;
 
 static boost::uint32_t convert_to_uint32(const double d) {
     boost::uint32_t ret = std::numeric_limits<boost::uint32_t>::max();
 
-    if (boost::math::isfinite(d)) {
+    if (std::isfinite(d)) {
         try {
             ret = boost::numeric_cast<boost::uint32_t>(d);
         } catch (boost::bad_numeric_cast) {
@@ -206,7 +205,7 @@ bool Value::getFiniteDouble(double &v) const
   if (!getDouble(result)) {
     return false;
   }
-  bool valid = boost::math::isfinite(result);
+  bool valid = std::isfinite(result);
   if (valid) {
     v = result;
   }
@@ -732,15 +731,15 @@ void RangeType::normalize() {
 }
 
 boost::uint32_t RangeType::numValues() const {
-  if (boost::math::isnan(begin_val) || boost::math::isnan(end_val) || boost::math::isnan(step_val)) {
+  if (std::isnan(begin_val) || std::isnan(end_val) || std::isnan(step_val)) {
 		return 0;
 	}
 
-  if (boost::math::isinf(begin_val) || (boost::math::isinf(end_val))) {
+  if (std::isinf(begin_val) || (std::isinf(end_val))) {
     return std::numeric_limits<boost::uint32_t>::max();
   }
 
-  if ((begin_val == end_val) || boost::math::isinf(step_val)) {
+  if ((begin_val == end_val) || std::isinf(step_val)) {
     return 1;
   }
   
@@ -783,7 +782,7 @@ void RangeType::iterator::update_type()
         }
     }
 
-		if (boost::math::isnan(range.begin_val) || boost::math::isnan(range.end_val) || boost::math::isnan(range.step_val)) type = RANGE_TYPE_END;
+		if (std::isnan(range.begin_val) || std::isnan(range.end_val) || std::isnan(range.step_val)) type = RANGE_TYPE_END;
 }
 
 RangeType::iterator::reference RangeType::iterator::operator*()

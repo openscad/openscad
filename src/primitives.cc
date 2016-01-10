@@ -40,9 +40,6 @@
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
-#include <boost/math/special_functions/fpclassify.hpp>
-#define isinf boost::math::isinf
-
 #define F_MINIMUM 0.01
 
 enum primitive_type_e {

@@ -4,7 +4,7 @@
 #include "Reindexer.h"
 #include <boost/lexical_cast.hpp>
 #include <unordered_map>
-#include <boost/math/special_functions/fpclassify.hpp>
+#include <cmath>
 
 #include <boost/functional/hash.hpp>
 
@@ -223,7 +223,7 @@ bool GeometryUtils::tessellatePolygonWithHoles(const Vector3f *vertices,
 				const Vector3f &v = vertices[face[i]];
 				int k;
 				for (k=0;k<3;k++) {
-					if (boost::math::isnan(v[k]) || boost::math::isinf(v[k])) {
+					if (std::isnan(v[k]) || std::isinf(v[k])) {
 						face.erase(face.begin()+i);
 						break;
 					}
