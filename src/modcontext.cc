@@ -31,7 +31,7 @@ void ModuleContext::evaluateAssignments(const AssignmentList &assignments)
 	// Variables which couldn't be evaluated in the first pass is attempted again,
   // to allow for initialization out of order
 
-	boost::unordered_map<std::string, Expression *> tmpass;
+	std::unordered_map<std::string, Expression *> tmpass;
 	for(const auto &ass : assignments) {
 		tmpass[ass.first] = ass.second;
 	}
@@ -42,7 +42,7 @@ void ModuleContext::evaluateAssignments(const AssignmentList &assignments)
 		std::list<std::string>::iterator iter = undefined_vars.begin();
 		while (iter != undefined_vars.end()) {
 			std::list<std::string>::iterator curr = iter++;
-			boost::unordered_map<std::string, Expression *>::iterator found = tmpass.find(*curr);
+			std::unordered_map<std::string, Expression *>::iterator found = tmpass.find(*curr);
 			if (found != tmpass.end()) {
 				const Expression *expr = found->second;
 				ValuePtr tmpval = expr->evaluate(this);

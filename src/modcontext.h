@@ -2,7 +2,6 @@
 
 #include "context.h"
 #include "module.h"
-#include <boost/unordered_map.hpp>
 
 /*!
 	This holds the context for a Module definition; keeps track of

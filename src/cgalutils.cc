@@ -28,11 +28,11 @@
 
 #include "svg.h"
 #include "Reindexer.h"
+#include "hash.h"
 #include "GeometryUtils.h"
 
 #include <map>
 #include <queue>
-#include <boost/unordered_set.hpp>
 
 static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 {

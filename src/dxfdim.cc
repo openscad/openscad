@@ -39,8 +39,8 @@
 #include <stdint.h>
 
 #include <boost/filesystem.hpp>
-boost::unordered_map<std::string, ValuePtr> dxf_dim_cache;
-boost::unordered_map<std::string, ValuePtr> dxf_cross_cache;
+std::unordered_map<std::string, ValuePtr> dxf_dim_cache;
+std::unordered_map<std::string, ValuePtr> dxf_cross_cache;
 namespace fs = boost::filesystem;
 
 ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)

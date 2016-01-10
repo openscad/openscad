@@ -32,7 +32,7 @@
 
 #include <map>
 #include <queue>
-#include <boost/unordered_set.hpp>
+#include <unordered_set>
 
 namespace CGALUtils {
 
@@ -46,7 +46,7 @@ namespace CGALUtils {
 			}
 		}
 		// Also make sure that there is only one shell:
-		boost::unordered_set<typename Polyhedron::Facet_const_handle, typename CGAL::Handle_hash_function> visited;
+		std::unordered_set<typename Polyhedron::Facet_const_handle, typename CGAL::Handle_hash_function> visited;
 		// c++11
 		// visited.reserve(p.size_of_facets());
 

@@ -277,6 +277,7 @@ HEADERS += src/typedefs.h \
            src/function.h \
            src/exceptions.h \
            src/grid.h \
+           src/hash.h \
            src/highlighter.h \
            src/localscope.h \
            src/module.h \
@@ -415,6 +416,7 @@ SOURCES += src/version_check.cc \
            src/AutoUpdater.cc \
            \
            src/grid.cc \
+           src/hash.cc \
            src/builtin.cc \
            src/calc.cc \
            src/export.cc \

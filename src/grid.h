@@ -2,6 +2,8 @@
 
 #include "mathc99.h"
 #include "linalg.h"
+#include "hash.h"
+#include <boost/functional/hash.hpp>
 
 #ifdef _WIN32
 typedef __int64 int64_t;
@@ -9,7 +11,7 @@ typedef __int64 int64_t;
 #include <stdint.h>
 #endif
 #include <stdlib.h>
-#include <boost/unordered_map.hpp>
+#include <unordered_map>
 #include <utility>
 
 //const double GRID_COARSE = 0.001;
@@ -27,7 +29,7 @@ class Grid2d
 {
 public:
 	double res;
-	boost::unordered_map<std::pair<int64_t,int64_t>, T> db;
+	std::unordered_map<std::pair<int64_t,int64_t>, T, boost::hash<std::pair<int64_t,int64_t>>> db;
 
 	Grid2d(double resolution) {
 		res = resolution;
@@ -87,21 +89,13 @@ public:
 	}
 };
 
-typedef Eigen::Matrix<int64_t, 3, 1> Vector3l;
-
-namespace Eigen {
-	size_t hash_value(Vector3f const &v);
-	size_t hash_value(Vector3d const &v);
-	size_t hash_value(Vector3l const &v);
-}
-
 template <typename T>
 class Grid3d
 {
 public:
 	double res;
 	typedef Vector3l Key;
-	typedef boost::unordered_map<Key, T> GridContainer;
+	typedef std::unordered_map<Key, T> GridContainer;
 	GridContainer db;
 
 	Grid3d(double resolution) {

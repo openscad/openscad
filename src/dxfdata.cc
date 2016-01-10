@@ -33,7 +33,7 @@
 #include <fstream>
 #include "mathc99.h"
 #include <assert.h>
-#include <boost/unordered_map.hpp>
+#include <unordered_map>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <algorithm>
@@ -86,7 +86,7 @@ DxfData::DxfData(double fn, double fs, double fa,
 
 	Grid2d< std::vector<int> > grid(GRID_COARSE);
 	std::vector<Line> lines;                       // Global lines
-	boost::unordered_map< std::string, std::vector<Line> > blockdata; // Lines in blocks
+	std::unordered_map< std::string, std::vector<Line> > blockdata; // Lines in blocks
 
 	bool in_entities_section = false;
 	bool in_blocks_section = false;
@@ -124,7 +124,7 @@ DxfData::DxfData(double fn, double fs, double fa,
 		for (int j = 0; j < 2; j++)
 			coords[i][j] = 0;
 
-	typedef boost::unordered_map<std::string, int> EntityList;
+	typedef std::unordered_map<std::string, int> EntityList;
 	EntityList unsupported_entities_list;
 
 	//

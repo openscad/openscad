@@ -2,11 +2,11 @@
 #include "tesselator.h"
 #include "printutils.h"
 #include "Reindexer.h"
-#include "grid.h"
-#include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/unordered_map.hpp>
+#include <unordered_map>
 #include <boost/math/special_functions/fpclassify.hpp>
+
+#include <boost/functional/hash.hpp>
 
 static void *stdAlloc(void* userData, unsigned int size) {
 	TESS_NOTUSED(userData);
@@ -27,7 +27,7 @@ typedef std::pair<int,int> IndexedEdge;
 class EdgeDict {
 public:
 // Counts occurrences of edges
-	typedef boost::unordered_map<IndexedEdge, int> IndexedEdgeDict;
+	typedef std::unordered_map<IndexedEdge, int, boost::hash<IndexedEdge>> IndexedEdgeDict;
 
 	EdgeDict() { }
 
@@ -148,7 +148,7 @@ public:
 		}
 
 		while (!v2e.empty()) {
-			boost::unordered_map<int, std::list<int> >::iterator it;
+			std::unordered_map<int, std::list<int> >::iterator it;
 			for (it = v2e.begin();it != v2e.end();it++) {
 				if (it->second.size() == 1) { // First single vertex
 					int vidx = it->first;
@@ -167,8 +167,8 @@ public:
 	}
 
 	IndexedEdgeDict edges;
-	boost::unordered_map<int, std::list<int> > v2e;
-	boost::unordered_map<int, std::list<int> > v2e_reverse;
+	std::unordered_map<int, std::list<int> > v2e;
+	std::unordered_map<int, std::list<int> > v2e_reverse;
 };
 
 
