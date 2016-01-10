@@ -139,7 +139,10 @@ std::string parser_source_path;
 
 input:    /* empty */
         | TOK_USE
-            { rootmodule->registerUse(std::string($1)); }
+            {
+              rootmodule->registerUse(std::string($1));
+              free($1);
+            }
           input
         | statement input
         ;
