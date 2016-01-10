@@ -272,7 +272,7 @@ namespace CGALUtils {
 
 		// 1. Build Indexed PolyMesh
 		Reindexer<Vector3f> allVertices;
-		std::vector<std::vector<IndexedFace> > polygons;
+		std::vector<std::vector<IndexedFace>> polygons;
 
 		CGAL_Nef_polyhedron3::Halffacet_const_iterator hfaceti;
 		CGAL_forall_halffacets(hfaceti, N) {

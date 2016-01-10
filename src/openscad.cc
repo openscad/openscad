@@ -441,8 +441,8 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		}
 	}
 	else if (term_output_file) {
-		std::vector<shared_ptr<CSGTerm> > highlight_terms;
-		std::vector<shared_ptr<CSGTerm> > background_terms;
+		std::vector<shared_ptr<CSGTerm>> highlight_terms;
+		std::vector<shared_ptr<CSGTerm>> background_terms;
 
 		CSGTermEvaluator csgRenderer(tree);
 		shared_ptr<CSGTerm> root_raw_term = csgRenderer.evaluateCSGTerm(*root_node, highlight_terms, background_terms);
@@ -673,7 +673,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 #endif
 	
 	// Other global settings
-	qRegisterMetaType<shared_ptr<const Geometry> >();
+	qRegisterMetaType<shared_ptr<const Geometry>>();
 	
 	const QString &app_path = app.applicationDirPath();
 	PlatformUtils::registerApplicationPath(app_path.toLocal8Bit().constData());
@@ -822,15 +822,15 @@ int main(int argc, char **argv)
 		("x,x", po::value<string>(), "dxf-file")
 		("d,d", po::value<string>(), "deps-file")
 		("m,m", po::value<string>(), "makefile")
-		("D,D", po::value<vector<string> >(), "var=val")
+		("D,D", po::value<vector<string>>(), "var=val")
 #ifdef ENABLE_EXPERIMENTAL
-		("enable", po::value<vector<string> >(), "enable experimental features")
+		("enable", po::value<vector<string>>(), "enable experimental features")
 #endif
 		;
 
 	po::options_description hidden("Hidden options");
 	hidden.add_options()
-		("input-file", po::value< vector<string> >(), "input file");
+		("input-file", po::value< vector<string>>(), "input file");
 
 	po::positional_options_description p;
 	p.add("input-file", -1);
@@ -898,21 +898,21 @@ int main(int argc, char **argv)
 	}
 
 	if (vm.count("D")) {
-		for(const auto &cmd : vm["D"].as<vector<string> >()) {
+		for(const auto &cmd : vm["D"].as<vector<string>>()) {
 			commandline_commands += cmd;
 			commandline_commands += ";\n";
 		}
 	}
 #ifdef ENABLE_EXPERIMENTAL
 	if (vm.count("enable")) {
-		for(const auto &feature : vm["enable"].as<vector<string> >()) {
+		for(const auto &feature : vm["enable"].as<vector<string>>()) {
 			Feature::enable_feature(feature);
 		}
 	}
 #endif
 	vector<string> inputFiles;
 	if (vm.count("input-file"))	{
-		inputFiles = vm["input-file"].as<vector<string> >();
+		inputFiles = vm["input-file"].as<vector<string>>();
 	}
 
 	if (vm.count("colorscheme")) {

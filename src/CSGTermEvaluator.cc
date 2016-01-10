@@ -30,8 +30,8 @@
 */
 
 shared_ptr<CSGTerm> CSGTermEvaluator::evaluateCSGTerm(const AbstractNode &node, 
-																					 std::vector<shared_ptr<CSGTerm> > &highlights, 
-																					 std::vector<shared_ptr<CSGTerm> > &background)
+																					 std::vector<shared_ptr<CSGTerm>> &highlights, 
+																					 std::vector<shared_ptr<CSGTerm>> &background)
 {
 	Traverser evaluate(*this, node, Traverser::PRE_AND_POSTFIX);
 	evaluate.execute();
@@ -88,8 +88,8 @@ Response CSGTermEvaluator::visit(State &state, const AbstractIntersectionNode &n
 }
 
 static shared_ptr<CSGTerm> evaluate_csg_term_from_geometry(const State &state, 
-																					std::vector<shared_ptr<CSGTerm> > &highlights, 
-																					std::vector<shared_ptr<CSGTerm> > &background, 
+																					std::vector<shared_ptr<CSGTerm>> &highlights, 
+																					std::vector<shared_ptr<CSGTerm>> &background, 
 																					const shared_ptr<const Geometry> &geom,
 																					const ModuleInstantiation *modinst, 
 																					const AbstractNode &node)

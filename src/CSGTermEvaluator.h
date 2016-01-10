@@ -25,8 +25,8 @@ public:
  	virtual Response visit(State &state, const class CgaladvNode &node);
 
 	shared_ptr<class CSGTerm> evaluateCSGTerm(const AbstractNode &node,
-																 std::vector<shared_ptr<CSGTerm> > &highlights, 
-																 std::vector<shared_ptr<CSGTerm> > &background);
+																 std::vector<shared_ptr<CSGTerm>> &highlights, 
+																 std::vector<shared_ptr<CSGTerm>> &background);
 
 private:
 	enum CsgOp {CSGT_UNION, CSGT_INTERSECTION, CSGT_DIFFERENCE, CSGT_MINKOWSKI};
@@ -38,10 +38,10 @@ private:
 	std::map<int, ChildList> visitedchildren;
 
 public:
-	std::map<int, shared_ptr<CSGTerm> > stored_term; // The term evaluated from each node index
+	std::map<int, shared_ptr<CSGTerm>> stored_term; // The term evaluated from each node index
 
-	std::vector<shared_ptr<CSGTerm> > highlights;
-	std::vector<shared_ptr<CSGTerm> > background;
+	std::vector<shared_ptr<CSGTerm>> highlights;
+	std::vector<shared_ptr<CSGTerm>> background;
 	const Tree &tree;
 	class GeometryEvaluator *geomevaluator;
 };

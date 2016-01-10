@@ -5,7 +5,7 @@
 #include <utility>
 #include "memory.h"
 
-class Assignment : public std::pair<std::string, shared_ptr<class Expression> >
+class Assignment : public std::pair<std::string, shared_ptr<class Expression>>
 {
 public:
     Assignment(std::string name) { first = name; second = shared_ptr<class Expression>(); }

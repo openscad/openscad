@@ -288,7 +288,7 @@ bool FileModule::handleDependencies()
 	this->is_handling_dependencies = true;
 
 	bool somethingchanged = false;
-	std::vector<std::pair<std::string,std::string> > updates;
+	std::vector<std::pair<std::string,std::string>> updates;
 
 	// If a lib in usedlibs was previously missing, we need to relocate it
 	// by searching the applicable paths. We can identify a previously missing module

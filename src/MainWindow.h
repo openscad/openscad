@@ -67,9 +67,9 @@ public:
 #endif
 	class ThrownTogetherRenderer *thrownTogetherRenderer;
 
-	std::vector<shared_ptr<CSGTerm> > highlight_terms;
+	std::vector<shared_ptr<CSGTerm>> highlight_terms;
 	CSGChain *highlights_chain;
-	std::vector<shared_ptr<CSGTerm> > background_terms;
+	std::vector<shared_ptr<CSGTerm>> background_terms;
 	CSGChain *background_chain;
 	QString last_compiled_doc;
 

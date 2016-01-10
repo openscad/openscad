@@ -22,7 +22,7 @@ typedef CGAL::Triangulation_2_filtered_projection_traits_3<K> Projection;
 typedef CGAL::Triangulation_face_base_with_info_2<FaceInfo, K> Fbb;
 typedef CGAL::Triangulation_data_structure_2<
 	CGAL::Triangulation_vertex_base_2<Projection>,
-	CGAL::Constrained_triangulation_face_base_2<Projection, Fbb> > Tds;
+	CGAL::Constrained_triangulation_face_base_2<Projection, Fbb>> Tds;
 typedef CGAL::Constrained_Delaunay_triangulation_2<
 	Projection, Tds, CGAL::Exact_predicates_tag> CDT;
 

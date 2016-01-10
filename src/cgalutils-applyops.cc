@@ -219,7 +219,7 @@ namespace CGALUtils {
 				typedef CGAL::Epick Hull_kernel;
 
 				std::list<CGAL_Polyhedron> P[2];
-				std::list<CGAL::Polyhedron_3<Hull_kernel> > result_parts;
+				std::list<CGAL::Polyhedron_3<Hull_kernel>> result_parts;
 
 				for (size_t i = 0; i < 2; i++) {
 					CGAL_Polyhedron poly;
@@ -375,7 +375,7 @@ namespace CGALUtils {
 					t.start();
 					PRINTDB("Minkowski: Computing union of %d parts",result_parts.size());
 					Geometry::Geometries fake_children;
-					for (std::list<CGAL::Polyhedron_3<Hull_kernel> >::iterator i = result_parts.begin(); i != result_parts.end(); ++i) {
+					for (std::list<CGAL::Polyhedron_3<Hull_kernel>>::iterator i = result_parts.begin(); i != result_parts.end(); ++i) {
 						PolySet ps(3,true);
 						createPolySetFromPolyhedron(*i, ps);
 						fake_children.push_back(std::make_pair((const AbstractNode*)NULL,

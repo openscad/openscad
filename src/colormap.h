@@ -68,7 +68,7 @@ private:
 
 class ColorMap
 {
-        typedef std::multimap<int, shared_ptr<RenderColorScheme>, std::less<int> > colorscheme_set_t;
+        typedef std::multimap<int, shared_ptr<RenderColorScheme>, std::less<int>> colorscheme_set_t;
     
 public:
 	static ColorMap *inst(bool erase = false);

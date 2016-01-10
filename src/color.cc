@@ -204,7 +204,7 @@ ColorModule::ColorModule()
 
 	    // additional OpenSCAD specific entry
 	    ("transparent", Color4f(0, 0, 0, 0))
-		.convert_to_container<std::unordered_map<std::string, Color4f> >();
+		.convert_to_container<std::unordered_map<std::string, Color4f>>();
 }
 
 ColorModule::~ColorModule()

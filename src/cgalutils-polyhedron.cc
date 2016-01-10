@@ -45,7 +45,7 @@ namespace /* anonymous */ {
 		
 			Grid3d<int> grid(GRID_FINE);
 			std::vector<CGALPoint> vertices;
-			std::vector<std::vector<size_t> > indices;
+			std::vector<std::vector<size_t>> indices;
 
 			// Align all vertices to grid and build vertex array in vertices
 			for(const auto &p : ps.polygons) {
@@ -289,7 +289,7 @@ namespace CGALUtils {
 	template bool createPolySetFromPolyhedron(const CGAL_Polyhedron &p, PolySet &ps);
 	template bool createPolySetFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Epick> &p, PolySet &ps);
 	template bool createPolySetFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Epeck> &p, PolySet &ps);
-	template bool createPolySetFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Simple_cartesian<long> > &p, PolySet &ps);
+	template bool createPolySetFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Simple_cartesian<long>> &p, PolySet &ps);
 
 	class Polyhedron_writer {
     std::ostream *out;

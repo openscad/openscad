@@ -178,7 +178,7 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
 	int lines = 0, columns = 0;
 	double min_val = 0;
 
-	typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+	typedef boost::tokenizer<boost::char_separator<char>> tokenizer;
 	boost::char_separator<char> sep(" \t");
 
 	while (!stream.eof()) {

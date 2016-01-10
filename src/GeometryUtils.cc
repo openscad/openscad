@@ -148,7 +148,7 @@ public:
 		}
 
 		while (!v2e.empty()) {
-			std::unordered_map<int, std::list<int> >::iterator it;
+			std::unordered_map<int, std::list<int>>::iterator it;
 			for (it = v2e.begin();it != v2e.end();it++) {
 				if (it->second.size() == 1) { // First single vertex
 					int vidx = it->first;
@@ -167,8 +167,8 @@ public:
 	}
 
 	IndexedEdgeDict edges;
-	std::unordered_map<int, std::list<int> > v2e;
-	std::unordered_map<int, std::list<int> > v2e_reverse;
+	std::unordered_map<int, std::list<int>> v2e;
+	std::unordered_map<int, std::list<int>> v2e_reverse;
 };
 
 
@@ -448,7 +448,7 @@ bool GeometryUtils::tessellatePolygon(const Polygon &polygon, Polygons &triangle
 	return err;
 }
 
-int GeometryUtils::findUnconnectedEdges(const std::vector<std::vector<IndexedFace> > &polygons)
+int GeometryUtils::findUnconnectedEdges(const std::vector<std::vector<IndexedFace>> &polygons)
 {
 	EdgeDict edges;
 	for(const auto &faces : polygons) {

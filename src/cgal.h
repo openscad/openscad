@@ -66,7 +66,7 @@ typedef std::vector<CGAL_Point_3> CGAL_Polygon_3;
 // CGAL_Nef_polyhedron2::Explorer::Point which is different than
 // CGAL_Kernel2::Point. Hence the suffix 'e'
 typedef CGAL_Nef_polyhedron2::Explorer::Point CGAL_Point_2e;
-typedef CGAL::Iso_rectangle_2<CGAL::Simple_cartesian<NT2> > CGAL_Iso_rectangle_2e;
+typedef CGAL::Iso_rectangle_2<CGAL::Simple_cartesian<NT2>> CGAL_Iso_rectangle_2e;
 
 
 #ifdef PREV_NDEBUG

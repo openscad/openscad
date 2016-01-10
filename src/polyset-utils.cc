@@ -53,7 +53,7 @@ namespace PolysetUtils {
 
 		// Build Indexed PolyMesh
 		Reindexer<Vector3f> allVertices;
-		std::vector<std::vector<IndexedFace> > polygons;
+		std::vector<std::vector<IndexedFace>> polygons;
 
 		for(const auto &pgon : inps.polygons) {
 			if (pgon.size() < 3) {
