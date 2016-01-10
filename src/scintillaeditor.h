@@ -11,7 +11,7 @@
 #include "scadlexer.h"
 #include "parsersettings.h"
 
-#include <boost/shared_ptr.hpp>
+#include "memory.h"
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
@@ -39,7 +39,7 @@ class ScintillaEditor : public EditorInterface
 {        
 	Q_OBJECT;
 
-        typedef std::multimap<int, boost::shared_ptr<EditorColorScheme>, std::less<int> > colorscheme_set_t;
+        typedef std::multimap<int, shared_ptr<EditorColorScheme>, std::less<int> > colorscheme_set_t;
         
 public:
 	ScintillaEditor(QWidget *parent);

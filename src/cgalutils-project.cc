@@ -105,8 +105,8 @@ OGL_helper.h
 class ZRemover {
 public:
 	CGAL_Nef_polyhedron2::Boundary boundary;
-	boost::shared_ptr<CGAL_Nef_polyhedron2> tmpnef2d;
-	boost::shared_ptr<CGAL_Nef_polyhedron2> output_nefpoly2d;
+	shared_ptr<CGAL_Nef_polyhedron2> tmpnef2d;
+	shared_ptr<CGAL_Nef_polyhedron2> output_nefpoly2d;
 	CGAL::Direction_3<CGAL_Kernel3> up;
 	ZRemover()
 	{

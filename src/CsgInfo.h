@@ -36,7 +36,7 @@ public:
 		const AbstractNode *root_node = tree.root();
 		GeometryEvaluator geomevaluator(tree);
 		CSGTermEvaluator evaluator(tree, &geomevaluator);
-		boost::shared_ptr<CSGTerm> root_raw_term = evaluator.evaluateCSGTerm( *root_node, this->highlight_terms, this->background_terms );
+		shared_ptr<CSGTerm> root_raw_term = evaluator.evaluateCSGTerm( *root_node, this->highlight_terms, this->background_terms );
 
 		PRINT("Compiling design (CSG Products normalization)...");
 		call_progress_function();
