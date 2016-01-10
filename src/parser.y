@@ -285,10 +285,11 @@ child_statement:
             }
         ;
 
-// "for" is a valid module identifier
+// "for" and "let" are valid module identifiers
 module_id:
           TOK_ID  { $$ = $1; }
         | TOK_FOR { $$ = strdup("for"); }
+        | TOK_LET { $$ = strdup("let"); }
         ;
 
 single_module_instantiation:
