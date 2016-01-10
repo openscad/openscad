@@ -34,7 +34,6 @@
 #include "mathc99.h"
 #include <assert.h>
 #include <boost/unordered_map.hpp>
-#include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <algorithm>
@@ -392,7 +391,7 @@ DxfData::DxfData(double fn, double fs, double fa,
   	}
 	}
 
-	BOOST_FOREACH(const EntityList::value_type &i, unsupported_entities_list) {
+	for(const auto &i : unsupported_entities_list) {
 		if (layername.empty()) {
 			PRINTB("WARNING: Unsupported DXF Entity '%s' (%x) in %s.",
 						 i.first % i.second % QuotedString(boosty::stringy(boostfs_uncomplete(filename, fs::current_path()))));
@@ -415,7 +414,7 @@ DxfData::DxfData(double fn, double fs, double fa,
 	{
 		int current_line, current_point;
 
-		BOOST_FOREACH(const LineMap::value_type &l, enabled_lines) {
+		for(const auto &l : enabled_lines) {
 			int idx = l.second;
 			for (int j = 0; j < 2; j++) {
 				std::vector<int> *lv = &grid.data(this->points[lines[idx].idx[j]][0], this->points[lines[idx].idx[j]][1]);

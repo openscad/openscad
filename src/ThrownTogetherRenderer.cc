@@ -32,7 +32,6 @@
 #include "system-gl.h"
 
 #include <boost/unordered_map.hpp>
-#include <boost/foreach.hpp>
 
 ThrownTogetherRenderer::ThrownTogetherRenderer(CSGChain *root_chain, 
 																							 CSGChain *highlights_chain,
@@ -67,7 +66,7 @@ void ThrownTogetherRenderer::renderCSGChain(CSGChain *chain, bool highlight,
 	PRINTD("Thrown renderCSGChain");
 	glDepthFunc(GL_LEQUAL);
 	boost::unordered_map<std::pair<const Geometry*,const Transform3d*>,int> geomVisitMark;
-	BOOST_FOREACH(const CSGChainObject &obj, chain->objects) {
+	for(const auto &obj : chain->objects) {
 		if (geomVisitMark[std::make_pair(obj.geom.get(), &obj.matrix)]++ > 0)
 			continue;
 		const Transform3d &m = obj.matrix;

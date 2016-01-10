@@ -37,7 +37,6 @@
 #include "mathc99.h"
 #include <sstream>
 #include <assert.h>
-#include <boost/foreach.hpp>
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
@@ -585,9 +584,9 @@ Geometry *PrimitiveNode::createGeometry() const
 				p->addOutline(outline);
 			}
 			else {
-				BOOST_FOREACH(const ValuePtr &polygon, this->paths->toVector()) {
+				for(const auto &polygon : this->paths->toVector()) {
 					Outline2d curroutline;
-					BOOST_FOREACH(const ValuePtr &index, polygon->toVector()) {
+					for(const auto &index : polygon->toVector()) {
 						unsigned int idx = index->toDouble();
 						if (idx < outline.vertices.size()) {
 							curroutline.vertices.push_back(outline.vertices[idx]);

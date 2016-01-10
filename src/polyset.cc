@@ -30,7 +30,6 @@
 #include "printutils.h"
 #include "grid.h"
 #include <Eigen/LU>
-#include <boost/foreach.hpp>
 
 /*! /class PolySet
 
@@ -128,8 +127,8 @@ BoundingBox PolySet::getBoundingBox() const
 {
 	if (this->dirty) {
 		this->bbox.setNull();
-		BOOST_FOREACH(const Polygon &poly, polygons) {
-			BOOST_FOREACH(const Vector3d &p, poly) {
+		for(const auto &poly : polygons) {
+			for(const auto &p : poly) {
 				this->bbox.extend(p);
 			}
 		}
@@ -141,7 +140,7 @@ BoundingBox PolySet::getBoundingBox() const
 size_t PolySet::memsize() const
 {
 	size_t mem = 0;
-	BOOST_FOREACH(const Polygon &p, this->polygons) mem += p.size() * sizeof(Vector3d);
+	for(const auto &p : this->polygons) mem += p.size() * sizeof(Vector3d);
 	mem += this->polygon.memsize() - sizeof(this->polygon);
 	mem += sizeof(PolySet);
 	return mem;
@@ -160,8 +159,8 @@ void PolySet::transform(const Transform3d &mat)
 	// If mirroring transform, flip faces to avoid the object to end up being inside-out
 	bool mirrored = mat.matrix().determinant() < 0;
 
-	BOOST_FOREACH(Polygon &p, this->polygons){
-		BOOST_FOREACH(Vector3d &v, p) {
+	for(auto &p : this->polygons){
+		for(auto &v : p) {
 			v = mat * v;
 		}
 		if (mirrored) std::reverse(p.begin(), p.end());

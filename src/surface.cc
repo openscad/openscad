@@ -37,7 +37,6 @@
 
 #include <sstream>
 #include <fstream>
-#include <boost/foreach.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
@@ -192,7 +191,7 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
 		int col = 0;
 		tokenizer tokens(line, sep);
 		try {
-			BOOST_FOREACH(const std::string &token, tokens) {
+			for(const auto &token : tokens) {
 				double v = boost::lexical_cast<double>(token);
 				data[std::make_pair(lines, col++)] = v;
 				if (col > columns) columns = col;

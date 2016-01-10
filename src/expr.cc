@@ -34,7 +34,6 @@
 #include "stackcheck.h"
 #include "exceptions.h"
 #include <boost/bind.hpp>
-#include <boost/foreach.hpp>
 
 // unnamed namespace
 namespace {
@@ -408,7 +407,7 @@ ExpressionVector::ExpressionVector(Expression *expr) : Expression(expr)
 ValuePtr ExpressionVector::evaluate(const Context *context) const
 {
 	Value::VectorType vec;
-	BOOST_FOREACH(const Expression *e, this->children) {
+	for(const auto &e : this->children) {
 		ValuePtr tmpval = e->evaluate(context);
 		vec.push_back(tmpval);
 	}

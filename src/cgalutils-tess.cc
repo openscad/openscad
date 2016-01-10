@@ -13,9 +13,6 @@
 #define NDEBUG PREV_NDEBUG
 #endif
 
-#include <boost/foreach.hpp>
-
-
 struct FaceInfo {
   int nesting_level;
   bool in_domain() { return nesting_level%2 == 1; }
@@ -118,7 +115,7 @@ namespace CGALUtils {
 		// the Constrained Delaunay Triangulator.
 		Projection actualProjection(normalvec);
 		CDT cdt(actualProjection);
-		BOOST_FOREACH(const PolygonK &poly, polygons) {
+		for(const auto &poly : polygons) {
 			for (size_t i=0;i<poly.size(); i++) {
 				cdt.insert_constraint(poly[i], poly[(i+1)%poly.size()]);
 			}

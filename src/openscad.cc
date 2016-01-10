@@ -62,7 +62,6 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/foreach.hpp>
 #include "boosty.h"
 
 #ifdef __APPLE__
@@ -211,7 +210,7 @@ Camera get_camera(po::variables_map vm)
 		split(strs, vm["camera"].as<string>(), is_any_of(","));
 		if ( strs.size()==6 || strs.size()==7 ) {
 			try {
-				BOOST_FOREACH(string &s, strs) cam_parameters.push_back(lexical_cast<double>(s));
+				for(const auto &s : strs) cam_parameters.push_back(lexical_cast<double>(s));
 				camera.setup(cam_parameters);
 			}
 			catch (bad_lexical_cast &) {
@@ -305,7 +304,7 @@ void set_render_color_scheme(const std::string color_scheme, const bool exit_if_
 		
 	if (exit_if_not_found) {
 		PRINTB("Unknown color scheme '%s'. Valid schemes:", color_scheme);
-		BOOST_FOREACH (const std::string &name, ColorMap::inst()->colorSchemeNames()) {
+		for(const auto &name : ColorMap::inst()->colorSchemeNames()) {
 			PRINT(name);
 		}
 		exit(1);
@@ -741,7 +740,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 			// the "" dummy in inputFiles to open an empty MainWindow.
 			if (!files.empty()) {
 				inputFiles.clear();
-				BOOST_FOREACH(const QString &f, files) {
+				for(const auto &f : files) {
 					inputFiles.push_back(f.toStdString());
 				}
 			}
@@ -754,7 +753,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	MainWindow *mainwin;
 	bool isMdi = settings.value("advanced/mdi", true).toBool();
 	if (isMdi) {
-	    BOOST_FOREACH(const string &infile, inputFiles) {
+		for(const auto &infile : inputFiles) {
 		    mainwin = new MainWindow(assemblePath(original_path, infile));
 	    }
 	} else {
@@ -899,14 +898,14 @@ int main(int argc, char **argv)
 	}
 
 	if (vm.count("D")) {
-		BOOST_FOREACH(const string &cmd, vm["D"].as<vector<string> >()) {
+		for(const auto &cmd : vm["D"].as<vector<string> >()) {
 			commandline_commands += cmd;
 			commandline_commands += ";\n";
 		}
 	}
 #ifdef ENABLE_EXPERIMENTAL
 	if (vm.count("enable")) {
-		BOOST_FOREACH(const string &feature, vm["enable"].as<vector<string> >()) {
+		for(const auto &feature : vm["enable"].as<vector<string> >()) {
 			Feature::enable_feature(feature);
 		}
 	}

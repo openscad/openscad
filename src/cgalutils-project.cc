@@ -32,7 +32,6 @@
 
 #include <map>
 #include <queue>
-#include <boost/foreach.hpp>
 #include <boost/unordered_set.hpp>
 
 

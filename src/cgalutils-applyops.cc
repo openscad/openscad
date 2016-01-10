@@ -32,7 +32,6 @@
 
 #include <map>
 #include <queue>
-#include <boost/foreach.hpp>
 #include <boost/unordered_set.hpp>
 
 namespace CGALUtils {
@@ -86,7 +85,7 @@ namespace CGALUtils {
 			CGAL::Nef_nary_union_3<CGAL_Nef_polyhedron3> nary_union;
 			int nary_union_num_inserted = 0;
 			
-			BOOST_FOREACH(const Geometry::GeometryItem &item, children) {
+			for(const auto &item : children) {
 				const shared_ptr<const Geometry> &chgeom = item.second;
 				shared_ptr<const CGAL_Nef_polyhedron> chN = 
 					dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
@@ -158,7 +157,7 @@ namespace CGALUtils {
 		// instead.
 		std::list<K::Point_3> points;
 
-		BOOST_FOREACH(const Geometry::GeometryItem &item, children) {
+		for(const auto &item : children) {
 			const shared_ptr<const Geometry> &chgeom = item.second;
 			const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(chgeom.get());
 			if (N) {
@@ -170,8 +169,8 @@ namespace CGALUtils {
 			} else {
 				const PolySet *ps = dynamic_cast<const PolySet *>(chgeom.get());
 				if (ps) {
-					BOOST_FOREACH(const Polygon &p, ps->polygons) {
-						BOOST_FOREACH(const Vector3d &v, p) {
+					for(const auto &p : ps->polygons) {
+						for(const auto &v : p) {
 							points.push_back(K::Point_3(v[0], v[1], v[2]));
 						}
 					}

@@ -4,7 +4,6 @@
 #include "printutils.h"
 #include "grid.h"
 #include <Eigen/LU>
-#include <boost/foreach.hpp>
 // all GL functions grouped together here
 
 
@@ -130,7 +129,7 @@ void PolySet::render_surface(Renderer::csgmode_e csgmode, const Transform3d &m, 
 
 		// Render sides
 		if (polygon.outlines().size() > 0) {
-			BOOST_FOREACH(const Outline2d &o, polygon.outlines()) {
+			for (const Outline2d &o : polygon.outlines()) {
 				for (size_t j = 1; j <= o.vertices.size(); j++) {
 					Vector3d p1(o.vertices[j-1][0], o.vertices[j-1][1], -zbase/2);
 					Vector3d p2(o.vertices[j-1][0], o.vertices[j-1][1], zbase/2);
@@ -203,9 +202,9 @@ void PolySet::render_edges(Renderer::csgmode_e csgmode) const
 	if (this->dim == 2) {
 		if (csgmode == Renderer::CSGMODE_NONE) {
 			// Render only outlines
-			BOOST_FOREACH(const Outline2d &o, polygon.outlines()) {
+			for (const Outline2d &o : polygon.outlines()) {
 				glBegin(GL_LINE_LOOP);
-				BOOST_FOREACH(const Vector2d &v, o.vertices) {
+				for (const Vector2d &v : o.vertices) {
 					glVertex3d(v[0], v[1], -0.1);
 				}
 				glEnd();
@@ -215,18 +214,18 @@ void PolySet::render_edges(Renderer::csgmode_e csgmode) const
 			// Render 2D objects 1mm thick, but differences slightly larger
 			double zbase = 1 + ((csgmode & CSGMODE_DIFFERENCE_FLAG) ? 0.1 : 0);
 
-			BOOST_FOREACH(const Outline2d &o, polygon.outlines()) {
+			for (const Outline2d &o : polygon.outlines()) {
 				// Render top+bottom outlines
 				for (double z = -zbase/2; z < zbase; z += zbase) {
 					glBegin(GL_LINE_LOOP);
-					BOOST_FOREACH(const Vector2d &v, o.vertices) {
+					for (const Vector2d &v : o.vertices) {
 						glVertex3d(v[0], v[1], z);
 					}
 					glEnd();
 				}
 				// Render sides
 				glBegin(GL_LINES);
-				BOOST_FOREACH(const Vector2d &v, o.vertices) {
+				for (const Vector2d &v : o.vertices) {
 					glVertex3d(v[0], v[1], -zbase/2);
 					glVertex3d(v[0], v[1], +zbase/2);
 				}

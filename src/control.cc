@@ -24,7 +24,6 @@
  *
  */
 
-#include <boost/foreach.hpp>
 #include "module.h"
 #include "node.h"
 #include "evalcontext.h"
@@ -34,10 +33,6 @@
 #include "printutils.h"
 #include <sstream>
 #include "mathc99.h"
-
-
-#define foreach BOOST_FOREACH
-
 
 class ControlModule : public AbstractModule
 {
@@ -103,7 +98,7 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 		// At this point, the for loop variables have been set and we can initialize
 		// the local scope (as they may depend on the for loop variables
 		Context c(ctx);
-		BOOST_FOREACH(const Assignment &ass, inst.scope.assignments) {
+		for(const auto &ass : inst.scope.assignments) {
 			c.set_variable(ass.first, ass.second->evaluate(&c));
 		}
 		
@@ -228,7 +223,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 			else if (value->type() == Value::VECTOR) {
 				AbstractNode* node = new GroupNode(inst);
 				const Value::VectorType& vect = value->toVector();
-				foreach (const ValuePtr &vectvalue, vect) {
+				for(const auto &vectvalue : vect) {
 					AbstractNode* childnode = getChild(vectvalue,modulectx);
 					if (childnode==NULL) continue; // error
 					node->children.push_back(childnode);

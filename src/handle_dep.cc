@@ -3,7 +3,6 @@
 #include <sstream>
 #include <stdlib.h> // for system()
 #include <boost/unordered_set.hpp>
-#include <boost/foreach.hpp>
 #include <boost/regex.hpp>
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
@@ -36,7 +35,7 @@ bool write_deps(const std::string &filename, const std::string &output_file)
 	}
 	fprintf(fp, "%s:", output_file.c_str());
 
-	BOOST_FOREACH(const std::string &str, dependencies) {
+	for(const auto &str : dependencies) {
 		fprintf(fp, " \\\n\t%s", str.c_str());
 	}
 	fprintf(fp, "\n");

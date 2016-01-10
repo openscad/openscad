@@ -37,7 +37,6 @@
 #include "printutils.h"
 #include "stackcheck.h"
 #include "exceptions.h"
-#include <boost/foreach.hpp>
 
 #include <boost/math/special_functions/fpclassify.hpp>
 using boost::math::isnan;
@@ -636,7 +635,7 @@ ValuePtr builtin_concat(const Context *, const EvalContext *evalctx)
 	for (size_t i = 0; i < evalctx->numArgs(); i++) {
 		ValuePtr val = evalctx->getArgValue(i);
 		if (val->type() == Value::VECTOR) {
-			BOOST_FOREACH(const ValuePtr &v, val->toVector()) { 
+			for(const auto &v : val->toVector()) { 
 				result.push_back(v);
 			}
 		} else {

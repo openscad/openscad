@@ -107,7 +107,6 @@
 
 #include <algorithm>
 #include <boost/version.hpp>
-#include <boost/foreach.hpp>
 #include <sys/stat.h>
 
 #ifdef ENABLE_CGAL

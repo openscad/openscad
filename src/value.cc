@@ -30,7 +30,6 @@
 #include <math.h>
 #include <assert.h>
 #include <sstream>
-#include <boost/foreach.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 #include <boost/variant/apply_visitor.hpp>
 #include <boost/variant/static_visitor.hpp>
@@ -71,7 +70,7 @@ std::ostream &operator<<(std::ostream &stream, const Filename &filename)
 std::ostream &operator<<(std::ostream &stream, const QuotedString &s)
 {
   stream << '"';
-  BOOST_FOREACH(char c, s) {
+  for(char c : s) {
     switch (c) {
     case '\t':
       stream << "\\t";
@@ -517,7 +516,7 @@ Value Value::multvecnum(const Value &vecval, const Value &numval)
 {
   // Vector * Number
   VectorType dstv;
-  BOOST_FOREACH(const ValuePtr &val, vecval.toVector()) {
+  for(const auto &val : vecval.toVector()) {
     dstv.push_back(ValuePtr(*val * numval));
   }
   return Value(dstv);
@@ -601,7 +600,7 @@ Value Value::operator*(const Value &v) const
                vec1[0]->toVector().size() == vec2.size()) {
       // Matrix * Matrix
       VectorType dstv;
-      BOOST_FOREACH(const ValuePtr &srcrow, vec1) {
+      for(const auto &srcrow : vec1) {
           const VectorType &srcrowvec = srcrow->toVector();
           if (srcrowvec.size() != vec2.size()) return Value::undefined;
           dstv.push_back(ValuePtr(multvecmat(srcrowvec, vec2)));
@@ -620,7 +619,7 @@ Value Value::operator/(const Value &v) const
   else if (this->type() == VECTOR && v.type() == NUMBER) {
     const VectorType &vec = this->toVector();
     VectorType dstv;
-    BOOST_FOREACH(const ValuePtr &vecval, vec) {
+    for(const auto &vecval : vec) {
       dstv.push_back(ValuePtr(*vecval / v));
     }
     return Value(dstv);
@@ -628,7 +627,7 @@ Value Value::operator/(const Value &v) const
   else if (this->type() == NUMBER && v.type() == VECTOR) {
     const VectorType &vec = v.toVector();
     VectorType dstv;
-    BOOST_FOREACH(const ValuePtr &vecval, vec) {
+    for(const auto &vecval : vec) {
       dstv.push_back(ValuePtr(*this / *vecval));
     }
     return Value(dstv);
@@ -652,7 +651,7 @@ Value Value::operator-() const
   else if (this->type() == VECTOR) {
     const VectorType &vec = this->toVector();
     VectorType dstv;
-    BOOST_FOREACH(const ValuePtr &vecval, vec) {
+    for(const auto &vecval : vec) {
       dstv.push_back(ValuePtr(-*vecval));
     }
     return Value(dstv);

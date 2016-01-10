@@ -28,7 +28,6 @@
 #include "Geometry.h"
 #include "linalg.h"
 #include <sstream>
-#include <boost/foreach.hpp>
 
 /*!
 	\class CSGTerm
@@ -185,7 +184,7 @@ std::string CSGChain::dump(bool full)
 {
 	std::stringstream dump;
 
-	BOOST_FOREACH(const CSGChainObject &obj, this->objects) {
+	for(const auto &obj : this->objects) {
 		if (obj.type == CSGTerm::TYPE_UNION) {
 			if (&obj != &this->objects.front()) dump << "\n";
 			dump << "+";
@@ -208,7 +207,7 @@ std::string CSGChain::dump(bool full)
 BoundingBox CSGChain::getBoundingBox() const
 {
 	BoundingBox bbox;
-	BOOST_FOREACH(const CSGChainObject &obj, this->objects) {
+	for(const auto &obj : this->objects) {
 		if (obj.type != CSGTerm::TYPE_DIFFERENCE) {
 			if (obj.geom) {
 				BoundingBox psbox = obj.geom->getBoundingBox();

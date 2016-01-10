@@ -29,8 +29,6 @@
 #include "polyset-utils.h"
 #include "dxfdata.h"
 
-#include <boost/foreach.hpp>
-
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"
@@ -42,7 +40,7 @@ static void append_stl(const PolySet &ps, std::ostream &output)
 	PolysetUtils::tessellate_faces(ps, triangulated);
 
 	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
-	BOOST_FOREACH(const Polygon &p, triangulated.polygons) {
+	for(const auto &p : triangulated.polygons) {
 		assert(p.size() == 3); // STL only allows triangles
 		std::stringstream stream;
 		stream << p[0][0] << " " << p[0][1] << " " << p[0][2];
@@ -70,7 +68,7 @@ static void append_stl(const PolySet &ps, std::ostream &output)
 			}
 			output << "    outer loop\n";
 		
-			BOOST_FOREACH(const Vector3d &v, p) {
+			for(const auto &v : p) {
 				output << "      vertex " << v[0] << " " << v[1] << " " << v[2] << "\n";
 			}
 			output << "    endloop\n";

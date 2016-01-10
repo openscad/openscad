@@ -1,6 +1,5 @@
 #include "Polygon2d.h"
 #include "printutils.h"
-#include <boost/foreach.hpp>
 
 /*!
 	Class for holding 2D geometry.
@@ -20,7 +19,7 @@
 size_t Polygon2d::memsize() const
 {
 	size_t mem = 0;
-	BOOST_FOREACH(const Outline2d &o, this->outlines()) {
+	for(const auto &o : this->outlines()) {
 		mem += o.vertices.size() * sizeof(Vector2d) + sizeof(Outline2d);
 	}
 	mem += sizeof(Polygon2d);
@@ -30,8 +29,8 @@ size_t Polygon2d::memsize() const
 BoundingBox Polygon2d::getBoundingBox() const
 {
 	BoundingBox bbox;
-	BOOST_FOREACH(const Outline2d &o, this->outlines()) {
-		BOOST_FOREACH(const Vector2d &v, o.vertices) {
+	for(const auto &o : this->outlines()) {
+		for(const auto &v : o.vertices) {
 			bbox.extend(Vector3d(v[0], v[1], 0));
 		}
 	}
@@ -41,9 +40,9 @@ BoundingBox Polygon2d::getBoundingBox() const
 std::string Polygon2d::dump() const
 {
 	std::stringstream out;
-	BOOST_FOREACH(const Outline2d &o, this->theoutlines) {
+	for(const auto &o : this->theoutlines) {
 		out << "contour:\n";
-		BOOST_FOREACH(const Vector2d &v, o.vertices) {
+		for(const auto &v : o.vertices) {
 			out << "  " << v.transpose();
 		}
 		out << "\n";
@@ -63,8 +62,8 @@ void Polygon2d::transform(const Transform2d &mat)
 		this->theoutlines.clear();
 		return;
 	}
-	BOOST_FOREACH(Outline2d &o, this->theoutlines) {
-		BOOST_FOREACH(Vector2d &v, o.vertices) {
+	for(auto &o : this->theoutlines) {
+		for(auto &v : o.vertices) {
 			v = mat * v;
 		}
 	}

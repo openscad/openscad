@@ -2,7 +2,6 @@
 #include "function.h"
 #include "module.h"
 #include "expression.h"
-#include <boost/foreach.hpp>
 
 Builtins *Builtins::instance(bool erase)
 {

@@ -43,7 +43,7 @@ shared_ptr<CSGTerm> CSGTermEvaluator::evaluateCSGTerm(const AbstractNode &node,
 void CSGTermEvaluator::applyToChildren(const AbstractNode &node, CSGTermEvaluator::CsgOp op)
 {
 	shared_ptr<CSGTerm> t1;
-	BOOST_FOREACH(const AbstractNode *chnode, this->visitedchildren[node.index()]) {
+	for(const auto &chnode : this->visitedchildren[node.index()]) {
 		shared_ptr<CSGTerm> t2(this->stored_term[chnode->index()]);
 		this->stored_term.erase(chnode->index());
 		if (t2 && !t1) {
