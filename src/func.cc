@@ -222,7 +222,7 @@ ValuePtr builtin_sign(const Context *, const EvalContext *evalctx)
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
 		if (v->type() == Value::NUMBER) {
-			register double x = v->toDouble();
+			double x = v->toDouble();
 			return ValuePtr((x<0) ? -1.0 : ((x>0) ? 1.0 : 0.0));
 		}
 	}
@@ -251,7 +251,7 @@ ValuePtr builtin_rands(const Context *, const EvalContext *evalctx)
 			PRINTB("WARNING: resetting to %f",max);
 		}
 		if (max < min) {
-			register double tmp = min; min = max; max = tmp;
+			double tmp = min; min = max; max = tmp;
 		}
 		ValuePtr v2 = evalctx->getArgValue(2);
 		if (v2->type() != Value::NUMBER) goto quit;
@@ -314,7 +314,7 @@ ValuePtr builtin_min(const Context *, const EvalContext *evalctx)
 				// 4/20/14 semantic change per discussion:
 				// break on any non-number
 				if (v->type() != Value::NUMBER) goto quit;
-				register double x = v->toDouble();
+				double x = v->toDouble();
 				if (x < val) val = x;
 			}
 			return ValuePtr(val);
@@ -346,7 +346,7 @@ ValuePtr builtin_max(const Context *, const EvalContext *evalctx)
 				// 4/20/14 semantic change per discussion:
 				// break on any non-number
 				if (v->type() != Value::NUMBER) goto quit;
-				register double x = v->toDouble();
+				double x = v->toDouble();
 				if (x > val) val = x;
 			}
 			return ValuePtr(val);
@@ -360,7 +360,7 @@ quit:
 // comment/undefine it to disable domain check
 #define TRIG_HUGE_VAL ((1L<<26)*360.0*(1L<<26))
 
-double sin_degrees(register double x)
+double sin_degrees(double x)
 {
 	// use positive tests because of possible Inf/NaN
 	if (x < 360.0 && x >= 0.0) {
@@ -370,7 +370,7 @@ double sin_degrees(register double x)
 	if (x < TRIG_HUGE_VAL && x > -TRIG_HUGE_VAL)
 #endif
 	{
-		register double revolutions = floor(x/360.0);
+		double revolutions = floor(x/360.0);
 		x -= 360.0*revolutions;
 	}
 #ifdef TRIG_HUGE_VAL
@@ -380,7 +380,7 @@ double sin_degrees(register double x)
 		return std::numeric_limits<double>::quiet_NaN();
 	}
 #endif
-	register bool oppose = x >= 180.0;
+	bool oppose = x >= 180.0;
 	if (oppose) x -= 180.0;
 	if (x > 90.0) x = 180.0 - x;
 	if (x < 45.0) {
@@ -404,7 +404,7 @@ ValuePtr builtin_sin(const Context *, const EvalContext *evalctx)
 	return ValuePtr::undefined;
 }
 
-double cos_degrees(register double x)
+double cos_degrees(double x)
 {
 	// use positive tests because of possible Inf/NaN
 	if (x < 360.0 && x >= 0.0) {
@@ -414,7 +414,7 @@ double cos_degrees(register double x)
 	if (x < TRIG_HUGE_VAL && x > -TRIG_HUGE_VAL)
 #endif
 	{
-		register double revolutions = floor(x/360.0);
+		double revolutions = floor(x/360.0);
 		x -= 360.0*revolutions;
 	}
 #ifdef TRIG_HUGE_VAL
@@ -424,7 +424,7 @@ double cos_degrees(register double x)
 		return std::numeric_limits<double>::quiet_NaN();
 	}
 #endif
-	register bool oppose = x >= 180.0;
+	bool oppose = x >= 180.0;
 	if (oppose) x -= 180.0;
 	if (x > 90.0) {
 		x = 180.0 - x;
@@ -940,7 +940,7 @@ ValuePtr builtin_norm(const Context *, const EvalContext *evalctx)
 			for (size_t i = 0; i < n; i++)
 				if (v[i]->type() == Value::NUMBER) {
 					// sum += pow(v[i].toDouble(),2);
-					register double x = v[i]->toDouble();
+					double x = v[i]->toDouble();
 					sum += x*x;
 				} else {
 					PRINT("WARNING: Incorrect arguments to norm()");
