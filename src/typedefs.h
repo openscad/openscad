@@ -8,8 +8,10 @@
 class Assignment : public std::pair<std::string, shared_ptr<class Expression>>
 {
 public:
-    Assignment(std::string name) { first = name; second = shared_ptr<class Expression>(); }
-    Assignment(std::string name, shared_ptr<class Expression> expr) { first = name; second = expr; }
+    Assignment(std::string name,
+							 shared_ptr<class Expression> expr = shared_ptr<class Expression>()) {
+			first = name; second = expr;
+		}
 };
 
 typedef std::vector<Assignment> AssignmentList;
