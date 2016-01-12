@@ -93,7 +93,7 @@ PolySet *CGAL_Nef_polyhedron::convertToPolyset() const
 }
 #endif
 
-void CGAL_Nef_polyhedron::resize(Vector3d newsize, 
+void CGAL_Nef_polyhedron::resize(const Vector3d &newsize, 
 																 const Eigen::Matrix<bool,3,1> &autosize)
 {
 	// Based on resize() in Giles Bathgate's RapCAD (but not exactly)
