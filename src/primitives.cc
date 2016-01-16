@@ -29,6 +29,7 @@
 #include "polyset.h"
 #include "evalcontext.h"
 #include "Polygon2d.h"
+#include "cgalutils.h"
 #include "builtin.h"
 #include "printutils.h"
 #include "visitor.h"
@@ -53,7 +54,8 @@ enum primitive_type_e {
 	POLYHEDRON,
 	SQUARE,
 	CIRCLE,
-	POLYGON
+	POLYGON,
+    POINTSET
 };
 
 class PrimitiveModule : public AbstractModule
@@ -96,6 +98,9 @@ public:
 			break;
 		case POLYGON:
 			return "polygon";
+			break;
+		case POINTSET:
+			return "pointset";
 			break;
 		default:
 			assert(false && "PrimitiveNode::name(): Unknown primitive type");
@@ -171,6 +176,9 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		break;
 	case POLYGON:
 		args += Assignment("points"), Assignment("paths"), Assignment("convexity");
+		break;
+	case POINTSET:
+		args += Assignment("points"), Assignment("convexity");
 		break;
 	default:
 		assert(false && "PrimitiveModule::instantiate(): Unknown node type");
@@ -271,6 +279,10 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 	case POLYGON: {
 		node->points = c.lookup_variable("points");
 		node->paths = c.lookup_variable("paths");
+		break;
+	}
+	case POINTSET: {
+		node->points = c.lookup_variable("points");
 		break;
 	}
 	}
@@ -602,6 +614,29 @@ Geometry *PrimitiveNode::createGeometry() const
 				p->setConvexity(convexity);
 			}
 	}
+		break;
+	case POINTSET: {
+		PolySet *p = new PolySet(3);
+		g = p;
+		p->setConvexity(this->convexity);
+        FTK sm_angle = 20.0;
+        FTK sm_radius = 30;
+        FTK sm_distance = 0375;
+        PointListK points;
+        for (size_t i=0; i<this->points->toVector().size(); i++)
+        {
+            double px, py, pz;
+            if (!this->points->toVector()[i]->getVec3(px,py,pz) ||
+                    isinf(px) || isinf(py) || isinf(pz)) {
+                PRINTB("ERROR: Unable to convert point at index %d to a vec3 of numbers", i);
+                return p;
+            }
+            PointK ptk(px,py,pz);
+            Point_with_normalK pwk(ptk,VectorK());
+            points.push_back(pwk);
+            // Do nothing yet.
+        }
+	}
 	}
 
 	return g;
@@ -643,6 +678,10 @@ std::string PrimitiveNode::toString() const
 	case POLYGON:
 		stream << "(points = " << *this->points << ", paths = " << *this->paths << ", convexity = " << this->convexity << ")";
 			break;
+	case POINTSET:
+		stream << "(points = " << *this->points
+					 << ", convexity = " << this->convexity << ")";
+			break;
 	default:
 		assert(false);
 	}
@@ -659,4 +698,5 @@ void register_builtin_primitives()
 	Builtins::init("square", new PrimitiveModule(SQUARE));
 	Builtins::init("circle", new PrimitiveModule(CIRCLE));
 	Builtins::init("polygon", new PrimitiveModule(POLYGON));
+	Builtins::init("pointset", new PrimitiveModule(POINTSET));
 }

@@ -11,6 +11,33 @@ typedef CGAL::Point_3<K> Vertex3K;
 typedef std::vector<Vertex3K> PolygonK;
 typedef std::vector<PolygonK> PolyholeK;
 
+/**
+#include <CGAL/Polyhedron_3.h>
+#include <CGAL/IO/Polyhedron_iostream.h>
+#include <CGAL/make_surface_mesh.h>
+#include <CGAL/IO/output_surface_facets_to_polyhedron.h>
+#include <CGAL/property_map.h>
+#include <CGAL/IO/read_xyz_points.h>
+#include <CGAL/compute_average_spacing.h>
+**/
+#define CGAL_EIGEN3_ENABLED
+#include <CGAL/Surface_mesh_default_triangulation_3.h>
+#include <CGAL/Point_with_normal_3.h>
+#include <CGAL/Poisson_reconstruction_function.h>
+#include <CGAL/Implicit_surface_3.h>
+typedef K::FT FTK;
+typedef K::Point_3 PointK;
+typedef K::Vector_3 VectorK;
+typedef std::pair<PointK,VectorK> PointVectorPairK;
+typedef CGAL::Point_with_normal_3<K> Point_with_normalK;
+typedef K::Sphere_3 SphereK;
+typedef std::vector<Point_with_normalK> PointListK;
+typedef CGAL::Polyhedron_3<K> PolyhedronK;
+typedef CGAL::Poisson_reconstruction_function<K> Poisson_reconstruction_functionK;
+typedef CGAL::Surface_mesh_default_triangulation_3 STr;
+typedef CGAL::Surface_mesh_complex_2_in_triangulation_3<STr> C2t3;
+typedef CGAL::Implicit_surface_3<K, Poisson_reconstruction_functionK> Surface_3K;
+
 namespace /* anonymous */ {
         template<typename Result, typename V>
         Result vector_convert(V const& v) {
