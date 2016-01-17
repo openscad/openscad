@@ -115,6 +115,8 @@ public:
 	int convexity;
 	ValuePtr points, paths, faces;
 	virtual Geometry *createGeometry() const;
+    double angle, radius, distance;
+    int neighbors;
 };
 
 /**
@@ -178,7 +180,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		args += Assignment("points"), Assignment("paths"), Assignment("convexity");
 		break;
 	case POINTSET:
-		args += Assignment("points"), Assignment("convexity");
+		args += Assignment("points"), Assignment("angle"), Assignment("radius"), Assignment("distance"), Assignment("neighbors"), Assignment("convexity");
 		break;
 	default:
 		assert(false && "PrimitiveModule::instantiate(): Unknown node type");
@@ -283,6 +285,35 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 	}
 	case POINTSET: {
 		node->points = c.lookup_variable("points");
+        ValuePtr angle = c.lookup_variable("angle");
+        if (angle->type() == Value::NUMBER) {
+            node->angle = angle->toDouble();
+        } else {
+            node->angle = 20.0;
+        }
+        PRINTB("POINTSET angle: %d",node->angle);
+        ValuePtr radius = c.lookup_variable("radius");
+        if (radius->type() == Value::NUMBER) {
+            node->radius = radius->toDouble();
+        } else {
+            node->radius = 30;
+        }
+        PRINTB("POINTSET radius: %d",node->radius);
+        ValuePtr distance = c.lookup_variable("distance");
+        if (distance->type() == Value::NUMBER) {
+            node->distance = distance->toDouble();
+        } else {
+            node->distance = 0.05;
+        }
+        PRINTB("POINTSET distance: %d",node->distance);
+        ValuePtr neighbors = c.lookup_variable("neighbors");
+        if (neighbors->type() == Value::NUMBER) {
+            node->neighbors = neighbors->toDouble();
+        } else {
+            node->neighbors = 16;
+        }
+        if (node->neighbors < 2) node->neighbors = 2;
+        PRINTB("POINTSET neighbors: %d",node->neighbors);
 		break;
 	}
 	}
@@ -619,11 +650,20 @@ Geometry *PrimitiveNode::createGeometry() const
 		PolySet *p = new PolySet(3);
 		g = p;
 		p->setConvexity(this->convexity);
-        FTK sm_angle = 20.0;
-        FTK sm_radius = 30;
-        FTK sm_distance = 0375;
-        PointListK points;
-        for (size_t i=0; i<this->points->toVector().size(); i++)
+        // Inspired by http://nuklei.sourceforge.net/doxygen/KernelCollectionMesh_8cpp_source.html
+        std::list<PointVectorPairK> points;
+        size_t num_points=this->points->toVector().size();
+        int nb_neighbors = (int)this->neighbors;
+        PRINTB("POINTSET nb_neighbors: %d",nb_neighbors);
+        if( num_points < 4 ) {
+            PRINTB("ERROR: Only %d points given", num_points);
+            return p;
+        }
+        if(0) if( nb_neighbors < num_points ) {
+            PRINTB("POINTSET nb_neighbors < num_points; setting nb_neighbors = num_points = %d",num_points);
+            nb_neighbors=(int)num_points;
+        }
+        for (size_t i=0; i<num_points; i++)
         {
             double px, py, pz;
             if (!this->points->toVector()[i]->getVec3(px,py,pz) ||
@@ -632,9 +672,73 @@ Geometry *PrimitiveNode::createGeometry() const
                 return p;
             }
             PointK ptk(px,py,pz);
-            Point_with_normalK pwk(ptk,VectorK());
-            points.push_back(pwk);
+            points.push_back(std::make_pair(ptk, VectorK()));
             // Do nothing yet.
+        }
+        CGAL::jet_estimate_normals(points.begin(), points.end(),
+                CGAL::First_of_pair_property_map<PointVectorPairK>(),
+                CGAL::Second_of_pair_property_map<PointVectorPairK>(),
+                nb_neighbors);
+        std::list<PointVectorPairK>::iterator unoriented_points_begin =
+            CGAL::mst_orient_normals(points.begin(), points.end(),
+                CGAL::First_of_pair_property_map<PointVectorPairK>(),
+                CGAL::Second_of_pair_property_map<PointVectorPairK>(),
+                nb_neighbors);
+        points.erase(unoriented_points_begin, points.end());
+        std::list<PointVectorPairK>(points).swap(points);
+        // FTK sm_angle = 20.0; // this->angle; // 20.0;
+        FTK sm_angle = this->angle; // 20.0;
+        PRINTB("POINTSET sm_angle: %d",sm_angle);
+        //FTK sm_radius = 30; // this->radius; // 30;
+        FTK sm_radius = this->radius; // 30;
+        PRINTB("POINTSET sm_radius: %d",sm_radius);
+        //FTK sm_distance = 0.05; // this->distance; // 0.05;
+        FTK sm_distance = this->distance; // 0.05;
+        PRINTB("POINTSET sm_distance: %d",sm_distance);
+        PointListK pl;
+        for (std::list<PointVectorPairK>::const_iterator i = points.begin(); i != points.end(); ++i)
+        {
+            pl.push_back(Point_with_normalK(i->first, i->second));
+        }
+        Poisson_reconstruction_functionK function(
+                pl.begin(), pl.end(),
+                CGAL::make_normal_of_point_with_normal_pmap(PointListK::value_type())
+                );
+        if ( ! function.compute_implicit_function() ) {
+            PRINT("ERROR: Poisson reconstruction function error.");
+            return p;
+        }
+        FTK average_spacing = CGAL::compute_average_spacing(pl.begin(), pl.end(),
+                6
+                );
+        PointK inner_point = function.get_inner_point();
+        SphereK bsphere = function.bounding_sphere();
+        FTK radius = std::sqrt(bsphere.squared_radius());
+        FTK sm_sphere_radius = 5.0 * radius;
+        FTK sm_dichotomy_error = sm_distance*average_spacing/1000.0;
+        Surface_3K surface(function,
+                SphereK(inner_point,sm_sphere_radius*sm_sphere_radius),
+                sm_dichotomy_error/sm_sphere_radius);
+        CGAL::Surface_mesh_default_criteria_3<STr> criteria(sm_angle
+                , sm_radius*average_spacing
+                , sm_distance*average_spacing);
+        STr tr;
+        C2t3 c2t3(tr);
+        CGAL::make_surface_mesh(c2t3
+                , surface
+                , criteria
+                , CGAL::Manifold_with_boundary_tag());
+        if(tr.number_of_vertices() == 0 )
+        {
+            PRINT("ERROR: make_surface_mesh failure");
+            return p;
+        }
+        PolyhedronK output_mesh;
+        CGAL::output_surface_facets_to_polyhedron(c2t3, output_mesh);
+        // createPolySetFromPolyhedron(const Polyhedron &p, PolySet &ps);
+        bool err = CGALUtils::createPolySetFromPolyhedron(output_mesh, *p);
+        if( ! err ) {
+            PRINT("ERROR: createPolySetFromPolyhedron failure");
         }
 	}
 	}
@@ -679,7 +783,7 @@ std::string PrimitiveNode::toString() const
 		stream << "(points = " << *this->points << ", paths = " << *this->paths << ", convexity = " << this->convexity << ")";
 			break;
 	case POINTSET:
-		stream << "(points = " << *this->points
+		stream << "(points = " << *this->points << ", angle = " << this->angle << ", radius = " << this->radius << ", distance = " << this->distance << ", neighbors = " << this->neighbors
 					 << ", convexity = " << this->convexity << ")";
 			break;
 	default:

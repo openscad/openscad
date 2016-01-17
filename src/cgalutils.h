@@ -14,17 +14,19 @@ typedef std::vector<PolygonK> PolyholeK;
 /**
 #include <CGAL/Polyhedron_3.h>
 #include <CGAL/IO/Polyhedron_iostream.h>
-#include <CGAL/make_surface_mesh.h>
-#include <CGAL/IO/output_surface_facets_to_polyhedron.h>
-#include <CGAL/property_map.h>
 #include <CGAL/IO/read_xyz_points.h>
-#include <CGAL/compute_average_spacing.h>
 **/
 #define CGAL_EIGEN3_ENABLED
 #include <CGAL/Surface_mesh_default_triangulation_3.h>
 #include <CGAL/Point_with_normal_3.h>
 #include <CGAL/Poisson_reconstruction_function.h>
 #include <CGAL/Implicit_surface_3.h>
+#include <CGAL/property_map.h>
+#include <CGAL/jet_estimate_normals.h>
+#include <CGAL/mst_orient_normals.h>
+#include <CGAL/compute_average_spacing.h>
+#include <CGAL/make_surface_mesh.h>
+#include <CGAL/IO/output_surface_facets_to_polyhedron.h>
 typedef K::FT FTK;
 typedef K::Point_3 PointK;
 typedef K::Vector_3 VectorK;
