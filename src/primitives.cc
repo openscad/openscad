@@ -660,7 +660,7 @@ Geometry *PrimitiveNode::createGeometry() const
             return p;
         }
         if(0) if( nb_neighbors < num_points ) {
-            PRINTB("POINTSET nb_neighbors < num_points; setting nb_neighbors = num_points = %d",num_points);
+            PRINTB("POINTSET neighbors < num_points; setting neighbors = num_points = %d",num_points);
             nb_neighbors=(int)num_points;
         }
         for (size_t i=0; i<num_points; i++)
@@ -673,26 +673,40 @@ Geometry *PrimitiveNode::createGeometry() const
             }
             PointK ptk(px,py,pz);
             points.push_back(std::make_pair(ptk, VectorK()));
-            // Do nothing yet.
         }
+        PRINT("POINTSET: Running jet_estimate_normals...");
         CGAL::jet_estimate_normals(points.begin(), points.end(),
                 CGAL::First_of_pair_property_map<PointVectorPairK>(),
                 CGAL::Second_of_pair_property_map<PointVectorPairK>(),
                 nb_neighbors);
+        PRINT("POINTSET: Running mst_orient_normals...");
         std::list<PointVectorPairK>::iterator unoriented_points_begin =
             CGAL::mst_orient_normals(points.begin(), points.end(),
                 CGAL::First_of_pair_property_map<PointVectorPairK>(),
                 CGAL::Second_of_pair_property_map<PointVectorPairK>(),
                 nb_neighbors);
+        PRINT("POINTSET: Running points.erase...");
         points.erase(unoriented_points_begin, points.end());
+        PRINT("POINTSET: Running swap(points)...");
         std::list<PointVectorPairK>(points).swap(points);
-        // FTK sm_angle = 20.0; // this->angle; // 20.0;
+        PRINT("POINTSET: Running edge_aware_upsample_point_set...");
+        const double sharpness_angle = 25;
+        const double edge_sensitivity = 0;
+        const double neighbor_radius = 0.25;
+        const double scale_num_points = 2.0;
+        const unsigned int number_of_output_points = (unsigned int) (num_points * scale_num_points);
+        CGAL::edge_aware_upsample_point_set(
+                points.begin(), points.end(), std::back_inserter(points),
+                CGAL::First_of_pair_property_map<PointVectorPairK>(),
+                CGAL::Second_of_pair_property_map<PointVectorPairK>(),
+                sharpness_angle,
+                edge_sensitivity,
+                neighbor_radius,
+                number_of_output_points);
         FTK sm_angle = this->angle; // 20.0;
         PRINTB("POINTSET sm_angle: %d",sm_angle);
-        //FTK sm_radius = 30; // this->radius; // 30;
         FTK sm_radius = this->radius; // 30;
         PRINTB("POINTSET sm_radius: %d",sm_radius);
-        //FTK sm_distance = 0.05; // this->distance; // 0.05;
         FTK sm_distance = this->distance; // 0.05;
         PRINTB("POINTSET sm_distance: %d",sm_distance);
         PointListK pl;
@@ -700,6 +714,7 @@ Geometry *PrimitiveNode::createGeometry() const
         {
             pl.push_back(Point_with_normalK(i->first, i->second));
         }
+        PRINT("POINTSET: Running Poisson_reconstruction_functionK...");
         Poisson_reconstruction_functionK function(
                 pl.begin(), pl.end(),
                 CGAL::make_normal_of_point_with_normal_pmap(PointListK::value_type())
@@ -708,12 +723,15 @@ Geometry *PrimitiveNode::createGeometry() const
             PRINT("ERROR: Poisson reconstruction function error.");
             return p;
         }
+        PRINT("POINTSET: Running compute_average_spacing...");
         FTK average_spacing = CGAL::compute_average_spacing(pl.begin(), pl.end(),
                 6
                 );
+        PRINTB("POINTSET:  average_spacing = %d",average_spacing);
         PointK inner_point = function.get_inner_point();
         SphereK bsphere = function.bounding_sphere();
         FTK radius = std::sqrt(bsphere.squared_radius());
+        PRINTB("POINTSET:  bsphere radius = %d",radius);
         FTK sm_sphere_radius = 5.0 * radius;
         FTK sm_dichotomy_error = sm_distance*average_spacing/1000.0;
         Surface_3K surface(function,
@@ -724,6 +742,7 @@ Geometry *PrimitiveNode::createGeometry() const
                 , sm_distance*average_spacing);
         STr tr;
         C2t3 c2t3(tr);
+        PRINT("POINTSET: Running make_surface_mesh...");
         CGAL::make_surface_mesh(c2t3
                 , surface
                 , criteria
@@ -734,6 +753,7 @@ Geometry *PrimitiveNode::createGeometry() const
             return p;
         }
         PolyhedronK output_mesh;
+        PRINT("POINTSET: Running output_surface_facets_to_polyhedron...");
         CGAL::output_surface_facets_to_polyhedron(c2t3, output_mesh);
         // createPolySetFromPolyhedron(const Polyhedron &p, PolySet &ps);
         bool err = CGALUtils::createPolySetFromPolyhedron(output_mesh, *p);
@@ -783,7 +803,7 @@ std::string PrimitiveNode::toString() const
 		stream << "(points = " << *this->points << ", paths = " << *this->paths << ", convexity = " << this->convexity << ")";
 			break;
 	case POINTSET:
-		stream << "(points = " << *this->points << ", angle = " << this->angle << ", radius = " << this->radius << ", distance = " << this->distance << ", neighbors = " << this->neighbors
+		stream << "(points = " << *this->points << ", angle = " << this->angle << ", radius = " << this->radius << ", distance = " << this->distance << ", neighbors = " << this->neighbors 
 					 << ", convexity = " << this->convexity << ")";
 			break;
 	default:
