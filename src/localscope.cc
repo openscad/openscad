@@ -42,7 +42,6 @@ std::string LocalScope::dump(const std::string &indent) const
 	return dump.str();
 }
 
-// FIXME: Two parameters here is a hack. Rather have separate types of scopes, or check the type of the first parameter. Note const vs. non-const
 std::vector<AbstractNode*> LocalScope::instantiateChildren(const Context *evalctx) const
 {
 	std::vector<AbstractNode*> childnodes;
