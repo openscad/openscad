@@ -646,6 +646,15 @@ Geometry *PrimitiveNode::createGeometry() const
 			}
 	}
 		break;
+    /***
+        Example:
+            cube_size=20;
+            cube_step=1;
+            pts_spiral_up=[ for(a=[0:10:359],z=[0:1:cube_size/2]) [(z+a/360)*cos(a),(z+a/360)*sin(a),z+a/360] ];
+            pts_spiral_plane=[ for(a=[0:10:359],z=[1:2:cube_size/2]) [z*cos(a),z*sin(a),cube_size/2+2*cube_step+(cube_size/4-z/2)] ];
+            pts_spiral=concat(pts_spiral_up,pts_spiral_plane);
+            pointset(points=pts_spiral,angle=45/4,radius=cube_size*1.5,distance=cube_step,neighbors=64,convexity=5);
+    ***/
 	case POINTSET: {
 		PolySet *p = new PolySet(3);
 		g = p;
@@ -746,7 +755,8 @@ Geometry *PrimitiveNode::createGeometry() const
         CGAL::make_surface_mesh(c2t3
                 , surface
                 , criteria
-                , CGAL::Manifold_with_boundary_tag());
+                // , CGAL::Manifold_with_boundary_tag());
+                , CGAL::Manifold_tag());
         if(tr.number_of_vertices() == 0 )
         {
             PRINT("ERROR: make_surface_mesh failure");
