@@ -142,7 +142,7 @@ void Preferences::init() {
 
 	uint savedsize = getValue("editor/fontsize").toUInt();
 	QFontDatabase db;
-	foreach(uint size, db.standardSizes()) {
+	for(auto size : db.standardSizes()) {
 		this->fontSize->addItem(QString::number(size));
 		if (size == savedsize) {
 			this->fontSize->setCurrentIndex(this->fontSize->count()-1);
@@ -748,9 +748,7 @@ void Preferences::create(QStringList colorSchemes)
 
     std::list<std::string> names = ColorMap::inst()->colorSchemeNames(true);
     QStringList renderColorSchemes;
-    foreach (std::string name, names) {
-	renderColorSchemes << name.c_str();
-    }
+    for(const auto &name : names) renderColorSchemes << name.c_str();
     
     instance = new Preferences();
     instance->syntaxHighlight->clear();

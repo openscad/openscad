@@ -685,8 +685,8 @@ set(CORE_SOURCES
   ../src/modcontext.cc 
   ../src/evalcontext.cc 
   ../src/feature.cc
-  ../src/csgterm.cc 
-  ../src/csgtermnormalizer.cc 
+  ../src/csgnode.cc 
+  ../src/CSGTreeNormalizer.cc 
   ../src/Geometry.cc 
   ../src/Polygon2d.cc 
   ../src/csgops.cc 
@@ -736,7 +736,7 @@ set(NOCGAL_SOURCES
 
 set(CGAL_SOURCES
   ${NOCGAL_SOURCES}
-  ../src/CSGTermEvaluator.cc 
+  ../src/CSGTreeEvaluator.cc 
   ../src/CGAL_Nef_polyhedron.cc 
   ../src/export_nef.cc
   ../src/cgalutils.cc 
@@ -1270,9 +1270,13 @@ disable_tests(opencsgtest_child-background)
 # These tests only makes sense in OpenCSG mode
 disable_tests(cgalpngtest_child-background
               cgalpngtest_highlight-and-background-modifier
+              cgalpngtest_highlight-modifier2
+              cgalpngtest_background-modifier2
               cgalpngtest_testcolornames
               csgpngtest_child-background
               csgpngtest_highlight-and-background-modifier
+              csgpngtest_highlight-modifier2
+              csgpngtest_background-modifier2
               csgpngtest_testcolornames
               throwntogethertest_testcolornames)
 

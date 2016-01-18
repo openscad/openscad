@@ -13,6 +13,7 @@
 #include "csgnode.h"
 #include "cgaladvnode.h"
 #include "projectionnode.h"
+#include "csgops.h"
 #include "textnode.h"
 #include "CGAL_Nef_polyhedron.h"
 #include "cgalutils.h"
@@ -27,7 +28,6 @@
 #include "dxfdata.h"
 
 #include <algorithm>
-#include <boost/foreach.hpp>
 
 #include <CGAL/convex_hull_2.h>
 #include <CGAL/Point_2.h>
@@ -522,7 +522,7 @@ Response GeometryEvaluator::visit(State &state, const TextNode &node)
 	operation:
 	  o Perform csg op on children
  */			
-Response GeometryEvaluator::visit(State &state, const CsgNode &node)
+Response GeometryEvaluator::visit(State &state, const CsgOpNode &node)
 {
 	if (state.isPrefix()) {
 		if (isSmartCached(node)) return PruneTraversal;
