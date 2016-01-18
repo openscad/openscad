@@ -42,6 +42,8 @@
 #include "stackcheck.h"
 #include "CocoaUtils.h"
 #include "FontCache.h"
+#include "OffscreenView.h"
+#include "GeometryEvaluator.h"
 
 #include <string>
 #include <vector>
@@ -52,9 +54,8 @@
 #include "cgalutils.h"
 #endif
 
-#include "csgterm.h"
-#include "CSGTermEvaluator.h"
-#include "CsgInfo.h"
+#include "csgnode.h"
+#include "CSGTreeEvaluator.h"
 
 #include <sstream>
 
@@ -169,15 +170,13 @@ static void info()
 {
 	std::cout << LibraryInfo::info() << "\n\n";
 
-	CsgInfo csgInfo = CsgInfo();
 	try {
-		csgInfo.glview = new OffscreenView(512,512);
+		OffscreenView glview(512,512);
+		std::cout << glview.getRendererInfo() << "\n";
 	} catch (int error) {
 		PRINTB("Can't create OpenGL OffscreenView. Code: %i. Exiting.\n", error);
 		exit(1);
 	}
-
-	std::cout << csgInfo.glview->getRendererInfo() << "\n";
 
 	exit(0);
 }
@@ -442,11 +441,8 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		}
 	}
 	else if (term_output_file) {
-		std::vector<shared_ptr<CSGTerm> > highlight_terms;
-		std::vector<shared_ptr<CSGTerm> > background_terms;
-
-		CSGTermEvaluator csgRenderer(tree);
-		shared_ptr<CSGTerm> root_raw_term = csgRenderer.evaluateCSGTerm(*root_node, highlight_terms, background_terms);
+		CSGTreeEvaluator csgRenderer(tree);
+		shared_ptr<CSGNode> root_raw_term = csgRenderer.buildCSGTree(*root_node);
 
 		fs::current_path(original_path);
 		std::ofstream fstream(term_output_file);

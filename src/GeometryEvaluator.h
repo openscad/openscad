@@ -27,7 +27,7 @@ public:
 	virtual Response visit(State &state, const RootNode &node);
 	virtual Response visit(State &state, const LeafNode &node);
 	virtual Response visit(State &state, const TransformNode &node);
-	virtual Response visit(State &state, const CsgNode &node);
+	virtual Response visit(State &state, const CsgOpNode &node);
 	virtual Response visit(State &state, const CgaladvNode &node);
 	virtual Response visit(State &state, const ProjectionNode &node);
 	virtual Response visit(State &state, const RenderNode &node);
