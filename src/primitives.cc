@@ -115,8 +115,9 @@ public:
 	int convexity;
 	ValuePtr points, paths, faces;
 	virtual Geometry *createGeometry() const;
-    double angle, radius, distance;
     int neighbors;
+    double scale_num_points, sharpness_angle, edge_sensitivity, neighbor_radius;
+    double angle, radius, distance;
 };
 
 /**
@@ -180,7 +181,11 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		args += Assignment("points"), Assignment("paths"), Assignment("convexity");
 		break;
 	case POINTSET:
-		args += Assignment("points"), Assignment("angle"), Assignment("radius"), Assignment("distance"), Assignment("neighbors"), Assignment("convexity");
+		args += Assignment("points")
+            , Assignment("neighbors")
+            , Assignment("scale_num_points"), Assignment("sharpness_angle"), Assignment("edge_sensitivity"), Assignment("neighbor_radius")
+            , Assignment("angle"), Assignment("radius"), Assignment("distance")
+            , Assignment("convexity");
 		break;
 	default:
 		assert(false && "PrimitiveModule::instantiate(): Unknown node type");
@@ -285,6 +290,64 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 	}
 	case POINTSET: {
 		node->points = c.lookup_variable("points");
+        // jet_estimate_normals & mst_orient_normals 'neighbors' parameter
+        ValuePtr neighbors = c.lookup_variable("neighbors");
+        if (neighbors->type() == Value::NUMBER) {
+            node->neighbors = neighbors->toDouble();
+        } else {
+            node->neighbors = 16;
+        }
+        if (node->neighbors < 2) node->neighbors = 2;
+        PRINTB("POINTSET neighbors: %d",node->neighbors);
+        // edge_aware_upsample_point_set parameters
+        ValuePtr scale_num_points = c.lookup_variable("scale_num_points");
+        if ( scale_num_points->type() == Value::NUMBER) {
+            const double snp = scale_num_points->toDouble();
+            if( snp > 1.0 ) {
+                node->scale_num_points = snp;
+            } else {
+                node->scale_num_points = 0;
+            }
+        } else {
+            node->scale_num_points = 0;
+        }
+        PRINTB("POINTSET scale_num_points: %d",node->scale_num_points);
+        ValuePtr sharpness_angle = c.lookup_variable("sharpness_angle");
+        if ( sharpness_angle->type() == Value::NUMBER) {
+            const double sat = sharpness_angle->toDouble();
+            node->sharpness_angle = sat;
+        } else {
+            node->sharpness_angle = 25.0;
+        }
+        PRINTB("POINTSET sharpness_angle: %d",node->sharpness_angle);
+        ValuePtr edge_sensitivity = c.lookup_variable("edge_sensitivity");
+        if ( edge_sensitivity->type() == Value::NUMBER) {
+            const double es = edge_sensitivity->toDouble();
+            if( es < 0.0 ) {
+                node->edge_sensitivity = 0.0;
+            } else if( es > 1.0 ) {
+                node->edge_sensitivity = 1.0;
+            } else {
+                node->edge_sensitivity = es;
+            }
+        } else {
+            node->edge_sensitivity = 0.0;
+        }
+        PRINTB("POINTSET edge_sensitivity: %d",node->edge_sensitivity);
+        // neighbor_radius = 0.25
+        ValuePtr neighbor_radius = c.lookup_variable("neighbor_radius");
+        if ( neighbor_radius->type() == Value::NUMBER) {
+            const double nr = neighbor_radius->toDouble();
+            if( nr > 0 ) {
+                node->neighbor_radius = nr;
+            } else {
+                node->neighbor_radius = 0.25;
+            }
+        } else {
+            node->neighbor_radius = 0.25;
+        }
+        PRINTB("POINTSET neighbor_radius: %d",node->neighbor_radius);
+        // Surface_mesh_default_criteria_3 parameters
         ValuePtr angle = c.lookup_variable("angle");
         if (angle->type() == Value::NUMBER) {
             node->angle = angle->toDouble();
@@ -306,14 +369,6 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
             node->distance = 0.05;
         }
         PRINTB("POINTSET distance: %d",node->distance);
-        ValuePtr neighbors = c.lookup_variable("neighbors");
-        if (neighbors->type() == Value::NUMBER) {
-            node->neighbors = neighbors->toDouble();
-        } else {
-            node->neighbors = 16;
-        }
-        if (node->neighbors < 2) node->neighbors = 2;
-        PRINTB("POINTSET neighbors: %d",node->neighbors);
 		break;
 	}
 	}
@@ -699,19 +754,21 @@ Geometry *PrimitiveNode::createGeometry() const
         PRINT("POINTSET: Running swap(points)...");
         std::list<PointVectorPairK>(points).swap(points);
         PRINT("POINTSET: Running edge_aware_upsample_point_set...");
-        const double sharpness_angle = 25;
-        const double edge_sensitivity = 0;
-        const double neighbor_radius = 0.25;
-        const double scale_num_points = 2.0;
-        const unsigned int number_of_output_points = (unsigned int) (num_points * scale_num_points);
-        CGAL::edge_aware_upsample_point_set(
-                points.begin(), points.end(), std::back_inserter(points),
-                CGAL::First_of_pair_property_map<PointVectorPairK>(),
-                CGAL::Second_of_pair_property_map<PointVectorPairK>(),
-                sharpness_angle,
-                edge_sensitivity,
-                neighbor_radius,
-                number_of_output_points);
+        const double scale_num_points = this->scale_num_points; // 2.0;
+        if ( scale_num_points > 1.0 ) {
+	        const double sharpness_angle = this->sharpness_angle; // 25;
+	        const double edge_sensitivity = this->edge_sensitivity; // 0;
+	        const double neighbor_radius = this->neighbor_radius; // 0.25;
+	        const unsigned int number_of_output_points = (unsigned int) (num_points * scale_num_points);
+	        CGAL::edge_aware_upsample_point_set(
+	                points.begin(), points.end(), std::back_inserter(points),
+	                CGAL::First_of_pair_property_map<PointVectorPairK>(),
+	                CGAL::Second_of_pair_property_map<PointVectorPairK>(),
+	                sharpness_angle,
+	                edge_sensitivity,
+	                neighbor_radius,
+	                number_of_output_points);
+        }
         FTK sm_angle = this->angle; // 20.0;
         PRINTB("POINTSET sm_angle: %d",sm_angle);
         FTK sm_radius = this->radius; // 30;
@@ -813,8 +870,21 @@ std::string PrimitiveNode::toString() const
 		stream << "(points = " << *this->points << ", paths = " << *this->paths << ", convexity = " << this->convexity << ")";
 			break;
 	case POINTSET:
-		stream << "(points = " << *this->points << ", angle = " << this->angle << ", radius = " << this->radius << ", distance = " << this->distance << ", neighbors = " << this->neighbors 
-					 << ", convexity = " << this->convexity << ")";
+		stream << "(points = " << *this->points 
+                    // jet_estimate_normals & mst_orient_normals 'nb_neighbors' parameter
+                    << ", neighbors = " << this->neighbors 
+                    // edge_aware_upsample_point_set parameters
+                    << ", scale_num_points = " << this->scale_num_points
+                    << ", sharpness_angle = " << this->sharpness_angle
+                    << ", edge_sensitivity = " << this->edge_sensitivity
+                    << ", neighbor_radius = " << this->neighbor_radius
+                    // Surface_mesh_default_criteria_3 parameters
+                    << ", angle = " << this->angle 
+                    << ", radius = " << this->radius 
+                    << ", distance = " << this->distance 
+                    // convexity
+					<< ", convexity = " << this->convexity 
+                    << ")";
 			break;
 	default:
 		assert(false);
