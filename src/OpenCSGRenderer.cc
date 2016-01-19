@@ -110,6 +110,7 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 		if (shaderinfo) glUseProgram(shaderinfo[0]);
 
 		const CSGChainObject &parent_obj = product.intersections[0];
+		if (product.intersections.size() > 0) setupMaterial(false);
 		BOOST_FOREACH(const CSGChainObject &csgobj, product.intersections) {
 			const Color4f &c = csgobj.leaf->color;
 				csgmode_e csgmode = csgmode_e(
@@ -132,6 +133,7 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 			render_surface(csgobj.leaf->geom, csgmode, csgobj.leaf->matrix, shaderinfo);
 			glPopMatrix();
 		}
+		if (product.subtractions.size() > 0) setupMaterial(true);
 		BOOST_FOREACH(const CSGChainObject &csgobj, product.subtractions) {
 			const Color4f &c = csgobj.leaf->color;
 				csgmode_e csgmode = csgmode_e(

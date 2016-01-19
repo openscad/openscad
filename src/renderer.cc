@@ -111,3 +111,19 @@ void Renderer::render_edges(shared_ptr<const Geometry> geom, csgmode_e csgmode)
 	if (ps) ps->render_edges(csgmode);
 }
 
+void Renderer::setupMaterial(bool subtraction) const
+{
+	int front = subtraction ? GL_BACK : GL_FRONT;
+	int back = subtraction ? GL_FRONT : GL_BACK;
+	float none[3] = {0.0f, 0.0f, 0.0f};
+
+  glColorMaterial(front, GL_AMBIENT_AND_DIFFUSE);
+	glMaterialfv(front, GL_EMISSION, none);
+	glMaterialfv(front, GL_SPECULAR, none);
+
+	// Highlight unexpected backfaces
+	float pink[3] = {1.0f, 0.0f, 1.0f};
+	glMaterialfv(back, GL_EMISSION, pink);
+	glMaterialfv(back, GL_AMBIENT, none);
+	glMaterialfv(back, GL_SPECULAR, none);
+}
