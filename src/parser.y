@@ -24,7 +24,7 @@
  *
  */
 
-%expect 1 /* Expect 1 shift/reduce conflict for ifelse_statement - "dangling else problem" */
+%expect 2 /* Expect 2 shift/reduce conflict for ifelse_statement - "dangling else problem" */
 
 %{
 
@@ -90,6 +90,7 @@ std::string parser_source_path;
 %token TOK_ELSE
 %token TOK_FOR
 %token TOK_LET
+%token TOK_EACH
 
 %token <text> TOK_ID
 %token <text> TOK_STRING
@@ -120,6 +121,7 @@ std::string parser_source_path;
 %type <expr> expr
 %type <expr> vector_expr
 %type <expr> list_comprehension_elements
+%type <expr> list_comprehension_elements_p
 %type <expr> list_comprehension_elements_or_expr
 
 %type <inst> module_instantiation
@@ -285,10 +287,11 @@ child_statement:
             }
         ;
 
-// "for" is a valid module identifier
+// "for" and "each" are a valid module identifier
 module_id:
           TOK_ID  { $$ = $1; }
         | TOK_FOR { $$ = strdup("for"); }
+        | TOK_EACH { $$ = strdup("each"); }
         ;
 
 single_module_instantiation:
@@ -346,10 +349,6 @@ expr:
         | '[' expr ':' expr ':' expr ']'
             {
                 $$ = new ExpressionRange($2, $4, $6);
-            }
-        | '[' list_comprehension_elements ']'
-            {
-                $$ = new ExpressionLcExpression($2);
             }
         | '[' optional_commas ']'
             {
@@ -446,10 +445,14 @@ expr:
 list_comprehension_elements:
           /* The last set element may not be a "let" (as that would instead
              be parsed as an expression) */
-          TOK_LET '(' arguments_call ')' list_comprehension_elements
+          TOK_LET '(' arguments_call ')' list_comprehension_elements_p
             {
-              $$ = new ExpressionLc("let", *$3, $5);
+              $$ = new ExpressionLcLet(*$3, $5);
                 delete $3;
+            }
+        | TOK_EACH list_comprehension_elements_or_expr
+            {
+              $$ = new ExpressionLcEach($2);
             }
         | TOK_FOR '(' arguments_call ')' list_comprehension_elements_or_expr
             {
@@ -459,19 +462,32 @@ list_comprehension_elements:
                 for (int i = $3->size()-1; i >= 0; i--) {
                   AssignmentList arglist;
                   arglist.push_back((*$3)[i]);
-                  Expression *e = new ExpressionLc("for", arglist, $$);
+                  Expression *e = new ExpressionLcFor(arglist, $$);
                     $$ = e;
                 }
                 delete $3;
             }
         | TOK_IF '(' expr ')' list_comprehension_elements_or_expr
             {
-              $$ = new ExpressionLc("if", $3, $5);
+              $$ = new ExpressionLcIf($3, $5, 0);
+            }
+        | TOK_IF '(' expr ')' list_comprehension_elements_or_expr TOK_ELSE list_comprehension_elements_or_expr
+            {
+              $$ = new ExpressionLcIf($3, $5, $7);
+            }
+        ;
+
+// list_comprehension_elements with optional parenthesis
+list_comprehension_elements_p:
+          list_comprehension_elements
+        | '(' list_comprehension_elements ')'
+            {
+                $$ = $2;
             }
         ;
 
 list_comprehension_elements_or_expr:
-          list_comprehension_elements
+          list_comprehension_elements_p
         | expr
         ;
 
@@ -485,7 +501,11 @@ vector_expr:
             {
                 $$ = new ExpressionVector($1);
             }
-        | vector_expr ',' optional_commas expr
+        |  list_comprehension_elements
+            {
+                $$ = new ExpressionVector($1);
+            }
+        | vector_expr ',' optional_commas list_comprehension_elements_or_expr
             {
                 $$ = $1;
                 $$->children.push_back($4);

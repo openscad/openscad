@@ -153,6 +153,7 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
 "else"		return TOK_ELSE;
 "let"		return TOK_LET;
 "for"		return TOK_FOR;
+"each"		return TOK_EACH;
 
 "true"		return TOK_TRUE;
 "false"		return TOK_FALSE;

@@ -27,3 +27,5 @@ echo([ for (a=[0:1]) if (true) if (true) a]);
 echo([ for (a=[0:1]) for (b=[a:2]) [b,a]]);
 echo([ for (a=[0:1]) if (true) for (b=[a:2]) [b,a]]);
 echo([ for (a=[0:1]) if (true) if (true) for (b=[a:2]) [b,a]]);
+echo([ -1, for (a = [0:1:3]) a, for (b = [3:-1:0]) b, -1 ]);
+echo([ for (a = [2:3]) a * 2, for (a = [5:9]) if ((a % 2) == 0) [ a, a + 1 ] , -1 ]);
