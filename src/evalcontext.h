@@ -22,6 +22,8 @@ public:
 	size_t numChildren() const;
 	ModuleInstantiation *getChild(size_t i) const;
 
+	void assignTo(Context &target) const;
+
 #ifdef DEBUG
 	virtual std::string dump(const class AbstractModule *mod, const ModuleInstantiation *inst);
 #endif

@@ -284,15 +284,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 		node = new GroupNode(inst);
 		Context c(evalctx);
 
-		// TODO: unify with evaluate_sequential_assignment() from expr.cc
-		for (unsigned int i = 0; i < evalctx->numArgs(); i++) {
-			if (c.has_local_variable(evalctx->getArgName(i))) {
-				PRINTB("WARNING: Ignoring duplicate variable assignment %s = %s", evalctx->getArgName(i) % evalctx->getArgValue(i, &c)->toString());
-			} else {
-				// NOTE: iteratively evaluated list of arguments
-				c.set_variable(evalctx->getArgName(i), evalctx->getArgValue(i, &c));
-			}
-		}
+		evalctx->assignTo(c);
 
 		inst->scope.apply(c);
 		std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(&c);
