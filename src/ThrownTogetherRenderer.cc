@@ -27,6 +27,7 @@
 #include "ThrownTogetherRenderer.h"
 #include "polyset.h"
 #include "printutils.h"
+#include <boost/foreach.hpp>
 
 #include "system-gl.h"
 
