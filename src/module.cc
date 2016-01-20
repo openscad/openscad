@@ -354,7 +354,7 @@ AbstractNode *FileModule::instantiate(const Context *ctx, const ModuleInstantiat
 		std::vector<AbstractNode *> instantiatednodes = this->scope.instantiateChildren(context);
 		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 	}
-	catch (RecursionException &e) {
+	catch (EvaluationException &e) {
 		PRINT(e.what());
 	}
 
