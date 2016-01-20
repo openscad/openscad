@@ -33,6 +33,7 @@
 #include "printutils.h"
 #include "stackcheck.h"
 #include "exceptions.h"
+#include "feature.h"
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 
@@ -534,6 +535,10 @@ ExpressionLcIf::ExpressionLcIf(Expression *cond, Expression *exprIf, Expression 
 
 ValuePtr ExpressionLcIf::evaluate(const Context *context) const
 {
+    if (this->second) {
+    	ExperimentalFeatureException::check(Feature::ExperimentalElseExpression);
+    }
+
     const Expression *expr = this->cond->evaluate(context) ? this->first : this->second;
 
 	Value::VectorType vec;
@@ -550,9 +555,9 @@ ValuePtr ExpressionLcIf::evaluate(const Context *context) const
 
 void ExpressionLcIf::print(std::ostream &stream) const
 {
-    stream << "if(" << *this->cond << ") " << *this->first;
+    stream << "if(" << *this->cond << ") (" << *this->first << ")";
     if (this->second) {
-        stream << " else " << *this->second;
+        stream << " else (" << *this->second << ")";
     }
 }
 
@@ -563,6 +568,8 @@ ExpressionLcEach::ExpressionLcEach(Expression *expr)
 
 ValuePtr ExpressionLcEach::evaluate(const Context *context) const
 {
+	ExperimentalFeatureException::check(Feature::ExperimentalEachExpression);
+
 	Value::VectorType vec;
 
     ValuePtr v = this->first->evaluate(context);
@@ -595,7 +602,7 @@ ValuePtr ExpressionLcEach::evaluate(const Context *context) const
 
 void ExpressionLcEach::print(std::ostream &stream) const
 {
-    stream << "each " << *this->first;
+    stream << "each (" << *this->first << ")";
 }
 
 ExpressionLcFor::ExpressionLcFor(const AssignmentList &arglist, Expression *expr)
@@ -647,7 +654,7 @@ ValuePtr ExpressionLcFor::evaluate(const Context *context) const
 
 void ExpressionLcFor::print(std::ostream &stream) const
 {
-    stream << "for(" << this->call_arguments << ") " << *this->first;
+    stream << "for(" << this->call_arguments << ") (" << *this->first << ")";
 }
 
 ExpressionLcForC::ExpressionLcForC(const AssignmentList &arglist, const AssignmentList &incrargs, Expression *cond, Expression *expr)
@@ -657,6 +664,8 @@ ExpressionLcForC::ExpressionLcForC(const AssignmentList &arglist, const Assignme
 
 ValuePtr ExpressionLcForC::evaluate(const Context *context) const
 {
+	ExperimentalFeatureException::check(Feature::ExperimentalForCExpression);
+
 	Value::VectorType vec;
 
     Context c(context);
@@ -703,7 +712,7 @@ ValuePtr ExpressionLcLet::evaluate(const Context *context) const
 
 void ExpressionLcLet::print(std::ostream &stream) const
 {
-    stream << "let(" << this->call_arguments << ") " << *this->first;
+    stream << "let(" << this->call_arguments << ") (" << *this->first << ")";
 }
 
 std::ostream &operator<<(std::ostream &stream, const Expression &expr)

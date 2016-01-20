@@ -121,6 +121,7 @@ std::string parser_source_path;
 %type <expr> expr
 %type <expr> vector_expr
 %type <expr> list_comprehension_elements
+%type <expr> list_comprehension_elements_p
 %type <expr> list_comprehension_elements_or_expr
 
 %type <inst> module_instantiation
@@ -444,7 +445,7 @@ expr:
 list_comprehension_elements:
           /* The last set element may not be a "let" (as that would instead
              be parsed as an expression) */
-          TOK_LET '(' arguments_call ')' list_comprehension_elements
+          TOK_LET '(' arguments_call ')' list_comprehension_elements_p
             {
               $$ = new ExpressionLcLet(*$3, $5);
                 delete $3;
@@ -482,8 +483,17 @@ list_comprehension_elements:
             }
         ;
 
-list_comprehension_elements_or_expr:
+// list_comprehension_elements with optional parenthesis
+list_comprehension_elements_p:
           list_comprehension_elements
+        | '(' list_comprehension_elements ')'
+            {
+                $$ = $2;
+            }
+        ;
+
+list_comprehension_elements_or_expr:
+          list_comprehension_elements_p
         | expr
         ;
 
