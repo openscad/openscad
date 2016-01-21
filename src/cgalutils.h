@@ -22,6 +22,7 @@ typedef std::vector<PolygonK> PolyholeK;
 #include <CGAL/Poisson_reconstruction_function.h>
 #include <CGAL/Implicit_surface_3.h>
 #include <CGAL/property_map.h>
+#include <CGAL/IO/read_xyz_points.h>
 #include <CGAL/edge_aware_upsample_point_set.h>
 #include <CGAL/jet_estimate_normals.h>
 #include <CGAL/mst_orient_normals.h>

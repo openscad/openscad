@@ -39,6 +39,10 @@
 #include "exceptions.h"
 #include <boost/foreach.hpp>
 
+#include "cgalutils.h"
+#include <vector>
+#include <fstream>
+
 #include <boost/math/special_functions/fpclassify.hpp>
 using boost::math::isnan;
 using boost::math::isinf;
@@ -956,6 +960,51 @@ ValuePtr builtin_norm(const Context *, const EvalContext *evalctx)
 	return ValuePtr::undefined;
 }
 
+ValuePtr builtin_read_xyz(const Context *, const EvalContext *evalctx)
+{
+    if (evalctx->numArgs() != 1) {
+        PRINT("WARNING: Invalid number of parameters for read_xyz()");
+        return ValuePtr::undefined;
+    }
+    ValuePtr arg0 = evalctx->getArgValue(0);
+    if ((arg0->type() != Value::STRING) ) {
+        PRINT( "WARNING: Invalid type of parameters for read_xyz()");
+        return ValuePtr::undefined;
+    }
+    std::string filename = arg0->toString();
+    std::vector<PointVectorPairK> points;
+    std::ifstream in(filename);
+    if ( !in ||
+        !CGAL::read_xyz_points_and_normals(
+            in,std::back_inserter(points),
+            CGAL::First_of_pair_property_map<PointVectorPairK>(),
+            CGAL::Second_of_pair_property_map<PointVectorPairK>()))
+    {
+        PRINTB("ERROR: cannot read file %s",filename);
+        return ValuePtr::undefined;
+    }
+    Value::VectorType result;
+    Value::VectorType point_vector,normal_vector;
+    for ( std::vector<PointVectorPairK>::const_iterator pvp = points.begin(); pvp != points.end(); pvp++ )
+    {
+        Value::VectorType vec;
+        PointK pk=pvp->first;
+        for ( int idx = 0; idx<3; idx++ ) {
+            vec.push_back(pk[idx]);
+        }
+        point_vector.push_back(vec);
+        Value::VectorType norm;
+        VectorK vk=pvp->second;
+        for ( int idx = 0; idx<3; idx++ ) {
+            norm.push_back(vk[idx]);
+        }
+        normal_vector.push_back(norm);
+    }
+    result.push_back(point_vector);
+    result.push_back(normal_vector);
+    return ValuePtr(result);
+}
+
 ValuePtr builtin_cross(const Context *, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() != 2) {
@@ -1041,4 +1090,5 @@ void register_builtin_functions()
 	Builtins::init("norm", new BuiltinFunction(&builtin_norm));
 	Builtins::init("cross", new BuiltinFunction(&builtin_cross));
 	Builtins::init("parent_module", new BuiltinFunction(&builtin_parent_module));
+    Builtins::init("read_xyz", new BuiltinFunction(&builtin_read_xyz));
 }
