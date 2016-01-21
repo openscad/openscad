@@ -717,6 +717,16 @@ Geometry *PrimitiveNode::createGeometry() const
         // Inspired by http://nuklei.sourceforge.net/doxygen/KernelCollectionMesh_8cpp_source.html
         std::list<PointVectorPairK> points;
         size_t num_points=this->points->toVector().size();
+        ValuePtr point_vec,norm_vec;
+        if(num_points==2) {
+            point_vec=this->points[0];
+            norm_vec=this->points[1];
+            if( point_vec->toVector().size() == norm_vec->toVector().size() ) num_points=point_vec->toVector().size();
+        } else {
+            point_vec=this->points;
+            norm_vec=ValuePtr::undefined;
+        }
+
         int nb_neighbors = (int)this->neighbors;
         PRINTB("POINTSET nb_neighbors: %d",nb_neighbors);
         if( num_points < 4 ) {
@@ -730,13 +740,19 @@ Geometry *PrimitiveNode::createGeometry() const
         for (size_t i=0; i<num_points; i++)
         {
             double px, py, pz;
-            if (!this->points->toVector()[i]->getVec3(px,py,pz) ||
+            if (!point_vec->toVector()[i]->getVec3(px,py,pz) ||
                     isinf(px) || isinf(py) || isinf(pz)) {
                 PRINTB("ERROR: Unable to convert point at index %d to a vec3 of numbers", i);
                 return p;
             }
             PointK ptk(px,py,pz);
-            points.push_back(std::make_pair(ptk, VectorK()));
+            if ( norm_vec==ValuePtr::undefined || !norm_vec->toVector()[i]->getVec3(px,py,pz) ||
+                    isinf(px) || isinf(py) || isinf(pz)) {
+                points.push_back(std::make_pair(ptk, VectorK()));
+            } else {
+                VectorK veck(px,py,pz);
+                points.push_back(std::make_pair(ptk, veck));
+            }
         }
         PRINT("POINTSET: Running jet_estimate_normals...");
         CGAL::jet_estimate_normals(points.begin(), points.end(),
