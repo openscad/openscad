@@ -716,6 +716,17 @@ Geometry *PrimitiveNode::createGeometry() const
 		p->setConvexity(this->convexity);
         // Inspired by http://nuklei.sourceforge.net/doxygen/KernelCollectionMesh_8cpp_source.html
         std::list<PointVectorPairK> points;
+        if( this->points->type() == ValuePtr::undefined ) {
+            PRINT("Usage pointset():");
+            PRINT("  pointset( points,neighbors,scale_num_points,sharpness_angle,edge_sensitivity,neighbor_radius,angle,radius,distance,convexity ) ");
+            PRINT("    where: ");
+            PRINT("        points : list_of_3D_points || [ list_of_3D_points, list_of_3D_normals ] ");
+            PRINT("        neighbors : jet_estimate_normals & mst_orient_normals 'neighbors' parameter ");
+            PRINT("        scale_num_points : >1 enables edge_aware_upsample_point_set() ");
+            PRINT("        sharpness_angle,edge_sensitivity,neighbor_radius : edge_aware_upsample_point_set() parameters ");
+            PRINT("        angle,radius,distance : Surface_mesh_default_criteria parameters ");
+            return p;
+        }
         size_t num_points=this->points->toVector().size();
         ValuePtr point_vec,norm_vec;
         if(num_points==2) {
@@ -840,7 +851,7 @@ Geometry *PrimitiveNode::createGeometry() const
         CGAL::output_surface_facets_to_polyhedron(c2t3, output_mesh);
         // createPolySetFromPolyhedron(const Polyhedron &p, PolySet &ps);
         bool err = CGALUtils::createPolySetFromPolyhedron(output_mesh, *p);
-        if( ! err ) {
+        if( err ) {
             PRINT("ERROR: createPolySetFromPolyhedron failure");
         }
 	}
