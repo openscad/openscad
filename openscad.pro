@@ -361,6 +361,7 @@ SOURCES += src/version_check.cc \
            src/transform.cc \
            src/color.cc \
            src/primitives.cc \
+           src/primitives-cgal.cc \
            src/projection.cc \
            src/cgaladv.cc \
            src/surface.cc \

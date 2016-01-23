@@ -40,6 +40,7 @@ extern void register_builtin_csgops();
 extern void register_builtin_transform();
 extern void register_builtin_color();
 extern void register_builtin_primitives();
+extern void register_builtin_cgal_primitives();
 extern void register_builtin_surface();
 extern void register_builtin_control();
 extern void register_builtin_render();
@@ -66,6 +67,7 @@ void Builtins::initialize()
 	register_builtin_transform();
 	register_builtin_color();
 	register_builtin_primitives();
+	register_builtin_cgal_primitives();
 	register_builtin_surface();
 	register_builtin_control();
 	register_builtin_render();
