@@ -297,7 +297,8 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
         } else {
             node->neighbors = 16;
         }
-        if (node->neighbors < 2) node->neighbors = 2;
+        if (node->neighbors < 0) node->neighbors = 0;
+        if (node->neighbors > 0 && node->neighbors < 4 ) node->neighbors = 4;
         PRINTB("POINTSET neighbors: %d",node->neighbors);
         // edge_aware_upsample_point_set parameters
         ValuePtr scale_num_points = c.lookup_variable("scale_num_points");
@@ -740,7 +741,7 @@ Geometry *PrimitiveNode::createGeometry() const
 
         int nb_neighbors = (int)this->neighbors;
         PRINTB("POINTSET nb_neighbors: %d",nb_neighbors);
-        if( num_points < 4 ) {
+        if( num_points < 4 && num_points > 0 ) {
             PRINTB("ERROR: Only %d points given", num_points);
             return p;
         }
@@ -757,27 +758,30 @@ Geometry *PrimitiveNode::createGeometry() const
                 return p;
             }
             PointK ptk(px,py,pz);
-            if ( norm_vec==ValuePtr::undefined || !norm_vec->toVector()[i]->getVec3(px,py,pz) ||
-                    isinf(px) || isinf(py) || isinf(pz)) {
+            double px2, py2, pz2;
+            if ( norm_vec==ValuePtr::undefined || !norm_vec->toVector()[i]->getVec3(px2,py2,pz2) ||
+                    isinf(px2) || isinf(py2) || isinf(pz2)) {
                 points.push_back(std::make_pair(ptk, VectorK()));
             } else {
-                VectorK veck(px,py,pz);
+                VectorK veck(px2,py2,pz2);
                 points.push_back(std::make_pair(ptk, veck));
             }
         }
-        PRINT("POINTSET: Running jet_estimate_normals...");
-        CGAL::jet_estimate_normals(points.begin(), points.end(),
-                CGAL::First_of_pair_property_map<PointVectorPairK>(),
-                CGAL::Second_of_pair_property_map<PointVectorPairK>(),
-                nb_neighbors);
-        PRINT("POINTSET: Running mst_orient_normals...");
-        std::list<PointVectorPairK>::iterator unoriented_points_begin =
-            CGAL::mst_orient_normals(points.begin(), points.end(),
-                CGAL::First_of_pair_property_map<PointVectorPairK>(),
-                CGAL::Second_of_pair_property_map<PointVectorPairK>(),
-                nb_neighbors);
-        PRINT("POINTSET: Running points.erase...");
-        points.erase(unoriented_points_begin, points.end());
+        if ( nb_neighbors > 3 ) {
+	        PRINT("POINTSET: Running jet_estimate_normals...");
+	        CGAL::jet_estimate_normals(points.begin(), points.end(),
+	                CGAL::First_of_pair_property_map<PointVectorPairK>(),
+	                CGAL::Second_of_pair_property_map<PointVectorPairK>(),
+	                nb_neighbors);
+	        PRINT("POINTSET: Running mst_orient_normals...");
+	        std::list<PointVectorPairK>::iterator unoriented_points_begin =
+	            CGAL::mst_orient_normals(points.begin(), points.end(),
+	                CGAL::First_of_pair_property_map<PointVectorPairK>(),
+	                CGAL::Second_of_pair_property_map<PointVectorPairK>(),
+	                nb_neighbors);
+	        PRINT("POINTSET: Running points.erase...");
+	        points.erase(unoriented_points_begin, points.end());
+        }
         PRINT("POINTSET: Running swap(points)...");
         std::list<PointVectorPairK>(points).swap(points);
         PRINT("POINTSET: Running edge_aware_upsample_point_set...");
