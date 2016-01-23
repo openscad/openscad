@@ -262,6 +262,7 @@ HEADERS += src/typedefs.h \
            src/expression.h \
            src/stackcheck.h \
            src/function.h \
+           src/function-read.h \
            src/exceptions.h \
            src/grid.h \
            src/highlighter.h \
@@ -340,6 +341,7 @@ SOURCES += src/version_check.cc \
            src/expr.cc \
            src/stackcheck.cc \
            src/func.cc \
+           src/func-read.cc \
            src/localscope.cc \
            src/module.cc \
            src/feature.cc \

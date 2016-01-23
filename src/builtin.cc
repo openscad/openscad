@@ -1,5 +1,6 @@
 #include "builtin.h"
 #include "function.h"
+#include "function-read.h"
 #include "module.h"
 #include "expression.h"
 #include <boost/foreach.hpp>
@@ -35,6 +36,7 @@ void Builtins::init(const char *name, class AbstractFunction *function)
 }
 
 extern void register_builtin_functions();
+extern void register_builtin_read_functions();
 extern void register_builtin_group();
 extern void register_builtin_csgops();
 extern void register_builtin_transform();
@@ -60,6 +62,7 @@ extern void initialize_builtin_dxf_dim();
 void Builtins::initialize()
 {
 	register_builtin_functions();
+	register_builtin_read_functions();
 	initialize_builtin_dxf_dim();
 
 	register_builtin_group();
