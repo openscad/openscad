@@ -149,7 +149,7 @@ void format_colors_for_light_background(QMap<QString,QTextCharFormat> &formats)
 	formats["keyword"].setForeground(QColor("Green"));
 	formats["keyword"].setToolTip("Keyword");
 	formats["transform"].setForeground(QColor("Indigo"));
-	formats["csgop"].setForeground(QColor("DarkGreen"));
+	formats["csgop"].setForeground(QColor("Red"/*"DarkGreen"*/));
 	formats["prim3d"].setForeground(QColor("DarkBlue"));
 	formats["prim2d"].setForeground(QColor("MidnightBlue"));
 	formats["import"].setForeground(Qt::darkYellow);
@@ -172,7 +172,7 @@ void format_colors_for_dark_background(QMap<QString,QTextCharFormat> &formats)
 	formats["keyword"].setForeground(QColor("LightGreen"));
 	formats["keyword"].setToolTip("Keyword");
 	formats["transform"].setForeground(QColor("Thistle"));
-	formats["csgop"].setForeground(QColor("LightGreen"));
+	formats["csgop"].setForeground(QColor("Red"/*"LightGreen"*/));
 	formats["prim3d"].setForeground(QColor("LightBlue"));
 	formats["prim2d"].setForeground(QColor("LightBlue"));
 	formats["import"].setForeground(QColor("LightYellow"));
@@ -221,7 +221,7 @@ Highlighter::Highlighter(QTextDocument *parent)
 	tokentypes["math"] << "abs" << "sign" << "acos" << "asin" << "atan" << "atan2" << "sin" << "cos" << "floor" << "round" << "ceil" << "ln" << "log" << "lookup" << "min" << "max" << "pow" << "sqrt" << "exp" << "rands";
 	tokentypes["keyword"] << "module" << "function" << "for" << "intersection_for" << "if" << "assign" << "echo"<< "search" << "str" << "let" << "each";
 	tokentypes["transform"] << "scale" << "translate" << "rotate" << "multmatrix" << "color" << "projection" << "hull" << "resize" << "mirror" << "minkowski";
-	tokentypes["csgop"]	<< "union" << "intersection" << "difference" << "render";
+	tokentypes["csgop"]	<< "union" << "intersection" << "difference" << "render" << "probe";
 	tokentypes["prim3d"] << "cube" << "cylinder" << "sphere" << "polyhedron";
 	tokentypes["prim2d"] << "square" << "polygon" << "circle";
 	tokentypes["import"] << "include" << "use" << "import_stl" << "import" << "import_dxf" << "dxf_dim" << "dxf_cross" << "surface";
