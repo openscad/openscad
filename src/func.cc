@@ -39,9 +39,6 @@
 #include "exceptions.h"
 #include <boost/foreach.hpp>
 
-#include <vector>
-#include <fstream>
-
 #include <boost/math/special_functions/fpclassify.hpp>
 using boost::math::isnan;
 using boost::math::isinf;
