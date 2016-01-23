@@ -252,19 +252,6 @@ AbstractNode *PrimitiveCGALModule::instantiate(const Context *ctx, const ModuleI
 	return node;
 }
 
-struct point2d {
-	double x, y;
-};
-
-static void generate_circle(point2d *circle, double r, int fragments)
-{
-	for (int i=0; i<fragments; i++) {
-		double phi = (M_PI*2*i) / fragments;
-		circle[i].x = r*cos(phi);
-		circle[i].y = r*sin(phi);
-	}
-}
-
 /*!
 	Creates geometry for this node.
 	May return an empty Geometry creation failed, but will not return NULL.

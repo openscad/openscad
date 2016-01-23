@@ -1,0 +1,917 @@
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++ -c -pipe -I/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/glib-2.0 -I/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/lib/glib-2.0/include -I/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include -I/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/harfbuzz -I/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/freetype2 -I/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/fontconfig -stdlib=libc++ -O2 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk -mmacosx-version-min=10.7 -Wall -W -Wno-overloaded-virtual -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -Wno-format-security -Wno-sign-compare -Wno-c++11-extensions -fPIC -DOPENSCAD_VERSION=2016.01.23 -DOPENSCAD_SHORTVERSION=2016.01.23 -DOPENSCAD_YEAR=2016.0 -DOPENSCAD_MONTH=01.0 -DOPENSCAD_DAY=23.0 -DDEBUG -DENABLE_EXPERIMENTAL -DENABLE_MDI -DENABLE_CGAL -DENABLE_OPENCSG -DUSE_QOPENGLWIDGET -D__ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES=0 -DUSE_SCINTILLA_EDITOR -DQT_NO_DEBUG -DQT_PRINTSUPPORT_LIB -DQT_WIDGETS_LIB -DQT_MACEXTRAS_LIB -DQT_GUI_LIB -DQT_CONCURRENT_LIB -DQT_CORE_LIB -I. -Isrc -I../libraries/install/include -Isrc/libtess2/Include -I../libraries/install/lib/QtPrintSupport.framework/Headers -I../libraries/install/lib/QtWidgets.framework/Headers -I../libraries/install/lib/QtMacExtras.framework/Headers -I../libraries/install/lib/QtGui.framework/Headers -I../libraries/install/lib/QtConcurrent.framework/Headers -I../libraries/install/lib/QtCore.framework/Headers -Iobjects -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/OpenGL.framework/Headers -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/AGL.framework/Headers -I../libraries/install/include/eigen3 -I../libraries/install/include -I../libraries/install/mkspecs/macx-clang -F/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/libraries/install/lib -o objects/builtin.o src/builtin.cc
+In file included from src/builtin.cc:1:
+In file included from src/builtin.h:4:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/unordered_map.hpp:17:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/unordered/unordered_map.hpp:18:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/unordered/detail/equivalent.hpp:15:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/unordered/detail/table.hpp:15:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/unordered/detail/buckets.hpp:16:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/unordered/detail/allocate.hpp:28:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/tuple/tuple.hpp:28:
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/tuple/detail/tuple_basic.hpp:329:5: warning: unused typedef 'boost_static_assert_typedef_329' [-Wunused-local-typedef]
+    BOOST_STATIC_ASSERT(length<cons>::value == 2); // check length = 2
+    ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:170:16: note: expanded from macro 'BOOST_STATIC_ASSERT'
+               BOOST_JOIN(boost_static_assert_typedef_, __LINE__) BOOST_STATIC_ASSERT_UNUSED_ATTRIBUTE
+               ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:544:28: note: expanded from macro 'BOOST_JOIN'
+#define BOOST_JOIN( X, Y ) BOOST_DO_JOIN( X, Y )
+                           ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:545:31: note: expanded from macro 'BOOST_DO_JOIN'
+#define BOOST_DO_JOIN( X, Y ) BOOST_DO_JOIN2(X,Y)
+                              ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:546:32: note: expanded from macro 'BOOST_DO_JOIN2'
+#define BOOST_DO_JOIN2( X, Y ) X##Y
+                               ^
+<scratch space>:109:1: note: expanded from here
+boost_static_assert_typedef_329
+^
+In file included from src/builtin.cc:1:
+In file included from src/builtin.h:4:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/unordered_map.hpp:17:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/unordered/unordered_map.hpp:18:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/unordered/detail/equivalent.hpp:15:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/unordered/detail/table.hpp:15:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/unordered/detail/buckets.hpp:16:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/unordered/detail/allocate.hpp:28:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/tuple/tuple.hpp:28:
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/tuple/detail/tuple_basic.hpp:586:5: warning: unused typedef 'boost_static_assert_typedef_586' [-Wunused-local-typedef]
+    BOOST_STATIC_ASSERT(length<tuple>::value == 2);// check_length = 2
+    ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:170:16: note: expanded from macro 'BOOST_STATIC_ASSERT'
+               BOOST_JOIN(boost_static_assert_typedef_, __LINE__) BOOST_STATIC_ASSERT_UNUSED_ATTRIBUTE
+               ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:544:28: note: expanded from macro 'BOOST_JOIN'
+#define BOOST_JOIN( X, Y ) BOOST_DO_JOIN( X, Y )
+                           ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:545:31: note: expanded from macro 'BOOST_DO_JOIN'
+#define BOOST_DO_JOIN( X, Y ) BOOST_DO_JOIN2(X,Y)
+                              ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:546:32: note: expanded from macro 'BOOST_DO_JOIN2'
+#define BOOST_DO_JOIN2( X, Y ) X##Y
+                               ^
+<scratch space>:111:1: note: expanded from here
+boost_static_assert_typedef_586
+^
+In file included from src/builtin.cc:1:
+In file included from src/builtin.h:5:
+In file included from src/module.h:12:
+In file included from src/value.h:10:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/variant.hpp:17:
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/variant/variant.hpp:2199:9: warning: unused typedef 'boost_static_assert_typedef_2199' [-Wunused-local-typedef]
+        BOOST_STATIC_ASSERT( false && sizeof(U) );
+        ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:170:16: note: expanded from macro 'BOOST_STATIC_ASSERT'
+               BOOST_JOIN(boost_static_assert_typedef_, __LINE__) BOOST_STATIC_ASSERT_UNUSED_ATTRIBUTE
+               ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:544:28: note: expanded from macro 'BOOST_JOIN'
+#define BOOST_JOIN( X, Y ) BOOST_DO_JOIN( X, Y )
+                           ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:545:31: note: expanded from macro 'BOOST_DO_JOIN'
+#define BOOST_DO_JOIN( X, Y ) BOOST_DO_JOIN2(X,Y)
+                              ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:546:32: note: expanded from macro 'BOOST_DO_JOIN2'
+#define BOOST_DO_JOIN2( X, Y ) X##Y
+                               ^
+<scratch space>:184:1: note: expanded from here
+boost_static_assert_typedef_2199
+^
+In file included from src/builtin.cc:1:
+In file included from src/builtin.h:5:
+In file included from src/module.h:12:
+In file included from src/value.h:10:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/variant.hpp:17:
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/variant/variant.hpp:2205:9: warning: unused typedef 'boost_static_assert_typedef_2205' [-Wunused-local-typedef]
+        BOOST_STATIC_ASSERT( false && sizeof(U) );
+        ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:170:16: note: expanded from macro 'BOOST_STATIC_ASSERT'
+               BOOST_JOIN(boost_static_assert_typedef_, __LINE__) BOOST_STATIC_ASSERT_UNUSED_ATTRIBUTE
+               ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:544:28: note: expanded from macro 'BOOST_JOIN'
+#define BOOST_JOIN( X, Y ) BOOST_DO_JOIN( X, Y )
+                           ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:545:31: note: expanded from macro 'BOOST_DO_JOIN'
+#define BOOST_DO_JOIN( X, Y ) BOOST_DO_JOIN2(X,Y)
+                              ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:546:32: note: expanded from macro 'BOOST_DO_JOIN2'
+#define BOOST_DO_JOIN2( X, Y ) X##Y
+                               ^
+<scratch space>:186:1: note: expanded from here
+boost_static_assert_typedef_2205
+^
+In file included from src/builtin.cc:1:
+In file included from src/builtin.h:5:
+In file included from src/module.h:12:
+In file included from src/value.h:10:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/variant.hpp:17:
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/variant/variant.hpp:2211:9: warning: unused typedef 'boost_static_assert_typedef_2211' [-Wunused-local-typedef]
+        BOOST_STATIC_ASSERT( false && sizeof(U) );
+        ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:170:16: note: expanded from macro 'BOOST_STATIC_ASSERT'
+               BOOST_JOIN(boost_static_assert_typedef_, __LINE__) BOOST_STATIC_ASSERT_UNUSED_ATTRIBUTE
+               ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:544:28: note: expanded from macro 'BOOST_JOIN'
+#define BOOST_JOIN( X, Y ) BOOST_DO_JOIN( X, Y )
+                           ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:545:31: note: expanded from macro 'BOOST_DO_JOIN'
+#define BOOST_DO_JOIN( X, Y ) BOOST_DO_JOIN2(X,Y)
+                              ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:546:32: note: expanded from macro 'BOOST_DO_JOIN2'
+#define BOOST_DO_JOIN2( X, Y ) X##Y
+                               ^
+<scratch space>:188:1: note: expanded from here
+boost_static_assert_typedef_2211
+^
+In file included from src/builtin.cc:1:
+In file included from src/builtin.h:5:
+In file included from src/module.h:12:
+In file included from src/value.h:10:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/variant.hpp:17:
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/variant/variant.hpp:2217:9: warning: unused typedef 'boost_static_assert_typedef_2217' [-Wunused-local-typedef]
+        BOOST_STATIC_ASSERT( false && sizeof(U) );
+        ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:170:16: note: expanded from macro 'BOOST_STATIC_ASSERT'
+               BOOST_JOIN(boost_static_assert_typedef_, __LINE__) BOOST_STATIC_ASSERT_UNUSED_ATTRIBUTE
+               ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:544:28: note: expanded from macro 'BOOST_JOIN'
+#define BOOST_JOIN( X, Y ) BOOST_DO_JOIN( X, Y )
+                           ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:545:31: note: expanded from macro 'BOOST_DO_JOIN'
+#define BOOST_DO_JOIN( X, Y ) BOOST_DO_JOIN2(X,Y)
+                              ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:546:32: note: expanded from macro 'BOOST_DO_JOIN2'
+#define BOOST_DO_JOIN2( X, Y ) X##Y
+                               ^
+<scratch space>:190:1: note: expanded from here
+boost_static_assert_typedef_2217
+^
+In file included from src/builtin.cc:1:
+In file included from src/builtin.h:5:
+In file included from src/module.h:12:
+In file included from src/value.h:10:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/variant.hpp:17:
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/variant/variant.hpp:2223:9: warning: unused typedef 'boost_static_assert_typedef_2223' [-Wunused-local-typedef]
+        BOOST_STATIC_ASSERT( false && sizeof(U) );
+        ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:170:16: note: expanded from macro 'BOOST_STATIC_ASSERT'
+               BOOST_JOIN(boost_static_assert_typedef_, __LINE__) BOOST_STATIC_ASSERT_UNUSED_ATTRIBUTE
+               ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:544:28: note: expanded from macro 'BOOST_JOIN'
+#define BOOST_JOIN( X, Y ) BOOST_DO_JOIN( X, Y )
+                           ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:545:31: note: expanded from macro 'BOOST_DO_JOIN'
+#define BOOST_DO_JOIN( X, Y ) BOOST_DO_JOIN2(X,Y)
+                              ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:546:32: note: expanded from macro 'BOOST_DO_JOIN2'
+#define BOOST_DO_JOIN2( X, Y ) X##Y
+                               ^
+<scratch space>:192:1: note: expanded from here
+boost_static_assert_typedef_2223
+^
+In file included from src/builtin.cc:1:
+In file included from src/builtin.h:5:
+In file included from src/module.h:12:
+In file included from src/value.h:10:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/variant.hpp:17:
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/variant/variant.hpp:2229:9: warning: unused typedef 'boost_static_assert_typedef_2229' [-Wunused-local-typedef]
+        BOOST_STATIC_ASSERT( false && sizeof(U) );
+        ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:170:16: note: expanded from macro 'BOOST_STATIC_ASSERT'
+               BOOST_JOIN(boost_static_assert_typedef_, __LINE__) BOOST_STATIC_ASSERT_UNUSED_ATTRIBUTE
+               ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:544:28: note: expanded from macro 'BOOST_JOIN'
+#define BOOST_JOIN( X, Y ) BOOST_DO_JOIN( X, Y )
+                           ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:545:31: note: expanded from macro 'BOOST_DO_JOIN'
+#define BOOST_DO_JOIN( X, Y ) BOOST_DO_JOIN2(X,Y)
+                              ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:546:32: note: expanded from macro 'BOOST_DO_JOIN2'
+#define BOOST_DO_JOIN2( X, Y ) X##Y
+                               ^
+<scratch space>:194:1: note: expanded from here
+boost_static_assert_typedef_2229
+^
+In file included from src/builtin.cc:1:
+In file included from src/builtin.h:5:
+In file included from src/module.h:12:
+In file included from src/value.h:10:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/variant.hpp:22:
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/variant/get.hpp:178:5: warning: unused typedef 'boost_static_assert_typedef_182' [-Wunused-local-typedef]
+    BOOST_STATIC_ASSERT_MSG(
+    ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:36:48: note: expanded from macro 'BOOST_STATIC_ASSERT_MSG'
+#     define BOOST_STATIC_ASSERT_MSG( B, Msg ) BOOST_STATIC_ASSERT( B )
+                                               ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:170:16: note: expanded from macro 'BOOST_STATIC_ASSERT'
+               BOOST_JOIN(boost_static_assert_typedef_, __LINE__) BOOST_STATIC_ASSERT_UNUSED_ATTRIBUTE
+               ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:544:28: note: expanded from macro 'BOOST_JOIN'
+#define BOOST_JOIN( X, Y ) BOOST_DO_JOIN( X, Y )
+                           ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:545:31: note: expanded from macro 'BOOST_DO_JOIN'
+#define BOOST_DO_JOIN( X, Y ) BOOST_DO_JOIN2(X,Y)
+                              ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:546:32: note: expanded from macro 'BOOST_DO_JOIN2'
+#define BOOST_DO_JOIN2( X, Y ) X##Y
+                               ^
+<scratch space>:15:1: note: expanded from here
+boost_static_assert_typedef_182
+^
+In file included from src/builtin.cc:1:
+In file included from src/builtin.h:5:
+In file included from src/module.h:12:
+In file included from src/value.h:10:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/variant.hpp:22:
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/variant/get.hpp:195:5: warning: unused typedef 'boost_static_assert_typedef_199' [-Wunused-local-typedef]
+    BOOST_STATIC_ASSERT_MSG(
+    ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:36:48: note: expanded from macro 'BOOST_STATIC_ASSERT_MSG'
+#     define BOOST_STATIC_ASSERT_MSG( B, Msg ) BOOST_STATIC_ASSERT( B )
+                                               ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:170:16: note: expanded from macro 'BOOST_STATIC_ASSERT'
+               BOOST_JOIN(boost_static_assert_typedef_, __LINE__) BOOST_STATIC_ASSERT_UNUSED_ATTRIBUTE
+               ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:544:28: note: expanded from macro 'BOOST_JOIN'
+#define BOOST_JOIN( X, Y ) BOOST_DO_JOIN( X, Y )
+                           ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:545:31: note: expanded from macro 'BOOST_DO_JOIN'
+#define BOOST_DO_JOIN( X, Y ) BOOST_DO_JOIN2(X,Y)
+                              ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:546:32: note: expanded from macro 'BOOST_DO_JOIN2'
+#define BOOST_DO_JOIN2( X, Y ) X##Y
+                               ^
+<scratch space>:230:1: note: expanded from here
+boost_static_assert_typedef_199
+^
+In file included from src/builtin.cc:1:
+In file included from src/builtin.h:5:
+In file included from src/module.h:12:
+In file included from src/value.h:10:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/variant.hpp:22:
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/variant/get.hpp:212:5: warning: unused typedef 'boost_static_assert_typedef_216' [-Wunused-local-typedef]
+    BOOST_STATIC_ASSERT_MSG(
+    ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:36:48: note: expanded from macro 'BOOST_STATIC_ASSERT_MSG'
+#     define BOOST_STATIC_ASSERT_MSG( B, Msg ) BOOST_STATIC_ASSERT( B )
+                                               ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:170:16: note: expanded from macro 'BOOST_STATIC_ASSERT'
+               BOOST_JOIN(boost_static_assert_typedef_, __LINE__) BOOST_STATIC_ASSERT_UNUSED_ATTRIBUTE
+               ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:544:28: note: expanded from macro 'BOOST_JOIN'
+#define BOOST_JOIN( X, Y ) BOOST_DO_JOIN( X, Y )
+                           ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:545:31: note: expanded from macro 'BOOST_DO_JOIN'
+#define BOOST_DO_JOIN( X, Y ) BOOST_DO_JOIN2(X,Y)
+                              ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:546:32: note: expanded from macro 'BOOST_DO_JOIN2'
+#define BOOST_DO_JOIN2( X, Y ) X##Y
+                               ^
+<scratch space>:162:1: note: expanded from here
+boost_static_assert_typedef_216
+^
+In file included from src/builtin.cc:1:
+In file included from src/builtin.h:5:
+In file included from src/module.h:12:
+In file included from src/value.h:10:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/variant.hpp:22:
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/variant/get.hpp:229:5: warning: unused typedef 'boost_static_assert_typedef_233' [-Wunused-local-typedef]
+    BOOST_STATIC_ASSERT_MSG(
+    ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:36:48: note: expanded from macro 'BOOST_STATIC_ASSERT_MSG'
+#     define BOOST_STATIC_ASSERT_MSG( B, Msg ) BOOST_STATIC_ASSERT( B )
+                                               ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:170:16: note: expanded from macro 'BOOST_STATIC_ASSERT'
+               BOOST_JOIN(boost_static_assert_typedef_, __LINE__) BOOST_STATIC_ASSERT_UNUSED_ATTRIBUTE
+               ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:544:28: note: expanded from macro 'BOOST_JOIN'
+#define BOOST_JOIN( X, Y ) BOOST_DO_JOIN( X, Y )
+                           ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:545:31: note: expanded from macro 'BOOST_DO_JOIN'
+#define BOOST_DO_JOIN( X, Y ) BOOST_DO_JOIN2(X,Y)
+                              ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:546:32: note: expanded from macro 'BOOST_DO_JOIN2'
+#define BOOST_DO_JOIN2( X, Y ) X##Y
+                               ^
+<scratch space>:92:1: note: expanded from here
+boost_static_assert_typedef_233
+^
+In file included from src/builtin.cc:1:
+In file included from src/builtin.h:5:
+In file included from src/module.h:12:
+In file included from src/value.h:11:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast.hpp:30:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/range/iterator_range_core.hpp:27:
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/iterator/iterator_facade.hpp:899:3: warning: unused typedef 'boost_static_assert_typedef_899' [-Wunused-local-typedef]
+  BOOST_ITERATOR_FACADE_RELATION(==, return, equal)
+  ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/iterator/iterator_facade.hpp:892:3: note: expanded from macro 'BOOST_ITERATOR_FACADE_RELATION'
+  BOOST_ITERATOR_FACADE_INTEROP(                                    \
+  ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/iterator/iterator_facade.hpp:881:7: note: expanded from macro 'BOOST_ITERATOR_FACADE_INTEROP'
+      BOOST_STATIC_ASSERT((                                                     \
+      ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:170:16: note: expanded from macro 'BOOST_STATIC_ASSERT'
+               BOOST_JOIN(boost_static_assert_typedef_, __LINE__) BOOST_STATIC_ASSERT_UNUSED_ATTRIBUTE
+               ^
+note: (skipping 1 expansions in backtrace; use -fmacro-backtrace-limit=0 to see all)
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:545:31: note: expanded from macro 'BOOST_DO_JOIN'
+#define BOOST_DO_JOIN( X, Y ) BOOST_DO_JOIN2(X,Y)
+                              ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:546:32: note: expanded from macro 'BOOST_DO_JOIN2'
+#define BOOST_DO_JOIN2( X, Y ) X##Y
+                               ^
+<scratch space>:150:1: note: expanded from here
+boost_static_assert_typedef_899
+^
+In file included from src/builtin.cc:1:
+In file included from src/builtin.h:5:
+In file included from src/module.h:12:
+In file included from src/value.h:11:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast.hpp:30:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/range/iterator_range_core.hpp:27:
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/iterator/iterator_facade.hpp:900:3: warning: unused typedef 'boost_static_assert_typedef_900' [-Wunused-local-typedef]
+  BOOST_ITERATOR_FACADE_RELATION(!=, return !, equal)
+  ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/iterator/iterator_facade.hpp:892:3: note: expanded from macro 'BOOST_ITERATOR_FACADE_RELATION'
+  BOOST_ITERATOR_FACADE_INTEROP(                                    \
+  ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/iterator/iterator_facade.hpp:881:7: note: expanded from macro 'BOOST_ITERATOR_FACADE_INTEROP'
+      BOOST_STATIC_ASSERT((                                                     \
+      ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:170:16: note: expanded from macro 'BOOST_STATIC_ASSERT'
+               BOOST_JOIN(boost_static_assert_typedef_, __LINE__) BOOST_STATIC_ASSERT_UNUSED_ATTRIBUTE
+               ^
+note: (skipping 1 expansions in backtrace; use -fmacro-backtrace-limit=0 to see all)
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:545:31: note: expanded from macro 'BOOST_DO_JOIN'
+#define BOOST_DO_JOIN( X, Y ) BOOST_DO_JOIN2(X,Y)
+                              ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:546:32: note: expanded from macro 'BOOST_DO_JOIN2'
+#define BOOST_DO_JOIN2( X, Y ) X##Y
+                               ^
+<scratch space>:152:1: note: expanded from here
+boost_static_assert_typedef_900
+^
+In file included from src/builtin.cc:1:
+In file included from src/builtin.h:5:
+In file included from src/module.h:12:
+In file included from src/value.h:11:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast.hpp:30:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/range/iterator_range_core.hpp:27:
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/iterator/iterator_facade.hpp:929:3: warning: unused typedef 'boost_static_assert_typedef_929' [-Wunused-local-typedef]
+  BOOST_ITERATOR_FACADE_RANDOM_ACCESS_RELATION(<, return 0 >, distance_from)
+  ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/iterator/iterator_facade.hpp:922:3: note: expanded from macro 'BOOST_ITERATOR_FACADE_RANDOM_ACCESS_RELATION'
+  BOOST_ITERATOR_FACADE_INTEROP_RANDOM_ACCESS(                                    \
+  ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/iterator/iterator_facade.hpp:909:7: note: expanded from macro 'BOOST_ITERATOR_FACADE_INTEROP_RANDOM_ACCESS'
+      BOOST_STATIC_ASSERT((                                                     \
+      ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:170:16: note: expanded from macro 'BOOST_STATIC_ASSERT'
+               BOOST_JOIN(boost_static_assert_typedef_, __LINE__) BOOST_STATIC_ASSERT_UNUSED_ATTRIBUTE
+               ^
+note: (skipping 1 expansions in backtrace; use -fmacro-backtrace-limit=0 to see all)
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:545:31: note: expanded from macro 'BOOST_DO_JOIN'
+#define BOOST_DO_JOIN( X, Y ) BOOST_DO_JOIN2(X,Y)
+                              ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:546:32: note: expanded from macro 'BOOST_DO_JOIN2'
+#define BOOST_DO_JOIN2( X, Y ) X##Y
+                               ^
+<scratch space>:154:1: note: expanded from here
+boost_static_assert_typedef_929
+^
+In file included from src/builtin.cc:1:
+In file included from src/builtin.h:5:
+In file included from src/module.h:12:
+In file included from src/value.h:11:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast.hpp:30:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/range/iterator_range_core.hpp:27:
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/iterator/iterator_facade.hpp:930:3: warning: unused typedef 'boost_static_assert_typedef_930' [-Wunused-local-typedef]
+  BOOST_ITERATOR_FACADE_RANDOM_ACCESS_RELATION(>, return 0 <, distance_from)
+  ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/iterator/iterator_facade.hpp:922:3: note: expanded from macro 'BOOST_ITERATOR_FACADE_RANDOM_ACCESS_RELATION'
+  BOOST_ITERATOR_FACADE_INTEROP_RANDOM_ACCESS(                                    \
+  ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/iterator/iterator_facade.hpp:909:7: note: expanded from macro 'BOOST_ITERATOR_FACADE_INTEROP_RANDOM_ACCESS'
+      BOOST_STATIC_ASSERT((                                                     \
+      ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:170:16: note: expanded from macro 'BOOST_STATIC_ASSERT'
+               BOOST_JOIN(boost_static_assert_typedef_, __LINE__) BOOST_STATIC_ASSERT_UNUSED_ATTRIBUTE
+               ^
+note: (skipping 1 expansions in backtrace; use -fmacro-backtrace-limit=0 to see all)
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:545:31: note: expanded from macro 'BOOST_DO_JOIN'
+#define BOOST_DO_JOIN( X, Y ) BOOST_DO_JOIN2(X,Y)
+                              ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:546:32: note: expanded from macro 'BOOST_DO_JOIN2'
+#define BOOST_DO_JOIN2( X, Y ) X##Y
+                               ^
+<scratch space>:156:1: note: expanded from here
+boost_static_assert_typedef_930
+^
+In file included from src/builtin.cc:1:
+In file included from src/builtin.h:5:
+In file included from src/module.h:12:
+In file included from src/value.h:11:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast.hpp:30:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/range/iterator_range_core.hpp:27:
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/iterator/iterator_facade.hpp:931:3: warning: unused typedef 'boost_static_assert_typedef_931' [-Wunused-local-typedef]
+  BOOST_ITERATOR_FACADE_RANDOM_ACCESS_RELATION(<=, return 0 >=, distance_from)
+  ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/iterator/iterator_facade.hpp:922:3: note: expanded from macro 'BOOST_ITERATOR_FACADE_RANDOM_ACCESS_RELATION'
+  BOOST_ITERATOR_FACADE_INTEROP_RANDOM_ACCESS(                                    \
+  ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/iterator/iterator_facade.hpp:909:7: note: expanded from macro 'BOOST_ITERATOR_FACADE_INTEROP_RANDOM_ACCESS'
+      BOOST_STATIC_ASSERT((                                                     \
+      ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:170:16: note: expanded from macro 'BOOST_STATIC_ASSERT'
+               BOOST_JOIN(boost_static_assert_typedef_, __LINE__) BOOST_STATIC_ASSERT_UNUSED_ATTRIBUTE
+               ^
+note: (skipping 1 expansions in backtrace; use -fmacro-backtrace-limit=0 to see all)
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:545:31: note: expanded from macro 'BOOST_DO_JOIN'
+#define BOOST_DO_JOIN( X, Y ) BOOST_DO_JOIN2(X,Y)
+                              ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:546:32: note: expanded from macro 'BOOST_DO_JOIN2'
+#define BOOST_DO_JOIN2( X, Y ) X##Y
+                               ^
+<scratch space>:158:1: note: expanded from here
+boost_static_assert_typedef_931
+^
+In file included from src/builtin.cc:1:
+In file included from src/builtin.h:5:
+In file included from src/module.h:12:
+In file included from src/value.h:11:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast.hpp:30:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/range/iterator_range_core.hpp:27:
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/iterator/iterator_facade.hpp:932:3: warning: unused typedef 'boost_static_assert_typedef_932' [-Wunused-local-typedef]
+  BOOST_ITERATOR_FACADE_RANDOM_ACCESS_RELATION(>=, return 0 <=, distance_from)
+  ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/iterator/iterator_facade.hpp:922:3: note: expanded from macro 'BOOST_ITERATOR_FACADE_RANDOM_ACCESS_RELATION'
+  BOOST_ITERATOR_FACADE_INTEROP_RANDOM_ACCESS(                                    \
+  ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/iterator/iterator_facade.hpp:909:7: note: expanded from macro 'BOOST_ITERATOR_FACADE_INTEROP_RANDOM_ACCESS'
+      BOOST_STATIC_ASSERT((                                                     \
+      ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:170:16: note: expanded from macro 'BOOST_STATIC_ASSERT'
+               BOOST_JOIN(boost_static_assert_typedef_, __LINE__) BOOST_STATIC_ASSERT_UNUSED_ATTRIBUTE
+               ^
+note: (skipping 1 expansions in backtrace; use -fmacro-backtrace-limit=0 to see all)
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:545:31: note: expanded from macro 'BOOST_DO_JOIN'
+#define BOOST_DO_JOIN( X, Y ) BOOST_DO_JOIN2(X,Y)
+                              ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:546:32: note: expanded from macro 'BOOST_DO_JOIN2'
+#define BOOST_DO_JOIN2( X, Y ) X##Y
+                               ^
+<scratch space>:160:1: note: expanded from here
+boost_static_assert_typedef_932
+^
+In file included from src/builtin.cc:1:
+In file included from src/builtin.h:5:
+In file included from src/module.h:12:
+In file included from src/value.h:11:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast.hpp:30:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/range/iterator_range_core.hpp:27:
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/iterator/iterator_facade.hpp:937:3: warning: unused typedef 'boost_static_assert_typedef_942' [-Wunused-local-typedef]
+  BOOST_ITERATOR_FACADE_INTEROP_RANDOM_ACCESS(
+  ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/iterator/iterator_facade.hpp:909:7: note: expanded from macro 'BOOST_ITERATOR_FACADE_INTEROP_RANDOM_ACCESS'
+      BOOST_STATIC_ASSERT((                                                     \
+      ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:170:16: note: expanded from macro 'BOOST_STATIC_ASSERT'
+               BOOST_JOIN(boost_static_assert_typedef_, __LINE__) BOOST_STATIC_ASSERT_UNUSED_ATTRIBUTE
+               ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:544:28: note: expanded from macro 'BOOST_JOIN'
+#define BOOST_JOIN( X, Y ) BOOST_DO_JOIN( X, Y )
+                           ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:545:31: note: expanded from macro 'BOOST_DO_JOIN'
+#define BOOST_DO_JOIN( X, Y ) BOOST_DO_JOIN2(X,Y)
+                              ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:546:32: note: expanded from macro 'BOOST_DO_JOIN2'
+#define BOOST_DO_JOIN2( X, Y ) X##Y
+                               ^
+<scratch space>:162:1: note: expanded from here
+boost_static_assert_typedef_942
+^
+In file included from src/builtin.cc:1:
+In file included from src/builtin.h:5:
+In file included from src/module.h:12:
+In file included from src/value.h:11:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast.hpp:30:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/range/iterator_range_core.hpp:38:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/range/functions.hpp:23:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/range/rbegin.hpp:19:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/range/reverse_iterator.hpp:21:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/iterator/reverse_iterator.hpp:12:
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/iterator/iterator_adaptor.hpp:214:7: warning: unused typedef 'boost_static_assert_typedef_214' [-Wunused-local-typedef]
+      BOOST_STATIC_ASSERT((is_convertible<Tr1, Tr2>::value));
+      ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:170:16: note: expanded from macro 'BOOST_STATIC_ASSERT'
+               BOOST_JOIN(boost_static_assert_typedef_, __LINE__) BOOST_STATIC_ASSERT_UNUSED_ATTRIBUTE
+               ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:544:28: note: expanded from macro 'BOOST_JOIN'
+#define BOOST_JOIN( X, Y ) BOOST_DO_JOIN( X, Y )
+                           ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:545:31: note: expanded from macro 'BOOST_DO_JOIN'
+#define BOOST_DO_JOIN( X, Y ) BOOST_DO_JOIN2(X,Y)
+                              ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:546:32: note: expanded from macro 'BOOST_DO_JOIN2'
+#define BOOST_DO_JOIN2( X, Y ) X##Y
+                               ^
+<scratch space>:191:1: note: expanded from here
+boost_static_assert_typedef_214
+^
+In file included from src/builtin.cc:1:
+In file included from src/builtin.h:5:
+In file included from src/module.h:12:
+In file included from src/value.h:11:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast.hpp:32:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/try_lexical_convert.hpp:35:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/detail/converter_lexical.hpp:54:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/detail/converter_lexical_streams.hpp:62:
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/detail/lcast_unsigned_converters.hpp:89:17: warning: unused typedef 'boost_static_assert_typedef_89' [-Wunused-local-typedef]
+                BOOST_STATIC_ASSERT(!std::numeric_limits<T>::is_signed);
+                ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:170:16: note: expanded from macro 'BOOST_STATIC_ASSERT'
+               BOOST_JOIN(boost_static_assert_typedef_, __LINE__) BOOST_STATIC_ASSERT_UNUSED_ATTRIBUTE
+               ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:544:28: note: expanded from macro 'BOOST_JOIN'
+#define BOOST_JOIN( X, Y ) BOOST_DO_JOIN( X, Y )
+                           ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:545:31: note: expanded from macro 'BOOST_DO_JOIN'
+#define BOOST_DO_JOIN( X, Y ) BOOST_DO_JOIN2(X,Y)
+                              ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:546:32: note: expanded from macro 'BOOST_DO_JOIN2'
+#define BOOST_DO_JOIN2( X, Y ) X##Y
+                               ^
+<scratch space>:10:1: note: expanded from here
+boost_static_assert_typedef_89
+^
+In file included from src/builtin.cc:1:
+In file included from src/builtin.h:5:
+In file included from src/module.h:12:
+In file included from src/value.h:11:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast.hpp:32:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/try_lexical_convert.hpp:35:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/detail/converter_lexical.hpp:54:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/detail/converter_lexical_streams.hpp:62:
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/detail/lcast_unsigned_converters.hpp:111:17: warning: unused typedef 'boost_static_assert_typedef_111' [-Wunused-local-typedef]
+                BOOST_STATIC_ASSERT(std::numeric_limits<T>::digits10 < CHAR_MAX);
+                ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:170:16: note: expanded from macro 'BOOST_STATIC_ASSERT'
+               BOOST_JOIN(boost_static_assert_typedef_, __LINE__) BOOST_STATIC_ASSERT_UNUSED_ATTRIBUTE
+               ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:544:28: note: expanded from macro 'BOOST_JOIN'
+#define BOOST_JOIN( X, Y ) BOOST_DO_JOIN( X, Y )
+                           ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:545:31: note: expanded from macro 'BOOST_DO_JOIN'
+#define BOOST_DO_JOIN( X, Y ) BOOST_DO_JOIN2(X,Y)
+                              ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:546:32: note: expanded from macro 'BOOST_DO_JOIN2'
+#define BOOST_DO_JOIN2( X, Y ) X##Y
+                               ^
+<scratch space>:12:1: note: expanded from here
+boost_static_assert_typedef_111
+^
+In file included from src/builtin.cc:1:
+In file included from src/builtin.h:5:
+In file included from src/module.h:12:
+In file included from src/value.h:11:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast.hpp:32:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/try_lexical_convert.hpp:35:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/detail/converter_lexical.hpp:54:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/detail/converter_lexical_streams.hpp:62:
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/detail/lcast_unsigned_converters.hpp:171:17: warning: unused typedef 'boost_static_assert_typedef_171' [-Wunused-local-typedef]
+                BOOST_STATIC_ASSERT(!std::numeric_limits<T>::is_signed);
+                ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:170:16: note: expanded from macro 'BOOST_STATIC_ASSERT'
+               BOOST_JOIN(boost_static_assert_typedef_, __LINE__) BOOST_STATIC_ASSERT_UNUSED_ATTRIBUTE
+               ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:544:28: note: expanded from macro 'BOOST_JOIN'
+#define BOOST_JOIN( X, Y ) BOOST_DO_JOIN( X, Y )
+                           ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:545:31: note: expanded from macro 'BOOST_DO_JOIN'
+#define BOOST_DO_JOIN( X, Y ) BOOST_DO_JOIN2(X,Y)
+                              ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:546:32: note: expanded from macro 'BOOST_DO_JOIN2'
+#define BOOST_DO_JOIN2( X, Y ) X##Y
+                               ^
+<scratch space>:14:1: note: expanded from here
+boost_static_assert_typedef_171
+^
+In file included from src/builtin.cc:1:
+In file included from src/builtin.h:5:
+In file included from src/module.h:12:
+In file included from src/value.h:11:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast.hpp:32:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/try_lexical_convert.hpp:35:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/detail/converter_lexical.hpp:54:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/detail/converter_lexical_streams.hpp:62:
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/detail/lcast_unsigned_converters.hpp:178:17: warning: unused typedef 'boost_static_assert_typedef_180' [-Wunused-local-typedef]
+                BOOST_STATIC_ASSERT_MSG(std::numeric_limits<T>::is_specialized,
+                ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:36:48: note: expanded from macro 'BOOST_STATIC_ASSERT_MSG'
+#     define BOOST_STATIC_ASSERT_MSG( B, Msg ) BOOST_STATIC_ASSERT( B )
+                                               ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:170:16: note: expanded from macro 'BOOST_STATIC_ASSERT'
+               BOOST_JOIN(boost_static_assert_typedef_, __LINE__) BOOST_STATIC_ASSERT_UNUSED_ATTRIBUTE
+               ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:544:28: note: expanded from macro 'BOOST_JOIN'
+#define BOOST_JOIN( X, Y ) BOOST_DO_JOIN( X, Y )
+                           ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:545:31: note: expanded from macro 'BOOST_DO_JOIN'
+#define BOOST_DO_JOIN( X, Y ) BOOST_DO_JOIN2(X,Y)
+                              ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:546:32: note: expanded from macro 'BOOST_DO_JOIN2'
+#define BOOST_DO_JOIN2( X, Y ) X##Y
+                               ^
+<scratch space>:16:1: note: expanded from here
+boost_static_assert_typedef_180
+^
+In file included from src/builtin.cc:1:
+In file included from src/builtin.h:5:
+In file included from src/module.h:12:
+In file included from src/value.h:11:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast.hpp:32:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/try_lexical_convert.hpp:35:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/detail/converter_lexical.hpp:54:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/detail/converter_lexical_streams.hpp:63:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/detail/inf_nan.hpp:34:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/math/special_functions/sign.hpp:17:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/math/special_functions/math_fwd.hpp:28:
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/math/policies/policy.hpp:831:4: warning: unused typedef 'boost_static_assert_typedef_831' [-Wunused-local-typedef]
+   BOOST_STATIC_ASSERT( ::std::numeric_limits<T>::is_specialized);
+   ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:170:16: note: expanded from macro 'BOOST_STATIC_ASSERT'
+               BOOST_JOIN(boost_static_assert_typedef_, __LINE__) BOOST_STATIC_ASSERT_UNUSED_ATTRIBUTE
+               ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:544:28: note: expanded from macro 'BOOST_JOIN'
+#define BOOST_JOIN( X, Y ) BOOST_DO_JOIN( X, Y )
+                           ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:545:31: note: expanded from macro 'BOOST_DO_JOIN'
+#define BOOST_DO_JOIN( X, Y ) BOOST_DO_JOIN2(X,Y)
+                              ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:546:32: note: expanded from macro 'BOOST_DO_JOIN2'
+#define BOOST_DO_JOIN2( X, Y ) X##Y
+                               ^
+<scratch space>:63:1: note: expanded from here
+boost_static_assert_typedef_831
+^
+In file included from src/builtin.cc:1:
+In file included from src/builtin.h:5:
+In file included from src/module.h:12:
+In file included from src/value.h:11:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast.hpp:32:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/try_lexical_convert.hpp:35:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/detail/converter_lexical.hpp:54:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/detail/converter_lexical_streams.hpp:63:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/detail/inf_nan.hpp:34:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/math/special_functions/sign.hpp:17:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/math/special_functions/math_fwd.hpp:28:
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/math/policies/policy.hpp:914:4: warning: unused typedef 'boost_static_assert_typedef_914' [-Wunused-local-typedef]
+   BOOST_STATIC_ASSERT( ::std::numeric_limits<T>::is_specialized);
+   ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:170:16: note: expanded from macro 'BOOST_STATIC_ASSERT'
+               BOOST_JOIN(boost_static_assert_typedef_, __LINE__) BOOST_STATIC_ASSERT_UNUSED_ATTRIBUTE
+               ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:544:28: note: expanded from macro 'BOOST_JOIN'
+#define BOOST_JOIN( X, Y ) BOOST_DO_JOIN( X, Y )
+                           ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:545:31: note: expanded from macro 'BOOST_DO_JOIN'
+#define BOOST_DO_JOIN( X, Y ) BOOST_DO_JOIN2(X,Y)
+                              ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:546:32: note: expanded from macro 'BOOST_DO_JOIN2'
+#define BOOST_DO_JOIN2( X, Y ) X##Y
+                               ^
+<scratch space>:65:1: note: expanded from here
+boost_static_assert_typedef_914
+^
+In file included from src/builtin.cc:1:
+In file included from src/builtin.h:5:
+In file included from src/module.h:12:
+In file included from src/value.h:11:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast.hpp:32:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/try_lexical_convert.hpp:35:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/detail/converter_lexical.hpp:54:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/detail/converter_lexical_streams.hpp:63:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/detail/inf_nan.hpp:34:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/math/special_functions/sign.hpp:17:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/math/special_functions/math_fwd.hpp:28:
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/math/policies/policy.hpp:915:4: warning: unused typedef 'boost_static_assert_typedef_915' [-Wunused-local-typedef]
+   BOOST_STATIC_ASSERT( ::std::numeric_limits<T>::radix == 2);
+   ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:170:16: note: expanded from macro 'BOOST_STATIC_ASSERT'
+               BOOST_JOIN(boost_static_assert_typedef_, __LINE__) BOOST_STATIC_ASSERT_UNUSED_ATTRIBUTE
+               ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:544:28: note: expanded from macro 'BOOST_JOIN'
+#define BOOST_JOIN( X, Y ) BOOST_DO_JOIN( X, Y )
+                           ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:545:31: note: expanded from macro 'BOOST_DO_JOIN'
+#define BOOST_DO_JOIN( X, Y ) BOOST_DO_JOIN2(X,Y)
+                              ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:546:32: note: expanded from macro 'BOOST_DO_JOIN2'
+#define BOOST_DO_JOIN2( X, Y ) X##Y
+                               ^
+<scratch space>:67:1: note: expanded from here
+boost_static_assert_typedef_915
+^
+In file included from src/builtin.cc:1:
+In file included from src/builtin.h:5:
+In file included from src/module.h:12:
+In file included from src/value.h:11:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast.hpp:32:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/try_lexical_convert.hpp:35:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/detail/converter_lexical.hpp:54:
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/detail/converter_lexical_streams.hpp:187:17: warning: unused typedef 'boost_static_assert_typedef_189' [-Wunused-local-typedef]
+                BOOST_STATIC_ASSERT_MSG(( sizeof(T) <= sizeof(CharT)) ,
+                ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:36:48: note: expanded from macro 'BOOST_STATIC_ASSERT_MSG'
+#     define BOOST_STATIC_ASSERT_MSG( B, Msg ) BOOST_STATIC_ASSERT( B )
+                                               ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:170:16: note: expanded from macro 'BOOST_STATIC_ASSERT'
+               BOOST_JOIN(boost_static_assert_typedef_, __LINE__) BOOST_STATIC_ASSERT_UNUSED_ATTRIBUTE
+               ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:544:28: note: expanded from macro 'BOOST_JOIN'
+#define BOOST_JOIN( X, Y ) BOOST_DO_JOIN( X, Y )
+                           ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:545:31: note: expanded from macro 'BOOST_DO_JOIN'
+#define BOOST_DO_JOIN( X, Y ) BOOST_DO_JOIN2(X,Y)
+                              ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:546:32: note: expanded from macro 'BOOST_DO_JOIN2'
+#define BOOST_DO_JOIN2( X, Y ) X##Y
+                               ^
+<scratch space>:73:1: note: expanded from here
+boost_static_assert_typedef_189
+^
+In file included from src/builtin.cc:1:
+In file included from src/builtin.h:5:
+In file included from src/module.h:12:
+In file included from src/value.h:11:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast.hpp:32:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/try_lexical_convert.hpp:35:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/detail/converter_lexical.hpp:54:
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/detail/converter_lexical_streams.hpp:210:17: warning: unused typedef 'boost_static_assert_typedef_212' [-Wunused-local-typedef]
+                BOOST_STATIC_ASSERT_MSG(( sizeof(T) <= sizeof(CharT)),
+                ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:36:48: note: expanded from macro 'BOOST_STATIC_ASSERT_MSG'
+#     define BOOST_STATIC_ASSERT_MSG( B, Msg ) BOOST_STATIC_ASSERT( B )
+                                               ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:170:16: note: expanded from macro 'BOOST_STATIC_ASSERT'
+               BOOST_JOIN(boost_static_assert_typedef_, __LINE__) BOOST_STATIC_ASSERT_UNUSED_ATTRIBUTE
+               ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:544:28: note: expanded from macro 'BOOST_JOIN'
+#define BOOST_JOIN( X, Y ) BOOST_DO_JOIN( X, Y )
+                           ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:545:31: note: expanded from macro 'BOOST_DO_JOIN'
+#define BOOST_DO_JOIN( X, Y ) BOOST_DO_JOIN2(X,Y)
+                              ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:546:32: note: expanded from macro 'BOOST_DO_JOIN2'
+#define BOOST_DO_JOIN2( X, Y ) X##Y
+                               ^
+<scratch space>:75:1: note: expanded from here
+boost_static_assert_typedef_212
+^
+In file included from src/builtin.cc:1:
+In file included from src/builtin.h:5:
+In file included from src/module.h:12:
+In file included from src/value.h:11:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast.hpp:32:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/try_lexical_convert.hpp:35:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/detail/converter_lexical.hpp:54:
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/detail/converter_lexical_streams.hpp:461:17: warning: unused typedef 'boost_static_assert_typedef_464' [-Wunused-local-typedef]
+                BOOST_STATIC_ASSERT_MSG(
+                ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:36:48: note: expanded from macro 'BOOST_STATIC_ASSERT_MSG'
+#     define BOOST_STATIC_ASSERT_MSG( B, Msg ) BOOST_STATIC_ASSERT( B )
+                                               ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:170:16: note: expanded from macro 'BOOST_STATIC_ASSERT'
+               BOOST_JOIN(boost_static_assert_typedef_, __LINE__) BOOST_STATIC_ASSERT_UNUSED_ATTRIBUTE
+               ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:544:28: note: expanded from macro 'BOOST_JOIN'
+#define BOOST_JOIN( X, Y ) BOOST_DO_JOIN( X, Y )
+                           ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:545:31: note: expanded from macro 'BOOST_DO_JOIN'
+#define BOOST_DO_JOIN( X, Y ) BOOST_DO_JOIN2(X,Y)
+                              ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:546:32: note: expanded from macro 'BOOST_DO_JOIN2'
+#define BOOST_DO_JOIN2( X, Y ) X##Y
+                               ^
+<scratch space>:77:1: note: expanded from here
+boost_static_assert_typedef_464
+^
+In file included from src/builtin.cc:1:
+In file included from src/builtin.h:5:
+In file included from src/module.h:12:
+In file included from src/value.h:11:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast.hpp:32:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/try_lexical_convert.hpp:35:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/detail/converter_lexical.hpp:54:
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/detail/converter_lexical_streams.hpp:565:17: warning: unused typedef 'boost_static_assert_typedef_568' [-Wunused-local-typedef]
+                BOOST_STATIC_ASSERT_MSG(
+                ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:36:48: note: expanded from macro 'BOOST_STATIC_ASSERT_MSG'
+#     define BOOST_STATIC_ASSERT_MSG( B, Msg ) BOOST_STATIC_ASSERT( B )
+                                               ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:170:16: note: expanded from macro 'BOOST_STATIC_ASSERT'
+               BOOST_JOIN(boost_static_assert_typedef_, __LINE__) BOOST_STATIC_ASSERT_UNUSED_ATTRIBUTE
+               ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:544:28: note: expanded from macro 'BOOST_JOIN'
+#define BOOST_JOIN( X, Y ) BOOST_DO_JOIN( X, Y )
+                           ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:545:31: note: expanded from macro 'BOOST_DO_JOIN'
+#define BOOST_DO_JOIN( X, Y ) BOOST_DO_JOIN2(X,Y)
+                              ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:546:32: note: expanded from macro 'BOOST_DO_JOIN2'
+#define BOOST_DO_JOIN2( X, Y ) X##Y
+                               ^
+<scratch space>:79:1: note: expanded from here
+boost_static_assert_typedef_568
+^
+In file included from src/builtin.cc:1:
+In file included from src/builtin.h:5:
+In file included from src/module.h:12:
+In file included from src/value.h:11:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast.hpp:32:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/try_lexical_convert.hpp:35:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/detail/converter_lexical.hpp:54:
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/detail/converter_lexical_streams.hpp:613:17: warning: unused typedef 'boost_static_assert_typedef_615' [-Wunused-local-typedef]
+                BOOST_STATIC_ASSERT_MSG(( sizeof(CharT) == sizeof(T) ),
+                ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:36:48: note: expanded from macro 'BOOST_STATIC_ASSERT_MSG'
+#     define BOOST_STATIC_ASSERT_MSG( B, Msg ) BOOST_STATIC_ASSERT( B )
+                                               ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:170:16: note: expanded from macro 'BOOST_STATIC_ASSERT'
+               BOOST_JOIN(boost_static_assert_typedef_, __LINE__) BOOST_STATIC_ASSERT_UNUSED_ATTRIBUTE
+               ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:544:28: note: expanded from macro 'BOOST_JOIN'
+#define BOOST_JOIN( X, Y ) BOOST_DO_JOIN( X, Y )
+                           ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:545:31: note: expanded from macro 'BOOST_DO_JOIN'
+#define BOOST_DO_JOIN( X, Y ) BOOST_DO_JOIN2(X,Y)
+                              ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:546:32: note: expanded from macro 'BOOST_DO_JOIN2'
+#define BOOST_DO_JOIN2( X, Y ) X##Y
+                               ^
+<scratch space>:81:1: note: expanded from here
+boost_static_assert_typedef_615
+^
+In file included from src/builtin.cc:1:
+In file included from src/builtin.h:5:
+In file included from src/module.h:12:
+In file included from src/value.h:11:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast.hpp:32:
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast/try_lexical_convert.hpp:180:13: warning: unused typedef 'boost_static_assert_typedef_183' [-Wunused-local-typedef]
+            BOOST_STATIC_ASSERT_MSG(
+            ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:36:48: note: expanded from macro 'BOOST_STATIC_ASSERT_MSG'
+#     define BOOST_STATIC_ASSERT_MSG( B, Msg ) BOOST_STATIC_ASSERT( B )
+                                               ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:170:16: note: expanded from macro 'BOOST_STATIC_ASSERT'
+               BOOST_JOIN(boost_static_assert_typedef_, __LINE__) BOOST_STATIC_ASSERT_UNUSED_ATTRIBUTE
+               ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:544:28: note: expanded from macro 'BOOST_JOIN'
+#define BOOST_JOIN( X, Y ) BOOST_DO_JOIN( X, Y )
+                           ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:545:31: note: expanded from macro 'BOOST_DO_JOIN'
+#define BOOST_DO_JOIN( X, Y ) BOOST_DO_JOIN2(X,Y)
+                              ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:546:32: note: expanded from macro 'BOOST_DO_JOIN2'
+#define BOOST_DO_JOIN2( X, Y ) X##Y
+                               ^
+<scratch space>:89:1: note: expanded from here
+boost_static_assert_typedef_183
+^
+In file included from src/builtin.cc:1:
+In file included from src/builtin.h:5:
+In file included from src/module.h:12:
+In file included from src/value.h:11:
+In file included from /Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/lexical_cast.hpp:33:
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/utility/value_init.hpp:128:7: warning: unused typedef 'boost_static_assert_typedef_128' [-Wunused-local-typedef]
+      BOOST_STATIC_ASSERT( ! is_const<T>::value );
+      ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/static_assert.hpp:170:16: note: expanded from macro 'BOOST_STATIC_ASSERT'
+               BOOST_JOIN(boost_static_assert_typedef_, __LINE__) BOOST_STATIC_ASSERT_UNUSED_ATTRIBUTE
+               ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:544:28: note: expanded from macro 'BOOST_JOIN'
+#define BOOST_JOIN( X, Y ) BOOST_DO_JOIN( X, Y )
+                           ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:545:31: note: expanded from macro 'BOOST_DO_JOIN'
+#define BOOST_DO_JOIN( X, Y ) BOOST_DO_JOIN2(X,Y)
+                              ^
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/include/boost/config/suffix.hpp:546:32: note: expanded from macro 'BOOST_DO_JOIN2'
+#define BOOST_DO_JOIN2( X, Y ) X##Y
+                               ^
+<scratch space>:93:1: note: expanded from here
+boost_static_assert_typedef_128
+^
+34 warnings generated.
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++ -headerpad_max_install_names -stdlib=libc++ -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk -mmacosx-version-min=10.7 -Wl,-rpath,/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/libraries/install/lib -o OpenSCAD.app/Contents/MacOS/OpenSCAD objects/OffscreenContextCGL.o objects/CocoaUtils.o objects/PlatformUtils-mac.o objects/scintillaeditor.o objects/scadlexer.o objects/version_check.o objects/ProgressWidget.o objects/mathc99.o objects/linalg.o objects/Camera.o objects/handle_dep.o objects/value.o objects/expr.o objects/stackcheck.o objects/func.o objects/localscope.o objects/module.o objects/feature.o objects/node.o objects/context.o objects/modcontext.o objects/evalcontext.o objects/csgnode.o objects/CSGTreeNormalizer.o objects/CSGTreeEvaluator.o objects/Geometry.o objects/Polygon2d.o objects/clipper-utils.o objects/polyset-utils.o objects/GeometryUtils.o objects/polyset.o objects/polyset-gl.o objects/csgops.o objects/transform.o objects/color.o objects/primitives.o objects/primitives-cgal.o objects/projection.o objects/cgaladv.o objects/surface.o objects/control.o objects/render.o objects/text.o objects/dxfdata.o objects/dxfdim.o objects/offset.o objects/linearextrude.o objects/rotateextrude.o objects/printutils.o objects/fileutils.o objects/progress.o objects/parsersettings.o objects/stl-utils.o objects/boost-utils.o objects/PlatformUtils.o objects/LibraryInfo.o objects/nodedumper.o objects/traverser.o objects/GeometryEvaluator.o objects/ModuleCache.o objects/GeometryCache.o objects/Tree.o objects/DrawingCallback.o objects/FreetypeRenderer.o objects/FontCache.o objects/settings.o objects/rendersettings.o objects/highlighter.o objects/Preferences.o objects/OpenCSGWarningDialog.o objects/editor.o objects/GLView.o objects/QGLView.o objects/AutoUpdater.o objects/grid.o objects/builtin.o objects/calc.o objects/export.o objects/export_stl.o objects/export_amf.o objects/export_off.o objects/export_dxf.o objects/export_svg.o objects/export_nef.o objects/export_png.o objects/import.o objects/renderer.o objects/colormap.o objects/ThrownTogetherRenderer.o objects/svg.o objects/OffscreenView.o objects/fbo.o objects/system-gl.o objects/imageutils.o objects/lodepng.o objects/openscad.o objects/mainwin.o objects/UIUtils.o objects/Dock.o objects/FontListDialog.o objects/FontListTableView.o objects/launchingscreen.o objects/legacyeditor.o objects/LibraryInfoDialog.o objects/clipper.o objects/bucketalloc.o objects/dict.o objects/geom.o objects/mesh.o objects/priorityq.o objects/sweep.o objects/tess.o objects/imageutils-macosx.o objects/OpenCSGRenderer.o objects/cgalutils.o objects/cgalutils-applyops.o objects/cgalutils-project.o objects/cgalutils-tess.o objects/cgalutils-polyhedron.o objects/CGALCache.o objects/CGALRenderer.o objects/CGAL_Nef_polyhedron.o objects/cgalworker.o objects/Polygon2d-CGAL.o objects/AppleEvents.o objects/qrc_openscad.o objects/moc_scintillaeditor.o objects/moc_ProgressWidget.o objects/moc_QGLView.o objects/moc_MainWindow.o objects/moc_Preferences.o objects/moc_OpenCSGWarningDialog.o objects/moc_AboutDialog.o objects/moc_FontListDialog.o objects/moc_FontListTableView.o objects/moc_highlighter.o objects/moc_editor.o objects/moc_Dock.o objects/moc_AutoUpdater.o objects/moc_launchingscreen.o objects/moc_legacyeditor.o objects/moc_LibraryInfoDialog.o objects/moc_cgalworker.o objects/moc_EventFilter.o objects/parser_yacc.o objects/lexer_lex.o   -L/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/../libraries/install/lib -F/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/libraries/install/lib -framework Cocoa -framework ApplicationServices -lCGAL -lmpfr -lgmp -lopencsg -lGLEW -lboost_thread -lboost_program_options -lboost_filesystem -lboost_system -lboost_regex -lglib-2.0 -lintl -liconv -lharfbuzz -lfreetype -lfontconfig -L/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/libraries/install/lib -lqscintilla2 -framework QtPrintSupport -framework QtWidgets -framework QtGui -framework QtCore -framework DiskArbitration -framework IOKit -framework QtMacExtras -framework QtConcurrent -framework OpenGL -framework AGL 
+/Volumes/CaseSensitive/ClothBotDesigns/Projects/clothbot/github/clothbot/openscad/openscad/scripts/translation-make.sh
+Compiling language files...
+msgfmt -c -v -o ./locale/fr/LC_MESSAGES/openscad.mo ./locale/fr.po
+268 translated messages.
+msgfmt -c -v -o ./locale/ru/LC_MESSAGES/openscad.mo ./locale/ru.po
+268 translated messages.
+msgfmt -c -v -o ./locale/de/LC_MESSAGES/openscad.mo ./locale/de.po
+268 translated messages.
+msgfmt -c -v -o ./locale/cs/LC_MESSAGES/openscad.mo ./locale/cs.po
+266 translated messages, 2 untranslated messages.
+msgfmt -c -v -o ./locale/es/LC_MESSAGES/openscad.mo ./locale/es.po
+217 translated messages, 41 fuzzy translations, 8 untranslated messages.
