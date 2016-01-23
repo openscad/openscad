@@ -1342,7 +1342,10 @@ set_test_config(Heavy cgalpngtest_rotate_extrude-tests
                       offpngtest_rounded_box
                       offpngtest_difference
                       offpngtest_translation
-)
+                      cgalstlcgalpngtest_rotate_extrude-tests
+                      monotonepngtest_rotate_extrude-tests
+                      echotest_tail-recursion-tests
+                      cgalstlcgalpngtest_rotate_extrude-tests)
 
 # Bugs
 
