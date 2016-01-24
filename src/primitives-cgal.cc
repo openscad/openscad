@@ -330,8 +330,9 @@ AbstractNode *PrimitiveCGALModule::instantiate(const Context *ctx, const ModuleI
 		node->weights = c.lookup_variable("weights");
 
         ValuePtr shrink_factor = c.lookup_variable("shrink_factor");
-        if (shrink_factor->type() == Value::NUMBER) {
+        if (shrink_factor->type() == Value::NUMBER ) {
             node->shrink_factor = shrink_factor->toDouble();
+            if ( node->shrink_factor <=0.0 || node->shrink_factor >=1.0 ) node->shrink_factor = 0.5;
         } else {
             node->shrink_factor = 0.5;
         }
@@ -554,6 +555,18 @@ Geometry *PrimitiveCGALNode::createGeometry() const
 		g = p;
 		p->setConvexity(this->convexity);
         std::list<WeightedK> points;
+        if( this->points->type() == ValuePtr::undefined ) {
+            PRINT("Usage skin_surface():");
+            PRINT("  skin_surface( points ) ");
+            PRINT("         points : list_of_3D_points || [ list_of_3D_points, list_of_weights ] ");
+            PRINT("     Optional parameters: ");
+            PRINT("         weights : list_of_weights - one value per 'points'");
+            PRINT("         weight : 1.25 - uniform weighting when 'weights' not set or valid");
+            PRINT("         shrink_factor : 0.5 - must be ( 0.0 < shrink_factor < 1.0 ) ");
+            PRINT("         subdivisions : 0 ");
+            PRINT("         grow_balls : true ");
+            return p;
+        }
         size_t num_points=this->points->toVector().size();
         ValuePtr point_vec=this->points;
         ValuePtr weight_vec=this->weights;
