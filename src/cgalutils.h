@@ -42,6 +42,14 @@ typedef CGAL::Surface_mesh_default_triangulation_3 STr;
 typedef CGAL::Surface_mesh_complex_2_in_triangulation_3<STr> C2t3;
 typedef CGAL::Implicit_surface_3<K, Poisson_reconstruction_functionK> Surface_3K;
 
+// Meshing and Subdividing a Skin Surface
+#include <CGAL/Skin_surface_3.h>
+#include <CGAL/make_skin_surface_mesh_3.h>
+#include <CGAL/mesh_skin_surface_3.h>
+#include <CGAL/subdivide_skin_surface_mesh_3.h>
+#include <CGAL/subdivide_skin_surface_mesh_3.h>
+typedef CGAL::Weighted_point<PointK,K::RT> WeightedK;
+
 namespace /* anonymous */ {
         template<typename Result, typename V>
         Result vector_convert(V const& v) {

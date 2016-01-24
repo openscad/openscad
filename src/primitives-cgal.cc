@@ -48,7 +48,8 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 #define F_MINIMUM 0.01
 
 enum primitive_cgal_type_e {
-    POINTSET
+    POINTSET,
+    SKIN_SURFACE
 };
 
 class PrimitiveCGALModule : public AbstractModule
@@ -74,6 +75,9 @@ public:
 		case POINTSET:
 			return "pointset";
 			break;
+		case SKIN_SURFACE:
+			return "skin_surface";
+			break;
 		default:
 			assert(false && "PrimitiveCGALNode::name(): Unknown primitive type");
 			return "unknown";
@@ -85,11 +89,20 @@ public:
 	double fn, fs, fa;
 	primitive_cgal_type_e type;
 	int convexity;
+    bool verbose;
 	ValuePtr points, paths, faces;
 	virtual Geometry *createGeometry() const;
-    int neighbors;
-    double scale_num_points, sharpness_angle, edge_sensitivity, neighbor_radius;
-    double angle, radius, distance;
+    int jen_k, mon_k;
+    double eaup_scale_num_points;
+    unsigned int eaup_number_of_output_points;
+    double eaup_sharpness_angle, eaup_edge_sensitivity, eaup_neighbor_radius;
+    int cas_k;
+    double smdc_angle, smdc_radius, smdc_distance;
+    ValuePtr weights;
+    double shrink_factor;
+    int subdivisions;
+    bool grow_balls;
+    double weight;
 };
 
 /**
@@ -127,16 +140,37 @@ AbstractNode *PrimitiveCGALModule::instantiate(const Context *ctx, const ModuleI
 
 	node->center = false;
 	node->x = node->y = node->z = node->h = node->r1 = node->r2 = 1;
+    node->verbose = false;
 
 	AssignmentList args;
 
 	switch (this->type) {
 	case POINTSET:
 		args += Assignment("points")
-            , Assignment("neighbors")
-            , Assignment("scale_num_points"), Assignment("sharpness_angle"), Assignment("edge_sensitivity"), Assignment("neighbor_radius")
-            , Assignment("angle"), Assignment("radius"), Assignment("distance")
-            , Assignment("convexity");
+            // jet_estimate_normals (jen)
+            , Assignment("jen_k")
+            // mst_orient_normals (mon)
+            , Assignment("mon_k")
+            // edge_aware_upsample_point_set (eaup)
+            , Assignment("eaup_scale_num_points") // number_of_output_points = eaup_scale_num_points * len(points)
+            , Assignment("eaup_number_of_output_points") // Override derived number_of_output_points calculation
+            , Assignment("eaup_sharpness_angle")
+            , Assignment("eaup_edge_sensitivity")
+            , Assignment("eaup_neighbor_radius")
+            // compute_average_spacing (cas)
+            , Assignment("cas_k")
+            // Surface_mesh_default_criteria (smdc)
+            , Assignment("smdc_angle"), Assignment("smdc_radius"), Assignment("smdc_distance")
+            , Assignment("convexity"), Assignment("verbose");
+		break;
+	case SKIN_SURFACE:
+		args += Assignment("points")
+            , Assignment("weights")
+            , Assignment("shrink_factor")
+            , Assignment("subdivisions")
+            , Assignment("grow_balls")
+            , Assignment("weight")
+            , Assignment("convexity"), Assignment("verbose");
 		break;
 	default:
 		assert(false && "PrimitiveCGALModule::instantiate(): Unknown node type");
@@ -161,86 +195,171 @@ AbstractNode *PrimitiveCGALModule::instantiate(const Context *ctx, const ModuleI
 	switch (this->type)  {
 	case POINTSET: {
 		node->points = c.lookup_variable("points");
-        // jet_estimate_normals & mst_orient_normals 'neighbors' parameter
-        ValuePtr neighbors = c.lookup_variable("neighbors");
-        if (neighbors->type() == Value::NUMBER) {
-            node->neighbors = neighbors->toDouble();
+        bool verbose = c.lookup_variable("verbose")->toBool();
+        // jet_estimate_normals 'neighbors' parameter
+        ValuePtr jen_k = c.lookup_variable("jen_k");
+        if (jen_k->type() == Value::NUMBER) {
+            node->jen_k = jen_k->toDouble();
         } else {
-            node->neighbors = 16;
+            node->jen_k = 16;
         }
-        if (node->neighbors < 0) node->neighbors = 0;
-        if (node->neighbors > 0 && node->neighbors < 4 ) node->neighbors = 4;
-        PRINTB("POINTSET neighbors: %d",node->neighbors);
+        if (node->jen_k < 0) node->jen_k = 0;
+        if (node->jen_k > 0 && node->jen_k < 5 ) node->jen_k = 5;
+        if (verbose) PRINTB("POINTSET jen_k: %d",node->jen_k);
+
+        // mst_orient_normals 'neighbors' parameter
+        ValuePtr mon_k = c.lookup_variable("mon_k");
+        if (mon_k->type() == Value::NUMBER) {
+            node->mon_k = mon_k->toDouble();
+        } else {
+            node->mon_k = 16;
+        }
+        if ( node->mon_k < 6 ) node->mon_k = 16;
+        if (verbose) PRINTB("POINTSET mon_k: %d",node->mon_k);
+
         // edge_aware_upsample_point_set parameters
-        ValuePtr scale_num_points = c.lookup_variable("scale_num_points");
-        if ( scale_num_points->type() == Value::NUMBER) {
-            const double snp = scale_num_points->toDouble();
+
+        ValuePtr eaup_scale_num_points = c.lookup_variable("eaup_scale_num_points");
+        if ( eaup_scale_num_points->type() == Value::NUMBER) {
+            const double snp = eaup_scale_num_points->toDouble();
             if( snp > 1.0 ) {
-                node->scale_num_points = snp;
+                node->eaup_scale_num_points = snp;
             } else {
-                node->scale_num_points = 0;
+                node->eaup_scale_num_points = 0;
             }
         } else {
-            node->scale_num_points = 0;
+            node->eaup_scale_num_points = 0;
         }
-        PRINTB("POINTSET scale_num_points: %d",node->scale_num_points);
-        ValuePtr sharpness_angle = c.lookup_variable("sharpness_angle");
-        if ( sharpness_angle->type() == Value::NUMBER) {
-            const double sat = sharpness_angle->toDouble();
-            node->sharpness_angle = sat;
+        if (verbose) PRINTB("POINTSET eaup_scale_num_points: %d",node->eaup_scale_num_points);
+
+        ValuePtr eaup_number_of_output_points = c.lookup_variable("eaup_number_of_output_points");
+        if ( eaup_number_of_output_points->type() == Value::NUMBER) {
+            const double enoop = eaup_number_of_output_points->toDouble();
+            if( enoop > 3 ) {
+                node->eaup_number_of_output_points = enoop;
+            } else {
+                node->eaup_number_of_output_points = 0;
+            }
         } else {
-            node->sharpness_angle = 25.0;
+            node->eaup_number_of_output_points = 0;
         }
-        PRINTB("POINTSET sharpness_angle: %d",node->sharpness_angle);
-        ValuePtr edge_sensitivity = c.lookup_variable("edge_sensitivity");
-        if ( edge_sensitivity->type() == Value::NUMBER) {
-            const double es = edge_sensitivity->toDouble();
+        if (verbose) PRINTB("POINTSET eaup_number_of_output_points: %d",node->eaup_number_of_output_points);
+
+        ValuePtr eaup_sharpness_angle = c.lookup_variable("eaup_sharpness_angle");
+        if ( eaup_sharpness_angle->type() == Value::NUMBER) {
+            const double sat = eaup_sharpness_angle->toDouble();
+            node->eaup_sharpness_angle = sat;
+        } else {
+            node->eaup_sharpness_angle = 25.0;
+        }
+        if (verbose) PRINTB("POINTSET eaup_sharpness_angle: %d",node->eaup_sharpness_angle);
+
+        ValuePtr eaup_edge_sensitivity = c.lookup_variable("eaup_edge_sensitivity");
+        if ( eaup_edge_sensitivity->type() == Value::NUMBER) {
+            const double es = eaup_edge_sensitivity->toDouble();
             if( es < 0.0 ) {
-                node->edge_sensitivity = 0.0;
+                node->eaup_edge_sensitivity = 0.0;
             } else if( es > 1.0 ) {
-                node->edge_sensitivity = 1.0;
+                node->eaup_edge_sensitivity = 1.0;
             } else {
-                node->edge_sensitivity = es;
+                node->eaup_edge_sensitivity = es;
             }
         } else {
-            node->edge_sensitivity = 0.0;
+            node->eaup_edge_sensitivity = 0.0;
         }
-        PRINTB("POINTSET edge_sensitivity: %d",node->edge_sensitivity);
+        if (verbose) PRINTB("POINTSET eaup_edge_sensitivity: %d",node->eaup_edge_sensitivity);
+
         // neighbor_radius = 0.25
-        ValuePtr neighbor_radius = c.lookup_variable("neighbor_radius");
-        if ( neighbor_radius->type() == Value::NUMBER) {
-            const double nr = neighbor_radius->toDouble();
+        ValuePtr eaup_neighbor_radius = c.lookup_variable("eaup_neighbor_radius");
+        if ( eaup_neighbor_radius->type() == Value::NUMBER) {
+            const double nr = eaup_neighbor_radius->toDouble();
             if( nr > 0 ) {
-                node->neighbor_radius = nr;
+                node->eaup_neighbor_radius = nr;
             } else {
-                node->neighbor_radius = 0.25;
+                node->eaup_neighbor_radius = 0.25;
             }
         } else {
-            node->neighbor_radius = 0.25;
+            node->eaup_neighbor_radius = 0.25;
         }
-        PRINTB("POINTSET neighbor_radius: %d",node->neighbor_radius);
+        if (verbose) PRINTB("POINTSET eaup_neighbor_radius: %d",node->eaup_neighbor_radius);
+
+        // compute_average_spacing
+        ValuePtr cas_k = c.lookup_variable("cas_k");
+        if ( cas_k->type() == Value::NUMBER) {
+            const double k = cas_k->toDouble();
+            if( k > 0 ) {
+                node->cas_k = k;
+            } else {
+                node->cas_k = 6;
+            }
+        } else {
+            node->cas_k = 6;
+        }
+        if (verbose) PRINTB("POINTSET cas_k: %d",node->cas_k);
+
         // Surface_mesh_default_criteria_3 parameters
-        ValuePtr angle = c.lookup_variable("angle");
-        if (angle->type() == Value::NUMBER) {
-            node->angle = angle->toDouble();
+        ValuePtr smdc_angle = c.lookup_variable("smdc_angle");
+        if (smdc_angle->type() == Value::NUMBER) {
+            node->smdc_angle = smdc_angle->toDouble();
         } else {
-            node->angle = 20.0;
+            node->smdc_angle = 20.0;
         }
-        PRINTB("POINTSET angle: %d",node->angle);
-        ValuePtr radius = c.lookup_variable("radius");
-        if (radius->type() == Value::NUMBER) {
-            node->radius = radius->toDouble();
+        if (verbose) PRINTB("POINTSET smdc_angle: %d",node->smdc_angle);
+
+        ValuePtr smdc_radius = c.lookup_variable("smdc_radius");
+        if (smdc_radius->type() == Value::NUMBER) {
+            node->smdc_radius = smdc_radius->toDouble();
         } else {
-            node->radius = 30;
+            node->smdc_radius = 30;
         }
-        PRINTB("POINTSET radius: %d",node->radius);
-        ValuePtr distance = c.lookup_variable("distance");
-        if (distance->type() == Value::NUMBER) {
-            node->distance = distance->toDouble();
+        if (verbose) PRINTB("POINTSET smdc_radius: %d",node->smdc_radius);
+
+        ValuePtr smdc_distance = c.lookup_variable("smdc_distance");
+        if (smdc_distance->type() == Value::NUMBER) {
+            node->smdc_distance = smdc_distance->toDouble();
         } else {
-            node->distance = 0.05;
+            node->smdc_distance = 0.05;
         }
-        PRINTB("POINTSET distance: %d",node->distance);
+        if (verbose) PRINTB("POINTSET smdc_distance: %d",node->smdc_distance);
+
+		break;
+	}
+	case SKIN_SURFACE: {
+        bool verbose = c.lookup_variable("verbose")->toBool();
+		node->points = c.lookup_variable("points");
+		node->weights = c.lookup_variable("weights");
+
+        ValuePtr shrink_factor = c.lookup_variable("shrink_factor");
+        if (shrink_factor->type() == Value::NUMBER) {
+            node->shrink_factor = shrink_factor->toDouble();
+        } else {
+            node->shrink_factor = 0.5;
+        }
+        if (verbose) PRINTB("SKIN_SURFACE shrink_factor: %d",node->shrink_factor);
+
+        ValuePtr subdivisions = c.lookup_variable("subdivisions");
+        if (subdivisions->type() == Value::NUMBER) {
+            node->subdivisions = subdivisions->toDouble();
+        } else {
+            node->subdivisions = 0;
+        }
+        if (verbose) PRINTB("SKIN_SURFACE subdivisions: %d",node->subdivisions);
+
+        ValuePtr grow_balls = c.lookup_variable("grow_balls");
+        if (grow_balls->type() == Value::BOOL) {
+            node->grow_balls = grow_balls->toBool();
+        } else {
+            node->grow_balls = true;
+        }
+        if (verbose) PRINTB("SKIN_SURFACE grow_balls: %d",node->grow_balls);
+
+        ValuePtr weight = c.lookup_variable("weight");
+        if ( weight->type() == Value::NUMBER) {
+            node->weight = weight->toDouble();
+        } else {
+            node->weight = 1.25;
+        }
+
 		break;
 	}
 	}
@@ -248,6 +367,7 @@ AbstractNode *PrimitiveCGALModule::instantiate(const Context *ctx, const ModuleI
 	node->convexity = c.lookup_variable("convexity", true)->toDouble();
 	if (node->convexity < 1)
 		node->convexity = 1;
+
 
 	return node;
 }
@@ -269,13 +389,16 @@ Geometry *PrimitiveCGALNode::createGeometry() const
         std::list<PointVectorPairK> points;
         if( this->points->type() == ValuePtr::undefined ) {
             PRINT("Usage pointset():");
-            PRINT("  pointset( points,neighbors,scale_num_points,sharpness_angle,edge_sensitivity,neighbor_radius,angle,radius,distance,convexity ) ");
-            PRINT("    where: ");
+            PRINT("  pointset( points ) ");
             PRINT("        points : list_of_3D_points || [ list_of_3D_points, list_of_3D_normals ] ");
-            PRINT("        neighbors : jet_estimate_normals & mst_orient_normals 'neighbors' parameter ");
-            PRINT("        scale_num_points : >1 enables edge_aware_upsample_point_set() ");
-            PRINT("        sharpness_angle,edge_sensitivity,neighbor_radius : edge_aware_upsample_point_set() parameters ");
-            PRINT("        angle,radius,distance : Surface_mesh_default_criteria parameters ");
+            PRINT("    Optional parameters: ");
+            PRINT("        jen_k : jet_estimate_normals 'neighbors' parameter - http://doc.cgal.org/latest/Point_set_processing_3/index.html#Point_set_processing_3NormalEstimation ");
+            PRINT("        mon_k : mst_orient_normals 'neighbors' parameter - http://doc.cgal.org/latest/Point_set_processing_3/index.html#Point_set_processing_3NormalOrientation ");
+            PRINT("        eaup_scale_num_points : >1 enables edge_aware_upsample_point_set() - http://doc.cgal.org/latest/Point_set_processing_3/index.html#Point_set_processing_3Upsampling ");
+            PRINT("        eaup_number_of_output_points : >len(points) ");
+            PRINT("        eaup_{sharpness_angle,edge_sensitivity,neighbor_radius} : edge_aware_upsample_point_set() parameters ");
+            PRINT("        cas_k : compute_average_spacing 'neighbors' parameter - http://doc.cgal.org/latest/Point_set_processing_3/index.html#Point_set_processing_3Analysis ");
+            PRINT("        smdc_angle,smdc_radius,smdc_distance : Surface_mesh_default_criteria parameters - http://doc.cgal.org/latest/Surface_mesher/index.html#SurfaceMesher_section_interface ");
             return p;
         }
         size_t num_points=this->points->toVector().size();
@@ -289,15 +412,9 @@ Geometry *PrimitiveCGALNode::createGeometry() const
             norm_vec=ValuePtr::undefined;
         }
 
-        int nb_neighbors = (int)this->neighbors;
-        PRINTB("POINTSET nb_neighbors: %d",nb_neighbors);
         if( num_points < 4 && num_points > 0 ) {
             PRINTB("ERROR: Only %d points given", num_points);
             return p;
-        }
-        if(0) if( nb_neighbors < num_points ) {
-            PRINTB("POINTSET neighbors < num_points; setting neighbors = num_points = %d",num_points);
-            nb_neighbors=(int)num_points;
         }
         for (size_t i=0; i<num_points; i++)
         {
@@ -317,51 +434,62 @@ Geometry *PrimitiveCGALNode::createGeometry() const
                 points.push_back(std::make_pair(ptk, veck));
             }
         }
-        if ( nb_neighbors > 3 ) {
-	        PRINT("POINTSET: Running jet_estimate_normals...");
+
+        int nb_jen_k = (int)this->jen_k;
+        if (verbose) PRINTB("POINTSET jen_k: %d",nb_jen_k);
+        if ( nb_jen_k > 3 ) {
+	        if (verbose) PRINT("POINTSET: Running jet_estimate_normals...");
 	        CGAL::jet_estimate_normals(points.begin(), points.end(),
 	                CGAL::First_of_pair_property_map<PointVectorPairK>(),
 	                CGAL::Second_of_pair_property_map<PointVectorPairK>(),
-	                nb_neighbors);
-	        PRINT("POINTSET: Running mst_orient_normals...");
+	                nb_jen_k);
+        } else {
+            if (verbose) PRINT("POINTSET: jet_estimate_normals disabled.");
+        }
+
+        int nb_mon_k = (int)this->mon_k;
+        if (verbose) PRINTB("POINTSET mon_k: %d",nb_mon_k);
+        if ( nb_mon_k > 3) {
+	        if (verbose) PRINT("POINTSET: Running mst_orient_normals...");
 	        std::list<PointVectorPairK>::iterator unoriented_points_begin =
 	            CGAL::mst_orient_normals(points.begin(), points.end(),
 	                CGAL::First_of_pair_property_map<PointVectorPairK>(),
 	                CGAL::Second_of_pair_property_map<PointVectorPairK>(),
-	                nb_neighbors);
-	        PRINT("POINTSET: Running points.erase...");
+	                nb_mon_k);
+	        if (verbose) PRINT("POINTSET: Running points.erase...");
 	        points.erase(unoriented_points_begin, points.end());
+        } else {
+            if (verbose) PRINT("POINTSET: mst_orient_normals disabled.");
         }
-        PRINT("POINTSET: Running swap(points)...");
+
+        if (verbose) PRINT("POINTSET: Running swap(points)...");
         std::list<PointVectorPairK>(points).swap(points);
-        PRINT("POINTSET: Running edge_aware_upsample_point_set...");
-        const double scale_num_points = this->scale_num_points; // 2.0;
-        if ( scale_num_points > 1.0 ) {
-	        const double sharpness_angle = this->sharpness_angle; // 25;
-	        const double edge_sensitivity = this->edge_sensitivity; // 0;
-	        const double neighbor_radius = this->neighbor_radius; // 0.25;
-	        const unsigned int number_of_output_points = (unsigned int) (num_points * scale_num_points);
+
+        const double scale_num_points = this->eaup_scale_num_points; // 2.0;
+        unsigned int number_of_output_points = (unsigned int ) this->eaup_number_of_output_points;
+        if ( scale_num_points > 1.0 || number_of_output_points > num_points ) {
+            if (verbose) PRINT("POINTSET: Running edge_aware_upsample_point_set...");
+	        if (scale_num_points > 1.0) number_of_output_points = (unsigned int) (num_points * scale_num_points);
+	        const double sharpness_angle = this->eaup_sharpness_angle; // 25;
+	        const double edge_sensitivity = this->eaup_edge_sensitivity; // 0;
+	        const double neighbor_radius = this->eaup_neighbor_radius; // 0.25;
 	        CGAL::edge_aware_upsample_point_set(
 	                points.begin(), points.end(), std::back_inserter(points),
 	                CGAL::First_of_pair_property_map<PointVectorPairK>(),
 	                CGAL::Second_of_pair_property_map<PointVectorPairK>(),
-	                sharpness_angle,
-	                edge_sensitivity,
-	                neighbor_radius,
+	                eaup_sharpness_angle,
+	                eaup_edge_sensitivity,
+	                eaup_neighbor_radius,
 	                number_of_output_points);
+        } else {
+            if (verbose) PRINT("POINTSET: edge_aware_upsample_point_set disabled.");
         }
-        FTK sm_angle = this->angle; // 20.0;
-        PRINTB("POINTSET sm_angle: %d",sm_angle);
-        FTK sm_radius = this->radius; // 30;
-        PRINTB("POINTSET sm_radius: %d",sm_radius);
-        FTK sm_distance = this->distance; // 0.05;
-        PRINTB("POINTSET sm_distance: %d",sm_distance);
         PointListK pl;
         for (std::list<PointVectorPairK>::const_iterator i = points.begin(); i != points.end(); ++i)
         {
             pl.push_back(Point_with_normalK(i->first, i->second));
         }
-        PRINT("POINTSET: Running Poisson_reconstruction_functionK...");
+        if (verbose) PRINT("POINTSET: Running Poisson_reconstruction_functionK...");
         Poisson_reconstruction_functionK function(
                 pl.begin(), pl.end(),
                 CGAL::make_normal_of_point_with_normal_pmap(PointListK::value_type())
@@ -370,26 +498,37 @@ Geometry *PrimitiveCGALNode::createGeometry() const
             PRINT("ERROR: Poisson reconstruction function error.");
             return p;
         }
-        PRINT("POINTSET: Running compute_average_spacing...");
+
+        if (verbose) PRINT("POINTSET: Running compute_average_spacing...");
+        unsigned int cas_k = (unsigned int) this->cas_k;
+        if (verbose) PRINTB("POINTSET: cas_k = %d",cas_k);
         FTK average_spacing = CGAL::compute_average_spacing(pl.begin(), pl.end(),
-                6
+               cas_k 
                 );
-        PRINTB("POINTSET:  average_spacing = %d",average_spacing);
+        if (verbose) PRINTB("POINTSET:  average_spacing = %d",average_spacing);
         PointK inner_point = function.get_inner_point();
         SphereK bsphere = function.bounding_sphere();
         FTK radius = std::sqrt(bsphere.squared_radius());
-        PRINTB("POINTSET:  bsphere radius = %d",radius);
+        if (verbose) PRINTB("POINTSET:  bsphere radius = %d",radius);
         FTK sm_sphere_radius = 5.0 * radius;
-        FTK sm_dichotomy_error = sm_distance*average_spacing/1000.0;
+
+        FTK smdc_angle = this->smdc_angle; // 20.0;
+        if (verbose) PRINTB("POINTSET smdc_angle: %d",smdc_angle);
+        FTK smdc_radius = this->smdc_radius; // 30;
+        if (verbose) PRINTB("POINTSET smdc_radius: %d",smdc_radius);
+        FTK smdc_distance = this->smdc_distance; // 0.05;
+        if (verbose) PRINTB("POINTSET smdc_distance: %d",smdc_distance);
+
+        FTK sm_dichotomy_error = smdc_distance*average_spacing/1000.0;
         Surface_3K surface(function,
                 SphereK(inner_point,sm_sphere_radius*sm_sphere_radius),
                 sm_dichotomy_error/sm_sphere_radius);
-        CGAL::Surface_mesh_default_criteria_3<STr> criteria(sm_angle
-                , sm_radius*average_spacing
-                , sm_distance*average_spacing);
+        CGAL::Surface_mesh_default_criteria_3<STr> criteria(smdc_angle
+                , smdc_radius*average_spacing
+                , smdc_distance*average_spacing);
         STr tr;
         C2t3 c2t3(tr);
-        PRINT("POINTSET: Running make_surface_mesh...");
+        if (verbose) PRINT("POINTSET: Running make_surface_mesh...");
         CGAL::make_surface_mesh(c2t3
                 , surface
                 , criteria
@@ -401,13 +540,59 @@ Geometry *PrimitiveCGALNode::createGeometry() const
             return p;
         }
         PolyhedronK output_mesh;
-        PRINT("POINTSET: Running output_surface_facets_to_polyhedron...");
+        if (verbose) PRINT("POINTSET: Running output_surface_facets_to_polyhedron...");
         CGAL::output_surface_facets_to_polyhedron(c2t3, output_mesh);
         // createPolySetFromPolyhedron(const Polyhedron &p, PolySet &ps);
         bool err = CGALUtils::createPolySetFromPolyhedron(output_mesh, *p);
         if( err ) {
             PRINT("ERROR: createPolySetFromPolyhedron failure");
         }
+        break;
+	}
+	case SKIN_SURFACE: {
+		PolySet *p = new PolySet(3);
+		g = p;
+		p->setConvexity(this->convexity);
+        std::list<WeightedK> points;
+        size_t num_points=this->points->toVector().size();
+        ValuePtr point_vec;
+        ValuePtr weight_vec=this->weights;
+        double weight;
+        if(num_points==2) {
+            point_vec=this->points[0];
+            weight_vec=this->points[1];
+            if( point_vec->toVector().size() <= weight_vec->toVector().size() ) num_points=point_vec->toVector().size();
+        } else {
+            point_vec=this->points;
+            weight=this->weight;
+        }
+        for (size_t i=0; i<num_points;i++)
+        {
+            double px, py, pz;
+            if (!point_vec->toVector()[i]->getVec3(px,py,pz) ||
+                    isinf(px) || isinf(py) || isinf(pz)) {
+                PRINTB("ERROR: Unable to convert point and index %d to a vec3 of numbers", i);
+                return p;
+            }
+            PointK ptk(px,py,pz);
+            double wt;
+            if ( weight_vec==ValuePtr::undefined || weight_vec->toVector()[i]->type()!=Value::NUMBER ) {
+                points.push_front(WeightedK(ptk,weight));
+            } else {
+                wt = weight_vec->toVector()[i]->toDouble();
+                points.push_front(WeightedK(ptk,wt));
+            }
+        }
+        PolyhedronK output_mesh;
+        double shrink_factor = this->shrink_factor;
+        int subdivisions = (int) this->subdivisions;
+        bool grow_balls = this->grow_balls;
+        CGAL::make_skin_surface_mesh_3(output_mesh, points.begin(), points.end(), shrink_factor, subdivisions, grow_balls);
+        bool err = CGALUtils::createPolySetFromPolyhedron(output_mesh, *p);
+        if( err ) {
+            PRINT("ERROR: createPolySetFromPolyhedron failure");
+        }
+        break;
 	}
 	}
 
@@ -422,20 +607,36 @@ std::string PrimitiveCGALNode::toString() const
 
 	switch (this->type) {
 	case POINTSET:
-		stream << "(points = " << *this->points 
-                    // jet_estimate_normals & mst_orient_normals 'nb_neighbors' parameter
-                    << ", neighbors = " << this->neighbors 
+		stream << "(points = " << this->points 
+                    // jet_estimate_normals 
+                    << ", jen_k = " << this->jen_k 
+                    // mst_orient_normals 
+                    << ", mon_k = " << this->mon_k 
                     // edge_aware_upsample_point_set parameters
-                    << ", scale_num_points = " << this->scale_num_points
-                    << ", sharpness_angle = " << this->sharpness_angle
-                    << ", edge_sensitivity = " << this->edge_sensitivity
-                    << ", neighbor_radius = " << this->neighbor_radius
+                    << ", eaup_scale_num_points = " << this->eaup_scale_num_points
+                    << ", eaup_number_of_output_points = " << this->eaup_number_of_output_points
+                    << ", eaup_sharpness_angle = " << this->eaup_sharpness_angle
+                    << ", eaup_edge_sensitivity = " << this->eaup_edge_sensitivity
+                    << ", eaup_neighbor_radius = " << this->eaup_neighbor_radius
+                    // compute_average_spacing
+                    << ", cas_k = " << this->cas_k
                     // Surface_mesh_default_criteria_3 parameters
-                    << ", angle = " << this->angle 
-                    << ", radius = " << this->radius 
-                    << ", distance = " << this->distance 
+                    << ", smdc_angle = " << this->smdc_angle 
+                    << ", smdc_radius = " << this->smdc_radius 
+                    << ", smdc_distance = " << this->smdc_distance 
                     // convexity
 					<< ", convexity = " << this->convexity 
+					<< ", verbose = " << this->verbose 
+                    << ")";
+			break;
+	case SKIN_SURFACE:
+		stream << "(points = " << this->points 
+                    << ", weights = " << this->weights
+                    << ", shrink_factor = " << this->shrink_factor
+                    << ", subdivisions = " << this->subdivisions
+                    << ", grow_balls = " << this->grow_balls
+					<< ", convexity = " << this->convexity 
+					<< ", verbose = " << this->verbose 
                     << ")";
 			break;
 	default:
@@ -448,4 +649,5 @@ std::string PrimitiveCGALNode::toString() const
 void register_builtin_cgal_primitives()
 {
 	Builtins::init("pointset", new PrimitiveCGALModule(POINTSET));
+	Builtins::init("skin_surface", new PrimitiveCGALModule(SKIN_SURFACE));
 }
