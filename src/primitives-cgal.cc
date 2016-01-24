@@ -555,15 +555,19 @@ Geometry *PrimitiveCGALNode::createGeometry() const
 		p->setConvexity(this->convexity);
         std::list<WeightedK> points;
         size_t num_points=this->points->toVector().size();
-        ValuePtr point_vec;
+        ValuePtr point_vec=this->points;
         ValuePtr weight_vec=this->weights;
         double weight;
         if(num_points==2) {
             point_vec=this->points[0];
             weight_vec=this->points[1];
-            if( point_vec->toVector().size() <= weight_vec->toVector().size() ) num_points=point_vec->toVector().size();
+            if( point_vec->toVector().size() <= weight_vec->toVector().size() ) {
+                num_points=point_vec->toVector().size();
+            } else {
+                PRINT("ERROR: Not enough weights for points.");
+                return p;
+            }
         } else {
-            point_vec=this->points;
             weight=this->weight;
         }
         for (size_t i=0; i<num_points;i++)
