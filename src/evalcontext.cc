@@ -42,7 +42,7 @@ ModuleInstantiation *EvalContext::getChild(size_t i) const
 
 void EvalContext::assignTo(Context &target) const
 {
-	BOOST_FOREACH(const Assignment &assignment, this->eval_arguments) {
+	for(const auto &assignment : this->eval_arguments) {
 		ValuePtr v;
 		if (assignment.second) v = assignment.second->evaluate(&target);
 		if (target.has_local_variable(assignment.first)) {
