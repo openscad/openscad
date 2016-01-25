@@ -13,7 +13,6 @@
 #include "editor.h"
 #include <vector>
 #include <QMutex>
-#include <QSet>
 #include <QTime>
 #include <QIODevice>
 
@@ -202,7 +201,6 @@ private slots:
 	void actionFlushCaches();
 
 public:
-	static QSet<MainWindow*> *getWindows();
 	void viewModeActionsUncheck();
 	void setCurrentOutput();
 	void clearCurrentOutput();
@@ -262,7 +260,6 @@ private:
 	static bool mdiMode;
 	static bool undockMode;
 	static bool reorderMode;
-	static QSet<MainWindow*> *windows;
 	static class QProgressDialog *fontCacheDialog;
 
 	shared_ptr<class CSGNode> csgRoot;           // Result of the CSGTreeEvaluator

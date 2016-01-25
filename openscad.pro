@@ -243,6 +243,8 @@ HEADERS += src/typedefs.h \
            src/QGLView.h \
            src/GLView.h \
            src/MainWindow.h \
+           src/OpenSCADApp.h \
+           src/WindowManager.h \
            src/Preferences.h \
            src/OpenCSGWarningDialog.h \
            src/AboutDialog.h \
@@ -425,6 +427,8 @@ SOURCES += src/version_check.cc \
            \
            src/openscad.cc \
            src/mainwin.cc \
+           src/OpenSCADApp.cc \
+           src/WindowManager.cc \
            src/UIUtils.cc \
            src/Dock.cc \
            src/FontListDialog.cc \

@@ -28,6 +28,7 @@
 #include "GeometryCache.h"
 #include "ModuleCache.h"
 #include "MainWindow.h"
+#include "OpenSCADApp.h"
 #include "parsersettings.h"
 #include "rendersettings.h"
 #include "Preferences.h"
@@ -72,7 +73,6 @@
 #include <QMenuBar>
 #include <QSplitter>
 #include <QFileDialog>
-#include <QApplication>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QLabel>
@@ -124,15 +124,6 @@
 
 #include "boosty.h"
 #include "FontCache.h"
-
-// Keeps track of open window
-QSet<MainWindow*> *MainWindow::windows = NULL;
-
-QSet<MainWindow*> *MainWindow::getWindows()
-{
-	if (!MainWindow::windows) MainWindow::windows = new QSet<MainWindow*>;
-	return MainWindow::windows;
-}
 
 // Global application state
 unsigned int GuiLocker::gui_locked = 0;
@@ -229,7 +220,7 @@ MainWindow::MainWindow(const QString &filename)
 
 	this->setAttribute(Qt::WA_DeleteOnClose);
 
-	MainWindow::getWindows()->insert(this);
+	scadApp->windowManager.add(this);
 
 #ifdef ENABLE_CGAL
 	this->cgalworker = new CGALWorker();
@@ -702,8 +693,8 @@ MainWindow::~MainWindow()
 	delete this->opencsgRenderer;
 #endif
 	delete this->thrownTogetherRenderer;
-	MainWindow::getWindows()->remove(this);
-	if (MainWindow::getWindows()->size() == 0) {
+	scadApp->windowManager.remove(this);
+	if (scadApp->windowManager.getWindows().size() == 0) {
 		// Quit application even in case some other windows like
 		// Preferences are still open.
 		this->quit();
@@ -736,7 +727,7 @@ void MainWindow::report_func(const class AbstractNode*, void *vp, int mark)
 void MainWindow::requestOpenFile(const QString &filename)
 {
 	// if we have an empty open window, use that one
-	QSetIterator<MainWindow *> i(*MainWindow::getWindows());
+	QSetIterator<MainWindow *> i(scadApp->windowManager.getWindows());
 	while (i.hasNext()) {
 		MainWindow *w = i.next();
 
