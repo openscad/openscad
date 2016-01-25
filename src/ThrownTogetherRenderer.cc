@@ -101,7 +101,15 @@ void ThrownTogetherRenderer::renderChainObject(const CSGChainObject &csgobj, boo
 	setColor(colormode, c.data());
 	glPushMatrix();
 	glMultMatrixd(m.data());
+	// We render twice in order to correctly render backfaces when
+	// the material is transparent
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
 	render_surface(csgobj.leaf->geom, csgmode, m);
+	glCullFace(GL_FRONT);
+	render_surface(csgobj.leaf->geom, csgmode, m);
+	glDisable(GL_CULL_FACE);
+
 	if (showedges) {
 		// FIXME? glColor4f((c[0]+1)/2, (c[1]+1)/2, (c[2]+1)/2, 1.0);
 		setColor(edge_colormode);
