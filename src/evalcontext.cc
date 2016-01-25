@@ -40,6 +40,19 @@ ModuleInstantiation *EvalContext::getChild(size_t i) const
 	return this->scope ? this->scope->children[i] : NULL; 
 }
 
+void EvalContext::assignTo(Context &target) const
+{
+	BOOST_FOREACH(const Assignment &assignment, this->eval_arguments) {
+		ValuePtr v;
+		if (assignment.second) v = assignment.second->evaluate(&target);
+		if (target.has_local_variable(assignment.first)) {
+			PRINTB("WARNING: Ignoring duplicate variable assignment %s = %s", assignment.first % v->toString());
+		} else {
+			target.set_variable(assignment.first, v);
+		}
+	}
+}
+
 #ifdef DEBUG
 std::string EvalContext::dump(const AbstractModule *mod, const ModuleInstantiation *inst)
 {

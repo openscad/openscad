@@ -1190,11 +1190,14 @@ void MainWindow::compileCSG(bool procevents)
 		PRINTB("Compiling highlights (%d CSG Trees)...", highlight_terms.size());
 		if (procevents) QApplication::processEvents();
 		
-		highlights_products.reset(new CSGProducts());
+		this->highlights_products.reset(new CSGProducts());
 		for (unsigned int i = 0; i < highlight_terms.size(); i++) {
 			shared_ptr<CSGNode> nterm = normalizer.normalize(highlight_terms[i]);
-			highlights_products->import(nterm);
+			this->highlights_products->import(nterm);
 		}
+	}
+	else {
+		this->highlights_products.reset();
 	}
 	
 	const std::vector<shared_ptr<CSGNode> > &background_terms = csgrenderer.getBackgroundNodes();
@@ -1202,11 +1205,14 @@ void MainWindow::compileCSG(bool procevents)
 		PRINTB("Compiling background (%d CSG Trees)...", background_terms.size());
 		if (procevents) QApplication::processEvents();
 		
-		background_products.reset(new CSGProducts());
+		this->background_products.reset(new CSGProducts());
 		for (unsigned int i = 0; i < background_terms.size(); i++) {
 			shared_ptr<CSGNode> nterm = normalizer.normalize(background_terms[i]);
-			background_products->import(nterm);
+			this->background_products->import(nterm);
 		}
+	}
+	else {
+		this->background_products.reset();
 	}
 
 	if (this->root_products &&
