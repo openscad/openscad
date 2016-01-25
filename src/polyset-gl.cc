@@ -206,7 +206,7 @@ void PolySet::render_edges(Renderer::csgmode_e csgmode) const
 			BOOST_FOREACH(const Outline2d &o, polygon.outlines()) {
 				glBegin(GL_LINE_LOOP);
 				BOOST_FOREACH(const Vector2d &v, o.vertices) {
-					glVertex3d(v[0], v[1], -0.1);
+					glVertex3d(v[0], v[1], 0);
 				}
 				glEnd();
 			}

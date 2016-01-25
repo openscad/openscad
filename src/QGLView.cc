@@ -201,7 +201,12 @@ void QGLView::mouseDoubleClickEvent (QMouseEvent *event) {
 	double y = viewport[3] - event->pos().y() * this->getDPI();
 	GLfloat z = 0;
 
+	glGetError(); // clear error state so we don't pick up previous errors
 	glReadPixels(x, y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &z);
+	GLenum glError = glGetError();
+	if (glError != GL_NO_ERROR) {
+		return;
+	}
 
 	if (z == 1) return; // outside object
 

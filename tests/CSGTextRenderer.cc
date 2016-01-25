@@ -7,7 +7,7 @@
 #include "state.h"
 #include "module.h" // FIXME: Temporarily for ModuleInstantiation
 
-#include "csgnode.h"
+#include "csgops.h"
 #include "transformnode.h"
 
 #include <sstream>
@@ -104,7 +104,7 @@ Response CSGTextRenderer::visit(State &state, const AbstractIntersectionNode &no
 	return ContinueTraversal;
 }
 
-Response CSGTextRenderer::visit(State &state, const CsgNode &node)
+Response CSGTextRenderer::visit(State &state, const CsgOpNode &node)
 {
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
