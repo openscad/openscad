@@ -48,6 +48,7 @@ public: // types
 		ECHO,
 		ASSIGN,
 		FOR,
+		LET,
 		INT_FOR,
 		IF
     };
@@ -279,6 +280,18 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 	}
 		break;
 
+	case LET: {
+		node = new GroupNode(inst);
+		Context c(evalctx);
+
+		evalctx->assignTo(c);
+
+		inst->scope.apply(c);
+		std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(&c);
+		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
+	}
+		break;
+
 	case ASSIGN: {
 		node = new GroupNode(inst);
 		// We create a new context to avoid parameters from influencing each other
@@ -331,6 +344,7 @@ void register_builtin_control()
 	Builtins::init("echo", new ControlModule(ControlModule::ECHO));
 	Builtins::init("assign", new ControlModule(ControlModule::ASSIGN));
 	Builtins::init("for", new ControlModule(ControlModule::FOR));
+	Builtins::init("let", new ControlModule(ControlModule::LET));
 	Builtins::init("intersection_for", new ControlModule(ControlModule::INT_FOR));
 	Builtins::init("if", new ControlModule(ControlModule::IF));
 }

@@ -287,10 +287,11 @@ child_statement:
             }
         ;
 
-// "for" and "each" are a valid module identifier
+// "for", "let" and "each" are valid module identifiers
 module_id:
           TOK_ID  { $$ = $1; }
         | TOK_FOR { $$ = strdup("for"); }
+        | TOK_LET { $$ = strdup("let"); }
         | TOK_EACH { $$ = strdup("each"); }
         ;
 
