@@ -400,6 +400,16 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->viewActionShowAxes, SIGNAL(triggered()), this, SLOT(viewModeShowAxes()));
 	connect(this->viewActionShowCrosshairs, SIGNAL(triggered()), this, SLOT(viewModeShowCrosshairs()));
 	connect(this->viewActionShowScaleProportional, SIGNAL(triggered()), this, SLOT(viewModeShowScaleProportional()));
+	connect(this->viewActionAutomatic, SIGNAL(triggered()), this, SLOT(viewViewportSize()));
+	connect(this->viewAction640x480, SIGNAL(triggered()), this, SLOT(viewViewportSize()));
+	connect(this->viewAction800x600, SIGNAL(triggered()), this, SLOT(viewViewportSize()));
+	connect(this->viewAction1024x768, SIGNAL(triggered()), this, SLOT(viewViewportSize()));
+	connect(this->viewAction1280x1024, SIGNAL(triggered()), this, SLOT(viewViewportSize()));
+	connect(this->viewAction1600x1200, SIGNAL(triggered()), this, SLOT(viewViewportSize()));
+	connect(this->viewAction1280x720, SIGNAL(triggered()), this, SLOT(viewViewportSize()));
+	connect(this->viewAction1366x768, SIGNAL(triggered()), this, SLOT(viewViewportSize()));
+	connect(this->viewAction1600x900, SIGNAL(triggered()), this, SLOT(viewViewportSize()));
+	connect(this->viewAction1920x1080, SIGNAL(triggered()), this, SLOT(viewViewportSize()));
 	connect(this->viewActionAnimate, SIGNAL(triggered()), this, SLOT(viewModeAnimate()));
 	connect(this->viewActionTop, SIGNAL(triggered()), this, SLOT(viewAngleTop()));
 	connect(this->viewActionBottom, SIGNAL(triggered()), this, SLOT(viewAngleBottom()));
@@ -486,7 +496,20 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->replaceButton, SIGNAL(clicked()), this, SLOT(replace()));
 	connect(this->replaceAllButton, SIGNAL(clicked()), this, SLOT(replaceAll()));
 	connect(this->replaceInputField, SIGNAL(returnPressed()), this->replaceButton, SLOT(animateClick()));
-	
+
+	viewportSizeGroup = new QActionGroup(this);
+	viewportSizeGroup->addAction(viewActionAutomatic);
+	viewportSizeGroup->addAction(viewAction640x480);
+	viewportSizeGroup->addAction(viewAction800x600);
+	viewportSizeGroup->addAction(viewAction1024x768);
+	viewportSizeGroup->addAction(viewAction1280x1024);
+	viewportSizeGroup->addAction(viewAction1600x1200);
+	viewportSizeGroup->addAction(viewAction1280x720);
+	viewportSizeGroup->addAction(viewAction1366x768);
+	viewportSizeGroup->addAction(viewAction1600x900);
+	viewportSizeGroup->addAction(viewAction1920x1080);
+	viewActionAutomatic->setChecked(true);
+
 	addKeyboardShortCut(this->viewerToolBar->actions());
 	addKeyboardShortCut(this->editortoolbar->actions());
 	
@@ -702,6 +725,7 @@ MainWindow::~MainWindow()
 	delete this->opencsgRenderer;
 #endif
 	delete this->thrownTogetherRenderer;
+	delete this->viewportSizeGroup;
 	MainWindow::getWindows()->remove(this);
 	if (MainWindow::getWindows()->size() == 0) {
 		// Quit application even in case some other windows like
@@ -2392,6 +2416,35 @@ void MainWindow::viewModeShowScaleProportional()
     settings.setValue("view/showScaleProportional",viewActionShowScaleProportional->isChecked());
     this->qglview->setShowScaleProportional(viewActionShowScaleProportional->isChecked());
     this->qglview->updateGL();
+}
+
+void MainWindow::viewViewportSize()
+{
+	QAction *action = dynamic_cast<QAction *>(sender());
+	if (!action) {
+		return;
+	}
+
+	QStringList sizes = action->text().split("x");
+	if (sizes.size() != 2) {
+		centralwidget->setMinimumSize(0, 0);
+		centralwidget->setMaximumSize(16777215, 16777215);
+		return;
+	}
+
+	bool width_ok, height_ok;
+	int width = sizes[0].toInt(&width_ok);
+	int height = sizes[1].toInt(&height_ok);
+
+	if (width_ok && height_ok) {
+		int toolbarHeight = viewerToolBar->isVisible() ? viewerToolBar->size().rheight() : 0;
+		int animationHeight = animate_panel->isVisible() ? animate_panel->size().rheight() : 0;
+		int resultHeight = frameCompileResult->isVisible() ? frameCompileResult->size().rheight() : 0;
+		int h = height + toolbarHeight + animationHeight + resultHeight;
+		centralwidget->setMinimumSize(width, h);
+		centralwidget->setMaximumSize(width, h);
+		adjustSize();
+	}
 }
 
 void MainWindow::viewModeAnimate()
