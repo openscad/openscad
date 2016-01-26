@@ -21,6 +21,7 @@ Feature::list_t Feature::feature_list;
  */
 const Feature Feature::ExperimentalEachExpression("lc-each", "Enable <code>each</code> expression in list comprehensions.");
 const Feature Feature::ExperimentalElseExpression("lc-else", "Enable <code>else</code> expression in list comprehensions.");
+const Feature Feature::ExperimentalForCExpression("lc-for-c", "Enable C-style <code>for</code> expression in list comprehensions.");
 
 Feature::Feature(const std::string &name, const std::string &description)
 	: enabled(false), name(name), description(description)

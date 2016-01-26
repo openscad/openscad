@@ -467,6 +467,12 @@ list_comprehension_elements:
                 }
                 delete $3;
             }
+        | TOK_FOR '(' arguments_call ';' expr ';' arguments_call ')' list_comprehension_elements_or_expr
+            {
+                $$ = new ExpressionLcForC(*$3, *$7, $5, $9);
+                delete $3;
+                delete $7;
+            }
         | TOK_IF '(' expr ')' list_comprehension_elements_or_expr
             {
               $$ = new ExpressionLcIf($3, $5, 0);
