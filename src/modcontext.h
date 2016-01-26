@@ -4,7 +4,7 @@
 #include "module.h"
 
 /*!
-	This holds the context for a Module definition; keeps track of
+	This holds the context for a UserModule definition; keeps track of
 	global variables, submodules and functions defined inside a module.
 
 	NB! every .scad file defines a FileModule holding the contents of the file.
@@ -15,7 +15,7 @@ public:
 	ModuleContext(const Context *parent = NULL, const EvalContext *evalctx = NULL);
 	virtual ~ModuleContext();
 
-	void initializeModule(const Module &m);
+	void initializeModule(const UserModule &m);
 	void registerBuiltin();
 	virtual ValuePtr evaluate_function(const std::string &name, 
 																										const EvalContext *evalctx) const;
@@ -44,6 +44,7 @@ class FileContext : public ModuleContext
 public:
 	FileContext(const class FileModule &module, const Context *parent);
 	virtual ~FileContext() {}
+	void initializeModule(const class FileModule &module);
 	virtual ValuePtr evaluate_function(const std::string &name, 
 																		 const EvalContext *evalctx) const;
 	virtual AbstractNode *instantiate_module(const ModuleInstantiation &inst, 

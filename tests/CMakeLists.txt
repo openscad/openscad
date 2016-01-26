@@ -675,9 +675,11 @@ set(CORE_SOURCES
   ../src/hash.cc 
   ../src/expr.cc 
   ../src/func.cc 
+  ../src/function.cc 
   ../src/stackcheck.cc 
   ../src/localscope.cc 
   ../src/module.cc 
+  ../src/ModuleInstantiation.cc 
   ../src/ModuleCache.cc 
   ../src/node.cc 
   ../src/context.cc 

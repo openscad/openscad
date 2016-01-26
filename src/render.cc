@@ -26,6 +26,7 @@
 
 #include "rendernode.h"
 #include "module.h"
+#include "ModuleInstantiation.h"
 #include "evalcontext.h"
 #include "builtin.h"
 #include "polyset.h"

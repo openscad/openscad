@@ -27,10 +27,10 @@
 %{
 
 #include <glib.h>
-#include "typedefs.h"
 #include "handle_dep.h"
 #include "printutils.h"
 #include "parsersettings.h"
+#include "Assignment.h"
 #include "parser_yacc.h"
 #include "module.h"
 #include <assert.h>

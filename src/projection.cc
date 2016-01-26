@@ -26,6 +26,7 @@
 
 #include "projectionnode.h"
 #include "module.h"
+#include "ModuleInstantiation.h"
 #include "evalcontext.h"
 #include "printutils.h"
 #include "builtin.h"

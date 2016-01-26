@@ -34,8 +34,9 @@
 #include <unistd.h>
 #endif
 
-#include "typedefs.h"
 #include "module.h"
+#include "ModuleInstantiation.h"
+#include "Assignment.h"
 #include "expression.h"
 #include "value.h"
 #include "function.h"
@@ -76,9 +77,10 @@ fs::path parser_sourcefile;
   double number;
   class Value *value;
   class Expression *expr;
+  class Vector *vec;
   class ModuleInstantiation *inst;
   class IfElseModuleInstantiation *ifelse;
-  Assignment *arg;
+  class Assignment *arg;
   AssignmentList *args;
 }
 
@@ -119,7 +121,7 @@ fs::path parser_sourcefile;
 %left '.'
 
 %type <expr> expr
-%type <expr> vector_expr
+%type <vec> vector_expr
 %type <expr> list_comprehension_elements
 %type <expr> list_comprehension_elements_p
 %type <expr> list_comprehension_elements_or_expr
@@ -160,7 +162,8 @@ statement:
         | assignment
         | TOK_MODULE TOK_ID '(' arguments_decl optional_commas ')'
             {
-                Module *newmodule = new Module();
+                UserModule *newmodule = new UserModule();
+                printf("Loc: %d\n", @$.first_line);
                 newmodule->definition_arguments = *$4;
                 scope_stack.top()->modules[$2] = newmodule;
                 scope_stack.push(&newmodule->scope);
@@ -173,7 +176,7 @@ statement:
             }
         | TOK_FUNCTION TOK_ID '(' arguments_decl optional_commas ')' '=' expr
             {
-                Function *func = Function::create($2, *$4, $8);
+              UserFunction *func = UserFunction::create($2, *$4, shared_ptr<Expression>($8));
                 scope_stack.top()->functions[$2] = func;
                 free($2);
                 delete $4;
@@ -191,8 +194,8 @@ assignment:
             {
                 bool found = false;
                 for (auto& iter : scope_stack.top()->assignments) {
-                    if (iter.first == $1) {
-                        iter.second = shared_ptr<Expression>($3);
+                    if (iter.name == $1) {
+                        iter.expr = shared_ptr<Expression>($3);
                         found = true;
                         break;
                     }
@@ -309,107 +312,107 @@ single_module_instantiation:
 expr:
           TOK_TRUE
             {
-                $$ = new ExpressionConst(ValuePtr(true));
+                $$ = new Literal(ValuePtr(true));
             }
         | TOK_FALSE
             {
-                $$ = new ExpressionConst(ValuePtr(false));
+                $$ = new Literal(ValuePtr(false));
             }
         | TOK_UNDEF
             {
-                $$ = new ExpressionConst(ValuePtr::undefined);
+                $$ = new Literal(ValuePtr::undefined);
             }
         | TOK_ID
             {
-                $$ = new ExpressionLookup($1);
+                $$ = new Lookup($1);
                 free($1);
             }
         | expr '.' TOK_ID
             {
-              $$ = new ExpressionMember($1, $3);
-                free($3);
+              $$ = new MemberLookup($1, $3);
+              free($3);
             }
         | TOK_STRING
             {
-                $$ = new ExpressionConst(ValuePtr(std::string($1)));
-                free($1);
+              $$ = new Literal(ValuePtr(std::string($1)));
+              free($1);
             }
         | TOK_NUMBER
             {
-                $$ = new ExpressionConst(ValuePtr($1));
+              $$ = new Literal(ValuePtr($1));
             }
         | TOK_LET '(' arguments_call ')' expr %prec LET
             {
-              $$ = new ExpressionLet(*$3, $5);
-                delete $3;
+              $$ = new Let(*$3, $5);
+              delete $3;
             }
         | '[' expr ':' expr ']'
             {
-                $$ = new ExpressionRange($2, $4);
+              $$ = new Range($2, $4);
             }
         | '[' expr ':' expr ':' expr ']'
             {
-                $$ = new ExpressionRange($2, $4, $6);
+              $$ = new Range($2, $4, $6);
             }
         | '[' optional_commas ']'
             {
-                $$ = new ExpressionConst(ValuePtr(Value::VectorType()));
+              $$ = new Literal(ValuePtr(Value::VectorType()));
             }
         | '[' vector_expr optional_commas ']'
             {
-                $$ = $2;
+              $$ = $2;
             }
         | expr '*' expr
             {
-                $$ = new ExpressionMultiply($1, $3);
+              $$ = new BinaryOp($1, BinaryOp::Op::Multiply, $3);
             }
         | expr '/' expr
             {
-                $$ = new ExpressionDivision($1, $3);
+              $$ = new BinaryOp($1, BinaryOp::Op::Divide, $3);
             }
         | expr '%' expr
             {
-                $$ = new ExpressionModulo($1, $3);
+              $$ = new BinaryOp($1, BinaryOp::Op::Modulo, $3);
             }
         | expr '+' expr
             {
-                $$ = new ExpressionPlus($1, $3);
+              $$ = new BinaryOp($1, BinaryOp::Op::Plus, $3);
             }
         | expr '-' expr
             {
-                $$ = new ExpressionMinus($1, $3);
+              $$ = new BinaryOp($1, BinaryOp::Op::Minus, $3);
             }
         | expr '<' expr
             {
-                $$ = new ExpressionLess($1, $3);
+              $$ = new BinaryOp($1, BinaryOp::Op::Less, $3);
             }
         | expr LE expr
             {
-                $$ = new ExpressionLessOrEqual($1, $3);
+              $$ = new BinaryOp($1, BinaryOp::Op::LessEqual, $3);
             }
         | expr EQ expr
             {
-                $$ = new ExpressionEqual($1, $3);
+              $$ = new BinaryOp($1, BinaryOp::Op::Equal, $3);
             }
         | expr NE expr
             {
-                $$ = new ExpressionNotEqual($1, $3);
+              $$ = new BinaryOp($1, BinaryOp::Op::NotEqual, $3);
             }
         | expr GE expr
             {
-                $$ = new ExpressionGreaterOrEqual($1, $3);
+              $$ = new BinaryOp($1, BinaryOp::Op::GreaterEqual, $3);
             }
         | expr '>' expr
             {
-                $$ = new ExpressionGreater($1, $3);
+              $$ = new BinaryOp($1, BinaryOp::Op::Greater, $3);
             }
         | expr AND expr
             {
-                $$ = new ExpressionLogicalAnd($1, $3);
+              $$ = new BinaryOp($1, BinaryOp::Op::LogicalAnd, $3);
             }
         | expr OR expr
             {
-                $$ = new ExpressionLogicalOr($1, $3);
+              $$ = new BinaryOp($1, BinaryOp::Op::LogicalOr, $3);
             }
         | '+' expr
             {
@@ -417,29 +420,29 @@ expr:
             }
         | '-' expr
             {
-                $$ = new ExpressionInvert($2);
+              $$ = new UnaryOp(UnaryOp::Op::Negate, $2);
             }
         | '!' expr
             {
-                $$ = new ExpressionNot($2);
+              $$ = new UnaryOp(UnaryOp::Op::Not, $2);
             }
         | '(' expr ')'
             {
-                $$ = $2;
+              $$ = $2;
             }
         | expr '?' expr ':' expr
             {
-                $$ = new ExpressionTernary($1, $3, $5);
+              $$ = new TernaryOp($1, $3, $5);
             }
         | expr '[' expr ']'
             {
-                $$ = new ExpressionArrayLookup($1, $3);
+              $$ = new ArrayLookup($1, $3);
             }
         | TOK_ID '(' arguments_call ')'
             {
-              $$ = new ExpressionFunctionCall($1, *$3);
-                free($1);
-                delete $3;
+              $$ = new FunctionCall($1, *$3);
+              free($1);
+              delete $3;
             }
         ;
 
@@ -448,12 +451,12 @@ list_comprehension_elements:
              be parsed as an expression) */
           TOK_LET '(' arguments_call ')' list_comprehension_elements_p
             {
-              $$ = new ExpressionLcLet(*$3, $5);
-                delete $3;
+              $$ = new LcLet(*$3, $5);
+              delete $3;
             }
         | TOK_EACH list_comprehension_elements_or_expr
             {
-              $$ = new ExpressionLcEach($2);
+              $$ = new LcEach($2);
             }
         | TOK_FOR '(' arguments_call ')' list_comprehension_elements_or_expr
             {
@@ -463,24 +466,24 @@ list_comprehension_elements:
                 for (int i = $3->size()-1; i >= 0; i--) {
                   AssignmentList arglist;
                   arglist.push_back((*$3)[i]);
-                  Expression *e = new ExpressionLcFor(arglist, $$);
+                  Expression *e = new LcFor(arglist, $$);
                     $$ = e;
                 }
                 delete $3;
             }
         | TOK_FOR '(' arguments_call ';' expr ';' arguments_call ')' list_comprehension_elements_or_expr
             {
-                $$ = new ExpressionLcForC(*$3, *$7, $5, $9);
+                $$ = new LcForC(*$3, *$7, $5, $9);
                 delete $3;
                 delete $7;
             }
         | TOK_IF '(' expr ')' list_comprehension_elements_or_expr
             {
-              $$ = new ExpressionLcIf($3, $5, 0);
+              $$ = new LcIf($3, $5, 0);
             }
         | TOK_IF '(' expr ')' list_comprehension_elements_or_expr TOK_ELSE list_comprehension_elements_or_expr
             {
-              $$ = new ExpressionLcIf($3, $5, $7);
+              $$ = new LcIf($3, $5, $7);
             }
         ;
 
@@ -506,16 +509,18 @@ optional_commas:
 vector_expr:
           expr
             {
-                $$ = new ExpressionVector($1);
+              $$ = new Vector();
+              $$->push_back($1);
             }
         |  list_comprehension_elements
             {
-                $$ = new ExpressionVector($1);
+              $$ = new Vector();
+              $$->push_back($1);
             }
         | vector_expr ',' optional_commas list_comprehension_elements_or_expr
             {
-                $$ = $1;
-                $$->children.push_back($4);
+              $$ = $1;
+              $$->push_back($4);
             }
         ;
 
