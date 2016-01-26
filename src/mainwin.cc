@@ -722,26 +722,6 @@ void MainWindow::report_func(const class AbstractNode*, void *vp, int mark)
 }
 
 /*!
-	Requests to open a file from an external event, e.g. by double-clicking a filename.
- */
-void MainWindow::requestOpenFile(const QString &filename)
-{
-	// if we have an empty open window, use that one
-	QSetIterator<MainWindow *> i(scadApp->windowManager.getWindows());
-	while (i.hasNext()) {
-		MainWindow *w = i.next();
-
-		if (w->editor->toPlainText().isEmpty()) {
-			w->openFile(filename);
-			return;
-		}
-	}
-
-	// otherwise, create a new one
-	new MainWindow(filename);
-}
-
-/*!
  	Open the given file. In MDI mode a new window is created if the current
  	one is not empty. Otherwise the current window content is overwritten.
  	Any check whether to replace the content have to be made before.
@@ -2395,6 +2375,11 @@ void MainWindow::viewModeAnimate()
 		animate_panel->hide();
 		animate_timer->stop();
 	}
+}
+
+bool MainWindow::isEmpty()
+{
+	return this->editor->toPlainText().isEmpty();
 }
 
 void MainWindow::animateUpdateDocChanged()

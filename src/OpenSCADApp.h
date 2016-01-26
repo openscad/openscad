@@ -12,6 +12,7 @@ public:
 	~OpenSCADApp();
 
 	bool notify(QObject *object, QEvent *event);
+	void requestOpenFile(const QString &filename);
 
 	WindowManager windowManager;
 };

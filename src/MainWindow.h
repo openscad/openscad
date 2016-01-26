@@ -28,8 +28,6 @@ class MainWindow : public QMainWindow, public Ui::MainWindow
 	Q_OBJECT
 
 public:
-	static void requestOpenFile(const QString &filename);
-
 	QString fileName;
 
 	class Preferences *prefs;
@@ -102,7 +100,6 @@ private slots:
 
 private:
         void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
-	void openFile(const QString &filename);
         void handleFileDrop(const QString &filename);
 	void refreshDocument();
         void updateCamera();
@@ -204,8 +201,10 @@ public:
 	void viewModeActionsUncheck();
 	void setCurrentOutput();
 	void clearCurrentOutput();
+  bool isEmpty();
 
 public slots:
+	void openFile(const QString &filename);
 	void actionReloadRenderPreview();
         void on_editorDock_visibilityChanged(bool);
         void on_consoleDock_visibilityChanged(bool);
