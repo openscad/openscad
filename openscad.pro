@@ -205,14 +205,6 @@ CONFIG(mingw-cross-env)|CONFIG(mingw-cross-env-shared) {
   include(mingw-cross-env.pri)
 }
 
-win* {
-  FLEXSOURCES = src/lexer.l
-  BISONSOURCES = src/parser.y
-} else {
-  LEXSOURCES += src/lexer.l
-  YACCSOURCES += src/parser.y
-}
-
 RESOURCES = openscad.qrc
 
 # Qt5 removed access to the QMAKE_UIC variable, the following
@@ -229,8 +221,28 @@ FORMS   += src/MainWindow.ui \
            src/launchingscreen.ui \
            src/LibraryInfoDialog.ui
 
-HEADERS += src/typedefs.h \
-           src/version_check.h \
+# AST nodes
+win* {
+  FLEXSOURCES = src/lexer.l
+  BISONSOURCES = src/parser.y
+} else {
+  LEXSOURCES += src/lexer.l
+  YACCSOURCES += src/parser.y
+}
+
+HEADERS += src/AST.h \
+           src/ModuleInstantiation.h \
+           src/Assignment.h \
+           src/expression.h \
+           src/function.h \
+           src/module.h
+
+SOURCES += src/ModuleInstantiation.cc \
+           src/expr.cc \
+           src/function.cc \
+           src/module.cc
+
+HEADERS += src/version_check.h \
            src/ProgressWidget.h \
            src/parsersettings.h \
            src/renderer.h \
@@ -261,15 +273,12 @@ HEADERS += src/typedefs.h \
            src/dxfdata.h \
            src/dxfdim.h \
            src/export.h \
-           src/expression.h \
            src/stackcheck.h \
-           src/function.h \
            src/exceptions.h \
            src/grid.h \
            src/hash.h \
            src/highlighter.h \
            src/localscope.h \
-           src/module.h \
            src/feature.h \
            src/node.h \
            src/csgnode.h \
@@ -338,11 +347,9 @@ SOURCES += src/version_check.cc \
            src/Camera.cc \
            src/handle_dep.cc \
            src/value.cc \
-           src/expr.cc \
            src/stackcheck.cc \
            src/func.cc \
            src/localscope.cc \
-           src/module.cc \
            src/feature.cc \
            src/node.cc \
            src/context.cc \

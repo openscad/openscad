@@ -3,6 +3,7 @@
 #include "state.h"
 #include "csgops.h"
 #include "module.h"
+#include "ModuleInstantiation.h"
 #include "csgnode.h"
 #include "transformnode.h"
 #include "colornode.h"

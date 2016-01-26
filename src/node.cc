@@ -26,6 +26,7 @@
 
 #include "node.h"
 #include "module.h"
+#include "ModuleInstantiation.h"
 #include "progress.h"
 #include "visitor.h"
 #include "stl-utils.h"

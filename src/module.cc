@@ -25,6 +25,7 @@
  */
 
 #include "module.h"
+#include "ModuleInstantiation.h"
 #include "ModuleCache.h"
 #include "node.h"
 #include "builtin.h"
@@ -78,103 +79,9 @@ std::string AbstractModule::dump(const std::string &indent, const std::string &n
 	return dump.str();
 }
 
-ModuleInstantiation::~ModuleInstantiation()
-{
-}
+std::deque<std::string> UserModule::module_stack;
 
-IfElseModuleInstantiation::~IfElseModuleInstantiation()
-{
-}
-
-/*!
-	Returns the absolute path to the given filename, unless it's empty.
-
-	NB! This will actually search for the file, to be backwards compatible with <= 2013.01
-	(see issue #217)
-*/
-std::string ModuleInstantiation::getAbsolutePath(const std::string &filename) const
-{
-	if (!filename.empty() && !boosty::is_absolute(fs::path(filename))) {
-		return boosty::absolute(fs::path(this->modpath) / filename).string();
-	}
-	else {
-		return filename;
-	}
-}
-
-std::string ModuleInstantiation::dump(const std::string &indent) const
-{
-	std::stringstream dump;
-	dump << indent;
-	dump << modname + "(";
-	for (size_t i=0; i < this->arguments.size(); i++) {
-		const Assignment &arg = this->arguments[i];
-		if (i > 0) dump << ", ";
-		if (!arg.first.empty()) dump << arg.first << " = ";
-		dump << *arg.second;
-	}
-	if (scope.numElements() == 0) {
-		dump << ");\n";
-	} else if (scope.numElements() == 1) {
-		dump << ") ";
-		dump << scope.dump("");
-	} else {
-		dump << ") {\n";
-		dump << scope.dump(indent + "\t");
-		dump << indent << "}\n";
-	}
-	return dump.str();
-}
-
-std::string IfElseModuleInstantiation::dump(const std::string &indent) const
-{
-	std::stringstream dump;
-	dump << ModuleInstantiation::dump(indent);
-	dump << indent;
-	if (else_scope.numElements() > 0) {
-		dump << indent << "else ";
-		if (else_scope.numElements() == 1) {
-			dump << else_scope.dump("");
-		}
-		else {
-			dump << "{\n";
-			dump << else_scope.dump(indent + "\t");
-			dump << indent << "}\n";
-		}
-	}
-	return dump.str();
-}
-
-AbstractNode *ModuleInstantiation::evaluate(const Context *ctx) const
-{
-	EvalContext c(ctx, this->arguments, &this->scope);
-
-#if 0 && DEBUG
-	PRINT("New eval ctx:");
-	c.dump(NULL, this);
-#endif
-
-	AbstractNode *node = ctx->instantiate_module(*this, &c); // Passes c as evalctx
-	return node;
-}
-
-std::vector<AbstractNode*> ModuleInstantiation::instantiateChildren(const Context *evalctx) const
-{
-	return this->scope.instantiateChildren(evalctx);
-}
-
-std::vector<AbstractNode*> IfElseModuleInstantiation::instantiateElseChildren(const Context *evalctx) const
-{
-	return this->else_scope.instantiateChildren(evalctx);
-}
-
-std::deque<std::string> Module::module_stack;
-
-Module::~Module()
-{
-}
-
-AbstractNode *Module::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
+AbstractNode *UserModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	if (StackCheck::inst()->check()) {
 		throw RecursionException::create("module", inst->name());
@@ -204,7 +111,7 @@ AbstractNode *Module::instantiate(const Context *ctx, const ModuleInstantiation 
 	return node;
 }
 
-std::string Module::dump(const std::string &indent, const std::string &name) const
+std::string UserModule::dump(const std::string &indent, const std::string &name) const
 {
 	std::stringstream dump;
 	std::string tab;
@@ -213,8 +120,8 @@ std::string Module::dump(const std::string &indent, const std::string &name) con
 		for (size_t i=0; i < this->definition_arguments.size(); i++) {
 			const Assignment &arg = this->definition_arguments[i];
 			if (i > 0) dump << ", ";
-			dump << arg.first;
-			if (arg.second) dump << " = " << *arg.second;
+			dump << arg.name;
+			if (arg.expr) dump << " = " << *arg.expr;
 		}
 		dump << ") {\n";
 		tab = "\t";
@@ -229,6 +136,11 @@ std::string Module::dump(const std::string &indent, const std::string &name) con
 FileModule::~FileModule()
 {
 	delete context;
+}
+
+std::string FileModule::dump(const std::string &indent, const std::string &name) const
+{
+	return scope.dump(indent);
 }
 
 void FileModule::registerUse(const std::string path) {
@@ -339,12 +251,12 @@ bool FileModule::handleDependencies()
 	return somethingchanged;
 }
 
-AbstractNode *FileModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx)
+AbstractNode *FileModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	assert(evalctx == NULL);
 	
-	delete context;
-	context = new FileContext(*this, ctx);
+	delete this->context;
+	this->context = new FileContext(*this, ctx);
 	AbstractNode *node = new RootNode(inst);
 
 	try {
@@ -363,11 +275,8 @@ AbstractNode *FileModule::instantiate(const Context *ctx, const ModuleInstantiat
 
 ValuePtr FileModule::lookup_variable(const std::string &name) const
 {
-	if (!context) {
-		return ValuePtr::undefined;
-	}
-	
-	return context->lookup_variable(name, true);
+	if (!this->context) return ValuePtr::undefined;
+	return this->context->lookup_variable(name, true);
 }
 
 void register_builtin_group()

@@ -35,6 +35,7 @@
 #include "printutils.h"
 #include "stackcheck.h"
 #include "exceptions.h"
+#include "memory.h"
 
 #include <cmath>
 #include <sstream>
@@ -69,137 +70,6 @@ int process_id = getpid();
 
 boost::mt19937 deterministic_rng;
 boost::mt19937 lessdeterministic_rng( std::time(0) + process_id );
-
-AbstractFunction::~AbstractFunction()
-{
-}
-
-// FIXME: Is this needed?
-ValuePtr AbstractFunction::evaluate(const Context*, const EvalContext *evalctx) const
-{
-	(void)evalctx; // unusued parameter
-	return ValuePtr::undefined;
-}
-
-std::string AbstractFunction::dump(const std::string &indent, const std::string &name) const
-{
-	std::stringstream dump;
-	dump << indent << "abstract function " << name << "();\n";
-	return dump.str();
-}
-
-Function::Function(const char *name, AssignmentList &definition_arguments, Expression *expr)
-	: name(name), definition_arguments(definition_arguments), expr(expr)
-{
-}
-
-Function::~Function()
-{
-	delete expr;
-}
-
-ValuePtr Function::evaluate(const Context *ctx, const EvalContext *evalctx) const
-{
-	if (!expr) return ValuePtr::undefined;
-	Context c(ctx);
-	c.setVariables(definition_arguments, evalctx);
-	ValuePtr result = expr->evaluate(&c);
-
-	return result;
-}
-
-std::string Function::dump(const std::string &indent, const std::string &name) const
-{
-	std::stringstream dump;
-	dump << indent << "function " << name << "(";
-	for (size_t i=0; i < definition_arguments.size(); i++) {
-		const Assignment &arg = definition_arguments[i];
-		if (i > 0) dump << ", ";
-		dump << arg.first;
-		if (arg.second) dump << " = " << *arg.second;
-	}
-	dump << ") = " << *expr << ";\n";
-	return dump.str();
-}
-
-class FunctionTailRecursion : public Function
-{
-private:
-	bool invert;
-	ExpressionFunctionCall *call; // memory owned by the main expression
-	Expression *endexpr; // memory owned by the main expression
-
-public:
-	FunctionTailRecursion(const char *name, AssignmentList &definition_arguments, Expression *expr, ExpressionFunctionCall *call, Expression *endexpr, bool invert);
-	virtual ~FunctionTailRecursion();
-
-	virtual ValuePtr evaluate(const Context *ctx, const EvalContext *evalctx) const;
-};
-
-FunctionTailRecursion::FunctionTailRecursion(const char *name, AssignmentList &definition_arguments, Expression *expr, ExpressionFunctionCall *call, Expression *endexpr, bool invert)
-	: Function(name, definition_arguments, expr), invert(invert), call(call), endexpr(endexpr)
-{
-}
-
-FunctionTailRecursion::~FunctionTailRecursion()
-{
-}
-
-ValuePtr FunctionTailRecursion::evaluate(const Context *ctx, const EvalContext *evalctx) const
-{
-	if (!expr) return ValuePtr::undefined;
-
-	Context c(ctx);
-	c.setVariables(definition_arguments, evalctx);
-
-	EvalContext ec(&c, call->call_arguments);
-	Context tmp(&c);
-	unsigned int counter = 0;
-	while (invert ^ expr->first->evaluate(&c)) {
-		tmp.setVariables(definition_arguments, &ec);
-		c.apply_variables(tmp);
-
-		if (counter++ == 1000000) throw RecursionException::create("function", this->name);
-	}
-
-	ValuePtr result = endexpr->evaluate(&c);
-
-	return result;
-}
-
-Function * Function::create(const char *name, AssignmentList &definition_arguments, Expression *expr)
-{
-	if (dynamic_cast<ExpressionTernary *>(expr)) {
-		ExpressionFunctionCall *f1 = dynamic_cast<ExpressionFunctionCall *>(expr->second);
-		ExpressionFunctionCall *f2 = dynamic_cast<ExpressionFunctionCall *>(expr->third);
-		if (f1 && !f2) {
-			if (name == f1->funcname) {
-				return new FunctionTailRecursion(name, definition_arguments, expr, f1, expr->third, false);
-			}
-		} else if (f2 && !f1) {
-			if (name == f2->funcname) {
-				return new FunctionTailRecursion(name, definition_arguments, expr, f2, expr->second, true);
-			}
-		}
-	}
-	return new Function(name, definition_arguments, expr);
-}
-
-BuiltinFunction::~BuiltinFunction()
-{
-}
-
-ValuePtr BuiltinFunction::evaluate(const Context *ctx, const EvalContext *evalctx) const
-{
-	return eval_func(ctx, evalctx);
-}
-
-std::string BuiltinFunction::dump(const std::string &indent, const std::string &name) const
-{
-	std::stringstream dump;
-	dump << indent << "builtin function " << name << "();\n";
-	return dump.str();
-}
 
 static inline double deg2rad(double x)
 {
@@ -912,7 +782,7 @@ ValuePtr builtin_parent_module(const Context *, const EvalContext *evalctx)
 {
 	int n;
 	double d;
-	int s = Module::stack_size();
+	int s = UserModule::stack_size();
 	if (evalctx->numArgs() == 0)
 		d=1; // parent module
 	else if (evalctx->numArgs() == 1) {
@@ -930,7 +800,7 @@ ValuePtr builtin_parent_module(const Context *, const EvalContext *evalctx)
 		PRINTB("WARNING: Parent module index (%d) greater than the number of modules on the stack", n);
 		return ValuePtr::undefined;
 	}
-	return ValuePtr(Module::stack_element(s - 1 - n));
+	return ValuePtr(UserModule::stack_element(s - 1 - n));
 }
 
 ValuePtr builtin_norm(const Context *, const EvalContext *evalctx)
