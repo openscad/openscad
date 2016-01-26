@@ -2,14 +2,6 @@
 
 #ifdef ENABLE_CGAL
 
-#ifdef _MSC_VER
-// see http://en.wikipedia.org/wiki/Stdint.h
-// and http://www.mpfr.org/mpfr-2.4.2/#stdint
-#include <boost/cstdint.hpp>
-using boost::intmax_t;
-using boost::uintmax_t;
-#endif
-
 // NDEBUG must be disabled when including CGAL headers, otherwise CGAL assertions
 // will not be thrown, causing OpenSCAD's CGAL error checking to fail.
 // To be on the safe side, this has to be done when including any CGAL header file.

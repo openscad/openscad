@@ -26,8 +26,6 @@
 
 #include "value.h"
 #include "printutils.h"
-#include <stdio.h>
-#include <math.h>
 #include <cmath>
 #include <assert.h>
 #include <sstream>
@@ -43,12 +41,12 @@
 Value Value::undefined;
 ValuePtr ValuePtr::undefined;
 
-static boost::uint32_t convert_to_uint32(const double d) {
-    boost::uint32_t ret = std::numeric_limits<boost::uint32_t>::max();
+static uint32_t convert_to_uint32(const double d) {
+    uint32_t ret = std::numeric_limits<uint32_t>::max();
 
     if (std::isfinite(d)) {
         try {
-            ret = boost::numeric_cast<boost::uint32_t>(d);
+            ret = boost::numeric_cast<uint32_t>(d);
         } catch (boost::bad_numeric_cast) {
             // ignore, leaving the default max() value
         }
@@ -299,7 +297,7 @@ public:
 
 	std::string operator()(const RangeType &v) const
 	{
-		const boost::uint32_t steps = v.numValues();
+		const uint32_t steps = v.numValues();
 		if (steps >= 10000) {
 			PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu).", steps);
 			return "";
@@ -681,7 +679,7 @@ public:
   Value operator()(const std::string &str, const double &idx) const {
     Value v;
 
-    const boost::uint32_t i = convert_to_uint32(idx);
+    const uint32_t i = convert_to_uint32(idx);
     if (i < str.size()) {
 	  //Ensure character (not byte) index is inside the character/glyph array
 	  if( (unsigned) i < g_utf8_strlen( str.c_str(), str.size() ) )	{
@@ -697,13 +695,13 @@ public:
   }
 
   Value operator()(const Value::VectorType &vec, const double &idx) const {
-    const boost::uint32_t i = convert_to_uint32(idx);
+    const uint32_t i = convert_to_uint32(idx);
     if (i < vec.size()) return *vec[i];
     return Value::undefined;
   }
 
   Value operator()(const RangeType &range, const double &idx) const {
-    const boost::uint32_t i = convert_to_uint32(idx);
+    const uint32_t i = convert_to_uint32(idx);
     switch(i) {
     case 0: return Value(range.begin_val);
     case 1: return Value(range.step_val);
@@ -730,13 +728,13 @@ void RangeType::normalize() {
   }
 }
 
-boost::uint32_t RangeType::numValues() const {
+uint32_t RangeType::numValues() const {
   if (std::isnan(begin_val) || std::isnan(end_val) || std::isnan(step_val)) {
 		return 0;
 	}
 
   if (std::isinf(begin_val) || (std::isinf(end_val))) {
-    return std::numeric_limits<boost::uint32_t>::max();
+    return std::numeric_limits<uint32_t>::max();
   }
 
   if ((begin_val == end_val) || std::isinf(step_val)) {
@@ -744,7 +742,7 @@ boost::uint32_t RangeType::numValues() const {
   }
   
   if (step_val == 0) { 
-    return std::numeric_limits<boost::uint32_t>::max();
+    return std::numeric_limits<uint32_t>::max();
   }
 
   double numvals;

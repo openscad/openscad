@@ -3,7 +3,7 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <Eigen/Dense>
-#include <boost/cstdint.hpp>
+#include <cstdint>
 
 using Eigen::Vector2d;
 using Eigen::Vector3d;

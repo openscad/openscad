@@ -5,12 +5,7 @@
 #include <boost/functional/hash.hpp>
 #include <cmath>
 
-#ifdef _WIN32
-typedef __int64 int64_t;
-#else
-#include <stdint.h>
-#endif
-#include <stdlib.h>
+#include <cstdint> // int64_t
 #include <unordered_map>
 #include <utility>
 
