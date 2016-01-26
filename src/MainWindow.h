@@ -65,6 +65,7 @@ public:
 	class ThrownTogetherRenderer *thrownTogetherRenderer;
 
 	QString last_compiled_doc;
+	QActionGroup *viewportSizeGroup;
 
 	QAction *actionRecentFile[UIUtils::maxRecentFiles];
         QMap<QString, QString> knownFileExtensions;
@@ -227,6 +228,7 @@ public slots:
 	void viewModeShowCrosshairs();
 	void viewModeShowScaleProportional();
 	void viewModeAnimate();
+	void viewViewportSize();
 	void viewAngleTop();
 	void viewAngleBottom();
 	void viewAngleLeft();

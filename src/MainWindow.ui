@@ -343,6 +343,23 @@
     <property name="title">
      <string>&amp;View</string>
     </property>
+    <widget class="QMenu" name="menuViewport_Size">
+     <property name="title">
+      <string>Viewport Size</string>
+     </property>
+     <addaction name="viewActionAutomatic"/>
+     <addaction name="separator"/>
+     <addaction name="viewAction640x480"/>
+     <addaction name="viewAction800x600"/>
+     <addaction name="viewAction1024x768"/>
+     <addaction name="viewAction1280x1024"/>
+     <addaction name="viewAction1600x1200"/>
+     <addaction name="separator"/>
+     <addaction name="viewAction1280x720"/>
+     <addaction name="viewAction1366x768"/>
+     <addaction name="viewAction1600x900"/>
+     <addaction name="viewAction1920x1080"/>
+    </widget>
     <addaction name="viewActionPreview"/>
     <addaction name="viewActionSurfaces"/>
     <addaction name="viewActionWireframe"/>
@@ -353,6 +370,7 @@
     <addaction name="viewActionShowScaleProportional"/>
     <addaction name="viewActionShowCrosshairs"/>
     <addaction name="viewActionAnimate"/>
+    <addaction name="menuViewport_Size"/>
     <addaction name="separator"/>
     <addaction name="viewActionTop"/>
     <addaction name="viewActionBottom"/>
@@ -1278,6 +1296,86 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+C</string>
+   </property>
+  </action>
+  <action name="viewAction1024x768">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>1024 x 768</string>
+   </property>
+  </action>
+  <action name="viewAction800x600">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>800 x 600</string>
+   </property>
+  </action>
+  <action name="viewAction1280x720">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>1280 x 720</string>
+   </property>
+  </action>
+  <action name="viewAction1366x768">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>1366 x 768</string>
+   </property>
+  </action>
+  <action name="viewAction640x480">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>640 x 480</string>
+   </property>
+  </action>
+  <action name="viewAction1280x1024">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>1280 x 1024</string>
+   </property>
+  </action>
+  <action name="viewAction1600x1200">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>1600 x 1200</string>
+   </property>
+  </action>
+  <action name="viewAction1600x900">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>1600 x 900</string>
+   </property>
+  </action>
+  <action name="viewAction1920x1080">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>1920 x 1080</string>
+   </property>
+  </action>
+  <action name="viewActionAutomatic">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Automatic</string>
    </property>
   </action>
  </widget>
