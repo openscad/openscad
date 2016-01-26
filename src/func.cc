@@ -24,20 +24,21 @@
  *
  */
 
-#include "mathc99.h"
 #include "function.h"
 #include "expression.h"
 #include "evalcontext.h"
 #include "builtin.h"
+#include "stl-utils.h"
+#include "printutils.h"
+#include "stackcheck.h"
+#include "exceptions.h"
+
+#include <cmath>
 #include <sstream>
 #include <ctime>
 #include <cmath>
 #include <limits>
 #include <algorithm>
-#include "stl-utils.h"
-#include "printutils.h"
-#include "stackcheck.h"
-#include "exceptions.h"
 
 /*
  Random numbers
@@ -212,7 +213,7 @@ ValuePtr builtin_abs(const Context *, const EvalContext *evalctx)
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
 		if (v->type() == Value::NUMBER)
-			return ValuePtr(fabs(v->toDouble()));
+			return ValuePtr(std::fabs(v->toDouble()));
 	}
 	return ValuePtr::undefined;
 }

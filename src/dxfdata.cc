@@ -31,7 +31,6 @@
 #include "calc.h"
 
 #include <fstream>
-#include "mathc99.h"
 #include <assert.h>
 #include <unordered_map>
 #include <boost/lexical_cast.hpp>

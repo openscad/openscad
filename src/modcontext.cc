@@ -1,4 +1,3 @@
-#include "mathc99.h"
 #include "modcontext.h"
 #include "module.h"
 #include "expression.h"
@@ -6,6 +5,7 @@
 #include "printutils.h"
 #include "builtin.h"
 #include "ModuleCache.h"
+#include <cmath>
 
 ModuleContext::ModuleContext(const Context *parent, const EvalContext *evalctx)
 	: Context(parent), functions_p(NULL), modules_p(NULL), evalctx(evalctx)

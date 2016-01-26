@@ -303,10 +303,9 @@ HEADERS += src/typedefs.h \
            src/GeometryCache.h \
            src/GeometryEvaluator.h \
            src/Tree.h \
-src/DrawingCallback.h \
-src/FreetypeRenderer.h \
-src/FontCache.h \
-           src/mathc99.h \
+           src/DrawingCallback.h \
+           src/FreetypeRenderer.h \
+           src/FontCache.h \
            src/memory.h \
            src/linalg.h \
            src/Camera.h \
@@ -333,7 +332,6 @@ src/FontCache.h \
 
 SOURCES += src/version_check.cc \
            src/ProgressWidget.cc \
-           src/mathc99.cc \
            src/linalg.cc \
            src/Camera.cc \
            src/handle_dep.cc \

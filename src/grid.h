@@ -1,9 +1,9 @@
 #pragma once
 
-#include "mathc99.h"
 #include "linalg.h"
 #include "hash.h"
 #include <boost/functional/hash.hpp>
+#include <cmath>
 
 #ifdef _WIN32
 typedef __int64 int64_t;
@@ -40,8 +40,8 @@ public:
 		if not.
 	*/ 
 	T &align(double &x, double &y) {
-		int64_t ix = (int64_t)round(x / res);
-		int64_t iy = (int64_t)round(y / res);
+		int64_t ix = (int64_t)std::round(x / res);
+		int64_t iy = (int64_t)std::round(y / res);
 		if (db.find(std::make_pair(ix, iy)) == db.end()) {
 			int dist = 10;
 			for (int64_t jx = ix - 1; jx <= ix + 1; jx++) {
@@ -62,8 +62,8 @@ public:
 	}
 
 	bool has(double x, double y) const {
-		int64_t ix = (int64_t)round(x / res);
-		int64_t iy = (int64_t)round(y / res);
+		int64_t ix = (int64_t)std::round(x / res);
+		int64_t iy = (int64_t)std::round(y / res);
 		if (db.find(std::make_pair(ix, iy)) != db.end())
 			return true;
 		for (int64_t jx = ix - 1; jx <= ix + 1; jx++)
