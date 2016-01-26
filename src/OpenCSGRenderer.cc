@@ -110,12 +110,13 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 		if (shaderinfo) glUseProgram(shaderinfo[0]);
 
 		const CSGChainObject &parent_obj = product.intersections[0];
+		if (product.intersections.size() > 0) setupMaterial(false);
 		BOOST_FOREACH(const CSGChainObject &csgobj, product.intersections) {
 			const Color4f &c = csgobj.leaf->color;
-				csgmode_e csgmode = csgmode_e(
-					highlight_mode ? 
-					CSGMODE_HIGHLIGHT :
-					(background_mode ? CSGMODE_BACKGROUND : CSGMODE_NORMAL));
+			csgmode_e csgmode = csgmode_e(
+				highlight_mode ? 
+				CSGMODE_HIGHLIGHT :
+				(background_mode ? CSGMODE_BACKGROUND : CSGMODE_NORMAL));
 			
 			ColorMode colormode = COLORMODE_NONE;
 			if (highlight_mode) {
@@ -129,9 +130,17 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 			setColor(colormode, c.data(), shaderinfo);
 			glPushMatrix();
 			glMultMatrixd(csgobj.leaf->matrix.data());
+			// We render twice in order to correctly render backfaces when
+			// the material is transparent
+			glEnable(GL_CULL_FACE);
+			glCullFace(GL_BACK);
 			render_surface(csgobj.leaf->geom, csgmode, csgobj.leaf->matrix, shaderinfo);
+			glCullFace(GL_FRONT);
+			render_surface(csgobj.leaf->geom, csgmode, csgobj.leaf->matrix, shaderinfo);
+			glDisable(GL_CULL_FACE);
 			glPopMatrix();
 		}
+		if (product.subtractions.size() > 0) setupMaterial(true);
 		BOOST_FOREACH(const CSGChainObject &csgobj, product.subtractions) {
 			const Color4f &c = csgobj.leaf->color;
 				csgmode_e csgmode = csgmode_e(

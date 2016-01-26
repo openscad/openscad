@@ -27,10 +27,9 @@
 #include "ThrownTogetherRenderer.h"
 #include "polyset.h"
 #include "printutils.h"
+#include <boost/foreach.hpp>
 
 #include "system-gl.h"
-
-#include <boost/foreach.hpp>
 
 ThrownTogetherRenderer::ThrownTogetherRenderer(shared_ptr<CSGProducts> root_products,
 																							 shared_ptr<CSGProducts> highlight_products,
@@ -42,19 +41,16 @@ ThrownTogetherRenderer::ThrownTogetherRenderer(shared_ptr<CSGProducts> root_prod
 void ThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges) const
 {
 	PRINTD("Thrown draw");
+	setupMaterial(false);
  	if (this->root_products) {
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_BACK);
 		renderCSGProducts(*this->root_products, false, false, showedges, false);
-		glCullFace(GL_FRONT);
-		glColor3ub(255, 0, 255);
-		renderCSGProducts(*this->root_products, false, false, showedges, true);
-		glDisable(GL_CULL_FACE);
 	}
-	if (this->background_products)
+	if (this->background_products) {
 	 	renderCSGProducts(*this->background_products, false, true, showedges, false);
-	if (this->highlight_products)
+	}
+	if (this->highlight_products) {
 	 	renderCSGProducts(*this->highlight_products, true, false, showedges, false);
+	}
 }
 
 void ThrownTogetherRenderer::renderChainObject(const CSGChainObject &csgobj, bool highlight_mode,
@@ -105,7 +101,15 @@ void ThrownTogetherRenderer::renderChainObject(const CSGChainObject &csgobj, boo
 	setColor(colormode, c.data());
 	glPushMatrix();
 	glMultMatrixd(m.data());
+	// We render twice in order to correctly render backfaces when
+	// the material is transparent
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
 	render_surface(csgobj.leaf->geom, csgmode, m);
+	glCullFace(GL_FRONT);
+	render_surface(csgobj.leaf->geom, csgmode, m);
+	glDisable(GL_CULL_FACE);
+
 	if (showedges) {
 		// FIXME? glColor4f((c[0]+1)/2, (c[1]+1)/2, (c[2]+1)/2, 1.0);
 		setColor(edge_colormode);
@@ -123,7 +127,7 @@ void ThrownTogetherRenderer::renderCSGProducts(const CSGProducts &products, bool
 	glDepthFunc(GL_LEQUAL);
 	this->geomVisitMark.clear();
 
-	BOOST_FOREACH(const CSGProduct &product, products.products) {
+  BOOST_FOREACH(const CSGProduct &product, products.products) {
 		BOOST_FOREACH(const CSGChainObject &csgobj, product.intersections) {
 			renderChainObject(csgobj, highlight_mode, background_mode, showedges, fberror, OPENSCAD_INTERSECTION);
 		}

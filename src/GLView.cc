@@ -363,9 +363,16 @@ void GLView::initializeGL()
   glEnable(GL_LIGHTING);
   glEnable(GL_NORMALIZE);
 
-  glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+  glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
+	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
   // The following line is reported to fix issue #71
 	glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 64);
+	// Highlight backfaces
+	float pink[4] = {1.0f, 0.0f, 1.0f, 1.0};
+	float none[4] = {0.0f, 0.0f, 0.0f, 1.0};
+	glMaterialfv(GL_BACK, GL_EMISSION, pink);
+	glMaterialfv(GL_BACK, GL_DIFFUSE, none);
+	glMaterialfv(GL_BACK, GL_SPECULAR, none);
   glEnable(GL_COLOR_MATERIAL);
 #ifdef ENABLE_OPENCSG
   enable_opencsg_shaders();

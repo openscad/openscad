@@ -97,6 +97,7 @@ void CGALRenderer::setColorScheme(const ColorScheme &cs)
 void CGALRenderer::draw(bool showfaces, bool showedges) const
 {
 	PRINTD("draw()");
+	setupMaterial(false);
 	if (this->polyset) {
 		PRINTD("draw() polyset");
 		if (this->polyset->getDimension() == 2) {
