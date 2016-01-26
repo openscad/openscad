@@ -21,14 +21,22 @@ OpenSCADApp::~OpenSCADApp()
 	delete this->fontCacheDialog;
 }
 
+#include <QMessageBox>
+
 bool OpenSCADApp::notify(QObject *object, QEvent *event)
 {
+	QString msg; 
 	try {
 		return QApplication::notify(object, event);
 	}
-	catch (...) {
-		std::cerr << "ouch" << std::endl;
+	catch (const std::exception &e) {
+		msg = e.what();
 	}
+	catch (...) {
+		msg = _("Unknown error");
+	}
+	// This happens when an uncaught exception is thrown in a Qt event handler
+	QMessageBox::critical(NULL, QString(_("Critical Error")), QString(_("A critical error was caught. The application may have become unstable:\n%1")).arg(QString(msg)));
 	return false;
 }
 
