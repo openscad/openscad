@@ -6,6 +6,7 @@
 
 #include <QProgressDialog>
 #include <iostream>
+#include <boost/foreach.hpp>
 
 OpenSCADApp::OpenSCADApp(int &argc ,char **argv)
 	: QApplication(argc, argv), fontCacheDialog(NULL)
@@ -36,7 +37,7 @@ bool OpenSCADApp::notify(QObject *object, QEvent *event)
  */
 void OpenSCADApp::requestOpenFile(const QString &filename)
 {
-	for (const auto &win : this->windowManager.getWindows()) {
+	BOOST_FOREACH(MainWindow *win, this->windowManager.getWindows()) {
 		// if we have an empty open window, use that one
 		if (win->isEmpty()) {
 			win->openFile(filename);
