@@ -616,23 +616,21 @@ void dialogThreadFunc(FontCacheInitializer *initializer)
 
 void dialogInitHandler(FontCacheInitializer *initializer, void *)
 {
-	MainWindow *mainw = *scadApp->windowManager.getWindows().begin();
-
 	QFutureWatcher<void> futureWatcher;
-	QObject::connect(&futureWatcher, SIGNAL(finished()), mainw, SLOT(hideFontCacheDialog()));
+	QObject::connect(&futureWatcher, SIGNAL(finished()), scadApp, SLOT(hideFontCacheDialog()));
 
 	QFuture<void> future = QtConcurrent::run(boost::bind(dialogThreadFunc, initializer));
 	futureWatcher.setFuture(future);
 
 	// We don't always get the started() signal, so we start manually
-	QMetaObject::invokeMethod(mainw, "showFontCacheDialog");
+	QMetaObject::invokeMethod(scadApp, "showFontCacheDialog");
 
 	// Block, in case we're in a separate thread, or the dialog was closed by the user
 	futureWatcher.waitForFinished();
 
 	// We don't always receive the finished signal. We still need the signal to break 
 	// out of the exec() though.
-	QMetaObject::invokeMethod(mainw, "hideFontCacheDialog");
+	QMetaObject::invokeMethod(scadApp, "hideFontCacheDialog");
 }
 
 int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, char ** argv)

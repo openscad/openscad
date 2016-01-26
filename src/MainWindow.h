@@ -251,15 +251,12 @@ public slots:
 	void waitAfterReload();
 	void autoReloadSet(bool);
 	void setContentsChanged();
-	void showFontCacheDialog();
-	void hideFontCacheDialog();
 
 private:
 	static void report_func(const class AbstractNode*, void *vp, int mark);
 	static bool mdiMode;
 	static bool undockMode;
 	static bool reorderMode;
-	static class QProgressDialog *fontCacheDialog;
 
 	shared_ptr<class CSGNode> csgRoot;           // Result of the CSGTreeEvaluator
 	shared_ptr<CSGNode> normalizedRoot;          // Normalized CSG tree

@@ -1,12 +1,14 @@
 #include "OpenSCADApp.h"
 #include "MainWindow.h"
-#include <iostream>
 #ifdef Q_OS_MAC
 #include "EventFilter.h"
 #endif
 
+#include <QProgressDialog>
+#include <iostream>
+
 OpenSCADApp::OpenSCADApp(int &argc ,char **argv)
-	: QApplication(argc, argv)
+	: QApplication(argc, argv), fontCacheDialog(NULL)
 {
 #ifdef Q_OS_MAC
 	this->installEventFilter(new EventFilter(this));
@@ -15,6 +17,7 @@ OpenSCADApp::OpenSCADApp(int &argc ,char **argv)
 
 OpenSCADApp::~OpenSCADApp()
 {
+	delete this->fontCacheDialog;
 }
 
 bool OpenSCADApp::notify(QObject *object, QEvent *event)
@@ -45,3 +48,18 @@ void OpenSCADApp::requestOpenFile(const QString &filename)
 	new MainWindow(filename);
 }
 
+void OpenSCADApp::showFontCacheDialog()
+{
+	if (!this->fontCacheDialog) this->fontCacheDialog = new QProgressDialog();
+	this->fontCacheDialog->setLabelText(_("Fontconfig needs to update its font cache.\nThis can take up to a couple of minutes."));
+	this->fontCacheDialog->setMinimum(0);
+	this->fontCacheDialog->setMaximum(0);
+	this->fontCacheDialog->setCancelButton(0);
+	this->fontCacheDialog->exec();
+}
+
+void OpenSCADApp::hideFontCacheDialog()
+{
+	assert(this->fontCacheDialog);
+	this->fontCacheDialog->reset();
+}
