@@ -994,7 +994,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
       if (${EXPERIMENTAL} EQUAL -1)
         set(EXPERIMENTAL_OPTION "")
       else()
-        set(EXPERIMENTAL_OPTION "--enable=lc-each" "--enable=lc-else")
+        set(EXPERIMENTAL_OPTION "--enable=lc-each" "--enable=lc-else" "--enable=lc-for-c")
       endif()
 
       # 2D tests should be viewed from the top, not an angle.
