@@ -25,7 +25,7 @@ BASEDIR=$PWD/../libraries
 OPENSCADDIR=$PWD
 SRCDIR=$BASEDIR/src
 DEPLOYDIR=$BASEDIR/install
-MAC_OSX_VERSION_MIN=10.7
+MAC_OSX_VERSION_MIN=10.11
 OPTION_32BIT=false
 OPTION_LLVM=false
 OPTION_CLANG=false
@@ -660,6 +660,7 @@ check_freetype()
 
 build_freetype()
 {
+  # May need 'coreutils' from MacPorts to complete: https://trac.macports.org/changeset/141039
   version="$1"
   extra_config_flags="--without-png"
 
@@ -777,6 +778,7 @@ check_glib2()
 
 build_glib2()
 {
+  # May need 'pkgconfig' from MacPorts to complete.
   version="$1"
 
   echo "Building glib2 $version..."

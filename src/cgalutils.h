@@ -32,6 +32,7 @@ typedef std::vector<PolygonK> PolyholeK;
 typedef K::FT FTK;
 typedef K::Point_3 PointK;
 typedef K::Vector_3 VectorK;
+// See https://github.com/CGAL/cgal/pull/561/files
 typedef std::pair<PointK,VectorK> PointVectorPairK;
 typedef CGAL::Point_with_normal_3<K> Point_with_normalK;
 typedef K::Sphere_3 SphereK;
