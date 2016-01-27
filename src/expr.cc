@@ -26,6 +26,7 @@
 #include "expression.h"
 #include "value.h"
 #include "evalcontext.h"
+#include <cstdint>
 #include <assert.h>
 #include <sstream>
 #include <algorithm>
@@ -565,7 +566,7 @@ ValuePtr ExpressionLcEach::evaluate(const Context *context) const
 
     if (v->type() == Value::RANGE) {
         RangeType range = v->toRange();
-        boost::uint32_t steps = range.numValues();
+        uint32_t steps = range.numValues();
         if (steps >= 1000000) {
             PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu).", steps);
         } else {
@@ -615,7 +616,7 @@ ValuePtr ExpressionLcFor::evaluate(const Context *context) const
 
     if (it_values->type() == Value::RANGE) {
         RangeType range = it_values->toRange();
-        boost::uint32_t steps = range.numValues();
+        uint32_t steps = range.numValues();
         if (steps >= 1000000) {
             PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu).", steps);
         } else {

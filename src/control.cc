@@ -31,6 +31,7 @@
 #include "expression.h"
 #include "builtin.h"
 #include "printutils.h"
+#include <cstdint>
 #include <sstream>
 
 class ControlModule : public AbstractModule
@@ -74,7 +75,7 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 		Context c(ctx);
 		if (it_values->type() == Value::RANGE) {
 			RangeType range = it_values->toRange();
-			boost::uint32_t steps = range.numValues();
+			uint32_t steps = range.numValues();
 			if (steps >= 10000) {
 				PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu).", steps);
 			} else {
@@ -232,7 +233,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 			}
 			else if (value->type() == Value::RANGE) {
 				RangeType range = value->toRange();
-				boost::uint32_t steps = range.numValues();
+				uint32_t steps = range.numValues();
 				if (steps >= 10000) {
 					PRINTB("WARNING: Bad range parameter for children: too many elements (%lu).", steps);
 					return NULL;
