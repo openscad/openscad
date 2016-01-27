@@ -1,4 +1,5 @@
 #pragma once
+#define CGAL_EIGEN3_ENABLED
 
 #include "cgal.h"
 #include "polyset.h"
@@ -16,7 +17,6 @@ typedef std::vector<PolygonK> PolyholeK;
 #include <CGAL/IO/Polyhedron_iostream.h>
 #include <CGAL/IO/read_xyz_points.h>
 **/
-#define CGAL_EIGEN3_ENABLED
 #include <CGAL/Surface_mesh_default_triangulation_3.h>
 #include <CGAL/Point_with_normal_3.h>
 #include <CGAL/Poisson_reconstruction_function.h>
