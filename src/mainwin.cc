@@ -28,6 +28,7 @@
 #include "GeometryCache.h"
 #include "ModuleCache.h"
 #include "MainWindow.h"
+#include "OpenSCADApp.h"
 #include "parsersettings.h"
 #include "rendersettings.h"
 #include "Preferences.h"
@@ -72,7 +73,6 @@
 #include <QMenuBar>
 #include <QSplitter>
 #include <QFileDialog>
-#include <QApplication>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QLabel>
@@ -125,15 +125,6 @@
 #include "boosty.h"
 #include "FontCache.h"
 
-// Keeps track of open window
-QSet<MainWindow*> *MainWindow::windows = NULL;
-
-QSet<MainWindow*> *MainWindow::getWindows()
-{
-	if (!MainWindow::windows) MainWindow::windows = new QSet<MainWindow*>;
-	return MainWindow::windows;
-}
-
 // Global application state
 unsigned int GuiLocker::gui_locked = 0;
 
@@ -179,8 +170,6 @@ settings_valueList(const QString &key, const QList<int> &defaultList = QList<int
 bool MainWindow::mdiMode = false;
 bool MainWindow::undockMode = false;
 bool MainWindow::reorderMode = false;
-
-QProgressDialog *MainWindow::fontCacheDialog = NULL;
 
 MainWindow::MainWindow(const QString &filename)
 	: root_inst("group"), library_info_dialog(NULL), font_list_dialog(NULL), procevents(false), tempFile(NULL), progresswidget(NULL), contentschanged(false)
@@ -229,7 +218,7 @@ MainWindow::MainWindow(const QString &filename)
 
 	this->setAttribute(Qt::WA_DeleteOnClose);
 
-	MainWindow::getWindows()->insert(this);
+	scadApp->windowManager.add(this);
 
 #ifdef ENABLE_CGAL
 	this->cgalworker = new CGALWorker();
@@ -702,8 +691,8 @@ MainWindow::~MainWindow()
 	delete this->opencsgRenderer;
 #endif
 	delete this->thrownTogetherRenderer;
-	MainWindow::getWindows()->remove(this);
-	if (MainWindow::getWindows()->size() == 0) {
+	scadApp->windowManager.remove(this);
+	if (scadApp->windowManager.getWindows().size() == 0) {
 		// Quit application even in case some other windows like
 		// Preferences are still open.
 		this->quit();
@@ -728,26 +717,6 @@ void MainWindow::report_func(const class AbstractNode*, void *vp, int mark)
 
 	// FIXME: Check if cancel was requested by e.g. Application quit
 	if (thisp->progresswidget->wasCanceled()) throw ProgressCancelException();
-}
-
-/*!
-	Requests to open a file from an external event, e.g. by double-clicking a filename.
- */
-void MainWindow::requestOpenFile(const QString &filename)
-{
-	// if we have an empty open window, use that one
-	QSetIterator<MainWindow *> i(*MainWindow::getWindows());
-	while (i.hasNext()) {
-		MainWindow *w = i.next();
-
-		if (w->editor->toPlainText().isEmpty()) {
-			w->openFile(filename);
-			return;
-		}
-	}
-
-	// otherwise, create a new one
-	new MainWindow(filename);
 }
 
 /*!
@@ -2406,6 +2375,11 @@ void MainWindow::viewModeAnimate()
 	}
 }
 
+bool MainWindow::isEmpty()
+{
+	return this->editor->toPlainText().isEmpty();
+}
+
 void MainWindow::animateUpdateDocChanged()
 {
 	QString current_doc = editor->toPlainText(); 
@@ -2789,20 +2763,3 @@ void MainWindow::setContentsChanged()
 	this->contentschanged = true;
 }
 
-void MainWindow::showFontCacheDialog()
-{
-	if (!MainWindow::fontCacheDialog) MainWindow::fontCacheDialog = new QProgressDialog;	
-	QProgressDialog *dialog = MainWindow::fontCacheDialog;
-
-	dialog->setLabelText(_("Fontconfig needs to update its font cache.\nThis can take up to a couple of minutes."));
-	dialog->setMinimum(0);
-	dialog->setMaximum(0);
-	dialog->setCancelButton(0);
-	dialog->exec();
-}
-
-void MainWindow::hideFontCacheDialog()
-{
-	assert(MainWindow::fontCacheDialog);
-	MainWindow::fontCacheDialog->reset();
-}

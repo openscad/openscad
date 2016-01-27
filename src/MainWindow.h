@@ -13,7 +13,6 @@
 #include "editor.h"
 #include <vector>
 #include <QMutex>
-#include <QSet>
 #include <QTime>
 #include <QIODevice>
 
@@ -29,8 +28,6 @@ class MainWindow : public QMainWindow, public Ui::MainWindow
 	Q_OBJECT
 
 public:
-	static void requestOpenFile(const QString &filename);
-
 	QString fileName;
 
 	class Preferences *prefs;
@@ -103,7 +100,6 @@ private slots:
 
 private:
         void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
-	void openFile(const QString &filename);
         void handleFileDrop(const QString &filename);
 	void refreshDocument();
         void updateCamera();
@@ -202,12 +198,13 @@ private slots:
 	void actionFlushCaches();
 
 public:
-	static QSet<MainWindow*> *getWindows();
 	void viewModeActionsUncheck();
 	void setCurrentOutput();
 	void clearCurrentOutput();
+  bool isEmpty();
 
 public slots:
+	void openFile(const QString &filename);
 	void actionReloadRenderPreview();
         void on_editorDock_visibilityChanged(bool);
         void on_consoleDock_visibilityChanged(bool);
@@ -254,16 +251,12 @@ public slots:
 	void waitAfterReload();
 	void autoReloadSet(bool);
 	void setContentsChanged();
-	void showFontCacheDialog();
-	void hideFontCacheDialog();
 
 private:
 	static void report_func(const class AbstractNode*, void *vp, int mark);
 	static bool mdiMode;
 	static bool undockMode;
 	static bool reorderMode;
-	static QSet<MainWindow*> *windows;
-	static class QProgressDialog *fontCacheDialog;
 
 	shared_ptr<class CSGNode> csgRoot;           // Result of the CSGTreeEvaluator
 	shared_ptr<CSGNode> normalizedRoot;          // Normalized CSG tree

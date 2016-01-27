@@ -272,7 +272,6 @@ Camera get_camera(po::variables_map vm)
 }
 
 #ifndef OPENSCAD_NOGUI
-#include <QApplication>
 #include <QSettings>
 #define OPENSCAD_QTGUI 1
 #endif
@@ -313,11 +312,13 @@ void set_render_color_scheme(const std::string color_scheme, const bool exit_if_
 	}
 }
 
+#include <QCoreApplication>
+
 int cmdline(const char *deps_output_file, const std::string &filename, Camera &camera, const char *output_file, const fs::path &original_path, Render::type renderer, int argc, char ** argv )
 {
 #ifdef OPENSCAD_QTGUI
 	QCoreApplication app(argc, argv);
-	const std::string application_path = QApplication::instance()->applicationDirPath().toLocal8Bit().constData();
+	const std::string application_path = QCoreApplication::instance()->applicationDirPath().toLocal8Bit().constData();
 #else
 	const std::string application_path = boosty::stringy(boosty::absolute(boost::filesystem::path(argv[0]).parent_path()));
 #endif	
@@ -568,11 +569,9 @@ Q_IMPORT_PLUGIN(qtaccessiblewidgets)
 #endif // QT_VERSION
 #endif // MINGW64/MINGW32/MSCVER
 #include "MainWindow.h"
+#include "OpenSCADApp.h"
 #include "launchingscreen.h"
 #include "qsettings.h"
-  #ifdef __APPLE__
-  #include "EventFilter.h"
-  #endif
 #include <QString>
 #include <QDir>
 #include <QFileInfo>
@@ -617,23 +616,21 @@ void dialogThreadFunc(FontCacheInitializer *initializer)
 
 void dialogInitHandler(FontCacheInitializer *initializer, void *)
 {
-	MainWindow *mainw = *MainWindow::getWindows()->begin();
-
 	QFutureWatcher<void> futureWatcher;
-	QObject::connect(&futureWatcher, SIGNAL(finished()), mainw, SLOT(hideFontCacheDialog()));
+	QObject::connect(&futureWatcher, SIGNAL(finished()), scadApp, SLOT(hideFontCacheDialog()));
 
 	QFuture<void> future = QtConcurrent::run(boost::bind(dialogThreadFunc, initializer));
 	futureWatcher.setFuture(future);
 
 	// We don't always get the started() signal, so we start manually
-	QMetaObject::invokeMethod(mainw, "showFontCacheDialog");
+	QMetaObject::invokeMethod(scadApp, "showFontCacheDialog");
 
 	// Block, in case we're in a separate thread, or the dialog was closed by the user
 	futureWatcher.waitForFinished();
 
 	// We don't always receive the finished signal. We still need the signal to break 
 	// out of the exec() though.
-	QMetaObject::invokeMethod(mainw, "hideFontCacheDialog");
+	QMetaObject::invokeMethod(scadApp, "hideFontCacheDialog");
 }
 
 int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, char ** argv)
@@ -645,13 +642,10 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 			QFont::insertSubstitution(".Lucida Grande UI", "Lucida Grande");
     }
 #endif
-	QApplication app(argc, argv, true); //useGUI);
+	OpenSCADApp app(argc, argv);
 	// remove ugly frames in the QStatusBar when using additional widgets
 	app.setStyleSheet("QStatusBar::item { border: 0px solid black; }");
 
-#ifdef Q_OS_MAC
-	app.installEventFilter(new EventFilter(&app));
-#endif
 	// set up groups for QSettings
 	QCoreApplication::setOrganizationName("OpenSCAD");
 	QCoreApplication::setOrganizationDomain("openscad.org");
@@ -759,8 +753,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 	int rc = app.exec();
-	QSet<MainWindow*> *windows = MainWindow::getWindows();
-	foreach (MainWindow *mainw, *windows) {
+	foreach (MainWindow *mainw, scadApp->windowManager.getWindows()) {
 		delete mainw;
 	}
 	return rc;
