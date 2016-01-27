@@ -29,7 +29,6 @@
 #include "polyset.h"
 #include "csgnode.h"
 #include "stl-utils.h"
-#include <boost/foreach.hpp>
 
 #ifdef ENABLE_OPENCSG
 #  include <opencsg.h>
@@ -95,12 +94,12 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 																				bool highlight_mode, bool background_mode) const
 {
 #ifdef ENABLE_OPENCSG
-	BOOST_FOREACH(const CSGProduct &product, products.products) {
+	for(const auto &product : products.products) {
 		std::vector<OpenCSG::Primitive*> primitives;
-		BOOST_FOREACH(const CSGChainObject &csgobj, product.intersections) {
+		for(const auto &csgobj : product.intersections) {
 			if (csgobj.leaf->geom) primitives.push_back(createCSGPrimitive(csgobj, OpenCSG::Intersection, highlight_mode, background_mode, OPENSCAD_INTERSECTION));
 		}
-		BOOST_FOREACH(const CSGChainObject &csgobj, product.subtractions) {
+		for(const auto &csgobj : product.subtractions) {
 			if (csgobj.leaf->geom) primitives.push_back(createCSGPrimitive(csgobj, OpenCSG::Subtraction, highlight_mode, background_mode, OPENSCAD_DIFFERENCE));
 		}
 		if (primitives.size() > 1) {
@@ -110,7 +109,7 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 		if (shaderinfo) glUseProgram(shaderinfo[0]);
 
 		const CSGChainObject &parent_obj = product.intersections[0];
-		BOOST_FOREACH(const CSGChainObject &csgobj, product.intersections) {
+		for(const auto &csgobj : product.intersections) {
 			const Color4f &c = csgobj.leaf->color;
 				csgmode_e csgmode = csgmode_e(
 					highlight_mode ? 
@@ -132,7 +131,7 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 			render_surface(csgobj.leaf->geom, csgmode, csgobj.leaf->matrix, shaderinfo);
 			glPopMatrix();
 		}
-		BOOST_FOREACH(const CSGChainObject &csgobj, product.subtractions) {
+		for(const auto &csgobj : product.subtractions) {
 			const Color4f &c = csgobj.leaf->color;
 				csgmode_e csgmode = csgmode_e(
 					(highlight_mode ? 
@@ -156,7 +155,7 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 		}
 
 		if (shaderinfo) glUseProgram(0);
-		BOOST_FOREACH(OpenCSG::Primitive *p, primitives) delete p;
+		for(auto &p : primitives) delete p;
 		glDepthFunc(GL_LEQUAL);
 	}
 #endif

@@ -1,9 +1,10 @@
 #pragma once
 
-#include <boost/unordered_map.hpp>
-#include <boost/functional.hpp>
+#include <unordered_map>
+#include <functional>
 #include <vector>
 #include <algorithm>
+#include "hash.h"
 
 /*!
   Reindexes a collection of elements of type T.
@@ -20,7 +21,7 @@ public:
     Looks up a value. Will insert the value if it doesn't already exist.
     Returns the new index. */
   int lookup(const T &val) {
-    typename boost::unordered_map<T, int>::const_iterator iter = this->map.find(val);
+    typename std::unordered_map<T, int>::const_iterator iter = this->map.find(val);
     if (iter != this->map.end()) return iter->second;
     else {
       this->map.insert(std::make_pair(val, this->map.size()));
@@ -40,7 +41,7 @@ public:
   */
   const T *getArray() {
     this->vec.resize(this->map.size());
-    typename boost::unordered_map<T, int>::const_iterator iter = this->map.begin();
+    typename std::unordered_map<T, int>::const_iterator iter = this->map.begin();
     while (iter != this->map.end()) {
       this->vec[iter->second] = iter->first;
       iter++;
@@ -57,6 +58,6 @@ public:
   }
 
 private:
-  boost::unordered_map<T, int> map;
+  std::unordered_map<T, int> map;
   std::vector<T> vec;
 };

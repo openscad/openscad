@@ -30,8 +30,6 @@
 
 #include "system-gl.h"
 
-#include <boost/foreach.hpp>
-
 ThrownTogetherRenderer::ThrownTogetherRenderer(shared_ptr<CSGProducts> root_products,
 																							 shared_ptr<CSGProducts> highlight_products,
 																							 shared_ptr<CSGProducts> background_products)
@@ -123,11 +121,11 @@ void ThrownTogetherRenderer::renderCSGProducts(const CSGProducts &products, bool
 	glDepthFunc(GL_LEQUAL);
 	this->geomVisitMark.clear();
 
-	BOOST_FOREACH(const CSGProduct &product, products.products) {
-		BOOST_FOREACH(const CSGChainObject &csgobj, product.intersections) {
+	for(const auto &product : products.products) {
+		for(const auto &csgobj : product.intersections) {
 			renderChainObject(csgobj, highlight_mode, background_mode, showedges, fberror, OPENSCAD_INTERSECTION);
 		}
-		BOOST_FOREACH(const CSGChainObject &csgobj, product.subtractions) {
+		for(const auto &csgobj : product.subtractions) {
 			renderChainObject(csgobj, highlight_mode, background_mode, showedges, fberror, OPENSCAD_DIFFERENCE);
 		}
 	}

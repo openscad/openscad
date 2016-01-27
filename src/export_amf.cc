@@ -29,8 +29,6 @@
 #include "polyset-utils.h"
 #include "dxfdata.h"
 
-#include <boost/foreach.hpp>
-
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"

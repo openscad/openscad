@@ -1,4 +1,6 @@
-#include "mathc99.h"
+#define _USE_MATH_DEFINES  // M_PI
+#include "math.h"
+
 #include "modcontext.h"
 #include "module.h"
 #include "expression.h"
@@ -6,8 +8,7 @@
 #include "printutils.h"
 #include "builtin.h"
 #include "ModuleCache.h"
-
-#include <boost/foreach.hpp>
+#include <cmath>
 
 ModuleContext::ModuleContext(const Context *parent, const EvalContext *evalctx)
 	: Context(parent), functions_p(NULL), modules_p(NULL), evalctx(evalctx)
@@ -24,7 +25,7 @@ void ModuleContext::evaluateAssignments(const AssignmentList &assignments)
 {
 	// First, assign all simple variables
 	std::list<std::string> undefined_vars;
- 	BOOST_FOREACH(const Assignment &ass, assignments) {
+ 	for(const auto &ass : assignments) {
 		ValuePtr tmpval = ass.second->evaluate(this);
 		if (tmpval->isUndefined()) undefined_vars.push_back(ass.first);
  		else this->set_variable(ass.first, tmpval);
@@ -33,8 +34,8 @@ void ModuleContext::evaluateAssignments(const AssignmentList &assignments)
 	// Variables which couldn't be evaluated in the first pass is attempted again,
   // to allow for initialization out of order
 
-	boost::unordered_map<std::string, Expression *> tmpass;
-	BOOST_FOREACH (const Assignment &ass, assignments) {
+	std::unordered_map<std::string, Expression *> tmpass;
+	for(const auto &ass : assignments) {
 		tmpass[ass.first] = ass.second;
 	}
 		
@@ -44,7 +45,7 @@ void ModuleContext::evaluateAssignments(const AssignmentList &assignments)
 		std::list<std::string>::iterator iter = undefined_vars.begin();
 		while (iter != undefined_vars.end()) {
 			std::list<std::string>::iterator curr = iter++;
-			boost::unordered_map<std::string, Expression *>::iterator found = tmpass.find(*curr);
+			std::unordered_map<std::string, Expression *>::iterator found = tmpass.find(*curr);
 			if (found != tmpass.end()) {
 				const Expression *expr = found->second;
 				ValuePtr tmpval = expr->evaluate(this);
@@ -69,7 +70,7 @@ void ModuleContext::initializeModule(const class Module &module)
 	// FIXME: Don't access module members directly
 	this->functions_p = &module.scope.functions;
 	this->modules_p = &module.scope.modules;
-	BOOST_FOREACH(const Assignment &ass, module.scope.assignments) {
+	for(const auto &ass : module.scope.assignments) {
 		this->set_variable(ass.first, ass.second->evaluate(this));
 	}
 
@@ -87,7 +88,7 @@ void ModuleContext::registerBuiltin()
 	// FIXME: Don't access module members directly
 	this->functions_p = &scope.functions;
 	this->modules_p = &scope.modules;
-	BOOST_FOREACH(const Assignment &ass, scope.assignments) {
+	for(const auto &ass : scope.assignments) {
 		this->set_variable(ass.first, ass.second->evaluate(this));
 	}
 
@@ -154,20 +155,20 @@ std::string ModuleContext::dump(const AbstractModule *mod, const ModuleInstantia
 		const Module *m = dynamic_cast<const Module*>(mod);
 		if (m) {
 			s << "  module args:";
-			BOOST_FOREACH(const Assignment &arg, m->definition_arguments) {
+			for(const auto &arg : m->definition_arguments) {
 				s << boost::format("    %s = %s") % arg.first % variables[arg.first];
 			}
 		}
 	}
 	typedef std::pair<std::string, ValuePtr> ValueMapType;
 	s << "  vars:";
-	BOOST_FOREACH(const ValueMapType &v, constants) {
+	for(const auto &v : constants) {
 		s << boost::format("    %s = %s") % v.first % v.second;
 	}
-	BOOST_FOREACH(const ValueMapType &v, variables) {
+	for(const auto &v : variables) {
 		s << boost::format("    %s = %s") % v.first % v.second;
 	}
-	BOOST_FOREACH(const ValueMapType &v, config_variables) {
+	for(const auto &v : config_variables) {
 		s << boost::format("    %s = %s") % v.first % v.second;
 	}
 	return s.str();
@@ -201,7 +202,7 @@ ValuePtr FileContext::evaluate_function(const std::string &name,
 	const AbstractFunction *foundf = findLocalFunction(name);
 	if (foundf) return foundf->evaluate(this, evalctx);
 
-	BOOST_FOREACH(const FileModule::ModuleContainer::value_type &m, this->usedlibs) {
+	for(const auto &m : this->usedlibs) {
 		// usedmod is NULL if the library wasn't be compiled (error or file-not-found)
 		FileModule *usedmod = ModuleCache::instance()->lookup(m);
 		if (usedmod && usedmod->scope.functions.find(name) != usedmod->scope.functions.end())
@@ -216,7 +217,7 @@ AbstractNode *FileContext::instantiate_module(const ModuleInstantiation &inst, E
 	const AbstractModule *foundm = this->findLocalModule(inst.name());
 	if (foundm) return foundm->instantiate(this, &inst, evalctx);
 
-	BOOST_FOREACH(const FileModule::ModuleContainer::value_type &m, this->usedlibs) {
+	for(const auto &m : this->usedlibs) {
 		FileModule *usedmod = ModuleCache::instance()->lookup(m);
 		// usedmod is NULL if the library wasn't be compiled (error or file-not-found)
 		if (usedmod &&

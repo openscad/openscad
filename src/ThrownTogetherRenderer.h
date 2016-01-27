@@ -2,7 +2,8 @@
 
 #include "renderer.h"
 #include "csgnode.h"
-#include <boost/unordered_map.hpp>
+#include <unordered_map>
+#include <boost/functional/hash.hpp>
 
 class ThrownTogetherRenderer : public Renderer
 {
@@ -21,5 +22,7 @@ private:
 	shared_ptr<CSGProducts> root_products;
 	shared_ptr<CSGProducts> highlight_products;
 	shared_ptr<CSGProducts> background_products;
-	mutable boost::unordered_map<std::pair<const Geometry*,const Transform3d*>,int> geomVisitMark;
+	mutable std::unordered_map<std::pair<const Geometry*,const Transform3d*>,
+														 int,
+														 boost::hash<std::pair<const Geometry*,const Transform3d*>>> geomVisitMark;
 };

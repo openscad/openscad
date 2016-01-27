@@ -377,7 +377,7 @@ void ScintillaEditor::enumerateColorSchemesInPath(ScintillaEditor::colorscheme_s
 
 			EditorColorScheme *colorScheme = new EditorColorScheme(path);
 			if (colorScheme->valid()) {
-				result_set.insert(colorscheme_set_t::value_type(colorScheme->index(), boost::shared_ptr<EditorColorScheme>(colorScheme)));
+				result_set.insert(colorscheme_set_t::value_type(colorScheme->index(), shared_ptr<EditorColorScheme>(colorScheme)));
 			} else {
 				delete colorScheme;
 			}

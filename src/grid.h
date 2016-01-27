@@ -1,15 +1,12 @@
 #pragma once
 
-#include "mathc99.h"
 #include "linalg.h"
+#include "hash.h"
+#include <boost/functional/hash.hpp>
+#include <cmath>
 
-#ifdef _WIN32
-typedef __int64 int64_t;
-#else
-#include <stdint.h>
-#endif
-#include <stdlib.h>
-#include <boost/unordered_map.hpp>
+#include <cstdint> // int64_t
+#include <unordered_map>
 #include <utility>
 
 //const double GRID_COARSE = 0.001;
@@ -27,7 +24,7 @@ class Grid2d
 {
 public:
 	double res;
-	boost::unordered_map<std::pair<int64_t,int64_t>, T> db;
+	std::unordered_map<std::pair<int64_t,int64_t>, T, boost::hash<std::pair<int64_t,int64_t>>> db;
 
 	Grid2d(double resolution) {
 		res = resolution;
@@ -38,8 +35,8 @@ public:
 		if not.
 	*/ 
 	T &align(double &x, double &y) {
-		int64_t ix = (int64_t)round(x / res);
-		int64_t iy = (int64_t)round(y / res);
+		int64_t ix = (int64_t)std::round(x / res);
+		int64_t iy = (int64_t)std::round(y / res);
 		if (db.find(std::make_pair(ix, iy)) == db.end()) {
 			int dist = 10;
 			for (int64_t jx = ix - 1; jx <= ix + 1; jx++) {
@@ -60,8 +57,8 @@ public:
 	}
 
 	bool has(double x, double y) const {
-		int64_t ix = (int64_t)round(x / res);
-		int64_t iy = (int64_t)round(y / res);
+		int64_t ix = (int64_t)std::round(x / res);
+		int64_t iy = (int64_t)std::round(y / res);
 		if (db.find(std::make_pair(ix, iy)) != db.end())
 			return true;
 		for (int64_t jx = ix - 1; jx <= ix + 1; jx++)
@@ -87,21 +84,13 @@ public:
 	}
 };
 
-typedef Eigen::Matrix<int64_t, 3, 1> Vector3l;
-
-namespace Eigen {
-	size_t hash_value(Vector3f const &v);
-	size_t hash_value(Vector3d const &v);
-	size_t hash_value(Vector3l const &v);
-}
-
 template <typename T>
 class Grid3d
 {
 public:
 	double res;
 	typedef Vector3l Key;
-	typedef boost::unordered_map<Key, T> GridContainer;
+	typedef std::unordered_map<Key, T> GridContainer;
 	GridContainer db;
 
 	Grid3d(double resolution) {

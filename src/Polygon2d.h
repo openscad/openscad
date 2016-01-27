@@ -32,7 +32,7 @@ public:
 	const Outlines2d &outlines() const { return theoutlines; }
 
 	void transform(const Transform2d &mat);
-	void resize(Vector2d newsize, const Eigen::Matrix<bool,2,1> &autosize);
+	void resize(const Vector2d &newsize, const Eigen::Matrix<bool,2,1> &autosize);
 
 	bool isSanitized() const { return this->sanitized; }
 	void setSanitized(bool s) { this->sanitized = s; }

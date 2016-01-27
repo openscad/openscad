@@ -32,7 +32,6 @@
 #include <QSettings>
 #include <QStatusBar>
 #include <boost/algorithm/string.hpp>
-#include <boost/foreach.hpp>
 #include "GeometryCache.h"
 #include "AutoUpdater.h"
 #include "feature.h"
@@ -143,7 +142,7 @@ void Preferences::init() {
 
 	uint savedsize = getValue("editor/fontsize").toUInt();
 	QFontDatabase db;
-	foreach(uint size, db.standardSizes()) {
+	for(auto size : db.standardSizes()) {
 		this->fontSize->addItem(QString::number(size));
 		if (size == savedsize) {
 			this->fontSize->setCurrentIndex(this->fontSize->count()-1);
@@ -691,7 +690,7 @@ void Preferences::initComboBox(QComboBox *comboBox, const Settings::SettingsEntr
 {
 	comboBox->clear();
 	// Range is a vector of 2D vectors: [[name, value], ...]
-	BOOST_FOREACH(const ValuePtr &v, entry.range().toVector()) {
+	for(const auto &v : entry.range().toVector()) {
 		QString val = QString::fromStdString(v[0]->toString());
 		QString qtext = QString::fromStdString(gettext(v[1]->toString().c_str()));
 		comboBox->addItem(qtext, val);
@@ -749,9 +748,7 @@ void Preferences::create(QStringList colorSchemes)
 
     std::list<std::string> names = ColorMap::inst()->colorSchemeNames(true);
     QStringList renderColorSchemes;
-    foreach (std::string name, names) {
-	renderColorSchemes << name.c_str();
-    }
+    for(const auto &name : names) renderColorSchemes << name.c_str();
     
     instance = new Preferences();
     instance->syntaxHighlight->clear();

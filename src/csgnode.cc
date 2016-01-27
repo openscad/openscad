@@ -28,7 +28,6 @@
 #include "Geometry.h"
 #include "linalg.h"
 #include <sstream>
-#include <boost/foreach.hpp>
 #include <boost/range/iterator_range.hpp>
 
 /*!
@@ -194,12 +193,12 @@ std::string CSGProduct::dump() const
 {
 	std::stringstream dump;
 	dump << this->intersections.front().leaf->label;
-	BOOST_FOREACH(const CSGChainObject &csgobj,
+	for(const auto &csgobj :
 								boost::make_iterator_range(this->intersections.begin() + 1,
 																					 this->intersections.end())) {
 		dump << " *" << csgobj.leaf->label;
 	}
-	BOOST_FOREACH(const CSGChainObject &csgobj, this->subtractions) {
+	for(const auto &csgobj : this->subtractions) {
 		dump << " -" << csgobj.leaf->label;
 	}
 	return dump.str();
@@ -208,7 +207,7 @@ std::string CSGProduct::dump() const
 BoundingBox CSGProduct::getBoundingBox() const
 {
 	BoundingBox bbox;
-	BOOST_FOREACH(const CSGChainObject &csgobj, this->intersections) {
+	for(const auto &csgobj : this->intersections) {
 		if (csgobj.leaf->geom) {
 			BoundingBox psbox = csgobj.leaf->geom->getBoundingBox();
 			// FIXME: Should intersect rather than extend
@@ -222,7 +221,7 @@ std::string CSGProducts::dump() const
 {
 	std::stringstream dump;
 
-	BOOST_FOREACH(const CSGProduct &product, this->products) {
+	for(const auto &product : this->products) {
 		dump << "+" << product.dump() << "\n";
 	}
 	return dump.str();
@@ -231,7 +230,7 @@ std::string CSGProducts::dump() const
 BoundingBox CSGProducts::getBoundingBox() const
 {
 	BoundingBox bbox;
-	BOOST_FOREACH(const CSGProduct &product, this->products) {
+	for(const auto &product : this->products) {
 		bbox.extend(product.getBoundingBox());
 	}
 	return bbox;
@@ -240,7 +239,7 @@ BoundingBox CSGProducts::getBoundingBox() const
 size_t CSGProducts::size() const
 {
 	size_t count = 0;
-	BOOST_FOREACH(const CSGProduct &product, this->products) {
+	for(const auto &product : this->products) {
 		count += product.intersections.size() + product.subtractions.size();
 	}
 	return count;

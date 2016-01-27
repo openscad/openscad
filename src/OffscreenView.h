@@ -4,9 +4,6 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <string>
-#ifndef _MSC_VER
-#include <stdint.h>
-#endif
 #include "system-gl.h"
 #include <iostream>
 #include "GLView.h"
@@ -14,7 +11,7 @@
 class OffscreenView : public GLView
 {
 public:
-	OffscreenView(size_t width, size_t height);
+	OffscreenView(int width, int height);
 	~OffscreenView();
 	bool save(std::ostream &output);
 	OffscreenContext *ctx;

@@ -28,7 +28,6 @@
 #include "dxfdata.h"
 
 #include <algorithm>
-#include <boost/foreach.hpp>
 
 #include <CGAL/convex_hull_2.h>
 #include <CGAL/Point_2.h>
@@ -81,7 +80,7 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const AbstractNode &node, OpenSCADOperator op)
 {
 	unsigned int dim = 0;
-	BOOST_FOREACH(const Geometry::GeometryItem &item, this->visitedchildren[node.index()]) {
+	for(const auto &item : this->visitedchildren[node.index()]) {
 		if (!item.first->modinst->isBackground() && item.second) {
 			if (!dim) dim = item.second->getDimension();
 			else if (dim != item.second->getDimension()) {
@@ -125,7 +124,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 
 	if (op == OPENSCAD_MINKOWSKI) {
 		Geometry::Geometries actualchildren;
-		BOOST_FOREACH(const Geometry::GeometryItem &item, children) {
+		for(const auto &item : children) {
 			if (!item.second->isEmpty()) actualchildren.push_back(item);
 		}
 		if (actualchildren.empty()) return ResultObject();
@@ -151,12 +150,12 @@ Polygon2d *GeometryEvaluator::applyHull2D(const AbstractNode &node)
 	std::vector<const Polygon2d *> children = collectChildren2D(node);
 	Polygon2d *geometry = new Polygon2d();
 
-	typedef CGAL::Point_2<CGAL::Cartesian<double> > CGALPoint2;
+	typedef CGAL::Point_2<CGAL::Cartesian<double>> CGALPoint2;
 	// Collect point cloud
 	std::list<CGALPoint2> points;
-	BOOST_FOREACH(const Polygon2d *p, children) {
-		BOOST_FOREACH(const Outline2d &o, p->outlines()) {
-			BOOST_FOREACH(const Vector2d &v, o.vertices) {
+	for(const auto &p : children) {
+		for(const auto &o : p->outlines()) {
+			for(const auto &v : o.vertices) {
 				points.push_back(CGALPoint2(v[0], v[1]));
 			}
 		}
@@ -168,7 +167,7 @@ Polygon2d *GeometryEvaluator::applyHull2D(const AbstractNode &node)
 
 		// Construct Polygon2d
 		Outline2d outline;
-		BOOST_FOREACH(const CGALPoint2 &p, result) {
+		for(const auto &p : result) {
 			outline.vertices.push_back(Vector2d(p[0], p[1]));
 		}
 		geometry->addOutline(outline);
@@ -204,7 +203,7 @@ Polygon2d *GeometryEvaluator::applyMinkowski2D(const AbstractNode &node)
 std::vector<const class Polygon2d *> GeometryEvaluator::collectChildren2D(const AbstractNode &node)
 {
 	std::vector<const Polygon2d *> children;
-	BOOST_FOREACH(const Geometry::GeometryItem &item, this->visitedchildren[node.index()]) {
+	for(const auto &item : this->visitedchildren[node.index()]) {
 		const AbstractNode *chnode = item.first;
 		const shared_ptr<const Geometry> &chgeom = item.second;
 		if (chnode->modinst->isBackground()) continue;
@@ -277,7 +276,7 @@ shared_ptr<const Geometry> GeometryEvaluator::smartCacheGet(const AbstractNode &
 Geometry::Geometries GeometryEvaluator::collectChildren3D(const AbstractNode &node)
 {
 	Geometry::Geometries children;
-	BOOST_FOREACH(const Geometry::GeometryItem &item, this->visitedchildren[node.index()]) {
+	for(const auto &item : this->visitedchildren[node.index()]) {
 		const AbstractNode *chnode = item.first;
 		const shared_ptr<const Geometry> &chgeom = item.second;
 		if (chnode->modinst->isBackground()) continue;
@@ -503,7 +502,7 @@ Response GeometryEvaluator::visit(State &state, const TextNode &node)
 		if (!isSmartCached(node)) {
 			std::vector<const Geometry *> geometrylist = node.createGeometryList();
 			std::vector<const Polygon2d *> polygonlist;
-			BOOST_FOREACH(const Geometry *geometry, geometrylist) {
+			for(const auto &geometry : geometrylist) {
 				const Polygon2d *polygon = dynamic_cast<const Polygon2d*>(geometry);
 				assert(polygon);
 				polygonlist.push_back(polygon);
@@ -619,8 +618,8 @@ Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 
 static void translate_PolySet(PolySet &ps, const Vector3d &translation)
 {
-	BOOST_FOREACH(Polygon &p, ps.polygons) {
-		BOOST_FOREACH(Vector3d &v, p) {
+	for(auto &p : ps.polygons) {
+		for(auto &v : p) {
 			v += translation;
 		}
 	}
@@ -636,7 +635,7 @@ static void add_slice(PolySet *ps, const Polygon2d &poly,
 	Eigen::Affine2d trans2(Eigen::Scaling(scale2) * Eigen::Rotation2D<double>(-rot2*M_PI/180));
 	
 	bool splitfirst = sin((rot1 - rot2)*M_PI/180) > 0.0;
-	BOOST_FOREACH(const Outline2d &o, poly.outlines()) {
+	for(const auto &o : poly.outlines()) {
 		Vector2d prev1 = trans1 * o.vertices[0];
 		Vector2d prev2 = trans2 * o.vertices[0];
 		for (size_t i=1;i<=o.vertices.size();i++) {
@@ -697,7 +696,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &
 	PolySet *ps_bottom = poly.tessellate(); // bottom
 	
 	// Flip vertex ordering for bottom polygon
-	BOOST_FOREACH(Polygon &p, ps_bottom->polygons) {
+	for(auto &p : ps_bottom->polygons) {
 		std::reverse(p.begin(), p.end());
 	}
 	translate_PolySet(*ps_bottom, Vector3d(0,0,h1));
@@ -817,8 +816,8 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 	double min_x = 0;
 	double max_x = 0;
 	int fragments = 0;
-	BOOST_FOREACH(const Outline2d &o, poly.outlines()) {
-		BOOST_FOREACH(const Vector2d &v, o.vertices) {
+	for(const auto &o : poly.outlines()) {
+		for(const auto &v : o.vertices) {
 			min_x = fmin(min_x, v[0]);
 			max_x = fmax(max_x, v[0]);
 
@@ -839,7 +838,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 		ps_start->transform(rot);
 		// Flip vertex ordering
 		if (!flip_faces) {
-			BOOST_FOREACH(Polygon &p, ps_start->polygons) {
+			for(auto &p : ps_start->polygons) {
 				std::reverse(p.begin(), p.end());
 			}
 		}
@@ -850,7 +849,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 		Transform3d rot2(Eigen::AngleAxisd(node.angle*M_PI/180, Vector3d::UnitZ()) * Eigen::AngleAxisd(M_PI/2, Vector3d::UnitX()));
 		ps_end->transform(rot2);
 		if (flip_faces) {
-			BOOST_FOREACH(Polygon &p, ps_end->polygons) {
+			for(auto &p : ps_end->polygons) {
 				std::reverse(p.begin(), p.end());
 			}
 		}
@@ -858,7 +857,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 		delete ps_end;
 	}
 
-	BOOST_FOREACH(const Outline2d &o, poly.outlines()) {
+	for(const auto &o : poly.outlines()) {
 		std::vector<Vector3d> rings[2];
 		rings[0].resize(o.vertices.size());
 		rings[1].resize(o.vertices.size());
@@ -951,7 +950,7 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 
 			if (!node.cut_mode) {
 				ClipperLib::Clipper sumclipper;
-				BOOST_FOREACH(const Geometry::GeometryItem &item, this->visitedchildren[node.index()]) {
+				for(const auto &item : this->visitedchildren[node.index()]) {
 					const AbstractNode *chnode = item.first;
 					const shared_ptr<const Geometry> &chgeom = item.second;
 					// FIXME: Don't use deep access to modinst members

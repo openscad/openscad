@@ -20,7 +20,6 @@
 #include <iostream>
 #include <assert.h>
 #include <cstddef>
-#include <boost/foreach.hpp>
 
 /*!
 	\class CSGTreeEvaluator
@@ -48,7 +47,7 @@ shared_ptr<CSGNode> CSGTreeEvaluator::buildCSGTree(const AbstractNode &node)
 
 void CSGTreeEvaluator::applyBackgroundAndHighlight(State &state, const AbstractNode &node)
 {
-	BOOST_FOREACH(const AbstractNode *chnode, this->visitedchildren[node.index()]) {
+	for(const auto &chnode : this->visitedchildren[node.index()]) {
 		shared_ptr<CSGNode> t(this->stored_term[chnode->index()]);
 		this->stored_term.erase(chnode->index());
 		if (t) {
@@ -62,7 +61,7 @@ void CSGTreeEvaluator::applyToChildren(State &state, const AbstractNode &node, O
 {
 	shared_ptr<CSGNode> t1;
 	const ModuleInstantiation *t1_modinst;
-	BOOST_FOREACH(const AbstractNode *chnode, this->visitedchildren[node.index()]) {
+	for(const auto &chnode : this->visitedchildren[node.index()]) {
 		shared_ptr<CSGNode> t2(this->stored_term[chnode->index()]);
 		const ModuleInstantiation *t2_modinst = chnode->modinst;
 		this->stored_term.erase(chnode->index());
