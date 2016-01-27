@@ -262,7 +262,6 @@ HEADERS += src/typedefs.h \
            src/expression.h \
            src/stackcheck.h \
            src/function.h \
-           src/function-read.h \
            src/exceptions.h \
            src/grid.h \
            src/highlighter.h \
@@ -341,7 +340,6 @@ SOURCES += src/version_check.cc \
            src/expr.cc \
            src/stackcheck.cc \
            src/func.cc \
-           src/func-read.cc \
            src/localscope.cc \
            src/module.cc \
            src/feature.cc \
@@ -363,7 +361,6 @@ SOURCES += src/version_check.cc \
            src/transform.cc \
            src/color.cc \
            src/primitives.cc \
-           src/primitives-cgal.cc \
            src/projection.cc \
            src/cgaladv.cc \
            src/surface.cc \
@@ -487,7 +484,8 @@ HEADERS += src/cgal.h \
            src/CGAL_Nef3_workaround.h \
            src/convex_hull_3_bugfix.h \
            src/cgalworker.h \
-           src/Polygon2d-CGAL.h
+           src/Polygon2d-CGAL.h \
+           src/function-read.h
 
 SOURCES += src/cgalutils.cc \
            src/cgalutils-applyops.cc \
@@ -498,7 +496,9 @@ SOURCES += src/cgalutils.cc \
            src/CGALRenderer.cc \
            src/CGAL_Nef_polyhedron.cc \
            src/cgalworker.cc \
-           src/Polygon2d-CGAL.cc
+           src/Polygon2d-CGAL.cc \
+           src/func-read.cc \
+           src/primitives-cgal.cc
 }
 
 macx {
