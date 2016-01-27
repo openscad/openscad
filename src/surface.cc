@@ -37,8 +37,8 @@
 
 #include <sstream>
 #include <fstream>
-#include <boost/foreach.hpp>
-#include <boost/unordered_map.hpp>
+#include <unordered_map>
+#include <boost/functional/hash.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
@@ -55,7 +55,7 @@ public:
 	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
 };
 
-typedef boost::unordered_map<std::pair<int,int>,double> img_data_t;
+typedef std::unordered_map<std::pair<int,int>, double, boost::hash<std::pair<int,int>>> img_data_t;
 
 class SurfaceNode : public LeafNode
 {
@@ -178,7 +178,7 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
 	int lines = 0, columns = 0;
 	double min_val = 0;
 
-	typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+	typedef boost::tokenizer<boost::char_separator<char>> tokenizer;
 	boost::char_separator<char> sep(" \t");
 
 	while (!stream.eof()) {
@@ -192,7 +192,7 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
 		int col = 0;
 		tokenizer tokens(line, sep);
 		try {
-			BOOST_FOREACH(const std::string &token, tokens) {
+			for(const auto &token : tokens) {
 				double v = boost::lexical_cast<double>(token);
 				data[std::make_pair(lines, col++)] = v;
 				if (col > columns) columns = col;

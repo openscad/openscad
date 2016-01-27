@@ -32,8 +32,7 @@
 
 #include <map>
 #include <queue>
-#include <boost/foreach.hpp>
-#include <boost/unordered_set.hpp>
+#include <unordered_set>
 
 namespace CGALUtils {
 
@@ -47,7 +46,7 @@ namespace CGALUtils {
 			}
 		}
 		// Also make sure that there is only one shell:
-		boost::unordered_set<typename Polyhedron::Facet_const_handle, typename CGAL::Handle_hash_function> visited;
+		std::unordered_set<typename Polyhedron::Facet_const_handle, typename CGAL::Handle_hash_function> visited;
 		// c++11
 		// visited.reserve(p.size_of_facets());
 
@@ -86,7 +85,7 @@ namespace CGALUtils {
 			CGAL::Nef_nary_union_3<CGAL_Nef_polyhedron3> nary_union;
 			int nary_union_num_inserted = 0;
 			
-			BOOST_FOREACH(const Geometry::GeometryItem &item, children) {
+			for(const auto &item : children) {
 				const shared_ptr<const Geometry> &chgeom = item.second;
 				shared_ptr<const CGAL_Nef_polyhedron> chN = 
 					dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
@@ -158,7 +157,7 @@ namespace CGALUtils {
 		// instead.
 		std::list<K::Point_3> points;
 
-		BOOST_FOREACH(const Geometry::GeometryItem &item, children) {
+		for(const auto &item : children) {
 			const shared_ptr<const Geometry> &chgeom = item.second;
 			const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(chgeom.get());
 			if (N) {
@@ -170,8 +169,8 @@ namespace CGALUtils {
 			} else {
 				const PolySet *ps = dynamic_cast<const PolySet *>(chgeom.get());
 				if (ps) {
-					BOOST_FOREACH(const Polygon &p, ps->polygons) {
-						BOOST_FOREACH(const Vector3d &v, p) {
+					for(const auto &p : ps->polygons) {
+						for(const auto &v : p) {
 							points.push_back(K::Point_3(v[0], v[1], v[2]));
 						}
 					}
@@ -220,7 +219,7 @@ namespace CGALUtils {
 				typedef CGAL::Epick Hull_kernel;
 
 				std::list<CGAL_Polyhedron> P[2];
-				std::list<CGAL::Polyhedron_3<Hull_kernel> > result_parts;
+				std::list<CGAL::Polyhedron_3<Hull_kernel>> result_parts;
 
 				for (size_t i = 0; i < 2; i++) {
 					CGAL_Polyhedron poly;
@@ -376,7 +375,7 @@ namespace CGALUtils {
 					t.start();
 					PRINTDB("Minkowski: Computing union of %d parts",result_parts.size());
 					Geometry::Geometries fake_children;
-					for (std::list<CGAL::Polyhedron_3<Hull_kernel> >::iterator i = result_parts.begin(); i != result_parts.end(); ++i) {
+					for (std::list<CGAL::Polyhedron_3<Hull_kernel>>::iterator i = result_parts.begin(); i != result_parts.end(); ++i) {
 						PolySet ps(3,true);
 						createPolySetFromPolyhedron(*i, ps);
 						fake_children.push_back(std::make_pair((const AbstractNode*)NULL,

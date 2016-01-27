@@ -50,11 +50,15 @@ project(tests)
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}")
 
+# Get GCC version
+if(CMAKE_COMPILER_IS_GNUCXX)
+  execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
+endif()
+
 # Build debug build as default
 if(NOT CMAKE_BUILD_TYPE)
   #  set(CMAKE_BUILD_TYPE Release)
   if(CMAKE_COMPILER_IS_GNUCXX)
-    execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
     if (GCC_VERSION VERSION_GREATER 4.6)
       set(CMAKE_BUILD_TYPE RelWithDebInfo)
     else()
@@ -256,26 +260,18 @@ endif()
 
 #
 # Handle C++11.
-# Usage: cmake -DCXX11=1 .
 # Note: Since Xcode 7, c++11 is default
-# Note: We do this after looking for Boost, just to have a way of determining
-#       which C++ library to link with
 #
-if (CXX11)
-  message(STATUS "Using C++11")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-  if(APPLE)
-    set(LIBCXX11 1)
-  endif()
-endif()
-if(APPLE)
-  if(LIBCXX11)
-    message(STATUS "Using libc++")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+message(STATUS "Using C++11")
+  if (NOT CMAKE_COMPILER_IS_GNUCXX OR GCC_VERSION VERSION_GREATER 4.6)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
   else()
-    message(STATUS "Using C++03 and libstdc++")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++03 -stdlib=libstdc++")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
   endif()
+if(APPLE)
+  set(LIBCXX11 1)
+  message(STATUS "Using libc++")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
 endif()
 
 # Mac OS X
@@ -674,7 +670,6 @@ endif()
 set(CORE_SOURCES
   tests-common.cc 
   ../src/parsersettings.cc
-  ../src/mathc99.cc
   ../src/linalg.cc
   ../src/colormap.cc
   ../src/Camera.cc
@@ -682,6 +677,7 @@ set(CORE_SOURCES
   ../src/value.cc 
   ../src/calc.cc 
   ../src/grid.cc 
+  ../src/hash.cc 
   ../src/expr.cc 
   ../src/func.cc 
   ../src/stackcheck.cc 
@@ -1004,7 +1000,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
       if (${EXPERIMENTAL} EQUAL -1)
         set(EXPERIMENTAL_OPTION "")
       else()
-        set(EXPERIMENTAL_OPTION "--enable=lc-each" "--enable=lc-else")
+        set(EXPERIMENTAL_OPTION "--enable=lc-each" "--enable=lc-else" "--enable=lc-for-c")
       endif()
 
       # 2D tests should be viewed from the top, not an angle.
@@ -1176,6 +1172,7 @@ list(APPEND DUMPTEST_FILES ${FEATURES_2D_FILES} ${FEATURES_3D_FILES} ${DEPRECATE
 list(APPEND DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/use-tests.scad
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/let-module-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/localfiles-test.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/localfiles_dir/localfiles-compatibility-test.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allexpressions.scad
@@ -1186,6 +1183,7 @@ list(APPEND CGALPNGTEST_2D_FILES ${FEATURES_2D_FILES} ${SCAD_DXF_FILES} ${EXAMPL
 list(APPEND CGALPNGTEST_3D_FILES ${FEATURES_3D_FILES} ${DEPRECATED_3D_FILES} ${ISSUES_3D_FILES} ${EXAMPLE_3D_FILES})
 list(APPEND CGALPNGTEST_3D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/use-tests.scad
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/let-module-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/transform-nan-inf-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/localfiles-test.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/localfiles_dir/localfiles-compatibility-test.scad

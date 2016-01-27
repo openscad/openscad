@@ -26,6 +26,7 @@
 #include "expression.h"
 #include "value.h"
 #include "evalcontext.h"
+#include <cstdint>
 #include <assert.h>
 #include <sstream>
 #include <algorithm>
@@ -35,7 +36,6 @@
 #include "exceptions.h"
 #include "feature.h"
 #include <boost/bind.hpp>
-#include <boost/foreach.hpp>
 
 // unnamed namespace
 namespace {
@@ -52,19 +52,9 @@ namespace {
 		return ret;
 	}
 
-	void evaluate_sequential_assignment(const AssignmentList & assignment_list, Context *context) {
-		EvalContext let_context(context, assignment_list);
-
-		const bool allow_reassignment = false;
-
-		for (unsigned int i = 0; i < let_context.numArgs(); i++) {
-			if (!allow_reassignment && context->has_local_variable(let_context.getArgName(i))) {
-				PRINTB("WARNING: Ignoring duplicate variable assignment %s = %s", let_context.getArgName(i) % let_context.getArgValue(i, context)->toString());
-			} else {
-				// NOTE: iteratively evaluated list of arguments
-				context->set_variable(let_context.getArgName(i), let_context.getArgValue(i, context));
-			}
-		}
+	void evaluate_sequential_assignment(const AssignmentList &assignment_list, Context *context) {
+		EvalContext ctx(context, assignment_list);
+		ctx.assignTo(*context);
 	}
 }
 
@@ -409,7 +399,7 @@ ExpressionVector::ExpressionVector(Expression *expr) : Expression(expr)
 ValuePtr ExpressionVector::evaluate(const Context *context) const
 {
 	Value::VectorType vec;
-	BOOST_FOREACH(const Expression *e, this->children) {
+	for(const auto &e : this->children) {
 		ValuePtr tmpval = e->evaluate(context);
 		if (e->isListComprehension()) {
 			const Value::VectorType result = tmpval->toVector();
@@ -576,7 +566,7 @@ ValuePtr ExpressionLcEach::evaluate(const Context *context) const
 
     if (v->type() == Value::RANGE) {
         RangeType range = v->toRange();
-        boost::uint32_t steps = range.numValues();
+        uint32_t steps = range.numValues();
         if (steps >= 1000000) {
             PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu).", steps);
         } else {
@@ -626,7 +616,7 @@ ValuePtr ExpressionLcFor::evaluate(const Context *context) const
 
     if (it_values->type() == Value::RANGE) {
         RangeType range = it_values->toRange();
-        boost::uint32_t steps = range.numValues();
+        uint32_t steps = range.numValues();
         if (steps >= 1000000) {
             PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu).", steps);
         } else {
@@ -655,6 +645,47 @@ ValuePtr ExpressionLcFor::evaluate(const Context *context) const
 void ExpressionLcFor::print(std::ostream &stream) const
 {
     stream << "for(" << this->call_arguments << ") (" << *this->first << ")";
+}
+
+ExpressionLcForC::ExpressionLcForC(const AssignmentList &arglist, const AssignmentList &incrargs, Expression *cond, Expression *expr)
+    : ExpressionLc(cond, expr), call_arguments(arglist), incr_arguments(incrargs)
+{
+}
+
+ValuePtr ExpressionLcForC::evaluate(const Context *context) const
+{
+	ExperimentalFeatureException::check(Feature::ExperimentalForCExpression);
+
+	Value::VectorType vec;
+
+    Context c(context);
+    evaluate_sequential_assignment(this->call_arguments, &c);
+
+	unsigned int counter = 0;
+    while (this->first->evaluate(&c)) {
+        vec.push_back(this->second->evaluate(&c));
+
+		if (counter++ == 1000000) throw RecursionException::create("for loop", "");
+
+        Context tmp(&c);
+        evaluate_sequential_assignment(this->incr_arguments, &tmp);
+        c.apply_variables(tmp);
+    }    
+
+    if (this->second->isListComprehension()) {
+        return ValuePtr(flatten(vec));
+    } else {
+        return ValuePtr(vec);
+    }
+}
+
+void ExpressionLcForC::print(std::ostream &stream) const
+{
+    stream
+        << "for(" << this->call_arguments
+        << ";" << *this->first
+        << ";" << this->incr_arguments
+        << ") " << *this->second;
 }
 
 ExpressionLcLet::ExpressionLcLet(const AssignmentList &arglist, Expression *expr)

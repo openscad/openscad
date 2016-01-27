@@ -40,12 +40,11 @@
 #include "value.h"
 #include "function.h"
 #include "printutils.h"
+#include "memory.h"
 #include <sstream>
-#include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
 
 namespace fs = boost::filesystem;
-#define foreach BOOST_FOREACH
 
 #include "boosty.h"
 
@@ -190,15 +189,15 @@ assignment:
           TOK_ID '=' expr ';'
             {
                 bool found = false;
-                foreach (Assignment& iter, scope_stack.top()->assignments) {
+                for (auto& iter : scope_stack.top()->assignments) {
                     if (iter.first == $1) {
-                        iter.second = boost::shared_ptr<Expression>($3);
+                        iter.second = shared_ptr<Expression>($3);
                         found = true;
                         break;
                     }
                 }
                 if (!found) {
-                    scope_stack.top()->assignments.push_back(Assignment($1, boost::shared_ptr<Expression>($3)));
+                    scope_stack.top()->assignments.push_back(Assignment($1, shared_ptr<Expression>($3)));
                 }
                 free($1);
             }
@@ -261,7 +260,7 @@ if_statement:
           TOK_IF '(' expr ')'
             {
                 $<ifelse>$ = new IfElseModuleInstantiation();
-                $<ifelse>$->arguments.push_back(Assignment("", boost::shared_ptr<Expression>($3)));
+                $<ifelse>$->arguments.push_back(Assignment("", shared_ptr<Expression>($3)));
                 $<ifelse>$->setPath(parser_source_path);
                 scope_stack.push(&$<ifelse>$->scope);
             }
@@ -287,10 +286,11 @@ child_statement:
             }
         ;
 
-// "for" and "each" are a valid module identifier
+// "for", "let" and "each" are valid module identifiers
 module_id:
           TOK_ID  { $$ = $1; }
         | TOK_FOR { $$ = strdup("for"); }
+        | TOK_LET { $$ = strdup("let"); }
         | TOK_EACH { $$ = strdup("each"); }
         ;
 
@@ -467,6 +467,12 @@ list_comprehension_elements:
                 }
                 delete $3;
             }
+        | TOK_FOR '(' arguments_call ';' expr ';' arguments_call ')' list_comprehension_elements_or_expr
+            {
+                $$ = new ExpressionLcForC(*$3, *$7, $5, $9);
+                delete $3;
+                delete $7;
+            }
         | TOK_IF '(' expr ')' list_comprehension_elements_or_expr
             {
               $$ = new ExpressionLcIf($3, $5, 0);
@@ -539,7 +545,7 @@ argument_decl:
             }
         | TOK_ID '=' expr
             {
-                $$ = new Assignment($1, boost::shared_ptr<Expression>($3));
+                $$ = new Assignment($1, shared_ptr<Expression>($3));
                 free($1);
             }
         ;
@@ -566,11 +572,11 @@ arguments_call:
 argument_call:
           expr
             {
-                $$ = new Assignment("", boost::shared_ptr<Expression>($1));
+                $$ = new Assignment("", shared_ptr<Expression>($1));
             }
         | TOK_ID '=' expr
             {
-                $$ = new Assignment($1, boost::shared_ptr<Expression>($3));
+                $$ = new Assignment($1, shared_ptr<Expression>($3));
                 free($1);
             }
         ;

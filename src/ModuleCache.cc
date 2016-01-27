@@ -6,7 +6,6 @@
 #include "boosty.h"
 #include <boost/format.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/foreach.hpp>
 
 #include <stdio.h>
 #include <fstream>

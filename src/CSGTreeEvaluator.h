@@ -30,10 +30,10 @@ public:
 	const shared_ptr<CSGNode> &getRootNode() const {
 		return this->rootNode;
 	}
-	const std::vector<shared_ptr<CSGNode> > &getHighlightNodes() const {
+	const std::vector<shared_ptr<CSGNode>> &getHighlightNodes() const {
 		return this->highlightNodes;
 	}
-	const std::vector<shared_ptr<CSGNode> > &getBackgroundNodes() const {
+	const std::vector<shared_ptr<CSGNode>> &getBackgroundNodes() const {
 		return this->backgroundNodes;
 	}
 
@@ -54,7 +54,7 @@ protected:
 	const Tree &tree;
 	class GeometryEvaluator *geomevaluator;
 	shared_ptr<CSGNode> rootNode;
-	std::vector<shared_ptr<CSGNode> > highlightNodes;
-	std::vector<shared_ptr<CSGNode> > backgroundNodes;
-	std::map<int, shared_ptr<CSGNode> > stored_term; // The term evaluated from each node index
+	std::vector<shared_ptr<CSGNode>> highlightNodes;
+	std::vector<shared_ptr<CSGNode>> backgroundNodes;
+	std::map<int, shared_ptr<CSGNode>> stored_term; // The term evaluated from each node index
 };

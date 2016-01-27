@@ -30,7 +30,7 @@ public:
 // FIXME: Deprecated by CGALUtils::createPolySetFromNefPolyhedron3
 //	class PolySet *convertToPolyset() const;
 	void transform( const Transform3d &matrix );
-	void resize(Vector3d newsize, const Eigen::Matrix<bool,3,1> &autosize);
+	void resize(const Vector3d &newsize, const Eigen::Matrix<bool,3,1> &autosize);
 
 	shared_ptr<CGAL_Nef_polyhedron3> p3;
 };

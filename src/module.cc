@@ -41,7 +41,6 @@
 namespace fs = boost::filesystem;
 #include "boosty.h"
 #include "FontCache.h"
-#include <boost/foreach.hpp>
 #include <sstream>
 #include <sys/stat.h>
 
@@ -259,7 +258,7 @@ void FileModule::registerInclude(const std::string &localpath,
 
 bool FileModule::includesChanged() const
 {
-	BOOST_FOREACH(const FileModule::IncludeContainer::value_type &item, this->includes) {
+	for(const auto &item : this->includes) {
 		if (include_modified(item.second)) return true;
 	}
 	return false;
@@ -289,12 +288,12 @@ bool FileModule::handleDependencies()
 	this->is_handling_dependencies = true;
 
 	bool somethingchanged = false;
-	std::vector<std::pair<std::string,std::string> > updates;
+	std::vector<std::pair<std::string,std::string>> updates;
 
 	// If a lib in usedlibs was previously missing, we need to relocate it
 	// by searching the applicable paths. We can identify a previously missing module
 	// as it will have a relative path.
-	BOOST_FOREACH(std::string filename, this->usedlibs) {
+	for(auto filename : this->usedlibs) {
 
 		bool wasmissing = false;
 		bool found = true;
@@ -332,7 +331,7 @@ bool FileModule::handleDependencies()
 
 	// Relative filenames which were located is reinserted as absolute filenames
 	typedef std::pair<std::string,std::string> stringpair;
-	BOOST_FOREACH(const stringpair &files, updates) {
+	for(const auto &files : updates) {
 		this->usedlibs.erase(files.first);
 		this->usedlibs.insert(files.second);
 	}

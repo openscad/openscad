@@ -28,6 +28,7 @@
 #include "GeometryCache.h"
 #include "ModuleCache.h"
 #include "MainWindow.h"
+#include "OpenSCADApp.h"
 #include "parsersettings.h"
 #include "rendersettings.h"
 #include "Preferences.h"
@@ -72,7 +73,6 @@
 #include <QMenuBar>
 #include <QSplitter>
 #include <QFileDialog>
-#include <QApplication>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QLabel>
@@ -107,7 +107,6 @@
 
 #include <algorithm>
 #include <boost/version.hpp>
-#include <boost/foreach.hpp>
 #include <sys/stat.h>
 
 #ifdef ENABLE_CGAL
@@ -124,15 +123,6 @@
 
 #include "boosty.h"
 #include "FontCache.h"
-
-// Keeps track of open window
-QSet<MainWindow*> *MainWindow::windows = NULL;
-
-QSet<MainWindow*> *MainWindow::getWindows()
-{
-	if (!MainWindow::windows) MainWindow::windows = new QSet<MainWindow*>;
-	return MainWindow::windows;
-}
 
 // Global application state
 unsigned int GuiLocker::gui_locked = 0;
@@ -179,8 +169,6 @@ settings_valueList(const QString &key, const QList<int> &defaultList = QList<int
 bool MainWindow::mdiMode = false;
 bool MainWindow::undockMode = false;
 bool MainWindow::reorderMode = false;
-
-QProgressDialog *MainWindow::fontCacheDialog = NULL;
 
 MainWindow::MainWindow(const QString &filename)
 	: root_inst("group"), library_info_dialog(NULL), font_list_dialog(NULL), procevents(false), tempFile(NULL), progresswidget(NULL), contentschanged(false)
@@ -229,7 +217,7 @@ MainWindow::MainWindow(const QString &filename)
 
 	this->setAttribute(Qt::WA_DeleteOnClose);
 
-	MainWindow::getWindows()->insert(this);
+	scadApp->windowManager.add(this);
 
 #ifdef ENABLE_CGAL
 	this->cgalworker = new CGALWorker();
@@ -596,20 +584,20 @@ void MainWindow::initActionIcon(QAction *action, const char *darkResource, const
 
 void MainWindow::addKeyboardShortCut(const QList<QAction *> &actions)
 {
-    foreach (QAction *action, actions) {
-	// prevent adding shortcut twice if action is added to multiple toolbars
-	if (action->toolTip().contains("&nbsp;")) {
+	for (auto &action : actions) {
+		// prevent adding shortcut twice if action is added to multiple toolbars
+		if (action->toolTip().contains("&nbsp;")) {
 	    continue;
-	}
-	
-	const QString shortCut(action->shortcut().toString(QKeySequence::NativeText));
-	if (shortCut.isEmpty()) {
+		}
+		
+		const QString shortCut(action->shortcut().toString(QKeySequence::NativeText));
+		if (shortCut.isEmpty()) {
 	    continue;
+		}
+		
+		const QString toolTip("%1 &nbsp;<span style=\"color: gray; font-size: small; font-style: italic\">%2</span>");
+		action->setToolTip(toolTip.arg(action->toolTip(), shortCut));
 	}
-
-	const QString toolTip("%1 &nbsp;<span style=\"color: gray; font-size: small; font-style: italic\">%2</span>");
-	action->setToolTip(toolTip.arg(action->toolTip(), shortCut));
-    }
 }
 
 void MainWindow::loadViewSettings(){
@@ -702,8 +690,8 @@ MainWindow::~MainWindow()
 	delete this->opencsgRenderer;
 #endif
 	delete this->thrownTogetherRenderer;
-	MainWindow::getWindows()->remove(this);
-	if (MainWindow::getWindows()->size() == 0) {
+	scadApp->windowManager.remove(this);
+	if (scadApp->windowManager.getWindows().size() == 0) {
 		// Quit application even in case some other windows like
 		// Preferences are still open.
 		this->quit();
@@ -728,26 +716,6 @@ void MainWindow::report_func(const class AbstractNode*, void *vp, int mark)
 
 	// FIXME: Check if cancel was requested by e.g. Application quit
 	if (thisp->progresswidget->wasCanceled()) throw ProgressCancelException();
-}
-
-/*!
-	Requests to open a file from an external event, e.g. by double-clicking a filename.
- */
-void MainWindow::requestOpenFile(const QString &filename)
-{
-	// if we have an empty open window, use that one
-	QSetIterator<MainWindow *> i(*MainWindow::getWindows());
-	while (i.hasNext()) {
-		MainWindow *w = i.next();
-
-		if (w->editor->toPlainText().isEmpty()) {
-			w->openFile(filename);
-			return;
-		}
-	}
-
-	// otherwise, create a new one
-	new MainWindow(filename);
 }
 
 /*!
@@ -819,7 +787,7 @@ void MainWindow::updateRecentFiles()
 	while (files.size() > UIUtils::maxRecentFiles) files.removeLast();
 	settings.setValue("recentFileList", files);
 
-	foreach(QWidget *widget, QApplication::topLevelWidgets()) {
+	for(auto &widget : QApplication::topLevelWidgets()) {
 		MainWindow *mainWin = qobject_cast<MainWindow *>(widget);
 		if (mainWin) {
 			mainWin->updateRecentFileActions();
@@ -1191,11 +1159,14 @@ void MainWindow::compileCSG(bool procevents)
 		PRINTB("Compiling highlights (%d CSG Trees)...", highlight_terms.size());
 		if (procevents) QApplication::processEvents();
 		
-		highlights_products.reset(new CSGProducts());
+		this->highlights_products.reset(new CSGProducts());
 		for (unsigned int i = 0; i < highlight_terms.size(); i++) {
 			shared_ptr<CSGNode> nterm = normalizer.normalize(highlight_terms[i]);
-			highlights_products->import(nterm);
+			this->highlights_products->import(nterm);
 		}
+	}
+	else {
+		this->highlights_products.reset();
 	}
 	
 	const std::vector<shared_ptr<CSGNode> > &background_terms = csgrenderer.getBackgroundNodes();
@@ -1203,11 +1174,14 @@ void MainWindow::compileCSG(bool procevents)
 		PRINTB("Compiling background (%d CSG Trees)...", background_terms.size());
 		if (procevents) QApplication::processEvents();
 		
-		background_products.reset(new CSGProducts());
+		this->background_products.reset(new CSGProducts());
 		for (unsigned int i = 0; i < background_terms.size(); i++) {
 			shared_ptr<CSGNode> nterm = normalizer.normalize(background_terms[i]);
-			background_products->import(nterm);
+			this->background_products->import(nterm);
 		}
+	}
+	else {
+		this->background_products.reset();
 	}
 
 	if (this->root_products &&
@@ -1299,11 +1273,11 @@ void MainWindow::show_examples()
 {
 	bool found_example = false;
 	
-	foreach (const QString &cat, UIUtils::exampleCategories()) {
+	for (const auto &cat : UIUtils::exampleCategories()) {
 		QFileInfoList examples = UIUtils::exampleFiles(cat);
 		QMenu *menu = this->menuExamples->addMenu(gettext(cat.toStdString().c_str()));
 		
-		foreach(const QFileInfo &ex, examples) {
+		for(const auto &ex : examples) {
 			QAction *openAct = new QAction(ex.fileName(), this);
 			connect(openAct, SIGNAL(triggered()), this, SLOT(actionOpenExample()));
 			menu->addAction(openAct);
@@ -2400,6 +2374,11 @@ void MainWindow::viewModeAnimate()
 	}
 }
 
+bool MainWindow::isEmpty()
+{
+	return this->editor->toPlainText().isEmpty();
+}
+
 void MainWindow::animateUpdateDocChanged()
 {
 	QString current_doc = editor->toPlainText(); 
@@ -2783,20 +2762,3 @@ void MainWindow::setContentsChanged()
 	this->contentschanged = true;
 }
 
-void MainWindow::showFontCacheDialog()
-{
-	if (!MainWindow::fontCacheDialog) MainWindow::fontCacheDialog = new QProgressDialog;	
-	QProgressDialog *dialog = MainWindow::fontCacheDialog;
-
-	dialog->setLabelText(_("Fontconfig needs to update its font cache.\nThis can take up to a couple of minutes."));
-	dialog->setMinimum(0);
-	dialog->setMaximum(0);
-	dialog->setCancelButton(0);
-	dialog->exec();
-}
-
-void MainWindow::hideFontCacheDialog()
-{
-	assert(MainWindow::fontCacheDialog);
-	MainWindow::fontCacheDialog->reset();
-}

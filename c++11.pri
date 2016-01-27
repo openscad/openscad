@@ -28,8 +28,22 @@ macx {
 }
 
 c++11 {
-  QMAKE_CXXFLAGS += -std=c++11
+  # -std=c++11 is only available in gcc>=4.7
+  *g++*: QMAKE_CXXFLAGS += -std=c++0x
+  else: QMAKE_CXXFLAGS += -std=c++11
   message("Using C++11")
+
+  *clang*: {
+      # 3rd party libraries will probably violate this for a long time
+    CXX11_SUPPRESS_WARNINGS += -Wno-inconsistent-missing-override
+    # boost/algorithm/string.hpp does this
+    CXX11_SUPPRESS_WARNINGS += -Wno-unused-local-typedef
+    # CGAL
+    CXX11_SUPPRESS_WARNINGS += -Wno-deprecated-register
+
+    QMAKE_CXXFLAGS_WARN_ON += $$CXX11_SUPPRESS_WARNINGS
+    QMAKE_OBJECTIVE_CFLAGS_WARN_ON += $$CXX11_SUPPRESS_WARNINGS
+  }
 }
 else {
   *clang* {
