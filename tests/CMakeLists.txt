@@ -665,7 +665,6 @@ endif()
 set(CORE_SOURCES
   tests-common.cc 
   ../src/parsersettings.cc
-  ../src/mathc99.cc
   ../src/linalg.cc
   ../src/colormap.cc
   ../src/Camera.cc
