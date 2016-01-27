@@ -34,7 +34,6 @@
 #include "parser_yacc.h"
 #include "module.h"
 #include <assert.h>
-#include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
@@ -292,7 +291,7 @@ void includefile()
 */
 void lexerdestroy()
 {
-	BOOST_FOREACH (FILE *f, openfiles) fclose(f);
+	for (auto f : openfiles) fclose(f);
 	openfiles.clear();
 	openfilenames.clear();
 	path_stack.clear();

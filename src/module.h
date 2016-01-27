@@ -4,8 +4,8 @@
 #include <vector>
 #include <list>
 #include <deque>
-#include <boost/unordered_map.hpp>
-#include <boost/unordered_set.hpp>
+#include <unordered_map>
+#include <unordered_set>
 #include <time.h>
 #include <sys/stat.h>
 
@@ -121,7 +121,7 @@ public:
 	bool isHandlingDependencies() const { return this->is_handling_dependencies; }
         ValuePtr lookup_variable(const std::string &name) const;
 
-	typedef boost::unordered_set<std::string> ModuleContainer;
+	typedef std::unordered_set<std::string> ModuleContainer;
 	ModuleContainer usedlibs;
 private:
         /** Reference to retain the context that was used in the last evaluation */
@@ -134,7 +134,7 @@ private:
 
 	bool include_modified(const IncludeFile &inc) const;
 
-	typedef boost::unordered_map<std::string, struct IncludeFile> IncludeContainer;
+	typedef std::unordered_map<std::string, struct IncludeFile> IncludeContainer;
 	IncludeContainer includes;
 	bool is_handling_dependencies;
 	std::string path;

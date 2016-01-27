@@ -47,6 +47,6 @@ public:
 	}
 
 private:
-  std::vector<shared_ptr<std::string> > cache;
+  std::vector<shared_ptr<std::string>> cache;
 	std::string nullvalue;
 };

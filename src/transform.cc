@@ -149,7 +149,7 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 
 		if (x != 0.0 || y != 0.0 || z != 0.0)
 		{
-			Eigen::Matrix4d m;
+			Matrix4d m;
 			m << 1-2*x*x, -2*y*x, -2*z*x, 0,
 				-2*x*y, 1-2*y*y, -2*z*y, 0,
 				-2*x*z, -2*y*z, 1-2*z*z, 0,

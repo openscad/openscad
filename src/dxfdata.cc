@@ -31,10 +31,8 @@
 #include "calc.h"
 
 #include <fstream>
-#include "mathc99.h"
 #include <assert.h>
-#include <boost/unordered_map.hpp>
-#include <boost/foreach.hpp>
+#include <unordered_map>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <algorithm>
@@ -85,9 +83,9 @@ DxfData::DxfData(double fn, double fs, double fa,
 		return;
 	}
 
-	Grid2d< std::vector<int> > grid(GRID_COARSE);
+	Grid2d< std::vector<int>> grid(GRID_COARSE);
 	std::vector<Line> lines;                       // Global lines
-	boost::unordered_map< std::string, std::vector<Line> > blockdata; // Lines in blocks
+	std::unordered_map< std::string, std::vector<Line>> blockdata; // Lines in blocks
 
 	bool in_entities_section = false;
 	bool in_blocks_section = false;
@@ -125,7 +123,7 @@ DxfData::DxfData(double fn, double fs, double fa,
 		for (int j = 0; j < 2; j++)
 			coords[i][j] = 0;
 
-	typedef boost::unordered_map<std::string, int> EntityList;
+	typedef std::unordered_map<std::string, int> EntityList;
 	EntityList unsupported_entities_list;
 
 	//
@@ -392,7 +390,7 @@ DxfData::DxfData(double fn, double fs, double fa,
   	}
 	}
 
-	BOOST_FOREACH(const EntityList::value_type &i, unsupported_entities_list) {
+	for(const auto &i : unsupported_entities_list) {
 		if (layername.empty()) {
 			PRINTB("WARNING: Unsupported DXF Entity '%s' (%x) in %s.",
 						 i.first % i.second % QuotedString(boosty::stringy(boostfs_uncomplete(filename, fs::current_path()))));
@@ -415,7 +413,7 @@ DxfData::DxfData(double fn, double fs, double fa,
 	{
 		int current_line, current_point;
 
-		BOOST_FOREACH(const LineMap::value_type &l, enabled_lines) {
+		for(const auto &l : enabled_lines) {
 			int idx = l.second;
 			for (int j = 0; j < 2; j++) {
 				std::vector<int> *lv = &grid.data(this->points[lines[idx].idx[j]][0], this->points[lines[idx].idx[j]][1]);

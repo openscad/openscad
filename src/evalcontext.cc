@@ -7,8 +7,6 @@
 #include "localscope.h"
 #include "exceptions.h"
 
-#include <boost/foreach.hpp>
-
 EvalContext::EvalContext(const Context *parent, 
 												 const AssignmentList &args, const class LocalScope *const scope)
 	: Context(parent), eval_arguments(args), scope(scope)
@@ -44,7 +42,7 @@ ModuleInstantiation *EvalContext::getChild(size_t i) const
 
 void EvalContext::assignTo(Context &target) const
 {
-	BOOST_FOREACH(const Assignment &assignment, this->eval_arguments) {
+	for(const auto &assignment : this->eval_arguments) {
 		ValuePtr v;
 		if (assignment.second) v = assignment.second->evaluate(&target);
 		if (target.has_local_variable(assignment.first)) {
@@ -71,7 +69,7 @@ std::string EvalContext::dump(const AbstractModule *mod, const ModuleInstantiati
 	}
 	if (this->scope && this->scope->children.size() > 0) {
 		s << boost::format("    children:");
-		BOOST_FOREACH(const ModuleInstantiation *ch, this->scope->children) {
+		for(const auto &ch : this->scope->children) {
 			s << boost::format("      %s") % ch->name();
 		}
 	}
@@ -79,7 +77,7 @@ std::string EvalContext::dump(const AbstractModule *mod, const ModuleInstantiati
 		const Module *m = dynamic_cast<const Module*>(mod);
 		if (m) {
 			s << boost::format("  module args:");
-			BOOST_FOREACH(const Assignment &arg, m->definition_arguments) {
+			for(const auto &arg : m->definition_arguments) {
 				s << boost::format("    %s = %s") % arg.first % *(variables[arg.first]);
 			}
 		}

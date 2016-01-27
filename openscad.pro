@@ -168,7 +168,7 @@ CONFIG(skip-version-check) {
 
 # Application configuration
 macx:CONFIG += mdi
-#CONFIG += c++11
+CONFIG += c++11
 CONFIG += cgal
 CONFIG += opencsg
 CONFIG += glew
@@ -266,6 +266,7 @@ HEADERS += src/typedefs.h \
            src/function.h \
            src/exceptions.h \
            src/grid.h \
+           src/hash.h \
            src/highlighter.h \
            src/localscope.h \
            src/module.h \
@@ -304,10 +305,9 @@ HEADERS += src/typedefs.h \
            src/GeometryCache.h \
            src/GeometryEvaluator.h \
            src/Tree.h \
-src/DrawingCallback.h \
-src/FreetypeRenderer.h \
-src/FontCache.h \
-           src/mathc99.h \
+           src/DrawingCallback.h \
+           src/FreetypeRenderer.h \
+           src/FontCache.h \
            src/memory.h \
            src/linalg.h \
            src/Camera.h \
@@ -334,7 +334,6 @@ src/FontCache.h \
 
 SOURCES += src/version_check.cc \
            src/ProgressWidget.cc \
-           src/mathc99.cc \
            src/linalg.cc \
            src/Camera.cc \
            src/handle_dep.cc \
@@ -404,6 +403,7 @@ SOURCES += src/version_check.cc \
            src/AutoUpdater.cc \
            \
            src/grid.cc \
+           src/hash.cc \
            src/builtin.cc \
            src/calc.cc \
            src/export.cc \

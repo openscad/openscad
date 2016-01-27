@@ -10,7 +10,7 @@
 class Geometry
 {
 public:
-  typedef std::pair<const class AbstractNode *, shared_ptr<const Geometry> > GeometryItem;
+  typedef std::pair<const class AbstractNode *, shared_ptr<const Geometry>> GeometryItem;
   typedef std::list<GeometryItem> Geometries;
 
 	Geometry() : convexity(1) {}

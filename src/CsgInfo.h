@@ -23,7 +23,7 @@ public:
 		const AbstractNode *root_node = tree.root();
 		GeometryEvaluator geomevaluator(tree);
 		CSGTreeEvaluator evaluator(tree, &geomevaluator);
-		boost::shared_ptr<CSGNode> csgRoot = evaluator.buildCSGTree(*root_node);
+		shared_ptr<CSGNode> csgRoot = evaluator.buildCSGTree(*root_node);
 		std::vector<shared_ptr<CSGNode> > highlightNodes = evaluator.getHighlightNodes();
 		std::vector<shared_ptr<CSGNode> > backgroundNodes = evaluator.getBackgroundNodes();
 

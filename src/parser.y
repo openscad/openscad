@@ -40,12 +40,11 @@
 #include "value.h"
 #include "function.h"
 #include "printutils.h"
+#include "memory.h"
 #include <sstream>
-#include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
 
 namespace fs = boost::filesystem;
-#define foreach BOOST_FOREACH
 
 #include "boosty.h"
 
@@ -190,15 +189,15 @@ assignment:
           TOK_ID '=' expr ';'
             {
                 bool found = false;
-                foreach (Assignment& iter, scope_stack.top()->assignments) {
+                for (auto& iter : scope_stack.top()->assignments) {
                     if (iter.first == $1) {
-                        iter.second = boost::shared_ptr<Expression>($3);
+                        iter.second = shared_ptr<Expression>($3);
                         found = true;
                         break;
                     }
                 }
                 if (!found) {
-                    scope_stack.top()->assignments.push_back(Assignment($1, boost::shared_ptr<Expression>($3)));
+                    scope_stack.top()->assignments.push_back(Assignment($1, shared_ptr<Expression>($3)));
                 }
                 free($1);
             }
@@ -261,7 +260,7 @@ if_statement:
           TOK_IF '(' expr ')'
             {
                 $<ifelse>$ = new IfElseModuleInstantiation();
-                $<ifelse>$->arguments.push_back(Assignment("", boost::shared_ptr<Expression>($3)));
+                $<ifelse>$->arguments.push_back(Assignment("", shared_ptr<Expression>($3)));
                 $<ifelse>$->setPath(parser_source_path);
                 scope_stack.push(&$<ifelse>$->scope);
             }
@@ -546,7 +545,7 @@ argument_decl:
             }
         | TOK_ID '=' expr
             {
-                $$ = new Assignment($1, boost::shared_ptr<Expression>($3));
+                $$ = new Assignment($1, shared_ptr<Expression>($3));
                 free($1);
             }
         ;
@@ -573,11 +572,11 @@ arguments_call:
 argument_call:
           expr
             {
-                $$ = new Assignment("", boost::shared_ptr<Expression>($1));
+                $$ = new Assignment("", shared_ptr<Expression>($1));
             }
         | TOK_ID '=' expr
             {
-                $$ = new Assignment($1, boost::shared_ptr<Expression>($3));
+                $$ = new Assignment($1, shared_ptr<Expression>($3));
                 free($1);
             }
         ;

@@ -1,6 +1,5 @@
 #include "parsersettings.h"
 #include <boost/filesystem.hpp>
-#include <boost/foreach.hpp>
 #include "boosty.h"
 #include <boost/algorithm/string.hpp>
 #include "PlatformUtils.h"
@@ -20,7 +19,7 @@ static void add_librarydir(const std::string &libdir)
 */
 fs::path search_libs(const fs::path &localpath)
 {
-	BOOST_FOREACH(const std::string &dir, librarypath) {
+	for(const auto &dir : librarypath) {
 		fs::path usepath = fs::path(dir) / localpath;
 		if (fs::exists(usepath) && !fs::is_directory(usepath)) {
 			return usepath.string();
@@ -53,7 +52,7 @@ static bool check_valid(const fs::path &p, const std::vector<std::string> *openf
 	std::string fullname = boosty::stringy(p);
   // Detect circular includes
 	if (openfilenames) {
-		BOOST_FOREACH(const std::string &s, *openfilenames) {
+		for(const auto &s : *openfilenames) {
 			if (s == fullname) {
 //				PRINTB("WARNING: circular include file %s", fullname);
 				return false;
