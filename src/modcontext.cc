@@ -1,3 +1,6 @@
+#define _USE_MATH_DEFINES  // M_PI
+#include "math.h"
+
 #include "modcontext.h"
 #include "module.h"
 #include "expression.h"

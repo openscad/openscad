@@ -24,6 +24,9 @@
  *
  */
 
+#define _USE_MATH_DEFINES  // M_SQRT1_2
+#include "math.h"
+
 #include "function.h"
 #include "expression.h"
 #include "evalcontext.h"
