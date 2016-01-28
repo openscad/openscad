@@ -35,15 +35,13 @@
 #include "visitor.h"
 #include "context.h"
 #include "calc.h"
-#include "mathc99.h"
 #include <sstream>
 #include <assert.h>
-#include <boost/foreach.hpp>
+#include <cmath>
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 #include <boost/math/special_functions/fpclassify.hpp>
-#define isinf boost::math::isinf
 
 #define F_MINIMUM 0.01
 
@@ -421,14 +419,14 @@ Geometry *PrimitiveCGALNode::createGeometry() const
         {
             double px, py, pz;
             if (!point_vec->toVector()[i]->getVec3(px,py,pz) ||
-                    isinf(px) || isinf(py) || isinf(pz)) {
+                    std::isinf(px) || std::isinf(py) || std::isinf(pz)) {
                 PRINTB("ERROR: Unable to convert point at index %d to a vec3 of numbers", i);
                 return p;
             }
             PointK ptk(px,py,pz);
             double px2, py2, pz2;
             if ( norm_vec==ValuePtr::undefined || !norm_vec->toVector()[i]->getVec3(px2,py2,pz2) ||
-                    isinf(px2) || isinf(py2) || isinf(pz2)) {
+                    std::isinf(px2) || std::isinf(py2) || std::isinf(pz2)) {
                 points.push_back(std::make_pair(ptk, VectorK()));
             } else {
                 VectorK veck(px2,py2,pz2);
@@ -587,7 +585,7 @@ Geometry *PrimitiveCGALNode::createGeometry() const
         {
             double px, py, pz;
             if (!point_vec->toVector()[i]->getVec3(px,py,pz) ||
-                    isinf(px) || isinf(py) || isinf(pz)) {
+                    std::isinf(px) || std::isinf(py) || std::isinf(pz)) {
                 PRINTB("ERROR: Unable to convert point and index %d to a vec3 of numbers", i);
                 return p;
             }

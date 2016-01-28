@@ -24,29 +24,29 @@
  *
  */
 
-#include "mathc99.h"
+#define _USE_MATH_DEFINES  // M_SQRT1_2
+#include "math.h"
+
 #include "function.h"
 #include "function-read.h"
 #include "expression.h"
 #include "evalcontext.h"
 #include "builtin.h"
-#include <sstream>
-#include <ctime>
-#include <limits>
-#include <algorithm>
 #include "stl-utils.h"
 #include "printutils.h"
 #include "stackcheck.h"
 #include "exceptions.h"
-#include <boost/foreach.hpp>
 
 #include "cgalutils.h"
 #include <vector>
 #include <fstream>
 
-#include <boost/math/special_functions/fpclassify.hpp>
-using boost::math::isnan;
-using boost::math::isinf;
+#include <cmath>
+#include <sstream>
+#include <ctime>
+#include <cmath>
+#include <limits>
+#include <algorithm>
 
 /*
  Random numbers
