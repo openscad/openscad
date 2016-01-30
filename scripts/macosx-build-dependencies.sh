@@ -379,8 +379,9 @@ build_cgal()
   fi
   tar xzf CGAL-$version.tar.gz
   cd CGAL-$version
-  # Fix for https://github.com/CGAL/cgal/pull/561/
-  patch -p1 < $OPENSCADDIR/patches/CGAL-clang-bugfix-561.patch
+  ## Fix for https://github.com/CGAL/cgal/pull/561/
+  ### Resolved via src/CGAL_Line_3_workaround.h
+  #  patch -p1 < $OPENSCADDIR/patches/CGAL-clang-bugfix-561.patch
   CXXFLAGS="$CXXSTDFLAGS" cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.dylib -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.dylib -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.dylib -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DBUILD_SHARED_LIBS=TRUE -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="x86_64" -DBOOST_ROOT=$DEPLOYDIR -DBoost_USE_MULTITHREADED=false
   make -j"$NUMCPU" install
   make install

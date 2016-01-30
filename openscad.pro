@@ -484,6 +484,7 @@ HEADERS += src/cgal.h \
            src/Reindexer.h \
            src/CGALCache.h \
            src/CGALRenderer.h \
+           src/CGAL_Line_3_workaround.h \
            src/CGAL_Nef_polyhedron.h \
            src/CGAL_Nef3_workaround.h \
            src/convex_hull_3_bugfix.h \

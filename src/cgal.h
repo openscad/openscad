@@ -13,6 +13,7 @@
 #endif
 
 #include "CGAL_workaround_Mark_bounded_volumes.h" // This file must be included prior to CGAL/Nef_polyhedron_3.h
+#include "CGAL_Line_3_workaround.h" // This file must be included prior to anything using std::pair<Point3,Vector3>
 #include <CGAL/Gmpq.h>
 #include <CGAL/Extended_cartesian.h>
 #include <CGAL/Nef_polyhedron_2.h>

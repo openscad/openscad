@@ -748,12 +748,13 @@ set(CGAL_SOURCES
   ../src/cgalutils-project.cc 
   ../src/cgalutils-tess.cc 
   ../src/cgalutils-polyhedron.cc 
-  ../src/func-read.cc
-  ../src/primitives-cgal.cc
   ../src/CGALCache.cc
   ../src/Polygon2d-CGAL.cc
   ../src/svg.cc
-  ../src/GeometryEvaluator.cc)
+  ../src/GeometryEvaluator.cc
+  ../src/func-read.cc
+  ../src/primitives-cgal.cc
+)
 
 set(COMMON_SOURCES
   ../src/nodedumper.cc 
