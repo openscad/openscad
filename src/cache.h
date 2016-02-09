@@ -44,7 +44,7 @@
 
 #pragma once
 
-#include <boost/unordered_map.hpp>
+#include <unordered_map>
 #include <boost/format.hpp>
 #include "printutils.h"
 
@@ -57,11 +57,11 @@ class Cache
 			: keyPtr(0), t(data), c(cost), p(0), n(0) {}
 		const Key *keyPtr; T *t; int c; Node *p,*n;
 	};
-	typedef typename boost::unordered_map<Key, Node> map_type;
+	typedef typename std::unordered_map<Key, Node> map_type;
 	typedef typename map_type::iterator iterator_type;
 	typedef typename map_type::value_type value_type;
 
-	boost::unordered_map<Key, Node> hash;
+	std::unordered_map<Key, Node> hash;
 	Node *f, *l;
 	void *unused;
 	int mx, total;

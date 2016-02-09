@@ -33,7 +33,6 @@
 #include "builtin.h"
 #include "calc.h"
 #include "polyset.h"
-#include "mathc99.h" 
 
 #include <sstream>
 #include <boost/assign/std/vector.hpp>

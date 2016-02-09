@@ -4,8 +4,8 @@
 #include <vector>
 #include <list>
 #include <deque>
-#include <boost/unordered_map.hpp>
-#include <boost/unordered_set.hpp>
+#include <unordered_map>
+#include <unordered_set>
 #include <time.h>
 #include <sys/stat.h>
 
@@ -67,10 +67,18 @@ public:
 	virtual ~AbstractModule();
         virtual bool is_experimental() const { return feature != NULL; }
         virtual bool is_enabled() const { return (feature == NULL) || feature->is_enabled(); }
-	virtual class AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, class EvalContext *evalctx = NULL) const;
+	virtual class AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, class EvalContext *evalctx = NULL) const = 0;
 	virtual std::string dump(const std::string &indent, const std::string &name) const;
         virtual double lookup_double_variable_with_default(Context &c, std::string variable, double def) const;
         virtual std::string lookup_string_variable_with_default(Context &c, std::string variable, std::string def) const;
+};
+
+class GroupModule : public AbstractModule
+{
+public:
+	GroupModule() { }
+	virtual ~GroupModule() { }
+	virtual class AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, class EvalContext *evalctx = NULL) const;
 };
 
 class Module : public AbstractModule
@@ -113,7 +121,7 @@ public:
 	bool isHandlingDependencies() const { return this->is_handling_dependencies; }
         ValuePtr lookup_variable(const std::string &name) const;
 
-	typedef boost::unordered_set<std::string> ModuleContainer;
+	typedef std::unordered_set<std::string> ModuleContainer;
 	ModuleContainer usedlibs;
 private:
         /** Reference to retain the context that was used in the last evaluation */
@@ -126,7 +134,7 @@ private:
 
 	bool include_modified(const IncludeFile &inc) const;
 
-	typedef boost::unordered_map<std::string, struct IncludeFile> IncludeContainer;
+	typedef std::unordered_map<std::string, struct IncludeFile> IncludeContainer;
 	IncludeContainer includes;
 	bool is_handling_dependencies;
 	std::string path;

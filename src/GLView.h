@@ -20,9 +20,6 @@ Some actions (showCrossHairs) only work properly on Gimbal Camera.
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <string>
-#ifndef _MSC_VER
-#include <stdint.h>
-#endif
 #include "system-gl.h"
 #include <iostream>
 #include "Camera.h"

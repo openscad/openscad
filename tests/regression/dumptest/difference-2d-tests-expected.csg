@@ -1,36 +1,34 @@
-group() {
+difference() {
+	square(size = [10, 10], center = true);
+	circle($fn = 0, $fa = 12, $fs = 2, r = 4);
+}
+multmatrix([[1, 0, 0, 12], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 	difference() {
+		square(size = [10, 10], center = true);
+		multmatrix([[1, 0, 0, 2], [0, 1, 0, 2], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			circle($fn = 0, $fa = 12, $fs = 2, r = 2);
+		}
+		multmatrix([[1, 0, 0, -2], [0, 1, 0, -2], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			circle($fn = 0, $fa = 12, $fs = 2, r = 2);
+		}
+	}
+}
+multmatrix([[1, 0, 0, 12], [0, 1, 0, 12], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	difference() {
+		square(size = [0, 10], center = true);
+#		circle($fn = 0, $fa = 12, $fs = 2, r = 4);
+	}
+}
+multmatrix([[1, 0, 0, 0], [0, 1, 0, 12], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	difference() {
+		group();
 		square(size = [10, 10], center = true);
 		circle($fn = 0, $fa = 12, $fs = 2, r = 4);
 	}
-	multmatrix([[1, 0, 0, 12], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		difference() {
-			square(size = [10, 10], center = true);
-			multmatrix([[1, 0, 0, 2], [0, 1, 0, 2], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-				circle($fn = 0, $fa = 12, $fs = 2, r = 2);
-			}
-			multmatrix([[1, 0, 0, -2], [0, 1, 0, -2], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-				circle($fn = 0, $fa = 12, $fs = 2, r = 2);
-			}
-		}
-	}
-	multmatrix([[1, 0, 0, 12], [0, 1, 0, 12], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		difference() {
-			square(size = [0, 10], center = true);
-#			circle($fn = 0, $fa = 12, $fs = 2, r = 4);
-		}
-	}
-	multmatrix([[1, 0, 0, 0], [0, 1, 0, 12], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		difference() {
-			group();
-			square(size = [10, 10], center = true);
-			circle($fn = 0, $fa = 12, $fs = 2, r = 4);
-		}
-	}
-	multmatrix([[1, 0, 0, 24], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		difference() {
-			square(size = [10, 10], center = true);
-			sphere($fn = 0, $fa = 12, $fs = 2, r = 4);
-		}
+}
+multmatrix([[1, 0, 0, 24], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	difference() {
+		square(size = [10, 10], center = true);
+		sphere($fn = 0, $fa = 12, $fs = 2, r = 4);
 	}
 }

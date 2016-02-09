@@ -1,48 +1,46 @@
-group() {
-	multmatrix([[1, 0, 0, -12], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		union() {
-			cube(size = [10, 10, 10], center = false);
-			multmatrix([[1, 0, 0, 4], [0, 1, 0, 4], [0, 0, 1, 8], [0, 0, 0, 1]]) {
-				cube(size = [2, 2, 10], center = false);
-			}
-		}
-	}
+multmatrix([[1, 0, 0, -12], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 	union() {
 		cube(size = [10, 10, 10], center = false);
-		multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 10], [0, 0, 0, 1]]) {
+		multmatrix([[1, 0, 0, 4], [0, 1, 0, 4], [0, 0, 1, 8], [0, 0, 0, 1]]) {
 			cube(size = [2, 2, 10], center = false);
 		}
 	}
-	multmatrix([[1, 0, 0, 12], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		union() {
-			cube(size = [10, 10, 10], center = false);
-			multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 11], [0, 0, 0, 1]]) {
-				cube(size = [2, 2, 10], center = false);
-			}
+}
+union() {
+	cube(size = [10, 10, 10], center = false);
+	multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 10], [0, 0, 0, 1]]) {
+		cube(size = [2, 2, 10], center = false);
+	}
+}
+multmatrix([[1, 0, 0, 12], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	union() {
+		cube(size = [10, 10, 10], center = false);
+		multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 11], [0, 0, 0, 1]]) {
+			cube(size = [2, 2, 10], center = false);
 		}
 	}
-	multmatrix([[1, 0, 0, 24], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		union() {
-			cube(size = [10, 10, 10], center = false);
-			multmatrix([[1, 0, 0, 4], [0, 1, 0, 4], [0, 0, 1, 10], [0, 0, 0, 1]]) {
-				cube(size = [2, 2, 10], center = false);
-			}
+}
+multmatrix([[1, 0, 0, 24], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	union() {
+		cube(size = [10, 10, 10], center = false);
+		multmatrix([[1, 0, 0, 4], [0, 1, 0, 4], [0, 0, 1, 10], [0, 0, 0, 1]]) {
+			cube(size = [2, 2, 10], center = false);
 		}
 	}
-	multmatrix([[1, 0, 0, -12], [0, 1, 0, 12], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		union() {
-			cube(size = [10, 10, 10], center = false);
-			multmatrix([[1, 0, 0, -2], [0, 1, 0, 10], [0, 0, 1, 10], [0, 0, 0, 1]]) {
-				cube(size = [2, 2, 10], center = false);
-			}
+}
+multmatrix([[1, 0, 0, -12], [0, 1, 0, 12], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	union() {
+		cube(size = [10, 10, 10], center = false);
+		multmatrix([[1, 0, 0, -2], [0, 1, 0, 10], [0, 0, 1, 10], [0, 0, 0, 1]]) {
+			cube(size = [2, 2, 10], center = false);
 		}
 	}
-	multmatrix([[1, 0, 0, 0], [0, 1, 0, 12], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		union() {
-			cube(size = [10, 10, 10], center = false);
-			multmatrix([[1, 0, 0, 0], [0, 1, 0, 10], [0, 0, 1, 10], [0, 0, 0, 1]]) {
-				cube(size = [2, 2, 10], center = false);
-			}
+}
+multmatrix([[1, 0, 0, 0], [0, 1, 0, 12], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	union() {
+		cube(size = [10, 10, 10], center = false);
+		multmatrix([[1, 0, 0, 0], [0, 1, 0, 10], [0, 0, 1, 10], [0, 0, 0, 1]]) {
+			cube(size = [2, 2, 10], center = false);
 		}
 	}
 }

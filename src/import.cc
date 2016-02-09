@@ -54,7 +54,7 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 #include "boosty.h"
 
 #include <boost/detail/endian.hpp>
-#include <boost/cstdint.hpp>
+#include <cstdint>
 
 class ImportModule : public AbstractModule
 {

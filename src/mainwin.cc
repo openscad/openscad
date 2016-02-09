@@ -28,13 +28,14 @@
 #include "GeometryCache.h"
 #include "ModuleCache.h"
 #include "MainWindow.h"
+#include "OpenSCADApp.h"
 #include "parsersettings.h"
 #include "rendersettings.h"
 #include "Preferences.h"
 #include "printutils.h"
 #include "node.h"
 #include "polyset.h"
-#include "csgterm.h"
+#include "csgnode.h"
 #include "highlighter.h"
 #include "export.h"
 #include "builtin.h"
@@ -51,13 +52,13 @@
 #include "FontListDialog.h"
 #include "LibraryInfoDialog.h"
 #ifdef ENABLE_OPENCSG
-#include "CSGTermEvaluator.h"
+#include "CSGTreeEvaluator.h"
 #include "OpenCSGRenderer.h"
 #include <opencsg.h>
 #endif
 #include "ProgressWidget.h"
 #include "ThrownTogetherRenderer.h"
-#include "csgtermnormalizer.h"
+#include "CSGTreeNormalizer.h"
 #include "QGLView.h"
 #ifdef Q_OS_MAC
 #include "CocoaUtils.h"
@@ -72,7 +73,6 @@
 #include <QMenuBar>
 #include <QSplitter>
 #include <QFileDialog>
-#include <QApplication>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QLabel>
@@ -107,7 +107,6 @@
 
 #include <algorithm>
 #include <boost/version.hpp>
-#include <boost/foreach.hpp>
 #include <sys/stat.h>
 
 #ifdef ENABLE_CGAL
@@ -124,15 +123,6 @@
 
 #include "boosty.h"
 #include "FontCache.h"
-
-// Keeps track of open window
-QSet<MainWindow*> *MainWindow::windows = NULL;
-
-QSet<MainWindow*> *MainWindow::getWindows()
-{
-	if (!MainWindow::windows) MainWindow::windows = new QSet<MainWindow*>;
-	return MainWindow::windows;
-}
 
 // Global application state
 unsigned int GuiLocker::gui_locked = 0;
@@ -179,8 +169,6 @@ settings_valueList(const QString &key, const QList<int> &defaultList = QList<int
 bool MainWindow::mdiMode = false;
 bool MainWindow::undockMode = false;
 bool MainWindow::reorderMode = false;
-
-QProgressDialog *MainWindow::fontCacheDialog = NULL;
 
 MainWindow::MainWindow(const QString &filename)
 	: root_inst("group"), library_info_dialog(NULL), font_list_dialog(NULL), procevents(false), tempFile(NULL), progresswidget(NULL), contentschanged(false)
@@ -229,7 +217,7 @@ MainWindow::MainWindow(const QString &filename)
 
 	this->setAttribute(Qt::WA_DeleteOnClose);
 
-	MainWindow::getWindows()->insert(this);
+	scadApp->windowManager.add(this);
 
 #ifdef ENABLE_CGAL
 	this->cgalworker = new CGALWorker();
@@ -241,7 +229,6 @@ MainWindow::MainWindow(const QString &filename)
 
 	root_module = NULL;
 	absolute_root_node = NULL;
-	this->root_chain = NULL;
 #ifdef ENABLE_CGAL
 	this->cgalRenderer = NULL;
 #endif
@@ -250,8 +237,6 @@ MainWindow::MainWindow(const QString &filename)
 #endif
 	this->thrownTogetherRenderer = NULL;
 
-	highlights_chain = NULL;
-	background_chain = NULL;
 	root_node = NULL;
 
 	this->anim_step = 0;
@@ -599,20 +584,20 @@ void MainWindow::initActionIcon(QAction *action, const char *darkResource, const
 
 void MainWindow::addKeyboardShortCut(const QList<QAction *> &actions)
 {
-    foreach (QAction *action, actions) {
-	// prevent adding shortcut twice if action is added to multiple toolbars
-	if (action->toolTip().contains("&nbsp;")) {
+	for (auto &action : actions) {
+		// prevent adding shortcut twice if action is added to multiple toolbars
+		if (action->toolTip().contains("&nbsp;")) {
 	    continue;
-	}
-	
-	const QString shortCut(action->shortcut().toString(QKeySequence::NativeText));
-	if (shortCut.isEmpty()) {
+		}
+		
+		const QString shortCut(action->shortcut().toString(QKeySequence::NativeText));
+		if (shortCut.isEmpty()) {
 	    continue;
+		}
+		
+		const QString toolTip("%1 &nbsp;<span style=\"color: gray; font-size: small; font-style: italic\">%2</span>");
+		action->setToolTip(toolTip.arg(action->toolTip(), shortCut));
 	}
-
-	const QString toolTip("%1 &nbsp;<span style=\"color: gray; font-size: small; font-style: italic\">%2</span>");
-	action->setToolTip(toolTip.arg(action->toolTip(), shortCut));
-    }
 }
 
 void MainWindow::loadViewSettings(){
@@ -697,7 +682,6 @@ MainWindow::~MainWindow()
 {
 	if (root_module) delete root_module;
 	if (root_node) delete root_node;
-	if (root_chain) delete root_chain;
 #ifdef ENABLE_CGAL
 	this->root_geom.reset();
 	delete this->cgalRenderer;
@@ -706,8 +690,8 @@ MainWindow::~MainWindow()
 	delete this->opencsgRenderer;
 #endif
 	delete this->thrownTogetherRenderer;
-	MainWindow::getWindows()->remove(this);
-	if (MainWindow::getWindows()->size() == 0) {
+	scadApp->windowManager.remove(this);
+	if (scadApp->windowManager.getWindows().size() == 0) {
 		// Quit application even in case some other windows like
 		// Preferences are still open.
 		this->quit();
@@ -732,26 +716,6 @@ void MainWindow::report_func(const class AbstractNode*, void *vp, int mark)
 
 	// FIXME: Check if cancel was requested by e.g. Application quit
 	if (thisp->progresswidget->wasCanceled()) throw ProgressCancelException();
-}
-
-/*!
-	Requests to open a file from an external event, e.g. by double-clicking a filename.
- */
-void MainWindow::requestOpenFile(const QString &filename)
-{
-	// if we have an empty open window, use that one
-	QSetIterator<MainWindow *> i(*MainWindow::getWindows());
-	while (i.hasNext()) {
-		MainWindow *w = i.next();
-
-		if (w->editor->toPlainText().isEmpty()) {
-			w->openFile(filename);
-			return;
-		}
-	}
-
-	// otherwise, create a new one
-	new MainWindow(filename);
 }
 
 /*!
@@ -823,7 +787,7 @@ void MainWindow::updateRecentFiles()
 	while (files.size() > UIUtils::maxRecentFiles) files.removeLast();
 	settings.setValue("recentFileList", files);
 
-	foreach(QWidget *widget, QApplication::topLevelWidgets()) {
+	for(auto &widget : QApplication::topLevelWidgets()) {
 		MainWindow *mainWin = qobject_cast<MainWindow *>(widget);
 		if (mainWin) {
 			mainWin->updateRecentFileActions();
@@ -1087,19 +1051,9 @@ void MainWindow::instantiateRoot()
 	delete this->absolute_root_node;
 	this->absolute_root_node = NULL;
 
-	this->root_raw_term.reset();
-	this->root_norm_term.reset();
-
-	delete this->root_chain;
-	this->root_chain = NULL;
-
-	this->highlight_terms.clear();
-	delete this->highlights_chain;
-	this->highlights_chain = NULL;
-
-	this->background_terms.clear();
-	delete this->background_chain;
-	this->background_chain = NULL;
+	this->csgRoot.reset();
+	this->normalizedRoot.reset();
+	this->root_products.reset();
 
 	this->root_node = NULL;
 	this->tree.setRoot(NULL);
@@ -1154,17 +1108,20 @@ void MainWindow::compileCSG(bool procevents)
 	this->progresswidget = new ProgressWidget(this);
 	connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
 
-	progress_report_prep(this->root_node, report_func, this);
-	try {
 #ifdef ENABLE_CGAL
 		GeometryEvaluator geomevaluator(this->tree);
 #else
 		// FIXME: Will we support this?
 #endif
 #ifdef ENABLE_OPENCSG
-		CSGTermEvaluator csgrenderer(this->tree, &geomevaluator);
+		CSGTreeEvaluator csgrenderer(this->tree, &geomevaluator);
+#endif
+
+	progress_report_prep(this->root_node, report_func, this);
+	try {
+#ifdef ENABLE_OPENCSG
 		if (procevents) QApplication::processEvents();
-		this->root_raw_term = csgrenderer.evaluateCSGTerm(*root_node, highlight_terms, background_terms);
+		this->csgRoot = csgrenderer.buildCSGTree(*root_node);
 #endif
 		GeometryCache::instance()->print();
 #ifdef ENABLE_CGAL
@@ -1182,62 +1139,70 @@ void MainWindow::compileCSG(bool procevents)
 	if (procevents) QApplication::processEvents();
 
 	size_t normalizelimit = 2 * Preferences::inst()->getValue("advanced/openCSGLimit").toUInt();
-	CSGTermNormalizer normalizer(normalizelimit);
+	CSGTreeNormalizer normalizer(normalizelimit);
 	
-	if (root_raw_term) {
-		this->root_norm_term = normalizer.normalize(this->root_raw_term);
-		if (this->root_norm_term) {
-			this->root_chain = new CSGChain();
-			this->root_chain->import(this->root_norm_term);
+	if (this->csgRoot) {
+		this->normalizedRoot = normalizer.normalize(this->csgRoot);
+		if (this->normalizedRoot) {
+			this->root_products.reset(new CSGProducts());
+			this->root_products->import(this->normalizedRoot);
 		}
 		else {
-			this->root_chain = NULL;
+			this->root_products.reset();
 			PRINT("WARNING: CSG normalization resulted in an empty tree");
 			if (procevents) QApplication::processEvents();
 		}
 	}
 
+	const std::vector<shared_ptr<CSGNode> > &highlight_terms = csgrenderer.getHighlightNodes();
 	if (highlight_terms.size() > 0) {
 		PRINTB("Compiling highlights (%d CSG Trees)...", highlight_terms.size());
 		if (procevents) QApplication::processEvents();
 		
-		highlights_chain = new CSGChain();
+		this->highlights_products.reset(new CSGProducts());
 		for (unsigned int i = 0; i < highlight_terms.size(); i++) {
-			highlight_terms[i] = normalizer.normalize(highlight_terms[i]);
-			highlights_chain->import(highlight_terms[i]);
+			shared_ptr<CSGNode> nterm = normalizer.normalize(highlight_terms[i]);
+			this->highlights_products->import(nterm);
 		}
 	}
+	else {
+		this->highlights_products.reset();
+	}
 	
+	const std::vector<shared_ptr<CSGNode> > &background_terms = csgrenderer.getBackgroundNodes();
 	if (background_terms.size() > 0) {
 		PRINTB("Compiling background (%d CSG Trees)...", background_terms.size());
 		if (procevents) QApplication::processEvents();
 		
-		background_chain = new CSGChain();
+		this->background_products.reset(new CSGProducts());
 		for (unsigned int i = 0; i < background_terms.size(); i++) {
-			background_terms[i] = normalizer.normalize(background_terms[i]);
-			background_chain->import(background_terms[i]);
+			shared_ptr<CSGNode> nterm = normalizer.normalize(background_terms[i]);
+			this->background_products->import(nterm);
 		}
 	}
+	else {
+		this->background_products.reset();
+	}
 
-	if (this->root_chain &&
-			(this->root_chain->objects.size() >
+	if (this->root_products &&
+			(this->root_products->size() >
 			 Preferences::inst()->getValue("advanced/openCSGLimit").toUInt())) {
-		PRINTB("WARNING: Normalized tree has %d elements!", this->root_chain->objects.size());
+		PRINTB("WARNING: Normalized tree has %d elements!", this->root_products->size());
 		PRINT("WARNING: OpenCSG rendering has been disabled.");
 	}
 #ifdef ENABLE_OPENCSG
 	else {
 		PRINTB("Normalized CSG tree has %d elements",
-					 (this->root_chain ? this->root_chain->objects.size() : 0));
-		this->opencsgRenderer = new OpenCSGRenderer(this->root_chain,
-																								this->highlights_chain,
-																								this->background_chain,
+					 (this->root_products ? this->root_products->size() : 0));
+		this->opencsgRenderer = new OpenCSGRenderer(this->root_products,
+																								this->highlights_products,
+																								this->background_products,
 																								this->qglview->shaderinfo);
 	}
 #endif
-	this->thrownTogetherRenderer = new ThrownTogetherRenderer(this->root_chain,
-																														this->highlights_chain,
-																														this->background_chain);
+	this->thrownTogetherRenderer = new ThrownTogetherRenderer(this->root_products,
+																														this->highlights_products,
+																														this->background_products);
 	PRINT("Compile and preview finished.");
 	int s = this->renderingTime.elapsed() / 1000;
 	PRINTB("Total rendering time: %d hours, %d minutes, %d seconds", (s / (60*60)) % ((s / 60) % 60) % (s % 60));
@@ -1308,11 +1273,11 @@ void MainWindow::show_examples()
 {
 	bool found_example = false;
 	
-	foreach (const QString &cat, UIUtils::exampleCategories()) {
+	for (const auto &cat : UIUtils::exampleCategories()) {
 		QFileInfoList examples = UIUtils::exampleFiles(cat);
 		QMenu *menu = this->menuExamples->addMenu(gettext(cat.toStdString().c_str()));
 		
-		foreach(const QFileInfo &ex, examples) {
+		for(const auto &ex : examples) {
 			QAction *openAct = new QAction(ex.fileName(), this);
 			connect(openAct, SIGNAL(triggered()), this, SLOT(actionOpenExample()));
 			menu->addAction(openAct);
@@ -2042,11 +2007,11 @@ void MainWindow::actionDisplayCSGProducts()
 	e->setReadOnly(true);
 	e->setPlainText(QString("\nCSG before normalization:\n%1\n\n\nCSG after normalization:\n%2\n\n\nCSG rendering chain:\n%3\n\n\nHighlights CSG rendering chain:\n%4\n\n\nBackground CSG rendering chain:\n%5\n")
 									
-	.arg(root_raw_term ? QString::fromUtf8(root_raw_term->dump().c_str()) : "N/A",
-	root_norm_term ? QString::fromUtf8(root_norm_term->dump().c_str()) : "N/A",
-	this->root_chain ? QString::fromUtf8(this->root_chain->dump().c_str()) : "N/A",
-	highlights_chain ? QString::fromUtf8(highlights_chain->dump().c_str()) : "N/A",
-	background_chain ? QString::fromUtf8(background_chain->dump().c_str()) : "N/A"));
+	.arg(this->csgRoot ? QString::fromUtf8(this->csgRoot->dump().c_str()) : "N/A",
+	this->normalizedRoot ? QString::fromUtf8(this->normalizedRoot->dump().c_str()) : "N/A",
+	this->root_products ? QString::fromUtf8(this->root_products->dump().c_str()) : "N/A",
+	this->highlights_products ? QString::fromUtf8(this->highlights_products->dump().c_str()) : "N/A",
+	this->background_products ? QString::fromUtf8(this->background_products->dump().c_str()) : "N/A"));
 	
 	e->show();
 	e->resize(600, 400);
@@ -2148,7 +2113,7 @@ void MainWindow::actionExport(export_type_e, QString, QString)
 		assert(false && "Unknown export type");
 		break;
 	}
-	exportFileByName(this->root_geom.get(), format,
+	exportFileByName(this->root_geom, format,
 		export_filename.toLocal8Bit().constData(),
 		export_filename.toUtf8());
 	PRINTB("%s export finished.", type_name);
@@ -2209,7 +2174,7 @@ void MainWindow::actionExportDXF()
 	if (dxf_filename.isEmpty()) {
 		return;
 	}
-	exportFileByName(this->root_geom.get(), OPENSCAD_DXF, dxf_filename.toUtf8(),
+	exportFileByName(this->root_geom, OPENSCAD_DXF, dxf_filename.toUtf8(),
 		dxf_filename.toLocal8Bit().constData());
 	PRINT("DXF export finished.");
 
@@ -2223,7 +2188,7 @@ void MainWindow::actionExportSVG()
 	if (svg_filename.isEmpty()) {
 		return;
 	}
-	exportFileByName(this->root_geom.get(), OPENSCAD_SVG, svg_filename.toUtf8(),
+	exportFileByName(this->root_geom, OPENSCAD_SVG, svg_filename.toUtf8(),
 		svg_filename.toLocal8Bit().constData());
 	PRINT("SVG export finished.");
 
@@ -2407,6 +2372,11 @@ void MainWindow::viewModeAnimate()
 		animate_panel->hide();
 		animate_timer->stop();
 	}
+}
+
+bool MainWindow::isEmpty()
+{
+	return this->editor->toPlainText().isEmpty();
 }
 
 void MainWindow::animateUpdateDocChanged()
@@ -2792,20 +2762,3 @@ void MainWindow::setContentsChanged()
 	this->contentschanged = true;
 }
 
-void MainWindow::showFontCacheDialog()
-{
-	if (!MainWindow::fontCacheDialog) MainWindow::fontCacheDialog = new QProgressDialog;	
-	QProgressDialog *dialog = MainWindow::fontCacheDialog;
-
-	dialog->setLabelText(_("Fontconfig needs to update its font cache.\nThis can take up to a couple of minutes."));
-	dialog->setMinimum(0);
-	dialog->setMaximum(0);
-	dialog->setCancelButton(0);
-	dialog->exec();
-}
-
-void MainWindow::hideFontCacheDialog()
-{
-	assert(MainWindow::fontCacheDialog);
-	MainWindow::fontCacheDialog->reset();
-}

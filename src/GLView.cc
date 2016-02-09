@@ -3,9 +3,9 @@
 #include "stdio.h"
 #include "colormap.h"
 #include "rendersettings.h"
-#include "mathc99.h"
 #include "printutils.h"
 #include "renderer.h"
+#include <cmath>
 
 #ifdef _WIN32
 #include <GL/wglew.h>
@@ -419,15 +419,15 @@ void GLView::showSmallaxes(const Color4f &col)
 
   GLdouble xlabel_x, xlabel_y, xlabel_z;
   gluProject(12*dpi, 0, 0, mat_model, mat_proj, viewport, &xlabel_x, &xlabel_y, &xlabel_z);
-  xlabel_x = round(xlabel_x); xlabel_y = round(xlabel_y);
+  xlabel_x = std::round(xlabel_x); xlabel_y = std::round(xlabel_y);
 
   GLdouble ylabel_x, ylabel_y, ylabel_z;
   gluProject(0, 12*dpi, 0, mat_model, mat_proj, viewport, &ylabel_x, &ylabel_y, &ylabel_z);
-  ylabel_x = round(ylabel_x); ylabel_y = round(ylabel_y);
+  ylabel_x = std::round(ylabel_x); ylabel_y = std::round(ylabel_y);
 
   GLdouble zlabel_x, zlabel_y, zlabel_z;
   gluProject(0, 0, 12*dpi, mat_model, mat_proj, viewport, &zlabel_x, &zlabel_y, &zlabel_z);
-  zlabel_x = round(zlabel_x); zlabel_y = round(zlabel_y);
+  zlabel_x = std::round(zlabel_x); zlabel_y = std::round(zlabel_y);
 
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();

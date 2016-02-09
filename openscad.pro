@@ -116,21 +116,7 @@ mingw* {
 }
 
 CONFIG += qt
-QT += opengl concurrent
-
-qopenglwidget {
-  !lessThan(QT_VERSION, 5.4) {
-    DEFINES += USE_QOPENGLWIDGET
-  }
-}
-
-# see http://fedoraproject.org/wiki/UnderstandingDSOLinkChange
-# and https://github.com/openscad/openscad/pull/119
-# ( QT += opengl does not automatically link glu on some DSO systems. )
-unix:!macx {
-  QMAKE_LIBS_OPENGL *= -lGLU
-  QMAKE_LIBS_OPENGL *= -lX11
-}
+QT += widgets concurrent
 
 netbsd* {
    QMAKE_LFLAGS += -L/usr/X11R7/lib
@@ -182,7 +168,7 @@ CONFIG(skip-version-check) {
 
 # Application configuration
 macx:CONFIG += mdi
-#CONFIG += c++11
+CONFIG += c++11
 CONFIG += cgal
 CONFIG += opencsg
 CONFIG += glew
@@ -257,6 +243,8 @@ HEADERS += src/typedefs.h \
            src/QGLView.h \
            src/GLView.h \
            src/MainWindow.h \
+           src/OpenSCADApp.h \
+           src/WindowManager.h \
            src/Preferences.h \
            src/OpenCSGWarningDialog.h \
            src/AboutDialog.h \
@@ -267,8 +255,9 @@ HEADERS += src/typedefs.h \
            src/context.h \
            src/modcontext.h \
            src/evalcontext.h \
-           src/csgterm.h \
-           src/csgtermnormalizer.h \
+           src/csgops.h \
+           src/CSGTreeNormalizer.h \
+           src/CSGTreeEvaluator.h \
            src/dxfdata.h \
            src/dxfdim.h \
            src/export.h \
@@ -277,6 +266,7 @@ HEADERS += src/typedefs.h \
            src/function.h \
            src/exceptions.h \
            src/grid.h \
+           src/hash.h \
            src/highlighter.h \
            src/localscope.h \
            src/module.h \
@@ -315,12 +305,10 @@ HEADERS += src/typedefs.h \
            src/ModuleCache.h \
            src/GeometryCache.h \
            src/GeometryEvaluator.h \
-           src/CSGTermEvaluator.h \
            src/Tree.h \
-src/DrawingCallback.h \
-src/FreetypeRenderer.h \
-src/FontCache.h \
-           src/mathc99.h \
+           src/DrawingCallback.h \
+           src/FreetypeRenderer.h \
+           src/FontCache.h \
            src/memory.h \
            src/linalg.h \
            src/Camera.h \
@@ -347,7 +335,6 @@ src/FontCache.h \
 
 SOURCES += src/version_check.cc \
            src/ProgressWidget.cc \
-           src/mathc99.cc \
            src/linalg.cc \
            src/Camera.cc \
            src/handle_dep.cc \
@@ -362,8 +349,9 @@ SOURCES += src/version_check.cc \
            src/context.cc \
            src/modcontext.cc \
            src/evalcontext.cc \
-           src/csgterm.cc \
-           src/csgtermnormalizer.cc \
+           src/csgnode.cc \
+           src/CSGTreeNormalizer.cc \
+           src/CSGTreeEvaluator.cc \
            src/Geometry.cc \
            src/Polygon2d.cc \
            src/clipper-utils.cc \
@@ -417,15 +405,21 @@ SOURCES += src/version_check.cc \
            src/AutoUpdater.cc \
            \
            src/grid.cc \
+           src/hash.cc \
            src/builtin.cc \
            src/calc.cc \
            src/export.cc \
+           src/export_stl.cc \
+           src/export_amf.cc \
+           src/export_off.cc \
+           src/export_dxf.cc \
+           src/export_svg.cc \
+           src/export_nef.cc \
            src/export_png.cc \
            src/import.cc \
            src/renderer.cc \
            src/colormap.cc \
            src/ThrownTogetherRenderer.cc \
-           src/CSGTermEvaluator.cc \
            src/svg.cc \
            src/OffscreenView.cc \
            src/fbo.cc \
@@ -435,6 +429,8 @@ SOURCES += src/version_check.cc \
            \
            src/openscad.cc \
            src/mainwin.cc \
+           src/OpenSCADApp.cc \
+           src/WindowManager.cc \
            src/UIUtils.cc \
            src/Dock.cc \
            src/FontListDialog.cc \

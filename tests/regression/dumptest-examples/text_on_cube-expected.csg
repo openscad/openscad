@@ -1,59 +1,57 @@
-group() {
-	group();
-	difference() {
-		union() {
-			color([0.501961, 0.501961, 0.501961, 1]) {
-				cube(size = [60, 60, 60], center = true);
-			}
-			multmatrix([[1, 0, 0, 0], [0, 1, 0, -27.5], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-				multmatrix([[1, 0, 0, 0], [0, 0, -1, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
-					group() {
-						linear_extrude(height = 5, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-							text(text = "C", size = 50, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "center", $fn = 16, $fa = 12, $fs = 2);
-						}
-					}
-				}
-			}
-			multmatrix([[1, 0, 0, 27.5], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-				multmatrix([[0, 0, 1, 0], [1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
-					group() {
-						linear_extrude(height = 5, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-							text(text = "U", size = 50, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "center", $fn = 16, $fa = 12, $fs = 2);
-						}
-					}
-				}
-			}
-			multmatrix([[1, 0, 0, 0], [0, 1, 0, 27.5], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-				multmatrix([[-1, 0, 0, 0], [0, 0, 1, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
-					group() {
-						linear_extrude(height = 5, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-							text(text = "B", size = 50, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "center", $fn = 16, $fa = 12, $fs = 2);
-						}
-					}
-				}
-			}
-			multmatrix([[1, 0, 0, -27.5], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-				multmatrix([[0, 0, -1, 0], [-1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
-					group() {
-						linear_extrude(height = 5, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-							text(text = "E", size = 50, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "center", $fn = 16, $fa = 12, $fs = 2);
-						}
+group();
+difference() {
+	union() {
+		color([0.501961, 0.501961, 0.501961, 1]) {
+			cube(size = [60, 60, 60], center = true);
+		}
+		multmatrix([[1, 0, 0, 0], [0, 1, 0, -27.5], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			multmatrix([[1, 0, 0, 0], [0, 2.22045e-16, -1, 0], [0, 1, 2.22045e-16, 0], [0, 0, 0, 1]]) {
+				group() {
+					linear_extrude(height = 5, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
+						text(text = "C", size = 50, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "center", $fn = 16, $fa = 12, $fs = 2);
 					}
 				}
 			}
 		}
-		multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 27.5], [0, 0, 0, 1]]) {
-			group() {
-				linear_extrude(height = 5, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-					text(text = "☺", size = 50, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", halign = "center", valign = "center", $fn = 16, $fa = 12, $fs = 2);
+		multmatrix([[1, 0, 0, 27.5], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			multmatrix([[2.22045e-16, -2.22045e-16, 1, 0], [1, 0, -2.22045e-16, 0], [0, 1, 2.22045e-16, 0], [0, 0, 0, 1]]) {
+				group() {
+					linear_extrude(height = 5, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
+						text(text = "U", size = 50, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "center", $fn = 16, $fa = 12, $fs = 2);
+					}
 				}
 			}
 		}
-		multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, -32.5], [0, 0, 0, 1]]) {
-			group() {
-				linear_extrude(height = 5, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-					text(text = "☼", size = 50, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", halign = "center", valign = "center", $fn = 16, $fa = 12, $fs = 2);
+		multmatrix([[1, 0, 0, 0], [0, 1, 0, 27.5], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			multmatrix([[-1, -2.46519e-32, 1.22465e-16, 0], [1.22465e-16, -2.22045e-16, 1, 0], [0, 1, 2.22045e-16, 0], [0, 0, 0, 1]]) {
+				group() {
+					linear_extrude(height = 5, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
+						text(text = "B", size = 50, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "center", $fn = 16, $fa = 12, $fs = 2);
+					}
 				}
+			}
+		}
+		multmatrix([[1, 0, 0, -27.5], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			multmatrix([[2.22045e-16, 2.22045e-16, -1, 0], [-1, 0, -2.22045e-16, 0], [0, 1, 2.22045e-16, 0], [0, 0, 0, 1]]) {
+				group() {
+					linear_extrude(height = 5, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
+						text(text = "E", size = 50, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "center", $fn = 16, $fa = 12, $fs = 2);
+					}
+				}
+			}
+		}
+	}
+	multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 27.5], [0, 0, 0, 1]]) {
+		group() {
+			linear_extrude(height = 5, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
+				text(text = "☺", size = 50, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", halign = "center", valign = "center", $fn = 16, $fa = 12, $fs = 2);
+			}
+		}
+	}
+	multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, -32.5], [0, 0, 0, 1]]) {
+		group() {
+			linear_extrude(height = 5, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
+				text(text = "☼", size = 50, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", halign = "center", valign = "center", $fn = 16, $fa = 12, $fs = 2);
 			}
 		}
 	}

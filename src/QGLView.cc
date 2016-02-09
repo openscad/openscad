@@ -43,7 +43,6 @@
 #include <QErrorMessage>
 #include "OpenCSGWarningDialog.h"
 
-#include "mathc99.h"
 #include <stdio.h>
 
 #ifdef ENABLE_OPENCSG
@@ -171,7 +170,11 @@ void QGLView::paintGL()
   if (statusLabel) {
     Camera nc(cam);
     nc.gimbalDefaultTranslate();
-    statusLabel->setText(QString::fromStdString(nc.statusText()));
+	const QString status = QString("%1 (%2x%3)")
+		.arg(QString::fromStdString(nc.statusText()))
+		.arg(size().rwidth())
+		.arg(size().rheight());
+    statusLabel->setText(status);
   }
 
 #if defined(_WIN32) && !defined(USE_QOPENGLWIDGET)
@@ -201,7 +204,12 @@ void QGLView::mouseDoubleClickEvent (QMouseEvent *event) {
 	double y = viewport[3] - event->pos().y() * this->getDPI();
 	GLfloat z = 0;
 
+	glGetError(); // clear error state so we don't pick up previous errors
 	glReadPixels(x, y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &z);
+	GLenum glError = glGetError();
+	if (glError != GL_NO_ERROR) {
+		return;
+	}
 
 	if (z == 1) return; // outside object
 

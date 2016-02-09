@@ -1,7 +1,7 @@
 #pragma once
 
 #include "typedefs.h"
-#include <boost/unordered_map.hpp>
+#include <unordered_map>
 
 class LocalScope
 {
@@ -17,8 +17,8 @@ public:
 
 	AssignmentList assignments;
 	ModuleInstantiationList children;
-	typedef boost::unordered_map<std::string, class AbstractFunction*> FunctionContainer;
+	typedef std::unordered_map<std::string, class AbstractFunction*> FunctionContainer;
 	FunctionContainer functions;
-	typedef boost::unordered_map<std::string, class AbstractModule*> AbstractModuleContainer;
+	typedef std::unordered_map<std::string, class AbstractModule*> AbstractModuleContainer;
 	AbstractModuleContainer	modules;
 };
