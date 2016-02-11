@@ -16,7 +16,9 @@ std::string svg_header( int widthpx, int heightpx )
 {
 	std::stringstream out;
 	out << "<svg width='" << widthpx << "px' height='" << heightpx << "px'"
-		<< " xmlns='http://www.w3.org/2000/svg' version='1.1'>";
+		<< " xmlns='http://www.w3.org/2000/svg' version='1.1'>\n";
+	out << "<!-- please do not write code depending on this format -->\n";
+	out << "<!-- it is for debugging only and subject to change  -->\n";
 	return out.str();
 }
 
@@ -189,6 +191,92 @@ std::string dump_svg( const CGAL_Nef_polyhedron2 &N )
 	return tmp;
 }
 
+std::string point_dump( CGAL_Point_3 p )
+{
+  std::stringstream out;
+  out << CGAL::to_double(p.x()) << ","
+    << CGAL::to_double(p.y()) << ","
+    << CGAL::to_double(p.z());
+  return out.str();
+}
+
+std::string point_dump( CGAL::Sphere_point<CGAL_Kernel3> p )
+{
+  std::stringstream out;
+  out << CGAL::to_double(p.x()) << ","
+    << CGAL::to_double(p.y()) << ","
+    << CGAL::to_double(p.z());
+  return out.str();
+}
+
+std::string vert_dump( CGAL_Nef_polyhedron3::Vertex_const_handle vch )
+{
+  return point_dump( vch->point() );
+}
+
+std::string vert_dump( CGAL_Nef_polyhedron3::Nef_polyhedron_S2::SVertex_const_handle vch )
+{
+  return point_dump( vch->point() );
+}
+
+/*
+Dump the 'sphere map' of every vertex in a CGAL Nef Polyhedron3
+see http://doc.cgal.org/latest/Nef_3/index.html
+*/
+std::string sphere_map_dump( const CGAL_Nef_polyhedron3& N)
+{
+  std::stringstream out;
+  typedef CGAL_Nef_polyhedron3::Vertex_const_iterator Vertex_const_iterator;
+  typedef CGAL_Nef_polyhedron3::Nef_polyhedron_S2 Nef_polyhedron_S2;
+  typedef Nef_polyhedron_S2::SVertex_const_handle SVertex_const_handle;
+  typedef Nef_polyhedron_S2::SHalfedge_const_handle SHalfedge_const_handle;
+  typedef Nef_polyhedron_S2::SHalfloop_const_handle SHalfloop_const_handle;
+  typedef Nef_polyhedron_S2::SFace_const_iterator SFace_const_iterator;
+  typedef Nef_polyhedron_S2::SFace_cycle_const_iterator SFace_cycle_const_iterator;
+  Vertex_const_iterator v;
+  out << "<!-- sphere map begin -->\n";
+  int counter = 0;
+  for (v = N.vertices_begin(); v!= N.vertices_end(); v++ ) {
+  counter++;
+  out << "<!-- vertex sphere map begin. vertex counter is " << counter << "\n";
+  out << "     vertex coordinates: " << vert_dump( v ) << "-->\n";
+  Nef_polyhedron_S2 S(N.get_sphere_map(v));
+
+  out << "  vertex sphere map info\n";
+  out << "  number of svertices: " << S.number_of_svertices() << std::endl;
+  out << "  number of shalfedges: " << S.number_of_shalfedges() << std::endl;
+  out << "  number of shalfloops: " << S.number_of_shalfloops() << std::endl;
+  out << "  number of sfaces: " << S.number_of_sfaces() << std::endl;
+  out << "  number of sface cycles: " << S.number_of_sface_cycles() << std::endl;
+  out << "  connected_components: " << S.number_of_connected_components() << "\n";
+  out << "  integrity check...(asserts if not OK)\n";
+  S.check_integrity_and_topological_planarity();
+// S.print_statistics( out );
+  int i=0;
+  SFace_const_iterator sf;
+  for(sf = S.sfaces_begin(); sf != S.sfaces_end(); sf++) {
+    SFace_cycle_const_iterator it;
+    out << " the sface cycles of sface " << i++ << " start with an\n";
+    for(it = sf->sface_cycles_begin(); it != sf->sface_cycles_end(); it++) {
+      if (it.is_svertex())
+        out << "  svertex at position "
+                  << vert_dump( SVertex_const_handle(it) ) << "\n";
+      else if (it.is_shalfedge())
+        out << "  shalfedge from "
+                  << vert_dump( SHalfedge_const_handle(it)->source() ) << " to "
+                  << vert_dump( SHalfedge_const_handle(it)->target() ) << std::endl;
+      else if (it.is_shalfloop())
+        out << "  shalfloop lying in the plane "
+                  << SHalfloop_const_handle(it)->circle() << std::endl;
+      else
+        out << "  unknown bug\n";
+    }
+  }
+  out << "\n  vertex sphere map end -->\n";
+  }
+  out << "<!-- sphere map end -->\n";
+  return out.str();
+}
 
 // This uses the Shell Explorer pattern from the CGAL Manual to dump the 3d Nef Polyhedron information
 // http://www.cgal.org/Manual/latest/doc_html/cgal_manual/Nef_3/Chapter_main.html#Subsection_29.7.2
@@ -200,11 +288,27 @@ public:
 	{
 		bbox = CGALUtils::boundingBox(N);
 	}
-	void visit(CGAL_Nef_polyhedron3::Vertex_const_handle ) {}
-	void visit(CGAL_Nef_polyhedron3::Halfedge_const_handle ) {}
-	void visit(CGAL_Nef_polyhedron3::SHalfedge_const_handle ) {}
-	void visit(CGAL_Nef_polyhedron3::SHalfloop_const_handle ) {}
-	void visit(CGAL_Nef_polyhedron3::SFace_const_handle ) {}
+	void visit(CGAL_Nef_polyhedron3::Vertex_const_handle vch)
+	{
+		CGAL_Point_3 p = vch->point();
+		out << "     <!-- vertex " << point_dump( p ) << " -->\n";
+	}
+	void visit(CGAL_Nef_polyhedron3::Halfedge_const_handle )
+	{
+		out << "  <!-- halfedge --> \n";
+	}
+	void visit(CGAL_Nef_polyhedron3::SHalfedge_const_handle )
+	{
+		out << "  <!-- shalfedge --> \n";
+	}
+	void visit(CGAL_Nef_polyhedron3::SHalfloop_const_handle )
+	{
+		out << "  <!-- shalfloop --> \n";
+	}
+	void visit(CGAL_Nef_polyhedron3::SFace_const_handle )
+	{
+		out << "  <!-- sface --> \n";
+	}
 	void visit( CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet )
 	{
 		int contour_count = 0;
@@ -254,6 +358,18 @@ std::string dump_svg( const CGAL_Nef_polyhedron3 &N )
 	out << "<!--CGAL_Nef_polyhedron3 dump begin-->\n";
 	out << svg_header() << "\n" << svg_border() << "\n";
 	out << svg_styleblock( linewidth ) << "\n" << svg_axes() << "\n";
+	out << "\n<!-- CGAL Nef Polyhedron data"
+	  << "\nnumber of vertices " << N.number_of_vertices()
+	  << "\nnumber of halfedges " << N.number_of_halfedges()
+	  << "\nnumber of edges " << N.number_of_edges()
+	  << "\nnumber of halffacets " << N.number_of_halffacets()
+	  << "\nnumber of facets " << N.number_of_facets()
+	  << "\nnumber of volumes " << N.number_of_volumes()
+	  << "\nis_simple()? " << N.is_simple()
+	  << "\nis_valid()? " << (const_cast<CGAL_Nef_polyhedron3&>(N)).is_valid()
+	  << "\n -->\n";
+	out << "<!-- CGAL Nef Polyhedron sphere map: -->\n";
+	out << sphere_map_dump( N );
 
 	CGAL_Nef_polyhedron3::Volume_const_iterator c;
 	CGAL_forall_volumes(c,N) {

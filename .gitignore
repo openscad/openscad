@@ -1,3 +1,5 @@
+/*.scad
+**/out*.*
 *.dmg
 *~
 *.tar*
@@ -9,13 +11,12 @@ objects
 .qmake.stash
 parser_yacc.h
 **/#*#
-testdata/scad/features/import_dxf-tests.scad
-testdata/scad/features/import_stl-tests.scad
+testdata/scad/2D/features/import_dxf-tests.scad
+testdata/scad/3D/features/import_stl-tests.scad
 testdata/scad/misc/include-tests.scad
 testdata/scad/misc/use-tests.scad
 **/project.xcworkspace
 **/xcuserdata
-/*.scad
 /*.stl
 /*.dxf
 /*.off
@@ -37,6 +38,7 @@ testdata/scad/misc/use-tests.scad
 /lexer_lex.cpp
 /parser_yacc.cpp
 /OpenSCAD.app
+/openscad.appdata.xml
 /openscad.pro.user
 /openscad
 /locale/*/*/*.mo

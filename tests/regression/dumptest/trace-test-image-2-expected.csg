@@ -1,6 +1,4 @@
-group() {
-	trace(file = "../../../image/OpenClipArt-Cute_Smiling_Cartoon_Mouse_by_qubodup.png", threshold = 0.5, $fn = 0, $fa = 12, $fs = 2);
-	multmatrix([[-1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		trace(file = "../../../image/OpenClipArt-Cute_Smiling_Cartoon_Mouse_by_qubodup.png", threshold = 0.7, $fn = 0, $fa = 12, $fs = 2);
-	}
+trace(file = "../../../image/OpenClipArt-Cute_Smiling_Cartoon_Mouse_by_qubodup.png", threshold = 0.5, $fn = 0, $fa = 12, $fs = 2, timestamp = 1455216509);
+multmatrix([[-1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	trace(file = "../../../image/OpenClipArt-Cute_Smiling_Cartoon_Mouse_by_qubodup.png", threshold = 0.7, $fn = 0, $fa = 12, $fs = 2, timestamp = 1455216509);
 }

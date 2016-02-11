@@ -9,15 +9,10 @@
 #include "cgal.h"
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 
-#include <boost/foreach.hpp>
-
-namespace /* anonymous */ {
-	template<typename Result, typename V>
-	Result vector_convert(V const& v) {
-		return Result(CGAL::to_double(v[0]),CGAL::to_double(v[1]),CGAL::to_double(v[2]));
-	}
+#include <boost/range/adaptor/reversed.hpp>
 
 #undef GEN_SURFACE_DEBUG
+namespace /* anonymous */ {
 
 	template <typename Polyhedron>
 	class CGAL_Build_PolySet : public CGAL::Modifier_base<typename Polyhedron::HalfedgeDS>
@@ -50,13 +45,13 @@ namespace /* anonymous */ {
 		
 			Grid3d<int> grid(GRID_FINE);
 			std::vector<CGALPoint> vertices;
-			std::vector<std::vector<size_t> > indices;
+			std::vector<std::vector<size_t>> indices;
 
 			// Align all vertices to grid and build vertex array in vertices
-			BOOST_FOREACH(const Polygon &p, ps.polygons) {
+			for(const auto &p : ps.polygons) {
 				indices.push_back(std::vector<size_t>());
-                            indices.back().reserve(p.size());
-				BOOST_REVERSE_FOREACH(Vector3d v, p) {
+				indices.back().reserve(p.size());
+				for (auto v : boost::adaptors::reverse(p)) {
 					// align v to the grid; the CGALPoint will receive the aligned vertex
 					size_t idx = grid.align(v);
 					if (idx == vertices.size()) {
@@ -72,10 +67,10 @@ namespace /* anonymous */ {
 			int pidx = 0;
 #endif
 			B.begin_surface(vertices.size(), ps.polygons.size());
-			BOOST_FOREACH(const CGALPoint &p, vertices) {
+			for(const auto &p : vertices) {
 				B.add_vertex(p);
 			}
-			BOOST_FOREACH(std::vector<size_t> &pindices, indices) {
+			for(auto &pindices : indices) {
 #ifdef GEN_SURFACE_DEBUG
 				if (pidx++ > 0) printf(",");
 #endif
@@ -92,7 +87,7 @@ namespace /* anonymous */ {
 #ifdef GEN_SURFACE_DEBUG
 				printf("[");
 				int fidx = 0;
-				BOOST_REVERSE_FOREACH(size_t i, pindices) {
+				for (auto i : boost::adaptors::reverse(pindices)) {
 					if (fidx++ > 0) printf(",");
 					printf("%ld", i);
 				}
@@ -126,12 +121,12 @@ namespace /* anonymous */ {
 #ifdef GEN_SURFACE_DEBUG
 				printf("polyhedron(faces=[");
 #endif
-				BOOST_FOREACH(const Polygon &p, ps.polygons) {
+				for(const auto &p : ps.polygons) {
 #ifdef GEN_SURFACE_DEBUG
 					if (pidx++ > 0) printf(",");
 #endif
 					indices.clear();
-					BOOST_REVERSE_FOREACH(const Vector3d &v, p) {
+					for (const auto &v, boost::adaptors::reverse(p)) {
 						size_t s = vertices.size();
 						size_t idx = vertices.lookup(v);
 						// If we added a vertex, also add it to the CGAL builder
@@ -156,7 +151,7 @@ namespace /* anonymous */ {
 #ifdef GEN_SURFACE_DEBUG
 						printf("[");
 						int fidx = 0;
-						BOOST_FOREACH(size_t i, indices) {
+						for(auto i : indices) {
 							if (fidx++ > 0) printf(",");
 							printf("%ld", i);
 						}
@@ -294,7 +289,7 @@ namespace CGALUtils {
 	template bool createPolySetFromPolyhedron(const CGAL_Polyhedron &p, PolySet &ps);
 	template bool createPolySetFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Epick> &p, PolySet &ps);
 	template bool createPolySetFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Epeck> &p, PolySet &ps);
-	template bool createPolySetFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Simple_cartesian<long> > &p, PolySet &ps);
+	template bool createPolySetFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Simple_cartesian<long>> &p, PolySet &ps);
 
 	class Polyhedron_writer {
     std::ostream *out;
@@ -332,7 +327,7 @@ namespace CGALUtils {
     }
     void write_facet_end() {
 			bool firsti = true;
-			BOOST_REVERSE_FOREACH(int i, indices) {
+			for (auto i : boost::adaptors::reverse(indices)) {
 				*out << (firsti ? "" : ",") << i;
 				firsti = false;
 			}

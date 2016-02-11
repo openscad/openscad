@@ -41,10 +41,10 @@ public:
     void add_glyph_advance(double advance_x, double advance_y);
 	std::vector<Geometry *> get_result();
 
-    void move_to(Vector2d to);
-    void line_to(Vector2d to);
-    void curve_to(Vector2d c1, Vector2d to);
-    void curve_to(Vector2d c1, Vector2d c2, Vector2d to);
+    void move_to(const Vector2d &to);
+    void line_to(const Vector2d &to);
+    void curve_to(const Vector2d &c1, const Vector2d &to);
+    void curve_to(const Vector2d &c1, const Vector2d &c2, const Vector2d &to);
 private:
     std::string context;
     unsigned long fn;
@@ -56,5 +56,5 @@ private:
 	class Polygon2d *polygon;
 	std::vector<class Geometry *> polygons;
     
-    void add_vertex(Vector2d v);
+    void add_vertex(const Vector2d &v);
 };

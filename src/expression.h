@@ -231,25 +231,59 @@ private:
 	AssignmentList call_arguments;
 };
 
-class ExpressionLcExpression : public Expression
-{
-public:
-	ExpressionLcExpression(Expression *expr);
-	ValuePtr evaluate(const class Context *context) const;
-	virtual void print(std::ostream &stream) const;
-};
-
 class ExpressionLc : public Expression
 {
 	virtual bool isListComprehension() const;
 public:
-	ExpressionLc(const std::string &name, 
-							 const AssignmentList &arglist, Expression *expr);
-	ExpressionLc(const std::string &name, 
-							 Expression *expr1, Expression *expr2);
+	ExpressionLc(Expression *expr);
+	ExpressionLc(Expression *expr1, Expression *expr2);
+};
+
+class ExpressionLcIf : public ExpressionLc
+{
+public:
+	ExpressionLcIf(Expression *cond, Expression *exprIf, Expression *exprElse);
 	ValuePtr evaluate(const class Context *context) const;
 	virtual void print(std::ostream &stream) const;
 private:
-	std::string name;
+        Expression *cond;
+};
+
+class ExpressionLcFor : public ExpressionLc
+{
+public:
+	ExpressionLcFor(const AssignmentList &arglist, Expression *expr);
+	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
+private:
+	AssignmentList call_arguments;
+};
+
+class ExpressionLcForC : public ExpressionLc
+{
+public:
+	ExpressionLcForC(const AssignmentList &arglist, const AssignmentList &incrargs, Expression *cond, Expression *expr);
+	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
+private:
+	AssignmentList call_arguments;
+	AssignmentList incr_arguments;
+};
+
+class ExpressionLcEach : public ExpressionLc
+{
+public:
+	ExpressionLcEach(Expression *expr);
+	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
+};
+
+class ExpressionLcLet : public ExpressionLc
+{
+public:
+	ExpressionLcLet(const AssignmentList &arglist, Expression *expr);
+	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
+private:
 	AssignmentList call_arguments;
 };

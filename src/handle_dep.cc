@@ -2,14 +2,13 @@
 #include <string>
 #include <sstream>
 #include <stdlib.h> // for system()
-#include <boost/unordered_set.hpp>
-#include <boost/foreach.hpp>
+#include <unordered_set>
 #include <boost/regex.hpp>
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 #include "boosty.h"
 
-boost::unordered_set<std::string> dependencies;
+std::unordered_set<std::string> dependencies;
 const char *make_command = NULL;
 
 void handle_dep(const std::string &filename)
@@ -36,7 +35,7 @@ bool write_deps(const std::string &filename, const std::string &output_file)
 	}
 	fprintf(fp, "%s:", output_file.c_str());
 
-	BOOST_FOREACH(const std::string &str, dependencies) {
+	for(const auto &str : dependencies) {
 		fprintf(fp, " \\\n\t%s", str.c_str());
 	}
 	fprintf(fp, "\n");

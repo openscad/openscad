@@ -5,35 +5,30 @@
 #include "Camera.h"
 #include "memory.h"
 
-#ifdef ENABLE_CGAL
-
 enum FileFormat {
 	OPENSCAD_STL,
 	OPENSCAD_OFF,
 	OPENSCAD_AMF,
 	OPENSCAD_DXF,
-	OPENSCAD_SVG
+	OPENSCAD_SVG,
+	OPENSCAD_NEFDBG,
+	OPENSCAD_NEF3
 };
 
-// void exportFile(const class Geometry *root_geom, std::ostream &output, FileFormat format);
-void exportFileByName(const class Geometry *root_geom, FileFormat format,
-	const char *name2open, const char *name2display);
-void export_png(shared_ptr<const class Geometry> root_geom, Camera &c, std::ostream &output);
+void exportFileByName(const shared_ptr<const class Geometry> &root_geom, FileFormat format,
+											const char *name2open, const char *name2display);
 
-void export_stl(const class CGAL_Nef_polyhedron *root_N, std::ostream &output);
-void export_stl(const class PolySet &ps, std::ostream &output);
-void export_off(const CGAL_Nef_polyhedron *root_N, std::ostream &output);
-void export_off(const class PolySet &ps, std::ostream &output);
-void export_amf(const class CGAL_Nef_polyhedron *root_N, std::ostream &output);
-void export_amf(const class PolySet &ps, std::ostream &output);
-void export_dxf(const class Polygon2d &poly, std::ostream &output);
-void export_svg(const class Polygon2d &poly, std::ostream &output);
-void export_png(const CGAL_Nef_polyhedron *root_N, Camera &c, std::ostream &output);
+void export_stl(const shared_ptr<const Geometry> &geom, std::ostream &output);
+void export_off(const shared_ptr<const Geometry> &geom, std::ostream &output);
+void export_amf(const shared_ptr<const Geometry> &geom, std::ostream &output);
+void export_dxf(const shared_ptr<const Geometry> &geom, std::ostream &output);
+void export_svg(const shared_ptr<const Geometry> &geom, std::ostream &output);
+void export_nefdbg(const shared_ptr<const Geometry> &geom, std::ostream &output);
+void export_nef3(const shared_ptr<const Geometry> &geom, std::ostream &output);
+
+// void exportFile(const class Geometry *root_geom, std::ostream &output, FileFormat format);
+
+void export_png(const shared_ptr<const class Geometry> &root_geom, Camera &c, std::ostream &output);
+void export_png(const shared_ptr<const class CGAL_Nef_polyhedron> &root_N, Camera &c, std::ostream &output);
 void export_png_with_opencsg(Tree &tree, Camera &c, std::ostream &output);
 void export_png_with_throwntogether(Tree &tree, Camera &c, std::ostream &output);
-
-#endif // ENABLE_CGAL
-
-#ifdef DEBUG
-void export_stl(const class PolySet &ps, std::ostream &output);
-#endif

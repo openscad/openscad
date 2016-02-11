@@ -2,6 +2,8 @@
 [![Coverity Status](https://scan.coverity.com/projects/2510/badge.svg)](https://scan.coverity.com/projects/2510)
 [![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/openscad/openscad/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
 
+[![Visit our IRC channel](https://kiwiirc.com/buttons/irc.freenode.net/openscad.png)](https://kiwiirc.com/client/irc.freenode.net/#openscad)
+
 # What is OpenSCAD?
 [![Flattr this git repo](http://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=openscad&url=http://openscad.org&title=OpenSCAD&language=&tags=github&category=software)
 
@@ -88,13 +90,14 @@ libraries from aptitude. If you're using Mac, or an older Linux/BSD, there
 are build scripts that download and compile the libraries from source. 
 Follow the instructions for the platform you're compiling on below.
 
-* [Qt4 (4.4 - 5.4)](http://www.qt.nokia.com/)
-* [QScintilla2 (2.7 - 2.8)](http://www.riverbankcomputing.co.uk/software/qscintilla/)
-* [CGAL (3.6 - 4.5)](http://www.cgal.org/)
+* A C++ compiler supporting C++11
+* [Qt4 (4.4 ->)](http://www.qt.nokia.com/)
+* [QScintilla2 (2.7 ->)](http://www.riverbankcomputing.co.uk/software/qscintilla/)
+* [CGAL (3.6 ->)](http://www.cgal.org/)
  * [GMP (5.x)](http://www.gmplib.org/)
  * [MPFR (3.x)](http://www.mpfr.org/)
-* [cmake (2.8 - 3.0, required by CGAL and the test framework)](http://www.cmake.org/)
-* [boost (1.35 - 1.57)](http://www.boost.org/)
+* [cmake (2.8 ->, required by CGAL and the test framework)](http://www.cmake.org/)
+* [boost (1.35 ->)](http://www.boost.org/)
 * [OpenCSG (1.3.2 ->)](http://www.opencsg.org/)
 * [GLEW (1.5.4 ->)](http://glew.sourceforge.net/)
 * [Eigen (3.x)](http://eigen.tuxfamily.org/)
@@ -128,7 +131,7 @@ Prerequisites:
 Install Dependencies:
 
 Run the script that sets up the environment variables:
-    ```source setenv_mac-qt5.sh```
+    ```source setenv_mac.sh```
 
 Then run the script to compile all the dependencies:
     ```./scripts/macosx-build-dependencies.sh```
@@ -147,7 +150,7 @@ For the adventurous, it might be possible to build OpenSCAD using _MacPorts_ or 
 
     ```sudo port install opencsg qscintilla boost cgal pkgconfig eigen3 harfbuzz fontconfig```
 
-1. **Homebrew** (assumes [Homebrew](http://brew.sh)) is already installed)
+1. **Homebrew** (assumes [Homebrew](http://brew.sh) is already installed)
 
     NB! Homebrew's ```qscintilla2``` component doesn't support Qt5, so using Qt4 is currently necessary.
     However, Homebrew's Qt4 has a broken ```moc``` command, causing OpenSCAD compilation to
@@ -231,9 +234,9 @@ For a 64-bit Windows cross-build, replace 32 with 64 in the above instructions.
 
 ### Compilation
 
-First, run 'qmake openscad.pro' from Qt4 to generate a Makefile.
+First, run 'qmake openscad.pro' from Qt to generate a Makefile.
 
-On some systems, depending on which version(s) of Qt you have installed, you may need to specify which version you want to use, e.g. by running 'qmake4', 'qmake-qt4' or something alike.
+On some systems, depending on which version(s) of Qt you have installed, you may need to specify which version you want to use, e.g. by running 'qmake4', 'qmake-qt4', 'qmake -qt=qt5', or something alike. 
 
 Then run make. Finally you might run 'make install' as root or simply copy the
 'openscad' binary (OpenSCAD.app on Mac OS X) to the bin directory of your choice.

@@ -49,7 +49,7 @@ Q_DECLARE_METATYPE(Feature *);
 class SettingsReader : public Settings::Visitor
 {
     QSettings settings;
-    const Value getValue(const Settings::SettingsEntry& entry, const std::string& value) const {
+    Value getValue(const Settings::SettingsEntry& entry, const std::string& value) const {
 	std::string trimmed_value(value);
 	boost::trim(trimmed_value);
 
@@ -101,7 +101,7 @@ class SettingsWriter : public Settings::Visitor
 	    settings.remove(key);
 	    PRINTDB("SettingsWriter D: %s", key.toStdString().c_str());
 	} else {
-	    Value value = s->get(entry);
+	    const Value &value = s->get(entry);
 	    settings.setValue(key, QString::fromStdString(value.toString()));
 	    PRINTDB("SettingsWriter W: %s = '%s'", key.toStdString().c_str() % value.toString().c_str());
 	}
@@ -142,7 +142,7 @@ void Preferences::init() {
 
 	uint savedsize = getValue("editor/fontsize").toUInt();
 	QFontDatabase db;
-	foreach(uint size, db.standardSizes()) {
+	for(auto size : db.standardSizes()) {
 		this->fontSize->addItem(QString::number(size));
 		if (size == savedsize) {
 			this->fontSize->setCurrentIndex(this->fontSize->count()-1);
@@ -689,18 +689,17 @@ void Preferences::updateGUI()
 void Preferences::initComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry)
 {
 	comboBox->clear();
-	Value::VectorType vector = entry.range().toVector();
-	for (Value::VectorType::iterator it = vector.begin();it != vector.end();it++) {
-		QString val = QString::fromStdString((*it)[0].toString());
-		std::string text((*it)[1].toString());
-		QString qtext = QString::fromStdString(gettext(text.c_str()));
+	// Range is a vector of 2D vectors: [[name, value], ...]
+	for(const auto &v : entry.range().toVector()) {
+		QString val = QString::fromStdString(v[0]->toString());
+		QString qtext = QString::fromStdString(gettext(v[1]->toString().c_str()));
 		comboBox->addItem(qtext, val);
 	}
 }
 
 void Preferences::initSpinBox(QSpinBox *spinBox, const Settings::SettingsEntry& entry)
 {
-	Value::RangeType range = entry.range().toRange();
+	RangeType range = entry.range().toRange();
 	spinBox->setMinimum(range.begin_value());
 	spinBox->setMaximum(range.end_value());
 }
@@ -709,13 +708,13 @@ void Preferences::updateComboBox(QComboBox *comboBox, const Settings::SettingsEn
 {
 	Settings::Settings *s = Settings::Settings::inst();
 
-	Value value = s->get(entry);
+	const Value &value = s->get(entry);
 	QString text = QString::fromStdString(value.toString());
 	int idx = comboBox->findData(text);
 	if (idx >= 0) {
 		comboBox->setCurrentIndex(idx);
 	} else {
-		Value defaultValue = entry.defaultValue();
+		const Value &defaultValue = entry.defaultValue();
 		QString defaultText = QString::fromStdString(defaultValue.toString());
 		int defIdx = comboBox->findData(defaultText);
 		if (defIdx >= 0) {
@@ -749,9 +748,7 @@ void Preferences::create(QStringList colorSchemes)
 
     std::list<std::string> names = ColorMap::inst()->colorSchemeNames(true);
     QStringList renderColorSchemes;
-    foreach (std::string name, names) {
-	renderColorSchemes << name.c_str();
-    }
+    for(const auto &name : names) renderColorSchemes << name.c_str();
     
     instance = new Preferences();
     instance->syntaxHighlight->clear();

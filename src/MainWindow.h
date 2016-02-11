@@ -13,8 +13,8 @@
 #include "editor.h"
 #include <vector>
 #include <QMutex>
-#include <QSet>
 #include <QTime>
+#include <QIODevice>
 
 enum export_type_e {
 	EXPORT_TYPE_UNKNOWN,
@@ -28,14 +28,16 @@ class MainWindow : public QMainWindow, public Ui::MainWindow
 	Q_OBJECT
 
 public:
-	static void requestOpenFile(const QString &filename);
-
 	QString fileName;
 
 	class Preferences *prefs;
 
 	QTimer *animate_timer;
-	double tval, fps, fsteps;
+	int anim_step;
+	int anim_numsteps;
+	double anim_tval;
+	bool anim_dumping;
+	int anim_dump_start_step;
 
 	QTimer *autoReloadTimer;
 	std::string autoReloadId;
@@ -50,9 +52,6 @@ public:
 	AbstractNode *root_node;          // Root if the root modifier (!) is used
 	Tree tree;
 
-	shared_ptr<class CSGTerm> root_raw_term;           // Result of CSG term rendering
-	shared_ptr<CSGTerm> root_norm_term;          // Normalized CSG products
-	class CSGChain *root_chain;
 #ifdef ENABLE_CGAL
 	shared_ptr<const class Geometry> root_geom;
 	class CGALRenderer *cgalRenderer;
@@ -62,10 +61,6 @@ public:
 #endif
 	class ThrownTogetherRenderer *thrownTogetherRenderer;
 
-	std::vector<shared_ptr<CSGTerm> > highlight_terms;
-	CSGChain *highlights_chain;
-	std::vector<shared_ptr<CSGTerm> > background_terms;
-	CSGChain *background_chain;
 	QString last_compiled_doc;
 
 	QAction *actionRecentFile[UIUtils::maxRecentFiles];
@@ -88,7 +83,10 @@ protected:
 	void closeEvent(QCloseEvent *event);
 
 private slots:
-	void updatedFps();
+	void updatedAnimTval();
+	void updatedAnimFps();
+	void updatedAnimSteps();
+	void updatedAnimDump(bool checked);
 	void updateTVal();
         void updateMdiMode(bool mdi);
         void updateUndockMode(bool undockMode);
@@ -102,7 +100,6 @@ private slots:
 
 private:
         void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
-	void openFile(const QString &filename);
         void handleFileDrop(const QString &filename);
 	void refreshDocument();
         void updateCamera();
@@ -113,6 +110,7 @@ private:
 	void compile(bool reload, bool forcedone = false);
 	void compileCSG(bool procevents);
 	bool maybeSave();
+        void saveError(const QIODevice &file, const std::string &msg);
 	bool checkEditorModified();
 	QString dumpCSGTree(AbstractNode *root);
 	static void consoleOutput(const std::string &msg, void *userdata);
@@ -196,15 +194,17 @@ private slots:
 	void actionExportSVG();
 	void actionExportCSG();
 	void actionExportImage();
+	void actionCopyViewport();
 	void actionFlushCaches();
 
 public:
-	static QSet<MainWindow*> *getWindows();
 	void viewModeActionsUncheck();
 	void setCurrentOutput();
 	void clearCurrentOutput();
+  bool isEmpty();
 
 public slots:
+	void openFile(const QString &filename);
 	void actionReloadRenderPreview();
         void on_editorDock_visibilityChanged(bool);
         void on_consoleDock_visibilityChanged(bool);
@@ -251,16 +251,18 @@ public slots:
 	void waitAfterReload();
 	void autoReloadSet(bool);
 	void setContentsChanged();
-	void showFontCacheDialog();
-	void hideFontCacheDialog();
 
 private:
 	static void report_func(const class AbstractNode*, void *vp, int mark);
 	static bool mdiMode;
 	static bool undockMode;
 	static bool reorderMode;
-	static QSet<MainWindow*> *windows;
-	static class QProgressDialog *fontCacheDialog;
+
+	shared_ptr<class CSGNode> csgRoot;           // Result of the CSGTreeEvaluator
+	shared_ptr<CSGNode> normalizedRoot;          // Normalized CSG tree
+ 	shared_ptr<class CSGProducts> root_products;
+	shared_ptr<CSGProducts> highlights_products;
+	shared_ptr<CSGProducts> background_products;
 
 	char const * afterCompileSlot;
 	bool procevents;

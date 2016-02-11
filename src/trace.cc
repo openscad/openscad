@@ -46,7 +46,6 @@ namespace fs = boost::filesystem;
 #include "builtin.h"
 #include "calc.h"
 #include "polyset.h"
-#include "mathc99.h"
 #include "lodepng.h"
 #include "fileutils.h"
 #include "DrawingCallback.h"

@@ -3,7 +3,6 @@
 #include "node.h"
 #include "state.h"
 #include <algorithm>
-#include <boost/foreach.hpp>
 
 void Traverser::execute() 
 {
@@ -26,7 +25,7 @@ Response Traverser::traverse(const AbstractNode &node, const State &state)
 	// Pruned traversals mean don't traverse children
 	if (response == ContinueTraversal) {
 		newstate.setParent(&node);
-		BOOST_FOREACH(const AbstractNode *chnode, node.getChildren()) {
+		for(const auto &chnode : node.getChildren()) {
 			response = this->traverse(*chnode, newstate);
 			if (response == AbortTraversal) return response; // Abort immediately
 		}
