@@ -109,7 +109,7 @@ public:
 	LeafNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) { };
 	virtual ~LeafNode() { };
   virtual Response accept(class State &state, class Visitor &visitor) const;
-	virtual class Geometry *createGeometry() const = 0;
+	virtual const class Geometry *createGeometry() const = 0;
 };
 
 std::ostream &operator<<(std::ostream &stream, const AbstractNode &node);
