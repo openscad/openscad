@@ -184,7 +184,7 @@ void read_stl_facet( std::ifstream &f, stl_facet &facet )
 /*!
 	Will return an empty geometry if the import failed, but not NULL
 */
-Geometry *ImportNode::createGeometry() const
+const Geometry *ImportNode::createGeometry() const
 {
 	Geometry *g = NULL;
 

@@ -105,7 +105,7 @@ public:
 	primitive_type_e type;
 	int convexity;
 	ValuePtr points, paths, faces;
-	virtual Geometry *createGeometry() const;
+	virtual const Geometry *createGeometry() const;
 };
 
 /**
@@ -295,7 +295,7 @@ static void generate_circle(point2d *circle, double r, int fragments)
 	Creates geometry for this node.
 	May return an empty Geometry creation failed, but will not return NULL.
 */
-Geometry *PrimitiveNode::createGeometry() const
+const Geometry *PrimitiveNode::createGeometry() const
 {
 	Geometry *g = NULL;
 

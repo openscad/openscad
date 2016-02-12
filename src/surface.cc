@@ -72,7 +72,7 @@ public:
 	bool invert;
 	int convexity;
 	
-	virtual Geometry *createGeometry() const;
+	virtual const Geometry *createGeometry() const;
 private:
 	void convert_image(img_data_t &data, std::vector<unsigned char> &img, unsigned int width, unsigned int height) const;
 	bool is_png(std::vector<unsigned char> &img) const;
@@ -211,7 +211,7 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
 	return data;
 }
 
-Geometry *SurfaceNode::createGeometry() const
+const Geometry *SurfaceNode::createGeometry() const
 {
 	img_data_t data = read_png_or_dat(filename);
 
