@@ -19,7 +19,7 @@ fi
 # opencsgtest_text-font-direction-tests - Fails due to old freetype (issue #899)
 # throwntogethertest_issue964 - Fails due to non-planar quad being tessellated slightly different
 # opencsgtest_issue1165 - z buffer tearing
-ctest -j8 -E "\
+ctest -E "\
 opencsgtest_rotate_extrude-tests|\
 opencsgtest_render-tests|\
 opencsgtest_rotate_extrude-hole|\
