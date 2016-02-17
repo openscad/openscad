@@ -3,6 +3,9 @@ Given:
 
 o Make sure we have a $VERSION branch. If not, create one
 
+o Update releases/$VERSION.md
+o scripts/makereleasenotes.sh
+
 o Update VERSION and VERSIONDATE in
   openscad.pro
   scripts/publish-macosx.sh
