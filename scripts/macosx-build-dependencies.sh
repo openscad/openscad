@@ -53,7 +53,7 @@ PACKAGES=(
     "fontconfig 2.11.1"
 )
 DEPLOY_PACKAGES=(
-    "sparkle 1.11.0"
+    "sparkle 1.13.1"
 )
 
 printUsage()
@@ -497,7 +497,7 @@ build_sparkle()
   version=$1
   cd $BASEDIR/src
   rm -rf Sparkle-$version
-  if [ ! -f Sparkle-$version.zip ]; then
+  if [ ! -f Sparkle-$version.tar.bz2 ]; then
     curl -LO https://github.com/sparkle-project/Sparkle/releases/download/$version/Sparkle-$version.tar.bz2
   fi
   mkdir Sparkle-$version
