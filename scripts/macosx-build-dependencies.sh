@@ -54,7 +54,7 @@ PACKAGES=(
     "fontconfig 2.11.1"
 )
 DEPLOY_PACKAGES=(
-    "sparkle Cocoanetics:1e7dcb1a48b96d1a8c62100b5864bd50211cbae1"
+    "sparkle 1.13.1"
 )
 
 printUsage()
@@ -596,35 +596,47 @@ check_sparkle()
     check_file lib/Sparkle.framework/Sparkle
 }
 
-# Usage: build_sparkle <githubuser>:<commitID>
+# Usage:
+#   build_sparkle <githubuser>:<commitID>
+#   build_sparkle <version>
 build_sparkle()
 {
-  v=$1
-  github=${1%%:*}  # Cut at first colon
-  version=${1#*:}  # cut until first colon
-
-  echo "Building Sparkle" $version "..."
-
-  # Let Sparkle use the default compiler
-  unset CC
-  unset CXX
-
+# Binary install:
+  version=$1
   cd $BASEDIR/src
   rm -rf Sparkle-$version
-  if [ ! -f Sparkle-$version.zip ]; then
-      curl -o Sparkle-$version.zip https://nodeload.github.com/$github/Sparkle/zip/$version
+  if [ ! -f Sparkle-$version.tar.bz2 ]; then
+    curl -LO https://github.com/sparkle-project/Sparkle/releases/download/$version/Sparkle-$version.tar.bz2
   fi
-  unzip -q Sparkle-$version.zip
+  mkdir Sparkle-$version
   cd Sparkle-$version
-  patch -p1 < $OPENSCADDIR/patches/sparkle.patch
-  if $OPTION_32BIT; then
-    SPARKLE_EXTRA_FLAGS="-arch i386"
-  fi
-  xcodebuild clean
-  xcodebuild -arch x86_64 $SPARKLE_EXTRA_FLAGS
-  rm -rf $DEPLOYDIR/lib/Sparkle.framework
-  cp -Rf build/Release/Sparkle.framework $DEPLOYDIR/lib/ 
-  install_name_tool -id $DEPLOYDIR/lib/Sparkle.framework/Versions/A/Sparkle $DEPLOYDIR/lib/Sparkle.framework/Sparkle
+  tar xjf ../Sparkle-$version.tar.bz2
+  cp -Rf Sparkle.framework $DEPLOYDIR/lib/ 
+
+# Build from source:
+#  v=$1
+#  github=${1%%:*}  # Cut at first colon
+#  version=${1#*:}  # cut until first colon
+#
+#  echo "Building Sparkle" $version "..."
+#
+#  # Let Sparkle use the default compiler
+#  unset CC
+#  unset CXX
+#
+#  cd $BASEDIR/src
+#  rm -rf Sparkle-$version
+#  if [ ! -f Sparkle-$version.zip ]; then
+#      curl -o Sparkle-$version.zip https://nodeload.github.com/$github/Sparkle/zip/$version
+#  fi
+#  unzip -q Sparkle-$version.zip
+#  cd Sparkle-$version
+#  patch -p1 < $OPENSCADDIR/patches/sparkle.patch
+#  xcodebuild clean
+#  xcodebuild -arch x86_64
+#  rm -rf $DEPLOYDIR/lib/Sparkle.framework
+#  cp -Rf build/Release/Sparkle.framework $DEPLOYDIR/lib/ 
+#  Install_name_tool -id $DEPLOYDIR/lib/Sparkle.framework/Versions/A/Sparkle $DEPLOYDIR/lib/Sparkle.framework/Sparkle
 }
 
 check_freetype()
