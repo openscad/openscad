@@ -993,7 +993,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
       if (${EXPERIMENTAL} EQUAL -1)
         set(EXPERIMENTAL_OPTION "")
       else()
-        set(EXPERIMENTAL_OPTION "--enable=lc-each" "--enable=lc-else" "--enable=lc-for-c")
+        set(EXPERIMENTAL_OPTION "--enable=lc-each" "--enable=lc-else" "--enable=lc-for-c" "--enable=echo")
       endif()
 
       # 2D tests should be viewed from the top, not an angle.
@@ -1307,7 +1307,8 @@ disable_tests(csgpngtest_primitive-inf-tests
               cgalpngtest_empty-shape-tests
               csgpngtest_issue1258)
 
-experimental_tests(echotest_list-comprehensions-experimental)
+experimental_tests(echotest_list-comprehensions-experimental
+                    echotest_echo-expression-tests)
 
 # Test config handling
 

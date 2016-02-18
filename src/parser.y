@@ -102,7 +102,7 @@ std::string parser_source_path;
 
 %token LE GE EQ NE AND OR
 
-%right LET
+%left HIGH_PRIO_LEFT
 
 %right '?' ':'
 
@@ -117,11 +117,14 @@ std::string parser_source_path;
 %left '[' ']'
 %left '.'
 
+%left LOW_PRIO_LEFT
+
 %type <expr> expr
 %type <expr> vector_expr
 %type <expr> list_comprehension_elements
 %type <expr> list_comprehension_elements_p
 %type <expr> list_comprehension_elements_or_expr
+%type <expr> expr_or_empty
 
 %type <inst> module_instantiation
 %type <ifelse> if_statement
@@ -337,11 +340,6 @@ expr:
             {
                 $$ = new ExpressionConst(ValuePtr($1));
             }
-        | TOK_LET '(' arguments_call ')' expr %prec LET
-            {
-              $$ = new ExpressionLet(*$3, $5);
-                delete $3;
-            }
         | '[' expr ':' expr ']'
             {
                 $$ = new ExpressionRange($2, $4);
@@ -434,12 +432,27 @@ expr:
             {
                 $$ = new ExpressionArrayLookup($1, $3);
             }
-        | TOK_ID '(' arguments_call ')'
+        | TOK_ID '(' arguments_call ')' expr_or_empty
             {
-              $$ = new ExpressionFunctionCall($1, *$3);
-                free($1);
-                delete $3;
-            }
+				$$ = ExpressionFunctionCall::create($1, *$3, $5);
+				delete $3;
+			}
+        | TOK_LET '(' arguments_call ')' expr_or_empty
+            {
+				$$ = ExpressionFunctionCall::create("let", *$3, $5);
+				delete $3;
+			}
+        ;
+
+expr_or_empty:
+		  %prec LOW_PRIO_LEFT
+		    {
+			    $$ = NULL;
+		    }
+		| expr %prec HIGH_PRIO_LEFT
+		    {
+			    $$ = $1;
+		    }
         ;
 
 list_comprehension_elements:

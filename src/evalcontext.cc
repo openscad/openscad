@@ -43,6 +43,9 @@ ModuleInstantiation *EvalContext::getChild(size_t i) const
 void EvalContext::assignTo(Context &target) const
 {
 	for(const auto &assignment : this->eval_arguments) {
+		if (assignment.first.empty()) {
+			continue;
+		}
 		ValuePtr v;
 		if (assignment.second) v = assignment.second->evaluate(&target);
 		if (target.has_local_variable(assignment.first)) {
@@ -51,6 +54,21 @@ void EvalContext::assignTo(Context &target) const
 			target.set_variable(assignment.first, v);
 		}
 	}
+}
+
+std::ostream &operator<<(std::ostream &stream, const EvalContext &ec)
+{
+	for (size_t i = 0; i < ec.numArgs(); i++) {
+		if (i > 0) stream << ", ";
+		if (!ec.getArgName(i).empty()) stream << ec.getArgName(i) << " = ";
+		ValuePtr val = ec.getArgValue(i);
+		if (val->type() == Value::STRING) {
+			stream << '"' << val->toString() << '"';
+		} else {
+			stream << val->toString();
+		}
+	}
+	return stream;
 }
 
 #ifdef DEBUG

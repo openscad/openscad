@@ -1,0 +1,14 @@
+ECHO: 
+ECHO: "t1"
+ECHO: 18
+ECHO: c = 18
+ECHO: 18
+ECHO: c = 2, 36
+ECHO: c = 2, d = 11, 396
+ECHO: t0 = undef
+ECHO: t1 = undef
+ECHO: t2 = undef
+ECHO: t3 = undef
+ECHO: t4 = 18
+ECHO: t5 = 36
+ECHO: t6 = 396

@@ -14,6 +14,7 @@ public:
 	typedef std::vector<Feature *> list_t;
 	typedef list_t::iterator iterator;
 
+        static const Feature ExperimentalEchoExpression;
         static const Feature ExperimentalEachExpression;
         static const Feature ExperimentalElseExpression;
         static const Feature ExperimentalForCExpression;

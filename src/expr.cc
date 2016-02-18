@@ -52,9 +52,9 @@ namespace {
 		return ret;
 	}
 
-	void evaluate_sequential_assignment(const AssignmentList &assignment_list, Context *context) {
-		EvalContext ctx(context, assignment_list);
-		ctx.assignTo(*context);
+	void evaluate_sequential_assignment(const AssignmentList &assignment_list, Context &context) {
+		EvalContext ctx(&context, assignment_list);
+		ctx.assignTo(context);
 	}
 }
 
@@ -463,45 +463,106 @@ void ExpressionMember::print(std::ostream &stream) const
 	stream << *first << "." << this->member;
 }
 
-ExpressionFunctionCall::ExpressionFunctionCall(const std::string &funcname, 
-																							 const AssignmentList &arglist)
-	: funcname(funcname), call_arguments(arglist)
+ExpressionFunctionCall::ExpressionFunctionCall(const std::string &name, const AssignmentList &arglist, Expression *expr)
+	: Expression(expr), funcname(name), call_arguments(arglist)
 {
 }
 
-ValuePtr ExpressionFunctionCall::evaluate(const Context *context) const
+ExpressionFunctionCall * ExpressionFunctionCall::create(const std::string &name, const AssignmentList &arglist, Expression *expr)
+{
+	if (name == "echo") {
+		return new ExpressionEcho(name, arglist, expr);
+	} else if (name == "let") {
+		return new ExpressionLet(name, arglist, expr);
+	} else {
+		if (expr == 0) {
+			return new ExpressionSimpleFunctionCall(name, arglist);
+		} else {
+			return new ExpressionError(name, arglist, expr);
+		}
+	}
+}
+
+void ExpressionFunctionCall::print(std::ostream &stream) const
+{
+	stream << this->funcname << "(" << this->call_arguments << ")";
+	if (this->first) {
+		stream << " " << *this->first;
+	}
+}
+
+ExpressionSimpleFunctionCall::ExpressionSimpleFunctionCall(const std::string &name, const AssignmentList &arglist)
+	: ExpressionFunctionCall(name, arglist, NULL)
+{
+}
+
+ValuePtr ExpressionSimpleFunctionCall::evaluate(const Context *context) const
 {
 	if (StackCheck::inst()->check()) {
 		throw RecursionException::create("function", funcname);
 	}
-    
+
 	EvalContext c(context, this->call_arguments);
 	ValuePtr result = context->evaluate_function(this->funcname, &c);
 
 	return result;
 }
 
-void ExpressionFunctionCall::print(std::ostream &stream) const
+ExpressionError::ExpressionError(const std::string &name, const AssignmentList &arglist, Expression *expr)
+	: ExpressionFunctionCall(name, arglist, expr)
 {
-	stream << this->funcname << "(" << this->call_arguments << ")";
 }
 
-ExpressionLet::ExpressionLet(const AssignmentList &arglist, Expression *expr)
-	: Expression(expr), call_arguments(arglist)
+ValuePtr ExpressionError::evaluate(const Context * /*context*/) const
+{
+	throw RecursionException::create("error", funcname);
+}
+
+ExpressionEcho::ExpressionEcho(const std::string &name, const AssignmentList &arglist, Expression *expr)
+	: ExpressionFunctionCall(name, arglist, expr)
+{
+}
+
+ValuePtr ExpressionEcho::evaluate(const Context *context) const
+{
+	ExperimentalFeatureException::check(Feature::ExperimentalEchoExpression);
+
+	EvalContext assignment_context(context, this->call_arguments);
+
+	Context c(context);
+	assignment_context.assignTo(c);
+
+	ValuePtr result = this->first ? this->first->evaluate(&c) : ValuePtr::undefined;
+
+	std::stringstream msg;
+	EvalContext echo_context(&c, this->call_arguments);
+	msg << "ECHO: " << echo_context;
+
+	if (this->first) {
+		if (echo_context.numArgs()) msg << ", ";
+		if (result->type() == Value::STRING) {
+			msg << '"' << result->toString() << '"';
+		} else {
+			msg << result->toString();
+		}
+	}
+
+	PRINTB("%s", msg.str());
+
+	return result;
+}
+
+ExpressionLet::ExpressionLet(const std::string &name, const AssignmentList &arglist, Expression *expr)
+	: ExpressionFunctionCall(name, arglist, expr)
 {
 }
 
 ValuePtr ExpressionLet::evaluate(const Context *context) const
 {
 	Context c(context);
-	evaluate_sequential_assignment(this->call_arguments, &c);
+	evaluate_sequential_assignment(this->call_arguments, c);
 
 	return this->first->evaluate(&c);
-}
-
-void ExpressionLet::print(std::ostream &stream) const
-{
-	stream << "let(" << this->call_arguments << ") " << *first;
 }
 
 ExpressionLc::ExpressionLc(Expression *expr) : Expression(expr)
@@ -659,7 +720,7 @@ ValuePtr ExpressionLcForC::evaluate(const Context *context) const
 	Value::VectorType vec;
 
     Context c(context);
-    evaluate_sequential_assignment(this->call_arguments, &c);
+    evaluate_sequential_assignment(this->call_arguments, c);
 
 	unsigned int counter = 0;
     while (this->first->evaluate(&c)) {
@@ -668,7 +729,7 @@ ValuePtr ExpressionLcForC::evaluate(const Context *context) const
 		if (counter++ == 1000000) throw RecursionException::create("for loop", "");
 
         Context tmp(&c);
-        evaluate_sequential_assignment(this->incr_arguments, &tmp);
+        evaluate_sequential_assignment(this->incr_arguments, tmp);
         c.apply_variables(tmp);
     }    
 
@@ -696,7 +757,8 @@ ExpressionLcLet::ExpressionLcLet(const AssignmentList &arglist, Expression *expr
 ValuePtr ExpressionLcLet::evaluate(const Context *context) const
 {
     Context c(context);
-    evaluate_sequential_assignment(this->call_arguments, &c);
+	evaluate_sequential_assignment(this->call_arguments, c);
+
     return this->first->evaluate(&c);
 }
 
