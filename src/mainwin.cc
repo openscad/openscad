@@ -93,6 +93,13 @@
 #include <QClipboard>
 #include <QDesktopWidget>
 
+#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
+#include <QTextDocument>
+#define QT_HTML_ESCAPE(qstring) Qt::escape(qstring)
+#else
+#define QT_HTML_ESCAPE(qstring) (qstring).toHtmlEscaped()
+#endif
+
 #if (QT_VERSION < QT_VERSION_CHECK(5, 1, 0))
 // Set dummy for Qt versions that do not have QSaveFile
 #define QT_FILE_SAVE_CLASS QFile
@@ -2724,10 +2731,10 @@ void MainWindow::consoleOutput(const QString &msg)
 	QString qmsg;
 	if (msg.startsWith("WARNING:") || msg.startsWith("DEPRECATED:")) {
 		this->compileWarnings++;
-		qmsg = "<html><span style=\"color: black; background-color: #ffffb0;\">" + msg + "</span></html>\n";
+		qmsg = "<html><span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span></html>\n";
 	} else if (msg.startsWith("ERROR:")) {
 		this->compileErrors++;
-		qmsg = "<html><span style=\"color: black; background-color: #ffb0b0;\">" + msg + "</span></html>\n";
+		qmsg = "<html><span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span></html>\n";
 	}
 	else {
 		qmsg = msg;
