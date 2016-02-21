@@ -993,7 +993,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
       if (${EXPERIMENTAL} EQUAL -1)
         set(EXPERIMENTAL_OPTION "")
       else()
-        set(EXPERIMENTAL_OPTION "--enable=lc-each" "--enable=lc-else" "--enable=lc-for-c" "--enable=echo")
+        set(EXPERIMENTAL_OPTION "--enable=lc-each" "--enable=lc-else" "--enable=lc-for-c" "--enable=echo" "--enable=assert")
       endif()
 
       # 2D tests should be viewed from the top, not an angle.
@@ -1122,6 +1122,10 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/for-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/expression-evaluation-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/echo-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/assert-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/assert-fail1-test.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/assert-fail2-test.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/assert-fail3-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/parser-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/builtin-tests.scad
@@ -1176,6 +1180,7 @@ list(APPEND CGALPNGTEST_2D_FILES ${FEATURES_2D_FILES} ${SCAD_DXF_FILES} ${EXAMPL
 list(APPEND CGALPNGTEST_3D_FILES ${FEATURES_3D_FILES} ${DEPRECATED_3D_FILES} ${ISSUES_3D_FILES} ${EXAMPLE_3D_FILES})
 list(APPEND CGALPNGTEST_3D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/use-tests.scad
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/assert-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/let-module-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/transform-nan-inf-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/localfiles-test.scad
@@ -1308,7 +1313,19 @@ disable_tests(csgpngtest_primitive-inf-tests
               csgpngtest_issue1258)
 
 experimental_tests(echotest_list-comprehensions-experimental
-                    echotest_echo-expression-tests)
+                   echotest_assert-tests
+                   cgalpngtest_assert-tests
+                   opencsgtest_assert-tests
+                   csgpngtest_assert-tests
+                   throwntogethertest_assert-tests
+                   echotest_assert-fail1-test
+                   echotest_assert-fail2-test
+                   echotest_assert-fail3-test
+                   echotest_echo-expression-tests
+                   echotest_assert-expression-tests
+                   echotest_assert-expression-fail1-test
+                   echotest_assert-expression-fail2-test
+                   echotest_assert-expression-fail3-test)
 
 # Test config handling
 

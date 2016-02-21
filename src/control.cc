@@ -41,6 +41,7 @@ public: // types
 		CHILD,
 		CHILDREN,
 		ECHO,
+		ASSERT,
 		ASSIGN,
 		FOR,
 		LET,
@@ -48,9 +49,9 @@ public: // types
 		IF
     };
 public: // methods
-	ControlModule(Type type)
-		: type(type)
-	{ }
+	ControlModule(Type type) : type(type) { }
+
+	ControlModule(Type type, const Feature& feature) : AbstractModule(feature), type(type) { }
 
 	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
 
@@ -303,6 +304,16 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 	}
 		break;
 
+	case ASSERT: {
+		node = new GroupNode(inst);
+
+		Context c(evalctx);
+		evaluate_assert(c, evalctx);
+		inst->scope.apply(c);
+		node->children = inst->instantiateChildren(&c);
+	}
+		break;
+
 	case FOR:
 		node = new GroupNode(inst);
 		for_eval(*node, *inst, 0, evalctx, evalctx);
@@ -337,6 +348,7 @@ void register_builtin_control()
 	Builtins::init("child", new ControlModule(ControlModule::CHILD));
 	Builtins::init("children", new ControlModule(ControlModule::CHILDREN));
 	Builtins::init("echo", new ControlModule(ControlModule::ECHO));
+	Builtins::init("assert", new ControlModule(ControlModule::ASSERT, Feature::ExperimentalAssertExpression));
 	Builtins::init("assign", new ControlModule(ControlModule::ASSIGN));
 	Builtins::init("for", new ControlModule(ControlModule::FOR));
 	Builtins::init("let", new ControlModule(ControlModule::LET));

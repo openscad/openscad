@@ -15,6 +15,7 @@ public:
 	typedef list_t::iterator iterator;
 
         static const Feature ExperimentalEchoExpression;
+        static const Feature ExperimentalAssertExpression;
         static const Feature ExperimentalEachExpression;
         static const Feature ExperimentalElseExpression;
         static const Feature ExperimentalForCExpression;

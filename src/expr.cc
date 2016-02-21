@@ -37,6 +37,9 @@
 #include "feature.h"
 #include <boost/bind.hpp>
 
+#include <boost/assign/std/vector.hpp>
+using namespace boost::assign; // bring 'operator+=()' into scope
+
 // unnamed namespace
 namespace {
 	Value::VectorType flatten(Value::VectorType const& vec) {
@@ -472,6 +475,8 @@ ExpressionFunctionCall * ExpressionFunctionCall::create(const std::string &name,
 {
 	if (name == "echo") {
 		return new ExpressionEcho(name, arglist, expr);
+	} else if (name == "assert") {
+		return new ExpressionAssert(name, arglist, expr);
 	} else if (name == "let") {
 		return new ExpressionLet(name, arglist, expr);
 	} else {
@@ -540,15 +545,27 @@ ValuePtr ExpressionEcho::evaluate(const Context *context) const
 
 	if (this->first) {
 		if (echo_context.numArgs()) msg << ", ";
-		if (result->type() == Value::STRING) {
-			msg << '"' << result->toString() << '"';
-		} else {
-			msg << result->toString();
-		}
+		msg << result->toEchoString();
 	}
 
 	PRINTB("%s", msg.str());
 
+	return result;
+}
+
+ExpressionAssert::ExpressionAssert(const std::string &name, const AssignmentList &arglist, Expression *expr)
+	: ExpressionFunctionCall(name, arglist, expr)
+{
+}
+
+ValuePtr ExpressionAssert::evaluate(const Context *context) const
+{
+	EvalContext assert_context(context, this->call_arguments);
+
+	Context c(&assert_context);
+	evaluate_assert(c, &assert_context);
+
+	ValuePtr result = this->first ? this->first->evaluate(&c) : ValuePtr::undefined;
 	return result;
 }
 
@@ -771,4 +788,31 @@ std::ostream &operator<<(std::ostream &stream, const Expression &expr)
 {
 	expr.print(stream);
 	return stream;
+}
+
+void evaluate_assert(const Context &context, const class EvalContext *evalctx)
+{
+	ExperimentalFeatureException::check(Feature::ExperimentalAssertExpression);
+
+	AssignmentList args;
+	args += Assignment("condition"), Assignment("message");
+
+	Context c(&context);
+	const Context::Expressions expressions = c.setVariables(args, evalctx);
+	const ValuePtr condition = c.lookup_variable("condition");
+
+	if (!condition->toBool()) {
+		std::stringstream msg;
+		msg << "ERROR: Assertion";
+		const Expression *expr = expressions.at("condition");
+		if (expr) {
+			msg << " '" << *expr << "'";
+		}
+		msg << " failed";
+		const ValuePtr message = c.lookup_variable("message", true);
+		if (message->isDefined()) {
+			msg << ": " << message->toEchoString();
+		}
+		throw AssertionFailedException(msg.str());
+	}
 }

@@ -243,6 +243,13 @@ public:
 	ValuePtr evaluate(const class Context *context) const;
 };
 
+class ExpressionAssert : public ExpressionFunctionCall
+{
+public:
+	ExpressionAssert(const std::string &name, const AssignmentList &arglist, Expression *expr);
+	ValuePtr evaluate(const class Context *context) const;
+};
+
 class ExpressionLet : public ExpressionFunctionCall
 {
 public:
@@ -306,3 +313,5 @@ public:
 private:
 	AssignmentList call_arguments;
 };
+
+void evaluate_assert(const Context &context, const class EvalContext *evalctx);

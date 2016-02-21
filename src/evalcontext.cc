@@ -61,12 +61,7 @@ std::ostream &operator<<(std::ostream &stream, const EvalContext &ec)
 	for (size_t i = 0; i < ec.numArgs(); i++) {
 		if (i > 0) stream << ", ";
 		if (!ec.getArgName(i).empty()) stream << ec.getArgName(i) << " = ";
-		ValuePtr val = ec.getArgValue(i);
-		if (val->type() == Value::STRING) {
-			stream << '"' << val->toString() << '"';
-		} else {
-			stream << val->toString();
-		}
+		stream << ec.getArgValue(i)->toEchoString();
 	}
 	return stream;
 }
