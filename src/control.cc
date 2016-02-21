@@ -260,7 +260,21 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 	case ECHO: {
 		node = new GroupNode(inst);
 		std::stringstream msg;
-		msg << "ECHO: " << *evalctx;
+		msg << "ECHO: ";
+#ifdef ENABLE_EXPERIMENTAL
+		if (Feature::ExperimentalEchoExpression.is_enabled()) {
+			Context c(evalctx);
+			evalctx->assignTo(c);
+			EvalContext echo_context(&c, evalctx->getArgs());
+			msg << echo_context;
+			inst->scope.apply(c);
+			node->children = inst->instantiateChildren(&c);
+		} else
+#endif
+		{
+			// "old" behavior as long as the new echo is experimental
+			msg << *evalctx;
+		}
 		PRINTB("%s", msg.str());
 	}
 		break;
@@ -268,12 +282,9 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 	case LET: {
 		node = new GroupNode(inst);
 		Context c(evalctx);
-
 		evalctx->assignTo(c);
-
 		inst->scope.apply(c);
-		std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(&c);
-		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
+		node->children = inst->instantiateChildren(&c);
 	}
 		break;
 
@@ -288,8 +299,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 		}
 		// Let any local variables override the parameters
 		inst->scope.apply(c);
-		std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(&c);
-		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
+		node->children = inst->instantiateChildren(&c);
 	}
 		break;
 
