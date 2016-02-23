@@ -110,7 +110,7 @@ do
 done
 
 if test -z "$VERSIONDATE"; then
-    VERSIONDATE=2016.02.23
+    VERSIONDATE=2016.02.17
 fi
 if test -z "$VERSION"; then
     VERSION=2015.03-3
