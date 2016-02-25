@@ -1,6 +1,6 @@
 // Example combining MCAD/fonts.scad with search() function.
 
-use <MCAD/fonts.scad>
+use <fonts.scad>
 
 echo(version=version());
 
