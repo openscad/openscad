@@ -28,12 +28,10 @@
 #include "polyset.h"
 #include "polyset-utils.h"
 
-#include <boost/foreach.hpp>
-
 static void append_svg(const Polygon2d &poly, std::ostream &output)
 {
 	output << "<path d=\"\n";
-	BOOST_FOREACH(const Outline2d &o, poly.outlines()) {
+	for(const auto &o : poly.outlines()) {
 		if (o.vertices.empty()) {
 			continue;
 		}

@@ -29,8 +29,6 @@
 #include "polyset-utils.h"
 #include "dxfdata.h"
 
-#include <boost/foreach.hpp>
-
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"
@@ -50,8 +48,8 @@ struct IndexedMesh {
 
 static void append_geometry(const PolySet &ps, IndexedMesh &mesh)
 {
-	BOOST_FOREACH(const Polygon &p, ps.polygons) {
-		BOOST_FOREACH(const Vector3d &v, p) {
+	for(const auto &p : ps.polygons) {
+		for(const auto &v : p) {
 			mesh.indices.push_back(mesh.vertices.lookup(v));
 		}
 		mesh.numfaces++;

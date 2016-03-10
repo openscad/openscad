@@ -43,7 +43,6 @@
 #include <QErrorMessage>
 #include "OpenCSGWarningDialog.h"
 
-#include "mathc99.h"
 #include <stdio.h>
 
 #ifdef ENABLE_OPENCSG
@@ -171,7 +170,11 @@ void QGLView::paintGL()
   if (statusLabel) {
     Camera nc(cam);
     nc.gimbalDefaultTranslate();
-    statusLabel->setText(QString::fromStdString(nc.statusText()));
+	const QString status = QString("%1 (%2x%3)")
+		.arg(QString::fromStdString(nc.statusText()))
+		.arg(size().rwidth())
+		.arg(size().rheight());
+    statusLabel->setText(status);
   }
 
 #if defined(_WIN32) && !defined(USE_QOPENGLWIDGET)

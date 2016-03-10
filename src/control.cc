@@ -24,7 +24,6 @@
  *
  */
 
-#include <boost/foreach.hpp>
 #include "module.h"
 #include "node.h"
 #include "evalcontext.h"
@@ -32,12 +31,8 @@
 #include "expression.h"
 #include "builtin.h"
 #include "printutils.h"
+#include <cstdint>
 #include <sstream>
-#include "mathc99.h"
-
-
-#define foreach BOOST_FOREACH
-
 
 class ControlModule : public AbstractModule
 {
@@ -48,6 +43,7 @@ public: // types
 		ECHO,
 		ASSIGN,
 		FOR,
+		LET,
 		INT_FOR,
 		IF
     };
@@ -79,7 +75,7 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 		Context c(ctx);
 		if (it_values->type() == Value::RANGE) {
 			RangeType range = it_values->toRange();
-			boost::uint32_t steps = range.numValues();
+			uint32_t steps = range.numValues();
 			if (steps >= 10000) {
 				PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu).", steps);
 			} else {
@@ -103,7 +99,7 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 		// At this point, the for loop variables have been set and we can initialize
 		// the local scope (as they may depend on the for loop variables
 		Context c(ctx);
-		BOOST_FOREACH(const Assignment &ass, inst.scope.assignments) {
+		for(const auto &ass : inst.scope.assignments) {
 			c.set_variable(ass.first, ass.second->evaluate(&c));
 		}
 		
@@ -228,7 +224,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 			else if (value->type() == Value::VECTOR) {
 				AbstractNode* node = new GroupNode(inst);
 				const Value::VectorType& vect = value->toVector();
-				foreach (const ValuePtr &vectvalue, vect) {
+				for(const auto &vectvalue : vect) {
 					AbstractNode* childnode = getChild(vectvalue,modulectx);
 					if (childnode==NULL) continue; // error
 					node->children.push_back(childnode);
@@ -237,7 +233,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 			}
 			else if (value->type() == Value::RANGE) {
 				RangeType range = value->toRange();
-				boost::uint32_t steps = range.numValues();
+				uint32_t steps = range.numValues();
 				if (steps >= 10000) {
 					PRINTB("WARNING: Bad range parameter for children: too many elements (%lu).", steps);
 					return NULL;
@@ -276,6 +272,18 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 			}
 		}
 		PRINTB("%s", msg.str());
+	}
+		break;
+
+	case LET: {
+		node = new GroupNode(inst);
+		Context c(evalctx);
+
+		evalctx->assignTo(c);
+
+		inst->scope.apply(c);
+		std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(&c);
+		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 	}
 		break;
 
@@ -331,6 +339,7 @@ void register_builtin_control()
 	Builtins::init("echo", new ControlModule(ControlModule::ECHO));
 	Builtins::init("assign", new ControlModule(ControlModule::ASSIGN));
 	Builtins::init("for", new ControlModule(ControlModule::FOR));
+	Builtins::init("let", new ControlModule(ControlModule::LET));
 	Builtins::init("intersection_for", new ControlModule(ControlModule::INT_FOR));
 	Builtins::init("if", new ControlModule(ControlModule::IF));
 }

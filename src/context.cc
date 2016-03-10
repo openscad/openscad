@@ -31,7 +31,6 @@
 #include "module.h"
 #include "builtin.h"
 #include "printutils.h"
-#include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 #include "boosty.h"
@@ -77,7 +76,7 @@ Context::~Context()
 void Context::setVariables(const AssignmentList &args,
 													 const EvalContext *evalctx)
 {
-	BOOST_FOREACH(const Assignment &arg, args) {
+	for(const auto &arg : args) {
 		set_variable(arg.first, arg.second ? arg.second->evaluate(this->parent) : ValuePtr::undefined);
 	}
 
@@ -215,20 +214,20 @@ std::string Context::dump(const AbstractModule *mod, const ModuleInstantiation *
 		const Module *m = dynamic_cast<const Module*>(mod);
 		if (m) {
 			s << "  module args:";
-			BOOST_FOREACH(const Assignment &arg, m->definition_arguments) {
+			for(const auto &arg : m->definition_arguments) {
 				s << boost::format("    %s = %s") % arg.first % variables[arg.first];
 			}
 		}
 	}
 	typedef std::pair<std::string, ValuePtr> ValueMapType;
 	s << "  vars:";
-	BOOST_FOREACH(const ValueMapType &v, constants) {
+	for(const auto &v : constants) {
 		s << boost::format("    %s = %s") % v.first % v.second;
 	}
-	BOOST_FOREACH(const ValueMapType &v, variables) {
+	for(const auto &v : variables) {
 		s << boost::format("    %s = %s") % v.first % v.second;
 	}
-	BOOST_FOREACH(const ValueMapType &v, config_variables) {
+	for(const auto &v : config_variables) {
 		s << boost::format("    %s = %s") % v.first % v.second;
 	}
 	return s.str();

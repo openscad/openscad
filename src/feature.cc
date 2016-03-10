@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <map>
 
@@ -18,6 +19,9 @@ Feature::list_t Feature::feature_list;
  * argument to enable the option and for saving the option value in GUI
  * context.
  */
+const Feature Feature::ExperimentalEachExpression("lc-each", "Enable <code>each</code> expression in list comprehensions.");
+const Feature Feature::ExperimentalElseExpression("lc-else", "Enable <code>else</code> expression in list comprehensions.");
+const Feature Feature::ExperimentalForCExpression("lc-for-c", "Enable C-style <code>for</code> expression in list comprehensions.");
 
 Feature::Feature(const std::string &name, const std::string &description)
 	: enabled(false), name(name), description(description)
@@ -75,4 +79,24 @@ void Feature::dump_features()
 	for (map_t::iterator it = feature_map.begin(); it != feature_map.end(); it++) {
 		std::cout << "Feature('" << it->first << "') = " << (it->second->is_enabled() ? "enabled" : "disabled") << std::endl;
 	}
+}
+
+ExperimentalFeatureException::ExperimentalFeatureException(const std::string &what_arg)
+    : EvaluationException(what_arg)
+{
+
+}
+
+ExperimentalFeatureException::~ExperimentalFeatureException() throw()
+{
+
+}
+
+void ExperimentalFeatureException::check(const Feature &feature)
+{
+    if (!feature.is_enabled()) {
+        std::stringstream out;
+        out << "ERROR: Experimental feature not enabled: '" << feature.get_name() << "'. Please check preferences.";
+        throw ExperimentalFeatureException(out.str());
+    }
 }
