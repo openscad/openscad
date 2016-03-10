@@ -78,7 +78,8 @@ void export_svg(const shared_ptr<const Geometry> &geom, std::ostream &output)
 	output
 		<< "<?xml version=\"1.0\" standalone=\"no\"?>\n"
 		<< "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n"
-		<< "<svg viewBox=\"" << minx << " " << miny << " " << width << " " << height
+		<< "<svg width=\"" << width << "mm\" height=\"" << height
+		<< "mm\" viewBox=\"" << minx << " " << miny << " " << width << " " << height
 		<< "\" xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">\n"
 		<< "<title>OpenSCAD Model</title>\n";
 
