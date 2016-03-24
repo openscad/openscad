@@ -2233,8 +2233,9 @@ void MainWindow::actionExportImage()
 
   // Grab first to make sure dialog box isn't part of the grabbed image
 	qglview->grabFrame();
+	QString filename = this->fileName.isEmpty() ? QString(_("Untitled.png")) : QFileInfo(this->fileName).completeBaseName() + ".png";
 	QString img_filename = QFileDialog::getSaveFileName(this,
-			_("Export Image"), "", _("PNG Files (*.png)"));
+			_("Export Image"), filename, _("PNG Files (*.png)"));
 	if (img_filename.isEmpty()) {
 		PRINT("No filename specified. Image export aborted.");
 	} else {
