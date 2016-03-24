@@ -763,7 +763,7 @@ void MainWindow::setFileName(const QString &filename)
 		this->top_ctx.setDocumentPath(currentdir);
 	} else {
 		QFileInfo fileinfo(filename);
-		this->fileName = fileinfo.exists() ? fileinfo.absoluteFilePath() : fileinfo.fileName();
+		this->fileName = fileinfo.absoluteFilePath();
 		QString fn =fileinfo.absoluteFilePath();
 		setWindowFilePath(fn);
 
