@@ -141,5 +141,5 @@ SettingsEntry Settings::indentStyle("editor", "indentStyle", values("Spaces", _(
 SettingsEntry Settings::tabKeyFunction("editor", "tabKeyFunction", values("Indent", _("Indent"), "InsertTab", _("Insert Tab")), Value("Indent"));
 SettingsEntry Settings::highlightCurrentLine("editor", "highlightCurrentLine", Value(true), Value(true));
 SettingsEntry Settings::enableBraceMatching("editor", "enableBraceMatching", Value(true), Value(true));
-
+SettingsEntry Settings::enableLineNumber("editor", "enableLineNumber", Value(true), Value(true));
 }
