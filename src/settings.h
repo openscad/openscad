@@ -50,6 +50,7 @@ public:
     static SettingsEntry tabKeyFunction;
     static SettingsEntry highlightCurrentLine;
     static SettingsEntry enableBraceMatching;
+    static SettingsEntry enableLineNumber;
 
     static Settings *inst(bool erase = false);
 
