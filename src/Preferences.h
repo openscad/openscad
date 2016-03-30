@@ -70,6 +70,7 @@ public slots:
 	// Display
 	void on_checkBoxHighlightCurrentLine_toggled(bool);
 	void on_checkBoxEnableBraceMatching_toggled(bool);
+    void on_checkBoxEnableLineNumber_toggled(bool);
 
 signals:
 	void requestRedraw() const;
@@ -82,6 +83,9 @@ signals:
 	void syntaxHighlightChanged(const QString &s) const;
 	void editorTypeChanged(const QString &type);
 	void editorConfigChanged() const;
+
+private slots:
+    void on_enableLineNumber_toggled(bool checked);
 
 private:
 	Preferences(QWidget *parent = NULL);
