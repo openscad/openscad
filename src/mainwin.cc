@@ -783,6 +783,7 @@ void MainWindow::setFileName(const QString &filename)
 	}
 	editorTopLevelChanged(editorDock->isFloating());
 	consoleTopLevelChanged(consoleDock->isFloating());
+    animateTopLevelChanged(consoleDock->isFloating());
 }
 
 void MainWindow::updateRecentFiles()
