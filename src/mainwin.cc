@@ -177,11 +177,12 @@ MainWindow::MainWindow(const QString &filename)
 
 	editorDockTitleWidget = new QWidget();
 	consoleDockTitleWidget = new QWidget();
-
+    animateDockTitleWidget = new QWidget();
 	this->editorDock->setConfigKey("view/hideEditor");
 	this->editorDock->setAction(this->viewActionHideEditor);
 	this->consoleDock->setConfigKey("view/hideConsole");
 	this->consoleDock->setAction(this->viewActionHideConsole);
+
 
 	this->versionLabel = NULL; // must be initialized before calling updateStatusBar()
 	updateStatusBar(NULL);
@@ -282,7 +283,6 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->e_fsteps, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimSteps()));
 	connect(this->e_dump, SIGNAL(toggled(bool)), this, SLOT(updatedAnimDump(bool)));
 
-	animate_panel->hide();
 	find_panel->hide();
 	frameCompileResult->hide();
 	this->labelCompileResultMessage->setOpenExternalLinks(false);
@@ -295,7 +295,8 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->fileActionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs()));
 	connect(this->fileActionReload, SIGNAL(triggered()), this, SLOT(actionReload()));
 	connect(this->fileActionQuit, SIGNAL(triggered()), this, SLOT(quit()));
-	connect(this->fileShowLibraryFolder, SIGNAL(triggered()), this, SLOT(actionShowLibraryFolder()));
+    connect(this->fileShowLibraryFolder, SIGNAL(triggered()), this, SLOT(actionShowLibraryFolder()));
+
 #ifndef __APPLE__
 	QList<QKeySequence> shortcuts = this->fileActionSave->shortcuts();
 	shortcuts.push_back(QKeySequence(Qt::Key_F2));
@@ -366,6 +367,8 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->fileActionExportImage, SIGNAL(triggered()), this, SLOT(actionExportImage()));
 	connect(this->designActionFlushCaches, SIGNAL(triggered()), this, SLOT(actionFlushCaches()));
 
+    connect(this->animateStop, SIGNAL(clicked()), this, SLOT(animateStopSlot()));
+    connect(this->animateStart, SIGNAL(clicked()), this, SLOT(animateStartSlot()));
 	// View menu
 #ifndef ENABLE_OPENCSG
 	this->viewActionPreview->setVisible(false);
@@ -473,7 +476,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->hideFindButton, SIGNAL(clicked()), find_panel, SLOT(hide()));
 	connect(this->replaceButton, SIGNAL(clicked()), this, SLOT(replace()));
 	connect(this->replaceAllButton, SIGNAL(clicked()), this, SLOT(replaceAll()));
-	connect(this->replaceInputField, SIGNAL(returnPressed()), this->replaceButton, SLOT(animateClick()));
+    connect(this->replaceInputField, SIGNAL(returnPressed()), this->replaceButton, SLOT(animateClick()));
 	
 	addKeyboardShortCut(this->viewerToolBar->actions());
 	addKeyboardShortCut(this->editortoolbar->actions());
@@ -558,6 +561,8 @@ MainWindow::MainWindow(const QString &filename)
 	
 	connect(this->editorDock, SIGNAL(topLevelChanged(bool)), this, SLOT(editorTopLevelChanged(bool)));
 	connect(this->consoleDock, SIGNAL(topLevelChanged(bool)), this, SLOT(consoleTopLevelChanged(bool)));
+    connect(this->animateDock, SIGNAL(topLevelChanged(bool)), this, SLOT(animateTopLevelChanged(bool)));
+
 	
 	// display this window and check for OpenGL 2.0 (OpenCSG) support
 	viewModeThrownTogether();
@@ -659,6 +664,7 @@ void MainWindow::updateUndockMode(bool undockMode)
 	if (undockMode) {
 		editorDock->setFeatures(editorDock->features() | QDockWidget::DockWidgetFloatable);
 		consoleDock->setFeatures(consoleDock->features() | QDockWidget::DockWidgetFloatable);
+        animateDock->setFeatures(animateDock->features() | QDockWidget::DockWidgetFloatable);
 	} else {
 		if (editorDock->isFloating()) {
 			editorDock->setFloating(false);
@@ -668,6 +674,10 @@ void MainWindow::updateUndockMode(bool undockMode)
 			consoleDock->setFloating(false);
 		}
 		consoleDock->setFeatures(consoleDock->features() & ~QDockWidget::DockWidgetFloatable);
+        if (animateDock->isFloating()) {
+            animateDock->setFloating(false);
+        }
+        animateDock->setFeatures(animateDock->features() & ~QDockWidget::DockWidgetFloatable);
 	}
 }
 
@@ -675,7 +685,8 @@ void MainWindow::updateReorderMode(bool reorderMode)
 {
 	MainWindow::reorderMode = reorderMode;
 	editorDock->setTitleBarWidget(reorderMode ? 0 : editorDockTitleWidget);
-	consoleDock->setTitleBarWidget(reorderMode ? 0 : consoleDockTitleWidget);
+    consoleDock->setTitleBarWidget(reorderMode ? 0 : consoleDockTitleWidget);
+    animateDock->setTitleBarWidget(reorderMode ? 0 : animateDockTitleWidget);
 }
 
 MainWindow::~MainWindow()
@@ -2364,15 +2375,29 @@ void MainWindow::viewModeShowScaleProportional()
 
 void MainWindow::viewModeAnimate()
 {
-	if (viewActionAnimate->isChecked()) {
-		animate_panel->show();
-		actionRenderPreview();
-		updatedAnimFps();
-	} else {
-		animate_panel->hide();
-		animate_timer->stop();
-	}
+    if (viewActionAnimate->isChecked()) {
+        animate_panel->hide();
+        animate_timer->stop();
+        animateDock->close();
+    } else {
+        animate_panel->show();
+        actionRenderPreview();
+        updatedAnimFps();
+        animateDock->show();
+    }
+
 }
+
+void MainWindow::animateStartSlot(){
+    animate_panel->show();
+    actionRenderPreview();
+    updatedAnimFps();
+}
+void MainWindow::animateStopSlot(){
+    animate_panel->hide();
+    animate_timer->stop();
+}
+
 
 bool MainWindow::isEmpty()
 {
@@ -2500,6 +2525,10 @@ void MainWindow::consoleTopLevelChanged(bool topLevel)
 	setDockWidgetTitle(consoleDock, QString(_("Console")), topLevel);
 }
 
+void MainWindow::animateTopLevelChanged(bool topLevel)
+{
+    setDockWidgetTitle(animateDock, QString(_("Animate")), topLevel);
+}
 void MainWindow::setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel)
 {
 	QString title(prefix);
