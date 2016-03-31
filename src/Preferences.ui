@@ -31,7 +31,16 @@
       </property>
       <widget class="QWidget" name="page3DView">
        <layout class="QVBoxLayout" name="verticalLayout_4">
-        <property name="margin">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
          <number>0</number>
         </property>
         <item>
@@ -95,7 +104,16 @@
         <property name="spacing">
          <number>0</number>
         </property>
-        <property name="margin">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
          <number>0</number>
         </property>
         <item>
@@ -107,9 +125,9 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>0</y>
-             <width>634</width>
-             <height>662</height>
+             <y>-262</y>
+             <width>639</width>
+             <height>653</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_5">
@@ -226,7 +244,7 @@
                  <widget class="QFontComboBox" name="fontChooser">
                   <property name="currentFont">
                    <font>
-                    <family>Helvetica</family>
+                    <family>TeX Gyre Heros</family>
                     <pointsize>12</pointsize>
                    </font>
                   </property>
@@ -680,6 +698,13 @@
                  </property>
                 </widget>
                </item>
+               <item row="3" column="0">
+                <widget class="QCheckBox" name="checkBoxEnableLineNumbers">
+                 <property name="text">
+                  <string>Display Line Numbers</string>
+                 </property>
+                </widget>
+               </item>
               </layout>
              </widget>
             </item>
@@ -1126,7 +1151,16 @@
       </widget>
       <widget class="QWidget" name="pageFeatures">
        <layout class="QGridLayout" name="gridLayout_2">
-        <property name="margin">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
          <number>0</number>
         </property>
         <item row="0" column="0">
@@ -1163,8 +1197,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>98</width>
-               <height>36</height>
+               <width>82</width>
+               <height>26</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_10">
@@ -1198,7 +1232,16 @@
       </widget>
       <widget class="QWidget" name="pageAdvanced">
        <layout class="QVBoxLayout" name="verticalLayout_3">
-        <property name="margin">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
          <number>0</number>
         </property>
         <item>
@@ -1217,8 +1260,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>440</width>
-             <height>339</height>
+             <width>490</width>
+             <height>383</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_12">
