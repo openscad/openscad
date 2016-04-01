@@ -377,7 +377,19 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="animateDock">
+  <widget class="Dock" name="animateDock">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>450</width>
+     <height>41</height>
+    </size>
+   </property>
    <attribute name="dockWidgetArea">
     <number>1</number>
    </attribute>
@@ -390,9 +402,15 @@
       <rect>
        <x>10</x>
        <y>40</y>
-       <width>421</width>
+       <width>301</width>
        <height>21</height>
       </rect>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
      </property>
      <property name="frameShape">
       <enum>QFrame::NoFrame</enum>
@@ -424,7 +442,14 @@
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="e_tval"/>
+       <widget class="QLineEdit" name="e_tval">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QLabel" name="label_2">
@@ -434,7 +459,14 @@
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="e_fps"/>
+       <widget class="QLineEdit" name="e_fps">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QLabel" name="label_3">
@@ -444,12 +476,12 @@
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="e_fsteps"/>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="e_dump">
-        <property name="text">
-         <string>Dump Pictures</string>
+       <widget class="QLineEdit" name="e_fsteps">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
         </property>
        </widget>
       </item>
@@ -481,6 +513,34 @@
       <string>Stop</string>
      </property>
     </widget>
+    <widget class="QCheckBox" name="e_dump">
+     <property name="geometry">
+      <rect>
+       <x>320</x>
+       <y>40</y>
+       <width>101</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>Dump Pictures</string>
+     </property>
+    </widget>
+    <zorder>animate_panel</zorder>
+    <zorder>animateStart</zorder>
+    <zorder>animateStop</zorder>
+    <zorder>e_dump</zorder>
+    <zorder>e_dump</zorder>
+    <zorder>e_dump</zorder>
+    <zorder>e_fsteps</zorder>
+    <zorder>e_fsteps</zorder>
+    <zorder>e_fps</zorder>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">

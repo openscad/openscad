@@ -182,7 +182,8 @@ MainWindow::MainWindow(const QString &filename)
 	this->editorDock->setAction(this->viewActionHideEditor);
 	this->consoleDock->setConfigKey("view/hideConsole");
 	this->consoleDock->setAction(this->viewActionHideConsole);
-
+    this->animateDock->setConfigKey("view/animate");
+    this->consoleDock->setAction(this->viewActionAnimate);
 
 	this->versionLabel = NULL; // must be initialized before calling updateStatusBar()
 	updateStatusBar(NULL);
@@ -391,7 +392,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->viewActionShowAxes, SIGNAL(triggered()), this, SLOT(viewModeShowAxes()));
 	connect(this->viewActionShowCrosshairs, SIGNAL(triggered()), this, SLOT(viewModeShowCrosshairs()));
 	connect(this->viewActionShowScaleProportional, SIGNAL(triggered()), this, SLOT(viewModeShowScaleProportional()));
-	connect(this->viewActionAnimate, SIGNAL(triggered()), this, SLOT(viewModeAnimate()));
+    connect(this->viewActionAnimate, SIGNAL(triggered()), this, SLOT(viewModeAnimate()));
 	connect(this->viewActionTop, SIGNAL(triggered()), this, SLOT(viewAngleTop()));
 	connect(this->viewActionBottom, SIGNAL(triggered()), this, SLOT(viewAngleBottom()));
 	connect(this->viewActionLeft, SIGNAL(triggered()), this, SLOT(viewAngleLeft()));
@@ -634,6 +635,8 @@ void MainWindow::loadViewSettings(){
 	hideEditor();
 	viewActionHideToolBars->setChecked(settings.value("view/hideToolbar").toBool());
 	hideToolbars();
+    viewActionAnimate->setChecked(settings.value("view/animate").toBool());
+    viewModeAnimate();
 	updateMdiMode(settings.value("advanced/mdi").toBool());
 	updateUndockMode(settings.value("advanced/undockableWindows").toBool());
 	updateReorderMode(settings.value("advanced/reorderWindows").toBool());
@@ -2395,7 +2398,6 @@ void MainWindow::animateStartSlot(){
     updatedAnimFps();
 }
 void MainWindow::animateStopSlot(){
-    animate_panel->hide();
     animate_timer->stop();
 }
 
@@ -2518,7 +2520,7 @@ void MainWindow::on_consoleDock_visibilityChanged(bool)
 
 void MainWindow::editorTopLevelChanged(bool topLevel)
 {
-	setDockWidgetTitle(editorDock, QString(_("Editor")), topLevel);
+    setDockWidgetTitle(editorDock, QString(_("Editor")), topLevel);
 }
 
 void MainWindow::consoleTopLevelChanged(bool topLevel)
