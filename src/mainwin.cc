@@ -183,7 +183,7 @@ MainWindow::MainWindow(const QString &filename)
 	this->consoleDock->setConfigKey("view/hideConsole");
 	this->consoleDock->setAction(this->viewActionHideConsole);
     this->animateDock->setConfigKey("view/animate");
-    this->consoleDock->setAction(this->viewActionAnimate);
+    this->animateDock->setAction(this->viewActionAnimate);
 
 	this->versionLabel = NULL; // must be initialized before calling updateStatusBar()
 	updateStatusBar(NULL);
@@ -786,7 +786,7 @@ void MainWindow::setFileName(const QString &filename)
 	}
 	editorTopLevelChanged(editorDock->isFloating());
 	consoleTopLevelChanged(consoleDock->isFloating());
-    animateTopLevelChanged(consoleDock->isFloating());
+    animateTopLevelChanged(animateDock->isFloating());
 }
 
 void MainWindow::updateRecentFiles()
