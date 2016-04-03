@@ -183,6 +183,8 @@ MainWindow::MainWindow(const QString &filename)
 	this->consoleDock->setConfigKey("view/hideConsole");
 	this->consoleDock->setAction(this->viewActionHideConsole);
     this->animateDock->setConfigKey("view/animate");
+    this->animateDock->hide();
+    this->tabifyDockWidget(consoleDock,animateDock);
     this->animateDock->setAction(this->viewActionAnimate);
 
 	this->versionLabel = NULL; // must be initialized before calling updateStatusBar()
