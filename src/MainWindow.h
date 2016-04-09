@@ -112,7 +112,7 @@ private:
 	void loadDesignSettings();
 	void saveBackup();
 	void writeBackup(class QFile *file);
-	QString get2dExportFilename(QString format, QString extension);
+    int get2dExportFilename();
 	void show_examples();
 	void setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel);
         void addKeyboardShortCut(const QList<QAction *> &actions);
@@ -180,14 +180,8 @@ private slots:
 	void actionDisplayAST();
 	void actionDisplayCSGTree();
 	void actionDisplayCSGProducts();
-	void actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim);
-	void actionExportSTL();
-	void actionExportOFF();
-	void actionExportAMF();
-	void actionExportDXF();
-	void actionExportSVG();
-	void actionExportCSG();
-	void actionExportImage();
+    void actionExport();
+    void actionExportCSG(QString);
 	void actionCopyViewport();
 	void actionFlushCaches();
 

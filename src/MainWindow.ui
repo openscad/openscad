@@ -15,7 +15,16 @@
     <property name="spacing">
      <number>0</number>
     </property>
-    <property name="margin">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
      <number>0</number>
     </property>
     <item>
@@ -30,7 +39,16 @@
        <property name="spacing">
         <number>0</number>
        </property>
-       <property name="margin">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
         <number>0</number>
        </property>
        <item>
@@ -162,7 +180,16 @@
           <number>0</number>
          </property>
          <layout class="QHBoxLayout" name="horizontalLayoutAnimate">
-          <property name="margin">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
            <number>0</number>
           </property>
           <item>
@@ -262,19 +289,6 @@
       <string>&amp;Examples</string>
      </property>
     </widget>
-    <widget class="QMenu" name="menuExport">
-     <property name="title">
-      <string>E&amp;xport</string>
-     </property>
-     <addaction name="fileActionExportSTL"/>
-     <addaction name="fileActionExportOFF"/>
-     <addaction name="fileActionExportAMF"/>
-     <addaction name="fileActionExportDXF"/>
-     <addaction name="fileActionExportSVG"/>
-     <addaction name="fileActionExportCSG"/>
-     <addaction name="separator"/>
-     <addaction name="fileActionExportImage"/>
-    </widget>
     <addaction name="fileActionNew"/>
     <addaction name="fileActionOpen"/>
     <addaction name="menuOpenRecent"/>
@@ -285,7 +299,7 @@
     <addaction name="fileActionSave"/>
     <addaction name="fileActionSaveAs"/>
     <addaction name="separator"/>
-    <addaction name="menuExport"/>
+    <addaction name="fileActionExport"/>
     <addaction name="separator"/>
     <addaction name="fileShowLibraryFolder"/>
     <addaction name="separator"/>
@@ -394,7 +408,6 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="Dock" name="editorDock">
-   <addaction name="editActionRedo_2"/>
    <attribute name="dockWidgetArea">
     <number>1</number>
    </attribute>
@@ -403,7 +416,16 @@
      <property name="spacing">
       <number>0</number>
      </property>
-     <property name="margin">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
       <number>0</number>
      </property>
      <item>
@@ -420,7 +442,7 @@
        <addaction name="designActionPreview"/>
        <addaction name="designActionRender"/>
        <addaction name="separator"/>
-       <addaction name="fileActionExportSTL"/>
+       <addaction name="fileActionExport"/>
       </widget>
      </item>
      <item>
@@ -521,6 +543,7 @@
      </item>
     </layout>
    </widget>
+   <addaction name="editActionRedo_2"/>
   </widget>
   <widget class="Dock" name="consoleDock">
    <attribute name="dockWidgetArea">
@@ -528,7 +551,16 @@
    </attribute>
    <widget class="QWidget" name="consoleDockContents">
     <layout class="QVBoxLayout" name="verticalLayout_5">
-     <property name="margin">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
       <number>0</number>
      </property>
      <item>
@@ -801,13 +833,13 @@
     <string>Display CSG Pr&amp;oducts...</string>
    </property>
   </action>
-  <action name="fileActionExportSTL">
+  <action name="fileActionExport">
    <property name="icon">
     <iconset resource="../openscad.qrc">
      <normaloff>:/images/STL.png</normaloff>:/images/STL.png</iconset>
    </property>
    <property name="text">
-    <string>Export as &amp;STL...</string>
+    <string>Export </string>
    </property>
   </action>
   <action name="fileActionExportOFF">

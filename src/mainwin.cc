@@ -356,13 +356,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->designActionDisplayAST, SIGNAL(triggered()), this, SLOT(actionDisplayAST()));
 	connect(this->designActionDisplayCSGTree, SIGNAL(triggered()), this, SLOT(actionDisplayCSGTree()));
 	connect(this->designActionDisplayCSGProducts, SIGNAL(triggered()), this, SLOT(actionDisplayCSGProducts()));
-	connect(this->fileActionExportSTL, SIGNAL(triggered()), this, SLOT(actionExportSTL()));
-	connect(this->fileActionExportOFF, SIGNAL(triggered()), this, SLOT(actionExportOFF()));
-	connect(this->fileActionExportAMF, SIGNAL(triggered()), this, SLOT(actionExportAMF()));
-	connect(this->fileActionExportDXF, SIGNAL(triggered()), this, SLOT(actionExportDXF()));
-	connect(this->fileActionExportSVG, SIGNAL(triggered()), this, SLOT(actionExportSVG()));
-	connect(this->fileActionExportCSG, SIGNAL(triggered()), this, SLOT(actionExportCSG()));
-	connect(this->fileActionExportImage, SIGNAL(triggered()), this, SLOT(actionExportImage()));
+    connect(this->fileActionExport, SIGNAL(triggered()), this, SLOT(actionExport()));
 	connect(this->designActionFlushCaches, SIGNAL(triggered()), this, SLOT(actionFlushCaches()));
 
 	// View menu
@@ -500,13 +494,7 @@ MainWindow::MainWindow(const QString &filename)
 	initActionIcon(viewActionOrthogonal, ":/images/orthogonal.png", ":/images/orthogonalwhite.png");
 	initActionIcon(designActionPreview, ":/images/preview-32.png", ":/images/preview-32-white.png");
 	initActionIcon(viewActionAnimate, ":/images/animate.png", ":/images/animate.png");
-	initActionIcon(fileActionExportSTL, ":/images/STL.png", ":/images/STL-white.png");
-	initActionIcon(fileActionExportAMF, ":/images/AMF.png", ":/images/AMF-white.png");
-	initActionIcon(fileActionExportOFF, ":/images/OFF.png", ":/images/OFF-white.png");
-	initActionIcon(fileActionExportDXF, ":/images/DXF.png", ":/images/DXF-white.png");
-	initActionIcon(fileActionExportSVG, ":/images/SVG.png", ":/images/SVG-white.png");
-	initActionIcon(fileActionExportCSG, ":/images/CSG.png", ":/images/CSG-white.png");
-	initActionIcon(fileActionExportImage, ":/images/PNG.png", ":/images/PNG-white.png");
+   initActionIcon(fileActionExport, ":/images/STL.png", ":/images/STL-white.png");
 	initActionIcon(viewActionViewAll, ":/images/zoom-all.png", ":/images/zoom-all-white.png");
 	initActionIcon(editActionUndo, ":/images/Command-Undo-32.png", ":/images/Command-Undo-32-white.png");
 	initActionIcon(editActionRedo, ":/images/Command-Redo-32.png", ":/images/Command-Redo-32-white.png");
@@ -2048,144 +2036,151 @@ void MainWindow::actionCheckValidity() {
 }
 
 #ifdef ENABLE_CGAL
-void MainWindow::actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim)
+void MainWindow::actionExport()
 #else
-	void MainWindow::actionExport(FileFormat, QString, QString, unsigned int)
+void MainWindow::actionExport()
 #endif
 {
-	if (GuiLocker::isLocked()) return;
-	GuiLocker lock;
+    if (GuiLocker::isLocked()) return;
+    GuiLocker lock;
 #ifdef ENABLE_CGAL
-	setCurrentOutput();
+    setCurrentOutput();
 
-	if (!this->root_geom) {
-		PRINT("ERROR: Nothing to export! Try rendering first (press F6).");
-		clearCurrentOutput();
-		return;
-	}
+    if (!this->root_geom) {
+        PRINT("WARNING: Nothing to export! Try building first (press F6).");
+        clearCurrentOutput();
+        return;
+    }
 
-	// editor has changed since last render
-	if (this->contentschanged) {
-		QMessageBox::StandardButton ret;
-		ret = QMessageBox::warning(this, "Application",
-				"The document has been modified since the last render (F6).\n"
-				"Do you really want to export the previous content?",
-				QMessageBox::Yes | QMessageBox::No);
-		if (ret != QMessageBox::Yes) {
-			return;
-		}
-	}
+    // editor has changed since last F6
+    if (this->contentschanged) {
+        QMessageBox::StandardButton ret;
+        ret = QMessageBox::warning(this, "Application",
+                "The document has been modified since the last render (F6).\n"
+                "Do you really want to export the previous content?",
+                QMessageBox::Yes | QMessageBox::No);
+        if (ret != QMessageBox::Yes) {
+            return;
+        }
+    }
 
-	if (this->root_geom->getDimension() != dim) {
-		PRINTB("ERROR: Current top level object is not a %dD object.", dim);
-		clearCurrentOutput();
-		return;
-	}
+    if (this->root_geom->getDimension() != 3) {
+        PRINT("Current top level object is not a 3D object.");
+        clearCurrentOutput();
+        return;
+    }
 
-	if (this->root_geom->isEmpty()) {
-		PRINT("ERROR: Current top level object is empty.");
-		clearCurrentOutput();
-		return;
-	}
+    if (this->root_geom->isEmpty()) {
+        PRINT("Current top level object is empty.");
+        clearCurrentOutput();
+        return;
+    }
 
-	const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(this->root_geom.get());
-	if (N && !N->p3->is_simple()) {
-	 	PRINT("WARNING: Object may not be a valid 2-manifold and may need repair! See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
-	}
+    const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(this->root_geom.get());
+    if (N && !N->p3->is_simple()) {
+        PRINT("WARNING: Object may not be a valid 2-manifold and may need repair! See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
+    }
 
-	QString title = QString(_("Export %1 File")).arg(type_name);
-	QString filter = QString(_("%1 Files (*%2)")).arg(type_name, suffix);
-	QString filename = this->fileName.isEmpty() ? QString(_("Untitled")) + suffix : QFileInfo(this->fileName).completeBaseName() + suffix;
-	QString export_filename = QFileDialog::getSaveFileName(this, title, filename, filter);
-	if (export_filename.isEmpty()) {
-		clearCurrentOutput();
-		return;
-	}
+    #define STL "STL files (*.stl)"
+    #define OFF "OFF files (*.off)"
+    #define AMF "AMF files (*.amf)"
+    #define DXF "DXF files (*.dxf)"
+    #define SVG "SVG files (*.svg)"
+    #define CSG "CSG files (*.svg)"
+    #define IMAGE "Image (*.png)"
 
-	exportFileByName(this->root_geom, format,
-		export_filename.toLocal8Bit().constData(),
-		export_filename.toUtf8());
-	PRINTB("%s export finished.", type_name);
-
-	clearCurrentOutput();
+    int check=0;
+    QString selectedFilter;
+    QString title = QString(_("Export File"));
+    QString filename = this->fileName.isEmpty() ? QString(_("Untitled")): QFileInfo(this->fileName).baseName();
+    QString export_filename = QFileDialog::getSaveFileName(this, title, filename, tr(STL ";;" OFF ";;" AMF";;" DXF";;" SVG";;" CSG";;" IMAGE), &selectedFilter);
+    if (export_filename.isEmpty()) {
+        clearCurrentOutput();
+        return;
+    }
+    if (fileName.isNull())
+      return;
+    enum FileFormat format = (enum FileFormat)-1;
+    if (selectedFilter == STL) {
+      format = OPENSCAD_STL;
+    } else if (selectedFilter == OFF) {
+      format = OPENSCAD_OFF;
+    } else if (selectedFilter == AMF) {
+      format = OPENSCAD_AMF;
+    } else if (selectedFilter == DXF){
+        format=OPENSCAD_DXF;
+        check=get2dExportFilename();
+    }else if (selectedFilter == SVG){
+        format=OPENSCAD_SVG;
+        check=get2dExportFilename();
+    }else if (selectedFilter == CSG){
+        actionExportCSG(export_filename);
+        return;
+    }
+    else if (selectedFilter == IMAGE){
+          qglview->grabFrame();
+          if (export_filename.isEmpty()) {
+              PRINT("No filename specified. Image export aborted.");
+          } else {
+              qglview->save(export_filename.toLocal8Bit().constData());
+          }
+          PRINTB("%s export finished.", "");
+           return;
+    }
+    else {
+        assert(false && "Unknown export type");
+        // something strange happened
+    }
+    if(check==1){
+            clearCurrentOutput();
+            return;
+    }
+    exportFileByName(this->root_geom, format,
+        export_filename.toLocal8Bit().constData(),
+        export_filename.toUtf8());
+    PRINTB("%s export finished.", "");
+    clearCurrentOutput();
 #endif /* ENABLE_CGAL */
 }
 
-void MainWindow::actionExportSTL()
-{
-	actionExport(OPENSCAD_STL, "STL", ".stl", 3);
+
+
+int MainWindow::get2dExportFilename() {
+    if (!this->root_geom) {
+        PRINT("WARNING: Nothing to export! Try building first (press F6).");
+        return 1;
+    }
+    if (this->root_geom->getDimension() != 2) {
+        PRINT("WARNING: Current top level object is not a 2D object.");
+        return 1;
+    }
+    return 0;
 }
 
-void MainWindow::actionExportOFF()
+
+void MainWindow::actionExportCSG(QString csg_filename)
 {
-	actionExport(OPENSCAD_OFF, "OFF", ".off", 3);
+
+    if (!this->root_node) {
+        PRINT("WARNING: Nothing to export. Please try compiling first...");
+        return;
+    }
+    if (csg_filename.isEmpty()) {
+        PRINT("No filename specified. CSG export aborted.");
+        return;
+    }
+
+    std::ofstream fstream(csg_filename.toLocal8Bit());
+    if (!fstream.is_open()) {
+        PRINTB("Can't open file \"%s\" for export", csg_filename.toLocal8Bit().constData());
+    }
+    else {
+        fstream << this->tree.getString(*this->root_node) << "\n";
+        fstream.close();
+        PRINT("CSG export finished.");
+    }
 }
 
-void MainWindow::actionExportAMF()
-{
-	actionExport(OPENSCAD_AMF, "AMF", ".amf", 3);
-}
-
-void MainWindow::actionExportDXF()
-{
-	actionExport(OPENSCAD_DXF, "DXF", ".dxf", 2);
-}
-
-void MainWindow::actionExportSVG()
-{
-	actionExport(OPENSCAD_SVG, "SVG", ".svg", 2);
-}
-
-void MainWindow::actionExportCSG()
-{
-	setCurrentOutput();
-
-	if (!this->root_node) {
-		PRINT("ERROR: Nothing to export. Please try compiling first.");
-		clearCurrentOutput();
-		return;
-	}
-
-	QString csg_filename = QFileDialog::getSaveFileName(this, _("Export CSG File"),
-	    this->fileName.isEmpty() ? _("Untitled.csg") : QFileInfo(this->fileName).baseName()+".csg",
-	    _("CSG Files (*.csg)"));
-	
-	if (csg_filename.isEmpty()) {
-		clearCurrentOutput();
-		return;
-	}
-
-	std::ofstream fstream(csg_filename.toLocal8Bit());
-	if (!fstream.is_open()) {
-		PRINTB("Can't open file \"%s\" for export", csg_filename.toLocal8Bit().constData());
-	}
-	else {
-		fstream << this->tree.getString(*this->root_node) << "\n";
-		fstream.close();
-		PRINT("CSG export finished.");
-	}
-
-	clearCurrentOutput();
-}
-
-void MainWindow::actionExportImage()
-{
-	setCurrentOutput();
-
-  // Grab first to make sure dialog box isn't part of the grabbed image
-	qglview->grabFrame();
-	QString filename = this->fileName.isEmpty() ? QString(_("Untitled.png")) : QFileInfo(this->fileName).completeBaseName() + ".png";
-	QString img_filename = QFileDialog::getSaveFileName(this,
-			_("Export Image"), filename, _("PNG Files (*.png)"));
-	if (img_filename.isEmpty()) {
-		clearCurrentOutput();
-		return;
-	}
-
-	qglview->save(img_filename.toLocal8Bit().constData());
-	clearCurrentOutput();
-	return;
-}
 
 void MainWindow::actionCopyViewport()
 {
