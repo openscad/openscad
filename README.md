@@ -126,7 +126,9 @@ To pull the MCAD library (http://reprap.org/wiki/MCAD), do the following:
 
 Prerequisites:
 
-* XCode, including XCode command-line tools.
+* Xcode
+* cmake
+* pkg-config
 
 Install Dependencies:
 
