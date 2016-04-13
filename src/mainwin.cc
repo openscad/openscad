@@ -2064,18 +2064,6 @@ void MainWindow::actionExport()
         }
     }
 
-    if (this->root_geom->getDimension() != 3) {
-        PRINT("Current top level object is not a 3D object.");
-        clearCurrentOutput();
-        return;
-    }
-
-    if (this->root_geom->isEmpty()) {
-        PRINT("Current top level object is empty.");
-        clearCurrentOutput();
-        return;
-    }
-
     const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(this->root_geom.get());
     if (N && !N->p3->is_simple()) {
         PRINT("WARNING: Object may not be a valid 2-manifold and may need repair! See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
@@ -2103,10 +2091,13 @@ void MainWindow::actionExport()
     enum FileFormat format = (enum FileFormat)-1;
     if (selectedFilter == STL) {
       format = OPENSCAD_STL;
+       check=check3dExport();
     } else if (selectedFilter == OFF) {
       format = OPENSCAD_OFF;
+       check=check3dExport();
     } else if (selectedFilter == AMF) {
       format = OPENSCAD_AMF;
+      check=check3dExport();
     } else if (selectedFilter == DXF){
         format=OPENSCAD_DXF;
         check=get2dExportFilename();
@@ -2124,7 +2115,7 @@ void MainWindow::actionExport()
           } else {
               qglview->save(export_filename.toLocal8Bit().constData());
           }
-          PRINTB("%s export finished.", "");
+         clearCurrentOutput();
            return;
     }
     else {
@@ -2138,20 +2129,33 @@ void MainWindow::actionExport()
     exportFileByName(this->root_geom, format,
         export_filename.toLocal8Bit().constData(),
         export_filename.toUtf8());
-    PRINTB("%s export finished.", "");
+    PRINTB("%s export finished.",format);
     clearCurrentOutput();
 #endif /* ENABLE_CGAL */
 }
 
 
-
-int MainWindow::get2dExportFilename() {
-    if (!this->root_geom) {
-        PRINT("WARNING: Nothing to export! Try building first (press F6).");
+int MainWindow::check3dExport(){
+    if (this->root_geom->getDimension() != 3) {
+        PRINT("Current top level object is not a 3D object.");
+        QMessageBox::warning(this, "Application",
+                "Current top level object is not a 3D object. \n");
         return 1;
     }
+    if (this->root_geom->isEmpty()) {
+        PRINT("Current top level object is empty.");
+        QMessageBox::warning(this, "Application",
+                "Current top level object is empty \n");
+        return 1;
+    }
+    return 0;
+}
+
+int MainWindow::get2dExportFilename() {
     if (this->root_geom->getDimension() != 2) {
         PRINT("WARNING: Current top level object is not a 2D object.");
+        QMessageBox::warning(this, "Application",
+                "Current top level object is not a 2D object. \n");
         return 1;
     }
     return 0;
@@ -2161,10 +2165,6 @@ int MainWindow::get2dExportFilename() {
 void MainWindow::actionExportCSG(QString csg_filename)
 {
 
-    if (!this->root_node) {
-        PRINT("WARNING: Nothing to export. Please try compiling first...");
-        return;
-    }
     if (csg_filename.isEmpty()) {
         PRINT("No filename specified. CSG export aborted.");
         return;

@@ -113,6 +113,7 @@ private:
 	void saveBackup();
 	void writeBackup(class QFile *file);
     int get2dExportFilename();
+    int check3dExport();
 	void show_examples();
 	void setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel);
         void addKeyboardShortCut(const QList<QAction *> &actions);
