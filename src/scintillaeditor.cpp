@@ -180,7 +180,17 @@ void ScintillaEditor::applySettings()
 
 	qsci->setBraceMatching(s->get(Settings::Settings::enableBraceMatching).toBool() ? QsciScintilla::SloppyBraceMatch : QsciScintilla::NoBraceMatch);
 	qsci->setCaretLineVisible(s->get(Settings::Settings::highlightCurrentLine).toBool());
-    qsci->setMarginLineNumbers(1, s->get(Settings::Settings::enableLineNumbers).toBool());
+    bool value = s->get(Settings::Settings::enableLineNumbers).toBool();
+    qsci->setMarginLineNumbers(1,value);
+
+    if(!value)
+    {
+             qsci->setMarginWidth(1,0);
+    }
+    else
+    {
+        qsci->setMarginWidth(1,QString(trunc(log10(qsci->lines())+2), '0'));
+    }
 }
 
 void ScintillaEditor::setPlainText(const QString &text)
