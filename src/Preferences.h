@@ -71,6 +71,7 @@ public slots:
 	void on_checkBoxHighlightCurrentLine_toggled(bool);
 	void on_checkBoxEnableBraceMatching_toggled(bool);
     void on_checkBoxEnableLineNumbers_toggled(bool);
+    void on_checkBoxEnableCodeFolding_toggled(bool);
 
 signals:
 	void requestRedraw() const;

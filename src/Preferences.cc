@@ -566,6 +566,11 @@ void Preferences::on_checkBoxEnableLineNumbers_toggled(bool checked)
     Settings::Settings::inst()->set(Settings::Settings::enableLineNumbers, Value(checked));
     writeSettings();
 }
+void Preferences::on_checkBoxEnableCodeFolding_toggled(bool checked)
+{
+    Settings::Settings::inst()->set(Settings::Settings::enableCodeFolding, Value(checked));
+    writeSettings();
+}
 
 void Preferences::writeSettings()
 {
@@ -690,6 +695,7 @@ void Preferences::updateGUI()
 	this->checkBoxEnableBraceMatching->setChecked(s->get(Settings::Settings::enableBraceMatching).toBool());
 	this->checkBoxShowWarningsIn3dView->setChecked(s->get(Settings::Settings::showWarningsIn3dView).toBool());
     this->checkBoxEnableLineNumbers->setChecked(s->get(Settings::Settings::enableLineNumbers).toBool());
+    this->checkBoxEnableCodeFolding->setChecked(s->get(Settings::Settings::enableCodeFolding).toBool());
 }
 
 void Preferences::initComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry)
