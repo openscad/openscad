@@ -51,6 +51,7 @@ public:
     static SettingsEntry highlightCurrentLine;
     static SettingsEntry enableBraceMatching;
     static SettingsEntry enableLineNumbers;
+    static SettingsEntry enableCodeFolding;
 
     static Settings *inst(bool erase = false);
 

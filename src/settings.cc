@@ -142,4 +142,5 @@ SettingsEntry Settings::tabKeyFunction("editor", "tabKeyFunction", values("Inden
 SettingsEntry Settings::highlightCurrentLine("editor", "highlightCurrentLine", Value(true), Value(true));
 SettingsEntry Settings::enableBraceMatching("editor", "enableBraceMatching", Value(true), Value(true));
 SettingsEntry Settings::enableLineNumbers("editor", "enableLineNumbers", Value(true), Value(true));
+SettingsEntry Settings::enableCodeFolding("editor", "enableCodeFolding", Value(true), Value(true));
 }
