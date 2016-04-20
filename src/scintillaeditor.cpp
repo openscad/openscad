@@ -185,11 +185,11 @@ void ScintillaEditor::applySettings()
 
     if(!value)
     {
-             qsci->setMarginWidth(1,0);
+             qsci->setMarginWidth(1,20);
     }
     else
     {
-        qsci->setMarginWidth(1,QString(trunc(log10(qsci->lines())+2), '0'));
+        qsci->setMarginWidth(1,QString(trunc(log10(qsci->lines())+4), '0'));
     }
 }
 
@@ -503,11 +503,11 @@ void ScintillaEditor::onTextChanged()
 
   if(!value)
   {
-           qsci->setMarginWidth(1,0);
+           qsci->setMarginWidth(1,20);
   }
   else
   {
-      qsci->setMarginWidth(1,QString(trunc(log10(qsci->lines())+2), '0'));
+      qsci->setMarginWidth(1,QString(trunc(log10(qsci->lines())+4), '0'));
   }
 }
 
