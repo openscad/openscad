@@ -1390,7 +1390,6 @@ void MainWindow::actionSave()
 			saveError(file, _("Error saving design"));
 		}
 	}
-	clearCurrentOutput();
 	updateRecentFiles();
 }
 
