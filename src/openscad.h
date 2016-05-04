@@ -26,7 +26,10 @@
 
 #pragma once
 
-extern class FileModule *parse(const char *text, const char *path, int debug);
+// forward declaration
+namespace boost { namespace filesystem { class path; }};
+
+extern class FileModule *parse(const char *text, const boost::filesystem::path &filename, int debug);
 
 #include <string>
 extern std::string commandline_commands;
