@@ -26,8 +26,7 @@
 
 #pragma once
 
-// forward declaration
-namespace boost { namespace filesystem { class path; }};
+#include <boost/filesystem.hpp>
 
 extern class FileModule *parse(const char *text, const boost::filesystem::path &filename, int debug);
 
