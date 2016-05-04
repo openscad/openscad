@@ -1695,10 +1695,10 @@ void MainWindow::compileTopLevelDocument()
 	delete this->root_module;
 	this->root_module = NULL;
 
-    fs::path fname = fs::path(
+    const char* fname =
         this->fileName.isEmpty() ? "" :
-        QFileInfo(this->fileName).absolutePath().toLocal8Bit());
-	this->root_module = parse(fulltext.c_str(), fname, false);
+        QFileInfo(this->fileName).absolutePath().toLocal8Bit();
+	this->root_module = parse(fulltext.c_str(), fs::path(fname), false);
 }
 
 void MainWindow::checkAutoReload()
