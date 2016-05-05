@@ -410,7 +410,17 @@
                  </property>
                 </widget>
                </item>
-               <item row="1" column="0">
+               <item row="1" column="1">
+                <widget class="QCheckBox" name="checkBoxBackspaceUnindents">
+                 <property name="text">
+                  <string>Backspace unindents</string>
+                 </property>
+                 <property name="checked">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0">
                 <layout class="QHBoxLayout" name="horizontalLayout_7">
                  <item>
                   <spacer name="horizontalSpacer_8">
@@ -434,7 +444,7 @@
                  </item>
                 </layout>
                </item>
-               <item row="1" column="1">
+               <item row="2" column="1">
                 <layout class="QHBoxLayout" name="horizontalLayout_15">
                  <item>
                   <widget class="QComboBox" name="comboBoxIndentUsing">
@@ -465,7 +475,7 @@
                  </item>
                 </layout>
                </item>
-               <item row="2" column="0">
+               <item row="3" column="0">
                 <layout class="QHBoxLayout" name="horizontalLayout_8">
                  <item>
                   <spacer name="horizontalSpacer_15">
@@ -489,7 +499,7 @@
                  </item>
                 </layout>
                </item>
-               <item row="3" column="0">
+               <item row="4" column="0">
                 <layout class="QHBoxLayout" name="horizontalLayout_12">
                  <item>
                   <spacer name="horizontalSpacer_16">
@@ -513,7 +523,7 @@
                  </item>
                 </layout>
                </item>
-               <item row="3" column="1">
+               <item row="4" column="1">
                 <layout class="QHBoxLayout" name="horizontalLayout_17">
                  <item>
                   <widget class="QSpinBox" name="spinBoxTabWidth">
@@ -540,7 +550,7 @@
                  </item>
                 </layout>
                </item>
-               <item row="4" column="0">
+               <item row="5" column="0">
                 <layout class="QHBoxLayout" name="horizontalLayout_13">
                  <item>
                   <spacer name="horizontalSpacer_19">
@@ -564,7 +574,7 @@
                  </item>
                 </layout>
                </item>
-               <item row="4" column="1">
+               <item row="5" column="1">
                 <layout class="QHBoxLayout" name="horizontalLayout_18">
                  <item>
                   <widget class="QComboBox" name="comboBoxTabKeyFunction">
@@ -595,7 +605,7 @@
                  </item>
                 </layout>
                </item>
-               <item row="5" column="0">
+               <item row="6" column="0">
                 <layout class="QHBoxLayout" name="horizontalLayout_14">
                  <item>
                   <spacer name="horizontalSpacer_20">
@@ -619,7 +629,7 @@
                  </item>
                 </layout>
                </item>
-               <item row="5" column="1">
+               <item row="6" column="1">
                 <layout class="QHBoxLayout" name="horizontalLayout_19">
                  <item>
                   <widget class="QComboBox" name="comboBoxShowWhitespace">
