@@ -1,5 +1,5 @@
 #include "CSGTreeEvaluator.h"
-#include "visitor.h"
+#include "traverser.h"
 #include "state.h"
 #include "csgops.h"
 #include "module.h"

@@ -3,7 +3,6 @@
 #include <string>
 #include <map>
 #include <list>
-#include "visitor.h"
 #include "state.h"
 #include "ModuleInstantiation.h"
 

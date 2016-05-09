@@ -1,13 +1,13 @@
 #pragma once
 
-enum Response {ContinueTraversal, AbortTraversal, PruneTraversal};
+#include "node.h"
 
 class Traverser
 {
 public:
   enum TraversalType {PREFIX, POSTFIX, PRE_AND_POSTFIX};
 
-  Traverser(class Visitor &visitor, const class AbstractNode &root, TraversalType travtype)
+  Traverser(BaseVisitor &visitor, const AbstractNode &root, TraversalType travtype)
 		: visitor(visitor), root(root), traversaltype(travtype) {
   }
   virtual ~Traverser() { }
@@ -17,7 +17,7 @@ public:
   Response traverse(const AbstractNode &node, const class State &state);
 private:
 
-  Visitor &visitor;
+  BaseVisitor &visitor;
   const AbstractNode &root;
   TraversalType traversaltype;
 };

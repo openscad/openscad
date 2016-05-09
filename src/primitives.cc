@@ -31,7 +31,6 @@
 #include "Polygon2d.h"
 #include "builtin.h"
 #include "printutils.h"
-#include "visitor.h"
 #include "context.h"
 #include "calc.h"
 #include <sstream>

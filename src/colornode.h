@@ -1,7 +1,6 @@
 #pragma once
 
 #include "node.h"
-#include "visitor.h"
 #include "linalg.h"
 
 class ColorNode : public AbstractNode
