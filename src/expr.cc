@@ -30,6 +30,7 @@
 #include <assert.h>
 #include <sstream>
 #include <algorithm>
+#include "stl-utils.h"
 #include "printutils.h"
 #include "stackcheck.h"
 #include "exceptions.h"
