@@ -61,7 +61,7 @@ private:
 class FileModule : public AbstractModule
 {
 public:
-	FileModule() : context(NULL), is_handling_dependencies(false) {}
+	FileModule() : context(nullptr), is_handling_dependencies(false) {}
 	virtual ~FileModule();
 
 	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx = NULL) const;
@@ -82,7 +82,7 @@ public:
 	ModuleContainer usedlibs;
 private:
 	// Reference to retain the context that was used in the last evaluation
-	mutable class FileContext *context = nullptr;
+	mutable class FileContext *context;
 	struct IncludeFile {
 		std::string filename;
 		bool valid;
