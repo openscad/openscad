@@ -47,37 +47,6 @@ AbstractNode::~AbstractNode()
 	std::for_each(this->children.begin(), this->children.end(), del_fun<AbstractNode>());
 }
 
-Response AbstractNode::accept(class State &state, Visitor &visitor) const
-{
-	return visitor.visit(state, *this);
-}
-
-Response AbstractIntersectionNode::accept(class State &state, Visitor &visitor) const
-{
-	return visitor.visit(state, *this);
-}
-
-Response AbstractPolyNode::accept(class State &state, Visitor &visitor) const
-{
-	return visitor.visit(state, *this);
-}
-
-Response GroupNode::accept(class State &state, Visitor &visitor) const
-{
-	return visitor.visit(state, *this);
-}
-
-Response RootNode::accept(class State &state, Visitor &visitor) const
-{
-	return visitor.visit(state, *this);
-}
-
-
-Response LeafNode::accept(class State &state, Visitor &visitor) const
-{
-	return visitor.visit(state, *this);
-}
-
 std::string AbstractNode::toString() const
 {
 	return this->name() + "()";
