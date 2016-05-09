@@ -1,5 +1,6 @@
 #include "Tree.h"
 #include "nodedumper.h"
+#include "traverser.h"
 #include "printutils.h"
 
 #include <assert.h>

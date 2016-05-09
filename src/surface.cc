@@ -33,7 +33,6 @@
 #include "printutils.h"
 #include "fileutils.h"
 #include "handle_dep.h" // handle_dep()
-#include "visitor.h"
 #include "lodepng.h"
 
 #include <sstream>

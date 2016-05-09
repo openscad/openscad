@@ -32,7 +32,6 @@
 #include "fileutils.h"
 #include "builtin.h"
 #include "polyset.h"
-#include "visitor.h"
 
 #include <sstream>
 #include <boost/assign/std/vector.hpp>

@@ -305,7 +305,7 @@ HEADERS += src/version_check.h \
            src/value.h \
            src/progress.h \
            src/editor.h \
-           src/visitor.h \
+           src/NodeVisitor.h \
            src/state.h \
            src/traverser.h \
            src/nodecache.h \

@@ -1,5 +1,4 @@
 #include "traverser.h"
-#include "visitor.h"
 #include "node.h"
 #include "state.h"
 #include <algorithm>

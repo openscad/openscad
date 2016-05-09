@@ -1,7 +1,6 @@
 #pragma once
 
 #include "node.h"
-#include "visitor.h"
 #include <string>
 
 class RenderNode : public AbstractNode

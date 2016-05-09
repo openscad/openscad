@@ -1,12 +1,33 @@
 #pragma once
 
-#include "traverser.h"
+#include "BaseVisitable.h"
+#include "node.h"
 
-class Visitor
+class NodeVisitor :
+	public BaseVisitor,
+	public Visitor<class AbstractNode>,
+	public Visitor<class AbstractIntersectionNode>,
+	public Visitor<class AbstractPolyNode>,
+	public Visitor<class GroupNode>,
+	public Visitor<class RootNode>,
+	public Visitor<class LeafNode>,
+	public Visitor<class CgaladvNode>,
+	public Visitor<class CsgOpNode>,
+	public Visitor<class LinearExtrudeNode>,
+	public Visitor<class RotateExtrudeNode>,
+	public Visitor<class ImportNode>,
+	public Visitor<class PrimitiveNode>,
+	public Visitor<class TextNode>,
+	public Visitor<class ProjectionNode>,
+	public Visitor<class RenderNode>,
+	public Visitor<class SurfaceNode>,
+	public Visitor<class TransformNode>,
+	public Visitor<class ColorNode>,
+	public Visitor<class OffsetNode>
 {
 public:
-  Visitor() {}
-  virtual ~Visitor() {}
+  NodeVisitor() {}
+  virtual ~NodeVisitor() {}
   
   virtual Response visit(class State &state, const class AbstractNode &node) = 0;
   virtual Response visit(class State &state, const class AbstractIntersectionNode &node) {
@@ -18,7 +39,7 @@ public:
   virtual Response visit(class State &state, const class GroupNode &node) {
 		return visit(state, (const class AbstractNode &)node);
 	}
-  virtual Response visit(class State &state, const class RootNode &node) {
+  virtual Response visit(class State &state, const RootNode &node) {
 		return visit(state, (const class GroupNode &)node);
 	}
   virtual Response visit(class State &state, const class LeafNode &node) {

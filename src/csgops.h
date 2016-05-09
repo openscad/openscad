@@ -1,7 +1,6 @@
 #pragma once
 
 #include "node.h"
-#include "visitor.h"
 #include "enums.h"
 
 class CsgOpNode : public AbstractNode

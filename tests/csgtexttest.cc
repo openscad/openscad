@@ -39,6 +39,7 @@
 #include "Tree.h"
 #include "PlatformUtils.h"
 #include "stackcheck.h"
+#include "traverser.h"
 
 #ifndef _MSC_VER
 #include <getopt.h>
