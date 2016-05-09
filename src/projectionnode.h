@@ -7,11 +7,9 @@
 class ProjectionNode : public AbstractPolyNode
 {
 public:
+	VISITABLE();
 	ProjectionNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) {
 		cut_mode = false;
-	}
-  virtual Response accept(class State &state, Visitor &visitor) const {
-		return visitor.visit(state, *this);
 	}
 	virtual std::string toString() const;
 	virtual std::string name() const { return "projection"; }
