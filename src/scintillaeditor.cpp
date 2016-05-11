@@ -172,6 +172,7 @@ void ScintillaEditor::applySettings()
 	qsci->setWhitespaceVisibility(conv.toShowWhitespaces(s->get(Settings::Settings::showWhitespace)));
 	qsci->setWhitespaceSize(s->get(Settings::Settings::showWhitespaceSize).toDouble());
 	qsci->setAutoIndent(s->get(Settings::Settings::autoIndent).toBool());
+	qsci->setBackspaceUnindents(s->get(Settings::Settings::backspaceUnindents).toBool());
 
 	std::string indentStyle = s->get(Settings::Settings::indentStyle).toString();
 	qsci->setIndentationsUseTabs(indentStyle == "Tabs");

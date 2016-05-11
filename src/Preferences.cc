@@ -541,6 +541,12 @@ void Preferences::on_checkBoxAutoIndent_toggled(bool val)
 	writeSettings();
 }
 
+void Preferences::on_checkBoxBackspaceUnindents_toggled(bool val)
+{
+    Settings::Settings::inst()->set(Settings::Settings::backspaceUnindents, Value(val));
+    writeSettings();
+}
+
 void Preferences::on_comboBoxIndentUsing_activated(int val)
 {
 	applyComboBox(comboBoxIndentUsing, val, Settings::Settings::indentStyle);
@@ -687,6 +693,7 @@ void Preferences::updateGUI()
 	this->spinBoxLineWrapIndentationIndent->setValue(s->get(Settings::Settings::lineWrapIndentation).toDouble());
 	this->spinBoxShowWhitespaceSize->setValue(s->get(Settings::Settings::showWhitespaceSize).toDouble());
 	this->checkBoxAutoIndent->setChecked(s->get(Settings::Settings::autoIndent).toBool());
+	this->checkBoxBackspaceUnindents->setChecked(s->get(Settings::Settings::backspaceUnindents).toBool());
 	this->checkBoxHighlightCurrentLine->setChecked(s->get(Settings::Settings::highlightCurrentLine).toBool());
 	this->checkBoxEnableBraceMatching->setChecked(s->get(Settings::Settings::enableBraceMatching).toBool());
 	this->checkBoxShowWarningsIn3dView->setChecked(s->get(Settings::Settings::showWarningsIn3dView).toBool());
