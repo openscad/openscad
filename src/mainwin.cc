@@ -339,6 +339,9 @@ MainWindow::MainWindow(const QString &filename)
 	// Edit->Find
 	connect(this->editActionFind, SIGNAL(triggered()), this, SLOT(find()));
 	connect(this->editActionFindAndReplace, SIGNAL(triggered()), this, SLOT(findAndReplace()));
+#ifdef Q_OS_WIN
+	this->editActionFindAndReplace->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_F));
+#endif
 	connect(this->editActionFindNext, SIGNAL(triggered()), this, SLOT(findNext()));
 	connect(this->editActionFindPrevious, SIGNAL(triggered()), this, SLOT(findPrev()));
 	connect(this->editActionUseSelectionForFind, SIGNAL(triggered()), this, SLOT(useSelectionForFind()));
