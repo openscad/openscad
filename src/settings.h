@@ -46,6 +46,7 @@ public:
     static SettingsEntry showWhitespace;
     static SettingsEntry showWhitespaceSize;
     static SettingsEntry autoIndent;
+    static SettingsEntry backspaceUnindents;
     static SettingsEntry indentStyle;
     static SettingsEntry tabKeyFunction;
     static SettingsEntry highlightCurrentLine;
