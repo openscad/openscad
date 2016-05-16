@@ -1,6 +1,6 @@
 #include "tests-common.h"
 #include "openscad.h"
-#include "module.h"
+#include "FileModule.h"
 #include "handle_dep.h"
 #include "boosty.h"
 

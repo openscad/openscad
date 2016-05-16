@@ -235,12 +235,14 @@ HEADERS += src/AST.h \
            src/Assignment.h \
            src/expression.h \
            src/function.h \
-           src/module.h
+           src/module.h \           
+           src/UserModule.h
 
 SOURCES += src/ModuleInstantiation.cc \
            src/expr.cc \
            src/function.cc \
-           src/module.cc
+           src/module.cc \
+           src/UserModule.cc
 
 HEADERS += src/version_check.h \
            src/ProgressWidget.h \
@@ -262,6 +264,8 @@ HEADERS += src/version_check.h \
            src/AboutDialog.h \
            src/FontListDialog.h \
            src/FontListTableView.h \
+           src/GroupModule.h \
+           src/FileModule.h \
            src/builtin.h \
            src/calc.h \
            src/context.h \
@@ -411,6 +415,8 @@ SOURCES += src/version_check.cc \
            \
            src/grid.cc \
            src/hash.cc \
+           src/GroupModule.cc \
+           src/FileModule.cc \
            src/builtin.cc \
            src/calc.cc \
            src/export.cc \

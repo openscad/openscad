@@ -1,5 +1,5 @@
 #include "evalcontext.h"
-#include "module.h"
+#include "UserModule.h"
 #include "ModuleInstantiation.h"
 #include "expression.h"
 #include "function.h"

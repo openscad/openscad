@@ -1,7 +1,7 @@
 #pragma once
 
 #include "context.h"
-#include "module.h"
+#include "FileModule.h"
 
 /*!
 	This holds the context for a UserModule definition; keeps track of
@@ -15,7 +15,7 @@ public:
 	ModuleContext(const Context *parent = NULL, const EvalContext *evalctx = NULL);
 	virtual ~ModuleContext();
 
-	void initializeModule(const UserModule &m);
+	void initializeModule(const class UserModule &m);
 	void registerBuiltin();
 	virtual ValuePtr evaluate_function(const std::string &name, 
 																										const EvalContext *evalctx) const;
@@ -42,9 +42,9 @@ private:
 class FileContext : public ModuleContext
 {
 public:
-	FileContext(const class FileModule &module, const Context *parent);
+	FileContext(const FileModule &module, const Context *parent);
 	virtual ~FileContext() {}
-	void initializeModule(const class FileModule &module);
+	void initializeModule(const FileModule &module);
 	virtual ValuePtr evaluate_function(const std::string &name, 
 																		 const EvalContext *evalctx) const;
 	virtual AbstractNode *instantiate_module(const ModuleInstantiation &inst, 

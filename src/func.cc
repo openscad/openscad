@@ -36,6 +36,7 @@
 #include "stackcheck.h"
 #include "exceptions.h"
 #include "memory.h"
+#include "UserModule.h"
 
 #include <cmath>
 #include <sstream>
