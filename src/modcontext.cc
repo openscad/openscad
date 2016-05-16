@@ -2,7 +2,7 @@
 #include "math.h"
 
 #include "modcontext.h"
-#include "module.h"
+#include "UserModule.h"
 #include "ModuleInstantiation.h"
 #include "expression.h"
 #include "function.h"
@@ -65,7 +65,7 @@ void ModuleContext::evaluateAssignments(const AssignmentList &assignments)
 }
 #endif
 
-void ModuleContext::initializeModule(const class UserModule &module)
+void ModuleContext::initializeModule(const UserModule &module)
 {
 	this->setVariables(module.definition_arguments, evalctx);
 	// FIXME: Don't access module members directly

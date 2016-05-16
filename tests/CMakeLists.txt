@@ -679,6 +679,9 @@ set(CORE_SOURCES
   ../src/stackcheck.cc 
   ../src/localscope.cc 
   ../src/module.cc 
+  ../src/FileModule.cc 
+  ../src/UserModule.cc 
+  ../src/GroupModule.cc 
   ../src/ModuleInstantiation.cc 
   ../src/ModuleCache.cc 
   ../src/node.cc 

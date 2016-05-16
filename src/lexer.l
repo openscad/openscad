@@ -32,7 +32,7 @@
 #include "parsersettings.h"
 #include "Assignment.h"
 #include "parser_yacc.h"
-#include "module.h"
+#include "FileModule.h"
 #include <assert.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>

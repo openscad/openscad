@@ -34,7 +34,8 @@
 #include <unistd.h>
 #endif
 
-#include "module.h"
+#include "FileModule.h"
+#include "UserModule.h"
 #include "ModuleInstantiation.h"
 #include "Assignment.h"
 #include "expression.h"

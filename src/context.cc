@@ -28,7 +28,7 @@
 #include "evalcontext.h"
 #include "expression.h"
 #include "function.h"
-#include "module.h"
+#include "UserModule.h"
 #include "ModuleInstantiation.h"
 #include "builtin.h"
 #include "printutils.h"
