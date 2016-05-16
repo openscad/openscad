@@ -1,5 +1,4 @@
 #include "GeometryEvaluator.h"
-#include "traverser.h"
 #include "Tree.h"
 #include "GeometryCache.h"
 #include "CGALCache.h"
@@ -55,8 +54,7 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 			this->root = N;
 		}	
     else {
-			Traverser trav(*this, node, Traverser::PRE_AND_POSTFIX);
-			trav.execute();
+			this->traverse(node);
 		}
 
 		if (!allownef) {

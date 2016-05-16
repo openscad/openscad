@@ -39,7 +39,6 @@
 #include "Tree.h"
 #include "PlatformUtils.h"
 #include "stackcheck.h"
-#include "traverser.h"
 
 #ifndef _MSC_VER
 #include <getopt.h>
@@ -60,8 +59,7 @@ std::string currentdir;
 void csgTree(CSGTextCache &cache, const AbstractNode &root)
 {
 	CSGTextRenderer renderer(cache);
-	Traverser render(renderer, root, Traverser::PRE_AND_POSTFIX);
-	render.execute();
+	renderer.traverse(root);
 }
 
 int main(int argc, char **argv)
