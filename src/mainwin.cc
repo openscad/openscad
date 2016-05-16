@@ -1696,8 +1696,7 @@ void MainWindow::compileTopLevelDocument()
 	this->root_module = NULL;
 
     const char* fname =
-        this->fileName.isEmpty() ? "" :
-        QFileInfo(this->fileName).absolutePath().toLocal8Bit();
+        this->fileName.isEmpty() ? "" : this->fileName.toLocal8Bit();
 	this->root_module = parse(fulltext.c_str(), fs::path(fname), false);
 }
 
