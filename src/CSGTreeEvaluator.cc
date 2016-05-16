@@ -1,5 +1,4 @@
 #include "CSGTreeEvaluator.h"
-#include "traverser.h"
 #include "state.h"
 #include "csgops.h"
 #include "module.h"
@@ -31,8 +30,7 @@
 
 shared_ptr<CSGNode> CSGTreeEvaluator::buildCSGTree(const AbstractNode &node)
 {
-	Traverser evaluate(*this, node, Traverser::PRE_AND_POSTFIX);
-	evaluate.execute();
+	this->traverse(node);
 	
 	shared_ptr<CSGNode> t(this->stored_term[node.index()]);
 	if (t) {

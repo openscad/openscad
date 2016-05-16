@@ -2,6 +2,7 @@
 
 #include "BaseVisitable.h"
 #include "node.h"
+#include "state.h"
 
 class NodeVisitor :
 	public BaseVisitor,
@@ -29,6 +30,8 @@ public:
   NodeVisitor() {}
   virtual ~NodeVisitor() {}
   
+	Response traverse(const AbstractNode &node, const class State &state = NodeVisitor::nullstate);
+
   virtual Response visit(class State &state, const class AbstractNode &node) = 0;
   virtual Response visit(class State &state, const class AbstractIntersectionNode &node) {
 		return visit(state, (const class AbstractNode &)node);
@@ -85,4 +88,7 @@ public:
 		return visit(state, (const class AbstractPolyNode &)node);
 	}
 	// Add visit() methods for new visitable subtypes of AbstractNode here
+
+private:
+	static State nullstate;
 };

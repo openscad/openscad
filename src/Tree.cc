@@ -1,6 +1,5 @@
 #include "Tree.h"
 #include "nodedumper.h"
-#include "traverser.h"
 #include "printutils.h"
 
 #include <assert.h>
@@ -25,8 +24,7 @@ const std::string &Tree::getString(const AbstractNode &node) const
 		this->nodecache.clear();
 		this->nodeidcache.clear();
 		NodeDumper dumper(this->nodecache, false);
-		Traverser trav(dumper, *this->root_node, Traverser::PRE_AND_POSTFIX);
-		trav.execute();
+		dumper.traverse(*this->root_node);
 		assert(this->nodecache.contains(*this->root_node) &&
 					 "NodeDumper failed to create a cache");
 	}
