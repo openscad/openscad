@@ -6,7 +6,7 @@ ScadLexer::ScadLexer(QObject *parent) : QsciLexerCPP(parent)
 {
 	// -> Style: Keyword (lexer.l)
 	keywordSet[0] =
-		"if else let for module function true false undef "
+		"if else let for each module function true false undef "
 		"include use";
 
 	// -> Style: KeywordSet2 (func.cc)
@@ -28,6 +28,8 @@ ScadLexer::ScadLexer(QObject *parent) : QsciLexerCPP(parent)
 		"intersection linear_extrude rotate_extrude import group  "
 		"projection render surface scale rotate mirror translate "
 		"multmatrix color offset ";
+
+    setFoldComments(true);
 }
 
 ScadLexer::~ScadLexer()

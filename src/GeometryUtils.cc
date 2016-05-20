@@ -2,11 +2,11 @@
 #include "tesselator.h"
 #include "printutils.h"
 #include "Reindexer.h"
-#include "grid.h"
-#include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/unordered_map.hpp>
-#include <boost/math/special_functions/fpclassify.hpp>
+#include <unordered_map>
+#include <cmath>
+
+#include <boost/functional/hash.hpp>
 
 static void *stdAlloc(void* userData, unsigned int size) {
 	TESS_NOTUSED(userData);
@@ -27,7 +27,7 @@ typedef std::pair<int,int> IndexedEdge;
 class EdgeDict {
 public:
 // Counts occurrences of edges
-	typedef boost::unordered_map<IndexedEdge, int> IndexedEdgeDict;
+	typedef std::unordered_map<IndexedEdge, int, boost::hash<IndexedEdge>> IndexedEdgeDict;
 
 	EdgeDict() { }
 
@@ -91,7 +91,7 @@ public:
 	size_t size() const { return this->edges.size(); }
 
 	void print() const {
-		BOOST_FOREACH(const IndexedEdgeDict::value_type &v, this->edges) {
+		for(const auto &v : this->edges) {
 			const IndexedEdge &e = v.first;
 			PRINTDB("     (%d,%d)%s", e.first % e.second % ((v.second > 1) ? boost::lexical_cast<std::string>(v.second).c_str() : ""));
 		}
@@ -139,7 +139,7 @@ public:
 		// First, look for self-intersections in edges
 		v2e.clear();
 		v2e_reverse.clear();
-		BOOST_FOREACH(const IndexedEdgeDict::value_type &v, this->edges) {
+		for(const auto &v : this->edges) {
 			const IndexedEdge &e = v.first;
 			for (int i=0;i<v.second;i++) {
 				v2e[e.first].push_back(e.second);
@@ -148,7 +148,7 @@ public:
 		}
 
 		while (!v2e.empty()) {
-			boost::unordered_map<int, std::list<int> >::iterator it;
+			std::unordered_map<int, std::list<int>>::iterator it;
 			for (it = v2e.begin();it != v2e.end();it++) {
 				if (it->second.size() == 1) { // First single vertex
 					int vidx = it->first;
@@ -167,8 +167,8 @@ public:
 	}
 
 	IndexedEdgeDict edges;
-	boost::unordered_map<int, std::list<int> > v2e;
-	boost::unordered_map<int, std::list<int> > v2e_reverse;
+	std::unordered_map<int, std::list<int>> v2e;
+	std::unordered_map<int, std::list<int>> v2e_reverse;
 };
 
 
@@ -207,7 +207,7 @@ bool GeometryUtils::tessellatePolygonWithHoles(const Vector3f *vertices,
 
 	// Remove consecutive equal vertices, as well as null ears
 	std::vector<IndexedFace> cleanfaces = faces;
-  BOOST_FOREACH(IndexedFace &face, cleanfaces) {
+  for(auto &face : cleanfaces) {
 		size_t i=0;
 		while (face.size() >= 3 && i < face.size()) {
 			if (face[i] == face[(i+1)%face.size()]) { // Two consecutively equal indices
@@ -223,7 +223,7 @@ bool GeometryUtils::tessellatePolygonWithHoles(const Vector3f *vertices,
 				const Vector3f &v = vertices[face[i]];
 				int k;
 				for (k=0;k<3;k++) {
-					if (boost::math::isnan(v[k]) || boost::math::isinf(v[k])) {
+					if (std::isnan(v[k]) || std::isinf(v[k])) {
 						face.erase(face.begin()+i);
 						break;
 					}
@@ -253,7 +253,7 @@ bool GeometryUtils::tessellatePolygonWithHoles(const Vector3f *vertices,
   // This contains all edges in the original polygon.
 	// To maintain connectivity, all these edges must exist in the output.
 	EdgeDict edges;
-	BOOST_FOREACH(IndexedFace &face, cleanfaces) {
+	for(const auto &face : cleanfaces) {
 		edges.add(face);
 	}
 
@@ -281,9 +281,9 @@ bool GeometryUtils::tessellatePolygonWithHoles(const Vector3f *vertices,
 	// Since libtess2's indices is based on the running number of points added, we need to map back
 	// to our indices. allindices does the mapping.
 	std::vector<int> allindices;
-  BOOST_FOREACH(const IndexedFace &face, cleanfaces) {
+  for(const auto &face : cleanfaces) {
     contour.clear();
-    BOOST_FOREACH(int idx, face) {
+    for(auto idx : face) {
 			const Vector3f &v = vertices[idx];
       contour.push_back(v[0]);
       contour.push_back(v[1]);
@@ -428,7 +428,7 @@ bool GeometryUtils::tessellatePolygon(const Polygon &polygon, Polygons &triangle
 	std::vector<IndexedFace> indexedfaces;
 	indexedfaces.push_back(IndexedFace());
 	IndexedFace &currface = indexedfaces.back();
-	BOOST_FOREACH (const Vector3d &v, polygon) {
+	for(const auto &v : polygon) {
 		int idx = uniqueVertices.lookup(v.cast<float>());
 		if (currface.empty() || idx != currface.back()) currface.push_back(idx);
 	}
@@ -437,7 +437,7 @@ bool GeometryUtils::tessellatePolygon(const Polygon &polygon, Polygons &triangle
 		const Vector3f *verts = uniqueVertices.getArray();
 		std::vector<IndexedTriangle> indexedtriangles;
 		err = tessellatePolygonWithHoles(verts, indexedfaces, indexedtriangles, normal);
-		BOOST_FOREACH(const IndexedTriangle &t, indexedtriangles) {
+		for(const auto &t : indexedtriangles) {
 			triangles.push_back(Polygon());
 			Polygon &p = triangles.back();
 			p.push_back(verts[t[0]].cast<double>());
@@ -448,11 +448,11 @@ bool GeometryUtils::tessellatePolygon(const Polygon &polygon, Polygons &triangle
 	return err;
 }
 
-int GeometryUtils::findUnconnectedEdges(const std::vector<std::vector<IndexedFace> > &polygons)
+int GeometryUtils::findUnconnectedEdges(const std::vector<std::vector<IndexedFace>> &polygons)
 {
 	EdgeDict edges;
-	BOOST_FOREACH(const std::vector<IndexedFace> &faces, polygons) {
-		BOOST_FOREACH(const IndexedFace &face, faces) {
+	for(const auto &faces : polygons) {
+		for(const auto &face : faces) {
 			edges.add(face);
 		}
 	}
@@ -468,7 +468,7 @@ int GeometryUtils::findUnconnectedEdges(const std::vector<std::vector<IndexedFac
 int GeometryUtils::findUnconnectedEdges(const std::vector<IndexedTriangle> &triangles)
 {
 	EdgeDict edges;
-	BOOST_FOREACH(const IndexedTriangle &t, triangles) {
+	for(const auto &t : triangles) {
 		edges.add(t);
 	}
 #if 1 // for debugging

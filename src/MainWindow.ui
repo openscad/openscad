@@ -522,6 +522,7 @@
      </item>
     </layout>
    </widget>
+   <addaction name="editActionRedo_2"/>
   </widget>
   <widget class="Dock" name="consoleDock">
    <attribute name="dockWidgetArea">
@@ -675,6 +676,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+Z</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
+   </property>
+  </action>
+  <action name="editActionRedo_2">
+   <property name="shortcut">
+    <string>Ctrl+Y</string>
    </property>
    <property name="shortcutContext">
     <enum>Qt::WidgetWithChildrenShortcut</enum>
@@ -1269,6 +1278,9 @@
    </property>
    <property name="text">
     <string>View All</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+V</string>
    </property>
   </action>
   <action name="editActionConvertTabsToSpaces">

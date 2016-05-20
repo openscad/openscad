@@ -1,10 +1,10 @@
-group() {
-	cube(size = [inf, inf, inf], center = false);
-	cube(size = [0, 0, inf], center = false);
-	cylinder($fn = 0, $fa = 12, $fs = 2, h = 10, r1 = inf, r2 = inf, center = false);
-	cylinder($fn = 0, $fa = 12, $fs = 2, h = 10, r1 = 1, r2 = inf, center = false);
-	cylinder($fn = 0, $fa = 12, $fs = 2, h = inf, r1 = 1, r2 = 1, center = false);
-	sphere($fn = 0, $fa = 12, $fs = 2, r = inf);
-	polygon(points = [[0, 0, 0], [1, 0, 0], [1, inf, 0]], paths = undef, convexity = 1);
-	polyhedron(points = [[inf, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]], faces = [[0, 4, 2], [0, 2, 5], [0, 3, 4], [0, 5, 3], [1, 2, 4], [1, 5, 2], [1, 4, 3], [1, 3, 5]], convexity = 1);
-}
+cube(size = [inf, inf, inf], center = false);
+cube(size = [0, 0, inf], center = false);
+cylinder($fn = 0, $fa = 12, $fs = 2, h = 10, r1 = inf, r2 = inf, center = false);
+cylinder($fn = 0, $fa = 12, $fs = 2, h = 10, r1 = 1, r2 = inf, center = false);
+cylinder($fn = 0, $fa = 12, $fs = 2, h = inf, r1 = 1, r2 = 1, center = false);
+sphere($fn = 0, $fa = 12, $fs = 2, r = inf);
+polygon(points = [[0, 0, 0], [1, 0, 0], [1, inf, 0]], paths = undef, convexity = 1);
+polyhedron(points = [[inf, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]], faces = [[0, 4, 2], [0, 2, 5], [0, 3, 4], [0, 5, 3], [1, 2, 4], [1, 5, 2], [1, 4, 3], [1, 3, 5]], convexity = 1);
+cylinder($fn = inf, $fa = 12, $fs = 2, h = 1, r1 = 1, r2 = 1, center = false);
+sphere($fn = inf, $fa = 12, $fs = 2, r = 1);

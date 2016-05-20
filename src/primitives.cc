@@ -34,15 +34,11 @@
 #include "visitor.h"
 #include "context.h"
 #include "calc.h"
-#include "mathc99.h"
 #include <sstream>
 #include <assert.h>
-#include <boost/foreach.hpp>
+#include <cmath>
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
-
-#include <boost/math/special_functions/fpclassify.hpp>
-#define isinf boost::math::isinf
 
 #define F_MINIMUM 0.01
 
@@ -99,7 +95,7 @@ public:
 			break;
 		default:
 			assert(false && "PrimitiveNode::name(): Unknown primitive type");
-			return AbstractPolyNode::name();
+			return "unknown";
 		}
 	}
 
@@ -109,7 +105,7 @@ public:
 	primitive_type_e type;
 	int convexity;
 	ValuePtr points, paths, faces;
-	virtual Geometry *createGeometry() const;
+	virtual const Geometry *createGeometry() const;
 };
 
 /**
@@ -299,7 +295,7 @@ static void generate_circle(point2d *circle, double r, int fragments)
 	Creates geometry for this node.
 	May return an empty Geometry creation failed, but will not return NULL.
 */
-Geometry *PrimitiveNode::createGeometry() const
+const Geometry *PrimitiveNode::createGeometry() const
 {
 	Geometry *g = NULL;
 
@@ -308,7 +304,7 @@ Geometry *PrimitiveNode::createGeometry() const
 		PolySet *p = new PolySet(3,true);
 		g = p;
 		if (this->x > 0 && this->y > 0 && this->z > 0 &&
-			!isinf(this->x) > 0 && !isinf(this->y) > 0 && !isinf(this->z) > 0) {
+			!std::isinf(this->x) > 0 && !std::isinf(this->y) > 0 && !std::isinf(this->z) > 0) {
 			double x1, x2, y1, y2, z1, z2;
 			if (this->center) {
 				x1 = -this->x/2;
@@ -365,7 +361,7 @@ Geometry *PrimitiveNode::createGeometry() const
 	case SPHERE: {
 		PolySet *p = new PolySet(3,true);
 		g = p;
-		if (this->r1 > 0 && !isinf(this->r1)) {
+		if (this->r1 > 0 && !std::isinf(this->r1)) {
 			struct ring_s {
 				point2d *points;
 				double z;
@@ -440,10 +436,10 @@ Geometry *PrimitiveNode::createGeometry() const
 	case CYLINDER: {
 		PolySet *p = new PolySet(3,true);
 		g = p;
-		if (this->h > 0 && !isinf(this->h) &&
+		if (this->h > 0 && !std::isinf(this->h) &&
 				this->r1 >=0 && this->r2 >= 0 && (this->r1 > 0 || this->r2 > 0) &&
-				!isinf(this->r1) && !isinf(this->r2)) {
-			int fragments = Calc::get_fragments_from_r(fmax(this->r1, this->r2), this->fn, this->fs, this->fa);
+				!std::isinf(this->r1) && !std::isinf(this->r2)) {
+			int fragments = Calc::get_fragments_from_r(std::fmax(this->r1, this->r2), this->fn, this->fs, this->fa);
 
 			double z1, z2;
 			if (this->center) {
@@ -508,13 +504,13 @@ Geometry *PrimitiveNode::createGeometry() const
 		for (size_t i=0; i<this->faces->toVector().size(); i++)
 		{
 			p->append_poly();
-			const Value::VectorType &vec = this->faces->toVector()[i].toVector();
+			const Value::VectorType &vec = this->faces->toVector()[i]->toVector();
 			for (size_t j=0; j<vec.size(); j++) {
-				size_t pt = vec[j].toDouble();
+				size_t pt = vec[j]->toDouble();
 				if (pt < this->points->toVector().size()) {
 					double px, py, pz;
-					if (!this->points->toVector()[pt].getVec3(px, py, pz) ||
-							isinf(px) || isinf(py) || isinf(pz)) {
+					if (!this->points->toVector()[pt]->getVec3(px, py, pz) ||
+							std::isinf(px) || std::isinf(py) || std::isinf(pz)) {
 						PRINTB("ERROR: Unable to convert point at index %d to a vec3 of numbers", j);
 						return p;
 					}
@@ -528,7 +524,7 @@ Geometry *PrimitiveNode::createGeometry() const
 		Polygon2d *p = new Polygon2d();
 		g = p;
 		if (this->x > 0 && this->y > 0 &&
-				!isinf(this->x) && !isinf(this->y)) {
+				!std::isinf(this->x) && !std::isinf(this->y)) {
 			Vector2d v1(0, 0);
 			Vector2d v2(this->x, this->y);
 			if (this->center) {
@@ -550,7 +546,7 @@ Geometry *PrimitiveNode::createGeometry() const
 	case CIRCLE: {
 		Polygon2d *p = new Polygon2d();
 		g = p;
-		if (this->r1 > 0 && !isinf(this->r1))	{
+		if (this->r1 > 0 && !std::isinf(this->r1))	{
 			int fragments = Calc::get_fragments_from_r(this->r1, this->fn, this->fs, this->fa);
 
 			Outline2d o;
@@ -572,8 +568,8 @@ Geometry *PrimitiveNode::createGeometry() const
 			double x,y;
 			const Value::VectorType &vec = this->points->toVector();
 			for (unsigned int i=0;i<vec.size();i++) {
-				const Value &val = vec[i];
-				if (!val.getVec2(x, y) || isinf(x) || isinf(y)) {
+				const Value &val = *vec[i];
+				if (!val.getVec2(x, y) || std::isinf(x) || std::isinf(y)) {
 					PRINTB("ERROR: Unable to convert point %s at index %d to a vec2 of numbers", 
 								 val.toString() % i);
 					return p;
@@ -585,10 +581,10 @@ Geometry *PrimitiveNode::createGeometry() const
 				p->addOutline(outline);
 			}
 			else {
-				BOOST_FOREACH(const Value &polygon, this->paths->toVector()) {
+				for(const auto &polygon : this->paths->toVector()) {
 					Outline2d curroutline;
-					BOOST_FOREACH(const Value &index, polygon.toVector()) {
-						unsigned int idx = index.toDouble();
+					for(const auto &index : polygon->toVector()) {
+						unsigned int idx = index->toDouble();
 						if (idx < outline.vertices.size()) {
 							curroutline.vertices.push_back(outline.vertices[idx]);
 						}

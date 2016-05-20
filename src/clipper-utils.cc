@@ -1,11 +1,11 @@
 #include "clipper-utils.h"
-#include <boost/foreach.hpp>
+#include "printutils.h"
 
 namespace ClipperUtils {
 
 	ClipperLib::Path fromOutline2d(const Outline2d &outline, bool keep_orientation) {
 		ClipperLib::Path p;
-		BOOST_FOREACH(const Vector2d &v, outline.vertices) {
+		for(const auto &v : outline.vertices) {
 			p.push_back(ClipperLib::IntPoint(v[0]*CLIPPER_SCALE, v[1]*CLIPPER_SCALE));
 		}
 		// Make sure all polygons point up, since we project also 
@@ -17,7 +17,7 @@ namespace ClipperUtils {
 
 	ClipperLib::Paths fromPolygon2d(const Polygon2d &poly) {
 		ClipperLib::Paths result;
-		BOOST_FOREACH(const Outline2d &outline, poly.outlines()) {
+		for(const auto &outline : poly.outlines()) {
 			result.push_back(fromOutline2d(outline, poly.isSanitized() ? true : false));
 		}
 		return result;
@@ -30,7 +30,15 @@ namespace ClipperUtils {
 	ClipperLib::PolyTree sanitize(const ClipperLib::Paths &paths) {
 		ClipperLib::PolyTree result;
 		ClipperLib::Clipper clipper;
-		clipper.AddPaths(paths, ClipperLib::ptSubject, true);
+		try {
+			clipper.AddPaths(paths, ClipperLib::ptSubject, true);
+		}
+		catch(...) {
+		  // Most likely caught a RangeTest exception from clipper
+		  // Note that Clipper up to v6.2.1 incorrectly throws
+                  // an exception of type char* rather than a clipperException()
+		  PRINT("WARNING: Range check failed for polygon. skipping");
+		}
 		clipper.Execute(ClipperLib::ctUnion, result, ClipperLib::pftEvenOdd);
 		return result;
 	}
@@ -57,7 +65,7 @@ namespace ClipperUtils {
 
 			// CleanPolygon can in some cases reduce the polygon down to no vertices
 			if (cleaned_path.size() >= 3)  {
-				BOOST_FOREACH(const ClipperLib::IntPoint &ip, cleaned_path) {
+				for(const auto &ip : cleaned_path) {
 					Vector2d v(1.0*ip.X/CLIPPER_SCALE, 1.0*ip.Y/CLIPPER_SCALE);
 					outline.vertices.push_back(v);
 				}
@@ -108,7 +116,7 @@ namespace ClipperUtils {
 		}
 
 		bool first = true;
-		BOOST_FOREACH(const ClipperLib::Paths &paths, pathsvector) {
+		for(const auto &paths : pathsvector) {
 			clipper.AddPaths(paths, first ? ClipperLib::ptSubject : ClipperLib::ptClip, true);
 			if (first) first = false;
 		}
@@ -129,7 +137,7 @@ namespace ClipperUtils {
 									 ClipperLib::ClipType clipType)
 	{
 		std::vector<ClipperLib::Paths> pathsvector;
-		BOOST_FOREACH(const Polygon2d *polygon, polygons) {
+		for(const auto &polygon : polygons) {
 			ClipperLib::Paths polypaths = fromPolygon2d(*polygon);
 			if (!polygon->isSanitized()) ClipperLib::PolyTreeToPaths(sanitize(polypaths), polypaths);
 			pathsvector.push_back(polypaths);
@@ -193,13 +201,13 @@ namespace ClipperUtils {
 	static void fill_minkowski_insides(const ClipperLib::Paths &a,
 																		 const ClipperLib::Paths &b,
 																		 ClipperLib::Paths &target) {
-		BOOST_FOREACH(const ClipperLib::Path &b_path, b) {
+		for(const auto &b_path : b) {
 			// We only need to add for positive components of b
 			if (!b_path.empty() && ClipperLib::Orientation(b_path) == 1) {
 				const ClipperLib::IntPoint &delta = b_path[0]; // arbitrary point
-				BOOST_FOREACH(const ClipperLib::Path &path, a) {
+				for(const auto &path : a) {
 					target.push_back(path);
-					BOOST_FOREACH(ClipperLib::IntPoint &point, target.back()) {
+					for(auto &point : target.back()) {
 						point.X += delta.X;
 						point.Y += delta.Y;
 					}
@@ -220,8 +228,8 @@ namespace ClipperUtils {
 			ClipperLib::Paths rhs = ClipperUtils::fromPolygon2d(*polygons[i]);
 
 			// First, convolve each outline of lhs with the outlines of rhs
-			BOOST_FOREACH(ClipperLib::Path const& rhs_path, rhs) {
-				BOOST_FOREACH(ClipperLib::Path const& lhs_path, lhs) {
+			for(auto const& rhs_path : rhs) {
+				for(auto const& lhs_path : lhs) {
 					ClipperLib::Paths result;
 					minkowski_outline(lhs_path, rhs_path, result, true, true);
 					minkowski_terms.insert(minkowski_terms.end(), result.begin(), result.end());

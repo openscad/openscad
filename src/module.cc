@@ -27,6 +27,7 @@
 #include "module.h"
 #include "ModuleCache.h"
 #include "node.h"
+#include "builtin.h"
 #include "modcontext.h"
 #include "evalcontext.h"
 #include "expression.h"
@@ -40,7 +41,6 @@
 namespace fs = boost::filesystem;
 #include "boosty.h"
 #include "FontCache.h"
-#include <boost/foreach.hpp>
 #include <sstream>
 #include <sys/stat.h>
 
@@ -48,11 +48,11 @@ AbstractModule::~AbstractModule()
 {
 }
 
-AbstractNode *AbstractModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
+AbstractNode *GroupModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	(void)ctx; // avoid unusued parameter warning
 
-	AbstractNode *node = new AbstractNode(inst);
+	AbstractNode *node = new GroupNode(inst);
 
 	node->children = inst->instantiateChildren(evalctx);
 
@@ -214,7 +214,7 @@ AbstractNode *Module::instantiate(const Context *ctx, const ModuleInstantiation 
 	c.dump(this, inst);
 #endif
 
-	AbstractNode *node = new AbstractNode(inst);
+	AbstractNode *node = new GroupNode(inst);
 	std::vector<AbstractNode *> instantiatednodes = this->scope.instantiateChildren(&c);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 	module_stack.pop_back();
@@ -276,7 +276,7 @@ void FileModule::registerInclude(const std::string &localpath,
 
 bool FileModule::includesChanged() const
 {
-	BOOST_FOREACH(const FileModule::IncludeContainer::value_type &item, this->includes) {
+	for(const auto &item : this->includes) {
 		if (include_modified(item.second)) return true;
 	}
 	return false;
@@ -306,12 +306,12 @@ bool FileModule::handleDependencies()
 	this->is_handling_dependencies = true;
 
 	bool somethingchanged = false;
-	std::vector<std::pair<std::string,std::string> > updates;
+	std::vector<std::pair<std::string,std::string>> updates;
 
 	// If a lib in usedlibs was previously missing, we need to relocate it
 	// by searching the applicable paths. We can identify a previously missing module
 	// as it will have a relative path.
-	BOOST_FOREACH(std::string filename, this->usedlibs) {
+	for(auto filename : this->usedlibs) {
 
 		bool wasmissing = false;
 		bool found = true;
@@ -349,7 +349,7 @@ bool FileModule::handleDependencies()
 
 	// Relative filenames which were located is reinserted as absolute filenames
 	typedef std::pair<std::string,std::string> stringpair;
-	BOOST_FOREACH(const stringpair &files, updates) {
+	for(const auto &files : updates) {
 		this->usedlibs.erase(files.first);
 		this->usedlibs.insert(files.second);
 	}
@@ -363,20 +363,16 @@ AbstractNode *FileModule::instantiate(const Context *ctx, const ModuleInstantiat
 	
 	delete context;
 	context = new FileContext(*this, ctx);
-	AbstractNode *node = new AbstractNode(inst);
+	AbstractNode *node = new RootNode(inst);
 
 	try {
 		context->initializeModule(*this);
 
 	// FIXME: Set document path to the path of the module
-#if 0 && DEBUG
-		c.dump(this, inst);
-#endif
-
 		std::vector<AbstractNode *> instantiatednodes = this->scope.instantiateChildren(context);
 		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 	}
-	catch (RecursionException &e) {
+	catch (EvaluationException &e) {
 		PRINT(e.what());
 	}
 
@@ -397,4 +393,9 @@ ValuePtr FileModule::lookup_variable(const std::string &name) const
 	}
 	
 	return context->lookup_variable(name, true);
+}
+
+void register_builtin_group()
+{
+	Builtins::init("group", new GroupModule());
 }

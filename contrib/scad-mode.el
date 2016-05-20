@@ -213,5 +213,5 @@ Key bindings:
   (interactive)
   (call-process scad-command nil 0 nil (buffer-file-name)))
 
-(provide 'scad)
+(provide 'scad-mode)
 ;;; scad-mode.el ends here

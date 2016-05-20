@@ -1,3 +1,4 @@
+#!/usr/bin/python
 #
 # Regression test driver for cmd-line tools
 #
@@ -230,7 +231,7 @@ def run_test(testname, cmd, args):
     try:
         cmdline = [cmd] + args + [outputname]
         print 'run_test() cmdline:',cmdline
-        fontdir =  os.path.join(os.path.dirname(cmd), "..", "testdata")
+        fontdir =  os.path.join(os.path.dirname(cmd), "testdata")
         fontenv = os.environ.copy()
         fontenv["OPENSCAD_FONT_PATH"] = fontdir
         print 'using font directory:', fontdir
@@ -245,6 +246,7 @@ def run_test(testname, cmd, args):
         outfile.close()
         if proc.returncode != 0:
             print >> sys.stderr, "Error: %s failed with return code %d" % (cmdname, proc.returncode)
+            return None
 
         return outputname
     except OSError, err:
