@@ -20,7 +20,6 @@ public:
 							 shared_ptr<class Expression> expr = shared_ptr<class Expression>()) {
 			first = name; second = expr;
 		}
-        virtual ~Assignment();
 
     virtual void add_annotations(AnnotationList *annotations);
     
