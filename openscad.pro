@@ -226,6 +226,9 @@ FORMS   += src/MainWindow.ui \
            src/AboutDialog.ui \
            src/FontListDialog.ui \
            src/ProgressWidget.ui \
+           src/LibraryWidget.ui \
+           src/ParameterWidget.ui \
+           src/ParameterEntryWidget.ui \
            src/launchingscreen.ui \
            src/LibraryInfoDialog.ui
 
@@ -243,6 +246,10 @@ HEADERS += src/typedefs.h \
            src/QGLView.h \
            src/GLView.h \
            src/MainWindow.h \
+           src/LibraryWidget.h \
+           src/LibraryListWidget.h \
+           src/ParameterWidget.h \
+           src/ParameterEntryWidget.h \
            src/OpenSCADApp.h \
            src/WindowManager.h \
            src/Preferences.h \
@@ -340,6 +347,8 @@ SOURCES += src/version_check.cc \
            src/value.cc \
            src/expr.cc \
            src/stackcheck.cc \
+           src/assignment.cc \
+           src/annotation.cc \
            src/func.cc \
            src/localscope.cc \
            src/module.cc \
@@ -414,6 +423,7 @@ SOURCES += src/version_check.cc \
            src/export_svg.cc \
            src/export_nef.cc \
            src/export_png.cc \
+           src/export_params.cc \
            src/import.cc \
            src/renderer.cc \
            src/colormap.cc \
@@ -427,6 +437,10 @@ SOURCES += src/version_check.cc \
            \
            src/openscad.cc \
            src/mainwin.cc \
+           src/LibraryWidget.cc \
+           src/LibraryListWidget.cc \
+           src/ParameterWidget.cc \
+           src/ParameterEntryWidget.cc \
            src/OpenSCADApp.cc \
            src/WindowManager.cc \
            src/UIUtils.cc \

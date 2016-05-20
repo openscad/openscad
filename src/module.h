@@ -13,6 +13,7 @@
 #include "typedefs.h"
 #include "localscope.h"
 #include "feature.h"
+#include "context.h"
 
 class ModuleInstantiation
 {
@@ -88,6 +89,10 @@ public:
 	Module(const Feature& feature) : AbstractModule(feature) { }
 	virtual ~Module();
 
+        virtual void add_annotations(AnnotationList *annotations);
+        virtual bool has_annotations() const;
+        virtual const Annotation * annotation(const std::string &name) const;
+
 	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx = NULL) const;
 	virtual std::string dump(const std::string &indent, const std::string &name) const;
 	static const std::string& stack_element(int n) { return module_stack[n]; };
@@ -96,6 +101,9 @@ public:
 	AssignmentList definition_arguments;
 
 	LocalScope scope;
+
+protected:
+        AnnotationMap annotations;
 
 private:
 	static std::deque<std::string> module_stack;
@@ -119,6 +127,7 @@ public:
 	bool hasIncludes() const { return !this->includes.empty(); }
 	bool usesLibraries() const { return !this->usedlibs.empty(); }
 	bool isHandlingDependencies() const { return this->is_handling_dependencies; }
+        void set_variable(const std::string name, Value value);
         ValuePtr lookup_variable(const std::string &name) const;
 
 	typedef std::unordered_set<std::string> ModuleContainer;

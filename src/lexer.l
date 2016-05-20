@@ -146,6 +146,7 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
 		yyterminate();
 }
 
+"@"             return TOK_ANNOTATION;
 "module"	return TOK_MODULE;
 "function"	return TOK_FUNCTION;
 "if"		return TOK_IF;
