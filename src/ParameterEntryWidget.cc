@@ -123,7 +123,7 @@ bool ParameterEntryWidget::isDefaultValue()
 
 void ParameterEntryWidget::applyParameter(Assignment *assignment)
 {
-	assignment->second = boost::shared_ptr<Expression>(new ExpressionConst(value));
+	assignment->second = shared_ptr<Expression>(new ExpressionConst(value));
 }
 
 void ParameterEntryWidget::setAssignment(Context *ctx, const Assignment *assignment, const ValuePtr defaultValue)
@@ -192,7 +192,7 @@ void ParameterEntryWidget::setValue(const ValuePtr defaultValue, const ValuePtr 
 		int idx = comboBox->findText(defaultText);
 		if (idx >= 0) {
 			comboBox->setCurrentIndex(idx);
-		}
+		}   
 		break;
 	}
 	case CHECKBOX:

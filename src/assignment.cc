@@ -26,21 +26,6 @@
 
 #include "typedefs.h"
 
-Assignment::Assignment(std::string name)
-{
-	first = name;
-	second = boost::shared_ptr<class Expression>();
-}
-
-Assignment::Assignment(std::string name, boost::shared_ptr<class Expression> expr)
-{
-	first = name;
-	second = expr;
-}
-
-Assignment::~Assignment()
-{
-}
 
 void Assignment::add_annotations(AnnotationList *annotations)
 {

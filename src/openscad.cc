@@ -438,7 +438,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		}
 		else {
 			fs::current_path(fparent); // Force exported filenames to be relative to document path
-			export_parameter(fstream, root_module);
+			//export_parameter(fstream, root_module);
 			fstream.close();
 		}
 	}
