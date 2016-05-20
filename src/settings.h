@@ -46,10 +46,12 @@ public:
     static SettingsEntry showWhitespace;
     static SettingsEntry showWhitespaceSize;
     static SettingsEntry autoIndent;
+    static SettingsEntry backspaceUnindents;
     static SettingsEntry indentStyle;
     static SettingsEntry tabKeyFunction;
     static SettingsEntry highlightCurrentLine;
     static SettingsEntry enableBraceMatching;
+    static SettingsEntry enableLineNumbers;
 
     static Settings *inst(bool erase = false);
 

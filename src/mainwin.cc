@@ -37,7 +37,6 @@
 #include "polyset.h"
 #include "csgnode.h"
 #include "highlighter.h"
-#include "export.h"
 #include "builtin.h"
 #include "memory.h"
 #include "expression.h"
@@ -340,6 +339,9 @@ MainWindow::MainWindow(const QString &filename)
 	// Edit->Find
 	connect(this->editActionFind, SIGNAL(triggered()), this, SLOT(find()));
 	connect(this->editActionFindAndReplace, SIGNAL(triggered()), this, SLOT(findAndReplace()));
+#ifdef Q_OS_WIN
+	this->editActionFindAndReplace->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_F));
+#endif
 	connect(this->editActionFindNext, SIGNAL(triggered()), this, SLOT(findNext()));
 	connect(this->editActionFindPrevious, SIGNAL(triggered()), this, SLOT(findPrev()));
 	connect(this->editActionUseSelectionForFind, SIGNAL(triggered()), this, SLOT(useSelectionForFind()));
@@ -763,9 +765,8 @@ void MainWindow::setFileName(const QString &filename)
 		this->top_ctx.setDocumentPath(currentdir);
 	} else {
 		QFileInfo fileinfo(filename);
-		this->fileName = fileinfo.exists() ? fileinfo.absoluteFilePath() : fileinfo.fileName();
-		QString fn =fileinfo.absoluteFilePath();
-		setWindowFilePath(fn);
+		this->fileName = fileinfo.absoluteFilePath();
+		setWindowFilePath(this->fileName);
 
 		QDir::setCurrent(fileinfo.dir().absolutePath());
 		this->top_ctx.setDocumentPath(fileinfo.dir().absolutePath().toLocal8Bit().constData());
@@ -1392,7 +1393,6 @@ void MainWindow::actionSave()
 			saveError(file, _("Error saving design"));
 		}
 	}
-	clearCurrentOutput();
 	updateRecentFiles();
 }
 
@@ -2050,9 +2050,9 @@ void MainWindow::actionCheckValidity() {
 }
 
 #ifdef ENABLE_CGAL
-void MainWindow::actionExport(export_type_e export_type, const char *type_name, const char *suffix)
+void MainWindow::actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim)
 #else
-void MainWindow::actionExport(export_type_e, QString, QString)
+	void MainWindow::actionExport(FileFormat, QString, QString, unsigned int)
 #endif
 {
 	if (GuiLocker::isLocked()) return;
@@ -2061,12 +2061,12 @@ void MainWindow::actionExport(export_type_e, QString, QString)
 	setCurrentOutput();
 
 	if (!this->root_geom) {
-		PRINT("WARNING: Nothing to export! Try building first (press F6).");
+		PRINT("ERROR: Nothing to export! Try rendering first (press F6).");
 		clearCurrentOutput();
 		return;
 	}
 
-	// editor has changed since last F6
+	// editor has changed since last render
 	if (this->contentschanged) {
 		QMessageBox::StandardButton ret;
 		ret = QMessageBox::warning(this, "Application",
@@ -2078,14 +2078,14 @@ void MainWindow::actionExport(export_type_e, QString, QString)
 		}
 	}
 
-	if (this->root_geom->getDimension() != 3) {
-		PRINT("Current top level object is not a 3D object.");
+	if (this->root_geom->getDimension() != dim) {
+		PRINTB("ERROR: Current top level object is not a %dD object.", dim);
 		clearCurrentOutput();
 		return;
 	}
 
 	if (this->root_geom->isEmpty()) {
-		PRINT("Current top level object is empty.");
+		PRINT("ERROR: Current top level object is empty.");
 		clearCurrentOutput();
 		return;
 	}
@@ -2097,22 +2097,13 @@ void MainWindow::actionExport(export_type_e, QString, QString)
 
 	QString title = QString(_("Export %1 File")).arg(type_name);
 	QString filter = QString(_("%1 Files (*%2)")).arg(type_name, suffix);
-	QString filename = this->fileName.isEmpty() ? QString(_("Untitled")) + suffix : QFileInfo(this->fileName).baseName() + suffix;
+	QString filename = this->fileName.isEmpty() ? QString(_("Untitled")) + suffix : QFileInfo(this->fileName).completeBaseName() + suffix;
 	QString export_filename = QFileDialog::getSaveFileName(this, title, filename, filter);
 	if (export_filename.isEmpty()) {
 		clearCurrentOutput();
 		return;
 	}
 
-	enum FileFormat format = (enum FileFormat)-1;
-	switch (export_type) {
-	case EXPORT_TYPE_STL: format = OPENSCAD_STL; break;
-	case EXPORT_TYPE_OFF: format = OPENSCAD_OFF; break;
-	case EXPORT_TYPE_AMF: format = OPENSCAD_AMF; break;
-	default:
-		assert(false && "Unknown export type");
-		break;
-	}
 	exportFileByName(this->root_geom, format,
 		export_filename.toLocal8Bit().constData(),
 		export_filename.toUtf8());
@@ -2124,75 +2115,27 @@ void MainWindow::actionExport(export_type_e, QString, QString)
 
 void MainWindow::actionExportSTL()
 {
-	actionExport(EXPORT_TYPE_STL, "STL", ".stl");
+	actionExport(OPENSCAD_STL, "STL", ".stl", 3);
 }
 
 void MainWindow::actionExportOFF()
 {
-	actionExport(EXPORT_TYPE_OFF, "OFF", ".off");
+	actionExport(OPENSCAD_OFF, "OFF", ".off", 3);
 }
 
 void MainWindow::actionExportAMF()
 {
-	actionExport(EXPORT_TYPE_AMF, "AMF", ".amf");
-}
-
-QString MainWindow::get2dExportFilename(QString format, QString extension) {
-	setCurrentOutput();
-
-	if (!this->root_geom) {
-		PRINT("WARNING: Nothing to export! Try building first (press F6).");
-		clearCurrentOutput();
-		return QString();
-	}
-
-	if (this->root_geom->getDimension() != 2) {
-		PRINT("WARNING: Current top level object is not a 2D object.");
-		clearCurrentOutput();
-		return QString();
-	}
-
-	QString caption = QString(_("Export %1 File")).arg(format);
-	QString suggestion = this->fileName.isEmpty()
-		? QString(_("Untitled%1")).arg(extension)
-		: QFileInfo(this->fileName).baseName() + extension;
-	QString filter = QString(_("%1 Files (*%2)")).arg(format, extension);
-	QString exportFilename = QFileDialog::getSaveFileName(this, caption, suggestion, filter);
-	if (exportFilename.isEmpty()) {
-		PRINT("No filename specified. DXF export aborted.");
-		clearCurrentOutput();
-		return QString();
-	}
-	
-	return exportFilename;
+	actionExport(OPENSCAD_AMF, "AMF", ".amf", 3);
 }
 
 void MainWindow::actionExportDXF()
 {
-#ifdef ENABLE_CGAL
-	QString dxf_filename = get2dExportFilename("DXF", ".dxf");
-	if (dxf_filename.isEmpty()) {
-		return;
-	}
-	exportFileByName(this->root_geom, OPENSCAD_DXF, dxf_filename.toUtf8(),
-		dxf_filename.toLocal8Bit().constData());
-	PRINT("DXF export finished.");
-
-	clearCurrentOutput();
-#endif /* ENABLE_CGAL */
+	actionExport(OPENSCAD_DXF, "DXF", ".dxf", 2);
 }
 
 void MainWindow::actionExportSVG()
 {
-	QString svg_filename = get2dExportFilename("SVG", ".svg");
-	if (svg_filename.isEmpty()) {
-		return;
-	}
-	exportFileByName(this->root_geom, OPENSCAD_SVG, svg_filename.toUtf8(),
-		svg_filename.toLocal8Bit().constData());
-	PRINT("SVG export finished.");
-
-	clearCurrentOutput();
+	actionExport(OPENSCAD_SVG, "SVG", ".svg", 2);
 }
 
 void MainWindow::actionExportCSG()
@@ -2200,7 +2143,7 @@ void MainWindow::actionExportCSG()
 	setCurrentOutput();
 
 	if (!this->root_node) {
-		PRINT("WARNING: Nothing to export. Please try compiling first...");
+		PRINT("ERROR: Nothing to export. Please try compiling first.");
 		clearCurrentOutput();
 		return;
 	}
@@ -2210,7 +2153,6 @@ void MainWindow::actionExportCSG()
 	    _("CSG Files (*.csg)"));
 	
 	if (csg_filename.isEmpty()) {
-		PRINT("No filename specified. CSG export aborted.");
 		clearCurrentOutput();
 		return;
 	}
@@ -2234,13 +2176,15 @@ void MainWindow::actionExportImage()
 
   // Grab first to make sure dialog box isn't part of the grabbed image
 	qglview->grabFrame();
+	QString filename = this->fileName.isEmpty() ? QString(_("Untitled.png")) : QFileInfo(this->fileName).completeBaseName() + ".png";
 	QString img_filename = QFileDialog::getSaveFileName(this,
-			_("Export Image"), "", _("PNG Files (*.png)"));
+			_("Export Image"), filename, _("PNG Files (*.png)"));
 	if (img_filename.isEmpty()) {
-		PRINT("No filename specified. Image export aborted.");
-	} else {
-		qglview->save(img_filename.toLocal8Bit().constData());
+		clearCurrentOutput();
+		return;
 	}
+
+	qglview->save(img_filename.toLocal8Bit().constData());
 	clearCurrentOutput();
 	return;
 }

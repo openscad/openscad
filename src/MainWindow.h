@@ -11,17 +11,11 @@
 #include "Tree.h"
 #include "memory.h"
 #include "editor.h"
+#include "export.h"
 #include <vector>
 #include <QMutex>
 #include <QTime>
 #include <QIODevice>
-
-enum export_type_e {
-	EXPORT_TYPE_UNKNOWN,
-	EXPORT_TYPE_STL,
-	EXPORT_TYPE_AMF,
-	EXPORT_TYPE_OFF
-};
 
 class MainWindow : public QMainWindow, public Ui::MainWindow
 {
@@ -186,7 +180,7 @@ private slots:
 	void actionDisplayAST();
 	void actionDisplayCSGTree();
 	void actionDisplayCSGProducts();
-	void actionExport(export_type_e, const char *, const char *);
+	void actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim);
 	void actionExportSTL();
 	void actionExportOFF();
 	void actionExportAMF();
