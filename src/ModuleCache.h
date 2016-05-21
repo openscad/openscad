@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <boost/unordered_map.hpp>
+#include <unordered_map>
 
 /*!
 	Caches FileModules based on their filenames
@@ -26,5 +26,5 @@ private:
 		class FileModule *module;
 		std::string cache_id;
 	};
-	boost::unordered_map<std::string, cache_entry> entries;
+	std::unordered_map<std::string, cache_entry> entries;
 };

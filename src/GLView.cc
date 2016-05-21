@@ -3,9 +3,9 @@
 #include "stdio.h"
 #include "colormap.h"
 #include "rendersettings.h"
-#include "mathc99.h"
 #include "printutils.h"
 #include "renderer.h"
+#include <cmath>
 
 #ifdef _WIN32
 #include <GL/wglew.h>
@@ -105,7 +105,7 @@ void GLView::setupCamera()
 			double height = dist * tan(cam.fov/2*M_PI/180);
 			glOrtho(-height*aspectratio, height*aspectratio,
 							-height, height,
-							-far_far_away, +far_far_away);
+							-100*dist, +100*dist);
 			break;
 		}
 		}
@@ -130,7 +130,7 @@ void GLView::setupCamera()
 			double height = dist * tan(cam.fov/2*M_PI/180);
 			glOrtho(-height*aspectratio, height*aspectratio,
 							-height, height,
-							-far_far_away, +far_far_away);
+							-100*dist, +100*dist);
 			break;
 		}
 		}
@@ -163,7 +163,7 @@ void GLView::paintGL()
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
   setupCamera();
-  if (this->cam.type) {
+  if (this->cam.type == Camera::GIMBAL) {
     // Only for GIMBAL cam
     // The crosshair should be fixed at the center of the viewport...
     if (showcrosshairs) GLView::showCrosshairs();
@@ -272,7 +272,7 @@ void GLView::enable_opencsg_shaders()
       "  vec3 normal, lightDir;\n"
       "  normal = normalize(gl_NormalMatrix * gl_Normal);\n"
       "  lightDir = normalize(vec3(gl_LightSource[0].position));\n"
-      "  shading = abs(dot(normal, lightDir));\n"
+      "  shading = 0.2 + abs(dot(normal, lightDir));\n"
       "}\n";
 
     /*
@@ -419,15 +419,15 @@ void GLView::showSmallaxes(const Color4f &col)
 
   GLdouble xlabel_x, xlabel_y, xlabel_z;
   gluProject(12*dpi, 0, 0, mat_model, mat_proj, viewport, &xlabel_x, &xlabel_y, &xlabel_z);
-  xlabel_x = round(xlabel_x); xlabel_y = round(xlabel_y);
+  xlabel_x = std::round(xlabel_x); xlabel_y = std::round(xlabel_y);
 
   GLdouble ylabel_x, ylabel_y, ylabel_z;
   gluProject(0, 12*dpi, 0, mat_model, mat_proj, viewport, &ylabel_x, &ylabel_y, &ylabel_z);
-  ylabel_x = round(ylabel_x); ylabel_y = round(ylabel_y);
+  ylabel_x = std::round(ylabel_x); ylabel_y = std::round(ylabel_y);
 
   GLdouble zlabel_x, zlabel_y, zlabel_z;
   gluProject(0, 0, 12*dpi, mat_model, mat_proj, viewport, &zlabel_x, &zlabel_y, &zlabel_z);
-  zlabel_x = round(zlabel_x); zlabel_y = round(zlabel_y);
+  zlabel_x = std::round(zlabel_x); zlabel_y = std::round(zlabel_y);
 
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();

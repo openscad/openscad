@@ -27,5 +27,5 @@ public:
 	int convexity;
 	double fn, fs, fa;
 	double origin_x, origin_y, scale;
-	virtual class Geometry *createGeometry() const;
+	virtual const class Geometry *createGeometry() const;
 };

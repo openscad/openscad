@@ -1,68 +1,66 @@
-group() {
-	rotate_extrude(convexity = 2, $fn = 0, $fa = 12, $fs = 2);
-	rotate_extrude(convexity = 2, $fn = 0, $fa = 12, $fs = 2);
-	rotate_extrude(convexity = 2, $fn = 0, $fa = 12, $fs = 2) {
-		cube(size = [1, 1, 1], center = false);
+rotate_extrude(angle = 360, convexity = 2, $fn = 0, $fa = 12, $fs = 2);
+rotate_extrude(angle = 360, convexity = 2, $fn = 0, $fa = 12, $fs = 2);
+rotate_extrude(angle = 360, convexity = 2, $fn = 0, $fa = 12, $fs = 2) {
+	cube(size = [1, 1, 1], center = false);
+}
+linear_extrude(height = 10, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
+	square(size = [10, 10], center = false);
+}
+multmatrix([[1, 0, 0, 19], [0, 1, 0, 5], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	linear_extrude(height = 10, center = true, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
+		difference() {
+			circle($fn = 0, $fa = 12, $fs = 2, r = 5);
+			circle($fn = 0, $fa = 12, $fs = 2, r = 3);
+		}
 	}
+}
+multmatrix([[1, 0, 0, 31.5], [0, 1, 0, 2.5], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	linear_extrude(height = 10, center = false, convexity = 1, twist = -45, slices = 3, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
+		polygon(points = [[-5, -2.5], [5, -2.5], [0, 2.5]], paths = undef, convexity = 1);
+	}
+}
+multmatrix([[1, 0, 0, 0], [0, 1, 0, 20], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	linear_extrude(height = 20, center = false, convexity = 1, twist = 30, slices = 2, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
+		difference() {
+			square(size = [10, 10], center = false);
+			multmatrix([[1, 0, 0, 1], [0, 1, 0, 1], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				square(size = [8, 8], center = false);
+			}
+		}
+	}
+}
+multmatrix([[1, 0, 0, 19], [0, 1, 0, 20], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	linear_extrude(height = 20, center = false, convexity = 1, twist = 45, slices = 10, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
+		square(size = [10, 10], center = false);
+	}
+}
+multmatrix([[1, 0, 0, 0], [0, 1, 0, -15], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	linear_extrude(height = 5, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
+		square(size = [10, 10], center = false);
+	}
+}
+multmatrix([[1, 0, 0, -25], [0, 1, 0, -10], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	linear_extrude(height = 10, center = false, convexity = 1, scale = [2, 2], $fn = 0, $fa = 12, $fs = 2) {
+		square(size = [5, 5], center = true);
+	}
+}
+multmatrix([[1, 0, 0, -15], [0, 1, 0, 20], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	linear_extrude(height = 20, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
+		square(size = [10, 10], center = false);
+	}
+}
+multmatrix([[1, 0, 0, -10], [0, 1, 0, 5], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	linear_extrude(height = 15, center = false, convexity = 1, scale = [0, 0], $fn = 0, $fa = 12, $fs = 2) {
+		square(size = [10, 10], center = true);
+	}
+}
+multmatrix([[1, 0, 0, -15], [0, 1, 0, -15], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 	linear_extrude(height = 10, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
 		square(size = [10, 10], center = false);
 	}
-	multmatrix([[1, 0, 0, 19], [0, 1, 0, 5], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		linear_extrude(height = 10, center = true, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-			difference() {
-				circle($fn = 0, $fa = 12, $fs = 2, r = 5);
-				circle($fn = 0, $fa = 12, $fs = 2, r = 3);
-			}
-		}
-	}
-	multmatrix([[1, 0, 0, 31.5], [0, 1, 0, 2.5], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		linear_extrude(height = 10, center = false, convexity = 1, twist = -45, slices = 3, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-			polygon(points = [[-5, -2.5], [5, -2.5], [0, 2.5]], paths = undef, convexity = 1);
-		}
-	}
-	multmatrix([[1, 0, 0, 0], [0, 1, 0, 20], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		linear_extrude(height = 20, center = false, convexity = 1, twist = 30, slices = 2, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-			difference() {
-				square(size = [10, 10], center = false);
-				multmatrix([[1, 0, 0, 1], [0, 1, 0, 1], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-					square(size = [8, 8], center = false);
-				}
-			}
-		}
-	}
-	multmatrix([[1, 0, 0, 19], [0, 1, 0, 20], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		linear_extrude(height = 20, center = false, convexity = 1, twist = 45, slices = 10, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-			square(size = [10, 10], center = false);
-		}
-	}
-	multmatrix([[1, 0, 0, 0], [0, 1, 0, -15], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		linear_extrude(height = 5, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-			square(size = [10, 10], center = false);
-		}
-	}
-	multmatrix([[1, 0, 0, -25], [0, 1, 0, -10], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		linear_extrude(height = 10, center = false, convexity = 1, scale = [2, 2], $fn = 0, $fa = 12, $fs = 2) {
-			square(size = [5, 5], center = true);
-		}
-	}
-	multmatrix([[1, 0, 0, -15], [0, 1, 0, 20], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		linear_extrude(height = 20, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-			square(size = [10, 10], center = false);
-		}
-	}
-	multmatrix([[1, 0, 0, -10], [0, 1, 0, 5], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		linear_extrude(height = 15, center = false, convexity = 1, scale = [0, 0], $fn = 0, $fa = 12, $fs = 2) {
-			square(size = [10, 10], center = true);
-		}
-	}
-	multmatrix([[1, 0, 0, -15], [0, 1, 0, -15], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		linear_extrude(height = 10, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-			square(size = [10, 10], center = false);
-		}
-	}
-	multmatrix([[1, 0, 0, 0], [0, 1, 0, -25], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		linear_extrude(height = 0, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-			square(size = [10, 10], center = true);
-		}
+}
+multmatrix([[1, 0, 0, 0], [0, 1, 0, -25], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	linear_extrude(height = 0, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
+		square(size = [10, 10], center = true);
 	}
 }

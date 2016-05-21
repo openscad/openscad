@@ -5,7 +5,7 @@
 #include <list>
 #include "linalg.h"
 
-#include <boost/shared_ptr.hpp>
+#include "memory.h"
 #include <boost/filesystem.hpp>
 #include <boost/property_tree/ptree.hpp>
 
@@ -68,7 +68,7 @@ private:
 
 class ColorMap
 {
-        typedef std::multimap<int, boost::shared_ptr<RenderColorScheme>, std::less<int> > colorscheme_set_t;
+        typedef std::multimap<int, shared_ptr<RenderColorScheme>, std::less<int>> colorscheme_set_t;
     
 public:
 	static ColorMap *inst(bool erase = false);

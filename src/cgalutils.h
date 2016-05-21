@@ -19,14 +19,14 @@ namespace /* anonymous */ {
 }
 
 namespace CGALUtils {
-	bool applyHull(const Geometry::ChildList &children, PolySet &P);
-	CGAL_Nef_polyhedron *applyOperator(const Geometry::ChildList &children, OpenSCADOperator op);
+	bool applyHull(const Geometry::Geometries &children, PolySet &P);
+	CGAL_Nef_polyhedron *applyOperator(const Geometry::Geometries &children, OpenSCADOperator op);
 	//FIXME: Old, can be removed:
 	//void applyBinaryOperator(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedron &src, OpenSCADOperator op);
 	Polygon2d *project(const CGAL_Nef_polyhedron &N, bool cut);
 	CGAL_Iso_cuboid_3 boundingBox(const CGAL_Nef_polyhedron3 &N);
 	bool is_approximately_convex(const PolySet &ps);
-	Geometry const* applyMinkowski(const Geometry::ChildList &children);
+	Geometry const* applyMinkowski(const Geometry::Geometries &children);
 
 	template <typename Polyhedron> std::string printPolyhedron(const Polyhedron &p);
 	template <typename Polyhedron> bool createPolySetFromPolyhedron(const Polyhedron &p, PolySet &ps);

@@ -40,7 +40,7 @@ isEmpty(GLIB2_LIBPATH) {
   GLIB2_LIBS = -L$$GLIB2_LIBPATH -lglib-2.0
 }
 
-CONFIG(mingw-cross-env) {
+CONFIG(mingw-cross-env)|CONFIG(mingw-cross-env-shared) {
   #message("mingw")
   isEmpty(GLIB2_INCLUDEPATH) {
     MXE_TARGET_DIR=$$(MXETARGETDIR)

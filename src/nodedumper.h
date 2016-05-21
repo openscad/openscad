@@ -16,11 +16,13 @@ public:
         virtual ~NodeDumper() {}
 
         virtual Response visit(State &state, const AbstractNode &node);
+        virtual Response visit(State &state, const RootNode &node);
 
 private:
         void handleVisitedChildren(const State &state, const AbstractNode &node);
         bool isCached(const AbstractNode &node) const;
         void handleIndent(const State &state);
+        std::string dumpChildBlock(const AbstractNode &node);
         std::string dumpChildren(const AbstractNode &node);
 
         NodeCache &cache;

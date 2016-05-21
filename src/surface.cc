@@ -37,8 +37,8 @@
 
 #include <sstream>
 #include <fstream>
-#include <boost/foreach.hpp>
-#include <boost/unordered_map.hpp>
+#include <unordered_map>
+#include <boost/functional/hash.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
@@ -55,7 +55,7 @@ public:
 	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
 };
 
-typedef boost::unordered_map<std::pair<int,int>,double> img_data_t;
+typedef std::unordered_map<std::pair<int,int>, double, boost::hash<std::pair<int,int>>> img_data_t;
 
 class SurfaceNode : public LeafNode
 {
@@ -72,7 +72,7 @@ public:
 	bool invert;
 	int convexity;
 	
-	virtual Geometry *createGeometry() const;
+	virtual const Geometry *createGeometry() const;
 private:
 	void convert_image(img_data_t &data, std::vector<unsigned char> &img, unsigned int width, unsigned int height) const;
 	bool is_png(std::vector<unsigned char> &img) const;
@@ -178,7 +178,7 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
 	int lines = 0, columns = 0;
 	double min_val = 0;
 
-	typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+	typedef boost::tokenizer<boost::char_separator<char>> tokenizer;
 	boost::char_separator<char> sep(" \t");
 
 	while (!stream.eof()) {
@@ -192,7 +192,7 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
 		int col = 0;
 		tokenizer tokens(line, sep);
 		try {
-			BOOST_FOREACH(const std::string &token, tokens) {
+			for(const auto &token : tokens) {
 				double v = boost::lexical_cast<double>(token);
 				data[std::make_pair(lines, col++)] = v;
 				if (col > columns) columns = col;
@@ -211,7 +211,7 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
 	return data;
 }
 
-Geometry *SurfaceNode::createGeometry() const
+const Geometry *SurfaceNode::createGeometry() const
 {
 	img_data_t data = read_png_or_dat(filename);
 
@@ -290,15 +290,17 @@ Geometry *SurfaceNode::createGeometry() const
 		p->append_vertex(ox + i, oy + lines-1, min_val);
 	}
 
-	p->append_poly();
-	for (int i = 0; i < columns-1; i++)
-		p->insert_vertex(ox + i, oy + 0, min_val);
-	for (int i = 0; i < lines-1; i++)
-		p->insert_vertex(ox + columns-1, oy + i, min_val);
-	for (int i = columns-1; i > 0; i--)
-		p->insert_vertex(ox + i, oy + lines-1, min_val);
-	for (int i = lines-1; i > 0; i--)
-		p->insert_vertex(ox + 0, oy + i, min_val);
+	if (columns > 1 && lines > 1) {
+		p->append_poly();
+		for (int i = 0; i < columns-1; i++)
+			p->insert_vertex(ox + i, oy + 0, min_val);
+		for (int i = 0; i < lines-1; i++)
+			p->insert_vertex(ox + columns-1, oy + i, min_val);
+		for (int i = columns-1; i > 0; i--)
+			p->insert_vertex(ox + i, oy + lines-1, min_val);
+		for (int i = lines-1; i > 0; i--)
+			p->insert_vertex(ox + 0, oy + i, min_val);
+	}
 
 	return p;
 }

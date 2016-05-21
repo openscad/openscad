@@ -22,7 +22,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- */
+
 #include <boost/foreach.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
@@ -91,3 +91,5 @@ void export_parameter(std::ostream &output, FileModule *fileModule)
 
 	pt::write_json(output, pt);
 }
+
+ */

@@ -33,14 +33,13 @@
 #include "fileutils.h"
 #include "evalcontext.h"
 
-#include "mathc99.h"
+#include <cmath>
 #include <sstream>
-
-#include <stdint.h>
+#include <cstdint>
 
 #include <boost/filesystem.hpp>
-boost::unordered_map<std::string, ValuePtr> dxf_dim_cache;
-boost::unordered_map<std::string, ValuePtr> dxf_cross_cache;
+std::unordered_map<std::string, ValuePtr> dxf_dim_cache;
+std::unordered_map<std::string, ValuePtr> dxf_cross_cache;
 namespace fs = boost::filesystem;
 
 ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
@@ -98,7 +97,7 @@ ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 			double x = d->coords[4][0] - d->coords[3][0];
 			double y = d->coords[4][1] - d->coords[3][1];
 			double angle = d->angle;
-			double distance_projected_on_line = fabs(x * cos(angle*M_PI/180) + y * sin(angle*M_PI/180));
+			double distance_projected_on_line = std::fabs(x * cos(angle*M_PI/180) + y * sin(angle*M_PI/180));
 			return dxf_dim_cache[key] = ValuePtr(distance_projected_on_line);
 		}
 		else if (type == 1) {
@@ -111,7 +110,7 @@ ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 			// Angular
 			double a1 = atan2(d->coords[0][0] - d->coords[5][0], d->coords[0][1] - d->coords[5][1]);
 			double a2 = atan2(d->coords[4][0] - d->coords[3][0], d->coords[4][1] - d->coords[3][1]);
-			return dxf_dim_cache[key] = ValuePtr(fabs(a1 - a2) * 180 / M_PI);
+			return dxf_dim_cache[key] = ValuePtr(std::fabs(a1 - a2) * 180 / M_PI);
 		}
 		else if (type == 3 || type == 4) {
 			// Diameter or Radius
@@ -200,8 +199,8 @@ ValuePtr builtin_dxf_cross(const Context *ctx, const EvalContext *evalctx)
 			double x = x1 + ua*(x2 - x1);
 			double y = y1 + ua*(y2 - y1);
 			Value::VectorType ret;
-			ret.push_back(Value(x));
-			ret.push_back(Value(y));
+			ret.push_back(ValuePtr(x));
+			ret.push_back(ValuePtr(y));
 			return dxf_cross_cache[key] = ValuePtr(ret);
 		}
 	}

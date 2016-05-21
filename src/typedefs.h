@@ -4,7 +4,8 @@
 #include <string>
 #include <vector>
 #include <utility>
-#include <boost/shared_ptr.hpp>
+
+#include "memory.h"
 
 #include "value.h"
 
@@ -14,11 +15,11 @@ typedef std::map<const std::string, Annotation *> AnnotationMap;
 
 typedef std::vector<Annotation> AnnotationList;
 
-class Assignment : public std::pair<std::string, boost::shared_ptr<class Expression> >
+class Assignment : public std::pair<std::string, shared_ptr<class Expression> >
 {
 public:
     Assignment(std::string name);
-    Assignment(std::string name, boost::shared_ptr<class Expression> expr);
+    Assignment(std::string name,shared_ptr<class Expression> expr);
     virtual ~Assignment();
 
     virtual void add_annotations(AnnotationList *annotations);

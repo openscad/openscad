@@ -123,7 +123,7 @@ bool ParameterEntryWidget::isDefaultValue()
 
 void ParameterEntryWidget::applyParameter(Assignment *assignment)
 {
-	assignment->second = boost::shared_ptr<Expression>(new ExpressionConst(value));
+	assignment->second = shared_ptr<Expression>(new ExpressionConst(value));
 }
 
 void ParameterEntryWidget::setAssignment(Context *ctx, const Assignment *assignment, const ValuePtr defaultValue)
@@ -185,8 +185,8 @@ void ParameterEntryWidget::setValue(const ValuePtr defaultValue, const ValuePtr 
 		comboBox->clear();
 		const Value::VectorType& vec = values->toVector();
 		for (Value::VectorType::const_iterator it = vec.begin(); it != vec.end(); it++) {
-			const Value *v = &(*it);
-			comboBox->addItem(QString::fromStdString((*it).toString()), qVariantFromValue((void *)v));
+			const ValuePtr *v = &(*it);
+			comboBox->addItem(QString::fromStdString((*it)->toString()), qVariantFromValue((void *)v));
 		}
 		QString defaultText = QString::fromStdString(value->toString());
 		int idx = comboBox->findText(defaultText);
@@ -234,17 +234,17 @@ void ParameterEntryWidget::setValue(const ValuePtr defaultValue, const ValuePtr 
 			this->doubleSpinBox2->hide();
 			this->doubleSpinBox2->setReadOnly(true);
 		}
-		this->doubleSpinBox1->setValue(vec.at(0).toDouble());
+		this->doubleSpinBox1->setValue(vec.at(0)->toDouble());
 		if (vec.size() > 1) {
-			this->doubleSpinBox2->setValue(vec.at(1).toDouble());
+			this->doubleSpinBox2->setValue(vec.at(1)->toDouble());
 			this->doubleSpinBox2->setReadOnly(false);
 		}
 		if (vec.size() > 2) {
-			this->doubleSpinBox3->setValue(vec.at(2).toDouble());
+			this->doubleSpinBox3->setValue(vec.at(2)->toDouble());
 			this->doubleSpinBox3->setReadOnly(false);
 		}
 		if (vec.size() > 3) {
-			this->doubleSpinBox4->setValue(vec.at(3).toDouble());
+			this->doubleSpinBox4->setValue(vec.at(3)->toDouble());
 			this->doubleSpinBox4->setReadOnly(false);
 		}
 	}

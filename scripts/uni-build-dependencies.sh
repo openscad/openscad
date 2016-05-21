@@ -190,7 +190,11 @@ build_qt5scintilla2()
   tar xzf QScintilla-gpl-$version.tar.gz
   cd QScintilla-gpl-$version/Qt4Qt5/
   qmake CONFIG+=staticlib
-  make -j"$NUMCPU" install
+  tmpinstalldir=$DEPLOYDIR/tmp/qsci$version
+  INSTALL_ROOT=$tmpinstalldir make -j"$NUMCPU" install
+  cp -av $tmpinstalldir/usr/share $DEPLOYDIR/
+  cp -av $tmpinstalldir/usr/include $DEPLOYDIR/
+  cp -av $tmpinstalldir/usr/lib $DEPLOYDIR/
 }
 
 build_bison()
@@ -412,8 +416,10 @@ build_cgal()
 
   # older cmakes have buggy FindBoost that can result in
   # finding the system libraries but OPENSCAD_LIBRARIES include paths
-  FINDBOOST_CMAKE=$OPENSCAD_SCRIPTDIR/../tests/FindBoost.cmake
-  cp $FINDBOOST_CMAKE ./cmake/modules/
+  # NB! This was removed 2015-12-02 - if this problem resurfaces, fix it only for the relevant platforms as this
+  # messes up more recent installations of cmake and CGAL.
+  # FINDBOOST_CMAKE=$OPENSCAD_SCRIPTDIR/../tests/FindBoost.cmake
+  # cp $FINDBOOST_CMAKE ./cmake/modules/
 
   mkdir bin
   cd bin

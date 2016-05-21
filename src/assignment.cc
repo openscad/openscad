@@ -29,10 +29,10 @@
 Assignment::Assignment(std::string name)
 {
 	first = name;
-	second = boost::shared_ptr<class Expression>();
+	second = shared_ptr<class Expression>();
 }
 
-Assignment::Assignment(std::string name, boost::shared_ptr<class Expression> expr)
+Assignment::Assignment(std::string name, shared_ptr<class Expression> expr)
 {
 	first = name;
 	second = expr;

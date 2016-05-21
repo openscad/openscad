@@ -20,7 +20,7 @@ public:
 
   virtual Response visit(State &state, const AbstractNode &node);
 	virtual Response visit(State &state, const AbstractIntersectionNode &node);
-	virtual Response visit(State &state, const CsgNode &node);
+	virtual Response visit(State &state, const CsgOpNode &node);
 	virtual Response visit(State &state, const TransformNode &node);
 	virtual Response visit(State &state, const AbstractPolyNode &node);
 
