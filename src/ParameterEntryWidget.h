@@ -27,20 +27,15 @@
 
 #include "value.h"
 #include "qtgettext.h"
+
 #include "ui_ParameterEntryWidget.h"
+#include "parameterobject.h"
 
 class ParameterEntryWidget : public QWidget, public Ui::ParameterEntryWidget
 {
 	Q_OBJECT
 
-        typedef enum { UNDEFINED, COMBOBOX, SLIDER, CHECKBOX, TEXT, NUMBER, VECTOR } parameter_type_t;
-
-        ValuePtr value;
-        ValuePtr values;
-        ValuePtr defaultValue;
-	Value::ValueType vt;
-	Value::ValueType dvt;
-        parameter_type_t target;
+        ParameterObject object;
 
 public:
 	ParameterEntryWidget(QWidget *parent = 0);
