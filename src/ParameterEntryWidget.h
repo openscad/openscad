@@ -38,14 +38,14 @@ class ParameterEntryWidget : public QWidget, public Ui::ParameterEntryWidget
 
 
 public:
-    ParameterObject object;
+    ParameterObject *object;
 	ParameterEntryWidget(QWidget *parent = 0);
 	virtual ~ParameterEntryWidget();
 
     ValuePtr getValue();
     bool isDefaultValue();
     void setAssignment(class Context *context, const class Assignment *assignment, const ValuePtr defaultValue);
-
+    void setAssignment(ParameterObject *parameterobject);
 protected slots:
         void on_comboBox_activated(int);
         void on_slider_valueChanged(int);

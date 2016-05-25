@@ -3,8 +3,8 @@
 // The use of children() allows to write generic modules that
 // modify child modules regardless of how the child geometry
 // is created.
-@parameter()
-a=3;
+
+
 color("red")
     make_ring_of(radius = 15, count = 6)
         cube(8, center = true);

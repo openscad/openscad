@@ -130,12 +130,13 @@ void ParameterWidget::setParameters(const Module *module)
 		if (defaultValue->type() == Value::UNDEFINED) {
 			continue;
 		}
-
+        ParameterObject *entryObject = new ParameterObject();
 		ParameterEntryWidget *entry = new ParameterEntryWidget();
-		entry->setAssignment(&ctx, &assignment, defaultValue);
+        entryObject->setAssignment(&ctx, &assignment, defaultValue);
+        entry->setAssignment(entryObject);
 		connect(entry, SIGNAL(changed()), this, SLOT(onValueChanged()));
         addEntry(entry);
-        entries[assignment.first] = &(entry->object);
+        entries[assignment.first] = entryObject;
 
 	}
 	end();

@@ -41,35 +41,35 @@ ParameterEntryWidget::~ParameterEntryWidget()
 void ParameterEntryWidget::on_comboBox_activated(int idx)
 {
     const Value *v = (const Value *)comboBox->itemData(idx).value<void *>();
-    object.value = ValuePtr(*v);
+    object->value = ValuePtr(*v);
 	emit changed();
 }
 
 void ParameterEntryWidget::on_slider_valueChanged(int)
 {
 	double v = slider->value();
-    object.value = ValuePtr(v);
+    object->value = ValuePtr(v);
 	this->labelSliderValue->setText(QString::number(v, 'f', 0));
 	emit changed();
 }
 
 void ParameterEntryWidget::on_lineEdit_editingFinished()
 {
-    if (object.dvt == Value::NUMBER) {
+    if (object->dvt == Value::NUMBER) {
 		try {
-            object.value = ValuePtr(boost::lexical_cast<double>(lineEdit->text().toStdString()));
+            object->value = ValuePtr(boost::lexical_cast<double>(lineEdit->text().toStdString()));
 		} catch (const boost::bad_lexical_cast& e) {
-            lineEdit->setText(QString::fromStdString(object.defaultValue->toString()));
+            lineEdit->setText(QString::fromStdString(object->defaultValue->toString()));
 		}
 	} else {
-        object.value = ValuePtr(lineEdit->text().toStdString());
+        object->value = ValuePtr(lineEdit->text().toStdString());
 	}
 	emit changed();
 }
 
 void ParameterEntryWidget::on_checkBox_toggled()
 {
-    object.value = ValuePtr(checkBox->isChecked());
+    object->value = ValuePtr(checkBox->isChecked());
 	emit changed();
 }
 
@@ -90,8 +90,8 @@ void ParameterEntryWidget::on_doubleSpinBox3_valueChanged(double)
 
 void ParameterEntryWidget::updateVectorValue()
 {
-    if (object.target == 5) {
-        object.value = ValuePtr(doubleSpinBox1->value());
+    if (object->target == 5) {
+        object->value = ValuePtr(doubleSpinBox1->value());
 	} else {
 		Value::VectorType vt;
 
@@ -106,28 +106,36 @@ void ParameterEntryWidget::updateVectorValue()
 			vt.push_back(this->doubleSpinBox4->value());
 		}
 
-        object.value = ValuePtr(vt);
+        object->value = ValuePtr(vt);
 	}
 	emit changed();
 }
 
 ValuePtr ParameterEntryWidget::getValue()
 {
-    return object.value;
+    return object->value;
 }
 
 bool ParameterEntryWidget::isDefaultValue()
 {
-    return object.value == object.defaultValue;
+    return object->value == object->defaultValue;
 }
 
 
+void ParameterEntryWidget::setAssignment(ParameterObject *parameterobject)
+{
+    object=parameterobject;
+    setName(QString::fromStdString(object->name));
+    setValue();
+    setDescription(QString::fromStdString(object->descritpion));
+}
+
 void ParameterEntryWidget::setAssignment(Context *ctx, const Assignment *assignment, const ValuePtr defaultValue)
 {
-    object.setAssignment(ctx,assignment,defaultValue);
-    setName(QString::fromStdString(object.name));
+    object->setAssignment(ctx,assignment,defaultValue);
+    setName(QString::fromStdString(object->name));
     setValue();
-    setDescription(QString::fromStdString(object.descritpion));
+    setDescription(QString::fromStdString(object->descritpion));
 }
 
 void ParameterEntryWidget::setName(const QString& name)
@@ -138,17 +146,17 @@ void ParameterEntryWidget::setName(const QString& name)
 
 void ParameterEntryWidget::setValue()
 {
-    switch (object.target) {
+    switch (object->target) {
     case 1:
 	{
 		this->stackedWidget->setCurrentWidget(this->pageComboBox);
 		comboBox->clear();
-        const Value::VectorType& vec = object.values->toVector();
+        const Value::VectorType& vec = object->values->toVector();
 		for (Value::VectorType::const_iterator it = vec.begin(); it != vec.end(); it++) {
 			const ValuePtr *v = &(*it);
 			comboBox->addItem(QString::fromStdString((*it)->toString()), qVariantFromValue((void *)v));
 		}
-        QString defaultText = QString::fromStdString(object.value->toString());
+        QString defaultText = QString::fromStdString(object->value->toString());
 		int idx = comboBox->findText(defaultText);
 		if (idx >= 0) {
 			comboBox->setCurrentIndex(idx);
@@ -158,26 +166,26 @@ void ParameterEntryWidget::setValue()
     case 2:
     {
         this->stackedWidget->setCurrentWidget(this->pageSlider);
-        this->slider->setMaximum(object.values->toRange().end_value());
-        this->slider->setValue(object.value->toDouble());
-        this->slider->setMinimum(object.values->toRange().begin_value());
+        this->slider->setMaximum(object->values->toRange().end_value());
+        this->slider->setValue(object->value->toDouble());
+        this->slider->setMinimum(object->values->toRange().begin_value());
         break;
     }
     case 3:
 	{
 		this->stackedWidget->setCurrentWidget(this->pageCheckBox);
-        this->checkBox->setChecked(object.value->toBool());
+        this->checkBox->setChecked(object->value->toBool());
 		break;
 	}
     case 4:{
         this->stackedWidget->setCurrentWidget(this->pageText);
-        this->lineEdit->setText(QString::fromStdString(object.defaultValue->toString()));
+        this->lineEdit->setText(QString::fromStdString(object->defaultValue->toString()));
         break;
     }
     case 5:
 	{
 		this->stackedWidget->setCurrentWidget(this->pageVector);
-        this->doubleSpinBox1->setValue(object.value->toDouble());
+        this->doubleSpinBox1->setValue(object->value->toDouble());
 		this->doubleSpinBox2->hide();
 		this->doubleSpinBox3->hide();
 		this->doubleSpinBox4->hide();
@@ -186,7 +194,7 @@ void ParameterEntryWidget::setValue()
     case 6:
 	{
 		this->stackedWidget->setCurrentWidget(this->pageVector);
-        Value::VectorType vec = object.defaultValue->toVector();
+        Value::VectorType vec = object->defaultValue->toVector();
 		if (vec.size() < 4) {
 			this->doubleSpinBox4->hide();
 			this->doubleSpinBox4->setReadOnly(true);
