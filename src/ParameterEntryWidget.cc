@@ -40,7 +40,7 @@ ParameterEntryWidget::~ParameterEntryWidget()
 
 void ParameterEntryWidget::on_comboBox_activated(int idx)
 {
-	const Value *v = (const Value *)comboBox->itemData(idx).value<void *>();
+    const Value *v = (const Value *)comboBox->itemData(idx).value<void *>();
     object.value = ValuePtr(*v);
 	emit changed();
 }
@@ -128,21 +128,10 @@ void ParameterEntryWidget::applyParameter(Assignment *assignment)
 
 void ParameterEntryWidget::setAssignment(Context *ctx, const Assignment *assignment, const ValuePtr defaultValue)
 {
-	const std::string name = assignment->first;
-
-	const Annotation *param = assignment->annotation("Parameter");
-	const ValuePtr values = param->evaluate(ctx, "values");
-
-	setName(QString::fromStdString(name));
-	setValue(defaultValue, values);
-
-	const Annotation *desc = assignment->annotation("Description");
-	if (desc) {
-		const ValuePtr v = desc->evaluate(ctx, "text");
-		if (v->type() == Value::STRING) {
-			setDescription(QString::fromStdString(v->toString()));
-		}
-	}
+    object.setAssignment(ctx,assignment,defaultValue);
+    setName(QString::fromStdString(object.name));
+    setValue();
+    setDescription(QString::fromStdString(object.descritpion));
 }
 
 void ParameterEntryWidget::setName(const QString& name)
@@ -151,10 +140,8 @@ void ParameterEntryWidget::setName(const QString& name)
 	this->labelParameter->setText(name);
 }
 
-void ParameterEntryWidget::setValue(const ValuePtr defaultValue, const ValuePtr values)
+void ParameterEntryWidget::setValue()
 {
-
-    object.setValue(defaultValue,values);
     switch (object.target) {
     case 1:
 	{

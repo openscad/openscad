@@ -14,8 +14,8 @@ int ParameterObject::setValue(const class ValuePtr defaultValue, const class Val
     this->values = values;
     this->value = defaultValue;
     this->defaultValue = defaultValue;
-    vt = values->type();
-    dvt = defaultValue->type();
+    this->vt = values->type();
+    this->dvt = defaultValue->type();
     if (dvt == Value::BOOL) {
         target = CHECKBOX;
     } else if ((dvt == Value::VECTOR) && (defaultValue->toVector().size() <= 4)) {
@@ -30,4 +30,19 @@ int ParameterObject::setValue(const class ValuePtr defaultValue, const class Val
         target = TEXT;
     }
     return target;
+}
+
+
+void ParameterObject::setAssignment(class Context *ctx, const class Assignment *assignment, const ValuePtr defaultValue){
+    name = assignment->first;
+    const Annotation *param = assignment->annotation("Parameter");
+    const ValuePtr values = param->evaluate(ctx, "values");
+    setValue(defaultValue, values);
+    const Annotation *desc = assignment->annotation("Description");
+    if (desc) {
+        const ValuePtr v = desc->evaluate(ctx, "text");
+        if (v->type() == Value::STRING) {
+            descritpion=v->toString();
+        }
+    }
 }

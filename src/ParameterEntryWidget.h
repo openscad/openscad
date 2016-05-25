@@ -61,6 +61,6 @@ signals:
 protected:
         void updateVectorValue();
         void setName(const QString& name);
-        void setValue(const class ValuePtr defaultValue, const class ValuePtr values);
+        void setValue();
         void setDescription(const QString& description);
 };
