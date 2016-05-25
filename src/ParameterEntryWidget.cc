@@ -121,10 +121,6 @@ bool ParameterEntryWidget::isDefaultValue()
     return object.value == object.defaultValue;
 }
 
-void ParameterEntryWidget::applyParameter(Assignment *assignment)
-{
-    object.applyParameter(assignment);
-}
 
 void ParameterEntryWidget::setAssignment(Context *ctx, const Assignment *assignment, const ValuePtr defaultValue)
 {

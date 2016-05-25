@@ -106,7 +106,7 @@ void ParameterWidget::applyParameters(FileModule *fileModule)
 			continue;
 		}
 
-		(*entry).second->applyParameter(&(*it));
+        (*entry).second->applyParameter(&(*it));
 	}
 }
 
@@ -134,8 +134,8 @@ void ParameterWidget::setParameters(const Module *module)
 		ParameterEntryWidget *entry = new ParameterEntryWidget();
 		entry->setAssignment(&ctx, &assignment, defaultValue);
 		connect(entry, SIGNAL(changed()), this, SLOT(onValueChanged()));
-		addEntry(entry);
-		entries[assignment.first] = entry;
+        addEntry(entry);
+        entries[assignment.first] = &(entry->object);
 
 	}
 	end();

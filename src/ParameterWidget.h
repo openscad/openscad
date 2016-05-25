@@ -28,13 +28,14 @@
 #include <QTimer>
 
 #include "qtgettext.h"
+#include "parameterobject.h"
 #include "ui_ParameterWidget.h"
 
 class ParameterWidget : public QWidget, public Ui::ParameterWidget
 {
 	Q_OBJECT
 
-        typedef std::map<std::string, class ParameterEntryWidget *> entry_map_t;
+        typedef std::map<std::string, class ParameterObject *> entry_map_t;
 
         QTimer autoPreviewTimer;
         entry_map_t entries;

@@ -1,10 +1,10 @@
 @Description("The resolution of the curves. Higher values give smoother curves but may increase the model render time.")
-@Parameter([10, 20, 30, 50, 100])
+@Parameter()
 resolution = 30;
 
 @Description("The horizontal radius of the outer ellipse of the sign.")
-@Parameter([60 : 200])
-radius = 80;
+@Parameter([60: 200])
+radius = 100;
 
 @Parameter([1 : 10])
 @Description("Total height of the sign")
