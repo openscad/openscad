@@ -15,8 +15,6 @@ class ParameterObject
 {
     typedef enum { UNDEFINED, COMBOBOX, SLIDER, CHECKBOX, TEXT, NUMBER, VECTOR } parameter_type_t;
 
-
-
 public:
     ValuePtr value;
     ValuePtr values;
@@ -26,10 +24,11 @@ public:
     parameter_type_t target;
     string descritpion;
     string name;
-    ParameterObject();
 
+    ParameterObject();
     void setAssignment(class Context *context, const class Assignment *assignment, const ValuePtr defaultValue);
     void applyParameter(class Assignment *assignment);
+
 protected:
     int setValue(const class ValuePtr defaultValue, const class ValuePtr values);
 };

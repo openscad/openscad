@@ -338,7 +338,8 @@ HEADERS += src/typedefs.h \
            src/launchingscreen.h \
            src/legacyeditor.h \
            src/LibraryInfoDialog.h \
-           src/parameterobject.h
+           src/parameterobject.h \
+    src/parameterextractor.h
 
 SOURCES += src/version_check.cc \
            src/ProgressWidget.cc \
@@ -451,7 +452,8 @@ SOURCES += src/version_check.cc \
            src/launchingscreen.cc \
            src/legacyeditor.cc \
            src/LibraryInfoDialog.cc \
-           src/parameterobject.cpp
+           src/parameterobject.cpp \
+    src/parameterextractor.cpp
 
 # ClipperLib
 SOURCES += src/polyclipping/clipper.cpp

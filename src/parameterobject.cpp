@@ -1,5 +1,4 @@
 #include "parameterobject.h"
-#include<QDebug>
 
 ParameterObject::ParameterObject()
 {

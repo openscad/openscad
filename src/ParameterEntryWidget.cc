@@ -130,6 +130,7 @@ void ParameterEntryWidget::setAssignment(ParameterObject *parameterobject)
     setDescription(QString::fromStdString(object->descritpion));
 }
 
+//To be deleted
 void ParameterEntryWidget::setAssignment(Context *ctx, const Assignment *assignment, const ValuePtr defaultValue)
 {
     object->setAssignment(ctx,assignment,defaultValue);

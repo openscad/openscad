@@ -44,16 +44,20 @@ public:
 
     ValuePtr getValue();
     bool isDefaultValue();
-    void setAssignment(class Context *context, const class Assignment *assignment, const ValuePtr defaultValue);
     void setAssignment(ParameterObject *parameterobject);
+
+    //only for LiberayWidget till now. will be deleted
+    void setAssignment(class Context *context, const class Assignment *assignment, const ValuePtr defaultValue);
+
+
 protected slots:
-        void on_comboBox_activated(int);
-        void on_slider_valueChanged(int);
-        void on_lineEdit_editingFinished();
-        void on_checkBox_toggled();
-        void on_doubleSpinBox1_valueChanged(double);
-        void on_doubleSpinBox2_valueChanged(double);
-        void on_doubleSpinBox3_valueChanged(double);
+    void on_comboBox_activated(int);
+    void on_slider_valueChanged(int);
+    void on_lineEdit_editingFinished();
+    void on_checkBox_toggled();
+    void on_doubleSpinBox1_valueChanged(double);
+    void on_doubleSpinBox2_valueChanged(double);
+    void on_doubleSpinBox3_valueChanged(double);
  
 signals:
         void changed();

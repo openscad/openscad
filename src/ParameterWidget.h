@@ -27,34 +27,29 @@
 
 #include <QTimer>
 
-#include "qtgettext.h"
 #include "parameterobject.h"
 #include "ui_ParameterWidget.h"
+#include "parameterextractor.h"
 
-class ParameterWidget : public QWidget, public Ui::ParameterWidget
+class ParameterWidget : public QWidget, public Ui::ParameterWidget, public ParameterExtractor
 {
 	Q_OBJECT
 
-        typedef std::map<std::string, class ParameterObject *> entry_map_t;
-
         QTimer autoPreviewTimer;
-        entry_map_t entries;
 
 public:
-	ParameterWidget(QWidget *parent = 0);
-	virtual ~ParameterWidget();
-
-        void setParameters(const Module *module);
-        void applyParameters(class FileModule *fileModule);
+        ParameterWidget(QWidget *parent = 0);
+        virtual ~ParameterWidget();
 
 protected slots:
-        void onValueChanged();
-        void onPreviewTimerElapsed();
+        void onValueChanged(); //work when changed signal emmitedd by parameterEntryWidget object
+        void onPreviewTimerElapsed(); //
 
 signals:
         void previewRequested();
 
 protected:
+        void connectWidget();
         void begin();
         void addEntry(class ParameterEntryWidget *entry);
         void end();
