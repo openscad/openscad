@@ -5,10 +5,11 @@ ParameterSpinBox::ParameterSpinBox(ParameterObject *parameterobject)
     object=parameterobject;
     setName(QString::fromStdString(object->name));
     setValue();
+        connect(doubleSpinBox1,SIGNAL(valueChanged(double)),this,SLOT(on_Changed(double)));
     setDescription(QString::fromStdString(object->descritpion));
 }
 
-void ParameterSpinBox::on_doubleSpinBox1_valueChanged(double){
+void ParameterSpinBox::on_Changed(double){
     object->value = ValuePtr(doubleSpinBox1->value());
     emit changed();
 }

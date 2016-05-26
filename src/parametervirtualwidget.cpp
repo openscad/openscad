@@ -1,10 +1,4 @@
-
 #include "parametervirtualwidget.h"
-
-
-#include "value.h"
-#include "typedefs.h"
-#include "expression.h"
 
 ParameterVirtualWidget::ParameterVirtualWidget(QWidget *parent) :
     QWidget(parent)

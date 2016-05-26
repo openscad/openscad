@@ -27,6 +27,7 @@
 
 #include "ParameterWidget.h"
 #include "parameterspinbox.h"
+#include "parametercombobox.h"
 #include "module.h"
 #include "modcontext.h"
 #include "expression.h"
@@ -97,14 +98,19 @@ void ParameterWidget::connectWidget()
     for(entry_map_t::iterator it = entries.begin(); it != entries.end(); it++) {
         ParameterVirtualWidget *entry ;
         switch (it->second->target) {
-        case 5:
-        {
-            entry = new ParameterSpinBox(it->second);
-            connect(entry, SIGNAL(changed()), this, SLOT(onValueChanged()));
-            addEntry(entry);
-            break;
+            case 1:{
+                entry = new ParameterComboBox(it->second);
+                connect(entry, SIGNAL(changed()), this, SLOT(onValueChanged()));
+                addEntry(entry);
+                break;
+            }
+            case 5:{
+                entry = new ParameterSpinBox(it->second);
+                connect(entry, SIGNAL(changed()), this, SLOT(onValueChanged()));
+                addEntry(entry);
+                break;
+            }
 
-        }
         }
     }
     end();

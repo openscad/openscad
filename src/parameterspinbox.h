@@ -4,15 +4,15 @@
 #include"parametervirtualwidget.h"
 #include "parameterobject.h"
 
-class ParameterSpinBox : public ParameterVirtualWidget
+class ParameterSpinBox :public ParameterVirtualWidget
 {
+    Q_OBJECT
 public:
-
     ParameterSpinBox(ParameterObject *parameterobject );
     void setValue();
 
 protected slots:
-    void on_doubleSpinBox1_valueChanged(double);
+    void on_Changed(double);
 };
 
 #endif // PARAMETERSPINBOX_H

@@ -21,12 +21,6 @@ public:
     ValuePtr getValue();
     bool isDefaultValue();
 
-
-protected slots:
-
-    virtual void on_doubleSpinBox1_valueChanged(double)=0;
-
-
 signals:
         void changed();
 

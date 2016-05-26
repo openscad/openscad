@@ -341,7 +341,8 @@ HEADERS += src/typedefs.h \
            src/parameterobject.h \
     src/parameterextractor.h \
     src/parametervirtualwidget.h \
-    src/parameterspinbox.h
+    src/parameterspinbox.h \
+    src/parametercombobox.h
 
 SOURCES += src/version_check.cc \
            src/ProgressWidget.cc \
@@ -457,7 +458,8 @@ SOURCES += src/version_check.cc \
            src/parameterobject.cpp \
     src/parameterextractor.cpp \
     src/parametervirtualwidget.cpp \
-    src/parameterspinbox.cpp
+    src/parameterspinbox.cpp \
+    src/parametercombobox.cpp
 
 # ClipperLib
 SOURCES += src/polyclipping/clipper.cpp
