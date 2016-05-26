@@ -51,6 +51,6 @@ signals:
 protected:
         void connectWidget();
         void begin();
-        void addEntry(class ParameterEntryWidget *entry);
+        void addEntry(class ParameterVirtualWidget *entry);
         void end();
 };

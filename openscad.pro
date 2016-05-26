@@ -230,7 +230,7 @@ FORMS   += src/MainWindow.ui \
            src/ParameterWidget.ui \
            src/ParameterEntryWidget.ui \
            src/launchingscreen.ui \
-           src/LibraryInfoDialog.ui
+           src/LibraryInfoDialog.ui \
 
 HEADERS += src/typedefs.h \
            src/version_check.h \
@@ -339,7 +339,9 @@ HEADERS += src/typedefs.h \
            src/legacyeditor.h \
            src/LibraryInfoDialog.h \
            src/parameterobject.h \
-    src/parameterextractor.h
+    src/parameterextractor.h \
+    src/parametervirtualwidget.h \
+    src/parameterspinbox.h
 
 SOURCES += src/version_check.cc \
            src/ProgressWidget.cc \
@@ -453,7 +455,9 @@ SOURCES += src/version_check.cc \
            src/legacyeditor.cc \
            src/LibraryInfoDialog.cc \
            src/parameterobject.cpp \
-    src/parameterextractor.cpp
+    src/parameterextractor.cpp \
+    src/parametervirtualwidget.cpp \
+    src/parameterspinbox.cpp
 
 # ClipperLib
 SOURCES += src/polyclipping/clipper.cpp

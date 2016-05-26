@@ -26,8 +26,7 @@
 #include <QWidget>
 
 #include "ParameterWidget.h"
-#include "ParameterEntryWidget.h"
-
+#include "parameterspinbox.h"
 #include "module.h"
 #include "modcontext.h"
 #include "expression.h"
@@ -39,7 +38,7 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 	autoPreviewTimer.setInterval(500);
 	autoPreviewTimer.setSingleShot(true);
 	connect(&autoPreviewTimer, SIGNAL(timeout()), this, SLOT(onPreviewTimerElapsed()));
-        connect(checkBoxAutoPreview, SIGNAL(toggled(bool)), this, SLOT(onValueChanged()));
+    connect(checkBoxAutoPreview, SIGNAL(toggled(bool)), this, SLOT(onValueChanged()));
 }
 
 ParameterWidget::~ParameterWidget()
@@ -69,7 +68,7 @@ void ParameterWidget::begin()
 	}
 }
 
-void ParameterWidget::addEntry(ParameterEntryWidget *entry)
+void ParameterWidget::addEntry(ParameterVirtualWidget *entry)
 {
 	QSizePolicy policy;
 	policy.setHorizontalPolicy(QSizePolicy::Expanding);
@@ -96,10 +95,17 @@ void ParameterWidget::connectWidget()
 {
     begin();
     for(entry_map_t::iterator it = entries.begin(); it != entries.end(); it++) {
-        ParameterEntryWidget *entry = new ParameterEntryWidget();
-        entry->setAssignment((it->second));
-        connect(entry, SIGNAL(changed()), this, SLOT(onValueChanged()));
-        addEntry(entry);
+        ParameterVirtualWidget *entry ;
+        switch (it->second->target) {
+        case 5:
+        {
+            entry = new ParameterSpinBox(it->second);
+            connect(entry, SIGNAL(changed()), this, SLOT(onValueChanged()));
+            addEntry(entry);
+            break;
+
+        }
+        }
     }
     end();
 }

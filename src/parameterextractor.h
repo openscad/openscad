@@ -3,6 +3,7 @@
 
 #include "qtgettext.h"
 #include "parameterobject.h"
+#include "parametervirtualwidget.h"
 
 class ParameterExtractor
 {
@@ -21,7 +22,7 @@ public:
 protected:
 
     virtual void begin()=0;
-    virtual void addEntry(class ParameterEntryWidget *entry)=0;
+    virtual void addEntry(ParameterVirtualWidget *entry)=0;
     virtual void end()=0;
     virtual void connectWidget()=0;
 };
