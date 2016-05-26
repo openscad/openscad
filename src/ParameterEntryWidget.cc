@@ -40,8 +40,13 @@ ParameterEntryWidget::~ParameterEntryWidget()
 
 void ParameterEntryWidget::on_comboBox_activated(int idx)
 {
-    const Value *v = (const Value *)comboBox->itemData(idx).value<void *>();
-    object->value = ValuePtr(*v);
+    if(object->dvt == Value::STRING){
+        const string v = comboBox->currentText().toUtf8().constData();
+        object->value = ValuePtr(v);
+    }else{
+        const double v = comboBox->currentText().toDouble();
+        object->value = ValuePtr(v);
+    }
 	emit changed();
 }
 
