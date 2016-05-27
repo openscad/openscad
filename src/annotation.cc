@@ -49,8 +49,6 @@ const Annotation * Annotation::create(const std::string name, const AssignmentLi
 		args += Assignment("text");
 	} else if (name == "Parameter") {
 		args += Assignment("values");
-	} else if (name == "LibraryPart") {
-		args += Assignment("library"), Assignment("name");
 	}
 	return new Annotation(name, assignments, args);
 }

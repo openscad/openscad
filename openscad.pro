@@ -226,7 +226,6 @@ FORMS   += src/MainWindow.ui \
            src/AboutDialog.ui \
            src/FontListDialog.ui \
            src/ProgressWidget.ui \
-           src/LibraryWidget.ui \
            src/ParameterWidget.ui \
            src/ParameterEntryWidget.ui \
            src/launchingscreen.ui \
@@ -246,8 +245,6 @@ HEADERS += src/typedefs.h \
            src/QGLView.h \
            src/GLView.h \
            src/MainWindow.h \
-           src/LibraryWidget.h \
-           src/LibraryListWidget.h \
            src/ParameterWidget.h \
            src/ParameterEntryWidget.h \
            src/OpenSCADApp.h \
@@ -446,8 +443,6 @@ SOURCES += src/version_check.cc \
            \
            src/openscad.cc \
            src/mainwin.cc \
-           src/LibraryWidget.cc \
-           src/LibraryListWidget.cc \
            src/ParameterWidget.cc \
            src/ParameterEntryWidget.cc \
            src/OpenSCADApp.cc \
