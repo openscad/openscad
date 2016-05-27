@@ -26,8 +26,14 @@
 #include <QWidget>
 
 #include "ParameterWidget.h"
+
 #include "parameterspinbox.h"
 #include "parametercombobox.h"
+#include "parameterslider.h"
+#include "parametercheckbox.h"
+#include "parametertext.h"
+#include "parametervector.h"
+
 #include "module.h"
 #include "modcontext.h"
 #include "expression.h"
@@ -100,17 +106,32 @@ void ParameterWidget::connectWidget()
         switch (it->second->target) {
             case 1:{
                 entry = new ParameterComboBox(it->second);
-                connect(entry, SIGNAL(changed()), this, SLOT(onValueChanged()));
-                addEntry(entry);
+                break;
+                }
+            case 2:{
+                entry = new ParameterSlider(it->second);
                 break;
             }
-            case 5:{
-                entry = new ParameterSpinBox(it->second);
-                connect(entry, SIGNAL(changed()), this, SLOT(onValueChanged()));
-                addEntry(entry);
-                break;
-            }
-
+        case 3:{
+            entry = new ParameterCheckBox(it->second);
+            break;
+        }
+        case 4:{
+            entry = new ParameterText(it->second);
+            break;
+        }
+        case 5:{
+            entry = new ParameterSpinBox(it->second);
+            break;
+        }
+        case 6:{
+            entry = new ParameterVector(it->second);
+            break;
+        }
+        }
+        if(it->second->target!=0){
+            connect(entry, SIGNAL(changed()), this, SLOT(onValueChanged()));
+            addEntry(entry);
         }
     }
     end();

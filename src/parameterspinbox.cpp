@@ -3,10 +3,8 @@
 ParameterSpinBox::ParameterSpinBox(ParameterObject *parameterobject)
 {
     object=parameterobject;
-    setName(QString::fromStdString(object->name));
-    setValue();
-        connect(doubleSpinBox1,SIGNAL(valueChanged(double)),this,SLOT(on_Changed(double)));
-    setDescription(QString::fromStdString(object->descritpion));
+    set();
+    connect(doubleSpinBox1,SIGNAL(valueChanged(double)),this,SLOT(on_Changed(double)));
 }
 
 void ParameterSpinBox::on_Changed(double){

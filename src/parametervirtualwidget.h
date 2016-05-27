@@ -25,6 +25,7 @@ signals:
         void changed();
 
 protected:
+        void set();
         void setName(const QString& name);
         virtual void setValue()=0;
         void setDescription(const QString& description);
