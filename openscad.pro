@@ -246,7 +246,6 @@ HEADERS += src/typedefs.h \
            src/GLView.h \
            src/MainWindow.h \
            src/ParameterWidget.h \
-           src/ParameterEntryWidget.h \
            src/OpenSCADApp.h \
            src/WindowManager.h \
            src/Preferences.h \
@@ -444,7 +443,6 @@ SOURCES += src/version_check.cc \
            src/openscad.cc \
            src/mainwin.cc \
            src/ParameterWidget.cc \
-           src/ParameterEntryWidget.cc \
            src/OpenSCADApp.cc \
            src/WindowManager.cc \
            src/UIUtils.cc \
