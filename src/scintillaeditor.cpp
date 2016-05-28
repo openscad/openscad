@@ -768,3 +768,10 @@ bool ScintillaEditor::modifyNumber(int key)
 	emit previewRequest();
 	return true;
 }
+
+QPoint ScintillaEditor::cursorPosition()
+{
+  int x, y;
+  qsci->getCursorPosition(&x, &y);
+  return QPoint(x, y);
+}
