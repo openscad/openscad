@@ -1,12 +1,19 @@
 #include "parametercombobox.h"
 
-ParameterComboBox::ParameterComboBox(ParameterObject *parameterobject)
+ParameterComboBox::ParameterComboBox(ParameterObject *parameterobject, bool showDescription)
 {
     object=parameterobject;
     setName(QString::fromStdString(object->name));
     setValue();
     connect(comboBox,SIGNAL(currentIndexChanged(int)),this,SLOT(on_Changed(int)));
-    setDescription(QString::fromStdString(object->descritpion));
+    if(showDescription==true){
+    setDescription(object->description);
+    }
+    else{
+        comboBox->setToolTip(object->description);
+    }
+
+
 }
 
 void ParameterComboBox::on_Changed(int idx){

@@ -22,7 +22,7 @@ public:
     Value::ValueType vt;
     Value::ValueType dvt;
     parameter_type_t target;
-    string descritpion;
+    QString description;
     string name;
 
     ParameterObject();

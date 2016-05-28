@@ -10,7 +10,7 @@ class ParameterComboBox : public ParameterVirtualWidget
 
     QComboBox *spinBox;
 public:
-    ParameterComboBox(ParameterObject *parameterobject );
+    ParameterComboBox(ParameterObject *parameterobject,bool showDescription);
     void setValue();
 
 public slots:

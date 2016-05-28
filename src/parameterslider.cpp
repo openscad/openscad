@@ -1,10 +1,16 @@
 #include "parameterslider.h"
 
-ParameterSlider::ParameterSlider(ParameterObject *parameterobject)
+ParameterSlider::ParameterSlider(ParameterObject *parameterobject, bool showDescription)
 {
     object=parameterobject;
     set();
     connect(slider,SIGNAL(valueChanged(int)),this,SLOT(on_Changed(int)));
+    if(showDescription==true){
+    setDescription(object->description);
+    }
+    else{
+        slider->setToolTip(object->description);
+    }
 }
 void ParameterSlider::on_Changed(int)
 {

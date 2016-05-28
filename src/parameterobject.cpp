@@ -48,7 +48,7 @@ void ParameterObject::setAssignment(class Context *ctx, const class Assignment *
     if (desc) {
         const ValuePtr v = desc->evaluate(ctx, "text");
         if (v->type() == Value::STRING) {
-            descritpion=v->toString();
+            description=QString::fromStdString(v->toString());
         }
     }
 }

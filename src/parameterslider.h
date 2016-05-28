@@ -8,7 +8,7 @@ class ParameterSlider : public ParameterVirtualWidget
 {
          Q_OBJECT
 public:
-    ParameterSlider(ParameterObject *parameterobject);
+    ParameterSlider(ParameterObject *parameterobject,bool showDescription);
     void setValue();
 
 protected slots:

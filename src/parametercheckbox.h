@@ -8,7 +8,7 @@ class ParameterCheckBox : public ParameterVirtualWidget
 {
     Q_OBJECT
 public:
-    ParameterCheckBox(ParameterObject *parameterobject);
+    ParameterCheckBox(ParameterObject *parameterobject,bool);
     void setValue();
 
 protected slots:

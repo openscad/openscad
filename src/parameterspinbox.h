@@ -8,7 +8,7 @@ class ParameterSpinBox :public ParameterVirtualWidget
 {
     Q_OBJECT
 public:
-    ParameterSpinBox(ParameterObject *parameterobject);
+    ParameterSpinBox(ParameterObject *parameterobject,bool showDescription);
     void setValue();
 
 protected slots:

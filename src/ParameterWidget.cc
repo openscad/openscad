@@ -46,12 +46,22 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 	autoPreviewTimer.setSingleShot(true);
 	connect(&autoPreviewTimer, SIGNAL(timeout()), this, SLOT(onPreviewTimerElapsed()));
     connect(checkBoxAutoPreview, SIGNAL(toggled(bool)), this, SLOT(onValueChanged()));
+    connect(checkBoxDetailedDescription,SIGNAL(toggled(bool)),this,SLOT(onDescriptionShow()));
 }
 
 ParameterWidget::~ParameterWidget()
 {
 }
 
+void ParameterWidget::onDescriptionShow()
+{
+    if(checkBoxDetailedDescription->isChecked()){
+        descriptionShow=true;
+    }else{
+        descriptionShow=false;
+    }
+    emit previewRequested();
+}
 void ParameterWidget::onValueChanged()
 {
 	autoPreviewTimer.stop();
@@ -105,27 +115,27 @@ void ParameterWidget::connectWidget()
         ParameterVirtualWidget *entry ;
         switch (it->second->target) {
             case COMBOBOX:{
-                entry = new ParameterComboBox(it->second);
+                entry = new ParameterComboBox(it->second,descriptionShow);
                 break;
                 }
             case SLIDER:{
-                entry = new ParameterSlider(it->second);
+                entry = new ParameterSlider(it->second,descriptionShow);
                 break;
             }
         case CHECKBOX:{
-            entry = new ParameterCheckBox(it->second);
+            entry = new ParameterCheckBox(it->second,descriptionShow);
             break;
         }
         case TEXT:{
-            entry = new ParameterText(it->second);
+            entry = new ParameterText(it->second,descriptionShow);
             break;
         }
         case NUMBER:{
-            entry = new ParameterSpinBox(it->second);
+            entry = new ParameterSpinBox(it->second,descriptionShow);
             break;
         }
         case VECTOR:{
-            entry = new ParameterVector(it->second);
+            entry = new ParameterVector(it->second,descriptionShow);
             break;
         }
         }

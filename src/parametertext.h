@@ -8,7 +8,7 @@ class ParameterText : public ParameterVirtualWidget
 {
      Q_OBJECT
 public:
-    ParameterText(ParameterObject *parameterobject);
+    ParameterText(ParameterObject *parameterobject,bool showDescription);
     void setValue();
 
 protected slots:

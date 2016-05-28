@@ -1,6 +1,6 @@
 #include "parametervector.h"
 
-ParameterVector::ParameterVector(ParameterObject *parameterobject)
+ParameterVector::ParameterVector(ParameterObject *parameterobject, bool showDescription)
 {
     object=parameterobject;
     set();
@@ -8,6 +8,13 @@ ParameterVector::ParameterVector(ParameterObject *parameterobject)
     connect(doubleSpinBox2,SIGNAL(valueChanged(double)),this,SLOT(on_Changed(double)));
     connect(doubleSpinBox3,SIGNAL(valueChanged(double)),this,SLOT(on_Changed(double)));
     connect(doubleSpinBox4,SIGNAL(valueChanged(double)),this,SLOT(on_Changed(double)));
+    if(showDescription==true){
+    setDescription(object->description);
+    }
+    else{
+        frame->setToolTip(object->description);
+    }
+
 }
 
 void ParameterVector::on_Changed(double)

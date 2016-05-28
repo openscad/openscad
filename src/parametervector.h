@@ -7,7 +7,7 @@ class ParameterVector : public ParameterVirtualWidget
 {
     Q_OBJECT
 public:
-    ParameterVector(ParameterObject *parameterobject);
+    ParameterVector(ParameterObject *parameterobject,bool showDescription);
     void setValue();
 
 protected slots:

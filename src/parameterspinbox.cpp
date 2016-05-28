@@ -1,10 +1,16 @@
 #include "parameterspinbox.h"
 
-ParameterSpinBox::ParameterSpinBox(ParameterObject *parameterobject)
+ParameterSpinBox::ParameterSpinBox(ParameterObject *parameterobject, bool showDescription)
 {
     object=parameterobject;
     set();
     connect(doubleSpinBox1,SIGNAL(valueChanged(double)),this,SLOT(on_Changed(double)));
+    if(showDescription==true){
+    setDescription(object->description);
+    }
+    else{
+        doubleSpinBox1->setToolTip(object->description);
+    }
 }
 
 void ParameterSpinBox::on_Changed(double){

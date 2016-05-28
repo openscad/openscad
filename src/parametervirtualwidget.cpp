@@ -37,5 +37,4 @@ void ParameterVirtualWidget::setDescription(const QString& description)
 void ParameterVirtualWidget::set(){
     setName(QString::fromStdString(object->name));
     setValue();
-    setDescription(QString::fromStdString(object->descritpion));
 }

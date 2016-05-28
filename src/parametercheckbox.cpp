@@ -1,10 +1,17 @@
 #include "parametercheckbox.h"
 
-ParameterCheckBox::ParameterCheckBox(ParameterObject *parameterobject)
+ParameterCheckBox::ParameterCheckBox(ParameterObject *parameterobject, bool showDescription)
 {
     object=parameterobject;
     set();
     connect(checkBox,SIGNAL(clicked()),this,SLOT(on_Changed()));
+    if(showDescription==true){
+    setDescription(object->description);
+    }
+    else{
+        checkBox->setToolTip(object->description);
+    }
+
 }
 
 void ParameterCheckBox::on_Changed(){
