@@ -15,6 +15,7 @@ protected:
 
 public:
     ParameterExtractor();
+    virtual ~ParameterExtractor();
     void setParameters(const Module *module);
     void applyParameters(class FileModule *fileModule);
 

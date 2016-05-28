@@ -8,6 +8,9 @@ ParameterExtractor::ParameterExtractor()
 {
 }
 
+ParameterExtractor::~ParameterExtractor()
+{
+}
 void ParameterExtractor::applyParameters(FileModule *fileModule)
 {
     if (fileModule == NULL) {

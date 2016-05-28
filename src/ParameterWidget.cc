@@ -104,32 +104,32 @@ void ParameterWidget::connectWidget()
     for(entry_map_t::iterator it = entries.begin(); it != entries.end(); it++) {
         ParameterVirtualWidget *entry ;
         switch (it->second->target) {
-            case 1:{
+            case COMBOBOX:{
                 entry = new ParameterComboBox(it->second);
                 break;
                 }
-            case 2:{
+            case SLIDER:{
                 entry = new ParameterSlider(it->second);
                 break;
             }
-        case 3:{
+        case CHECKBOX:{
             entry = new ParameterCheckBox(it->second);
             break;
         }
-        case 4:{
+        case TEXT:{
             entry = new ParameterText(it->second);
             break;
         }
-        case 5:{
+        case NUMBER:{
             entry = new ParameterSpinBox(it->second);
             break;
         }
-        case 6:{
+        case VECTOR:{
             entry = new ParameterVector(it->second);
             break;
         }
         }
-        if(it->second->target!=0){
+        if(it->second->target!=UNDEFINED){
             connect(entry, SIGNAL(changed()), this, SLOT(onValueChanged()));
             addEntry(entry);
         }

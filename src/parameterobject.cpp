@@ -1,12 +1,19 @@
 #include "parameterobject.h"
 
+#include "module.h"
+#include "modcontext.h"
+
 ParameterObject::ParameterObject()
 {
 
 }
 
 void ParameterObject::applyParameter(class Assignment *assignment){
-    assignment->second = shared_ptr<Expression>(new ExpressionConst(value));
+    ModuleContext ctx;
+    const ValuePtr defaultValue =assignment->second.get()->evaluate(&ctx);
+    if( defaultValue->type() == dvt ){
+        assignment->second = shared_ptr<Expression>(new ExpressionConst(value));
+    }
 }
 
 int ParameterObject::setValue(const class ValuePtr defaultValue, const class ValuePtr values){
