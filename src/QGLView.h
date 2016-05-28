@@ -98,4 +98,5 @@ private slots:
 
 signals:
 	void doAnimateUpdate();
+	void pickedObject(int);
 };
