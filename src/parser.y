@@ -25,6 +25,7 @@
  */
 
 %expect 2 /* Expect 2 shift/reduce conflict for ifelse_statement - "dangling else problem" */
+%locations
 
 %{
 
@@ -301,6 +302,8 @@ single_module_instantiation:
                 $$ = new ModuleInstantiation($1);
                 $$->arguments = *$3;
                 $$->setPath(boosty::stringy(parser_sourcefile.parent_path()));
+                $$->setLocation(@$.first_line, @$.first_column,
+                                @$.last_line, @$.last_column);
                 free($1);
                 delete $3;
             }

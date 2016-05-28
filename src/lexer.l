@@ -88,6 +88,15 @@ std::vector<std::string> openfilenames;
 std::string filename;
 std::string filepath;
 
+
+extern YYLTYPE parserlloc;
+#define yylloc parserlloc
+
+int yycolumn = 1;
+#define YY_USER_ACTION yylloc.first_line = yylloc.last_line = yylineno; \
+    yylloc.first_column = yycolumn; yylloc.last_column = yycolumn+yyleng-1; \
+    yycolumn += yyleng;
+
 %}
 
 %option yylineno
@@ -199,7 +208,7 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
 			return TOK_STRING; }
 }
 
-[\n\r\t ]
+[\r\t ]
 
 \/\/ BEGIN(cond_lcomment);
 <cond_lcomment>{
@@ -221,7 +230,7 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
 "!="	return NE;
 "&&"	return AND;
 "||"	return OR;
-
+\n { yycolumn = 1;}
 . { return yytext[0]; }
 
 %%

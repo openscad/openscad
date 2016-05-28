@@ -14,6 +14,18 @@
 #include "localscope.h"
 #include "feature.h"
 
+struct Location
+{
+  Location() : first_line(-1), first_column(-1), last_line(-1), last_column(-1) {}
+  Location (int fl, int fc, int ll, int lc)
+   : first_line(fl), first_column(fc), last_line(ll), last_column(lc) {}
+  int first_line;
+  int first_column;
+  int last_line;
+  int last_column;
+  static const Location none;
+};
+
 class ModuleInstantiation
 {
 public:
@@ -29,6 +41,15 @@ public:
 	const std::string &path() const { return this->modpath; }
 	std::string getAbsolutePath(const std::string &filename) const;
 
+	void setLocation(int first_line, int first_column, int last_line, int last_column)
+	{
+	  this->location.first_line = first_line;
+	  this->location.first_column = first_column;
+	  this->location.last_line = last_line;
+	  this->location.last_column = last_column;
+	}
+	Location getLocation() const { return this->location;}
+
 	const std::string &name() const { return this->modname; }
 	bool isBackground() const { return this->tag_background; }
 	bool isHighlight() const { return this->tag_highlight; }
@@ -43,6 +64,7 @@ public:
 protected:
 	std::string modname;
 	std::string modpath;
+	Location location;
 
 	friend class Module;
 };
