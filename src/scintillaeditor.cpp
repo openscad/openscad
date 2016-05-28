@@ -775,3 +775,8 @@ QPoint ScintillaEditor::cursorPosition()
   qsci->getCursorPosition(&x, &y);
   return QPoint(x, y);
 }
+
+void ScintillaEditor::setSelection(QRect r)
+{
+  qsci->setSelection(r.top(), r.left(), r.bottom(), r.right());
+}

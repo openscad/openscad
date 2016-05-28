@@ -24,6 +24,7 @@ public:
 	virtual void replaceAll(const QString &findText, const QString &replaceText) = 0;
 	virtual QStringList colorSchemes() = 0;
 	virtual QPoint cursorPosition() = 0;
+	virtual void setSelection(QRect rect) {};
 
 signals:
   void contentsChanged();

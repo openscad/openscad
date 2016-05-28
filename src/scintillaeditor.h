@@ -55,7 +55,7 @@ public:
 	void replaceAll(const QString &findText, const QString &replaceText);
 	QStringList colorSchemes();
 	QPoint cursorPosition();
-        
+	void setSelection(QRect selection);
 private:
         void getRange(int *lineFrom, int *lineTo);
         void setColormap(const EditorColorScheme *colorScheme);
