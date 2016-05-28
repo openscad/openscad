@@ -1711,12 +1711,13 @@ void MainWindow::compileTopLevelDocument()
 	delete this->root_module;
 	this->root_module = NULL;
 
-	this->root_module = parse(fulltext.c_str(),
-		this->fileName.isEmpty() ? "" :
-		QFileInfo(this->fileName).absolutePath().toLocal8Bit(), false);
-
+    const char* fname =
+        this->fileName.isEmpty() ? "" : this->fileName.toLocal8Bit();
+	this->root_module = parse(fulltext.c_str(), fs::path(fname), false);
+	
 	this->parameterWidget->applyParameters(this->root_module);
 	this->parameterWidget->setParameters(this->root_module);
+
 }
 
 void MainWindow::checkAutoReload()

@@ -56,6 +56,7 @@ int parserlex(void);
 void yyerror(char const *s);
 
 int lexerget_lineno(void);
+fs::path sourcefile(void);
 int lexerlex_destroy(void);
 int lexerlex(void);
 
@@ -66,7 +67,7 @@ extern void lexerdestroy();
 extern FILE *lexerin;
 extern const char *parser_input_buffer;
 const char *parser_input_buffer;
-std::string parser_source_path;
+fs::path parser_sourcefile;
 
 %}
 
@@ -310,7 +311,7 @@ if_statement:
             {
                 $<ifelse>$ = new IfElseModuleInstantiation();
                 $<ifelse>$->arguments.push_back(Assignment("", shared_ptr<Expression>($3)));
-                $<ifelse>$->setPath(parser_source_path);
+                $<ifelse>$->setPath(boosty::stringy(parser_sourcefile.parent_path()));
                 scope_stack.push(&$<ifelse>$->scope);
             }
           child_statement
@@ -348,7 +349,7 @@ single_module_instantiation:
             {
                 $$ = new ModuleInstantiation($1);
                 $$->arguments = *$3;
-                $$->setPath(parser_source_path);
+                $$->setPath(boosty::stringy(parser_sourcefile.parent_path()));
                 free($1);
                 delete $3;
             }
@@ -653,19 +654,20 @@ int parserlex(void)
 
 void yyerror (char const *s)
 {
-  // FIXME: We leak memory on parser errors...
-  PRINTB("ERROR: Parser error in line %d: %s\n", lexerget_lineno() % s);
+    // FIXME: We leak memory on parser errors...
+    PRINTB("ERROR: Parser error in file %s, line %d: %s\n",
+        sourcefile() % lexerget_lineno() % s);
 }
 
-FileModule *parse(const char *text, const char *path, int debug)
+FileModule *parse(const char *text, const fs::path &filename, int debug)
 {
   lexerin = NULL;
   parser_error_pos = -1;
   parser_input_buffer = text;
-  parser_source_path = boosty::absolute(std::string(path)).string();
+  parser_sourcefile = boosty::absolute(filename);
 
   rootmodule = new FileModule();
-  rootmodule->setModulePath(path);
+  rootmodule->setModulePath(boosty::stringy(filename.parent_path()));
   scope_stack.push(&rootmodule->scope);
   //        PRINTB_NOCACHE("New module: %s %p", "root" % rootmodule);
 
