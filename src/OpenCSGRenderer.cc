@@ -51,13 +51,32 @@ public:
 
 #endif
 
+static int object_id(std::string const& label)
+{
+  size_t pos = label.find_first_of("0123456789");
+  if (pos == label.npos)
+    return -1;
+  return strtol(&label[pos], 0, 0);
+}
+
+static void gl_pick_color(unsigned int id)
+{ // play safe and use only 6 bits per color component, giving us 200K objects max
+  double d = 1 / 128.0;
+  glColor4f((id % 64) / 64.0  + d,
+            ((id / 64) % 64) / 64.0 + d,
+            ((id / 64 / 64) % 64) / 64.0 + d,
+            1);
+}
+
+
 OpenCSGRenderer::OpenCSGRenderer(shared_ptr<CSGProducts> root_products,
 																 shared_ptr<CSGProducts> highlights_products,
 																 shared_ptr<CSGProducts> background_products,
 																 GLint *shaderinfo)
 	: root_products(root_products), 
 		highlights_products(highlights_products), 
-		background_products(background_products), shaderinfo(shaderinfo)
+		background_products(background_products), shaderinfo(shaderinfo),
+		picking(false)
 {
 }
 
@@ -94,6 +113,8 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 																				bool highlight_mode, bool background_mode) const
 {
 #ifdef ENABLE_OPENCSG
+  if (picking)
+    glDisable(GL_LIGHTING);
 	for(const auto &product : products.products) {
 		std::vector<OpenCSG::Primitive*> primitives;
 		for(const auto &csgobj : product.intersections) {
@@ -124,8 +145,13 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 			} else {
 				colormode = COLORMODE_MATERIAL;
 			}
-			
-			setColor(colormode, c.data(), shaderinfo);
+			if (!this->picking)
+			  setColor(colormode, c.data(), shaderinfo);
+			else
+			{
+			  glUseProgram(0);
+			  gl_pick_color(object_id(csgobj.leaf->label));
+			}
 			glPushMatrix();
 			glMultMatrixd(csgobj.leaf->matrix.data());
 			render_surface(csgobj.leaf->geom, csgmode, csgobj.leaf->matrix, shaderinfo);
@@ -146,8 +172,13 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 			} else {
 				colormode = COLORMODE_CUTOUT;
 			}
-			
-			setColor(colormode, c.data(), shaderinfo);
+			if (!this->picking)
+			  setColor(colormode, c.data(), shaderinfo);
+			else
+			{
+			  glUseProgram(0);
+			  gl_pick_color(object_id(csgobj.leaf->label));
+			}
 			glPushMatrix();
 			glMultMatrixd(csgobj.leaf->matrix.data());
 			render_surface(csgobj.leaf->geom, csgmode, csgobj.leaf->matrix, shaderinfo);
@@ -158,6 +189,8 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 		for(auto &p : primitives) delete p;
 		glDepthFunc(GL_LEQUAL);
 	}
+	if (picking)
+    glEnable(GL_LIGHTING);
 #endif
 }
 

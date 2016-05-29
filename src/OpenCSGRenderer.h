@@ -16,6 +16,7 @@ public:
 									GLint *shaderinfo);
 	virtual void draw(bool showfaces, bool showedges) const;
 	virtual BoundingBox getBoundingBox() const;
+	void setPicking(bool p) { this->picking = p;}
 private:
 #ifdef ENABLE_OPENCSG
 	class OpenCSGPrim *createCSGPrimitive(const class CSGChainObject &csgobj, OpenCSG::Operation operation, bool highlight_mode, bool background_mode, OpenSCADOperator type) const;
@@ -27,4 +28,5 @@ private:
 	shared_ptr<CSGProducts> highlights_products;
 	shared_ptr<CSGProducts> background_products;
 	GLint *shaderinfo;
+	bool picking;
 };
