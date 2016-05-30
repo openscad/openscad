@@ -37,7 +37,7 @@ class ParameterWidget : public QWidget, public Ui::ParameterWidget, public Param
 
     typedef enum { UNDEFINED, COMBOBOX, SLIDER, CHECKBOX, TEXT, NUMBER, VECTOR } parameter_type_t;
     QTimer autoPreviewTimer;
-    bool descriptionShow=true;
+    bool descriptionShow;
 
 public:
         ParameterWidget(QWidget *parent = 0);
