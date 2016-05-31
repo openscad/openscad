@@ -22,13 +22,12 @@ public:
     bool isDefaultValue();
 
 signals:
-        void changed();
+    void changed();
 
 protected:
-        void set();
-        void setName(const QString& name);
-        virtual void setValue()=0;
-        void setDescription(const QString& description);
+    void setName(const QString& name);
+    virtual void setValue()=0;
+    void setDescription(const QString& description);
 };
 
 #endif // PARAMETERVIRTUALWIDGET_H

@@ -3,13 +3,14 @@
 ParameterText::ParameterText(ParameterObject *parameterobject, bool showDescription)
 {
     object=parameterobject;
-    set();
+    setName(QString::fromStdString(object->name));
+    setValue();
     connect(lineEdit,SIGNAL(editingFinished()),this,SLOT(on_Changed()));
     if(showDescription==true){
-    setDescription(object->description);
+        setDescription(object->description);
     }
     else{
-    lineEdit->setToolTip(object->description);
+        lineEdit->setToolTip(object->description);
     }
 }
 
@@ -24,6 +25,7 @@ void ParameterText::on_Changed()
     } else {
         object->value = ValuePtr(lineEdit->text().toStdString());
     }
+
     emit changed();
 }
 

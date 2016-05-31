@@ -3,18 +3,18 @@
 ParameterVector::ParameterVector(ParameterObject *parameterobject, bool showDescription)
 {
     object=parameterobject;
-    set();
+    setName(QString::fromStdString(object->name));
+    setValue();
     connect(doubleSpinBox1,SIGNAL(valueChanged(double)),this,SLOT(on_Changed(double)));
     connect(doubleSpinBox2,SIGNAL(valueChanged(double)),this,SLOT(on_Changed(double)));
     connect(doubleSpinBox3,SIGNAL(valueChanged(double)),this,SLOT(on_Changed(double)));
     connect(doubleSpinBox4,SIGNAL(valueChanged(double)),this,SLOT(on_Changed(double)));
     if(showDescription==true){
-    setDescription(object->description);
+        setDescription(object->description);
     }
     else{
         frame->setToolTip(object->description);
     }
-
 }
 
 void ParameterVector::on_Changed(double)

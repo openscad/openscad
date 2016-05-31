@@ -3,15 +3,17 @@
 ParameterSlider::ParameterSlider(ParameterObject *parameterobject, bool showDescription)
 {
     object=parameterobject;
-    set();
+    setName(QString::fromStdString(object->name));
+    setValue();
     connect(slider,SIGNAL(valueChanged(int)),this,SLOT(on_Changed(int)));
     if(showDescription==true){
-    setDescription(object->description);
+        setDescription(object->description);
     }
     else{
         slider->setToolTip(object->description);
     }
 }
+
 void ParameterSlider::on_Changed(int)
 {
     double v = slider->value();

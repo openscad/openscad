@@ -8,7 +8,6 @@ class ParameterComboBox : public ParameterVirtualWidget
 {
     Q_OBJECT
 
-    QComboBox *spinBox;
 public:
     ParameterComboBox(ParameterObject *parameterobject,bool showDescription);
     void setValue();

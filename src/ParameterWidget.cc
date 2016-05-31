@@ -63,6 +63,7 @@ void ParameterWidget::onDescriptionShow()
     }
     emit previewRequested();
 }
+
 void ParameterWidget::onValueChanged()
 {
 	autoPreviewTimer.stop();
@@ -118,27 +119,27 @@ void ParameterWidget::connectWidget()
             case COMBOBOX:{
                 entry = new ParameterComboBox(it->second,descriptionShow);
                 break;
-                }
+            }
             case SLIDER:{
                 entry = new ParameterSlider(it->second,descriptionShow);
                 break;
             }
-        case CHECKBOX:{
-            entry = new ParameterCheckBox(it->second,descriptionShow);
-            break;
-        }
-        case TEXT:{
-            entry = new ParameterText(it->second,descriptionShow);
-            break;
-        }
-        case NUMBER:{
-            entry = new ParameterSpinBox(it->second,descriptionShow);
-            break;
-        }
-        case VECTOR:{
-            entry = new ParameterVector(it->second,descriptionShow);
-            break;
-        }
+            case CHECKBOX:{
+                entry = new ParameterCheckBox(it->second,descriptionShow);
+                break;
+            }
+            case TEXT:{
+                entry = new ParameterText(it->second,descriptionShow);
+                break;
+            }
+            case NUMBER:{
+                entry = new ParameterSpinBox(it->second,descriptionShow);
+                break;
+            }
+            case VECTOR:{
+                entry = new ParameterVector(it->second,descriptionShow);
+                break;
+            }
         }
         if(it->second->target!=UNDEFINED){
             connect(entry, SIGNAL(changed()), this, SLOT(onValueChanged()));

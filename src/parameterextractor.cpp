@@ -11,6 +11,7 @@ ParameterExtractor::ParameterExtractor()
 ParameterExtractor::~ParameterExtractor()
 {
 }
+
 void ParameterExtractor::applyParameters(FileModule *fileModule)
 {
     if (fileModule == NULL) {
@@ -26,7 +27,6 @@ void ParameterExtractor::applyParameters(FileModule *fileModule)
         (*entry).second->applyParameter(&(*it));
     }
 }
-
 
 void ParameterExtractor::setParameters(const Module *module)
 {
@@ -52,8 +52,6 @@ void ParameterExtractor::setParameters(const Module *module)
         ParameterObject *entryObject = new ParameterObject();
         entryObject->setAssignment(&ctx, &assignment, defaultValue);
         entries[assignment.first] = entryObject;
-
     }
     connectWidget();
-
 }

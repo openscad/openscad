@@ -3,10 +3,11 @@
 ParameterCheckBox::ParameterCheckBox(ParameterObject *parameterobject, bool showDescription)
 {
     object=parameterobject;
-    set();
+    setName(QString::fromStdString(object->name));
+    setValue();
     connect(checkBox,SIGNAL(clicked()),this,SLOT(on_Changed()));
     if(showDescription==true){
-    setDescription(object->description);
+        setDescription(object->description);
     }
     else{
         checkBox->setToolTip(object->description);

@@ -34,26 +34,26 @@
 class ParameterWidget : public QWidget, public Ui::ParameterWidget, public ParameterExtractor
 {
 	Q_OBJECT
-
+private:
     typedef enum { UNDEFINED, COMBOBOX, SLIDER, CHECKBOX, TEXT, NUMBER, VECTOR } parameter_type_t;
     QTimer autoPreviewTimer;
     bool descriptionShow;
 
 public:
-        ParameterWidget(QWidget *parent = 0);
-        virtual ~ParameterWidget();
+    ParameterWidget(QWidget *parent = 0);
+    virtual ~ParameterWidget();
 
 protected slots:
-        void onValueChanged(); //work when changed signal emmitedd by parameterEntryWidget object
-        void onPreviewTimerElapsed(); //
-        void onDescriptionShow();
+    void onValueChanged();
+    void onPreviewTimerElapsed();
+    void onDescriptionShow();
 
 signals:
-        void previewRequested();
+    void previewRequested();
 
 protected:
-        void connectWidget();
-        void begin();
-        void addEntry(class ParameterVirtualWidget *entry);
-        void end();
+    void connectWidget();
+    void begin();
+    void addEntry(class ParameterVirtualWidget *entry);
+    void end();
 };

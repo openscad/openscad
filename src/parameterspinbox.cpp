@@ -3,10 +3,11 @@
 ParameterSpinBox::ParameterSpinBox(ParameterObject *parameterobject, bool showDescription)
 {
     object=parameterobject;
-    set();
+    setName(QString::fromStdString(object->name));
+    setValue();
     connect(doubleSpinBox1,SIGNAL(valueChanged(double)),this,SLOT(on_Changed(double)));
     if(showDescription==true){
-    setDescription(object->description);
+        setDescription(object->description);
     }
     else{
         doubleSpinBox1->setToolTip(object->description);
@@ -14,11 +15,13 @@ ParameterSpinBox::ParameterSpinBox(ParameterObject *parameterobject, bool showDe
 }
 
 void ParameterSpinBox::on_Changed(double){
+
     object->value = ValuePtr(doubleSpinBox1->value());
     emit changed();
 }
 
 void ParameterSpinBox::setValue(){
+
     this->stackedWidget->setCurrentWidget(this->pageVector);
     this->doubleSpinBox1->setValue(object->value->toDouble());
     this->doubleSpinBox2->hide();
