@@ -69,7 +69,7 @@ extern FILE *lexerin;
 extern const char *parser_input_buffer;
 const char *parser_input_buffer;
 fs::path parser_sourcefile;
-
+extern std::vector<fs::path> filename_stack;
 %}
 
 %union {
@@ -302,8 +302,9 @@ single_module_instantiation:
                 $$ = new ModuleInstantiation($1);
                 $$->arguments = *$3;
                 $$->setPath(boosty::stringy(parser_sourcefile.parent_path()));
-                $$->setLocation(@$.first_line, @$.first_column,
-                                @$.last_line, @$.last_column);
+                if (filename_stack.empty())
+                  $$->setLocation(@$.first_line, @$.first_column,
+                                  @$.last_line, @$.last_column);
                 free($1);
                 delete $3;
             }
