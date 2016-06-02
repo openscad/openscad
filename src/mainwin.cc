@@ -1715,8 +1715,9 @@ void MainWindow::compileTopLevelDocument()
         this->fileName.isEmpty() ? "" : this->fileName.toLocal8Bit();
 	this->root_module = parse(fulltext.c_str(), fs::path(fname), false);
 	
-	this->parameterWidget->applyParameters(this->root_module);
-	this->parameterWidget->setParameters(this->root_module);
+    this->parameterWidget->setParameters(this->root_module);
+    this->parameterWidget->applyParameters(this->root_module);
+
 
 }
 

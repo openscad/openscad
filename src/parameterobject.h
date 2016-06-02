@@ -24,10 +24,16 @@ public:
     parameter_type_t target;
     QString description;
     string name;
+    bool set;
 
     ParameterObject();
     void setAssignment(class Context *context, const class Assignment *assignment, const ValuePtr defaultValue);
     void applyParameter(class Assignment *assignment);
+    bool operator == (const ParameterObject &second)
+    {
+        return (this->defaultValue == second.defaultValue && this->values==second.values &&
+            this->description == second.description);
+    }
 
 protected:
     int setValue(const class ValuePtr defaultValue, const class ValuePtr values);

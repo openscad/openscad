@@ -21,7 +21,6 @@ public:
 
 
 protected:
-
     virtual void begin()=0;
     virtual void addEntry(ParameterVirtualWidget *entry)=0;
     virtual void end()=0;

@@ -114,6 +114,11 @@ void ParameterWidget::connectWidget()
 {
     begin();
     for(entry_map_t::iterator it = entries.begin(); it != entries.end(); it++) {
+        entry_map_t::iterator ent = entries.find((*it).first);
+        if(!(*ent).second->set){
+            entries.erase((*it).first);
+            continue;
+        }
         ParameterVirtualWidget *entry ;
         switch (it->second->target) {
             case COMBOBOX:{
