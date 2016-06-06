@@ -13,21 +13,33 @@ class ParameterVirtualWidget : public QWidget, public Ui::ParameterEntryWidget
 {
     Q_OBJECT
 
-public:
+protected:
     ParameterObject *object;
-    ParameterVirtualWidget(QWidget *parent = 0);
-    virtual ~ParameterVirtualWidget();
 
-    ValuePtr getValue();
-    bool isDefaultValue();
+public:
+    ParameterVirtualWidget(QWidget *parent=0) :
+        QWidget(parent)
+    {
+        setupUi(this);
+    }
+    virtual ~ParameterVirtualWidget(){}
 
 signals:
     void changed();
 
 protected:
-    void setName(const QString& name);
     virtual void setValue()=0;
-    void setDescription(const QString& description);
+    void setName(const QString& name)
+    {
+        this->labelDescription->hide();
+        this->labelParameter->setText(name);
+    }
+
+    void setDescription(const QString& description)
+    {
+        this->labelDescription->show();
+        this->labelDescription->setText(description);
+    }
 };
 
 #endif // PARAMETERVIRTUALWIDGET_H

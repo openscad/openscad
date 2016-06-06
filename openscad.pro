@@ -454,7 +454,6 @@ SOURCES += src/version_check.cc \
            src/LibraryInfoDialog.cc \
            src/parameterobject.cpp \
     src/parameterextractor.cpp \
-    src/parametervirtualwidget.cpp \
     src/parameterspinbox.cpp \
     src/parametercombobox.cpp \
     src/parameterslider.cpp \
