@@ -232,6 +232,7 @@ win* {
 
 HEADERS += src/AST.h \
            src/ModuleInstantiation.h \
+           src/Package.h \
            src/Assignment.h \
            src/expression.h \
            src/function.h \
@@ -311,7 +312,6 @@ HEADERS += src/version_check.h \
            src/editor.h \
            src/NodeVisitor.h \
            src/state.h \
-           src/traverser.h \
            src/nodecache.h \
            src/nodedumper.h \
            src/ModuleCache.h \
@@ -394,7 +394,7 @@ SOURCES += src/version_check.cc \
            src/LibraryInfo.cc \
            \
            src/nodedumper.cc \
-           src/traverser.cc \
+           src/NodeVisitor.cc \
            src/GeometryEvaluator.cc \
            src/ModuleCache.cc \
            src/GeometryCache.cc \
