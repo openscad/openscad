@@ -226,8 +226,8 @@ FORMS   += src/MainWindow.ui \
            src/AboutDialog.ui \
            src/FontListDialog.ui \
            src/ProgressWidget.ui \
-           src/ParameterWidget.ui \
-           src/ParameterEntryWidget.ui \
+            src/Parameter/parameterWidget.ui \
+            src/Parameter/parameterEntryWidget.ui \
            src/launchingscreen.ui \
            src/LibraryInfoDialog.ui \
 
@@ -245,7 +245,7 @@ HEADERS += src/typedefs.h \
            src/QGLView.h \
            src/GLView.h \
            src/MainWindow.h \
-           src/ParameterWidget.h \
+            src/Parameter/parameterWidget.h \
            src/OpenSCADApp.h \
            src/WindowManager.h \
            src/Preferences.h \
@@ -334,15 +334,15 @@ HEADERS += src/typedefs.h \
            src/launchingscreen.h \
            src/legacyeditor.h \
            src/LibraryInfoDialog.h \
-           src/parameterobject.h \
-    src/parameterextractor.h \
-    src/parametervirtualwidget.h \
-    src/parameterspinbox.h \
-    src/parametercombobox.h \
-    src/parameterslider.h \
-    src/parametercheckbox.h \
-    src/parametertext.h \
-    src/parametervector.h
+            src/Parameter/parameterobject.h \
+     src/Parameter/parameterextractor.h \
+     src/Parameter/parametervirtualwidget.h \
+     src/Parameter/parameterspinbox.h \
+     src/Parameter/parametercombobox.h \
+     src/Parameter/parameterslider.h \
+     src/Parameter/parametercheckbox.h \
+     src/Parameter/parametertext.h \
+     src/Parameter/parametervector.h
 
 SOURCES += src/version_check.cc \
            src/ProgressWidget.cc \
@@ -442,7 +442,7 @@ SOURCES += src/version_check.cc \
            \
            src/openscad.cc \
            src/mainwin.cc \
-           src/ParameterWidget.cc \
+            src/Parameter/parameterWidget.cc \
            src/OpenSCADApp.cc \
            src/WindowManager.cc \
            src/UIUtils.cc \
@@ -452,14 +452,14 @@ SOURCES += src/version_check.cc \
            src/launchingscreen.cc \
            src/legacyeditor.cc \
            src/LibraryInfoDialog.cc \
-           src/parameterobject.cpp \
-    src/parameterextractor.cpp \
-    src/parameterspinbox.cpp \
-    src/parametercombobox.cpp \
-    src/parameterslider.cpp \
-    src/parametercheckbox.cpp \
-    src/parametertext.cpp \
-    src/parametervector.cpp
+            src/Parameter/parameterobject.cpp \
+     src/Parameter/parameterextractor.cpp \
+     src/Parameter/parameterspinbox.cpp \
+     src/Parameter/parametercombobox.cpp \
+     src/Parameter/parameterslider.cpp \
+     src/Parameter/parametercheckbox.cpp \
+     src/Parameter/parametertext.cpp \
+     src/Parameter/parametervector.cpp
 
 # ClipperLib
 SOURCES += src/polyclipping/clipper.cpp
