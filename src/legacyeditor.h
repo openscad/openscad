@@ -27,6 +27,7 @@ public slots:
 	void unindentSelection();
 	void commentSelection();
 	void uncommentSelection();
+        void insertTemplate();
 	void setPlainText(const QString&);
 	void highlightError(int);
 	void unhighlightLastError();

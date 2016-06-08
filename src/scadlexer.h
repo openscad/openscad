@@ -12,10 +12,11 @@ public:
 	virtual ~ScadLexer();
 	const char *language() const;
 	const char *keywords(int set) const;	
-
-        void setKeywords(int set, const std::string& keywords);
+	void setKeywords(int set, const std::string& keywords);
+	const char *autoCompletionFillups() const;
+  
 private:
-        std::string keywordSet[4];
+	std::string keywordSet[4];
 	ScadLexer(const ScadLexer &);
 	ScadLexer &operator=(const ScadLexer &);
 };

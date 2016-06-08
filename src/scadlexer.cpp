@@ -36,6 +36,11 @@ ScadLexer::~ScadLexer()
 {
 }
 
+const char *ScadLexer::autoCompletionFillups() const
+{
+    return "(<";
+}
+
 const char *ScadLexer::language() const
 {
 	return "SCAD";

@@ -309,6 +309,7 @@
     <addaction name="editActionComment"/>
     <addaction name="editActionUncomment"/>
     <addaction name="editActionConvertTabsToSpaces"/>
+    <addaction name="actionInsertTemplate"/>
     <addaction name="separator"/>
     <addaction name="editActionPasteVPT"/>
     <addaction name="editActionPasteVPR"/>
@@ -1281,6 +1282,17 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+C</string>
+   </property>
+  </action>
+  <action name="actionInsertTemplate">
+   <property name="text">
+    <string>Insert Template</string>
+   </property>
+   <property name="toolTip">
+    <string>Insert code template</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Return</string>
    </property>
   </action>
  </widget>

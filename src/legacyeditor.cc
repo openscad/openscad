@@ -240,7 +240,7 @@ bool LegacyEditor::findString(const QString & exp, bool findBackwards) const
 	return this->textedit->find(exp, findBackwards ? QTextDocument::FindBackward : QTextDocument::FindFlags(0));
 }
 
-bool LegacyEditor::find(const QString &newText, bool findNext, bool findBackwards)
+bool LegacyEditor::find(const QString &newText, bool /* findNext */, bool findBackwards)
 {
 	bool success = this->findString(newText, findBackwards);
 	if (!success) { // Implement wrap-around search behavior
@@ -294,4 +294,8 @@ QStringList LegacyEditor::colorSchemes()
 	    << "Off";
 	
 	return colorSchemes;
+}
+
+void LegacyEditor::insertTemplate()
+{
 }

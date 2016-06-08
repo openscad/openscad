@@ -250,6 +250,7 @@ HEADERS += src/typedefs.h \
            src/AboutDialog.h \
            src/FontListDialog.h \
            src/FontListTableView.h \
+	   src/scadapi.h \
            src/builtin.h \
            src/calc.h \
            src/context.h \

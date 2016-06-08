@@ -258,6 +258,7 @@ MainWindow::MainWindow(const QString &filename)
 
 	connect(this, SIGNAL(highlightError(int)), editor, SLOT(highlightError(int)));
 	connect(this, SIGNAL(unhighlightLastError()), editor, SLOT(unhighlightLastError()));
+	connect(this->actionInsertTemplate, SIGNAL(triggered()), editor, SLOT(insertTemplate()));
 
 	this->qglview->statusLabel = new QLabel(this);
 	this->qglview->statusLabel->setMinimumWidth(100);

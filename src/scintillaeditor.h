@@ -5,9 +5,11 @@
 #include <QString>
 #include <QWidget>
 #include <QVBoxLayout>
+
 #include <Qsci/qsciscintilla.h>
-#include <QVBoxLayout>
+
 #include "editor.h"
+#include "scadapi.h"
 #include "scadlexer.h"
 #include "parsersettings.h"
 
@@ -67,6 +69,7 @@ private:
         virtual bool eventFilter(QObject* obj, QEvent *event);
         void navigateOnNumber(int key);
         bool modifyNumber(int key);
+	void addTemplate(const QString key, const QString text, const int cursor_offset);
 
 signals:
 	void previewRequest(void);
@@ -84,6 +87,7 @@ public slots:
 	void unindentSelection();
 	void commentSelection();
 	void uncommentSelection();
+        void insertTemplate();
 	void insert(const QString&);
 	void setText(const QString&);
 	void undo();
@@ -92,6 +96,7 @@ public slots:
 	void copy();
 	void paste();
 	void initFont(const QString&, uint);
+        void onUserListSelected(const int id, const QString &text);
 
 private slots:
 	void onTextChanged();
@@ -101,6 +106,10 @@ private:
 	QVBoxLayout *scintillaLayout;
 	static const int indicatorNumber = 8; // first 8 are used by lexers
 	static const int markerNumber = 2;
+        static const int templateUserListId = 1;
 	ScadLexer *lexer;
 	QFont currentFont;
+	ScadApi *api;
+	QStringList userList;
+	QMap<QString, ScadTemplate> templateMap;
 };
