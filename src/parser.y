@@ -24,7 +24,7 @@
  *
  */
 
-%expect 2 /* Expect 2 shift/reduce conflict for ifelse_statement - "dangling else problem" */
+//%expect 3 /* Expect 2 shift/reduce conflict for ifelse_statement - "dangling else problem" */
 
 %{
 
@@ -88,15 +88,18 @@ fs::path parser_sourcefile;
 
 %token TOK_MODULE
 %token TOK_ANNOTATION
+%token COMMENT DCOMMENT
 %token TOK_FUNCTION
 %token TOK_IF
 %token TOK_ELSE
 %token TOK_FOR
 %token TOK_LET
-%token TOK_EACH
+%token TOK_EACH 
+
 
 %token <text> TOK_ID
 %token <text> TOK_STRING
+%token <text> CTOK_STRING
 %token <text> TOK_USE
 %token <number> TOK_NUMBER
 
@@ -140,6 +143,10 @@ fs::path parser_sourcefile;
 %type <arg> argument_decl
 
 %type <annotation> annotation
+%type <annotation> parameter
+%type <annotations> parameters
+%type <annotation> description
+%type <annotations> descriptions
 %type <annotations> annotations
 
 %type <text> module_id
@@ -171,7 +178,7 @@ annotations:
                 $$->push_back(*$2);
                 delete $2;
             }
-
+            
 annotation:
           TOK_ANNOTATION TOK_ID '(' arguments_call ')'
             {
@@ -179,6 +186,41 @@ annotation:
                 free($2);
             }
 
+descriptions:
+             description
+             {
+                $$ = new AnnotationList();
+                $$->push_back(*$1);
+                delete $1;
+             }
+                       
+description:
+            DCOMMENT arguments_call 
+            { 
+                $$ = Annotation::create("Description", *$2);
+            }
+
+parameters:
+             parameter
+             {
+                $$ = new AnnotationList();
+                $$->push_back(*$1);
+                delete $1;
+             }
+             |
+             parameters parameter
+            {
+                $$ = $1;
+                $$->push_back(*$2);
+                delete $2;
+            }
+
+parameter: 
+             COMMENT arguments_call 
+            { 
+                $$ = Annotation::create("Parameter", *$2);
+            }
+               
 statement:
           ';'
         | '{' inner_input '}'
@@ -187,10 +229,24 @@ statement:
                 if ($1) scope_stack.top()->addChild($1);
             }
         | assignment
-        | annotations assignment
+        | annotations assignment 
             {
                 $2->add_annotations($1);
             }
+        | assignment parameters
+            {
+                $1->add_annotations($2);
+            }
+         | descriptions assignment
+            {
+                $2->add_annotations($1);
+            }
+        | descriptions assignment parameters
+            {   
+                $2->add_annotations($1);
+                $2->add_annotations($3);
+            }
+        
         | TOK_MODULE TOK_ID '(' arguments_decl optional_commas ')'
             {
                 Module *newmodule = new Module();
@@ -379,6 +435,11 @@ expr:
                 free($3);
             }
         | TOK_STRING
+            {
+                $$ = new ExpressionConst(ValuePtr(std::string($1)));
+                free($1);
+            }
+        | CTOK_STRING
             {
                 $$ = new ExpressionConst(ValuePtr(std::string($1)));
                 free($1);

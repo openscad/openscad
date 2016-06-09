@@ -23,7 +23,8 @@ public:
     virtual ~Assignment();
 
     virtual void add_annotations(AnnotationList *annotations);
-    
+    virtual void add_annotation(Annotation *annotations);
+
     virtual bool has_annotations() const;
     virtual const Annotation * annotation(const std::string &name) const;
 

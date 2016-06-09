@@ -33,6 +33,7 @@
 #include "parsersettings.h"
 #include "parser_yacc.h"
 #include "module.h"
+#include<iostream>
 #include <assert.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
@@ -202,12 +203,20 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
 
 [\n\r\t ]
 
-\/\/ BEGIN(cond_lcomment);
+\/\/        { return COMMENT;}
+"//"[^0-9"["]         { BEGIN(cond_lcomment); stringcontents.clear(); return DCOMMENT;}
 <cond_lcomment>{
-\n                      { BEGIN(INITIAL); }
-{UNICODE}               { parser_error_pos -= strlen(lexertext) - 1; }
-[^\n]
+\n                      { BEGIN(INITIAL);
+			                parserlval.text = strdup(stringcontents.c_str());
+			                std::cout<<"afaf";
+			                return TOK_STRING; }
+{UNICODE}              { 
+                         parser_error_pos -= strlen(lexertext) - 1; 
+                            stringcontents += lexertext; } 
+[^\n]           { stringcontents += lexertext;} 
+
 }
+
 
 "/*" BEGIN(cond_comment);
 <cond_comment>{

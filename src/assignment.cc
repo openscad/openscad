@@ -12,8 +12,8 @@
  *  with the CGAL library and distribute executables, as long as you
  *  follow the requirements of the GNU GPL in regard to all of the
  *  software in the executable aside from CGAL.
- *
  *  This program is distributed in the hope that it will be useful,
+ *
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
@@ -47,6 +47,11 @@ void Assignment::add_annotations(AnnotationList *annotations)
 	for (AnnotationList::iterator it = annotations->begin();it != annotations->end();it++) {
 		this->annotations.insert(std::pair<const std::string, Annotation *>((*it).get_name(), &(*it)));
 	}
+}
+
+void Assignment::add_annotation(Annotation *annotation)
+{
+		this->annotations.insert(std::pair<const std::string, Annotation *>((*annotation).get_name(), &(*annotation)));
 }
 
 bool Assignment::has_annotations() const
