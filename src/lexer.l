@@ -204,12 +204,11 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
 [\n\r\t ]
 
 \/\/        { return COMMENT;}
-"//"[^0-9"["]         { BEGIN(cond_lcomment); stringcontents.clear(); return DCOMMENT;}
+"//"[^0-9"["]         { yyless(2); BEGIN(cond_lcomment); stringcontents.clear(); return DCOMMENT;}
 <cond_lcomment>{
 \n                      { BEGIN(INITIAL);
 			                parserlval.text = strdup(stringcontents.c_str());
-			                std::cout<<"afaf";
-			                return TOK_STRING; }
+			                return CTOK_STRING; }
 {UNICODE}              { 
                          parser_error_pos -= strlen(lexertext) - 1; 
                             stringcontents += lexertext; } 
