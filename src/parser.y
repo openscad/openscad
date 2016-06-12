@@ -178,6 +178,7 @@ annotations:
                 $$->push_back(*$2);
                 delete $2;
             }
+           ;
             
 annotation:
           TOK_ANNOTATION TOK_ID '(' arguments_call ')'
@@ -185,6 +186,7 @@ annotation:
                 $$ = Annotation::create($2, *$4);
                 free($2);
             }
+            ;
 
 descriptions:
              description
@@ -193,12 +195,13 @@ descriptions:
                 $$->push_back(*$1);
                 delete $1;
              }
-                       
+             ;          
 description:
-            DCOMMENT arguments_call 
+            COMMENT arguments_call 
             { 
                 $$ = Annotation::create("Description", *$2);
             }
+            ;
 
 parameters:
              parameter
@@ -207,19 +210,14 @@ parameters:
                 $$->push_back(*$1);
                 delete $1;
              }
-             |
-             parameters parameter
-            {
-                $$ = $1;
-                $$->push_back(*$2);
-                delete $2;
-            }
+             ;
 
 parameter: 
              COMMENT arguments_call 
             { 
                 $$ = Annotation::create("Parameter", *$2);
             }
+            ;
                
 statement:
           ';'
@@ -246,7 +244,7 @@ statement:
                 $2->add_annotations($1);
                 $2->add_annotations($3);
             }
-        
+        |descriptions
         | TOK_MODULE TOK_ID '(' arguments_decl optional_commas ')'
             {
                 Module *newmodule = new Module();
