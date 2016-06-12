@@ -2,7 +2,6 @@
 #define PARAMETERSLIDER_H
 
 #include"parametervirtualwidget.h"
-#include "parameterobject.h"
 
 class ParameterSlider : public ParameterVirtualWidget
 {

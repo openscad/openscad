@@ -57,3 +57,9 @@ void ParameterObject::setAssignment(class Context *ctx, const class Assignment *
         }
     }
 }
+
+bool ParameterObject::operator == (const ParameterObject &second)
+{
+    return (this->defaultValue == second.defaultValue && this->values==second.values &&
+        this->description == second.description);
+}

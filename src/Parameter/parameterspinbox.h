@@ -2,7 +2,6 @@
 #define PARAMETERSPINBOX_H
 
 #include"parametervirtualwidget.h"
-#include "parameterobject.h"
 
 class ParameterSpinBox :public ParameterVirtualWidget
 {

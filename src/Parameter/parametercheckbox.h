@@ -2,7 +2,7 @@
 #define PARAMETERCHECKBOX_H
 
 #include"parametervirtualwidget.h"
-#include "parameterobject.h"
+
 
 class ParameterCheckBox : public ParameterVirtualWidget
 {

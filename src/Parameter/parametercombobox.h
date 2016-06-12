@@ -2,7 +2,6 @@
 #define PARAMETERCOMBOBOX_H
 
 #include"parametervirtualwidget.h"
-#include "parameterobject.h"
 
 class ParameterComboBox : public ParameterVirtualWidget
 {

@@ -27,9 +27,10 @@
 
 #include <QTimer>
 
-#include "parameterobject.h"
-#include "ui_ParameterWidget.h"
+
 #include "parameterextractor.h"
+#include "ui_ParameterWidget.h"
+
 
 class ParameterWidget : public QWidget, public Ui::ParameterWidget, public ParameterExtractor
 {

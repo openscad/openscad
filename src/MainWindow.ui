@@ -1384,7 +1384,7 @@
   <customwidget>
    <class>ParameterWidget</class>
    <extends>QWidget</extends>
-   <header>ParameterWidget.h</header>
+   <header>Parameter/ParameterWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

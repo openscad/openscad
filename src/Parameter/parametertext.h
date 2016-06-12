@@ -2,7 +2,6 @@
 #define PARAMETERTEXT_H
 
 #include"parametervirtualwidget.h"
-#include "parameterobject.h"
 
 class ParameterText : public ParameterVirtualWidget
 {

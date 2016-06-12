@@ -34,9 +34,6 @@
 #include "parametertext.h"
 #include "parametervector.h"
 
-#include "module.h"
-#include "modcontext.h"
-#include "expression.h"
 
 ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 {
@@ -117,8 +114,8 @@ void ParameterWidget::connectWidget()
             entries.erase((*it).first);
             continue;
         }
-
     }
+
     begin();
     for(entry_map_t::iterator it = entries.begin(); it != entries.end(); it++) {
 

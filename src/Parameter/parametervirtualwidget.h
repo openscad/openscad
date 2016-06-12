@@ -5,7 +5,6 @@
 
 #include "value.h"
 #include "qtgettext.h"
-
 #include "ui_ParameterEntryWidget.h"
 #include "parameterobject.h"
 

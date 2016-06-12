@@ -1,8 +1,6 @@
 #ifndef PARAMETEREXTRACTOR_H
 #define PARAMETEREXTRACTOR_H
 
-#include "qtgettext.h"
-#include "parameterobject.h"
 #include "parametervirtualwidget.h"
 
 class ParameterExtractor
