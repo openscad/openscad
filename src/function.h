@@ -13,8 +13,8 @@ class AbstractFunction
 private:
 	const Feature *feature;
 public:
-	AbstractFunction(const Feature& feature) : AbstractFunction(&feature) {}
-	AbstractFunction(const Feature *feature = NULL) : feature(feature) {}
+	AbstractFunction(const Feature& feature) : feature(&feature) {}
+	AbstractFunction() : feature(NULL) {}
 	virtual ~AbstractFunction();
 	virtual bool is_experimental() const { return feature != NULL; }
 	virtual bool is_enabled() const { return (feature == NULL) || feature->is_enabled(); }
