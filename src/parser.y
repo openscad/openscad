@@ -264,9 +264,7 @@ ifelse_statement:
 if_statement:
           TOK_IF '(' expr ')'
             {
-                $<ifelse>$ = new IfElseModuleInstantiation(LOC(@$));
-                $<ifelse>$->arguments.push_back(Assignment("", shared_ptr<Expression>($3)));
-                $<ifelse>$->setPath(boosty::stringy(parser_sourcefile.parent_path()));
+                $<ifelse>$ = new IfElseModuleInstantiation(shared_ptr<Expression>($3), boosty::stringy(parser_sourcefile.parent_path()), LOC(@$));
                 scope_stack.push(&$<ifelse>$->scope);
             }
           child_statement
@@ -302,9 +300,7 @@ module_id:
 single_module_instantiation:
           module_id '(' arguments_call ')'
             {
-              $$ = new ModuleInstantiation($1, LOC(@$));
-                $$->arguments = *$3;
-                $$->setPath(boosty::stringy(parser_sourcefile.parent_path()));
+                $$ = new ModuleInstantiation($1, *$3, boosty::stringy(parser_sourcefile.parent_path()), LOC(@$));
                 free($1);
                 delete $3;
             }
