@@ -29,6 +29,8 @@
 #include "expression.h"
 #include "context.h"
 #include "evalcontext.h"
+
+extern AssignmentList * parser(const char *text);
 #include <iostream>
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
@@ -44,6 +46,12 @@ Annotation::~Annotation()
 
 const Annotation * Annotation::create(const std::string name, const AssignmentList assignments)
 {
+    AssignmentList *assignment;
+    if (name == "DParameter") {
+		assignment=parser("[12:34]");
+		return create("Parameter",*assignment);
+	}
+ 
 	AssignmentList args;
 	if (name == "Description") {
 		args += Assignment("text");

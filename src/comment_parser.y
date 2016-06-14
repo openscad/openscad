@@ -9,6 +9,7 @@
     void yyerror(char *);
     int yylex(void);
     AssignmentList *argument;
+    extern const char *parser_input_buffer;
 %}
 %union {
     char *text;
@@ -18,6 +19,7 @@
     AssignmentList *args;
     
 };
+
 
 %token<text> NUM
 %token<text> WORD
@@ -107,7 +109,9 @@ void yyerror(char *s) {
     cout<<s<<endl;   
 }
 
-int parse(void) {
-   yyparse();;
-    return 0;
+AssignmentList * parser(const char *text) {
+    parser_input_buffer = text;
+    yyparse();
+    return argument;
+    
 }
