@@ -30,7 +30,6 @@
 #include <assert.h>
 #include <sstream>
 #include <algorithm>
-#include "stl-utils.h"
 #include "printutils.h"
 #include "stackcheck.h"
 #include "exceptions.h"
@@ -58,14 +57,6 @@ namespace {
 	}
 }
 
-Expression::Expression()
-{
-}
-
-Expression::~Expression()
-{
-}
-
 namespace /* anonymous*/ {
 
 	std::ostream &operator << (std::ostream &o, AssignmentList const& l) {
@@ -85,7 +76,7 @@ bool Expression::isListComprehension() const
 	return false;
 }
 
-UnaryOp::UnaryOp(UnaryOp::Op op, Expression *expr) : op(op), expr(expr)
+UnaryOp::UnaryOp(UnaryOp::Op op, Expression *expr, const Location &loc) : Expression(loc), op(op), expr(expr)
 {
 }
 
@@ -122,8 +113,8 @@ void UnaryOp::print(std::ostream &stream) const
 	stream << opString() << *this->expr;
 }
 
-BinaryOp::BinaryOp(Expression *left, BinaryOp::Op op, Expression *right) :
-	op(op), left(left), right(right)
+BinaryOp::BinaryOp(Expression *left, BinaryOp::Op op, Expression *right, const Location &loc) :
+	Expression(loc), op(op), left(left), right(right)
 {
 }
 
@@ -228,8 +219,8 @@ void BinaryOp::print(std::ostream &stream) const
 	stream << "(" << *this->left << " " << opString() << " " << *this->right << ")";
 }
 
-TernaryOp::TernaryOp(Expression *cond, Expression *ifexpr, Expression *elseexpr)
-	: cond(cond), ifexpr(ifexpr), elseexpr(elseexpr)
+TernaryOp::TernaryOp(Expression *cond, Expression *ifexpr, Expression *elseexpr, const Location &loc)
+	: Expression(loc), cond(cond), ifexpr(ifexpr), elseexpr(elseexpr)
 {
 }
 
@@ -243,8 +234,8 @@ void TernaryOp::print(std::ostream &stream) const
 	stream << "(" << *this->cond << " ? " << *this->ifexpr << " : " << *this->elseexpr << ")";
 }
 
-ArrayLookup::ArrayLookup(Expression *array, Expression *index)
-	: array(array), index(index)
+ArrayLookup::ArrayLookup(Expression *array, Expression *index, const Location &loc)
+	: Expression(loc), array(array), index(index)
 {
 }
 
@@ -257,7 +248,7 @@ void ArrayLookup::print(std::ostream &stream) const
 	stream << *array << "[" << *index << "]";
 }
 
-Literal::Literal(const ValuePtr &val) : value(val)
+Literal::Literal(const ValuePtr &val, const Location &loc) : Expression(loc), value(val)
 {
 }
 
@@ -271,13 +262,13 @@ void Literal::print(std::ostream &stream) const
     stream << *this->value;
 }
 
-Range::Range(Expression *begin, Expression *end)
-	: begin(begin), end(end)
+Range::Range(Expression *begin, Expression *end, const Location &loc)
+	: Expression(loc), begin(begin), end(end)
 {
 }
 
-Range::Range(Expression *begin, Expression *step, Expression *end)
-	: begin(begin), step(step), end(end)
+Range::Range(Expression *begin, Expression *step, Expression *end, const Location &loc)
+	: Expression(loc), begin(begin), step(step), end(end)
 {
 }
 
@@ -310,7 +301,7 @@ void Range::print(std::ostream &stream) const
 	stream << "]";
 }
 
-Vector::Vector()
+Vector::Vector(const Location &loc) : Expression(loc)
 {
 }
 
@@ -346,7 +337,7 @@ void Vector::print(std::ostream &stream) const
 	stream << "]";
 }
 
-Lookup::Lookup(const std::string &name) : name(name)
+Lookup::Lookup(const std::string &name, const Location &loc) : Expression(loc), name(name)
 {
 }
 
@@ -360,8 +351,8 @@ void Lookup::print(std::ostream &stream) const
 	stream << this->name;
 }
 
-MemberLookup::MemberLookup(Expression *expr, const std::string &member)
-	: expr(expr), member(member)
+MemberLookup::MemberLookup(Expression *expr, const std::string &member, const Location &loc)
+	: Expression(loc), expr(expr), member(member)
 {
 }
 
@@ -387,8 +378,8 @@ void MemberLookup::print(std::ostream &stream) const
 }
 
 FunctionCall::FunctionCall(const std::string &name, 
-													 const AssignmentList &args)
-	: name(name), arguments(args)
+													 const AssignmentList &args, const Location &loc)
+	: Expression(loc), name(name), arguments(args)
 {
 }
 
@@ -409,8 +400,8 @@ void FunctionCall::print(std::ostream &stream) const
 	stream << this->name << "(" << this->arguments << ")";
 }
 
-Let::Let(const AssignmentList &args, Expression *expr)
-	: arguments(args), expr(expr)
+Let::Let(const AssignmentList &args, Expression *expr, const Location &loc)
+	: Expression(loc), arguments(args), expr(expr)
 {
 }
 
@@ -427,7 +418,7 @@ void Let::print(std::ostream &stream) const
 	stream << "let(" << this->arguments << ") " << *expr;
 }
 
-ListComprehension::ListComprehension()
+ListComprehension::ListComprehension(const Location &loc) : Expression(loc)
 {
 }
 
@@ -436,8 +427,8 @@ bool ListComprehension::isListComprehension() const
 	return true;
 }
 
-LcIf::LcIf(Expression *cond, Expression *ifexpr, Expression *elseexpr)
-	: cond(cond), ifexpr(ifexpr), elseexpr(elseexpr)
+LcIf::LcIf(Expression *cond, Expression *ifexpr, Expression *elseexpr, const Location &loc)
+	: ListComprehension(loc), cond(cond), ifexpr(ifexpr), elseexpr(elseexpr)
 {
 }
 
@@ -469,7 +460,7 @@ void LcIf::print(std::ostream &stream) const
     }
 }
 
-LcEach::LcEach(Expression *expr) : expr(expr)
+LcEach::LcEach(Expression *expr, const Location &loc) : ListComprehension(loc), expr(expr)
 {
 }
 
@@ -512,8 +503,8 @@ void LcEach::print(std::ostream &stream) const
     stream << "each (" << *this->expr << ")";
 }
 
-LcFor::LcFor(const AssignmentList &args, Expression *expr)
-	: arguments(args), expr(expr)
+LcFor::LcFor(const AssignmentList &args, Expression *expr, const Location &loc)
+	: ListComprehension(loc), arguments(args), expr(expr)
 {
 }
 
@@ -564,8 +555,8 @@ void LcFor::print(std::ostream &stream) const
     stream << "for(" << this->arguments << ") (" << *this->expr << ")";
 }
 
-LcForC::LcForC(const AssignmentList &args, const AssignmentList &incrargs, Expression *cond, Expression *expr)
-	: arguments(args), incr_arguments(incrargs), cond(cond), expr(expr)
+LcForC::LcForC(const AssignmentList &args, const AssignmentList &incrargs, Expression *cond, Expression *expr, const Location &loc)
+	: ListComprehension(loc), arguments(args), incr_arguments(incrargs), cond(cond), expr(expr)
 {
 }
 
@@ -605,8 +596,8 @@ void LcForC::print(std::ostream &stream) const
         << ") " << *this->expr;
 }
 
-LcLet::LcLet(const AssignmentList &args, Expression *expr)
-	: arguments(args), expr(expr)
+LcLet::LcLet(const AssignmentList &args, Expression *expr, const Location &loc)
+	: ListComprehension(loc), arguments(args), expr(expr)
 {
 }
 

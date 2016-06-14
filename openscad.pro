@@ -239,7 +239,8 @@ HEADERS += src/AST.h \
            src/module.h \           
            src/UserModule.h
 
-SOURCES += src/ModuleInstantiation.cc \
+SOURCES += src/AST.cc \
+           src/ModuleInstantiation.cc \
            src/expr.cc \
            src/function.cc \
            src/module.cc \

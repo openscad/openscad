@@ -11,8 +11,8 @@
 class Expression : public ASTNode
 {
 public:
-	Expression();
-	virtual ~Expression();
+	Expression(const Location &loc) : ASTNode(loc) {}
+	virtual ~Expression() {}
 
 	virtual bool isListComprehension() const;
 	virtual ValuePtr evaluate(const class Context *context) const = 0;
@@ -29,7 +29,7 @@ public:
 		Negate
 	};
 
-	UnaryOp(Op op, Expression *expr);
+	UnaryOp(Op op, Expression *expr, const Location &loc);
 	virtual ValuePtr evaluate(const class Context *context) const;
 	virtual void print(std::ostream &stream) const;
 
@@ -59,7 +59,7 @@ public:
 		NotEqual
 	};
 
-	BinaryOp(Expression *left, Op op, Expression *right);
+	BinaryOp(Expression *left, Op op, Expression *right, const Location &loc);
 	virtual ValuePtr evaluate(const class Context *context) const;
 	virtual void print(std::ostream &stream) const;
 
@@ -74,7 +74,7 @@ private:
 class TernaryOp : public Expression
 {
 public:
-	TernaryOp(Expression *cond, Expression *ifexpr, Expression *elseexpr);
+	TernaryOp(Expression *cond, Expression *ifexpr, Expression *elseexpr, const Location &loc);
 	ValuePtr evaluate(const class Context *context) const;
 	virtual void print(std::ostream &stream) const;
 
@@ -86,7 +86,7 @@ public:
 class ArrayLookup : public Expression
 {
 public:
-	ArrayLookup(Expression *array, Expression *index);
+	ArrayLookup(Expression *array, Expression *index, const Location &loc);
 	ValuePtr evaluate(const class Context *context) const;
 	virtual void print(std::ostream &stream) const;
 private:
@@ -97,7 +97,7 @@ private:
 class Literal : public Expression
 {
 public:
-	Literal(const ValuePtr &val);
+	Literal(const ValuePtr &val, const Location &loc = Location::NONE);
 	ValuePtr evaluate(const class Context *) const;
 	virtual void print(std::ostream &stream) const;
 private:
@@ -107,8 +107,8 @@ private:
 class Range : public Expression
 {
 public:
-	Range(Expression *begin, Expression *end);
-	Range(Expression *begin, Expression *step, Expression *end);
+	Range(Expression *begin, Expression *end, const Location &loc);
+	Range(Expression *begin, Expression *step, Expression *end, const Location &loc);
 	ValuePtr evaluate(const class Context *context) const;
 	virtual void print(std::ostream &stream) const;
 private:
@@ -120,7 +120,7 @@ private:
 class Vector : public Expression
 {
 public:
-	Vector();
+	Vector(const Location &loc);
 	ValuePtr evaluate(const class Context *context) const;
 	virtual void print(std::ostream &stream) const;
 	void push_back(Expression *expr);
@@ -131,7 +131,7 @@ private:
 class Lookup : public Expression
 {
 public:
-	Lookup(const std::string &name);
+	Lookup(const std::string &name, const Location &loc);
 	ValuePtr evaluate(const class Context *context) const;
 	virtual void print(std::ostream &stream) const;
 private:
@@ -141,7 +141,7 @@ private:
 class MemberLookup : public Expression
 {
 public:
-	MemberLookup(Expression *expr, const std::string &member);
+	MemberLookup(Expression *expr, const std::string &member, const Location &loc);
 	ValuePtr evaluate(const class Context *context) const;
 	virtual void print(std::ostream &stream) const;
 private:
@@ -152,7 +152,7 @@ private:
 class FunctionCall : public Expression
 {
 public:
-	FunctionCall(const std::string &funcname, const AssignmentList &arglist);
+	FunctionCall(const std::string &funcname, const AssignmentList &arglist, const Location &loc);
 	ValuePtr evaluate(const class Context *context) const;
 	virtual void print(std::ostream &stream) const;
 public:
@@ -163,7 +163,7 @@ public:
 class Let : public Expression
 {
 public:
-	Let(const AssignmentList &args, Expression *expr);
+	Let(const AssignmentList &args, Expression *expr, const Location &loc);
 	ValuePtr evaluate(const class Context *context) const;
 	virtual void print(std::ostream &stream) const;
 private:
@@ -175,13 +175,14 @@ class ListComprehension : public Expression
 {
 	virtual bool isListComprehension() const;
 public:
-	ListComprehension();
+	ListComprehension(const Location &loc);
+	~ListComprehension() = default;
 };
 
 class LcIf : public ListComprehension
 {
 public:
-	LcIf(Expression *cond, Expression *ifexpr, Expression *elseexpr);
+	LcIf(Expression *cond, Expression *ifexpr, Expression *elseexpr, const Location &loc);
 	ValuePtr evaluate(const class Context *context) const;
 	virtual void print(std::ostream &stream) const;
 private:
@@ -193,7 +194,7 @@ private:
 class LcFor : public ListComprehension
 {
 public:
-	LcFor(const AssignmentList &args, Expression *expr);
+	LcFor(const AssignmentList &args, Expression *expr, const Location &loc);
 	ValuePtr evaluate(const class Context *context) const;
 	virtual void print(std::ostream &stream) const;
 private:
@@ -204,7 +205,7 @@ private:
 class LcForC : public ListComprehension
 {
 public:
-	LcForC(const AssignmentList &args, const AssignmentList &incrargs, Expression *cond, Expression *expr);
+	LcForC(const AssignmentList &args, const AssignmentList &incrargs, Expression *cond, Expression *expr, const Location &loc);
 	ValuePtr evaluate(const class Context *context) const;
 	virtual void print(std::ostream &stream) const;
 private:
@@ -217,7 +218,7 @@ private:
 class LcEach : public ListComprehension
 {
 public:
-	LcEach(Expression *expr);
+	LcEach(Expression *expr, const Location &loc);
 	ValuePtr evaluate(const class Context *context) const;
 	virtual void print(std::ostream &stream) const;
 private:
@@ -227,7 +228,7 @@ private:
 class LcLet : public ListComprehension
 {
 public:
-	LcLet(const AssignmentList &args, Expression *expr);
+	LcLet(const AssignmentList &args, Expression *expr, const Location &loc);
 	ValuePtr evaluate(const class Context *context) const;
 	virtual void print(std::ostream &stream) const;
 private:

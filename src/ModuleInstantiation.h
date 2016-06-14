@@ -9,8 +9,8 @@ typedef std::vector<class ModuleInstantiation*> ModuleInstantiationList;
 class ModuleInstantiation : public ASTNode
 {
 public:
-	ModuleInstantiation(const std::string &name = "")
-		: tag_root(false), tag_highlight(false), tag_background(false), modname(name) { }
+	ModuleInstantiation(const std::string &name = "", const Location &loc = Location::NONE)
+		: ASTNode(loc), tag_root(false), tag_highlight(false), tag_background(false), modname(name) { }
 	virtual ~ModuleInstantiation();
 
 	virtual std::string dump(const std::string &indent) const;
@@ -39,7 +39,7 @@ protected:
 
 class IfElseModuleInstantiation : public ModuleInstantiation {
 public:
-	IfElseModuleInstantiation() : ModuleInstantiation("if") { }
+	IfElseModuleInstantiation(const Location &loc) : ModuleInstantiation("if", loc) { }
 	virtual ~IfElseModuleInstantiation();
 	std::vector<AbstractNode*> instantiateElseChildren(const Context *evalctx) const;
 	virtual std::string dump(const std::string &indent) const;
