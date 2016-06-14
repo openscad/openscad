@@ -8,13 +8,13 @@
 #include <string>
 #include <vector>
 
-class AbstractFunction : public ASTNode
+class AbstractFunction
 {
 private:
 	const Feature *feature;
 public:
-	AbstractFunction() : feature(NULL) {}
-	AbstractFunction(const Feature& feature) : feature(&feature) {}
+	AbstractFunction(const Feature& feature) : AbstractFunction(&feature) {}
+	AbstractFunction(const Feature *feature = NULL) : feature(feature) {}
 	virtual ~AbstractFunction();
 	virtual bool is_experimental() const { return feature != NULL; }
 	virtual bool is_enabled() const { return (feature == NULL) || feature->is_enabled(); }
@@ -36,7 +36,7 @@ public:
 	virtual std::string dump(const std::string &indent, const std::string &name) const;
 };
 
-class UserFunction : public AbstractFunction
+class UserFunction : public AbstractFunction, public ASTNode
 {
 public:
 	std::string name;
@@ -44,11 +44,11 @@ public:
 
 	shared_ptr<Expression> expr;
 
-	UserFunction(const char *name, AssignmentList &definition_arguments, shared_ptr<Expression> expr);
+	UserFunction(const char *name, AssignmentList &definition_arguments, shared_ptr<Expression> expr, const Location &loc);
 	virtual ~UserFunction();
 
 	virtual ValuePtr evaluate(const Context *ctx, const EvalContext *evalctx) const;
 	virtual std::string dump(const std::string &indent, const std::string &name) const;
         
-	static UserFunction *create(const char *name, AssignmentList &definition_arguments, shared_ptr<Expression> expr);
+	static UserFunction *create(const char *name, AssignmentList &definition_arguments, shared_ptr<Expression> expr, const Location &loc);
 };

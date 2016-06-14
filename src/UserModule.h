@@ -9,8 +9,8 @@
 class UserModule : public AbstractModule, public ASTNode
 {
 public:
-	UserModule() { }
-	UserModule(const class Feature& feature) : AbstractModule(feature) { }
+	UserModule(const Location &loc) : ASTNode(loc) { }
+	UserModule(const class Feature& feature, const Location &loc) : AbstractModule(feature), ASTNode(loc) { }
 	virtual ~UserModule() {}
 
 	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx = NULL) const;

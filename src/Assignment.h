@@ -10,10 +10,11 @@
 class Assignment : public ASTNode
 {
 public:
+	Assignment(std::string name, const Location &loc) : Assignment(name, shared_ptr<class Expression>(), loc) {	}
 	Assignment(std::string name,
-						 shared_ptr<class Expression> expr = shared_ptr<class Expression>())
-		: name(name), expr(expr) {
-	}
+						 shared_ptr<class Expression> expr = shared_ptr<class Expression>(),
+						 const Location &loc = Location::NONE)
+		: ASTNode(loc), name(name), expr(expr) { }
 	
 	std::string name;
 	shared_ptr<class Expression> expr;

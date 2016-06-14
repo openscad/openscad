@@ -682,6 +682,7 @@ set(CORE_SOURCES
   ../src/FileModule.cc 
   ../src/UserModule.cc 
   ../src/GroupModule.cc 
+  ../src/AST.cc 
   ../src/ModuleInstantiation.cc 
   ../src/ModuleCache.cc 
   ../src/node.cc 
