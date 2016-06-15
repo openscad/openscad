@@ -24,7 +24,7 @@
 };
 
 
-%token<text> NUM
+%token<num> NUM
 %token<text> WORD
 %type <expr> expr
 %type <args> arguments_call
@@ -50,14 +50,12 @@ arguments_call:
             {
                 $$ = new AssignmentList();
                 $$->push_back(*$1);
-                argument=$$;
                 delete $1;
             }
         | arguments_call ',' optional_commas argument_call
             {
                 $$ = $1;
                 $$->push_back(*$4);
-                argument=$$;
                 delete $4;
             }
         ;
@@ -88,7 +86,7 @@ expr		:
         | '[' vector_expr optional_commas ']'
             {
                 $$ = $2;
-            }
+            }            
         | '[' expr ':' expr ']'
             {
                 $$ = new ExpressionRange($2, $4);
@@ -96,6 +94,11 @@ expr		:
         | '[' expr ':' expr ':' expr ']'
             {
                 $$ = new ExpressionRange($2, $4, $6);
+            }
+            |  expr ':' expr 
+            {   
+                $$ = new ExpressionVector($1);
+                $$->children.push_back($3);
             }
 		;
 
@@ -108,6 +111,11 @@ vector_expr:
           expr
             {
                 $$ = new ExpressionVector($1);
+            }
+            | vector_expr ',' optional_commas expr
+            {
+                $$ = $1;
+                $$->children.push_back($4);
             }
             ;		
 %%

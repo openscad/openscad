@@ -24,27 +24,27 @@ UNICODE {U2}{U}|{U3}{U}{U}|{U4}{U}{U}{U}
 %%
 
 
-{D}+{E}?  |
+{D}+{E}? |
 {D}*\.{D}+{E}? |
-{D}+\.{D}*{E}? {
-                    try {
-                        yylval.num = boost::lexical_cast<double>(yytext);
-                        return NUM;
-                    } catch (boost::bad_lexical_cast) {}
-                }
-
-"=" {  cout<<yytext; yylval.ch=yytext[0]; return yytext[0];}
-"[" {  cout<<yytext; yylval.ch=yytext[0]; return yytext[0];}
-"]" {  cout<<yytext; yylval.ch=yytext[0]; return yytext[0];}
-"," {  cout<<yytext; yylval.ch=yytext[0]; return yytext[0];}
-
-    
-[^(/ \n \[ \] \, \: )]* {cout<<yytext; yylval.text=strdup(yytext); return WORD;}
+{D}+\.{D}*{E}?          {
+                            try {
+                                yylval.num = boost::lexical_cast<double>(yytext);
+                                return NUM;
+                            } catch (boost::bad_lexical_cast) {}
+                        }
+                        
+"=" {   yylval.ch=yytext[0]; return yytext[0];}
+"[" {   yylval.ch=yytext[0]; return yytext[0];}
+"]" {   yylval.ch=yytext[0]; return yytext[0];}
+"," {   yylval.ch=yytext[0]; return yytext[0];}
+":" {   yylval.ch=yytext[0]; return yytext[0];}
+   
+[^(/ \n \[ \] \, \: )]* { yylval.text=strdup(yytext); return WORD;}
 
 [\n\r ]
 
 
-. {  cout<<yytext; yylval.ch=yytext[0]; return yytext[0]; }
+. {   yylval.ch=yytext[0]; return yytext[0]; }
 %%
 
 int yywrap(void) {
