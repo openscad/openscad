@@ -1,6 +1,7 @@
 %{
     #include<string.h>
     #include<iostream>
+    #include<stdio.h>
     using namespace std;
     #include "typedefs.h"
     #include "module.h"
@@ -10,10 +11,12 @@
     int yylex(void);
     AssignmentList *argument;
     extern const char *parser_input_buffer;
+     extern FILE* yyin;
 %}
 %union {
     char *text;
     char ch;
+    double num;
     class Expression *expr;
     Assignment *arg;
     AssignmentList *args;
@@ -37,6 +40,7 @@ input:
                 argument=$1;
             }
             ;
+            
 arguments_call:
           /* empty */
             {
@@ -46,13 +50,15 @@ arguments_call:
             {
                 $$ = new AssignmentList();
                 $$->push_back(*$1);
+                argument=$$;
                 delete $1;
             }
-        | arguments_call ',' argument_call
+        | arguments_call ',' optional_commas argument_call
             {
                 $$ = $1;
-                $$->push_back(*$3);
-                delete $3;
+                $$->push_back(*$4);
+                argument=$$;
+                delete $4;
             }
         ;
 
@@ -65,9 +71,10 @@ argument_call:
             ;
             
 expr		: 
-            NUM 
+         NUM 
             {
                 $$ = new ExpressionConst(ValuePtr($1));
+                
             }
         | WORD
             {
@@ -110,8 +117,14 @@ void yyerror(char *s) {
 }
 
 AssignmentList * parser(const char *text) {
-    parser_input_buffer = text;
-    yyparse();
+    FILE *f=fopen("input.txt","r");
+    if(f == NULL){
+        cout<<"AFAFA";
+    }
+    yyin= f;
+    int parserretval = yyparse();
+    if (parserretval != 0) return NULL;
+    fclose(f);
     return argument;
     
 }

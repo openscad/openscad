@@ -29,6 +29,7 @@
 #include "expression.h"
 #include "context.h"
 #include "evalcontext.h"
+#include<QDebug>
 
 extern AssignmentList * parser(const char *text);
 #include <iostream>
@@ -46,18 +47,24 @@ Annotation::~Annotation()
 
 const Annotation * Annotation::create(const std::string name, const AssignmentList assignments)
 {
-    AssignmentList *assignment;
-    if (name == "DParameter") {
-		assignment=parser("[12:34]");
-		return create("Parameter",*assignment);
-	}
+
+    
+    AssignmentList args;	
+     AssignmentList *assignment;
+        if (name == "commentParameter") {
+            assignment=parser("[12:34]");
+            return create("Parameter",*assignment);
+        }
  
-	AssignmentList args;
+
 	if (name == "Description") {
 		args += Assignment("text");
 	} else if (name == "Parameter") {
 		args += Assignment("values");
 	}
+    else{
+        args += Assignment("values");
+    }
 	return new Annotation(name, assignments, args);
 }
 

@@ -215,7 +215,7 @@ parameters:
 parameter: 
              COMMENT arguments_call 
             { 
-                $$ = Annotation::create("DParameter", *$2);
+                $$ = Annotation::create("commentParameter", *$2);
             }
             ;
                
