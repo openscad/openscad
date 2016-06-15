@@ -30,8 +30,6 @@
 #include "context.h"
 #include "evalcontext.h"
 #include<QDebug>
-
-extern AssignmentList * parser(const char *text);
 #include <iostream>
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
@@ -50,13 +48,6 @@ const Annotation * Annotation::create(const std::string name, const AssignmentLi
 
     
     AssignmentList args;	
-     AssignmentList *assignment;
-        if (name == "commentParameter") {
-            assignment=parser("[12:34]");
-            return create("Parameter",*assignment);
-        }
- 
-
 	if (name == "Description") {
 		args += Assignment("text");
 	} else if (name == "Parameter") {

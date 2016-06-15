@@ -10,8 +10,7 @@
     void yyerror(char *);
     int yylex(void);
     AssignmentList *argument;
-    extern const char *parser_input_buffer;
-     extern FILE* yyin;
+      extern void yy_scan_string ( const char *str );
 %}
 %union {
     char *text;
@@ -125,14 +124,10 @@ void yyerror(char *s) {
 }
 
 AssignmentList * parser(const char *text) {
-    FILE *f=fopen("input.txt","r");
-    if(f == NULL){
-        cout<<"AFAFA";
-    }
-    yyin= f;
+
+    yy_scan_string(text);
     int parserretval = yyparse();
     if (parserretval != 0) return NULL;
-    fclose(f);
     return argument;
     
 }

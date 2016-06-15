@@ -60,6 +60,7 @@ fs::path sourcefile(void);
 int lexerlex_destroy(void);
 int lexerlex(void);
 
+extern AssignmentList * parser(const char *text);
 std::stack<LocalScope *> scope_stack;
 FileModule *rootmodule;
 
@@ -213,9 +214,11 @@ parameters:
              ;
 
 parameter: 
-             COMMENT arguments_call 
+             COMMENT  CTOK_STRING
             { 
-                $$ = Annotation::create("commentParameter", *$2);
+                 AssignmentList *assignments;
+                assignments=parser($2);
+                $$ = Annotation::create("Parameter",*assignments);
             }
             ;
                
