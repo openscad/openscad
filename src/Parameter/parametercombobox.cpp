@@ -35,8 +35,8 @@ void ParameterComboBox::setValue(){
     for (Value::VectorType::const_iterator it = vec.begin(); it != vec.end(); it++) {
 
         if((*it)->toVector().size()>1){
-            comboBox->addItem(QString::fromStdString((*it)->toVector()[0]->toString()),
-                    QVariant(QString::fromStdString((*it)->toVector()[1]->toString())));
+            comboBox->addItem(QString::fromStdString((*it)->toVector()[1]->toString()),
+                    QVariant(QString::fromStdString((*it)->toVector()[0]->toString())));
         }
         else
         {

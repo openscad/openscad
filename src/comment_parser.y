@@ -1,7 +1,5 @@
 %{
-    #include<string.h>
     #include<iostream>
-    #include<stdio.h>
     using namespace std;
     #include "typedefs.h"
     #include "module.h"
@@ -27,19 +25,12 @@
 %token<text> WORD
 %type <expr> expr
 %type <args> arguments_call
-%type <args> input
 %type <arg> argument_call
 %type <expr> vector_expr
 
 %%
 
-input:
-    arguments_call
-            {
-                argument=$1;
-            }
-            ;
-            
+
 arguments_call:
           /* empty */
             {
@@ -49,13 +40,8 @@ arguments_call:
             {
                 $$ = new AssignmentList();
                 $$->push_back(*$1);
+                 argument=$$;
                 delete $1;
-            }
-        | arguments_call ',' optional_commas argument_call
-            {
-                $$ = $1;
-                $$->push_back(*$4);
-                delete $4;
             }
         ;
 
@@ -119,15 +105,14 @@ vector_expr:
             ;		
 %%
 
-void yyerror(char *s) {
-    cout<<s<<endl;   
+void yyerror(char *msg) {
+    cout<<msg<<endl;   
 }
 
 AssignmentList * parser(const char *text) {
 
     yy_scan_string(text);
     int parserretval = yyparse();
-    if (parserretval != 0) return NULL;
     return argument;
     
 }

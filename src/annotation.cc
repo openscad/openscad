@@ -29,7 +29,6 @@
 #include "expression.h"
 #include "context.h"
 #include "evalcontext.h"
-#include<QDebug>
 #include <iostream>
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
