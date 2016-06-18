@@ -1,5 +1,6 @@
 %{
     #include<iostream>
+    #include<string.h>
     using namespace std;
     #include "typedefs.h"
     #include "module.h"

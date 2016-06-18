@@ -203,6 +203,8 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
 
 [\n\r\t ]
 
+[\n]+"//" { BEGIN(cond_lcomment); stringcontents.clear(); return DCOMMENT;}
+
 \/\/     { BEGIN(cond_lcomment); stringcontents.clear(); return COMMENT;}
 <cond_lcomment>{
 \n                      { BEGIN(INITIAL);

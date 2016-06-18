@@ -247,7 +247,8 @@ statement:
                 $2->add_annotations($1);
                 $2->add_annotations($3);
             }
-        |descriptions
+        | COMMENT CTOK_STRING {}
+        | DCOMMENT CTOK_STRING {}
         | TOK_MODULE TOK_ID '(' arguments_decl optional_commas ')'
             {
                 Module *newmodule = new Module();
@@ -308,6 +309,8 @@ assignment:
                 }
                 free($1);
             }
+        | COMMENT CTOK_STRING {}
+        | DCOMMENT CTOK_STRING {}
         ;
 
 module_instantiation:
