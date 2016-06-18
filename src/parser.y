@@ -24,7 +24,7 @@
  *
  */
 
-%expect 2 /* Expect 2 shift/reduce conflict for ifelse_statement - "dangling else problem" */
+//%expect 3 /* Expect 2 shift/reduce conflict for ifelse_statement - "dangling else problem" */
 
 %{
 
@@ -60,6 +60,7 @@ fs::path sourcefile(void);
 int lexerlex_destroy(void);
 int lexerlex(void);
 
+extern AssignmentList * parser(const char *text);
 std::stack<LocalScope *> scope_stack;
 FileModule *rootmodule;
 
@@ -80,20 +81,26 @@ fs::path parser_sourcefile;
   class IfElseModuleInstantiation *ifelse;
   Assignment *arg;
   AssignmentList *args;
+  const Annotation *annotation;
+  AnnotationList *annotations;
 }
 
 %token TOK_ERROR
 
 %token TOK_MODULE
+%token TOK_ANNOTATION
+%token COMMENT DCOMMENT
 %token TOK_FUNCTION
 %token TOK_IF
 %token TOK_ELSE
 %token TOK_FOR
 %token TOK_LET
-%token TOK_EACH
+%token TOK_EACH 
+
 
 %token <text> TOK_ID
 %token <text> TOK_STRING
+%token <text> CTOK_STRING
 %token <text> TOK_USE
 %token <number> TOK_NUMBER
 
@@ -132,8 +139,17 @@ fs::path parser_sourcefile;
 %type <args> arguments_call
 %type <args> arguments_decl
 
+%type <arg> assignment
 %type <arg> argument_call
 %type <arg> argument_decl
+
+%type <annotation> annotation
+%type <annotation> parameter
+%type <annotations> parameters
+%type <annotation> description
+%type <annotations> descriptions
+%type <annotations> annotations
+
 %type <text> module_id
 
 %debug
@@ -150,6 +166,62 @@ input:    /* empty */
         | statement input
         ;
 
+annotations:
+          annotation
+            {
+                $$ = new AnnotationList();
+                $$->push_back(*$1);
+                delete $1;
+            }
+        | annotations annotation
+            {
+                $$ = $1;
+                $$->push_back(*$2);
+                delete $2;
+            }
+           ;
+            
+annotation:
+          TOK_ANNOTATION TOK_ID '(' arguments_call ')'
+            {
+                $$ = Annotation::create($2, *$4);
+                free($2);
+            }
+            ;
+
+descriptions:
+             description
+             {
+                $$ = new AnnotationList();
+                $$->push_back(*$1);
+                delete $1;
+             }
+             ;          
+description:
+            COMMENT arguments_call 
+            { 
+                $$ = Annotation::create("Description", *$2);
+            }
+            ;
+
+parameters:
+             parameter
+             {
+                $$ = new AnnotationList();
+                $$->push_back(*$1);
+                delete $1;
+             }
+             ;
+
+parameter: 
+             COMMENT  CTOK_STRING
+            { 
+                 AssignmentList *assignments;
+                assignments=parser($2);
+                $$ = Annotation::create("Parameter",*assignments);
+            }
+            ;
+               
 statement:
           ';'
         | '{' inner_input '}'
@@ -158,6 +230,25 @@ statement:
                 if ($1) scope_stack.top()->addChild($1);
             }
         | assignment
+        | annotations assignment 
+            {
+                $2->add_annotations($1);
+            }
+        | assignment parameters
+            {
+                $1->add_annotations($2);
+            }
+         | descriptions assignment
+            {
+                $2->add_annotations($1);
+            }
+        | descriptions assignment parameters
+            {   
+                $2->add_annotations($1);
+                $2->add_annotations($3);
+            }
+        | COMMENT CTOK_STRING {}
+        | DCOMMENT CTOK_STRING {}
         | TOK_MODULE TOK_ID '(' arguments_decl optional_commas ')'
             {
                 Module *newmodule = new Module();
@@ -166,6 +257,20 @@ statement:
                 scope_stack.push(&newmodule->scope);
                 free($2);
                 delete $4;
+            }
+          statement
+            {
+                scope_stack.pop();
+            }
+        | annotations TOK_MODULE TOK_ID '(' arguments_decl optional_commas ')'
+            {
+                Module *newmodule = new Module();
+                newmodule->definition_arguments = *$5;
+                newmodule->add_annotations($1);
+                scope_stack.top()->modules[$3] = newmodule;
+                scope_stack.push(&newmodule->scope);
+                free($3);
+                delete $5;
             }
           statement
             {
@@ -194,14 +299,18 @@ assignment:
                     if (iter.first == $1) {
                         iter.second = shared_ptr<Expression>($3);
                         found = true;
+                        $$ = &iter;
                         break;
                     }
                 }
                 if (!found) {
                     scope_stack.top()->assignments.push_back(Assignment($1, shared_ptr<Expression>($3)));
+                    $$ = &scope_stack.top()->assignments.back();
                 }
                 free($1);
             }
+        | COMMENT CTOK_STRING {}
+        | DCOMMENT CTOK_STRING {}
         ;
 
 module_instantiation:
@@ -330,6 +439,11 @@ expr:
                 free($3);
             }
         | TOK_STRING
+            {
+                $$ = new ExpressionConst(ValuePtr(std::string($1)));
+                free($1);
+            }
+        | CTOK_STRING
             {
                 $$ = new ExpressionConst(ValuePtr(std::string($1)));
                 free($1);
@@ -530,11 +644,25 @@ arguments_decl:
                 $$->push_back(*$1);
                 delete $1;
             }
+        | annotations argument_decl
+            {
+                $$ = new AssignmentList();
+                $2->add_annotations($1);
+                $$->push_back(*$2);
+                delete $2;
+            }
         | arguments_decl ',' optional_commas argument_decl
             {
                 $$ = $1;
                 $$->push_back(*$4);
                 delete $4;
+            }
+        | arguments_decl ',' optional_commas annotations argument_decl
+            {
+                $$ = $1;
+                $5->add_annotations($4);
+                $$->push_back(*$5);
+                delete $5;
             }
         ;
 

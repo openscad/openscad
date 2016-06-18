@@ -4,6 +4,7 @@
 #include "Tree.h"
 #include "Camera.h"
 #include "memory.h"
+#include "module.h"
 
 enum FileFormat {
 	OPENSCAD_STL,
@@ -32,3 +33,11 @@ void export_png(const shared_ptr<const class Geometry> &root_geom, Camera &c, st
 void export_png(const shared_ptr<const class CGAL_Nef_polyhedron> &root_N, Camera &c, std::ostream &output);
 void export_png_with_opencsg(Tree &tree, Camera &c, std::ostream &output);
 void export_png_with_throwntogether(Tree &tree, Camera &c, std::ostream &output);
+
+void export_parameter(std::ostream &output, FileModule *fileModule);
+
+
+#ifdef DEBUG
+void export_stl(const class PolySet &ps, std::ostream &output);
+#endif
+
