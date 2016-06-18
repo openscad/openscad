@@ -413,6 +413,14 @@ single_module_instantiation:
                 free($1);
                 delete $3;
             }
+          |module_id '(' arguments_call ')' COMMENT CTOK_STRING
+            {
+                $$ = new ModuleInstantiation($1);
+                $$->arguments = *$3;
+                $$->setPath(boosty::stringy(parser_sourcefile.parent_path()));
+                free($1);
+                delete $3;
+            }
         ;
 
 expr:
@@ -448,6 +456,10 @@ expr:
                 $$ = new ExpressionConst(ValuePtr(std::string($1)));
                 free($1);
             }
+        | COMMENT CTOK_STRING {}
+        | COMMENT CTOK_STRING expr {
+            $$=$3;
+        }
         | TOK_NUMBER
             {
                 $$ = new ExpressionConst(ValuePtr($1));
@@ -469,7 +481,11 @@ expr:
             {
                 $$ = new ExpressionConst(ValuePtr(Value::VectorType()));
             }
-        | '[' vector_expr optional_commas ']'
+        | '[' vector_expr optional_commas expr']'
+            {
+                $$ = $2;
+            }
+        | '[' vector_expr optional_commas']'
             {
                 $$ = $2;
             }

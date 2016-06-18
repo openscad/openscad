@@ -9,6 +9,7 @@ module B() offset(0.5) text("B", size=10, halign="center", valign="center", font
 $fn=64;
 
 module GEB() {
+
 intersection() {
     linear_extrude(height = 20, convexity = 3, center=true) B();
     
