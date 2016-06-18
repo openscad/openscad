@@ -33,6 +33,7 @@
 #include "parsersettings.h"
 #include "parser_yacc.h"
 #include "module.h"
+#include<iostream>
 #include <assert.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
@@ -151,6 +152,7 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
 		yyterminate();
 }
 
+"@"             return TOK_ANNOTATION;
 "module"	return TOK_MODULE;
 "function"	return TOK_FUNCTION;
 "if"		return TOK_IF;
@@ -201,12 +203,20 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
 
 [\n\r\t ]
 
-\/\/ BEGIN(cond_lcomment);
+[\n]+"//" { BEGIN(cond_lcomment); stringcontents.clear(); return DCOMMENT;}
+
+\/\/     { BEGIN(cond_lcomment); stringcontents.clear(); return COMMENT;}
 <cond_lcomment>{
-\n                      { BEGIN(INITIAL); }
-{UNICODE}               { parser_error_pos -= strlen(lexertext) - 1; }
-[^\n]
+\n                      { BEGIN(INITIAL);
+			                parserlval.text = strdup(stringcontents.c_str());
+			                return CTOK_STRING; }
+{UNICODE}              { 
+                         parser_error_pos -= strlen(lexertext) - 1; 
+                            stringcontents += lexertext; } 
+[^\n]           { stringcontents += lexertext;} 
+
 }
+
 
 "/*" BEGIN(cond_comment);
 <cond_comment>{

@@ -174,6 +174,24 @@ Module::~Module()
 {
 }
 
+void Module::add_annotations(AnnotationList *annotations)
+{
+	for (AnnotationList::iterator it = annotations->begin();it != annotations->end();it++) {
+		this->annotations.insert(std::pair<const std::string, Annotation *>((*it).get_name(), &(*it)));
+	}
+}
+
+bool Module::has_annotations() const
+{
+	return !annotations.empty();
+}
+
+const Annotation * Module::annotation(const std::string &name) const
+{
+	AnnotationMap::const_iterator it = annotations.find(name);
+	return it == annotations.end() ? NULL : (*it).second;
+}
+
 AbstractNode *Module::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	if (StackCheck::inst()->check()) {
@@ -359,6 +377,13 @@ AbstractNode *FileModule::instantiate(const Context *ctx, const ModuleInstantiat
 	}
 
 	return node;
+}
+
+void FileModule::set_variable(const std::string name, Value value)
+{
+	if (this->context) {
+		this->context->set_variable(name, value);
+	}
 }
 
 ValuePtr FileModule::lookup_variable(const std::string &name) const
