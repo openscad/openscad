@@ -440,8 +440,13 @@ if (WIN32)
   set(FLEX_UNISTD_FLAG "-DYY_NO_UNISTD_H")
 endif()
 FLEX_TARGET(OpenSCADlexer ../src/lexer.l ${CMAKE_CURRENT_BINARY_DIR}/lexer.cpp COMPILE_FLAGS "-Plexer ${FLEX_UNISTD_FLAG}")
+FLEX_TARGET(OpenSCADcommentlexer ../src/comment_lexer.l ${CMAKE_CURRENT_BINARY_DIR}/comment_lexer.cpp COMPILE_FLAGS " ${FLEX_UNISTD_FLAG}")
 BISON_TARGET(OpenSCADparser ../src/parser.y ${CMAKE_CURRENT_BINARY_DIR}/parser_yacc.c COMPILE_FLAGS "-p parser")
+
+BISON_TARGET(OpenSCADcommentparser ../src/comment_parser.y ${CMAKE_CURRENT_BINARY_DIR}/comment_parser.cpp COMPILE_FLAGS "")
+
 ADD_FLEX_BISON_DEPENDENCY(OpenSCADlexer OpenSCADparser)
+ADD_FLEX_BISON_DEPENDENCY(OpenSCADcommentlexer OpenSCADcommentparser)
 set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/parser_yacc.c PROPERTIES LANGUAGE "CXX")
 
 # CGAL
@@ -717,7 +722,9 @@ set(CORE_SOURCES
   ../src/PlatformUtils.cc 
   ../src/${PLATFORMUTILS_SOURCE}
   ${FLEX_OpenSCADlexer_OUTPUTS}
-  ${BISON_OpenSCADparser_OUTPUTS})
+  ${BISON_OpenSCADparser_OUTPUTS}
+  ${FLEX_OpenSCADcommentlexer_OUTPUTS}
+  ${BISON_OpenSCADcommentparser_OUTPUTS})
 
 set(NOCGAL_SOURCES
   ../src/builtin.cc 
