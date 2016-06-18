@@ -22,7 +22,9 @@
 
 
 %token<num> NUM
+
 %token<text> WORD
+%type <text> word
 %type <expr> expr
 %type <args> arguments_call
 %type <arg> argument_call
@@ -59,7 +61,7 @@ expr		:
                 $$ = new ExpressionConst(ValuePtr($1));
                 
             }
-        | WORD
+        | word
             {
                 $$ = new ExpressionConst(ValuePtr(std::string($1)));
                 free($1);
@@ -103,6 +105,20 @@ vector_expr:
                 $$->children.push_back($4);
             }
             ;		
+
+word:   
+    WORD
+    {
+        $$=$1;    
+    }
+    | word WORD
+    {
+        string a;
+        a=$1;
+        a+=" ";
+        a+=$2;
+        $$=strdup(a.c_str());
+    }
 %%
 
 void yyerror(char *msg) {
