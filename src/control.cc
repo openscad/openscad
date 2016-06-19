@@ -41,6 +41,7 @@ public: // types
 		CHILD,
 		CHILDREN,
 		ECHO,
+		ASSERT,
 		ASSIGN,
 		FOR,
 		LET,
@@ -48,9 +49,9 @@ public: // types
 		IF
     };
 public: // methods
-	ControlModule(Type type)
-		: type(type)
-	{ }
+	ControlModule(Type type) : type(type) { }
+
+	ControlModule(Type type, const Feature& feature) : AbstractModule(feature), type(type) { }
 
 	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
 
@@ -261,15 +262,19 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 		node = new GroupNode(inst);
 		std::stringstream msg;
 		msg << "ECHO: ";
-		for (size_t i = 0; i < inst->arguments.size(); i++) {
-			if (i > 0) msg << ", ";
-			if (!evalctx->getArgName(i).empty()) msg << evalctx->getArgName(i) << " = ";
-			ValuePtr val = evalctx->getArgValue(i);
-			if (val->type() == Value::STRING) {
-				msg << '"' << val->toString() << '"';
-			} else {
-				msg << val->toString();
-			}
+#ifdef ENABLE_EXPERIMENTAL
+		if (Feature::ExperimentalEchoExpression.is_enabled()) {
+			Context c(evalctx);
+			evalctx->assignTo(c);
+			EvalContext echo_context(&c, evalctx->getArgs());
+			msg << echo_context;
+			inst->scope.apply(c);
+			node->children = inst->instantiateChildren(&c);
+		} else
+#endif
+		{
+			// "old" behavior as long as the new echo is experimental
+			msg << *evalctx;
 		}
 		PRINTB("%s", msg.str());
 	}
@@ -278,12 +283,9 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 	case LET: {
 		node = new GroupNode(inst);
 		Context c(evalctx);
-
 		evalctx->assignTo(c);
-
 		inst->scope.apply(c);
-		std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(&c);
-		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
+		node->children = inst->instantiateChildren(&c);
 	}
 		break;
 
@@ -298,8 +300,17 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 		}
 		// Let any local variables override the parameters
 		inst->scope.apply(c);
-		std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(&c);
-		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
+		node->children = inst->instantiateChildren(&c);
+	}
+		break;
+
+	case ASSERT: {
+		node = new GroupNode(inst);
+
+		Context c(evalctx);
+		evaluate_assert(c, evalctx);
+		inst->scope.apply(c);
+		node->children = inst->instantiateChildren(&c);
 	}
 		break;
 
@@ -337,6 +348,7 @@ void register_builtin_control()
 	Builtins::init("child", new ControlModule(ControlModule::CHILD));
 	Builtins::init("children", new ControlModule(ControlModule::CHILDREN));
 	Builtins::init("echo", new ControlModule(ControlModule::ECHO));
+	Builtins::init("assert", new ControlModule(ControlModule::ASSERT, Feature::ExperimentalAssertExpression));
 	Builtins::init("assign", new ControlModule(ControlModule::ASSIGN));
 	Builtins::init("for", new ControlModule(ControlModule::FOR));
 	Builtins::init("let", new ControlModule(ControlModule::LET));

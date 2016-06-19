@@ -169,6 +169,7 @@ public:
   bool getFiniteDouble(double &v) const;
   bool toBool() const;
   std::string toString() const;
+  std::string toEchoString() const;
   std::string chrString() const;
   const VectorType &toVector() const;
   bool getVec2(double &x, double &y, bool ignoreInfinite = false) const;

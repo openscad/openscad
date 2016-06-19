@@ -213,22 +213,48 @@ private:
 class ExpressionFunctionCall : public Expression
 {
 public:
-	ExpressionFunctionCall(const std::string &funcname, const AssignmentList &arglist);
-	ValuePtr evaluate(const class Context *context) const;
+	ExpressionFunctionCall(const std::string &name, const AssignmentList &arglist, Expression *expr);
 	virtual void print(std::ostream &stream) const;
+	static ExpressionFunctionCall * create(const std::string &funcname, const AssignmentList &arglist, Expression *expr);
+
 public:
 	std::string funcname;
 	AssignmentList call_arguments;
 };
 
-class ExpressionLet : public Expression
+class ExpressionSimpleFunctionCall : public ExpressionFunctionCall
 {
 public:
-	ExpressionLet(const AssignmentList &arglist, Expression *expr);
+	ExpressionSimpleFunctionCall(const std::string &name, const AssignmentList &arglist);
 	ValuePtr evaluate(const class Context *context) const;
-	virtual void print(std::ostream &stream) const;
-private:
-	AssignmentList call_arguments;
+};
+
+class ExpressionError : public ExpressionFunctionCall
+{
+public:
+	ExpressionError(const std::string &name, const AssignmentList &arglist, Expression *expr);
+	ValuePtr evaluate(const class Context *context) const;
+};
+
+class ExpressionEcho : public ExpressionFunctionCall
+{
+public:
+	ExpressionEcho(const std::string &name, const AssignmentList &arglist, Expression *expr);
+	ValuePtr evaluate(const class Context *context) const;
+};
+
+class ExpressionAssert : public ExpressionFunctionCall
+{
+public:
+	ExpressionAssert(const std::string &name, const AssignmentList &arglist, Expression *expr);
+	ValuePtr evaluate(const class Context *context) const;
+};
+
+class ExpressionLet : public ExpressionFunctionCall
+{
+public:
+	ExpressionLet(const std::string &name, const AssignmentList &arglist, Expression *expr);
+	ValuePtr evaluate(const class Context *context) const;
 };
 
 class ExpressionLc : public Expression
@@ -287,3 +313,5 @@ public:
 private:
 	AssignmentList call_arguments;
 };
+
+void evaluate_assert(const Context &context, const class EvalContext *evalctx);
