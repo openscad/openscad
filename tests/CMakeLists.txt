@@ -1371,7 +1371,9 @@ list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue13.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1580-back-to-back2.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1580-import-back-to-back2.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1580-zero-area-triangle.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1580-import-zero-area-triangle.scad)
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1580-import-zero-area-triangle.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1671.scad
+)
 
 # We know that we cannot import weakly manifold files into CGAL, so to make tests easier
 # to manage, don't try. Once we improve import, we can reenable this
@@ -1379,8 +1381,9 @@ list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue13.scad
 # Known weak manifold files -> EXPORT3D_CGAL_TEST_FILES
 # Known non-manifold files -> EXPORT3D_TEST_FILES
 list(APPEND EXPORT3D_CGALCGAL_TEST_FILES ${BUGS_FILES})
-#list(REMOVE_ITEM EXPORT3D_CGALCGAL_TEST_FILES
-#)
+list(REMOVE_ITEM EXPORT3D_CGALCGAL_TEST_FILES
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1671.scad
+)
 #list(APPEND EXPORT3D_CGAL_TEST_FILES
 #)
 
