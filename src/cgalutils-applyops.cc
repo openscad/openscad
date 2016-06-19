@@ -193,7 +193,7 @@ namespace CGALUtils {
                             PRINTDB("After hull valid: %d", r.is_valid());
 				success = !createPolySetFromPolyhedron(r, result);
 			}
-			catch (const CGAL::Assertion_exception &e) {
+			catch (const CGAL::Failure_exception &e) {
 				PRINTB("ERROR: CGAL error in applyHull(): %s", e.what());
 			}
 			CGAL::set_error_behaviour(old_behaviour);
