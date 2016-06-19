@@ -11,8 +11,9 @@
 class CSGTreeEvaluator : public Visitor
 {
 public:
-	CSGTreeEvaluator(const class Tree &tree, class GeometryEvaluator *geomevaluator = NULL)
-		: tree(tree), geomevaluator(geomevaluator) {
+	CSGTreeEvaluator(const class Tree &tree, class GeometryEvaluator *geomevaluator = NULL,
+	                 int cursor_line = -1, int cursor_column=-1)
+		: tree(tree), geomevaluator(geomevaluator), cursor_line(cursor_line), cursor_column(cursor_column) {
 	}
   virtual ~CSGTreeEvaluator() {}
 
@@ -49,7 +50,8 @@ private:
   const AbstractNode *root;
   typedef std::list<const AbstractNode *> ChildList;
 	std::map<int, ChildList> visitedchildren;
-
+	int cursor_line;
+	int cursor_column;
 protected:
 	const Tree &tree;
 	class GeometryEvaluator *geomevaluator;

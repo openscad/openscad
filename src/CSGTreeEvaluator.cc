@@ -131,8 +131,17 @@ void CSGTreeEvaluator::applyToChildren(State &state, const AbstractNode &node, O
 		}
 	}
 	if (t1) {
+	  Location loc = node.modinst->getLocation();
+	  bool cursor_incl =
+	    (cursor_line > loc.first_line
+	      || (cursor_line == loc.first_line
+	        && cursor_column >= loc.first_column))
+	    &&
+	    (cursor_line < loc.last_line
+	      || (cursor_line == loc.last_line
+	        && cursor_column <= loc.last_column));
 		if (node.modinst->isBackground()) t1->setBackground(true);
-		if (node.modinst->isHighlight()) t1->setHighlight(true);
+		if (node.modinst->isHighlight() || cursor_incl) t1->setHighlight(true);
 	}
 	this->stored_term[node.index()] = t1;
 }
@@ -186,7 +195,17 @@ shared_ptr<CSGNode> CSGTreeEvaluator::evaluateCSGNodeFromGeometry(
 	}
 
 	shared_ptr<CSGNode> t(new CSGLeaf(g, state.matrix(), state.color(), stream.str()));
-	if (modinst->isHighlight()) t->setHighlight(true);
+	Location loc = modinst->getLocation();
+	bool cursor_incl =
+	  (cursor_line > loc.first_line
+	    || (cursor_line == loc.first_line
+	      && cursor_column >= loc.first_column))
+	  &&
+	  (cursor_line < loc.last_line
+	    || (cursor_line == loc.last_line
+	      && cursor_column <= loc.last_column));
+
+	if (modinst->isHighlight() || cursor_incl) t->setHighlight(true);
 	else if (modinst->isBackground()) t->setBackground(true);
 	return t;
 }

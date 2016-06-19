@@ -391,6 +391,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->viewActionShowCrosshairs, SIGNAL(triggered()), this, SLOT(viewModeShowCrosshairs()));
 	connect(this->viewActionShowScaleProportional, SIGNAL(triggered()), this, SLOT(viewModeShowScaleProportional()));
 	connect(this->viewActionAnimate, SIGNAL(triggered()), this, SLOT(viewModeAnimate()));
+	connect(this->viewActionHighlightUnderCursor, SIGNAL(triggered()), this, SLOT(viewModeHighlightUnderCursor()));
 	connect(this->viewActionTop, SIGNAL(triggered()), this, SLOT(viewAngleTop()));
 	connect(this->viewActionBottom, SIGNAL(triggered()), this, SLOT(viewAngleBottom()));
 	connect(this->viewActionLeft, SIGNAL(triggered()), this, SLOT(viewAngleLeft()));
@@ -560,7 +561,8 @@ MainWindow::MainWindow(const QString &filename)
 	
 	connect(this->editorDock, SIGNAL(topLevelChanged(bool)), this, SLOT(editorTopLevelChanged(bool)));
 	connect(this->consoleDock, SIGNAL(topLevelChanged(bool)), this, SLOT(consoleTopLevelChanged(bool)));
-	
+
+	connect(this->qglview, SIGNAL(pickedObject(int)), this, SLOT(pickedObject(int)));
 	// display this window and check for OpenGL 2.0 (OpenCSG) support
 	viewModeThrownTogether();
 	show();
@@ -619,6 +621,9 @@ void MainWindow::loadViewSettings(){
 	if (settings.value("view/showScaleProportional", true).toBool()) {
         viewActionShowScaleProportional->setChecked(true);
         viewModeShowScaleProportional();
+    }
+  if (settings.value("view/highlightUnderCursor", true).toBool()) {
+        viewActionHighlightUnderCursor->setChecked(true);
     }
 	if (settings.value("view/orthogonalProjection").toBool()) {
 		viewOrthogonal();
@@ -1115,7 +1120,12 @@ void MainWindow::compileCSG(bool procevents)
 		// FIXME: Will we support this?
 #endif
 #ifdef ENABLE_OPENCSG
-		CSGTreeEvaluator csgrenderer(this->tree, &geomevaluator);
+    QPoint cursor;
+		if (this->viewActionHighlightUnderCursor->isChecked())
+		  cursor = this->editor->cursorPosition();
+		else
+		  cursor = QPoint(-1, -1);
+		CSGTreeEvaluator csgrenderer(this->tree, &geomevaluator, cursor.x()+1, cursor.y()+1);
 #endif
 
 	progress_report_prep(this->root_node, report_func, this);
@@ -2324,6 +2334,12 @@ bool MainWindow::isEmpty()
 	return this->editor->toPlainText().isEmpty();
 }
 
+void MainWindow::viewModeHighlightUnderCursor()
+{
+  QSettings settings;
+  settings.setValue("view/highlightUnderCursor",viewActionHighlightUnderCursor->isChecked());
+}
+
 void MainWindow::animateUpdateDocChanged()
 {
 	QString current_doc = editor->toPlainText(); 
@@ -2707,3 +2723,27 @@ void MainWindow::setContentsChanged()
 	this->contentschanged = true;
 }
 
+static AbstractNode* find_by_id(AbstractNode* n, int id)
+{
+	if (n->index() == id)
+		return n;
+	const std::vector<AbstractNode*> & children = n->getChildren();
+	for (std::vector<AbstractNode*>::const_iterator it = children.begin();
+			 it != children.end(); ++it)
+	{
+		AbstractNode* res = find_by_id(*it, id);
+		if (res)
+			return res;
+	}
+	return 0;
+}
+
+void MainWindow::pickedObject(int id)
+{
+	AbstractNode* node = find_by_id(absolute_root_node, id);
+	if (!node || !node->modinst)
+		return;
+	Location loc = node->modinst->getLocation();
+	editor->setSelection(QRect(QPoint(loc.first_column-1, loc.first_line-1),
+														 QPoint(loc.last_column-1, loc.last_line-1)));
+}

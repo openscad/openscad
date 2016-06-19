@@ -295,3 +295,8 @@ QStringList LegacyEditor::colorSchemes()
 	
 	return colorSchemes;
 }
+
+QPoint LegacyEditor::cursorPosition()
+{
+  return textedit->cursorRect().topLeft();
+}

@@ -353,6 +353,7 @@
     <addaction name="viewActionShowScaleProportional"/>
     <addaction name="viewActionShowCrosshairs"/>
     <addaction name="viewActionAnimate"/>
+    <addaction name="viewActionHighlightUnderCursor"/>
     <addaction name="separator"/>
     <addaction name="viewActionTop"/>
     <addaction name="viewActionBottom"/>
@@ -926,6 +927,14 @@
    </property>
    <property name="text">
     <string>Animate</string>
+   </property>
+  </action>
+  <action name="viewActionHighlightUnderCursor">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Highlight object under cursor</string>
    </property>
   </action>
   <action name="viewActionTop">

@@ -218,6 +218,7 @@ public slots:
 	void viewModeShowCrosshairs();
 	void viewModeShowScaleProportional();
 	void viewModeAnimate();
+	void viewModeHighlightUnderCursor();
 	void viewAngleTop();
 	void viewAngleBottom();
 	void viewAngleLeft();
@@ -245,7 +246,7 @@ public slots:
 	void waitAfterReload();
 	void autoReloadSet(bool);
 	void setContentsChanged();
-
+	void pickedObject(int);
 private:
 	static void report_func(const class AbstractNode*, void *vp, int mark);
 	static bool mdiMode;

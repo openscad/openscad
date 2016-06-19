@@ -374,3 +374,5 @@ void register_builtin_group()
 {
 	Builtins::init("group", new GroupModule());
 }
+
+const Location Location::none;

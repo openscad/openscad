@@ -47,6 +47,7 @@
 
 #ifdef ENABLE_OPENCSG
 #  include <opencsg.h>
+#  include <OpenCSGRenderer.h>
 #endif
 
 QGLView::QGLView(QWidget *parent) :
@@ -184,6 +185,28 @@ void QGLView::paintGL()
 
 void QGLView::mousePressEvent(QMouseEvent *event)
 {
+#ifdef ENABLE_OPENCSG
+  if (event->modifiers() & Qt::ControlModifier)
+  {
+    OpenCSGRenderer* o = dynamic_cast<OpenCSGRenderer*>(this->getRenderer());
+    if (o)
+    {
+      o->setPicking(true);
+      paintGL();
+      o->setPicking(false);
+      int viewport[4];
+      glGetIntegerv( GL_VIEWPORT, viewport);
+      double x = event->pos().x() * this->getDPI();
+      double y = viewport[3] - event->pos().y() * this->getDPI();
+      unsigned int hit = 0;
+      glReadPixels(x, y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &hit);
+      // extract the 6 bits per byte that form the value
+      hit = ((hit & 0xFC) >> 2) + ((hit & 0xFC00) >> 4) + ((hit & 0xFC0000) >> 6);
+      emit pickedObject(hit);
+      return;
+    }
+  }
+#endif
   mouse_drag_active = true;
   last_mouse = event->globalPos();
 }
