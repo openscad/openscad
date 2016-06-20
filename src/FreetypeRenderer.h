@@ -103,7 +103,7 @@ public:
     virtual ~FreetypeRenderer();
 
         void detect_properties(FreetypeRenderer::Params &params) const;
-	std::vector<const class Geometry *> render(const FreetypeRenderer::Params &params) const;
+	std::vector<class Geometry *> render(const FreetypeRenderer::Params &params) const;
 private:
 	  const static double scale;
     FT_Outline_Funcs funcs;

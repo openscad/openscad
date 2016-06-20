@@ -515,8 +515,18 @@ if(${CMAKE_CXX_COMPILER} MATCHES ".*clang.*" AND NOT ${CGAL_CXX_FLAGS_INIT} STRE
   string(REPLACE "FORTIFY_SOURCE=2" "FORTIFY_SOURCE=0" CGAL_CXX_FLAGS_INIT ${CGAL_CXX_FLAGS_INIT})
 endif()
 
-# GLib2
+# potrace
+find_package(POTRACE 1.10)
+add_definitions(${POTRACE_DEFINITIONS})
+inclusion(POTRACE_DIR POTRACE_INCLUDE_DIRS)
+set(LIBS ${LIBS} ${POTRACE_LIBRARIES})
+if (DEFINED POTRACE_FOUND)
+  add_definitions(-DHAVE_POTRACE=1)
+else()
+  message(STATUS "potrace not found, trace() disabled")
+endif()
 
+# GLib2
 find_package(GLIB2 2.2.0 REQUIRED)
 add_definitions(${GLIB2_DEFINITIONS})
 inclusion(GLIB2_DIR GLIB2_INCLUDE_DIRS)
@@ -701,6 +711,7 @@ set(CORE_SOURCES
   ../src/dxfdata.cc 
   ../src/dxfdim.cc 
   ../src/offset.cc 
+  ../src/trace.cc 
   ../src/linearextrude.cc 
   ../src/rotateextrude.cc 
   ../src/text.cc 
@@ -797,7 +808,7 @@ if(NULLGL)
 endif()
 
 add_library(tests-core STATIC ${CORE_SOURCES})
-target_link_libraries(tests-core ${OPENGL_LIBRARIES} ${GLIB2_LIBRARIES} ${FONTCONFIG_LDFLAGS} ${FREETYPE_LDFLAGS} ${HARFBUZZ_LDFLAGS} ${Boost_LIBRARIES} ${COCOA_LIBRARY})
+target_link_libraries(tests-core ${OPENGL_LIBRARIES} ${GLIB2_LIBRARIES} ${FONTCONFIG_LDFLAGS} ${FREETYPE_LDFLAGS} ${HARFBUZZ_LDFLAGS} ${POTRACE_LIBRARIES} ${Boost_LIBRARIES} ${COCOA_LIBRARY})
 
 add_library(tests-common STATIC ${COMMON_SOURCES})
 target_link_libraries(tests-common tests-core)
@@ -993,7 +1004,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
       if (${EXPERIMENTAL} EQUAL -1)
         set(EXPERIMENTAL_OPTION "")
       else()
-        set(EXPERIMENTAL_OPTION "--enable=lc-each" "--enable=lc-else" "--enable=lc-for-c")
+        set(EXPERIMENTAL_OPTION "--enable=trace" "--enable=lc-each" "--enable=lc-else" "--enable=lc-for-c")
       endif()
 
       # 2D tests should be viewed from the top, not an angle.
@@ -1308,7 +1319,31 @@ disable_tests(csgpngtest_primitive-inf-tests
               cgalpngtest_empty-shape-tests
               csgpngtest_issue1258)
 
-experimental_tests(echotest_list-comprehensions-experimental)
+experimental_tests(echotest_list-comprehensions-experimental
+                   cgalpngtest_trace-test-image-1
+                   cgalpngtest_trace-test-image-2
+                   cgalpngtest_trace-tests
+                   cgalpngtest_trace-transparency-tests
+                   csgpngtest_trace-test-image-1
+                   csgpngtest_trace-test-image-2
+                   csgpngtest_trace-tests
+                   csgpngtest_trace-transparency-tests
+                   dumptest_trace-test-image-1
+                   dumptest_trace-test-image-2
+                   dumptest_trace-tests
+                   dumptest_trace-transparency-tests
+                   dxfpngtest_trace-test-image-1
+                   dxfpngtest_trace-test-image-2
+                   dxfpngtest_trace-tests
+                   dxfpngtest_trace-transparency-tests
+                   opencsgtest_trace-test-image-1
+                   opencsgtest_trace-test-image-2
+                   opencsgtest_trace-tests
+                   opencsgtest_trace-transparency-tests
+                   throwntogethertest_trace-test-image-1
+                   throwntogethertest_trace-test-image-2
+                   throwntogethertest_trace-tests
+                   throwntogethertest_trace-transparency-tests)
 
 # Test config handling
 
@@ -1561,6 +1596,8 @@ add_failing_test(offfailedtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DI
 #
 # Add experimental tests
 #
+
+
 
 # Tests using the actual OpenSCAD binary
 

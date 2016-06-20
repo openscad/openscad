@@ -51,6 +51,7 @@ PACKAGES=(
     "harfbuzz 1.0.6"
     "libxml2 2.9.2"
     "fontconfig 2.11.1"
+    "potrace 1.12"
 )
 DEPLOY_PACKAGES=(
     "sparkle 1.13.1"
@@ -720,6 +721,28 @@ build_harfbuzz()
   sed -e "s/SUBDIRS = src util test docs/SUBDIRS = src util test/g" Makefile.am > Makefile.am.bak && mv Makefile.am.bak Makefile.am
   sed -e "s/^docs.*$//" configure.ac > configure.ac.bak && mv configure.ac.bak configure.ac
   PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" ./autogen.sh --prefix="$DEPLOYDIR" --with-freetype=yes --with-gobject=no --with-cairo=no --with-icu=no CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN CXXFLAGS="$CXXFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="$CXXFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN" $extra_config_flags
+  make -j$NUMCPU
+  make install
+}
+
+check_potrace()
+{
+    check_file lib/libpotrace.dylib
+}
+
+build_potrace()
+{
+  version=$1
+
+  echo "Building potrace $version..."
+  cd "$BASEDIR"/src
+  rm -rf "potrace-$version"
+  if [ ! -f "potrace-$version.tar.gz" ]; then
+    curl --insecure -LO "http://potrace.sourceforge.net/download/$version/potrace-$version.tar.gz"
+  fi
+  tar xzf "potrace-$version.tar.gz"
+  cd "potrace-$version"
+  ./configure --prefix="$DEPLOYDIR" --with-libpotrace CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN
   make -j$NUMCPU
   make install
 }

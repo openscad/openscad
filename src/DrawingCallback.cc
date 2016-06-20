@@ -27,12 +27,14 @@
 
 #include <iostream>
 #include <algorithm>
+#include <boost/foreach.hpp>
 
 #include "Polygon2d.h"
 #include "DrawingCallback.h"
+#include "printutils.h"
 
-DrawingCallback::DrawingCallback(unsigned long fn) :
-	pen(Vector2d(0, 0)), offset(Vector2d(0, 0)), advance(Vector2d(0, 0)), fn(fn)
+DrawingCallback::DrawingCallback(const std::string &context, unsigned long fn) : context(context), fn(fn),
+	pen(Vector2d(0, 0)), offset(Vector2d(0, 0)), advance(Vector2d(0, 0))
 {
 }
 
@@ -59,8 +61,26 @@ void DrawingCallback::finish_glyph()
 	if (this->polygon) this->polygons.push_back(this->polygon);
 }
 
-std::vector<const Geometry *> DrawingCallback::get_result()
+std::vector<Geometry *> DrawingCallback::get_result()
 {
+#ifdef DEBUG
+	PRINTDB("Geometry '%s'", this->context);
+	PRINTDB("- polygons: %d", this->polygons.size());
+	int outlines = 0;
+	int vertices = 0;
+	BOOST_FOREACH(const Geometry *g, this->polygons) {
+		const Polygon2d *polygon = dynamic_cast<const Polygon2d *>(g);
+		if (polygon != NULL) {
+			outlines += polygon->outlines().size();
+			BOOST_FOREACH(const Outline2d &o, polygon->outlines()) {
+				vertices += o.vertices.size();
+			}
+		}
+	}
+
+	PRINTDB("- outlines: %d", outlines);
+	PRINTDB("- vertices: %d", vertices);
+#endif
 	return this->polygons;
 }
 

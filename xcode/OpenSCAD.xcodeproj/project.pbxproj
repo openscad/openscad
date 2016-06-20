@@ -67,6 +67,8 @@
 		E0034E2719AA848C009F0BD0 /* openscad_nogui */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = openscad_nogui; path = ../tests/openscad_nogui; sourceTree = SOURCE_ROOT; };
 		E0034E3E19AA8651009F0BD0 /* OpenSCAD.app */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OpenSCAD.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0034E4919AA868F009F0BD0 /* OpenSCAD.app */ = {isa = PBXFileReference; lastKnownFileType = wrapper.application; name = OpenSCAD.app; path = ../OpenSCAD.app; sourceTree = SOURCE_ROOT; };
+		E0228AEB1B06990F0004D6BE /* trace.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = trace.cc; sourceTree = "<group>"; };
+		E0228AEC1B06990F0004D6BE /* tracenode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tracenode.h; sourceTree = "<group>"; };
 		E0348EF3194E49B800CAB791 /* Geometry.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Geometry.cc; sourceTree = "<group>"; };
 		E0348EF4194E49B800CAB791 /* Geometry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Geometry.h; sourceTree = "<group>"; };
 		E0348EF5194E49B800CAB791 /* GeometryCache.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GeometryCache.cc; sourceTree = "<group>"; };
@@ -619,6 +621,8 @@
 				E091576419AA58CA00D699E9 /* textnode.h */,
 				E05FBF2717C30A06004F525B /* ThrownTogetherRenderer.cc */,
 				E05FBF2817C30A06004F525B /* ThrownTogetherRenderer.h */,
+				E0228AEB1B06990F0004D6BE /* trace.cc */,
+				E0228AEC1B06990F0004D6BE /* tracenode.h */,
 				E05FBF2A17C30A06004F525B /* transform.cc */,
 				E05FBF2B17C30A06004F525B /* transformnode.h */,
 				E05FBF2C17C30A06004F525B /* traverser.cc */,

@@ -87,7 +87,7 @@ AbstractNode *TextModule::instantiate(const Context *ctx, const ModuleInstantiat
 	return node;
 }
 
-std::vector<const Geometry *> TextNode::createGeometryList() const
+std::vector<Geometry *> TextNode::createGeometryList() const
 {
 	FreetypeRenderer renderer;
 	return renderer.render(this->get_params());

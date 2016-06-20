@@ -193,26 +193,26 @@ void FreetypeRenderer::detect_properties(FreetypeRenderer::Params &params) const
 	params.set_direction(hb_direction_to_string(direction));
 }
 
-std::vector<const Geometry *> FreetypeRenderer::render(const FreetypeRenderer::Params &params) const
+std::vector<Geometry *> FreetypeRenderer::render(const FreetypeRenderer::Params &params) const
 {
 	FT_Face face;
 	FT_Error error;
-	DrawingCallback callback(params.segments);
+	DrawingCallback callback(params.text, params.segments);
 	
 	FontCache *cache = FontCache::instance();
 	if (!cache->is_init_ok()) {
-		return std::vector<const Geometry *>();
+		return std::vector<Geometry *>();
 	}
 
 	face = cache->get_font(params.font);
 	if (face == NULL) {
-		return std::vector<const Geometry *>();
+		return std::vector<Geometry *>();
 	}
 	
 	error = FT_Set_Char_Size(face, 0, params.size * scale, 100, 100);
 	if (error) {
 		PRINTB("Can't set font size for font %s", params.font);
-		return std::vector<const Geometry *>();
+		return std::vector<Geometry *>();
 	}
 	
 	hb_font_t *hb_ft_font = hb_ft_font_create(face, NULL);
