@@ -666,6 +666,8 @@ set(CORE_SOURCES
   tests-common.cc 
   ../src/parsersettings.cc
   ../src/linalg.cc
+  ../src/assignment.cc
+  ../src/annotation.cc
   ../src/colormap.cc
   ../src/Camera.cc
   ../src/handle_dep.cc 

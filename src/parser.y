@@ -80,11 +80,14 @@ fs::path parser_sourcefile;
   class IfElseModuleInstantiation *ifelse;
   Assignment *arg;
   AssignmentList *args;
+  const Annotation *annotation;
+  AnnotationList *annotations;
 }
 
 %token TOK_ERROR
 
 %token TOK_MODULE
+%token TOK_ANNOTATION
 %token TOK_FUNCTION
 %token TOK_IF
 %token TOK_ELSE
@@ -132,8 +135,13 @@ fs::path parser_sourcefile;
 %type <args> arguments_call
 %type <args> arguments_decl
 
+%type <arg> assignment
 %type <arg> argument_call
 %type <arg> argument_decl
+
+%type <annotation> annotation
+%type <annotations> annotations
+
 %type <text> module_id
 
 %debug
@@ -150,6 +158,27 @@ input:    /* empty */
         | statement input
         ;
 
+annotations:
+          annotation
+            {
+                $$ = new AnnotationList();
+                $$->push_back(*$1);
+                delete $1;
+            }
+        | annotations annotation
+            {
+                $$ = $1;
+                $$->push_back(*$2);
+                delete $2;
+            }
+
+annotation:
+          TOK_ANNOTATION TOK_ID '(' arguments_call ')'
+            {
+                $$ = Annotation::create($2, *$4);
+                free($2);
+            }
+
 statement:
           ';'
         | '{' inner_input '}'
@@ -158,6 +187,10 @@ statement:
                 if ($1) scope_stack.top()->addChild($1);
             }
         | assignment
+        | annotations assignment
+            {
+                $2->add_annotations($1);
+            }
         | TOK_MODULE TOK_ID '(' arguments_decl optional_commas ')'
             {
                 Module *newmodule = new Module();
@@ -166,6 +199,20 @@ statement:
                 scope_stack.push(&newmodule->scope);
                 free($2);
                 delete $4;
+            }
+          statement
+            {
+                scope_stack.pop();
+            }
+        | annotations TOK_MODULE TOK_ID '(' arguments_decl optional_commas ')'
+            {
+                Module *newmodule = new Module();
+                newmodule->definition_arguments = *$5;
+                newmodule->add_annotations($1);
+                scope_stack.top()->modules[$3] = newmodule;
+                scope_stack.push(&newmodule->scope);
+                free($3);
+                delete $5;
             }
           statement
             {
@@ -194,11 +241,13 @@ assignment:
                     if (iter.first == $1) {
                         iter.second = shared_ptr<Expression>($3);
                         found = true;
+                        $$ = &iter;
                         break;
                     }
                 }
                 if (!found) {
                     scope_stack.top()->assignments.push_back(Assignment($1, shared_ptr<Expression>($3)));
+                    $$ = &scope_stack.top()->assignments.back();
                 }
                 free($1);
             }
@@ -530,11 +579,25 @@ arguments_decl:
                 $$->push_back(*$1);
                 delete $1;
             }
+        | annotations argument_decl
+            {
+                $$ = new AssignmentList();
+                $2->add_annotations($1);
+                $$->push_back(*$2);
+                delete $2;
+            }
         | arguments_decl ',' optional_commas argument_decl
             {
                 $$ = $1;
                 $$->push_back(*$4);
                 delete $4;
+            }
+        | arguments_decl ',' optional_commas annotations argument_decl
+            {
+                $$ = $1;
+                $5->add_annotations($4);
+                $$->push_back(*$5);
+                delete $5;
             }
         ;
 

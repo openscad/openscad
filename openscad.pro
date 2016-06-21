@@ -226,8 +226,10 @@ FORMS   += src/MainWindow.ui \
            src/AboutDialog.ui \
            src/FontListDialog.ui \
            src/ProgressWidget.ui \
+            src/Parameter/parameterWidget.ui \
+            src/Parameter/parameterEntryWidget.ui \
            src/launchingscreen.ui \
-           src/LibraryInfoDialog.ui
+           src/LibraryInfoDialog.ui \
 
 HEADERS += src/typedefs.h \
            src/version_check.h \
@@ -243,6 +245,7 @@ HEADERS += src/typedefs.h \
            src/QGLView.h \
            src/GLView.h \
            src/MainWindow.h \
+            src/Parameter/parameterWidget.h \
            src/OpenSCADApp.h \
            src/WindowManager.h \
            src/Preferences.h \
@@ -330,7 +333,16 @@ HEADERS += src/typedefs.h \
            src/AutoUpdater.h \
            src/launchingscreen.h \
            src/legacyeditor.h \
-           src/LibraryInfoDialog.h
+           src/LibraryInfoDialog.h \
+            src/Parameter/parameterobject.h \
+     src/Parameter/parameterextractor.h \
+     src/Parameter/parametervirtualwidget.h \
+     src/Parameter/parameterspinbox.h \
+     src/Parameter/parametercombobox.h \
+     src/Parameter/parameterslider.h \
+     src/Parameter/parametercheckbox.h \
+     src/Parameter/parametertext.h \
+     src/Parameter/parametervector.h
 
 SOURCES += src/version_check.cc \
            src/ProgressWidget.cc \
@@ -340,6 +352,8 @@ SOURCES += src/version_check.cc \
            src/value.cc \
            src/expr.cc \
            src/stackcheck.cc \
+           src/assignment.cc \
+           src/annotation.cc \
            src/func.cc \
            src/localscope.cc \
            src/module.cc \
@@ -414,6 +428,7 @@ SOURCES += src/version_check.cc \
            src/export_svg.cc \
            src/export_nef.cc \
            src/export_png.cc \
+           src/export_params.cc \
            src/import.cc \
            src/renderer.cc \
            src/colormap.cc \
@@ -427,6 +442,7 @@ SOURCES += src/version_check.cc \
            \
            src/openscad.cc \
            src/mainwin.cc \
+            src/Parameter/parameterWidget.cc \
            src/OpenSCADApp.cc \
            src/WindowManager.cc \
            src/UIUtils.cc \
@@ -435,7 +451,15 @@ SOURCES += src/version_check.cc \
            src/FontListTableView.cc \
            src/launchingscreen.cc \
            src/legacyeditor.cc \
-           src/LibraryInfoDialog.cc
+           src/LibraryInfoDialog.cc \
+            src/Parameter/parameterobject.cpp \
+     src/Parameter/parameterextractor.cpp \
+     src/Parameter/parameterspinbox.cpp \
+     src/Parameter/parametercombobox.cpp \
+     src/Parameter/parameterslider.cpp \
+     src/Parameter/parametercheckbox.cpp \
+     src/Parameter/parametertext.cpp \
+     src/Parameter/parametervector.cpp
 
 # ClipperLib
 SOURCES += src/polyclipping/clipper.cpp
