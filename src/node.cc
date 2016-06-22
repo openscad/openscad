@@ -26,8 +26,8 @@
 
 #include "node.h"
 #include "module.h"
+#include "ModuleInstantiation.h"
 #include "progress.h"
-#include "visitor.h"
 #include "stl-utils.h"
 
 #include <iostream>
@@ -44,37 +44,6 @@ AbstractNode::AbstractNode(const ModuleInstantiation *mi)
 AbstractNode::~AbstractNode()
 {
 	std::for_each(this->children.begin(), this->children.end(), del_fun<AbstractNode>());
-}
-
-Response AbstractNode::accept(class State &state, Visitor &visitor) const
-{
-	return visitor.visit(state, *this);
-}
-
-Response AbstractIntersectionNode::accept(class State &state, Visitor &visitor) const
-{
-	return visitor.visit(state, *this);
-}
-
-Response AbstractPolyNode::accept(class State &state, Visitor &visitor) const
-{
-	return visitor.visit(state, *this);
-}
-
-Response GroupNode::accept(class State &state, Visitor &visitor) const
-{
-	return visitor.visit(state, *this);
-}
-
-Response RootNode::accept(class State &state, Visitor &visitor) const
-{
-	return visitor.visit(state, *this);
-}
-
-
-Response LeafNode::accept(class State &state, Visitor &visitor) const
-{
-	return visitor.visit(state, *this);
 }
 
 std::string AbstractNode::toString() const

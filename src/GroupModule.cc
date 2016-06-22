@@ -24,30 +24,24 @@
  *
  */
 
-#include "module.h"
-#include "context.h"
-#include "value.h"
-#include <sstream>
+#include "GroupModule.h"
+#include "ModuleInstantiation.h"
+#include "node.h"
+#include "builtin.h"
+#include "evalcontext.h"
 
-AbstractModule::~AbstractModule()
+AbstractNode *GroupModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
+	(void)ctx; // avoid unusued parameter warning
+
+	AbstractNode *node = new GroupNode(inst);
+
+	node->children = inst->instantiateChildren(evalctx);
+
+	return node;
 }
 
-double AbstractModule::lookup_double_variable_with_default(Context &c, std::string variable, double def) const
+void register_builtin_group()
 {
-	ValuePtr v = c.lookup_variable(variable, true);
-	return (v->type() == Value::NUMBER) ? v->toDouble() : def;
-}
-
-std::string AbstractModule::lookup_string_variable_with_default(Context &c, std::string variable, std::string def) const
-{
-	ValuePtr v = c.lookup_variable(variable, true);
-	return (v->type() == Value::STRING) ? v->toString() : def;
-}
-
-std::string AbstractModule::dump(const std::string &indent, const std::string &name) const
-{
-	std::stringstream dump;
-	dump << indent << "abstract module " << name << "();\n";
-	return dump.str();
+	Builtins::init("group", new GroupModule());
 }

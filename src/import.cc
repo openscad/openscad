@@ -27,6 +27,7 @@
 #include "importnode.h"
 
 #include "module.h"
+#include "ModuleInstantiation.h"
 #include "polyset.h"
 #include "Polygon2d.h"
 #include "evalcontext.h"

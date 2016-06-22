@@ -26,12 +26,12 @@
 
 #include "rotateextrudenode.h"
 #include "module.h"
+#include "ModuleInstantiation.h"
 #include "evalcontext.h"
 #include "printutils.h"
 #include "fileutils.h"
 #include "builtin.h"
 #include "polyset.h"
-#include "visitor.h"
 
 #include <sstream>
 #include <boost/assign/std/vector.hpp>
