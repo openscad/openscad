@@ -3,9 +3,8 @@
 #include <string>
 #include <map>
 #include <list>
-#include "visitor.h"
 #include "state.h"
-#include "module.h" // FIXME: Temporarily for ModuleInstantiation
+#include "ModuleInstantiation.h"
 
 #include "csgops.h"
 #include "transformnode.h"

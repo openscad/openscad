@@ -1,5 +1,5 @@
 #include "ModuleCache.h"
-#include "module.h"
+#include "FileModule.h"
 #include "printutils.h"
 #include "openscad.h"
 

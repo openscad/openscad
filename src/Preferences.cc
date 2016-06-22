@@ -46,7 +46,7 @@ Preferences *Preferences::instance = NULL;
 const char * Preferences::featurePropertyName = "FeatureProperty";
 Q_DECLARE_METATYPE(Feature *);
 
-class SettingsReader : public Settings::Visitor
+class SettingsReader : public Settings::SettingsVisitor
 {
     QSettings settings;
     Value getValue(const Settings::SettingsEntry& entry, const std::string& value) const {
@@ -90,7 +90,7 @@ class SettingsReader : public Settings::Visitor
     }
 };
 
-class SettingsWriter : public Settings::Visitor
+class SettingsWriter : public Settings::SettingsVisitor
 {
     virtual void handle(Settings::SettingsEntry& entry) const {
 	Settings::Settings *s = Settings::Settings::inst();

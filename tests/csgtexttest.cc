@@ -31,6 +31,7 @@
 #include "parsersettings.h"
 #include "node.h"
 #include "module.h"
+#include "ModuleInstantiation.h"
 #include "modcontext.h"
 #include "value.h"
 #include "export.h"
@@ -58,8 +59,7 @@ std::string currentdir;
 void csgTree(CSGTextCache &cache, const AbstractNode &root)
 {
 	CSGTextRenderer renderer(cache);
-	Traverser render(renderer, root, Traverser::PRE_AND_POSTFIX);
-	render.execute();
+	renderer.traverse(root);
 }
 
 int main(int argc, char **argv)
