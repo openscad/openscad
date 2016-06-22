@@ -1,7 +1,8 @@
 #pragma once
 
+#include "AST.h"
 #include "value.h"
-#include "typedefs.h"
+#include "Assignment.h"
 #include "feature.h"
 
 #include <string>
@@ -12,13 +13,13 @@ class AbstractFunction
 private:
 	const Feature *feature;
 public:
-	AbstractFunction() : feature(NULL) {}
 	AbstractFunction(const Feature& feature) : feature(&feature) {}
+	AbstractFunction() : feature(NULL) {}
 	virtual ~AbstractFunction();
 	virtual bool is_experimental() const { return feature != NULL; }
 	virtual bool is_enabled() const { return (feature == NULL) || feature->is_enabled(); }
-	virtual ValuePtr evaluate(const class Context *ctx, const class EvalContext *evalctx) const;
-	virtual std::string dump(const std::string &indent, const std::string &name) const;
+	virtual ValuePtr evaluate(const class Context *ctx, const class EvalContext *evalctx) const = 0;
+	virtual std::string dump(const std::string &indent, const std::string &name) const = 0;
 };
 
 class BuiltinFunction : public AbstractFunction
@@ -35,19 +36,19 @@ public:
 	virtual std::string dump(const std::string &indent, const std::string &name) const;
 };
 
-class Function : public AbstractFunction
+class UserFunction : public AbstractFunction, public ASTNode
 {
 public:
-        std::string name;
+	std::string name;
 	AssignmentList definition_arguments;
 
-	Expression *expr;
+	shared_ptr<Expression> expr;
 
-	Function(const char *name, AssignmentList &definition_arguments, Expression *expr);
-	virtual ~Function();
+	UserFunction(const char *name, AssignmentList &definition_arguments, shared_ptr<Expression> expr, const Location &loc);
+	virtual ~UserFunction();
 
 	virtual ValuePtr evaluate(const Context *ctx, const EvalContext *evalctx) const;
 	virtual std::string dump(const std::string &indent, const std::string &name) const;
         
-        static Function * create(const char *name, AssignmentList &definition_arguments, Expression *expr);
+	static UserFunction *create(const char *name, AssignmentList &definition_arguments, shared_ptr<Expression> expr, const Location &loc);
 };

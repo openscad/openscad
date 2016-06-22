@@ -1,6 +1,7 @@
 #ifndef PARAMETEREXTRACTOR_H
 #define PARAMETEREXTRACTOR_H
 
+#include "FileModule.h"
 #include "parametervirtualwidget.h"
 
 class ParameterExtractor
@@ -14,7 +15,7 @@ protected:
 public:
     ParameterExtractor();
     virtual ~ParameterExtractor();
-    void setParameters(const Module *module);
+    void setParameters(const FileModule* module);
     void applyParameters(class FileModule *fileModule);
 
 

@@ -1,6 +1,6 @@
 #include "parameterextractor.h"
 
-#include "module.h"
+#include "FileModule.h"
 #include "modcontext.h"
 
 ParameterExtractor::ParameterExtractor()
@@ -18,7 +18,7 @@ void ParameterExtractor::applyParameters(FileModule *fileModule)
     }
 
     for (AssignmentList::iterator it = fileModule->scope.assignments.begin();it != fileModule->scope.assignments.end();it++) {
-        entry_map_t::iterator entry = entries.find((*it).first);
+        entry_map_t::iterator entry = entries.find((*it).name);
         if (entry == entries.end()) {
             continue;
         }
@@ -28,7 +28,7 @@ void ParameterExtractor::applyParameters(FileModule *fileModule)
     }
 }
 
-void ParameterExtractor::setParameters(const Module *module)
+void ParameterExtractor::setParameters(const FileModule* module)
 {
     if (module == NULL) {
         return;
@@ -43,7 +43,7 @@ void ParameterExtractor::setParameters(const Module *module)
             continue;
         }
 
-        const ValuePtr defaultValue = assignment.second.get()->evaluate(&ctx);
+        const ValuePtr defaultValue = assignment.expr.get()->evaluate(&ctx);
         if (defaultValue->type() == Value::UNDEFINED) {
             continue;
         }
@@ -52,13 +52,13 @@ void ParameterExtractor::setParameters(const Module *module)
         entryObject->setAssignment(&ctx, &assignment, defaultValue);
 
         //need to improve structure
-        if(entries.find(assignment.first) == entries.end()){
-            entries[assignment.first] = entryObject;
+        if(entries.find(assignment.name) == entries.end()){
+            entries[assignment.name] = entryObject;
         }else{
-            if(*entryObject==*entries[assignment.first]){
-                entryObject=entries[assignment.first];
+            if(*entryObject==*entries[assignment.name]){
+                entryObject=entries[assignment.name];
            }else{
-                entries[assignment.first] = entryObject;
+                entries[assignment.name] = entryObject;
             }
         }
 

@@ -11,10 +11,10 @@ ParameterObject::ParameterObject()
 void ParameterObject::applyParameter(class Assignment *assignment){
 
     ModuleContext ctx;
-    const ValuePtr defaultValue =assignment->second.get()->evaluate(&ctx);
+    const ValuePtr defaultValue =assignment->expr.get()->evaluate(&ctx);
 
     if( defaultValue->type() == dvt ){
-        assignment->second = shared_ptr<Expression>(new ExpressionConst(value));
+        assignment->expr = shared_ptr<Expression>(new Literal(value));
     }
 }
 
@@ -44,7 +44,7 @@ int ParameterObject::setValue(const class ValuePtr defaultValue, const class Val
 }
 
 void ParameterObject::setAssignment(class Context *ctx, const class Assignment *assignment, const ValuePtr defaultValue){
-    name = assignment->first;
+    name = assignment->name;
     const Annotation *param = assignment->annotation("Parameter");
     const ValuePtr values = param->evaluate(ctx, "values");
     setValue(defaultValue, values);

@@ -87,7 +87,7 @@ Settings::~Settings()
 {
 }
 
-void Settings::visit(Visitor& visitor)
+void Settings::visit(SettingsVisitor& visitor)
 {
 	for (std::list<SettingsEntry *>::iterator it = entries.begin();it != entries.end();it++) {
 		visitor.handle(*(*it));
@@ -109,11 +109,11 @@ void Settings::set(SettingsEntry& entry, const Value &val)
     entry._value = val;
 }
 
-Visitor::Visitor()
+SettingsVisitor::SettingsVisitor()
 {
 }
 
-Visitor::~Visitor()
+SettingsVisitor::~SettingsVisitor()
 {
 }
 

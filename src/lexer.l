@@ -27,13 +27,12 @@
 %{
 
 #include <glib.h>
-#include "typedefs.h"
 #include "handle_dep.h"
 #include "printutils.h"
 #include "parsersettings.h"
+#include "Assignment.h"
 #include "parser_yacc.h"
-#include "module.h"
-#include<iostream>
+#include "FileModule.h"
 #include <assert.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
@@ -203,18 +202,11 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
 
 [\n\r\t ]
 
-[\n]+"//" { BEGIN(cond_lcomment); stringcontents.clear(); return DCOMMENT;}
-
-\/\/     { BEGIN(cond_lcomment); stringcontents.clear(); return COMMENT;}
+\/\/ BEGIN(cond_lcomment);
 <cond_lcomment>{
-\n                      { BEGIN(INITIAL);
-			                parserlval.text = strdup(stringcontents.c_str());
-			                return CTOK_STRING; }
-{UNICODE}              { 
-                         parser_error_pos -= strlen(lexertext) - 1; 
-                            stringcontents += lexertext; } 
-[^\n]           { stringcontents += lexertext;} 
-
+\n                      { BEGIN(INITIAL); }
+{UNICODE}               { parser_error_pos -= strlen(lexertext) - 1; }
+[^\n]
 }
 
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdexcept>
+#include <sstream>
 
 class EvaluationException : public std::runtime_error {
 public:

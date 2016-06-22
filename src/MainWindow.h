@@ -8,6 +8,7 @@
 #include "openscad.h"
 #include "modcontext.h"
 #include "module.h"
+#include "ModuleInstantiation.h"
 #include "Tree.h"
 #include "memory.h"
 #include "editor.h"

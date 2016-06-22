@@ -1,10 +1,10 @@
 #include "GeometryEvaluator.h"
-#include "traverser.h"
 #include "Tree.h"
 #include "GeometryCache.h"
 #include "CGALCache.h"
 #include "Polygon2d.h"
 #include "module.h"
+#include "ModuleInstantiation.h"
 #include "state.h"
 #include "offsetnode.h"
 #include "transformnode.h"
@@ -54,8 +54,7 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 			this->root = N;
 		}	
     else {
-			Traverser trav(*this, node, Traverser::PRE_AND_POSTFIX);
-			trav.execute();
+			this->traverse(node);
 		}
 
 		if (!allownef) {

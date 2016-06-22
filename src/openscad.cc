@@ -27,6 +27,7 @@
 #include "openscad.h"
 #include "node.h"
 #include "module.h"
+#include "ModuleInstantiation.h"
 #include "modcontext.h"
 #include "value.h"
 #include "export.h"
