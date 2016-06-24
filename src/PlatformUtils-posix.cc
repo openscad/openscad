@@ -8,9 +8,11 @@
 #include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/filesystem.hpp>
 
 #include "PlatformUtils.h"
-#include "boosty.h"
+
+namespace fs=boost::filesystem;
 
 std::string PlatformUtils::pathSeparatorChar()
 {
@@ -23,7 +25,7 @@ std::string PlatformUtils::documentsPath()
 	if (home) {
 		fs::path docpath(home);
 		docpath = docpath / ".local" / "share";
-		return boosty::stringy(docpath);
+		return docpath.generic_string();
 	}
 	else {
 		return "";
@@ -46,7 +48,7 @@ std::string PlatformUtils::userConfigPath()
     }
 
     if (fs::is_directory(config_path)) {
-	return boosty::stringy(boosty::absolute(config_path));
+	return fs::absolute(config_path).generic_string();
     }
     
     return "";

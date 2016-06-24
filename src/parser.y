@@ -46,8 +46,6 @@
 
 namespace fs = boost::filesystem;
 
-#include "boosty.h"
-
 #define YYMAXDEPTH 20000
 
 int parser_error_pos = -1;
@@ -262,7 +260,7 @@ if_statement:
             {
                 $<ifelse>$ = new IfElseModuleInstantiation();
                 $<ifelse>$->arguments.push_back(Assignment("", shared_ptr<Expression>($3)));
-                $<ifelse>$->setPath(boosty::stringy(parser_sourcefile.parent_path()));
+                $<ifelse>$->setPath(parser_sourcefile.parent_path().generic_string());
                 scope_stack.push(&$<ifelse>$->scope);
             }
           child_statement
@@ -300,7 +298,7 @@ single_module_instantiation:
             {
                 $$ = new ModuleInstantiation($1);
                 $$->arguments = *$3;
-                $$->setPath(boosty::stringy(parser_sourcefile.parent_path()));
+                $$->setPath(parser_sourcefile.parent_path().generic_string());
                 free($1);
                 delete $3;
             }
@@ -601,10 +599,10 @@ FileModule *parse(const char *text, const fs::path &filename, int debug)
   lexerin = NULL;
   parser_error_pos = -1;
   parser_input_buffer = text;
-  parser_sourcefile = boosty::absolute(filename);
+  parser_sourcefile = fs::absolute(filename);
 
   rootmodule = new FileModule();
-  rootmodule->setModulePath(boosty::stringy(filename.parent_path()));
+  rootmodule->setModulePath(filename.parent_path().generic_string());
   scope_stack.push(&rootmodule->scope);
   //        PRINTB_NOCACHE("New module: %s %p", "root" % rootmodule);
 
