@@ -34,7 +34,8 @@
 #include <boost/variant/static_visitor.hpp>
 #include <boost/format.hpp>
 #include "boost-utils.h"
-#include "boosty.h"
+#include <boost/filesystem.hpp>
+namespace fs=boost::filesystem;
 /*Unicode support for string lengths and array accesses*/
 #include <glib.h>
 
@@ -59,7 +60,7 @@ std::ostream &operator<<(std::ostream &stream, const Filename &filename)
 {
   fs::path fnpath = fs::path( (std::string)filename );
   fs::path fpath = boostfs_uncomplete(fnpath, fs::current_path());
-  stream << QuotedString(boosty::stringy( fpath ));
+  stream << QuotedString(fpath.generic_string());
   return stream;
 }
 
