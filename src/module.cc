@@ -38,8 +38,8 @@
 #include "stackcheck.h"
 
 #include <boost/filesystem.hpp>
+#include <boost/algorithm/string.hpp>
 namespace fs = boost::filesystem;
-#include "boosty.h"
 #include "FontCache.h"
 #include <sstream>
 #include <sys/stat.h>
@@ -94,8 +94,8 @@ IfElseModuleInstantiation::~IfElseModuleInstantiation()
 */
 std::string ModuleInstantiation::getAbsolutePath(const std::string &filename) const
 {
-	if (!filename.empty() && !boosty::is_absolute(fs::path(filename))) {
-		return boosty::absolute(fs::path(this->modpath) / filename).string();
+	if (!filename.empty() && !fs::path(filename).is_absolute()) {
+		return fs::absolute(fs::path(this->modpath) / filename).string();
 	}
 	else {
 		return filename;
@@ -232,7 +232,7 @@ FileModule::~FileModule()
 }
 
 void FileModule::registerUse(const std::string path) {
-	std::string extraw = boosty::extension_str(fs::path(path));
+	std::string extraw = fs::path(path).extension().generic_string();
 	std::string ext = boost::algorithm::to_lower_copy(extraw);
 	
 	if ((ext == ".otf") || (ext == ".ttf")) {
@@ -270,7 +270,7 @@ bool FileModule::include_modified(const IncludeFile &inc) const
 	memset(&st, 0, sizeof(struct stat));
 
 	fs::path fullpath = find_valid_path(this->path, inc.filename);
-	bool valid = !fullpath.empty() ? (stat(boosty::stringy(fullpath).c_str(), &st) == 0) : false;
+	bool valid = !fullpath.empty() ? (stat(fullpath.generic_string().c_str(), &st) == 0) : false;
 	
 	if (valid && !inc.valid) return true; // Detect appearance of file but not removal
 	if (valid && st.st_mtime > inc.mtime) return true;
@@ -299,12 +299,12 @@ bool FileModule::handleDependencies()
 		bool found = true;
 
 		// Get an absolute filename for the module
-		if (!boosty::is_absolute(filename)) {
+		if (!fs::path(filename).is_absolute()) {
 			wasmissing = true;
 			fs::path fullpath = find_valid_path(this->path, filename);
 			if (!fullpath.empty()) {
-				updates.push_back(std::make_pair(filename, boosty::stringy(fullpath)));
-				filename = boosty::stringy(fullpath);
+				updates.push_back(std::make_pair(filename, fullpath.generic_string()));
+				filename = fullpath.generic_string();
 			}
 			else {
 				found = false;
