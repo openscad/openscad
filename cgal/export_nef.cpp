@@ -1,5 +1,6 @@
 #include <boost/foreach.hpp>
 #include <boost/regex.hpp>
+#include <boost/filesystem.hpp>
 #include <sstream>
 #include <iostream>
 #include <fstream>
@@ -9,11 +10,11 @@
 #include "export.h"
 #include "polyset.h"
 #include "CGAL_Nef_polyhedron.h"
-#include "boosty.h"
 
 #include <CGAL/IO/Nef_polyhedron_iostream_3.h>
 
 using namespace CGALUtils;
+namespace fs=boost::fileystem;
 
 #define STL_FACET_NUMBYTES 4*3*4+2
 // as there is no 'float32_t' standard, we assume the systems 'float'
@@ -152,7 +153,7 @@ int main(int argc, char *argv[])
   PolySet *ps = NULL;
   if (argc == 2) {
     std::string filename(argv[1]);
-    std::string suffix = boosty::extension_str(filename);
+    std::string suffix = filename.extension().generic_string();
     boost::algorithm::to_lower(suffix);
     if (suffix == ".stl") {
       if (!(ps = import_stl(filename))) {
