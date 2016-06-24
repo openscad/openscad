@@ -77,6 +77,21 @@ extern FileModule *rootmodule;
   }                                       \
 }
 
+/*
+  Handle locations.
+  Note: Since flex doesn't handle column numbers, we deal with those manually.
+  The yycolumn is manually reset for each encountered newline.
+*/
+extern YYLTYPE parserlloc;
+int yycolumn = 1;
+#define YY_USER_ACTION {              \
+  parserlloc.first_line = yylineno;   \
+  parserlloc.first_column = yycolumn; \
+  yycolumn = yycolumn + yyleng;       \
+  parserlloc.last_column = yycolumn;  \
+  parserlloc.last_line = yylineno;    \
+}
+
 void to_utf8(const char *, char *);
 void includefile();
 fs::path sourcefile();
@@ -199,7 +214,8 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
 			return TOK_STRING; }
 }
 
-[\n\r\t ]
+[\t ]                   /* whitespace */
+[\n\r]                  { yycolumn = 1; }
 
 \/\/ BEGIN(cond_lcomment);
 <cond_lcomment>{
