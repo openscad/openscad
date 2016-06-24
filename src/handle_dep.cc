@@ -6,7 +6,6 @@
 #include <boost/regex.hpp>
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
-#include "boosty.h"
 
 std::unordered_set<std::string> dependencies;
 const char *make_command = NULL;
@@ -15,7 +14,7 @@ void handle_dep(const std::string &filename)
 {
 	fs::path filepath(filename);
 	std::string dep;
-	if (boosty::is_absolute(filepath)) dep = filename;
+	if (filepath.is_absolute()) dep = filename;
 	else dep = (fs::current_path() / filepath).string();
 	dependencies.insert(boost::regex_replace(filename, boost::regex("\\ "), "\\\\ "));
 
