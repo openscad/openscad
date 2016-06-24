@@ -35,14 +35,18 @@
 #include <unordered_map>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/filesystem.hpp>
 #include <algorithm>
 #include <sstream>
 #include <map>
 
 #include "value.h"
 #include "boost-utils.h"
-#include "boosty.h"
 #include "Polygon2d.h"
+#include "printutils.h"
+
+
+namespace fs=boost::filesystem;
 
 /*! \class DxfData
 
@@ -393,10 +397,10 @@ DxfData::DxfData(double fn, double fs, double fa,
 	for(const auto &i : unsupported_entities_list) {
 		if (layername.empty()) {
 			PRINTB("WARNING: Unsupported DXF Entity '%s' (%x) in %s.",
-						 i.first % i.second % QuotedString(boosty::stringy(boostfs_uncomplete(filename, fs::current_path()))));
+						 i.first % i.second % QuotedString(boostfs_uncomplete(filename, fs::current_path()).generic_string()));
 		} else {
 			PRINTB("WARNING: Unsupported DXF Entity '%s' (%x) in layer '%s' of %s.",
-						 i.first % i.second % layername % QuotedString(boosty::stringy(boostfs_uncomplete(filename, fs::current_path()))));
+						 i.first % i.second % layername % QuotedString(boostfs_uncomplete(filename, fs::current_path()).generic_string()));
 		}
 	}
 
