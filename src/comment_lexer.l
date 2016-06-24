@@ -29,10 +29,12 @@ H [0-9a-fA-F]
 "]" { return yytext[0];}
 "," { return yytext[0];}
 ":" { return yytext[0];}
+  
+[ \t]
    
 [^(\[ \] \, \:)]* { yylval.text=strdup(yytext); return WORD;}
 
-[\n\r ]
+[ \n\r ]
 
 . { }
 

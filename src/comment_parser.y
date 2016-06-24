@@ -30,6 +30,7 @@
 %type <args> arguments_call
 %type <arg> argument_call
 %type <vec> vector_expr
+%type <vec> labled_vector
 
 %%
 
@@ -83,6 +84,15 @@ expr		:
             {
                 $$ = new Range($2, $4, $6,Location::NONE);
             }
+        | labled_vector
+        ;
+                
+labled_vector: 
+        expr ':' expr {
+            $$ = new Vector(Location::NONE);
+            $$->push_back($1);
+            $$->push_back($3);
+        }
 		;
 
 optional_commas:
