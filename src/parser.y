@@ -48,8 +48,6 @@
 
 namespace fs = boost::filesystem;
 
-#include "boosty.h"
-
 #define YYMAXDEPTH 20000
 #define LOC(loc) Location(loc.first_line, loc.first_column, loc.last_line, loc.last_column)
   
@@ -264,7 +262,7 @@ ifelse_statement:
 if_statement:
           TOK_IF '(' expr ')'
             {
-                $<ifelse>$ = new IfElseModuleInstantiation(shared_ptr<Expression>($3), boosty::stringy(parser_sourcefile.parent_path()), LOC(@$));
+                $<ifelse>$ = new IfElseModuleInstantiation(shared_ptr<Expression>($3), parser_sourcefile.parent_path().generic_string(), LOC(@$));
                 scope_stack.push(&$<ifelse>$->scope);
             }
           child_statement
@@ -300,7 +298,7 @@ module_id:
 single_module_instantiation:
           module_id '(' arguments_call ')'
             {
-                $$ = new ModuleInstantiation($1, *$3, boosty::stringy(parser_sourcefile.parent_path()), LOC(@$));
+                $$ = new ModuleInstantiation($1, *$3, parser_sourcefile.parent_path().generic_string(), LOC(@$));
                 free($1);
                 delete $3;
             }
@@ -603,10 +601,10 @@ FileModule *parse(const char *text, const fs::path &filename, int debug)
   lexerin = NULL;
   parser_error_pos = -1;
   parser_input_buffer = text;
-  parser_sourcefile = boosty::absolute(filename);
+  parser_sourcefile = fs::absolute(filename);
 
   rootmodule = new FileModule();
-  rootmodule->setModulePath(boosty::stringy(filename.parent_path()));
+  rootmodule->setModulePath(filename.parent_path().generic_string());
   scope_stack.push(&rootmodule->scope);
   //        PRINTB_NOCACHE("New module: %s %p", "root" % rootmodule);
 
