@@ -1744,11 +1744,13 @@ void MainWindow::addparameter(const char *fulltext){
         
             //getting the node for parameter annnotataion
             assignments=parser(name.c_str());
-            const Annotation *Parameter;
-            Parameter=Annotation::create("Parameter",*assignments);
-            
-            // adding parameter to the list
-            annotationList->push_back(*Parameter);
+            if(assignments!=NULL){
+                const Annotation *Parameter;
+                Parameter=Annotation::create("Parameter",*assignments);
+
+                // adding parameter to the list
+                annotationList->push_back(*Parameter);
+            }
         }
         
         //extracting the description 
@@ -1788,7 +1790,7 @@ string MainWindow::getParameter(string fulltext, int loc){
    }
     string str2 = fulltext.substr(chara,len-chara);
     int start= str2.find("//");
-    if(start<0 && start+2>str2.length()){
+    if(start<0 || start+2>str2.length()){
         return " ";
     }
     return str2.substr(start+2);
