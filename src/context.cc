@@ -33,7 +33,6 @@
 #include "printutils.h"
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
-#include "boosty.h"
 
 // $children is not a config_variable. config_variables have dynamic scope, 
 // meaning they are passed down the call chain implicitly.
@@ -193,8 +192,8 @@ AbstractNode *Context::instantiate_module(const ModuleInstantiation &inst, EvalC
  */
 std::string Context::getAbsolutePath(const std::string &filename) const
 {
-	if (!filename.empty() && !boosty::is_absolute(fs::path(filename))) {
-		return boosty::absolute(fs::path(this->document_path) / filename).string();
+	if (!filename.empty() && !fs::path(filename).is_absolute()) {
+		return fs::absolute(fs::path(this->document_path) / filename).string();
 	}
 	else {
 		return filename;
