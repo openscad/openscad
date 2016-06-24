@@ -120,7 +120,6 @@
 
 #endif // ENABLE_CGAL
 
-#include "boosty.h"
 #include "FontCache.h"
 
 // Global application state

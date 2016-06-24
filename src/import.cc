@@ -51,7 +51,6 @@
 namespace fs = boost::filesystem;
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
-#include "boosty.h"
 
 #include <boost/detail/endian.hpp>
 #include <cstdint>
@@ -101,7 +100,7 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 	std::string filename = lookup_file(v->isUndefined() ? "" : v->toString(), inst->path(), ctx->documentPath());
 	import_type_e actualtype = this->type;
 	if (actualtype == TYPE_UNKNOWN) {
-		std::string extraw = boosty::extension_str(fs::path(filename));
+		std::string extraw = fs::path(filename).extension().generic_string();
 		std::string ext = boost::algorithm::to_lower_copy(extraw);
 		if (ext == ".stl") actualtype = TYPE_STL;
 		else if (ext == ".off") actualtype = TYPE_OFF;
