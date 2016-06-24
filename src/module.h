@@ -18,7 +18,7 @@ class ModuleInstantiation
 {
 public:
 	ModuleInstantiation(const std::string &name = "")
-		: tag_root(false), tag_highlight(false), tag_background(false), modname(name) { }
+		: tag_root(false), tag_highlight(false), tag_background(false), modname(name) { std::cout<<"modinst "<<name<<std::endl;}
 	virtual ~ModuleInstantiation();
 
 	virtual std::string dump(const std::string &indent) const;

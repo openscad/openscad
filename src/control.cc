@@ -175,6 +175,34 @@ AbstractNode* ControlModule::getChild(const Value& value, const EvalContext* mod
 	return modulectx->getChild(n)->evaluate(modulectx);
 }
 
+//
+// return true if G is exactly filling its bounding box
+//
+bool isBBoxFull(shared_ptr<const PolySet> G)
+{
+	bool isFull=true;
+	//std::cout << G->dump() <<std::endl;
+	for (size_t i = 0; i < G->polygons.size(); i++) {
+		//std::cout << "\n  polygon " << i << " : ";
+                const Polygon *poly = &G->polygons[i];
+		if( poly->size() < 3 ) continue; // impossible
+		Vector3d a = poly->at(1) - poly->at(0);
+		Vector3d b = poly->at(2) - poly->at(0);
+		Vector3d n(a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]);
+		//std::cout << "\n   vertor 1:" << a.transpose();
+		//std::cout << "\n   vertor 2:" << b.transpose();
+		//std::cout << "\n   vertor N:" << n.transpose() << "\n";
+		//std::cout << fabs(n[0]) << ","<<fabs(n[1]) << ","<<fabs(n[2]) << "\n";
+		//std::cout << (fabs(n[0])==0) << ","<<(fabs(n[1])==0) << ","<<(fabs(n[2])==0) << "\n";
+		//std::cout << fabs(n[0]*n[1]) << ","<<fabs(n[1]*n[2]) << ","<<fabs(n[2]*n[0]) << "\n";
+		//std::cout << (fabs(n[0]*n[1])==0) << ","<<(fabs(n[1]*n[2])==0) << ","<<(fabs(n[2]*n[0])==0) << "\n";
+		double e=0.0001;
+		if( (fabs(n[0]*n[1])>e) || (fabs(n[1]*n[2])>e) || fabs(n[2]*n[0])>e ) isFull=false;
+        }
+	return isFull;
+}
+
+
 AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	AbstractNode *node = NULL;
@@ -336,12 +364,14 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 		//
 		// render first children, then compute the bounding box.
 		// set the following 4 vector variables and 1 bool variable:
-		//    bbempty = true/false, state if there was any usable geometry.
+		//    empty = true/false, state if there was any usable geometry.
 		//              when bbempty is false, the next variables are undef
 		//    bbmin = [xmin,ymin,zmin], the minimum of the bounding box
 		//    bbmax = [xmax,ymax,zmax], the maximum of the bounding box
 		//    bbsize = [xmax-xmin,...], the size of the bounding box
 		//    bbcenter = [(xmax+xmin)/2, ...], the center of the bounding box
+		//    volume = volume of object
+		//    centroid = center of mass of object
 		//
 		// the only parameter that probe takes is $exact=true/false
 		// it is generaly set to true, but with false the rendering will not be Nef (so its faster).
@@ -349,6 +379,10 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 		//
 		node = new AbstractNode(inst);
 		Context c(evalctx);
+
+		AssignmentList args;
+		args.push_back(Assignment("volume"));
+		c.setVariables(args,evalctx);
 
 		// les parametres.. au cas ou on fera $exact=1
 		for (size_t i = 0; i < evalctx->numArgs(); i++) {
@@ -359,6 +393,9 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 
 		// not sure how to set the default value to true... for now its false.
         	bool exact = c.lookup_variable("$exact")->toBool();
+        	bool volume = c.lookup_variable("volume")->toBool();
+
+		PRINTB("probe volume=%d", volume);
 
 		// Let any local variables override the parameters
 		inst->scope.apply(c);
@@ -367,7 +404,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
                 std::vector<AbstractNode*> childnodes;
                 AbstractNode *nc;
 
-		double xmin,ymin,zmin,xmax,ymax,zmax;
+		double xmin=0,ymin=0,zmin=0,xmax=0,ymax=0,zmax=0;
 
                 for(unsigned int k=0;k<evalctx->numChildren();k++) {
                         nc = evalctx->getChild(k)->evaluate(&c);
@@ -382,10 +419,12 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 				shared_ptr<const Geometry> geom;
 
 				bool empty=true;
+				//bool full=false;
+
 
 				geom=geomEvaluator.evaluateGeometry(*nc,exact); // false-> no NEF, true= ok NEF
 				G = dynamic_pointer_cast<const PolySet>(geom);
-				// we assueme that we will get either CSG or CGAL, but not both
+				// we assume that we will get either CSG or CGAL, but not both
 				if( G!=NULL ) {
 					// we obtained a fast CSG geometry instead of a Nef polyhedron.
 					empty=G->isEmpty();
@@ -397,6 +436,24 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 						xmax=bb.max().x();
 						ymax=bb.max().y();
 						zmax=bb.max().z();
+						std::cout << "CSG!" << std::endl;
+						//G->dump();
+						//full=isBBoxFull(G);
+						//std::cout << "full:" <<full<<std::endl;
+						if( volume ) {
+							NT3 volumeTotal;
+							NT3 centerOfMass[3];
+							std::cout << "PolySet volume!" << std::endl;
+							CGALUtils::computeVolume( *G,volumeTotal,centerOfMass );
+							std::cout<<"Volume Total = "<<to_double(volumeTotal)<<"\n";
+							std::cout<<"center of mass is ("<<to_double(centerOfMass[0])<<","<<to_double(centerOfMass[1])<<","<<to_double(centerOfMass[2])<<")\n";
+			        			c.set_variable("volume",Value(to_double(volumeTotal)));
+							Value::VectorType bbcentroid;
+							bbcentroid.push_back(to_double(centerOfMass[0]));
+							bbcentroid.push_back(to_double(centerOfMass[1]));
+							bbcentroid.push_back(to_double(centerOfMass[2]));
+			        			c.set_variable("centroid",Value(bbcentroid));
+						}
 					}
 				}else{
 #ifdef ENABLE_CGAL
@@ -412,11 +469,27 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 						xmax=CGAL::to_double(bb.xmax());
 						ymax=CGAL::to_double(bb.ymax());
 						zmax=CGAL::to_double(bb.zmax());
+						if( volume ) {
+							NT3 volumeTotal;
+							NT3 centerOfMass[3];
+							// check the volume
+							std::cout << "NEF volume!" << std::endl;
+							CGALUtils::computeVolume( *(N->p3), volumeTotal,centerOfMass );
+							std::cout<<"Volume Total = "<<to_double(volumeTotal)<<"\n";
+							std::cout<<"center of mass is ("<<to_double(centerOfMass[0])<<","<<to_double(centerOfMass[1])<<","<<to_double(centerOfMass[2])<<")\n";
+			        			c.set_variable("volume",Value(to_double(volumeTotal)));
+							Value::VectorType bbcentroid;
+							bbcentroid.push_back(to_double(centerOfMass[0]));
+							bbcentroid.push_back(to_double(centerOfMass[1]));
+							bbcentroid.push_back(to_double(centerOfMass[2]));
+			        			c.set_variable("centroid",Value(bbcentroid));
+						}
 					    }
 					}
 #endif
 				}
 			        c.set_variable("bbempty",Value(empty));
+			        //c.set_variable("bbfull",Value(full));
 				if( !empty ) {
 					// define the variables
                                         Value::VectorType bbmin;

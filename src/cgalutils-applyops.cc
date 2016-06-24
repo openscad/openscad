@@ -208,6 +208,7 @@ namespace CGALUtils {
 	*/
 	Geometry const * applyMinkowski(const Geometry::ChildList &children)
 	{
+		std::cout << "Minkowski!!!\n";
 		CGAL::Timer t,t_tot;
 		assert(children.size() >= 2);
 		Geometry::ChildList::const_iterator it = children.begin();
@@ -223,30 +224,33 @@ namespace CGALUtils {
 				std::list<CGAL::Polyhedron_3<Hull_kernel> > result_parts;
 
 				for (size_t i = 0; i < 2; i++) {
+					std::cout << "yo!!!"<<i<<"\n";
 					CGAL_Polyhedron poly;
 
 					const PolySet * ps = dynamic_cast<const PolySet *>(operands[i]);
 
 					const CGAL_Nef_polyhedron * nef = dynamic_cast<const CGAL_Nef_polyhedron *>(operands[i]);
 
+					std::cout << "ps "<<(ps==NULL?"NULL":"ok")<<" nef "<<(nef==NULL?"NULL":"ok")<<((nef&&nef->p3->is_simple())?" simple":" not simple")<<"?\n";
+
 					if (ps) CGALUtils::createPolyhedronFromPolySet(*ps, poly);
 					else if (nef && nef->p3->is_simple()) nefworkaround::convert_to_Polyhedron<CGAL_Kernel3>(*nef->p3, poly);
-					else throw 0;
+					else { std::cout<<"throw\n"; throw 0; }
 
 					if ((ps && ps->is_convex()) ||
 							(!ps && is_weakly_convex(poly))) {
-						PRINTDB("Minkowski: child %d is convex and %s",i % (ps?"PolySet":"Nef"));
+						PRINTB("Minkowski: child %d is convex and %s",i % (ps?"PolySet":"Nef"));
 						P[i].push_back(poly);
 					} else {
 						CGAL_Nef_polyhedron3 decomposed_nef;
 
 						if (ps) {
-							PRINTDB("Minkowski: child %d is nonconvex PolySet, transforming to Nef and decomposing...", i);
+							PRINTB("Minkowski: child %d is nonconvex PolySet, transforming to Nef and decomposing...", i);
 							CGAL_Nef_polyhedron *p = createNefPolyhedronFromGeometry(*ps);
 							if (!p->isEmpty()) decomposed_nef = *p->p3;
 							delete p;
 						} else {
-							PRINTDB("Minkowski: child %d is nonconvex Nef, decomposing...",i);
+							PRINTB("Minkowski: child %d is nonconvex Nef, decomposing...",i);
 							decomposed_nef = *nef->p3;
 						}
 
@@ -264,9 +268,9 @@ namespace CGALUtils {
 						}
 
 
-						PRINTDB("Minkowski: decomposed into %d convex parts", P[i].size());
+						PRINTB("Minkowski: decomposed into %d convex parts", P[i].size());
 						t.stop();
-						PRINTDB("Minkowski: decomposition took %f s", t.time());
+						PRINTB("Minkowski: decomposition took %f s", t.time());
 					}
 				}
 
@@ -402,7 +406,7 @@ namespace CGALUtils {
 		}
 		catch (...) {
 			// If anything throws we simply fall back to Nef Minkowski
-			PRINTD("Minkowski: Falling back to Nef Minkowski");
+			PRINTB("Minkowski: Falling back to Nef Minkowski %d",0);
 
 			CGAL_Nef_polyhedron *N = applyOperator(children, OPENSCAD_MINKOWSKI);
 			return N;

@@ -283,11 +283,11 @@ ValuePtr builtin_min(const Context *, const EvalContext *evalctx)
 	size_t n = evalctx->numArgs();
 	if (n >= 1) {
 		ValuePtr v0 = evalctx->getArgValue(0);
-
 		if (n == 1 && v0->type() == Value::VECTOR && !v0->toVector().empty()) {
-			Value min = v0->toVector()[0];
-			for (size_t i = 1; i < v0->toVector().size(); i++) {
-				if (v0->toVector()[i] < min) min = v0->toVector()[i];
+			Value min = Value::undefined;//v0->toVector()[0];
+			for (size_t i = 0; i < v0->toVector().size(); i++) {
+		                if (v0->toVector()[i].type()!=Value::NUMBER ) continue;
+				if (!min.isDefined() || v0->toVector()[i] < min) min = v0->toVector()[i];
 			}
 			return ValuePtr(min);
 		}
@@ -317,9 +317,10 @@ ValuePtr builtin_max(const Context *, const EvalContext *evalctx)
 		ValuePtr v0 = evalctx->getArgValue(0);
 
 		if (n == 1 && v0->type() == Value::VECTOR && !v0->toVector().empty()) {
-			Value max = v0->toVector()[0];
+			Value max = Value::undefined; // v0->toVector()[0];
 			for (size_t i = 1; i < v0->toVector().size(); i++) {
-				if (v0->toVector()[i] > max) max = v0->toVector()[i];
+		                if (v0->toVector()[i].type()!=Value::NUMBER ) continue;
+				if (!max.isDefined() || v0->toVector()[i] > max) max = v0->toVector()[i];
 			}
 			return ValuePtr(max);
 		}

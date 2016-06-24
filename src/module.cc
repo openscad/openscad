@@ -149,6 +149,9 @@ AbstractNode *ModuleInstantiation::evaluate(const Context *ctx) const
 {
 	EvalContext c(ctx, this->arguments, &this->scope);
 
+	// seb
+	//std::cout << "evaluate module  " << modname << std::endl;
+
 #if 0 && DEBUG
 	PRINT("New eval ctx:");
 	c.dump(NULL, this);
@@ -180,6 +183,9 @@ AbstractNode *Module::instantiate(const Context *ctx, const ModuleInstantiation 
 		throw RecursionException::create("module", inst->name());
 		return NULL;
 	}
+
+	// seb
+	//std::cout << "instantiate module  " << inst->modname << std::endl;
 
 	// At this point we know that nobody will modify the dependencies of the local scope
 	// passed to this instance, so we can populate the context
