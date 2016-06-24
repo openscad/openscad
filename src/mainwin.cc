@@ -1716,7 +1716,8 @@ void MainWindow::compileTopLevelDocument()
     const char* fname =
         this->fileName.isEmpty() ? "" : fnameba;
 	this->root_module = parse(fulltext.c_str(), fs::path(fname), false);
-
+    
+    if(this->root_module!=NULL)
     addparameter(fulltext.c_str());
 
     this->parameterWidget->setParameters(this->root_module);
@@ -1739,7 +1740,7 @@ void MainWindow::addparameter(const char *fulltext){
          
         //extracting the parameter 
         string name = getParameter(std::string(fulltext),loc);
-        if(name!= " "){
+        if(name!= " " ){
         
             //getting the node for parameter annnotataion
             assignments=parser(name.c_str());
@@ -1787,7 +1788,7 @@ string MainWindow::getParameter(string fulltext, int loc){
    }
     string str2 = fulltext.substr(chara,len-chara);
     int start= str2.find("//");
-    if(start<0){
+    if(start<0 && start+2>str2.length()){
         return " ";
     }
     return str2.substr(start+2);

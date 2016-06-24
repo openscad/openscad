@@ -88,6 +88,7 @@ fs::path parser_sourcefile;
   AnnotationList *annotations;
 }
 
+%locations
 %token TOK_ERROR
 
 %token TOK_MODULE
@@ -236,7 +237,7 @@ assignment:
                     }
                 }
                 if (!found) {
-                    scope_stack.top()->assignments.push_back(Assignment($1, shared_ptr<Expression>($3)));
+                    scope_stack.top()->assignments.push_back(Assignment($1, shared_ptr<Expression>($3),LOC(@$)));
                 }
                 free($1);
                 $$ = &scope_stack.top()->assignments.back();
