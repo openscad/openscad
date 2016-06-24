@@ -1,15 +1,18 @@
-#include "boosty.h"
+#include <boost/filesystem.hpp>
+#include "printutils.h"
 #include "boost-utils.h"
 #include <stdio.h>
 #include <iostream>
+
+namespace fs=boost::filesystem;
 
 // If the given (absolute) path is relative to the relative_to path, return a new
 // relative path. Will normalize the given path first
 fs::path boostfs_relative_path(const fs::path &path, const fs::path &relative_to)
 {
 	// create absolute paths
-	fs::path p = boosty::absolute(boostfs_normalize(path));
-	fs::path r = boosty::absolute(relative_to);
+	fs::path p = fs::absolute(boostfs_normalize(path));
+	fs::path r = fs::absolute(relative_to);
 	
 	// if root paths are different, return absolute path
 	if (p.root_path() != r.root_path())
@@ -47,7 +50,7 @@ fs::path boostfs_relative_path(const fs::path &path, const fs::path &relative_to
 // Will normalize the given path, i.e. remove any redundant ".." path elements.
 fs::path boostfs_normalize(const fs::path &path)
 {
-	fs::path absPath = boosty::absolute(path);
+	fs::path absPath = fs::absolute(path);
 	fs::path::iterator it = absPath.begin();
 	fs::path result = *it;
 	if (it!=absPath.end()) it++;
@@ -56,7 +59,7 @@ fs::path boostfs_normalize(const fs::path &path)
 	for(;exists(result) && it != absPath.end(); ++it) {
 		result /= *it;
 	}
-	result = boosty::canonical(result.parent_path());
+	result = fs::canonical(result.parent_path());
 	if (it!=absPath.begin()) it--;
 
 	// For the rest remove ".." and "." in a path with no symlinks
@@ -100,8 +103,8 @@ boostfs_uncomplete(fs::path const p, fs::path const base)
 		which it most likely is... but then base shouldn't be a filename so... */
 
 	// create absolute paths
-	fs::path abs_p = boosty::absolute(boostfs_normalize(p));
-	fs::path abs_base = boosty::absolute(base);
+	fs::path abs_p = fs::absolute(boostfs_normalize(p));
+	fs::path abs_base = fs::absolute(base);
 
 	fs::path from_path, from_base, output;
 
