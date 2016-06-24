@@ -20,8 +20,8 @@ IfElseModuleInstantiation::~IfElseModuleInstantiation()
 */
 std::string ModuleInstantiation::getAbsolutePath(const std::string &filename) const
 {
-	if (!filename.empty() && !boosty::is_absolute(fs::path(filename))) {
-		return boosty::absolute(fs::path(this->modpath) / filename).string();
+	if (!filename.empty() && !fs::path(filename).is_absolute()) {
+		return fs::absolute(fs::path(this->modpath) / filename).string();
 	}
 	else {
 		return filename;

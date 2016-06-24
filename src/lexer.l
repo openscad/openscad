@@ -37,7 +37,6 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
-#include "boosty.h"
 
 //isatty for visual c++ and mingw-cross-env
 #if defined __WIN32__ && ! defined _MSC_VER
@@ -278,15 +277,15 @@ void includefile()
   fs::path localpath = fs::path(filepath) / filename;
   fs::path fullpath = find_valid_path(sourcefile().parent_path(), localpath, &openfilenames);
   if (!fullpath.empty()) {
-    rootmodule->registerInclude(boosty::stringy(localpath), boosty::stringy(fullpath));
+    rootmodule->registerInclude(localpath.generic_string(), fullpath.generic_string());
   }
   else {
-    rootmodule->registerInclude(boosty::stringy(localpath), boosty::stringy(localpath));
-    PRINTB("WARNING: Can't open include file '%s'.", boosty::stringy(localpath));
+    rootmodule->registerInclude(localpath.generic_string(), localpath.generic_string());
+    PRINTB("WARNING: Can't open include file '%s'.", localpath.generic_string());
     return;
   };
 
-  std::string fullname = boosty::stringy(fullpath);
+  std::string fullname = fullpath.generic_string();
 
   filepath.clear();
   filename_stack.push_back(fullpath);
@@ -295,7 +294,7 @@ void includefile()
 
   yyin = fopen(fullname.c_str(), "r");
   if (!yyin) {
-    PRINTB("WARNING: Can't open include file '%s'.", boosty::stringy(localpath));
+    PRINTB("WARNING: Can't open include file '%s'.", localpath.generic_string());
     filename_stack.pop_back();
     return;
   }
