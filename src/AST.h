@@ -26,7 +26,7 @@ public:
   ASTNode(const Location &loc) : loc(loc) {}
 	virtual ~ASTNode() {}
 
-	Location location() const { return loc; }
+	const Location &location() const { return loc; }
 
 protected:
 	Location loc;
