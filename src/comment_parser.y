@@ -126,6 +126,7 @@ AssignmentList * parser(const char *text) {
 
     yy_scan_string(text);
     int parserretval = yyparse();
+    if (parserretval != 0) return NULL;
     return argument;
     
 }
