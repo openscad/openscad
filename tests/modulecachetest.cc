@@ -46,7 +46,6 @@
 
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
-#include "boosty.h"
 #include "PlatformUtils.h"
 
 std::string commandline_commands;
@@ -74,9 +73,9 @@ int main(int argc, char **argv)
 
 	fs::path original_path = fs::current_path();
 
-	currentdir = boosty::stringy( fs::current_path() );
+	currentdir = fs::current_path().generic_string();
 
-	PlatformUtils::registerApplicationPath(boosty::stringy(fs::path(argv[0]).branch_path()));
+	PlatformUtils::registerApplicationPath(fs::path(argv[0]).branch_path().generic_string());
 	parser_init();
 
 	ModuleContext top_ctx;

@@ -11,12 +11,18 @@ notifications:
     skip_join: true
 
 before_install:
+ - echo 'yes' | sudo apt-get update
  - echo 'yes' | sudo add-apt-repository ppa:chrysn/openscad
  - sudo apt-get update -qq
- - sudo apt-get install -qq build-essential libqt4-dev libqt4-opengl-dev libxmu-dev cmake bison flex git-core libboost-all-dev libXi-dev libmpfr-dev libboost-dev libglew-dev libeigen3-dev libcgal-dev libgmp3-dev libgmp-dev curl imagemagick libfontconfig-dev
- - sudo apt-get install -qq libopencsg-dev
+ - sudo dpkg -l libboost*
+ - sudo apt-get install libboost-all-dev
+ - sudo apt-get install libboost-thread-dev
+ - sudo apt-get install libboost-program-options-dev
+ - sudo apt-get install libboost1.48-all-dev
+ - sudo apt-get install build-essential libqt4-dev libqt4-opengl-dev libxmu-dev cmake bison flex git-core libXi-dev libmpfr-dev libglew-dev libeigen3-dev libcgal-dev libgmp3-dev libgmp-dev curl imagemagick libfontconfig-dev
  - echo 'yes' | sudo add-apt-repository ppa:mapnik/nightly-trunk
- - sudo apt-get update -qq
+ - sudo apt-get update 
+ - sudo apt-get install -qq libopencsg-dev
  - sudo apt-get install -qq libharfbuzz-dev
  - echo 'yes' | sudo add-apt-repository ppa:oibaf/graphics-drivers
  - sudo apt-get update -qq
