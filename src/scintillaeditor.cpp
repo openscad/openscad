@@ -2,12 +2,13 @@
 #include <algorithm>
 #include <QString>
 #include <QChar>
-#include "boosty.h"
 #include "scintillaeditor.h"
 #include <Qsci/qscicommandset.h>
 #include "Preferences.h"
 #include "PlatformUtils.h"
 #include "settings.h"
+#include <boost/filesystem.hpp>
+namespace fs=boost::filesystem;
 
 class SettingsConverter {
 public:
@@ -72,11 +73,11 @@ QsciScintilla::WhitespaceVisibility SettingsConverter::toShowWhitespaces(Value v
 EditorColorScheme::EditorColorScheme(fs::path path) : path(path)
 {
 	try {
-		boost::property_tree::read_json(boosty::stringy(path).c_str(), pt);
+		boost::property_tree::read_json(path.generic_string().c_str(), pt);
 		_name = QString(pt.get<std::string>("name").c_str());
 		_index = pt.get<int>("index");
 	} catch (const std::exception & e) {
-		PRINTB("Error reading color scheme file '%s': %s", boosty::stringy(path).c_str() % e.what());
+		PRINTB("Error reading color scheme file '%s': %s", path.generic_string().c_str() % e.what());
 		_name = "";
 		_index = 0;
 	}
