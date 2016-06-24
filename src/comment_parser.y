@@ -84,7 +84,7 @@ expr		:
             {
                 $$ = new Range($2, $4, $6,Location::NONE);
             }
-        | labled_vector
+        | labled_vector { $$=$1;}
         ;
                 
 labled_vector: 
@@ -130,6 +130,7 @@ word:
 
 void yyerror(char *msg) {
     cout<<msg<<endl;   
+    argument=NULL;
 }
 
 AssignmentList * parser(const char *text) {
