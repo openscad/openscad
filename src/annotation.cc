@@ -25,12 +25,13 @@
  */
 
 #include <stdio.h>
-#include "typedefs.h"
+#include"Assignment.h"
 #include "expression.h"
 #include "context.h"
 #include "evalcontext.h"
 #include <iostream>
 #include <boost/assign/std/vector.hpp>
+
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 Annotation::Annotation(const std::string name, const AssignmentList assignments, const AssignmentList args)
@@ -82,6 +83,6 @@ void Annotation::dump()
 	std::cout << "  ANNOTATION: '" << name << "'" << std::endl;
 	for (AssignmentList::const_iterator it = assignments.begin();it != assignments.end();it++) {
 		const Assignment &assignment = (*it);
-		std::cout << (*it).first << assignment.second << std::endl;
+		std::cout << (*it).name << assignment.expr << std::endl;
 	}
 }

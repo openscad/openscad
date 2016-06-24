@@ -205,14 +205,6 @@ CONFIG(mingw-cross-env)|CONFIG(mingw-cross-env-shared) {
   include(mingw-cross-env.pri)
 }
 
-win* {
-  FLEXSOURCES = src/lexer.l
-  BISONSOURCES = src/parser.y
-} else {
-  LEXSOURCES += src/lexer.l
-  YACCSOURCES += src/parser.y
-}
-
   FLEX = src/comment_lexer.l
   BISON = src/comment_parser.y
   
@@ -262,8 +254,32 @@ FORMS   += src/MainWindow.ui \
            src/launchingscreen.ui \
            src/LibraryInfoDialog.ui \
 
-HEADERS += src/typedefs.h \
-           src/version_check.h \
+# AST nodes
+win* {
+  FLEXSOURCES = src/lexer.l
+  BISONSOURCES = src/parser.y
+} else {
+  LEXSOURCES += src/lexer.l
+  YACCSOURCES += src/parser.y
+}
+
+HEADERS += src/AST.h \
+           src/ModuleInstantiation.h \
+           src/Package.h \
+           src/Assignment.h \
+           src/expression.h \
+           src/function.h \
+           src/module.h \           
+           src/UserModule.h
+
+SOURCES += src/AST.cc \
+           src/ModuleInstantiation.cc \
+           src/expr.cc \
+           src/function.cc \
+           src/module.cc \
+           src/UserModule.cc
+
+HEADERS += src/version_check.h \
            src/ProgressWidget.h \
            src/parsersettings.h \
            src/renderer.h \
@@ -284,6 +300,8 @@ HEADERS += src/typedefs.h \
            src/AboutDialog.h \
            src/FontListDialog.h \
            src/FontListTableView.h \
+           src/GroupModule.h \
+           src/FileModule.h \
            src/builtin.h \
            src/calc.h \
            src/context.h \
@@ -295,15 +313,12 @@ HEADERS += src/typedefs.h \
            src/dxfdata.h \
            src/dxfdim.h \
            src/export.h \
-           src/expression.h \
            src/stackcheck.h \
-           src/function.h \
            src/exceptions.h \
            src/grid.h \
            src/hash.h \
            src/highlighter.h \
            src/localscope.h \
-           src/module.h \
            src/feature.h \
            src/node.h \
            src/csgnode.h \
@@ -330,9 +345,8 @@ HEADERS += src/typedefs.h \
            src/value.h \
            src/progress.h \
            src/editor.h \
-           src/visitor.h \
+           src/NodeVisitor.h \
            src/state.h \
-           src/traverser.h \
            src/nodecache.h \
            src/nodedumper.h \
            src/ModuleCache.h \
@@ -381,13 +395,11 @@ SOURCES += src/version_check.cc \
            src/Camera.cc \
            src/handle_dep.cc \
            src/value.cc \
-           src/expr.cc \
            src/stackcheck.cc \
            src/assignment.cc \
            src/annotation.cc \
            src/func.cc \
            src/localscope.cc \
-           src/module.cc \
            src/feature.cc \
            src/node.cc \
            src/context.cc \
@@ -428,7 +440,7 @@ SOURCES += src/version_check.cc \
            src/LibraryInfo.cc \
            \
            src/nodedumper.cc \
-           src/traverser.cc \
+           src/NodeVisitor.cc \
            src/GeometryEvaluator.cc \
            src/ModuleCache.cc \
            src/GeometryCache.cc \
@@ -449,6 +461,8 @@ SOURCES += src/version_check.cc \
            \
            src/grid.cc \
            src/hash.cc \
+           src/GroupModule.cc \
+           src/FileModule.cc \
            src/builtin.cc \
            src/calc.cc \
            src/export.cc \

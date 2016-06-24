@@ -28,6 +28,7 @@
 
 #include "evalcontext.h"
 #include "module.h"
+#include "ModuleInstantiation.h"
 #include "csgnode.h"
 #include "builtin.h"
 #include <sstream>

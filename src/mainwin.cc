@@ -23,6 +23,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+
 #include <iostream>
 #include "openscad.h"
 #include "GeometryCache.h"
@@ -1715,12 +1716,90 @@ void MainWindow::compileTopLevelDocument()
     const char* fname =
         this->fileName.isEmpty() ? "" : fnameba;
 	this->root_module = parse(fulltext.c_str(), fs::path(fname), false);
-	
+    
+    if(this->root_module!=NULL)
+    addparameter(fulltext.c_str());
+
     this->parameterWidget->setParameters(this->root_module);
     this->parameterWidget->applyParameters(this->root_module);
 
 
 }
+
+void MainWindow::addparameter(const char *fulltext){
+
+    for (AssignmentList::iterator it = this->root_module->scope.assignments.begin();it != this->root_module->scope.assignments.end();it++) {
+
+        //get loaction of assignment node 
+        const Location locate=(*it).location();
+        int loc =locate.firstLine();
+        
+        // makeing list to add annotations
+        AnnotationList *annotationList = new AnnotationList();
+         AssignmentList *assignments;
+         
+        //extracting the parameter 
+        string name = getParameter(std::string(fulltext),loc);
+        if(name!= " " ){
+        
+            //getting the node for parameter annnotataion
+            assignments=parser(name.c_str());
+            if(assignments!=NULL){
+                const Annotation *Parameter;
+                Parameter=Annotation::create("Parameter",*assignments);
+
+                // adding parameter to the list
+                annotationList->push_back(*Parameter);
+            }
+        }
+        
+        //extracting the description 
+        name = getParameter(std::string(fulltext),loc-1);
+        if(name!= " "){ 
+            //creating node for description
+            assignments=new AssignmentList();
+            Expression *expr;
+            expr=new Literal(ValuePtr(std::string(name.c_str())));
+            Assignment *assign;
+            assign=new Assignment("", shared_ptr<Expression>(expr));
+            assignments->push_back(*assign);
+                
+            const Annotation * Description;    
+            Description=Annotation::create("Description", *assignments);
+            annotationList->push_back(*Description);
+        }
+
+        (*it).add_annotations(annotationList);
+        
+    }
+}
+    
+string MainWindow::getParameter(string fulltext, int loc){
+    int chara=0;
+    
+    for(; chara<fulltext.length() ; chara++){
+        if(fulltext[chara]=='\n')
+            loc--;
+        if(loc==1)
+            break;    
+    }
+   int len=chara+1;
+   while(fulltext[len]!='\n'){
+        len++;
+        
+   }
+    string str2 = fulltext.substr(chara,len-chara);
+    int start= str2.find("//");
+    if(start<0 || start+2>str2.length()){
+        return " ";
+    }
+    return str2.substr(start+2);
+    
+}
+
+
+    
+
 
 void MainWindow::checkAutoReload()
 {

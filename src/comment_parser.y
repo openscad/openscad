@@ -2,8 +2,7 @@
     #include<iostream>
     #include<string.h>
     using namespace std;
-    #include "typedefs.h"
-    #include "module.h"
+    #include "Assignment.h"
     #include "expression.h"
     #include "value.h" 
     void yyerror(char *);
@@ -16,6 +15,7 @@
     char ch;
     double num;
     class Expression *expr;
+    class Vector *vec;
     Assignment *arg;
     AssignmentList *args;
     
@@ -29,7 +29,8 @@
 %type <expr> expr
 %type <args> arguments_call
 %type <arg> argument_call
-%type <expr> vector_expr
+%type <vec> vector_expr
+%type <vec> labled_vector
 
 %%
 
@@ -59,17 +60,17 @@ argument_call:
 expr		: 
          NUM 
             {
-                $$ = new ExpressionConst(ValuePtr($1));
+                $$ = new Literal(ValuePtr($1));
                 
             }
         | word
             {
-                $$ = new ExpressionConst(ValuePtr(std::string($1)));
+                $$ = new Literal(ValuePtr(std::string($1)));
                 free($1);
             }
         | '[' optional_commas ']'
             {
-                $$ = new ExpressionConst(ValuePtr(Value::VectorType()));
+                $$ = new Literal(ValuePtr(Value::VectorType()));
             }
         | '[' vector_expr optional_commas ']'
             {
@@ -77,17 +78,21 @@ expr		:
             }            
         | '[' expr ':' expr ']'
             {
-                $$ = new ExpressionRange($2, $4);
+                $$ = new Range($2, $4,Location::NONE);
             }
         | '[' expr ':' expr ':' expr ']'
             {
-                $$ = new ExpressionRange($2, $4, $6);
+                $$ = new Range($2, $4, $6,Location::NONE);
             }
-            |  expr ':' expr 
-            {   
-                $$ = new ExpressionVector($1);
-                $$->children.push_back($3);
-            }
+        | labled_vector { $$=$1;}
+        ;
+                
+labled_vector: 
+        expr ':' expr {
+            $$ = new Vector(Location::NONE);
+            $$->push_back($1);
+            $$->push_back($3);
+        }
 		;
 
 optional_commas:
@@ -98,12 +103,13 @@ optional_commas:
 vector_expr:
           expr
             {
-                $$ = new ExpressionVector($1);
+                $$ = new Vector(Location::NONE);
+                $$->push_back($1);
             }
             | vector_expr ',' optional_commas expr
             {
                 $$ = $1;
-                $$->children.push_back($4);
+                $$->push_back($4);
             }
             ;		
 
@@ -124,12 +130,14 @@ word:
 
 void yyerror(char *msg) {
     cout<<msg<<endl;   
+    argument=NULL;
 }
 
 AssignmentList * parser(const char *text) {
 
     yy_scan_string(text);
     int parserretval = yyparse();
+    if (parserretval != 0) return NULL;
     return argument;
     
 }

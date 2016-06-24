@@ -5,7 +5,7 @@
 
 #include "value.h"
 #include "qtgettext.h"
-#include "typedefs.h"
+#include "Assignment.h"
 #include "expression.h"
 #include<QString>
 

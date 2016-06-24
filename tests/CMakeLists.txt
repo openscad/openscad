@@ -682,11 +682,18 @@ set(CORE_SOURCES
   ../src/hash.cc 
   ../src/expr.cc 
   ../src/func.cc 
+  ../src/function.cc 
   ../src/stackcheck.cc 
   ../src/localscope.cc 
   ../src/module.cc 
+  ../src/FileModule.cc 
+  ../src/UserModule.cc 
+  ../src/GroupModule.cc 
+  ../src/AST.cc 
+  ../src/ModuleInstantiation.cc 
   ../src/ModuleCache.cc 
   ../src/node.cc 
+  ../src/NodeVisitor.cc 
   ../src/context.cc 
   ../src/modcontext.cc 
   ../src/evalcontext.cc 
@@ -759,7 +766,6 @@ set(CGAL_SOURCES
 
 set(COMMON_SOURCES
   ../src/nodedumper.cc 
-  ../src/traverser.cc 
   ../src/GeometryCache.cc 
   ../src/clipper-utils.cc 
   ../src/Tree.cc
@@ -1168,7 +1174,8 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1472.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/empty-stl.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1516.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1528.scad)
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1528.scad
+            )
 
 list(APPEND DUMPTEST_FILES ${FEATURES_2D_FILES} ${FEATURES_3D_FILES} ${DEPRECATED_3D_FILES})
 list(APPEND DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.scad
@@ -1380,7 +1387,8 @@ list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue13.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1580-back-to-back2.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1580-import-back-to-back2.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1580-zero-area-triangle.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1580-import-zero-area-triangle.scad)
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1580-import-zero-area-triangle.scad
+)
 
 # We know that we cannot import weakly manifold files into CGAL, so to make tests easier
 # to manage, don't try. Once we improve import, we can reenable this

@@ -8,6 +8,7 @@
 #include "openscad.h"
 #include "modcontext.h"
 #include "module.h"
+#include "ModuleInstantiation.h"
 #include "Tree.h"
 #include "memory.h"
 #include "editor.h"
@@ -16,6 +17,9 @@
 #include <QMutex>
 #include <QTime>
 #include <QIODevice>
+#include"Assignment.h"
+
+extern AssignmentList * parser(const char *text);
 
 class MainWindow : public QMainWindow, public Ui::MainWindow
 {
@@ -94,6 +98,8 @@ private slots:
 	void consoleOutput(const QString &msg);
 
 private:
+        void addparameter(const char *fulltext);
+        string getParameter(string fulltext, int loc);
         void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
         void handleFileDrop(const QString &filename);
 	void refreshDocument();
