@@ -63,7 +63,6 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
-#include "boosty.h"
 
 #ifdef __APPLE__
 #include "AppleEvents.h"
@@ -319,7 +318,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	QCoreApplication app(argc, argv);
 	const std::string application_path = QCoreApplication::instance()->applicationDirPath().toLocal8Bit().constData();
 #else
-	const std::string application_path = boosty::stringy(boosty::absolute(boost::filesystem::path(argv[0]).parent_path()));
+	const std::string application_path = fs::absolute(boost::filesystem::path(argv[0]).parent_path()).generic_string();
 #endif	
 	PlatformUtils::registerApplicationPath(application_path);
 	parser_init();
@@ -346,7 +345,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	const char *nefdbg_output_file = NULL;
 	const char *nef3_output_file = NULL;
 
-	std::string suffix = boosty::extension_str( output_file );
+	std::string suffix = fs::path(output_file).extension().generic_string();
 	boost::algorithm::to_lower( suffix );
 
 	if (suffix == ".stl") stl_output_file = output_file;
@@ -393,7 +392,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	}
 	std::string text((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 	text += "\n" + commandline_commands;
-	fs::path abspath = boosty::absolute(filename);
+	fs::path abspath = fs::absolute(filename);
 	root_module = parse(text.c_str(), abspath, false);
 	if (!root_module) {
 		PRINTB("Can't parse file '%s'!\n", filename.c_str());
@@ -401,7 +400,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	}
 	root_module->handleDependencies();
 
-	fs::path fpath = boosty::absolute(fs::path(filename));
+	fs::path fpath = fs::absolute(fs::path(filename));
 	fs::path fparent = fpath.parent_path();
 	fs::current_path(fparent);
 	top_ctx.setDocumentPath(fparent.string());
@@ -585,7 +584,7 @@ Q_DECLARE_METATYPE(shared_ptr<const Geometry>);
 static QString assemblePath(const fs::path& absoluteBaseDir,
                             const string& fileName) {
   if (fileName.empty()) return "";
-  QString qsDir = QString::fromLocal8Bit( boosty::stringy( absoluteBaseDir ).c_str() );
+  QString qsDir = QString::fromLocal8Bit(absoluteBaseDir.generic_string().c_str() );
   QString qsFile = QString::fromLocal8Bit( fileName.c_str() );
   // if qsfile is absolute, dir is ignored. (see documentation of QFileInfo)
   QFileInfo info( qsDir, qsFile );
@@ -905,7 +904,7 @@ int main(int argc, char **argv)
 		arg_colorscheme = vm["colorscheme"].as<string>();
 	}
 
-	currentdir = boosty::stringy(fs::current_path());
+	currentdir = fs::current_path().generic_string();
 
 	Camera camera = get_camera(vm);
 
