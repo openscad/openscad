@@ -36,11 +36,7 @@
 
 
 arguments_call:
-          /* empty */
-            {
-                $$ = new AssignmentList();
-            }
-        | argument_call
+        argument_call
             {
                 $$ = new AssignmentList();
                 $$->push_back(*$1);
