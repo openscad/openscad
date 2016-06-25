@@ -337,22 +337,25 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 			std::vector<AbstractNode *> instantiatednodes = ifelse->instantiateElseChildren(evalctx);
 			node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 		}
+		break;
 	}
 
- case PROBE: {
+ 	case PROBE: {
                 //
                 // render first children, then compute the bounding box.
                 // set the following 4 vector variables and 1 bool variable:
                 //    empty = true/false, state if there was any usable geometry.
-                //              when bbempty is false, the next variables are undef
+                //              when empty is false, the next variables are undef
                 //    bbmin = [xmin,ymin,zmin], the minimum of the bounding box
                 //    bbmax = [xmax,ymax,zmax], the maximum of the bounding box
                 //    bbsize = [xmax-xmin,...], the size of the bounding box
                 //    bbcenter = [(xmax+xmin)/2, ...], the center of the bounding box
+		//
+		// if called with (volume=true), then these variables are also defined
                 //    volume = volume of object
                 //    centroid = center of mass of object
                 //
-                // the only parameter that probe takes is $exact=true/false
+                // A parameter that probe takes is $exact=true/false
                 // it is generaly set to true, but with false the rendering will not be Nef (so its faster).
                 // any other parameter will be treated just like assign() (i.e. passed inside)
                 //
@@ -415,17 +418,17 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
                                                 xmax=bb.max().x();
                                                 ymax=bb.max().y();
                                                 zmax=bb.max().z();
-                                                std::cout << "CSG!" << std::endl;
+                                                //std::cout << "CSG!" << std::endl;
                                                 //G->dump();
                                                 //full=isBBoxFull(G);
                                                 //std::cout << "full:" <<full<<std::endl;
                                                 if( volume ) {
                                                         NT3 volumeTotal;
                                                         NT3 centerOfMass[3];
-                                                        std::cout << "PolySet volume!" << std::endl;
+                                                        //std::cout << "PolySet volume!" << std::endl;
                                                         CGALUtils::computeVolume( *G,volumeTotal,centerOfMass );
-                                                        std::cout<<"Volume Total = "<<to_double(volumeTotal)<<"\n";
-                                                        std::cout<<"center of mass is ("<<to_double(centerOfMass[0])<<","<<to_double(centerOfMass[1])<<","<<to_double(centerOfMass[2])<<")\n";
+                                                        //std::cout<<"Volume Total = "<<to_double(volumeTotal)<<"\n";
+                                                        //std::cout<<"center of mass is ("<<to_double(centerOfMass[0])<<","<<to_double(centerOfMass[1])<<","<<to_double(centerOfMass[2])<<")\n";
                                                         c.set_variable("volume",Value(to_double(volumeTotal)));
                                                         Value::VectorType bbcentroid;
                                                         bbcentroid.push_back(to_double(centerOfMass[0]));
@@ -452,10 +455,10 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
                                                         NT3 volumeTotal;
                                                         NT3 centerOfMass[3];
                                                         // check the volume
-                                                        std::cout << "NEF volume!" << std::endl;
+                                                        //std::cout << "NEF volume!" << std::endl;
                                                         CGALUtils::computeVolume( *(N->p3), volumeTotal,centerOfMass );
-                                                        std::cout<<"Volume Total = "<<to_double(volumeTotal)<<"\n";
-                                                        std::cout<<"center of mass is ("<<to_double(centerOfMass[0])<<","<<to_double(centerOfMass[1])<<","<<to_double(centerOfMass[2])<<")\n";
+                                                        //std::cout<<"Volume Total = "<<to_double(volumeTotal)<<"\n";
+                                                        //std::cout<<"center of mass is ("<<to_double(centerOfMass[0])<<","<<to_double(centerOfMass[1])<<","<<to_double(centerOfMass[2])<<")\n";
                                                         c.set_variable("volume",Value(to_double(volumeTotal)));
                                                         Value::VectorType bbcentroid;
                                                         bbcentroid.push_back(to_double(centerOfMass[0]));
@@ -467,7 +470,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
                                         }
 #endif
                                 }
-                                c.set_variable("bbempty",Value(empty));
+                                c.set_variable("empty",Value(empty));
                                 //c.set_variable("bbfull",Value(full));
                                 if( !empty ) {
                                         // define the variables
@@ -503,11 +506,9 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
                         }
 
 		}
-
-
 		break;
 	}
-	}
+	} // switch
 	return node;
 }
 

@@ -142,7 +142,7 @@ namespace CGALUtils {
 
 	void computeVolume(const PolySet &ps,NT3 &volumeTotal,NT3 centerOfMass[3])
         {
-                std::cout << "volume of polyset!"<<std::endl;
+                //std::cout << "volume of polyset!"<<std::endl;
                 CGAL_Polyhedron poly;
                 CGALUtils::createPolyhedronFromPolySet(ps, poly);
                 CGAL_Nef_polyhedron *p = createNefPolyhedronFromGeometry(ps);
@@ -152,29 +152,19 @@ namespace CGALUtils {
         void computeVolume(const CGAL_Nef_polyhedron3 &N,NT3 &volumeTotal,NT3 centerOfMass[3])
         {
                 // attention, il faut etre sur que N->p3()->is_simple(), sinon ca fonctionne pas fort
-                std::cout << "volumen of nef!"<<std::endl;
+                //std::cout << "volumen of nef!"<<std::endl;
                 CGAL::Timer t;
                 std::vector<CGAL_Polyhedron> parts;
                 t.start();
                 CGAL_Nef_polyhedron3 decomp=N;
                 CGAL::convex_decomposition_3(decomp);
-                std::cout <<"nb volumes = "<<decomp.number_of_volumes()<<"\n";
+                //std::cout <<"nb volumes = "<<decomp.number_of_volumes()<<"\n";
                 // the first volume is the outer volume, which ignored in the decomposition
                 CGAL_Nef_polyhedron3::Volume_const_iterator ci = decomp.volumes_begin();
                 for(; ci != decomp.volumes_end(); ++ci) {
-                        std::cout <<"one part...\n";
-                        /*CGAL_Nef_polyhedron3::Shell_entry_const_iterator si=ci->shells_begin();
-                        for(; si != ci->shells_end(); ++si) {
-                                std::cout <<"shell\n";
-                                std::cout<<" converting to poly.\n";
-                                CGAL_Polyhedron poly;
-                                decomp.convert_inner_shell_to_polyhedron(si, poly);
-                                parts.push_back(poly);
-                        }
-                        */
-
+                        //std::cout <<"one part...\n";
                         if(ci->mark()) {
-                                std::cout<<" converting to poly.\n";
+                                //std::cout<<" converting to poly.\n";
                                 CGAL_Polyhedron poly;
                                 decomp.convert_inner_shell_to_polyhedron(ci->shells_begin(), poly);
                                 parts.push_back(poly);
@@ -191,7 +181,7 @@ namespace CGALUtils {
                 centerOfMass[2]=0;
                 // on affiche chaque partie...
                 for(int i=0;i<(int)parts.size();i++) {
-                        std::cout<<"part "<<i<<" : facets = "<<parts[i].size_of_facets()<<", vertex="<<parts[i].size_of_vertices()<<"\n";
+                        //std::cout<<"part "<<i<<" : facets = "<<parts[i].size_of_facets()<<", vertex="<<parts[i].size_of_vertices()<<"\n";
                         //
                         // on trouve le centre des points (xs,ys,zs)
                         //
@@ -260,10 +250,8 @@ namespace CGALUtils {
                         centerOfMass[1]/=volumeTotal;
                         centerOfMass[2]/=volumeTotal;
                 }
-                std::cout<<"Volume Total = "<<to_double(volumeTotal)<<"\n";
-                std::cout<<"center of mass is ("<<to_double(centerOfMass[0])<<","<<to_double(centerOfMass[1])<<","<<to_double(centerOfMass[2])<<")\n";
-        //      std::cout<<"center of mass is ("<<centerOfMass[0]<<","<<centerOfMass[1]<<","<<centerOfMass[2]<<")\n";
-
+                //std::cout<<"Volume Total = "<<to_double(volumeTotal)<<"\n";
+                //std::cout<<"center of mass is ("<<to_double(centerOfMass[0])<<","<<to_double(centerOfMass[1])<<","<<to_double(centerOfMass[2])<<")\n";
         }
 
 
