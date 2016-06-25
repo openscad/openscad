@@ -377,7 +377,11 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
                 bool exact = c.lookup_variable("$exact")->toBool();
                 bool volume = c.lookup_variable("volume")->toBool();
 
-                PRINTB("probe volume=%d", volume);
+		if( exact ) {
+			PRINTB("probe volume=%d (exact)", volume);
+		}else{
+			PRINTB("probe volume=%d (not exact)", volume);
+		}
 
                 // Let any local variables override the parameters
                 inst->scope.apply(c);
