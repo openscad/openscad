@@ -37,7 +37,7 @@
 
 
 // pour le probe()
-#include "CGAL_Nef_polyhedron.h"
+//#include "CGAL_Nef_polyhedron.h"
 #include "GeometryEvaluator.h"
 #include "Tree.h"
 #include "cgalutils.h"
