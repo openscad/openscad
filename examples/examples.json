@@ -50,5 +50,11 @@
     "example022.scad",
     "example023.scad",
     "example024.scad"
+  ],
+  "Probe": [
+	"probe_bbox.scad",
+	"probe_volume.scad",
+	"probe_volume_1.scad",
+	"probe_volume_bottles.scad"
   ]
 }
