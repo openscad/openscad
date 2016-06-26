@@ -1,0 +1,167 @@
+group() {
+	multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		group() {
+			group() {
+				group() {
+					group();
+					group();
+					group();
+					group();
+					group();
+					group();
+					group();
+					group() {
+						union() {
+							sphere($fn = 0, $fa = 12, $fs = 2, r = 10);
+							cube(size = [20, 20, 20], center = false);
+						}
+					}
+					multmatrix([[1, 0, 0, 0], [0, 1, 0, -29.9452], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+						group() {
+							color([0, 0, 1, 1]) {
+								multmatrix([[1, 0, 0, 0], [0, 0.866025, -0.5, 0], [0, 0.5, 0.866025, 0], [0, 0, 0, 1]]) {
+									text(text = "11.6ml", size = 8, spacing = 1, font = "", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "center", $fn = 0, $fa = 12, $fs = 2);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+group() {
+	multmatrix([[1, 0, 0, 30], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		group() {
+			group() {
+				color([0, 0, 1, 1]) {
+					multmatrix([[1, 0, 0, 0], [0, 0.866025, -0.5, 0], [0, 0.5, 0.866025, 0], [0, 0, 0, 1]]) {
+						text(text = "=", size = 16, spacing = 1, font = "", direction = "ltr", language = "en", halign = "center", valign = "center", $fn = 0, $fa = 12, $fs = 2);
+					}
+				}
+			}
+		}
+	}
+}
+group() {
+	multmatrix([[1, 0, 0, 60], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		group() {
+			group() {
+				group() {
+					group();
+					group();
+					group();
+					group();
+					group();
+					group();
+					group();
+					group() {
+						intersection() {
+							sphere($fn = 0, $fa = 12, $fs = 2, r = 10);
+							cube(size = [20, 20, 20], center = false);
+						}
+					}
+					multmatrix([[1, 0, 0, 0], [0, 1, 0, -20], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+						group() {
+							color([0, 0, 1, 1]) {
+								multmatrix([[1, 0, 0, 0], [0, 0.866025, -0.5, 0], [0, 0.5, 0.866025, 0], [0, 0, 0, 1]]) {
+									text(text = "0.5ml", size = 8, spacing = 1, font = "", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "center", $fn = 0, $fa = 12, $fs = 2);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+group() {
+	multmatrix([[1, 0, 0, 90], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		group() {
+			group() {
+				color([0, 0, 1, 1]) {
+					multmatrix([[1, 0, 0, 0], [0, 0.866025, -0.5, 0], [0, 0.5, 0.866025, 0], [0, 0, 0, 1]]) {
+						text(text = "+", size = 16, spacing = 1, font = "", direction = "ltr", language = "en", halign = "center", valign = "center", $fn = 0, $fa = 12, $fs = 2);
+					}
+				}
+			}
+		}
+	}
+}
+group() {
+	multmatrix([[1, 0, 0, 120], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		group() {
+			group() {
+				group() {
+					group();
+					group();
+					group();
+					group();
+					group();
+					group();
+					group();
+					group() {
+						difference() {
+							sphere($fn = 0, $fa = 12, $fs = 2, r = 10);
+							cube(size = [20, 20, 20], center = false);
+						}
+					}
+					multmatrix([[1, 0, 0, 0], [0, 1, 0, -29.9452], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+						group() {
+							color([0, 0, 1, 1]) {
+								multmatrix([[1, 0, 0, 0], [0, 0.866025, -0.5, 0], [0, 0.5, 0.866025, 0], [0, 0, 0, 1]]) {
+									text(text = "3.6ml", size = 8, spacing = 1, font = "", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "center", $fn = 0, $fa = 12, $fs = 2);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+group() {
+	multmatrix([[1, 0, 0, 150], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		group() {
+			group() {
+				color([0, 0, 1, 1]) {
+					multmatrix([[1, 0, 0, 0], [0, 0.866025, -0.5, 0], [0, 0.5, 0.866025, 0], [0, 0, 0, 1]]) {
+						text(text = "+", size = 16, spacing = 1, font = "", direction = "ltr", language = "en", halign = "center", valign = "center", $fn = 0, $fa = 12, $fs = 2);
+					}
+				}
+			}
+		}
+	}
+}
+group() {
+	multmatrix([[1, 0, 0, 180], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		group() {
+			group() {
+				group() {
+					group();
+					group();
+					group();
+					group();
+					group();
+					group();
+					group();
+					group() {
+						difference() {
+							cube(size = [20, 20, 20], center = false);
+							sphere($fn = 0, $fa = 12, $fs = 2, r = 10);
+						}
+					}
+					multmatrix([[1, 0, 0, 0], [0, 1, 0, -20], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+						group() {
+							color([0, 0, 1, 1]) {
+								multmatrix([[1, 0, 0, 0], [0, 0.866025, -0.5, 0], [0, 0.5, 0.866025, 0], [0, 0, 0, 1]]) {
+									text(text = "7.5ml", size = 8, spacing = 1, font = "", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "center", $fn = 0, $fa = 12, $fs = 2);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
