@@ -88,7 +88,7 @@ ValuePtr UnaryOp::evaluate(const Context *context) const
 	case (Op::Negate):
 		return -this->expr->evaluate(context);
 	default:
-		break;
+		return ValuePtr::undefined;
 		// FIXME: error:
 	}
 }
@@ -103,7 +103,7 @@ const char *UnaryOp::opString() const
 		return "-";
 		break;
 	default:
-		break;
+		return "";
 		// FIXME: Error: unknown op
 	}
 }
@@ -161,7 +161,7 @@ ValuePtr BinaryOp::evaluate(const Context *context) const
 		return this->left->evaluate(context) != this->right->evaluate(context);
 		break;
 	default:
-		break;
+		return ValuePtr::undefined;
 		// FIXME: Error: unknown op
 	}
 }
@@ -209,7 +209,7 @@ const char *BinaryOp::opString() const
 		return "!=";
 		break;
 	default:
-		break;
+		return "";
 		// FIXME: Error: unknown op
 	}
 }
