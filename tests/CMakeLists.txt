@@ -675,11 +675,18 @@ set(CORE_SOURCES
   ../src/hash.cc 
   ../src/expr.cc 
   ../src/func.cc 
+  ../src/function.cc 
   ../src/stackcheck.cc 
   ../src/localscope.cc 
   ../src/module.cc 
+  ../src/FileModule.cc 
+  ../src/UserModule.cc 
+  ../src/GroupModule.cc 
+  ../src/AST.cc 
+  ../src/ModuleInstantiation.cc 
   ../src/ModuleCache.cc 
   ../src/node.cc 
+  ../src/NodeVisitor.cc 
   ../src/context.cc 
   ../src/modcontext.cc 
   ../src/evalcontext.cc 
@@ -750,7 +757,6 @@ set(CGAL_SOURCES
 
 set(COMMON_SOURCES
   ../src/nodedumper.cc 
-  ../src/traverser.cc 
   ../src/GeometryCache.cc 
   ../src/clipper-utils.cc 
   ../src/Tree.cc

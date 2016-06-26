@@ -4,11 +4,11 @@
 #include <list>
 #include <vector>
 #include <cstddef>
-#include "visitor.h"
+#include "NodeVisitor.h"
 #include "memory.h"
 #include "csgnode.h"
 
-class CSGTreeEvaluator : public Visitor
+class CSGTreeEvaluator : public NodeVisitor
 {
 public:
 	CSGTreeEvaluator(const class Tree &tree, class GeometryEvaluator *geomevaluator = NULL)
