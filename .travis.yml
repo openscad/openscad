@@ -18,7 +18,7 @@ before_install:
  - sudo apt-get update -qq
  - sudo dpkg -l libboost*
  - sudo apt-cache policy libcgal-dev
- - sudo apt-get install build-essential libqt4-dev libqt4-opengl-dev libxmu-dev cmake bison flex git-core libXi-dev libmpfr-dev libglew-dev libeigen3-dev libgmp3-dev libgmp-dev curl imagemagick libfontconfig-dev 
+ - sudo apt-get install build-essential libqt4-dev libqt4-opengl-dev libxmu-dev cmake bison flex git-core libXi-dev libmpfr-dev libglew-dev libeigen3-dev libgmp3-dev libgmp-dev curl imagemagick libfontconfig-dev libcgal-dev
 
  - sudo apt-get update 
  - sudo apt-get install -qq libopencsg-dev
