@@ -75,7 +75,10 @@ macx:isEmpty(OPENSCAD_LIBDIR) {
 deploy {
   message("Building deployment version")
   DEFINES += OPENSCAD_DEPLOY
-  macx: CONFIG += sparkle
+  macx: {
+    CONFIG += sparkle
+    QMAKE_RPATHDIR = @executable_path/../Frameworks
+  }
 }
 snapshot: DEFINES += OPENSCAD_SNAPSHOT
 
