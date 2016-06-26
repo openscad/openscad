@@ -394,8 +394,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	std::string text((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 	text += "\n" + commandline_commands;
 	fs::path abspath = boosty::absolute(filename);
-	std::string parentpath = boosty::stringy(abspath.parent_path());
-	root_module = parse(text.c_str(), parentpath.c_str(), false);
+	root_module = parse(text.c_str(), abspath, false);
 	if (!root_module) {
 		PRINTB("Can't parse file '%s'!\n", filename.c_str());
 		return 1;

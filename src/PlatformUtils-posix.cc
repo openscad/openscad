@@ -58,9 +58,15 @@ unsigned long PlatformUtils::stackLimit()
 
     int ret = getrlimit(RLIMIT_STACK, &limit);
     if (ret == 0) {
+        if (limit.rlim_cur == RLIM_INFINITY) {
+	  return STACK_LIMIT_DEFAULT;
+        }
 	if (limit.rlim_cur > STACK_BUFFER_SIZE) {
 	    return limit.rlim_cur - STACK_BUFFER_SIZE;
 	}
+        if (limit.rlim_max == RLIM_INFINITY) {
+          return STACK_LIMIT_DEFAULT;
+        }
 	if (limit.rlim_max > STACK_BUFFER_SIZE) {
 	    return limit.rlim_max - STACK_BUFFER_SIZE;
 	}

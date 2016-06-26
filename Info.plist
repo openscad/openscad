@@ -82,5 +82,15 @@
 	<string>OpenSCAD.sdef</string>
 	<key>SUPublicDSAKeyFile</key>
 	<string>dsa_pub.pem</string>
+	<key>SUFeedURL</key>
+	<string>http://files.openscad.org/appcast.xml</string>
+        <key>NSExceptionDomains</key>  
+        <dict>  
+          <key>files.openscad.org</key>
+          <dict>  
+            <key>NSExceptionAllowsInsecureHTTPLoads</key><true/>  
+            <key>NSExceptionRequiresForwardSecrecy</key><false/>  
+          </dict>  
+        </dict>
 </dict>
 </plist>

@@ -157,12 +157,12 @@ static void append_amf(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 static void append_amf(const shared_ptr<const Geometry> &geom, std::ostream &output)
 {
 	if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(geom.get())) {
-		append_amf(*N, output);
+		if (!N->isEmpty()) append_amf(*N, output);
 	}
 	else if (const PolySet *ps = dynamic_cast<const PolySet *>(geom.get())) {
 		// FIXME: Implement this without creating a Nef polyhedron
 		CGAL_Nef_polyhedron *N = CGALUtils::createNefPolyhedronFromGeometry(*ps);
-		append_amf(*N, output);
+		if (!N->isEmpty()) append_amf(*N, output);
 		delete N;
 	}
 	else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(geom.get())) {

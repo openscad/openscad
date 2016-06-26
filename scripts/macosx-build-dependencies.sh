@@ -33,27 +33,27 @@ OPTION_CXX11=true
 
 PACKAGES=(
     # NB! For eigen, also update the path in the function
-    "eigen 3.2.6"
-    "gmp 5.1.3"
-    "mpfr 3.1.3"
-    "boost 1.59.0"
-    "qt5 5.5.1"
-    "qscintilla 2.8.4"
+    "eigen 3.2.8"
+    "gmp 6.1.1"
+    "mpfr 3.1.4"
+    "boost 1.61.0"
+    "qt5 5.7.0"
+    "qscintilla 2.9.2"
     # NB! For CGAL, also update the actual download URL in the function
-    "cgal 4.6.3"
+    "cgal 4.8.1"
     "glew 1.13.0"
-    "gettext 0.19.6"
+    "gettext 0.19.8"
     "libffi 3.2.1"
     "glib2 2.46.1"
     "opencsg 1.4.0"
-    "freetype 2.6.1"
+    "freetype 2.6.3"
     "ragel 6.9"
-    "harfbuzz 1.0.6"
-    "libxml2 2.9.2"
-    "fontconfig 2.11.1"
+    "harfbuzz 1.2.7"
+    "libxml2 2.9.4"
+    "fontconfig 2.12.0"
 )
 DEPLOY_PACKAGES=(
-    "sparkle 1.11.0"
+    "sparkle 1.13.1"
 )
 
 printUsage()
@@ -216,7 +216,6 @@ build_qt5()
   fi
   tar xzf qt-everywhere-opensource-src-$version.tar.gz
   cd qt-everywhere-opensource-src-$version
-  patch -d qtbase -p1 < $OPENSCADDIR/patches/qt5/QTBUG-46846.patch
   if ! $USING_CXX11; then
     QT_EXTRA_FLAGS="-no-c++11"
   fi
@@ -224,10 +223,14 @@ build_qt5()
 		-nomake examples -nomake tests \
 		-no-xcb -no-glib -no-harfbuzz -no-sql-db2 -no-sql-ibase -no-sql-mysql -no-sql-oci -no-sql-odbc \
 		-no-sql-psql -no-sql-sqlite2 -no-sql-tds -no-cups -no-qml-debug \
-		-skip activeqt -skip connectivity -skip declarative -skip doc \
-		-skip enginio -skip graphicaleffects -skip location -skip multimedia \
-		-skip quick1 -skip quickcontrols -skip script -skip sensors -skip serialport \
-		-skip svg -skip webkit -skip webkit-examples -skip websockets -skip xmlpatterns -skip qtwebchannel
+                -skip qtx11extras -skip qtandroidextras -skip qtserialport -skip qtserialbus \
+                -skip qtactiveqt -skip qtxmlpatterns -skip qtdeclarative -skip qtscxml \
+                -skip qtpurchasing -skip qtcanvas3d -skip qtgamepad -skip qtwayland \
+                -skip qtconnectivity -skip qtwebsockets -skip qtwebchannel -skip qtsensors \
+                -skip qtmultimedia -skip qtdatavis3d -skip qtcharts -skip qtwinextras \
+                -skip qtgraphicaleffects -skip qtquickcontrols2 -skip qtquickcontrols \
+                -skip qtvirtualkeyboard -skip qtlocation -skip qtwebengine -skip qtwebview \
+                -skip qtscript -skip qttranslations -skip qtdoc
   make -j"$NUMCPU" 
   make install
 }
@@ -250,7 +253,7 @@ build_qscintilla()
   cd QScintilla-gpl-$version/Qt4Qt5
   qmake QMAKE_CXXFLAGS+="$CXXSTDFLAGS" QMAKE_LFLAGS+="$CXXSTDFLAGS" qscintilla.pro
   make -j"$NUMCPU" install
-  install_name_tool -id $DEPLOYDIR/lib/libqscintilla2.dylib $DEPLOYDIR/lib/libqscintilla2.dylib
+  install_name_tool -id @rpath/libqscintilla2.dylib $DEPLOYDIR/lib/libqscintilla2.dylib
 }
 
 check_gmp()
@@ -273,8 +276,9 @@ build_gmp()
   ./configure --prefix=$DEPLOYDIR CXXFLAGS="$CXXSTDFLAGS" CFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64" LDFLAGS="$LDSTDFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64" ABI=64 --enable-cxx
   make -j"$NUMCPU" install
 
-  install_name_tool -id $DEPLOYDIR/lib/libgmp.dylib $DEPLOYDIR/lib/libgmp.dylib
-  install_name_tool -id $DEPLOYDIR/lib/libgmpxx.dylib $DEPLOYDIR/lib/libgmpxx.dylib
+  install_name_tool -id @rpath/libgmp.dylib $DEPLOYDIR/lib/libgmp.dylib
+  install_name_tool -id @rpath/libgmpxx.dylib $DEPLOYDIR/lib/libgmpxx.dylib
+  install_name_tool -change $DEPLOYDIR/lib/libgmp.10.dylib @rpath/libgmp.dylib $DEPLOYDIR/lib/libgmpxx.dylib
 }
 
 check_mpfr()
@@ -305,7 +309,7 @@ build_mpfr()
   ./configure --prefix=$DEPLOYDIR --with-gmp=$DEPLOYDIR CFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64" LDFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64"
   make -j"$NUMCPU" install
 
-  install_name_tool -id $DEPLOYDIR/lib/libmpfr.dylib $DEPLOYDIR/lib/libmpfr.dylib
+  install_name_tool -id @rpath/libmpfr.dylib $DEPLOYDIR/lib/libmpfr.dylib
 }
 
 check_boost()
@@ -336,16 +340,6 @@ build_boost()
     echo "using clang ;" >> tools/build/user-config.jam 
   fi
   ./b2 -j"$NUMCPU" -d+2 $BOOST_TOOLSET cflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64 $CXXSTDFLAGS" linkflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64  $LDSTDFLAGS -headerpad_max_install_names" install
-  install_name_tool -id $DEPLOYDIR/lib/libboost_thread.dylib $DEPLOYDIR/lib/libboost_thread.dylib 
-  install_name_tool -change libboost_system.dylib $DEPLOYDIR/lib/libboost_system.dylib $DEPLOYDIR/lib/libboost_thread.dylib 
-  install_name_tool -change libboost_chrono.dylib $DEPLOYDIR/lib/libboost_chrono.dylib $DEPLOYDIR/lib/libboost_thread.dylib 
-  install_name_tool -id $DEPLOYDIR/lib/libboost_program_options.dylib $DEPLOYDIR/lib/libboost_program_options.dylib 
-  install_name_tool -id $DEPLOYDIR/lib/libboost_filesystem.dylib $DEPLOYDIR/lib/libboost_filesystem.dylib 
-  install_name_tool -change libboost_system.dylib $DEPLOYDIR/lib/libboost_system.dylib $DEPLOYDIR/lib/libboost_filesystem.dylib 
-  install_name_tool -id $DEPLOYDIR/lib/libboost_system.dylib $DEPLOYDIR/lib/libboost_system.dylib 
-  install_name_tool -id $DEPLOYDIR/lib/libboost_regex.dylib $DEPLOYDIR/lib/libboost_regex.dylib 
-
-
 }
 
 check_cgal()
@@ -360,9 +354,10 @@ build_cgal()
   echo "Building CGAL" $version "..."
   cd $BASEDIR/src
   rm -rf CGAL-$version
-  if [ ! -f CGAL-$version.tar.gz ]; then
-    # 4.6.3
-    curl -O https://gforge.inria.fr/frs/download.php/file/35138/CGAL-$version.tar.gz
+  if [ ! -f CGAL-$version.tar.xz ]; then
+    # 4.8  
+    curl -LO https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-$version/CGAL-$version.tar.xz
+    # 4.6.3 curl -O https://gforge.inria.fr/frs/download.php/file/35138/CGAL-$version.tar.gz
     # 4.5.2 curl -O https://gforge.inria.fr/frs/download.php/file/34512/CGAL-$version.tar.gz
     # 4.5.1 curl -O https://gforge.inria.fr/frs/download.php/file/34400/CGAL-$version.tar.gz
     # 4.5 curl -O https://gforge.inria.fr/frs/download.php/file/34149/CGAL-$version.tar.gz
@@ -377,14 +372,14 @@ build_cgal()
     # 3.8 curl -O https://gforge.inria.fr/frs/download.php/28500/CGAL-$version.tar.gz
     # 3.7 curl -O https://gforge.inria.fr/frs/download.php/27641/CGAL-$version.tar.gz
   fi
-  tar xzf CGAL-$version.tar.gz
+  tar xzf CGAL-$version.tar.xz
   cd CGAL-$version
   CXXFLAGS="$CXXSTDFLAGS" cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.dylib -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.dylib -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.dylib -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DBUILD_SHARED_LIBS=TRUE -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="x86_64" -DBOOST_ROOT=$DEPLOYDIR -DBoost_USE_MULTITHREADED=false
   make -j"$NUMCPU" install
   make install
-  install_name_tool -id $DEPLOYDIR/lib/libCGAL.dylib $DEPLOYDIR/lib/libCGAL.dylib
-  install_name_tool -id $DEPLOYDIR/lib/libCGAL_Core.dylib $DEPLOYDIR/lib/libCGAL_Core.dylib
-  install_name_tool -change $PWD/lib/libCGAL.9.dylib $DEPLOYDIR/lib/libCGAL.dylib $DEPLOYDIR/lib/libCGAL_Core.dylib
+  install_name_tool -id @rpath/libCGAL.dylib $DEPLOYDIR/lib/libCGAL.dylib
+  install_name_tool -id @rpath/libCGAL_Core.dylib $DEPLOYDIR/lib/libCGAL_Core.dylib
+  install_name_tool -change libCGAL.11.dylib @rpath/libCGAL.dylib $DEPLOYDIR/lib/libCGAL_Core.dylib
 }
 
 check_glew()
@@ -405,7 +400,7 @@ build_glew()
   tar xzf glew-$version.tgz
   cd glew-$version
   mkdir -p $DEPLOYDIR/lib/pkgconfig
-  make GLEW_DEST=$DEPLOYDIR CC=$CC CFLAGS.EXTRA="-no-cpp-precomp -dynamic -fno-common -mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64" LDFLAGS.EXTRA="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64" STRIP= install
+  make GLEW_DEST=$DEPLOYDIR CC=$CC CFLAGS.EXTRA="-no-cpp-precomp -dynamic -fno-common -mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64" LDFLAGS.EXTRA="-install_name @rpath/libGLEW.dylib -mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64" POPT="-Os" STRIP= install
 }
 
 check_opencsg()
@@ -428,6 +423,7 @@ build_opencsg()
   patch -p1 < $OPENSCADDIR/patches/OpenCSG-$version-MacOSX-port.patch
   qmake -r QMAKE_CXXFLAGS+="-I$DEPLOYDIR/include $CXXSTDFLAGS" QMAKE_LFLAGS+="-L$DEPLOYDIR/lib $LDSTDFLAGS" CONFIG+="x86_64" DESTDIR=$DEPLOYDIR
   make install
+  install_name_tool -id @rpath/libopencsg.dylib $DEPLOYDIR/lib/libopencsg.dylib
 }
 
 # Usage: func [<version>]
@@ -461,8 +457,9 @@ build_eigen()
   elif [ $version = "3.2.3" ]; then EIGENDIR=eigen-eigen-36fd1ba04c12;
   elif [ $version = "3.2.4" ]; then EIGENDIR=eigen-eigen-10219c95fe65;
   elif [ $version = "3.2.6" ]; then EIGENDIR=eigen-eigen-c58038c56923;
-  fi
-
+  elif [ $version = "3.2.8" ]; then EIGENDIR=eigen-eigen-07105f7124f9;
+  fi  
+  
   if [ $EIGENDIR = "none" ]; then
     echo Unknown eigen version. Please edit script.
     exit 1
@@ -497,7 +494,7 @@ build_sparkle()
   version=$1
   cd $BASEDIR/src
   rm -rf Sparkle-$version
-  if [ ! -f Sparkle-$version.zip ]; then
+  if [ ! -f Sparkle-$version.tar.bz2 ]; then
     curl -LO https://github.com/sparkle-project/Sparkle/releases/download/$version/Sparkle-$version.tar.bz2
   fi
   mkdir Sparkle-$version
@@ -555,6 +552,7 @@ build_freetype()
   PKG_CONFIG_LIBDIR="$DEPLOYDOR/lib/pkgconfig" ./configure --prefix="$DEPLOYDIR" CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN $extra_config_flags
   make -j"$NUMCPU"
   make install
+  install_name_tool -id @rpath/libfreetype.dylib $DEPLOYDIR/lib/libfreetype.dylib
 }
  
 check_libxml2()
@@ -577,6 +575,7 @@ build_libxml2()
   ./configure --prefix="$DEPLOYDIR" --with-zlib=/usr -without-lzma --without-ftp --without-http --without-python CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN
   make -j$NUMCPU
   make install
+  install_name_tool -id @rpath/libxml2.dylib $DEPLOYDIR/lib/libxml2.dylib
 }
 
 check_fontconfig()
@@ -601,6 +600,7 @@ build_fontconfig()
   unset PKG_CONFIG_PATH
   make -j$NUMCPU
   make install
+  install_name_tool -id @rpath/libfontconfig.dylib $DEPLOYDIR/lib/libfontconfig.dylib
 }
 
 check_libffi()
@@ -623,6 +623,7 @@ build_libffi()
   ./configure --prefix="$DEPLOYDIR"
   make -j$NUMCPU
   make install
+  install_name_tool -id @rpath/libffi.dylib $DEPLOYDIR/lib/libffi.dylib
 }
 
 check_gettext()
@@ -646,6 +647,7 @@ build_gettext()
   ./configure --prefix="$DEPLOYDIR" CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN
   make -j$NUMCPU
   make install
+  install_name_tool -id @rpath/libintl.dylib $DEPLOYDIR/lib/libintl.dylib
 }
 
 check_glib2()
@@ -673,6 +675,7 @@ build_glib2()
   unset PKG_CONFIG_PATH
   make -j$NUMCPU
   make install
+  install_name_tool -id @rpath/libglib-2.0.dylib $DEPLOYDIR/lib/libglib-2.0.dylib
 }
 
 check_ragel()
@@ -722,6 +725,7 @@ build_harfbuzz()
   PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" ./autogen.sh --prefix="$DEPLOYDIR" --with-freetype=yes --with-gobject=no --with-cairo=no --with-icu=no CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN CXXFLAGS="$CXXFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="$CXXFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN" $extra_config_flags
   make -j$NUMCPU
   make install
+  install_name_tool -id @rpath/libharfbuzz.dylib $DEPLOYDIR/lib/libharfbuzz.dylib
 }
 
 if [ ! -f $OPENSCADDIR/openscad.pro ]; then
