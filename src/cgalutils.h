@@ -19,8 +19,8 @@ namespace /* anonymous */ {
 }
 
 namespace CGALUtils {
+ 	void computeVolume(const PolySet &ps, double &volumeTotal,double centerOfMass[3]);
         void computeVolume(const CGAL_Nef_polyhedron3 &N,NT3 &volumeTotal,NT3 centerOfMass[3]);
-        void computeVolume(const PolySet &ps,NT3 &volumeTotal,NT3 centerOfMass[3]);
 
 	bool applyHull(const Geometry::Geometries &children, PolySet &P);
 	CGAL_Nef_polyhedron *applyOperator(const Geometry::Geometries &children, OpenSCADOperator op);

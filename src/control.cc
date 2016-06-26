@@ -40,7 +40,11 @@
 //#include "CGAL_Nef_polyhedron.h"
 #include "GeometryEvaluator.h"
 #include "Tree.h"
-#include "cgalutils.h"
+#include "polyset.h"
+#include "polyset-utils.h"
+#ifdef ENABLE_CGAL
+	#include "cgalutils.h"
+#endif
 
 
 
@@ -392,6 +396,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 
                 double xmin=0,ymin=0,zmin=0,xmax=0,ymax=0,zmax=0;
 
+#ifdef ENABLE_CGAL
                for(unsigned int k=0;k<evalctx->numChildren();k++) {
                         nc = evalctx->getChild(k)->evaluate(&c);
                         // first child? then we render and set the bbox variables
@@ -401,7 +406,9 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
                                 GeometryEvaluator geomEvaluator(tree);
 
                                 shared_ptr<const PolySet> G;
+#ifdef ENABLE_CGAL
                                 shared_ptr<const CGAL_Nef_polyhedron> N;
+#endif
                                 shared_ptr<const Geometry> geom;
 
                                 bool empty=true;
@@ -427,17 +434,15 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
                                                 //full=isBBoxFull(G);
                                                 //std::cout << "full:" <<full<<std::endl;
                                                 if( volume ) {
-                                                        NT3 volumeTotal;
-                                                        NT3 centerOfMass[3];
+                                                        double volumeTotal;
+                                                        double centerOfMass[3];
                                                         //std::cout << "PolySet volume!" << std::endl;
-                                                        CGALUtils::computeVolume( *G,volumeTotal,centerOfMass );
-                                                        //std::cout<<"Volume Total = "<<to_double(volumeTotal)<<"\n";
-                                                        //std::cout<<"center of mass is ("<<to_double(centerOfMass[0])<<","<<to_double(centerOfMass[1])<<","<<to_double(centerOfMass[2])<<")\n";
-                                                        c.set_variable("volume",Value(to_double(volumeTotal)));
+                                                        PolysetUtils::computeVolume( *G,volumeTotal,centerOfMass );
+                                                        c.set_variable("volume",Value(volumeTotal));
                                                         Value::VectorType bbcentroid;
-                                                        bbcentroid.push_back(to_double(centerOfMass[0]));
-                                                        bbcentroid.push_back(to_double(centerOfMass[1]));
-                                                        bbcentroid.push_back(to_double(centerOfMass[2]));
+                                                        bbcentroid.push_back(centerOfMass[0]);
+                                                        bbcentroid.push_back(centerOfMass[1]);
+                                                        bbcentroid.push_back(centerOfMass[2]);
                                                         c.set_variable("centroid",Value(bbcentroid));
                                                 }
                                         }
@@ -510,6 +515,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
                         }
 
 		}
+#endif
 		break;
 	}
 	} // switch

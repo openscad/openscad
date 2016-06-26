@@ -139,14 +139,20 @@ static void updateCenterOfMass( CGAL_Polyhedron::Point_3 const& p1,
 
 
 namespace CGALUtils {
-
-	void computeVolume(const PolySet &ps,NT3 &volumeTotal,NT3 centerOfMass[3])
-        {
+	void computeVolume(const PolySet &ps, double &volumeTotal,double centerOfMass[3]) {
                 //std::cout << "volume of polyset!"<<std::endl;
                 CGAL_Polyhedron poly;
-                CGALUtils::createPolyhedronFromPolySet(ps, poly);
+                createPolyhedronFromPolySet(ps, poly);
                 CGAL_Nef_polyhedron *p = createNefPolyhedronFromGeometry(ps);
-                if (!p->isEmpty()) computeVolume(*p->p3,volumeTotal,centerOfMass);
+                if (!p->isEmpty()) {
+			NT3 volumeTotalNT3;
+			NT3 centerOfMassNT3[3];
+			computeVolume(*p->p3,volumeTotalNT3,centerOfMassNT3);
+			volumeTotal=to_double(volumeTotalNT3);
+			centerOfMass[0]=to_double(centerOfMassNT3[0]);
+			centerOfMass[1]=to_double(centerOfMassNT3[1]);
+			centerOfMass[2]=to_double(centerOfMassNT3[2]);
+		}
         }
 
         void computeVolume(const CGAL_Nef_polyhedron3 &N,NT3 &volumeTotal,NT3 centerOfMass[3])
