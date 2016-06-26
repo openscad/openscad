@@ -1736,17 +1736,17 @@ void MainWindow::addparameter(const char *fulltext){
         
         // makeing list to add annotations
         AnnotationList *annotationList = new AnnotationList();
-         AssignmentList *assignments;
+         AssignmentList *assignmentList;
          
         //extracting the parameter 
         string name = getParameter(std::string(fulltext),loc);
-        if(name!= " " ){
+        if(name!= "" ){
         
             //getting the node for parameter annnotataion
-            assignments=parser(name.c_str());
-            if(assignments!=NULL){
+            assignmentList=parser(name.c_str());
+            if(assignmentList!=NULL){
                 const Annotation *Parameter;
-                Parameter=Annotation::create("Parameter",*assignments);
+                Parameter=Annotation::create("Parameter",*assignmentList);
 
                 // adding parameter to the list
                 annotationList->push_back(*Parameter);
@@ -1755,17 +1755,21 @@ void MainWindow::addparameter(const char *fulltext){
         
         //extracting the description 
         name = getParameter(std::string(fulltext),loc-1);
-        if(name!= " "){ 
+        if(name!= ""){ 
+        
             //creating node for description
-            assignments=new AssignmentList();
+            assignmentList=new AssignmentList();
             Expression *expr;
+            
             expr=new Literal(ValuePtr(std::string(name.c_str())));
-            Assignment *assign;
-            assign=new Assignment("", shared_ptr<Expression>(expr));
-            assignments->push_back(*assign);
+            
+            Assignment *assignment;
+            
+            assignment=new Assignment("", shared_ptr<Expression>(expr));
+            assignmentList->push_back(*assignment);
                 
             const Annotation * Description;    
-            Description=Annotation::create("Description", *assignments);
+            Description=Annotation::create("Description", *assignmentList);
             annotationList->push_back(*Description);
         }
 
@@ -1775,25 +1779,43 @@ void MainWindow::addparameter(const char *fulltext){
 }
     
 string MainWindow::getParameter(string fulltext, int loc){
-    int chara=0;
     
-    for(; chara<fulltext.length() ; chara++){
-        if(fulltext[chara]=='\n')
+    int start = 0;
+    for(; start<fulltext.length() ; start++){
+       
+        if(fulltext[start]=='\n')
             loc--;
+       
         if(loc==1)
             break;    
     }
-   int len=chara+1;
-   while(fulltext[len]!='\n'){
-        len++;
+    
+    int end=start+1;
+    while(fulltext[end]!='\n'){
+        end++;
         
-   }
-    string str2 = fulltext.substr(chara,len-chara);
-    int start= str2.find("//");
-    if(start<0 || start+2>str2.length()){
-        return " ";
     }
-    return str2.substr(start+2);
+    
+    string comment = fulltext.substr(start,end-start);
+
+    int startText=0;
+    bool check=true;
+    for(;startText<comment.length()-1;startText++){
+        
+        if(comment[startText]=='\"' || comment[startText]=='\''){
+            check=!check;
+        }
+        if( comment[startText]== '/' && comment[startText+1]=='/'  && check){
+            break;
+        }
+       
+    }
+    
+    
+    if(startText+2>comment.length()){
+        return "";
+    }
+    return comment.substr(startText+2);
     
 }
 

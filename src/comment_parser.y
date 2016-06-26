@@ -4,6 +4,7 @@
     using namespace std;
     #include "Assignment.h"
     #include "expression.h"
+    #include "printutils.h"
     #include "value.h" 
     void yyerror(char *);
     int yylex(void);
@@ -36,11 +37,7 @@
 
 
 arguments_call:
-          /* empty */
-            {
-                $$ = new AssignmentList();
-            }
-        | argument_call
+        argument_call
             {
                 $$ = new AssignmentList();
                 $$->push_back(*$1);
@@ -129,6 +126,7 @@ word:
 %%
 
 void yyerror(char *msg) {
+    PRINTD("ERROR IN PARAMETER: Parser error in comments of file \n ");
     cout<<msg<<endl;   
     argument=NULL;
 }
