@@ -55,25 +55,8 @@ inline std::string extension_str( fs::path p)
 
 #else
 
-inline bool is_absolute( fs::path p )
-{
-	return p.is_complete();
-}
+#error you should be using a newer version of boost on win/mac/linux
 
-inline fs::path absolute( fs::path p )
-{
-	return fs::complete(p, fs::current_path());
-}
-
-inline std::string stringy( fs::path p )
-{
-	return p.string();
-}
-
-inline std::string extension_str( fs::path p)
-{
-	return p.extension();
-}
 
 #endif
 
