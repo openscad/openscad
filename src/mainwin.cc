@@ -1781,12 +1781,15 @@ void MainWindow::addparameter(const char *fulltext){
 string MainWindow::getParameter(string fulltext, int loc){
     
     int start = 0;
+    if( loc<1){
+        return " ";
+    }
     for(; start<fulltext.length() ; start++){
        
         if(fulltext[start]=='\n')
             loc--;
        
-        if(loc==1)
+        if(loc<=1)
             break;    
     }
     
