@@ -78,11 +78,12 @@ const std::string & Annotation::get_name()
 	return name;
 }
 
-void Annotation::dump()
+std::string Annotation::dump() const
 {
-	std::cout << "  ANNOTATION: '" << name << "'" << std::endl;
-	for (AssignmentList::const_iterator it = assignments.begin();it != assignments.end();it++) {
-		const Assignment &assignment = (*it);
-		std::cout << (*it).name << assignment.expr << std::endl;
-	}
+    std::stringstream dump;
+	dump << "@" << name << "(";
+	for(const auto &ass : this->assignments) {
+		dump << *ass.expr <<")"<< std::endl;
+	}	
+	return dump.str();
 }

@@ -24,6 +24,7 @@
  *
  */
 
+#include "comment.h"
 #include "openscad.h"
 #include "node.h"
 #include "module.h"
@@ -402,6 +403,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		PRINTB("Can't parse file '%s'!\n", filename.c_str());
 		return 1;
 	}
+	addparameter(text.c_str(),root_module);
 	root_module->handleDependencies();
 
 	fs::path fpath = boosty::absolute(fs::path(filename));

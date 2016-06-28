@@ -1,4 +1,4 @@
-# Environment variables which can be set to specify library locations:
+c# Environment variables which can be set to specify library locations:
 # MPIRDIR
 # MPFRDIR
 # BOOSTDIR
@@ -273,7 +273,7 @@ HEADERS += src/AST.h \
            src/expression.h \
            src/function.h \
            src/module.h \           
-           src/UserModule.h
+           src/UserModule.h \
 
 SOURCES += src/AST.cc \
            src/ModuleInstantiation.cc \
@@ -390,7 +390,8 @@ HEADERS += src/version_check.h \
      src/Parameter/parameterslider.h \
      src/Parameter/parametercheckbox.h \
      src/Parameter/parametertext.h \
-     src/Parameter/parametervector.h
+     src/Parameter/parametervector.h \
+          src/comment.h
 
 SOURCES += src/version_check.cc \
            src/ProgressWidget.cc \
@@ -507,7 +508,9 @@ SOURCES += src/version_check.cc \
      src/Parameter/parameterslider.cpp \
      src/Parameter/parametercheckbox.cpp \
      src/Parameter/parametertext.cpp \
-     src/Parameter/parametervector.cpp
+     src/Parameter/parametervector.cpp \
+     src/comment.cpp
+
 
 # ClipperLib
 SOURCES += src/polyclipping/clipper.cpp

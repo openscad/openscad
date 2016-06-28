@@ -35,7 +35,7 @@ void Assignment::add_annotations(AnnotationList *annotations)
 	}
 }
 
-void Assignment::add_annotation(Annotation *annotation)
+void Assignment::add_annotation(Annotation *annotation) 
 {
 		this->annotations.insert(std::pair<const std::string, Annotation *>((*annotation).get_name(), &(*annotation)));
 }
