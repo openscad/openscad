@@ -25,6 +25,7 @@
  */
 
 #include <iostream>
+#include "comment.h"
 #include "openscad.h"
 #include "GeometryCache.h"
 #include "ModuleCache.h"
@@ -1718,109 +1719,13 @@ void MainWindow::compileTopLevelDocument()
 	this->root_module = parse(fulltext.c_str(), fs::path(fname), false);
     
     if(this->root_module!=NULL)
-    addparameter(fulltext.c_str());
+    addparameter(fulltext.c_str(),this->root_module);
 
     this->parameterWidget->setParameters(this->root_module);
     this->parameterWidget->applyParameters(this->root_module);
 
 
 }
-
-void MainWindow::addparameter(const char *fulltext){
-
-    for (AssignmentList::iterator it = this->root_module->scope.assignments.begin();it != this->root_module->scope.assignments.end();it++) {
-
-        //get loaction of assignment node 
-        const Location locate=(*it).location();
-        int loc =locate.firstLine();
-        
-        // makeing list to add annotations
-        AnnotationList *annotationList = new AnnotationList();
-         AssignmentList *assignmentList;
-         
-        //extracting the parameter 
-        string name = getParameter(std::string(fulltext),loc);
-        if(name!= "" ){
-        
-            //getting the node for parameter annnotataion
-            assignmentList=parser(name.c_str());
-            if(assignmentList!=NULL){
-                const Annotation *Parameter;
-                Parameter=Annotation::create("Parameter",*assignmentList);
-
-                // adding parameter to the list
-                annotationList->push_back(*Parameter);
-            }
-        }
-        
-        //extracting the description 
-        name = getParameter(std::string(fulltext),loc-1);
-        if(name!= ""){ 
-        
-            //creating node for description
-            assignmentList=new AssignmentList();
-            Expression *expr;
-            
-            expr=new Literal(ValuePtr(std::string(name.c_str())));
-            
-            Assignment *assignment;
-            
-            assignment=new Assignment("", shared_ptr<Expression>(expr));
-            assignmentList->push_back(*assignment);
-                
-            const Annotation * Description;    
-            Description=Annotation::create("Description", *assignmentList);
-            annotationList->push_back(*Description);
-        }
-
-        (*it).add_annotations(annotationList);
-        
-    }
-}
-    
-string MainWindow::getParameter(string fulltext, int loc){
-    
-    int start = 0;
-    for(; start<fulltext.length() ; start++){
-       
-        if(fulltext[start]=='\n')
-            loc--;
-       
-        if(loc==1)
-            break;    
-    }
-    
-    int end=start+1;
-    while(fulltext[end]!='\n'){
-        end++;
-        
-    }
-    
-    string comment = fulltext.substr(start,end-start);
-
-    int startText=0;
-    bool check=true;
-    for(;startText<comment.length()-1;startText++){
-        
-        if(comment[startText]=='\"' || comment[startText]=='\''){
-            check=!check;
-        }
-        if( comment[startText]== '/' && comment[startText+1]=='/'  && check){
-            break;
-        }
-       
-    }
-    
-    
-    if(startText+2>comment.length()){
-        return "";
-    }
-    return comment.substr(startText+2);
-    
-}
-
-
-    
 
 
 void MainWindow::checkAutoReload()

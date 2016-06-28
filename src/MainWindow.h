@@ -98,8 +98,7 @@ private slots:
 	void consoleOutput(const QString &msg);
 
 private:
-        void addparameter(const char *fulltext);
-        string getParameter(string fulltext, int loc);
+        
         void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
         void handleFileDrop(const QString &filename);
 	void refreshDocument();

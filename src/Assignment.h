@@ -52,7 +52,7 @@ protected:
 public:
     virtual ~Annotation();
 
-    void dump();
+    std::string dump() const;
     const std::string & get_name();
     virtual ValuePtr evaluate(class Context *ctx, const std::string& var) const;
     
