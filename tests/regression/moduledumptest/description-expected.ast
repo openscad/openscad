@@ -1,0 +1,20 @@
+@Description("normal description")
+x = 50;
+@Description("normal  starting width spaces description")
+x2 = 45;
+@Description("normal starting tab spaces description")
+x3 = 3;
+x4 = 3;
+x5 = 3;
+x6 = 12;
+x7 = 12;
+x8 = 12;
+@Description("description sandwiched between two assignments")
+x9 = 23;
+x10 = 23;
+x11 = 23;
+x12 = 23;
+x13 = 7;
+@Description("double description            normal comment starting with tab before  ")
+x14 = 3;
+

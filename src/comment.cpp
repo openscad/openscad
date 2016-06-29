@@ -28,7 +28,7 @@ void addparameter(const char *fulltext, class FileModule *root_module){
         }
         
         //extracting the description 
-        name = getParameter(std::string(fulltext),loc-1);
+        name = getDescription(std::string(fulltext),loc-1);
         if(name!= ""){ 
         
             //creating node for description
@@ -76,6 +76,7 @@ string getParameter(string fulltext, int loc){
     string comment = fulltext.substr(start,end-start);
 
     int startText=0;
+    int noOfSemicolon=0;
     bool check=true;
     for(;startText<comment.length()-1;startText++){
         
@@ -84,6 +85,14 @@ string getParameter(string fulltext, int loc){
         }
         if( comment[startText]== '/' && comment[startText+1]=='/'  && check){
             break;
+        }
+        if(comment[startText]== ';' && check && noOfSemicolon>0){
+            
+            return "";
+        }
+        if(comment[startText]== ';' && check){
+            
+            noOfSemicolon++;
         }
        
     }
@@ -95,4 +104,51 @@ string getParameter(string fulltext, int loc){
     return comment.substr(startText+2);
     
 }
+
+string getDescription(string fulltext, int loc){
+    int start = 0;
+    if( loc<1){
+        return "";
+    }
+    for(; start<fulltext.length() ; start++){
+       
+        if(fulltext[start]=='\n')
+            loc--;
+       
+        if(loc<=1)
+            break;    
+    }
+    start++; 
+    
+    //not a valid description
+    if(fulltext[start] != '/' || fulltext[start+1] != '/'){ 
+        return "";
+    }
+    
+    //jump over the two forward slashes
+    start=start+2;  
+    
+    //jump over all the spaces
+    while(fulltext[start]==' ' || fulltext[start]=='\t'){  
+        start++;
+    }
+    string retString = "";
+    //go till the end of the world, I mean the end of the line
+    while(fulltext[start]!='\n'){  
+        
+        //replace // with space
+        if(fulltext[start] == '/' && fulltext[start+1] == '/'){ 
+            
+                retString += " ";
+                start++;
+        }else{
+        
+            retString += fulltext[start];
+        }
+        
+        start++;
+    }
+    return retString;
+}
+
 

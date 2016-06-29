@@ -10,6 +10,7 @@ using std::string;
 extern AssignmentList * parser(const char *text);
 
 string getParameter(string fulltext, int loc);
+string getDescription(string fulltext, int loc);
 void addparameter(const char *fulltext, class FileModule *root_module);
 
 #endif // COMMENT_H
