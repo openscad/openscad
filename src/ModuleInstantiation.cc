@@ -1,8 +1,8 @@
 #include "ModuleInstantiation.h"
 #include "evalcontext.h"
 #include "expression.h"
-
-#include "boosty.h"
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
 
 ModuleInstantiation::~ModuleInstantiation()
 {
