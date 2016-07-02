@@ -61,7 +61,6 @@ void ParameterExtractor::setParameters(const FileModule* module)
                 entries[assignment.name] = entryObject;
             }
         }
-
         entryObject->set=true;
     }
     connectWidget();

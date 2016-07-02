@@ -53,6 +53,9 @@ const Annotation * Annotation::create(const std::string name, const AssignmentLi
 	} else if (name == "Parameter") {
 		args += Assignment("values");
 	}
+	else if (name == "Group") {
+		args += Assignment("text");
+	}
 
 	return new Annotation(name, assignments, args);
 }
