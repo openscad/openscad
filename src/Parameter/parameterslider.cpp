@@ -26,8 +26,9 @@ void ParameterSlider::on_Changed(int)
 void ParameterSlider::setValue()
 {
     this->stackedWidget->setCurrentWidget(this->pageSlider);
-    this->slider->setMaximum(object->values->toRange().end_value());
+    this->slider->setRange(object->values->toRange().begin_value(),object->values->toRange().end_value());
     this->slider->setValue(object->value->toDouble());
-    this->slider->setMinimum(object->values->toRange().begin_value());
+    this->slider->setSingleStep(object->values->toRange().step_value());
+
     this->labelSliderValue->setText(QString::number(object->value->toDouble(), 'f', 0));
 }
