@@ -16,9 +16,9 @@ H [0-9a-fA-F]
 %%
 
 
-{D}+{E}? |
-{D}*\.{D}+{E}? |
-{D}+\.{D}*{E}? {
+[+-]?{D}+{E}? |
+[+-]?{D}*\.{D}+{E}? |
+[+-]?{D}+\.{D}*{E}? {
                     try {
                         yylval.num = boost::lexical_cast<double>(yytext);
                         return NUM;
