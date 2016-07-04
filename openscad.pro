@@ -295,7 +295,7 @@ HEADERS += src/version_check.h \
            src/QGLView.h \
            src/GLView.h \
            src/MainWindow.h \
-            src/Parameter/parameterWidget.h \
+            src/Parameter/ParameterWidget.h \
            src/OpenSCADApp.h \
            src/WindowManager.h \
            src/Preferences.h \
@@ -491,7 +491,7 @@ SOURCES += src/version_check.cc \
            \
            src/openscad.cc \
            src/mainwin.cc \
-            src/Parameter/parameterWidget.cc \
+            src/Parameter/ParameterWidget.cc \
            src/OpenSCADApp.cc \
            src/WindowManager.cc \
            src/UIUtils.cc \
