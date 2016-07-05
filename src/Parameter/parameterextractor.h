@@ -12,8 +12,6 @@ protected:
     typedef std::map<std::string, class ParameterObject *> entry_map_t;
     entry_map_t entries;
 
-    typedef std::map<std::string,vector<string> > group_map;
-    group_map groupMap;
 public:
     ParameterExtractor();
     virtual ~ParameterExtractor();

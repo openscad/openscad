@@ -79,9 +79,11 @@ void ParameterWidget::begin()
 	QLayoutItem *child;
 	while ((child = this->scrollAreaWidgetContents->layout()->takeAt(0)) != 0) {
 		QWidget *w = child->widget();
-		this->scrollAreaWidgetContents->layout()->removeWidget(w);
+        this->scrollAreaWidgetContents->layout()->removeWidget(w);
+
 		delete w;
 	}
+	anyLayout = new QVBoxLayout();
 }
 
 void ParameterWidget::addEntry(ParameterVirtualWidget *entry)
@@ -91,8 +93,9 @@ void ParameterWidget::addEntry(ParameterVirtualWidget *entry)
 	policy.setVerticalPolicy(QSizePolicy::Preferred);
 	policy.setHorizontalStretch(0);
 	policy.setVerticalStretch(0);
-	entry->setSizePolicy(policy);
-	this->scrollAreaWidgetContents->layout()->addWidget(entry);
+    entry->setSizePolicy(policy);
+    anyLayout->addWidget(entry);
+
 }
 
 void ParameterWidget::end()
@@ -115,16 +118,18 @@ void ParameterWidget::connectWidget()
             continue;
         }
     }
+     for(group_map::iterator it = groupMap.begin(); it != groupMap.end(); it++) {
+         it->second.parameterVector.clear();
+     }
 
-    groupMap.clear();
     for(entry_map_t::iterator it = entries.begin(); it != entries.end(); it++) {
             if(groupMap.find(it->second->groupName) == groupMap.end()){
-                vector<string> enter;
-                enter.push_back(it->first);
+                groupInst enter;
+                enter.parameterVector.push_back(it->first);
                 groupMap[it->second->groupName]=enter;
             }
             else{
-                groupMap[it->second->groupName].push_back(it->first);
+                groupMap[it->second->groupName].parameterVector.push_back(it->first);
 
             }
      }
@@ -132,9 +137,11 @@ void ParameterWidget::connectWidget()
     begin();
     for(group_map::iterator it = groupMap.begin(); it != groupMap.end(); it++) {
         vector<string> gr;
-        gr=it->second;
-        QLabel *groupname= new QLabel(QString::fromStdString(it->first));
-        this->scrollAreaWidgetContents->layout()->addWidget(groupname);
+        gr=it->second.parameterVector;
+        if(gr.empty()){
+            groupMap.erase((*it).first);
+            continue;
+        }
         for(int i=0;i <gr.size();i++){
             ParameterVirtualWidget *entry ;
             switch (entries[gr[i]]->target) {
@@ -166,8 +173,15 @@ void ParameterWidget::connectWidget()
             if(entries[gr[i]]->target!=UNDEFINED){
                 connect(entry, SIGNAL(changed()), this, SLOT(onValueChanged()));
                 addEntry(entry);
+                
             }
         }
+        GroupWidget *groupWidget =new GroupWidget(it->second.show ,QString::fromStdString(it->first));
+        groupWidget->setContentLayout(*anyLayout);
+        this->scrollAreaWidgetContents->layout()->addWidget(groupWidget);
+	    anyLayout = new QVBoxLayout();
     }
     end();
 }
+
+

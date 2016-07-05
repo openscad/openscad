@@ -391,6 +391,7 @@ HEADERS += src/version_check.h \
      src/Parameter/parametercheckbox.h \
      src/Parameter/parametertext.h \
      src/Parameter/parametervector.h \
+     src/Parameter/groupwidget.h \
           src/comment.h
 
 SOURCES += src/version_check.cc \
@@ -509,6 +510,7 @@ SOURCES += src/version_check.cc \
      src/Parameter/parametercheckbox.cpp \
      src/Parameter/parametertext.cpp \
      src/Parameter/parametervector.cpp \
+     src/Parameter/groupwidget.cpp \
      src/comment.cpp
 
 
