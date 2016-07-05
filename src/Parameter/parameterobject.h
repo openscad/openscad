@@ -22,6 +22,7 @@ public:
     Value::ValueType dvt;
     parameter_type_t target;
     QString description;
+    std::string groupName;
     string name;
     bool set;
 

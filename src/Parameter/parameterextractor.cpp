@@ -51,15 +51,11 @@ void ParameterExtractor::setParameters(const FileModule* module)
         ParameterObject *entryObject = new ParameterObject();
         entryObject->setAssignment(&ctx, &assignment, defaultValue);
 
-        //need to improve structure
-        if(entries.find(assignment.name) == entries.end()){
+        if(entries.find(assignment.name) == entries.end() || !(*entryObject==*entries[assignment.name]) ){
             entries[assignment.name] = entryObject;
-        }else{
-            if(*entryObject==*entries[assignment.name]){
-                entryObject=entries[assignment.name];
-           }else{
-                entries[assignment.name] = entryObject;
-            }
+        }
+        else{
+               entryObject=entries[assignment.name];
         }
 
         entryObject->set=true;

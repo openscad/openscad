@@ -1,7 +1,8 @@
 #include "comment.h"
 
 void addparameter(const char *fulltext, class FileModule *root_module){
-
+    
+    multicomment group=collectcomment(std::string(fulltext));
     for (AssignmentList::iterator it = root_module->scope.assignments.begin();it != root_module->scope.assignments.end();it++) {
 
         //get loaction of assignment node 
@@ -44,6 +45,29 @@ void addparameter(const char *fulltext, class FileModule *root_module){
                 
             const Annotation * Description;    
             Description=Annotation::create("Description", *assignmentList);
+            annotationList->push_back(*Description);
+        }
+        
+        int i=0;        
+        for( ;i<group.size() && group[i].line<loc;i++){
+            
+         }
+         i--; 
+         
+         if(i>=0){
+            //creating node for description
+            assignmentList=new AssignmentList();
+            Expression *expr;
+            
+            expr=new Literal(ValuePtr(group[i].commentString));
+            
+            Assignment *assignment;
+            
+            assignment=new Assignment("", shared_ptr<Expression>(expr));
+            assignmentList->push_back(*assignment);
+                
+            const Annotation * Description;    
+            Description=Annotation::create("Group", *assignmentList);
             annotationList->push_back(*Description);
         }
 
@@ -151,4 +175,30 @@ string getDescription(string fulltext, int loc){
     return retString;
 }
 
+multicomment collectcomment(string fulltext){
+    
+    multicomment multi;
+    int line=1;
+    for(int i=0; i<fulltext.length(); i++){
+    
+        if(fulltext[i]=='\n'){
+            line++;
+        }
+        if(fulltext[i]=='/' && fulltext[i+1]=='*'){
+            string comment;
+            i=i+2;
+            while(fulltext[i]!='*' && fulltext[i+1]!='/'){
+                comment+=fulltext[i];
+                i++;
+            }
+            multilineComment m;
+          
+            m.commentString=comment;
+            m.line=line;
+            multi.push_back(m);
+        }
+    }
+    return multi;
+}
+ 
 

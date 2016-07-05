@@ -38,6 +38,12 @@ std::string LocalScope::dump(const std::string &indent) const
 		   if( annotation != NULL){
 		        dump<<annotation->dump();
 		   }
+		}
+		if( ass.has_annotations()){
+		   const Annotation  *annotation=ass.annotation("Group");
+		   if( annotation != NULL){
+		        dump<<annotation->dump();
+		   }
 		}		
 		
 		if( ass.has_annotations()){

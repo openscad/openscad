@@ -30,15 +30,18 @@
 
 #include "parameterextractor.h"
 #include "ui_ParameterWidget.h"
-
+#include "groupwidget.h"
 
 class ParameterWidget : public QWidget, public Ui::ParameterWidget, public ParameterExtractor
 {
 	Q_OBJECT
 private:
+    typedef std::map<std::string,groupInst > group_map;
+    group_map groupMap;
     typedef enum { UNDEFINED, COMBOBOX, SLIDER, CHECKBOX, TEXT, NUMBER, VECTOR } parameter_type_t;
     QTimer autoPreviewTimer;
     bool descriptionShow;
+    QVBoxLayout * anyLayout;
 
 public:
     ParameterWidget(QWidget *parent = 0);
@@ -58,3 +61,4 @@ protected:
     void addEntry(class ParameterVirtualWidget *entry);
     void end();
 };
+
