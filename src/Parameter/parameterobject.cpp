@@ -50,7 +50,7 @@ void ParameterObject::setAssignment(class Context *ctx, const class Assignment *
     const ValuePtr values = param->evaluate(ctx, "values");
     setValue(defaultValue, values);
     const Annotation *desc = assignment->annotation("Description");
-
+    
     if (desc) {
         const ValuePtr v = desc->evaluate(ctx, "text");
         if (v->type() == Value::STRING) {
@@ -63,8 +63,9 @@ void ParameterObject::setAssignment(class Context *ctx, const class Assignment *
         const ValuePtr v = group->evaluate(ctx, "text");
         if (v->type() == Value::STRING) {
             groupName=v->toString();
-
         }
+    } else{
+            groupName="Parameters";
     }
 }
 

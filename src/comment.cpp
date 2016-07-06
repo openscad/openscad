@@ -136,14 +136,14 @@ string getDescription(string fulltext, int loc){
     }
     for(; start<fulltext.length() ; start++){
        
-        if(fulltext[start]=='\n')
-            loc--;
+       if(loc<=1)
+            break;  
        
-        if(loc<=1)
-            break;    
+       if(fulltext[start]=='\n')
+            loc--;  
+            
     }
-    start++; 
-    
+
     //not a valid description
     if(fulltext[start] != '/' || fulltext[start+1] != '/'){ 
         return "";
