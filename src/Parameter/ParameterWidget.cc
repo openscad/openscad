@@ -126,6 +126,7 @@ void ParameterWidget::connectWidget()
             if(groupMap.find(it->second->groupName) == groupMap.end()){
                 groupInst enter;
                 enter.parameterVector.push_back(it->first);
+                enter.show=false;
                 groupMap[it->second->groupName]=enter;
             }
             else{

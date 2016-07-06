@@ -12,7 +12,7 @@
 
 struct groupInst{
     std::vector<std::string> parameterVector;
-    bool show=false;
+    bool show;
 };
 
 class GroupWidget : public QWidget {
@@ -23,7 +23,7 @@ private:
     QFrame headerLine;
     QParallelAnimationGroup toggleAnimation;
     QScrollArea contentArea;
-    int animationDuration{300};
+    int animationDuration;
     bool *show;
 public:
     groupInst groupinst;
