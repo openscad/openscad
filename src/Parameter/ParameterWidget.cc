@@ -112,12 +112,14 @@ void ParameterWidget::end()
 
 void ParameterWidget::connectWidget()
 {
-    for(entry_map_t::iterator it = entries.begin(); it != entries.end(); it++) {
+    for(entry_map_t::iterator it = entries.begin(); it != entries.end();) {
         if(!(*it).second->set){
-            entries.erase((*it).first);
-            continue;
+            it=entries.erase(it);
+        }else{
+            it++;
         }
     }
+
      for(group_map::iterator it = groupMap.begin(); it != groupMap.end(); it++) {
          it->second.parameterVector.clear();
      }
@@ -126,6 +128,7 @@ void ParameterWidget::connectWidget()
             if(groupMap.find(it->second->groupName) == groupMap.end()){
                 groupInst enter;
                 enter.parameterVector.push_back(it->first);
+                enter.show=false;
                 groupMap[it->second->groupName]=enter;
             }
             else{
@@ -134,14 +137,30 @@ void ParameterWidget::connectWidget()
             }
      }
 
+vector<string> global;
+if(groupMap.find("Global")!=groupMap.end()){
+    global=groupMap["Global"].parameterVector;
+    groupMap["Global"].parameterVector.clear();
+}
+
+ for(group_map::iterator it = groupMap.begin(); it != groupMap.end(); ) {
+        vector<string> gr;
+        gr=it->second.parameterVector; 
+        if(gr.empty()|| it->first=="Hidden"){
+            it=groupMap.erase(it);
+        }
+        else{
+   
+            it->second.parameterVector.insert( it->second.parameterVector.end(), global.begin(), global.end() );
+            it++;
+    }
+}
+
     begin();
     for(group_map::iterator it = groupMap.begin(); it != groupMap.end(); it++) {
         vector<string> gr;
         gr=it->second.parameterVector;
-        if(gr.empty()){
-            groupMap.erase((*it).first);
-            continue;
-        }
+       
         for(int i=0;i <gr.size();i++){
             ParameterVirtualWidget *entry ;
             switch (entries[gr[i]]->target) {
