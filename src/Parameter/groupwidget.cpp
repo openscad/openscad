@@ -47,6 +47,7 @@ void GroupWidget::onclicked(const bool checked){
         }else{
             *(this->show)=false;
         }
+        this->animationDuration=300;
     }
 
 void GroupWidget::setContentLayout(QLayout & contentLayout) {

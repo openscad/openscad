@@ -27,7 +27,7 @@ private:
     bool *show;
 public:
     groupInst groupinst;
-    explicit GroupWidget(bool &show,const QString & title = "", const int animationDuration = 0.05, QWidget *parent = 0);
+    explicit GroupWidget(bool &show,const QString & title = "", const int animationDuration = 300, QWidget *parent = 0);
     void setContentLayout(QLayout & contentLayout);
 
 private slots:
