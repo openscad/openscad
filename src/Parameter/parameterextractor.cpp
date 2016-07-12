@@ -2,12 +2,6 @@
 
 #include "FileModule.h"
 #include "modcontext.h"
-#include<QJsonDocument>
-#include<QFile>
-#include<QJsonObject>
-#include<QJsonValue>
-#include<QJsonArray>
-#include<QDebug>
 
 ParameterExtractor::ParameterExtractor()
 {
@@ -36,7 +30,7 @@ void ParameterExtractor::applyParameters(FileModule *fileModule)
 
 void ParameterExtractor::setParameters(const FileModule* module)
 {
-    getParameterSet("save.json");
+
     if (module == NULL) {
         return;
     }
@@ -69,67 +63,3 @@ void ParameterExtractor::setParameters(const FileModule* module)
     }
     connectWidget();
 }
-
-bool ParameterExtractor::getParameterSet(string filename){
-        QFile loadFile(QStringLiteral("save.json"));
-
-        if (!loadFile.open(QIODevice::ReadOnly)) {
-            qWarning("Couldn't open save file.");
-            return false;
-        }
-
-        QByteArray saveData = loadFile.readAll();
-        QJsonDocument loadDoc(QJsonDocument::fromJson(saveData));
-        QJsonObject SetObject = loadDoc.object();
-
-        for (QJsonObject::iterator value = SetObject.begin(); value!=SetObject.end();value++){
-            QJsonValueRef setArray=value.value();
-            SetOfParameter setofparameter;
-            for(int i=0; i<setArray.toArray().size();i++){
-                setofparameter[setArray.toArray().at(i).toObject().begin().key().toStdString()]=setArray.toArray().at(i).toObject().begin().value();
-            }
-            parameterSet[value.key().toStdString()]=setofparameter;
-        }
-        print();
-        return true;
-}
-
-void ParameterExtractor::print(){
-
-    for(ParameterSet::iterator it=parameterSet.begin();it!=parameterSet.end();it++){
-        SetOfParameter setofparameter=(*it).second;
-        for(SetOfParameter::iterator i=setofparameter.begin();i!=setofparameter.end(); i++){
-            std::cout<<i->first<<" ";
-        }
-    }
-
-}
-
-
-void ParameterExtractor::applyParameterSet(FileModule *fileModule,string setName)
-{
-    if (fileModule == NULL) {
-        return;
-    }
-
-    ParameterSet::iterator set=parameterSet.find(setName);
-    if(set==parameterSet.end()){
-        qWarning("no set");
-        return ;
-     }
-
-    SetOfParameter setofparameter=set->second;
-
-    for (AssignmentList::iterator it = fileModule->scope.assignments.begin();it != fileModule->scope.assignments.end();it++) {
-
-        for(SetOfParameter::iterator i = setofparameter.begin();i!=setofparameter.end();i++){
-            if(i->first== (*it).name){
-                Assignment *assignment;
-                    assignment=&(*it);
-                    assignment->expr = shared_ptr<Expression>(new Literal(ValuePtr(i->second.toString().toStdString())));
-             }
-
-         }
-    }
-}
-

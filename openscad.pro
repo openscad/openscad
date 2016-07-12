@@ -273,14 +273,16 @@ HEADERS += src/AST.h \
            src/expression.h \
            src/function.h \
            src/module.h \           
-           src/UserModule.h
+           src/UserModule.h \
+    src/Parameter/parameterset.h
 
 SOURCES += src/AST.cc \
            src/ModuleInstantiation.cc \
            src/expr.cc \
            src/function.cc \
            src/module.cc \
-           src/UserModule.cc
+           src/UserModule.cc \
+    src/Parameter/parameterset.cpp
 
 HEADERS += src/version_check.h \
            src/ProgressWidget.h \

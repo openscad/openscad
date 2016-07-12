@@ -1724,7 +1724,6 @@ void MainWindow::compileTopLevelDocument()
     this->parameterWidget->setParameters(this->root_module);
 
     this->parameterWidget->applyParameters(this->root_module);
-    this->parameterWidget->applyParameterSet(this->root_module,"firstSet");
 
 }
 

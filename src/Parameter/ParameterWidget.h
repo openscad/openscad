@@ -52,6 +52,7 @@ protected slots:
     void onPreviewTimerElapsed();
     void onDescriptionShow();
 
+
 signals:
     void previewRequested();
 
