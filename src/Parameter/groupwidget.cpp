@@ -1,7 +1,6 @@
 #include "groupwidget.h"
 
 #include <QPropertyAnimation>
-#include <QPropertyAnimation>
 
 GroupWidget::GroupWidget(bool &show, const QString & title, const int animationDuration, QWidget *parent) : QWidget(parent), animationDuration(animationDuration) {
     toggleButton.setStyleSheet("QToolButton { border: none; }");

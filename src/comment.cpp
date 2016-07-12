@@ -179,12 +179,17 @@ multicomment collectcomment(string fulltext){
     
     multicomment multi;
     int line=1;
+    bool check=true;
     for(int i=0; i<fulltext.length(); i++){
     
         if(fulltext[i]=='\n'){
             line++;
         }
-        if(fulltext[i]=='/' && fulltext[i+1]=='*'){
+        if(fulltext[i]=='\"' || fulltext[i]=='\''){
+            check=!check;
+        }
+        
+        if(fulltext[i]=='/' && fulltext[i+1]=='*' && check){
             string comment;
             i=i+2;
             while(fulltext[i]!='*' && fulltext[i+1]!='/'){
@@ -192,8 +197,31 @@ multicomment collectcomment(string fulltext){
                 i++;
             }
             multilineComment m;
-          
-            m.commentString=comment;
+            string group;
+            string commentPart;
+            bool bracketCheck=false;
+            for(int it=0; it<comment.length();it++){
+                if(comment[it]=='[' ){
+                    bracketCheck=true;
+                    continue;
+                }
+                 if(comment[it]==']' ){
+                    bracketCheck=false;
+                    
+                    if(!group.empty()){
+                        group=group+"-"+commentPart;
+                    }else{
+                        group=group+commentPart;
+                    }
+                    commentPart.clear();
+                    continue;
+                }
+                if(bracketCheck){
+                    commentPart+=comment[it];
+                }                
+            }
+            
+            m.commentString=group;
             m.line=line;
             multi.push_back(m);
         }

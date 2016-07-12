@@ -9,6 +9,7 @@ class ParameterExtractor
 
 protected:
 
+
     typedef std::map<std::string, class ParameterObject *> entry_map_t;
     entry_map_t entries;
 
@@ -17,7 +18,6 @@ public:
     virtual ~ParameterExtractor();
     void setParameters(const FileModule* module);
     void applyParameters(class FileModule *fileModule);
-
 
 protected:
     virtual void begin()=0;

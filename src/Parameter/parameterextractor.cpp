@@ -30,6 +30,7 @@ void ParameterExtractor::applyParameters(FileModule *fileModule)
 
 void ParameterExtractor::setParameters(const FileModule* module)
 {
+
     if (module == NULL) {
         return;
     }
