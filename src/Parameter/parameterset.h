@@ -10,6 +10,7 @@ using namespace std;
 class ParameterSet
 {
 
+protected:
     typedef map<string,string >SetOfParameter;
     typedef map<string,SetOfParameter> Parameterset;
      Parameterset parameterSet;
@@ -17,7 +18,7 @@ class ParameterSet
 public:
 
      ParameterSet();
-     bool getParameterSet(string filename);
+     void getParameterSet(string filename);
      void print();
      void applyParameterSet(FileModule *fileModule,string setName);
 

@@ -16,7 +16,7 @@ ParameterSet::ParameterSet()
 {
 }
 
-bool ParameterSet::getParameterSet(string filename){
+void ParameterSet::getParameterSet(string filename){
 
     try{
             std::fstream myfile;
@@ -32,15 +32,13 @@ bool ParameterSet::getParameterSet(string filename){
                 SetOfParameter setofparameter;
                 std::cout<<"model name"<<v.first<<std::endl;
                 for(pt::ptree::value_type &vi : v.second){
-
                       setofparameter[vi.first]=vi.second.data();
-                      std::cout<<vi.first<<std::endl;
+
                 }
                 parameterSet[v.first]=setofparameter;
             }
 
             myfile.close();
-            print();
        }
        catch (std::exception const& e)
        {
@@ -73,14 +71,22 @@ void ParameterSet::applyParameterSet(FileModule *fileModule,string setName)
      }
 
     SetOfParameter setofparameter=set->second;
+    ModuleContext ctx;
 
     for (AssignmentList::iterator it = fileModule->scope.assignments.begin();it != fileModule->scope.assignments.end();it++) {
 
         for(SetOfParameter::iterator i = setofparameter.begin();i!=setofparameter.end();i++){
             if(i->first== (*it).name){
                 Assignment *assignment;
-                    assignment=&(*it);
+                assignment=&(*it);
+                const ValuePtr defaultValue = assignment->expr.get()->evaluate(&ctx);
+                if(defaultValue->type()== Value::STRING){
                     assignment->expr = shared_ptr<Expression>(new Literal(ValuePtr(i->second)));
+                }else if(defaultValue->type()== Value::BOOL){
+                      assignment->expr = shared_ptr<Expression>(new Literal(ValuePtr(i->second=="true")));
+                }else{
+                    assignment->expr = shared_ptr<Expression>(new Literal(ValuePtr(QString::fromStdString(i->second).toDouble())))  ;
+                }
              }
 
          }

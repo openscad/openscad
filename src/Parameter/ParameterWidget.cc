@@ -38,7 +38,8 @@
 ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 {
 	setupUi(this);
-
+    getParameterSet("save.json");
+    setComboBoxForSet();
     descriptionShow=true;
 	autoPreviewTimer.setInterval(500);
 	autoPreviewTimer.setSingleShot(true);
@@ -49,6 +50,26 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 
 ParameterWidget::~ParameterWidget()
 {
+}
+
+void ParameterWidget::setComboBoxForSet(){
+
+    this->comboBox->addItem("No Set Selected",
+                QVariant(QString::fromStdString("")));
+    for(Parameterset::iterator it=parameterSet.begin();it != parameterSet.end();it++){
+          this->comboBox->addItem(QString::fromStdString(it->first),
+                      QVariant(QString::fromStdString(it->first)));
+    }
+    this->comboBox->setCurrentText("No Set Selected");
+    connect(comboBox, SIGNAL(currentIndexChanged(int)),this,SLOT(onSetChanged(int)));
+}
+
+void ParameterWidget::onSetChanged(int idx){
+
+    const string v = comboBox->itemData(idx).toString().toUtf8().constData();
+    applyParameterSet(v);
+    emit previewRequested();
+
 }
 
 void ParameterWidget::onDescriptionShow()
@@ -203,4 +224,30 @@ if(groupMap.find("Global")!=groupMap.end()){
     end();
 }
 
+void ParameterWidget::applyParameterSet(string setName){
+
+
+    Parameterset::iterator set=parameterSet.find(setName);
+    if(set==parameterSet.end()){
+        qWarning("no set");
+        return ;
+     }
+    SetOfParameter setofparameter=set->second;
+
+    for(SetOfParameter::iterator i = setofparameter.begin();i!=setofparameter.end();i++){
+
+        entry_map_t::iterator entry =entries.find(i->first);
+        if(entry!=entries.end()){
+            if(entry->second->dvt == Value::STRING){
+                entry->second->value=ValuePtr(i->second);
+            }else if(entry->second->dvt== Value::BOOL){
+                entry->second->value=ValuePtr(i->second=="true");
+          }
+            else{
+             entry->second->value=ValuePtr(QString::fromStdString(i->second).toDouble());
+            }
+        }
+    }
+
+}
 
