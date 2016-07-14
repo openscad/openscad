@@ -91,7 +91,7 @@ are build scripts that download and compile the libraries from source.
 Follow the instructions for the platform you're compiling on below.
 
 * A C++ compiler supporting C++11
-* [Qt4 (4.4 ->)](http://www.qt.nokia.com/)
+* [Qt (4.4 -> 5.x)](http://qt.io/)
 * [QScintilla2 (2.7 ->)](http://www.riverbankcomputing.co.uk/software/qscintilla/)
 * [CGAL (3.6 ->)](http://www.cgal.org/)
  * [GMP (5.x)](http://www.gmplib.org/)
