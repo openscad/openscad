@@ -38,8 +38,9 @@ start()
   elif [ "`ps cax | grep $VFB_PID_MINUS1 | grep $VFB_BINARY`" ]; then
     VFB_PID=$VFB_PID_MINUS1
   else
-    echo started $VFB_BINARY but cannot find process ID in process table
+    echo "started $VFB_BINARY but cannot find process ID in process table ($VFB_PID_MINUS0 or $VFB_PID_MINUS1)"
     echo please stop $VFB_BINARY manually
+    if [ $debug ]; then echo `ps cax | grep $VFB_BINARY`; fi
     VFB_PID=
     return
   fi
