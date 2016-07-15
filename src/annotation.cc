@@ -25,7 +25,7 @@
  */
 
 #include <stdio.h>
-#include"Assignment.h"
+#include "Assignment.h"
 #include "expression.h"
 #include "context.h"
 #include "evalcontext.h"
