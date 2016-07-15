@@ -13,7 +13,7 @@
 
 class Annotation;
 
-typedef std::map<const std::string, Annotation *> AnnotationMap;
+typedef std::map<std::string, Annotation *> AnnotationMap;
 
 typedef std::vector<Annotation> AnnotationList;
 
