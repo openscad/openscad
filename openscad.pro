@@ -103,6 +103,7 @@ macx {
   APP_RESOURCES.files = OpenSCAD.sdef dsa_pub.pem icons/SCAD.icns
   QMAKE_BUNDLE_DATA += APP_RESOURCES
   LIBS += -framework Cocoa -framework ApplicationServices
+  QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.8
 }
 
 

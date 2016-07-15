@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # This script builds all library dependencies of OpenSCAD for Mac OS X.
-# The libraries will be build in 64-bit mode and backwards compatible with 10.7 "Lion".
+# The libraries will be build in 64-bit mode and backwards compatible with 10.8 "Mountain Lion".
 # 
 # This script must be run from the OpenSCAD source root directory
 #
@@ -23,10 +23,9 @@ BASEDIR=$PWD/../libraries
 OPENSCADDIR=$PWD
 SRCDIR=$BASEDIR/src
 DEPLOYDIR=$BASEDIR/install
-MAC_OSX_VERSION_MIN=10.7
+MAC_OSX_VERSION_MIN=10.8
 OPTION_LLVM=false
 OPTION_CLANG=false
-OPTION_GCC=false
 OPTION_DEPLOY=false
 OPTION_FORCE=0
 OPTION_CXX11=true
@@ -757,19 +756,14 @@ elif (( $OSX_VERSION >= 9 )); then
   echo "Detected Mavericks (10.9)"
 elif (( $OSX_VERSION >= 8 )); then
   echo "Detected Mountain Lion (10.8)"
-elif (( $OSX_VERSION >= 7 )); then
-  echo "Detected Lion (10.7)"
 else
-  echo "Detected Snow Leopard (10.6) or earlier"
+  echo "Detected Lion (10.7) or earlier"
 fi
 
 USING_LLVM=false
-USING_GCC=false
 USING_CLANG=false
 if $OPTION_LLVM; then
   USING_LLVM=true
-elif $OPTION_GCC; then
-  USING_GCC=true
 elif $OPTION_CLANG; then
   USING_CLANG=true
 elif (( $OSX_VERSION >= 7 )); then
@@ -780,14 +774,6 @@ if $USING_LLVM; then
   echo "Using gcc LLVM compiler"
   export CC=llvm-gcc
   export CXX=llvm-g++
-  export QMAKESPEC=macx-llvm
-elif $USING_GCC; then
-  echo "Using gcc compiler"
-  export CC=gcc
-  export CXX=g++
-  export CPP=cpp
-  # Somehow, qmake in Qt-4.8.2 doesn't detect Lion's gcc and falls back into
-  # project file mode unless manually given a QMAKESPEC
   export QMAKESPEC=macx-llvm
 elif $USING_CLANG; then
   echo "Using clang compiler"
