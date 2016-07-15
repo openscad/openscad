@@ -38,7 +38,6 @@
 ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 {
 	setupUi(this);
-
     descriptionShow=true;
 	autoPreviewTimer.setInterval(500);
 	autoPreviewTimer.setSingleShot(true);
@@ -47,8 +46,39 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
     connect(checkBoxDetailedDescription,SIGNAL(toggled(bool)),this,SLOT(onDescriptionShow()));
 }
 
+void ParameterWidget::setFile(QString jsonFile){
+
+    getParameterSet(jsonFile.replace(".scad",".json").toStdString());
+    setComboBoxForSet();
+}
+
 ParameterWidget::~ParameterWidget()
 {
+}
+
+void ParameterWidget::setComboBoxForSet(){
+
+    if(root.empty()){
+        return;
+    }
+    this->comboBox->addItem("No Set Selected",
+                QVariant(QString::fromStdString("")));
+
+    for(pt::ptree::value_type &v : root.get_child("SET")){
+
+        this->comboBox->addItem(QString::fromStdString(v.first),
+                      QVariant(QString::fromStdString(v.first)));
+    }
+    this->comboBox->setCurrentText("No Set Selected");
+    connect(comboBox, SIGNAL(currentIndexChanged(int)),this,SLOT(onSetChanged(int)));
+}
+
+void ParameterWidget::onSetChanged(int idx){
+
+    const string v = comboBox->itemData(idx).toString().toUtf8().constData();
+    applyParameterSet(v);
+    emit previewRequested();
+
 }
 
 void ParameterWidget::onDescriptionShow()
@@ -203,4 +233,33 @@ if(groupMap.find("Global")!=groupMap.end()){
     end();
 }
 
+void ParameterWidget::applyParameterSet(string setName){
+
+    if(root.empty()){
+        return;
+    }
+    string path="SET."+setName;
+    Parameterset::iterator set=parameterSet.find(setName);
+    for(pt::ptree::value_type &v : root.get_child(path)){
+        entry_map_t::iterator entry =entries.find(v.first);
+        try{
+            if(entry!=entries.end()){
+                if(entry->second->dvt == Value::NUMBER){
+                    entry->second->value=ValuePtr(v.second.get_value<double>());
+                }else if(entry->second->dvt== Value::BOOL){
+                    entry->second->value=ValuePtr(v.second.get_value<bool>());
+                }else if(entry->second->dvt== Value::VECTOR){
+
+                    //code to written
+
+                }else{
+                 entry->second->value=ValuePtr(v.second.data());
+                }
+            }
+        }
+        catch (std::exception const& e){
+            std::cerr << e.what() << std::endl;
+        }
+    }
+}
 

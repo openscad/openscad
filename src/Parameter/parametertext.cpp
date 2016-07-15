@@ -31,7 +31,7 @@ void ParameterText::on_Changed()
 void ParameterText::setValue()
 {
     this->stackedWidget->setCurrentWidget(this->pageText);
-    this->lineEdit->setText(QString::fromStdString(object->defaultValue->toString()));
+    this->lineEdit->setText(QString::fromStdString(object->value->toString()));
     if(object->values->toDouble()>0){
         this->lineEdit->setMaxLength(object->values->toDouble());
     }

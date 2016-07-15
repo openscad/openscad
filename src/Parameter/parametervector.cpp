@@ -41,7 +41,7 @@ void ParameterVector::on_Changed(double)
 void ParameterVector::setValue()
 {
     this->stackedWidget->setCurrentWidget(this->pageVector);
-    Value::VectorType vec = object->defaultValue->toVector();
+    Value::VectorType vec = object->value->toVector();
     if (vec.size() < 4) {
         this->doubleSpinBox4->hide();
         this->doubleSpinBox4->setReadOnly(true);

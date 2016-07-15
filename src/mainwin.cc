@@ -176,6 +176,7 @@ MainWindow::MainWindow(const QString &filename)
 {
 	setupUi(this);
 
+    this->parameterWidget->setFile(filename);
 	editorDockTitleWidget = new QWidget();
         consoleDockTitleWidget = new QWidget();
         parameterDockTitleWidget = new QWidget();
