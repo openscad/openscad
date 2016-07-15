@@ -1,16 +1,5 @@
 #include "parameterset.h"
-
-#include "FileModule.h"
 #include "modcontext.h"
-
-#include<QDebug>
-
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
-
-
-// Short alias for this namespace
-namespace pt = boost::property_tree;
 
 ParameterSet::ParameterSet()
 {
@@ -18,78 +7,44 @@ ParameterSet::ParameterSet()
 
 void ParameterSet::getParameterSet(string filename){
 
-    try{
-            std::fstream myfile;
-            myfile.open (filename);
-            // send your JSON above to the parser below, but populate ss first
-
-            pt::ptree root;
-            pt::read_json(myfile, root);
-
-            for(pt::ptree::value_type &v : root.get_child("SET")) {
-
-                // The data function is used to access the data stored in a node.
-                SetOfParameter setofparameter;
-                std::cout<<"model name"<<v.first<<std::endl;
-                for(pt::ptree::value_type &vi : v.second){
-                      setofparameter[vi.first]=vi.second.data();
-
-                }
-                parameterSet[v.first]=setofparameter;
-            }
-
-            myfile.close();
-       }
-       catch (std::exception const& e)
-       {
-           std::cerr << e.what() << std::endl;
-       }
-}
-
-void ParameterSet::print(){
-
-    for(Parameterset::iterator it=parameterSet.begin();it!=parameterSet.end();it++){
-        SetOfParameter setofparameter=(*it).second;
-        for(SetOfParameter::iterator i=setofparameter.begin();i!=setofparameter.end(); i++){
-            std::cout<<i->first<<" ";
-        }
+    std::fstream myfile;
+    myfile.open (filename);
+    // send your JSON above to the parser below, but populate ss first
+    if(myfile.is_open()){
+        pt::read_json(myfile, this->root);
     }
-
+    myfile.close();
 }
-
 
 void ParameterSet::applyParameterSet(FileModule *fileModule,string setName)
 {
-    if (fileModule == NULL) {
-        return;
-    }
+    try{
+        if (fileModule == NULL ||root.empty()) {
+            return;
+        }
+        ModuleContext ctx;
+        string path="SET."+setName;
+        for (AssignmentList::iterator it = fileModule->scope.assignments.begin();it != fileModule->scope.assignments.end();it++) {
 
-    Parameterset::iterator set=parameterSet.find(setName);
-    if(set==parameterSet.end()){
-        qWarning("no set");
-        return ;
-     }
-
-    SetOfParameter setofparameter=set->second;
-    ModuleContext ctx;
-
-    for (AssignmentList::iterator it = fileModule->scope.assignments.begin();it != fileModule->scope.assignments.end();it++) {
-
-        for(SetOfParameter::iterator i = setofparameter.begin();i!=setofparameter.end();i++){
-            if(i->first== (*it).name){
-                Assignment *assignment;
-                assignment=&(*it);
-                const ValuePtr defaultValue = assignment->expr.get()->evaluate(&ctx);
-                if(defaultValue->type()== Value::STRING){
-                    assignment->expr = shared_ptr<Expression>(new Literal(ValuePtr(i->second)));
-                }else if(defaultValue->type()== Value::BOOL){
-                      assignment->expr = shared_ptr<Expression>(new Literal(ValuePtr(i->second=="true")));
-                }else{
-                    assignment->expr = shared_ptr<Expression>(new Literal(ValuePtr(QString::fromStdString(i->second).toDouble())))  ;
-                }
+            for(pt::ptree::value_type &v : root.get_child(path)){
+                if(v.first== (*it).name){
+                    Assignment *assignment;
+                    assignment=&(*it);
+                    const ValuePtr defaultValue = assignment->expr.get()->evaluate(&ctx);
+                    if(defaultValue->type()== Value::NUMBER){
+                        assignment->expr = shared_ptr<Expression>(new Literal(ValuePtr(v.second.get_value<double>())))  ;
+                    }else if(defaultValue->type()== Value::BOOL){
+                          assignment->expr = shared_ptr<Expression>(new Literal(ValuePtr(v.second.get_value<bool>())));
+                    }else{
+                        assignment->expr = shared_ptr<Expression>(new Literal(ValuePtr(v.second.data())));
+                    }
+                 }
              }
-
-         }
+        }
+    }
+    catch (std::exception const& e)
+    {
+        std::cerr << e.what() << std::endl;
     }
 }
 

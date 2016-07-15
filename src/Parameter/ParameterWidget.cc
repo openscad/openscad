@@ -38,8 +38,6 @@
 ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 {
 	setupUi(this);
-    getParameterSet("save.json");
-    setComboBoxForSet();
     descriptionShow=true;
 	autoPreviewTimer.setInterval(500);
 	autoPreviewTimer.setSingleShot(true);
@@ -48,17 +46,28 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
     connect(checkBoxDetailedDescription,SIGNAL(toggled(bool)),this,SLOT(onDescriptionShow()));
 }
 
+void ParameterWidget::setFile(QString jsonFile){
+
+    getParameterSet(jsonFile.replace(".scad",".json").toStdString());
+    setComboBoxForSet();
+}
+
 ParameterWidget::~ParameterWidget()
 {
 }
 
 void ParameterWidget::setComboBoxForSet(){
 
+    if(root.empty()){
+        return;
+    }
     this->comboBox->addItem("No Set Selected",
                 QVariant(QString::fromStdString("")));
-    for(Parameterset::iterator it=parameterSet.begin();it != parameterSet.end();it++){
-          this->comboBox->addItem(QString::fromStdString(it->first),
-                      QVariant(QString::fromStdString(it->first)));
+
+    for(pt::ptree::value_type &v : root.get_child("SET")){
+
+        this->comboBox->addItem(QString::fromStdString(v.first),
+                      QVariant(QString::fromStdString(v.first)));
     }
     this->comboBox->setCurrentText("No Set Selected");
     connect(comboBox, SIGNAL(currentIndexChanged(int)),this,SLOT(onSetChanged(int)));
@@ -226,28 +235,31 @@ if(groupMap.find("Global")!=groupMap.end()){
 
 void ParameterWidget::applyParameterSet(string setName){
 
-
+    if(root.empty()){
+        return;
+    }
+    string path="SET."+setName;
     Parameterset::iterator set=parameterSet.find(setName);
-    if(set==parameterSet.end()){
-        qWarning("no set");
-        return ;
-     }
-    SetOfParameter setofparameter=set->second;
+    for(pt::ptree::value_type &v : root.get_child(path)){
+        entry_map_t::iterator entry =entries.find(v.first);
+        try{
+            if(entry!=entries.end()){
+                if(entry->second->dvt == Value::NUMBER){
+                    entry->second->value=ValuePtr(v.second.get_value<double>());
+                }else if(entry->second->dvt== Value::BOOL){
+                    entry->second->value=ValuePtr(v.second.get_value<bool>());
+                }else if(entry->second->dvt== Value::VECTOR){
 
-    for(SetOfParameter::iterator i = setofparameter.begin();i!=setofparameter.end();i++){
+                    //code to written
 
-        entry_map_t::iterator entry =entries.find(i->first);
-        if(entry!=entries.end()){
-            if(entry->second->dvt == Value::STRING){
-                entry->second->value=ValuePtr(i->second);
-            }else if(entry->second->dvt== Value::BOOL){
-                entry->second->value=ValuePtr(i->second=="true");
-          }
-            else{
-             entry->second->value=ValuePtr(QString::fromStdString(i->second).toDouble());
+                }else{
+                 entry->second->value=ValuePtr(v.second.data());
+                }
             }
         }
+        catch (std::exception const& e){
+            std::cerr << e.what() << std::endl;
+        }
     }
-
 }
 

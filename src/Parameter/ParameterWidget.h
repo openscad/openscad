@@ -47,6 +47,7 @@ private:
 public:
     ParameterWidget(QWidget *parent = 0);
     virtual ~ParameterWidget();
+    void setFile(QString jsonFile);
 
 protected slots:
     void onValueChanged();
