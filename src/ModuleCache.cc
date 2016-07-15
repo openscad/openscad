@@ -1,9 +1,8 @@
 #include "ModuleCache.h"
-#include "module.h"
+#include "FileModule.h"
 #include "printutils.h"
 #include "openscad.h"
 
-#include "boosty.h"
 #include <boost/format.hpp>
 #include <boost/filesystem.hpp>
 
@@ -13,6 +12,7 @@
 #include <time.h>
 #include <sys/stat.h>
 
+namespace fs=boost::filesystem;
 //#include "parsersettings.h"
 /*!
 	FIXME: Implement an LRU scheme to avoid having an ever-growing module cache

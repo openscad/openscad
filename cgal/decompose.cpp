@@ -1,4 +1,5 @@
 #include <boost/foreach.hpp>
+#include <boost/filesystem.hpp>
 #include <boost/regex.hpp>
 #include <sstream>
 #include <iostream>
@@ -8,11 +9,10 @@
 #include "export.h"
 #include "polyset.h"
 #include "CGAL_Nef_polyhedron.h"
-#include "boosty.h"
-
 #include <CGAL/IO/Nef_polyhedron_iostream_3.h>
 
 using namespace CGALUtils;
+namespace fs = boost::filesystem;
 
 // Nef polyhedron are using CGAL_Kernel3 (Cartesian<Gmpq>)
 // Triangulation will use Epick
@@ -636,7 +636,7 @@ int main(int argc, char *argv[])
   CGAL_Nef_polyhedron *N = NULL;
   if (argc == 2) {
     std::string filename(argv[1]);
-    std::string suffix = boosty::extension_str(filename);
+    std::string suffix = filename.extension().generic_string();
     if (suffix == ".stl") {
       if (!(ps = import_stl(filename))) {
         std::cerr << "Error importing STL " << filename << std::endl;

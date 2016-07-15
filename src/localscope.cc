@@ -1,7 +1,7 @@
 #include "localscope.h"
 #include "modcontext.h"
 #include "module.h"
-#include "typedefs.h"
+#include "ModuleInstantiation.h"
 #include "expression.h"
 #include "function.h"
 
@@ -32,7 +32,7 @@ std::string LocalScope::dump(const std::string &indent) const
 		dump << m.second->dump(indent, m.first);
 	}
 	for(const auto &ass : this->assignments) {
-		dump << indent << ass.first << " = " << *ass.second << ";\n";
+		dump << indent << ass.name << " = " << *ass.expr << ";\n";
 	}
 	for(const auto &inst : this->children) {
 		dump << inst->dump(indent);
@@ -61,6 +61,6 @@ std::vector<AbstractNode*> LocalScope::instantiateChildren(const Context *evalct
 void LocalScope::apply(Context &ctx) const
 {
 	for(const auto &ass : this->assignments) {
-		ctx.set_variable(ass.first, ass.second->evaluate(&ctx));
+		ctx.set_variable(ass.name, ass.expr->evaluate(&ctx));
 	}
 }

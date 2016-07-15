@@ -22,8 +22,6 @@ macx {
     QMAKE_CXXFLAGS += -stdlib=libc++
     QMAKE_LFLAGS += -stdlib=libc++
     QMAKE_OBJECTIVE_CFLAGS += -stdlib=libc++
-    # libc++ on requires Mac OS X 10.7+
-    QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.7
   }
 }
 

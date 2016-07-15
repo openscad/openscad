@@ -27,17 +27,16 @@
 %{
 
 #include <glib.h>
-#include "typedefs.h"
 #include "handle_dep.h"
 #include "printutils.h"
 #include "parsersettings.h"
+#include "Assignment.h"
 #include "parser_yacc.h"
-#include "module.h"
+#include "FileModule.h"
 #include <assert.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
-#include "boosty.h"
 
 //isatty for visual c++ and mingw-cross-env
 #if defined __WIN32__ && ! defined _MSC_VER
@@ -75,6 +74,21 @@ extern FileModule *rootmodule;
       result = YY_NULL;                   \
     }                                     \
   }                                       \
+}
+
+/*
+  Handle locations.
+  Note: Since flex doesn't handle column numbers, we deal with those manually.
+  The yycolumn is manually reset for each encountered newline.
+*/
+extern YYLTYPE parserlloc;
+int yycolumn = 1;
+#define YY_USER_ACTION {              \
+  parserlloc.first_line = yylineno;   \
+  parserlloc.first_column = yycolumn; \
+  yycolumn = yycolumn + yyleng;       \
+  parserlloc.last_column = yycolumn;  \
+  parserlloc.last_line = yylineno;    \
 }
 
 void to_utf8(const char *, char *);
@@ -199,7 +213,8 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
 			return TOK_STRING; }
 }
 
-[\n\r\t ]
+[\t ]                   /* whitespace */
+[\n\r]                  { yycolumn = 1; }
 
 \/\/ BEGIN(cond_lcomment);
 <cond_lcomment>{
@@ -262,15 +277,15 @@ void includefile()
   fs::path localpath = fs::path(filepath) / filename;
   fs::path fullpath = find_valid_path(sourcefile().parent_path(), localpath, &openfilenames);
   if (!fullpath.empty()) {
-    rootmodule->registerInclude(boosty::stringy(localpath), boosty::stringy(fullpath));
+    rootmodule->registerInclude(localpath.generic_string(), fullpath.generic_string());
   }
   else {
-    rootmodule->registerInclude(boosty::stringy(localpath), boosty::stringy(localpath));
-    PRINTB("WARNING: Can't open include file '%s'.", boosty::stringy(localpath));
+    rootmodule->registerInclude(localpath.generic_string(), localpath.generic_string());
+    PRINTB("WARNING: Can't open include file '%s'.", localpath.generic_string());
     return;
   };
 
-  std::string fullname = boosty::stringy(fullpath);
+  std::string fullname = fullpath.generic_string();
 
   filepath.clear();
   filename_stack.push_back(fullpath);
@@ -279,7 +294,7 @@ void includefile()
 
   yyin = fopen(fullname.c_str(), "r");
   if (!yyin) {
-    PRINTB("WARNING: Can't open include file '%s'.", boosty::stringy(localpath));
+    PRINTB("WARNING: Can't open include file '%s'.", localpath.generic_string());
     filename_stack.pop_back();
     return;
   }

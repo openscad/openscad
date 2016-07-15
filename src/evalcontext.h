@@ -1,6 +1,7 @@
 #pragma once
 
 #include "context.h"
+#include "Assignment.h"
 
 /*!
   This hold the evaluation context (the parameters actually sent

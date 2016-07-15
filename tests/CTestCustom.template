@@ -18,7 +18,7 @@ set(ENV{OPENSCADPATH} "__cmake_current_source_dir__/../libraries")
 # This is not used by Windows or Mac because they have alternate means 
 # of accessing OpenGL.
 
-set(debug_openscad_template 0)
+set(debug_openscad_template 1)
 
 if( __cmake_system_name__ MATCHES "Linux|BSD")
  set(DISPLAY_ENV $ENV{DISPLAY})
