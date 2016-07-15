@@ -57,10 +57,11 @@ OffscreenContext *create_offscreen_context(int w, int h)
   // Will not be used for actual rendering.
                                    
   NSOpenGLPixelFormatAttribute attributes[] = {
-    NSOpenGLPFAPixelBuffer,
     NSOpenGLPFANoRecovery,
     NSOpenGLPFADepthSize, 24,
     NSOpenGLPFAStencilSize, 8,
+// Enable this to force software rendering
+// NSOpenGLPFARendererID, kCGLRendererGenericID,
 // Took out the acceleration requirement to be able to run the tests
 // in a non-accelerated VM.
 // NSOpenGLPFAAccelerated,
