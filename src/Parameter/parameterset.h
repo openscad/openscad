@@ -18,14 +18,15 @@ class ParameterSet
 
 protected:
     pt::ptree root;
-    typedef map<string,string >SetOfParameter;
+    fstream myfile;
     typedef map<string,pt::ptree::value_type> Parameterset;
     Parameterset parameterSet;
 
 public:
-     ParameterSet();
-     void getParameterSet(string filename);
-     void applyParameterSet(FileModule *fileModule,string setName);
+    ParameterSet();
+    ~ParameterSet();
+    void getParameterSet(string filename);
+    void applyParameterSet(FileModule *fileModule,string setName);
 
 };
 

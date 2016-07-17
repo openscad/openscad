@@ -4,16 +4,24 @@
 ParameterSet::ParameterSet()
 {
 }
+ParameterSet::~ParameterSet()
+{
+    myfile.close();
+}
 
 void ParameterSet::getParameterSet(string filename){
 
-    std::fstream myfile;
     myfile.open (filename);
     // send your JSON above to the parser below, but populate ss first
     if(myfile.is_open()){
-        pt::read_json(myfile, this->root);
+        try{
+            pt::read_json(myfile, this->root);
+        }
+        catch (std::exception const& e){
+
+            std::cerr << e.what() << std::endl;
+        }
     }
-    myfile.close();
 }
 
 void ParameterSet::applyParameterSet(FileModule *fileModule,string setName)

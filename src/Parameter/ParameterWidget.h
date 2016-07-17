@@ -43,6 +43,7 @@ private:
     QTimer autoPreviewTimer;
     bool descriptionShow;
     QVBoxLayout * anyLayout;
+    string jsonFile;
 
 public:
     ParameterWidget(QWidget *parent = 0);
@@ -54,6 +55,8 @@ protected slots:
     void onPreviewTimerElapsed();
     void onDescriptionShow();
     void onSetChanged(int idx);
+    void onSetAdd();
+    void onSetDelete();
 
 
 signals:
@@ -65,6 +68,7 @@ protected:
     void addEntry(class ParameterVirtualWidget *entry);
     void end();
     void setComboBoxForSet();
-     void applyParameterSet(string setName);
+    void applyParameterSet(string setName);
+    void updateParameterSet(string setName);
 };
 

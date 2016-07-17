@@ -252,8 +252,8 @@ FORMS   += src/MainWindow.ui \
            src/AboutDialog.ui \
            src/FontListDialog.ui \
            src/ProgressWidget.ui \
-            src/Parameter/parameterWidget.ui \
-            src/Parameter/parameterEntryWidget.ui \
+           src/Parameter/ParameterWidget.ui \
+           src/Parameter/ParameterEntryWidget.ui \
            src/launchingscreen.ui \
            src/LibraryInfoDialog.ui \
 
