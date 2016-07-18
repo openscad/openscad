@@ -3,6 +3,8 @@
 
 #include"expression.h"
 #include "FileModule.h"
+#include "modcontext.h"
+extern AssignmentList * parser(const char *text);
 
 #include<map>
 

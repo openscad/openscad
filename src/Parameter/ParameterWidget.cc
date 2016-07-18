@@ -35,6 +35,9 @@
 #include "parametervector.h"
 #include <QInputDialog>
 
+#include "modcontext.h"
+extern AssignmentList * parser(const char *text);
+
 ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 {
 	setupUi(this);
@@ -274,10 +277,15 @@ void ParameterWidget::applyParameterSet(string setName){
                 }else if(entry->second->dvt== Value::BOOL){
                     entry->second->value=ValuePtr(v.second.get_value<bool>());
                 }else if(entry->second->dvt== Value::VECTOR){
-
-                    //code to written
-
-                }else{
+                    ModuleContext ctx;
+                    AssignmentList *assignmentList;
+                    assignmentList=parser(v.second.data().c_str());
+                    Assignment *assignment;
+                    for(int i=0; i<assignmentList->size(); i++) {
+                        assignment=assignmentList[i].data();
+                    }
+                    entry->second->value=assignment->expr.get()->evaluate(&ctx);
+                }else if(entry->second->dvt== Value::STRING){
                  entry->second->value=ValuePtr(v.second.data());
                 }
             }

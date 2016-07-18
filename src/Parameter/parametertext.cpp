@@ -1,4 +1,6 @@
 #include "parametertext.h"
+#include "modcontext.h"
+extern AssignmentList * parser(const char *text);
 
 ParameterText::ParameterText(ParameterObject *parameterobject, bool showDescription)
 {
@@ -16,14 +18,18 @@ ParameterText::ParameterText(ParameterObject *parameterobject, bool showDescript
 
 void ParameterText::on_Changed()
 {
-    if (object->dvt == Value::NUMBER) {
-        try {
-            object->value = ValuePtr(boost::lexical_cast<double>(lineEdit->text().toStdString()));
-        } catch (const boost::bad_lexical_cast& e) {
-            lineEdit->setText(QString::fromStdString(object->defaultValue->toString()));
-        }
-    } else {
+    if(object->dvt == Value::STRING){        
         object->value = ValuePtr(lineEdit->text().toStdString());
+    }
+    else{
+        ModuleContext ctx;
+        AssignmentList *assignmentList;
+        assignmentList=parser(lineEdit->text().toStdString().c_str());
+        Assignment *assignment;
+        for(int i=0; i<assignmentList->size(); i++) {
+            assignment=assignmentList[i].data();
+        }
+        object->value=assignment->expr.get()->evaluate(&ctx);
     }
     emit changed();
 }

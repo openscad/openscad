@@ -87,6 +87,9 @@ std::string Annotation::dump() const
 	dump << "@" << name << "(";
 	for(const auto &ass : this->assignments) {
 		dump << *ass.expr <<")"<< std::endl;
-	}	
+    }
+    if(this->assignments.empty()){
+        dump <<")"<< std::endl;
+    }
 	return dump.str();
 }

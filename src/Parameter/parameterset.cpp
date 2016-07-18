@@ -43,8 +43,15 @@ void ParameterSet::applyParameterSet(FileModule *fileModule,string setName)
                         assignment->expr = shared_ptr<Expression>(new Literal(ValuePtr(v.second.get_value<double>())))  ;
                     }else if(defaultValue->type()== Value::BOOL){
                           assignment->expr = shared_ptr<Expression>(new Literal(ValuePtr(v.second.get_value<bool>())));
-                    }else{
-                        assignment->expr = shared_ptr<Expression>(new Literal(ValuePtr(v.second.data())));
+                    }else if(defaultValue->type()== Value::VECTOR){
+
+                        AssignmentList *assignmentList;
+                        assignmentList=parser(v.second.data().c_str());
+                        for(int i=0; i<assignmentList->size(); i++) {
+                            assignment=assignmentList[i].data();
+                        }
+                    }else if(defaultValue->type()== Value::STRING){
+                            assignment->expr = shared_ptr<Expression>(new Literal(ValuePtr(v.second.data())));
                     }
                  }
              }
