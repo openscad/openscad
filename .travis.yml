@@ -1,6 +1,11 @@
 language: cpp
-cache: apt
 compiler: gcc
+os:
+ - linux
+ - osx
+dist: trusty
+sudo: required
+cache: apt
 
 notifications:
   irc:
@@ -11,16 +16,8 @@ notifications:
     skip_join: true
 
 before_install:
- - echo 'yes' | sudo add-apt-repository ppa:chrysn/openscad
- - sudo apt-get update -qq
- - sudo apt-get install -qq build-essential libqt4-dev libqt4-opengl-dev libxmu-dev cmake bison flex git-core libboost-all-dev libXi-dev libmpfr-dev libboost-dev libglew-dev libeigen3-dev libcgal-dev libgmp3-dev libgmp-dev curl imagemagick libfontconfig-dev
- - sudo apt-get install -qq libopencsg-dev
- - echo 'yes' | sudo add-apt-repository ppa:mapnik/nightly-trunk
- - sudo apt-get update -qq
- - sudo apt-get install -qq libharfbuzz-dev
- - echo 'yes' | sudo add-apt-repository ppa:oibaf/graphics-drivers
- - sudo apt-get update -qq
- - sudo apt-get install --install-recommends libgl1-mesa-dev-lts-quantal
+ - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then wget -qO - http://files.openscad.org/OBS-Repository-Key.pub | sudo apt-key add - ; echo 'yes' | sudo add-apt-repository 'deb http://download.opensuse.org/repositories/home:/t-paul:/lib3mf/xUbuntu_14.04/ ./' ; sudo apt-get update -qq ; sudo apt-get install -qq build-essential libqt4-dev libqt4-opengl-dev libxmu-dev cmake bison flex git-core libboost-all-dev libXi-dev libmpfr-dev libboost-dev libglew-dev libeigen3-dev libcgal-dev libgmp3-dev libgmp-dev curl imagemagick libfontconfig-dev libopencsg-dev libharfbuzz-dev lib3mf-dev ; fi
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update ; ./scripts/macosx-build-homebrew.sh ; fi
 
 branches:
   only:
@@ -29,8 +26,7 @@ branches:
 before_script:
  - echo -e "Host files.openscad.org\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
  - echo -n $openscad_rsa_{00..40} >> ~/.ssh/openscad_rsa_base64
- - base64 --decode --ignore-garbage ~/.ssh/openscad_rsa_base64 > ~/.ssh/id_rsa
- - chmod 600 ~/.ssh/id_rsa
+ - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then base64 --decode --ignore-garbage ~/.ssh/openscad_rsa_base64 > ~/.ssh/id_rsa ; chmod 600 ~/.ssh/id_rsa ; fi
 
 script: if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then ./scripts/travis-ci.sh ; fi
 
