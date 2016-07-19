@@ -132,18 +132,23 @@ Prerequisites:
 
 Install Dependencies:
 
+After building dependencies, follow the instructions in the *Compilation* section.
+
+1. **From source**
+
 Run the script that sets up the environment variables:
     ```source setenv_mac.sh```
 
 Then run the script to compile all the dependencies:
     ```./scripts/macosx-build-dependencies.sh```
 
+1. **Homebrew** (assumes [Homebrew](http://brew.sh) is already installed)
 
-After building dependencies, follow the instructions in the *Compilation* section.
-
-For the adventurous, it might be possible to build OpenSCAD using _MacPorts_ or _Homebrew_. The main challenge is that both these systems have partially broken libraries, but that tends to change from time to time.
+    ```./scripts/macosx-build-homebrew.sh```
 
 1. **MacPorts** (assumes [MacPorts](http://macports.org) is already installed)
+
+    For the adventurous, it might be possible to build OpenSCAD using _MacPorts_. The main challenge is that MacPorts have partially broken libraries, but that tends to change from time to time.
 
     NB! MacPorts currently doesn't support Qt5 very well, so using Qt4
     is the only working option at the moment. However, MacPorts' Qt4
@@ -152,15 +157,6 @@ For the adventurous, it might be possible to build OpenSCAD using _MacPorts_ or 
 
     ```sudo port install opencsg qscintilla boost cgal pkgconfig eigen3 harfbuzz fontconfig```
 
-1. **Homebrew** (assumes [Homebrew](http://brew.sh) is already installed)
-
-    NB! Homebrew's ```qscintilla2``` component doesn't support Qt5, so using Qt4 is currently necessary.
-    However, Homebrew's Qt4 has a broken ```moc``` command, causing OpenSCAD compilation to
-    break. This may be fixed in Homebrew by the time you read this.
-    NB! Homebrew's ```harfbuzz``` package requires X11, so you may have to install an X11 server.
-    NB! Homebrew doesnt have an OpenCSG package
-
-    ```brew install cgal qscintilla2 eigen harfbuzz```
 
 
 ### Building for Linux/BSD
