@@ -317,10 +317,11 @@ if __name__ == '__main__':
         print >> sys.stderr, basename
         print >> sys.stderr, path, options.filename
 
-    print >> sys.stderr, options.filename
     if not hasattr(options, "filename"):
         print >> sys.stderr, "Filename cannot be deducted from arguments. Specify test filename using the -f option"
         sys.exit(2)
+    else:
+        print >> sys.stderr, options.filename
 
     if not hasattr(options, "testname"):
         options.testname = os.path.split(args[0])[1]
