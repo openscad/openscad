@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <iostream>
+#include <cmath>
 
 #include <boost/format.hpp>
 
@@ -86,8 +87,8 @@ rect::set_attrs(attr_map_t& attrs)
 	this->rx = parse_double(attrs["rx"]);
 	this->ry = parse_double(attrs["ry"]);
 
-	bool has_rx = !(abs(rx) < 1e-8);
-	bool has_ry = !(abs(ry) < 1e-8);
+	bool has_rx = !(std::fabs(rx) < 1e-8);
+	bool has_ry = !(std::fabs(ry) < 1e-8);
 	
 	if (has_rx || has_ry) {
 		if (!has_rx) {

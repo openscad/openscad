@@ -2,6 +2,7 @@
 
 #include <string>
 #include <iostream>
+#include <cmath>
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -75,8 +76,8 @@ path::arc_to(path_t& path, double x1, double y1, double rx, double ry, double x2
 
 	double d = (x1_ * x1_) / (rx * rx) + (y1_ * y1_) / (ry * ry);
 	if (d > 1) {
-		rx = abs(sqrt(d) * rx);
-		ry = abs(sqrt(d) * ry);
+		rx = std::fabs(std::sqrt(d) * rx);
+		ry = std::fabs(std::sqrt(d) * ry);
 	}
 	
 	// F.6.5.2
@@ -85,7 +86,7 @@ path::arc_to(path_t& path, double x1, double y1, double rx, double ry, double x2
 	if (t1 < 0) {
 		t1 = 0;
 	}
-	double t3 = sqrt(t1 / t2);
+	double t3 = std::sqrt(t1 / t2);
 	if (large == sweep) {
 		t3 = -t3;
 	}
@@ -109,7 +110,7 @@ path::arc_to(path_t& path, double x1, double y1, double rx, double ry, double x2
             delta -= 2 * M_PI;
 	}
 	
-	int steps = std::abs(delta) * 10.0 / M_PI + 4;
+	int steps = std::fabs(delta) * 10.0 / M_PI + 4;
 	for (int a = 0;a <= steps;a++) {
 	        double phi = theta + delta * a / steps;
 
@@ -211,10 +212,10 @@ path::set_attrs(attr_map_t& attrs)
 			//(rx ry x-axis-rotation large-arc-flag sweep-flag x y)
 			switch (point) {
 			case 0:
-				rx = abs(p);
+				rx = std::fabs(p);
 				break;
 			case 1:
-				ry = abs(p);
+				ry = std::fabs(p);
 				break;
 			case 2:
 				angle = p;

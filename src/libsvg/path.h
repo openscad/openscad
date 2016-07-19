@@ -1,10 +1,8 @@
 #ifndef LIBSVG_PATH_H
 #define LIBSVG_PATH_H
 
-#include <math.h>
-
-#include <vector>
-
+#include <cmath>
+#include <string>
 #include "shape.h"
 
 namespace libsvg {
@@ -15,7 +13,7 @@ protected:
 
 private:
     inline double t(double t, int exp) const {
-	return pow(1.0 - t, exp);
+			return std::pow(1.0 - t, exp);
     }
 
     bool is_open_path(path_t& path);
