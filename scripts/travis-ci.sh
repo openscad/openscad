@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x
+
 qmake CONFIG+=experimental CONFIG+=nogui
 make
 
