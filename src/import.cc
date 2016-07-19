@@ -24,8 +24,8 @@
  *
  */
 
-#include "importnode.h"
 #include "import.h"
+#include "importnode.h"
 
 #include "module.h"
 #include "ModuleInstantiation.h"
@@ -36,6 +36,7 @@
 #include "dxfdata.h"
 #include "printutils.h"
 #include "fileutils.h"
+#include "feature.h"
 
 #include <sys/types.h>
 #include <sstream>
@@ -98,6 +99,7 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 		if (ext == ".stl") actualtype = TYPE_STL;
 		else if (ext == ".off") actualtype = TYPE_OFF;
 		else if (ext == ".dxf") actualtype = TYPE_DXF;
+		else if (Feature::ExperimentalSvgImport.is_enabled() && ext == ".svg") actualtype = TYPE_SVG;
 	}
 
 	ImportNode *node = new ImportNode(inst, actualtype);
@@ -127,6 +129,11 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 
 	if (node->scale <= 0) node->scale = 1;
 
+	ValuePtr width = c.lookup_variable("width", true);
+	ValuePtr height = c.lookup_variable("height", true);
+	node->width = (width->type() == Value::NUMBER) ? width->toDouble() : -1;
+	node->height = (height->type() == Value::NUMBER) ? height->toDouble() : -1;
+	
 	return node;
 }
 
@@ -147,6 +154,10 @@ const Geometry *ImportNode::createGeometry() const
 		PolySet *p = import_off(this->filename);
 		g = p;
 		break;
+	}
+	case TYPE_SVG: {
+		g = import_svg(this->filename);
+ 		break;
 	}
 	case TYPE_DXF: {
 		DxfData dd(this->fn, this->fs, this->fa, this->filename, this->layername, this->origin_x, this->origin_y, this->scale);

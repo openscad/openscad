@@ -7,6 +7,7 @@ enum import_type_e {
 	TYPE_UNKNOWN,
 	TYPE_STL,
 	TYPE_OFF,
+	TYPE_SVG,
 	TYPE_DXF
 };
 
@@ -24,5 +25,6 @@ public:
 	int convexity;
 	double fn, fs, fa;
 	double origin_x, origin_y, scale;
+	double width, height;
 	virtual const class Geometry *createGeometry() const;
 };

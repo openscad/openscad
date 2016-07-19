@@ -183,6 +183,7 @@ CONFIG += harfbuzz
 CONFIG += freetype
 CONFIG += fontconfig
 CONFIG += gettext
+CONFIG += libxml2
 
 #Uncomment the following line to enable the QScintilla editor
 !nogui {
@@ -351,7 +352,22 @@ HEADERS += src/version_check.h \
            src/legacyeditor.h \
            src/LibraryInfoDialog.h
 
-SOURCES += src/version_check.cc \
+SOURCES += \
+           src/libsvg/libsvg.cc \
+           src/libsvg/circle.cc \
+           src/libsvg/ellipse.cc \
+           src/libsvg/line.cc \
+           src/libsvg/polygon.cc \
+           src/libsvg/polyline.cc \
+           src/libsvg/rect.cc \
+           src/libsvg/group.cc \
+           src/libsvg/svgpage.cc \
+           src/libsvg/path.cc \
+           src/libsvg/shape.cc \
+           src/libsvg/transformation.cc \
+           src/libsvg/util.cc \
+           \
+           src/version_check.cc \
            src/ProgressWidget.cc \
            src/linalg.cc \
            src/Camera.cc \
@@ -436,6 +452,7 @@ SOURCES += src/version_check.cc \
            src/import.cc \
            src/import_stl.cc \
            src/import_off.cc \
+           src/import_svg.cc \
            src/renderer.cc \
            src/colormap.cc \
            src/ThrownTogetherRenderer.cc \
