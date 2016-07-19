@@ -727,6 +727,8 @@ set(CORE_SOURCES
 set(NOCGAL_SOURCES
   ../src/builtin.cc 
   ../src/import.cc
+  ../src/import_stl.cc
+  ../src/import_off.cc
   ../src/export.cc
   ../src/export_stl.cc
   ../src/export_amf.cc
