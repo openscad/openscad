@@ -84,6 +84,6 @@ addons:
       name: "openscad/openscad"
       description: "The Programmers Solid 3D CAD Modeller"
     notification_email: dev@openscad.org
-    build_command_prepend: qmake
+    build_command_prepend: qmake CONFIG+=experimental CONFIG+=nogui
     build_command: make
     branch_pattern: coverity_scan
