@@ -31,7 +31,7 @@ fi
 # opencsgtest_issue1258
 # throwntogethertest_issue1089
 # throwntogethertest_issue1215
-ctest -j8 -E "\
+ctest $PARALLEL -E "\
 opencsgtest_rotate_extrude-tests|\
 opencsgtest_render-tests|\
 opencsgtest_rotate_extrude-hole|\
