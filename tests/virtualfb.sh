@@ -69,6 +69,9 @@ stop()
   if [ -e $LOCKFILE ]; then
     rm $LOCKFILE
   fi
+  cat virtualfb1.log
+  cat virtualfb2.log
+  cat ~/.xsession-errors
   rm ./virtualfb.PID
   rm ./virtualfb.DISPLAY
 }

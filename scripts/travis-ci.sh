@@ -14,12 +14,24 @@ if [[ $? != 0 ]]; then
   echo "Error building test suite"
   exit 1
 fi
+
+if [[ "$DIST" == "trusty" ]]; then
+    PARALLEL=-j2
+else
+    PARALLEL=-j8
+fi
+
 # Exclude tests known the cause issues on Travis
 # opencsgtest_rotate_extrude-tests - Fails on Ubuntu 12.04 using Gallium 0.4 drivers
 # *_text-font-direction-tests - Fails due to old freetype (issue #899)
 # throwntogethertest_issue964 - Fails due to non-planar quad being tessellated slightly different
 # opencsgtest_issue1165 - z buffer tearing
-ctest -j8 -E "\
+
+# Fails on Apple's software renderer:
+# opencsgtest_issue1258
+# throwntogethertest_issue1089
+# throwntogethertest_issue1215
+ctest $PARALLEL -E "\
 opencsgtest_rotate_extrude-tests|\
 opencsgtest_render-tests|\
 opencsgtest_rotate_extrude-hole|\
@@ -38,7 +50,10 @@ csgpngtest_text-font-direction-tests|\
 svgpngtest_text-font-direction-tests|\
 throwntogethertest_text-font-direction-tests|\
 throwntogethertest_issue964|\
-opencsgtest_issue1165\
+opencsgtest_issue1165|\
+opencsgtest_issue1258|\
+throwntogethertest_issue1089|\
+throwntogethertest_issue1215\
 "
 if [[ $? != 0 ]]; then
   echo "Test failure"
