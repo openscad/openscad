@@ -26,10 +26,15 @@ void ParameterText::on_Changed()
         AssignmentList *assignmentList;
         assignmentList=parser(lineEdit->text().toStdString().c_str());
         Assignment *assignment;
-        for(int i=0; i<assignmentList->size(); i++) {
-            assignment=assignmentList[i].data();
+        if(assignmentList==NULL){
+            return ;
         }
-        object->value=assignment->expr.get()->evaluate(&ctx);
+        for(int i=0; i<assignmentList->size(); i++) {
+            ValuePtr newValue=assignmentList[i].data()->expr.get()->evaluate(&ctx);
+                        if(object->dvt==newValue->type()){
+                            object->value=newValue;
+                        }
+        }
     }
     emit changed();
 }

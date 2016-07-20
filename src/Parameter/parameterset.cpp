@@ -6,11 +6,12 @@ ParameterSet::ParameterSet()
 }
 ParameterSet::~ParameterSet()
 {
-    myfile.close();
+
 }
 
 void ParameterSet::getParameterSet(string filename){
 
+    fstream myfile;
     myfile.open (filename);
     // send your JSON above to the parser below, but populate ss first
     if(myfile.is_open()){
@@ -22,6 +23,27 @@ void ParameterSet::getParameterSet(string filename){
             std::cerr << e.what() << std::endl;
         }
     }
+     myfile.close();
+}
+
+void ParameterSet::writeParameterSet(string filename){
+    if(root.empty()){
+        return;
+    }
+
+    fstream myfile;
+    myfile.open(filename,ios::out);
+    // send your JSON above to the parser below, but populate ss first
+    if(myfile.is_open()){
+        try{
+            pt::write_json(myfile, this->root);
+        }
+        catch (std::exception const& e){
+
+            std::cerr << e.what() << std::endl;
+        }
+    }
+     myfile.close();
 }
 
 void ParameterSet::applyParameterSet(FileModule *fileModule,string setName)
@@ -39,21 +61,23 @@ void ParameterSet::applyParameterSet(FileModule *fileModule,string setName)
                     Assignment *assignment;
                     assignment=&(*it);
                     const ValuePtr defaultValue = assignment->expr.get()->evaluate(&ctx);
-                    if(defaultValue->type()== Value::NUMBER){
-                        assignment->expr = shared_ptr<Expression>(new Literal(ValuePtr(v.second.get_value<double>())))  ;
-                    }else if(defaultValue->type()== Value::BOOL){
-                          assignment->expr = shared_ptr<Expression>(new Literal(ValuePtr(v.second.get_value<bool>())));
-                    }else if(defaultValue->type()== Value::VECTOR){
+                    if(defaultValue->type()== Value::STRING){
+                        assignment->expr = shared_ptr<Expression>(new Literal(ValuePtr(v.second.data())));
+                    }else{
 
                         AssignmentList *assignmentList;
                         assignmentList=parser(v.second.data().c_str());
-                        for(int i=0; i<assignmentList->size(); i++) {
-                            assignment=assignmentList[i].data();
+                        if(assignmentList==NULL){
+                            return ;
                         }
-                    }else if(defaultValue->type()== Value::STRING){
-                            assignment->expr = shared_ptr<Expression>(new Literal(ValuePtr(v.second.data())));
+                        ModuleContext ctx;
+                        for(int i=0; i<assignmentList->size(); i++) {
+                             if(defaultValue->type()== assignmentList[i].data()->expr.get()->evaluate(&ctx)->type()){
+                                assignment=assignmentList[i].data();
+                             }
+                        }
                     }
-                 }
+                }
              }
         }
     }

@@ -81,6 +81,7 @@ void ParameterWidget::setFile(QString jsonFile){
     getParameterSet(this->jsonFile);
     connect(addButton,SIGNAL(clicked()),this,SLOT(onSetAdd()));
     connect(deleteButton,SIGNAL(clicked()),this,SLOT(onSetDelete()));
+    this->comboBox->clear();
     setComboBoxForSet();
 }
 
@@ -271,23 +272,26 @@ void ParameterWidget::applyParameterSet(string setName){
     for(pt::ptree::value_type &v : root.get_child(path)){
         entry_map_t::iterator entry =entries.find(v.first);
             if(entry!=entries.end()){
-                if(entry->second->dvt == Value::NUMBER){
-                    entry->second->value=ValuePtr(v.second.get_value<double>());
-                }else if(entry->second->dvt== Value::BOOL){
-                    entry->second->value=ValuePtr(v.second.get_value<bool>());
-                }else if(entry->second->dvt== Value::VECTOR){
-                    ModuleContext ctx;
+                if(entry->second->dvt== Value::STRING){
+                    entry->second->value=ValuePtr(v.second.data());
+                }else{
+
                     AssignmentList *assignmentList;
                     assignmentList=parser(v.second.data().c_str());
+                    if(assignmentList==NULL){
+                        return ;
+                    }
+
+                    ModuleContext ctx;
                     Assignment *assignment;
                     for(int i=0; i<assignmentList->size(); i++) {
-                        assignment=assignmentList[i].data();
+                        ValuePtr newValue=assignmentList[i].data()->expr.get()->evaluate(&ctx);
+                        if(entry->second->dvt==newValue->type()){
+                            entry->second->value=newValue;
+                        }
                     }
-                    entry->second->value=assignment->expr.get()->evaluate(&ctx);
-                }else if(entry->second->dvt== Value::STRING){
-                 entry->second->value=ValuePtr(v.second.data());
                 }
-            }
+        }
     }
 }
 

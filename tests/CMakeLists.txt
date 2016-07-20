@@ -1531,7 +1531,8 @@ add_cmdline_test(moduledumptest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX ast FILES
                  ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/allmodulescomment.scad
                  ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/allfunctionscomment.scad
                  ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/allexpressionscomment.scad
-                 
+                 ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/nativeParameter.scad
+                 ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/group.scad
                  )
 add_cmdline_test(csgtexttest SUFFIX txt FILES
                              ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allexpressions.scad

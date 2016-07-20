@@ -20,7 +20,6 @@ class ParameterSet
 
 protected:
     pt::ptree root;
-    fstream myfile;
     typedef map<string,pt::ptree::value_type> Parameterset;
     Parameterset parameterSet;
 
@@ -28,6 +27,7 @@ public:
     ParameterSet();
     ~ParameterSet();
     void getParameterSet(string filename);
+    void writeParameterSet(string filename);
     void applyParameterSet(FileModule *fileModule,string setName);
 
 };
