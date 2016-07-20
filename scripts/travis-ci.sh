@@ -18,7 +18,7 @@ if [[ $? != 0 ]]; then
 fi
 
 if [[ "$DIST" == "trusty" ]]; then
-    PARALLEL=-j2
+    PARALLEL=-j1
 else
     PARALLEL=-j8
 fi
