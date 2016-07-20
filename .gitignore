@@ -11,6 +11,7 @@ objects
 .qmake.stash
 parser_yacc.h
 **/#*#
+/.dir-locals.el
 testdata/scad/2D/features/import_dxf-tests.scad
 testdata/scad/3D/features/import_stl-tests.scad
 testdata/scad/misc/include-tests.scad
@@ -51,3 +52,4 @@ testdata/scad/misc/use-tests.scad
 src/*.org
 src/*.old
 src/*.debug
+/Testing
