@@ -1,5 +1,6 @@
 #include "AppleEvents.h"
 #include <MacTypes.h>
+#include <AssertMacros.h>
 #include <CoreServices/CoreServices.h>
 #include <QApplication>
 #include "MainWindow.h"
