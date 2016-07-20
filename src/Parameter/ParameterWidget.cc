@@ -47,6 +47,7 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 	connect(&autoPreviewTimer, SIGNAL(timeout()), this, SLOT(onPreviewTimerElapsed()));
     connect(checkBoxAutoPreview, SIGNAL(toggled(bool)), this, SLOT(onValueChanged()));
     connect(checkBoxDetailedDescription,SIGNAL(toggled(bool)),this,SLOT(onDescriptionShow()));
+    connect(comboBox, SIGNAL(currentIndexChanged(int)),this,SLOT(onSetChanged(int)));
 }
 
 void ParameterWidget::onSetDelete(){
@@ -57,16 +58,19 @@ void ParameterWidget::onSetDelete(){
     root.get_child("SET").erase(setName);
     std::fstream myfile;
     myfile.open (this->jsonFile,ios::out);
-    pt::write_json(myfile,root);
+    if(myfile.is_open()){
+        pt::write_json(myfile,root);
+        this->comboBox->clear();
+        setComboBoxForSet();
+    }
     myfile.close();
-    this->comboBox->clear();
-    setComboBoxForSet();
 }
 
 void ParameterWidget::onSetAdd(){
 
     if(root.empty()){
-        return;
+        pt::ptree setRoot;
+        root.add_child("SET",setRoot);
     }
     updateParameterSet(comboBox->itemData(this->comboBox->currentIndex()).toString().toStdString());
 }
@@ -75,11 +79,9 @@ void ParameterWidget::setFile(QString jsonFile){
 
     this->jsonFile=jsonFile.replace(".scad",".json").toStdString();
     getParameterSet(this->jsonFile);
-    if(myfile.is_open()){
-        connect(addButton,SIGNAL(clicked()),this,SLOT(onSetAdd()));
-        connect(deleteButton,SIGNAL(clicked()),this,SLOT(onSetDelete()));
-        setComboBoxForSet();
-    }
+    connect(addButton,SIGNAL(clicked()),this,SLOT(onSetAdd()));
+    connect(deleteButton,SIGNAL(clicked()),this,SLOT(onSetDelete()));
+    setComboBoxForSet();
 }
 
 ParameterWidget::~ParameterWidget()
@@ -88,18 +90,15 @@ ParameterWidget::~ParameterWidget()
 
 void ParameterWidget::setComboBoxForSet(){
 
+    this->comboBox->addItem("No Set Selected",
+                QVariant(QString::fromStdString("")));
     if(root.empty()){
         return;
     }
-    this->comboBox->addItem("No Set Selected",
-                QVariant(QString::fromStdString("")));
-
     for(pt::ptree::value_type &v : root.get_child("SET")){
-
         this->comboBox->addItem(QString::fromStdString(v.first),
                       QVariant(QString::fromStdString(v.first)));
     }
-    connect(comboBox, SIGNAL(currentIndexChanged(int)),this,SLOT(onSetChanged(int)));
 }
 
 void ParameterWidget::onSetChanged(int idx){
@@ -293,28 +292,30 @@ void ParameterWidget::applyParameterSet(string setName){
 }
 
 void ParameterWidget::updateParameterSet(string setName){
-
-    if(setName==""){
-        QInputDialog *a=new QInputDialog();
-        a->setLabelText("Name of new set");
-        setName=a->getText(NULL,"Create new Set of parameter","Enter name of set name").toStdString();
-        if(setName.empty()){
-            return;
-         }
+    std::fstream myfile;
+    myfile.open (this->jsonFile,ios::out);
+    if(myfile.is_open()){
+        if(setName==""){
+            QInputDialog *a=new QInputDialog();
+            a->setLabelText("Name of new set");
+            setName=a->getText(NULL,"Create new Set of parameter","Enter name of set name").toStdString();
+            if(setName.empty()){
+                return;
+             }
+        }
+        pt::ptree iroot;
+        for(entry_map_t::iterator it = entries.begin(); it != entries.end(); it++) {
+            iroot.put(it->first,it->second->value->toString());
+        }
+        root.get_child("SET").erase(setName);
+        root.add_child("SET."+setName,iroot);
+        pt::write_json(myfile,root);
         if(this->comboBox->findText(QString::fromStdString(setName))==-1){
             this->comboBox->addItem(QString::fromStdString(setName),
                       QVariant(QString::fromStdString(setName)));
+            this->comboBox->setCurrentIndex(this->comboBox->findText(QString::fromStdString(setName)));
         }
     }
-    pt::ptree iroot;
-    for(entry_map_t::iterator it = entries.begin(); it != entries.end(); it++) {
-        iroot.put(it->first,it->second->value->toString());
-    }
-    root.get_child("SET").erase(setName);
-    root.add_child("SET."+setName,iroot);
-    std::fstream myfile;
-    myfile.open (this->jsonFile,ios::out);
-    pt::write_json(myfile,root);
     myfile.close();
 
 }
