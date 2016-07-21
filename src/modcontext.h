@@ -42,7 +42,7 @@ private:
 class FileContext : public ModuleContext
 {
 public:
-	FileContext(const FileModule &module, const Context *parent);
+	FileContext(const Context *parent);
 	virtual ~FileContext() {}
 	void initializeModule(const FileModule &module);
 	virtual ValuePtr evaluate_function(const std::string &name, 
@@ -51,7 +51,7 @@ public:
 																					 EvalContext *evalctx) const;
 
 private:
-	const FileModule::ModuleContainer &usedlibs;
+	const FileModule::ModuleContainer *usedlibs_p;
 
 	// This sub_* method is needed to minimize stack usage only.
 	ValuePtr sub_evaluate_function(const std::string &name, 

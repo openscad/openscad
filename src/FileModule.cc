@@ -161,13 +161,12 @@ AbstractNode *FileModule::instantiate(const Context *ctx, const ModuleInstantiat
 	assert(evalctx == NULL);
 	
 	delete this->context;
-	this->context = new FileContext(*this, ctx);
+	this->context = new FileContext(ctx);
+	context->initializeModule(*this);
+
 	AbstractNode *node = new RootNode(inst);
-
 	try {
-		context->initializeModule(*this);
-
-	// FIXME: Set document path to the path of the module
+		// FIXME: Set document path to the path of the module
 		std::vector<AbstractNode *> instantiatednodes = this->scope.instantiateChildren(context);
 		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 	}

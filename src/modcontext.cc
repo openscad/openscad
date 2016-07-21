@@ -176,17 +176,15 @@ std::string ModuleContext::dump(const AbstractModule *mod, const ModuleInstantia
 }
 #endif
 
-FileContext::FileContext(const class FileModule &module, const Context *parent)
-	: ModuleContext(parent), usedlibs(module.usedlibs)
+FileContext::FileContext(const Context *parent) : ModuleContext(parent)
 {
-	if (!module.modulePath().empty()) this->document_path = module.modulePath();
 }
 
 ValuePtr FileContext::sub_evaluate_function(const std::string &name, 
-																													 const EvalContext *evalctx,
-																													 FileModule *usedmod) const
+																						const EvalContext *evalctx,
+																						FileModule *usedmod) const
 {
-	FileContext ctx(*usedmod, this->parent);
+	FileContext ctx(this->parent);
 	ctx.initializeModule(*usedmod);
 	// FIXME: Set document path
 #ifdef DEBUG
@@ -202,7 +200,7 @@ ValuePtr FileContext::evaluate_function(const std::string &name,
 	const AbstractFunction *foundf = findLocalFunction(name);
 	if (foundf) return foundf->evaluate(this, evalctx);
 
-	for(const auto &m : this->usedlibs) {
+	for(const auto &m : *this->usedlibs_p) {
 		// usedmod is NULL if the library wasn't be compiled (error or file-not-found)
 		FileModule *usedmod = ModuleCache::instance()->lookup(m);
 		if (usedmod && usedmod->scope.functions.find(name) != usedmod->scope.functions.end())
@@ -217,12 +215,12 @@ AbstractNode *FileContext::instantiate_module(const ModuleInstantiation &inst, E
 	const AbstractModule *foundm = this->findLocalModule(inst.name());
 	if (foundm) return foundm->instantiate(this, &inst, evalctx);
 
-	for(const auto &m : this->usedlibs) {
+	for(const auto &m : *this->usedlibs_p) {
 		FileModule *usedmod = ModuleCache::instance()->lookup(m);
 		// usedmod is NULL if the library wasn't be compiled (error or file-not-found)
 		if (usedmod &&
 				usedmod->scope.modules.find(inst.name()) != usedmod->scope.modules.end()) {
-			FileContext ctx(*usedmod, this->parent);
+			FileContext ctx(this->parent);
 			ctx.initializeModule(*usedmod);
 			// FIXME: Set document path
 #ifdef DEBUG
@@ -238,10 +236,12 @@ AbstractNode *FileContext::instantiate_module(const ModuleInstantiation &inst, E
 
 void FileContext::initializeModule(const class FileModule &module)
 {
+	if (!module.modulePath().empty()) this->document_path = module.modulePath();
 	// FIXME: Don't access module members directly
 	this->functions_p = &module.scope.functions;
 	this->modules_p = &module.scope.modules;
 	for(const auto &ass : module.scope.assignments) {
 		this->set_variable(ass.name, ass.expr->evaluate(this));
 	}
+	this->usedlibs_p = &module.usedlibs;
 }
