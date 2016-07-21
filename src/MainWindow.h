@@ -276,14 +276,18 @@ class GuiLocker
 {
 public:
 	GuiLocker() {
-		gui_locked++;
+		GuiLocker::lock();
 	}
 	~GuiLocker() {
-		gui_locked--;
+		GuiLocker::unlock();
 	}
 	static bool isLocked() { return gui_locked > 0; }
-	static void lock() { gui_locked++; }
-	static void unlock() { gui_locked--; }
+	static void lock() {
+		gui_locked++;
+	}
+	static void unlock() {
+		gui_locked--;
+	}
 
 private:
  	static unsigned int gui_locked;
