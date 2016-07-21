@@ -1,0 +1,29 @@
+{
+    "SET":
+    {
+        "initial":
+        {
+            "height": "2",
+            "radius": "80",
+            "resolution": "30",
+            "selection": "Welcome to...",
+            "text": "Parametric Designs"
+        },
+        "secondset":
+        {
+            "height": "6",
+            "radius": "110",
+            "resolution": "50",
+            "selection": "Happy Anniversary",
+            "text": "Parametric D"
+        },
+        "final":
+        {
+            "height": "9",
+            "radius": "74",
+            "resolution": "100",
+            "selection": "Thank You",
+            "text": "third set"
+        }
+    }
+}

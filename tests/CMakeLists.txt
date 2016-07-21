@@ -1525,15 +1525,7 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.cmake ${TMP})
 add_cmdline_test(moduledumptest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX ast FILES
                  ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allmodules.scad
                  ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allfunctions.scad
-                 ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allexpressions.scad
-                 ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/description.scad
-                 ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/parameter.scad
-                 ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/allmodulescomment.scad
-                 ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/allfunctionscomment.scad
-                 ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/allexpressionscomment.scad
-                 ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/nativeParameter.scad
-                 ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/group.scad
-                 )
+                 ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allexpressions.scad)
 add_cmdline_test(csgtexttest SUFFIX txt FILES
                              ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allexpressions.scad
                              ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allfunctions.scad
@@ -1580,6 +1572,24 @@ add_cmdline_test(dxfpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/
 #
 add_failing_test(stlfailedtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/shouldfail.py ARGS --openscad=${OPENSCAD_BINPATH} --retval=1 -o SUFFIX stl FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/empty-union.scad)
 add_failing_test(offfailedtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/shouldfail.py ARGS --openscad=${OPENSCAD_BINPATH} --retval=1 -o SUFFIX off FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/empty-union.scad)
+
+#
+# Customizer tests
+#
+
+add_cmdline_test(customizertest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX ast FILES
+                 ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/description.scad
+                 ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/parameter.scad
+                 ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/allmodulescomment.scad
+                 ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/allfunctionscomment.scad
+                 ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/allexpressionscomment.scad
+                 ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/nativeParameter.scad
+                 ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/group.scad
+                 )
+
+add_cmdline_test(customizertest_secondset EXE ${OPENSCAD_BINPATH} ARGS -p ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/sign.json -P secondset -o SUFFIX ast FILES ${CMAKE_SOURCE_DIR}/../examples/Parametric/sign.scad)
+add_cmdline_test(customizertest_final EXE ${OPENSCAD_BINPATH} ARGS -p ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/sign.json -P final -o SUFFIX ast FILES ${CMAKE_SOURCE_DIR}/../examples/Parametric/sign.scad)
+
 
 #
 # Add experimental tests
