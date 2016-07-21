@@ -40,7 +40,6 @@ namespace fs = boost::filesystem;
 
 FileModule::~FileModule()
 {
-	delete context;
 }
 
 std::string FileModule::dump(const std::string &indent, const std::string &name) const
@@ -160,14 +159,20 @@ AbstractNode *FileModule::instantiate(const Context *ctx, const ModuleInstantiat
 {
 	assert(evalctx == NULL);
 	
-	delete this->context;
-	this->context = new FileContext(ctx);
-	context->initializeModule(*this);
+	FileContext context(ctx);
+	return this->instantiateWithFileContext(&context, inst, evalctx);
+}
+
+AbstractNode *FileModule::instantiateWithFileContext(FileContext *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
+{
+	assert(evalctx == NULL);
+	
+	ctx->initializeModule(*this);
 
 	AbstractNode *node = new RootNode(inst);
 	try {
 		// FIXME: Set document path to the path of the module
-		std::vector<AbstractNode *> instantiatednodes = this->scope.instantiateChildren(context);
+		std::vector<AbstractNode *> instantiatednodes = this->scope.instantiateChildren(ctx);
 		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 	}
 	catch (EvaluationException &e) {
@@ -175,10 +180,4 @@ AbstractNode *FileModule::instantiate(const Context *ctx, const ModuleInstantiat
 	}
 
 	return node;
-}
-
-ValuePtr FileModule::lookup_variable(const std::string &name) const
-{
-	if (!this->context) return ValuePtr::undefined;
-	return this->context->lookup_variable(name, true);
 }
