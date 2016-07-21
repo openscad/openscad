@@ -2206,7 +2206,6 @@ void MainWindow::actionFlushCaches()
 	dxf_dim_cache.clear();
 	dxf_cross_cache.clear();
 	ModuleCache::instance()->clear();
-	FontCache::instance()->clear();
 }
 
 void MainWindow::viewModeActionsUncheck()
