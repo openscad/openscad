@@ -1590,6 +1590,10 @@ add_cmdline_test(customizertest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX ast FILES
 add_cmdline_test(customizertest_secondset EXE ${OPENSCAD_BINPATH} ARGS -p ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/sign.json -P secondset -o SUFFIX ast FILES ${CMAKE_SOURCE_DIR}/../examples/Parametric/sign.scad)
 add_cmdline_test(customizertest_final EXE ${OPENSCAD_BINPATH} ARGS -p ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/sign.json -P final -o SUFFIX ast FILES ${CMAKE_SOURCE_DIR}/../examples/Parametric/sign.scad)
 
+add_cmdline_test(customizertest-first EXE ${OPENSCAD_BINPATH} ARGS -p ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/setofparameter.json -P firstSet -o SUFFIX ast FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/setofparameter.scad)
+add_cmdline_test(customizertest-wrong EXE ${OPENSCAD_BINPATH} ARGS -p ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/setofparameter.json -P wrongSetValues -o SUFFIX ast FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/setofparameter.scad)
+add_cmdline_test(customizertest-incomplete EXE ${OPENSCAD_BINPATH} ARGS -p ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/setofparameter.json -P thirdSet -o SUFFIX ast FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/setofparameter.scad)
+add_cmdline_test(customizertest-imgset EXE ${OPENSCAD_BINPATH} ARGS -p ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/setofparameter.json -P imagine -o SUFFIX ast FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/setofparameter.scad)
 
 #
 # Add experimental tests

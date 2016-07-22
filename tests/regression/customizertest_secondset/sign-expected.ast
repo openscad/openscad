@@ -1,12 +1,12 @@
 @Description("The resolution of the curves. Higher values give smoother curves but may increase the model render time.")
 @Parameter([10, 20, 30, 50, 100])
-resolution = 30;
+resolution = 50;
 @Description("The horizontal radius of the outer ellipse of the sign.")
 @Parameter([60 : 200])
-radius = 80;
+radius = 110;
 @Description("Total height of the sign")
 @Parameter([1 : 10])
-height = 2;
+height = 6;
 @Parameter(["Welcome to...", "Happy Birthday!", "Happy Anniversary", "Congratulations", "Thank You"])
 selection = "Happy Anniversary";
 @Parameter()

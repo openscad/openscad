@@ -279,7 +279,7 @@ void ParameterWidget::applyParameterSet(string setName){
                     AssignmentList *assignmentList;
                     assignmentList=parser(v.second.data().c_str());
                     if(assignmentList==NULL){
-                        return ;
+                        continue ;
                     }
 
                     ModuleContext ctx;

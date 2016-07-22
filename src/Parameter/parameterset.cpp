@@ -68,12 +68,12 @@ void ParameterSet::applyParameterSet(FileModule *fileModule,string setName)
                         AssignmentList *assignmentList;
                         assignmentList=parser(v.second.data().c_str());
                         if(assignmentList==NULL){
-                            return ;
+                            continue ;
                         }
                         ModuleContext ctx;
                         for(int i=0; i<assignmentList->size(); i++) {
                              if(defaultValue->type()== assignmentList[i].data()->expr.get()->evaluate(&ctx)->type()){
-                                assignment=assignmentList[i].data();
+                                assignment->expr=assignmentList[i].data()->expr;
                              }
                         }
                     }
