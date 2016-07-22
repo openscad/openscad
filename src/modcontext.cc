@@ -176,7 +176,7 @@ std::string ModuleContext::dump(const AbstractModule *mod, const ModuleInstantia
 }
 #endif
 
-FileContext::FileContext(const Context *parent) : ModuleContext(parent)
+FileContext::FileContext(const Context *parent) : ModuleContext(parent), usedlibs_p(nullptr)
 {
 }
 
@@ -238,10 +238,10 @@ void FileContext::initializeModule(const class FileModule &module)
 {
 	if (!module.modulePath().empty()) this->document_path = module.modulePath();
 	// FIXME: Don't access module members directly
+	this->usedlibs_p = &module.usedlibs;
 	this->functions_p = &module.scope.functions;
 	this->modules_p = &module.scope.modules;
 	for(const auto &ass : module.scope.assignments) {
 		this->set_variable(ass.name, ass.expr->evaluate(this));
 	}
-	this->usedlibs_p = &module.usedlibs;
 }
