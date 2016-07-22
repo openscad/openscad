@@ -35,6 +35,7 @@ import hashlib
 import subprocess
 import time
 import platform
+import cgi
 try:
     from urllib.error import URLError
     from urllib.request import urlopen
@@ -348,7 +349,7 @@ def to_html(project_name, startdate, tests, enddate, sysinfo, sysid, imgcomparer
             text_test_count += 1
             templates.add('text_template', 'text_tests',
                           test_name=test.fullname,
-                          test_log=test.fulltestlog)
+                          test_log=cgi.escape(test.fulltestlog))
         elif test.type == 'png':
             image_test_count += 1
             alttxt = 'OpenSCAD test image'
