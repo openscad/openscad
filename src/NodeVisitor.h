@@ -24,6 +24,7 @@ class NodeVisitor :
 	public Visitor<class SurfaceNode>,
 	public Visitor<class TransformNode>,
 	public Visitor<class ColorNode>,
+	public Visitor<class MarkerNode>,
 	public Visitor<class OffsetNode>
 {
 public:
@@ -82,6 +83,9 @@ public:
 		return visit(state, (const class AbstractNode &)node);
 	}
   virtual Response visit(class State &state, const class ColorNode &node) {
+		return visit(state, (const class AbstractNode &)node);
+	}
+  virtual Response visit(class State &state, const class MarkerNode &node) {
 		return visit(state, (const class AbstractNode &)node);
 	}
   virtual Response visit(class State &state, const class OffsetNode &node) {
