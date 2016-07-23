@@ -394,7 +394,6 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="Dock" name="editorDock">
-   <addaction name="editActionRedo_2"/>
    <attribute name="dockWidgetArea">
     <number>1</number>
    </attribute>
@@ -521,6 +520,7 @@
      </item>
     </layout>
    </widget>
+   <addaction name="editActionRedo_2"/>
   </widget>
   <widget class="Dock" name="consoleDock">
    <attribute name="dockWidgetArea">
@@ -1240,6 +1240,9 @@
    </property>
    <property name="text">
     <string>View All</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+V</string>
    </property>
   </action>
   <action name="editActionConvertTabsToSpaces">

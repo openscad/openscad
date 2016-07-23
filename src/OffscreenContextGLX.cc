@@ -53,6 +53,10 @@ using namespace std;
 
 struct OffscreenContext
 {
+	OffscreenContext(int width, int height) :
+		openGLContext(NULL), xdisplay(nullptr), xwindow(0),
+		width(width), height(height),
+		fbo(nullptr) {}
 	GLXContext openGLContext;
 	Display *xdisplay;
 	Window xwindow;
@@ -62,16 +66,6 @@ struct OffscreenContext
 };
 
 #include "OffscreenContextAll.hpp"
-
-void offscreen_context_init(OffscreenContext &ctx, int width, int height)
-{
-	ctx.width = width;
-	ctx.height = height;
-	ctx.openGLContext = NULL;
-	ctx.xdisplay = NULL;
-	ctx.xwindow = (Window)NULL;
-	ctx.fbo = NULL;
-}
 
 string get_os_info()
 {
@@ -145,7 +139,7 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
 		GLX_ALPHA_SIZE, 8,
 		GLX_DEPTH_SIZE, 24, // depth-stencil for OpenCSG
 		GLX_STENCIL_SIZE, 8,
-		GLX_DOUBLEBUFFER, True,
+		GLX_DOUBLEBUFFER, true,
 		None
 	};
 
@@ -196,7 +190,7 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
 	// Most programs would call XMapWindow here. But we don't, to keep the window hidden
 	// XMapWindow( dpy, xWin );
 
-	GLXContext context = glXCreateNewContext( dpy, fbconfigs[0], GLX_RGBA_TYPE, NULL, True );
+	GLXContext context = glXCreateNewContext(dpy, fbconfigs[0], GLX_RGBA_TYPE, NULL, true);
 	if ( context == NULL ) {
 		cerr << "glXCreateNewContext failed\n";
 		XDestroyWindow( dpy, xWin );
@@ -226,22 +220,21 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
 	return true;
 	}
 
-	Bool create_glx_dummy_context(OffscreenContext &ctx);
+	bool create_glx_dummy_context(OffscreenContext &ctx);
 
 	OffscreenContext *create_offscreen_context(int w, int h)
 	{
-		OffscreenContext *ctx = new OffscreenContext;
-		offscreen_context_init( *ctx, w, h );
+		OffscreenContext *ctx = new OffscreenContext(w, h);
 
 		// before an FBO can be setup, a GLX context must be created
 		// this call alters ctx->xDisplay and ctx->openGLContext 
-		//  and ctx->xwindow if successfull
-		if (!create_glx_dummy_context( *ctx )) {
+		// and ctx->xwindow if successful
+		if (!create_glx_dummy_context(*ctx)) {
 			delete ctx;
 			return NULL;
 		}
 
-		return create_offscreen_context_common( ctx );
+		return create_offscreen_context_common(ctx);
 	}
 
 	bool teardown_offscreen_context(OffscreenContext *ctx)
@@ -264,17 +257,17 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
 	}
 
 #pragma GCC diagnostic ignored "-Waddress"
-	Bool create_glx_dummy_context(OffscreenContext &ctx)
+	bool create_glx_dummy_context(OffscreenContext &ctx)
 	{
 		// This will alter ctx.openGLContext and ctx.xdisplay and ctx.xwindow if successfull
 		int major;
 		int minor;
-		Bool result = False;
+		bool result = false;
 
-		ctx.xdisplay = XOpenDisplay( NULL );
-		if ( ctx.xdisplay == NULL ) {
-			cerr << "Unable to open a connection to the X server\n";
-			return False;
+		ctx.xdisplay = XOpenDisplay(NULL);
+		if (ctx.xdisplay == NULL) {
+			cerr << "Unable to open a connection to the X server (DISPLAY=" << getenv("DISPLAY") << ")\n";
+			return false;
 		}
 
 		// glxQueryVersion is not always reliable. Use it, but then
@@ -291,4 +284,3 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
 		if (!result) XCloseDisplay( ctx.xdisplay );
 		return result;
 	}
-

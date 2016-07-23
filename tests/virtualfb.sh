@@ -3,7 +3,7 @@
 # Toggle the Virtual Framebuffer
 # If started, stop. If stopped, start.
 
-debug=
+debug=1
 
 start()
 {
@@ -38,8 +38,15 @@ start()
   elif [ "`ps cax | grep $VFB_PID_MINUS1 | grep $VFB_BINARY`" ]; then
     VFB_PID=$VFB_PID_MINUS1
   else
-    echo started $VFB_BINARY but cannot find process ID in process table
+    echo "started $VFB_BINARY but cannot find process ID in process table ($VFB_PID_MINUS0 or $VFB_PID_MINUS1)"
     echo please stop $VFB_BINARY manually
+    if [ $debug ]; then
+        echo `ps cax | grep $VFB_BINARY`
+        echo "stdout:"
+        cat ./virtualfb1.log
+        echo "stderr:"
+        cat ./virtualfb2.log
+    fi
     VFB_PID=
     return
   fi
@@ -47,7 +54,7 @@ start()
   echo $VFB_DISPLAY > ./virtualfb.DISPLAY
   echo $VFB_PID > ./virtualfb.PID
 
-  echo "Started virtual fb, PID=$VFB_PID , DISPLAY=$VFB_DISPLAY"
+  echo "Started $VFB_BINARY fb, PID=$VFB_PID , DISPLAY=$VFB_DISPLAY"
   sleep 1
 }
 
@@ -62,6 +69,9 @@ stop()
   if [ -e $LOCKFILE ]; then
     rm $LOCKFILE
   fi
+  cat virtualfb1.log
+  cat virtualfb2.log
+  cat ~/.xsession-errors
   rm ./virtualfb.PID
   rm ./virtualfb.DISPLAY
 }

@@ -26,3 +26,8 @@ out.*
 /csgtermtest
 /echotest
 /dumptest
+/cgalpngtest
+/cgaltest
+/moduledumptest
+/opencsgtest
+/Testing

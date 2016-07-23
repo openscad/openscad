@@ -87,7 +87,7 @@ Settings::~Settings()
 {
 }
 
-void Settings::visit(Visitor& visitor)
+void Settings::visit(SettingsVisitor& visitor)
 {
 	for (std::list<SettingsEntry *>::iterator it = entries.begin();it != entries.end();it++) {
 		visitor.handle(*(*it));
@@ -109,11 +109,11 @@ void Settings::set(SettingsEntry& entry, const Value &val)
     entry._value = val;
 }
 
-Visitor::Visitor()
+SettingsVisitor::SettingsVisitor()
 {
 }
 
-Visitor::~Visitor()
+SettingsVisitor::~SettingsVisitor()
 {
 }
 
@@ -137,9 +137,10 @@ SettingsEntry Settings::lineWrapVisualizationEnd("editor", "lineWrapVisualizatio
 SettingsEntry Settings::showWhitespace("editor", "showWhitespaces", values("Never", _("Never"), "Always", _("Always"), "AfterIndentation", _("After indentation")), Value("Never"));
 SettingsEntry Settings::showWhitespaceSize("editor", "showWhitespacesSize", Value(RangeType(1, 16)), Value(2));
 SettingsEntry Settings::autoIndent("editor", "autoIndent", Value(true), Value(true));
+SettingsEntry Settings::backspaceUnindents("editor", "backspaceUnindents", Value(true), Value(false));
 SettingsEntry Settings::indentStyle("editor", "indentStyle", values("Spaces", _("Spaces"), "Tabs", _("Tabs")), Value("Spaces"));
 SettingsEntry Settings::tabKeyFunction("editor", "tabKeyFunction", values("Indent", _("Indent"), "InsertTab", _("Insert Tab")), Value("Indent"));
 SettingsEntry Settings::highlightCurrentLine("editor", "highlightCurrentLine", Value(true), Value(true));
 SettingsEntry Settings::enableBraceMatching("editor", "enableBraceMatching", Value(true), Value(true));
-
+SettingsEntry Settings::enableLineNumbers("editor", "enableLineNumbers", Value(true), Value(true));
 }

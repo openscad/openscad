@@ -1,9 +1,8 @@
 #include "ModuleCache.h"
-#include "module.h"
+#include "FileModule.h"
 #include "printutils.h"
 #include "openscad.h"
 
-#include "boosty.h"
 #include <boost/format.hpp>
 #include <boost/filesystem.hpp>
 
@@ -13,6 +12,7 @@
 #include <time.h>
 #include <sys/stat.h>
 
+namespace fs=boost::filesystem;
 //#include "parsersettings.h"
 /*!
 	FIXME: Implement an LRU scheme to avoid having an ever-growing module cache
@@ -105,8 +105,8 @@ bool ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 		
 		FileModule *oldmodule = lib_mod;
 		
-		std::string pathname = boosty::stringy(fs::path(filename).parent_path());
-		lib_mod = dynamic_cast<FileModule*>(parse(textbuf.str().c_str(), pathname.c_str(), false));
+        fs::path pathname = fs::path(filename);
+		lib_mod = parse(textbuf.str().c_str(), pathname, false);
 		PRINTDB("  compiled module: %p", lib_mod);
 		
 		// We defer deletion so we can ensure that the new module won't

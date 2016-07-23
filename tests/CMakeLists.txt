@@ -311,6 +311,9 @@ if (NOT EIGEN_INCLUDE_DIR)
     find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS /usr/pkg/include/eigen3)
   elseif (APPLE)
     find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS /opt/local/include/eigen3)
+    if (NOT EIGEN_INCLUDE_DIR)
+      find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS /usr/local/include/eigen3)
+    endif()
   else()
     find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS /usr/include/eigen3)
   endif()
@@ -551,6 +554,10 @@ add_definitions(${FONTCONFIG_CFLAGS})
 add_definitions(${FREETYPE_CFLAGS})
 add_definitions(${HARFBUZZ_CFLAGS})
 
+find_package(LibXml2 2.9 REQUIRED)
+add_definitions(${LIBXML2_DEFINITIONS})
+inclusion(LIBXML2_DIR LIBXML2_INCLUDE_DIR)
+
 # Image comparison - expected test image vs actual generated image
 
 if (DIFFPNG)
@@ -561,6 +568,8 @@ if (DIFFPNG)
   set(SKIP_IMAGEMAGICK 1)
   message(STATUS "using diffpng for image comparison")
 endif()
+
+# Imagemagick
 
 if (SKIP_IMAGEMAGICK)
   if (NOT DIFFPNG)
@@ -675,11 +684,18 @@ set(CORE_SOURCES
   ../src/hash.cc 
   ../src/expr.cc 
   ../src/func.cc 
+  ../src/function.cc 
   ../src/stackcheck.cc 
   ../src/localscope.cc 
   ../src/module.cc 
+  ../src/FileModule.cc 
+  ../src/UserModule.cc 
+  ../src/GroupModule.cc 
+  ../src/AST.cc 
+  ../src/ModuleInstantiation.cc 
   ../src/ModuleCache.cc 
   ../src/node.cc 
+  ../src/NodeVisitor.cc 
   ../src/context.cc 
   ../src/modcontext.cc 
   ../src/evalcontext.cc 
@@ -713,6 +729,21 @@ set(CORE_SOURCES
   ../src/FreetypeRenderer.cc
   ../src/lodepng.cpp
   ../src/PlatformUtils.cc 
+  ../src/libsvg/circle.cc
+  ../src/libsvg/ellipse.cc
+  ../src/libsvg/group.cc
+  ../src/libsvg/libsvg.cc
+  ../src/libsvg/line.cc
+  ../src/libsvg/path.cc
+  ../src/libsvg/polygon.cc
+  ../src/libsvg/polyline.cc
+  ../src/libsvg/rect.cc
+  ../src/libsvg/shape.cc
+  ../src/libsvg/svgpage.cc
+  ../src/libsvg/transformation.cc
+  ../src/libsvg/util.cc
+  ../src/clipper-utils.cc 
+  ../src/polyclipping/clipper.cpp
   ../src/${PLATFORMUTILS_SOURCE}
   ${FLEX_OpenSCADlexer_OUTPUTS}
   ${BISON_OpenSCADparser_OUTPUTS})
@@ -720,6 +751,9 @@ set(CORE_SOURCES
 set(NOCGAL_SOURCES
   ../src/builtin.cc 
   ../src/import.cc
+  ../src/import_stl.cc
+  ../src/import_off.cc
+  ../src/import_svg.cc
   ../src/export.cc
   ../src/export_stl.cc
   ../src/export_amf.cc
@@ -750,7 +784,6 @@ set(CGAL_SOURCES
 
 set(COMMON_SOURCES
   ../src/nodedumper.cc 
-  ../src/traverser.cc 
   ../src/GeometryCache.cc 
   ../src/clipper-utils.cc 
   ../src/Tree.cc
@@ -761,7 +794,8 @@ set(COMMON_SOURCES
   ../src/libtess2/Source/mesh.c
   ../src/libtess2/Source/priorityq.c
   ../src/libtess2/Source/sweep.c
-  ../src/libtess2/Source/tess.c)
+  ../src/libtess2/Source/tess.c
+  ../src/Tree.cc)
 
 #
 # Offscreen OpenGL context source code
@@ -797,7 +831,7 @@ if(NULLGL)
 endif()
 
 add_library(tests-core STATIC ${CORE_SOURCES})
-target_link_libraries(tests-core ${OPENGL_LIBRARIES} ${GLIB2_LIBRARIES} ${FONTCONFIG_LDFLAGS} ${FREETYPE_LDFLAGS} ${HARFBUZZ_LDFLAGS} ${Boost_LIBRARIES} ${COCOA_LIBRARY})
+target_link_libraries(tests-core ${OPENGL_LIBRARIES} ${GLIB2_LIBRARIES} ${FONTCONFIG_LDFLAGS} ${FREETYPE_LDFLAGS} ${HARFBUZZ_LDFLAGS} ${LIBXML2_LIBRARIES} ${Boost_LIBRARIES} ${COCOA_LIBRARY})
 
 add_library(tests-common STATIC ${COMMON_SOURCES})
 target_link_libraries(tests-common tests-core)
@@ -1159,7 +1193,8 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1472.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/empty-stl.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1516.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1528.scad)
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1528.scad
+            )
 
 list(APPEND DUMPTEST_FILES ${FEATURES_2D_FILES} ${FEATURES_3D_FILES} ${DEPRECATED_3D_FILES})
 list(APPEND DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.scad
@@ -1248,6 +1283,9 @@ disable_tests(
   dxfpngtest_text-empty-tests
   dxfpngtest_nothing-decimal-comma-separated
   dxfpngtest_nullspace-2d
+  svgpngtest_text-empty-tests
+  svgpngtest_nothing-decimal-comma-separated
+  svgpngtest_nullspace-2d
 
   # Not useful
   throwntogethertest_internal-cavity
@@ -1267,7 +1305,7 @@ disable_tests(
 )
 
 # 2D tests
-list(APPEND FILES_2D ${FEATURES_2D_FILES} ${SCAD_DXF_FILES} ${EXAMPLE_2D_FILES})
+list(APPEND FILES_2D ${FEATURES_2D_FILES} ${SCAD_DXF_FILES} ${SCAD_SVG_FILES} ${EXAMPLE_2D_FILES})
 list(APPEND ALL_2D_FILES ${FILES_2D})
 
 # FIXME: This test illustrates a weakness in child() combined with modifiers.
@@ -1365,7 +1403,14 @@ list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue13.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1223b.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1246.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1455.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1529.scad)
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1529.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1580-back-to-back.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1580-import-back-to-back.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1580-back-to-back2.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1580-import-back-to-back2.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1580-zero-area-triangle.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1580-import-zero-area-triangle.scad
+)
 
 # We know that we cannot import weakly manifold files into CGAL, so to make tests easier
 # to manage, don't try. Once we improve import, we can reenable this
@@ -1542,6 +1587,8 @@ add_cmdline_test(offpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/
 add_cmdline_test(offcgalpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=OFF --render=cgal EXPECTEDDIR monotonepngtest SUFFIX png FILES ${EXPORT3D_CGAL_TEST_FILES})
 
 add_cmdline_test(dxfpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=DXF --render=cgal EXPECTEDDIR cgalpngtest SUFFIX png FILES ${FILES_2D})
+
+add_cmdline_test(svgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=SVG --render=cgal --enable=svg-import EXPECTEDDIR cgalpngtest SUFFIX png FILES ${FILES_2D})
 
 
 #

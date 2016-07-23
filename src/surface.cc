@@ -25,6 +25,7 @@
  */
 
 #include "module.h"
+#include "ModuleInstantiation.h"
 #include "node.h"
 #include "polyset.h"
 #include "evalcontext.h"
@@ -32,7 +33,6 @@
 #include "printutils.h"
 #include "fileutils.h"
 #include "handle_dep.h" // handle_dep()
-#include "visitor.h"
 #include "lodepng.h"
 
 #include <sstream>
@@ -60,10 +60,8 @@ typedef std::unordered_map<std::pair<int,int>, double, boost::hash<std::pair<int
 class SurfaceNode : public LeafNode
 {
 public:
+	VISITABLE();
 	SurfaceNode(const ModuleInstantiation *mi) : LeafNode(mi) { }
-  virtual Response accept(class State &state, Visitor &visitor) const {
-		return visitor.visit(state, *this);
-	}
 	virtual std::string toString() const;
 	virtual std::string name() const { return "surface"; }
 
@@ -72,7 +70,7 @@ public:
 	bool invert;
 	int convexity;
 	
-	virtual Geometry *createGeometry() const;
+	virtual const Geometry *createGeometry() const;
 private:
 	void convert_image(img_data_t &data, std::vector<unsigned char> &img, unsigned int width, unsigned int height) const;
 	bool is_png(std::vector<unsigned char> &img) const;
@@ -211,7 +209,7 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
 	return data;
 }
 
-Geometry *SurfaceNode::createGeometry() const
+const Geometry *SurfaceNode::createGeometry() const
 {
 	img_data_t data = read_png_or_dat(filename);
 

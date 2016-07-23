@@ -25,7 +25,7 @@
  */
 
 #include "transformnode.h"
-#include "module.h"
+#include "ModuleInstantiation.h"
 #include "evalcontext.h"
 #include "polyset.h"
 #include "builtin.h"

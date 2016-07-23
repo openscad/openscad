@@ -1,7 +1,7 @@
 #ifndef CSGTEXTRENDERER_H_
 #define CSGTEXTRENDERER_H_
 
-#include "visitor.h"
+#include "NodeVisitor.h"
 #include "CSGTextCache.h"
 #include "enums.h"
 
@@ -12,7 +12,7 @@ using std::string;
 using std::map;
 using std::list;
 
-class CSGTextRenderer : public Visitor
+class CSGTextRenderer : public NodeVisitor
 {
 public:
 	CSGTextRenderer(CSGTextCache &cache) : cache(cache) {}

@@ -2,12 +2,13 @@
 #include <algorithm>
 #include <QString>
 #include <QChar>
-#include "boosty.h"
 #include "scintillaeditor.h"
 #include <Qsci/qscicommandset.h>
 #include "Preferences.h"
 #include "PlatformUtils.h"
 #include "settings.h"
+#include <boost/filesystem.hpp>
+namespace fs=boost::filesystem;
 
 class SettingsConverter {
 public:
@@ -72,11 +73,11 @@ QsciScintilla::WhitespaceVisibility SettingsConverter::toShowWhitespaces(Value v
 EditorColorScheme::EditorColorScheme(fs::path path) : path(path)
 {
 	try {
-		boost::property_tree::read_json(boosty::stringy(path).c_str(), pt);
+		boost::property_tree::read_json(path.generic_string().c_str(), pt);
 		_name = QString(pt.get<std::string>("name").c_str());
 		_index = pt.get<int>("index");
 	} catch (const std::exception & e) {
-		PRINTB("Error reading color scheme file '%s': %s", boosty::stringy(path).c_str() % e.what());
+		PRINTB("Error reading color scheme file '%s': %s", path.generic_string().c_str() % e.what());
 		_name = "";
 		_index = 0;
 	}
@@ -172,6 +173,7 @@ void ScintillaEditor::applySettings()
 	qsci->setWhitespaceVisibility(conv.toShowWhitespaces(s->get(Settings::Settings::showWhitespace)));
 	qsci->setWhitespaceSize(s->get(Settings::Settings::showWhitespaceSize).toDouble());
 	qsci->setAutoIndent(s->get(Settings::Settings::autoIndent).toBool());
+	qsci->setBackspaceUnindents(s->get(Settings::Settings::backspaceUnindents).toBool());
 
 	std::string indentStyle = s->get(Settings::Settings::indentStyle).toString();
 	qsci->setIndentationsUseTabs(indentStyle == "Tabs");
@@ -180,6 +182,17 @@ void ScintillaEditor::applySettings()
 
 	qsci->setBraceMatching(s->get(Settings::Settings::enableBraceMatching).toBool() ? QsciScintilla::SloppyBraceMatch : QsciScintilla::NoBraceMatch);
 	qsci->setCaretLineVisible(s->get(Settings::Settings::highlightCurrentLine).toBool());
+    bool value = s->get(Settings::Settings::enableLineNumbers).toBool();
+    qsci->setMarginLineNumbers(1,value);
+
+    if(!value)
+    {
+             qsci->setMarginWidth(1,20);
+    }
+    else
+    {
+        qsci->setMarginWidth(1,QString(trunc(log10(qsci->lines())+4), '0'));
+    }
 }
 
 void ScintillaEditor::setPlainText(const QString &text)
@@ -486,8 +499,18 @@ void ScintillaEditor::initMargin()
 
 void ScintillaEditor::onTextChanged()
 {
+  Settings::Settings *s = Settings::Settings::inst();
   QFontMetrics fontmetrics(this->currentFont);
-  qsci->setMarginWidth(1, QString(trunc(log10(qsci->lines())+2), '0'));
+  bool value = s->get(Settings::Settings::enableLineNumbers).toBool();
+
+  if(!value)
+  {
+           qsci->setMarginWidth(1,20);
+  }
+  else
+  {
+      qsci->setMarginWidth(1,QString(trunc(log10(qsci->lines())+4), '0'));
+  }
 }
 
 bool ScintillaEditor::find(const QString &expr, bool findNext, bool findBackwards)

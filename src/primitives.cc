@@ -31,7 +31,6 @@
 #include "Polygon2d.h"
 #include "builtin.h"
 #include "printutils.h"
-#include "visitor.h"
 #include "context.h"
 #include "calc.h"
 #include <sstream>
@@ -65,10 +64,8 @@ private:
 class PrimitiveNode : public LeafNode
 {
 public:
+	VISITABLE();
 	PrimitiveNode(const ModuleInstantiation *mi, primitive_type_e type) : LeafNode(mi), type(type) { }
-  virtual Response accept(class State &state, Visitor &visitor) const {
-		return visitor.visit(state, *this);
-	}
 	virtual std::string toString() const;
 	virtual std::string name() const {
 		switch (this->type) {
@@ -105,7 +102,7 @@ public:
 	primitive_type_e type;
 	int convexity;
 	ValuePtr points, paths, faces;
-	virtual Geometry *createGeometry() const;
+	virtual const Geometry *createGeometry() const;
 };
 
 /**
@@ -295,7 +292,7 @@ static void generate_circle(point2d *circle, double r, int fragments)
 	Creates geometry for this node.
 	May return an empty Geometry creation failed, but will not return NULL.
 */
-Geometry *PrimitiveNode::createGeometry() const
+const Geometry *PrimitiveNode::createGeometry() const
 {
 	Geometry *g = NULL;
 
