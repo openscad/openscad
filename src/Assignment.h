@@ -6,9 +6,7 @@
 #include <utility>
 
 #include "value.h"
-
 #include "AST.h"
-
 #include "memory.h"
 
 class Annotation;
@@ -32,7 +30,6 @@ public:
 typedef std::vector<Assignment> AssignmentList;
 
     virtual void add_annotations(AnnotationList *annotations);
-
     virtual bool has_annotations() const;
     virtual const Annotation * annotation(const std::string &name) const;
 
