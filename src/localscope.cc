@@ -32,7 +32,23 @@ std::string LocalScope::dump(const std::string &indent) const
 		dump << m.second->dump(indent, m.first);
 	}
 	for(const auto &ass : this->assignments) {
-		dump << indent << ass.name << " = " << *ass.expr << ";\n";
+        if( ass.has_annotations()){
+		    
+            const Annotation  *Description=ass.annotation("Description");
+            if( Description != NULL){
+		        dump<<Description->dump();
+		    }
+			
+            const Annotation  *parameter =ass.annotation("Parameter");
+		    if( parameter != NULL){
+                dump<<parameter->dump();
+		    }
+		    dump << indent << ass.name << " = " << *ass.expr << ";\n";
+        }
+        else{
+            dump << indent << ass.name << " = " << *ass.expr << ";\n";
+        }
+		
 	}
 	for(const auto &inst : this->children) {
 		dump << inst->dump(indent);

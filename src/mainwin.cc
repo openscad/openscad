@@ -24,6 +24,7 @@
  *
  */
 #include <iostream>
+#include "comment.h"
 #include "openscad.h"
 #include "GeometryCache.h"
 #include "ModuleCache.h"
@@ -1699,6 +1700,11 @@ void MainWindow::compileTopLevelDocument()
     const char* fname =
         this->fileName.isEmpty() ? "" : fnameba;
 	this->root_module = parse(fulltext.c_str(), fs::path(fname), false);
+    if(this->root_module!=NULL)
+
+        //add parameters as annotation in AST
+        addParameter(fulltext.c_str(),this->root_module);
+
 }
 
 void MainWindow::checkAutoReload()
