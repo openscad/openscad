@@ -224,7 +224,9 @@ FORMS   += src/MainWindow.ui \
            src/FontListDialog.ui \
            src/ProgressWidget.ui \
            src/launchingscreen.ui \
-           src/LibraryInfoDialog.ui
+           src/LibraryInfoDialog.ui \
+           src/parameter/ParameterWidget.ui \
+           src/parameter/ParameterEntryWidget.ui
 
 # AST nodes
 win* {
@@ -385,6 +387,17 @@ HEADERS += src/version_check.h \
            src/LibraryInfoDialog.h \
            \
            src/comment.h\
+           \
+           src/parameter/ParameterWidget.h \
+           src/parameter/parameterobject.h \
+           src/parameter/parameterextractor.h \
+           src/parameter/parametervirtualwidget.h \
+           src/parameter/parameterspinbox.h \
+           src/parameter/parametercombobox.h \
+           src/parameter/parameterslider.h \
+           src/parameter/parametercheckbox.h \
+           src/parameter/parametertext.h \
+           src/parameter/parametervector.h
 
 SOURCES += \
            src/libsvg/libsvg.cc \
@@ -509,7 +522,18 @@ SOURCES += \
            src/legacyeditor.cc \
            src/LibraryInfoDialog.cc\
            \
-           src/comment.cpp
+           src/comment.cpp \
+           \
+           src/parameter/ParameterWidget.cc\
+           src/parameter/parameterobject.cpp \
+           src/parameter/parameterextractor.cpp \
+           src/parameter/parameterspinbox.cpp \
+           src/parameter/parametercombobox.cpp \
+           src/parameter/parameterslider.cpp \
+           src/parameter/parametercheckbox.cpp \
+           src/parameter/parametertext.cpp \
+           src/parameter/parametervector.cpp
+
 
 # ClipperLib
 SOURCES += src/polyclipping/clipper.cpp
