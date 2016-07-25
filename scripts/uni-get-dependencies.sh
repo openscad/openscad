@@ -148,6 +148,12 @@ get_ubuntu_14_deps()
   get_debian_8_deps
 }
 
+get_arch_deps()
+{
+  pacman -S --noconfirm qt5 qscintilla-qt5 cgal gmp mpfr boost \
+    opencsg glew eigen glib2 fontconfig freetype2 harfbuzz bison flex make
+}
+
 unknown()
 {
  echo "Unknown system type. Please install the dependency packages listed"
@@ -187,6 +193,8 @@ if [ -e /etc/issue ]; then
   get_mageia_deps
  elif [ "`grep -i qomo /etc/issue`" ]; then
   get_qomo_deps
+ elif [ "`grep -i arch /etc/issue`" ]; then
+   get_arch_deps
  elif [ "`command -v rpm`" ]; then
   if [ "`rpm -qa | grep altlinux`" ]; then
    get_altlinux_deps
