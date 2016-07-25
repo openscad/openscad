@@ -136,14 +136,16 @@ After building dependencies, follow the instructions in the *Compilation* sectio
 1. **From source**
 
 Run the script that sets up the environment variables:
-    ```source setenv_mac.sh```
+
+    source setenv_mac.sh
 
 Then run the script to compile all the dependencies:
-    ```./scripts/macosx-build-dependencies.sh```
+
+    ./scripts/macosx-build-dependencies.sh
 
 1. **Homebrew** (assumes [Homebrew](http://brew.sh) is already installed)
 
-    ```./scripts/macosx-build-homebrew.sh```
+        ./scripts/macosx-build-homebrew.sh
 
 1. **MacPorts** (assumes [MacPorts](http://macports.org) is already installed)
 
@@ -151,10 +153,10 @@ Then run the script to compile all the dependencies:
 
     NB! MacPorts currently doesn't support Qt5 very well, so using Qt4
     is the only working option at the moment. However, MacPorts' Qt4
-    has a broken ```moc``` command, causing OpenSCAD compilation to
+    has a broken `moc` command, causing OpenSCAD compilation to
     break. This may be fixed in MacPorts by the time you read this.
 
-    ```sudo port install opencsg qscintilla boost cgal pkgconfig eigen3 harfbuzz fontconfig```
+        sudo port install opencsg qscintilla boost cgal pkgconfig eigen3 harfbuzz fontconfig
 
 
 
