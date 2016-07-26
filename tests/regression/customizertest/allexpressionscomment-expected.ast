@@ -6,11 +6,7 @@ b = false;
 @Description("description")
 @Parameter("parameter")
 c = undef;
-@Description("description")
-@Parameter("parameter")
 d = a;
-@Description("description")
-@Parameter("parameter")
 e = $fn;
 @Description("description")
 @Parameter("parameter")
@@ -18,8 +14,6 @@ f1 = [1];
 @Description("description")
 @Parameter("parameter")
 f2 = [1, 2, 3];
-@Description("description")
-@Parameter("parameter")
 g = ((f2.x + f2.y) + f2.z);
 @Description("description")
 @Parameter("parameter")
@@ -27,8 +21,6 @@ h1 = [2 : 5];
 @Description("description")
 @Parameter("parameter")
 h2 = [1 : 2 : 10];
-@Description("description")
-@Parameter("parameter")
 i = ((h2.begin - h2.step) - h2.end);
 @Description("description")
 @Parameter("parameter")
@@ -36,41 +28,17 @@ j = "test";
 @Description("description")
 @Parameter("parameter")
 k = 0.0123;
-@Description("description")
-@Parameter("parameter")
 l = (a * b);
-@Description("description")
-@Parameter("parameter")
 m = (a / b);
-@Description("description")
-@Parameter("parameter")
 n = (a % b);
-@Description("description")
-@Parameter("parameter")
 o = (c < d);
-@Description("description")
-@Parameter("parameter")
 p = (c <= d);
-@Description("description")
-@Parameter("parameter")
 q = (c == d);
-@Description("description")
-@Parameter("parameter")
 r = (c != d);
-@Description("description")
-@Parameter("parameter")
 s = (c >= d);
-@Description("description")
-@Parameter("parameter")
 t = (c > d);
-@Description("description")
-@Parameter("parameter")
 u = (e && g);
-@Description("description")
-@Parameter("parameter")
 v = (e || g);
-@Description("description")
-@Parameter("parameter")
 w = i;
 @Description("description")
 @Parameter("parameter")
@@ -78,33 +46,14 @@ x = -i;
 @Description("description")
 @Parameter("parameter")
 y = !i;
-@Description("description")
-@Parameter("parameter")
 z = j;
-@Description("description")
-@Parameter("parameter")
 aa = (k ? l : m);
-@Description("description")
-@Parameter("parameter")
 bb = n[o];
-@Description("description")
-@Parameter("parameter")
 cc = let(a = 1) a;
-@Description("description")
-@Parameter("parameter")
 dd = [for(a = [0, 1]) (let(b = a) (if(true) (b)))];
-@Description("description")
-@Parameter("parameter")
 ee = ["abc", for(a = [0, 1]) (let(b = a) (if(true) (b))), true, for(c = [1 : 3]) (c), 3];
-@Description("description")
-@Parameter("parameter")
 ff = [for(a = [0, 1]) (if((a == 0)) ("A") else ("B"))];
-@Description("description")
-@Parameter("parameter")
 gg = [each (["a", 0, false])];
-@Description("description")
-@Parameter("parameter")
 hh = [for(a = [0 : 3]) (if((a < 2)) (if((a < 1)) (["+", a])) else (["-", a]))];
-@Description("description")
 ii = [for(a = 0, b = 1;(a < 5);a = (a + 1), b = (b + 2)) [a, (b * b)]];
 

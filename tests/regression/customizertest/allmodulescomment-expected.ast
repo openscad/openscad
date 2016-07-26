@@ -1,6 +1,4 @@
 minkowski();
-glide();
-subdiv();
 hull();
 resize();
 child();

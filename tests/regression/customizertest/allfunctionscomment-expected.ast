@@ -1,98 +1,34 @@
-@Parameter("parameter")
 a = abs();
-@Description("description")
-@Parameter("parameter")
 b = sign();
-@Description("description")
-@Parameter("parameter")
 c = rands();
-@Description("description")
-@Parameter("parameter")
 d = min();
-@Description("description")
-@Parameter("parameter")
 e = max();
-@Description("description")
-@Parameter("parameter")
 f = sin();
-@Description("description")
-@Parameter("parameter")
 g = cos();
-@Description("description")
-@Parameter("parameter")
 h = asin();
-@Description("description")
-@Parameter("parameter")
 i = acos();
-@Description("description")
-@Parameter("parameter")
 j = tan();
-@Description("description")
-@Parameter("parameter")
 k = atan();
-@Description("description")
-@Parameter("parameter")
 l = atan2();
-@Description("description")
-@Parameter("parameter")
 m = round();
-@Description("description")
-@Parameter("parameter")
 n = ceil();
-@Description("description")
-@Parameter("parameter")
 o = floor();
-@Description("description")
-@Parameter("parameter")
 p = pow();
-@Description("description")
-@Parameter("parameter")
 q = sqrt();
-@Description("description")
-@Parameter("parameter")
 r = exp();
-@Description("description")
-@Parameter("parameter")
 ra = len();
-@Description("description")
-@Parameter("parameter")
 s = log();
-@Description("description")
-@Parameter("parameter")
 t = ln();
-@Description("description")
-@Parameter("parameter")
 u = str();
-@Description("description")
-@Parameter("parameter")
 ua = chr();
-@Description("description")
-@Parameter("parameter")
 ub = concat();
-@Description("description")
-@Parameter("parameter")
 v = lookup();
-@Description("description")
-@Parameter("parameter")
 va = search();
-@Description("description")
-@Parameter("parameter")
 y = version();
-@Description("description")
-@Parameter("parameter")
 z = version_num();
-@Description("description")
-@Parameter("parameter")
 za = norm();
-@Description("description")
-@Parameter("parameter")
 zb = cross();
-@Description("description")
-@Parameter("parameter")
 zc = parent_module();
-@Description("description")
-@Parameter("parameter")
 w = dxf_dim();
-@Description("description")
 x = dxf_cross();
 

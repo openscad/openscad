@@ -76,6 +76,11 @@ bool Expression::isListComprehension() const
 	return false;
 }
 
+bool Expression::isLiteral() const
+{
+    return false;
+}
+
 UnaryOp::UnaryOp(UnaryOp::Op op, Expression *expr, const Location &loc) : Expression(loc), op(op), expr(expr)
 {
 }
@@ -303,6 +308,15 @@ void Range::print(std::ostream &stream) const
 
 Vector::Vector(const Location &loc) : Expression(loc)
 {
+}
+
+bool Vector::isLiteral() const {
+    for(const auto &e : this->children) {
+        if (!e->isLiteral()){
+            return false;
+        }
+    } 
+    return true;
 }
 
 void Vector::push_back(Expression *expr)

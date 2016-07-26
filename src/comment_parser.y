@@ -1,5 +1,6 @@
 %{
     #include<iostream>
+    #include <sstream>
     #include<string.h>
     using namespace std;
     #include "Assignment.h"
@@ -114,6 +115,27 @@ word:
     WORD
     {
         $$=$1;    
+    }
+    | word NUM
+    {
+        string a;
+        a=$1;
+        a+=" ";
+        double dbl=$2;
+        std::ostringstream strs;
+        strs<<dbl;
+        a=a+strs.str();
+        $$=strdup(a.c_str());
+    }
+    | NUM word
+    {
+        double dbl=$1;
+        std::ostringstream strs;
+        strs<<dbl;
+        string a=" ";
+        a+=$2;
+        a=strs.str()+a;
+        $$=strdup(a.c_str());
     }
     | word WORD
     {

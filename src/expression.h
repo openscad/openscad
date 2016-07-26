@@ -13,7 +13,7 @@ class Expression : public ASTNode
 public:
 	Expression(const Location &loc) : ASTNode(loc) {}
 	virtual ~Expression() {}
-
+    virtual bool isLiteral() const;
 	virtual bool isListComprehension() const;
 	virtual ValuePtr evaluate(const class Context *context) const = 0;
 	virtual void print(std::ostream &stream) const = 0;
@@ -28,7 +28,7 @@ public:
 		Not,
 		Negate
 	};
-
+    virtual bool isLiteral() const { return true;}
 	UnaryOp(Op op, Expression *expr, const Location &loc);
 	virtual ValuePtr evaluate(const class Context *context) const;
 	virtual void print(std::ostream &stream) const;
@@ -100,6 +100,7 @@ public:
 	Literal(const ValuePtr &val, const Location &loc = Location::NONE);
 	ValuePtr evaluate(const class Context *) const;
 	virtual void print(std::ostream &stream) const;
+    virtual bool isLiteral() const { return true;}
 private:
 	ValuePtr value;
 };
@@ -112,6 +113,7 @@ public:
 	ValuePtr evaluate(const class Context *context) const;
 	virtual void print(std::ostream &stream) const;
 private:
+    virtual bool isLiteral() const { return true;}
 	shared_ptr<Expression> begin;
 	shared_ptr<Expression> step;
 	shared_ptr<Expression> end;
@@ -124,6 +126,7 @@ public:
 	ValuePtr evaluate(const class Context *context) const;
 	virtual void print(std::ostream &stream) const;
 	void push_back(Expression *expr);
+    virtual bool isLiteral() const ;
 private:
 	std::vector<shared_ptr<Expression>> children;
 };

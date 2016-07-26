@@ -14,25 +14,31 @@ void addParameter(const char *fulltext, class FileModule *root_module){
         //get loaction of assignment node 
         const Location locate=(*it).location();
         int loc =locate.firstLine();
-        
+        if(!it->expr.get()->isLiteral()){
+            continue;
+        }
         // makeing list to add annotations
         AnnotationList *annotationList = new AnnotationList();
-         AssignmentList *assignmentList;
+        AssignmentList *assignmentList;
          
         //extracting the parameter 
-        string name = getParameter(std::string(fulltext),loc);
-        if(name!= "" ){
-        
+        string name = getParameter(std::string(fulltext),loc);        
             //getting the node for parameter annnotataion
             assignmentList=parser(name.c_str());
-            if(assignmentList!=NULL){
-                const Annotation *Parameter;
-                Parameter=Annotation::create("Parameter",*assignmentList);
-
-                // adding parameter to the list
-                annotationList->push_back(*Parameter);
+            if(assignmentList==NULL){
+                assignmentList=new AssignmentList();
+                Expression *expr;
+                expr=new Literal(ValuePtr(std::string("")));
+                Assignment *assignment;
+                assignment=new Assignment("", shared_ptr<Expression>(expr));
+                assignmentList->push_back(*assignment);   
             }
-        }
+            const Annotation *Parameter;
+            Parameter=Annotation::create("Parameter",*assignmentList);
+
+            // adding parameter to the list
+            annotationList->push_back(*Parameter);
+        
         
         //extracting the description 
         name = getDescription(std::string(fulltext),loc-1);

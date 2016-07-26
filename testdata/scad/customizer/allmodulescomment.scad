@@ -1,9 +1,5 @@
 minkowski();//parameter
 //description
-glide();//parameter
-//description
-subdiv();//parameter
-//description
 hull();//parameter
 //description
 resize();//parameter
