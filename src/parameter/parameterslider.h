@@ -11,7 +11,7 @@ public:
     void setValue();
 
 protected slots:
-    void on_Changed(int);
+    void on_Changed();
 };
 
 #endif // PARAMETERSLIDER_H

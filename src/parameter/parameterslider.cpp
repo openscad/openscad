@@ -5,7 +5,7 @@ ParameterSlider::ParameterSlider(ParameterObject *parameterobject, bool showDesc
     object=parameterobject;
     setName(QString::fromStdString(object->name));
     setValue();
-    connect(slider,SIGNAL(valueChanged(int)),this,SLOT(on_Changed(int)));
+    connect(slider,SIGNAL(sliderReleased()),this,SLOT(on_Changed()));
     if(showDescription==true){
         setDescription(object->description);
     }
@@ -14,7 +14,7 @@ ParameterSlider::ParameterSlider(ParameterObject *parameterobject, bool showDesc
     }
 }
 
-void ParameterSlider::on_Changed(int)
+void ParameterSlider::on_Changed()
 {
     double v = slider->value();
     object->value = ValuePtr(v);

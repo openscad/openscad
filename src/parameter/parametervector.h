@@ -11,7 +11,7 @@ public:
     void setValue();
 
 protected slots:
-    void on_Changed(double);
+    void on_Changed();
 };
 
 #endif // PARAMETERVECTOR_H
