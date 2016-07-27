@@ -1613,6 +1613,7 @@ add_cmdline_test(customizertest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX ast FILES
                  ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/allmodulescomment.scad
                  ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/allfunctionscomment.scad
                  ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/allexpressionscomment.scad
+                 ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/group.scad
                  )
                  
 # Tests using the actual OpenSCAD binary

@@ -55,10 +55,20 @@ void ParameterObject::setAssignment(Context *ctx, const Assignment *assignment, 
             description=QString::fromStdString(v->toString());
         }
     }
+
+    const Annotation *group = assignment->annotation("Group");
+    if (group) {
+            const ValuePtr v = group->evaluate(ctx, "text");
+            if (v->type() == Value::STRING) {
+                groupName=v->toString();
+            }
+        } else{
+                groupName="Parameters";
+        }
 }
 
 bool ParameterObject::operator == (const ParameterObject &second)
 {
     return (this->defaultValue == second.defaultValue && this->values==second.values &&
-        this->description == second.description);
+        this->description == second.description && this->groupName == second.groupName);
 }

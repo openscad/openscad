@@ -34,6 +34,11 @@ std::string LocalScope::dump(const std::string &indent) const
 	for(const auto &ass : this->assignments) {
         if( ass.has_annotations()){
 		    
+            const Annotation  *group =ass.annotation("Group");
+            if( group != NULL){
+                dump<<group->dump();
+             }
+
             const Annotation  *Description=ass.annotation("Description");
             if( Description != NULL){
 		        dump<<Description->dump();

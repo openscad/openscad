@@ -23,6 +23,7 @@ public:
     QString description;
     string name;
     bool set;
+    string groupName;
 
 private:
     Value::ValueType vt;

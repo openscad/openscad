@@ -82,6 +82,7 @@ void ParameterWidget::begin()
 		this->scrollAreaWidgetContents->layout()->removeWidget(w);
 		delete w;
 	}
+	anyLayout = new QVBoxLayout();
 }
 
 void ParameterWidget::addEntry(ParameterVirtualWidget *entry)
@@ -92,7 +93,7 @@ void ParameterWidget::addEntry(ParameterVirtualWidget *entry)
 	policy.setHorizontalStretch(0);
 	policy.setVerticalStretch(0);
 	entry->setSizePolicy(policy);
-	this->scrollAreaWidgetContents->layout()->addWidget(entry);
+	anyLayout->addWidget(entry);
 }
 
 void ParameterWidget::end()
@@ -109,6 +110,45 @@ void ParameterWidget::end()
 
 void ParameterWidget::connectWidget()
 {
+    // clear previous entries in groupMap and entries
+    clear();
+
+    vector<string> global;
+    if(groupMap.find("Global")!=groupMap.end()){
+     global=groupMap["Global"].parameterVector;
+     groupMap["Global"].parameterVector.clear();
+    }
+
+    for(group_map::iterator it = groupMap.begin(); it != groupMap.end(); ) {
+        vector<string> gr;
+        gr=it->second.parameterVector;
+        if(gr.empty()|| it->first=="Hidden"){
+            it=groupMap.erase(it);
+        }
+        else{
+
+            it->second.parameterVector.insert( it->second.parameterVector.end(), global.begin(), global.end() );
+            it++;
+    }
+    }
+
+    begin();
+    for(group_map::iterator it = groupMap.begin(); it != groupMap.end(); it++) {
+        vector<string> gr;
+        gr=it->second.parameterVector;
+
+        for(int i=0;i <gr.size();i++){
+            AddParameterWidget(gr[i]);
+        }
+        GroupWidget *groupWidget =new GroupWidget(it->second.show ,QString::fromStdString(it->first));
+        groupWidget->setContentLayout(*anyLayout);
+        this->scrollAreaWidgetContents->layout()->addWidget(groupWidget);
+        anyLayout = new QVBoxLayout();
+    }
+    end();
+}
+
+void ParameterWidget::clear(){
     for(entry_map_t::iterator it = entries.begin(); it != entries.end();) {
         if(!(*it).second->set){
             it=entries.erase(it);
@@ -116,41 +156,58 @@ void ParameterWidget::connectWidget()
             it++;
         }
     }
+         for(group_map::iterator it = groupMap.begin(); it != groupMap.end(); it++) {
+         it->second.parameterVector.clear();
+     }
 
-    begin();
+
     for(entry_map_t::iterator it = entries.begin(); it != entries.end(); it++) {
+                if(groupMap.find(it->second->groupName) == groupMap.end()){
+                    groupInst enter;
+                    enter.parameterVector.push_back(it->first);
+                    enter.show=false;
+                    groupMap[it->second->groupName]=enter;
+                }
+                else{
+                    groupMap[it->second->groupName].parameterVector.push_back(it->first);
 
-        ParameterVirtualWidget *entry ;
-        switch (it->second->target) {
-            case COMBOBOX:{
-                entry = new ParameterComboBox(it->second,descriptionShow);
-                break;
-            }
-            case SLIDER:{
-                entry = new ParameterSlider(it->second,descriptionShow);
-                break;
-            }
-            case CHECKBOX:{
-                entry = new ParameterCheckBox(it->second,descriptionShow);
-                break;
-            }
-            case TEXT:{
-                entry = new ParameterText(it->second,descriptionShow);
-                break;
-            }
-            case NUMBER:{
-                entry = new ParameterSpinBox(it->second,descriptionShow);
-                break;
-            }
-            case VECTOR:{
-                entry = new ParameterVector(it->second,descriptionShow);
-                break;
-            }
+                }
+         }
+
+}
+
+void ParameterWidget::AddParameterWidget(string parameterName){
+    ParameterVirtualWidget *entry ;
+    switch (entries[parameterName]->target) {
+        case COMBOBOX:{
+            entry = new ParameterComboBox(entries[parameterName],descriptionShow);
+            break;
         }
-        if(it->second->target!=UNDEFINED){
-            connect(entry, SIGNAL(changed()), this, SLOT(onValueChanged()));
-            addEntry(entry);
+        case SLIDER:{
+            entry = new ParameterSlider(entries[parameterName],descriptionShow);
+            break;
+        }
+        case CHECKBOX:{
+            entry = new ParameterCheckBox(entries[parameterName],descriptionShow);
+            break;
+        }
+        case TEXT:{
+            entry = new ParameterText(entries[parameterName],descriptionShow);
+            break;
+        }
+        case NUMBER:{
+            entry = new ParameterSpinBox(entries[parameterName],descriptionShow);
+            break;
+        }
+        case VECTOR:{
+            entry = new ParameterVector(entries[parameterName],descriptionShow);
+            break;
         }
     }
-    end();
+    if(entries[parameterName]->target!=UNDEFINED){
+        connect(entry, SIGNAL(changed()), this, SLOT(onValueChanged()));
+        addEntry(entry);
+
+    }
+
 }
