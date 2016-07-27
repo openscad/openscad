@@ -398,7 +398,8 @@ HEADERS += src/version_check.h \
            src/parameter/parametercheckbox.h \
            src/parameter/parametertext.h \
            src/parameter/parametervector.h \
-           src/parameter/groupwidget.h
+           src/parameter/groupwidget.h \
+           src/parameter/parameterset.h
 
 SOURCES += \
            src/libsvg/libsvg.cc \
@@ -534,7 +535,8 @@ SOURCES += \
            src/parameter/parametercheckbox.cpp \
            src/parameter/parametertext.cpp \
            src/parameter/parametervector.cpp \
-           src/parameter/groupwidget.cpp
+           src/parameter/groupwidget.cpp \
+           src/parameter/parameterset.cpp
 
 
 # ClipperLib

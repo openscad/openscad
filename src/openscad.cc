@@ -47,6 +47,7 @@
 #include "OffscreenView.h"
 #include "GeometryEvaluator.h"
 
+#include"parameter/parameterset.h"
 #include <string>
 #include <vector>
 #include <fstream>
@@ -314,7 +315,7 @@ void set_render_color_scheme(const std::string color_scheme, const bool exit_if_
 
 #include <QCoreApplication>
 
-int cmdline(const char *deps_output_file, const std::string &filename, Camera &camera, const char *output_file, const fs::path &original_path, Render::type renderer, int argc, char ** argv )
+int cmdline(const char *deps_output_file, const std::string &filename, Camera &camera, const char *output_file, const fs::path &original_path, Render::type renderer,const std::string &parameterFile,const std::string &setName, int argc, char ** argv )
 {
 #ifdef OPENSCAD_QTGUI
 	QCoreApplication app(argc, argv);
@@ -403,7 +404,12 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
     
     // add parameter to AST
 	addParameter(text.c_str(),root_module);
-	
+	if(!parameterFile.empty() && !setName.empty()){
+        ParameterSet param;
+        param.getParameterSet(parameterFile);
+        param.applyParameterSet(root_module,setName);
+    }
+    
 	root_module->handleDependencies();
 
 	fs::path fpath = fs::absolute(fs::path(filename));
@@ -809,6 +815,8 @@ int main(int argc, char **argv)
 		("debug", po::value<string>(), "special debug info")
 		("quiet,q", "quiet mode (don't print anything *except* errors)")
 		("o,o", po::value<string>(), "out-file")
+	    ("p,p", po::value<string>(), "parameter-file")
+        ("P,P", po::value<string>(), "parameter-Set")
 		("s,s", po::value<string>(), "stl-file")
 		("x,x", po::value<string>(), "dxf-file")
 		("d,d", po::value<string>(), "deps-file")
@@ -887,6 +895,21 @@ int main(int argc, char **argv)
 		if (make_command) help(argv[0], true);
 		make_command = vm["m"].as<string>().c_str();
 	}
+	
+	    string parameterFile;
+    string parameterSet;
+
+    if (vm.count("p")) {
+        if (!parameterFile.empty()) help(argv[0], true);
+
+        parameterFile = vm["p"].as<string>().c_str();
+    }
+
+    if (vm.count("P")) {
+        if (!parameterSet.empty()) help(argv[0], true);
+
+        parameterSet = vm["P"].as<string>().c_str();
+    }
 
 	if (vm.count("D")) {
 		for(const auto &cmd : vm["D"].as<vector<string>>()) {
@@ -926,7 +949,7 @@ int main(int argc, char **argv)
 
 	if (arg_info || cmdlinemode) {
 		if (inputFiles.size() > 1) help(argv[0], true);
-		rc = cmdline(deps_output_file, inputFiles[0], camera, output_file, original_path, renderer, argc, argv);
+		 rc = cmdline(deps_output_file, inputFiles[0], camera, output_file, original_path, renderer, parameterFile, parameterSet, argc, argv);
 	}
 	else if (QtUseGUI()) {
 		rc = gui(inputFiles, original_path, argc, argv);

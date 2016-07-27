@@ -779,7 +779,9 @@ void MainWindow::setFileName(const QString &filename)
 		QFileInfo fileinfo(filename);
 		this->fileName = fileinfo.absoluteFilePath();
 		setWindowFilePath(this->fileName);
-
+        
+        this->parameterWidget->setFile(this->fileName);
+        
 		QDir::setCurrent(fileinfo.dir().absolutePath());
 		this->top_ctx.setDocumentPath(fileinfo.dir().absolutePath().toLocal8Bit().constData());
 	}
@@ -1430,6 +1432,9 @@ void MainWindow::actionSaveAs()
 				}
 			}
 		}
+		QString jsonfile=new_filename;
+		this->parameterWidget->writeParameterSet(jsonfile.replace(".scad",".json").toStdString());
+		
 		setFileName(new_filename);
 		actionSave();
 	}

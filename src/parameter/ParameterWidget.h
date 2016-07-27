@@ -31,8 +31,9 @@
 #include "parameterextractor.h"
 #include "ui_ParameterWidget.h"
 #include "groupwidget.h"
+#include "parameterset.h"
 
-class ParameterWidget : public QWidget, public Ui::ParameterWidget, public ParameterExtractor
+class ParameterWidget : public QWidget, public Ui::ParameterWidget, public ParameterExtractor, public ParameterSet
 {
 	Q_OBJECT
 private:
@@ -42,15 +43,21 @@ private:
     QTimer autoPreviewTimer;
     bool descriptionShow;
     QVBoxLayout * anyLayout;
+    string jsonFile;
+
 
 public:
     ParameterWidget(QWidget *parent = 0);
     virtual ~ParameterWidget();
+    void setFile(QString jsonFile);
 
 protected slots:
     void onValueChanged();
     void onPreviewTimerElapsed();
     void onDescriptionShow();
+    void onSetChanged(int idx);
+    void onSetAdd();
+    void onSetDelete();
 
 signals:
     void previewRequested();
@@ -62,4 +69,8 @@ protected:
     void end();
     void clear();
     void AddParameterWidget(string parameterName);
+    void setComboBoxForSet();
+    void applyParameterSet(string setName);
+    void updateParameterSet(string setName);
 };
+
