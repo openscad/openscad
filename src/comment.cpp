@@ -120,7 +120,7 @@ string getParameter(string fulltext, int loc){
     bool isComment=true;
     for(;startText<comment.length()-1;startText++){
         
-        if(comment[startText]=='\"' || comment[startText]=='\''){
+        if(comment[startText]=='\"'){
             isComment=!isComment;
         }
         if( comment[startText]== '/' && comment[startText+1]=='/'  && isComment){
@@ -216,11 +216,22 @@ GroupList collectGroups(string fulltext){
         //increase line number
         if(fulltext[i]=='\n'){
             lineNo++;
+            continue;
         }
         
         //start or end of string negate the checkpoint
-        if(fulltext[i]=='\"' || fulltext[i]=='\''){
+        if(fulltext[i]=='\"'){
             isComment=!isComment;
+            continue;
+        }
+        
+         if(fulltext[i]=='/' && fulltext[i+1]=='/'){
+            i++;
+            while(fulltext[i]!='\n'){
+                i++;
+            }
+            lineNo++;
+            continue;
         }
         
         //start of multi line comment if check is true

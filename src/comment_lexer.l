@@ -5,6 +5,7 @@
     #include "comment_parser.h"
     #include <boost/lexical_cast.hpp>
     YY_BUFFER_STATE yy_scan_string ( const char *str ) ;
+    std::string stringcon;
 %}
 
 
@@ -12,6 +13,11 @@
 D [0-9]
 E [Ee][-+]?{D}+
 H [0-9a-fA-F]
+U       [\x80-\xbf]
+U2      [\xc2-\xdf]
+U3      [\xe0-\xef]
+U4      [\xf0-\xf4]
+UNICODE {U2}{U}|{U3}{U}{U}|{U4}{U}{U}{U}
 
 %%
 
@@ -31,8 +37,26 @@ H [0-9a-fA-F]
 ":" { return yytext[0];}
   
 [ \t]
+
+\"			{ BEGIN(cond_string); stringcon.clear(); }
+<cond_string>{
+\\n			{ stringcon += '\n'; }
+\\t			{ stringcon += '\t'; }
+\\r			{ stringcon += '\r'; }
+\\\\			{ stringcon += '\\'; }
+\\\"			{ stringcon += '"'; }
+{UNICODE}               { stringcon += yytext; }
+[^\\\n\"]		{ stringcon += yytext; }
+\" 			{ BEGIN(INITIAL);
+			yylval.text = strdup(stringcon.c_str());
+			return WORD; }
+<<EOF>> {   BEGIN(INITIAL);
+			yylval.text = strdup(stringcon.c_str());
+			return WORD; }
+}
+
    
-[^(\[ \] \, \:)]* { yylval.text=strdup(yytext); return WORD;}
+[^(\[ \] \, \" \:)]* { yylval.text=strdup(yytext); return WORD;}
 
 . { }
 
