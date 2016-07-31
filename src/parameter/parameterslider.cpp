@@ -19,13 +19,13 @@ ParameterSlider::ParameterSlider(ParameterObject *parameterobject, bool showDesc
 
 void ParameterSlider::onMoved(int)
 {
-    double v = slider->value()/pow(10,presicion);
+    double v = slider->value()*step;
     this->labelSliderValue->setText(QString::number(v, 'f', presicion));
 }
 
 void ParameterSlider::on_Changed()
 {
-    double v = slider->value()/pow(10,presicion);
+    double v = slider->value()*step;
     object->value = ValuePtr(v);
     //to be corrected
     this->labelSliderValue->setText(QString::number(v, 'f',presicion));
@@ -38,9 +38,14 @@ void ParameterSlider::setValue()
     ostr <<object->values->toRange().step_value();
     std::string number= ostr.str();
     presicion=number.size()-number.find('.')-1;
+
+    step=object->values->toRange().step_value();
+
+    int min = object->values->toRange().begin_value()/step;
+    int max=object->values->toRange().end_value()/step;
+    int current=object->value->toDouble()/step;
     this->stackedWidget->setCurrentWidget(this->pageSlider);
-    this->slider->setRange(object->values->toRange().begin_value()*pow(10,presicion),object->values->toRange().end_value()*pow(10,presicion));
-    this->slider->setValue(object->value->toDouble()*pow(10,presicion));
-    this->slider->setSingleStep(object->values->toRange().step_value()*pow(10,presicion));
-    this->labelSliderValue->setText(QString::number(object->value->toDouble(), 'f',presicion));
+    this->slider->setRange(min,max);
+    this->slider->setValue(current);
+    this->labelSliderValue->setText(QString::number(current*step, 'f',presicion));
 }

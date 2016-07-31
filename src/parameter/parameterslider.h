@@ -12,6 +12,7 @@ public:
 
 private:
     int presicion;
+    double step;
 
 protected slots:
     void on_Changed();
