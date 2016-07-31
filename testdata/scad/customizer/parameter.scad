@@ -53,3 +53,10 @@ x27=12; //end parameter
 
 x28=-12; 
 x29=!1;
+
+x30=["new","secon"];
+
+x31=["new","second"]; //[new,second]
+
+x32=["new","second"]; //["new",second]
+

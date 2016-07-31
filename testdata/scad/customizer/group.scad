@@ -39,4 +39,11 @@ String="hello"; //comment
 //Text box for vector with less than or equal to 4 elements
 Vector2=[12,34,45,23]; //any thing
 
+// Norma; text
+String2="hello"; //comment with "
+
+/* [group after " in previous comment ] */
+//Text box for vector with less than or equal to 4 elements
+Vector3=[12,34,45,23]; //any thing
+
 echo(String);

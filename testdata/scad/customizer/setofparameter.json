@@ -13,7 +13,8 @@
             "Vector": "[2, 34, 45, 12, 3, 56]",
             "Vector2": "[12,4, 45, 23]",
             "slider": "38",
-            "stepSlider": "12"
+            "stepSlider": "12",
+            "stringVector":"[hello, new, 12]"
         },
         "wrongSetValues":
         {
@@ -33,7 +34,8 @@
         {
             "Labeled_value":"S new",
             "non existing":"value", 
-            "nonparameter" : "second"   
+            "nonparameter" : "second",
+            "stringVector":"[ \" hello\",\" new \"]"
         }
     }
 }

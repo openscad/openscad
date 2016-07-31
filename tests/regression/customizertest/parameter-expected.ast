@@ -60,4 +60,10 @@ x27 = 12;
 x28 = -12;
 @Parameter("")
 x29 = !1;
+@Parameter("")
+x30 = ["new", "secon"];
+@Parameter(["new", "second"])
+x31 = ["new", "second"];
+@Parameter(["new", "second"])
+x32 = ["new", "second"];
 

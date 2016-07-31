@@ -42,4 +42,5 @@ Vector2=[12,34,45,23]; //any thing
 
 nonparameter="new";
 
+stringVector=["1","2"];
 echo(String);

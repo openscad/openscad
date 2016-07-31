@@ -45,5 +45,8 @@ Vector2 = [12, 34, 45, 23];
 @Group("Special vector")
 @Parameter("")
 nonparameter = "new";
+@Group("Special vector")
+@Parameter("")
+stringVector = ["1", "2"];
 echo(String);
 
