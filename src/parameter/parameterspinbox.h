@@ -9,7 +9,8 @@ class ParameterSpinBox :public ParameterVirtualWidget
 public:
     ParameterSpinBox(ParameterObject *parameterobject,bool showDescription);
     void setValue();
-
+private:
+    int presicion;
 protected slots:
     void on_Changed();
 };

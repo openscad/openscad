@@ -27,6 +27,7 @@ public:
 
 private:
     Value::ValueType vt;
+    void checkVectorWidget();
 
 public:
     ParameterObject();

@@ -28,7 +28,7 @@ int ParameterObject::setValue(const class ValuePtr defaultValue, const class Val
     if (dvt == Value::BOOL) {
         target = CHECKBOX;
     } else if ((dvt == Value::VECTOR) && (defaultValue->toVector().size() <= 4)) {
-        target = VECTOR;
+        checkVectorWidget();
     } else if ((vt == Value::VECTOR) && ((dvt == Value::NUMBER) || (dvt == Value::STRING))) {
         target = COMBOBOX;
     } else if ((vt == Value::RANGE) && (dvt == Value::NUMBER)) {
@@ -71,4 +71,16 @@ bool ParameterObject::operator == (const ParameterObject &second)
 {
     return (this->defaultValue == second.defaultValue && this->values==second.values &&
         this->description == second.description && this->groupName == second.groupName);
+}
+
+void ParameterObject::checkVectorWidget(){
+
+Value::VectorType vec = defaultValue->toVector();
+    for(int i=0;i<vec.size();i++){
+        if(vec[i]->type()!=Value::NUMBER){
+            target=TEXT;
+            return;
+        }
+    }
+    target=VECTOR;
 }
