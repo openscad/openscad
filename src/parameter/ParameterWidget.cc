@@ -170,6 +170,7 @@ void ParameterWidget::end()
 
 void ParameterWidget::connectWidget()
 {
+    anyfocused=false;
     // clear previous entries in groupMap and entries
     clear();
 
@@ -189,7 +190,7 @@ void ParameterWidget::connectWidget()
 
             it->second.parameterVector.insert( it->second.parameterVector.end(), global.begin(), global.end() );
             it++;
-    }
+        }
     }
 
     begin();
@@ -206,6 +207,9 @@ void ParameterWidget::connectWidget()
         anyLayout = new QVBoxLayout();
     }
     end();
+    if(anyfocused!=0){
+        entryToFocus->setParameterFocus();
+    }
 }
 
 void ParameterWidget::clear(){
@@ -267,7 +271,10 @@ void ParameterWidget::AddParameterWidget(string parameterName){
     if(entries[parameterName]->target!=UNDEFINED){
         connect(entry, SIGNAL(changed()), this, SLOT(onValueChanged()));
         addEntry(entry);
-
+        if(entries[parameterName]->focus){
+            entryToFocus=entry;
+            anyfocused=true;
+        }
     }
 
 }

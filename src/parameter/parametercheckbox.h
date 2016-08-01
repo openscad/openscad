@@ -10,9 +10,10 @@ class ParameterCheckBox : public ParameterVirtualWidget
 public:
     ParameterCheckBox(ParameterObject *parameterobject,bool);
     void setValue();
+    void setParameterFocus();
 
 protected slots:
-    void on_Changed();
+    void onChanged();
 };
 
 #endif // PARAMETERCHECKBOX_H

@@ -24,6 +24,7 @@ public:
     string name;
     bool set;
     string groupName;
+    bool focus;
 
 private:
     Value::ValueType vt;

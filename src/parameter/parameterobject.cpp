@@ -5,6 +5,7 @@
 
 ParameterObject::ParameterObject()
 {
+    focus=false;
 }
 
 void ParameterObject::applyParameter(class Assignment *assignment){

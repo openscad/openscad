@@ -8,7 +8,7 @@ ParameterText::ParameterText(ParameterObject *parameterobject, bool showDescript
     object=parameterobject;
     setName(QString::fromStdString(object->name));
     setValue();
-    connect(lineEdit,SIGNAL(editingFinished()),this,SLOT(on_Changed()));
+    connect(lineEdit,SIGNAL(textChanged(QString)),this,SLOT(onChanged(QString)));
     if(showDescription==true){
         setDescription(object->description);
     }
@@ -17,8 +17,9 @@ ParameterText::ParameterText(ParameterObject *parameterobject, bool showDescript
     }
 }
 
-void ParameterText::on_Changed()
+void ParameterText::onChanged(QString)
 {
+
     if(object->dvt == Value::STRING){
         object->value = ValuePtr(lineEdit->text().toStdString());
     }
@@ -36,7 +37,15 @@ void ParameterText::on_Changed()
             }
         }
     }
+    object->focus=true;
     emit changed();
+}
+
+void ParameterText::setParameterFocus()
+{
+   this->lineEdit->setFocus();
+   object->focus=false;
+
 }
 
 void ParameterText::setValue()

@@ -9,9 +9,10 @@ class ParameterVector : public ParameterVirtualWidget
 public:
     ParameterVector(ParameterObject *parameterobject,bool showDescription);
     void setValue();
+    void setParameterFocus();
 
 protected slots:
-    void on_Changed();
+    void onChanged(double);
 };
 
 #endif // PARAMETERVECTOR_H

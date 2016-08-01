@@ -44,6 +44,8 @@ private:
     bool descriptionShow;
     QVBoxLayout * anyLayout;
     string jsonFile;
+    bool anyfocused;
+    ParameterVirtualWidget *entryToFocus;
 
 
 public:

@@ -10,9 +10,10 @@ class ParameterComboBox : public ParameterVirtualWidget
 public:
     ParameterComboBox(ParameterObject *parameterobject,bool showDescription);
     void setValue();
+    void setParameterFocus();
 
 public slots:
-    void on_Changed(int idx);
+    void onChanged(int idx);
 };
 
 

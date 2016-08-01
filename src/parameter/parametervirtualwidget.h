@@ -22,6 +22,7 @@ public:
     }
 
     virtual ~ParameterVirtualWidget(){}
+    virtual void setParameterFocus()=0;
 
 signals:
     void changed();

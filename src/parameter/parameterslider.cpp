@@ -7,8 +7,7 @@ ParameterSlider::ParameterSlider(ParameterObject *parameterobject, bool showDesc
     object=parameterobject;
     setName(QString::fromStdString(object->name));
     setValue();
-    connect(slider,SIGNAL(sliderReleased()),this,SLOT(on_Changed()));
-    connect(slider,SIGNAL(valueChanged(int)),this,SLOT(onMoved(int)));
+    connect(slider,SIGNAL(valueChanged(int)),this,SLOT(onChanged(int)));
     if(showDescription==true){
         setDescription(object->description);
     }
@@ -17,20 +16,21 @@ ParameterSlider::ParameterSlider(ParameterObject *parameterobject, bool showDesc
     }
 }
 
-void ParameterSlider::onMoved(int)
+void ParameterSlider::onChanged(int)
 {
+    object->focus=true;
     double v = slider->value()*step;
     this->labelSliderValue->setText(QString::number(v, 'f', presicion));
-}
-
-void ParameterSlider::on_Changed()
-{
-    double v = slider->value()*step;
     object->value = ValuePtr(v);
-    //to be corrected
-    this->labelSliderValue->setText(QString::number(v, 'f',presicion));
     emit changed();
 }
+
+void ParameterSlider::setParameterFocus()
+{
+   slider->setFocus();
+   object->focus=false;
+}
+
 
 void ParameterSlider::setValue()
 {

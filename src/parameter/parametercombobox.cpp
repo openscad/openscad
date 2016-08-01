@@ -1,10 +1,11 @@
 #include "parametercombobox.h"
 
 ParameterComboBox::ParameterComboBox(ParameterObject *parameterobject, bool showDescription){
+
     object=parameterobject;
     setName(QString::fromStdString(object->name));
     setValue();
-    connect(comboBox,SIGNAL(currentIndexChanged(int)),this,SLOT(on_Changed(int)));
+    connect(comboBox,SIGNAL(currentIndexChanged(int)),this,SLOT(onChanged(int)));
     if(showDescription==true){
         setDescription(object->description);
     }
@@ -14,7 +15,7 @@ ParameterComboBox::ParameterComboBox(ParameterObject *parameterobject, bool show
 
 }
 
-void ParameterComboBox::on_Changed(int idx){
+void ParameterComboBox::onChanged(int idx){
 
     if(object->dvt == Value::STRING){
         const string v = comboBox->itemData(idx).toString().toStdString();
@@ -23,7 +24,14 @@ void ParameterComboBox::on_Changed(int idx){
         const double v = comboBox->itemData(idx).toDouble();
         object->value = ValuePtr(v);
     }
+    object->focus=true;
     emit changed();
+}
+
+void ParameterComboBox::setParameterFocus()
+{
+   this->comboBox->setFocus();
+   object->focus=false;
 }
 
 void ParameterComboBox::setValue(){

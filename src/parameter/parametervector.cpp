@@ -5,10 +5,10 @@ ParameterVector::ParameterVector(ParameterObject *parameterobject, bool showDesc
     object=parameterobject;
     setName(QString::fromStdString(object->name));
     setValue();
-    connect(doubleSpinBox1,SIGNAL(editingFinished()),this,SLOT(on_Changed()));
-    connect(doubleSpinBox2,SIGNAL(editingFinished()),this,SLOT(on_Changed()));
-    connect(doubleSpinBox3,SIGNAL(editingFinished()),this,SLOT(on_Changed()));
-    connect(doubleSpinBox4,SIGNAL(editingFinished()),this,SLOT(on_Changed()));
+    connect(doubleSpinBox1,SIGNAL(valueChanged(double)),this,SLOT(onChanged(double)));
+    connect(doubleSpinBox2,SIGNAL(valueChanged(double)),this,SLOT(onChanged(double)));
+    connect(doubleSpinBox3,SIGNAL(valueChanged(double)),this,SLOT(onChanged(double)));
+    connect(doubleSpinBox4,SIGNAL(valueChanged(double)),this,SLOT(onChanged(double)));
     if(showDescription==true){
         setDescription(object->description);
     }
@@ -17,8 +17,9 @@ ParameterVector::ParameterVector(ParameterObject *parameterobject, bool showDesc
     }
 }
 
-void ParameterVector::on_Changed()
+void ParameterVector::onChanged(double)
 {
+    object->focus=true;
     if (object->target == 5) {
         object->value = ValuePtr(doubleSpinBox1->value());
     } else {
@@ -36,6 +37,12 @@ void ParameterVector::on_Changed()
         object->value = ValuePtr(vt);
     }
     emit changed();
+}
+
+void ParameterVector::setParameterFocus()
+{
+   this->doubleSpinBox1->setFocus();
+   object->focus=false;
 }
 
 void ParameterVector::setValue()

@@ -9,9 +9,10 @@ class ParameterText : public ParameterVirtualWidget
 public:
     ParameterText(ParameterObject *parameterobject,bool showDescription);
     void setValue();
+    void setParameterFocus();
 
 protected slots:
-    void on_Changed();
+    void onChanged(QString);
 };
 
 #endif // PARAMETERTEXT_H

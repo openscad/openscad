@@ -5,7 +5,7 @@ ParameterCheckBox::ParameterCheckBox(ParameterObject *parameterobject, bool show
     object=parameterobject;
     setName(QString::fromStdString(object->name));
     setValue();
-    connect(checkBox,SIGNAL(clicked()),this,SLOT(on_Changed()));
+    connect(checkBox,SIGNAL(clicked()),this,SLOT(onChanged()));
     if(showDescription==true){
         setDescription(object->description);
     }
@@ -15,9 +15,16 @@ ParameterCheckBox::ParameterCheckBox(ParameterObject *parameterobject, bool show
 
 }
 
-void ParameterCheckBox::on_Changed(){
+void ParameterCheckBox::onChanged(){
+    object->focus=true;
     object->value = ValuePtr(checkBox->isChecked());
     emit changed();
+}
+
+void ParameterCheckBox::setParameterFocus()
+{
+   this->checkBox->setFocus();
+    object->focus=false;
 }
 
 void ParameterCheckBox::setValue(){

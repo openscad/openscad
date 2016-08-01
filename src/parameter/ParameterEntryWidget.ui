@@ -58,6 +58,9 @@
       </property>
       <item row="2" column="0">
        <widget class="QStackedWidget" name="stackedWidget">
+        <property name="currentIndex">
+         <number>4</number>
+        </property>
         <widget class="QWidget" name="pageCheckBox">
          <layout class="QVBoxLayout" name="verticalLayout">
           <property name="spacing">
@@ -282,6 +285,16 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>doubleSpinBox1</tabstop>
+  <tabstop>doubleSpinBox2</tabstop>
+  <tabstop>doubleSpinBox3</tabstop>
+  <tabstop>doubleSpinBox4</tabstop>
+  <tabstop>slider</tabstop>
+  <tabstop>checkBox</tabstop>
+  <tabstop>comboBox</tabstop>
+  <tabstop>lineEdit</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
