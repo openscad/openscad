@@ -53,8 +53,9 @@ public:
 	bool find(const QString &, bool findNext = false, bool findBackwards = false);
 	void replaceSelectedText(const QString&);
 	void replaceAll(const QString &findText, const QString &replaceText);
-    bool canUndo();
-    QStringList colorSchemes();
+	QStringList colorSchemes();
+    	bool canUndo();
+    
         
 private:
         void getRange(int *lineFrom, int *lineTo);
