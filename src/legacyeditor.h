@@ -16,8 +16,8 @@ public:
 	void replaceSelectedText(const QString &newText);	
 	void replaceAll(const QString &findText, const QString &replaceText);
 	bool findString(const QString & exp, bool findBackwards) const;
-    bool canUndo();
-    QStringList colorSchemes();
+    	QStringList colorSchemes();
+    	bool canUndo();
 
 public slots:
 	void zoomIn();
