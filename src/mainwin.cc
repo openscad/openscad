@@ -337,7 +337,6 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->editActionZoomTextIn, SIGNAL(triggered()), editor, SLOT(zoomIn()));
 	connect(this->editActionZoomTextOut, SIGNAL(triggered()), editor, SLOT(zoomOut()));
     	connect(this->editActionPreferences, SIGNAL(triggered()), this, SLOT(preferences()));
-    	
 	// Edit->Find
     	connect(this->editActionFind, SIGNAL(triggered()), this, SLOT(find()));
 	connect(this->editActionFindAndReplace, SIGNAL(triggered()), this, SLOT(findAndReplace()));
