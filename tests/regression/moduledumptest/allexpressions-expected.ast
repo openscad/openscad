@@ -1,24 +1,15 @@
-@Parameter("")
 a = true;
-@Parameter("")
 b = false;
-@Parameter("")
 c = undef;
 d = a;
 e = $fn;
-@Parameter("")
 f1 = [1];
-@Parameter("")
 f2 = [1, 2, 3];
 g = ((f2.x + f2.y) + f2.z);
-@Parameter("")
 h1 = [2 : 5];
-@Parameter("")
 h2 = [1 : 2 : 10];
 i = ((h2.begin - h2.step) - h2.end);
-@Parameter("")
 j = "test";
-@Parameter("")
 k = 0.0123;
 l = (a * b);
 m = (a / b);
@@ -32,9 +23,7 @@ t = (c > d);
 u = (e && g);
 v = (e || g);
 w = i;
-@Parameter("")
 x = -i;
-@Parameter("")
 y = !i;
 z = j;
 aa = (k ? l : m);

@@ -1029,7 +1029,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
       if (${EXPERIMENTAL} EQUAL -1)
         set(EXPERIMENTAL_OPTION "")
       else()
-        set(EXPERIMENTAL_OPTION "--enable=lc-each" "--enable=lc-else" "--enable=lc-for-c")
+          set(EXPERIMENTAL_OPTION "--enable=lc-each" "--enable=lc-else" "--enable=lc-for-c")
       endif()
 
       # 2D tests should be viewed from the top, not an angle.
@@ -1607,7 +1607,7 @@ add_failing_test(offfailedtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DI
 # Customizer tests
 #
 
-add_cmdline_test(customizertest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX ast FILES
+add_cmdline_test(customizertest EXE ${OPENSCAD_BINPATH} ARGS --enable=ParameterWidget -o SUFFIX ast FILES
                  ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/description.scad
                  ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/parameter.scad
                  ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/allmodulescomment.scad
@@ -1616,10 +1616,10 @@ add_cmdline_test(customizertest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX ast FILES
                  ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/group.scad
                  )
 
-add_cmdline_test(customizertest-first EXE ${OPENSCAD_BINPATH} ARGS -p ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/setofparameter.json -P firstSet -o SUFFIX ast FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/setofparameter.scad)
-add_cmdline_test(customizertest-wrong EXE ${OPENSCAD_BINPATH} ARGS -p ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/setofparameter.json -P wrongSetValues -o SUFFIX ast FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/setofparameter.scad)
-add_cmdline_test(customizertest-incomplete EXE ${OPENSCAD_BINPATH} ARGS -p ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/setofparameter.json -P thirdSet -o SUFFIX ast FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/setofparameter.scad)
-add_cmdline_test(customizertest-imgset EXE ${OPENSCAD_BINPATH} ARGS -p ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/setofparameter.json -P imagine -o SUFFIX ast FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/setofparameter.scad)            
+add_cmdline_test(customizertest-first EXE ${OPENSCAD_BINPATH} ARGS --enable=ParameterWidget -p ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/setofparameter.json -P firstSet -o SUFFIX ast FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/setofparameter.scad)
+add_cmdline_test(customizertest-wrong EXE ${OPENSCAD_BINPATH} ARGS --enable=ParameterWidget -p ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/setofparameter.json -P wrongSetValues -o SUFFIX ast FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/setofparameter.scad)
+add_cmdline_test(customizertest-incomplete EXE ${OPENSCAD_BINPATH} ARGS --enable=ParameterWidget -p ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/setofparameter.json -P thirdSet -o SUFFIX ast FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/setofparameter.scad)
+add_cmdline_test(customizertest-imgset EXE ${OPENSCAD_BINPATH} ARGS --enable=ParameterWidget -p ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/setofparameter.json -P imagine -o SUFFIX ast FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/setofparameter.scad)            
 # Tests using the actual OpenSCAD binary
 
 # non-ASCII filenames

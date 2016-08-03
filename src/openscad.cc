@@ -401,13 +401,15 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		PRINTB("Can't parse file '%s'!\n", filename.c_str());
 		return 1;
 	}
-    
-    // add parameter to AST
-	addParameter(text.c_str(),root_module);
-	if(!parameterFile.empty() && !setName.empty()){
-        ParameterSet param;
-        param.getParameterSet(parameterFile);
-        param.applyParameterSet(root_module,setName);
+
+    if(Feature::ExperimentalParameterWidget.is_enabled()){
+        // add parameter to AST
+        addParameter(text.c_str(),root_module);
+        if(!parameterFile.empty() && !setName.empty()){
+            ParameterSet param;
+            param.getParameterSet(parameterFile);
+            param.applyParameterSet(root_module,setName);
+        }
     }
     
 	root_module->handleDependencies();
@@ -895,21 +897,6 @@ int main(int argc, char **argv)
 		if (make_command) help(argv[0], true);
 		make_command = vm["m"].as<string>().c_str();
 	}
-	
-	    string parameterFile;
-    string parameterSet;
-
-    if (vm.count("p")) {
-        if (!parameterFile.empty()) help(argv[0], true);
-
-        parameterFile = vm["p"].as<string>().c_str();
-    }
-
-    if (vm.count("P")) {
-        if (!parameterSet.empty()) help(argv[0], true);
-
-        parameterSet = vm["P"].as<string>().c_str();
-    }
 
 	if (vm.count("D")) {
 		for(const auto &cmd : vm["D"].as<vector<string>>()) {
@@ -924,6 +911,31 @@ int main(int argc, char **argv)
 		}
 	}
 #endif
+
+    string parameterFile;
+    string parameterSet;
+
+    if(Feature::ExperimentalParameterWidget.is_enabled()){
+        if (vm.count("p")) {
+            if (!parameterFile.empty()) help(argv[0], true);
+
+            parameterFile = vm["p"].as<string>().c_str();
+        }
+
+        if (vm.count("P")) {
+            if (!parameterSet.empty()) help(argv[0], true);
+
+            parameterSet = vm["P"].as<string>().c_str();
+        }
+    }
+    else {
+        if (vm.count("p") || vm.count("P")) {
+            if (!parameterSet.empty()) help(argv[0], true);
+            PRINT("ParameterWidget feature not activated \n");
+            help(argv[0], true);
+        }
+    }
+
 	vector<string> inputFiles;
 	if (vm.count("input-file"))	{
 		inputFiles = vm["input-file"].as<vector<string>>();

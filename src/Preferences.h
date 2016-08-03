@@ -13,7 +13,7 @@ class Preferences : public QMainWindow, public Ui::Preferences
 
 public:
 	~Preferences();
-        
+
         static void create(QStringList colorSchemes);
 	static Preferences *inst();
 
@@ -83,10 +83,11 @@ signals:
 	void openCSGSettingsChanged() const;
 	void syntaxHighlightChanged(const QString &s) const;
 	void editorTypeChanged(const QString &type);
-	void editorConfigChanged() const;
+    void editorConfigChanged() const;
+    void Experimentalchanged() const ;
 
 private:
-	Preferences(QWidget *parent = NULL);
+    Preferences(QWidget *parent = NULL);
 	void keyPressEvent(QKeyEvent *e);
 	void updateGUI();
 	void removeDefaultSettings();

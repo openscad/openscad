@@ -280,6 +280,7 @@ MainWindow::MainWindow(const QString &filename)
 	waitAfterReloadTimer->setInterval(200);
 	connect(waitAfterReloadTimer, SIGNAL(timeout()), this, SLOT(waitAfterReload()));
     connect(this->parameterWidget, SIGNAL(previewRequested()), this, SLOT(actionRenderPreview()));
+    connect(Preferences::inst(), SIGNAL(Experimentalchanged()), this, SLOT(changeParameterWidget()));
 	connect(this->e_tval, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimTval()));
 	connect(this->e_fps, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimFps()));
 	connect(this->e_fsteps, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimSteps()));
@@ -635,8 +636,16 @@ void MainWindow::loadViewSettings(){
 	hideEditor();
 	viewActionHideToolBars->setChecked(settings.value("view/hideToolbar").toBool());
 	hideToolbars();
-    viewActionHideParameters->setChecked(settings.value("view/hideParameters").toBool());
-    hideParameters();
+
+    if(Feature::ExperimentalParameterWidget.is_enabled()){
+        viewActionHideParameters->setChecked(settings.value("view/hideParameters").toBool());
+        hideParameters();
+    }else{
+        viewActionHideParameters->setChecked(true);
+        hideParameters();
+        viewActionHideParameters->setVisible(false);
+    }
+
 	updateMdiMode(settings.value("advanced/mdi").toBool());
 	updateUndockMode(settings.value("advanced/undockableWindows").toBool());
 	updateReorderMode(settings.value("advanced/reorderWindows").toBool());
@@ -1718,14 +1727,26 @@ void MainWindow::compileTopLevelDocument()
         this->fileName.isEmpty() ? "" : fnameba;
 	this->root_module = parse(fulltext.c_str(), fs::path(fname), false);
     
-    if(this->root_module!=NULL){
-        //add parameters as annotation in AST
-        addParameter(fulltext.c_str(),this->root_module);
+    if(Feature::ExperimentalParameterWidget.is_enabled()){
+        if(this->root_module!=NULL){
+            //add parameters as annotation in AST
+            addParameter(fulltext.c_str(),this->root_module);
+        }
+        this->parameterWidget->setParameters(this->root_module);
+        this->parameterWidget->applyParameters(this->root_module);
+   }
+
+}
+
+void MainWindow::changeParameterWidget(){
+    if(Feature::ExperimentalParameterWidget.is_enabled()){
+        viewActionHideParameters->setVisible(true);
+    }else{
+         viewActionHideParameters->setChecked(true);
+         hideParameters();
+         viewActionHideParameters->setVisible(false);
     }
-
-    this->parameterWidget->setParameters(this->root_module);
-    this->parameterWidget->applyParameters(this->root_module);
-
+   emit actionRenderPreview();
 }
 
 void MainWindow::checkAutoReload()
@@ -1739,9 +1760,9 @@ void MainWindow::autoReloadSet(bool on)
 {
 	QSettings settings;
 	settings.setValue("design/autoReload",designActionAutoReload->isChecked());
-	if (on) {
-		autoReloadTimer->start(200);
-	} else {
+    if (on) {
+        autoReloadTimer->start(200);
+    } else {
 		autoReloadTimer->stop();
 	}
 }
