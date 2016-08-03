@@ -319,8 +319,9 @@ MainWindow::MainWindow(const QString &filename)
 	show_examples();
 
 	// Edit menu
-	connect(this->editActionUndo, SIGNAL(triggered()), editor, SLOT(undo()));
-	connect(this->editActionRedo, SIGNAL(triggered()), editor, SLOT(redo()));
+    connect(this->editActionUndo, SIGNAL(triggered()), editor, SLOT(undo()));
+    connect(editor, SIGNAL(contentsChanged()), this, SLOT(updateActionUndoState()));
+    connect(this->editActionRedo, SIGNAL(triggered()), editor, SLOT(redo()));
 	connect(this->editActionRedo_2, SIGNAL(triggered()), editor, SLOT(redo()));
 	connect(this->editActionCut, SIGNAL(triggered()), editor, SLOT(cut()));
 	connect(this->editActionCopy, SIGNAL(triggered()), editor, SLOT(copy()));
@@ -335,9 +336,11 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->editActionPasteVPR, SIGNAL(triggered()), this, SLOT(pasteViewportRotation()));
 	connect(this->editActionZoomTextIn, SIGNAL(triggered()), editor, SLOT(zoomIn()));
 	connect(this->editActionZoomTextOut, SIGNAL(triggered()), editor, SLOT(zoomOut()));
-	connect(this->editActionPreferences, SIGNAL(triggered()), this, SLOT(preferences()));
+    connect(this->editActionPreferences, SIGNAL(triggered()), this, SLOT(preferences()));
+
+
 	// Edit->Find
-	connect(this->editActionFind, SIGNAL(triggered()), this, SLOT(find()));
+    connect(this->editActionFind, SIGNAL(triggered()), this, SLOT(find()));
 	connect(this->editActionFindAndReplace, SIGNAL(triggered()), this, SLOT(findAndReplace()));
 #ifdef Q_OS_WIN
 	this->editActionFindAndReplace->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_F));
@@ -600,6 +603,10 @@ void MainWindow::addKeyboardShortCut(const QList<QAction *> &actions)
 		const QString toolTip("%1 &nbsp;<span style=\"color: gray; font-size: small; font-style: italic\">%2</span>");
 		action->setToolTip(toolTip.arg(action->toolTip(), shortCut));
 	}
+}
+
+void MainWindow::updateActionUndoState() {
+    editActionUndo->setEnabled(editor->canUndo());
 }
 
 void MainWindow::loadViewSettings(){
