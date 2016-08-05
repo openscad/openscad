@@ -2,7 +2,6 @@
 
 ParameterSpinBox::ParameterSpinBox(ParameterObject *parameterobject, bool showDescription)
 {
-    presicion =0;
     object=parameterobject;
     setName(QString::fromStdString(object->name));
     setValue();
@@ -29,10 +28,8 @@ void ParameterSpinBox::setParameterFocus()
 }
 
 void ParameterSpinBox::setValue(){
-
-    std::string number= object->value->toString();
-    presicion=number.size()-number.find('.')-1;
-    this->doubleSpinBox1->setDecimals(presicion);
+    setPrecision(object->value->toDouble());
+    this->doubleSpinBox1->setDecimals(decimalPrecision);
     this->stackedWidget->setCurrentWidget(this->pageVector);
     this->doubleSpinBox1->setRange(object->value->toDouble()-1000,object->value->toDouble()+1000);
     this->doubleSpinBox1->setValue(object->value->toDouble());

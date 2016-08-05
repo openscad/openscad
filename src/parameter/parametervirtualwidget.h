@@ -16,30 +16,29 @@ protected:
     ParameterObject *object;
 
 public:
-    ParameterVirtualWidget(QWidget *parent=0) : QWidget(parent)
-    {
-        setupUi(this);
-    }
-
-    virtual ~ParameterVirtualWidget(){}
+    ParameterVirtualWidget(QWidget *parent=0);
+    virtual ~ParameterVirtualWidget();
     virtual void setParameterFocus()=0;
 
 signals:
     void changed();
 
 protected:
+    int decimalPrecision;
+    virtual void setPrecision(double number);
     virtual void setValue()=0;
-    void setName(const QString& name)
-    {
+    void setName(const QString& name){
+
         this->labelDescription->hide();
         this->labelParameter->setText(name);
     }
 
-    void setDescription(const QString& description)
-    {
+    void setDescription(const QString& description){
+
         this->labelDescription->show();
         this->labelDescription->setText(description);
     }
+
 };
 
 #endif // PARAMETERVIRTUALWIDGET_H

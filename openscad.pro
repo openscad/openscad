@@ -536,7 +536,8 @@ SOURCES += \
            src/parameter/parametertext.cpp \
            src/parameter/parametervector.cpp \
            src/parameter/groupwidget.cpp \
-           src/parameter/parameterset.cpp
+           src/parameter/parameterset.cpp \
+           src/parameter/parametervirtualwidget.cpp
 
 
 # ClipperLib

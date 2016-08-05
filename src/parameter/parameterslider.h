@@ -11,9 +11,7 @@ public:
     void setValue();
     void setParameterFocus();
 
-
 private:
-    int presicion;
     double step;
 
 protected slots:

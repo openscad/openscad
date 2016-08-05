@@ -11,8 +11,6 @@ public:
     void setValue();
     void setParameterFocus();
 
-private:
-    int presicion;
 protected slots:
     void onChanged(double);
 };
