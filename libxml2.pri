@@ -30,6 +30,12 @@ isEmpty(LIBXML2_LIBPATH) {
   LIBXML2_LIBS = -L$$LIBXML2_LIBPATH -lxml2
 }
 
+CONFIG(mingw-cross-env): {
+  !CONFIG(mingw-cross-env-shared) {
+    DEFINES += LIBXML_STATIC
+  }
+}
+
 QMAKE_CXXFLAGS += $$LIBXML2_CFLAGS
 LIBS += $$LIBXML2_LIBS
 }
