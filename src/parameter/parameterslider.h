@@ -13,9 +13,11 @@ public:
 
 private:
     double step;
-
+    bool pressed;
 protected slots:
     void onChanged(int);
+    void onReleased();
+    void onPressed();
 };
 
 #endif // PARAMETERSLIDER_H

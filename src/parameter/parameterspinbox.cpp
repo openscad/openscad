@@ -28,14 +28,20 @@ void ParameterSpinBox::setParameterFocus()
 }
 
 void ParameterSpinBox::setValue(){
-    setPrecision(object->value->toDouble());
+
+    if(object->values->toDouble()>0){
+         setPrecision(object->values->toDouble());
+        this->doubleSpinBox1->setSingleStep(object->values->toDouble());
+    }
+    else{
+         setPrecision(object->defaultValue->toDouble());
+         this->doubleSpinBox1->setSingleStep(1/pow(10,decimalPrecision));
+    }
     this->doubleSpinBox1->setDecimals(decimalPrecision);
     this->stackedWidget->setCurrentWidget(this->pageVector);
     this->doubleSpinBox1->setRange(object->value->toDouble()-1000,object->value->toDouble()+1000);
     this->doubleSpinBox1->setValue(object->value->toDouble());
-    if(object->values->toDouble()>0){
-        this->doubleSpinBox1->setSingleStep(object->values->toDouble());
-    }
+
     this->doubleSpinBox2->hide();
     this->doubleSpinBox3->hide();
     this->doubleSpinBox4->hide();
