@@ -459,7 +459,7 @@ MainWindow::MainWindow(const QString &filename)
 
 	//find and replace panel
 	connect(this->findInputField, SIGNAL(textChanged(QString)), this, SLOT(findString(QString)));
-    connect(this->findInputField, SIGNAL(returnPressed()), this->findNextButton, SLOT(animateClick()));
+        connect(this->findInputField, SIGNAL(returnPressed()), this->findNextButton, SLOT(animateClick()));
 	find_panel->installEventFilter(this);
 	if (QApplication::clipboard()->supportsFindBuffer()) {
 		connect(this->findInputField, SIGNAL(textChanged(QString)), this, SLOT(updateFindBuffer(QString)));
@@ -469,9 +469,9 @@ MainWindow::MainWindow(const QString &filename)
 		this->findInputField->setText(QApplication::clipboard()->text(QClipboard::FindBuffer));
 	}
 
-    connect(this->findPrevButton, SIGNAL(clicked()), this, SLOT(findPrev()));
-    connect(this->findNextButton, SIGNAL(clicked()), this, SLOT(findNext()));
-    connect(this->cancelButton, SIGNAL(clicked()), find_panel, SLOT(hide()));
+        connect(this->findPrevButton, SIGNAL(clicked()), this, SLOT(findPrev()));
+        connect(this->findNextButton, SIGNAL(clicked()), this, SLOT(findNext()));
+        connect(this->cancelButton, SIGNAL(clicked()), find_panel, SLOT(hide()));
 	connect(this->replaceButton, SIGNAL(clicked()), this, SLOT(replace()));
 	connect(this->replaceAllButton, SIGNAL(clicked()), this, SLOT(replaceAll()));
 	connect(this->replaceInputField, SIGNAL(returnPressed()), this->replaceButton, SLOT(animateClick()));
@@ -1465,7 +1465,7 @@ void MainWindow::find()
 	replaceInputField->hide();
 	replaceButton->hide();
 	replaceAllButton->hide();
-    replaceLabel->setVisible(false);
+        replaceLabel->setVisible(false);
 	find_panel->show();
 	if (!editor->selectedText().isEmpty()) {
 		findInputField->setText(editor->selectedText());
@@ -1484,7 +1484,7 @@ void MainWindow::findAndReplace()
 	replaceInputField->show();
 	replaceButton->show();
 	replaceAllButton->show();
-    replaceLabel->setVisible(true);
+        replaceLabel->setVisible(true);
 	find_panel->show();
 	if (!editor->selectedText().isEmpty()) {
 		findInputField->setText(editor->selectedText());
