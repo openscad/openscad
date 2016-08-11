@@ -178,13 +178,6 @@ MainWindow::MainWindow(const QString &filename)
 	consoleDockTitleWidget = new QWidget();
     parameterDockTitleWidget = new QWidget();
 
-	this->editorDock->setConfigKey("view/hideEditor");
-	this->editorDock->setAction(this->viewActionHideEditor);
-	this->consoleDock->setConfigKey("view/hideConsole");
-	this->consoleDock->setAction(this->viewActionHideConsole);
-    this->parameterDock->setConfigKey("view/hideParameters");
-    this->parameterDock->setAction(this->viewActionHideParameters);
-
 	this->versionLabel = NULL; // must be initialized before calling updateStatusBar()
 	updateStatusBar(NULL);
 
@@ -2527,6 +2520,9 @@ void MainWindow::hideToolbars()
 
 void MainWindow::hideEditor()
 {
+    QSettings settings;
+    bool shouldHide = viewActionHideEditor->isChecked();
+    settings.setValue("view/hideEditor", shouldHide);
 	if (viewActionHideEditor->isChecked()) {
 		editorDock->close();
 	} else {
@@ -2543,6 +2539,9 @@ void MainWindow::showConsole()
 
 void MainWindow::hideConsole()
 {
+    QSettings settings;
+    bool shouldHide = viewActionHideConsole->isChecked();
+    settings.setValue("view/hideConsole", shouldHide);
 	if (viewActionHideConsole->isChecked()) {
 		consoleDock->hide();
 	} else {
@@ -2552,6 +2551,10 @@ void MainWindow::hideConsole()
 
 void MainWindow::hideParameters()
 {
+    QSettings settings;
+    bool shouldHide = viewActionHideParameters->isChecked();
+    settings.setValue("view/hideParameters", shouldHide);
+
     if (viewActionHideParameters->isChecked()) {
         parameterDock->hide();
     } else {
