@@ -532,7 +532,7 @@ bool ScintillaEditor::find(const QString &expr, bool findNext, bool findBackward
 
 void ScintillaEditor::replaceSelectedText(const QString &newText)
 {
-	if (qsci->selectedText() != newText) qsci->replaceSelectedText(newText);
+    if ((qsci->selectedText() != newText)&&(qsci->hasSelectedText())) qsci->replaceSelectedText(newText);
 }
 
 void ScintillaEditor::replaceAll(const QString &findText, const QString &replaceText)
