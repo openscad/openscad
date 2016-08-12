@@ -31,7 +31,7 @@ x9=23;
 
 x8=12;
     // comment sandwiched between two assignments
-x9=23;
+x19=23;
 
 x10=23;
 

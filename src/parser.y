@@ -195,6 +195,7 @@ assignment:
                 for (auto& iter : scope_stack.top()->assignments) {
                     if (iter.name == $1) {
                         iter.expr = shared_ptr<Expression>($3);
+                        iter.updateLoc(LOC(@$));
                         found = true;
                         break;
                     }
