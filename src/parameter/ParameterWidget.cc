@@ -290,7 +290,11 @@ void ParameterWidget::applyParameterSet(string setName){
         entry_map_t::iterator entry =entries.find(v.first);
             if(entry!=entries.end()){
                 if(entry->second->dvt== Value::STRING){
+
                     entry->second->value=ValuePtr(v.second.data());
+                }else if(entry->second->dvt== Value::BOOL){
+
+                    entry->second->value=ValuePtr(v.second.get_value<bool>());
                 }else{
 
                     AssignmentList *assignmentList;
@@ -317,26 +321,24 @@ void ParameterWidget::updateParameterSet(string setName){
     myfile.open (this->jsonFile,ios::out);
     if(myfile.is_open()){
         if(setName==""){
-            QInputDialog *a=new QInputDialog();
-            a->setLabelText("Name of new set");
-            setName=a->getText(NULL,"Create new Set of parameter","Enter name of set name").toStdString();
-            if(setName.empty()){
-                return;
-             }
+            bool ok=true;
+            QInputDialog *setDialog=new QInputDialog();
+            setName=setDialog->getText(this,"Create new Set of parameter","Enter name of set name",QLineEdit::Normal,"",&ok).toStdString();
         }
         pt::ptree iroot;
         for(entry_map_t::iterator it = entries.begin(); it != entries.end(); it++) {
             iroot.put(it->first,it->second->value->toString());
         }
-        root.get_child("SET").erase(setName);
-        root.add_child("SET."+setName,iroot);
-        pt::write_json(myfile,root);
-        if(this->comboBox->findText(QString::fromStdString(setName))==-1){
-            this->comboBox->addItem(QString::fromStdString(setName),
-                      QVariant(QString::fromStdString(setName)));
-            this->comboBox->setCurrentIndex(this->comboBox->findText(QString::fromStdString(setName)));
+        if(!setName.empty()){
+            root.get_child("SET").erase(setName);
+            root.add_child("SET."+setName,iroot);
+            if(this->comboBox->findText(QString::fromStdString(setName))==-1){
+                this->comboBox->addItem(QString::fromStdString(setName),
+                          QVariant(QString::fromStdString(setName)));
+                this->comboBox->setCurrentIndex(this->comboBox->findText(QString::fromStdString(setName)));
+            }
         }
+        pt::write_json(myfile,root);
     }
     myfile.close();
-
 }

@@ -25,7 +25,7 @@ stepSlider = 12;
 @Group("Checkbox")
 @Description("description")
 @Parameter("comment")
-Variable = true;
+Variable = false;
 @Group("Spinbox")
 @Description("spinbox with step size 23")
 @Parameter(23)

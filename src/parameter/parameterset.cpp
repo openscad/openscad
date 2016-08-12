@@ -62,7 +62,11 @@ void ParameterSet::applyParameterSet(FileModule *fileModule,string setName)
                     assignment=&(*it);
                     const ValuePtr defaultValue = assignment->expr.get()->evaluate(&ctx);
                     if(defaultValue->type()== Value::STRING){
+
                         assignment->expr = shared_ptr<Expression>(new Literal(ValuePtr(v.second.data())));
+                    }else if(defaultValue->type()== Value::BOOL){
+
+                       assignment->expr = shared_ptr<Expression>(new Literal(ValuePtr(v.second.get_value<bool>())));
                     }else{
 
                         AssignmentList *assignmentList;
