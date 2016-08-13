@@ -64,6 +64,7 @@ public:
         QLabel *versionLabel;
         QWidget *editorDockTitleWidget;
         QWidget *consoleDockTitleWidget;
+         QWidget *animateDockTitleWidget;
         
 	QString editortype;	
 	bool useScintilla;
@@ -92,6 +93,8 @@ private slots:
 	void showProgress();
 	void openCSGSettingsChanged();
 	void consoleOutput(const QString &msg);
+    void animateStartSlot();
+    void animateStopSlot();
 
 private:
         void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
@@ -203,9 +206,11 @@ public slots:
 	void actionReloadRenderPreview();
         void on_editorDock_visibilityChanged(bool);
         void on_consoleDock_visibilityChanged(bool);
+
         void on_toolButtonCompileResultClose_clicked();
         void editorTopLevelChanged(bool);
         void consoleTopLevelChanged(bool);
+        void animateTopLevelChanged(bool topLevel);
 #ifdef ENABLE_OPENCSG
 	void viewModePreview();
 #endif
