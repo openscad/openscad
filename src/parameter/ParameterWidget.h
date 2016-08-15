@@ -60,6 +60,7 @@ protected slots:
     void onSetChanged(int idx);
     void onSetAdd();
     void onSetDelete();
+    void resetParameter();
 
 signals:
     void previewRequested();

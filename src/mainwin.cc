@@ -631,7 +631,7 @@ void MainWindow::loadViewSettings(){
 	hideToolbars();
 
     if(Feature::ExperimentalParameterWidget.is_enabled()){
-        viewActionHideParameters->setChecked(settings.value("view/hideParameters").toBool());
+        viewActionHideParameters->setChecked(settings.value("view/hideCustomizer").toBool());
         hideParameters();
     }else{
         viewActionHideParameters->setChecked(true);
@@ -2490,7 +2490,7 @@ void MainWindow::consoleTopLevelChanged(bool topLevel)
 
 void MainWindow::parameterTopLevelChanged(bool topLevel)
 {
-    setDockWidgetTitle(parameterDock, QString(_("ParameterWidget")), topLevel);
+    setDockWidgetTitle(parameterDock, QString(_("Customizer")), topLevel);
 }
 
 void MainWindow::setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel)
@@ -2553,7 +2553,7 @@ void MainWindow::hideParameters()
 {
     QSettings settings;
     bool shouldHide = viewActionHideParameters->isChecked();
-    settings.setValue("view/hideParameters", shouldHide);
+    settings.setValue("view/hideCustomizer", shouldHide);
 
     if (viewActionHideParameters->isChecked()) {
         parameterDock->hide();

@@ -24,6 +24,7 @@ protected:
     virtual void addEntry(ParameterVirtualWidget *entry)=0;
     virtual void end()=0;
     virtual void connectWidget()=0;
+    bool resetPara;
 };
 
 #endif // PARAMETEREXTRACTOR_H

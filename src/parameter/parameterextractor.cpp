@@ -4,6 +4,7 @@
 
 ParameterExtractor::ParameterExtractor()
 {
+    resetPara=false;
 }
 
 ParameterExtractor::~ParameterExtractor()
@@ -50,18 +51,28 @@ void ParameterExtractor::setParameters(const FileModule* module)
         ParameterObject *entryObject = new ParameterObject();
         entryObject->setAssignment(&ctx, &assignment, defaultValue);
 
-        //need to improve structure
-        if(entries.find(assignment.name) == entries.end()){
+        //check whether object exist or not previously
+        if(entries.find(assignment.name) == entries.end() || resetPara){
+
+            //if object doen't exist
+            //or we have reset Parameters then add new entry
             entries[assignment.name] = entryObject;
         }else{
+
+            //if entry object is already exist we check if its modified
+            //or not
             if(*entryObject==*entries[assignment.name]){
+
+                //if entry is not modified then we don't add new entry
                 entryObject=entries[assignment.name];
            }else{
+
+                //if entry is modified then we add new entry
                 entries[assignment.name] = entryObject;
             }
         }
-
         entryObject->set=true;
     }
     connectWidget();
+    this->resetPara=false;
 }

@@ -1367,7 +1367,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Hide parameters</string>
+    <string>Hide Customizer</string>
    </property>
   </action>
  </widget>

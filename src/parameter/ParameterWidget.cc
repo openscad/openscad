@@ -49,6 +49,12 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
     connect(checkBoxAutoPreview, SIGNAL(toggled(bool)), this, SLOT(onValueChanged()));
     connect(checkBoxDetailedDescription,SIGNAL(toggled(bool)),this,SLOT(onDescriptionShow()));
     connect(comboBox, SIGNAL(currentIndexChanged(int)),this,SLOT(onSetChanged(int)));
+    connect(reset, SIGNAL(clicked()),this,SLOT(resetParameter()));
+}
+
+void ParameterWidget::resetParameter(){
+    this->resetPara=true;
+    emit previewRequested();
 }
 
 ParameterWidget::~ParameterWidget()
