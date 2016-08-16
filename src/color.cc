@@ -26,6 +26,7 @@
 
 #include "colornode.h"
 #include "module.h"
+#include "ModuleInstantiation.h"
 #include "evalcontext.h"
 #include "builtin.h"
 #include "printutils.h"

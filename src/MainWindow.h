@@ -8,6 +8,7 @@
 #include "openscad.h"
 #include "modcontext.h"
 #include "module.h"
+#include "ModuleInstantiation.h"
 #include "Tree.h"
 #include "memory.h"
 #include "editor.h"
@@ -96,7 +97,7 @@ private:
         void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
         void handleFileDrop(const QString &filename);
 	void refreshDocument();
-        void updateCamera();
+	void updateCamera(const class FileContext &ctx);
 	void updateTemporalVariables();
 	bool fileChangedOnDisk();
 	void compileTopLevelDocument();
@@ -275,14 +276,18 @@ class GuiLocker
 {
 public:
 	GuiLocker() {
-		gui_locked++;
+		GuiLocker::lock();
 	}
 	~GuiLocker() {
-		gui_locked--;
+		GuiLocker::unlock();
 	}
 	static bool isLocked() { return gui_locked > 0; }
-	static void lock() { gui_locked++; }
-	static void unlock() { gui_locked--; }
+	static void lock() {
+		gui_locked++;
+	}
+	static void unlock() {
+		gui_locked--;
+	}
 
 private:
  	static unsigned int gui_locked;

@@ -49,7 +49,7 @@ static bool check_valid(const fs::path &p, const std::vector<std::string> *openf
 		//PRINTB("WARNING: %s invalid - points to a directory",p);
 		return false;
 	}
-	std::string fullname = boosty::stringy(p);
+	std::string fullname = p.generic_string();
   // Detect circular includes
 	if (openfilenames) {
 		for(const auto &s : *openfilenames) {
@@ -75,7 +75,7 @@ fs::path find_valid_path(const fs::path &sourcepath,
 												 const fs::path &localpath,
 												 const std::vector<std::string> *openfilenames)
 {
-	if (boosty::is_absolute(localpath)) {
+	if (localpath.is_absolute()) {
 		if (check_valid(localpath, openfilenames)) return boosty::canonical(localpath);
 	}
 	else {
@@ -97,11 +97,11 @@ void parser_init()
 		std::string sep = PlatformUtils::pathSeparatorChar();
 		typedef boost::split_iterator<std::string::iterator> string_split_iterator;
 		for (string_split_iterator it = boost::make_split_iterator(paths, boost::first_finder(sep, boost::is_iequal())); it != string_split_iterator(); ++it) {
-			add_librarydir(boosty::absolute(fs::path(boost::copy_range<std::string>(*it))).string());
+			add_librarydir(fs::absolute(fs::path(boost::copy_range<std::string>(*it))).string());
 		}
 	}
 
 	add_librarydir(PlatformUtils::userLibraryPath());
 
-	add_librarydir(boosty::absolute(PlatformUtils::resourcePath("libraries")).string());
+	add_librarydir(fs::absolute(PlatformUtils::resourcePath("libraries")).string());
 }

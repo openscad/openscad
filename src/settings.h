@@ -55,7 +55,7 @@ public:
 
     static Settings *inst(bool erase = false);
 
-    void visit(class Visitor& visitor);
+    void visit(class SettingsVisitor& visitor);
 
     const Value &defaultValue(const SettingsEntry& entry);
     const Value &get(const SettingsEntry& entry);
@@ -66,11 +66,11 @@ private:
     virtual ~Settings();
 };
 
-class Visitor
+class SettingsVisitor
 {
 public:
-    Visitor();
-    virtual ~Visitor();
+    SettingsVisitor();
+    virtual ~SettingsVisitor();
 
     virtual void handle(SettingsEntry& entry) const = 0;
 };

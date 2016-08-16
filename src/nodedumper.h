@@ -3,10 +3,11 @@
 #include <string>
 #include <map>
 #include <list>
-#include "visitor.h"
+#include "NodeVisitor.h"
+#include "node.h"
 #include "nodecache.h"
 
-class NodeDumper : public Visitor
+class NodeDumper : public NodeVisitor
 {
 public:
         /*! If idPrefix is true, we will output "n<id>:" in front of each node,

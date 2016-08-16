@@ -25,6 +25,7 @@
  */
 
 #include "module.h"
+#include "ModuleInstantiation.h"
 #include "node.h"
 #include "evalcontext.h"
 #include "modcontext.h"
@@ -115,7 +116,7 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 		// the local scope (as they may depend on the for loop variables
 		Context c(ctx);
 		for(const auto &ass : inst.scope.assignments) {
-			c.set_variable(ass.first, ass.second->evaluate(&c));
+			c.set_variable(ass.name, ass.expr->evaluate(&c));
 		}
 		
 		std::vector<AbstractNode *> instantiatednodes = inst.instantiateChildren(&c);

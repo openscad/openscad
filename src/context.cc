@@ -28,12 +28,12 @@
 #include "evalcontext.h"
 #include "expression.h"
 #include "function.h"
-#include "module.h"
+#include "UserModule.h"
+#include "ModuleInstantiation.h"
 #include "builtin.h"
 #include "printutils.h"
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
-#include "boosty.h"
 
 // $children is not a config_variable. config_variables have dynamic scope, 
 // meaning they are passed down the call chain implicitly.
@@ -77,7 +77,7 @@ void Context::setVariables(const AssignmentList &args,
 													 const EvalContext *evalctx)
 {
 	for(const auto &arg : args) {
-		set_variable(arg.first, arg.second ? arg.second->evaluate(this->parent) : ValuePtr::undefined);
+		set_variable(arg.name, arg.expr ? arg.expr->evaluate(this->parent) : ValuePtr::undefined);
 	}
 
 	if (evalctx) {
@@ -86,7 +86,7 @@ void Context::setVariables(const AssignmentList &args,
 			const std::string &name = evalctx->getArgName(i);
 			ValuePtr val = evalctx->getArgValue(i);
 			if (name.empty()) {
-				if (posarg < args.size()) this->set_variable(args[posarg++].first, val);
+				if (posarg < args.size()) this->set_variable(args[posarg++].name, val);
 			} else {
 				this->set_variable(name, val);
 			}
@@ -193,8 +193,8 @@ AbstractNode *Context::instantiate_module(const ModuleInstantiation &inst, EvalC
  */
 std::string Context::getAbsolutePath(const std::string &filename) const
 {
-	if (!filename.empty() && !boosty::is_absolute(fs::path(filename))) {
-		return boosty::absolute(fs::path(this->document_path) / filename).string();
+	if (!filename.empty() && !fs::path(filename).is_absolute()) {
+		return fs::absolute(fs::path(this->document_path) / filename).string();
 	}
 	else {
 		return filename;
@@ -211,11 +211,11 @@ std::string Context::dump(const AbstractModule *mod, const ModuleInstantiation *
 		s << boost::format("Context: %p (%p)") % this % this->parent;
 	s << boost::format("  document path: %s") % this->document_path;
 	if (mod) {
-		const Module *m = dynamic_cast<const Module*>(mod);
+		const UserModule *m = dynamic_cast<const UserModule*>(mod);
 		if (m) {
 			s << "  module args:";
 			for(const auto &arg : m->definition_arguments) {
-				s << boost::format("    %s = %s") % arg.first % variables[arg.first];
+				s << boost::format("    %s = %s") % arg.name % variables[arg.name];
 			}
 		}
 	}

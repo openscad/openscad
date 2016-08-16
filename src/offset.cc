@@ -27,6 +27,7 @@
 #include "offsetnode.h"
 
 #include "module.h"
+#include "ModuleInstantiation.h"
 #include "evalcontext.h"
 #include "printutils.h"
 #include "fileutils.h"

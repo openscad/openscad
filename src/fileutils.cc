@@ -3,7 +3,6 @@
 
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
-#include "boosty.h"
 
 /*!
 	Returns the absolute path to the given filename, unless it's empty.
@@ -14,11 +13,11 @@ std::string lookup_file(const std::string &filename,
 												const std::string &path, const std::string &fallbackpath)
 {
 	std::string resultfile;
-	if (!filename.empty() && !boosty::is_absolute(fs::path(filename))) {
+	if (!filename.empty() && !fs::path(filename).is_absolute()) {
 		fs::path absfile;
-		if (!path.empty()) absfile = boosty::absolute(fs::path(path) / filename);
+		if (!path.empty()) absfile = fs::absolute(fs::path(path) / filename);
 		fs::path absfile_fallback;
-		if (!fallbackpath.empty()) absfile_fallback = boosty::absolute(fs::path(fallbackpath) / filename);
+		if (!fallbackpath.empty()) absfile_fallback = fs::absolute(fs::path(fallbackpath) / filename);
 
 		if (!fs::exists(absfile) && fs::exists(absfile_fallback)) {
 			resultfile = absfile_fallback.string();
