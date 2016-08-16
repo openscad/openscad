@@ -16,6 +16,10 @@
 #include <CGAL/normal_vector_newell_3.h>
 #include <CGAL/Handle_hash_function.h>
 
+// extra pour regularization
+#include <CGAL/Extended_homogeneous.h>
+#include <CGAL/Nef_polyhedron_3.h>
+
 #include <CGAL/config.h> 
 #include <CGAL/version.h> 
 

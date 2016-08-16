@@ -19,18 +19,24 @@ CGAL_Nef_polyhedron::CGAL_Nef_polyhedron(const CGAL_Nef_polyhedron &src)
 CGAL_Nef_polyhedron& CGAL_Nef_polyhedron::operator+=(const CGAL_Nef_polyhedron &other)
 {
 	(*this->p3) += (*other.p3);
+	PRINT("REGULARIZATION!!!");
+	(*this->p3) = (*this->p3).regularization(); // seb
 	return *this;
 }
 
 CGAL_Nef_polyhedron& CGAL_Nef_polyhedron::operator*=(const CGAL_Nef_polyhedron &other)
 {
 	(*this->p3) *= (*other.p3);
+	PRINT("REGULARIZATION!!!");
+	(*this->p3) = (*this->p3).regularization(); // seb
 	return *this;
 }
 
 CGAL_Nef_polyhedron& CGAL_Nef_polyhedron::operator-=(const CGAL_Nef_polyhedron &other)
 {
 	(*this->p3) -= (*other.p3);
+	PRINT("REGULARIZATION!!!");
+	(*this->p3) = (*this->p3).regularization(); // seb
 	return *this;
 }
 
