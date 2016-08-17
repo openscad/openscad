@@ -630,7 +630,7 @@ void MainWindow::loadViewSettings(){
 	viewActionHideToolBars->setChecked(settings.value("view/hideToolbar").toBool());
 	hideToolbars();
 
-    if(Feature::ExperimentalParameterWidget.is_enabled()){
+    if(Feature::ExperimentalCustomizer.is_enabled()){
         viewActionHideParameters->setChecked(settings.value("view/hideCustomizer").toBool());
         hideParameters();
     }else{
@@ -1720,7 +1720,7 @@ void MainWindow::compileTopLevelDocument()
         this->fileName.isEmpty() ? "" : fnameba;
 	this->root_module = parse(fulltext.c_str(), fs::path(fname), false);
     
-    if(Feature::ExperimentalParameterWidget.is_enabled()){
+    if(Feature::ExperimentalCustomizer.is_enabled()){
         if(this->root_module!=NULL){
             //add parameters as annotation in AST
             addParameter(fulltext.c_str(),this->root_module);
@@ -1732,7 +1732,7 @@ void MainWindow::compileTopLevelDocument()
 }
 
 void MainWindow::changeParameterWidget(){
-    if(Feature::ExperimentalParameterWidget.is_enabled()){
+    if(Feature::ExperimentalCustomizer.is_enabled()){
         viewActionHideParameters->setVisible(true);
     }else{
          viewActionHideParameters->setChecked(true);

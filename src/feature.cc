@@ -23,7 +23,7 @@ const Feature Feature::ExperimentalEachExpression("lc-each", "Enable <code>each<
 const Feature Feature::ExperimentalElseExpression("lc-else", "Enable <code>else</code> expression in list comprehensions.");
 const Feature Feature::ExperimentalForCExpression("lc-for-c", "Enable C-style <code>for</code> expression in list comprehensions.");
 const Feature Feature::ExperimentalSvgImport("svg-import", "Enable SVG import.");
-const Feature Feature::ExperimentalParameterWidget("ParameterWidget", "Enable ParameterWidget");
+const Feature Feature::ExperimentalCustomizer("Customizer", "Enable Customizer");
 
 
 Feature::Feature(const std::string &name, const std::string &description)

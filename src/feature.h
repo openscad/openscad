@@ -18,7 +18,7 @@ public:
         static const Feature ExperimentalElseExpression;
         static const Feature ExperimentalForCExpression;
         static const Feature ExperimentalSvgImport;
-        static const Feature ExperimentalParameterWidget;
+        static const Feature ExperimentalCustomizer;
 
 
 	const std::string& get_name() const;

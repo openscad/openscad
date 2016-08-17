@@ -402,7 +402,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		return 1;
 	}
 
-    if(Feature::ExperimentalParameterWidget.is_enabled()){
+    if(Feature::ExperimentalCustomizer.is_enabled()){
         // add parameter to AST
         addParameter(text.c_str(),root_module);
         if(!parameterFile.empty() && !setName.empty()){
@@ -915,7 +915,7 @@ int main(int argc, char **argv)
     string parameterFile;
     string parameterSet;
 
-    if(Feature::ExperimentalParameterWidget.is_enabled()){
+    if(Feature::ExperimentalCustomizer.is_enabled()){
         if (vm.count("p")) {
             if (!parameterFile.empty()) help(argv[0], true);
 
@@ -931,7 +931,7 @@ int main(int argc, char **argv)
     else {
         if (vm.count("p") || vm.count("P")) {
             if (!parameterSet.empty()) help(argv[0], true);
-            PRINT("ParameterWidget feature not activated \n");
+            PRINT("Customizer feature not activated \n");
             help(argv[0], true);
         }
     }
