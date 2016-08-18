@@ -30,6 +30,7 @@ ScadLexer::ScadLexer(QObject *parent) : QsciLexerCPP(parent)
 		"multmatrix color offset ";
 
     setFoldComments(true);
+    setFoldAtElse(true);
 }
 
 ScadLexer::~ScadLexer()
