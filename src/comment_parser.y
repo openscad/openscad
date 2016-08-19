@@ -1,5 +1,4 @@
 %{
-    #include<iostream>
     #include <sstream>
     #include<string.h>
     using namespace std;
@@ -148,8 +147,7 @@ word:
 %%
 
 void yyerror(char *msg) {
-    PRINTD("ERROR IN PARAMETER: Parser error in comments of file \n ");
-    cout<<msg<<endl;   
+    PRINTD("ERROR IN PARAMETER: Parser error in comments of file \n "); 
     argument=NULL;
 }
 
