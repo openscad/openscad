@@ -605,8 +605,7 @@ void MainWindow::addKeyboardShortCut(const QList<QAction *> &actions)
 
 void MainWindow::updateActionUndoState()
 {
-    bool a = editor->canUndo();
-    editActionUndo->setEnabled(a);
+    editActionUndo->setEnabled(editor->canUndo());
 }
 
 void MainWindow::loadViewSettings(){

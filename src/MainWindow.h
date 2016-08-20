@@ -91,7 +91,7 @@ private slots:
 	void setColorScheme(const QString &cs);
 	void showProgress();
 	void openCSGSettingsChanged();
-	void consoleOutput(const QString &msg);
+    void consoleOutput(const QString &msg);
     void updateActionUndoState();
 
 private:

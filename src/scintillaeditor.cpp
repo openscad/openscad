@@ -423,7 +423,7 @@ QStringList ScintillaEditor::colorSchemes()
 
 bool ScintillaEditor::canUndo()
 {
-    qsci->isUndoAvailable();
+    return qsci->isUndoAvailable();
 }
 
 void ScintillaEditor::setHighlightScheme(const QString &name)
