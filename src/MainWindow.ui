@@ -614,6 +614,9 @@
    </property>
   </action>
   <action name="editActionUndo">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="../openscad.qrc">
      <normaloff>:/images/Command-Undo-32.png</normaloff>:/images/Command-Undo-32.png</iconset>

@@ -21,6 +21,11 @@ LegacyEditor::LegacyEditor(QWidget *parent) : EditorInterface(parent)
 	connect(this->textedit->document(), SIGNAL(modificationChanged(bool)), this, SIGNAL(modificationChanged(bool)));
 }
 
+bool LegacyEditor::canUndo()
+{
+    return (!textedit->toPlainText().isEmpty());
+}
+
 void LegacyEditor::indentSelection()
 {	
 	QTextCursor cursor = this->textedit->textCursor();

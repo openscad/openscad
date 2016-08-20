@@ -447,6 +447,11 @@ void ScintillaEditor::setText(const QString &text)
 	qsci->replaceSelectedText(text);
 }
 
+bool ScintillaEditor::canUndo()
+{
+    return !(qsci->text().length() == 0);
+}
+
 void ScintillaEditor::undo()
 {
 	qsci->undo();
