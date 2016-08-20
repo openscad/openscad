@@ -18,6 +18,16 @@ scintilla {
     }
   }
 
+  # The above looks in too specific paths, use QT_* variables to find where things really should be.
+  isEmpty(QSCILOADED) {
+      exists($$[QT_INSTALL_DATA]/mkspecs/features/qscintilla2.prf) {
+      include($$[QT_INSTALL_DATA]/mkspecs/features/qscintilla2.prf)
+      INCLUDEPATH = $$[QT_INSTALL_HEADERS] $$INCLUDEPATH
+      LIBS = -L$$[QT_INSTALL_LIBS] $$LIBS
+      QSCILOADED=yes
+    }
+  }
+
   # The qscintilla2.prf which ships with QScintilla is broken for Mac/Windows
   # debug builds, so we supply our own
   isEmpty(QSCILOADED) {
