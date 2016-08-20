@@ -421,6 +421,11 @@ QStringList ScintillaEditor::colorSchemes()
 	return colorSchemes;
 }
 
+bool ScintillaEditor::canUndo()
+{
+    qsci->isUndoAvailable();
+}
+
 void ScintillaEditor::setHighlightScheme(const QString &name)
 {
 	const colorscheme_set_t colorscheme_set = enumerateColorSchemes();

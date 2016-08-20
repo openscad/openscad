@@ -54,6 +54,7 @@ public:
 	void replaceSelectedText(const QString&);
 	void replaceAll(const QString &findText, const QString &replaceText);
 	QStringList colorSchemes();
+    bool canUndo();
         
 private:
         void getRange(int *lineFrom, int *lineTo);
