@@ -318,6 +318,7 @@ MainWindow::MainWindow(const QString &filename)
 
 	// Edit menu
 	connect(this->editActionUndo, SIGNAL(triggered()), editor, SLOT(undo()));
+    connect(editor, SIGNAL(contentsChanged()), this, SLOT(updateActionUndoState()));
 	connect(this->editActionRedo, SIGNAL(triggered()), editor, SLOT(redo()));
 	connect(this->editActionRedo_2, SIGNAL(triggered()), editor, SLOT(redo()));
 	connect(this->editActionCut, SIGNAL(triggered()), editor, SLOT(cut()));
@@ -598,6 +599,11 @@ void MainWindow::addKeyboardShortCut(const QList<QAction *> &actions)
 		const QString toolTip("%1 &nbsp;<span style=\"color: gray; font-size: small; font-style: italic\">%2</span>");
 		action->setToolTip(toolTip.arg(action->toolTip(), shortCut));
 	}
+}
+
+void MainWindow::updateActionUndoState()
+{
+    editActionUndo->setEnabled(editor->canUndo());
 }
 
 void MainWindow::loadViewSettings(){

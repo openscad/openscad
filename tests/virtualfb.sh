@@ -9,17 +9,19 @@ start()
 {
   VFB_BINARY=
 
-  if [ "`command -v Xvfb`" ]; then
-    VFB_BINARY=Xvfb
-  fi
-
   if [ "`command -v Xvnc`" ]; then
     VFB_BINARY=Xvnc
+    VFB_OPTIONS='-geometry 800x600 -depth 24'
+  fi
+
+  if [ "`command -v Xvfb`" ]; then
+    VFB_BINARY=Xvfb
+    VFB_OPTIONS='-screen 0 800x600x24'
   fi
 
   if [ ! $VFB_BINARY ]; then
-    echo "$0 Failed, cannot find Xvfb or Xvnc"
-    echo "$0 Failed, cannot find Xvfb or Xvnc" > ./virtualfb.log
+    echo "$0 Failed, cannot find Xvnc or Xvfb"
+    echo "$0 Failed, cannot find Xvnc or Xvfb" > ./virtualfb.log
     exit 1
   fi
 
@@ -28,7 +30,7 @@ start()
     echo debug VFB_DISPLAY $VFB_DISPLAY
     echo debug VFB_BINARY $VFB_BINARY
   fi
-  $VFB_BINARY $VFB_DISPLAY -screen 0 800x600x24 > ./virtualfb1.log 2> ./virtualfb2.log &
+  $VFB_BINARY $VFB_DISPLAY $VFB_OPTIONS > ./virtualfb1.log 2> ./virtualfb2.log &
   # on some systems $! gives us VFB_BINARY's PID, on others we have to subtract 1
   VFB_PID_MINUS0=$!
   VFB_PID_MINUS1=$(($VFB_PID_MINUS0 - 1))
@@ -71,7 +73,9 @@ stop()
   fi
   cat virtualfb1.log
   cat virtualfb2.log
+  echo 'dump ~/.xession-errors:'
   cat ~/.xsession-errors
+  echo 'end  ~/.xession-errors'
   rm ./virtualfb.PID
   rm ./virtualfb.DISPLAY
 }
