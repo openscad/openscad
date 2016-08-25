@@ -610,7 +610,7 @@ if ( not ${IMAGEMACIK_NOBINARY} )
   endif()
 endif()
 
-if (DIFFPNG)
+if ( ${DIFFPNG} )
   set(IMAGE_COMPARE_EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/diffpng)
   set(COMPARATOR "diffpng")
   add_executable(diffpng diffpng.cpp ../src/lodepng.cpp)
