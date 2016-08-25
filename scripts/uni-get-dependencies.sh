@@ -139,7 +139,7 @@ get_qt4or5_deps_debian()
 
 get_debian_8_deps()
 {
-  apt-get -y install libharfbuzz-dev
+  apt-get -y install libharfbuzz-dev libxml2-dev
   get_debian_deps
   get_qt4or5_deps_debian
 }
