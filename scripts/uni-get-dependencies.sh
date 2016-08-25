@@ -22,6 +22,9 @@ get_fedora_deps_dnf()
   opencsg-devel git libXmu-devel curl ImageMagick glib2-devel make \
   xorg-x11-server-Xvfb gettext qscintilla-devel qscintilla-qt5-devel \
   mesa-dri-drivers
+ dnf -y install libxml2-devel
+ dnf -y install libffi-devel
+ dnf -y install redhat-rpm-config
 }
 
 get_qomo_deps()
@@ -200,6 +203,8 @@ if [ -e /etc/issue ]; then
   get_mageia_deps
  elif [ "`grep -i qomo /etc/issue`" ]; then
   get_qomo_deps
+ elif [ "`grep -i fedora.release /etc/fedora-release`" ]; then
+  get_fedora_deps_dnf
  elif [ "`command -v rpm`" ]; then
   if [ "`rpm -qa | grep altlinux`" ]; then
    get_altlinux_deps
