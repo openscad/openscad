@@ -192,14 +192,27 @@ build_qt5scintilla2()
   qmake CONFIG+=staticlib
   tmpinstalldir=$DEPLOYDIR/tmp/qsci$version
   INSTALL_ROOT=$tmpinstalldir make -j"$NUMCPU" install
-  qsci_staticlib=`find $tmpinstalldir -name libqscintilla2.a`
-  qsci_include=`find $tmpinstalldir -name Qsci`
-  cp -av $qsci_include $DEPLOYDIR/include/
-  cp -av $qsci_staticlib $DEPLOYDIR/lib/
-  # workaround numerous bugs in qscintilla build system, see 
-  # ../qscintilla2.prf and ../scintilla.pri for more info
-  if [ -e $DEPLOYDIR/lib/libqscintilla2.a ]; then
-    cp $DEPLOYDIR/lib/libqscintilla2.a $DEPLOYDIR/lib/libqt5scintilla2.a
+
+  if [ -d $tmpinstalldir/usr/share ]; then
+    cp -av $tmpinstalldir/usr/share $DEPLOYDIR/
+    cp -av $tmpinstalldir/usr/include $DEPLOYDIR/
+    cp -av $tmpinstalldir/usr/lib $DEPLOYDIR/
+  fi
+
+  if [ ! -e $DEPLOYDIR/include/Qsci ]; then
+    # workaround numerous bugs in qscintilla build system, see 
+    # ../qscintilla2.prf and ../scintilla.pri for more info
+    qsci_staticlib=`find $tmpinstalldir -name libqscintilla2.a`
+    qsci_include=`find $tmpinstalldir -name Qsci`
+    if [ -e $qsci_staticlib ]; then
+      cp -av $qsci_include $DEPLOYDIR/include/
+      cp -av $qsci_staticlib $DEPLOYDIR/lib/
+    else
+      echo problems finding built qscintilla libraries and include headers
+    fi
+    if [ -e $DEPLOYDIR/lib/libqscintilla2.a ]; then
+      cp $DEPLOYDIR/lib/libqscintilla2.a $DEPLOYDIR/lib/libqt5scintilla2.a
+    fi
   fi
 }
 
