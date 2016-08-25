@@ -870,7 +870,7 @@ build_gettext 0.18.3.1
 build_glib2 2.38.2
 
 # the following are only needed for text()
-build_freetype 2.5.0.1 --without-png
+build_freetype 2.6.1 --without-png
 build_libxml2 2.9.1
 build_fontconfig 2.11.0 --with-add-fonts=/usr/X11R6/lib/X11/fonts,/usr/local/share/fonts
 build_ragel 6.9
