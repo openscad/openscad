@@ -183,7 +183,7 @@ build_qt5scintilla2()
 
   echo "Building Qt5Scintilla2" $version "..."
   cd $BASEDIR/src
-  #rm -rf QScintilla-gpl-$version.tar.gz
+  rm -rf ./QScintilla-gpl-$version.tar.gz
   if [ ! -f QScintilla-gpl-$version.tar.gz ]; then
      curl -L -o "QScintilla-gpl-$version.tar.gz" "http://downloads.sourceforge.net/project/pyqt/QScintilla2/QScintilla-$version/QScintilla-gpl-$version.tar.gz?use_mirror=switch"
   fi
@@ -192,9 +192,15 @@ build_qt5scintilla2()
   qmake CONFIG+=staticlib
   tmpinstalldir=$DEPLOYDIR/tmp/qsci$version
   INSTALL_ROOT=$tmpinstalldir make -j"$NUMCPU" install
-  cp -av $tmpinstalldir/usr/share $DEPLOYDIR/
-  cp -av $tmpinstalldir/usr/include $DEPLOYDIR/
-  cp -av $tmpinstalldir/usr/lib $DEPLOYDIR/
+  qsci_staticlib=`find $tmpinstalldir -name libqscintilla2.a`
+  qsci_include=`find $tmpinstalldir -name Qsci`
+  cp -av $qsci_include $DEPLOYDIR/include/
+  cp -av $qsci_staticlib $DEPLOYDIR/lib/
+  # workaround numerous bugs in qscintilla build system, see 
+  # ../qscintilla2.prf and ../scintilla.pri for more info
+  if [ -e $DEPLOYDIR/lib/libqscintilla2.a ]; then
+    cp $DEPLOYDIR/lib/libqscintilla2.a $DEPLOYDIR/lib/libqt5scintilla2.a
+  fi
 }
 
 build_bison()
@@ -757,7 +763,8 @@ mkdir -p $SRCDIR $DEPLOYDIR
 # they are installed under $BASEDIR/bin which we have added to our PATH
 
 if [ ! "`command -v curl`" ]; then
-  build_curl 7.26.0
+  # to prevent "end of file" NSS error -5938 (ssl) use a newer version of curl
+  build_curl 7.49.0
 fi
 
 if [ ! "`command -v bison`" ]; then
@@ -790,6 +797,10 @@ if [ $1 ]; then
   if [ $1 = "qt4" ]; then
     # such a huge build, put here by itself
     build_qt4 4.8.4
+    exit $?
+  fi
+  if [ $1 = "qt5scintilla2" ]; then
+    build_qt5scintilla2 2.8.3
     exit $?
   fi
   if [ $1 = "qt5" ]; then

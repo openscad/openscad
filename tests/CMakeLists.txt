@@ -548,26 +548,20 @@ if (HARFBUZZ_VERSION)
   message(STATUS "harfbuzz ${HARFBUZZ_VERSION} found: ${HARFBUZZ_INCLUDE_DIRS}")
 endif()
 
+# FindLibXml2.cmake uses pkgconfig so keep this inside our own pkgconfig section
+# in case we had to build libxml2 ourselves under $OPENSACD_LIBRARIES builddir
+find_package(LibXml2 2.9 REQUIRED)
+add_definitions(${LIBXML2_DEFINITIONS})
+inclusion(LIBXML2_DIR LIBXML2_INCLUDE_DIR)
+
 restore_pkg_config_env()
 
 add_definitions(${FONTCONFIG_CFLAGS})
 add_definitions(${FREETYPE_CFLAGS})
 add_definitions(${HARFBUZZ_CFLAGS})
 
-find_package(LibXml2 2.9 REQUIRED)
-add_definitions(${LIBXML2_DEFINITIONS})
-inclusion(LIBXML2_DIR LIBXML2_INCLUDE_DIR)
 
 # Image comparison - expected test image vs actual generated image
-
-if (DIFFPNG)
-  # How to set cflags to optimize the executable?
-  set(IMAGE_COMPARE_EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/diffpng)
-  set(COMPARATOR "diffpng")
-  add_executable(diffpng diffpng.cpp ../src/lodepng.cpp)
-  set(SKIP_IMAGEMAGICK 1)
-  message(STATUS "using diffpng for image comparison")
-endif()
 
 # Imagemagick
 
@@ -583,8 +577,12 @@ else()
     set(IMAGE_COMPARE_EXECUTABLE ${ImageMagick_convert_EXECUTABLE})
   else()
     message(STATUS "Couldn't find imagemagick 'convert' program")
+    set(IMAGEMAGICK_NOBINARY 1)
     set(DIFFPNG 1)
   endif()
+endif()
+
+if ( not ${IMAGEMACIK_NOBINARY} )
   if ( "${ImageMagick_VERSION_STRING}" VERSION_LESS "6.5.9.4" )
     message(STATUS "ImageMagick version less than 6.5.9.4, cannot use -morphology comparison")
     message(STATUS "ImageMagick Using older image comparison method")
@@ -610,6 +608,13 @@ else()
     message(STATUS "Using alternative image comparison")
     set(DIFFPNG 1)
   endif()
+endif()
+
+if (DIFFPNG)
+  set(IMAGE_COMPARE_EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/diffpng)
+  set(COMPARATOR "diffpng")
+  add_executable(diffpng diffpng.cpp ../src/lodepng.cpp)
+  message(STATUS "using diffpng for image comparison")
 endif()
 
 # Internal includes
