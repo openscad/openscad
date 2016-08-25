@@ -820,7 +820,7 @@ if [ $1 ]; then
   fi
   if [ $1 = "harfbuzz" ]; then
     # debian 7 lacks only harfbuzz
-    build_harfbuzz 0.9.23 --with-glib=yes
+    build_harfbuzz 0.9.35 --with-glib=yes
     exit $?
   fi
   if [ $1 = "glib2" ]; then
