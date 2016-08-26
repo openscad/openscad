@@ -50,13 +50,13 @@ setenv_freebsd()
  else
    QMAKESPEC=freebsd-g++
  fi
- if [ -d /usr/local/share/qt5 ]; then
-   QTDIR=/usr/local/share/qt5
-   PATH=/usr/local/lib/qt5/bin:$PATH
- else
+ #if [ -d /usr/local/share/qt5 ]; then
+ #  QTDIR=/usr/local/share/qt5
+ #  PATH=/usr/local/lib/qt5/bin:$PATH
+ #else
    QTDIR=/usr/local/share/qt4
-   PATH=/usr/local/lib/qt5/bin:$PATH
- fi
+   PATH=/usr/local/lib/qt4/bin:$PATH
+ #fi
  export PATH
  export QMAKESPEC
  export QTDIR
