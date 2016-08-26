@@ -18,6 +18,11 @@ LIBXML2_DIR = $$(LIBXML2DIR)
   }
 }
 
+!exists($$LIBXML2_INCLUDEPATH/libxml/xmlversion.h) {
+  LIBXML2_INCLUDEPATH =
+  LIBXML2_LIBPATH =
+}
+
 isEmpty(LIBXML2_INCLUDEPATH) {
   LIBXML2_CFLAGS = $$system("pkg-config --cflags libxml-2.0")
 } else {

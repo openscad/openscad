@@ -44,14 +44,24 @@ setenv_common()
 setenv_freebsd()
 {
  echo .... freebsd detected. 
- echo .... if you have freebsd >9, it is advisable to install
- echo .... the clang compiler and re-run this script as 
- echo .... '. ./scripts/setenv-unibuild.sh clang'
  setenv_common
- QMAKESPEC=freebsd-g++
- QTDIR=/usr/local/share/qt4
+ if [ "`command -v clang`" ]; then
+   QMAKESPEC=freebsd-clang
+ else
+   QMAKESPEC=freebsd-g++
+ fi
+ if [ -d /usr/local/share/qt5 ]; then
+   QTDIR=/usr/local/share/qt5
+   PATH=/usr/local/lib/qt5/bin:$PATH
+ else
+   QTDIR=/usr/local/share/qt4
+   PATH=/usr/local/lib/qt5/bin:$PATH
+ fi
+ export PATH
  export QMAKESPEC
  export QTDIR
+ echo QMAKESPEC $QMAKESPEC
+ echo QTDIR $QTDIR
 }
 
 setenv_netbsd()
@@ -78,17 +88,6 @@ setenv_linux_clang()
  export CC=clang
  export CXX=clang++
  export QMAKESPEC=unsupported/linux-clang
-
- echo CC has been modified: $CC
- echo CXX has been modified: $CXX
- echo QMAKESPEC has been modified: $QMAKESPEC
-}
-
-setenv_freebsd_clang()
-{
- export CC=clang
- export CXX=clang++
- export QMAKESPEC=freebsd-clang
 
  echo CC has been modified: $CC
  echo CXX has been modified: $CXX
@@ -125,9 +124,6 @@ if [ "`uname | grep -i 'linux\|debian'`" ]; then
  fi
 elif [ "`uname | grep -i freebsd`" ]; then
  setenv_freebsd
- if [ "`echo $* | grep clang`" ]; then
-  setenv_freebsd_clang
- fi
 elif [ "`uname | grep -i netbsd`" ]; then
  setenv_netbsd
  if [ "`echo $* | grep clang`" ]; then
