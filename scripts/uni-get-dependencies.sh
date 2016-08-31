@@ -22,6 +22,9 @@ get_fedora_deps_dnf()
   opencsg-devel git libXmu-devel curl ImageMagick glib2-devel make \
   xorg-x11-server-Xvfb gettext qscintilla-devel qscintilla-qt5-devel \
   mesa-dri-drivers
+ dnf -y install libxml2-devel
+ dnf -y install libffi-devel
+ dnf -y install redhat-rpm-config
 }
 
 get_qomo_deps()
@@ -41,7 +44,21 @@ get_freebsd_deps()
  pkg_add -r bison boost-libs cmake git bash eigen3 flex gmake gmp mpfr \
   xorg libGLU libXmu libXi xorg-vfbserver glew \
   qt4-corelib qt4-gui qt4-moc qt4-opengl qt4-qmake qt4-rcc qt4-uic \
-  opencsg cgal curl imagemagick glib2-devel gettext
+  opencsg cgal curl imagemagick glib2-devel gettext harfbuzz libxml2 \
+  qscintilla2
+}
+
+get_freebsd_10_3_deps()
+{
+ pkg install bison boost-libs cmake git bash eigen flex gmake gmp mpfr \
+  xorg libGLU libXmu libXi xorg-vfbserver glew \
+  opencsg cgal curl imagemagick glib gettext \
+  qt4-corelib qt4-gui qt4-moc qt4-opengl qt4-qmake qt4-rcc qt4-uic \
+  qscintilla2 \
+  harfbuzz ragel imagemagick gettext libxml2 libxslt
+  # on freebsd10 opencsg is linked to qt4 so qt5 cannot be used on default
+  #  qt5 qscintilla2-qt5 qt5-3d qt5-buildtools qt5-core \
+  #  qt5-gui qt5-opengl qt5-qmake \
 }
 
 get_netbsd_deps()
@@ -139,7 +156,7 @@ get_qt4or5_deps_debian()
 
 get_debian_8_deps()
 {
-  apt-get -y install libharfbuzz-dev
+  apt-get -y install libharfbuzz-dev libxml2-dev
   get_debian_deps
   get_qt4or5_deps_debian
 }
@@ -200,6 +217,8 @@ if [ -e /etc/issue ]; then
   get_mageia_deps
  elif [ "`grep -i qomo /etc/issue`" ]; then
   get_qomo_deps
+ elif [ "`grep -i fedora.release /etc/fedora-release`" ]; then
+  get_fedora_deps_dnf
  elif [ "`command -v rpm`" ]; then
   if [ "`rpm -qa | grep altlinux`" ]; then
    get_altlinux_deps
@@ -207,7 +226,9 @@ if [ -e /etc/issue ]; then
  else
   unknown
  fi
-elif [ "`uname | grep -i freebsd `" ]; then
+elif [ "`uname -a | grep -i freebsd.10.[3-9]`" ]; then
+ get_freebsd_10_3_deps
+elif [ "`uname | grep -i freebsd`" ]; then
  get_freebsd_deps
 elif [ "`uname | grep -i netbsd`" ]; then
  get_netbsd_deps

@@ -163,6 +163,7 @@ netbsd* {
   QMAKE_CXXFLAGS_WARN_ON += -Wno-format-security
   # might want to actually turn this on once in a while
   QMAKE_CXXFLAGS_WARN_ON += -Wno-sign-compare
+  QMAKE_CXXFLAGS_WARN_ON += -Wno-unknown-warning-option
 }
 
 CONFIG(skip-version-check) {

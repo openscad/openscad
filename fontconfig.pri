@@ -19,6 +19,11 @@ FONTCONFIG_DIR = $$(FONTCONFIGDIR)
   }
 }
 
+!exists($$FONTCONFIG_INCLUDEPATH/fontconfig.h) {
+  FONTCONFIG_INCLUDEPATH =
+  FONTCONFIG_LIBPATH =
+}
+
 isEmpty(FONTCONFIG_INCLUDEPATH) {
   FONTCONFIG_CFLAGS = $$system("pkg-config --cflags fontconfig")
 } else {
