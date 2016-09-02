@@ -272,8 +272,8 @@ MainWindow::MainWindow(const QString &filename)
 	waitAfterReloadTimer->setSingleShot(true);
 	waitAfterReloadTimer->setInterval(200);
 	connect(waitAfterReloadTimer, SIGNAL(timeout()), this, SLOT(waitAfterReload()));
-    connect(this->parameterWidget, SIGNAL(previewRequested()), this, SLOT(actionRenderPreview()));
-    connect(Preferences::inst(), SIGNAL(Experimentalchanged()), this, SLOT(changeParameterWidget()));
+	connect(this->parameterWidget, SIGNAL(previewRequested()), this, SLOT(actionRenderPreview()));
+	connect(Preferences::inst(), SIGNAL(ExperimentalChanged()), this, SLOT(changeParameterWidget()));
 	connect(this->e_tval, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimTval()));
 	connect(this->e_fps, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimFps()));
 	connect(this->e_fsteps, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimSteps()));
@@ -1722,30 +1722,30 @@ void MainWindow::compileTopLevelDocument()
 	this->root_module = NULL;
 
 	auto fnameba = this->fileName.toLocal8Bit();
-    const char* fname =
-        this->fileName.isEmpty() ? "" : fnameba;
+	const char* fname = this->fileName.isEmpty() ? "" : fnameba;
 	this->root_module = parse(fulltext.c_str(), fs::path(fname), false);
     
-    if(Feature::ExperimentalCustomizer.is_enabled()){
-        if(this->root_module!=NULL){
-            //add parameters as annotation in AST
-            addParameter(fulltext.c_str(),this->root_module);
-        }
-        this->parameterWidget->setParameters(this->root_module);
-        this->parameterWidget->applyParameters(this->root_module);
-   }
-
+	if (Feature::ExperimentalCustomizer.is_enabled()) {
+		if (this->root_module!=NULL) {
+			//add parameters as annotation in AST
+			addParameter(fulltext.c_str(),this->root_module);
+		}
+		this->parameterWidget->setParameters(this->root_module);
+		this->parameterWidget->applyParameters(this->root_module);
+	}
 }
 
-void MainWindow::changeParameterWidget(){
-    if(Feature::ExperimentalCustomizer.is_enabled()){
-        viewActionHideParameters->setVisible(true);
-    }else{
-         viewActionHideParameters->setChecked(true);
-         hideParameters();
-         viewActionHideParameters->setVisible(false);
-    }
-   emit actionRenderPreview();
+void MainWindow::changeParameterWidget()
+{
+	if (Feature::ExperimentalCustomizer.is_enabled()) {
+		viewActionHideParameters->setVisible(true);
+	}
+	else {
+		viewActionHideParameters->setChecked(true);
+		hideParameters();
+		viewActionHideParameters->setVisible(false);
+	}
+	emit actionRenderPreview();
 }
 
 void MainWindow::checkAutoReload()
