@@ -216,6 +216,56 @@ build_qt5scintilla2()
   fi
 }
 
+build_libtool()
+{
+  if [ "`command -v libtool`" ]; then
+    echo libtool already installed
+    return
+  fi
+
+  VERSION=$1
+  cd $BASEDIR/src
+  curl --insecure -O http://mirror.team-cymru.org/gnu/libtool/libtool-$VERSION.tar.gz
+  tar xf libtool-$VERSION.tar.gz
+  cd libtool-$VERSION
+  ./configure --prefix=$DEPLOYDIR
+  make
+  make install
+}
+
+build_autoconf()
+{
+  if [ "`command -v autoconf`" ]; then
+    echo autoconf already installed
+    return
+  fi
+
+  VERSION=$1
+  cd $BASEDIR/src
+  curl --insecure -O http://ftp.gnu.org/gnu/autoconf/autoconf-$VERSION.tar.bz2
+  tar xf autoconf-$VERSION.tar.bz2
+  cd autoconf-$VERSION
+  ./configure --prefix=$DEPLOYDIR
+  make
+  make install
+}
+
+build_automake()
+{
+  if [ "`command -v automake`" ]; then
+    echo automake already installed
+    return
+  fi
+  VERSION=$1
+  cd $BASEDIR/src
+  curl --insecure -O http://ftp.gnu.org/gnu/automake/automake-$VERSION.tar.gz
+  tar xf automake-$VERSION.tar.gz
+  cd automake-$VERSION
+  ./configure --prefix=$DEPLOYDIR
+  make
+  make install
+}
+
 build_bison()
 {
   version=$1
@@ -349,10 +399,12 @@ build_boost()
   fi
   tar xjf boost_$bversion.tar.bz2
   cd boost_$bversion
-  if [ "`gcc --version|grep 4.7`" ]; then
-    if [ "`echo $version | grep 1.47`" ]; then
-      echo gcc 4.7 incompatible with boost 1.47. edit boost version in $0
-      exit
+  if [ "`command -v gcc`" ]; then
+    if [ "`gcc --version|grep 4.7`" ]; then
+      if [ "`echo $version | grep 1.47`" ]; then
+        echo gcc 4.7 incompatible with boost 1.47. edit boost version in $0
+        exit
+      fi
     fi
   fi
   # We only need certain portions of boost
@@ -361,8 +413,14 @@ build_boost()
   else
     BSTRAPBIN=./configure
   fi
-  $BSTRAPBIN --prefix=$DEPLOYDIR --with-libraries=thread,program_options,filesystem,system,regex
-	if [ -e ./b2 ]; then
+  CLANGSTRAP=""
+  if [ $CXX ]; then
+    if [ $CXX = "clang++" ]; then
+      CLANGSTRAP="--with-toolset=clang"
+    fi
+  fi
+  $BSTRAPBIN --prefix=$DEPLOYDIR --with-libraries=thread,program_options,filesystem,system,regex $CLANGSTRAP
+  if [ -e ./b2 ]; then
     BJAMBIN=./b2;
   elif [ -e ./bjam ]; then
     BJAMBIN=./bjam
@@ -400,6 +458,7 @@ build_cgal()
   echo "Building CGAL" $version "..."
   cd $BASEDIR/src
   rm -rf CGAL-$version
+  ver4_8="curl -L --insecure -O https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-4.8/CGAL-4.8.tar.xz"
   ver4_4="curl --insecure -O https://gforge.inria.fr/frs/download.php/file/33524/CGAL-4.4.tar.bz2"
   ver4_2="curl --insecure -O https://gforge.inria.fr/frs/download.php/32360/CGAL-4.2.tar.bz2"
   ver4_1="curl --insecure -O https://gforge.inria.fr/frs/download.php/31640/CGAL-4.1.tar.bz2"
@@ -417,6 +476,12 @@ build_cgal()
   if [ -e CGAL-$version.tar.bz2 ]; then
     download_cmd=vernull;
   fi
+  if [ -e CGAL-$version.tar.xz ]; then
+    download_cmd=vernull;
+  fi
+  if [ -e CGAL-$version.tar ]; then
+    download_cmd=vernull;
+  fi
 
   eval echo "$"$download_cmd
   `eval echo "$"$download_cmd`
@@ -427,8 +492,15 @@ build_cgal()
     zipper=bzip2
     suffix=bz2
   fi
+  if [ -e CGAL-$version.tar.xz ]; then
+    zipper=xz
+    suffix=xz
+  fi
 
-  $zipper -f -d CGAL-$version.tar.$suffix;
+  if [ -e CGAL-$version.tar.$suffix ]; then		
+    $zipper -f -d CGAL-$version.tar.$suffix;
+  fi
+
   tar xf CGAL-$version.tar
 
   cd CGAL-$version
@@ -447,6 +519,12 @@ build_cgal()
     CGAL_BUILDTYPE="Release" # avoid assertion violation
   else
     CGAL_BUILDTYPE="Debug"
+  fi
+
+  if [ "`uname | grep freebsd`" ]; then
+    CGALLINK="-DCMAKE_SHARED_LINKER_FLAGS=-lpthread"
+    CGALLINK="$CGALLINK -DCMAKE_MODULE_LINKER_FLAGS=-lpthread"
+    CGALLINK="$CGALLINK -DCMAKE_EXE_LINKER_FLAGS=-lpthread"
   fi
 
   DEBUGBOOSTFIND=0 # for debugging FindBoost.cmake (not for debugging boost)
@@ -506,6 +584,13 @@ build_glew()
     sed -ibak s/"CC = cc"/"# CC = cc"/ config/Makefile.linux
   fi
 
+  if [ "`uname -a | grep freebsd | grep -v kfreebsd`" ]; then
+    if [ ! -d /usr/X11R6 ]; then
+      sed -ibak s/"\\-L\\/usr\\/X11R6\\/lib"/"-fPIC\\ \\-L\\/usr\\/local\\/lib"/ config/Makefile.freebsd
+      sed -ibak s/"\\-I\\/usr\\/X11R6\\/include"/"-fPIC\\ \\-I\\/usr\\/local\\/include"/ config/Makefile.freebsd
+    fi
+  fi
+
   MAKER=make
   if [ "`uname | grep BSD`" ]; then
     if [ "`command -v gmake`" ]; then
@@ -548,6 +633,7 @@ build_opencsg()
     build_glu 9.0.0
   fi
 
+  echo $CC $CXX
   if [ "`command -v qmake-qt4`" ]; then
     OPENCSG_QMAKE=qmake-qt4
   elif [ "`command -v qmake4`" ]; then
@@ -582,7 +668,6 @@ build_opencsg()
 
   cd $BASEDIR/src/OpenCSG-$version
   $OPENCSG_QMAKE
-
   make
 
   ls lib/* include/*
@@ -595,6 +680,21 @@ build_opencsg()
   if [ -e lib/.libs ]; then install lib/.libs/* $DEPLOYDIR/lib; fi #netbsd
 
   cd $BASEDIR
+}
+
+build_zlib()
+{
+  if [ -e $DEPLOYDIR/lib/libz.so ]; then
+    echo zlib already installed
+  fi
+  VERSION=$1
+  cd $BASEDIR/src
+  curl --insecure -O http://zlib.net/zlib-1.2.8.tar.gz
+  tar xf zlib-$VERSION.tar.gz
+  cd zlib-$VERSION
+  ./configure --prefix=$DEPLOYDIR
+  make
+  make install
 }
 
 build_eigen()
@@ -631,37 +731,10 @@ build_eigen()
   make install
 }
 
-
-# glib2 and dependencies
-
-#build_gettext()
-#{
-#  version=$1
-#  ls -l $DEPLOYDIR/include/gettext-po.h
-#  if [ -e $DEPLOYDIR/include/gettext-po.h ]; then
-#    echo "gettext already installed. not building"
-#    return
-#  fi
-#
-#  echo "Building gettext $version..."
-#
-#  cd "$BASEDIR"/src
-#  rm -rf "gettext-$version"
-#  if [ ! -f "glib-$version.tar.gz" ]; then
-#    curl --insecure -LO "http://ftpmirror.gnu.org/gettext/gettext-$version.tar.gz"
-#  fi
-#  tar xzf "gettext-$version.tar.gz"
-#  cd "gettext-$version"
-#
-#  ./configure --prefix="$DEPLOYDIR"
-#  make -j$NUMCPU
-#  make install
-#}
-
 build_pkgconfig()
 {
-  if [ "`command -v pkg-config`" ]; then
-    echo "pkg-config already installed. not building"
+  if [ -e $DEPLOYDIR/bin/pkg-config ]; then
+    echo "pkg-config already installed in $DEPLOYDIR/bin. not building"
     return
   fi
   version=$1
@@ -706,32 +779,6 @@ build_libffi()
   make -j$NUMCPU
   make install
 }
-
-#build_glib2()
-#{
-#  version="$1"
-#  maj_min_version="${version%.*}" #Drop micro#
-#
-#  if [ -e $DEPLOYDIR/lib/glib-2.0 ]; then
-#    echo "glib2 already installed. not building"
-#    return
-#  fi
-#
-# echo "Building glib2 $version..."
-#  cd "$BASEDIR"/src
-#  rm -rf "glib-$version"
-#  if [ ! -f "glib-$version.tar.xz" ]; then
-#    curl --insecure -LO "http://ftp.gnome.org/pub/gnome/sources/glib/$maj_min_version/glib-$version.tar.xz"
-#  fi
-#  tar xJf "glib-$version.tar.xz"
-#  cd "glib-$version"
-
-#  ./configure --disable-gtk-doc --disable-man --prefix="$DEPLOYDIR" CFLAGS="-I$DEPLOYDIR/include" LDFLAGS="-L$DEPLOYDIR/lib"
-#  make -j$NUMCPU
-#  make install
-#}
-
-## end of glib2 stuff
 
 # this section allows 'out of tree' builds, as long as the system has
 # the 'dirname' command installed
@@ -858,22 +905,40 @@ fi
 # 
 # Some of these are defined in scripts/common-build-dependencies.sh
 
+CGAL_VERSION=4.4
+GLIB_VERSION=2.47.2
+FREETYPE_VERSION=2.6.1
+LIBXML2_VERSION=2.9.1
+HARFBUZZ_VERSION=0.9.35
+LIBTOOL_VERSION=2.4.6
+
+if [ "`uname -a | grep freebsd | grep -v kfreebsd`" ]; then
+  build_zlib 1.2.8
+  build_pkgconfig 0.28
+  build_autoconf 2.68
+  build_automake 1.14
+  build_libtool $LIBTOOL_VERSION
+  CGAL_VERSION=4.8
+  FREETYPE_VERSION=2.6.2
+  HARFBUZZ_VERSION=1.2.7
+fi
+
 build_eigen 3.2.2
 build_gmp 5.0.5
 build_mpfr 3.1.1
 build_boost 1.56.0
 # NB! For CGAL, also update the actual download URL in the function
-build_cgal 4.4
+build_cgal $CGAL_VERSION
 build_glew 1.9.0
 build_opencsg 1.3.2
 build_gettext 0.18.3.1
-build_glib2 2.38.2
+build_glib2 $GLIB_VERSION
 
 # the following are only needed for text()
-build_freetype 2.6.1 --without-png
-build_libxml2 2.9.1
+build_freetype $FREETYPE_VERSION --without-png
+build_libxml2 $LIBXML2_VERSION
 build_fontconfig 2.11.0 --with-add-fonts=/usr/X11R6/lib/X11/fonts,/usr/local/share/fonts
 build_ragel 6.9
-build_harfbuzz 0.9.35 --with-glib=yes
+build_harfbuzz $HARFBUZZ_VERSION --with-glib=yes
 
 echo "OpenSCAD dependencies built and installed to " $BASEDIR

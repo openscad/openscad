@@ -12,7 +12,8 @@ gettext {
 OPENSCAD_LIBRARIES_DIR = $$(OPENSCAD_LIBRARIES)
 GETTEXT_DIR = $$(GETTEXTDIR)
 
-macx: {
+macx|freebsd*: {
+  message('dang')
   isEmpty(GETTEXT_INCLUDEPATH) {
     !isEmpty(OPENSCAD_LIBRARIES_DIR) {
       GETTEXT_INCLUDEPATH = $$OPENSCAD_LIBRARIES_DIR/include

@@ -47,21 +47,21 @@ setenv_freebsd()
  setenv_common
  if [ "`command -v clang`" ]; then
    QMAKESPEC=freebsd-clang
+   CC=clang
+   CXX=clang++
  else
    QMAKESPEC=freebsd-g++
  fi
- #if [ -d /usr/local/share/qt5 ]; then
- #  QTDIR=/usr/local/share/qt5
- #  PATH=/usr/local/lib/qt5/bin:$PATH
- #else
-   QTDIR=/usr/local/share/qt4
-   PATH=/usr/local/lib/qt4/bin:$PATH
- #fi
+ QTDIR=/usr/local/share/qt4
+ PATH=/usr/local/lib/qt4/bin:$PATH
  export PATH
  export QMAKESPEC
  export QTDIR
+ export CC
+ export CXX
  echo QMAKESPEC $QMAKESPEC
  echo QTDIR $QTDIR
+ echo CXX CC $CXX $CC
 }
 
 setenv_netbsd()

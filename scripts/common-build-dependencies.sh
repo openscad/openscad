@@ -26,8 +26,20 @@ build_freetype()
   tar xzf "freetype-$version.tar.gz"
   cd "freetype-$version"
   ./configure --prefix="$DEPLOYDIR" $extra_config_flags
-  make -j"$NUMCPU"
-  make install
+
+  MAKEBIN=make
+  if [ "`uname -a | grep freebsd`" ]; then
+    MAKEBIN=gmake
+    SAVEPATH=$PATH
+    PATH=.:$PATH
+  fi
+  
+  $MAKEBIN -j"$NUMCPU"
+  $MAKEBIN install
+
+  if [ "`uname -a | grep freebsd`" ]; then
+    PATH=$SAVEPATH
+  fi
 }
  
 build_libxml2()
@@ -48,8 +60,14 @@ build_libxml2()
   tar xzf "libxml2-$version.tar.gz"
   cd "libxml2-$version"
   ./configure --prefix="$DEPLOYDIR" --without-ftp --without-http --without-python
-  make -j$NUMCPU
-  make install
+
+  MAKEBIN=make
+  if [ "`uname -a | grep freebsd`" ]; then
+    MAKEBIN=gmake
+  fi
+
+  $MAKEBIN -j$NUMCPU
+  $MAKEBIN install
 }
 
 build_fontconfig()
@@ -107,6 +125,10 @@ build_gettext()
     echo "gettext already installed. not building"
     return
   fi
+  if [ -f "$DEPLOYDIR"/lib/libgettextpo.dll ]; then
+    echo "gettext already installed. not building"
+    return
+  fi
 
   echo "Building gettext $version..."
   cd "$BASEDIR"/src
@@ -117,7 +139,8 @@ build_gettext()
   tar xzf "gettext-$version.tar.gz"
   cd "gettext-$version"
 
-  ./configure --prefix="$DEPLOYDIR" --disable-java --disable-native-java
+  ./configure --prefix="$DEPLOYDIR" --disable-java --disable-native-java --enable-shared
+  #exit
   make -j$NUMCPU
   make install
 }
@@ -142,10 +165,19 @@ build_glib2()
   cd "glib-$version"
 
   export PKG_CONFIG_PATH="$DEPLOYDIR/lib/pkgconfig"
-  ./configure --disable-gtk-doc --disable-man --prefix="$DEPLOYDIR" CFLAGS="-I$DEPLOYDIR/include" LDFLAGS="-L$DEPLOYDIR/lib"
+
+  MAKEBIN=make
+  DTRACEFLAG=
+  if [ "`uname -a | grep freebsd`" ]; then
+    DTRACEFLAG=--disable-dtrace
+    MAKEBIN=gmake
+  fi
+
+  ./configure $DTRACEFLAG --disable-gtk-doc --disable-man --prefix="$DEPLOYDIR" CFLAGS="-I$DEPLOYDIR/include" LDFLAGS="-L$DEPLOYDIR/lib"
   unset PKG_CONFIG_PATH
-  make -j$NUMCPU
-  make install
+
+  $MAKEBIN -j$NUMCPU
+  $MAKEBIN install
 }
 
 build_ragel()
@@ -178,7 +210,7 @@ build_harfbuzz()
 
   if [ -e $DEPLOYDIR/include/harfbuzz ]; then
     echo "harfbuzz already installed. not building"
-    return
+    echo return
   fi
 
   echo "Building harfbuzz $version..."
@@ -189,12 +221,23 @@ build_harfbuzz()
   fi
   tar xzf "harfbuzz-$version.tar.gz"
   cd "harfbuzz-$version"
-  # we do not need gtkdocize
-  sed -e "s/gtkdocize/echo/g" autogen.sh > autogen.sh.bak && mv autogen.sh.bak autogen.sh
   # disable doc directories as they make problems on Mac OS Build
   sed -e "s/SUBDIRS = src util test docs/SUBDIRS = src util test/g" Makefile.am > Makefile.am.bak && mv Makefile.am.bak Makefile.am
   sed -e "s/^docs.*$//" configure.ac > configure.ac.bak && mv configure.ac.bak configure.ac
+
+  export PKG_CONFIG_PATH="$DEPLOYDIR/lib/pkgconfig"
+  export PKG_CONFIG=$DEPLOYDIR/bin/pkg-config
+
   sh ./autogen.sh --prefix="$DEPLOYDIR" --with-freetype=yes --with-gobject=no --with-cairo=no --with-icu=no $extra_config_flags
-  make -j$NUMCPU
-  make install
+
+  unset PKG_CONFIG_PATH
+  unset PKG_CONFIG
+
+  MAKEBIN=make
+  if [ "`uname -a | grep freebsd`" ]; then
+    MAKEBIN=gmake
+  fi
+  
+  $MAKEBIN -j$NUMCPU
+  $MAKEBIN install
 }
