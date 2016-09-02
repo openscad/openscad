@@ -402,15 +402,15 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		return 1;
 	}
 
-    if(Feature::ExperimentalCustomizer.is_enabled()){
-        // add parameter to AST
-        addParameter(text.c_str(),root_module);
-        if(!parameterFile.empty() && !setName.empty()){
-            ParameterSet param;
-            param.getParameterSet(parameterFile);
-            param.applyParameterSet(root_module,setName);
-        }
-    }
+	if (Feature::ExperimentalCustomizer.is_enabled()) {
+		// add parameter to AST
+		addParameter(text.c_str(), root_module);
+		if (!parameterFile.empty() && !setName.empty()) {
+			ParameterSet param;
+			param.getParameterSet(parameterFile);
+			param.applyParameterSet(root_module, setName);
+		}
+	}
     
 	root_module->handleDependencies();
 
@@ -817,8 +817,8 @@ int main(int argc, char **argv)
 		("debug", po::value<string>(), "special debug info")
 		("quiet,q", "quiet mode (don't print anything *except* errors)")
 		("o,o", po::value<string>(), "out-file")
-	    ("p,p", po::value<string>(), "parameter-file")
-        ("P,P", po::value<string>(), "parameter-Set")
+		("p,p", po::value<string>(), "parameter file")
+		("P,P", po::value<string>(), "parameter set")
 		("s,s", po::value<string>(), "stl-file")
 		("x,x", po::value<string>(), "dxf-file")
 		("d,d", po::value<string>(), "deps-file")
@@ -912,30 +912,30 @@ int main(int argc, char **argv)
 	}
 #endif
 
-    string parameterFile;
-    string parameterSet;
-
-    if(Feature::ExperimentalCustomizer.is_enabled()){
-        if (vm.count("p")) {
-            if (!parameterFile.empty()) help(argv[0], true);
-
-            parameterFile = vm["p"].as<string>().c_str();
-        }
-
-        if (vm.count("P")) {
-            if (!parameterSet.empty()) help(argv[0], true);
-
-            parameterSet = vm["P"].as<string>().c_str();
-        }
-    }
-    else {
-        if (vm.count("p") || vm.count("P")) {
-            if (!parameterSet.empty()) help(argv[0], true);
-            PRINT("Customizer feature not activated \n");
-            help(argv[0], true);
-        }
-    }
-
+	string parameterFile;
+	string parameterSet;
+	
+	if (Feature::ExperimentalCustomizer.is_enabled()) {
+		if (vm.count("p")) {
+			if (!parameterFile.empty()) help(argv[0], true);
+			
+			parameterFile = vm["p"].as<string>().c_str();
+		}
+		
+		if (vm.count("P")) {
+			if (!parameterSet.empty()) help(argv[0], true);
+			
+			parameterSet = vm["P"].as<string>().c_str();
+		}
+	}
+	else {
+		if (vm.count("p") || vm.count("P")) {
+			if (!parameterSet.empty()) help(argv[0], true);
+			PRINT("Customizer feature not activated\n");
+			help(argv[0], true);
+		}
+	}
+	
 	vector<string> inputFiles;
 	if (vm.count("input-file"))	{
 		inputFiles = vm["input-file"].as<vector<string>>();
@@ -961,7 +961,7 @@ int main(int argc, char **argv)
 
 	if (arg_info || cmdlinemode) {
 		if (inputFiles.size() > 1) help(argv[0], true);
-		 rc = cmdline(deps_output_file, inputFiles[0], camera, output_file, original_path, renderer, parameterFile, parameterSet, argc, argv);
+		rc = cmdline(deps_output_file, inputFiles[0], camera, output_file, original_path, renderer, parameterFile, parameterSet, argc, argv);
 	}
 	else if (QtUseGUI()) {
 		rc = gui(inputFiles, original_path, argc, argv);
