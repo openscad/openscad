@@ -35,6 +35,8 @@ start()
   VFB_PID_MINUS0=$!
   VFB_PID_MINUS1=$(($VFB_PID_MINUS0 - 1))
 
+  # FIXME: Sometimes, these ps commands won't find the process, but the ps command in the debug
+  # section below does. Perhaps we need to wait for VFB to finish running?
   if [ "`ps cax | grep $VFB_PID_MINUS0 | grep $VFB_BINARY`" ]; then
     VFB_PID=$VFB_PID_MINUS0
   elif [ "`ps cax | grep $VFB_PID_MINUS1 | grep $VFB_BINARY`" ]; then
