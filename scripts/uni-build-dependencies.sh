@@ -183,7 +183,7 @@ build_qt5scintilla2()
 
   echo "Building Qt5Scintilla2" $version "..."
   cd $BASEDIR/src
-  #rm -rf QScintilla-gpl-$version.tar.gz
+  rm -rf ./QScintilla-gpl-$version.tar.gz
   if [ ! -f QScintilla-gpl-$version.tar.gz ]; then
      curl -L -o "QScintilla-gpl-$version.tar.gz" "http://downloads.sourceforge.net/project/pyqt/QScintilla2/QScintilla-$version/QScintilla-gpl-$version.tar.gz?use_mirror=switch"
   fi
@@ -192,9 +192,28 @@ build_qt5scintilla2()
   qmake CONFIG+=staticlib
   tmpinstalldir=$DEPLOYDIR/tmp/qsci$version
   INSTALL_ROOT=$tmpinstalldir make -j"$NUMCPU" install
-  cp -av $tmpinstalldir/usr/share $DEPLOYDIR/
-  cp -av $tmpinstalldir/usr/include $DEPLOYDIR/
-  cp -av $tmpinstalldir/usr/lib $DEPLOYDIR/
+
+  if [ -d $tmpinstalldir/usr/share ]; then
+    cp -av $tmpinstalldir/usr/share $DEPLOYDIR/
+    cp -av $tmpinstalldir/usr/include $DEPLOYDIR/
+    cp -av $tmpinstalldir/usr/lib $DEPLOYDIR/
+  fi
+
+  if [ ! -e $DEPLOYDIR/include/Qsci ]; then
+    # workaround numerous bugs in qscintilla build system, see 
+    # ../qscintilla2.prf and ../scintilla.pri for more info
+    qsci_staticlib=`find $tmpinstalldir -name libqscintilla2.a`
+    qsci_include=`find $tmpinstalldir -name Qsci`
+    if [ -e $qsci_staticlib ]; then
+      cp -av $qsci_include $DEPLOYDIR/include/
+      cp -av $qsci_staticlib $DEPLOYDIR/lib/
+    else
+      echo problems finding built qscintilla libraries and include headers
+    fi
+    if [ -e $DEPLOYDIR/lib/libqscintilla2.a ]; then
+      cp $DEPLOYDIR/lib/libqscintilla2.a $DEPLOYDIR/lib/libqt5scintilla2.a
+    fi
+  fi
 }
 
 build_bison()
@@ -757,7 +776,8 @@ mkdir -p $SRCDIR $DEPLOYDIR
 # they are installed under $BASEDIR/bin which we have added to our PATH
 
 if [ ! "`command -v curl`" ]; then
-  build_curl 7.26.0
+  # to prevent "end of file" NSS error -5938 (ssl) use a newer version of curl
+  build_curl 7.49.0
 fi
 
 if [ ! "`command -v bison`" ]; then
@@ -792,6 +812,10 @@ if [ $1 ]; then
     build_qt4 4.8.4
     exit $?
   fi
+  if [ $1 = "qt5scintilla2" ]; then
+    build_qt5scintilla2 2.8.3
+    exit $?
+  fi
   if [ $1 = "qt5" ]; then
     build_qt5 5.3.1
     build_qt5scintilla2 2.8.3
@@ -809,7 +833,7 @@ if [ $1 ]; then
   fi
   if [ $1 = "harfbuzz" ]; then
     # debian 7 lacks only harfbuzz
-    build_harfbuzz 0.9.23 --with-glib=yes
+    build_harfbuzz 0.9.35 --with-glib=yes
     exit $?
   fi
   if [ $1 = "glib2" ]; then
@@ -846,10 +870,10 @@ build_gettext 0.18.3.1
 build_glib2 2.38.2
 
 # the following are only needed for text()
-build_freetype 2.5.0.1 --without-png
+build_freetype 2.6.1 --without-png
 build_libxml2 2.9.1
 build_fontconfig 2.11.0 --with-add-fonts=/usr/X11R6/lib/X11/fonts,/usr/local/share/fonts
 build_ragel 6.9
-build_harfbuzz 0.9.23 --with-glib=yes
+build_harfbuzz 0.9.35 --with-glib=yes
 
 echo "OpenSCAD dependencies built and installed to " $BASEDIR
