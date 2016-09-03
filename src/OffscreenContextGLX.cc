@@ -266,7 +266,9 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
 
 		ctx.xdisplay = XOpenDisplay(NULL);
 		if (ctx.xdisplay == NULL) {
-			cerr << "Unable to open a connection to the X server (DISPLAY=" << getenv("DISPLAY") << ")\n";
+			cerr << "Unable to open a connection to the X server.\n";
+			char * dpyenv = getenv("DISPLAY");
+			cerr << "DISPLAY=" << (dpyenv?dpyenv:"") << "\n";
 			return false;
 		}
 
