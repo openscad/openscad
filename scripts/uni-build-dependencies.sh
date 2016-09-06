@@ -114,7 +114,7 @@ build_glu()
   tar xzf glu-$version.tar.gz
   cd glu-$version
   ./autogen.sh --prefix=$DEPLOYDIR
-  make -j$NUMCPU
+  make
   make install
 }
 
@@ -134,7 +134,7 @@ build_qt4()
   tar xzf qt-everywhere-opensource-src-$version.tar.gz
   cd qt-everywhere-opensource-src-$version
   ./configure -prefix $DEPLOYDIR -opensource -confirm-license -fast -no-qt3support -no-svg -no-phonon -no-audio-backend -no-multimedia -no-javascript-jit -no-script -no-scripttools -no-declarative -no-xmlpatterns -nomake demos -nomake examples -nomake docs -nomake translations -no-webkit
-  make -j$NUMCPU
+  make
   make install
   QTDIR=$DEPLOYDIR
   export QTDIR
@@ -169,7 +169,7 @@ build_qt5()
                 -skip enginio -skip graphicaleffects -skip location -skip multimedia \
                 -skip quick1 -skip quickcontrols -skip script -skip sensors -skip serialport \
                 -skip svg -skip webkit -skip webkit-examples -skip websockets -skip xmlpatterns
-  make -j"$NUMCPU" install
+  make install
 }
 
 build_qt5scintilla2()
@@ -191,7 +191,7 @@ build_qt5scintilla2()
   cd QScintilla-gpl-$version/Qt4Qt5/
   qmake CONFIG+=staticlib
   tmpinstalldir=$DEPLOYDIR/tmp/qsci$version
-  INSTALL_ROOT=$tmpinstalldir make -j"$NUMCPU" install
+  INSTALL_ROOT=$tmpinstalldir make install
 
   if [ -d $tmpinstalldir/usr/share ]; then
     cp -av $tmpinstalldir/usr/share $DEPLOYDIR/
@@ -278,7 +278,7 @@ build_bison()
   tar zxf bison-$version.tar.gz
   cd bison-$version
   ./configure --prefix=$DEPLOYDIR
-  make -j$NUMCPU
+  make
   make install
 }
 
@@ -294,7 +294,7 @@ build_git()
   tar zxf git-$version.tar.gz
   cd git-$version
   ./configure --prefix=$DEPLOYDIR
-  make -j$NUMCPU
+  make
   make install
 }
 
@@ -312,7 +312,7 @@ build_cmake()
   mkdir build
   cd build
   ../configure --prefix=$DEPLOYDIR
-  make -j$NUMCPU
+  make
   make install
 }
 
@@ -330,7 +330,7 @@ build_curl()
   mkdir build
   cd build
   ../configure --prefix=$DEPLOYDIR
-  make -j$NUMCPU
+  make
   make install
 }
 
@@ -352,7 +352,7 @@ build_gmp()
   mkdir build
   cd build
   ../configure --prefix=$DEPLOYDIR --enable-cxx
-  make -j$NUMCPU
+  make
   make install
 }
 
@@ -374,7 +374,7 @@ build_mpfr()
   mkdir build
   cd build
   ../configure --prefix=$DEPLOYDIR --with-gmp=$DEPLOYDIR
-  make -j$NUMCPU
+  make
   make install
   cd ..
 }
@@ -534,7 +534,7 @@ build_cgal()
   else
     cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.so -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.so -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.so -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DBOOST_LIBRARYDIR=$DEPLOYDIR/lib -DBOOST_INCLUDEDIR=$DEPLOYDIR/include -DCMAKE_BUILD_TYPE=$CGAL_BUILDTYPE -DBoost_DEBUG=$DEBUGBOOSTFIND -DBoost_NO_SYSTEM_PATHS=1 ..
   fi
-  make -j$NUMCPU
+  make
   make install
 }
 
@@ -728,7 +728,7 @@ build_eigen()
   mkdir build
   cd build
   cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DEIGEN_TEST_NO_OPENGL=1 ..
-  make -j$NUMCPU
+  make
   make install
 }
 
@@ -750,7 +750,7 @@ build_pkgconfig()
   cd "pkg-config-$version"
 
   ./configure --prefix="$DEPLOYDIR" --with-internal-glib
-  make -j$NUMCPU
+  make
   make install
 }
 
@@ -767,17 +767,17 @@ build_libffi()
   rm -rf "libffi-$version"
   if [ ! -f "libffi-$version.tar.gz" ]; then
     curl --insecure -LO "ftp://sourceware.org/pub/libffi/libffi-$version.tar.gz"
-    curl --insecure -LO "http://www.linuxfromscratch.org/patches/blfs/svn/libffi-$version-includedir-1.patch"
+    #curl --insecure -LO "http://www.linuxfromscratch.org/patches/blfs/svn/libffi-$version-includedir-1.patch"
   fi
   tar xzf "libffi-$version.tar.gz"
   cd "libffi-$version"
-  if [ ! "`command -v patch`" ]; then
-    echo cannot proceed, need 'patch' program
-    exit 1
-  fi
-  patch -Np1 -i ../libffi-3.0.13-includedir-1.patch
+  #if [ ! "`command -v patch`" ]; then
+  #  echo cannot proceed, need 'patch' program
+  #  exit 1
+  #fi
+  #patch -Np1 -i ../libffi-3.0.13-includedir-1.patch
   ./configure --prefix="$DEPLOYDIR"
-  make -j$NUMCPU
+  make
   make install
 }
 
@@ -806,8 +806,21 @@ check_env
 SRCDIR=$BASEDIR/src
 
 if [ ! $NUMCPU ]; then
-  echo "Note: The NUMCPU environment variable can be set for parallel builds"
-  NUMCPU=1
+  if [ "`echo $MAKEFLAGS | grep \\-j`" ]; then
+    echo "Using MAKEFLAGS environment variable for paralell builds:"
+    echo MAKEFLAGS=$MAKEFLAGS
+  else
+    echo "Note: The NUMCPU environment variable can be set for parallel builds"
+    NUMCPU=1
+  fi
+else
+  if [ "`echo $MAKEFLAGS | grep \\-j`" ]; then
+    echo "MAKEFLAGS already set for paralell build, cannot use NUMCPU"
+  else
+    MAKEFLAGS=$MAKEFLAGS" -j"$NUMCPU
+    echo "NUMCPU detected as $NUMCPU, adding -j option to MAKEFLAGS"
+    echo MAKEFLAGS=$MAKEFLAGS
+  fi
 fi
 
 if [ ! -d $BASEDIR/bin ]; then
@@ -915,6 +928,7 @@ LIBTOOL_VERSION=2.4.6
 
 if [ "`uname -a | grep -i freebsd | grep -v kfreebsd`" ]; then
   build_zlib 1.2.8
+  build_libffi 3.2.1
   build_pkgconfig 0.28
   build_autoconf 2.68
   build_automake 1.14
