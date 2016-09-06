@@ -686,6 +686,7 @@ build_zlib()
 {
   if [ -e $DEPLOYDIR/lib/libz.so ]; then
     echo zlib already installed
+    return
   fi
   VERSION=$1
   cd $BASEDIR/src
