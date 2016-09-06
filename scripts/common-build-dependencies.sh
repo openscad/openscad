@@ -28,7 +28,7 @@ build_freetype()
   ./configure --prefix="$DEPLOYDIR" $extra_config_flags
 
   MAKEBIN=make
-  if [ "`uname -a | grep freebsd`" ]; then
+  if [ "`uname -a | grep -i bsd`" ]; then
     MAKEBIN=gmake
     SAVEPATH=$PATH
     PATH=.:$PATH
@@ -37,7 +37,7 @@ build_freetype()
   $MAKEBIN -j"$NUMCPU"
   $MAKEBIN install
 
-  if [ "`uname -a | grep freebsd`" ]; then
+  if [ "`uname -a | grep -i bsd`" ]; then
     PATH=$SAVEPATH
   fi
 }
@@ -62,7 +62,7 @@ build_libxml2()
   ./configure --prefix="$DEPLOYDIR" --without-ftp --without-http --without-python
 
   MAKEBIN=make
-  if [ "`uname -a | grep freebsd`" ]; then
+  if [ "`uname -a | grep -i bsd`" ]; then
     MAKEBIN=gmake
   fi
 
@@ -168,7 +168,7 @@ build_glib2()
 
   MAKEBIN=make
   DTRACEFLAG=
-  if [ "`uname -a | grep freebsd`" ]; then
+  if [ "`uname -a | grep -i bsd`" ]; then
     DTRACEFLAG=--disable-dtrace
     MAKEBIN=gmake
   fi
@@ -234,7 +234,7 @@ build_harfbuzz()
   unset PKG_CONFIG
 
   MAKEBIN=make
-  if [ "`uname -a | grep freebsd`" ]; then
+  if [ "`uname -a | grep -i bsd`" ]; then
     MAKEBIN=gmake
   fi
   
