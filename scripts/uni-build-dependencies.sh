@@ -521,7 +521,7 @@ build_cgal()
     CGAL_BUILDTYPE="Debug"
   fi
 
-  if [ "`uname | grep freebsd`" ]; then
+  if [ "`uname | grep -i freebsd`" ]; then
     CGALLINK="-DCMAKE_SHARED_LINKER_FLAGS=-lpthread"
     CGALLINK="$CGALLINK -DCMAKE_MODULE_LINKER_FLAGS=-lpthread"
     CGALLINK="$CGALLINK -DCMAKE_EXE_LINKER_FLAGS=-lpthread"
@@ -584,7 +584,7 @@ build_glew()
     sed -ibak s/"CC = cc"/"# CC = cc"/ config/Makefile.linux
   fi
 
-  if [ "`uname -a | grep freebsd | grep -v kfreebsd`" ]; then
+  if [ "`uname -a | grep -i freebsd | grep -v kfreebsd`" ]; then
     if [ ! -d /usr/X11R6 ]; then
       sed -ibak s/"\\-L\\/usr\\/X11R6\\/lib"/"-fPIC\\ \\-L\\/usr\\/local\\/lib"/ config/Makefile.freebsd
       sed -ibak s/"\\-I\\/usr\\/X11R6\\/include"/"-fPIC\\ \\-I\\/usr\\/local\\/include"/ config/Makefile.freebsd
@@ -912,7 +912,7 @@ LIBXML2_VERSION=2.9.1
 HARFBUZZ_VERSION=0.9.35
 LIBTOOL_VERSION=2.4.6
 
-if [ "`uname -a | grep freebsd | grep -v kfreebsd`" ]; then
+if [ "`uname -a | grep -i freebsd | grep -v kfreebsd`" ]; then
   build_zlib 1.2.8
   build_pkgconfig 0.28
   build_autoconf 2.68
