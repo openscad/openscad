@@ -226,7 +226,7 @@ if [ -e /etc/issue ]; then
  else
   unknown
  fi
-elif [ "`uname -a | grep -i freebsd.10.[3-9]`" ]; then
+elif [ "`uname -a | grep -i freebsd.1[0-9].[0-9]`" ]; then
  get_freebsd_10_3_deps
 elif [ "`uname | grep -i freebsd`" ]; then
  get_freebsd_deps
