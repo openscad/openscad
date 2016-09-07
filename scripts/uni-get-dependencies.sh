@@ -61,11 +61,12 @@ get_freebsd_10_3_deps()
   #  qt5-gui qt5-opengl qt5-qmake \
 }
 
-get_netbsd_deps()
+get_netbsd7_deps()
 {
  pkgin install bison boost cmake git bash eigen3 flex gmake gmp mpfr \
   qt4 glew cgal opencsg python27 curl \
-  ImageMagick glib2 gettext
+  ImageMagick glib2 gettext \
+  fontconfig qt4-qscintilla harfbuzz freetype2 ragel libxml2
 }
 
 get_opensuse_deps()
@@ -228,10 +229,12 @@ if [ -e /etc/issue ]; then
  fi
 elif [ "`uname -a | grep -i freebsd.1[0-9].[0-9]`" ]; then
  get_freebsd_10_3_deps
-elif [ "`uname | grep -i freebsd`" ]; then
+elif [ "`uname -a | grep -i freebsd`" ]; then
  get_freebsd_deps
-elif [ "`uname | grep -i netbsd`" ]; then
- get_netbsd_deps
+elif [ "`uname -a | grep -i netbsd.6`" ]; then
+ echo sorry netbsd 6 is not advised, you have to hack it yourself
+elif [ "`uname -a | grep -i netbsd`" ]; then
+ get_netbsd7_deps
 else
  unknown
 fi
