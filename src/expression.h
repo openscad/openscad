@@ -14,7 +14,6 @@ public:
 	Expression(const Location &loc) : ASTNode(loc) {}
 	virtual ~Expression() {}
     virtual bool isLiteral() const;
-	virtual bool isListComprehension() const;
 	virtual ValuePtr evaluate(const class Context *context) const = 0;
 	virtual void print(std::ostream &stream) const = 0;
 };
@@ -176,7 +175,6 @@ private:
 
 class ListComprehension : public Expression
 {
-	virtual bool isListComprehension() const;
 public:
 	ListComprehension(const Location &loc);
 	~ListComprehension() = default;

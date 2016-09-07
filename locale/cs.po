@@ -21,7 +21,7 @@ msgstr ""
 
 #: objects/ui_AboutDialog.h:103 src/AboutDialog.h:13
 msgid "About OpenSCAD"
-msgstr "O OpenSCADu"
+msgstr "O aplikaci OpenSCAD"
 
 #: objects/ui_AboutDialog.h:105 objects/ui_launchingscreen.h:305
 msgid ""

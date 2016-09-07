@@ -189,10 +189,12 @@ build_harfbuzz()
   fi
   tar xzf "harfbuzz-$version.tar.gz"
   cd "harfbuzz-$version"
+  # we do not need gtkdocize
+  sed -e "s/gtkdocize/echo/g" autogen.sh > autogen.sh.bak && mv autogen.sh.bak autogen.sh
   # disable doc directories as they make problems on Mac OS Build
   sed -e "s/SUBDIRS = src util test docs/SUBDIRS = src util test/g" Makefile.am > Makefile.am.bak && mv Makefile.am.bak Makefile.am
   sed -e "s/^docs.*$//" configure.ac > configure.ac.bak && mv configure.ac.bak configure.ac
-  ./autogen.sh --prefix="$DEPLOYDIR" --with-freetype=yes --with-gobject=no --with-cairo=no --with-icu=no $extra_config_flags
+  sh ./autogen.sh --prefix="$DEPLOYDIR" --with-freetype=yes --with-gobject=no --with-cairo=no --with-icu=no $extra_config_flags
   make -j$NUMCPU
   make install
 }

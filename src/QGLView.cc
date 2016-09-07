@@ -44,6 +44,7 @@
 #include "OpenCSGWarningDialog.h"
 
 #include <stdio.h>
+#include <sstream>
 
 #ifdef ENABLE_OPENCSG
 #  include <opencsg.h>
@@ -109,16 +110,25 @@ void QGLView::initializeGL()
 
 std::string QGLView::getRendererInfo() const
 {
-  std::string glewinfo = glew_dump();
-  std::string glextlist = glew_extensions_dump();
-	// Don't translate as translated text in the Library Info dialog is not wanted
-  return glewinfo + 
+  std::stringstream info;
+  info << glew_dump();
+  // Don't translate as translated text in the Library Info dialog is not wanted
 #ifdef USE_QOPENGLWIDGET
-		std::string("\nUsing QOpenGLWidget\n\n")
+  info << "\nQt graphics widget: QOpenGLWidget";
+  QSurfaceFormat qsf = this->format();
+  int rbits = qsf.redBufferSize();
+  int gbits = qsf.greenBufferSize();
+  int bbits = qsf.blueBufferSize();
+  int abits = qsf.alphaBufferSize();
+  int dbits = qsf.depthBufferSize();
+  int sbits = qsf.stencilBufferSize();
+  info << boost::format("\nQSurfaceFormat: RGBA(%d%d%d%d), depth(%d), stencil(%d)\n\n") %
+    rbits % gbits % bbits % abits % dbits % sbits;
 #else
-		std::string("\nUsing QGLWidget\n\n")
+  info << "\nQt graphics widget: QGLWidget";
 #endif
-		+ glextlist;
+  info << glew_extensions_dump();
+  return info.str();
 }
 
 #ifdef ENABLE_OPENCSG

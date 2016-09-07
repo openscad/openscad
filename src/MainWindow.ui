@@ -272,7 +272,7 @@
      <x>0</x>
      <y>0</y>
      <width>1118</width>
-     <height>22</height>
+     <height>19</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -690,6 +690,9 @@
    </property>
   </action>
   <action name="editActionUndo">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="../openscad.qrc">
      <normaloff>:/images/Command-Undo-32.png</normaloff>:/images/Command-Undo-32.png</iconset>

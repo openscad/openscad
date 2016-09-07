@@ -38,6 +38,10 @@
 
 // unnamed namespace
 namespace {
+	bool isListComprehension(const shared_ptr<Expression> &e) {
+		return dynamic_cast<const ListComprehension *>(e.get());
+	}
+
 	Value::VectorType flatten(Value::VectorType const& vec) {
 		int n = 0;
 		for (unsigned int i = 0; i < vec.size(); i++) {
@@ -71,10 +75,6 @@ namespace /* anonymous*/ {
 
 }
 
-bool Expression::isListComprehension() const
-{
-	return false;
-}
 
 bool Expression::isLiteral() const
 {
@@ -329,7 +329,7 @@ ValuePtr Vector::evaluate(const Context *context) const
 	Value::VectorType vec;
 	for(const auto &e : this->children) {
 		ValuePtr tmpval = e->evaluate(context);
-		if (e->isListComprehension()) {
+		if (isListComprehension(e)) {
 			const Value::VectorType result = tmpval->toVector();
 			for (size_t i = 0;i < result.size();i++) {
 				vec.push_back(result[i]);
@@ -436,11 +436,6 @@ ListComprehension::ListComprehension(const Location &loc) : Expression(loc)
 {
 }
 
-bool ListComprehension::isListComprehension() const
-{
-	return true;
-}
-
 LcIf::LcIf(Expression *cond, Expression *ifexpr, Expression *elseexpr, const Location &loc)
 	: ListComprehension(loc), cond(cond), ifexpr(ifexpr), elseexpr(elseexpr)
 {
@@ -456,7 +451,7 @@ ValuePtr LcIf::evaluate(const Context *context) const
 	
     Value::VectorType vec;
     if (expr) {
-        if (expr->isListComprehension()) {
+        if (isListComprehension(expr)) {
             return expr->evaluate(context);
         } else {
            vec.push_back(expr->evaluate(context));
@@ -505,7 +500,7 @@ ValuePtr LcEach::evaluate(const Context *context) const
         vec.push_back(v);
     }
 
-    if (this->expr->isListComprehension()) {
+    if (isListComprehension(this->expr)) {
         return ValuePtr(flatten(vec));
     } else {
         return ValuePtr(vec);
@@ -557,7 +552,7 @@ ValuePtr LcFor::evaluate(const Context *context) const
         vec.push_back(this->expr->evaluate(&c));
     }
 
-    if (this->expr->isListComprehension()) {
+    if (isListComprehension(this->expr)) {
         return ValuePtr(flatten(vec));
     } else {
         return ValuePtr(vec);
@@ -594,7 +589,7 @@ ValuePtr LcForC::evaluate(const Context *context) const
         c.apply_variables(tmp);
     }    
 
-    if (this->expr->isListComprehension()) {
+    if (isListComprehension(this->expr)) {
         return ValuePtr(flatten(vec));
     } else {
         return ValuePtr(vec);
