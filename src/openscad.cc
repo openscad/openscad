@@ -167,11 +167,11 @@ static void version()
 
 static void info()
 {
-	std::cout << LibraryInfo::info() << "\n\n";
+	std::cout << LibraryInfo::info() << std::endl;
 
 	try {
 		OffscreenView glview(512,512);
-		std::cout << glview.getRendererInfo() << "\n";
+		std::cout << glview.getRendererInfo() << std::endl;
 	} catch (int error) {
 		PRINTB("Can't create OpenGL OffscreenView. Code: %i. Exiting.\n", error);
 		exit(1);
