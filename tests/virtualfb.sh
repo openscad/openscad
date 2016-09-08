@@ -3,7 +3,7 @@
 # Toggle the Virtual Framebuffer
 # If started, stop. If stopped, start.
 
-debug=1
+debug=$DEBUG_VIRTUALFB
 
 start()
 {
@@ -71,11 +71,15 @@ stop()
   if [ -e $LOCKFILE ]; then
     rm $LOCKFILE
   fi
-  cat virtualfb1.log
-  cat virtualfb2.log
-  echo 'dump ~/.xession-errors:'
-  cat ~/.xsession-errors
-  echo 'end  ~/.xession-errors'
+  if [ $debug ]; then
+    echo 'virtualfb1.log:(stdout)'
+    cat virtualfb1.log
+    echo 'virtualfb2.log:(stderr)'
+    cat virtualfb2.log
+    echo 'dump ~/.xession-errors:'
+    cat ~/.xsession-errors
+    echo 'end  ~/.xession-errors'
+  fi
   rm ./virtualfb.PID
   rm ./virtualfb.DISPLAY
 }
