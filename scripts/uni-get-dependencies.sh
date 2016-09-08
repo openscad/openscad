@@ -66,7 +66,9 @@ get_netbsd7_deps()
  pkgin install bison boost cmake git bash eigen3 flex gmake gmp mpfr \
   qt4 glew cgal opencsg python27 curl \
   ImageMagick glib2 gettext \
-  fontconfig qt4-qscintilla harfbuzz freetype2 ragel libxml2
+  fontconfig qt4-qscintilla harfbuzz freetype2 ragel libxml2 \
+  modular-xorg-server modular-xorg-fonts
+  # xorg-server has Xvfb virtual framebuffer
 }
 
 get_opensuse_deps()
