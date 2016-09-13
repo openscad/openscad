@@ -44,7 +44,7 @@ PACKAGES=(
     "gettext 0.19.8"
     "libffi 3.2.1"
     "glib2 2.46.1"
-    "opencsg 1.4.0"
+    "opencsg 1.4.1"
     "freetype 2.6.3"
     "ragel 6.9"
     "harfbuzz 1.2.7"
@@ -420,7 +420,7 @@ build_opencsg()
   tar xzf OpenCSG-$version.tar.gz
   cd OpenCSG-$version
   patch -p1 < $OPENSCADDIR/patches/OpenCSG-$version-MacOSX-port.patch
-  qmake -r QMAKE_CXXFLAGS+="-I$DEPLOYDIR/include $CXXSTDFLAGS" QMAKE_LFLAGS+="-L$DEPLOYDIR/lib $LDSTDFLAGS" CONFIG+="x86_64" DESTDIR=$DEPLOYDIR
+  qmake -r INSTALLDIR=$DEPLOYDIR
   make install
   install_name_tool -id @rpath/libopencsg.dylib $DEPLOYDIR/lib/libopencsg.dylib
 }
