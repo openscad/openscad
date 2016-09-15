@@ -203,8 +203,10 @@ if [ -e /etc/issue ]; then
   get_mageia_deps
  elif [ "`grep -i qomo /etc/issue`" ]; then
   get_qomo_deps
- elif [ "`grep -i fedora.release /etc/fedora-release`" ]; then
-  get_fedora_deps_dnf
+ elif [ -e /etc/fedora-release ]; then
+  if [ "`grep -i fedora.release /etc/fedora-release`" ]; then
+    get_fedora_deps_dnf
+  fi
  elif [ "`command -v rpm`" ]; then
   if [ "`rpm -qa | grep altlinux`" ]; then
    get_altlinux_deps
