@@ -22,7 +22,8 @@ public slots:
 
 private slots:
 	void checkboxState(bool state);
-    void checkboxOpenState(int state);
+    void checkboxOpenState(bool state);
+    void checkboxOpenChangeState(int state);
 	void enableRecentButton(const QModelIndex &current, const QModelIndex &previous);
 	void enableExampleButton(QTreeWidgetItem *current, QTreeWidgetItem *previous);
 	void openUserFile();

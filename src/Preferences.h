@@ -44,6 +44,7 @@ public slots:
 	void on_undockCheckBox_toggled(bool);
 	void on_checkNowButton_clicked();
 	void on_launcherBox_toggled(bool);
+    void on_launcherBox2_toggled(bool);
 	void on_editorType_currentIndexChanged(const QString &);
 
 	void on_checkBoxShowWarningsIn3dView_toggled(bool);

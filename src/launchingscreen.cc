@@ -65,8 +65,12 @@ LaunchingScreen::LaunchingScreen(QWidget *parent) : QDialog(parent)
     connect(this->recentList->selectionModel(), SIGNAL(currentRowChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(enableRecentButton(const QModelIndex &, const QModelIndex &)));
     connect(this->treeWidget, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)), this, SLOT(enableExampleButton(QTreeWidgetItem *, QTreeWidgetItem *)));
 
+    connect(this->recentList, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(openRecent()));
+    connect(this->treeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem *,int)), this, SLOT(openExample()));
+
     connect(this->checkBox, SIGNAL(toggled(bool)), this, SLOT(checkboxState(bool)));
-    connect(this->checkBoxOpen, SIGNAL(stateChanged(int)), this, SLOT(checkboxOpenState(int)));
+    connect(this->checkBoxOpen, SIGNAL(toggled(bool)), this, SLOT(checkboxOpenState(bool)));
+    connect(this->checkBoxOpen, SIGNAL(stateChanged(int)), this, SLOT(checkboxOpenChangeState(int)));
 }
 
 LaunchingScreen::~LaunchingScreen()
@@ -138,7 +142,12 @@ void LaunchingScreen::checkboxState(bool state)
 	settings.setValue("launcher/showOnStartup", !state);
 }
 
-void LaunchingScreen::checkboxOpenState(int state)
+void LaunchingScreen::checkboxOpenState(bool state) {
+    QSettings settings;
+    settings.setValue("launcher/showOnMethodOpen", !state);
+}
+
+void LaunchingScreen::checkboxOpenChangeState(int state)
 {
     if (state == 0) {
         disconnect(this->recentList, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(openRecent()));
