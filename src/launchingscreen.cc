@@ -142,7 +142,8 @@ void LaunchingScreen::checkboxState(bool state)
 	settings.setValue("launcher/showOnStartup", !state);
 }
 
-void LaunchingScreen::checkboxOpenState(bool state) {
+void LaunchingScreen::checkboxOpenState(bool state)
+{
     QSettings settings;
     settings.setValue("launcher/showOnMethodOpen", !state);
 }
