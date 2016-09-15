@@ -160,6 +160,17 @@ get_ubuntu_16_deps()
   get_debian_8_deps
 }
 
+get_neon_deps()
+{
+  get_debian_deps
+  apt-get -y install libxi-dev libxml2-dev libfontconfig1-dev
+  apt-get -y install libharfbuzz-dev libxml2-dev
+  # qt5 scintilla is broken on kde neon. use qt4 # issue 1790
+  apt-get -y install libcgal-dev
+  apt-get -y install libqt4-dev libqscintilla2-dev libqt4-opengl-dev
+  echo on KDE Neon please use qmake-qt4 to build
+}
+
 unknown()
 {
  echo "Unknown system type. Please install the dependency packages listed"
@@ -171,8 +182,8 @@ if [ -e /etc/issue ]; then
   get_ubuntu_14_deps
  elif [ "`grep -i ubuntu.1[6-9] /etc/issue`" ]; then
   get_ubuntu_16_deps
- elif [ "`grep -i "KDE neon 5.7" /etc/issue`" ]; then
-  get_ubuntu_16_deps
+ elif [ "`grep -i KDE.neon /etc/issue`" ]; then
+  get_neon_deps
  elif [ "`grep -i ubuntu /etc/issue`" ]; then
   get_debian_deps
  elif [ "`grep -i elementary.*freya /etc/issue`" ]; then
