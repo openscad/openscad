@@ -171,6 +171,8 @@ if [ -e /etc/issue ]; then
   get_ubuntu_14_deps
  elif [ "`grep -i ubuntu.1[6-9] /etc/issue`" ]; then
   get_ubuntu_16_deps
+ elif [ "`grep -i "KDE neon 5.7" /etc/issue`" ]; then
+  get_ubuntu_16_deps
  elif [ "`grep -i ubuntu /etc/issue`" ]; then
   get_debian_deps
  elif [ "`grep -i elementary.*freya /etc/issue`" ]; then
