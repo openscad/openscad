@@ -443,8 +443,13 @@ if (WIN32)
   set(FLEX_UNISTD_FLAG "-DYY_NO_UNISTD_H")
 endif()
 FLEX_TARGET(OpenSCADlexer ../src/lexer.l ${CMAKE_CURRENT_BINARY_DIR}/lexer.cpp COMPILE_FLAGS "-Plexer ${FLEX_UNISTD_FLAG}")
+FLEX_TARGET(OpenSCADcommentlexer ../src/comment_lexer.l ${CMAKE_CURRENT_BINARY_DIR}/comment_lexer.cpp COMPILE_FLAGS " ${FLEX_UNISTD_FLAG}")
 BISON_TARGET(OpenSCADparser ../src/parser.y ${CMAKE_CURRENT_BINARY_DIR}/parser_yacc.c COMPILE_FLAGS "-p parser")
+
+BISON_TARGET(OpenSCADcommentparser ../src/comment_parser.y ${CMAKE_CURRENT_BINARY_DIR}/comment_parser.cpp COMPILE_FLAGS "")
+
 ADD_FLEX_BISON_DEPENDENCY(OpenSCADlexer OpenSCADparser)
+ADD_FLEX_BISON_DEPENDENCY(OpenSCADcommentlexer OpenSCADcommentparser)
 set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/parser_yacc.c PROPERTIES LANGUAGE "CXX")
 
 # CGAL
@@ -680,6 +685,8 @@ set(CORE_SOURCES
   tests-common.cc 
   ../src/parsersettings.cc
   ../src/linalg.cc
+  ../src/assignment.cc
+  ../src/annotation.cc
   ../src/colormap.cc
   ../src/Camera.cc
   ../src/handle_dep.cc 
@@ -751,7 +758,9 @@ set(CORE_SOURCES
   ../src/polyclipping/clipper.cpp
   ../src/${PLATFORMUTILS_SOURCE}
   ${FLEX_OpenSCADlexer_OUTPUTS}
-  ${BISON_OpenSCADparser_OUTPUTS})
+  ${BISON_OpenSCADparser_OUTPUTS}
+  ${FLEX_OpenSCADcommentlexer_OUTPUTS}
+  ${BISON_OpenSCADcommentparser_OUTPUTS})
 
 set(NOCGAL_SOURCES
   ../src/builtin.cc 
@@ -1601,6 +1610,28 @@ add_cmdline_test(svgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/
 #
 add_failing_test(stlfailedtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/shouldfail.py ARGS --openscad=${OPENSCAD_BINPATH} --retval=1 -o SUFFIX stl FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/empty-union.scad)
 add_failing_test(offfailedtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/shouldfail.py ARGS --openscad=${OPENSCAD_BINPATH} --retval=1 -o SUFFIX off FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/empty-union.scad)
+
+#
+# Customizer tests
+#
+
+add_cmdline_test(customizertest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX ast FILES
+                 ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/description.scad
+                 ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/parameter.scad
+                 ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/allmodulescomment.scad
+                 ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/allfunctionscomment.scad
+                 ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/allexpressionscomment.scad
+                 ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/nativeParameter.scad
+                 ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/group.scad
+                 )
+
+add_cmdline_test(customizertest_secondset EXE ${OPENSCAD_BINPATH} ARGS -p ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/sign.json -P secondset -o SUFFIX ast FILES ${CMAKE_SOURCE_DIR}/../examples/Parametric/sign.scad)
+add_cmdline_test(customizertest_final EXE ${OPENSCAD_BINPATH} ARGS -p ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/sign.json -P final -o SUFFIX ast FILES ${CMAKE_SOURCE_DIR}/../examples/Parametric/sign.scad)
+
+add_cmdline_test(customizertest-first EXE ${OPENSCAD_BINPATH} ARGS -p ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/setofparameter.json -P firstSet -o SUFFIX ast FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/setofparameter.scad)
+add_cmdline_test(customizertest-wrong EXE ${OPENSCAD_BINPATH} ARGS -p ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/setofparameter.json -P wrongSetValues -o SUFFIX ast FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/setofparameter.scad)
+add_cmdline_test(customizertest-incomplete EXE ${OPENSCAD_BINPATH} ARGS -p ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/setofparameter.json -P thirdSet -o SUFFIX ast FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/setofparameter.scad)
+add_cmdline_test(customizertest-imgset EXE ${OPENSCAD_BINPATH} ARGS -p ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/setofparameter.json -P imagine -o SUFFIX ast FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/setofparameter.scad)
 
 #
 # Add experimental tests

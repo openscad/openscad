@@ -51,3 +51,4 @@ std::string AbstractModule::dump(const std::string &indent, const std::string &n
 	dump << indent << "abstract module " << name << "();\n";
 	return dump.str();
 }
+

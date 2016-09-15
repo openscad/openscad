@@ -17,6 +17,9 @@
 #include <QMutex>
 #include <QTime>
 #include <QIODevice>
+#include"Assignment.h"
+
+extern AssignmentList * parser(const char *text);
 
 class MainWindow : public QMainWindow, public Ui::MainWindow
 {
@@ -64,6 +67,7 @@ public:
         QLabel *versionLabel;
         QWidget *editorDockTitleWidget;
         QWidget *consoleDockTitleWidget;
+        QWidget *parameterDockTitleWidget;
         
 	QString editortype;	
 	bool useScintilla;
@@ -95,6 +99,7 @@ private slots:
     void updateActionUndoState();
 
 private:
+        
         void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
         void handleFileDrop(const QString &filename);
 	void refreshDocument();
@@ -151,6 +156,7 @@ private slots:
 	void hideEditor();
 	void hideConsole();
 	void showConsole();
+	void hideParameters();
 
 private slots:
 	void selectFindType(int);
@@ -205,8 +211,10 @@ public slots:
         void on_editorDock_visibilityChanged(bool);
         void on_consoleDock_visibilityChanged(bool);
         void on_toolButtonCompileResultClose_clicked();
+        void on_parameterDock_visibilityChanged(bool);
         void editorTopLevelChanged(bool);
         void consoleTopLevelChanged(bool);
+        void parameterTopLevelChanged(bool);
 #ifdef ENABLE_OPENCSG
 	void viewModePreview();
 #endif
