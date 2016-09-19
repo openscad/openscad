@@ -26,13 +26,12 @@
 
 #include "node.h"
 #include "module.h"
+#include "ModuleInstantiation.h"
 #include "progress.h"
-#include "visitor.h"
 #include "stl-utils.h"
 
 #include <iostream>
 #include <algorithm>
-#include <boost/foreach.hpp>
 
 size_t AbstractNode::idx_counter;
 
@@ -47,34 +46,19 @@ AbstractNode::~AbstractNode()
 	std::for_each(this->children.begin(), this->children.end(), del_fun<AbstractNode>());
 }
 
-Response AbstractNode::accept(class State &state, Visitor &visitor) const
-{
-	return visitor.visit(state, *this);
-}
-
-Response AbstractIntersectionNode::accept(class State &state, Visitor &visitor) const
-{
-	return visitor.visit(state, *this);
-}
-
-Response AbstractPolyNode::accept(class State &state, Visitor &visitor) const
-{
-	return visitor.visit(state, *this);
-}
-
-Response LeafNode::accept(class State &state, Visitor &visitor) const
-{
-	return visitor.visit(state, *this);
-}
-
 std::string AbstractNode::toString() const
 {
 	return this->name() + "()";
 }
 
-std::string AbstractNode::name() const
+std::string GroupNode::name() const
 {
 	return "group";
+}
+
+std::string RootNode::name() const
+{
+	return "root";
 }
 
 std::string AbstractIntersectionNode::toString() const
@@ -109,9 +93,9 @@ std::ostream &operator<<(std::ostream &stream, const AbstractNode &node)
 // Do we have an explicit root node (! modifier)?
 AbstractNode *find_root_tag(AbstractNode *n)
 {
-  BOOST_FOREACH(AbstractNode *v, n->children) {
+  for(auto v : n->children) {
     if (v->modinst->tag_root) return v;
-    if (AbstractNode *vroot = find_root_tag(v)) return vroot;
+    if (auto vroot = find_root_tag(v)) return vroot;
   }
   return NULL;
 }

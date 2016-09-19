@@ -26,7 +26,6 @@
 
 #include <iostream>
 
-#include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
 
@@ -104,7 +103,7 @@ FontCache::FontCache()
 	// For system installs and dev environments, we leave this alone
 	fs::path fontdir(PlatformUtils::resourcePath("fonts"));
 	if (fs::is_regular_file(fontdir / "fonts.conf")) {
-		PlatformUtils::setenv("FONTCONFIG_PATH", boosty::stringy(boosty::absolute(fontdir)).c_str(), 0);
+		PlatformUtils::setenv("FONTCONFIG_PATH", (fs::absolute(fontdir).generic_string()).c_str(), 0);
 	}
 
 	// Just load the configs. We'll build the fonts once all configs are loaded
@@ -117,8 +116,8 @@ FontCache::FontCache()
 	// Add the built-in fonts & config
 	fs::path builtinfontpath(PlatformUtils::resourcePath("fonts"));
 	if (fs::is_directory(builtinfontpath)) {
-		FcConfigParseAndLoad(this->config, reinterpret_cast<const FcChar8 *>(boosty::stringy(builtinfontpath).c_str()), false);
-		add_font_dir(boosty::stringy(boosty::canonical(builtinfontpath)));
+		FcConfigParseAndLoad(this->config, reinterpret_cast<const FcChar8 *>(builtinfontpath.generic_string().c_str()), false);
+		add_font_dir(boosty::canonical(builtinfontpath).generic_string());
 	}
 
 	const char *home = getenv("HOME");
@@ -137,7 +136,7 @@ FontCache::FontCache()
 		for (string_split_iterator it = boost::make_split_iterator(paths, boost::first_finder(sep, boost::is_iequal())); it != string_split_iterator(); it++) {
 			const fs::path p(boost::copy_range<std::string>(*it));
 			if (fs::exists(p) && fs::is_directory(p)) {
-				std::string path = boosty::absolute(p).string();
+				std::string path = fs::absolute(p).string();
 				add_font_dir(path);
 			}
 		}

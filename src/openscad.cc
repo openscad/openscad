@@ -27,6 +27,7 @@
 #include "openscad.h"
 #include "node.h"
 #include "module.h"
+#include "ModuleInstantiation.h"
 #include "modcontext.h"
 #include "value.h"
 #include "export.h"
@@ -42,6 +43,8 @@
 #include "stackcheck.h"
 #include "CocoaUtils.h"
 #include "FontCache.h"
+#include "OffscreenView.h"
+#include "GeometryEvaluator.h"
 
 #include <string>
 #include <vector>
@@ -52,9 +55,8 @@
 #include "cgalutils.h"
 #endif
 
-#include "csgterm.h"
-#include "CSGTermEvaluator.h"
-#include "CsgInfo.h"
+#include "csgnode.h"
+#include "CSGTreeEvaluator.h"
 
 #include <sstream>
 
@@ -62,8 +64,6 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/foreach.hpp>
-#include "boosty.h"
 
 #ifdef __APPLE__
 #include "AppleEvents.h"
@@ -169,15 +169,13 @@ static void info()
 {
 	std::cout << LibraryInfo::info() << "\n\n";
 
-	CsgInfo csgInfo = CsgInfo();
 	try {
-		csgInfo.glview = new OffscreenView(512,512);
+		OffscreenView glview(512,512);
+		std::cout << glview.getRendererInfo() << "\n";
 	} catch (int error) {
 		PRINTB("Can't create OpenGL OffscreenView. Code: %i. Exiting.\n", error);
 		exit(1);
 	}
-
-	std::cout << csgInfo.glview->getRendererInfo() << "\n";
 
 	exit(0);
 }
@@ -211,7 +209,7 @@ Camera get_camera(po::variables_map vm)
 		split(strs, vm["camera"].as<string>(), is_any_of(","));
 		if ( strs.size()==6 || strs.size()==7 ) {
 			try {
-				BOOST_FOREACH(string &s, strs) cam_parameters.push_back(lexical_cast<double>(s));
+				for(const auto &s : strs) cam_parameters.push_back(lexical_cast<double>(s));
 				camera.setup(cam_parameters);
 			}
 			catch (bad_lexical_cast &) {
@@ -273,7 +271,6 @@ Camera get_camera(po::variables_map vm)
 }
 
 #ifndef OPENSCAD_NOGUI
-#include <QApplication>
 #include <QSettings>
 #define OPENSCAD_QTGUI 1
 #endif
@@ -288,7 +285,7 @@ static bool checkAndExport(shared_ptr<const Geometry> root_geom, unsigned nd,
 		PRINT("Current top level object is empty.");
 		return false;
 	}
-	exportFileByName(root_geom.get(), format, filename, filename);
+	exportFileByName(root_geom, format, filename, filename);
 	return true;
 }
 
@@ -305,7 +302,7 @@ void set_render_color_scheme(const std::string color_scheme, const bool exit_if_
 		
 	if (exit_if_not_found) {
 		PRINTB("Unknown color scheme '%s'. Valid schemes:", color_scheme);
-		BOOST_FOREACH (const std::string &name, ColorMap::inst()->colorSchemeNames()) {
+		for(const auto &name : ColorMap::inst()->colorSchemeNames()) {
 			PRINT(name);
 		}
 		exit(1);
@@ -314,13 +311,15 @@ void set_render_color_scheme(const std::string color_scheme, const bool exit_if_
 	}
 }
 
+#include <QCoreApplication>
+
 int cmdline(const char *deps_output_file, const std::string &filename, Camera &camera, const char *output_file, const fs::path &original_path, Render::type renderer, int argc, char ** argv )
 {
 #ifdef OPENSCAD_QTGUI
 	QCoreApplication app(argc, argv);
-	const std::string application_path = QApplication::instance()->applicationDirPath().toLocal8Bit().constData();
+	const std::string application_path = QCoreApplication::instance()->applicationDirPath().toLocal8Bit().constData();
 #else
-	const std::string application_path = boosty::stringy(boosty::absolute(boost::filesystem::path(argv[0]).parent_path()));
+	const std::string application_path = fs::absolute(boost::filesystem::path(argv[0]).parent_path()).generic_string();
 #endif	
 	PlatformUtils::registerApplicationPath(application_path);
 	parser_init();
@@ -347,7 +346,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	const char *nefdbg_output_file = NULL;
 	const char *nef3_output_file = NULL;
 
-	std::string suffix = boosty::extension_str( output_file );
+	std::string suffix = fs::path(output_file).extension().generic_string();
 	boost::algorithm::to_lower( suffix );
 
 	if (suffix == ".stl") stl_output_file = output_file;
@@ -394,16 +393,15 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	}
 	std::string text((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 	text += "\n" + commandline_commands;
-	fs::path abspath = boosty::absolute(filename);
-	std::string parentpath = boosty::stringy(abspath.parent_path());
-	root_module = parse(text.c_str(), parentpath.c_str(), false);
+	fs::path abspath = fs::absolute(filename);
+	root_module = parse(text.c_str(), abspath, false);
 	if (!root_module) {
 		PRINTB("Can't parse file '%s'!\n", filename.c_str());
 		return 1;
 	}
 	root_module->handleDependencies();
 
-	fs::path fpath = boosty::absolute(fs::path(filename));
+	fs::path fpath = fs::absolute(fs::path(filename));
 	fs::path fparent = fpath.parent_path();
 	fs::current_path(fparent);
 	top_ctx.setDocumentPath(fparent.string());
@@ -442,11 +440,8 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		}
 	}
 	else if (term_output_file) {
-		std::vector<shared_ptr<CSGTerm> > highlight_terms;
-		std::vector<shared_ptr<CSGTerm> > background_terms;
-
-		CSGTermEvaluator csgRenderer(tree);
-		shared_ptr<CSGTerm> root_raw_term = csgRenderer.evaluateCSGTerm(*root_node, highlight_terms, background_terms);
+		CSGTreeEvaluator csgRenderer(tree);
+		shared_ptr<CSGNode> root_raw_term = csgRenderer.buildCSGTree(*root_node);
 
 		fs::current_path(original_path);
 		std::ofstream fstream(term_output_file);
@@ -468,6 +463,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 				(renderer==Render::OPENCSG || renderer==Render::THROWNTOGETHER)) {
 			// echo or OpenCSG png -> don't necessarily need geometry evaluation
 		} else {
+			// Force creation of CGAL objects (for testing)
 			root_geom = geomevaluator.evaluateGeometry(*tree.root(), true);
 			if (!root_geom) root_geom.reset(new CGAL_Nef_polyhedron());
 			if (renderer == Render::CGAL && root_geom->getDimension() == 3) {
@@ -571,11 +567,9 @@ Q_IMPORT_PLUGIN(qtaccessiblewidgets)
 #endif // QT_VERSION
 #endif // MINGW64/MINGW32/MSCVER
 #include "MainWindow.h"
+#include "OpenSCADApp.h"
 #include "launchingscreen.h"
 #include "qsettings.h"
-  #ifdef __APPLE__
-  #include "EventFilter.h"
-  #endif
 #include <QString>
 #include <QDir>
 #include <QFileInfo>
@@ -591,7 +585,7 @@ Q_DECLARE_METATYPE(shared_ptr<const Geometry>);
 static QString assemblePath(const fs::path& absoluteBaseDir,
                             const string& fileName) {
   if (fileName.empty()) return "";
-  QString qsDir = QString::fromLocal8Bit( boosty::stringy( absoluteBaseDir ).c_str() );
+  QString qsDir = QString::fromLocal8Bit(absoluteBaseDir.generic_string().c_str() );
   QString qsFile = QString::fromLocal8Bit( fileName.c_str() );
   // if qsfile is absolute, dir is ignored. (see documentation of QFileInfo)
   QFileInfo info( qsDir, qsFile );
@@ -620,23 +614,21 @@ void dialogThreadFunc(FontCacheInitializer *initializer)
 
 void dialogInitHandler(FontCacheInitializer *initializer, void *)
 {
-	MainWindow *mainw = *MainWindow::getWindows()->begin();
-
 	QFutureWatcher<void> futureWatcher;
-	QObject::connect(&futureWatcher, SIGNAL(finished()), mainw, SLOT(hideFontCacheDialog()));
+	QObject::connect(&futureWatcher, SIGNAL(finished()), scadApp, SLOT(hideFontCacheDialog()));
 
 	QFuture<void> future = QtConcurrent::run(boost::bind(dialogThreadFunc, initializer));
 	futureWatcher.setFuture(future);
 
 	// We don't always get the started() signal, so we start manually
-	QMetaObject::invokeMethod(mainw, "showFontCacheDialog");
+	QMetaObject::invokeMethod(scadApp, "showFontCacheDialog");
 
 	// Block, in case we're in a separate thread, or the dialog was closed by the user
 	futureWatcher.waitForFinished();
 
 	// We don't always receive the finished signal. We still need the signal to break 
 	// out of the exec() though.
-	QMetaObject::invokeMethod(mainw, "hideFontCacheDialog");
+	QMetaObject::invokeMethod(scadApp, "hideFontCacheDialog");
 }
 
 int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, char ** argv)
@@ -648,13 +640,10 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 			QFont::insertSubstitution(".Lucida Grande UI", "Lucida Grande");
     }
 #endif
-	QApplication app(argc, argv, true); //useGUI);
+	OpenSCADApp app(argc, argv);
 	// remove ugly frames in the QStatusBar when using additional widgets
 	app.setStyleSheet("QStatusBar::item { border: 0px solid black; }");
 
-#ifdef Q_OS_MAC
-	app.installEventFilter(new EventFilter(&app));
-#endif
 	// set up groups for QSettings
 	QCoreApplication::setOrganizationName("OpenSCAD");
 	QCoreApplication::setOrganizationDomain("openscad.org");
@@ -673,7 +662,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 #endif
 	
 	// Other global settings
-	qRegisterMetaType<shared_ptr<const Geometry> >();
+	qRegisterMetaType<shared_ptr<const Geometry>>();
 	
 	const QString &app_path = app.applicationDirPath();
 	PlatformUtils::registerApplicationPath(app_path.toLocal8Bit().constData());
@@ -704,6 +693,9 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	updater->init();
 #endif
 
+#ifndef USE_QOPENGLWIDGET
+	// This workaround appears to only be needed when QGLWidget is used QOpenGLWidget
+	// available in Qt 5.4 is much better.
 	QGLFormat fmt;
 #if 0 /*** disabled by clifford wolf: adds rendering artefacts with OpenCSG ***/
 	// turn on anti-aliasing
@@ -717,6 +709,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	// (see https://bugreports.qt-project.org/browse/QTBUG-39370
 	fmt.setSwapInterval(0);
 	QGLFormat::setDefaultFormat(fmt);
+#endif
 
 	set_render_color_scheme(arg_colorscheme, false);
 	
@@ -736,7 +729,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 			// the "" dummy in inputFiles to open an empty MainWindow.
 			if (!files.empty()) {
 				inputFiles.clear();
-				BOOST_FOREACH(const QString &f, files) {
+				for(const auto &f : files) {
 					inputFiles.push_back(f.toStdString());
 				}
 			}
@@ -749,7 +742,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	MainWindow *mainwin;
 	bool isMdi = settings.value("advanced/mdi", true).toBool();
 	if (isMdi) {
-	    BOOST_FOREACH(const string &infile, inputFiles) {
+		for(const auto &infile : inputFiles) {
 		    mainwin = new MainWindow(assemblePath(original_path, infile));
 	    }
 	} else {
@@ -758,10 +751,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 	int rc = app.exec();
-	QSet<MainWindow*> *windows = MainWindow::getWindows();
-	foreach (MainWindow *mainw, *windows) {
-		delete mainw;
-	}
+	for(auto &mainw : scadApp->windowManager.getWindows()) delete mainw;
 	return rc;
 }
 #else // OPENSCAD_QTGUI
@@ -818,15 +808,15 @@ int main(int argc, char **argv)
 		("x,x", po::value<string>(), "dxf-file")
 		("d,d", po::value<string>(), "deps-file")
 		("m,m", po::value<string>(), "makefile")
-		("D,D", po::value<vector<string> >(), "var=val")
+		("D,D", po::value<vector<string>>(), "var=val")
 #ifdef ENABLE_EXPERIMENTAL
-		("enable", po::value<vector<string> >(), "enable experimental features")
+		("enable", po::value<vector<string>>(), "enable experimental features")
 #endif
 		;
 
 	po::options_description hidden("Hidden options");
 	hidden.add_options()
-		("input-file", po::value< vector<string> >(), "input file");
+		("input-file", po::value< vector<string>>(), "input file");
 
 	po::positional_options_description p;
 	p.add("input-file", -1);
@@ -894,28 +884,28 @@ int main(int argc, char **argv)
 	}
 
 	if (vm.count("D")) {
-		BOOST_FOREACH(const string &cmd, vm["D"].as<vector<string> >()) {
+		for(const auto &cmd : vm["D"].as<vector<string>>()) {
 			commandline_commands += cmd;
 			commandline_commands += ";\n";
 		}
 	}
 #ifdef ENABLE_EXPERIMENTAL
 	if (vm.count("enable")) {
-		BOOST_FOREACH(const string &feature, vm["enable"].as<vector<string> >()) {
+		for(const auto &feature : vm["enable"].as<vector<string>>()) {
 			Feature::enable_feature(feature);
 		}
 	}
 #endif
 	vector<string> inputFiles;
 	if (vm.count("input-file"))	{
-		inputFiles = vm["input-file"].as<vector<string> >();
+		inputFiles = vm["input-file"].as<vector<string>>();
 	}
 
 	if (vm.count("colorscheme")) {
 		arg_colorscheme = vm["colorscheme"].as<string>();
 	}
 
-	currentdir = boosty::stringy(fs::current_path());
+	currentdir = fs::current_path().generic_string();
 
 	Camera camera = get_camera(vm);
 

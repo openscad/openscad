@@ -24,7 +24,7 @@
  *
  */
 
-%expect 1 /* Expect 1 shift/reduce conflict for ifelse_statement - "dangling else problem" */
+%expect 2 /* Expect 2 shift/reduce conflict for ifelse_statement - "dangling else problem" */
 
 %{
 
@@ -34,29 +34,30 @@
 #include <unistd.h>
 #endif
 
-#include "typedefs.h"
-#include "module.h"
+#include "FileModule.h"
+#include "UserModule.h"
+#include "ModuleInstantiation.h"
+#include "Assignment.h"
 #include "expression.h"
 #include "value.h"
 #include "function.h"
 #include "printutils.h"
+#include "memory.h"
 #include <sstream>
-#include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
 
 namespace fs = boost::filesystem;
-#define foreach BOOST_FOREACH
-
-#include "boosty.h"
 
 #define YYMAXDEPTH 20000
-
+#define LOC(loc) Location(loc.first_line, loc.first_column, loc.last_line, loc.last_column)
+  
 int parser_error_pos = -1;
 
 int parserlex(void);
 void yyerror(char const *s);
 
 int lexerget_lineno(void);
+fs::path sourcefile(void);
 int lexerlex_destroy(void);
 int lexerlex(void);
 
@@ -67,7 +68,7 @@ extern void lexerdestroy();
 extern FILE *lexerin;
 extern const char *parser_input_buffer;
 const char *parser_input_buffer;
-std::string parser_source_path;
+fs::path parser_sourcefile;
 
 %}
 
@@ -76,9 +77,10 @@ std::string parser_source_path;
   double number;
   class Value *value;
   class Expression *expr;
+  class Vector *vec;
   class ModuleInstantiation *inst;
   class IfElseModuleInstantiation *ifelse;
-  Assignment *arg;
+  class Assignment *arg;
   AssignmentList *args;
 }
 
@@ -90,6 +92,7 @@ std::string parser_source_path;
 %token TOK_ELSE
 %token TOK_FOR
 %token TOK_LET
+%token TOK_EACH
 
 %token <text> TOK_ID
 %token <text> TOK_STRING
@@ -118,8 +121,9 @@ std::string parser_source_path;
 %left '.'
 
 %type <expr> expr
-%type <expr> vector_expr
+%type <vec> vector_expr
 %type <expr> list_comprehension_elements
+%type <expr> list_comprehension_elements_p
 %type <expr> list_comprehension_elements_or_expr
 
 %type <inst> module_instantiation
@@ -140,7 +144,10 @@ std::string parser_source_path;
 
 input:    /* empty */
         | TOK_USE
-            { rootmodule->registerUse(std::string($1)); }
+            {
+              rootmodule->registerUse(std::string($1));
+              free($1);
+            }
           input
         | statement input
         ;
@@ -155,7 +162,7 @@ statement:
         | assignment
         | TOK_MODULE TOK_ID '(' arguments_decl optional_commas ')'
             {
-                Module *newmodule = new Module();
+              UserModule *newmodule = new UserModule(LOC(@$));
                 newmodule->definition_arguments = *$4;
                 scope_stack.top()->modules[$2] = newmodule;
                 scope_stack.push(&newmodule->scope);
@@ -168,7 +175,7 @@ statement:
             }
         | TOK_FUNCTION TOK_ID '(' arguments_decl optional_commas ')' '=' expr
             {
-                Function *func = Function::create($2, *$4, $8);
+              UserFunction *func = UserFunction::create($2, *$4, shared_ptr<Expression>($8), LOC(@$));
                 scope_stack.top()->functions[$2] = func;
                 free($2);
                 delete $4;
@@ -185,15 +192,15 @@ assignment:
           TOK_ID '=' expr ';'
             {
                 bool found = false;
-                foreach (Assignment& iter, scope_stack.top()->assignments) {
-                    if (iter.first == $1) {
-                        iter.second = boost::shared_ptr<Expression>($3);
+                for (auto& iter : scope_stack.top()->assignments) {
+                    if (iter.name == $1) {
+                        iter.expr = shared_ptr<Expression>($3);
                         found = true;
                         break;
                     }
                 }
                 if (!found) {
-                    scope_stack.top()->assignments.push_back(Assignment($1, boost::shared_ptr<Expression>($3)));
+                    scope_stack.top()->assignments.push_back(Assignment($1, shared_ptr<Expression>($3)));
                 }
                 free($1);
             }
@@ -255,9 +262,7 @@ ifelse_statement:
 if_statement:
           TOK_IF '(' expr ')'
             {
-                $<ifelse>$ = new IfElseModuleInstantiation();
-                $<ifelse>$->arguments.push_back(Assignment("", boost::shared_ptr<Expression>($3)));
-                $<ifelse>$->setPath(parser_source_path);
+                $<ifelse>$ = new IfElseModuleInstantiation(shared_ptr<Expression>($3), parser_sourcefile.parent_path().generic_string(), LOC(@$));
                 scope_stack.push(&$<ifelse>$->scope);
             }
           child_statement
@@ -282,18 +287,18 @@ child_statement:
             }
         ;
 
-// "for" is a valid module identifier
+// "for", "let" and "each" are valid module identifiers
 module_id:
           TOK_ID  { $$ = $1; }
         | TOK_FOR { $$ = strdup("for"); }
+        | TOK_LET { $$ = strdup("let"); }
+        | TOK_EACH { $$ = strdup("each"); }
         ;
 
 single_module_instantiation:
           module_id '(' arguments_call ')'
             {
-                $$ = new ModuleInstantiation($1);
-                $$->arguments = *$3;
-                $$->setPath(parser_source_path);
+                $$ = new ModuleInstantiation($1, *$3, parser_sourcefile.parent_path().generic_string(), LOC(@$));
                 free($1);
                 delete $3;
             }
@@ -302,111 +307,107 @@ single_module_instantiation:
 expr:
           TOK_TRUE
             {
-                $$ = new ExpressionConst(ValuePtr(true));
+              $$ = new Literal(ValuePtr(true), LOC(@$));
             }
         | TOK_FALSE
             {
-                $$ = new ExpressionConst(ValuePtr(false));
+              $$ = new Literal(ValuePtr(false), LOC(@$));
             }
         | TOK_UNDEF
             {
-                $$ = new ExpressionConst(ValuePtr::undefined);
+              $$ = new Literal(ValuePtr::undefined, LOC(@$));
             }
         | TOK_ID
             {
-                $$ = new ExpressionLookup($1);
+              $$ = new Lookup($1, LOC(@$));
                 free($1);
             }
         | expr '.' TOK_ID
             {
-              $$ = new ExpressionMember($1, $3);
-                free($3);
+              $$ = new MemberLookup($1, $3, LOC(@$));
+              free($3);
             }
         | TOK_STRING
             {
-                $$ = new ExpressionConst(ValuePtr(std::string($1)));
-                free($1);
+              $$ = new Literal(ValuePtr(std::string($1)), LOC(@$));
+              free($1);
             }
         | TOK_NUMBER
             {
-                $$ = new ExpressionConst(ValuePtr($1));
+              $$ = new Literal(ValuePtr($1), LOC(@$));
             }
         | TOK_LET '(' arguments_call ')' expr %prec LET
             {
-              $$ = new ExpressionLet(*$3, $5);
-                delete $3;
+              $$ = new Let(*$3, $5, LOC(@$));
+              delete $3;
             }
         | '[' expr ':' expr ']'
             {
-                $$ = new ExpressionRange($2, $4);
+              $$ = new Range($2, $4, LOC(@$));
             }
         | '[' expr ':' expr ':' expr ']'
             {
-                $$ = new ExpressionRange($2, $4, $6);
-            }
-        | '[' list_comprehension_elements ']'
-            {
-                $$ = new ExpressionLcExpression($2);
+              $$ = new Range($2, $4, $6, LOC(@$));
             }
         | '[' optional_commas ']'
             {
-                $$ = new ExpressionConst(ValuePtr(Value::VectorType()));
+              $$ = new Literal(ValuePtr(Value::VectorType()), LOC(@$));
             }
         | '[' vector_expr optional_commas ']'
             {
-                $$ = $2;
+              $$ = $2;
             }
         | expr '*' expr
             {
-                $$ = new ExpressionMultiply($1, $3);
+              $$ = new BinaryOp($1, BinaryOp::Op::Multiply, $3, LOC(@$));
             }
         | expr '/' expr
             {
-                $$ = new ExpressionDivision($1, $3);
+              $$ = new BinaryOp($1, BinaryOp::Op::Divide, $3, LOC(@$));
             }
         | expr '%' expr
             {
-                $$ = new ExpressionModulo($1, $3);
+              $$ = new BinaryOp($1, BinaryOp::Op::Modulo, $3, LOC(@$));
             }
         | expr '+' expr
             {
-                $$ = new ExpressionPlus($1, $3);
+              $$ = new BinaryOp($1, BinaryOp::Op::Plus, $3, LOC(@$));
             }
         | expr '-' expr
             {
-                $$ = new ExpressionMinus($1, $3);
+              $$ = new BinaryOp($1, BinaryOp::Op::Minus, $3, LOC(@$));
             }
         | expr '<' expr
             {
-                $$ = new ExpressionLess($1, $3);
+              $$ = new BinaryOp($1, BinaryOp::Op::Less, $3, LOC(@$));
             }
         | expr LE expr
             {
-                $$ = new ExpressionLessOrEqual($1, $3);
+              $$ = new BinaryOp($1, BinaryOp::Op::LessEqual, $3, LOC(@$));
             }
         | expr EQ expr
             {
-                $$ = new ExpressionEqual($1, $3);
+              $$ = new BinaryOp($1, BinaryOp::Op::Equal, $3, LOC(@$));
             }
         | expr NE expr
             {
-                $$ = new ExpressionNotEqual($1, $3);
+              $$ = new BinaryOp($1, BinaryOp::Op::NotEqual, $3, LOC(@$));
             }
         | expr GE expr
             {
-                $$ = new ExpressionGreaterOrEqual($1, $3);
+              $$ = new BinaryOp($1, BinaryOp::Op::GreaterEqual, $3, LOC(@$));
             }
         | expr '>' expr
             {
-                $$ = new ExpressionGreater($1, $3);
+              $$ = new BinaryOp($1, BinaryOp::Op::Greater, $3, LOC(@$));
             }
         | expr AND expr
             {
-                $$ = new ExpressionLogicalAnd($1, $3);
+              $$ = new BinaryOp($1, BinaryOp::Op::LogicalAnd, $3, LOC(@$));
             }
         | expr OR expr
             {
-                $$ = new ExpressionLogicalOr($1, $3);
+              $$ = new BinaryOp($1, BinaryOp::Op::LogicalOr, $3, LOC(@$));
             }
         | '+' expr
             {
@@ -414,39 +415,43 @@ expr:
             }
         | '-' expr
             {
-                $$ = new ExpressionInvert($2);
+              $$ = new UnaryOp(UnaryOp::Op::Negate, $2, LOC(@$));
             }
         | '!' expr
             {
-                $$ = new ExpressionNot($2);
+              $$ = new UnaryOp(UnaryOp::Op::Not, $2, LOC(@$));
             }
         | '(' expr ')'
             {
-                $$ = $2;
+              $$ = $2;
             }
         | expr '?' expr ':' expr
             {
-                $$ = new ExpressionTernary($1, $3, $5);
+              $$ = new TernaryOp($1, $3, $5, LOC(@$));
             }
         | expr '[' expr ']'
             {
-                $$ = new ExpressionArrayLookup($1, $3);
+              $$ = new ArrayLookup($1, $3, LOC(@$));
             }
         | TOK_ID '(' arguments_call ')'
             {
-              $$ = new ExpressionFunctionCall($1, *$3);
-                free($1);
-                delete $3;
+              $$ = new FunctionCall($1, *$3, LOC(@$));
+              free($1);
+              delete $3;
             }
         ;
 
 list_comprehension_elements:
           /* The last set element may not be a "let" (as that would instead
              be parsed as an expression) */
-          TOK_LET '(' arguments_call ')' list_comprehension_elements
+          TOK_LET '(' arguments_call ')' list_comprehension_elements_p
             {
-              $$ = new ExpressionLc("let", *$3, $5);
-                delete $3;
+              $$ = new LcLet(*$3, $5, LOC(@$));
+              delete $3;
+            }
+        | TOK_EACH list_comprehension_elements_or_expr
+            {
+              $$ = new LcEach($2, LOC(@$));
             }
         | TOK_FOR '(' arguments_call ')' list_comprehension_elements_or_expr
             {
@@ -456,19 +461,38 @@ list_comprehension_elements:
                 for (int i = $3->size()-1; i >= 0; i--) {
                   AssignmentList arglist;
                   arglist.push_back((*$3)[i]);
-                  Expression *e = new ExpressionLc("for", arglist, $$);
+                  Expression *e = new LcFor(arglist, $$, LOC(@$));
                     $$ = e;
                 }
                 delete $3;
             }
+        | TOK_FOR '(' arguments_call ';' expr ';' arguments_call ')' list_comprehension_elements_or_expr
+            {
+              $$ = new LcForC(*$3, *$7, $5, $9, LOC(@$));
+                delete $3;
+                delete $7;
+            }
         | TOK_IF '(' expr ')' list_comprehension_elements_or_expr
             {
-              $$ = new ExpressionLc("if", $3, $5);
+              $$ = new LcIf($3, $5, 0, LOC(@$));
+            }
+        | TOK_IF '(' expr ')' list_comprehension_elements_or_expr TOK_ELSE list_comprehension_elements_or_expr
+            {
+              $$ = new LcIf($3, $5, $7, LOC(@$));
+            }
+        ;
+
+// list_comprehension_elements with optional parenthesis
+list_comprehension_elements_p:
+          list_comprehension_elements
+        | '(' list_comprehension_elements ')'
+            {
+                $$ = $2;
             }
         ;
 
 list_comprehension_elements_or_expr:
-          list_comprehension_elements
+          list_comprehension_elements_p
         | expr
         ;
 
@@ -480,12 +504,18 @@ optional_commas:
 vector_expr:
           expr
             {
-                $$ = new ExpressionVector($1);
+              $$ = new Vector(LOC(@$));
+              $$->push_back($1);
             }
-        | vector_expr ',' optional_commas expr
+        |  list_comprehension_elements
             {
-                $$ = $1;
-                $$->children.push_back($4);
+              $$ = new Vector(LOC(@$));
+              $$->push_back($1);
+            }
+        | vector_expr ',' optional_commas list_comprehension_elements_or_expr
+            {
+              $$ = $1;
+              $$->push_back($4);
             }
         ;
 
@@ -511,12 +541,12 @@ arguments_decl:
 argument_decl:
           TOK_ID
             {
-                $$ = new Assignment($1);
+                $$ = new Assignment($1, LOC(@$));
                 free($1);
             }
         | TOK_ID '=' expr
             {
-                $$ = new Assignment($1, boost::shared_ptr<Expression>($3));
+              $$ = new Assignment($1, shared_ptr<Expression>($3), LOC(@$));
                 free($1);
             }
         ;
@@ -543,11 +573,11 @@ arguments_call:
 argument_call:
           expr
             {
-                $$ = new Assignment("", boost::shared_ptr<Expression>($1));
+                $$ = new Assignment("", shared_ptr<Expression>($1), LOC(@$));
             }
         | TOK_ID '=' expr
             {
-                $$ = new Assignment($1, boost::shared_ptr<Expression>($3));
+                $$ = new Assignment($1, shared_ptr<Expression>($3), LOC(@$));
                 free($1);
             }
         ;
@@ -562,18 +592,19 @@ int parserlex(void)
 void yyerror (char const *s)
 {
   // FIXME: We leak memory on parser errors...
-  PRINTB("ERROR: Parser error in line %d: %s\n", lexerget_lineno() % s);
+  PRINTB("ERROR: Parser error in file %s, line %d: %s\n",
+         sourcefile() % lexerget_lineno() % s);
 }
 
-FileModule *parse(const char *text, const char *path, int debug)
+FileModule *parse(const char *text, const fs::path &filename, int debug)
 {
   lexerin = NULL;
   parser_error_pos = -1;
   parser_input_buffer = text;
-  parser_source_path = boosty::absolute(std::string(path)).string();
+  parser_sourcefile = fs::absolute(filename);
 
   rootmodule = new FileModule();
-  rootmodule->setModulePath(path);
+  rootmodule->setModulePath(filename.parent_path().generic_string());
   scope_stack.push(&rootmodule->scope);
   //        PRINTB_NOCACHE("New module: %s %p", "root" % rootmodule);
 

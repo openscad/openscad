@@ -2,9 +2,9 @@
 
 #include <string>
 #include <vector>
-#include <boost/unordered_map.hpp>
+#include <unordered_map>
 #include "value.h"
-#include "typedefs.h"
+#include "Assignment.h"
 #include "memory.h"
 
 class Context
@@ -40,7 +40,7 @@ protected:
 	const Context *parent;
 	Stack *ctx_stack;
 
-	typedef boost::unordered_map<std::string, ValuePtr> ValueMap;
+	typedef std::unordered_map<std::string, ValuePtr> ValueMap;
 	ValueMap constants;
 	ValueMap variables;
 	ValueMap config_variables;

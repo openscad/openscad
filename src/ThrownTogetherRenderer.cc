@@ -26,107 +26,116 @@
 
 #include "ThrownTogetherRenderer.h"
 #include "polyset.h"
-#include "csgterm.h"
 #include "printutils.h"
 
 #include "system-gl.h"
 
-#include <boost/unordered_map.hpp>
-#include <boost/foreach.hpp>
-
-ThrownTogetherRenderer::ThrownTogetherRenderer(CSGChain *root_chain, 
-																							 CSGChain *highlights_chain,
-																							 CSGChain *background_chain)
-	: root_chain(root_chain), highlights_chain(highlights_chain), 
-		background_chain(background_chain)
+ThrownTogetherRenderer::ThrownTogetherRenderer(shared_ptr<CSGProducts> root_products,
+																							 shared_ptr<CSGProducts> highlight_products,
+																							 shared_ptr<CSGProducts> background_products)
+	: root_products(root_products), highlight_products(highlight_products), background_products(background_products)
 {
 }
 
 void ThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges) const
 {
 	PRINTD("Thrown draw");
-	if (this->root_chain) {
+ 	if (this->root_products) {
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
-		renderCSGChain(this->root_chain, false, false, showedges, false);
+		renderCSGProducts(*this->root_products, false, false, showedges, false);
 		glCullFace(GL_FRONT);
 		glColor3ub(255, 0, 255);
-		renderCSGChain(this->root_chain, false, false, showedges, true);
+		renderCSGProducts(*this->root_products, false, false, showedges, true);
 		glDisable(GL_CULL_FACE);
 	}
-	if (this->background_chain)
-	 	renderCSGChain(this->background_chain, false, true, showedges, false);
-	if (this->highlights_chain)
-	 	renderCSGChain(this->highlights_chain, true, false, showedges, false);
+	if (this->background_products)
+	 	renderCSGProducts(*this->background_products, false, true, showedges, false);
+	if (this->highlight_products)
+	 	renderCSGProducts(*this->highlight_products, true, false, showedges, false);
 }
 
-void ThrownTogetherRenderer::renderCSGChain(CSGChain *chain, bool highlight,
-																						bool background, bool showedges, 
-																						bool fberror) const
+void ThrownTogetherRenderer::renderChainObject(const CSGChainObject &csgobj, bool highlight_mode,
+																							 bool background_mode, bool showedges, bool fberror, OpenSCADOperator type) const
 {
-	PRINTD("Thrown renderCSGChain");
-	glDepthFunc(GL_LEQUAL);
-	boost::unordered_map<std::pair<const Geometry*,const Transform3d*>,int> geomVisitMark;
-	BOOST_FOREACH(const CSGChainObject &obj, chain->objects) {
-		if (geomVisitMark[std::make_pair(obj.geom.get(), &obj.matrix)]++ > 0)
-			continue;
-		const Transform3d &m = obj.matrix;
-		const Color4f &c = obj.color;
-		glPushMatrix();
-		glMultMatrixd(m.data());
-		csgmode_e csgmode = csgmode_e(
-			(highlight ? 
-			 CSGMODE_HIGHLIGHT :
-			 (background ? CSGMODE_BACKGROUND : CSGMODE_NORMAL)) |
-			(obj.type == CSGTerm::TYPE_DIFFERENCE ? CSGMODE_DIFFERENCE : 0));
-		ColorMode colormode = COLORMODE_NONE;
-		ColorMode edge_colormode = COLORMODE_NONE;
+	if (this->geomVisitMark[std::make_pair(csgobj.leaf->geom.get(), &csgobj.leaf->matrix)]++ > 0) return;
+	const Color4f &c = csgobj.leaf->color;
+	csgmode_e csgmode = csgmode_e(
+		(highlight_mode ? 
+		 CSGMODE_HIGHLIGHT :
+		 (background_mode ? CSGMODE_BACKGROUND : CSGMODE_NORMAL)) |
+		(type == OPENSCAD_DIFFERENCE ? CSGMODE_DIFFERENCE : CSGMODE_NONE));
 
-		if (highlight) {
+	ColorMode colormode = COLORMODE_NONE;
+	ColorMode edge_colormode = COLORMODE_NONE;
+	
+	if (highlight_mode) {
+		colormode = COLORMODE_HIGHLIGHT;
+		edge_colormode = COLORMODE_HIGHLIGHT_EDGES;
+	} else if (background_mode) {
+		if (csgobj.flags & CSGNode::FLAG_HIGHLIGHT) {
 			colormode = COLORMODE_HIGHLIGHT;
-			edge_colormode = COLORMODE_HIGHLIGHT_EDGES;
-		} else if (background) {
-			if (obj.flag & CSGTerm::FLAG_HIGHLIGHT) {
-				colormode = COLORMODE_HIGHLIGHT;
-			}
-			else {
-				colormode = COLORMODE_BACKGROUND;
-			}
-			edge_colormode = COLORMODE_BACKGROUND_EDGES;
-		} else if (fberror) {
-		} else if (obj.type == CSGTerm::TYPE_DIFFERENCE) {
-			if (obj.flag & CSGTerm::FLAG_HIGHLIGHT) {
-				colormode = COLORMODE_HIGHLIGHT;
-			}
-			else {
-				colormode = COLORMODE_CUTOUT;
-			}
-			edge_colormode = COLORMODE_CUTOUT_EDGES;
-		} else {
-			if (obj.flag & CSGTerm::FLAG_HIGHLIGHT) {
-				colormode = COLORMODE_HIGHLIGHT;
-			}
-			else {
-				colormode = COLORMODE_MATERIAL;
-			}
-			edge_colormode = COLORMODE_MATERIAL_EDGES;
 		}
-		
-		setColor(colormode, c.data());
-		render_surface(obj.geom, csgmode, m);
-		if (showedges) {
-			// FIXME? glColor4f((c[0]+1)/2, (c[1]+1)/2, (c[2]+1)/2, 1.0);
-			setColor(edge_colormode);
-			render_edges(obj.geom, csgmode);
+		else {
+			colormode = COLORMODE_BACKGROUND;
 		}
+		edge_colormode = COLORMODE_BACKGROUND_EDGES;
+	} else if (fberror) {
+	} else if (type == OPENSCAD_DIFFERENCE) {
+		if (csgobj.flags & CSGNode::FLAG_HIGHLIGHT) {
+			colormode = COLORMODE_HIGHLIGHT;
+		}
+		else {
+			colormode = COLORMODE_CUTOUT;
+		}
+		edge_colormode = COLORMODE_CUTOUT_EDGES;
+	} else {
+		if (csgobj.flags & CSGNode::FLAG_HIGHLIGHT) {
+			colormode = COLORMODE_HIGHLIGHT;
+		}
+		else {
+			colormode = COLORMODE_MATERIAL;
+		}
+		edge_colormode = COLORMODE_MATERIAL_EDGES;
+	}
+	
+	const Transform3d &m = csgobj.leaf->matrix;
+	setColor(colormode, c.data());
+	glPushMatrix();
+	glMultMatrixd(m.data());
+	render_surface(csgobj.leaf->geom, csgmode, m);
+	if (showedges) {
+		// FIXME? glColor4f((c[0]+1)/2, (c[1]+1)/2, (c[2]+1)/2, 1.0);
+		setColor(edge_colormode);
+		render_edges(csgobj.leaf->geom, csgmode);
+	}
+	glPopMatrix();
+	
+}
 
-		glPopMatrix();
+void ThrownTogetherRenderer::renderCSGProducts(const CSGProducts &products, bool highlight_mode,
+																							 bool background_mode, bool showedges, 
+																							 bool fberror) const
+{
+	PRINTD("Thrown renderCSGProducts");
+	glDepthFunc(GL_LEQUAL);
+	this->geomVisitMark.clear();
+
+	for(const auto &product : products.products) {
+		for(const auto &csgobj : product.intersections) {
+			renderChainObject(csgobj, highlight_mode, background_mode, showedges, fberror, OPENSCAD_INTERSECTION);
+		}
+		for(const auto &csgobj : product.subtractions) {
+			renderChainObject(csgobj, highlight_mode, background_mode, showedges, fberror, OPENSCAD_DIFFERENCE);
+		}
 	}
 }
 
 BoundingBox ThrownTogetherRenderer::getBoundingBox() const
 {
 	BoundingBox bbox;
-	if (this->root_chain) bbox = this->root_chain->getBoundingBox();
+	if (this->root_products) bbox = this->root_products->getBoundingBox();
+	if (this->highlight_products) bbox.extend(this->highlight_products->getBoundingBox());
+//	if (this->background_products) bbox.extend(this->background_products->getBoundingBox());
 	return bbox;
 }

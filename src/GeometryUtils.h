@@ -22,7 +22,7 @@ struct IndexedTriangleMesh {
 // Indexed polygon mesh, where each polygon can have holes
 struct IndexedPolyMesh {
 	std::vector<Vector3f> vertices;
-	std::vector<std::vector<IndexedFace> > polygons;
+	std::vector<std::vector<IndexedFace>> polygons;
 };
 
 namespace GeometryUtils {
@@ -34,6 +34,6 @@ namespace GeometryUtils {
 																	std::vector<IndexedTriangle> &triangles,
 																	const Vector3f *normal = NULL);
 
-	int findUnconnectedEdges(const std::vector<std::vector<IndexedFace> > &polygons);
+	int findUnconnectedEdges(const std::vector<std::vector<IndexedFace>> &polygons);
 	int findUnconnectedEdges(const std::vector<IndexedTriangle> &triangles);
 }

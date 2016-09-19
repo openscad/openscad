@@ -109,7 +109,7 @@ void CGALRenderer::draw(bool showfaces, bool showedges) const
 				glBegin(GL_POLYGON);
 				for (size_t j=0; j < this->polyset->polygons[i].size(); j++) {
 					const Vector3d &p = this->polyset->polygons[i][j];
-					glVertex3d(p[0], p[1], -0.1);
+					glVertex3d(p[0], p[1], 0);
 				}
 				glEnd();
 			}

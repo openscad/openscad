@@ -340,7 +340,7 @@ namespace CGALUtils {
 		PRINTDB("plane %s",plane );
 		PRINTDB("proj: %i %i",goodproj.plane % goodproj.flip);
 		PRINTD("Inserting points and edges into Constrained Delaunay Triangulation");
-		std::vector< std::vector<CGAL_Point_2> > polygons2d;
+		std::vector< std::vector<CGAL_Point_2>> polygons2d;
 		for (size_t i=0;i<polygons.size();i++) {
 			std::vector<Vertex_handle> vhandles;
 			std::vector<CGAL_Point_2> polygon2d;
@@ -459,7 +459,7 @@ namespace CGALUtils {
 		PRINTDB("plane %s",plane );
 		PRINTDB("proj: %i %i",goodproj.plane % goodproj.flip);
 		PRINTD("Inserting points and edges into Constrained Delaunay Triangulation");
-		std::vector< std::vector<CGAL_Point_2> > polygons2d;
+		std::vector< std::vector<CGAL_Point_2>> polygons2d;
 		for (size_t i=0;i<polygons.size();i++) {
 			std::vector<Vertex_handle> vhandles;
 			std::vector<CGAL_Point_2> polygon2d;

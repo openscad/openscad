@@ -22,6 +22,9 @@ get_fedora_deps_dnf()
   opencsg-devel git libXmu-devel curl ImageMagick glib2-devel make \
   xorg-x11-server-Xvfb gettext qscintilla-devel qscintilla-qt5-devel \
   mesa-dri-drivers
+ dnf -y install libxml2-devel
+ dnf -y install libffi-devel
+ dnf -y install redhat-rpm-config
 }
 
 get_qomo_deps()
@@ -76,10 +79,11 @@ get_debian_deps()
  apt-get -y install \
   build-essential curl libffi-dev \
   libxmu-dev cmake bison flex git-core libboost-all-dev \
-  libXi-dev libmpfr-dev libboost-dev libglew-dev \
+  libmpfr-dev libboost-dev libglew-dev \
   libeigen3-dev libcgal-dev libopencsg-dev libgmp3-dev libgmp-dev \
-  imagemagick libfontconfig-dev libfreetype6-dev \
+  imagemagick libfreetype6-dev \
   gtk-doc-tools libglib2.0-dev gettext xvfb pkg-config ragel
+ apt-get -y install libXi-dev libfontconfig-dev
 }
 
 get_debian_7_deps()
@@ -138,7 +142,7 @@ get_qt4or5_deps_debian()
 
 get_debian_8_deps()
 {
-  apt-get -y install libharfbuzz-dev
+  apt-get -y install libharfbuzz-dev libxml2-dev
   get_debian_deps
   get_qt4or5_deps_debian
 }
@@ -148,6 +152,25 @@ get_ubuntu_14_deps()
   get_debian_8_deps
 }
 
+get_ubuntu_16_deps()
+{
+  apt-get -y install libxi-dev libxml2-dev libfontconfig1-dev
+  # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=804539
+  apt-get -y install libcgal-qt5-dev
+  get_debian_8_deps
+}
+
+get_neon_deps()
+{
+  get_debian_deps
+  apt-get -y install libxi-dev libxml2-dev libfontconfig1-dev
+  apt-get -y install libharfbuzz-dev libxml2-dev
+  # qt5 scintilla is broken on kde neon. use qt4 # issue 1790
+  apt-get -y install libcgal-dev
+  apt-get -y install libqt4-dev libqscintilla2-dev libqt4-opengl-dev
+  echo on KDE Neon please use qmake-qt4 to build
+}
+
 unknown()
 {
  echo "Unknown system type. Please install the dependency packages listed"
@@ -155,10 +178,16 @@ unknown()
 }
 
 if [ -e /etc/issue ]; then
- if [ "`grep -i ubuntu.1[4-9] /etc/issue`" ]; then
+ if [ "`grep -i ubuntu.1[4-5] /etc/issue`" ]; then
   get_ubuntu_14_deps
+ elif [ "`grep -i ubuntu.1[6-9] /etc/issue`" ]; then
+  get_ubuntu_16_deps
+ elif [ "`grep -i KDE.neon /etc/issue`" ]; then
+  get_neon_deps
  elif [ "`grep -i ubuntu /etc/issue`" ]; then
   get_debian_deps
+ elif [ "`grep -i elementary.*freya /etc/issue`" ]; then
+  get_ubuntu_14_deps
  elif [ "`grep -i debian.GNU.Linux.7 /etc/issue`" ]; then
   get_debian_7_deps
  elif [ "`grep -i debian /etc/issue`" ]; then
@@ -187,6 +216,10 @@ if [ -e /etc/issue ]; then
   get_mageia_deps
  elif [ "`grep -i qomo /etc/issue`" ]; then
   get_qomo_deps
+ elif [ -e /etc/fedora-release ]; then
+  if [ "`grep -i fedora.release /etc/fedora-release`" ]; then
+    get_fedora_deps_dnf
+  fi
  elif [ "`command -v rpm`" ]; then
   if [ "`rpm -qa | grep altlinux`" ]; then
    get_altlinux_deps

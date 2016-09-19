@@ -24,24 +24,26 @@
  *
  */
 
-#include "mathc99.h"
+#define _USE_MATH_DEFINES  // M_SQRT1_2
+#include "math.h"
+
 #include "function.h"
 #include "expression.h"
 #include "evalcontext.h"
 #include "builtin.h"
-#include <sstream>
-#include <ctime>
-#include <limits>
-#include <algorithm>
 #include "stl-utils.h"
 #include "printutils.h"
 #include "stackcheck.h"
 #include "exceptions.h"
-#include <boost/foreach.hpp>
+#include "memory.h"
+#include "UserModule.h"
 
-#include <boost/math/special_functions/fpclassify.hpp>
-using boost::math::isnan;
-using boost::math::isinf;
+#include <cmath>
+#include <sstream>
+#include <ctime>
+#include <cmath>
+#include <limits>
+#include <algorithm>
 
 /*
  Random numbers
@@ -70,137 +72,6 @@ int process_id = getpid();
 boost::mt19937 deterministic_rng;
 boost::mt19937 lessdeterministic_rng( std::time(0) + process_id );
 
-AbstractFunction::~AbstractFunction()
-{
-}
-
-// FIXME: Is this needed?
-ValuePtr AbstractFunction::evaluate(const Context*, const EvalContext *evalctx) const
-{
-	(void)evalctx; // unusued parameter
-	return ValuePtr::undefined;
-}
-
-std::string AbstractFunction::dump(const std::string &indent, const std::string &name) const
-{
-	std::stringstream dump;
-	dump << indent << "abstract function " << name << "();\n";
-	return dump.str();
-}
-
-Function::Function(const char *name, AssignmentList &definition_arguments, Expression *expr)
-	: name(name), definition_arguments(definition_arguments), expr(expr)
-{
-}
-
-Function::~Function()
-{
-	delete expr;
-}
-
-ValuePtr Function::evaluate(const Context *ctx, const EvalContext *evalctx) const
-{
-	if (!expr) return ValuePtr::undefined;
-	Context c(ctx);
-	c.setVariables(definition_arguments, evalctx);
-	ValuePtr result = expr->evaluate(&c);
-
-	return result;
-}
-
-std::string Function::dump(const std::string &indent, const std::string &name) const
-{
-	std::stringstream dump;
-	dump << indent << "function " << name << "(";
-	for (size_t i=0; i < definition_arguments.size(); i++) {
-		const Assignment &arg = definition_arguments[i];
-		if (i > 0) dump << ", ";
-		dump << arg.first;
-		if (arg.second) dump << " = " << *arg.second;
-	}
-	dump << ") = " << *expr << ";\n";
-	return dump.str();
-}
-
-class FunctionTailRecursion : public Function
-{
-private:
-	bool invert;
-	ExpressionFunctionCall *call; // memory owned by the main expression
-	Expression *endexpr; // memory owned by the main expression
-
-public:
-	FunctionTailRecursion(const char *name, AssignmentList &definition_arguments, Expression *expr, ExpressionFunctionCall *call, Expression *endexpr, bool invert);
-	virtual ~FunctionTailRecursion();
-
-	virtual ValuePtr evaluate(const Context *ctx, const EvalContext *evalctx) const;
-};
-
-FunctionTailRecursion::FunctionTailRecursion(const char *name, AssignmentList &definition_arguments, Expression *expr, ExpressionFunctionCall *call, Expression *endexpr, bool invert)
-	: Function(name, definition_arguments, expr), invert(invert), call(call), endexpr(endexpr)
-{
-}
-
-FunctionTailRecursion::~FunctionTailRecursion()
-{
-}
-
-ValuePtr FunctionTailRecursion::evaluate(const Context *ctx, const EvalContext *evalctx) const
-{
-	if (!expr) return ValuePtr::undefined;
-
-	Context c(ctx);
-	c.setVariables(definition_arguments, evalctx);
-
-	EvalContext ec(&c, call->call_arguments);
-	Context tmp(&c);
-	unsigned int counter = 0;
-	while (invert ^ expr->first->evaluate(&c)) {
-		tmp.setVariables(definition_arguments, &ec);
-		c.apply_variables(tmp);
-
-		if (counter++ == 1000000) throw RecursionException::create("function", this->name);
-	}
-
-	ValuePtr result = endexpr->evaluate(&c);
-
-	return result;
-}
-
-Function * Function::create(const char *name, AssignmentList &definition_arguments, Expression *expr)
-{
-	if (dynamic_cast<ExpressionTernary *>(expr)) {
-		ExpressionFunctionCall *f1 = dynamic_cast<ExpressionFunctionCall *>(expr->second);
-		ExpressionFunctionCall *f2 = dynamic_cast<ExpressionFunctionCall *>(expr->third);
-		if (f1 && !f2) {
-			if (name == f1->funcname) {
-				return new FunctionTailRecursion(name, definition_arguments, expr, f1, expr->third, false);
-			}
-		} else if (f2 && !f1) {
-			if (name == f2->funcname) {
-				return new FunctionTailRecursion(name, definition_arguments, expr, f2, expr->second, true);
-			}
-		}
-	}
-	return new Function(name, definition_arguments, expr);
-}
-
-BuiltinFunction::~BuiltinFunction()
-{
-}
-
-ValuePtr BuiltinFunction::evaluate(const Context *ctx, const EvalContext *evalctx) const
-{
-	return eval_func(ctx, evalctx);
-}
-
-std::string BuiltinFunction::dump(const std::string &indent, const std::string &name) const
-{
-	std::stringstream dump;
-	dump << indent << "builtin function " << name << "();\n";
-	return dump.str();
-}
-
 static inline double deg2rad(double x)
 {
 	return x * M_PI / 180.0;
@@ -216,7 +87,7 @@ ValuePtr builtin_abs(const Context *, const EvalContext *evalctx)
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
 		if (v->type() == Value::NUMBER)
-			return ValuePtr(fabs(v->toDouble()));
+			return ValuePtr(std::fabs(v->toDouble()));
 	}
 	return ValuePtr::undefined;
 }
@@ -226,7 +97,7 @@ ValuePtr builtin_sign(const Context *, const EvalContext *evalctx)
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
 		if (v->type() == Value::NUMBER) {
-			register double x = v->toDouble();
+			double x = v->toDouble();
 			return ValuePtr((x<0) ? -1.0 : ((x>0) ? 1.0 : 0.0));
 		}
 	}
@@ -241,7 +112,7 @@ ValuePtr builtin_rands(const Context *, const EvalContext *evalctx)
 		if (v0->type() != Value::NUMBER) goto quit;
 		double min = v0->toDouble();
 
-		if (boost::math::isinf(min)) {
+		if (std::isinf(min)) {
 			PRINT("WARNING: rands() range min cannot be infinite");
 			min = -std::numeric_limits<double>::max()/2;
 			PRINTB("WARNING: resetting to %f",min);
@@ -249,18 +120,18 @@ ValuePtr builtin_rands(const Context *, const EvalContext *evalctx)
 		ValuePtr v1 = evalctx->getArgValue(1);
 		if (v1->type() != Value::NUMBER) goto quit;
 		double max = v1->toDouble();
-		if (boost::math::isinf(max)) {
+		if (std::isinf(max)) {
 			PRINT("WARNING: rands() range max cannot be infinite");
 			max = std::numeric_limits<double>::max()/2;
 			PRINTB("WARNING: resetting to %f",max);
 		}
 		if (max < min) {
-			register double tmp = min; min = max; max = tmp;
+			double tmp = min; min = max; max = tmp;
 		}
 		ValuePtr v2 = evalctx->getArgValue(2);
 		if (v2->type() != Value::NUMBER) goto quit;
 		double numresultsd = std::abs( v2->toDouble() );
-		if (boost::math::isinf(numresultsd)) {
+		if (std::isinf(numresultsd)) {
 			PRINT("WARNING: rands() cannot create an infinite number of results");
 			PRINT("WARNING: resetting number of results to 1");
 			numresultsd = 1;
@@ -318,7 +189,7 @@ ValuePtr builtin_min(const Context *, const EvalContext *evalctx)
 				// 4/20/14 semantic change per discussion:
 				// break on any non-number
 				if (v->type() != Value::NUMBER) goto quit;
-				register double x = v->toDouble();
+				double x = v->toDouble();
 				if (x < val) val = x;
 			}
 			return ValuePtr(val);
@@ -350,7 +221,7 @@ ValuePtr builtin_max(const Context *, const EvalContext *evalctx)
 				// 4/20/14 semantic change per discussion:
 				// break on any non-number
 				if (v->type() != Value::NUMBER) goto quit;
-				register double x = v->toDouble();
+				double x = v->toDouble();
 				if (x > val) val = x;
 			}
 			return ValuePtr(val);
@@ -364,7 +235,7 @@ quit:
 // comment/undefine it to disable domain check
 #define TRIG_HUGE_VAL ((1L<<26)*360.0*(1L<<26))
 
-double sin_degrees(register double x)
+double sin_degrees(double x)
 {
 	// use positive tests because of possible Inf/NaN
 	if (x < 360.0 && x >= 0.0) {
@@ -374,7 +245,7 @@ double sin_degrees(register double x)
 	if (x < TRIG_HUGE_VAL && x > -TRIG_HUGE_VAL)
 #endif
 	{
-		register double revolutions = floor(x/360.0);
+		double revolutions = floor(x/360.0);
 		x -= 360.0*revolutions;
 	}
 #ifdef TRIG_HUGE_VAL
@@ -384,7 +255,7 @@ double sin_degrees(register double x)
 		return std::numeric_limits<double>::quiet_NaN();
 	}
 #endif
-	register bool oppose = x >= 180.0;
+	bool oppose = x >= 180.0;
 	if (oppose) x -= 180.0;
 	if (x > 90.0) x = 180.0 - x;
 	if (x < 45.0) {
@@ -408,7 +279,7 @@ ValuePtr builtin_sin(const Context *, const EvalContext *evalctx)
 	return ValuePtr::undefined;
 }
 
-double cos_degrees(register double x)
+double cos_degrees(double x)
 {
 	// use positive tests because of possible Inf/NaN
 	if (x < 360.0 && x >= 0.0) {
@@ -418,7 +289,7 @@ double cos_degrees(register double x)
 	if (x < TRIG_HUGE_VAL && x > -TRIG_HUGE_VAL)
 #endif
 	{
-		register double revolutions = floor(x/360.0);
+		double revolutions = floor(x/360.0);
 		x -= 360.0*revolutions;
 	}
 #ifdef TRIG_HUGE_VAL
@@ -428,7 +299,7 @@ double cos_degrees(register double x)
 		return std::numeric_limits<double>::quiet_NaN();
 	}
 #endif
-	register bool oppose = x >= 180.0;
+	bool oppose = x >= 180.0;
 	if (oppose) x -= 180.0;
 	if (x > 90.0) {
 		x = 180.0 - x;
@@ -636,7 +507,7 @@ ValuePtr builtin_concat(const Context *, const EvalContext *evalctx)
 	for (size_t i = 0; i < evalctx->numArgs(); i++) {
 		ValuePtr val = evalctx->getArgValue(i);
 		if (val->type() == Value::VECTOR) {
-			BOOST_FOREACH(const ValuePtr &v, val->toVector()) { 
+			for(const auto &v : val->toVector()) { 
 				result.push_back(v);
 			}
 		} else {
@@ -655,8 +526,9 @@ ValuePtr builtin_lookup(const Context *, const EvalContext *evalctx)
 
 	ValuePtr v1 = evalctx->getArgValue(1);
 	const Value::VectorType &vec = v1->toVector();
-	if (vec[0]->toVector().size() < 2) // Second must be a vector of vectors
-		return ValuePtr::undefined;
+	if (vec.empty()) return ValuePtr::undefined; // Second must be a vector
+	if (vec[0]->toVector().size() < 2) return ValuePtr::undefined; // ..of vectors
+
 	if (!vec[0]->getVec2(low_p, low_v) || !vec[0]->getVec2(high_p, high_v))
 		return ValuePtr::undefined;
 	for (size_t i = 1; i < vec.size(); i++) {
@@ -911,7 +783,7 @@ ValuePtr builtin_parent_module(const Context *, const EvalContext *evalctx)
 {
 	int n;
 	double d;
-	int s = Module::stack_size();
+	int s = UserModule::stack_size();
 	if (evalctx->numArgs() == 0)
 		d=1; // parent module
 	else if (evalctx->numArgs() == 1) {
@@ -929,7 +801,7 @@ ValuePtr builtin_parent_module(const Context *, const EvalContext *evalctx)
 		PRINTB("WARNING: Parent module index (%d) greater than the number of modules on the stack", n);
 		return ValuePtr::undefined;
 	}
-	return ValuePtr(Module::stack_element(s - 1 - n));
+	return ValuePtr(UserModule::stack_element(s - 1 - n));
 }
 
 ValuePtr builtin_norm(const Context *, const EvalContext *evalctx)
@@ -943,7 +815,7 @@ ValuePtr builtin_norm(const Context *, const EvalContext *evalctx)
 			for (size_t i = 0; i < n; i++)
 				if (v[i]->type() == Value::NUMBER) {
 					// sum += pow(v[i].toDouble(),2);
-					register double x = v[i]->toDouble();
+					double x = v[i]->toDouble();
 					sum += x*x;
 				} else {
 					PRINT("WARNING: Incorrect arguments to norm()");
@@ -986,11 +858,11 @@ ValuePtr builtin_cross(const Context *, const EvalContext *evalctx)
 		}
 		double d0 = v0[a]->toDouble();
 		double d1 = v1[a]->toDouble();
-		if (boost::math::isnan(d0) || boost::math::isnan(d1)) {
+		if (std::isnan(d0) || std::isnan(d1)) {
 			PRINT("WARNING: Invalid value (NaN) in parameter vector for cross()");
 			return ValuePtr::undefined;
 		}
-		if (boost::math::isinf(d0) || boost::math::isinf(d1)) {
+		if (std::isinf(d0) || std::isinf(d1)) {
 			PRINT("WARNING: Invalid value (INF) in parameter vector for cross()");
 			return ValuePtr::undefined;
 		}

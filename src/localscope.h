@@ -1,7 +1,7 @@
 #pragma once
 
-#include "typedefs.h"
-#include <boost/unordered_map.hpp>
+#include "Assignment.h"
+#include <unordered_map>
 
 class LocalScope
 {
@@ -12,13 +12,13 @@ public:
 	size_t numElements() const { return assignments.size() + children.size(); }
 	std::string dump(const std::string &indent) const;
 	std::vector<class AbstractNode*> instantiateChildren(const class Context *evalctx) const;
-	void addChild(ModuleInstantiation *ch);
+	void addChild(class ModuleInstantiation *ch);
 	void apply(Context &ctx) const;
 
 	AssignmentList assignments;
-	ModuleInstantiationList children;
-	typedef boost::unordered_map<std::string, class AbstractFunction*> FunctionContainer;
+	std::vector<ModuleInstantiation*> children;
+	typedef std::unordered_map<std::string, class AbstractFunction*> FunctionContainer;
 	FunctionContainer functions;
-	typedef boost::unordered_map<std::string, class AbstractModule*> AbstractModuleContainer;
+	typedef std::unordered_map<std::string, class AbstractModule*> AbstractModuleContainer;
 	AbstractModuleContainer	modules;
 };
