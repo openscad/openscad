@@ -249,6 +249,7 @@ MainWindow::MainWindow(const QString &filename)
 	knownFileExtensions["off"] = importStatement;
 	knownFileExtensions["dxf"] = importStatement;
 	if (Feature::ExperimentalSvgImport.is_enabled()) knownFileExtensions["svg"] = importStatement;
+	if (Feature::ExperimentalAmfImport.is_enabled()) knownFileExtensions["amf"] = importStatement;
 	knownFileExtensions["dat"] = surfaceStatement;
 	knownFileExtensions["png"] = surfaceStatement;
 	knownFileExtensions["scad"] = "";

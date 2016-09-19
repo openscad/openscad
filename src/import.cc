@@ -99,9 +99,9 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 		std::string extraw = fs::path(filename).extension().generic_string();
 		std::string ext = boost::algorithm::to_lower_copy(extraw);
 		if (ext == ".stl") actualtype = TYPE_STL;
-		else if (ext == ".amf") actualtype = TYPE_AMF;
 		else if (ext == ".off") actualtype = TYPE_OFF;
 		else if (ext == ".dxf") actualtype = TYPE_DXF;
+		else if (Feature::ExperimentalAmfImport.is_enabled() && ext == ".amf") actualtype = TYPE_AMF;
 		else if (Feature::ExperimentalSvgImport.is_enabled() && ext == ".svg") actualtype = TYPE_SVG;
 	}
 
