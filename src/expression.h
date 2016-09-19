@@ -13,7 +13,7 @@ class Expression : public ASTNode
 public:
 	Expression(const Location &loc) : ASTNode(loc) {}
 	virtual ~Expression() {}
-	virtual bool isLiteral() const;
+    virtual bool isLiteral() const;
 	virtual ValuePtr evaluate(const class Context *context) const = 0;
 	virtual void print(std::ostream &stream) const = 0;
 };

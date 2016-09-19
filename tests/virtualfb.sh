@@ -5,9 +5,36 @@
 
 debug=1
 
+verify_pid()
+{
+  verify_pid_result=0
+  PID0=$1
+  PID1=$2
+  BIN=$3
+  if [ "`ps cax | grep $PID0 | grep $BIN`" ]; then
+    verify_pid_result=$PID0
+  elif [ "`ps cax | grep $PID1 | grep $BIN`" ]; then
+    verify_pid_result=$PID1
+  fi
+  return
+}
+
+guess_pid_from_ps()
+{
+  guess_pid_from_ps_result=0
+  BIN=$1
+  if [ "`ps cx | grep $BIN`" ]; then
+    echo guessing PID from ps cx '|' grep $BIN
+    echo `ps cx | grep $BIN`
+    guess_pid_from_ps_result=`ps cx | grep $BIN | awk '{ print $1 }';`
+  fi
+  return
+}
+
 start()
 {
   VFB_BINARY=
+  VFB_PID=0
 
   if [ "`command -v Xvnc`" ]; then
     VFB_BINARY=Xvnc
@@ -29,19 +56,38 @@ start()
   if [ $debug ]; then
     echo debug VFB_DISPLAY $VFB_DISPLAY
     echo debug VFB_BINARY $VFB_BINARY
+    echo debug VFB_OPTIONS $VFB_OPTIONS
   fi
   $VFB_BINARY $VFB_DISPLAY $VFB_OPTIONS > ./virtualfb1.log 2> ./virtualfb2.log &
   # on some systems $! gives us VFB_BINARY's PID, on others we have to subtract 1
   VFB_PID_MINUS0=$!
   VFB_PID_MINUS1=$(($VFB_PID_MINUS0 - 1))
 
-  if [ "`ps cax | grep $VFB_PID_MINUS0 | grep $VFB_BINARY`" ]; then
-    VFB_PID=$VFB_PID_MINUS0
-  elif [ "`ps cax | grep $VFB_PID_MINUS1 | grep $VFB_BINARY`" ]; then
-    VFB_PID=$VFB_PID_MINUS1
-  else
+  if [ $debug ]; then
+    echo debug '$!' was $VFB_PID_MINUS0
+  fi
+
+  count=3
+  while [ "$count" -gt 0 ]; do
+    verify_pid $VFB_PID_MINUS0 $VFB_PID_MINUS1 $VFB_BINARY
+    if [ $verify_pid_result -gt 0 ]; then
+      VFB_PID=$verify_pid_result
+      count=0
+    else
+      echo "failed to find PID $VFB_PID_MINUS0 or $VFB_PID_MINUS1. Retrying"
+      sleep 1
+      count=`expr $count - 1`
+    fi
+  done
+
+  if [ $VFB_PID -eq 0 ]; then
+    guess_pid_from_ps $VFB_BINARY
+    VFB_PID=$guess_pid_from_ps_result
+  fi
+
+  if [ $VFB_PID -eq 0 ]; then
     echo "started $VFB_BINARY but cannot find process ID in process table ($VFB_PID_MINUS0 or $VFB_PID_MINUS1)"
-    echo please stop $VFB_BINARY manually
+    echo "please stop $VFB_BINARY manually"
     if [ $debug ]; then
         echo `ps cax | grep $VFB_BINARY`
         echo "stdout:"
