@@ -23,6 +23,12 @@
 #endif // GNUG
 #endif // ENABLE_CGAL
 
+#ifdef ENABLE_LIBZIP
+#include <zip.h>
+#else
+#define LIBZIP_VERSION "<not enabled>"
+#endif
+
 extern std::vector<std::string> librarypath;
 extern std::vector<std::string> fontpath;
 
@@ -101,6 +107,7 @@ std::string LibraryInfo::info()
 #endif
 	  << "\nMingW build: " << mingwstatus
 	  << "\nGLib version: "       << GLIB_MAJOR_VERSION << "." << GLIB_MINOR_VERSION << "." << GLIB_MICRO_VERSION
+	  << "\nlibzip version: " << LIBZIP_VERSION
 	  << "\nApplication Path: " << PlatformUtils::applicationPath()
 	  << "\nDocuments Path: " << PlatformUtils::documentsPath()
 	  << "\nResource Path: " << PlatformUtils::resourceBasePath()

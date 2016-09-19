@@ -184,6 +184,7 @@ CONFIG += freetype
 CONFIG += fontconfig
 CONFIG += gettext
 CONFIG += libxml2
+CONFIG += libzip
 
 #Uncomment the following line to enable the QScintilla editor
 !nogui {

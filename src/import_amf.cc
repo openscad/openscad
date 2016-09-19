@@ -41,88 +41,129 @@
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
-fs::path path("/");
-const std::string text_node("#text");
-const std::string object("/amf/object");
-const std::string coordinates("/amf/object/mesh/vertices/vertex/coordinates");
-const std::string coordinates_x = coordinates + "/x";
-const std::string coordinates_y = coordinates + "/y";
-const std::string coordinates_z = coordinates + "/z";
-const std::string triangle("/amf/object/mesh/volume/triangle");
-const std::string triangle_v1 = triangle + "/v1";
-const std::string triangle_v2 = triangle + "/v2";
-const std::string triangle_v3 = triangle + "/v3";
+static const std::string text_node("#text");
+static const std::string object("/amf/object");
+static const std::string coordinates("/amf/object/mesh/vertices/vertex/coordinates");
+static const std::string coordinates_x = coordinates + "/x";
+static const std::string coordinates_y = coordinates + "/y";
+static const std::string coordinates_z = coordinates + "/z";
+static const std::string triangle("/amf/object/mesh/volume/triangle");
+static const std::string triangle_v1 = triangle + "/v1";
+static const std::string triangle_v2 = triangle + "/v2";
+static const std::string triangle_v3 = triangle + "/v3";
 
-typedef void (*cb_func)(const xmlChar *);
+class AmfImporter {
+private:
+	fs::path path;
 
-static PolySet *polySet;
-static Eigen::Vector3d vertex;
-static int idx_v1, idx_v2, idx_v3;
-static std::vector<Eigen::Vector3d> vertex_list;
-static std::vector<PolySet *> polySets;
+	typedef void (*cb_func)(AmfImporter *, const xmlChar *);
 
-static std::map<const std::string, cb_func> funcs;
-static std::map<const std::string, cb_func> start_funcs;
-static std::map<const std::string, cb_func> end_funcs;
+	PolySet *polySet;
+	std::vector<PolySet *> polySets;
+	
+	double x, y, z;
+	int idx_v1, idx_v2, idx_v3;
+	std::vector<Eigen::Vector3d> vertex_list;
 
-static void set_x(const xmlChar *value)
+	std::map<const std::string, cb_func> funcs;
+	std::map<const std::string, cb_func> start_funcs;
+	std::map<const std::string, cb_func> end_funcs;
+
+	static void set_x(AmfImporter *importer, const xmlChar *value);
+	static void set_y(AmfImporter *importer, const xmlChar *value);
+	static void set_z(AmfImporter *importer, const xmlChar *value);
+	static void set_v1(AmfImporter *importer, const xmlChar *value);
+	static void set_v2(AmfImporter *importer, const xmlChar *value);
+	static void set_v3(AmfImporter *importer, const xmlChar *value);
+	static void start_object(AmfImporter *importer, const xmlChar *value);
+	static void end_object(AmfImporter *importer, const xmlChar *value);
+	static void end_triangle(AmfImporter *importer, const xmlChar *vlue);
+	static void end_vertex(AmfImporter *importer, const xmlChar *value);
+	
+	int streamFile(const char *filename);
+	void processNode(xmlTextReaderPtr reader);
+
+public:
+	AmfImporter();
+	virtual ~AmfImporter();
+	PolySet *read(const std::string filename);
+	
+	virtual xmlTextReaderPtr createXmlReader(const char *filename);
+};
+
+AmfImporter::AmfImporter() : path("/")
 {
-	double x = atof((const char *) value);
-	vertex = Eigen::Vector3d(x, vertex.y(), vertex.z());
 }
 
-static void set_y(const xmlChar *value)
+AmfImporter::~AmfImporter()
 {
-	double y = atof((const char *) value);
-	vertex = Eigen::Vector3d(vertex.x(), y, vertex.z());
 }
-
-static void set_z(const xmlChar *value)
+	
+void AmfImporter::set_x(AmfImporter *importer, const xmlChar *value)
 {
-	double z = atof((const char *) value);
-	vertex = Eigen::Vector3d(vertex.x(), vertex.y(), z);
+	importer->x = boost::lexical_cast<double>(std::string((const char *)value));
 }
 
-static void set_v1(const xmlChar *value)
+void AmfImporter::set_y(AmfImporter *importer, const xmlChar *value)
 {
-	idx_v1 = atof((const char *)value);
+	importer->y = boost::lexical_cast<double>(std::string((const char *)value));
 }
 
-static void set_v2(const xmlChar *value)
+void AmfImporter::set_z(AmfImporter *importer, const xmlChar *value)
 {
-	idx_v2 = atof((const char *)value);
+	importer->z = boost::lexical_cast<double>(std::string((const char *)value));
 }
 
-static void set_v3(const xmlChar *value)
+void AmfImporter::set_v1(AmfImporter *importer, const xmlChar *value)
 {
-	idx_v3 = atof((const char *)value);
+	importer->idx_v1 = boost::lexical_cast<int>(std::string((const char *)value));
 }
 
-static void start_object(const xmlChar *) {
-	polySet = new PolySet(3);
-}
-
-static void end_vertex(const xmlChar *)
+void AmfImporter::set_v2(AmfImporter *importer, const xmlChar *value)
 {
-	vertex_list.push_back(vertex);
+	importer->idx_v2 = boost::lexical_cast<int>(std::string((const char *)value));
 }
 
-static void end_triangle(const xmlChar *)
+void AmfImporter::set_v3(AmfImporter *importer, const xmlChar *value)
 {
-	polySet->append_poly();
-	polySet->append_vertex(vertex_list[idx_v1].x(), vertex_list[idx_v1].y(), vertex_list[idx_v1].z());
-	polySet->append_vertex(vertex_list[idx_v2].x(), vertex_list[idx_v2].y(), vertex_list[idx_v2].z());
-	polySet->append_vertex(vertex_list[idx_v3].x(), vertex_list[idx_v3].y(), vertex_list[idx_v3].z());
+	importer->idx_v3 = boost::lexical_cast<int>(std::string((const char *)value));
 }
 
-static void end_object(const xmlChar *)
+void AmfImporter::start_object(AmfImporter *importer, const xmlChar *)
 {
-	polySets.push_back(polySet);
-	vertex_list.clear();
-	polySet = NULL;
+	importer->polySet = new PolySet(3);
 }
 
-static void processNode(xmlTextReaderPtr reader)
+void AmfImporter::end_object(AmfImporter *importer, const xmlChar *)
+{
+	PRINTDB("AMF: add object %d", importer->polySets.size());
+	importer->polySets.push_back(importer->polySet);
+	importer->vertex_list.clear();
+	importer->polySet = NULL;
+}
+
+void AmfImporter::end_vertex(AmfImporter *importer, const xmlChar *)
+{
+	PRINTDB("AMF: add vertex %d - (%.2f, %.2f, %.2f)", importer->vertex_list.size() % importer->x % importer->y % importer->z);
+	importer->vertex_list.push_back(Eigen::Vector3d(importer->x, importer->y, importer->z));
+}
+
+void AmfImporter::end_triangle(AmfImporter *importer, const xmlChar *)
+{
+	int idx_v1 = importer->idx_v1;
+	int idx_v2 = importer->idx_v2;
+	int idx_v3 = importer->idx_v3;
+	PRINTDB("AMF: add triangle %d - (%.2f, %.2f, %.2f)", importer->vertex_list.size() % idx_v1 % idx_v2 % idx_v3);
+
+	std::vector<Eigen::Vector3d> &v = importer->vertex_list;
+	
+	importer->polySet->append_poly();
+	importer->polySet->append_vertex(v[idx_v1].x(), v[idx_v1].y(), v[idx_v1].z());
+	importer->polySet->append_vertex(v[idx_v2].x(), v[idx_v2].y(), v[idx_v2].z());
+	importer->polySet->append_vertex(v[idx_v3].x(), v[idx_v3].y(), v[idx_v3].z());
+}
+
+void AmfImporter::processNode(xmlTextReaderPtr reader)
 {
 	const char *name = reinterpret_cast<const char *> (xmlTextReaderName(reader));
 	if (name == NULL)
@@ -136,24 +177,27 @@ static void processNode(xmlTextReaderPtr reader)
 		path /= name;
 		cb_func startFunc = start_funcs[path.string()];
 		if (startFunc) {
-			startFunc(NULL);
+			PRINTDB("AMF: start %s", path.string());
+			startFunc(this, NULL);
 		}
 	}
 		break;
 	case XML_READER_TYPE_END_ELEMENT:
 	{
-		cb_func f1 = end_funcs[path.string()];
-		if (f1) {
-			f1(value);
+		cb_func endFunc = end_funcs[path.string()];
+		if (endFunc) {
+			PRINTDB("AMF: end   %s", path.string());
+			endFunc(this, value);
 		}
 		path = path.parent_path();
 	}
 		break;
 	case XML_READER_TYPE_TEXT:
 	{
-		cb_func f = funcs[path.string()];
-		if (f) {
-			f(value);
+		cb_func textFunc = funcs[path.string()];
+		if (textFunc) {
+			PRINTDB("AMF: text  %s - '%s'", path.string() % value);
+			textFunc(this, value);
 		}
 	}
 		break;
@@ -163,30 +207,41 @@ static void processNode(xmlTextReaderPtr reader)
 	xmlFree((void *) (name));
 }
 
-static int streamFile(const char *filename)
+xmlTextReaderPtr AmfImporter::createXmlReader(const char *filename)
 {
-	xmlTextReaderPtr reader;
+	return xmlReaderForFile(filename, NULL, XML_PARSE_NOENT | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+}
+
+int AmfImporter::streamFile(const char *filename)
+{
 	int ret;
 
-	reader = xmlNewTextReaderFilename(filename);
-	xmlTextReaderSetParserProp(reader, XML_PARSER_SUBST_ENTITIES, 1);
-	if (reader != NULL) {
+	xmlTextReaderPtr reader = createXmlReader(filename);
+	
+	if (reader == NULL) {
+		PRINTB("WARNING: Can't open import file '%s'.", filename);
+		return 1;
+	}
+
+	try {
+		xmlTextReaderSetParserProp(reader, XML_PARSER_SUBST_ENTITIES, 1);
 		ret = xmlTextReaderRead(reader);
 		while (ret == 1) {
 			processNode(reader);
 			ret = xmlTextReaderRead(reader);
 		}
 		xmlFreeTextReader(reader);
-		if (ret != 0) {
-			printf("%s : failed to parse\n", filename);
-		}
-	} else {
-		printf("Unable to open %s\n", filename);
+	} catch (boost::bad_lexical_cast &) {
+		ret = -1;
 	}
-	return 0;
+	if (ret != 0) {
+		PRINTB("WARNING: Failed to parse file '%s'.", filename);
+	}
+	return ret;
 }
 
-PolySet *import_amf(const std::string filename) {
+PolySet * AmfImporter::read(const std::string filename)
+{
 	funcs[coordinates_x] = set_x;
 	funcs[coordinates_y] = set_y;
 	funcs[coordinates_z] = set_z;
@@ -200,11 +255,11 @@ PolySet *import_amf(const std::string filename) {
 	streamFile(filename.c_str());
 	vertex_list.clear();
 
-	PolySet *p;
+	PolySet *p = NULL;
 #ifdef ENABLE_CGAL
 	if (polySets.size() == 1) {
 		p = polySets[0];
-	} else {
+	} if (polySets.size() > 1) {
 		Geometry::Geometries children;
 		for (std::vector<PolySet *>::iterator it = polySets.begin();it != polySets.end();it++) {
 			children.push_back(std::make_pair((const AbstractNode*)NULL,  shared_ptr<const Geometry>(*it)));
@@ -213,13 +268,96 @@ PolySet *import_amf(const std::string filename) {
 		PolySet *result = new PolySet(3);
 		if (CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, *result)) {
 			delete result;
+			p = new PolySet(3);
+			PRINTB("ERROR: Error importing multi-object AMF file '%s'", filename);
 		} else {
 			p = result;
 		}
 	}
-#else
-	p = new PolySet(3);
 #endif
+	if (!p) {
+		p = new PolySet(3);
+	}
 	polySets.clear();
 	return p;
 }
+
+#if ENABLE_LIBZIP
+
+#include <zip.h>
+
+class AmfImporterZIP : public AmfImporter
+{
+private:
+	struct zip *archive;
+	struct zip_file *zipfile;
+
+	static int read_callback(void *context, char *buffer, int len);
+	static int close_callback(void *context);
+
+public:
+	AmfImporterZIP();
+	virtual ~AmfImporterZIP();
+
+	virtual xmlTextReaderPtr createXmlReader(const char *filename);
+};
+
+AmfImporterZIP::AmfImporterZIP()
+{
+}
+
+AmfImporterZIP::~AmfImporterZIP()
+{
+}
+
+int AmfImporterZIP::read_callback(void *context, char *buffer, int len)
+{
+	AmfImporterZIP *importer = (AmfImporterZIP *)context;
+	return zip_fread(importer->zipfile, buffer, len);
+}
+
+int AmfImporterZIP::close_callback(void *context)
+{
+	AmfImporterZIP *importer = (AmfImporterZIP *)context;
+	return zip_fclose(importer->zipfile);
+}
+
+xmlTextReaderPtr AmfImporterZIP::createXmlReader(const char *filename)
+{
+	archive = zip_open(filename, 0, NULL);
+	if (archive) {
+		fs::path f(filename);
+		zipfile = zip_fopen(archive, f.filename().c_str(), ZIP_FL_NODIR);
+		if (zipfile == NULL) {
+			PRINTB("WARNING: Can't read file '%s' from zipped AMF '%s'", f.filename().c_str() % filename);
+		}
+		if ((zipfile == NULL) && (zip_get_num_files(archive) == 1)) {
+			PRINTB("WARNING: Trying to read single entry '%s'", zip_get_name(archive, 0, 0));
+			zipfile = zip_fopen_index(archive, 0, 0);
+		}
+		if (zipfile) {
+			return xmlReaderForIO(read_callback, close_callback, this, f.filename().c_str(), NULL,
+				XML_PARSE_NOENT | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+		} else {
+			zip_close(archive);
+			zipfile = NULL;
+			return NULL;
+		}
+	} else {
+		return AmfImporter::createXmlReader(filename);
+	}
+}
+
+PolySet *import_amf(const std::string filename) {
+	AmfImporterZIP importer;
+	return importer.read(filename);
+}
+
+#else
+
+PolySet *import_amf(const std::string filename) {
+	AmfImporter importer;
+	return importer.read(filename);
+}
+
+#endif
