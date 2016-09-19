@@ -24,7 +24,6 @@ public:
 						 shared_ptr<class Expression> expr = shared_ptr<class Expression>(),
 						 const Location &loc = Location::NONE)
 		: ASTNode(loc), name(name), expr(expr) { }
-    void updateLoc(const Location & loc);
 	std::string name;
 	shared_ptr<class Expression> expr;
     typedef std::vector<Assignment> AssignmentList;

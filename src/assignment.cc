@@ -45,8 +45,3 @@ const Annotation * Assignment::annotation(const std::string &name) const
 	AnnotationMap::const_iterator it = annotations.find(name);
 	return it == annotations.end() ? NULL : (*it).second;
 }
-
-void Assignment::updateLoc( const Location &loc){
-    
-    this->loc=loc;
-}
