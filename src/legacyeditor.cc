@@ -185,6 +185,11 @@ void LegacyEditor::setText(const QString &text)
 	this->textedit->insertPlainText(text);
 }
 
+bool LegacyEditor::canUndo()
+{
+    return (this->textedit->document()->availableUndoSteps() != 0);
+}
+
 void LegacyEditor::undo()
 {
 	this->textedit->undo();

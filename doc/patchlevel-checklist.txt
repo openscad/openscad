@@ -1,6 +1,10 @@
-Given a version, e.g. 2015.03, and a patchlevel release, e.g. 2015.03-1
+Given:
+ VERSION (e.g. 2015.03-1)
 
-o Make sure we have a "$VERSION" branch. If not, create one
+o Make sure we have a $VERSION branch. If not, create one
+
+o Update releases/$VERSION.md
+o scripts/makereleasenotes.sh
 
 o Update VERSION and VERSIONDATE in
   openscad.pro
@@ -18,7 +22,6 @@ o Upload Source package
 o Revert VERSION and VERSIONDATE in openscad.pro scripts/publish-macosx.sh scripts/release-common.sh scripts/publish-mingw-x.sh tests/CMakeLists.txt
 
 o Announce:
-  - ./scripts/github-release.sh $VERSION
   - Write short release email to mailing list
   - Tweet as OpenSCAD
   - Notify package managers

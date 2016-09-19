@@ -43,24 +43,26 @@
 #include <QErrorMessage>
 #include "OpenCSGWarningDialog.h"
 
-#include "mathc99.h"
 #include <stdio.h>
+#include <sstream>
 
 #ifdef ENABLE_OPENCSG
 #  include <opencsg.h>
 #endif
 
-QGLView::QGLView(QWidget *parent) : QGLWidget(parent)
+QGLView::QGLView(QWidget *parent) :
+#ifdef USE_QOPENGLWIDGET
+	QOpenGLWidget(parent)
+#else
+	QGLWidget(parent)
+#endif
 {
   init();
 }
 
-QGLView::QGLView(const QGLFormat & format, QWidget *parent) : QGLWidget(format, parent)
-{
-  init();
-}
-
+#if defined(_WIN32) && !defined(USE_QOPENGLWIDGET)
 static bool running_under_wine = false;
+#endif
 
 void QGLView::init()
 {
@@ -71,8 +73,10 @@ void QGLView::init()
 
   setMouseTracking(true);
 
+
+
+#if defined(_WIN32) && !defined(USE_QOPENGLWIDGET)
 // see paintGL() + issue160 + wine FAQ
-#ifdef _WIN32
 #include <windows.h>
   HMODULE hntdll = GetModuleHandle(L"ntdll.dll");
   if (hntdll)
@@ -106,10 +110,25 @@ void QGLView::initializeGL()
 
 std::string QGLView::getRendererInfo() const
 {
-  std::string glewinfo = glew_dump();
-  std::string glextlist = glew_extensions_dump();
-	// Don't translate as translated text in the Library Info dialog is not wanted
-  return glewinfo + std::string("\nUsing QGLWidget\n\n") + glextlist;
+  std::stringstream info;
+  info << glew_dump();
+  // Don't translate as translated text in the Library Info dialog is not wanted
+#ifdef USE_QOPENGLWIDGET
+  info << "\nQt graphics widget: QOpenGLWidget";
+  QSurfaceFormat qsf = this->format();
+  int rbits = qsf.redBufferSize();
+  int gbits = qsf.greenBufferSize();
+  int bbits = qsf.blueBufferSize();
+  int abits = qsf.alphaBufferSize();
+  int dbits = qsf.depthBufferSize();
+  int sbits = qsf.stencilBufferSize();
+  info << boost::format("\nQSurfaceFormat: RGBA(%d%d%d%d), depth(%d), stencil(%d)\n\n") %
+    rbits % gbits % bbits % abits % dbits % sbits;
+#else
+  info << "\nQt graphics widget: QGLWidget";
+#endif
+  info << glew_extensions_dump();
+  return info.str();
 }
 
 #ifdef ENABLE_OPENCSG
@@ -161,10 +180,16 @@ void QGLView::paintGL()
   if (statusLabel) {
     Camera nc(cam);
     nc.gimbalDefaultTranslate();
-    statusLabel->setText(QString::fromStdString(nc.statusText()));
+	const QString status = QString("%1 (%2x%3)")
+		.arg(QString::fromStdString(nc.statusText()))
+		.arg(size().rwidth())
+		.arg(size().rheight());
+    statusLabel->setText(status);
   }
 
+#if defined(_WIN32) && !defined(USE_QOPENGLWIDGET)
   if (running_under_wine) swapBuffers();
+#endif
 }
 
 void QGLView::mousePressEvent(QMouseEvent *event)
@@ -189,7 +214,12 @@ void QGLView::mouseDoubleClickEvent (QMouseEvent *event) {
 	double y = viewport[3] - event->pos().y() * this->getDPI();
 	GLfloat z = 0;
 
+	glGetError(); // clear error state so we don't pick up previous errors
 	glReadPixels(x, y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &z);
+	GLenum glError = glGetError();
+	if (glError != GL_NO_ERROR) {
+		return;
+	}
 
 	if (z == 1) return; // outside object
 

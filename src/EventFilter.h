@@ -2,7 +2,7 @@
 
 #include <QObject>
 #include <QFileOpenEvent>
-#include "MainWindow.h"
+#include "OpenSCADApp.h"
 #include "launchingscreen.h"
 
 class EventFilter : public QObject
@@ -24,7 +24,7 @@ protected:
 																	Q_ARG(QString, filename));
 			}
 			else {
-				MainWindow::requestOpenFile(filename);
+				scadApp->requestOpenFile(filename);
 			}
 			return true;
 		} else {

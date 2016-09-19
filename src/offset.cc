@@ -27,13 +27,13 @@
 #include "offsetnode.h"
 
 #include "module.h"
+#include "ModuleInstantiation.h"
 #include "evalcontext.h"
 #include "printutils.h"
 #include "fileutils.h"
 #include "builtin.h"
 #include "calc.h"
 #include "polyset.h"
-#include "mathc99.h" 
 
 #include <sstream>
 #include <boost/assign/std/vector.hpp>

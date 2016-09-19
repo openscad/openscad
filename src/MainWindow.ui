@@ -274,7 +274,7 @@
      <x>0</x>
      <y>0</y>
      <width>1118</width>
-     <height>25</height>
+     <height>19</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -559,6 +559,7 @@
      </item>
     </layout>
    </widget>
+   <addaction name="editActionRedo_2"/>
   </widget>
   <widget class="Dock" name="consoleDock">
    <attribute name="dockWidgetArea">
@@ -661,6 +662,9 @@
    </property>
   </action>
   <action name="editActionUndo">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="../openscad.qrc">
      <normaloff>:/images/Command-Undo-32.png</normaloff>:/images/Command-Undo-32.png</iconset>
@@ -685,6 +689,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+Z</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
+   </property>
+  </action>
+  <action name="editActionRedo_2">
+   <property name="shortcut">
+    <string>Ctrl+Y</string>
    </property>
    <property name="shortcutContext">
     <enum>Qt::WidgetWithChildrenShortcut</enum>
@@ -1279,6 +1291,9 @@
    </property>
    <property name="text">
     <string>View All</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+V</string>
    </property>
   </action>
   <action name="editActionConvertTabsToSpaces">

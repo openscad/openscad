@@ -19,7 +19,7 @@ static void setupCamera(Camera &cam, const BoundingBox &bbox)
 	if (cam.viewall) cam.viewAll(bbox);
 }
 
-void export_png(shared_ptr<const Geometry> root_geom, Camera &cam, std::ostream &output)
+void export_png(const shared_ptr<const Geometry> &root_geom, Camera &cam, std::ostream &output)
 {
 	PRINTD("export_png geom");
 	OffscreenView *glview;
@@ -53,37 +53,38 @@ void export_png_preview_common(Tree &tree, Camera &cam, std::ostream &output, Pr
 {
 	PRINTD("export_png_preview_common");
 	CsgInfo csgInfo = CsgInfo();
-    csgInfo.compile_chains(tree);
+  csgInfo.compile_products(tree);
 
+	OffscreenView *glview;
 	try {
-		csgInfo.glview = new OffscreenView(cam.pixel_width, cam.pixel_height);
+		glview = new OffscreenView(cam.pixel_width, cam.pixel_height);
 	} catch (int error) {
 		fprintf(stderr,"Can't create OpenGL OffscreenView. Code: %i.\n", error);
 		return;
 	}
 
 #ifdef ENABLE_OPENCSG
-	OpenCSGRenderer openCSGRenderer(csgInfo.root_chain, csgInfo.highlights_chain, csgInfo.background_chain, csgInfo.glview->shaderinfo);
+	OpenCSGRenderer openCSGRenderer(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products, glview->shaderinfo);
 #endif
-	ThrownTogetherRenderer thrownTogetherRenderer(csgInfo.root_chain, csgInfo.highlights_chain, csgInfo.background_chain);
+	ThrownTogetherRenderer thrownTogetherRenderer(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products);
 
 #ifdef ENABLE_OPENCSG
 	if (previewer == OPENCSG)
-		csgInfo.glview->setRenderer(&openCSGRenderer);
+		glview->setRenderer(&openCSGRenderer);
 	else
 #endif
-		csgInfo.glview->setRenderer(&thrownTogetherRenderer);
+		glview->setRenderer(&thrownTogetherRenderer);
 #ifdef ENABLE_OPENCSG
-	BoundingBox bbox = csgInfo.glview->getRenderer()->getBoundingBox();
+	BoundingBox bbox = glview->getRenderer()->getBoundingBox();
 	setupCamera(cam, bbox);
 
-	csgInfo.glview->setCamera(cam);
+	glview->setCamera(cam);
 	OpenCSG::setContext(0);
 	OpenCSG::setOption(OpenCSG::OffscreenSetting, OpenCSG::FrameBufferObject);
 #endif
-	csgInfo.glview->setColorScheme(RenderSettings::inst()->colorscheme);
-	csgInfo.glview->paintGL();
-	csgInfo.glview->save(output);
+	glview->setColorScheme(RenderSettings::inst()->colorscheme);
+	glview->paintGL();
+	glview->save(output);
 }
 
 void export_png_with_opencsg(Tree &tree, Camera &cam, std::ostream &output)

@@ -3,10 +3,11 @@
 #include <string>
 #include <map>
 #include <list>
-#include "visitor.h"
+#include "NodeVisitor.h"
+#include "node.h"
 #include "nodecache.h"
 
-class NodeDumper : public Visitor
+class NodeDumper : public NodeVisitor
 {
 public:
         /*! If idPrefix is true, we will output "n<id>:" in front of each node,
@@ -16,11 +17,13 @@ public:
         virtual ~NodeDumper() {}
 
         virtual Response visit(State &state, const AbstractNode &node);
+        virtual Response visit(State &state, const RootNode &node);
 
 private:
         void handleVisitedChildren(const State &state, const AbstractNode &node);
         bool isCached(const AbstractNode &node) const;
         void handleIndent(const State &state);
+        std::string dumpChildBlock(const AbstractNode &node);
         std::string dumpChildren(const AbstractNode &node);
 
         NodeCache &cache;

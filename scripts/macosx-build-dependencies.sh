@@ -1,14 +1,12 @@
 #!/bin/bash
 #
 # This script builds all library dependencies of OpenSCAD for Mac OS X.
-# The libraries will be build in 64-bit (and optionally 32-bit mode) mode
-# and backwards compatible with 10.5 "Leopard".
+# The libraries will be build in 64-bit mode and backwards compatible with 10.8 "Mountain Lion".
 # 
 # This script must be run from the OpenSCAD source root directory
 #
 # Usage: macosx-build-dependencies.sh [-16lcdf] [<package>]
-#  -3   Build using C++03 and libstdc++
-#  -6   Build only 64-bit binaries
+#  -3   Build using C++03 and libstdc++ (default is C++11 and libc++)
 #  -l   Force use of LLVM compiler
 #  -c   Force use of clang compiler
 #  -d   Build for deployment (if not specified, e.g. Sparkle won't be built)
@@ -25,46 +23,43 @@ BASEDIR=$PWD/../libraries
 OPENSCADDIR=$PWD
 SRCDIR=$BASEDIR/src
 DEPLOYDIR=$BASEDIR/install
-MAC_OSX_VERSION_MIN=10.7
-OPTION_32BIT=false
+MAC_OSX_VERSION_MIN=10.8
 OPTION_LLVM=false
 OPTION_CLANG=false
-OPTION_GCC=false
 OPTION_DEPLOY=false
 OPTION_FORCE=0
 OPTION_CXX11=true
 
 PACKAGES=(
     # NB! For eigen, also update the path in the function
-    "eigen 3.2.6"
-    "gmp 5.1.3"
-    "mpfr 3.1.3"
-    "boost 1.59.0"
-    "qt5 5.5.1"
-    "qscintilla 2.9"
+    "eigen 3.2.8"
+    "gmp 6.1.1"
+    "mpfr 3.1.4"
+    "boost 1.61.0"
+    "qt5 5.7.0"
+    "qscintilla 2.9.2"
     # NB! For CGAL, also update the actual download URL in the function
-    "cgal 4.6.3"
+    "cgal 4.8.1"
     "glew 1.13.0"
-    "gettext 0.19.6"
+    "gettext 0.19.8"
     "libffi 3.2.1"
     "glib2 2.46.1"
-    "opencsg 1.4.0"
-    "freetype 2.6.1"
+    "opencsg 1.4.1"
+    "freetype 2.6.3"
     "ragel 6.9"
-    "harfbuzz 1.0.6"
-    "libxml2 2.9.2"
-    "fontconfig 2.11.1"
+    "harfbuzz 1.2.7"
+    "libxml2 2.9.4"
+    "fontconfig 2.12.0"
 )
 DEPLOY_PACKAGES=(
-    "sparkle 1.11.0"
+    "sparkle 1.13.1"
 )
 
 printUsage()
 {
-  echo "Usage: $0 [-36lcdf] [<package>]"
+  echo "Usage: $0 [-3lcdf] [<package>]"
   echo
   echo "  -3   Build using C++03 and libstdc++"
-  echo "  -6   Build only 64-bit binaries"
   echo "  -l   Force use of LLVM compiler"
   echo "  -c   Force use of clang compiler"
   echo "  -d   Build for deployment"
@@ -112,7 +107,6 @@ build()
         build_$package $version
         set +e
     fi
-    
 }
 
 # Usage: is_installed <package> [<version>]
@@ -188,9 +182,6 @@ build_qt()
     sed -i "" -e "s/::TabletProximityRec/TabletProximityRec/g"  src/gui/kernel/qt_cocoa_helpers_mac_p.h
     PLATFORM="-platform unsupported/macx-clang"
   fi
-  if $OPTION_32BIT; then
-    QT_32BIT="-arch x86"
-  fi
   case "$OSX_VERSION" in
     9)
       # libtiff fails in the linker step with Mavericks / XCode 5.0.1
@@ -202,7 +193,7 @@ build_qt()
       MACOSX_RELEASE_OPTIONS=
       ;;
   esac
-  ./configure -prefix $DEPLOYDIR -release $QT_32BIT -arch x86_64 -opensource -confirm-license $PLATFORM -fast -no-qt3support -no-svg -no-phonon -no-audio-backend -no-multimedia -no-javascript-jit -no-script -no-scripttools -no-declarative -no-xmlpatterns -nomake demos -nomake examples -nomake docs -nomake translations -no-webkit $MACOSX_RELEASE_OPTIONS
+  ./configure -prefix $DEPLOYDIR -release -arch x86_64 -opensource -confirm-license $PLATFORM -fast -no-qt3support -no-svg -no-phonon -no-audio-backend -no-multimedia -no-javascript-jit -no-script -no-scripttools -no-declarative -no-xmlpatterns -nomake demos -nomake examples -nomake docs -nomake translations -no-webkit $MACOSX_RELEASE_OPTIONS
   make -j"$NUMCPU" install
 }
 
@@ -224,7 +215,6 @@ build_qt5()
   fi
   tar xzf qt-everywhere-opensource-src-$version.tar.gz
   cd qt-everywhere-opensource-src-$version
-  patch -d qtbase -p1 < $OPENSCADDIR/patches/qt5/QTBUG-46846.patch
   if ! $USING_CXX11; then
     QT_EXTRA_FLAGS="-no-c++11"
   fi
@@ -232,10 +222,14 @@ build_qt5()
 		-nomake examples -nomake tests \
 		-no-xcb -no-glib -no-harfbuzz -no-sql-db2 -no-sql-ibase -no-sql-mysql -no-sql-oci -no-sql-odbc \
 		-no-sql-psql -no-sql-sqlite2 -no-sql-tds -no-cups -no-qml-debug \
-		-skip activeqt -skip connectivity -skip declarative -skip doc \
-		-skip enginio -skip graphicaleffects -skip location -skip multimedia \
-		-skip quick1 -skip quickcontrols -skip script -skip sensors -skip serialport \
-		-skip svg -skip webkit -skip webkit-examples -skip websockets -skip xmlpatterns -skip qtwebchannel
+                -skip qtx11extras -skip qtandroidextras -skip qtserialport -skip qtserialbus \
+                -skip qtactiveqt -skip qtxmlpatterns -skip qtdeclarative -skip qtscxml \
+                -skip qtpurchasing -skip qtcanvas3d -skip qtgamepad -skip qtwayland \
+                -skip qtconnectivity -skip qtwebsockets -skip qtwebchannel -skip qtsensors \
+                -skip qtmultimedia -skip qtdatavis3d -skip qtcharts -skip qtwinextras \
+                -skip qtgraphicaleffects -skip qtquickcontrols2 -skip qtquickcontrols \
+                -skip qtvirtualkeyboard -skip qtlocation -skip qtwebengine -skip qtwebview \
+                -skip qtscript -skip qttranslations -skip qtdoc
   make -j"$NUMCPU" 
   make install
 }
@@ -257,8 +251,8 @@ build_qscintilla()
   tar xzf QScintilla-gpl-$version.tar.gz
   cd QScintilla-gpl-$version/Qt4Qt5
   qmake QMAKE_CXXFLAGS+="$CXXSTDFLAGS" QMAKE_LFLAGS+="$CXXSTDFLAGS" qscintilla.pro
-  make -j6 install
-  install_name_tool -id $DEPLOYDIR/lib/libqscintilla2.dylib $DEPLOYDIR/lib/libqscintilla2.dylib
+  make -j"$NUMCPU" install
+  install_name_tool -id @rpath/libqscintilla2.dylib $DEPLOYDIR/lib/libqscintilla2.dylib
 }
 
 check_gmp()
@@ -266,9 +260,6 @@ check_gmp()
     check_file lib/libgmp.dylib
 }
 
-# Hack warning: gmplib is built separately in 32-bit and 64-bit mode
-# and then merged afterwards. gmplib's header files are dependent on
-# the CPU architecture on which configure was run and will be patched accordingly.
 build_gmp()
 {
   version=$1
@@ -281,87 +272,12 @@ build_gmp()
   fi
   tar xjf gmp-$version.tar.bz2
   cd gmp-$version
-  patch -p0 gmp-h.in << EOF
---- gmp-5.1.3/gmp-h.in.old	2013-12-02 20:16:26.000000000 -0800
-+++ gmp-5.1.3/gmp-h.in	2013-12-02 20:21:22.000000000 -0800
-@@ -27,13 +27,38 @@
- #endif
- 
- 
--/* Instantiated by configure. */
- #if ! defined (__GMP_WITHIN_CONFIGURE)
-+/* For benefit of fat builds on MacOSX, generate a .h file that can
-+ * be used with a universal fat library
-+ */
-+#if defined(__x86_64__)
-+#define __GMP_HAVE_HOST_CPU_FAMILY_power   0
-+#define __GMP_HAVE_HOST_CPU_FAMILY_powerpc 0
-+#define GMP_LIMB_BITS                      64
-+#define GMP_NAIL_BITS                      0
-+#elif defined(__i386__)
-+#define __GMP_HAVE_HOST_CPU_FAMILY_power   0
-+#define __GMP_HAVE_HOST_CPU_FAMILY_powerpc 0
-+#define GMP_LIMB_BITS                      32
-+#define GMP_NAIL_BITS                      0
-+#elif defined(__powerpc64__)
-+#define __GMP_HAVE_HOST_CPU_FAMILY_power   0
-+#define __GMP_HAVE_HOST_CPU_FAMILY_powerpc 1
-+#define GMP_LIMB_BITS                      64
-+#define GMP_NAIL_BITS                      0
-+#elif defined(__ppc__)
-+#define __GMP_HAVE_HOST_CPU_FAMILY_power   0
-+#define __GMP_HAVE_HOST_CPU_FAMILY_powerpc 1
-+#define GMP_LIMB_BITS                      32
-+#define GMP_NAIL_BITS                      0
-+#else
-+/* For other architectures, fall back on values computed by configure */
- #define __GMP_HAVE_HOST_CPU_FAMILY_power   @HAVE_HOST_CPU_FAMILY_power@
- #define __GMP_HAVE_HOST_CPU_FAMILY_powerpc @HAVE_HOST_CPU_FAMILY_powerpc@
- #define GMP_LIMB_BITS                      @GMP_LIMB_BITS@
- #define GMP_NAIL_BITS                      @GMP_NAIL_BITS@
- #endif
-+#endif
- #define GMP_NUMB_BITS     (GMP_LIMB_BITS - GMP_NAIL_BITS)
- #define GMP_NUMB_MASK     ((~ __GMP_CAST (mp_limb_t, 0)) >> GMP_NAIL_BITS)
- #define GMP_NUMB_MAX      GMP_NUMB_MASK
-EOF
+  ./configure --prefix=$DEPLOYDIR CXXFLAGS="$CXXSTDFLAGS" CFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64" LDFLAGS="$LDSTDFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64" ABI=64 --enable-cxx
+  make -j"$NUMCPU" install
 
-  if $OPTION_32BIT; then
-    mkdir build-i386
-    cd build-i386
-    ../configure --prefix=$DEPLOYDIR/i386 CXXFLAGS="$CXXSTDFLAGS" CFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch i386" LDFLAGS="$LDSTDFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch i386" ABI=32 --enable-cxx
-    make install
-    cd ..
-  fi
-
-  # 64-bit version
-  mkdir build-x86_64
-  cd build-x86_64
-  ../configure --prefix=$DEPLOYDIR/x86_64 CXXFLAGS="$CXXSTDFLAGS" CFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64" LDFLAGS="$LDSTDFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64" ABI=64 --enable-cxx
-  make install
-
-  # merge
-  cd $DEPLOYDIR
-  mkdir -p lib
-  if $OPTION_32BIT; then
-    lipo -create i386/lib/libgmp.dylib x86_64/lib/libgmp.dylib -output lib/libgmp.dylib
-    lipo -create i386/lib/libgmpxx.dylib x86_64/lib/libgmpxx.dylib -output lib/libgmpxx.dylib
-  else
-    cp x86_64/lib/libgmp.dylib lib/libgmp.dylib
-    cp x86_64/lib/libgmpxx.dylib lib/libgmpxx.dylib
-  fi
-  install_name_tool -id $DEPLOYDIR/lib/libgmp.dylib lib/libgmp.dylib
-  install_name_tool -id $DEPLOYDIR/lib/libgmpxx.dylib lib/libgmpxx.dylib
-  install_name_tool -change $DEPLOYDIR/x86_64/lib/libgmp.10.dylib $DEPLOYDIR/lib/libgmp.dylib lib/libgmpxx.dylib
-  if $OPTION_32BIT; then
-    cp lib/libgmp.dylib i386/lib/
-    cp lib/libgmp.dylib x86_64/lib/
-    cp lib/libgmpxx.dylib i386/lib/
-    cp lib/libgmpxx.dylib x86_64/lib/
-  fi
-  mkdir -p include
-  cp x86_64/include/gmp.h include/
-  cp x86_64/include/gmpxx.h include/
+  install_name_tool -id @rpath/libgmp.dylib $DEPLOYDIR/lib/libgmp.dylib
+  install_name_tool -id @rpath/libgmpxx.dylib $DEPLOYDIR/lib/libgmpxx.dylib
+  install_name_tool -change $DEPLOYDIR/lib/libgmp.10.dylib @rpath/libgmp.dylib $DEPLOYDIR/lib/libgmpxx.dylib
 }
 
 check_mpfr()
@@ -371,6 +287,11 @@ check_mpfr()
 
 # As with gmplib, mpfr is built separately in 32-bit and 64-bit mode and then merged
 # afterwards.
+check_mpfr()
+{
+    check_file include/mpfr.h
+}
+
 build_mpfr()
 {
   version=$1
@@ -383,33 +304,11 @@ build_mpfr()
   fi
   tar xjf mpfr-$version.tar.bz2
   cd mpfr-$version
-#  curl -O http://www.mpfr.org/mpfr-$version/allpatches
-#  patch -N -Z -p1 < allpatches 
-  if $OPTION_32BIT; then
-    mkdir build-i386
-    cd build-i386
-    ../configure --prefix=$DEPLOYDIR/i386 --with-gmp=$DEPLOYDIR/i386 CFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch i386" LDFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch i386"
-    make install
-    cd ..
-  fi
 
-  # 64-bit version
-  mkdir build-x86_64
-  cd build-x86_64
-  ../configure --prefix=$DEPLOYDIR/x86_64 --with-gmp=$DEPLOYDIR/x86_64 CFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64" LDFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64"
-  make install
+  ./configure --prefix=$DEPLOYDIR --with-gmp=$DEPLOYDIR CFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64" LDFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64"
+  make -j"$NUMCPU" install
 
-  # merge
-  cd $DEPLOYDIR
-  if $OPTION_32BIT; then
-    lipo -create i386/lib/libmpfr.dylib x86_64/lib/libmpfr.dylib -output lib/libmpfr.dylib
-  else
-    cp x86_64/lib/libmpfr.dylib lib/libmpfr.dylib
-  fi
-  install_name_tool -id $DEPLOYDIR/lib/libmpfr.dylib lib/libmpfr.dylib
-  mkdir -p include
-  cp x86_64/include/mpfr.h include/
-  cp x86_64/include/mpf2mpfr.h include/
+  install_name_tool -id @rpath/libmpfr.dylib $DEPLOYDIR/lib/libmpfr.dylib
 }
 
 check_boost()
@@ -432,9 +331,6 @@ build_boost()
   cd boost_$bversion
   # We only need the thread and program_options libraries
   ./bootstrap.sh --prefix=$DEPLOYDIR --with-libraries=thread,program_options,filesystem,chrono,system,regex
-  if $OPTION_32BIT; then
-    BOOST_EXTRA_FLAGS="-arch i386"
-  fi
   if $USING_LLVM; then
     BOOST_TOOLSET="toolset=darwin-llvm"
     echo "using darwin : llvm : llvm-g++ ;" >> tools/build/user-config.jam 
@@ -442,17 +338,7 @@ build_boost()
     BOOST_TOOLSET="toolset=clang"
     echo "using clang ;" >> tools/build/user-config.jam 
   fi
-  ./b2 -j"$NUMCPU" -d+2 $BOOST_TOOLSET cflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64 $BOOST_EXTRA_FLAGS $CXXSTDFLAGS" linkflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64 $BOOST_EXTRA_FLAGS $LDSTDFLAGS -headerpad_max_install_names" install
-  install_name_tool -id $DEPLOYDIR/lib/libboost_thread.dylib $DEPLOYDIR/lib/libboost_thread.dylib 
-  install_name_tool -change libboost_system.dylib $DEPLOYDIR/lib/libboost_system.dylib $DEPLOYDIR/lib/libboost_thread.dylib 
-  install_name_tool -change libboost_chrono.dylib $DEPLOYDIR/lib/libboost_chrono.dylib $DEPLOYDIR/lib/libboost_thread.dylib 
-  install_name_tool -id $DEPLOYDIR/lib/libboost_program_options.dylib $DEPLOYDIR/lib/libboost_program_options.dylib 
-  install_name_tool -id $DEPLOYDIR/lib/libboost_filesystem.dylib $DEPLOYDIR/lib/libboost_filesystem.dylib 
-  install_name_tool -change libboost_system.dylib $DEPLOYDIR/lib/libboost_system.dylib $DEPLOYDIR/lib/libboost_filesystem.dylib 
-  install_name_tool -id $DEPLOYDIR/lib/libboost_system.dylib $DEPLOYDIR/lib/libboost_system.dylib 
-  install_name_tool -id $DEPLOYDIR/lib/libboost_regex.dylib $DEPLOYDIR/lib/libboost_regex.dylib 
-
-
+  ./b2 -j"$NUMCPU" -d+2 $BOOST_TOOLSET cflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64 $CXXSTDFLAGS" linkflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64  $LDSTDFLAGS -headerpad_max_install_names" install
 }
 
 check_cgal()
@@ -467,9 +353,10 @@ build_cgal()
   echo "Building CGAL" $version "..."
   cd $BASEDIR/src
   rm -rf CGAL-$version
-  if [ ! -f CGAL-$version.tar.gz ]; then
-    # 4.6.3
-    curl -O https://gforge.inria.fr/frs/download.php/file/35138/CGAL-$version.tar.gz
+  if [ ! -f CGAL-$version.tar.xz ]; then
+    # 4.8  
+    curl -LO https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-$version/CGAL-$version.tar.xz
+    # 4.6.3 curl -O https://gforge.inria.fr/frs/download.php/file/35138/CGAL-$version.tar.gz
     # 4.5.2 curl -O https://gforge.inria.fr/frs/download.php/file/34512/CGAL-$version.tar.gz
     # 4.5.1 curl -O https://gforge.inria.fr/frs/download.php/file/34400/CGAL-$version.tar.gz
     # 4.5 curl -O https://gforge.inria.fr/frs/download.php/file/34149/CGAL-$version.tar.gz
@@ -484,17 +371,14 @@ build_cgal()
     # 3.8 curl -O https://gforge.inria.fr/frs/download.php/28500/CGAL-$version.tar.gz
     # 3.7 curl -O https://gforge.inria.fr/frs/download.php/27641/CGAL-$version.tar.gz
   fi
-  tar xzf CGAL-$version.tar.gz
+  tar xzf CGAL-$version.tar.xz
   cd CGAL-$version
-  if $OPTION_32BIT; then
-    CGAL_EXTRA_FLAGS=";i386"
-  fi
-  CXXFLAGS="$CXXSTDFLAGS" cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.dylib -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.dylib -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.dylib -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DBUILD_SHARED_LIBS=TRUE -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="x86_64$CGAL_EXTRA_FLAGS" -DBOOST_ROOT=$DEPLOYDIR -DBoost_USE_MULTITHREADED=false
+  CXXFLAGS="$CXXSTDFLAGS" cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.dylib -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.dylib -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.dylib -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DBUILD_SHARED_LIBS=TRUE -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="x86_64" -DBOOST_ROOT=$DEPLOYDIR -DBoost_USE_MULTITHREADED=false
   make -j"$NUMCPU" install
   make install
-  install_name_tool -id $DEPLOYDIR/lib/libCGAL.dylib $DEPLOYDIR/lib/libCGAL.dylib
-  install_name_tool -id $DEPLOYDIR/lib/libCGAL_Core.dylib $DEPLOYDIR/lib/libCGAL_Core.dylib
-  install_name_tool -change $PWD/lib/libCGAL.9.dylib $DEPLOYDIR/lib/libCGAL.dylib $DEPLOYDIR/lib/libCGAL_Core.dylib
+  install_name_tool -id @rpath/libCGAL.dylib $DEPLOYDIR/lib/libCGAL.dylib
+  install_name_tool -id @rpath/libCGAL_Core.dylib $DEPLOYDIR/lib/libCGAL_Core.dylib
+  install_name_tool -change libCGAL.11.dylib @rpath/libCGAL.dylib $DEPLOYDIR/lib/libCGAL_Core.dylib
 }
 
 check_glew()
@@ -515,10 +399,7 @@ build_glew()
   tar xzf glew-$version.tgz
   cd glew-$version
   mkdir -p $DEPLOYDIR/lib/pkgconfig
-  if $OPTION_32BIT; then
-    GLEW_EXTRA_FLAGS="-arch i386"
-  fi
-  make GLEW_DEST=$DEPLOYDIR CC=$CC CFLAGS.EXTRA="-no-cpp-precomp -dynamic -fno-common -mmacosx-version-min=$MAC_OSX_VERSION_MIN $GLEW_EXTRA_FLAGS -arch x86_64" LDFLAGS.EXTRA="-mmacosx-version-min=$MAC_OSX_VERSION_MIN $GLEW_EXTRA_FLAGS -arch x86_64" STRIP= install
+  make GLEW_DEST=$DEPLOYDIR CC=$CC CFLAGS.EXTRA="-no-cpp-precomp -dynamic -fno-common -mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64" LDFLAGS.EXTRA="-install_name @rpath/libGLEW.dylib -mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64" POPT="-Os" STRIP= install
 }
 
 check_opencsg()
@@ -539,11 +420,9 @@ build_opencsg()
   tar xzf OpenCSG-$version.tar.gz
   cd OpenCSG-$version
   patch -p1 < $OPENSCADDIR/patches/OpenCSG-$version-MacOSX-port.patch
-  if $OPTION_32BIT; then
-    OPENCSG_EXTRA_FLAGS="x86"
-  fi
-  qmake -r QMAKE_CXXFLAGS+="-I$DEPLOYDIR/include $CXXSTDFLAGS" QMAKE_LFLAGS+="-L$DEPLOYDIR/lib $LDSTDFLAGS" CONFIG+="x86_64 $OPENCSG_EXTRA_FLAGS" DESTDIR=$DEPLOYDIR
+  qmake -r INSTALLDIR=$DEPLOYDIR
   make install
+  install_name_tool -id @rpath/libopencsg.dylib $DEPLOYDIR/lib/libopencsg.dylib
 }
 
 # Usage: func [<version>]
@@ -577,8 +456,9 @@ build_eigen()
   elif [ $version = "3.2.3" ]; then EIGENDIR=eigen-eigen-36fd1ba04c12;
   elif [ $version = "3.2.4" ]; then EIGENDIR=eigen-eigen-10219c95fe65;
   elif [ $version = "3.2.6" ]; then EIGENDIR=eigen-eigen-c58038c56923;
-  fi
-
+  elif [ $version = "3.2.8" ]; then EIGENDIR=eigen-eigen-07105f7124f9;
+  fi  
+  
   if [ $EIGENDIR = "none" ]; then
     echo Unknown eigen version. Please edit script.
     exit 1
@@ -594,10 +474,7 @@ build_eigen()
   cd eigen-$version
   mkdir build
   cd build
-  if $OPTION_32BIT; then
-    EIGEN_EXTRA_FLAGS=";i386"
-  fi
-  CXXFLAGS="$CXXSTDFLAGS" cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DEIGEN_TEST_NOQT=TRUE -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="x86_64$EIGEN_EXTRA_FLAGS" ..
+  CXXFLAGS="$CXXSTDFLAGS" cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DEIGEN_TEST_NOQT=TRUE -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="x86_64" ..
   make -j"$NUMCPU" install
 }
 
@@ -616,7 +493,7 @@ build_sparkle()
   version=$1
   cd $BASEDIR/src
   rm -rf Sparkle-$version
-  if [ ! -f Sparkle-$version.zip ]; then
+  if [ ! -f Sparkle-$version.tar.bz2 ]; then
     curl -LO https://github.com/sparkle-project/Sparkle/releases/download/$version/Sparkle-$version.tar.bz2
   fi
   mkdir Sparkle-$version
@@ -643,11 +520,8 @@ build_sparkle()
 #  unzip -q Sparkle-$version.zip
 #  cd Sparkle-$version
 #  patch -p1 < $OPENSCADDIR/patches/sparkle.patch
-#  if $OPTION_32BIT; then
-#    SPARKLE_EXTRA_FLAGS="-arch i386"
-#  fi
 #  xcodebuild clean
-#  xcodebuild -arch x86_64 $SPARKLE_EXTRA_FLAGS
+#  xcodebuild -arch x86_64
 #  rm -rf $DEPLOYDIR/lib/Sparkle.framework
 #  cp -Rf build/Release/Sparkle.framework $DEPLOYDIR/lib/ 
 #  Install_name_tool -id $DEPLOYDIR/lib/Sparkle.framework/Versions/A/Sparkle $DEPLOYDIR/lib/Sparkle.framework/Sparkle
@@ -677,6 +551,7 @@ build_freetype()
   PKG_CONFIG_LIBDIR="$DEPLOYDOR/lib/pkgconfig" ./configure --prefix="$DEPLOYDIR" CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN $extra_config_flags
   make -j"$NUMCPU"
   make install
+  install_name_tool -id @rpath/libfreetype.dylib $DEPLOYDIR/lib/libfreetype.dylib
 }
  
 check_libxml2()
@@ -699,6 +574,7 @@ build_libxml2()
   ./configure --prefix="$DEPLOYDIR" --with-zlib=/usr -without-lzma --without-ftp --without-http --without-python CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN
   make -j$NUMCPU
   make install
+  install_name_tool -id @rpath/libxml2.dylib $DEPLOYDIR/lib/libxml2.dylib
 }
 
 check_fontconfig()
@@ -723,6 +599,7 @@ build_fontconfig()
   unset PKG_CONFIG_PATH
   make -j$NUMCPU
   make install
+  install_name_tool -id @rpath/libfontconfig.dylib $DEPLOYDIR/lib/libfontconfig.dylib
 }
 
 check_libffi()
@@ -745,6 +622,7 @@ build_libffi()
   ./configure --prefix="$DEPLOYDIR"
   make -j$NUMCPU
   make install
+  install_name_tool -id @rpath/libffi.dylib $DEPLOYDIR/lib/libffi.dylib
 }
 
 check_gettext()
@@ -768,6 +646,7 @@ build_gettext()
   ./configure --prefix="$DEPLOYDIR" CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN
   make -j$NUMCPU
   make install
+  install_name_tool -id @rpath/libintl.dylib $DEPLOYDIR/lib/libintl.dylib
 }
 
 check_glib2()
@@ -795,6 +674,7 @@ build_glib2()
   unset PKG_CONFIG_PATH
   make -j$NUMCPU
   make install
+  install_name_tool -id @rpath/libglib-2.0.dylib $DEPLOYDIR/lib/libglib-2.0.dylib
 }
 
 check_ragel()
@@ -844,6 +724,7 @@ build_harfbuzz()
   PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" ./autogen.sh --prefix="$DEPLOYDIR" --with-freetype=yes --with-gobject=no --with-cairo=no --with-icu=no CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN CXXFLAGS="$CXXFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="$CXXFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN" $extra_config_flags
   make -j$NUMCPU
   make install
+  install_name_tool -id @rpath/libharfbuzz.dylib $DEPLOYDIR/lib/libharfbuzz.dylib
 }
 
 if [ ! -f $OPENSCADDIR/openscad.pro ]; then
@@ -852,11 +733,10 @@ if [ ! -f $OPENSCADDIR/openscad.pro ]; then
 fi
 OPENSCAD_SCRIPTDIR=$PWD/scripts
 
-while getopts '36lcdf' c
+while getopts '3lcdf' c
 do
   case $c in
     3) USING_CXX11=false;;
-    6) OPTION_32BIT=false;;
     l) OPTION_LLVM=true;;
     c) OPTION_CLANG=true;;
     d) OPTION_DEPLOY=true;;
@@ -876,19 +756,14 @@ elif (( $OSX_VERSION >= 9 )); then
   echo "Detected Mavericks (10.9)"
 elif (( $OSX_VERSION >= 8 )); then
   echo "Detected Mountain Lion (10.8)"
-elif (( $OSX_VERSION >= 7 )); then
-  echo "Detected Lion (10.7)"
 else
-  echo "Detected Snow Leopard (10.6) or earlier"
+  echo "Detected Lion (10.7) or earlier"
 fi
 
 USING_LLVM=false
-USING_GCC=false
 USING_CLANG=false
 if $OPTION_LLVM; then
   USING_LLVM=true
-elif $OPTION_GCC; then
-  USING_GCC=true
 elif $OPTION_CLANG; then
   USING_CLANG=true
 elif (( $OSX_VERSION >= 7 )); then
@@ -899,14 +774,6 @@ if $USING_LLVM; then
   echo "Using gcc LLVM compiler"
   export CC=llvm-gcc
   export CXX=llvm-g++
-  export QMAKESPEC=macx-llvm
-elif $USING_GCC; then
-  echo "Using gcc compiler"
-  export CC=gcc
-  export CXX=g++
-  export CPP=cpp
-  # Somehow, qmake in Qt-4.8.2 doesn't detect Lion's gcc and falls back into
-  # project file mode unless manually given a QMAKESPEC
   export QMAKESPEC=macx-llvm
 elif $USING_CLANG; then
   echo "Using clang compiler"
@@ -931,12 +798,6 @@ fi
 
 if $OPTION_DEPLOY; then
   echo "Building deployment version of libraries"
-fi
-
-if $OPTION_32BIT; then
-  echo "Building combined 32/64-bit binaries"
-else
-  echo "Building 64-bit binaries"
 fi
 
 if (( $OPTION_FORCE )); then
