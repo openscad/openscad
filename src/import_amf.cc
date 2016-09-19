@@ -202,16 +202,20 @@ PolySet *import_amf(const std::string filename) {
 
 	PolySet *p;
 #ifdef ENABLE_CGAL
-	Geometry::Geometries children;
-	for (std::vector<PolySet *>::iterator it = polySets.begin();it != polySets.end();it++) {
-		children.push_back(std::make_pair((const AbstractNode*)NULL,  shared_ptr<const Geometry>(*it)));
-	}
-	CGAL_Nef_polyhedron *N = CGALUtils::applyOperator(children, OPENSCAD_UNION);
-	PolySet *result = new PolySet(3);
-	if (CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, *result)) {
-		delete result;
+	if (polySets.size() == 1) {
+		p = polySets[0];
 	} else {
-		p = result;
+		Geometry::Geometries children;
+		for (std::vector<PolySet *>::iterator it = polySets.begin();it != polySets.end();it++) {
+			children.push_back(std::make_pair((const AbstractNode*)NULL,  shared_ptr<const Geometry>(*it)));
+		}
+		CGAL_Nef_polyhedron *N = CGALUtils::applyOperator(children, OPENSCAD_UNION);
+		PolySet *result = new PolySet(3);
+		if (CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, *result)) {
+			delete result;
+		} else {
+			p = result;
+		}
 	}
 #else
 	p = new PolySet(3);
