@@ -33,6 +33,7 @@ isEmpty(LIBXML2_LIBPATH) {
 }
 
 CONFIG(mingw-cross-env): {
+  LIBXML2_LIBS += -llzma
   !CONFIG(mingw-cross-env-shared) {
     DEFINES += LIBXML_STATIC
   }

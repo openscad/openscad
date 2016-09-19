@@ -967,7 +967,7 @@ msgstr "Включить перетаскивание Редактора и Ко
 
 #: objects/ui_Preferences.h:1161
 msgid "Show Welcome Screen"
-msgstr "Показать экран преветствия"
+msgstr "Показать экран приветствия"
 
 #: objects/ui_Preferences.h:1162
 msgid "Enable user interface localization (requires restart of OpenSCAD)"
@@ -1031,7 +1031,7 @@ msgid ""
 "Warning: You may experience OpenCSG rendering errors.\n"
 "\n"
 msgstr ""
-"Предупреждение: Возможны ошибки рендринга OpenCSG.\n"
+"Предупреждение: Возможны ошибки рендеринга OpenCSG.\n"
 "\n"
 
 #: src/QGLView.cc:132
