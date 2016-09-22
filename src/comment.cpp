@@ -13,13 +13,10 @@ typedef std::vector <GroupInfo> GroupList;
 
     
 /*! 
-  gives the string parameter for given 
-  Assignment
-
   Finds the given line in the given source code text, and
   extracts the comment (excluding the "//" prefix)
 */
-static std::string getParameter(std::string fulltext, int line)
+static std::string getComment(const std::string &fulltext, int line)
 {
   if (line < 1) return "";
 
@@ -54,18 +51,17 @@ static std::string getParameter(std::string fulltext, int line)
 }
 
 /* 
-   Gives the string of Description for given 
-   Assignment
+   Extracts a parameter description from comment on the given line.
+   Returns description, without any "//"
 */
-    
-static std::string getDescription(std::string fulltext, int loc)
+static std::string getDescription(const std::string &fulltext, int line)
 {
-  if (loc < 1) return "";
+  if (line < 1) return "";
 
   unsigned int start = 0;
   for (; start<fulltext.length() ; start++) {
-    if (loc <= 1) break;  
-    if (fulltext[start] == '\n') loc--;
+    if (line <= 1) break;  
+    if (fulltext[start] == '\n') line--;
   }
 
   // not a valid description
@@ -93,10 +89,10 @@ static std::string getDescription(std::string fulltext, int loc)
 }
 
 /*
-  This function collect the list of groups of Parameter decsibred in 
-  scad file
+  This function collect all groups of parameters described in the
+  scad file.
 */
-static GroupList collectGroups(std::string fulltext)
+static GroupList collectGroups(const std::string &fulltext)
 {
   GroupList groupList; //container of all group names
   int lineNo = 1; // tracks line number
@@ -117,7 +113,7 @@ static GroupList collectGroups(std::string fulltext)
     }
         
     if (fulltext.compare(i, 2, "//") == 0) {
-      i++;
+      i+=2;
       while (fulltext[i] != '\n') i++;
       lineNo++;
       continue;
@@ -181,9 +177,10 @@ static GroupList collectGroups(std::string fulltext)
 */
 void CommentParser::addParameter(const char *fulltext, FileModule *root_module)
 {
-  // Getting list of all group names in the file
+  // Get all groups of parameters
   GroupList groupList = collectGroups(std::string(fulltext));
 
+  // Extract parameters for all literal assignments
   for (auto &assignment : root_module->scope.assignments) {
     if (!assignment.expr.get()->isLiteral()) continue; // Only consider literals
 
@@ -193,28 +190,27 @@ void CommentParser::addParameter(const char *fulltext, FileModule *root_module)
     // making list to add annotations
     AnnotationList *annotationList = new AnnotationList();
          
-    // extracting the parameter 
-    std::string name = getParameter(std::string(fulltext), firstLine);        
+    // Extracting the parameter comment 
+    std::string comment = getComment(std::string(fulltext), firstLine);
     // getting the node for parameter annnotataion
-    AssignmentList *assignmentList = CommentParser::parser(name.c_str());
+    AssignmentList *assignmentList = CommentParser::parser(comment.c_str());
     if (assignmentList == NULL) {
       assignmentList = new AssignmentList();
       Expression *expr = new Literal(ValuePtr(std::string("")));
       Assignment *assignment = new Assignment("", shared_ptr<Expression>(expr));
-      assignmentList->push_back(*assignment);   
+      assignmentList->push_back(*assignment);
     }
-    const Annotation *parameter = Annotation::create("Parameter",*assignmentList);
+    const Annotation *parameter = Annotation::create("Parameter", *assignmentList);
 
     // adding parameter to the list
     annotationList->push_back(*parameter);
         
-        
     //extracting the description 
-    name = getDescription(std::string(fulltext), firstLine-1);
-    if (name != "") {
+    std::string descr = getDescription(std::string(fulltext), firstLine - 1);
+    if (descr != "") {
       //creating node for description
       assignmentList = new AssignmentList();
-      Expression *expr = new Literal(ValuePtr(std::string(name.c_str())));
+      Expression *expr = new Literal(ValuePtr(std::string(descr.c_str())));
             
       Assignment *assignment = new Assignment("", shared_ptr<Expression>(expr));
       assignmentList->push_back(*assignment);
