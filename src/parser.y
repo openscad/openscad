@@ -204,7 +204,6 @@ assignment:
                   scope_stack.top()->assignments.push_back(Assignment($1, shared_ptr<Expression>($3), LOC(@$)));
                 }
                 free($1);
-                
             }
         ;
 
