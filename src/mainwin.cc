@@ -1728,7 +1728,7 @@ void MainWindow::compileTopLevelDocument()
 	if (Feature::ExperimentalCustomizer.is_enabled()) {
 		if (this->root_module!=NULL) {
 			//add parameters as annotation in AST
-			addParameter(fulltext.c_str(),this->root_module);
+			CommentParser::addParameter(fulltext.c_str(),this->root_module);
 		}
 		this->parameterWidget->setParameters(this->root_module);
 		this->parameterWidget->applyParameters(this->root_module);

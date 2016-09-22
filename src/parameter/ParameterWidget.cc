@@ -36,7 +36,7 @@
 #include <QInputDialog>
 
 #include "modcontext.h"
-extern AssignmentList * parser(const char *text);
+#include "comment.h"
 
 ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 {
@@ -304,7 +304,7 @@ void ParameterWidget::applyParameterSet(string setName){
                 }else{
 
                     AssignmentList *assignmentList;
-                    assignmentList=parser(v.second.data().c_str());
+                    assignmentList=CommentParser::parser(v.second.data().c_str());
                     if(assignmentList==NULL){
                         continue ;
                     }

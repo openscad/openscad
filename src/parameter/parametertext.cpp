@@ -1,7 +1,6 @@
 #include "parametertext.h"
-
 #include "modcontext.h"
-extern AssignmentList * parser(const char *text);
+#include "comment.h"
 
 ParameterText::ParameterText(ParameterObject *parameterobject, bool showDescription)
 {
@@ -26,7 +25,7 @@ void ParameterText::onChanged(QString)
     else{
         ModuleContext ctx;
         AssignmentList *assignmentList;
-        assignmentList=parser(lineEdit->text().toStdString().c_str());
+        assignmentList=CommentParser::parser(lineEdit->text().toStdString().c_str());
         if(assignmentList==NULL){
             return ;
         }

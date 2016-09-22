@@ -1,5 +1,6 @@
 #include "parameterset.h"
 #include "modcontext.h"
+#include "comment.h"
 
 ParameterSet::ParameterSet()
 {
@@ -70,7 +71,7 @@ void ParameterSet::applyParameterSet(FileModule *fileModule,string setName)
                     }else{
 
                         AssignmentList *assignmentList;
-                        assignmentList=parser(v.second.data().c_str());
+                        assignmentList=CommentParser::parser(v.second.data().c_str());
                         if(assignmentList==NULL){
                             continue ;
                         }

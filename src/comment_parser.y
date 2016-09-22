@@ -1,11 +1,11 @@
 %{
     #include <sstream>
-    #include<string.h>
-    using namespace std;
+    #include <string.h>
     #include "Assignment.h"
     #include "expression.h"
     #include "printutils.h"
     #include "value.h" 
+    #include "comment.h" 
     void yyerror(char *);
     int yylex(void);
     AssignmentList *argument;
@@ -117,7 +117,7 @@ word:
     }
     | word NUM
     {
-        string a;
+        std::string a;
         a=$1;
         a+=" ";
         double dbl=$2;
@@ -131,14 +131,14 @@ word:
         double dbl=$1;
         std::ostringstream strs;
         strs<<dbl;
-        string a=" ";
+        std::string a=" ";
         a+=$2;
         a=strs.str()+a;
         $$=strdup(a.c_str());
     }
     | word WORD
     {
-        string a;
+        std::string a;
         a=$1;
         a+=" ";
         a+=$2;
@@ -151,11 +151,10 @@ void yyerror(char *msg) {
     argument=NULL;
 }
 
-AssignmentList * parser(const char *text) {
-
-    yy_scan_string(text);
-    int parserretval = yyparse();
-    if (parserretval != 0) return NULL;
-    return argument;
-    
+AssignmentList *CommentParser::parser(const char *text)
+{
+  yy_scan_string(text);
+  int parserretval = yyparse();
+  if (parserretval != 0) return NULL;
+  return argument;
 }

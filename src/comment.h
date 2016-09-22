@@ -1,26 +1,14 @@
 #ifndef COMMENT_H
 #define COMMENT_H
 
-#include "expression.h"
-#include"Assignment.h"
 #include "FileModule.h"
-#include <string>
-#include<vector>
+#include "Assignment.h"
 
-using namespace std;
+namespace CommentParser {
 
-extern AssignmentList * parser(const char *text);
+	AssignmentList *parser(const char *text);
+	void addParameter(const char *fulltext, FileModule *root_module);
 
-struct GroupInfo{
-    string commentString;
-    int lineNo;
-};
-
-typedef vector <GroupInfo> GroupList;
-
-GroupList collectGroups(string fulltext);
-string getParameter(string fulltext, int loc);
-string getDescription(string fulltext, int loc);
-void addParameter(const char *fulltext, class FileModule *root_module);
+}
 
 #endif // COMMENT_H

@@ -1,10 +1,9 @@
 #ifndef PARAMETERSET_H
 #define PARAMETERSET_H
 
-#include"expression.h"
+#include "expression.h"
 #include "FileModule.h"
 #include "modcontext.h"
-extern AssignmentList * parser(const char *text);
 
 #include<map>
 
