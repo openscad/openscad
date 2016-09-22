@@ -244,12 +244,12 @@ build_qscintilla()
   version=$1
   echo "Building QScintilla" $version "..."
   cd $BASEDIR/src
-  rm -rf QScintilla-gpl-$version
-  if [ ! -f QScintilla-gpl-$version.tar.gz ]; then
-    curl -LO http://downloads.sourceforge.net/project/pyqt/QScintilla2/QScintilla-$version/QScintilla-gpl-$version.tar.gz
+  rm -rf QScintilla_gpl-$version
+  if [ ! -f QScintilla_gpl-$version.tar.gz ]; then
+    curl -LO http://downloads.sourceforge.net/project/pyqt/QScintilla2/QScintilla-$version/QScintilla_gpl-$version.tar.gz
   fi
-  tar xzf QScintilla-gpl-$version.tar.gz
-  cd QScintilla-gpl-$version/Qt4Qt5
+  tar xzf QScintilla_gpl-$version.tar.gz
+  cd QScintilla_gpl-$version/Qt4Qt5
   qmake QMAKE_CXXFLAGS+="$CXXSTDFLAGS" QMAKE_LFLAGS+="$CXXSTDFLAGS" qscintilla.pro
   make -j"$NUMCPU" install
   install_name_tool -id @rpath/libqscintilla2.dylib $DEPLOYDIR/lib/libqscintilla2.dylib
