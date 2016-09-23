@@ -267,6 +267,7 @@ HEADERS += src/typedefs.h \
            src/context.h \
            src/modcontext.h \
            src/evalcontext.h \
+           src/bendnode.h \
            src/csgterm.h \
            src/csgtermnormalizer.h \
            src/dxfdata.h \
@@ -372,6 +373,7 @@ SOURCES += src/version_check.cc \
            src/polyset-gl.cc \
            src/csgops.cc \
            src/transform.cc \
+           src/bend.cc \
            src/color.cc \
            src/primitives.cc \
            src/projection.cc \
