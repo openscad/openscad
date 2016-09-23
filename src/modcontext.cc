@@ -2,7 +2,8 @@
 #include "math.h"
 
 #include "modcontext.h"
-#include "module.h"
+#include "UserModule.h"
+#include "ModuleInstantiation.h"
 #include "expression.h"
 #include "function.h"
 #include "printutils.h"
@@ -64,14 +65,14 @@ void ModuleContext::evaluateAssignments(const AssignmentList &assignments)
 }
 #endif
 
-void ModuleContext::initializeModule(const class Module &module)
+void ModuleContext::initializeModule(const UserModule &module)
 {
 	this->setVariables(module.definition_arguments, evalctx);
 	// FIXME: Don't access module members directly
 	this->functions_p = &module.scope.functions;
 	this->modules_p = &module.scope.modules;
 	for(const auto &ass : module.scope.assignments) {
-		this->set_variable(ass.first, ass.second->evaluate(this));
+		this->set_variable(ass.name, ass.expr->evaluate(this));
 	}
 
 // Experimental code. See issue #399
@@ -89,7 +90,7 @@ void ModuleContext::registerBuiltin()
 	this->functions_p = &scope.functions;
 	this->modules_p = &scope.modules;
 	for(const auto &ass : scope.assignments) {
-		this->set_variable(ass.first, ass.second->evaluate(this));
+		this->set_variable(ass.name, ass.expr->evaluate(this));
 	}
 
 	this->set_constant("PI", ValuePtr(M_PI));
@@ -152,11 +153,11 @@ std::string ModuleContext::dump(const AbstractModule *mod, const ModuleInstantia
 		s << boost::format("ModuleContext: %p (%p)") % this % this->parent;
 	s << boost::format("  document path: %s") % this->document_path;
 	if (mod) {
-		const Module *m = dynamic_cast<const Module*>(mod);
+		const UserModule *m = dynamic_cast<const UserModule*>(mod);
 		if (m) {
 			s << "  module args:";
 			for(const auto &arg : m->definition_arguments) {
-				s << boost::format("    %s = %s") % arg.first % variables[arg.first];
+				s << boost::format("    %s = %s") % arg.name % variables[arg.name];
 			}
 		}
 	}
@@ -175,18 +176,15 @@ std::string ModuleContext::dump(const AbstractModule *mod, const ModuleInstantia
 }
 #endif
 
-FileContext::FileContext(const class FileModule &module, const Context *parent)
-	: ModuleContext(parent), usedlibs(module.usedlibs)
+FileContext::FileContext(const Context *parent) : ModuleContext(parent), usedlibs_p(nullptr)
 {
-	if (!module.modulePath().empty()) this->document_path = module.modulePath();
 }
 
 ValuePtr FileContext::sub_evaluate_function(const std::string &name, 
-																													 const EvalContext *evalctx,
-																													 FileModule *usedmod) const
-
+																						const EvalContext *evalctx,
+																						FileModule *usedmod) const
 {
-	FileContext ctx(*usedmod, this->parent);
+	FileContext ctx(this->parent);
 	ctx.initializeModule(*usedmod);
 	// FIXME: Set document path
 #ifdef DEBUG
@@ -202,7 +200,7 @@ ValuePtr FileContext::evaluate_function(const std::string &name,
 	const AbstractFunction *foundf = findLocalFunction(name);
 	if (foundf) return foundf->evaluate(this, evalctx);
 
-	for(const auto &m : this->usedlibs) {
+	for(const auto &m : *this->usedlibs_p) {
 		// usedmod is NULL if the library wasn't be compiled (error or file-not-found)
 		FileModule *usedmod = ModuleCache::instance()->lookup(m);
 		if (usedmod && usedmod->scope.functions.find(name) != usedmod->scope.functions.end())
@@ -217,12 +215,12 @@ AbstractNode *FileContext::instantiate_module(const ModuleInstantiation &inst, E
 	const AbstractModule *foundm = this->findLocalModule(inst.name());
 	if (foundm) return foundm->instantiate(this, &inst, evalctx);
 
-	for(const auto &m : this->usedlibs) {
+	for(const auto &m : *this->usedlibs_p) {
 		FileModule *usedmod = ModuleCache::instance()->lookup(m);
 		// usedmod is NULL if the library wasn't be compiled (error or file-not-found)
 		if (usedmod &&
 				usedmod->scope.modules.find(inst.name()) != usedmod->scope.modules.end()) {
-			FileContext ctx(*usedmod, this->parent);
+			FileContext ctx(this->parent);
 			ctx.initializeModule(*usedmod);
 			// FIXME: Set document path
 #ifdef DEBUG
@@ -234,4 +232,16 @@ AbstractNode *FileContext::instantiate_module(const ModuleInstantiation &inst, E
 	}
 
 	return ModuleContext::instantiate_module(inst, evalctx);
+}
+
+void FileContext::initializeModule(const class FileModule &module)
+{
+	if (!module.modulePath().empty()) this->document_path = module.modulePath();
+	// FIXME: Don't access module members directly
+	this->usedlibs_p = &module.usedlibs;
+	this->functions_p = &module.scope.functions;
+	this->modules_p = &module.scope.modules;
+	for(const auto &ass : module.scope.assignments) {
+		this->set_variable(ass.name, ass.expr->evaluate(this));
+	}
 }

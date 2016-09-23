@@ -2,14 +2,14 @@
 
 #include <vector>
 #include <string>
-#include "traverser.h"
 #include "linalg.h"
+#include "BaseVisitable.h"
 
 extern int progress_report_count;
 extern void (*progress_report_f)(const class AbstractNode*, void*, int);
 extern void *progress_report_vp;
 
-void progress_report_prep(AbstractNode *root, void (*f)(const class AbstractNode *node, void *vp, int mark), void *vp);
+void progress_report_prep(class AbstractNode *root, void (*f)(const class AbstractNode *node, void *vp, int mark), void *vp);
 void progress_report_fin();
 
 /*!  
@@ -19,7 +19,7 @@ void progress_report_fin();
 	scratch for each compile.
 
  */
-class AbstractNode
+class AbstractNode : public BaseVisitable
 {
 	// FIXME: the idx_counter/idx is mostly (only?) for debugging.
 	// We can hash on pointer value or smth. else.
@@ -28,9 +28,9 @@ class AbstractNode
 	static size_t idx_counter;   // Node instantiation index
 public:
 	Color4f color;
+	VISITABLE();
 	AbstractNode(const class ModuleInstantiation *mi);
 	virtual ~AbstractNode();
-  virtual Response accept(class State &state, class Visitor &visitor) const;
 	virtual std::string toString() const;
 	/*! The 'OpenSCAD name' of this node, defaults to classname, but can be 
 	    overloaded to provide specialization for e.g. CSG nodes, primitive nodes etc.
@@ -60,9 +60,9 @@ public:
 class AbstractIntersectionNode : public AbstractNode
 {
 public:
+	VISITABLE();
 	AbstractIntersectionNode(const ModuleInstantiation *mi) : AbstractNode(mi) { };
 	virtual ~AbstractIntersectionNode() { };
-  virtual Response accept(class State &state, class Visitor &visitor) const;
 	virtual std::string toString() const;
 	virtual std::string name() const;
 };
@@ -70,9 +70,9 @@ public:
 class AbstractPolyNode : public AbstractNode
 {
 public:
+	VISITABLE();
 	AbstractPolyNode(const ModuleInstantiation *mi) : AbstractNode(mi) { };
 	virtual ~AbstractPolyNode() { };
-  virtual Response accept(class State &state, class Visitor &visitor) const;
 
 	enum render_mode_e {
 		RENDER_CGAL,
@@ -87,9 +87,9 @@ public:
 class GroupNode : public AbstractNode
 {
 public:
+	VISITABLE();
 	GroupNode(const class ModuleInstantiation *mi) : AbstractNode(mi) { }
 	virtual ~GroupNode() { }
-  virtual Response accept(class State &state, class Visitor &visitor) const;
 	virtual std::string name() const;
 };
 
@@ -99,18 +99,19 @@ public:
 class RootNode : public GroupNode
 {
 public:
+	VISITABLE();
+
 	RootNode(const class ModuleInstantiation *mi) : GroupNode(mi) { }
 	virtual ~RootNode() { }
-  virtual Response accept(class State &state, class Visitor &visitor) const;
 	virtual std::string name() const;
 };
 
 class LeafNode : public AbstractPolyNode
 {
 public:
+	VISITABLE();
 	LeafNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) { };
 	virtual ~LeafNode() { };
-  virtual Response accept(class State &state, class Visitor &visitor) const;
 	virtual const class Geometry *createGeometry() const = 0;
 };
 

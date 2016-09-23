@@ -28,6 +28,9 @@ ScadLexer::ScadLexer(QObject *parent) : QsciLexerCPP(parent)
 		"intersection linear_extrude rotate_extrude import group  "
 		"projection render surface scale rotate mirror translate "
 		"multmatrix color offset ";
+
+    setFoldComments(true);
+    setFoldAtElse(true);
 }
 
 ScadLexer::~ScadLexer()

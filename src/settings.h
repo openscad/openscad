@@ -46,14 +46,16 @@ public:
     static SettingsEntry showWhitespace;
     static SettingsEntry showWhitespaceSize;
     static SettingsEntry autoIndent;
+    static SettingsEntry backspaceUnindents;
     static SettingsEntry indentStyle;
     static SettingsEntry tabKeyFunction;
     static SettingsEntry highlightCurrentLine;
     static SettingsEntry enableBraceMatching;
+    static SettingsEntry enableLineNumbers;
 
     static Settings *inst(bool erase = false);
 
-    void visit(class Visitor& visitor);
+    void visit(class SettingsVisitor& visitor);
 
     const Value &defaultValue(const SettingsEntry& entry);
     const Value &get(const SettingsEntry& entry);
@@ -64,11 +66,11 @@ private:
     virtual ~Settings();
 };
 
-class Visitor
+class SettingsVisitor
 {
 public:
-    Visitor();
-    virtual ~Visitor();
+    SettingsVisitor();
+    virtual ~SettingsVisitor();
 
     virtual void handle(SettingsEntry& entry) const = 0;
 };

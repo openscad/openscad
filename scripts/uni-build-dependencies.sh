@@ -183,7 +183,7 @@ build_qt5scintilla2()
 
   echo "Building Qt5Scintilla2" $version "..."
   cd $BASEDIR/src
-  #rm -rf QScintilla-gpl-$version.tar.gz
+  rm -rf ./QScintilla-gpl-$version.tar.gz
   if [ ! -f QScintilla-gpl-$version.tar.gz ]; then
      curl -L -o "QScintilla-gpl-$version.tar.gz" "http://downloads.sourceforge.net/project/pyqt/QScintilla2/QScintilla-$version/QScintilla-gpl-$version.tar.gz?use_mirror=switch"
   fi
@@ -192,9 +192,28 @@ build_qt5scintilla2()
   qmake CONFIG+=staticlib
   tmpinstalldir=$DEPLOYDIR/tmp/qsci$version
   INSTALL_ROOT=$tmpinstalldir make -j"$NUMCPU" install
-  cp -av $tmpinstalldir/usr/share $DEPLOYDIR/
-  cp -av $tmpinstalldir/usr/include $DEPLOYDIR/
-  cp -av $tmpinstalldir/usr/lib $DEPLOYDIR/
+
+  if [ -d $tmpinstalldir/usr/share ]; then
+    cp -av $tmpinstalldir/usr/share $DEPLOYDIR/
+    cp -av $tmpinstalldir/usr/include $DEPLOYDIR/
+    cp -av $tmpinstalldir/usr/lib $DEPLOYDIR/
+  fi
+
+  if [ ! -e $DEPLOYDIR/include/Qsci ]; then
+    # workaround numerous bugs in qscintilla build system, see 
+    # ../qscintilla2.prf and ../scintilla.pri for more info
+    qsci_staticlib=`find $tmpinstalldir -name libqscintilla2.a`
+    qsci_include=`find $tmpinstalldir -name Qsci`
+    if [ -e $qsci_staticlib ]; then
+      cp -av $qsci_include $DEPLOYDIR/include/
+      cp -av $qsci_staticlib $DEPLOYDIR/lib/
+    else
+      echo problems finding built qscintilla libraries and include headers
+    fi
+    if [ -e $DEPLOYDIR/lib/libqscintilla2.a ]; then
+      cp $DEPLOYDIR/lib/libqscintilla2.a $DEPLOYDIR/lib/libqt5scintilla2.a
+    fi
+  fi
 }
 
 build_bison()
@@ -381,6 +400,8 @@ build_cgal()
   echo "Building CGAL" $version "..."
   cd $BASEDIR/src
   rm -rf CGAL-$version
+  ver4_8="curl -L --insecure -O https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-4.8/CGAL-4.8.tar.xz"
+  ver4_7="curl -L --insecure -O https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-4.7/CGAL-4.7.tar.gz"
   ver4_4="curl --insecure -O https://gforge.inria.fr/frs/download.php/file/33524/CGAL-4.4.tar.bz2"
   ver4_2="curl --insecure -O https://gforge.inria.fr/frs/download.php/32360/CGAL-4.2.tar.bz2"
   ver4_1="curl --insecure -O https://gforge.inria.fr/frs/download.php/31640/CGAL-4.1.tar.bz2"
@@ -398,6 +419,9 @@ build_cgal()
   if [ -e CGAL-$version.tar.bz2 ]; then
     download_cmd=vernull;
   fi
+  if [ -e CGAL-$version.tar.xz ]; then
+    download_cmd=vernull;
+  fi
 
   eval echo "$"$download_cmd
   `eval echo "$"$download_cmd`
@@ -407,6 +431,10 @@ build_cgal()
   if [ -e CGAL-$version.tar.bz2 ]; then
     zipper=bzip2
     suffix=bz2
+  fi
+  if [ -e CGAL-$version.tar.xz ]; then
+    zipper=xz
+    suffix=xz
   fi
 
   $zipper -f -d CGAL-$version.tar.$suffix;
@@ -757,7 +785,8 @@ mkdir -p $SRCDIR $DEPLOYDIR
 # they are installed under $BASEDIR/bin which we have added to our PATH
 
 if [ ! "`command -v curl`" ]; then
-  build_curl 7.26.0
+  # to prevent "end of file" NSS error -5938 (ssl) use a newer version of curl
+  build_curl 7.49.0
 fi
 
 if [ ! "`command -v bison`" ]; then
@@ -792,6 +821,10 @@ if [ $1 ]; then
     build_qt4 4.8.4
     exit $?
   fi
+  if [ $1 = "qt5scintilla2" ]; then
+    build_qt5scintilla2 2.8.3
+    exit $?
+  fi
   if [ $1 = "qt5" ]; then
     build_qt5 5.3.1
     build_qt5scintilla2 2.8.3
@@ -809,7 +842,7 @@ if [ $1 ]; then
   fi
   if [ $1 = "harfbuzz" ]; then
     # debian 7 lacks only harfbuzz
-    build_harfbuzz 0.9.23 --with-glib=yes
+    build_harfbuzz 0.9.35 --with-glib=yes
     exit $?
   fi
   if [ $1 = "glib2" ]; then
@@ -835,21 +868,21 @@ fi
 # Some of these are defined in scripts/common-build-dependencies.sh
 
 build_eigen 3.2.2
-build_gmp 5.0.5
+build_gmp 6.0.0
 build_mpfr 3.1.1
 build_boost 1.56.0
 # NB! For CGAL, also update the actual download URL in the function
-build_cgal 4.4
+build_cgal 4.7
 build_glew 1.9.0
 build_opencsg 1.3.2
 build_gettext 0.18.3.1
 build_glib2 2.38.2
 
 # the following are only needed for text()
-build_freetype 2.5.0.1 --without-png
+build_freetype 2.6.1 --without-png
 build_libxml2 2.9.1
 build_fontconfig 2.11.0 --with-add-fonts=/usr/X11R6/lib/X11/fonts,/usr/local/share/fonts
 build_ragel 6.9
-build_harfbuzz 0.9.23 --with-glib=yes
+build_harfbuzz 0.9.35 --with-glib=yes
 
 echo "OpenSCAD dependencies built and installed to " $BASEDIR

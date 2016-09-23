@@ -46,7 +46,7 @@ Preferences *Preferences::instance = NULL;
 const char * Preferences::featurePropertyName = "FeatureProperty";
 Q_DECLARE_METATYPE(Feature *);
 
-class SettingsReader : public Settings::Visitor
+class SettingsReader : public Settings::SettingsVisitor
 {
     QSettings settings;
     Value getValue(const Settings::SettingsEntry& entry, const std::string& value) const {
@@ -90,7 +90,7 @@ class SettingsReader : public Settings::Visitor
     }
 };
 
-class SettingsWriter : public Settings::Visitor
+class SettingsWriter : public Settings::SettingsVisitor
 {
     virtual void handle(Settings::SettingsEntry& entry) const {
 	Settings::Settings *s = Settings::Settings::inst();
@@ -504,6 +504,7 @@ void Preferences::on_comboBoxLineWrap_activated(int val)
 
 void Preferences::on_comboBoxLineWrapIndentationStyle_activated(int val)
 {
+	spinBoxLineWrapIndentationIndent->setDisabled(comboBoxLineWrapIndentationStyle->currentText() == "Same");
 	applyComboBox(comboBoxLineWrapIndentationStyle, val, Settings::Settings::lineWrapIndentationStyle);
 }
 
@@ -540,6 +541,12 @@ void Preferences::on_checkBoxAutoIndent_toggled(bool val)
 	writeSettings();
 }
 
+void Preferences::on_checkBoxBackspaceUnindents_toggled(bool val)
+{
+    Settings::Settings::inst()->set(Settings::Settings::backspaceUnindents, Value(val));
+    writeSettings();
+}
+
 void Preferences::on_comboBoxIndentUsing_activated(int val)
 {
 	applyComboBox(comboBoxIndentUsing, val, Settings::Settings::indentStyle);
@@ -560,6 +567,11 @@ void Preferences::on_checkBoxEnableBraceMatching_toggled(bool val)
 {
 	Settings::Settings::inst()->set(Settings::Settings::enableBraceMatching, Value(val));
 	writeSettings();
+}
+void Preferences::on_checkBoxEnableLineNumbers_toggled(bool checked)
+{
+    Settings::Settings::inst()->set(Settings::Settings::enableLineNumbers, Value(checked));
+    writeSettings();
 }
 
 void Preferences::writeSettings()
@@ -681,9 +693,12 @@ void Preferences::updateGUI()
 	this->spinBoxLineWrapIndentationIndent->setValue(s->get(Settings::Settings::lineWrapIndentation).toDouble());
 	this->spinBoxShowWhitespaceSize->setValue(s->get(Settings::Settings::showWhitespaceSize).toDouble());
 	this->checkBoxAutoIndent->setChecked(s->get(Settings::Settings::autoIndent).toBool());
+	this->checkBoxBackspaceUnindents->setChecked(s->get(Settings::Settings::backspaceUnindents).toBool());
 	this->checkBoxHighlightCurrentLine->setChecked(s->get(Settings::Settings::highlightCurrentLine).toBool());
 	this->checkBoxEnableBraceMatching->setChecked(s->get(Settings::Settings::enableBraceMatching).toBool());
 	this->checkBoxShowWarningsIn3dView->setChecked(s->get(Settings::Settings::showWarningsIn3dView).toBool());
+	this->checkBoxEnableLineNumbers->setChecked(s->get(Settings::Settings::enableLineNumbers).toBool());
+	this->spinBoxLineWrapIndentationIndent->setDisabled(this->comboBoxLineWrapIndentationStyle->currentText() == "Same");
 }
 
 void Preferences::initComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry)

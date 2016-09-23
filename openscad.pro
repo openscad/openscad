@@ -75,7 +75,10 @@ macx:isEmpty(OPENSCAD_LIBDIR) {
 deploy {
   message("Building deployment version")
   DEFINES += OPENSCAD_DEPLOY
-  macx: CONFIG += sparkle
+  macx: {
+    CONFIG += sparkle
+    QMAKE_RPATHDIR = @executable_path/../Frameworks
+  }
 }
 snapshot: DEFINES += OPENSCAD_SNAPSHOT
 
@@ -100,6 +103,7 @@ macx {
   APP_RESOURCES.files = OpenSCAD.sdef dsa_pub.pem icons/SCAD.icns
   QMAKE_BUNDLE_DATA += APP_RESOURCES
   LIBS += -framework Cocoa -framework ApplicationServices
+  QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.8
 }
 
 
@@ -179,6 +183,7 @@ CONFIG += harfbuzz
 CONFIG += freetype
 CONFIG += fontconfig
 CONFIG += gettext
+CONFIG += libxml2
 
 #Uncomment the following line to enable the QScintilla editor
 !nogui {
@@ -205,14 +210,6 @@ CONFIG(mingw-cross-env)|CONFIG(mingw-cross-env-shared) {
   include(mingw-cross-env.pri)
 }
 
-win* {
-  FLEXSOURCES = src/lexer.l
-  BISONSOURCES = src/parser.y
-} else {
-  LEXSOURCES += src/lexer.l
-  YACCSOURCES += src/parser.y
-}
-
 RESOURCES = openscad.qrc
 
 # Qt5 removed access to the QMAKE_UIC variable, the following
@@ -229,8 +226,32 @@ FORMS   += src/MainWindow.ui \
            src/launchingscreen.ui \
            src/LibraryInfoDialog.ui
 
-HEADERS += src/typedefs.h \
-           src/version_check.h \
+# AST nodes
+win* {
+  FLEXSOURCES = src/lexer.l
+  BISONSOURCES = src/parser.y
+} else {
+  LEXSOURCES += src/lexer.l
+  YACCSOURCES += src/parser.y
+}
+
+HEADERS += src/AST.h \
+           src/ModuleInstantiation.h \
+           src/Package.h \
+           src/Assignment.h \
+           src/expression.h \
+           src/function.h \
+           src/module.h \           
+           src/UserModule.h
+
+SOURCES += src/AST.cc \
+           src/ModuleInstantiation.cc \
+           src/expr.cc \
+           src/function.cc \
+           src/module.cc \
+           src/UserModule.cc
+
+HEADERS += src/version_check.h \
            src/ProgressWidget.h \
            src/parsersettings.h \
            src/renderer.h \
@@ -250,6 +271,8 @@ HEADERS += src/typedefs.h \
            src/AboutDialog.h \
            src/FontListDialog.h \
            src/FontListTableView.h \
+           src/GroupModule.h \
+           src/FileModule.h \
            src/builtin.h \
            src/calc.h \
            src/context.h \
@@ -262,15 +285,12 @@ HEADERS += src/typedefs.h \
            src/dxfdata.h \
            src/dxfdim.h \
            src/export.h \
-           src/expression.h \
            src/stackcheck.h \
-           src/function.h \
            src/exceptions.h \
            src/grid.h \
            src/hash.h \
            src/highlighter.h \
            src/localscope.h \
-           src/module.h \
            src/feature.h \
            src/node.h \
            src/csgnode.h \
@@ -280,6 +300,7 @@ HEADERS += src/typedefs.h \
            src/projectionnode.h \
            src/cgaladvnode.h \
            src/importnode.h \
+           src/import.h \
            src/transformnode.h \
            src/colornode.h \
            src/rendernode.h \
@@ -297,9 +318,8 @@ HEADERS += src/typedefs.h \
            src/value.h \
            src/progress.h \
            src/editor.h \
-           src/visitor.h \
+           src/NodeVisitor.h \
            src/state.h \
-           src/traverser.h \
            src/nodecache.h \
            src/nodedumper.h \
            src/ModuleCache.h \
@@ -333,17 +353,30 @@ HEADERS += src/typedefs.h \
            src/legacyeditor.h \
            src/LibraryInfoDialog.h
 
-SOURCES += src/version_check.cc \
+SOURCES += \
+           src/libsvg/libsvg.cc \
+           src/libsvg/circle.cc \
+           src/libsvg/ellipse.cc \
+           src/libsvg/line.cc \
+           src/libsvg/polygon.cc \
+           src/libsvg/polyline.cc \
+           src/libsvg/rect.cc \
+           src/libsvg/group.cc \
+           src/libsvg/svgpage.cc \
+           src/libsvg/path.cc \
+           src/libsvg/shape.cc \
+           src/libsvg/transformation.cc \
+           src/libsvg/util.cc \
+           \
+           src/version_check.cc \
            src/ProgressWidget.cc \
            src/linalg.cc \
            src/Camera.cc \
            src/handle_dep.cc \
            src/value.cc \
-           src/expr.cc \
            src/stackcheck.cc \
            src/func.cc \
            src/localscope.cc \
-           src/module.cc \
            src/feature.cc \
            src/node.cc \
            src/context.cc \
@@ -385,7 +418,7 @@ SOURCES += src/version_check.cc \
            src/LibraryInfo.cc \
            \
            src/nodedumper.cc \
-           src/traverser.cc \
+           src/NodeVisitor.cc \
            src/GeometryEvaluator.cc \
            src/ModuleCache.cc \
            src/GeometryCache.cc \
@@ -406,6 +439,8 @@ SOURCES += src/version_check.cc \
            \
            src/grid.cc \
            src/hash.cc \
+           src/GroupModule.cc \
+           src/FileModule.cc \
            src/builtin.cc \
            src/calc.cc \
            src/export.cc \
@@ -417,6 +452,9 @@ SOURCES += src/version_check.cc \
            src/export_nef.cc \
            src/export_png.cc \
            src/import.cc \
+           src/import_stl.cc \
+           src/import_off.cc \
+           src/import_svg.cc \
            src/renderer.cc \
            src/colormap.cc \
            src/ThrownTogetherRenderer.cc \

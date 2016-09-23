@@ -15,7 +15,16 @@
     <property name="spacing">
      <number>0</number>
     </property>
-    <property name="margin">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
      <number>0</number>
     </property>
     <item>
@@ -30,7 +39,16 @@
        <property name="spacing">
         <number>0</number>
        </property>
-       <property name="margin">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
         <number>0</number>
        </property>
        <item>
@@ -162,7 +180,16 @@
           <number>0</number>
          </property>
          <layout class="QHBoxLayout" name="horizontalLayoutAnimate">
-          <property name="margin">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
            <number>0</number>
           </property>
           <item>
@@ -245,7 +272,7 @@
      <x>0</x>
      <y>0</y>
      <width>1118</width>
-     <height>22</height>
+     <height>19</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -394,7 +421,6 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="Dock" name="editorDock">
-   <addaction name="editActionRedo_2"/>
    <attribute name="dockWidgetArea">
     <number>1</number>
    </attribute>
@@ -403,7 +429,16 @@
      <property name="spacing">
       <number>0</number>
      </property>
-     <property name="margin">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
       <number>0</number>
      </property>
      <item>
@@ -521,6 +556,7 @@
      </item>
     </layout>
    </widget>
+   <addaction name="editActionRedo_2"/>
   </widget>
   <widget class="Dock" name="consoleDock">
    <attribute name="dockWidgetArea">
@@ -528,7 +564,16 @@
    </attribute>
    <widget class="QWidget" name="consoleDockContents">
     <layout class="QVBoxLayout" name="verticalLayout_5">
-     <property name="margin">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
       <number>0</number>
      </property>
      <item>
@@ -614,6 +659,9 @@
    </property>
   </action>
   <action name="editActionUndo">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="../openscad.qrc">
      <normaloff>:/images/Command-Undo-32.png</normaloff>:/images/Command-Undo-32.png</iconset>
@@ -1240,6 +1288,9 @@
    </property>
    <property name="text">
     <string>View All</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+V</string>
    </property>
   </action>
   <action name="editActionConvertTabsToSpaces">

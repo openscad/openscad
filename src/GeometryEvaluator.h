@@ -1,6 +1,6 @@
 #pragma once
 
-#include "visitor.h"
+#include "NodeVisitor.h"
 #include "enums.h"
 #include "memory.h"
 #include "Geometry.h"
@@ -10,7 +10,7 @@
 #include <vector>
 #include <map>
 
-class GeometryEvaluator : public Visitor
+class GeometryEvaluator : public NodeVisitor
 {
 public:
 	GeometryEvaluator(const class Tree &tree);

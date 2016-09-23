@@ -1,6 +1,5 @@
 [![Travis CI](https://api.travis-ci.org/openscad/openscad.png)](https://travis-ci.org/openscad/openscad)
 [![Coverity Status](https://scan.coverity.com/projects/2510/badge.svg)](https://scan.coverity.com/projects/2510)
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/openscad/openscad/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
 
 [![Visit our IRC channel](https://kiwiirc.com/buttons/irc.freenode.net/openscad.png)](https://kiwiirc.com/client/irc.freenode.net/#openscad)
 
@@ -91,7 +90,7 @@ are build scripts that download and compile the libraries from source.
 Follow the instructions for the platform you're compiling on below.
 
 * A C++ compiler supporting C++11
-* [Qt4 (4.4 ->)](http://www.qt.nokia.com/)
+* [Qt (4.4 -> 5.x)](http://qt.io/)
 * [QScintilla2 (2.7 ->)](http://www.riverbankcomputing.co.uk/software/qscintilla/)
 * [CGAL (3.6 ->)](http://www.cgal.org/)
  * [GMP (5.x)](http://www.gmplib.org/)
@@ -126,39 +125,39 @@ To pull the MCAD library (http://reprap.org/wiki/MCAD), do the following:
 
 Prerequisites:
 
-* XCode, including XCode command-line tools.
+* Xcode
+* cmake
+* pkg-config
 
 Install Dependencies:
 
-Run the script that sets up the environment variables:
-    ```source setenv_mac.sh```
-
-Then run the script to compile all the dependencies:
-    ```./scripts/macosx-build-dependencies.sh```
-
-
 After building dependencies, follow the instructions in the *Compilation* section.
 
-For the adventurous, it might be possible to build OpenSCAD using _MacPorts_ or _Homebrew_. The main challenge is that both these systems have partially broken libraries, but that tends to change from time to time.
+1. **From source**
 
-1. **MacPorts** (assumes [MacPorts](http://macports.org) is already installed)
+Run the script that sets up the environment variables:
 
-    NB! MacPorts currently doesn't support Qt5 very well, so using Qt4
-    is the only working option at the moment. However, MacPorts' Qt4
-    has a broken ```moc``` command, causing OpenSCAD compilation to
-    break. This may be fixed in MacPorts by the time you read this.
+    source setenv_mac.sh
 
-    ```sudo port install opencsg qscintilla boost cgal pkgconfig eigen3 harfbuzz fontconfig```
+Then run the script to compile all the dependencies:
+
+    ./scripts/macosx-build-dependencies.sh
 
 1. **Homebrew** (assumes [Homebrew](http://brew.sh) is already installed)
 
-    NB! Homebrew's ```qscintilla2``` component doesn't support Qt5, so using Qt4 is currently necessary.
-    However, Homebrew's Qt4 has a broken ```moc``` command, causing OpenSCAD compilation to
-    break. This may be fixed in Homebrew by the time you read this.
-    NB! Homebrew's ```harfbuzz``` package requires X11, so you may have to install an X11 server.
-    NB! Homebrew doesnt have an OpenCSG package
+        ./scripts/macosx-build-homebrew.sh
 
-    ```brew install cgal qscintilla2 eigen harfbuzz```
+1. **MacPorts** (assumes [MacPorts](http://macports.org) is already installed)
+
+    For the adventurous, it might be possible to build OpenSCAD using _MacPorts_. The main challenge is that MacPorts have partially broken libraries, but that tends to change from time to time.
+
+    NB! MacPorts currently doesn't support Qt5 very well, so using Qt4
+    is the only working option at the moment. However, MacPorts' Qt4
+    has a broken `moc` command, causing OpenSCAD compilation to
+    break. This may be fixed in MacPorts by the time you read this.
+
+        sudo port install opencsg qscintilla boost cgal pkgconfig eigen3 harfbuzz fontconfig
+
 
 
 ### Building for Linux/BSD
@@ -207,30 +206,34 @@ OpenSCAD for Windows is usually cross-compiled from Linux. If you wish to
 attempt an MSVC build on Windows, please see this site:
 http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Windows
 
-To cross-build, first make sure that you have development tools 
-installed to get GCC. Then after you've cloned this git repository, 
-start a new clean bash shell and run the script that sets up the environment 
-variables.
+To cross-build, first make sure that you have all necessary dependencies 
+of the MXE project ( listed at http://mxe.cc/#requirements ). Don't install
+MXE itself, the scripts below will do that for you under $HOME/openscad_deps/mxe
 
-    source ./scripts/setenv-mingw-xbuild.sh 32
+Then get your development tools installed to get GCC. Then after you've 
+cloned this git repository, start a new clean bash shell and run the 
+script that sets up the environment variables.
+
+    source ./scripts/setenv-mingw-xbuild.sh 64
 
 Then run the script to download & compile all the prerequisite libraries above:
 
-    ./scripts/mingw-x-build-dependencies.sh 32
+    ./scripts/mingw-x-build-dependencies.sh 64
 
-Note that this process can take several hours, as it uses the 
-http://mxe.cc system to cross-build many libraries. After it is 
-complete, build OpenSCAD and package it to an installer:
+Note that this process can take several hours, and tens of gigabytes of 
+disk space, as it uses the http://mxe.cc system to cross-build many 
+libraries. After it is complete, build OpenSCAD and package it to an 
+installer:
 
-    ./scripts/release-common.sh mingw32
+    ./scripts/release-common.sh mingw64
 
 If you wish you can only build the openscad.exe binary:
 
-    cd mingw32
+    cd mingw64
     qmake ../openscad.pro CONFIG+=mingw-cross-env
     make
 
-For a 64-bit Windows cross-build, replace 32 with 64 in the above instructions. 
+For a 32-bit Windows cross-build, replace 64 with 32 in the above instructions. 
 
 ### Compilation
 

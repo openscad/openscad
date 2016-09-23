@@ -1,10 +1,10 @@
 #include "GeometryEvaluator.h"
-#include "traverser.h"
 #include "Tree.h"
 #include "GeometryCache.h"
 #include "CGALCache.h"
 #include "Polygon2d.h"
 #include "module.h"
+#include "ModuleInstantiation.h"
 #include "state.h"
 #include "offsetnode.h"
 #include "transformnode.h"
@@ -55,8 +55,7 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 			this->root = N;
 		}	
     else {
-			Traverser trav(*this, node, Traverser::PRE_AND_POSTFIX);
-			trav.execute();
+			this->traverse(node);
 		}
 
 		if (!allownef) {
@@ -583,8 +582,11 @@ Response GeometryEvaluator::visit(State &state, const BendNode &node)
 					if (res.isConst()) newpoly.reset(new Polygon2d(*polygons));
 					else newpoly = dynamic_pointer_cast<Polygon2d>(res.ptr());
 
-					BOOST_FOREACH(Outline2d &p, (Polygon2d::Outlines2d&)newpoly->outlines()) {
-						BOOST_FOREACH(Vector2d &v, p.vertices) {
+//					BOOST_FOREACH(Outline2d &p, (Polygon2d::Outlines2d&)newpoly->outlines()) {
+//
+					for(auto &p : (Polygon2d::Outlines2d&)newpoly->outlines()) {
+//						BOOST_FOREACH(Vector2d &v, p.vertices) {
+						for(auto &v : p.vertices) {
 							ov[0] = v[0]-node.center_x;
 							ov[1] = v[1]-node.center_y;
 							R = ov[0]*b1[0] + ov[1]*b1[1];
@@ -640,8 +642,10 @@ Response GeometryEvaluator::visit(State &state, const BendNode &node)
 
 						if (m < EPS) {
 							// center, fixed and cyl are laying on a single straight line => 3D spherical bend
-							BOOST_FOREACH(Polygon &p, newps->polygons) {
-								BOOST_FOREACH(Vector3d &v, p) {
+//							BOOST_FOREACH(Polygon &p, newps->polygons) {
+							for(auto & p : newps->polygons) {
+//								BOOST_FOREACH(Vector3d &v, p) {
+								for(auto & v : p ) {
 									ov[0] = v[0]-node.center_x;
 									ov[1] = v[1]-node.center_y;
 									ov[2] = v[2]-node.center_z;
@@ -672,8 +676,10 @@ Response GeometryEvaluator::visit(State &state, const BendNode &node)
 							b3[2] = b1[0] * b2[1] - b1[1] * b2[0];
 
 							// 3D cylindric bend
-							BOOST_FOREACH(Polygon &p, newps->polygons) {
-								BOOST_FOREACH(Vector3d &v, p) {
+//							BOOST_FOREACH(Polygon &p, newps->polygons) {
+							for(auto &p : newps->polygons) {
+//								BOOST_FOREACH(Vector3d &v, p) {
+								for(auto &v :p) {
 									ov[0] = v[0]-node.center_x;
 									ov[1] = v[1]-node.center_y;
 									ov[2] = v[2]-node.center_z;

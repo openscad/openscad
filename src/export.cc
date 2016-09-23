@@ -26,11 +26,12 @@
 
 #include "export.h"
 #include "evalcontext.h"
+#include "module.h"
+#include "ModuleInstantiation.h"
 #include "printutils.h"
 #include "Geometry.h"
 #include "GeometryEvaluator.h"
 #include "builtin.h"
-#include "typedefs.h"
 #include "fileutils.h"
 
 #include <boost/algorithm/string.hpp>
@@ -130,7 +131,7 @@ AbstractNode *ExportModule::instantiate(const Context* ctx, const ModuleInstanti
  
         FileFormat format;
 
-       	std::string extraw = boosty::extension_str(fs::path(filename));
+	std::string extraw = fs::path(filename).extension().generic_string();
 	std::string ext = boost::algorithm::to_lower_copy(extraw);
 	if (ext == ".stl") format=OPENSCAD_STL;
 	else if (ext == ".off") format = OPENSCAD_OFF;

@@ -193,7 +193,7 @@ namespace CGALUtils {
                             PRINTDB("After hull valid: %d", r.is_valid());
 				success = !createPolySetFromPolyhedron(r, result);
 			}
-			catch (const CGAL::Assertion_exception &e) {
+			catch (const CGAL::Failure_exception &e) {
 				PRINTB("ERROR: CGAL error in applyHull(): %s", e.what());
 			}
 			CGAL::set_error_behaviour(old_behaviour);
@@ -207,6 +207,7 @@ namespace CGALUtils {
 	*/
 	Geometry const * applyMinkowski(const Geometry::Geometries &children)
 	{
+		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 		CGAL::Timer t,t_tot;
 		assert(children.size() >= 2);
 		Geometry::Geometries::const_iterator it = children.begin();
@@ -397,6 +398,7 @@ namespace CGALUtils {
 			t_tot.stop();
 			PRINTDB("Minkowski: Total execution time %f s", t_tot.time());
 			t_tot.reset();
+			CGAL::set_error_behaviour(old_behaviour);
 			return operands[0];
 		}
 		catch (...) {
@@ -404,6 +406,7 @@ namespace CGALUtils {
 			PRINTD("Minkowski: Falling back to Nef Minkowski");
 
 			CGAL_Nef_polyhedron *N = applyOperator(children, OPENSCAD_MINKOWSKI);
+			CGAL::set_error_behaviour(old_behaviour);
 			return N;
 		}
 	}

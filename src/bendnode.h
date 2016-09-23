@@ -1,21 +1,21 @@
 #pragma once
 
 #include "node.h"
-#include "visitor.h"
 #include "value.h"
 
 class BendNode: public AbstractPolyNode
 {
 public:
+	VISITABLE();
 	BendNode(const ModuleInstantiation *mi): AbstractPolyNode(mi) {
 		convexity = 0;
 		center_x = center_y = center_z = 0;
 		fixed_x = fixed_y = fixed_z = 0;
 		is3d = false;
 	}
-	virtual Response accept(class State &state, Visitor &visitor) const {
+/*	virtual Response accept(class State &state, Visitor &visitor) const {
 		return visitor.visit(state, *this);
-	}
+	}*/
 	virtual std::string toString() const;
 	virtual std::string name() const { return "bend"; }
 
