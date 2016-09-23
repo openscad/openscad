@@ -27,8 +27,12 @@
 #include "export.h"
 #include "polyset.h"
 #include "polyset-utils.h"
+#include "linalg.h"
 
-static void append_svg(const Polygon2d &poly, std::ostream &output)
+//static void append_svg(const Polygon2d &poly, std::ostream &output)
+#include <boost/foreach.hpp>
+
+static void append_svg(const Polygon2d &poly, std::ostream &output, Color4f c)
 {
 	output << "<path d=\"\n";
 	for(const auto &o : poly.outlines()) {
@@ -47,7 +51,7 @@ static void append_svg(const Polygon2d &poly, std::ostream &output)
 		}
 		output << " z\n";
 	}
-	output << "\" stroke=\"black\" fill=\"lightgray\" stroke-width=\"0.5\"/>\n";
+	output << "\" stroke=\"black\" fill=\"rgb("<<255*c[0]<<","<<255*c[1]<<","<<255*c[2]<<")\"  fill-opacity=\""<<c[3]<<"\" stroke-width=\"0.5\"/>\n";
 
 }
 
@@ -57,7 +61,8 @@ static void append_svg(const shared_ptr<const Geometry> &geom, std::ostream &out
 		assert(false && "Unsupported file format");
 	}
 	else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(geom.get())) {
-		append_svg(*poly, output);
+ 
+		append_svg(*poly, output,poly->color);
 	} else {
 		assert(false && "Export as SVG for this geometry type is not supported");
 	}
@@ -74,6 +79,7 @@ void export_svg(const shared_ptr<const Geometry> &geom, std::ostream &output)
 	int maxy = ceil(-bbox.min().y());
 	int width = maxx - minx;
 	int height = maxy - miny;
+        
 
 	output
 		<< "<?xml version=\"1.0\" standalone=\"no\"?>\n"

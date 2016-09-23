@@ -258,6 +258,7 @@ HEADERS += src/typedefs.h \
            src/csgops.h \
            src/CSGTreeNormalizer.h \
            src/CSGTreeEvaluator.h \
+           src/bendnode.h \
            src/dxfdata.h \
            src/dxfdim.h \
            src/export.h \
@@ -360,6 +361,7 @@ SOURCES += src/version_check.cc \
            src/polyset-gl.cc \
            src/csgops.cc \
            src/transform.cc \
+           src/bend.cc \
            src/color.cc \
            src/primitives.cc \
            src/projection.cc \
