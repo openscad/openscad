@@ -25,37 +25,24 @@ void LocalScope::addChild(ModuleInstantiation *ch)
 std::string LocalScope::dump(const std::string &indent) const
 {
 	std::stringstream dump;
-	for(const auto &f : this->functions) {
+	for (const auto &f : this->functions) {
 		dump << f.second->dump(indent, f.first);
 	}
-	for(const auto &m : this->modules) {
+	for (const auto &m : this->modules) {
 		dump << m.second->dump(indent, m.first);
 	}
-	for(const auto &ass : this->assignments) {
-        if( ass.has_annotations()){
-		    
-            const Annotation  *group =ass.annotation("Group");
-            if( group != NULL){
-                dump<<group->dump();
-             }
-
-            const Annotation  *Description=ass.annotation("Description");
-            if( Description != NULL){
-		        dump<<Description->dump();
-		    }
-			
-            const Annotation  *parameter =ass.annotation("Parameter");
-		    if( parameter != NULL){
-                dump<<parameter->dump();
-		    }
-		    dump << indent << ass.name << " = " << *ass.expr << ";\n";
-        }
-        else{
-            dump << indent << ass.name << " = " << *ass.expr << ";\n";
-        }
-		
+	for (const auto &ass : this->assignments) {
+		if (ass.has_annotations()) {
+			const Annotation *group = ass.annotation("Group");
+			if (group != NULL) dump << group->dump();
+			const Annotation *Description = ass.annotation("Description");
+			if (Description != NULL) dump << Description->dump();
+			const Annotation *parameter = ass.annotation("Parameter");
+			if (parameter != NULL) dump << parameter->dump();
+		}
+		dump << indent << ass.name << " = " << *ass.expr << ";\n";
 	}
-	for(const auto &inst : this->children) {
+	for (const auto &inst : this->children) {
 		dump << inst->dump(indent);
 	}
 	return dump.str();
