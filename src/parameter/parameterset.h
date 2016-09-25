@@ -5,29 +5,25 @@
 #include "FileModule.h"
 #include "modcontext.h"
 
-#include<map>
-
+#include <map>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
 namespace pt = boost::property_tree;
 
-using namespace std;
-
 class ParameterSet
 {
-
 protected:
-    pt::ptree root;
-    typedef map<string,pt::ptree::value_type> Parameterset;
-    Parameterset parameterSet;
+	pt::ptree root;
+	typedef std::map<std::string, pt::ptree::value_type> Parameterset;
+	Parameterset parameterSet;
 
 public:
-    ParameterSet();
-    ~ParameterSet();
-    void getParameterSet(string filename);
-    void writeParameterSet(string filename);
-    void applyParameterSet(FileModule *fileModule,string setName);
+	ParameterSet();
+	~ParameterSet();
+	void getParameterSet(const std::string &filename);
+	void writeParameterSet(const std::string &filename);
+	void applyParameterSet(FileModule *fileModule, const std::string &setName);
 
 };
 

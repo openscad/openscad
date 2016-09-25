@@ -2,6 +2,7 @@
 
 #include "module.h"
 #include "modcontext.h"
+#include "annotation.h"
 
 ParameterObject::ParameterObject()
 {

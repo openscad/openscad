@@ -25,23 +25,22 @@
  */
 
 #include "Assignment.h"
+#include "annotation.h"
 
-
-
-void Assignment::add_annotations(AnnotationList *annotations)
+void Assignment::addAnnotations(AnnotationList *annotations)
 {
-	for (AnnotationList::iterator it = annotations->begin();it != annotations->end();it++) {
-		this->annotations.insert(std::pair<const std::string, Annotation *>((*it).getName(), &(*it)));
+	for (auto &annotation : *annotations) {
+		this->annotations.insert(std::make_pair(annotation.getName(), &annotation));
 	}
 }
 
-bool Assignment::has_annotations() const
+bool Assignment::hasAnnotations() const
 {
 	return !annotations.empty();
 }
 
 const Annotation * Assignment::annotation(const std::string &name) const
 {
-	AnnotationMap::const_iterator it = annotations.find(name);
-	return it == annotations.end() ? NULL : (*it).second;
+	auto found = annotations.find(name);
+	return found == annotations.end() ? nullptr : found->second;
 }

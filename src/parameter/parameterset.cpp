@@ -10,9 +10,9 @@ ParameterSet::~ParameterSet()
 
 }
 
-void ParameterSet::getParameterSet(string filename){
-
-    fstream myfile;
+void ParameterSet::getParameterSet(const std::string &filename)
+{
+    std::fstream myfile;
     myfile.open (filename);
     // send your JSON above to the parser below, but populate ss first
     if(myfile.is_open()){
@@ -27,13 +27,13 @@ void ParameterSet::getParameterSet(string filename){
      myfile.close();
 }
 
-void ParameterSet::writeParameterSet(string filename){
+void ParameterSet::writeParameterSet(const std::string &filename){
     if(root.empty()){
         return;
     }
 
-    fstream myfile;
-    myfile.open(filename,ios::out);
+    std::fstream myfile;
+    myfile.open(filename, std::ios::out);
     // send your JSON above to the parser below, but populate ss first
     if(myfile.is_open()){
         try{
@@ -47,14 +47,14 @@ void ParameterSet::writeParameterSet(string filename){
      myfile.close();
 }
 
-void ParameterSet::applyParameterSet(FileModule *fileModule,string setName)
+void ParameterSet::applyParameterSet(FileModule *fileModule, const std::string &setName)
 {
     try{
         if (fileModule == NULL ||root.empty()) {
             return;
         }
         ModuleContext ctx;
-        string path="SET."+setName;
+        std::string path="SET."+setName;
         for (AssignmentList::iterator it = fileModule->scope.assignments.begin();it != fileModule->scope.assignments.end();it++) {
 
             for(pt::ptree::value_type &v : root.get_child(path)){
