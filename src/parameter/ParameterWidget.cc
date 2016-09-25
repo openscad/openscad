@@ -303,20 +303,15 @@ void ParameterWidget::applyParameterSet(string setName){
                     entry->second->value=ValuePtr(v.second.get_value<bool>());
                 }else{
 
-                    AssignmentList *assignmentList;
-                    assignmentList=CommentParser::parser(v.second.data().c_str());
-                    if(assignmentList==NULL){
-                        continue ;
-                    }
+									shared_ptr<Expression> params = CommentParser::parser(v.second.data().c_str());
+									if (!params) continue;
 
                     ModuleContext ctx;
                     Assignment *assignment;
-                    for(int i=0; i<assignmentList->size(); i++) {
-                        ValuePtr newValue=assignmentList[i].data()->expr.get()->evaluate(&ctx);
-                        if(entry->second->dvt==newValue->type()){
-                            entry->second->value=newValue;
-                        }
-                    }
+										ValuePtr newValue = params->evaluate(&ctx);
+										if (entry->second->dvt == newValue->type()) {
+											entry->second->value = newValue;
+										}
                 }
         }
     }

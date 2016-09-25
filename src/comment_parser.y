@@ -8,18 +8,15 @@
     #include "comment.h" 
     void yyerror(char *);
     int yylex(void);
-    AssignmentList *argument;
-      extern void yy_scan_string ( const char *str );
+    extern void yy_scan_string ( const char *str );
+    Expression *params;
 %}
 %union {
     char *text;
     char ch;
     double num;
-    class Expression *expr;
     class Vector *vec;
-    Assignment *arg;
-    AssignmentList *args;
-    
+    class Expression *expr;
 };
 
 
@@ -28,33 +25,22 @@
 %token<text> WORD
 %type <text> word
 %type <expr> expr
-%type <args> arguments_call
-%type <arg> argument_call
+%type <expr> params
 %type <vec> vector_expr
 %type <vec> labled_vector
 
 %%
 
 
-arguments_call:
-        argument_call
-            {
-                $$ = new AssignmentList();
-                $$->push_back(*$1);
-                 argument=$$;
-                delete $1;
-            }
-        ;
-
-
-argument_call:
+params:
           expr
             {
-                $$ = new Assignment("", shared_ptr<Expression>($1));
+                $$ = $1;
+                params = $$;
             }			
             ;
             
-expr		: 
+expr: 
          NUM 
             {
                 $$ = new Literal(ValuePtr($1));
@@ -148,13 +134,13 @@ word:
 
 void yyerror(char *msg) {
     PRINTD("ERROR IN PARAMETER: Parser error in comments of file \n "); 
-    argument=NULL;
+    params = NULL;
 }
 
-AssignmentList *CommentParser::parser(const char *text)
+shared_ptr<Expression> CommentParser::parser(const char *text)
 {
   yy_scan_string(text);
   int parserretval = yyparse();
   if (parserretval != 0) return NULL;
-  return argument;
+  return shared_ptr<Expression>(params);
 }

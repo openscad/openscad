@@ -24,16 +24,11 @@ void ParameterText::onChanged(QString)
     }
     else{
         ModuleContext ctx;
-        AssignmentList *assignmentList;
-        assignmentList=CommentParser::parser(lineEdit->text().toStdString().c_str());
-        if(assignmentList==NULL){
-            return ;
-        }
-        for(unsigned int i=0; i<assignmentList->size(); i++) {
-            ValuePtr newValue=assignmentList[i].data()->expr.get()->evaluate(&ctx);
-            if(object->dvt==newValue->type()){
-                object->value=newValue;
-            }
+        shared_ptr<Expression> params = CommentParser::parser(lineEdit->text().toStdString().c_str());
+        if (!params) return;
+        ValuePtr newValue = params->evaluate(&ctx);
+        if (object->dvt == newValue->type()) {
+          object->value = newValue;
         }
     }
     object->focus=true;

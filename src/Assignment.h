@@ -41,25 +41,15 @@ typedef std::vector<Assignment> AssignmentList;
        
 class Annotation
 {
-protected:
-    Annotation(const std::string name, const AssignmentList assignments, const AssignmentList args);
-    
 public:
+    Annotation(const std::string &name, shared_ptr<class Expression> expr);
     virtual ~Annotation();
 
     std::string dump() const;
-    const std::string & get_name();
-    virtual ValuePtr evaluate(class Context *ctx, const std::string& var) const;
-    
-    Annotation& operator=(const Annotation&);
+    const std::string &getName() const;
+    virtual ValuePtr evaluate(class Context *ctx) const;
 
-    static const Annotation * create(const std::string name, const AssignmentList assignments);
-
-//private:
-    std::string name;
-    /** Defines the names and values parsed from the script */
-    AssignmentList assignments;
 private:
-    /** Defines the names of the positional parameters */
-    AssignmentList args;
-};                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     	
+    std::string name;
+    shared_ptr<Expression> expr;
+};

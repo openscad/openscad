@@ -46,12 +46,12 @@ int ParameterObject::setValue(const class ValuePtr defaultValue, const class Val
 void ParameterObject::setAssignment(Context *ctx, const Assignment *assignment, const ValuePtr defaultValue){
     name = assignment->name;
     const Annotation *param = assignment->annotation("Parameter");
-    const ValuePtr values = param->evaluate(ctx, "values");
+    const ValuePtr values = param->evaluate(ctx);
     setValue(defaultValue, values);
     const Annotation *desc = assignment->annotation("Description");
 
     if (desc) {
-        const ValuePtr v = desc->evaluate(ctx, "text");
+        const ValuePtr v = desc->evaluate(ctx);
         if (v->type() == Value::STRING) {
             description=QString::fromStdString(v->toString());
         }
@@ -59,7 +59,7 @@ void ParameterObject::setAssignment(Context *ctx, const Assignment *assignment, 
 
     const Annotation *group = assignment->annotation("Group");
     if (group) {
-            const ValuePtr v = group->evaluate(ctx, "text");
+            const ValuePtr v = group->evaluate(ctx);
             if (v->type() == Value::STRING) {
                 groupName=v->toString();
             }
