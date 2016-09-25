@@ -33,10 +33,16 @@
 #include "parametercheckbox.h"
 #include "parametertext.h"
 #include "parametervector.h"
-#include <QInputDialog>
 
 #include "modcontext.h"
 #include "comment.h"
+
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
+namespace pt = boost::property_tree;
+
+#include <QInputDialog>
+#include <fstream>
 
 ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 {
@@ -89,7 +95,7 @@ void ParameterWidget::onSetAdd(){
 void ParameterWidget::setFile(QString jsonFile){
 
     this->jsonFile=jsonFile.replace(".scad",".json").toStdString();
-    getParameterSet(this->jsonFile);
+    readParameterSet(this->jsonFile);
     connect(addButton,SIGNAL(clicked()),this,SLOT(onSetAdd()));
     connect(deleteButton,SIGNAL(clicked()),this,SLOT(onSetDelete()));
     this->comboBox->clear();
@@ -291,7 +297,6 @@ void ParameterWidget::applyParameterSet(string setName){
         return;
     }
     string path="SET."+setName;
-    Parameterset::iterator set=parameterSet.find(setName);
     for(pt::ptree::value_type &v : root.get_child(path)){
         entry_map_t::iterator entry =entries.find(v.first);
             if(entry!=entries.end()){

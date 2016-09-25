@@ -176,7 +176,7 @@ static GroupList collectGroups(const std::string &fulltext)
   Insert Parameters in AST of given scad file
   form of annotations
 */
-void CommentParser::addParameter(const char *fulltext, FileModule *root_module)
+void CommentParser::collectParameters(const char *fulltext, FileModule *root_module)
 {
   // Get all groups of parameters
   GroupList groupList = collectGroups(std::string(fulltext));

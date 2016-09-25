@@ -7,7 +7,7 @@
 namespace CommentParser {
 
 	shared_ptr<Expression> parser(const char *text);
-	void addParameter(const char *fulltext, FileModule *root_module);
+	void collectParameters(const char *fulltext, FileModule *root_module);
 
 }
 

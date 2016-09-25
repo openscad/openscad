@@ -404,10 +404,10 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 
 	if (Feature::ExperimentalCustomizer.is_enabled()) {
 		// add parameter to AST
-		CommentParser::addParameter(text.c_str(), root_module);
+		CommentParser::collectParameters(text.c_str(), root_module);
 		if (!parameterFile.empty() && !setName.empty()) {
 			ParameterSet param;
-			param.getParameterSet(parameterFile);
+			param.readParameterSet(parameterFile);
 			param.applyParameterSet(root_module, setName);
 		}
 	}
