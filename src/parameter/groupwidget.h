@@ -1,6 +1,4 @@
-#ifndef GROUPWIDGET_H
-#define GROUPWIDGET_H
-
+#pragma once
 
 #include <QFrame>
 #include <QGridLayout>
@@ -33,5 +31,3 @@ public:
 private slots:
     void onclicked(bool);
 };
-
-#endif // GROUPWIDGET_H

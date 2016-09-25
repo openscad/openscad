@@ -1,6 +1,3 @@
-#ifndef PARAMETERVIRTUALWIDGET_H
-#define PARAMETERVIRTUALWIDGET_H
-
 #pragma once
 
 #include "value.h"
@@ -40,5 +37,3 @@ protected:
     }
 
 };
-
-#endif // PARAMETERVIRTUALWIDGET_H

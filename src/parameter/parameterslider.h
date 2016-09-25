@@ -1,7 +1,6 @@
-#ifndef PARAMETERSLIDER_H
-#define PARAMETERSLIDER_H
+#pragma once
 
-#include"parametervirtualwidget.h"
+#include "parametervirtualwidget.h"
 
 class ParameterSlider : public ParameterVirtualWidget
 {
@@ -19,5 +18,3 @@ protected slots:
     void onReleased();
     void onPressed();
 };
-
-#endif // PARAMETERSLIDER_H

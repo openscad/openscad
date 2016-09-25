@@ -1,7 +1,6 @@
-#ifndef PARAMETERCOMBOBOX_H
-#define PARAMETERCOMBOBOX_H
+#pragma once
 
-#include"parametervirtualwidget.h"
+#include "parametervirtualwidget.h"
 
 class ParameterComboBox : public ParameterVirtualWidget
 {
@@ -15,6 +14,3 @@ public:
 public slots:
     void onChanged(int idx);
 };
-
-
-#endif // PARAMETERCOMBOBOX_H

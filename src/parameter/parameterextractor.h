@@ -1,5 +1,4 @@
-#ifndef PARAMETEREXTRACTOR_H
-#define PARAMETEREXTRACTOR_H
+#pragma once
 
 #include "FileModule.h"
 #include "parametervirtualwidget.h"
@@ -26,5 +25,3 @@ protected:
     virtual void connectWidget()=0;
     bool resetPara;
 };
-
-#endif // PARAMETEREXTRACTOR_H

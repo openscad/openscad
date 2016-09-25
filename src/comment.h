@@ -1,5 +1,4 @@
-#ifndef COMMENT_H
-#define COMMENT_H
+#pragma once
 
 #include "FileModule.h"
 #include "Assignment.h"
@@ -10,5 +9,3 @@ namespace CommentParser {
 	void collectParameters(const char *fulltext, FileModule *root_module);
 
 }
-
-#endif // COMMENT_H

@@ -1,6 +1,3 @@
-#ifndef PARAMETEROBJECT_H
-#define PARAMETEROBJECT_H
-
 #pragma once
 
 #include "value.h"
@@ -39,5 +36,3 @@ public:
 protected:
     int setValue(const ValuePtr defaultValue, const ValuePtr values);
 };
-
-#endif // PARAMETEROBJECT_H
