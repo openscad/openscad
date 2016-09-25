@@ -27,7 +27,6 @@
 
 #include <QTimer>
 
-
 #include "parameterextractor.h"
 #include "ui_ParameterWidget.h"
 #include "groupwidget.h"
@@ -43,14 +42,15 @@ private:
 	QTimer autoPreviewTimer;
 	bool descriptionShow;
 	QVBoxLayout * anyLayout;
-	string jsonFile;
+	std::string jsonFile;
 	bool anyfocused;
 	ParameterVirtualWidget *entryToFocus;
 
 public:
 	ParameterWidget(QWidget *parent = 0);
 	virtual ~ParameterWidget();
-	void setFile(QString jsonFile);
+	void readFile(QString scadFile);
+	void writeFile(QString scadFile);
 																
 protected slots:
 	void onValueChanged();
@@ -70,9 +70,9 @@ protected:
 	void addEntry(class ParameterVirtualWidget *entry);
 	void end();
 	void clear();
-	void AddParameterWidget(string parameterName);
+	void AddParameterWidget(std::string parameterName);
 	void setComboBoxForSet();
-	void applyParameterSet(string setName);
-	void updateParameterSet(string setName);
+	void applyParameterSet(std::string setName);
+	void updateParameterSet(std::string setName);
 };
 
