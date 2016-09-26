@@ -1,7 +1,6 @@
-#ifndef PARAMETERSPINBOX_H
-#define PARAMETERSPINBOX_H
+#pragma once
 
-#include"parametervirtualwidget.h"
+#include "parametervirtualwidget.h"
 
 class ParameterSpinBox :public ParameterVirtualWidget
 {
@@ -14,5 +13,3 @@ public:
 protected slots:
     void onChanged(double);
 };
-
-#endif // PARAMETERSPINBOX_H

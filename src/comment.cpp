@@ -1,5 +1,6 @@
 #include "comment.h"
 #include "expression.h"
+#include "annotation.h"
 
 #include <string>
 #include <vector>
@@ -175,7 +176,7 @@ static GroupList collectGroups(const std::string &fulltext)
   Insert Parameters in AST of given scad file
   form of annotations
 */
-void CommentParser::addParameter(const char *fulltext, FileModule *root_module)
+void CommentParser::collectParameters(const char *fulltext, FileModule *root_module)
 {
   // Get all groups of parameters
   GroupList groupList = collectGroups(std::string(fulltext));
@@ -219,6 +220,6 @@ void CommentParser::addParameter(const char *fulltext, FileModule *root_module)
       shared_ptr<Expression> expr(new Literal(ValuePtr(groupList[i].commentString)));
       annotationList->push_back(Annotation("Group", expr));
     }
-    assignment.add_annotations(annotationList);
+    assignment.addAnnotations(annotationList);
   }
 }

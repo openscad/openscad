@@ -1,34 +1,18 @@
-#ifndef PARAMETERSET_H
-#define PARAMETERSET_H
-
-#include "expression.h"
-#include "FileModule.h"
-#include "modcontext.h"
-
-#include<map>
+#pragma once
 
 #include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
 
 namespace pt = boost::property_tree;
 
-using namespace std;
-
 class ParameterSet
 {
-
 protected:
-    pt::ptree root;
-    typedef map<string,pt::ptree::value_type> Parameterset;
-    Parameterset parameterSet;
+	pt::ptree root;
 
 public:
-    ParameterSet();
-    ~ParameterSet();
-    void getParameterSet(string filename);
-    void writeParameterSet(string filename);
-    void applyParameterSet(FileModule *fileModule,string setName);
-
+	ParameterSet() {}
+	~ParameterSet() {}
+	void readParameterSet(const std::string &filename);
+	void writeParameterSet(const std::string &filename) const;
+	void applyParameterSet(class FileModule *fileModule, const std::string &setName);
 };
-
-#endif // PARAMETERSET_H

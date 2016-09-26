@@ -1,89 +1,65 @@
 #include "parameterset.h"
-#include "modcontext.h"
 #include "comment.h"
+#include "modcontext.h"
+#include "filemodule.h"
+#include "expression.h"
 
-ParameterSet::ParameterSet()
+#include <boost/property_tree/json_parser.hpp>
+
+void ParameterSet::readParameterSet(const std::string &filename)
 {
+  try {
+    pt::read_json(filename, this->root);
+  }
+  catch (const pt::json_parser_error &e) {
+    // FIXME: Better error handling
+    std::cerr << e.what() << std::endl;
+  }
 }
-ParameterSet::~ParameterSet()
+
+void ParameterSet::writeParameterSet(const std::string &filename) const
 {
+  if (this->root.empty()) return;
 
+  try {
+    pt::write_json(filename, this->root);
+  }
+  catch (const pt::json_parser_error &e) {
+    // FIXME: Better error handling
+    std::cerr << e.what() << std::endl;
+  }
 }
 
-void ParameterSet::getParameterSet(string filename){
-
-    fstream myfile;
-    myfile.open (filename);
-    // send your JSON above to the parser below, but populate ss first
-    if(myfile.is_open()){
-        try{
-            pt::read_json(myfile, this->root);
-        }
-        catch (std::exception const& e){
-
-            std::cerr << e.what() << std::endl;
-        }
-    }
-     myfile.close();
-}
-
-void ParameterSet::writeParameterSet(string filename){
-    if(root.empty()){
-        return;
-    }
-
-    fstream myfile;
-    myfile.open(filename,ios::out);
-    // send your JSON above to the parser below, but populate ss first
-    if(myfile.is_open()){
-        try{
-            pt::write_json(myfile, this->root);
-        }
-        catch (std::exception const& e){
-
-            std::cerr << e.what() << std::endl;
-        }
-    }
-     myfile.close();
-}
-
-void ParameterSet::applyParameterSet(FileModule *fileModule,string setName)
+void ParameterSet::applyParameterSet(FileModule *fileModule, const std::string &setName)
 {
-    try{
-        if (fileModule == NULL ||root.empty()) {
-            return;
+  if (fileModule == NULL || this->root.empty()) return;
+  try {
+    ModuleContext ctx;
+    std::string path = "SET." + setName;
+    for (auto &assignment : fileModule->scope.assignments) {
+      for (auto &v : root.get_child(path)) {
+        if (v.first == assignment.name) {
+          const ValuePtr defaultValue = assignment.expr->evaluate(&ctx);
+          if (defaultValue->type() == Value::STRING) {
+            assignment.expr = shared_ptr<Expression>(new Literal(ValuePtr(v.second.data())));
+          }
+          else if (defaultValue->type() == Value::BOOL) {
+            assignment.expr = shared_ptr<Expression>(new Literal(ValuePtr(v.second.get_value<bool>())));
+          } else {
+            shared_ptr<Expression> params = CommentParser::parser(v.second.data().c_str());
+            if (!params) continue;
+            ModuleContext ctx;
+            if (defaultValue->type() == params->evaluate(&ctx)->type()) {
+              assignment.expr = params;
+            }
+          }
         }
-        ModuleContext ctx;
-        string path="SET."+setName;
-        for (AssignmentList::iterator it = fileModule->scope.assignments.begin();it != fileModule->scope.assignments.end();it++) {
-
-            for(pt::ptree::value_type &v : root.get_child(path)){
-                if(v.first== (*it).name){
-                    Assignment *assignment;
-                    assignment=&(*it);
-                    const ValuePtr defaultValue = assignment->expr.get()->evaluate(&ctx);
-                    if(defaultValue->type()== Value::STRING){
-
-                        assignment->expr = shared_ptr<Expression>(new Literal(ValuePtr(v.second.data())));
-                    }else if(defaultValue->type()== Value::BOOL){
-
-                       assignment->expr = shared_ptr<Expression>(new Literal(ValuePtr(v.second.get_value<bool>())));
-                    }else{
-
-                      shared_ptr<Expression> params = CommentParser::parser(v.second.data().c_str());
-                      if (!params) continue;
-                        ModuleContext ctx;
-                        if (defaultValue->type() == params->evaluate(&ctx)->type()) {
-                          assignment->expr = params;
-                        }
-                    }
-                }
-             }
-        }
+      }
     }
-    catch (std::exception const& e)
-    {
-        std::cerr << e.what() << std::endl;
-    }
+  }
+  catch (std::exception const& e) {
+    // FIXME: Better error handling
+    std::cerr << e.what() << std::endl;
+  }
 }
 

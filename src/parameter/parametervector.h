@@ -1,7 +1,6 @@
-#ifndef PARAMETERVECTOR_H
-#define PARAMETERVECTOR_H
+#pragma once
 
-#include"parametervirtualwidget.h"
+#include "parametervirtualwidget.h"
 
 class ParameterVector : public ParameterVirtualWidget
 {
@@ -14,5 +13,3 @@ public:
 protected slots:
     void onChanged(double);
 };
-
-#endif // PARAMETERVECTOR_H

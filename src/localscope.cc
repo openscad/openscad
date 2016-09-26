@@ -4,6 +4,7 @@
 #include "ModuleInstantiation.h"
 #include "expression.h"
 #include "function.h"
+#include "annotation.h"
 
 LocalScope::LocalScope()
 {
@@ -32,7 +33,7 @@ std::string LocalScope::dump(const std::string &indent) const
 		dump << m.second->dump(indent, m.first);
 	}
 	for (const auto &ass : this->assignments) {
-		if (ass.has_annotations()) {
+		if (ass.hasAnnotations()) {
 			const Annotation *group = ass.annotation("Group");
 			if (group != NULL) dump << group->dump();
 			const Annotation *Description = ass.annotation("Description");

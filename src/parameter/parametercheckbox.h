@@ -1,8 +1,6 @@
-#ifndef PARAMETERCHECKBOX_H
-#define PARAMETERCHECKBOX_H
+#pragma once
 
-#include"parametervirtualwidget.h"
-
+#include "parametervirtualwidget.h"
 
 class ParameterCheckBox : public ParameterVirtualWidget
 {
@@ -15,5 +13,3 @@ public:
 protected slots:
     void onChanged();
 };
-
-#endif // PARAMETERCHECKBOX_H

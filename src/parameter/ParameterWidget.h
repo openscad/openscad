@@ -27,7 +27,6 @@
 
 #include <QTimer>
 
-
 #include "parameterextractor.h"
 #include "ui_ParameterWidget.h"
 #include "groupwidget.h"
@@ -37,43 +36,43 @@ class ParameterWidget : public QWidget, public Ui::ParameterWidget, public Param
 {
 	Q_OBJECT
 private:
-    typedef std::map<std::string,groupInst > group_map;
-    group_map groupMap;
-    typedef enum { UNDEFINED, COMBOBOX, SLIDER, CHECKBOX, TEXT, NUMBER, VECTOR } parameter_type_t;
-    QTimer autoPreviewTimer;
-    bool descriptionShow;
-    QVBoxLayout * anyLayout;
-    string jsonFile;
-    bool anyfocused;
-    ParameterVirtualWidget *entryToFocus;
-
+	typedef std::map<std::string,groupInst > group_map;
+	group_map groupMap;
+	typedef enum { UNDEFINED, COMBOBOX, SLIDER, CHECKBOX, TEXT, NUMBER, VECTOR } parameter_type_t;
+	QTimer autoPreviewTimer;
+	bool descriptionShow;
+	QVBoxLayout * anyLayout;
+	std::string jsonFile;
+	bool anyfocused;
+	ParameterVirtualWidget *entryToFocus;
 
 public:
-    ParameterWidget(QWidget *parent = 0);
-    virtual ~ParameterWidget();
-    void setFile(QString jsonFile);
-
+	ParameterWidget(QWidget *parent = 0);
+	virtual ~ParameterWidget();
+	void readFile(QString scadFile);
+	void writeFile(QString scadFile);
+																
 protected slots:
-    void onValueChanged();
-    void onPreviewTimerElapsed();
-    void onDescriptionShow();
-    void onSetChanged(int idx);
-    void onSetAdd();
-    void onSetDelete();
-    void resetParameter();
-
+	void onValueChanged();
+	void onPreviewTimerElapsed();
+	void onDescriptionShow();
+	void onSetChanged(int idx);
+	void onSetAdd();
+	void onSetDelete();
+	void resetParameter();
+	
 signals:
-    void previewRequested();
-
+	void previewRequested();
+	
 protected:
-    void connectWidget();
-    void begin();
-    void addEntry(class ParameterVirtualWidget *entry);
-    void end();
-    void clear();
-    void AddParameterWidget(string parameterName);
-    void setComboBoxForSet();
-    void applyParameterSet(string setName);
-    void updateParameterSet(string setName);
+	void connectWidget();
+	void begin();
+	void addEntry(class ParameterVirtualWidget *entry);
+	void end();
+	void clear();
+	void AddParameterWidget(std::string parameterName);
+	void setComboBoxForSet();
+	void applyParameterSet(std::string setName);
+	void updateParameterSet(std::string setName);
 };
 

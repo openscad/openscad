@@ -176,7 +176,7 @@ MainWindow::MainWindow(const QString &filename)
 
 	editorDockTitleWidget = new QWidget();
 	consoleDockTitleWidget = new QWidget();
-    parameterDockTitleWidget = new QWidget();
+	parameterDockTitleWidget = new QWidget();
 
 	this->versionLabel = NULL; // must be initialized before calling updateStatusBar()
 	updateStatusBar(NULL);
@@ -559,7 +559,7 @@ MainWindow::MainWindow(const QString &filename)
 	
 	connect(this->editorDock, SIGNAL(topLevelChanged(bool)), this, SLOT(editorTopLevelChanged(bool)));
 	connect(this->consoleDock, SIGNAL(topLevelChanged(bool)), this, SLOT(consoleTopLevelChanged(bool)));
-    connect(this->parameterDock, SIGNAL(topLevelChanged(bool)), this, SLOT(parameterTopLevelChanged(bool)));
+	connect(this->parameterDock, SIGNAL(topLevelChanged(bool)), this, SLOT(parameterTopLevelChanged(bool)));
 	// display this window and check for OpenGL 2.0 (OpenCSG) support
 	viewModeThrownTogether();
 	show();
@@ -636,14 +636,14 @@ void MainWindow::loadViewSettings(){
 	viewActionHideToolBars->setChecked(settings.value("view/hideToolbar").toBool());
 	hideToolbars();
 
-    if(Feature::ExperimentalCustomizer.is_enabled()){
-        viewActionHideParameters->setChecked(settings.value("view/hideCustomizer").toBool());
-        hideParameters();
-    }else{
-        viewActionHideParameters->setChecked(true);
-        hideParameters();
-        viewActionHideParameters->setVisible(false);
-    }
+	if (Feature::ExperimentalCustomizer.is_enabled()) {
+		viewActionHideParameters->setChecked(settings.value("view/hideCustomizer").toBool());
+		hideParameters();
+	} else {
+		viewActionHideParameters->setChecked(true);
+		hideParameters();
+		viewActionHideParameters->setVisible(false);
+	}
 
 	updateMdiMode(settings.value("advanced/mdi").toBool());
 	updateUndockMode(settings.value("advanced/undockableWindows").toBool());
@@ -675,7 +675,7 @@ void MainWindow::updateUndockMode(bool undockMode)
 	if (undockMode) {
 		editorDock->setFeatures(editorDock->features() | QDockWidget::DockWidgetFloatable);
 		consoleDock->setFeatures(consoleDock->features() | QDockWidget::DockWidgetFloatable);
-        parameterDock->setFeatures(parameterDock->features() | QDockWidget::DockWidgetFloatable);
+		parameterDock->setFeatures(parameterDock->features() | QDockWidget::DockWidgetFloatable);
 	} else {
 		if (editorDock->isFloating()) {
 			editorDock->setFloating(false);
@@ -685,10 +685,10 @@ void MainWindow::updateUndockMode(bool undockMode)
 			consoleDock->setFloating(false);
 		}
 		consoleDock->setFeatures(consoleDock->features() & ~QDockWidget::DockWidgetFloatable);
-        if (parameterDock->isFloating()) {
-                    parameterDock->setFloating(false);
-        }
-        parameterDock->setFeatures(parameterDock->features() & ~QDockWidget::DockWidgetFloatable);
+		if (parameterDock->isFloating()) {
+			parameterDock->setFloating(false);
+		}
+		parameterDock->setFeatures(parameterDock->features() & ~QDockWidget::DockWidgetFloatable);
 	}
 }
 
@@ -697,7 +697,7 @@ void MainWindow::updateReorderMode(bool reorderMode)
 	MainWindow::reorderMode = reorderMode;
 	editorDock->setTitleBarWidget(reorderMode ? 0 : editorDockTitleWidget);
 	consoleDock->setTitleBarWidget(reorderMode ? 0 : consoleDockTitleWidget);
-    parameterDock->setTitleBarWidget(reorderMode ? 0 : parameterDockTitleWidget);
+	parameterDock->setTitleBarWidget(reorderMode ? 0 : parameterDockTitleWidget);
 }
 
 MainWindow::~MainWindow()
@@ -788,7 +788,7 @@ void MainWindow::setFileName(const QString &filename)
 		this->fileName = fileinfo.absoluteFilePath();
 		setWindowFilePath(this->fileName);
         
-        this->parameterWidget->setFile(this->fileName);
+		this->parameterWidget->readFile(this->fileName);
         
 		QDir::setCurrent(fileinfo.dir().absolutePath());
 		this->top_ctx.setDocumentPath(fileinfo.dir().absolutePath().toLocal8Bit().constData());
@@ -1440,8 +1440,7 @@ void MainWindow::actionSaveAs()
 				}
 			}
 		}
-		QString jsonfile=new_filename;
-		this->parameterWidget->writeParameterSet(jsonfile.replace(".scad",".json").toStdString());
+		this->parameterWidget->writeFile(new_filename);
 		
 		setFileName(new_filename);
 		actionSave();
@@ -1728,7 +1727,7 @@ void MainWindow::compileTopLevelDocument()
 	if (Feature::ExperimentalCustomizer.is_enabled()) {
 		if (this->root_module!=NULL) {
 			//add parameters as annotation in AST
-			CommentParser::addParameter(fulltext.c_str(),this->root_module);
+			CommentParser::collectParameters(fulltext.c_str(),this->root_module);
 		}
 		this->parameterWidget->setParameters(this->root_module);
 		this->parameterWidget->applyParameters(this->root_module);

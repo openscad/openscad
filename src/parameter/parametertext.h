@@ -1,7 +1,6 @@
-#ifndef PARAMETERTEXT_H
-#define PARAMETERTEXT_H
+#pragma once
 
-#include"parametervirtualwidget.h"
+#include "parametervirtualwidget.h"
 
 class ParameterText : public ParameterVirtualWidget
 {
@@ -14,5 +13,3 @@ public:
 protected slots:
     void onChanged(QString);
 };
-
-#endif // PARAMETERTEXT_H

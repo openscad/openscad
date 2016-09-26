@@ -33,26 +33,32 @@
 #include "parametercheckbox.h"
 #include "parametertext.h"
 #include "parametervector.h"
-#include <QInputDialog>
 
 #include "modcontext.h"
 #include "comment.h"
+
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
+namespace pt = boost::property_tree;
+
+#include <QInputDialog>
+#include <fstream>
 
 ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 {
 	setupUi(this);
 
-    descriptionShow=true;
+	descriptionShow = true;
 	autoPreviewTimer.setInterval(500);
 	autoPreviewTimer.setSingleShot(true);
 	connect(&autoPreviewTimer, SIGNAL(timeout()), this, SLOT(onPreviewTimerElapsed()));
-    connect(checkBoxAutoPreview, SIGNAL(toggled(bool)), this, SLOT(onValueChanged()));
-    connect(checkBoxDetailedDescription,SIGNAL(toggled(bool)),this,SLOT(onDescriptionShow()));
-    connect(comboBox, SIGNAL(currentIndexChanged(int)),this,SLOT(onSetChanged(int)));
-    connect(reset, SIGNAL(clicked()),this,SLOT(resetParameter()));
+	connect(checkBoxAutoPreview, SIGNAL(toggled(bool)), this, SLOT(onValueChanged()));
+	connect(checkBoxDetailedDescription,SIGNAL(toggled(bool)), this,SLOT(onDescriptionShow()));
+	connect(comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onSetChanged(int)));
+	connect(reset, SIGNAL(clicked()), this, SLOT(resetParameter()));
 }
 
-void ParameterWidget::resetParameter(){
+void ParameterWidget::resetParameter() {
     this->resetPara=true;
     emit previewRequested();
 }
@@ -65,10 +71,10 @@ void ParameterWidget::onSetDelete(){
     if(root.empty()){
         return;
     }
-    string setName=comboBox->itemData(this->comboBox->currentIndex()).toString().toStdString();
+    std::string setName=comboBox->itemData(this->comboBox->currentIndex()).toString().toStdString();
     root.get_child("SET").erase(setName);
     std::fstream myfile;
-    myfile.open (this->jsonFile,ios::out);
+    myfile.open (this->jsonFile, std::ios::out);
     if(myfile.is_open()){
         pt::write_json(myfile,root);
         this->comboBox->clear();
@@ -86,32 +92,34 @@ void ParameterWidget::onSetAdd(){
     updateParameterSet(comboBox->itemData(this->comboBox->currentIndex()).toString().toStdString());
 }
 
-void ParameterWidget::setFile(QString jsonFile){
+void ParameterWidget::readFile(QString scadFile)
+{
+	this->jsonFile = scadFile.replace(".scad", ".json").toStdString();
+	readParameterSet(this->jsonFile);
+	connect(this->addButton, SIGNAL(clicked()), this, SLOT(onSetAdd()));
+	connect(this->deleteButton, SIGNAL(clicked()), this, SLOT(onSetDelete()));
+	this->comboBox->clear();
+	setComboBoxForSet();
+}
 
-    this->jsonFile=jsonFile.replace(".scad",".json").toStdString();
-    getParameterSet(this->jsonFile);
-    connect(addButton,SIGNAL(clicked()),this,SLOT(onSetAdd()));
-    connect(deleteButton,SIGNAL(clicked()),this,SLOT(onSetDelete()));
-    this->comboBox->clear();
-    setComboBoxForSet();
+void ParameterWidget::writeFile(QString scadFile)
+{
+	writeParameterSet(scadFile.replace(".scad", ".json").toStdString());
 }
 
 void ParameterWidget::setComboBoxForSet(){
 
-    this->comboBox->addItem("No Set Selected",
-                QVariant(QString::fromStdString("")));
-    if(root.empty()){
-        return;
-    }
-    for(pt::ptree::value_type &v : root.get_child("SET")){
-        this->comboBox->addItem(QString::fromStdString(v.first),
-                      QVariant(QString::fromStdString(v.first)));
-    }
+	this->comboBox->addItem("No Set Selected", QVariant(QString::fromStdString("")));
+	if (root.empty()) return;
+	for (const auto &v : root.get_child("SET")) {
+		this->comboBox->addItem(QString::fromStdString(v.first),
+														QVariant(QString::fromStdString(v.first)));
+	}
 }
 
 void ParameterWidget::onSetChanged(int idx){
 
-    const string v = comboBox->itemData(idx).toString().toUtf8().constData();
+    const std::string v = comboBox->itemData(idx).toString().toUtf8().constData();
     applyParameterSet(v);
     emit previewRequested();
 
@@ -180,14 +188,14 @@ void ParameterWidget::connectWidget()
     // clear previous entries in groupMap and entries
     clear();
 
-    vector<string> global;
+    std::vector<std::string> global;
     if(groupMap.find("Global")!=groupMap.end()){
      global=groupMap["Global"].parameterVector;
      groupMap["Global"].parameterVector.clear();
     }
 
     for(group_map::iterator it = groupMap.begin(); it != groupMap.end(); ) {
-        vector<string> gr;
+        std::vector<std::string> gr;
         gr=it->second.parameterVector;
         if(gr.empty()|| it->first=="Hidden"){
             it=groupMap.erase(it);
@@ -201,7 +209,7 @@ void ParameterWidget::connectWidget()
 
     begin();
     for(group_map::iterator it = groupMap.begin(); it != groupMap.end(); it++) {
-        vector<string> gr;
+        std::vector<std::string> gr;
         gr=it->second.parameterVector;
 
         for(int i=0;i <gr.size();i++){
@@ -246,7 +254,7 @@ void ParameterWidget::clear(){
 
 }
 
-void ParameterWidget::AddParameterWidget(string parameterName){
+void ParameterWidget::AddParameterWidget(std::string parameterName){
     ParameterVirtualWidget *entry ;
     switch (entries[parameterName]->target) {
         case COMBOBOX:{
@@ -285,13 +293,12 @@ void ParameterWidget::AddParameterWidget(string parameterName){
 
 }
 
-void ParameterWidget::applyParameterSet(string setName){
+void ParameterWidget::applyParameterSet(std::string setName){
 
     if(root.empty()){
         return;
     }
-    string path="SET."+setName;
-    Parameterset::iterator set=parameterSet.find(setName);
+    std::string path="SET."+setName;
     for(pt::ptree::value_type &v : root.get_child(path)){
         entry_map_t::iterator entry =entries.find(v.first);
             if(entry!=entries.end()){
@@ -317,9 +324,9 @@ void ParameterWidget::applyParameterSet(string setName){
     }
 }
 
-void ParameterWidget::updateParameterSet(string setName){
+void ParameterWidget::updateParameterSet(std::string setName){
     std::fstream myfile;
-    myfile.open (this->jsonFile,ios::out);
+    myfile.open (this->jsonFile, std::ios::out);
     if(myfile.is_open()){
         if(setName==""){
             bool ok=true;
