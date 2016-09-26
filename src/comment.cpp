@@ -193,30 +193,20 @@ void CommentParser::addParameter(const char *fulltext, FileModule *root_module)
     // Extracting the parameter comment 
     std::string comment = getComment(std::string(fulltext), firstLine);
     // getting the node for parameter annnotataion
-    AssignmentList *assignmentList = CommentParser::parser(comment.c_str());
-    if (assignmentList == NULL) {
-      assignmentList = new AssignmentList();
-      Expression *expr = new Literal(ValuePtr(std::string("")));
-      Assignment *assignment = new Assignment("", shared_ptr<Expression>(expr));
-      assignmentList->push_back(*assignment);
+    shared_ptr<Expression> params = CommentParser::parser(comment.c_str());
+    if (!params) {
+      params = shared_ptr<Expression>(new Literal(ValuePtr(std::string(""))));
     }
-    const Annotation *parameter = Annotation::create("Parameter", *assignmentList);
 
     // adding parameter to the list
-    annotationList->push_back(*parameter);
+    annotationList->push_back(Annotation("Parameter", params));
         
     //extracting the description 
     std::string descr = getDescription(std::string(fulltext), firstLine - 1);
     if (descr != "") {
       //creating node for description
-      assignmentList = new AssignmentList();
-      Expression *expr = new Literal(ValuePtr(std::string(descr.c_str())));
-            
-      Assignment *assignment = new Assignment("", shared_ptr<Expression>(expr));
-      assignmentList->push_back(*assignment);
-                
-      const Annotation *description = Annotation::create("Description", *assignmentList);
-      annotationList->push_back(*description);
+      shared_ptr<Expression> expr(new Literal(ValuePtr(std::string(descr.c_str()))));
+      annotationList->push_back(Annotation("Description", expr));
     }
         
     // Look for the group to which the given assignment belong
@@ -226,14 +216,8 @@ void CommentParser::addParameter(const char *fulltext, FileModule *root_module)
          
     if (i >= 0) {
       //creating node for description
-      assignmentList = new AssignmentList();
-      Expression *expr = new Literal(ValuePtr(groupList[i].commentString));
-            
-      Assignment *assignment = new Assignment("", shared_ptr<Expression>(expr));
-      assignmentList->push_back(*assignment);
-                
-      const Annotation * description = Annotation::create("Group", *assignmentList);
-      annotationList->push_back(*description);
+      shared_ptr<Expression> expr(new Literal(ValuePtr(groupList[i].commentString)));
+      annotationList->push_back(Annotation("Group", expr));
     }
     assignment.add_annotations(annotationList);
   }

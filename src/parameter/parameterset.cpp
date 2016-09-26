@@ -70,16 +70,11 @@ void ParameterSet::applyParameterSet(FileModule *fileModule,string setName)
                        assignment->expr = shared_ptr<Expression>(new Literal(ValuePtr(v.second.get_value<bool>())));
                     }else{
 
-                        AssignmentList *assignmentList;
-                        assignmentList=CommentParser::parser(v.second.data().c_str());
-                        if(assignmentList==NULL){
-                            continue ;
-                        }
+                      shared_ptr<Expression> params = CommentParser::parser(v.second.data().c_str());
+                      if (!params) continue;
                         ModuleContext ctx;
-                        for(int i=0; i<assignmentList->size(); i++) {
-                             if(defaultValue->type()== assignmentList[i].data()->expr.get()->evaluate(&ctx)->type()){
-                                assignment->expr=assignmentList[i].data()->expr;
-                             }
+                        if (defaultValue->type() == params->evaluate(&ctx)->type()) {
+                          assignment->expr = params;
                         }
                     }
                 }

@@ -28,13 +28,9 @@
 #include "Assignment.h"
 #include "expression.h"
 #include "context.h"
-#include "evalcontext.h"
-#include <boost/assign/std/vector.hpp>
 
-using namespace boost::assign; // bring 'operator+=()' into scope
-
-Annotation::Annotation(const std::string name, const AssignmentList assignments, const AssignmentList args)
-	: name(name), assignments(assignments), args(args)
+Annotation::Annotation(const std::string &name, shared_ptr<class Expression> expr)
+	: name(name), expr(expr)
 {
 }
 
@@ -42,53 +38,19 @@ Annotation::~Annotation()
 {
 }
 
-const Annotation * Annotation::create(const std::string name, const AssignmentList assignments)
+ValuePtr Annotation::evaluate(class Context *ctx) const
 {
-
-    
-    AssignmentList args;	
-	if (name == "Description") {
-		args += Assignment("text");
-	} else if (name == "Parameter") {
-		args += Assignment("values");
-	}
-	else if (name == "Group") {
-		args += Assignment("text");
-	}
-
-	return new Annotation(name, assignments, args);
+	return this->expr->evaluate(ctx);
 }
 
-Annotation& Annotation::operator=(const Annotation& other)
-{
-	name = other.name;
-	assignments = other.assignments;
-	return *this;
-}
-
-ValuePtr Annotation::evaluate(class Context *ctx, const std::string& var) const
-{
-	Context c(ctx);
-	EvalContext ec(&c, assignments);
-	c.setVariables(args, &ec);
-	const ValuePtr v = c.lookup_variable(var, true);
-	return v;
-}
-
-const std::string & Annotation::get_name()
+const std::string & Annotation::getName() const
 {
 	return name;
 }
 
 std::string Annotation::dump() const
 {
-    std::stringstream dump;
-	dump << "@" << name << "(";
-	for(const auto &ass : this->assignments) {
-		dump << *ass.expr <<")"<< std::endl;
-    }
-    if(this->assignments.empty()){
-        dump <<")"<< std::endl;
-    }
+	std::stringstream dump;
+	dump << "@" << name << "(" << *this->expr << ")" << std::endl;
 	return dump.str();
 }
