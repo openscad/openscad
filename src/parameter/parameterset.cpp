@@ -1,7 +1,6 @@
 #include "parameterset.h"
 #include "comment.h"
 #include "modcontext.h"
-#include "filemodule.h"
 #include "expression.h"
 
 #include <boost/property_tree/json_parser.hpp>

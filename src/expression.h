@@ -27,7 +27,7 @@ public:
 		Not,
 		Negate
 	};
-    virtual bool isLiteral() const { return true;}
+    virtual bool isLiteral() const;
 	UnaryOp(Op op, Expression *expr, const Location &loc);
 	virtual ValuePtr evaluate(const class Context *context) const;
 	virtual void print(std::ostream &stream) const;
@@ -111,8 +111,8 @@ public:
 	Range(Expression *begin, Expression *step, Expression *end, const Location &loc);
 	ValuePtr evaluate(const class Context *context) const;
 	virtual void print(std::ostream &stream) const;
+	virtual bool isLiteral() const;
 private:
-    virtual bool isLiteral() const { return true;}
 	shared_ptr<Expression> begin;
 	shared_ptr<Expression> step;
 	shared_ptr<Expression> end;

@@ -112,6 +112,13 @@ const char *UnaryOp::opString() const
 	}
 }
 
+bool UnaryOp::isLiteral() const { 
+
+    if(this->expr->isLiteral()) 
+        return true;
+    return false;
+}
+
 void UnaryOp::print(std::ostream &stream) const
 {
 	stream << opString() << *this->expr;
@@ -303,6 +310,17 @@ void Range::print(std::ostream &stream) const
 	if (this->step) stream << " : " << *this->step;
 	stream << " : " << *this->end;
 	stream << "]";
+}
+
+bool Range::isLiteral() const {
+    if(!this->step){ 
+        if( begin->isLiteral() && end->isLiteral())
+            return true;
+    }else{
+        if( begin->isLiteral() && end->isLiteral() && step->isLiteral())
+            return true;
+    }
+    return false;
 }
 
 Vector::Vector(const Location &loc) : Expression(loc)

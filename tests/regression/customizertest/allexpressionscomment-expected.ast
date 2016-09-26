@@ -40,11 +40,7 @@ t = (c > d);
 u = (e && g);
 v = (e || g);
 w = i;
-@Description("description")
-@Parameter("parameter")
 x = -i;
-@Description("description")
-@Parameter("parameter")
 y = !i;
 z = j;
 aa = (k ? l : m);
