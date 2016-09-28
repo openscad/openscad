@@ -16,7 +16,7 @@
 #   resource folder. E.g. using SUFFIX=-nightly will name the
 #   resulting binary openscad-nightly.
 #
-# Please see the 'Building' sections of the OpenSCAD user manual 
+# Please see the 'Building' sections of the OpenSCAD user manual
 # for updated tips & workarounds.
 #
 # https://en.wikibooks.org/wiki/OpenSCAD_User_Manual
@@ -131,6 +131,7 @@ netbsd* {
 # See Dec 2011 OpenSCAD mailing list, re: CGAL/GCC bugs.
 *g++* {
   QMAKE_CXXFLAGS *= -fno-strict-aliasing
+  QMAKE_CXXFLAGS += -std=c++11
   QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-local-typedefs # ignored before 4.8
 }
 
@@ -167,6 +168,8 @@ CONFIG += fontconfig
 CONFIG += gettext
 CONFIG += libxml2
 CONFIG += libzip
+CONFIG += hidapi
+CONFIG += spnav
 
 #Uncomment the following line to enable the QScintilla editor
 !nogui {
@@ -247,6 +250,7 @@ HEADERS += src/version_check.h \
            src/ThrownTogetherRenderer.h \
            src/CGAL_OGL_Polyhedron.h \
            src/OGL_helper.h \
+           src/SixDoFDev.h \
            src/QGLView.h \
            src/GLView.h \
            src/MainWindow.h \
@@ -434,6 +438,7 @@ SOURCES += \
            src/OpenCSGWarningDialog.cc \
            src/editor.cc \
            src/GLView.cc \
+           src/SixDoFDev.cc \
            src/QGLView.cc \
            src/AutoUpdater.cc \
            \
