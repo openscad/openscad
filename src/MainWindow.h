@@ -222,7 +222,7 @@ public slots:
 	void viewModeShowAxes();
 	void viewModeShowCrosshairs();
 	void viewModeShowScaleProportional();
-	void viewModeAnimate();
+	void viewModeAnimate(bool);
 	void viewAngleTop();
 	void viewAngleBottom();
 	void viewAngleLeft();
@@ -235,8 +235,11 @@ public slots:
 	void viewOrthogonal();
 	void viewResetView();
 	void viewAll();
+        void animationStart();
+        void animationStop();
 	void animateUpdateDocChanged();
 	void animateUpdate();
+        void videoExportChanged(int);
 	void dragEnterEvent(QDragEnterEvent *event);
 	void dropEvent(QDropEvent *event);
 	void helpAbout();

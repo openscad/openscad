@@ -121,6 +121,7 @@
 #endif // ENABLE_CGAL
 
 #include "video_png.h"
+#include "video_vpx.h"
 #include "boosty.h"
 #include "FontCache.h"
 
@@ -394,7 +395,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->viewActionShowAxes, SIGNAL(triggered()), this, SLOT(viewModeShowAxes()));
 	connect(this->viewActionShowCrosshairs, SIGNAL(triggered()), this, SLOT(viewModeShowCrosshairs()));
 	connect(this->viewActionShowScaleProportional, SIGNAL(triggered()), this, SLOT(viewModeShowScaleProportional()));
-	connect(this->viewActionAnimate, SIGNAL(triggered()), this, SLOT(viewModeAnimate()));
+	connect(this->viewActionAnimate, SIGNAL(triggered(bool)), this, SLOT(viewModeAnimate(bool)));
 	connect(this->viewActionTop, SIGNAL(triggered()), this, SLOT(viewAngleTop()));
 	connect(this->viewActionBottom, SIGNAL(triggered()), this, SLOT(viewAngleBottom()));
 	connect(this->viewActionLeft, SIGNAL(triggered()), this, SLOT(viewAngleLeft()));
@@ -522,7 +523,13 @@ MainWindow::MainWindow(const QString &filename)
 	initActionIcon(viewActionShowScaleProportional, ":/images/scalemarkers.png", ":/images/scalemarkers-white.png");
 
 	animationFormatComboBox->addItem("PNG Images", 0);
-	animationFormatComboBox->addItem("VP8 Video", 1);
+	animationFormatComboBox->addItem("WebM Video (VP8)", 1);
+	connect(this->actionAnimationPlay, SIGNAL(triggered()), this, SLOT(animationStart()));
+	connect(this->actionAnimationStop, SIGNAL(triggered()), this, SLOT(animationStop()));
+	connect(this->animationFormatComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(videoExportChanged(int)));
+	this->actionAnimationPlay->setChecked(false);
+	this->actionAnimationPlay->setEnabled(false);
+	this->actionAnimationStop->setEnabled(false);
 	
 	// make sure it looks nice..
 	QByteArray windowState = settings.value("window/state", QByteArray()).toByteArray();
@@ -821,6 +828,24 @@ void MainWindow::updatedAnimTval()
 	actionRenderPreview();
 }
 
+// Only called from animate_timer
+void MainWindow::updateTVal()
+{
+	if (this->anim_numsteps == 0) return;
+
+	if (this->anim_numsteps > 1) {
+		this->anim_step = (this->anim_step + 1) % this->anim_numsteps;
+		this->anim_tval = 1.0 * this->anim_step / this->anim_numsteps;
+	}
+	else if (this->anim_numsteps > 0) {
+		this->anim_step = 0;
+		this->anim_tval = 0.0;
+	}
+	QString txt;
+	txt.sprintf("%.5f", this->anim_tval);
+	this->e_tval->setText(txt);
+}
+
 void MainWindow::updatedAnimFps()
 {
 	bool fps_ok;
@@ -851,24 +876,6 @@ void MainWindow::updatedAnimSteps()
 void MainWindow::updatedAnimDump(bool checked)
 {
 	if (!checked) this->anim_dumping = false;
-}
-
-// Only called from animate_timer
-void MainWindow::updateTVal()
-{
-	if (this->anim_numsteps == 0) return;
-
-	if (this->anim_numsteps > 1) {
-		this->anim_step = (this->anim_step + 1) % this->anim_numsteps;
-		this->anim_tval = 1.0 * this->anim_step / this->anim_numsteps;
-	}
-	else if (this->anim_numsteps > 0) {
-		this->anim_step = 0;
-		this->anim_tval = 0.0;
-	}
-	QString txt;
-	txt.sprintf("%.5f", this->anim_tval);
-	this->e_tval->setText(txt);
 }
 
 void MainWindow::refreshDocument()
@@ -1792,7 +1799,7 @@ void MainWindow::actionRenderPreview()
 	PRINT("Parsing design (AST generation)...");
 	QApplication::processEvents();
 	this->afterCompileSlot = "csgRender";
-	this->procevents = !viewActionAnimate->isChecked();
+	this->procevents = !actionAnimationPlay->isChecked();
 	compile(false);
 	if (preview_requested) {
 		// if the action was called when the gui was locked, we must request it one more time
@@ -1804,7 +1811,7 @@ void MainWindow::actionRenderPreview()
 
 void MainWindow::csgRender()
 {
-	if (this->root_node) compileCSG(!viewActionAnimate->isChecked());
+	if (this->root_node) compileCSG(!actionAnimationPlay->isChecked());
 
 	// Go to non-CGAL view mode
 	if (viewActionThrownTogether->isChecked()) {
@@ -1818,7 +1825,7 @@ void MainWindow::csgRender()
 #endif
 	}
 
-	if (actionAnimationRecord->isChecked() && animate_timer->isActive()) {
+	if (actionAnimationPlay->isChecked() && actionAnimationRecord->isChecked() && animate_timer->isActive()) {
 		if (anim_dumping && anim_dump_start_step == anim_step) {
 			anim_dumping = false;
 			actionAnimationRecord->setChecked(false);
@@ -1833,7 +1840,11 @@ void MainWindow::csgRender()
 			double s = this->e_fsteps->text().toDouble();
 			double t = this->e_tval->text().toDouble();
 			if (video == NULL) {
-				video = new PngVideo(img.width(), img.height());
+				if (this->animationFormatComboBox->currentIndex() == 0) {
+					video = new PngVideo(img.width(), img.height());
+				} else {
+					video = new VpxVideo(img.width(), img.height());
+				}
 				video->open("");
 			}
 			video->exportFrame(img, s, t);
@@ -2323,17 +2334,12 @@ void MainWindow::viewModeShowScaleProportional()
     this->qglview->updateGL();
 }
 
-void MainWindow::viewModeAnimate()
+void MainWindow::viewModeAnimate(bool checked)
 {
-	if (viewActionAnimate->isChecked()) {
+	if (checked) {
 		animationDock->show();
-		actionRenderPreview();
-		updatedAnimFps();
 	} else {
 		animationDock->hide();
-		animate_timer->stop();
-		e_tval->setText("0");
-		actionRenderPreview();
 	}
 }
 
@@ -2349,9 +2355,24 @@ void MainWindow::animateUpdateDocChanged()
 		animateUpdate();
 }
 
+void MainWindow::animationStart()
+{
+	animate_timer->setSingleShot(false);
+	animate_timer->setInterval(int(1000 / this->e_fps->text().toDouble()));
+	animate_timer->start();
+}
+
+void MainWindow::animationStop()
+{
+	animate_timer->stop();
+	actionAnimationPlay->setChecked(false);
+	e_tval->setText("0");
+	actionRenderPreview();
+}
+
 void MainWindow::animateUpdate()
 {
-	if (animationDock->isVisible()) {
+	if (actionAnimationPlay->isChecked()) {
 		bool fps_ok;
 		double fps = this->e_fps->text().toDouble(&fps_ok);
 		if (fps_ok && fps <= 0 && !animate_timer->isActive()) {
@@ -2361,6 +2382,10 @@ void MainWindow::animateUpdate()
 			animate_timer->start();
 		}
 	}
+}
+
+void MainWindow::videoExportChanged(int index)
+{
 }
 
 void MainWindow::viewAngleTop()
