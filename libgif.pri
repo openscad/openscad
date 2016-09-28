@@ -43,8 +43,8 @@ LIBGIF_DIR = $$(LIBGIFDIR)
   LIBS += -L$$LIBGIF_LIBPATH -lgif
   DEFINES += ENABLE_VIDEO_GIF
 
-#  HEADERS += src/video_gif.h
-#  SOURCES += src/video_gif.cc
+  HEADERS += src/video_gif.h
+  SOURCES += src/video_gif.cc
 }
 
 }

@@ -121,6 +121,7 @@
 #endif // ENABLE_CGAL
 
 #include "video_png.h"
+#include "video_gif.h"
 #include "video_vpx.h"
 #include "video_xvid.h"
 #include "boosty.h"
@@ -524,8 +525,9 @@ MainWindow::MainWindow(const QString &filename)
 	initActionIcon(viewActionShowScaleProportional, ":/images/scalemarkers.png", ":/images/scalemarkers-white.png");
 
 	animationFormatComboBox->addItem("PNG Images", 0);
-	animationFormatComboBox->addItem("WebM Video (VP8)", 1);
-	animationFormatComboBox->addItem("MP4", 2);
+	animationFormatComboBox->addItem("Animated GIF", 1);
+	animationFormatComboBox->addItem("WebM Video (VP8)", 2);
+	animationFormatComboBox->addItem("MP4", 3);
 	connect(this->actionAnimationPlay, SIGNAL(triggered()), this, SLOT(animationStart()));
 	connect(this->actionAnimationStop, SIGNAL(triggered()), this, SLOT(animationStop()));
 	connect(this->animationFormatComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(videoExportChanged(int)));
@@ -1844,9 +1846,12 @@ void MainWindow::csgRender()
 			if (video == NULL) {
 				switch (this->animationFormatComboBox->currentIndex()) {
 				case 1:
-					video = new VpxVideo(img.width(), img.height());
+					video = new GifVideo(img.width(), img.height());
 					break;
 				case 2:
+					video = new VpxVideo(img.width(), img.height());
+					break;
+				case 3:
 					video = new XvidVideo(img.width(), img.height());
 					break;
 				default:
