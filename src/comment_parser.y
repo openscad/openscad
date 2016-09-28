@@ -103,32 +103,21 @@ word:
     }
     | word NUM
     {
-        std::string a;
-        a=$1;
-        a+=" ";
-        double dbl=$2;
         std::ostringstream strs;
-        strs<<dbl;
-        a=a+strs.str();
-        $$=strdup(a.c_str());
+        strs << $1 << " " << $2;
+        $$ = strdup(strs.str().c_str());
     }
     | NUM word
     {
-        double dbl=$1;
         std::ostringstream strs;
-        strs<<dbl;
-        std::string a=" ";
-        a+=$2;
-        a=strs.str()+a;
-        $$=strdup(a.c_str());
+        strs << $1 << " " << $2;
+        $$ = strdup(strs.str().c_str());
     }
     | word WORD
     {
-        std::string a;
-        a=$1;
-        a+=" ";
-        a+=$2;
-        $$=strdup(a.c_str());
+        std::ostringstream strs;
+        strs << $1 << " " << $2;
+        $$ = strdup(strs.str().c_str());
     }
 %%
 
