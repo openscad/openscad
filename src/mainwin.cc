@@ -198,6 +198,7 @@ MainWindow::MainWindow(const QString &filename)
 		editor = new LegacyEditor(editorDockContents);
 
 	Preferences::create(editor->colorSchemes());
+        connect(Preferences::inst(), SIGNAL(inputMappingChanged()), InputDriverManager::instance(), SLOT(onInputMappingUpdated()), Qt::UniqueConnection);
 
 #ifdef USE_SCINTILLA_EDITOR
 	if (useScintilla) {

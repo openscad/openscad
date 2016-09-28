@@ -25,6 +25,7 @@
  */
 #include "InputEventMapper.h"
 #include "InputDriverManager.h"
+#include "settings.h"
 
 #include <math.h>
 #include <QSettings>
@@ -39,29 +40,7 @@ InputEventMapper::InputEventMapper()
     connect(timer, SIGNAL(timeout()), this, SLOT(onTimer()));
     timer->start(30);
 
-    QSettings settings;
-
-    if (settings.value("InputDriver/button/1").toString().isEmpty()) {
-        settings.setValue("InputDriver/button/1", "viewActionResetView");
-        settings.setValue("InputDriver/button/2", "viewActionViewAll");
-        settings.setValue("InputDriver/axis/translateX", "+1");
-        settings.setValue("InputDriver/axis/translateY", "-2");
-        settings.setValue("InputDriver/axis/translateZ", "-3");
-        settings.setValue("InputDriver/axis/rotateX", "+4");
-        settings.setValue("InputDriver/axis/rotateY", "-5");
-        settings.setValue("InputDriver/axis/rotateZ", "-6");
-    }
-
-    for (int a = 0;a < 10;a++) {
-        QString key = QString("InputDriver/button/%1").arg(a + 1);
-        actions[a] = settings.value(key).toString();
-    }
-    translate[0] = settings.value("InputDriver/axis/translateX").toInt();
-    translate[1] = settings.value("InputDriver/axis/translateY").toInt();
-    translate[2] = settings.value("InputDriver/axis/translateZ").toInt();
-    rotate[0] = settings.value("InputDriver/axis/rotateX").toInt();
-    rotate[1] = settings.value("InputDriver/axis/rotateY").toInt();
-    rotate[2] = settings.value("InputDriver/axis/rotateZ").toInt();
+    onInputMappingUpdated();
 }
 
 InputEventMapper::~InputEventMapper()
@@ -101,6 +80,12 @@ void InputEventMapper::onTimer()
     double rz = getAxisValue(rotate[2]);
     if ((fabs(rx) > threshold) || (fabs(ry) > threshold) || (fabs(rz) > threshold)) {
         InputEvent *inputEvent = new InputEventRotate(rx, ry, rz);
+        InputDriverManager::instance()->postEvent(inputEvent);
+    }
+
+    double z = getAxisValue(zoom);
+    if (fabs(z) > threshold) {
+        InputEvent *inputEvent = new InputEventZoom(z);
         InputDriverManager::instance()->postEvent(inputEvent);
     }
 }
@@ -143,4 +128,34 @@ void InputEventMapper::onActionEvent(InputEventAction *event)
 void InputEventMapper::onZoomEvent(InputEventZoom *event)
 {
     InputDriverManager::instance()->postEvent(event);
+}
+
+int InputEventMapper::parseSettingValue(const std::string val)
+{
+    if (val.length() != 2) {
+        return 0;
+    }
+    return atoi(val.c_str());
+}
+
+void InputEventMapper::onInputMappingUpdated()
+{
+    Settings::Settings *s = Settings::Settings::inst();
+
+    actions[0] = QString(s->get(Settings::Settings::inputButton1).toString().c_str());
+    actions[1] = QString(s->get(Settings::Settings::inputButton2).toString().c_str());
+    actions[2] = QString(s->get(Settings::Settings::inputButton3).toString().c_str());
+    actions[3] = QString(s->get(Settings::Settings::inputButton4).toString().c_str());
+    actions[4] = QString(s->get(Settings::Settings::inputButton5).toString().c_str());
+    actions[5] = QString(s->get(Settings::Settings::inputButton6).toString().c_str());
+    actions[6] = QString(s->get(Settings::Settings::inputButton7).toString().c_str());
+    actions[7] = QString(s->get(Settings::Settings::inputButton8).toString().c_str());
+
+    translate[0] = parseSettingValue(s->get(Settings::Settings::inputTranslationX).toString());
+    translate[1] = parseSettingValue(s->get(Settings::Settings::inputTranslationY).toString());
+    translate[2] = parseSettingValue(s->get(Settings::Settings::inputTranslationZ).toString());
+    rotate[0] = parseSettingValue(s->get(Settings::Settings::inputRotateX).toString());
+    rotate[1] = parseSettingValue(s->get(Settings::Settings::inputRotateY).toString());
+    rotate[2] = parseSettingValue(s->get(Settings::Settings::inputRotateZ).toString());
+    zoom = parseSettingValue(s->get(Settings::Settings::inputZoom).toString());
 }

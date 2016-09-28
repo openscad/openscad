@@ -73,6 +73,22 @@ public slots:
 	void on_checkBoxEnableBraceMatching_toggled(bool);
     void on_checkBoxEnableLineNumbers_toggled(bool);
 
+        void on_comboBoxTranslationX_activated(int val);
+        void on_comboBoxTranslationY_activated(int val);
+        void on_comboBoxTranslationZ_activated(int val);
+        void on_comboBoxRotationX_activated(int val);
+        void on_comboBoxRotationY_activated(int val);
+        void on_comboBoxRotationZ_activated(int val);
+        void on_comboBoxZoom_activated(int val);
+        void on_comboBoxButton1_activated(int val);
+        void on_comboBoxButton2_activated(int val);
+        void on_comboBoxButton3_activated(int val);
+        void on_comboBoxButton4_activated(int val);
+        void on_comboBoxButton5_activated(int val);
+        void on_comboBoxButton6_activated(int val);
+        void on_comboBoxButton7_activated(int val);
+        void on_comboBoxButton8_activated(int val);
+
 signals:
 	void requestRedraw() const;
 	void updateMdiMode(bool mdi) const;
@@ -84,6 +100,7 @@ signals:
 	void syntaxHighlightChanged(const QString &s) const;
 	void editorTypeChanged(const QString &type);
 	void editorConfigChanged() const;
+        void inputMappingChanged() const;
 
 private:
 	Preferences(QWidget *parent = NULL);
