@@ -38,8 +38,8 @@ isEmpty(VPX_LIBPATH) {
   LIBS += $$VPX_LIBS
   DEFINES += ENABLE_VIDEO_VPX
 
-#  HEADERS += src/video_vpx.h
-#  SOURCES += src/video_vpx.cc
+  HEADERS += src/video_vpx.h
+  SOURCES += src/video_vpx.cc
 }
 
 }
