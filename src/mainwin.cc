@@ -122,6 +122,7 @@
 
 #include "video_png.h"
 #include "video_vpx.h"
+#include "video_xvid.h"
 #include "boosty.h"
 #include "FontCache.h"
 
@@ -524,6 +525,7 @@ MainWindow::MainWindow(const QString &filename)
 
 	animationFormatComboBox->addItem("PNG Images", 0);
 	animationFormatComboBox->addItem("WebM Video (VP8)", 1);
+	animationFormatComboBox->addItem("MP4", 2);
 	connect(this->actionAnimationPlay, SIGNAL(triggered()), this, SLOT(animationStart()));
 	connect(this->actionAnimationStop, SIGNAL(triggered()), this, SLOT(animationStop()));
 	connect(this->animationFormatComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(videoExportChanged(int)));
@@ -1840,12 +1842,18 @@ void MainWindow::csgRender()
 			double s = this->e_fsteps->text().toDouble();
 			double t = this->e_tval->text().toDouble();
 			if (video == NULL) {
-				if (this->animationFormatComboBox->currentIndex() == 0) {
-					video = new PngVideo(img.width(), img.height());
-				} else {
+				switch (this->animationFormatComboBox->currentIndex()) {
+				case 1:
 					video = new VpxVideo(img.width(), img.height());
+					break;
+				case 2:
+					video = new XvidVideo(img.width(), img.height());
+					break;
+				default:
+					video = new PngVideo(img.width(), img.height());
+					break;
 				}
-				video->open("");
+				video->open("test");
 			}
 			video->exportFrame(img, s, t);
 		}
