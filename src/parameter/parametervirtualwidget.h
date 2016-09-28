@@ -7,33 +7,30 @@
 
 class ParameterVirtualWidget : public QWidget, public Ui::ParameterEntryWidget
 {
-    Q_OBJECT
-
+	Q_OBJECT
+	
 protected:
-    ParameterObject *object;
-
+	ParameterObject *object;
+	
 public:
-    ParameterVirtualWidget(QWidget *parent=0);
-    virtual ~ParameterVirtualWidget();
-    virtual void setParameterFocus()=0;
-
+	ParameterVirtualWidget(QWidget *parent = 0);
+	virtual ~ParameterVirtualWidget();
+	virtual void setParameterFocus() = 0;
+	
 signals:
-    void changed();
-
+	void changed();
+	
 protected:
-    int decimalPrecision;
-    virtual void setPrecision(double number);
-    virtual void setValue()=0;
-    void setName(const QString& name){
-
-        this->labelDescription->hide();
-        this->labelParameter->setText(name);
-    }
-
-    void setDescription(const QString& description){
-
-        this->labelDescription->show();
-        this->labelDescription->setText(description);
-    }
-
+	int decimalPrecision;
+	virtual void setPrecision(double number);
+	virtual void setValue() = 0;
+	void setName(const QString& name) {
+		this->labelDescription->hide();
+		this->labelParameter->setText(name);
+	}
+	
+	void setDescription(const QString& description) {
+		this->labelDescription->show();
+		this->labelDescription->setText(description);
+	}
 };

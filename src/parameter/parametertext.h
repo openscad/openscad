@@ -4,12 +4,12 @@
 
 class ParameterText : public ParameterVirtualWidget
 {
-     Q_OBJECT
+	Q_OBJECT
 public:
-    ParameterText(ParameterObject *parameterobject,bool showDescription);
-    void setValue();
-    void setParameterFocus();
+	ParameterText(ParameterObject *parameterobject,bool showDescription);
+	void setValue();
+	void setParameterFocus();
 
 protected slots:
-    void onChanged(QString);
+	void onChanged(QString);
 };
