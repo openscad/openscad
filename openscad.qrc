@@ -1,5 +1,8 @@
 <RCC>
   <qresource prefix="/">
+    <file>icons/player_play.png</file>
+    <file>icons/player_record.png</file>
+    <file>icons/player_stop.png</file>
     <file>images/zoom-text-in-white.png</file>
     <file>images/zoom-text-in.png</file>
     <file>images/zoom-text-out-white.png</file>

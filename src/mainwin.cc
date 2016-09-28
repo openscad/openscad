@@ -282,9 +282,9 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->e_tval, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimTval()));
 	connect(this->e_fps, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimFps()));
 	connect(this->e_fsteps, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimSteps()));
-	connect(this->e_dump, SIGNAL(toggled(bool)), this, SLOT(updatedAnimDump(bool)));
+	connect(this->actionAnimationRecord, SIGNAL(toggled(bool)), this, SLOT(updatedAnimDump(bool)));
 
-	animate_panel->hide();
+	animationDock->hide();
 	find_panel->hide();
 	frameCompileResult->hide();
 	this->labelCompileResultMessage->setOpenExternalLinks(false);
@@ -520,6 +520,9 @@ MainWindow::MainWindow(const QString &filename)
 	initActionIcon(editActionIndent, ":/images/Increase-Indent-32.png", ":/images/Increase-Indent-32-white.png");
 	initActionIcon(viewActionResetView, ":/images/Command-Reset-32.png", ":/images/Command-Reset-32-white.png");
 	initActionIcon(viewActionShowScaleProportional, ":/images/scalemarkers.png", ":/images/scalemarkers-white.png");
+
+	animationFormatComboBox->addItem("PNG Images", 0);
+	animationFormatComboBox->addItem("VP8 Video", 1);
 	
 	// make sure it looks nice..
 	QByteArray windowState = settings.value("window/state", QByteArray()).toByteArray();
@@ -954,7 +957,7 @@ void MainWindow::compile(bool reload, bool forcedone)
 	}
 
 	if (!reload && didcompile) {
-		if (!animate_panel->isVisible()) {
+		if (!animationDock->isVisible()) {
 			emit unhighlightLastError();
 			if (!this->root_module) {
 				emit highlightError( parser_error_pos );
@@ -1815,10 +1818,10 @@ void MainWindow::csgRender()
 #endif
 	}
 
-	if (e_dump->isChecked() && animate_timer->isActive()) {
+	if (actionAnimationRecord->isChecked() && animate_timer->isActive()) {
 		if (anim_dumping && anim_dump_start_step == anim_step) {
 			anim_dumping = false;
-			e_dump->setChecked(false);
+			actionAnimationRecord->setChecked(false);
 		} else {
 			if (!anim_dumping) {
 				anim_dumping = true;
@@ -2323,12 +2326,14 @@ void MainWindow::viewModeShowScaleProportional()
 void MainWindow::viewModeAnimate()
 {
 	if (viewActionAnimate->isChecked()) {
-		animate_panel->show();
+		animationDock->show();
 		actionRenderPreview();
 		updatedAnimFps();
 	} else {
-		animate_panel->hide();
+		animationDock->hide();
 		animate_timer->stop();
+		e_tval->setText("0");
+		actionRenderPreview();
 	}
 }
 
@@ -2346,7 +2351,7 @@ void MainWindow::animateUpdateDocChanged()
 
 void MainWindow::animateUpdate()
 {
-	if (animate_panel->isVisible()) {
+	if (animationDock->isVisible()) {
 		bool fps_ok;
 		double fps = this->e_fps->text().toDouble(&fps_ok);
 		if (fps_ok && fps <= 0 && !animate_timer->isActive()) {
