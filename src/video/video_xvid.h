@@ -25,34 +25,31 @@
  */
 #pragma once
 
-#include <QString>
-#include <QImage>
-#include <QVector>
-#include <QStringList>
-#include <boost/shared_ptr.hpp>
+#include <xvid.h>
 
-class AbstractVideoExport
-{
-public:
-    virtual ~AbstractVideoExport() { }
+#include "video.h"
 
-    virtual QString name() const = 0;
-    virtual AbstractVideoExport * create(const unsigned int width, const unsigned int height) const = 0;
-
-    virtual void open(const QString filename) = 0;
-    virtual void close() = 0;
-    virtual void exportFrame(const QImage frame, const double s, const double t) = 0;
-};
-
-class Video
+class XvidVideoExport : public AbstractVideoExport
 {
 private:
-    QVector<boost::shared_ptr<AbstractVideoExport> > exporters;
+    bool init_ok;
+    unsigned int width, height;
 
+    FILE *f;
+    unsigned char *buf;
+    xvid_gbl_init_t      _gbl_init;
+    xvid_enc_create_t    _enc_create;
+    xvid_plugin_single_t _plugin_single;
+    xvid_enc_plugin_t    _plugins[1];
+    
 public:
-    Video();
-    virtual ~Video();
+    XvidVideoExport(const unsigned int width = 0, const unsigned int height = 0);
+    virtual ~XvidVideoExport();
+    
+    virtual QString name() const;
+    virtual AbstractVideoExport * create(const unsigned int width, const unsigned int height) const;
 
-    const QStringList getExporterNames();
-    AbstractVideoExport * getExporter(unsigned int idx, unsigned int width, unsigned int height);
+    virtual void open(const QString fileName);
+    virtual void close();
+    virtual void exportFrame(const QImage frame, const double s, const double t);
 };

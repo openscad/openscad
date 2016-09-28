@@ -43,8 +43,8 @@ XVIDCORE_DIR = $$(XVIDCOREDIR)
   LIBS += -L$$XVIDCORE_LIBPATH -lxvidcore
   DEFINES += ENABLE_VIDEO_XVID
 
-  HEADERS += src/video_xvid.h
-  SOURCES += src/video_xvid.cc
+  HEADERS += src/video/video_xvid.h
+  SOURCES += src/video/video_xvid.cc
 }
 
 }

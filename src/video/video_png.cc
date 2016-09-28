@@ -23,36 +23,53 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#pragma once
+#include <math.h>
 
-#include <QString>
-#include <QImage>
-#include <QVector>
-#include <QStringList>
-#include <boost/shared_ptr.hpp>
+#include "video_png.h"
 
-class AbstractVideoExport
+PngVideoExport::PngVideoExport(const unsigned int width, const unsigned int height)
 {
-public:
-    virtual ~AbstractVideoExport() { }
+	this->width = width;
+	this->height = height;
+}
 
-    virtual QString name() const = 0;
-    virtual AbstractVideoExport * create(const unsigned int width, const unsigned int height) const = 0;
-
-    virtual void open(const QString filename) = 0;
-    virtual void close() = 0;
-    virtual void exportFrame(const QImage frame, const double s, const double t) = 0;
-};
-
-class Video
+PngVideoExport::~PngVideoExport()
 {
-private:
-    QVector<boost::shared_ptr<AbstractVideoExport> > exporters;
+}
 
-public:
-    Video();
-    virtual ~Video();
+QString
+PngVideoExport::name() const
+{
+	return "PNG Images";
+}
 
-    const QStringList getExporterNames();
-    AbstractVideoExport * getExporter(unsigned int idx, unsigned int width, unsigned int height);
-};
+AbstractVideoExport *
+PngVideoExport::create(const unsigned int width, const unsigned int height) const
+{
+	return new PngVideoExport(width, height);
+}
+
+void
+PngVideoExport::open(const QString filename)
+{
+	const QString f(filename.trimmed());
+	
+	if (f.length() == 0) {
+		this->filename = "frame";
+	} else {
+		this->filename = filename;
+	}
+}
+
+void
+PngVideoExport::close()
+{
+}
+
+void
+PngVideoExport::exportFrame(const QImage frame, const double s, const double t)
+{
+	QString name;
+	name.sprintf("%s%05d.png", filename.toStdString().c_str(), int(round(s*t)));
+	frame.save(name, "PNG");
+}

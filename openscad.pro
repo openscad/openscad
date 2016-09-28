@@ -340,7 +340,7 @@ HEADERS += src/version_check.h \
            src/LibraryInfo.h \
            src/svg.h \
            src/video.h \
-           src/video_png.h \
+           src/video/video_png.h \
 	   src/EbmlWriter.h \
            \
            src/lodepng.h \
@@ -419,7 +419,7 @@ SOURCES += \
            src/stl-utils.cc \
            src/boost-utils.cc \
            src/video.cc \
-           src/video_png.cc \
+           src/video/video_png.cc \
 	   src/EbmlWriter.cpp \
            src/PlatformUtils.cc \
            src/LibraryInfo.cc \

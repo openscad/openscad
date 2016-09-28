@@ -120,11 +120,6 @@
 
 #endif // ENABLE_CGAL
 
-#include "video_png.h"
-#include "video_gif.h"
-#include "video_vpx.h"
-#include "video_xvid.h"
-#include "boosty.h"
 #include "FontCache.h"
 
 // Global application state

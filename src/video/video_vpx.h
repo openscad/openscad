@@ -25,34 +25,33 @@
  */
 #pragma once
 
-#include <QString>
-#include <QImage>
-#include <QVector>
-#include <QStringList>
-#include <boost/shared_ptr.hpp>
+#define VPX_CODEC_DISABLE_COMPAT 1
+#include <vpx/vpx_encoder.h>
+#include <vpx/vp8cx.h>
 
-class AbstractVideoExport
-{
-public:
-    virtual ~AbstractVideoExport() { }
+#include "video.h"
+#include "EbmlWriter.h"
 
-    virtual QString name() const = 0;
-    virtual AbstractVideoExport * create(const unsigned int width, const unsigned int height) const = 0;
-
-    virtual void open(const QString filename) = 0;
-    virtual void close() = 0;
-    virtual void exportFrame(const QImage frame, const double s, const double t) = 0;
-};
-
-class Video
+class VpxVideoExport : public AbstractVideoExport
 {
 private:
-    QVector<boost::shared_ptr<AbstractVideoExport> > exporters;
+    bool init_ok;
+    unsigned int width, height;
+    int frame_cnt;
+    EbmlGlobal ebml;
+    vpx_codec_ctx_t      codec;
+    vpx_codec_enc_cfg_t  cfg;
+    vpx_image_t          raw;
+    vpx_codec_err_t      res;
 
 public:
-    Video();
-    virtual ~Video();
+    VpxVideoExport(const unsigned int width = 0, const unsigned int height = 0);
+    virtual ~VpxVideoExport();
 
-    const QStringList getExporterNames();
-    AbstractVideoExport * getExporter(unsigned int idx, unsigned int width, unsigned int height);
+    virtual QString name() const;
+    virtual AbstractVideoExport * create(const unsigned int width, const unsigned int height) const;
+
+    virtual void open(const QString fileName);
+    virtual void close();
+    virtual void exportFrame(const QImage frame, const double s, const double t);
 };
