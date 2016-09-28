@@ -170,13 +170,6 @@ CONFIG += libzip
 CONFIG += hidapi
 CONFIG += spnav
 
-unix:!macx {
-  QT += dbus
-  DEFINES += ENABLE_DBUS
-  DBUS_ADAPTORS += org.openscad.OpenSCAD.xml
-  DBUS_INTERFACES += org.openscad.OpenSCAD.xml
-}
-
 #Uncomment the following line to enable the QScintilla editor
 !nogui {
   CONFIG += scintilla
@@ -365,11 +358,7 @@ HEADERS += src/version_check.h \
            src/QWordSearchField.h \
            src/QSettingsCached.h \
            src/input/InputDriver.h \
-           src/input/InputDriverManager.h \
-           src/input/HidApiInputDriver.h \
-           src/input/SpaceNavInputDriver.h \
-           src/input/JoystickInputDriver.h \
-           src/input/DBusInputDriver.h
+           src/input/InputDriverManager.h
 
 SOURCES += \
            src/libsvg/libsvg.cc \
@@ -515,11 +504,7 @@ SOURCES += \
            src/QSettingsCached.cc \
            \
            src/input/InputDriver.cc \
-           src/input/InputDriverManager.cc \
-           src/input/HidApiInputDriver.cc \
-           src/input/SpaceNavInputDriver.cc \
-           src/input/JoystickInputDriver.cc \
-           src/input/DBusInputDriver.cc
+           src/input/InputDriverManager.cc
 
 # ClipperLib
 SOURCES += src/polyclipping/clipper.cpp
@@ -542,6 +527,23 @@ HEADERS += src/libtess2/Include/tesselator.h \
            src/libtess2/Source/priorityq.h \
            src/libtess2/Source/sweep.h \
            src/libtess2/Source/tess.h
+
+unix:!macx {
+  QT += dbus
+  DEFINES += ENABLE_DBUS
+  DBUS_ADAPTORS += org.openscad.OpenSCAD.xml
+  DBUS_INTERFACES += org.openscad.OpenSCAD.xml
+
+  HEADERS += src/input/DBusInputDriver.h
+  SOURCES += src/input/DBusInputDriver.cc
+}
+
+unix:!macx {
+  DEFINES += ENABLE_JOYSTICK
+
+  HEADERS += src/input/JoystickInputDriver.h
+  SOURCES += src/input/JoystickInputDriver.cc
+}
 
 unix:!macx {
   SOURCES += src/imageutils-lodepng.cc
@@ -665,3 +667,7 @@ INSTALLS += icons
 man.path = $$PREFIX/share/man/man1
 man.extra = cp -f doc/openscad.1 \"\$(INSTALL_ROOT)$${man.path}/$${FULLNAME}.1\"
 INSTALLS += man
+
+info: {
+    include(info.pri)
+}

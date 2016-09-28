@@ -26,8 +26,6 @@
 
 #pragma once
 
-#include <hidapi/hidapi.h>
-
 #include "input/InputDriver.h"
 
 class SpaceNavInputDriver : public InputDriver

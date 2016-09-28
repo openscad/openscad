@@ -50,6 +50,7 @@ public:
     void postEvent(InputEvent *event, bool activeOnly = true);
 
     void init();
+    std::string listDrivers();
     void registerDriver(InputDriver *driver);
     void unregisterDriver(InputDriver *driver);
 
