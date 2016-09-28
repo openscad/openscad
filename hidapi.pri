@@ -22,17 +22,24 @@ HIDAPI_DIR = $$(HIDAPIDIR)
 }
 
 isEmpty(HIDAPI_INCLUDEPATH) {
-  HIDAPI_CFLAGS = $$system("pkg-config --cflags hidapi-libusb")
+  HIDAPI_CFLAGS = $$system("pkg-config --silence-errors --cflags hidapi-libusb")
 } else {
   HIDAPI_CFLAGS = -I$$HIDAPI_INCLUDEPATH
 }
 
 isEmpty(HIDAPI_LIBPATH) {
-  HIDAPI_LIBS = $$system("pkg-config --libs hidapi-libusb")
+  HIDAPI_LIBS = $$system("pkg-config --silence-errors --libs hidapi-libusb")
 } else {
   HIDAPI_LIBS = -L$$HIDAPI_LIBPATH -lhidapi-libusb
 }
 
-QMAKE_CXXFLAGS += $$HIDAPI_CFLAGS
-LIBS += $$HIDAPI_LIBS
+!isEmpty(HIDAPI_CFLAGS) {
+  QMAKE_CXXFLAGS += $$HIDAPI_CFLAGS
+  LIBS += $$HIDAPI_LIBS
+  DEFINES += ENABLE_HIDAPI
+
+  HEADERS += src/input/HidApiInputDriver.h
+  SOURCES += src/input/HidApiInputDriver.cc
+}
+
 }

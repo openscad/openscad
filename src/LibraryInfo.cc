@@ -3,6 +3,7 @@
 #include <vector>
 #ifdef USE_SCINTILLA_EDITOR
 #include <Qsci/qsciglobal.h>
+#include "input/InputDriverManager.h"
 #endif
 
 #include "version_check.h"
@@ -98,6 +99,7 @@ std::string LibraryInfo::info()
 	  << "\nQt version: " << qtVersion
 #ifdef USE_SCINTILLA_EDITOR
 	  << "\nQScintilla version: " << QSCINTILLA_VERSION_STR
+          << "\nInputDrivers: " << InputDriverManager::instance()->listDrivers()
 #endif
 	  << "\nMingW build: " << mingwstatus
 	  << "\nGLib version: "       << GLIB_MAJOR_VERSION << "." << GLIB_MINOR_VERSION << "." << GLIB_MICRO_VERSION

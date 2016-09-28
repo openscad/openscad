@@ -69,6 +69,17 @@ void InputDriverManager::init()
     }
 }
 
+std::string InputDriverManager::listDrivers()
+{
+    std::stringstream stream;
+    const char *sep = "";
+    for (drivers_t::iterator it = drivers.begin();it != drivers.end();it++) {
+        stream << sep << (*it)->get_name();
+        sep = ", ";
+    }
+    return stream.str();
+}
+
 void InputDriverManager::postEvent(InputEvent *event, bool activeOnly)
 {
     QWidget *window = activeOnly ? QApplication::activeWindow() : currentWindow;
