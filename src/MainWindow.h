@@ -18,7 +18,7 @@
 #include <QTime>
 #include <QIODevice>
 
-class MainWindow : public QMainWindow, public Ui::MainWindow
+class MainWindow : public QMainWindow, public Ui::MainWindow, public InputEventHandler
 {
 	Q_OBJECT
 
@@ -119,6 +119,7 @@ private:
 	void setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel);
         void addKeyboardShortCut(const QList<QAction *> &actions);
         void updateStatusBar(class ProgressWidget *progressWidget);
+        QAction * findAction(const QList<QAction *> &actions, const std::string &name);
 
 	EditorInterface *editor;
 
@@ -199,6 +200,14 @@ public:
 	void setCurrentOutput();
 	void clearCurrentOutput();
   bool isEmpty();
+
+        void onAxisChanged(InputEventAxisChanged *event);
+        void onButtonChanged(InputEventButtonChanged *event);
+
+        void onTranslateEvent(InputEventTranslate *event);
+        void onRotateEvent(InputEventRotate *event);
+        void onActionEvent(InputEventAction *event);
+        void onZoomEvent(InputEventZoom *event);
 
 public slots:
 	void openFile(const QString &filename);

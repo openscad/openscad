@@ -309,47 +309,6 @@ bool QGLView::save(const char *filename)
   return this->frame.save(filename, "PNG");
 }
 
-void QGLView::onTranslateEvent(const InputEventTranslate *event)
-{
-    double zoomFactor = 0.001 * cam.zoomValue();
-    translate(zoomFactor * event->x, event->y, zoomFactor * event->z, event->relative, false);
-}
-
-void QGLView::onRotateEvent(const InputEventRotate *event)
-{
-    if (event->relative) {
-        rotate2(event->x, event->y, event->z);
-    } else {
-        rotate(event->x, event->y, event->z, event->relative);
-    }
-}
-
-void QGLView::onButtonEvent(const InputEventButton *event)
-{
-    if (event->down) {
-        return;
-    }
-
-    switch (event->idx) {
-    case 0:
-        resetView();
-        updateGL();
-        break;
-    case 1:
-        viewAll();
-        updateGL();
-        break;
-    case 2:
-        translate(0, 0, 0, false, true);
-        break;
-    }
-}
-
-void QGLView::onZoomEvent(const InputEventZoom *event)
-{
-    zoom(event->zoom, event->relative);
-}
-
 void QGLView::wheelEvent(QWheelEvent *event)
 {
 #if QT_VERSION >= 0x050000

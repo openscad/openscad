@@ -87,15 +87,15 @@ bool SpaceNavInputDriver::spnav_input(void)
 
             if (ev.motion.x != 0 || ev.motion.y != 0 || ev.motion.z != 0) {
                 InputEvent *event = new InputEventTranslate(0.1 * ev.motion.x, 0.1 * ev.motion.z, 0.1 * ev.motion.y);
-                InputDriverManager::instance()->postEvent(event);
+                InputDriverManager::instance()->sendEvent(event);
             }
             if (ev.motion.rx != 0 || ev.motion.ry != 0 || ev.motion.rz != 0) {
                 InputEvent *event = new InputEventRotate(0.01 * ev.motion.rx, 0.01 * ev.motion.rz, 0.01 * ev.motion.ry);
-                InputDriverManager::instance()->postEvent(event);
+                InputDriverManager::instance()->sendEvent(event);
             }
         } else if (ev.type == SPNAV_EVENT_BUTTON) {
-            InputEvent *event = new InputEventButton(ev.button.bnum, ev.button.press);
-            InputDriverManager::instance()->postEvent(event);
+            InputEvent *event = new InputEventButtonChanged(ev.button.bnum, ev.button.press);
+            InputDriverManager::instance()->sendEvent(event);
         }
     } while (spnav_poll_event(&ev));
     return true;

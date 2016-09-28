@@ -30,15 +30,20 @@
 #include <QTimer>
 
 #include "InputDriver.h"
+#include "InputEventMapper.h"
 #include "MainWindow.h"
 
 class InputDriverManager : public QObject
 {
     Q_OBJECT
 private:
+    typedef std::list<QAction *> actions_t;
     typedef std::list<InputDriver *> drivers_t;
 
+    actions_t actions;
     drivers_t drivers;
+
+    InputEventMapper mapper;
 
     MainWindow *currentWindow;
 
@@ -46,16 +51,19 @@ private:
 
     static InputDriverManager *self;
 
+    void postEvent(InputEvent *event);
+
 public:
     InputDriverManager();
     virtual ~InputDriverManager();
 
-    void postEvent(InputEvent *event, bool activeOnly = true);
+    void sendEvent(InputEvent *event);
 
     void init();
     std::string listDrivers();
     void registerDriver(InputDriver *driver);
     void unregisterDriver(InputDriver *driver);
+    void registerActions(const QList<QAction *> &actions, const int level = 0);
 
     static InputDriverManager * instance();
 
@@ -63,4 +71,6 @@ private slots:
     void onTimeout();
     void doOpen(bool firstOpen);
     void onFocusChanged(QWidget *, QWidget *);
+
+    friend class InputEventMapper;
 };

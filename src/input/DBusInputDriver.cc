@@ -60,7 +60,8 @@ bool DBusInputDriver::open()
         return true;
     }
 
-    if (!QDBusConnection::sessionBus().isConnected()) {
+    QDBusConnection connection = QDBusConnection::sessionBus();
+    if (!connection.isConnected()) {
         return false;
     }
 
@@ -68,7 +69,9 @@ bool DBusInputDriver::open()
     QDBusConnection::sessionBus().registerObject("/org/openscad/OpenSCAD/Application", this);
 
     org::openscad::OpenSCAD *iface;
-    iface = new org::openscad::OpenSCAD(QString(), QString(), QDBusConnection::sessionBus(), this);
+    iface = new org::openscad::OpenSCAD(QString(), QString(), connection, this);
+
+    name = "DBusInputDriver (" + connection.baseService().toStdString() + ")";
 
     connect(iface, SIGNAL(zoom(double)), this, SLOT(zoom(double)));
     connect(iface, SIGNAL(zoomTo(double)), this, SLOT(zoomTo(double)));
@@ -76,6 +79,7 @@ bool DBusInputDriver::open()
     connect(iface, SIGNAL(rotateTo(double, double, double)), this, SLOT(rotateTo(double, double, double)));
     connect(iface, SIGNAL(translate(double, double, double)), this, SLOT(translate(double, double, double)));
     connect(iface, SIGNAL(translateTo(double, double, double)), this, SLOT(translateTo(double, double, double)));
+    connect(iface, SIGNAL(action(QString)), this, SLOT(action(QString)));
     is_open = true;
     return true;
 }
@@ -87,36 +91,40 @@ void DBusInputDriver::close()
 
 void DBusInputDriver::zoom(double zoom)
 {
-    InputDriverManager::instance()->postEvent(new InputEventZoom(zoom), false);
+    InputDriverManager::instance()->sendEvent(new InputEventZoom(zoom, true, false));
 }
 
 void DBusInputDriver::zoomTo(double zoom)
 {
-    InputDriverManager::instance()->postEvent(new InputEventZoom(zoom, false), false);
+    InputDriverManager::instance()->sendEvent(new InputEventZoom(zoom, false, false));
 }
 
 void DBusInputDriver::rotate(double x, double y, double z)
 {
-    InputDriverManager::instance()->postEvent(new InputEventRotate(x, y, z), false);
+    InputDriverManager::instance()->sendEvent(new InputEventRotate(x, y, z, true, false));
 }
 
 void DBusInputDriver::rotateTo(double x, double y, double z)
 {
-    InputDriverManager::instance()->postEvent(new InputEventRotate(x, y, z, false), false);
+    InputDriverManager::instance()->sendEvent(new InputEventRotate(x, y, z, false, false));
 }
 
 void DBusInputDriver::translate(double x, double y, double z)
 {
-    InputDriverManager::instance()->postEvent(new InputEventTranslate(x, y, z), false);
+    InputDriverManager::instance()->sendEvent(new InputEventTranslate(x, y, z, true, false));
 }
 
 void DBusInputDriver::translateTo(double x, double y, double z)
 {
-    InputDriverManager::instance()->postEvent(new InputEventTranslate(x, y, z, false), false);
+    InputDriverManager::instance()->sendEvent(new InputEventTranslate(x, y, z, false, false));
+}
+
+void DBusInputDriver::action(QString name)
+{
+    InputDriverManager::instance()->sendEvent(new InputEventAction(name.toStdString(), false));
 }
 
 const std::string & DBusInputDriver::get_name() const
 {
-    static std::string name = "DBusInputDriver";
     return name;
 }
