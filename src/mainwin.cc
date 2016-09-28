@@ -120,6 +120,8 @@
 
 #endif // ENABLE_CGAL
 
+#include "video_png.h"
+#include "boosty.h"
 #include "FontCache.h"
 
 // Global application state
@@ -265,7 +267,8 @@ MainWindow::MainWindow(const QString &filename)
 
 	animate_timer = new QTimer(this);
 	connect(animate_timer, SIGNAL(timeout()), this, SLOT(updateTVal()));
-
+	video = NULL;
+	
 	autoReloadTimer = new QTimer(this);
 	autoReloadTimer->setSingleShot(false);
 	autoReloadTimer->setInterval(200);
@@ -1814,7 +1817,7 @@ void MainWindow::csgRender()
 
 	if (e_dump->isChecked() && animate_timer->isActive()) {
 		if (anim_dumping && anim_dump_start_step == anim_step) {
-			anim_dumping=false;
+			anim_dumping = false;
 			e_dump->setChecked(false);
 		} else {
 			if (!anim_dumping) {
@@ -1824,10 +1827,18 @@ void MainWindow::csgRender()
 			// Force reading from front buffer. Some configurations will read from the back buffer here.
 			glReadBuffer(GL_FRONT);
 			QImage img = this->qglview->grabFrameBuffer();
-			QString filename;
-			filename.sprintf("frame%05d.png", this->anim_step);
-			img.save(filename, "PNG");
+			double s = this->e_fsteps->text().toDouble();
+			double t = this->e_tval->text().toDouble();
+			if (video == NULL) {
+				video = new PngVideo(img.width(), img.height());
+				video->open("");
+			}
+			video->exportFrame(img, s, t);
 		}
+	} else if (video != NULL) {
+		video->close();
+		delete video;
+		video = NULL;
 	}
 
 	compileEnded();

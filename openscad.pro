@@ -336,6 +336,8 @@ HEADERS += src/version_check.h \
            src/boost-utils.h \
            src/LibraryInfo.h \
            src/svg.h \
+           src/video.h \
+           src/video_png.h \
            \
            src/lodepng.h \
            src/OffscreenView.h \
@@ -412,6 +414,7 @@ SOURCES += \
            src/parsersettings.cc \
            src/stl-utils.cc \
            src/boost-utils.cc \
+           src/video_png.cc \
            src/PlatformUtils.cc \
            src/LibraryInfo.cc \
            \

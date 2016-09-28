@@ -13,6 +13,7 @@
 #include "memory.h"
 #include "editor.h"
 #include "export.h"
+#include "video.h"
 #include <vector>
 #include <QMutex>
 #include <QTime>
@@ -28,11 +29,13 @@ public:
 	class Preferences *prefs;
 
 	QTimer *animate_timer;
+
 	int anim_step;
 	int anim_numsteps;
 	double anim_tval;
 	bool anim_dumping;
 	int anim_dump_start_step;
+	AbstractVideo *video;
 
 	QTimer *autoReloadTimer;
 	std::string autoReloadId;
