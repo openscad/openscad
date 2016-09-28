@@ -184,6 +184,9 @@ CONFIG += freetype
 CONFIG += fontconfig
 CONFIG += gettext
 CONFIG += libxml2
+CONFIG += libgif
+CONFIG += vpx
+CONFIG += xvidcore
 
 #Uncomment the following line to enable the QScintilla editor
 !nogui {
