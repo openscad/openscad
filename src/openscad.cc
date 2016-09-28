@@ -57,6 +57,7 @@
 
 #include "csgnode.h"
 #include "CSGTreeEvaluator.h"
+#include "SixDoFDev.h"
 
 #include <sstream>
 
@@ -753,6 +754,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	}
 
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
+	spacenav();
 	int rc = app.exec();
 	for(auto &mainw : scadApp->windowManager.getWindows()) delete mainw;
 	return rc;

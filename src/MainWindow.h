@@ -166,6 +166,7 @@ private slots:
 	// Mac OSX FindBuffer support
 	void findBufferChanged();
 	void updateFindBuffer(QString);
+	bool event(QEvent* event);
 protected:
 	virtual bool eventFilter(QObject* obj, QEvent *event);
 

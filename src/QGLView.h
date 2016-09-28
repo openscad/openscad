@@ -14,6 +14,7 @@
 #include <Eigen/Geometry>
 #include "GLView.h"
 #include "renderer.h"
+#include "SixDoFDev.h"
 
 class QGLView :
 #ifdef USE_QOPENGLWIDGET
@@ -21,7 +22,7 @@ class QGLView :
 #else
 		public QGLWidget,
 #endif
-		public GLView
+		public GLView, public SixDoFDevEventHandler
 {
 	Q_OBJECT
 	Q_PROPERTY(bool showFaces READ showFaces WRITE setShowFaces);
@@ -66,6 +67,10 @@ public slots:
 	inline void updateGL() { update(); }
 #endif
 
+	void SixDoFDev_translate( SixDoFDevEventTranslate* event);
+	void SixDoFDev_rotate( SixDoFDevEventRotate* event);
+	void SixDoFDev_button( SixDoFDevEventButton* event);
+
 public:
 	QLabel *statusLabel;
 #ifdef USE_QOPENGLWIDGET
@@ -83,6 +88,8 @@ private:
 	void mouseMoveEvent(QMouseEvent *event);
 	void mouseReleaseEvent(QMouseEvent *event);
 	void mouseDoubleClickEvent(QMouseEvent *event);
+	void translate( double x, double y, double z);
+	void rotate( double x, double y, double z);
 
 	void initializeGL();
 	void resizeGL(int w, int h);

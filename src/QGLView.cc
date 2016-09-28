@@ -255,65 +255,35 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
       ) {
       // Left button rotates in xz, Shift-left rotates in xy
       // On Mac, Ctrl-Left is handled as right button on other platforms
-      cam.object_rot.x() += dy;
       if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0)
-        cam.object_rot.y() += dx;
+        rotate( dy, dx, 0.0);
       else
-        cam.object_rot.z() += dx;
-
-      normalizeAngle(cam.object_rot.x());
-      normalizeAngle(cam.object_rot.y());
-      normalizeAngle(cam.object_rot.z());
+        rotate( dy, 0.0, dx);
     } else {
       // Right button pans in the xz plane
       // Middle button pans in the xy plane
       // Shift-right and Shift-middle zooms
       if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
-	      cam.zoom(-12.0 * dy);
+        translate( 0.0, -12.0 * dy, 0.0);
       } else {
-
-      double mx = +(dx) * 3.0 * cam.zoomValue() / QWidget::width();
-      double mz = -(dy) * 3.0 * cam.zoomValue() / QWidget::height();
-
-      double my = 0;
+        double mx = +(dx) * 3.0 * cam.zoomValue() / QWidget::width();
+        double mz = -(dy) * 3.0 * cam.zoomValue() / QWidget::height();
+        double my = 0;
 #if (QT_VERSION < QT_VERSION_CHECK(4, 7, 0))
-      if (event->buttons() & Qt::MidButton) {
+        if (event->buttons() & Qt::MidButton)
 #else
-      if (event->buttons() & Qt::MiddleButton) {
+        if (event->buttons() & Qt::MiddleButton)
 #endif
-        my = mz;
-        mz = 0;
-        // actually lock the x-position
-        // (turns out to be easier to use than xy panning)
-        mx = 0;
-      }
-
-      Matrix3d aax, aay, aaz, tm3;
-      aax = Eigen::AngleAxisd(-(cam.object_rot.x()/180) * M_PI, Vector3d::UnitX());
-      aay = Eigen::AngleAxisd(-(cam.object_rot.y()/180) * M_PI, Vector3d::UnitY());
-      aaz = Eigen::AngleAxisd(-(cam.object_rot.z()/180) * M_PI, Vector3d::UnitZ());
-      tm3 = Matrix3d::Identity();
-      tm3 = aaz * (aay * (aax * tm3));
-
-      Matrix4d tm;
-      tm = Matrix4d::Identity();
-      for (int i=0;i<3;i++) for (int j=0;j<3;j++) tm(j,i)=tm3(j,i);
-
-      Matrix4d vec;
-      vec <<
-        0,  0,  0,  mx,
-        0,  0,  0,  my,
-        0,  0,  0,  mz,
-        0,  0,  0,  1
-      ;
-      tm = tm * vec;
-      cam.object_trans.x() += tm(0,3);
-      cam.object_trans.y() += tm(1,3);
-      cam.object_trans.z() += tm(2,3);
+        {
+          my = mz;
+          mz = 0;
+          // actually lock the x-position
+          // (turns out to be easier to use than xy panning)
+          mx = 0;
+        }
+        translate( mx, my, mz);
       }
     }
-    updateGL();
-    emit doAnimateUpdate();
   }
   last_mouse = this_mouse;
 }
@@ -363,3 +333,81 @@ void QGLView::setOrthoMode(bool enabled) {
 	if (enabled) this->cam.setProjection(Camera::ORTHOGONAL);
 	else this->cam.setProjection(Camera::PERSPECTIVE);
 }
+
+
+void
+QGLView::SixDoFDev_translate( SixDoFDevEventTranslate* event) {
+	if (event->x == 0 && event->y == 0 && event->z == 0) {
+		return;
+	}
+	translate( event->x * 0.0001 * cam.zoomValue(), event->y * 0.1, -event->z * 0.0001 * cam.zoomValue());
+}
+
+
+void
+QGLView::SixDoFDev_rotate( SixDoFDevEventRotate* event) {
+	if (event->x == 0 && event->y == 0 && event->z == 0) {
+		return;
+	}
+	rotate( event->x * 0.01, event->y * -0.01, event->z * -0.01);
+}
+
+
+void
+QGLView::SixDoFDev_button( SixDoFDevEventButton* event) {
+	if ((event->down & 1) != 0) {
+		cam.object_trans << 0,0,0;
+		updateGL();
+	}
+	if ((event->down & 2) != 0) {
+		resetView();
+		updateGL();
+	}
+}
+
+
+void
+QGLView::translate( double x, double y, double z) {
+	cam.zoom( y);
+	y = 0;
+	Matrix3d aax, aay, aaz, tm3;
+	aax = Eigen::AngleAxisd( -(cam.object_rot.x() / 180) * M_PI, Vector3d::UnitX());
+	aay = Eigen::AngleAxisd( -(cam.object_rot.y() / 180) * M_PI, Vector3d::UnitY());
+	aaz = Eigen::AngleAxisd( -(cam.object_rot.z() / 180) * M_PI, Vector3d::UnitZ());
+	tm3 = Matrix3d::Identity();
+	tm3 = aaz * (aay * (aax * tm3));
+	Matrix4d tm;
+	tm = Matrix4d::Identity();
+	for (int i = 0; i < 3; ++i) {
+		for (int j = 0; j < 3; ++j) {
+			tm( j, i) = tm3( j, i);
+		}
+	}
+	Matrix4d vec;
+	vec <<
+	  0,  0,  0,  x,
+	  0,  0,  0,  y,
+	  0,  0,  0,  z,
+	  0,  0,  0,  1
+	;
+	tm = tm * vec;
+	cam.object_trans.x() += tm( 0, 3);
+	cam.object_trans.y() += tm( 1, 3);
+	cam.object_trans.z() += tm( 2, 3);
+    updateGL();
+    emit doAnimateUpdate();
+}
+
+
+void
+QGLView::rotate( double x, double y, double z) {
+	cam.object_rot.x() += x;
+	cam.object_rot.y() += y;
+	cam.object_rot.z() += z;
+	normalizeAngle( cam.object_rot.x());
+	normalizeAngle( cam.object_rot.y());
+	normalizeAngle( cam.object_rot.z());
+	updateGL();
+    emit doAnimateUpdate();
+}
+

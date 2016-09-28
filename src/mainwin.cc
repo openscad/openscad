@@ -59,6 +59,7 @@
 #include "ThrownTogetherRenderer.h"
 #include "CSGTreeNormalizer.h"
 #include "QGLView.h"
+#include "SixDoFDev.h"
 #ifdef Q_OS_MAC
 #include "CocoaUtils.h"
 #endif
@@ -1565,6 +1566,15 @@ void MainWindow::findBufferChanged() {
 	if (!t.isEmpty()) {
 		findInputField->setText(t);
 	}
+}
+
+bool MainWindow::event(QEvent* event) {
+	if (event->type() == SixDoFDevEvent::my_type) {
+		static_cast< SixDoFDevEvent*>( event)->deliver( qglview);
+		event->accept();
+		return true;
+	}
+	return QMainWindow::event( event);
 }
 
 bool MainWindow::eventFilter(QObject* obj, QEvent *event)
