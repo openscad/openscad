@@ -27,9 +27,6 @@ void
 GifVideo::close()
 {
 	if (gif_handle != NULL) {
-		if (buf) {
-			flush_buffer(buf, frame_delay);
-		}
 		EGifCloseFile(gif_handle, NULL);
 		gif_handle = NULL;
 	}
@@ -154,24 +151,39 @@ GifVideo::exportFrame(const QImage frame, const double s, const double t)
 		if (frame_delay > MAX_FRAME_DELAY)
 			frame_delay = MAX_FRAME_DELAY;
 
+		unsigned char *cur = new unsigned char[width * height];
+		for (unsigned int y = 0;y < height;y++) {
+			memcpy(cur + y * width, scaled.scanLine(y), width);
+		}
+
 		if (buf == NULL) {
-			buf = new unsigned char[width * height];
-			for (unsigned int y = 0; y < height; y++) {
-				memcpy(buf + y * width, scaled.scanLine(y), width);
-			}
+			flush_buffer(cur, frame_delay, 0, height);
+			buf = cur;
 			return;
 		}
 
-		if (buf) {
-			flush_buffer(buf, frame_delay);
-			for (unsigned int y = 0; y < height; y++) {
-				memcpy(buf + y * width, scaled.scanLine(y), width);
+		int miny = 0, maxy = height - 1;
+		for (unsigned int y = 0;y < height;y++) {
+			if ((memcmp(buf + y * width, cur + y * width, width)) != 0) {
+				break;
 			}
-		} else {
-			flush_buffer((unsigned char *) scaled.bits(), frame_delay);
+			miny = y;
 		}
+		for (int y = height - 1;y >= 0;y--) {
+			if ((memcmp(buf + y * width, cur + y * width, width)) != 0) {
+				break;
+			}
+			maxy = y;
+		}
+		
+		if (miny <= maxy) {
+			flush_buffer(cur, frame_delay, miny, maxy + 1);
+			frame_delay = 0;
+		}
+		
+		delete buf;
+		buf = cur;
 
-		frame_delay = 0;
 	}
 		break;
 	default:
@@ -180,7 +192,7 @@ GifVideo::exportFrame(const QImage frame, const double s, const double t)
 }
 
 bool
-GifVideo::flush_buffer(unsigned char *buf, unsigned int delay)
+GifVideo::flush_buffer(unsigned char *buf, unsigned int delay, unsigned int miny, unsigned int maxy)
 {
 	/*
 	 * Graphic Control Extension
@@ -221,10 +233,10 @@ GifVideo::flush_buffer(unsigned char *buf, unsigned int delay)
 	if (EGifPutExtension(gif_handle, 0xF9, 4, EXT_GCE) != GIF_OK)
 		return false;
 
-	if (EGifPutImageDesc(gif_handle, 0, 0, width, height, 0, cmap) != GIF_OK)
+	if (EGifPutImageDesc(gif_handle, 0, miny, width, maxy - miny, 0, cmap) != GIF_OK)
 		return false;
 
-	if (EGifPutLine(gif_handle, buf, width * height) != GIF_OK)
+	if (EGifPutLine(gif_handle, buf + miny * width, width * (maxy - miny)) != GIF_OK)
 		return false;
 	
 	return true;

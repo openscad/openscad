@@ -21,7 +21,7 @@ private:
     unsigned char *buf;
 
 private:
-    bool flush_buffer(unsigned char *buf, unsigned int delay);
+    bool flush_buffer(unsigned char *buf, unsigned int delay, unsigned int miny, unsigned int maxy);
 
 public:
     GifVideo(const int width, const int height);
