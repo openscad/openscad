@@ -356,7 +356,8 @@ HEADERS += src/version_check.h \
            \
            src/input/InputDriver.h \
            src/input/InputDriverManager.h \
-           src/input/SixDoFDev.h
+           src/input/HidApiInputDriver.h \
+           src/input/SpaceNavInputDriver.h
 
 SOURCES += \
            src/libsvg/libsvg.cc \
@@ -483,7 +484,8 @@ SOURCES += \
            \
            src/input/InputDriver.cc \
            src/input/InputDriverManager.cc \
-           src/input/SixDoFDev.cc
+           src/input/HidApiInputDriver.cc \
+           src/input/SpaceNavInputDriver.cc
 
 # ClipperLib
 SOURCES += src/polyclipping/clipper.cpp

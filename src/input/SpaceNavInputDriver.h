@@ -1,6 +1,6 @@
 /*
  *  OpenSCAD (www.openscad.org)
- *  Copyright (C) 2009-2015 Clifford Wolf <clifford@clifford.at> and
+ *  Copyright (C) 2009-2011 Clifford Wolf <clifford@clifford.at> and
  *                          Marius Kintel <marius@kintel.net>
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -23,36 +23,24 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+
 #pragma once
 
-#include <QWidget>
-#include <QThread>
+#include <hidapi/hidapi.h>
 
-#include "InputDriver.h"
-#include "MainWindow.h"
+#include "input/InputDriver.h"
 
-class InputDriverManager : public QObject
+class SpaceNavInputDriver : public InputDriver
 {
     Q_OBJECT
-private:
-    std::list<InputDriver *> drivers;
-    std::list<MainWindow *> windows;
-
-    MainWindow *currentWindow;
-
-    static InputDriverManager *self;
 
 public:
-    InputDriverManager();
-    virtual ~InputDriverManager();
+    SpaceNavInputDriver();
+    virtual ~SpaceNavInputDriver();
+    virtual void run();
+    virtual void open();
+    virtual void close();
 
-    void postEvent(InputEvent *event, bool activeOnly = true);
-
-    void registerDriver(InputDriver *driver);
-    void unregisterDriver(InputDriver *driver);
-
-    static InputDriverManager * instance();
-
-private slots:
-    void onFocusChanged(QWidget *, QWidget *);
+private:
+    void spnav_input();
 };

@@ -28,7 +28,6 @@
 #include <stdint.h>
 
 #include <QEvent>
-#include <QObject>
 #include <QThread>
 
 class InputEventHandler
