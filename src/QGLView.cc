@@ -244,48 +244,50 @@ void QGLView::normalizeAngle(GLdouble& angle)
 
 void QGLView::mouseMoveEvent(QMouseEvent *event)
 {
-  QPoint this_mouse = event->globalPos();
-  double dx = (this_mouse.x()-last_mouse.x()) * 0.7;
-  double dy = (this_mouse.y()-last_mouse.y()) * 0.7;
-  if (mouse_drag_active) {
-    if (event->buttons() & Qt::LeftButton
+    QPoint this_mouse = event->globalPos();
+    double dx = (this_mouse.x() - last_mouse.x()) * 0.7;
+    double dy = (this_mouse.y() - last_mouse.y()) * 0.7;
+    if (mouse_drag_active) {
+        if (event->buttons() & Qt::LeftButton
 #ifdef Q_OS_MAC
-        && !(event->modifiers() & Qt::MetaModifier)
+            && !(event->modifiers() & Qt::MetaModifier)
 #endif
-      ) {
-      // Left button rotates in xz, Shift-left rotates in xy
-      // On Mac, Ctrl-Left is handled as right button on other platforms
-      if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0)
-        rotate( dy, dx, 0.0);
-      else
-        rotate( dy, 0.0, dx);
-    } else {
-      // Right button pans in the xz plane
-      // Middle button pans in the xy plane
-      // Shift-right and Shift-middle zooms
-      if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
-        translate( 0.0, -12.0 * dy, 0.0);
-      } else {
-        double mx = +(dx) * 3.0 * cam.zoomValue() / QWidget::width();
-        double mz = -(dy) * 3.0 * cam.zoomValue() / QWidget::height();
-        double my = 0;
+            ) {
+            // Left button rotates in xz, Shift-left rotates in xy
+            // On Mac, Ctrl-Left is handled as right button on other platforms
+            if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
+                rotate(dy, dx, 0.0, true);
+            } else {
+                rotate(dy, 0.0, dx, true);
+            }
+        } else {
+            // Right button pans in the xz plane
+            // Middle button pans in the xy plane
+            // Shift-right and Shift-middle zooms
+            if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
+                zoom(-12.0 * dy, true);
+            } else {
+                double mx = +(dx) * 3.0 * cam.zoomValue() / QWidget::width();
+                double my = 0;
+                double mz = -(dy) * 3.0 * cam.zoomValue() / QWidget::height();
+
 #if (QT_VERSION < QT_VERSION_CHECK(4, 7, 0))
-        if (event->buttons() & Qt::MidButton)
+                if (event->buttons() & Qt::MidButton) {
 #else
-        if (event->buttons() & Qt::MiddleButton)
+                if (event->buttons() & Qt::MiddleButton) {
 #endif
-        {
-          my = mz;
-          mz = 0;
-          // actually lock the x-position
-          // (turns out to be easier to use than xy panning)
-          mx = 0;
+                    my = mz;
+                    mz = 0;
+                    // actually lock the x-position
+                    // (turns out to be easier to use than xy panning)
+                    mx = 0;
+                }
+
+                translate(mx, my, mz, true);
+            }
         }
-        translate( mx, my, mz);
-      }
     }
-  }
-  last_mouse = this_mouse;
+    last_mouse = this_mouse;
 }
 
 void QGLView::mouseReleaseEvent(QMouseEvent*)
@@ -307,107 +309,115 @@ bool QGLView::save(const char *filename)
   return this->frame.save(filename, "PNG");
 }
 
+void QGLView::onTranslateEvent(const InputEventTranslate *event)
+{
+    double zoomFactor = 0.001 * cam.zoomValue();
+    translate(zoomFactor * event->x, event->y, zoomFactor * event->z, event->relative, false);
+}
+
+void QGLView::onRotateEvent(const InputEventRotate *event)
+{
+    rotate(event->x, event->y, event->z, event->relative);
+}
+
+void QGLView::onButtonEvent(const InputEventButton *event)
+{
+    if (event->down) {
+        return;
+    }
+
+    switch (event->idx) {
+    case 0:
+        resetView();
+        updateGL();
+        break;
+    case 1:
+        viewAll();
+        updateGL();
+        break;
+    case 2:
+        translate(0, 0, 0, false, true);
+        break;
+    }
+}
+
+void QGLView::onZoomEvent(const InputEventZoom *event)
+{
+    zoom(event->zoom, event->relative);
+}
+
 void QGLView::wheelEvent(QWheelEvent *event)
 {
 #if QT_VERSION >= 0x050000
-	this->cam.zoom(event->angleDelta().y());
+    int v = event->angleDelta().y();
 #else
-	this->cam.zoom(event->delta());
+    int v = event->delta();
 #endif
-  updateGL();
+    zoom(v, true);
 }
 
 void QGLView::ZoomIn(void)
 {
-  this->cam.zoom(120);
-  updateGL();
+    zoom(120, true);
 }
 
 void QGLView::ZoomOut(void)
 {
-  this->cam.zoom(-120);
-  updateGL();
+    zoom(-120, true);
+}
+
+void QGLView::zoom(double v, bool relative)
+{
+    this->cam.zoom(v, relative);
+    updateGL();
+}
+
+void QGLView::translate(double x, double y, double z, bool relative, bool viewPortRelative)
+{
+    Matrix3d aax, aay, aaz;
+    aax = Eigen::AngleAxisd(-(cam.object_rot.x() / 180) * M_PI, Vector3d::UnitX());
+    aay = Eigen::AngleAxisd(-(cam.object_rot.y() / 180) * M_PI, Vector3d::UnitY());
+    aaz = Eigen::AngleAxisd(-(cam.object_rot.z() / 180) * M_PI, Vector3d::UnitZ());
+    Matrix3d tm3 = aaz * aay * aax;
+
+    Matrix4d tm = Matrix4d::Identity();
+    if (viewPortRelative) {
+        for (int i = 0; i < 3; ++i) {
+            for (int j = 0; j < 3; ++j) {
+                tm(j, i) = tm3(j, i);
+            }
+        }
+    }
+    Matrix4d vec;
+    vec <<
+        0, 0, 0, x,
+        0, 0, 0, y,
+        0, 0, 0, z,
+        0, 0, 0, 1
+        ;
+    tm = tm * vec;
+    double f = relative ? 1 : 0;
+    cam.object_trans.x() = f * cam.object_trans.x() + tm(0, 3);
+    cam.object_trans.y() = f * cam.object_trans.y() + tm(1, 3);
+    cam.object_trans.z() = f * cam.object_trans.z() + tm(2, 3);
+    updateGL();
+    emit doAnimateUpdate();
+}
+
+void QGLView::rotate(double x, double y, double z, bool relative)
+{
+    double f = relative ? 1 : 0;
+    cam.object_rot.x() = f *  cam.object_rot.x() + x;
+    cam.object_rot.y() = f *  cam.object_rot.y() + y;
+    cam.object_rot.z() = f *  cam.object_rot.z() + z;
+    normalizeAngle(cam.object_rot.x());
+    normalizeAngle(cam.object_rot.y());
+    normalizeAngle(cam.object_rot.z());
+    updateGL();
+    emit doAnimateUpdate();
 }
 
 void QGLView::setOrthoMode(bool enabled) {
 	if (enabled) this->cam.setProjection(Camera::ORTHOGONAL);
 	else this->cam.setProjection(Camera::PERSPECTIVE);
 }
-
-
-void
-QGLView::SixDoFDev_translate( SixDoFDevEventTranslate* event) {
-	if (event->x == 0 && event->y == 0 && event->z == 0) {
-		return;
-	}
-	translate( event->x * 0.0001 * cam.zoomValue(), event->y * 0.1, -event->z * 0.0001 * cam.zoomValue());
-}
-
-
-void
-QGLView::SixDoFDev_rotate( SixDoFDevEventRotate* event) {
-	if (event->x == 0 && event->y == 0 && event->z == 0) {
-		return;
-	}
-	rotate( event->x * 0.01, event->y * -0.01, event->z * -0.01);
-}
-
-
-void
-QGLView::SixDoFDev_button( SixDoFDevEventButton* event) {
-	if ((event->down & 1) != 0) {
-		cam.object_trans << 0,0,0;
-		updateGL();
-	}
-	if ((event->down & 2) != 0) {
-		resetView();
-		updateGL();
-	}
-}
-
-
-void
-QGLView::translate( double x, double y, double z) {
-	cam.zoom( y);
-	y = 0;
-	Matrix3d aax, aay, aaz, tm3;
-	aax = Eigen::AngleAxisd( -(cam.object_rot.x() / 180) * M_PI, Vector3d::UnitX());
-	aay = Eigen::AngleAxisd( -(cam.object_rot.y() / 180) * M_PI, Vector3d::UnitY());
-	aaz = Eigen::AngleAxisd( -(cam.object_rot.z() / 180) * M_PI, Vector3d::UnitZ());
-	tm3 = Matrix3d::Identity();
-	tm3 = aaz * (aay * (aax * tm3));
-	Matrix4d tm;
-	tm = Matrix4d::Identity();
-	for (int i = 0; i < 3; ++i) {
-		for (int j = 0; j < 3; ++j) {
-			tm( j, i) = tm3( j, i);
-		}
-	}
-	Matrix4d vec;
-	vec <<
-	  0,  0,  0,  x,
-	  0,  0,  0,  y,
-	  0,  0,  0,  z,
-	  0,  0,  0,  1
-	;
-	tm = tm * vec;
-	cam.object_trans.x() += tm( 0, 3);
-	cam.object_trans.y() += tm( 1, 3);
-	cam.object_trans.z() += tm( 2, 3);
-    updateGL();
-    emit doAnimateUpdate();
-}
-
-
-void
-QGLView::rotate( double x, double y, double z) {
-	cam.object_rot.x() += x;
-	cam.object_rot.y() += y;
-	cam.object_rot.z() += z;
-	normalizeAngle( cam.object_rot.x());
-	normalizeAngle( cam.object_rot.y());
-	normalizeAngle( cam.object_rot.z());
-	updateGL();
-    emit doAnimateUpdate();
-}
-

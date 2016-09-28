@@ -149,7 +149,6 @@ netbsd* {
 # See Dec 2011 OpenSCAD mailing list, re: CGAL/GCC bugs.
 *g++* {
   QMAKE_CXXFLAGS *= -fno-strict-aliasing
-  QMAKE_CXXFLAGS += -std=c++11
   QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-local-typedefs # ignored before 4.8
 }
 
@@ -264,7 +263,6 @@ HEADERS += src/version_check.h \
            src/ThrownTogetherRenderer.h \
            src/CGAL_OGL_Polyhedron.h \
            src/OGL_helper.h \
-           src/SixDoFDev.h \
            src/QGLView.h \
            src/GLView.h \
            src/MainWindow.h \
@@ -354,7 +352,11 @@ HEADERS += src/version_check.h \
            src/AutoUpdater.h \
            src/launchingscreen.h \
            src/legacyeditor.h \
-           src/LibraryInfoDialog.h
+           src/LibraryInfoDialog.h \
+           \
+           src/input/InputDriver.h \
+           src/input/InputDriverManager.h \
+           src/input/SixDoFDev.h
 
 SOURCES += \
            src/libsvg/libsvg.cc \
@@ -436,7 +438,6 @@ SOURCES += \
            src/OpenCSGWarningDialog.cc \
            src/editor.cc \
            src/GLView.cc \
-           src/SixDoFDev.cc \
            src/QGLView.cc \
            src/AutoUpdater.cc \
            \
@@ -478,7 +479,11 @@ SOURCES += \
            src/FontListTableView.cc \
            src/launchingscreen.cc \
            src/legacyeditor.cc \
-           src/LibraryInfoDialog.cc
+           src/LibraryInfoDialog.cc \
+           \
+           src/input/InputDriver.cc \
+           src/input/InputDriverManager.cc \
+           src/input/SixDoFDev.cc
 
 # ClipperLib
 SOURCES += src/polyclipping/clipper.cpp
