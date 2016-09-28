@@ -2,7 +2,7 @@
 
 #include "video_gif.h"
 
-GifVideo::GifVideo(const int width, const int height)
+GifVideoExport::GifVideoExport(const unsigned int width, unsigned const int height)
 {
 	this->width = width & ~1;
 	this->height = height & ~1;
@@ -12,19 +12,31 @@ GifVideo::GifVideo(const int width, const int height)
 	this->state = STATE_INIT;
 }
 
-GifVideo::~GifVideo()
+GifVideoExport::~GifVideoExport()
 {
 }
 
+QString
+GifVideoExport::name() const
+{
+	return "Animated GIF";
+}
+
+AbstractVideoExport *
+GifVideoExport::create(const unsigned int width, const unsigned int height) const
+{
+	return new GifVideoExport(width, height);
+}
+
 void
-GifVideo::open(const QString fileName)
+GifVideoExport::open(const QString fileName)
 {
 	gif_handle = EGifOpenFileName(fileName.toStdString().c_str(), false, NULL);
 	EGifSetGifVersion(gif_handle, true);
 }
 
 void
-GifVideo::close()
+GifVideoExport::close()
 {
 	if (gif_handle != NULL) {
 		EGifCloseFile(gif_handle, NULL);
@@ -41,7 +53,7 @@ GifVideo::close()
 }
 
 void
-GifVideo::exportFrame(const QImage frame, const double s, const double t)
+GifVideoExport::exportFrame(const QImage frame, const double s, const double t)
 {
 	int frameNr = int(round(s * t));
 
@@ -68,35 +80,8 @@ GifVideo::exportFrame(const QImage frame, const double s, const double t)
 	}
 
 	switch (state) {
-	case STATE_COLORMAP: {
-		QVector<QRgb> frameColorMap = frame.convertToFormat(QImage::Format_Indexed8).colorTable();
-
-		ColorMapObject *colormap = GifMakeMapObject(256, NULL);
-		for (int a = 0; a < 256; a++) {
-			if (a < frameColorMap.size()) {
-				const QRgb rgb = frameColorMap.at(a);
-				colormap->Colors[a].Red = qRed(rgb);
-				colormap->Colors[a].Green = qGreen(rgb);
-				colormap->Colors[a].Blue = qBlue(rgb);
-			} else {
-				colormap->Colors[a].Red = 0;
-				colormap->Colors[a].Green = 0;
-				colormap->Colors[a].Blue = 0;
-			}
-		}
-
-		if (cmap == NULL) {
-			cmap = colormap;
-		} else {
-			GifPixelType mapping[256];
-			ColorMapObject *unionmap = GifUnionColorMap(cmap, colormap, mapping);
-			if (unionmap != NULL) {
-				GifFreeMapObject(cmap);
-				cmap = unionmap;
-			}
-			GifFreeMapObject(colormap);
-		}
-	}
+	case STATE_COLORMAP:
+		collect_colormap(frame);
 		break;
 	case STATE_OUTPUT: {
 		/*
@@ -157,33 +142,25 @@ GifVideo::exportFrame(const QImage frame, const double s, const double t)
 		}
 
 		if (buf == NULL) {
-			flush_buffer(cur, frame_delay, 0, height);
+			flush_buffer(cur, frame_delay, 0, width, 0, height);
 			buf = cur;
 			return;
 		}
 
-		int miny = 0, maxy = height - 1;
-		for (unsigned int y = 0;y < height;y++) {
-			if ((memcmp(buf + y * width, cur + y * width, width)) != 0) {
-				break;
-			}
-			miny = y;
-		}
-		for (int y = height - 1;y >= 0;y--) {
-			if ((memcmp(buf + y * width, cur + y * width, width)) != 0) {
-				break;
-			}
-			maxy = y;
-		}
-		
+		int miny = find_hchange(cur, buf, 0, height - 1);
+		int maxy = find_hchange(cur, buf, height - 1, 0);
+
 		if (miny <= maxy) {
-			flush_buffer(cur, frame_delay, miny, maxy + 1);
-			frame_delay = 0;
+			int minx = find_vchange(cur, buf, miny, maxy, 0, width - 1);
+			int maxx = find_vchange(cur, buf, miny, maxy, width - 1, 0);
+			if (minx <= maxx) {
+				flush_buffer(cur, frame_delay, minx, maxx + 1, miny, maxy + 1);
+				frame_delay = 0;
+			}
 		}
 		
 		delete buf;
 		buf = cur;
-
 	}
 		break;
 	default:
@@ -191,8 +168,77 @@ GifVideo::exportFrame(const QImage frame, const double s, const double t)
 	}
 }
 
+unsigned int
+GifVideoExport::find_hchange(const unsigned char *b1, const unsigned char *b2, const int start, const int end)
+{
+	int step = start < end ? 1 : -1;
+
+	int result = start;
+	for (unsigned int y = start;y != end;y += step) {
+		if ((memcmp(b1 + y * width, b2 + y * width, width)) != 0) {
+			break;
+		}
+		result = y;
+	}
+	return result;
+}
+
+unsigned int
+GifVideoExport::find_vchange(const unsigned char *b1, const unsigned char *b2, const unsigned int miny, const unsigned int maxy, const int start, const int end)
+{
+	int step = start < end ? 1 : -1;
+
+	int result = start;
+	for (unsigned int x = start;x != end;x += step) {
+		bool changed = false;
+		for (unsigned int y = miny;y <= maxy;y++) {
+			if (*(b1 + y * width + x) != *(b2 + y * width + x)) {
+				changed = true;
+				break;
+			}
+		}
+		if (changed) {
+			break;
+		}
+		result = x;
+	}
+	return result;
+}
+
+void
+GifVideoExport::collect_colormap(const QImage &frame)
+{
+	QVector<QRgb> frameColorMap = frame.convertToFormat(QImage::Format_Indexed8).colorTable();
+
+	ColorMapObject *colormap = GifMakeMapObject(256, NULL);
+	for (int a = 0; a < 256; a++) {
+		if (a < frameColorMap.size()) {
+			const QRgb rgb = frameColorMap.at(a);
+			colormap->Colors[a].Red = qRed(rgb);
+			colormap->Colors[a].Green = qGreen(rgb);
+			colormap->Colors[a].Blue = qBlue(rgb);
+		} else {
+			colormap->Colors[a].Red = 0;
+			colormap->Colors[a].Green = 0;
+			colormap->Colors[a].Blue = 0;
+		}
+	}
+
+	if (cmap == NULL) {
+		cmap = colormap;
+	} else {
+		GifPixelType mapping[256];
+		ColorMapObject *unionmap = GifUnionColorMap(cmap, colormap, mapping);
+		if (unionmap != NULL) {
+			GifFreeMapObject(cmap);
+			cmap = unionmap;
+		}
+		GifFreeMapObject(colormap);
+	}
+}
+
 bool
-GifVideo::flush_buffer(unsigned char *buf, unsigned int delay, unsigned int miny, unsigned int maxy)
+GifVideoExport::flush_buffer(unsigned char *buf, unsigned int delay, unsigned int minx, unsigned int maxx, unsigned int miny, unsigned int maxy)
 {
 	/*
 	 * Graphic Control Extension
@@ -233,11 +279,13 @@ GifVideo::flush_buffer(unsigned char *buf, unsigned int delay, unsigned int miny
 	if (EGifPutExtension(gif_handle, 0xF9, 4, EXT_GCE) != GIF_OK)
 		return false;
 
-	if (EGifPutImageDesc(gif_handle, 0, miny, width, maxy - miny, 0, cmap) != GIF_OK)
+	if (EGifPutImageDesc(gif_handle, minx, miny, maxx - minx, maxy - miny, 0, cmap) != GIF_OK)
 		return false;
 
-	if (EGifPutLine(gif_handle, buf + miny * width, width * (maxy - miny)) != GIF_OK)
-		return false;
+	for (int y = miny;y < maxy;y++) {
+		if (EGifPutLine(gif_handle, buf + y * width + minx, maxx - minx) != GIF_OK)
+			return false;
+	}
 	
 	return true;
 }

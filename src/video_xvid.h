@@ -4,11 +4,11 @@
 
 #include "video.h"
 
-class XvidVideo : public AbstractVideo
+class XvidVideoExport : public AbstractVideoExport
 {
 private:
     bool init_ok;
-    int width, height;
+    unsigned int width, height;
 
     FILE *f;
     unsigned char *buf;
@@ -18,9 +18,12 @@ private:
     xvid_enc_plugin_t    _plugins[1];
     
 public:
-    XvidVideo(const int width, const int height);
-    virtual ~XvidVideo();
+    XvidVideoExport(const unsigned int width = 0, const unsigned int height = 0);
+    virtual ~XvidVideoExport();
     
+    virtual QString name() const;
+    virtual AbstractVideoExport * create(const unsigned int width, const unsigned int height) const;
+
     virtual void open(const QString fileName);
     virtual void close();
     virtual void exportFrame(const QImage frame, const double s, const double t);

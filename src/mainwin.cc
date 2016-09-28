@@ -270,7 +270,7 @@ MainWindow::MainWindow(const QString &filename)
 
 	animate_timer = new QTimer(this);
 	connect(animate_timer, SIGNAL(timeout()), this, SLOT(updateTVal()));
-	video = NULL;
+	videoExporter = NULL;
 	
 	autoReloadTimer = new QTimer(this);
 	autoReloadTimer->setSingleShot(false);
@@ -524,10 +524,7 @@ MainWindow::MainWindow(const QString &filename)
 	initActionIcon(viewActionResetView, ":/images/Command-Reset-32.png", ":/images/Command-Reset-32-white.png");
 	initActionIcon(viewActionShowScaleProportional, ":/images/scalemarkers.png", ":/images/scalemarkers-white.png");
 
-	animationFormatComboBox->addItem("PNG Images", 0);
-	animationFormatComboBox->addItem("Animated GIF", 1);
-	animationFormatComboBox->addItem("WebM Video (VP8)", 2);
-	animationFormatComboBox->addItem("MP4", 3);
+	animationFormatComboBox->addItems(video.getExporterNames());
 	connect(this->actionAnimationPlay, SIGNAL(triggered()), this, SLOT(animationStart()));
 	connect(this->actionAnimationStop, SIGNAL(triggered()), this, SLOT(animationStop()));
 	connect(this->animationFormatComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(videoExportChanged(int)));
@@ -1843,29 +1840,18 @@ void MainWindow::csgRender()
 			QImage img = this->qglview->grabFrameBuffer();
 			double s = this->e_fsteps->text().toDouble();
 			double t = this->e_tval->text().toDouble();
-			if (video == NULL) {
-				switch (this->animationFormatComboBox->currentIndex()) {
-				case 1:
-					video = new GifVideo(img.width(), img.height());
-					break;
-				case 2:
-					video = new VpxVideo(img.width(), img.height());
-					break;
-				case 3:
-					video = new XvidVideo(img.width(), img.height());
-					break;
-				default:
-					video = new PngVideo(img.width(), img.height());
-					break;
-				}
-				video->open("test");
+			if (videoExporter == NULL) {
+				videoExporter = video.getExporter(this->animationFormatComboBox->currentIndex(), img.width(), img.height());
+				const QString name = textEditVideoFileName->text().trimmed();
+				const QString winname = this->fileName.isEmpty() ? QString(_("Untitled")) : QFileInfo(this->fileName).baseName();
+				const QString filename = name.isEmpty() ? winname : name;
+				videoExporter->open(filename);
 			}
-			video->exportFrame(img, s, t);
+			videoExporter->exportFrame(img, s, t);
 		}
-	} else if (video != NULL) {
-		video->close();
-		delete video;
-		video = NULL;
+	} else if (videoExporter != NULL) {
+		videoExporter->close();
+		videoExporter = NULL;
 	}
 
 	compileEnded();

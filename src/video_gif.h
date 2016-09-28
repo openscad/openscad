@@ -4,7 +4,7 @@
 
 #include "video.h"
 
-class GifVideo : public AbstractVideo
+class GifVideoExport : public AbstractVideoExport
 {
 private:
     enum { MAX_FRAME_DELAY = 65535 };
@@ -21,11 +21,17 @@ private:
     unsigned char *buf;
 
 private:
-    bool flush_buffer(unsigned char *buf, unsigned int delay, unsigned int miny, unsigned int maxy);
+    void collect_colormap(const QImage &frame);
+    unsigned int find_hchange(const unsigned char *b1, const unsigned char *b2, const int start, const int end);
+    unsigned int find_vchange(const unsigned char *b1, const unsigned char *b2, const unsigned int miny, const unsigned int maxy, const int start, const int end);
+    bool flush_buffer(unsigned char *buf, unsigned int delay, unsigned int minx, unsigned int maxx, unsigned int miny, unsigned int maxy);
 
 public:
-    GifVideo(const int width, const int height);
-    virtual ~GifVideo();
+    GifVideoExport(const unsigned int width = 0, unsigned const int height = 0);
+    virtual ~GifVideoExport();
+
+    virtual QString name() const;
+    virtual AbstractVideoExport * create(const unsigned int width, const unsigned int height) const;
 
     virtual void open(const QString fileName);
     virtual void close();

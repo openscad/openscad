@@ -3,7 +3,7 @@
 
 #include "video_xvid.h"
 
-XvidVideo::XvidVideo(const int width, const int height)
+XvidVideoExport::XvidVideoExport(const unsigned int width, const unsigned int height)
 {
 	this->width = width & ~1;
 	this->height = height & ~1;
@@ -14,14 +14,26 @@ XvidVideo::XvidVideo(const int width, const int height)
 	xvid_global(NULL, XVID_GBL_INIT, &_gbl_init, NULL);
 }
 
-XvidVideo::~XvidVideo()
+XvidVideoExport::~XvidVideoExport()
 {
 }
 
-void
-XvidVideo::open(const QString fileName)
+QString
+XvidVideoExport::name() const
 {
-	printf("XvidVideo::open()\n");
+	return "MP4";
+}
+
+AbstractVideoExport *
+XvidVideoExport::create(const unsigned int width, const unsigned int height) const
+{
+	return new XvidVideoExport(width, height);
+}
+
+void
+XvidVideoExport::open(const QString fileName)
+{
+	QString name = QString("%1.mp4").arg(fileName);
 
 	init_ok = false;
 
@@ -48,7 +60,7 @@ XvidVideo::open(const QString fileName)
 
 	 xvid_encore(NULL, XVID_ENC_CREATE, &_enc_create, NULL);
 
-	f = fopen(fileName.toStdString().c_str(), "wb+");
+	f = fopen(name.toStdString().c_str(), "wb+");
 	if (f == NULL)
 	  return;
 	
@@ -58,15 +70,13 @@ XvidVideo::open(const QString fileName)
 }
 
 void
-XvidVideo::close()
+XvidVideoExport::close()
 {
-	printf("XvidVideo::close()\n");
-
 	xvid_encore(_enc_create.handle, XVID_ENC_DESTROY, NULL, NULL);
 }
 
 void
-XvidVideo::exportFrame(const QImage frame, const double, const double)
+XvidVideoExport::exportFrame(const QImage frame, const double, const double)
 {
 	const QImage scaled = frame.scaled(width, height).convertToFormat(QImage::Format_RGB32);
 

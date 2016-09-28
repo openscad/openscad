@@ -418,6 +418,7 @@ SOURCES += \
            src/parsersettings.cc \
            src/stl-utils.cc \
            src/boost-utils.cc \
+           src/video.cc \
            src/video_png.cc \
 	   src/EbmlWriter.cpp \
            src/PlatformUtils.cc \

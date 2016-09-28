@@ -35,7 +35,9 @@ public:
 	double anim_tval;
 	bool anim_dumping;
 	int anim_dump_start_step;
-	AbstractVideo *video;
+
+	Video video;
+	AbstractVideoExport *videoExporter;
 
 	QTimer *autoReloadTimer;
 	std::string autoReloadId;

@@ -2,32 +2,49 @@
 
 #include "video_png.h"
 
-PngVideo::PngVideo(const int width, const int height)
+PngVideoExport::PngVideoExport(const unsigned int width, const unsigned int height)
 {
 	this->width = width;
 	this->height = height;
 }
 
-PngVideo::~PngVideo()
+PngVideoExport::~PngVideoExport()
 {
 }
 
-void
-PngVideo::open(const QString fileName)
+QString
+PngVideoExport::name() const
 {
+	return "PNG Images";
+}
+
+AbstractVideoExport *
+PngVideoExport::create(const unsigned int width, const unsigned int height) const
+{
+	return new PngVideoExport(width, height);
+}
+
+void
+PngVideoExport::open(const QString filename)
+{
+	const QString f(filename.trimmed());
 	
+	if (f.length() == 0) {
+		this->filename = "frame";
+	} else {
+		this->filename = filename;
+	}
 }
 
 void
-PngVideo::close()
+PngVideoExport::close()
 {
-	
 }
 
 void
-PngVideo::exportFrame(const QImage frame, const double s, const double t)
+PngVideoExport::exportFrame(const QImage frame, const double s, const double t)
 {
-	QString filename;
-	filename.sprintf("frame%05d.png", int(round(s*t)));
-	frame.save(filename, "PNG");
+	QString name;
+	name.sprintf("%s%05d.png", filename.toStdString().c_str(), int(round(s*t)));
+	frame.save(name, "PNG");
 }
