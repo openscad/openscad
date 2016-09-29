@@ -31,6 +31,8 @@ class PngVideoExport : public AbstractVideoExport
 {
 private:
     unsigned int width, height;
+	unsigned int start_frame;
+	bool first_frame;
     QString filename;
 
 public:
@@ -40,7 +42,7 @@ public:
     virtual QString name() const;
     virtual AbstractVideoExport * create(const unsigned int width, const unsigned int height) const;
 
-    virtual void open(const QString fileName);
+    virtual void open(const QString fileName, const double fps);
     virtual void close();
-    virtual void exportFrame(const QImage frame, const double s, const double t);
+    virtual bool exportFrame(const QImage frame, const int step);
 };

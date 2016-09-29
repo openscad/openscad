@@ -240,8 +240,6 @@ MainWindow::MainWindow(const QString &filename)
 	this->anim_step = 0;
 	this->anim_numsteps = 0;
 	this->anim_tval = 0.0;
-	this->anim_dumping = false;
-	this->anim_dump_start_step = 0;
 
 	const QString importStatement = "import(\"%1\");\n";
 	const QString surfaceStatement = "surface(\"%1\");\n";
@@ -280,7 +278,6 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->e_tval, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimTval()));
 	connect(this->e_fps, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimFps()));
 	connect(this->e_fsteps, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimSteps()));
-	connect(this->actionAnimationRecord, SIGNAL(toggled(bool)), this, SLOT(updatedAnimDump(bool)));
 
 	animationDock->hide();
 	find_panel->hide();
@@ -520,7 +517,7 @@ MainWindow::MainWindow(const QString &filename)
 	initActionIcon(viewActionShowScaleProportional, ":/images/scalemarkers.png", ":/images/scalemarkers-white.png");
 
 	animationFormatComboBox->addItems(video.getExporterNames());
-	connect(this->actionAnimationPlay, SIGNAL(triggered()), this, SLOT(animationStart()));
+	connect(this->actionAnimationPlay, SIGNAL(triggered(bool)), this, SLOT(animationStart(bool)));
 	connect(this->actionAnimationStop, SIGNAL(triggered()), this, SLOT(animationStop()));
 	connect(this->animationFormatComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(videoExportChanged(int)));
 	this->actionAnimationPlay->setChecked(false);
@@ -810,6 +807,7 @@ void MainWindow::updateRecentFiles()
 	}
 }
 
+// Input field with the time value changed
 void MainWindow::updatedAnimTval()
 {
 	bool t_ok;
@@ -817,61 +815,108 @@ void MainWindow::updatedAnimTval()
 	// Clamp t to 0-1
 	if (t_ok) {
 		this->anim_tval = t < 0 ? 0.0 : ((t > 1.0) ? 1.0 : t);
-	}
-	else {
+	} else {
 		this->anim_tval = 0.0;
 	}
 	actionRenderPreview();
 }
 
-// Only called from animate_timer
-void MainWindow::updateTVal()
-{
-	if (this->anim_numsteps == 0) return;
-
-	if (this->anim_numsteps > 1) {
-		this->anim_step = (this->anim_step + 1) % this->anim_numsteps;
-		this->anim_tval = 1.0 * this->anim_step / this->anim_numsteps;
-	}
-	else if (this->anim_numsteps > 0) {
-		this->anim_step = 0;
-		this->anim_tval = 0.0;
-	}
-	QString txt;
-	txt.sprintf("%.5f", this->anim_tval);
-	this->e_tval->setText(txt);
-}
-
+// Input field with the FPS changed
 void MainWindow::updatedAnimFps()
 {
 	bool fps_ok;
 	double fps = this->e_fps->text().toDouble(&fps_ok);
-	animate_timer->stop();
-	if (fps_ok && fps > 0 && this->anim_numsteps > 0) {
-		this->anim_step = int(this->anim_tval * this->anim_numsteps) % this->anim_numsteps;
-		animate_timer->setSingleShot(false);
-		animate_timer->setInterval(int(1000 / fps));
-		animate_timer->start();
+	if (fps_ok) {
+		this->anim_fps = fps < 0 ? 0.0 : fps;
+	} else {
+		this->anim_fps = 0.0;
 	}
+	updateAnimGuiState();
 }
 
+// Input field with Steps changed
 void MainWindow::updatedAnimSteps()
 {
 	bool steps_ok;
 	int numsteps = this->e_fsteps->text().toInt(&steps_ok);
-	if (steps_ok) {
-		this->anim_numsteps = numsteps;
-		updatedAnimFps(); // Make sure we start
-	}
-	else {
-		this->anim_numsteps = 0;
-	}
-	anim_dumping=false;
+	this->anim_numsteps = steps_ok ? numsteps : 0;
+	updateAnimGuiState();
 }
 
-void MainWindow::updatedAnimDump(bool checked)
+void MainWindow::updateAnimGuiState() {
+	animate_timer->stop();
+
+	bool anim_ok = (this->anim_fps > 0.0) && (this->anim_numsteps > 0);
+	this->actionAnimationPlay->setEnabled(anim_ok);
+	this->actionAnimationRecord->setEnabled(anim_ok);
+	if (anim_ok) {
+		this->anim_step = int(this->anim_tval * this->anim_numsteps) % this->anim_numsteps;
+	} else {
+		this->actionAnimationPlay->setChecked(false);
+		this->actionAnimationRecord->setChecked(false);
+	}
+}
+
+void MainWindow::animationStart(bool checked)
 {
-	if (!checked) this->anim_dumping = false;
+	if (checked) {
+		this->animate_timer->setSingleShot(false);
+		this->animate_timer->setInterval(int(1000.0 / this->anim_fps));
+		this->animate_timer->start();
+		this->actionAnimationStop->setEnabled(true);
+		this->actionAnimationRecord->setEnabled(true);
+	} else {
+		this->animate_timer->stop();
+		this->actionAnimationStop->setEnabled(false);
+		this->actionAnimationRecord->setEnabled(false);
+	}
+}
+
+void MainWindow::animationStop()
+{
+	animate_timer->stop();
+	actionAnimationPlay->setChecked(false);
+	actionAnimationRecord->setChecked(false);
+	this->e_tval->setText("0");
+	actionRenderPreview();
+}
+
+void MainWindow::animateUpdate()
+{
+	if (actionAnimationPlay->isChecked()) {
+		bool fps_ok;
+		double fps = this->e_fps->text().toDouble(&fps_ok);
+		if (fps_ok && fps <= 0 && !animate_timer->isActive()) {
+			animate_timer->stop();
+			animate_timer->setSingleShot(true);
+			animate_timer->setInterval(50);
+			animate_timer->start();
+		}
+	}
+}
+
+void MainWindow::videoExportChanged(int index)
+{
+}
+
+// Only called from animate_timer
+void MainWindow::updateTVal()
+{
+	if (this->anim_numsteps == 0) {
+		return;
+	}
+
+	if (this->anim_numsteps > 1) {
+		this->anim_step = (this->anim_step + 1) % this->anim_numsteps;
+		this->anim_tval = 1.0 * this->anim_step / this->anim_numsteps;
+	} else if (this->anim_numsteps > 0) {
+		this->anim_step = 0;
+		this->anim_tval = 0.0;
+	}
+
+	QString txt;
+	txt.sprintf("%.5f", this->anim_tval);
+	this->e_tval->setText(txt);
 }
 
 void MainWindow::refreshDocument()
@@ -1821,28 +1866,20 @@ void MainWindow::csgRender()
 #endif
 	}
 
-	if (actionAnimationPlay->isChecked() && actionAnimationRecord->isChecked() && animate_timer->isActive()) {
-		if (anim_dumping && anim_dump_start_step == anim_step) {
-			anim_dumping = false;
-			actionAnimationRecord->setChecked(false);
-		} else {
-			if (!anim_dumping) {
-				anim_dumping = true;
-				anim_dump_start_step = anim_step;
-			}
-			// Force reading from front buffer. Some configurations will read from the back buffer here.
-			glReadBuffer(GL_FRONT);
-			QImage img = this->qglview->grabFrameBuffer();
-			double s = this->e_fsteps->text().toDouble();
-			double t = this->e_tval->text().toDouble();
-			if (videoExporter == NULL) {
-				videoExporter = video.getExporter(this->animationFormatComboBox->currentIndex(), img.width(), img.height());
-				const QString name = textEditVideoFileName->text().trimmed();
-				const QString winname = this->fileName.isEmpty() ? QString(_("Untitled")) : QFileInfo(this->fileName).baseName();
-				const QString filename = name.isEmpty() ? winname : name;
-				videoExporter->open(filename);
-			}
-			videoExporter->exportFrame(img, s, t);
+	if (actionAnimationRecord->isChecked()) {
+		// Force reading from front buffer. Some configurations will read from the back buffer here.
+		glReadBuffer(GL_FRONT);
+		QImage img = this->qglview->grabFrameBuffer();
+		if (videoExporter == NULL) {
+			videoExporter = video.getExporter(this->animationFormatComboBox->currentIndex(), img.width(), img.height());
+			const QString name = textEditVideoFileName->text().trimmed();
+			const QString winname = this->fileName.isEmpty() ? QString(_("Untitled")) : QFileInfo(this->fileName).baseName();
+			const QString filename = name.isEmpty() ? winname : name;
+			videoExporter->open(filename, this->anim_fps);
+		}
+		if (!videoExporter->exportFrame(img, this->anim_step)) {
+			this->animationStart(false);
+			this->actionAnimationPlay->setChecked(false);
 		}
 	} else if (videoExporter != NULL) {
 		videoExporter->close();
@@ -2347,39 +2384,6 @@ void MainWindow::animateUpdateDocChanged()
 	QString current_doc = editor->toPlainText(); 
 	if (current_doc != last_compiled_doc)
 		animateUpdate();
-}
-
-void MainWindow::animationStart()
-{
-	animate_timer->setSingleShot(false);
-	animate_timer->setInterval(int(1000 / this->e_fps->text().toDouble()));
-	animate_timer->start();
-}
-
-void MainWindow::animationStop()
-{
-	animate_timer->stop();
-	actionAnimationPlay->setChecked(false);
-	e_tval->setText("0");
-	actionRenderPreview();
-}
-
-void MainWindow::animateUpdate()
-{
-	if (actionAnimationPlay->isChecked()) {
-		bool fps_ok;
-		double fps = this->e_fps->text().toDouble(&fps_ok);
-		if (fps_ok && fps <= 0 && !animate_timer->isActive()) {
-			animate_timer->stop();
-			animate_timer->setSingleShot(true);
-			animate_timer->setInterval(50);
-			animate_timer->start();
-		}
-	}
-}
-
-void MainWindow::videoExportChanged(int index)
-{
 }
 
 void MainWindow::viewAngleTop()

@@ -32,9 +32,8 @@ public:
 
 	int anim_step;
 	int anim_numsteps;
+	double anim_fps;
 	double anim_tval;
-	bool anim_dumping;
-	int anim_dump_start_step;
 
 	Video video;
 	AbstractVideoExport *videoExporter;
@@ -86,11 +85,11 @@ private slots:
 	void updatedAnimTval();
 	void updatedAnimFps();
 	void updatedAnimSteps();
-	void updatedAnimDump(bool checked);
 	void updateTVal();
-        void updateMdiMode(bool mdi);
-        void updateUndockMode(bool undockMode);
-        void updateReorderMode(bool reorderMode);
+
+	void updateMdiMode(bool mdi);
+	void updateUndockMode(bool undockMode);
+	void updateReorderMode(bool reorderMode);
 	void setFileName(const QString &filename);
 	void setFont(const QString &family, uint size);
 	void setColorScheme(const QString &cs);
@@ -100,18 +99,18 @@ private slots:
     void updateActionUndoState();
 
 private:
-        void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
-        void handleFileDrop(const QString &filename);
+	void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
+	void handleFileDrop(const QString &filename);
 	void refreshDocument();
 	void updateCamera(const class FileContext &ctx);
 	void updateTemporalVariables();
 	bool fileChangedOnDisk();
 	void compileTopLevelDocument();
-        void updateCompileResult();
+	void updateCompileResult();
 	void compile(bool reload, bool forcedone = false);
 	void compileCSG(bool procevents);
 	bool maybeSave();
-        void saveError(const QIODevice &file, const std::string &msg);
+	void saveError(const QIODevice &file, const std::string &msg);
 	bool checkEditorModified();
 	QString dumpCSGTree(AbstractNode *root);
 	static void consoleOutput(const std::string &msg, void *userdata);
@@ -122,8 +121,9 @@ private:
 	QString get2dExportFilename(QString format, QString extension);
 	void show_examples();
 	void setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel);
-        void addKeyboardShortCut(const QList<QAction *> &actions);
-        void updateStatusBar(class ProgressWidget *progressWidget);
+	void addKeyboardShortCut(const QList<QAction *> &actions);
+	void updateStatusBar(class ProgressWidget *progressWidget);
+	void updateAnimGuiState();
 
 	EditorInterface *editor;
 
@@ -142,7 +142,7 @@ private slots:
 	void actionSaveAs();
 	void actionReload();
 	void actionShowLibraryFolder();
-        void convertTabsToSpaces();
+	void convertTabsToSpaces();
 
 	void instantiateRoot();
 	void compileDone(bool didchange);
@@ -207,11 +207,11 @@ public:
 public slots:
 	void openFile(const QString &filename);
 	void actionReloadRenderPreview();
-        void on_editorDock_visibilityChanged(bool);
-        void on_consoleDock_visibilityChanged(bool);
-        void on_toolButtonCompileResultClose_clicked();
-        void editorTopLevelChanged(bool);
-        void consoleTopLevelChanged(bool);
+	void on_editorDock_visibilityChanged(bool);
+	void on_consoleDock_visibilityChanged(bool);
+	void on_toolButtonCompileResultClose_clicked();
+	void editorTopLevelChanged(bool);
+	void consoleTopLevelChanged(bool);
 #ifdef ENABLE_OPENCSG
 	void viewModePreview();
 #endif
@@ -237,11 +237,11 @@ public slots:
 	void viewOrthogonal();
 	void viewResetView();
 	void viewAll();
-        void animationStart();
-        void animationStop();
+	void animationStart(bool checked);
+	void animationStop();
 	void animateUpdateDocChanged();
 	void animateUpdate();
-        void videoExportChanged(int);
+	void videoExportChanged(int);
 	void dragEnterEvent(QDragEnterEvent *event);
 	void dropEvent(QDropEvent *event);
 	void helpAbout();

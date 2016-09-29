@@ -54,9 +54,10 @@ GifVideoExport::create(const unsigned int width, const unsigned int height) cons
 }
 
 void
-GifVideoExport::open(const QString fileName)
+GifVideoExport::open(const QString fileName, const double fps)
 {
-	gif_handle = EGifOpenFileName(fileName.toStdString().c_str(), false, NULL);
+	const QString name = QString("%1.gif").arg(fileName);
+	gif_handle = EGifOpenFileName(name.toStdString().c_str(), false, NULL);
 	EGifSetGifVersion(gif_handle, true);
 }
 
@@ -77,11 +78,9 @@ GifVideoExport::close()
 	}
 }
 
-void
-GifVideoExport::exportFrame(const QImage frame, const double s, const double t)
+bool
+GifVideoExport::exportFrame(const QImage frame, const int frameNr)
 {
-	int frameNr = int(round(s * t));
-
 	switch (state) {
 	case STATE_INIT:
 		if (frameNr == 0) {
@@ -97,11 +96,11 @@ GifVideoExport::exportFrame(const QImage frame, const double s, const double t)
 		if (frameNr == 0) {
 			state = STATE_END;
 			close();
-			return;
+			return false;
 		}
 		break;
 	case STATE_END:
-		return;
+		return false;
 	}
 
 	switch (state) {
@@ -139,19 +138,19 @@ GifVideoExport::exportFrame(const QImage frame, const double s, const double t)
 			}
 
 			if (EGifPutScreenDesc(gif_handle, width, height, 256, 0, cmap) != GIF_OK)
-				return;
+				return false;
 
 			if (EGifPutExtensionLeader(gif_handle, 0xFF) != GIF_OK)
-				return;
+				return false;
 
 			if (EGifPutExtensionBlock(gif_handle, 11, EXT_NETSCAPE) != GIF_OK)
-				return;
+				return false;
 
 			if (EGifPutExtensionBlock(gif_handle, 3, EXT_NETSCAPE_LOOP) != GIF_OK)
-				return;
+				return false;
 
 			if (EGifPutExtensionTrailer(gif_handle) != GIF_OK)
-				return;
+				return false;
 		}
 
 		const QImage scaled = frame.scaled(width, height).convertToFormat(QImage::Format_Indexed8, export_color_map);
@@ -169,7 +168,7 @@ GifVideoExport::exportFrame(const QImage frame, const double s, const double t)
 		if (buf == NULL) {
 			flush_buffer(cur, frame_delay, 0, width, 0, height);
 			buf = cur;
-			return;
+			return true;
 		}
 
 		int miny = find_hchange(cur, buf, 0, height - 1);
@@ -191,6 +190,8 @@ GifVideoExport::exportFrame(const QImage frame, const double s, const double t)
 	default:
 		break;
 	}
+
+	return true;
 }
 
 unsigned int

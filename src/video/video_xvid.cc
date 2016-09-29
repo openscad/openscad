@@ -24,7 +24,6 @@
  *
  */
 #include <math.h>
-#include <stdio.h>
 
 #include "video_xvid.h"
 
@@ -32,7 +31,6 @@ XvidVideoExport::XvidVideoExport(const unsigned int width, const unsigned int he
 {
 	this->width = width & ~1;
 	this->height = height & ~1;
-	printf("width = %d, height = %d\n", width, height);
 
 	memset(&_gbl_init, 0, sizeof (xvid_gbl_init_t));
 	_gbl_init.version = XVID_VERSION;
@@ -56,7 +54,7 @@ XvidVideoExport::create(const unsigned int width, const unsigned int height) con
 }
 
 void
-XvidVideoExport::open(const QString fileName)
+XvidVideoExport::open(const QString fileName, const double fps)
 {
 	QString name = QString("%1.mp4").arg(fileName);
 
@@ -100,8 +98,8 @@ XvidVideoExport::close()
 	xvid_encore(_enc_create.handle, XVID_ENC_DESTROY, NULL, NULL);
 }
 
-void
-XvidVideoExport::exportFrame(const QImage frame, const double, const double)
+bool
+XvidVideoExport::exportFrame(const QImage frame, const int)
 {
 	const QImage scaled = frame.scaled(width, height).convertToFormat(QImage::Format_RGB32);
 
@@ -125,4 +123,5 @@ XvidVideoExport::exportFrame(const QImage frame, const double, const double)
 	int size = xvid_encore(_enc_create.handle, XVID_ENC_ENCODE, &enc_frame, NULL);
 	bool write_ok = fwrite(bitstream, 1, size, f) == (size_t)size;
 	delete bitstream;
+	return write_ok;
 }

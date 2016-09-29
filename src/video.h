@@ -39,9 +39,9 @@ public:
     virtual QString name() const = 0;
     virtual AbstractVideoExport * create(const unsigned int width, const unsigned int height) const = 0;
 
-    virtual void open(const QString filename) = 0;
+    virtual void open(const QString filename, const double fps) = 0;
     virtual void close() = 0;
-    virtual void exportFrame(const QImage frame, const double s, const double t) = 0;
+    virtual bool exportFrame(const QImage frame, const int step) = 0;
 };
 
 class Video

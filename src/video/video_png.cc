@@ -50,7 +50,7 @@ PngVideoExport::create(const unsigned int width, const unsigned int height) cons
 }
 
 void
-PngVideoExport::open(const QString filename)
+PngVideoExport::open(const QString filename, const double fps)
 {
 	const QString f(filename.trimmed());
 	
@@ -59,6 +59,9 @@ PngVideoExport::open(const QString filename)
 	} else {
 		this->filename = filename;
 	}
+
+	this->start_frame = -1;
+	this->first_frame = true;
 }
 
 void
@@ -66,10 +69,20 @@ PngVideoExport::close()
 {
 }
 
-void
-PngVideoExport::exportFrame(const QImage frame, const double s, const double t)
+bool
+PngVideoExport::exportFrame(const QImage frame, const int step)
 {
+	if (this->first_frame) {
+		this->start_frame = step;
+		this->first_frame = false;
+	} else {
+		if (this->start_frame == step) {
+			return false;
+		}
+	}
+
 	QString name;
-	name.sprintf("%s%05d.png", filename.toStdString().c_str(), int(round(s*t)));
+	name.sprintf("%s%05d.png", filename.toStdString().c_str(), step);
 	frame.save(name, "PNG");
+	return true;
 }

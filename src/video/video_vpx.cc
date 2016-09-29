@@ -99,7 +99,6 @@ VpxVideoExport::VpxVideoExport(const unsigned int width, const unsigned int heig
 {
 	this->width = width & ~1;
 	this->height = height & ~1;
-	printf("width = %d, height = %d\n", width, height);
 }
 
 VpxVideoExport::~VpxVideoExport()
@@ -119,7 +118,7 @@ VpxVideoExport::create(const unsigned int width, const unsigned int height) cons
 }
 
 void
-VpxVideoExport::open(const QString fileName)
+VpxVideoExport::open(const QString fileName, const double fps)
 {
 	QString name = QString("%1.webm").arg(fileName);
 
@@ -172,8 +171,8 @@ VpxVideoExport::close()
 		return;
 }
 
-void
-VpxVideoExport::exportFrame(const QImage frame, const double s, const double t)
+bool
+VpxVideoExport::exportFrame(const QImage frame, const int)
 {
 	const QImage scaled = frame.scaled(width, height);
 	rgb32_to_i420(width, height, (const char *)scaled.bits(), (char *)raw.planes[0]);
@@ -181,7 +180,7 @@ VpxVideoExport::exportFrame(const QImage frame, const double s, const double t)
 	vpx_codec_err_t r = vpx_codec_encode(&codec, &raw, frame_cnt, 1, 0, VPX_DL_GOOD_QUALITY);
 	if (r) {
 		printf("can't encode\n");
-		return;
+		return false;
 	}
 
 	vpx_codec_iter_t iter = NULL;
@@ -190,4 +189,5 @@ VpxVideoExport::exportFrame(const QImage frame, const double s, const double t)
 		Ebml_WriteWebMBlock(&ebml, &cfg, pkt);
 	}
 	frame_cnt++;
+	return true;
 }
