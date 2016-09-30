@@ -341,7 +341,6 @@ HEADERS += src/version_check.h \
            src/svg.h \
            src/video.h \
            src/video/video_png.h \
-	   src/EbmlWriter.h \
            \
            src/lodepng.h \
            src/OffscreenView.h \
@@ -420,7 +419,6 @@ SOURCES += \
            src/boost-utils.cc \
            src/video.cc \
            src/video/video_png.cc \
-	   src/EbmlWriter.cpp \
            src/PlatformUtils.cc \
            src/LibraryInfo.cc \
            \
