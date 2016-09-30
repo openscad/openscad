@@ -26,6 +26,7 @@
 #include <math.h>
 
 #include "video_gif.h"
+#include "printutils.h"
 
 GifVideoExport::GifVideoExport(const unsigned int width, unsigned const int height)
 {
@@ -56,14 +57,17 @@ GifVideoExport::create(const unsigned int width, const unsigned int height) cons
 void
 GifVideoExport::open(const QString fileName, const double fps)
 {
+	this->fps = fps;
 	const QString name = QString("%1.gif").arg(fileName);
 	gif_handle = EGifOpenFileName(name.toStdString().c_str(), false, NULL);
-	EGifSetGifVersion(gif_handle, true);
+
+	PRINTDB("GifVideoExport::open(): '%s'", name.toStdString().c_str());
 }
 
 void
 GifVideoExport::close()
 {
+	PRINTD("GifVideoExport::close()");
 	if (gif_handle != NULL) {
 		EGifCloseFile(gif_handle, NULL);
 		gif_handle = NULL;
@@ -137,6 +141,8 @@ GifVideoExport::exportFrame(const QImage frame, const int frameNr)
 				export_color_map.append(rgb);
 			}
 
+			EGifSetGifVersion(gif_handle, true);
+
 			if (EGifPutScreenDesc(gif_handle, width, height, 256, 0, cmap) != GIF_OK)
 				return false;
 
@@ -154,37 +160,40 @@ GifVideoExport::exportFrame(const QImage frame, const int frameNr)
 		}
 
 		const QImage scaled = frame.scaled(width, height).convertToFormat(QImage::Format_Indexed8, export_color_map);
-
-		int _fps_den = 1;
-		frame_delay += 2 * _fps_den;
-		if (frame_delay > MAX_FRAME_DELAY)
-			frame_delay = MAX_FRAME_DELAY;
-
 		unsigned char *cur = new unsigned char[width * height];
 		for (unsigned int y = 0;y < height;y++) {
 			memcpy(cur + y * width, scaled.scanLine(y), width);
 		}
 
-		if (buf == NULL) {
-			flush_buffer(cur, frame_delay, 0, width, 0, height);
-			buf = cur;
-			return true;
-		}
+		frame_delay += 100.0 / fps;
+		unsigned int cur_frame_delay = frame_delay;
 
-		int miny = find_hchange(cur, buf, 0, height - 1);
-		int maxy = find_hchange(cur, buf, height - 1, 0);
+		bool is_first_frame = buf == NULL;
+		bool reached_max_frame_delay = cur_frame_delay > MAX_FRAME_DELAY;
 
-		if (miny <= maxy) {
-			int minx = find_vchange(cur, buf, miny, maxy, 0, width - 1);
-			int maxx = find_vchange(cur, buf, miny, maxy, width - 1, 0);
-			if (minx <= maxx) {
-				flush_buffer(cur, frame_delay, minx, maxx + 1, miny, maxy + 1);
-				frame_delay = 0;
+		bool set_buffer = false;
+		if (is_first_frame || reached_max_frame_delay) {
+			flush_buffer(cur, cur_frame_delay, 0, width, 0, height);
+			set_buffer = true;
+		} else {
+			unsigned int miny = find_hchange(cur, buf, 0, height - 1);
+			unsigned int maxy = find_hchange(cur, buf, height - 1, 0);
+
+			if (miny <= maxy) {
+				unsigned int minx = find_vchange(cur, buf, miny, maxy, 0, width - 1);
+				unsigned int maxx = find_vchange(cur, buf, miny, maxy, width - 1, 0);
+				if (minx <= maxx) {
+					flush_buffer(cur, cur_frame_delay, minx, maxx + 1, miny, maxy + 1);
+					set_buffer = true;
+				}
 			}
 		}
-		
-		delete buf;
-		buf = cur;
+
+		if (set_buffer) {
+			delete buf;
+			buf = cur;
+			frame_delay = 0;
+		}
 	}
 		break;
 	default:
@@ -195,11 +204,11 @@ GifVideoExport::exportFrame(const QImage frame, const int frameNr)
 }
 
 unsigned int
-GifVideoExport::find_hchange(const unsigned char *b1, const unsigned char *b2, const int start, const int end)
+GifVideoExport::find_hchange(const unsigned char *b1, const unsigned char *b2, const unsigned int start, const unsigned int end)
 {
 	int step = start < end ? 1 : -1;
 
-	int result = start;
+	unsigned int result = start;
 	for (unsigned int y = start;y != end;y += step) {
 		if ((memcmp(b1 + y * width, b2 + y * width, width)) != 0) {
 			break;
@@ -210,11 +219,11 @@ GifVideoExport::find_hchange(const unsigned char *b1, const unsigned char *b2, c
 }
 
 unsigned int
-GifVideoExport::find_vchange(const unsigned char *b1, const unsigned char *b2, const unsigned int miny, const unsigned int maxy, const int start, const int end)
+GifVideoExport::find_vchange(const unsigned char *b1, const unsigned char *b2, const unsigned int miny, const unsigned int maxy, const unsigned int start, const unsigned int end)
 {
 	int step = start < end ? 1 : -1;
 
-	int result = start;
+	unsigned int result = start;
 	for (unsigned int x = start;x != end;x += step) {
 		bool changed = false;
 		for (unsigned int y = miny;y <= maxy;y++) {
@@ -290,7 +299,7 @@ GifVideoExport::flush_buffer(unsigned char *buf, unsigned int delay, unsigned in
 	 *         1 -   Transparent Index is given.
 	 * byte 2 & 3:
 	 *         Delay Time - If not 0, this field specifies the number of
-	 *         hundredths (1/100) of a second to wait before continuing with the
+	 *         hundredth (1/100) of a second to wait before continuing with the
 	 *         processing of the Data Stream. The clock starts ticking immediately
 	 *         after the graphic is rendered. This field may be used in
 	 *         conjunction with the User Input Flag field.
@@ -308,7 +317,12 @@ GifVideoExport::flush_buffer(unsigned char *buf, unsigned int delay, unsigned in
 	if (EGifPutImageDesc(gif_handle, minx, miny, maxx - minx, maxy - miny, 0, cmap) != GIF_OK)
 		return false;
 
-	for (int y = miny;y < maxy;y++) {
+	PRINTDB("GifVideoExport::flush_buffer(): x = %d-%d (%d), y = %d-%d (%d), delay = %d",
+		minx % maxx % (maxx - minx) %
+		miny % maxy % (maxy - miny) %
+		delay);
+
+	for (unsigned int y = miny;y < maxy;y++) {
 		if (EGifPutLine(gif_handle, buf + y * width + minx, maxx - minx) != GIF_OK)
 			return false;
 	}

@@ -60,20 +60,22 @@ XvidVideoExport::open(const QString fileName, const double fps)
 
 	init_ok = false;
 
-	double fps_den = 1;
 	memset(&_enc_create, 0, sizeof (xvid_enc_create_t));
 	_enc_create.version = XVID_VERSION;
+	_enc_create.profile = XVID_PROFILE_AS_L4;
 	_enc_create.width = width;
 	_enc_create.height = height;
 	_enc_create.zones = NULL;
-	_enc_create.fincr = fps_den;
-	_enc_create.fbase = 50;
-	_enc_create.max_key_interval = 500 / fps_den;
+	_enc_create.fincr = 10000;
+	_enc_create.fbase = fps * 10000.0;
+	_enc_create.max_key_interval = 200;
+	_enc_create.max_bframes = 16;
 	_enc_create.bquant_ratio = 150;
 	_enc_create.bquant_offset = 100;
 
 	memset(&_plugin_single, 0, sizeof(xvid_plugin_single_t));
 	_plugin_single.version = XVID_VERSION;
+	_plugin_single.bitrate = (2400L * width * height) / (1920L * 1080L);
 
 	_plugins[0].func  = xvid_plugin_single;
 	_plugins[0].param = &_plugin_single;
@@ -115,9 +117,9 @@ XvidVideoExport::exportFrame(const QImage frame, const int)
 	enc_frame.input.csp = XVID_CSP_BGRA;
 	enc_frame.input.stride[0] = scaled.bytesPerLine();
 	enc_frame.vol_flags = 0;
-	enc_frame.vop_flags = XVID_VOP_HALFPEL | XVID_VOP_TRELLISQUANT | XVID_VOP_HQACPRED;
+	enc_frame.vop_flags = XVID_VOP_HALFPEL | XVID_VOP_HQACPRED;
 	enc_frame.type = XVID_TYPE_AUTO;
-	enc_frame.quant = 0.8;
+	enc_frame.quant = 0; // automatic rate control
 	enc_frame.motion = XVID_ME_ADVANCEDDIAMOND16 | XVID_ME_HALFPELREFINE16 | XVID_ME_EXTSEARCH16 | XVID_ME_ADVANCEDDIAMOND8 | XVID_ME_HALFPELREFINE8 | XVID_ME_EXTSEARCH8;
 
 	int size = xvid_encore(_enc_create.handle, XVID_ENC_ENCODE, &enc_frame, NULL);

@@ -135,7 +135,10 @@ VpxVideoExport::open(const QString fileName, const double fps)
 
 	/* Update the default configuration with our settings */
 	//cfg.rc_target_bitrate = (width * height * cfg.rc_target_bitrate) / cfg.g_w / cfg.g_h / 4;
-	cfg.rc_target_bitrate = (1600L * width * height) / (1920L * 1080L);
+	cfg.rc_target_bitrate = (2400L * width * height) / (1920L * 1080L);
+	double factor = fabs(fps - int(fps)) > 0.001 ? 10000.0 : 1.0;
+	cfg.g_timebase.num = factor;
+	cfg.g_timebase.den = factor * fps;
 	cfg.g_w = width;
 	cfg.g_h = height;
 	cfg.g_pass = VPX_RC_ONE_PASS;
@@ -148,7 +151,7 @@ VpxVideoExport::open(const QString fileName, const double fps)
 	{
 		return;
 	}
-	vpx_rational arg_framerate = {30, 1};
+	vpx_rational arg_framerate = {cfg.g_timebase.den, cfg.g_timebase.num};
 	Ebml_WriteWebMFileHeader(&ebml, &cfg, &arg_framerate);
 
 	/* Initialize codec */
@@ -157,7 +160,7 @@ VpxVideoExport::open(const QString fileName, const double fps)
 
 	frame_cnt = 0;
 
-	printf("Using %s with bitrate %u @ %dx%d\n", vpx_codec_iface_name(vpx_interface), cfg.rc_target_bitrate, width, height);
+	printf("Using %s with bitrate %u @ %.2f fps @ %dx%d\n", vpx_codec_iface_name(vpx_interface), fps, cfg.rc_target_bitrate, width, height);
 }
 
 void

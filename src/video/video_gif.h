@@ -32,12 +32,13 @@
 class GifVideoExport : public AbstractVideoExport
 {
 private:
-    enum { MAX_FRAME_DELAY = 65535 };
+    enum { MAX_FRAME_DELAY = 30000 };
     typedef enum { STATE_INIT, STATE_COLORMAP, STATE_OUTPUT, STATE_END } state_t;
 
     state_t state;
+	double fps;
+    double frame_delay;
     unsigned int width, height;
-    unsigned int frame_delay;
 
     ColorMapObject *cmap;
     QVector<QRgb> export_color_map;
@@ -47,8 +48,8 @@ private:
 
 private:
     void collect_colormap(const QImage &frame);
-    unsigned int find_hchange(const unsigned char *b1, const unsigned char *b2, const int start, const int end);
-    unsigned int find_vchange(const unsigned char *b1, const unsigned char *b2, const unsigned int miny, const unsigned int maxy, const int start, const int end);
+    unsigned int find_hchange(const unsigned char *b1, const unsigned char *b2, const int unsigned start, const unsigned int end);
+    unsigned int find_vchange(const unsigned char *b1, const unsigned char *b2, const unsigned int miny, const unsigned int maxy, const unsigned int start, const unsigned int end);
     bool flush_buffer(unsigned char *buf, unsigned int delay, unsigned int minx, unsigned int maxx, unsigned int miny, unsigned int maxy);
 
 public:
