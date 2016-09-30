@@ -274,6 +274,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 		        * Using regexp to determine whether string contain HTML
 		        * If so - we need to replace escape symbols
 		        * Because escape symbols (\t, \n etc.) doesn't render well with HTML tags
+			* 'if' statement is required because widget doesn't interpret each string as HTML 
 		        */
 
 		        if (boost::regex_match(val->toString(), tagRegEx)) {
