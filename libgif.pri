@@ -36,15 +36,33 @@ LIBGIF_DIR = $$(LIBGIFDIR)
       LIBGIF_LIBPATH = /opt/lib
     }
   }
+
+  GIFLIB_MAJOR = $$system("grep GIFLIB_MAJOR $$LIBGIF_INCLUDEPATH/gif_lib.h | tr -d '[:alpha:][:punct:][:blank:]'")
+  GIFLIB_MINOR = $$system("grep GIFLIB_MINOR $$LIBGIF_INCLUDEPATH/gif_lib.h | tr -d '[:alpha:][:punct:][:blank:]'")
+  !lessThan(GIFLIB_MAJOR, 5) {
+    greaterThan(GIFLIB_MAJOR, 5) {
+      GIFLIB_VERSION_OK = true
+    } else {
+      !lessThan(GIFLIB_MINOR, 1) {
+        GIFLIB_VERSION_OK = true
+      }
+    }
+  }
 }
 
 !isEmpty(LIBGIF_INCLUDEPATH) {
-  QMAKE_CXXFLAGS += -I$$LIBGIF_INCLUDEPATH
-  LIBS += -L$$LIBGIF_LIBPATH -lgif
-  DEFINES += ENABLE_VIDEO_GIF
+  defined(GIFLIB_VERSION_OK, var) {
+    message(Found libgif $${GIFLIB_MAJOR}.$${GIFLIB_MINOR})
 
-  HEADERS += src/video/video_gif.h
-  SOURCES += src/video/video_gif.cc
+    QMAKE_CXXFLAGS += -I$$LIBGIF_INCLUDEPATH
+    LIBS += -L$$LIBGIF_LIBPATH -lgif
+    DEFINES += ENABLE_VIDEO_GIF
+
+    HEADERS += src/video/video_gif.h
+    SOURCES += src/video/video_gif.cc
+  } else {
+    message(Found unsupported libgif version: $${GIFLIB_MAJOR}.$${GIFLIB_MINOR})
+  }
 }
 
 }
