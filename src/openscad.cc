@@ -525,20 +525,23 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		}
 
 		if (png_output_file) {
+			bool success = true;
 			std::ofstream fstream(png_output_file,std::ios::out|std::ios::binary);
 			if (!fstream.is_open()) {
 				PRINTB("Can't open file \"%s\" for export", png_output_file);
+				success = false;
 			}
 			else {
 				if (renderer==Render::CGAL || renderer==Render::GEOMETRY) {
-					export_png(root_geom, camera, fstream);
+					success = export_png(root_geom, camera, fstream);
 				} else if (renderer==Render::THROWNTOGETHER) {
-					export_png_with_throwntogether(tree, camera, fstream);
+					success = export_png_with_throwntogether(tree, camera, fstream);
 				} else {
-					export_png_with_opencsg(tree, camera, fstream);
+					success = export_png_with_opencsg(tree, camera, fstream);
 				}
 				fstream.close();
 			}
+			return success ? 0 : 1;
 		}
 
 		if (nefdbg_output_file) {

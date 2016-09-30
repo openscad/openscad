@@ -192,15 +192,16 @@ assignment:
           TOK_ID '=' expr ';'
             {
                 bool found = false;
-                for (auto& iter : scope_stack.top()->assignments) {
-                    if (iter.name == $1) {
-                        iter.expr = shared_ptr<Expression>($3);
+                for (auto &assignment : scope_stack.top()->assignments) {
+                    if (assignment.name == $1) {
+                        assignment.expr = shared_ptr<Expression>($3);
+                        assignment.setLocation(LOC(@$));
                         found = true;
                         break;
                     }
                 }
                 if (!found) {
-                    scope_stack.top()->assignments.push_back(Assignment($1, shared_ptr<Expression>($3)));
+                  scope_stack.top()->assignments.push_back(Assignment($1, shared_ptr<Expression>($3), LOC(@$)));
                 }
                 free($1);
             }

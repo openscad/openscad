@@ -44,7 +44,7 @@ PACKAGES=(
     "gettext 0.19.8"
     "libffi 3.2.1"
     "glib2 2.46.1"
-    "opencsg 1.4.0"
+    "opencsg 1.4.1"
     "freetype 2.6.3"
     "ragel 6.9"
     "harfbuzz 1.2.7"
@@ -244,12 +244,12 @@ build_qscintilla()
   version=$1
   echo "Building QScintilla" $version "..."
   cd $BASEDIR/src
-  rm -rf QScintilla-gpl-$version
-  if [ ! -f QScintilla-gpl-$version.tar.gz ]; then
-    curl -LO http://downloads.sourceforge.net/project/pyqt/QScintilla2/QScintilla-$version/QScintilla-gpl-$version.tar.gz
+  rm -rf QScintilla_gpl-$version
+  if [ ! -f QScintilla_gpl-$version.tar.gz ]; then
+    curl -LO http://downloads.sourceforge.net/project/pyqt/QScintilla2/QScintilla-$version/QScintilla_gpl-$version.tar.gz
   fi
-  tar xzf QScintilla-gpl-$version.tar.gz
-  cd QScintilla-gpl-$version/Qt4Qt5
+  tar xzf QScintilla_gpl-$version.tar.gz
+  cd QScintilla_gpl-$version/Qt4Qt5
   qmake QMAKE_CXXFLAGS+="$CXXSTDFLAGS" QMAKE_LFLAGS+="$CXXSTDFLAGS" qscintilla.pro
   make -j"$NUMCPU" install
   install_name_tool -id @rpath/libqscintilla2.dylib $DEPLOYDIR/lib/libqscintilla2.dylib
@@ -420,7 +420,7 @@ build_opencsg()
   tar xzf OpenCSG-$version.tar.gz
   cd OpenCSG-$version
   patch -p1 < $OPENSCADDIR/patches/OpenCSG-$version-MacOSX-port.patch
-  qmake -r QMAKE_CXXFLAGS+="-I$DEPLOYDIR/include $CXXSTDFLAGS" QMAKE_LFLAGS+="-L$DEPLOYDIR/lib $LDSTDFLAGS" CONFIG+="x86_64" DESTDIR=$DEPLOYDIR
+  qmake -r INSTALLDIR=$DEPLOYDIR
   make install
   install_name_tool -id @rpath/libopencsg.dylib $DEPLOYDIR/lib/libopencsg.dylib
 }
