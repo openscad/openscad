@@ -38,7 +38,6 @@ class ParameterWidget : public QWidget, public Ui::ParameterWidget, public Param
 private:
 	typedef std::map<std::string,groupInst > group_map;
 	group_map groupMap;
-	typedef enum { UNDEFINED, COMBOBOX, SLIDER, CHECKBOX, TEXT, NUMBER, VECTOR } parameter_type_t;
 	QTimer autoPreviewTimer;
 	bool descriptionShow;
 	QVBoxLayout * anyLayout;

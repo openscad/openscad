@@ -13,7 +13,6 @@ ParameterVirtualWidget::~ParameterVirtualWidget(){
 void ParameterVirtualWidget::setPrecision(double number){
 	
 	decimalPrecision = 0;
-	int beforeDecimal = 0;
 	long double diff, rn; //rn stands for real number
 	unsigned long long intNumber, multi = 1;
 	number = abs(number);

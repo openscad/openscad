@@ -8,9 +8,9 @@
 
 class ParameterObject
 {
+public:
 	typedef enum { UNDEFINED, COMBOBOX, SLIDER, CHECKBOX, TEXT, NUMBER, VECTOR } parameter_type_t;
 
-public:
 	ValuePtr value;
 	ValuePtr values;
 	ValuePtr defaultValue;

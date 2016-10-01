@@ -5,6 +5,10 @@
 
 #include <boost/property_tree/json_parser.hpp>
 
+std::string ParameterSet::parameterSetsKey("parameterSets");
+std::string ParameterSet::fileFormatVersionKey("fileFormatVersion");
+std::string ParameterSet::fileFormatVersionValue("1");
+
 void ParameterSet::readParameterSet(const std::string &filename)
 {
   try {
@@ -16,9 +20,10 @@ void ParameterSet::readParameterSet(const std::string &filename)
   }
 }
 
-void ParameterSet::writeParameterSet(const std::string &filename) const
+void ParameterSet::writeParameterSet(const std::string &filename)
 {
-  if (this->root.empty()) return;
+  // Always force default version for now
+  root.put<std::string>(fileFormatVersionKey, fileFormatVersionValue);
 
   try {
     pt::write_json(filename, this->root);
@@ -34,7 +39,7 @@ void ParameterSet::applyParameterSet(FileModule *fileModule, const std::string &
   if (fileModule == NULL || this->root.empty()) return;
   try {
     ModuleContext ctx;
-    std::string path = "SET." + setName;
+    std::string path = parameterSetsKey + "." + setName;
     for (auto &assignment : fileModule->scope.assignments) {
       for (auto &v : root.get_child(path)) {
         if (v.first == assignment.name) {

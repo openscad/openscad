@@ -78,7 +78,7 @@ bool ParameterObject::operator == (const ParameterObject &second)
 void ParameterObject::checkVectorWidget()
 {
   Value::VectorType vec = defaultValue->toVector();
-  for (int i=0;i<vec.size();i++) {
+  for (unsigned int i = 0;i < vec.size();i++) {
     if (vec[i]->type() != Value::NUMBER) {
       target = TEXT;
       return;

@@ -73,22 +73,17 @@ void ParameterWidget::onSetDelete()
     if (root.empty()) return;
 
     std::string setName=comboBox->itemData(this->comboBox->currentIndex()).toString().toStdString();
-    root.get_child("SET").erase(setName);
-    std::fstream myfile;
-    myfile.open(this->jsonFile, std::ios::out);
-    if (myfile.is_open()) {
-			pt::write_json(myfile,root);
-			this->comboBox->clear();
-			setComboBoxForSet();
-    }
-    myfile.close();
+    root.get_child(ParameterSet::parameterSetsKey).erase(setName);
+	writeParameterSet(this->jsonFile);
+	this->comboBox->clear();
+	setComboBoxForSet();
 }
 
 void ParameterWidget::onSetAdd()
 {
 	if (root.empty()) {
 		pt::ptree setRoot;
-		root.add_child("SET",setRoot);
+		root.add_child(ParameterSet::parameterSetsKey, setRoot);
 	}
 	updateParameterSet(comboBox->itemData(this->comboBox->currentIndex()).toString().toStdString());
 }
@@ -112,7 +107,7 @@ void ParameterWidget::setComboBoxForSet()
 {
 	this->comboBox->addItem("No Set Selected", QVariant(QString::fromStdString("")));
 	if (root.empty()) return;
-	for (const auto &v : root.get_child("SET")) {
+	for (const auto &v : root.get_child(ParameterSet::parameterSetsKey)) {
 		this->comboBox->addItem(QString::fromStdString(v.first),
 														QVariant(QString::fromStdString(v.first)));
 	}
@@ -210,7 +205,7 @@ void ParameterWidget::connectWidget()
 	for (group_map::iterator it = groupMap.begin(); it != groupMap.end(); it++) {
 		std::vector<std::string> gr;
 		gr = it->second.parameterVector;
-		for(int i=0;i <gr.size();i++) {
+		for(unsigned int i=0;i < gr.size();i++) {
 			AddParameterWidget(gr[i]);
 		}
 		GroupWidget *groupWidget = new GroupWidget(it->second.show, QString::fromStdString(it->first));
@@ -254,32 +249,35 @@ void ParameterWidget::AddParameterWidget(std::string parameterName)
 {
     ParameterVirtualWidget *entry ;
     switch(entries[parameterName]->target) {
-		case COMBOBOX:{
+		case ParameterObject::COMBOBOX:{
 			entry = new ParameterComboBox(entries[parameterName], descriptionShow);
 			break;
 		}
-		case SLIDER:{
+		case ParameterObject::SLIDER:{
 			entry = new ParameterSlider(entries[parameterName], descriptionShow);
 			break;
 		}
-		case CHECKBOX:{
+		case ParameterObject::CHECKBOX:{
 			entry = new ParameterCheckBox(entries[parameterName], descriptionShow);
 			break;
 		}
-		case TEXT:{
+		case ParameterObject::TEXT:{
 			entry = new ParameterText(entries[parameterName], descriptionShow);
 			break;
 		}
-		case NUMBER:{
+		case ParameterObject::NUMBER:{
 			entry = new ParameterSpinBox(entries[parameterName], descriptionShow);
 			break;
 		}
-		case VECTOR:{
+		case ParameterObject::VECTOR:{
 			entry = new ParameterVector(entries[parameterName], descriptionShow);
 			break;
 		}
+		case ParameterObject::UNDEFINED:{
+			break;
+		}
     }
-    if (entries[parameterName]->target != UNDEFINED) {
+    if (entries[parameterName]->target != ParameterObject::UNDEFINED) {
 			connect(entry, SIGNAL(changed()), this, SLOT(onValueChanged()));
 			addEntry(entry);
 			if (entries[parameterName]->focus){
@@ -293,7 +291,7 @@ void ParameterWidget::applyParameterSet(std::string setName)
 {
 	if (root.empty()) return;
 	
-	std::string path = "SET." + setName;
+	std::string path = ParameterSet::parameterSetsKey + "." + setName;
 	for (pt::ptree::value_type &v : root.get_child(path)) {
 		entry_map_t::iterator entry = entries.find(v.first);
 		if (entry != entries.end()) {
@@ -306,7 +304,6 @@ void ParameterWidget::applyParameterSet(std::string setName)
 				if (!params) continue;
 				
 				ModuleContext ctx;
-				Assignment *assignment;
 				ValuePtr newValue = params->evaluate(&ctx);
 				if (entry->second->dvt == newValue->type()) {
 					entry->second->value = newValue;
@@ -318,28 +315,23 @@ void ParameterWidget::applyParameterSet(std::string setName)
 
 void ParameterWidget::updateParameterSet(std::string setName)
 {
-	std::fstream myfile;
-	myfile.open(this->jsonFile, std::ios::out);
-	if (myfile.is_open()) {
-		if (setName == "") {
-			bool ok = true;
-			QInputDialog *setDialog = new QInputDialog();
-			setName = setDialog->getText(this, "Create new Set of parameter","Enter name of set name", QLineEdit::Normal, "", &ok).toStdString();
-		}
-		pt::ptree iroot;
-		for (entry_map_t::iterator it = entries.begin(); it != entries.end(); it++) {
-			iroot.put(it->first,it->second->value->toString());
-		}
-		if (!setName.empty()) {
-			root.get_child("SET").erase(setName);
-			root.add_child("SET." + setName,iroot);
-			if (this->comboBox->findText(QString::fromStdString(setName)) == -1) {
-				this->comboBox->addItem(QString::fromStdString(setName),
-																QVariant(QString::fromStdString(setName)));
-				this->comboBox->setCurrentIndex(this->comboBox->findText(QString::fromStdString(setName)));
-			}
-		}
-		pt::write_json(myfile, root);
+	if (setName == "") {
+		bool ok = true;
+		QInputDialog *setDialog = new QInputDialog();
+		setName = setDialog->getText(this, "Create new Set of parameter","Enter name of set name", QLineEdit::Normal, "", &ok).toStdString();
 	}
-	myfile.close();
+	pt::ptree iroot;
+	for (entry_map_t::iterator it = entries.begin(); it != entries.end(); it++) {
+		iroot.put(it->first,it->second->value->toString());
+	}
+	if (!setName.empty()) {
+		root.get_child(ParameterSet::parameterSetsKey).erase(setName);
+		root.add_child(ParameterSet::parameterSetsKey + "." + setName, iroot);
+		if (this->comboBox->findText(QString::fromStdString(setName)) == -1) {
+			this->comboBox->addItem(QString::fromStdString(setName),
+															QVariant(QString::fromStdString(setName)));
+			this->comboBox->setCurrentIndex(this->comboBox->findText(QString::fromStdString(setName)));
+		}
+	}
+	writeParameterSet(this->jsonFile);
 }
