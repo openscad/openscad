@@ -24,10 +24,10 @@ static std::string getComment(const std::string &fulltext, int line)
   // Locate line
   unsigned int start = 0;
   for (; start<fulltext.length() ; start++) {
-    if (fulltext[start] == '\n') line--;
     if (line <= 1) break;
+    if (fulltext[start] == '\n') line--;
   }
-    
+
   int end = start + 1;
   while (fulltext[end] != '\n') end++;
     
@@ -36,10 +36,14 @@ static std::string getComment(const std::string &fulltext, int line)
   // Locate comment
   unsigned int startText = 0;
   int noOfSemicolon = 0;
-  bool isComment = true;
-  for (;startText < comment.length() - 1 ; startText++) {
-    if (comment[startText] == '"') isComment = !isComment;
-    if (isComment) {
+  bool inString = false;
+  for (;startText < comment.length() - 1;startText++) {
+    if (inString && comment.compare(startText, 2, "\\\"") == 0) {
+      startText++;
+      continue;
+    }
+    if (comment[startText] == '"') inString = !inString;
+    if (!inString) {
       if (comment.compare(startText, 2, "//") == 0) break;
       if (comment[startText] == ';' && noOfSemicolon > 0) return "";
       if (comment[startText] == ';') noOfSemicolon++;
@@ -48,7 +52,8 @@ static std::string getComment(const std::string &fulltext, int line)
     
   if (startText + 2 > comment.length()) return "";
 
-  return comment.substr(startText + 2);
+  std::string result = comment.substr(startText + 2);
+  return result;
 }
 
 /* 
@@ -95,25 +100,31 @@ static std::string getDescription(const std::string &fulltext, int line)
 */
 static GroupList collectGroups(const std::string &fulltext)
 {
-  GroupList groupList; //container of all group names
+  GroupList groupList; // container of all group names
   int lineNo = 1; // tracks line number
-  bool isComment = true; //check if its string or comment
-    
-  //iterate through whole scad file
+  bool inString = false; // check if its string or (line-) comment
+
+  // iterate through whole scad file
   for (unsigned int i=0; i<fulltext.length(); i++) {
-    //increase line number
+    // increase line number
     if (fulltext[i] == '\n') {
       lineNo++;
       continue;
     }
-        
-    //start or end of string negate the checkpoint
-    if (fulltext[i] == '"') {
-      isComment = !isComment;
+
+    // skip escaped quotes inside strings
+    if (inString && fulltext.compare(i, 2, "\\\"") == 0) {
+      i++;
       continue;
     }
-        
-    if (fulltext.compare(i, 2, "//") == 0) {
+
+    //start or end of string negate the checkpoint
+    if (fulltext[i] == '"') {
+      inString = !inString;
+      continue;
+    }
+
+    if (!inString && fulltext.compare(i, 2, "//") == 0) {
       i+=2;
       while (fulltext[i] != '\n') i++;
       lineNo++;
@@ -121,7 +132,7 @@ static GroupList collectGroups(const std::string &fulltext)
     }
         
     //start of multi line comment if check is true
-    if (isComment && fulltext.compare(i, 2, "/*") == 0) {
+    if (!inString && fulltext.compare(i, 2, "/*") == 0) {
       //store comment
       std::string comment;
       i += 2;
