@@ -107,9 +107,9 @@ void ParameterWidget::setComboBoxForSet()
 {
 	this->comboBox->addItem("No Set Selected", QVariant(QString::fromStdString("")));
 	if (root.empty()) return;
-	for (const auto &v : root.get_child(ParameterSet::parameterSetsKey)) {
-		this->comboBox->addItem(QString::fromStdString(v.first),
-														QVariant(QString::fromStdString(v.first)));
+	for (const auto &name : getParameterNames()) {
+		const QString n = QString::fromStdString(name);
+		this->comboBox->addItem(n, QVariant(n));
 	}
 }
 
@@ -289,10 +289,12 @@ void ParameterWidget::AddParameterWidget(std::string parameterName)
 
 void ParameterWidget::applyParameterSet(std::string setName)
 {
-	if (root.empty()) return;
-	
-	std::string path = ParameterSet::parameterSetsKey + "." + setName;
-	for (pt::ptree::value_type &v : root.get_child(path)) {
+	boost::optional<pt::ptree &> set = getParameterSet(setName);
+	if (!set.is_initialized()) {
+		return;
+	}
+
+	for (pt::ptree::value_type &v : set.get()) {
 		entry_map_t::iterator entry = entries.find(v.first);
 		if (entry != entries.end()) {
 			if (entry->second->dvt == Value::STRING) {
@@ -316,22 +318,29 @@ void ParameterWidget::applyParameterSet(std::string setName)
 void ParameterWidget::updateParameterSet(std::string setName)
 {
 	if (setName == "") {
-		bool ok = true;
 		QInputDialog *setDialog = new QInputDialog();
-		setName = setDialog->getText(this, "Create new Set of parameter","Enter name of set name", QLineEdit::Normal, "", &ok).toStdString();
-	}
-	pt::ptree iroot;
-	for (entry_map_t::iterator it = entries.begin(); it != entries.end(); it++) {
-		iroot.put(it->first,it->second->value->toString());
-	}
-	if (!setName.empty()) {
-		root.get_child(ParameterSet::parameterSetsKey).erase(setName);
-		root.add_child(ParameterSet::parameterSetsKey + "." + setName, iroot);
-		if (this->comboBox->findText(QString::fromStdString(setName)) == -1) {
-			this->comboBox->addItem(QString::fromStdString(setName),
-															QVariant(QString::fromStdString(setName)));
-			this->comboBox->setCurrentIndex(this->comboBox->findText(QString::fromStdString(setName)));
+
+		bool ok = true;
+		const QString result = setDialog->getText(this,
+			"Create new set of parameter", "Enter name of the parameter set",
+			QLineEdit::Normal, "", &ok);
+
+		if (ok) {
+			setName = result.trimmed().toStdString();
 		}
 	}
-	writeParameterSet(this->jsonFile);
+
+	if (!setName.empty()) {
+		pt::ptree iroot;
+		for (entry_map_t::iterator it = entries.begin(); it != entries.end(); it++) {
+			iroot.put(it->first,it->second->value->toString());
+		}
+		addParameterSet(setName, iroot);
+		const QString s(QString::fromStdString(setName));
+		if (this->comboBox->findText(s) == -1) {
+			this->comboBox->addItem(s, QVariant(s));
+			this->comboBox->setCurrentIndex(this->comboBox->findText(s));
+		}
+		writeParameterSet(this->jsonFile);
+	}
 }

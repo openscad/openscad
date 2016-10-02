@@ -9,6 +9,45 @@ std::string ParameterSet::parameterSetsKey("parameterSets");
 std::string ParameterSet::fileFormatVersionKey("fileFormatVersion");
 std::string ParameterSet::fileFormatVersionValue("1");
 
+boost::optional<pt::ptree &> ParameterSet::parameterSets()
+{
+	return root.get_child_optional(ParameterSet::parameterSetsKey);
+}
+
+std::vector<std::string> ParameterSet::getParameterNames()
+{
+	std::vector<std::string> names;
+
+	boost::optional<pt::ptree &> sets = parameterSets();
+	if (sets.is_initialized()) {
+		for (const auto &v : sets.get()) {
+			names.push_back(v.first);
+		}
+	}
+	return names;
+}
+
+boost::optional<pt::ptree &> ParameterSet::getParameterSet(const std::string &setName)
+{
+	boost::optional<pt::ptree &> sets = root.get_child_optional(ParameterSet::parameterSetsKey);
+	if (!sets.is_initialized()) {
+		return sets;
+	}
+
+	boost::optional<pt::ptree &> set = sets.get().get_child_optional(setName);
+	return set;
+}
+
+void ParameterSet::addParameterSet(const std::string setName, const pt::ptree & set)
+{
+	boost::optional<pt::ptree &> sets = parameterSets();
+	if (sets.is_initialized()) {
+		sets.get().erase(setName);
+	}
+
+	root.add_child(ParameterSet::parameterSetsKey + "." + setName, set);
+}
+
 void ParameterSet::readParameterSet(const std::string &filename)
 {
   try {
