@@ -60,8 +60,8 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 
 void ParameterWidget::resetParameter()
 {
-    this->resetPara = true;
-    emit previewRequested();
+	this->resetPara = true;
+	emit previewRequested();
 }
 
 ParameterWidget::~ParameterWidget()
@@ -70,10 +70,9 @@ ParameterWidget::~ParameterWidget()
 
 void ParameterWidget::onSetDelete()
 {
-    if (root.empty()) return;
-
-    std::string setName=comboBox->itemData(this->comboBox->currentIndex()).toString().toStdString();
-    root.get_child(ParameterSet::parameterSetsKey).erase(setName);
+	if (root.empty()) return;
+	std::string setName=comboBox->itemData(this->comboBox->currentIndex()).toString().toStdString();
+	root.get_child(ParameterSet::parameterSetsKey).erase(setName);
 	writeParameterSet(this->jsonFile);
 	this->comboBox->clear();
 	setComboBoxForSet();
@@ -91,9 +90,17 @@ void ParameterWidget::onSetAdd()
 void ParameterWidget::readFile(QString scadFile)
 {
 	this->jsonFile = scadFile.replace(".scad", ".json").toStdString();
-	readParameterSet(this->jsonFile);
-	connect(this->addButton, SIGNAL(clicked()), this, SLOT(onSetAdd()));
-	connect(this->deleteButton, SIGNAL(clicked()), this, SLOT(onSetDelete()));
+	bool readonly=readParameterSet(this->jsonFile);
+	if(readonly){
+		connect(this->addButton, SIGNAL(clicked()), this, SLOT(onSetAdd()));
+		connect(this->deleteButton, SIGNAL(clicked()), this, SLOT(onSetDelete()));
+	}
+	else{
+		this->addButton->setDisabled(true);
+		this->addButton->setToolTip("JSON file read only");
+		this->deleteButton->setDisabled(true);
+		this->deleteButton->setToolTip("JSON file read only");
+	}
 	this->comboBox->clear();
 	setComboBoxForSet();
 }

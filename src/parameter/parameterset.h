@@ -24,7 +24,7 @@ public:
 	std::vector<std::string> getParameterNames();
 	boost::optional<pt::ptree &> getParameterSet(const std::string &setName);
 	void addParameterSet(const std::string setName, const pt::ptree & set);
-	void readParameterSet(const std::string &filename);
+	bool readParameterSet(const std::string &filename);
 	void writeParameterSet(const std::string &filename);
 	void applyParameterSet(class FileModule *fileModule, const std::string &setName);
 };
