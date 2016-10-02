@@ -178,6 +178,13 @@ MainWindow::MainWindow(const QString &filename)
 	consoleDockTitleWidget = new QWidget();
 	parameterDockTitleWidget = new QWidget();
 
+	this->editorDock->setConfigKey("view/hideEditor");
+	this->editorDock->setAction(this->viewActionHideEditor);
+	this->consoleDock->setConfigKey("view/hideConsole");
+	this->consoleDock->setAction(this->viewActionHideConsole);
+	this->parameterDock->setConfigKey("view/hideCustomizer");
+	this->parameterDock->setAction(this->viewActionHideParameters);
+
 	this->versionLabel = NULL; // must be initialized before calling updateStatusBar()
 	updateStatusBar(NULL);
 
@@ -516,12 +523,19 @@ MainWindow::MainWindow(const QString &filename)
 	initActionIcon(editActionIndent, ":/images/Increase-Indent-32.png", ":/images/Increase-Indent-32-white.png");
 	initActionIcon(viewActionResetView, ":/images/Command-Reset-32.png", ":/images/Command-Reset-32-white.png");
 	initActionIcon(viewActionShowScaleProportional, ":/images/scalemarkers.png", ":/images/scalemarkers-white.png");
+
+	// fetch window states to be restored after restoreState() call
+	bool hideConsole = settings.value("view/hideConsole").toBool();
+	bool hideEditor = settings.value("view/hideEditor").toBool();
+	bool hideCustomizer = settings.value("view/hideCustomizer").toBool();
+	bool hideToolbar = settings.value("view/hideToolbar").toBool();
 	
 	// make sure it looks nice..
 	QByteArray windowState = settings.value("window/state", QByteArray()).toByteArray();
 	restoreState(windowState);
 	resize(settings.value("window/size", QSize(800, 600)).toSize());
 	move(settings.value("window/position", QPoint(0, 0)).toPoint());
+	updateWindowSettings(hideConsole, hideEditor, hideCustomizer, hideToolbar);
 
 	if (windowState.size() == 0) {
 		/*
@@ -606,7 +620,31 @@ void MainWindow::updateActionUndoState()
     editActionUndo->setEnabled(editor->canUndo());
 }
 
-void MainWindow::loadViewSettings(){
+/**
+ * Update window settings that get overwritten by the restoreState()
+ * Qt call. So the values are loaded before the call and restored here
+ * regardless of the (potential outdated) serialized state.
+ */
+void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer, bool toolbar)
+{
+	viewActionHideConsole->setChecked(console);
+	hideConsole();
+	viewActionHideEditor->setChecked(editor);
+	hideEditor();
+	viewActionHideToolBars->setChecked(toolbar);
+	hideToolbars();
+
+	if (Feature::ExperimentalCustomizer.is_enabled()) {
+		viewActionHideParameters->setChecked(customizer);
+		hideParameters();
+	} else {
+		viewActionHideParameters->setChecked(true);
+		hideParameters();
+		viewActionHideParameters->setVisible(false);
+	}
+}
+
+void MainWindow::loadViewSettings() {
 	QSettings settings;
 	if (settings.value("view/showEdges").toBool()) {
 		viewActionShowEdges->setChecked(true);
@@ -628,21 +666,6 @@ void MainWindow::loadViewSettings(){
 		viewOrthogonal();
 	} else {
 		viewPerspective();
-	}
-	viewActionHideConsole->setChecked(settings.value("view/hideConsole").toBool());
-	hideConsole();
-	viewActionHideEditor->setChecked(settings.value("view/hideEditor").toBool());
-	hideEditor();
-	viewActionHideToolBars->setChecked(settings.value("view/hideToolbar").toBool());
-	hideToolbars();
-
-	if (Feature::ExperimentalCustomizer.is_enabled()) {
-		viewActionHideParameters->setChecked(settings.value("view/hideCustomizer").toBool());
-		hideParameters();
-	} else {
-		viewActionHideParameters->setChecked(true);
-		hideParameters();
-		viewActionHideParameters->setVisible(false);
 	}
 
 	updateMdiMode(settings.value("advanced/mdi").toBool());
@@ -2525,9 +2548,6 @@ void MainWindow::hideToolbars()
 
 void MainWindow::hideEditor()
 {
-    QSettings settings;
-    bool shouldHide = viewActionHideEditor->isChecked();
-    settings.setValue("view/hideEditor", shouldHide);
 	if (viewActionHideEditor->isChecked()) {
 		editorDock->close();
 	} else {
@@ -2544,9 +2564,6 @@ void MainWindow::showConsole()
 
 void MainWindow::hideConsole()
 {
-    QSettings settings;
-    bool shouldHide = viewActionHideConsole->isChecked();
-    settings.setValue("view/hideConsole", shouldHide);
 	if (viewActionHideConsole->isChecked()) {
 		consoleDock->hide();
 	} else {
@@ -2556,10 +2573,6 @@ void MainWindow::hideConsole()
 
 void MainWindow::hideParameters()
 {
-    QSettings settings;
-    bool shouldHide = viewActionHideParameters->isChecked();
-    settings.setValue("view/hideCustomizer", shouldHide);
-
     if (viewActionHideParameters->isChecked()) {
         parameterDock->hide();
     } else {
