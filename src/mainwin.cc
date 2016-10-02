@@ -795,7 +795,7 @@ void MainWindow::setFileName(const QString &filename)
 	}
 	editorTopLevelChanged(editorDock->isFloating());
 	consoleTopLevelChanged(consoleDock->isFloating());
-    parameterTopLevelChanged(parameterDock->isFloating() );
+    parameterTopLevelChanged(parameterDock->isFloating());
 }
 
 void MainWindow::updateRecentFiles()
@@ -2480,7 +2480,7 @@ void MainWindow::on_consoleDock_visibilityChanged(bool)
 
 void MainWindow::on_parameterDock_visibilityChanged(bool)
 {
-    consoleTopLevelChanged(consoleDock->isFloating());
+    parameterTopLevelChanged(parameterDock->isFloating());
 }
 
 void MainWindow::editorTopLevelChanged(bool topLevel)

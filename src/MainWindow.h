@@ -207,8 +207,8 @@ public slots:
 	void actionReloadRenderPreview();
         void on_editorDock_visibilityChanged(bool);
         void on_consoleDock_visibilityChanged(bool);
-        void on_toolButtonCompileResultClose_clicked();
         void on_parameterDock_visibilityChanged(bool);
+        void on_toolButtonCompileResultClose_clicked();
         void editorTopLevelChanged(bool);
         void consoleTopLevelChanged(bool);
         void parameterTopLevelChanged(bool);
