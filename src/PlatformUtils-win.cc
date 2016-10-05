@@ -121,56 +121,6 @@ static BOOL IsWow64()
     return bIsWow64;
 }
 
-std::string platformid_sysinfo(OSVERSIONINFOEX &osinfo)
-{
-	std::string result("");
-	unsigned int version = osinfo.dwMajorVersion * 1000 + osinfo.dwMinorVersion;
-	switch (version) {
-		case 5000:
-			result += "Windows 2000";
-			break;
-		case 5001:
-			result += "Windows XP";
-			break;
-		case 5002:
-			result += "Windows Server 2003";
-			break;
-		case 6000:
-			result += (osinfo.wProductType == VER_NT_WORKSTATION ? "Windows Vista" : "Windows Server 2008");
-			break;
-		case 6001:
-			result += (osinfo.wProductType == VER_NT_WORKSTATION ? "Windows 7" : "Windows Server 2008 R2");
-			break;
-		case 6002:
-			result += (osinfo.wProductType == VER_NT_WORKSTATION ? "Windows 8" : "Windows Server 2012");
-			break;
-		case 6003:
-			// For applications that have been manifested for Windows 8.1.
-			result += (osinfo.wProductType == VER_NT_WORKSTATION ? "Windows 8.1" : "Windows Server 2012 R2");
-			break;
-		default:
-			result += "Unknown Windows";
-			break;
-	}
-
-	if (osinfo.wServicePackMajor > 0) {
-		boost::format fmtServicePack;
-		if (osinfo.wServicePackMinor == 0) {
-			fmtServicePack = boost::format(" SP%d");
-			fmtServicePack % osinfo.wServicePackMajor;
-		} else {
-			fmtServicePack = boost::format(" SP%d.%d");
-			fmtServicePack % osinfo.wServicePackMajor % osinfo.wServicePackMinor;
-		}
-		result += fmtServicePack.str();
-	}
-
-	boost::format fmt(" (v%d.%d.%d.%d)");
-	fmt % osinfo.dwMajorVersion % osinfo.dwMinorVersion % osinfo.wServicePackMajor % osinfo.wServicePackMinor;
-	result += fmt.str();
-	return result;
-}
-
 std::string PlatformUtils::sysinfo(bool extended)
 {
 	std::string result;
@@ -179,15 +129,15 @@ std::string PlatformUtils::sysinfo(bool extended)
 	osinfo.dwOSVersionInfoSize = sizeof(osinfo);
 
 	if (GetVersionExEx(&osinfo) == 0) {
-		result += "Unknown Windows";
+		result += "Unknown Windows(TM)";
 	} else {
-		if (osinfo.dwPlatformId == VER_PLATFORM_WIN32_NT) {
-			result += platformid_sysinfo( osinfo );
-		} else {
-			boost::format fmt("Unknown Windows (dwPlatformId = %d, dwMajorVersion = %d, dwMinorVersion = %d");
-			fmt % osinfo.dwPlatformId % osinfo.dwMajorVersion % osinfo.dwMinorVersion;
-			result += fmt.str();
-		}
+		boost::format fmt("Windows(TM) %d.%d SP %d.%d");
+		fmt 	% osinfo.dwMajorVersion % osinfo.dwMinorVersion
+			% osinfo.wServicePackMajor % osinfo.wServicePackMinor;
+		result += fmt.str();
+		if (osinfo.wProductType == VER_NT_WORKSTATION)
+			result += " NT_WORKSTATION";
+		result += " (MSDN 724833)";
 	}
 
 	SYSTEM_INFO systeminfo;
