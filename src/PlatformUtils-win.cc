@@ -121,19 +121,11 @@ static BOOL IsWow64()
     return bIsWow64;
 }
 
-std::string PlatformUtils::sysinfo(bool extended)
+std::string platformid_sysinfo(OSVERSIONINFOEX &osinfo)
 {
-	std::string result;
-  
-	OSVERSIONINFOEX osinfo;
-	osinfo.dwOSVersionInfoSize = sizeof(osinfo);
-	
-	if (GetVersionExEx(&osinfo) == 0) {
-		result += "Unknown Windows";
-	} else {
-		unsigned int version = osinfo.dwMajorVersion * 1000 + osinfo.dwMinorVersion;
-	if (osinfo.dwPlatformId == VER_PLATFORM_WIN32_NT) {
-		switch (version) {
+	std::string result("");
+	unsigned int version = osinfo.dwMajorVersion * 1000 + osinfo.dwMinorVersion;
+	switch (version) {
 		case 5000:
 			result += "Windows 2000";
 			break;
@@ -159,44 +151,59 @@ std::string PlatformUtils::sysinfo(bool extended)
 		default:
 			result += "Unknown Windows";
 			break;
-		}
-		
-		if (osinfo.wServicePackMajor > 0) {
-			boost::format fmtServicePack;
-			if (osinfo.wServicePackMinor == 0) {
-				fmtServicePack = boost::format(" SP%d");
-				fmtServicePack % osinfo.wServicePackMajor;
-			} else {
-				fmtServicePack = boost::format(" SP%d.%d");
-				fmtServicePack % osinfo.wServicePackMajor % osinfo.wServicePackMinor;
-			}
-			result += fmtServicePack.str();
-		}
-		
-		boost::format fmt(" (v%d.%d.%d.%d)");
-		fmt % osinfo.dwMajorVersion % osinfo.dwMinorVersion % osinfo.wServicePackMajor % osinfo.wServicePackMinor;
-		result += fmt.str();
-	} else {
-		boost::format fmt("Unknown Windows (dwPlatformId = %d, dwMajorVersion = %d, dwMinorVersion = %d");
-		fmt % osinfo.dwPlatformId % osinfo.dwMajorVersion % osinfo.dwMinorVersion;
-		result += fmt.str();
-	}    
 	}
-	
+
+	if (osinfo.wServicePackMajor > 0) {
+		boost::format fmtServicePack;
+		if (osinfo.wServicePackMinor == 0) {
+			fmtServicePack = boost::format(" SP%d");
+			fmtServicePack % osinfo.wServicePackMajor;
+		} else {
+			fmtServicePack = boost::format(" SP%d.%d");
+			fmtServicePack % osinfo.wServicePackMajor % osinfo.wServicePackMinor;
+		}
+		result += fmtServicePack.str();
+	}
+
+	boost::format fmt(" (v%d.%d.%d.%d)");
+	fmt % osinfo.dwMajorVersion % osinfo.dwMinorVersion % osinfo.wServicePackMajor % osinfo.wServicePackMinor;
+	result += fmt.str();
+	return result;
+}
+
+std::string PlatformUtils::sysinfo(bool extended)
+{
+	std::string result;
+
+	OSVERSIONINFOEX osinfo;
+	osinfo.dwOSVersionInfoSize = sizeof(osinfo);
+
+	if (GetVersionExEx(&osinfo) == 0) {
+		result += "Unknown Windows";
+	} else {
+		if (osinfo.dwPlatformId == VER_PLATFORM_WIN32_NT) {
+			result += platformid_sysinfo( osinfo );
+		} else {
+			boost::format fmt("Unknown Windows (dwPlatformId = %d, dwMajorVersion = %d, dwMinorVersion = %d");
+			fmt % osinfo.dwPlatformId % osinfo.dwMajorVersion % osinfo.dwMinorVersion;
+			result += fmt.str();
+		}
+	}
+
 	SYSTEM_INFO systeminfo;
 	bool isWow64 = IsWow64();
 	if (isWow64) {
 		GetNativeSystemInfo(&systeminfo);
 	} else {
-		GetSystemInfo(&systeminfo);   
+		GetSystemInfo(&systeminfo);
 	}
-	
+
 	if (extended) {
 		int numcpu = systeminfo.dwNumberOfProcessors;
 		boost::format fmt(" %d CPU%s%s");
 		fmt % numcpu % (numcpu > 1 ? "s" : "") % (isWow64 ? " WOW64" : "");
 		result += fmt.str();
-		
+
 		MEMORYSTATUSEX memoryinfo;
 		memoryinfo.dwLength = sizeof(memoryinfo);
 		if (GlobalMemoryStatusEx(&memoryinfo) != 0) {
@@ -204,7 +211,7 @@ std::string PlatformUtils::sysinfo(bool extended)
 			result += PlatformUtils::toMemorySizeString(memoryinfo.ullTotalPhys, 2);
 			result += " RAM";
 		}
-  }
+  	}
 
 	return result;
 }
