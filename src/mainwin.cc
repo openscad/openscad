@@ -459,9 +459,8 @@ MainWindow::MainWindow(const QString &filename)
 	this->setColorScheme(cs);
 
 	//find and replace panel
-	connect(this->findTypeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(selectFindType(int)));
 	connect(this->findInputField, SIGNAL(textChanged(QString)), this, SLOT(findString(QString)));
-	connect(this->findInputField, SIGNAL(returnPressed()), this->nextButton, SLOT(animateClick()));
+        connect(this->findInputField, SIGNAL(returnPressed()), this->findNextButton, SLOT(animateClick()));
 	find_panel->installEventFilter(this);
 	if (QApplication::clipboard()->supportsFindBuffer()) {
 		connect(this->findInputField, SIGNAL(textChanged(QString)), this, SLOT(updateFindBuffer(QString)));
@@ -471,9 +470,9 @@ MainWindow::MainWindow(const QString &filename)
 		this->findInputField->setText(QApplication::clipboard()->text(QClipboard::FindBuffer));
 	}
 
-	connect(this->prevButton, SIGNAL(clicked()), this, SLOT(findPrev()));
-	connect(this->nextButton, SIGNAL(clicked()), this, SLOT(findNext()));
-	connect(this->hideFindButton, SIGNAL(clicked()), find_panel, SLOT(hide()));
+        connect(this->findPrevButton, SIGNAL(clicked()), this, SLOT(findPrev()));
+        connect(this->findNextButton, SIGNAL(clicked()), this, SLOT(findNext()));
+        connect(this->cancelButton, SIGNAL(clicked()), find_panel, SLOT(hide()));
 	connect(this->replaceButton, SIGNAL(clicked()), this, SLOT(replace()));
 	connect(this->replaceAllButton, SIGNAL(clicked()), this, SLOT(replaceAll()));
 	connect(this->replaceInputField, SIGNAL(returnPressed()), this->replaceButton, SLOT(animateClick()));
@@ -1469,10 +1468,10 @@ void MainWindow::pasteViewportRotation()
 
 void MainWindow::find()
 {
-	findTypeComboBox->setCurrentIndex(0);
 	replaceInputField->hide();
 	replaceButton->hide();
 	replaceAllButton->hide();
+        replaceLabel->setVisible(false);
 	find_panel->show();
 	if (!editor->selectedText().isEmpty()) {
 		findInputField->setText(editor->selectedText());
@@ -1488,10 +1487,10 @@ void MainWindow::findString(QString textToFind)
 
 void MainWindow::findAndReplace()
 {
-	findTypeComboBox->setCurrentIndex(1);
 	replaceInputField->show();
 	replaceButton->show();
 	replaceAllButton->show();
+        replaceLabel->setVisible(true);
 	find_panel->show();
 	if (!editor->selectedText().isEmpty()) {
 		findInputField->setText(editor->selectedText());
