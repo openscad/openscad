@@ -27,6 +27,7 @@ public:
 	virtual ~ASTNode() {}
 
 	const Location &location() const { return loc; }
+	void setLocation(const Location &loc) { this->loc = loc; }
 
 protected:
 	Location loc;

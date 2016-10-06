@@ -23,6 +23,7 @@ public:
 	virtual void replaceSelectedText(const QString &newText) = 0;
 	virtual void replaceAll(const QString &findText, const QString &replaceText) = 0;
 	virtual QStringList colorSchemes() = 0;
+    virtual bool canUndo() = 0;
 
 signals:
   void contentsChanged();

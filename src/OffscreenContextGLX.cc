@@ -117,8 +117,6 @@ static int XCreateWindow_error(Display *dpy, XErrorEvent *event)
 	return 0;
 }
 
-bool create_glx_dummy_window(OffscreenContext &ctx)
-{
 /*
    create a dummy X window without showing it. (without 'mapping' it)
    and save information to the ctx.
@@ -129,7 +127,8 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
 
    This function will alter ctx.openGLContext and ctx.xwindow if successfull
  */
-
+bool create_glx_dummy_window(OffscreenContext &ctx)
+{
 	int attributes[] = {
 		GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT | GLX_PIXMAP_BIT | GLX_PBUFFER_BIT, //support all 3, for OpenCSG
 		GLX_RENDER_TYPE,   GLX_RGBA_BIT,
@@ -218,69 +217,71 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
 	XFree( fbconfigs );
 
 	return true;
+}
+
+bool create_glx_dummy_context(OffscreenContext &ctx);
+
+OffscreenContext *create_offscreen_context(int w, int h)
+{
+	OffscreenContext *ctx = new OffscreenContext(w, h);
+
+	// before an FBO can be setup, a GLX context must be created
+	// this call alters ctx->xDisplay and ctx->openGLContext 
+	// and ctx->xwindow if successful
+	if (!create_glx_dummy_context(*ctx)) {
+		delete ctx;
+		return NULL;
 	}
 
-	bool create_glx_dummy_context(OffscreenContext &ctx);
+	return create_offscreen_context_common(ctx);
+}
 
-	OffscreenContext *create_offscreen_context(int w, int h)
-	{
-		OffscreenContext *ctx = new OffscreenContext(w, h);
-
-		// before an FBO can be setup, a GLX context must be created
-		// this call alters ctx->xDisplay and ctx->openGLContext 
-		// and ctx->xwindow if successful
-		if (!create_glx_dummy_context(*ctx)) {
-			delete ctx;
-			return NULL;
-		}
-
-		return create_offscreen_context_common(ctx);
+bool teardown_offscreen_context(OffscreenContext *ctx)
+{
+	if (ctx) {
+		fbo_unbind(ctx->fbo);
+		fbo_delete(ctx->fbo);
+		XDestroyWindow( ctx->xdisplay, ctx->xwindow );
+		glXDestroyContext( ctx->xdisplay, ctx->openGLContext );
+		XCloseDisplay( ctx->xdisplay );
+		return true;
 	}
+	return false;
+}
 
-	bool teardown_offscreen_context(OffscreenContext *ctx)
-	{
-		if (ctx) {
-			fbo_unbind(ctx->fbo);
-			fbo_delete(ctx->fbo);
-			XDestroyWindow( ctx->xdisplay, ctx->xwindow );
-			glXDestroyContext( ctx->xdisplay, ctx->openGLContext );
-			XCloseDisplay( ctx->xdisplay );
-			return true;
-		}
+bool save_framebuffer(OffscreenContext *ctx, std::ostream &output)
+{
+	glXSwapBuffers(ctx->xdisplay, ctx->xwindow);
+	return save_framebuffer_common(ctx, output);
+}
+
+#pragma GCC diagnostic ignored "-Waddress"
+bool create_glx_dummy_context(OffscreenContext &ctx)
+{
+	// This will alter ctx.openGLContext and ctx.xdisplay and ctx.xwindow if successfull
+	int major;
+	int minor;
+	bool result = false;
+
+	ctx.xdisplay = XOpenDisplay(NULL);
+	if (ctx.xdisplay == NULL) {
+		cerr << "Unable to open a connection to the X server.\n";
+		char * dpyenv = getenv("DISPLAY");
+		cerr << "DISPLAY=" << (dpyenv?dpyenv:"") << "\n";
 		return false;
 	}
 
-	bool save_framebuffer(OffscreenContext *ctx, std::ostream &output)
-	{
-		glXSwapBuffers(ctx->xdisplay, ctx->xwindow);
-		return save_framebuffer_common(ctx, output);
+	// glxQueryVersion is not always reliable. Use it, but then
+	// also check to see if GLX 1.3 functions exist
+
+	glXQueryVersion(ctx.xdisplay, &major, &minor);
+	if ( major==1 && minor<=2 && glXGetVisualFromFBConfig==NULL ) {
+		cerr << "Error: GLX version 1.3 functions missing. "
+			<< "Your GLX version: " << major << "." << minor << endl;
+	} else {
+		result = create_glx_dummy_window(ctx);
 	}
 
-#pragma GCC diagnostic ignored "-Waddress"
-	bool create_glx_dummy_context(OffscreenContext &ctx)
-	{
-		// This will alter ctx.openGLContext and ctx.xdisplay and ctx.xwindow if successfull
-		int major;
-		int minor;
-		bool result = false;
-
-		ctx.xdisplay = XOpenDisplay(NULL);
-		if (ctx.xdisplay == NULL) {
-			cerr << "Unable to open a connection to the X server (DISPLAY=" << getenv("DISPLAY") << ")\n";
-			return false;
-		}
-
-		// glxQueryVersion is not always reliable. Use it, but then
-		// also check to see if GLX 1.3 functions exist
-
-		glXQueryVersion(ctx.xdisplay, &major, &minor);
-		if ( major==1 && minor<=2 && glXGetVisualFromFBConfig==NULL ) {
-			cerr << "Error: GLX version 1.3 functions missing. "
-				<< "Your GLX version: " << major << "." << minor << endl;
-		} else {
-			result = create_glx_dummy_window(ctx);
-		}
-
-		if (!result) XCloseDisplay( ctx.xdisplay );
-		return result;
-	}
+	if (!result) XCloseDisplay( ctx.xdisplay );
+	return result;
+}
