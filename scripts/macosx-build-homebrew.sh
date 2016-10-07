@@ -31,7 +31,7 @@ brew -v update
 # Disabling until we can figure out why we unlinked in the first place
 # brew unlink boost
 for formula in eigen boost cgal glew glib opencsg freetype libxml2 fontconfig harfbuzz qt5 qscintilla2 imagemagick; do
-  brew -v ls --versions $formula && brew -v install $formula
+  brew -v install $formula
   brew -v outdated $formula || brew -v upgrade $formula
 done
 brew -v link --force gettext
