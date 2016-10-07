@@ -135,7 +135,7 @@ std::string PlatformUtils::sysinfo(bool extended)
 		fmt 	% osinfo.dwMajorVersion % osinfo.dwMinorVersion
 			% osinfo.wServicePackMajor % osinfo.wServicePackMinor
 			% (osinfo.wProductType == VER_NT_WORKSTATION);
-		result += fmt.str;
+		result += fmt.str();
 	}
 
 	SYSTEM_INFO systeminfo;
