@@ -133,7 +133,7 @@ std::string PlatformUtils::sysinfo(bool extended)
 	} else {
 		boost::format fmt("Windows(TM) %d.%d SP %d.%d NTW %i");
 		fmt 	% osinfo.dwMajorVersion % osinfo.dwMinorVersion
-			% osinfo.wServicePackMajor % osinfo.wServicePackMinor;
+			% osinfo.wServicePackMajor % osinfo.wServicePackMinor
 			% (osinfo.wProductType == VER_NT_WORKSTATION);
 		result += " MSDN 724833";
 	}
