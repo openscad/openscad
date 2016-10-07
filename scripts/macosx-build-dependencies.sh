@@ -44,7 +44,7 @@ PACKAGES=(
     "gettext 0.19.8"
     "libffi 3.2.1"
     "glib2 2.46.1"
-    "opencsg 1.4.1"
+    "opencsg 1.4.2"
     "freetype 2.6.3"
     "ragel 6.9"
     "harfbuzz 1.2.7"
