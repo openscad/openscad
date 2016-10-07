@@ -131,13 +131,11 @@ std::string PlatformUtils::sysinfo(bool extended)
 	if (GetVersionExEx(&osinfo) == 0) {
 		result += "Unknown Windows(TM)";
 	} else {
-		boost::format fmt("Windows(TM) %d.%d SP %d.%d");
+		boost::format fmt("Windows(TM) %d.%d SP %d.%d NTW %i");
 		fmt 	% osinfo.dwMajorVersion % osinfo.dwMinorVersion
 			% osinfo.wServicePackMajor % osinfo.wServicePackMinor;
-		result += fmt.str();
-		if (osinfo.wProductType == VER_NT_WORKSTATION)
-			result += " NT_WORKSTATION";
-		result += " (MSDN 724833)";
+			% (osinfo.wProductType == VER_NT_WORKSTATION);
+		result += " MSDN 724833";
 	}
 
 	SYSTEM_INFO systeminfo;
