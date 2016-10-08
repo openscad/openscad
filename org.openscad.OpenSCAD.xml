@@ -1,0 +1,38 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node>
+  <interface name="org.openscad.OpenSCAD">
+    <signal name="zoom">
+      <arg name="zoom" type="d" direction="out"/>
+    </signal>
+    <signal name="zoomTo">
+      <arg name="zoom" type="d" direction="out"/>
+    </signal>
+    <signal name="rotate">
+      <arg name="x" type="d" direction="out"/>
+      <arg name="y" type="d" direction="out"/>
+      <arg name="z" type="d" direction="out"/>
+    </signal>
+    <signal name="rotateTo">
+      <arg name="x" type="d" direction="out"/>
+      <arg name="y" type="d" direction="out"/>
+      <arg name="z" type="d" direction="out"/>
+    </signal>
+    <signal name="translate">
+      <arg name="x" type="d" direction="out"/>
+      <arg name="y" type="d" direction="out"/>
+      <arg name="z" type="d" direction="out"/>
+    </signal>
+    <signal name="translateTo">
+      <arg name="x" type="d" direction="out"/>
+      <arg name="y" type="d" direction="out"/>
+      <arg name="z" type="d" direction="out"/>
+    </signal>
+    <signal name="action">
+      <arg name="name" type="s" direction="out"/>
+    </signal>
+    <signal name="buttonPress">
+      <arg name="idx" type="u" direction="out"/>
+    </signal>
+  </interface>
+</node>

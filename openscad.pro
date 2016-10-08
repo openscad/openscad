@@ -187,6 +187,13 @@ CONFIG += libxml2
 CONFIG += hidapi
 CONFIG += spnav
 
+unix:!macx {
+  QT += dbus
+  DEFINES += ENABLE_DBUS
+  DBUS_ADAPTORS += org.openscad.OpenSCAD.xml
+  DBUS_INTERFACES += org.openscad.OpenSCAD.xml
+}
+
 #Uncomment the following line to enable the QScintilla editor
 !nogui {
   CONFIG += scintilla
@@ -358,7 +365,8 @@ HEADERS += src/version_check.h \
            src/input/InputDriverManager.h \
            src/input/HidApiInputDriver.h \
            src/input/SpaceNavInputDriver.h \
-           src/input/JoystickInputDriver.h
+           src/input/JoystickInputDriver.h \
+           src/input/DBusInputDriver.h
 
 SOURCES += \
            src/libsvg/libsvg.cc \
@@ -487,7 +495,8 @@ SOURCES += \
            src/input/InputDriverManager.cc \
            src/input/HidApiInputDriver.cc \
            src/input/SpaceNavInputDriver.cc \
-           src/input/JoystickInputDriver.cc
+           src/input/JoystickInputDriver.cc \
+           src/input/DBusInputDriver.cc
 
 # ClipperLib
 SOURCES += src/polyclipping/clipper.cpp

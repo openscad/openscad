@@ -577,6 +577,7 @@ Q_IMPORT_PLUGIN(qtaccessiblewidgets)
 #include "input/HidApiInputDriver.h"
 #include "input/SpaceNavInputDriver.h"
 #include "input/JoystickInputDriver.h"
+#include "input/DBusInputDriver.h"
 #include <QString>
 #include <QDir>
 #include <QFileInfo>
@@ -760,6 +761,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
         InputDriverManager::instance()->registerDriver(new HidApiInputDriver());
         InputDriverManager::instance()->registerDriver(new SpaceNavInputDriver());
         InputDriverManager::instance()->registerDriver(new JoystickInputDriver());
+        InputDriverManager::instance()->registerDriver(new DBusInputDriver());
         InputDriverManager::instance()->init();
 	int rc = app.exec();
 	for(auto &mainw : scadApp->windowManager.getWindows()) delete mainw;
