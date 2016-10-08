@@ -22,11 +22,6 @@
 #
 #
 
-if [ ! $MXE_TARGET ]; then
-	echo please run '. scripts/setenv-mingw-xbuild.sh'
-	exit
-fi
-
 if [ ! $NUMCPU ]; then
 	echo "note: you can 'export NUMCPU=x' for multi-core compiles (x=number)";
 	NUMCPU=1
@@ -40,27 +35,51 @@ if [ ! $NUMJOBS ]; then
 	fi
 fi
 
-if [ ! -e $MXEDIR ]; then
-	mkdir -p $MXEDIR
-	cd $MXEDIR/..
-	echo "Downloading MXE into " $PWD
-	git clone git://github.com/openscad/mxe.git $MXEDIR
-fi
-
 docmd()
 {
 	echo $*
 	$*
 }
 
-docmd cd $MXEDIR
-docmd git checkout openscad-snapshot-build
-
 PACKAGES='qtbase qscintilla2 mpfr eigen opencsg cgal'
-PACKAGES=$PACKAGES' glib freetype fontconfig harfbuzz'
-if [ "`echo $MXE_TARGET|grep i686`" ]; then
-  PACKAGES=$PACKAGES' nsis'
+PACKAGES=$PACKAGES' glib freetype fontconfig harfbuzz libxml2'
+if [ "`echo $MXE_TARGET | grep i686`" ]; then
+	PACKAGES=$PACKAGES' nsis'
 fi
 
-docmd echo make $PACKAGES MXE_TARGETS=$MXE_TARGET -j $NUMCPU JOBS=$NUMJOBS
-docmd cd $OPENSCADDIR
+mxe_get_debian_binary()
+{
+	debline="deb http://pkg.mxe.cc/repos/apt/debian wheezy main"
+	echo $debline > /etc/apt/sources.list.d/mxeapt.list
+	apt-key adv --keyserver keyserver.ubuntu.com --recv-keys D43A795B73B16ABE9643FE1AFD8FFF16DB45C6AB
+	apt-get update
+	MXE_PREFIX=`echo $MXE_TARGET | sed -e s/_/-/g`
+	PKGLIST=
+	for pkg in $PACKAGES; do
+		PKGLIST=$PKGLIST' '$MXE_PREFIX'-'$pkg
+	done
+	apt-get -y install $PKGLIST
+}
+
+mxe_build_from_src()
+{
+	if [ ! $MXE_TARGET ]; then
+		echo please run '. scripts/setenv-mingw-xbuild.sh'
+		exit
+	fi
+
+	if [ ! -e $MXEDIR ]; then
+		mkdir -p $MXEDIR
+		cd $MXEDIR/..
+		echo "Downloading MXE into " $PWD
+		git clone git://github.com/openscad/mxe.git $MXEDIR
+	fi
+
+	docmd cd $MXEDIR
+	docmd git checkout openscad-snapshot-build
+
+	docmd make $PACKAGES MXE_TARGETS=$MXE_TARGET -j $NUMCPU JOBS=$NUMJOBS
+	docmd cd $OPENSCADDIR
+}
+
+mxe_get_debian_binary
