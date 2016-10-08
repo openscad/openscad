@@ -33,7 +33,7 @@ STL and OFF file formats.
 # Getting started
 
 You can download the latest binaries of OpenSCAD at
-<http://www.openscad.org>. Install binaries as you would any other
+<http://www.openscad.org/downloads>. Install binaries as you would any other
 software.
 
 When you open OpenSCAD, you'll see three frames within the window. The
@@ -73,12 +73,6 @@ Manual](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual).
 
 Have a look at the OpenSCAD Homepage (http://openscad.org/) for documentation.
 
-## Getting OpenSCAD
-
-OpenSCAD is available pre-built and ready to install for many systems, 
-including OSX, Linux, BSD, and Windows. Please check 
-http://openscad.org/downloads for the latest information.
-
 ## Building OpenSCAD
 
 To build OpenSCAD from source, follow the instructions for the
@@ -90,11 +84,11 @@ To build OpenSCAD, you need some libraries and tools. The version
 numbers in brackets specify the versions which have been used for
 development. Other versions may or may not work as well.
 
-If you're using a newer version of Linux or BSD, you can install these 
-libraries from the package manager like apt or pkg. If you're using a Mac 
-there are build scripts that download and compile the libraries from 
-source. Follow the instructions for the platform you're compiling on 
-below.
+If you're using a newer version of Linux or BSD, and you have root or 
+sudo access, you can install these libraries from the package manager 
+like apt or pkg. If you're using a Mac there are build scripts that 
+download and compile the libraries from source. Follow the instructions 
+for the platform you're compiling on below.
 
 * A C++ compiler supporting C++11
 * [Qt (4.4 -> 5.x)](http://qt.io/)
@@ -199,27 +193,25 @@ Then skip ahead to the Compilation instructions.
 
 ### Building for Windows
 
-OpenSCAD for Windows is cross-compiled from within Linux. First, install 
-all necessary dependencies of the MXE project, as listed at 
-http://mxe.cc/#requirements, but not MXE itself.
+OpenSCAD for Windows is cross-compiled from within Linux. It uses the 
+MXE <http://mxe.cc/> cross build system.
 
 Start a new clean bash shell and run the script that sets up the 
 environment variables.
 
     source ./scripts/setenv-mingw-xbuild.sh 64
 
-Then run the script to download & compile the MXE cross tools
+Then run the script to download the packages for the MXE tools
 
-    ./scripts/mingw-x-build-dependencies.sh 64
+    ./scripts/mingw-x-get-dependencies.sh
 
-This process may take several hours, and over 10 Gigabyte of disk 
-space. After it is complete, build an installer and .zip package under bin/:
+Then cross-build the installer package and .zip bundle
 
     ./scripts/release-common.sh
 
 If you only want to build the openscad.exe binary, without the packaging, run
 
-    cd $DEPLOYDIR && qmake && make
+    cd $DEPLOYDIR && qmake ../../openscad.pro && make
 
 For a 32-bit Windows cross-build, replace 64 with 32 in the above instructions. 
 
