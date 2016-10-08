@@ -6,13 +6,10 @@
 # This script must be run from the OpenSCAD source root directory
 #
 # Usage:
-#        ./scripts/mingw-x-build-dependencies.sh              # 32 bit
-#        ./scripts/mingw-x-build-dependencies.sh 64           # 64 bit
+#        ./scripts/mingw-x-build-dependencies.sh [64|32] [download]
 #
-# If you just want to download, and build later:
-#
-#        ./scripts/mingw-x-build-dependencies.sh download     # 32 bit download
-#        ./scripts/mingw-x-build-dependencies.sh 64 download  # 64 bit download
+# 64 or 32 choose the bits of the target operating system. Default is 64
+# download will perform only the download, not the build.
 #
 # Prerequisites:
 #
@@ -20,28 +17,23 @@
 #
 # Also see http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Cross-compiling_for_Windows_on_Linux_or_Mac_OS_X
 #
-# Notes:
-#
-# Originally this was based on Tony Theodore's branch of MXE, which is now
-# integrated into official MXE.
-#
 # Targets:
 #
-# MXE allows 4 separate targets with the MXE_TARGETS environment variable.
-# As of 2015 shared are not guaranteed to work.
+# MXE allows separate targets with the MXE_TARGETS environment variable.
 #
+# As of 2016:
 # 64 bit static linked libraries MXE_TARGETS=x86_64-w64-mingw32.static
 # 32 bit static linked libraries MXE_TARGETS=i686-w64-mingw32.static
 # 64 bit shared libraries        MXE_TARGETS=x86_64-w64-mingw32.shared
 # 32 bit shared libraries        MXE_TARGETS=i686-w64-mingw32.shared
 #
 
-OPENSCADDIR=$PWD
-if [ ! -f $OPENSCADDIR/openscad.pro ]; then
-	echo "Must be run from the OpenSCAD source root directory"
-	exit 0
+if [ ! $OPENSCADDIR ]; then
+	echo please run '. scripts/setenv-mingw-xbuild.sh'
 fi
-echo OPENSCADDIR: $OPENSCADDIR
+if [ ! $MXE_TARGET ]; then
+	echo please run '. scripts/setenv-mingw-xbuild.sh'
+fi
 
 if [ ! $NUMCPU ]; then
 	echo "note: you can 'export NUMCPU=x' for multi-core compiles (x=number)";
@@ -56,12 +48,6 @@ if [ ! $NUMJOBS ]; then
 	fi
 fi
 
-. ./scripts/setenv-mingw-xbuild.sh $*
-
-if [ ! -e $BASEDIR ]; then
-	mkdir -p $BASEDIR
-fi
-
 if [ ! -e $MXEDIR ]; then
 	mkdir -p $MXEDIR
 	cd $MXEDIR/..
@@ -73,23 +59,15 @@ echo "entering" $MXEDIR
 cd $MXEDIR
 echo 'checkout openscad-snapshot-build branch'
 git checkout openscad-snapshot-build
-if [ "`echo $* | grep 64`" ]; then
- MXE_TARGETS='x86_64-w64-mingw32.static'
- if [ "`echo $* | grep download`" ]; then
-  PACKAGES='download-mpfr download-eigen download-opencsg download-cgal download-qtbase download-glib download-freetype download-fontconfig download-harfbuzz'
- else
-  PACKAGES='qtbase qscintilla2 mpfr eigen opencsg cgal glib freetype fontconfig harfbuzz'
- fi
-else
- MXE_TARGETS='i686-w64-mingw32.static'
- if [ "`echo $* | grep download`" ]; then
-  PACKAGES='download-mpfr download-eigen download-opencsg download-cgal download-qtbase download-nsis download-glib download-freetype download-fontconfig download-harfbuzz'
- else
-  PACKAGES='qtbase qscintilla2 mpfr eigen opencsg cgal nsis glib freetype fontconfig harfbuzz'
- fi
+
+PACKAGES='qtbase qscintilla2 mpfr eigen opencsg cgal'
+PACKAGES=$PACKAGES' glib freetype fontconfig harfbuzz'
+if [ "`echo $MXE_TARGET|grep i686`" ]; then
+  PACKAGES=$PACKAGES' nsis'
 fi
-echo make $PACKAGES MXE_TARGETS=$MXE_TARGETS -j $NUMCPU JOBS=$NUMJOBS
-make $PACKAGES MXE_TARGETS=$MXE_TARGETS -j $NUMCPU JOBS=$NUMJOBS
+
+echo make $PACKAGES MXE_TARGETS=$MXE_TARGET -j $NUMCPU JOBS=$NUMJOBS
+make $PACKAGES MXE_TARGETS=$MXE_TARGET -j $NUMCPU JOBS=$NUMJOBS
 
 echo "leaving" $MXEDIR
 

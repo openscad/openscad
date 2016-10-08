@@ -213,17 +213,13 @@ Then run the script to download & compile the MXE cross tools
     ./scripts/mingw-x-build-dependencies.sh 64
 
 This process may take several hours, and over 10 Gigabyte of disk 
-space. After it is complete, test your setup by building openscad.exe
+space. After it is complete, build an installer and .zip package under bin/:
 
-    cd ./bin/x86_64-w64-mingw32.static
-    qmake ../../openscad.pro
-    make
+    ./scripts/release-common.sh
 
-This should create a file named ./release/openscad.exe 
-Now build an installer and .zip package:
+If you only want to build the openscad.exe binary, without the packaging, run
 
-    cd ../../
-    ./scripts/release-common.sh mingw64
+    cd $DEPLOYDIR && qmake && make
 
 For a 32-bit Windows cross-build, replace 64 with 32 in the above instructions. 
 
@@ -239,16 +235,16 @@ Then run make. Finally you might run 'make install' as root or simply
 copy the 'openscad' binary (OpenSCAD.app on Mac OS X) to the bin 
 directory of your choice.
 
-### Building and running the test suite
+### Test suite
 
-OpenSCAD comes with hundreds of self-tests. To run them, first build the 
-main openscad program above, then review doc/testing.txt, and then run 
-the following (Linux/BSD/Mac only):
+To run the self-tests, first build the main openscad program above, then run 
 
    cd tests
    cmake .
    make
    ctest
+
+See doc/testing.txt for more information. Tests are for Mac/Linux/BSD only.
 
 ### Problems building
 
@@ -258,4 +254,4 @@ If you had problems compiling from source, please raise a new issue in the
 This site and it's subpages can also be helpful:
 http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_OpenSCAD_from_Sources
 
-Thank you for trying OpenSCAD.
+Thank you for using OpenSCAD.

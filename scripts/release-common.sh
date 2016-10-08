@@ -6,8 +6,8 @@
 # The script will create a file called openscad-<versionstring>.<extension>
 # in the current directory.
 #
-# For cross build, 'source scripts/setenv-mingw-xbuild.sh [32|64]' before
-# running this. The result will be under bin/ in $DEPLOYDIR
+# For cross build, do 'source scripts/setenv-mingw-xbuild.sh [32|64]' before
+# running this. The result will be under bin/machine-triple aka $DEPLOYDIR
 #
 # Usage: release-common.sh [-v <versionstring>] [-dryrun] [-snapshot]
 #  -v       Version string (e.g. -v 2010.01)
@@ -35,6 +35,11 @@ if [ ! -f $OPENSCADDIR/openscad.pro ]; then
 fi
 
 echo OPENSCADDIR:$OPENSCADDIR
+
+if [ ! -d $DEPLOYDIR ]; then
+  mkdir -p $DEPLOYDIR
+fi
+echo DEPLOYDIR: $DEPLOYDIR
 
 CONFIG=deploy
 
@@ -198,7 +203,6 @@ case $OS in
     UNIX_CROSS_WIN)
         cd $DEPLOYDIR
         make -j$NUMCPU
-        cd $OPENSCADDIR
     ;;
     *)
         make -j$NUMCPU
@@ -206,7 +210,7 @@ case $OS in
 esac
 
 if [[ $? != 0 ]]; then
-  echo "Error building OpenSCAD. Aborting."
+  echo "Error building OpenSCAD. Stopping."
   exit 1
 fi
 
@@ -217,11 +221,11 @@ case $OS in
     cd $DEPLOYDIR
     qmake $OPENSCADDIR/winconsole/winconsole.pro
     make
-    cd $OPENSCADDIR
     if [[ $? != 0 ]]; then
-      echo "Error building $DEPLOYDIR/openscad.com. Aborting."
+      echo "Error building $DEPLOYDIR/openscad.com. Stopping."
       exit 1
     fi
+    cd $OPENSCADDIR
   ;;
 esac
 
