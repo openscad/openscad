@@ -45,12 +45,14 @@ setenv_freebsd()
 {
  echo .... freebsd detected. 
  setenv_common
- if [ "`command -v clang`" ]; then
+ if [ "`uname -a |grep -i freebsd.9`" ]; then
+   echo freebsd9 is unsupported, please use freebsd 11
+ elif [ "`uname -a |grep -i freebsd.10`" ]; then
+   echo freebsd10 is unsupported, please use freebsd 11
+ else
    QMAKESPEC=freebsd-clang
    CC=clang
    CXX=clang++
- else
-   QMAKESPEC=freebsd-g++
  fi
  QTDIR=/usr/local/share/qt4
  PATH=/usr/local/lib/qt4/bin:$PATH
