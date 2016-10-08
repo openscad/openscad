@@ -1,10 +1,6 @@
-# cross compilation unix->win
-# depends on MXE_TARGET_DIR set by scripts/setenv-mingw-xbuild.sh
-
-_MXE_TARGET_DIR = $$(MXE_TARGET_DIR)
-message($$_MXE_TARGET_DIR mxe target dir)
-!isEmpty(_MXE_TARGET_DIR) {
-  message(_MXE_TARGET_DIR $$_MXE_TARGET_DIR)
+# cross compilation unix->win32
+# depends on env variables set under scripts/setenv-mingw-xbuild.sh
+CONFIG(mingw-cross-env) {
   LIBS += $$_MXE_TARGET_DIR/lib/libglew32s.a 
   LIBS += $$_MXE_TARGET_DIR/lib/libglut.a 
   LIBS += $$_MXE_TARGET_DIR/lib/libopengl32.a 
@@ -26,8 +22,7 @@ message($$_MXE_TARGET_DIR mxe target dir)
   LIBS += $$_MXE_TARGET_DIR/lib/libiconv.a
 }
 
-contains( _MXE_TARGET_DIR, shared ) {
-  message(_MXE_TARGET_DIR $$_MXE_TARGET_DIR contained shared)
+CONFIG(mingw-cross-env-shared) {
   # on MXE, the shared library .dll files are under 'bin' not 'lib'.
   QMAKE_LFLAGS += -L./$$_MXE_TARGET_DIR/bin
   LIBS += -lglew32 -lglut -lopengl32 -lGLEW -lglu32
@@ -35,8 +30,7 @@ contains( _MXE_TARGET_DIR, shared ) {
   LIBS += -lfontconfig -lfreetype -lharfbuzz -lbz2 -lexpat -lintl -liconv
 }
 
-!isEmpty(_MXE_TARGET_DIR) {
-  message(_MXE_TARGET_DIR $$_MXE_TARGET_DIR)
+CONFIG(mingw-cross-env)|CONFIG(mingw-cross-env-shared) {
   QMAKE_CXXFLAGS += -fpermissive
   WINSTACKSIZE = 8388608 # 8MB # github issue 116
   QMAKE_CXXFLAGS += -Wl,--stack,$$WINSTACKSIZE
