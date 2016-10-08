@@ -206,26 +206,19 @@ case $OS in
     UNIX_CROSS_WIN)
         # make main openscad.exe
         cd $DEPLOYDIR
-        make $TARGET -j$NUMCPU
-        if [ ! -e $TARGET/openscad.exe ]; then
-            echo "cant find $TARGET/openscad.exe. build failed. stopping."
+        make -j$NUMCPU
+        if [ ! -e ./release/openscad.exe ]; then
+            echo "cant find release/openscad.exe. build failed. stopping."
             exit
         fi
         # make console pipe-able openscad.com - see winconsole.pro for info
         qmake $OPENSCADDIR/winconsole/winconsole.pro
         make
-        if [ ! -e $TARGET/openscad.com ]; then
+        if [ ! -e ./release/openscad.com ]; then
             echo "cant find $TARGET/openscad.com. build failed. stopping."
             exit
         fi
         cd $OPENSCADDIR
-    ;;
-    LINUX)
-        if [ $FAKEMAKE ]; then
-            echo "notexe. debugging build process" > $TARGET/openscad
-        else
-            make $TARGET -j$NUMCPU
-        fi
     ;;
     *)
         make -j$NUMCPU $TARGET
@@ -288,7 +281,7 @@ if [ -n $FONTDIR ]; then
       cp -a fonts-osx/* $FONTDIR
       ;;
     UNIX_CROSS_WIN)
-      cp -a "$DEPLOYDIR"/mingw-cross-env/etc/fonts/. "$FONTDIR"
+      cp -a $MXE_TARGET_DIR/etc/fonts/. "$FONTDIR"
       ;;
   esac
 fi
@@ -340,12 +333,12 @@ case $OS in
     UNIX_CROSS_WIN)
         cd $OPENSCADDIR
         cd $DEPLOYDIR
-        BINFILE=$DEPLOYDIR/OpenSCAD-$VERSION-x86-$ARCH.zip
+        ZIPFILE=$DEPLOYDIR/OpenSCAD-$VERSION-x86-$ARCH.zip
         INSTFILE=$DEPLOYDIR/OpenSCAD-$VERSION-x86-$ARCH-Installer.exe
 
         #package
-        if [ $MXELIBTYPE = "shared" ]; then
-          flprefix=$DEPLOYDIR/mingw-cross-env/bin
+        if [ $MXE_LIB_TYPE = "shared" ]; then
+          flprefix=$MXE_TARGET_DIR/bin
           echo Copying dlls for shared library build
           echo from $flprefix
           echo to $DEPLOYDIR/$TARGET
@@ -404,7 +397,7 @@ case $OS in
         echo "Copying main binary .exe, .com, and dlls"
         echo "from $DEPLOYDIR/$TARGET"
         echo "to $DEPLOYDIR/openscad-$VERSION"
-        TMPTAR=$DEPLOYDIR/tmpmingw.$ARCH.$MXELIBTYPE.tar
+        TMPTAR=$DEPLOYDIR/tmpmingw.$ARCH.$MXE_LIB_TYPE.tar
         cd $DEPLOYDIR
         cd $TARGET
         tar cvf $TMPTAR --exclude=winconsole.o .
@@ -417,7 +410,7 @@ case $OS in
 
         echo "Creating binary zip package"
         rm -f OpenSCAD-$VERSION.x86-$ARCH.zip
-        "$ZIP" $ZIPARGS $BINFILE openscad-$VERSION
+        "$ZIP" $ZIPARGS $ZIPFILE openscad-$VERSION
         cd $OPENSCADDIR
         echo "Binary zip package created"
 
@@ -436,17 +429,16 @@ case $OS in
         cp $DEPLOYDIR/openscad-$VERSION/openscad_setup.exe $INSTFILE
         cd $OPENSCADDIR
 
-        if [ -e $BINFILE ]; then
-            if [ -e $INSTFILE ]; then
-                echo
-                echo "Binary created:" $BINFILE
-                echo "Installer created:" $INSTFILE
-                echo
-            else
-                echo "Build failed. Cannot find" $INSTFILE
-            fi
+        if [ -e $ZIPFILE ]; then
+            echo "Zipfile created:" $ZIPFILE
         else
-            echo "Build failed. Cannot find" $BINFILE
+            echo "zipfile creation failed. stopping"
+            exit 1
+        fi
+        if [ -e $INSTFILE ]; then
+            echo "Installer created:" $INSTFILE
+        else
+            echo "installer creation failed. stopping"
             exit 1
         fi
         ;;
