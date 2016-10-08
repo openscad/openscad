@@ -3,29 +3,20 @@
 # This script creates a binary release of OpenSCAD. This should work
 # under Mac OS X, Linux 32bit, Linux 64bit, and Linux->Win32 MXE cross-build.
 #
-# The script will create a file called openscad-<versionstring>.<extension> in
-# the current directory.
+# The script will create a file called openscad-<versionstring>.<extension>
+# in the current directory.
 #
-# Usage: release-common.sh [-v <versionstring>]
+# For cross build, 'source scripts/setenv-mingw.sh [32|64]' before running this.
+# The result will be under bin/ in $DEPLOYDIR
+#
+# Usage: release-common.sh [-v <versionstring>] [-dryrun] [-snapshot]
 #  -v       Version string (e.g. -v 2010.01)
 #  -d       Version date (e.g. -d 2010.01.23)
+#  -dryrun  Quickly build a dummy openscad.exe file to test this release script
 #  -snapshot Build a snapshot binary (make e.g. experimental features available, build with commit info)
 #
 # If no version string or version date is given, todays date will be used (YYYY-MM-DD)
 # If only version date is given, it will be used also as version string.
-
-# convert end-of-line in given file from unix \n to dos/windows(TM) \r\n
-# see https://kb.iu.edu/data/acux.html
-lf2crlf()
-{
-	fname=$1
-	if [ "`command -v awk`" ]; then
-		echo using awk to convert end of line markers in $fname
-		awk 'sub("$", "\r")' $fname > $fname".temp"
-		mv $fname".temp" $fname
-		return
-	fi
-}
 
 printUsage()
 {
@@ -47,27 +38,23 @@ echo OPENSCADDIR:$OPENSCADDIR
 
 CONFIG=deploy
 
-if [[ "$OSTYPE" =~ "darwin" ]]; then
+if [ $MXE_TARGET ]; then
+  OS=UNIX_CROSS_WIN
+elif [[ "$OSTYPE" =~ "darwin" ]]; then
   OS=MACOSX
 elif [[ $OSTYPE == "msys" ]]; then
   OS=WIN
 elif [[ $OSTYPE == "linux-gnu" ]]; then
   OS=LINUX
-  if [[ `uname -m` == "x86_64" ]]; then
-    ARCH=64
-  else
-    ARCH=32
-  fi
-  echo "Detected build-machine ARCH: $ARCH"
+  ARCH=`uname -m`
 fi
 
-if [ $MXE_TARGET ]; then
+if [ $OS = UNIX_CROSS_WIN ]; then
   echo MXE cross build environment variables detected
   echo MXE_TARGET_DIR $MXE_TARGET_DIR
   echo MXE_TARGET $MXE_TARGET
   echo MXE_LIB_TYPE $MXE_LIB_TYPE
   echo DEPLOYDIR $DEPLOYDIR
-  OS=UNIX_CROSS_WIN
 fi
 
 if [ "`echo $* | grep snapshot`" ]; then
@@ -107,7 +94,7 @@ case $OS in
         MAKENSIS=
         if [ "`command -v makensis`" ]; then
             MAKENSIS=makensis
-        elif [ -e $MXE_DIR/usr/bin/i686-pc-mingw32-makensis`" ]; then
+        elif [ -e $MXE_DIR/usr/bin/i686-pc-mingw32-makensis ]; then
             # MXE has its own makensis, but its only available under
             # 32-bit MXE. it works the same as a native linux version so
             # its not really a 'cross' nsis
@@ -145,7 +132,6 @@ echo "NUMCPU: " $NUMCPU
 
 case $OS in
     LINUX|MACOSX)
-        TARGET=
         # for QT4 set QT_SELECT=4
         QT_SELECT=5
         export QT_SELECT
@@ -158,8 +144,12 @@ esac
 
 case $OS in
     UNIX_CROSS_WIN)
+        QPROFILE=$OPENSCADDIR/openscad.pro
+        if [ "`echo $* | grep dryrun`" ]; then
+          QPROFILE=$OPENSCADDIR/scripts/fakescad.pro
+        fi
         cd $DEPLOYDIR
-        qmake VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+="$CONFIG" CONFIG-=debug $OPENSCADDIR/openscad.pro
+        qmake VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+="$CONFIG" CONFIG-=debug $QPROFILE
         cd $OPENSCADDIR
     ;;
     *)
@@ -183,6 +173,8 @@ case $OS in
     ;;
 esac
 
+
+
 case $OS in
     MACOSX)
         rm -rf OpenSCAD.app
@@ -204,24 +196,12 @@ echo "Building GUI binary..."
 
 case $OS in
     UNIX_CROSS_WIN)
-        # make main openscad.exe
         cd $DEPLOYDIR
         make -j$NUMCPU
-        if [ ! -e ./release/openscad.exe ]; then
-            echo "cant find release/openscad.exe. build failed. stopping."
-            exit
-        fi
-        # make console pipe-able openscad.com - see winconsole.pro for info
-        qmake $OPENSCADDIR/winconsole/winconsole.pro
-        make
-        if [ ! -e ./release/openscad.com ]; then
-            echo "cant find $TARGET/openscad.com. build failed. stopping."
-            exit
-        fi
         cd $OPENSCADDIR
     ;;
     *)
-        make -j$NUMCPU $TARGET
+        make -j$NUMCPU
     ;;
 esac
 
@@ -229,6 +209,21 @@ if [[ $? != 0 ]]; then
   echo "Error building OpenSCAD. Aborting."
   exit 1
 fi
+
+
+case $OS in
+  UNIX_CROSS_WIN)
+    # make console pipe-able openscad.com - see winconsole.pro for info
+    cd $DEPLOYDIR
+    qmake $OPENSCADDIR/winconsole/winconsole.pro
+    make
+    cd $OPENSCADDIR
+    if [[ $? != 0 ]]; then
+      echo "Error building $DEPLOYDIR/openscad.com. Aborting."
+      exit 1
+    fi
+  ;;
+esac
 
 echo "Creating directory structure..."
 
@@ -276,7 +271,7 @@ if [ -n $FONTDIR ]; then
   cp -a fonts/10-liberation.conf $FONTDIR
   cp -a fonts/Liberation-2.00.1 $FONTDIR
   case $OS in
-    MACOSX) 
+    MACOSX)
       cp -a fonts/05-osx-fonts.conf $FONTDIR
       cp -a fonts-osx/* $FONTDIR
       ;;
@@ -312,6 +307,64 @@ fi
 
 echo "Creating archive.."
 
+mxe_shared()
+{
+  flprefix=$MXE_TARGET_DIR/bin
+  echo Copying dlls for shared library build
+  echo from $flprefix
+  echo to $DEPLOYDIR/release
+  flist=
+  # fl="$fl opengl.dll" # use Windows version?
+  # fl="$fl libmpfr.dll" # does not exist
+  fl="$fl libgmp-10.dll"
+  fl="$fl libgmpxx-4.dll"
+  fl="$fl libboost_filesystem-mt.dll"
+  fl="$fl libboost_program_options-mt.dll"
+  fl="$fl libboost_regex-mt.dll"
+  fl="$fl libboost_chrono-mt.dll"
+  fl="$fl libboost_system-mt.dll"
+  fl="$fl libboost_thread_win32-mt.dll"
+  fl="$fl libCGAL.dll"
+  fl="$fl libCGAL_Core.dll"
+  fl="$fl GLEW.dll"
+  fl="$fl libglib-2.0-0.dll"
+  fl="$fl libopencsg-1.dll"
+  fl="$fl libharfbuzz-0.dll"
+  # fl="$fl libharfbuzz-gobject-0.dll" # ????
+  fl="$fl libfontconfig-1.dll"
+  fl="$fl libexpat-1.dll"
+  fl="$fl libbz2.dll"
+  fl="$fl libintl-8.dll"
+  fl="$fl libiconv-2.dll"
+  fl="$fl libfreetype-6.dll"
+  fl="$fl libpcre16-0.dll"
+  fl="$fl zlib1.dll"
+  fl="$fl libpng16-16.dll"
+  fl="$fl icudt54.dll"
+  fl="$fl icudt.dll"
+  fl="$fl icuin.dll"
+  fl="$fl libstdc++-6.dll"
+  fl="$fl ../qt5/lib/qscintilla2.dll"
+  fl="$fl ../qt5/bin/Qt5PrintSupport.dll"
+  fl="$fl ../qt5/bin/Qt5Core.dll"
+  fl="$fl ../qt5/bin/Qt5Gui.dll"
+  fl="$fl ../qt5/bin/Qt5OpenGL.dll"
+  #  fl="$fl ../qt5/bin/QtSvg4.dll" # why is this here?
+  fl="$fl ../qt5/bin/Qt5Widgets.dll"
+  fl="$fl ../qt5/bin/Qt5PrintSupport.dll"
+  fl="$fl ../qt5/bin/Qt5PrintSupport.dll"
+  for dllfile in $fl; do
+    if [ -e $flprefix/$dllfile ]; then
+  echo $flprefix/$dllfile
+  cp $flprefix/$dllfile $DEPLOYDIR/release/
+    else
+  echo cannot find $flprefix/$dllfile
+  echo stopping build.
+  exit 1
+    fi
+  done
+}
+
 case $OS in
     MACOSX)
         /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $VERSIONDATE" OpenSCAD.app/Contents/Info.plist
@@ -323,8 +376,8 @@ case $OS in
     WIN)
         #package
         cp win32deps/* openscad-$VERSION
-        cp $TARGET/openscad.exe openscad-$VERSION
-        cp $TARGET/openscad.com openscad-$VERSION
+        cp release/openscad.exe openscad-$VERSION
+        cp release/openscad.com openscad-$VERSION
         rm -f openscad-$VERSION.x86-$ARCH.zip
         "$ZIP" $ZIPARGS openscad-$VERSION.x86-$ARCH.zip openscad-$VERSION
         rm -rf openscad-$VERSION
@@ -333,73 +386,22 @@ case $OS in
     UNIX_CROSS_WIN)
         cd $OPENSCADDIR
         cd $DEPLOYDIR
-        ZIPFILE=$DEPLOYDIR/OpenSCAD-$VERSION-x86-$ARCH.zip
-        INSTFILE=$DEPLOYDIR/OpenSCAD-$VERSION-x86-$ARCH-Installer.exe
+        ARCH=x86_64
+        if [ "`echo $MXE_TARGET | grep i686`" ]; then ARCH=x86_32 ; fi
+        ZIPFILE=$DEPLOYDIR/OpenSCAD-$VERSION-$ARCH.zip
+        INSTFILE=$DEPLOYDIR/OpenSCAD-$VERSION-$ARCH-Installer.exe
 
         #package
         if [ $MXE_LIB_TYPE = "shared" ]; then
-          flprefix=$MXE_TARGET_DIR/bin
-          echo Copying dlls for shared library build
-          echo from $flprefix
-          echo to $DEPLOYDIR/$TARGET
-          flist=
-          # fl="$fl opengl.dll" # use Windows version?
-          # fl="$fl libmpfr.dll" # does not exist
-          fl="$fl libgmp-10.dll"
-          fl="$fl libgmpxx-4.dll"
-          fl="$fl libboost_filesystem-mt.dll"
-          fl="$fl libboost_program_options-mt.dll"
-          fl="$fl libboost_regex-mt.dll"
-          fl="$fl libboost_chrono-mt.dll"
-          fl="$fl libboost_system-mt.dll"
-          fl="$fl libboost_thread_win32-mt.dll"
-          fl="$fl libCGAL.dll"
-          fl="$fl libCGAL_Core.dll"
-          fl="$fl GLEW.dll"
-          fl="$fl libglib-2.0-0.dll"
-          fl="$fl libopencsg-1.dll"
-          fl="$fl libharfbuzz-0.dll"
-          # fl="$fl libharfbuzz-gobject-0.dll" # ????
-          fl="$fl libfontconfig-1.dll"
-          fl="$fl libexpat-1.dll"
-          fl="$fl libbz2.dll"
-          fl="$fl libintl-8.dll"
-          fl="$fl libiconv-2.dll"
-          fl="$fl libfreetype-6.dll"
-          fl="$fl libpcre16-0.dll"
-          fl="$fl zlib1.dll"
-          fl="$fl libpng16-16.dll"
-          fl="$fl icudt54.dll"
-          fl="$fl icudt.dll"
-          fl="$fl icuin.dll"
-          fl="$fl libstdc++-6.dll"
-          fl="$fl ../qt5/lib/qscintilla2.dll"
-          fl="$fl ../qt5/bin/Qt5PrintSupport.dll"
-          fl="$fl ../qt5/bin/Qt5Core.dll"
-          fl="$fl ../qt5/bin/Qt5Gui.dll"
-          fl="$fl ../qt5/bin/Qt5OpenGL.dll"
-          #  fl="$fl ../qt5/bin/QtSvg4.dll" # why is this here?
-          fl="$fl ../qt5/bin/Qt5Widgets.dll"
-          fl="$fl ../qt5/bin/Qt5PrintSupport.dll"
-          fl="$fl ../qt5/bin/Qt5PrintSupport.dll"
-          for dllfile in $fl; do
-            if [ -e $flprefix/$dllfile ]; then
-                echo $flprefix/$dllfile
-                cp $flprefix/$dllfile $DEPLOYDIR/$TARGET/
-            else
-                echo cannot find $flprefix/$dllfile
-                echo stopping build.
-                exit 1
-            fi
-          done
+          mxe_shared
         fi
 
         echo "Copying main binary .exe, .com, and dlls"
-        echo "from $DEPLOYDIR/$TARGET"
+        echo "from $DEPLOYDIR/release"
         echo "to $DEPLOYDIR/openscad-$VERSION"
         TMPTAR=$DEPLOYDIR/tmpmingw.$ARCH.$MXE_LIB_TYPE.tar
         cd $DEPLOYDIR
-        cd $TARGET
+        cd release
         tar cvf $TMPTAR --exclude=winconsole.o .
         cd $DEPLOYDIR
         cd ./openscad-$VERSION
@@ -416,7 +418,9 @@ case $OS in
 
         echo "Creating installer"
         echo "Copying NSIS files to $DEPLOYDIR/openscad-$VERSION"
-        cp ./scripts/installer$ARCH.nsi $DEPLOYDIR/openscad-$VERSION/installer_arch.nsi
+        BITS=64
+        if [ "`echo $MXE_TARGET | grep i686`" ]; then BITS=32 ; fi
+        cp ./scripts/installer$BITS.nsi $DEPLOYDIR/openscad-$VERSION/installer_arch.nsi
         cp ./scripts/installer.nsi $DEPLOYDIR/openscad-$VERSION/
         cp ./scripts/mingw-file-association.nsh $DEPLOYDIR/openscad-$VERSION/
         cp ./scripts/x64.nsh $DEPLOYDIR/openscad-$VERSION/

@@ -14,6 +14,9 @@
 #
 
 OPENSCADDIR=$PWD
+if [ ! -e openscad.pro ]; then
+	echo "please run from root openscad source"
+fi
 
 if [ ! $BASEDIR ]; then
 	BASEDIR=$HOME/openscad_deps
@@ -69,22 +72,24 @@ cleanpath()
 cleanpath
 PATH=$MXE_BIN_DIR:$MXE_QTBIN_DIR:$PATH
 
-export OPENSCAD_LIBRARIES
+export OPENSCADDIR
 export BASEDIR
-export MXE_TARGET_DIR
+export MXEDIR
 export MXE_TARGET
 export MXE_LIB_TYPE
-export MXEDIR
+export MXE_TARGET_DIR
 export DEPLOYDIR
+export OPENSCAD_LIBRARIES
 export PATH
 
-echo OPENSCAD_LIBRARIES: $OPENSCAD_LIBRARIES
+echo OPENSCADDIR: $OPENSCADDIR
 echo BASEDIR: $BASEDIR
-echo MXE_TARGET_DIR: $MXE_TARGET_DIR
+echo MXEDIR: $MXEDIR
 echo MXE_TARGET: $MXE_TARGET
 echo MXE_LIB_TYPE: $MXE_LIB_TYPE
-echo MXEDIR: $MXEDIR
+echo MXE_TARGET_DIR: $MXE_TARGET_DIR
 echo DEPLOYDIR: $DEPLOYDIR
+echo OPENSCAD_LIBRARIES: $OPENSCAD_LIBRARIES
 echo PATH: $PATH
 
 if [ ! -e $DEPLOYDIR ]; then
