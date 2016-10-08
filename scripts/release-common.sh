@@ -6,8 +6,8 @@
 # The script will create a file called openscad-<versionstring>.<extension>
 # in the current directory.
 #
-# For cross build, 'source scripts/setenv-mingw.sh [32|64]' before running this.
-# The result will be under bin/ in $DEPLOYDIR
+# For cross build, 'source scripts/setenv-mingw-xbuild.sh [32|64]' before
+# running this. The result will be under bin/ in $DEPLOYDIR
 #
 # Usage: release-common.sh [-v <versionstring>] [-dryrun] [-snapshot]
 #  -v       Version string (e.g. -v 2010.01)
