@@ -50,6 +50,7 @@ PACKAGES=(
     "harfbuzz 1.2.7"
     "libxml2 2.9.4"
     "fontconfig 2.12.0"
+    "hidapi 0.7.0"
 )
 DEPLOY_PACKAGES=(
     "sparkle 1.13.1"
@@ -725,6 +726,31 @@ build_harfbuzz()
   make -j$NUMCPU
   make install
   install_name_tool -id @rpath/libharfbuzz.dylib $DEPLOYDIR/lib/libharfbuzz.dylib
+}
+
+check_hidapi()
+{
+    check_file lib/libhidapi.a
+}
+
+build_hidapi()
+{
+  version=$1
+  extra_config_flags=""
+
+  echo "Building hidapi $version..."
+  cd "$BASEDIR"/src
+  rm -rf "hidapi-$version"
+  if [ ! -f "hidapi-$version.zip" ]; then
+    curl --insecure -LO "http://github.com/downloads/signal11/hidapi/hidapi-${version}.zip"
+  fi
+  unzip "hidapi-$version.zip"
+  cd "hidapi-$version"
+  make -C mac -j$NUMCPU
+  mkdir -p "$DEPLOYDIR"/lib
+  libtool -static -o "$DEPLOYDIR"/lib/libhidapi.a mac/hid.o
+  mkdir -p "$DEPLOYDIR"/include/hidapi
+  cp hidapi/hidapi.h "$DEPLOYDIR"/include/hidapi/
 }
 
 if [ ! -f $OPENSCADDIR/openscad.pro ]; then

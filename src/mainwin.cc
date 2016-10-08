@@ -121,6 +121,7 @@
 #endif // ENABLE_CGAL
 
 #include "FontCache.h"
+#include "input/InputDriverManager.h"
 
 // Global application state
 unsigned int GuiLocker::gui_locked = 0;
@@ -197,6 +198,7 @@ MainWindow::MainWindow(const QString &filename)
 		editor = new LegacyEditor(editorDockContents);
 
 	Preferences::create(editor->colorSchemes());
+        connect(Preferences::inst(), SIGNAL(inputMappingChanged()), InputDriverManager::instance(), SLOT(onInputMappingUpdated()), Qt::UniqueConnection);
 
 #ifdef USE_SCINTILLA_EDITOR
 	if (useScintilla) {
@@ -479,6 +481,7 @@ MainWindow::MainWindow(const QString &filename)
 	
 	addKeyboardShortCut(this->viewerToolBar->actions());
 	addKeyboardShortCut(this->editortoolbar->actions());
+        InputDriverManager::instance()->registerActions(this->menuBar()->actions());
 	
 	initActionIcon(fileActionNew, ":/images/blackNew.png", ":/images/Document-New-128.png");
 	initActionIcon(fileActionOpen, ":/images/Open-32.png", ":/images/Open-128.png");
@@ -605,6 +608,59 @@ void MainWindow::addKeyboardShortCut(const QList<QAction *> &actions)
 void MainWindow::updateActionUndoState()
 {
     editActionUndo->setEnabled(editor->canUndo());
+}
+
+void MainWindow::onAxisChanged(InputEventAxisChanged *event)
+{
+
+}
+
+void MainWindow::onButtonChanged(InputEventButtonChanged *event)
+{
+
+}
+
+void MainWindow::onTranslateEvent(InputEventTranslate *event)
+{
+    double zoomFactor = 0.001 * qglview->cam.zoomValue();
+    qglview->translate(zoomFactor * event->x, event->y, zoomFactor * event->z, event->relative, false);
+}
+
+void MainWindow::onRotateEvent(InputEventRotate *event)
+{
+    qglview->rotate(event->x, event->y, event->z, event->relative);
+}
+
+void MainWindow::onActionEvent(InputEventAction *event)
+{
+    QAction *action = findAction(this->menuBar()->actions(), event->action);
+    if (!action) {
+        return;
+    }
+    action->trigger();
+}
+
+QAction * MainWindow::findAction(const QList<QAction *> &actions, const std::string &name)
+{
+    foreach(QAction *action, actions) {
+        if (!action->objectName().isEmpty()) {
+            if (action->objectName().toStdString() == name) {
+                return action;
+            }
+        }
+        if (action->menu()) {
+            QAction *result = findAction(action->menu()->actions(), name);
+            if (result) {
+                return result;
+            }
+        }
+    }
+    return NULL;
+}
+
+void MainWindow::onZoomEvent(InputEventZoom *event)
+{
+    qglview->zoom(event->zoom, event->relative);
 }
 
 void MainWindow::loadViewSettings(){
@@ -1565,6 +1621,18 @@ void MainWindow::findBufferChanged() {
 	if (!t.isEmpty()) {
 		findInputField->setText(t);
 	}
+}
+
+bool MainWindow::event(QEvent* event) {
+	if (event->type() == InputEvent::eventType) {
+		InputEvent *inputEvent = dynamic_cast<InputEvent *>(event);
+		if (inputEvent) {
+			inputEvent->deliver(this);
+		}
+		event->accept();
+		return true;
+	}
+	return QMainWindow::event(event);
 }
 
 bool MainWindow::eventFilter(QObject* obj, QEvent *event)

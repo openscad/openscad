@@ -184,6 +184,8 @@ CONFIG += freetype
 CONFIG += fontconfig
 CONFIG += gettext
 CONFIG += libxml2
+CONFIG += hidapi
+CONFIG += spnav
 
 #Uncomment the following line to enable the QScintilla editor
 !nogui {
@@ -350,7 +352,11 @@ HEADERS += src/version_check.h \
            src/AutoUpdater.h \
            src/launchingscreen.h \
            src/legacyeditor.h \
-           src/LibraryInfoDialog.h
+           src/LibraryInfoDialog.h \
+           \
+           src/input/InputDriver.h \
+           src/input/InputEventMapper.h \
+           src/input/InputDriverManager.h
 
 SOURCES += \
            src/libsvg/libsvg.cc \
@@ -473,7 +479,11 @@ SOURCES += \
            src/FontListTableView.cc \
            src/launchingscreen.cc \
            src/legacyeditor.cc \
-           src/LibraryInfoDialog.cc
+           src/LibraryInfoDialog.cc \
+           \
+           src/input/InputDriver.cc \
+           src/input/InputEventMapper.cc \
+           src/input/InputDriverManager.cc
 
 # ClipperLib
 SOURCES += src/polyclipping/clipper.cpp
@@ -496,6 +506,23 @@ HEADERS += src/libtess2/Include/tesselator.h \
            src/libtess2/Source/priorityq.h \
            src/libtess2/Source/sweep.h \
            src/libtess2/Source/tess.h
+
+unix:!macx {
+  QT += dbus
+  DEFINES += ENABLE_DBUS
+  DBUS_ADAPTORS += org.openscad.OpenSCAD.xml
+  DBUS_INTERFACES += org.openscad.OpenSCAD.xml
+
+  HEADERS += src/input/DBusInputDriver.h
+  SOURCES += src/input/DBusInputDriver.cc
+}
+
+unix:!macx {
+  DEFINES += ENABLE_JOYSTICK
+
+  HEADERS += src/input/JoystickInputDriver.h
+  SOURCES += src/input/JoystickInputDriver.cc
+}
 
 unix:!macx {
   SOURCES += src/imageutils-lodepng.cc
@@ -618,3 +645,7 @@ INSTALLS += icons
 man.path = $$PREFIX/share/man/man1
 man.extra = cp -f doc/openscad.1 \"\$(INSTALL_ROOT)$${man.path}/$${FULLNAME}.1\"
 INSTALLS += man
+
+info: {
+    include(info.pri)
+}

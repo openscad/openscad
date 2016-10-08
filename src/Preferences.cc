@@ -182,6 +182,7 @@ void Preferences::init() {
 	this->toolBar->removeAction(prefsActionFeatures);
 #endif
 	addPrefPage(group, prefsActionAdvanced, pageAdvanced);
+	addPrefPage(group, prefsActionInput, pageInput);
 	connect(group, SIGNAL(triggered(QAction*)), this, SLOT(actionTriggered(QAction*)));
 
 	prefsAction3DView->setChecked(true);
@@ -209,6 +210,22 @@ void Preferences::init() {
 	initSpinBox(this->spinBoxLineWrapIndentationIndent, Settings::Settings::lineWrapIndentation);
 	initSpinBox(this->spinBoxShowWhitespaceSize, Settings::Settings::showWhitespaceSize);
 	initSpinBox(this->spinBoxTabWidth, Settings::Settings::tabWidth);
+
+        initComboBox(this->comboBoxTranslationX, Settings::Settings::inputTranslationX);
+        initComboBox(this->comboBoxTranslationY, Settings::Settings::inputTranslationY);
+        initComboBox(this->comboBoxTranslationZ, Settings::Settings::inputTranslationZ);
+        initComboBox(this->comboBoxRotationX, Settings::Settings::inputRotateX);
+        initComboBox(this->comboBoxRotationY, Settings::Settings::inputRotateY);
+        initComboBox(this->comboBoxRotationZ, Settings::Settings::inputRotateZ);
+        initComboBox(this->comboBoxZoom, Settings::Settings::inputZoom);
+        initComboBox(this->comboBoxButton1, Settings::Settings::inputButton1);
+        initComboBox(this->comboBoxButton2, Settings::Settings::inputButton2);
+        initComboBox(this->comboBoxButton3, Settings::Settings::inputButton3);
+        initComboBox(this->comboBoxButton4, Settings::Settings::inputButton4);
+        initComboBox(this->comboBoxButton5, Settings::Settings::inputButton5);
+        initComboBox(this->comboBoxButton6, Settings::Settings::inputButton6);
+        initComboBox(this->comboBoxButton7, Settings::Settings::inputButton7);
+        initComboBox(this->comboBoxButton8, Settings::Settings::inputButton8);
 
 	SettingsReader settingsReader;
 	Settings::Settings::inst()->visit(settingsReader);
@@ -574,6 +591,96 @@ void Preferences::on_checkBoxEnableLineNumbers_toggled(bool checked)
     writeSettings();
 }
 
+void Preferences::on_comboBoxTranslationX_activated(int val)
+{
+	applyComboBox(comboBoxTranslationX, val, Settings::Settings::inputTranslationX);
+        emit inputMappingChanged();
+}
+
+void Preferences::on_comboBoxTranslationY_activated(int val)
+{
+	applyComboBox(comboBoxTranslationY, val, Settings::Settings::inputTranslationY);
+        emit inputMappingChanged();
+}
+
+void Preferences::on_comboBoxTranslationZ_activated(int val)
+{
+	applyComboBox(comboBoxTranslationZ, val, Settings::Settings::inputTranslationZ);
+        emit inputMappingChanged();
+}
+
+void Preferences::on_comboBoxRotationX_activated(int val)
+{
+	applyComboBox(comboBoxRotationX, val, Settings::Settings::inputRotateX);
+        emit inputMappingChanged();
+}
+
+void Preferences::on_comboBoxRotationY_activated(int val)
+{
+	applyComboBox(comboBoxRotationY, val, Settings::Settings::inputRotateY);
+        emit inputMappingChanged();
+}
+
+void Preferences::on_comboBoxRotationZ_activated(int val)
+{
+	applyComboBox(comboBoxRotationZ, val, Settings::Settings::inputRotateZ);
+        emit inputMappingChanged();
+}
+
+void Preferences::on_comboBoxZoom_activated(int val)
+{
+	applyComboBox(comboBoxZoom, val, Settings::Settings::inputZoom);
+        emit inputMappingChanged();
+}
+
+void Preferences::on_comboBoxButton1_activated(int val)
+{
+	applyComboBox(comboBoxButton1, val, Settings::Settings::inputButton1);
+        emit inputMappingChanged();
+}
+
+void Preferences::on_comboBoxButton2_activated(int val)
+{
+	applyComboBox(comboBoxButton2, val, Settings::Settings::inputButton2);
+        emit inputMappingChanged();
+}
+
+void Preferences::on_comboBoxButton3_activated(int val)
+{
+	applyComboBox(comboBoxButton3, val, Settings::Settings::inputButton3);
+        emit inputMappingChanged();
+}
+
+void Preferences::on_comboBoxButton4_activated(int val)
+{
+	applyComboBox(comboBoxButton4, val, Settings::Settings::inputButton4);
+        emit inputMappingChanged();
+}
+
+void Preferences::on_comboBoxButton5_activated(int val)
+{
+	applyComboBox(comboBoxButton5, val, Settings::Settings::inputButton5);
+        emit inputMappingChanged();
+}
+
+void Preferences::on_comboBoxButton6_activated(int val)
+{
+	applyComboBox(comboBoxButton6, val, Settings::Settings::inputButton6);
+        emit inputMappingChanged();
+}
+
+void Preferences::on_comboBoxButton7_activated(int val)
+{
+	applyComboBox(comboBoxButton7, val, Settings::Settings::inputButton7);
+        emit inputMappingChanged();
+}
+
+void Preferences::on_comboBoxButton8_activated(int val)
+{
+	applyComboBox(comboBoxButton8, val, Settings::Settings::inputButton8);
+        emit inputMappingChanged();
+}
+
 void Preferences::writeSettings()
 {
 	SettingsWriter settingsWriter;
@@ -699,6 +806,22 @@ void Preferences::updateGUI()
 	this->checkBoxShowWarningsIn3dView->setChecked(s->get(Settings::Settings::showWarningsIn3dView).toBool());
 	this->checkBoxEnableLineNumbers->setChecked(s->get(Settings::Settings::enableLineNumbers).toBool());
 	this->spinBoxLineWrapIndentationIndent->setDisabled(this->comboBoxLineWrapIndentationStyle->currentText() == "Same");
+
+	updateComboBox(this->comboBoxTranslationX, Settings::Settings::inputTranslationX);
+	updateComboBox(this->comboBoxTranslationY, Settings::Settings::inputTranslationY);
+	updateComboBox(this->comboBoxTranslationZ, Settings::Settings::inputTranslationZ);
+	updateComboBox(this->comboBoxRotationX, Settings::Settings::inputRotateX);
+	updateComboBox(this->comboBoxRotationY, Settings::Settings::inputRotateY);
+	updateComboBox(this->comboBoxRotationZ, Settings::Settings::inputRotateZ);
+	updateComboBox(this->comboBoxZoom, Settings::Settings::inputZoom);
+	updateComboBox(this->comboBoxButton1, Settings::Settings::inputButton1);
+	updateComboBox(this->comboBoxButton2, Settings::Settings::inputButton2);
+	updateComboBox(this->comboBoxButton3, Settings::Settings::inputButton3);
+	updateComboBox(this->comboBoxButton4, Settings::Settings::inputButton4);
+	updateComboBox(this->comboBoxButton5, Settings::Settings::inputButton5);
+	updateComboBox(this->comboBoxButton6, Settings::Settings::inputButton6);
+	updateComboBox(this->comboBoxButton7, Settings::Settings::inputButton7);
+	updateComboBox(this->comboBoxButton8, Settings::Settings::inputButton8);
 }
 
 void Preferences::initComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry)
