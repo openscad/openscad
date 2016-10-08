@@ -1,37 +1,42 @@
-# cross compilation unix->win32
-# To use static linking, pass CONFIG+=mingw-cross-env to qmake
-# To use shared linking, pass CONFIG+=mingw-cross-env-shared to qmake
-CONFIG(mingw-cross-env) {
-  LIBS += mingw-cross-env/lib/libglew32s.a 
-  LIBS += mingw-cross-env/lib/libglut.a 
-  LIBS += mingw-cross-env/lib/libopengl32.a 
-  LIBS += mingw-cross-env/lib/libGLEW.a 
-#  exists( mingw-cross-env/lib/libglaux.a ) {
-#    LIBS += mingw-cross-env/lib/libglaux.a
+# cross compilation unix->win
+# depends on MXE_TARGET_DIR set by scripts/setenv-mingw-xbuild.sh
+
+_MXE_TARGET_DIR = $$(MXE_TARGET_DIR)
+
+!isEmpty(_MXE_TARGET_DIR) {
+  message(_MXE_TARGET_DIR $$_MXE_TARGET_DIR)
+  LIBS += $$_MXE_TARGET_DIR/lib/libglew32s.a 
+  LIBS += $$_MXE_TARGET_DIR/lib/libglut.a 
+  LIBS += $$_MXE_TARGET_DIR/lib/libopengl32.a 
+  LIBS += $$_MXE_TARGET_DIR/lib/libGLEW.a 
+#  exists( $$_MXE_TARGET_DIR/lib/libglaux.a ) {
+#    LIBS += $$_MXE_TARGET_DIR/lib/libglaux.a
 #  }
-  LIBS += mingw-cross-env/lib/libglu32.a 
-  LIBS += mingw-cross-env/lib/libopencsg.a 
-  LIBS += mingw-cross-env/lib/libmpfr.a 
-  LIBS += mingw-cross-env/lib/libgmp.a 
-  LIBS += mingw-cross-env/lib/libCGAL.a
-  LIBS += mingw-cross-env/lib/libfontconfig.a
-  LIBS += mingw-cross-env/lib/libfreetype.a
-  LIBS += mingw-cross-env/lib/libharfbuzz.a
-  LIBS += mingw-cross-env/lib/libbz2.a
-  LIBS += mingw-cross-env/lib/libexpat.a
-  LIBS += mingw-cross-env/lib/libintl.a
-  LIBS += mingw-cross-env/lib/libiconv.a
+  LIBS += $$_MXE_TARGET_DIR/lib/libglu32.a 
+  LIBS += $$_MXE_TARGET_DIR/lib/libopencsg.a 
+  LIBS += $$_MXE_TARGET_DIR/lib/libmpfr.a 
+  LIBS += $$_MXE_TARGET_DIR/lib/libgmp.a 
+  LIBS += $$_MXE_TARGET_DIR/lib/libCGAL.a
+  LIBS += $$_MXE_TARGET_DIR/lib/libfontconfig.a
+  LIBS += $$_MXE_TARGET_DIR/lib/libfreetype.a
+  LIBS += $$_MXE_TARGET_DIR/lib/libharfbuzz.a
+  LIBS += $$_MXE_TARGET_DIR/lib/libbz2.a
+  LIBS += $$_MXE_TARGET_DIR/lib/libexpat.a
+  LIBS += $$_MXE_TARGET_DIR/lib/libintl.a
+  LIBS += $$_MXE_TARGET_DIR/lib/libiconv.a
 }
 
-CONFIG(mingw-cross-env-shared) {
+contains( _MXE_TARGET_DIR, shared ) {
+  message(_MXE_TARGET_DIR $$_MXE_TARGET_DIR contained shared)
   # on MXE, the shared library .dll files are under 'bin' not 'lib'.
-  QMAKE_LFLAGS += -L./mingw-cross-env/bin
+  QMAKE_LFLAGS += -L./$$_MXE_TARGET_DIR/bin
   LIBS += -lglew32 -lglut -lopengl32 -lGLEW -lglu32
   LIBS += -lopencsg -lmpfr -lgmp -lCGAL 
   LIBS += -lfontconfig -lfreetype -lharfbuzz -lbz2 -lexpat -lintl -liconv
 }
 
-CONFIG(mingw-cross-env)|CONFIG(mingw-cross-env-shared) {
+!isEmpty(_MXE_TARGET_DIR) {
+  message(_MXE_TARGET_DIR $$_MXE_TARGET_DIR)
   QMAKE_CXXFLAGS += -fpermissive
   WINSTACKSIZE = 8388608 # 8MB # github issue 116
   QMAKE_CXXFLAGS += -Wl,--stack,$$WINSTACKSIZE
