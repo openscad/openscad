@@ -215,14 +215,14 @@ Then run the script to download & compile the MXE cross tools
 This process may take several hours, and over 10 Gigabyte of disk 
 space. After it is complete, test your setup by building openscad.exe
 
-    cd mingw64.static
-    qmake ../openscad.pro CONFIG+=mingw-cross-env
+    cd ./bin/x86_64-w64-mingw32.static
+    qmake ../../openscad.pro
     make
-    cd ..
 
-This should create a file named ./mingw64.static/release/openscad.exe. 
+This should create a file named ./release/openscad.exe 
 Now build an installer and .zip package:
 
+    cd ../../
     ./scripts/release-common.sh mingw64
 
 For a 32-bit Windows cross-build, replace 64 with 32 in the above instructions. 
