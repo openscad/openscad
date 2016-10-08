@@ -112,13 +112,6 @@ win* {
   QMAKE_CXXFLAGS += -DNOGDI
 }
 
-mingw* {
-  # needed to prevent compilation error on MSYS2:
-  # as.exe: objects/cgalutils.o: too many sections (76541)
-  # using -Wa,-mbig-obj did not help
-  debug: QMAKE_CXXFLAGS += -O1
-}
-
 CONFIG += qt
 QT += widgets concurrent
 
@@ -206,8 +199,15 @@ mdi {
 
 include(common.pri)
 
+
 # mingw has to come after other items so OBJECT_DIRS will work properly
-CONFIG(mingw-cross-env)|CONFIG(mingw-cross-env-shared) {
+_MXE_TARGET_DIR = $$(MXE_TARGET_DIR)
+!isEmpty(_MXE_TARGET_DIR) {
+  contains(_MXE_TARGET_DIR, shared) {
+    CONFIG += mingw-cross-env-shared
+  } else {
+    CONFIG += mingw-cross-env
+  }
   include(mingw-cross-env.pri)
 }
 

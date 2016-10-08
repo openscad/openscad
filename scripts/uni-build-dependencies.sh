@@ -114,8 +114,8 @@ build_glu()
   tar xzf glu-$version.tar.gz
   cd glu-$version
   ./autogen.sh --prefix=$DEPLOYDIR
-  make -j$NUMCPU
-  make install
+  $MAKEBIN
+  $MAKEBIN install
 }
 
 build_qt4()
@@ -134,8 +134,8 @@ build_qt4()
   tar xzf qt-everywhere-opensource-src-$version.tar.gz
   cd qt-everywhere-opensource-src-$version
   ./configure -prefix $DEPLOYDIR -opensource -confirm-license -fast -no-qt3support -no-svg -no-phonon -no-audio-backend -no-multimedia -no-javascript-jit -no-script -no-scripttools -no-declarative -no-xmlpatterns -nomake demos -nomake examples -nomake docs -nomake translations -no-webkit
-  make -j$NUMCPU
-  make install
+  $MAKEBIN
+  $MAKEBIN install
   QTDIR=$DEPLOYDIR
   export QTDIR
   echo "----------"
@@ -169,7 +169,7 @@ build_qt5()
                 -skip enginio -skip graphicaleffects -skip location -skip multimedia \
                 -skip quick1 -skip quickcontrols -skip script -skip sensors -skip serialport \
                 -skip svg -skip webkit -skip webkit-examples -skip websockets -skip xmlpatterns
-  make -j"$NUMCPU" install
+  $MAKEBIN install
 }
 
 build_qt5scintilla2()
@@ -191,7 +191,7 @@ build_qt5scintilla2()
   cd QScintilla-gpl-$version/Qt4Qt5/
   qmake CONFIG+=staticlib
   tmpinstalldir=$DEPLOYDIR/tmp/qsci$version
-  INSTALL_ROOT=$tmpinstalldir make -j"$NUMCPU" install
+  INSTALL_ROOT=$tmpinstalldir $MAKEBIN install
 
   if [ -d $tmpinstalldir/usr/share ]; then
     cp -av $tmpinstalldir/usr/share $DEPLOYDIR/
@@ -229,8 +229,8 @@ build_libtool()
   tar xf libtool-$VERSION.tar.gz
   cd libtool-$VERSION
   ./configure --prefix=$DEPLOYDIR
-  make
-  make install
+  $MAKEBIN
+  $MAKEBIN install
 }
 
 build_autoconf()
@@ -246,8 +246,8 @@ build_autoconf()
   tar xf autoconf-$VERSION.tar.bz2
   cd autoconf-$VERSION
   ./configure --prefix=$DEPLOYDIR
-  make
-  make install
+  $MAKEBIN
+  $MAKEBIN install
 }
 
 build_automake()
@@ -262,8 +262,8 @@ build_automake()
   tar xf automake-$VERSION.tar.gz
   cd automake-$VERSION
   ./configure --prefix=$DEPLOYDIR
-  make
-  make install
+  $MAKEBIN
+  $MAKEBIN install
 }
 
 build_bison()
@@ -278,8 +278,8 @@ build_bison()
   tar zxf bison-$version.tar.gz
   cd bison-$version
   ./configure --prefix=$DEPLOYDIR
-  make -j$NUMCPU
-  make install
+  $MAKEBIN
+  $MAKEBIN install
 }
 
 build_git()
@@ -294,8 +294,8 @@ build_git()
   tar zxf git-$version.tar.gz
   cd git-$version
   ./configure --prefix=$DEPLOYDIR
-  make -j$NUMCPU
-  make install
+  $MAKEBIN
+  $MAKEBIN install
 }
 
 build_cmake()
@@ -312,8 +312,8 @@ build_cmake()
   mkdir build
   cd build
   ../configure --prefix=$DEPLOYDIR
-  make -j$NUMCPU
-  make install
+  $MAKEBIN
+  $MAKEBIN install
 }
 
 build_curl()
@@ -330,8 +330,8 @@ build_curl()
   mkdir build
   cd build
   ../configure --prefix=$DEPLOYDIR
-  make -j$NUMCPU
-  make install
+  $MAKEBIN
+  $MAKEBIN install
 }
 
 build_gmp()
@@ -352,8 +352,8 @@ build_gmp()
   mkdir build
   cd build
   ../configure --prefix=$DEPLOYDIR --enable-cxx
-  make -j$NUMCPU
-  make install
+  $MAKEBIN
+  $MAKEBIN install
 }
 
 build_mpfr()
@@ -374,8 +374,8 @@ build_mpfr()
   mkdir build
   cd build
   ../configure --prefix=$DEPLOYDIR --with-gmp=$DEPLOYDIR
-  make -j$NUMCPU
-  make install
+  $MAKEBIN
+  $MAKEBIN install
   cd ..
 }
 
@@ -425,7 +425,7 @@ build_boost()
   elif [ -e ./bjam ]; then
     BJAMBIN=./bjam
   elif [ -e ./Makefile ]; then
-    BJAMBIN=make
+    BJAMBIN=$MAKEBIN
   fi
   if [ $CXX ]; then
     if [ $CXX = "clang++" ]; then
@@ -521,7 +521,7 @@ build_cgal()
     CGAL_BUILDTYPE="Debug"
   fi
 
-  if [ "`uname | grep freebsd`" ]; then
+  if [ "`uname | grep -i freebsd`" ]; then
     CGALLINK="-DCMAKE_SHARED_LINKER_FLAGS=-lpthread"
     CGALLINK="$CGALLINK -DCMAKE_MODULE_LINKER_FLAGS=-lpthread"
     CGALLINK="$CGALLINK -DCMAKE_EXE_LINKER_FLAGS=-lpthread"
@@ -534,8 +534,8 @@ build_cgal()
   else
     cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.so -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.so -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.so -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DBOOST_LIBRARYDIR=$DEPLOYDIR/lib -DBOOST_INCLUDEDIR=$DEPLOYDIR/include -DCMAKE_BUILD_TYPE=$CGAL_BUILDTYPE -DBoost_DEBUG=$DEBUGBOOSTFIND -DBoost_NO_SYSTEM_PATHS=1 ..
   fi
-  make -j$NUMCPU
-  make install
+  $MAKEBIN
+  $MAKEBIN install
 }
 
 build_glew()
@@ -584,20 +584,10 @@ build_glew()
     sed -ibak s/"CC = cc"/"# CC = cc"/ config/Makefile.linux
   fi
 
-  if [ "`uname -a | grep freebsd | grep -v kfreebsd`" ]; then
+  if [ "`uname -a | grep -i freebsd | grep -v kfreebsd`" ]; then
     if [ ! -d /usr/X11R6 ]; then
       sed -ibak s/"\\-L\\/usr\\/X11R6\\/lib"/"-fPIC\\ \\-L\\/usr\\/local\\/lib"/ config/Makefile.freebsd
       sed -ibak s/"\\-I\\/usr\\/X11R6\\/include"/"-fPIC\\ \\-I\\/usr\\/local\\/include"/ config/Makefile.freebsd
-    fi
-  fi
-
-  MAKER=make
-  if [ "`uname | grep BSD`" ]; then
-    if [ "`command -v gmake`" ]; then
-      MAKER=gmake
-    else
-      echo "building glew on BSD requires gmake (gnu make)"
-      exit
     fi
   fi
 
@@ -646,7 +636,7 @@ build_opencsg()
     OPENCSG_QMAKE=qmake
   else
     echo qmake not found... using standard OpenCSG makefiles
-    OPENCSG_QMAKE=make
+    OPENCSG_QMAKE=$MAKEBIN
     cp Makefile Makefile.bak
     cp src/Makefile src/Makefile.bak
 
@@ -658,7 +648,7 @@ build_opencsg()
     version=$tmp
   fi
 
-  if [ ! $OPENCSG_QMAKE = "make" ]; then
+  if [ ! $OPENCSG_QMAKE = "$MAKEBIN" ]; then
     OPENCSG_QMAKE=$OPENCSG_QMAKE' "QMAKE_CXXFLAGS+=-I'$GLU_INCLUDE'"'
   fi
   echo OPENCSG_QMAKE: $OPENCSG_QMAKE
@@ -668,7 +658,7 @@ build_opencsg()
 
   cd $BASEDIR/src/OpenCSG-$version
   $OPENCSG_QMAKE
-  make
+  $MAKEBIN
 
   ls lib/* include/*
   if [ -e lib/.libs ]; then ls lib/.libs/*; fi # netbsd
@@ -686,6 +676,7 @@ build_zlib()
 {
   if [ -e $DEPLOYDIR/lib/libz.so ]; then
     echo zlib already installed
+    return
   fi
   VERSION=$1
   cd $BASEDIR/src
@@ -693,8 +684,8 @@ build_zlib()
   tar xf zlib-$VERSION.tar.gz
   cd zlib-$VERSION
   ./configure --prefix=$DEPLOYDIR
-  make
-  make install
+  $MAKEBIN
+  $MAKEBIN install
 }
 
 build_eigen()
@@ -727,8 +718,8 @@ build_eigen()
   mkdir build
   cd build
   cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DEIGEN_TEST_NO_OPENGL=1 ..
-  make -j$NUMCPU
-  make install
+  $MAKEBIN
+  $MAKEBIN install
 }
 
 build_pkgconfig()
@@ -749,8 +740,8 @@ build_pkgconfig()
   cd "pkg-config-$version"
 
   ./configure --prefix="$DEPLOYDIR" --with-internal-glib
-  make -j$NUMCPU
-  make install
+  $MAKEBIN
+  $MAKEBIN install
 }
 
 build_libffi()
@@ -766,18 +757,18 @@ build_libffi()
   rm -rf "libffi-$version"
   if [ ! -f "libffi-$version.tar.gz" ]; then
     curl --insecure -LO "ftp://sourceware.org/pub/libffi/libffi-$version.tar.gz"
-    curl --insecure -LO "http://www.linuxfromscratch.org/patches/blfs/svn/libffi-$version-includedir-1.patch"
+    #curl --insecure -LO "http://www.linuxfromscratch.org/patches/blfs/svn/libffi-$version-includedir-1.patch"
   fi
   tar xzf "libffi-$version.tar.gz"
   cd "libffi-$version"
-  if [ ! "`command -v patch`" ]; then
-    echo cannot proceed, need 'patch' program
-    exit 1
-  fi
-  patch -Np1 -i ../libffi-3.0.13-includedir-1.patch
+  #if [ ! "`command -v patch`" ]; then
+  #  echo cannot proceed, need 'patch' program
+  #  exit 1
+  #fi
+  #patch -Np1 -i ../libffi-3.0.13-includedir-1.patch
   ./configure --prefix="$DEPLOYDIR"
-  make -j$NUMCPU
-  make install
+  $MAKEBIN
+  $MAKEBIN install
 }
 
 # this section allows 'out of tree' builds, as long as the system has
@@ -804,9 +795,33 @@ check_env
 . $OPENSCAD_SCRIPTDIR/common-build-dependencies.sh
 SRCDIR=$BASEDIR/src
 
+MAKEBIN=make
+if [ "`uname | grep -i BSD`" ]; then
+  if [ "`command -v gmake`" ]; then
+    MAKEBIN=gmake
+  else
+    echo "building on BSD requires gmake (gnu make)"
+    exit
+  fi
+fi
+
+
 if [ ! $NUMCPU ]; then
-  echo "Note: The NUMCPU environment variable can be set for parallel builds"
-  NUMCPU=1
+  if [ "`echo $MAKEFLAGS | grep \\-j`" ]; then
+    echo "Using MAKEFLAGS environment variable for paralell builds:"
+    echo MAKEFLAGS=$MAKEFLAGS
+  else
+    echo "Note: The NUMCPU environment variable can be set for parallel builds"
+    NUMCPU=1
+  fi
+else
+  if [ "`echo $MAKEFLAGS | grep \\-j`" ]; then
+    echo "MAKEFLAGS already set for paralell build, cannot use NUMCPU"
+  else
+    MAKEFLAGS=$MAKEFLAGS" -j"$NUMCPU
+    echo "NUMCPU detected as $NUMCPU, adding -j option to MAKEFLAGS"
+    echo MAKEFLAGS=$MAKEFLAGS
+  fi
 fi
 
 if [ ! -d $BASEDIR/bin ]; then
@@ -912,8 +927,9 @@ LIBXML2_VERSION=2.9.1
 HARFBUZZ_VERSION=0.9.35
 LIBTOOL_VERSION=2.4.6
 
-if [ "`uname -a | grep freebsd | grep -v kfreebsd`" ]; then
+if [ "`uname -a | grep -i freebsd | grep -v kfreebsd`" ]; then
   build_zlib 1.2.8
+  build_libffi 3.2.1
   build_pkgconfig 0.28
   build_autoconf 2.68
   build_automake 1.14

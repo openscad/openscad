@@ -45,12 +45,14 @@ setenv_freebsd()
 {
  echo .... freebsd detected. 
  setenv_common
- if [ "`command -v clang`" ]; then
+ if [ "`uname -a |grep -i freebsd.9`" ]; then
+   echo freebsd9 is unsupported, please use freebsd 11
+ elif [ "`uname -a |grep -i freebsd.10`" ]; then
+   echo freebsd10 is unsupported, please use freebsd 11
+ else
    QMAKESPEC=freebsd-clang
    CC=clang
    CXX=clang++
- else
-   QMAKESPEC=freebsd-g++
  fi
  QTDIR=/usr/local/share/qt4
  PATH=/usr/local/lib/qt4/bin:$PATH
@@ -67,9 +69,10 @@ setenv_freebsd()
 setenv_netbsd()
 {
  setenv_common
- echo --- netbsd build situation is complex. it comes with gcc4.5
- echo --- which is incompatable with updated CGAL. 
- echo --- you may need to hack with newer gcc to make it work
+ if [ "` uname -a |grep NetBSD.6 `" ]; then
+   echo sorry, recommend NetBSD 7 or more, you will have to hack 6 yourself
+ fi
+ # we have to use qt4 here because netbsd7 has no qscintilla for qt5
  QMAKESPEC=netbsd-g++
  QTDIR=/usr/pkg/qt4
  PATH=/usr/pkg/qt4/bin:$PATH
