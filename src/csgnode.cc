@@ -181,6 +181,9 @@ void CSGProducts::import(shared_ptr<CSGNode> csgnode, OpenSCADOperator type, CSG
 		else if (type == OPENSCAD_DIFFERENCE) {
 			this->currentlist = &this->currentproduct->subtractions;
 		}
+		else if (type == OPENSCAD_INTERSECTION) {
+			this->currentlist = &this->currentproduct->intersections;
+		}
 		this->currentlist->push_back(CSGChainObject(leaf, newflags));
 	} else if (shared_ptr<CSGOperation> op = dynamic_pointer_cast<CSGOperation>(csgnode)) {
 		assert(op->left() && op->right());
