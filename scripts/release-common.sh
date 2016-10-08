@@ -4,55 +4,46 @@
 # under Mac OS X, Linux 32bit, Linux 64bit, and Linux->Win32 MXE cross-build.
 #
 # The script will create a file called openscad-<versionstring>.<extension> in
-# bin/machine-triplet
+# the current directory.
 #
-# Usage: release-common.sh [-v <versionstring>] [-c] [-mingw[32|64]] [-tests]
+# Usage: release-common.sh [-v <versionstring>]
 #  -v       Version string (e.g. -v 2010.01)
 #  -d       Version date (e.g. -d 2010.01.23)
-#  -mingw32 Cross-compile for win32 using MXE
-#  -mingw64 Cross-compile for win64 using MXE
 #  -snapshot Build a snapshot binary (make e.g. experimental features available, build with commit info)
 #
 # If no version string or version date is given, todays date will be used (YYYY-MM-DD)
 # If only version date is given, it will be used also as version string.
-# If no make target is given, release will be used on Windows, none one Mac OS X
-#
-# The mingw cross compile depends on the MXE cross-build tools. Please
-# see the README.md file on how to install these dependencies. To debug
-# the mingw-cross build process, set env var FAKEMAKE=1 to fake-make the
-# .exe files
-#
 
 # convert end-of-line in given file from unix \n to dos/windows(TM) \r\n
 # see https://kb.iu.edu/data/acux.html
 lf2crlf()
 {
 	fname=$1
-	if [ "`command -v unix2dos`" ]; then
-		unix2dos $fname
-		return
-	fi
 	if [ "`command -v awk`" ]; then
 		echo using awk to convert end of line markers in $fname
 		awk 'sub("$", "\r")' $fname > $fname".temp"
 		mv $fname".temp" $fname
 		return
 	fi
-	echo 'warning- cant change eol to cr eol'
 }
 
 printUsage()
 {
-  echo "Usage: $0 -v <versionstring> -d <versiondate> -c -mingw32
+  echo "Usage: $0 -v <versionstring> -d <versiondate>
   echo
   echo "  Example: $0 -v 2010.01
 }
 
-OPENSCADDIR=$PWD
+if [ ! $OPENSCADDIR ]; then
+  OPENSCADDIR=$PWD
+fi
+
 if [ ! -f $OPENSCADDIR/openscad.pro ]; then
-  echo "Must be run from the OpenSCAD source root directory"
+  echo "Cannot find OPENSCADDIR/openscad.pro, OPENSCADDIR should be src root "
   exit 1
 fi
+
+echo OPENSCADDIR:$OPENSCADDIR
 
 CONFIG=deploy
 
@@ -70,17 +61,13 @@ elif [[ $OSTYPE == "linux-gnu" ]]; then
   echo "Detected build-machine ARCH: $ARCH"
 fi
 
-if [ "`echo $* | grep mingw`" ]; then
+if [ $MXE_TARGET ]; then
+  echo MXE cross build environment variables detected
+  echo MXE_TARGET_DIR $MXE_TARGET_DIR
+  echo MXE_TARGET $MXE_TARGET
+  echo MXE_LIB_TYPE $MXE_LIB_TYPE
+  echo DEPLOYDIR $DEPLOYDIR
   OS=UNIX_CROSS_WIN
-  ARCH=32
-  MXELIBTYPE=static
-  if [ "`echo $* | grep mingw64`" ]; then
-    ARCH=64
-  fi
-  if [ "`echo $* | grep shared`" ]; then
-    MXELIBTYPE=shared
-  fi
-  echo Mingw-cross build using ARCH=$ARCH MXELIBTYPE=$MXELIBTYPE
 fi
 
 if [ "`echo $* | grep snapshot`" ]; then
@@ -113,12 +100,6 @@ fi
 export VERSIONDATE
 export VERSION
 
-if [ $FAKEMAKE ]; then
-  echo 'fake make on:' $FAKEMAKE
-else
-  FAKEMAKE=
-fi
-
 echo "Checking pre-requisites..."
 
 case $OS in
@@ -126,14 +107,10 @@ case $OS in
         MAKENSIS=
         if [ "`command -v makensis`" ]; then
             MAKENSIS=makensis
-        elif [ "`command -v i686-pc-mingw32-makensis`" ]; then
-            # we cant find systems nsis so look for the MXE's version.
+        elif [ -e $MXE_DIR/usr/bin/i686-pc-mingw32-makensis`" ]; then
             # MXE has its own makensis, but its only available under
-            # 32-bit MXE. note that the cross-version in theory works
-            # the same as the linux version so we can use them, in
-            # theory, interchangeably. its not really a 'cross' nsis
-            # todo - when doing 64 bit mingw build, see if we can call
-            # 32bit nsis here.
+            # 32-bit MXE. it works the same as a native linux version so
+            # its not really a 'cross' nsis
             MAKENSIS=i686-pc-mingw32-makensis
         else
             echo "makensis not found. please install nsis on your system."
@@ -167,37 +144,22 @@ echo "NUMCPU: " $NUMCPU
 
 
 case $OS in
-    LINUX|MACOSX) 
+    LINUX|MACOSX)
         TARGET=
         # for QT4 set QT_SELECT=4
         QT_SELECT=5
         export QT_SELECT
         ;;
-    WIN)
-        export QTDIR=/c/devmingw/qt2009.03
-        export QTMAKESPEC=win32-g++
-        export PATH=$PATH:/c/devmingw/qt2009.03/bin:/c/devmingw/qt2009.03/qt/bin
-        ZIP="/c/Program Files/7-Zip/7z.exe"
-        ZIPARGS="a -tzip"
-        TARGET=release
-        ;;
     UNIX_CROSS_WIN)
-        . ./scripts/setenv-mingw-xbuild.sh $ARCH $MXELIBTYPE
-        TARGET=release
         ZIP="zip"
         ZIPARGS="-r -q"
         ;;
 esac
 
-
 case $OS in
     UNIX_CROSS_WIN)
         cd $DEPLOYDIR
-        MINGWCONFIG=mingw-cross-env
-        if [ $MXELIBTYPE = "shared" ]; then
-          MINGWCONFIG=mingw-cross-env-shared
-        fi
-        qmake VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+="$CONFIG" CONFIG+=$MINGWCONFIG CONFIG-=debug ../openscad.pro
+        qmake VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+="$CONFIG" CONFIG-=debug $OPENSCADDIR/openscad.pro
         cd $OPENSCADDIR
     ;;
     *)
@@ -213,7 +175,7 @@ esac
 case $OS in
     UNIX_CROSS_WIN)
         cd $DEPLOYDIR
-        make clean ## comment out for test-run
+        make clean
         cd $OPENSCADDIR
     ;;
     *)
@@ -222,7 +184,7 @@ case $OS in
 esac
 
 case $OS in
-    MACOSX) 
+    MACOSX)
         rm -rf OpenSCAD.app
         ;;
     WIN)
@@ -244,17 +206,13 @@ case $OS in
     UNIX_CROSS_WIN)
         # make main openscad.exe
         cd $DEPLOYDIR
-        if [ $FAKEMAKE ]; then
-            echo "notexe. debugging build process" > $TARGET/openscad.exe
-        else
-            make $TARGET -j$NUMCPU
-        fi
+        make $TARGET -j$NUMCPU
         if [ ! -e $TARGET/openscad.exe ]; then
             echo "cant find $TARGET/openscad.exe. build failed. stopping."
             exit
         fi
         # make console pipe-able openscad.com - see winconsole.pro for info
-        qmake ../winconsole/winconsole.pro
+        qmake $OPENSCADDIR/winconsole/winconsole.pro
         make
         if [ ! -e $TARGET/openscad.com ]; then
             echo "cant find $TARGET/openscad.com. build failed. stopping."

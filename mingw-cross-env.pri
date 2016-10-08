@@ -2,7 +2,7 @@
 # depends on MXE_TARGET_DIR set by scripts/setenv-mingw-xbuild.sh
 
 _MXE_TARGET_DIR = $$(MXE_TARGET_DIR)
-
+message($$_MXE_TARGET_DIR mxe target dir)
 !isEmpty(_MXE_TARGET_DIR) {
   message(_MXE_TARGET_DIR $$_MXE_TARGET_DIR)
   LIBS += $$_MXE_TARGET_DIR/lib/libglew32s.a 
