@@ -195,12 +195,15 @@ cross-Mingw build system <http://mxe.cc>. These instructions will also
 work using "Bash on Ubuntu on Windows" included as part of the Windows 
 Linux Subsystem on Windows 10, no virtual machine required.
 
-First run the script to set up environment variables:
+First, follow the instructions at <http://mxe.cc/#requirements> to
+get the required tools for mxe cross building. 
+
+Next run the script to set up environment variables:
 
     source ./scripts/setenv-mingw-x-build.sh 64
 
-Now run the following script to build MXE tools from source. This may 
-take 10G of diskspace under $HOME/openscad_deps and several hours of time.
+Now run the script to build MXE tools from source. This may take 10G of 
+diskspace under $HOME/openscad_deps and several hours of time.
 
     ./scripts/mingw-x-build-dependencies.sh
 
