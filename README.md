@@ -214,7 +214,7 @@ results will be under the openscad/bin/ directory.
 
 If you only want to build the openscad.exe binary, without the packaging, run
 
-    cd $DEPLOYDIR && qmake ../../openscad.pro && make
+    cd $DEPLOYDIR && qmake ../.. && make
 
 For a 32-bit Windows cross-build, replace 64 with 32 in the above instructions. 
 
