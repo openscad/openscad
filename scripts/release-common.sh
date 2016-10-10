@@ -117,9 +117,14 @@ if [ ! -e $OPENSCADDIR/libraries/MCAD/__init__.py ]; then
   echo "Downloading MCAD"
   git submodule init
   git submodule update
+  if [ ! -e $OPENSCADDIR/libraries/MCAD/__init__.py ]; then
+    echo "Downloading MCAD failed. exiting"
+    exit
+  fi
 else
   echo "MCAD found:" $OPENSCADDIR/libraries/MCAD
 fi
+
 
 if [ -d .git ]; then
   git submodule update

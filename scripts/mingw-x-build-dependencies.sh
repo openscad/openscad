@@ -59,6 +59,7 @@ mxe_get_debian_binary()
 		PKGLIST=$PKGLIST' '$MXE_PREFIX'-'$pkg
 	done
 	apt-get -y install $PKGLIST
+	apt-get install nsis
 }
 
 mxe_build_from_src()
