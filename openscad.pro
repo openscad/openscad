@@ -197,10 +197,7 @@ mdi {
   DEFINES += ENABLE_MDI
 }
 
-include(common.pri)
-
-
-# mingw has to come after other items so OBJECT_DIRS will work properly
+# config MINGW before other .pri includes
 _MXE_TARGET_DIR = $$(MXE_TARGET_DIR)
 !isEmpty(_MXE_TARGET_DIR) {
   contains(_MXE_TARGET_DIR, shared) {
@@ -208,6 +205,12 @@ _MXE_TARGET_DIR = $$(MXE_TARGET_DIR)
   } else {
     CONFIG += mingw-cross-env
   }
+}
+
+include(common.pri)
+
+# mingw has to come after other items so OBJECT_DIRS will work properly
+CONFIG(mingw-cross-env)|CONFIG(mingw-cross-env-shared) {
   include(mingw-cross-env.pri)
 }
 

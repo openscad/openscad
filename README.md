@@ -33,7 +33,7 @@ STL and OFF file formats.
 # Getting started
 
 You can download the latest binaries of OpenSCAD at
-<http://www.openscad.org>. Install binaries as you would any other
+<http://www.openscad.org/downloads>. Install binaries as you would any other
 software.
 
 When you open OpenSCAD, you'll see three frames within the window. The
@@ -73,12 +73,6 @@ Manual](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual).
 
 Have a look at the OpenSCAD Homepage (http://openscad.org/) for documentation.
 
-## Getting OpenSCAD
-
-OpenSCAD is available pre-built and ready to install for many systems, 
-including OSX, Linux, BSD, and Windows. Please check 
-http://openscad.org/downloads for the latest information.
-
 ## Building OpenSCAD
 
 To build OpenSCAD from source, follow the instructions for the
@@ -90,11 +84,11 @@ To build OpenSCAD, you need some libraries and tools. The version
 numbers in brackets specify the versions which have been used for
 development. Other versions may or may not work as well.
 
-If you're using a newer version of Linux or BSD, you can install these 
-libraries from the package manager like apt or pkg. If you're using a Mac 
-there are build scripts that download and compile the libraries from 
-source. Follow the instructions for the platform you're compiling on 
-below.
+If you're using a newer version of Linux or BSD, and you have root or 
+sudo access, you can install these libraries from the package manager 
+like apt or pkg. If you're using a Mac there are build scripts that 
+download and compile the libraries from source. Follow the instructions 
+for the platform you're compiling on below.
 
 * A C++ compiler supporting C++11
 * [Qt (4.4 -> 5.x)](http://qt.io/)
@@ -121,20 +115,22 @@ package manager on your system when you install the packages listed above.
 
 ### Supported systems
 
-Building from source works best on current operating systems. Operating 
-systems that are near or past "end of life" may not work. Please see the 
-"building from sources" wikibooks link at the end of this file for tips 
-on unusual build situations.
+Building from source tends to work best on current operating systems. 
+Operating systems that are near or past "end of life" may not work. 
+Please see the "building from sources" wikibooks link at the end of this 
+file for tips on unusual build situations.
 
 ### Getting the source code
 
-Install git (http://git-scm.com/) onto your system. Then run a clone:
+Install git (http://git-scm.com/) onto your system. The package may be 
+called 'git-core' or 'scmgit' on some systems. Then run a clone:
 
     git clone git://github.com/openscad/openscad.git
 
 This will download the latest sources into a directory named 'openscad'. 
 
-To pull the MCAD library (http://reprap.org/wiki/MCAD), do the following:
+Now cd into the openscad directory and pull the MCAD library 
+(http://reprap.org/wiki/MCAD):
 
     cd openscad
     git submodule update --init
@@ -176,12 +172,7 @@ Then run the script to compile all the dependencies:
 
         sudo port install opencsg qscintilla boost cgal pkgconfig eigen3 harfbuzz fontconfig
 
-
 ### Building for Linux or BSD
-
-Install git with your package manager. For example on Ubuntu, run 
-sudo apt install git. The package may be called 'git-core' or 'scmgit' 
-on some systems.
 
 Once you've cloned this git repository, download and install the 
 dependency packages listed above using your system's package manager. A 
@@ -199,31 +190,31 @@ Then skip ahead to the Compilation instructions.
 
 ### Building for Windows
 
-OpenSCAD for Windows is cross-compiled from within Linux. First, install 
-all necessary dependencies of the MXE project, as listed at 
-http://mxe.cc/#requirements, but not MXE itself.
+OpenSCAD for Windows is cross-compiled from within Linux using the MXE 
+cross-Mingw build system <http://mxe.cc>. These instructions will also 
+work using "Bash on Ubuntu on Windows" included as part of the Windows 
+Linux Subsystem on Windows 10, no virtual machine required.
 
-Start a new clean bash shell and run the script that sets up the 
-environment variables.
+First, follow the instructions at <http://mxe.cc/#requirements> to
+get the required tools for mxe cross building. 
 
-    source ./scripts/setenv-mingw-xbuild.sh 64
+Next run the script to set up environment variables:
 
-Then run the script to download & compile the MXE cross tools
+    source ./scripts/setenv-mingw-x-build.sh 64
 
-    ./scripts/mingw-x-build-dependencies.sh 64
+Now run the script to build MXE tools from source. This may take 10G of 
+diskspace under $HOME/openscad_deps and several hours of time.
 
-This process may take several hours, and over 10 Gigabyte of disk 
-space. After it is complete, test your setup by building openscad.exe
+    ./scripts/mingw-x-build-dependencies.sh
 
-    cd ./bin/x86_64-w64-mingw32.static
-    qmake ../../openscad.pro
-    make
+Then cross-build the OpenSCAD Windows installer package and .zip bundle. The
+results will be under the openscad/bin/ directory.
 
-This should create a file named ./release/openscad.exe 
-Now build an installer and .zip package:
+    ./scripts/release-common.sh
 
-    cd ../../
-    ./scripts/release-common.sh mingw64
+If you only want to build the openscad.exe binary, without the packaging, run
+
+    cd $DEPLOYDIR && qmake ../.. && make
 
 For a 32-bit Windows cross-build, replace 64 with 32 in the above instructions. 
 
@@ -239,16 +230,16 @@ Then run make. Finally you might run 'make install' as root or simply
 copy the 'openscad' binary (OpenSCAD.app on Mac OS X) to the bin 
 directory of your choice.
 
-### Building and running the test suite
+### Test suite
 
-OpenSCAD comes with hundreds of self-tests. To run them, first build the 
-main openscad program above, then review doc/testing.txt, and then run 
-the following (Linux/BSD/Mac only):
+To run the self-tests, first build the main openscad program above, then run 
 
    cd tests
    cmake .
    make
    ctest
+
+See doc/testing.txt for more information. Tests are for Mac/Linux/BSD only.
 
 ### Problems building
 
@@ -258,4 +249,4 @@ If you had problems compiling from source, please raise a new issue in the
 This site and it's subpages can also be helpful:
 http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_OpenSCAD_from_Sources
 
-Thank you for trying OpenSCAD.
+Thank you for using OpenSCAD.
