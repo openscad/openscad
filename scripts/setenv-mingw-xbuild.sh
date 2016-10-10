@@ -28,9 +28,9 @@ if [ ! $MXEDIR ]; then
 		if [ -e /opt/mxe ]; then
 			MXEDIR=/opt/mxe # mxe on custom build machines
 		fi
-		if [ -e /usr/lib/mxe ]; then
-			MXEDIR=/usr/lib/mxe  # mxe dpkg binary on debian
-		fi
+		#if [ -e /usr/lib/mxe ]; then
+		#	MXEDIR=/usr/lib/mxe  # mxe dpkg binary on debian
+		#fi
 	fi
 fi
 

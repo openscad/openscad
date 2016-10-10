@@ -20,6 +20,7 @@ CONFIG(mingw-cross-env) {
   LIBS += $$_MXE_TARGET_DIR/lib/libexpat.a
   LIBS += $$_MXE_TARGET_DIR/lib/libintl.a
   LIBS += $$_MXE_TARGET_DIR/lib/libiconv.a
+  LIBS += $$_MXE_TARGET_DIR/lib/liblzma.a
 }
 
 CONFIG(mingw-cross-env-shared) {

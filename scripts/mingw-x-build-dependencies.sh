@@ -35,6 +35,8 @@ if [ ! $NUMJOBS ]; then
 	fi
 fi
 
+. ./scripts/setenv-mingw-xbuild.sh $*
+
 docmd()
 {
 	echo $*
@@ -49,6 +51,8 @@ fi
 
 mxe_get_debian_binary()
 {
+	# experimental. as of late 2016 the binary mxe packages are still
+	# buggy and this will not work.
 	debline="deb http://pkg.mxe.cc/repos/apt/debian wheezy main"
 	echo $debline > /etc/apt/sources.list.d/mxeapt.list
 	apt-key adv --keyserver keyserver.ubuntu.com --recv-keys D43A795B73B16ABE9643FE1AFD8FFF16DB45C6AB
@@ -83,4 +87,5 @@ mxe_build_from_src()
 	docmd cd $OPENSCADDIR
 }
 
-mxe_get_debian_binary
+mxe_build_from_src
+
