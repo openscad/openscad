@@ -115,20 +115,22 @@ package manager on your system when you install the packages listed above.
 
 ### Supported systems
 
-Building from source works best on current operating systems. Operating 
-systems that are near or past "end of life" may not work. Please see the 
-"building from sources" wikibooks link at the end of this file for tips 
-on unusual build situations.
+Building from source tends to work best on current operating systems. 
+Operating systems that are near or past "end of life" may not work. 
+Please see the "building from sources" wikibooks link at the end of this 
+file for tips on unusual build situations.
 
 ### Getting the source code
 
-Install git (http://git-scm.com/) onto your system. Then run a clone:
+Install git (http://git-scm.com/) onto your system. The package may be 
+called 'git-core' or 'scmgit' on some systems. Then run a clone:
 
     git clone git://github.com/openscad/openscad.git
 
 This will download the latest sources into a directory named 'openscad'. 
 
-To pull the MCAD library (http://reprap.org/wiki/MCAD), do the following:
+Now cd into the openscad directory and pull the MCAD library 
+(http://reprap.org/wiki/MCAD):
 
     cd openscad
     git submodule update --init
@@ -170,12 +172,7 @@ Then run the script to compile all the dependencies:
 
         sudo port install opencsg qscintilla boost cgal pkgconfig eigen3 harfbuzz fontconfig
 
-
 ### Building for Linux or BSD
-
-Install git with your package manager. For example on Ubuntu, run 
-sudo apt install git. The package may be called 'git-core' or 'scmgit' 
-on some systems.
 
 Once you've cloned this git repository, download and install the 
 dependency packages listed above using your system's package manager. A 
@@ -193,19 +190,22 @@ Then skip ahead to the Compilation instructions.
 
 ### Building for Windows
 
-OpenSCAD for Windows is cross-compiled from within Linux. It uses the 
-MXE <http://mxe.cc/> cross build system.
+OpenSCAD for Windows is cross-compiled from within Linux using the MXE 
+cross-Mingw build system <http://mxe.cc>. These instructions will also 
+work using "Bash on Ubuntu on Windows" included as part of the Windows 
+Linux Subsystem on Windows 10, no virtual machine required.
 
-Start a new clean bash shell and run the script that sets up the 
-environment variables.
+First run the script to set up environment variables:
 
-    source ./scripts/setenv-mingw-xbuild.sh 64
+    source ./scripts/setenv-mingw-x-build.sh 64
 
-Then run the script to download the packages for the MXE tools
+Now run the following script to build MXE tools from source. This may 
+take 10G of diskspace under $HOME/openscad_deps and several hours of time.
 
-    ./scripts/mingw-x-get-dependencies.sh
+    ./scripts/mingw-x-build-dependencies.sh
 
-Then cross-build the installer package and .zip bundle
+Then cross-build the OpenSCAD Windows installer package and .zip bundle. The
+results will be under the openscad/bin/ directory.
 
     ./scripts/release-common.sh
 
