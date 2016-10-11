@@ -115,8 +115,6 @@ if [ ! $? -eq 0 ]; then
 fi
 
 echo in directory $DEPLOYDIR
-echo to install, run:
-echo '   'sudo dpkg -i $DPKGFILE
-echo then to fix any dependency problems, run
-echo '   'sudo apt install -f
+echo to install, please run:
+echo '   'sudo gdebi $DPKGFILE
 
