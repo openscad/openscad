@@ -1,32 +1,32 @@
-@Parameter("parameter")
+//Parameter("parameter")
 a = true;
-@Description("description")
-@Parameter("parameter")
+//Description("description")
+//Parameter("parameter")
 b = false;
-@Description("description")
-@Parameter("parameter")
+//Description("description")
+//Parameter("parameter")
 c = undef;
 d = a;
 e = $fn;
-@Description("description")
-@Parameter("parameter")
+//Description("description")
+//Parameter("parameter")
 f1 = [1];
-@Description("description")
-@Parameter("parameter")
+//Description("description")
+//Parameter("parameter")
 f2 = [1, 2, 3];
 g = ((f2.x + f2.y) + f2.z);
-@Description("description")
-@Parameter("parameter")
+//Description("description")
+//Parameter("parameter")
 h1 = [2 : 5];
-@Description("description")
-@Parameter("parameter")
+//Description("description")
+//Parameter("parameter")
 h2 = [1 : 2 : 10];
 i = ((h2.begin - h2.step) - h2.end);
-@Description("description")
-@Parameter("parameter")
+//Description("description")
+//Parameter("parameter")
 j = "test";
-@Description("description")
-@Parameter("parameter")
+//Description("description")
+//Parameter("parameter")
 k = 0.0123;
 l = (a * b);
 m = (a / b);

@@ -51,6 +51,6 @@ const std::string & Annotation::getName() const
 std::string Annotation::dump() const
 {
 	std::stringstream dump;
-	dump << "@" << name << "(" << *this->expr << ")" << std::endl;
+	dump << "//" << name << "(" << *this->expr << ")" << std::endl;
 	return dump.str();
 }

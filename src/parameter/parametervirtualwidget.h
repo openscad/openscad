@@ -30,7 +30,9 @@ protected:
 	}
 	
 	void setDescription(const QString& description) {
-		this->labelDescription->show();
-		this->labelDescription->setText(description);
+		if(!description.isEmpty()){
+			this->labelDescription->show();
+			this->labelDescription->setText(description);
+		}
 	}
 };

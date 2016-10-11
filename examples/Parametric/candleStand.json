@@ -1,23 +1,6 @@
 {
-    "parameterSets":
-    {
-        "Large":
-        {
-            "CenterCandleWidth": "10",
-            "candleSize": "9",
-            "centerCandle": "false",
-            "count": "7",
-            "heightOfRing": "4",
-            "heightOfSupport": "3",
-            "holeSize": "3",
-            "length": "70",
-            "radius": "25",
-            "width": "5",
-            "widthOfRing": "23",
-            "widthOfSupport": "3"
-        },
-        "Medium Size":
-        {
+    "parameterSets": {
+        "Medium Size": {
             "CenterCandleWidth": "6",
             "candleSize": "9",
             "centerCandle": "true",
@@ -31,8 +14,7 @@
             "widthOfRing": "23",
             "widthOfSupport": "3"
         },
-        "small":
-        {
+        "small": {
             "CenterCandleWidth": "4",
             "candleSize": "6",
             "centerCandle": "true",
@@ -46,8 +28,7 @@
             "widthOfRing": "13",
             "widthOfSupport": "2"
         },
-        "With Ball":
-        {
+        "With Ball": {
             "CenterCandleWidth": "7",
             "candleSize": "6",
             "centerCandle": "false",
@@ -60,6 +41,21 @@
             "width": "4",
             "widthOfRing": "13",
             "widthOfSupport": "2"
+        },
+        "Large": {
+            "CenterCandleWidth": "10",
+            "candleSize": "9",
+            "centerCandle": "false",
+            "count": "7",
+            "heightOfRing": "4",
+            "heightOfSupport": "3",
+            "holeSize": "3",
+            "length": "70",
+            "radius": "25",
+            "width": "5",
+            "widthOfRing": "23",
+            "widthOfSupport": "3"
         }
-    }
+    },
+    "fileFormatVersion": "1"
 }
