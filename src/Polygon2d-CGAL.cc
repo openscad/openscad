@@ -8,8 +8,6 @@
 #include <CGAL/Polygon_2.h>
 #include <iostream>
 
-#include <boost/foreach.hpp>
-
 namespace Polygon2DCGAL {
 
 struct FaceInfo
@@ -111,10 +109,10 @@ PolySet *Polygon2d::tessellate() const
 	Polygon2DCGAL::CDT cdt; // Uses a constrained Delaunay triangulator.
 	OPENSCAD_CGAL_ERROR_BEGIN;
 	// Adds all vertices, and add all contours as constraints.
-	BOOST_FOREACH(const Outline2d &outline, this->outlines()) {
+	for(const auto &outline : this->outlines()) {
 		// Start with last point
 		Polygon2DCGAL::CDT::Vertex_handle prev = cdt.insert(Polygon2DCGAL::Point(outline.vertices[outline.vertices.size()-1][0], outline.vertices[outline.vertices.size()-1][1]));
-		BOOST_FOREACH(const Vector2d &v, outline.vertices) {
+		for(const auto &v : outline.vertices) {
 			Polygon2DCGAL::CDT::Vertex_handle curr = cdt.insert(Polygon2DCGAL::Point(v[0], v[1]));
 			if (prev != curr) { // Ignore duplicate vertices
 				cdt.insert_constraint(prev, curr);

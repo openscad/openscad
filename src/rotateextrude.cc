@@ -26,12 +26,12 @@
 
 #include "rotateextrudenode.h"
 #include "module.h"
+#include "ModuleInstantiation.h"
 #include "evalcontext.h"
 #include "printutils.h"
 #include "fileutils.h"
 #include "builtin.h"
 #include "polyset.h"
-#include "visitor.h"
 
 #include <sstream>
 #include <boost/assign/std/vector.hpp>
@@ -61,13 +61,15 @@ AbstractNode *RotateExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	node->fn = c.lookup_variable("$fn")->toDouble();
 	node->fs = c.lookup_variable("$fs")->toDouble();
 	node->fa = c.lookup_variable("$fa")->toDouble();
+    
 
 	ValuePtr file = c.lookup_variable("file");
 	ValuePtr layer = c.lookup_variable("layer", true);
 	ValuePtr convexity = c.lookup_variable("convexity", true);
 	ValuePtr origin = c.lookup_variable("origin", true);
 	ValuePtr scale = c.lookup_variable("scale", true);
-
+	ValuePtr angle = c.lookup_variable("angle", true);
+    
 	if (!file->isUndefined()) {
 		printDeprecation("Support for reading files in rotate_extrude will be removed in future releases. Use a child import() instead.");
 		node->filename = lookup_file(file->toString(), inst->path(), c.documentPath());
@@ -77,12 +79,17 @@ AbstractNode *RotateExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	node->convexity = (int)convexity->toDouble();
 	origin->getVec2(node->origin_x, node->origin_y);
 	node->scale = scale->toDouble();
+	node->angle = 360;
+	angle->getFiniteDouble(node->angle);
 
 	if (node->convexity <= 0)
 		node->convexity = 2;
 
 	if (node->scale <= 0)
 		node->scale = 1;
+
+	if ((node->angle <= -360) || (node->angle > 360))
+		node->angle = 360;
 
 	if (node->filename.empty()) {
 		std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(evalctx);
@@ -108,6 +115,7 @@ std::string RotateExtrudeNode::toString() const
 			;
 	}
 	stream <<
+		"angle = " << this->angle << ", "
 		"convexity = " << this->convexity << ", "
 		"$fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs << ")";
 

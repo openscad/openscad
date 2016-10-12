@@ -54,10 +54,12 @@ macx {
   }
 }
 
-# See Dec 2011 OpenSCAD mailing list, re: CGAL/GCC bugs.
 *g++* {
+  # See Dec 2011 OpenSCAD mailing list, re: CGAL/GCC bugs.
   QMAKE_CXXFLAGS *= -fno-strict-aliasing
   QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-local-typedefs # ignored before 4.8
+  # use of 'auto'
+  QMAKE_CXXFLAGS += -std=c++11
 }
 
 *clang* {
@@ -80,7 +82,10 @@ CONFIG += gettext
 
 mac: {
    LIBS += -framework OpenGL
+} else {
+   LIBS += -lGL
 }
+
 
 include(../common.pri)
 

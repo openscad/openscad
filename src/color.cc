@@ -26,12 +26,13 @@
 
 #include "colornode.h"
 #include "module.h"
+#include "ModuleInstantiation.h"
 #include "evalcontext.h"
 #include "builtin.h"
 #include "printutils.h"
 #include <sstream>
 #include <assert.h>
-#include <boost/unordered/unordered_map.hpp>
+#include <unordered_map>
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/assign/std/vector.hpp>
 #include <boost/assign/list_of.hpp>
@@ -45,7 +46,7 @@ public:
 	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
 
 private:
-	boost::unordered_map<std::string, Color4f> webcolors;
+	std::unordered_map<std::string, Color4f> webcolors;
 };
 
 ColorModule::ColorModule()
@@ -204,7 +205,7 @@ ColorModule::ColorModule()
 
 	    // additional OpenSCAD specific entry
 	    ("transparent", Color4f(0, 0, 0, 0))
-		.convert_to_container<boost::unordered_map<std::string, Color4f> >();
+		.convert_to_container<std::unordered_map<std::string, Color4f>>();
 }
 
 ColorModule::~ColorModule()

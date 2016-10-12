@@ -9,10 +9,6 @@
 #include "cgalutils.h"
 #endif
 
-#include <boost/foreach.hpp>
-
-using namespace GeometryUtils;
-
 namespace PolysetUtils {
 
 	// Project all polygons (also back-facing) into a Polygon2d instance.
@@ -21,9 +17,9 @@ namespace PolysetUtils {
 	Polygon2d *project(const PolySet &ps) {
 		Polygon2d *poly = new Polygon2d;
 
-		BOOST_FOREACH(const Polygon &p, ps.polygons) {
+		for(const auto &p : ps.polygons) {
 			Outline2d outline;
-			BOOST_FOREACH(const Vector3d &v, p) {
+			for(const auto &v : p) {
 				outline.vertices.push_back(Vector2d(v[0], v[1]));
 			}
 			poly->addOutline(outline);
@@ -57,9 +53,9 @@ namespace PolysetUtils {
 
 		// Build Indexed PolyMesh
 		Reindexer<Vector3f> allVertices;
-		std::vector<std::vector<IndexedFace> > polygons;
+		std::vector<std::vector<IndexedFace>> polygons;
 
-		BOOST_FOREACH(const Polygon &pgon, inps.polygons) {
+		for(const auto &pgon : inps.polygons) {
 			if (pgon.size() < 3) {
 				degeneratePolygons++;
 				continue;
@@ -73,7 +69,7 @@ namespace PolysetUtils {
 			std::vector<IndexedFace> &faces = polygons.back();
 			faces.push_back(IndexedFace());
 			IndexedFace &currface = faces.back();
-			BOOST_FOREACH (const Vector3d &v, pgon) {
+			for(const auto &v : pgon) {
 				// Create vertex indices and remove consecutive duplicate vertices
 				int idx = allVertices.lookup(v.cast<float>());
 				if (currface.empty() || idx != currface.back()) currface.push_back(idx);
@@ -88,7 +84,7 @@ namespace PolysetUtils {
 		// Tessellate indexed mesh
 		const Vector3f *verts = allVertices.getArray();
 		std::vector<IndexedTriangle> allTriangles;
-		BOOST_FOREACH(const std::vector<IndexedFace> &faces, polygons) {
+		for(const auto &faces : polygons) {
 			std::vector<IndexedTriangle> triangles;
 			if (faces[0].size() == 3) {
 				triangles.push_back(IndexedTriangle(faces[0][0], faces[0][1], faces[0][2]));
@@ -96,7 +92,7 @@ namespace PolysetUtils {
 			else {
 				bool err = GeometryUtils::tessellatePolygonWithHoles(verts, faces, triangles, NULL);
 				if (!err) {
-					BOOST_FOREACH(const IndexedTriangle &t, triangles) {
+					for(const auto &t : triangles) {
 						outps.append_poly();
 						outps.append_vertex(verts[t[0]]);
 						outps.append_vertex(verts[t[1]]);

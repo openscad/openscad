@@ -1,5 +1,6 @@
-#include <AppleEvents.h>
+#include "AppleEvents.h"
 #include <MacTypes.h>
+#include <AssertMacros.h>
 #include <CoreServices/CoreServices.h>
 #include <QApplication>
 #include "MainWindow.h"
@@ -12,7 +13,7 @@ OSErr eventHandler(const AppleEvent *, AppleEvent *, SRefCon )
 {
 // FIXME: Ugly hack; just using the first MainWindow we can find
 	MainWindow *mainwin = NULL;
-	foreach (QWidget *w, QApplication::topLevelWidgets()) {
+	for (auto &w : QApplication::topLevelWidgets()) {
 		mainwin = qobject_cast<MainWindow*>(w);
 		if (mainwin) break;
 	}

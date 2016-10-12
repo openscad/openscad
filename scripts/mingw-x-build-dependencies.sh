@@ -63,15 +63,22 @@ fi
 
 echo "entering" $MXEDIR
 cd $MXEDIR
-plist=""
-plist="$plist qtbase qscintilla2 mpfr eigen opencsg cgal glib freetype"
-plist="$plist fontconfig harfbuzz nsis"
-if [ "`echo $* | grep download`" ]; then
-  plist2=
-  for pkg in $plist; do
-    plist2="$plist2 "$pkg"-download"
-  done
-  plist=$plist2
+echo 'checkout openscad-snapshot-build branch'
+git checkout openscad-snapshot-build
+if [ "`echo $* | grep 64`" ]; then
+ MXE_TARGETS='x86_64-w64-mingw32.static'
+ if [ "`echo $* | grep download`" ]; then
+  PACKAGES='download-mpfr download-eigen download-opencsg download-cgal download-qtbase download-glib download-libxml2 download-freetype download-fontconfig download-harfbuzz'
+ else
+  PACKAGES='qtbase qscintilla2 mpfr eigen opencsg cgal glib libxml2 freetype fontconfig harfbuzz'
+ fi
+else
+ MXE_TARGETS='i686-w64-mingw32.static'
+ if [ "`echo $* | grep download`" ]; then
+  PACKAGES='download-mpfr download-eigen download-opencsg download-cgal download-qtbase download-nsis download-glib download-libxml2 download-freetype download-fontconfig download-harfbuzz'
+ else
+  PACKAGES='qtbase qscintilla2 mpfr eigen opencsg cgal nsis glib libxml2 freetype fontconfig harfbuzz'
+ fi
 fi
 cmd="make MXE_TARGETS=$MXE_TARGET -j $NUMCPU JOBS=$NUMJOBS $plist"
 echo $cmd

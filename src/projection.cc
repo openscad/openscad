@@ -26,10 +26,10 @@
 
 #include "projectionnode.h"
 #include "module.h"
+#include "ModuleInstantiation.h"
 #include "evalcontext.h"
 #include "printutils.h"
 #include "builtin.h"
-#include "visitor.h"
 #include "polyset.h"
 
 #include <assert.h>

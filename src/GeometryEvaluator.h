@@ -1,6 +1,6 @@
 #pragma once
 
-#include "visitor.h"
+#include "NodeVisitor.h"
 #include "enums.h"
 #include "memory.h"
 #include "Geometry.h"
@@ -10,7 +10,7 @@
 #include <vector>
 #include <map>
 
-class GeometryEvaluator : public Visitor
+class GeometryEvaluator : public NodeVisitor
 {
 public:
 	GeometryEvaluator(const class Tree &tree);
@@ -23,9 +23,11 @@ public:
 	virtual Response visit(State &state, const AbstractPolyNode &node);
 	virtual Response visit(State &state, const LinearExtrudeNode &node);
 	virtual Response visit(State &state, const RotateExtrudeNode &node);
+	virtual Response visit(State &state, const GroupNode &node);
+	virtual Response visit(State &state, const RootNode &node);
 	virtual Response visit(State &state, const LeafNode &node);
 	virtual Response visit(State &state, const TransformNode &node);
-	virtual Response visit(State &state, const CsgNode &node);
+	virtual Response visit(State &state, const CsgOpNode &node);
 	virtual Response visit(State &state, const CgaladvNode &node);
 	virtual Response visit(State &state, const ProjectionNode &node);
 	virtual Response visit(State &state, const RenderNode &node);
@@ -57,7 +59,7 @@ private:
 	shared_ptr<const Geometry> smartCacheGet(const AbstractNode &node, bool preferNef);
 	bool isSmartCached(const AbstractNode &node);
 	std::vector<const class Polygon2d *> collectChildren2D(const AbstractNode &node);
-	Geometry::ChildList collectChildren3D(const AbstractNode &node);
+	Geometry::Geometries collectChildren3D(const AbstractNode &node);
 	Polygon2d *applyMinkowski2D(const AbstractNode &node);
 	Polygon2d *applyHull2D(const AbstractNode &node);
 	Geometry *applyHull3D(const AbstractNode &node);
@@ -67,7 +69,7 @@ private:
 	ResultObject applyToChildren(const AbstractNode &node, OpenSCADOperator op);
 	void addToParent(const State &state, const AbstractNode &node, const shared_ptr<const Geometry> &geom);
 
-	std::map<int, Geometry::ChildList> visitedchildren;
+	std::map<int, Geometry::Geometries> visitedchildren;
 	const Tree &tree;
 	shared_ptr<const Geometry> root;
 

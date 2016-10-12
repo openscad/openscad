@@ -26,31 +26,28 @@
 
 #include "value.h"
 #include "printutils.h"
-#include <stdio.h>
-#include <math.h>
+#include <cmath>
 #include <assert.h>
 #include <sstream>
-#include <boost/foreach.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 #include <boost/variant/apply_visitor.hpp>
 #include <boost/variant/static_visitor.hpp>
 #include <boost/format.hpp>
 #include "boost-utils.h"
-#include "boosty.h"
+#include <boost/filesystem.hpp>
+namespace fs=boost::filesystem;
 /*Unicode support for string lengths and array accesses*/
 #include <glib.h>
-
-#include <boost/math/special_functions/fpclassify.hpp>
 
 Value Value::undefined;
 ValuePtr ValuePtr::undefined;
 
-static boost::uint32_t convert_to_uint32(const double d) {
-    boost::uint32_t ret = std::numeric_limits<boost::uint32_t>::max();
+static uint32_t convert_to_uint32(const double d) {
+    uint32_t ret = std::numeric_limits<uint32_t>::max();
 
-    if (boost::math::isfinite(d)) {
+    if (std::isfinite(d)) {
         try {
-            ret = boost::numeric_cast<boost::uint32_t>(d);
+            ret = boost::numeric_cast<uint32_t>(d);
         } catch (boost::bad_numeric_cast) {
             // ignore, leaving the default max() value
         }
@@ -63,7 +60,7 @@ std::ostream &operator<<(std::ostream &stream, const Filename &filename)
 {
   fs::path fnpath = fs::path( (std::string)filename );
   fs::path fpath = boostfs_uncomplete(fnpath, fs::current_path());
-  stream << QuotedString(boosty::stringy( fpath ));
+  stream << QuotedString(fpath.generic_string());
   return stream;
 }
 
@@ -71,7 +68,7 @@ std::ostream &operator<<(std::ostream &stream, const Filename &filename)
 std::ostream &operator<<(std::ostream &stream, const QuotedString &s)
 {
   stream << '"';
-  BOOST_FOREACH(char c, s) {
+  for(char c : s) {
     switch (c) {
     case '\t':
       stream << "\\t";
@@ -207,7 +204,7 @@ bool Value::getFiniteDouble(double &v) const
   if (!getDouble(result)) {
     return false;
   }
-  bool valid = boost::math::isfinite(result);
+  bool valid = std::isfinite(result);
   if (valid) {
     v = result;
   }
@@ -301,7 +298,7 @@ public:
 
 	std::string operator()(const RangeType &v) const
 	{
-		const boost::uint32_t steps = v.nbsteps();
+		const uint32_t steps = v.numValues();
 		if (steps >= 10000) {
 			PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu).", steps);
 			return "";
@@ -517,7 +514,7 @@ Value Value::multvecnum(const Value &vecval, const Value &numval)
 {
   // Vector * Number
   VectorType dstv;
-  BOOST_FOREACH(const ValuePtr &val, vecval.toVector()) {
+  for(const auto &val : vecval.toVector()) {
     dstv.push_back(ValuePtr(*val * numval));
   }
   return Value(dstv);
@@ -578,6 +575,8 @@ Value Value::operator*(const Value &v) const
   else if (this->type() == VECTOR && v.type() == VECTOR) {
     const VectorType &vec1 = this->toVector();
     const VectorType &vec2 = v.toVector();
+		if (vec1.size() == 0 || vec2.size() == 0) return Value::undefined;
+
     if (vec1[0]->type() == NUMBER && vec2[0]->type() == NUMBER &&
         vec1.size() == vec2.size()) { 
         // Vector dot product.
@@ -599,7 +598,7 @@ Value Value::operator*(const Value &v) const
                vec1[0]->toVector().size() == vec2.size()) {
       // Matrix * Matrix
       VectorType dstv;
-      BOOST_FOREACH(const ValuePtr &srcrow, vec1) {
+      for(const auto &srcrow : vec1) {
           const VectorType &srcrowvec = srcrow->toVector();
           if (srcrowvec.size() != vec2.size()) return Value::undefined;
           dstv.push_back(ValuePtr(multvecmat(srcrowvec, vec2)));
@@ -618,7 +617,7 @@ Value Value::operator/(const Value &v) const
   else if (this->type() == VECTOR && v.type() == NUMBER) {
     const VectorType &vec = this->toVector();
     VectorType dstv;
-    BOOST_FOREACH(const ValuePtr &vecval, vec) {
+    for(const auto &vecval : vec) {
       dstv.push_back(ValuePtr(*vecval / v));
     }
     return Value(dstv);
@@ -626,7 +625,7 @@ Value Value::operator/(const Value &v) const
   else if (this->type() == NUMBER && v.type() == VECTOR) {
     const VectorType &vec = v.toVector();
     VectorType dstv;
-    BOOST_FOREACH(const ValuePtr &vecval, vec) {
+    for(const auto &vecval : vec) {
       dstv.push_back(ValuePtr(*this / *vecval));
     }
     return Value(dstv);
@@ -650,7 +649,7 @@ Value Value::operator-() const
   else if (this->type() == VECTOR) {
     const VectorType &vec = this->toVector();
     VectorType dstv;
-    BOOST_FOREACH(const ValuePtr &vecval, vec) {
+    for(const auto &vecval : vec) {
       dstv.push_back(ValuePtr(-*vecval));
     }
     return Value(dstv);
@@ -681,7 +680,7 @@ public:
   Value operator()(const std::string &str, const double &idx) const {
     Value v;
 
-    const boost::uint32_t i = convert_to_uint32(idx);
+    const uint32_t i = convert_to_uint32(idx);
     if (i < str.size()) {
 	  //Ensure character (not byte) index is inside the character/glyph array
 	  if( (unsigned) i < g_utf8_strlen( str.c_str(), str.size() ) )	{
@@ -697,13 +696,13 @@ public:
   }
 
   Value operator()(const Value::VectorType &vec, const double &idx) const {
-    const boost::uint32_t i = convert_to_uint32(idx);
+    const uint32_t i = convert_to_uint32(idx);
     if (i < vec.size()) return *vec[i];
     return Value::undefined;
   }
 
   Value operator()(const RangeType &range, const double &idx) const {
-    const boost::uint32_t i = convert_to_uint32(idx);
+    const uint32_t i = convert_to_uint32(idx);
     switch(i) {
     case 0: return Value(range.begin_val);
     case 1: return Value(range.step_val);
@@ -730,38 +729,41 @@ void RangeType::normalize() {
   }
 }
 
-boost::uint32_t RangeType::nbsteps() const {
-  if (boost::math::isnan(step_val) || boost::math::isinf(begin_val) || (boost::math::isinf(end_val))) {
-    return std::numeric_limits<boost::uint32_t>::max();
+uint32_t RangeType::numValues() const {
+  if (std::isnan(begin_val) || std::isnan(end_val) || std::isnan(step_val)) {
+		return 0;
+	}
+
+  if (std::isinf(begin_val) || (std::isinf(end_val))) {
+    return std::numeric_limits<uint32_t>::max();
   }
 
-  if ((begin_val == end_val) || boost::math::isinf(step_val)) {
-    return 0;
+  if ((begin_val == end_val) || std::isinf(step_val)) {
+    return 1;
   }
   
   if (step_val == 0) { 
-    return std::numeric_limits<boost::uint32_t>::max();
+    return std::numeric_limits<uint32_t>::max();
   }
 
-  double steps;
+  double numvals;
   if (step_val < 0) {
     if (begin_val < end_val) {
       return 0;
     }
-    steps = (begin_val - end_val) / (-step_val);
+    numvals = (begin_val - end_val) / (-step_val) + 1;
   } else {
     if (begin_val > end_val) {
       return 0;
     }
-    steps = (end_val - begin_val) / step_val;
+    numvals = (end_val - begin_val) / step_val + 1;
   }
   
-  return steps;
+  return numvals;
 }
 
-RangeType::iterator::iterator(RangeType &range, type_t type) : range(range), val(range.begin_val)
+RangeType::iterator::iterator(RangeType &range, type_t type) : range(range), val(range.begin_val), type(type)
 {
-    this->type = type;
     update_type();
 }
 
@@ -778,6 +780,8 @@ void RangeType::iterator::update_type()
             type = RANGE_TYPE_END;
         }
     }
+
+		if (std::isnan(range.begin_val) || std::isnan(range.end_val) || std::isnan(range.step_val)) type = RANGE_TYPE_END;
 }
 
 RangeType::iterator::reference RangeType::iterator::operator*()

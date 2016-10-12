@@ -10,7 +10,7 @@
 #include <boost/variant.hpp>
 #include <boost/lexical_cast.hpp>
 #endif
-#include <boost/cstdint.hpp>
+#include <cstdint>
 #include "memory.h"
 
 class QuotedString : public std::string
@@ -74,9 +74,10 @@ public:
 		: begin_val(begin), step_val(step), end_val(end) {}
 	
 	bool operator==(const RangeType &other) const {
-		return this->begin_val == other.begin_val &&
-			this->step_val == other.step_val &&
-			this->end_val == other.end_val;
+		return this == &other ||
+			(this->begin_val == other.begin_val &&
+			 this->step_val == other.step_val &&
+			 this->end_val == other.end_val);
 	}
 	
 	double begin_value() { return begin_val; }
@@ -86,8 +87,8 @@ public:
 	iterator begin() { return iterator(*this, RANGE_TYPE_BEGIN); }
 	iterator end() { return iterator(*this, RANGE_TYPE_END); }
 	
-	/// return number of steps, max uint32_t value if step is 0
-	boost::uint32_t nbsteps() const;
+	/// return number of values, max uint32_t value if step is 0 or range is infinite
+	uint32_t numValues() const;
   
 	friend class chr_visitor;
 	friend class tostring_visitor;

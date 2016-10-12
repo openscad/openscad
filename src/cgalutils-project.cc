@@ -27,15 +27,10 @@
 #endif
 
 #include "svg.h"
-#include "Reindexer.h"
 #include "GeometryUtils.h"
 
 #include <map>
 #include <queue>
-#include <boost/foreach.hpp>
-#include <boost/unordered_set.hpp>
-
-using namespace GeometryUtils;
 
 static void add_outline_to_poly(CGAL_Nef_polyhedron2::Explorer &explorer,
 								CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator circ,
@@ -110,8 +105,8 @@ OGL_helper.h
 class ZRemover {
 public:
 	CGAL_Nef_polyhedron2::Boundary boundary;
-	boost::shared_ptr<CGAL_Nef_polyhedron2> tmpnef2d;
-	boost::shared_ptr<CGAL_Nef_polyhedron2> output_nefpoly2d;
+	shared_ptr<CGAL_Nef_polyhedron2> tmpnef2d;
+	shared_ptr<CGAL_Nef_polyhedron2> output_nefpoly2d;
 	CGAL::Direction_3<CGAL_Kernel3> up;
 	ZRemover()
 	{

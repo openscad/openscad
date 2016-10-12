@@ -1,3 +1,1 @@
-group() {
-	rotate_extrude(file = "../../../dxf/open-polyline.dxf", layer = "", origin = [0, 0], scale = 1, convexity = 2, $fn = 0, $fa = 12, $fs = 2);
-}
+rotate_extrude(file = "../../../dxf/open-polyline.dxf", layer = "", origin = [0, 0], scale = 1, timestamp = 1354956624, angle = 360, convexity = 2, $fn = 0, $fa = 12, $fs = 2);

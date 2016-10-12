@@ -28,12 +28,11 @@
 
 #include "svg.h"
 #include "Reindexer.h"
+#include "hash.h"
 #include "GeometryUtils.h"
 
 #include <map>
 #include <queue>
-#include <boost/foreach.hpp>
-#include <boost/unordered_set.hpp>
 
 using namespace GeometryUtils;
 
@@ -55,8 +54,8 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 		// NB! CGAL's convex_hull_3() doesn't like std::set iterators, so we use a list
 		// instead.
 		std::list<K::Point_3> points;
-		BOOST_FOREACH(const Polygon &poly, psq.polygons) {
-			BOOST_FOREACH(const Vector3d &p, poly) {
+		for(const auto &poly : psq.polygons) {
+			for(const auto &p : poly) {
 				points.push_back(vector_convert<K::Point_3>(p));
 			}
 		}
@@ -275,7 +274,7 @@ namespace CGALUtils {
 
 		// 1. Build Indexed PolyMesh
 		Reindexer<Vector3f> allVertices;
-		std::vector<std::vector<IndexedFace> > polygons;
+		std::vector<std::vector<IndexedFace>> polygons;
 
 		CGAL_Nef_polyhedron3::Halffacet_const_iterator hfaceti;
 		CGAL_forall_halffacets(hfaceti, N) {
@@ -314,19 +313,19 @@ namespace CGALUtils {
 		// 3. Triangulate each face
 		const Vector3f *verts = allVertices.getArray();
 		std::vector<IndexedTriangle> allTriangles;
-		BOOST_FOREACH(const std::vector<IndexedFace> &faces, polygons) {
+		for(const auto &faces : polygons) {
 #if 0 // For debugging
 			std::cerr << "---\n";
-			BOOST_FOREACH(const IndexedFace &poly, faces) {
-				BOOST_FOREACH(int i, poly) {
+			for(const auto &poly : faces) {
+				for(auto i : poly) {
 					std::cerr << i << " ";
 				}
 				std::cerr << "\n";
 			}
 #if 0 // debug
 			std::cerr.precision(20);
-			BOOST_FOREACH(const IndexedFace &poly, faces) {
-				BOOST_FOREACH(int i, poly) {
+			for(const auto &poly : faces) {
+				for(auto i : poly) {
 					std::cerr << verts[i][0] << "," << verts[i][1] << "," << verts[i][2] << "\n";
 				}
 				std::cerr << "\n";
@@ -356,7 +355,7 @@ namespace CGALUtils {
 			std::vector<IndexedTriangle> triangles;
 			bool err = GeometryUtils::tessellatePolygonWithHoles(verts, faces, triangles, NULL);
 			if (!err) {
-				BOOST_FOREACH(const IndexedTriangle &t, triangles) {
+				for(const auto &t : triangles) {
 					assert(t[0] >= 0 && t[0] < (int)allVertices.size());
 					assert(t[1] >= 0 && t[1] < (int)allVertices.size());
 					assert(t[2] >= 0 && t[2] < (int)allVertices.size());
@@ -366,7 +365,7 @@ namespace CGALUtils {
 		}
 
 #if 0 // For debugging
-		BOOST_FOREACH(const IndexedTriangle &t, allTriangles) {
+		for(const auto &t : allTriangles) {
 			std::cerr << t[0] << " " << t[1] << " " << t[2] << "\n";
 		}
 #endif // debug
@@ -376,7 +375,7 @@ namespace CGALUtils {
 			PRINTB("Error: Non-manifold triangle mesh created: %d unconnected edges", unconnected2);
 		}
 
-		BOOST_FOREACH(const IndexedTriangle &t, allTriangles) {
+		for(const auto &t : allTriangles) {
 			ps.append_poly();
 			ps.append_vertex(verts[t[0]]);
 			ps.append_vertex(verts[t[1]]);
@@ -427,7 +426,7 @@ namespace CGALUtils {
 			std::vector<CGAL_Polygon_3> triangles;
 			bool err = CGALUtils::tessellate3DFaceWithHoles(polyholes, triangles, plane);
 			if (!err) {
-				BOOST_FOREACH(const CGAL_Polygon_3 &p, triangles) {
+				for(const auto &p : triangles) {
 					if (p.size() != 3) {
 						PRINT("WARNING: triangle doesn't have 3 points. skipping");
 						continue;
@@ -476,7 +475,7 @@ namespace CGALUtils {
 			std::vector<Polygon> triangles;
 			bool err = CGALUtils::tessellate3DFaceWithHolesNew(polyholes, triangles, plane);
 			if (!err) {
-				BOOST_FOREACH(const Polygon &p, triangles) {
+				for(const auto &p : triangles) {
 					if (p.size() != 3) {
 						PRINT("WARNING: triangle doesn't have 3 points. skipping");
 						continue;
@@ -541,7 +540,7 @@ namespace CGALUtils {
 			std::vector<Polygon> triangles;
 			bool err = CGALUtils::tessellatePolygonWithHolesNew(polyholes, triangles, NULL);
 			if (!err) {
-				BOOST_FOREACH(const Polygon &p, triangles) {
+				for(const auto &p : triangles) {
 					if (p.size() != 3) {
 						PRINT("WARNING: triangle doesn't have 3 points. skipping");
 						continue;
@@ -580,8 +579,8 @@ namespace CGALUtils {
 			}
 
 			std::cout << "---\n";
-			BOOST_FOREACH(const PolygonK &poly, polyholes) {
-				BOOST_FOREACH(const Vertex3K &v, poly) {
+			for(const auto &poly : polyholes) {
+				for(const auto &v : poly) {
 					std::cout << v.x() << "," << v.y() << "," << v.z() << "\n";
 				}
 				std::cout << "\n";
@@ -603,7 +602,7 @@ namespace CGALUtils {
 			std::vector<Polygon> triangles;
 			bool err = CGALUtils::tessellatePolygonWithHolesNew(polyholes, triangles, NULL);
 			if (!err) {
-				BOOST_FOREACH(const Polygon &p, triangles) {
+				for(const auto &p : triangles) {
 					if (p.size() != 3) {
 						PRINT("WARNING: triangle doesn't have 3 points. skipping");
 						continue;
@@ -655,8 +654,8 @@ namespace CGALUtils {
 #if 0 // For debugging
 			std::cerr << "---\n";
 			std::cerr.precision(20);
-			BOOST_FOREACH(const IndexedFace &poly, polyhole.faces) {
-				BOOST_FOREACH(int i, poly) {
+			for(const auto &poly : polyhole.faces) {
+				for(auto i : poly) {
 					std::cerr << polyhole.vertices[i][0] << "," << polyhole.vertices[i][1] << "," << polyhole.vertices[i][2] << "\n";
 				}
 				std::cerr << "\n";
@@ -680,7 +679,7 @@ namespace CGALUtils {
 			bool err = GeometryUtils::tessellatePolygonWithHoles(polyhole, triangles, NULL);
 			const Vector3f *verts = &polyhole.vertices.front();
 			if (!err) {
-				BOOST_FOREACH(const Vector3i &t, triangles) {
+				for(const auto &t : triangles) {
 					ps.append_poly();
 					ps.append_vertex(verts[t[0]]);
 					ps.append_vertex(verts[t[1]]);

@@ -2,7 +2,8 @@
 
 #include <string>
 
-#include "boosty.h"
+#include <boost/filesystem.hpp>
+namespace fs=boost::filesystem;
 
 #define STACK_BUFFER_SIZE (64 * 1024)
 #define STACK_LIMIT_DEFAULT (8 * 1024 * 1024 - STACK_BUFFER_SIZE)
@@ -44,8 +45,7 @@ namespace PlatformUtils {
          * OS type is reported based on what platform the application was
          * built for.
          * 
-				 * Extended sysinfo will return more info, like CPUs and RAM
-				 *
+         * Extended sysinfo will return more info, like CPUs and RAM
          * @return system information.
          */
         std::string sysinfo(bool extended = true);

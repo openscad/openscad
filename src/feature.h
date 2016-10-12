@@ -6,11 +6,18 @@
 #include <map>
 #include <vector>
 
+#include "exceptions.h"
+
 class Feature
 {
 public:
 	typedef std::vector<Feature *> list_t;
 	typedef list_t::iterator iterator;
+
+        static const Feature ExperimentalEachExpression;
+        static const Feature ExperimentalElseExpression;
+        static const Feature ExperimentalForCExpression;
+        static const Feature ExperimentalSvgImport;
 
 	const std::string& get_name() const;
 	const std::string& get_description() const;
@@ -36,4 +43,14 @@ private:
     
 	Feature(const std::string &name, const std::string &description);
 	virtual ~Feature();
+};
+
+class ExperimentalFeatureException : public EvaluationException
+{
+public:
+	static void check(const Feature &feature);
+	virtual ~ExperimentalFeatureException() throw();
+
+private:
+	ExperimentalFeatureException(const std::string &what_arg);
 };

@@ -32,7 +32,6 @@
 #include <QSettings>
 #include <QStatusBar>
 #include <boost/algorithm/string.hpp>
-#include <boost/foreach.hpp>
 #include "GeometryCache.h"
 #include "AutoUpdater.h"
 #include "feature.h"
@@ -47,7 +46,7 @@ Preferences *Preferences::instance = NULL;
 const char * Preferences::featurePropertyName = "FeatureProperty";
 Q_DECLARE_METATYPE(Feature *);
 
-class SettingsReader : public Settings::Visitor
+class SettingsReader : public Settings::SettingsVisitor
 {
     QSettings settings;
     Value getValue(const Settings::SettingsEntry& entry, const std::string& value) const {
@@ -91,7 +90,7 @@ class SettingsReader : public Settings::Visitor
     }
 };
 
-class SettingsWriter : public Settings::Visitor
+class SettingsWriter : public Settings::SettingsVisitor
 {
     virtual void handle(Settings::SettingsEntry& entry) const {
 	Settings::Settings *s = Settings::Settings::inst();
@@ -143,7 +142,7 @@ void Preferences::init() {
 
 	uint savedsize = getValue("editor/fontsize").toUInt();
 	QFontDatabase db;
-	foreach(uint size, db.standardSizes()) {
+	for(auto size : db.standardSizes()) {
 		this->fontSize->addItem(QString::number(size));
 		if (size == savedsize) {
 			this->fontSize->setCurrentIndex(this->fontSize->count()-1);
@@ -505,6 +504,7 @@ void Preferences::on_comboBoxLineWrap_activated(int val)
 
 void Preferences::on_comboBoxLineWrapIndentationStyle_activated(int val)
 {
+	spinBoxLineWrapIndentationIndent->setDisabled(comboBoxLineWrapIndentationStyle->currentText() == "Same");
 	applyComboBox(comboBoxLineWrapIndentationStyle, val, Settings::Settings::lineWrapIndentationStyle);
 }
 
@@ -541,6 +541,12 @@ void Preferences::on_checkBoxAutoIndent_toggled(bool val)
 	writeSettings();
 }
 
+void Preferences::on_checkBoxBackspaceUnindents_toggled(bool val)
+{
+    Settings::Settings::inst()->set(Settings::Settings::backspaceUnindents, Value(val));
+    writeSettings();
+}
+
 void Preferences::on_comboBoxIndentUsing_activated(int val)
 {
 	applyComboBox(comboBoxIndentUsing, val, Settings::Settings::indentStyle);
@@ -561,6 +567,11 @@ void Preferences::on_checkBoxEnableBraceMatching_toggled(bool val)
 {
 	Settings::Settings::inst()->set(Settings::Settings::enableBraceMatching, Value(val));
 	writeSettings();
+}
+void Preferences::on_checkBoxEnableLineNumbers_toggled(bool checked)
+{
+    Settings::Settings::inst()->set(Settings::Settings::enableLineNumbers, Value(checked));
+    writeSettings();
 }
 
 void Preferences::writeSettings()
@@ -682,16 +693,19 @@ void Preferences::updateGUI()
 	this->spinBoxLineWrapIndentationIndent->setValue(s->get(Settings::Settings::lineWrapIndentation).toDouble());
 	this->spinBoxShowWhitespaceSize->setValue(s->get(Settings::Settings::showWhitespaceSize).toDouble());
 	this->checkBoxAutoIndent->setChecked(s->get(Settings::Settings::autoIndent).toBool());
+	this->checkBoxBackspaceUnindents->setChecked(s->get(Settings::Settings::backspaceUnindents).toBool());
 	this->checkBoxHighlightCurrentLine->setChecked(s->get(Settings::Settings::highlightCurrentLine).toBool());
 	this->checkBoxEnableBraceMatching->setChecked(s->get(Settings::Settings::enableBraceMatching).toBool());
 	this->checkBoxShowWarningsIn3dView->setChecked(s->get(Settings::Settings::showWarningsIn3dView).toBool());
+	this->checkBoxEnableLineNumbers->setChecked(s->get(Settings::Settings::enableLineNumbers).toBool());
+	this->spinBoxLineWrapIndentationIndent->setDisabled(this->comboBoxLineWrapIndentationStyle->currentText() == "Same");
 }
 
 void Preferences::initComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry)
 {
 	comboBox->clear();
 	// Range is a vector of 2D vectors: [[name, value], ...]
-	BOOST_FOREACH(const ValuePtr &v, entry.range().toVector()) {
+	for(const auto &v : entry.range().toVector()) {
 		QString val = QString::fromStdString(v[0]->toString());
 		QString qtext = QString::fromStdString(gettext(v[1]->toString().c_str()));
 		comboBox->addItem(qtext, val);
@@ -749,9 +763,7 @@ void Preferences::create(QStringList colorSchemes)
 
     std::list<std::string> names = ColorMap::inst()->colorSchemeNames(true);
     QStringList renderColorSchemes;
-    foreach (std::string name, names) {
-	renderColorSchemes << name.c_str();
-    }
+    for(const auto &name : names) renderColorSchemes << name.c_str();
     
     instance = new Preferences();
     instance->syntaxHighlight->clear();
