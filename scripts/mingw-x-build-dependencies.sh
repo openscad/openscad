@@ -22,6 +22,11 @@
 #
 #
 
+if [ ! "`command -v zip`" ]; then
+	echo please install zip
+	exit
+fi
+
 if [ ! $NUMCPU ]; then
 	echo "note: you can 'export NUMCPU=x' for multi-core compiles (x=number)";
 	NUMCPU=1
