@@ -186,10 +186,13 @@ download and install MSYS2 from
 
      http://msys2.github.io
 
-Now start a new clean bash shell and run the script that sets up the 
-environment variables.
+Please make sure to carefully follow the instructions to fully update your
+MSYS2 installation.
 
-    source ./scripts/setenv.sh msys2
+Now start a new clean MSYS2-MINGW 64bit shell and run the script that 
+sets up the environment variables.
+
+    source ./scripts/setenv.sh
 
 Then run the script to download & compile all the prerequisite libraries above:
 
@@ -201,6 +204,8 @@ Next, build OpenSCAD and package it to an installer and/or .zip archive:
 
 If you only want to build openscad.exe, not make a package, then
 skip ahead to the Compilation instructions. 
+
+### Cross building
 
 To cross-build, first make sure that you have all necessary dependencies 
 of the MXE project ( listed at http://mxe.cc/#requirements ). Don't install

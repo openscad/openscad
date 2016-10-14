@@ -1,3 +1,4 @@
+#!/bin/sh
 # auto-install dependency packages using the systems package manager.
 # after running this, run ./script/check-dependencies.sh. see README.md
 #
@@ -185,20 +186,22 @@ pacinstall()
 get_msys2_x86_64_deps()
 {
  # for Windows(TM), see http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Microsoft_Windows
- pacman -Sy
+ pacman -Syuu
+ if [ ! -e /mingw64 ]; then mkdir /mingw64 ; fi
  for i in git make bison flex; do
-  pacinstall $i
+  pacman -S --noconfirm --force  $i
  done
  for i in freetype fontconfig harfbuzz qt5 qt-creator boost cgal eigen3 \
           glew qscintilla opencsg pkg-config cmake gdb zip; do
-   pacinstall mingw-w64-x86_64-$i
+   pacman -S --noconfirm mingw-w64-x86_64-$i
  done
 }
 
 get_msys2_i686_deps()
 {
  # for Windows(TM), see http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Microsoft_Windows
- pacman -Sy
+ pacman -Syuu
+ if [ ! -e /mingw32 ]; then mkdir /mingw32 ; fi
  for i in git make bison flex; do
   pacinstall $i
  done

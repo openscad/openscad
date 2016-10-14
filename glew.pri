@@ -9,11 +9,13 @@ glew {
   }
 
   unix:LIBS += -lGLEW
+  win*: {
+     DEFINES += GLEW_STATIC
+     LIBS += -lglew32
+  }
   CONFIG(mingw-cross-env): {
     !CONFIG(mingw-cross-env-shared) {
       DEFINES += GLEW_STATIC
     }
-  } else {
-    win32:LIBS += -lglew32
   }
 }
