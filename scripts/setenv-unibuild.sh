@@ -4,6 +4,36 @@
 # Please see the 'uni-build-dependencies.sh' file for usage information
 #
 
+linuxbrew()
+{
+  #LDFLAGS: -L$HOME/.linuxbrew/opt/qt5/lib
+  #CPPFLAGS: -I$HOME/.linuxbrew/opt/qt5/include
+  BASEDIR=$HOME/.linuxbrew
+  PKG_CONFIG_PATH=$BASEDIR/opt/qt5/lib/pkgconfig:$PKG_CONFIG_PATH
+  PATH=$BASEDIR/bin:$PATH
+  PATH=$BASEDIR/opt/qt5/bin:$PATH
+  LD_LIBRARY_PATH=$BASEDIR/lib:$BASEDIR/lib64:$BASEDIR/opt/qt5/lib
+  LD_RUN_PATH=$BASEDIR/lib:$BASEDIR/lib64:$BASEDIR/opt/qt5/lib
+  OPENSCAD_LIBRARIES=$BASEDIR
+  GLEWDIR=$BASEDIR
+  DEPLOYDIR=`pwd`/binbrew/
+  export BASEDIR
+  export PKG_CONFIG_PATH
+  export PATH
+  export LD_LIBRARY_PATH
+  export LD_RUN_PATH
+  export OPENSCAD_LIBRARIES
+  export GLEWDIR
+  echo BASEDIR: $BASEDIR
+  echo PKG_CONFIG_PATH: $PKG_CONFIG_PATH
+  echo DEPLOYDIR: $DEPLOYDIR
+  echo LD_LIBRARY_PATH: $LD_LIBRARY_PATH
+  echo LD_RUN_PATH: $LD_RUN_PATH
+  echo OPENSCAD_LIBRARIES: $OPENSCAD_LIBRARIES
+  echo GLEWDIR: $GLEWDiR
+  echo PATH: $PATH
+}
+
 setenv_common()
 {
  if [ ! $BASEDIR ]; then
@@ -120,7 +150,9 @@ clean_note()
  echo "Please re-run" $QMAKEBIN "and run 'make clean' if necessary"
 }
 
-if [ "`uname | grep -i 'linux\|debian'`" ]; then
+if [ "`echo $* | grep brew`" ]; then
+ linuxbrew
+elif [ "`uname | grep -i 'linux\|debian'`" ]; then
  setenv_common
  if [ "`echo $* | grep clang`" ]; then
   setenv_linux_clang
