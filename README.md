@@ -202,8 +202,10 @@ Next, build OpenSCAD and package it to an installer and/or .zip archive:
 
     ./scripts/release-common.sh
 
-If you only want to build openscad.exe, not make a package, then
-skip ahead to the Compilation instructions. 
+If you only want to build openscad.exe, not make a package, then run this
+
+    qmake CONFIG=Release
+    make
 
 ### Cross building
 
