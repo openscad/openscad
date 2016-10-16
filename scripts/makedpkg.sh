@@ -27,8 +27,8 @@ eval $OSINFO
 DEBINFO=`dpkg-architecture`
 eval $DEBINFO
 TARGETOS=`echo $ID'_'$VERSION_ID`
-ARCH=$DEB_TARGET_ARCH
-MACHINE_TRIPLE=$DEB_TARGET_GNU_TYPE
+ARCH=$DEB_HOST_ARCH
+MACHINE_TRIPLE=$DEB_HOST_GNU_TYPE
 
 OSCADVERSION=`date "+%Y.%m.%d"`
 OPENSCADDIR=`pwd`
@@ -115,8 +115,6 @@ if [ ! $? -eq 0 ]; then
 fi
 
 echo in directory $DEPLOYDIR
-echo to install, run:
-echo '   'sudo dpkg -i $DPKGFILE
-echo then to fix any dependency problems, run
-echo '   'sudo apt install -f
+echo to install, please run:
+echo '   'sudo gdebi $DPKGFILE
 
