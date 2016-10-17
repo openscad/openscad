@@ -160,6 +160,7 @@ class Test:
         return x
 
 def parsetest(teststring):
+    debug("---------\nAttempting to parse test:"+teststring)
     patterns = ["Test:(.*?)\n", # fullname
         "Test time =(.*?) sec\n",
         "Test time.*?Test (Passed)", # pass/fail
@@ -370,7 +371,12 @@ def to_html(project_name, startdate, tests, enddate, sysinfo, sysid, imgcomparer
                           actual=actual_img,
                           expected=expected_img)
         else:
-            raise TypeError('Unknown test type %r' % test.type)
+            debug("unknown test type, treating as text test")
+            debug("test name was: "+ test.fullname)
+            text_test_count += 1
+            templates.add('text_template', 'text_tests',
+                          test_name=test.fullname,
+                          test_log=cgi.escape(test.fulltestlog))
 
     for mf in sorted(makefiles.keys()):
         mfname = mf.strip().lstrip(os.path.sep)

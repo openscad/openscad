@@ -169,8 +169,9 @@ def compare_png(resultfilename):
 
       # Writing the 'difference image' with --output is very useful for debugging but takes a long time
       # args = [expectedfilename, resultfilename, "--output", resultfilename+'.diff.png']
+      bgargs=['--bgred','255','--bggreen','255','--bgblue','229']
 
-      args = [expectedfilename, resultfilename]
+      args = [expectedfilename, resultfilename] + bgargs
       compare_method = 'diffpng'
 
     print >> sys.stderr, 'Image comparison cmdline: '

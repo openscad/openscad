@@ -57,10 +57,6 @@ LodePNG Examples
 */
 
 
-// To use this file as a .hpp header file, uncomment the following
-//#define DIFFPNG_HEADERONLY
-
-
 #ifndef DIFFPNG_HPP
 #define DIFFPNG_HPP
 
@@ -245,7 +241,7 @@ public:
 			redavg=greenavg=blueavg=alphaavg=0;
 			for (int i=-1;i<=1;i++) {
 			for (int j=-1;j<=1;j++) {
-	                        red = this->Get_Red(     (y*2+i)*oldwidth + (x*2+j) );
+				red = this->Get_Red(     (y*2+i)*oldwidth + (x*2+j) );
 				green = this->Get_Green( (y*2+i)*oldwidth + (x*2+j) );
 				blue = this->Get_Blue(   (y*2+i)*oldwidth + (x*2+j) );
 				alpha = this->Get_Alpha( (y*2+i)*oldwidth + (x*2+j) );
@@ -278,7 +274,7 @@ public:
 		uint8_t red, green, blue, alpha;
 		for (unsigned x = 0; x < Width; x++) {
 		for (unsigned y = 0; y < Height; y++) {
-                        red = this->Get_Red(     (y+ypix)*Width + (x+xpix) );
+			red = this->Get_Red(     (y+ypix)*Width + (x+xpix) );
 			green = this->Get_Green( (y+ypix)*Width + (x+xpix) );
 			blue = this->Get_Blue(   (y+ypix)*Width + (x+xpix) );
 			alpha = this->Get_Alpha( (y+ypix)*Width + (x+xpix) );
@@ -304,7 +300,7 @@ public:
 			redavg=greenavg=blueavg=alphaavg=0;
 			for (int i=-1;i<=1;i++) {
 			for (int j=-1;j<=1;j++) {
-	                        red = this->Get_Red(     (y+i)*Width + (x+j) );
+				red = this->Get_Red(     (y+i)*Width + (x+j) );
 				green = this->Get_Green( (y+i)*Width + (x+j) );
 				blue = this->Get_Blue(   (y+i)*Width + (x+j) );
 				alpha = this->Get_Alpha( (y+i)*Width + (x+j) );
@@ -397,7 +393,7 @@ public:
 		SumErrors = false;
 		FieldOfView = 45.0f;
 		Gamma = 2.2f;
-		ThresholdPixelsPercent = 128.0/(512.0*512.0) * 100.0;
+		ThresholdPixelsPercent = 2.0f; //128.0/(512.0*512.0) * 100.0;
 		Luminance = 100.0f;
 		ColorFactor = 0.1f;
 		MaxPyramidLevels = 2;
@@ -409,6 +405,7 @@ public:
 		ImgA = NULL; // Image A
 		ImgB = NULL; // Image B
 		ImgDiff = NULL; // Image Diff
+		bgred = bgblue = bggreen = 0;
 	}
 	bool Parse_Args(int argc, char **argv)
 	{
@@ -489,6 +486,27 @@ public:
 					if (++i < argc)
 					{
 						Luminance = lexical_cast<float>(argv[i]);
+					}
+				}
+				else if (option_matches(argv[i], "bgred"))
+				{
+					if (++i < argc)
+					{
+						bgred = lexical_cast<short>(argv[i]);
+					}
+				}
+				else if (option_matches(argv[i], "bggreen"))
+				{
+					if (++i < argc)
+					{
+						bggreen = lexical_cast<short>(argv[i]);
+					}
+				}
+				else if (option_matches(argv[i], "bgblue"))
+				{
+					if (++i < argc)
+					{
+						bgblue = lexical_cast<short>(argv[i]);
 					}
 				}
 				else if (option_matches(argv[i], "luminanceonly"))
@@ -586,6 +604,7 @@ public:
 			  << "The Color Factor is " << ColorFactor << "\n"
 			  << "Initial Max Laplacian Pyramid Levels is " << MaxPyramidLevels << "\n"
 			  << "Final Max Laplacian Pyramid Levels is " << FinalMaxPyramidLevels << "\n"
+			  << "Background "<< bgred << "," << bggreen << "," << bgblue << "\n"
 		;
 	}
 
@@ -615,13 +634,15 @@ public:
 
 	// Here we set up the number of Laplacian Pyramid Levels used
 	// by Yee's algorithm. A MATCH is very reliable with a low level
-	// of max levels, and somehwat fsat. However, a DIFFERENCE with
+	// of max levels, and somehwat fast. However, a DIFFERENCE with
 	// a low level of levels can be unreliable. So in that case, we can
 	// 'retest' with more levels, starting with the initial, and
 	// ending with the 'final'. Each new level is slower.
 	unsigned int MaxPyramidLevels;
 	unsigned int FinalMaxPyramidLevels;
 
+	// background pixel colors
+	unsigned int bgred, bggreen, bgblue;
 };
 
 
@@ -877,6 +898,31 @@ bool Yee_Compare_Engine(CompareArgs &args)
 	if (identical)
 	{
 		cout << "Images are binary identical\n";
+		return true;
+	}
+
+	unsigned int num_background_pixels = 0;
+
+	for (unsigned i = 0u; i < dim; i++)
+	{
+		unsigned int r = args.ImgA->Get_Red(i);
+		unsigned int g = args.ImgA->Get_Green(i);
+		unsigned int b = args.ImgA->Get_Blue(i);
+		//cout << "rgb" << r << g << b << "\n";
+		//cout << (r==args.bgred);
+		//cout << (g==args.bggreen);
+		//cout << (b==args.bgblue) << "\n";
+		if (r==args.bgred && b==args.bgblue && g==args.bggreen)
+		{
+			num_background_pixels++;
+		}
+	}
+	if (args.Verbose)
+	{
+		cout << "background rgb: " << args.bgred << " "
+		  << args.bggreen << " " << args.bgblue
+		  << "\ncounted " << num_background_pixels
+		  << " background pixels\n";
 	}
 
 	// assuming colorspaces are in Adobe RGB (1998) convert to XYZ
@@ -945,7 +991,14 @@ bool Yee_Compare_Engine(CompareArgs &args)
 	}
 
 	unsigned int pixels_failed = 0u;
-	unsigned total_pixels = w*h;
+	unsigned int total_pixels = w*h;
+  	unsigned int tot_fg_pixels = total_pixels - num_background_pixels;
+	if (tot_fg_pixels==0)
+	{
+		cout << "Image was 100% background pixels\n";
+		return true;
+	}
+
 	float error_sum = 0.;
 //#pragma omp parallel for reduction(+ : pixels_failed) reduction(+ : error_sum)
 	for (unsigned y = 0u; y < h; y++)
@@ -1056,14 +1109,14 @@ bool Yee_Compare_Engine(CompareArgs &args)
 	s << error_sum << " error sum\n";
 	const string error_sum_buff = s.str();
 
-	s.str("");
-	s << pixels_failed << " pixels differed out of " << total_pixels << ". (";
+	float failpercent1 = float(pixels_failed)/total_pixels;
+	float failpercent2 = float(pixels_failed)/tot_fg_pixels;
 
-	float pixels_failed_percentage = 100.0*(float(pixels_failed)/total_pixels);
-	s << pixels_failed_percentage << " percent)";
+	s << "Failed: " << failpercent1 << " " << failpercent2 << "\n";
+	s << "Threshhold: " << args.ThresholdPixelsPercent << " % \n";
 	const string different = s.str();
 
-	if (pixels_failed_percentage < args.ThresholdPixelsPercent)
+	if (failpercent2 < args.ThresholdPixelsPercent)
 	{
 		args.ErrorStr = "Images are roughly the same\n";
 		args.ErrorStr += different;
@@ -1080,7 +1133,8 @@ bool Yee_Compare_Engine(CompareArgs &args)
 	return false;
 }
 
-void copy( diffpng::RGBAImage &dest, diffpng::RGBAImage &src) {
+void copy( diffpng::RGBAImage &dest, diffpng::RGBAImage &src) 
+{
 	dest.Data.clear();
 	dest.Data.resize( src.Data.size() );
 	for (unsigned i=0;i<src.Data.size();i++) {
@@ -1244,11 +1298,6 @@ bool LevelClimberCompare(CompareArgs &args) {
 
 } // namespace diffpng
 
-#ifndef DIFFPNG_HEADERONLY
-
-// main() is only used for 'cpp' compile mode. to build as .hpp header file
-// see the comment at the top of this file.
-
 // is this program running inside a script or from the console?
 bool interactive()
 {
@@ -1263,50 +1312,40 @@ int main(int argc, char **argv)
 	std::string green("\033[40;32m");
 	std::string nocolor("\033[0m");
 
-//	try
-//	{
-		if (not args.Parse_Args(argc, argv))
+	if (not args.Parse_Args(argc, argv))
+	{
+		std::cout << args.ErrorStr << "\n";
+		return -1;
+	}
+	else
+	{
+		if (args.Verbose)
 		{
-			std::cout << args.ErrorStr << "\n";
-			return -1;
+			args.Print_Args();
 		}
-		else
-		{
-			if (args.Verbose)
-			{
-				args.Print_Args();
-			}
-		}
+	}
 
-		std::cout << "\n";
-		bool matches = diffpng::LevelClimberCompare(args);
-		if (matches)
+	std::cout << "\n";
+	bool matches = diffpng::LevelClimberCompare(args);
+	if (matches)
+	{
+		if (args.Verbose)
 		{
-			if (args.Verbose)
-			{
-				if (interactive()) std::cout << green;
-				std::cout << "MATCHES: result: " << args.ErrorStr << "\n";
-				if (interactive()) std::cout << nocolor;
-			}
-		}
-		else
-		{
-			if (interactive()) std::cout << red;
-			std::cout << "DIFFERS: result: " << args.ErrorStr << "\n";
+			if (interactive()) std::cout << green;
+			std::cout << "MATCHES: result: " << args.ErrorStr << "\n";
 			if (interactive()) std::cout << nocolor;
 		}
+	}
+	else
+	{
+		if (interactive()) std::cout << red;
+		std::cout << "DIFFERS: result: " << args.ErrorStr << "\n";
+		if (interactive()) std::cout << nocolor;
+	}
 
 	if (args.FlipExit) matches = !matches;
 	if (matches) return 0;
 	return 1;
-//	}
-/*	catch (...)
-	{
-		std::cerr << "Exception" << std::endl;
-		return 1;
-	}
-*/
 }
 
-#endif // ifndef HEADERONLY
 
