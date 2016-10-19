@@ -24,11 +24,7 @@ protected:
 	int decimalPrecision;
 	virtual void setPrecision(double number);
 	virtual void setValue() = 0;
-	void setName(const QString& name) {
-		this->labelDescription->hide();
-		this->labelParameter->setText(name);
-	}
-	
+    void setName(QString name);
 	void setDescription(const QString& description) {
 		if(!description.isEmpty()){
 			this->labelDescription->show();

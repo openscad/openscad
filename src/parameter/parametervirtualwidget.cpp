@@ -10,6 +10,14 @@ ParameterVirtualWidget::~ParameterVirtualWidget(){
 	
 }
 
+
+void ParameterVirtualWidget::setName(QString name) {
+	this->labelDescription->hide();
+	name.replace(QRegExp("([_]+)"), " ");
+	this->labelParameter->setText(name);
+}
+
+
 void ParameterVirtualWidget::setPrecision(double number){
 	
 	decimalPrecision = 0;
