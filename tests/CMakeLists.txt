@@ -48,6 +48,9 @@ set(TESTTOOLS_DIR "${tests_SOURCE_DIR}")
 set(MCAD_LIBRARIES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../libraries")
 set(EXAMPLES_DIR "${CMAKE_SOURCE_DIR}/../examples")
 
+
+# Msys2 re-distributable ctest package
+
 if ("${CMAKE_CURRENT_BINARY_DIR}" STREQUAL "C:/Program Files/OpenSCAD/tests")
   message(STATUS "build msys2 test distribution package. copying testdata...")
   set(MSYS 1) # as admin, msys2 has no env vars set
@@ -74,6 +77,7 @@ if ("${CMAKE_CURRENT_BINARY_DIR}" STREQUAL "C:/Program Files/OpenSCAD/tests")
   set(TESTTOOLS_DIR ${CMAKE_BINARY_DIR})
   set(MCAD_LIBRARIES_DIR ${CMAKE_BINARY_DIR}/../libraries)
   set(EXAMPLES_DIR ${CMAKE_BINARY_DIR}/../examples)
+  set(PYTHON_EXECUTABLE "C:/Python27/python.exe")
 #  message(FATAL_ERROR "hi")
 endif()
 
@@ -1084,7 +1088,10 @@ endfunction()
 #                        [SCRIPT <script>]
 #                        [EXPECTEDDIR <shared dir>] SUFFIX <suffix> FILES <test files>)
 #
-find_package(PythonInterp)
+if (NOT PYTHON_EXECUTABLE)
+  find_package(PythonInterp)
+endif()
+
 function(add_cmdline_test TESTCMD_BASENAME)
   cmake_parse_arguments(TESTCMD "" "EXE;SCRIPT;SUFFIX;EXPECTEDDIR" "FILES;ARGS" ${ARGN})
 

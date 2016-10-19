@@ -86,6 +86,31 @@ This is almost the same as adding a new regression test:
 4) run the test normally and verify that it passes:
   $ ctest -C Examples -R exampleNNN
 
+Building Windows(TM) redistributable:
+-------------------------------------
+
+CMake hard-codes paths into ctest files. However by putting our
+current directory under C:\Program Files\OpenSCAD we can make this
+work for anyone who wants to download a prebuilt test package, install
+ctest, and run it, without having a compiler installed.
+
+1) Install MSYS2
+2) Install an OpenSCAD package into C:\Program Files\OpenSCAD
+3) Clone openscad source code into $HOME (~)
+4) Open an MSYS64 shell prompt As Administrator
+  This is accomplished by right-clicking MSys64 shell
+  Open Folder
+  Right Click Msys64 Shortcut
+  Run as Administrator
+
+    $ cd c:/Program Files/OpenSCAD
+    $ mkdir tests
+    $ cd tests
+    $ cmake -G "MSYS Makefiles" $HOME/openscad
+    $ make
+
+Users will need to have both Windows Python and Windows Ctest installed.
+
 Troubleshooting:
 ------------------------------
 
