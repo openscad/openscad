@@ -70,7 +70,8 @@ if ("${CMAKE_CURRENT_BINARY_DIR}" STREQUAL "C:/Program Files/OpenSCAD/tests")
   file(GLOB CMAKEFILES ${CMAKE_SOURCE_DIR}/Enforce*.cmake)
   file(GLOB PNGFILES ${CMAKE_SOURCE_DIR}/*.png)
   file(GLOB MISCFILES ${CMAKE_SOURCE_DIR}/cgalsanitytest)
-  file(COPY ${PYFILES} ${PNGFILES} ${CMAKEFILES} ${MISCFILES} DESTINATION ${CMAKE_BINARY_DIR})
+  file(GLOB CCFILES ${CMAKE_SOURCE_DIR}/test_pretty*.cc)
+  file(COPY ${PYFILES} ${PNGFILES} ${CMAKEFILES} ${MISCFILES} ${CCFILES} DESTINATION ${CMAKE_BINARY_DIR})
 
   set(TESTDATA_DIR ${CMAKE_BINARY_DIR}/../testdata)
   set(ENV{OPENSCAD_BINARY} ${CMAKE_BINARY_DIR}/../openscad.exe)
@@ -1594,9 +1595,9 @@ endif()
 #
 
 add_executable(test_pretty_print test_pretty_print.cc)
-file(TO_NATIVE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/test_pretty_print.py PYSRC)
+file(TO_NATIVE_PATH ${TESTTOOLS_DIR}/test_pretty_print.py PYSRC)
 set_target_properties(test_pretty_print PROPERTIES COMPILE_FLAGS
-  "-DPYBIN=${PYTHON_EXECUTABLE} -DPYSRC=${PYSRC} -DBUILDDIR=--builddir=${CMAKE_CURRENT_BINARY_DIR}"
+  "-DPYBIN=${PYTHON_EXECUTABLE} -DPYSRC=${PYSRC} -DBUILDDIR=--builddir=\"${CMAKE_CURRENT_BINARY_DIR}\""
 )
 
 file(READ ${CMAKE_CURRENT_SOURCE_DIR}/CTestCustom.template TMP)
