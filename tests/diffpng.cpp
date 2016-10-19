@@ -393,7 +393,7 @@ public:
 		SumErrors = false;
 		FieldOfView = 45.0f;
 		Gamma = 2.2f;
-		ThresholdPixelsPercent = 2.0f; //128.0/(512.0*512.0) * 100.0;
+		ThresholdPixelsPercent = 128.0/(512.0*512.0) * 100.0;
 		Luminance = 100.0f;
 		ColorFactor = 0.1f;
 		MaxPyramidLevels = 2;
@@ -443,13 +443,13 @@ public:
 				{
 					if (++i < argc)
 					{
-						int temporary = lexical_cast<float>(argv[i]);
+						float temporary = lexical_cast<float>(argv[i]);
 						if (temporary < 0)
 						{
 							cout << " invalid_argument(" <<
 								"-threshold must be positive";
 						}
-						ThresholdPixelsPercent = static_cast<float>(temporary);
+						ThresholdPixelsPercent = temporary;
 					}
 				}
 				else if (option_matches(argv[i], "gamma"))
@@ -1109,14 +1109,15 @@ bool Yee_Compare_Engine(CompareArgs &args)
 	s << error_sum << " error sum\n";
 	const string error_sum_buff = s.str();
 
-	float failpercent1 = float(pixels_failed)/total_pixels;
-	float failpercent2 = float(pixels_failed)/tot_fg_pixels;
+	float failpercent1 = 100*float(pixels_failed)/total_pixels;
+	float failpercent2 = 100*float(pixels_failed)/tot_fg_pixels;
 
-	s << "Failed: " << failpercent1 << " " << failpercent2 << "\n";
+	s << "Failed (% of all pixels): " << failpercent1 << "\n";
+	s << "Failed (% of foreground pixels): " << failpercent2 << "\n";
 	s << "Threshhold: " << args.ThresholdPixelsPercent << " % \n";
 	const string different = s.str();
 
-	if (failpercent2 < args.ThresholdPixelsPercent)
+	if (failpercent1 < args.ThresholdPixelsPercent)
 	{
 		args.ErrorStr = "Images are roughly the same\n";
 		args.ErrorStr += different;

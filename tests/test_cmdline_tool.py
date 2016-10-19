@@ -171,7 +171,7 @@ def compare_png(resultfilename):
       # args = [expectedfilename, resultfilename, "--output", resultfilename+'.diff.png']
       bgargs=['--bgred','255','--bggreen','255','--bgblue','229']
 
-      args = [expectedfilename, resultfilename] + bgargs
+      args = [expectedfilename, resultfilename] + ['--threshold','0.5']
       compare_method = 'diffpng'
 
     print >> sys.stderr, 'Image comparison cmdline: '
