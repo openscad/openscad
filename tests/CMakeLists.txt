@@ -48,6 +48,47 @@ set(CTEST_ENVIRONMENT "${CTEST_ENVIRONMENT};OPENSCADPATH=${MCAD_LIBRARIES_DIR}")
 
 include("CMakeCompilerSettings.cmake")
 
+# Find image comparison program
+
+find_package(ImageMagick COMPONENTS convert)
+if (ImageMagick_convert_FOUND)
+  message(STATUS "ImageMagick convert executable found: " ${ImageMagick_convert_EXECUTABLE})
+  set(IMAGE_COMPARE_EXECUTABLE ${ImageMagick_convert_EXECUTABLE})
+else()
+  message(STATUS "Couldn't find imagemagick 'convert' program")
+  set(DIFFPNG 1)
+endif()
+
+if (ImageMagick_convert_FOUND)
+  execute_process(COMMAND ${IMAGE_COMPARE_EXECUTABLE} --version OUTPUT_VARIABLE IM_OUT )
+  if ( ${IM_OUT} MATCHES "OpenMP" )
+    # http://www.daniloaz.com/en/617/systems/high-cpu-load-when-converting-images-with-imagemagick
+    message(STATUS "ImageMagick: OpenMP bug workaround - setting MAGICK_THREAD_LIMIT=1")
+    set(CTEST_ENVIRONMENT "${CTEST_ENVIRONMENT};MAGICK_THREAD_LIMIT=1")
+  endif()
+
+  message(STATUS "Comparing magicktest1.png with magicktest2.png")
+  set(IM_TEST_FILES "${CMAKE_CURRENT_SOURCE_DIR}/magicktest1.png" "${CMAKE_CURRENT_SOURCE_DIR}/magicktest2.png")
+  set(COMPARE_ARGS ${IMAGE_COMPARE_EXECUTABLE} ${IM_TEST_FILES} -alpha Off -compose difference -composite -threshold 10% -morphology Erode Square -format %[fx:w*h*mean] info:)
+  # compare arguments taken from test_cmdline_tool.py
+  message(STATUS "Running ImageMagick compare: ${COMPARE_ARGS}")
+  execute_process(COMMAND ${COMPARE_ARGS} RESULT_VARIABLE IM_RESULT OUTPUT_VARIABLE IM_OUT )
+  message(STATUS "Result: ${IM_RESULT}")
+  if ( NOT ${IM_RESULT} STREQUAL "0" )
+    message(STATUS "magicktest1.png and magicktest2.png were incorrectly detected as identical")
+    message(STATUS "Using alternative image comparison")
+    set(DIFFPNG 1)
+ endif()
+endif()
+
+if ( ${DIFFPNG} )
+  set(IMAGE_COMPARE_EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/diffpng)
+  set(COMPARATOR "diffpng")
+  add_executable(diffpng diffpng.cpp ../src/lodepng.cpp)
+  message(STATUS "using diffpng for image comparison")
+endif()
+
+
 # Re-distributable MSYS ctest package
 # no executables, just a portable ctest script
 if (MSYS_DISTRIB)

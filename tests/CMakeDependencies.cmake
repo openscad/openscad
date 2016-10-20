@@ -57,7 +57,7 @@ pkg_check_modules(FONTCONFIG REQUIRED fontconfig>=2.8.0)
 pkg_check_modules(FREETYPE REQUIRED freetype2>=2.4.9)
 pkg_check_modules(HARFBUZZ REQUIRED harfbuzz>=0.9.19)
 pkg_check_modules(GLIB2 REQUIRED glib-2.0)
-find_package(LibXml2 2.9 REQUIRED)
+pkg_check_modules(LIBXML2 REQUIRED libxml-2.0)
 
 add_definitions(${EIGEN_CFLAGS})
 add_definitions(${GLEW_CFLAGS})
@@ -67,7 +67,7 @@ add_definitions(${HARFBUZZ_CFLAGS})
 add_definitions(${GLIB2_DEFINITIONS})
 add_definitions(${LIBXML2_DEFINITIONS})
 #inclusion(GLIB2_DIR GLIB2_INCLUDE_DIRS)
-#inclusion(LIBXML2_DIR LIBXML2_INCLUDE_DIR)
+inclusion(LIBXML2_DIR LIBXML2_INCLUDE_DIR)
 
 restore_pkg_config_env()
 
