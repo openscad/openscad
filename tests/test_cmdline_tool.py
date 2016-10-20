@@ -300,7 +300,7 @@ if __name__ == '__main__':
             options.testname = a
         elif o in ("-f", "--file"):
             options.filename = a
-        elif o in ("-c", "--compare-exec"): 
+        elif o in ("-c", "--convexec"): 
             options.comparison_exec = os.path.normpath( a )
         elif o in ("-m", "--comparator"):
             options.comparator = a
@@ -318,6 +318,7 @@ if __name__ == '__main__':
         print >> sys.stderr, basename
         print >> sys.stderr, path, options.filename
 
+    print >> sys.stderr, 'options.filename ' + options.filename
     if not hasattr(options, "filename"):
         print >> sys.stderr, "Filename cannot be deducted from arguments. Specify test filename using the -f option"
         sys.exit(2)
