@@ -49,35 +49,35 @@ set(MCAD_LIBRARIES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../libraries")
 set(EXAMPLES_DIR "${CMAKE_SOURCE_DIR}/../examples")
 
 
-# Msys2 re-distributable ctest package
-
-if ("${CMAKE_CURRENT_BINARY_DIR}" STREQUAL "C:/Program Files/OpenSCAD/tests")
+# Re-distributable MSYS ctest package
+# no executables, just a portable ctest script
+if (MSYS_DISTRIB)
+  set(TESTS_DEPLOY_DIR "C:/Program Files/OpenSCAD/tests")
   message(STATUS "build msys2 test distribution package. copying testdata...")
-  set(MSYS 1) # as admin, msys2 has no env vars set
 
   # copy testdata so paths setup by cmake will work on any user machine. 
   # use 'cp' shell command because file(COPY) bugs with msys2+cmake+unicode
   set(CMDL1 "#!/usr/bin/bash\n")
-  set(CMDL2 "cp -av " ${TESTDATA_DIR} " " ${CMAKE_BINARY_DIR}/.. "\n")
-  set(CMDL3 "cp -av " ${CMAKE_SOURCE_DIR}/regression " " ${CMAKE_BINARY_DIR} "\n")
+  set(CMDL2 "cp -av " ${TESTDATA_DIR} " " ${TESTS_DEPLOY_DIR}/.. "\n")
+  set(CMDL3 "cp -av " ${CMAKE_SOURCE_DIR}/regression " " ${TESTS_DEPLOY_DIR} "\n")
   set(CMD ${CMDL1} ${CMDL2} ${CMDL3})
   string(REPLACE "Program Files" "Program\\ Files" CMD ${CMD})
-  file(WRITE "${CMAKE_BINARY_DIR}/wincopy.sh" ${CMD})
+  file(WRITE "${TESTS_DEPLOY_DIR}/wincopy.sh" ${CMD})
   execute_process(COMMAND sh wincopy.sh OUTPUT_VARIABLE result ERROR_VARIABLE result)
   message(STATUS ${result})
 
   file(GLOB PYFILES ${CMAKE_SOURCE_DIR}/*.py)
   file(GLOB CMAKEFILES ${CMAKE_SOURCE_DIR}/Enforce*.cmake)
   file(GLOB PNGFILES ${CMAKE_SOURCE_DIR}/*.png)
+  file(GLOB BATFILES ${CMAKE_SOURCE_DIR}/*.bat)
   file(GLOB MISCFILES ${CMAKE_SOURCE_DIR}/cgalsanitytest)
-  file(GLOB CCFILES ${CMAKE_SOURCE_DIR}/test_pretty*.cc)
-  file(COPY ${PYFILES} ${PNGFILES} ${CMAKEFILES} ${MISCFILES} ${CCFILES} DESTINATION ${CMAKE_BINARY_DIR})
+  file(COPY ${PYFILES} ${PNGFILES} ${CMAKEFILES} ${MISCFILES} ${CCFILES} ${BATFILES} DESTINATION ${TESTS_DEPLOY_DIR})
 
-  set(TESTDATA_DIR ${CMAKE_BINARY_DIR}/../testdata)
-  set(ENV{OPENSCAD_BINARY} ${CMAKE_BINARY_DIR}/../openscad.exe)
-  set(TESTTOOLS_DIR ${CMAKE_BINARY_DIR})
-  set(MCAD_LIBRARIES_DIR ${CMAKE_BINARY_DIR}/../libraries)
-  set(EXAMPLES_DIR ${CMAKE_BINARY_DIR}/../examples)
+  set(TESTDATA_DIR ${TESTS_DEPLOY_DIR}/../testdata)
+  set(ENV{OPENSCAD_BINARY} ${TESTS_DEPLOY_DIR}/../openscad.exe)
+  set(TESTTOOLS_DIR ${TESTS_DEPLOY_DIR})
+  set(MCAD_LIBRARIES_DIR ${TESTS_DEPLOY_DIR}/../libraries)
+  set(EXAMPLES_DIR ${TESTS_DEPLOY_DIR}/../examples)
   set(PYTHON_EXECUTABLE "C:/Python27/python.exe")
 #  message(FATAL_ERROR "hi")
 endif()
@@ -129,16 +129,6 @@ if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../libraries/MCAD/__init__.py)
   message(FATAL_ERROR "MCAD not found. You can install from the OpenSCAD root as follows: \n  git submodule update --init")
 endif()
 
-# NULLGL - Allow us to build without OpenGL(TM). run 'cmake .. -DNULLGL=1'
-# Most tests will fail, but it can be used for testing/experiments
-
-if(NULLGL)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNULLGL")
-  set(SKIP_IMAGEMAGICK "1") # we dont generate png, so nothing to compare
-else()
-  set(ENABLE_OPENCSG_FLAG "-DENABLE_OPENCSG")
-endif()
-
 #
 # Windows(TM)
 # Note - if(WIN32) will also detect 64-bit Win
@@ -149,44 +139,8 @@ if(WIN32)
   add_definitions( -DUNICODE )
 endif()
 
-if(WIN32 AND MSVC)
-  set(WIN32_STATIC_BUILD "True")
-endif()
-
-if(WIN32_STATIC_BUILD AND MSVC)
-  if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-    set(EMSG "\nTo build Win32 STATIC OpenSCAD please see doc/testing.txt")
-    message(FATAL_ERROR ${EMSG})
-  endif()
-endif()
-
-# Disable warnings
-if(WIN32 AND MSVC)
-  # too long decorated names
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4503")
-  # int cast to bool in CGAL
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4800")
-  # unreferenced parameters in CGAL
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4100")
-  # fopen_s advertisement
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_CRT_SECURE_NO_DEPRECATE")
-  # lexer uses strdup & other POSIX stuff
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_CRT_NONSTDC_NO_DEPRECATE")
-  # M_PI
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_USE_MATH_DEFINES")
-endif()
-
-# Debugging - if you uncomment, use nmake -f Makefile > log.txt (the log is big)
-if(WIN32 AND MSVC)
-  # Linker debugging
-  #set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -VERBOSE")
-
-  # Compiler debugging
-  # you have to pass -DCMAKE_VERBOSE_MAKEFILE=ON to cmake when you run it. 
-endif()
-
 if(CMAKE_COMPILER_IS_GNUCXX)
-  if (WIN32 OR ${CMAKE_SYSTEM_NAME} MATCHES "NetBSD")
+  if (WIN32)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive -frounding-math")
   endif()
 endif()
@@ -200,6 +154,7 @@ if(${CMAKE_CXX_COMPILER} MATCHES ".*clang.*")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-function")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-sign-compare")
 endif()
+
 #
 # Build test apps
 #
@@ -380,10 +335,6 @@ else()
   inclusion(EIGEN_DIR EIGEN_INCLUDE_DIRS)
 endif()
 
-###### NULLGL wraps all OpenGL(TM) items (GL, Glew, OpenCSG)
-###### Several pages of code fall under this 'if( NOT NULLGL )'
-if (NOT NULLGL)
-
 # OpenGL
 find_package(OpenGL REQUIRED)
 if (NOT OPENGL_GLU_FOUND)
@@ -475,8 +426,6 @@ message(STATUS "GLEW includes: " ${GLEW_INCLUDE_DIRS})
 message(STATUS "GLEW libraries: " ${GLEW_LIBRARIES})
 
 inclusion(GLEW_DIR GLEW_INCLUDE_DIRS)
-
-endif() ########## NULLGL ENDIF
 
 # Flex/Bison
 find_package(BISON REQUIRED)
@@ -679,6 +628,9 @@ endif()
 
 if ( ${DIFFPNG} )
   set(IMAGE_COMPARE_EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/diffpng)
+  if (MSYS)
+    set(IMAGE_COMPARE_EXECUTABLE ${IMAGE_COMPARE_EXECUTABLE}.exe)
+  endif()
   set(COMPARATOR "diffpng")
   add_executable(diffpng diffpng.cpp ../src/lodepng.cpp)
   message(STATUS "using diffpng for image comparison")
@@ -944,17 +896,6 @@ target_link_libraries(csgtexttest tests-nocgal ${GLEW_LIBRARIES} ${OPENCSG_LIBRA
 add_executable(cgalcachetest cgalcachetest.cc)
 set_target_properties(cgalcachetest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
 target_link_libraries(cgalcachetest tests-cgal ${GLEW_LIBRARIES} ${OPENCSG_LIBRARY} ${APP_SERVICES_LIBRARY})
-
-#
-# openscad_nogui - an OpenSCAD binary build without Qt
-# Enabled by using -DNOGUI=1 as a cmake parameter. Only kept for backwards compatibility and in case
-# someone needs that binary.
-#
-if (NOGUI)
- add_executable(openscad_nogui ../src/openscad.cc)
- set_target_properties(openscad_nogui PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing -DEIGEN_DONT_ALIGN ${ENABLE_OPENCSG_FLAG} -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
- target_link_libraries(openscad_nogui tests-offscreen tests-cgal ${GLEW_LIBRARY} ${OPENCSG_LIBRARY} ${APP_SERVICES_LIBRARY})
-endif()
 
 #
 # GUI binary tests
@@ -1640,6 +1581,17 @@ add_cmdline_test(moduledumptest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX ast FILES
                  ${TESTDATA_DIR}/scad/misc/allmodules.scad
                  ${TESTDATA_DIR}/scad/misc/allfunctions.scad
                  ${TESTDATA_DIR}/scad/misc/allexpressions.scad)
+add_cmdline_test(echotest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX echo FILES ${ECHO_FILES})
+add_cmdline_test(dumptest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX csg FILES ${DUMPTEST_FILES})
+add_cmdline_test(dumptest-examples EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX csg FILES ${EXAMPLE_FILES})
+add_cmdline_test(cgalpngtest EXE ${OPENSCAD_BINPATH} ARGS --render -o SUFFIX png FILES ${CGALPNGTEST_FILES})
+add_cmdline_test(opencsgtest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX png FILES ${OPENCSGTEST_FILES})
+add_cmdline_test(csgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${TESTTOOLS_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=csg --render EXPECTEDDIR cgalpngtest SUFFIX png FILES ${CGALPNGTEST_FILES})
+add_cmdline_test(throwntogethertest EXE ${OPENSCAD_BINPATH} ARGS --preview=throwntogether -o SUFFIX png FILES ${THROWNTOGETHERTEST_FILES})
+
+# FIXME: We don't actually need to compare the output of cgalstlsanitytest
+# with anything. It's self-contained and returns != 0 on error
+add_cmdline_test(cgalstlsanitytest EXE ${TESTTOOLS_DIR}/cgalstlsanitytest SUFFIX txt ARGS ${OPENSCAD_BINPATH} FILES ${CGALSTLSANITYTEST_FILES})
 add_cmdline_test(csgtexttest SUFFIX txt FILES
                              ${TESTDATA_DIR}/scad/misc/allexpressions.scad
                              ${TESTDATA_DIR}/scad/misc/allfunctions.scad
@@ -1648,16 +1600,6 @@ add_cmdline_test(csgtermtest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX term FILES
                              ${TESTDATA_DIR}/scad/misc/allexpressions.scad
                              ${TESTDATA_DIR}/scad/misc/allfunctions.scad
                              ${TESTDATA_DIR}/scad/misc/allmodules.scad)
-add_cmdline_test(echotest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX echo FILES ${ECHO_FILES})
-add_cmdline_test(dumptest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX csg FILES ${DUMPTEST_FILES})
-add_cmdline_test(dumptest-examples EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX csg FILES ${EXAMPLE_FILES})
-add_cmdline_test(cgalpngtest EXE ${OPENSCAD_BINPATH} ARGS --render -o SUFFIX png FILES ${CGALPNGTEST_FILES})
-add_cmdline_test(opencsgtest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX png FILES ${OPENCSGTEST_FILES})
-add_cmdline_test(csgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${TESTTOOLS_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=csg --render EXPECTEDDIR cgalpngtest SUFFIX png FILES ${CGALPNGTEST_FILES})
-add_cmdline_test(throwntogethertest EXE ${OPENSCAD_BINPATH} ARGS --preview=throwntogether -o SUFFIX png FILES ${THROWNTOGETHERTEST_FILES})
-# FIXME: We don't actually need to compare the output of cgalstlsanitytest
-# with anything. It's self-contained and returns != 0 on error
-add_cmdline_test(cgalstlsanitytest EXE ${TESTTOOLS_DIR}/cgalstlsanitytest SUFFIX txt ARGS ${OPENSCAD_BINPATH} FILES ${CGALSTLSANITYTEST_FILES})
 
 #
 # Export/Import tests

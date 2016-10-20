@@ -10,7 +10,7 @@ import os,sys
 thisfile_abspath=os.path.abspath(__file__)
 thisdir_abspath=os.path.abspath(os.path.dirname(thisfile_abspath))
 
-starting_dir=os.path.join(thisdir_abspath,'tests-build')
+starting_dir=os.path.join(thisdir_abspath)
 print 'changing current folder to '+starting_dir
 os.chdir(starting_dir)
 
@@ -19,28 +19,28 @@ sys.path.append(starting_dir)
 
 build_dir=starting_dir
 
-print 'converting CTestTestfile.cmake by calling mingw_convert_test.py'
-import mingw_convert_ctest
-mingw_convert_ctest.run()
+#print 'converting CTestTestfile.cmake by calling mingw_convert_test.py'
+#import mingw_convert_ctest
+#mingw_convert_ctest.run()
 
 print 'searching for ctest.exe'
 ctestpath=''
 for basedir in 'C:/Program Files','C:/Program Files (x86)':
         if os.path.isdir(basedir):
-		pflist = os.listdir(basedir)
-		for subdir in pflist:
-			if 'cmake' in subdir.lower():
-				abssubdir=os.path.join(basedir,subdir)
-				for root,dirs,files in os.walk(abssubdir):
-					if 'ctest.exe' in files:
-						ctestpath=os.path.join(root,'ctest.exe')
+                pflist = os.listdir(basedir)
+                for subdir in pflist:
+                        if 'cmake' in subdir.lower():
+                                abssubdir=os.path.join(basedir,subdir)
+                                for root,dirs,files in os.walk(abssubdir):
+                                        if 'ctest.exe' in files:
+                                                ctestpath=os.path.join(root,'ctest.exe')
 
 if not os.path.isfile(ctestpath):
         print 'error, cant find ctest.exe'
 else:
-	ctestdir = os.pathsep + os.path.dirname(ctestpath)
-	print 'adding ctest dir to PATH:',ctestdir
-	os.environ['PATH'] += ctestdir
+        ctestdir = os.pathsep + os.path.dirname(ctestpath)
+        print 'adding ctest dir to PATH:',ctestdir
+        os.environ['PATH'] += ctestdir
 
 #cmd = 'start "OpenSCAD Test console" /wait /d c:\\temp cmd.exe'
 #cmd = 'start /d "'+starting_dir+'" cmd.exe "OpenSCAD Test Console"'
