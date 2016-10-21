@@ -37,6 +37,8 @@ endif()
 
 add_definitions(-DENABLE_EXPERIMENTAL -DOPENSCAD_NOGUI)
 
+set(ENABLE_OPENCSG_FLAG "-DENABLE_OPENCSG")
+
 # Platform specific settings
 
 if(APPLE)
