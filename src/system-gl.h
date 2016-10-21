@@ -1,6 +1,5 @@
 #pragma once
 
-#ifndef NULLGL
 #include <GL/glew.h>
 
 #ifdef __APPLE__
@@ -9,12 +8,6 @@
  #include <GL/gl.h>
  #include <GL/glu.h>
 #endif
-
-#else // NULLGL
-#define GLint int
-#define GLuint unsigned int
-inline void glColor4fv( float *c ) {}
-#endif // NULLGL
 
 #include <string>
 

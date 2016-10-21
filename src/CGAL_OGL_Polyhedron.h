@@ -26,8 +26,6 @@
 
 #pragma once
 
-#ifndef NULLGL
-
 #include "colormap.h"
 #include "rendersettings.h"
 #include "OGL_helper.h"
@@ -127,16 +125,3 @@ private:
 
 
 
-#else // NULLGL
-
-#include <CGAL/Bbox_3.h>
-
-class CGAL_OGL_Polyhedron
-{
-public:
-	CGAL_OGL_Polyhedron() {}
-	void draw(bool showedges) const {}
-	CGAL::Bbox_3 bbox() const { return CGAL::Bbox_3(-1,-1,-1,1,1,1); }
-};
-
-#endif // NULLGL

@@ -46,7 +46,6 @@ static void draw_tri(const Vector3d &p0, const Vector3d &p1, const Vector3d &p2,
 	if (mirror) glVertex3d(p1[0], p1[1], p1[2] + z); 
 }
 
-#ifndef NULLGL
 static void gl_draw_triangle(GLint *shaderinfo, const Vector3d &p0, const Vector3d &p1, const Vector3d &p2, bool e0, bool e1, bool e2, double z, bool mirrored)
 {
 	double ax = p1[0] - p0[0], bx = p1[0] - p2[0];
@@ -249,10 +248,4 @@ void PolySet::render_edges(Renderer::csgmode_e csgmode) const
 	glEnable(GL_LIGHTING);
 }
 
-
-#else //NULLGL
-static void gl_draw_triangle(GLint *shaderinfo, const Vector3d &p0, const Vector3d &p1, const Vector3d &p2, bool e0, bool e1, bool e2, double z, bool mirrored) {}
-void PolySet::render_surface(Renderer::csgmode_e csgmode, const Transform3d &m, GLint *shaderinfo) const {}
-void PolySet::render_edges(Renderer::csgmode_e csgmode) const {}
-#endif //NULLGL
 
