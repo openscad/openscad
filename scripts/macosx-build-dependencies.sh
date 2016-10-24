@@ -37,7 +37,7 @@ PACKAGES=(
     "mpfr 3.1.4"
     "boost 1.61.0"
     "qt5 5.7.0"
-    "qscintilla 2.9.2"
+    "qscintilla 2.9.3"
     # NB! For CGAL, also update the actual download URL in the function
     "cgal 4.8.1"
     "glew 1.13.0"
