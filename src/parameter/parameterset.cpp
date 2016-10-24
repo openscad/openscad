@@ -2,6 +2,7 @@
 #include "comment.h"
 #include "modcontext.h"
 #include "expression.h"
+#include "printutils.h"
 #include <fstream>
 #include <boost/property_tree/json_parser.hpp>
 
@@ -48,6 +49,9 @@ void ParameterSet::addParameterSet(const std::string setName, const pt::ptree & 
 	root.add_child(ParameterSet::parameterSetsKey + "." + setName, set);
 }
 
+/*!
+	Returns true if the file is writable
+*/
 bool ParameterSet::readParameterSet(const std::string &filename)
 {
 	try {
@@ -58,14 +62,13 @@ bool ParameterSet::readParameterSet(const std::string &filename)
 		file.open(filename, std::ios::app);
 		if (file.is_open()) {
 			file.close();
-			return 1;
+			return true;
 		}
 	}
 	catch (const pt::json_parser_error &e) {
-		// FIXME: Better error handling
-		std::cerr << e.what() << std::endl;
+		PRINTB("ERROR: Cannot open Parameter Set '%s': %s", filename % e.what());
 	}
-	return 0;
+	return false;
 }
 
 void ParameterSet::writeParameterSet(const std::string &filename)
@@ -76,8 +79,7 @@ void ParameterSet::writeParameterSet(const std::string &filename)
 		pt::write_json(filename, this->root);
 	}
 	catch (const pt::json_parser_error &e) {
-		// FIXME: Better error handling
-		std::cerr << e.what() << std::endl;
+		PRINTB("ERROR: Cannot write Parameter Set '%s': %s", filename % e.what());
 	}
 }
 
@@ -109,8 +111,7 @@ void ParameterSet::applyParameterSet(FileModule *fileModule, const std::string &
 		}
 	}
 	catch (std::exception const& e) {
-		// FIXME: Better error handling
-		std::cerr << e.what() << std::endl;
+		PRINTB("ERROR: Cannot apply parameter Set: %s", e.what());
 	}
 }
 
