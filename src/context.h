@@ -1,5 +1,6 @@
 #pragma once
 
+#include <map>
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -11,6 +12,8 @@ class Context
 {
 public:
 	typedef std::vector<const Context*> Stack;
+	typedef std::map<std::string, const class Expression *> Expressions;
+
 	Context(const Context *parent = NULL);
 	virtual ~Context();
 
@@ -18,15 +21,15 @@ public:
 	virtual ValuePtr evaluate_function(const std::string &name, const class EvalContext *evalctx) const;
 	virtual class AbstractNode *instantiate_module(const class ModuleInstantiation &inst, EvalContext *evalctx) const;
 
-	void setVariables(const AssignmentList &args,
-										const class EvalContext *evalctx = NULL);
+	const Expressions getExpressions(const AssignmentList &args, const class EvalContext *evalctx);
+	const Expressions setVariables(const AssignmentList &args, const class EvalContext *evalctx = NULL);
 
 	void set_variable(const std::string &name, const ValuePtr &value);
 	void set_variable(const std::string &name, const Value &value);
 	void set_constant(const std::string &name, const ValuePtr &value);
 	void set_constant(const std::string &name, const Value &value);
 
-        void apply_variables(const Context &other);
+	void apply_variables(const Context &other);
 	ValuePtr lookup_variable(const std::string &name, bool silent = false) const;
 	bool has_local_variable(const std::string &name) const;
 

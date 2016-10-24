@@ -105,7 +105,7 @@ fs::path parser_sourcefile;
 
 %token LE GE EQ NE AND OR
 
-%right LET
+%left HIGH_PRIO_LEFT
 
 %right '?' ':'
 
@@ -120,11 +120,14 @@ fs::path parser_sourcefile;
 %left '[' ']'
 %left '.'
 
+%left LOW_PRIO_LEFT
+
 %type <expr> expr
 %type <vec> vector_expr
 %type <expr> list_comprehension_elements
 %type <expr> list_comprehension_elements_p
 %type <expr> list_comprehension_elements_or_expr
+%type <expr> expr_or_empty
 
 %type <inst> module_instantiation
 %type <ifelse> if_statement
@@ -337,11 +340,6 @@ expr:
             {
               $$ = new Literal(ValuePtr($1), LOC(@$));
             }
-        | TOK_LET '(' arguments_call ')' expr %prec LET
-            {
-              $$ = new Let(*$3, $5, LOC(@$));
-              delete $3;
-            }
         | '[' expr ':' expr ']'
             {
               $$ = new Range($2, $4, LOC(@$));
@@ -434,13 +432,29 @@ expr:
             {
               $$ = new ArrayLookup($1, $3, LOC(@$));
             }
-        | TOK_ID '(' arguments_call ')'
+        | TOK_ID '(' arguments_call ')' expr_or_empty
             {
-              $$ = new FunctionCall($1, *$3, LOC(@$));
-              free($1);
-              delete $3;
-            }
+              $$ = FunctionCall::create($1, *$3, $5, LOC(@$));
+			  free($1);
+			  delete $3;
+			}
+		| TOK_LET '(' arguments_call ')' expr_or_empty
+            {
+				$$ = FunctionCall::create("let", *$3, $5, LOC(@$));
+				delete $3;
+			}
         ;
+
+expr_or_empty:
+		  %prec LOW_PRIO_LEFT
+		    {
+			    $$ = NULL;
+		    }
+		| expr %prec HIGH_PRIO_LEFT
+		    {
+			    $$ = $1;
+		    }
+		;
 
 list_comprehension_elements:
           /* The last set element may not be a "let" (as that would instead
