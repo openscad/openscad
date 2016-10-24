@@ -69,29 +69,45 @@ Context::~Context()
 	if (!parent) delete this->ctx_stack;
 }
 
-/*!
-	Initialize context from a module argument list and a evaluation context
-	which may pass variables which will be preferred over default values.
-*/
-void Context::setVariables(const AssignmentList &args,
-													 const EvalContext *evalctx)
+const Context::Expressions Context::getExpressions(const AssignmentList &args, const EvalContext *evalctx)
 {
+	Expressions expressions;
+
 	for(const auto &arg : args) {
-		set_variable(arg.name, arg.expr ? arg.expr->evaluate(this->parent) : ValuePtr::undefined);
+		expressions[arg.name] = arg.expr.get(); // NOTE: this can assign NULL pointers!
 	}
 
 	if (evalctx) {
 		size_t posarg = 0;
 		for (size_t i=0; i<evalctx->numArgs(); i++) {
 			const std::string &name = evalctx->getArgName(i);
-			ValuePtr val = evalctx->getArgValue(i);
+			const Expression *expr = evalctx->getArgs()[i].expr.get();
 			if (name.empty()) {
-				if (posarg < args.size()) this->set_variable(args[posarg++].name, val);
+				if (posarg < args.size()) {
+					const Assignment assignment = args[posarg++];
+					expressions[assignment.name] = expr;
+				}
 			} else {
-				this->set_variable(name, val);
+				expressions[name] = expr;
 			}
 		}
 	}
+
+	return expressions;
+}
+
+/*!
+	Initialize context from a module argument list and a evaluation context
+	which may pass variables which will be preferred over default values.
+*/
+const Context::Expressions Context::setVariables(const AssignmentList &args, const EvalContext *evalctx)
+{
+	const Expressions expressions = getExpressions(args, evalctx);
+	for (const auto &expr : expressions) {
+		const ValuePtr val = expr.second ? expr.second->evaluate(evalctx) : ValuePtr::undefined;
+		this->set_variable(expr.first, val);
+	}
+	return expressions;
 }
 
 void Context::set_variable(const std::string &name, const ValuePtr &value)

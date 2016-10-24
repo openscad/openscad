@@ -9,6 +9,12 @@ public:
 	virtual ~EvaluationException() throw() {}
 };
 
+class AssertionFailedException : public EvaluationException {
+public:
+	AssertionFailedException(const std::string &what_arg) : EvaluationException(what_arg) {}
+	virtual ~AssertionFailedException() throw() {}
+};
+
 class RecursionException: public EvaluationException {
 public:
 	static RecursionException create(const char *recursiontype, const std::string &name) {
