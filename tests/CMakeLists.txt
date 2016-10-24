@@ -1032,7 +1032,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
       if (${EXPERIMENTAL} EQUAL -1)
         set(EXPERIMENTAL_OPTION "")
       else()
-        set(EXPERIMENTAL_OPTION "--enable=lc-each" "--enable=lc-else" "--enable=lc-for-c" "--enable=amf-import")
+        set(EXPERIMENTAL_OPTION "--enable=assert" "--enable=lc-each" "--enable=lc-else" "--enable=lc-for-c" "--enable=amf-import")
       endif()
 
       # 2D tests should be viewed from the top, not an angle.
@@ -1162,6 +1162,10 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/for-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/expression-evaluation-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/echo-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/assert-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/assert-fail1-test.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/assert-fail2-test.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/assert-fail3-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/parser-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/builtin-tests.scad
@@ -1206,6 +1210,7 @@ list(APPEND DUMPTEST_FILES ${FEATURES_2D_FILES} ${FEATURES_3D_FILES} ${DEPRECATE
 list(APPEND DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/use-tests.scad
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/assert-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/let-module-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/localfiles-test.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/localfiles_dir/localfiles-compatibility-test.scad
@@ -1217,6 +1222,7 @@ list(APPEND CGALPNGTEST_2D_FILES ${FEATURES_2D_FILES} ${SCAD_DXF_FILES} ${EXAMPL
 list(APPEND CGALPNGTEST_3D_FILES ${FEATURES_3D_FILES} ${SCAD_AMF_FILES} ${DEPRECATED_3D_FILES} ${ISSUES_3D_FILES} ${EXAMPLE_3D_FILES})
 list(APPEND CGALPNGTEST_3D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/use-tests.scad
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/assert-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/let-module-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/transform-nan-inf-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/localfiles-test.scad
@@ -1352,26 +1358,39 @@ disable_tests(csgpngtest_primitive-inf-tests
               csgpngtest_issue1258)
 
 experimental_tests(echotest_list-comprehensions-experimental
-              cgalpngtest_cube-with-hole
-              cgalpngtest_multi-volume-binary
-              cgalpngtest_sphere20face
-              cgalpngtest_split_pyramid
-              cgalpngtest_tetra_multicolor
-              opencsgtest_cube-with-hole
-              opencsgtest_multi-volume-binary
-              opencsgtest_sphere20face
-              opencsgtest_split_pyramid
-              opencsgtest_tetra_multicolor
-              csgpngtest_cube-with-hole
-              csgpngtest_multi-volume-binary
-              csgpngtest_sphere20face
-              csgpngtest_split_pyramid
-              csgpngtest_tetra_multicolor
-              throwntogethertest_cube-with-hole
-              throwntogethertest_multi-volume-binary
-              throwntogethertest_sphere20face
-              throwntogethertest_split_pyramid
-              throwntogethertest_tetra_multicolor)
+                   cgalpngtest_cube-with-hole
+                   cgalpngtest_multi-volume-binary
+                   cgalpngtest_sphere20face
+                   cgalpngtest_split_pyramid
+                   cgalpngtest_tetra_multicolor
+                   opencsgtest_cube-with-hole
+                   opencsgtest_multi-volume-binary
+                   opencsgtest_sphere20face
+                   opencsgtest_split_pyramid
+                   opencsgtest_tetra_multicolor
+                   csgpngtest_cube-with-hole
+                   csgpngtest_multi-volume-binary
+                   csgpngtest_sphere20face
+                   csgpngtest_split_pyramid
+                   csgpngtest_tetra_multicolor
+                   throwntogethertest_cube-with-hole
+                   throwntogethertest_multi-volume-binary
+                   throwntogethertest_sphere20face
+                   throwntogethertest_split_pyramid
+                   throwntogethertest_tetra_multicolor
+                   echotest_assert-tests
+                   cgalpngtest_assert-tests
+                   opencsgtest_assert-tests
+                   csgpngtest_assert-tests
+                   throwntogethertest_assert-tests
+                   echotest_assert-fail1-test
+                   echotest_assert-fail2-test
+                   echotest_assert-fail3-test
+                   echotest_echo-expression-tests
+                   echotest_assert-expression-tests
+                   echotest_assert-expression-fail1-test
+                   echotest_assert-expression-fail2-test
+                   echotest_assert-expression-fail3-test)
 
 # Test config handling
 
@@ -1436,6 +1455,7 @@ list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue13.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1580-import-back-to-back2.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1580-zero-area-triangle.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1580-import-zero-area-triangle.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1803.scad
 )
 
 # We know that we cannot import weakly manifold files into CGAL, so to make tests easier
@@ -1594,7 +1614,23 @@ add_cmdline_test(throwntogethertest EXE ${OPENSCAD_BINPATH} ARGS --preview=throw
 add_cmdline_test(cgalstlsanitytest EXE ${CMAKE_SOURCE_DIR}/cgalstlsanitytest SUFFIX txt ARGS ${OPENSCAD_BINPATH} FILES ${CGALSTLSANITYTEST_FILES})
 
 #
-# Export/Import tests
+# Trivial Export/Import files
+# This sanity-checks bidirectional file format import/export
+#
+
+list(APPEND TRIVIAL_IMPORT_EXPORT_2D_FILES
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/square10.scad)
+list(APPEND TRIVIAL_IMPORT_EXPORT_3D_FILES
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/cube10.scad)
+
+add_cmdline_test(monotonepngtest EXE ${OPENSCAD_BINPATH} ARGS --colorscheme=Monotone --render -o SUFFIX png FILES ${TRIVIAL_IMPORT_EXPORT_2D_FILES} ${TRIVIAL_IMPORT_EXPORT_3D_FILES})
+add_cmdline_test(stlpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=STL EXPECTEDDIR monotonepngtest SUFFIX png FILES ${TRIVIAL_IMPORT_EXPORT_3D_FILES})
+add_cmdline_test(offpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=OFF EXPECTEDDIR monotonepngtest SUFFIX png FILES ${TRIVIAL_IMPORT_EXPORT_3D_FILES})
+add_cmdline_test(dxfpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=DXF --render=cgal EXPECTEDDIR monotonepngtest SUFFIX png FILES ${TRIVIAL_IMPORT_EXPORT_2D_FILES})
+add_cmdline_test(svgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=SVG --enable=svg-import --render=cgal EXPECTEDDIR monotonepngtest SUFFIX png FILES ${TRIVIAL_IMPORT_EXPORT_2D_FILES})
+
+#
+# Corner-case Export/Import tests
 #
 
 add_cmdline_test(monotonepngtest EXE ${OPENSCAD_BINPATH} ARGS --colorscheme=Monotone --render -o SUFFIX png FILES ${EXPORT3D_CGAL_TEST_FILES} ${EXPORT3D_CGALCGAL_TEST_FILES})

@@ -37,14 +37,14 @@ PACKAGES=(
     "mpfr 3.1.4"
     "boost 1.61.0"
     "qt5 5.7.0"
-    "qscintilla 2.9.2"
+    "qscintilla 2.9.3"
     # NB! For CGAL, also update the actual download URL in the function
     "cgal 4.8.1"
     "glew 1.13.0"
     "gettext 0.19.8"
     "libffi 3.2.1"
     "glib2 2.46.1"
-    "opencsg 1.4.1"
+    "opencsg 1.4.2"
     "freetype 2.6.3"
     "ragel 6.9"
     "harfbuzz 1.2.7"
@@ -244,12 +244,12 @@ build_qscintilla()
   version=$1
   echo "Building QScintilla" $version "..."
   cd $BASEDIR/src
-  rm -rf QScintilla-gpl-$version
-  if [ ! -f QScintilla-gpl-$version.tar.gz ]; then
-    curl -LO http://downloads.sourceforge.net/project/pyqt/QScintilla2/QScintilla-$version/QScintilla-gpl-$version.tar.gz
+  rm -rf QScintilla_gpl-$version
+  if [ ! -f QScintilla_gpl-$version.tar.gz ]; then
+    curl -LO http://downloads.sourceforge.net/project/pyqt/QScintilla2/QScintilla-$version/QScintilla_gpl-$version.tar.gz
   fi
-  tar xzf QScintilla-gpl-$version.tar.gz
-  cd QScintilla-gpl-$version/Qt4Qt5
+  tar xzf QScintilla_gpl-$version.tar.gz
+  cd QScintilla_gpl-$version/Qt4Qt5
   qmake QMAKE_CXXFLAGS+="$CXXSTDFLAGS" QMAKE_LFLAGS+="$CXXSTDFLAGS" qscintilla.pro
   make -j"$NUMCPU" install
   install_name_tool -id @rpath/libqscintilla2.dylib $DEPLOYDIR/lib/libqscintilla2.dylib

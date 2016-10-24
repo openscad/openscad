@@ -45,8 +45,7 @@ namespace PlatformUtils {
          * OS type is reported based on what platform the application was
          * built for.
          * 
-				 * Extended sysinfo will return more info, like CPUs and RAM
-				 *
+         * Extended sysinfo will return more info, like CPUs and RAM
          * @return system information.
          */
         std::string sysinfo(bool extended = true);
