@@ -93,6 +93,13 @@
 #include <QClipboard>
 #include <QDesktopWidget>
 
+#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
+#include <QTextDocument>
+#define QT_HTML_ESCAPE(qstring) Qt::escape(qstring)
+#else
+#define QT_HTML_ESCAPE(qstring) (qstring).toHtmlEscaped()
+#endif
+
 #if (QT_VERSION < QT_VERSION_CHECK(5, 1, 0))
 // Set dummy for Qt versions that do not have QSaveFile
 #define QT_FILE_SAVE_CLASS QFile
@@ -464,9 +471,8 @@ MainWindow::MainWindow(const QString &filename)
 	this->setColorScheme(cs);
 
 	//find and replace panel
-	connect(this->findTypeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(selectFindType(int)));
 	connect(this->findInputField, SIGNAL(textChanged(QString)), this, SLOT(findString(QString)));
-	connect(this->findInputField, SIGNAL(returnPressed()), this->nextButton, SLOT(animateClick()));
+        connect(this->findInputField, SIGNAL(returnPressed()), this->findNextButton, SLOT(animateClick()));
 	find_panel->installEventFilter(this);
 	if (QApplication::clipboard()->supportsFindBuffer()) {
 		connect(this->findInputField, SIGNAL(textChanged(QString)), this, SLOT(updateFindBuffer(QString)));
@@ -476,9 +482,9 @@ MainWindow::MainWindow(const QString &filename)
 		this->findInputField->setText(QApplication::clipboard()->text(QClipboard::FindBuffer));
 	}
 
-	connect(this->prevButton, SIGNAL(clicked()), this, SLOT(findPrev()));
-	connect(this->nextButton, SIGNAL(clicked()), this, SLOT(findNext()));
-	connect(this->hideFindButton, SIGNAL(clicked()), find_panel, SLOT(hide()));
+        connect(this->findPrevButton, SIGNAL(clicked()), this, SLOT(findPrev()));
+        connect(this->findNextButton, SIGNAL(clicked()), this, SLOT(findNext()));
+        connect(this->cancelButton, SIGNAL(clicked()), find_panel, SLOT(hide()));
 	connect(this->replaceButton, SIGNAL(clicked()), this, SLOT(replace()));
 	connect(this->replaceAllButton, SIGNAL(clicked()), this, SLOT(replaceAll()));
 	connect(this->replaceInputField, SIGNAL(returnPressed()), this->replaceButton, SLOT(animateClick()));
@@ -1511,10 +1517,10 @@ void MainWindow::pasteViewportRotation()
 
 void MainWindow::find()
 {
-	findTypeComboBox->setCurrentIndex(0);
 	replaceInputField->hide();
 	replaceButton->hide();
 	replaceAllButton->hide();
+        replaceLabel->setVisible(false);
 	find_panel->show();
 	if (!editor->selectedText().isEmpty()) {
 		findInputField->setText(editor->selectedText());
@@ -1530,10 +1536,10 @@ void MainWindow::findString(QString textToFind)
 
 void MainWindow::findAndReplace()
 {
-	findTypeComboBox->setCurrentIndex(1);
 	replaceInputField->show();
 	replaceButton->show();
 	replaceAllButton->show();
+        replaceLabel->setVisible(true);
 	find_panel->show();
 	if (!editor->selectedText().isEmpty()) {
 		findInputField->setText(editor->selectedText());
@@ -2754,10 +2760,10 @@ void MainWindow::consoleOutput(const QString &msg)
 	QString qmsg;
 	if (msg.startsWith("WARNING:") || msg.startsWith("DEPRECATED:")) {
 		this->compileWarnings++;
-		qmsg = "<html><span style=\"color: black; background-color: #ffffb0;\">" + msg + "</span></html>\n";
+		qmsg = "<html><span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span></html>\n";
 	} else if (msg.startsWith("ERROR:")) {
 		this->compileErrors++;
-		qmsg = "<html><span style=\"color: black; background-color: #ffb0b0;\">" + msg + "</span></html>\n";
+		qmsg = "<html><span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span></html>\n";
 	}
 	else {
 		qmsg = msg;

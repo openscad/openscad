@@ -489,66 +489,66 @@
         <property name="verticalSpacing">
          <number>0</number>
         </property>
-        <item row="0" column="0">
-         <widget class="QComboBox" name="findTypeComboBox">
-          <item>
-           <property name="text">
-            <string>Find</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Replace</string>
-           </property>
-          </item>
-         </widget>
-        </item>
         <item row="0" column="1">
          <widget class="QLineEdit" name="findInputField">
           <property name="placeholderText">
-           <string>Search string</string>
+           <string/>
           </property>
          </widget>
         </item>
         <item row="0" column="2">
-         <widget class="QPushButton" name="prevButton">
+         <widget class="QPushButton" name="findPrevButton">
           <property name="text">
-           <string>&lt;</string>
+           <string>Find Previous</string>
           </property>
          </widget>
         </item>
         <item row="0" column="3">
-         <widget class="QPushButton" name="nextButton">
+         <widget class="QPushButton" name="findNextButton">
           <property name="text">
-           <string>&gt;</string>
+           <string>Find Next</string>
           </property>
          </widget>
         </item>
         <item row="0" column="4">
-         <widget class="QPushButton" name="hideFindButton">
+         <widget class="QPushButton" name="cancelButton">
           <property name="text">
-           <string>Done</string>
+           <string>Cancel</string>
           </property>
          </widget>
         </item>
         <item row="1" column="1">
          <widget class="QLineEdit" name="replaceInputField">
           <property name="placeholderText">
-           <string>Replacement string</string>
+           <string/>
           </property>
          </widget>
         </item>
-        <item row="1" column="2" colspan="2">
+        <item row="0" column="0">
+         <widget class="QLabel" name="findLabel">
+          <property name="text">
+           <string>Find:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="2">
          <widget class="QPushButton" name="replaceButton">
           <property name="text">
            <string>Replace</string>
           </property>
          </widget>
         </item>
-        <item row="1" column="4">
+        <item row="1" column="3">
          <widget class="QPushButton" name="replaceAllButton">
           <property name="text">
-           <string>All</string>
+           <string>Replace All</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="replaceLabel">
+          <property name="text">
+           <string>Replace with:</string>
           </property>
          </widget>
         </item>

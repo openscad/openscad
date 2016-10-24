@@ -267,6 +267,15 @@ std::string Value::toString() const
   return boost::apply_visitor(tostring_visitor(), this->value);
 }
 
+std::string Value::toEchoString() const
+{
+	if (type() == Value::STRING) {
+		return std::string("\"") + toString() + '"';
+	} else {
+		return toString();
+	}
+}
+
 class chr_visitor : public boost::static_visitor<std::string> {
 public:
 	template <typename S> std::string operator()(const S &) const
