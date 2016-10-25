@@ -129,6 +129,8 @@ get_qt4or5_deps_debian()
 
   if [ $useqt = 5 ]; then
     apt-get -y install qtbase5-dev libqt5scintilla2-dev libqt5opengl5-dev qt5-qmake
+    # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=804539
+    apt-get -y install libcgal-qt5-dev
   else
     apt-get -y install libqt4-dev libqscintilla2-dev libqt4-opengl-dev
   fi

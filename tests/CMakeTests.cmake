@@ -214,13 +214,13 @@ enable_testing()
 set_directory_properties(PROPERTIES TEST_INCLUDE_FILE "${TESTTOOLS_DIR}/EnforceConfig.cmake")
 
 # Subst files
-configure_file(${TESTDATA_DIR}/scad/templates/include-tests-template.scad
+configure_file(${TESTDATA_SRCDIR}/scad/templates/include-tests-template.scad
                ${TESTDATA_DIR}/scad/misc/include-tests.scad)
-configure_file(${TESTDATA_DIR}/scad/templates/use-tests-template.scad
+configure_file(${TESTDATA_SRCDIR}/scad/templates/use-tests-template.scad
                ${TESTDATA_DIR}/scad/misc/use-tests.scad)
-configure_file(${TESTDATA_DIR}/scad/templates/import_stl-tests-template.scad
+configure_file(${TESTDATA_SRCDIR}/scad/templates/import_stl-tests-template.scad
                ${TESTDATA_DIR}/scad/3D/features/import_stl-tests.scad)
-configure_file(${TESTDATA_DIR}/scad/templates/import_dxf-tests-template.scad
+configure_file(${TESTDATA_SRCDIR}/scad/templates/import_dxf-tests-template.scad
                ${TESTDATA_DIR}/scad/2D/features/import_dxf-tests.scad)
 
 # Find all scad files

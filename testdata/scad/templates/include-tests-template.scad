@@ -26,7 +26,7 @@ include<test/>
 include </>
 
 //Test with absolute path
-include <@CMAKE_SOURCE_DIR@/../testdata/scad/misc/sub2/test7.scad>
+include <@TESTDATA_HOSTDIR@/scad/misc/sub2/test7.scad>
 
 // Test simple MCAD include
 include <MCAD/constants.scad>

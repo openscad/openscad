@@ -64,10 +64,8 @@ add_definitions(${GLEW_CFLAGS})
 add_definitions(${FONTCONFIG_CFLAGS})
 add_definitions(${FREETYPE_CFLAGS})
 add_definitions(${HARFBUZZ_CFLAGS})
-add_definitions(${GLIB2_DEFINITIONS})
-add_definitions(${LIBXML2_DEFINITIONS})
-#inclusion(GLIB2_DIR GLIB2_INCLUDE_DIRS)
-inclusion(LIBXML2_DIR LIBXML2_INCLUDE_DIR)
+add_definitions(${GLIB2_CFLAGS})
+add_definitions(${LIBXML2_CFLAGS})
 
 restore_pkg_config_env()
 

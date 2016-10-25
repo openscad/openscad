@@ -8,4 +8,4 @@ translate([-200,200,0]) import(file="../../../dxf/multiple-layers.dxf", layer="0
 translate([0,200,0]) import(filename="../../../dxf/multiple-layers.dxf", layername="0");
 translate([200,200,0]) import(file="../../../dxf/multiple-layers.dxf", layer="noname");
 translate([0,200,0]) import(file="../../../dxf/multiple-layers.dxf", layer="Layer with a pretty long name including \\ \"special\" /'\\\\ characters");
-translate([200,0,0]) import(file="@CMAKE_SOURCE_DIR@/../testdata/dxf/polygons.dxf");
+translate([200,0,0]) import(file="@TESTDATA_HOSTDIR@/dxf/polygons.dxf");
