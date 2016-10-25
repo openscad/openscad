@@ -5,6 +5,7 @@
 
 enum import_type_e {
 	TYPE_UNKNOWN,
+	TYPE_AMF,
 	TYPE_STL,
 	TYPE_OFF,
 	TYPE_SVG,
