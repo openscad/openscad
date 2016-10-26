@@ -9,14 +9,6 @@ endif()
 
 project(tests)
 
-set(OPENSCAD_ROOT "${CMAKE_SOURCE_DIR}/..")
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}")
-set(TESTDATA_DIR "${CMAKE_SOURCE_DIR}/../testdata")
-set(TESTDATA_SRCDIR "${TESTDATA_DIR}")
-set(TESTTOOLS_DIR "${tests_SOURCE_DIR}")
-set(MCAD_LIBRARIES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../libraries")
-set(EXAMPLES_DIR "${CMAKE_SOURCE_DIR}/../examples")
-
 # Find GUI openscad binary (typically built with qmake)
 if(EXISTS "$ENV{OPENSCAD_BINARY}")
   set(OPENSCAD_BINPATH "$ENV{OPENSCAD_BINARY}")
@@ -41,14 +33,85 @@ else()
   message(FATAL_ERROR "Please build the OpenSCAD binary and place it here: ${OPENSCAD_BINPATH}" )
 endif()
 
+# Setup paths
+# SRC - source path
+# HOST - path on machine where tests will run (usually same as SRC)
+# DEPLOY - path where tests will be packaged (usually same as SRC)
+set(CMAKE_MODULE_PATH   "${CMAKE_SOURCE_DIR}")
+set(TESTDATA_SRC_DIR    "${CMAKE_SOURCE_DIR}/../testdata")
+set(TESTDATA_HOST_DIR   "${CMAKE_SOURCE_DIR}/../testdata")
+set(TESTDATA_DEPLOY_DIR "${CMAKE_SOURCE_DIR}/../testdata")
+set(TESTTOOLS_HOST_DIR  "${tests_SOURCE_DIR}")
+set(MCAD_HOST_DIR       "${CMAKE_SOURCE_DIR}/../libraries")
+set(EXAMPLES_HOST_DIR   "${CMAKE_SOURCE_DIR}/../examples")
 
 # Search for MCAD in correct place
+
 if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../libraries/MCAD/__init__.py)
   message(FATAL_ERROR "MCAD not found. You can install from the OpenSCAD root as follows: \n  git submodule update --init")
 endif()
-set(CTEST_ENVIRONMENT "${CTEST_ENVIRONMENT};OPENSCADPATH=${MCAD_LIBRARIES_DIR}")
+set(CTEST_ENVIRONMENT "${CTEST_ENVIRONMENT};OPENSCADPATH=${MCAD_HOST_DIR}")
+
+set(OPENSCAD_HOST_ROOT "${CMAKE_SOURCE_DIR}/..")
+set(TESTDATA_HOSTDIR "${CMAKE_SOURCE_DIR}/../testdata")
 
 include("CMakeCompilerSettings.cmake")
+
+
+# Re-distributable packages. (see SRC,HOST,DEPLOY above)
+get_filename_component(CBD_ABS ${CMAKE_BINARY_DIR} ABSOLUTE)
+get_filename_component(DEPLOY_DIR_ABS $ENV{BUILDDIR} ABSOLUTE)
+if ("${CBD_ABS}" STREQUAL "${DEPLOY_DIR_ABS}/tests")
+  set(DISTRIB 1)
+endif()
+if (DISTRIB AND ${CMAKE_SYSTEM_NAME} STREQUAL "MSYS")
+  message(STATUS "build msys2 test distribution package.")
+  set(TESTS_DEPLOY_DIR "C:/Program Files/OpenSCAD/tests")
+
+  # copy testdata so paths setup by cmake will work on any user machine.
+  # use 'cp' shell command because file(COPY) has unicode bugs on msys2
+  set(CMDL1 "#!/usr/bin/bash\n")
+  set(CMDL2 "cp -av " ${TESTDATA_DIR} " " ${TESTS_DEPLOY_DIR}/.. "\n")
+  set(CMDL3 "cp -av " ${CMAKE_SOURCE_DIR}/regression " " ${TESTS_DEPLOY_DIR} "\n")
+  set(CMD ${CMDL1} ${CMDL2} ${CMDL3})
+  string(REPLACE "Program Files" "Program\\ Files" CMD ${CMD})
+  file(WRITE "${TESTS_DEPLOY_DIR}/wincopy.sh" ${CMD})
+  #execute_process(COMMAND sh wincopy.sh OUTPUT_VARIABLE result ERROR_VARIABLE result)
+  message(STATUS ${result})
+
+  file(GLOB PYFILES ${CMAKE_SOURCE_DIR}/*.py)
+  file(GLOB CMAKEFILES ${CMAKE_SOURCE_DIR}/Enforce*.cmake)
+  file(GLOB PNGFILES ${CMAKE_SOURCE_DIR}/*.png)
+  file(GLOB BATFILES ${CMAKE_SOURCE_DIR}/*.bat)
+  file(GLOB MISCFILES ${CMAKE_SOURCE_DIR}/cgalsanitytest)
+  #file(COPY ${PYFILES} ${PNGFILES} ${CMAKEFILES} ${MISCFILES} ${CCFILES} ${BATFILES} DESTINATION ${TESTS_DEPLOY_DIR})
+elseif( DISTRIB AND ${CMAKE_SYSTEM_NAME} STREQUAL "Linux" )
+  message(STATUS "build linux test distribution package.")
+  set(TESTS_DEPLOY_DIR     "${DEPLOY_DIR_ABS}/tests")
+  set(TESTDATA_DEPLOY_DIR  "${TESTS_DEPLOY_DIR}/../testdata")
+  set(OPENSCAD_HOST_BINARY "/usr/local/bin/openscad")
+  set(OPENSCAD_HOST_ROOT   "/usr/local/openscad")
+  set(TESTS_HOST_DIR       "/usr/local/openscad/tests")
+  set(TESTDATA_HOST_DIR    "/usr/local/openscad/testdata")
+  set(TESTTOOLS_HOST_DIR   "/usr/local/openscad/tests")
+  set(MCAD_HOST_DIR        "/usr/local/openscad/libraries")
+  set(EXAMPLES_HOST_DIR    "/usr/local/openscad/examples")
+  set(PYTHON_HOST_BINARY   "/usr/bin/python")
+
+  message(STATUS "package test files into ${TESTS_DEPLOY_DIR}")
+
+  # copy testdata to deploy, example: openscad/bin/x86_64-linux-gnu/testdata
+  file(COPY ${TESTDATA_SRCDIR} DESTINATION ${TESTS_DEPLOY_DIR}/..)
+  file(COPY ${CMAKE_SOURCE_DIR}/regression DESTINATION ${TESTS_DEPLOY_DIR})
+  file(GLOB PYFILES ${CMAKE_SOURCE_DIR}/*.py)
+  file(GLOB CMAKEFILES ${CMAKE_SOURCE_DIR}/Enforce*.cmake)
+  file(GLOB PNGFILES ${CMAKE_SOURCE_DIR}/*.png)
+  file(GLOB BATFILES ${CMAKE_SOURCE_DIR}/*.bat)
+  file(GLOB MISCFILES ${CMAKE_SOURCE_DIR}/cgalsanitytest)
+  file(COPY ${PYFILES} ${PNGFILES} ${CMAKEFILES} ${MISCFILES} ${CCFILES} ${BATFILES} DESTINATION ${TESTS_DEPLOY_DIR})
+endif()
+#message(FATAL_ERROR "end on purpose. testing distribution prebuild")
+
 
 # Find image comparison program
 
@@ -91,77 +154,22 @@ if ( ${DIFFPNG} )
 endif()
 
 
-# Re-distributable packages.
-# no executables, just the test data, results, and ctestestfiles
-# Design is based around getting MSYS/MXE to work which means we cannot
-# be "in" the "destination directory" when building.
-if (DISTRIB AND MSYS)
-  message(STATUS "build msys2 test distribution package. copying testdata...")
-  set(TESTS_DEPLOY_DIR "C:/Program Files/OpenSCAD/tests")
 
-  # copy testdata so paths setup by cmake will work on any user machine.
-  # use 'cp' shell command because file(COPY) has unicode bugs on msys2
-  set(CMDL1 "#!/usr/bin/bash\n")
-  set(CMDL2 "cp -av " ${TESTDATA_DIR} " " ${TESTS_DEPLOY_DIR}/.. "\n")
-  set(CMDL3 "cp -av " ${CMAKE_SOURCE_DIR}/regression " " ${TESTS_DEPLOY_DIR} "\n")
-  set(CMD ${CMDL1} ${CMDL2} ${CMDL3})
-  string(REPLACE "Program Files" "Program\\ Files" CMD ${CMD})
-  file(WRITE "${TESTS_DEPLOY_DIR}/wincopy.sh" ${CMD})
-  #execute_process(COMMAND sh wincopy.sh OUTPUT_VARIABLE result ERROR_VARIABLE result)
-  message(STATUS ${result})
-
-  file(GLOB PYFILES ${CMAKE_SOURCE_DIR}/*.py)
-  file(GLOB CMAKEFILES ${CMAKE_SOURCE_DIR}/Enforce*.cmake)
-  file(GLOB PNGFILES ${CMAKE_SOURCE_DIR}/*.png)
-  file(GLOB BATFILES ${CMAKE_SOURCE_DIR}/*.bat)
-  file(GLOB MISCFILES ${CMAKE_SOURCE_DIR}/cgalsanitytest)
-  #file(COPY ${PYFILES} ${PNGFILES} ${CMAKEFILES} ${MISCFILES} ${CCFILES} ${BATFILES} DESTINATION ${TESTS_DEPLOY_DIR})
-
-  set(TESTDATA_DIR ${TESTS_DEPLOY_DIR}/../testdata)
-  set(ENV{OPENSCAD_BINARY} ${TESTS_DEPLOY_DIR}/../openscad.exe)
-  set(TESTTOOLS_DIR ${TESTS_DEPLOY_DIR})
-  set(MCAD_LIBRARIES_DIR ${TESTS_DEPLOY_DIR}/../libraries)
-  set(EXAMPLES_DIR ${TESTS_DEPLOY_DIR}/../examples)
-  set(PYTHON_EXECUTABLE "C:/Python27/python.exe")
-elseif( DISTRIB AND ${CMAKE_SYSTEM_NAME} STREQUAL "Linux" )
-  message(STATUS "build linux test distribution package. copying testdata...")
-  execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpmachine OUTPUT_VARIABLE MACHINE_TRIPLE OUTPUT_STRIP_TRAILING_WHITESPACE)
-  set(TESTS_DEPLOY_DIR "${OPENSCAD_ROOT}/bin/${MACHINE_TRIPLE}/tests")
-  message(STATUS "package test files into ${TESTS_DEPLOY_DIR}")
-
-  # copy testdata to deploy, example: openscad/bin/x86_64-linux-gnu/testdata
-  file(COPY ${TESTDATA_SRCDIR} DESTINATION ${TESTS_DEPLOY_DIR}/..)
-  file(COPY ${CMAKE_SOURCE_DIR}/regression DESTINATION ${TESTS_DEPLOY_DIR})
-  file(GLOB PYFILES ${CMAKE_SOURCE_DIR}/*.py)
-  file(GLOB CMAKEFILES ${CMAKE_SOURCE_DIR}/Enforce*.cmake)
-  file(GLOB PNGFILES ${CMAKE_SOURCE_DIR}/*.png)
-  file(GLOB BATFILES ${CMAKE_SOURCE_DIR}/*.bat)
-  file(GLOB MISCFILES ${CMAKE_SOURCE_DIR}/cgalsanitytest)
-  file(COPY ${PYFILES} ${PNGFILES} ${CMAKEFILES} ${MISCFILES} ${CCFILES} ${BATFILES} DESTINATION ${TESTS_DEPLOY_DIR})
-
-  set(TESTS_HOST_DIR "/usr/local/openscad/tests")
-  set(TESTDATA_HOSTDIR "${TESTS_HOST_DIR}/../testdata")
-  set(TESTDATA_DIR "${TESTS_DEPLOY_DIR}/../testdata")
-  set(ENV{OPENSCAD_BINARY} "${TESTS_HOST_DIR}/../openscad")
-  set(TESTTOOLS_DIR "${TESTS_HOST_DIR}")
-  set(MCAD_LIBRARIES_DIR "${TESTS_HOST_DIR}/../libraries")
-  set(EXAMPLES_DIR "${TESTS_HOST_DIR}/../examples")
-  set(PYTHON_EXECUTABLE "/usr/bin/python")
-  set(OPENSCAD_BINPATH "${TESTS_HOST_DIR}/openscad")
-endif()
-#message(FATAL_ERROR "end on purpose. testing distribution prebuild")
-
-
-
-message(STATUS "Detecting software GL driver for Windows(TM)")
+message(STATUS "Detecting GL subsystem for Windows(TM)")
 if (MSYS)
-  set(GLFILENAME "C:/msys64/mingw64/bin/opengl32.dll")
-  if(EXISTS ${GLFILENAME})
-    get_filename_component(OPENSCAD_BINDIR ${OPENSCAD_BINPATH} DIRECTORY)
-    message(STATUS "copying ${GLFILENAME} to ${OPENSCAD_BINDIR}")
-    file(COPY ${GLFILENAME} DESTINATION ${OPENSCAD_BINDIR})
+  execute_process(${OPENSCAD_BINARY} ${EXAMPLES_DIR}/Basics/CSG.scad -o testgl.png RESULT_VARIABLE gl_result)
+  if ( ${gl_result} STREQUAL "0" )
+    message(STATUS "testgl.png: OpenSCAD GL returned 0, appears to be working")
   else()
-    message(STATUS "could not find opengl32.dll")
+    message(STATUS "testgl.png: failed. Attempting to find software MESA driver")
+    set(GLFILENAME "C:/msys64/mingw64/bin/opengl32.dll")
+    if(EXISTS ${GLFILENAME})
+      get_filename_component(OPENSCAD_BINDIR ${OPENSCAD_BINPATH} DIRECTORY)
+      message(STATUS "copying ${GLFILENAME} to ${OPENSCAD_BINDIR}")
+      file(COPY ${GLFILENAME} DESTINATION ${OPENSCAD_BINDIR})
+    else()
+      message(FATAL_ERROR "could not find opengl32.dll")
+    endif()
   endif()
 endif()
 
@@ -184,8 +192,6 @@ include("CMakeTests.cmake")
 
 message(STATUS "CPPFLAGS: ${CMAKE_CXX_FLAGS}")
 
-if (DISTRIB)
-  file(COPY ${CMAKE_BINARY_DIR}/CTestCustom.cmake DESTINATION ${TESTS_DEPLOY_DIR})
-  file(COPY ${CMAKE_BINARY_DIR}/CTestTestfile.cmake DESTINATION ${TESTS_DEPLOY_DIR})
-  message(STATUS "DISTRIB: ${TESTS_DEPLOY_DIR}")
+if(DISTRIB)
+  message(STATUS "DISTRIB detected, tests set for repackaging and distribution.")
 endif()
