@@ -63,7 +63,7 @@ endif()
 message("running '@OPENSCAD_HOST_BINARY@ --info' to generate sysinfo.txt")
 execute_process(COMMAND @OPENSCAD_HOST_BINARY@ --info OUTPUT_FILE sysinfo.txt)
 
-set(CTEST_CUSTOM_POST_TEST ${CTEST_CUSTOM_POST_TEST} "@PYTHON_HOST_BINARY@ \"@TESTTOOLS_HOST_DIR@/test_pretty_print.py\" --builddir=@TESTS_HOST_DIR@ @UPLOADARG@")
+set(CTEST_CUSTOM_POST_TEST ${CTEST_CUSTOM_POST_TEST} "@PYTHON_HOST_BINARY@ \"@TESTTOOLS_HOST_DIR@/test_pretty_print.py\" @UPLOADARG@")
 
 if ( ${debug_openscad_template} )
   foreach(post_test ${CTEST_CUSTOM_POST_TEST} )
