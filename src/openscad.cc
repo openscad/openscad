@@ -148,7 +148,8 @@ static void help(const char *progname, bool failure = false)
          "%2%[ --colorscheme=[Cornfield|Sunset|Metallic|Starnight|BeforeDawn|Nature|DeepOcean] ] \\\n"
          "%2%[ --csglimit=num ]"
 #ifdef ENABLE_EXPERIMENTAL
-         " [ --enable=<feature> ]"
+         " [ --enable=<feature> ] \\\n"
+         "%2%[ -p <Parameter Filename>] [-P <Parameter Set>] "
 #endif
          "\\\n"
 #ifdef DEBUG
