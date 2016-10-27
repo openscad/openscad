@@ -1,0 +1,28 @@
+ECHO: 
+ECHO: undef
+ECHO: "t2"
+ECHO: 18
+ECHO: c = 18
+ECHO: 18
+WARNING: Ignoring unknown variable 'c'.
+ECHO: c = 2, undef
+ECHO: t0 = undef
+ECHO: t1 = undef
+ECHO: t2 = undef
+ECHO: t3 = undef
+ECHO: t4 = undef
+ECHO: t5 = 18
+ECHO: t6 = undef
+ECHO: 2
+ECHO: 5
+ECHO: 7
+ECHO: "f1(v) = ", [2, 5, 7]
+ECHO: 3, 0
+ECHO: 2, 7
+ECHO: 1, 12
+ECHO: 0, 14
+ECHO: "f2(v) = ", 14
+ECHO: i = 2, 7
+ECHO: i = 1, 12
+ECHO: i = 0, 14
+ECHO: "f3(v) = ", 14

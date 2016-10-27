@@ -1032,7 +1032,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
       if (${EXPERIMENTAL} EQUAL -1)
         set(EXPERIMENTAL_OPTION "")
       else()
-        set(EXPERIMENTAL_OPTION "--enable=assert" "--enable=lc-each" "--enable=lc-else" "--enable=lc-for-c" "--enable=amf-import")
+        set(EXPERIMENTAL_OPTION "--enable=assert" "--enable=echo" "--enable=lc-each" "--enable=lc-else" "--enable=lc-for-c" "--enable=amf-import")
       endif()
 
       # 2D tests should be viewed from the top, not an angle.
@@ -1162,6 +1162,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/for-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/expression-evaluation-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/echo-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/echo-expression-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/assert-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/assert-fail1-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/assert-fail2-test.scad
@@ -1378,6 +1379,7 @@ experimental_tests(echotest_list-comprehensions-experimental
                    throwntogethertest_sphere20face
                    throwntogethertest_split_pyramid
                    throwntogethertest_tetra_multicolor
+		   echotest_echo-expression-tests
                    echotest_assert-tests
                    cgalpngtest_assert-tests
                    opencsgtest_assert-tests

@@ -171,6 +171,17 @@ private:
 	shared_ptr<Expression> expr;
 };
 
+class Echo : public Expression
+{
+public:
+	Echo(const AssignmentList &args, Expression *expr, const Location &loc);
+	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
+private:
+	AssignmentList arguments;
+	shared_ptr<Expression> expr;
+};
+
 class Let : public Expression
 {
 public:
