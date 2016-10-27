@@ -122,13 +122,6 @@ win* {
   QMAKE_CXXFLAGS += -DNOGDI
 }
 
-mingw* {
-  # needed to prevent compilation error on MSYS2:
-  # as.exe: objects/cgalutils.o: too many sections (76541)
-  # using -Wa,-mbig-obj did not help
-  debug: QMAKE_CXXFLAGS += -O1
-}
-
 CONFIG += qt
 QT += widgets concurrent
 
@@ -173,6 +166,7 @@ netbsd* {
   QMAKE_CXXFLAGS_WARN_ON += -Wno-format-security
   # might want to actually turn this on once in a while
   QMAKE_CXXFLAGS_WARN_ON += -Wno-sign-compare
+  QMAKE_CXXFLAGS_WARN_ON += -Wno-unknown-warning-option
 }
 
 CONFIG(skip-version-check) {
@@ -211,6 +205,16 @@ nogui {
 
 mdi {
   DEFINES += ENABLE_MDI
+}
+
+# config MINGW before other .pri includes
+_MXE_TARGET_DIR = $$(MXE_TARGET_DIR)
+!isEmpty(_MXE_TARGET_DIR) {
+  contains(_MXE_TARGET_DIR, shared) {
+    CONFIG += mingw-cross-env-shared
+  } else {
+    CONFIG += mingw-cross-env
+  }
 }
 
 include(common.pri)

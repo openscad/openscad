@@ -33,7 +33,7 @@ STL and OFF file formats.
 # Getting started
 
 You can download the latest binaries of OpenSCAD at
-<http://www.openscad.org>. Install binaries as you would any other
+<http://www.openscad.org/downloads>. Install binaries as you would any other
 software.
 
 When you open OpenSCAD, you'll see three frames within the window. The
@@ -84,10 +84,9 @@ To build OpenSCAD, you need some libraries and tools. The version
 numbers in brackets specify the versions which have been used for
 development. Other versions may or may not work as well.
 
-If you're using a newer version of Ubuntu, you can install these 
-libraries from aptitude. If you're using Mac, or an older Linux/BSD, there 
-are build scripts that download and compile the libraries from source. 
-Follow the instructions for the platform you're compiling on below.
+There are helper scripts that may be able to assist you in downloading 
+and/or building these dependencies on your machine. Please follow the 
+instructions for the platform you're compiling on below.
 
 * A C++ compiler supporting C++11
 * [Qt (4.4 -> 5.x)](http://qt.io/)
@@ -108,15 +107,21 @@ Follow the instructions for the platform you're compiling on below.
 * [Flex (2.5.35 -> )](http://flex.sourceforge.net/)
 * [pkg-config (0.26 -> )](http://www.freedesktop.org/wiki/Software/pkg-config/)
 
+Note that many of these package in turn have their own dependencies not 
+listed here. These will typically be installed automatically by the 
+package manager on your system when you install the packages listed above.
+
 ### Getting the source code
 
-Install git (http://git-scm.com/) onto your system. Then run a clone:
+Install git (http://git-scm.com/) onto your system. The package may be 
+called 'git-core' or 'scmgit' on some systems. Then run a clone:
 
     git clone git://github.com/openscad/openscad.git
 
 This will download the latest sources into a directory named 'openscad'. 
 
-To pull the MCAD library (http://reprap.org/wiki/MCAD), do the following:
+Now cd into the openscad directory and pull the MCAD library 
+(http://reprap.org/wiki/MCAD):
 
     cd openscad
     git submodule update --init
@@ -158,101 +163,84 @@ Then run the script to compile all the dependencies:
 
         sudo port install opencsg qscintilla boost cgal pkgconfig eigen3 harfbuzz fontconfig
 
+### On Windows
 
-
-### Building for Linux/BSD
-
-First, make sure that you have git installed (often packaged as 'git-core' 
-or 'scmgit'). Once you've cloned this git repository, download and install 
-the dependency packages listed above using your system's package 
-manager. A convenience script is provided that can help with this 
-process on some systems:
-
-    sudo ./scripts/uni-get-dependencies.sh
-
-After installing dependencies, check their versions. You can run this 
-script to help you:
-
-    ./scripts/check-dependencies.sh
-
-Take care that you don't have old local copies anywhere (/usr/local/). 
-If all dependencies are present and of a high enough version, skip ahead 
-to the Compilation instructions.
-
-### Building for Windows
-
-OpenSCAD for Windows can be built using the MSYS2 system. First, 
-download and install MSYS2 from
+OpenSCAD can be built on Windows using the MSYS2 system. First, download 
+and install MSYS2 from
 
      http://msys2.github.io
 
 Please make sure to carefully follow the instructions to fully update your
-MSYS2 installation.
+MSYS2 installation. This may take several hours and GB of space. Then continue
 
-Now start a new clean MSYS2-MINGW 64bit shell and run the script that 
-sets up the environment variables.
+### Building on Linux, BSD, or MSYS2
 
-    source ./scripts/setenv.sh
-
-Then run the script to download & compile all the prerequisite libraries above:
-
-    ./scripts/msys2-get-dependencies.sh
-
-Next, build OpenSCAD and package it to an installer and/or .zip archive:
-
-    ./scripts/release-common.sh
-
-If you only want to build openscad.exe, not make a package, then run this
-
-    qmake CONFIG=Release
-    make
-
-### Cross building
-
-To cross-build, first make sure that you have all necessary dependencies 
-of the MXE project ( listed at http://mxe.cc/#requirements ). Don't install
-MXE itself, the scripts below will do that for you under $HOME/openscad_deps/mxe
-
-Then get your development tools installed to get GCC. Then after you've 
-cloned this git repository, start a new clean bash shell and run the 
-script that sets up the environment variables.
-
-    source ./scripts/setenv-mingw-xbuild.sh 64
-
-Fist run the script that sets up the environment variables.
+The basic formula is the same for all of these platforms. First, setup environment
+variables.
 
     source ./scripts/setenv.sh
 
-    ./scripts/mingw-x-build-dependencies.sh 64
+Then get dependencies
 
-Note that this process can take several hours, and tens of gigabytes of 
-disk space, as it uses the http://mxe.cc system to cross-build many 
-libraries. After it is complete, build OpenSCAD and package it to an 
-installer:
+    sudo ./scripts/get-dependencies.sh
 
-    ./scripts/release-common.sh mingw64
+Build Makefile with qmake, then make binary
 
-This is how official releases are created. It uses the http://mxe.cc 
-cross-build system. See doc/win-cross-build.txt for more information.
-
-    cd mingw64
-    qmake ../openscad.pro CONFIG+=mingw-cross-env
+    qmake
     make
 
-For a 32-bit Windows cross-build, replace 64 with 32 in the above instructions. 
+To build an installable package for your system, run
 
-### Compilation
+   ./scripts/make_package.sh
 
-First, run 'qmake openscad.pro' from Qt to generate a Makefile.
+The resulting package will be under the bin/ directory. It supports
+Debian gdebi style .deb, Windows .exe/.zip, and Mac .dmg
 
-On some systems, depending on which version(s) of Qt you have installed, you may need to specify which version you want to use, e.g. by running 'qmake4', 'qmake-qt4', 'qmake -qt=qt5', or something alike. 
+### Linux without root
 
-Then run make. Finally you might run 'make install' as root or simply copy the
-'openscad' binary (OpenSCAD.app on Mac OS X) to the bin directory of your choice.
+Use the linuxbrew setenv option. It installs dependencies into 
+$HOME/.linuxbrew using the Linuxbrew / Homebrew packaging system.
 
-If you had problems compiling from source, raise a new issue in the
+    source ./scripts/setenv.sh homebrew
+    ./scripts/get-dependencies.sh
+    qmake && make
+
+### Cross build from linux to Windows with MXE.cc
+
+This setenv option will setup a cross compiler, so that you can build 
+Windows binaries on a Linux build machine. These instructions will also 
+work using "Bash on Ubuntu on Windows" running under the Windows Linux 
+Subsystem included with Windows 10.
+
+First install MXE requirements from <http://mxe.cc/#requirements>. Then run
+
+    source ./scripts/setenv.sh mingw64
+    ./scripts/get-dependencies.sh
+    qmake && make
+
+Use mingw32 if you wish a 32 bit build.
+
+### Test suite
+
+To run the self-tests, first build the main openscad program above, then run 
+
+   cd tests
+   cmake .
+   make
+   ctest
+
+### Problems building
+
+If you had problems compiling from source, please raise a new issue in the
 [issue tracker on the github page](https://github.com/openscad/openscad/issues).
+
+On some systems, depending on which version(s) of Qt you have installed, 
+you may need to specify which version you want to use, e.g. by running 
+'qmake4', 'qmake-qt4', 'qmake -qt=qt5', or something alike.
+
+See doc/testing.txt for more information on test builds.
 
 This site and it's subpages can also be helpful:
 http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_OpenSCAD_from_Sources
 
+Thank you for using OpenSCAD.

@@ -17,7 +17,8 @@ OffscreenView::OffscreenView(int width, int height)
 
 OffscreenView::~OffscreenView()
 {
-  teardown_offscreen_context(this->ctx);
+  bool teardown_result = teardown_offscreen_context(this->ctx);
+  PRINTDB("Offscreen Context Teardown Result: %i", teardown_result );
 }
 
 #ifdef ENABLE_OPENCSG

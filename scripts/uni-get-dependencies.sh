@@ -45,14 +45,31 @@ get_freebsd_deps()
  pkg_add -r bison boost-libs cmake git bash eigen3 flex gmake gmp mpfr \
   xorg libGLU libXmu libXi xorg-vfbserver glew \
   qt4-corelib qt4-gui qt4-moc qt4-opengl qt4-qmake qt4-rcc qt4-uic \
-  opencsg cgal curl imagemagick glib2-devel gettext
+  opencsg cgal curl imagemagick glib2-devel gettext harfbuzz libxml2 \
+  qscintilla2
 }
 
-get_netbsd_deps()
+get_freebsd_10_3_deps()
+{
+ pkg install bison boost-libs cmake git bash eigen flex gmake gmp mpfr \
+  xorg libGLU libXmu libXi xorg-vfbserver glew \
+  opencsg cgal curl imagemagick glib gettext \
+  qt4-corelib qt4-gui qt4-moc qt4-opengl qt4-qmake qt4-rcc qt4-uic \
+  qscintilla2 \
+  harfbuzz ragel imagemagick gettext libxml2 libxslt
+  # on freebsd10 opencsg is linked to qt4 so qt5 cannot be used on default
+  #  qt5 qscintilla2-qt5 qt5-3d qt5-buildtools qt5-core \
+  #  qt5-gui qt5-opengl qt5-qmake \
+}
+
+get_netbsd7_deps()
 {
  pkgin install bison boost cmake git bash eigen3 flex gmake gmp mpfr \
   qt4 glew cgal opencsg python27 curl \
-  ImageMagick glib2 gettext
+  ImageMagick glib2 gettext \
+  fontconfig qt4-qscintilla harfbuzz freetype2 ragel libxml2 \
+  modular-xorg-server modular-xorg-fonts
+  # xorg-server has Xvfb virtual framebuffer
 }
 
 get_opensuse_deps()
@@ -290,6 +307,14 @@ try_using_uname()
   get_freebsd_deps
  elif [ "`uname | grep -i netbsd`" ]; then
   get_netbsd_deps
+ elif [ "`uname -a | grep -i freebsd.1[0-9].[0-9]`" ]; then
+  get_freebsd_10_3_deps
+ elif [ "`uname -a | grep -i freebsd`" ]; then
+  get_freebsd_deps
+ elif [ "`uname -a | grep -i netbsd.6`" ]; then
+  echo sorry netbsd 6 is not advised, you have to hack it yourself
+ elif [ "`uname -a | grep -i netbsd`" ]; then
+  get_netbsd7_deps
  else
   try_result=0
  fi

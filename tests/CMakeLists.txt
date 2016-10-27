@@ -154,7 +154,6 @@ if ( ${DIFFPNG} )
 endif()
 
 
-
 message(STATUS "Detecting GL subsystem for Windows(TM)")
 if (MSYS)
   execute_process(${OPENSCAD_BINARY} ${EXAMPLES_DIR}/Basics/CSG.scad -o testgl.png RESULT_VARIABLE gl_result)

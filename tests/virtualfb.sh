@@ -3,7 +3,33 @@
 # Toggle the Virtual Framebuffer
 # If started, stop. If stopped, start.
 
-debug=1
+debug=$DEBUG_VIRTUALFB
+
+verify_pid()
+{
+  verify_pid_result=0
+  PID0=$1
+  PID1=$2
+  BIN=$3
+  if [ "`ps cax | grep $PID0 | grep $BIN`" ]; then
+    verify_pid_result=$PID0
+  elif [ "`ps cax | grep $PID1 | grep $BIN`" ]; then
+    verify_pid_result=$PID1
+  fi
+  return
+}
+
+guess_pid_from_ps()
+{
+  guess_pid_from_ps_result=0
+  BIN=$1
+  if [ "`ps cx | grep $BIN`" ]; then
+    echo guessing PID from ps cx '|' grep $BIN
+    echo `ps cx | grep $BIN`
+    guess_pid_from_ps_result=`ps cx | grep $BIN | awk '{ print $1 }';`
+  fi
+  return
+}
 
 verify_pid()
 {
@@ -74,7 +100,7 @@ start()
       VFB_PID=$verify_pid_result
       count=0
     else
-      echo "failed to find PID $VFB_PID_MINUS0 or $VFB_PID_MINUS1. Retrying"
+      echo "failed to find PID $VFB_PID_MINUS0 or $VFB_PID_MINUS1 from "'$!'" Retrying"
       sleep 1
       count=`expr $count - 1`
     fi
@@ -117,11 +143,15 @@ stop()
   if [ -e $LOCKFILE ]; then
     rm $LOCKFILE
   fi
-  cat virtualfb1.log
-  cat virtualfb2.log
-  echo 'dump ~/.xession-errors:'
-  cat ~/.xsession-errors
-  echo 'end  ~/.xession-errors'
+  if [ $debug ]; then
+    echo 'virtualfb1.log:(stdout)'
+    cat virtualfb1.log
+    echo 'virtualfb2.log:(stderr)'
+    cat virtualfb2.log
+    echo 'dump ~/.xession-errors:'
+    cat ~/.xsession-errors
+    echo 'end  ~/.xession-errors'
+  fi
   rm ./virtualfb.PID
   rm ./virtualfb.DISPLAY
 }

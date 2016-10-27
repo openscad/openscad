@@ -17,6 +17,10 @@ if [[ $? != 0 ]]; then
   exit 1
 fi
 
+# dump the logs of the virtual framebuffer system ( Xvfb, Xvnc, etc )
+DEBUG_VIRTUALFB=1
+export DEBUG_VIRTUALFB
+
 if [[ "$DIST" == "trusty" ]]; then
     PARALLEL=-j1
 else

@@ -1,57 +1,21 @@
 #!/bin/sh -e
-
-# uni-build-dependencies by don bright 2012. copyright assigned to
-# Marius Kintel and Clifford Wolf, 2012. released under the GPL 2, or
-# later, as described in the file named 'COPYING' in OpenSCAD's project root.
-
-# This script builds most dependencies, both libraries and binary tools,
-# of OpenSCAD for Linux/BSD. It is based on macosx-build-dependencies.sh
 #
-# By default it builds under $HOME/openscad_deps. You can alter this by
-# setting the BASEDIR environment variable or with the 'out of tree'
-# feature
+# Build openscad without root access
 #
-# Usage:
-#   cd openscad
-#   . ./scripts/setenv-unibuild.sh
-#   ./scripts/uni-build-dependencies.sh
-#
-# Out-of-tree usage:
-#
-#   cd somepath
 #   . /path/to/openscad/scripts/setenv-unibuild.sh
 #   /path/to/openscad/scripts/uni-build-dependencies.sh
 #
 # Prerequisites:
-# - wget or curl
-# - OpenGL (GL/gl.h)
-# - GLU (GL/glu.h)
-# - gcc
-# - Qt4
 #
-# If your system lacks qt4, build like this:
+# - see http://linuxbrew.sh/
 #
-#   ./scripts/uni-build-dependencies.sh qt4
-#   . ./scripts/setenv-unibuild.sh #(Rerun to re-detect qt4)
-#
-# If your system lacks glu, gettext, or glib2, you can build them as well:
-#
-#   ./scripts/uni-build-dependencies.sh glu
-#   ./scripts/uni-build-dependencies.sh glib2
-#   ./scripts/uni-build-dependencies.sh gettext
-#
-# If you want to try Clang compiler (experimental, only works on linux):
-#
-#   . ./scripts/setenv-unibuild.sh clang
-#
-# If you want to try Qt5 (experimental)
-#
-#   . ./scripts/setenv-unibuild.sh qt5
-#
+
+OPENSCADDIR=$PWD
 
 printUsage()
 {
   echo "Usage: $0"
+<<<<<<< HEAD
   echo
 }
 
@@ -467,395 +431,40 @@ build_cgal()
   fi
   make -j$NUMCPU
   make install
+=======
+>>>>>>> fbsdbuild
 }
 
-build_glew()
-{
-  GLEW_INSTALLED=
-  if [ -e $DEPLOYDIR/lib64/libGLEW.so ]; then
-    GLEW_INSTALLED=1
-  fi
-  if [ -e $DEPLOYDIR/lib/libGLEW.so ]; then
-    GLEW_INSTALLED=1
-  fi
-  if [ $GLEW_INSTALLED ]; then
-    echo "glew already installed. not building"
-    return
-  fi
-  version=$1
-  echo "Building GLEW" $version "..."
-  cd $BASEDIR/src
-  rm -rf glew-$version
-  if [ ! -f glew-$version.tgz ]; then
-    curl --insecure -LO http://downloads.sourceforge.net/project/glew/glew/$version/glew-$version.tgz
-  fi
-  tar xzf glew-$version.tgz
-  cd glew-$version
-  mkdir -p $DEPLOYDIR/lib/pkgconfig
-
-  # Glew's makefile is not built for Linux Multiarch. We aren't trying
-  # to fix everything here, just the test machines OScad normally runs on
-
-  # Fedora 64-bit
-  if [ "`uname -m | grep 64`" ]; then
-    if [ -e /usr/lib64/libXmu.so.6 ]; then
-      sed -ibak s/"\-lXmu"/"\-L\/usr\/lib64\/libXmu.so.6"/ config/Makefile.linux
-    fi
-  fi
-
-  # debian hurd i386
-  if [ "`uname -m | grep 386`" ]; then
-    if [ -e /usr/lib/i386-gnu/libXi.so.6 ]; then
-      sed -ibak s/"-lXi"/"\-L\/usr\/lib\/i386-gnu\/libXi.so.6"/ config/Makefile.gnu
-    fi
-  fi
-
-  # clang linux
-  if [ $CC ]; then
-    sed -ibak s/"CC = cc"/"# CC = cc"/ config/Makefile.linux
-  fi
-
-  MAKER=make
-  if [ "`uname | grep BSD`" ]; then
-    if [ "`command -v gmake`" ]; then
-      MAKER=gmake
-    else
-      echo "building glew on BSD requires gmake (gnu make)"
-      exit
-    fi
-  fi
-
-  GLEW_DEST=$DEPLOYDIR $MAKER -j$NUMCPU
-  GLEW_DEST=$DEPLOYDIR $MAKER install
-}
-
-build_opencsg()
-{
-  if [ -e $DEPLOYDIR/lib/libopencsg.so ]; then
-    echo "OpenCSG already installed. not building"
-    return
-  fi
-  version=$1
-  echo "Building OpenCSG" $version "..."
-  cd $BASEDIR/src
-  rm -rf OpenCSG-$version
-  if [ ! -f OpenCSG-$version.tar.gz ]; then
-    curl --insecure -O http://www.opencsg.org/OpenCSG-$version.tar.gz
-  fi
-  tar xzf OpenCSG-$version.tar.gz
-  cd OpenCSG-$version
-
-  # modify the .pro file for qmake, then use qmake to
-  # manually rebuild the src/Makefile (some systems don't auto-rebuild it)
-
-  cp opencsg.pro opencsg.pro.bak
-  cat opencsg.pro.bak | sed s/example// > opencsg.pro
-
-  detect_glu
-  GLU_INCLUDE=$detect_glu_include
-  if [ ! $detect_glu_result ]; then
-    build_glu 9.0.0
-  fi
-
-  if [ "`command -v qmake-qt4`" ]; then
-    OPENCSG_QMAKE=qmake-qt4
-  elif [ "`command -v qmake4`" ]; then
-    OPENCSG_QMAKE=qmake4
-  elif [ "`command -v qmake-qt5`" ]; then
-    OPENCSG_QMAKE=qmake-qt5
-  elif [ "`command -v qmake5`" ]; then
-    OPENCSG_QMAKE=qmake5
-  elif [ "`command -v qmake`" ]; then
-    OPENCSG_QMAKE=qmake
-  else
-    echo qmake not found... using standard OpenCSG makefiles
-    OPENCSG_QMAKE=make
-    cp Makefile Makefile.bak
-    cp src/Makefile src/Makefile.bak
-
-    cat Makefile.bak | sed s/example// |sed s/glew// > Makefile
-    cat src/Makefile.bak | sed s@^INCPATH.*@INCPATH\ =\ -I$BASEDIR/include\ -I../include\ -I..\ -I$GLU_INCLUDE -I.@ > src/Makefile
-    cp src/Makefile src/Makefile.bak2
-    cat src/Makefile.bak2 | sed s@^LIBS.*@LIBS\ =\ -L$BASEDIR/lib\ -L/usr/X11R6/lib\ -lGLU\ -lGL@ > src/Makefile
-    tmp=$version
-    version=$tmp
-  fi
-
-  if [ ! $OPENCSG_QMAKE = "make" ]; then
-    OPENCSG_QMAKE=$OPENCSG_QMAKE' "QMAKE_CXXFLAGS+=-I'$GLU_INCLUDE'"'
-  fi
-  echo OPENCSG_QMAKE: $OPENCSG_QMAKE
-
-  cd $BASEDIR/src/OpenCSG-$version/src
-  $OPENCSG_QMAKE
-
-  cd $BASEDIR/src/OpenCSG-$version
-  $OPENCSG_QMAKE
-
-  make
-
-  ls lib/* include/*
-  if [ -e lib/.libs ]; then ls lib/.libs/*; fi # netbsd
-  echo "installing to -->" $DEPLOYDIR
-  mkdir -p $DEPLOYDIR/lib
-  mkdir -p $DEPLOYDIR/include
-  install lib/* $DEPLOYDIR/lib
-  install include/* $DEPLOYDIR/include
-  if [ -e lib/.libs ]; then install lib/.libs/* $DEPLOYDIR/lib; fi #netbsd
-
-  cd $BASEDIR
-}
-
-build_eigen()
-{
-  version=$1
-  if [ -e $DEPLOYDIR/include/eigen3 ]; then
-    if [ `echo $version | grep 3....` ]; then
-      echo "Eigen3 already installed. not building"
-      return
-    fi
-  fi
-  echo "Building eigen" $version "..."
-  cd $BASEDIR/src
-  rm -rf eigen-$version
-  EIGENDIR="none"
-  if [ $version = "3.2.2" ]; then EIGENDIR=eigen-eigen-1306d75b4a21; fi
-  if [ $version = "3.1.1" ]; then EIGENDIR=eigen-eigen-43d9075b23ef; fi
-  if [ $EIGENDIR = "none" ]; then
-    echo Unknown eigen version. Please edit script.
-    exit 1
-  fi
-  rm -rf ./$EIGENDIR
-  if [ ! -f eigen-$version.tar.bz2 ]; then
-    curl --insecure -LO http://bitbucket.org/eigen/eigen/get/$version.tar.bz2
-    mv $version.tar.bz2 eigen-$version.tar.bz2
-  fi
-  tar xjf eigen-$version.tar.bz2
-  ln -s ./$EIGENDIR eigen-$version
-  cd eigen-$version
-  mkdir build
-  cd build
-  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DEIGEN_TEST_NO_OPENGL=1 ..
-  make -j$NUMCPU
-  make install
-}
-
-
-# glib2 and dependencies
-
-#build_gettext()
-#{
-#  version=$1
-#  ls -l $DEPLOYDIR/include/gettext-po.h
-#  if [ -e $DEPLOYDIR/include/gettext-po.h ]; then
-#    echo "gettext already installed. not building"
-#    return
-#  fi
-#
-#  echo "Building gettext $version..."
-#
-#  cd "$BASEDIR"/src
-#  rm -rf "gettext-$version"
-#  if [ ! -f "glib-$version.tar.gz" ]; then
-#    curl --insecure -LO "http://ftpmirror.gnu.org/gettext/gettext-$version.tar.gz"
-#  fi
-#  tar xzf "gettext-$version.tar.gz"
-#  cd "gettext-$version"
-#
-#  ./configure --prefix="$DEPLOYDIR"
-#  make -j$NUMCPU
-#  make install
-#}
-
-build_pkgconfig()
-{
-  if [ "`command -v pkg-config`" ]; then
-    echo "pkg-config already installed. not building"
-    return
-  fi
-  version=$1
-  echo "Building pkg-config $version..."
-
-  cd "$BASEDIR"/src
-  rm -rf "pkg-config-$version"
-  if [ ! -f "pkg-config-$version.tar.gz" ]; then
-    curl --insecure -LO "http://pkgconfig.freedesktop.org/releases/pkg-config-$version.tar.gz"
-  fi
-  tar xzf "pkg-config-$version.tar.gz"
-  cd "pkg-config-$version"
-
-  ./configure --prefix="$DEPLOYDIR" --with-internal-glib
-  make -j$NUMCPU
-  make install
-}
-
-build_libffi()
-{
-  if [ -e $DEPLOYDIR/include/ffi.h ]; then
-    echo "libffi already installed. not building"
-    return
-  fi
-  version=$1
-  echo "Building libffi $version..."
-
-  cd "$BASEDIR"/src
-  rm -rf "libffi-$version"
-  if [ ! -f "libffi-$version.tar.gz" ]; then
-    curl --insecure -LO "ftp://sourceware.org/pub/libffi/libffi-$version.tar.gz"
-    curl --insecure -LO "http://www.linuxfromscratch.org/patches/blfs/svn/libffi-$version-includedir-1.patch"
-  fi
-  tar xzf "libffi-$version.tar.gz"
-  cd "libffi-$version"
-  if [ ! "`command -v patch`" ]; then
-    echo cannot proceed, need 'patch' program
-    exit 1
-  fi
-  patch -Np1 -i ../libffi-3.0.13-includedir-1.patch
-  ./configure --prefix="$DEPLOYDIR"
-  make -j$NUMCPU
-  make install
-}
-
-#build_glib2()
-#{
-#  version="$1"
-#  maj_min_version="${version%.*}" #Drop micro#
-#
-#  if [ -e $DEPLOYDIR/lib/glib-2.0 ]; then
-#    echo "glib2 already installed. not building"
-#    return
-#  fi
-#
-# echo "Building glib2 $version..."
-#  cd "$BASEDIR"/src
-#  rm -rf "glib-$version"
-#  if [ ! -f "glib-$version.tar.xz" ]; then
-#    curl --insecure -LO "http://ftp.gnome.org/pub/gnome/sources/glib/$maj_min_version/glib-$version.tar.xz"
-#  fi
-#  tar xJf "glib-$version.tar.xz"
-#  cd "glib-$version"
-
-#  ./configure --disable-gtk-doc --disable-man --prefix="$DEPLOYDIR" CFLAGS="-I$DEPLOYDIR/include" LDFLAGS="-L$DEPLOYDIR/lib"
-#  make -j$NUMCPU
-#  make install
-#}
-
-## end of glib2 stuff
-
-# this section allows 'out of tree' builds, as long as the system has
-# the 'dirname' command installed
-
-if [ "`command -v dirname`" ]; then
-  RUNDIR=$PWD
-  OPENSCAD_SCRIPTDIR=`dirname $0`
-  cd $OPENSCAD_SCRIPTDIR
-  OPENSCAD_SCRIPTDIR=$PWD
-  cd $RUNDIR
-else
-  if [ ! -f openscad.pro ]; then
-    echo "Must be run from the OpenSCAD source root directory (dont have 'dirname')"
-    exit 1
-  else
-    OPENSCAD_SCRIPTDIR=$PWD
-  fi
+if [ ! -f $OPENSCADDIR/openscad.pro ]; then
+  echo "Must be run from the OpenSCAD source root directory"
+  exit 0
 fi
 
-check_env
-
-. $OPENSCAD_SCRIPTDIR/setenv-unibuild.sh # '.' is equivalent to 'source'
-. $OPENSCAD_SCRIPTDIR/common-build-dependencies.sh
-SRCDIR=$BASEDIR/src
-
-if [ ! $NUMCPU ]; then
-  echo "Note: The NUMCPU environment variable can be set for parallel builds"
-  NUMCPU=1
+if [ ! "`uname -m`|grep x86_64" ]; then
+  echo "requires x86_64 bit cpu sorry, please see linuxbrew.sh"
 fi
 
-if [ ! -d $BASEDIR/bin ]; then
-  mkdir -p $BASEDIR/bin
+. ./scripts/setenv-unibuild.sh
+
+cd $HOME
+
+brewurl=https://raw.githubusercontent.com/Linuxbrew/install/master/install
+if [ ! -e ~/.linuxbrew ]; then
+  ruby -e "$(curl -fsSL "$brewurl")"
 fi
 
-echo "Using basedir:" $BASEDIR
-echo "Using deploydir:" $DEPLOYDIR
-echo "Using srcdir:" $SRCDIR
-echo "Number of CPUs for parallel builds:" $NUMCPU
-mkdir -p $SRCDIR $DEPLOYDIR
+brew update
+pkgs='eigen boost cgal glew glib opencsg freetype libxml2 fontconfig'
+pkgs=$pkgs' harfbuzz qt5 qscintilla2 imagemagick'
+for formula in $pkgs; do
+  brew install $formula
+  brew outdated $formula || brew upgrade $formula
+done
+brew link --force gettext
+brew link --force qt5
+brew link --force qscintilla2
 
-# this section builds some basic tools, if they are missing or outdated
-# they are installed under $BASEDIR/bin which we have added to our PATH
-
-if [ ! "`command -v curl`" ]; then
-  # to prevent "end of file" NSS error -5938 (ssl) use a newer version of curl
-  build_curl 7.49.0
-fi
-
-if [ ! "`command -v bison`" ]; then
-  build_bison 2.6.1
-fi
-
-# NB! For cmake, also update the actual download URL in the function
-if [ ! "`command -v cmake`" ]; then
-  build_cmake 2.8.8
-fi
-# see README for needed version (this should match 1<minimum)
-if [ "`cmake --version | grep 'version 2.[1-8][^0-9][1-4] '`" ]; then
-  build_cmake 2.8.8
-fi
-
-# Singly build certain tools or libraries
-if [ $1 ]; then
-  if [ $1 = "git" ]; then
-    build_git 1.7.10.3
-    exit $?
-  fi
-  if [ $1 = "cgal" ]; then
-    build_cgal 4.4 use-sys-libs
-    exit $?
-  fi
-  if [ $1 = "opencsg" ]; then
-    build_opencsg 1.3.2
-    exit $?
-  fi
-  if [ $1 = "qt4" ]; then
-    # such a huge build, put here by itself
-    build_qt4 4.8.4
-    exit $?
-  fi
-  if [ $1 = "qt5scintilla2" ]; then
-    build_qt5scintilla2 2.8.3
-    exit $?
-  fi
-  if [ $1 = "qt5" ]; then
-    build_qt5 5.3.1
-    build_qt5scintilla2 2.8.3
-    exit $?
-  fi
-  if [ $1 = "glu" ]; then
-    # Mesa and GLU split in late 2012, so it's not on some systems
-    build_glu 9.0.0
-    exit $?
-  fi
-  if [ $1 = "gettext" ]; then
-    # such a huge build, put here by itself
-    build_gettext 0.18.3.1
-    exit $?
-  fi
-  if [ $1 = "harfbuzz" ]; then
-    # debian 7 lacks only harfbuzz
-    build_harfbuzz 0.9.35 --with-glib=yes
-    exit $?
-  fi
-  if [ $1 = "glib2" ]; then
-    # such a huge build, put here by itself
-    build_pkgconfig 0.28
-    build_libffi 3.0.13
-    #build_gettext 0.18.3.1
-    build_glib2 2.38.2
-    exit $?
-  fi
-fi
-
-
+<<<<<<< HEAD
 # todo - cgal 4.02 for gcc<4.7, gcc 4.2 for above
 
 #
@@ -884,5 +493,6 @@ build_libxml2 2.9.1
 build_fontconfig 2.11.0 --with-add-fonts=/usr/X11R6/lib/X11/fonts,/usr/local/share/fonts
 build_ragel 6.9
 build_harfbuzz 0.9.35 --with-glib=yes
+=======
+>>>>>>> fbsdbuild
 
-echo "OpenSCAD dependencies built and installed to " $BASEDIR
