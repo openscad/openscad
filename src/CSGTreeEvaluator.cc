@@ -100,15 +100,17 @@ void CSGTreeEvaluator::applyToChildren(State &state, const AbstractNode &node, O
 					}
 					break;
 				case OPENSCAD_INTERSECTION:
-					if (t != t1 && t != t2 &&
+					if (t && t != t1 && t != t2 &&
 							t1->isHighlight() && t2->isHighlight()) {
 						t->setHighlight(true);
 					}
-					else if (t != t1 && t1->isHighlight()) {
-						this->highlightNodes.push_back(t1);
-					}
-					else if (t != t2 && t2->isHighlight()) {
-						this->highlightNodes.push_back(t2);
+					else {
+						if (t != t1 && t1->isHighlight()) {
+							this->highlightNodes.push_back(t1);
+						}
+						if (t != t2 && t2->isHighlight()) {
+							this->highlightNodes.push_back(t2);
+						}
 					}
 					break;
 				case OPENSCAD_UNION:
