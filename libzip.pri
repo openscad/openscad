@@ -3,19 +3,9 @@
 #
 # Priority
 # 1. LIBZIP_INCLUDEPATH / LIBZIP_LIBPATH (qmake parameter, not checked it given on commandline)
-# 2. OPENSCAD_LIBRARIES (environment variable)
 # 3. system's standard include paths from pkg-config
 
 libzip {
-# read environment variables
-OPENSCAD_LIBRARIES_DIR = $$(OPENSCAD_LIBRARIES)
-
-!isEmpty(OPENSCAD_LIBRARIES_DIR) {
-  isEmpty(LIBZIP_INCLUDEPATH) {
-    LIBZIP_INCLUDEPATH = $$OPENSCAD_LIBRARIES_DIR/include
-    LIBZIP_LIBPATH = $$OPENSCAD_LIBRARIES_DIR/lib
-  }
-}
 
 exists($$LIBZIP_INCLUDEPATH/zip.h) {
   ENABLE_LIBZIP=yes
