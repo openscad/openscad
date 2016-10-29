@@ -23,7 +23,7 @@ contains(OSNAME,Msys) {
   CONFIG=release
 }
 
-message("If you're building a public release deploy binary, use CONFIG=deploy")
+message("If you're building a Stable Release, use CONFIG=deploy")
 CONFIG+=experimental
 DEFINES += ENABLE_EXPERIMENTAL
 macx: {
@@ -38,6 +38,12 @@ deploy {
     QMAKE_RPATHDIR = @executable_path/../Frameworks
   }
 }
+
+win* {
+  RC_FILE = openscad_win32.rc
+  QMAKE_CXXFLAGS += -DNOGDI
+}
+QT += widgets core gui
 
 mxetarget=$$(MXE_TARGET)
 !isEmpty(mxetarget) {
@@ -75,12 +81,13 @@ else {
   TARGET = openscad
 }
 
-win* {
-  RC_FILE = openscad_win32.rc
-  QMAKE_CXXFLAGS += -DNOGDI
-}
+RESOURCES = openscad.qrc
 
-QT += widgets concurrent
+OBJECTS_DIR = objects
+MOC_DIR = objects
+UI_DIR = objects
+RCC_DIR = objects
+INCLUDEPATH += objects
 
 macx:CONFIG += mdi
 CONFIG += c++11
@@ -90,11 +97,6 @@ CONFIG += opencsg
 CONFIG += boost
 CONFIG += gettext
 CONFIG += scintilla
-
-OBJECTS_DIR = objects
-MOC_DIR = objects
-UI_DIR = objects
-RCC_DIR = objects
 
 include(flex.pri)
 include(bison.pri)
@@ -107,15 +109,24 @@ include(sparkle.pri)
 include(scintilla.pri)
 include(c++11.pri)
 
-macx:QT_CONFIG -= no-pkg-config
+# VERSION is a qmake keyword, do not use
+isEmpty(OSCADVERSION) {
+  datecmd=date
+  contains(OSNAME,Msys): datecmd=$$(MINGW_PREFIX)/../usr/bin/date
+  VERSION_YEAR=$$system($$datecmd "+%-Y")
+  VERSION_MONTH=$$system($$datecmd "+%-m")
+  VERSION_DAY=$$system($$datecmd "+%-d")
+  OSCADVERSION=$$system($$datecmd "+%Y.%m.%d")
+}
+DEFINES += OPENSCAD_VERSION=$$OSCADVERSION OPENSCAD_YEAR=$$VERSION_YEAR OPENSCAD_MONTH=$$VERSION_MONTH
+!isEmpty(VERSION_DAY): DEFINES += OPENSCAD_DAY=$$VERSION_DAY
+!isEmpty(OPENSCAD_COMMIT) {
+  DEFINES += OPENSCAD_COMMIT=$$OPENSCAD_COMMIT
+}
+
+#macx:QT_CONFIG -= no-pkg-config
 CONFIG += link_pkgconfig
-PKGCONFIG += eigen
-PKGCONFIG += glew
-PKGCONFIG += fontconfig
-PKGCONFIG += freetype
-PKGCONFIG += harfbuzz
-PKGCONFIG += glib2
-PKGCONFIG += libxml2
+PKGCONFIG += eigen3 glew fontconfig freetype2 harfbuzz glib-2.0 libxml-2.0
 
 # mingw has to come after other items so OBJECT_DIRS will work properly
 
@@ -126,8 +137,6 @@ CONFIG(mingw-cross-env)|CONFIG(mingw-cross-env-shared): {
   LIBS += -Wl,--stack,$$WINSTACKSIZE
   QMAKE_DEL_FILE = rm -f
 }
-
-RESOURCES = openscad.qrc
 
 # Qt5 removed access to the QMAKE_UIC variable, the following
 # way works for both Qt4 and Qt5
@@ -162,7 +171,7 @@ SOURCES += src/AST.cc \
            src/module.cc \
            src/UserModule.cc
 
-HEADERS += src/version_check.h \
+HEADERS += \
            src/ProgressWidget.h \
            src/parsersettings.h \
            src/renderer.h \
@@ -260,7 +269,6 @@ HEADERS += src/version_check.h \
            src/Dock.h \
            src/AutoUpdater.h \
            src/launchingscreen.h \
-           src/legacyeditor.h \
            src/LibraryInfoDialog.h
 
 SOURCES += \
@@ -278,7 +286,6 @@ SOURCES += \
            src/libsvg/transformation.cc \
            src/libsvg/util.cc \
            \
-           src/version_check.cc \
            src/ProgressWidget.cc \
            src/linalg.cc \
            src/Camera.cc \
@@ -383,7 +390,6 @@ SOURCES += \
            src/FontListDialog.cc \
            src/FontListTableView.cc \
            src/launchingscreen.cc \
-           src/legacyeditor.cc \
            src/LibraryInfoDialog.cc
 
 # ClipperLib
@@ -539,3 +545,4 @@ INSTALLS += icons
 man.path = $$PREFIX/share/man/man1
 man.extra = cp -f doc/openscad.1 \"\$(INSTALL_ROOT)$${man.path}/$${FULLNAME}.1\"
 INSTALLS += man
+

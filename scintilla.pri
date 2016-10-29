@@ -2,8 +2,6 @@ scintilla {
   HEADERS += src/scintillaeditor.h src/scadlexer.h
   SOURCES += src/scintillaeditor.cpp src/scadlexer.cpp
 
-  DEFINES += USE_SCINTILLA_EDITOR
-
   QSCILOADED =
   OPENSCAD_LIBDIR = $$(OPENSCAD_LIBRARIES)
 
