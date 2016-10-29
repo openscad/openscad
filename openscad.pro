@@ -184,6 +184,7 @@ CONFIG += freetype
 CONFIG += fontconfig
 CONFIG += gettext
 CONFIG += libxml2
+CONFIG += libzip
 
 #Uncomment the following line to enable the QScintilla editor
 !nogui {
@@ -503,6 +504,7 @@ SOURCES += \
            src/import_stl.cc \
            src/import_off.cc \
            src/import_svg.cc \
+           src/import_amf.cc \
            src/renderer.cc \
            src/colormap.cc \
            src/ThrownTogetherRenderer.cc \

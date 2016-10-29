@@ -1,7 +1,4 @@
-ECHO: t0 = undef
-ECHO: t1 = undef
-ECHO: t2 = undef
-ECHO: t3 = undef
-ECHO: t4 = 18
-ECHO: t5 = 36
-ECHO: t6 = 396
+ERROR: Parser error in file "/Users/kintel/code/OpenSCAD/openscad/testdata/scad/functions/assert-expression-tests.scad", line 16: syntax error
+
+Can't parse file 'testdata/scad/functions/assert-expression-tests.scad'!
+

@@ -49,6 +49,8 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 #include <boost/detail/endian.hpp>
 #include <cstdint>
 
+extern PolySet * import_amf(std::string);
+	
 class ImportModule : public AbstractModule
 {
 public:
@@ -99,6 +101,7 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 		if (ext == ".stl") actualtype = TYPE_STL;
 		else if (ext == ".off") actualtype = TYPE_OFF;
 		else if (ext == ".dxf") actualtype = TYPE_DXF;
+		else if (Feature::ExperimentalAmfImport.is_enabled() && ext == ".amf") actualtype = TYPE_AMF;
 		else if (Feature::ExperimentalSvgImport.is_enabled() && ext == ".svg") actualtype = TYPE_SVG;
 	}
 
@@ -146,13 +149,15 @@ const Geometry *ImportNode::createGeometry() const
 
 	switch (this->type) {
 	case TYPE_STL: {
-		PolySet *p = import_stl(this->filename);
-		g = p;
+		g = import_stl(this->filename);
+		break;
+	}
+	case TYPE_AMF: {
+		g = import_amf(this->filename);
 		break;
 	}
 	case TYPE_OFF: {
-		PolySet *p = import_off(this->filename);
-		g = p;
+		g = import_off(this->filename);
 		break;
 	}
 	case TYPE_SVG: {
