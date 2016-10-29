@@ -42,11 +42,8 @@
 #include "expression.h"
 #include "progress.h"
 #include "dxfdim.h"
-#include "legacyeditor.h"
 #include "settings.h"
-#ifdef USE_SCINTILLA_EDITOR
 #include "scintillaeditor.h"
-#endif
 #include "AboutDialog.h"
 #include "FontListDialog.h"
 #include "LibraryInfoDialog.h"
@@ -188,22 +185,13 @@ MainWindow::MainWindow(const QString &filename)
 	editortype = settings.value("editor/editortype").toString();
 	useScintilla = (editortype != "Simple Editor");
 
-#ifdef USE_SCINTILLA_EDITOR
-	if (useScintilla) {
-		 editor = new ScintillaEditor(editorDockContents);
-	}
-	else
-#endif
-		editor = new LegacyEditor(editorDockContents);
+	editor = new ScintillaEditor(editorDockContents);
 
 	Preferences::create(editor->colorSchemes());
 
-#ifdef USE_SCINTILLA_EDITOR
-	if (useScintilla) {
-		connect(Preferences::inst(), SIGNAL(editorConfigChanged()), editor, SLOT(applySettings()));
-		Preferences::inst()->fireEditorConfigChanged();
-	}
-#endif
+	connect(Preferences::inst(), SIGNAL(editorConfigChanged()), editor, SLOT(applySettings()));
+	Preferences::inst()->fireEditorConfigChanged();
+
 	connect(editor, SIGNAL(previewRequest()), this, SLOT(actionRenderPreview()));
 
 	editorDockContents->layout()->addWidget(editor);

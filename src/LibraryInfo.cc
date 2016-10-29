@@ -1,9 +1,7 @@
 #include "LibraryInfo.h"
 #include <glib.h>
 #include <vector>
-#ifdef USE_SCINTILLA_EDITOR
 #include <Qsci/qsciglobal.h>
-#endif
 
 #include "version_check.h"
 #include "PlatformUtils.h"

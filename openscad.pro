@@ -23,13 +23,15 @@
 
 OSNAME=$$system(uname -o)
 contains(OSNAME,Msys) {
+  # qmake on win has two makefiles, "Makefile.debug"+"Makefile.release", 
+  # debug build on msys is broken b/c of qscintilla
   CONFIG=release
 }
 
-CONFIG+=$$(OPENSCAD_QMAKE_CONFIG)
-
-!experimental {
-  message("If you're building a development binary, consider adding CONFIG+=experimental")
+CONFIG=experimental
+message("If you're building a public release binary, use CONFIG=noexperimental")
+noexperimental {
+  CONFIG-=experimental
 }
 
 mxetarget=$$(MXE_TARGET)
@@ -42,17 +44,6 @@ mxetarget=$$(MXE_TARGET)
   }
 }
 
-# Auto-include config_<variant>.pri if the VARIANT variable is give on the
-# command-line, e.g. qmake VARIANT=mybuild
-!isEmpty(VARIANT) {
-  message("Variant: $${VARIANT}")
-  exists(config_$${VARIANT}.pri) {
-    message("Including config_$${VARIANT}.pri")
-    include(config_$${VARIANT}.pri)
-  }
-}
-
-# If VERSION is not set, populate VERSION, VERSION_YEAR, VERSION_MONTH from system date
 include(version.pri)
 
 debug: DEFINES += DEBUG
@@ -62,23 +53,8 @@ TEMPLATE = app
 INCLUDEPATH += src
 DEPENDPATH += src
 
-# Handle custom library location.
-# Used when manually installing 3rd party libraries
-isEmpty(OPENSCAD_LIBDIR) OPENSCAD_LIBDIR = $$(OPENSCAD_LIBRARIES)
-macx:isEmpty(OPENSCAD_LIBDIR) {
-  exists(/opt/local):exists(/usr/local/Cellar) {
-    error("It seems you might have libraries in both /opt/local and /usr/local. Please specify which one to use with qmake OPENSCAD_LIBDIR=<prefix>")
-  } else {
-    exists(/opt/local) {
-      #Default to MacPorts on Mac OS X
-      message("Automatically searching for libraries in /opt/local. To override, use qmake OPENSCAD_LIBDIR=<prefix>")
-      OPENSCAD_LIBDIR = /opt/local
-    } else:exists(/usr/local/Cellar) {
-      message("Automatically searching for libraries in /usr/local. To override, use qmake OPENSCAD_LIBDIR=<prefix>")
-      OPENSCAD_LIBDIR = /usr/local
-    }
-  }
-}
+OPENSCAD_LIBDIR = $$(OPENSCAD_LIBRARIES)
+
 !isEmpty(OPENSCAD_LIBDIR) {
   QMAKE_INCDIR = $$OPENSCAD_LIBDIR/include
   QMAKE_LIBDIR = $$OPENSCAD_LIBDIR/lib
