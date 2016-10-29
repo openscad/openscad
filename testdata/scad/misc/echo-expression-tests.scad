@@ -1,5 +1,6 @@
 a = 3;
 b = 6;
+c = 8;
 v = [2, 5, 7];
 
 t0 = echo();
@@ -23,11 +24,11 @@ echo(t5 = t5);
 t6 = echo(c = 2) a*b*c;
 echo(t6 = t6);
 
-function f1(x) = [ for (a = x) echo() a ];
+function f1(x) = [ for (a = x) echo(a = a) a ];
 echo("f1(v) = ", f1(v));
 
 function f2(x, i = 0) = echo(i) len(x) > i ? x[i] + f2(x, i + 1) : 0;
 echo("f2(v) = ", f2(v));
 
-function f3(x, i = 0) = len(x) > i ? echo(i = i) x[i] + f3(x, i + 1) : 0;
+function f3(x, i = 0) = len(x) > i ? let(a = x[i] + f3(x, i + 1)) echo(a) a : 0;
 echo("f3(v) = ", f3(v));
