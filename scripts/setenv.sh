@@ -14,19 +14,23 @@
 #  source ./scripts/setenv.sh x86_64-w64-mingw32.shared # Dynamic link 64bit
 #
 # Special linux builds:
-#  
+#
 #  source ./scripts/setenv.sh brew          # use linuxbrew from $HOME/.linuxbrew
 #  source ./scripts/setenv.sh clang         # build linux using clang compiler
 #
-#  Use the 'machine triple' modeled on GNU. (gcc -dumpmachine)
+# See Also:
+#
 #  ARCH,SUB,SYS,ABI - http://clang.llvn.org/docs/CrossCompilation
+#  https://gcc.gnu.org/onlinedocs/gccint/Configure-Terms.html
 #  HOST = machine openscad will be run on
 #  BUILD = machine openscad is being built on
 #
 # Notes:
 #
-#  This script works by using function naming and run() for portability.
-
+#  This script works by using function naming and run()
+#  Ex, using 'run setup_mypath' will run setup_mypath, but if you
+#  are on darwin, it will instead run 'setup_mypath_darwin', which
+#  may or may not call the main setup_mypath
 
 setup_host()
 {
