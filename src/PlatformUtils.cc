@@ -4,12 +4,6 @@
 #include "PlatformUtils.h"
 #include "boosty.h"
 
-#ifdef INSTALL_SUFFIX
-#define RESOURCE_FOLDER(path) path INSTALL_SUFFIX
-#else
-#define RESOURCE_FOLDER(path) path
-#endif
-
 extern std::vector<std::string> librarypath;
 extern std::vector<std::string> fontpath;
 
@@ -37,14 +31,14 @@ static std::string lookupResourcesPath()
 #ifdef _WIN32
     const char *searchpath[] = {
         ".", // Release location
-        RESOURCE_FOLDER("../share/openscad"), // MSYS2 location
+        "../share/openscad", // MSYS2 location
         "..", // Dev location
         NULL
     };
 #else
     const char *searchpath[] = {
-	    RESOURCE_FOLDER("../share/openscad"),
-	    RESOURCE_FOLDER("../../share/openscad"),
+	    "../share/openscad",
+	    "../../share/openscad",
 	    ".",
 	    "..",
 	    "../..",

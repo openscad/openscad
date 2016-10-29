@@ -1,5 +1,4 @@
 # Environment variables which can be set to specify library locations:
-# MPIRDIR
 # MPFRDIR
 # BOOSTDIR
 # CGALDIR
@@ -12,10 +11,6 @@
 #
 #   PREFIX defines the base installation folder
 #
-#   SUFFIX defines an optional suffix for the binary and the
-#   resource folder. E.g. using SUFFIX=-nightly will name the
-#   resulting binary openscad-nightly.
-#
 # Please see the 'Building' sections of the OpenSCAD user manual 
 # for updated tips & workarounds.
 #
@@ -23,20 +18,30 @@
 
 OSNAME=$$system(uname -o)
 contains(OSNAME,Msys) {
-  # qmake on win has two makefiles, "Makefile.debug"+"Makefile.release", 
-  # debug build on msys is broken b/c of qscintilla
+  # only use 'release' on windows, because qmake on win uses two makefiles
+  # Makefile.release and Makefile.debug, the debug is broken b/c qcsintilla
   CONFIG=release
 }
 
-CONFIG=experimental
-message("If you're building a public release binary, use CONFIG=noexperimental")
-noexperimental {
+message("If you're building a public release deploy binary, use CONFIG=deploy")
+CONFIG+=experimental
+DEFINES += ENABLE_EXPERIMENTAL
+macx: {
+  ICON = icons/icon-nightly.icns
+}
+deploy {
   CONFIG-=experimental
+  DEFINES-=ENABLE_EXPERIMENTAL
+  macx: {
+    ICON = icons/OpenSCAD.icns
+    CONFIG += sparkle
+    QMAKE_RPATHDIR = @executable_path/../Frameworks
+  }
 }
 
 mxetarget=$$(MXE_TARGET)
 !isEmpty(mxetarget) {
-  mxeabi=$$(OPENSCAD_BUILD_TARGET_ABI)
+  mxeabi=$$(MXE_TARGET)
   contains(mxeabi,shared) {
     CONFIG += mingw-cross-env-shared
   } else {
@@ -44,12 +49,9 @@ mxetarget=$$(MXE_TARGET)
   }
 }
 
-include(version.pri)
-
-debug: DEFINES += DEBUG
+DEFINES += OPENSCAD_COMMIT=$$(OPENSCAD_COMMIT)
 
 TEMPLATE = app
-
 INCLUDEPATH += src
 DEPENDPATH += src
 
@@ -60,33 +62,8 @@ OPENSCAD_LIBDIR = $$(OPENSCAD_LIBRARIES)
   QMAKE_LIBDIR = $$OPENSCAD_LIBDIR/lib
 }
 
-# add CONFIG+=deploy to the qmake command-line to make a deployment build
-deploy {
-  message("Building deployment version")
-  DEFINES += OPENSCAD_DEPLOY
-  macx: {
-    CONFIG += sparkle
-    QMAKE_RPATHDIR = @executable_path/../Frameworks
-  }
-}
-snapshot: DEFINES += OPENSCAD_SNAPSHOT
-
 macx {
   TARGET = OpenSCAD
-}
-else {
-  TARGET = openscad$${SUFFIX}
-}
-FULLNAME = openscad$${SUFFIX}
-!isEmpty(SUFFIX): DEFINES += INSTALL_SUFFIX="\"\\\"$${SUFFIX}\\\"\""
-
-macx {
-  snapshot {
-    ICON = icons/icon-nightly.icns
-  }
-  else {
-    ICON = icons/OpenSCAD.icns
-  }
   QMAKE_INFO_PLIST = Info.plist
   APP_RESOURCES.path = Contents/Resources
   APP_RESOURCES.files = OpenSCAD.sdef dsa_pub.pem icons/SCAD.icns
@@ -94,114 +71,60 @@ macx {
   LIBS += -framework Cocoa -framework ApplicationServices
   QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.8
 }
-
+else {	
+  TARGET = openscad
+}
 
 win* {
   RC_FILE = openscad_win32.rc
   QMAKE_CXXFLAGS += -DNOGDI
 }
 
-CONFIG += qt
 QT += widgets concurrent
 
-netbsd* {
-   QMAKE_LFLAGS += -L/usr/X11R7/lib
-   QMAKE_LFLAGS += -Wl,-R/usr/X11R7/lib
-   QMAKE_LFLAGS += -Wl,-R/usr/pkg/lib
-   # FIXME: Can the lines below be removed in favour of the OPENSCAD_LIBDIR handling above?
-   !isEmpty(OPENSCAD_LIBDIR) {
-     QMAKE_CFLAGS = -I$$OPENSCAD_LIBDIR/include $$QMAKE_CFLAGS
-     QMAKE_CXXFLAGS = -I$$OPENSCAD_LIBDIR/include $$QMAKE_CXXFLAGS
-     QMAKE_LFLAGS = -L$$OPENSCAD_LIBDIR/lib $$QMAKE_LFLAGS
-     QMAKE_LFLAGS = -Wl,-R$$OPENSCAD_LIBDIR/lib $$QMAKE_LFLAGS
-   }
-}
-
-# Prevent LD_LIBRARY_PATH problems when running the openscad binary
-# on systems where uni-build-dependencies.sh was used.
-# Will not affect 'normal' builds.
-!isEmpty(OPENSCAD_LIBDIR) {
-  unix:!macx {
-    QMAKE_LFLAGS = -Wl,-R$$OPENSCAD_LIBDIR/lib $$QMAKE_LFLAGS
-    # need /lib64 beause GLEW installs itself there on 64 bit machines
-    QMAKE_LFLAGS = -Wl,-R$$OPENSCAD_LIBDIR/lib64 $$QMAKE_LFLAGS
-  }
-}
-
-# See Dec 2011 OpenSCAD mailing list, re: CGAL/GCC bugs.
-*g++* {
-  QMAKE_CXXFLAGS *= -fno-strict-aliasing
-  QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-local-typedefs # ignored before 4.8
-}
-
-*clang* {
-  # http://llvm.org/bugs/show_bug.cgi?id=9182
-  QMAKE_CXXFLAGS_WARN_ON += -Wno-overloaded-virtual
-  # disable enormous amount of warnings about CGAL / boost / etc
-  QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-parameter
-  QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-variable
-  QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-function
-  # gettext
-  QMAKE_CXXFLAGS_WARN_ON += -Wno-format-security
-  # might want to actually turn this on once in a while
-  QMAKE_CXXFLAGS_WARN_ON += -Wno-sign-compare
-  QMAKE_CXXFLAGS_WARN_ON += -Wno-unknown-warning-option
-}
-
-CONFIG(skip-version-check) {
-  # force the use of outdated libraries
-  DEFINES += OPENSCAD_SKIP_VERSION_CHECK
-}
-
-# Application configuration
 macx:CONFIG += mdi
 CONFIG += c++11
+
 CONFIG += cgal
 CONFIG += opencsg
-CONFIG += glew
 CONFIG += boost
-CONFIG += eigen
-CONFIG += glib-2.0
-CONFIG += harfbuzz
-CONFIG += freetype
-CONFIG += fontconfig
 CONFIG += gettext
-CONFIG += libxml2
+CONFIG += scintilla
 
-#Uncomment the following line to enable the QScintilla editor
-!nogui {
-  CONFIG += scintilla
-}
+OBJECTS_DIR = objects
+MOC_DIR = objects
+UI_DIR = objects
+RCC_DIR = objects
 
-# Make experimental features available
-experimental {
-  DEFINES += ENABLE_EXPERIMENTAL
-}
+include(flex.pri)
+include(bison.pri)
+include(cgal.pri)
+include(opencsg.pri)
+include(opengl.pri)
+include(boost.pri)
+include(gettext.pri)
+include(sparkle.pri)
+include(scintilla.pri)
+include(c++11.pri)
 
-nogui {
-  DEFINES += OPENSCAD_NOGUI
-}
-
-mdi {
-  DEFINES += ENABLE_MDI
-}
-
-# config MINGW before other .pri includes
-_MXE_TARGET_DIR = $$(MXE_TARGET_DIR)
-!isEmpty(_MXE_TARGET_DIR) {
-  contains(_MXE_TARGET_DIR, shared) {
-    CONFIG += mingw-cross-env-shared
-  } else {
-    CONFIG += mingw-cross-env
-  }
-}
-
-include(common.pri)
+macx:QT_CONFIG -= no-pkg-config
+CONFIG += link_pkgconfig
+PKGCONFIG += eigen
+PKGCONFIG += glew
+PKGCONFIG += fontconfig
+PKGCONFIG += freetype
+PKGCONFIG += harfbuzz
+PKGCONFIG += glib2
+PKGCONFIG += libxml2
 
 # mingw has to come after other items so OBJECT_DIRS will work properly
 
-CONFIG(mingw-cross-env)|CONFIG(mingw-cross-env-shared) {
-  include(mingw-cross-env.pri)
+CONFIG(mingw-cross-env)|CONFIG(mingw-cross-env-shared): {
+  QMAKE_CXXFLAGS += -fpermissive
+  WINSTACKSIZE = 8388608 # 8MB # github issue 116
+  QMAKE_CXXFLAGS += -Wl,--stack,$$WINSTACKSIZE
+  LIBS += -Wl,--stack,$$WINSTACKSIZE
+  QMAKE_DEL_FILE = rm -f
 }
 
 RESOURCES = openscad.qrc
@@ -220,14 +143,8 @@ FORMS   += src/MainWindow.ui \
            src/launchingscreen.ui \
            src/LibraryInfoDialog.ui
 
-# AST nodes
-win* {
-  FLEXSOURCES = src/lexer.l
-  BISONSOURCES = src/parser.y
-} else {
-  LEXSOURCES += src/lexer.l
-  YACCSOURCES += src/parser.y
-}
+LEXSOURCES += src/lexer.l
+YACCSOURCES += src/parser.y
 
 HEADERS += src/AST.h \
            src/ModuleInstantiation.h \

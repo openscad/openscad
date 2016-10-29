@@ -658,7 +658,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 #else
 	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
 #endif
-#ifdef OPENSCAD_SNAPSHOT
+#ifdef ENABLE_EXPERIMENTAL
 	app.setWindowIcon(QIcon(":/icons/openscad-nightly.png"));
 #else
 	app.setWindowIcon(QIcon(":/icons/openscad.png"));
