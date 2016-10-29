@@ -108,9 +108,9 @@ include(c++11.pri)
 
 CONFIG += link_pkgconfig
 PKGCONFIG += eigen3 glew fontconfig freetype2 harfbuzz glib-2.0 libxml-2.0
-contains(OSNAME,Msys): PKGCONFIG += Qt5Core Qt5OpenGL Qt5Gui
+contains(OSNAME,Msys): PKGCONFIG += Qt5Core Qt5OpenGL Qt5Gui Qt5Concurrent
 
-QT += widgets core gui
+QT += widgets core gui concurrent
 
 # VERSION is a qmake keyword, do not use
 isEmpty(OSCADVERSION) {

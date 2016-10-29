@@ -624,7 +624,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	QCoreApplication::setOrganizationName("OpenSCAD");
 	QCoreApplication::setOrganizationDomain("openscad.org");
 	QCoreApplication::setApplicationName("OpenSCAD");
-	QCoreApplication::setApplicationVersion(PlatformUtils::fullversion());
+	QCoreApplication::setApplicationVersion(QString::fromStdString(PlatformUtils::fullversion()));
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 	QGuiApplication::setApplicationDisplayName("OpenSCAD");
 	QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
