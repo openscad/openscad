@@ -21,12 +21,15 @@
 #
 # http://en.wikibooks.org/wiki/OpenSCAD_User_Manual
 
-!experimental {
-  message("If you're building a development binary, consider adding CONFIG+=experimental")
+OSNAME=$$system(uname -o)
+contains(OSNAME,Msys) {
+  CONFIG=release
 }
 
-isEmpty(QT_VERSION) {
-  error("Please use qmake for Qt 4 or Qt 5 (probably qmake-qt4)")
+CONFIG+=$$(OPENSCAD_QMAKE_CONFIG)
+
+!experimental {
+  message("If you're building a development binary, consider adding CONFIG+=experimental")
 }
 
 mxetarget=$$(MXE_TARGET)

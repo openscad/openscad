@@ -1,7 +1,5 @@
-# setup environment variables for building OpenSCAD against custom built
-# dependency libraries. works on Linux/BSD.
 #
-# Please see the 'uni-build-dependencies.sh' file for usage information
+# setup environment variables for building OpenSCAD
 #
 
 linuxbrew()

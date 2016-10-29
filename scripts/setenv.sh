@@ -5,81 +5,40 @@
 # Usage:
 #
 #  source ./scripts/setenv.sh               # standard darwin/linux/msys2 build
-#  source ./scripts/setenv.sh mxe           # mxe cross-build for Win, 32 bit
-#  source ./scripts/setenv.sh mxe shared    # mxe with shared libraries (DLLs)
-#  source ./scripts/setenv.sh mxe 64        # mxe 64 bit static link
-#  source ./scripts/setenv.sh mxe 64 shared # mxe 64 bit shared libraries (DLLs)
-#  source ./scripts/setenv.sh clang         # build *nix using clang compiler
+#  source ./scripts/setenv.sh linuxbrew     # use brew from $HOME/.linuxbrew
+#  source ./scripts/setenv.sh i686-w64-mingw32.static   # crossbuild Win 32bit
+#  source ./scripts/setenv.sh i686-w64-mingw32.shared   # cross DLLs Win 32bit
+#  source ./scripts/setenv.sh x86_64-w64-mingw32.static # crossbuild Win 64bit
+#  source ./scripts/setenv.sh x86_64-w64-mingw32.shared # cross DLLs Win 64bit
+#  source ./scripts/setenv.sh clang         # build linux using clang compiler
 #  source ./scripts/setenv.sh clean         # unset all exported variables
 #
+#  Use the 'machine triple' modeled on GNU. (gcc -dumpmachine)
+#  ARCH,SUB,SYS,ABI - http://clang.llvn.org/docs/CrossCompilation
+#  HOST = machine openscad will be run on
+#  BUILD = machine openscad is being built on
+#
 # Notes:
-#
-# Darwin/OSX:
-#
-#  It simply loads ./openscad/setenv_mac-qt5.sh
-#
-# Linux/BSD:
-#
-#  Please see 'scripts/uni-build-dependencies.sh'
-#
-# MXE (Cross-build Linux->Windows):
-#
-#  Please see http://mxe.cc/#requirements
-#
-#  Also see http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Cross-compiling_for_Windows_on_Linux_or_Mac_OS_X
-#
-# Msys2 (WindowsTM):
-#
-#  32 or 64 bit is selected by starting the appropriate "MINGW64" or
-#  "MINGW32" shell on the system and runnning these commands from within it.
-#
-#  Please download and install msys2 from http://msys2.github.io
-#
-# General:
 #
 #  This script works by using function naming and run() for portability.
 #  "_generic" is a generic linux/bsd build. _msys / _mxe etc are specialized.
 #  Only variables in the 'varexportlist' are exported.
 #  This script uses a lot of global variables, take care if editing.
 
-setup_target_generic()
+
+setup_host_generic()
 {
-  ARCH=`uname -m`
-  OPENSCAD_BUILD_TARGET_ARCH=$ARCH
-  OPENSCAD_BUILD_TARGET_TRIPLE=$ARCH-$OSTYPE
-  if [ "`echo $ARGS | grep qt4`" ]; then
-    OPENSCAD_USEQT4=1
+  if [ "`echo $1 | grep mingw`" ]; then
+    HOST_TRIPLE=$1
+    MXE_TARGET=$1
+  elif [ "`command -v gcc`" ]; then
+    HOST_TRIPLE=`gcc -dumpmachine`
+  elif [ "`command -v clang`" ]; then
+    HOST_TRIPLE=`clang -dumpmachine`
   fi
 }
 
-setup_target_mxe()
-{
-  ARCH=i686
-  SUB=w64
-  SYS=mingw32
-  ABI=static
-  if [ "`echo $ARGS | grep 64 `" ]; then ARCH=x86_64 ; fi
-  if [ "`echo $ARGS | grep shared `" ]; then ABI=shared ; fi
-  MXE_TARGET=$ARCH-$SUB-$SYS.$ABI
-  OPENSCAD_BUILD_TARGET_ARCH=$ARCH
-  OPENSCAD_BUILD_TARGET_ABI=$ABI
-  OPENSCAD_BUILD_TARGET_TRIPLE=$MXE_TARGET
-}
-
-setup_target_msys()
-{
-  ARCH=i686
-  SUB=w64
-  SYS=windows
-  ABI=gnu
-  if [ "`uname -a | grep -i x86_64`" ]; then
-    ARCH=x86_64
-  fi
-  OPENSCAD_BUILD_TARGET_ARCH=$ARCH
-  OPENSCAD_BUILD_TARGET_TRIPLE=$ARCH-$SUB-$SYS.$ABI
-}
-
-setup_target_darwin()
+setup_host_darwin()
 {
   . ./setenv_mac-qt5.sh
 }
@@ -104,13 +63,13 @@ setup_dirs_generic()
     QTDIR=$BASEDIR
   fi
   OPENSCADDIR=$PWD
-  BUILDDIR=$OPENSCADDIR/bin/$OPENSCAD_BUILD_TARGET_TRIPLE
+  BUILDDIR=$OPENSCADDIR/bin/$OPENSCAD_BUILD_host_TRIPLE
 }
 
 setup_dirs_msys()
 {
   OPENSCADDIR=$PWD
-  BUILDDIR=$OPENSCADDIR/bin/$OPENSCAD_BUILD_TARGET_TRIPLE
+  BUILDDIR=$OPENSCADDIR/bin/$OPENSCAD_BUILD_host_TRIPLE
 }
 
 setup_dirs_mxe()
@@ -158,7 +117,7 @@ setup_dirs_netbsd()
 setup_dirs_darwin()
 {
   echo
-  # noop, already done in setup_target_darwin() (. ../setenv_mac-qt5.sh)
+  # noop, already done in setup_host_darwin() (. ../setenv_mac-qt5.sh)
 }
 
 save_path_generic()
@@ -172,15 +131,6 @@ save_path_generic()
 setup_path_generic()
 {
   PATH=$BASEDIR/bin:$PATH
-  LD_LIBRARY_PATH=$BASEDIR/lib:$BASEDIR/lib64
-  LD_RUN_PATH=$BASEDIR/lib:$BASEDIR/lib64
-}
-
-setup_path_msys()
-{
-  MWBITS=32
-  if [ $ARCH = x86_64 ]; then MWBITS=64; fi
-  PATH=/mingw$MWBITS/bin:$PATH
 }
 
 setup_path_mxe()
@@ -205,7 +155,7 @@ setup_path_netbsd()
 setup_path_darwin()
 {
   echo
-  # noop, already done in setup_target_darwin() (. ../setenv_mac-qt5.sh)
+  # noop, already done in setup_host_darwin() (. ../setenv_mac-qt5.sh)
 }
 
 setup_clang_generic()
@@ -217,7 +167,7 @@ setup_clang_generic()
 setup_clang_darwin()
 {
   echo
-  # noop, already done in setup_target_darwin() (. ../setenv_mac-qt5.sh)
+  # noop, already done in setup_host_darwin() (. ../setenv_mac-qt5.sh)
 }
 
 setup_clang_msys()
@@ -247,10 +197,10 @@ setup_clang_freebsd()
 setup_varexportlist_common()
 {
   vel=
-  vel="$vel SETENV_SAVED_ORIGINAL_PATH OPENSCAD_BUILD_TARGET_OSTYPE"
-  vel="$vel OPENSCAD_BUILD_TARGET_TRIPLE"
-  vel="$vel OPENSCAD_BUILD_TARGET_ARCH"
-  vel="$vel OPENSCAD_BUILD_TARGET_ABI"
+  vel="$vel SETENV_SAVED_ORIGINAL_PATH OPENSCAD_BUILD_host_OSTYPE"
+  vel="$vel OPENSCAD_BUILD_host_TRIPLE"
+  vel="$vel OPENSCAD_BUILD_host_ARCH"
+  vel="$vel OPENSCAD_BUILD_host_ABI"
   vel="$vel BUILDDIR BASEDIR OPENSCAD_LIBRARIES"
 }
 
@@ -289,10 +239,10 @@ clean_variables_generic()
   echo "SETENV build environment variables cleared"
 }
 
-export_and_print_vars_generic()
+export_and_print_vars()
 {
-  if [ "`echo $vel`" ]; then
-    for varname in $vel; do
+  if [ "`echo $*`" ]; then
+    for varname in $*; do
       export $varname
       echo "$varname: "`eval echo "$"$varname`
     done
@@ -305,7 +255,7 @@ run()
 {
   # run() calls function $1_generic, or a specialized version $1_$ostype
   # stackoverflow.com/questions/85880/determine-if-a-function-exists-in-bash
-  runfunc1=`echo $1"_"$OPENSCAD_BUILD_TARGET_OSTYPE`
+  runfunc1=`echo $1"_"$OPENSCAD_BUILD_host_OSTYPE`
   runfunc2=`echo $1_generic`
   if [ "`type -t $runfunc1 | grep function`" ]; then
     echo "calling $runfunc1"
@@ -318,45 +268,17 @@ run()
   fi
 }
 
-detect_target_ostype()
-{
-  if [ "`echo $1 | grep mxe`" ]; then
-    OPENSCAD_BUILD_TARGET_OSTYPE=mxe
-  elif [ "`uname | grep -i darwin`" ]; then
-    OPENSCAD_BUILD_TARGET_OSTYPE=darwin
-  elif [ "`uname | grep -i linux`" ]; then
-    OPENSCAD_BUILD_TARGET_OSTYPE=linux
-  elif [ "`uname | grep -i debian`" ]; then
-    OPENSCAD_BUILD_TARGET_OSTYPE=linux
-  elif [ "`uname | grep -i freebsd`" ]; then
-    OPENSCAD_BUILD_TARGET_OSTYPE=freebsd
-  elif [ "`uname | grep -i netbsd`" ]; then
-    OPENSCAD_BUILD_TARGET_OSTYPE=netbsd
-  elif [ "`echo $OSTYPE | grep -i msys`" ]; then
-    OPENSCAD_BUILD_TARGET_OSTYPE=msys
-  else
-    OPENSCAD_BUILD_TARGET_OSTYPE=unknownos
-  fi
-}
-
-ARGS=$*
-detect_target_ostype $ARGS
-run setup_varexportlist
-if [ "`echo $ARGS | grep clean`" ]; then
-  run clean_variables
-  run export_and_print_vars
-else
-  if [ $SETENV_SAVED_ORIGINAL_PATH ]; then
-    echo "$OPENSCAD_BUILD_TARGET_OSTYPE environment was previously setup"
-    echo "Please run this script with 'clean' before use, or logout/login"
-  else
-    run setup_target
-    run setup_dirs
-    run save_path
-    run setup_path
-    if [ "`echo $ARGS | grep clang`" ]; then
-      run setup_clang
-    fi
-    run export_and_print_vars
-  fi
+if [ SETENV_SAVED_ORIGINAL_PATH ]; then
+    echo "$OPENSCAD_BUILD_host_OSTYPE environment was previously setup"
 fi
+
+OPENSCAD_QMAKE_CONFIG=experimental
+export_and_print_vars OPENSCAD_QMAKE_CONFIG
+
+#run setup_host
+#run setup_dirs
+#run save_path
+#run setup_path
+#if [ "`echo $ARGS | grep clang`" ]; then
+#  run setup_clang
+#fi

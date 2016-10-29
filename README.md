@@ -175,8 +175,8 @@ MSYS2 installation. This may take several hours and GB of space. Then continue
 
 ### Building on Linux, BSD, or MSYS2
 
-The basic formula is the same for all of these platforms. First, setup environment
-variables.
+The basic formula is the same for all of these platforms. First, setup 
+environment variables.
 
     source ./scripts/setenv.sh
 
@@ -184,7 +184,7 @@ Then get dependencies
 
     sudo ./scripts/get-dependencies.sh
 
-Build Makefile with qmake, then make binary
+Build the Makefile with qmake, then make the main openscad binary
 
     qmake
     make

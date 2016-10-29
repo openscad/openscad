@@ -1,7 +1,11 @@
 # get VERSION from system date
 
 isEmpty(VERSION) {
-  VERSION = $$system(date "+%Y.%m.%d")
+  contains(OSNAME,Msys) {
+    VERSION=$$system($$(MINGW_PREFIX)/../usr/bin/date "+%Y.%m.%d")
+  } else {
+    VERSION = $$system(date "+%Y.%m.%d")
+  }
 }
 
 # Split off patch level indicator
