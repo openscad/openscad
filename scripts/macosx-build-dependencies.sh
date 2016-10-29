@@ -48,6 +48,7 @@ PACKAGES=(
     "freetype 2.6.3"
     "ragel 6.9"
     "harfbuzz 1.2.7"
+    "libzip 1.1.3"
     "libxml2 2.9.4"
     "fontconfig 2.12.0"
 )
@@ -272,7 +273,7 @@ build_gmp()
   fi
   tar xjf gmp-$version.tar.bz2
   cd gmp-$version
-  ./configure --prefix=$DEPLOYDIR CXXFLAGS="$CXXSTDFLAGS" CFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64" LDFLAGS="$LDSTDFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64" ABI=64 --enable-cxx
+  ./configure --prefix=$DEPLOYDIR CXXFLAGS="$CXXSTDFLAGS" CFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="$LDSTDFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN" --enable-cxx
   make -j"$NUMCPU" install
 
   install_name_tool -id @rpath/libgmp.dylib $DEPLOYDIR/lib/libgmp.dylib
@@ -554,6 +555,29 @@ build_freetype()
   install_name_tool -id @rpath/libfreetype.dylib $DEPLOYDIR/lib/libfreetype.dylib
 }
  
+check_libzip()
+{
+    check_file lib/libzip.dylib
+}
+
+build_libzip()
+{
+  version="$1"
+
+  echo "Building libzip $version..."
+  cd "$BASEDIR"/src
+  rm -rf "libzip-$version"
+  if [ ! -f "libxml2-$version.tar.gz" ]; then
+    curl --insecure -LO "https://nih.at/libzip/libzip-1.1.3.tar.gz"
+  fi
+  tar xzf "libzip-$version.tar.gz"
+  cd "libzip-$version"
+  ./configure --prefix="$DEPLOYDIR" CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN
+  make -j$NUMCPU
+  make install
+  install_name_tool -id @rpath/libzip.dylib $DEPLOYDIR/lib/libzip.dylib
+}
+
 check_libxml2()
 {
     check_file lib/libxml2.dylib
@@ -571,7 +595,7 @@ build_libxml2()
   fi
   tar xzf "libxml2-$version.tar.gz"
   cd "libxml2-$version"
-  ./configure --prefix="$DEPLOYDIR" --with-zlib=/usr -without-lzma --without-ftp --without-http --without-python CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN
+  ./configure --prefix="$DEPLOYDIR" --with-zlib=/usr -with-lzma --without-ftp --without-http --without-python CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN
   make -j$NUMCPU
   make install
   install_name_tool -id @rpath/libxml2.dylib $DEPLOYDIR/lib/libxml2.dylib
