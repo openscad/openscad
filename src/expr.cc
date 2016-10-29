@@ -451,16 +451,9 @@ ValuePtr Echo::evaluate(const Context *context) const
 	std::stringstream msg;
 	EvalContext echo_context(context, this->arguments);
 	msg << "ECHO: " << echo_context;
-
-	ValuePtr result = expr ? expr->evaluate(context) : ValuePtr::undefined;
-
-	if (expr) {
-		if (echo_context.numArgs()) msg << ", ";
-		msg << result->toEchoString();
-	}
-
 	PRINTB("%s", msg.str());
 
+	ValuePtr result = expr ? expr->evaluate(context) : ValuePtr::undefined;
 	return result;
 }
 
