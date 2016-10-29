@@ -14,3 +14,5 @@ ECHO: 12
 ECHO: 6
 ECHO: 12
 ECHO: 18
+ECHO: [1, 1]
+ECHO: [[1, 2], [2, 2]]
