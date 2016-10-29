@@ -34,6 +34,7 @@
 #include "printutils.h"
 #include <cstdint>
 #include <sstream>
+#include "boost/regex.hpp"
 
 class ControlModule : public AbstractModule
 {
@@ -263,10 +264,25 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 		node = new GroupNode(inst);
 		std::stringstream msg;
 		msg << "ECHO: ";
+		static boost::regex tagRegEx(".*<[^>]+>.*");
+		static boost::regex escapeSymbRegEx("(\t)|(\n)|(\r)"); // using boost extended format string
 		for (size_t i = 0; i < inst->arguments.size(); i++) {
 			if (i > 0) msg << ", ";
 			if (!evalctx->getArgName(i).empty()) msg << evalctx->getArgName(i) << " = ";
 			ValuePtr val = evalctx->getArgValue(i);
+
+		        /*
+		        * Using regexp to determine whether string contain HTML
+		        * If so - we need to replace escape symbols
+		        * Because escape symbols (\t, \n etc.) doesn't render well with HTML tags
+			* 'if' statement is required because widget doesn't interpret each string as HTML 
+		        */
+
+		        if (boost::regex_match(val->toString(), tagRegEx)) {
+				std::string formatString = "(?1&nbsp;&nbsp;&nbsp;&nbsp;)(?2<br/>)(?3<br/>)";
+				val = boost::regex_replace(val->toString(), escapeSymbRegEx, formatString, boost::format_all);
+		        }
+
 			if (val->type() == Value::STRING) {
 				msg << '"' << val->toString() << '"';
 			} else {
