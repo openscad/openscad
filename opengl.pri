@@ -1,4 +1,4 @@
-# Prefer QOpenGLWidget for non-Windows platforms
+# Prefer QOpenGLWidget when not doing an mxe cross build
 # To explicitly enable QOpenGLWidget: qmake CONFIG += qopenglwidget
 # To explicitly enable QGLWidget: qmake CONFIG += qglwidget
 !win*: CONFIG += qopenglwidget
@@ -7,12 +7,9 @@ contains(OSNAME,Msys) {
   CONFIG += using_qopenglwidget
 }
 
-using_qopenglwidget {
-  message("Using QOpenGLWidget")
-  DEFINES += USE_QOPENGLWIDGET
-}
-else {
+using_qglwidget {
   message("Using QGLWidget")
+  DEFINES += USE_QGLWIDGET
   QT += opengl
 }
 

@@ -10,6 +10,9 @@ namespace fs=boost::filesystem;
 
 namespace PlatformUtils {
         extern const char *OPENSCAD_FOLDER_NAME;
+	std::string version();
+	std::vector<std::string> version_ymd();
+	std::string fullversion();
 
 	void registerApplicationPath(const std::string &applicationpath);
 	std::string applicationPath();
@@ -87,4 +90,5 @@ namespace PlatformUtils {
          * a given number of digits.
          */
         std::string toMemorySizeString(uint64_t bytes, int digits);
+
 }

@@ -45,6 +45,8 @@
 #include <limits>
 #include <algorithm>
 
+#include "PlatformUtils.h"
+
 /*
  Random numbers
 
@@ -752,18 +754,14 @@ ValuePtr builtin_search(const Context *, const EvalContext *evalctx)
 	return ValuePtr(returnvec);
 }
 
-#define QUOTE(x__) # x__
-#define QUOTED(x__) QUOTE(x__)
-
 ValuePtr builtin_version(const Context *, const EvalContext *evalctx)
 {
 	(void)evalctx; // unusued parameter
 	Value::VectorType val;
-	val.push_back(double(OPENSCAD_YEAR));
-	val.push_back(double(OPENSCAD_MONTH));
-#ifdef OPENSCAD_DAY
-	val.push_back(double(OPENSCAD_DAY));
-#endif
+	std::vector<std::string> ymd = PlatformUtils::version_ymd();
+	val.push_back( boost::lexical_cast<double>(ymd[0]) );
+	val.push_back( boost::lexical_cast<double>(ymd[1]) );
+	if (ymd.size()>2) val.push_back( boost::lexical_cast<double>(ymd[2]) );
 	return ValuePtr(val);
 }
 

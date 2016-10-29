@@ -3,7 +3,6 @@
 #include <vector>
 #include <Qsci/qsciglobal.h>
 
-#include "version_check.h"
 #include "PlatformUtils.h"
 #include "openscad.h"
 #define STRINGIFY(x) #x
@@ -20,6 +19,8 @@
 #endif // GCC_INT_VERSION
 #endif // GNUG
 #endif // ENABLE_CGAL
+
+#include <Eigen/Core>
 
 extern std::vector<std::string> librarypath;
 extern std::vector<std::string> fontpath;
@@ -86,7 +87,7 @@ std::string LibraryInfo::info()
 	const char *env_path = getenv("OPENSCADPATH");
 	const char *env_font_path = getenv("OPENSCAD_FONT_PATH");
 	
-	s << "OpenSCAD Version: " << openscad_detailedversionnumber
+	s << "OpenSCAD Version: " << PlatformUtils::fullversion()
 	  << "\nSystem information: " << PlatformUtils::sysinfo()
 		<< "\nCompiler: " << compiler_info
 	  << "\nBoost version: " << BOOST_LIB_VERSION
@@ -94,9 +95,7 @@ std::string LibraryInfo::info()
 	  << "\nCGAL version, kernels: " << TOSTRING(CGAL_VERSION) << ", " << cgal_3d_kernel << ", " << cgal_2d_kernel << ", " << cgal_2d_kernelEx
 	  << "\nOpenCSG version: " << OPENCSG_VERSION_STRING
 	  << "\nQt version: " << qtVersion
-#ifdef USE_SCINTILLA_EDITOR
 	  << "\nQScintilla version: " << QSCINTILLA_VERSION_STR
-#endif
 	  << "\nMingW build: " << mingwstatus
 	  << "\nGLib version: "       << GLIB_MAJOR_VERSION << "." << GLIB_MINOR_VERSION << "." << GLIB_MICRO_VERSION
 	  << "\nApplication Path: " << PlatformUtils::applicationPath()

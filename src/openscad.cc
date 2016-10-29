@@ -72,10 +72,6 @@
   #endif
 #endif
 
-#ifdef _MSC_VER
-#define snprintf _snprintf
-#endif
-
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 namespace Render { enum type { GEOMETRY, CGAL, OPENCSG, THROWNTOGETHER }; };
@@ -89,27 +85,6 @@ std::string commandline_commands;
 std::string currentdir;
 static bool arg_info = false;
 static std::string arg_colorscheme;
-
-#define QUOTE(x__) # x__
-#define QUOTED(x__) QUOTE(x__)
-
-std::string openscad_shortversionnumber = QUOTED(OPENSCAD_SHORTVERSION);
-std::string openscad_versionnumber = QUOTED(OPENSCAD_VERSION);
-
-std::string openscad_displayversionnumber = 
-#ifdef OPENSCAD_COMMIT
-  QUOTED(OPENSCAD_VERSION)
-  " (git " QUOTED(OPENSCAD_COMMIT) ")";
-#else
-  QUOTED(OPENSCAD_SHORTVERSION);
-#endif
-
-std::string openscad_detailedversionnumber =
-#ifdef OPENSCAD_COMMIT
-  openscad_displayversionnumber;
-#else
-  openscad_versionnumber;
-#endif
 
 class Echostream : public std::ofstream
 {
@@ -157,11 +132,9 @@ static void help(const char *progname, bool failure = false)
 	exit(failure ? 1 : 0);
 }
 
-#define STRINGIFY(x) #x
-#define TOSTRING(x) STRINGIFY(x)
 static void version()
 {
-	PRINTB("OpenSCAD version %s", TOSTRING(OPENSCAD_VERSION));
+	PRINTB("OpenSCAD version %s", PlatformUtils::fullversion());
 	exit(0);
 }
 
@@ -651,7 +624,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	QCoreApplication::setOrganizationName("OpenSCAD");
 	QCoreApplication::setOrganizationDomain("openscad.org");
 	QCoreApplication::setApplicationName("OpenSCAD");
-	QCoreApplication::setApplicationVersion(TOSTRING(OPENSCAD_VERSION));
+	QCoreApplication::setApplicationVersion(PlatformUtils::fullversion());
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 	QGuiApplication::setApplicationDisplayName("OpenSCAD");
 	QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
@@ -696,7 +669,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	updater->init();
 #endif
 
-#ifndef USE_QOPENGLWIDGET
+#ifdef USE_QGLWIDGET
 	// This workaround appears to only be needed when QGLWidget is used QOpenGLWidget
 	// available in Qt 5.4 is much better.
 	QGLFormat fmt;

@@ -51,18 +51,14 @@
 #endif
 
 QGLView::QGLView(QWidget *parent) :
-#ifdef USE_QOPENGLWIDGET
-	QOpenGLWidget(parent)
-#else
+#ifdef USE_QGLWIDGET
 	QGLWidget(parent)
+#else
+	QOpenGLWidget(parent)
 #endif
 {
   init();
 }
-
-#if defined(_WIN32) && !defined(USE_QOPENGLWIDGET)
-static bool running_under_wine = false;
-#endif
 
 void QGLView::init()
 {
@@ -72,17 +68,6 @@ void QGLView::init()
   this->statusLabel = NULL;
 
   setMouseTracking(true);
-
-
-
-#if defined(_WIN32) && !defined(USE_QOPENGLWIDGET)
-// see paintGL() + issue160 + wine FAQ
-#include <windows.h>
-  HMODULE hntdll = GetModuleHandle(L"ntdll.dll");
-  if (hntdll)
-    if ( (void *)GetProcAddress(hntdll, "wine_get_version") )
-      running_under_wine = true;
-#endif
 }
 
 void QGLView::resetView()
@@ -113,7 +98,9 @@ std::string QGLView::getRendererInfo() const
   std::stringstream info;
   info << glew_dump();
   // Don't translate as translated text in the Library Info dialog is not wanted
-#ifdef USE_QOPENGLWIDGET
+#ifdef USE_QGLWIDGET
+  info << "\nQt graphics widget: QGLWidget";
+#else
   info << "\nQt graphics widget: QOpenGLWidget";
   QSurfaceFormat qsf = this->format();
   int rbits = qsf.redBufferSize();
@@ -124,8 +111,6 @@ std::string QGLView::getRendererInfo() const
   int sbits = qsf.stencilBufferSize();
   info << boost::format("\nQSurfaceFormat: RGBA(%d%d%d%d), depth(%d), stencil(%d)\n\n") %
     rbits % gbits % bbits % abits % dbits % sbits;
-#else
-  info << "\nQt graphics widget: QGLWidget";
 #endif
   info << glew_extensions_dump();
   return info.str();
@@ -186,10 +171,6 @@ void QGLView::paintGL()
 		.arg(size().rheight());
     statusLabel->setText(status);
   }
-
-#if defined(_WIN32) && !defined(USE_QOPENGLWIDGET)
-  if (running_under_wine) swapBuffers();
-#endif
 }
 
 void QGLView::mousePressEvent(QMouseEvent *event)

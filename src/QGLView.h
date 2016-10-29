@@ -3,10 +3,10 @@
 #include "system-gl.h"
 #include <QtGlobal>
 
-#ifdef USE_QOPENGLWIDGET
-#include <QOpenGLWidget>
-#else
+#ifdef USE_QGLWIDGET
 #include <QGLWidget>
+#else
+#include <QOpenGLWidget>
 #endif
 #include <QLabel>
 
@@ -16,10 +16,10 @@
 #include "renderer.h"
 
 class QGLView :
-#ifdef USE_QOPENGLWIDGET
-		public QOpenGLWidget,
-#else
+#ifdef USE_QGLWIDGET
 		public QGLWidget,
+#else
+		public QOpenGLWidget,
 #endif
 		public GLView
 {
@@ -62,13 +62,13 @@ public:
 public slots:
 	void ZoomIn(void);
 	void ZoomOut(void);
-#ifdef USE_QOPENGLWIDGET
+#ifndef USE_QGLWIDGET
 	inline void updateGL() { update(); }
 #endif
 
 public:
 	QLabel *statusLabel;
-#ifdef USE_QOPENGLWIDGET
+#ifndef USE_QGLWIDGET
 	inline QImage grabFrameBuffer() { return grabFramebuffer(); }
 #endif
 private:

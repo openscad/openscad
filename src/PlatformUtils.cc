@@ -15,6 +15,30 @@ namespace {
 
 const char *PlatformUtils::OPENSCAD_FOLDER_NAME = "OpenSCAD";
 
+#define QUOTE(x__) # x__
+#define QUOTED(x__) QUOTE(x__)
+static std::string version()
+{
+	return std::string(QUOTED(OPENSCAD_VERSION));
+}
+
+static std::vector<std::string> version_ymd()
+{
+	std::vector<std::string> ymd;
+	std::string ver = PlatformUtils::version();
+	boost::split(ymd, ver, boost::is_any_of("."));
+	return ymd; 
+}
+
+#ifndef OPENSCAD_COMMIT
+#define OPENSCAD_COMMIT
+#endif
+static std::string fullversion()
+{
+	std::string commit = QUOTED(OPENSCAD_COMMIT);
+	return( boost::format("%s %s") % PlatformUtils::version() % commit).str();
+}
+
 static std::string lookupResourcesPath()
 {
 	fs::path resourcedir(applicationpath);

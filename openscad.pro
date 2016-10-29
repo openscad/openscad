@@ -39,12 +39,6 @@ deploy {
   }
 }
 
-win* {
-  RC_FILE = openscad_win32.rc
-  QMAKE_CXXFLAGS += -DNOGDI
-}
-QT += widgets core gui
-
 mxetarget=$$(MXE_TARGET)
 !isEmpty(mxetarget) {
   mxeabi=$$(MXE_TARGET)
@@ -54,8 +48,6 @@ mxetarget=$$(MXE_TARGET)
     CONFIG += mingw-cross-env
   }
 }
-
-DEFINES += OPENSCAD_COMMIT=$$(OPENSCAD_COMMIT)
 
 TEMPLATE = app
 INCLUDEPATH += src
@@ -80,6 +72,11 @@ macx {
 else {	
   TARGET = openscad
 }
+win* {
+  RC_FILE = openscad_win32.rc
+  QMAKE_CXXFLAGS += -DNOGDI
+}
+
 
 RESOURCES = openscad.qrc
 
@@ -109,24 +106,20 @@ include(sparkle.pri)
 include(scintilla.pri)
 include(c++11.pri)
 
+CONFIG += link_pkgconfig
+PKGCONFIG += eigen3 glew fontconfig freetype2 harfbuzz glib-2.0 libxml-2.0
+contains(OSNAME,Msys): PKGCONFIG += Qt5Core Qt5OpenGL Qt5Gui
+
+QT += widgets core gui
+
 # VERSION is a qmake keyword, do not use
 isEmpty(OSCADVERSION) {
   datecmd=date
   contains(OSNAME,Msys): datecmd=$$(MINGW_PREFIX)/../usr/bin/date
-  VERSION_YEAR=$$system($$datecmd "+%-Y")
-  VERSION_MONTH=$$system($$datecmd "+%-m")
-  VERSION_DAY=$$system($$datecmd "+%-d")
   OSCADVERSION=$$system($$datecmd "+%Y.%m.%d")
 }
-DEFINES += OPENSCAD_VERSION=$$OSCADVERSION OPENSCAD_YEAR=$$VERSION_YEAR OPENSCAD_MONTH=$$VERSION_MONTH
-!isEmpty(VERSION_DAY): DEFINES += OPENSCAD_DAY=$$VERSION_DAY
-!isEmpty(OPENSCAD_COMMIT) {
-  DEFINES += OPENSCAD_COMMIT=$$OPENSCAD_COMMIT
-}
-
-#macx:QT_CONFIG -= no-pkg-config
-CONFIG += link_pkgconfig
-PKGCONFIG += eigen3 glew fontconfig freetype2 harfbuzz glib-2.0 libxml-2.0
+DEFINES += OPENSCAD_VERSION=$$OSCADVERSION
+DEFINES += OPENSCAD_COMMIT=$$OPENSCAD_COMMIT
 
 # mingw has to come after other items so OBJECT_DIRS will work properly
 
@@ -482,8 +475,7 @@ INSTALLS += target
 POST_LINK_CMD = "$$_PRO_FILE_PWD_/scripts/translation-make.sh"
 win32 {
   # on MSYS2, handle spaces in pathnames (ex if username is "Emmy Noether")
-  _MSYSTEM = $$(MSYSTEM)
-  contains(_MSYSTEM,MSYS) | contains(_MSYSTEM,MINGW64) | contains(_MSYSTEM,MINGW32) {
+  contains(OSNAME,Msys) {
     POST_LINK_CMD = ___QUOTE___"$$POST_LINK_CMD"___QUOTE___
     POST_LINK_CMD = $$replace(POST_LINK_CMD,"___QUOTE___","\"")
     POST_LINK_CMD = $$shell_path($$POST_LINK_CMD)
