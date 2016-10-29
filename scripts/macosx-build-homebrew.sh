@@ -47,7 +47,7 @@ $TAP tap openscad/homebrew-tap
 for formula in eigen boost cgal glew glib opencsg freetype libxml2 fontconfig harfbuzz qt5 qscintilla2 imagemagick; do
   log "Installing formula $formula"
   brew ls --versions $formula
-  (time -p brew install $formula) 2>&1 | grep real | awk '{print "-> " $2 " sec"}'
+  time brew install $formula
 done
 
 for formula in gettext qt5 qscintilla2; do
