@@ -13,7 +13,7 @@ public:
 		setupUi(this);
 		this->setWindowTitle( QString(_("About OpenSCAD")) + " " + PlatformUtils::shortversion().c_str());
 		QString tmp = this->aboutText->toHtml();
-		tmp.replace("__VERSION__", PlatformUtils::detailversion().c_str());
+		tmp.replace("__VERSION__", PlatformUtils::detailedversion().c_str());
 		this->aboutText->setHtml(tmp);
 	}
 

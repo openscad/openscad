@@ -17,7 +17,7 @@ const char *PlatformUtils::OPENSCAD_FOLDER_NAME = "OpenSCAD";
 
 #define QUOTE(x__) # x__
 #define QUOTED(x__) QUOTE(x__)
-static std::string shortversion()
+std::string PlatformUtils::shortversion()
 {
 	std::vector<std::string> ymd = PlatformUtils::version_ymd();
 	if (ymd.size()>2)
@@ -25,7 +25,7 @@ static std::string shortversion()
 	return( boost::format("%s.%s") % ymd[0] % ymd[1] ).str();
 }
 
-static std::vector<std::string> version_ymd()
+std::vector<std::string> PlatformUtils::version_ymd()
 {
 	std::string ver = PlatformUtils::fullversion();
 	std::vector<std::string> ymd,tmp;
@@ -34,12 +34,12 @@ static std::vector<std::string> version_ymd()
 	return ymd;
 }
 
-static std::string fullversion()
+std::string PlatformUtils::fullversion()
 {
 	return std::string(QUOTED(OPENSCAD_VERSION));
 }
 
-static std::string detailedversion()
+std::string PlatformUtils::detailedversion()
 {
 	std::string commit = QUOTED(OPENSCAD_COMMIT);
 	return( boost::format("%s %s") % PlatformUtils::fullversion() % commit).str();

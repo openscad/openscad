@@ -27,16 +27,16 @@ macx {
 
 
 c++11 {
-  gcc* {
+  # qmake will figure out what gcc needs
+  gcc: {
     system( "gcc -v 2>&1 | grep ersion.[3-4].[0-6]" ) {
       QMAKE_CXXFLAGS += -std=c++0x
-      message("Using C++0x")
     } else {
       QMAKE_CXXFLAGS += -std=c++11
-      message("Using C++11")
     }
   }
   *clang*: {
+    QMAKE_CXXFLAGS += -std=c++11
     # 3rd party libraries will probably violate this for a long time
     CXX11_SUPPRESS_WARNINGS += -Wno-inconsistent-missing-override
     # boost/algorithm/string.hpp does this
