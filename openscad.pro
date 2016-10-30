@@ -123,7 +123,7 @@ isEmpty(OSCADVERSION) {
   contains(OSNAME,Msys): datecmd=$$(MINGW_PREFIX)/../usr/bin/date
   OSCADVERSION=$$system($$datecmd "+%Y.%m.%d")
 }
-DEFINES += OPENSCAD_VERSION=$$OSCADVERSION
+DEFINES += OPENSCAD_VERSION=$$OPENSCAD_VERSION
 DEFINES += OPENSCAD_COMMIT=$$OPENSCAD_COMMIT
 
 # mingw has to come after other items so OBJECT_DIRS will work properly
@@ -152,7 +152,7 @@ FORMS   += src/MainWindow.ui \
 
 LEXSOURCES += src/lexer.l
 YACCSOURCES += src/parser.y
-CONFIG += yacc lex
+contains(OSNAME,Msys): CONFIG += yacc lex
 
 HEADERS += src/AST.h \
            src/ModuleInstantiation.h \

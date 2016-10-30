@@ -363,7 +363,7 @@ call_qmake()
   if [ "`echo $* | grep dryrun`" ]; then
     QPRO_FILE=$OPENSCADDIR/scripts/fakescad.pro
   fi
-  qmake PREFIX=$DEPLOYDIR VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT $QPRO_FILE
+  qmake PREFIX=$DEPLOYDIR OPENSCAD_VERSION=$OPENSCAD_VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT $QPRO_FILE
 }
 
 cleanup_darwin()
