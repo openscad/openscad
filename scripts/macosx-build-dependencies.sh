@@ -251,6 +251,7 @@ build_qscintilla()
   fi
   tar xzf QScintilla_gpl-$version.tar.gz
   cd QScintilla_gpl-$version/Qt4Qt5
+  patch -p2 < $OPENSCADDIR/patches/QScintilla-2.9.3-xcode8.patch
   qmake QMAKE_CXXFLAGS+="$CXXSTDFLAGS" QMAKE_LFLAGS+="$CXXSTDFLAGS" qscintilla.pro
   make -j"$NUMCPU" install
   install_name_tool -id @rpath/libqscintilla2.dylib $DEPLOYDIR/lib/libqscintilla2.dylib
