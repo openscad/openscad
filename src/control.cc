@@ -262,17 +262,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 	case ECHO: {
 		node = new GroupNode(inst);
 		std::stringstream msg;
-		msg << "ECHO: ";
-		for (size_t i = 0; i < inst->arguments.size(); i++) {
-			if (i > 0) msg << ", ";
-			if (!evalctx->getArgName(i).empty()) msg << evalctx->getArgName(i) << " = ";
-			ValuePtr val = evalctx->getArgValue(i);
-			if (val->type() == Value::STRING) {
-				msg << '"' << val->toString() << '"';
-			} else {
-				msg << val->toString();
-			}
-		}
+		msg << "ECHO: " << *evalctx;
 		PRINTB("%s", msg.str());
 	}
 		break;

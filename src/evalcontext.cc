@@ -54,6 +54,17 @@ void EvalContext::assignTo(Context &target) const
 	}
 }
 
+std::ostream &operator<<(std::ostream &stream, const EvalContext &ec)
+{
+	for (size_t i = 0; i < ec.numArgs(); i++) {
+		if (i > 0) stream << ", ";
+		if (!ec.getArgName(i).empty()) stream << ec.getArgName(i) << " = ";
+		ValuePtr val = ec.getArgValue(i);
+		stream << val->toEchoString();
+	}
+	return stream;
+}
+
 #ifdef DEBUG
 std::string EvalContext::dump(const AbstractModule *mod, const ModuleInstantiation *inst)
 {
