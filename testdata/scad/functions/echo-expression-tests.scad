@@ -24,6 +24,12 @@ echo(t5 = t5);
 t6 = echo(c = 2) a*b*c;
 echo(t6 = t6);
 
+t7 = echo() [a,b];
+echo(t7 = t7);
+
+t8 = echo() [for (i=[1:a]) [i,b]];
+echo(t8 = t8);
+
 function f1(x) = [ for (a = x) echo(a = a) a ];
 echo("f1(v) = ", f1(v));
 
