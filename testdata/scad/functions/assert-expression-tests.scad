@@ -23,3 +23,10 @@ echo(t5 = t5);
 d = c + 9;
 t6 = assert(condition = d + 5 > 15, message = str("value: ", d + 5)) a*b*c*d;
 echo(t6 = t6);
+
+t7 = assert(true) [a,b];
+echo(t7 = t7);
+
+t8 = assert(true) [for (i=[1:a]) [i,b]];
+echo(t8 = t8);
+
