@@ -123,7 +123,7 @@ UNICODE {U2}{U}|{U3}{U}{U}|{U4}{U}{U}{U}
 
 %%
 
-include[ \t\r\n>]*"<"	{ BEGIN(cond_include); filepath = filename = ""; }
+include[ \t\r\n]*"<"	{ BEGIN(cond_include); filepath = filename = ""; }
 <cond_include>{
 [^\t\r\n>]*"/"	{ filepath = yytext; }
 [^\t\r\n>/]+	{ filename = yytext; }
@@ -131,7 +131,7 @@ include[ \t\r\n>]*"<"	{ BEGIN(cond_include); filepath = filename = ""; }
 }
 
 
-use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
+use[ \t\r\n]*"<"	{ BEGIN(cond_use); }
 <cond_use>{
 [^\t\r\n>]+	{ filename = yytext; }
  ">"		{
