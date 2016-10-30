@@ -380,10 +380,10 @@ cleanup_mxe()
   rm -f ./debug/*
   rm -rf $DEPLOYDIR/openscad-$VERSION
   mkdir $DEPLOYDIR/openscad-$VERSION
-  touch -t 200012121010 $OPENSCADDIR/src/parser_yacc.h
-  touch -t 200012121010 $OPENSCADDIR/src/parser_yacc.cpp
-  touch -t 200012121010 $OPENSCADDIR/src/parser_yacc.hpp
-  touch -t 200012121010 $OPENSCADDIR/src/lexer_lex.cpp
+  #touch -t 200012121010 $OPENSCADDIR/src/parser_yacc.h
+  #touch -t 200012121010 $OPENSCADDIR/src/parser_yacc.cpp
+  #touch -t 200012121010 $OPENSCADDIR/src/parser_yacc.hpp
+  #touch -t 200012121010 $OPENSCADDIR/src/lexer_lex.cpp
 }
 
 call_make()

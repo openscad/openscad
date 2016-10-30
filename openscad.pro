@@ -76,7 +76,9 @@ win* {
   RC_FILE = openscad_win32.rc
   QMAKE_CXXFLAGS += -DNOGDI
 }
-
+contains(OSNAME,Msys): {
+  QMAKE_CXXFLAGS -= -pipe # ctrl-c doesn't like pipes
+}
 
 RESOURCES = openscad.qrc
 
@@ -95,8 +97,6 @@ CONFIG += boost
 CONFIG += gettext
 CONFIG += scintilla
 
-include(flex.pri)
-include(bison.pri)
 include(cgal.pri)
 include(opencsg.pri)
 include(opengl.pri)
@@ -111,8 +111,10 @@ PKGCONFIG += eigen3 glew fontconfig freetype2 harfbuzz glib-2.0 libxml-2.0
 contains(OSNAME,Msys): {
   PKGCONFIG += Qt5Core Qt5OpenGL Qt5Gui Qt5Concurrent
   LIBS += -lopengl32 -lglu32
+  CONFIG += moc
 }
 
+#CONFIG += qt
 QT += widgets core gui concurrent
 
 # VERSION is a qmake keyword, do not use
@@ -150,6 +152,7 @@ FORMS   += src/MainWindow.ui \
 
 LEXSOURCES += src/lexer.l
 YACCSOURCES += src/parser.y
+CONFIG += yacc lex
 
 HEADERS += src/AST.h \
            src/ModuleInstantiation.h \
