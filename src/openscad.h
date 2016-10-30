@@ -36,13 +36,3 @@ extern std::string commandline_commands;
 // The CWD when application started. We shouldn't change CWD, but until we stop
 // doing this, use currentdir to get the original CWD.
 extern std::string currentdir;
-
-// Version number without any patch level indicator
-extern std::string openscad_shortversionnumber;
-// The full version number, e.g. 2014.03, 2015.03-1, 2014.12.23
-extern std::string openscad_versionnumber;
-// Version used for display, typically without patchlevel indicator,
-// but may include git commit id for snapshot builds
-extern std::string openscad_displayversionnumber;
-// Version used for detailed display
-extern std::string openscad_detailedversionnumber;

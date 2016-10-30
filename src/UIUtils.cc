@@ -137,7 +137,7 @@ void UIUtils::openHomepageURL()
 
 static void openVersionedURL(QString url)
 {
-    QDesktopServices::openUrl(QUrl(url.arg(openscad_shortversionnumber.c_str())));
+    QDesktopServices::openUrl(QUrl(url.arg(PlatformUtils::shortversion().c_str())));
 }
 
 void UIUtils::openUserManualURL()

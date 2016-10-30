@@ -10,9 +10,16 @@ namespace fs=boost::filesystem;
 
 namespace PlatformUtils {
         extern const char *OPENSCAD_FOLDER_NAME;
-	std::string version();
+	extern std::string openscad_detailedversionnumber;
+
+	// Version number without any patch level indicator, 2014.03, 2015.03.23
+	std::string shortversion();
+	// Version year, month, day, will be size 2 if no day
 	std::vector<std::string> version_ymd();
+	// The full version number, e.g. 2014.03, 2015.03-1, 2014.12.23
 	std::string fullversion();
+	// Full number + git commit
+	std::string detailedversion();
 
 	void registerApplicationPath(const std::string &applicationpath);
 	std::string applicationPath();

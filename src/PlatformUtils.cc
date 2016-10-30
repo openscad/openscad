@@ -17,26 +17,32 @@ const char *PlatformUtils::OPENSCAD_FOLDER_NAME = "OpenSCAD";
 
 #define QUOTE(x__) # x__
 #define QUOTED(x__) QUOTE(x__)
-static std::string version()
+static std::string shortversion()
 {
-	return std::string(QUOTED(OPENSCAD_VERSION));
+	std::vector<std::string> ymd = PlatformUtils::version_ymd();
+	if (ymd.size()>2)
+		return( boost::format("%s.%s.%s") % ymd[0] % ymd[1] % ymd[2] ).str();
+	return( boost::format("%s.%s") % ymd[0] % ymd[1] ).str();
 }
 
 static std::vector<std::string> version_ymd()
 {
-	std::vector<std::string> ymd;
-	std::string ver = PlatformUtils::version();
-	boost::split(ymd, ver, boost::is_any_of("."));
-	return ymd; 
+	std::string ver = PlatformUtils::fullversion();
+	std::vector<std::string> ymd,tmp;
+	boost::split(tmp, ver, boost::is_any_of("-"));
+	boost::split(ymd, tmp[0], boost::is_any_of("."));
+	return ymd;
 }
 
-#ifndef OPENSCAD_COMMIT
-#define OPENSCAD_COMMIT
-#endif
 static std::string fullversion()
 {
+	return std::string(QUOTED(OPENSCAD_VERSION));
+}
+
+static std::string detailedversion()
+{
 	std::string commit = QUOTED(OPENSCAD_COMMIT);
-	return( boost::format("%s %s") % PlatformUtils::version() % commit).str();
+	return( boost::format("%s %s") % PlatformUtils::fullversion() % commit).str();
 }
 
 static std::string lookupResourcesPath()
