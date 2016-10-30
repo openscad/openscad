@@ -1378,6 +1378,7 @@ experimental_tests(echotest_list-comprehensions-experimental
                    throwntogethertest_sphere20face
                    throwntogethertest_split_pyramid
                    throwntogethertest_tetra_multicolor
+                   dumptest_assert-tests
                    echotest_assert-tests
                    cgalpngtest_assert-tests
                    opencsgtest_assert-tests
