@@ -7,7 +7,7 @@
 # former. See src/winconsole.c for more details.
 #
 # Qmake doesn't like building two binaries in the same directory so we
-# depend on release-common.sh to call qmake twice and package the file
+# depend on makepkg.sh to call qmake twice and package the file
 # properly
 
 TEMPLATE = app
@@ -21,3 +21,8 @@ SOURCES = winconsole.c
 CONFIG -= qt
 CONFIG += console # sets IMAGE_SUBSYSTEM_WINDOWS_CUI in binary
 QMAKE_POST_LINK = cd $(DESTDIR) && mv winconsole.exe openscad.com
+
+comfile.path = $$PREFIX/bin/
+comfile.extra = mv $$DESTDIR/openscad.com $$PREFIX/bin/openscad.com
+INSTALLS += comfile
+

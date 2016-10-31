@@ -555,7 +555,7 @@ man.extra = cp -f $$PWD/doc/openscad.1 \"\$(INSTALL_ROOT)$${man.path}/$$OPENSCAD
 INSTALLS += man
 
 contains(OSNAME,Msys) {
-  !exists(objects/openscad_win32_res.o) {
+  !exists(./objects/openscad_win32_res.o) {
     message("please ignore WARNING: Failure to find objects/openscad_win32_res.o and proceed to run make")
   }
 }

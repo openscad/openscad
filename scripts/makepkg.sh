@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# This script creates a package of OpenSCAD for easy installation and 
+# This script creates a package of OpenSCAD for easy installation and
 # deinstallation.
 #
 # Mac                       .dmg
@@ -8,9 +8,10 @@
 # Windows MSYS              .exe/.zip
 # Windows cross build MXE   .exe/.zip
 #
-# The script will create a file called openscad-<versionstring>.<extension>
-# under $DEPLOYDIR which is typically openscad/bin/host-triple 
-# This means you can build packages for multiple targets within one tree.
+# It uses openscad/buildtmp/host-triple for temporary build files.
+# It installs packaged files into opensacd/bin/host-triple
+# host-triple is a gcc-style identified for the machine openscad will run on
+# such as i686-linux-gnu
 #
 # Usage: make-pkg.sh [-dryrun]
 #  -dryrun  Quickly build a dummy openscad.exe file to test this release script
@@ -46,18 +47,18 @@ update_mcad()
 
 verify_binary_generic()
 {
-  run ls $DEPLOYDIR/openscad
+  run ls $BUILDDIR/openscad
 }
 
 verify_binary_darwin()
 {
-  run ls $DEPLOYDIR/OpenSCAD.app/Contents/MacOS/OpenSCAD
+  run ls $BUILDDIR/OpenSCAD.app/Contents/MacOS/OpenSCAD
 }
 
 verify_binary_mxe()
 {
-  run ls $DEPLOYDIR/openscad.com
-  run ls $DEPLOYDIR/openscad.exe
+  run ls $BUILDDIR/openscad.com
+  run ls $BUILDDIR/openscad.exe
 }
 
 verify_binary_linux()
@@ -200,7 +201,7 @@ create_package_mxe_shared()
   flprefix=$MXE_TARGET_DIR/bin
   echo Copying dlls for shared library build
   echo from $flprefix
-  echo to $DEPLOYDIR/release
+  echo to $BUILDDIR/release
   flist=
   # fl="$fl opengl.dll" # use Windows version?
   # fl="$fl libmpfr.dll" # does not exist
@@ -244,7 +245,7 @@ create_package_mxe_shared()
   for dllfile in $fl; do
     if [ -e $flprefix/$dllfile ]; then
   echo $flprefix/$dllfile
-  cp $flprefix/$dllfile $DEPLOYDIR/release/
+  cp $flprefix/$dllfile $BUILDDIR/release/
     else
   echo cannot find $flprefix/$dllfile
   echo stopping build.
@@ -350,7 +351,7 @@ create_package_linux()
 {
   cd $OPENSCADDIR
   ./scripts/makepkg-deb.sh
-  cd $DEPLOYDIR
+  cd $BUILDDIR
 }
 
 call_qmake()
@@ -378,8 +379,8 @@ cleanup_mxe()
   make clean
   rm -f ./release/*
   rm -f ./debug/*
-  rm -rf $DEPLOYDIR/openscad-$VERSION
-  mkdir $DEPLOYDIR/openscad-$VERSION
+  rm -rf $BUILDDIR/openscad-$VERSION
+  mkdir $BUILDDIR/openscad-$VERSION
   #touch -t 200012121010 $OPENSCADDIR/src/parser_yacc.h
   #touch -t 200012121010 $OPENSCADDIR/src/parser_yacc.cpp
   #touch -t 200012121010 $OPENSCADDIR/src/parser_yacc.hpp
@@ -398,6 +399,7 @@ call_make_mxe()
   # make console pipe-able openscad.com - see winconsole.pro for info
   run qmake $OPENSCADDIR/winconsole/winconsole.pro
   run make
+  run make install
 }
 
 call_make_msys()
@@ -407,12 +409,15 @@ call_make_msys()
 
 setup_dirs()
 {
-  RESOURCES_DIR=$DEPLOYDIR/openscad-$VERSION
+  BUILDDIR=$OPENSCADDIR/buildtmp/$HOST_TRIPLE
+  BUILDDIR=$OPENSCADDIR/bin/$HOST_TRIPLE
+  RESOURCES_DIR=$BUILDDIR/openscad-$VERSION
 }
 
 setup_dirs_darwin()
 {
-  RESOURCES_DIR=$DEPLOYDIR/OpenSCAD.app/Contents/Resources
+  setup_dirs
+  RESOURCES_DIR=$BUILDDIR/OpenSCAD.app/Contents/Resources
 }
 
 
@@ -453,29 +458,26 @@ copy_resources()
   find  ./locale -print -depth | grep ".mo" | cpio -pud $RESOURCES_DIR
   chmod -R u=rwx,go=r,+X $RESOURCES_DIR/libraries
   chmod -R 644 $RESOURCES_DIR/examples
-  cd $DEPLOYDIR
+  cd $BUILDDIR
 }
 
 
 if [ ! $OPENSCADDIR ]; then
   echo please run scripts/setenv.sh first
 fi
-if [ ! $DEPLOYDIR ]; then
+if [ ! $BUILDDIR ]; then
   echo please run scripts/setenv.sh first
 fi
 
-if [ ! -d $DEPLOYDIR ]; then
-  mkdir -p $DEPLOYDIR
+if [ ! -d $BUILDDIR ]; then
+  mkdir -p $BUILDDIR
 fi
-
-OPENSCAD_COMMIT=`git log -1 --pretty=format:"%h"`
-VERSION=`date "+%Y.%m.%d"`
-export_and_print_vars OPENSCAD_COMMIT VERSION
 
 run update_mcad
 run check_prereq
+run setup_dirs
 
-cd $DEPLOYDIR
+cd $BUILDDIR
 
 QT_SELECT=5
 ZIP="zip"
@@ -484,7 +486,6 @@ ZIPARGS="-r -q"
 run cleanup
 run call_qmake
 run call_make
-run setup_dirs
 run copy_resources
 run copy_fonts
 run create_package
