@@ -2,8 +2,6 @@
 # MPFRDIR
 # BOOSTDIR
 # CGALDIR
-# EIGENDIR
-# GLEWDIR
 # OPENCSGDIR
 # OPENSCAD_LIBRARIES
 #
@@ -23,7 +21,7 @@ contains(OSNAME,Msys) {
   CONFIG=release
 }
 
-message("If you're building a Stable Release, use CONFIG=deploy")
+message("If you're building a Stable Release, please use CONFIG=deploy")
 CONFIG+=experimental
 DEFINES += ENABLE_EXPERIMENTAL
 macx: {
@@ -33,7 +31,7 @@ deploy {
   CONFIG-=experimental
   DEFINES-=ENABLE_EXPERIMENTAL
   macx: {
-    ICON = icons/OpenSCAD.icns
+    ICON = $$PWD/icons/OpenSCAD.icns
     CONFIG += sparkle
     QMAKE_RPATHDIR = @executable_path/../Frameworks
   }
@@ -115,14 +113,25 @@ contains(OSNAME,Msys): {
 
 QT += widgets core gui concurrent
 
-# VERSION is a qmake keyword, do not use
-isEmpty(OSCADVERSION) {
+# OPENSCAD_VERSION   format: yyyy.mm.dd.gitcommit
+# format for stable release: yyyy.mm-patchlevel
+# note - VERSION is a qmake keyword, do not use
+isEmpty(OPENSCAD_VERSION) {
   datecmd=date
   contains(OSNAME,Msys): datecmd=$$(MINGW_PREFIX)/../usr/bin/date
-  OSCADVERSION=$$system($$datecmd "+%Y.%m.%d")
+  YMD=$$system($$datecmd "+%Y.%m.%d")
+  COMMIT=$$system(git log -1 --pretty=format:"%h")
+  !isEmpty(COMMIT): COMMIT=".$$COMMIT"
+  OPENSCAD_VERSION=$$YMD$$COMMIT
 }
 DEFINES += OPENSCAD_VERSION=$$OPENSCAD_VERSION
-DEFINES += OPENSCAD_COMMIT=$$OPENSCAD_COMMIT
+
+# PKGNAME is for packaging and installation. 
+# For ordinary dev build it is the full version. For Stable Release, it
+# is simply 'openscad'.
+# example as a pathname: /usr/local/share/openscad-2016.01.20.f43f/locale
+OPENSCAD_PKGNAME = openscad-$$OPENSCAD_VERSION
+deploy: $$OPENSCAD_PKGNAME = openscad
 
 # mingw has to come after other items so OBJECT_DIRS will work properly
 
@@ -488,11 +497,11 @@ win32 {
 QMAKE_POST_LINK += $$POST_LINK_CMD
 
 # Create install targets for the languages defined in LINGUAS
-LINGUAS = $$cat(locale/LINGUAS)
-LOCALE_PREFIX = "$$PREFIX/share/$${FULLNAME}/locale"
+LINGUAS = $$cat($$_PRO_FILE_PWD_/locale/LINGUAS)
+LOCALE_PREFIX = "$$PREFIX/share/$$OPENSCAD_PKGNAME/locale"
 for(language, LINGUAS) {
-  catalogdir = locale/$$language/LC_MESSAGES
-  exists(locale/$${language}.po) {
+  catalogdir = $$_PRO_FILE_PWD_/locale/$$language/LC_MESSAGES
+  exists($$_PRO_FILE_PWD_/locale/$${language}.po) {
     # Use .extra and copy manually as the source path might not exist,
     # e.g. on a clean checkout. In that case qmake would not create
     # the needed targets in the generated Makefile.
@@ -501,47 +510,49 @@ for(language, LINGUAS) {
     translation_depends = translation_$${language}.depends
     $$translation_path = $$LOCALE_PREFIX/$$language/LC_MESSAGES/
     $$translation_extra = cp -f $${catalogdir}/openscad.mo \"\$(INSTALL_ROOT)$$LOCALE_PREFIX/$$language/LC_MESSAGES/openscad.mo\"
-    $$translation_depends = locale/$${language}.po
+    $$translation_depends = $$_PRO_FILE_PWD_/locale/$${language}.po
     INSTALLS += translation_$$language
   }
 }
 
-examples.path = "$$PREFIX/share/$${FULLNAME}/examples/"
-examples.files = examples/*
+examples.path = "$$PREFIX/share/$$OPENSCAD_PKGNAME/examples/"
+examples.files = $$PWD/examples/*
 INSTALLS += examples
 
-libraries.path = "$$PREFIX/share/$${FULLNAME}/libraries/"
-libraries.files = libraries/*
+libraries.path = "$$PREFIX/share/$$OPENSCAD_PKGNAME/libraries/"
+libraries.files = $$PWD/libraries/*
 INSTALLS += libraries
 
-fonts.path = "$$PREFIX/share/$${FULLNAME}/fonts/"
-fonts.files = fonts/*
+fonts.path = "$$PREFIX/share/$$OPENSCAD_PKGNAME/fonts/"
+fonts.files = $$PWD/fonts/*
 INSTALLS += fonts
 
-colorschemes.path = "$$PREFIX/share/$${FULLNAME}/color-schemes/"
-colorschemes.files = color-schemes/*
+colorschemes.path = "$$PREFIX/share/$$OPENSCAD_PKGNAME/color-schemes/"
+colorschemes.files = $$PWD/color-schemes/*
 INSTALLS += colorschemes
 
 applications.path = $$PREFIX/share/applications
-applications.extra = cat icons/openscad.desktop | sed -e \"'s/^Icon=openscad/Icon=$${FULLNAME}/; s/^Exec=openscad/Exec=$${FULLNAME}/'\" > \"\$(INSTALL_ROOT)$${applications.path}/$${FULLNAME}.desktop\"
+applications.extra = cat $$PWD/icons/openscad.desktop | sed -e \"'s/^Icon=openscad/Icon=$$OPENSCAD_PKGNAME/; s/^Version=1.0/Version=$$OPENSCAD_VERSION/; s/^Exec=openscad/Exec=$$OPENSCAD_PKGNAME/'\" > \"\$(INSTALL_ROOT)$${applications.path}/openscad.desktop\"
 INSTALLS += applications
 
 mimexml.path = $$PREFIX/share/mime/packages
-mimexml.extra = cp -f icons/openscad.xml \"\$(INSTALL_ROOT)$${mimexml.path}/$${FULLNAME}.xml\"
+mimexml.extra = cp -f $$PWD/icons/openscad.xml \"\$(INSTALL_ROOT)$${mimexml.path}/$$OPENSCAD_PKGNAME.xml\"
 INSTALLS += mimexml
 
 appdata.path = $$PREFIX/share/appdata
-appdata.extra = cp -f openscad.appdata.xml \"\$(INSTALL_ROOT)$${appdata.path}/$${FULLNAME}.appdata.xml\"
+appdata.extra = cp -f $$PWD/openscad.appdata.xml \"\$(INSTALL_ROOT)$${appdata.path}/$$OPENSCAD_PKGNAME.appdata.xml\"
 INSTALLS += appdata
 
+OPENSCAD_PNGICON=openscad.png
+deploy: OPENSCAD_PNGICON=openscad-nightly.png
+
 icons.path = $$PREFIX/share/pixmaps
-icons.extra = test -f icons/$${FULLNAME}.png && cp -f icons/$${FULLNAME}.png \"\$(INSTALL_ROOT)$${icons.path}/\" || cp -f icons/openscad.png \"\$(INSTALL_ROOT)$${icons.path}/$${FULLNAME}.png\"
+icons.extra = test -f $$PWD/icons/$$OPENSCAD_PNGICON && cp -f $$PWD/icons/$$OPENSCAD_PNGICON \"\$(INSTALL_ROOT)$${icons.path}/\"
 INSTALLS += icons
 
 man.path = $$PREFIX/share/man/man1
-man.extra = cp -f doc/openscad.1 \"\$(INSTALL_ROOT)$${man.path}/$${FULLNAME}.1\"
+man.extra = cp -f $$PWD/doc/openscad.1 \"\$(INSTALL_ROOT)$${man.path}/$$OPENSCAD_PKGNAME.1\"
 INSTALLS += man
-
 
 contains(OSNAME,Msys) {
   !exists(objects/openscad_win32_res.o) {
