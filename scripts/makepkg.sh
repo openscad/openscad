@@ -69,42 +69,6 @@ verify_binary_linux()
   fi
 }
 
-setup_directories_generic()
-{
-  bprefix=$BUILDDIR/openscad-$VERSION
-  EXAMPLESDIR=$bprefix/examples/
-  LIBRARYDIR=$bprefix/libraries/
-  FONTDIR=$bprefix/fonts/
-  TRANSLATIONDIR=$bprefix/locale/
-  COLORSCHEMESDIR=$bprefix/color-schemes/
-  if [ -e $bprefix ]; then
-    rm -rf $bprefix
-  fi
-  mkdir $bprefix
-}
-
-setup_directories_darwin()
-{
-  EXAMPLESDIR=OpenSCAD.app/Contents/Resources/examples
-  LIBRARYDIR=OpenSCAD.app/Contents/Resources/libraries
-  FONTDIR=OpenSCAD.app/Contents/Resources/fonts
-  TRANSLATIONDIR=OpenSCAD.app/Contents/Resources/locale
-  COLORSCHEMESDIR=OpenSCAD.app/Contents/Resources/color-schemes
-}
-
-copy_examples_generic()
-{
-  cd $OPENSCADDIR
-  echo $EXAMPLESDIR
-  mkdir -p $EXAMPLESDIR
-  rm -f examples.tar
-  tar cf examples.tar examples
-  ls -l examples.tar
-  cd $EXAMPLESDIR/.. && tar xf $OPENSCADDIR/examples.tar && cd $OPENSCADDIR
-  rm -f examples.tar
-  chmod -R 644 $EXAMPLESDIR/*/*
-}
-
 copy_fonts()
 {
   mkdir -p $FONTDIR
@@ -381,19 +345,15 @@ cleanup_mxe()
   rm -f ./debug/*
   rm -rf $BUILDDIR/openscad-$VERSION
   mkdir $BUILDDIR/openscad-$VERSION
-  #touch -t 200012121010 $OPENSCADDIR/src/parser_yacc.h
-  #touch -t 200012121010 $OPENSCADDIR/src/parser_yacc.cpp
-  #touch -t 200012121010 $OPENSCADDIR/src/parser_yacc.hpp
-  #touch -t 200012121010 $OPENSCADDIR/src/lexer_lex.cpp
 }
 
-call_make()
+call_make_install()
 {
   run make
   run make install
 }
 
-call_make_mxe()
+call_make_install_mxe()
 {
   run call_make
   # make console pipe-able openscad.com - see winconsole.pro for info
@@ -402,7 +362,7 @@ call_make_mxe()
   run make install
 }
 
-call_make_msys()
+call_make_install_msys()
 {
   call_make_mxe
 }
@@ -452,10 +412,10 @@ copy_fonts_mxe()
 copy_resources()
 {
   cd $OPENSCADDIR
-  find ./examples -print -depth | cpio -pud $RESOURCES_DIR
-  find ./color-schemes -print -depth | cpio -pud $RESOURCES_DIR
-  find  ./libraries -print -depth | grep -v ".git" | cpio -pud $RESOURCES_DIR
-  find  ./locale -print -depth | grep ".mo" | cpio -pud $RESOURCES_DIR
+  #find ./examples -print -depth | cpio -pud $RESOURCES_DIR
+  #find ./color-schemes -print -depth | cpio -pud $RESOURCES_DIR
+  #find  ./libraries -print -depth | grep -v ".git" | cpio -pud $RESOURCES_DIR
+  #find  ./locale -print -depth | grep ".mo" | cpio -pud $RESOURCES_DIR
   chmod -R u=rwx,go=r,+X $RESOURCES_DIR/libraries
   chmod -R 644 $RESOURCES_DIR/examples
   cd $BUILDDIR
@@ -476,6 +436,7 @@ fi
 run update_mcad
 run check_prereq
 run setup_dirs
+run cleanup
 
 cd $BUILDDIR
 
@@ -483,9 +444,10 @@ QT_SELECT=5
 ZIP="zip"
 ZIPARGS="-r -q"
 
-run cleanup
 run call_qmake
-run call_make
+run call_make_install
+
+echo copy resources - move to qmake
 run copy_resources
-run copy_fonts
+echo copy fonts needs to be put into qmake
 run create_package
