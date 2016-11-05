@@ -435,7 +435,8 @@ ValuePtr Assert::evaluate(const Context *context) const
 
 void Assert::print(std::ostream &stream) const
 {
-	stream << "assert(" << this->arguments << ") " << *expr;
+	stream << "assert(" << this->arguments << ")";
+	if (this->expr) stream << " " << *this->expr;
 }
 
 Echo::Echo(const AssignmentList &args, Expression *expr, const Location &loc)
@@ -459,7 +460,8 @@ ValuePtr Echo::evaluate(const Context *context) const
 
 void Echo::print(std::ostream &stream) const
 {
-	stream << "echo(" << this->arguments << ") " << *expr;
+	stream << "echo(" << this->arguments << ")";
+	if (this->expr) stream << " " << *this->expr;
 }
 
 Let::Let(const AssignmentList &args, Expression *expr, const Location &loc)
