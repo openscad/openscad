@@ -1,7 +1,6 @@
 #include "comment.h"
 #include "expression.h"
 #include "annotation.h"
-
 #include <string>
 #include <vector>
 
@@ -12,8 +11,61 @@ struct GroupInfo {
 
 typedef std::vector <GroupInfo> GroupList;
 
-    
-/*! 
+/*
+  Finds line to break stop parsing parsing parameters
+
+*/ 
+
+static int getLineToStop( const std::string &fulltext){
+  int lineNo=1;
+  bool inString=false;
+  for (unsigned int i=0; i<fulltext.length(); i++) {
+    // increase line number
+    if (fulltext[i] == '\n') {
+      lineNo++;
+      continue;
+    }
+
+    // skip escaped quotes inside strings
+    if (inString && fulltext.compare(i, 2, "\\\"") == 0) {
+      i++;
+      continue;
+    }
+
+    //start or end of string negate the checkpoint
+    if (fulltext[i] == '"') {
+      inString = !inString;
+      continue;
+    }
+
+    if (!inString && fulltext.compare(i, 2, "//") == 0) {
+      i+=2;
+      while (fulltext[i] != '\n') i++;
+      lineNo++;
+      continue;
+    }
+
+    //start of multi line comment if check is true
+    if (!inString && fulltext.compare(i, 2, "/*") == 0) {
+      i += 2;
+      // till */ every character is comment
+      while (fulltext.compare(i, 2, "*/") != 0) {
+        if(fulltext[i]=='\n'){
+            lineNo++;
+        }
+        i++;
+       }
+     }
+
+      if (fulltext[i]== '{') {
+         return lineNo; 
+      }
+  }
+  return lineNo;
+}
+
+
+/* 
   Finds the given line in the given source code text, and
   extracts the comment (excluding the "//" prefix)
 */
@@ -95,6 +147,50 @@ static std::string getDescription(const std::string &fulltext, int line)
 }
 
 /*
+ Create groups by parsing the multi line comment provided
+*/
+static GroupInfo createGroup(std::string comment,int lineNo)
+{
+      //store info related to group
+      GroupInfo groupInfo;
+      std::string finalGroupName; //Final group name
+      std::string groupName; //group name
+      bool isGroupName = false;
+      for (unsigned int it = 0; it < comment.length();it++) {
+
+        //Start of Group Name
+        if (comment[it] == '[') {
+          isGroupName = true;
+          continue;
+        }
+
+        //End of Group Name
+        if (comment[it] == ']') {
+          isGroupName = false;
+
+          //Setting of group name 
+          if (!finalGroupName.empty()) {
+            finalGroupName = finalGroupName + "-" + groupName;
+          } else {
+            finalGroupName = finalGroupName + groupName;
+          }
+          groupName.clear();
+          continue;
+        }
+
+        //collect characters if it belong to group name
+        if (isGroupName) {
+          groupName += comment[it];
+        }
+      }
+
+      groupInfo.commentString = finalGroupName;
+      groupInfo.lineNo = lineNo;
+   return groupInfo;
+}
+
+
+/*
   This function collect all groups of parameters described in the
   scad file.
 */
@@ -136,52 +232,25 @@ static GroupList collectGroups(const std::string &fulltext)
       //store comment
       std::string comment;
       i += 2;
+      bool isGroup=true;
       // till */ every character is comment
       while (fulltext.compare(i, 2, "*/") != 0) {
+        if(fulltext[i]=='\n'){
+            lineNo++;
+            isGroup=false; 
+        }
         comment += fulltext[i];
         i++;
       }
 
-      //store info related to group
-      GroupInfo groupInfo;
-      std::string finalGroupName; //Final group name
-      std::string groupName; //group name
-      bool isGroupName = false;
-      for (unsigned int it = 0; it < comment.length();it++) {
-            
-        //Start of Group Name
-        if (comment[it] == '[') {
-          isGroupName = true;
-          continue;
-        }
-                
-        //End of Group Name
-        if (comment[it] == ']') {
-          isGroupName = false;
-                    
-          //Setting of group name 
-          if (!finalGroupName.empty()) {
-            finalGroupName = finalGroupName + "-" + groupName;
-          } else {
-            finalGroupName = finalGroupName + groupName;
-          }
-          groupName.clear();
-          continue;
-        }
-                
-        //collect characters if it belong to group name
-        if (isGroupName) {
-          groupName += comment[it];
-        }                
-      }
-            
-      groupInfo.commentString = finalGroupName;
-      groupInfo.lineNo = lineNo;
-      groupList.push_back(groupInfo);
+      if(isGroup)
+      groupList.push_back(createGroup(comment,lineNo));
     }
   }
   return groupList;
 }
+
+
 
 /*!
   Insert Parameters in AST of given scad file
@@ -191,14 +260,15 @@ void CommentParser::collectParameters(const char *fulltext, FileModule *root_mod
 {
   // Get all groups of parameters
   GroupList groupList = collectGroups(std::string(fulltext));
-
+  int parseTill=getLineToStop(fulltext);
   // Extract parameters for all literal assignments
   for (auto &assignment : root_module->scope.assignments) {
     if (!assignment.expr.get()->isLiteral()) continue; // Only consider literals
-
+ 
     // get location of assignment node 
     int firstLine = assignment.location().firstLine();
 
+    if(firstLine>=parseTill) continue;
     // making list to add annotations
     AnnotationList *annotationList = new AnnotationList();
          

@@ -26,6 +26,19 @@ width=4;
 holeSize=3;
 
 CenterCandleWidth=4;
+
+/*[Properties of support]*/
+
+heightOfSupport=3;
+widthOfSupport=3;
+
+/*[Properties of Ring]*/
+
+heightOfRing=4;
+
+widthOfRing=23;
+
+
 //Create center candle
 translate([0,0,length-candleSize/2])
 if(centerCandle){
@@ -47,10 +60,6 @@ translate([0,0,length-candleSize/2]){
     }
 }
 
-/*[Properties of support]*/
-
-heightOfSupport=3;
-widthOfSupport=3;
 
 //Base of candle stand
 for (a = [0 : count - 1]) {
@@ -59,12 +68,6 @@ for (a = [0 : count - 1]) {
         cube([radius, widthOfSupport, heightOfSupport]);
     }
 }
-
-/*[Properties of Ring]*/
-
-heightOfRing=4;
-
-widthOfRing=23;
 
 //make ring with candle holders
 module make(radius, count,candleSize,length){
