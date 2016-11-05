@@ -170,6 +170,8 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
 "if"		return TOK_IF;
 "else"		return TOK_ELSE;
 "let"		return TOK_LET;
+"assert"	return TOK_ASSERT;
+"echo"	        return TOK_ECHO;
 "for"		return TOK_FOR;
 "each"		return TOK_EACH;
 
