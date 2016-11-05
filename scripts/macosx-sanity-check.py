@@ -30,29 +30,26 @@ def usage():
 # Returns the full path to the library or None if the library is not found.
 def lookup_library(file):
     found = None
-    if not re.match("/", file):
-        if re.search("@rpath", file):
-            file = re.sub("^@rpath", lc_rpath, file)
-            if os.path.exists(file): found = file
-            if DEBUG: print "Lib in @rpath found: " + str(file)
-        if (not found):
-            if re.search("@executable_path", file):
-                abs = re.sub("^@executable_path", executable_path, file)
+    if re.search("@rpath", file):
+        file = re.sub("^@rpath", lc_rpath, file)
+        if os.path.exists(file): found = file
+        if DEBUG: print "@rpath resolved: " + str(file)
+    if not found:
+        if re.search("\.app/", file):
+            found = file
+            if DEBUG: print "App found: " + str(found)
+        elif re.search("@executable_path", file):
+            abs = re.sub("^@executable_path", executable_path, file)
+            if os.path.exists(abs): found = abs
+            if DEBUG: print "Lib in @executable_path found: " + str(found)
+        elif re.search("\.framework/", file):
+            found = os.path.join("/Library/Frameworks", file)
+            if DEBUG: print "Framework found: " + str(found)
+        else:
+            for path in os.getenv("DYLD_LIBRARY_PATH").split(':'):
+                abs = os.path.join(path, file)
                 if os.path.exists(abs): found = abs
-                if DEBUG: print "Lib in @executable_path found: " + str(found)
-            elif re.search("\.app/", file):
-                found = file
-                if DEBUG: print "App found: " + str(found)
-            elif re.search("\.framework/", file):
-                found = os.path.join("/Library/Frameworks", file)
-                if DEBUG: print "Framework found: " + str(found)
-            else:
-                for path in os.getenv("DYLD_LIBRARY_PATH").split(':'):
-                    abs = os.path.join(path, file)
-                    if os.path.exists(abs): found = abs
-                    if DEBUG: print "Library found: " + str(found)
-    else:
-        found = file
+                if DEBUG: print "Library found: " + str(found)
     return found
 
 # Returns a list of dependent libraries, excluding system libs
@@ -163,7 +160,6 @@ if __name__ == '__main__':
 
     for dep in processed:
        if DEBUG: print "Validating: " + dep
-#        print "     " + str(processed[dep])
        if not validate_lib(dep):
            print "..required by " + str(processed[dep])
            error = True
