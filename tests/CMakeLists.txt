@@ -1034,7 +1034,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
       if (${EXPERIMENTAL} EQUAL -1)
         set(EXPERIMENTAL_OPTION "")
       else()
-        set(EXPERIMENTAL_OPTION "--enable=assert" "--enable=lc-each" "--enable=lc-else" "--enable=lc-for-c" "--enable=amf-import")
+        set(EXPERIMENTAL_OPTION "--enable=assert" "--enable=echo" "--enable=lc-each" "--enable=lc-else" "--enable=lc-for-c" "--enable=amf-import")
       endif()
 
       # 2D tests should be viewed from the top, not an angle.
@@ -1380,6 +1380,7 @@ experimental_tests(echotest_list-comprehensions-experimental
                    throwntogethertest_sphere20face
                    throwntogethertest_split_pyramid
                    throwntogethertest_tetra_multicolor
+                   dumptest_assert-tests
                    echotest_assert-tests
                    cgalpngtest_assert-tests
                    opencsgtest_assert-tests

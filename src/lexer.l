@@ -123,7 +123,7 @@ UNICODE {U2}{U}|{U3}{U}{U}|{U4}{U}{U}{U}
 
 %%
 
-include[ \t\r\n>]*"<"	{ BEGIN(cond_include); filepath = filename = ""; }
+include[ \t\r\n]*"<"	{ BEGIN(cond_include); filepath = filename = ""; }
 <cond_include>{
 [^\t\r\n>]*"/"	{ filepath = yytext; }
 [^\t\r\n>/]+	{ filename = yytext; }
@@ -131,7 +131,7 @@ include[ \t\r\n>]*"<"	{ BEGIN(cond_include); filepath = filename = ""; }
 }
 
 
-use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
+use[ \t\r\n]*"<"	{ BEGIN(cond_use); }
 <cond_use>{
 [^\t\r\n>]+	{ filename = yytext; }
  ">"		{
@@ -170,6 +170,8 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
 "if"		return TOK_IF;
 "else"		return TOK_ELSE;
 "let"		return TOK_LET;
+"assert"	return TOK_ASSERT;
+"echo"	        return TOK_ECHO;
 "for"		return TOK_FOR;
 "each"		return TOK_EACH;
 
@@ -208,17 +210,18 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
 \\x[0-7]{H}             { unsigned long i = strtoul(lexertext + 2, NULL, 16); stringcontents += (i == 0 ? ' ' : (unsigned char)(i & 0xff)); }
 \\u{H}{4}|\\U{H}{6}     { char buf[8]; to_utf8(lexertext + 2, buf); stringcontents += buf; }
 [^\\\n\"]		{ stringcontents += lexertext; }
+[\n\r]		        { yycolumn = 1; }
 \"			{ BEGIN(INITIAL);
 			parserlval.text = strdup(stringcontents.c_str());
 			return TOK_STRING; }
 }
 
 [\t ]                   /* whitespace */
-[\n\r]                  { yycolumn = 1; }
+[\n\r]
 
 \/\/ BEGIN(cond_lcomment);
 <cond_lcomment>{
-\n                      { BEGIN(INITIAL); }
+\n                      { BEGIN(INITIAL); yycolumn = 1; }
 {UNICODE}               { parser_error_pos -= strlen(lexertext) - 1; }
 [^\n]
 }

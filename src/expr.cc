@@ -438,6 +438,8 @@ Expression * FunctionCall::create(const std::string &funcname, const AssignmentL
 {
 	if (funcname == "assert" && Feature::ExperimentalAssertExpression.is_enabled()) {
 		return new Assert(arglist, expr, loc);
+	} else if (funcname == "echo" && Feature::ExperimentalEchoExpression.is_enabled()) {
+		return new Echo(arglist, expr, loc);
 	} else if (funcname == "let") {
 		return new Let(arglist, expr, loc);
 	}
@@ -465,7 +467,33 @@ ValuePtr Assert::evaluate(const Context *context) const
 
 void Assert::print(std::ostream &stream) const
 {
-	stream << "assert(" << this->arguments << ") " << *expr;
+	stream << "assert(" << this->arguments << ")";
+	if (this->expr) stream << " " << *this->expr;
+}
+
+Echo::Echo(const AssignmentList &args, Expression *expr, const Location &loc)
+	: Expression(loc), arguments(args), expr(expr)
+{
+
+}
+
+ValuePtr Echo::evaluate(const Context *context) const
+{
+	ExperimentalFeatureException::check(Feature::ExperimentalEchoExpression);
+
+	std::stringstream msg;
+	EvalContext echo_context(context, this->arguments);
+	msg << "ECHO: " << echo_context;
+	PRINTB("%s", msg.str());
+
+	ValuePtr result = expr ? expr->evaluate(context) : ValuePtr::undefined;
+	return result;
+}
+
+void Echo::print(std::ostream &stream) const
+{
+	stream << "echo(" << this->arguments << ")";
+	if (this->expr) stream << " " << *this->expr;
 }
 
 Let::Let(const AssignmentList &args, Expression *expr, const Location &loc)

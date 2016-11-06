@@ -20,6 +20,7 @@ Feature::list_t Feature::feature_list;
  * context.
  */
 const Feature Feature::ExperimentalAssertExpression("assert", "Enable <code>assert</code>.");
+const Feature Feature::ExperimentalEchoExpression("echo", "Enable <code>echo</code> expression.");
 const Feature Feature::ExperimentalEachExpression("lc-each", "Enable <code>each</code> expression in list comprehensions.");
 const Feature Feature::ExperimentalElseExpression("lc-else", "Enable <code>else</code> expression in list comprehensions.");
 const Feature Feature::ExperimentalForCExpression("lc-for-c", "Enable C-style <code>for</code> expression in list comprehensions.");

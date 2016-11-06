@@ -43,7 +43,7 @@ PACKAGES=(
     "glew 1.13.0"
     "gettext 0.19.8"
     "libffi 3.2.1"
-    "glib2 2.46.1"
+    "glib2 2.50.1"
     "opencsg 1.4.2"
     "freetype 2.6.3"
     "ragel 6.9"
@@ -216,6 +216,8 @@ build_qt5()
   fi
   tar xzf qt-everywhere-opensource-src-$version.tar.gz
   cd qt-everywhere-opensource-src-$version
+  patch -d qtbase -p1 < $OPENSCADDIR/patches/qt5/QTBUG-56004.patch
+  patch -d qtbase -p1 < $OPENSCADDIR/patches/qt5/QTBUG-56004b.patch
   if ! $USING_CXX11; then
     QT_EXTRA_FLAGS="-no-c++11"
   fi
@@ -251,6 +253,7 @@ build_qscintilla()
   fi
   tar xzf QScintilla_gpl-$version.tar.gz
   cd QScintilla_gpl-$version/Qt4Qt5
+  patch -p2 < $OPENSCADDIR/patches/QScintilla-2.9.3-xcode8.patch
   qmake QMAKE_CXXFLAGS+="$CXXSTDFLAGS" QMAKE_LFLAGS+="$CXXSTDFLAGS" qscintilla.pro
   make -j"$NUMCPU" install
   install_name_tool -id @rpath/libqscintilla2.dylib $DEPLOYDIR/lib/libqscintilla2.dylib
@@ -552,7 +555,7 @@ build_freetype()
   PKG_CONFIG_LIBDIR="$DEPLOYDOR/lib/pkgconfig" ./configure --prefix="$DEPLOYDIR" CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN $extra_config_flags
   make -j"$NUMCPU"
   make install
-  install_name_tool -id @rpath/libfreetype.dylib $DEPLOYDIR/lib/libfreetype.dylib
+  install_name_tool -id $DEPLOYDIR/lib/libfreetype.dylib $DEPLOYDIR/lib/libfreetype.dylib
 }
  
 check_libzip()
@@ -595,10 +598,10 @@ build_libxml2()
   fi
   tar xzf "libxml2-$version.tar.gz"
   cd "libxml2-$version"
-  ./configure --prefix="$DEPLOYDIR" --with-zlib=/usr -with-lzma --without-ftp --without-http --without-python CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN
+  ./configure --prefix="$DEPLOYDIR" --with-zlib=/usr --without-lzma --without-ftp --without-http --without-python CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN
   make -j$NUMCPU
   make install
-  install_name_tool -id @rpath/libxml2.dylib $DEPLOYDIR/lib/libxml2.dylib
+  install_name_tool -id $DEPLOYDIR/lib/libxml2.dylib $DEPLOYDIR/lib/libxml2.dylib
 }
 
 check_fontconfig()
@@ -667,10 +670,10 @@ build_gettext()
   tar xzf "gettext-$version.tar.gz"
   cd "gettext-$version"
 
-  ./configure --prefix="$DEPLOYDIR" CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN
+  ./configure --with-included-glib --prefix="$DEPLOYDIR" CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN
   make -j$NUMCPU
   make install
-  install_name_tool -id @rpath/libintl.dylib $DEPLOYDIR/lib/libintl.dylib
+  install_name_tool -id $DEPLOYDIR/lib/libintl.dylib $DEPLOYDIR/lib/libintl.dylib
 }
 
 check_glib2()
