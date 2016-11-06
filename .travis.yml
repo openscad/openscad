@@ -22,7 +22,7 @@ notifications:
     channels:
       - "chat.freenode.net#openscad"
     on_success: change
-    use_notice: true
+    use_notice: false
     skip_join: true
 
 before_install:
