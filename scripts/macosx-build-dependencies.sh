@@ -698,7 +698,7 @@ build_glib2()
   cd "glib-$version"
 
   export PKG_CONFIG_PATH="$DEPLOYDIR/lib/pkgconfig"
-  ./configure --disable-gtk-doc --disable-man --prefix="$DEPLOYDIR" CFLAGS="-I$DEPLOYDIR/include -mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-L$DEPLOYDIR/lib -mmacosx-version-min=$MAC_OSX_VERSION_MIN"
+  ./configure --disable-gtk-doc --disable-man --without-pcre --prefix="$DEPLOYDIR" CFLAGS="-I$DEPLOYDIR/include -mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-L$DEPLOYDIR/lib -mmacosx-version-min=$MAC_OSX_VERSION_MIN"
   unset PKG_CONFIG_PATH
   make -j$NUMCPU
   make install
