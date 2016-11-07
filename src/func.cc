@@ -522,7 +522,7 @@ ValuePtr builtin_asc(const Context *, const EvalContext *evalctx)
 		const glong len = g_utf8_strlen(ptr, -1);
 		for (;*ptr && len > 0;ptr = g_utf8_next_char(ptr)) {
 			const gunichar c = g_utf8_get_char(ptr);
-			result.push_back(Value((double)c));
+			result.push_back(ValuePtr((double)c));
 		}
 	}
 
