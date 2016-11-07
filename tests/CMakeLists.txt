@@ -1174,7 +1174,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/string-indexing.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/string-unicode.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/chr-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/asc-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/ord-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/vector-values.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/search-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/search-tests-unicode.scad
