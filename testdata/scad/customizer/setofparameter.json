@@ -1,0 +1,41 @@
+{
+    "parameterSets":
+    {
+        "firstSet":
+        {
+            "Labeled_value": " \/*New *\/ ",
+            "Labeled_values": "100",
+            "Numbers": "1",
+            "Spinbox": "35",
+            "String": "hello",
+            "Strings": "foo",
+            "Variable": "false",
+            "Vector": "[2, 34, 45, 12, 3, 56]",
+            "Vector2": "[12,4, 45, 23]",
+            "slider": "38",
+            "stepSlider": "12",
+            "stringVector":"[hello, new, 12]"
+        },
+        "wrongSetValues":
+        {
+            "Labeled_value": "S new",
+            "Labeled_values": "wrong type",
+            "Numbers": "2",
+            "Spinbox": "5",
+            "String": "1234",
+            "Strings": "fo",
+            "Variable": "true",
+            "Vector": "12, 34, 44, 43, 2, 23",
+            "Vector2": "[12, 34, 45, 23]",
+            "slider": "34",
+            "stepSlider": "2"
+        },
+        "thirdSet":
+        {
+            "Labeled_value":"S new",
+            "non existing":"value", 
+            "nonparameter" : "second",
+            "stringVector":"[ \" hello\",\" new \"]"
+        }
+    }
+}

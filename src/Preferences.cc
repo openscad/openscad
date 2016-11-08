@@ -271,6 +271,7 @@ void Preferences::featuresCheckBoxToggled(bool state)
 	feature->enable(state);
 	QSettings settings;
 	settings.setValue(QString("feature/%1").arg(QString::fromStdString(feature->get_name())), state);
+	emit ExperimentalChanged();
 }
 
 /**

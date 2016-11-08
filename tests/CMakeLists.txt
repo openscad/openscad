@@ -747,7 +747,9 @@ set(CORE_SOURCES
   ../src/libsvg/svgpage.cc
   ../src/libsvg/transformation.cc
   ../src/libsvg/util.cc
-  ../src/clipper-utils.cc 
+  ../src/clipper-utils.cc
+  ../src/assignment.cc
+  ../src/annotation.cc 
   ../src/polyclipping/clipper.cpp
   ../src/${PLATFORMUTILS_SOURCE}
   ${FLEX_OpenSCADlexer_OUTPUTS}
@@ -1664,6 +1666,23 @@ add_failing_test(offfailedtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DI
 # Add experimental tests
 #
 
+#
+# Customizer tests
+#
+
+add_cmdline_test(customizertest EXE ${OPENSCAD_BINPATH} ARGS --enable=customizer -o SUFFIX ast FILES
+                 ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/description.scad
+                 ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/parameter.scad
+                 ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/allmodulescomment.scad
+                 ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/allfunctionscomment.scad
+                 ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/allexpressionscomment.scad
+                 ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/group.scad
+                 )
+
+add_cmdline_test(customizertest-first EXE ${OPENSCAD_BINPATH} ARGS --enable=customizer -p ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/setofparameter.json -P firstSet -o SUFFIX ast FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/setofparameter.scad)
+add_cmdline_test(customizertest-wrong EXE ${OPENSCAD_BINPATH} ARGS --enable=customizer -p ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/setofparameter.json -P wrongSetValues -o SUFFIX ast FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/setofparameter.scad)
+add_cmdline_test(customizertest-incomplete EXE ${OPENSCAD_BINPATH} ARGS --enable=customizer -p ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/setofparameter.json -P thirdSet -o SUFFIX ast FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/setofparameter.scad)
+add_cmdline_test(customizertest-imgset EXE ${OPENSCAD_BINPATH} ARGS --enable=customizer -p ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/setofparameter.json -P imagine -o SUFFIX ast FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/setofparameter.scad)            
 # Tests using the actual OpenSCAD binary
 
 # non-ASCII filenames

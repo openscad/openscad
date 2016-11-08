@@ -225,7 +225,9 @@ FORMS   += src/MainWindow.ui \
            src/FontListDialog.ui \
            src/ProgressWidget.ui \
            src/launchingscreen.ui \
-           src/LibraryInfoDialog.ui
+           src/LibraryInfoDialog.ui \
+           src/parameter/ParameterWidget.ui \
+           src/parameter/ParameterEntryWidget.ui
 
 # AST nodes
 win* {
@@ -243,14 +245,47 @@ HEADERS += src/AST.h \
            src/expression.h \
            src/function.h \
            src/module.h \           
-           src/UserModule.h
+           src/UserModule.h \
 
 SOURCES += src/AST.cc \
            src/ModuleInstantiation.cc \
            src/expr.cc \
            src/function.cc \
            src/module.cc \
-           src/UserModule.cc
+           src/UserModule.cc \
+           src/annotation.cc \
+           src/assignment.cc
+
+# Comment parser
+FLEX = src/comment_lexer.l
+BISON = src/comment_parser.y
+
+flexs.name = Flex ${QMAKE_FILE_IN}
+flexs.input = FLEX
+flexs.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}.cpp
+flexs.commands = flex -o${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}.cpp ${QMAKE_FILE_IN}
+flexs.CONFIG += target_predeps
+flexs.variable_out = GENERATED_SOURCES
+silent:flexs.commands = @echo Lex ${QMAKE_FILE_IN} && $$flexs.commands
+QMAKE_EXTRA_COMPILERS += flexs
+
+bison.name = Bison ${QMAKE_FILE_IN}
+biso.input = BISON
+biso.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}.cpp
+biso.commands = bison -d -o ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}.cpp ${QMAKE_FILE_IN}
+biso.commands += && if [[ -e ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}_yacc.hpp ]] ; then mv ${QMAKE_FILE_PATH}/${QMAKE_FILE_BASE}.hpp ${QMAKE_FILE_PATH}/${QMAKE_FILE_BASE}.h ; fi
+biso.CONFIG += target_predeps
+biso.variable_out = GENERATED_SOURCES
+silent:biso.commands = @echo Bison ${QMAKE_FILE_IN} && $$biso.commands
+QMAKE_EXTRA_COMPILERS += biso
+
+biso_header.input = BISON
+biso_header.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}.h
+biso_header.commands = bison -d -o ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}.cpp ${QMAKE_FILE_IN}
+biso_header.commands += && if [ -e ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}.hpp ]; then mv ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}.hpp ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}.h ; fi
+biso_header.CONFIG += target_predeps no_link
+silent:biso_header.commands = @echo Bison ${QMAKE_FILE_IN} && $$biso.commands
+QMAKE_EXTRA_COMPILERS += biso_header
 
 HEADERS += src/version_check.h \
            src/ProgressWidget.h \
@@ -351,7 +386,22 @@ HEADERS += src/version_check.h \
            src/AutoUpdater.h \
            src/launchingscreen.h \
            src/legacyeditor.h \
-           src/LibraryInfoDialog.h
+           src/LibraryInfoDialog.h \
+           \
+           src/comment.h\
+           \
+           src/parameter/ParameterWidget.h \
+           src/parameter/parameterobject.h \
+           src/parameter/parameterextractor.h \
+           src/parameter/parametervirtualwidget.h \
+           src/parameter/parameterspinbox.h \
+           src/parameter/parametercombobox.h \
+           src/parameter/parameterslider.h \
+           src/parameter/parametercheckbox.h \
+           src/parameter/parametertext.h \
+           src/parameter/parametervector.h \
+           src/parameter/groupwidget.h \
+           src/parameter/parameterset.h
 
 SOURCES += \
            src/libsvg/libsvg.cc \
@@ -475,7 +525,23 @@ SOURCES += \
            src/FontListTableView.cc \
            src/launchingscreen.cc \
            src/legacyeditor.cc \
-           src/LibraryInfoDialog.cc
+           src/LibraryInfoDialog.cc\
+           \
+           src/comment.cpp \
+           \
+           src/parameter/ParameterWidget.cc\
+           src/parameter/parameterobject.cpp \
+           src/parameter/parameterextractor.cpp \
+           src/parameter/parameterspinbox.cpp \
+           src/parameter/parametercombobox.cpp \
+           src/parameter/parameterslider.cpp \
+           src/parameter/parametercheckbox.cpp \
+           src/parameter/parametertext.cpp \
+           src/parameter/parametervector.cpp \
+           src/parameter/groupwidget.cpp \
+           src/parameter/parameterset.cpp \
+           src/parameter/parametervirtualwidget.cpp
+
 
 # ClipperLib
 SOURCES += src/polyclipping/clipper.cpp

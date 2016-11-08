@@ -21,6 +21,8 @@ public:
         static const Feature ExperimentalForCExpression;
         static const Feature ExperimentalAmfImport;
         static const Feature ExperimentalSvgImport;
+        static const Feature ExperimentalCustomizer;
+
 
 	const std::string& get_name() const;
 	const std::string& get_description() const;

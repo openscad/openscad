@@ -26,6 +26,8 @@ const Feature Feature::ExperimentalElseExpression("lc-else", "Enable <code>else<
 const Feature Feature::ExperimentalForCExpression("lc-for-c", "Enable C-style <code>for</code> expression in list comprehensions.");
 const Feature Feature::ExperimentalAmfImport("amf-import", "Enable AMF import.");
 const Feature Feature::ExperimentalSvgImport("svg-import", "Enable SVG import.");
+const Feature Feature::ExperimentalCustomizer("customizer", "Enable Customizer");
+
 
 Feature::Feature(const std::string &name, const std::string &description)
 	: enabled(false), name(name), description(description)

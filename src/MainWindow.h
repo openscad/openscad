@@ -64,7 +64,8 @@ public:
         QLabel *versionLabel;
         QWidget *editorDockTitleWidget;
         QWidget *consoleDockTitleWidget;
-        
+        QWidget *parameterDockTitleWidget;
+
 	QString editortype;	
 	bool useScintilla;
 
@@ -112,6 +113,7 @@ private:
 	static void consoleOutput(const std::string &msg, void *userdata);
 	void loadViewSettings();
 	void loadDesignSettings();
+	void updateWindowSettings(bool console, bool editor, bool customizer, bool toolbar);
 	void saveBackup();
 	void writeBackup(class QFile *file);
 	QString get2dExportFilename(QString format, QString extension);
@@ -142,6 +144,7 @@ private slots:
 	void instantiateRoot();
 	void compileDone(bool didchange);
 	void compileEnded();
+    void changeParameterWidget();
 
 private slots:
 	void pasteViewportTranslation();
@@ -151,6 +154,7 @@ private slots:
 	void hideEditor();
 	void hideConsole();
 	void showConsole();
+    void hideParameters();
 
 private slots:
 	void selectFindType(int);
@@ -204,9 +208,12 @@ public slots:
 	void actionReloadRenderPreview();
         void on_editorDock_visibilityChanged(bool);
         void on_consoleDock_visibilityChanged(bool);
+        void on_parameterDock_visibilityChanged(bool);
         void on_toolButtonCompileResultClose_clicked();
         void editorTopLevelChanged(bool);
         void consoleTopLevelChanged(bool);
+        void parameterTopLevelChanged(bool);
+
 #ifdef ENABLE_OPENCSG
 	void viewModePreview();
 #endif

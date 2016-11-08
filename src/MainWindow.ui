@@ -401,6 +401,7 @@
     <addaction name="viewActionHideToolBars"/>
     <addaction name="viewActionHideEditor"/>
     <addaction name="viewActionHideConsole"/>
+    <addaction name="viewActionHideParameters"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -591,6 +592,36 @@
         <bool>true</bool>
        </property>
       </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="Dock" name="parameterDock">
+   <property name="windowTitle">
+    <string>Parameter Widget</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents">
+    <layout class="QGridLayout" name="gridLayout_2">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <property name="spacing">
+      <number>0</number>
+     </property>
+     <item row="0" column="0">
+      <widget class="ParameterWidget" name="parameterWidget" native="true"/>
      </item>
     </layout>
    </widget>
@@ -1331,6 +1362,17 @@
     <string>Ctrl+Shift+C</string>
    </property>
   </action>
+  <action name="viewActionHideParameters">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Hide Customizer</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -1343,6 +1385,12 @@
    <class>Dock</class>
    <extends>QDockWidget</extends>
    <header>Dock.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ParameterWidget</class>
+   <extends>QWidget</extends>
+   <header>parameter/ParameterWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

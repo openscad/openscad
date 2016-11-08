@@ -78,6 +78,11 @@ namespace /* anonymous*/ {
 
 }
 
+bool Expression::isLiteral() const
+{
+    return false;
+}
+
 UnaryOp::UnaryOp(UnaryOp::Op op, Expression *expr, const Location &loc) : Expression(loc), op(op), expr(expr)
 {
 }
@@ -108,6 +113,13 @@ const char *UnaryOp::opString() const
 		return "";
 		// FIXME: Error: unknown op
 	}
+}
+
+bool UnaryOp::isLiteral() const { 
+
+    if(this->expr->isLiteral()) 
+        return true;
+    return false;
 }
 
 void UnaryOp::print(std::ostream &stream) const
@@ -303,8 +315,28 @@ void Range::print(std::ostream &stream) const
 	stream << "]";
 }
 
+bool Range::isLiteral() const {
+    if(!this->step){ 
+        if( begin->isLiteral() && end->isLiteral())
+            return true;
+    }else{
+        if( begin->isLiteral() && end->isLiteral() && step->isLiteral())
+            return true;
+    }
+    return false;
+}
+
 Vector::Vector(const Location &loc) : Expression(loc)
 {
+}
+
+bool Vector::isLiteral() const {
+    for(const auto &e : this->children) {
+        if (!e->isLiteral()){
+            return false;
+        }
+    } 
+    return true;
 }
 
 void Vector::push_back(Expression *expr)
