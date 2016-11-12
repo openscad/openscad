@@ -13,7 +13,6 @@ GroupWidget::GroupWidget(bool &show, const QString & title, const int animationD
 	headerLine.setFrameShadow(QFrame::Sunken);
 	headerLine.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 	
-	contentArea.setStyleSheet("QScrollArea { background-color: white; border: none; }");
 	contentArea.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 	// start out collapsed
 	contentArea.setMaximumHeight(0);
