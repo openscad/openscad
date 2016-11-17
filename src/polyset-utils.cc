@@ -55,13 +55,9 @@ namespace PolysetUtils {
 		Reindexer<Vector3f> allVertices;
 		std::vector<std::vector<IndexedFace>> polygons;
 
-		for(const auto &pgon : inps.polygons) {
+		for (const auto &pgon : inps.polygons) {
 			if (pgon.size() < 3) {
 				degeneratePolygons++;
-				continue;
-			}
-			if (pgon.size() == 3) { // Short-circuit
-				outps.append_poly(pgon);
 				continue;
 			}
 			
@@ -86,18 +82,19 @@ namespace PolysetUtils {
 		std::vector<IndexedTriangle> allTriangles;
 		for(const auto &faces : polygons) {
 			std::vector<IndexedTriangle> triangles;
+			bool err = false;
 			if (faces[0].size() == 3) {
 				triangles.push_back(IndexedTriangle(faces[0][0], faces[0][1], faces[0][2]));
 			}
 			else {
-				bool err = GeometryUtils::tessellatePolygonWithHoles(verts, faces, triangles, NULL);
-				if (!err) {
-					for(const auto &t : triangles) {
-						outps.append_poly();
-						outps.append_vertex(verts[t[0]]);
-						outps.append_vertex(verts[t[1]]);
-						outps.append_vertex(verts[t[2]]);
-					}
+				err = GeometryUtils::tessellatePolygonWithHoles(verts, faces, triangles, NULL);
+			}
+			if (!err) {
+				for(const auto &t : triangles) {
+					outps.append_poly();
+					outps.append_vertex(verts[t[0]]);
+					outps.append_vertex(verts[t[1]]);
+					outps.append_vertex(verts[t[2]]);
 				}
 			}
 		}
