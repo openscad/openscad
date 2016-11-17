@@ -817,15 +817,15 @@ void MainWindow::setFileName(const QString &filename)
 		QFileInfo fileinfo(filename);
 		this->fileName = fileinfo.absoluteFilePath();
 		setWindowFilePath(this->fileName);
-        
-		this->parameterWidget->readFile(this->fileName);
-        
+		if (Feature::ExperimentalCustomizer.is_enabled()) {
+			this->parameterWidget->readFile(this->fileName);
+        	}
 		QDir::setCurrent(fileinfo.dir().absolutePath());
 		this->top_ctx.setDocumentPath(fileinfo.dir().absolutePath().toLocal8Bit().constData());
 	}
 	editorTopLevelChanged(editorDock->isFloating());
 	consoleTopLevelChanged(consoleDock->isFloating());
-    parameterTopLevelChanged(parameterDock->isFloating());
+ 	parameterTopLevelChanged(parameterDock->isFloating());
 }
 
 void MainWindow::updateRecentFiles()
@@ -1470,8 +1470,9 @@ void MainWindow::actionSaveAs()
 				}
 			}
 		}
-		this->parameterWidget->writeFile(new_filename);
-		
+		if (Feature::ExperimentalCustomizer.is_enabled()) {
+			this->parameterWidget->writeFile(new_filename);
+		}
 		setFileName(new_filename);
 		actionSave();
 	}
