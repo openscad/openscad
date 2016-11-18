@@ -19,17 +19,18 @@ contains(OSNAME,Msys) {
   # only use 'release' on windows, because qmake on win uses two makefiles
   # Makefile.release and Makefile.debug, the debug is broken b/c qcsintilla
   CONFIG=release
+  CONFIG+=msys
 }
 
 message("If you're building a Stable Release, please use CONFIG=deploy")
-CONFIG+=experimental
+CONFIG += experimental
 DEFINES += ENABLE_EXPERIMENTAL
 macx: {
   ICON = icons/icon-nightly.icns
 }
 deploy {
-  CONFIG-=experimental
-  DEFINES-=ENABLE_EXPERIMENTAL
+  CONFIG -= experimental
+  DEFINES -= ENABLE_EXPERIMENTAL
   macx: {
     ICON = $$PWD/icons/OpenSCAD.icns
     CONFIG += sparkle
@@ -39,6 +40,7 @@ deploy {
 
 mxetarget=$$(MXE_TARGET)
 !isEmpty(mxetarget) {
+  CONFIG += mxe
   mxeabi=$$(MXE_TARGET)
   contains(mxeabi,shared) {
     CONFIG += mingw-cross-env-shared
@@ -46,6 +48,9 @@ mxetarget=$$(MXE_TARGET)
     CONFIG += mingw-cross-env
   }
 }
+
+CONFIG += qt
+QT += widgets core gui concurrent
 
 TEMPLATE = app
 INCLUDEPATH += src
@@ -74,7 +79,7 @@ win* {
   RC_FILE = openscad_win32.rc
   QMAKE_CXXFLAGS += -DNOGDI
 }
-contains(OSNAME,Msys): {
+msys {
   QMAKE_CXXFLAGS -= -pipe # ctrl-c doesn't like pipes
 }
 
@@ -106,19 +111,17 @@ include(c++11.pri)
 
 CONFIG += link_pkgconfig
 PKGCONFIG += eigen3 glew fontconfig freetype2 harfbuzz glib-2.0 libxml-2.0
-contains(OSNAME,Msys): {
-  PKGCONFIG += Qt5Core Qt5OpenGL Qt5Gui Qt5Concurrent
-  CONFIG += moc opengl
-}
-
-QT += widgets core gui concurrent
+#msys {
+#  PKGCONFIG += Qt5Core Qt5OpenGL Qt5Gui Qt5Concurrent
+ # CONFIG += moc opengl
+#}
 
 # OPENSCAD_VERSION   format: yyyy.mm.dd.gitcommit
 # format for stable release: yyyy.mm-patchlevel
 # note - VERSION is a qmake keyword, do not use
 isEmpty(OPENSCAD_VERSION) {
   datecmd=date
-  contains(OSNAME,Msys): datecmd=$$(MINGW_PREFIX)/../usr/bin/date
+  msys: datecmd=$$(MINGW_PREFIX)/../usr/bin/date
   YMD=$$system($$datecmd "+%Y.%m.%d")
   COMMIT=$$system(git log -1 --pretty=format:"%h")
   !isEmpty(COMMIT): COMMIT=".$$COMMIT"
@@ -127,9 +130,8 @@ isEmpty(OPENSCAD_VERSION) {
 DEFINES += OPENSCAD_VERSION=$$OPENSCAD_VERSION
 
 # PKGNAME is for packaging and installation. 
-# For ordinary dev build it is the full version. For Stable Release, it
-# is simply 'openscad'.
-# example as a pathname: /usr/local/share/openscad-2016.01.20.f43f/locale
+# ordinary build: /usr/local/share/openscad-2016.01.20.f43f/locale
+# stable release: /usr/local/share/openscad/locale
 OPENSCAD_PKGNAME = openscad-$$OPENSCAD_VERSION
 deploy: $$OPENSCAD_PKGNAME = openscad
 
@@ -159,7 +161,7 @@ FORMS   += src/MainWindow.ui \
 
 LEXSOURCES += src/lexer.l
 YACCSOURCES += src/parser.y
-contains(OSNAME,Msys): CONFIG += yacc lex
+#msys: CONFIG += yacc lex
 
 HEADERS += src/AST.h \
            src/ModuleInstantiation.h \
@@ -479,6 +481,13 @@ win* {
   SOURCES += src/PlatformUtils-win.cc
 }
 
+dryrun {
+  LEXSOURCES =
+  YACCSOURCES =
+  SOURCES= scripts/fakescad.cc
+  HEADERS=
+}
+
 isEmpty(PREFIX):PREFIX = /usr/local
 
 target.path = $$PREFIX/bin/
@@ -488,7 +497,7 @@ INSTALLS += target
 POST_LINK_CMD = "$$_PRO_FILE_PWD_/scripts/translation-make.sh"
 win32 {
   # on MSYS2, handle spaces in pathnames (ex if username is "Emmy Noether")
-  contains(OSNAME,Msys) {
+  msys {
     POST_LINK_CMD = ___QUOTE___"$$POST_LINK_CMD"___QUOTE___
     POST_LINK_CMD = $$replace(POST_LINK_CMD,"___QUOTE___","\"")
     POST_LINK_CMD = $$shell_path($$POST_LINK_CMD)
@@ -517,14 +526,20 @@ for(language, LINGUAS) {
 
 examples.path = "$$PREFIX/share/$$OPENSCAD_PKGNAME/examples/"
 examples.files = $$PWD/examples/*
+examples.extra = chmod -R u=rwx,go=r,+X $$PREFIX/share/$$OPENSCAD_PKGNAME/examples
 INSTALLS += examples
 
 libraries.path = "$$PREFIX/share/$$OPENSCAD_PKGNAME/libraries/"
 libraries.files = $$PWD/libraries/*
+libraries.extra = chmod -R u=rwx,go=r,+X $$PREFIX/share/$$OPENSCAD_PKGNAME/libraries
 INSTALLS += libraries
 
 fonts.path = "$$PREFIX/share/$$OPENSCAD_PKGNAME/fonts/"
-fonts.files = $$PWD/fonts/*
+fonts.files  = $$PWD/fonts/10-liberation.conf
+fonts.files += $$PWD/fonts/Liberation-2.00.1
+mac: fonts.files += $$PWD/fonts/05-osx-fonts.conf
+mac: fonts.files += $$PWD/fonts-osx
+mxe: fonts.files += $$MXETARGETDIR/etc/fonts
 INSTALLS += fonts
 
 colorschemes.path = "$$PREFIX/share/$$OPENSCAD_PKGNAME/color-schemes/"
@@ -551,11 +566,12 @@ icons.extra = test -f $$PWD/icons/$$OPENSCAD_PNGICON && cp -f $$PWD/icons/$$OPEN
 INSTALLS += icons
 
 man.path = $$PREFIX/share/man/man1
-man.extra = cp -f $$PWD/doc/openscad.1 \"\$(INSTALL_ROOT)$${man.path}/$$OPENSCAD_PKGNAME.1\"
+man.extra = cp -f $$PWD/doc/openscad.1 \"\$(INSTALL_ROOT)$${man.path}/openscad.1\"
 INSTALLS += man
 
-contains(OSNAME,Msys) {
+msys {
   !exists(./objects/openscad_win32_res.o) {
     message("please ignore WARNING: Failure to find objects/openscad_win32_res.o and proceed to run make")
   }
 }
+

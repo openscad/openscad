@@ -1,23 +1,36 @@
 #!/usr/bin/env bash
 #
-# This script creates a package of OpenSCAD for easy installation and
+# This script creates a binary package of OpenSCAD for easy installation and
 # deinstallation.
 #
-# Mac                       .dmg
-# Linux gdebi               .deb
-# Windows MSYS              .exe/.zip
-# Windows cross build MXE   .exe/.zip
+# Type of binary package               filename extension
+# Mac disk image                      .dmg
+# Linux gdebi package                 .deb
+# Linux AppImage package              .AppImage
+# Windows MSYS installer              .exe + .zip
+# Windows cross build MXE installer   .exe + .zip
 #
-# It uses openscad/buildtmp/host-triple for temporary build files.
-# It installs packaged files into opensacd/bin/host-triple
-# host-triple is a gcc-style identified for the machine openscad will run on
-# such as i686-linux-gnu
+# openscad/bin/host-triple-tmp         temporary build files (.o,.a,ui_)
+# openscad/bin/host-triple             deploy build files (binary+data)
+# openscad/bin/host-triple.extension   binary package
 #
-# Usage: make-pkg.sh [-dryrun]
-#  -dryrun  Quickly build a dummy openscad.exe file to test this release script
+# host-triple is a system identifier, from gcc -dumpmachine (i686-linux-gnu)
+#
+# Usage: makebinpkg.sh [-dryrun]
+#
+#  -dryrun Runs this script, but creates a dummy 'openscad' binary for testing
+
+check_prereq()
+{
+  if [ ! -e ./scripts/setenv.sh ]; then
+    echo please run from openscad root directory.
+    exit 1
+  fi
+}
 
 check_prereq_mxe()
 {
+  check_prereq
   MAKENSIS=
   if [ "`command -v makensis`" ]; then
     MAKENSIS=makensis
@@ -67,26 +80,6 @@ verify_binary_linux()
     echo "cant find $MAKE_TARGET/openscad. build failed. stopping."
     exit 1
   fi
-}
-
-copy_fonts()
-{
-  mkdir -p $FONTDIR
-  cp -a fonts/10-liberation.conf $FONTDIR
-  cp -a fonts/Liberation-2.00.1 $FONTDIR
-}
-
-copy_fonts_darwin()
-{
-  copy_fonts_generic
-  cp -a fonts/05-osx-fonts.conf $FONTDIR
-  cp -a fonts-osx/* $FONTDIR
-}
-
-copy_fonts_mxe()
-{
-  copy_fonts_generic
-  cp -a $MXETARGETDIR/etc/fonts/ "$FONTDIR"
 }
 
 create_package_darwin()
@@ -314,21 +307,31 @@ create_package_mxe()
 create_package_linux()
 {
   cd $OPENSCADDIR
-  ./scripts/makepkg-deb.sh
+  if [ "`echo $* | grep deb`" ]; then
+    ./scripts/makebinpkg-deb.sh $OPENSCADDIR $DEPLOYDIR $OPENSCAD_VERSION
+  fi
   cd $BUILDDIR
 }
 
 call_qmake()
 {
+  DRYRUN=
+  QDEBUG=
+  # QDEBUG="-d -d"
   QMAKE="`command -v qmake-qt5`"
   if [ ! -x "$QMAKE" ]; then
     QMAKE=qmake
   fi
   QPRO_FILE=$OPENSCADDIR/openscad.pro
   if [ "`echo $* | grep dryrun`" ]; then
-    QPRO_FILE=$OPENSCADDIR/scripts/fakescad.pro
+    DRYRUN="CONFIG+=dryrun"
   fi
-  qmake PREFIX=$DEPLOYDIR OPENSCAD_VERSION=$OPENSCAD_VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT $QPRO_FILE
+  qmake $DRYRUN $QDEBUG PREFIX=$DEPLOYDIR OPENSCAD_VERSION=$OPENSCAD_VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT $QPRO_FILE
+}
+
+cleanup()
+{
+  make clean
 }
 
 cleanup_darwin()
@@ -369,8 +372,9 @@ call_make_install_msys()
 
 setup_dirs()
 {
-  BUILDDIR=$OPENSCADDIR/buildtmp/$HOST_TRIPLE
-  BUILDDIR=$OPENSCADDIR/bin/$HOST_TRIPLE
+  if [ ! -d $BUILDDIR ]; then
+    mkdir -p $BUILDDIR
+  fi
   RESOURCES_DIR=$BUILDDIR/openscad-$VERSION
 }
 
@@ -380,35 +384,6 @@ setup_dirs_darwin()
   RESOURCES_DIR=$BUILDDIR/OpenSCAD.app/Contents/Resources
 }
 
-
-copy_fonts()
-{
-  find ./fonts/10-liberation.conf -print -depth | cpio -pud $RESOURCES_DIR/fonts
-  find ./fonts/Liberation-2.00.1 -print -depth | cpio -pud $RESOURCES_DIR/fonts
-}
-
-copy_fonts_darwin()
-{
-  copy_fonts
-  cp -a ./fonts/05-osx-fonts.conf $RESOURCES_DIR/fonts
-  cp -a fonts-osx/* $RESOURCES_DIR/fonts
-}
-
-copy_fonts_mxe()
-{
-  copy_fonts
-  mxefonts=$MXEDIR/usr/$MXE_TARGET/etc
-  if [ -d $mxefonts ]; then
-    pwds=$PWD
-    cd $mxefonts
-    find ./fonts -print -depth | cpio -pud $RESOURCES_DIR
-    cd $pwds
-  else
-    echo cannot find mxe fonts
-    exit 1
-  fi
-}
-
 copy_resources()
 {
   cd $OPENSCADDIR
@@ -416,38 +391,24 @@ copy_resources()
   #find ./color-schemes -print -depth | cpio -pud $RESOURCES_DIR
   #find  ./libraries -print -depth | grep -v ".git" | cpio -pud $RESOURCES_DIR
   #find  ./locale -print -depth | grep ".mo" | cpio -pud $RESOURCES_DIR
-  chmod -R u=rwx,go=r,+X $RESOURCES_DIR/libraries
-  chmod -R 644 $RESOURCES_DIR/examples
+  #chmod -R u=rwx,go=r,+X $RESOURCES_DIR/libraries
+  #chmod -R 644 $RESOURCES_DIR/examples
   cd $BUILDDIR
 }
 
 
-if [ ! $OPENSCADDIR ]; then
-  echo please run scripts/setenv.sh first
-fi
-if [ ! $BUILDDIR ]; then
-  echo please run scripts/setenv.sh first
-fi
-
-if [ ! -d $BUILDDIR ]; then
-  mkdir -p $BUILDDIR
-fi
-
+#set -x
+check_prereq
+source ./scripts/setenv.sh $*
 run update_mcad
-run check_prereq
 run setup_dirs
-run cleanup
 
 cd $BUILDDIR
-
 QT_SELECT=5
 ZIP="zip"
 ZIPARGS="-r -q"
 
-run call_qmake
+run call_qmake $*
+run cleanup
 run call_make_install
-
-echo copy resources - move to qmake
-run copy_resources
-echo copy fonts needs to be put into qmake
-run create_package
+run create_package $*

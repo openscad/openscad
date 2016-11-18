@@ -53,11 +53,11 @@ setup_host_darwin()
 setup_buildtype()
 {
   BUILDTYPE=$OSTYPE
-  case
-    $BUILDTYPE in darwin*)
+  case $BUILDTYPE in
+    darwin*)
       BUILDTYPE=darwin
     ;;
-    $BUILDTYPE in linux*)
+    linux*)
       BUILDTYPE=linux
     ;;
   esac
@@ -67,7 +67,7 @@ setup_buildtype()
   export_and_print_vars BUILDTYPE
 }
 
-def setup_dirvars()
+setup_dirvars()
 {
   OPENSCADDIR=$PWD
 
@@ -77,8 +77,9 @@ def setup_dirvars()
   fi
 
   DEPLOYDIR=$OPENSCADDIR/bin/$HOST_TRIPLE
+  BUILDDIR=$OPENSCADDIR/build/$HOST_TRIPLE
 
-  export_and_print_vars OPENSCADDIR DEPLOYDIR
+  export_and_print_vars OPENSCADDIR DEPLOYDIR BUILDDIR
 }
 
 setup_dirvars_mxe()
@@ -98,7 +99,7 @@ setup_dirvars_mxe()
     fi
   fi
   if [ ! -e $MXEDIR ]; then
-    echo can't find mxe. please install, see README.md
+    echo "cannot find mxe. please install, see README.md"
   fi
   OPENSCAD_LIBRARIES=$MXEDIR/usr/$MXE_TARGET
   PATH=$MXEDIR/usr/bin:$PATH
@@ -117,7 +118,7 @@ setup_dirvars_linuxbrew()
   export_and_print_vars OPENSCAD_LIBRARIES PATH PKG_CONFIG_PATH
 }
 
-def setup_dirvars_darwin()
+setup_dirvars_darwin()
 {
   if [ ! $OPENSCAD_LIBRARIES ]; then
     OPENSCAD_LIBRARIES=/usr/local/Cellar
@@ -149,16 +150,17 @@ run()
   runfunc1=`echo $1"_"$BUILDTYPE`
   runfunc2=`echo $1`
   if [ "`type -t $runfunc1 | grep function`" ]; then
-    echo "calling $runfunc1"
-    eval $runfunc1
+    echo "calling $runfunc1 $2 $3 $4 $5"
+    eval $runfunc1 $2 $3 $4 $5
   elif [ "`type -t $runfunc2 | grep function`" ]; then
-    echo "calling $runfunc2"
-    eval $runfunc2
+    echo "calling $runfunc2 $2 $3 $4 $5"
+    eval $runfunc2 $2 $3 $4 $5
   else
-    eval $1
+    echo "calling "$*
+    eval $*
   fi
   if [[ $? != 0 ]]; then
-    echo "Error while running $1 ...Stopping"
+    echo "Error while running $* ...Stopping"
     exit 1
   fi
 }
