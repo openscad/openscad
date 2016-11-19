@@ -101,8 +101,11 @@ void ParameterWidget::readFile(QString scadFile)
 		this->deleteButton->setDisabled(true);
 		this->deleteButton->setToolTip("JSON file read only");
 	}
+        disconnect(comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onSetChanged(int)));
 	this->comboBox->clear();
 	setComboBoxForSet();
+	connect(comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onSetChanged(int)));
+
 }
 
 void ParameterWidget::writeFile(QString scadFile)
