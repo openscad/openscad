@@ -861,23 +861,10 @@ set_target_properties(tests-offscreen PROPERTIES COMPILE_FLAGS "${ENABLE_OPENCSG
 target_link_libraries(tests-offscreen ${OFFSCREEN_CTX_LIBRARIES})
 
 #
-# modulecachetest
-#
-add_executable(modulecachetest modulecachetest.cc)
-target_link_libraries(modulecachetest tests-nocgal ${GLEW_LIBRARY} ${OPENCSG_LIBRARY} ${APP_SERVICES_LIBRARY})
-
-#
 # csgtexttest
 #
 add_executable(csgtexttest csgtexttest.cc CSGTextRenderer.cc CSGTextCache.cc)
 target_link_libraries(csgtexttest tests-nocgal ${GLEW_LIBRARY} ${OPENCSG_LIBRARY} ${APP_SERVICES_LIBRARY})
-
-#
-# cgalcachetest
-#
-add_executable(cgalcachetest cgalcachetest.cc)
-set_target_properties(cgalcachetest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
-target_link_libraries(cgalcachetest tests-cgal ${GLEW_LIBRARY} ${OPENCSG_LIBRARY} ${APP_SERVICES_LIBRARY})
 
 #
 # openscad_nogui - an OpenSCAD binary build without Qt
