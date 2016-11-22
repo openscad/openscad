@@ -15,6 +15,11 @@ include(CMakeParseArguments.cmake)
 # Detect Lion and force gcc
 IF (APPLE)
    EXECUTE_PROCESS(COMMAND sw_vers -productVersion OUTPUT_VARIABLE MACOSX_VERSION)
+#   IF (NOT ${MACOSX_VERSION} VERSION_LESS "10.11.0")
+#     message("Detected El Capitain (10.11) or later")
+#     set(CMAKE_C_COMPILER "clang")
+#     set(CMAKE_CXX_COMPILER "clang++")
+#     SET(CMAKE_OSX_DEPLOYMENT_TARGET 10.11 CACHE STRING "Deployment target")
    IF (NOT ${MACOSX_VERSION} VERSION_LESS "10.9.0")
      message("Detected Maverick (10.9) or later")
      set(CMAKE_C_COMPILER "clang")
@@ -787,7 +792,10 @@ set(CGAL_SOURCES
   ../src/CGALCache.cc
   ../src/Polygon2d-CGAL.cc
   ../src/svg.cc
-  ../src/GeometryEvaluator.cc)
+  ../src/GeometryEvaluator.cc
+  ../src/func-read.cc
+  ../src/primitives-cgal.cc
+)
 
 set(COMMON_SOURCES
   ../src/nodedumper.cc 

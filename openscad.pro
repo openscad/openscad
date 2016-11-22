@@ -590,11 +590,13 @@ HEADERS += src/cgal.h \
            src/Reindexer.h \
            src/CGALCache.h \
            src/CGALRenderer.h \
+           src/CGAL_Line_3_workaround.h \
            src/CGAL_Nef_polyhedron.h \
            src/CGAL_Nef3_workaround.h \
            src/convex_hull_3_bugfix.h \
            src/cgalworker.h \
-           src/Polygon2d-CGAL.h
+           src/Polygon2d-CGAL.h \
+           src/function-read.h
 
 SOURCES += src/cgalutils.cc \
            src/cgalutils-applyops.cc \
@@ -605,7 +607,9 @@ SOURCES += src/cgalutils.cc \
            src/CGALRenderer.cc \
            src/CGAL_Nef_polyhedron.cc \
            src/cgalworker.cc \
-           src/Polygon2d-CGAL.cc
+           src/Polygon2d-CGAL.cc \
+           src/func-read.cc \
+           src/primitives-cgal.cc
 }
 
 macx {

@@ -1,4 +1,5 @@
 #pragma once
+#define CGAL_EIGEN3_ENABLED
 
 #include "cgal.h"
 #include "polyset.h"
@@ -10,6 +11,45 @@ typedef CGAL::Epick K;
 typedef CGAL::Point_3<K> Vertex3K;
 typedef std::vector<Vertex3K> PolygonK;
 typedef std::vector<PolygonK> PolyholeK;
+
+/**
+#include <CGAL/Polyhedron_3.h>
+#include <CGAL/IO/Polyhedron_iostream.h>
+#include <CGAL/IO/read_xyz_points.h>
+**/
+#include <CGAL/Surface_mesh_default_triangulation_3.h>
+#include <CGAL/Point_with_normal_3.h>
+#include <CGAL/Poisson_reconstruction_function.h>
+#include <CGAL/Implicit_surface_3.h>
+#include <CGAL/property_map.h>
+#include <CGAL/IO/read_xyz_points.h>
+#include <CGAL/edge_aware_upsample_point_set.h>
+#include <CGAL/jet_estimate_normals.h>
+#include <CGAL/mst_orient_normals.h>
+#include <CGAL/compute_average_spacing.h>
+#include <CGAL/make_surface_mesh.h>
+#include <CGAL/IO/output_surface_facets_to_polyhedron.h>
+typedef K::FT FTK;
+typedef K::Point_3 PointK;
+typedef K::Vector_3 VectorK;
+// See https://github.com/CGAL/cgal/pull/561/files
+typedef std::pair<K::Point_3,K::Vector_3> PointVectorPairK;
+typedef CGAL::Point_with_normal_3<K> Point_with_normalK;
+typedef K::Sphere_3 SphereK;
+typedef std::vector<Point_with_normalK> PointListK;
+typedef CGAL::Polyhedron_3<K> PolyhedronK;
+typedef CGAL::Poisson_reconstruction_function<K> Poisson_reconstruction_functionK;
+typedef CGAL::Surface_mesh_default_triangulation_3 STr;
+typedef CGAL::Surface_mesh_complex_2_in_triangulation_3<STr> C2t3;
+typedef CGAL::Implicit_surface_3<K, Poisson_reconstruction_functionK> Surface_3K;
+
+// Meshing and Subdividing a Skin Surface
+#include <CGAL/Skin_surface_3.h>
+#include <CGAL/make_skin_surface_mesh_3.h>
+#include <CGAL/mesh_skin_surface_3.h>
+#include <CGAL/subdivide_skin_surface_mesh_3.h>
+#include <CGAL/subdivide_skin_surface_mesh_3.h>
+typedef CGAL::Weighted_point<PointK,K::RT> WeightedK;
 
 namespace /* anonymous */ {
         template<typename Result, typename V>

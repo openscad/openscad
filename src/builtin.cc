@@ -1,5 +1,6 @@
 #include "builtin.h"
 #include "function.h"
+#include "function-read.h"
 #include "module.h"
 #include "expression.h"
 
@@ -34,11 +35,13 @@ void Builtins::init(const char *name, class AbstractFunction *function)
 }
 
 extern void register_builtin_functions();
+extern void register_builtin_read_functions();
 extern void register_builtin_group();
 extern void register_builtin_csgops();
 extern void register_builtin_transform();
 extern void register_builtin_color();
 extern void register_builtin_primitives();
+extern void register_builtin_cgal_primitives();
 extern void register_builtin_surface();
 extern void register_builtin_control();
 extern void register_builtin_render();
@@ -58,6 +61,7 @@ extern void initialize_builtin_dxf_dim();
 void Builtins::initialize()
 {
 	register_builtin_functions();
+	register_builtin_read_functions();
 	initialize_builtin_dxf_dim();
 
 	register_builtin_group();
@@ -65,6 +69,7 @@ void Builtins::initialize()
 	register_builtin_transform();
 	register_builtin_color();
 	register_builtin_primitives();
+	register_builtin_cgal_primitives();
 	register_builtin_surface();
 	register_builtin_control();
 	register_builtin_render();
