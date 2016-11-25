@@ -605,7 +605,8 @@ SOURCES += src/cgalutils.cc \
            src/CGALRenderer.cc \
            src/CGAL_Nef_polyhedron.cc \
            src/cgalworker.cc \
-           src/Polygon2d-CGAL.cc
+           src/Polygon2d-CGAL.cc \
+           src/import_nef.cc
 }
 
 macx {

@@ -30,6 +30,9 @@
 #include "module.h"
 #include "ModuleInstantiation.h"
 #include "polyset.h"
+#ifdef ENABLE_CGAL
+#include "CGAL_Nef_polyhedron.h"
+#endif
 #include "Polygon2d.h"
 #include "evalcontext.h"
 #include "builtin.h"
@@ -101,6 +104,7 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 		if (ext == ".stl") actualtype = TYPE_STL;
 		else if (ext == ".off") actualtype = TYPE_OFF;
 		else if (ext == ".dxf") actualtype = TYPE_DXF;
+		else if (ext == ".nef3") actualtype = TYPE_NEF3;
 		else if (Feature::ExperimentalAmfImport.is_enabled() && ext == ".amf") actualtype = TYPE_AMF;
 		else if (Feature::ExperimentalSvgImport.is_enabled() && ext == ".svg") actualtype = TYPE_SVG;
 	}
@@ -169,6 +173,12 @@ const Geometry *ImportNode::createGeometry() const
 		g = dd.toPolygon2d();
 		break;
 	}
+#ifdef ENABLE_CGAL
+	case TYPE_NEF3: {
+		g = import_nef3(this->filename);
+		break;
+	}
+#endif
 	default:
 		PRINTB("ERROR: Unsupported file format while trying to import file '%s'", this->filename);
 		g = new PolySet(0);
