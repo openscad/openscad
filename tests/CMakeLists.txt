@@ -1447,6 +1447,7 @@ list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue13.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1580-zero-area-triangle.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1580-import-zero-area-triangle.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1803.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1876.scad
 )
 
 # We know that we cannot import weakly manifold files into CGAL, so to make tests easier
