@@ -54,7 +54,7 @@ static void append_stl(const PolySet &ps, std::ostream &output)
 		if (vs1 != vs2 && vs1 != vs3 && vs2 != vs3) {
 			// The above condition ensures that there are 3 distinct vertices, but
 			// they may be collinear. If they are, the unit normal is meaningless
-			// so the default value of "1 0 0" can be used. If the vertices are not
+			// so the default value of "0 0 0" can be used. If the vertices are not
 			// collinear then the unit normal must be calculated from the
 			// components.
 			output << "  facet normal ";
