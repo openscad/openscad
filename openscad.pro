@@ -329,6 +329,7 @@ HEADERS += src/version_check.h \
            src/feature.h \
            src/node.h \
            src/csgnode.h \
+           src/primitivenode.h \
            src/offsetnode.h \
            src/linearextrudenode.h \
            src/rotateextrudenode.h \
@@ -433,6 +434,7 @@ SOURCES += \
            src/modcontext.cc \
            src/evalcontext.cc \
            src/csgnode.cc \
+           src/primitivenode.cc \
            src/CSGTreeNormalizer.cc \
            src/CSGTreeEvaluator.cc \
            src/Geometry.cc \

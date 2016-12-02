@@ -710,6 +710,7 @@ set(CORE_SOURCES
   ../src/Geometry.cc 
   ../src/Polygon2d.cc 
   ../src/csgops.cc 
+  ../src/primitivenode.cc 
   ../src/transform.cc 
   ../src/color.cc 
   ../src/primitives.cc 
