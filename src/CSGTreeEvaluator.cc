@@ -34,7 +34,7 @@ shared_ptr<CSGNode> CSGTreeEvaluator::buildCSGTree(const AbstractNode &node)
 	
 	shared_ptr<CSGNode> t(this->stored_term[node.index()]);
 	if (t) {
-            if (t->isHighlight()) this->highlightNodes.push_back(t);
+		if (t->isHighlight()) this->highlightNodes.push_back(t);
 		if (t->isBackground()) {
 			this->backgroundNodes.push_back(t);
 			t.reset();
