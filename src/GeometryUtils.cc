@@ -2,6 +2,7 @@
 #include "tesselator.h"
 #include "printutils.h"
 #include "Reindexer.h"
+#include "PolySet.h"
 #include <boost/lexical_cast.hpp>
 #include <unordered_map>
 #include <cmath>
@@ -479,4 +480,15 @@ int GeometryUtils::findUnconnectedEdges(const std::vector<IndexedTriangle> &tria
 #endif
 
 	return edges.size();
+}
+
+void GeometryUtils::createIndexedPolygonsFromPolySet(const PolySet &ps, IndexedPolygons &mesh)
+{
+	Reindexer<Vector3f> vertices;
+	for (const auto &p : ps.polygons) {
+		IndexedFace f;
+		for (const auto &v : p) f.push_back(vertices.lookup(v.cast<float>()));
+		mesh.faces.push_back(f);
+	}
+	vertices.copy(std::back_inserter(mesh.vertices));
 }

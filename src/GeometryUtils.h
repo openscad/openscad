@@ -25,6 +25,8 @@ struct IndexedPolyMesh {
 	std::vector<std::vector<IndexedFace>> polygons;
 };
 
+class PolySet;
+
 namespace GeometryUtils {
 	bool tessellatePolygon(const Polygon &polygon,
 												 Polygons &triangles,
@@ -36,4 +38,6 @@ namespace GeometryUtils {
 
 	int findUnconnectedEdges(const std::vector<std::vector<IndexedFace>> &polygons);
 	int findUnconnectedEdges(const std::vector<IndexedTriangle> &triangles);
+
+	void createIndexedPolygonsFromPolySet(const PolySet &ps, IndexedPolygons &ip);
 }

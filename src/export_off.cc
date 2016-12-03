@@ -27,6 +27,7 @@
 #include "export.h"
 #include "polyset.h"
 #include "polyset-utils.h"
+#include "GeometryUtils.h"
 #include "dxfdata.h"
 
 #ifdef ENABLE_CGAL
@@ -37,27 +38,12 @@
 #include "Reindexer.h"
 #include "grid.h"
 
-struct IndexedMesh {
-	IndexedMesh() : numfaces(0) {}
-
-	Reindexer<Vector3d> vertices;
-	std::vector<int> indices;
-	size_t numfaces;
-};
-
-
-static void append_geometry(const PolySet &ps, IndexedMesh &mesh)
+static void append_geometry(const PolySet &ps, IndexedPolygons &mesh)
 {
-	for(const auto &p : ps.polygons) {
-		for(const auto &v : p) {
-			mesh.indices.push_back(mesh.vertices.lookup(v));
-		}
-		mesh.numfaces++;
-		mesh.indices.push_back(-1);
-	}
+	GeometryUtils::createIndexedPolygonsFromPolySet(ps, mesh);
 }
 
-void append_geometry(const shared_ptr<const Geometry> &geom, IndexedMesh &mesh)
+void append_geometry(const shared_ptr<const Geometry> &geom, IndexedPolygons &mesh)
 {
 	if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(geom.get())) {
 		PolySet ps(3);
@@ -79,26 +65,18 @@ void append_geometry(const shared_ptr<const Geometry> &geom, IndexedMesh &mesh)
 
 void export_off(const shared_ptr<const Geometry> &geom, std::ostream &output)
 {
-	IndexedMesh mesh;
+	IndexedPolygons mesh;
 	append_geometry(geom, mesh);
 
-	output << "OFF " << mesh.vertices.size() << " " << mesh.numfaces << " 0\n";
-	const Vector3d *v = mesh.vertices.getArray();
-	size_t numverts = mesh.vertices.size();
-	for (size_t i=0;i<numverts;i++) {
-		output << v[i][0] << " " << v[i][1] << " " << v[i][2] << " " << "\n";
+	output << "OFF " << mesh.vertices.size() << " " << mesh.faces.size() << " 0\n";
+	for (const auto &v : mesh.vertices) {
+		output << v[0] << " " << v[1] << " " << v[2] << " " << "\n";
 	}
-	size_t cnt = 0;
-	for (size_t i=0;i<mesh.numfaces;i++) {
-		size_t nverts = 0;
-		while (mesh.indices[cnt++] != -1) nverts++;
-		output << nverts;
-		cnt -= nverts + 1;
-		for (size_t n=0;n<nverts;n++) output << " " << mesh.indices[cnt++];
+	for (const auto &f : mesh.faces) {
+		output << f.size();
+		for (const auto &i : f) output << " " << i;
 		output << "\n";
-        cnt++; // Skip the -1 marker
 	}
-
 }
 
 #endif // ENABLE_CGAL
