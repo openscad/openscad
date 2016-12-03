@@ -35,10 +35,8 @@
 
 size_t AbstractNode::idx_counter;
 
-AbstractNode::AbstractNode(const ModuleInstantiation *mi)
+AbstractNode::AbstractNode(const ModuleInstantiation *mi) : modinst(mi), idx(idx_counter++)
 {
-	modinst = mi;
-	idx = idx_counter++;
 }
 
 AbstractNode::~AbstractNode()
