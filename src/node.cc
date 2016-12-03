@@ -71,6 +71,21 @@ std::string AbstractIntersectionNode::name() const
 	return "intersection";
 }
 
+bool AbstractNode::isBackground() const
+{
+	return this->modinst && this->modinst->isBackground();
+}
+
+bool AbstractNode::isHighlight() const
+{
+	return this->modinst && this->modinst->isHighlight();
+}
+
+bool AbstractNode::isRoot() const
+{
+	return this->modinst && this->modinst->isRoot();
+}
+
 void AbstractNode::progress_prepare()
 {
 	std::for_each(this->children.begin(), this->children.end(), std::mem_fun(&AbstractNode::progress_prepare));

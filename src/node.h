@@ -40,6 +40,10 @@ public:
 	}
 	size_t index() const { return this->idx; }
 
+	bool isBackground() const;
+	bool isHighlight() const;
+	bool isRoot() const;
+
 	static void resetIndexCounter() { idx_counter = 1; }
 
 	// FIXME: Make protected
