@@ -18,6 +18,13 @@ class NodeVisitor :
 	public Visitor<class RotateExtrudeNode>,
 	public Visitor<class ImportNode>,
 	public Visitor<class PrimitiveNode>,
+	public Visitor<class CubeNode>,
+	public Visitor<class SphereNode>,
+	public Visitor<class CylinderNode>,
+	public Visitor<class PolyhedronNode>,
+	public Visitor<class SquareNode>,
+	public Visitor<class CircleNode>,
+	public Visitor<class PolygonNode>,
 	public Visitor<class TextNode>,
 	public Visitor<class ProjectionNode>,
 	public Visitor<class RenderNode>,
@@ -65,6 +72,27 @@ public:
 	}
   virtual Response visit(class State &state, const class PrimitiveNode &node) {
 		return visit(state, (const class LeafNode &)node);
+	}
+  virtual Response visit(class State &state, const class CubeNode &node) {
+		return visit(state, (const class PrimitiveNode &)node);
+	}
+  virtual Response visit(class State &state, const class SphereNode &node) {
+		return visit(state, (const class PrimitiveNode &)node);
+	}
+  virtual Response visit(class State &state, const class CylinderNode &node) {
+		return visit(state, (const class PrimitiveNode &)node);
+	}
+  virtual Response visit(class State &state, const class PolyhedronNode &node) {
+		return visit(state, (const class PrimitiveNode &)node);
+	}
+  virtual Response visit(class State &state, const class SquareNode &node) {
+		return visit(state, (const class PrimitiveNode &)node);
+	}
+  virtual Response visit(class State &state, const class CircleNode &node) {
+		return visit(state, (const class PrimitiveNode &)node);
+	}
+  virtual Response visit(class State &state, const class PolygonNode &node) {
+		return visit(state, (const class PrimitiveNode &)node);
 	}
   virtual Response visit(class State &state, const class TextNode &node) {
 		return visit(state, (const class AbstractPolyNode &)node);

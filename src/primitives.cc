@@ -79,11 +79,6 @@ Value PrimitiveModule::lookup_radius(const Context &ctx, const std::string &diam
 
 AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
-	PrimitiveNode *node = new PrimitiveNode(inst, this->type);
-
-	node->center = false;
-	node->x = node->y = node->z = node->h = node->r1 = node->r2 = 1;
-
 	AssignmentList args;
 
 	switch (this->type) {
@@ -115,105 +110,107 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 	Context c(ctx);
 	c.setVariables(args, evalctx);
 
-	node->fn = c.lookup_variable("$fn")->toDouble();
-	node->fs = c.lookup_variable("$fs")->toDouble();
-	node->fa = c.lookup_variable("$fa")->toDouble();
-
-	if (node->fs < F_MINIMUM) {
-		PRINTB("WARNING: $fs too small - clamping to %f", F_MINIMUM);
-		node->fs = F_MINIMUM;
-	}
-	if (node->fa < F_MINIMUM) {
-		PRINTB("WARNING: $fa too small - clamping to %f", F_MINIMUM);
-		node->fa = F_MINIMUM;
-	}
-
+	PrimitiveNode *node = nullptr;
 	switch (this->type)  {
 	case CUBE: {
 		ValuePtr size = c.lookup_variable("size");
 		ValuePtr center = c.lookup_variable("center");
-		size->getDouble(node->x);
-		size->getDouble(node->y);
-		size->getDouble(node->z);
-		size->getVec3(node->x, node->y, node->z);
-		if (center->type() == Value::BOOL) {
-			node->center = center->toBool();
-		}
+		double x = 1, y = 1, z = 1;
+		size->getDouble(x);
+		size->getDouble(y);
+		size->getDouble(z);
+		size->getVec3(x, y, z);
+		bool c = (center->type() == Value::BOOL) ? center->toBool() : false;
+		node = new CubeNode(inst, x, y, z, c);
 		break;
 	}
 	case SPHERE: {
-		const Value r = lookup_radius(c, "d", "r");
-		if (r.type() == Value::NUMBER) {
-			node->r1 = r.toDouble();
-		}
+		const Value rval = lookup_radius(c, "d", "r");
+		double r = rval.type() == Value::NUMBER ? rval.toDouble() : 1;
+		node = new SphereNode(inst, r);
 		break;
 	}
 	case CYLINDER: {
-		ValuePtr h = c.lookup_variable("h");
-		if (h->type() == Value::NUMBER) {
-			node->h = h->toDouble();
+		ValuePtr hval = c.lookup_variable("h");
+		double h = hval->type() == Value::NUMBER ? hval->toDouble() : 1;
+
+		const Value rval = lookup_radius(c, "d", "r");
+		const Value r1val = lookup_radius(c, "d1", "r1");
+		const Value r2val = lookup_radius(c, "d2", "r2");
+		double r1 = 1, r2 = 1;
+		if (rval.type() == Value::NUMBER) {
+			r1 = rval.toDouble();
+			r2 = rval.toDouble();
+		}
+		if (r1val.type() == Value::NUMBER) {
+			r1 = r1val.toDouble();
+		}
+		if (r2val.type() == Value::NUMBER) {
+			r2 = r2val.toDouble();
 		}
 
-		const Value r = lookup_radius(c, "d", "r");
-		const Value r1 = lookup_radius(c, "d1", "r1");
-		const Value r2 = lookup_radius(c, "d2", "r2");
-		if (r.type() == Value::NUMBER) {
-			node->r1 = r.toDouble();
-			node->r2 = r.toDouble();
-		}
-		if (r1.type() == Value::NUMBER) {
-			node->r1 = r1.toDouble();
-		}
-		if (r2.type() == Value::NUMBER) {
-			node->r2 = r2.toDouble();
-		}
-		
 		ValuePtr center = c.lookup_variable("center");
-		if (center->type() == Value::BOOL) {
-			node->center = center->toBool();
-		}
+		bool c = center->type() == Value::BOOL ? center->toBool() : false;
+		node = new CylinderNode(inst, r1, r2, h, c);
 		break;
 	}
 	case POLYHEDRON: {
-		node->points = c.lookup_variable("points");
-		node->faces = c.lookup_variable("faces");
-		if (node->faces->type() == Value::UNDEFINED) {
+		ValuePtr points = c.lookup_variable("points");
+		ValuePtr faces = c.lookup_variable("faces");
+		if (faces->type() == Value::UNDEFINED) {
 			// backwards compatible
-			node->faces = c.lookup_variable("triangles", true);
-			if (node->faces->type() != Value::UNDEFINED) {
+			faces = c.lookup_variable("triangles", true);
+			if (faces->type() != Value::UNDEFINED) {
 				printDeprecation("polyhedron(triangles=[]) will be removed in future releases. Use polyhedron(faces=[]) instead.");
 			}
 		}
+		node = new PolyhedronNode(inst, points, faces);
 		break;
 	}
 	case SQUARE: {
 		ValuePtr size = c.lookup_variable("size");
 		ValuePtr center = c.lookup_variable("center");
-		size->getDouble(node->x);
-		size->getDouble(node->y);
-		size->getVec2(node->x, node->y);
-		if (center->type() == Value::BOOL) {
-			node->center = center->toBool();
-		}
+		double x = 1, y = 1;
+		size->getDouble(x);
+		size->getDouble(y);
+		size->getVec2(x, y);
+		bool c = center->type() == Value::BOOL ? center->toBool() : false;
+		node = new SquareNode(inst, x, y, c);
 		break;
 	}
 	case CIRCLE: {
-		const Value r = lookup_radius(c, "d", "r");
-		if (r.type() == Value::NUMBER) {
-			node->r1 = r.toDouble();
-		}
+		const Value rval = lookup_radius(c, "d", "r");
+		double r = rval.type() == Value::NUMBER ? rval.toDouble() : 1;
+		node = new CircleNode(inst, r);
 		break;
 	}
 	case POLYGON: {
-		node->points = c.lookup_variable("points");
-		node->paths = c.lookup_variable("paths");
+		ValuePtr points = c.lookup_variable("points");
+		ValuePtr paths = c.lookup_variable("paths");
+		node = new PolygonNode(inst, points, paths);
 		break;
 	}
 	}
 
-	node->convexity = c.lookup_variable("convexity", true)->toDouble();
-	if (node->convexity < 1)
-		node->convexity = 1;
+	int convexity = c.lookup_variable("convexity", true)->toDouble();
+	if (convexity < 1) convexity = 1;
+
+	double fn = c.lookup_variable("$fn")->toDouble();
+	double fs = c.lookup_variable("$fs")->toDouble();
+	double fa = c.lookup_variable("$fa")->toDouble();
+	if (fs < F_MINIMUM) {
+		PRINTB("WARNING: $fs too small - clamping to %f", F_MINIMUM);
+		fs = F_MINIMUM;
+	}
+	if (fa < F_MINIMUM) {
+		PRINTB("WARNING: $fa too small - clamping to %f", F_MINIMUM);
+		fa = F_MINIMUM;
+	}
+
+	node->convexity = convexity;
+	node->fn = fn;
+	node->fs = fs;
+	node->fa = fa;
 
 	return node;
 }
