@@ -132,8 +132,8 @@ void CSGTreeEvaluator::applyToChildren(State &state, const AbstractNode &node, O
 		}
 	}
 	if (t1) {
-		if (node.modinst->isBackground()) t1->setBackground(true);
-		if (node.modinst->isHighlight()) t1->setHighlight(true);
+		if (node.isBackground()) t1->setBackground(true);
+		if (node.isHighlight()) t1->setHighlight(true);
 	}
 	this->stored_term[node.index()] = t1;
 }

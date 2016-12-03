@@ -80,7 +80,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const Abstrac
 {
 	unsigned int dim = 0;
 	for(const auto &item : this->visitedchildren[node.index()]) {
-		if (!item.first->modinst->isBackground() && item.second) {
+		if (!item.first->isBackground() && item.second) {
 			if (!dim) dim = item.second->getDimension();
 			else if (dim != item.second->getDimension()) {
 				PRINT("WARNING: Mixing 2D and 3D objects is not supported.");
@@ -205,7 +205,7 @@ std::vector<const class Polygon2d *> GeometryEvaluator::collectChildren2D(const 
 	for(const auto &item : this->visitedchildren[node.index()]) {
 		const AbstractNode *chnode = item.first;
 		const shared_ptr<const Geometry> &chgeom = item.second;
-		if (chnode->modinst->isBackground()) continue;
+		if (chnode->isBackground()) continue;
 
 		// NB! We insert into the cache here to ensure that all children of
 		// a node is a valid object. If we inserted as we created them, the 
@@ -278,7 +278,7 @@ Geometry::Geometries GeometryEvaluator::collectChildren3D(const AbstractNode &no
 	for(const auto &item : this->visitedchildren[node.index()]) {
 		const AbstractNode *chnode = item.first;
 		const shared_ptr<const Geometry> &chgeom = item.second;
-		if (chnode->modinst->isBackground()) continue;
+		if (chnode->isBackground()) continue;
 
 		// NB! We insert into the cache here to ensure that all children of
 		// a node is a valid object. If we inserted as we created them, the 
@@ -952,8 +952,7 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 				for(const auto &item : this->visitedchildren[node.index()]) {
 					const AbstractNode *chnode = item.first;
 					const shared_ptr<const Geometry> &chgeom = item.second;
-					// FIXME: Don't use deep access to modinst members
-					if (chnode->modinst->isBackground()) continue;
+					if (chnode->isBackground()) continue;
 
 					const Polygon2d *poly = NULL;
 
