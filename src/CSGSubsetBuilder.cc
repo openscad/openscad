@@ -25,13 +25,30 @@
 const AbstractNode *CSGSubsetBuilder::buildCSG(const AbstractNode &node)
 {
 	this->traverse(node);
-	return this->transformed[&node];
+	const AbstractNode *rootnode = this->transformed[&node];
+	if (rootnode->getChildren().size() == 1) rootnode = rootnode->getChildren().front();
+	return rootnode;
 }
 
-void CSGSubsetBuilder::addTransformedNode(const State &state, const AbstractNode *node, AbstractNode *newnode)
+void CSGSubsetBuilder::addTransformedNode(const State &state, const AbstractNode *node)
 {
-	if (state.parent()) this->transformed[state.parent()]->children.push_back(newnode); // FIXME: direct member access
-	this->transformed[node] = newnode;
+	AbstractNode *newnode = this->transformed[node];
+	if (state.isPostfix() && state.parent()) {
+//	if (state.isPostfix() && state.parent() && newnode->getChildren().size() > 0) {
+		if (dynamic_cast<CsgOpNode*>(newnode)) {
+			if (newnode->getChildren().size() == 1) {
+				this->transformed[state.parent()]->children.push_back(newnode->getChildren().front());
+			}
+			else if (newnode->getChildren().size() > 1) {
+				this->transformed[state.parent()]->children.push_back(newnode); // FIXME: direct member access
+			}
+		}
+		else {
+			this->transformed[state.parent()]->children.push_back(newnode); // FIXME: direct member access
+		}
+	}
+//	if (state.parent()) this->transformed[state.parent()]->children.push_back(newnode); // FIXME: direct member access
+//	this->transformed[node] = newnode;
 }
 
 PrimitiveNode *CSGSubsetBuilder::evaluateGeometry(const State &state, const AbstractNode &node)
@@ -102,7 +119,10 @@ PrimitiveNode *CSGSubsetBuilder::evaluateGeometry(const State &state, const Abst
 Response CSGSubsetBuilder::visit(State &state, const AbstractNode &node)
 {
 	if (state.isPrefix()) {
-		this->addTransformedNode(state, &node, new CsgOpNode(node.modinst, OPENSCAD_UNION));
+		this->transformed[&node] = new CsgOpNode(node.modinst, OPENSCAD_UNION);
+	}
+	else if (state.isPostfix()) {
+		this->addTransformedNode(state, &node);
 	}
 	return ContinueTraversal;
 }
@@ -110,7 +130,10 @@ Response CSGSubsetBuilder::visit(State &state, const AbstractNode &node)
 Response CSGSubsetBuilder::visit(State &state, const AbstractIntersectionNode &node)
 {
 	if (state.isPrefix()) {
-		this->addTransformedNode(state, &node, new CsgOpNode(node.modinst, OPENSCAD_INTERSECTION));
+		this->transformed[&node] = new CsgOpNode(node.modinst, OPENSCAD_INTERSECTION);
+	}
+	else if (state.isPostfix()) {
+		this->addTransformedNode(state, &node);
 	}
 	return ContinueTraversal;
 }
@@ -118,8 +141,10 @@ Response CSGSubsetBuilder::visit(State &state, const AbstractIntersectionNode &n
 Response CSGSubsetBuilder::visit(State &state, const AbstractPolyNode &node)
 {
 	if (state.isPrefix()) {
-		PrimitiveNode *newnode = this->evaluateGeometry(state, node);
-		if (newnode) this->addTransformedNode(state, &node, newnode);
+		this->transformed[&node] = this->evaluateGeometry(state, node);
+	}
+	else if (state.isPostfix()) {
+		this->addTransformedNode(state, &node);
 	}
 	return PruneTraversal;
 }
@@ -127,7 +152,10 @@ Response CSGSubsetBuilder::visit(State &state, const AbstractPolyNode &node)
 Response CSGSubsetBuilder::visit(State &state, const CsgOpNode &node)
 {
 	if (state.isPrefix()) {
-		this->addTransformedNode(state, &node, new CsgOpNode(node.modinst, node.type));
+		this->transformed[&node] = new CsgOpNode(node.modinst, node.type);
+	}
+	else if (state.isPostfix()) {
+		this->addTransformedNode(state, &node);
 	}
 	return ContinueTraversal;
 }
@@ -136,7 +164,10 @@ Response CSGSubsetBuilder::visit(State &state, const TransformNode &node)
 {
 	if (state.isPrefix()) {
 		state.setMatrix(state.matrix() * node.matrix);
-		this->addTransformedNode(state, &node, new CsgOpNode(node.modinst, OPENSCAD_UNION));
+		this->transformed[&node] = new CsgOpNode(node.modinst, OPENSCAD_UNION);
+	}
+	else if (state.isPostfix()) {
+		this->addTransformedNode(state, &node);
 	}
 	return ContinueTraversal;
 }
@@ -145,7 +176,10 @@ Response CSGSubsetBuilder::visit(State &state, const ColorNode &node)
 {
 	if (state.isPrefix()) {
 		// FIXME: Keep color?	if (!state.color().isValid()) state.setColor(node.color);
-		this->addTransformedNode(state, &node, new CsgOpNode(node.modinst, OPENSCAD_UNION));
+		this->transformed[&node] = new CsgOpNode(node.modinst, OPENSCAD_UNION);
+	}
+	else if (state.isPostfix()) {
+		this->addTransformedNode(state, &node);
 	}
 	return ContinueTraversal;
 }
@@ -153,8 +187,10 @@ Response CSGSubsetBuilder::visit(State &state, const ColorNode &node)
 Response CSGSubsetBuilder::visit(State &state, const RenderNode &node)
 {
 	if (state.isPrefix()) {
-		PrimitiveNode *newnode = this->evaluateGeometry(state, node);
-		if (newnode) this->addTransformedNode(state, &node, newnode);
+		this->transformed[&node] = this->evaluateGeometry(state, node);
+	}
+	else if (state.isPostfix()) {
+		this->addTransformedNode(state, &node);
 	}
 	
 	return PruneTraversal;
@@ -163,8 +199,10 @@ Response CSGSubsetBuilder::visit(State &state, const RenderNode &node)
 Response CSGSubsetBuilder::visit(State &state, const CgaladvNode &node)
 {
 	if (state.isPrefix()) {
-		PrimitiveNode *newnode = this->evaluateGeometry(state, node);
-		if (newnode) this->addTransformedNode(state, &node, newnode);
+		this->transformed[&node] = this->evaluateGeometry(state, node);
+	}
+	else if (state.isPostfix()) {
+		this->addTransformedNode(state, &node);
 	}
 	return PruneTraversal;
 }

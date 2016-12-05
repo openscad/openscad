@@ -26,7 +26,7 @@ public:
 	const AbstractNode *buildCSG(const AbstractNode &node);
 
 private:
-	void addTransformedNode(const State &state, const AbstractNode *node, AbstractNode *newnode);
+	void addTransformedNode(const State &state, const AbstractNode *node);
 	PrimitiveNode *evaluateGeometry(const State &state, const AbstractNode &node);
 
 	const Tree &tree;
