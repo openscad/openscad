@@ -317,6 +317,7 @@ HEADERS += src/version_check.h \
            src/csgops.h \
            src/CSGTreeNormalizer.h \
            src/CSGTreeEvaluator.h \
+           src/CSGSubsetBuilder.h \
            src/dxfdata.h \
            src/dxfdim.h \
            src/export.h \
@@ -437,6 +438,7 @@ SOURCES += \
            src/primitivenode.cc \
            src/CSGTreeNormalizer.cc \
            src/CSGTreeEvaluator.cc \
+           src/CSGSubsetBuilder.cc \
            src/Geometry.cc \
            src/Polygon2d.cc \
            src/clipper-utils.cc \

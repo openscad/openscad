@@ -46,6 +46,7 @@
 #include "FontCache.h"
 #include "OffscreenView.h"
 #include "GeometryEvaluator.h"
+#include "CsgSubsetBuilder.h"
 
 #include"parameter/parameterset.h"
 #include <string>
@@ -437,7 +438,12 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		}
 		else {
 			fs::current_path(fparent); // Force exported filenames to be relative to document path
-			fstream << tree.getString(*root_node) << "\n";
+			CSGSubsetBuilder builder(tree, &geomevaluator);
+			auto *csgroot = builder.buildCSG(*tree.root());
+			Tree csgtree;
+			csgtree.setRoot(csgroot);
+			fstream << csgtree.getString(*csgroot) << "\n";
+//			fstream << tree.getString(*root_node) << "\n";
 			fstream.close();
 		}
 	}
