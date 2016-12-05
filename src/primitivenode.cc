@@ -17,6 +17,11 @@ static void generate_circle(point2d *circle, double r, int fragments)
 	}
 }
 
+PrimitiveNode::PrimitiveNode(const ModuleInstantiation *mi, primitive_type_e type)
+	: LeafNode(mi), type(type), fn(0), fs(2), fa(12), convexity(1)
+{
+}
+
 const Geometry *CubeNode::createGeometry() const
 {
 	PolySet *p = new PolySet(3, true);

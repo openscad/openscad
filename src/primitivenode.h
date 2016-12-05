@@ -16,8 +16,8 @@ enum primitive_type_e {
 class PrimitiveNode : public LeafNode
 {
 public:
+	PrimitiveNode(const ModuleInstantiation *mi, primitive_type_e type);
 	VISITABLE();
-	PrimitiveNode(const ModuleInstantiation *mi, primitive_type_e type) : LeafNode(mi), type(type) { }
 	virtual std::string toString() const = 0;
 	virtual std::string name() const = 0;
 	virtual const Geometry *createGeometry() const = 0;
