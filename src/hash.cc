@@ -11,6 +11,9 @@ namespace std {
 	std::size_t hash<Vector3l>::operator()(const Vector3l &s) const {
 		return Eigen::hash_value(s);
 	}
+	std::size_t hash<Vector2d>::operator()(const Vector2d &s) const {
+		return Eigen::hash_value(s);
+	}
 }
 
 namespace Eigen {
@@ -27,6 +30,12 @@ namespace Eigen {
   size_t hash_value(Eigen::Matrix<int64_t, 3, 1> const &v) {
     size_t seed = 0;
     for (int i=0;i<3;i++) boost::hash_combine(seed, v[i]);
+    return seed;
+  }
+  size_t hash_value(Vector2d const &v) {
+    size_t seed = 0;
+		boost::hash_combine(seed, v[0]);
+		boost::hash_combine(seed, v[1]);
     return seed;
   }
 }
