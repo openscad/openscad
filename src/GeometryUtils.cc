@@ -2,7 +2,7 @@
 #include "tesselator.h"
 #include "printutils.h"
 #include "Reindexer.h"
-#include "PolySet.h"
+#include "polyset.h"
 #include <boost/lexical_cast.hpp>
 #include <unordered_map>
 #include <cmath>
