@@ -237,20 +237,19 @@ void ParameterWidget::clear(){
 			it++;
 		}
 	}
-	for (group_map::iterator it = groupMap.begin(); it != groupMap.end(); it++) {
+	for (group_map::iterator it = groupMap.begin(); it != groupMap.end(); it++) 		{
 		it->second.parameterVector.clear();
 	}
-
-	for (entry_map_t::iterator it = entries.begin(); it != entries.end(); it++) {
-		if (groupMap.find(it->second->groupName) == groupMap.end()) {
+	for (int it=0; it<ParameterPos.size(); it++) {
+		std::string groupName=entries[ParameterPos[it]]->groupName;
+		if (groupMap.find(groupName) == groupMap.end()) {
 			groupInst enter;
-			enter.parameterVector.push_back(it->first);
+			enter.parameterVector.push_back(ParameterPos[it]);
 			enter.show = false;
-			groupMap[it->second->groupName] = enter;
+			groupMap[groupName] = enter;
 		}
 		else {
-			groupMap[it->second->groupName].parameterVector.push_back(it->first);
-			
+			groupMap[groupName].parameterVector.push_back(ParameterPos[it]);
 		}
 	}
 }

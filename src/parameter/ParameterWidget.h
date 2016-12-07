@@ -36,6 +36,11 @@ class ParameterWidget : public QWidget, public Ui::ParameterWidget, public Param
 {
 	Q_OBJECT
 private:
+	struct groupInst {
+		std::vector<std::string> parameterVector;
+		bool show;
+	};
+
 	typedef std::map<std::string,groupInst > group_map;
 	group_map groupMap;
 	QTimer autoPreviewTimer;
