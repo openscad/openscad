@@ -211,14 +211,17 @@ void ParameterWidget::connectWidget()
 		}
 	}
 	
+	groupPos.resize( std::distance(groupPos.begin(),std::unique (groupPos.begin(), groupPos.end())));
 	begin();
-	for (group_map::iterator it = groupMap.begin(); it != groupMap.end(); it++) {
+	for (std::vector<std::string>::iterator it = groupPos.begin(); it != groupPos.end(); it++) {
+		if(groupMap.find(*it)==groupMap.end())
+			continue;
 		std::vector<std::string> gr;
-		gr = it->second.parameterVector;
+		gr = groupMap[*it].parameterVector;
 		for(unsigned int i=0;i < gr.size();i++) {
 			AddParameterWidget(gr[i]);
 		}
-		GroupWidget *groupWidget = new GroupWidget(it->second.show, QString::fromStdString(it->first));
+		GroupWidget *groupWidget = new GroupWidget(groupMap[*it].show, QString::fromStdString(*it));
 		groupWidget->setContentLayout(*anyLayout);
 		this->scrollAreaWidgetContents->layout()->addWidget(groupWidget);
 		anyLayout = new QVBoxLayout();
@@ -237,11 +240,14 @@ void ParameterWidget::clear(){
 			it++;
 		}
 	}
-	for (group_map::iterator it = groupMap.begin(); it != groupMap.end(); it++) 		{
+	for (group_map::iterator it = groupMap.begin(); it != groupMap.end(); it++){
 		it->second.parameterVector.clear();
 	}
+
+	groupPos.clear();
 	for (int it=0; it<ParameterPos.size(); it++) {
 		std::string groupName=entries[ParameterPos[it]]->groupName;
+		groupPos.push_back(groupName);
 		if (groupMap.find(groupName) == groupMap.end()) {
 			groupInst enter;
 			enter.parameterVector.push_back(ParameterPos[it]);

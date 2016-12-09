@@ -40,7 +40,7 @@ private:
 		std::vector<std::string> parameterVector;
 		bool show;
 	};
-
+	std::vector<std::string> groupPos;
 	typedef std::map<std::string,groupInst > group_map;
 	group_map groupMap;
 	QTimer autoPreviewTimer;
