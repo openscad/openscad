@@ -210,8 +210,6 @@ void ParameterWidget::connectWidget()
 			it++;
 		}
 	}
-	
-	groupPos.resize( std::distance(groupPos.begin(),std::unique (groupPos.begin(), groupPos.end())));
 	begin();
 	for (std::vector<std::string>::iterator it = groupPos.begin(); it != groupPos.end(); it++) {
 		if(groupMap.find(*it)==groupMap.end())
@@ -242,19 +240,25 @@ void ParameterWidget::clear(){
 	}
 	for (group_map::iterator it = groupMap.begin(); it != groupMap.end(); it++){
 		it->second.parameterVector.clear();
+		it->second.inList=false;
 	}
 
 	groupPos.clear();
 	for (int it=0; it<ParameterPos.size(); it++) {
 		std::string groupName=entries[ParameterPos[it]]->groupName;
-		groupPos.push_back(groupName);
 		if (groupMap.find(groupName) == groupMap.end()) {
+			groupPos.push_back(groupName);
 			groupInst enter;
 			enter.parameterVector.push_back(ParameterPos[it]);
 			enter.show = false;
+			enter.inList=true;
 			groupMap[groupName] = enter;
 		}
 		else {
+			if(groupMap[groupName].inList == false){
+				groupMap[groupName].inList=true;
+				groupPos.push_back(groupName);
+			}
 			groupMap[groupName].parameterVector.push_back(ParameterPos[it]);
 		}
 	}
