@@ -34,6 +34,7 @@
 #include <unistd.h>
 #endif
 
+#include<string>
 #include "FileModule.h"
 #include "UserModule.h"
 #include "ModuleInstantiation.h"
@@ -49,7 +50,7 @@
 namespace fs = boost::filesystem;
 
 #define YYMAXDEPTH 20000
-#define LOC(loc) Location(loc.first_line, loc.first_column, loc.last_line, loc.last_column)
+#define LOC(loc) Location(loc.first_line, loc.first_column, loc.last_line, loc.last_column, yylloc.filename)
   
 int parser_error_pos = -1;
 
@@ -69,8 +70,22 @@ extern FILE *lexerin;
 extern const char *parser_input_buffer;
 const char *parser_input_buffer;
 fs::path parser_sourcefile;
-
+std::string filename;
 %}
+
+%code requires{
+
+/* current filename here for the lexer */
+typedef struct YYLTYPE {
+int first_line;
+int first_column;
+int last_line;
+int last_column;
+std::string filename;
+} YYLTYPE;
+
+# define YYLTYPE_IS_DECLARED 1
+}
 
 %union {
   char *text;
@@ -634,7 +649,7 @@ FileModule *parse(const char *text, const fs::path &filename, int debug)
   parser_error_pos = -1;
   parser_input_buffer = text;
   parser_sourcefile = fs::absolute(filename);
-
+  ::filename=filename.parent_path().generic_string();
   rootmodule = new FileModule();
   rootmodule->setModulePath(filename.parent_path().generic_string());
   scope_stack.push(&rootmodule->scope);

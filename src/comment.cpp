@@ -267,8 +267,9 @@ void CommentParser::collectParameters(const char *fulltext, FileModule *root_mod
  
     // get location of assignment node 
     int firstLine = assignment.location().firstLine();
-
-    if(firstLine>=parseTill) continue;
+    if(firstLine>=parseTill || assignment.location().fileName()!=root_module->modulePath()){
+	 continue;
+    }
     // making list to add annotations
     AnnotationList *annotationList = new AnnotationList();
          

@@ -82,8 +82,11 @@ extern FileModule *rootmodule;
   The yycolumn is manually reset for each encountered newline.
 */
 extern YYLTYPE parserlloc;
+
+extern std::string filename;
 int yycolumn = 1;
 #define YY_USER_ACTION {              \
+  parserlloc.filename = filename;     \
   parserlloc.first_line = yylineno;   \
   parserlloc.first_column = yycolumn; \
   yycolumn = yycolumn + yyleng;       \
@@ -99,9 +102,8 @@ std::vector<int> lineno_stack;
 std::vector<FILE*> openfiles;
 std::vector<std::string> openfilenames;
 
-std::string filename;
 std::string filepath;
-
+std::string filenameUse;
 %}
 
 %option yylineno
@@ -133,13 +135,13 @@ include[ \t\r\n]*"<"	{ BEGIN(cond_include); filepath = filename = ""; }
 
 use[ \t\r\n]*"<"	{ BEGIN(cond_use); }
 <cond_use>{
-[^\t\r\n>]+	{ filename = yytext; }
+[^\t\r\n>]+	{ filenameUse = yytext; }
  ">"		{
 	BEGIN(INITIAL);
-        fs::path fullpath = find_valid_path(sourcefile().parent_path(), fs::path(filename), &openfilenames);
+        fs::path fullpath = find_valid_path(sourcefile().parent_path(), fs::path(filenameUse), &openfilenames);
 	if (fullpath.empty()) {
-          PRINTB("WARNING: Can't open library '%s'.", filename);
-          parserlval.text = strdup(filename.c_str());
+          PRINTB("WARNING: Can't open library '%s'.", filenameUse);
+          parserlval.text = strdup(filenameUse.c_str());
 	} else {
           handle_dep(fullpath.string());
           parserlval.text = strdup(fullpath.string().c_str());
@@ -150,6 +152,10 @@ use[ \t\r\n]*"<"	{ BEGIN(cond_use); }
 
 <<EOF>> {
 	if (!filename_stack.empty()) filename_stack.pop_back();
+
+	if (filename_stack.empty()) {
+		filename=rootmodule->modulePath();
+	}
 	if (!lineno_stack.empty()) {
 		yylineno = lineno_stack.back();
 		lineno_stack.pop_back();
@@ -306,7 +312,6 @@ void includefile()
   yylineno = 1;
   openfiles.push_back(yyin);
   openfilenames.push_back(fullname);
-  filename.clear();
 
   yypush_buffer_state(yy_create_buffer(yyin, YY_BUF_SIZE));
 }
