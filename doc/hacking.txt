@@ -8,4 +8,4 @@
    * cheatsheet
    * Modules: tooltips (editor.cc)
    * External editor modes
-   * Add to RELEASE_NOTES
+   * Add to RELEASE_NOTES.md
