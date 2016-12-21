@@ -29,6 +29,7 @@ void ParameterExtractor::setParameters(const FileModule* module)
 
   ModuleContext ctx;
 
+  ParameterPos.clear();
   for (auto &assignment : module->scope.assignments) {
     const Annotation *param = assignment.annotation("Parameter");
     if (!param) continue;
@@ -57,6 +58,7 @@ void ParameterExtractor::setParameters(const FileModule* module)
       }
     }
     entryObject->set = true;
+    ParameterPos.push_back(assignment.name);
   }
   connectWidget();
   this->resetPara = false;

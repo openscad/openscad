@@ -152,6 +152,12 @@ get_ubuntu_14_deps()
   get_debian_8_deps
 }
 
+get_arch_deps()
+{
+  pacman -S --noconfirm qt5 qscintilla-qt5 cgal gmp mpfr boost \
+    opencsg glew eigen glib2 fontconfig freetype2 harfbuzz bison flex make
+}
+
 get_ubuntu_16_deps()
 {
   apt-get -y install libxi-dev libxml2-dev libfontconfig1-dev
@@ -216,6 +222,8 @@ if [ -e /etc/issue ]; then
   get_mageia_deps
  elif [ "`grep -i qomo /etc/issue`" ]; then
   get_qomo_deps
+ elif [ "`grep -i arch /etc/issue`" ]; then
+   get_arch_deps
  elif [ -e /etc/fedora-release ]; then
   if [ "`grep -i fedora.release /etc/fedora-release`" ]; then
     get_fedora_deps_dnf
