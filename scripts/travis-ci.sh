@@ -2,7 +2,7 @@
 
 set -x
 
-qmake CONFIG+=experimental CONFIG+=nogui
+qmake CONFIG+=experimental CONFIG+=nogui CONFIG+=debug
 make
 
 cd tests
