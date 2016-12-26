@@ -211,11 +211,11 @@ MainWindow::MainWindow(const QString &filename)
 
 #ifdef USE_SCINTILLA_EDITOR
 	if (useScintilla) {
+		connect(editor, SIGNAL(previewRequest()), this, SLOT(actionRenderPreview()));
 		connect(Preferences::inst(), SIGNAL(editorConfigChanged()), editor, SLOT(applySettings()));
 		Preferences::inst()->fireEditorConfigChanged();
 	}
 #endif
-	connect(editor, SIGNAL(previewRequest()), this, SLOT(actionRenderPreview()));
 
 	editorDockContents->layout()->addWidget(editor);
 
