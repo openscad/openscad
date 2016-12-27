@@ -33,30 +33,7 @@ fi
 # opencsgtest_issue1258
 # throwntogethertest_issue1089
 # throwntogethertest_issue1215
-ctest $PARALLEL -E "\
-opencsgtest_rotate_extrude-tests|\
-opencsgtest_render-tests|\
-opencsgtest_rotate_extrude-hole|\
-opencsgtest_internal-cavity|\
-opencsgtest_internal-cavity-polyhedron|\
-opencsgtest_minkowski3-erosion|\
-opencsgtest_issue835|\
-opencsgtest_issue911|\
-opencsgtest_issue913|\
-opencsgtest_issue1215|\
-opencsgtest_issue1105d|\
-dxfpngtest_text-font-direction-tests|\
-cgalpngtest_text-font-direction-tests|\
-opencsgtest_text-font-direction-tests|\
-csgpngtest_text-font-direction-tests|\
-svgpngtest_text-font-direction-tests|\
-throwntogethertest_text-font-direction-tests|\
-throwntogethertest_issue964|\
-opencsgtest_issue1165|\
-opencsgtest_issue1258|\
-throwntogethertest_issue1089|\
-throwntogethertest_issue1215\
-"
+ctest $PARALLEL -R transform-nan-inf
 if [[ $? != 0 ]]; then
   echo "Test failure"
   exit 1
