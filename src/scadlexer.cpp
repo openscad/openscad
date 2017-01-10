@@ -24,7 +24,7 @@ ScadLexer::ScadLexer(QObject *parent) : QsciLexerCPP(parent)
 	// -> Style: GlobalClass
 	keywordSet[3] =
 		"cube sphere cylinder polyhedron square circle polygon text "
-		"minkowski hull resize child echo union difference "
+		"minkowski hull resize child children echo union difference "
 		"intersection linear_extrude rotate_extrude import group  "
 		"projection render surface scale rotate mirror translate "
 		"multmatrix color offset ";
