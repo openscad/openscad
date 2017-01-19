@@ -208,13 +208,8 @@ FORMS   += src/MainWindow.ui \
            src/parameter/ParameterEntryWidget.ui
 
 # AST nodes
-win* {
-  FLEXSOURCES = src/lexer.l
-  BISONSOURCES = src/parser.y
-} else {
-  LEXSOURCES += src/lexer.l
-  YACCSOURCES += src/parser.y
-}
+FLEXSOURCES = src/lexer.l
+BISONSOURCES = src/parser.y
 
 HEADERS += src/AST.h \
            src/ModuleInstantiation.h \
