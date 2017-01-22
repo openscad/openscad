@@ -553,7 +553,7 @@ Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 	if (state.isPostfix()) {
 		shared_ptr<const class Geometry> geom;
 		if (!isSmartCached(node)) {
-			if (!node.matrix.matrix().allFinite()) {
+			if (matrix_contains_infinity(node.matrix) || matrix_contains_nan(node.matrix)) {
 				// due to the way parse/eval works we can't currently distinguish between NaN and Inf
 				PRINT("WARNING: Transformation matrix contains Not-a-Number and/or Infinity - removing object.");
 			}
