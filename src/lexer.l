@@ -31,7 +31,7 @@
 #include "printutils.h"
 #include "parsersettings.h"
 #include "Assignment.h"
-#include "parser_yacc.h"
+#include "parser.hxx"
 #include "FileModule.h"
 #include <assert.h>
 #include <boost/lexical_cast.hpp>
