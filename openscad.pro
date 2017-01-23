@@ -49,28 +49,6 @@ TEMPLATE = app
 INCLUDEPATH += src
 DEPENDPATH += src
 
-# Handle custom library location.
-# Used when manually installing 3rd party libraries
-isEmpty(OPENSCAD_LIBDIR) OPENSCAD_LIBDIR = $$(OPENSCAD_LIBRARIES)
-macx:isEmpty(OPENSCAD_LIBDIR) {
-  exists(/opt/local):exists(/usr/local/Cellar) {
-    error("It seems you might have libraries in both /opt/local and /usr/local. Please specify which one to use with qmake OPENSCAD_LIBDIR=<prefix>")
-  } else {
-    exists(/opt/local) {
-      #Default to MacPorts on Mac OS X
-      message("Automatically searching for libraries in /opt/local. To override, use qmake OPENSCAD_LIBDIR=<prefix>")
-      OPENSCAD_LIBDIR = /opt/local
-    } else:exists(/usr/local/Cellar) {
-      message("Automatically searching for libraries in /usr/local. To override, use qmake OPENSCAD_LIBDIR=<prefix>")
-      OPENSCAD_LIBDIR = /usr/local
-    }
-  }
-}
-!isEmpty(OPENSCAD_LIBDIR) {
-  QMAKE_INCDIR = $$OPENSCAD_LIBDIR/include
-  QMAKE_LIBDIR = $$OPENSCAD_LIBDIR/lib
-}
-
 # add CONFIG+=deploy to the qmake command-line to make a deployment build
 deploy {
   message("Building deployment version")
@@ -230,13 +208,8 @@ FORMS   += src/MainWindow.ui \
            src/parameter/ParameterEntryWidget.ui
 
 # AST nodes
-win* {
-  FLEXSOURCES = src/lexer.l
-  BISONSOURCES = src/parser.y
-} else {
-  LEXSOURCES += src/lexer.l
-  YACCSOURCES += src/parser.y
-}
+FLEXSOURCES += src/lexer.l 
+BISONSOURCES += src/parser.y
 
 HEADERS += src/AST.h \
            src/ModuleInstantiation.h \
@@ -257,35 +230,8 @@ SOURCES += src/AST.cc \
            src/assignment.cc
 
 # Comment parser
-FLEX = src/comment_lexer.l
-BISON = src/comment_parser.y
-
-flexs.name = Flex ${QMAKE_FILE_IN}
-flexs.input = FLEX
-flexs.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}.cpp
-flexs.commands = flex -o${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}.cpp ${QMAKE_FILE_IN}
-flexs.CONFIG += target_predeps
-flexs.variable_out = GENERATED_SOURCES
-silent:flexs.commands = @echo Lex ${QMAKE_FILE_IN} && $$flexs.commands
-QMAKE_EXTRA_COMPILERS += flexs
-
-bison.name = Bison ${QMAKE_FILE_IN}
-biso.input = BISON
-biso.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}.cpp
-biso.commands = bison -d -o ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}.cpp ${QMAKE_FILE_IN}
-biso.commands += && if [[ -e ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}_yacc.hpp ]] ; then mv ${QMAKE_FILE_PATH}/${QMAKE_FILE_BASE}.hpp ${QMAKE_FILE_PATH}/${QMAKE_FILE_BASE}.h ; fi
-biso.CONFIG += target_predeps
-biso.variable_out = GENERATED_SOURCES
-silent:biso.commands = @echo Bison ${QMAKE_FILE_IN} && $$biso.commands
-QMAKE_EXTRA_COMPILERS += biso
-
-biso_header.input = BISON
-biso_header.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}.h
-biso_header.commands = bison -d -o ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}.cpp ${QMAKE_FILE_IN}
-biso_header.commands += && if [ -e ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}.hpp ]; then mv ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}.hpp ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}.h ; fi
-biso_header.CONFIG += target_predeps no_link
-silent:biso_header.commands = @echo Bison ${QMAKE_FILE_IN} && $$biso.commands
-QMAKE_EXTRA_COMPILERS += biso_header
+FLEXSOURCES += src/comment_lexer.l
+BISONSOURCES += src/comment_parser.y
 
 HEADERS += src/version_check.h \
            src/ProgressWidget.h \

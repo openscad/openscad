@@ -8,7 +8,8 @@ class ParameterExtractor
 protected:
 	typedef std::map<std::string, class ParameterObject *> entry_map_t;
 	entry_map_t entries;
-	
+	std::vector<std::string> ParameterPos;
+
 public:
 	ParameterExtractor();
 	virtual ~ParameterExtractor();

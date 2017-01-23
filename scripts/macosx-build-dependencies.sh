@@ -32,7 +32,7 @@ OPTION_CXX11=true
 
 PACKAGES=(
     # NB! For eigen, also update the path in the function
-    "eigen 3.2.8"
+    "eigen 3.3.1"
     "gmp 6.1.1"
     "mpfr 3.1.4"
     "boost 1.61.0"
@@ -451,29 +451,11 @@ build_eigen()
   cd $BASEDIR/src
   rm -rf eigen-$version
 
-  EIGENDIR="none"
-  if [ $version = "3.1.2" ]; then EIGENDIR=eigen-eigen-5097c01bcdc4;
-  elif [ $version = "3.1.3" ]; then EIGENDIR=eigen-eigen-2249f9c22fe8;
-  elif [ $version = "3.1.4" ]; then EIGENDIR=eigen-eigen-36bf2ceaf8f5;
-  elif [ $version = "3.2.0" ]; then EIGENDIR=eigen-eigen-ffa86ffb5570;
-  elif [ $version = "3.2.1" ]; then EIGENDIR=eigen-eigen-6b38706d90a9;
-  elif [ $version = "3.2.2" ]; then EIGENDIR=eigen-eigen-1306d75b4a21;
-  elif [ $version = "3.2.3" ]; then EIGENDIR=eigen-eigen-36fd1ba04c12;
-  elif [ $version = "3.2.4" ]; then EIGENDIR=eigen-eigen-10219c95fe65;
-  elif [ $version = "3.2.6" ]; then EIGENDIR=eigen-eigen-c58038c56923;
-  elif [ $version = "3.2.8" ]; then EIGENDIR=eigen-eigen-07105f7124f9;
-  fi  
-  
-  if [ $EIGENDIR = "none" ]; then
-    echo Unknown eigen version. Please edit script.
-    exit 1
-  fi
-  rm -rf ./$EIGENDIR
-
   if [ ! -f eigen-$version.tar.bz2 ]; then
     curl -LO http://bitbucket.org/eigen/eigen/get/$version.tar.bz2
     mv $version.tar.bz2 eigen-$version.tar.bz2
   fi
+  EIGENDIR=`tar tjf eigen-$version.tar.bz2 | head -1 | cut -f1 -d"/"`
   tar xjf eigen-$version.tar.bz2
   ln -s ./$EIGENDIR eigen-$version
   cd eigen-$version

@@ -8,11 +8,6 @@
 #include <QWidget>
 #include <vector>
 
-struct groupInst {
-	std::vector<std::string> parameterVector;
-	bool show;
-};
-
 class GroupWidget : public QWidget {
 	Q_OBJECT
 private:
@@ -24,7 +19,6 @@ private:
 	int animationDuration;
 	bool *show;
 public:
-	groupInst groupinst;
 	explicit GroupWidget(bool &show,const QString & title = "", const int animationDuration = 0, QWidget *parent = 0);
 	void setContentLayout(QLayout & contentLayout);
 																								
