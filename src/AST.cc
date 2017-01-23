@@ -1,3 +1,3 @@
 #include "AST.h"
 
-Location Location::NONE(0, 0, 0, 0);
+Location Location::NONE(0, 0, 0, 0, "");
