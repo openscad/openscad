@@ -163,16 +163,16 @@ gmp_sysver()
 qt_sysver()
 {
   if [ "`command -v qtchooser`" ]; then
-    if qtchooser -run-tool=qmake -qt=5 -v >/dev/null 2>&1 ; then
+    qtver=`qtchooser -run-tool=qmake -qt=5 -v 2>&1`
+    if [ $? -eq 0 ] ; then
       export QT_SELECT=5
-      qtpath="`qtchooser -run-tool=qmake -qt=5 -query QT_INSTALL_HEADERS`"/QtCore
-    fi
-    if [ ! -e "$qtpath" ]; then
-      if qtchooser -run-tool=qmake -qt=4 -v >/dev/null 2>&1 ; then
-        export QT_SELECT=4
-        qtpath="`qtchooser -run-tool=qmake -qt=4 -query QT_INSTALL_HEADERS`"/QtCore
+    else
+      qtver=`qtchooser -run-tool=qmake -qt=4 -v 2>&1`
+      if [ $? -eq 0 ] ; then
+	export QT_SELECT=4
       fi
     fi
+    qtver=`echo "$qtver" | grep "Using Qt version" | awk '{print $4}'`
   else
     export QT_SELECT=5
     qtpath=$1/include/qt5/QtCore
@@ -194,17 +194,19 @@ qt_sysver()
       qtpath=$1/qt4/include/QtCore
     fi
   fi
-  if [ ! -e "$qtpath" ]; then
-    unset QT_SELECT
-    return
-  fi
-  qtver=`grep 'define  *QT_VERSION_STR  *' "$qtpath"/qglobal.h`
-  # fix for Qt 5.7
   if [ -z "$qtver" ]; then
-  	qtver=`grep 'define  *QT_VERSION_STR  *' "$qtpath"/qconfig.h`
+    if [ ! -e "$qtpath" ]; then
+      unset QT_SELECT
+      return
+    fi
+    qtver=`grep 'define  *QT_VERSION_STR  *' "$qtpath"/qglobal.h`
+    # fix for Qt 5.7
+    if [ -z "$qtver" ]; then
+	  qtver=`grep 'define  *QT_VERSION_STR  *' "$qtpath"/qconfig.h`
+    fi
+    
+    qtver=`echo $qtver | awk '{print $3}' | sed s/'"'//g`
   fi
-  
-  qtver=`echo $qtver | awk '{print $3}' | sed s/'"'//g`
   qt_sysver_result=$qtver
 }
 

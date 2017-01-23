@@ -2,7 +2,7 @@
     #include "Assignment.h"
     #include "expression.h"
     #include "value.h"  
-    #include "comment_parser.h"
+    #include "comment_parser.hxx"
     #include <boost/lexical_cast.hpp>
     YY_BUFFER_STATE yy_scan_string ( const char *str ) ;
     std::string stringcon;
@@ -26,7 +26,7 @@ UNICODE {U2}{U}|{U3}{U}{U}|{U4}{U}{U}{U}
 [+-]?{D}*\.{D}+{E}? |
 [+-]?{D}+\.{D}*{E}? {
                     try {
-                        yylval.num = boost::lexical_cast<double>(yytext);
+                        comment_parserlval.num = boost::lexical_cast<double>(yytext);
                         return NUM;
                     } catch (boost::bad_lexical_cast) {}
                 }
@@ -48,15 +48,15 @@ UNICODE {U2}{U}|{U3}{U}{U}|{U4}{U}{U}{U}
 {UNICODE}               { stringcon += yytext; }
 [^\\\n\"]		{ stringcon += yytext; }
 \" 			{ BEGIN(INITIAL);
-			yylval.text = strdup(stringcon.c_str());
+			comment_parserlval.text = strdup(stringcon.c_str());
 			return WORD; }
 <<EOF>> {   BEGIN(INITIAL);
-			yylval.text = strdup(stringcon.c_str());
+			comment_parserlval.text = strdup(stringcon.c_str());
 			return WORD; }
 }
 
    
-[^(\[ \] \, \" \:)]* { yylval.text=strdup(yytext); return WORD;}
+[^(\[ \] \, \" \:)]* { comment_parserlval.text=strdup(yytext); return WORD;}
 
 . { }
 

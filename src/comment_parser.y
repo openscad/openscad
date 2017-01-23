@@ -7,8 +7,9 @@
     #include "value.h" 
     #include "comment.h" 
     void yyerror(char *);
-    int yylex(void);
-    extern void yy_scan_string ( const char *str );
+    int comment_lexerlex(void);
+    int comment_parserlex(void);
+    extern void comment_lexer_scan_string ( const char *str );
     Expression *params;
 %}
 %union {
@@ -121,6 +122,11 @@ word:
     }
 %%
 
+int comment_parserlex(void)
+{
+  return comment_lexerlex();
+}
+
 void yyerror(char *msg) {
     PRINTD("ERROR IN PARAMETER: Parser error in comments of file \n "); 
     params = NULL;
@@ -128,8 +134,8 @@ void yyerror(char *msg) {
 
 shared_ptr<Expression> CommentParser::parser(const char *text)
 {
-  yy_scan_string(text);
-  int parserretval = yyparse();
+  comment_lexer_scan_string(text);
+  int parserretval = comment_parserparse();
   if (parserretval != 0) return NULL;
   return shared_ptr<Expression>(params);
 }

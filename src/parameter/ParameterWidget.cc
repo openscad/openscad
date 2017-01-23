@@ -210,15 +210,16 @@ void ParameterWidget::connectWidget()
 			it++;
 		}
 	}
-	
 	begin();
-	for (group_map::iterator it = groupMap.begin(); it != groupMap.end(); it++) {
+	for (std::vector<std::string>::iterator it = groupPos.begin(); it != groupPos.end(); it++) {
+		if(groupMap.find(*it)==groupMap.end())
+			continue;
 		std::vector<std::string> gr;
-		gr = it->second.parameterVector;
+		gr = groupMap[*it].parameterVector;
 		for(unsigned int i=0;i < gr.size();i++) {
 			AddParameterWidget(gr[i]);
 		}
-		GroupWidget *groupWidget = new GroupWidget(it->second.show, QString::fromStdString(it->first));
+		GroupWidget *groupWidget = new GroupWidget(groupMap[*it].show, QString::fromStdString(*it));
 		groupWidget->setContentLayout(*anyLayout);
 		this->scrollAreaWidgetContents->layout()->addWidget(groupWidget);
 		anyLayout = new QVBoxLayout();
@@ -237,20 +238,28 @@ void ParameterWidget::clear(){
 			it++;
 		}
 	}
-	for (group_map::iterator it = groupMap.begin(); it != groupMap.end(); it++) {
+	for (group_map::iterator it = groupMap.begin(); it != groupMap.end(); it++){
 		it->second.parameterVector.clear();
+		it->second.inList=false;
 	}
 
-	for (entry_map_t::iterator it = entries.begin(); it != entries.end(); it++) {
-		if (groupMap.find(it->second->groupName) == groupMap.end()) {
+	groupPos.clear();
+	for (int it=0; it<ParameterPos.size(); it++) {
+		std::string groupName=entries[ParameterPos[it]]->groupName;
+		if (groupMap.find(groupName) == groupMap.end()) {
+			groupPos.push_back(groupName);
 			groupInst enter;
-			enter.parameterVector.push_back(it->first);
+			enter.parameterVector.push_back(ParameterPos[it]);
 			enter.show = false;
-			groupMap[it->second->groupName] = enter;
+			enter.inList=true;
+			groupMap[groupName] = enter;
 		}
 		else {
-			groupMap[it->second->groupName].parameterVector.push_back(it->first);
-			
+			if(groupMap[groupName].inList == false){
+				groupMap[groupName].inList=true;
+				groupPos.push_back(groupName);
+			}
+			groupMap[groupName].parameterVector.push_back(ParameterPos[it]);
 		}
 	}
 }

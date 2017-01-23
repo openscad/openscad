@@ -16,10 +16,16 @@
 
 #define N_(String) String
 
-inline QString _( const char *msgid, int category )
+inline QString _(const char *msgid, int category)
 {
-	Q_UNUSED( category );
-	return QString::fromUtf8( _( msgid ) );
+	Q_UNUSED(category);
+	return QString::fromUtf8(_(msgid));
+}
+
+inline QString _(const char *msgid, const char *disambiguation)
+{
+	Q_UNUSED(disambiguation);
+	return QString::fromUtf8(_(msgid));
 }
 
 #endif

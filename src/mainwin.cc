@@ -134,7 +134,7 @@
 unsigned int GuiLocker::gui_locked = 0;
 
 static char copyrighttext[] =
-	"Copyright (C) 2009-2015 The OpenSCAD Developers\n"
+	"Copyright (C) 2009-2017 The OpenSCAD Developers\n"
 	"\n"
 	"This program is free software; you can redistribute it and/or modify "
 	"it under the terms of the GNU General Public License as published by "
@@ -211,11 +211,11 @@ MainWindow::MainWindow(const QString &filename)
 
 #ifdef USE_SCINTILLA_EDITOR
 	if (useScintilla) {
+		connect(editor, SIGNAL(previewRequest()), this, SLOT(actionRenderPreview()));
 		connect(Preferences::inst(), SIGNAL(editorConfigChanged()), editor, SLOT(applySettings()));
 		Preferences::inst()->fireEditorConfigChanged();
 	}
 #endif
-	connect(editor, SIGNAL(previewRequest()), this, SLOT(actionRenderPreview()));
 
 	editorDockContents->layout()->addWidget(editor);
 
