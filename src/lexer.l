@@ -24,6 +24,8 @@
  *
  */
 
+%option prefix="lexer"
+
 %{
 
 #include <glib.h>
