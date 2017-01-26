@@ -574,7 +574,7 @@ build_opencsg()
     cp src/Makefile src/Makefile.bak
 
     cat Makefile.bak | sed s/example// |sed s/glew// > Makefile
-    cat src/Makefile.bak | sed s@^INCPATH.*@INCPATH\ =\ -I$BASEDIR/include\ -I../include\ -I..\ -I$GLU_INCLUDE -I.@ > src/Makefile
+    cat src/Makefile.bak | sed s@^INCPATH.*@INCPATH\ =\ -I$BASEDIR/include\ -I../include\ -I..\ -I$GLU_INCLUDE\ -I.@ > src/Makefile
     cp src/Makefile src/Makefile.bak2
     cat src/Makefile.bak2 | sed s@^LIBS.*@LIBS\ =\ -L$BASEDIR/lib\ -L/usr/X11R6/lib\ -lGLU\ -lGL@ > src/Makefile
     tmp=$version
