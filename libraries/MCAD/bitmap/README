@@ -1,0 +1,17 @@
+This is an OpenSCAD module that let's you easily (well kinda) create 3D text. I've emulated the Atari 8-Bit fonts A-Z, a-z, 0-9, and most punctuation. You can create them a letter at a time or pass an array of characters. (OpenSCAD doesn't have any real string manipulation)
+
+It also has a bitmap module that you can use to define your own fonts. It's pretty simple, you pass it an array of numbers, then tell it how many bits per row and it creates cubes (of configurable width and height) in a grid and combines them into a single shape.  The number in the array sets the pixel height modifier.  So if you set height to 5 and the array value is 2, then the height of that pixel will be 10mm.
+
+Be careful when defining your own bitmaps in that you can't have two bits only connected diagonally. Otherwise OpenSCAD will say it's not manifold. For instance you can't have:
+
+0 0 0
+0 1 0
+0 0 1
+
+But you can have:
+
+0 0 0
+0 1 1
+0 0 1
+
+For more info see: http://www.thingiverse.com/thing:2054
