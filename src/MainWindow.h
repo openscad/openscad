@@ -158,9 +158,10 @@ private slots:
 
 private slots:
 	void selectFindType(int);
-	void find();
-	void findString(QString);
-	void findAndReplace();
+    void hideFind();
+    void showFind();
+    void findString(QString);
+    void showFindAndReplace();
 	void findNext();
 	void findPrev();
 	void useSelectionForFind();
