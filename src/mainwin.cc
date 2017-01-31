@@ -28,6 +28,7 @@
 #include "openscad.h"
 #include "GeometryCache.h"
 #include "ModuleCache.h"
+#include "StatCache.h"
 #include "MainWindow.h"
 #include "OpenSCADApp.h"
 #include "parsersettings.h"
@@ -948,6 +949,7 @@ void MainWindow::compile(bool reload, bool forcedone)
 	compileWarnings = 0;
 
 	this->renderingTime.start();
+    StatCache::clear();
 
 	// Reload checks the timestamp of the toplevel file and refreshes if necessary,
 	if (reload) {
@@ -1012,6 +1014,7 @@ void MainWindow::compile(bool reload, bool forcedone)
 
 void MainWindow::waitAfterReload()
 {
+    StatCache::clear();
 	if (this->root_module->handleDependencies()) {
 		this->waitAfterReloadTimer->start();
 		return;

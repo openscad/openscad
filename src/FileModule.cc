@@ -31,6 +31,7 @@
 #include "exceptions.h"
 #include "modcontext.h"
 #include "parsersettings.h"
+#include "StatCache.h"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
@@ -85,9 +86,9 @@ bool FileModule::include_modified(const IncludeFile &inc) const
 	struct stat st;
 	memset(&st, 0, sizeof(struct stat));
 
-	fs::path fullpath = find_valid_path(this->path, inc.filename);
-	bool valid = !fullpath.empty() ? (stat(fullpath.generic_string().c_str(), &st) == 0) : false;
-	
+	//fs::path fullpath = find_valid_path(this->path, inc.filename);
+	//bool valid = !fullpath.empty() ? (StatCache::stat(fullpath.generic_string().c_str(), &st) == 0) : false;
+	bool valid = (StatCache::stat(inc.filename.c_str(), &st) == 0);
 	if (valid && !inc.valid) return true; // Detect appearance of file but not removal
 	if (valid && st.st_mtime > inc.mtime) return true;
 	
