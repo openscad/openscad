@@ -699,6 +699,7 @@ set(CORE_SOURCES
   ../src/AST.cc 
   ../src/ModuleInstantiation.cc 
   ../src/ModuleCache.cc 
+  ../src/StatCache.cc
   ../src/node.cc 
   ../src/NodeVisitor.cc 
   ../src/context.cc 
