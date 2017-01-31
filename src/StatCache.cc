@@ -39,7 +39,7 @@ static bool printed = false;
 
 void StatCache::clear(void) {
     if(misses && !printed) {
-        PRINTB("StatCache: %d hits, %d misses", hits % misses);
+        PRINTDB("StatCache: %d hits, %d misses", hits % misses);
         printed = true;
     }
     statMap.clear();
