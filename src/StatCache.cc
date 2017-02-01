@@ -30,36 +30,35 @@
 #include <sys/stat.h>
 #include <string>
 #include <unordered_map>
+#include <ctime>
 
-typedef std::unordered_map<std::string, struct stat> StatMap;
+const float stale = 0.190;  // Maximum lifetime of a cache entry chosen to be shorter than the automatic reload poll time
+
+struct CacheEntry {
+	struct stat st;         // result from stat
+	clock_t timestamp;      // the time stat was called
+};
+
+typedef std::unordered_map<std::string, CacheEntry> StatMap;
 
 static StatMap statMap;
-static int hits, misses;
-static bool printed = false;
 
-void StatCache::clear(void) {
-    if(misses && !printed) {
-        PRINTDB("StatCache: %d hits, %d misses", hits % misses);
-        printed = true;
-    }
-    statMap.clear();
-    hits = misses = 0;
-}
-    
-    
 int StatCache::stat(const char *path, struct stat *st) {
-    StatMap::iterator iter = statMap.find(path);
-    if(iter != statMap.end()) {
-        *st = iter->second;
-        ++hits;
-        return 0;
-    }
-    struct stat buff;
-    if(int rv = ::stat(path, &buff))
-        return rv;
-    statMap.insert(std::make_pair(std::string(path), buff));
-    *st = buff;
-    ++misses;
-    return 0;
+	StatMap::iterator iter = statMap.find(path);
+	if(iter != statMap.end()) {                         // Have we got an entry for this file?
+		clock_t age = clock() - iter->second.timestamp; // How old is it?
+		if(float(age) / CLOCKS_PER_SEC < stale) {       // Not stale yet so return it
+			*st = iter->second.st;
+			return 0;
+		}
+		statMap.erase(iter);                            // Remove state entry
+	}
+	CacheEntry entry;                                   // Make a new entry
+	if(int rv = ::stat(path, &entry.st))
+		return rv;                                      // stat failed
+	entry.timestamp = clock();                          // Add the current time
+	statMap.insert(std::make_pair(std::string(path), entry));
+	*st = entry.st;
+	return 0;
 }   
 

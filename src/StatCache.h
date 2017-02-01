@@ -28,6 +28,5 @@
 
 class StatCache {
 public:
-    static void clear(void);
-    static int stat(const char *, struct stat *);   
+	static int stat(const char *, struct stat *);
 };
