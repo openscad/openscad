@@ -28,7 +28,6 @@
 #include "openscad.h"
 #include "GeometryCache.h"
 #include "ModuleCache.h"
-#include "StatCache.h"
 #include "MainWindow.h"
 #include "OpenSCADApp.h"
 #include "parsersettings.h"
