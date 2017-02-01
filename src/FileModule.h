@@ -15,13 +15,13 @@ public:
 	FileModule() : is_handling_dependencies(false) {}
 	virtual ~FileModule();
 
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx = NULL) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx = nullptr) const;
 	virtual std::string dump(const std::string &indent, const std::string &name) const;
 	AbstractNode *instantiateWithFileContext(class FileContext *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
 
-void setModulePath(const std::string &path) { this->path = path; }
+	void setModulePath(const std::string &path) { this->path = path; }
 	const std::string &modulePath() const { return this->path; }
-        void registerUse(const std::string path);
+	void registerUse(const std::string path);
 	void registerInclude(const std::string &localpath, const std::string &fullpath);
 	bool includesChanged() const;
 	bool handleDependencies();

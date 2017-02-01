@@ -65,16 +65,14 @@ void FileModule::registerUse(const std::string path) {
 void FileModule::registerInclude(const std::string &localpath,
 																 const std::string &fullpath)
 {
-	struct stat st;
-	memset(&st, 0, sizeof(struct stat));
+	struct stat st{};
 	bool valid = stat(fullpath.c_str(), &st) == 0;
-	IncludeFile inc = {fullpath, valid, st.st_mtime};
-	this->includes[localpath] = inc;
+	this->includes[localpath] = {fullpath, valid, st.st_mtime};
 }
 
 bool FileModule::includesChanged() const
 {
-	for(const auto &item : this->includes) {
+	for (const auto &item : this->includes) {
 		if (include_modified(item.second)) return true;
 	}
 	return false;
@@ -82,8 +80,7 @@ bool FileModule::includesChanged() const
 
 bool FileModule::include_modified(const IncludeFile &inc) const
 {
-	struct stat st;
-	memset(&st, 0, sizeof(struct stat));
+	struct stat st{};
 
 	fs::path fullpath = find_valid_path(this->path, inc.filename);
 	bool valid = !fullpath.empty() ? (stat(fullpath.generic_string().c_str(), &st) == 0) : false;
@@ -109,7 +106,7 @@ bool FileModule::handleDependencies()
 	// If a lib in usedlibs was previously missing, we need to relocate it
 	// by searching the applicable paths. We can identify a previously missing module
 	// as it will have a relative path.
-	for(auto filename : this->usedlibs) {
+	for (auto filename : this->usedlibs) {
 
 		bool wasmissing = false;
 		bool found = true;
@@ -137,6 +134,9 @@ bool FileModule::handleDependencies()
 			if (changed) {
 				PRINTDB("  %s: %p -> %p", filename % oldmodule % newmodule);
 			}
+			else {
+				PRINTDB("  %s: %p", filename % oldmodule);
+			}
 			somethingchanged |= changed;
 			// Only print warning if we're not part of an automatic reload
 			if (!newmodule && !wascached && !wasmissing) {
@@ -145,9 +145,9 @@ bool FileModule::handleDependencies()
 		}
 	}
 
-	// Relative filenames which were located is reinserted as absolute filenames
+	// Relative filenames which were located are reinserted as absolute filenames
 	typedef std::pair<std::string,std::string> stringpair;
-	for(const auto &files : updates) {
+	for (const auto &files : updates) {
 		this->usedlibs.erase(files.first);
 		this->usedlibs.insert(files.second);
 	}
@@ -155,17 +155,19 @@ bool FileModule::handleDependencies()
 	return somethingchanged;
 }
 
-AbstractNode *FileModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
+AbstractNode *FileModule::instantiate(const Context *ctx, const ModuleInstantiation *inst,
+																			EvalContext *evalctx) const
 {
-	assert(evalctx == NULL);
+	assert(evalctx == nullptr);
 	
 	FileContext context(ctx);
 	return this->instantiateWithFileContext(&context, inst, evalctx);
 }
 
-AbstractNode *FileModule::instantiateWithFileContext(FileContext *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
+AbstractNode *FileModule::instantiateWithFileContext(FileContext *ctx, const ModuleInstantiation *inst,
+																										 EvalContext *evalctx) const
 {
-	assert(evalctx == NULL);
+	assert(evalctx == nullptr);
 	
 	AbstractNode *node = new RootNode(inst);
 	try {
