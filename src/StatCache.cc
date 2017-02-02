@@ -43,9 +43,10 @@ typedef std::unordered_map<std::string, CacheEntry> StatMap;
 
 static StatMap statMap;
 
-int StatCache::stat(const char *path, struct stat *st) {
+int StatCache::stat(const char *path, struct stat *st)
+{
 	StatMap::iterator iter = statMap.find(path);
-	if(iter != statMap.end()) {                         // Have we got an entry for this file?
+	if (iter != statMap.end()) {                      // Have we got an entry for this file?
 		clock_t age = clock() - iter->second.timestamp; // How old is it?
 		if(float(age) / CLOCKS_PER_SEC < stale) {       // Not stale yet so return it
 			*st = iter->second.st;
@@ -53,11 +54,10 @@ int StatCache::stat(const char *path, struct stat *st) {
 		}
 		statMap.erase(iter);                            // Remove state entry
 	}
-	CacheEntry entry;                                   // Make a new entry
-	if(int rv = ::stat(path, &entry.st))
-		return rv;                                      // stat failed
-	entry.timestamp = clock();                          // Add the current time
-	statMap.insert(std::make_pair(std::string(path), entry));
+	CacheEntry entry;                                 // Make a new entry
+	if (int rv = ::stat(path, &entry.st)) return rv;  // stat failed
+	entry.timestamp = clock();                        // Add the current time
+	statMap[path] = entry;
 	*st = entry.st;
 	return 0;
 }   
