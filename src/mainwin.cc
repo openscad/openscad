@@ -1521,12 +1521,14 @@ void MainWindow::pasteViewportRotation()
 void MainWindow::hideFind()
 {
     find_panel->hide();
-    int findcount = editor->resetFindIndicators(this->findInputField->text(), false);
+    this->findInputField->findcount = editor->resetFindIndicators(this->findInputField->text(), false);
+    QApplication::processEvents();
 }
 
 void MainWindow::showFind()
 {
-    int findcount = editor->resetFindIndicators(this->findInputField->text());
+    this->findInputField->findcount = editor->resetFindIndicators(this->findInputField->text());
+    QApplication::processEvents();
     findTypeComboBox->setCurrentIndex(0);
     replaceInputField->hide();
     replaceButton->hide();
@@ -1543,13 +1545,21 @@ void MainWindow::showFind()
 
 void MainWindow::findString(QString textToFind)
 {
-    int findcount = editor->resetFindIndicators(textToFind);
+    this->findInputField->findcount = editor->resetFindIndicators(textToFind);
+    QApplication::processEvents();
+    QTextCursor c = this->console->textCursor();
+    c.movePosition(QTextCursor::End);
+    this->console->setTextCursor(c);
+    
+    this->console->append(QString(std::string(std::to_string(this->findInputField->findcount) + ": ").c_str()).append(this->findInputField->text()));
+    if (this->procevents) QApplication::processEvents();
     editor->find(textToFind);
 }
 
 void MainWindow::showFindAndReplace()
 {
-    int findcount = editor->resetFindIndicators(this->findInputField->text());
+    this->findInputField->findcount = editor->resetFindIndicators(this->findInputField->text());
+    QApplication::processEvents();
     findTypeComboBox->setCurrentIndex(1); 
     replaceInputField->show();
     replaceButton->show();
