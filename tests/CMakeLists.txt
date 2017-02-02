@@ -1196,17 +1196,18 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1528.scad
             )
 
-list(APPEND DUMPTEST_FILES ${FEATURES_2D_FILES} ${FEATURES_3D_FILES} ${DEPRECATED_3D_FILES})
-list(APPEND DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.scad
-                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-tests.scad
-                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/use-tests.scad
-                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/assert-tests.scad
-                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/let-module-tests.scad
-                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/localfiles-test.scad
-                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/localfiles_dir/localfiles-compatibility-test.scad
-                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allexpressions.scad
-                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allfunctions.scad
-                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allmodules.scad)
+list(APPEND MISC_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-tests.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/use-tests.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/assert-tests.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/let-module-tests.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/localfiles-test.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/localfiles_dir/localfiles-compatibility-test.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allexpressions.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allfunctions.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allmodules.scad)
+
+list(APPEND DUMPTEST_FILES ${FEATURES_2D_FILES} ${FEATURES_3D_FILES} ${DEPRECATED_3D_FILES} ${MISC_FILES})
 
 list(APPEND CGALPNGTEST_2D_FILES ${FEATURES_2D_FILES} ${SCAD_DXF_FILES} ${EXAMPLE_2D_FILES})
 list(APPEND CGALPNGTEST_3D_FILES ${FEATURES_3D_FILES} ${SCAD_AMF_FILES} ${DEPRECATED_3D_FILES} ${ISSUES_3D_FILES} ${EXAMPLE_3D_FILES})
@@ -1583,10 +1584,7 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.cmake ${TMP})
 # o dxfpngtest: Export to DXF, Re-import and render to PNG (--render=cgal)
 #
 
-add_cmdline_test(astdumptest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX ast FILES
-                 ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allmodules.scad
-                 ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allfunctions.scad
-                 ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allexpressions.scad)
+add_cmdline_test(astdumptest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX ast FILES ${MISC_FILES})
 add_cmdline_test(csgtexttest SUFFIX txt FILES
                              ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allexpressions.scad
                              ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allfunctions.scad
