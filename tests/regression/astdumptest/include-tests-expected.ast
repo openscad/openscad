@@ -1,0 +1,66 @@
+function deg(angle) = ((360 * angle) / TAU);
+module test1() {
+	test2();
+	translate([2, 0, 0]) test3();
+	translate([2, -2, 0]) test4();
+	translate([-2, 0, 0]) test5();
+	translate([-2, -2, 0]) test6();
+	translate([0, 2, 0]) test7();
+	translate([0, -2, 0]) sphere(test2_variable, $fn = 16);
+	translate([0, -4, 0]) cube([(TAU / 4), 0.5, 0.5], center = true);
+	translate([-2, -4, 0]) cube([(deg(0.5) / 20), 0.5, 0.5], center = true);
+	translate([2, -4, -0.5]) scale(0.05) alignds420([0, 0, 0], [0, 0, 0]);
+}
+module test_alignds420() {
+	alignds420(screws = 1);
+}
+module test7() {
+	cube([0.5, 0.5, 1], center = true);
+}
+module test2() {
+	cube(center = true);
+}
+module test6() {
+	difference() {
+		cube(center = true);
+		cylinder(r = 0.4, h = 2, center = true);
+	}
+}
+module alignds420(position, rotation, screws = 0, axle_lenght = 0) {
+	translate(position) rotate(rotation) {
+	union() {
+		translate([0, 0, 17]) {
+			cylinder(r = 6, h = 8, $fn = 30);
+			cylinder(r = 2.5, h = 10.5, $fn = 20);
+		}
+		translate([-6, -6, 0]) {
+			cube([12, 22.8, 19.5], false);
+			translate([0, -5, 17]) cube([12, 7, 2.5]);
+			translate([0, 20.8, 17]) cube([12, 7, 2.5]);
+		}
+		if((screws > 0)) {
+			translate([0, (-10.2 + 1.8), 11.5]) cylinder(r = (1.8 / 2), h = 6, $fn = 6);
+			translate([0, (21 - 1.8), 11.5]) cylinder(r = (1.8 / 2), h = 6, $fn = 6);
+		}
+				translate([-6, 0, 19]) rotate([90, 0, 90]) triangle(4, 18, 12);
+		translate([-6, -6, 19]) cube([12, 6.5, 4]);
+	}
+	if((axle_lenght > 0)) cylinder(r = 0.9, h = axle_lenght, center = true, $fn = 8);
+	}
+}
+module test5() {
+	sphere(r = 0.5, $fn = 8);
+}
+module test4() {
+	cylinder(r = 0.5, $fn = 10, center = true);
+}
+module test3() {
+	cylinder(r1 = 0.7, r2 = 0.2, center = true);
+}
+test2_variable = 0.7;
+TAU = 6.28319;
+PI = (TAU / 2);
+mm_per_inch = 25.4;
+echo("included.scad");
+echo("included2.scad");
+test1();

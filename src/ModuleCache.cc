@@ -1,4 +1,5 @@
 #include "ModuleCache.h"
+#include "StatCache.h"
 #include "FileModule.h"
 #include "printutils.h"
 #include "openscad.h"
@@ -18,21 +19,22 @@ namespace fs=boost::filesystem;
 	FIXME: Implement an LRU scheme to avoid having an ever-growing module cache
 */
 
-ModuleCache *ModuleCache::inst = NULL;
+ModuleCache *ModuleCache::inst = nullptr;
 
 /*!
 	Reevaluate the given file and all it's dependencies and recompile anything
 	needing reevaluation. Updates the cache if necessary.
 	The given filename must be absolute.
 
-	Sets the module reference to the new module, or NULL on any error (e.g. compile
+	Sets the module reference to the new module, or nullptr on any error (e.g. compile
 	error or file not found).
 
 	Returns true if anything was compiled (module or dependencies) and false otherwise.
 */
 bool ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 {
-	FileModule *lib_mod = NULL;
+	module = nullptr;
+	FileModule *lib_mod = nullptr;
 	bool found = false;
 	if (this->entries.find(filename) != this->entries.end()) {
 		found = true;
@@ -44,9 +46,8 @@ bool ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 	if (lib_mod && lib_mod->isHandlingDependencies()) return false;
 
 	// Create cache ID
-	struct stat st;
-	memset(&st, 0, sizeof(struct stat));
-	bool valid = (stat(filename.c_str(), &st) == 0);
+	struct stat st{};
+	bool valid = (StatCache::stat(filename.c_str(), &st) == 0);
 
 	// If file isn't there, just return and let the cache retain the old module
 	if (!valid) return false;
@@ -57,7 +58,7 @@ bool ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 	cache_entry &entry = this->entries[filename];
 	// Initialize entry, if new
 	if (!found) {
-		entry.module = NULL;
+		entry.module = nullptr;
 		entry.cache_id = cache_id;
 	}
   
@@ -68,7 +69,7 @@ bool ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 			shouldCompile = false;
 			// Recompile if includes changed
 			if (lib_mod && lib_mod->includesChanged()) {
-				lib_mod = NULL;
+				lib_mod = nullptr;
 				shouldCompile = true;
 			}
 		}
@@ -105,7 +106,7 @@ bool ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 		
 		FileModule *oldmodule = lib_mod;
 		
-        fs::path pathname = fs::path(filename);
+		fs::path pathname = fs::path(filename);
 		lib_mod = parse(textbuf.str().c_str(), pathname, false);
 		PRINTDB("  compiled module: %p", lib_mod);
 		
@@ -131,11 +132,10 @@ void ModuleCache::clear()
 
 FileModule *ModuleCache::lookup(const std::string &filename)
 {
-	return isCached(filename) ? this->entries[filename].module : NULL;
+	return isCached(filename) ? this->entries[filename].module : nullptr;
 }
 
 bool ModuleCache::isCached(const std::string &filename)
 {
 	return this->entries.find(filename) != this->entries.end();
 }
-

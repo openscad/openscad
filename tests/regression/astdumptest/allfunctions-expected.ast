@@ -31,4 +31,3 @@ zb = cross();
 zc = parent_module();
 w = dxf_dim();
 x = dxf_cross();
-

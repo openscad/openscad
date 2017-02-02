@@ -89,7 +89,7 @@ fs::path boostfs_normalize(const fs::path &path)
  *  iterate path and base
  * compare all elements so far of path and base
  * whilst they are the same, no write to output
-x2 * when they change, or one runs out:
+ * when they change, or one runs out:
  *   write to output, ../ times the number of remaining elements in base
  *   write to output, the remaining elements in path
  */
