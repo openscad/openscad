@@ -33,6 +33,7 @@ ModuleCache *ModuleCache::inst = NULL;
 */
 bool ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 {
+	module = nullptr;
 	FileModule *lib_mod = NULL;
 	bool found = false;
 	if (this->entries.find(filename) != this->entries.end()) {
