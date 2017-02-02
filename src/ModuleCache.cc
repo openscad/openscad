@@ -1,4 +1,5 @@
 #include "ModuleCache.h"
+#include "StatCache.h"
 #include "FileModule.h"
 #include "printutils.h"
 #include "openscad.h"
@@ -46,7 +47,7 @@ bool ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 
 	// Create cache ID
 	struct stat st{};
-	bool valid = (stat(filename.c_str(), &st) == 0);
+	bool valid = (StatCache::stat(filename.c_str(), &st) == 0);
 
 	// If file isn't there, just return and let the cache retain the old module
 	if (!valid) return false;
