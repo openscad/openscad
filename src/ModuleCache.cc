@@ -12,6 +12,7 @@
 #include <sstream>
 #include <time.h>
 #include <sys/stat.h>
+#include <algorithm>
 
 namespace fs=boost::filesystem;
 //#include "parsersettings.h"
@@ -60,8 +61,9 @@ time_t ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 	if (!found) {
 		entry.module = nullptr;
 		entry.cache_id = cache_id;
-		entry.compile_time = 0;
+		entry.includes_mtime = st.st_mtime;
 	}
+	entry.mtime = st.st_mtime;
   
 	bool shouldCompile = true;
 	if (found) {
@@ -69,9 +71,13 @@ time_t ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 		if (entry.cache_id == cache_id) {
 			shouldCompile = false;
 			// Recompile if includes changed
-			if (lib_mod && lib_mod->includesChanged() > entry.compile_time) {
-				lib_mod = nullptr;
-				shouldCompile = true;
+			if (lib_mod) {
+				time_t mtime = lib_mod->includesChanged();
+				if (mtime > entry.includes_mtime) {
+					entry.includes_mtime = mtime;
+					lib_mod = nullptr;
+					shouldCompile = true;
+				}
 			}
 		}
 	}
@@ -92,7 +98,6 @@ time_t ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 		}
 #endif
 
-		entry.compile_time = time(NULL);    // update compile time before parsing to avoid race condition.
 		std::stringstream textbuf;
 		{
 			std::ifstream ifs(filename.c_str());
@@ -124,7 +129,7 @@ time_t ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 	module = lib_mod;
     time_t deps_mtime = lib_mod ? lib_mod->handleDependencies() : 0;
 
-	return deps_mtime > entry.compile_time ? deps_mtime : entry.compile_time;
+	return std::max(deps_mtime, std::max(entry.mtime, entry.includes_mtime));
 }
 
 void ModuleCache::clear()

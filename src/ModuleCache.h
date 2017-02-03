@@ -25,7 +25,8 @@ private:
 	struct cache_entry {
 		class FileModule *module;
 		std::string cache_id;
-		time_t compile_time;   // last time this module was compiled
+		time_t mtime;          // time file last modified
+		time_t includes_mtime; // time the includes last changed
 	};
 	std::unordered_map<std::string, cache_entry> entries;
 };
