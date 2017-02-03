@@ -66,45 +66,43 @@ void FileModule::registerUse(const std::string path) {
 void FileModule::registerInclude(const std::string &localpath,
 																 const std::string &fullpath)
 {
-	struct stat st{};
-	bool valid = stat(fullpath.c_str(), &st) == 0;
-	this->includes[localpath] = {fullpath, valid, st.st_mtime};
+	this->includes[localpath] = {fullpath};
 }
 
-bool FileModule::includesChanged() const
+time_t FileModule::includesChanged() const
 {
+	time_t latest = 0;
 	for (const auto &item : this->includes) {
-		if (include_modified(item.second)) return true;
+		time_t mtime = include_modified(item.second);
+		if (mtime > latest) latest = mtime;
 	}
-	return false;
+	return latest;
 }
 
-bool FileModule::include_modified(const IncludeFile &inc) const
+time_t FileModule::include_modified(const IncludeFile &inc) const
 {
 	struct stat st{};
 
-	bool valid = (StatCache::stat(inc.filename.c_str(), &st) == 0);
-	if (valid && !inc.valid) return true; // Detect appearance of file but not removal
-	if (valid && st.st_mtime > inc.mtime) return true;
-	
-	return false;
+	if (StatCache::stat(inc.filename.c_str(), &st) == 0)
+		return st.st_mtime;
+	return 0;
 }
 
 /*!
 	Check if any dependencies have been modified and recompile them.
 	Returns true if anything was recompiled.
 */
-bool FileModule::handleDependencies()
+time_t FileModule::handleDependencies()
 {
-	if (this->is_handling_dependencies) return false;
+	if (this->is_handling_dependencies) return 0;
 	this->is_handling_dependencies = true;
 
-	bool somethingchanged = false;
 	std::vector<std::pair<std::string,std::string>> updates;
 
 	// If a lib in usedlibs was previously missing, we need to relocate it
 	// by searching the applicable paths. We can identify a previously missing module
 	// as it will have a relative path.
+	time_t latest = 0;
 	for (auto filename : this->usedlibs) {
 
 		bool wasmissing = false;
@@ -127,7 +125,9 @@ bool FileModule::handleDependencies()
 			bool wascached = ModuleCache::instance()->isCached(filename);
 			FileModule *oldmodule = ModuleCache::instance()->lookup(filename);
 			FileModule *newmodule;
-			bool changed = ModuleCache::instance()->evaluate(filename, newmodule);
+			time_t mtime = ModuleCache::instance()->evaluate(filename, newmodule);
+			if (mtime > latest) latest = mtime;
+			bool changed = newmodule && newmodule != oldmodule;
 			// Detect appearance but not removal of files, and keep old module
 			// on compile errors (FIXME: Is this correct behavior?)
 			if (changed) {
@@ -136,7 +136,6 @@ bool FileModule::handleDependencies()
 			else {
 				PRINTDB("  %s: %p", filename % oldmodule);
 			}
-			somethingchanged |= changed;
 			// Only print warning if we're not part of an automatic reload
 			if (!newmodule && !wascached && !wasmissing) {
 				PRINTB_NOCACHE("WARNING: Failed to compile library '%s'.", filename);
@@ -151,7 +150,7 @@ bool FileModule::handleDependencies()
 		this->usedlibs.insert(files.second);
 	}
 	this->is_handling_dependencies = false;
-	return somethingchanged;
+	return latest;
 }
 
 AbstractNode *FileModule::instantiate(const Context *ctx, const ModuleInstantiation *inst,

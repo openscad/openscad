@@ -10,7 +10,7 @@ class ModuleCache
 {
 public:
 	static ModuleCache *instance() { if (!inst) inst = new ModuleCache; return inst; }
-	bool evaluate(const std::string &filename, class FileModule *&module);
+	time_t evaluate(const std::string &filename, class FileModule *&module);
 	class FileModule *lookup(const std::string &filename);
 	bool isCached(const std::string &filename);
 	size_t size() { return this->entries.size(); }
@@ -25,6 +25,7 @@ private:
 	struct cache_entry {
 		class FileModule *module;
 		std::string cache_id;
+		time_t compile_time;   // last time this module was compiled
 	};
 	std::unordered_map<std::string, cache_entry> entries;
 };

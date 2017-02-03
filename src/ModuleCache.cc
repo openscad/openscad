@@ -29,9 +29,9 @@ ModuleCache *ModuleCache::inst = nullptr;
 	Sets the module reference to the new module, or nullptr on any error (e.g. compile
 	error or file not found).
 
-	Returns true if anything was compiled (module or dependencies) and false otherwise.
+	Returns the latest mod time of the modul or its dependencies or includes.
 */
-bool ModuleCache::evaluate(const std::string &filename, FileModule *&module)
+time_t ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 {
 	module = nullptr;
 	FileModule *lib_mod = nullptr;
@@ -43,14 +43,14 @@ bool ModuleCache::evaluate(const std::string &filename, FileModule *&module)
   
 	// Don't try to recursively evaluate - if the file changes
 	// during evaluation, that would be really bad.
-	if (lib_mod && lib_mod->isHandlingDependencies()) return false;
+	if (lib_mod && lib_mod->isHandlingDependencies()) return 0;
 
 	// Create cache ID
 	struct stat st{};
 	bool valid = (StatCache::stat(filename.c_str(), &st) == 0);
 
 	// If file isn't there, just return and let the cache retain the old module
-	if (!valid) return false;
+	if (!valid) return 0;
 
 	// If the file is present, we'll always cache some result
 	std::string cache_id = str(boost::format("%x.%x") % st.st_mtime % st.st_size);
@@ -60,6 +60,7 @@ bool ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 	if (!found) {
 		entry.module = nullptr;
 		entry.cache_id = cache_id;
+		entry.compile_time = 0;
 	}
   
 	bool shouldCompile = true;
@@ -68,7 +69,7 @@ bool ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 		if (entry.cache_id == cache_id) {
 			shouldCompile = false;
 			// Recompile if includes changed
-			if (lib_mod && lib_mod->includesChanged()) {
+			if (lib_mod && lib_mod->includesChanged() > entry.compile_time) {
 				lib_mod = nullptr;
 				shouldCompile = true;
 			}
@@ -91,12 +92,13 @@ bool ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 		}
 #endif
 
+		entry.compile_time = time(NULL);    // update compile time before parsing to avoid race condition.
 		std::stringstream textbuf;
 		{
 			std::ifstream ifs(filename.c_str());
 			if (!ifs.is_open()) {
 				PRINTB("WARNING: Can't open library file '%s'\n", filename);
-				return false;
+				return 0;
 			}
 			textbuf << ifs.rdbuf();
 		}
@@ -120,9 +122,9 @@ bool ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 	}
 	
 	module = lib_mod;
-	bool depschanged = lib_mod ? lib_mod->handleDependencies() : false;
+    time_t deps_mtime = lib_mod ? lib_mod->handleDependencies() : 0;
 
-	return shouldCompile || depschanged;
+	return deps_mtime > entry.compile_time ? deps_mtime : entry.compile_time;
 }
 
 void ModuleCache::clear()
