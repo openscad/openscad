@@ -1,0 +1,4 @@
+DEPRECATED: Imported file (localfile.dxf) found in document root instead of relative to the importing module. This behavior is deprecated
+DEPRECATED: Support for reading files in linear_extrude will be removed in future releases. Use a child import() instead.
+DEPRECATED: Support for reading files in rotate_extrude will be removed in future releases. Use a child import() instead.
+DEPRECATED: Imported file (localfile.dat) found in document root instead of relative to the importing module. This behavior is deprecated

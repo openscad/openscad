@@ -1,0 +1,2 @@
+DEPRECATED: Support for reading files in linear_extrude will be removed in future releases. Use a child import() instead.
+DEPRECATED: Support for reading files in rotate_extrude will be removed in future releases. Use a child import() instead.

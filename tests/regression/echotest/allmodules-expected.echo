@@ -1,0 +1,8 @@
+DEPRECATED: child() will be removed in future releases. Use children() instead.
+ECHO: 
+DEPRECATED: The assign() module will be removed in future releases. Use a regular assignment instead.
+DEPRECATED: The dxf_linear_extrude() module will be removed in future releases. Use linear_extrude() instead.
+DEPRECATED: The dxf_rotate_extrude() module will be removed in future releases. Use rotate_extrude() instead.
+DEPRECATED: The import_stl() module will be removed in future releases. Use import() instead.
+DEPRECATED: The import_off() module will be removed in future releases. Use import() instead.
+DEPRECATED: The import_dxf() module will be removed in future releases. Use import() instead.
