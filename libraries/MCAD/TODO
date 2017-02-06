@@ -1,0 +1,21 @@
+Code that could be integrated:
+* http://github.com/l0b0/qr2scad
+* http://github.com/l0b0/img2scad
+* http://github.com/l0b0/OpenSCAD-Minimizer
+* http://www.thingiverse.com/thing:4656
+* http://www.thingiverse.com/thing:4758
+* http://www.thingiverse.com/thing:6021
+* Color library: http://www.thingiverse.com/thing:6717
+* http://www.thingiverse.com/thing:6465
+
+Integrate these better:
+* bitmap
+
+Testing:
+* add tests for openscad functions
+* motors.scad
+* tests for 2D stuff
+
+Code style:
+* motors.scad
+* nuts_and_bolts.scad
