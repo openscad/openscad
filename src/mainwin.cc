@@ -1548,12 +1548,6 @@ void MainWindow::findString(QString textToFind)
 {
     this->findInputField->findcount = editor->resetFindIndicators(textToFind);
     QApplication::processEvents();
-    QTextCursor c = this->console->textCursor();
-    c.movePosition(QTextCursor::End);
-    this->console->setTextCursor(c);
-    
-    this->console->append(QString(std::string(std::to_string(this->findInputField->findcount) + ": ").c_str()).append(this->findInputField->text()));
-    if (this->procevents) QApplication::processEvents();
     editor->find(textToFind);
 }
 
