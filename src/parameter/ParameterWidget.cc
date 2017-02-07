@@ -72,7 +72,7 @@ void ParameterWidget::onSetDelete()
 {
 	if (root.empty()) return;
 	std::string setName=comboBox->itemData(this->comboBox->currentIndex()).toString().toStdString();
-	root.get_child(ParameterSet::parameterSetsKey).erase(setName);
+	root.get_child(ParameterSet::parameterSetsKey).erase(pt::ptree::key_type(setName));
 	writeParameterSet(this->jsonFile);
 	this->comboBox->clear();
 	setComboBoxForSet();
@@ -101,7 +101,7 @@ void ParameterWidget::readFile(QString scadFile)
 		this->deleteButton->setDisabled(true);
 		this->deleteButton->setToolTip("JSON file read only");
 	}
-        disconnect(comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onSetChanged(int)));
+	disconnect(comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onSetChanged(int)));
 	this->comboBox->clear();
 	setComboBoxForSet();
 	connect(comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onSetChanged(int)));
