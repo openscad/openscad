@@ -52,9 +52,9 @@ static StatMap statMap;
 int StatCache::stat(const char *path, struct stat *st)
 {
 	StatMap::iterator iter = statMap.find(path);
-	if (iter != statMap.end()) {                        // Have we got an entry for this file?
-		if(ms_clock() - iter->second.timestamp < stale) {
-			*st = iter->second.st;                      // Not stale yet so return it
+	if (iter != statMap.end()) {                      // Have we got an entry for this file?
+		if (ms_clock() - iter->second.timestamp < stale) {
+			*st = iter->second.st;                        // Not stale yet so return it
 			return 0;
 		}
 		statMap.erase(iter);                            // Remove stale entry
