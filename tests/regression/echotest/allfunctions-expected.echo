@@ -1,0 +1,6 @@
+WARNING: Invalid number of parameters for cross()
+WARNING: Parent module index (1) greater than the number of modules on the stack
+WARNING: Can't open DXF file ''.
+WARNING: Can't find dimension '' in '', layer ''!
+WARNING: Can't open DXF file ''.
+WARNING: Can't find cross in '', layer ''!
