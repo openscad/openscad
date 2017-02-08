@@ -1,30 +1,27 @@
 function deg(angle) = ((360 * angle) / TAU);
-module test1() {
-	test2();
-	translate([2, 0, 0]) test3();
-	translate([2, -2, 0]) test4();
-	translate([-2, 0, 0]) test5();
-	translate([-2, -2, 0]) test6();
-	translate([0, 2, 0]) test7();
-	translate([0, -2, 0]) sphere(test2_variable, $fn = 16);
-	translate([0, -4, 0]) cube([(TAU / 4), 0.5, 0.5], center = true);
-	translate([-2, -4, 0]) cube([(deg(0.5) / 20), 0.5, 0.5], center = true);
-	translate([2, -4, -0.5]) scale(0.05) alignds420([0, 0, 0], [0, 0, 0]);
+module test3() {
+	cylinder(r1 = 0.7, r2 = 0.2, center = true);
 }
-module test_alignds420() {
-	alignds420(screws = 1);
-}
-module test7() {
-	cube([0.5, 0.5, 1], center = true);
+module test4() {
+	cylinder(r = 0.5, $fn = 10, center = true);
 }
 module test2() {
 	cube(center = true);
+}
+module test5() {
+	sphere(r = 0.5, $fn = 8);
+}
+module test5() {
+	sphere(r = 0.5, $fn = 8);
 }
 module test6() {
 	difference() {
 		cube(center = true);
 		cylinder(r = 0.4, h = 2, center = true);
 	}
+}
+module test7() {
+	cube([0.5, 0.5, 1], center = true);
 }
 module alignds420(position, rotation, screws = 0, axle_lenght = 0) {
 	translate(position) rotate(rotation) {
@@ -48,14 +45,20 @@ module alignds420(position, rotation, screws = 0, axle_lenght = 0) {
 	if((axle_lenght > 0)) cylinder(r = 0.9, h = axle_lenght, center = true, $fn = 8);
 	}
 }
-module test5() {
-	sphere(r = 0.5, $fn = 8);
+module test_alignds420() {
+	alignds420(screws = 1);
 }
-module test4() {
-	cylinder(r = 0.5, $fn = 10, center = true);
-}
-module test3() {
-	cylinder(r1 = 0.7, r2 = 0.2, center = true);
+module test1() {
+	test2();
+	translate([2, 0, 0]) test3();
+	translate([2, -2, 0]) test4();
+	translate([-2, 0, 0]) test5();
+	translate([-2, -2, 0]) test6();
+	translate([0, 2, 0]) test7();
+	translate([0, -2, 0]) sphere(test2_variable, $fn = 16);
+	translate([0, -4, 0]) cube([(TAU / 4), 0.5, 0.5], center = true);
+	translate([-2, -4, 0]) cube([(deg(0.5) / 20), 0.5, 0.5], center = true);
+	translate([2, -4, -0.5]) scale(0.05) alignds420([0, 0, 0], [0, 0, 0]);
 }
 test2_variable = 0.7;
 TAU = 6.28319;

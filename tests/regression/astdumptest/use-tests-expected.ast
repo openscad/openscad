@@ -1,18 +1,17 @@
 function deg(angle) = ((360 * angle) / TAU);
-module test1() {
-	test2();
-	translate([4, 0, 0]) test3();
-	translate([4, -2, 0]) test4();
-	translate([-2, 0, 0]) test5();
-	translate([-2, -2, 0]) test6();
-	translate([0, 2, 0]) test7();
-	translate([0, -2, 0]) sphere(test2_variable, $fn = 16);
-	translate([0, -4, 0]) teardrop(0.3, 1.5, 90);
-	translate([-2, -4, 0]) cube([(deg(0.5) / 20), 0.5, 0.5], center = true);
-	translate([2, -4, -0.5]) scale(0.05) alignds420([0, 0, 0], [0, 0, 0]);
+module test7() {
+	cube([0.5, 0.5, 1], center = true);
 }
-module test_alignds420() {
-	alignds420(screws = 1);
+module teardrop(radius, length, angle) {
+	rotate([0, angle, 0]) union() {
+	linear_extrude(height = length, center = true, convexity = radius, twist = 0) circle(r = radius, center = true, $fn = 30);
+	linear_extrude(height = length, center = true, convexity = radius, twist = 0) projection(cut = false) rotate([0, -angle, 0]) translate([0, 0, ((radius * sin(45)) * 1.5)]) cylinder(h = (radius * sin(45)), r1 = (radius * sin(45)), r2 = 0, center = true, $fn = 30);
+}
+}
+module test_teardrop() {
+	translate([0, -15, 0]) teardrop(5, 20, 90);
+	translate([0, 0, 0]) teardrop(5, 20, 60);
+	translate([0, 15, 0]) teardrop(5, 20, 45);
 }
 module alignds420(position, rotation, screws = 0, axle_lenght = 0) {
 	translate(position) rotate(rotation) {
@@ -36,19 +35,20 @@ module alignds420(position, rotation, screws = 0, axle_lenght = 0) {
 	if((axle_lenght > 0)) cylinder(r = 0.9, h = axle_lenght, center = true, $fn = 8);
 	}
 }
-module test_teardrop() {
-	translate([0, -15, 0]) teardrop(5, 20, 90);
-	translate([0, 0, 0]) teardrop(5, 20, 60);
-	translate([0, 15, 0]) teardrop(5, 20, 45);
+module test_alignds420() {
+	alignds420(screws = 1);
 }
-module teardrop(radius, length, angle) {
-	rotate([0, angle, 0]) union() {
-	linear_extrude(height = length, center = true, convexity = radius, twist = 0) circle(r = radius, center = true, $fn = 30);
-	linear_extrude(height = length, center = true, convexity = radius, twist = 0) projection(cut = false) rotate([0, -angle, 0]) translate([0, 0, ((radius * sin(45)) * 1.5)]) cylinder(h = (radius * sin(45)), r1 = (radius * sin(45)), r2 = 0, center = true, $fn = 30);
-}
-}
-module test7() {
-	cube([0.5, 0.5, 1], center = true);
+module test1() {
+	test2();
+	translate([4, 0, 0]) test3();
+	translate([4, -2, 0]) test4();
+	translate([-2, 0, 0]) test5();
+	translate([-2, -2, 0]) test6();
+	translate([0, 2, 0]) test7();
+	translate([0, -2, 0]) sphere(test2_variable, $fn = 16);
+	translate([0, -4, 0]) teardrop(0.3, 1.5, 90);
+	translate([-2, -4, 0]) cube([(deg(0.5) / 20), 0.5, 0.5], center = true);
+	translate([2, -4, -0.5]) scale(0.05) alignds420([0, 0, 0], [0, 0, 0]);
 }
 TAU = 6.28319;
 PI = (TAU / 2);
