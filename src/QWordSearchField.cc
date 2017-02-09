@@ -9,7 +9,7 @@ QWordSearchField::QWordSearchField(QFrame *parent) : QLineEdit(parent) {
     fieldLabel->setCursor(Qt::ArrowCursor);
     fieldLabel->setStyleSheet("QLabel { border: none; padding: 0px; }");
     fieldLabel->hide();
-    connect(this, SIGNAL(textChanged(const QString&)), this, SLOT(updateFieldLabel(const QString&)));
+    connect(this, SIGNAL(findCountChanged()), this, SLOT(updateFieldLabel()));
     int frameWidth = style()->pixelMetric(QStyle::PM_DefaultFrameWidth);
     setStyleSheet(QString("QLineEdit { padding-right: %1px; } ").arg(fieldLabel->sizeHint().width() + frameWidth + 1));
     QSize minsize = minimumSizeHint();
@@ -28,13 +28,21 @@ void QWordSearchField::resizeSearchField() {
 }
 
 
-void QWordSearchField::updateFieldLabel(const QString& text){
-    fieldLabel->setVisible(!text.isEmpty());
+void QWordSearchField::updateFieldLabel(){
     if (findcount > 0){
         fieldLabel->setText(QString::number(findcount));
+        fieldLabel->setVisible(true);
     }else{
         fieldLabel->setText(QString(""));
+        fieldLabel->setVisible(false);
     }
     resizeSearchField();
 }
-        
+    
+void QWordSearchField::setFindCount(int value) {
+    if (value != findcount) {
+        findcount = value;
+        emit findCountChanged();
+    }
+}
+

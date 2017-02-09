@@ -10,17 +10,25 @@ class QWordSearchField : public QLineEdit
     
 public:
     QWordSearchField(QFrame *parent = NULL);
-    int findcount;
+    int findCount() const { return findcount; }
     
 protected:
     void resizeEvent(QResizeEvent *);
     void resizeSearchField();
     
 private slots:
-    void updateFieldLabel(const QString &text);
+    void updateFieldLabel();
+    
+public slots:
+    void setFindCount(int value);
+    
+signals:
+    void findCountChanged();
     
 private:
     QLabel *fieldLabel;
+    int findcount;
 };
 
 #endif /* QWORDSEARCHFIELD_H */
+
