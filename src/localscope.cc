@@ -2,6 +2,7 @@
 #include "modcontext.h"
 #include "module.h"
 #include "ModuleInstantiation.h"
+#include "UserModule.h"
 #include "expression.h"
 #include "function.h"
 #include "annotation.h"
@@ -12,24 +13,43 @@ LocalScope::LocalScope()
 
 LocalScope::~LocalScope()
 {
-	for(auto &v : children) delete v;
-	for(auto &f : functions) delete f.second;
-	for(auto &m : modules) delete m.second;
+	for (auto &v : children) delete v;
+	for (auto &f : functions) delete f.second;
+	for (auto &m : modules) delete m.second;
 }
 
-void LocalScope::addChild(ModuleInstantiation *ch) 
+void LocalScope::addChild(ModuleInstantiation *modinst) 
 {
-	assert(ch != NULL);
-	this->children.push_back(ch); 
+	assert(modinst);
+	this->children.push_back(modinst);
+}
+
+void LocalScope::addModule(const std::string &name, class UserModule *module)
+{
+	assert(module);
+	this->modules[name] = module;
+	this->astModules.push_back({name, module});
+}
+
+void LocalScope::addFunction(class UserFunction *func)
+{
+	assert(func);
+	this->functions[func->name] = func;
+	this->astFunctions.push_back({func->name, func});
+}
+
+void LocalScope::addAssignment(const Assignment &ass)
+{
+	this->assignments.push_back(ass);
 }
 
 std::string LocalScope::dump(const std::string &indent) const
 {
 	std::stringstream dump;
-	for (const auto &f : this->functions) {
+	for (const auto &f : this->astFunctions) {
 		dump << f.second->dump(indent, f.first);
 	}
-	for (const auto &m : this->modules) {
+	for (const auto &m : this->astModules) {
 		dump << m.second->dump(indent, m.first);
 	}
 	for (const auto &ass : this->assignments) {
