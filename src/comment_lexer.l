@@ -1,3 +1,5 @@
+%option prefix="comment_lexer"
+
 %{
     #include "Assignment.h"
     #include "expression.h"
