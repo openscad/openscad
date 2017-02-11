@@ -177,7 +177,7 @@ bool MainWindow::undockMode = false;
 bool MainWindow::reorderMode = false;
 
 MainWindow::MainWindow(const QString &filename)
-	: root_inst("group"), library_info_dialog(NULL), font_list_dialog(NULL), procevents(false), tempFile(NULL), progresswidget(NULL), contentschanged(false)
+	: root_inst("group"), library_info_dialog(NULL), font_list_dialog(NULL), procevents(false), tempFile(NULL), progresswidget(NULL), contentschanged(false), includes_mtime(0), deps_mtime(0)
 {
 	setupUi(this);
 
@@ -969,8 +969,12 @@ void MainWindow::compile(bool reload, bool forcedone)
 		shouldcompiletoplevel = true;
 	}
 
-	if (!shouldcompiletoplevel && this->root_module && this->root_module->includesChanged()) {
-		shouldcompiletoplevel = true;
+	if (!shouldcompiletoplevel && this->root_module) {
+		time_t mtime = this->root_module->includesChanged();
+		if (mtime > this->includes_mtime) {
+			this->includes_mtime = mtime;
+			shouldcompiletoplevel = true;
+		}
 	}
 
 	if (shouldcompiletoplevel) {
@@ -981,7 +985,9 @@ void MainWindow::compile(bool reload, bool forcedone)
 	}
 
 	if (this->root_module) {
-		if (this->root_module->handleDependencies()) {
+		time_t mtime = this->root_module->handleDependencies();
+		if (mtime > this->deps_mtime) {
+			this->deps_mtime = mtime;
 			PRINTB("Module cache size: %d modules", ModuleCache::instance()->size());
 			didcompile = true;
 		}
@@ -1012,7 +1018,9 @@ void MainWindow::compile(bool reload, bool forcedone)
 
 void MainWindow::waitAfterReload()
 {
-	if (this->root_module->handleDependencies()) {
+	time_t mtime = this->root_module->handleDependencies();
+	if (mtime > this->deps_mtime) {
+		this->deps_mtime = mtime;
 		this->waitAfterReloadTimer->start();
 		return;
 	}
