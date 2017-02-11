@@ -1,9 +1,9 @@
 Some work is needed to include these into the automated test suite.
 For now, run them manually according to these instructions:
 
-Compile OpenSCAD in debug mode. This will give console output related to module caching, e.g.:
-/path/to/used.scad: 0x103612f70
-Module cache size: 1 modules
+Compile OpenSCAD in debug mode and always run OpenSCAD from the cmd-line using the argument --debug=FileModule.
+This will give console output related to module caching, e.g.:
+    FileModule: /path/to/used.scad: 0x103612f70
 
 Test1: Basic cache
 ------
@@ -131,10 +131,9 @@ Test 15: Correct handling of compile errors in auto-reloaded modules
 o Turn on Automatic Reload and Compile
 o Open mainusingerror.scad
 o Verify that you get:
-  - Compiling library '.../error.scad'.
-  - Parser error in line 3: syntax error
+  - ERROR: Parser error in file ".../error.scad", line 3: syntax error
   - WARNING: Failed to compile library '.../error.scad'.
-  - Main file should keep compiling
+  - Main file should keep compiling and ECHO the OpenSCAD version
 o Verify that the above doesn't repeat
 
 Test 16: Dependency tracking of underlying dependencies
