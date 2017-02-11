@@ -144,3 +144,17 @@ o Open mainsubsub.scad
 o Verify that you see a red cylinder
 o edit subdir/subsub.scad: Change color
 o Verify that color changes
+
+Test 17: Dependency tracking with two open files
+--------
+o Turn on Automatic Reload and Compile
+o Open these 3 files: main-use-include.scad used.scad included.scad
+o Verify that you see 1) A red cube and sphere 2) A red sphere 3) a red cube
+o In an external editor, edit used.scad: Change color
+o Verify that color changed also in main-use-include
+o In an external editor, edit included.scad: Change color
+o Verify that color changed also in main-use-include
+
+
+
+
