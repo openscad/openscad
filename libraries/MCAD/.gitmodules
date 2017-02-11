@@ -1,0 +1,3 @@
+[submodule "libraries/MCAD"]
+    path = libraries/MCAD
+    url = ../MCAD.git
