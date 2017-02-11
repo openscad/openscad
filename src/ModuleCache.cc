@@ -12,6 +12,7 @@
 #include <sstream>
 #include <time.h>
 #include <sys/stat.h>
+#include <algorithm>
 
 namespace fs=boost::filesystem;
 //#include "parsersettings.h"
@@ -29,9 +30,9 @@ ModuleCache *ModuleCache::inst = nullptr;
 	Sets the module reference to the new module, or nullptr on any error (e.g. compile
 	error or file not found).
 
-	Returns true if anything was compiled (module or dependencies) and false otherwise.
+	Returns the latest mod time of the modul or its dependencies or includes.
 */
-bool ModuleCache::evaluate(const std::string &filename, FileModule *&module)
+time_t ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 {
 	module = nullptr;
 	FileModule *lib_mod = nullptr;
@@ -43,14 +44,14 @@ bool ModuleCache::evaluate(const std::string &filename, FileModule *&module)
   
 	// Don't try to recursively evaluate - if the file changes
 	// during evaluation, that would be really bad.
-	if (lib_mod && lib_mod->isHandlingDependencies()) return false;
+	if (lib_mod && lib_mod->isHandlingDependencies()) return 0;
 
 	// Create cache ID
 	struct stat st{};
 	bool valid = (StatCache::stat(filename.c_str(), &st) == 0);
 
 	// If file isn't there, just return and let the cache retain the old module
-	if (!valid) return false;
+	if (!valid) return 0;
 
 	// If the file is present, we'll always cache some result
 	std::string cache_id = str(boost::format("%x.%x") % st.st_mtime % st.st_size);
@@ -60,7 +61,9 @@ bool ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 	if (!found) {
 		entry.module = nullptr;
 		entry.cache_id = cache_id;
+		entry.includes_mtime = st.st_mtime;
 	}
+	entry.mtime = st.st_mtime;
   
 	bool shouldCompile = true;
 	if (found) {
@@ -68,9 +71,13 @@ bool ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 		if (entry.cache_id == cache_id) {
 			shouldCompile = false;
 			// Recompile if includes changed
-			if (lib_mod && lib_mod->includesChanged()) {
-				lib_mod = nullptr;
-				shouldCompile = true;
+			if (lib_mod) {
+				time_t mtime = lib_mod->includesChanged();
+				if (mtime > entry.includes_mtime) {
+					entry.includes_mtime = mtime;
+					lib_mod = nullptr;
+					shouldCompile = true;
+				}
 			}
 		}
 	}
@@ -96,7 +103,7 @@ bool ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 			std::ifstream ifs(filename.c_str());
 			if (!ifs.is_open()) {
 				PRINTB("WARNING: Can't open library file '%s'\n", filename);
-				return false;
+				return 0;
 			}
 			textbuf << ifs.rdbuf();
 		}
@@ -120,9 +127,9 @@ bool ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 	}
 	
 	module = lib_mod;
-	bool depschanged = lib_mod ? lib_mod->handleDependencies() : false;
+    time_t deps_mtime = lib_mod ? lib_mod->handleDependencies() : 0;
 
-	return shouldCompile || depschanged;
+	return std::max(deps_mtime, std::max(entry.mtime, entry.includes_mtime));
 }
 
 void ModuleCache::clear()
