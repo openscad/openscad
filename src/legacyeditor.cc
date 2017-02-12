@@ -245,6 +245,13 @@ bool LegacyEditor::findString(const QString & exp, bool findBackwards) const
 	return this->textedit->find(exp, findBackwards ? QTextDocument::FindBackward : QTextDocument::FindFlags(0));
 }
 
+int LegacyEditor::resetFindIndicators(const QString &findText, bool visibility)//incomplete-place-hoder
+{
+    int findwordcount = 0;
+    // blank see scintillaeditor.cpp
+    return findwordcount;
+}
+
 bool LegacyEditor::find(const QString &newText, bool findNext, bool findBackwards)
 {
 	bool success = this->findString(newText, findBackwards);
