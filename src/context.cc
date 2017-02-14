@@ -79,18 +79,11 @@ void Context::setVariables(const AssignmentList &args, const EvalContext *evalct
   for (const auto &arg : args) {
     set_variable(arg.name, arg.expr ? arg.expr->evaluate(this->parent) : ValuePtr::undefined);
   }
-  
+	
   if (evalctx) {
-    size_t posarg = 0;
-    // Iterate over positional args
-    for (size_t i=0; i<evalctx->numArgs(); i++) {
-      const std::string &name = evalctx->getArgName(i); // name is optional
-      ValuePtr val = evalctx->getArgValue(i);
-      if (name.empty()) { // If positional, find name of arg with this position
-        if (posarg < args.size()) this->set_variable(args[posarg++].name, val);
-      } else {
-        this->set_variable(name, val);
-      }
+		AssignmentMap assignments = evalctx->resolveArguments(args);
+		for (const auto &ass : assignments) {
+			this->set_variable(ass.first, ass.second->evaluate(evalctx));
     }
   }
 }
