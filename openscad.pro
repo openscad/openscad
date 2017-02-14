@@ -208,13 +208,8 @@ FORMS   += src/MainWindow.ui \
            src/parameter/ParameterEntryWidget.ui
 
 # AST nodes
-win* {
-  FLEXSOURCES = src/lexer.l
-  BISONSOURCES = src/parser.y
-} else {
-  LEXSOURCES += src/lexer.l
-  YACCSOURCES += src/parser.y
-}
+FLEXSOURCES += src/lexer.l 
+BISONSOURCES += src/parser.y
 
 HEADERS += src/AST.h \
            src/ModuleInstantiation.h \
@@ -235,35 +230,8 @@ SOURCES += src/AST.cc \
            src/assignment.cc
 
 # Comment parser
-FLEX = src/comment_lexer.l
-BISON = src/comment_parser.y
-
-flexs.name = Flex ${QMAKE_FILE_IN}
-flexs.input = FLEX
-flexs.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}.cpp
-flexs.commands = flex -o${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}.cpp ${QMAKE_FILE_IN}
-flexs.CONFIG += target_predeps
-flexs.variable_out = GENERATED_SOURCES
-silent:flexs.commands = @echo Lex ${QMAKE_FILE_IN} && $$flexs.commands
-QMAKE_EXTRA_COMPILERS += flexs
-
-bison.name = Bison ${QMAKE_FILE_IN}
-biso.input = BISON
-biso.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}.cpp
-biso.commands = bison -d -o ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}.cpp ${QMAKE_FILE_IN}
-biso.commands += && if [[ -e ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}_yacc.hpp ]] ; then mv ${QMAKE_FILE_PATH}/${QMAKE_FILE_BASE}.hpp ${QMAKE_FILE_PATH}/${QMAKE_FILE_BASE}.h ; fi
-biso.CONFIG += target_predeps
-biso.variable_out = GENERATED_SOURCES
-silent:biso.commands = @echo Bison ${QMAKE_FILE_IN} && $$biso.commands
-QMAKE_EXTRA_COMPILERS += biso
-
-biso_header.input = BISON
-biso_header.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}.h
-biso_header.commands = bison -d -o ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}.cpp ${QMAKE_FILE_IN}
-biso_header.commands += && if [ -e ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}.hpp ]; then mv ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}.hpp ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}.h ; fi
-biso_header.CONFIG += target_predeps no_link
-silent:biso_header.commands = @echo Bison ${QMAKE_FILE_IN} && $$biso.commands
-QMAKE_EXTRA_COMPILERS += biso_header
+FLEXSOURCES += src/comment_lexer.l
+BISONSOURCES += src/comment_parser.y
 
 HEADERS += src/version_check.h \
            src/ProgressWidget.h \
@@ -287,6 +255,7 @@ HEADERS += src/version_check.h \
            src/FontListTableView.h \
            src/GroupModule.h \
            src/FileModule.h \
+           src/StatCache.h \
            src/builtin.h \
            src/calc.h \
            src/context.h \
@@ -380,7 +349,7 @@ HEADERS += src/version_check.h \
            src/parameter/parametervector.h \
            src/parameter/groupwidget.h \
            src/parameter/parameterset.h\
-           src/QWordSearchField.h#      changed     ##      changed     ##      changed     #
+           src/QWordSearchField.h
 
 SOURCES += \
            src/libsvg/libsvg.cc \
@@ -469,6 +438,7 @@ SOURCES += \
            src/hash.cc \
            src/GroupModule.cc \
            src/FileModule.cc \
+           src/StatCache.cc \
            src/builtin.cc \
            src/calc.cc \
            src/export.cc \
@@ -520,7 +490,7 @@ SOURCES += \
            src/parameter/groupwidget.cpp \
            src/parameter/parameterset.cpp \
            src/parameter/parametervirtualwidget.cpp\
-           src/QWordSearchField.cc#      changed     ##      changed     ##      changed     #
+           src/QWordSearchField.cc
 
 
 # ClipperLib
