@@ -718,16 +718,22 @@ void evaluate_assert(const Context &context, const class EvalContext *evalctx, c
 	args += Assignment("condition"), Assignment("message");
 
 	Context c(&context);
-	const Context::Expressions expressions = c.setVariables(args, evalctx);
+
+	AssignmentMap assignments = evalctx->resolveArguments(args);
+	for (const auto &arg : args) {
+		auto it = assignments.find(arg.name);
+		if (it != assignments.end()) {
+			c.set_variable(arg.name, assignments[arg.name]->evaluate(evalctx));
+		}
+	}
+	
 	const ValuePtr condition = c.lookup_variable("condition");
 
 	if (!condition->toBool()) {
 		std::stringstream msg;
 		msg << "ERROR: Assertion";
-		const Expression *expr = expressions.at("condition");
-		if (expr) {
-			msg << " '" << *expr << "'";
-		}
+		const Expression *expr = assignments["condition"];
+		if (expr) msg << " '" << *expr << "'";
 		msg << " failed, line " << loc.firstLine();
 		const ValuePtr message = c.lookup_variable("message", true);
 		if (message->isDefined()) {

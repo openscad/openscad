@@ -1202,6 +1202,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/empty-stl.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1516.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1528.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1923.scad
             )
 
 list(APPEND ASTDUMPTEST_FILES ${MISC_FILES}

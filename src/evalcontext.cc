@@ -31,6 +31,27 @@ ValuePtr EvalContext::getArgValue(size_t i, const Context *ctx) const
 	return v;
 }
 
+/*!
+  Resolves arguments specified by evalctx, using args to lookup positional arguments.
+  Returns an AssignmentMap (string -> Expression*)
+*/
+AssignmentMap EvalContext::resolveArguments(const AssignmentList &args) const
+{
+  AssignmentMap resolvedArgs;
+  size_t posarg = 0;
+  // Iterate over positional args
+  for (size_t i=0; i<this->numArgs(); i++) {
+    const std::string &name = this->getArgName(i); // name is optional
+    const Expression *expr = this->getArgs()[i].expr.get();
+    if (!name.empty()) {
+      resolvedArgs[name] = expr;
+    }
+    // If positional, find name of arg with this position
+    else if (posarg < args.size()) resolvedArgs[args[posarg++].name] = expr;
+  }
+  return resolvedArgs;
+}
+
 size_t EvalContext::numChildren() const
 {
 	return this->scope ? this->scope->children.size() : 0;
