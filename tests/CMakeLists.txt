@@ -1416,8 +1416,23 @@ set_test_config(Heavy cgalpngtest_rotate_extrude-tests
                       cgalpngtest_linear_extrude-scale-zero-tests
                       csgpngtest_linear_extrude-scale-zero-tests
                       cgalpngtest_sphere-tests
+                      csgpngtest_sphere-tests
                       csgpngtest_resize-tests
                       csgpngtest_resize-tests
+                      csgpngtest_minkowski3-erosion
+                      cgalpngtest_minkowski3-erosion
+                      opencsgtest_minkowski3-erosion
+                      cgalpngtest_camera-tests
+                      csgpngtest_camera-tests
+                      cgalpngtest_surface-tests
+                      csgpngtest_surface-tests
+                      csgpngtest_linear_extrude-parameter-tests
+                      cgalpngtest_linear_extrude-parameter-tests
+                      csgpngtest_rotate_extrude-angle
+                      cgalpngtest_rotate_extrude-angle
+                      cgalpngtest_projection-extrude-tests
+                      cgalpngtest_for-tests
+                      csgpngtest_for-tests
                       stlpngtest_fence
                       stlpngtest_surface
                       stlpngtest_demo_cut
@@ -1435,7 +1450,9 @@ set_test_config(Heavy cgalpngtest_rotate_extrude-tests
                       cgalstlcgalpngtest_rotate_extrude-tests
                       monotonepngtest_rotate_extrude-tests
                       echotest_tail-recursion-tests
-                      cgalstlcgalpngtest_rotate_extrude-tests)
+                      cgalstlcgalpngtest_rotate_extrude-tests
+                      openscad-colorscheme-metallic-render_CSG
+                      )
 
 # Bugs
 
