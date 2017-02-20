@@ -142,9 +142,6 @@
     (modify-syntax-entry ?=  "." st)
     (modify-syntax-entry ?\;  "." st)
 
-    ;; _ allowed in word (alternatively "_" as symbol constituent?)
-    (modify-syntax-entry ?_  "w" st)
-
     st)
   "Syntax table for `scad-mode'.")
 
