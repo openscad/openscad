@@ -60,6 +60,7 @@ time_t ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 	// Initialize entry, if new
 	if (!found) {
 		entry.module = nullptr;
+		entry.last_good_module = nullptr;
 		entry.cache_id = cache_id;
 		entry.includes_mtime = st.st_mtime;
 	}
@@ -71,11 +72,10 @@ time_t ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 		if (entry.cache_id == cache_id) {
 			shouldCompile = false;
 			// Recompile if includes changed
-			if (lib_mod) {
-				time_t mtime = lib_mod->includesChanged();
+			if (entry.last_good_module) {
+				time_t mtime = entry.last_good_module->includesChanged();
 				if (mtime > entry.includes_mtime) {
 					entry.includes_mtime = mtime;
-					lib_mod = nullptr;
 					shouldCompile = true;
 				}
 			}
@@ -111,15 +111,15 @@ time_t ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 		
 		print_messages_push();
 		
-		FileModule *oldmodule = lib_mod;
-		
 		fs::path pathname = fs::path(filename);
 		lib_mod = parse(textbuf.str().c_str(), pathname, false);
 		PRINTDB("  compiled module: %p", lib_mod);
-		
-		// We defer deletion so we can ensure that the new module won't
-		// have the same address as the old
-		if (oldmodule) delete oldmodule;
+
+		if(lib_mod) { // parse successful
+            if(entry.last_good_module)
+                delete entry.last_good_module;
+            entry.last_good_module = lib_mod;
+        }
 		entry.module = lib_mod;
 		entry.cache_id = cache_id;
 		

@@ -237,6 +237,7 @@ MainWindow::MainWindow(const QString &filename)
 	top_ctx.registerBuiltin();
 
 	root_module = NULL;
+	last_good_module = NULL;
 	absolute_root_node = NULL;
 #ifdef ENABLE_CGAL
 	this->cgalRenderer = NULL;
@@ -732,7 +733,10 @@ void MainWindow::updateReorderMode(bool reorderMode)
 
 MainWindow::~MainWindow()
 {
-	if (root_module) delete root_module;
+	if (root_module)
+		delete root_module;
+	else
+		if(last_good_module) delete last_good_module;
 	if (root_node) delete root_node;
 #ifdef ENABLE_CGAL
 	this->root_geom.reset();
@@ -969,8 +973,8 @@ void MainWindow::compile(bool reload, bool forcedone)
 		shouldcompiletoplevel = true;
 	}
 
-	if (!shouldcompiletoplevel && this->root_module) {
-		time_t mtime = this->root_module->includesChanged();
+	if (!shouldcompiletoplevel && this->last_good_module) {
+		time_t mtime = this->last_good_module->includesChanged();
 		if (mtime > this->includes_mtime) {
 			this->includes_mtime = mtime;
 			shouldcompiletoplevel = true;
@@ -1756,12 +1760,13 @@ void MainWindow::compileTopLevelDocument()
 		std::string(this->last_compiled_doc.toUtf8().constData()) +
 		"\n" + commandline_commands;
 	
-	delete this->root_module;
-	this->root_module = NULL;
-
 	auto fnameba = this->fileName.toLocal8Bit();
 	const char* fname = this->fileName.isEmpty() ? "" : fnameba;
 	this->root_module = parse(fulltext.c_str(), fs::path(fname), false);
+	if(this->root_module) {
+		if(this->last_good_module) delete this->last_good_module;
+		this->last_good_module = this->root_module;
+	}
     
 	if (Feature::ExperimentalCustomizer.is_enabled()) {
 		if (this->root_module!=NULL) {

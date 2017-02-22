@@ -24,6 +24,7 @@ private:
 
 	struct cache_entry {
 		class FileModule *module;
+		class FileModule *last_good_module; // the last version that parsed correctly for include list
 		std::string cache_id;
 		time_t mtime;          // time file last modified
 		time_t includes_mtime; // time the includes last changed
