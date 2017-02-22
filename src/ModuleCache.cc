@@ -116,10 +116,10 @@ time_t ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 		PRINTDB("  compiled module: %p", lib_mod);
 
 		if(lib_mod) { // parse successful
-            if(entry.last_good_module)
-                delete entry.last_good_module;
-            entry.last_good_module = lib_mod;
-        }
+			if(entry.last_good_module)
+				delete entry.last_good_module;
+			entry.last_good_module = lib_mod;
+		}
 		entry.module = lib_mod;
 		entry.cache_id = cache_id;
 		
