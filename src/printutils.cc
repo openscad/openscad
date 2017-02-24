@@ -119,7 +119,8 @@ void printDeprecation(const std::string &str)
 	}
 }
 
-void resetPrintedDeprecations()
+void resetSuppressedMessages()
 {
 	printedDeprecations.clear();
+	lastmessages.clear();
 }
