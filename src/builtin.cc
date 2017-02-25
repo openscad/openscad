@@ -98,6 +98,7 @@ Builtins::Builtins()
 	this->globalscope.assignments.push_back(Assignment("$fs", shared_ptr<Expression>(new Literal(ValuePtr(2.0)))));
 	this->globalscope.assignments.push_back(Assignment("$fa", shared_ptr<Expression>(new Literal(ValuePtr(12.0)))));
 	this->globalscope.assignments.push_back(Assignment("$t", shared_ptr<Expression>(new Literal(ValuePtr(0.0)))));
+	this->globalscope.assignments.push_back(Assignment("$preview", shared_ptr<Expression>(new Literal(ValuePtr(0)))));
 
 	Value::VectorType zero3;
 	zero3.push_back(ValuePtr(0.0));
