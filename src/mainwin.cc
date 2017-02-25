@@ -1768,7 +1768,7 @@ bool MainWindow::fileChangedOnDisk()
 */
 void MainWindow::compileTopLevelDocument()
 {
-	resetPrintedDeprecations();
+	resetSuppressedMessages();
 
 	this->last_compiled_doc = editor->toPlainText();
 
