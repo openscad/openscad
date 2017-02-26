@@ -377,7 +377,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	ModuleContext top_ctx;
 	top_ctx.registerBuiltin();
 	bool preview = png_output_file ? (renderer==Render::OPENCSG || renderer==Render::THROWNTOGETHER) : false;
-	top_ctx.set_variable("$preview", ValuePtr(preview ? 1 : 0));
+	top_ctx.set_variable("$preview", ValuePtr(preview));
 #ifdef DEBUG
 	PRINTDB("Top ModuleContext:\n%s",top_ctx.dump(nullptr, nullptr));
 #endif

@@ -1850,7 +1850,7 @@ void MainWindow::actionReloadRenderPreview()
 	// QApplication::processEvents();
 	this->afterCompileSlot = "csgReloadRender";
 	this->procevents = true;
-	this->top_ctx.set_variable("$preview", ValuePtr(1));
+	this->top_ctx.set_variable("$preview", ValuePtr(true));
 
 	compile(true);
 }
@@ -1888,7 +1888,7 @@ void MainWindow::actionRenderPreview()
 	QApplication::processEvents();
 	this->afterCompileSlot = "csgRender";
 	this->procevents = !viewActionAnimate->isChecked();
-	this->top_ctx.set_variable("$preview", ValuePtr(1));
+	this->top_ctx.set_variable("$preview", ValuePtr(true));
 	compile(false);
 	if (preview_requested) {
 		// if the action was called when the gui was locked, we must request it one more time
@@ -1948,7 +1948,7 @@ void MainWindow::actionRender()
 	QApplication::processEvents();
 	this->afterCompileSlot = "cgalRender";
 	this->procevents = true;
-	this->top_ctx.set_variable("$preview", ValuePtr(0));
+	this->top_ctx.set_variable("$preview", ValuePtr(false));
 	compile(false);
 }
 
