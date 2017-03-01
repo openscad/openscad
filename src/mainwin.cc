@@ -733,7 +733,8 @@ void MainWindow::updateReorderMode(bool reorderMode)
 
 MainWindow::~MainWindow()
 {
-	delete root_module;
+	// If root_module is not null then it will be the same as last_good_module,
+	// so no need to delete it.
 	delete last_good_module;
 	delete root_node;
 #ifdef ENABLE_CGAL
