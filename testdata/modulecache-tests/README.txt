@@ -154,6 +154,22 @@ o Verify that color changed also in main-use-include
 o In an external editor, edit included.scad: Change color
 o Verify that color changed also in main-use-include
 
+Test 18: Correct auto-reload of errors in includes from main
+--------
+o Turn on Automatic Reload and Compile
+o Open mainincludingerror.scad
+o Verify that you get:
+  - ERROR: Parser error in file ".../error.scad", line 3: syntax error
+  - ERROR: Compilation failed
+o edit error.scad: fix the syntax error (add semicolon)
+o Verify that you now see a cube
 
-
-
+Test 19: Correct auto-reload of errors in includes from sub modules
+--------
+o Turn on Automatic Reload and Compile
+o Open mainuseincludingerror.scad
+o Verify that you get:
+  - ERROR: Parser error in file ".../error.scad", line 3: syntax error
+  - WARNING: Failed to compile library ...mainincludingerror.scad
+o edit error.scad: fix the syntax error (add semicolon)
+o Verify that you now see a cube
