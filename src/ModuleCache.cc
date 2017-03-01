@@ -47,7 +47,7 @@ time_t ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 	if (lib_mod && lib_mod->isHandlingDependencies()) return 0;
 
 	// Create cache ID
-	struct stat st{};
+	struct stat st;
 	bool valid = (StatCache::stat(filename.c_str(), &st) == 0);
 
 	// If file isn't there, just return and let the cache retain the old module

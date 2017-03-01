@@ -59,7 +59,7 @@ int StatCache::stat(const char *path, struct stat *st)
 		}
 		statMap.erase(iter);                            // Remove stale entry
 	}
-	CacheEntry entry{};                               // Make a new entry
+	CacheEntry entry;                                 // Make a new entry
 	entry.timestamp = ms_clock();
 	if (int rv = ::stat(path, &entry.st)) return rv;  // stat failed
 	statMap[path] = entry;
