@@ -733,11 +733,9 @@ void MainWindow::updateReorderMode(bool reorderMode)
 
 MainWindow::~MainWindow()
 {
-	if (root_module)
-		delete root_module;
-	else
-		if(last_good_module) delete last_good_module;
-	if (root_node) delete root_node;
+	delete root_module;
+	delete last_good_module;
+	delete root_node;
 #ifdef ENABLE_CGAL
 	this->root_geom.reset();
 	delete this->cgalRenderer;
@@ -1763,8 +1761,8 @@ void MainWindow::compileTopLevelDocument()
 	auto fnameba = this->fileName.toLocal8Bit();
 	const char* fname = this->fileName.isEmpty() ? "" : fnameba;
 	this->root_module = parse(fulltext.c_str(), fs::path(fname), false);
-	if(this->root_module) {
-		if(this->last_good_module) delete this->last_good_module;
+	if (this->root_module) {
+		delete this->last_good_module;
 		this->last_good_module = this->root_module;
 	}
     
