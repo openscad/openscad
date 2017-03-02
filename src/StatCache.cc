@@ -36,7 +36,7 @@ const float stale = 0.190;  // Maximum lifetime of a cache entry chosen to be sh
 
 static double ms_clock(void)
 {
-	struct timeb tb{};
+	struct timeb tb;
 	ftime(&tb);
 	return tb.time + double(tb.millitm) / 1000;
 }
