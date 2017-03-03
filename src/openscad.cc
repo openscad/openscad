@@ -397,7 +397,10 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	std::string text((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 	text += "\n" + commandline_commands;
 	fs::path abspath = fs::absolute(filename);
-	root_module = parse(text.c_str(), abspath, false);
+	if(!parse(root_module, text.c_str(), abspath, false)) {
+		delete root_module;  // parse failed
+		root_module = NULL;
+	}
 	if (!root_module) {
 		PRINTB("Can't parse file '%s'!\n", filename.c_str());
 		return 1;
