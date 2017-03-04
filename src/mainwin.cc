@@ -239,7 +239,7 @@ MainWindow::MainWindow(const QString &filename)
 	top_ctx.registerBuiltin();
 
 	root_module = NULL;
-	last_good_module = NULL;
+	parsed_module = NULL;
 	absolute_root_node = NULL;
 #ifdef ENABLE_CGAL
 	this->cgalRenderer = NULL;
@@ -736,8 +736,9 @@ void MainWindow::updateReorderMode(bool reorderMode)
 
 MainWindow::~MainWindow()
 {
-	delete root_module;
-	delete last_good_module;
+	// If root_module is not null then it will be the same as parsed_module,
+	// so no need to delete it.
+	delete parsed_module;
 	delete root_node;
 #ifdef ENABLE_CGAL
 	this->root_geom.reset();
@@ -974,8 +975,8 @@ void MainWindow::compile(bool reload, bool forcedone)
 		shouldcompiletoplevel = true;
 	}
 
-	if (!shouldcompiletoplevel && this->last_good_module) {
-		time_t mtime = this->last_good_module->includesChanged();
+	if (!shouldcompiletoplevel && this->parsed_module) {
+		time_t mtime = this->parsed_module->includesChanged();
 		if (mtime > this->includes_mtime) {
 			this->includes_mtime = mtime;
 			shouldcompiletoplevel = true;
@@ -1780,12 +1781,9 @@ void MainWindow::compileTopLevelDocument()
 	
 	auto fnameba = this->fileName.toLocal8Bit();
 	const char* fname = this->fileName.isEmpty() ? "" : fnameba;
-	this->root_module = parse(fulltext.c_str(), fs::path(fname), false);
-	if (this->root_module) {
-		delete this->last_good_module;
-		this->last_good_module = this->root_module;
-	}
-    
+	delete this->parsed_module;
+	this->root_module = parse(this->parsed_module, fulltext.c_str(), fs::path(fname), false) ? this->parsed_module : NULL;
+
 	if (Feature::ExperimentalCustomizer.is_enabled()) {
 		if (this->root_module!=NULL) {
 			//add parameters as annotation in AST

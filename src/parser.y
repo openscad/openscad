@@ -628,7 +628,7 @@ void yyerror (char const *s)
          sourcefile() % lexerget_lineno() % s);
 }
 
-FileModule *parse(const char *text, const fs::path &filename, int debug)
+bool parse(FileModule *&module, const char *text, const fs::path &filename, int debug)
 {
   lexerin = NULL;
   parser_error_pos = -1;
@@ -645,9 +645,10 @@ FileModule *parse(const char *text, const fs::path &filename, int debug)
   lexerdestroy();
   lexerlex_destroy();
 
-  if (parserretval != 0) return NULL;
+  module = rootmodule;
+  if (parserretval != 0) return false;
 
   parser_error_pos = -1;
   scope_stack.pop();
-  return rootmodule;
+  return true;
 }

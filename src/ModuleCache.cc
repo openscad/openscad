@@ -47,7 +47,7 @@ time_t ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 	if (lib_mod && lib_mod->isHandlingDependencies()) return 0;
 
 	// Create cache ID
-	struct stat st{};
+	struct stat st;
 	bool valid = (StatCache::stat(filename.c_str(), &st) == 0);
 
 	// If file isn't there, just return and let the cache retain the old module
@@ -60,7 +60,7 @@ time_t ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 	// Initialize entry, if new
 	if (!found) {
 		entry.module = nullptr;
-		entry.last_good_module = nullptr;
+		entry.parsed_module = nullptr;
 		entry.cache_id = cache_id;
 		entry.includes_mtime = st.st_mtime;
 	}
@@ -72,8 +72,8 @@ time_t ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 		if (entry.cache_id == cache_id) {
 			shouldCompile = false;
 			// Recompile if includes changed
-			if (entry.last_good_module) {
-				time_t mtime = entry.last_good_module->includesChanged();
+			if (entry.parsed_module) {
+				time_t mtime = entry.parsed_module->includesChanged();
 				if (mtime > entry.includes_mtime) {
 					entry.includes_mtime = mtime;
 					shouldCompile = true;
@@ -112,13 +112,9 @@ time_t ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 		print_messages_push();
 		
 		fs::path pathname = fs::path(filename);
-		lib_mod = parse(textbuf.str().c_str(), pathname, false);
+		delete entry.parsed_module;
+		lib_mod = parse(entry.parsed_module, textbuf.str().c_str(), pathname, false) ? entry.parsed_module : nullptr;
 		PRINTDB("  compiled module: %p", lib_mod);
-
-		if (lib_mod) { // parse successful
-			delete entry.last_good_module;
-			entry.last_good_module = lib_mod;
-		}
 		entry.module = lib_mod;
 		entry.cache_id = cache_id;
 		

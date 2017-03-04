@@ -81,7 +81,7 @@ time_t FileModule::includesChanged() const
 
 time_t FileModule::include_modified(const IncludeFile &inc) const
 {
-	struct stat st{};
+	struct stat st;
 
 	if (StatCache::stat(inc.filename.c_str(), &st) == 0) {
 		return st.st_mtime;

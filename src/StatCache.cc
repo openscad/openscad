@@ -36,7 +36,7 @@ const float stale = 0.190;  // Maximum lifetime of a cache entry chosen to be sh
 
 static double ms_clock(void)
 {
-	struct timeb tb{};
+	struct timeb tb;
 	ftime(&tb);
 	return tb.time + double(tb.millitm) / 1000;
 }
@@ -59,7 +59,7 @@ int StatCache::stat(const char *path, struct stat *st)
 		}
 		statMap.erase(iter);                            // Remove stale entry
 	}
-	CacheEntry entry{};                               // Make a new entry
+	CacheEntry entry;                                 // Make a new entry
 	entry.timestamp = ms_clock();
 	if (int rv = ::stat(path, &entry.st)) return rv;  // stat failed
 	statMap[path] = entry;

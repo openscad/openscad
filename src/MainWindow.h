@@ -42,7 +42,7 @@ public:
 
 	ModuleContext top_ctx;
 	FileModule *root_module;          // Result of parsing
-	FileModule *last_good_module;     // Last successful parse for include list
+	FileModule *parsed_module;        // Last parse for include list
 	ModuleInstantiation root_inst;    // Top level instance
 	AbstractNode *absolute_root_node; // Result of tree evaluation
 	AbstractNode *root_node;          // Root if the root modifier (!) is used
