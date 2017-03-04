@@ -571,17 +571,34 @@ void ScintillaEditor::replaceSelectedText(const QString &newText)
     if ((qsci->selectedText() != newText)&&(qsci->hasSelectedText())) qsci->replaceSelectedText(newText);
 }
 
-void ScintillaEditor::replaceAll(const QString &findText, const QString &replaceText)//QScintilla bug no longer an issue 
+void ScintillaEditor::replaceAll(const QString &findText, const QString &replaceText)
 {
-    if (qsci->findFirst(findText,
-                        false /*re*/, false /*cs*/, false /*wo*/,
-                        false /*wrap*/, true /*forward*/, 0, 0)) {
-        qsci->replace(replaceText);
-        while (qsci->findNext()) {
-            qsci->replace(replaceText);
-        }
+  // We need to issue a Select All first due to a bug in QScintilla:
+  // It doesn't update the find range when just doing findFirst() + findNext() causing the search
+  // to end prematurely if the replaced string is larger than the selected string.
+#if QSCINTILLA_VERSION >= 0x020903
+  // QScintilla bug seams to be fixed in 2.9.3
+  if (qsci->findFirst(findText,
+                      false /*re*/, false /*cs*/, false /*wo*/,
+                      false /*wrap*/, true /*forward*/, 0, 0)) {
+#elif QSCINTILLA_VERSION >= 0x020700
+  qsci->selectAll();
+  if (qsci->findFirstInSelection(findText, 
+                      false /*re*/, false /*cs*/, false /*wo*/, 
+                      false /*wrap*/, true /*forward*/)) {
+#else
+    // findFirstInSelection() was introduced in QScintilla 2.7
+  if (qsci->findFirst(findText, 
+                      false /*re*/, false /*cs*/, false /*wo*/, 
+                      false /*wrap*/, true /*forward*/, 0, 0)) {
+#endif
+    qsci->replace(replaceText);
+    while (qsci->findNext()) {
+      qsci->replace(replaceText);
     }
+  }
 }
+
 
 void ScintillaEditor::getRange(int *lineFrom, int *lineTo)
 {
