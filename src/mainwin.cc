@@ -92,6 +92,8 @@
 #include <QDockWidget>
 #include <QClipboard>
 #include <QDesktopWidget>
+#include <string>
+#include "QWordSearchField.h"
 
 #if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
 #include <QTextDocument>
@@ -296,7 +298,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->e_dump, SIGNAL(toggled(bool)), this, SLOT(updatedAnimDump(bool)));
 
 	animate_panel->hide();
-	find_panel->hide();
+	this->hideFind(); 
 	frameCompileResult->hide();
 	this->labelCompileResultMessage->setOpenExternalLinks(false);
 	connect(this->labelCompileResultMessage, SIGNAL(linkActivated(QString)), SLOT(showConsole()));
@@ -351,9 +353,9 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->editActionZoomTextIn, SIGNAL(triggered()), editor, SLOT(zoomIn()));
 	connect(this->editActionZoomTextOut, SIGNAL(triggered()), editor, SLOT(zoomOut()));
 	connect(this->editActionPreferences, SIGNAL(triggered()), this, SLOT(preferences()));
-	// Edit->Find
-	connect(this->editActionFind, SIGNAL(triggered()), this, SLOT(find()));
-	connect(this->editActionFindAndReplace, SIGNAL(triggered()), this, SLOT(findAndReplace()));
+    // Edit->Find
+    connect(this->editActionFind, SIGNAL(triggered()), this, SLOT(showFind()));
+    connect(this->editActionFindAndReplace, SIGNAL(triggered()), this, SLOT(showFindAndReplace()));
 #ifdef Q_OS_WIN
 	this->editActionFindAndReplace->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_F));
 #endif
@@ -472,7 +474,8 @@ MainWindow::MainWindow(const QString &filename)
 	QString cs = Preferences::inst()->getValue("3dview/colorscheme").toString();
 	this->setColorScheme(cs);
 
-	//find and replace panel
+    //find and replace panel
+    connect(this->findTypeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(selectFindType(int)));
 	connect(this->findInputField, SIGNAL(textChanged(QString)), this, SLOT(findString(QString)));
         connect(this->findInputField, SIGNAL(returnPressed()), this->findNextButton, SLOT(animateClick()));
 	find_panel->installEventFilter(this);
@@ -486,7 +489,7 @@ MainWindow::MainWindow(const QString &filename)
 
         connect(this->findPrevButton, SIGNAL(clicked()), this, SLOT(findPrev()));
         connect(this->findNextButton, SIGNAL(clicked()), this, SLOT(findNext()));
-        connect(this->cancelButton, SIGNAL(clicked()), find_panel, SLOT(hide()));
+    connect(this->cancelButton, SIGNAL(clicked()), this, SLOT(hideFind()));
 	connect(this->replaceButton, SIGNAL(clicked()), this, SLOT(replace()));
 	connect(this->replaceAllButton, SIGNAL(clicked()), this, SLOT(replaceAll()));
 	connect(this->replaceInputField, SIGNAL(returnPressed()), this->replaceButton, SLOT(animateClick()));
@@ -1528,43 +1531,60 @@ void MainWindow::pasteViewportRotation()
 	this->editor->insert(txt);
 }
 
-void MainWindow::find()
+void MainWindow::hideFind()
 {
-	replaceInputField->hide();
-	replaceButton->hide();
-	replaceAllButton->hide();
-        replaceLabel->setVisible(false);
-	find_panel->show();
-	if (!editor->selectedText().isEmpty()) {
-		findInputField->setText(editor->selectedText());
-	}
-	findInputField->setFocus();
-	findInputField->selectAll();
+    find_panel->hide();
+    this->findInputField->setFindCount(editor->resetFindIndicators(this->findInputField->text(), false));
+    QApplication::processEvents();
+}
+
+void MainWindow::showFind()
+{
+    this->findInputField->setFindCount(editor->resetFindIndicators(this->findInputField->text()));
+    QApplication::processEvents();
+    findTypeComboBox->setCurrentIndex(0);
+    replaceInputField->hide();
+    replaceButton->hide();
+    replaceAllButton->hide();
+    //replaceLabel->setVisible(false); 
+    find_panel->show();
+    if (!editor->selectedText().isEmpty()) {
+        findInputField->setText(editor->selectedText());
+    }
+    findInputField->setFocus();
+    findInputField->selectAll();
+    
 }
 
 void MainWindow::findString(QString textToFind)
 {
-	editor->find(textToFind);
+    this->findInputField->setFindCount(editor->resetFindIndicators(textToFind));
+    QApplication::processEvents();
+    editor->find(textToFind);
 }
 
-void MainWindow::findAndReplace()
+void MainWindow::showFindAndReplace()
 {
-	replaceInputField->show();
-	replaceButton->show();
-	replaceAllButton->show();
-        replaceLabel->setVisible(true);
-	find_panel->show();
-	if (!editor->selectedText().isEmpty()) {
-		findInputField->setText(editor->selectedText());
-	}
-	findInputField->setFocus();
-	findInputField->selectAll();
+    this->findInputField->setFindCount(editor->resetFindIndicators(this->findInputField->text()));
+    QApplication::processEvents();
+    findTypeComboBox->setCurrentIndex(1); 
+    replaceInputField->show();
+    replaceButton->show();
+    replaceAllButton->show();
+    //replaceLabel->setVisible(true); 
+    find_panel->show();
+    if (!editor->selectedText().isEmpty()) {
+        findInputField->setText(editor->selectedText());
+    }
+    findInputField->setFocus();
+    findInputField->selectAll();
+    
 }
 
 void MainWindow::selectFindType(int type)
 {
-	if (type == 0) find();
-	if (type == 1) findAndReplace();
+    if (type == 0) showFind();
+    if (type == 1) showFindAndReplace();
 }
 
 void MainWindow::replace()
@@ -1638,7 +1658,7 @@ bool MainWindow::eventFilter(QObject* obj, QEvent *event)
             QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
             if (keyEvent->key() == Qt::Key_Escape)
             {
-				find_panel->hide();
+				this->hideFind();
 				return true;
             }
         }
