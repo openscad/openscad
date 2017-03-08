@@ -346,8 +346,13 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->editActionComment, SIGNAL(triggered()), editor, SLOT(commentSelection()));
 	connect(this->editActionUncomment, SIGNAL(triggered()), editor, SLOT(uncommentSelection()));
 	connect(this->editActionConvertTabsToSpaces, SIGNAL(triggered()), this, SLOT(convertTabsToSpaces()));
+	connect(this->editActionExpandAbbreviation, SIGNAL(triggered()), editor, SLOT(expandAbbreviation()));
+	connect(this->editActionCompleteWord, SIGNAL(triggered()), editor, SLOT(completeWord()));
+	connect(this->editActionCompleteSymbol, SIGNAL(triggered()), editor, SLOT(completeSymbol()));
 	connect(this->editActionPasteVPT, SIGNAL(triggered()), this, SLOT(pasteViewportTranslation()));
 	connect(this->editActionPasteVPR, SIGNAL(triggered()), this, SLOT(pasteViewportRotation()));
+	connect(this->editActionToggleCurrentFold, SIGNAL(triggered()), editor, SLOT(toggleCurrentFold()));
+	connect(this->editActionToggleAllFolds, SIGNAL(triggered()), editor, SLOT(toggleAllFolds()));
 	connect(this->editActionZoomTextIn, SIGNAL(triggered()), editor, SLOT(zoomIn()));
 	connect(this->editActionZoomTextOut, SIGNAL(triggered()), editor, SLOT(zoomOut()));
 	connect(this->editActionPreferences, SIGNAL(triggered()), this, SLOT(preferences()));

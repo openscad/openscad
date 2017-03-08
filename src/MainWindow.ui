@@ -336,6 +336,9 @@
     <addaction name="editActionComment"/>
     <addaction name="editActionUncomment"/>
     <addaction name="editActionConvertTabsToSpaces"/>
+    <addaction name="editActionExpandAbbreviation"/>
+    <addaction name="editActionCompleteWord"/>
+    <addaction name="editActionCompleteSymbol"/>
     <addaction name="separator"/>
     <addaction name="editActionPasteVPT"/>
     <addaction name="editActionPasteVPR"/>
@@ -345,6 +348,9 @@
     <addaction name="editActionFindNext"/>
     <addaction name="editActionFindPrevious"/>
     <addaction name="editActionUseSelectionForFind"/>
+    <addaction name="separator"/>
+    <addaction name="editActionToggleCurrentFold"/>
+    <addaction name="editActionToggleAllFolds"/>
     <addaction name="separator"/>
     <addaction name="editActionZoomTextIn"/>
     <addaction name="editActionZoomTextOut"/>
@@ -1210,6 +1216,22 @@
     <string>Ctrl+E</string>
    </property>
   </action>
+  <action name="editActionToggleCurrentFold">
+   <property name="text">
+    <string>Toggle current fol&amp;d</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+*</string>
+   </property>
+  </action>
+  <action name="editActionToggleAllFolds">
+   <property name="text">
+    <string>Toggle a&amp;ll folds</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+*</string>
+   </property>
+  </action>
   <action name="designActionFlushCaches">
    <property name="text">
     <string>&amp;Flush Caches</string>
@@ -1327,6 +1349,30 @@
   <action name="editActionConvertTabsToSpaces">
    <property name="text">
     <string>Conv&amp;ert Tabs to Spaces</string>
+   </property>
+  </action>
+  <action name="editActionExpandAbbreviation">
+   <property name="text">
+    <string>Expand abbreviation</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+B</string>
+   </property>
+  </action>
+  <action name="editActionCompleteWord">
+   <property name="text">
+    <string>Complete &amp;word</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Return</string>
+   </property>
+  </action>
+  <action name="editActionCompleteSymbol">
+   <property name="text">
+    <string>Complete s&amp;ymbol</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Space</string>
    </property>
   </action>
   <action name="viewActionHideToolBars">
