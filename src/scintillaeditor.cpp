@@ -141,8 +141,8 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	scintillaLayout->addWidget(qsci);
 
 	qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator, errorIndicatorNumber);
-	qsci->indicatorDefine(QsciScintilla::FullBoxIndicator , findIndicatorNumber); 
-    qsci->markerDefine(QsciScintilla::Circle, markerNumber);
+	qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator , findIndicatorNumber); 
+	qsci->markerDefine(QsciScintilla::Circle, markerNumber);
 	qsci->setUtf8(true);
 	qsci->setFolding(QsciScintilla::BoxedTreeFoldStyle, 4);
 
