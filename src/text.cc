@@ -40,7 +40,7 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 class TextModule : public AbstractModule
 {
 public:
-	TextModule() : AbstractModule(Feature::ExperimentalTextModule) { }
+	TextModule() : AbstractModule() { }
 	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
 };
 
@@ -54,9 +54,9 @@ AbstractNode *TextModule::instantiate(const Context *ctx, const ModuleInstantiat
 	Context c(ctx);
 	c.setVariables(args, evalctx);
 
-	double fn = c.lookup_variable("$fn").toDouble();
-	double fa = c.lookup_variable("$fa").toDouble();
-	double fs = c.lookup_variable("$fs").toDouble();
+	double fn = c.lookup_variable("$fn")->toDouble();
+	double fa = c.lookup_variable("$fa")->toDouble();
+	double fs = c.lookup_variable("$fs")->toDouble();
 
 	node->params.set_fn(fn);
 	node->params.set_fa(fa);
@@ -75,11 +75,14 @@ AbstractNode *TextModule::instantiate(const Context *ctx, const ModuleInstantiat
 	node->params.set_text(lookup_string_variable_with_default(c, "text", ""));
 	node->params.set_spacing(lookup_double_variable_with_default(c, "spacing", 1.0));
 	node->params.set_font(lookup_string_variable_with_default(c, "font", ""));
-	node->params.set_direction(lookup_string_variable_with_default(c, "direction", "ltr"));
+	node->params.set_direction(lookup_string_variable_with_default(c, "direction", ""));
 	node->params.set_language(lookup_string_variable_with_default(c, "language", "en"));
-	node->params.set_script(lookup_string_variable_with_default(c, "script", "latin"));
+	node->params.set_script(lookup_string_variable_with_default(c, "script", ""));
 	node->params.set_halign(lookup_string_variable_with_default(c, "halign", "left"));
 	node->params.set_valign(lookup_string_variable_with_default(c, "valign", "baseline"));
+
+	FreetypeRenderer renderer;
+	renderer.detect_properties(node->params);
 
 	return node;
 }

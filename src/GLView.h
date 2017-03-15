@@ -20,9 +20,6 @@ Some actions (showCrossHairs) only work properly on Gimbal Camera.
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <string>
-#ifndef _MSC_VER
-#include <stdint.h>
-#endif
 #include "system-gl.h"
 #include <iostream>
 #include "Camera.h"
@@ -62,6 +59,7 @@ public:
 	bool showfaces;
 	bool showedges;
 	bool showcrosshairs;
+	bool showscale;
 
 #ifdef ENABLE_OPENCSG
 	GLint shaderinfo[11];
@@ -76,4 +74,6 @@ private:
 	void showCrosshairs();
 	void showAxes(const Color4f &col);
 	void showSmallaxes(const Color4f &col);
+	void showScalemarkers(const Color4f &col);
+	void decodeMarkerValue(double i, double l, int size_div_sm);
 };

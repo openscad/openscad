@@ -2,6 +2,8 @@
 
 #include <QDialog>
 #include <QString>
+
+#include "qtgettext.h"
 #include "ui_LibraryInfoDialog.h"
 
 class LibraryInfoDialog : public QDialog, public Ui::LibraryInfoDialog

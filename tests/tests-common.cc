@@ -1,11 +1,14 @@
 #include "tests-common.h"
 #include "openscad.h"
-#include "module.h"
+#include "FileModule.h"
 #include "handle_dep.h"
-#include "boosty.h"
+
+#include <boost/filesystem.hpp>
 
 #include <sstream>
 #include <fstream>
+
+namespace fs=boost::filesystem;
 
 /*!
 	fakepath is used to force the parser to believe that the file is
@@ -26,8 +29,11 @@ FileModule *parsefile(const char *filename, const char *fakepath)
 		text += "\n" + commandline_commands;
 		std::string pathname;
 		if (fakepath) pathname = fakepath;
-		else pathname = boosty::stringy(fs::path(filename).parent_path());
-		root_module = parse(text.c_str(), pathname.c_str(), false);
+		else pathname = fs::path(filename).parent_path().generic_string();
+		if(!parse(root_module, text.c_str(), pathname.c_str(), false)) {
+			delete root_module;             // parse failed
+			root_module = NULL;
+		}
 		if (root_module) {
 			root_module->handleDependencies();
 		}

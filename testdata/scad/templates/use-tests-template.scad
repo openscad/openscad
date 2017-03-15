@@ -13,9 +13,6 @@ use <use-test5.scad>
 //Test without preceding space
 use<use-test5.scad>
 
-//Test with other strange character that is allowed
-use>>>>><use-test5.scad>
-
 //Test that filenames with spaces work
 use <use test6.scad>
 

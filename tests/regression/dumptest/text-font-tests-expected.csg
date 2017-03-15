@@ -1,20 +1,18 @@
-group() {
-	multmatrix([[0.70710678118, 0.5, -0.5, 0], [-0.70710678118, 0.5, -0.5, 0], [0, 0.70710678118, 0.70710678118, 0], [0, 0, 0, 1]]) {
-		multmatrix([[1, 0, 0, 0], [0, 1, 0, 80], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-			text(text = "OpenSCAD", size = 20, spacing = 1, font = "Liberation Sans:style=Regular", direction = "ltr", language = "en", script = "latin", halign = "left", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
-		}
-		multmatrix([[1, 0, 0, 0], [0, 1, 0, 40], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-			text(text = "الخط الأميري", size = 20, spacing = 1, font = "Amiri:style=Regular", direction = "rtl", language = "ar", script = "arabic", halign = "left", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
-		}
-		text(text = "الخط الأميري", size = 20, spacing = 1, font = "Amiri:style=Regular", direction = "rtl", language = "ar", script = "arabic", halign = "left", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
-		multmatrix([[1, 0, 0, 0], [0, 1, 0, -40], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-			text(text = "типографика", size = 20, spacing = 1, font = "Liberation Sans:style=Regular", direction = "ltr", language = "ru", script = "latin", halign = "left", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
-		}
-		multmatrix([[1, 0, 0, 0], [0, 1, 0, -80], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-			text(text = "positional", size = 30, spacing = 1, font = "Liberation Sans:style=Regular", direction = "ltr", language = "en", script = "latin", halign = "left", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
-		}
-		multmatrix([[1, 0, 0, 0], [0, 1, 0, -100], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-			text(text = "parameters", size = 12, spacing = 1, font = "Amiri:style=Regular", direction = "ltr", language = "en", script = "latin", halign = "left", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
-		}
+multmatrix([[0.707107, 0.5, -0.5, 0], [-0.707107, 0.5, -0.5, 0], [-5.55112e-17, 0.707107, 0.707107, 0], [0, 0, 0, 1]]) {
+	multmatrix([[1, 0, 0, 0], [0, 1, 0, 80], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		text(text = "OpenSCAD", size = 20, spacing = 1, font = "Liberation Sans:style=Regular", direction = "ltr", language = "en", script = "Latn", halign = "left", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
+	}
+	multmatrix([[1, 0, 0, 0], [0, 1, 0, 40], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		text(text = "الخط الأميري", size = 20, spacing = 1, font = "Amiri:style=Regular", direction = "rtl", language = "ar", script = "Arab", halign = "left", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
+	}
+	text(text = "الخط الأميري", size = 20, spacing = 1, font = "Amiri:style=Regular", direction = "rtl", language = "ar", script = "Arab", halign = "left", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
+	multmatrix([[1, 0, 0, 0], [0, 1, 0, -40], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		text(text = "типографика", size = 20, spacing = 1, font = "Liberation Sans:style=Regular", direction = "ltr", language = "ru", script = "Cyrl", halign = "left", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
+	}
+	multmatrix([[1, 0, 0, 0], [0, 1, 0, -80], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		text(text = "positional", size = 30, spacing = 1, font = "Liberation Sans:style=Regular", direction = "ltr", language = "en", script = "Latn", halign = "left", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
+	}
+	multmatrix([[1, 0, 0, 0], [0, 1, 0, -100], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		text(text = "parameters", size = 12, spacing = 1, font = "Amiri:style=Regular", direction = "ltr", language = "en", script = "Latn", halign = "left", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
 	}
 }

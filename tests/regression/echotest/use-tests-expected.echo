@@ -1,0 +1,7 @@
+WARNING: Can't open library ''.
+WARNING: Can't open library 'non/existent/path/non-file'.
+WARNING: Can't open library 'test/'.
+WARNING: Can't open library '/'.
+WARNING: Ignoring unknown module 'test3'.
+WARNING: Ignoring unknown module 'test4'.
+WARNING: Ignoring unknown variable 'test2_variable'.

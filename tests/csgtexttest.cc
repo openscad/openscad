@@ -31,12 +31,14 @@
 #include "parsersettings.h"
 #include "node.h"
 #include "module.h"
+#include "ModuleInstantiation.h"
 #include "modcontext.h"
 #include "value.h"
 #include "export.h"
 #include "builtin.h"
 #include "Tree.h"
 #include "PlatformUtils.h"
+#include "stackcheck.h"
 
 #ifndef _MSC_VER
 #include <getopt.h>
@@ -48,7 +50,7 @@
 
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
-#include "boosty.h"
+#include "PlatformUtils.h"
 
 std::string commandline_commands;
 std::string currentdir;
@@ -56,8 +58,7 @@ std::string currentdir;
 void csgTree(CSGTextCache &cache, const AbstractNode &root)
 {
 	CSGTextRenderer renderer(cache);
-	Traverser render(renderer, root, Traverser::PRE_AND_POSTFIX);
-	render.execute();
+	renderer.traverse(root);
 }
 
 int main(int argc, char **argv)
@@ -72,16 +73,16 @@ int main(int argc, char **argv)
 
 	int rc = 0;
 
+	StackCheck::inst()->init();
 	Builtins::instance()->initialize();
 
 	fs::path original_path = fs::current_path();
 
-	currentdir = boosty::stringy( fs::current_path() );
+	currentdir = fs::current_path().generic_string();
 
-	std::string appicationpath = boosty::stringy(fs::path(argv[0]).branch_path());
-	PlatformUtils::registerApplicationPath(appicationpath);
-	parser_init(appicationpath);
-	add_librarydir(boosty::stringy(fs::path(argv[0]).branch_path() / "../libraries"));
+	std::string applicationpath = fs::path(argv[0]).branch_path().generic_string();
+	PlatformUtils::registerApplicationPath(applicationpath);
+	parser_init();
 
 	ModuleContext top_ctx;
 	top_ctx.registerBuiltin();

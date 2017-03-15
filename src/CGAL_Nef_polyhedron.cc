@@ -3,6 +3,7 @@
 #include "cgalutils.h"
 #include "printutils.h"
 #include "polyset.h"
+#include "svg.h"
 
 CGAL_Nef_polyhedron::CGAL_Nef_polyhedron(CGAL_Nef_polyhedron3 *p)
 {
@@ -48,6 +49,11 @@ size_t CGAL_Nef_polyhedron::memsize() const
 	return memsize;
 }
 
+bool CGAL_Nef_polyhedron::isEmpty() const
+{
+	return !this->p3 || this->p3->is_empty();
+}
+
 /*!
 	Creates a new PolySet and initializes it with the data from this polyhedron
 
@@ -87,7 +93,7 @@ PolySet *CGAL_Nef_polyhedron::convertToPolyset() const
 }
 #endif
 
-void CGAL_Nef_polyhedron::resize(Vector3d newsize, 
+void CGAL_Nef_polyhedron::resize(const Vector3d &newsize, 
 																 const Eigen::Matrix<bool,3,1> &autosize)
 {
 	// Based on resize() in Giles Bathgate's RapCAD (but not exactly)
@@ -129,4 +135,27 @@ void CGAL_Nef_polyhedron::resize(Vector3d newsize,
 	     0,        0,        0,                                   1;
 
 	this->transform(Transform3d(t));
+}
+
+std::string CGAL_Nef_polyhedron::dump() const
+{
+	return OpenSCAD::dump_svg( *this->p3 );
+}
+
+
+void CGAL_Nef_polyhedron::transform( const Transform3d &matrix )
+{
+	if (!this->isEmpty()) {
+		if (matrix.matrix().determinant() == 0) {
+			PRINT("WARNING: Scaling a 3D object with 0 - removing object");
+			this->reset();
+		}
+		else {
+			CGAL_Aff_transformation t(
+				matrix(0,0), matrix(0,1), matrix(0,2), matrix(0,3),
+				matrix(1,0), matrix(1,1), matrix(1,2), matrix(1,3),
+				matrix(2,0), matrix(2,1), matrix(2,2), matrix(2,3), matrix(3,3));
+			this->p3->transform(t);
+		}
+	}
 }

@@ -7,6 +7,7 @@
 
 #include "version_check.h"
 #include "PlatformUtils.h"
+#include "openscad.h"
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 
@@ -22,6 +23,12 @@
 #endif // GNUG
 #endif // ENABLE_CGAL
 
+#ifdef ENABLE_LIBZIP
+#include <zip.h>
+#else
+#define LIBZIP_VERSION "<not enabled>"
+#endif
+
 extern std::vector<std::string> librarypath;
 extern std::vector<std::string> fontpath;
 
@@ -29,12 +36,20 @@ std::string LibraryInfo::info()
 {
 	std::stringstream s;
 
+#if defined(__x86_64__) || defined(_M_X64)
+	std::string bits(" 64bit");
+#elif defined(__i386) || defined(_M_IX86)
+	std::string bits(" 32bit");
+#else
+	std::string bits("");
+#endif
+	
 #if defined(__GNUG__) && !defined(__clang__)
-	std::string compiler_info( "GCC " + std::string(TOSTRING(__VERSION__)) );
+	std::string compiler_info( "GCC " + std::string(TOSTRING(__VERSION__)) + bits);
 #elif defined(_MSC_VER)
-	std::string compiler_info( "MSVC " + std::string(TOSTRING(_MSC_FULL_VER)) );
+	std::string compiler_info( "MSVC " + std::string(TOSTRING(_MSC_FULL_VER)) + bits);
 #elif defined(__clang__)
-	std::string compiler_info( "Clang " + std::string(TOSTRING(__clang_version__)) );
+	std::string compiler_info( "Clang " + std::string(TOSTRING(__clang_version__)) + bits);
 #else
 	std::string compiler_info( "unknown compiler" );
 #endif
@@ -79,8 +94,9 @@ std::string LibraryInfo::info()
 	const char *env_path = getenv("OPENSCADPATH");
 	const char *env_font_path = getenv("OPENSCAD_FONT_PATH");
 	
-	s << "OpenSCAD Version: " << TOSTRING(OPENSCAD_VERSION)
-          << "\nCompiler, build date: " << compiler_info << ", " << __DATE__
+	s << "OpenSCAD Version: " << openscad_detailedversionnumber
+	  << "\nSystem information: " << PlatformUtils::sysinfo()
+		<< "\nCompiler: " << compiler_info
 	  << "\nBoost version: " << BOOST_LIB_VERSION
 	  << "\nEigen version: " << EIGEN_WORLD_VERSION << "." << EIGEN_MAJOR_VERSION << "." << EIGEN_MINOR_VERSION
 	  << "\nCGAL version, kernels: " << TOSTRING(CGAL_VERSION) << ", " << cgal_3d_kernel << ", " << cgal_2d_kernel << ", " << cgal_2d_kernelEx
@@ -91,9 +107,10 @@ std::string LibraryInfo::info()
 #endif
 	  << "\nMingW build: " << mingwstatus
 	  << "\nGLib version: "       << GLIB_MAJOR_VERSION << "." << GLIB_MINOR_VERSION << "." << GLIB_MICRO_VERSION
+	  << "\nlibzip version: " << LIBZIP_VERSION
 	  << "\nApplication Path: " << PlatformUtils::applicationPath()
 	  << "\nDocuments Path: " << PlatformUtils::documentsPath()
-	  << "\nResource Path: " << PlatformUtils::resourcesPath()
+	  << "\nResource Path: " << PlatformUtils::resourceBasePath()
 	  << "\nUser Library Path: " << PlatformUtils::userLibraryPath()
 	  << "\nUser Config Path: " << PlatformUtils::userConfigPath()
 	  << "\nBackup Path: " << PlatformUtils::backupPath()

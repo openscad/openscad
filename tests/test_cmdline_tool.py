@@ -1,3 +1,4 @@
+#!/usr/bin/python
 #
 # Regression test driver for cmd-line tools
 #
@@ -93,12 +94,38 @@ def execute_and_redirect(cmd, params, outfile):
     if outfile == subprocess.PIPE: return (retval, out)
     else: return retval
 
+def normalize_string(s):
+    """Apply all modifications to an output string which would have been
+    applied if OPENSCAD_TESTING was defined at build time of the executable.
+
+    This truncates all floats, removes ', timestamp = ...' parts. The function
+    is idempotent.
+
+    This also normalizes away import paths from 'file = ' arguments."""
+
+    s = re.sub(', timestamp = [0-9]+', '', s)
+    def floatrep(match):
+        value = float(match.groups()[0])
+        if abs(value) < 10**-12:
+            return "0"
+        if abs(value) >= 10**6:
+            return "%d"%value
+        return "%.6g"%value
+    s = re.sub('(-?[0-9]+\\.[0-9]+(e[+-][0-9]+)?)', floatrep, s)
+
+    def pathrep(match):
+        return match.groups()[0] + match.groups()[2]
+    s = re.sub('(file = ")([^"/]*/)*([^"]*")', pathrep, s)
+
+    return s
+
 def get_normalized_text(filename):
     try: 
         f = open(filename)
         text = f.read()
     except: 
         text = ''
+    text = normalize_string(text)
     return text.strip("\r\n").replace("\r\n", "\n") + "\n"
 
 def compare_text(expected, actual):
@@ -112,8 +139,12 @@ def compare_default(resultfilename):
     actual_text = get_normalized_text(resultfilename)
     if not expected_text == actual_text:
 	if resultfilename: 
-            differences = difflib.unified_diff(expected_text.splitlines(1), actual_text.splitlines(1))
-            for line in differences: sys.stderr.write(line)
+            differences = difflib.unified_diff(
+                [line.strip() for line in expected_text.splitlines()],
+                [line.strip() for line in actual_text.splitlines()])
+            line = None
+            for line in differences: sys.stderr.write(line + '\n')
+            if not line: return True
         return False
     return True
 
@@ -200,7 +231,7 @@ def run_test(testname, cmd, args):
     try:
         cmdline = [cmd] + args + [outputname]
         print 'run_test() cmdline:',cmdline
-        fontdir =  os.path.join(os.path.dirname(cmd), "..", "testdata")
+        fontdir =  os.path.join(os.path.dirname(cmd), "testdata")
         fontenv = os.environ.copy()
         fontenv["OPENSCAD_FONT_PATH"] = fontdir
         print 'using font directory:', fontdir
@@ -215,6 +246,7 @@ def run_test(testname, cmd, args):
         outfile.close()
         if proc.returncode != 0:
             print >> sys.stderr, "Error: %s failed with return code %d" % (cmdname, proc.returncode)
+            return None
 
         return outputname
     except OSError, err:
@@ -285,10 +317,11 @@ if __name__ == '__main__':
         print >> sys.stderr, basename
         print >> sys.stderr, path, options.filename
 
-    print >> sys.stderr, options.filename
     if not hasattr(options, "filename"):
         print >> sys.stderr, "Filename cannot be deducted from arguments. Specify test filename using the -f option"
         sys.exit(2)
+    else:
+        print >> sys.stderr, options.filename
 
     if not hasattr(options, "testname"):
         options.testname = os.path.split(args[0])[1]

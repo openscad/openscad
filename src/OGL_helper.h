@@ -44,6 +44,7 @@ const bool cull_backfaces = false;
 const bool color_backfaces = false;
 
 #ifdef _WIN32
+#include <windows.h> // For the CALLBACK macro
 #define CGAL_GLU_TESS_CALLBACK CALLBACK
 #else
 #define CGAL_GLU_TESS_CALLBACK 
@@ -485,6 +486,7 @@ namespace OGL {
       gluTessEndPolygon(tess_);
       //      CGAL_NEF_TRACEN("End Polygon");
       gluDeleteTess(tess_);
+      combineCallback(NULL, NULL, NULL, NULL);
     }
 
     void construct_axes() const

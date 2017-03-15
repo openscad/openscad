@@ -1,59 +1,263 @@
 #pragma once
 
+#include "AST.h"
+
 #include <string>
 #include <vector>
 #include "value.h"
-#include "typedefs.h"
+#include "memory.h"
+#include "Assignment.h"
 
-class Expression
+class Expression : public ASTNode
 {
 public:
-	std::vector<Expression*> children;
-
-	const Value const_value;
-	std::string var_name;
-
-	std::string call_funcname;
-	AssignmentList call_arguments;
-
-	// Boolean: ! && ||
-	// Operators: * / % + -
-	// Relations: < <= == != >= >
-	// Vector element: []
-	// Condition operator: ?:
-	// Invert (prefix '-'): I
-	// Constant value: C
-	// Create Range: R
-	// Create Vector: V
-	// Create Matrix: M
-	// Lookup Variable: L
-	// Lookup member per name: N
-	// Function call: F
-	// Let expression: l
-  // List comprehension expression: i
-  // List comprehension: c
-  std::string type;
-
-	Expression();
-	Expression(const Value &val);
-	Expression(const std::string &type, Expression *left, Expression *right);
-	Expression(const std::string &type, Expression *expr);
-	~Expression();
-
-	Value evaluate(const class Context *context) const;
-
-	std::string toString() const;
-
-private:
-	mutable int recursioncount;
-
-	// The following sub_* methods are needed to minimize stack usage only.
-	Value sub_evaluate_function(const class Context *context) const;
-	Value sub_evaluate_member(const class Context *context) const;
-	Value sub_evaluate_range(const class Context *context) const;
-	Value sub_evaluate_vector(const class Context *context) const;
-	Value sub_evaluate_let_expression(const class Context *context) const;
-	Value sub_evaluate_list_comprehension(const class Context *context) const;
+	Expression(const Location &loc) : ASTNode(loc) {}
+	virtual ~Expression() {}
+    virtual bool isLiteral() const;
+	virtual ValuePtr evaluate(const class Context *context) const = 0;
+	virtual void print(std::ostream &stream) const = 0;
 };
 
 std::ostream &operator<<(std::ostream &stream, const Expression &expr);
+
+class UnaryOp : public Expression
+{
+public:
+	enum class Op {
+		Not,
+		Negate
+	};
+    virtual bool isLiteral() const;
+	UnaryOp(Op op, Expression *expr, const Location &loc);
+	virtual ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
+
+private:
+	const char *opString() const;
+
+	Op op;
+	shared_ptr<Expression> expr;
+};
+
+class BinaryOp : public Expression
+{
+public:
+	enum class Op {
+		LogicalAnd,
+		LogicalOr,
+		Multiply,
+		Divide,
+		Modulo,
+		Plus,
+		Minus,
+		Less,
+		LessEqual,
+		Greater,
+		GreaterEqual,
+		Equal,
+		NotEqual
+	};
+
+	BinaryOp(Expression *left, Op op, Expression *right, const Location &loc);
+	virtual ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
+
+private:
+	const char *opString() const;
+
+	Op op;
+	shared_ptr<Expression> left;
+	shared_ptr<Expression> right;
+};
+
+class TernaryOp : public Expression
+{
+public:
+	TernaryOp(Expression *cond, Expression *ifexpr, Expression *elseexpr, const Location &loc);
+	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
+
+	shared_ptr<Expression> cond;
+	shared_ptr<Expression> ifexpr;
+	shared_ptr<Expression> elseexpr;
+};
+
+class ArrayLookup : public Expression
+{
+public:
+	ArrayLookup(Expression *array, Expression *index, const Location &loc);
+	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
+private:
+	shared_ptr<Expression> array;
+	shared_ptr<Expression> index;
+};
+
+class Literal : public Expression
+{
+public:
+	Literal(const ValuePtr &val, const Location &loc = Location::NONE);
+	ValuePtr evaluate(const class Context *) const;
+	virtual void print(std::ostream &stream) const;
+    virtual bool isLiteral() const { return true;}
+private:
+	ValuePtr value;
+};
+
+class Range : public Expression
+{
+public:
+	Range(Expression *begin, Expression *end, const Location &loc);
+	Range(Expression *begin, Expression *step, Expression *end, const Location &loc);
+	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
+	virtual bool isLiteral() const;
+private:
+	shared_ptr<Expression> begin;
+	shared_ptr<Expression> step;
+	shared_ptr<Expression> end;
+};
+
+class Vector : public Expression
+{
+public:
+	Vector(const Location &loc);
+	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
+	void push_back(Expression *expr);
+    virtual bool isLiteral() const ;
+private:
+	std::vector<shared_ptr<Expression>> children;
+};
+
+class Lookup : public Expression
+{
+public:
+	Lookup(const std::string &name, const Location &loc);
+	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
+private:
+	std::string name;
+};
+
+class MemberLookup : public Expression
+{
+public:
+	MemberLookup(Expression *expr, const std::string &member, const Location &loc);
+	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
+private:
+	shared_ptr<Expression> expr;
+	std::string member;
+};
+
+class FunctionCall : public Expression
+{
+public:
+	FunctionCall(const std::string &funcname, const AssignmentList &arglist, const Location &loc);
+	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
+	static Expression * create(const std::string &funcname, const AssignmentList &arglist, Expression *expr, const Location &loc);
+public:
+	std::string name;
+	AssignmentList arguments;
+};
+
+class Assert : public Expression
+{
+public:
+	Assert(const AssignmentList &args, Expression *expr, const Location &loc);
+	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
+private:
+	AssignmentList arguments;
+	shared_ptr<Expression> expr;
+};
+
+class Echo : public Expression
+{
+public:
+	Echo(const AssignmentList &args, Expression *expr, const Location &loc);
+	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
+private:
+	AssignmentList arguments;
+	shared_ptr<Expression> expr;
+};
+
+class Let : public Expression
+{
+public:
+	Let(const AssignmentList &args, Expression *expr, const Location &loc);
+	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
+private:
+	AssignmentList arguments;
+	shared_ptr<Expression> expr;
+};
+
+class ListComprehension : public Expression
+{
+public:
+	ListComprehension(const Location &loc);
+	~ListComprehension() = default;
+};
+
+class LcIf : public ListComprehension
+{
+public:
+	LcIf(Expression *cond, Expression *ifexpr, Expression *elseexpr, const Location &loc);
+	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
+private:
+	shared_ptr<Expression> cond;
+	shared_ptr<Expression> ifexpr;
+	shared_ptr<Expression> elseexpr;
+};
+
+class LcFor : public ListComprehension
+{
+public:
+	LcFor(const AssignmentList &args, Expression *expr, const Location &loc);
+	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
+private:
+	AssignmentList arguments;
+	shared_ptr<Expression> expr;
+};
+
+class LcForC : public ListComprehension
+{
+public:
+	LcForC(const AssignmentList &args, const AssignmentList &incrargs, Expression *cond, Expression *expr, const Location &loc);
+	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
+private:
+	AssignmentList arguments;
+	AssignmentList incr_arguments;
+	shared_ptr<Expression> cond;
+	shared_ptr<Expression> expr;
+};
+
+class LcEach : public ListComprehension
+{
+public:
+	LcEach(Expression *expr, const Location &loc);
+	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
+private:
+	shared_ptr<Expression> expr;
+};
+
+class LcLet : public ListComprehension
+{
+public:
+	LcLet(const AssignmentList &args, Expression *expr, const Location &loc);
+	ValuePtr evaluate(const class Context *context) const;
+	virtual void print(std::ostream &stream) const;
+private:
+	AssignmentList arguments;
+	shared_ptr<Expression> expr;
+};
+
+void evaluate_assert(const Context &context, const class EvalContext *evalctx, const Location &loc);

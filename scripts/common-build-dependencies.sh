@@ -161,7 +161,7 @@ build_ragel()
   cd "$BASEDIR"/src
   rm -rf "ragel-$version"
   if [ ! -f "ragel-$version.tar.gz" ]; then
-    curl --insecure -LO "http://www.complang.org/ragel/ragel-$version.tar.gz"
+    curl --insecure -LO "http://www.colm.net/files/ragel/ragel-$version.tar.gz"
   fi
   tar xzf "ragel-$version.tar.gz"
   cd "ragel-$version"
@@ -189,10 +189,12 @@ build_harfbuzz()
   fi
   tar xzf "harfbuzz-$version.tar.gz"
   cd "harfbuzz-$version"
+  # we do not need gtkdocize
+  sed -e "s/gtkdocize/echo/g" autogen.sh > autogen.sh.bak && mv autogen.sh.bak autogen.sh
   # disable doc directories as they make problems on Mac OS Build
   sed -e "s/SUBDIRS = src util test docs/SUBDIRS = src util test/g" Makefile.am > Makefile.am.bak && mv Makefile.am.bak Makefile.am
   sed -e "s/^docs.*$//" configure.ac > configure.ac.bak && mv configure.ac.bak configure.ac
-  ./autogen.sh --prefix="$DEPLOYDIR" --with-freetype=yes --with-gobject=no --with-cairo=no --with-icu=no $extra_config_flags
+  sh ./autogen.sh --prefix="$DEPLOYDIR" --with-freetype=yes --with-gobject=no --with-cairo=no --with-icu=no $extra_config_flags
   make -j$NUMCPU
   make install
 }

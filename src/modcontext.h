@@ -1,11 +1,10 @@
 #pragma once
 
 #include "context.h"
-#include "module.h"
-#include <boost/unordered_map.hpp>
+#include "FileModule.h"
 
 /*!
-	This holds the context for a Module definition; keeps track of
+	This holds the context for a UserModule definition; keeps track of
 	global variables, submodules and functions defined inside a module.
 
 	NB! every .scad file defines a FileModule holding the contents of the file.
@@ -16,10 +15,10 @@ public:
 	ModuleContext(const Context *parent = NULL, const EvalContext *evalctx = NULL);
 	virtual ~ModuleContext();
 
-	void initializeModule(const Module &m);
+	void initializeModule(const class UserModule &m);
 	void registerBuiltin();
-	virtual Value evaluate_function(const std::string &name, 
-																	const EvalContext *evalctx) const;
+	virtual ValuePtr evaluate_function(const std::string &name, 
+																										const EvalContext *evalctx) const;
 	virtual AbstractNode *instantiate_module(const ModuleInstantiation &inst, 
 																					 EvalContext *evalctx) const;
 
@@ -43,15 +42,19 @@ private:
 class FileContext : public ModuleContext
 {
 public:
-	FileContext(const class FileModule &module, const Context *parent);
+	FileContext(const Context *parent);
 	virtual ~FileContext() {}
-	virtual Value evaluate_function(const std::string &name, const EvalContext *evalctx) const;
+	void initializeModule(const FileModule &module);
+	virtual ValuePtr evaluate_function(const std::string &name, 
+																		 const EvalContext *evalctx) const;
 	virtual AbstractNode *instantiate_module(const ModuleInstantiation &inst, 
 																					 EvalContext *evalctx) const;
 
 private:
-	const FileModule::ModuleContainer &usedlibs;
+	const FileModule::ModuleContainer *usedlibs_p;
 
 	// This sub_* method is needed to minimize stack usage only.
-	Value sub_evaluate_function(const std::string &name, const EvalContext *evalctx, FileModule *usedmod) const;
+	ValuePtr sub_evaluate_function(const std::string &name, 
+																 const EvalContext *evalctx, 
+																 FileModule *usedmod) const;
 };

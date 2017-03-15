@@ -85,7 +85,7 @@ public:
 			<< ", font = \"" << params.font
 			<< "\", direction = \"" << params.direction
 			<< "\", language = \"" << params.language
-			<< "\", script = \"" << params.script
+			<< (params.script.empty() ? "" : "\", script = \"") << params.script
 			<< "\", halign = \"" << params.halign
 			<< "\", valign = \"" << params.valign
                         << "\", $fn = " << params.fn
@@ -102,6 +102,7 @@ public:
     FreetypeRenderer();
     virtual ~FreetypeRenderer();
 
+        void detect_properties(FreetypeRenderer::Params &params) const;
 	std::vector<const class Geometry *> render(const FreetypeRenderer::Params &params) const;
 private:
 	  const static double scale;
@@ -109,7 +110,7 @@ private:
     
     class GlyphData {
     public:
-        GlyphData(FT_Glyph glyph, unsigned int idx, hb_glyph_info_t *glyph_info, hb_glyph_position_t *glyph_pos) : glyph(glyph), idx(idx), glyph_pos(glyph_pos), glyph_info(glyph_info) {}
+        GlyphData(FT_Glyph glyph, unsigned int idx, hb_glyph_position_t *glyph_pos) : glyph(glyph), idx(idx), glyph_pos(glyph_pos) {}
         unsigned int get_idx() const { return idx; };
         FT_Glyph get_glyph() const { return glyph; };
         double get_x_offset() const { return glyph_pos->x_offset / 64.0 / 16.0; };
@@ -120,7 +121,6 @@ private:
         FT_Glyph glyph;
         unsigned int idx;
         hb_glyph_position_t *glyph_pos;
-        hb_glyph_info_t *glyph_info;
     };
 
     struct done_glyph : public std::unary_function<const GlyphData *, void> {
@@ -136,6 +136,10 @@ private:
             std::for_each(begin(), end(), done_glyph());
         }
     };
+
+    bool is_ignored_script(const hb_script_t script) const;
+    hb_script_t get_script(const FreetypeRenderer::Params &params, hb_glyph_info_t *glyph_info, unsigned int glyph_count) const;
+    hb_direction_t get_direction(const FreetypeRenderer::Params &params, const hb_script_t script) const;
 
     double calc_x_offset(std::string halign, double width) const;
     double calc_y_offset(std::string valign, double ascend, double descend) const;

@@ -1,0 +1,36 @@
+{
+    "name" : "Tomorrow Night",
+    "index" : 1600,
+    "paper" : "#1d1f21",
+    "text" : "#c5c8c6",
+    "caret" : {
+        "width" : 2,
+        "foreground" : "#ffffff",
+        "line-background" : "#282a2e"
+    },
+    "colors" : {
+        "keyword1" : "#de935f",
+        "keyword2" : "#b294bb",
+        "keyword3" : "#81a2be",
+        "comment" : "#969896",
+        "commentline" : "#969896",
+        "commentdoc" : "#969896",
+        "commentdockeyword" : "#f0c674",
+        "number" : "#cc6666",
+        "string" : "#b5bd68",
+        "operator" : "#8abeb7",
+        "whitespace-foreground" : "#c5c8c6",
+        "selection-foreground" : "#373b41",
+        "selection-background" : "#c5c8c6",
+        "margin-background" : "#1d1f21",
+        "margin-foreground" : "#969896",
+        "matched-brace-background" : "#50545c",
+        "matched-brace-foreground" : "#e2e6e3",
+        "unmatched-brace-background" : "#8a1111",
+        "unmatched-brace-foreground" : "#e2e6e3",
+        "error-marker" : "#ff0000",
+        "error-indicator" : "#80ff0000",
+        "error-indicator-outline" : "#ff000000",
+        "edge" : "#d33682"
+    }
+}

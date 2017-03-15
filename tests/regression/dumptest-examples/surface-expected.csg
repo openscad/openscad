@@ -1,9 +1,7 @@
-group() {
-	group();
-	intersection() {
+group();
+intersection() {
+	surface(file = "surface.dat", center = true, invert = false);
+	multmatrix([[0.70710678118, -0.70710678118, 0, 0], [0.70710678118, 0.70710678118, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 		surface(file = "surface.dat", center = true, invert = false);
-		multmatrix([[0.70710678118, -0.70710678118, 0, 0], [0.70710678118, 0.70710678118, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-			surface(file = "surface.dat", center = true, invert = false);
-		}
 	}
 }

@@ -1,0 +1,19 @@
+{
+    "name" : "Tomorrow",
+    "index" : 1800,
+    "show-in-gui" : true,
+
+    "colors" : {
+        "background" :         "#f8f8f8",
+        "axes-color" :         "#181818",
+        "opencsg-face-front" : "#4271ae",
+        "opencsg-face-back" :  "#f5871f",
+        "cgal-face-front" :    "#3e999f",
+        "cgal-face-back" :     "#eab700",
+        "cgal-face-2d" :       "#718c00",
+        "cgal-edge-front" :    "#4d4d4c",
+        "cgal-edge-back" :     "#4d4d4c",
+        "cgal-edge-2d" :       "#c82829",
+        "crosshair" :          "#8959a8"
+    }
+}

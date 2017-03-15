@@ -3,7 +3,7 @@
 # Export-import test
 #
 #
-# Usage: <script> <inputfile> --openscad=<executable-path> --format=<format> [<openscad args>] file.png
+# Usage: <script> <inputfile> --openscad=<executable-path> --format=<format> --require-manifold [<openscad args>] file.png
 #
 #
 # step 1. If the input file is _not_ an .scad file, create a temporary .scad file importing the input file.
@@ -14,6 +14,9 @@
 #         of the original .scad file. they should be the same!
 #
 # All the optional openscad args are passed on to OpenSCAD both in step 2 and 4.
+# Exception: In any --render arguments are passed, the first pass (step 2) will always
+# be run with --render=cgal while the second pass (step 4) will use the passed --render 
+# argument.
 #
 # This script should return 0 on success, not-0 on error.
 #
@@ -24,6 +27,7 @@
 # Authors: Torsten Paul, Don Bright, Marius Kintel
 
 import sys, os, re, subprocess, argparse
+from validatestl import validateSTL
 
 def failquit(*args):
 	if len(args)!=0: print(args)
@@ -50,6 +54,8 @@ formats = ['csg', 'stl','off', 'amf', 'dxf', 'svg']
 parser = argparse.ArgumentParser()
 parser.add_argument('--openscad', required=True, help='Specify OpenSCAD executable')
 parser.add_argument('--format', required=True, choices=[item for sublist in [(f,f.upper()) for f in formats] for item in sublist], help='Specify 3d export format')
+parser.add_argument('--require-manifold', dest='requiremanifold', action='store_true', help='Require STL output to be manifold')
+parser.set_defaults(requiremanifold=False)
 args,remaining_args = parser.parse_known_args()
 
 args.format = args.format.lower()
@@ -82,13 +88,20 @@ if inputsuffix != '.scad' and inputsuffix != '.csg':
 
 #
 # First run: Just export the given filetype
+# For any --render arguments to --render=cgal
 #
-export_cmd = [args.openscad, inputfile, '--enable=text', '-o', exportfile] + remaining_args
-print('Running OpenSCAD #1:')
-print(' '.join(export_cmd))
+tmpargs =  ['--render=cgal' if arg.startswith('--render') else arg for arg in remaining_args]
+
+export_cmd = [args.openscad, inputfile, '-o', exportfile] + tmpargs
+print >> sys.stderr, 'Running OpenSCAD #1:'
+print >> sys.stderr, ' '.join(export_cmd)
 result = subprocess.call(export_cmd)
 if result != 0:
 	failquit('OpenSCAD #1 failed with return code ' + str(result))
+
+if args.format == 'stl' and args.requiremanifold:
+        if not validateSTL(exportfile):
+                failquit("Error: Non-manifold STL file exported from OpenSCAD")
 
 
 #
@@ -100,10 +113,10 @@ if args.format != 'csg':
         newscadfile += '.scad'
         createImport(exportfile, newscadfile)
 
-create_png_cmd = [args.openscad, newscadfile, '--enable=text', '-o', pngfile] + remaining_args
-print('Running OpenSCAD #2:')
-print(' '.join(create_png_cmd))
-fontdir =  os.path.join(os.path.dirname(args.openscad), "..", "testdata");
+create_png_cmd = [args.openscad, newscadfile, '-o', pngfile] + remaining_args
+print >> sys.stderr, 'Running OpenSCAD #2:'
+print >> sys.stderr, ' '.join(create_png_cmd)
+fontdir =  os.path.join(os.path.dirname(__file__), "..", "testdata");
 fontenv = os.environ.copy();
 fontenv["OPENSCAD_FONT_PATH"] = fontdir;
 result = subprocess.call(create_png_cmd, env = fontenv);

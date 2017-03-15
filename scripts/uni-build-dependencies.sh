@@ -79,10 +79,22 @@ check_env()
 detect_glu()
 {
   detect_glu_result=
-  if [ -e $DEPLOYDIR/include/GL/glu.h ]; then detect_glu_result=1; fi
-  if [ -e /usr/include/GL/glu.h ]; then detect_glu_result=1; fi
-  if [ -e /usr/local/include/GL/glu.h ]; then detect_glu_result=1; fi
-  if [ -e /usr/pkg/X11R7/include/GL/glu.h ]; then detect_glu_result=1; fi
+  if [ -e $DEPLOYDIR/include/GL/glu.h ]; then
+    detect_glu_include=$DEPLOYDIR/include
+    detect_glu_result=1;
+  fi
+  if [ -e /usr/include/GL/glu.h ]; then
+    detect_glu_include=/usr/include
+    detect_glu_result=1;
+  fi
+  if [ -e /usr/local/include/GL/glu.h ]; then
+    detect_glu_include=/usr/local/include
+    detect_glu_result=1;
+  fi
+  if [ -e /usr/pkg/X11R7/include/GL/glu.h ]; then
+    detect_glu_include=/usr/pkg/X11R7/include
+    detect_glu_result=1;
+  fi
   return
 }
 
@@ -171,14 +183,37 @@ build_qt5scintilla2()
 
   echo "Building Qt5Scintilla2" $version "..."
   cd $BASEDIR/src
-  #rm -rf QScintilla-gpl-$version.tar.gz
+  rm -rf ./QScintilla-gpl-$version.tar.gz
   if [ ! -f QScintilla-gpl-$version.tar.gz ]; then
      curl -L -o "QScintilla-gpl-$version.tar.gz" "http://downloads.sourceforge.net/project/pyqt/QScintilla2/QScintilla-$version/QScintilla-gpl-$version.tar.gz?use_mirror=switch"
   fi
   tar xzf QScintilla-gpl-$version.tar.gz
   cd QScintilla-gpl-$version/Qt4Qt5/
   qmake CONFIG+=staticlib
-  make -j"$NUMCPU" install
+  tmpinstalldir=$DEPLOYDIR/tmp/qsci$version
+  INSTALL_ROOT=$tmpinstalldir make -j"$NUMCPU" install
+
+  if [ -d $tmpinstalldir/usr/share ]; then
+    cp -av $tmpinstalldir/usr/share $DEPLOYDIR/
+    cp -av $tmpinstalldir/usr/include $DEPLOYDIR/
+    cp -av $tmpinstalldir/usr/lib $DEPLOYDIR/
+  fi
+
+  if [ ! -e $DEPLOYDIR/include/Qsci ]; then
+    # workaround numerous bugs in qscintilla build system, see 
+    # ../qscintilla2.prf and ../scintilla.pri for more info
+    qsci_staticlib=`find $tmpinstalldir -name libqscintilla2.a`
+    qsci_include=`find $tmpinstalldir -name Qsci`
+    if [ -e $qsci_staticlib ]; then
+      cp -av $qsci_include $DEPLOYDIR/include/
+      cp -av $qsci_staticlib $DEPLOYDIR/lib/
+    else
+      echo problems finding built qscintilla libraries and include headers
+    fi
+    if [ -e $DEPLOYDIR/lib/libqscintilla2.a ]; then
+      cp $DEPLOYDIR/lib/libqscintilla2.a $DEPLOYDIR/lib/libqt5scintilla2.a
+    fi
+  fi
 }
 
 build_bison()
@@ -365,6 +400,8 @@ build_cgal()
   echo "Building CGAL" $version "..."
   cd $BASEDIR/src
   rm -rf CGAL-$version
+  ver4_8="curl -L --insecure -O https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-4.8/CGAL-4.8.tar.xz"
+  ver4_7="curl -L --insecure -O https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-4.7/CGAL-4.7.tar.gz"
   ver4_4="curl --insecure -O https://gforge.inria.fr/frs/download.php/file/33524/CGAL-4.4.tar.bz2"
   ver4_2="curl --insecure -O https://gforge.inria.fr/frs/download.php/32360/CGAL-4.2.tar.bz2"
   ver4_1="curl --insecure -O https://gforge.inria.fr/frs/download.php/31640/CGAL-4.1.tar.bz2"
@@ -382,6 +419,9 @@ build_cgal()
   if [ -e CGAL-$version.tar.bz2 ]; then
     download_cmd=vernull;
   fi
+  if [ -e CGAL-$version.tar.xz ]; then
+    download_cmd=vernull;
+  fi
 
   eval echo "$"$download_cmd
   `eval echo "$"$download_cmd`
@@ -392,6 +432,10 @@ build_cgal()
     zipper=bzip2
     suffix=bz2
   fi
+  if [ -e CGAL-$version.tar.xz ]; then
+    zipper=xz
+    suffix=xz
+  fi
 
   $zipper -f -d CGAL-$version.tar.$suffix;
   tar xf CGAL-$version.tar
@@ -400,8 +444,10 @@ build_cgal()
 
   # older cmakes have buggy FindBoost that can result in
   # finding the system libraries but OPENSCAD_LIBRARIES include paths
-  FINDBOOST_CMAKE=$OPENSCAD_SCRIPTDIR/../tests/FindBoost.cmake
-  cp $FINDBOOST_CMAKE ./cmake/modules/
+  # NB! This was removed 2015-12-02 - if this problem resurfaces, fix it only for the relevant platforms as this
+  # messes up more recent installations of cmake and CGAL.
+  # FINDBOOST_CMAKE=$OPENSCAD_SCRIPTDIR/../tests/FindBoost.cmake
+  # cp $FINDBOOST_CMAKE ./cmake/modules/
 
   mkdir bin
   cd bin
@@ -505,10 +551,20 @@ build_opencsg()
   cp opencsg.pro opencsg.pro.bak
   cat opencsg.pro.bak | sed s/example// > opencsg.pro
 
+  detect_glu
+  GLU_INCLUDE=$detect_glu_include
+  if [ ! $detect_glu_result ]; then
+    build_glu 9.0.0
+  fi
+
   if [ "`command -v qmake-qt4`" ]; then
     OPENCSG_QMAKE=qmake-qt4
   elif [ "`command -v qmake4`" ]; then
     OPENCSG_QMAKE=qmake4
+  elif [ "`command -v qmake-qt5`" ]; then
+    OPENCSG_QMAKE=qmake-qt5
+  elif [ "`command -v qmake5`" ]; then
+    OPENCSG_QMAKE=qmake5
   elif [ "`command -v qmake`" ]; then
     OPENCSG_QMAKE=qmake
   else
@@ -518,14 +574,17 @@ build_opencsg()
     cp src/Makefile src/Makefile.bak
 
     cat Makefile.bak | sed s/example// |sed s/glew// > Makefile
-    cat src/Makefile.bak | sed s@^INCPATH.*@INCPATH\ =\ -I$BASEDIR/include\ -I../include\ -I..\ -I.@ > src/Makefile
+    cat src/Makefile.bak | sed s@^INCPATH.*@INCPATH\ =\ -I$BASEDIR/include\ -I../include\ -I..\ -I$GLU_INCLUDE\ -I.@ > src/Makefile
     cp src/Makefile src/Makefile.bak2
     cat src/Makefile.bak2 | sed s@^LIBS.*@LIBS\ =\ -L$BASEDIR/lib\ -L/usr/X11R6/lib\ -lGLU\ -lGL@ > src/Makefile
     tmp=$version
-    detect_glu
-    if [ ! $detect_glu_result ]; then build_glu 9.0.0 ; fi
     version=$tmp
   fi
+
+  if [ ! $OPENCSG_QMAKE = "make" ]; then
+    OPENCSG_QMAKE=$OPENCSG_QMAKE' "QMAKE_CXXFLAGS+=-I'$GLU_INCLUDE'"'
+  fi
+  echo OPENCSG_QMAKE: $OPENCSG_QMAKE
 
   cd $BASEDIR/src/OpenCSG-$version/src
   $OPENCSG_QMAKE
@@ -726,7 +785,8 @@ mkdir -p $SRCDIR $DEPLOYDIR
 # they are installed under $BASEDIR/bin which we have added to our PATH
 
 if [ ! "`command -v curl`" ]; then
-  build_curl 7.26.0
+  # to prevent "end of file" NSS error -5938 (ssl) use a newer version of curl
+  build_curl 7.49.0
 fi
 
 if [ ! "`command -v bison`" ]; then
@@ -761,6 +821,10 @@ if [ $1 ]; then
     build_qt4 4.8.4
     exit $?
   fi
+  if [ $1 = "qt5scintilla2" ]; then
+    build_qt5scintilla2 2.8.3
+    exit $?
+  fi
   if [ $1 = "qt5" ]; then
     build_qt5 5.3.1
     build_qt5scintilla2 2.8.3
@@ -774,6 +838,11 @@ if [ $1 ]; then
   if [ $1 = "gettext" ]; then
     # such a huge build, put here by itself
     build_gettext 0.18.3.1
+    exit $?
+  fi
+  if [ $1 = "harfbuzz" ]; then
+    # debian 7 lacks only harfbuzz
+    build_harfbuzz 0.9.35 --with-glib=yes
     exit $?
   fi
   if [ $1 = "glib2" ]; then
@@ -799,21 +868,21 @@ fi
 # Some of these are defined in scripts/common-build-dependencies.sh
 
 build_eigen 3.2.2
-build_gmp 5.0.5
+build_gmp 6.0.0
 build_mpfr 3.1.1
 build_boost 1.56.0
 # NB! For CGAL, also update the actual download URL in the function
-build_cgal 4.4
+build_cgal 4.7
 build_glew 1.9.0
 build_opencsg 1.3.2
 build_gettext 0.18.3.1
 build_glib2 2.38.2
 
 # the following are only needed for text()
-build_freetype 2.5.0.1 --without-png
+build_freetype 2.6.1 --without-png
 build_libxml2 2.9.1
 build_fontconfig 2.11.0 --with-add-fonts=/usr/X11R6/lib/X11/fonts,/usr/local/share/fonts
-build_ragel 6.8
-build_harfbuzz 0.9.23 --with-glib=yes
+build_ragel 6.9
+build_harfbuzz 0.9.35 --with-glib=yes
 
 echo "OpenSCAD dependencies built and installed to " $BASEDIR

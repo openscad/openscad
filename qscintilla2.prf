@@ -10,9 +10,45 @@ INCLUDEPATH += $$[QT_INSTALL_HEADERS]
 
 LIBS += -L$$[QT_INSTALL_LIBS]
 
-greaterThan(QT_MAJOR_VERSION, 4) {
-    win32|macx:LIBS += -lqscintilla2
-    else:LIBS += -lqt5scintilla2
+QT5LIB=qt5scintilla2
+
+unix:linux* {
+    FEDORA32LIBS=/usr/lib/libqscintilla2-qt5.so
+    FEDORA64LIBS=/usr/lib64/libqscintilla2-qt5.so
+    exists($$FEDORA32LIBS) | exists($$FEDORA64LIBS) {
+        QT5LIB=qscintilla2-qt5
+    }
+}
+
+CONFIG(debug, debug|release) {
+    mac: {
+	#LIBS += -lqscintilla2_debug
+	LIBS += -lqscintilla2
+    } else {
+	win32: {
+	    LIBS += -lqscintilla2d
+	} else {
+	    greaterThan(QT_MAJOR_VERSION, 4) {
+		message("Using $$QT5LIB as library name")
+		LIBS += -l$$QT5LIB
+	    } else {
+		LIBS += -lqscintilla2
+	    }
+	}
+    }
 } else {
-    LIBS += -lqscintilla2
+    mac: {
+	LIBS += -lqscintilla2
+    } else {
+      win32: {
+        LIBS += -lqscintilla2
+      } else {
+        greaterThan(QT_MAJOR_VERSION, 4) {
+	    message("Using $$QT5LIB as library name")
+	    LIBS += -l$$QT5LIB
+        } else {
+	    LIBS += -lqscintilla2
+        }
+      }
+    }
 }

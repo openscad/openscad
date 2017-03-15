@@ -5,15 +5,15 @@
 #include <list>
 #include "linalg.h"
 
-#include <boost/shared_ptr.hpp>
+#include "memory.h"
 #include <boost/filesystem.hpp>
 #include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
 
 namespace fs = boost::filesystem;
 
 enum RenderColor {
 	BACKGROUND_COLOR,
+	AXES_COLOR,
 	OPENCSG_FACE_FRONT_COLOR,
 	OPENCSG_FACE_BACK_COLOR,
 	CGAL_FACE_FRONT_COLOR,
@@ -68,7 +68,7 @@ private:
 
 class ColorMap
 {
-        typedef std::multimap<int, boost::shared_ptr<RenderColorScheme>, std::less<int> > colorscheme_set_t;
+        typedef std::multimap<int, shared_ptr<RenderColorScheme>, std::less<int>> colorscheme_set_t;
     
 public:
 	static ColorMap *inst(bool erase = false);

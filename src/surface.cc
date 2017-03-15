@@ -25,6 +25,7 @@
  */
 
 #include "module.h"
+#include "ModuleInstantiation.h"
 #include "node.h"
 #include "polyset.h"
 #include "evalcontext.h"
@@ -32,13 +33,12 @@
 #include "printutils.h"
 #include "fileutils.h"
 #include "handle_dep.h" // handle_dep()
-#include "visitor.h"
 #include "lodepng.h"
 
 #include <sstream>
 #include <fstream>
-#include <boost/foreach.hpp>
-#include <boost/unordered_map.hpp>
+#include <unordered_map>
+#include <boost/functional/hash.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
@@ -55,15 +55,13 @@ public:
 	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
 };
 
-typedef boost::unordered_map<std::pair<int,int>,double> img_data_t;
+typedef std::unordered_map<std::pair<int,int>, double, boost::hash<std::pair<int,int>>> img_data_t;
 
 class SurfaceNode : public LeafNode
 {
 public:
+	VISITABLE();
 	SurfaceNode(const ModuleInstantiation *mi) : LeafNode(mi) { }
-  virtual Response accept(class State &state, Visitor &visitor) const {
-		return visitor.visit(state, *this);
-	}
 	virtual std::string toString() const;
 	virtual std::string name() const { return "surface"; }
 
@@ -72,7 +70,7 @@ public:
 	bool invert;
 	int convexity;
 	
-	virtual Geometry *createGeometry() const;
+	virtual const Geometry *createGeometry() const;
 private:
 	void convert_image(img_data_t &data, std::vector<unsigned char> &img, unsigned int width, unsigned int height) const;
 	bool is_png(std::vector<unsigned char> &img) const;
@@ -93,22 +91,22 @@ AbstractNode *SurfaceModule::instantiate(const Context *ctx, const ModuleInstant
 	Context c(ctx);
 	c.setVariables(args, evalctx);
 
-	Value fileval = c.lookup_variable("file");
-	node->filename = lookup_file(fileval.isUndefined() ? "" : fileval.toString(), inst->path(), c.documentPath());
+	ValuePtr fileval = c.lookup_variable("file");
+	node->filename = lookup_file(fileval->isUndefined() ? "" : fileval->toString(), inst->path(), c.documentPath());
 
-	Value center = c.lookup_variable("center", true);
-	if (center.type() == Value::BOOL) {
-		node->center = center.toBool();
+	ValuePtr center = c.lookup_variable("center", true);
+	if (center->type() == Value::BOOL) {
+		node->center = center->toBool();
 	}
 
-	Value convexity = c.lookup_variable("convexity", true);
-	if (convexity.type() == Value::NUMBER) {
-		node->convexity = (int)convexity.toDouble();
+	ValuePtr convexity = c.lookup_variable("convexity", true);
+	if (convexity->type() == Value::NUMBER) {
+		node->convexity = (int)convexity->toDouble();
 	}
 
-	Value invert = c.lookup_variable("invert", true);
-	if (invert.type() == Value::BOOL) {
-		node->invert = invert.toBool();
+	ValuePtr invert = c.lookup_variable("invert", true);
+	if (invert->type() == Value::BOOL) {
+		node->invert = invert->toBool();
 	}
 
 	return node;
@@ -116,31 +114,12 @@ AbstractNode *SurfaceModule::instantiate(const Context *ctx, const ModuleInstant
 
 void SurfaceNode::convert_image(img_data_t &data, std::vector<unsigned char> &img, unsigned int width, unsigned int height) const
 {
-	double z_min = 100000;
-	double z_max = 0;
-	for (unsigned long idx = 0;idx < img.size();idx += 4) {
-		// sRGB luminance, see http://en.wikipedia.org/wiki/Grayscale
-		double z = 0.2126 * img[idx] + 0.7152 * img[idx + 1] + 0.0722 * img[idx + 2];
-		if (z < z_min) {
-			z_min = z;
-		}
-		if (z > z_max) {
-			z_max = z;
-		}
-	}
-
-	double h = 100;
-	double scale = h / (z_max - z_min);
 	for (unsigned int y = 0;y < height;y++) {
 		for (unsigned int x = 0;x < width;x++) {
 			long idx = 4 * (y * width + x);
 			double pixel = 0.2126 * img[idx] + 0.7152 * img[idx + 1] + 0.0722 * img[idx + 2];
-			double z = scale * (pixel - z_min);
-			if (invert) {
-				z = h - z;
-			}
-			data[std::make_pair(height - y, x)] = z;
-			
+			double z = 100.0/255 * (invert ? 1 - pixel : pixel);
+			data[std::make_pair(height - 1 - y, x)] = z;
 		}
 	}
 }
@@ -197,7 +176,7 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
 	int lines = 0, columns = 0;
 	double min_val = 0;
 
-	typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+	typedef boost::tokenizer<boost::char_separator<char>> tokenizer;
 	boost::char_separator<char> sep(" \t");
 
 	while (!stream.eof()) {
@@ -211,7 +190,7 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
 		int col = 0;
 		tokenizer tokens(line, sep);
 		try {
-			BOOST_FOREACH(const std::string &token, tokens) {
+			for(const auto &token : tokens) {
 				double v = boost::lexical_cast<double>(token);
 				data[std::make_pair(lines, col++)] = v;
 				if (col > columns) columns = col;
@@ -230,7 +209,7 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
 	return data;
 }
 
-Geometry *SurfaceNode::createGeometry() const
+const Geometry *SurfaceNode::createGeometry() const
 {
 	img_data_t data = read_png_or_dat(filename);
 
@@ -239,7 +218,7 @@ Geometry *SurfaceNode::createGeometry() const
 	
 	int lines = 0;
 	int columns = 0;
-	double min_val = std::numeric_limits<double>::max();
+	double min_val = 0;
 	for (img_data_t::iterator it = data.begin();it != data.end();it++) {
 		lines = std::max(lines, (*it).first.first + 1);
 		columns = std::max(columns, (*it).first.second + 1);
@@ -309,15 +288,17 @@ Geometry *SurfaceNode::createGeometry() const
 		p->append_vertex(ox + i, oy + lines-1, min_val);
 	}
 
-	p->append_poly();
-	for (int i = 0; i < columns-1; i++)
-		p->insert_vertex(ox + i, oy + 0, min_val);
-	for (int i = 0; i < lines-1; i++)
-		p->insert_vertex(ox + columns-1, oy + i, min_val);
-	for (int i = columns-1; i > 0; i--)
-		p->insert_vertex(ox + i, oy + lines-1, min_val);
-	for (int i = lines-1; i > 0; i--)
-		p->insert_vertex(ox + 0, oy + i, min_val);
+	if (columns > 1 && lines > 1) {
+		p->append_poly();
+		for (int i = 0; i < columns-1; i++)
+			p->insert_vertex(ox + i, oy + 0, min_val);
+		for (int i = 0; i < lines-1; i++)
+			p->insert_vertex(ox + columns-1, oy + i, min_val);
+		for (int i = columns-1; i > 0; i--)
+			p->insert_vertex(ox + i, oy + lines-1, min_val);
+		for (int i = lines-1; i > 0; i--)
+			p->insert_vertex(ox + 0, oy + i, min_val);
+	}
 
 	return p;
 }
@@ -330,10 +311,7 @@ std::string SurfaceNode::toString() const
 	stream << this->name() << "(file = " << this->filename
 		<< ", center = " << (this->center ? "true" : "false")
 		<< ", invert = " << (this->invert ? "true" : "false")
-#ifndef OPENSCAD_TESTING
-		// timestamp is needed for caching, but disturbs the test framework
 				 << ", " "timestamp = " << (fs::exists(path) ? fs::last_write_time(path) : 0)
-#endif
 				 << ")";
 
 	return stream.str();

@@ -13,11 +13,18 @@ File openscad.com
 File /r /x mingw-cross-env examples
 File /r /x mingw-cross-env libraries
 File /r /x mingw-cross-env fonts
+File /r /x mingw-cross-env locale
 File /r /x mingw-cross-env color-schemes
 ${registerExtension} "$INSTDIR\openscad.exe" ".scad" "OpenSCAD_File"
 CreateShortCut $SMPROGRAMS\OpenSCAD.lnk $INSTDIR\openscad.exe
 WriteUninstaller $INSTDIR\Uninstall.exe
+# see https://msdn.microsoft.com/en-us/library/aa372105(v=vs.85).aspx
 WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenSCAD" "DisplayName" "OpenSCAD (remove only)"
+WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenSCAD" "DisplayVersion" "${VERSION}"
+WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenSCAD" "Publisher" "The OpenSCAD Developers"
+WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenSCAD" "URLInfoAbout" "http://www.openscad.org/"
+WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenSCAD" "URLUpdateInfo" "http://www.openscad.org/downloads.html"
+WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenSCAD" "HelpLink" "http://forum.openscad.org/"
 WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenSCAD" "UninstallString" "$INSTDIR\Uninstall.exe"
 WriteRegStr HKCR ".scad" "PerceivedType" "text"
 SectionEnd
@@ -31,6 +38,7 @@ RMDir /r $INSTDIR\fonts
 RMDir /r $INSTDIR\color-schemes
 RMDir /r $INSTDIR\examples
 RMDir /r $INSTDIR\libraries\mcad
+RMDir /r $INSTDIR\locale
 Delete $INSTDIR\libraries\boxes.scad
 Delete $INSTDIR\libraries\shapes.scad
 RMDir $INSTDIR\libraries

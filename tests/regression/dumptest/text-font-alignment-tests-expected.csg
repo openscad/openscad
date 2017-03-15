@@ -1,69 +1,67 @@
 group() {
-	group() {
-		multmatrix([[1, 0, 0, 10], [0, 1, 0, 10], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-			color([1, 0, 0, 1]) {
-				square(size = [135, 0.5], center = false);
-			}
-			color([0, 0, 1, 1]) {
-				square(size = [0.5, 20], center = false);
-			}
-			text(text = "OpenSCAD", size = 20, spacing = 1, font = "Liberation Sans:style=Regular", direction = "ltr", language = "en", script = "latin", halign = "left", valign = "top", $fn = 0, $fa = 12, $fs = 2);
+	multmatrix([[1, 0, 0, 10], [0, 1, 0, 10], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		color([1, 0, 0, 1]) {
+			square(size = [135, 0.5], center = false);
 		}
-		multmatrix([[1, 0, 0, 10], [0, 1, 0, 40], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-			color([1, 0, 0, 1]) {
-				square(size = [135, 0.5], center = false);
-			}
-			color([0, 0, 1, 1]) {
-				square(size = [0.5, 20], center = false);
-			}
-			text(text = "OpenSCAD", size = 20, spacing = 1, font = "Liberation Sans:style=Regular", direction = "ltr", language = "en", script = "latin", halign = "left", valign = "center", $fn = 0, $fa = 12, $fs = 2);
+		color([0, 0, 1, 1]) {
+			square(size = [0.5, 20], center = false);
 		}
-		multmatrix([[1, 0, 0, 10], [0, 1, 0, 70], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-			color([1, 0, 0, 1]) {
-				square(size = [135, 0.5], center = false);
-			}
-			color([0, 0, 1, 1]) {
-				square(size = [0.5, 20], center = false);
-			}
-			text(text = "OpenSCAD", size = 20, spacing = 1, font = "Liberation Sans:style=Regular", direction = "ltr", language = "en", script = "latin", halign = "left", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
-		}
-		multmatrix([[1, 0, 0, 10], [0, 1, 0, 100], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-			color([1, 0, 0, 1]) {
-				square(size = [135, 0.5], center = false);
-			}
-			color([0, 0, 1, 1]) {
-				square(size = [0.5, 20], center = false);
-			}
-			text(text = "OpenSCAD", size = 20, spacing = 1, font = "Liberation Sans:style=Regular", direction = "ltr", language = "en", script = "latin", halign = "left", valign = "bottom", $fn = 0, $fa = 12, $fs = 2);
-		}
+		text(text = "OpenSCAD", size = 20, spacing = 1, font = "Liberation Sans:style=Regular", direction = "ltr", language = "en", script = "Latn", halign = "left", valign = "top", $fn = 0, $fa = 12, $fs = 2);
 	}
-	group() {
-		multmatrix([[1, 0, 0, 182.3], [0, 1, 0, 10], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-			color([1, 0, 0, 1]) {
-				square(size = [135, 0.5], center = false);
-			}
-			color([0, 0, 1, 1]) {
-				square(size = [0.5, 20], center = false);
-			}
-			text(text = "OpenSCAD", size = 20, spacing = 1, font = "Liberation Sans:style=Regular", direction = "ltr", language = "en", script = "latin", halign = "left", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
+	multmatrix([[1, 0, 0, 10], [0, 1, 0, 40], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		color([1, 0, 0, 1]) {
+			square(size = [135, 0.5], center = false);
 		}
-		multmatrix([[1, 0, 0, 249.2], [0, 1, 0, 40], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-			color([1, 0, 0, 1]) {
-				square(size = [135, 0.5], center = false);
-			}
-			color([0, 0, 1, 1]) {
-				square(size = [0.5, 20], center = false);
-			}
-			text(text = "OpenSCAD", size = 20, spacing = 1, font = "Liberation Sans:style=Regular", direction = "ltr", language = "en", script = "latin", halign = "center", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
+		color([0, 0, 1, 1]) {
+			square(size = [0.5, 20], center = false);
 		}
-		multmatrix([[1, 0, 0, 316.1], [0, 1, 0, 70], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-			color([1, 0, 0, 1]) {
-				square(size = [135, 0.5], center = false);
-			}
-			color([0, 0, 1, 1]) {
-				square(size = [0.5, 20], center = false);
-			}
-			text(text = "OpenSCAD", size = 20, spacing = 1, font = "Liberation Sans:style=Regular", direction = "ltr", language = "en", script = "latin", halign = "right", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
+		text(text = "OpenSCAD", size = 20, spacing = 1, font = "Liberation Sans:style=Regular", direction = "ltr", language = "en", script = "Latn", halign = "left", valign = "center", $fn = 0, $fa = 12, $fs = 2);
+	}
+	multmatrix([[1, 0, 0, 10], [0, 1, 0, 70], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		color([1, 0, 0, 1]) {
+			square(size = [135, 0.5], center = false);
 		}
+		color([0, 0, 1, 1]) {
+			square(size = [0.5, 20], center = false);
+		}
+		text(text = "OpenSCAD", size = 20, spacing = 1, font = "Liberation Sans:style=Regular", direction = "ltr", language = "en", script = "Latn", halign = "left", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
+	}
+	multmatrix([[1, 0, 0, 10], [0, 1, 0, 100], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		color([1, 0, 0, 1]) {
+			square(size = [135, 0.5], center = false);
+		}
+		color([0, 0, 1, 1]) {
+			square(size = [0.5, 20], center = false);
+		}
+		text(text = "OpenSCAD", size = 20, spacing = 1, font = "Liberation Sans:style=Regular", direction = "ltr", language = "en", script = "Latn", halign = "left", valign = "bottom", $fn = 0, $fa = 12, $fs = 2);
+	}
+}
+group() {
+	multmatrix([[1, 0, 0, 182.3], [0, 1, 0, 10], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		color([1, 0, 0, 1]) {
+			square(size = [135, 0.5], center = false);
+		}
+		color([0, 0, 1, 1]) {
+			square(size = [0.5, 20], center = false);
+		}
+		text(text = "OpenSCAD", size = 20, spacing = 1, font = "Liberation Sans:style=Regular", direction = "ltr", language = "en", script = "Latn", halign = "left", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
+	}
+	multmatrix([[1, 0, 0, 249.2], [0, 1, 0, 40], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		color([1, 0, 0, 1]) {
+			square(size = [135, 0.5], center = false);
+		}
+		color([0, 0, 1, 1]) {
+			square(size = [0.5, 20], center = false);
+		}
+		text(text = "OpenSCAD", size = 20, spacing = 1, font = "Liberation Sans:style=Regular", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
+	}
+	multmatrix([[1, 0, 0, 316.1], [0, 1, 0, 70], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		color([1, 0, 0, 1]) {
+			square(size = [135, 0.5], center = false);
+		}
+		color([0, 0, 1, 1]) {
+			square(size = [0.5, 20], center = false);
+		}
+		text(text = "OpenSCAD", size = 20, spacing = 1, font = "Liberation Sans:style=Regular", direction = "ltr", language = "en", script = "Latn", halign = "right", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
 	}
 }

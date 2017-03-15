@@ -1,0 +1,55 @@
+//Parameter("parameter")
+a = true;
+//Description("description")
+//Parameter("parameter")
+b = false;
+//Description("description")
+//Parameter("parameter")
+c = undef;
+d = a;
+e = $fn;
+//Description("description")
+//Parameter("parameter")
+f1 = [1];
+//Description("description")
+//Parameter("parameter")
+f2 = [1, 2, 3];
+g = ((f2.x + f2.y) + f2.z);
+//Description("description")
+//Parameter("parameter")
+h1 = [2 : 5];
+//Description("description")
+//Parameter("parameter")
+h2 = [1 : 2 : 10];
+i = ((h2.begin - h2.step) - h2.end);
+//Description("description")
+//Parameter("parameter")
+j = "test";
+//Description("description")
+//Parameter("parameter")
+k = 0.0123;
+l = (a * b);
+m = (a / b);
+n = (a % b);
+o = (c < d);
+p = (c <= d);
+q = (c == d);
+r = (c != d);
+s = (c >= d);
+t = (c > d);
+u = (e && g);
+v = (e || g);
+w = i;
+x = -i;
+y = !i;
+z = j;
+aa = (k ? l : m);
+bb = n[o];
+cc = let(a = 1) a;
+dd = [for(a = [0, 1]) (let(b = a) (if(true) (b)))];
+ee = ["abc", for(a = [0, 1]) (let(b = a) (if(true) (b))), true, for(c = [1 : 3]) (c), 3];
+ff = [for(a = [0, 1]) (if((a == 0)) ("A") else ("B"))];
+gg = [each (["a", 0, false])];
+hh = [for(a = [0 : 3]) (if((a < 2)) (if((a < 1)) (["+", a])) else (["-", a]))];
+ii = [for(a = 0, b = 1;(a < 5);a = (a + 1), b = (b + 2)) [a, (b * b)]];
+

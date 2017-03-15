@@ -1,6 +1,7 @@
 #include "nodedumper.h"
 #include "state.h"
 #include "module.h"
+#include "ModuleInstantiation.h"
 
 #include <string>
 #include <sstream>
@@ -16,7 +17,7 @@
 
 bool NodeDumper::isCached(const AbstractNode &node) const
 {
-	return !this->cache[node].empty();
+	return this->cache.contains(node);
 }
 
 /*!
@@ -38,25 +39,35 @@ void NodeDumper::handleIndent(const State &state)
 	including braces and indentation.
 	All children are assumed to be cached already.
  */
-std::string NodeDumper::dumpChildren(const AbstractNode &node)
+std::string NodeDumper::dumpChildBlock(const AbstractNode &node)
 {
 	std::stringstream dump;
 	if (!this->visitedchildren[node.index()].empty()) {
 		dump << " {\n";
-		
-		for (ChildList::const_iterator iter = this->visitedchildren[node.index()].begin();
-				 iter != this->visitedchildren[node.index()].end();
-				 iter++) {
-			assert(isCached(**iter));
-			if ((*iter)->modinst->isBackground()) dump << "%";
-			if ((*iter)->modinst->isHighlight()) dump << "#";
-			dump << this->cache[**iter] << "\n";
-		}
-		
+		const std::string &chstr = dumpChildren(node);
+		if (!chstr.empty()) dump << chstr << "\n";
 		dump << this->currindent << "}";
 	}
 	else {
 		dump << ";";
+	}
+	return dump.str();
+}
+
+std::string NodeDumper::dumpChildren(const AbstractNode &node)
+{
+	std::stringstream dump;
+	for (ChildList::const_iterator iter = this->visitedchildren[node.index()].begin();
+			 iter != this->visitedchildren[node.index()].end();
+			 iter++) {
+		assert(isCached(**iter));
+		const std::string &str = this->cache[**iter];
+		if (!str.empty()) {
+            if (iter != this->visitedchildren[node.index()].begin()) dump << "\n";
+			if ((*iter)->modinst->isBackground()) dump << "%";
+			if ((*iter)->modinst->isHighlight()) dump << "#";
+			dump << str;
+		}
 	}
 	return dump.str();
 }
@@ -75,6 +86,23 @@ Response NodeDumper::visit(State &state, const AbstractNode &node)
 		dump << this->currindent;
 		if (this->idprefix) dump << "n" << node.index() << ":";
 		dump << node;
+		dump << dumpChildBlock(node);
+		this->cache.insert(node, dump.str());
+	}
+
+	handleVisitedChildren(state, node);
+	return ContinueTraversal;
+}
+
+/*!
+	Handle root nodes specially: Only list children
+*/
+Response NodeDumper::visit(State &state, const RootNode &node)
+{
+	if (isCached(node)) return PruneTraversal;
+
+	if (state.isPostfix()) {
+		std::stringstream dump;
 		dump << dumpChildren(node);
 		this->cache.insert(node, dump.str());
 	}

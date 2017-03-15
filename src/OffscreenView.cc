@@ -7,7 +7,7 @@
 #include <sstream>
 #include "printutils.h"
 
-OffscreenView::OffscreenView(size_t width, size_t height)
+OffscreenView::OffscreenView(int width, int height)
 {
   this->ctx = create_offscreen_context(width, height);
   if ( this->ctx == NULL ) throw -1;

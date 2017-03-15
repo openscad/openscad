@@ -26,6 +26,7 @@
 
 #include "rendernode.h"
 #include "module.h"
+#include "ModuleInstantiation.h"
 #include "evalcontext.h"
 #include "builtin.h"
 #include "polyset.h"
@@ -52,9 +53,9 @@ AbstractNode *RenderModule::instantiate(const Context *ctx, const ModuleInstanti
 	c.setVariables(args, evalctx);
 	inst->scope.apply(*evalctx);
 
-	Value v = c.lookup_variable("convexity");
-	if (v.type() == Value::NUMBER)
-		node->convexity = (int)v.toDouble();
+	ValuePtr v = c.lookup_variable("convexity");
+	if (v->type() == Value::NUMBER)
+		node->convexity = (int)v->toDouble();
 
 	std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(evalctx);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());

@@ -31,8 +31,8 @@
 #include "Polygon2d.h"
 #include "DrawingCallback.h"
 
-DrawingCallback::DrawingCallback(unsigned long fn) : fn(fn),
-	pen(Vector2d(0, 0)), offset(Vector2d(0, 0)), advance(Vector2d(0, 0))
+DrawingCallback::DrawingCallback(unsigned long fn) :
+	pen(Vector2d(0, 0)), offset(Vector2d(0, 0)), advance(Vector2d(0, 0)), fn(fn)
 {
 }
 
@@ -74,12 +74,12 @@ void DrawingCallback::add_glyph_advance(double advance_x, double advance_y)
 	advance += Vector2d(advance_x, advance_y);
 }
 
-void DrawingCallback::add_vertex(Vector2d v)
+void DrawingCallback::add_vertex(const Vector2d &v)
 {
 	this->outline.vertices.push_back(v + offset + advance);
 }
 
-void DrawingCallback::move_to(Vector2d to)
+void DrawingCallback::move_to(const Vector2d &to)
 {
 	if (this->outline.vertices.size() > 0) {
 		this->polygon->addOutline(this->outline);
@@ -89,30 +89,33 @@ void DrawingCallback::move_to(Vector2d to)
 	pen = to;
 }
 
-void DrawingCallback::line_to(Vector2d to)
+void DrawingCallback::line_to(const Vector2d &to)
 {
 	add_vertex(to);
 	pen = to;
 }
 
-void DrawingCallback::curve_to(Vector2d c1, Vector2d to)
+// Quadric Bezier curve
+void DrawingCallback::curve_to(const Vector2d &c1, const Vector2d &to)
 {
 	for (unsigned long idx = 1;idx <= fn;idx++) {
 		const double a = idx * (1.0 / (double)fn);
-		const double x = pen[0] * t(a, 2) + c1[0] * 2 * t(a, 1) * a + to[0] * a * a;
-		const double y = pen[1] * t(a, 2) + c1[1] * 2 * t(a, 1) * a + to[1] * a * a;
-		add_vertex(Vector2d(x, y));
+		add_vertex(pen * pow(1-a, 2) + 
+							 c1 * 2 * pow(1-a, 1) * a + 
+							 to * pow(a, 2));
 	}
 	pen = to;
 }
 
-void DrawingCallback::curve_to(Vector2d c1, Vector2d c2, Vector2d to)
+// Cubic Bezier curve
+void DrawingCallback::curve_to(const Vector2d &c1, const Vector2d &c2, const Vector2d &to)
 {
 	for (unsigned long idx = 1;idx <= fn;idx++) {
 		const double a = idx * (1.0 / (double)fn);
-		const double x = pen[0] * t(a, 3) + c1[0] * 3 * t(a, 2) * a + c2[0] * 3 * t(a, 1) * a * a + to[0] * a * a * a;
-		const double y = pen[1] * t(a, 3) + c1[1] * 3 * t(a, 2) * a + c2[1] * 3 * t(a, 1) * a * a + to[1] * a * a * a;
-		add_vertex(Vector2d(x, y));
+		add_vertex(pen * pow(1-a, 3) + 
+							 c1 * 3 * pow(1-a, 2) * a + 
+							 c2 * 3 * pow(1-a, 1) * pow(a, 2) + 
+							 to * pow(a, 3));
 	}
 	pen = to;
 }

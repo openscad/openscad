@@ -13,9 +13,6 @@
 #define NDEBUG PREV_NDEBUG
 #endif
 
-#include <boost/foreach.hpp>
-
-
 struct FaceInfo {
   int nesting_level;
   bool in_domain() { return nesting_level%2 == 1; }
@@ -25,7 +22,7 @@ typedef CGAL::Triangulation_2_filtered_projection_traits_3<K> Projection;
 typedef CGAL::Triangulation_face_base_with_info_2<FaceInfo, K> Fbb;
 typedef CGAL::Triangulation_data_structure_2<
 	CGAL::Triangulation_vertex_base_2<Projection>,
-	CGAL::Constrained_triangulation_face_base_2<Projection, Fbb> > Tds;
+	CGAL::Constrained_triangulation_face_base_2<Projection, Fbb>> Tds;
 typedef CGAL::Constrained_Delaunay_triangulation_2<
 	Projection, Tds, CGAL::Exact_predicates_tag> CDT;
 
@@ -108,6 +105,8 @@ namespace CGALUtils {
 			// Calculate best guess at face normal using Newell's method
 			CGAL::normal_vector_newell_3(polygons.front().begin(), polygons.front().end(), normalvec);
 		}
+		double sqrl = normalvec.squared_length();
+		if (sqrl > 0.0) normalvec = normalvec / sqrt(sqrl);
 
 		// Pass the normal vector to the (undocumented)
 		// CGAL::Triangulation_2_filtered_projection_traits_3. This
@@ -116,7 +115,7 @@ namespace CGALUtils {
 		// the Constrained Delaunay Triangulator.
 		Projection actualProjection(normalvec);
 		CDT cdt(actualProjection);
-		BOOST_FOREACH(const PolygonK &poly, polygons) {
+		for(const auto &poly : polygons) {
 			for (size_t i=0;i<poly.size(); i++) {
 				cdt.insert_constraint(poly[i], poly[(i+1)%poly.size()]);
 			}
@@ -163,6 +162,8 @@ namespace CGALUtils {
 			// Calculate best guess at face normal using Newell's method
 			CGAL::normal_vector_newell_3(polygon.begin(), polygon.end(), normalvec);
 		}
+		double sqrl = normalvec.squared_length();
+		if (sqrl > 0.0) normalvec = normalvec / sqrt(sqrl);
 		
 		// Pass the normal vector to the (undocumented)
 		// CGAL::Triangulation_2_filtered_projection_traits_3. This

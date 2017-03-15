@@ -31,8 +31,13 @@
 #include <QFileDialog>
 #include <QDesktopServices>
 
+#include "qtgettext.h"
 #include "UIUtils.h"
 #include "PlatformUtils.h"
+#include "openscad.h"
+
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
 
 QFileInfo UIUtils::openFile(QWidget *parent)
 {
@@ -77,24 +82,52 @@ QStringList UIUtils::recentFiles()
     return files;
 }
 
+using namespace boost::property_tree;
+
+static ptree *examples_tree = NULL;
+static ptree *examplesTree()
+{
+	if (!examples_tree) {
+		std::string path = (PlatformUtils::resourcePath("examples") / "examples.json").string();
+		try {
+			examples_tree = new ptree;
+			read_json(path, *examples_tree);
+		} catch (const std::exception & e) {
+			PRINTB("Error reading examples.json: %s", e.what());
+			delete examples_tree;
+			examples_tree = NULL;
+		}
+	}
+	return examples_tree;
+}
+
 QStringList UIUtils::exampleCategories()
 {
-    QStringList categories;
-    //categories in File menu item - Examples
-    categories << "Basics" << "Shapes" << "Extrusion" << "Advanced";
-    
-    return categories;
+	// categories in File menu item - Examples
+	QStringList categories;
+	ptree *pt = examplesTree();
+	if (pt) {
+		for(const auto &v : *pt) {
+			// v.first is the name of the child.
+			// v.second is the child tree.
+			categories << QString::fromStdString(v.first);
+		}
+	}
+  
+	return categories;
 }
 
 QFileInfoList UIUtils::exampleFiles(const QString &category)
 {
-    QDir dir(QString::fromStdString(PlatformUtils::resourcesPath()));
-    if (!dir.cd("examples") || !dir.cd(category)) {
-	return QFileInfoList();
-    }
-
-    QFileInfoList examples = dir.entryInfoList(QStringList("*.scad"), QDir::Files | QDir::Readable, QDir::Name);
-    return examples;
+	QFileInfoList examples;
+	ptree *pt = examplesTree();
+	if (pt) {
+		fs::path examplesPath = PlatformUtils::resourcePath("examples") / category.toStdString();
+		for(const auto &v : pt->get_child(category.toStdString())) {
+			examples << QFileInfo(QString::fromStdString((examplesPath / v.second.data()).string()));
+		}
+	}
+	return examples;
 }
 
 void UIUtils::openHomepageURL()
@@ -102,7 +135,17 @@ void UIUtils::openHomepageURL()
     QDesktopServices::openUrl(QUrl("http://openscad.org/"));
 }
 
+static void openVersionedURL(QString url)
+{
+    QDesktopServices::openUrl(QUrl(url.arg(openscad_shortversionnumber.c_str())));
+}
+
 void UIUtils::openUserManualURL()
 {
-    QDesktopServices::openUrl(QUrl("http://www.openscad.org/documentation.html"));
+    openVersionedURL("http://www.openscad.org/documentation.html?version=%1");
+}
+
+void UIUtils::openCheatSheetURL()
+{
+    openVersionedURL("http://www.openscad.org/cheatsheet/index.html?version=%1");
 }

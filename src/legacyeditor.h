@@ -12,10 +12,13 @@ public:
 	void setInitialSizeHint(const QSize&);
 	QString	toPlainText();
 	QString selectedText();
+    int resetFindIndicators(const QString &findText, bool visibility = true);
 	bool find(const QString &, bool findNext = false, bool findBackwards = false);
 	void replaceSelectedText(const QString &newText);	
+	void replaceAll(const QString &findText, const QString &replaceText);
 	bool findString(const QString & exp, bool findBackwards) const;
 	QStringList colorSchemes();
+    bool canUndo();
 
 public slots:
 	void zoomIn();
@@ -31,7 +34,7 @@ public slots:
 	void unhighlightLastError();
 	void setHighlightScheme(const QString&);
 	void insert(const QString&);
-        void replaceAll(const QString&);
+	void setText(const QString&);
 	void undo();
 	void redo();
 	void cut();

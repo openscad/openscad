@@ -26,10 +26,10 @@
 
 #include "projectionnode.h"
 #include "module.h"
+#include "ModuleInstantiation.h"
 #include "evalcontext.h"
 #include "printutils.h"
 #include "builtin.h"
-#include "visitor.h"
 #include "polyset.h"
 
 #include <assert.h>
@@ -55,13 +55,13 @@ AbstractNode *ProjectionModule::instantiate(const Context *ctx, const ModuleInst
 	c.setVariables(args, evalctx);
 	inst->scope.apply(*evalctx);
 
-	Value convexity = c.lookup_variable("convexity", true);
-	Value cut = c.lookup_variable("cut", true);
+	ValuePtr convexity = c.lookup_variable("convexity", true);
+	ValuePtr cut = c.lookup_variable("cut", true);
 
-	node->convexity = (int)convexity.toDouble();
+	node->convexity = (int)convexity->toDouble();
 
-	if (cut.type() == Value::BOOL)
-		node->cut_mode = cut.toBool();
+	if (cut->type() == Value::BOOL)
+		node->cut_mode = cut->toBool();
 
 	std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(evalctx);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());

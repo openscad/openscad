@@ -20,6 +20,8 @@ import re
 
 DEBUG = False
 
+cxxlib = None
+
 def usage():
     print >> sys.stderr, "Usage: " + sys.argv[0] + " <executable>"
     sys.exit(1)
@@ -28,14 +30,18 @@ def usage():
 # Returns the full path to the library or None if the library is not found.
 def lookup_library(file):
     found = None
-    if not re.match("/", file):
-        if re.search("@executable_path", file):
+    if re.search("@rpath", file):
+        file = re.sub("^@rpath", lc_rpath, file)
+        if os.path.exists(file): found = file
+        if DEBUG: print "@rpath resolved: " + str(file)
+    if not found:
+        if re.search("\.app/", file):
+            found = file
+            if DEBUG: print "App found: " + str(found)
+        elif re.search("@executable_path", file):
             abs = re.sub("^@executable_path", executable_path, file)
             if os.path.exists(abs): found = abs
             if DEBUG: print "Lib in @executable_path found: " + str(found)
-        elif re.search("\.app/", file):
-            found = file
-            if DEBUG: print "App found: " + str(found)
         elif re.search("\.framework/", file):
             found = os.path.join("/Library/Frameworks", file)
             if DEBUG: print "Framework found: " + str(found)
@@ -43,9 +49,7 @@ def lookup_library(file):
             for path in os.getenv("DYLD_LIBRARY_PATH").split(':'):
                 abs = os.path.join(path, file)
                 if os.path.exists(abs): found = abs
-            if DEBUG: print "Library found: " + str(found)
-    else:
-        found = file
+                if DEBUG: print "Library found: " + str(found)
     return found
 
 # Returns a list of dependent libraries, excluding system libs
@@ -62,12 +66,17 @@ def find_dependencies(file):
         return None
     deps = output.split('\n')
     for dep in deps:
-        #print dep
-        # Fail if anything is linked with libc++, as that's not backwards compatible
-        # with Mac OS X 10.6
-        if re.search("libc\+\+", dep):
-            print "Error: clang's libc++ is used by " + file
-            return None
+        # print dep
+        # Fail if libstc++ and libc++ was mixed
+        global cxxlib
+        match = re.search("lib(std)?c\+\+", dep)
+        if match:
+            if not cxxlib:
+                cxxlib = match.group(0)
+            else:
+                if cxxlib != match.group(0):
+                    print "Error: Mixing libc++ and libstdc++"
+                    return None
         dep = re.sub(".*:$", "", dep) # Take away header line
         dep = re.sub("^\t", "", dep) # Remove initial tabs
         dep = re.sub(" \(.*\)$", "", dep) # Remove trailing parentheses
@@ -82,7 +91,7 @@ def validate_lib(lib):
     # Check deployment target
     m = re.search("LC_VERSION_MIN_MACOSX.*\n(.*)\n\s+version (.*)", output, re.MULTILINE)
     deploymenttarget = float(m.group(2))
-    if deploymenttarget > 10.7:
+    if deploymenttarget > 10.8:
         print "Error: Unsupported deployment target " + m.group(2) + " found: " + lib
         return False
 # We don't support Snow Leopard anymore
@@ -110,6 +119,18 @@ if __name__ == '__main__':
     executable = sys.argv[1]
     if DEBUG: print "Processing " + executable
     executable_path = os.path.dirname(executable)
+
+    # Find the Runpath search path (LC_RPATH)
+    p  = subprocess.Popen(["otool", "-l", executable], stdout=subprocess.PIPE)
+    output = p.communicate()[0]
+    if p.returncode != 0: 
+        print 'Error otool -l failed on main executable'
+        sys.exit(1)
+    # Check deployment target
+    m = re.search("LC_RPATH\n(.*)\n\s+path ([^ ]+)", output, re.MULTILINE)
+    lc_rpath = m.group(2)
+    if DEBUG: print 'Runpath search path: ' + lc_rpath
+
     # processed is a dict {libname : [parents]} - each parent is dependant on libname
     processed = {}
     pending = [executable]
@@ -118,17 +139,18 @@ if __name__ == '__main__':
         dep = pending.pop()
         if DEBUG: print "Evaluating " + dep
         deps = find_dependencies(dep)
+#        if DEBUG: print "Deps: " + ' '.join(deps)
         assert(deps)
         for d in deps:
             absfile = lookup_library(d)
-            if not re.match(executable_path, absfile):
-                print "Error: External dependency " + d
-                sys.exit(1)
             if absfile == None:
                 print "Not found: " + d
                 print "  ..required by " + str(processed[dep])
                 error = True
                 continue
+            if not re.match(executable_path, absfile):
+                print "Error: External dependency " + d
+                sys.exit(1)
             if absfile in processed:
                 processed[absfile].append(dep)
             else: 
@@ -138,7 +160,6 @@ if __name__ == '__main__':
 
     for dep in processed:
        if DEBUG: print "Validating: " + dep
-#        print "     " + str(processed[dep])
        if not validate_lib(dep):
            print "..required by " + str(processed[dep])
            error = True

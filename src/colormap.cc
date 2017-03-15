@@ -1,7 +1,11 @@
 #include "colormap.h"
-#include "boosty.h"
 #include "printutils.h"
 #include "PlatformUtils.h"
+
+#include <boost/property_tree/json_parser.hpp>
+#include <boost/filesystem.hpp>
+
+namespace fs=boost::filesystem;
 
 static const char *DEFAULT_COLOR_SCHEME_NAME = "Cornfield";
 
@@ -35,6 +39,7 @@ RenderColorScheme::RenderColorScheme() : _path("")
 	_show_in_gui = true;
 
 	_color_scheme.insert(ColorScheme::value_type(BACKGROUND_COLOR, Color4f(0xff, 0xff, 0xe5)));
+	_color_scheme.insert(ColorScheme::value_type(AXES_COLOR, Color4f(0x00, 0x00, 0x00)));
 	_color_scheme.insert(ColorScheme::value_type(OPENCSG_FACE_FRONT_COLOR, Color4f(0xf9, 0xd7, 0x2c)));
 	_color_scheme.insert(ColorScheme::value_type(OPENCSG_FACE_BACK_COLOR, Color4f(0x9d, 0xcb, 0x51)));
 	_color_scheme.insert(ColorScheme::value_type(CGAL_FACE_FRONT_COLOR, Color4f(0xf9, 0xd7, 0x2c)));
@@ -49,12 +54,13 @@ RenderColorScheme::RenderColorScheme() : _path("")
 RenderColorScheme::RenderColorScheme(fs::path path) : _path(path)
 {
     try {
-	boost::property_tree::read_json(boosty::stringy(path).c_str(), pt);
+	boost::property_tree::read_json(path.generic_string().c_str(), pt);
 	_name = pt.get<std::string>("name");
 	_index = pt.get<int>("index");
 	_show_in_gui = pt.get<bool>("show-in-gui");
 	
 	addColor(BACKGROUND_COLOR, "background");
+	addColor(AXES_COLOR, "axes-color");
 	addColor(OPENCSG_FACE_FRONT_COLOR, "opencsg-face-front");
 	addColor(OPENCSG_FACE_BACK_COLOR, "opencsg-face-back");
 	addColor(CGAL_FACE_FRONT_COLOR, "cgal-face-front");
@@ -65,7 +71,7 @@ RenderColorScheme::RenderColorScheme(fs::path path) : _path(path)
 	addColor(CGAL_EDGE_2D_COLOR, "cgal-edge-2d");
 	addColor(CROSSHAIR_COLOR, "crosshair");
     } catch (const std::exception & e) {
-	PRINTB("Error reading color scheme file '%s': %s", path.c_str() % e.what());
+			PRINTB("Error reading color scheme file '%s': %s", path.generic_string().c_str() % e.what());
 	_error = e.what();
 	_name = "";
 	_index = 0;
@@ -259,7 +265,7 @@ void ColorMap::enumerateColorSchemesInPath(colorscheme_set_t &result_set, const 
 {
     const fs::path color_schemes = basePath / "color-schemes" / "render";
 
-    PRINTDB("Enumerating color schemes from '%s'", color_schemes.string().c_str());
+    PRINTDB("Enumerating color schemes from '%s'", color_schemes.generic_string().c_str());
     
     fs::directory_iterator end_iter;
     
@@ -270,13 +276,13 @@ void ColorMap::enumerateColorSchemesInPath(colorscheme_set_t &result_set, const 
 	    }
 	    
 	    const fs::path path = (*dir_iter).path();
-	    if (!(path.extension().string() == ".json")) {
+	    if (!(path.extension() == ".json")) {
 		continue;
 	    }
 	    
 	    RenderColorScheme *colorScheme = new RenderColorScheme(path);
 	    if (colorScheme->valid() && (findColorScheme(colorScheme->name()) == 0)) {
-		result_set.insert(colorscheme_set_t::value_type(colorScheme->index(), boost::shared_ptr<RenderColorScheme>(colorScheme)));
+		result_set.insert(colorscheme_set_t::value_type(colorScheme->index(), shared_ptr<RenderColorScheme>(colorScheme)));
 		PRINTDB("Found file '%s' with color scheme '%s' and index %d",
 			colorScheme->path() % colorScheme->name() % colorScheme->index());
 	    } else {
@@ -293,8 +299,8 @@ ColorMap::colorscheme_set_t ColorMap::enumerateColorSchemes()
 
     RenderColorScheme *defaultColorScheme = new RenderColorScheme();
     result_set.insert(colorscheme_set_t::value_type(defaultColorScheme->index(),
-	    boost::shared_ptr<RenderColorScheme>(defaultColorScheme)));
-    enumerateColorSchemesInPath(result_set, PlatformUtils::resourcesPath());
+	    shared_ptr<RenderColorScheme>(defaultColorScheme)));
+    enumerateColorSchemesInPath(result_set, PlatformUtils::resourceBasePath());
     enumerateColorSchemesInPath(result_set, PlatformUtils::userConfigPath());
     
     return result_set;

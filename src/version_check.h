@@ -18,7 +18,7 @@ a time, to avoid confusion.
 
 #ifndef OPENSCAD_SKIP_VERSION_CHECK
 
-
+#include <stddef.h> // Needed by gmp.h under OS X 10.10
 #include <gmp.h>
 // set minimum numbers here.
 #define GMPMAJOR 5
@@ -89,7 +89,7 @@ a time, to avoid confusion.
 #else
 #endif // ENABLE_OPENCSG
 
-#ifndef OPENSCAD_TESTING
+#ifndef OPENSCAD_NOGUI
 #include <QtCore/qglobal.h>
 #if QT_VERSION < 0x040400
 #error QT library missing or version too old. See README.md. To force compile, run qmake CONFIG+=skip-version-check

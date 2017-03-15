@@ -1,0 +1,13 @@
+difference() {
+	square(size = [10, 10], center = true);
+#	circle($fn = 0, $fa = 12, $fs = 2, r = 3);
+}
+#group() {
+	square(size = [11, 12], center = false);
+}
+#multmatrix([[1, 0, 0, 0], [0, 1, 0, -12], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	difference() {
+		square(size = [10, 10], center = true);
+		square(size = [5, 5], center = true);
+	}
+}

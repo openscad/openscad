@@ -1,4 +1,2 @@
-group() {
-	text(text = "", size = 10, spacing = 1, font = "", direction = "ltr", language = "en", script = "latin", halign = "left", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
-	text(text = "", size = 10, spacing = 1, font = "", direction = "ltr", language = "en", script = "latin", halign = "left", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
-}
+text(text = "", size = 10, spacing = 1, font = "", direction = "ltr", language = "en", halign = "left", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
+text(text = "", size = 10, spacing = 1, font = "", direction = "ltr", language = "en", halign = "left", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);

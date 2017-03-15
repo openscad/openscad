@@ -1,3 +1,1 @@
-group() {
-	text(text = "T-X-U", size = 40, spacing = 1, font = "Liberation Sans:style=Regular", direction = "ltr", language = "en", script = "latin", halign = "left", valign = "baseline", $fn = 2, $fa = 12, $fs = 2);
-}
+text(text = "T-X-U", size = 40, spacing = 1, font = "Liberation Sans:style=Regular", direction = "ltr", language = "en", script = "Latn", halign = "left", valign = "baseline", $fn = 2, $fa = 12, $fs = 2);

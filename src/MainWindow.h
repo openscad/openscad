@@ -1,5 +1,6 @@
 #pragma once
 
+#include "qtgettext.h"
 #include <QMainWindow>
 #include <QIcon>
 #include "ui_MainWindow.h"
@@ -7,48 +8,46 @@
 #include "openscad.h"
 #include "modcontext.h"
 #include "module.h"
+#include "ModuleInstantiation.h"
 #include "Tree.h"
 #include "memory.h"
 #include "editor.h"
+#include "export.h"
 #include <vector>
 #include <QMutex>
-#include <QSet>
-
-enum export_type_e {
-	EXPORT_TYPE_UNKNOWN,
-	EXPORT_TYPE_STL,
-	EXPORT_TYPE_AMF,
-	EXPORT_TYPE_OFF
-};
+#include <QTime>
+#include <QIODevice>
 
 class MainWindow : public QMainWindow, public Ui::MainWindow
 {
 	Q_OBJECT
 
 public:
-	static void requestOpenFile(const QString &filename);
-
 	QString fileName;
 
 	class Preferences *prefs;
 
 	QTimer *animate_timer;
-	double tval, fps, fsteps;
+	int anim_step;
+	int anim_numsteps;
+	double anim_tval;
+	bool anim_dumping;
+	int anim_dump_start_step;
 
 	QTimer *autoReloadTimer;
 	std::string autoReloadId;
 	QTimer *waitAfterReloadTimer;
 
+	QTime renderingTime;
+
 	ModuleContext top_ctx;
-	FileModule *root_module;      // Result of parsing
-	ModuleInstantiation root_inst;    // Top level instance
+	FileModule *root_module;		  // Result of parsing
+	FileModule *parsed_module;		// Last parse for include list
+	ModuleInstantiation root_inst;	// Top level instance
 	AbstractNode *absolute_root_node; // Result of tree evaluation
-	AbstractNode *root_node;          // Root if the root modifier (!) is used
+	AbstractNode *root_node;		  // Root if the root modifier (!) is used
 	Tree tree;
 
-	shared_ptr<class CSGTerm> root_raw_term;           // Result of CSG term rendering
-	shared_ptr<CSGTerm> root_norm_term;          // Normalized CSG products
-	class CSGChain *root_chain;
 #ifdef ENABLE_CGAL
 	shared_ptr<const class Geometry> root_geom;
 	class CGALRenderer *cgalRenderer;
@@ -58,20 +57,21 @@ public:
 #endif
 	class ThrownTogetherRenderer *thrownTogetherRenderer;
 
-	std::vector<shared_ptr<CSGTerm> > highlight_terms;
-	CSGChain *highlights_chain;
-	std::vector<shared_ptr<CSGTerm> > background_terms;
-	CSGChain *background_chain;
 	QString last_compiled_doc;
 
 	QAction *actionRecentFile[UIUtils::maxRecentFiles];
-        QMap<QString, QString> knownFileExtensions;
+		QMap<QString, QString> knownFileExtensions;
 
-        QWidget *editorDockTitleWidget;
-        QWidget *consoleDockTitleWidget;
-        
+		QLabel *versionLabel;
+		QWidget *editorDockTitleWidget;
+		QWidget *consoleDockTitleWidget;
+		QWidget *parameterDockTitleWidget;
+
 	QString editortype;	
 	bool useScintilla;
+
+		int compileErrors;
+		int compileWarnings;
 
 	MainWindow(const QString &filename);
 	~MainWindow();
@@ -80,38 +80,48 @@ protected:
 	void closeEvent(QCloseEvent *event);
 
 private slots:
-	void updatedFps();
+	void updatedAnimTval();
+	void updatedAnimFps();
+	void updatedAnimSteps();
+	void updatedAnimDump(bool checked);
 	void updateTVal();
-        void updateMdiMode(bool mdi);
-        void updateUndockMode(bool undockMode);
-        void updateReorderMode(bool reorderMode);
+		void updateMdiMode(bool mdi);
+		void updateUndockMode(bool undockMode);
+		void updateReorderMode(bool reorderMode);
 	void setFileName(const QString &filename);
 	void setFont(const QString &family, uint size);
 	void setColorScheme(const QString &cs);
 	void showProgress();
 	void openCSGSettingsChanged();
+	void consoleOutput(const QString &msg);
+	void updateActionUndoState();
+
 private:
-	void openFile(const QString &filename);
-        void handleFileDrop(const QString &filename);
+		void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
+		void handleFileDrop(const QString &filename);
 	void refreshDocument();
-        void updateCamera();
+	void updateCamera(const class FileContext &ctx);
 	void updateTemporalVariables();
 	bool fileChangedOnDisk();
 	void compileTopLevelDocument();
+		void updateCompileResult();
 	void compile(bool reload, bool forcedone = false);
 	void compileCSG(bool procevents);
 	bool maybeSave();
+		void saveError(const QIODevice &file, const std::string &msg);
 	bool checkEditorModified();
 	QString dumpCSGTree(AbstractNode *root);
 	static void consoleOutput(const std::string &msg, void *userdata);
 	void loadViewSettings();
 	void loadDesignSettings();
+	void updateWindowSettings(bool console, bool editor, bool customizer, bool toolbar);
 	void saveBackup();
 	void writeBackup(class QFile *file);
 	QString get2dExportFilename(QString format, QString extension);
 	void show_examples();
 	void setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel);
-        void addKeyboardShortCut(const QList<QAction *> &actions);
+		void addKeyboardShortCut(const QList<QAction *> &actions);
+		void updateStatusBar(class ProgressWidget *progressWidget);
 
 	EditorInterface *editor;
 
@@ -130,11 +140,12 @@ private slots:
 	void actionSaveAs();
 	void actionReload();
 	void actionShowLibraryFolder();
-        void convertTabsToSpaces();
+		void convertTabsToSpaces();
 
 	void instantiateRoot();
 	void compileDone(bool didchange);
 	void compileEnded();
+	void changeParameterWidget();
 
 private slots:
 	void pasteViewportTranslation();
@@ -143,12 +154,15 @@ private slots:
 	void hideToolbars();
 	void hideEditor();
 	void hideConsole();
+	void showConsole();
+	void hideParameters();
 
 private slots:
 	void selectFindType(int);
-	void find();
+	void hideFind();
+	void showFind();
 	void findString(QString);
-	void findAndReplace();
+	void showFindAndReplace();
 	void findNext();
 	void findPrev();
 	void useSelectionForFind();
@@ -174,7 +188,7 @@ private slots:
 	void actionDisplayAST();
 	void actionDisplayCSGTree();
 	void actionDisplayCSGProducts();
-	void actionExport(export_type_e, const char *, const char *);
+	void actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim);
 	void actionExportSTL();
 	void actionExportOFF();
 	void actionExportAMF();
@@ -182,20 +196,26 @@ private slots:
 	void actionExportSVG();
 	void actionExportCSG();
 	void actionExportImage();
+	void actionCopyViewport();
 	void actionFlushCaches();
 
 public:
-	static QSet<MainWindow*> *getWindows();
 	void viewModeActionsUncheck();
 	void setCurrentOutput();
 	void clearCurrentOutput();
+  bool isEmpty();
 
 public slots:
+	void openFile(const QString &filename);
 	void actionReloadRenderPreview();
-        void on_editorDock_visibilityChanged(bool);
-        void on_consoleDock_visibilityChanged(bool);
-        void editorTopLevelChanged(bool);
-        void consoleTopLevelChanged(bool);
+		void on_editorDock_visibilityChanged(bool);
+		void on_consoleDock_visibilityChanged(bool);
+		void on_parameterDock_visibilityChanged(bool);
+		void on_toolButtonCompileResultClose_clicked();
+		void editorTopLevelChanged(bool);
+		void consoleTopLevelChanged(bool);
+		void parameterTopLevelChanged(bool);
+
 #ifdef ENABLE_OPENCSG
 	void viewModePreview();
 #endif
@@ -207,6 +227,7 @@ public slots:
 	void viewModeShowEdges();
 	void viewModeShowAxes();
 	void viewModeShowCrosshairs();
+	void viewModeShowScaleProportional();
 	void viewModeAnimate();
 	void viewAngleTop();
 	void viewAngleBottom();
@@ -227,6 +248,7 @@ public slots:
 	void helpAbout();
 	void helpHomepage();
 	void helpManual();
+	void helpCheatSheet();
 	void helpLibrary();
 	void helpFontInfo();
 	void quit();
@@ -240,7 +262,12 @@ private:
 	static bool mdiMode;
 	static bool undockMode;
 	static bool reorderMode;
-	static QSet<MainWindow*> *windows;
+
+	shared_ptr<class CSGNode> csgRoot;		   // Result of the CSGTreeEvaluator
+	shared_ptr<CSGNode> normalizedRoot;		  // Normalized CSG tree
+ 	shared_ptr<class CSGProducts> root_products;
+	shared_ptr<CSGProducts> highlights_products;
+	shared_ptr<CSGProducts> background_products;
 
 	char const * afterCompileSlot;
 	bool procevents;
@@ -249,6 +276,8 @@ private:
 	class CGALWorker *cgalworker;
 	QMutex consolemutex;
 	bool contentschanged; // Set if the source code has changes since the last render (F6)
+	time_t includes_mtime;   // latest include mod time
+	time_t deps_mtime;	  // latest dependency mod time
 
 signals:
 	void highlightError(int);
@@ -259,14 +288,18 @@ class GuiLocker
 {
 public:
 	GuiLocker() {
-		gui_locked++;
+		GuiLocker::lock();
 	}
 	~GuiLocker() {
-		gui_locked--;
+		GuiLocker::unlock();
 	}
 	static bool isLocked() { return gui_locked > 0; }
-	static void lock() { gui_locked++; }
-	static void unlock() { gui_locked--; }
+	static void lock() {
+		gui_locked++;
+	}
+	static void unlock() {
+		gui_locked--;
+	}
 
 private:
  	static unsigned int gui_locked;

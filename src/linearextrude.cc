@@ -27,14 +27,15 @@
 #include "linearextrudenode.h"
 
 #include "module.h"
+#include "ModuleInstantiation.h"
 #include "evalcontext.h"
 #include "printutils.h"
 #include "fileutils.h"
 #include "builtin.h"
 #include "calc.h"
 #include "polyset.h"
-#include "mathc99.h" 
 
+#include <cmath>
 #include <sstream>
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
@@ -60,46 +61,46 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	c.setVariables(args, evalctx);
 	inst->scope.apply(*evalctx);
 
-	node->fn = c.lookup_variable("$fn").toDouble();
-	node->fs = c.lookup_variable("$fs").toDouble();
-	node->fa = c.lookup_variable("$fa").toDouble();
+	node->fn = c.lookup_variable("$fn")->toDouble();
+	node->fs = c.lookup_variable("$fs")->toDouble();
+	node->fa = c.lookup_variable("$fa")->toDouble();
 
-	Value file = c.lookup_variable("file");
-	Value layer = c.lookup_variable("layer", true);
-	Value height = c.lookup_variable("height", true);
-	Value convexity = c.lookup_variable("convexity", true);
-	Value origin = c.lookup_variable("origin", true);
-	Value scale = c.lookup_variable("scale", true);
-	Value center = c.lookup_variable("center", true);
-	Value twist = c.lookup_variable("twist", true);
-	Value slices = c.lookup_variable("slices", true);
+	ValuePtr file = c.lookup_variable("file");
+	ValuePtr layer = c.lookup_variable("layer", true);
+	ValuePtr height = c.lookup_variable("height", true);
+	ValuePtr convexity = c.lookup_variable("convexity", true);
+	ValuePtr origin = c.lookup_variable("origin", true);
+	ValuePtr scale = c.lookup_variable("scale", true);
+	ValuePtr center = c.lookup_variable("center", true);
+	ValuePtr twist = c.lookup_variable("twist", true);
+	ValuePtr slices = c.lookup_variable("slices", true);
 
-	if (!file.isUndefined() && file.type() == Value::STRING) {
-		printDeprecation("DEPRECATED: Support for reading files in linear_extrude will be removed in future releases. Use a child import() instead.");
-		node->filename = lookup_file(file.toString(), inst->path(), c.documentPath());
+	if (!file->isUndefined() && file->type() == Value::STRING) {
+		printDeprecation("Support for reading files in linear_extrude will be removed in future releases. Use a child import() instead.");
+		node->filename = lookup_file(file->toString(), inst->path(), c.documentPath());
 	}
 
 	// if height not given, and first argument is a number,
 	// then assume it should be the height.
-	if (c.lookup_variable("height").isUndefined() &&
+	if (c.lookup_variable("height")->isUndefined() &&
 			evalctx->numArgs() > 0 &&
 			evalctx->getArgName(0) == "") {
-		const Value &val = evalctx->getArgValue(0);
-		if (val.type() == Value::NUMBER) height = val;
+		ValuePtr val = evalctx->getArgValue(0);
+		if (val->type() == Value::NUMBER) height = val;
 	}
 
-	node->layername = layer.isUndefined() ? "" : layer.toString();
+	node->layername = layer->isUndefined() ? "" : layer->toString();
 	node->height = 100;
-	height.getDouble(node->height);
-	node->convexity = (int)convexity.toDouble();
-	origin.getVec2(node->origin_x, node->origin_y);
+	height->getFiniteDouble(node->height);
+	node->convexity = (int)convexity->toDouble();
+	origin->getVec2(node->origin_x, node->origin_y, true);
 	node->scale_x = node->scale_y = 1;
-	scale.getDouble(node->scale_x);
-	scale.getDouble(node->scale_y);
-	scale.getVec2(node->scale_x, node->scale_y);
+	scale->getFiniteDouble(node->scale_x);
+	scale->getFiniteDouble(node->scale_y);
+	scale->getVec2(node->scale_x, node->scale_y, true);
 
-	if (center.type() == Value::BOOL)
-		node->center = center.toBool();
+	if (center->type() == Value::BOOL)
+		node->center = center->toBool();
 
 	if (node->height <= 0) node->height = 0;
 
@@ -109,17 +110,17 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	if (node->scale_x < 0) node->scale_x = 0;
 	if (node->scale_y < 0) node->scale_y = 0;
 
-	if (slices.type() == Value::NUMBER) node->slices = (int)slices.toDouble();
+	double slicesVal = 0;
+	slices->getFiniteDouble(slicesVal);
+	node->slices = (int)slicesVal;
 
-	if (twist.type() == Value::NUMBER) {
-		node->twist = twist.toDouble();
-		if (node->twist != 0.0) {
-			if (node->slices == 0) {
-				node->slices = (int)fmax(2, fabs(Calc::get_fragments_from_r(node->height,
-																																		node->fn, node->fs, node->fa) * node->twist / 360));
-			}
-			node->has_twist = true;
+	node->twist = 0.0;
+	twist->getFiniteDouble(node->twist);
+	if (node->twist != 0.0) {
+		if (node->slices == 0) {
+			node->slices = (int)fmax(2, fabs(Calc::get_fragments_from_r(node->height, node->fn, node->fs, node->fa) * node->twist / 360));
 		}
+		node->has_twist = true;
 	}
 	node->slices = std::max(node->slices, 1);
 
@@ -142,10 +143,7 @@ std::string LinearExtrudeNode::toString() const
 			"file = " << this->filename << ", "
 			"layer = " << QuotedString(this->layername) << ", "
 			"origin = [" << this->origin_x << ", " << this->origin_y << "], "
-#ifndef OPENSCAD_TESTING
-			// timestamp is needed for caching, but disturbs the test framework
 			<< "timestamp = " << (fs::exists(path) ? fs::last_write_time(path) : 0) << ", "
-#endif
 			;
 	}
 	stream <<

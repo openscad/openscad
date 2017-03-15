@@ -73,6 +73,26 @@
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>svg</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>SVG file</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>amf</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>AMF file</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+		</dict>
 	</array>
 	<key>NSAppleScriptEnabled</key>
 	<true/>
@@ -82,5 +102,15 @@
 	<string>OpenSCAD.sdef</string>
 	<key>SUPublicDSAKeyFile</key>
 	<string>dsa_pub.pem</string>
+	<key>SUFeedURL</key>
+	<string>http://files.openscad.org/appcast.xml</string>
+        <key>NSExceptionDomains</key>  
+        <dict>  
+          <key>files.openscad.org</key>
+          <dict>  
+            <key>NSExceptionAllowsInsecureHTTPLoads</key><true/>  
+            <key>NSExceptionRequiresForwardSecrecy</key><false/>  
+          </dict>  
+        </dict>
 </dict>
 </plist>
