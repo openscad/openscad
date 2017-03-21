@@ -1,67 +1,89 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.5.0)
 
 project(openscad)
 
+set(CMAKE_CXX_STANDARD 11)
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+set(CMAKE_PREFIX_PATH "$ENV{OPENSCAD_LIBRARIES}")
+
+find_package(Eigen3 REQUIRED QUIET)
+message("Eigen3: ${EIGEN3_FOUND}")
+include_directories(${EIGEN3_INCLUDE_DIRS})
+
+find_package(Boost 1.36 REQUIRED COMPONENTS filesystem system thread regex program_options QUIET)
+message("Boost: ${Boost_FOUND}")
+include_directories(${Boost_INCLUDE_DIRS})
+
+find_package(CGAL REQUIRED QUIET)
+message("CGAL: ${CGAL_FOUND}")
+include_directories(${CGAL_INCLUDE_DIRS})
+
+find_package(HarfBuzz 0.9.19 REQUIRED QUIET)
+message("Harfbuzz: ${HARFBUZZ_FOUND}")
+include_directories(${HARFBUZZ_INCLUDE_DIRS})
+
+find_package(FontConfig 2.8.0 REQUIRED QUIET)
+message("Fontconfig: ${FONTCONFIG_FOUND}")
+
+find_package(Freetype 2.4.9 REQUIRED QUIET)
+message("Freetype: ${FREETYPE_FOUND}")
+include_directories(${FREETYPE_INCLUDE_DIRS})
+
+find_package(GLIB2 2.26 REQUIRED QUIET)
+message("Glib: ${GLIB2_FOUND}")
+include_directories(${GLIB2_INCLUDE_DIRS})
+
+find_package(LibXml2 2.9.4 REQUIRED QUIET)
+message("LibXml2: ${LIBXML2_FOUND}")
+include_directories(${LIBXML2_INCLUDE_DIR})
+
+find_package(FLEX REQUIRED QUIET)
+message("Flex: ${FLEX_FOUND}")
+
+find_package(BISON REQUIRED QUIET)
+message("Bison: ${BISON_FOUND}")
+
 include(CheckIncludeFileCXX)
 
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTOUIC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 include_directories(src)
 
-find_package(PkgConfig)
-pkg_check_modules(PC_EIGEN3 REQUIRED eigen3>=3.0)
-add_definitions(${PC_EIGEN3_CFLAGS})
-include_directories(${PC_EIGEN3_INCLUDES})
+FLEX_TARGET(openscad_lexer src/lexer.l ${CMAKE_CURRENT_BINARY_DIR}/lexer.cxx DEFINES_FILE ${CMAKE_CURRENT_BINARY_DIR}/lexer.hxx)
+BISON_TARGET(openscad_parser src/parser.y ${CMAKE_CURRENT_BINARY_DIR}/parser.cxx DEFINES_FILE ${CMAKE_CURRENT_BINARY_DIR}/parser.hxx COMPILE_FLAGS "-d -p parser")
+ADD_FLEX_BISON_DEPENDENCY(openscad_lexer openscad_parser)
 
-pkg_check_modules(PC_FONTCONFIG REQUIRED fontconfig>=2.8.0)
-include_directories(${PC_FONTCONFIG_INCLUDES})
-
-pkg_check_modules(PC_FREETYPE2 REQUIRED freetype2>=2.4.9)
-add_definitions(${PC_FREETYPE2_CFLAGS})
-include_directories(${PC_FREETYPE2_INCLUDES})
-
-pkg_check_modules(PC_HARFBUZZ REQUIRED harfbuzz>=0.9.19)
-add_definitions(${PC_HARFBUZZ_CFLAGS})
-include_directories(${PC_HARFBUZZ_INCLUDES})
-
-pkg_check_modules(PC_GLIB REQUIRED glib-2.0>=2.26)
-add_definitions(${PC_GLIB_CFLAGS})
-include_directories(${PC_GLIB_INCLUDES})
-
-find_package(Boost 1.36 REQUIRED COMPONENTS filesystem system thread regex program_options)
-include_directories(${Boost_INCLUDE_DIRS})
-
-find_package(BISON REQUIRED)
-find_package(FLEX REQUIRED)
-# The COMPILE_FLAGS and forced C++ compiler is just to be compatible with qmake
-if (WIN32)
-  set(FLEX_UNISTD_FLAG "-DYY_NO_UNISTD_H")
-endif()
-FLEX_TARGET(OpenSCADlexer src/lexer.l ${CMAKE_CURRENT_BINARY_DIR}/lexer.cpp COMPILE_FLAGS "-Plexer ${FLEX_UNISTD_FLAG}")
-BISON_TARGET(OpenSCADparser src/parser.y ${CMAKE_CURRENT_BINARY_DIR}/parser_yacc.c COMPILE_FLAGS "-p parser")
-ADD_FLEX_BISON_DEPENDENCY(OpenSCADlexer OpenSCADparser)
-set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/parser_yacc.c PROPERTIES LANGUAGE "CXX")
+FLEX_TARGET(comment_lexer src/comment_lexer.l ${CMAKE_CURRENT_BINARY_DIR}/comment_lexer.cxx DEFINES_FILE ${CMAKE_CURRENT_BINARY_DIR}/comment_lexer.hxx)
+BISON_TARGET(comment_parser src/comment_parser.y ${CMAKE_CURRENT_BINARY_DIR}/comment_parser.cxx DEFINES_FILE ${CMAKE_CURRENT_BINARY_DIR}/comment_parser.hxx COMPILE_FLAGS "-d -p comment_parser")
+ADD_FLEX_BISON_DEPENDENCY(comment_lexer comment_parser)
 
 if(NOT HEADLESS)
-  find_package(Qt5Widgets REQUIRED)
-  include_directories(${Qt5Widgets_INCLUDES})
-
-  find_package(Qt5OpenGL REQUIRED)
-  include_directories(${Qt5OpenGL_INCLUDES})
+  set(CMAKE_AUTOMOC ON)
+  set(CMAKE_AUTOUIC ON)
+  find_package(Qt5 COMPONENTS Core Widgets OpenGL Concurrent REQUIRED QUIET)
+  message("Qt5: ${Qt5_FOUND}")
+  set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
   if (Qt5_POSITION_INDEPENDENT_CODE)
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
   endif()
 
-  add_definitions(${Qt5Widgets_DEFINITIONS})
-  add_definitions(${Qt5OpenGL_DEFINITIONS})
-  add_definitions(${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS})
-  add_definitions(${Qt5OpenGL_EXECUTABLE_COMPILE_FLAGS})
+  find_package(Qt5QScintilla 2.8.0 REQUIRED QUIET)
+  message("QScintilla: ${QT5QSCINTILLA_FOUND}")
+  
+#  add_definitions(${Qt5Widgets_DEFINITIONS})
+#  add_definitions(${Qt5OpenGL_DEFINITIONS})
+#  add_definitions(${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS})
+#  add_definitions(${Qt5OpenGL_EXECUTABLE_COMPILE_FLAGS})
 
-  find_package(OpenGL REQUIRED)
-  find_package(GLEW REQUIRED)
+  find_package(OpenGL REQUIRED QUIET)
+
+  find_package(GLEW REQUIRED QUIET)
+  message("GLEW: ${GLEW_FOUND}")
+
+  find_package(OpenCSG REQUIRED QUIET)
+  message("OpenCSG: ${OPENCSG_FOUND}")
 endif()
 
 # NULLGL - Allow us to build without OpenGL(TM). run 'cmake .. -DNULLGL=1'
@@ -78,100 +100,148 @@ add_definitions("-DENABLE_CGAL -DOPENSCAD_YEAR=2014 -DOPENSCAD_MONTH=12 -DOPENSC
 #
 if(APPLE)
   message(STATUS "Offscreen OpenGL Context - using Apple CGL")
-  set(OFFSCREEN_CTX_SOURCE "OffscreenContextCGL.mm" CACHE TYPE STRING)
-  set(OFFSCREEN_IMGUTILS_SOURCE "imageutils-macosx.cc" CACHE TYPE STRING)
-  set(PLATFORMUTILS_SOURCE "PlatformUtils-mac.mm" CACHE TYPE STRING)
+  set(PLATFORM_SOURCES src/PlatformUtils-mac.mm src/OffscreenContextCGL.mm src/imageutils-macosx.cc src/CocoaUtils.mm src/AppleEvents.cc src/EventFilter.cc)
+  find_library(COCOA_LIBRARY Cocoa)
+  set(PLATFORM_LIBS ${COCOA_LIBRARY})
 elseif(UNIX)
   message(STATUS "Offscreen OpenGL Context - using Unix GLX")
-  set(OFFSCREEN_CTX_SOURCE "OffscreenContextGLX.cc" CACHE TYPE STRING)
-  set(OFFSCREEN_IMGUTILS_SOURCE "imageutils-lodepng.cc" CACHE TYPE STRING)
-  set(PLATFORMUTILS_SOURCE "PlatformUtils-posix.cc" CACHE TYPE STRING)
+  set(PLATFORM_SOURCES src/OffscreenContextGLX.cc src/imageutils-lodepng.cc src/PlatformUtils-posix.cc)
 elseif(WIN32)
   message(STATUS "Offscreen OpenGL Context - using Microsoft WGL")
-  set(OFFSCREEN_CTX_SOURCE "OffscreenContextWGL.cc" CACHE TYPE STRING)
-  set(OFFSCREEN_IMGUTILS_SOURCE "imageutils-lodepng.cc" CACHE TYPE STRING)
-  set(PLATFORMUTILS_SOURCE "PlatformUtils-win.cc" CACHE TYPE STRING)
+  set(PLATFORM_SOURCES src/OffscreenContextWGL.cc src/imageutils-lodepng.cc src/PlatformUtils-win.cc)
 endif()
 
 set(CORE_SOURCES
   src/parsersettings.cc
-  src/mathc99.cc
   src/linalg.cc
   src/colormap.cc
   src/Camera.cc
-  src/handle_dep.cc
-  src/value.cc
-  src/calc.cc
-  src/expr.cc
-  src/func.cc
-  src/localscope.cc
-  src/module.cc
-  src/ModuleCache.cc
-  src/node.cc
-  src/context.cc
-  src/modcontext.cc
-  src/evalcontext.cc
+  src/handle_dep.cc 
+  src/value.cc 
+  src/calc.cc 
+  src/grid.cc 
+  src/hash.cc 
+  src/expr.cc 
+  src/func.cc 
+  src/function.cc 
+  src/stackcheck.cc 
+  src/localscope.cc 
+  src/module.cc 
+  src/FileModule.cc 
+  src/UserModule.cc 
+  src/GroupModule.cc 
+  src/AST.cc 
+  src/ModuleInstantiation.cc 
+  src/ModuleCache.cc 
+  src/StatCache.cc
+  src/node.cc 
+  src/NodeVisitor.cc 
+  src/context.cc 
+  src/modcontext.cc 
+  src/evalcontext.cc 
   src/feature.cc
-  src/csgterm.cc
-  src/csgtermnormalizer.cc
-  src/Geometry.cc
-  src/Polygon2d.cc
-  src/polyset.cc
-  src/csgops.cc
-  src/transform.cc
-  src/color.cc
-  src/primitives.cc
-  src/projection.cc
-  src/cgaladv.cc
-  src/surface.cc
-  src/control.cc
-  src/render.cc
-  src/rendersettings.cc
-  src/dxfdata.cc
-  src/dxfdim.cc
-  src/offset.cc
-  src/linearextrude.cc
-  src/rotateextrude.cc
-  src/text.cc
-  src/printutils.cc
-  src/fileutils.cc
-  src/progress.cc
-  src/boost-utils.cc
+  src/csgnode.cc 
+  src/CSGTreeNormalizer.cc 
+  src/Geometry.cc 
+  src/Polygon2d.cc 
+  src/csgops.cc 
+  src/transform.cc 
+  src/color.cc 
+  src/primitives.cc 
+  src/projection.cc 
+  src/cgaladv.cc 
+  src/surface.cc 
+  src/control.cc 
+  src/render.cc 
+  src/rendersettings.cc 
+  src/settings.cc
+  src/dxfdata.cc 
+  src/dxfdim.cc 
+  src/offset.cc 
+  src/linearextrude.cc 
+  src/rotateextrude.cc 
+  src/text.cc 
+  src/printutils.cc 
+  src/fileutils.cc 
+  src/progress.cc 
+  src/boost-utils.cc 
   src/FontCache.cc
   src/DrawingCallback.cc
   src/FreetypeRenderer.cc
   src/lodepng.cpp
-  src/PlatformUtils.cc
-  src/${PLATFORMUTILS_SOURCE}
-  ${FLEX_OpenSCADlexer_OUTPUTS}
-  ${BISON_OpenSCADparser_OUTPUTS})
+  src/PlatformUtils.cc 
+  src/libsvg/circle.cc
+  src/libsvg/ellipse.cc
+  src/libsvg/group.cc
+  src/libsvg/libsvg.cc
+  src/libsvg/line.cc
+  src/libsvg/path.cc
+  src/libsvg/polygon.cc
+  src/libsvg/polyline.cc
+  src/libsvg/rect.cc
+  src/libsvg/shape.cc
+  src/libsvg/svgpage.cc
+  src/libsvg/transformation.cc
+  src/libsvg/util.cc
+  src/clipper-utils.cc
+  src/assignment.cc
+  src/annotation.cc 
+  src/polyclipping/clipper.cpp
+  ${PLATFORM_SOURCES}
+  ${FLEX_openscad_lexer_OUTPUTS}
+  ${BISON_openscad_parser_OUTPUTS}
+  ${FLEX_comment_lexer_OUTPUTS}
+  ${BISON_comment_parser_OUTPUTS})
 
 set(NOCGAL_SOURCES
-  src/builtin.cc
+  src/builtin.cc 
   src/import.cc
+  src/import_stl.cc
+  src/import_amf.cc
+  src/import_off.cc
+  src/import_svg.cc
   src/export.cc
-  src/LibraryInfo.cc)
+  src/export_stl.cc
+  src/export_amf.cc
+  src/export_off.cc
+  src/export_dxf.cc
+  src/export_svg.cc
+  src/LibraryInfo.cc
+  src/polyset.cc
+  src/polyset-gl.cc
+  src/polyset-utils.cc
+  src/GeometryUtils.cc)
 
 set(CGAL_SOURCES
   ${NOCGAL_SOURCES}
-  src/CSGTermEvaluator.cc
-  src/CGAL_Nef_polyhedron.cc
-  src/cgalutils.cc
-  src/cgalutils-tess.cc
-  src/cgalutils-tess-old.cc
+  src/CSGTreeEvaluator.cc 
+  src/CGAL_Nef_polyhedron.cc 
+  src/export_nef.cc
+  src/import_nef.cc
+  src/cgalutils.cc 
+  src/cgalutils-applyops.cc 
+  src/cgalutils-project.cc 
+  src/cgalutils-tess.cc 
+  src/cgalutils-polyhedron.cc 
   src/CGALCache.cc
-  src/CGAL_Nef_polyhedron_DxfData.cc
   src/Polygon2d-CGAL.cc
-  src/polyset-utils.cc
   src/svg.cc
   src/GeometryEvaluator.cc)
 
+include_directories("src/libtess2/Include")
 set(COMMON_SOURCES
-  src/nodedumper.cc
-  src/traverser.cc
-  src/GeometryCache.cc
-  src/clipper-utils.cc
+  src/nodedumper.cc 
+  src/GeometryCache.cc 
+  src/clipper-utils.cc 
+  src/Tree.cc
   src/polyclipping/clipper.cpp
+  src/libtess2/Source/bucketalloc.c
+  src/libtess2/Source/dict.c
+  src/libtess2/Source/geom.c
+  src/libtess2/Source/mesh.c
+  src/libtess2/Source/priorityq.c
+  src/libtess2/Source/sweep.c
+  src/libtess2/Source/tess.c
   src/Tree.cc)
 
 #
@@ -180,8 +250,6 @@ set(COMMON_SOURCES
 set(OFFSCREEN_SOURCES
   src/GLView.cc
   src/OffscreenView.cc
-  src/${OFFSCREEN_CTX_SOURCE}
-  src/${OFFSCREEN_IMGUTILS_SOURCE}
   src/imageutils.cc
   src/fbo.cc
   src/system-gl.cc
@@ -193,9 +261,13 @@ set(OFFSCREEN_SOURCES
   src/OpenCSGRenderer.cc)
 
 set(GUI_SOURCES
-  src/mainwin.cc
+  src/MainWindow.cc
+  src/OpenSCADApp.cc
+  src/WindowManager.cc
+  src/AboutDialog.cc
   src/Preferences.cc
   src/FontListDialog.cc
+  src/FontListTableView.cc
   src/LibraryInfoDialog.cc
   src/OpenCSGWarningDialog.cc
   src/ProgressWidget.cc
@@ -209,7 +281,22 @@ set(GUI_SOURCES
   src/editor.cc
   src/legacyeditor.cc
   src/scintillaeditor.cpp
-  src/launchingscreen.cc)
+  src/launchingscreen.cc
+  src/QWordSearchField.cc
+  src/comment.cpp
+  src/parameter/ParameterWidget.cc
+  src/parameter/groupwidget.cpp
+  src/parameter/parametercheckbox.cpp
+  src/parameter/parametercombobox.cpp
+  src/parameter/parameterextractor.cpp
+  src/parameter/parameterobject.cpp
+  src/parameter/parameterset.cpp
+  src/parameter/parameterslider.cpp
+  src/parameter/parameterspinbox.cpp
+  src/parameter/parametertext.cpp
+  src/parameter/parametervector.cpp
+  src/parameter/parametervirtualwidget.cpp
+  )
 
 if(NULLGL)
   message(STATUS "NULLGL is set. Overriding previous OpenGL(TM) settings")
@@ -237,7 +324,7 @@ file(GLOB Resources *.qrc)
 
 set(Sources src/openscad.cc ${CORE_SOURCES} ${COMMON_SOURCES} ${CGAL_SOURCES} ${OFFSCREEN_SOURCES} ${GUI_SOURCES})
 
-add_executable(openscad ${Sources} ${Headers} ${ResourceSources} ${FLEX_OpenSCADlexer_OUTPUTS} ${BISON_OpenSCADparser_OUTPUTS})
+add_executable(openscad ${Sources} ${ResourceSources} ${FLEX_openscad_lexer_OUTPUTS} ${BISON_openscad_parser_OUTPUTS})
 
 if(HEADLESS)
   add_definitions("-DOPENSCAD_TESTING")
@@ -254,18 +341,20 @@ else()
   qt5_add_resources(ResourceSources ${Resources})
   qt5_use_modules(openscad Widgets OpenGL)
   target_link_libraries(openscad
-    ${QT_LIBRARIES}
-    ${OPENGL_LIBRARIES}
-    ${GLEW_LIBRARIES}
-    -lCGAL
-    -lopencsg
-    -lgmp
-    -lmpfr
-    -lqt5scintilla2
-    ${PC_HARFBUZZ_LIBRARIES}
-    ${PC_FREETYPE2_LIBRARIES}
-    ${PC_FONTCONFIG_LIBRARIES}
+    ${CGAL_LIBRARY}
+    ${GMP_LIBRARIES}
+    ${MPFR_LIBRARIES}
     ${Boost_LIBRARIES}
-    ${PC_GLIB_LIBRARIES})
+    ${HARFBUZZ_LIBRARIES}
+    ${FONTCONFIG_LIBRARIES}
+    ${FREETYPE_LIBRARIES}
+    ${GLIB2_LIBRARIES}
+    ${LIBXML2_LIBRARIES}
+    Qt5::Core Qt5::Widgets Qt5::OpenGL Qt5::Concurrent
+    ${QT5QSCINTILLA_LIBRARY}
+    ${OPENGL_LIBRARIES}
+    ${GLEW_LIBRARY}
+    ${OPENCSG_LIBRARY}
+    ${PLATFORM_LIBS})
 endif()
 
