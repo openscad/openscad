@@ -5,6 +5,8 @@
 #include <Eigen/Dense>
 #include <cstdint>
 
+#include "value.h"
+
 using Eigen::Vector2d;
 using Eigen::Vector3d;
 using Eigen::Vector3f;
@@ -44,3 +46,32 @@ public:
 
 	bool isValid() const { return this->minCoeff() >= 0.0f; }
 };
+
+template<typename Derived>
+std::ostream& operator << (std::ostream &stream, const Eigen::MatrixBase<Derived>& x)
+{
+#if 0
+	static Eigen::IOFormat fmt(Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", ", ", "[", "]", "[", "]");
+	return stream << x.template cast<Value>().format(fmt);
+#else
+	const size_t rows = x.rows(),  cols = x.cols();
+
+	stream << "[";
+	for (size_t row = 0; row < rows; ++row) {
+		stream << "[";
+		for (size_t col = 0; col < cols; ++col) {
+			stream << Value(x(row, col));
+			if (col != cols - 1) stream << ", ";
+		}
+		stream << "]";
+		if (row != rows - 1) stream << ", ";
+	}
+	return stream << "]";
+#endif
+}
+
+template<typename Scalar, int Dim, int Mode, int Options>
+std::ostream& operator << (std::ostream &stream, const Eigen::Transform<Scalar, Dim, Mode, Options>& m)
+{
+	return stream << m.matrix();
+}
