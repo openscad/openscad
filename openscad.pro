@@ -297,6 +297,7 @@ HEADERS += src/version_check.h \
            src/polyset.h \
            src/printutils.h \
            src/fileutils.h \
+	   src/joiner.h \
            src/value.h \
            src/progress.h \
            src/editor.h \
