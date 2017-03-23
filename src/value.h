@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <limits>
 
+#include <Eigen/Geometry>
+
 // Workaround for https://bugreports.qt-project.org/browse/QTBUG-22829
 #ifndef Q_MOC_RUN
 #include <boost/variant.hpp>
@@ -176,6 +178,16 @@ public:
   bool getVec3(double &x, double &y, double &z, double defaultval = 0.0) const;
   RangeType toRange() const;
 
+  	template <typename Derived>
+	bool getMatrix(Eigen::MatrixBase<Derived>& m, const Derived& defaultval = Derived::Zero()) const;
+
+	template<typename Scalar, int Dim, int Mode, int Options>
+	bool getTransform (Eigen::Transform<Scalar, Dim, Mode, Options>& t,
+			const Eigen::Transform<Scalar, Dim, Mode, Options>& defaultval = Eigen::Transform<Scalar, Dim, Mode, Options>::Identity()) const;
+	template<typename Scalar, int Dim, int Mode, int Options>
+	bool getTransform (Eigen::Transform<Scalar, Dim, Mode, Options>& t,
+			const typename Eigen::Transform<Scalar, Dim, Mode, Options>::MatrixType& defaultval) const;
+
 	operator bool() const { return this->toBool(); }
 
   Value &operator=(const Value &v);
@@ -209,3 +221,54 @@ private:
   Variant value;
 };
 
+template <typename Derived>
+bool Value::getMatrix(Eigen::MatrixBase<Derived>& m, const Derived& defaultval) const
+{
+	m = defaultval;
+
+	if (this->type() != Value::VECTOR) {
+		return false;
+	}
+
+	const Value::VectorType &vrows = this->toVector();
+	const size_t i_rows_max = std::min<size_t>(m.rows(), vrows.size());
+
+	for (size_t i_row = 0; i_row < i_rows_max; ++i_row) {
+		const ValuePtr &vrow = vrows[i_row];
+
+		if (vrow->type() != Value::VECTOR) {
+			break;
+                }
+
+		const Value::VectorType &vcols = vrow->toVector();
+		const size_t i_cols_max = std::min<size_t>(m.cols(), vcols.size());
+
+		for (size_t i_col = 0; i_col < i_cols_max; ++i_col) {
+			vcols[i_col]->getDouble(m(i_row, i_col));
+		}
+	}
+	return true;
+}
+
+template<typename Scalar, int Dim, int Mode, int Options>
+bool Value::getTransform (Eigen::Transform<Scalar, Dim, Mode, Options>& t,
+		const Eigen::Transform<Scalar, Dim, Mode, Options>& defaultval) const
+{
+	return getTransform(t, defaultval.matrix());
+}
+
+template<typename Scalar, int Dim, int Mode, int Options>
+bool Value::getTransform (Eigen::Transform<Scalar, Dim, Mode, Options>& t,
+		const typename Eigen::Transform<Scalar, Dim, Mode, Options>::MatrixType& defaultval) const
+{
+	Eigen::Matrix<Scalar, Dim + 1, Dim + 1> m;
+	bool success = getMatrix(m, defaultval);
+
+        Scalar w;
+	if (success && (w = m(Dim, Dim)) != 1) {
+		m /= w;
+	}
+
+	t = m;
+	return success;
+}
