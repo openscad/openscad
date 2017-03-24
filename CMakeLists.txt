@@ -1,8 +1,29 @@
+#
+# CMake build system for OpenSCAD
+#
+# Configuration variables
+#   -DHEADLESS=<ON|OFF>
+#
+#
+
+if(APPLE)
+  set(CMAKE_OSX_DEPLOYMENT_TARGET 10.8)
+endif()
 cmake_minimum_required(VERSION 3.5.0)
+
+
+if(HEADLESS)
+  list(APPEND CONFIG_OPTIONS "HEADLESS")
+endif(HEADLESS)
+message(STATUS "Configuration: ${CONFIG_OPTIONS}")
 
 project(openscad)
 
 set(CMAKE_CXX_STANDARD 11)
+if(APPLE)
+  # Needed for deployment target 10.8 as cmake doesn't know about the libc++
+  set(CMAKE_CXX_FLAGS "-stdlib=libc++")
+endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 set(CMAKE_PREFIX_PATH "$ENV{OPENSCAD_LIBRARIES}")
@@ -18,6 +39,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 find_package(CGAL REQUIRED QUIET)
 message("CGAL: ${CGAL_FOUND}")
 include_directories(${CGAL_INCLUDE_DIRS})
+add_definitions(-DENABLE_CGAL)
 
 find_package(HarfBuzz 0.9.19 REQUIRED QUIET)
 message("Harfbuzz: ${HARFBUZZ_FOUND}")
@@ -61,6 +83,7 @@ ADD_FLEX_BISON_DEPENDENCY(comment_lexer comment_parser)
 if(NOT HEADLESS)
   set(CMAKE_AUTOMOC ON)
   set(CMAKE_AUTOUIC ON)
+  set(CMAKE_AUTORCC ON)
   find_package(Qt5 COMPONENTS Core Widgets OpenGL Concurrent REQUIRED QUIET)
   message("Qt5: ${Qt5_FOUND}")
   set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -69,8 +92,11 @@ if(NOT HEADLESS)
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
   endif()
 
+  add_definitions(-DUSE_QOPENGLWIDGET)
+
   find_package(Qt5QScintilla 2.8.0 REQUIRED QUIET)
   message("QScintilla: ${QT5QSCINTILLA_FOUND}")
+  add_definitions(-DUSE_SCINTILLA_EDITOR)
   
 #  add_definitions(${Qt5Widgets_DEFINITIONS})
 #  add_definitions(${Qt5OpenGL_DEFINITIONS})
@@ -89,11 +115,13 @@ endif()
 # NULLGL - Allow us to build without OpenGL(TM). run 'cmake .. -DNULLGL=1'
 # Most tests will fail, but it can be used for testing/experiments
 if(NULLGL)
-  add_definitions("-DNULLGL")
+  add_definitions(-DNULLGL)
 else()
-  add_definitions("-DENABLE_OPENCSG")
+  add_definitions(-DENABLE_OPENCSG)
 endif()
-add_definitions("-DENABLE_CGAL -DOPENSCAD_YEAR=2014 -DOPENSCAD_MONTH=12 -DOPENSCAD_DAY=3")
+# -DENABLE_LIBZIP -DDEBUG
+add_definitions(-DENABLE_EXPERIMENTAL -DENABLE_MDI)
+add_definitions(-DOPENSCAD_YEAR=2017.0 -DOPENSCAD_MONTH=3.0 -DOPENSCAD_DAY=18.0 -DOPENSCAD_VERSION=2017.03.18 -DOPENSCAD_SHORTVERSION=2017.03.18)
 
 #
 # Platform specific settings
@@ -322,13 +350,28 @@ endif()
 file(GLOB UIs src/*.ui)
 file(GLOB Resources *.qrc)
 
-set(Sources src/openscad.cc ${CORE_SOURCES} ${COMMON_SOURCES} ${CGAL_SOURCES} ${OFFSCREEN_SOURCES} ${GUI_SOURCES})
+set(Sources src/openscad.cc ${CORE_SOURCES} ${COMMON_SOURCES} ${CGAL_SOURCES} ${OFFSCREEN_SOURCES} ${GUI_SOURCES} ${Resources})
 
-add_executable(openscad ${Sources} ${ResourceSources} ${FLEX_openscad_lexer_OUTPUTS} ${BISON_openscad_parser_OUTPUTS})
+set(RESOURCE_FILES icons/OpenSCAD.icns)
+
+add_executable(OpenSCAD ${Sources} ${RESOURCE_FILES})
+
+# FIXME: snapshot, ICON = icons/icon-nightly.icns
+
+if(APPLE)
+  set_target_properties(OpenSCAD PROPERTIES
+    MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/Info.plist.in
+    MACOSX_BUNDLE TRUE
+    MACOSX_BUNDLE_ICON_FILE OpenSCAD.icns
+    MACOSX_BUNDLE_BUNDLE_VERSION 2017.03
+    MACOSX_BUNDLE_SHORT_VERSION_STRING 2017.03
+    RESOURCE "${RESOURCE_FILES}"
+  )
+endif(APPLE)
 
 if(HEADLESS)
-  add_definitions("-DOPENSCAD_TESTING")
-  target_link_libraries(openscad
+  add_definitions(-DOPENSCAD_TESTING)
+  target_link_libraries(OpenSCAD
     -lCGAL
     -lgmp
     -lmpfr
@@ -338,9 +381,7 @@ if(HEADLESS)
     ${Boost_LIBRARIES}
     ${PC_GLIB_LIBRARIES})
 else()
-  qt5_add_resources(ResourceSources ${Resources})
-  qt5_use_modules(openscad Widgets OpenGL)
-  target_link_libraries(openscad
+  target_link_libraries(OpenSCAD
     ${CGAL_LIBRARY}
     ${GMP_LIBRARIES}
     ${MPFR_LIBRARIES}
