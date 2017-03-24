@@ -29,42 +29,42 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 set(CMAKE_PREFIX_PATH "$ENV{OPENSCAD_LIBRARIES}")
 
 find_package(Eigen3 REQUIRED QUIET)
-message("Eigen3: ${EIGEN3_FOUND}")
+message("Eigen3: ${EIGEN3_VERSION_STRING}")
 include_directories(${EIGEN3_INCLUDE_DIRS})
 
 find_package(Boost 1.36 REQUIRED COMPONENTS filesystem system thread regex program_options QUIET)
-message("Boost: ${Boost_FOUND}")
+message("Boost: ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
 include_directories(${Boost_INCLUDE_DIRS})
 
 find_package(CGAL REQUIRED QUIET)
-message("CGAL: ${CGAL_FOUND}")
+message("CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}")
 include_directories(${CGAL_INCLUDE_DIRS})
 add_definitions(-DENABLE_CGAL)
 
 find_package(HarfBuzz 0.9.19 REQUIRED QUIET)
-message("Harfbuzz: ${HARFBUZZ_FOUND}")
+message("Harfbuzz: ${HARFBUZZ_VERSION}")
 include_directories(${HARFBUZZ_INCLUDE_DIRS})
 
 find_package(FontConfig 2.8.0 REQUIRED QUIET)
-message("Fontconfig: ${FONTCONFIG_FOUND}")
+message("Fontconfig: ${FONTCONFIG_VERSION}")
 
 find_package(Freetype 2.4.9 REQUIRED QUIET)
-message("Freetype: ${FREETYPE_FOUND}")
+message("Freetype: ${FREETYPE_VERSION_STRING}")
 include_directories(${FREETYPE_INCLUDE_DIRS})
 
 find_package(GLIB2 2.26 REQUIRED QUIET)
-message("Glib: ${GLIB2_FOUND}")
+message("Glib: ${GLIB2_VERSION}")
 include_directories(${GLIB2_INCLUDE_DIRS})
 
 find_package(LibXml2 2.9.4 REQUIRED QUIET)
-message("LibXml2: ${LIBXML2_FOUND}")
+message("LibXml2: ${LIBXML2_VERSION_STRING}")
 include_directories(${LIBXML2_INCLUDE_DIR})
 
 find_package(FLEX REQUIRED QUIET)
-message("Flex: ${FLEX_FOUND}")
+message("Flex: ${FLEX_VERSION}")
 
 find_package(BISON REQUIRED QUIET)
-message("Bison: ${BISON_FOUND}")
+message("Bison: ${BISON_VERSION}")
 
 include(CheckIncludeFileCXX)
 
@@ -85,7 +85,7 @@ if(NOT HEADLESS)
   set(CMAKE_AUTOUIC ON)
   set(CMAKE_AUTORCC ON)
   find_package(Qt5 COMPONENTS Core Widgets OpenGL Concurrent REQUIRED QUIET)
-  message("Qt5: ${Qt5_FOUND}")
+  message("Qt5: ${Qt5_VERSION}")
   set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
   if (Qt5_POSITION_INDEPENDENT_CODE)
@@ -95,8 +95,9 @@ if(NOT HEADLESS)
   add_definitions(-DUSE_QOPENGLWIDGET)
 
   find_package(Qt5QScintilla 2.8.0 REQUIRED QUIET)
-  message("QScintilla: ${QT5QSCINTILLA_FOUND}")
+  message("QScintilla: ${QT5QSCINTILLA_VERSION_STRING}")
   add_definitions(-DUSE_SCINTILLA_EDITOR)
+  add_definitions(-DENABLE_MDI)
   
 #  add_definitions(${Qt5Widgets_DEFINITIONS})
 #  add_definitions(${Qt5OpenGL_DEFINITIONS})
@@ -109,7 +110,7 @@ if(NOT HEADLESS)
   message("GLEW: ${GLEW_FOUND}")
 
   find_package(OpenCSG REQUIRED QUIET)
-  message("OpenCSG: ${OPENCSG_FOUND}")
+  message("OpenCSG: ${OPENCSG_VERSION_STRING}")
 endif()
 
 # NULLGL - Allow us to build without OpenGL(TM). run 'cmake .. -DNULLGL=1'
@@ -120,7 +121,7 @@ else()
   add_definitions(-DENABLE_OPENCSG)
 endif()
 # -DENABLE_LIBZIP -DDEBUG
-add_definitions(-DENABLE_EXPERIMENTAL -DENABLE_MDI)
+add_definitions(-DENABLE_EXPERIMENTAL)
 add_definitions(-DOPENSCAD_YEAR=2017.0 -DOPENSCAD_MONTH=3.0 -DOPENSCAD_DAY=18.0 -DOPENSCAD_VERSION=2017.03.18 -DOPENSCAD_SHORTVERSION=2017.03.18)
 
 #
@@ -339,18 +340,18 @@ if(NULLGL)
     src/render.cc)
 endif()
 
-if(HEADLESS)
-  message(STATUS "HEADLESS is set.")
-  set(GUI_SOURCES "")
-endif()
-
 #file(GLOB Headers src/*.h src/*.hpp src/polyclipping/*.hpp)
 #list(REMOVE_ITEM Headers ${CMAKE_SOURCE_DIR}/src/SparkleAutoUpdater.h)
 
 file(GLOB UIs src/*.ui)
 file(GLOB Resources *.qrc)
 
-set(Sources src/openscad.cc ${CORE_SOURCES} ${COMMON_SOURCES} ${CGAL_SOURCES} ${OFFSCREEN_SOURCES} ${GUI_SOURCES} ${Resources})
+set(Sources src/openscad.cc ${CORE_SOURCES} ${COMMON_SOURCES} ${CGAL_SOURCES} ${OFFSCREEN_SOURCES} ${Resources})
+if(HEADLESS)
+  add_definitions(-DOPENSCAD_NOGUI)
+else()
+  list(APPEND Sources ${GUI_SOURCES})
+endif()
 
 set(RESOURCE_FILES icons/OpenSCAD.icns)
 
@@ -369,19 +370,7 @@ if(APPLE)
   )
 endif(APPLE)
 
-if(HEADLESS)
-  add_definitions(-DOPENSCAD_TESTING)
-  target_link_libraries(OpenSCAD
-    -lCGAL
-    -lgmp
-    -lmpfr
-    ${PC_HARFBUZZ_LIBRARIES}
-    ${PC_FREETYPE2_LIBRARIES}
-    ${PC_FONTCONFIG_LIBRARIES}
-    ${Boost_LIBRARIES}
-    ${PC_GLIB_LIBRARIES})
-else()
-  target_link_libraries(OpenSCAD
+set(COMMON_LIBRARIES
     ${CGAL_LIBRARY}
     ${GMP_LIBRARIES}
     ${MPFR_LIBRARIES}
@@ -391,11 +380,13 @@ else()
     ${FREETYPE_LIBRARIES}
     ${GLIB2_LIBRARIES}
     ${LIBXML2_LIBRARIES}
-    Qt5::Core Qt5::Widgets Qt5::OpenGL Qt5::Concurrent
-    ${QT5QSCINTILLA_LIBRARY}
     ${OPENGL_LIBRARIES}
     ${GLEW_LIBRARY}
     ${OPENCSG_LIBRARY}
     ${PLATFORM_LIBS})
+
+target_link_libraries(OpenSCAD ${COMMON_LIBRARIES})
+if(NOT HEADLESS)
+  target_link_libraries(OpenSCAD Qt5::Core Qt5::Widgets Qt5::OpenGL Qt5::Concurrent ${QT5QSCINTILLA_LIBRARY})
 endif()
 
