@@ -187,7 +187,7 @@ namespace CGALUtils {
 
 		CGAL_Nef_polyhedron newN;
 		if (cut) {
-			CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+			CGALUtils::lockErrors(CGAL::THROW_EXCEPTION);
 			try {
 				CGAL_Nef_polyhedron3::Plane_3 xy_plane = CGAL_Nef_polyhedron3::Plane_3(0,0,1,0);
 				newN.p3.reset(new CGAL_Nef_polyhedron3(N.p3->intersection(xy_plane, CGAL_Nef_polyhedron3::PLANE_ONLY)));
@@ -215,7 +215,7 @@ namespace CGALUtils {
 			}
 				
 			if (!newN.p3 || newN.p3->is_empty()) {
-				CGAL::set_error_behaviour(old_behaviour);
+				CGALUtils::unlockErrors();
 				PRINT("WARNING: projection() failed.");
 				return poly;
 			}
@@ -242,7 +242,7 @@ namespace CGALUtils {
 			}
 			PRINTD("</svg>");
 				
-			CGAL::set_error_behaviour(old_behaviour);
+			CGALUtils::unlockErrors();
 		}
 		// In projection mode all the triangles are projected manually into the XY plane
 		else {

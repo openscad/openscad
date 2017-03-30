@@ -55,7 +55,7 @@ static void append_amf(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 		PRINT("WARNING: Export failed, the object isn't a valid 2-manifold.");
 		return;
 	}
-	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+	CGALUtils::lockErrors(CGAL::THROW_EXCEPTION);
 	try {
 		CGAL_Polyhedron P;
 		root_N.p3->convert_to_Polyhedron(P);
@@ -151,7 +151,7 @@ static void append_amf(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 	} catch (CGAL::Assertion_exception e) {
 		PRINTB("ERROR: CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s", e.what());
 	}
-	CGAL::set_error_behaviour(old_behaviour);
+	CGALUtils::unlockErrors();
 }
 
 static void append_amf(const shared_ptr<const Geometry> &geom, std::ostream &output)

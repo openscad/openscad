@@ -65,7 +65,7 @@ PolySet *CGAL_Nef_polyhedron::convertToPolyset() const
 {
 	if (this->isEmpty()) return new PolySet(3);
 	PolySet *ps = NULL;
-	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+	CGALUtils::lockErrors(CGAL::THROW_EXCEPTION);
 	ps = new PolySet(3);
 	ps->setConvexity(this->convexity);
 	bool err = true;
@@ -88,7 +88,7 @@ PolySet *CGAL_Nef_polyhedron::convertToPolyset() const
 		if (errmsg!="") PRINTB("ERROR: %s",errmsg);
 		delete ps; ps = NULL;
 	}
-	CGAL::set_error_behaviour(old_behaviour);
+	CGALUtils::unlockErrors();
 	return ps;
 }
 #endif

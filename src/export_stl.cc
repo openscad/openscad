@@ -160,7 +160,7 @@ static void append_stl(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 		}
 	}
 	else {
-		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+		CGALUtils::lockErrors(CGAL::THROW_EXCEPTION);
 		try {
 			CGAL_Polyhedron P;
 			//root_N.p3->convert_to_Polyhedron(P);
@@ -177,7 +177,7 @@ static void append_stl(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 		catch (...) {
 			PRINT("ERROR: CGAL unknown error in CGAL_Nef_polyhedron3::convert_to_Polyhedron()");
 		}
-		CGAL::set_error_behaviour(old_behaviour);
+		CGALUtils::unlockErrors();
 	}
 }
 
