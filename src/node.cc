@@ -29,7 +29,8 @@
 #include "ModuleInstantiation.h"
 #include "progress.h"
 #include "stl-utils.h"
-
+#include "printutils.h"
+#include <functional>
 #include <iostream>
 #include <algorithm>
 
@@ -93,10 +94,26 @@ std::ostream &operator<<(std::ostream &stream, const AbstractNode &node)
 // Do we have an explicit root node (! modifier)?
 AbstractNode *find_root_tag(AbstractNode *n)
 {
-  for(auto v : n->children) {
-    if (v->modinst->tag_root) return v;
-    if (auto vroot = find_root_tag(v)) return vroot;
-  }
-  return NULL;
-}
+	std::vector<AbstractNode*> rootTags;
 
+	std::function <void (AbstractNode *n)> find_root_tags = [&] (AbstractNode *n)
+	{
+		for(auto v : n->children) {
+			if (v->modinst->tag_root) rootTags.push_back(v);
+			find_root_tags(v);
+		}
+	};
+
+	find_root_tags(n);
+
+	if(rootTags.size()>1) {
+		for(int i = 0; i<rootTags.size(); i++) {
+			PRINTB("WARNING: Root Modifier (!) Added At Line%d \n", rootTags[i]->modinst->location().firstLine());
+		}
+		return rootTags[0];
+	}
+	else {
+		if(rootTags.size() == 0) return NULL;
+		else return rootTags[0];
+	}
+}
