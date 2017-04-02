@@ -381,6 +381,7 @@ Response GeometryEvaluator::visit(State &state, const AbstractNode &node)
 		else {
 			geom = smartCacheGet(node, state.preferNef());
 		}
+		node.progress_report();
 		addToParent(state, node, geom);
 	}
 	return ContinueTraversal;
@@ -421,6 +422,7 @@ Response GeometryEvaluator::visit(State &state, const OffsetNode &node)
 		else {
 			geom = smartCacheGet(node, false);
 		}
+		node.progress_report();
 		addToParent(state, node, geom);
 	}
 	return ContinueTraversal;
@@ -461,6 +463,7 @@ Response GeometryEvaluator::visit(State &state, const RenderNode &node)
 		else {
 			geom = smartCacheGet(node, state.preferNef());
 		}
+		node.progress_report();
 		addToParent(state, node, geom);
 	}
 	return ContinueTraversal;
@@ -478,7 +481,7 @@ Response GeometryEvaluator::visit(State &state, const LeafNode &node)
 		shared_ptr<const Geometry> geom;
 		if (!isSmartCached(node)) {
 			const Geometry *geometry = node.createGeometry();
-            assert(geometry);
+			assert(geometry);
 			if (const Polygon2d *polygon = dynamic_cast<const Polygon2d*>(geometry)) {
 				if (!polygon->isSanitized()) {
 					Polygon2d *p = ClipperUtils::sanitize(*polygon);
@@ -486,9 +489,10 @@ Response GeometryEvaluator::visit(State &state, const LeafNode &node)
 					geometry = p;
 				}
 			}
-            geom.reset(geometry);
+			geom.reset(geometry);
 		}
 		else geom = smartCacheGet(node, state.preferNef());
+		node.progress_report();
 		addToParent(state, node, geom);
 	}
 	return PruneTraversal;
@@ -509,6 +513,7 @@ Response GeometryEvaluator::visit(State &state, const TextNode &node)
 			geom.reset(ClipperUtils::apply(polygonlist, ClipperLib::ctUnion));
 		}
 		else geom = GeometryCache::instance()->get(this->tree.getIdString(node));
+		node.progress_report();
 		addToParent(state, node, geom);
 	}
 	return PruneTraversal;
@@ -535,6 +540,7 @@ Response GeometryEvaluator::visit(State &state, const CsgOpNode &node)
 		else {
 			geom = smartCacheGet(node, state.preferNef());
 		}
+		node.progress_report();
 		addToParent(state, node, geom);
 	}
 	return ContinueTraversal;
@@ -610,6 +616,7 @@ Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 		else {
 			geom = smartCacheGet(node, state.preferNef());
 		}
+		node.progress_report();
 		addToParent(state, node, geom);
 	}
 	return ContinueTraversal;
@@ -764,6 +771,7 @@ Response GeometryEvaluator::visit(State &state, const LinearExtrudeNode &node)
 		else {
 			geom = smartCacheGet(node, false);
 		}
+		node.progress_report();
 		addToParent(state, node, geom);
 	}
 	return ContinueTraversal;
@@ -919,6 +927,7 @@ Response GeometryEvaluator::visit(State &state, const RotateExtrudeNode &node)
 		else {
 			geom = smartCacheGet(node, false);
 		}
+		node.progress_report();
 		addToParent(state, node, geom);
 	}
 	return ContinueTraversal;
@@ -1039,6 +1048,7 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 		else {
 			geom = smartCacheGet(node, false);
 		}
+		node.progress_report();
 		addToParent(state, node, geom);
 	}
 	return ContinueTraversal;
@@ -1115,6 +1125,7 @@ Response GeometryEvaluator::visit(State &state, const CgaladvNode &node)
 		else {
 			geom = smartCacheGet(node, state.preferNef());
 		}
+		node.progress_report();
 		addToParent(state, node, geom);
 	}
 	return ContinueTraversal;
@@ -1134,6 +1145,7 @@ Response GeometryEvaluator::visit(State &state, const AbstractIntersectionNode &
 		else {
 			geom = smartCacheGet(node, state.preferNef());
 		}
+		node.progress_report();
 		addToParent(state, node, geom);
 	}
 	return ContinueTraversal;
