@@ -34,39 +34,41 @@
 #include <queue>
 #include <unordered_set>
 
-#include <boost/thread/mutex.hpp>
+#include <atomic>
 
 namespace CGALUtils {
 
 	// manage changes to CGAL::set_error_behaviour:
 	//  a mutex to guard access
-	boost::mutex lockedErrorsLock;
+	std::atomic_flag lockedErrorsLock = ATOMIC_FLAG_INIT;
 	//  the number of times lockErrors has been called (without corresponding unlockErrors)
 	size_t lockedErrorsCount = 0;
 	//  the original error state
 	CGAL::Failure_behaviour lockedErrors = CGAL::Failure_behaviour::ABORT;
 
+#define SPIN_LOCK(flag) do { } while(flag.test_and_set())
+
 	// increments lockedErrorsCount and calls CGAL::set_error_behavior if this is the first [unlocked] call
 	void lockErrors(CGAL::Failure_behaviour behavior)
 	{
-		lockedErrorsLock.lock();
+		SPIN_LOCK(lockedErrorsLock);
 		if (lockedErrorsCount == 0)
 			lockedErrors = CGAL::set_error_behaviour(behavior);
 		lockedErrorsCount++;
-		lockedErrorsLock.unlock();
+		lockedErrorsLock.clear();
 	}
 
 	// decrements lockedErrorsCount and calls CGAL::set_error_behavior if this is the last [locked] call
 	void unlockErrors()
 	{
-		lockedErrorsLock.lock();
+		SPIN_LOCK(lockedErrorsLock);
 		if (lockedErrorsCount > 0)
 		{
 			lockedErrorsCount--;
 			if (lockedErrorsCount == 0)
 				CGAL::set_error_behaviour(lockedErrors);
 		}
-		lockedErrorsLock.unlock();
+		lockedErrorsLock.clear();
 	}
 
 	template<typename Polyhedron>
@@ -116,7 +118,6 @@ namespace CGALUtils {
 		int nary_union_num_inserted = 0;
 
 		for (const auto &item : children) {
-			item.first->progress_report(); // report here in case of early continue in the loop
 			const shared_ptr<const Geometry> &chgeom = item.second;
 			shared_ptr<const CGAL_Nef_polyhedron> chN =
 				dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
@@ -131,6 +132,9 @@ namespace CGALUtils {
 				nary_union.add_polyhedron(*chN->p3);
 				nary_union_num_inserted++;
 			}
+
+			if (item.first)
+				item.first->progress_report();
 		}
 		
 		if (nary_union_num_inserted > 0) {
@@ -156,7 +160,6 @@ namespace CGALUtils {
 			else
 			{
 				for (const auto &item : children) {
-					item.first->progress_report(); // report here in case of early continue in the loop
 					const shared_ptr<const Geometry> &chgeom = item.second;
 					shared_ptr<const CGAL_Nef_polyhedron> chN =
 						dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
@@ -168,17 +171,25 @@ namespace CGALUtils {
 					// Initialize N with first expected geometric object
 					if (!N) {
 						N = new CGAL_Nef_polyhedron(*chN);
+						if (item.first)
+							item.first->progress_report();
 						continue;
 					}
 
 					// Intersecting something with nothing results in nothing
 					if (chN->isEmpty()) {
 						if (op == OPENSCAD_INTERSECTION) *N = *chN;
+						if (item.first)
+							item.first->progress_report();
 						continue;
 					}
 
 					// empty op <something> => empty
-					if (N->isEmpty()) continue;
+					if (N->isEmpty()) {
+						if (item.first)
+							item.first->progress_report();
+						continue;
+					}
 
 					switch (op) {
 					case OPENSCAD_INTERSECTION:
@@ -193,6 +204,8 @@ namespace CGALUtils {
 					default:
 						PRINTB("ERROR: Unsupported CGAL operator: %d", op);
 					}
+					if (item.first)
+						item.first->progress_report();
 				}
 			}
 		}

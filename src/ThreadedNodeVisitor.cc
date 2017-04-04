@@ -14,10 +14,13 @@
 #include "Tree.h"
 #include "progress.h"
 #include "cgalutils.h"
+#include "CGALCache.h"
 
 const char *ResponseStr[3] = { "Continue", "Abort", "Prune" };
 
 std::atomic<int> numRunning;
+
+#define SPIN_LOCK(flag) do { } while (flag.test_and_set())
 
 class TraverseRunner
 {
@@ -81,6 +84,7 @@ public:
 	TraverseData *getParent() const { return parent; }
 	const std::string &getIdString() const { return idString; }
 	const AbstractNode *getNode() const { return node; }
+	const std::list<TraverseData*> &getChildren() const { return children; }
 	int getId() const { return node->index(); }
 	size_t getDepth() const { return depth; }
 	Response getResponse() const { return response; }
@@ -191,6 +195,97 @@ public:
 	}
 };
 
+class TraverseCache
+{
+	struct CacheItem
+	{
+		std::string idString;
+		std::atomic<size_t> totalRefs;
+		std::atomic<size_t> deadRefs;
+		shared_ptr<const CGAL_Nef_polyhedron> geom;
+
+		// add a reference count
+		void addRef() { totalRefs++; }
+
+		// insert the given geometry
+		void insert(const shared_ptr<const CGAL_Nef_polyhedron> &geom)
+		{
+			std::atomic_store(&this->geom, geom);
+		}
+
+		void releaseRef() {
+			// release a reference
+			size_t r = ++deadRefs;
+			// release the geometry if it's the last one
+			if (r == totalRefs)
+				geom.reset();
+		}
+
+		CacheItem(std::string _idString)
+			: idString(_idString)
+			, totalRefs(0)
+			, deadRefs(0)
+		{
+		}
+	};
+	std::map<std::string, CacheItem*> cache;
+
+	void add(const std::string &idString)
+	{
+		auto iter = cache.find(idString);
+		if (iter == cache.end())
+		{
+			cache.insert(std::make_pair(idString, new CacheItem(idString)));
+			iter = cache.find(idString);
+		}
+		iter->second->addRef();
+	}
+
+	void addNode(const Tree &tree, const AbstractNode &node)
+	{
+		add(tree.getIdString(node));
+		for (auto child : node.getChildren())
+			addNode(tree, *child);
+	}
+
+public:
+	TraverseCache(const Tree &tree, const AbstractNode &node)
+	{
+		addNode(tree, node);
+	}
+
+	~TraverseCache()
+	{
+		for (auto item : cache)
+			delete item.second;
+		cache.clear();
+	}
+
+	void insert(const std::string &idString, const shared_ptr<const CGAL_Nef_polyhedron> &geom)
+	{
+		auto iter = cache.find(idString);
+		if (iter != cache.end())
+			iter->second->insert(geom);
+	}
+
+	void release(const std::string &idString)
+	{
+		auto iter = cache.find(idString);
+		assert(iter != cache.end());
+		iter->second->releaseRef();
+	}
+};
+
+void ThreadedNodeVisitor::smartCacheInsert(const AbstractNode &node, const shared_ptr<const Geometry> &geom)
+{
+	if (cache != NULL)
+	{
+		shared_ptr<const CGAL_Nef_polyhedron> g = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom);
+		if (g != NULL)
+			cache->insert(tree.getIdString(node), g);
+	}
+}
+
 Response ThreadedNodeVisitor::traverseThreaded(const AbstractNode &node, const State &state /*= NodeVisitor::nullstate*/, TraverseData *parentData /*= NULL*/, size_t currentDepth /*= 0*/)
 {
 	if (!threaded)
@@ -209,6 +304,7 @@ Response ThreadedNodeVisitor::traverseThreaded(const AbstractNode &node, const S
 	{
 		size_t geomCount = nodeData->countLeafGeometries();
 		PRINTB("Threaded traversal phase 1: Generating %d leaf geometries", geomCount);
+		cache = new TraverseCache(tree, node);
 	}
 		
 	//PRINTB("  (%d) Running prefix", nodeData->getId());
@@ -249,6 +345,8 @@ Response ThreadedNodeVisitor::traverseThreaded(const AbstractNode &node, const S
 		response = waitForIt(nodeData);
 		//PRINT("DONE!!! Deleting the root traversal data");
 		delete nodeData;
+		delete cache;
+		cache = NULL;
 	}
 
 	if (response != AbortTraversal) response = ContinueTraversal;
@@ -327,6 +425,9 @@ Response ThreadedNodeVisitor::waitForIt(TraverseData *nodeData)
 			// check for abort
 			if (runner->data->getResponse() == AbortTraversal)
 				response = AbortTraversal;
+			// release cached references for the node's children
+			for (auto child : runner->data->getChildren())
+				cache->release(child->getIdString());
 			// release the memory
 			delete runner;
 			// decrement the running thread count, et.al.
@@ -368,9 +469,9 @@ void ThreadedNodeVisitor::startRunner(ThreadFunc f, TraverseRunner *runner)
 	};
 
 	// put the runner into the running map
-	runner_lock.wait();
+	SPIN_LOCK(runner_lock);
 	running[runner->data->getIdString()] = runner;
-	runner_lock.post();
+	runner_lock.clear();
 
 	// now, start the thread
 	runner->startRunner(wrapper);
@@ -380,7 +481,7 @@ void ThreadedNodeVisitor::startRunner(ThreadFunc f, TraverseRunner *runner)
 // called on the runner thread
 void ThreadedNodeVisitor::finishRunner(TraverseRunner *runner)
 {
-	runner_lock.wait();
+	SPIN_LOCK(runner_lock);
 	// post ready_event if this is the first runner to finish
 	if (finished.empty())
 		ready_event.post();
@@ -388,7 +489,7 @@ void ThreadedNodeVisitor::finishRunner(TraverseRunner *runner)
 	finished.push_back(runner);
 	// pull it from running
 	running.erase(runner->data->getIdString());
-	runner_lock.post();
+	runner_lock.clear();
 }
 
 // waits for any runners to finish and fills finished with 'em
@@ -398,12 +499,12 @@ void ThreadedNodeVisitor::waitForAny(std::list<TraverseRunner*> &finished, std::
 {
 	ready_event.wait();
 	// ready_event was posted; fill the result lists
-	runner_lock.wait();
+	SPIN_LOCK(runner_lock);
 	finished.assign(this->finished.begin(), this->finished.end());
 	this->finished.clear();
 	for (auto r : running)
 		stillRunning.push_back(r.second);
-	runner_lock.post();
+	runner_lock.clear();
 }
 
 // checks if the given data is running
@@ -411,8 +512,8 @@ void ThreadedNodeVisitor::waitForAny(std::list<TraverseRunner*> &finished, std::
 bool ThreadedNodeVisitor::isRunning(TraverseData *data)
 {
 	const std::string &id = data->getIdString();
-	runner_lock.wait();
+	SPIN_LOCK(runner_lock);
 	bool result = running.find(id) != running.end();
-	runner_lock.post();
+	runner_lock.clear();
 	return result;
 }

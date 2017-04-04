@@ -304,6 +304,7 @@ HEADERS += src/version_check.h \
            src/editor.h \
            src/NodeVisitor.h \
            src/ThreadedNodeVisitor.h \
+           src/CGAL_Handle_for_atomic_shared_ptr.h \
            src/state.h \
            src/nodecache.h \
            src/nodedumper.h \

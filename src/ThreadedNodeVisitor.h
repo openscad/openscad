@@ -6,6 +6,7 @@
 #include <stack>
 #include "NodeVisitor.h"
 #include "Tree.h"
+#include "CGAL_Nef_polyhedron.h"
 
 // MinGW defines sprintf to libintl_sprintf which breaks usage of the
 // Qt sprintf in QString. This is skipped if sprintf and _GL_STDIO_H
@@ -16,18 +17,24 @@
 #endif
 #include <boost/interprocess/sync/interprocess_semaphore.hpp>
 
+#include <memory>
+#include <atomic>
+
 // forward declaration: node specific data for threaded traversal
 class TraverseData;
 // forward declaration: encapsulates a "runner" for TraverseData objects
 class TraverseRunner;
+// forward declaration: custom cache to ensure geometries aren't deleted prematurely
+class TraverseCache;
 
 class ThreadedNodeVisitor : public NodeVisitor
 {
 	bool threaded;												// indicates this visitor should actually use threads
-	boost::interprocess::interprocess_semaphore runner_lock;	// locks access to the runners
+	std::atomic_flag runner_lock;								// locks access to the runners
 	boost::interprocess::interprocess_semaphore ready_event;	// set when the first runner has finished
 	std::list<TraverseRunner*> finished;						// a list of finished runners
 	std::map<std::string, TraverseRunner*> running;				// the current runners indexed by TraverseData::idString
+	TraverseCache *cache;										// custom cache to ensure geometries aren't deleted prematurely
 
 	const Tree &tree;
 
@@ -47,9 +54,13 @@ class ThreadedNodeVisitor : public NodeVisitor
 
 	// start runners using the available cores and wait for them to finish
 	Response waitForIt(TraverseData *nodeData);
+
+protected:
+	virtual void smartCacheInsert(const AbstractNode &node, const shared_ptr<const Geometry> &geom);
+
 public:
   ThreadedNodeVisitor(const Tree &_tree, bool _threaded = false)
-	  : threaded(_threaded), runner_lock(1), ready_event(0), tree(_tree) {
+	  : threaded(_threaded), runner_lock(ATOMIC_FLAG_INIT), ready_event(0), cache(NULL), tree(_tree) {
   }
   virtual ~ThreadedNodeVisitor() { }
 
