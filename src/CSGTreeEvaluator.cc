@@ -201,7 +201,6 @@ Response CSGTreeEvaluator::visit(State &state, const AbstractPolyNode &node)
 			if (geom) {
 				t1 = evaluateCSGNodeFromGeometry(state, geom, node.modinst, node);
 			}
-			node.progress_report();
 		}
 		this->stored_term[node.index()] = t1;
 		addToParent(state, node);
@@ -257,7 +256,6 @@ Response CSGTreeEvaluator::visit(State &state, const RenderNode &node)
 			if (geom) {
 				t1 = evaluateCSGNodeFromGeometry(state, geom, node.modinst, node);
 			}
-			node.progress_report();
 		}
 		this->stored_term[node.index()] = t1;
 		addToParent(state, node);
@@ -276,7 +274,6 @@ Response CSGTreeEvaluator::visit(State &state, const CgaladvNode &node)
 			if (geom) {
 				t1 = evaluateCSGNodeFromGeometry(state, geom, node.modinst, node);
 			}
-			node.progress_report();
 		}
 		this->stored_term[node.index()] = t1;
 		applyBackgroundAndHighlight(state, node);

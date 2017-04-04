@@ -30,6 +30,8 @@ Response NodeVisitor::traverse(const AbstractNode &node, const State &state)
 		response = node.accept(newstate, *this);
 	}
 
+	node.progress_report();
+
 	if (response != AbortTraversal) response = ContinueTraversal;
 	return response;
 }
