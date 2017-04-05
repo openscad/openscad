@@ -14,7 +14,6 @@
 #include "Tree.h"
 #include "progress.h"
 #include "cgalutils.h"
-#include "CGALCache.h"
 
 const char *ResponseStr[3] = { "Continue", "Abort", "Prune" };
 
@@ -280,9 +279,9 @@ void ThreadedNodeVisitor::smartCacheInsert(const AbstractNode &node, const share
 {
 	if (cache != NULL)
 	{
-		shared_ptr<const CGAL_Nef_polyhedron> g = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom);
-		if (g != NULL)
-			cache->insert(tree.getIdString(node), g);
+		shared_ptr<const CGAL_Nef_polyhedron> poly = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom);
+		if (poly != NULL)
+			cache->insert(tree.getIdString(node), poly);
 	}
 }
 

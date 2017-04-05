@@ -58,6 +58,20 @@ template <class T>
 class Handle_for
 {
 	std::shared_ptr<T> ptr_;
+	std::atomic_flag flag_;
+
+	struct SpinLock
+	{
+		std::atomic_flag &flag;
+		SpinLock(std::atomic_flag &flag) : flag(flag)
+		{
+			do {} while (flag.test_and_set(std::memory_order_acquire));
+		}
+		~SpinLock()
+		{
+			flag.clear(std::memory_order_release); 
+		}
+	};
 
 public:
 
@@ -66,12 +80,14 @@ public:
     typedef std::ptrdiff_t Id_type ;
 
     Handle_for()
+		: flag_(ATOMIC_FLAG_INIT)
     {
 		// init a new shared pointer
 		ptr_ = std::make_shared<T>();
     }
 
     Handle_for(const element_type& t)
+		: flag_(ATOMIC_FLAG_INIT)
     {
 		// make a shared pointer via t's copy constructor
 		ptr_ = std::make_shared<T>(t);
@@ -79,6 +95,7 @@ public:
 
 #ifndef CGAL_CFG_NO_CPP0X_RVALUE_REFERENCE
     Handle_for(element_type && t)
+		: flag_(ATOMIC_FLAG_INIT)
     {
 		// make a shared pointer via t's copy constructor
 		ptr_ = std::make_shared<T>(std::forward<element_type>(t));
@@ -88,38 +105,45 @@ public:
 #if !defined CGAL_CFG_NO_CPP0X_VARIADIC_TEMPLATES && !defined CGAL_CFG_NO_CPP0X_RVALUE_REFERENCE
 	template < typename T1, typename T2, typename... Args >
 	Handle_for(T1 && t1, T2 && t2, Args && ... args)
+		: flag_(ATOMIC_FLAG_INIT)
 	{
 		ptr_ = std::make_shared<T>(std::forward<T1>(t1), std::forward<T2>(t2), std::forward<Args>(args)...);
 	}
 #else
 	template < typename T1, typename T2 >
 	Handle_for(const T1& t1, const T2& t2)
+		: flag_(ATOMIC_FLAG_INIT)
 	{
 		ptr_ = std::make_shared<T>(t1, t2);
 	}
 
 	template < typename T1, typename T2, typename T3 >
 	Handle_for(const T1& t1, const T2& t2, const T3& t3)
+		: flag_(ATOMIC_FLAG_INIT)
 	{
 		ptr_ = std::make_shared<T>(t1, t2, t3);
 	}
 
 	template < typename T1, typename T2, typename T3, typename T4 >
 	Handle_for(const T1& t1, const T2& t2, const T3& t3, const T4& t4)
+		: flag_(ATOMIC_FLAG_INIT)
 	{
 		ptr_ = std::make_shared<T>(t1, t2, t3, t4);
 	}
 #endif // CGAL_CFG_NO_CPP0X_VARIADIC_TEMPLATES
 
     Handle_for(const Handle_for& h)
+		: ptr_(h.ptr_)
+		, flag_(ATOMIC_FLAG_INIT)
     {
-		std::atomic_store(&ptr_, h.ptr_);
     }
 
     Handle_for&
     operator=(const Handle_for& h)
     {
-		std::atomic_store(&ptr_, h.ptr_);
+		// copy h's shared pointer
+		SpinLock lock(flag_);
+		ptr_ = h.ptr_;
         return *this;
     }
 
@@ -127,7 +151,9 @@ public:
     operator=(const element_type &t)
     {
 		// make a shared pointer via t's copy constructor
-		std::atomic_store(&ptr_, std::make_shared<T>(t));
+		std::shared_ptr<T> tmp = std::make_shared<T>(t);
+		SpinLock lock(flag_);
+		ptr_ = tmp;
         return *this;
     }
 
@@ -138,7 +164,7 @@ public:
     Handle_for&
     operator=(Handle_for && h)
     {
-		std::atomic_exchange(&ptr_, h.ptr_);
+		swap(h);
         return *this;
     }
 
@@ -146,7 +172,9 @@ public:
     operator=(element_type && t)
     {
 		// make a shared pointer via t's copy constructor
-		std::atomic_store(&ptr_, std::make_shared<T>(std::forward<element_type>(t)));
+		std::shared_ptr<T> tmp = std::make_shared<T>(std::forward<element_type>(t));		
+		SpinLock lock(flag_);
+		ptr_ = tmp;
         return *this;
     }
 #endif
@@ -189,8 +217,10 @@ public:
     void
     swap(Handle_for& h)
     {
-		std::shared_ptr<T> tmp = std::atomic_exchange(&h.ptr_, ptr_);
-		std::atomic_exchange(&ptr_, tmp);
+		std::shared_ptr<T> tmp = h.ptr_;
+		SpinLock lock(flag_);
+		h.ptr_ = ptr_;
+		ptr_ = tmp;
     }
 
 protected:
@@ -198,18 +228,11 @@ protected:
     void
     copy_on_write()
     {
+		SpinLock lock(flag_);
 		if (is_shared()) 
 		{
-			// get a local reference
-			std::shared_ptr<T> p;
-			std::atomic_store(&p, ptr_);
-			// make a new copy of the data
-			std::shared_ptr<T> pp = std::make_shared<T>(*p.get());
-			// create a temp with the new data...
-			Handle_for tmp(*pp);
-			// ...swap the temp with this
-			tmp.swap(*this);
-			// tmp and p will dereference, pp is stored in this
+			// make a new copy of the data via its copy constructor
+			ptr_ = std::make_shared<T>(*ptr_.get());
 		}
     }
 
@@ -248,7 +271,7 @@ inline
 const T&
 get_pointee_or_identity(const Handle_for<T> &h)
 {
-    return *(h.Ptr());
+	return *(h.Ptr());
 }
 
 template <class T>
@@ -256,7 +279,23 @@ inline
 const T&
 get_pointee_or_identity(const T &t)
 {
-    return t;
+	return t;
+}
+
+template <class T>
+inline
+const T&
+get(const Handle_for<T> &h)
+{
+	return *(h.Ptr());
+}
+
+template <class T>
+inline
+const T&
+get(const T &t)
+{
+	return t;
 }
 
 } //namespace CGAL
