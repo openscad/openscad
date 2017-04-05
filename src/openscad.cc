@@ -783,36 +783,6 @@ int gui(const vector<string> &inputFiles, const fs::path &original_path, int arg
 }
 #endif // OPENSCAD_QTGUI
 
-#include <execinfo.h>
-#include <signal.h>
-
-#include <boost/thread/mutex.hpp>
-boost::mutex traceLock;
-bool handledSig = false;
-
-void sighandler(int signum)
-{
-	void *array[20];
-	size_t size;
-
-	// get void*'s for all entries on the stack
-	size = backtrace(array, 20);
-
-	// print out all the frames to stderr
-	traceLock.lock();
-	fprintf(stderr, "ERROR: signal %d:\n", signum);
-	if (!handledSig)
-	{
-		fprintf(stderr, "!!! Attach debugger now: pid=%d\nPress a key to continue.\n", getpid());
-		fgetc(stdin);
-		handledSig = true;
-	}
-	//backtrace_symbols_fd(array, size, STDERR_FILENO);
-	traceLock.unlock();
-	//exit(1);
-}
-
-
 int main(int argc, char **argv)
 {
 	int rc = 0;
@@ -868,7 +838,6 @@ int main(int argc, char **argv)
 
 	po::options_description hidden("Hidden options");
 	hidden.add_options()
-		("segv,g", "catch SIGSEGV and pause (attach debugger)")
 		("input-file", po::value< vector<string>>(), "input file");
 
 	po::positional_options_description p;
@@ -893,9 +862,6 @@ int main(int argc, char **argv)
 	}
 	if (vm.count("quiet")) {
 		OpenSCAD::quiet = true;
-	}
-	if (vm.count("segv")) {
-		signal(SIGSEGV, sighandler);
 	}
 	if (vm.count("help")) help(argv[0]);
 	if (vm.count("version")) version();
