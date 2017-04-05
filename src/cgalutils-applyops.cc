@@ -126,7 +126,7 @@ namespace CGALUtils {
 				if (chps) chN.reset(createNefPolyhedronFromGeometry(*chps));
 			}
 
-			if (!chN->isEmpty()) {
+			if (chN && !chN->isEmpty()) {
 				// nary_union.add_polyhedron() can issue assertion errors:
 				// https://github.com/openscad/openscad/issues/802
 				nary_union.add_polyhedron(*chN->p3);
@@ -166,6 +166,12 @@ namespace CGALUtils {
 					if (!chN) {
 						const PolySet *chps = dynamic_cast<const PolySet*>(chgeom.get());
 						if (chps) chN.reset(createNefPolyhedronFromGeometry(*chps));
+					}
+					if (!chN) {
+						// ???
+						if (item.first)
+							item.first->progress_report();
+						continue;
 					}
 
 					// Initialize N with first expected geometric object
