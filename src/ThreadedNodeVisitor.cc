@@ -209,10 +209,11 @@ class TraverseCache
 		// insert the given geometry
 		void insert(const shared_ptr<const CGAL_Nef_polyhedron> &geom)
 		{
-			std::atomic_store(&this->geom, geom);
+			this->geom = geom;
 		}
 
-		void releaseRef() {
+		void releaseRef()
+		{
 			// release a reference
 			size_t r = ++deadRefs;
 			// release the geometry if it's the last one
