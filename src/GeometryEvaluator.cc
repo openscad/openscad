@@ -635,34 +635,37 @@ static void add_slice(PolySet *ps, const Polygon2d &poly,
 	
 	bool splitfirst = sin((rot1 - rot2)*M_PI/180) > 0.0;
 	for(const auto &o : poly.outlines()) {
-		Vector2d prev1 = trans1 * o.vertices[0];
-		Vector2d prev2 = trans2 * o.vertices[0];
+		Vector3d prev1, prev2;
+		prev1 << trans1 * o.vertices[0], h1;
+		prev2 << trans2 * o.vertices[0], h2;
+
 		for (size_t i=1;i<=o.vertices.size();i++) {
-			Vector2d curr1 = trans1 * o.vertices[i % o.vertices.size()];
-			Vector2d curr2 = trans2 * o.vertices[i % o.vertices.size()];
+			Vector3d curr1, curr2;
+			curr1 << trans1 * o.vertices[i % o.vertices.size()], h1;
+			curr2 << trans2 * o.vertices[i % o.vertices.size()], h2;
 			ps->append_poly();
 			
 			// Make sure to split negative outlines correctly
 			if (splitfirst xor !o.positive) {
-				ps->insert_vertex(prev1[0], prev1[1], h1);
-				ps->insert_vertex(curr2[0], curr2[1], h2);
-				ps->insert_vertex(curr1[0], curr1[1], h1);
+				ps->insert_vertex(prev1);
+				ps->insert_vertex(curr2);
+				ps->insert_vertex(curr1);
 				if (scale2[0] > 0 || scale2[1] > 0) {
 					ps->append_poly();
-					ps->insert_vertex(curr2[0], curr2[1], h2);
-					ps->insert_vertex(prev1[0], prev1[1], h1);
-					ps->insert_vertex(prev2[0], prev2[1], h2);
+					ps->insert_vertex(curr2);
+					ps->insert_vertex(prev1);
+					ps->insert_vertex(prev2);
 				}
 			}
 			else {
-				ps->insert_vertex(prev1[0], prev1[1], h1);
-				ps->insert_vertex(prev2[0], prev2[1], h2);
-				ps->insert_vertex(curr1[0], curr1[1], h1);
+				ps->insert_vertex(prev1);
+				ps->insert_vertex(prev2);
+				ps->insert_vertex(curr1);
 				if (scale2[0] > 0 || scale2[1] > 0) {
 					ps->append_poly();
-					ps->insert_vertex(prev2[0], prev2[1], h2);
-					ps->insert_vertex(curr2[0], curr2[1], h2);
-					ps->insert_vertex(curr1[0], curr1[1], h1);
+					ps->insert_vertex(prev2);
+					ps->insert_vertex(curr2);
+					ps->insert_vertex(curr1);
 				}
 			}
 			prev1 = curr1;
