@@ -55,7 +55,7 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	LinearExtrudeNode *node = new LinearExtrudeNode(inst);
 
 	AssignmentList args;
-	args += Assignment("file"), Assignment("layer"), Assignment("height"), Assignment("origin"), Assignment("scale"), Assignment("center"), Assignment("twist"), Assignment("slices");
+	args += Assignment("file"), Assignment("layer"), Assignment("height"), Assignment("origin"), Assignment("scale"), Assignment("center"), Assignment("twist"), Assignment("slices"), Assignment("circulate");
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);
@@ -74,6 +74,7 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	ValuePtr center = c.lookup_variable("center", true);
 	ValuePtr twist = c.lookup_variable("twist", true);
 	ValuePtr slices = c.lookup_variable("slices", true);
+	ValuePtr circulate = c.lookup_variable("circulate", true);
 
 	if (!file->isUndefined() && file->type() == Value::STRING) {
 		printDeprecation("Support for reading files in linear_extrude will be removed in future releases. Use a child import() instead.");
@@ -113,6 +114,10 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	double slicesVal = 0;
 	slices->getFiniteDouble(slicesVal);
 	node->slices = (int)slicesVal;
+
+	double circulateVal = 0;
+	circulate->getFiniteDouble(circulateVal);
+	node->circulate = (int)circulateVal;
 
 	node->twist = 0.0;
 	twist->getFiniteDouble(node->twist);
@@ -156,6 +161,9 @@ std::string LinearExtrudeNode::toString() const
 	}
 	if (this->slices > 1) {
 		stream << ", slices = " << this->slices;
+	}
+	if (this->circulate != 0) {
+		stream << ", circulate = " << this->circulate;
 	}
 	stream << ", scale = [" << this->scale_x << ", " << this->scale_y << "]";
 	stream << ", $fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs << ")";

@@ -624,11 +624,23 @@ static void translate_PolySet(PolySet &ps, const Vector3d &translation)
 	}
 }
 
+namespace
+{
+template<class T>
+const typename T::value_type &modulo_index(const T &container, typename T::size_type idx) {
+	ssize_t size = container.size();
+	idx %= size;
+	if(idx < 0) idx += size;
+	return container.at(idx);
+}
+}
+
 static void add_slice(PolySet *ps, const Polygon2d &poly, 
 											double rot1, double rot2, 
 											double h1, double h2, 
 											const Vector2d &scale1,
-											const Vector2d &scale2)
+											const Vector2d &scale2,
+											long int circulate1, long int circulate2)
 {
 	Eigen::Affine2d trans1(Eigen::Scaling(scale1) * Eigen::Rotation2D<double>(-rot1*M_PI/180));
 	Eigen::Affine2d trans2(Eigen::Scaling(scale2) * Eigen::Rotation2D<double>(-rot2*M_PI/180));
@@ -636,13 +648,13 @@ static void add_slice(PolySet *ps, const Polygon2d &poly,
 	bool splitfirst = sin((rot1 - rot2)*M_PI/180) > 0.0;
 	for(const auto &o : poly.outlines()) {
 		Vector3d prev1, prev2;
-		prev1 << trans1 * o.vertices[0], h1;
-		prev2 << trans2 * o.vertices[0], h2;
+		prev1 << trans1 * modulo_index(o.vertices, circulate1), h1;
+		prev2 << trans2 * modulo_index(o.vertices, circulate2), h2;
 
 		for (size_t i=1;i<=o.vertices.size();i++) {
 			Vector3d curr1, curr2;
-			curr1 << trans1 * o.vertices[i % o.vertices.size()], h1;
-			curr2 << trans2 * o.vertices[i % o.vertices.size()], h2;
+			curr1 << trans1 * modulo_index(o.vertices, circulate1 + i), h1;
+			curr2 << trans2 * modulo_index(o.vertices, circulate2 + i), h2;
 			ps->append_poly();
 			
 			// Make sure to split negative outlines correctly
@@ -716,17 +728,20 @@ static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &
 		delete ps_top;
 	}
     size_t slices = node.slices;
+	int circulate = node.circulate;
 
 	for (unsigned int j = 0; j < slices; j++) {
 		double rot1 = node.twist*j / slices;
 		double rot2 = node.twist*(j+1) / slices;
 		double height1 = h1 + (h2-h1)*j / slices;
 		double height2 = h1 + (h2-h1)*(j+1) / slices;
+		auto circulate1 = j * circulate;
+		auto circulate2 = (j+1) * circulate;
 		Vector2d scale1(1 - (1-node.scale_x)*j / slices,
 										1 - (1-node.scale_y)*j / slices);
 		Vector2d scale2(1 - (1-node.scale_x)*(j+1) / slices,
 										1 - (1-node.scale_y)*(j+1) / slices);
-		add_slice(ps, poly, rot1, rot2, height1, height2, scale1, scale2);
+		add_slice(ps, poly, rot1, rot2, height1, height2, scale1, scale2, circulate1, circulate2);
 	}
 
 	return ps;
