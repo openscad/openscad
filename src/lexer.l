@@ -93,6 +93,7 @@ int yycolumn = 1;
   parserlloc.last_line = yylineno;    \
 }
 
+extern void parsererror(char const *s);
 void to_utf8(const char *, char *);
 void includefile();
 fs::path sourcefile();
@@ -130,6 +131,7 @@ include[ \t\r\n]*"<"	{ BEGIN(cond_include); filepath = filename = ""; }
 [^\t\r\n>]*"/"	{ filepath = yytext; }
 [^\t\r\n>/]+	{ filename = yytext; }
 ">"		{ BEGIN(INITIAL); includefile(); }
+<<EOF>>         { parsererror("Unterminated include statement"); yyterminate(); }
 }
 
 
@@ -148,6 +150,7 @@ use[ \t\r\n]*"<"	{ BEGIN(cond_use); }
 	}
         return TOK_USE;
     }
+<<EOF>>         { parsererror("Unterminated use statement"); yyterminate(); }
 }
 
 <<EOF>> {
@@ -216,6 +219,7 @@ use[ \t\r\n]*"<"	{ BEGIN(cond_use); }
 \"			{ BEGIN(INITIAL);
 			parserlval.text = strdup(stringcontents.c_str());
 			return TOK_STRING; }
+<<EOF>>                 { parsererror("Unterminated string"); yyterminate(); }
 }
 
 [\t ]                   /* whitespace */
@@ -226,6 +230,7 @@ use[ \t\r\n]*"<"	{ BEGIN(cond_use); }
 \n                      { BEGIN(INITIAL); yycolumn = 1; }
 {UNICODE}               { parser_error_pos -= strlen(lexertext) - 1; }
 [^\n]
+<<EOF>>                 { parsererror("Unterminated comment"); yyterminate(); }
 }
 
 "/*" BEGIN(cond_comment);
