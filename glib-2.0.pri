@@ -38,6 +38,7 @@ isEmpty(GLIB2_LIBPATH) {
   GLIB2_LIBS = $$system("pkg-config --libs glib-2.0")
 } else {
   GLIB2_LIBS = -L$$GLIB2_LIBPATH -lglib-2.0
+  win*: GLIB2_LIBS += -lintl -liconv
 }
 
 CONFIG(mingw-cross-env)|CONFIG(mingw-cross-env-shared) {
