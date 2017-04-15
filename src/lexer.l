@@ -153,6 +153,43 @@ use[ \t\r\n]*"<"	{ BEGIN(cond_use); }
 <<EOF>>         { parsererror("Unterminated use statement"); yyterminate(); }
 }
 
+\"			{ BEGIN(cond_string); stringcontents.clear(); }
+<cond_string>{
+\\n			{ stringcontents += '\n'; }
+\\t			{ stringcontents += '\t'; }
+\\r			{ stringcontents += '\r'; }
+\\\\			{ stringcontents += '\\'; }
+\\\"			{ stringcontents += '"'; }
+{UNICODE}               { parser_error_pos -= strlen(lexertext) - 1; stringcontents += lexertext; }
+\\x[0-7]{H}             { unsigned long i = strtoul(lexertext + 2, NULL, 16); stringcontents += (i == 0 ? ' ' : (unsigned char)(i & 0xff)); }
+\\u{H}{4}|\\U{H}{6}     { char buf[8]; to_utf8(lexertext + 2, buf); stringcontents += buf; }
+[^\\\n\"]		{ stringcontents += lexertext; }
+[\n\r]		        { yycolumn = 1; }
+\"			{ BEGIN(INITIAL);
+			parserlval.text = strdup(stringcontents.c_str());
+			return TOK_STRING; }
+<<EOF>>                 { parsererror("Unterminated string"); yyterminate(); }
+}
+
+[\t ]                   /* whitespace */
+[\n\r]
+
+\/\/ BEGIN(cond_lcomment);
+<cond_lcomment>{
+\n                      { BEGIN(INITIAL); yycolumn = 1; }
+{UNICODE}               { parser_error_pos -= strlen(lexertext) - 1; }
+[^\n]
+<<EOF>>                 { parsererror("Unterminated comment"); yyterminate(); }
+}
+
+"/*" BEGIN(cond_comment);
+<cond_comment>{
+"*/"                    { BEGIN(INITIAL); }
+{UNICODE}               { parser_error_pos -= strlen(lexertext) - 1; }
+.|\n
+<<EOF>>                 { parsererror("Unterminated comment"); yyterminate(); }
+}
+
 <<EOF>> {
 	if (!filename_stack.empty()) filename_stack.pop_back();
 	if (!lineno_stack.empty()) {
@@ -203,42 +240,6 @@ use[ \t\r\n]*"<"	{ BEGIN(cond_use); }
                             } catch (boost::bad_lexical_cast) {}
                         }
 "$"?[a-zA-Z0-9_]+       { parserlval.text = strdup(yytext); return TOK_ID; }
-
-\"			{ BEGIN(cond_string); stringcontents.clear(); }
-<cond_string>{
-\\n			{ stringcontents += '\n'; }
-\\t			{ stringcontents += '\t'; }
-\\r			{ stringcontents += '\r'; }
-\\\\			{ stringcontents += '\\'; }
-\\\"			{ stringcontents += '"'; }
-{UNICODE}               { parser_error_pos -= strlen(lexertext) - 1; stringcontents += lexertext; }
-\\x[0-7]{H}             { unsigned long i = strtoul(lexertext + 2, NULL, 16); stringcontents += (i == 0 ? ' ' : (unsigned char)(i & 0xff)); }
-\\u{H}{4}|\\U{H}{6}     { char buf[8]; to_utf8(lexertext + 2, buf); stringcontents += buf; }
-[^\\\n\"]		{ stringcontents += lexertext; }
-[\n\r]		        { yycolumn = 1; }
-\"			{ BEGIN(INITIAL);
-			parserlval.text = strdup(stringcontents.c_str());
-			return TOK_STRING; }
-<<EOF>>                 { parsererror("Unterminated string"); yyterminate(); }
-}
-
-[\t ]                   /* whitespace */
-[\n\r]
-
-\/\/ BEGIN(cond_lcomment);
-<cond_lcomment>{
-\n                      { BEGIN(INITIAL); yycolumn = 1; }
-{UNICODE}               { parser_error_pos -= strlen(lexertext) - 1; }
-[^\n]
-<<EOF>>                 { parsererror("Unterminated comment"); yyterminate(); }
-}
-
-"/*" BEGIN(cond_comment);
-<cond_comment>{
-"*/"                    { BEGIN(INITIAL); }
-{UNICODE}               { parser_error_pos -= strlen(lexertext) - 1; }
-.|\n
-}
 
 "<="	return LE;
 ">="	return GE;
