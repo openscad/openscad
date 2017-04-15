@@ -179,7 +179,6 @@ use[ \t\r\n]*"<"	{ BEGIN(cond_use); }
 \n                      { BEGIN(INITIAL); yycolumn = 1; }
 {UNICODE}               { parser_error_pos -= strlen(lexertext) - 1; }
 [^\n]
-<<EOF>>                 { parsererror("Unterminated comment"); yyterminate(); }
 }
 
 "/*" BEGIN(cond_comment);
