@@ -177,6 +177,7 @@ settings_valueList(const QString &key, const QList<int> &defaultList = QList<int
 bool MainWindow::mdiMode = false;
 bool MainWindow::undockMode = false;
 bool MainWindow::reorderMode = false;
+const int MainWindow::tabStopWidth = 15;
 
 MainWindow::MainWindow(const QString &filename)
 	: root_inst("group"), library_info_dialog(NULL), font_list_dialog(NULL), procevents(false), tempFile(NULL), progresswidget(NULL), contentschanged(false), includes_mtime(0), deps_mtime(0)
@@ -2071,7 +2072,7 @@ void MainWindow::actionDisplayAST()
 	setCurrentOutput();
 	QTextEdit *e = new QTextEdit(this);
 	e->setWindowFlags(Qt::Window);
-	e->setTabStopWidth(30);
+	e->setTabStopWidth(tabStopWidth);
 	e->setWindowTitle("AST Dump");
 	e->setReadOnly(true);
 	if (root_module) {
@@ -2089,7 +2090,7 @@ void MainWindow::actionDisplayCSGTree()
 	setCurrentOutput();
 	QTextEdit *e = new QTextEdit(this);
 	e->setWindowFlags(Qt::Window);
-	e->setTabStopWidth(30);
+	e->setTabStopWidth(tabStopWidth);
 	e->setWindowTitle("CSG Tree Dump");
 	e->setReadOnly(true);
 	if (this->root_node) {
@@ -2107,7 +2108,7 @@ void MainWindow::actionDisplayCSGProducts()
 	setCurrentOutput();
 	QTextEdit *e = new QTextEdit(this);
 	e->setWindowFlags(Qt::Window);
-	e->setTabStopWidth(30);
+	e->setTabStopWidth(tabStopWidth);
 	e->setWindowTitle("CSG Products Dump");
 	e->setReadOnly(true);
 	e->setPlainText(QString("\nCSG before normalization:\n%1\n\n\nCSG after normalization:\n%2\n\n\nCSG rendering chain:\n%3\n\n\nHighlights CSG rendering chain:\n%4\n\n\nBackground CSG rendering chain:\n%5\n")
