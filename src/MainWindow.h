@@ -262,6 +262,7 @@ private:
 	static bool mdiMode;
 	static bool undockMode;
 	static bool reorderMode;
+	static const int tabStopWidth;
 
 	shared_ptr<class CSGNode> csgRoot;		   // Result of the CSGTreeEvaluator
 	shared_ptr<CSGNode> normalizedRoot;		  // Normalized CSG tree
