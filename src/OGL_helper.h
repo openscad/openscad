@@ -486,7 +486,7 @@ namespace OGL {
       gluTessEndPolygon(tess_);
       //      CGAL_NEF_TRACEN("End Polygon");
       gluDeleteTess(tess_);
-      combineCallback(nullptr, nullptr, nullptr, nullptr);
+      combineCallback(NULL, NULL, NULL, NULL);
     }
 
     void construct_axes() const

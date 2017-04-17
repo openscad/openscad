@@ -191,7 +191,7 @@ public:
   typedef typename Interval_nt_advanced::Protector           Protector;
 
   Is_on_positive_side_of_plane_3(const Traits&,const Point_3& p_,const Point_3& q_,const Point_3& r_)
-  :p(p_),q(q_),r(r_),ck_plane(nullptr),pk_plane(nullptr)
+  :p(p_),q(q_),r(r_),ck_plane(NULL),pk_plane(NULL)
   {
     double pqx = q.x() - p.x();
     double pqy = q.y() - p.y();
@@ -218,8 +218,8 @@ public:
   }
 
   ~Is_on_positive_side_of_plane_3(){
-    if (ck_plane!=nullptr) delete ck_plane;
-    if (pk_plane!=nullptr) delete pk_plane;
+    if (ck_plane!=NULL) delete ck_plane;
+    if (pk_plane!=NULL) delete pk_plane;
   }
   
   bool operator() (const Point_3& s) const 
@@ -233,12 +233,12 @@ public:
       return static_res == 1;
     
     try{
-      if (ck_plane==nullptr)
+      if (ck_plane==NULL)
         ck_plane=new typename CK::Plane_3(to_CK(p),to_CK(q),to_CK(r));
       return ck_plane->has_on_positive_side(to_CK(s));
     }
     catch (Uncertain_conversion_exception){
-      if (pk_plane==nullptr)
+      if (pk_plane==NULL)
         pk_plane=new typename PK::Plane_3(to_PK(p),to_PK(q),to_PK(r));
       return pk_plane->has_on_positive_side(to_PK(s));
     }
