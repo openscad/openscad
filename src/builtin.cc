@@ -35,6 +35,7 @@ void Builtins::init(const char *name, class AbstractFunction *function)
 
 extern void register_builtin_functions();
 extern void register_builtin_group();
+extern void register_builtin_bend();
 extern void register_builtin_csgops();
 extern void register_builtin_transform();
 extern void register_builtin_color();
@@ -43,6 +44,7 @@ extern void register_builtin_surface();
 extern void register_builtin_control();
 extern void register_builtin_render();
 extern void register_builtin_import();
+extern void register_builtin_export();
 extern void register_builtin_projection();
 extern void register_builtin_cgaladv();
 extern void register_builtin_offset();
@@ -69,12 +71,14 @@ void Builtins::initialize()
 	register_builtin_control();
 	register_builtin_render();
 	register_builtin_import();
+	register_builtin_export();
 	register_builtin_projection();
 	register_builtin_cgaladv();
 	register_builtin_offset();
 	register_builtin_dxf_linear_extrude();
 	register_builtin_dxf_rotate_extrude();
 	register_builtin_text();
+	register_builtin_bend();
 
 	this->deprecations["dxf_linear_extrude"] = "linear_extrude()";
 	this->deprecations["dxf_rotate_extrude"] = "rotate_extrude()";

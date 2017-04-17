@@ -61,7 +61,7 @@ distributed, this file may become obsolete and can be deleted from OpenSCAD
 #include <CGAL/Polyhedron_3.h>
 #include <CGAL/assertions.h>
 
-#include <CGAL/Constrained_triangulation_2.h>
+#include <CGAL/Constrained_Delaunay_triangulation_2.h>
 #include <CGAL/Triangulation_data_structure_2.h>
 #include <CGAL/Projection_traits_xy_3.h>
 #include <CGAL/Projection_traits_yz_3.h>
@@ -79,7 +79,8 @@ class Triangulation_handler2 {
     typedef typename CGAL::Triangulation_vertex_base_2<Kernel>               Vb;
     typedef typename CGAL::Constrained_triangulation_face_base_2<Kernel>     Fb;
     typedef typename CGAL::Triangulation_data_structure_2<Vb,Fb>             TDS;
-    typedef typename CGAL::Constrained_triangulation_2<Kernel,TDS>           CT;
+    //typedef typename CGAL::Constrained_triangulation_2<Kernel,TDS>           CT;
+    typedef typename CGAL::Constrained_Delaunay_triangulation_2<Kernel,TDS>  CT;
 
     typedef typename CT::Face_handle           Face_handle;
     typedef typename CT::Vertex_handle         CTVertex_handle;

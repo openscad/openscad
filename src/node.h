@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string>
+#include "linalg.h"
 #include "BaseVisitable.h"
 
 extern int progress_report_count;
@@ -26,6 +27,7 @@ class AbstractNode : public BaseVisitable
 	// use smth. else to display node identifier in CSG tree output?
 	static size_t idx_counter;   // Node instantiation index
 public:
+	Color4f color;
 	VISITABLE();
 	AbstractNode(const class ModuleInstantiation *mi);
 	virtual ~AbstractNode();

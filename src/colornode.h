@@ -11,5 +11,4 @@ public:
 	virtual std::string toString() const;
 	virtual std::string name() const;
 
-	Color4f color;
 };
