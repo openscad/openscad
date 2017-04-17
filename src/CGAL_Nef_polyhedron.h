@@ -9,7 +9,7 @@
 class CGAL_Nef_polyhedron : public Geometry
 {
 public:
-	CGAL_Nef_polyhedron(CGAL_Nef_polyhedron3 *p = NULL);
+	CGAL_Nef_polyhedron(CGAL_Nef_polyhedron3 *p = nullptr);
 	CGAL_Nef_polyhedron(const CGAL_Nef_polyhedron &src);
 	~CGAL_Nef_polyhedron() {}
 

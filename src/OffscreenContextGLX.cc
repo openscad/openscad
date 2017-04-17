@@ -54,7 +54,7 @@ using namespace std;
 struct OffscreenContext
 {
 	OffscreenContext(int width, int height) :
-		openGLContext(NULL), xdisplay(nullptr), xwindow(0),
+		openGLContext(nullptr), xdisplay(nullptr), xwindow(0),
 		width(width), height(height),
 		fbo(nullptr) {}
 	GLXContext openGLContext;
@@ -103,7 +103,7 @@ string offscreen_context_getinfo(OffscreenContext *ctx)
 	return out.str();
 }
 
-static XErrorHandler original_xlib_handler = (XErrorHandler) NULL;
+static XErrorHandler original_xlib_handler = (XErrorHandler) nullptr;
 static bool XCreateWindow_failed = false;
 static int XCreateWindow_error(Display *dpy, XErrorEvent *event)
 {
@@ -146,19 +146,19 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
 
 	int num_returned = 0;
 	GLXFBConfig *fbconfigs = glXChooseFBConfig( dpy, DefaultScreen(dpy), attributes, &num_returned );
-	if ( fbconfigs == NULL ) {
+	if ( fbconfigs == nullptr ) {
 		cerr << "glXChooseFBConfig failed\n";
 		return false;
 	}
 
 	XVisualInfo *visinfo = glXGetVisualFromFBConfig( dpy, fbconfigs[0] );
-	if ( visinfo == NULL ) {
+	if ( visinfo == nullptr ) {
 		cerr << "glXGetVisualFromFBConfig failed\n";
 		XFree( fbconfigs );
 		return false;
 	}
 
-	// can't depend on xWin==NULL at failure. use a custom Xlib error handler instead.
+	// can't depend on xWin==nullptr at failure. use a custom Xlib error handler instead.
 	original_xlib_handler = XSetErrorHandler( XCreateWindow_error );
 
 	Window root = DefaultRootWindow( dpy );
@@ -189,8 +189,8 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
 	// Most programs would call XMapWindow here. But we don't, to keep the window hidden
 	// XMapWindow( dpy, xWin );
 
-	GLXContext context = glXCreateNewContext(dpy, fbconfigs[0], GLX_RGBA_TYPE, NULL, true);
-	if ( context == NULL ) {
+	GLXContext context = glXCreateNewContext(dpy, fbconfigs[0], GLX_RGBA_TYPE, nullptr, true);
+	if ( context == nullptr ) {
 		cerr << "glXCreateNewContext failed\n";
 		XDestroyWindow( dpy, xWin );
 		XFree( visinfo );
@@ -198,7 +198,7 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
 		return false;
 	}
 
-	//GLXWindow glxWin = glXCreateWindow( dpy, fbconfigs[0], xWin, NULL );
+	//GLXWindow glxWin = glXCreateWindow( dpy, fbconfigs[0], xWin, nullptr );
 
 	if (!glXMakeContextCurrent( dpy, xWin, xWin, context )) {
 		//if (!glXMakeContextCurrent( dpy, glxWin, glxWin, context )) {
@@ -230,7 +230,7 @@ OffscreenContext *create_offscreen_context(int w, int h)
 	// and ctx->xwindow if successful
 	if (!create_glx_dummy_context(*ctx)) {
 		delete ctx;
-		return NULL;
+		return nullptr;
 	}
 
 	return create_offscreen_context_common(ctx);
@@ -263,8 +263,8 @@ bool create_glx_dummy_context(OffscreenContext &ctx)
 	int minor;
 	bool result = false;
 
-	ctx.xdisplay = XOpenDisplay(NULL);
-	if (ctx.xdisplay == NULL) {
+	ctx.xdisplay = XOpenDisplay(nullptr);
+	if (ctx.xdisplay == nullptr) {
 		cerr << "Unable to open a connection to the X server.\n";
 		char * dpyenv = getenv("DISPLAY");
 		cerr << "DISPLAY=" << (dpyenv?dpyenv:"") << "\n";
@@ -275,7 +275,7 @@ bool create_glx_dummy_context(OffscreenContext &ctx)
 	// also check to see if GLX 1.3 functions exist
 
 	glXQueryVersion(ctx.xdisplay, &major, &minor);
-	if ( major==1 && minor<=2 && glXGetVisualFromFBConfig==NULL ) {
+	if ( major==1 && minor<=2 && glXGetVisualFromFBConfig==nullptr ) {
 		cerr << "Error: GLX version 1.3 functions missing. "
 			<< "Your GLX version: " << major << "." << minor << endl;
 	} else {

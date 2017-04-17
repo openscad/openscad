@@ -290,11 +290,11 @@ static void generate_circle(point2d *circle, double r, int fragments)
 
 /*!
 	Creates geometry for this node.
-	May return an empty Geometry creation failed, but will not return NULL.
+	May return an empty Geometry creation failed, but will not return nullptr.
 */
 const Geometry *PrimitiveNode::createGeometry() const
 {
-	Geometry *g = NULL;
+	Geometry *g = nullptr;
 
 	switch (this->type) {
 	case CUBE: {

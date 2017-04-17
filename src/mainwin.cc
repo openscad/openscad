@@ -180,7 +180,7 @@ bool MainWindow::reorderMode = false;
 const int MainWindow::tabStopWidth = 15;
 
 MainWindow::MainWindow(const QString &filename)
-	: root_inst("group"), library_info_dialog(NULL), font_list_dialog(NULL), procevents(false), tempFile(NULL), progresswidget(NULL), contentschanged(false), includes_mtime(0), deps_mtime(0)
+	: root_inst("group"), library_info_dialog(nullptr), font_list_dialog(nullptr), procevents(false), tempFile(nullptr), progresswidget(nullptr), contentschanged(false), includes_mtime(0), deps_mtime(0)
 {
 	setupUi(this);
 
@@ -195,8 +195,8 @@ MainWindow::MainWindow(const QString &filename)
 	this->parameterDock->setConfigKey("view/hideCustomizer");
 	this->parameterDock->setAction(this->viewActionHideParameters);
 
-	this->versionLabel = NULL; // must be initialized before calling updateStatusBar()
-	updateStatusBar(NULL);
+	this->versionLabel = nullptr; // must be initialized before calling updateStatusBar()
+	updateStatusBar(nullptr);
 
 	QSettings settings;
 	editortype = settings.value("editor/editortype").toString();
@@ -239,18 +239,18 @@ MainWindow::MainWindow(const QString &filename)
 
 	top_ctx.registerBuiltin();
 
-	root_module = NULL;
-	parsed_module = NULL;
-	absolute_root_node = NULL;
+	root_module = nullptr;
+	parsed_module = nullptr;
+	absolute_root_node = nullptr;
 #ifdef ENABLE_CGAL
-	this->cgalRenderer = NULL;
+	this->cgalRenderer = nullptr;
 #endif
 #ifdef ENABLE_OPENCSG
-	this->opencsgRenderer = NULL;
+	this->opencsgRenderer = nullptr;
 #endif
-	this->thrownTogetherRenderer = NULL;
+	this->thrownTogetherRenderer = nullptr;
 
-	root_node = NULL;
+	root_node = nullptr;
 
 	this->anim_step = 0;
 	this->anim_numsteps = 0;
@@ -1107,24 +1107,24 @@ void MainWindow::instantiateRoot()
 	// Go on and instantiate root_node, then call the continuation slot
 
   // Invalidate renderers before we kill the CSG tree
-	this->qglview->setRenderer(NULL);
+	this->qglview->setRenderer(nullptr);
 #ifdef ENABLE_OPENCSG
 	delete this->opencsgRenderer;
-	this->opencsgRenderer = NULL;
+	this->opencsgRenderer = nullptr;
 #endif
 	delete this->thrownTogetherRenderer;
-	this->thrownTogetherRenderer = NULL;
+	this->thrownTogetherRenderer = nullptr;
 
 	// Remove previous CSG tree
 	delete this->absolute_root_node;
-	this->absolute_root_node = NULL;
+	this->absolute_root_node = nullptr;
 
 	this->csgRoot.reset();
 	this->normalizedRoot.reset();
 	this->root_products.reset();
 
-	this->root_node = NULL;
-	this->tree.setRoot(NULL);
+	this->root_node = nullptr;
+	this->tree.setRoot(nullptr);
 
 	if (this->root_module) {
 		// Evaluate CSG tree
@@ -1138,7 +1138,7 @@ void MainWindow::instantiateRoot()
 		this->root_inst = mi;
 
 		FileContext filectx(&top_ctx);
-		this->absolute_root_node = this->root_module->instantiateWithFileContext(&filectx, &this->root_inst, NULL);
+		this->absolute_root_node = this->root_module->instantiateWithFileContext(&filectx, &this->root_inst, nullptr);
 		this->updateCamera(filectx);
 		
 		if (this->absolute_root_node) {
@@ -1203,7 +1203,7 @@ void MainWindow::compileCSG(bool procevents)
 		PRINT("CSG generation cancelled.");
 	}
 	progress_report_fin();
-	updateStatusBar(NULL);
+	updateStatusBar(nullptr);
 
 	PRINT("Compiling design (CSG Products normalization)...");
 	if (procevents) QApplication::processEvents();
@@ -1358,7 +1358,7 @@ void MainWindow::show_examples()
 	
 	if (!found_example) {
 		delete this->menuExamples;
-		this->menuExamples = NULL;
+		this->menuExamples = nullptr;
 	}
 }
 
@@ -1783,10 +1783,10 @@ void MainWindow::compileTopLevelDocument()
 	auto fnameba = this->fileName.toLocal8Bit();
 	const char* fname = this->fileName.isEmpty() ? "" : fnameba;
 	delete this->parsed_module;
-	this->root_module = parse(this->parsed_module, fulltext.c_str(), fs::path(fname), false) ? this->parsed_module : NULL;
+	this->root_module = parse(this->parsed_module, fulltext.c_str(), fs::path(fname), false) ? this->parsed_module : nullptr;
 
 	if (Feature::ExperimentalCustomizer.is_enabled()) {
-		if (this->root_module!=NULL) {
+		if (this->root_module!=nullptr) {
 			//add parameters as annotation in AST
 			CommentParser::collectParameters(fulltext.c_str(),this->root_module);
 		}
@@ -1958,9 +1958,9 @@ void MainWindow::cgalRender()
 		return;
 	}
 
-	this->qglview->setRenderer(NULL);
+	this->qglview->setRenderer(nullptr);
 	delete this->cgalRenderer;
-	this->cgalRenderer = NULL;
+	this->cgalRenderer = nullptr;
 	this->root_geom.reset();
 
 	PRINT("Rendering Polygon Mesh using CGAL...");
@@ -2026,7 +2026,7 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 		PRINT("WARNING: No top level geometry to render");
 	}
 
-	updateStatusBar(NULL);
+	updateStatusBar(nullptr);
 
 	this->contentschanged = false;
 	compileEnded();
@@ -2037,31 +2037,31 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 /**
  * Switch version label and progress widget. When switching to the progress
  * widget, the new instance is passed by the caller.
- * In case of resetting back to the version label, NULL will be passed and
+ * In case of resetting back to the version label, nullptr will be passed and
  * multiple calls can happen. So this method must guard against adding the
  * version label multiple times.
  *
- * @param progressWidget a pointer to the progress widget to show or NULL in
+ * @param progressWidget a pointer to the progress widget to show or nullptr in
  * case the display should switch back to the version label.
  */
 void MainWindow::updateStatusBar(ProgressWidget *progressWidget)
 {
 	QStatusBar *sb = this->statusBar();
-	if (progressWidget == NULL) {
-		if (this->progresswidget != NULL) {
+	if (progressWidget == nullptr) {
+		if (this->progresswidget != nullptr) {
 			sb->removeWidget(this->progresswidget);
 			delete this->progresswidget;
-			this->progresswidget = NULL;
+			this->progresswidget = nullptr;
 		}
-		if (versionLabel == NULL) {
+		if (versionLabel == nullptr) {
 			versionLabel = new QLabel("OpenSCAD " + QString::fromStdString(openscad_displayversionnumber));
 			sb->addPermanentWidget(this->versionLabel);
 		}
 	} else {
-		if (this->versionLabel != NULL) {
+		if (this->versionLabel != nullptr) {
 			sb->removeWidget(this->versionLabel);
 			delete this->versionLabel;
-			this->versionLabel = NULL;
+			this->versionLabel = nullptr;
 		}
 		sb->addPermanentWidget(progressWidget);
 	}
@@ -2736,7 +2736,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 		settings.setValue("window/state", saveState());
 		if (this->tempFile) {
 			delete this->tempFile;
-			this->tempFile = NULL;
+			this->tempFile = nullptr;
 		}
 		event->accept();
 	} else {
@@ -2814,7 +2814,7 @@ void MainWindow::setCurrentOutput()
 
 void MainWindow::clearCurrentOutput()
 {
-	set_output_handler(NULL, NULL);
+	set_output_handler(nullptr, nullptr);
 }
 
 void MainWindow::openCSGSettingsChanged()

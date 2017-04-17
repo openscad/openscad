@@ -591,7 +591,7 @@ std::string DxfData::dump() const
 }
 
 /*
-    May return an empty polygon, but will not return NULL
+    May return an empty polygon, but will not return nullptr
  */
 Polygon2d *DxfData::toPolygon2d() const
 {

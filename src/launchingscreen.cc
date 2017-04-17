@@ -8,7 +8,7 @@
 
 #include "UIUtils.h"
 
-LaunchingScreen *LaunchingScreen::inst = NULL;
+LaunchingScreen *LaunchingScreen::inst = nullptr;
 
 LaunchingScreen *LaunchingScreen::getDialog() {
 	return LaunchingScreen::inst;
@@ -72,7 +72,7 @@ LaunchingScreen::LaunchingScreen(QWidget *parent) : QDialog(parent)
 
 LaunchingScreen::~LaunchingScreen()
 {
-	LaunchingScreen::inst = NULL;
+	LaunchingScreen::inst = nullptr;
 }
 
 QStringList LaunchingScreen::selectedFiles()
@@ -89,7 +89,7 @@ void LaunchingScreen::enableRecentButton(const QModelIndex &, const QModelIndex 
 void LaunchingScreen::openRecent()
 {
 	QListWidgetItem *item = this->recentList->currentItem();
-	if (item == NULL) {
+	if (item == nullptr) {
 		return;
 	}
 
@@ -106,7 +106,7 @@ void LaunchingScreen::enableExampleButton(QTreeWidgetItem *current, QTreeWidgetI
 void LaunchingScreen::openExample()
 {
 	QTreeWidgetItem *item = this->treeWidget->currentItem();
-	if (item == NULL) {
+	if (item == nullptr) {
 		return;
 	}
 

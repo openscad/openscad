@@ -68,7 +68,7 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 		return new CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3(r_exact));
 	}
 
-	CGAL_Nef_polyhedron3 *N = NULL;
+	CGAL_Nef_polyhedron3 *N = nullptr;
 	bool plane_error = false;
 	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 	try {
@@ -248,7 +248,7 @@ namespace CGALUtils {
 			if (poly2d) return createNefPolyhedronFromPolygon2d(*poly2d);
 		}
 		assert(false && "createNefPolyhedronFromGeometry(): Unsupported geometry type");
-		return NULL;
+		return nullptr;
 	}
 
 /*
@@ -351,7 +351,7 @@ namespace CGALUtils {
 			// CGAL::Vector_3<CGAL_Kernel3> nvec = plane.orthogonal_vector();
 			// K::Vector_3 normal(CGAL::to_double(nvec.x()), CGAL::to_double(nvec.y()), CGAL::to_double(nvec.z()));
 			std::vector<IndexedTriangle> triangles;
-			bool err = GeometryUtils::tessellatePolygonWithHoles(verts, faces, triangles, NULL);
+			bool err = GeometryUtils::tessellatePolygonWithHoles(verts, faces, triangles, nullptr);
 			if (!err) {
 				for(const auto &t : triangles) {
 					assert(t[0] >= 0 && t[0] < (int)allVertices.size());
@@ -536,7 +536,7 @@ namespace CGALUtils {
 			// CGAL::Vector_3<CGAL_Kernel3> nvec = plane.orthogonal_vector();
 			// K::Vector_3 normal(CGAL::to_double(nvec.x()), CGAL::to_double(nvec.y()), CGAL::to_double(nvec.z()));
 			std::vector<Polygon> triangles;
-			bool err = CGALUtils::tessellatePolygonWithHolesNew(polyholes, triangles, NULL);
+			bool err = CGALUtils::tessellatePolygonWithHolesNew(polyholes, triangles, nullptr);
 			if (!err) {
 				for(const auto &p : triangles) {
 					if (p.size() != 3) {
@@ -598,7 +598,7 @@ namespace CGALUtils {
 			// CGAL::Vector_3<CGAL_Kernel3> nvec = plane.orthogonal_vector();
 			// K::Vector_3 normal(CGAL::to_double(nvec.x()), CGAL::to_double(nvec.y()), CGAL::to_double(nvec.z()));
 			std::vector<Polygon> triangles;
-			bool err = CGALUtils::tessellatePolygonWithHolesNew(polyholes, triangles, NULL);
+			bool err = CGALUtils::tessellatePolygonWithHolesNew(polyholes, triangles, nullptr);
 			if (!err) {
 				for(const auto &p : triangles) {
 					if (p.size() != 3) {
@@ -674,7 +674,7 @@ namespace CGALUtils {
 			// CGAL::Vector_3<CGAL_Kernel3> nvec = plane.orthogonal_vector();
 			// K::Vector_3 normal(CGAL::to_double(nvec.x()), CGAL::to_double(nvec.y()), CGAL::to_double(nvec.z()));
 			std::vector<IndexedTriangle> triangles;
-			bool err = GeometryUtils::tessellatePolygonWithHoles(polyhole, triangles, NULL);
+			bool err = GeometryUtils::tessellatePolygonWithHoles(polyhole, triangles, nullptr);
 			const Vector3f *verts = &polyhole.vertices.front();
 			if (!err) {
 				for(const auto &t : triangles) {

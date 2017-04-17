@@ -182,7 +182,7 @@ namespace CGALUtils {
 
 	Polygon2d *project(const CGAL_Nef_polyhedron &N, bool cut)
 	{
-		Polygon2d *poly = NULL;
+		Polygon2d *poly = nullptr;
 		if (N.getDimension() != 3) return poly;
 
 		CGAL_Nef_polyhedron newN;

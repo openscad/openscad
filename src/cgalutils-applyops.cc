@@ -78,7 +78,7 @@ namespace CGALUtils {
 */
 	CGAL_Nef_polyhedron *applyOperator(const Geometry::Geometries &children, OpenSCADOperator op)
 	{
-		CGAL_Nef_polyhedron *N = NULL;
+		CGAL_Nef_polyhedron *N = nullptr;
 		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 		try {
 			// Speeds up n-ary union operations significantly
@@ -203,7 +203,7 @@ namespace CGALUtils {
 
 
 	/*!
-		children cannot contain NULL objects
+		children cannot contain nullptr objects
 	*/
 	Geometry const * applyMinkowski(const Geometry::Geometries &children)
 	{
@@ -212,7 +212,7 @@ namespace CGALUtils {
 		assert(children.size() >= 2);
 		Geometry::Geometries::const_iterator it = children.begin();
 		t_tot.start();
-		Geometry const* operands[2] = {it->second.get(), NULL};
+		Geometry const* operands[2] = {it->second.get(), nullptr};
 		try {
 			while (++it != children.end()) {
 				operands[1] = it->second.get();
@@ -379,7 +379,7 @@ namespace CGALUtils {
 					for (std::list<CGAL::Polyhedron_3<Hull_kernel>>::iterator i = result_parts.begin(); i != result_parts.end(); ++i) {
 						PolySet ps(3,true);
 						createPolySetFromPolyhedron(*i, ps);
-						fake_children.push_back(std::make_pair((const AbstractNode*)NULL,
+						fake_children.push_back(std::make_pair((const AbstractNode*)nullptr,
 															   shared_ptr<const Geometry>(createNefPolyhedronFromGeometry(ps))));
 					}
 					CGAL_Nef_polyhedron *N = CGALUtils::applyOperator(fake_children, OPENSCAD_UNION);

@@ -2,7 +2,7 @@
 #include <QAction>
 #include <QMenuBar>
 
-AutoUpdater *AutoUpdater::updater_instance = NULL;
+AutoUpdater *AutoUpdater::updater_instance = nullptr;
 
 void AutoUpdater::init()
 {

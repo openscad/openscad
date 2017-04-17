@@ -11,7 +11,7 @@
 class Tree
 {
 public:
-	Tree(const AbstractNode *root = NULL) : root_node(root) {}
+	Tree(const AbstractNode *root = nullptr) : root_node(root) {}
 	~Tree();
 
 	void setRoot(const AbstractNode *root);

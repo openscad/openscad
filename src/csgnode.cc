@@ -38,8 +38,8 @@
 	operation on its operands.
 
 	Note: To distinguish between geometry evaluated to an empty volume
-	and non-geometric nodes (e.g. echo), a NULL CSGLeaf is considered a
-	non-geometric node, while a CSGLeaf with a NULL geometry is
+	and non-geometric nodes (e.g. echo), a nullptr CSGLeaf is considered a
+	non-geometric node, while a CSGLeaf with a nullptr geometry is
 	considered empty geometry. This is important when e.g. establishing
 	positive vs. negative volumes using the difference operator.
  */
@@ -61,7 +61,7 @@ primitives, each having a CSG type associated with it.
 
 shared_ptr<CSGNode> CSGOperation::createCSGNode(OpenSCADOperator type, shared_ptr<CSGNode> left, shared_ptr<CSGNode> right)
 {
-	// In case we're creating a CSG terms from a pruned tree, left/right can be NULL
+	// In case we're creating a CSG terms from a pruned tree, left/right can be nullptr
 	if (!right) {
 		if (type == OPENSCAD_UNION || type == OPENSCAD_DIFFERENCE) return left;
 		else return right;

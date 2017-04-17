@@ -64,15 +64,15 @@ OpenCSGRenderer::OpenCSGRenderer(shared_ptr<CSGProducts> root_products,
 void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges) const
 {
 	GLint *shaderinfo = this->shaderinfo;
-	if (!shaderinfo[0]) shaderinfo = NULL;
+	if (!shaderinfo[0]) shaderinfo = nullptr;
 	if (this->root_products) {
-		renderCSGProducts(*this->root_products, showedges ? shaderinfo : NULL, false, false);
+		renderCSGProducts(*this->root_products, showedges ? shaderinfo : nullptr, false, false);
 	}
 	if (this->background_products) {
-		renderCSGProducts(*this->background_products, showedges ? shaderinfo : NULL, false, true);
+		renderCSGProducts(*this->background_products, showedges ? shaderinfo : nullptr, false, true);
 	}
 	if (this->highlights_products) {
-		renderCSGProducts(*this->highlights_products, showedges ? shaderinfo : NULL, true, false);
+		renderCSGProducts(*this->highlights_products, showedges ? shaderinfo : nullptr, true, false);
 	}
 }
 

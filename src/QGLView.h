@@ -32,7 +32,7 @@ class QGLView :
 	Q_PROPERTY(double showScaleProportional READ showScaleProportional WRITE setShowScaleProportional);
 
 public:
-	QGLView(QWidget *parent = NULL);
+	QGLView(QWidget *parent = nullptr);
 #ifdef ENABLE_OPENCSG
 	bool hasOpenCSGSupport() { return this->opencsg_support; }
 #endif

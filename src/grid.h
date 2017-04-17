@@ -146,7 +146,7 @@ public:
 		return data;
 	}
 
-	bool has(const Vector3d &v, T *data = NULL) {
+	bool has(const Vector3d &v, T *data = nullptr) {
 		Vector3l key = createGridVertex(v);
 		typename GridContainer::iterator pos = db.find(key);
 		if (pos != db.end()) {

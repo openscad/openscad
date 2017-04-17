@@ -144,7 +144,7 @@ ColorMap *ColorMap::inst(bool erase)
 	static ColorMap *instance = new ColorMap;
 	if (erase) {
 		delete instance;
-		instance = NULL;
+		instance = nullptr;
 	}
 	return instance;
 }
@@ -179,7 +179,7 @@ const ColorScheme *ColorMap::findColorScheme(const std::string &name) const
 	}
     }
 
-    return NULL;
+    return nullptr;
 }
 
 void ColorMap::dump() const

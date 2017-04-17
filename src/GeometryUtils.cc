@@ -257,7 +257,7 @@ bool GeometryUtils::tessellatePolygonWithHoles(const Vector3f *vertices,
 		edges.add(face);
 	}
 
-  TESSreal *normalvec = NULL;
+  TESSreal *normalvec = nullptr;
   TESSreal passednormal[3];
   if (normal) {
     passednormal[0] = (*normal)[0];

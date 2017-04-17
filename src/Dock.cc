@@ -3,7 +3,7 @@
 
 #include "Dock.h"
 
-Dock::Dock(QWidget *parent) : QDockWidget(parent), action(NULL)
+Dock::Dock(QWidget *parent) : QDockWidget(parent), action(nullptr)
 {
 }
 
@@ -15,7 +15,7 @@ void Dock::setVisible(bool visible)
 {
     QSettings settings;
     settings.setValue(configKey, !visible);
-    if (action != NULL) {
+    if (action != nullptr) {
 	action->setChecked(!visible);
     }
     QDockWidget::setVisible(visible);

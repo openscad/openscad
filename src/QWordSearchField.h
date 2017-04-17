@@ -9,7 +9,7 @@ class QWordSearchField : public QLineEdit
     Q_OBJECT
     
 public:
-    QWordSearchField(QFrame *parent = NULL);
+    QWordSearchField(QFrame *parent = nullptr);
     int findCount() const { return findcount; }
     
 protected:

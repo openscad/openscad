@@ -8,7 +8,7 @@
   #include "CGAL_Nef_polyhedron.h"
 #endif
 
-GeometryCache *GeometryCache::inst = NULL;
+GeometryCache *GeometryCache::inst = nullptr;
 
 shared_ptr<const Geometry> GeometryCache::get(const std::string &id) const
 {

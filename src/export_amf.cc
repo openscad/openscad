@@ -124,9 +124,9 @@ static void append_amf(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 			strcpy(chrs, s.c_str());
 			std::string coords = strtok(chrs, " ");
 			output << "     <x>" << coords << "</x>\r\n";
-			coords = strtok(NULL, " ");
+			coords = strtok(nullptr, " ");
 			output << "     <y>" << coords << "</y>\r\n";
-			coords = strtok(NULL, " ");
+			coords = strtok(nullptr, " ");
 			output << "     <z>" << coords << "</z>\r\n";
 			output << "    </coordinates></vertex>\r\n";
 			delete[] chrs;

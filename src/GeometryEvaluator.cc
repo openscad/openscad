@@ -100,7 +100,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const Abstrac
 /*!
 	Applies the operator to all child nodes of the given node.
 	
-	May return NULL or any 3D Geometry object (can be either PolySet or CGAL_Nef_polyhedron)
+	May return nullptr or any 3D Geometry object (can be either PolySet or CGAL_Nef_polyhedron)
 */
 GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const AbstractNode &node, OpenSCADOperator op)
 {
@@ -132,7 +132,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 	}
 
 	CGAL_Nef_polyhedron *N = CGALUtils::applyOperator(children, op);
-	// FIXME: Clarify when we can return NULL and what that means
+	// FIXME: Clarify when we can return nullptr and what that means
 	if (!N) N = new CGAL_Nef_polyhedron;
 	return ResultObject(N);
 }
@@ -142,7 +142,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 /*!
 	Apply 2D hull.
 
-	May return an empty geometry but will not return NULL.
+	May return an empty geometry but will not return nullptr.
 */
 Polygon2d *GeometryEvaluator::applyHull2D(const AbstractNode &node)
 {
@@ -183,7 +183,7 @@ Geometry *GeometryEvaluator::applyHull3D(const AbstractNode &node)
 		return P;
 	}
 	delete P;
-	return NULL;
+	return nullptr;
 }
 
 Polygon2d *GeometryEvaluator::applyMinkowski2D(const AbstractNode &node)
@@ -192,12 +192,12 @@ Polygon2d *GeometryEvaluator::applyMinkowski2D(const AbstractNode &node)
 	if (!children.empty()) {
 		return ClipperUtils::applyMinkowski(children);
 	}
-	return NULL;
+	return nullptr;
 }
 
 /*!
 	Returns a list of Polygon2d children of the given node.
-	May return empty Polygon2d object, but not NULL objects
+	May return empty Polygon2d object, but not nullptr objects
 */
 std::vector<const class Polygon2d *> GeometryEvaluator::collectChildren2D(const AbstractNode &node)
 {
@@ -270,7 +270,7 @@ shared_ptr<const Geometry> GeometryEvaluator::smartCacheGet(const AbstractNode &
 
 /*!
 	Returns a list of 3D Geometry children of the given node.
-	May return empty geometries, but not NULL objects
+	May return empty geometries, but not nullptr objects
 */
 Geometry::Geometries GeometryEvaluator::collectChildren3D(const AbstractNode &node)
 {
@@ -313,7 +313,7 @@ Polygon2d *GeometryEvaluator::applyToChildren2D(const AbstractNode &node, OpenSC
 	std::vector<const Polygon2d *> children = collectChildren2D(node);
 
 	if (children.empty()) {
-		return NULL;
+		return nullptr;
 	}
 
 	if (children.size() == 1) {
@@ -333,7 +333,7 @@ Polygon2d *GeometryEvaluator::applyToChildren2D(const AbstractNode &node, OpenSC
 		break;
 	default:
 		PRINTB("Error: Unknown boolean operation %d", int(op));
-		return NULL;
+		return nullptr;
 		break;
 	}
 
@@ -347,7 +347,7 @@ Polygon2d *GeometryEvaluator::applyToChildren2D(const AbstractNode &node, OpenSC
 	we defer traversal letting other components (e.g. CGAL) render the subgraph, 
 	and we'll then call this from prefix and prune further traversal.
 
-	The added geometry can be NULL if it wasn't possible to evaluate it.
+	The added geometry can be nullptr if it wasn't possible to evaluate it.
 */
 void GeometryEvaluator::addToParent(const State &state, 
 																		const AbstractNode &node, 
@@ -742,7 +742,7 @@ Response GeometryEvaluator::visit(State &state, const LinearExtrudeNode &node)
 	if (state.isPostfix()) {
 		shared_ptr<const Geometry> geom;
 		if (!isSmartCached(node)) {
-			const Geometry *geometry = NULL;
+			const Geometry *geometry = nullptr;
 			if (!node.filename.empty()) {
 				DxfData dxf(node.fn, node.fs, node.fa, node.filename, node.layername, node.origin_x, node.origin_y, node.scale_x);
 
@@ -807,7 +807,7 @@ static void fill_ring(std::vector<Vector3d> &ring, const Outline2d &o, double a,
 */
 static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &poly)
 {
-	if (node.angle == 0) return NULL; 
+	if (node.angle == 0) return nullptr; 
 
 	PolySet *ps = new PolySet(3);
 	ps->setConvexity(node.convexity);
@@ -823,7 +823,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 			if ((max_x - min_x) > max_x && (max_x - min_x) > fabs(min_x)) {
 				PRINTB("ERROR: all points for rotate_extrude() must have the same X coordinate sign (range is %.2f -> %.2f)", min_x % max_x);
 				delete ps;
-				return NULL;
+				return nullptr;
 			}
 		}
 		fragments = fmax(Calc::get_fragments_from_r(max_x - min_x, node.fn, node.fs, node.fa) * std::abs(node.angle) / 360, 1);
@@ -899,7 +899,7 @@ Response GeometryEvaluator::visit(State &state, const RotateExtrudeNode &node)
 	if (state.isPostfix()) {
 		shared_ptr<const Geometry> geom;
 		if (!isSmartCached(node)) {
-			const Geometry *geometry = NULL;
+			const Geometry *geometry = nullptr;
 			if (!node.filename.empty()) {
 				DxfData dxf(node.fn, node.fs, node.fa, node.filename, node.layername, node.origin_x, node.origin_y, node.scale);
 				Polygon2d *p2d = dxf.toPolygon2d();
@@ -955,7 +955,7 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 					// FIXME: Don't use deep access to modinst members
 					if (chnode->modinst->isBackground()) continue;
 
-					const Polygon2d *poly = NULL;
+					const Polygon2d *poly = nullptr;
 
 // CGAL version of Geometry projection
 // Causes crashes in createNefPolyhedronFromGeometry() for this model:
@@ -968,7 +968,7 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 // }
 #if 0
 					shared_ptr<const PolySet> chPS = dynamic_pointer_cast<const PolySet>(chgeom);
-					const PolySet *ps2d = NULL;
+					const PolySet *ps2d = nullptr;
 					shared_ptr<const CGAL_Nef_polyhedron> chN = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
 					if (chN) chPS.reset(chN->convertToPolyset());
 					if (chPS) ps2d = PolysetUtils::flatten(*chPS);

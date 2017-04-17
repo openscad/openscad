@@ -12,7 +12,7 @@
 #include <cmath>
 
 ModuleContext::ModuleContext(const Context *parent, const EvalContext *evalctx)
-	: Context(parent), functions_p(NULL), modules_p(NULL), evalctx(evalctx)
+	: Context(parent), functions_p(nullptr), modules_p(nullptr), evalctx(evalctx)
 {
 }
 
@@ -102,11 +102,11 @@ const AbstractFunction *ModuleContext::findLocalFunction(const std::string &name
 		AbstractFunction *f = this->functions_p->find(name)->second;
 		if (!f->is_enabled()) {
 			PRINTB("WARNING: Experimental builtin function '%s' is not enabled.", name);
-			return NULL;
+			return nullptr;
 		}
 		return f;
 	}
-	return NULL;
+	return nullptr;
 }
 
 const AbstractModule *ModuleContext::findLocalModule(const std::string &name) const
@@ -115,7 +115,7 @@ const AbstractModule *ModuleContext::findLocalModule(const std::string &name) co
 		AbstractModule *m = this->modules_p->find(name)->second;
 		if (!m->is_enabled()) {
 			PRINTB("WARNING: Experimental builtin module '%s' is not enabled.", name);
-			return NULL;
+			return nullptr;
 		}
 		std::string replacement = Builtins::instance()->isDeprecated(name);
 		if (!replacement.empty()) {
@@ -123,7 +123,7 @@ const AbstractModule *ModuleContext::findLocalModule(const std::string &name) co
 		}
 		return m;
 	}
-	return NULL;
+	return nullptr;
 }
 
 ValuePtr ModuleContext::evaluate_function(const std::string &name, 
@@ -189,7 +189,7 @@ ValuePtr FileContext::sub_evaluate_function(const std::string &name,
 	// FIXME: Set document path
 #ifdef DEBUG
 	PRINTDB("New lib Context for %s func:", name);
-	PRINTDB("%s",ctx.dump(NULL, NULL));
+	PRINTDB("%s",ctx.dump(nullptr, nullptr));
 #endif
 	return usedmod->scope.functions[name]->evaluate(&ctx, evalctx);
 }
@@ -201,7 +201,7 @@ ValuePtr FileContext::evaluate_function(const std::string &name,
 	if (foundf) return foundf->evaluate(this, evalctx);
 
 	for(const auto &m : *this->usedlibs_p) {
-		// usedmod is NULL if the library wasn't be compiled (error or file-not-found)
+		// usedmod is nullptr if the library wasn't be compiled (error or file-not-found)
 		FileModule *usedmod = ModuleCache::instance()->lookup(m);
 		if (usedmod && usedmod->scope.functions.find(name) != usedmod->scope.functions.end())
 			return sub_evaluate_function(name, evalctx, usedmod);
@@ -217,7 +217,7 @@ AbstractNode *FileContext::instantiate_module(const ModuleInstantiation &inst, E
 
 	for(const auto &m : *this->usedlibs_p) {
 		FileModule *usedmod = ModuleCache::instance()->lookup(m);
-		// usedmod is NULL if the library wasn't be compiled (error or file-not-found)
+		// usedmod is nullptr if the library wasn't be compiled (error or file-not-found)
 		if (usedmod &&
 				usedmod->scope.modules.find(inst.name()) != usedmod->scope.modules.end()) {
 			FileContext ctx(this->parent);
@@ -225,7 +225,7 @@ AbstractNode *FileContext::instantiate_module(const ModuleInstantiation &inst, E
 			// FIXME: Set document path
 #ifdef DEBUG
 			PRINTD("New file Context:");
-			PRINTDB("%s",ctx.dump(NULL, &inst));
+			PRINTDB("%s",ctx.dump(nullptr, &inst));
 #endif
 			return usedmod->scope.modules[inst.name()]->instantiate(&ctx, &inst, evalctx);
 		}

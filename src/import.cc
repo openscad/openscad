@@ -145,11 +145,11 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 }
 
 /*!
-	Will return an empty geometry if the import failed, but not NULL
+	Will return an empty geometry if the import failed, but not nullptr
 */
 const Geometry *ImportNode::createGeometry() const
 {
-	Geometry *g = NULL;
+	Geometry *g = nullptr;
 
 	switch (this->type) {
 	case TYPE_STL: {

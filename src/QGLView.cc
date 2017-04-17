@@ -69,7 +69,7 @@ void QGLView::init()
   resetView();
 
   this->mouse_drag_active = false;
-  this->statusLabel = NULL;
+  this->statusLabel = nullptr;
 
   setMouseTracking(true);
 

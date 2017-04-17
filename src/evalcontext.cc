@@ -59,7 +59,7 @@ size_t EvalContext::numChildren() const
 
 ModuleInstantiation *EvalContext::getChild(size_t i) const
 {
-	return this->scope ? this->scope->children[i] : NULL; 
+	return this->scope ? this->scope->children[i] : nullptr; 
 }
 
 void EvalContext::assignTo(Context &target) const

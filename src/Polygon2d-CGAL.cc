@@ -120,7 +120,7 @@ PolySet *Polygon2d::tessellate() const
 			}
 		}
 	}
-	OPENSCAD_CGAL_ERROR_END("CGAL error in Polygon2d::tesselate()", return NULL);
+	OPENSCAD_CGAL_ERROR_END("CGAL error in Polygon2d::tesselate()", return nullptr);
 
 	// To extract triangles which is part of our polygon, we need to filter away
 	// triangles inside holes.

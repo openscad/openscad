@@ -16,7 +16,7 @@ bool Renderer::getColor(Renderer::ColorMode colormode, Color4f &col) const
 	return false;
 }
 
-Renderer::Renderer() : colorscheme(NULL)
+Renderer::Renderer() : colorscheme(nullptr)
 {
 	PRINTD("Renderer() start");
 	// Setup default colors

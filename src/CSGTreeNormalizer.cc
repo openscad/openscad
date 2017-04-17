@@ -15,7 +15,7 @@ static bool validate_tree(const shared_ptr<CSGNode> &node)
 #endif
 
 /*!
-	NB! for e.g. empty intersections, this can normalize a tree to nothing and return NULL.
+	NB! for e.g. empty intersections, this can normalize a tree to nothing and return nullptr.
 */
 shared_ptr<CSGNode> CSGTreeNormalizer::normalize(const shared_ptr<CSGNode> &root)
 {
@@ -46,9 +46,9 @@ shared_ptr<CSGNode> CSGTreeNormalizer::normalize(const shared_ptr<CSGNode> &root
 }
 
 /*!
-	After aborting, a subtree might have become invalidated (NULL child node)
+	After aborting, a subtree might have become invalidated (nullptr child node)
 	since terms can be instantiated multiple times.
-	This will search for NULL children an recursively repair the corresponding
+	This will search for nullptr children an recursively repair the corresponding
 	subtree.
  */
 shared_ptr<CSGNode> CSGTreeNormalizer::cleanup_term(shared_ptr<CSGNode> &t)

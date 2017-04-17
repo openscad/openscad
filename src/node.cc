@@ -113,7 +113,7 @@ AbstractNode *find_root_tag(AbstractNode *n)
 		return rootTags[0];
 	}
 	else {
-		if(rootTags.size() == 0) return NULL;
+		if(rootTags.size() == 0) return nullptr;
 		else return rootTags[0];
 	}
 }

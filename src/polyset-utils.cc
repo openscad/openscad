@@ -87,7 +87,7 @@ namespace PolysetUtils {
 				triangles.push_back(IndexedTriangle(faces[0][0], faces[0][1], faces[0][2]));
 			}
 			else {
-				err = GeometryUtils::tessellatePolygonWithHoles(verts, faces, triangles, NULL);
+				err = GeometryUtils::tessellatePolygonWithHoles(verts, faces, triangles, nullptr);
 			}
 			if (!err) {
 				for(const auto &t : triangles) {

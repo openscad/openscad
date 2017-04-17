@@ -336,18 +336,18 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	    info();
 	}
 	
-	const char *stl_output_file = NULL;
-	const char *off_output_file = NULL;
-	const char *amf_output_file = NULL;
-	const char *dxf_output_file = NULL;
-	const char *svg_output_file = NULL;
-	const char *csg_output_file = NULL;
-	const char *png_output_file = NULL;
-	const char *ast_output_file = NULL;
-	const char *term_output_file = NULL;
-	const char *echo_output_file = NULL;
-	const char *nefdbg_output_file = NULL;
-	const char *nef3_output_file = NULL;
+	const char *stl_output_file = nullptr;
+	const char *off_output_file = nullptr;
+	const char *amf_output_file = nullptr;
+	const char *dxf_output_file = nullptr;
+	const char *svg_output_file = nullptr;
+	const char *csg_output_file = nullptr;
+	const char *png_output_file = nullptr;
+	const char *ast_output_file = nullptr;
+	const char *term_output_file = nullptr;
+	const char *echo_output_file = nullptr;
+	const char *nefdbg_output_file = nullptr;
+	const char *nef3_output_file = nullptr;
 
 	std::string suffix = fs::path(output_file).extension().generic_string();
 	boost::algorithm::to_lower( suffix );
@@ -375,7 +375,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	ModuleContext top_ctx;
 	top_ctx.registerBuiltin();
 #ifdef DEBUG
-	PRINTDB("Top ModuleContext:\n%s",top_ctx.dump(NULL, NULL));
+	PRINTDB("Top ModuleContext:\n%s",top_ctx.dump(nullptr, nullptr));
 #endif
 	shared_ptr<Echostream> echostream;
 	if (echo_output_file)
@@ -399,7 +399,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	fs::path abspath = fs::absolute(filename);
 	if(!parse(root_module, text.c_str(), abspath, false)) {
 		delete root_module;  // parse failed
-		root_module = NULL;
+		root_module = nullptr;
 	}
 	if (!root_module) {
 		PRINTB("Can't parse file '%s'!\n", filename.c_str());
@@ -424,7 +424,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	top_ctx.setDocumentPath(fparent.string());
 
 	AbstractNode::resetIndexCounter();
-	absolute_root_node = root_module->instantiate(&top_ctx, &root_inst, NULL);
+	absolute_root_node = root_module->instantiate(&top_ctx, &root_inst, nullptr);
 
 	// Do we have an explicit root node (! modifier)?
 	if (!(root_node = find_root_tag(absolute_root_node)))
@@ -790,7 +790,7 @@ int main(int argc, char **argv)
 	StackCheck::inst()->init();
 	
 #ifdef Q_OS_MAC
-	if (isGuiLaunched) set_output_handler(CocoaUtils::nslog, NULL);
+	if (isGuiLaunched) set_output_handler(CocoaUtils::nslog, nullptr);
 #else
 	PlatformUtils::ensureStdIO();
 #endif
@@ -804,8 +804,8 @@ int main(int argc, char **argv)
 
 	fs::path original_path = fs::current_path();
 
-	const char *output_file = NULL;
-	const char *deps_output_file = NULL;
+	const char *output_file = nullptr;
+	const char *deps_output_file = nullptr;
 
 	po::options_description desc("Allowed options");
 	desc.add_options()

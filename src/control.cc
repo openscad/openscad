@@ -123,11 +123,11 @@ const EvalContext* ControlModule::getLastModuleCtx(const EvalContext *evalctx)
 			if (modulectx->evalctx) {
 				return modulectx->evalctx;
 			}
-			return NULL;
+			return nullptr;
 		}
 		tmpc = tmpc->getParent();
 	}
-	return NULL;
+	return nullptr;
 }
 
 // static
@@ -137,25 +137,25 @@ AbstractNode* ControlModule::getChild(const ValuePtr &value, const EvalContext* 
 		// Invalid parameter
 		// (e.g. first child of difference is invalid)
 		PRINTB("WARNING: Bad parameter type (%s) for children, only accept: empty, number, vector, range.", value->toString());
-		return NULL;
+		return nullptr;
 	}
 	double v;
 	if (!value->getDouble(v)) {
 		PRINTB("WARNING: Bad parameter type (%s) for children, only accept: empty, number, vector, range.", value->toString());
-		return NULL;
+		return nullptr;
 	}
 		
 	int n = trunc(v);
 	if (n < 0) {
 		PRINTB("WARNING: Negative children index (%d) not allowed", n);
-		return NULL; // Disallow negative child indices
+		return nullptr; // Disallow negative child indices
 	}
 	if (n>=(int)modulectx->numChildren()) {
 		// How to deal with negative objects in this case?
 		// (e.g. first child of difference is invalid)
 		PRINTB("WARNING: Children index (%d) out of bounds (%d children)"
 			, n % modulectx->numChildren());
-		return NULL;
+		return nullptr;
 	}
 	// OK
 	return modulectx->getChild(n)->evaluate(modulectx);
@@ -163,7 +163,7 @@ AbstractNode* ControlModule::getChild(const ValuePtr &value, const EvalContext* 
 
 AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
-	AbstractNode *node = NULL;
+	AbstractNode *node = nullptr;
 
 	switch (this->type) {
 	case CHILD:	{
@@ -175,7 +175,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 				n = trunc(v);
 				if (n < 0) {
 					PRINTB("WARNING: Negative child index (%d) not allowed", n);
-					return NULL; // Disallow negative child indices
+					return nullptr; // Disallow negative child indices
 				}
 			}
 		}
@@ -183,8 +183,8 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 		// Find the last custom module invocation, which will contain
 		// an eval context with the children of the module invokation
 		const EvalContext *modulectx = getLastModuleCtx(evalctx);
-		if (modulectx==NULL) {
-			return NULL;
+		if (modulectx==nullptr) {
+			return nullptr;
 		}
 		// This will trigger if trying to invoke child from the root of any file
         if (n < (int)modulectx->numChildren()) {
@@ -202,8 +202,8 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 
 	case CHILDREN: {
 		const EvalContext *modulectx = getLastModuleCtx(evalctx);
-		if (modulectx==NULL) {
-			return NULL;
+		if (modulectx==nullptr) {
+			return nullptr;
 		}
 		// This will trigger if trying to invoke child from the root of any file
 		// assert(filectx->evalctx);
@@ -212,7 +212,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 			AbstractNode* node = new GroupNode(inst);
 			for (int n = 0; n < (int)modulectx->numChildren(); ++n) {
 				AbstractNode* childnode = modulectx->getChild(n)->evaluate(modulectx);
-				if (childnode==NULL) continue; // error
+				if (childnode==nullptr) continue; // error
 				node->children.push_back(childnode);
 			}
 			return node;
@@ -228,7 +228,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 				const Value::VectorType& vect = value->toVector();
 				for(const auto &vectvalue : vect) {
 					AbstractNode* childnode = getChild(vectvalue,modulectx);
-					if (childnode==NULL) continue; // error
+					if (childnode==nullptr) continue; // error
 					node->children.push_back(childnode);
 				}
 				return node;
@@ -238,12 +238,12 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 				uint32_t steps = range.numValues();
 				if (steps >= 10000) {
 					PRINTB("WARNING: Bad range parameter for children: too many elements (%lu).", steps);
-					return NULL;
+					return nullptr;
 				}
 				AbstractNode* node = new GroupNode(inst);
 				for (RangeType::iterator it = range.begin();it != range.end();it++) {
 					AbstractNode* childnode = getChild(ValuePtr(*it),modulectx); // with error cases
-					if (childnode==NULL) continue; // error
+					if (childnode==nullptr) continue; // error
 					node->children.push_back(childnode);
 				}
 				return node;
@@ -252,10 +252,10 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 				// Invalid parameter
 				// (e.g. first child of difference is invalid)
 				PRINTB("WARNING: Bad parameter type (%s) for children, only accept: empty, number, vector, range.", value->toString());
-				return NULL;
+				return nullptr;
 			}
 		}
-		return NULL;
+		return nullptr;
 	}
 		break;
 

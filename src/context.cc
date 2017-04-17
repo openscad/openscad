@@ -179,7 +179,7 @@ AbstractNode *Context::instantiate_module(const ModuleInstantiation &inst, EvalC
 {
 	if (this->parent) return this->parent->instantiate_module(inst, evalctx);
 	print_ignore_warning("module", inst.name().c_str());
-	return NULL;
+	return nullptr;
 }
 
 /*!

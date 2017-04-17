@@ -2,7 +2,7 @@
 #include "printutils.h"
 #include "CGAL_Nef_polyhedron.h"
 
-CGALCache *CGALCache::inst = NULL;
+CGALCache *CGALCache::inst = nullptr;
 
 CGALCache::CGALCache(size_t limit) : cache(limit)
 {

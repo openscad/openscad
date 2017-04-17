@@ -57,14 +57,14 @@ bool CGAL_Nef_polyhedron::isEmpty() const
 /*!
 	Creates a new PolySet and initializes it with the data from this polyhedron
 
-	Note: Can return NULL if an error occurred
+	Note: Can return nullptr if an error occurred
 */
 // FIXME: Deprecated by CGALUtils::createPolySetFromNefPolyhedron3
 #if 0
 PolySet *CGAL_Nef_polyhedron::convertToPolyset() const
 {
 	if (this->isEmpty()) return new PolySet(3);
-	PolySet *ps = NULL;
+	PolySet *ps = nullptr;
 	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 	ps = new PolySet(3);
 	ps->setConvexity(this->convexity);
@@ -86,7 +86,7 @@ PolySet *CGAL_Nef_polyhedron::convertToPolyset() const
 	if (err) {
 		PRINT("ERROR: CGAL NefPolyhedron->Polyhedron conversion failed.");
 		if (errmsg!="") PRINTB("ERROR: %s",errmsg);
-		delete ps; ps = NULL;
+		delete ps; ps = nullptr;
 	}
 	CGAL::set_error_behaviour(old_behaviour);
 	return ps;

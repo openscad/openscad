@@ -12,7 +12,7 @@ extern "C" {
 OSErr eventHandler(const AppleEvent *, AppleEvent *, SRefCon )
 {
 // FIXME: Ugly hack; just using the first MainWindow we can find
-	MainWindow *mainwin = NULL;
+	MainWindow *mainwin = nullptr;
 	for (auto &w : QApplication::topLevelWidgets()) {
 		mainwin = qobject_cast<MainWindow*>(w);
 		if (mainwin) break;

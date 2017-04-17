@@ -8,7 +8,7 @@ Builtins *Builtins::instance(bool erase)
 	static Builtins *s_builtins = new Builtins;
 	if (erase) {
 		delete s_builtins;
-		s_builtins = NULL;
+		s_builtins = nullptr;
 	}
 	return s_builtins;
 }

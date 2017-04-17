@@ -26,7 +26,7 @@ GLView::GLView()
   showaxes = false;
   showcrosshairs = false;
   showscale = false;
-  renderer = NULL;
+  renderer = nullptr;
   colorscheme = &ColorMap::inst()->defaultColorScheme();
   cam = Camera();
   far_far_away = RenderSettings::inst()->far_gl_clip_limit;
@@ -199,7 +199,7 @@ void GLView::enable_opencsg_shaders()
 {
   const char *openscad_disable_gl20_env = getenv("OPENSCAD_DISABLE_GL20");
   if (openscad_disable_gl20_env && !strcmp(openscad_disable_gl20_env, "0")) {
-    openscad_disable_gl20_env = NULL;
+    openscad_disable_gl20_env = nullptr;
   }
 
   // All OpenGL 2 contexts are OpenCSG capable
@@ -291,11 +291,11 @@ void GLView::enable_opencsg_shaders()
       "}\n";
 
     GLuint vs = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vs, 1, (const GLchar**)&vs_source, NULL);
+    glShaderSource(vs, 1, (const GLchar**)&vs_source, nullptr);
     glCompileShader(vs);
 
     GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fs, 1, (const GLchar**)&fs_source, NULL);
+    glShaderSource(fs, 1, (const GLchar**)&fs_source, nullptr);
     glCompileShader(fs);
 
     GLuint edgeshader_prog = glCreateProgram();

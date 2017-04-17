@@ -23,10 +23,10 @@ std::string winapi_wstr_to_utf8( std::wstring wstr )
 	DWORD dwFlags = 0;
 	LPCWSTR lpWideCharStr = &wstr[0];
 	int cchWideChar = (int)wstr.size();
-	LPSTR lpMultiByteStr = NULL;
+	LPSTR lpMultiByteStr = nullptr;
 	int cbMultiByte = 0;
-	LPCSTR lpDefaultChar = NULL;
-	LPBOOL lpUsedDefaultChar = NULL;
+	LPCSTR lpDefaultChar = nullptr;
+	LPBOOL lpUsedDefaultChar = nullptr;
 
 	int numbytes = WideCharToMultiByte( CodePage, dwFlags, lpWideCharStr,
 	  cchWideChar, lpMultiByteStr, cbMultiByte, lpDefaultChar, lpUsedDefaultChar );
@@ -55,14 +55,14 @@ static const std::string getFolderPath(int nFolder)
 	std::wstring path(MAX_PATH,0);
 
 	HWND hwndOwner = 0;
-	HANDLE hToken = NULL;
+	HANDLE hToken = nullptr;
 	DWORD dwFlags = SHGFP_TYPE_CURRENT;
 	LPTSTR pszPath = &path[0];
 
 	int result = SHGetFolderPathW( hwndOwner, nFolder, hToken, dwFlags, pszPath );
 
 	if (result == S_OK) {
-        path = std::wstring( path.c_str() ); // strip extra NULLs
+        path = std::wstring( path.c_str() ); // strip extra nullptrs
         // Use boost::filesystem to decide how to convert from wstring
         // to string. Normally the path encoding is system local and
         // we don't want to force conversion to UTF-8.
@@ -112,7 +112,7 @@ static BOOL IsWow64()
     //and GetProcAddress to get a pointer to the function if available.
     LPFN_ISWOW64PROCESS fnIsWow64Process = (LPFN_ISWOW64PROCESS)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "IsWow64Process");
 
-    if (NULL != fnIsWow64Process) {
+    if (nullptr != fnIsWow64Process) {
         if (!fnIsWow64Process(GetCurrentProcess(), &bIsWow64))
         {
 	    return false;
