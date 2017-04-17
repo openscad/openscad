@@ -382,7 +382,7 @@ void Highlighter::highlightBlock(const QString &text)
 			}
 		}
 	}
-	setCurrentBlockState((int) state);
+	setCurrentBlockState(static_cast<int>(state));
 
 	// Highlight an error. Do it last to 'overwrite' other formatting.
 	if (errorState) {

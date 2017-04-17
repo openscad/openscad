@@ -22,7 +22,7 @@ std::string winapi_wstr_to_utf8( std::wstring wstr )
 	UINT CodePage = CP_UTF8;
 	DWORD dwFlags = 0;
 	LPCWSTR lpWideCharStr = &wstr[0];
-	int cchWideChar = (int)wstr.size();
+	int cchWideChar = static_cast<int>(wstr.size());
 	LPSTR lpMultiByteStr = nullptr;
 	int cbMultiByte = 0;
 	LPCSTR lpDefaultChar = nullptr;

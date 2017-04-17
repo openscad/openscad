@@ -118,8 +118,8 @@ public:
  */
 Value PrimitiveModule::lookup_radius(const Context &ctx, const std::string &diameter_var, const std::string &radius_var) const
 {
-	ValuePtr d = ctx.lookup_variable(diameter_var, true);
-	ValuePtr r = ctx.lookup_variable(radius_var, true);
+	auto d = ctx.lookup_variable(diameter_var, true);
+	auto r = ctx.lookup_variable(radius_var, true);
 	const bool r_defined = (r->type() == Value::ValueType::NUMBER);
 	
 	if (d->type() == Value::ValueType::NUMBER) {
@@ -136,7 +136,7 @@ Value PrimitiveModule::lookup_radius(const Context &ctx, const std::string &diam
 
 AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
-	PrimitiveNode *node = new PrimitiveNode(inst, this->type);
+	auto node = new PrimitiveNode(inst, this->type);
 
 	node->center = false;
 	node->x = node->y = node->z = node->h = node->r1 = node->r2 = 1;
@@ -187,8 +187,8 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 
 	switch (this->type)  {
 	case primitive_type_e::CUBE: {
-		ValuePtr size = c.lookup_variable("size");
-		ValuePtr center = c.lookup_variable("center");
+		auto size = c.lookup_variable("size");
+		auto center = c.lookup_variable("center");
 		size->getDouble(node->x);
 		size->getDouble(node->y);
 		size->getDouble(node->z);
@@ -206,7 +206,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		break;
 	}
 	case primitive_type_e::CYLINDER: {
-		ValuePtr h = c.lookup_variable("h");
+		auto h = c.lookup_variable("h");
 		if (h->type() == Value::ValueType::NUMBER) {
 			node->h = h->toDouble();
 		}
@@ -225,7 +225,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 			node->r2 = r2.toDouble();
 		}
 		
-		ValuePtr center = c.lookup_variable("center");
+		auto center = c.lookup_variable("center");
 		if (center->type() == Value::ValueType::BOOL) {
 			node->center = center->toBool();
 		}
@@ -244,8 +244,8 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		break;
 	}
 	case primitive_type_e::SQUARE: {
-		ValuePtr size = c.lookup_variable("size");
-		ValuePtr center = c.lookup_variable("center");
+		auto size = c.lookup_variable("size");
+		auto center = c.lookup_variable("center");
 		size->getDouble(node->x);
 		size->getDouble(node->y);
 		size->getVec2(node->x, node->y);
@@ -269,8 +269,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 	}
 
 	node->convexity = c.lookup_variable("convexity", true)->toDouble();
-	if (node->convexity < 1)
-		node->convexity = 1;
+	if (node->convexity < 1) node->convexity = 1;
 
 	return node;
 }
@@ -298,7 +297,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 
 	switch (this->type) {
 	case primitive_type_e::CUBE: {
-		PolySet *p = new PolySet(3,true);
+		auto p = new PolySet(3,true);
 		g = p;
 		if (this->x > 0 && this->y > 0 && this->z > 0 &&
 			!std::isinf(this->x) > 0 && !std::isinf(this->y) > 0 && !std::isinf(this->z) > 0) {
@@ -356,7 +355,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 	}
 		break;
 	case primitive_type_e::SPHERE: {
-		PolySet *p = new PolySet(3,true);
+		auto p = new PolySet(3,true);
 		g = p;
 		if (this->r1 > 0 && !std::isinf(this->r1)) {
 			struct ring_s {
@@ -369,7 +368,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 // Uncomment the following three lines to enable experimental sphere tesselation
 //		if (rings % 2 == 0) rings++; // To ensure that the middle ring is at phi == 0 degrees
 
-			ring_s *ring = new ring_s[rings];
+			auto ring = new ring_s[rings];
 
 //		double offset = 0.5 * ((fragments / 2) % 2);
 			for (int i = 0; i < rings; i++) {
@@ -386,8 +385,8 @@ const Geometry *PrimitiveNode::createGeometry() const
 				p->append_vertex(ring[0].points[i].x, ring[0].points[i].y, ring[0].z);
 
 			for (int i = 0; i < rings-1; i++) {
-				ring_s *r1 = &ring[i];
-				ring_s *r2 = &ring[i+1];
+				auto r1 = &ring[i];
+				auto  r2 = &ring[i+1];
 				int r1i = 0, r2i = 0;
 				while (r1i < fragments || r2i < fragments)
 				{
@@ -431,7 +430,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 	}
 		break;
 	case primitive_type_e::CYLINDER: {
-		PolySet *p = new PolySet(3,true);
+		auto p = new PolySet(3,true);
 		g = p;
 		if (this->h > 0 && !std::isinf(this->h) &&
 				this->r1 >=0 && this->r2 >= 0 && (this->r1 > 0 || this->r2 > 0) &&
@@ -447,8 +446,8 @@ const Geometry *PrimitiveNode::createGeometry() const
 				z2 = this->h;
 			}
 
-			point2d *circle1 = new point2d[fragments];
-			point2d *circle2 = new point2d[fragments];
+			auto circle1 = new point2d[fragments];
+			auto circle2 = new point2d[fragments];
 
 			generate_circle(circle1, r1, fragments);
 			generate_circle(circle2, r2, fragments);
@@ -495,13 +494,12 @@ const Geometry *PrimitiveNode::createGeometry() const
 	}
 		break;
 	case primitive_type_e::POLYHEDRON: {
-		PolySet *p = new PolySet(3);
+		auto p = new PolySet(3);
 		g = p;
 		p->setConvexity(this->convexity);
-		for (size_t i=0; i<this->faces->toVector().size(); i++)
-		{
+		for (size_t i=0; i<this->faces->toVector().size(); i++)	{
 			p->append_poly();
-			const Value::VectorType &vec = this->faces->toVector()[i]->toVector();
+			const auto &vec = this->faces->toVector()[i]->toVector();
 			for (size_t j=0; j<vec.size(); j++) {
 				size_t pt = vec[j]->toDouble();
 				if (pt < this->points->toVector().size()) {
@@ -518,7 +516,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 	}
 		break;
 	case primitive_type_e::SQUARE: {
-		Polygon2d *p = new Polygon2d();
+		auto p = new Polygon2d();
 		g = p;
 		if (this->x > 0 && this->y > 0 &&
 				!std::isinf(this->x) && !std::isinf(this->y)) {
@@ -541,7 +539,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 	}
 		break;
 	case primitive_type_e::CIRCLE: {
-		Polygon2d *p = new Polygon2d();
+		auto p = new Polygon2d();
 		g = p;
 		if (this->r1 > 0 && !std::isinf(this->r1))	{
 			int fragments = Calc::get_fragments_from_r(this->r1, this->fn, this->fs, this->fa);
@@ -558,14 +556,14 @@ const Geometry *PrimitiveNode::createGeometry() const
 	}
 		break;
 	case primitive_type_e::POLYGON:	{
-			Polygon2d *p = new Polygon2d();
+			auto p = new Polygon2d();
 			g = p;
 
 			Outline2d outline;
 			double x,y;
-			const Value::VectorType &vec = this->points->toVector();
+			const auto &vec = this->points->toVector();
 			for (unsigned int i=0;i<vec.size();i++) {
-				const Value &val = *vec[i];
+				const auto &val = *vec[i];
 				if (!val.getVec2(x, y) || std::isinf(x) || std::isinf(y)) {
 					PRINTB("ERROR: Unable to convert point %s at index %d to a vec2 of numbers", 
 								 val.toString() % i);

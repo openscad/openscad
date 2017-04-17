@@ -45,7 +45,7 @@ public:
 
 AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
-	CgaladvNode *node = new CgaladvNode(inst, type);
+	auto node = new CgaladvNode(inst, type);
 
 	AssignmentList args;
 
@@ -65,10 +65,10 @@ AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstant
 	c.setVariables(args, evalctx);
 	inst->scope.apply(*evalctx);
 
-	ValuePtr convexity = ValuePtr::undefined;
-	ValuePtr path = ValuePtr::undefined;
-	ValuePtr subdiv_type = ValuePtr::undefined;
-	ValuePtr level = ValuePtr::undefined;
+	auto convexity = ValuePtr::undefined;
+	auto path = ValuePtr::undefined;
+	auto subdiv_type = ValuePtr::undefined;
+	auto level = ValuePtr::undefined;
 	
 	if (type == CgaladvType::MINKOWSKI) {
 		convexity = c.lookup_variable("convexity", true);
@@ -86,7 +86,7 @@ AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstant
 	}
 
 	if (type == CgaladvType::RESIZE) {
-		ValuePtr ns = c.lookup_variable("newsize");
+		auto ns = c.lookup_variable("newsize");
 		node->newsize << 0,0,0;
 		if ( ns->type() == Value::ValueType::VECTOR ) {
 			const Value::VectorType &vs = ns->toVector();
@@ -94,7 +94,7 @@ AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstant
 			if ( vs.size() >= 2 ) node->newsize[1] = vs[1]->toDouble();
 			if ( vs.size() >= 3 ) node->newsize[2] = vs[2]->toDouble();
 		}
-		ValuePtr autosize = c.lookup_variable("auto");
+		auto autosize = c.lookup_variable("auto");
 		node->autosize << false, false, false;
 		if ( autosize->type() == Value::ValueType::VECTOR ) {
 			const Value::VectorType &va = autosize->toVector();
@@ -107,15 +107,14 @@ AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstant
 		}
 	}
 
-	node->convexity = (int)convexity->toDouble();
+	node->convexity = static_cast<int>(convexity->toDouble());
 	node->path = path;
 	node->subdiv_type = subdiv_type->toString();
-	node->level = (int)level->toDouble();
+	node->level = static_cast<int>(level->toDouble());
 
-	if (node->level <= 1)
-		node->level = 1;
+	if (node->level <= 1) node->level = 1;
 
-	std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(evalctx);
+	auto instantiatednodes = inst->instantiateChildren(evalctx);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 
 	return node;

@@ -45,8 +45,8 @@ public:
 AbstractNode *CsgModule::instantiate(const Context*, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	inst->scope.apply(*evalctx);
-	CsgOpNode *node = new CsgOpNode(inst, type);
-	std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(evalctx);
+	auto node = new CsgOpNode(inst, type);
+	auto instantiatednodes = inst->instantiateChildren(evalctx);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 	return node;
 }

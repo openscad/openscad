@@ -98,7 +98,7 @@ public:
 class ValuePtr : public shared_ptr<const class Value>
 {
 public:
-  static ValuePtr undefined;
+  static const ValuePtr undefined;
 
 	ValuePtr();
 	explicit ValuePtr(const Value &v);
@@ -146,7 +146,7 @@ public:
     VECTOR,
     RANGE
   };
-  static Value undefined;
+  static const Value undefined;
 
   Value();
   Value(bool v);

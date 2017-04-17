@@ -73,13 +73,13 @@ shared_ptr<CSGNode> CSGOperation::createCSGNode(OpenSCADOperator type, shared_pt
 
   // Pruning the tree. For details, see "Solid Modeling" by Goldfeather:
   // http://www.cc.gatech.edu/~turk/my_papers/pxpl_csg.pdf
-	const BoundingBox &leftbox = left->getBoundingBox();
-	const BoundingBox &rightbox = right->getBoundingBox();
+	const auto &leftbox = left->getBoundingBox();
+	const auto &rightbox = right->getBoundingBox();
 	Vector3d newmin, newmax;
 	if (type == OpenSCADOperator::INTERSECTION) {
 		newmin = leftbox.min().array().cwiseMax( rightbox.min().array() );
 		newmax = leftbox.max().array().cwiseMin( rightbox.max().array() );
-		BoundingBox newbox( newmin, newmax );
+		BoundingBox newbox(newmin, newmax);
 		if (newbox.isNull()) {
 			return shared_ptr<CSGNode>(); // Prune entire product
 		}
@@ -127,8 +127,8 @@ void CSGLeaf::initBoundingBox()
 
 void CSGOperation::initBoundingBox()
 {
-	const BoundingBox &leftbox = this->left()->getBoundingBox();
-	const BoundingBox &rightbox = this->right()->getBoundingBox();
+	const auto &leftbox = this->left()->getBoundingBox();
+	const auto &rightbox = this->right()->getBoundingBox();
 	Vector3d newmin, newmax;
 	switch (this->type) {
 	case OpenSCADOperator::UNION:
@@ -172,9 +172,9 @@ std::string CSGOperation::dump()
 
 void CSGProducts::import(shared_ptr<CSGNode> csgnode, OpenSCADOperator type, CSGNode::Flag flags)
 {
-	CSGNode::Flag newflags = (CSGNode::Flag)(csgnode->getFlags() | flags);
+	auto newflags = static_cast<CSGNode::Flag>(csgnode->getFlags() | flags);
 
-	if (shared_ptr<CSGLeaf> leaf = dynamic_pointer_cast<CSGLeaf>(csgnode)) {
+	if (auto leaf = dynamic_pointer_cast<CSGLeaf>(csgnode)) {
 		if (type == OpenSCADOperator::UNION && this->currentproduct->intersections.size() > 0) {
 			this->createProduct();
 		}
@@ -185,7 +185,7 @@ void CSGProducts::import(shared_ptr<CSGNode> csgnode, OpenSCADOperator type, CSG
 			this->currentlist = &this->currentproduct->intersections;
 		}
 		this->currentlist->push_back(CSGChainObject(leaf, newflags));
-	} else if (shared_ptr<CSGOperation> op = dynamic_pointer_cast<CSGOperation>(csgnode)) {
+	} else if (auto op = dynamic_pointer_cast<CSGOperation>(csgnode)) {
 		assert(op->left() && op->right());
 		import(op->left(), type, newflags);
 		import(op->right(), op->getType(), newflags);
@@ -212,7 +212,7 @@ BoundingBox CSGProduct::getBoundingBox() const
 	BoundingBox bbox;
 	for(const auto &csgobj : this->intersections) {
 		if (csgobj.leaf->geom) {
-			BoundingBox psbox = csgobj.leaf->geom->getBoundingBox();
+			auto psbox = csgobj.leaf->geom->getBoundingBox();
 			// FIXME: Should intersect rather than extend
 			if (!psbox.isEmpty()) bbox.extend(csgobj.leaf->matrix * psbox);
 		}

@@ -764,9 +764,9 @@ void MainWindow::showProgress()
 
 void MainWindow::report_func(const class AbstractNode*, void *vp, int mark)
 {
-	MainWindow *thisp = static_cast<MainWindow*>(vp);
-	int v = (int)((mark*1000.0) / progress_report_count);
-	int permille = v < 1000 ? v : 999;
+	auto thisp = static_cast<MainWindow*>(vp);
+	auto v = static_cast<int>((mark*1000.0) / progress_report_count);
+	auto permille = v < 1000 ? v : 999;
 	if (permille > thisp->progresswidget->value()) {
 		QMetaObject::invokeMethod(thisp->progresswidget, "setValue", Qt::QueuedConnection,
 															Q_ARG(int, permille));

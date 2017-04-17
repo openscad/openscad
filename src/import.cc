@@ -64,10 +64,12 @@ public:
 
 AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
-	AssignmentList args;
-	args += Assignment("file"), Assignment("layer"), Assignment("convexity"), Assignment("origin"), Assignment("scale");
-	args += Assignment("filename"), Assignment("layername");
-
+  AssignmentList args{
+    Assignment("file"), Assignment("layer"), Assignment("convexity"),
+		Assignment("origin"), Assignment("scale"), Assignment("filename"),
+		Assignment("layername")
+	};
+	
   // FIXME: This is broken. Tag as deprecated and fix
 	// Map old argnames to new argnames for compatibility
 	// To fix: 
@@ -89,7 +91,7 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 	c.dump(this, inst);
 #endif
 
-	ValuePtr v = c.lookup_variable("file");
+	auto v = c.lookup_variable("file");
 	if (v->isUndefined()) {
 		v = c.lookup_variable("filename");
 		if (!v->isUndefined()) {
@@ -109,14 +111,14 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 		else if (Feature::ExperimentalSvgImport.is_enabled() && ext == ".svg") actualtype = ImportType::SVG;
 	}
 
-	ImportNode *node = new ImportNode(inst, actualtype);
+	auto node = new ImportNode(inst, actualtype);
 
 	node->fn = c.lookup_variable("$fn")->toDouble();
 	node->fs = c.lookup_variable("$fs")->toDouble();
 	node->fa = c.lookup_variable("$fa")->toDouble();
 
 	node->filename = filename;
-	Value layerval = *c.lookup_variable("layer", true);
+	auto layerval = *c.lookup_variable("layer", true);
 	if (layerval.isUndefined()) {
 		layerval = *c.lookup_variable("layername");
 		if (!layerval.isUndefined()) {
@@ -128,7 +130,7 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 
 	if (node->convexity <= 0) node->convexity = 1;
 
-	ValuePtr origin = c.lookup_variable("origin", true);
+	auto origin = c.lookup_variable("origin", true);
 	node->origin_x = node->origin_y = 0;
 	origin->getVec2(node->origin_x, node->origin_y);
 
@@ -136,8 +138,8 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 
 	if (node->scale <= 0) node->scale = 1;
 
-	ValuePtr width = c.lookup_variable("width", true);
-	ValuePtr height = c.lookup_variable("height", true);
+	auto width = c.lookup_variable("width", true);
+	auto height = c.lookup_variable("height", true);
 	node->width = (width->type() == Value::ValueType::NUMBER) ? width->toDouble() : -1;
 	node->height = (height->type() == Value::ValueType::NUMBER) ? height->toDouble() : -1;
 	

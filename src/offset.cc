@@ -51,10 +51,9 @@ public:
 
 AbstractNode *OffsetModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
-	OffsetNode *node = new OffsetNode(inst);
+	auto node = new OffsetNode(inst);
 
-	AssignmentList args;
-	args += Assignment("r");
+	AssignmentList args{Assignment("r")};
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);
@@ -69,23 +68,22 @@ AbstractNode *OffsetModule::instantiate(const Context *ctx, const ModuleInstanti
 	node->delta = 1;
 	node->chamfer = false;
 	node->join_type = ClipperLib::jtRound;
-	const ValuePtr r = c.lookup_variable("r", true);
-	const ValuePtr delta = c.lookup_variable("delta", true);
-	const ValuePtr chamfer = c.lookup_variable("chamfer", true);
+	const auto r = c.lookup_variable("r", true);
+	const auto delta = c.lookup_variable("delta", true);
+	const auto chamfer = c.lookup_variable("chamfer", true);
 	
 	if (r->isDefinedAs(Value::ValueType::NUMBER)) {
-	    r->getDouble(node->delta);
+		r->getDouble(node->delta);
 	} else if (delta->isDefinedAs(Value::ValueType::NUMBER)) {
-	    delta->getDouble(node->delta);
-
-	    node->join_type = ClipperLib::jtMiter;
-	    if (chamfer->isDefinedAs(Value::ValueType::BOOL) && chamfer->toBool()) {
-		node->chamfer = true;
-		node->join_type = ClipperLib::jtSquare;
-	    }
+		delta->getDouble(node->delta);
+		node->join_type = ClipperLib::jtMiter;
+		if (chamfer->isDefinedAs(Value::ValueType::BOOL) && chamfer->toBool()) {
+			node->chamfer = true;
+			node->join_type = ClipperLib::jtSquare;
+		}
 	}
 	
-	std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(evalctx);
+	auto instantiatednodes = inst->instantiateChildren(evalctx);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 
 	return node;
@@ -96,7 +94,7 @@ std::string OffsetNode::toString() const
 	std::stringstream stream;
 
 	bool isRadius = this->join_type == ClipperLib::jtRound;
-	const char *var = isRadius ? "(r = " : "(delta = ";
+	auto var = isRadius ? "(r = " : "(delta = ";
 
 	stream  << this->name() << var << std::dec << this->delta;
 	if (!isRadius) {

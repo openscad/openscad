@@ -7,16 +7,16 @@ Camera::Camera(CameraType camtype) :
 {
 	PRINTD("Camera()");
 
-        // gimbal cam values
-        object_trans << 0,0,0;
-        object_rot << 35,0,25;
-        viewer_distance = 500;
-
-        // vector cam values
-        center << 0,0,0;
-        Eigen::Vector3d cameradir(1, 1, -0.5);
-        eye = center - 500 * cameradir;
-
+	// gimbal cam values
+	object_trans << 0,0,0;
+	object_rot << 35,0,25;
+	viewer_distance = 500;
+	
+	// vector cam values
+	center << 0,0,0;
+	Eigen::Vector3d cameradir(1, 1, -0.5);
+	eye = center - 500 * cameradir;
+	
 	pixel_width = RenderSettings::inst()->img_width;
 	pixel_height = RenderSettings::inst()->img_height;
 	autocenter = false;
@@ -65,7 +65,7 @@ void Camera::viewAll(const BoundingBox &bbox)
             this->object_trans = -bbox.center(); // for Gimbal cam
         }
         else if (this->type == CameraType::VECTOR) {
-            Vector3d dir = this->center - this->eye;
+            auto dir = this->center - this->eye;
             this->center = bbox.center(); // for Vector cam
             this->eye = this->center - dir;
         }
@@ -79,7 +79,7 @@ void Camera::viewAll(const BoundingBox &bbox)
 		this->viewer_distance = distance;
 		break;
 	case CameraType::VECTOR: {
-		Vector3d cameradir = (this->center - this->eye).normalized();
+		auto cameradir = (this->center - this->eye).normalized();
 		this->eye = this->center - distance*cameradir;
 		break;
 	}

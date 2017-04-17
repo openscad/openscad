@@ -214,20 +214,18 @@ ColorModule::~ColorModule()
 
 AbstractNode *ColorModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
-	ColorNode *node = new ColorNode(inst);
+	auto node = new ColorNode(inst);
 
 	node->color[0] = node->color[1] = node->color[2] = -1.0;
 	node->color[3] = 1.0;
 
-	AssignmentList args;
-
-	args += Assignment("c"), Assignment("alpha");
+	AssignmentList args{Assignment("c"), Assignment("alpha")};
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);
 	inst->scope.apply(*evalctx);
 
-	ValuePtr v = c.lookup_variable("c");
+	auto v = c.lookup_variable("c");
 	if (v->type() == Value::ValueType::VECTOR) {
 		for (size_t i = 0; i < 4; i++) {
 			node->color[i] = i < v->toVector().size() ? v->toVector()[i]->toDouble() : 1.0;
@@ -245,12 +243,12 @@ AbstractNode *ColorModule::instantiate(const Context *ctx, const ModuleInstantia
 			PRINT_NOCACHE("WARNING: http://en.wikipedia.org/wiki/Web_colors");
 		}
 	}
-	ValuePtr alpha = c.lookup_variable("alpha");
+	auto alpha = c.lookup_variable("alpha");
 	if (alpha->type() == Value::ValueType::NUMBER) {
 		node->color[3] = alpha->toDouble();
 	}
 
-	std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(evalctx);
+	auto instantiatednodes = inst->instantiateChildren(evalctx);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 
 	return node;

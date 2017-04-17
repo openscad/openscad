@@ -62,7 +62,7 @@ void GLView::setColorScheme(const ColorScheme &cs)
 
 void GLView::setColorScheme(const std::string &cs)
 {
-  const ColorScheme *colorscheme = ColorMap::inst()->findColorScheme(cs);
+  const auto colorscheme = ColorMap::inst()->findColorScheme(cs);
   if (colorscheme) {
     setColorScheme(*colorscheme);
   }
@@ -95,14 +95,14 @@ void GLView::setupCamera()
 
 	switch (this->cam.type) {
 	case Camera::CameraType::GIMBAL: {
-		double dist = cam.zoomValue();
+		auto dist = cam.zoomValue();
 		switch (this->cam.projection) {
 		case Camera::ProjectionType::PERSPECTIVE: {
 			gluPerspective(cam.fov, aspectratio, 0.1*dist, 100*dist);
 			break;
 		}
 		case Camera::ProjectionType::ORTHOGONAL: {
-			double height = dist * tan(cam.fov/2*M_PI/180);
+			auto height = dist * tan(cam.fov/2*M_PI/180);
 			glOrtho(-height*aspectratio, height*aspectratio,
 							-height, height,
 							-100*dist, +100*dist);
@@ -120,14 +120,14 @@ void GLView::setupCamera()
 		break;
 	}
 	case Camera::CameraType::VECTOR: {
-		double dist = (cam.center - cam.eye).norm();
+		auto dist = (cam.center - cam.eye).norm();
 		switch (this->cam.projection) {
 		case Camera::ProjectionType::PERSPECTIVE: {
 			gluPerspective(cam.fov, aspectratio, 0.1*dist, 100*dist);
 			break;
 		}
 		case Camera::ProjectionType::ORTHOGONAL: {
-			double height = dist * tan(cam.fov/2*M_PI/180);
+			auto height = dist * tan(cam.fov/2*M_PI/180);
 			glOrtho(-height*aspectratio, height*aspectratio,
 							-height, height,
 							-100*dist, +100*dist);
@@ -157,8 +157,8 @@ void GLView::paintGL()
 {
   glDisable(GL_LIGHTING);
 
-  Color4f bgcol = ColorMap::getColor(*this->colorscheme, RenderColor::BACKGROUND_COLOR);
-  Color4f axescolor = ColorMap::getColor(*this->colorscheme, RenderColor::AXES_COLOR);
+  auto bgcol = ColorMap::getColor(*this->colorscheme, RenderColor::BACKGROUND_COLOR);
+  auto axescolor = ColorMap::getColor(*this->colorscheme, RenderColor::AXES_COLOR);
   glClearColor(bgcol[0], bgcol[1], bgcol[2], 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
@@ -290,15 +290,15 @@ void GLView::enable_opencsg_shaders()
       "    gl_FragColor = color2;\n"
       "}\n";
 
-    GLuint vs = glCreateShader(GL_VERTEX_SHADER);
+    auto vs = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vs, 1, (const GLchar**)&vs_source, nullptr);
     glCompileShader(vs);
 
-    GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
+    auto fs = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fs, 1, (const GLchar**)&fs_source, nullptr);
     glCompileShader(fs);
 
-    GLuint edgeshader_prog = glCreateProgram();
+    auto edgeshader_prog = glCreateProgram();
     glAttachShader(edgeshader_prog, vs);
     glAttachShader(edgeshader_prog, fs);
     glLinkProgram(edgeshader_prog);
@@ -313,7 +313,7 @@ void GLView::enable_opencsg_shaders()
     shaderinfo[7] = glGetUniformLocation(edgeshader_prog, "xscale");
     shaderinfo[8] = glGetUniformLocation(edgeshader_prog, "yscale");
 
-    GLenum err = glGetError();
+    auto err = glGetError();
     if (err != GL_NO_ERROR) {
       fprintf(stderr, "OpenGL Error: %s\n", gluErrorString(err));
     }
@@ -376,7 +376,7 @@ void GLView::showSmallaxes(const Color4f &col)
 {
   // Fixme - this doesnt work in Vector Camera mode
 
-	float dpi = this->getDPI();
+	auto dpi = this->getDPI();
   // Small axis cross in the lower left corner
   glDepthFunc(GL_ALWAYS);
 
@@ -384,7 +384,7 @@ void GLView::showSmallaxes(const Color4f &col)
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
 	glTranslatef(-0.8f, -0.8f, 0.0f);
-	double scale = 90;
+	auto scale = 90;
 	glOrtho(-scale*dpi*aspectratio,scale*dpi*aspectratio,
 					-scale*dpi,scale*dpi,
 					-scale*dpi,scale*dpi);
@@ -458,7 +458,7 @@ void GLView::showSmallaxes(const Color4f &col)
 
 void GLView::showAxes(const Color4f &col)
 {
-  double l = cam.zoomValue();
+  auto l = cam.zoomValue();
   
   // FIXME: doesn't work under Vector Camera
   // Large gray axis cross inline with the model
@@ -492,12 +492,12 @@ void GLView::showCrosshairs()
 {
   // FIXME: this might not work with Vector camera
   glLineWidth(this->getDPI());
-  Color4f col = ColorMap::getColor(*this->colorscheme, RenderColor::CROSSHAIR_COLOR);
+  auto col = ColorMap::getColor(*this->colorscheme, RenderColor::CROSSHAIR_COLOR);
   glColor3f(col[0], col[1], col[2]);
   glBegin(GL_LINES);
   for (double xf = -1; xf <= +1; xf += 2)
   for (double yf = -1; yf <= +1; yf += 2) {
-    double vd = cam.zoomValue()/8;
+    auto vd = cam.zoomValue()/8;
     glVertex3d(-xf*vd, -yf*vd, -vd);
     glVertex3d(+xf*vd, +yf*vd, +vd);
   }
@@ -507,15 +507,15 @@ void GLView::showCrosshairs()
 void GLView::showScalemarkers(const Color4f &col)
 {
 	// Add scale tics on large axes
-	double l = cam.zoomValue();
+	auto l = cam.zoomValue();
 	glLineWidth(this->getDPI());
 	glColor3f(col[0], col[1], col[2]);
 
 	// determine the log value to provide proportional tics
-	int log_l = (int)log10(l);
+	auto log_l = static_cast<int>(log10(l));
 
 	// j represents the increment for each minor tic
-	double j = 10;
+	auto j = 10;
 	// deal with 0 log values
 	if (l < 1.5){
 		j = pow(10,log_l-2);
@@ -592,7 +592,7 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
 	// convert the axis position to a string
 	std::ostringstream oss;
 	oss << i;
-	std::string digit = oss.str();
+	auto digit = oss.str();
 
 	// setup how far above the axis (or tic TBD) to draw the number
 	double dig_buf = (l/size_div_sm)/4;
@@ -677,7 +677,7 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
 		{1,0,2,3,2,4,5},
 		{1,0,2,3,2,4,5}};
 
-	std::string stash_digit = digit;
+	auto stash_digit = digit;
 
 	// walk through axes
 	for (int di=0;di<6;di++){

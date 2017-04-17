@@ -145,12 +145,12 @@ AbstractNode* ControlModule::getChild(const ValuePtr &value, const EvalContext* 
 		return nullptr;
 	}
 		
-	int n = trunc(v);
+	int n = static_cast<int>(trunc(v));
 	if (n < 0) {
 		PRINTB("WARNING: Negative children index (%d) not allowed", n);
 		return nullptr; // Disallow negative child indices
 	}
-	if (n>=(int)modulectx->numChildren()) {
+	if (n >= static_cast<int>(modulectx->numChildren())) {
 		// How to deal with negative objects in this case?
 		// (e.g. first child of difference is invalid)
 		PRINTB("WARNING: Children index (%d) out of bounds (%d children)"

@@ -34,7 +34,7 @@ shared_ptr<CSGNode> CSGTreeEvaluator::buildCSGTree(const AbstractNode &node)
 	
 	shared_ptr<CSGNode> t(this->stored_term[node.index()]);
 	if (t) {
-            if (t->isHighlight()) this->highlightNodes.push_back(t);
+		if (t->isHighlight()) this->highlightNodes.push_back(t);
 		if (t->isBackground()) {
 			this->backgroundNodes.push_back(t);
 			t.reset();
@@ -62,7 +62,7 @@ void CSGTreeEvaluator::applyToChildren(State &state, const AbstractNode &node, O
 	const ModuleInstantiation *t1_modinst;
 	for(const auto &chnode : this->visitedchildren[node.index()]) {
 		shared_ptr<CSGNode> t2(this->stored_term[chnode->index()]);
-		const ModuleInstantiation *t2_modinst = chnode->modinst;
+		auto t2_modinst = chnode->modinst;
 		this->stored_term.erase(chnode->index());
 		if (t2 && !t1) {
 			t1 = t2;
@@ -164,21 +164,21 @@ shared_ptr<CSGNode> CSGTreeEvaluator::evaluateCSGNodeFromGeometry(
 	stream << node.name() << node.index();
 
 	// We cannot render Polygon2d directly, so we preprocess (tessellate) it here
-	shared_ptr<const Geometry> g = geom;
+	auto g = geom;
 	if (!g->isEmpty()) {
-		shared_ptr<const Polygon2d> p2d = dynamic_pointer_cast<const Polygon2d>(geom);
+		auto p2d = dynamic_pointer_cast<const Polygon2d>(geom);
 		if (p2d) {
 			g.reset(p2d->tessellate());
 		}
 		else {
 			// We cannot render concave polygons, so tessellate any 3D PolySets
-			shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(geom);
+			auto ps = dynamic_pointer_cast<const PolySet>(geom);
 			// Since is_convex() doesn't handle non-planar faces, we need to tessellate
 			// also in the indeterminate state so we cannot just use a boolean comparison. See #1061
-			bool convex = ps->convexValue();
+			auto convex = ps->convexValue();
 			if (ps && !convex) {
 				assert(ps->getDimension() == 3);
-				PolySet *ps_tri = new PolySet(3, ps->convexValue());
+				auto ps_tri = new PolySet(3, ps->convexValue());
 				ps_tri->setConvexity(ps->getConvexity());
 				PolysetUtils::tessellate_faces(*ps, *ps_tri);
 				g.reset(ps_tri);
@@ -197,7 +197,7 @@ Response CSGTreeEvaluator::visit(State &state, const AbstractPolyNode &node)
 	if (state.isPostfix()) {
 		shared_ptr<CSGNode> t1;
 		if (this->geomevaluator) {
-			shared_ptr<const Geometry> geom = this->geomevaluator->evaluateGeometry(node, false);
+			auto geom = this->geomevaluator->evaluateGeometry(node, false);
 			if (geom) {
 				t1 = evaluateCSGNodeFromGeometry(state, geom, node.modinst, node);
 			}

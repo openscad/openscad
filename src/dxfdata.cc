@@ -207,7 +207,7 @@ DxfData::DxfData(double fn, double fs, double fa,
 				int n = Calc::get_fragments_from_r(radius, fn, fs, fa);
 				while (arc_start_angle > arc_stop_angle)
 					arc_stop_angle += 360.0;
-				n = (int)ceil(n * (arc_stop_angle-arc_start_angle) / 360);
+				n = static_cast<int>(ceil(n * (arc_stop_angle-arc_start_angle) / 360));
 				for (int i = 0; i < n; i++) {
 					double a1 = ((arc_stop_angle-arc_start_angle)*i)/n;
 					double a2 = ((arc_stop_angle-arc_start_angle)*(i+1))/n;
@@ -242,7 +242,7 @@ DxfData::DxfData(double fn, double fs, double fa,
 				double r_minor = r_major * radius;
 				double sweep_angle = ellipse_stop_angle-ellipse_start_angle;
 				int n = Calc::get_fragments_from_r(r_major, fn, fs, fa);
-				n = (int)ceil(n * sweep_angle / (2 * M_PI));
+				n = static_cast<int>(ceil(n * sweep_angle / (2 * M_PI)));
 //				Vector2d p1;
 				Vector2d p1; p1 << 0,0;
 				for (int i=0;i<=n;i++) {
