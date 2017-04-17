@@ -75,7 +75,7 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	ValuePtr twist = c.lookup_variable("twist", true);
 	ValuePtr slices = c.lookup_variable("slices", true);
 
-	if (!file->isUndefined() && file->type() == Value::STRING) {
+	if (!file->isUndefined() && file->type() == Value::ValueType::STRING) {
 		printDeprecation("Support for reading files in linear_extrude will be removed in future releases. Use a child import() instead.");
 		node->filename = lookup_file(file->toString(), inst->path(), c.documentPath());
 	}
@@ -86,7 +86,7 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 			evalctx->numArgs() > 0 &&
 			evalctx->getArgName(0) == "") {
 		ValuePtr val = evalctx->getArgValue(0);
-		if (val->type() == Value::NUMBER) height = val;
+		if (val->type() == Value::ValueType::NUMBER) height = val;
 	}
 
 	node->layername = layer->isUndefined() ? "" : layer->toString();
@@ -99,7 +99,7 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	scale->getFiniteDouble(node->scale_y);
 	scale->getVec2(node->scale_x, node->scale_y, true);
 
-	if (center->type() == Value::BOOL)
+	if (center->type() == Value::ValueType::BOOL)
 		node->center = center->toBool();
 
 	if (node->height <= 0) node->height = 0;

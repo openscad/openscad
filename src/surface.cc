@@ -95,17 +95,17 @@ AbstractNode *SurfaceModule::instantiate(const Context *ctx, const ModuleInstant
 	node->filename = lookup_file(fileval->isUndefined() ? "" : fileval->toString(), inst->path(), c.documentPath());
 
 	ValuePtr center = c.lookup_variable("center", true);
-	if (center->type() == Value::BOOL) {
+	if (center->type() == Value::ValueType::BOOL) {
 		node->center = center->toBool();
 	}
 
 	ValuePtr convexity = c.lookup_variable("convexity", true);
-	if (convexity->type() == Value::NUMBER) {
+	if (convexity->type() == Value::ValueType::NUMBER) {
 		node->convexity = (int)convexity->toDouble();
 	}
 
 	ValuePtr invert = c.lookup_variable("invert", true);
-	if (invert->type() == Value::BOOL) {
+	if (invert->type() == Value::ValueType::BOOL) {
 		node->invert = invert->toBool();
 	}
 

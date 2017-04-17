@@ -107,7 +107,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 	Geometry::Geometries children = collectChildren3D(node);
 	if (children.size() == 0) return ResultObject();
 
-	if (op == OPENSCAD_HULL) {
+	if (op == OpenSCADOperator::HULL) {
 		PolySet *ps = new PolySet(3, true);
 
 		if (CGALUtils::applyHull(children, *ps)) {
@@ -121,7 +121,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 	// Only one child -> this is a noop
 	if (children.size() == 1) return ResultObject(children.front().second);
 
-	if (op == OPENSCAD_MINKOWSKI) {
+	if (op == OpenSCADOperator::MINKOWSKI) {
 		Geometry::Geometries actualchildren;
 		for(const auto &item : children) {
 			if (!item.second->isEmpty()) actualchildren.push_back(item);
@@ -303,10 +303,10 @@ Geometry::Geometries GeometryEvaluator::collectChildren3D(const AbstractNode &no
 */
 Polygon2d *GeometryEvaluator::applyToChildren2D(const AbstractNode &node, OpenSCADOperator op)
 {
-	if (op == OPENSCAD_MINKOWSKI) {
+	if (op == OpenSCADOperator::MINKOWSKI) {
 		return applyMinkowski2D(node);
 	}
-	else if (op == OPENSCAD_HULL) {
+	else if (op == OpenSCADOperator::HULL) {
 		return applyHull2D(node);
 	}
 
@@ -322,13 +322,13 @@ Polygon2d *GeometryEvaluator::applyToChildren2D(const AbstractNode &node, OpenSC
 
 	ClipperLib::ClipType clipType;
 	switch (op) {
-	case OPENSCAD_UNION:
+	case OpenSCADOperator::UNION:
 		clipType = ClipperLib::ctUnion;
 		break;
-	case OPENSCAD_INTERSECTION:
+	case OpenSCADOperator::INTERSECTION:
 		clipType = ClipperLib::ctIntersection;
 		break;
-	case OPENSCAD_DIFFERENCE:
+	case OpenSCADOperator::DIFFERENCE:
 		clipType = ClipperLib::ctDifference;
 		break;
 	default:
@@ -370,20 +370,20 @@ void GeometryEvaluator::addToParent(const State &state,
 Response GeometryEvaluator::visit(State &state, const AbstractNode &node)
 {
 	if (state.isPrefix()) {
-		if (isSmartCached(node)) return PruneTraversal;
+		if (isSmartCached(node)) return Response::PruneTraversal;
 		state.setPreferNef(true); // Improve quality of CSG by avoiding conversion loss
 	}
 	if (state.isPostfix()) {
 		shared_ptr<const class Geometry> geom;
 		if (!isSmartCached(node)) {
-			geom = applyToChildren(node, OPENSCAD_UNION).constptr();
+			geom = applyToChildren(node, OpenSCADOperator::UNION).constptr();
 		}
 		else {
 			geom = smartCacheGet(node, state.preferNef());
 		}
 		addToParent(state, node, geom);
 	}
-	return ContinueTraversal;
+	return Response::ContinueTraversal;
 }
 
 /*!
@@ -401,11 +401,11 @@ Response GeometryEvaluator::visit(State &state, const RootNode &node)
 
 Response GeometryEvaluator::visit(State &state, const OffsetNode &node)
 {
-	if (state.isPrefix() && isSmartCached(node)) return PruneTraversal;
+	if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;
 	if (state.isPostfix()) {
 		shared_ptr<const Geometry> geom;
 		if (!isSmartCached(node)) {
-			const Geometry *geometry = applyToChildren2D(node, OPENSCAD_UNION);
+			const Geometry *geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
 			if (geometry) {
 				const Polygon2d *polygon = dynamic_cast<const Polygon2d*>(geometry);
 				// ClipperLib documentation: The formula for the number of steps in a full
@@ -423,7 +423,7 @@ Response GeometryEvaluator::visit(State &state, const OffsetNode &node)
 		}
 		addToParent(state, node, geom);
 	}
-	return ContinueTraversal;
+	return Response::ContinueTraversal;
 }
 
 /*!
@@ -432,13 +432,13 @@ Response GeometryEvaluator::visit(State &state, const OffsetNode &node)
 Response GeometryEvaluator::visit(State &state, const RenderNode &node)
 {
 	if (state.isPrefix()) {
-		if (isSmartCached(node)) return PruneTraversal;
+		if (isSmartCached(node)) return Response::PruneTraversal;
 		state.setPreferNef(true); // Improve quality of CSG by avoiding conversion loss
 	}
 	if (state.isPostfix()) {
 		shared_ptr<const class Geometry> geom;
 		if (!isSmartCached(node)) {
-			ResultObject res = applyToChildren(node, OPENSCAD_UNION);
+			ResultObject res = applyToChildren(node, OpenSCADOperator::UNION);
 
 			geom = res.constptr();
 			if (shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(geom)) {
@@ -463,7 +463,7 @@ Response GeometryEvaluator::visit(State &state, const RenderNode &node)
 		}
 		addToParent(state, node, geom);
 	}
-	return ContinueTraversal;
+	return Response::ContinueTraversal;
 }
 
 /*!
@@ -491,7 +491,7 @@ Response GeometryEvaluator::visit(State &state, const LeafNode &node)
 		else geom = smartCacheGet(node, state.preferNef());
 		addToParent(state, node, geom);
 	}
-	return PruneTraversal;
+	return Response::PruneTraversal;
 }
 
 Response GeometryEvaluator::visit(State &state, const TextNode &node)
@@ -511,7 +511,7 @@ Response GeometryEvaluator::visit(State &state, const TextNode &node)
 		else geom = GeometryCache::instance()->get(this->tree.getIdString(node));
 		addToParent(state, node, geom);
 	}
-	return PruneTraversal;
+	return Response::PruneTraversal;
 }
 
 
@@ -524,7 +524,7 @@ Response GeometryEvaluator::visit(State &state, const TextNode &node)
 Response GeometryEvaluator::visit(State &state, const CsgOpNode &node)
 {
 	if (state.isPrefix()) {
-		if (isSmartCached(node)) return PruneTraversal;
+		if (isSmartCached(node)) return Response::PruneTraversal;
 		state.setPreferNef(true); // Improve quality of CSG by avoiding conversion loss
 	}
 	if (state.isPostfix()) {
@@ -537,7 +537,7 @@ Response GeometryEvaluator::visit(State &state, const CsgOpNode &node)
 		}
 		addToParent(state, node, geom);
 	}
-	return ContinueTraversal;
+	return Response::ContinueTraversal;
 }
 
 /*!
@@ -549,7 +549,7 @@ Response GeometryEvaluator::visit(State &state, const CsgOpNode &node)
  */			
 Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 {
-	if (state.isPrefix() && isSmartCached(node)) return PruneTraversal;
+	if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;
 	if (state.isPostfix()) {
 		shared_ptr<const class Geometry> geom;
 		if (!isSmartCached(node)) {
@@ -559,7 +559,7 @@ Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 			}
 			else {
 				// First union all children
-				ResultObject res = applyToChildren(node, OPENSCAD_UNION);
+				ResultObject res = applyToChildren(node, OpenSCADOperator::UNION);
 				if ((geom = res.constptr())) {
 					if (geom->getDimension() == 2) {
 						shared_ptr<const Polygon2d> polygons = dynamic_pointer_cast<const Polygon2d>(geom);
@@ -612,7 +612,7 @@ Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 		}
 		addToParent(state, node, geom);
 	}
-	return ContinueTraversal;
+	return Response::ContinueTraversal;
 }
 
 static void translate_PolySet(PolySet &ps, const Vector3d &translation)
@@ -738,7 +738,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &
  */			
 Response GeometryEvaluator::visit(State &state, const LinearExtrudeNode &node)
 {
-	if (state.isPrefix() && isSmartCached(node)) return PruneTraversal;
+	if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;
 	if (state.isPostfix()) {
 		shared_ptr<const Geometry> geom;
 		if (!isSmartCached(node)) {
@@ -751,7 +751,7 @@ Response GeometryEvaluator::visit(State &state, const LinearExtrudeNode &node)
 				delete p2d;
 			}
 			else {
-				geometry = applyToChildren2D(node, OPENSCAD_UNION);
+				geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
 			}
 			if (geometry) {
 				const Polygon2d *polygons = dynamic_cast<const Polygon2d*>(geometry);
@@ -766,7 +766,7 @@ Response GeometryEvaluator::visit(State &state, const LinearExtrudeNode &node)
 		}
 		addToParent(state, node, geom);
 	}
-	return ContinueTraversal;
+	return Response::ContinueTraversal;
 }
 
 static void fill_ring(std::vector<Vector3d> &ring, const Outline2d &o, double a, bool flip)
@@ -895,7 +895,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
  */			
 Response GeometryEvaluator::visit(State &state, const RotateExtrudeNode &node)
 {
-	if (state.isPrefix() && isSmartCached(node)) return PruneTraversal;
+	if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;
 	if (state.isPostfix()) {
 		shared_ptr<const Geometry> geom;
 		if (!isSmartCached(node)) {
@@ -907,7 +907,7 @@ Response GeometryEvaluator::visit(State &state, const RotateExtrudeNode &node)
 				delete p2d;
 			}
 			else {
-				geometry = applyToChildren2D(node, OPENSCAD_UNION);
+				geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
 			}
 			if (geometry) {
 				const Polygon2d *polygons = dynamic_cast<const Polygon2d*>(geometry);
@@ -921,7 +921,7 @@ Response GeometryEvaluator::visit(State &state, const RotateExtrudeNode &node)
 		}
 		addToParent(state, node, geom);
 	}
-	return ContinueTraversal;
+	return Response::ContinueTraversal;
 }
 
 /*!
@@ -930,7 +930,7 @@ Response GeometryEvaluator::visit(State &state, const RotateExtrudeNode &node)
 Response GeometryEvaluator::visit(State &state, const AbstractPolyNode &node)
 {
 	assert(false);
-	return AbortTraversal;
+	return Response::AbortTraversal;
 }
 
 /*!
@@ -942,7 +942,7 @@ Response GeometryEvaluator::visit(State &state, const AbstractPolyNode &node)
  */			
 Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 {
-	if (state.isPrefix() && isSmartCached(node)) return PruneTraversal;
+	if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;
 	if (state.isPostfix()) {
 		shared_ptr<const class Geometry> geom;
 		if (!isSmartCached(node)) {
@@ -1020,7 +1020,7 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 				if (sumresult.Total() > 0) geom.reset(ClipperUtils::toPolygon2d(sumresult));
 			}
 			else {
-				shared_ptr<const Geometry> newgeom = applyToChildren3D(node, OPENSCAD_UNION).constptr();
+				shared_ptr<const Geometry> newgeom = applyToChildren3D(node, OpenSCADOperator::UNION).constptr();
 				if (newgeom) {
 					shared_ptr<const CGAL_Nef_polyhedron> Nptr = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(newgeom);
 					if (!Nptr) {
@@ -1041,7 +1041,7 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 		}
 		addToParent(state, node, geom);
 	}
-	return ContinueTraversal;
+	return Response::ContinueTraversal;
 }		
 
 /*!
@@ -1052,13 +1052,13 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
  */			
 Response GeometryEvaluator::visit(State &state, const CgaladvNode &node)
 {
-	if (state.isPrefix() && isSmartCached(node)) return PruneTraversal;
+	if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;
 	if (state.isPostfix()) {
 		shared_ptr<const Geometry> geom;
 		if (!isSmartCached(node)) {
 			switch (node.type) {
-			case MINKOWSKI: {
-				ResultObject res = applyToChildren(node, OPENSCAD_MINKOWSKI);
+			case CgaladvType::MINKOWSKI: {
+				ResultObject res = applyToChildren(node, OpenSCADOperator::MINKOWSKI);
 				geom = res.constptr();
 				// If we added convexity, we need to pass it on
 				if (geom && geom->getConvexity() != node.convexity) {
@@ -1071,12 +1071,12 @@ Response GeometryEvaluator::visit(State &state, const CgaladvNode &node)
 				}
 				break;
 			}
-			case HULL: {
-				geom = applyToChildren(node, OPENSCAD_HULL).constptr();
+			case CgaladvType::HULL: {
+				geom = applyToChildren(node, OpenSCADOperator::HULL).constptr();
 				break;
 			}
-			case RESIZE: {
-				ResultObject res = applyToChildren(node, OPENSCAD_UNION);
+			case CgaladvType::RESIZE: {
+				ResultObject res = applyToChildren(node, OpenSCADOperator::UNION);
 				geom = res.constptr();
 				if (geom) {
 					shared_ptr<Geometry> editablegeom;
@@ -1117,24 +1117,24 @@ Response GeometryEvaluator::visit(State &state, const CgaladvNode &node)
 		}
 		addToParent(state, node, geom);
 	}
-	return ContinueTraversal;
+	return Response::ContinueTraversal;
 }
 
 Response GeometryEvaluator::visit(State &state, const AbstractIntersectionNode &node)
 {
 	if (state.isPrefix()) {
-		if (isSmartCached(node)) return PruneTraversal;
+		if (isSmartCached(node)) return Response::PruneTraversal;
 		state.setPreferNef(true); // Improve quality of CSG by avoiding conversion loss
 	}
 	if (state.isPostfix()) {
 		shared_ptr<const class Geometry> geom;
 		if (!isSmartCached(node)) {
-			geom = applyToChildren(node, OPENSCAD_INTERSECTION).constptr();
+			geom = applyToChildren(node, OpenSCADOperator::INTERSECTION).constptr();
 		}
 		else {
 			geom = smartCacheGet(node, state.preferNef());
 		}
 		addToParent(state, node, geom);
 	}
-	return ContinueTraversal;
+	return Response::ContinueTraversal;
 }

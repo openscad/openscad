@@ -1725,7 +1725,7 @@ void MainWindow::updateCamera(const FileContext &ctx)
 	}
 
 	const ValuePtr vpd = ctx.lookup_variable("$vpd");
-	if (vpd->type() == Value::NUMBER) {
+	if (vpd->type() == Value::ValueType::NUMBER) {
 		d = vpd->toDouble();
 		camera_set = true;
 	}
@@ -2221,27 +2221,27 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
 
 void MainWindow::actionExportSTL()
 {
-	actionExport(OPENSCAD_STL, "STL", ".stl", 3);
+	actionExport(FileFormat::STL, "STL", ".stl", 3);
 }
 
 void MainWindow::actionExportOFF()
 {
-	actionExport(OPENSCAD_OFF, "OFF", ".off", 3);
+	actionExport(FileFormat::OFF, "OFF", ".off", 3);
 }
 
 void MainWindow::actionExportAMF()
 {
-	actionExport(OPENSCAD_AMF, "AMF", ".amf", 3);
+	actionExport(FileFormat::AMF, "AMF", ".amf", 3);
 }
 
 void MainWindow::actionExportDXF()
 {
-	actionExport(OPENSCAD_DXF, "DXF", ".dxf", 2);
+	actionExport(FileFormat::DXF, "DXF", ".dxf", 2);
 }
 
 void MainWindow::actionExportSVG()
 {
-	actionExport(OPENSCAD_SVG, "SVG", ".svg", 2);
+	actionExport(FileFormat::SVG, "SVG", ".svg", 2);
 }
 
 void MainWindow::actionExportCSG()

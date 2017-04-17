@@ -80,7 +80,7 @@
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
-namespace Render { enum type { GEOMETRY, CGAL, OPENCSG, THROWNTOGETHER }; };
+enum class RenderType { GEOMETRY, CGAL, OPENCSG, THROWNTOGETHER };
 using std::string;
 using std::vector;
 using boost::lexical_cast;
@@ -225,7 +225,7 @@ Camera get_camera(po::variables_map vm)
 		}
 	}
 
-	if (camera.type == Camera::GIMBAL) {
+	if (camera.type == Camera::CameraType::GIMBAL) {
 		camera.gimbalDefaultTranslate();
 	}
 
@@ -240,9 +240,9 @@ Camera get_camera(po::variables_map vm)
 	if (vm.count("projection")) {
 		string proj = vm["projection"].as<string>();
 		if (proj=="o" || proj=="ortho" || proj=="orthogonal")
-			camera.projection = Camera::ORTHOGONAL;
+			camera.projection = Camera::ProjectionType::ORTHOGONAL;
 		else if (proj=="p" || proj=="perspective")
-			camera.projection = Camera::PERSPECTIVE;
+			camera.projection = Camera::ProjectionType::PERSPECTIVE;
 		else {
 			PRINT("projection needs to be 'o' or 'p' for ortho or perspective\n");
 			exit(1);
@@ -278,7 +278,7 @@ Camera get_camera(po::variables_map vm)
 #define OPENSCAD_QTGUI 1
 #endif
 static bool checkAndExport(shared_ptr<const Geometry> root_geom, unsigned nd,
-	enum FileFormat format, const char *filename)
+	FileFormat format, const char *filename)
 {
 	if (root_geom->getDimension() != nd) {
 		PRINTB("Current top level object is not a %dD object.", nd);
@@ -316,7 +316,7 @@ void set_render_color_scheme(const std::string color_scheme, const bool exit_if_
 
 #include <QCoreApplication>
 
-int cmdline(const char *deps_output_file, const std::string &filename, Camera &camera, const char *output_file, const fs::path &original_path, Render::type renderer,const std::string &parameterFile,const std::string &setName, int argc, char ** argv )
+int cmdline(const char *deps_output_file, const std::string &filename, Camera &camera, const char *output_file, const fs::path &original_path, RenderType renderer,const std::string &parameterFile,const std::string &setName, int argc, char ** argv )
 {
 #ifdef OPENSCAD_QTGUI
 	QCoreApplication app(argc, argv);
@@ -477,13 +477,13 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	else {
 #ifdef ENABLE_CGAL
 		if ((echo_output_file || png_output_file) &&
-				(renderer==Render::OPENCSG || renderer==Render::THROWNTOGETHER)) {
+				(renderer==RenderType::OPENCSG || renderer==RenderType::THROWNTOGETHER)) {
 			// echo or OpenCSG png -> don't necessarily need geometry evaluation
 		} else {
 			// Force creation of CGAL objects (for testing)
 			root_geom = geomevaluator.evaluateGeometry(*tree.root(), true);
 			if (!root_geom) root_geom.reset(new CGAL_Nef_polyhedron());
-			if (renderer == Render::CGAL && root_geom->getDimension() == 3) {
+			if (renderer == RenderType::CGAL && root_geom->getDimension() == 3) {
 				const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron*>(root_geom.get());
 				if (!N) {
 					N = CGALUtils::createNefPolyhedronFromGeometry(*root_geom);
@@ -517,27 +517,27 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		}
 
 		if (stl_output_file) {
-			if (!checkAndExport(root_geom, 3, OPENSCAD_STL, stl_output_file))
+			if (!checkAndExport(root_geom, 3, FileFormat::STL, stl_output_file))
 				return 1;
 		}
 
 		if (off_output_file) {
-			if (!checkAndExport(root_geom, 3, OPENSCAD_OFF, off_output_file))
+			if (!checkAndExport(root_geom, 3, FileFormat::OFF, off_output_file))
 				return 1;
 		}
 
 		if (amf_output_file) {
-			if (!checkAndExport(root_geom, 3, OPENSCAD_AMF, amf_output_file))
+			if (!checkAndExport(root_geom, 3, FileFormat::AMF, amf_output_file))
 				return 1;
 		}
 
 		if (dxf_output_file) {
-			if (!checkAndExport(root_geom, 2, OPENSCAD_DXF, dxf_output_file))
+			if (!checkAndExport(root_geom, 2, FileFormat::DXF, dxf_output_file))
 				return 1;
 		}
 		
 		if (svg_output_file) {
-			if (!checkAndExport(root_geom, 2, OPENSCAD_SVG, svg_output_file))
+			if (!checkAndExport(root_geom, 2, FileFormat::SVG, svg_output_file))
 				return 1;
 		}
 
@@ -549,9 +549,9 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 				success = false;
 			}
 			else {
-				if (renderer==Render::CGAL || renderer==Render::GEOMETRY) {
+				if (renderer==RenderType::CGAL || renderer==RenderType::GEOMETRY) {
 					success = export_png(root_geom, camera, fstream);
-				} else if (renderer==Render::THROWNTOGETHER) {
+				} else if (renderer==RenderType::THROWNTOGETHER) {
 					success = export_png_with_throwntogether(tree, camera, fstream);
 				} else {
 					success = export_png_with_opencsg(tree, camera, fstream);
@@ -562,12 +562,12 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		}
 
 		if (nefdbg_output_file) {
-			if (!checkAndExport(root_geom, 3, OPENSCAD_NEFDBG, nefdbg_output_file))
+			if (!checkAndExport(root_geom, 3, FileFormat::NEFDBG, nefdbg_output_file))
 				return 1;
 		}
 
 		if (nef3_output_file) {
-			if (!checkAndExport(root_geom, 3, OPENSCAD_NEF3, nef3_output_file))
+			if (!checkAndExport(root_geom, 3, FileFormat::NEF3, nef3_output_file))
 				return 1;
 		}
 #else
@@ -867,14 +867,14 @@ int main(int argc, char **argv)
 	if (vm.count("version")) version();
 	if (vm.count("info")) arg_info = true;
 
-	Render::type renderer = Render::OPENCSG;
+	RenderType renderer = RenderType::OPENCSG;
 	if (vm.count("preview")) {
 		if (vm["preview"].as<string>() == "throwntogether")
-			renderer = Render::THROWNTOGETHER;
+			renderer = RenderType::THROWNTOGETHER;
 	}
 	else if (vm.count("render")) {
-		if (vm["render"].as<string>() == "cgal") renderer = Render::CGAL;
-		else renderer = Render::GEOMETRY;
+		if (vm["render"].as<string>() == "cgal") renderer = RenderType::CGAL;
+		else renderer = RenderType::GEOMETRY;
 	}
 
 	if (vm.count("csglimit")) {

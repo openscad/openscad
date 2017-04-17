@@ -86,7 +86,7 @@ OpenCSGPrim *OpenCSGRenderer::createCSGPrimitive(const CSGChainObject &csgobj, O
 		(highlight_mode ? 
 		 CSGMODE_HIGHLIGHT :
 		 (background_mode ? CSGMODE_BACKGROUND : CSGMODE_NORMAL)) |
-		(type == OPENSCAD_DIFFERENCE ? CSGMODE_DIFFERENCE : CSGMODE_NONE));
+		(type == OpenSCADOperator::DIFFERENCE ? CSGMODE_DIFFERENCE : CSGMODE_NONE));
 	return prim;
 }
 
@@ -97,10 +97,10 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 	for(const auto &product : products.products) {
 		std::vector<OpenCSG::Primitive*> primitives;
 		for(const auto &csgobj : product.intersections) {
-			if (csgobj.leaf->geom) primitives.push_back(createCSGPrimitive(csgobj, OpenCSG::Intersection, highlight_mode, background_mode, OPENSCAD_INTERSECTION));
+			if (csgobj.leaf->geom) primitives.push_back(createCSGPrimitive(csgobj, OpenCSG::Intersection, highlight_mode, background_mode, OpenSCADOperator::INTERSECTION));
 		}
 		for(const auto &csgobj : product.subtractions) {
-			if (csgobj.leaf->geom) primitives.push_back(createCSGPrimitive(csgobj, OpenCSG::Subtraction, highlight_mode, background_mode, OPENSCAD_DIFFERENCE));
+			if (csgobj.leaf->geom) primitives.push_back(createCSGPrimitive(csgobj, OpenCSG::Subtraction, highlight_mode, background_mode, OpenSCADOperator::DIFFERENCE));
 		}
 		if (primitives.size() > 1) {
 			OpenCSG::render(primitives);
@@ -116,13 +116,13 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 					CSGMODE_HIGHLIGHT :
 					(background_mode ? CSGMODE_BACKGROUND : CSGMODE_NORMAL));
 			
-			ColorMode colormode = COLORMODE_NONE;
+			ColorMode colormode = ColorMode::NONE;
 			if (highlight_mode) {
-				colormode = COLORMODE_HIGHLIGHT;
+				colormode = ColorMode::HIGHLIGHT;
 			} else if (background_mode) {
-				colormode = COLORMODE_BACKGROUND;
+				colormode = ColorMode::BACKGROUND;
 			} else {
-				colormode = COLORMODE_MATERIAL;
+				colormode = ColorMode::MATERIAL;
 			}
 			
 			setColor(colormode, c.data(), shaderinfo);
@@ -138,13 +138,13 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 					 CSGMODE_HIGHLIGHT :
 					 (background_mode ? CSGMODE_BACKGROUND : CSGMODE_NORMAL)) | CSGMODE_DIFFERENCE);
 			
-			ColorMode colormode = COLORMODE_NONE;
+			ColorMode colormode = ColorMode::NONE;
 			if (highlight_mode) {
-				colormode = COLORMODE_HIGHLIGHT;
+				colormode = ColorMode::HIGHLIGHT;
 			} else if (background_mode) {
-				colormode = COLORMODE_BACKGROUND;
+				colormode = ColorMode::BACKGROUND;
 			} else {
-				colormode = COLORMODE_CUTOUT;
+				colormode = ColorMode::CUTOUT;
 			}
 			
 			setColor(colormode, c.data(), shaderinfo);

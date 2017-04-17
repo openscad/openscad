@@ -36,15 +36,13 @@
 
 size_t AbstractNode::idx_counter;
 
-AbstractNode::AbstractNode(const ModuleInstantiation *mi)
+AbstractNode::AbstractNode(const ModuleInstantiation *mi) : modinst(mi), idx(idx_counter++)
 {
-	modinst = mi;
-	idx = idx_counter++;
 }
 
 AbstractNode::~AbstractNode()
 {
-	std::for_each(this->children.begin(), this->children.end(), del_fun<AbstractNode>());
+	std::for_each(this->children.begin(), this->children.end(), std::default_delete<AbstractNode>());
 }
 
 std::string AbstractNode::toString() const
@@ -96,9 +94,8 @@ AbstractNode *find_root_tag(AbstractNode *n)
 {
 	std::vector<AbstractNode*> rootTags;
 
-	std::function <void (AbstractNode *n)> find_root_tags = [&] (AbstractNode *n)
-	{
-		for(auto v : n->children) {
+	std::function <void (AbstractNode *n)> find_root_tags = [&](AbstractNode *n) {
+		for (auto v : n->children) {
 			if (v->modinst->tag_root) rootTags.push_back(v);
 			find_root_tags(v);
 		}
@@ -106,14 +103,11 @@ AbstractNode *find_root_tag(AbstractNode *n)
 
 	find_root_tags(n);
 
-	if(rootTags.size()>1) {
-		for(int i = 0; i<rootTags.size(); i++) {
-			PRINTB("WARNING: Root Modifier (!) Added At Line%d \n", rootTags[i]->modinst->location().firstLine());
+	if (rootTags.size() == 0) return nullptr;
+	if (rootTags.size() > 1) {
+		for (const auto& rootTag : rootTags) {
+			PRINTB("WARNING: Root Modifier (!) Added At Line%d \n", rootTag->modinst->location().firstLine());
 		}
-		return rootTags[0];
 	}
-	else {
-		if(rootTags.size() == 0) return nullptr;
-		else return rootTags[0];
-	}
+	return rootTags.front();
 }

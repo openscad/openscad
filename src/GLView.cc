@@ -94,14 +94,14 @@ void GLView::setupCamera()
   glLoadIdentity();
 
 	switch (this->cam.type) {
-	case Camera::GIMBAL: {
+	case Camera::CameraType::GIMBAL: {
 		double dist = cam.zoomValue();
 		switch (this->cam.projection) {
-		case Camera::PERSPECTIVE: {
+		case Camera::ProjectionType::PERSPECTIVE: {
 			gluPerspective(cam.fov, aspectratio, 0.1*dist, 100*dist);
 			break;
 		}
-		case Camera::ORTHOGONAL: {
+		case Camera::ProjectionType::ORTHOGONAL: {
 			double height = dist * tan(cam.fov/2*M_PI/180);
 			glOrtho(-height*aspectratio, height*aspectratio,
 							-height, height,
@@ -119,14 +119,14 @@ void GLView::setupCamera()
 		glRotated(cam.object_rot.z(), 0.0, 0.0, 1.0);
 		break;
 	}
-	case Camera::VECTOR: {
+	case Camera::CameraType::VECTOR: {
 		double dist = (cam.center - cam.eye).norm();
 		switch (this->cam.projection) {
-		case Camera::PERSPECTIVE: {
+		case Camera::ProjectionType::PERSPECTIVE: {
 			gluPerspective(cam.fov, aspectratio, 0.1*dist, 100*dist);
 			break;
 		}
-		case Camera::ORTHOGONAL: {
+		case Camera::ProjectionType::ORTHOGONAL: {
 			double height = dist * tan(cam.fov/2*M_PI/180);
 			glOrtho(-height*aspectratio, height*aspectratio,
 							-height, height,
@@ -157,13 +157,13 @@ void GLView::paintGL()
 {
   glDisable(GL_LIGHTING);
 
-  Color4f bgcol = ColorMap::getColor(*this->colorscheme, BACKGROUND_COLOR);
-  Color4f axescolor = ColorMap::getColor(*this->colorscheme, AXES_COLOR);
+  Color4f bgcol = ColorMap::getColor(*this->colorscheme, RenderColor::BACKGROUND_COLOR);
+  Color4f axescolor = ColorMap::getColor(*this->colorscheme, RenderColor::AXES_COLOR);
   glClearColor(bgcol[0], bgcol[1], bgcol[2], 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
   setupCamera();
-  if (this->cam.type == Camera::GIMBAL) {
+  if (this->cam.type == Camera::CameraType::GIMBAL) {
     // Only for GIMBAL cam
     // The crosshair should be fixed at the center of the viewport...
     if (showcrosshairs) GLView::showCrosshairs();
@@ -492,7 +492,7 @@ void GLView::showCrosshairs()
 {
   // FIXME: this might not work with Vector camera
   glLineWidth(this->getDPI());
-  Color4f col = ColorMap::getColor(*this->colorscheme, CROSSHAIR_COLOR);
+  Color4f col = ColorMap::getColor(*this->colorscheme, RenderColor::CROSSHAIR_COLOR);
   glColor3f(col[0], col[1], col[2]);
   glBegin(GL_LINES);
   for (double xf = -1; xf <= +1; xf += 2)

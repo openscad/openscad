@@ -16,7 +16,7 @@ ParameterComboBox::ParameterComboBox(ParameterObject *parameterobject, bool show
 
 void ParameterComboBox::onChanged(int idx)
 {
-	if (object->dvt == Value::STRING) {
+	if (object->dvt == Value::ValueType::STRING) {
 		const std::string v = comboBox->itemData(idx).toString().toStdString();
 		object->value = ValuePtr(v);
 	} else {

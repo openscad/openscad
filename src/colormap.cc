@@ -38,17 +38,17 @@ RenderColorScheme::RenderColorScheme() : _path("")
 	_index = 1000;
 	_show_in_gui = true;
 
-	_color_scheme.insert(ColorScheme::value_type(BACKGROUND_COLOR, Color4f(0xff, 0xff, 0xe5)));
-	_color_scheme.insert(ColorScheme::value_type(AXES_COLOR, Color4f(0x00, 0x00, 0x00)));
-	_color_scheme.insert(ColorScheme::value_type(OPENCSG_FACE_FRONT_COLOR, Color4f(0xf9, 0xd7, 0x2c)));
-	_color_scheme.insert(ColorScheme::value_type(OPENCSG_FACE_BACK_COLOR, Color4f(0x9d, 0xcb, 0x51)));
-	_color_scheme.insert(ColorScheme::value_type(CGAL_FACE_FRONT_COLOR, Color4f(0xf9, 0xd7, 0x2c)));
-	_color_scheme.insert(ColorScheme::value_type(CGAL_FACE_2D_COLOR, Color4f(0x00, 0xbf, 0x99)));
-	_color_scheme.insert(ColorScheme::value_type(CGAL_FACE_BACK_COLOR, Color4f(0x9d, 0xcb, 0x51)));
-	_color_scheme.insert(ColorScheme::value_type(CGAL_EDGE_FRONT_COLOR, Color4f(0xff, 0xec, 0x5e)));
-	_color_scheme.insert(ColorScheme::value_type(CGAL_EDGE_BACK_COLOR, Color4f(0xab, 0xd8, 0x56)));
-	_color_scheme.insert(ColorScheme::value_type(CGAL_EDGE_2D_COLOR, Color4f(0xff, 0x00, 0x00)));
-	_color_scheme.insert(ColorScheme::value_type(CROSSHAIR_COLOR, Color4f(0x80, 0x00, 0x00)));
+	_color_scheme.insert(ColorScheme::value_type(RenderColor::BACKGROUND_COLOR, Color4f(0xff, 0xff, 0xe5)));
+	_color_scheme.insert(ColorScheme::value_type(RenderColor::AXES_COLOR, Color4f(0x00, 0x00, 0x00)));
+	_color_scheme.insert(ColorScheme::value_type(RenderColor::OPENCSG_FACE_FRONT_COLOR, Color4f(0xf9, 0xd7, 0x2c)));
+	_color_scheme.insert(ColorScheme::value_type(RenderColor::OPENCSG_FACE_BACK_COLOR, Color4f(0x9d, 0xcb, 0x51)));
+	_color_scheme.insert(ColorScheme::value_type(RenderColor::CGAL_FACE_FRONT_COLOR, Color4f(0xf9, 0xd7, 0x2c)));
+	_color_scheme.insert(ColorScheme::value_type(RenderColor::CGAL_FACE_2D_COLOR, Color4f(0x00, 0xbf, 0x99)));
+	_color_scheme.insert(ColorScheme::value_type(RenderColor::CGAL_FACE_BACK_COLOR, Color4f(0x9d, 0xcb, 0x51)));
+	_color_scheme.insert(ColorScheme::value_type(RenderColor::CGAL_EDGE_FRONT_COLOR, Color4f(0xff, 0xec, 0x5e)));
+	_color_scheme.insert(ColorScheme::value_type(RenderColor::CGAL_EDGE_BACK_COLOR, Color4f(0xab, 0xd8, 0x56)));
+	_color_scheme.insert(ColorScheme::value_type(RenderColor::CGAL_EDGE_2D_COLOR, Color4f(0xff, 0x00, 0x00)));
+	_color_scheme.insert(ColorScheme::value_type(RenderColor::CROSSHAIR_COLOR, Color4f(0x80, 0x00, 0x00)));
 }
 
 RenderColorScheme::RenderColorScheme(fs::path path) : _path(path)
@@ -59,17 +59,17 @@ RenderColorScheme::RenderColorScheme(fs::path path) : _path(path)
 	_index = pt.get<int>("index");
 	_show_in_gui = pt.get<bool>("show-in-gui");
 	
-	addColor(BACKGROUND_COLOR, "background");
-	addColor(AXES_COLOR, "axes-color");
-	addColor(OPENCSG_FACE_FRONT_COLOR, "opencsg-face-front");
-	addColor(OPENCSG_FACE_BACK_COLOR, "opencsg-face-back");
-	addColor(CGAL_FACE_FRONT_COLOR, "cgal-face-front");
-	addColor(CGAL_FACE_2D_COLOR, "cgal-face-2d");
-	addColor(CGAL_FACE_BACK_COLOR, "cgal-face-back");
-	addColor(CGAL_EDGE_FRONT_COLOR, "cgal-edge-front");
-	addColor(CGAL_EDGE_BACK_COLOR, "cgal-edge-back");
-	addColor(CGAL_EDGE_2D_COLOR, "cgal-edge-2d");
-	addColor(CROSSHAIR_COLOR, "crosshair");
+	addColor(RenderColor::BACKGROUND_COLOR, "background");
+	addColor(RenderColor::AXES_COLOR, "axes-color");
+	addColor(RenderColor::OPENCSG_FACE_FRONT_COLOR, "opencsg-face-front");
+	addColor(RenderColor::OPENCSG_FACE_BACK_COLOR, "opencsg-face-back");
+	addColor(RenderColor::CGAL_FACE_FRONT_COLOR, "cgal-face-front");
+	addColor(RenderColor::CGAL_FACE_2D_COLOR, "cgal-face-2d");
+	addColor(RenderColor::CGAL_FACE_BACK_COLOR, "cgal-face-back");
+	addColor(RenderColor::CGAL_EDGE_FRONT_COLOR, "cgal-edge-front");
+	addColor(RenderColor::CGAL_EDGE_BACK_COLOR, "cgal-edge-back");
+	addColor(RenderColor::CGAL_EDGE_2D_COLOR, "cgal-edge-2d");
+	addColor(RenderColor::CROSSHAIR_COLOR, "crosshair");
     } catch (const std::exception & e) {
 			PRINTB("Error reading color scheme file '%s': %s", path.generic_string().c_str() % e.what());
 	_error = e.what();

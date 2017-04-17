@@ -73,7 +73,7 @@ void CSGTreeEvaluator::applyToChildren(State &state, const AbstractNode &node, O
 			// Handle background
 			if (t1->isBackground() && 
 					// For difference, we inherit the flag from the positive object
-					(t2->isBackground() || op == OPENSCAD_DIFFERENCE)) {
+					(t2->isBackground() || op == OpenSCADOperator::DIFFERENCE)) {
 				t = CSGOperation::createCSGNode(op, t1, t2);
 				t->setBackground(true);
 			}
@@ -91,7 +91,7 @@ void CSGTreeEvaluator::applyToChildren(State &state, const AbstractNode &node, O
 			}
 			// Handle highlight
 				switch (op) {
-				case OPENSCAD_DIFFERENCE:
+				case OpenSCADOperator::DIFFERENCE:
 					if (t != t1 && t1->isHighlight()) {
 						t->setHighlight(true);
 					}
@@ -99,7 +99,7 @@ void CSGTreeEvaluator::applyToChildren(State &state, const AbstractNode &node, O
 						this->highlightNodes.push_back(t2);
 					}
 					break;
-				case OPENSCAD_INTERSECTION:
+				case OpenSCADOperator::INTERSECTION:
 					if (t && t != t1 && t != t2 &&
 							t1->isHighlight() && t2->isHighlight()) {
 						t->setHighlight(true);
@@ -113,7 +113,7 @@ void CSGTreeEvaluator::applyToChildren(State &state, const AbstractNode &node, O
 						}
 					}
 					break;
-				case OPENSCAD_UNION:
+				case OpenSCADOperator::UNION:
 					if (t != t1 && t != t2 &&
 							t1->isHighlight() && t2->isHighlight()) {
 						t->setHighlight(true);
@@ -141,19 +141,19 @@ void CSGTreeEvaluator::applyToChildren(State &state, const AbstractNode &node, O
 Response CSGTreeEvaluator::visit(State &state, const AbstractNode &node)
 {
 	if (state.isPostfix()) {
-		applyToChildren(state, node, OPENSCAD_UNION);
+		applyToChildren(state, node, OpenSCADOperator::UNION);
 		addToParent(state, node);
 	}
-	return ContinueTraversal;
+	return Response::ContinueTraversal;
 }
 
 Response CSGTreeEvaluator::visit(State &state, const AbstractIntersectionNode &node)
 {
 	if (state.isPostfix()) {
-		applyToChildren(state, node, OPENSCAD_INTERSECTION);
+		applyToChildren(state, node, OpenSCADOperator::INTERSECTION);
 		addToParent(state, node);
 	}
-	return ContinueTraversal;
+	return Response::ContinueTraversal;
 }
 
 shared_ptr<CSGNode> CSGTreeEvaluator::evaluateCSGNodeFromGeometry(
@@ -206,7 +206,7 @@ Response CSGTreeEvaluator::visit(State &state, const AbstractPolyNode &node)
 		this->stored_term[node.index()] = t1;
 		addToParent(state, node);
 	}
-	return ContinueTraversal;
+	return Response::ContinueTraversal;
 }
 
 Response CSGTreeEvaluator::visit(State &state, const CsgOpNode &node)
@@ -215,7 +215,7 @@ Response CSGTreeEvaluator::visit(State &state, const CsgOpNode &node)
 		applyToChildren(state, node, node.type);
 		addToParent(state, node);
 	}
-	return ContinueTraversal;
+	return Response::ContinueTraversal;
 }
 
 Response CSGTreeEvaluator::visit(State &state, const TransformNode &node)
@@ -223,15 +223,15 @@ Response CSGTreeEvaluator::visit(State &state, const TransformNode &node)
 	if (state.isPrefix()) {
 		if (matrix_contains_infinity(node.matrix) || matrix_contains_nan(node.matrix)) {
 			PRINT("WARNING: Transformation matrix contains Not-a-Number and/or Infinity - removing object.");
-			return PruneTraversal;
+			return Response::PruneTraversal;
 		}
 		state.setMatrix(state.matrix() * node.matrix);
 	}
 	if (state.isPostfix()) {
-		applyToChildren(state, node, OPENSCAD_UNION);
+		applyToChildren(state, node, OpenSCADOperator::UNION);
 		addToParent(state, node);
 	}
-	return ContinueTraversal;
+	return Response::ContinueTraversal;
 }
 
 Response CSGTreeEvaluator::visit(State &state, const ColorNode &node)
@@ -240,10 +240,10 @@ Response CSGTreeEvaluator::visit(State &state, const ColorNode &node)
 		if (!state.color().isValid()) state.setColor(node.color);
 	}
 	if (state.isPostfix()) {
-		applyToChildren(state, node, OPENSCAD_UNION);
+		applyToChildren(state, node, OpenSCADOperator::UNION);
 		addToParent(state, node);
 	}
-	return ContinueTraversal;
+	return Response::ContinueTraversal;
 }
 
 // FIXME: If we've got CGAL support, render this node as a CGAL union into a PolySet
@@ -262,7 +262,7 @@ Response CSGTreeEvaluator::visit(State &state, const RenderNode &node)
 		this->stored_term[node.index()] = t1;
 		addToParent(state, node);
 	}
-	return ContinueTraversal;
+	return Response::ContinueTraversal;
 }
 
 Response CSGTreeEvaluator::visit(State &state, const CgaladvNode &node)
@@ -282,7 +282,7 @@ Response CSGTreeEvaluator::visit(State &state, const CgaladvNode &node)
 		applyBackgroundAndHighlight(state, node);
 		addToParent(state, node);
 	}
-	return ContinueTraversal;
+	return Response::ContinueTraversal;
 }
 
 /*!

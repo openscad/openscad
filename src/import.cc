@@ -57,8 +57,8 @@ extern PolySet * import_amf(std::string);
 class ImportModule : public AbstractModule
 {
 public:
-	import_type_e type;
-	ImportModule(import_type_e type = TYPE_UNKNOWN) : type(type) { }
+	ImportType type;
+	ImportModule(ImportType type = ImportType::UNKNOWN) : type(type) { }
 	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
 };
 
@@ -97,16 +97,16 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 		}
 	}
 	std::string filename = lookup_file(v->isUndefined() ? "" : v->toString(), inst->path(), ctx->documentPath());
-	import_type_e actualtype = this->type;
-	if (actualtype == TYPE_UNKNOWN) {
+	ImportType actualtype = this->type;
+	if (actualtype == ImportType::UNKNOWN) {
 		std::string extraw = fs::path(filename).extension().generic_string();
 		std::string ext = boost::algorithm::to_lower_copy(extraw);
-		if (ext == ".stl") actualtype = TYPE_STL;
-		else if (ext == ".off") actualtype = TYPE_OFF;
-		else if (ext == ".dxf") actualtype = TYPE_DXF;
-		else if (ext == ".nef3") actualtype = TYPE_NEF3;
-		else if (Feature::ExperimentalAmfImport.is_enabled() && ext == ".amf") actualtype = TYPE_AMF;
-		else if (Feature::ExperimentalSvgImport.is_enabled() && ext == ".svg") actualtype = TYPE_SVG;
+		if (ext == ".stl") actualtype = ImportType::STL;
+		else if (ext == ".off") actualtype = ImportType::OFF;
+		else if (ext == ".dxf") actualtype = ImportType::DXF;
+		else if (ext == ".nef3") actualtype = ImportType::NEF3;
+		else if (Feature::ExperimentalAmfImport.is_enabled() && ext == ".amf") actualtype = ImportType::AMF;
+		else if (Feature::ExperimentalSvgImport.is_enabled() && ext == ".svg") actualtype = ImportType::SVG;
 	}
 
 	ImportNode *node = new ImportNode(inst, actualtype);
@@ -138,8 +138,8 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 
 	ValuePtr width = c.lookup_variable("width", true);
 	ValuePtr height = c.lookup_variable("height", true);
-	node->width = (width->type() == Value::NUMBER) ? width->toDouble() : -1;
-	node->height = (height->type() == Value::NUMBER) ? height->toDouble() : -1;
+	node->width = (width->type() == Value::ValueType::NUMBER) ? width->toDouble() : -1;
+	node->height = (height->type() == Value::ValueType::NUMBER) ? height->toDouble() : -1;
 	
 	return node;
 }
@@ -152,29 +152,29 @@ const Geometry *ImportNode::createGeometry() const
 	Geometry *g = nullptr;
 
 	switch (this->type) {
-	case TYPE_STL: {
+	case ImportType::STL: {
 		g = import_stl(this->filename);
 		break;
 	}
-	case TYPE_AMF: {
+	case ImportType::AMF: {
 		g = import_amf(this->filename);
 		break;
 	}
-	case TYPE_OFF: {
+	case ImportType::OFF: {
 		g = import_off(this->filename);
 		break;
 	}
-	case TYPE_SVG: {
+	case ImportType::SVG: {
 		g = import_svg(this->filename);
  		break;
 	}
-	case TYPE_DXF: {
+	case ImportType::DXF: {
 		DxfData dd(this->fn, this->fs, this->fa, this->filename, this->layername, this->origin_x, this->origin_y, this->scale);
 		g = dd.toPolygon2d();
 		break;
 	}
 #ifdef ENABLE_CGAL
-	case TYPE_NEF3: {
+	case ImportType::NEF3: {
 		g = import_nef3(this->filename);
 		break;
 	}
@@ -214,8 +214,8 @@ std::string ImportNode::name() const
 
 void register_builtin_import()
 {
-	Builtins::init("import_stl", new ImportModule(TYPE_STL));
-	Builtins::init("import_off", new ImportModule(TYPE_OFF));
-	Builtins::init("import_dxf", new ImportModule(TYPE_DXF));
+	Builtins::init("import_stl", new ImportModule(ImportType::STL));
+	Builtins::init("import_off", new ImportModule(ImportType::OFF));
+	Builtins::init("import_dxf", new ImportModule(ImportType::DXF));
 	Builtins::init("import", new ImportModule());
 }

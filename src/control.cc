@@ -38,7 +38,7 @@
 class ControlModule : public AbstractModule
 {
 public: // types
-	enum Type {
+	enum class Type {
 		CHILD,
 		CHILDREN,
 		ECHO,
@@ -75,7 +75,7 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 		const std::string &it_name = evalctx->getArgName(l);
 		ValuePtr it_values = evalctx->getArgValue(l, ctx);
 		Context c(ctx);
-		if (it_values->type() == Value::RANGE) {
+		if (it_values->type() == Value::ValueType::RANGE) {
 			RangeType range = it_values->toRange();
 			uint32_t steps = range.numValues();
 			if (steps >= 10000) {
@@ -87,13 +87,13 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 				}
 			}
 		}
-		else if (it_values->type() == Value::VECTOR) {
+		else if (it_values->type() == Value::ValueType::VECTOR) {
 			for (size_t i = 0; i < it_values->toVector().size(); i++) {
 				c.set_variable(it_name, it_values->toVector()[i]);
 				for_eval(node, inst, l+1, &c, evalctx);
 			}
 		}
-		else if (it_values->type() != Value::UNDEFINED) {
+		else if (it_values->type() != Value::ValueType::UNDEFINED) {
 			c.set_variable(it_name, it_values);
 			for_eval(node, inst, l+1, &c, evalctx);
 		}
@@ -133,7 +133,7 @@ const EvalContext* ControlModule::getLastModuleCtx(const EvalContext *evalctx)
 // static
 AbstractNode* ControlModule::getChild(const ValuePtr &value, const EvalContext* modulectx)
 {
-	if (value->type()!=Value::NUMBER) {
+	if (value->type()!=Value::ValueType::NUMBER) {
 		// Invalid parameter
 		// (e.g. first child of difference is invalid)
 		PRINTB("WARNING: Bad parameter type (%s) for children, only accept: empty, number, vector, range.", value->toString());
@@ -166,7 +166,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 	AbstractNode *node = nullptr;
 
 	switch (this->type) {
-	case CHILD:	{
+	case Type::CHILD:	{
 		printDeprecation("child() will be removed in future releases. Use children() instead.");
 		int n = 0;
 		if (evalctx->numArgs() > 0) {
@@ -200,7 +200,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 	}
 		break;
 
-	case CHILDREN: {
+	case Type::CHILDREN: {
 		const EvalContext *modulectx = getLastModuleCtx(evalctx);
 		if (modulectx==nullptr) {
 			return nullptr;
@@ -220,10 +220,10 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 		else if (evalctx->numArgs()>0) {
 			// one (or more ignored) parameter
 			ValuePtr value = evalctx->getArgValue(0);
-			if (value->type() == Value::NUMBER) {
+			if (value->type() == Value::ValueType::NUMBER) {
 				return getChild(value, modulectx);
 			}
-			else if (value->type() == Value::VECTOR) {
+			else if (value->type() == Value::ValueType::VECTOR) {
 				AbstractNode* node = new GroupNode(inst);
 				const Value::VectorType& vect = value->toVector();
 				for(const auto &vectvalue : vect) {
@@ -233,7 +233,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 				}
 				return node;
 			}
-			else if (value->type() == Value::RANGE) {
+			else if (value->type() == Value::ValueType::RANGE) {
 				RangeType range = value->toRange();
 				uint32_t steps = range.numValues();
 				if (steps >= 10000) {
@@ -259,7 +259,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 	}
 		break;
 
-	case ECHO: {
+	case Type::ECHO: {
 		node = new GroupNode(inst);
 		std::stringstream msg;
 		msg << "ECHO: " << *evalctx;
@@ -267,7 +267,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 	}
 		break;
 
-	case ASSERT: {
+	case Type::ASSERT: {
 		node = new GroupNode(inst);
 
 		Context c(evalctx);
@@ -277,7 +277,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 	}
 		break;
 
-	case LET: {
+	case Type::LET: {
 		node = new GroupNode(inst);
 		Context c(evalctx);
 
@@ -289,7 +289,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 	}
 		break;
 
-	case ASSIGN: {
+	case Type::ASSIGN: {
 		node = new GroupNode(inst);
 		// We create a new context to avoid parameters from influencing each other
 		// -> parallel evaluation. This is to be backwards compatible.
@@ -305,17 +305,17 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 	}
 		break;
 
-	case FOR:
+	case Type::FOR:
 		node = new GroupNode(inst);
 		for_eval(*node, *inst, 0, evalctx, evalctx);
 		break;
 
-	case INT_FOR:
+	case Type::INT_FOR:
 		node = new AbstractIntersectionNode(inst);
 		for_eval(*node, *inst, 0, evalctx, evalctx);
 		break;
 
-	case IF: {
+	case Type::IF: {
 		node = new GroupNode(inst);
 		const IfElseModuleInstantiation *ifelse = dynamic_cast<const IfElseModuleInstantiation*>(inst);
 		if (evalctx->numArgs() > 0 && evalctx->getArgValue(0)->toBool()) {
@@ -336,13 +336,13 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 
 void register_builtin_control()
 {
-	Builtins::init("child", new ControlModule(ControlModule::CHILD));
-	Builtins::init("children", new ControlModule(ControlModule::CHILDREN));
-	Builtins::init("echo", new ControlModule(ControlModule::ECHO));
-	Builtins::init("assert", new ControlModule(ControlModule::ASSERT, Feature::ExperimentalAssertExpression));
-	Builtins::init("assign", new ControlModule(ControlModule::ASSIGN));
-	Builtins::init("for", new ControlModule(ControlModule::FOR));
-	Builtins::init("let", new ControlModule(ControlModule::LET));
-	Builtins::init("intersection_for", new ControlModule(ControlModule::INT_FOR));
-	Builtins::init("if", new ControlModule(ControlModule::IF));
+	Builtins::init("child", new ControlModule(ControlModule::Type::CHILD));
+	Builtins::init("children", new ControlModule(ControlModule::Type::CHILDREN));
+	Builtins::init("echo", new ControlModule(ControlModule::Type::ECHO));
+	Builtins::init("assert", new ControlModule(ControlModule::Type::ASSERT, Feature::ExperimentalAssertExpression));
+	Builtins::init("assign", new ControlModule(ControlModule::Type::ASSIGN));
+	Builtins::init("for", new ControlModule(ControlModule::Type::FOR));
+	Builtins::init("let", new ControlModule(ControlModule::Type::LET));
+	Builtins::init("intersection_for", new ControlModule(ControlModule::Type::INT_FOR));
+	Builtins::init("if", new ControlModule(ControlModule::Type::IF));
 }

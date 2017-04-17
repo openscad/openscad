@@ -360,6 +360,6 @@ void QGLView::ZoomOut(void)
 }
 
 void QGLView::setOrthoMode(bool enabled) {
-	if (enabled) this->cam.setProjection(Camera::ORTHOGONAL);
-	else this->cam.setProjection(Camera::PERSPECTIVE);
+	if (enabled) this->cam.setProjection(Camera::ProjectionType::ORTHOGONAL);
+	else this->cam.setProjection(Camera::ProjectionType::PERSPECTIVE);
 }

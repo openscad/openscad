@@ -59,11 +59,11 @@ class SettingsReader : public Settings::SettingsVisitor
 
 	try {
 		switch (entry.defaultValue().type()) {
-		case Value::STRING:
+		case Value::ValueType::STRING:
 			return Value(trimmed_value);
-		case Value::NUMBER:
+		case Value::ValueType::NUMBER:
 			return Value(boost::lexical_cast<int>(trimmed_value));
-		case Value::BOOL:
+		case Value::ValueType::BOOL:
 			boost::to_lower(trimmed_value);
 			if ("false" == trimmed_value) {
 				return Value(false);

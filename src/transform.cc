@@ -37,7 +37,7 @@
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
-enum transform_type_e {
+enum class transform_type_e {
 	SCALE,
 	ROTATE,
 	MIRROR,
@@ -62,19 +62,19 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 	AssignmentList args;
 
 	switch (this->type) {
-	case SCALE:
+	case transform_type_e::SCALE:
 		args += Assignment("v");
 		break;
-	case ROTATE:
+	case transform_type_e::ROTATE:
 		args += Assignment("a"), Assignment("v");
 		break;
-	case MIRROR:
+	case transform_type_e::MIRROR:
 		args += Assignment("v");
 		break;
-	case TRANSLATE:
+	case transform_type_e::TRANSLATE:
 		args += Assignment("v");
 		break;
-	case MULTMATRIX:
+	case transform_type_e::MULTMATRIX:
 		args += Assignment("m");
 		break;
 	default:
@@ -85,7 +85,7 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 	c.setVariables(args, evalctx);
 	inst->scope.apply(*evalctx);
 
-	if (this->type == SCALE)
+	if (this->type == transform_type_e::SCALE)
 	{
 		Vector3d scalevec(1,1,1);
 		ValuePtr v = c.lookup_variable("v");
@@ -95,10 +95,10 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 		}
 		node->matrix.scale(scalevec);
 	}
-	else if (this->type == ROTATE)
+	else if (this->type == transform_type_e::ROTATE)
 	{
 		ValuePtr val_a = c.lookup_variable("a");
-		if (val_a->type() == Value::VECTOR)
+		if (val_a->type() == Value::ValueType::VECTOR)
 		{
 			Eigen::AngleAxisd rotx(0, Vector3d::UnitX());
 			Eigen::AngleAxisd roty(0, Vector3d::UnitY());
@@ -135,7 +135,7 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 			}
 		}
 	}
-	else if (this->type == MIRROR)
+	else if (this->type == transform_type_e::MIRROR)
 	{
 		ValuePtr val_v = c.lookup_variable("v");
 		double x = 1, y = 0, z = 0;
@@ -157,22 +157,22 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 			node->matrix = m;
 		}
 	}
-	else if (this->type == TRANSLATE)
+	else if (this->type == transform_type_e::TRANSLATE)
 	{
 		ValuePtr v = c.lookup_variable("v");
 		Vector3d translatevec(0,0,0);
 		v->getVec3(translatevec[0], translatevec[1], translatevec[2]);
 		node->matrix.translate(translatevec);
 	}
-	else if (this->type == MULTMATRIX)
+	else if (this->type == transform_type_e::MULTMATRIX)
 	{
 		ValuePtr v = c.lookup_variable("m");
-		if (v->type() == Value::VECTOR) {
+		if (v->type() == Value::ValueType::VECTOR) {
 			Matrix4d rawmatrix = Matrix4d::Identity();
 			for (int i = 0; i < 16; i++) {
 				size_t x = i / 4, y = i % 4;
 				if (y < v->toVector().size() && v->toVector()[y]->type() == 
-						Value::VECTOR && x < v->toVector()[y]->toVector().size())
+						Value::ValueType::VECTOR && x < v->toVector()[y]->toVector().size())
 					v->toVector()[y]->toVector()[x]->getDouble(rawmatrix(y, x));
 			}
 			double w = rawmatrix(3,3);
@@ -214,9 +214,9 @@ std::string TransformNode::name() const
 
 void register_builtin_transform()
 {
-	Builtins::init("scale", new TransformModule(SCALE));
-	Builtins::init("rotate", new TransformModule(ROTATE));
-	Builtins::init("mirror", new TransformModule(MIRROR));
-	Builtins::init("translate", new TransformModule(TRANSLATE));
-	Builtins::init("multmatrix", new TransformModule(MULTMATRIX));
+	Builtins::init("scale", new TransformModule(transform_type_e::SCALE));
+	Builtins::init("rotate", new TransformModule(transform_type_e::ROTATE));
+	Builtins::init("mirror", new TransformModule(transform_type_e::MIRROR));
+	Builtins::init("translate", new TransformModule(transform_type_e::TRANSLATE));
+	Builtins::init("multmatrix", new TransformModule(transform_type_e::MULTMATRIX));
 }

@@ -126,7 +126,7 @@ void CGALRenderer::draw(bool showfaces, bool showedges) const
 		else {
 			// Draw 3D polygons
 			const Color4f c(-1,-1,-1,-1);	
-			setColor(COLORMODE_MATERIAL, c.data(), nullptr);
+			setColor(ColorMode::MATERIAL, c.data(), nullptr);
 			this->polyset->render_surface(CSGMODE_NORMAL, Transform3d::Identity(), nullptr);
 		}
 	}

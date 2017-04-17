@@ -54,7 +54,7 @@ AbstractNode *RenderModule::instantiate(const Context *ctx, const ModuleInstanti
 	inst->scope.apply(*evalctx);
 
 	ValuePtr v = c.lookup_variable("convexity");
-	if (v->type() == Value::NUMBER)
+	if (v->type() == Value::ValueType::NUMBER)
 		node->convexity = (int)v->toDouble();
 
 	std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(evalctx);

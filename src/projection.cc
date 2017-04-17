@@ -60,7 +60,7 @@ AbstractNode *ProjectionModule::instantiate(const Context *ctx, const ModuleInst
 
 	node->convexity = (int)convexity->toDouble();
 
-	if (cut->type() == Value::BOOL)
+	if (cut->type() == Value::ValueType::BOOL)
 		node->cut_mode = cut->toBool();
 
 	std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(evalctx);

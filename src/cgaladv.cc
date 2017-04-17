@@ -38,8 +38,8 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 class CgaladvModule : public AbstractModule
 {
 public:
-	cgaladv_type_e type;
-	CgaladvModule(cgaladv_type_e type) : type(type) { }
+	CgaladvType type;
+	CgaladvModule(CgaladvType type) : type(type) { }
 	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
 };
 
@@ -49,16 +49,16 @@ AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstant
 
 	AssignmentList args;
 
-	if (type == MINKOWSKI)
+	if (type == CgaladvType::MINKOWSKI)
 		args += Assignment("convexity");
 
-	if (type == GLIDE)
+	if (type == CgaladvType::GLIDE)
 		args += Assignment("path"), Assignment("convexity");
 
-	if (type == SUBDIV)
+	if (type == CgaladvType::SUBDIV)
 		args += Assignment("type"), Assignment("level"), Assignment("convexity");
 
-	if (type == RESIZE)
+	if (type == CgaladvType::RESIZE)
 		args += Assignment("newsize"), Assignment("auto");
 
 	Context c(ctx);
@@ -70,25 +70,25 @@ AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstant
 	ValuePtr subdiv_type = ValuePtr::undefined;
 	ValuePtr level = ValuePtr::undefined;
 	
-	if (type == MINKOWSKI) {
+	if (type == CgaladvType::MINKOWSKI) {
 		convexity = c.lookup_variable("convexity", true);
 	}
 
-	if (type == GLIDE) {
+	if (type == CgaladvType::GLIDE) {
 		convexity = c.lookup_variable("convexity", true);
 		path = c.lookup_variable("path", false);
 	}
 
-	if (type == SUBDIV) {
+	if (type == CgaladvType::SUBDIV) {
 		convexity = c.lookup_variable("convexity", true);
 		subdiv_type = c.lookup_variable("type", false);
 		level = c.lookup_variable("level", true);
 	}
 
-	if (type == RESIZE) {
+	if (type == CgaladvType::RESIZE) {
 		ValuePtr ns = c.lookup_variable("newsize");
 		node->newsize << 0,0,0;
-		if ( ns->type() == Value::VECTOR ) {
+		if ( ns->type() == Value::ValueType::VECTOR ) {
 			const Value::VectorType &vs = ns->toVector();
 			if ( vs.size() >= 1 ) node->newsize[0] = vs[0]->toDouble();
 			if ( vs.size() >= 2 ) node->newsize[1] = vs[1]->toDouble();
@@ -96,13 +96,13 @@ AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstant
 		}
 		ValuePtr autosize = c.lookup_variable("auto");
 		node->autosize << false, false, false;
-		if ( autosize->type() == Value::VECTOR ) {
+		if ( autosize->type() == Value::ValueType::VECTOR ) {
 			const Value::VectorType &va = autosize->toVector();
 			if ( va.size() >= 1 ) node->autosize[0] = va[0]->toBool();
 			if ( va.size() >= 2 ) node->autosize[1] = va[1]->toBool();
 			if ( va.size() >= 3 ) node->autosize[2] = va[2]->toBool();
 		}
-		else if ( autosize->type() == Value::BOOL ) {
+		else if ( autosize->type() == Value::ValueType::BOOL ) {
 			node->autosize << autosize->toBool(),autosize->toBool(),autosize->toBool();
 		}
 	}
@@ -124,19 +124,19 @@ AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstant
 std::string CgaladvNode::name() const
 {
 	switch (this->type) {
-	case MINKOWSKI:
+	case CgaladvType::MINKOWSKI:
 		return "minkowski";
 		break;
-	case GLIDE:
+	case CgaladvType::GLIDE:
 		return "glide";
 		break;
-	case SUBDIV:
+	case CgaladvType::SUBDIV:
 		return "subdiv";
 		break;
-	case HULL:
+	case CgaladvType::HULL:
 		return "hull";
 		break;
-	case RESIZE:
+	case CgaladvType::RESIZE:
 		return "resize";
 		break;
 	default:
@@ -151,19 +151,19 @@ std::string CgaladvNode::toString() const
 
 	stream << this->name();
 	switch (type) {
-	case MINKOWSKI:
+	case CgaladvType::MINKOWSKI:
 		stream << "(convexity = " << this->convexity << ")";
 		break;
-	case GLIDE:
+	case CgaladvType::GLIDE:
 		stream << "(path = " << *this->path << ", convexity = " << this->convexity << ")";
 		break;
-	case SUBDIV:
+	case CgaladvType::SUBDIV:
 		stream << "(level = " << this->level << ", convexity = " << this->convexity << ")";
 		break;
-	case HULL:
+	case CgaladvType::HULL:
 		stream << "()";
 		break;
-	case RESIZE:
+	case CgaladvType::RESIZE:
 		stream << "(newsize = ["
 		  << this->newsize[0] << "," << this->newsize[1] << "," << this->newsize[2] << "]"
 		  << ", auto = ["
@@ -179,9 +179,9 @@ std::string CgaladvNode::toString() const
 
 void register_builtin_cgaladv()
 {
-	Builtins::init("minkowski", new CgaladvModule(MINKOWSKI));
-	Builtins::init("glide", new CgaladvModule(GLIDE));
-	Builtins::init("subdiv", new CgaladvModule(SUBDIV));
-	Builtins::init("hull", new CgaladvModule(HULL));
-	Builtins::init("resize", new CgaladvModule(RESIZE));
+	Builtins::init("minkowski", new CgaladvModule(CgaladvType::MINKOWSKI));
+	Builtins::init("glide", new CgaladvModule(CgaladvType::GLIDE));
+	Builtins::init("subdiv", new CgaladvModule(CgaladvType::SUBDIV));
+	Builtins::init("hull", new CgaladvModule(CgaladvType::HULL));
+	Builtins::init("resize", new CgaladvModule(CgaladvType::RESIZE));
 }
