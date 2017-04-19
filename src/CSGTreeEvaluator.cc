@@ -175,7 +175,7 @@ shared_ptr<CSGNode> CSGTreeEvaluator::evaluateCSGNodeFromGeometry(
 			auto ps = dynamic_pointer_cast<const PolySet>(geom);
 			// Since is_convex() doesn't handle non-planar faces, we need to tessellate
 			// also in the indeterminate state so we cannot just use a boolean comparison. See #1061
-			auto convex = ps->convexValue();
+			bool convex = ps->convexValue();
 			if (ps && !convex) {
 				assert(ps->getDimension() == 3);
 				auto ps_tri = new PolySet(3, ps->convexValue());

@@ -46,6 +46,7 @@ OffscreenContext.mm (Mac OSX version)
 
 #include <assert.h>
 #include <sstream>
+#include <string>
 
 #include <sys/utsname.h> // for uname
 
@@ -65,10 +66,10 @@ struct OffscreenContext
 
 #include "OffscreenContextAll.hpp"
 
-string get_os_info()
+std::string get_os_info()
 {
 	struct utsname u;
-	stringstream out;
+	std::stringstream out;
 
 	if (uname(&u) < 0) {
 		out << "OS info: unknown, uname() error\n";
@@ -83,18 +84,18 @@ string get_os_info()
 	return out.str();
 }
 
-string offscreen_context_getinfo(OffscreenContext *ctx)
+std::string offscreen_context_getinfo(OffscreenContext *ctx)
 {
 	assert(ctx);
 
 	if (!ctx->xdisplay) {
-		return string("No GL Context initialized. No information to report\n");
+		return std::string("No GL Context initialized. No information to report\n");
 	}
 
 	int major, minor;
 	glXQueryVersion(ctx->xdisplay, &major, &minor);
 
-	stringstream out;
+	std::stringstream out;
 	out << "GL context creator: GLX\n"
 	    << "PNG generator: lodepng\n"
 	    << "GLX version: " << major << "." << minor << "\n"
@@ -107,12 +108,12 @@ static XErrorHandler original_xlib_handler = nullptr;
 static auto XCreateWindow_failed = false;
 static int XCreateWindow_error(Display *dpy, XErrorEvent *event)
 {
-	cerr << "XCreateWindow failed: XID: " << event->resourceid
+	std::cerr << "XCreateWindow failed: XID: " << event->resourceid
 	     << " request: " << static_cast<int>(event->request_code)
 	     << " minor: " << static_cast<int>(event->minor_code) << "\n";
 	char description[1024];
 	XGetErrorText( dpy, event->error_code, description, 1023 );
-	cerr << " error message: " << description << "\n";
+	std::cerr << " error message: " << description << "\n";
 	XCreateWindow_failed = true;
 	return 0;
 }
@@ -147,13 +148,13 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
 	int num_returned = 0;
 	auto fbconfigs = glXChooseFBConfig( dpy, DefaultScreen(dpy), attributes, &num_returned );
 	if (fbconfigs == nullptr) {
-		cerr << "glXChooseFBConfig failed\n";
+		std::cerr << "glXChooseFBConfig failed\n";
 		return false;
 	}
 
 	auto visinfo = glXGetVisualFromFBConfig( dpy, fbconfigs[0] );
 	if (visinfo == nullptr) {
-		cerr << "glXGetVisualFromFBConfig failed\n";
+		std::cerr << "glXGetVisualFromFBConfig failed\n";
 		XFree(fbconfigs);
 		return false;
 	}
@@ -191,7 +192,7 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
 
 	auto context = glXCreateNewContext(dpy, fbconfigs[0], GLX_RGBA_TYPE, nullptr, true);
 	if (context == nullptr) {
-		cerr << "glXCreateNewContext failed\n";
+		std::cerr << "glXCreateNewContext failed\n";
 		XDestroyWindow(dpy, xWin);
 		XFree(visinfo);
 		XFree(fbconfigs);
@@ -202,7 +203,7 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
 
 	if (!glXMakeContextCurrent( dpy, xWin, xWin, context )) {
 		//if (!glXMakeContextCurrent( dpy, glxWin, glxWin, context )) {
-		cerr << "glXMakeContextCurrent failed\n";
+		std::cerr << "glXMakeContextCurrent failed\n";
 		glXDestroyContext(dpy, context);
 		XDestroyWindow(dpy, xWin);
 		XFree(visinfo);
@@ -265,9 +266,9 @@ bool create_glx_dummy_context(OffscreenContext &ctx)
 
 	ctx.xdisplay = XOpenDisplay(nullptr);
 	if (ctx.xdisplay == nullptr) {
-		cerr << "Unable to open a connection to the X server.\n";
+		std::cerr << "Unable to open a connection to the X server.\n";
 		auto dpyenv = getenv("DISPLAY");
-		cerr << "DISPLAY=" << (dpyenv?dpyenv:"") << "\n";
+		std::cerr << "DISPLAY=" << (dpyenv?dpyenv:"") << "\n";
 		return false;
 	}
 
@@ -276,8 +277,8 @@ bool create_glx_dummy_context(OffscreenContext &ctx)
 
 	glXQueryVersion(ctx.xdisplay, &major, &minor);
 	if (major==1 && minor<=2 && glXGetVisualFromFBConfig==nullptr) {
-		cerr << "Error: GLX version 1.3 functions missing. "
-			<< "Your GLX version: " << major << "." << minor << endl;
+		std::cerr << "Error: GLX version 1.3 functions missing. "
+			<< "Your GLX version: " << major << "." << minor << std::endl;
 	} else {
 		result = create_glx_dummy_window(ctx);
 	}

@@ -301,7 +301,7 @@ const Geometry *SurfaceNode::createGeometry() const
 std::string SurfaceNode::toString() const
 {
 	std::stringstream stream;
-	fs::path path{this->filename};
+	fs::path path{static_cast<std::string>(this->filename)}; // gcc-4.6
 
 	stream << this->name() << "(file = " << this->filename
 		<< ", center = " << (this->center ? "true" : "false")

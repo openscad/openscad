@@ -65,7 +65,7 @@ void Camera::viewAll(const BoundingBox &bbox)
             this->object_trans = -bbox.center(); // for Gimbal cam
         }
         else if (this->type == CameraType::VECTOR) {
-            auto dir = this->center - this->eye;
+            Vector3d dir = this->center - this->eye;
             this->center = bbox.center(); // for Vector cam
             this->eye = this->center - dir;
         }
@@ -79,7 +79,7 @@ void Camera::viewAll(const BoundingBox &bbox)
 		this->viewer_distance = distance;
 		break;
 	case CameraType::VECTOR: {
-		auto cameradir = (this->center - this->eye).normalized();
+		Vector3d cameradir = (this->center - this->eye).normalized();
 		this->eye = this->center - distance*cameradir;
 		break;
 	}
