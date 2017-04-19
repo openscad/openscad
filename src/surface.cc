@@ -129,7 +129,7 @@ bool SurfaceNode::is_png(std::vector<uint8_t> &png) const
 {
 	return (png.size() >= 8 &&
 					std::memcmp(png.data(),
-											std::array<uint8_t, 8>({0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a}).data(), 8) == 0);
+											std::array<uint8_t, 8>({{0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a}}).data(), 8) == 0);
 }
 
 img_data_t SurfaceNode::read_png_or_dat(std::string filename) const
