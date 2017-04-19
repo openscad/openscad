@@ -28,7 +28,6 @@
 #include "module.h"
 #include "ModuleInstantiation.h"
 #include "progress.h"
-#include "stl-utils.h"
 #include "printutils.h"
 #include <functional>
 #include <iostream>

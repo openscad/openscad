@@ -31,7 +31,6 @@
 #include "expression.h"
 #include "evalcontext.h"
 #include "builtin.h"
-#include "stl-utils.h"
 #include "printutils.h"
 #include "stackcheck.h"
 #include "exceptions.h"

@@ -28,7 +28,6 @@
 #include "OpenCSGRenderer.h"
 #include "polyset.h"
 #include "csgnode.h"
-#include "stl-utils.h"
 
 #ifdef ENABLE_OPENCSG
 #  include <opencsg.h>
