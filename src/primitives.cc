@@ -120,13 +120,13 @@ Value PrimitiveModule::lookup_radius(const Context &ctx, const std::string &diam
 {
 	auto d = ctx.lookup_variable(diameter_var, true);
 	auto r = ctx.lookup_variable(radius_var, true);
-	const bool r_defined = (r->type() == Value::ValueType::NUMBER);
+	const auto r_defined = (r->type() == Value::ValueType::NUMBER);
 	
 	if (d->type() == Value::ValueType::NUMBER) {
 		if (r_defined) {
 			PRINTB("WARNING: Ignoring radius variable '%s' as diameter '%s' is defined too.", radius_var % diameter_var);
 		}
-		return Value(d->toDouble() / 2.0);
+		return {d->toDouble() / 2.0};
 	} else if (r_defined) {
 		return *r;
 	} else {
@@ -199,21 +199,21 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		break;
 	}
 	case primitive_type_e::SPHERE: {
-		const Value r = lookup_radius(c, "d", "r");
+		const auto r = lookup_radius(c, "d", "r");
 		if (r.type() == Value::ValueType::NUMBER) {
 			node->r1 = r.toDouble();
 		}
 		break;
 	}
 	case primitive_type_e::CYLINDER: {
-		auto h = c.lookup_variable("h");
+		const auto h = c.lookup_variable("h");
 		if (h->type() == Value::ValueType::NUMBER) {
 			node->h = h->toDouble();
 		}
 
-		const Value r = lookup_radius(c, "d", "r");
-		const Value r1 = lookup_radius(c, "d1", "r1");
-		const Value r2 = lookup_radius(c, "d2", "r2");
+		const auto r = lookup_radius(c, "d", "r");
+		const auto r1 = lookup_radius(c, "d1", "r1");
+		const auto r2 = lookup_radius(c, "d2", "r2");
 		if (r.type() == Value::ValueType::NUMBER) {
 			node->r1 = r.toDouble();
 			node->r2 = r.toDouble();
@@ -255,7 +255,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		break;
 	}
 	case primitive_type_e::CIRCLE: {
-		const Value r = lookup_radius(c, "d", "r");
+		const auto r = lookup_radius(c, "d", "r");
 		if (r.type() == Value::ValueType::NUMBER) {
 			node->r1 = r.toDouble();
 		}
@@ -363,7 +363,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 				double z;
 			};
 
-			int fragments = Calc::get_fragments_from_r(r1, fn, fs, fa);
+			auto fragments = Calc::get_fragments_from_r(r1, fn, fs, fa);
 			int rings = (fragments+1)/2;
 // Uncomment the following three lines to enable experimental sphere tesselation
 //		if (rings % 2 == 0) rings++; // To ensure that the middle ring is at phi == 0 degrees
@@ -388,15 +388,10 @@ const Geometry *PrimitiveNode::createGeometry() const
 				auto r1 = &ring[i];
 				auto  r2 = &ring[i+1];
 				int r1i = 0, r2i = 0;
-				while (r1i < fragments || r2i < fragments)
-				{
-					if (r1i >= fragments)
-						goto sphere_next_r2;
-					if (r2i >= fragments)
-						goto sphere_next_r1;
-					if ((double)r1i / fragments <
-							(double)r2i / fragments)
-					{
+				while (r1i < fragments || r2i < fragments) {
+					if (r1i >= fragments) goto sphere_next_r2;
+					if (r2i >= fragments) goto sphere_next_r1;
+					if ((double)r1i / fragments < (double)r2i / fragments) {
 					sphere_next_r1:
 						p->append_poly();
 						int r1j = (r1i+1) % fragments;
@@ -417,10 +412,11 @@ const Geometry *PrimitiveNode::createGeometry() const
 			}
 
 			p->append_poly();
-			for (int i = 0; i < fragments; i++)
+			for (int i = 0; i < fragments; i++) {
 				p->insert_vertex(ring[rings-1].points[i].x, 
 												 ring[rings-1].points[i].y, 
 												 ring[rings-1].z);
+			}
 
 			for (int i = 0; i < rings; i++) {
 				delete[] ring[i].points;
@@ -435,7 +431,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 		if (this->h > 0 && !std::isinf(this->h) &&
 				this->r1 >=0 && this->r2 >= 0 && (this->r1 > 0 || this->r2 > 0) &&
 				!std::isinf(this->r1) && !std::isinf(this->r2)) {
-			int fragments = Calc::get_fragments_from_r(std::fmax(this->r1, this->r2), this->fn, this->fs, this->fa);
+			auto fragments = Calc::get_fragments_from_r(std::fmax(this->r1, this->r2), this->fn, this->fs, this->fa);
 
 			double z1, z2;
 			if (this->center) {
@@ -528,11 +524,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 			}
 
 			Outline2d o;
-			o.vertices.resize(4);
-			o.vertices[0] = v1;
-			o.vertices[1] = Vector2d(v2[0], v1[1]);
-			o.vertices[2] = v2;
-			o.vertices[3] = Vector2d(v1[0], v2[1]);
+			o.vertices = {v1, {v2[0], v1[1]}, v2, {v1[0], v2[1]}};
 			p->addOutline(o);
 		}
 		p->setSanitized(true);
@@ -542,13 +534,13 @@ const Geometry *PrimitiveNode::createGeometry() const
 		auto p = new Polygon2d();
 		g = p;
 		if (this->r1 > 0 && !std::isinf(this->r1))	{
-			int fragments = Calc::get_fragments_from_r(this->r1, this->fn, this->fs, this->fa);
+			auto fragments = Calc::get_fragments_from_r(this->r1, this->fn, this->fs, this->fa);
 
 			Outline2d o;
 			o.vertices.resize(fragments);
 			for (int i=0; i < fragments; i++) {
 				double phi = (M_PI*2*i) / fragments;
-				o.vertices[i] = Vector2d(this->r1*cos(phi), this->r1*sin(phi));
+				o.vertices[i] = {this->r1*cos(phi), this->r1*sin(phi)};
 			}
 			p->addOutline(o);
 		}
@@ -569,16 +561,16 @@ const Geometry *PrimitiveNode::createGeometry() const
 								 val.toString() % i);
 					return p;
 				}
-				outline.vertices.push_back(Vector2d(x, y));
+				outline.vertices.emplace_back(x, y);
 			}
 
 			if (this->paths->toVector().size() == 0 && outline.vertices.size() > 2) {
 				p->addOutline(outline);
 			}
 			else {
-				for(const auto &polygon : this->paths->toVector()) {
+				for (const auto &polygon : this->paths->toVector()) {
 					Outline2d curroutline;
-					for(const auto &index : polygon->toVector()) {
+					for (const auto &index : polygon->toVector()) {
 						unsigned int idx = index->toDouble();
 						if (idx < outline.vertices.size()) {
 							curroutline.vertices.push_back(outline.vertices[idx]);

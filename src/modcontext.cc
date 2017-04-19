@@ -26,7 +26,7 @@ void ModuleContext::evaluateAssignments(const AssignmentList &assignments)
 {
 	// First, assign all simple variables
 	std::list<std::string> undefined_vars;
- 	for(const auto &ass : assignments) {
+ 	for (const auto &ass : assignments) {
 		ValuePtr tmpval = ass.second->evaluate(this);
 		if (tmpval->isUndefined()) undefined_vars.push_back(ass.first);
  		else this->set_variable(ass.first, tmpval);
@@ -71,7 +71,7 @@ void ModuleContext::initializeModule(const UserModule &module)
 	// FIXME: Don't access module members directly
 	this->functions_p = &module.scope.functions;
 	this->modules_p = &module.scope.modules;
-	for(const auto &ass : module.scope.assignments) {
+	for (const auto &ass : module.scope.assignments) {
 		this->set_variable(ass.name, ass.expr->evaluate(this));
 	}
 
@@ -84,12 +84,12 @@ void ModuleContext::initializeModule(const UserModule &module)
 */
 void ModuleContext::registerBuiltin()
 {
-	const LocalScope &scope = Builtins::instance()->getGlobalScope();
+	const auto &scope = Builtins::instance()->getGlobalScope();
 
 	// FIXME: Don't access module members directly
 	this->functions_p = &scope.functions;
 	this->modules_p = &scope.modules;
-	for(const auto &ass : scope.assignments) {
+	for (const auto &ass : scope.assignments) {
 		this->set_variable(ass.name, ass.expr->evaluate(this));
 	}
 
@@ -99,7 +99,7 @@ void ModuleContext::registerBuiltin()
 const AbstractFunction *ModuleContext::findLocalFunction(const std::string &name) const
 {
 	if (this->functions_p && this->functions_p->find(name) != this->functions_p->end()) {
-		AbstractFunction *f = this->functions_p->find(name)->second;
+		auto f = this->functions_p->find(name)->second;
 		if (!f->is_enabled()) {
 			PRINTB("WARNING: Experimental builtin function '%s' is not enabled.", name);
 			return nullptr;
@@ -112,12 +112,12 @@ const AbstractFunction *ModuleContext::findLocalFunction(const std::string &name
 const AbstractModule *ModuleContext::findLocalModule(const std::string &name) const
 {
 	if (this->modules_p && this->modules_p->find(name) != this->modules_p->end()) {
-		AbstractModule *m = this->modules_p->find(name)->second;
+		auto m = this->modules_p->find(name)->second;
 		if (!m->is_enabled()) {
 			PRINTB("WARNING: Experimental builtin module '%s' is not enabled.", name);
 			return nullptr;
 		}
-		std::string replacement = Builtins::instance()->isDeprecated(name);
+		auto replacement = Builtins::instance()->isDeprecated(name);
 		if (!replacement.empty()) {
 			PRINT_DEPRECATION("The %s() module will be removed in future releases. Use %s instead.", name % replacement);
 		}
@@ -129,7 +129,7 @@ const AbstractModule *ModuleContext::findLocalModule(const std::string &name) co
 ValuePtr ModuleContext::evaluate_function(const std::string &name, 
 																												 const EvalContext *evalctx) const
 {
-	const AbstractFunction *foundf = findLocalFunction(name);
+	const auto foundf = findLocalFunction(name);
 	if (foundf) return foundf->evaluate(this, evalctx);
 
 	return Context::evaluate_function(name, evalctx);
@@ -137,7 +137,7 @@ ValuePtr ModuleContext::evaluate_function(const std::string &name,
 
 AbstractNode *ModuleContext::instantiate_module(const ModuleInstantiation &inst, EvalContext *evalctx) const
 {
-	const AbstractModule *foundm = this->findLocalModule(inst.name());
+	const auto foundm = this->findLocalModule(inst.name());
 	if (foundm) return foundm->instantiate(this, &inst, evalctx);
 
 	return Context::instantiate_module(inst, evalctx);
@@ -147,10 +147,12 @@ AbstractNode *ModuleContext::instantiate_module(const ModuleInstantiation &inst,
 std::string ModuleContext::dump(const AbstractModule *mod, const ModuleInstantiation *inst)
 {
 	std::stringstream s;
-	if (inst)
+	if (inst) {
 		s << boost::format("ModuleContext %p (%p) for %s inst (%p) ") % this % this->parent % inst->name() % inst;
-	else
+	}
+	else {
 		s << boost::format("ModuleContext: %p (%p)") % this % this->parent;
+	}
 	s << boost::format("  document path: %s") % this->document_path;
 	if (mod) {
 		const UserModule *m = dynamic_cast<const UserModule*>(mod);
@@ -197,12 +199,12 @@ ValuePtr FileContext::sub_evaluate_function(const std::string &name,
 ValuePtr FileContext::evaluate_function(const std::string &name, 
 																											 const EvalContext *evalctx) const
 {
-	const AbstractFunction *foundf = findLocalFunction(name);
+	const auto foundf = findLocalFunction(name);
 	if (foundf) return foundf->evaluate(this, evalctx);
 
-	for(const auto &m : *this->usedlibs_p) {
+	for (const auto &m : *this->usedlibs_p) {
 		// usedmod is nullptr if the library wasn't be compiled (error or file-not-found)
-		FileModule *usedmod = ModuleCache::instance()->lookup(m);
+		auto usedmod = ModuleCache::instance()->lookup(m);
 		if (usedmod && usedmod->scope.functions.find(name) != usedmod->scope.functions.end())
 			return sub_evaluate_function(name, evalctx, usedmod);
 	}
@@ -212,11 +214,11 @@ ValuePtr FileContext::evaluate_function(const std::string &name,
 
 AbstractNode *FileContext::instantiate_module(const ModuleInstantiation &inst, EvalContext *evalctx) const
 {
-	const AbstractModule *foundm = this->findLocalModule(inst.name());
+	const auto foundm = this->findLocalModule(inst.name());
 	if (foundm) return foundm->instantiate(this, &inst, evalctx);
 
-	for(const auto &m : *this->usedlibs_p) {
-		FileModule *usedmod = ModuleCache::instance()->lookup(m);
+	for (const auto &m : *this->usedlibs_p) {
+		auto usedmod = ModuleCache::instance()->lookup(m);
 		// usedmod is nullptr if the library wasn't be compiled (error or file-not-found)
 		if (usedmod &&
 				usedmod->scope.modules.find(inst.name()) != usedmod->scope.modules.end()) {
@@ -241,7 +243,7 @@ void FileContext::initializeModule(const class FileModule &module)
 	this->usedlibs_p = &module.usedlibs;
 	this->functions_p = &module.scope.functions;
 	this->modules_p = &module.scope.modules;
-	for(const auto &ass : module.scope.assignments) {
+	for (const auto &ass : module.scope.assignments) {
 		this->set_variable(ass.name, ass.expr->evaluate(this));
 	}
 }

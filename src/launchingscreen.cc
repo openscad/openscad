@@ -33,22 +33,20 @@ LaunchingScreen::LaunchingScreen(QWidget *parent) : QDialog(parent)
 	this->versionNumberLabel->setText("OpenSCAD " + QString::fromStdString(openscad_displayversionnumber));
 
 	QStringList recentFiles = UIUtils::recentFiles();
-	for (int a = 0;a < recentFiles.size();a++) {
-		QFileInfo fileInfo(recentFiles[a]);
-		QListWidgetItem *item = new QListWidgetItem(fileInfo.fileName());
+	for (const auto& recentFile : recentFiles) {
+		QFileInfo fileInfo(recentFile);
+		auto item = new QListWidgetItem(fileInfo.fileName());
 		item->setData(Qt::ToolTipRole, fileInfo.canonicalPath());
 		item->setData(Qt::UserRole, fileInfo.canonicalFilePath());
 		this->recentList->addItem(item);
 	}
 
-	for(const auto &category : UIUtils::exampleCategories())
-	{
-		QFileInfoList examples = UIUtils::exampleFiles(category);
-		QTreeWidgetItem *categoryItem = new QTreeWidgetItem(QStringList(gettext(category.toStdString().c_str())));
+	for (const auto &category : UIUtils::exampleCategories()) {
+		auto examples = UIUtils::exampleFiles(category);
+		auto categoryItem = new QTreeWidgetItem(QStringList(gettext(category.toStdString().c_str())));
 
-		for(const auto &example : examples)
-		{
-	    QTreeWidgetItem *exampleItem = new QTreeWidgetItem(QStringList(example.fileName()));
+		for (const auto &example : examples)	{
+	    auto exampleItem = new QTreeWidgetItem(QStringList(example.fileName()));
 	    exampleItem->setData(0, Qt::UserRole, example.canonicalFilePath());
 	    categoryItem->addChild(exampleItem);
 		}
@@ -75,7 +73,7 @@ LaunchingScreen::~LaunchingScreen()
 	LaunchingScreen::inst = nullptr;
 }
 
-QStringList LaunchingScreen::selectedFiles()
+QStringList LaunchingScreen::selectedFiles() const
 {
 	return this->files;
 }
@@ -133,13 +131,13 @@ void LaunchingScreen::openUserFile()
 	}
 }
 
-void LaunchingScreen::checkboxState(bool state)
+void LaunchingScreen::checkboxState(bool state) const
 {
 	QSettings settings;
 	settings.setValue("launcher/showOnStartup", !state);
 }
 
-void LaunchingScreen::openUserManualURL()
+void LaunchingScreen::openUserManualURL() const
 {
 	UIUtils::openUserManualURL();
 }

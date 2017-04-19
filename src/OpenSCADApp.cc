@@ -45,7 +45,7 @@ bool OpenSCADApp::notify(QObject *object, QEvent *event)
  */
 void OpenSCADApp::requestOpenFile(const QString &filename)
 {
-	BOOST_FOREACH(MainWindow *win, this->windowManager.getWindows()) {
+	for (auto win : this->windowManager.getWindows()) {
 		// if we have an empty open window, use that one
 		if (win->isEmpty()) {
 			win->openFile(filename);
