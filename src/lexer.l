@@ -131,7 +131,7 @@ include[ \t\r\n]*"<"	{ BEGIN(cond_include); filepath = filename = ""; }
 [^\t\r\n>]*"/"	{ filepath = yytext; }
 [^\t\r\n>/]+	{ filename = yytext; }
 ">"		{ BEGIN(INITIAL); includefile(); }
-<<EOF>>         { parsererror("Unterminated include statement"); yyterminate(); }
+<<EOF>>         { parsererror("Unterminated include statement"); return TOK_ERROR; }
 }
 
 
@@ -150,7 +150,7 @@ use[ \t\r\n]*"<"	{ BEGIN(cond_use); }
 	}
         return TOK_USE;
     }
-<<EOF>>         { parsererror("Unterminated use statement"); yyterminate(); }
+<<EOF>>         { parsererror("Unterminated use statement"); return TOK_ERROR; }
 }
 
 \"			{ BEGIN(cond_string); stringcontents.clear(); }
@@ -168,7 +168,7 @@ use[ \t\r\n]*"<"	{ BEGIN(cond_use); }
 \"			{ BEGIN(INITIAL);
 			parserlval.text = strdup(stringcontents.c_str());
 			return TOK_STRING; }
-<<EOF>>                 { parsererror("Unterminated string"); yyterminate(); }
+<<EOF>>                 { parsererror("Unterminated string"); return TOK_ERROR; }
 }
 
 [\t ]                   /* whitespace */
@@ -186,7 +186,7 @@ use[ \t\r\n]*"<"	{ BEGIN(cond_use); }
 "*/"                    { BEGIN(INITIAL); }
 {UNICODE}               { parser_error_pos -= strlen(lexertext) - 1; }
 .|\n
-<<EOF>>                 { parsererror("Unterminated comment"); yyterminate(); }
+<<EOF>>                 { parsererror("Unterminated comment"); return TOK_ERROR; }
 }
 
 <<EOF>> {
