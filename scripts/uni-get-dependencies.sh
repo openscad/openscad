@@ -83,7 +83,7 @@ get_debian_deps()
   libeigen3-dev libcgal-dev libopencsg-dev libgmp3-dev libgmp-dev \
   imagemagick libfreetype6-dev \
   gtk-doc-tools libglib2.0-dev gettext xvfb pkg-config ragel
- apt-get -y install libXi-dev libfontconfig-dev
+ apt-get -y install libxi-dev libfontconfig-dev
 }
 
 get_debian_7_deps()
