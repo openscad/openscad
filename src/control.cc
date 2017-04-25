@@ -35,6 +35,20 @@
 #include <cstdint>
 #include <sstream>
 
+
+
+// pour le probe()
+//#include "CGAL_Nef_polyhedron.h"
+#include "GeometryEvaluator.h"
+#include "Tree.h"
+#include "polyset.h"
+#include "polyset-utils.h"
+#ifdef ENABLE_CGAL
+	#include "cgalutils.h"
+#endif
+
+
+
 class ControlModule : public AbstractModule
 {
 public: // types
@@ -47,7 +61,8 @@ public: // types
 		FOR,
 		LET,
 		INT_FOR,
-		IF
+		IF,
+		PROBE
     };
 public: // methods
 	ControlModule(Type type) : type(type) { }
@@ -328,9 +343,184 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 			std::vector<AbstractNode *> instantiatednodes = ifelse->instantiateElseChildren(evalctx);
 			node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 		}
-	}
 		break;
 	}
+
+ 	case PROBE: {
+                //
+                // render first children, then compute the bounding box.
+                // set the following 4 vector variables and 1 bool variable:
+                //    empty = true/false, state if there was any usable geometry.
+                //              when empty is false, the next variables are undef
+                //    bbmin = [xmin,ymin,zmin], the minimum of the bounding box
+                //    bbmax = [xmax,ymax,zmax], the maximum of the bounding box
+                //    bbsize = [xmax-xmin,...], the size of the bounding box
+                //    bbcenter = [(xmax+xmin)/2, ...], the center of the bounding box
+		//
+		// if called with (volume=true), then these variables are also defined
+                //    volume = volume of object
+                //    centroid = center of mass of object
+                //
+                // A parameter that probe takes is $exact=true/false
+                // it is generaly set to true, but with false the rendering will not be Nef (so its faster).
+                // any other parameter will be treated just like assign() (i.e. passed inside)
+                //
+                node = new GroupNode(inst);
+                Context c(evalctx);
+
+                AssignmentList args;
+                args.push_back(Assignment("volume"));
+                c.setVariables(args,evalctx);
+
+                // les parametres.. au cas ou on fera $exact=1
+                for (size_t i = 0; i < evalctx->numArgs(); i++) {
+                        if (!evalctx->getArgName(i).empty()) {
+                                c.set_variable(evalctx->getArgName(i), evalctx->getArgValue(i));
+                        }
+                }
+
+                // not sure how to set the default value to true... for now its false.
+                bool exact = c.lookup_variable("$exact")->toBool();
+                bool volume = c.lookup_variable("volume")->toBool();
+
+		if( exact ) {
+			PRINTB("probe volume=%d (exact)", volume);
+		}else{
+			PRINTB("probe volume=%d (not exact)", volume);
+		}
+
+                // Let any local variables override the parameters
+                inst->scope.apply(c);
+
+                // instantiate children one by one...
+                std::vector<AbstractNode*> childnodes;
+                AbstractNode *nc;
+
+                double xmin=0,ymin=0,zmin=0,xmax=0,ymax=0,zmax=0;
+
+#ifdef ENABLE_CGAL
+               for(unsigned int k=0;k<evalctx->numChildren();k++) {
+                        nc = evalctx->getChild(k)->evaluate(&c);
+                        // first child? then we render and set the bbox variables
+                        if( k==0 && nc!=NULL ) {
+                                Tree tree;
+                                tree.setRoot(nc);
+                                GeometryEvaluator geomEvaluator(tree);
+
+                                shared_ptr<const PolySet> G;
+#ifdef ENABLE_CGAL
+                                shared_ptr<const CGAL_Nef_polyhedron> N;
+#endif
+                                shared_ptr<const Geometry> geom;
+
+                                bool empty=true;
+                                //bool full=false;
+
+
+                                geom=geomEvaluator.evaluateGeometry(*nc,exact); // false-> no NEF, true= ok NEF
+                                G = dynamic_pointer_cast<const PolySet>(geom);
+                                // we assume that we will get either CSG or CGAL, but not both
+                                if( G!=NULL ) {
+                                        // we obtained a fast CSG geometry instead of a Nef polyhedron.
+                                        empty=G->isEmpty();
+                                        if( !empty ) {
+                                                BoundingBox bb = G->getBoundingBox();
+                                                xmin=bb.min().x();
+                                                ymin=bb.min().y();
+                                                zmin=bb.min().z();
+                                                xmax=bb.max().x();
+                                                ymax=bb.max().y();
+                                                zmax=bb.max().z();
+                                                //std::cout << "CSG!" << std::endl;
+                                                //G->dump();
+                                                //full=isBBoxFull(G);
+                                                //std::cout << "full:" <<full<<std::endl;
+                                                if( volume ) {
+                                                        double volumeTotal;
+                                                        double centerOfMass[3];
+                                                        //std::cout << "PolySet volume!" << std::endl;
+                                                        PolysetUtils::computeVolume( *G,volumeTotal,centerOfMass );
+                                                        c.set_variable("volume",Value(volumeTotal));
+                                                        Value::VectorType bbcentroid;
+                                                        bbcentroid.push_back(centerOfMass[0]);
+                                                        bbcentroid.push_back(centerOfMass[1]);
+                                                        bbcentroid.push_back(centerOfMass[2]);
+                                                        c.set_variable("centroid",Value(bbcentroid));
+                                                }
+                                        }
+                                }else{
+#ifdef ENABLE_CGAL
+                                        N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom);
+                                        if( N!=NULL ) {
+                                            empty=N->isEmpty();
+                                            if( !empty ) {
+                                                CGAL_Iso_cuboid_3 bb;
+                                                bb = CGALUtils::boundingBox( *(N->p3) );
+                                                xmin=CGAL::to_double(bb.xmin());
+                                                ymin=CGAL::to_double(bb.ymin());
+                                                zmin=CGAL::to_double(bb.zmin());
+                                                xmax=CGAL::to_double(bb.xmax());
+                                                ymax=CGAL::to_double(bb.ymax());
+                                                zmax=CGAL::to_double(bb.zmax());
+                                                if( volume ) {
+                                                        NT3 volumeTotal;
+                                                        NT3 centerOfMass[3];
+                                                        // check the volume
+                                                        //std::cout << "NEF volume!" << std::endl;
+                                                        CGALUtils::computeVolume( *(N->p3), volumeTotal,centerOfMass );
+                                                        //std::cout<<"Volume Total = "<<to_double(volumeTotal)<<"\n";
+                                                        //std::cout<<"center of mass is ("<<to_double(centerOfMass[0])<<","<<to_double(centerOfMass[1])<<","<<to_double(centerOfMass[2])<<")\n";
+                                                        c.set_variable("volume",Value(to_double(volumeTotal)));
+                                                        Value::VectorType bbcentroid;
+                                                        bbcentroid.push_back(to_double(centerOfMass[0]));
+                                                        bbcentroid.push_back(to_double(centerOfMass[1]));
+                                                        bbcentroid.push_back(to_double(centerOfMass[2]));
+                                                        c.set_variable("centroid",Value(bbcentroid));
+                                                }
+                                            }
+                                        }
+#endif
+                                }
+                                c.set_variable("empty",Value(empty));
+                                //c.set_variable("bbfull",Value(full));
+                                if( !empty ) {
+                                        // define the variables
+                                        Value::VectorType bbmin;
+                                        bbmin.push_back(xmin);
+                                        bbmin.push_back(ymin);
+                                        bbmin.push_back(zmin);
+                                        c.set_variable("bbmin",Value(bbmin));
+
+                                        Value::VectorType bbmax;
+                                        bbmax.push_back(xmax);
+                                        bbmax.push_back(ymax);
+                                        bbmax.push_back(zmax);
+                                        c.set_variable("bbmax",Value(bbmax));
+
+                                        Value::VectorType bbcenter;
+                                        bbcenter.push_back((xmin+xmax)/2.0);
+                                        bbcenter.push_back((ymin+ymax)/2.0);
+                                        bbcenter.push_back((zmin+zmax)/2.0);
+                                        c.set_variable("bbcenter",Value(bbcenter));
+
+                                        Value::VectorType bbsize;
+                                        bbsize.push_back(xmax-xmin);
+                                        bbsize.push_back(ymax-ymin);
+                                        bbsize.push_back(zmax-zmin);
+                                        c.set_variable("bbsize",Value(bbsize));
+                                }
+                                // this node is not added to the final rendering.
+                                delete nc;
+                        }else{
+                                // add the node to the final rendering
+                                if( nc!=NULL ) node->children.push_back(nc);
+                        }
+
+		}
+#endif
+		break;
+	}
+	} // switch
 	return node;
 }
 
@@ -345,4 +535,5 @@ void register_builtin_control()
 	Builtins::init("let", new ControlModule(ControlModule::LET));
 	Builtins::init("intersection_for", new ControlModule(ControlModule::INT_FOR));
 	Builtins::init("if", new ControlModule(ControlModule::IF));
+	Builtins::init("probe", new ControlModule(ControlModule::PROBE));
 }

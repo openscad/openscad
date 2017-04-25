@@ -112,7 +112,155 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolygon2d(const Polygon2d &po
 	return createNefPolyhedronFromPolySet(*ps);
 }
 
+
+static void updateCenterOfMass( CGAL_Polyhedron::Point_3 const& p1,
+                                CGAL_Polyhedron::Point_3 const& p2,
+                                CGAL_Polyhedron::Point_3 const& p3,
+                                CGAL_Polyhedron::Point_3 const& ps,
+                                NT3 &volumeTotal,
+                                NT3 centerOfMass[3]) {
+        //std::cout << "p1 ("<<p1.x()<<","<<p1.y()<<","<<p1.z()<<")\n";
+        //std::cout << "p2 ("<<p2.x()<<","<<p2.y()<<","<<p2.z()<<")\n";
+        //std::cout << "p3 ("<<p3.x()<<","<<p3.y()<<","<<p3.z()<<")\n";
+        //std::cout << "ps ("<<ps.x()<<","<<ps.y()<<","<<ps.z()<<")\n";
+        NT3 vol=abs(CGAL::volume(ps,p1,p2,p3));
+        NT3 centroid[3];
+        centroid[0]=(p1[0]+p2[0]+p3[0]+ps[0])/4;
+        centroid[1]=(p1[1]+p2[1]+p3[1]+ps[1])/4;
+        centroid[2]=(p1[2]+p2[2]+p3[2]+ps[2])/4;
+        volumeTotal+=vol;
+        centerOfMass[0]+=centroid[0]*vol;
+        centerOfMass[1]+=centroid[1]*vol;
+        centerOfMass[2]+=centroid[2]*vol;
+        //std::cout << "volume="<<to_double(vol)<<" centroid="<<to_double(centroid[0])<<","<<to_double(centroid[1])<<","<<to_double(centroid[2])<<"\n";
+        //std::cout<<"center of mass is ("<<to_double(centerOfMass[0])<<","<<to_double(centerOfMass[1])<<","<<to_double(centerOfMass[2])<<")\n";
+}
+
+
+
 namespace CGALUtils {
+	void computeVolume(const PolySet &ps, double &volumeTotal,double centerOfMass[3]) {
+                //std::cout << "volume of polyset!"<<std::endl;
+                CGAL_Polyhedron poly;
+                createPolyhedronFromPolySet(ps, poly);
+                CGAL_Nef_polyhedron *p = createNefPolyhedronFromGeometry(ps);
+                if (!p->isEmpty()) {
+			NT3 volumeTotalNT3;
+			NT3 centerOfMassNT3[3];
+			computeVolume(*p->p3,volumeTotalNT3,centerOfMassNT3);
+			volumeTotal=to_double(volumeTotalNT3);
+			centerOfMass[0]=to_double(centerOfMassNT3[0]);
+			centerOfMass[1]=to_double(centerOfMassNT3[1]);
+			centerOfMass[2]=to_double(centerOfMassNT3[2]);
+		}
+        }
+
+        void computeVolume(const CGAL_Nef_polyhedron3 &N,NT3 &volumeTotal,NT3 centerOfMass[3])
+        {
+                // attention, il faut etre sur que N->p3()->is_simple(), sinon ca fonctionne pas fort
+                //std::cout << "volumen of nef!"<<std::endl;
+                CGAL::Timer t;
+                std::vector<CGAL_Polyhedron> parts;
+                t.start();
+                CGAL_Nef_polyhedron3 decomp=N;
+                CGAL::convex_decomposition_3(decomp);
+                //std::cout <<"nb volumes = "<<decomp.number_of_volumes()<<"\n";
+                // the first volume is the outer volume, which ignored in the decomposition
+                CGAL_Nef_polyhedron3::Volume_const_iterator ci = decomp.volumes_begin();
+                for(; ci != decomp.volumes_end(); ++ci) {
+                        //std::cout <<"one part...\n";
+                        if(ci->mark()) {
+                                //std::cout<<" converting to poly.\n";
+                                CGAL_Polyhedron poly;
+                                decomp.convert_inner_shell_to_polyhedron(ci->shells_begin(), poly);
+                                parts.push_back(poly);
+                        }
+
+                }
+                t.stop();
+                PRINTB("Center of mass: decomposed into %d convex parts", parts.size());
+                PRINTB("Center of mass: decomposition took %f s", t.time());
+
+                volumeTotal=0;
+                centerOfMass[0]=0;
+                centerOfMass[1]=0;
+                centerOfMass[2]=0;
+                // on affiche chaque partie...
+                for(int i=0;i<(int)parts.size();i++) {
+                        //std::cout<<"part "<<i<<" : facets = "<<parts[i].size_of_facets()<<", vertex="<<parts[i].size_of_vertices()<<"\n";
+                        //
+                        // on trouve le centre des points (xs,ys,zs)
+                        //
+                        CGAL_Polyhedron::Vertex_const_iterator vi = parts[i].vertices_begin();
+                        NT3 xs=0,ys=0,zs=0;
+                        int nb=0;
+                        for(;vi!=parts[i].vertices_end();vi++) {
+                                CGAL_Polyhedron::Point_3 const& p = vi->point();
+                                xs+=p[0];
+                                ys+=p[1];
+                                zs+=p[2];
+                                nb++;
+                                //std::cout << "vertice ("<<x<<","<<y<<","<<z<<")\n";
+                        }
+                        CGAL_Polyhedron::Point_3 ps(xs/nb,ys/nb,zs/nb);
+                        //std::cout << "center is ("<<ps[0]<<","<<ps[1]<<","<<ps[2]<<")\n";
+                        //
+                        // on visite chaque facette...
+                        // on la triangule
+                        //
+                        CGAL_Polyhedron::Facet_const_iterator fi = parts[i].facets_begin();
+                        for(;fi!=parts[i].facets_end();fi++) {
+                                //std::cout << "facet "<<fi->is_triangle()<<" , nbedge="<<fi->facet_degree()<<"\n";
+                                if( fi->is_triangle() ) {
+                                        // tetrahedre avec le centre... et voila!
+                                        CGAL_Polyhedron::Facet::Halfedge_around_facet_const_circulator he,end;
+                                        end = he = fi->facet_begin();
+                                        //CGAL_Polyhedron P;
+
+                                        CGAL_Polyhedron::Point_3 const& p1 = he->vertex()->point();he++;
+                                        CGAL_Polyhedron::Point_3 const& p2 = he->vertex()->point();he++;
+                                        CGAL_Polyhedron::Point_3 const& p3 = he->vertex()->point();
+                                        updateCenterOfMass(p1,p2,p3,ps,volumeTotal,centerOfMass);
+
+                                }else{
+                                        // on decoupe!
+                                        // trouve le centre de la facette
+                                        CGAL_Polyhedron::Facet::Halfedge_around_facet_const_circulator he,end;
+                                        NT3 xc=0,yc=0,zc=0;
+                                        end = he = fi->facet_begin();
+                                        CGAL_For_all(he,end) {
+                                                CGAL_Polyhedron::Point_3 const& p = he->vertex()->point();
+                                                xc+=p[0];yc+=p[1];zc+=p[2];
+                                                //std::cout << "facet halfedge ("<<to_double(p[0])<<","<<to_double(p[1])<<","<<to_double(p[2])<<")\n";
+                                        }
+                                        xc/=(int)fi->facet_degree();
+                                        yc/=(int)fi->facet_degree();
+                                        zc/=(int)fi->facet_degree();
+                                        CGAL_Polyhedron::Point_3 pc(xc,yc,zc);
+                                        //std::cout << "facet center ("<<to_double(xc)<<","<<to_double(yc)<<","<<to_double(zc)<<")\n";
+                                        // on fait le tour de la facette, en ajoutant les tetra (p1,p2,ps,pc)
+                                        end = he = fi->facet_begin();
+                                        CGAL_For_all(he,end) {
+                                                CGAL_Polyhedron::Point_3 const& p1 = he->vertex()->point();
+                                                CGAL_Polyhedron::Point_3 const& p2 = he->next()->vertex()->point();
+                                                //std::cout << "facet halfedge p1 ("<<to_double(p1[0])<<","<<to_double(p1[1])<<","<<to_double(p1[2])<<")\n";
+                                                //std::cout << "facet halfedge p2 ("<<to_double(p2[0])<<","<<to_double(p2[1])<<","<<to_double(p2[2])<<")\n";
+                                                updateCenterOfMass(p1,p2,pc,ps,volumeTotal,centerOfMass);
+                                        }
+                                }
+                        }
+                }
+                // finalise le centre de masse
+                if( volumeTotal>0 ) {
+                        centerOfMass[0]/=volumeTotal;
+                        centerOfMass[1]/=volumeTotal;
+                        centerOfMass[2]/=volumeTotal;
+                }
+                //std::cout<<"Volume Total = "<<to_double(volumeTotal)<<"\n";
+                //std::cout<<"center of mass is ("<<to_double(centerOfMass[0])<<","<<to_double(centerOfMass[1])<<","<<to_double(centerOfMass[2])<<")\n";
+        }
+
+
 
 	CGAL_Iso_cuboid_3 boundingBox(const CGAL_Nef_polyhedron3 &N)
 	{

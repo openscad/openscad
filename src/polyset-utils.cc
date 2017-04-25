@@ -109,4 +109,12 @@ namespace PolysetUtils {
 #endif
 	}
 
+
+	void computeVolume(const PolySet &ps, double &volumeTotal,double centerOfMass[3]) {
+#ifdef ENABLE_CGAL
+                CGALUtils::computeVolume(ps,volumeTotal,centerOfMass);
+#endif
+        }
+
+
 }
