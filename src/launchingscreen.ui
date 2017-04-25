@@ -380,6 +380,13 @@ QPushButton:pressed {
      </item>
     </layout>
    </item>
+   <item row="7" column="0">
+    <widget class="QCheckBox" name="checkBoxOpen">
+     <property name="text">
+      <string>Open the file by 1 click</string>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <resources>

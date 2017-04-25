@@ -56,18 +56,21 @@ LaunchingScreen::LaunchingScreen(QWidget *parent) : QDialog(parent)
 		this->treeWidget->addTopLevelItem(categoryItem);
 	}
 
-	connect(this->pushButtonNew, SIGNAL(clicked()), this, SLOT(accept()));
-	connect(this->pushButtonOpen, SIGNAL(clicked()), this, SLOT(openUserFile()));
-	connect(this->pushButtonHelp, SIGNAL(clicked()), this, SLOT(openUserManualURL()));
-	connect(this->recentList->selectionModel(), SIGNAL(currentRowChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(enableRecentButton(const QModelIndex &, const QModelIndex &)));
+    connect(this->pushButtonNew, SIGNAL(clicked()), this, SLOT(accept()));
+    connect(this->pushButtonOpen, SIGNAL(clicked()), this, SLOT(openUserFile()));
+    connect(this->pushButtonHelp, SIGNAL(clicked()), this, SLOT(openUserManualURL()));
+    connect(this->openRecentButton, SIGNAL(clicked()), this, SLOT(openRecent()));
+    connect(this->openExampleButton, SIGNAL(clicked()), this, SLOT(openExample()));
 
-	connect(this->recentList, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(openRecent()));
-	connect(this->treeWidget, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)), this, SLOT(enableExampleButton(QTreeWidgetItem *, QTreeWidgetItem *)));
+    connect(this->recentList->selectionModel(), SIGNAL(currentRowChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(enableRecentButton(const QModelIndex &, const QModelIndex &)));
+    connect(this->treeWidget, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)), this, SLOT(enableExampleButton(QTreeWidgetItem *, QTreeWidgetItem *)));
 
-	connect(this->treeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem *,int)), this, SLOT(openExample()));
-	connect(this->openRecentButton, SIGNAL(clicked()), this, SLOT(openRecent()));
-	connect(this->openExampleButton, SIGNAL(clicked()), this, SLOT(openExample()));
-	connect(this->checkBox, SIGNAL(toggled(bool)), this, SLOT(checkboxState(bool)));	
+    connect(this->recentList, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(openRecent()));
+    connect(this->treeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem *,int)), this, SLOT(openExample()));
+
+    connect(this->checkBox, SIGNAL(toggled(bool)), this, SLOT(checkboxState(bool)));
+    connect(this->checkBoxOpen, SIGNAL(toggled(bool)), this, SLOT(checkboxOpenState(bool)));
+    connect(this->checkBoxOpen, SIGNAL(stateChanged(int)), this, SLOT(checkboxOpenChangeState(int)));
 }
 
 LaunchingScreen::~LaunchingScreen()
@@ -137,6 +140,35 @@ void LaunchingScreen::checkboxState(bool state)
 {
 	QSettings settings;
 	settings.setValue("launcher/showOnStartup", !state);
+}
+
+void LaunchingScreen::checkboxOpenState(bool state)
+{
+    QSettings settings;
+    settings.setValue("launcher/showOnMethodOpen", !state);
+}
+
+void LaunchingScreen::checkboxOpenChangeState(int state)
+{
+    if (state == 0) {
+        disconnect(this->recentList, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(openRecent()));
+        disconnect(this->treeWidget, SIGNAL(itemClicked(QTreeWidgetItem *,int)), this, SLOT(openExample()));
+
+        this->openRecentButton->setVisible(true);
+        this->openExampleButton->setVisible(true);
+
+        connect(this->recentList, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(openRecent()));
+        connect(this->treeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem *,int)), this, SLOT(openExample()));
+    } else {
+        disconnect(this->recentList, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(openRecent()));
+        disconnect(this->treeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem *,int)), this, SLOT(openExample()));
+
+        this->openRecentButton->setVisible(false);
+        this->openExampleButton->setVisible(false);
+
+        connect(this->recentList, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(openRecent()));
+        connect(this->treeWidget, SIGNAL(itemClicked(QTreeWidgetItem *,int)), this, SLOT(openExample()));
+    }
 }
 
 void LaunchingScreen::openUserManualURL()

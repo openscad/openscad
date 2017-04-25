@@ -166,6 +166,7 @@ void Preferences::init() {
 	this->defaultmap["advanced/reorderWindows"] = true;
 	this->defaultmap["launcher/showOnStartup"] = true;
 	this->defaultmap["advanced/localization"] = true;
+    this->defaultmap["launcher/showOnMethodOpen"] = true;
 
 	// Toolbar
 	QActionGroup *group = new QActionGroup(this);
@@ -478,6 +479,12 @@ void Preferences::on_launcherBox_toggled(bool state)
 {
 	QSettings settings;
  	settings.setValue("launcher/showOnStartup", state);	
+}
+
+void Preferences::on_launcherBox2_toggled(bool state)
+{
+    QSettings settings;
+    settings.setValue("launcher/showOnMethodOpen", state);
 }
 
 void Preferences::on_checkBoxShowWarningsIn3dView_toggled(bool val)
