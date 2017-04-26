@@ -84,10 +84,14 @@ macx {
   QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.8
 }
 
+# Set same stack size for the linker and #define used in PlatformUtils.h
+STACKSIZE = 8388608 # 8MB # github issue 116
+QMAKE_CXXFLAGS += -DSTACKSIZE=$$STACKSIZE
 
 win* {
   RC_FILE = openscad_win32.rc
   QMAKE_CXXFLAGS += -DNOGDI
+  QMAKE_LFLAGS += -Wl,--stack,$$STACKSIZE
 }
 
 mingw* {
