@@ -8,6 +8,7 @@
 #include "state.h"
 #include "offsetnode.h"
 #include "transformnode.h"
+#include "extrudenode.h"
 #include "linearextrudenode.h"
 #include "rotateextrudenode.h"
 #include "csgnode.h"
@@ -609,6 +610,128 @@ Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 		}
 		else {
 			geom = smartCacheGet(node, state.preferNef());
+		}
+		addToParent(state, node, geom);
+	}
+	return ContinueTraversal;
+}
+
+static void fill_slice(std::vector<Vector3d> &slice, const Outline2d &o, const Transform3d &t, bool flip)
+{
+	if (flip) {
+		unsigned int l = o.vertices.size()-1;
+		for (unsigned int i=0 ;i<o.vertices.size();i++) {
+			const Vector2d &v = o.vertices[l-i];
+			slice[i] = t * Vector3d(v[0], v[1], 0);
+		}
+	} else {
+		for (unsigned int i=0 ;i<o.vertices.size();i++) {
+			const Vector2d &v = o.vertices[i];
+			slice[i] = t * Vector3d(v[0], v[1], 0);
+		}
+	}
+}
+
+/*!
+	Input to extrude should be clean. This means non-intersecting, correct winding order
+	etc., the input coming from a library like Clipper.
+
+	FIXME: We should handle some common corner cases better:
+  o 2D polygon having an edge being on the Y axis:
+	  In this case, we don't need to generate geometry involving this edge as it
+		will be an internal edge.
+  o 2D polygon having a vertex touching the Y axis:
+    This is more complex as the resulting geometry will (may?) be nonmanifold.
+		In any case, the previous case is a specialization of this, so the following
+		should be handled for both cases:
+		Since the ring associated with this vertex will have a radius of zero, it will
+		collapse to one vertex. Any quad using this ring will be collapsed to a triangle.
+
+	Currently, we generate a lot of zero-area triangles
+
+*/
+static Geometry *extrudePolygon(const ExtrudeNode &node, const Polygon2d &poly)
+{
+	if (node.path.size() <= 1) return NULL; 
+
+	PolySet *ps = new PolySet(3);
+	ps->setConvexity(node.convexity);
+
+	int fragments = node.path.size() + (node.is_ring ? 1 : 0);
+	bool flip_faces = node.flip_faces;
+
+	if (!node.is_ring) {
+		PolySet *ps_start = poly.tessellate();
+		ps_start->transform(node.path[0]);
+		// Flip vertex ordering
+		if (!flip_faces) {
+			for(auto &p : ps_start->polygons) {
+				std::reverse(p.begin(), p.end());
+			}
+		}
+		ps->append(*ps_start);
+		delete ps_start;
+
+		PolySet *ps_end = poly.tessellate();
+		ps_end->transform(node.path[node.path.size() - 1]);
+		if (flip_faces) {
+			for(auto &p : ps_end->polygons) {
+				std::reverse(p.begin(), p.end());
+			}
+		}
+		ps->append(*ps_end);
+		delete ps_end;
+	}
+
+	for(const auto &o : poly.outlines()) {
+		std::vector<Vector3d> slices[2];
+		slices[0].resize(o.vertices.size());
+		slices[1].resize(o.vertices.size());
+
+		fill_slice(slices[0], o, node.path[0], flip_faces); // first ring
+		for (int j = 0; j < fragments; j++) {
+			fill_slice(slices[(j+1)%2], o, node.path[j % node.path.size()], flip_faces);
+
+			for (size_t i=0;i<o.vertices.size();i++) {
+				ps->append_poly();
+				ps->insert_vertex(slices[j%2][i]);
+				ps->insert_vertex(slices[(j+1)%2][(i+1)%o.vertices.size()]);
+				ps->insert_vertex(slices[j%2][(i+1)%o.vertices.size()]);
+				ps->append_poly();
+				ps->insert_vertex(slices[j%2][i]);
+				ps->insert_vertex(slices[(j+1)%2][i]);
+				ps->insert_vertex(slices[(j+1)%2][(i+1)%o.vertices.size()]);
+			}
+		}
+	}
+
+	return ps;
+}
+
+/*!
+	input: List of 2D objects
+	output: 3D PolySet
+	operation:
+	  o Union all children
+	  o Perform extrude
+ */			
+Response GeometryEvaluator::visit(State &state, const ExtrudeNode &node)
+{
+	if (state.isPrefix() && isSmartCached(node)) return PruneTraversal;
+	if (state.isPostfix()) {
+		shared_ptr<const Geometry> geom;
+		if (!isSmartCached(node)) {
+			const Geometry *geometry = applyToChildren2D(node, OPENSCAD_UNION);
+
+			if (geometry) {
+				const Polygon2d *polygons = dynamic_cast<const Polygon2d*>(geometry);
+				Geometry *extruded = extrudePolygon(node, *polygons);
+				geom.reset(extruded);
+				delete geometry;
+			}
+		}
+		else {
+			geom = smartCacheGet(node, false);
 		}
 		addToParent(state, node, geom);
 	}

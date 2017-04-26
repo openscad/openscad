@@ -723,6 +723,7 @@ set(CORE_SOURCES
   ../src/dxfdata.cc 
   ../src/dxfdim.cc 
   ../src/offset.cc 
+  ../src/extrude.cc 
   ../src/linearextrude.cc 
   ../src/rotateextrude.cc 
   ../src/text.cc 

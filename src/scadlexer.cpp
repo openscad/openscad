@@ -27,7 +27,7 @@ ScadLexer::ScadLexer(QObject *parent) : QsciLexerCPP(parent)
 		"minkowski hull resize child children echo union difference "
 		"intersection linear_extrude rotate_extrude import group  "
 		"projection render surface scale rotate mirror translate "
-		"multmatrix color offset ";
+		"multmatrix color offset extrude";
 
     setFoldComments(true);
     setFoldAtElse(true);
