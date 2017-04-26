@@ -33,8 +33,8 @@
 
 FontListDialog::FontListDialog()
 {
-	model = NULL;
-	proxy = NULL;
+	model = nullptr;
+	proxy = nullptr;
 	setupUi(this);
 	connect(this->okButton, SIGNAL(clicked()), this, SLOT(accept()));
 }
@@ -78,11 +78,11 @@ void FontListDialog::update_font_list()
 
 	if (proxy) {
 		delete proxy;
-		proxy = NULL;
+		proxy = nullptr;
 	}
 	if (model) {
 		delete model;
-		model = NULL;
+		model = nullptr;
 	}
 	
 	FontInfoList *list = FontCache::instance()->list_fonts();

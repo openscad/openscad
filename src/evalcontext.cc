@@ -23,7 +23,7 @@ const std::string &EvalContext::getArgName(size_t i) const
 ValuePtr EvalContext::getArgValue(size_t i, const Context *ctx) const
 {
 	assert(i < this->eval_arguments.size());
-	const Assignment &arg = this->eval_arguments[i];
+	const auto &arg = this->eval_arguments[i];
 	ValuePtr v;
 	if (arg.expr) {
 		v = arg.expr->evaluate(ctx ? ctx : this);
@@ -41,8 +41,8 @@ AssignmentMap EvalContext::resolveArguments(const AssignmentList &args) const
   size_t posarg = 0;
   // Iterate over positional args
   for (size_t i=0; i<this->numArgs(); i++) {
-    const std::string &name = this->getArgName(i); // name is optional
-    const Expression *expr = this->getArgs()[i].expr.get();
+    const auto &name = this->getArgName(i); // name is optional
+    const auto expr = this->getArgs()[i].expr.get();
     if (!name.empty()) {
       resolvedArgs[name] = expr;
     }
@@ -59,12 +59,12 @@ size_t EvalContext::numChildren() const
 
 ModuleInstantiation *EvalContext::getChild(size_t i) const
 {
-	return this->scope ? this->scope->children[i] : NULL; 
+	return this->scope ? this->scope->children[i] : nullptr; 
 }
 
 void EvalContext::assignTo(Context &target) const
 {
-	for(const auto &assignment : this->eval_arguments) {
+	for (const auto &assignment : this->eval_arguments) {
 		ValuePtr v;
 		if (assignment.expr) v = assignment.expr->evaluate(&target);
 		if (target.has_local_variable(assignment.name)) {
@@ -80,7 +80,7 @@ std::ostream &operator<<(std::ostream &stream, const EvalContext &ec)
 	for (size_t i = 0; i < ec.numArgs(); i++) {
 		if (i > 0) stream << ", ";
 		if (!ec.getArgName(i).empty()) stream << ec.getArgName(i) << " = ";
-		ValuePtr val = ec.getArgValue(i);
+		auto val = ec.getArgValue(i);
 		stream << val->toEchoString();
 	}
 	return stream;

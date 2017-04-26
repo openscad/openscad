@@ -41,7 +41,7 @@
 #include "colormap.h"
 #include "rendersettings.h"
 
-Preferences *Preferences::instance = NULL;
+Preferences *Preferences::instance = nullptr;
 
 const char * Preferences::featurePropertyName = "FeatureProperty";
 Q_DECLARE_METATYPE(Feature *);
@@ -59,11 +59,11 @@ class SettingsReader : public Settings::SettingsVisitor
 
 	try {
 		switch (entry.defaultValue().type()) {
-		case Value::STRING:
+		case Value::ValueType::STRING:
 			return Value(trimmed_value);
-		case Value::NUMBER:
+		case Value::ValueType::NUMBER:
 			return Value(boost::lexical_cast<int>(trimmed_value));
-		case Value::BOOL:
+		case Value::ValueType::BOOL:
 			boost::to_lower(trimmed_value);
 			if ("false" == trimmed_value) {
 				return Value(false);
@@ -218,7 +218,7 @@ void Preferences::init() {
 Preferences::~Preferences()
 {
 	removeDefaultSettings();
-	instance = NULL;
+	instance = nullptr;
 }
 
 /**
@@ -260,7 +260,7 @@ Preferences::actionTriggered(QAction *action)
 void Preferences::featuresCheckBoxToggled(bool state)
 {
 	const QObject *sender = QObject::sender();
-	if (sender == NULL) {
+	if (sender == nullptr) {
 		return;
 	}
 	QVariant v = sender->property(featurePropertyName);
@@ -758,7 +758,7 @@ void Preferences::apply() const
 
 void Preferences::create(QStringList colorSchemes)
 {
-    if (instance != NULL) {
+    if (instance != nullptr) {
 	return;
     }
 
@@ -777,7 +777,7 @@ void Preferences::create(QStringList colorSchemes)
 }
 
 Preferences *Preferences::inst() {
-    assert(instance != NULL);
+    assert(instance != nullptr);
     
     return instance;
 }

@@ -49,10 +49,9 @@ public:
 
 AbstractNode *RotateExtrudeModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
-	RotateExtrudeNode *node = new RotateExtrudeNode(inst);
+	auto node = new RotateExtrudeNode(inst);
 
-	AssignmentList args;
-	args += Assignment("file"), Assignment("layer"), Assignment("origin"), Assignment("scale");
+	AssignmentList args{Assignment("file"), Assignment("layer"), Assignment("origin"), Assignment("scale")};
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);
@@ -63,12 +62,12 @@ AbstractNode *RotateExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	node->fa = c.lookup_variable("$fa")->toDouble();
     
 
-	ValuePtr file = c.lookup_variable("file");
-	ValuePtr layer = c.lookup_variable("layer", true);
-	ValuePtr convexity = c.lookup_variable("convexity", true);
-	ValuePtr origin = c.lookup_variable("origin", true);
-	ValuePtr scale = c.lookup_variable("scale", true);
-	ValuePtr angle = c.lookup_variable("angle", true);
+	auto file = c.lookup_variable("file");
+	auto layer = c.lookup_variable("layer", true);
+	auto convexity = c.lookup_variable("convexity", true);
+	auto origin = c.lookup_variable("origin", true);
+	auto scale = c.lookup_variable("scale", true);
+	auto angle = c.lookup_variable("angle", true);
     
 	if (!file->isUndefined()) {
 		printDeprecation("Support for reading files in rotate_extrude will be removed in future releases. Use a child import() instead.");
@@ -76,7 +75,7 @@ AbstractNode *RotateExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	}
 
 	node->layername = layer->isUndefined() ? "" : layer->toString();
-	node->convexity = (int)convexity->toDouble();
+	node->convexity = static_cast<int>(convexity->toDouble());
 	origin->getVec2(node->origin_x, node->origin_y);
 	node->scale = scale->toDouble();
 	node->angle = 360;
@@ -92,7 +91,7 @@ AbstractNode *RotateExtrudeModule::instantiate(const Context *ctx, const ModuleI
 		node->angle = 360;
 
 	if (node->filename.empty()) {
-		std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(evalctx);
+		auto instantiatednodes = inst->instantiateChildren(evalctx);
 		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 	}
 

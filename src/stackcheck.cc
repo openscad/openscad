@@ -3,9 +3,9 @@
 #include "stackcheck.h"
 #include "PlatformUtils.h"
 
-StackCheck * StackCheck::self = 0;
+StackCheck *StackCheck::self = nullptr;
 
-StackCheck::StackCheck() : ptr(0)
+StackCheck::StackCheck() : ptr(nullptr)
 {
 }
 
@@ -27,13 +27,13 @@ unsigned long StackCheck::size()
 
 bool StackCheck::check()
 {
-    return size() >= PlatformUtils::stackLimit();
+	return size() >= PlatformUtils::stackLimit();
 }
 
-StackCheck * StackCheck::inst()
+StackCheck *StackCheck::inst()
 {
-    if (self == 0) {
-        self = new StackCheck();
-    }
-    return self;
+	if (self == 0) {
+		self = new StackCheck();
+	}
+	return self;
 }

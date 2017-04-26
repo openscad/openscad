@@ -10,7 +10,7 @@ class Highlighter : public QSyntaxHighlighter
 {
 	Q_OBJECT
 public:
-	enum state_e {NORMAL=-1,QUOTE,COMMENT};
+	enum class state_e {NORMAL=-1,QUOTE,COMMENT};
 	QHash<QString, QTextCharFormat> tokenFormats;
 	QTextCharFormat errorFormat;
 	Highlighter(QTextDocument *parent);

@@ -84,7 +84,7 @@ QStringList UIUtils::recentFiles()
 
 using namespace boost::property_tree;
 
-static ptree *examples_tree = NULL;
+static ptree *examples_tree = nullptr;
 static ptree *examplesTree()
 {
 	if (!examples_tree) {
@@ -95,7 +95,7 @@ static ptree *examplesTree()
 		} catch (const std::exception & e) {
 			PRINTB("Error reading examples.json: %s", e.what());
 			delete examples_tree;
-			examples_tree = NULL;
+			examples_tree = nullptr;
 		}
 	}
 	return examples_tree;

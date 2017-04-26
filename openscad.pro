@@ -315,7 +315,6 @@ HEADERS += src/version_check.h \
            src/linalg.h \
            src/Camera.h \
            src/system-gl.h \
-           src/stl-utils.h \
            src/boost-utils.h \
            src/LibraryInfo.h \
            src/svg.h \
@@ -409,7 +408,6 @@ SOURCES += \
            src/fileutils.cc \
            src/progress.cc \
            src/parsersettings.cc \
-           src/stl-utils.cc \
            src/boost-utils.cc \
            src/PlatformUtils.cc \
            src/LibraryInfo.cc \

@@ -7,7 +7,7 @@ class FontListTableView : public QTableView
 	Q_OBJECT;
 
 public:
-        FontListTableView(QWidget *parent = NULL);
+        FontListTableView(QWidget *parent = nullptr);
         void setDragText(const QString &text);
 
 protected:

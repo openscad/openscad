@@ -54,7 +54,7 @@ void DrawingCallback::finish_glyph()
 	}
 	if (this->polygon->outlines().size() == 0) {
 		delete this->polygon;
-		this->polygon = NULL;
+		this->polygon = nullptr;
 	}
 	if (this->polygon) this->polygons.push_back(this->polygon);
 }

@@ -8,7 +8,7 @@ class AutoUpdater : public QObject
 	Q_OBJECT;
 
 public:
-	AutoUpdater() : updateAction(NULL) {}
+	AutoUpdater() : updateAction(nullptr) {}
 	virtual ~AutoUpdater() {}
 	
 	virtual void setAutomaticallyChecksForUpdates(bool on) = 0;

@@ -78,7 +78,7 @@ namespace CGALUtils {
 */
 	CGAL_Nef_polyhedron *applyOperator(const Geometry::Geometries &children, OpenSCADOperator op)
 	{
-		CGAL_Nef_polyhedron *N = NULL;
+		CGAL_Nef_polyhedron *N = nullptr;
 		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 		try {
 			// Speeds up n-ary union operations significantly
@@ -94,7 +94,7 @@ namespace CGALUtils {
 					if (chps) chN.reset(createNefPolyhedronFromGeometry(*chps));
 				}
 				
-				if (op == OPENSCAD_UNION) {
+				if (op == OpenSCADOperator::UNION) {
 					if (!chN->isEmpty()) {
 						// nary_union.add_polyhedron() can issue assertion errors:
 						// https://github.com/openscad/openscad/issues/802
@@ -111,7 +111,7 @@ namespace CGALUtils {
 				
 				// Intersecting something with nothing results in nothing
 				if (chN->isEmpty()) {
-					if (op == OPENSCAD_INTERSECTION) *N = *chN;
+					if (op == OpenSCADOperator::INTERSECTION) *N = *chN;
 					continue;
 				}
 				
@@ -119,28 +119,28 @@ namespace CGALUtils {
 				if (N->isEmpty()) continue;
 				
 				switch (op) {
-				case OPENSCAD_INTERSECTION:
+				case OpenSCADOperator::INTERSECTION:
 					*N *= *chN;
 					break;
-				case OPENSCAD_DIFFERENCE:
+				case OpenSCADOperator::DIFFERENCE:
 					*N -= *chN;
 					break;
-				case OPENSCAD_MINKOWSKI:
+				case OpenSCADOperator::MINKOWSKI:
 					N->minkowski(*chN);
 					break;
 				default:
-					PRINTB("ERROR: Unsupported CGAL operator: %d", op);
+					PRINTB("ERROR: Unsupported CGAL operator: %d", static_cast<int>(op));
 				}
 				item.first->progress_report();
 			}
 
-			if (op == OPENSCAD_UNION && nary_union_num_inserted > 0) {
+			if (op == OpenSCADOperator::UNION && nary_union_num_inserted > 0) {
 				N = new CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3(nary_union.get_union()));
 			}
 		}
 	// union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad and testdata/scad/bugs/issue204.scad
 		catch (const CGAL::Failure_exception &e) {
-			std::string opstr = op == OPENSCAD_INTERSECTION ? "intersection" : op == OPENSCAD_DIFFERENCE ? "difference" : op == OPENSCAD_UNION ? "union" : "UNKNOWN";
+			std::string opstr = op == OpenSCADOperator::INTERSECTION ? "intersection" : op == OpenSCADOperator::DIFFERENCE ? "difference" : op == OpenSCADOperator::UNION ? "union" : "UNKNOWN";
 			PRINTB("ERROR: CGAL error in CGALUtils::applyBinaryOperator %s: %s", opstr % e.what());
 		}
 		CGAL::set_error_behaviour(old_behaviour);
@@ -203,7 +203,7 @@ namespace CGALUtils {
 
 
 	/*!
-		children cannot contain NULL objects
+		children cannot contain nullptr objects
 	*/
 	Geometry const * applyMinkowski(const Geometry::Geometries &children)
 	{
@@ -212,7 +212,7 @@ namespace CGALUtils {
 		assert(children.size() >= 2);
 		Geometry::Geometries::const_iterator it = children.begin();
 		t_tot.start();
-		Geometry const* operands[2] = {it->second.get(), NULL};
+		Geometry const* operands[2] = {it->second.get(), nullptr};
 		try {
 			while (++it != children.end()) {
 				operands[1] = it->second.get();
@@ -379,10 +379,10 @@ namespace CGALUtils {
 					for (std::list<CGAL::Polyhedron_3<Hull_kernel>>::iterator i = result_parts.begin(); i != result_parts.end(); ++i) {
 						PolySet ps(3,true);
 						createPolySetFromPolyhedron(*i, ps);
-						fake_children.push_back(std::make_pair((const AbstractNode*)NULL,
+						fake_children.push_back(std::make_pair((const AbstractNode*)nullptr,
 															   shared_ptr<const Geometry>(createNefPolyhedronFromGeometry(ps))));
 					}
-					CGAL_Nef_polyhedron *N = CGALUtils::applyOperator(fake_children, OPENSCAD_UNION);
+					CGAL_Nef_polyhedron *N = CGALUtils::applyOperator(fake_children, OpenSCADOperator::UNION);
 					// FIXME: This hould really never throw.
 					// Assert once we figured out what went wrong with issue #1069?
 					if (!N) throw 0;
@@ -405,7 +405,7 @@ namespace CGALUtils {
 			// If anything throws we simply fall back to Nef Minkowski
 			PRINTD("Minkowski: Falling back to Nef Minkowski");
 
-			CGAL_Nef_polyhedron *N = applyOperator(children, OPENSCAD_MINKOWSKI);
+			CGAL_Nef_polyhedron *N = applyOperator(children, OpenSCADOperator::MINKOWSKI);
 			CGAL::set_error_behaviour(old_behaviour);
 			return N;
 		}

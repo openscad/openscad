@@ -30,7 +30,7 @@
 void Assignment::addAnnotations(AnnotationList *annotations)
 {
 	for (auto &annotation : *annotations) {
-		this->annotations.insert(std::make_pair(annotation.getName(), &annotation));
+		this->annotations.insert({annotation.getName(), &annotation});
 	}
 }
 

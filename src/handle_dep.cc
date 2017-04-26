@@ -8,7 +8,7 @@
 namespace fs = boost::filesystem;
 
 std::unordered_set<std::string> dependencies;
-const char *make_command = NULL;
+const char *make_command = nullptr;
 
 void handle_dep(const std::string &filename)
 {

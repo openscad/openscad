@@ -18,7 +18,7 @@ ParameterText::ParameterText(ParameterObject *parameterobject, bool showDescript
 
 void ParameterText::onChanged(QString)
 {
-	if (object->dvt == Value::STRING) {
+	if (object->dvt == Value::ValueType::STRING) {
 		object->value = ValuePtr(lineEdit->text().toStdString());
 	}
 	else {

@@ -114,14 +114,14 @@ std::string LibraryInfo::info()
 	  << "\nUser Library Path: " << PlatformUtils::userLibraryPath()
 	  << "\nUser Config Path: " << PlatformUtils::userConfigPath()
 	  << "\nBackup Path: " << PlatformUtils::backupPath()
-	  << "\nOPENSCADPATH: " << (env_path == NULL ? "<not set>" : env_path)
+	  << "\nOPENSCADPATH: " << (env_path == nullptr ? "<not set>" : env_path)
 	  << "\nOpenSCAD library path:\n";
 
 	for (std::vector<std::string>::iterator it = librarypath.begin();it != librarypath.end();it++) {
 		s << "  " << *it << "\n";
 	}
 
-	s << "\nOPENSCAD_FONT_PATH: " << (env_font_path == NULL ? "<not set>" : env_font_path)
+	s << "\nOPENSCAD_FONT_PATH: " << (env_font_path == nullptr ? "<not set>" : env_font_path)
 	  << "\nOpenSCAD font path:\n";
 	
 	for (std::vector<std::string>::iterator it = fontpath.begin();it != fontpath.end();it++) {
