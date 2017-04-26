@@ -260,6 +260,7 @@ endif()
 #
 # Handle C++11.
 # Note: Since Xcode 7, c++11 is default
+# Note gnu++11 used to enable numeric constants in maths.h on Windows.
 #
 message(STATUS "Using C++11")
   if (NOT CMAKE_COMPILER_IS_GNUCXX OR GCC_VERSION VERSION_GREATER 4.6)
