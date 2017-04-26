@@ -330,7 +330,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 
 	Tree tree;
 #ifdef ENABLE_CGAL
-	GeometryEvaluator geomevaluator(tree);
+	GeometryEvaluator geomevaluator(tree, true);
 #endif
 	if (arg_info) {
 	    info();
@@ -788,7 +788,7 @@ int main(int argc, char **argv)
 	int rc = 0;
 	bool isGuiLaunched = getenv("GUI_LAUNCHED") != 0;
 	StackCheck::inst()->init();
-	
+		
 #ifdef Q_OS_MAC
 	if (isGuiLaunched) set_output_handler(CocoaUtils::nslog, NULL);
 #else

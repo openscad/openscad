@@ -12,6 +12,7 @@
 #undef NDEBUG
 #endif
 
+#include "CGAL_Handle_for_atomic_shared_ptr.h"	  // This file must be included prior to CGAL/Handle_for.h
 #include "CGAL_workaround_Mark_bounded_volumes.h" // This file must be included prior to CGAL/Nef_polyhedron_3.h
 #include <CGAL/Gmpq.h>
 #include <CGAL/Extended_cartesian.h>

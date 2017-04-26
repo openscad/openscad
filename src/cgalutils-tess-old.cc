@@ -357,13 +357,13 @@ namespace CGALUtils {
 			for (size_t k=0;k<vhandles.size();k++) {
 				int vindex1 = (k+0);
 				int vindex2 = (k+1)%vhandles.size();
-				CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+				CGALUtils::lockErrors(CGAL::THROW_EXCEPTION);
 				try {
 					cdt.insert_constraint( vhandles[vindex1], vhandles[vindex2] );
 				} catch (const CGAL::Failure_exception &e) {
 					PRINTB("WARNING: Constraint insertion failure %s", e.what());
 				}
-				CGAL::set_error_behaviour(old_behaviour);
+				CGALUtils::unlockErrors();
 			}
 		}
 
@@ -476,13 +476,13 @@ namespace CGALUtils {
 			for (size_t k=0;k<vhandles.size();k++) {
 				int vindex1 = (k+0);
 				int vindex2 = (k+1)%vhandles.size();
-				CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+				CGALUtils::lockErrors(CGAL::THROW_EXCEPTION);
 				try {
 					cdt.insert_constraint( vhandles[vindex1], vhandles[vindex2] );
 				} catch (const CGAL::Failure_exception &e) {
 					PRINTB("WARNING: Constraint insertion failure %s", e.what());
 				}
-				CGAL::set_error_behaviour(old_behaviour);
+				CGALUtils::unlockErrors();
 			}
 		}
 

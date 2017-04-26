@@ -1,19 +1,21 @@
 #pragma once
 
-#include "NodeVisitor.h"
+#include "ThreadedNodeVisitor.h"
 #include "enums.h"
 #include "memory.h"
 #include "Geometry.h"
+#include "state.h"
+#include "Polygon2d.h"
 
 #include <utility>
 #include <list>
 #include <vector>
 #include <map>
 
-class GeometryEvaluator : public NodeVisitor
+class GeometryEvaluator : public ThreadedNodeVisitor
 {
 public:
-	GeometryEvaluator(const class Tree &tree);
+	GeometryEvaluator(const class Tree &tree, bool threaded = false);
 	virtual ~GeometryEvaluator() {}
 
 	shared_ptr<const Geometry> evaluateGeometry(const AbstractNode &node, bool allownef);
@@ -42,6 +44,7 @@ private:
 		ResultObject() : is_const(true) {}
 		ResultObject(const Geometry *g) : is_const(true), const_pointer(g) {}
 		ResultObject(shared_ptr<const Geometry> &g) : is_const(true), const_pointer(g) {}
+		ResultObject(const shared_ptr<const Geometry> &g) : is_const(true), const_pointer(g) {}
 		ResultObject(Geometry *g) : is_const(false), pointer(g) {}
 		ResultObject(shared_ptr<Geometry> &g) : is_const(false), pointer(g) {}
 		bool isConst() const { return is_const; }
@@ -58,17 +61,19 @@ private:
 	void smartCacheInsert(const AbstractNode &node, const shared_ptr<const Geometry> &geom);
 	shared_ptr<const Geometry> smartCacheGet(const AbstractNode &node, bool preferNef);
 	bool isSmartCached(const AbstractNode &node);
-	std::vector<const class Polygon2d *> collectChildren2D(const AbstractNode &node);
-	Geometry::Geometries collectChildren3D(const AbstractNode &node);
-	Polygon2d *applyMinkowski2D(const AbstractNode &node);
-	Polygon2d *applyHull2D(const AbstractNode &node);
-	Geometry *applyHull3D(const AbstractNode &node);
+	unsigned int collectChildren(const AbstractNode &node, Geometry::Geometries &dim2, Geometry::Geometries &dim3);
+	Polygon2d *applyMinkowski2D(const Geometry::Geometries &children);
+	Polygon2d *applyHull2D(const Geometry::Geometries &children);
+	Geometry *applyHull3D(const Geometry::Geometries &children);
 	void applyResize3D(class CGAL_Nef_polyhedron &N, const Vector3d &newsize, const Eigen::Matrix<bool,3,1> &autosize);
-	Polygon2d *applyToChildren2D(const AbstractNode &node, OpenSCADOperator op);
-	ResultObject applyToChildren3D(const AbstractNode &node, OpenSCADOperator op);
+	Polygon2d *applyToChildren2D(const Geometry::Geometries &children, OpenSCADOperator op);
+	ResultObject applyToChildren3D(const Geometry::Geometries &children, OpenSCADOperator op);
 	ResultObject applyToChildren(const AbstractNode &node, OpenSCADOperator op);
 	void addToParent(const State &state, const AbstractNode &node, const shared_ptr<const Geometry> &geom);
 
+	const Geometry::Geometries &getVisitedChildren(const AbstractNode &node);
+
+	std::map<int, Geometry::Geometries> sortedchildren;
 	std::map<int, Geometry::Geometries> visitedchildren;
 	const Tree &tree;
 	shared_ptr<const Geometry> root;

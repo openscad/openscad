@@ -128,6 +128,8 @@ netbsd* {
 *g++* {
   QMAKE_CXXFLAGS *= -fno-strict-aliasing
   QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-local-typedefs # ignored before 4.8
+  # debug: turn off optimization in debug builds
+  debug: QMAKE_LFLAGS += -rdynamic -O0
 }
 
 *clang* {
@@ -301,6 +303,8 @@ HEADERS += src/version_check.h \
            src/progress.h \
            src/editor.h \
            src/NodeVisitor.h \
+           src/ThreadedNodeVisitor.h \
+           src/CGAL_Handle_for_atomic_shared_ptr.h \
            src/state.h \
            src/nodecache.h \
            src/nodedumper.h \
@@ -416,6 +420,7 @@ SOURCES += \
            \
            src/nodedumper.cc \
            src/NodeVisitor.cc \
+           src/ThreadedNodeVisitor.cc \
            src/GeometryEvaluator.cc \
            src/ModuleCache.cc \
            src/GeometryCache.cc \

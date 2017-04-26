@@ -1,6 +1,7 @@
 #include "Polygon2d-CGAL.h"
 #include "polyset.h"
 #include "printutils.h"
+#include "cgalutils.h"
 
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
@@ -85,17 +86,17 @@ mark_domains(CDT &cdt)
 }
 
 #define OPENSCAD_CGAL_ERROR_BEGIN \
-	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION); \
+	CGALUtils::lockErrors(CGAL::THROW_EXCEPTION); \
 	try {
 
 #define OPENSCAD_CGAL_ERROR_END(errorstr, onerror) \
   } \
 	catch (const CGAL::Precondition_exception &e) { \
 		PRINTB(errorstr ": %s", e.what()); \
-		CGAL::set_error_behaviour(old_behaviour); \
+		CGALUtils::unlockErrors(); \
 		onerror; \
 	} \
-	CGAL::set_error_behaviour(old_behaviour);
+	CGALUtils::unlockErrors();
   
 
 /*!
@@ -120,7 +121,7 @@ PolySet *Polygon2d::tessellate() const
 			}
 		}
 	}
-	OPENSCAD_CGAL_ERROR_END("CGAL error in Polygon2d::tesselate()", return NULL);
+	OPENSCAD_CGAL_ERROR_END("CGAL error in Polygon2d::tesselate()", delete polyset; return NULL);
 
 	// To extract triangles which is part of our polygon, we need to filter away
 	// triangles inside holes.

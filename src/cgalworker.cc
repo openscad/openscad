@@ -29,7 +29,7 @@ void CGALWorker::work()
 {
 	shared_ptr<const Geometry> root_geom;
 	try {
-		GeometryEvaluator evaluator(*this->tree);
+		GeometryEvaluator evaluator(*this->tree, true);
 		root_geom = evaluator.evaluateGeometry(*this->tree->root(), true);
 	}
 	catch (const ProgressCancelException &e) {
