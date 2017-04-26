@@ -8,7 +8,7 @@ class LinearExtrudeNode : public AbstractPolyNode
 public:
 	VISITABLE();
 	LinearExtrudeNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) {
-		convexity = slices = 0;
+		convexity = slices = circulate = 0;
 		fn = fs = fa = height = twist = 0;
 		origin_x = origin_y = 0;
 		scale_x = scale_y = 1;
@@ -17,7 +17,7 @@ public:
 	virtual std::string toString() const;
 	virtual std::string name() const { return "linear_extrude"; }
 
-	int convexity, slices;
+	int convexity, slices, circulate;
 	double fn, fs, fa, height, twist;
 	double origin_x, origin_y, scale_x, scale_y;
 	bool center, has_twist;
