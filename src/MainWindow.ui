@@ -289,19 +289,6 @@
       <string>&amp;Examples</string>
      </property>
     </widget>
-    <widget class="QMenu" name="menuExport">
-     <property name="title">
-      <string>E&amp;xport</string>
-     </property>
-     <addaction name="fileActionExportSTL"/>
-     <addaction name="fileActionExportOFF"/>
-     <addaction name="fileActionExportAMF"/>
-     <addaction name="fileActionExportDXF"/>
-     <addaction name="fileActionExportSVG"/>
-     <addaction name="fileActionExportCSG"/>
-     <addaction name="separator"/>
-     <addaction name="fileActionExportImage"/>
-    </widget>
     <addaction name="fileActionNew"/>
     <addaction name="fileActionOpen"/>
     <addaction name="menuOpenRecent"/>
@@ -312,7 +299,7 @@
     <addaction name="fileActionSave"/>
     <addaction name="fileActionSaveAs"/>
     <addaction name="separator"/>
-    <addaction name="menuExport"/>
+    <addaction name="fileActionExport"/>
     <addaction name="separator"/>
     <addaction name="fileShowLibraryFolder"/>
     <addaction name="separator"/>
@@ -456,7 +443,7 @@
        <addaction name="designActionPreview"/>
        <addaction name="designActionRender"/>
        <addaction name="separator"/>
-       <addaction name="fileActionExportSTL"/>
+       <addaction name="fileActionExport"/>
       </widget>
      </item>
      <item>
@@ -880,13 +867,16 @@
     <string>Display CSG Pr&amp;oducts...</string>
    </property>
   </action>
-  <action name="fileActionExportSTL">
+  <action name="fileActionExport">
    <property name="icon">
     <iconset resource="../openscad.qrc">
      <normaloff>:/images/STL.png</normaloff>:/images/STL.png</iconset>
    </property>
    <property name="text">
-    <string>Export as &amp;STL...</string>
+    <string>Export </string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+E</string>
    </property>
   </action>
   <action name="fileActionExportOFF">
