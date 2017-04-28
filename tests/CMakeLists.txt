@@ -130,6 +130,10 @@ if(WIN32 AND MSVC)
   # M_PI
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_USE_MATH_DEFINES")
 endif()
+if(WIN32)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUNICODE")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNOGDI")
+endif()
 
 # Debugging - if you uncomment, use nmake -f Makefile > log.txt (the log is big)
 if(WIN32 AND MSVC)
@@ -256,12 +260,13 @@ endif()
 #
 # Handle C++11.
 # Note: Since Xcode 7, c++11 is default
+# Note gnu++11 used to enable numeric constants in maths.h on Windows.
 #
 message(STATUS "Using C++11")
   if (NOT CMAKE_COMPILER_IS_GNUCXX OR GCC_VERSION VERSION_GREATER 4.6)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
   else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x")
   endif()
 if(APPLE)
   set(LIBCXX11 1)

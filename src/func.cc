@@ -24,7 +24,6 @@
  *
  */
 
-#define _USE_MATH_DEFINES  // M_SQRT1_2
 #include "math.h"
 
 #include "function.h"
