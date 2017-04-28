@@ -44,6 +44,12 @@ ENDIF(APPLE)
 project(tests)
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}")
+# Set same stack size for the linker and #define used in PlatformUtils.h
+set(STACKSIZE 8388608)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSTACKSIZE=${STACKSIZE}")
+if(WIN32)
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--stack,${STACKSIZE}")
+endif()
 
 # Get GCC version
 if(CMAKE_COMPILER_IS_GNUCXX)
