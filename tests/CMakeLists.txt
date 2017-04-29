@@ -1220,6 +1220,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1516.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1528.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1923.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/preview_variable.scad
             )
 
 list(APPEND ASTDUMPTEST_FILES ${MISC_FILES}
@@ -1253,7 +1254,9 @@ list(APPEND CGALPNGTEST_3D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/inclu
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/bad-stl-pcbvicebar.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/bad-stl-tardis.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/bad-stl-wing.scad
-                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/rotate_extrude-hole.scad)
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/rotate_extrude-hole.scad
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/preview_variable.scad
+                           )
 
 list(APPEND CGALPNGTEST_FILES ${CGALPNGTEST_2D_FILES} ${CGALPNGTEST_3D_FILES})
 list(APPEND OPENCSGTEST_FILES ${CGALPNGTEST_FILES})
@@ -1280,7 +1283,9 @@ list(APPEND EXPORT3D_CGALCGAL_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1215.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1215c.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1221.scad
-                                ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1225.scad)
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1225.scad
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/preview_variable.scad
+                                )
 
 # Issue #910
 set_test_config(Bugs 

@@ -225,7 +225,7 @@ Highlighter::Highlighter(QTextDocument *parent)
 	tokentypes["prim3d"] << "cube" << "cylinder" << "sphere" << "polyhedron";
 	tokentypes["prim2d"] << "square" << "polygon" << "circle";
 	tokentypes["import"] << "include" << "use" << "import_stl" << "import" << "import_dxf" << "dxf_dim" << "dxf_cross" << "surface";
-	tokentypes["special"] << "$children" << "child" << "children" << "$fn" << "$fa" << "$fs" << "$t" << "$vpt" << "$vpr" << "$vpd";
+	tokentypes["special"] << "$children" << "child" << "children" << "$fn" << "$fa" << "$fs" << "$t" << "$preview" << "$vpt" << "$vpr" << "$vpd";
 	tokentypes["extrude"] << "linear_extrude" << "rotate_extrude";
 	tokentypes["bracket"] << "[" << "]" << "(" << ")";
 	tokentypes["curlies"] << "{" << "}";
