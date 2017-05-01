@@ -142,7 +142,7 @@ static char copyrighttext[] =
 	"it under the terms of the GNU General Public License as published by "
 	"the Free Software Foundation; either version 2 of the License, or "
 	"(at your option) any later version.";
-
+/*
 static void
 settings_setValueList(const QString &key,const QList<int> &list)
 {
@@ -173,7 +173,7 @@ settings_valueList(const QString &key, const QList<int> &defaultList = QList<int
 	}
 
 }
-
+*/
 bool MainWindow::mdiMode = false;
 bool MainWindow::undockMode = false;
 bool MainWindow::reorderMode = false;

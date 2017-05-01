@@ -92,7 +92,7 @@ public:
 	}
 
 	// overrides function in OGL_helper.h
-	CGAL::Color getFacetColor(Halffacet_iterator f, bool is_back_facing) const {
+	CGAL::Color getFacetColor(Halffacet_iterator f, bool /*is_back_facing*/) const {
 		PRINTD("getFacetColor");
 		CGAL::Color c = f->mark() ? colors[CGALColorIndex::UNMARKED_FACET_COLOR] : colors[CGALColorIndex::MARKED_FACET_COLOR];
 		return c;

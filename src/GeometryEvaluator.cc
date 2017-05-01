@@ -927,7 +927,7 @@ Response GeometryEvaluator::visit(State &state, const RotateExtrudeNode &node)
 /*!
 	FIXME: Not in use
 */
-Response GeometryEvaluator::visit(State &state, const AbstractPolyNode &node)
+Response GeometryEvaluator::visit(State & /*state*/, const AbstractPolyNode & /*node*/)
 {
 	assert(false);
 	return Response::AbortTraversal;

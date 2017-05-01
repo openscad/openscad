@@ -244,7 +244,7 @@ void ParameterWidget::clear(){
 	}
 
 	groupPos.clear();
-	for (int it=0; it<ParameterPos.size(); it++) {
+	for (unsigned int it=0; it<ParameterPos.size(); it++) {
 		std::string groupName=entries[ParameterPos[it]]->groupName;
 		if (groupMap.find(groupName) == groupMap.end()) {
 			groupPos.push_back(groupName);
@@ -266,7 +266,7 @@ void ParameterWidget::clear(){
 
 void ParameterWidget::AddParameterWidget(std::string parameterName)
 {
-    ParameterVirtualWidget *entry ;
+    ParameterVirtualWidget *entry = nullptr;
     switch(entries[parameterName]->target) {
 		case ParameterObject::COMBOBOX:{
 			entry = new ParameterComboBox(entries[parameterName], descriptionShow);
