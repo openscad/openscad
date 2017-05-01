@@ -123,6 +123,9 @@ endif()
 # -DENABLE_LIBZIP -DDEBUG
 add_definitions(-DENABLE_EXPERIMENTAL)
 
+# Stack size 8MB; github issue 116
+add_definitions(-DSTACKSIZE=8388608)
+
 #
 # Version
 #
