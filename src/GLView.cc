@@ -515,7 +515,7 @@ void GLView::showScalemarkers(const Color4f &col)
 	auto log_l = static_cast<int>(log10(l));
 
 	// j represents the increment for each minor tic
-	auto j = 10;
+	auto j = 10.0;
 	// deal with 0 log values
 	if (l < 1.5){
 		j = pow(10,log_l-2);
