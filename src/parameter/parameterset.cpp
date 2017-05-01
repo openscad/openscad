@@ -97,10 +97,10 @@ void ParameterSet::applyParameterSet(FileModule *fileModule, const std::string &
 			for (auto &v : set.get()) {
 				if (v.first == assignment.name) {
 					const ValuePtr defaultValue = assignment.expr->evaluate(&ctx);
-					if (defaultValue->type() == Value::STRING) {
+					if (defaultValue->type() == Value::ValueType::STRING) {
 						assignment.expr = shared_ptr<Expression>(new Literal(ValuePtr(v.second.data())));
 					}
-					else if (defaultValue->type() == Value::BOOL) {
+					else if (defaultValue->type() == Value::ValueType::BOOL) {
 						assignment.expr = shared_ptr<Expression>(new Literal(ValuePtr(v.second.get_value<bool>())));
 					} else {
 						shared_ptr<Expression> params = CommentParser::parser(v.second.data().c_str());

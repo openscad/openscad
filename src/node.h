@@ -72,7 +72,7 @@ public:
 	AbstractPolyNode(const ModuleInstantiation *mi) : AbstractNode(mi) { };
 	virtual ~AbstractPolyNode() { };
 
-	enum render_mode_e {
+	enum class render_mode_e {
 		RENDER_CGAL,
 		RENDER_OPENCSG
 	};

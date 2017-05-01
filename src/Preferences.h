@@ -87,7 +87,7 @@ signals:
 	void ExperimentalChanged() const ;
 
 private:
-    Preferences(QWidget *parent = NULL);
+    Preferences(QWidget *parent = nullptr);
 	void keyPressEvent(QKeyEvent *e);
 	void updateGUI();
 	void removeDefaultSettings();

@@ -38,7 +38,8 @@ namespace fs = boost::filesystem;
 // $children is not a config_variable. config_variables have dynamic scope, 
 // meaning they are passed down the call chain implicitly.
 // $children is simply misnamed and shouldn't have included the '$'.
-static bool is_config_variable(const std::string &name) {
+static bool is_config_variable(const std::string &name)
+{
 	return name[0] == '$' && name != "$children";
 }
 
@@ -81,7 +82,7 @@ void Context::setVariables(const AssignmentList &args, const EvalContext *evalct
   }
 	
   if (evalctx) {
-		AssignmentMap assignments = evalctx->resolveArguments(args);
+		auto assignments = evalctx->resolveArguments(args);
 		for (const auto &ass : assignments) {
 			this->set_variable(ass.first, ass.second->evaluate(evalctx));
     }
@@ -116,8 +117,8 @@ void Context::set_constant(const std::string &name, const Value &value)
 
 void Context::apply_variables(const Context &other)
 {
-	for (ValueMap::const_iterator it = other.variables.begin();it != other.variables.end();it++) {
-		set_variable((*it).first, (*it).second);
+	for (const auto &var : other.variables) {
+		set_variable(var.first, var.second);
 	}
 }
 
@@ -129,29 +130,36 @@ ValuePtr Context::lookup_variable(const std::string &name, bool silent) const
 	}
 	if (is_config_variable(name)) {
 		for (int i = this->ctx_stack->size()-1; i >= 0; i--) {
-			const ValueMap &confvars = ctx_stack->at(i)->config_variables;
-			if (confvars.find(name) != confvars.end())
+			const auto &confvars = ctx_stack->at(i)->config_variables;
+			if (confvars.find(name) != confvars.end()) {
 				return confvars.find(name)->second;
+			}
 		}
 		return ValuePtr::undefined;
 	}
-	if (!this->parent && this->constants.find(name) != this->constants.end())
+	if (!this->parent && this->constants.find(name) != this->constants.end()) {
 		return this->constants.find(name)->second;
-	if (this->variables.find(name) != this->variables.end())
+	}
+	if (this->variables.find(name) != this->variables.end()) {
 		return this->variables.find(name)->second;
-	if (this->parent)
+	}
+	if (this->parent) {
 		return this->parent->lookup_variable(name, silent);
-	if (!silent)
+	}
+	if (!silent) {
 		PRINTB("WARNING: Ignoring unknown variable '%s'.", name);
+	}
 	return ValuePtr::undefined;
 }
 
 bool Context::has_local_variable(const std::string &name) const
 {
-	if (is_config_variable(name))
+	if (is_config_variable(name)) {
 		return config_variables.find(name) != config_variables.end();
-	if (!parent && constants.find(name) != constants.end())
+	}
+	if (!parent && constants.find(name) != constants.end()) {
 		return true;
+	}
 	return variables.find(name) != variables.end();
 }
 
@@ -179,7 +187,7 @@ AbstractNode *Context::instantiate_module(const ModuleInstantiation &inst, EvalC
 {
 	if (this->parent) return this->parent->instantiate_module(inst, evalctx);
 	print_ignore_warning("module", inst.name().c_str());
-	return NULL;
+	return nullptr;
 }
 
 /*!
@@ -199,10 +207,12 @@ std::string Context::getAbsolutePath(const std::string &filename) const
 std::string Context::dump(const AbstractModule *mod, const ModuleInstantiation *inst)
 {
 	std::stringstream s;
-	if (inst)
+	if (inst) {
 		s << boost::format("ModuleContext %p (%p) for %s inst (%p)") % this % this->parent % inst->name() % inst;
-	else
+	}
+	else {
 		s << boost::format("Context: %p (%p)") % this % this->parent;
+	}
 	s << boost::format("  document path: %s") % this->document_path;
 	if (mod) {
 		const UserModule *m = dynamic_cast<const UserModule*>(mod);

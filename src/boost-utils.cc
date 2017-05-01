@@ -9,19 +9,18 @@ namespace fs=boost::filesystem;
 fs::path boostfs_relative_path(const fs::path &path, const fs::path &relative_to)
 {
 	// create absolute paths
-	fs::path p = fs::absolute(boostfs_normalize(path));
-	fs::path r = fs::absolute(relative_to);
+	auto p = fs::absolute(boostfs_normalize(path));
+	auto r = fs::absolute(relative_to);
 	
 	// if root paths are different, return absolute path
-	if (p.root_path() != r.root_path())
-		return p;
+	if (p.root_path() != r.root_path()) return p;
 	
 	// initialize relative path
 	fs::path result;
 	
 	// find out where the two paths diverge
-	fs::path::const_iterator itr_path = p.begin();
-	fs::path::const_iterator itr_relative_to = r.begin();
+	auto itr_path = p.begin();
+	auto itr_relative_to = r.begin();
 	while (*itr_path == *itr_relative_to && itr_path != p.end() && itr_relative_to != r.end()) {
 		++itr_path;
 		++itr_relative_to;
@@ -48,13 +47,13 @@ fs::path boostfs_relative_path(const fs::path &path, const fs::path &relative_to
 // Will normalize the given path, i.e. remove any redundant ".." path elements.
 fs::path boostfs_normalize(const fs::path &path)
 {
-	fs::path absPath = fs::absolute(path);
-	fs::path::iterator it = absPath.begin();
-	fs::path result = *it;
-	if (it!=absPath.end()) it++;
+	auto absPath = fs::absolute(path);
+	auto it = absPath.begin();
+	auto result = *it;
+	if (it != absPath.end()) it++;
 
 	// Get canonical version of the existing part
-	for(;exists(result) && it != absPath.end(); ++it) {
+	for (;exists(result) && it != absPath.end(); ++it) {
 		result /= *it;
 	}
 	result = boosty::canonical(result.parent_path());

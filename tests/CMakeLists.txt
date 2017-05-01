@@ -44,6 +44,12 @@ ENDIF(APPLE)
 project(tests)
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}")
+# Set same stack size for the linker and #define used in PlatformUtils.h
+set(STACKSIZE 8388608)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSTACKSIZE=${STACKSIZE}")
+if(WIN32)
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--stack,${STACKSIZE}")
+endif()
 
 # Get GCC version
 if(CMAKE_COMPILER_IS_GNUCXX)
@@ -129,6 +135,10 @@ if(WIN32 AND MSVC)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_CRT_NONSTDC_NO_DEPRECATE")
   # M_PI
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_USE_MATH_DEFINES")
+endif()
+if(WIN32)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUNICODE")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNOGDI")
 endif()
 
 # Debugging - if you uncomment, use nmake -f Makefile > log.txt (the log is big)
@@ -256,12 +266,13 @@ endif()
 #
 # Handle C++11.
 # Note: Since Xcode 7, c++11 is default
+# Note gnu++11 used to enable numeric constants in maths.h on Windows.
 #
 message(STATUS "Using C++11")
   if (NOT CMAKE_COMPILER_IS_GNUCXX OR GCC_VERSION VERSION_GREATER 4.6)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
   else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x")
   endif()
 if(APPLE)
   set(LIBCXX11 1)
@@ -1159,6 +1170,12 @@ list(APPEND MISC_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.sca
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allfunctions.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allmodules.scad)
 
+
+list(APPEND FAILING_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1890-comment.scad
+                          ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1890-include.scad
+                          ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1890-string.scad
+                          ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1890-use.scad)
+
 list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/for-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/expression-evaluation-tests.scad
@@ -1203,6 +1220,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1516.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1528.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1923.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/preview_variable.scad
             )
 
 list(APPEND ASTDUMPTEST_FILES ${MISC_FILES}
@@ -1236,7 +1254,9 @@ list(APPEND CGALPNGTEST_3D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/inclu
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/bad-stl-pcbvicebar.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/bad-stl-tardis.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/bad-stl-wing.scad
-                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/rotate_extrude-hole.scad)
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/rotate_extrude-hole.scad
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/preview_variable.scad
+                           )
 
 list(APPEND CGALPNGTEST_FILES ${CGALPNGTEST_2D_FILES} ${CGALPNGTEST_3D_FILES})
 list(APPEND OPENCSGTEST_FILES ${CGALPNGTEST_FILES})
@@ -1263,7 +1283,9 @@ list(APPEND EXPORT3D_CGALCGAL_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1215.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1215c.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1221.scad
-                                ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1225.scad)
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1225.scad
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/preview_variable.scad
+                                )
 
 # Issue #910
 set_test_config(Bugs 
@@ -1636,7 +1658,7 @@ add_cmdline_test(csgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/
 add_cmdline_test(throwntogethertest EXE ${OPENSCAD_BINPATH} ARGS --preview=throwntogether -o SUFFIX png FILES ${THROWNTOGETHERTEST_FILES})
 # FIXME: We don't actually need to compare the output of cgalstlsanitytest
 # with anything. It's self-contained and returns != 0 on error
-add_cmdline_test(cgalstlsanitytest EXE ${CMAKE_SOURCE_DIR}/cgalstlsanitytest SUFFIX txt ARGS ${OPENSCAD_BINPATH} FILES ${CGALSTLSANITYTEST_FILES})
+add_cmdline_test(cgalstlsanitytest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/cgalstlsanitytest SUFFIX txt ARGS ${OPENSCAD_BINPATH} FILES ${CGALSTLSANITYTEST_FILES})
 
 #
 # Trivial Export/Import files
@@ -1683,6 +1705,7 @@ add_cmdline_test(svgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/
 #
 add_failing_test(stlfailedtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/shouldfail.py ARGS --openscad=${OPENSCAD_BINPATH} --retval=1 -o SUFFIX stl FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/empty-union.scad)
 add_failing_test(offfailedtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/shouldfail.py ARGS --openscad=${OPENSCAD_BINPATH} --retval=1 -o SUFFIX off FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/empty-union.scad)
+add_failing_test(parsererrors EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/shouldfail.py ARGS --openscad=${OPENSCAD_BINPATH} --retval=1 -o SUFFIX stl FILES ${FAILING_FILES})
 
 #
 # Add experimental tests

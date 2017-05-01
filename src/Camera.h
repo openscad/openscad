@@ -23,9 +23,9 @@ projection, Perspective and Orthogonal.
 class Camera
 {
 public:
-	enum CameraType { NONE, GIMBAL, VECTOR } type;
-	enum ProjectionType { ORTHOGONAL, PERSPECTIVE } projection;
-	Camera(enum CameraType camtype = NONE);
+	enum class CameraType { NONE, GIMBAL, VECTOR } type;
+	enum class ProjectionType { ORTHOGONAL, PERSPECTIVE } projection;
+	Camera(CameraType camtype = CameraType::NONE);
 	void setup(std::vector<double> params);
 	void gimbalDefaultTranslate();
 	void setProjection(ProjectionType type);

@@ -73,7 +73,7 @@ Settings *Settings::inst(bool erase)
 	
 	if (erase) {
 		delete instance;
-		instance = NULL;
+		instance = nullptr;
 	}
 
 	return instance;

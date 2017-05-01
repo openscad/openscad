@@ -12,7 +12,7 @@
 class ModuleContext : public Context
 {
 public:
-	ModuleContext(const Context *parent = NULL, const EvalContext *evalctx = NULL);
+	ModuleContext(const Context *parent = nullptr, const EvalContext *evalctx = nullptr);
 	virtual ~ModuleContext();
 
 	void initializeModule(const class UserModule &m);

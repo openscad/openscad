@@ -90,7 +90,7 @@ public:
     static FontCache *instance();
 
     typedef void (InitHandlerFunc)(FontCacheInitializer *initializer, void *userdata);
-    static void registerProgressHandler(InitHandlerFunc *handler, void *userdata = NULL);
+    static void registerProgressHandler(InitHandlerFunc *handler, void *userdata = nullptr);
 
 private:
     typedef std::pair<FT_Face, time_t> cache_entry_t;

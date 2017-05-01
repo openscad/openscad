@@ -9,7 +9,7 @@
 #include <boost/foreach.hpp>
 
 OpenSCADApp::OpenSCADApp(int &argc ,char **argv)
-	: QApplication(argc, argv), fontCacheDialog(NULL)
+	: QApplication(argc, argv), fontCacheDialog(nullptr)
 {
 #ifdef Q_OS_MAC
 	this->installEventFilter(new EventFilter(this));
@@ -36,7 +36,7 @@ bool OpenSCADApp::notify(QObject *object, QEvent *event)
 		msg = _("Unknown error");
 	}
 	// This happens when an uncaught exception is thrown in a Qt event handler
-	QMessageBox::critical(NULL, QString(_("Critical Error")), QString(_("A critical error was caught. The application may have become unstable:\n%1")).arg(QString(msg)));
+	QMessageBox::critical(nullptr, QString(_("Critical Error")), QString(_("A critical error was caught. The application may have become unstable:\n%1")).arg(QString(msg)));
 	return false;
 }
 
@@ -45,7 +45,7 @@ bool OpenSCADApp::notify(QObject *object, QEvent *event)
  */
 void OpenSCADApp::requestOpenFile(const QString &filename)
 {
-	BOOST_FOREACH(MainWindow *win, this->windowManager.getWindows()) {
+	for (auto win : this->windowManager.getWindows()) {
 		// if we have an empty open window, use that one
 		if (win->isEmpty()) {
 			win->openFile(filename);

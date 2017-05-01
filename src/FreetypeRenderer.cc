@@ -205,7 +205,7 @@ std::vector<const Geometry *> FreetypeRenderer::render(const FreetypeRenderer::P
 	}
 
 	face = cache->get_font(params.font);
-	if (face == NULL) {
+	if (face == nullptr) {
 		return std::vector<const Geometry *>();
 	}
 	
@@ -215,7 +215,7 @@ std::vector<const Geometry *> FreetypeRenderer::render(const FreetypeRenderer::P
 		return std::vector<const Geometry *>();
 	}
 	
-	hb_font_t *hb_ft_font = hb_ft_font_create(face, NULL);
+	hb_font_t *hb_ft_font = hb_ft_font_create(face, nullptr);
 
 	hb_buffer_t *hb_buf = hb_buffer_create();
 	hb_buffer_set_direction(hb_buf, hb_direction_from_string(params.direction.c_str(), -1));
@@ -231,7 +231,7 @@ std::vector<const Geometry *> FreetypeRenderer::render(const FreetypeRenderer::P
 		// values are untouched, so using the correct codepoint directly
 		// (e.g. \uf021 for the spider in Webdings) still works.
 		const char *p = params.text.c_str();
-		if (g_utf8_validate(p, -1, NULL)) {
+		if (g_utf8_validate(p, -1, nullptr)) {
 			char buf[8];
 			while (*p != 0) {
 				memset(buf, 0, 8);
@@ -247,7 +247,7 @@ std::vector<const Geometry *> FreetypeRenderer::render(const FreetypeRenderer::P
 	} else {
 		hb_buffer_add_utf8(hb_buf, params.text.c_str(), strlen(params.text.c_str()), 0, strlen(params.text.c_str()));
 	}
-	hb_shape(hb_ft_font, hb_buf, NULL, 0);
+	hb_shape(hb_ft_font, hb_buf, nullptr, 0);
 	
 	unsigned int glyph_count;
         hb_glyph_info_t *glyph_info = hb_buffer_get_glyph_infos(hb_buf, &glyph_count);

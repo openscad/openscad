@@ -35,7 +35,7 @@ void ParameterExtractor::setParameters(const FileModule* module)
     if (!param) continue;
 
     const ValuePtr defaultValue = assignment.expr->evaluate(&ctx);
-    if (defaultValue->type() == Value::UNDEFINED) continue;
+    if (defaultValue->type() == Value::ValueType::UNDEFINED) continue;
 
     ParameterObject *entryObject = new ParameterObject();
     entryObject->setAssignment(&ctx, &assignment, defaultValue);

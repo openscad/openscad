@@ -43,12 +43,12 @@ struct OffscreenContext
 
 void offscreen_context_init(OffscreenContext &ctx, int width, int height)
 {
-  ctx.window = (HWND)NULL;
-  ctx.dev_context = (HDC)NULL;
-  ctx.openGLContext = (HGLRC)NULL;
+  ctx.window = (HWND)nullptr;
+  ctx.dev_context = (HDC)nullptr;
+  ctx.openGLContext = (HGLRC)nullptr;
   ctx.width = width;
   ctx.height = height;
-  ctx.fbo = NULL;
+  ctx.fbo = nullptr;
 }
 
 string get_os_info()
@@ -125,15 +125,15 @@ bool create_wgl_dummy_context(OffscreenContext &ctx)
   int y = 0;
   int nWidth = ctx.width;
   int nHeight = ctx.height;
-  HWND hWndParent = NULL;
-  HMENU hMenu = NULL;
+  HWND hWndParent = nullptr;
+  HMENU hMenu = nullptr;
   HINSTANCE hInstance = inst;
-  LPVOID lpParam = NULL;
+  LPVOID lpParam = nullptr;
 
   HWND window = CreateWindowW( lpClassName, lpWindowName, dwStyle, x, y,
     nWidth, nHeight, hWndParent, hMenu, hInstance, lpParam );
 
-  if ( window==NULL ) {
+  if ( window==nullptr ) {
     cerr << "MS GDI - CreateWindow failed\n";
     cerr << "last-error code: " << GetLastError() << "\n";
     return false;
@@ -144,7 +144,7 @@ bool create_wgl_dummy_context(OffscreenContext &ctx)
   PIXELFORMATDESCRIPTOR pixformat;
   int chosenformat;
   HDC dev_context = GetDC( window );
-  if ( dev_context == NULL ) {
+  if ( dev_context == nullptr ) {
     cerr << "MS GDI - GetDC failed\n";
     cerr << "last-error code: " << GetLastError() << "\n";
     return false;
@@ -177,7 +177,7 @@ bool create_wgl_dummy_context(OffscreenContext &ctx)
   }
 
   HGLRC gl_render_context = wglCreateContext( dev_context );
-  if ( gl_render_context == NULL ) {
+  if ( gl_render_context == nullptr ) {
       cerr << "MS WGL - wglCreateContext failed\n";
     cerr << "last-error code: " << GetLastError() << "\n";
       ReleaseDC( ctx.window, ctx.dev_context );
@@ -208,7 +208,7 @@ OffscreenContext *create_offscreen_context(int w, int h)
   // This call alters ctx->window and ctx->openGLContext 
   //  and ctx->dev_context if successfull
   if (!create_wgl_dummy_context( *ctx )) {
-    return NULL;
+    return nullptr;
   }
 
   return create_offscreen_context_common( ctx );
@@ -220,7 +220,7 @@ bool teardown_offscreen_context(OffscreenContext *ctx)
     fbo_unbind(ctx->fbo);
     fbo_delete(ctx->fbo);
 
-    wglMakeCurrent( NULL, NULL );
+    wglMakeCurrent( nullptr, nullptr );
     wglDeleteContext( ctx->openGLContext );
     ReleaseDC( ctx->window, ctx->dev_context );
 

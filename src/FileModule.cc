@@ -48,9 +48,10 @@ std::string FileModule::dump(const std::string &indent, const std::string &name)
 	return scope.dump(indent);
 }
 
-void FileModule::registerUse(const std::string path) {
-	std::string extraw = fs::path(path).extension().generic_string();
-	std::string ext = boost::algorithm::to_lower_copy(extraw);
+void FileModule::registerUse(const std::string path)
+{
+	auto extraw = fs::path(path).extension().generic_string();
+	auto ext = boost::algorithm::to_lower_copy(extraw);
 	
 	if ((ext == ".otf") || (ext == ".ttf")) {
 		if (fs::is_regular(path)) {
@@ -63,8 +64,7 @@ void FileModule::registerUse(const std::string path) {
 	}
 }
 
-void FileModule::registerInclude(const std::string &localpath,
-																 const std::string &fullpath)
+void FileModule::registerInclude(const std::string &localpath, const std::string &fullpath)
 {
 	this->includes[localpath] = {fullpath};
 }
@@ -73,7 +73,7 @@ time_t FileModule::includesChanged() const
 {
 	time_t latest = 0;
 	for (const auto &item : this->includes) {
-		time_t mtime = include_modified(item.second);
+		auto mtime = include_modified(item.second);
 		if (mtime > latest) latest = mtime;
 	}
 	return latest;
@@ -107,15 +107,15 @@ time_t FileModule::handleDependencies()
 	time_t latest = 0;
 	for (auto filename : this->usedlibs) {
 
-		bool wasmissing = false;
-		bool found = true;
+		auto wasmissing = false;
+		auto found = true;
 
 		// Get an absolute filename for the module
 		if (!fs::path(filename).is_absolute()) {
 			wasmissing = true;
-			fs::path fullpath = find_valid_path(this->path, filename);
+			auto fullpath = find_valid_path(this->path, filename);
 			if (!fullpath.empty()) {
-				updates.push_back(std::make_pair(filename, fullpath.generic_string()));
+				updates.emplace_back(filename, fullpath.generic_string());
 				filename = fullpath.generic_string();
 			}
 			else {
@@ -124,12 +124,12 @@ time_t FileModule::handleDependencies()
 		}
 
 		if (found) {
-			bool wascached = ModuleCache::instance()->isCached(filename);
-			FileModule *oldmodule = ModuleCache::instance()->lookup(filename);
+			auto wascached = ModuleCache::instance()->isCached(filename);
+			auto oldmodule = ModuleCache::instance()->lookup(filename);
 			FileModule *newmodule;
-			time_t mtime = ModuleCache::instance()->evaluate(filename, newmodule);
+			auto mtime = ModuleCache::instance()->evaluate(filename, newmodule);
 			if (mtime > latest) latest = mtime;
-			bool changed = newmodule && newmodule != oldmodule;
+			auto changed = newmodule && newmodule != oldmodule;
 			// Detect appearance but not removal of files, and keep old module
 			// on compile errors (FIXME: Is this correct behavior?)
 			if (changed) {
@@ -169,11 +169,11 @@ AbstractNode *FileModule::instantiateWithFileContext(FileContext *ctx, const Mod
 {
 	assert(evalctx == nullptr);
 	
-	AbstractNode *node = new RootNode(inst);
+	auto node = new RootNode(inst);
 	try {
 		ctx->initializeModule(*this); // May throw an ExperimentalFeatureException
 		// FIXME: Set document path to the path of the module
-		std::vector<AbstractNode *> instantiatednodes = this->scope.instantiateChildren(ctx);
+		auto instantiatednodes = this->scope.instantiateChildren(ctx);
 		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 	}
 	catch (EvaluationException &e) {

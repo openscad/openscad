@@ -84,10 +84,14 @@ macx {
   QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.8
 }
 
+# Set same stack size for the linker and #define used in PlatformUtils.h
+STACKSIZE = 8388608 # 8MB # github issue 116
+QMAKE_CXXFLAGS += -DSTACKSIZE=$$STACKSIZE
 
 win* {
   RC_FILE = openscad_win32.rc
   QMAKE_CXXFLAGS += -DNOGDI
+  QMAKE_LFLAGS += -Wl,--stack,$$STACKSIZE
 }
 
 mingw* {
@@ -315,7 +319,6 @@ HEADERS += src/version_check.h \
            src/linalg.h \
            src/Camera.h \
            src/system-gl.h \
-           src/stl-utils.h \
            src/boost-utils.h \
            src/LibraryInfo.h \
            src/svg.h \
@@ -409,7 +412,6 @@ SOURCES += \
            src/fileutils.cc \
            src/progress.cc \
            src/parsersettings.cc \
-           src/stl-utils.cc \
            src/boost-utils.cc \
            src/PlatformUtils.cc \
            src/LibraryInfo.cc \
@@ -581,7 +583,7 @@ target.path = $$PREFIX/bin/
 INSTALLS += target
 
 # Run translation update scripts as last step after linking the target
-QMAKE_POST_LINK += $$PWD/scripts/translation-make.sh
+QMAKE_POST_LINK += "$$PWD/scripts/translation-make.sh"
 
 # Create install targets for the languages defined in LINGUAS
 LINGUAS = $$cat(locale/LINGUAS)

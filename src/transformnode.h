@@ -7,7 +7,7 @@ class TransformNode : public AbstractNode
 {
 public:
 	VISITABLE();
-	TransformNode(const ModuleInstantiation *mi) : AbstractNode(mi) { }
+	TransformNode(const ModuleInstantiation *mi);
 	virtual std::string toString() const;
 	virtual std::string name() const;
 

@@ -4,7 +4,7 @@
 #include "value.h"
 #include "linalg.h"
 
-enum cgaladv_type_e {
+enum class CgaladvType {
 	MINKOWSKI,
 	GLIDE,
 	SUBDIV,
@@ -16,7 +16,7 @@ class CgaladvNode : public AbstractNode
 {
 public:
 	VISITABLE();
-	CgaladvNode(const ModuleInstantiation *mi, cgaladv_type_e type) : AbstractNode(mi), type(type) {
+	CgaladvNode(const ModuleInstantiation *mi, CgaladvType type) : AbstractNode(mi), type(type) {
 		convexity = 1;
 	}
 	virtual ~CgaladvNode() { }
@@ -28,5 +28,5 @@ public:
 	int convexity, level;
 	Vector3d newsize;
 	Eigen::Matrix<bool,3,1> autosize;
-	cgaladv_type_e type;
+	CgaladvType type;
 };
