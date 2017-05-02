@@ -40,13 +40,6 @@ std::vector<std::string> fontpath;
 
 namespace fs = boost::filesystem;
 
-/*
-static bool FontInfoSortPredicate(const FontInfo& fi1, const FontInfo& fi2)
-{
-	return (fi1 < fi2);
-}
-*/
-
 FontInfo::FontInfo(const std::string &family, const std::string &style, const std::string &file) : family(family), style(style), file(file)
 {
 }

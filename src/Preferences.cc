@@ -143,9 +143,9 @@ void Preferences::init() {
 
 	uint savedsize = getValue("editor/fontsize").toUInt();
 	QFontDatabase db;
-	for(uint size : db.standardSizes()) {
+	for(auto size : db.standardSizes()) {
 		this->fontSize->addItem(QString::number(size));
-		if (size == savedsize) {
+		if (static_cast<uint>(size) == savedsize) {
 			this->fontSize->setCurrentIndex(this->fontSize->count()-1);
 		}
 	}
