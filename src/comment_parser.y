@@ -6,7 +6,7 @@
     #include "printutils.h"
     #include "value.h" 
     #include "comment.h" 
-    void yyerror(char *);
+    void yyerror(const char *);
     int comment_lexerlex(void);
     int comment_parserlex(void);
     extern void comment_lexer_scan_string ( const char *str );
@@ -127,7 +127,7 @@ int comment_parserlex(void)
   return comment_lexerlex();
 }
 
-void yyerror(char *msg) {
+void yyerror(const char * /*msg*/) {
     PRINTD("ERROR IN PARAMETER: Parser error in comments of file \n "); 
     params = NULL;
 }

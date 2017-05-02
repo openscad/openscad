@@ -189,7 +189,7 @@ static void append_stl(const shared_ptr<const Geometry> &geom, std::ostream &out
 	else if (const PolySet *ps = dynamic_cast<const PolySet *>(geom.get())) {
 		append_stl(*ps, output);
 	}
-	else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(geom.get())) {
+	else if (dynamic_cast<const Polygon2d *>(geom.get())) {
 		assert(false && "Unsupported file format");
 	} else {
 		assert(false && "Not implemented");

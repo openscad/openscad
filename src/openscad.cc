@@ -771,14 +771,13 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 		}
 	}
 
-	MainWindow *mainwin;
 	auto isMdi = settings.value("advanced/mdi", true).toBool();
 	if (isMdi) {
 		for(const auto &infile : inputFiles) {
-		    mainwin = new MainWindow(assemblePath(original_path, infile));
+		   new MainWindow(assemblePath(original_path, infile));
 	    }
 	} else {
-	    mainwin = new MainWindow(assemblePath(original_path, inputFiles[0]));
+	   new MainWindow(assemblePath(original_path, inputFiles[0]));
 	}
 
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
@@ -798,10 +797,10 @@ int gui(const vector<string> &inputFiles, const fs::path &original_path, int arg
 int main(int argc, char **argv)
 {
 	int rc = 0;
-	bool isGuiLaunched = getenv("GUI_LAUNCHED") != 0;
 	StackCheck::inst()->init();
 	
 #ifdef Q_OS_MAC
+	bool isGuiLaunched = getenv("GUI_LAUNCHED") != 0;
 	if (isGuiLaunched) set_output_handler(CocoaUtils::nslog, nullptr);
 #else
 	PlatformUtils::ensureStdIO();

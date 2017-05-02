@@ -37,7 +37,7 @@ GroupWidget::GroupWidget(bool &show, const QString & title, const int animationD
 }
 
 
-void GroupWidget::onclicked(const bool checked)
+void GroupWidget::onclicked(const bool /*checked*/)
 {
 	toggleButton.setArrowType(toggleButton.isChecked() ? Qt::DownArrow : Qt::RightArrow);
 	toggleAnimation.setDirection(toggleButton.isChecked() ? QAbstractAnimation::Forward : QAbstractAnimation::Backward);

@@ -81,7 +81,7 @@ string get_os_info()
   return out.str();
 }
 
-string offscreen_context_getinfo(OffscreenContext *ctx)
+string offscreen_context_getinfo(OffscreenContext * /*ctx*/)
 {
   // should probably get some info from WGL context here?
   stringstream out;

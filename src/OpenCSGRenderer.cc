@@ -107,7 +107,6 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 		}
 		if (shaderinfo) glUseProgram(shaderinfo[0]);
 
-		const CSGChainObject &parent_obj = product.intersections[0];
 		for(const auto &csgobj : product.intersections) {
 			const Color4f &c = csgobj.leaf->color;
 				csgmode_e csgmode = csgmode_e(

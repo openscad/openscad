@@ -73,6 +73,7 @@ class SettingsReader : public Settings::SettingsVisitor
 			return Value(boost::lexical_cast<bool>(trimmed_value));
 		default:
 			assert(false && "invalid value type for settings");
+			return 0; // keep compiler happy
 		}
 	} catch (const boost::bad_lexical_cast& e) {
 		return entry.defaultValue();
@@ -144,7 +145,7 @@ void Preferences::init() {
 	QFontDatabase db;
 	for(auto size : db.standardSizes()) {
 		this->fontSize->addItem(QString::number(size));
-		if (size == savedsize) {
+		if (static_cast<uint>(size) == savedsize) {
 			this->fontSize->setCurrentIndex(this->fontSize->count()-1);
 		}
 	}

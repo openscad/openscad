@@ -15,7 +15,7 @@ public:
 
 	virtual size_t memsize() const;
 	// FIXME: Implement, but we probably want a high-resolution BBox..
-	virtual BoundingBox getBoundingBox() const { assert(false && "not implemented"); }
+	virtual BoundingBox getBoundingBox() const { assert(false && "not implemented"); return BoundingBox(); }
 	virtual std::string dump() const;
 	virtual unsigned int getDimension() const { return 3; }
   // Empty means it is a geometric node which has zero area/volume

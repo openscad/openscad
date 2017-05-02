@@ -44,7 +44,7 @@ shared_ptr<CSGNode> CSGTreeEvaluator::buildCSGTree(const AbstractNode &node)
 	return this->rootNode = t;
 }
 
-void CSGTreeEvaluator::applyBackgroundAndHighlight(State &state, const AbstractNode &node)
+void CSGTreeEvaluator::applyBackgroundAndHighlight(State & /*state*/, const AbstractNode &node)
 {
 	for(const auto &chnode : this->visitedchildren[node.index()]) {
 		shared_ptr<CSGNode> t(this->stored_term[chnode->index()]);
@@ -56,17 +56,14 @@ void CSGTreeEvaluator::applyBackgroundAndHighlight(State &state, const AbstractN
 	}
 }
 
-void CSGTreeEvaluator::applyToChildren(State &state, const AbstractNode &node, OpenSCADOperator op)
+void CSGTreeEvaluator::applyToChildren(State & /*state*/, const AbstractNode &node, OpenSCADOperator op)
 {
 	shared_ptr<CSGNode> t1;
-	const ModuleInstantiation *t1_modinst;
 	for(const auto &chnode : this->visitedchildren[node.index()]) {
 		shared_ptr<CSGNode> t2(this->stored_term[chnode->index()]);
-		auto t2_modinst = chnode->modinst;
 		this->stored_term.erase(chnode->index());
 		if (t2 && !t1) {
 			t1 = t2;
-			t1_modinst = t2_modinst;
 		} else if (t2 && t1) {
 
 			shared_ptr<CSGNode> t;
@@ -127,6 +124,10 @@ void CSGTreeEvaluator::applyToChildren(State &state, const AbstractNode &node, O
 						t = t1;
 					}
 					break;
+                case OpenSCADOperator::MINKOWSKI:
+                case OpenSCADOperator::HULL:
+                case OpenSCADOperator::RESIZE:
+                    break;
 				}
 			t1 = t;
 		}

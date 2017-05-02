@@ -304,7 +304,7 @@ void CommentParser::collectParameters(const char *fulltext, FileModule *root_mod
 
 		// Look for the group to which the given assignment belong
 		int i=0;
-		for (;i<groupList.size() && groupList[i].lineNo<firstLine;i++);
+		for (; (unsigned)i < groupList.size() && groupList[i].lineNo<firstLine;i++);
 		i--;
 
 		if (i >= 0) {

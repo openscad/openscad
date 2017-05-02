@@ -142,38 +142,6 @@ static char copyrighttext[] =
 	"it under the terms of the GNU General Public License as published by "
 	"the Free Software Foundation; either version 2 of the License, or "
 	"(at your option) any later version.";
-
-static void
-settings_setValueList(const QString &key,const QList<int> &list)
-{
-	QSettings settings;
-	settings.beginWriteArray(key);
-	for (int i=0;i<list.size(); ++i) {
-		settings.setArrayIndex(i);
-		settings.setValue("entry",list[i]);
-	}
-	settings.endArray();
-}
-
-QList<int>
-settings_valueList(const QString &key, const QList<int> &defaultList = QList<int>())
-{
-	QSettings settings;
-	QList<int> result;
-	if (settings.contains(key+"/size")){
-		auto length = settings.beginReadArray(key);
-		for (int i = 0; i < length; ++i) {
-			settings.setArrayIndex(i);
-			result += settings.value("entry").toInt();
-		}
-		settings.endArray();
-		return result;
-	} else {
-		return defaultList;
-	}
-
-}
-
 bool MainWindow::mdiMode = false;
 bool MainWindow::undockMode = false;
 bool MainWindow::reorderMode = false;

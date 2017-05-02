@@ -165,7 +165,7 @@ static void append_amf(const shared_ptr<const Geometry> &geom, std::ostream &out
 		if (!N->isEmpty()) append_amf(*N, output);
 		delete N;
 	}
-	else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(geom.get())) {
+	else if (dynamic_cast<const Polygon2d *>(geom.get())) {
 		assert(false && "Unsupported file format");
 	} else {
 		assert(false && "Not implemented");
