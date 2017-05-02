@@ -303,15 +303,15 @@ void CommentParser::collectParameters(const char *fulltext, FileModule *root_mod
 		}
 
 		// Look for the group to which the given assignment belong
-		for (const auto &groupInfo : groupList) {
-			if (groupInfo.lineNo >= firstLine) {
-				//creating node for description
-				shared_ptr<Expression> expr(new Literal(ValuePtr(groupInfo.commentString)));
-				annotationList->push_back(Annotation("Group", expr));
-				break;
-			}
-		}
+		int i=0;
+		for (; (unsigned)i < groupList.size() && groupList[i].lineNo<firstLine;i++);
+		i--;
 
+		if (i >= 0) {
+			//creating node for description
+			shared_ptr<Expression> expr(new Literal(ValuePtr(groupList[i].commentString)));
+			annotationList->push_back(Annotation("Group", expr));
+		}
 		assignment.addAnnotations(annotationList);
 	}
 }
