@@ -63,11 +63,11 @@ VERSION_YEAR=$$member(VERSION_SPLIT, 0)
 VERSION_MONTH=$$member(VERSION_SPLIT, 1)
 VERSION_DAY=$$member(VERSION_SPLIT, 2)
 
-# Strip leading zeros to prevent integers with leading zeros
-# being interpreted by C++ as octals. 
-VERSION_YEAR=$$num_add($$VERSION_YEAR)
-VERSION_MONTH=$$num_add($$VERSION_MONTH)
-VERSION_DAY=$$num_add($$VERSION_DAY)
+# Fix for problem with integers with leading zeros
+# being interpreted by C++ as octals. Now they're doubles.
+VERSION_YEAR=$${VERSION_YEAR}.0
+VERSION_MONTH=$${VERSION_MONTH}.0
+VERSION_DAY=$${VERSION_DAY}.0
 
 DEFINES += OPENSCAD_VERSION=$$VERSION OPENSCAD_SHORTVERSION=$$SHORTVERSION OPENSCAD_YEAR=$$VERSION_YEAR OPENSCAD_MONTH=$$VERSION_MONTH
 !isEmpty(VERSION_DAY): DEFINES += OPENSCAD_DAY=$$VERSION_DAY
