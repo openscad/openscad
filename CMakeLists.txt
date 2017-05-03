@@ -56,7 +56,7 @@ find_package(GLIB2 2.26 REQUIRED QUIET)
 message(STATUS "Glib: ${GLIB2_VERSION}")
 include_directories(${GLIB2_INCLUDE_DIRS})
 
-find_package(LibXml2 2.9.4 REQUIRED QUIET)
+find_package(LibXml2 2.9 REQUIRED QUIET)
 message(STATUS "LibXml2: ${LIBXML2_VERSION_STRING}")
 include_directories(${LIBXML2_INCLUDE_DIR})
 
