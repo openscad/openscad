@@ -346,8 +346,10 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->designActionDisplayCSGTree, SIGNAL(triggered()), this, SLOT(actionDisplayCSGTree()));
 	connect(this->designActionDisplayCSGProducts, SIGNAL(triggered()), this, SLOT(actionDisplayCSGProducts()));
 	connect(this->fileActionExportSTL, SIGNAL(triggered()), this, SLOT(actionExportSTL()));
+	connect(this->fileActionExportOBJ, SIGNAL(triggered()), this, SLOT(actionExportOBJ()));
 	connect(this->fileActionExportOFF, SIGNAL(triggered()), this, SLOT(actionExportOFF()));
 	connect(this->fileActionExportAMF, SIGNAL(triggered()), this, SLOT(actionExportAMF()));
+	connect(this->fileActionExportX3D, SIGNAL(triggered()), this, SLOT(actionExportX3D()));
 	connect(this->fileActionExportDXF, SIGNAL(triggered()), this, SLOT(actionExportDXF()));
 	connect(this->fileActionExportSVG, SIGNAL(triggered()), this, SLOT(actionExportSVG()));
 	connect(this->fileActionExportCSG, SIGNAL(triggered()), this, SLOT(actionExportCSG()));
@@ -491,7 +493,9 @@ MainWindow::MainWindow(const QString &filename)
 	initActionIcon(viewActionAnimate, ":/images/animate.png", ":/images/animate.png");
 	initActionIcon(fileActionExportSTL, ":/images/STL.png", ":/images/STL-white.png");
 	initActionIcon(fileActionExportAMF, ":/images/AMF.png", ":/images/AMF-white.png");
+	initActionIcon(fileActionExportOBJ, ":/images/OBJ.png", ":/images/OBJ-white.png");
 	initActionIcon(fileActionExportOFF, ":/images/OFF.png", ":/images/OFF-white.png");
+	initActionIcon(fileActionExportX3D, ":/images/X3D.png", ":/images/X3D-white.png");
 	initActionIcon(fileActionExportDXF, ":/images/DXF.png", ":/images/DXF-white.png");
 	initActionIcon(fileActionExportSVG, ":/images/SVG.png", ":/images/SVG-white.png");
 	initActionIcon(fileActionExportCSG, ":/images/CSG.png", ":/images/CSG-white.png");
@@ -2193,6 +2197,11 @@ void MainWindow::actionExportSTL()
 	actionExport(FileFormat::STL, "STL", ".stl", 3);
 }
 
+void MainWindow::actionExportOBJ()
+{
+	actionExport(FileFormat::OBJ, "OBJ", ".obj", 3);
+}
+
 void MainWindow::actionExportOFF()
 {
 	actionExport(FileFormat::OFF, "OFF", ".off", 3);
@@ -2201,6 +2210,11 @@ void MainWindow::actionExportOFF()
 void MainWindow::actionExportAMF()
 {
 	actionExport(FileFormat::AMF, "AMF", ".amf", 3);
+}
+
+void MainWindow::actionExportX3D()
+{
+	actionExport(FileFormat::X3D, "X3D", ".x3d", 3);
 }
 
 void MainWindow::actionExportDXF()

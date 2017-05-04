@@ -21,6 +21,7 @@ testdata/scad/misc/use-tests.scad
 /*.dxf
 /*.off
 /*.amf
+/*.x3d
 /*.png
 /*.csg
 /*.nef3

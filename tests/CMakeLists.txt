@@ -777,9 +777,12 @@ set(NOCGAL_SOURCES
   ../src/export.cc
   ../src/export_stl.cc
   ../src/export_amf.cc
+  ../src/export_obj.cc
   ../src/export_off.cc
+  ../src/export_x3d.cc
   ../src/export_dxf.cc
   ../src/export_svg.cc
+  ../src/export_indexed_triangles.cc
   ../src/LibraryInfo.cc
   ../src/polyset.cc
   ../src/polyset-gl.cc
