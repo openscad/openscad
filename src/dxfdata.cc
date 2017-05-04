@@ -27,7 +27,6 @@
 #include "dxfdata.h"
 #include "grid.h"
 #include "printutils.h"
-#include "handle_dep.h"
 #include "calc.h"
 
 #include <fstream>
@@ -79,8 +78,6 @@ DxfData::DxfData(double fn, double fs, double fa,
 								 const std::string &filename, const std::string &layername, 
 								 double xorigin, double yorigin, double scale)
 {
-	handle_dep(filename); // Register ourselves as a dependency
-
 	std::ifstream stream(filename.c_str());
 	if (!stream.good()) {
 		PRINTB("WARNING: Can't open DXF file '%s'.", filename);

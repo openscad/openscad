@@ -32,7 +32,7 @@
 #include "builtin.h"
 #include "printutils.h"
 #include "fileutils.h"
-#include "handle_dep.h" // handle_dep()
+#include "handle_dep.h"
 #include "lodepng.h"
 
 #include <cstdint>
@@ -93,7 +93,9 @@ AbstractNode *SurfaceModule::instantiate(const Context *ctx, const ModuleInstant
 	c.setVariables(args, evalctx);
 
 	auto fileval = c.lookup_variable("file");
-	node->filename = lookup_file(fileval->isUndefined() ? "" : fileval->toString(), inst->path(), c.documentPath());
+	std::string filename = lookup_file(fileval->isUndefined() ? "" : fileval->toString(), inst->path(), c.documentPath());
+	node->filename = filename;
+	handle_dep(fs::path(filename).generic_string());
 
 	auto center = c.lookup_variable("center", true);
 	if (center->type() == Value::ValueType::BOOL) {

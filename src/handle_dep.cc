@@ -13,10 +13,7 @@ const char *make_command = nullptr;
 void handle_dep(const std::string &filename)
 {
 	fs::path filepath(filename);
-	std::string dep;
-	if (filepath.is_absolute()) dep = filename;
-	else dep = (fs::current_path() / filepath).string();
-	dependencies.insert(boost::regex_replace(filename, boost::regex("\\ "), "\\\\ "));
+	dependencies.insert(boost::regex_replace(filepath.generic_string(), boost::regex("\\ "), "\\\\ "));
 
 	if (!fs::exists(filepath) && make_command) {
 		std::stringstream buf;

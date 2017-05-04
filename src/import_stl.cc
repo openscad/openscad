@@ -1,6 +1,5 @@
 #include "import.h"
 #include "polyset.h"
-#include "handle_dep.h" // handle_dep()
 #include "printutils.h"
 
 #include <boost/algorithm/string.hpp>
@@ -57,7 +56,6 @@ PolySet *import_stl(const std::string &filename)
 {
 	PolySet *p = new PolySet(3);
 
-	handle_dep(filename);
 	// Open file and position at the end
 	std::ifstream f(filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
 	if (!f.good()) {

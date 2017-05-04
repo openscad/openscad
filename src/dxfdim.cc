@@ -32,6 +32,7 @@
 #include "printutils.h"
 #include "fileutils.h"
 #include "evalcontext.h"
+#include "handle_dep.h"
 
 #include <cmath>
 #include <sstream>
@@ -59,7 +60,7 @@ ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 		ValuePtr v = evalctx->getArgValue(i);
 		if (evalctx->getArgName(i) == "file") {
 			filename = lookup_file(v->toString(), 
-														 evalctx->documentPath(), ctx->documentPath());
+			evalctx->documentPath(), ctx->documentPath());
 		}
 		if (n == "layer") layername = v->toString();
 		if (n == "origin") v->getVec2(xorigin, yorigin);
@@ -81,7 +82,7 @@ ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 	std::string key = keystream.str();
 	if (dxf_dim_cache.find(key) != dxf_dim_cache.end())
 		return dxf_dim_cache.find(key)->second;
-
+	handle_dep(filepath.string());
 	DxfData dxf(36, 0, 0, filename, layername, xorigin, yorigin, scale);
 
 	for (size_t i = 0; i < dxf.dims.size(); i++)
@@ -170,10 +171,9 @@ ValuePtr builtin_dxf_cross(const Context *ctx, const EvalContext *evalctx)
 						<< "|" << filesize;
 	std::string key = keystream.str();
 
-	if (dxf_cross_cache.find(key) != dxf_cross_cache.end()) {
+	if (dxf_cross_cache.find(key) != dxf_cross_cache.end())
 		return dxf_cross_cache.find(key)->second;
-	}
-
+	handle_dep(filepath.string());
 	DxfData dxf(36, 0, 0, filename, layername, xorigin, yorigin, scale);
 
 	double coords[4][2];

@@ -40,6 +40,7 @@
 #include "printutils.h"
 #include "fileutils.h"
 #include "feature.h"
+#include "handle_dep.h"
 
 #include <sys/types.h>
 #include <sstream>
@@ -99,6 +100,7 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 		}
 	}
 	std::string filename = lookup_file(v->isUndefined() ? "" : v->toString(), inst->path(), ctx->documentPath());
+	handle_dep(filename);
 	ImportType actualtype = this->type;
 	if (actualtype == ImportType::UNKNOWN) {
 		std::string extraw = fs::path(filename).extension().generic_string();
