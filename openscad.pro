@@ -353,6 +353,7 @@ HEADERS += src/version_check.h \
            src/parameter/groupwidget.h \
            src/parameter/parameterset.h\
            src/QWordSearchField.h
+           src/QSettingsCached.h
 
 SOURCES += \
            src/libsvg/libsvg.cc \
@@ -492,7 +493,9 @@ SOURCES += \
            src/parameter/groupwidget.cpp \
            src/parameter/parameterset.cpp \
            src/parameter/parametervirtualwidget.cpp\
-           src/QWordSearchField.cc
+           src/QWordSearchField.cc\
+           \
+           src/QSettingsCached.cc
 
 
 # ClipperLib

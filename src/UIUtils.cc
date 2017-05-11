@@ -25,7 +25,6 @@
  */
 
 #include <QDir>
-#include <QSettings>
 #include <QFileInfo>
 #include <QUrl>
 #include <QFileDialog>
@@ -35,13 +34,15 @@
 #include "UIUtils.h"
 #include "PlatformUtils.h"
 #include "openscad.h"
+#include "QSettingsCached.h"
+
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
 QFileInfo UIUtils::openFile(QWidget *parent)
 {
-    QSettings settings;
+    QSettingsCached settings;
     QString last_dirname = settings.value("lastOpenDirName").toString();
     QString new_filename = QFileDialog::getOpenFileName(parent, "Open File",
 	    last_dirname, "OpenSCAD Designs (*.scad *.csg)");
@@ -59,7 +60,7 @@ QFileInfo UIUtils::openFile(QWidget *parent)
 
 QStringList UIUtils::recentFiles()
 {
-    QSettings settings; // set up project and program properly in main.cpp
+    QSettingsCached settings; // set up project and program properly in main.cpp
     QStringList files = settings.value("recentFileList").toStringList();
 
     // Remove any duplicate or empty entries from the list
