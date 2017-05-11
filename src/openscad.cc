@@ -276,7 +276,7 @@ Camera get_camera(po::variables_map vm)
 }
 
 #ifndef OPENSCAD_NOGUI
-#include <QSettings>
+#include "QSettingsCached.h"
 #define OPENSCAD_QTGUI 1
 #endif
 static bool checkAndExport(shared_ptr<const Geometry> root_geom, unsigned nd,
@@ -601,7 +601,7 @@ Q_IMPORT_PLUGIN(qtaccessiblewidgets)
 #include "MainWindow.h"
 #include "OpenSCADApp.h"
 #include "launchingscreen.h"
-#include "qsettings.h"
+#include "QSettingsCached.h"
 #include <QString>
 #include <QDir>
 #include <QFileInfo>

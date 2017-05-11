@@ -36,12 +36,13 @@
 #include <QMouseEvent>
 #include <QMessageBox>
 #include <QPushButton>
-#include <QSettings>
 #include <QTimer>
 #include <QTextEdit>
 #include <QVBoxLayout>
 #include <QErrorMessage>
 #include "OpenCSGWarningDialog.h"
+#include "QSettingsCached.h"
+
 
 #include <stdio.h>
 #include <sstream>

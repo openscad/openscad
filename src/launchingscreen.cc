@@ -1,10 +1,10 @@
 #include <QFileInfo>
-#include <QSettings>
 #include <QListWidgetItem>
 
 #include "openscad.h"
 #include "launchingscreen.h"
 #include "ui_launchingscreen.h"
+#include "QSettingsCached.h"
 
 #include "UIUtils.h"
 
@@ -133,7 +133,7 @@ void LaunchingScreen::openUserFile()
 
 void LaunchingScreen::checkboxState(bool state) const
 {
-	QSettings settings;
+	QSettingsCached settings;
 	settings.setValue("launcher/showOnStartup", !state);
 }
 
