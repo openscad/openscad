@@ -8,11 +8,6 @@ matrix:
       env: DIST="trusty"
       sudo: required
       cache: apt
-    - os: linux
-      compiler: gcc
-      dist: precise
-      env: DIST="precise"
-      cache: apt
     - os: osx
       compiler: clang
       env: DIST="osx"
