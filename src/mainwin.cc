@@ -85,7 +85,6 @@
 #include <QTimer>
 #include <QMessageBox>
 #include <QDesktopServices>
-#include <QSettings>
 #include <QProgressDialog>
 #include <QMutexLocker>
 #include <QTemporaryFile>
@@ -94,6 +93,8 @@
 #include <QDesktopWidget>
 #include <string>
 #include "QWordSearchField.h"
+#include <QSettings> //Include QSettings for direct operations on settings arrays
+#include "QSettingsCached.h"
 
 #if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
 #include <QTextDocument>
@@ -166,7 +167,7 @@ MainWindow::MainWindow(const QString &filename)
 	this->versionLabel = nullptr; // must be initialized before calling updateStatusBar()
 	updateStatusBar(nullptr);
 
-	QSettings settings;
+	QSettingsCached settings;
 	editortype = settings.value("editor/editortype").toString();
 	useScintilla = (editortype != "Simple Editor");
 
@@ -625,7 +626,7 @@ void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer
 }
 
 void MainWindow::loadViewSettings() {
-	QSettings settings;
+	QSettingsCached settings;
 	if (settings.value("view/showEdges").toBool()) {
 		viewActionShowEdges->setChecked(true);
 		viewModeShowEdges();
@@ -655,7 +656,7 @@ void MainWindow::loadViewSettings() {
 
 void MainWindow::loadDesignSettings()
 {
-	QSettings settings;
+	QSettingsCached settings;
 	if (settings.value("design/autoReload", true).toBool()) {
 		designActionAutoReload->setChecked(true);
 	}
@@ -809,7 +810,7 @@ void MainWindow::updateRecentFiles()
 	// if it does. Should prevent empty list items on initial open etc.
 	QFileInfo fileinfo(this->fileName);
 	auto infoFileName = fileinfo.absoluteFilePath();
-	QSettings settings; // already set up properly via main.cpp
+	QSettingsCached settings; // already set up properly via main.cpp
 	auto files = settings.value("recentFileList").toStringList();
 	files.removeAll(infoFileName);
 	files.prepend(infoFileName);
@@ -1286,7 +1287,7 @@ void MainWindow::actionOpenRecent()
 
 void MainWindow::clearRecentFiles()
 {
-	QSettings settings; // already set up properly via main.cpp
+	QSettingsCached settings; // already set up properly via main.cpp
 	QStringList files;
 	settings.setValue("recentFileList", files);
 
@@ -1783,7 +1784,7 @@ void MainWindow::checkAutoReload()
 
 void MainWindow::autoReloadSet(bool on)
 {
-	QSettings settings;
+	QSettingsCached settings;
 	settings.setValue("design/autoReload",designActionAutoReload->isChecked());
 	if (on) {
 		autoReloadTimer->start(200);
@@ -2348,7 +2349,7 @@ void MainWindow::viewModeThrownTogether()
 
 void MainWindow::viewModeShowEdges()
 {
-	QSettings settings;
+	QSettingsCached settings;
 	settings.setValue("view/showEdges",viewActionShowEdges->isChecked());
 	this->qglview->setShowEdges(viewActionShowEdges->isChecked());
 	this->qglview->updateGL();
@@ -2357,7 +2358,7 @@ void MainWindow::viewModeShowEdges()
 void MainWindow::viewModeShowAxes()
 {
 	bool showaxes = viewActionShowAxes->isChecked();
-	QSettings settings;
+	QSettingsCached settings;
 	settings.setValue("view/showAxes", showaxes);
 	this->viewActionShowScaleProportional->setEnabled(showaxes);
 	this->qglview->setShowAxes(showaxes);
@@ -2366,7 +2367,7 @@ void MainWindow::viewModeShowAxes()
 
 void MainWindow::viewModeShowCrosshairs()
 {
-	QSettings settings;
+	QSettingsCached settings;
 	settings.setValue("view/showCrosshairs",viewActionShowCrosshairs->isChecked());
 	this->qglview->setShowCrosshairs(viewActionShowCrosshairs->isChecked());
 	this->qglview->updateGL();
@@ -2374,7 +2375,7 @@ void MainWindow::viewModeShowCrosshairs()
 
 void MainWindow::viewModeShowScaleProportional()
 {
-	QSettings settings;
+	QSettingsCached settings;
 	settings.setValue("view/showScaleProportional",viewActionShowScaleProportional->isChecked());
 	this->qglview->setShowScaleProportional(viewActionShowScaleProportional->isChecked());
 	this->qglview->updateGL();
@@ -2469,7 +2470,7 @@ void MainWindow::viewCenter()
 
 void MainWindow::viewPerspective()
 {
-	QSettings settings;
+	QSettingsCached settings;
 	settings.setValue("view/orthogonalProjection",false);
 	viewActionPerspective->setChecked(true);
 	viewActionOrthogonal->setChecked(false);
@@ -2479,7 +2480,7 @@ void MainWindow::viewPerspective()
 
 void MainWindow::viewOrthogonal()
 {
-	QSettings settings;
+	QSettingsCached settings;
 	settings.setValue("view/orthogonalProjection",true);
 	viewActionPerspective->setChecked(false);
 	viewActionOrthogonal->setChecked(true);
@@ -2541,7 +2542,7 @@ void MainWindow::setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, boo
 
 void MainWindow::hideToolbars()
 {
-	QSettings settings;
+	QSettingsCached settings;
 	bool shouldHide = viewActionHideToolBars->isChecked();
 	settings.setValue("view/hideToolbar", shouldHide);
 
@@ -2698,7 +2699,7 @@ bool MainWindow::maybeSave()
 void MainWindow::closeEvent(QCloseEvent *event)
 {
 	if (maybeSave()) {
-		QSettings settings;
+		QSettingsCached settings;
 		settings.setValue("window/size", size());
 		settings.setValue("window/position", pos());
 		settings.setValue("window/state", saveState());

@@ -1,5 +1,5 @@
 #include <iostream>
-#include <QSettings>
+#include "QSettingsCached.h"
 
 #include "Dock.h"
 
@@ -13,7 +13,7 @@ Dock::~Dock()
 
 void Dock::setVisible(bool visible)
 {
-	QSettings settings;
+	QSettingsCached settings;
 	settings.setValue(configKey, !visible);
 	if (action != nullptr) {
 		action->setChecked(!visible);

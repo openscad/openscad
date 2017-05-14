@@ -1,6 +1,7 @@
 #include "legacyeditor.h"
 #include "Preferences.h"
 #include "highlighter.h"
+#include "QSettingsCached.h"
 
 LegacyEditor::LegacyEditor(QWidget *parent) : EditorInterface(parent)
 {
@@ -95,7 +96,7 @@ void LegacyEditor::uncommentSelection()
 void LegacyEditor::zoomIn()
 {
 	// See also QT's implementation in QLegacyEditor.cpp
-	QSettings settings;
+	QSettingsCached settings;
 	QFont tmp_font = this->textedit->font() ;
 	if (font().pointSize() >= 1)
 		tmp_font.setPointSize(1 + font().pointSize());
@@ -108,7 +109,7 @@ void LegacyEditor::zoomIn()
 void LegacyEditor::zoomOut()
 {
 
-	QSettings settings;
+	QSettingsCached settings;
 	QFont tmp_font = this->textedit->font();
 	if (font().pointSize() >= 2)
 		tmp_font.setPointSize(-1 + font().pointSize());

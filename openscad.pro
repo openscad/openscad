@@ -351,8 +351,9 @@ HEADERS += src/version_check.h \
            src/parameter/parametertext.h \
            src/parameter/parametervector.h \
            src/parameter/groupwidget.h \
-           src/parameter/parameterset.h\
-           src/QWordSearchField.h
+           src/parameter/parameterset.h \
+           src/QWordSearchField.h \
+           src/QSettingsCached.h
 
 SOURCES += \
            src/libsvg/libsvg.cc \
@@ -422,9 +423,9 @@ SOURCES += \
            src/ModuleCache.cc \
            src/GeometryCache.cc \
            src/Tree.cc \
-	   src/DrawingCallback.cc \
-	   src/FreetypeRenderer.cc \
-	   src/FontCache.cc \
+	       src/DrawingCallback.cc \
+	       src/FreetypeRenderer.cc \
+	       src/FontCache.cc \
            \
            src/settings.cc \
            src/rendersettings.cc \
@@ -492,7 +493,9 @@ SOURCES += \
            src/parameter/groupwidget.cpp \
            src/parameter/parameterset.cpp \
            src/parameter/parametervirtualwidget.cpp\
-           src/QWordSearchField.cc
+           src/QWordSearchField.cc\
+           \
+           src/QSettingsCached.cc
 
 
 # ClipperLib
