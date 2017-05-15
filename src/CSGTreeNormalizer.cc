@@ -66,9 +66,9 @@ static bool isUnion(shared_ptr<CSGNode> node) {
 	return op && op->getType() == OpenSCADOperator::UNION;
 }
 
-static bool hasRightLeaf(shared_ptr<CSGNode> node) {
+static bool hasRightNonLeaf(shared_ptr<CSGNode> node) {
 	shared_ptr<CSGOperation> op = dynamic_pointer_cast<CSGOperation>(node);
-	return op && dynamic_pointer_cast<CSGLeaf>(op->right());
+	return op->right() && (dynamic_pointer_cast<CSGLeaf>(op->right()) == nullptr);
 }
 
 static bool hasLeftUnion(shared_ptr<CSGNode> node) {
@@ -87,7 +87,6 @@ shared_ptr<CSGNode> CSGTreeNormalizer::normalizePass(shared_ptr<CSGNode> node)
   // http://www.cc.gatech.edu/~turk/my_papers/pxpl_csg.pdf
 
 	if (dynamic_pointer_cast<CSGLeaf>(node)) return node;
-
 	do {
 		while (node && match_and_replace(node)) {	}
 		this->nodecount++;
@@ -96,13 +95,12 @@ shared_ptr<CSGNode> CSGTreeNormalizer::normalizePass(shared_ptr<CSGNode> node)
 			this->aborted = true;
 			return shared_ptr<CSGNode>();
 		}
-		if (!node) return node;
+		if (!node || dynamic_pointer_cast<CSGLeaf>(node)) return node;
 		if (shared_ptr<CSGOperation> op = dynamic_pointer_cast<CSGOperation>(node)) {
 			op->left() = normalizePass(op->left());
 		}
-	} while (!this->aborted && !isUnion(node) &&
-					 (!hasRightLeaf(node) ||
-						hasLeftUnion(node)));
+	} while (!this->aborted && !isUnion(node) && (hasRightNonLeaf(node) || hasLeftUnion(node)));
+
 	if (!this->aborted) {
 		shared_ptr<CSGOperation> op = dynamic_pointer_cast<CSGOperation>(node);
 		assert(op);
