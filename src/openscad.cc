@@ -437,6 +437,17 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	}
 	tree.setRoot(root_node);
 
+	if (deps_output_file) {
+		fs::current_path(original_path);
+		std::string deps_out(deps_output_file);
+		std::string geom_out(output_file);
+		int result = write_deps(deps_out, geom_out);
+		if (!result) {
+			PRINT("error writing deps");
+			return 1;
+		}
+	}
+
 	if (csg_output_file) {
 		fs::current_path(original_path);
 		std::ofstream fstream(csg_output_file);
@@ -499,27 +510,6 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		}
 
 		fs::current_path(original_path);
-
-		if (deps_output_file) {
-			std::string deps_out(deps_output_file);
-			std::string geom_out;
-			if (stl_output_file) geom_out = std::string(stl_output_file);
-			else if (off_output_file) geom_out = std::string(off_output_file);
-			else if (amf_output_file) geom_out = std::string(amf_output_file);
-			else if (dxf_output_file) geom_out = std::string(dxf_output_file);
-			else if (svg_output_file) geom_out = std::string(svg_output_file);
-			else if (png_output_file) geom_out = std::string(png_output_file);
-			else {
-				PRINTB("Output file:%s\n",output_file);
-				PRINT("Sorry, don't know how to write deps for that file type. Exiting\n");
-				return 1;
-			}
-			int result = write_deps(deps_out, geom_out);
-			if (!result) {
-				PRINT("error writing deps");
-				return 1;
-			}
-		}
 
 		if (stl_output_file) {
 			if (!checkAndExport(root_geom, 3, FileFormat::STL, stl_output_file)) {

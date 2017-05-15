@@ -32,6 +32,7 @@
 #include "fileutils.h"
 #include "builtin.h"
 #include "polyset.h"
+#include "handle_dep.h"
 
 #include <sstream>
 #include <boost/assign/std/vector.hpp>
@@ -71,7 +72,9 @@ AbstractNode *RotateExtrudeModule::instantiate(const Context *ctx, const ModuleI
     
 	if (!file->isUndefined()) {
 		printDeprecation("Support for reading files in rotate_extrude will be removed in future releases. Use a child import() instead.");
-		node->filename = lookup_file(file->toString(), inst->path(), c.documentPath());
+		std::string filename = lookup_file(file->toString(), inst->path(), c.documentPath());
+		node->filename = filename;
+		handle_dep(filename);
 	}
 
 	node->layername = layer->isUndefined() ? "" : layer->toString();
