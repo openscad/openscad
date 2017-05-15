@@ -125,10 +125,13 @@ SOURCES += decompose.cpp \
            ../src/export.cc \
            ../src/export_stl.cc \
            ../src/export_amf.cc \
+           ../src/export_obj.cc \
            ../src/export_off.cc \
+           ../src/export_x3d.cc \
            ../src/export_dxf.cc \
            ../src/export_svg.cc \
            ../src/export_nef.cc \
+           ../src/export_indexed_triangles.cc \
            ../src/polyset-utils.cc \
            ../src/progress.cc \
            ../src/printutils.cc \

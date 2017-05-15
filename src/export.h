@@ -7,8 +7,10 @@
 
 enum class FileFormat {
 	STL,
+	OBJ,
 	OFF,
 	AMF,
+	X3D,
 	DXF,
 	SVG,
 	NEFDBG,
@@ -19,8 +21,10 @@ void exportFileByName(const shared_ptr<const class Geometry> &root_geom, FileFor
 											const char *name2open, const char *name2display);
 
 void export_stl(const shared_ptr<const Geometry> &geom, std::ostream &output);
+void export_obj(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_off(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_amf(const shared_ptr<const Geometry> &geom, std::ostream &output);
+void export_x3d(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_dxf(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_svg(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_nefdbg(const shared_ptr<const Geometry> &geom, std::ostream &output);
