@@ -77,7 +77,7 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 
 	if (!file->isUndefined() && file->type() == Value::ValueType::STRING) {
 		printDeprecation("Support for reading files in linear_extrude will be removed in future releases. Use a child import() instead.");
-		std::string filename = lookup_file(file->toString(), inst->path(), c.documentPath());
+		auto filename = lookup_file(file->toString(), inst->path(), c.documentPath());
 		node->filename = filename;
 		handle_dep(filename);
 	}

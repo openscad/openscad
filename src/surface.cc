@@ -93,7 +93,7 @@ AbstractNode *SurfaceModule::instantiate(const Context *ctx, const ModuleInstant
 	c.setVariables(args, evalctx);
 
 	auto fileval = c.lookup_variable("file");
-	std::string filename = lookup_file(fileval->isUndefined() ? "" : fileval->toString(), inst->path(), c.documentPath());
+	auto filename = lookup_file(fileval->isUndefined() ? "" : fileval->toString(), inst->path(), c.documentPath());
 	node->filename = filename;
 	handle_dep(fs::path(filename).generic_string());
 

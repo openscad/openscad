@@ -72,7 +72,7 @@ AbstractNode *RotateExtrudeModule::instantiate(const Context *ctx, const ModuleI
     
 	if (!file->isUndefined()) {
 		printDeprecation("Support for reading files in rotate_extrude will be removed in future releases. Use a child import() instead.");
-		std::string filename = lookup_file(file->toString(), inst->path(), c.documentPath());
+		auto filename = lookup_file(file->toString(), inst->path(), c.documentPath());
 		node->filename = filename;
 		handle_dep(filename);
 	}

@@ -171,8 +171,9 @@ ValuePtr builtin_dxf_cross(const Context *ctx, const EvalContext *evalctx)
 						<< "|" << filesize;
 	std::string key = keystream.str();
 
-	if (dxf_cross_cache.find(key) != dxf_cross_cache.end())
+	if (dxf_cross_cache.find(key) != dxf_cross_cache.end()) {
 		return dxf_cross_cache.find(key)->second;
+	}
 	handle_dep(filepath.string());
 	DxfData dxf(36, 0, 0, filename, layername, xorigin, yorigin, scale);
 

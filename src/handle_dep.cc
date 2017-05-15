@@ -14,8 +14,9 @@ void handle_dep(const std::string &filename)
 {
 	fs::path filepath(filename);
 	std::string dep = boost::regex_replace(filepath.generic_string(), boost::regex("\\ "), "\\\\ ");
-	if(dependencies.find(dep) != dependencies.end())
+	if (dependencies.find(dep) != dependencies.end()) {
 		return; // included and used files are very likely to be added many times by the parser
+	}
 	dependencies.insert(dep);
 
 	if (make_command && !fs::exists(filepath)) {
