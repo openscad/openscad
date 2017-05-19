@@ -23,16 +23,16 @@ use<test/>
 use </>
 
 //Test with absolute path
-include <@CMAKE_SOURCE_DIR@/../testdata/scad/misc/sub2/test7.scad>
+use <@CMAKE_SOURCE_DIR@/../testdata/scad/misc/sub2/test7.scad>
 
 // Test simple MCAD library
-include <MCAD/teardrop.scad>
+use <MCAD/teardrop.scad>
 
 // Test MCAD library which includes another file
-include <MCAD/math.scad>
+use <MCAD/math.scad>
 
 // Test MCAD library which uses another file
-include <MCAD/servos.scad>
+use <MCAD/servos.scad>
 
 module test1()
 {
