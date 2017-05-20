@@ -196,13 +196,13 @@ void Preferences::init() {
 
   // Advanced pane	
 	QValidator *intValidator = new QIntValidator(this);
-	QValidator *floatValidator = new QDoubleValidator(this);
+	QValidator *doubleValidator = new QDoubleValidator(this);
 #ifdef ENABLE_CGAL
 	this->cgalCacheSizeEdit->setValidator(intValidator);
 #endif
 	this->polysetCacheSizeEdit->setValidator(intValidator);
 	this->opencsgLimitEdit->setValidator(intValidator);
-	this->laserOffset->setValidator(floatValidator);
+	this->laserOffset->setValidator(doubleValidator);
 
 	initComboBox(this->comboBoxIndentUsing, Settings::Settings::indentStyle);
 	initComboBox(this->comboBoxLineWrap, Settings::Settings::lineWrap);

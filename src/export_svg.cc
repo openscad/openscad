@@ -24,31 +24,75 @@
  *
  */
 
+#include "clipper-utils.h"
 #include "export.h"
 #include "polyset.h"
 #include "polyset-utils.h"
+#ifdef QT_WIDGETS_LIB
+#include "Preferences.h"
+#endif
 
-static void append_svg(const Polygon2d &poly, std::ostream &output)
+static void output_points(const Outline2d &outlines, std::ostream &output)
 {
-	output << "<path d=\"\n";
-	for(const auto &o : poly.outlines()) {
+	const Eigen::Vector2d& p0 = outlines.vertices[0];
+	output << "M " << p0.x() << "," << -p0.y();
+	for (unsigned int idx = 1;idx < outlines.vertices.size();idx++) {
+		const Eigen::Vector2d& p = outlines.vertices[idx];
+		output << " L " << p.x() << "," << -p.y();
+		if ((idx % 6) == 5) {
+			output << "\n";
+		}
+	}
+	output << " z\n";
+}
+
+static void output_path_separate(const Polygon2d *offset_poly, std::ostream &output)
+{
+	for(const auto &o : offset_poly->outlines()) {
 		if (o.vertices.empty()) {
 			continue;
 		}
-		
-		const Eigen::Vector2d& p0 = o.vertices[0];
-		output << "M " << p0.x() << "," << -p0.y();
-		for (unsigned int idx = 1;idx < o.vertices.size();idx++) {
-			const Eigen::Vector2d& p = o.vertices[idx];
-			output << " L " << p.x() << "," << -p.y();
-			if ((idx % 6) == 5) {
-				output << "\n";
-			}
+		output << "<path d=\"\n";
+		output_points(o, output);
+		if(ClipperUtils::orientation(o)) {
+			output << "\" stroke=\"red\"";
+		} else {
+			output << "\" stroke=\"green\"";
 		}
-		output << " z\n";
+		output << " fill=\"none\" stroke-width=\"0.5\"/>\n";
+	}
+}
+
+static void output_path_combined(const Polygon2d *offset_poly, std::ostream &output)
+{
+	output << "<path d=\"\n";
+	for(const auto &o : offset_poly->outlines()) {
+		if (o.vertices.empty()) {
+			continue;
+		}
+		output_points(o, output);
 	}
 	output << "\" stroke=\"black\" fill=\"lightgray\" stroke-width=\"0.5\"/>\n";
+}
 
+static void append_svg(const Polygon2d &poly, std::ostream &output)
+{
+	const Polygon2d *offset_poly = &poly;
+	bool laser_output = false;
+
+#ifdef QT_WIDGETS_LIB
+	float kerf = Preferences::inst()->getValue("advanced/laserOffset").toFloat();
+	if(kerf != 0) {
+		offset_poly = ClipperUtils::applyOffset(poly, kerf, ClipperLib::JoinType::jtRound, 0, 0);
+	}
+	laser_output = Preferences::inst()->getValue("advanced/laserColors").toBool();
+#endif
+
+	if(laser_output) {
+		output_path_separate(offset_poly, output);
+	} else {
+		output_path_combined(offset_poly, output);
+	}
 }
 
 static void append_svg(const shared_ptr<const Geometry> &geom, std::ostream &output)
