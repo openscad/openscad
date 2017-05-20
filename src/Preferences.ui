@@ -1434,6 +1434,33 @@
               </property>
              </widget>
             </item>
+	    <item>
+             <widget class="QCheckBox" name="laserColors">
+              <property name="text">
+               <string>SVG output for laser cutting</string>
+              </property>
+              <property name="checked">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+             <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_4">
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="QLabel" name="label_7">
+                <property name="text">
+                 <string>Offset for SVG output (kerf)</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="laserOffset"/>
+              </item>
+             </layout>
+            </item>
             <item>
              <spacer name="verticalSpacer">
               <property name="orientation">
