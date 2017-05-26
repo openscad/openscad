@@ -72,7 +72,10 @@ void ParameterWidget::onSetDelete()
 {
 	if (root.empty()) return;
 	std::string setName=comboBox->itemData(this->comboBox->currentIndex()).toString().toStdString();
-	root.get_child(ParameterSet::parameterSetsKey).erase(pt::ptree::key_type(setName));
+	boost::optional<pt::ptree &> sets = parameterSets();
+	if (sets.is_initialized()) {
+		sets.get().erase(pt::ptree::key_type(setName));
+	}
 	writeParameterSet(this->jsonFile);
 	this->comboBox->clear();
 	setComboBoxForSet();
