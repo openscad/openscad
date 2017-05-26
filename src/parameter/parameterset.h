@@ -15,12 +15,10 @@ public:
 protected:
 	pt::ptree root;
 
-private:
-	boost::optional<pt::ptree &> parameterSets();
-
 public:
 	ParameterSet() {}
 	~ParameterSet() {}
+	boost::optional<pt::ptree &> parameterSets();
 	std::vector<std::string> getParameterNames();
 	boost::optional<pt::ptree &> getParameterSet(const std::string &setName);
 	void addParameterSet(const std::string setName, const pt::ptree & set);

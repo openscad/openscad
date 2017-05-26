@@ -30,7 +30,7 @@ std::vector<std::string> ParameterSet::getParameterNames()
 
 boost::optional<pt::ptree &> ParameterSet::getParameterSet(const std::string &setName)
 {
-	boost::optional<pt::ptree &> sets = root.get_child_optional(ParameterSet::parameterSetsKey);
+	boost::optional<pt::ptree &> sets = parameterSets();
 	if (!sets.is_initialized()) {
 		return sets;
 	}
