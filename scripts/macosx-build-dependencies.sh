@@ -50,7 +50,7 @@ PACKAGES=(
     "harfbuzz 1.2.7"
     "libzip 1.1.3"
     "libxml2 2.9.4"
-    "fontconfig 2.12.0"
+    "fontconfig 2.12.1"
 )
 DEPLOY_PACKAGES=(
     "sparkle 1.13.1"
@@ -605,7 +605,9 @@ build_fontconfig()
   tar xzf "fontconfig-$version.tar.gz"
   cd "fontconfig-$version"
   export PKG_CONFIG_PATH="$DEPLOYDIR/lib/pkgconfig"
-  ./configure --prefix="$DEPLOYDIR" --enable-libxml2 CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN
+  # FIXME: The "ac_cv_func_mkostemp=no" is a workaround for fontconfig's autotools config not respecting any passed
+  # -no_weak_imports linker flag. This may be improved in future versions of fontconfig
+  ./configure --prefix="$DEPLOYDIR" --enable-libxml2 CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN ac_cv_func_mkostemp=no
   unset PKG_CONFIG_PATH
   make -j$NUMCPU
   make install
