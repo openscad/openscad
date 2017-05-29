@@ -99,6 +99,16 @@ def validate_lib(lib):
 #        print "Error: Requires Snow Leopard: " + lib
 #        return False
 
+    # This is a check for a weak symbols from a build made on 10.12 or newer sneaking into a build for an
+    # earlier deployment target. The 'mkostemp' symbol tends to be introduced by fontconfig.
+    p  = subprocess.Popen(["nm", "-g", lib], stdout=subprocess.PIPE)
+    output = p.communicate()[0]
+    if p.returncode != 0: return False
+    match = re.search("mkostemp", output)
+    if match:
+        print "Error: Reference to mkostemp() found - only supported on macOS 10.12->"
+        return None
+
     p  = subprocess.Popen(["lipo", lib, "-verify_arch", "x86_64"], stdout=subprocess.PIPE)
     output = p.communicate()[0]
     if p.returncode != 0: 
