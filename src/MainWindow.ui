@@ -420,7 +420,14 @@
    <addaction name="menu_View"/>
    <addaction name="menuHelp"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QStatusBar" name="statusbar">
+   <property name="maximumSize">
+    <size>
+     <width>16777215</width>
+     <height>23</height>
+    </size>
+   </property>
+  </widget>
   <widget class="Dock" name="editorDock">
    <attribute name="dockWidgetArea">
     <number>1</number>
