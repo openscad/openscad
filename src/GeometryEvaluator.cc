@@ -303,6 +303,7 @@ Geometry::Geometries GeometryEvaluator::collectChildren3D(const AbstractNode &no
 */
 Polygon2d *GeometryEvaluator::applyToChildren2D(const AbstractNode &node, OpenSCADOperator op)
 {
+	node.progress_report();
 	if (op == OpenSCADOperator::MINKOWSKI) {
 		return applyMinkowski2D(node);
 	}
@@ -382,6 +383,7 @@ Response GeometryEvaluator::visit(State &state, const AbstractNode &node)
 			geom = smartCacheGet(node, state.preferNef());
 		}
 		addToParent(state, node, geom);
+		node.progress_report();
 	}
 	return Response::ContinueTraversal;
 }
@@ -422,6 +424,7 @@ Response GeometryEvaluator::visit(State &state, const OffsetNode &node)
 			geom = smartCacheGet(node, false);
 		}
 		addToParent(state, node, geom);
+		node.progress_report();
 	}
 	return Response::ContinueTraversal;
 }
@@ -461,6 +464,7 @@ Response GeometryEvaluator::visit(State &state, const RenderNode &node)
 		else {
 			geom = smartCacheGet(node, state.preferNef());
 		}
+		node.progress_report();
 		addToParent(state, node, geom);
 	}
 	return Response::ContinueTraversal;
@@ -490,6 +494,7 @@ Response GeometryEvaluator::visit(State &state, const LeafNode &node)
 		}
 		else geom = smartCacheGet(node, state.preferNef());
 		addToParent(state, node, geom);
+		node.progress_report();
 	}
 	return Response::PruneTraversal;
 }
@@ -510,6 +515,7 @@ Response GeometryEvaluator::visit(State &state, const TextNode &node)
 		}
 		else geom = GeometryCache::instance()->get(this->tree.getIdString(node));
 		addToParent(state, node, geom);
+		node.progress_report();
 	}
 	return Response::PruneTraversal;
 }
@@ -536,6 +542,7 @@ Response GeometryEvaluator::visit(State &state, const CsgOpNode &node)
 			geom = smartCacheGet(node, state.preferNef());
 		}
 		addToParent(state, node, geom);
+		node.progress_report();
 	}
 	return Response::ContinueTraversal;
 }
@@ -611,6 +618,7 @@ Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 			geom = smartCacheGet(node, state.preferNef());
 		}
 		addToParent(state, node, geom);
+		node.progress_report();
 	}
 	return Response::ContinueTraversal;
 }
@@ -765,6 +773,7 @@ Response GeometryEvaluator::visit(State &state, const LinearExtrudeNode &node)
 			geom = smartCacheGet(node, false);
 		}
 		addToParent(state, node, geom);
+		node.progress_report();
 	}
 	return Response::ContinueTraversal;
 }
@@ -920,6 +929,7 @@ Response GeometryEvaluator::visit(State &state, const RotateExtrudeNode &node)
 			geom = smartCacheGet(node, false);
 		}
 		addToParent(state, node, geom);
+		node.progress_report();
 	}
 	return Response::ContinueTraversal;
 }
@@ -1040,6 +1050,7 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 			geom = smartCacheGet(node, false);
 		}
 		addToParent(state, node, geom);
+		node.progress_report();
 	}
 	return Response::ContinueTraversal;
 }		
@@ -1116,6 +1127,7 @@ Response GeometryEvaluator::visit(State &state, const CgaladvNode &node)
 			geom = smartCacheGet(node, state.preferNef());
 		}
 		addToParent(state, node, geom);
+		node.progress_report();
 	}
 	return Response::ContinueTraversal;
 }
@@ -1135,6 +1147,7 @@ Response GeometryEvaluator::visit(State &state, const AbstractIntersectionNode &
 			geom = smartCacheGet(node, state.preferNef());
 		}
 		addToParent(state, node, geom);
+		node.progress_report();
 	}
 	return Response::ContinueTraversal;
 }
