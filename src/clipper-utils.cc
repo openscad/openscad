@@ -16,6 +16,16 @@ namespace ClipperUtils {
 		return p;
 	}
 
+	bool orientation(const Outline2d &outline)
+	{
+		// Returns true if this is an exterior polygon (counter-clockwise)
+		ClipperLib::Path p;
+		for (const auto &v : outline.vertices) {
+			p.emplace_back(v[0]*CLIPPER_SCALE, v[1]*CLIPPER_SCALE);
+		}
+		return ClipperLib::Orientation(p);
+	}
+
 	ClipperLib::Paths fromPolygon2d(const Polygon2d &poly)
 	{
 		ClipperLib::Paths result;

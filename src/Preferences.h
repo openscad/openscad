@@ -45,6 +45,8 @@ public slots:
 	void on_checkNowButton_clicked();
 	void on_launcherBox_toggled(bool);
 	void on_editorType_currentIndexChanged(const QString &);
+	void on_laserOffset_textChanged(const QString &);
+	void on_laserColors_toggled(bool);
 
 	void on_checkBoxShowWarningsIn3dView_toggled(bool);
   //

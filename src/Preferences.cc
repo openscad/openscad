@@ -168,6 +168,8 @@ void Preferences::init() {
 	this->defaultmap["advanced/reorderWindows"] = true;
 	this->defaultmap["launcher/showOnStartup"] = true;
 	this->defaultmap["advanced/localization"] = true;
+	this->defaultmap["advanced/laserColors"] = false;
+	this->defaultmap["advanced/laserOffset"] = 0.0;
 
 	// Toolbar
 	QActionGroup *group = new QActionGroup(this);
@@ -193,12 +195,14 @@ void Preferences::init() {
 	this->defaultmap["3dview/colorscheme"] = "Cornfield";
 
   // Advanced pane	
-	QValidator *validator = new QIntValidator(this);
+	QValidator *intValidator = new QIntValidator(this);
+	QValidator *doubleValidator = new QDoubleValidator(this);
 #ifdef ENABLE_CGAL
-	this->cgalCacheSizeEdit->setValidator(validator);
+	this->cgalCacheSizeEdit->setValidator(intValidator);
 #endif
-	this->polysetCacheSizeEdit->setValidator(validator);
-	this->opencsgLimitEdit->setValidator(validator);
+	this->polysetCacheSizeEdit->setValidator(intValidator);
+	this->opencsgLimitEdit->setValidator(intValidator);
+	this->laserOffset->setValidator(doubleValidator);
 
 	initComboBox(this->comboBoxIndentUsing, Settings::Settings::indentStyle);
 	initComboBox(this->comboBoxLineWrap, Settings::Settings::lineWrap);
@@ -450,6 +454,18 @@ void Preferences::on_polysetCacheSizeEdit_textChanged(const QString &text)
 	GeometryCache::instance()->setMaxSize(text.toULong());
 }
 
+void Preferences::on_laserOffset_textChanged(const QString &text)
+{
+	QSettingsCached settings;
+	settings.setValue("advanced/laserOffset", text);
+}
+
+void Preferences::on_laserColors_toggled(bool state)
+{
+	QSettingsCached settings;
+	settings.setValue("advanced/laserColors", state);
+}
+
 void Preferences::on_opencsgLimitEdit_textChanged(const QString &text)
 {
 	QSettingsCached settings;
@@ -682,6 +698,8 @@ void Preferences::updateGUI()
 	this->undockCheckBox->setChecked(getValue("advanced/undockableWindows").toBool());
 	this->undockCheckBox->setEnabled(this->reorderCheckBox->isChecked());
 	this->launcherBox->setChecked(getValue("launcher/showOnStartup").toBool());
+	this->laserColors->setChecked(getValue("advanced/laserColors").toBool());
+	this->laserOffset->setText(getValue("advanced/laserOffset").toString());
 
 	Settings::Settings *s = Settings::Settings::inst();
 	updateComboBox(this->comboBoxLineWrap, Settings::Settings::lineWrap);
