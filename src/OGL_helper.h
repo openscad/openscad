@@ -424,7 +424,7 @@ namespace OGL {
 
 
     // Overridden in CGAL_renderer
-    virtual CGAL::Color getFacetColor(Halffacet_iterator f, bool is_back_facing) const
+    virtual CGAL::Color getFacetColor(Halffacet_iterator /*f*/, bool /*is_back_facing*/) const
     {
       PRINTD("getFacetColor");
 /*

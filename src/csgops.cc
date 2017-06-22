@@ -45,8 +45,8 @@ public:
 AbstractNode *CsgModule::instantiate(const Context*, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	inst->scope.apply(*evalctx);
-	CsgOpNode *node = new CsgOpNode(inst, type);
-	std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(evalctx);
+	auto node = new CsgOpNode(inst, type);
+	auto instantiatednodes = inst->instantiateChildren(evalctx);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 	return node;
 }
@@ -59,13 +59,13 @@ std::string CsgOpNode::toString() const
 std::string CsgOpNode::name() const
 {
 	switch (this->type) {
-	case OPENSCAD_UNION:
+	case OpenSCADOperator::UNION:
 		return "union";
 		break;
-	case OPENSCAD_DIFFERENCE:
+	case OpenSCADOperator::DIFFERENCE:
 		return "difference";
 		break;
-	case OPENSCAD_INTERSECTION:
+	case OpenSCADOperator::INTERSECTION:
 		return "intersection";
 		break;
 	default:
@@ -76,8 +76,8 @@ std::string CsgOpNode::name() const
 
 void register_builtin_csgops()
 {
-	Builtins::init("union", new CsgModule(OPENSCAD_UNION));
-	Builtins::init("difference", new CsgModule(OPENSCAD_DIFFERENCE));
-	Builtins::init("intersection", new CsgModule(OPENSCAD_INTERSECTION));
+	Builtins::init("union", new CsgModule(OpenSCADOperator::UNION));
+	Builtins::init("difference", new CsgModule(OpenSCADOperator::DIFFERENCE));
+	Builtins::init("intersection", new CsgModule(OpenSCADOperator::INTERSECTION));
 }
 

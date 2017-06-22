@@ -44,7 +44,7 @@ size_t CGAL_Nef_polyhedron::memsize() const
 {
 	if (this->isEmpty()) return 0;
 
-	size_t memsize = sizeof(CGAL_Nef_polyhedron);
+	auto memsize = sizeof(CGAL_Nef_polyhedron);
 	memsize += this->p3->bytes();
 	return memsize;
 }
@@ -57,14 +57,14 @@ bool CGAL_Nef_polyhedron::isEmpty() const
 /*!
 	Creates a new PolySet and initializes it with the data from this polyhedron
 
-	Note: Can return NULL if an error occurred
+	Note: Can return nullptr if an error occurred
 */
 // FIXME: Deprecated by CGALUtils::createPolySetFromNefPolyhedron3
 #if 0
 PolySet *CGAL_Nef_polyhedron::convertToPolyset() const
 {
 	if (this->isEmpty()) return new PolySet(3);
-	PolySet *ps = NULL;
+	PolySet *ps = nullptr;
 	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 	ps = new PolySet(3);
 	ps->setConvexity(this->convexity);
@@ -86,7 +86,7 @@ PolySet *CGAL_Nef_polyhedron::convertToPolyset() const
 	if (err) {
 		PRINT("ERROR: CGAL NefPolyhedron->Polyhedron conversion failed.");
 		if (errmsg!="") PRINTB("ERROR: %s",errmsg);
-		delete ps; ps = NULL;
+		delete ps; ps = nullptr;
 	}
 	CGAL::set_error_behaviour(old_behaviour);
 	return ps;
@@ -99,7 +99,7 @@ void CGAL_Nef_polyhedron::resize(const Vector3d &newsize,
 	// Based on resize() in Giles Bathgate's RapCAD (but not exactly)
 	if (this->isEmpty()) return;
 
-	CGAL_Iso_cuboid_3 bb = CGALUtils::boundingBox(*this->p3);
+	auto bb = CGALUtils::boundingBox(*this->p3);
 
 	std::vector<NT3> scale, bbox_size;
 	for (unsigned int i=0;i<3;i++) {
@@ -120,7 +120,7 @@ void CGAL_Nef_polyhedron::resize(const Vector3d &newsize,
 		}
 	}
 
-	NT3 autoscale = NT3(1);
+	auto autoscale = NT3(1);
 	if (newsize[newsizemax_index] != 0) {
 		autoscale = NT3(newsize[newsizemax_index]) / bbox_size[newsizemax_index];
 	}

@@ -81,7 +81,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "testdata/scad/misc/allmodules.scad"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "non-manifold2.scad -o non-manifold2.stl --debug=GeometryUtils"

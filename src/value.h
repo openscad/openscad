@@ -39,7 +39,7 @@ private:
 	void normalize();
 	
 public:
-	typedef enum { RANGE_TYPE_BEGIN, RANGE_TYPE_RUNNING, RANGE_TYPE_END } type_t;
+	enum class type_t { RANGE_TYPE_BEGIN, RANGE_TYPE_RUNNING, RANGE_TYPE_END };
   
 	class iterator {
 	public:
@@ -84,8 +84,8 @@ public:
 	double step_value() { return step_val; }
 	double end_value() { return end_val; }
 	
-	iterator begin() { return iterator(*this, RANGE_TYPE_BEGIN); }
-	iterator end() { return iterator(*this, RANGE_TYPE_END); }
+	iterator begin() { return iterator(*this, type_t::RANGE_TYPE_BEGIN); }
+	iterator end() { return iterator(*this, type_t::RANGE_TYPE_END); }
 	
 	/// return number of values, max uint32_t value if step is 0 or range is infinite
 	uint32_t numValues() const;
@@ -98,7 +98,7 @@ public:
 class ValuePtr : public shared_ptr<const class Value>
 {
 public:
-  static ValuePtr undefined;
+  static const ValuePtr undefined;
 
 	ValuePtr();
 	explicit ValuePtr(const Value &v);
@@ -138,7 +138,7 @@ class Value
 public:
 	typedef std::vector<ValuePtr> VectorType;
 
-  enum ValueType {
+  enum class ValueType {
     UNDEFINED,
     BOOL,
     NUMBER,
@@ -146,7 +146,7 @@ public:
     VECTOR,
     RANGE
   };
-  static Value undefined;
+  static const Value undefined;
 
   Value();
   Value(bool v);
@@ -169,6 +169,7 @@ public:
   bool getFiniteDouble(double &v) const;
   bool toBool() const;
   std::string toString() const;
+  std::string toEchoString() const;
   std::string chrString() const;
   const VectorType &toVector() const;
   bool getVec2(double &x, double &y, bool ignoreInfinite = false) const;
@@ -193,7 +194,7 @@ public:
   Value operator%(const Value &v) const;
 
   friend std::ostream &operator<<(std::ostream &stream, const Value &value) {
-    if (value.type() == Value::STRING) stream << QuotedString(value.toString());
+    if (value.type() == Value::ValueType::STRING) stream << QuotedString(value.toString());
     else stream << value.toString();
     return stream;
   }

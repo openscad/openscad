@@ -163,43 +163,50 @@ gmp_sysver()
 qt_sysver()
 {
   if [ "`command -v qtchooser`" ]; then
-    if qtchooser -run-tool=qmake -qt=5 -v >/dev/null 2>&1 ; then
+    qtver=`qtchooser -run-tool=qmake -qt=5 -v 2>&1`
+    if [ $? -eq 0 ] ; then
       export QT_SELECT=5
-      qtpath="`qtchooser -run-tool=qmake -qt=5 -query QT_INSTALL_HEADERS`"/QtCore/qglobal.h 
-    fi
-    if [ ! -e "$qtpath" ]; then
-      if qtchooser -run-tool=qmake -qt=4 -v >/dev/null 2>&1 ; then
-        export QT_SELECT=4
-        qtpath="`qtchooser -run-tool=qmake -qt=4 -query QT_INSTALL_HEADERS`"/QtCore/qglobal.h 
+    else
+      qtver=`qtchooser -run-tool=qmake -qt=4 -v 2>&1`
+      if [ $? -eq 0 ] ; then
+	export QT_SELECT=4
       fi
     fi
+    qtver=`echo "$qtver" | grep "Using Qt version" | awk '{print $4}'`
   else
     export QT_SELECT=5
-    qtpath=$1/include/qt5/QtCore/qglobal.h
+    qtpath=$1/include/qt5/QtCore
     if [ ! -e $qtpath ]; then
-      qtpath=$1/include/i686-linux-gnu/qt5/QtCore/qglobal.h
+      qtpath=$1/include/i686-linux-gnu/qt5/QtCore
     fi
     if [ ! -e $qtpath ]; then
-      qtpath=$1/include/x86_64-linux-gnu/qt5/QtCore/qglobal.h
+      qtpath=$1/include/x86_64-linux-gnu/qt5/QtCore
     fi
     if [ ! -e $qtpath ]; then
       export QT_SELECT=4
-      qtpath=$1/include/qt4/QtCore/qglobal.h
+      qtpath=$1/include/qt4/QtCore/
     fi
     if [ ! -e $qtpath ]; then
-      qtpath=$1/include/QtCore/qglobal.h
+      qtpath=$1/include/QtCore
     fi
     if [ ! -e $qtpath ]; then
       # netbsd
-      qtpath=$1/qt4/include/QtCore/qglobal.h 
+      qtpath=$1/qt4/include/QtCore
     fi
   fi
-  if [ ! -e "$qtpath" ]; then
-    unset QT_SELECT
-    return
+  if [ -z "$qtver" ]; then
+    if [ ! -e "$qtpath" ]; then
+      unset QT_SELECT
+      return
+    fi
+    qtver=`grep 'define  *QT_VERSION_STR  *' "$qtpath"/qglobal.h`
+    # fix for Qt 5.7
+    if [ -z "$qtver" ]; then
+	  qtver=`grep 'define  *QT_VERSION_STR  *' "$qtpath"/qconfig.h`
+    fi
+    
+    qtver=`echo $qtver | awk '{print $3}' | sed s/'"'//g`
   fi
-  qtver=`grep 'define  *QT_VERSION_STR  *' $qtpath | awk '{print $3}'`
-  qtver=`echo $qtver | sed s/'"'//g`
   qt_sysver_result=$qtver
 }
 

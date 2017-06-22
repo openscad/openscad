@@ -25,6 +25,10 @@
     "animation.scad",
     "module_recursion.scad"
   ],
+  "Parametric": [
+    "sign.scad",
+    "candleStand.scad"
+  ],
   "Old": [
     "example001.scad",
     "example002.scad",

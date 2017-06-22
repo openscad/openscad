@@ -117,8 +117,9 @@ stop()
   if [ -e $LOCKFILE ]; then
     rm $LOCKFILE
   fi
-  cat virtualfb1.log
-  cat virtualfb2.log
+# Very verbose debug output:  
+#  cat virtualfb1.log
+#  cat virtualfb2.log
   echo 'dump ~/.xession-errors:'
   cat ~/.xsession-errors
   echo 'end  ~/.xession-errors'

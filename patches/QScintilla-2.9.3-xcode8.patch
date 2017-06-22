@@ -1,0 +1,81 @@
+diff --git a/Qt4Qt5/Qsci/qsciscintilla.h b/Qt4Qt5/Qsci/qsciscintilla.h
+index c8a7d5a..563884b 100644
+--- a/Qt4Qt5/Qsci/qsciscintilla.h
++++ b/Qt4Qt5/Qsci/qsciscintilla.h
+@@ -22,9 +22,11 @@
+ #ifndef QSCISCINTILLA_H
+ #define QSCISCINTILLA_H
+ 
++/*---OPENCOR---
+ #ifdef __APPLE__
+ extern "C++" {
+ #endif
++*/
+ 
+ #include <QByteArray>
+ #include <QList>
+@@ -2135,7 +2137,13 @@ private slots:
+     int ct_cursor;
+     QList<int> ct_shifts;
+     AutoCompletionUseSingle use_single;
++/*---OPENCOR---
+     QPointer<QsciLexer> lex;
++*/
++//---OPENCOR--- BEGIN
++    struct Lexer;
++    Lexer *lexerStruct;
++//---OPENCOR--- END
+     QsciCommandSet *stdCmds;
+     QsciDocument doc;
+     QColor nl_text_colour;
+@@ -2157,8 +2165,10 @@ private slots:
+     QsciScintilla &operator=(const QsciScintilla &);
+ };
+ 
++/*---OPENCOR---
+ #ifdef __APPLE__
+ }
+ #endif
++*/
+ 
+ #endif
+diff --git a/Qt4Qt5/qsciscintilla.cpp b/Qt4Qt5/qsciscintilla.cpp
+index 4ddad7c..4f0bf85 100644
+--- a/Qt4Qt5/qsciscintilla.cpp
++++ b/Qt4Qt5/qsciscintilla.cpp
+@@ -41,6 +41,14 @@
+ #include "Qsci/qscistyle.h"
+ #include "Qsci/qscistyledtext.h"
+ 
++//---OPENCOR--- BEGIN
++struct QsciScintilla::Lexer
++{
++    QPointer<QsciLexer> object;
++};
++
++#define lex (lexerStruct->object)
++//---OPENCOR--- END
+ 
+ // Make sure these match the values in Scintilla.h.  We don't #include that
+ // file because it just causes more clashes.
+@@ -67,6 +75,9 @@ QsciScintilla::QsciScintilla(QWidget *parent)
+       wchars(defaultWordChars), call_tips_position(CallTipsBelowText),
+       call_tips_style(CallTipsNoContext), maxCallTips(-1),
+       use_single(AcusNever), explicit_fillups(""), fillups_enabled(false)
++//---OPENCOR--- BEGIN
++    , lexerStruct(new Lexer())
++//---OPENCOR--- END
+ {
+     connect(this,SIGNAL(SCN_MODIFYATTEMPTRO()),
+              SIGNAL(modificationAttempted()));
+@@ -146,6 +157,9 @@ QsciScintilla::~QsciScintilla()
+ 
+     doc.undisplay(this);
+     delete stdCmds;
++//---OPENCOR--- BEGIN
++    delete lexerStruct;
++//---OPENCOR--- END
+ }
+ 
+ 
+

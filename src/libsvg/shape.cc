@@ -25,7 +25,7 @@ shape::shape() : parent(NULL), x(0), y(0)
 {
 }
 
-shape::shape(const shape& orig)
+shape::shape(const shape& /*orig*/)
 {
 }
 

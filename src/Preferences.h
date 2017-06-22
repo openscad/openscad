@@ -13,14 +13,14 @@ class Preferences : public QMainWindow, public Ui::Preferences
 
 public:
 	~Preferences();
-        
-        static void create(QStringList colorSchemes);
+	
+	static void create(QStringList colorSchemes);
 	static Preferences *inst();
-
+	
 	QVariant getValue(const QString &key) const;
-        void init();
+	void init();
 	void apply() const;
-        void fireEditorConfigChanged() const;
+	void fireEditorConfigChanged() const;
 
 public slots:
 	void actionTriggered(class QAction *);
@@ -84,24 +84,25 @@ signals:
 	void syntaxHighlightChanged(const QString &s) const;
 	void editorTypeChanged(const QString &type);
 	void editorConfigChanged() const;
+	void ExperimentalChanged() const ;
 
 private:
-	Preferences(QWidget *parent = NULL);
+    Preferences(QWidget *parent = nullptr);
 	void keyPressEvent(QKeyEvent *e);
 	void updateGUI();
 	void removeDefaultSettings();
 	void setupFeaturesPage();
-        void writeSettings();
+	void writeSettings();
 	void addPrefPage(QActionGroup *group, QAction *action, QWidget *widget);
 
-        /** Initialize combobox list values from the settings range values */
-        void initComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry);
-        /** Initialize spinbox min/max values from the settings range values */
-        void initSpinBox(QSpinBox *spinBox, const Settings::SettingsEntry& entry);
-        /** Update combobox from current settings */
-        void updateComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry);
-        /** Set value from combobox to settings */
-        void applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntry& entry);
+	/** Initialize combobox list values from the settings range values */
+	void initComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry);
+	/** Initialize spinbox min/max values from the settings range values */
+	void initSpinBox(QSpinBox *spinBox, const Settings::SettingsEntry& entry);
+	/** Update combobox from current settings */
+	void updateComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry);
+	/** Set value from combobox to settings */
+	void applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntry& entry);
 
 	QSettings::SettingsMap defaultmap;
 	QHash<const QAction *, QWidget *> prefPages;

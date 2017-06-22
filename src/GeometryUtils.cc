@@ -81,7 +81,7 @@ public:
 	}
 
 	int count(const IndexedEdge &e) {
-		IndexedEdgeDict::const_iterator it = this->edges.find(e);
+		auto it = this->edges.find(e);
 		if (it != edges.end()) return it->second;
 		return 0;
 	}
@@ -91,19 +91,19 @@ public:
 	size_t size() const { return this->edges.size(); }
 
 	void print() const {
-		for(const auto &v : this->edges) {
-			const IndexedEdge &e = v.first;
+		for (const auto &v : this->edges) {
+			const auto &e = v.first;
 			PRINTDB("     (%d,%d)%s", e.first % e.second % ((v.second > 1) ? boost::lexical_cast<std::string>(v.second).c_str() : ""));
 		}
 	}
 
 	void remove_from_v2e(int vidx, int next, int prev) {
-		std::list<int> &l = v2e[vidx];
-		std::list<int>::iterator it = std::find(l.begin(), l.end(), next);
+		auto &l = v2e[vidx];
+		auto it = std::find(l.begin(), l.end(), next);
 		if (it != l.end()) l.erase(it);
 		if (l.empty()) v2e.erase(vidx);
 
-		std::list<int> &l2 = v2e_reverse[vidx];
+		auto &l2 = v2e_reverse[vidx];
 		it = std::find(l2.begin(), l2.end(), prev);
 		if (it != l2.end()) l2.erase(it);
 		if (l2.empty()) v2e_reverse.erase(vidx);
@@ -112,7 +112,7 @@ public:
 	void extractTriangle(int vidx, int next, std::vector<IndexedTriangle> &triangles) {
 		assert(v2e_reverse.find(vidx) != v2e_reverse.end());
 		assert(!v2e_reverse[vidx].empty());
-		int prev = v2e_reverse[vidx].front();
+		auto prev = v2e_reverse[vidx].front();
 		
 		IndexedTriangle t(prev, vidx, next);
 		PRINTDB("Clipping ear: %d %d %d", t[0] % t[1] % t[2]);
@@ -121,17 +121,15 @@ public:
 		// Add new boundary edges to the edge dict
 		this->remove(t);
 
-            // If next->prev doesn't exists, add prev->next
-            std::list<int>::iterator v2eit = std::find(v2e[next].begin(), v2e[next].end(), prev);
-            if (v2eit == v2e[next].end()) {
-                v2e[prev].push_back(next);
-                v2e_reverse[next].push_back(prev);
-            }
-            remove_from_v2e(vidx, next, prev);
-            remove_from_v2e(prev, vidx, next);
-            remove_from_v2e(next, prev, vidx);
-		
-		
+		// If next->prev doesn't exists, add prev->next
+		auto v2eit = std::find(v2e[next].begin(), v2e[next].end(), prev);
+		if (v2eit == v2e[next].end()) {
+			v2e[prev].push_back(next);
+			v2e_reverse[next].push_back(prev);
+		}
+		remove_from_v2e(vidx, next, prev);
+		remove_from_v2e(prev, vidx, next);
+		remove_from_v2e(next, prev, vidx);
 	}
 
 	// Triangulate remaining loops and add to triangles
@@ -139,8 +137,8 @@ public:
 		// First, look for self-intersections in edges
 		v2e.clear();
 		v2e_reverse.clear();
-		for(const auto &v : this->edges) {
-			const IndexedEdge &e = v.first;
+		for (const auto &v : this->edges) {
+			const auto &e = v.first;
 			for (int i=0;i<v.second;i++) {
 				v2e[e.first].push_back(e.second);
 				v2e_reverse[e.second].push_back(e.first);
@@ -151,16 +149,16 @@ public:
 			std::unordered_map<int, std::list<int>>::iterator it;
 			for (it = v2e.begin();it != v2e.end();it++) {
 				if (it->second.size() == 1) { // First single vertex
-					int vidx = it->first;
-					int next = it->second.front();
+					auto vidx = it->first;
+					auto next = it->second.front();
 					extractTriangle(vidx, next, triangles);
 					break;
 				}
 			}
 			// Only duplicate vertices left
 			if (it == v2e.end() && !v2e.empty()) {
-				int vidx = v2e.begin()->first;
-				int next = v2e.begin()->second.front();
+				auto vidx = v2e.begin()->first;
+				auto next = v2e.begin()->second.front();
 				extractTriangle(vidx, next, triangles);
 			}
 		}
@@ -206,8 +204,8 @@ bool GeometryUtils::tessellatePolygonWithHoles(const Vector3f *vertices,
   if (faces.empty()) return false;
 
 	// Remove consecutive equal vertices, as well as null ears
-	std::vector<IndexedFace> cleanfaces = faces;
-  for(auto &face : cleanfaces) {
+	auto cleanfaces = faces;
+  for (auto &face : cleanfaces) {
 		size_t i=0;
 		while (face.size() >= 3 && i < face.size()) {
 			if (face[i] == face[(i+1)%face.size()]) { // Two consecutively equal indices
@@ -220,7 +218,7 @@ bool GeometryUtils::tessellatePolygonWithHoles(const Vector3f *vertices,
 			}
 			else {
 				// Filter away inf and nan vertices as they cause libtess2 to crash
-				const Vector3f &v = vertices[face[i]];
+				const auto &v = vertices[face[i]];
 				int k;
 				for (k=0;k<3;k++) {
 					if (std::isnan(v[k]) || std::isinf(v[k])) {
@@ -245,7 +243,7 @@ bool GeometryUtils::tessellatePolygonWithHoles(const Vector3f *vertices,
 	if (cleanfaces.size() == 1 && cleanfaces[0].size() == 3) {
 		// Input polygon has 3 points. shortcut tessellation.
 		//PRINTDB("  tri: %d %d %d", cleanfaces[0][0] % cleanfaces[0][1] % cleanfaces[0][2]);
-		triangles.push_back(IndexedTriangle(cleanfaces[0][0], cleanfaces[0][1], cleanfaces[0][2]));
+		triangles.emplace_back(cleanfaces[0][0], cleanfaces[0][1], cleanfaces[0][2]);
 		return false;
 	}
 
@@ -253,11 +251,11 @@ bool GeometryUtils::tessellatePolygonWithHoles(const Vector3f *vertices,
   // This contains all edges in the original polygon.
 	// To maintain connectivity, all these edges must exist in the output.
 	EdgeDict edges;
-	for(const auto &face : cleanfaces) {
+	for (const auto &face : cleanfaces) {
 		edges.add(face);
 	}
 
-  TESSreal *normalvec = NULL;
+  TESSreal *normalvec = nullptr;
   TESSreal passednormal[3];
   if (normal) {
     passednormal[0] = (*normal)[0];
@@ -281,10 +279,10 @@ bool GeometryUtils::tessellatePolygonWithHoles(const Vector3f *vertices,
 	// Since libtess2's indices is based on the running number of points added, we need to map back
 	// to our indices. allindices does the mapping.
 	std::vector<int> allindices;
-  for(const auto &face : cleanfaces) {
+  for (const auto &face : cleanfaces) {
     contour.clear();
-    for(auto idx : face) {
-			const Vector3f &v = vertices[idx];
+    for (auto idx : face) {
+			const auto &v = vertices[idx];
       contour.push_back(v[0]);
       contour.push_back(v[1]);
       contour.push_back(v[2]);
@@ -298,9 +296,9 @@ bool GeometryUtils::tessellatePolygonWithHoles(const Vector3f *vertices,
 
   if (!tessTesselate(tess, TESS_WINDING_ODD, TESS_CONSTRAINED_DELAUNAY_TRIANGLES, 3, 3, normalvec)) return -1;
 
-  const TESSindex *vindices = tessGetVertexIndices(tess);
-  const TESSindex *elements = tessGetElements(tess);
-  int numelems = tessGetElementCount(tess);
+  const auto vindices = tessGetVertexIndices(tess);
+  const auto elements = tessGetElements(tess);
+  auto numelems = tessGetElementCount(tess);
   
 	/*
 		At this point, we have a delaunay triangle mesh.
@@ -319,16 +317,16 @@ bool GeometryUtils::tessellatePolygonWithHoles(const Vector3f *vertices,
 			B) Locate all unused vertices
 			C) For each unused vertex, create a triangle connecting it to the existing mesh
 		*/
-		int inputSize = allindices.size(); // inputSize is number of points added to libtess2
+		auto inputSize = allindices.size(); // inputSize is number of points added to libtess2
 		std::vector<int> vflags(inputSize); // Inits with 0's
 		
 		IndexedTriangle tri;
 		IndexedTriangle mappedtri;
 		for (int t=0;t<numelems;t++) {
-			bool err = false;
+			auto err = false;
 			mappedtri.fill(-1);
 			for (int i=0;i<3;i++) {
-				int vidx = vindices[elements[t*3 + i]];
+				auto vidx = vindices[elements[t*3 + i]];
 				if (vidx == TESS_UNDEF) {
 					err = true;
 				}
@@ -353,7 +351,7 @@ bool GeometryUtils::tessellatePolygonWithHoles(const Vector3f *vertices,
 				// missing edges.
 				// Note: In some degenerate cases, we create triangles with mixed edge directions.
 				// In this case, don't reverse, but attempt to carry on
-				bool reverse = false;
+				auto reverse = false;
 				for (int i=0;i<3;i++) {
 					const IndexedEdge e(mappedtri[i], mappedtri[(i+1)%3]);
 					if (edges.count(e) > 0) {
@@ -366,8 +364,7 @@ bool GeometryUtils::tessellatePolygonWithHoles(const Vector3f *vertices,
 				}
 				if (reverse) {
 					mappedtri.reverseInPlace();
-					PRINTDB("  reversed: %d %d %d",
-									mappedtri[0] % mappedtri[1] % mappedtri[2]);
+					PRINTDB("  reversed: %d %d %d", mappedtri[0] % mappedtri[1] % mappedtri[2]);
 				}
 
 				// Remove the generated triangle from the original.
@@ -423,21 +420,20 @@ bool GeometryUtils::tessellatePolygonWithHoles(const Vector3f *vertices,
 bool GeometryUtils::tessellatePolygon(const Polygon &polygon, Polygons &triangles,
 																			const Vector3f *normal)
 {
-	bool err = false;
+	auto err = false;
 	Reindexer<Vector3f> uniqueVertices;
-	std::vector<IndexedFace> indexedfaces;
-	indexedfaces.push_back(IndexedFace());
-	IndexedFace &currface = indexedfaces.back();
-	for(const auto &v : polygon) {
-		int idx = uniqueVertices.lookup(v.cast<float>());
+	std::vector<IndexedFace> indexedfaces{{}};
+	auto &currface = indexedfaces.back();
+	for (const auto &v : polygon) {
+		auto idx = uniqueVertices.lookup(v.cast<float>());
 		if (currface.empty() || idx != currface.back()) currface.push_back(idx);
 	}
 	if (currface.front() == currface.back()) currface.pop_back();
 	if (currface.size() >= 3) { // Cull empty triangles
-		const Vector3f *verts = uniqueVertices.getArray();
+		const auto verts = uniqueVertices.getArray();
 		std::vector<IndexedTriangle> indexedtriangles;
 		err = tessellatePolygonWithHoles(verts, indexedfaces, indexedtriangles, normal);
-		for(const auto &t : indexedtriangles) {
+		for (const auto &t : indexedtriangles) {
 			triangles.push_back(Polygon());
 			Polygon &p = triangles.back();
 			p.push_back(verts[t[0]].cast<double>());
@@ -451,8 +447,8 @@ bool GeometryUtils::tessellatePolygon(const Polygon &polygon, Polygons &triangle
 int GeometryUtils::findUnconnectedEdges(const std::vector<std::vector<IndexedFace>> &polygons)
 {
 	EdgeDict edges;
-	for(const auto &faces : polygons) {
-		for(const auto &face : faces) {
+	for (const auto &faces : polygons) {
+		for (const auto &face : faces) {
 			edges.add(face);
 		}
 	}
@@ -468,7 +464,7 @@ int GeometryUtils::findUnconnectedEdges(const std::vector<std::vector<IndexedFac
 int GeometryUtils::findUnconnectedEdges(const std::vector<IndexedTriangle> &triangles)
 {
 	EdgeDict edges;
-	for(const auto &t : triangles) {
+	for (const auto &t : triangles) {
 		edges.add(t);
 	}
 #if 1 // for debugging

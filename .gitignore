@@ -9,7 +9,6 @@ Makefile
 objects
 .gdbinit
 .qmake.stash
-parser_yacc.h
 **/#*#
 /.dir-locals.el
 testdata/scad/2D/features/import_dxf-tests.scad
@@ -36,8 +35,6 @@ testdata/scad/misc/use-tests.scad
 /*.h
 /*.dump
 /*.pl
-/lexer_lex.cpp
-/parser_yacc.cpp
 /OpenSCAD.app
 /openscad.appdata.xml
 /openscad.pro.user
