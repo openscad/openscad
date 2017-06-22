@@ -24,6 +24,8 @@
  *
  */
 
+%option prefix="lexer"
+
 %{
 
 #include <glib.h>
@@ -31,7 +33,7 @@
 #include "printutils.h"
 #include "parsersettings.h"
 #include "Assignment.h"
-#include "parser_yacc.h"
+#include "parser.hxx"
 #include "FileModule.h"
 #include <assert.h>
 #include <boost/lexical_cast.hpp>
@@ -91,6 +93,7 @@ int yycolumn = 1;
   parserlloc.last_line = yylineno;    \
 }
 
+extern void parsererror(char const *s);
 void to_utf8(const char *, char *);
 void includefile();
 fs::path sourcefile();
@@ -123,15 +126,16 @@ UNICODE {U2}{U}|{U3}{U}{U}|{U4}{U}{U}{U}
 
 %%
 
-include[ \t\r\n>]*"<"	{ BEGIN(cond_include); filepath = filename = ""; }
+include[ \t\r\n]*"<"	{ BEGIN(cond_include); filepath = filename = ""; }
 <cond_include>{
 [^\t\r\n>]*"/"	{ filepath = yytext; }
 [^\t\r\n>/]+	{ filename = yytext; }
 ">"		{ BEGIN(INITIAL); includefile(); }
+<<EOF>>         { parsererror("Unterminated include statement"); return TOK_ERROR; }
 }
 
 
-use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
+use[ \t\r\n]*"<"	{ BEGIN(cond_use); }
 <cond_use>{
 [^\t\r\n>]+	{ filename = yytext; }
  ">"		{
@@ -141,11 +145,48 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
           PRINTB("WARNING: Can't open library '%s'.", filename);
           parserlval.text = strdup(filename.c_str());
 	} else {
-          handle_dep(fullpath.string());
+          handle_dep(fullpath.generic_string());
           parserlval.text = strdup(fullpath.string().c_str());
 	}
         return TOK_USE;
     }
+<<EOF>>         { parsererror("Unterminated use statement"); return TOK_ERROR; }
+}
+
+\"			{ BEGIN(cond_string); stringcontents.clear(); }
+<cond_string>{
+\\n			{ stringcontents += '\n'; }
+\\t			{ stringcontents += '\t'; }
+\\r			{ stringcontents += '\r'; }
+\\\\			{ stringcontents += '\\'; }
+\\\"			{ stringcontents += '"'; }
+{UNICODE}               { parser_error_pos -= strlen(lexertext) - 1; stringcontents += lexertext; }
+\\x[0-7]{H}             { unsigned long i = strtoul(lexertext + 2, NULL, 16); stringcontents += (i == 0 ? ' ' : (unsigned char)(i & 0xff)); }
+\\u{H}{4}|\\U{H}{6}     { char buf[8]; to_utf8(lexertext + 2, buf); stringcontents += buf; }
+[^\\\n\"]		{ stringcontents += lexertext; }
+[\n\r]		        { yycolumn = 1; }
+\"			{ BEGIN(INITIAL);
+			parserlval.text = strdup(stringcontents.c_str());
+			return TOK_STRING; }
+<<EOF>>                 { parsererror("Unterminated string"); return TOK_ERROR; }
+}
+
+[\t ]                   /* whitespace */
+[\n\r]
+
+\/\/ BEGIN(cond_lcomment);
+<cond_lcomment>{
+\n                      { BEGIN(INITIAL); yycolumn = 1; }
+{UNICODE}               { parser_error_pos -= strlen(lexertext) - 1; }
+[^\n]
+}
+
+"/*" BEGIN(cond_comment);
+<cond_comment>{
+"*/"                    { BEGIN(INITIAL); }
+{UNICODE}               { parser_error_pos -= strlen(lexertext) - 1; }
+.|\n
+<<EOF>>                 { parsererror("Unterminated comment"); return TOK_ERROR; }
 }
 
 <<EOF>> {
@@ -170,6 +211,8 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
 "if"		return TOK_IF;
 "else"		return TOK_ELSE;
 "let"		return TOK_LET;
+"assert"	return TOK_ASSERT;
+"echo"	        return TOK_ECHO;
 "for"		return TOK_FOR;
 "each"		return TOK_EACH;
 
@@ -196,39 +239,6 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
                             } catch (boost::bad_lexical_cast) {}
                         }
 "$"?[a-zA-Z0-9_]+       { parserlval.text = strdup(yytext); return TOK_ID; }
-
-\"			{ BEGIN(cond_string); stringcontents.clear(); }
-<cond_string>{
-\\n			{ stringcontents += '\n'; }
-\\t			{ stringcontents += '\t'; }
-\\r			{ stringcontents += '\r'; }
-\\\\			{ stringcontents += '\\'; }
-\\\"			{ stringcontents += '"'; }
-{UNICODE}               { parser_error_pos -= strlen(lexertext) - 1; stringcontents += lexertext; }
-\\x[0-7]{H}             { unsigned long i = strtoul(lexertext + 2, NULL, 16); stringcontents += (i == 0 ? ' ' : (unsigned char)(i & 0xff)); }
-\\u{H}{4}|\\U{H}{6}     { char buf[8]; to_utf8(lexertext + 2, buf); stringcontents += buf; }
-[^\\\n\"]		{ stringcontents += lexertext; }
-\"			{ BEGIN(INITIAL);
-			parserlval.text = strdup(stringcontents.c_str());
-			return TOK_STRING; }
-}
-
-[\t ]                   /* whitespace */
-[\n\r]                  { yycolumn = 1; }
-
-\/\/ BEGIN(cond_lcomment);
-<cond_lcomment>{
-\n                      { BEGIN(INITIAL); }
-{UNICODE}               { parser_error_pos -= strlen(lexertext) - 1; }
-[^\n]
-}
-
-"/*" BEGIN(cond_comment);
-<cond_comment>{
-"*/"                    { BEGIN(INITIAL); }
-{UNICODE}               { parser_error_pos -= strlen(lexertext) - 1; }
-.|\n
-}
 
 "<="	return LE;
 ">="	return GE;

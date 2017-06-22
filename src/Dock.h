@@ -9,7 +9,7 @@ class Dock : public QDockWidget
 	Q_OBJECT
 	
 public:
-        Dock(QWidget *parent = NULL);
+        Dock(QWidget *parent = nullptr);
         virtual ~Dock();
         void setConfigKey(const QString configKey);
         void setAction(QAction *action);

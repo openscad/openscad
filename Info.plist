@@ -83,6 +83,16 @@
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>amf</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>AMF file</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+		</dict>
 	</array>
 	<key>NSAppleScriptEnabled</key>
 	<true/>

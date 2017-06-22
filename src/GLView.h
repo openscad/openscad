@@ -35,7 +35,7 @@ public:
 	void initializeGL();
 	void resizeGL(int w, int h);
 	virtual void paintGL();
-	void paintGL_oneEye();
+	void paintGL_oneEye(const Color4f& axescolor);
 
 	void setCamera(const Camera &cam);
 	void setupCamera(Camera::Eye eye=Camera::CENTER);

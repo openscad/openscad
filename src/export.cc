@@ -36,25 +36,25 @@
 void exportFile(const shared_ptr<const Geometry> &root_geom, std::ostream &output, FileFormat format)
 {
 	switch (format) {
-	case OPENSCAD_STL:
+	case FileFormat::STL:
 		export_stl(root_geom, output);
 		break;
-	case OPENSCAD_OFF:
+	case FileFormat::OFF:
 		export_off(root_geom, output);
 		break;
-	case OPENSCAD_AMF:
+	case FileFormat::AMF:
 		export_amf(root_geom, output);
 		break;
-	case OPENSCAD_DXF:
+	case FileFormat::DXF:
 		export_dxf(root_geom, output);
 		break;
-	case OPENSCAD_SVG:
+	case FileFormat::SVG:
 		export_svg(root_geom, output);
 		break;
-	case OPENSCAD_NEFDBG:
+	case FileFormat::NEFDBG:
 		export_nefdbg(root_geom, output);
 		break;
-	case OPENSCAD_NEF3:
+	case FileFormat::NEF3:
 		export_nef3(root_geom, output);
 		break;
 	default:

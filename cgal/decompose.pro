@@ -93,6 +93,7 @@ HEADERS += ../src/cgal.h \
            ../src/cgalutils.h \
            ../src/linalg.h \
            ../src/grid.h \
+           ../src/hash.h \
            ../src/polyset.h \
            ../src/polyset-utils.h \
            ../src/printutils.h \
@@ -119,8 +120,15 @@ SOURCES += decompose.cpp \
            ../src/GeometryUtils.cc \
            ../src/svg.cc \
            ../src/grid.cc \
+           ../src/hash.cc \
            ../src/node.cc \
            ../src/export.cc \
+           ../src/export_stl.cc \
+           ../src/export_amf.cc \
+           ../src/export_off.cc \
+           ../src/export_dxf.cc \
+           ../src/export_svg.cc \
+           ../src/export_nef.cc \
            ../src/polyset-utils.cc \
            ../src/progress.cc \
            ../src/printutils.cc \

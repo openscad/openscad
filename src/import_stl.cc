@@ -1,6 +1,5 @@
 #include "import.h"
 #include "polyset.h"
-#include "handle_dep.h" // handle_dep()
 #include "printutils.h"
 
 #include <boost/algorithm/string.hpp>
@@ -23,22 +22,24 @@ union stl_facet {
 	} data;
 };
 
+#ifdef BOOST_BIG_ENDIAN
 static void uint32_byte_swap(uint32_t &x)
 {
-#if __GNUC__ >= 4 && __GNUC_MINOR__ >= 3
+# if __GNUC__ >= 4 && __GNUC_MINOR__ >= 3
 	x = __builtin_bswap32( x );
-#elif defined(__clang__)
+# elif defined(__clang__)
 	x = __builtin_bswap32( x );
-#elif defined(_MSC_VER)
+# elif defined(_MSC_VER)
 	x = _byteswap_ulong( x );
-#else
+# else
 	uint32_t b1 = ( 0x000000FF & x ) << 24;
 	uint32_t b2 = ( 0x0000FF00 & x ) << 8;
 	uint32_t b3 = ( 0x00FF0000 & x ) >> 8;
 	uint32_t b4 = ( 0xFF000000 & x ) >> 24;
 	x = b1 | b2 | b3 | b4;
-#endif
+# endif
 }
+#endif
 
 static void read_stl_facet(std::ifstream &f, stl_facet &facet)
 {
@@ -55,7 +56,6 @@ PolySet *import_stl(const std::string &filename)
 {
 	PolySet *p = new PolySet(3);
 
-	handle_dep(filename);
 	// Open file and position at the end
 	std::ifstream f(filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
 	if (!f.good()) {

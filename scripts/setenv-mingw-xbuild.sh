@@ -43,7 +43,7 @@ fi
 
 if [ ! $MXEDIR ]; then
 	if [ "`echo $* | grep 64 `" ]; then
-		MXEDIR=$BASEDIR/mxe-w64
+		MXEDIR=$BASEDIR/mxe
 	else
 		MXEDIR=$BASEDIR/mxe
 	fi

@@ -22,11 +22,11 @@ std::string winapi_wstr_to_utf8( std::wstring wstr )
 	UINT CodePage = CP_UTF8;
 	DWORD dwFlags = 0;
 	LPCWSTR lpWideCharStr = &wstr[0];
-	int cchWideChar = (int)wstr.size();
-	LPSTR lpMultiByteStr = NULL;
+	int cchWideChar = static_cast<int>(wstr.size());
+	LPSTR lpMultiByteStr = nullptr;
 	int cbMultiByte = 0;
-	LPCSTR lpDefaultChar = NULL;
-	LPBOOL lpUsedDefaultChar = NULL;
+	LPCSTR lpDefaultChar = nullptr;
+	LPBOOL lpUsedDefaultChar = nullptr;
 
 	int numbytes = WideCharToMultiByte( CodePage, dwFlags, lpWideCharStr,
 	  cchWideChar, lpMultiByteStr, cbMultiByte, lpDefaultChar, lpUsedDefaultChar );
@@ -55,14 +55,14 @@ static const std::string getFolderPath(int nFolder)
 	std::wstring path(MAX_PATH,0);
 
 	HWND hwndOwner = 0;
-	HANDLE hToken = NULL;
+	HANDLE hToken = nullptr;
 	DWORD dwFlags = SHGFP_TYPE_CURRENT;
 	LPTSTR pszPath = &path[0];
 
 	int result = SHGetFolderPathW( hwndOwner, nFolder, hToken, dwFlags, pszPath );
 
 	if (result == S_OK) {
-        path = std::wstring( path.c_str() ); // strip extra NULLs
+        path = std::wstring( path.c_str() ); // strip extra nullptrs
         // Use boost::filesystem to decide how to convert from wstring
         // to string. Normally the path encoding is system local and
         // we don't want to force conversion to UTF-8.
@@ -112,7 +112,7 @@ static BOOL IsWow64()
     //and GetProcAddress to get a pointer to the function if available.
     LPFN_ISWOW64PROCESS fnIsWow64Process = (LPFN_ISWOW64PROCESS)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "IsWow64Process");
 
-    if (NULL != fnIsWow64Process) {
+    if (nullptr != fnIsWow64Process) {
         if (!fnIsWow64Process(GetCurrentProcess(), &bIsWow64))
         {
 	    return false;
@@ -124,79 +124,34 @@ static BOOL IsWow64()
 std::string PlatformUtils::sysinfo(bool extended)
 {
 	std::string result;
-  
+
 	OSVERSIONINFOEX osinfo;
 	osinfo.dwOSVersionInfoSize = sizeof(osinfo);
-	
+
 	if (GetVersionExEx(&osinfo) == 0) {
-		result += "Unknown Windows";
+		result += "Unknown Windows(TM)";
 	} else {
-		unsigned int version = osinfo.dwMajorVersion * 1000 + osinfo.dwMinorVersion;
-	if (osinfo.dwPlatformId == VER_PLATFORM_WIN32_NT) {
-		switch (version) {
-		case 5000:
-			result += "Windows 2000";
-			break;
-		case 5001:
-			result += "Windows XP";
-			break;
-		case 5002:
-			result += "Windows Server 2003";
-			break;
-		case 6000:
-			result += (osinfo.wProductType == VER_NT_WORKSTATION ? "Windows Vista" : "Windows Server 2008");
-			break;
-		case 6001:
-			result += (osinfo.wProductType == VER_NT_WORKSTATION ? "Windows 7" : "Windows Server 2008 R2");
-			break;
-		case 6002:
-			result += (osinfo.wProductType == VER_NT_WORKSTATION ? "Windows 8" : "Windows Server 2012");
-			break;
-		case 6003:
-			// For applications that have been manifested for Windows 8.1.
-			result += (osinfo.wProductType == VER_NT_WORKSTATION ? "Windows 8.1" : "Windows Server 2012 R2");
-			break;
-		default:
-			result += "Unknown Windows";
-			break;
-		}
-		
-		if (osinfo.wServicePackMajor > 0) {
-			boost::format fmtServicePack;
-			if (osinfo.wServicePackMinor == 0) {
-				fmtServicePack = boost::format(" SP%d");
-				fmtServicePack % osinfo.wServicePackMajor;
-			} else {
-				fmtServicePack = boost::format(" SP%d.%d");
-				fmtServicePack % osinfo.wServicePackMajor % osinfo.wServicePackMinor;
-			}
-			result += fmtServicePack.str();
-		}
-		
-		boost::format fmt(" (v%d.%d.%d.%d)");
-		fmt % osinfo.dwMajorVersion % osinfo.dwMinorVersion % osinfo.wServicePackMajor % osinfo.wServicePackMinor;
+		boost::format fmt("Windows(TM) %d.%d SP %d.%d NTW %i MSDN 724833");
+		fmt 	% osinfo.dwMajorVersion % osinfo.dwMinorVersion
+			% osinfo.wServicePackMajor % osinfo.wServicePackMinor
+			% (osinfo.wProductType == VER_NT_WORKSTATION);
 		result += fmt.str();
-	} else {
-		boost::format fmt("Unknown Windows (dwPlatformId = %d, dwMajorVersion = %d, dwMinorVersion = %d");
-		fmt % osinfo.dwPlatformId % osinfo.dwMajorVersion % osinfo.dwMinorVersion;
-		result += fmt.str();
-	}    
 	}
-	
+
 	SYSTEM_INFO systeminfo;
 	bool isWow64 = IsWow64();
 	if (isWow64) {
 		GetNativeSystemInfo(&systeminfo);
 	} else {
-		GetSystemInfo(&systeminfo);   
+		GetSystemInfo(&systeminfo);
 	}
-	
+
 	if (extended) {
 		int numcpu = systeminfo.dwNumberOfProcessors;
 		boost::format fmt(" %d CPU%s%s");
 		fmt % numcpu % (numcpu > 1 ? "s" : "") % (isWow64 ? " WOW64" : "");
 		result += fmt.str();
-		
+
 		MEMORYSTATUSEX memoryinfo;
 		memoryinfo.dwLength = sizeof(memoryinfo);
 		if (GlobalMemoryStatusEx(&memoryinfo) != 0) {
@@ -204,7 +159,7 @@ std::string PlatformUtils::sysinfo(bool extended)
 			result += PlatformUtils::toMemorySizeString(memoryinfo.ullTotalPhys, 2);
 			result += " RAM";
 		}
-  }
+  	}
 
 	return result;
 }

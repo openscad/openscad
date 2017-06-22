@@ -13,9 +13,6 @@ include <include-test5.scad>
 //Test without preceding space
 include<include-test5.scad>
 
-//Test with other strange character that is allowed
-include>>>>><include-test5.scad>
-
 //Test that filenames with spaces work
 include <include test6.scad>
 

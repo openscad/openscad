@@ -30,6 +30,19 @@ addition to 2D paths for extrusion it is also possible to read design parameters
 from DXF files. Besides DXF files OpenSCAD can read and create 3D models in the
 STL and OFF file formats.
 
+# Contents
+
+- [Getting Started](#getting-started)
+- [Documentation](#documentation)
+    - [Building OpenSCAD](#building-openscad)
+        - [Prerequisites](#prerequisites)
+        - [Getting the source code](#getting-the-source-code)
+        - [Building for Mac OS X](#building-for-mac-os-x)
+        - [Building for Linux/BSD](#building-for-linuxbsd)
+        - [Building for Linux/BSD on systems with older or missing dependencies](#building-for-linuxbsd-on-systems-with-older-or-missing-dependencies)
+        - [Building for Windows](#building-for-windows)
+        - [Compilation](#compilation)
+
 # Getting started
 
 You can download the latest binaries of OpenSCAD at

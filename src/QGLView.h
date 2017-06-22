@@ -32,7 +32,7 @@ class QGLView :
 	Q_PROPERTY(double showScaleProportional READ showScaleProportional WRITE setShowScaleProportional);
 
 public:
-	QGLView(QWidget *parent = NULL);
+	QGLView(QWidget *parent = nullptr);
 #ifdef ENABLE_OPENCSG
 	bool hasOpenCSGSupport() { return this->opencsg_support; }
 #endif
@@ -45,7 +45,7 @@ public:
 	void setShowAxes(bool enabled) { this->showaxes = enabled; }
 	bool showCrosshairs() const { return this->showcrosshairs; }
 	void setShowCrosshairs(bool enabled) { this->showcrosshairs = enabled; }
-	bool orthoMode() const { return (this->cam.projection == Camera::ORTHOGONAL); }
+	bool orthoMode() const { return (this->cam.projection == Camera::ProjectionType::ORTHOGONAL); }
 	void setOrthoMode(bool enabled);
 	bool showScaleProportional() const { return this->showscale; }
 	void setShowScaleProportional(bool enabled) { this->showscale = enabled; }

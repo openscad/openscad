@@ -29,8 +29,8 @@
 #include <QMessageBox>
 #include <QFontDatabase>
 #include <QKeyEvent>
-#include <QSettings>
 #include <QStatusBar>
+#include <QSettings>
 #include <boost/algorithm/string.hpp>
 #include "GeometryCache.h"
 #include "AutoUpdater.h"
@@ -40,15 +40,16 @@
 #endif
 #include "colormap.h"
 #include "rendersettings.h"
+#include "QSettingsCached.h"
 
-Preferences *Preferences::instance = NULL;
+Preferences *Preferences::instance = nullptr;
 
 const char * Preferences::featurePropertyName = "FeatureProperty";
 Q_DECLARE_METATYPE(Feature *);
 
 class SettingsReader : public Settings::SettingsVisitor
 {
-    QSettings settings;
+    QSettingsCached settings;
     Value getValue(const Settings::SettingsEntry& entry, const std::string& value) const {
 	std::string trimmed_value(value);
 	boost::trim(trimmed_value);
@@ -59,11 +60,11 @@ class SettingsReader : public Settings::SettingsVisitor
 
 	try {
 		switch (entry.defaultValue().type()) {
-		case Value::STRING:
+		case Value::ValueType::STRING:
 			return Value(trimmed_value);
-		case Value::NUMBER:
+		case Value::ValueType::NUMBER:
 			return Value(boost::lexical_cast<int>(trimmed_value));
-		case Value::BOOL:
+		case Value::ValueType::BOOL:
 			boost::to_lower(trimmed_value);
 			if ("false" == trimmed_value) {
 				return Value(false);
@@ -73,6 +74,7 @@ class SettingsReader : public Settings::SettingsVisitor
 			return Value(boost::lexical_cast<bool>(trimmed_value));
 		default:
 			assert(false && "invalid value type for settings");
+			return 0; // keep compiler happy
 		}
 	} catch (const boost::bad_lexical_cast& e) {
 		return entry.defaultValue();
@@ -95,7 +97,7 @@ class SettingsWriter : public Settings::SettingsVisitor
     virtual void handle(Settings::SettingsEntry& entry) const {
 	Settings::Settings *s = Settings::Settings::inst();
 
-	QSettings settings;
+	QSettingsCached settings;
 	QString key = QString::fromStdString(entry.category() + "/" + entry.name());
 	if (entry.is_default()) {
 	    settings.remove(key);
@@ -144,7 +146,7 @@ void Preferences::init() {
 	QFontDatabase db;
 	for(auto size : db.standardSizes()) {
 		this->fontSize->addItem(QString::number(size));
-		if (size == savedsize) {
+		if (static_cast<uint>(size) == savedsize) {
 			this->fontSize->setCurrentIndex(this->fontSize->count()-1);
 		}
 	}
@@ -218,7 +220,7 @@ void Preferences::init() {
 Preferences::~Preferences()
 {
 	removeDefaultSettings();
-	instance = NULL;
+	instance = nullptr;
 }
 
 /**
@@ -260,7 +262,7 @@ Preferences::actionTriggered(QAction *action)
 void Preferences::featuresCheckBoxToggled(bool state)
 {
 	const QObject *sender = QObject::sender();
-	if (sender == NULL) {
+	if (sender == nullptr) {
 		return;
 	}
 	QVariant v = sender->property(featurePropertyName);
@@ -269,8 +271,9 @@ void Preferences::featuresCheckBoxToggled(bool state)
 	}
 	Feature *feature = v.value<Feature *>();
 	feature->enable(state);
-	QSettings settings;
+	QSettingsCached settings;
 	settings.setValue(QString("feature/%1").arg(QString::fromStdString(feature->get_name())), state);
+	emit ExperimentalChanged();
 }
 
 /**
@@ -322,14 +325,14 @@ Preferences::setupFeaturesPage()
 void Preferences::on_colorSchemeChooser_itemSelectionChanged()
 {
 	QString scheme = this->colorSchemeChooser->currentItem()->text();
-	QSettings settings;
+	QSettingsCached settings;
 	settings.setValue("3dview/colorscheme", scheme);
 	emit colorSchemeChanged( scheme );
 }
 
 void Preferences::on_fontChooser_activated(const QString &family)
 {
-	QSettings settings;
+	QSettingsCached settings;
 	settings.setValue("editor/fontfamily", family);
 	emit fontChanged(family, getValue("editor/fontsize").toUInt());
 }
@@ -337,20 +340,20 @@ void Preferences::on_fontChooser_activated(const QString &family)
 void Preferences::on_fontSize_currentIndexChanged(const QString &size)
 {
 	uint intsize = size.toUInt();
-	QSettings settings;
+	QSettingsCached settings;
 	settings.setValue("editor/fontsize", intsize);
 	emit fontChanged(getValue("editor/fontfamily").toString(), intsize);
 }
 
 void Preferences::on_editorType_currentIndexChanged(const QString &type)
 {
-	QSettings settings;
+	QSettingsCached settings;
 	settings.setValue("editor/editortype", type);
 }
 
 void Preferences::on_syntaxHighlight_activated(const QString &s)
 {
-	QSettings settings;
+	QSettingsCached settings;
 	settings.setValue("editor/syntaxhighlight", s);
 	emit syntaxHighlightChanged(s);
 }
@@ -392,7 +395,7 @@ void Preferences::on_checkNowButton_clicked()
 void
 Preferences::on_mdiCheckBox_toggled(bool state)
 {
-	QSettings settings;
+	QSettingsCached settings;
 	settings.setValue("advanced/mdi", state);
 	emit updateMdiMode(state);
 }
@@ -404,7 +407,7 @@ Preferences::on_reorderCheckBox_toggled(bool state)
 		undockCheckBox->setChecked(false);
 	}
 	undockCheckBox->setEnabled(state);
-	QSettings settings;
+	QSettingsCached settings;
 	settings.setValue("advanced/reorderWindows", state);
 	emit updateReorderMode(state);
 }
@@ -412,7 +415,7 @@ Preferences::on_reorderCheckBox_toggled(bool state)
 void
 Preferences::on_undockCheckBox_toggled(bool state)
 {
-	QSettings settings;
+	QSettingsCached settings;
 	settings.setValue("advanced/undockableWindows", state);
 	emit updateUndockMode(state);
 }
@@ -420,20 +423,20 @@ Preferences::on_undockCheckBox_toggled(bool state)
 void
 Preferences::on_openCSGWarningBox_toggled(bool state)
 {
-	QSettings settings;
+	QSettingsCached settings;
 	settings.setValue("advanced/opencsg_show_warning",state);
 }
 
 void
 Preferences::on_enableOpenCSGBox_toggled(bool state)
 {
-	QSettings settings;
+	QSettingsCached settings;
 	settings.setValue("advanced/enable_opencsg_opengl1x", state);
 }
 
 void Preferences::on_cgalCacheSizeEdit_textChanged(const QString &text)
 {
-	QSettings settings;
+	QSettingsCached settings;
 	settings.setValue("advanced/cgalCacheSize", text);
 #ifdef ENABLE_CGAL
 	CGALCache::instance()->setMaxSize(text.toULong());
@@ -442,40 +445,40 @@ void Preferences::on_cgalCacheSizeEdit_textChanged(const QString &text)
 
 void Preferences::on_polysetCacheSizeEdit_textChanged(const QString &text)
 {
-	QSettings settings;
+	QSettingsCached settings;
 	settings.setValue("advanced/polysetCacheSize", text);
 	GeometryCache::instance()->setMaxSize(text.toULong());
 }
 
 void Preferences::on_opencsgLimitEdit_textChanged(const QString &text)
 {
-	QSettings settings;
+	QSettingsCached settings;
 	settings.setValue("advanced/openCSGLimit", text);
 	// FIXME: Set this globally?
 }
 
 void Preferences::on_localizationCheckBox_toggled(bool state)
 {
-	QSettings settings;
+	QSettingsCached settings;
 	settings.setValue("advanced/localization", state);
 }
 
 void Preferences::on_forceGoldfeatherBox_toggled(bool state)
 {
-	QSettings settings;
+	QSettingsCached settings;
 	settings.setValue("advanced/forceGoldfeather", state);
 	emit openCSGSettingsChanged();
 }
 
 void Preferences::on_mouseWheelZoomBox_toggled(bool state)
 {
-	QSettings settings;
+	QSettingsCached settings;
 	settings.setValue("editor/ctrlmousewheelzoom", state);
 }
 
 void Preferences::on_launcherBox_toggled(bool state)
 {
-	QSettings settings;
+	QSettingsCached settings;
  	settings.setValue("launcher/showOnStartup", state);	
 }
 
@@ -605,7 +608,7 @@ void Preferences::keyPressEvent(QKeyEvent *e)
  */
 void Preferences::removeDefaultSettings()
 {
-	QSettings settings;
+	QSettingsCached settings;
 	for (QSettings::SettingsMap::const_iterator iter = this->defaultmap.begin();
 			 iter != this->defaultmap.end();
 			 iter++) {
@@ -617,7 +620,7 @@ void Preferences::removeDefaultSettings()
 
 QVariant Preferences::getValue(const QString &key) const
 {
-	QSettings settings;
+	QSettingsCached settings;
 	assert(settings.contains(key) || this->defaultmap.contains(key));
 	return settings.value(key, this->defaultmap[key]);
 }
@@ -757,7 +760,7 @@ void Preferences::apply() const
 
 void Preferences::create(QStringList colorSchemes)
 {
-    if (instance != NULL) {
+    if (instance != nullptr) {
 	return;
     }
 
@@ -776,7 +779,7 @@ void Preferences::create(QStringList colorSchemes)
 }
 
 Preferences *Preferences::inst() {
-    assert(instance != NULL);
+    assert(instance != nullptr);
     
     return instance;
 }

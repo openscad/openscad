@@ -6,6 +6,7 @@
 #include <locale.h>
 
 #include "cgalutils.h"
+#include "memory.h"
 #include "export.h"
 #include "polyset.h"
 #include "CGAL_Nef_polyhedron.h"
@@ -277,13 +278,13 @@ void decompose(const CGAL_Nef_polyhedron3 *N, Output out_iter)
   }
 }
 
-Geometry const * minkowskitest(const Geometry::ChildList &children)
+Geometry const * minkowskitest(const Geometry::Geometries &children)
 {
   CGAL::Timer t,t_tot;
   assert(children.size() >= 2);
   // Iterate over children, perform pairwise minkowski on children:
   //   operands = [ch, ch+1]
-  Geometry::ChildList::const_iterator minkowski_ch_it = children.begin();
+  Geometry::Geometries::const_iterator minkowski_ch_it = children.begin();
   t_tot.start();
   Geometry const *operands[2] = {minkowski_ch_it->second.get(), NULL};
   try {
@@ -421,10 +422,10 @@ Geometry const * minkowskitest(const Geometry::ChildList &children)
       } else if (!result_parts.empty()) {
         t.start();
         PRINTDB("Minkowski: Computing union of %d parts",result_parts.size());
-        Geometry::ChildList fake_children;
-        for (std::list<PolyhedronK>::iterator i = result_parts.begin(); i != result_parts.end(); ++i) {
+        Geometry::Geometries fake_children;
+        for (const auto &polyhedron : result_parts) {
           PolySet ps(3,true);
-          createPolySetFromPolyhedron(*i, ps);
+          createPolySetFromPolyhedron(polyhedron, ps);
           fake_children.push_back(std::make_pair((const AbstractNode*)NULL,
                                                  shared_ptr<const Geometry>(createNefPolyhedronFromGeometry(ps))));
         }
@@ -636,7 +637,7 @@ int main(int argc, char *argv[])
   CGAL_Nef_polyhedron *N = NULL;
   if (argc == 2) {
     std::string filename(argv[1]);
-    std::string suffix = filename.extension().generic_string();
+    std::string suffix = fs::path(filename).extension().generic_string();
     if (suffix == ".stl") {
       if (!(ps = import_stl(filename))) {
         std::cerr << "Error importing STL " << filename << std::endl;
@@ -665,14 +666,14 @@ int main(int argc, char *argv[])
 
   int idx = 0;
   BOOST_FOREACH(const PolyhedronK &P, result) {
-    PolySet result_ps(3);
-    if (CGALUtils::createPolySetFromPolyhedron(P, result_ps)) {
+    PolySet *result_ps = new PolySet(3);
+    if (CGALUtils::createPolySetFromPolyhedron(P, *result_ps)) {
       std::cerr << "Error converting to PolySet\n";
     }
     else {
       std::stringstream ss;
       ss << "out" << idx++ << ".stl";
-      exportFileByName(&result_ps, OPENSCAD_STL, ss.str().c_str(), ss.str().c_str());
+      exportFileByName(shared_ptr<const Geometry>(result_ps), OPENSCAD_STL, ss.str().c_str(), ss.str().c_str());
       std::cout << "color([" << colors[idx%147][0] << "," << colors[idx%147][1] << "," << colors[idx%147][2] << "]) " << "import(\"" << ss.str() << "\");\n";
     }
   }

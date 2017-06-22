@@ -225,7 +225,7 @@ Highlighter::Highlighter(QTextDocument *parent)
 	tokentypes["prim3d"] << "cube" << "cylinder" << "sphere" << "polyhedron";
 	tokentypes["prim2d"] << "square" << "polygon" << "circle";
 	tokentypes["import"] << "include" << "use" << "import_stl" << "import" << "import_dxf" << "dxf_dim" << "dxf_cross" << "surface";
-	tokentypes["special"] << "$children" << "child" << "children" << "$fn" << "$fa" << "$fs" << "$t" << "$vpt" << "$vpr" << "$vpd";
+	tokentypes["special"] << "$children" << "child" << "children" << "$fn" << "$fa" << "$fs" << "$t" << "$preview" << "$vpt" << "$vpr" << "$vpd";
 	tokentypes["extrude"] << "linear_extrude" << "rotate_extrude";
 	tokentypes["bracket"] << "[" << "]" << "(" << ")";
 	tokentypes["curlies"] << "{" << "}";
@@ -350,12 +350,12 @@ void Highlighter::highlightBlock(const QString &text)
 	}
 
 	// Quoting and Comments.
-	state_e state = (state_e) previousBlockState();
+	state_e state = static_cast<state_e>(previousBlockState());
 	int quote_esc_state = 0;
 	for (int n = 0; n < text.size(); ++n){
-		if (state == NORMAL){
+		if (state == state_e::NORMAL){
 			if (text[n] == '"'){
-				state = QUOTE;
+				state = state_e::QUOTE;
 				setFormat(n,1,quoteFormat);
 			} else if (text[n] == '/'){
 				if ( n+1 < text.size() && text[n+1] == '/'){
@@ -363,26 +363,26 @@ void Highlighter::highlightBlock(const QString &text)
 					break;
 				} else if ( n+1 < text.size() && text[n+1] == '*'){
 					setFormat(n++,2,commentFormat);
-					state = COMMENT;
+					state = state_e::COMMENT;
 				}
 			}
-		} else if (state == QUOTE){
+		} else if (state == state_e::QUOTE){
 			setFormat(n,1,quoteFormat);
 			if (quote_esc_state > 0)
 				quote_esc_state = 0;
 			else if (text[n] == '\\')
 				quote_esc_state = 1;
 			else if (text[n] == '"')
-				state = NORMAL;
-		} else if (state == COMMENT){
+				state = state_e::NORMAL;
+		} else if (state == state_e::COMMENT){
 			setFormat(n,1,commentFormat);
 			if (text[n] == '*' && n+1 < text.size() && text[n+1] == '/'){
 				setFormat(++n,1,commentFormat);
-				state = NORMAL;
+				state = state_e::NORMAL;
 			}
 		}
 	}
-	setCurrentBlockState((int) state);
+	setCurrentBlockState(static_cast<int>(state));
 
 	// Highlight an error. Do it last to 'overwrite' other formatting.
 	if (errorState) {

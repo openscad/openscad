@@ -38,8 +38,8 @@
 	operation on its operands.
 
 	Note: To distinguish between geometry evaluated to an empty volume
-	and non-geometric nodes (e.g. echo), a NULL CSGLeaf is considered a
-	non-geometric node, while a CSGLeaf with a NULL geometry is
+	and non-geometric nodes (e.g. echo), a nullptr CSGLeaf is considered a
+	non-geometric node, while a CSGLeaf with a nullptr geometry is
 	considered empty geometry. This is important when e.g. establishing
 	positive vs. negative volumes using the difference operator.
  */
@@ -61,30 +61,30 @@ primitives, each having a CSG type associated with it.
 
 shared_ptr<CSGNode> CSGOperation::createCSGNode(OpenSCADOperator type, shared_ptr<CSGNode> left, shared_ptr<CSGNode> right)
 {
-	// In case we're creating a CSG terms from a pruned tree, left/right can be NULL
+	// In case we're creating a CSG terms from a pruned tree, left/right can be nullptr
 	if (!right) {
-		if (type == OPENSCAD_UNION || type == OPENSCAD_DIFFERENCE) return left;
+		if (type == OpenSCADOperator::UNION || type == OpenSCADOperator::DIFFERENCE) return left;
 		else return right;
 	}
 	if (!left) {
-		if (type == OPENSCAD_UNION) return right;
+		if (type == OpenSCADOperator::UNION) return right;
 		else return left;
 	}
 
   // Pruning the tree. For details, see "Solid Modeling" by Goldfeather:
   // http://www.cc.gatech.edu/~turk/my_papers/pxpl_csg.pdf
-	const BoundingBox &leftbox = left->getBoundingBox();
-	const BoundingBox &rightbox = right->getBoundingBox();
+	const auto &leftbox = left->getBoundingBox();
+	const auto &rightbox = right->getBoundingBox();
 	Vector3d newmin, newmax;
-	if (type == OPENSCAD_INTERSECTION) {
+	if (type == OpenSCADOperator::INTERSECTION) {
 		newmin = leftbox.min().array().cwiseMax( rightbox.min().array() );
 		newmax = leftbox.max().array().cwiseMin( rightbox.max().array() );
-		BoundingBox newbox( newmin, newmax );
+		BoundingBox newbox(newmin, newmax);
 		if (newbox.isNull()) {
 			return shared_ptr<CSGNode>(); // Prune entire product
 		}
 	}
-	else if (type == OPENSCAD_DIFFERENCE) {
+	else if (type == OpenSCADOperator::DIFFERENCE) {
 		newmin = leftbox.min().array().cwiseMax( rightbox.min().array() );
 		newmax = leftbox.max().array().cwiseMin( rightbox.max().array() );
 		BoundingBox newbox( newmin, newmax );
@@ -127,21 +127,21 @@ void CSGLeaf::initBoundingBox()
 
 void CSGOperation::initBoundingBox()
 {
-	const BoundingBox &leftbox = this->left()->getBoundingBox();
-	const BoundingBox &rightbox = this->right()->getBoundingBox();
+	const auto &leftbox = this->left()->getBoundingBox();
+	const auto &rightbox = this->right()->getBoundingBox();
 	Vector3d newmin, newmax;
 	switch (this->type) {
-	case OPENSCAD_UNION:
+	case OpenSCADOperator::UNION:
 		newmin = leftbox.min().array().cwiseMin( rightbox.min().array() );
 		newmax = leftbox.max().array().cwiseMax( rightbox.max().array() );
 		this->bbox = BoundingBox( newmin, newmax );
 		break;
-	case OPENSCAD_INTERSECTION:
+	case OpenSCADOperator::INTERSECTION:
 		newmin = leftbox.min().array().cwiseMax( rightbox.min().array() );
 		newmax = leftbox.max().array().cwiseMin( rightbox.max().array() );
 		this->bbox = BoundingBox( newmin, newmax );
 		break;
-	case OPENSCAD_DIFFERENCE:
+	case OpenSCADOperator::DIFFERENCE:
 		this->bbox = leftbox;
 		break;
 	default:
@@ -158,11 +158,11 @@ std::string CSGOperation::dump()
 {
 	std::stringstream dump;
 
-	if (type == OPENSCAD_UNION)
+	if (type == OpenSCADOperator::UNION)
 		dump << "(" << left()->dump() << " + " << right()->dump() << ")";
-	else if (type == OPENSCAD_INTERSECTION)
+	else if (type == OpenSCADOperator::INTERSECTION)
 		dump << "(" << left()->dump() << " * " << right()->dump() << ")";
-	else if (type == OPENSCAD_DIFFERENCE)
+	else if (type == OpenSCADOperator::DIFFERENCE)
 		dump << "(" << left()->dump() << " - " << right()->dump() << ")";
 	else 
 		assert(false);
@@ -172,17 +172,20 @@ std::string CSGOperation::dump()
 
 void CSGProducts::import(shared_ptr<CSGNode> csgnode, OpenSCADOperator type, CSGNode::Flag flags)
 {
-	CSGNode::Flag newflags = (CSGNode::Flag)(csgnode->getFlags() | flags);
+	auto newflags = static_cast<CSGNode::Flag>(csgnode->getFlags() | flags);
 
-	if (shared_ptr<CSGLeaf> leaf = dynamic_pointer_cast<CSGLeaf>(csgnode)) {
-		if (type == OPENSCAD_UNION && this->currentproduct->intersections.size() > 0) {
+	if (auto leaf = dynamic_pointer_cast<CSGLeaf>(csgnode)) {
+		if (type == OpenSCADOperator::UNION && this->currentproduct->intersections.size() > 0) {
 			this->createProduct();
 		}
-		else if (type == OPENSCAD_DIFFERENCE) {
+		else if (type == OpenSCADOperator::DIFFERENCE) {
 			this->currentlist = &this->currentproduct->subtractions;
 		}
+		else if (type == OpenSCADOperator::INTERSECTION) {
+			this->currentlist = &this->currentproduct->intersections;
+		}
 		this->currentlist->push_back(CSGChainObject(leaf, newflags));
-	} else if (shared_ptr<CSGOperation> op = dynamic_pointer_cast<CSGOperation>(csgnode)) {
+	} else if (auto op = dynamic_pointer_cast<CSGOperation>(csgnode)) {
 		assert(op->left() && op->right());
 		import(op->left(), type, newflags);
 		import(op->right(), op->getType(), newflags);
@@ -209,7 +212,7 @@ BoundingBox CSGProduct::getBoundingBox() const
 	BoundingBox bbox;
 	for(const auto &csgobj : this->intersections) {
 		if (csgobj.leaf->geom) {
-			BoundingBox psbox = csgobj.leaf->geom->getBoundingBox();
+			auto psbox = csgobj.leaf->geom->getBoundingBox();
 			// FIXME: Should intersect rather than extend
 			if (!psbox.isEmpty()) bbox.extend(csgobj.leaf->matrix * psbox);
 		}

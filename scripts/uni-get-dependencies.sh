@@ -83,7 +83,7 @@ get_debian_deps()
   libeigen3-dev libcgal-dev libopencsg-dev libgmp3-dev libgmp-dev \
   imagemagick libfreetype6-dev \
   gtk-doc-tools libglib2.0-dev gettext xvfb pkg-config ragel
- apt-get -y install libXi-dev libfontconfig-dev
+ apt-get -y install libxi-dev libfontconfig-dev
 }
 
 get_debian_7_deps()
@@ -152,6 +152,12 @@ get_ubuntu_14_deps()
   get_debian_8_deps
 }
 
+get_arch_deps()
+{
+  pacman -S --noconfirm qt5 qscintilla-qt5 cgal gmp mpfr boost \
+    opencsg glew eigen glib2 fontconfig freetype2 harfbuzz bison flex make
+}
+
 get_ubuntu_16_deps()
 {
   apt-get -y install libxi-dev libxml2-dev libfontconfig1-dev
@@ -216,6 +222,8 @@ if [ -e /etc/issue ]; then
   get_mageia_deps
  elif [ "`grep -i qomo /etc/issue`" ]; then
   get_qomo_deps
+ elif [ "`grep -i arch /etc/issue`" ]; then
+   get_arch_deps
  elif [ -e /etc/fedora-release ]; then
   if [ "`grep -i fedora.release /etc/fedora-release`" ]; then
     get_fedora_deps_dnf
