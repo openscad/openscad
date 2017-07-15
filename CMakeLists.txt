@@ -313,10 +313,10 @@ set(OFFSCREEN_SOURCES
   src/OpenCSGRenderer.cc)
 
 set(GUI_SOURCES
-  src/MainWindow.cc
+  src/MainWindow.h
   src/OpenSCADApp.cc
   src/WindowManager.cc
-  src/AboutDialog.cc
+  src/AboutDialog.h
   src/Preferences.cc
   src/FontListDialog.cc
   src/FontListTableView.cc
