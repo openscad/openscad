@@ -336,6 +336,7 @@ set(GUI_SOURCES
   src/scintillaeditor.cpp
   src/launchingscreen.cc
   src/QWordSearchField.cc
+  src/QSettingsCached.cc
   src/comment.cpp
   src/parameter/ParameterWidget.cc
   src/parameter/groupwidget.cpp
