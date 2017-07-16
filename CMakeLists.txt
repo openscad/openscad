@@ -313,10 +313,9 @@ set(OFFSCREEN_SOURCES
   src/OpenCSGRenderer.cc)
 
 set(GUI_SOURCES
-  src/MainWindow.h
+  src/mainwin.cc
   src/OpenSCADApp.cc
   src/WindowManager.cc
-  src/AboutDialog.h
   src/Preferences.cc
   src/FontListDialog.cc
   src/FontListTableView.cc
@@ -350,6 +349,12 @@ set(GUI_SOURCES
   src/parameter/parametervirtualwidget.cpp
   )
 
+# header-only code
+set(GUI_HEADERS
+  src/AboutDialog.h
+  src/MainWindow.h
+  )
+
 if(NULLGL)
   message(STATUS "NULLGL is set. Overriding previous OpenGL(TM) settings")
   set(OFFSCREEN_SOURCES
@@ -373,7 +378,7 @@ set(Sources src/openscad.cc ${CORE_SOURCES} ${COMMON_SOURCES} ${CGAL_SOURCES} ${
 if(HEADLESS)
   add_definitions(-DOPENSCAD_NOGUI)
 else()
-  list(APPEND Sources ${GUI_SOURCES})
+  list(APPEND Sources ${GUI_SOURCES} ${GUI_HEADERS})
 endif()
 
 set(RESOURCE_FILES icons/OpenSCAD.icns)
