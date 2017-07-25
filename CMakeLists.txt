@@ -156,8 +156,10 @@ if(APPLE)
   find_library(COCOA_LIBRARY Cocoa)
   set(PLATFORM_LIBS ${COCOA_LIBRARY})
 elseif(UNIX)
-  message(STATUS "Offscreen OpenGL Context - using Unix GLX")
+  message(STATUS "Offscreen OpenGL Context - using Unix GLX on X11")
   set(PLATFORM_SOURCES src/OffscreenContextGLX.cc src/imageutils-lodepng.cc src/PlatformUtils-posix.cc)
+  find_library(X11_LIBRARY X11)
+  set(PLATFORM_LIBS ${X11_LIBRARY})
 elseif(WIN32)
   message(STATUS "Offscreen OpenGL Context - using Microsoft WGL")
   set(PLATFORM_SOURCES src/OffscreenContextWGL.cc src/imageutils-lodepng.cc src/PlatformUtils-win.cc)
@@ -313,10 +315,9 @@ set(OFFSCREEN_SOURCES
   src/OpenCSGRenderer.cc)
 
 set(GUI_SOURCES
-  src/MainWindow.cc
+  src/mainwin.cc
   src/OpenSCADApp.cc
   src/WindowManager.cc
-  src/AboutDialog.cc
   src/Preferences.cc
   src/FontListDialog.cc
   src/FontListTableView.cc
@@ -335,6 +336,7 @@ set(GUI_SOURCES
   src/scintillaeditor.cpp
   src/launchingscreen.cc
   src/QWordSearchField.cc
+  src/QSettingsCached.cc
   src/comment.cpp
   src/parameter/ParameterWidget.cc
   src/parameter/groupwidget.cpp
@@ -348,6 +350,12 @@ set(GUI_SOURCES
   src/parameter/parametertext.cpp
   src/parameter/parametervector.cpp
   src/parameter/parametervirtualwidget.cpp
+  )
+
+# header-only code
+set(GUI_HEADERS
+  src/AboutDialog.h
+  src/MainWindow.h
   )
 
 if(NULLGL)
@@ -373,7 +381,7 @@ set(Sources src/openscad.cc ${CORE_SOURCES} ${COMMON_SOURCES} ${CGAL_SOURCES} ${
 if(HEADLESS)
   add_definitions(-DOPENSCAD_NOGUI)
 else()
-  list(APPEND Sources ${GUI_SOURCES})
+  list(APPEND Sources ${GUI_SOURCES} ${GUI_HEADERS})
 endif()
 
 set(RESOURCE_FILES icons/OpenSCAD.icns)
