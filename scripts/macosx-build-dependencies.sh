@@ -649,12 +649,12 @@ build_gettext()
   echo "Building gettext $version..."
   cd "$BASEDIR"/src
   rm -rf "gettext-$version"
-  if [ ! -f "gettext-$version.tar.xz" ]; then
+  if [ ! -f "gettext-$version.tar.gz" ]; then
     curl --insecure -LO "http://ftpmirror.gnu.org/gettext/gettext-$version.tar.gz"
   fi
   tar xzf "gettext-$version.tar.gz"
   cd "gettext-$version"
-
+  patch -p1 < $OPENSCADDIR/patches/gettext.patch
   ./configure --with-included-glib --prefix="$DEPLOYDIR" CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN
   make -j$NUMCPU
   make install
