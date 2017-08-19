@@ -56,14 +56,29 @@ get_netbsd_deps()
 
 get_opensuse_deps()
 {
- zypper install libeigen3-devel mpfr-devel gmp-devel boost-devel \
-  libqt4-devel glew-devel cmake git bison flex cgal-devel curl \
-  glib2-devel gettext freetype-devel harfbuzz-devel libqscintilla-devel \
-  xvfb-run imagemagick opencsg-devel
-  echo if you are missing opencsg, please add the -graphics- repository
-  echo find your version from cat /etc/issue, then replace it below, then run
-  echo " zypper ar -f http://download.opensuse.org/repositories/graphics/openSUSE_13.2 graphics"
-  echo " zypper install opencsg-devel"
+ zypper install  mpfr-devel gmp-devel boost-devel \
+  glew-devel cmake git bison flex cgal-devel curl \
+  glib2-devel gettext freetype-devel harfbuzz-devel  \
+  libqscintilla-qt5-devel libqt5-qtbase-devel libQt5OpenGL-devel \
+  xvfb-run libzip-devel
+ zypper install libeigen3-devel
+ if [ $? -ne 0 ]; then
+  zypper install libeigen3
+ fi
+ zypper install ImageMagick
+ if [ $? -ne 0 ]; then
+  zypper install imagemagick
+ fi
+ zypper install opencsg-devel
+ if [ $? -ne 0 ]; then
+  pver=`cat /etc/os-release | grep -i pretty_name | sed s/PRETTY_NAME=//g`
+  pver=`echo $pver | sed s/\"//g | sed s/\ /_/g `
+  echo attempting to add graphics repository for opencsg...
+  set +x
+  zypper ar -f http://download.opensuse.org/repositories/graphics/$pver graphics
+  zypper install opencsg-devel
+  set -x
+ fi
 }
 
 get_mageia_deps()
