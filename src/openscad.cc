@@ -64,6 +64,7 @@
 
 #include "Camera.h"
 #include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/split.hpp>
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 
@@ -318,7 +319,7 @@ void set_render_color_scheme(const std::string color_scheme, const bool exit_if_
 
 #include <QCoreApplication>
 
-int cmdline(const char *deps_output_file, const std::string &filename, Camera &camera, const char *output_file, const fs::path &original_path, RenderType renderer,const std::string &parameterFile,const std::string &setName, int argc, char ** argv )
+int cmdline(const char *deps_output_file, const std::string &filename, Camera &camera, const char *output_file, const fs::path &original_path, RenderType renderer,const std::string &parameterFile,const std::string &setName, ViewOptions& viewOptions, int argc, char ** argv )
 {
 #ifdef OPENSCAD_QTGUI
 	QCoreApplication app(argc, argv);
@@ -550,11 +551,10 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 			}
 			else {
 				if (renderer == RenderType::CGAL || renderer == RenderType::GEOMETRY) {
-					success = export_png(root_geom, camera, fstream);
-				} else if (renderer == RenderType::THROWNTOGETHER) {
-					success = export_png_with_throwntogether(tree, camera, fstream);
+					success = export_png(root_geom, camera, viewOptions, fstream);
 				} else {
-					success = export_png_with_opencsg(tree, camera, fstream);
+					viewOptions.previewer = (renderer == RenderType::THROWNTOGETHER) ? Previewer::THROWNTOGETHER : Previewer::OPENCSG;
+					success = export_preview_png(tree, camera, viewOptions, fstream);
 				}
 				fstream.close();
 			}
@@ -794,6 +794,21 @@ std::pair<string, string> customSyntax(const string& s)
 	return {};
 }
 
+/*!
+	This makes boost::program_option parse comma-separated values
+ */
+struct CommaSeparatedVector
+{
+	std::vector<std::string> values;
+
+	friend std::istream &operator>>(std::istream &in, CommaSeparatedVector &value) {
+		std::string token;
+		in >> token;
+		boost::split(value.values, token, boost::is_any_of(","));
+		return in;
+	}
+};
+
 int main(int argc, char **argv)
 {
 	int rc = 0;
@@ -825,6 +840,7 @@ int main(int argc, char **argv)
 		("info", "print information about the building process")
 		("render", po::value<string>()->implicit_value(""), "if exporting a png image, do a full geometry evaluation")
 		("preview", po::value<string>()->implicit_value(""), "if exporting a png image, do an OpenCSG(default) or ThrownTogether preview")
+		("view", po::value<CommaSeparatedVector>()->value_name("axes|scalemarkers"), "view options")
 		("csglimit", po::value<unsigned int>(), "if exporting a png image, stop rendering at the given number of CSG elements")
 		("camera", po::value<string>(), "parameters for camera when exporting png")
 		("autocenter", "adjust camera to look at object center")
@@ -889,6 +905,17 @@ int main(int argc, char **argv)
 	else if (vm.count("render")) {
 		if (vm["render"].as<string>() == "cgal") renderer = RenderType::CGAL;
 		else renderer = RenderType::GEOMETRY;
+	}
+
+	ViewOptions viewOptions{};
+	if (vm.count("view")) {
+		const auto &viewOptionValues = vm["view"].as<CommaSeparatedVector>();
+		std::cout << "View options:\n";
+		for (const auto &option : viewOptionValues.values) {
+			if (option == "axes") viewOptions.showAxes = true;
+			else if (option == "scaleMarkers") viewOptions.showScaleMarkers = true;
+			std::cout << option << "\n";
+		}
 	}
 
 	if (vm.count("csglimit")) {
@@ -982,7 +1009,7 @@ int main(int argc, char **argv)
 
 	if (arg_info || cmdlinemode) {
 		if (inputFiles.size() > 1) help(argv[0], true);
-		rc = cmdline(deps_output_file, inputFiles[0], camera, output_file, original_path, renderer, parameterFile, parameterSet, argc, argv);
+		rc = cmdline(deps_output_file, inputFiles[0], camera, output_file, original_path, renderer, parameterFile, parameterSet, viewOptions, argc, argv);
 	}
 	else if (QtUseGUI()) {
 		rc = gui(inputFiles, original_path, argc, argv);

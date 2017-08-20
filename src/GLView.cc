@@ -163,16 +163,13 @@ void GLView::paintGL()
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
   setupCamera();
-  if (this->cam.type == Camera::CameraType::GIMBAL) {
-    // Only for GIMBAL cam
-    // The crosshair should be fixed at the center of the viewport...
-    if (showcrosshairs) GLView::showCrosshairs();
-    glTranslated(cam.object_trans.x(), cam.object_trans.y(), cam.object_trans.z());
-    // ...the axis lines need to follow the object translation.
-    if (showaxes) GLView::showAxes(axescolor);
-    // mark the scale along the axis lines
-    if (showaxes && showscale) GLView::showScalemarkers(axescolor);
-  }
+	// The crosshair should be fixed at the center of the viewport...
+	if (showcrosshairs) GLView::showCrosshairs();
+	glTranslated(cam.object_trans.x(), cam.object_trans.y(), cam.object_trans.z());
+	// ...the axis lines need to follow the object translation.
+	if (showaxes) GLView::showAxes(axescolor);
+	// mark the scale along the axis lines
+	if (showaxes && showscale) GLView::showScalemarkers(axescolor);
 
   glEnable(GL_LIGHTING);
   glDepthFunc(GL_LESS);
@@ -189,7 +186,6 @@ void GLView::paintGL()
     this->renderer->draw(showfaces, showedges);
   }
 
-  // Only for GIMBAL
   glDisable(GL_LIGHTING);
   if (showaxes) GLView::showSmallaxes(axescolor);
 }
