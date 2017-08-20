@@ -41,14 +41,10 @@ public:
 	void setShowFaces(bool enabled) { this->showfaces = enabled; }
 	bool showEdges() const { return this->showedges; }
 	void setShowEdges(bool enabled) { this->showedges = enabled; }
-	bool showAxes() const { return this->showaxes; }
-	void setShowAxes(bool enabled) { this->showaxes = enabled; }
 	bool showCrosshairs() const { return this->showcrosshairs; }
 	void setShowCrosshairs(bool enabled) { this->showcrosshairs = enabled; }
 	bool orthoMode() const { return (this->cam.projection == Camera::ProjectionType::ORTHOGONAL); }
 	void setOrthoMode(bool enabled);
-	bool showScaleProportional() const { return this->showscale; }
-	void setShowScaleProportional(bool enabled) { this->showscale = enabled; }
 	std::string getRendererInfo() const;
 #if QT_VERSION >= 0x050100
 	float getDPI() { return this->devicePixelRatio(); }
