@@ -43,6 +43,11 @@ public:
 	void setColorScheme(const std::string &cs);
 	void updateColorScheme();
 
+	bool showAxes() const { return this->showaxes; }
+	void setShowAxes(bool enabled) { this->showaxes = enabled; }
+	bool showScaleProportional() const { return this->showscale; }
+	void setShowScaleProportional(bool enabled) { this->showscale = enabled; }
+	
 	virtual bool save(const char *filename) = 0;
 	virtual std::string getRendererInfo() const = 0;
 	virtual float getDPI() { return 1.0f; }
