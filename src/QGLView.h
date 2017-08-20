@@ -41,8 +41,6 @@ public:
 	void setShowFaces(bool enabled) { this->showfaces = enabled; }
 	bool showEdges() const { return this->showedges; }
 	void setShowEdges(bool enabled) { this->showedges = enabled; }
-	bool showAxes() const { return this->showaxes; }
-	void setShowAxes(bool enabled) { this->showaxes = enabled; }
 	bool showCrosshairs() const { return this->showcrosshairs; }
 	void setShowCrosshairs(bool enabled) { this->showcrosshairs = enabled; }
 	bool orthoMode() const { return (this->cam.projection == Camera::ProjectionType::ORTHOGONAL); }

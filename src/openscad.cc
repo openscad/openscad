@@ -64,6 +64,7 @@
 
 #include "Camera.h"
 #include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/split.hpp>
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 
@@ -80,7 +81,6 @@
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
-enum class RenderType { GEOMETRY, CGAL, OPENCSG, THROWNTOGETHER };
 using std::string;
 using std::vector;
 using boost::lexical_cast;
@@ -293,7 +293,7 @@ void set_render_color_scheme(const std::string color_scheme, const bool exit_if_
 	}
 }
 
-int cmdline(const char *deps_output_file, const std::string &filename, Camera &camera, const char *output_file, const fs::path &original_path, RenderType renderer,const std::string &parameterFile,const std::string &setName)
+int cmdline(const char *deps_output_file, const std::string &filename, const char *output_file, const fs::path &original_path, const std::string &parameterFile, const std::string &setName, const ViewOptions& viewOptions)
 {
 	parser_init();
 	localization_init();
@@ -343,7 +343,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 
 	// Top context - this context only holds builtins
 	BuiltinContext top_ctx;
-	bool preview = png_output_file ? (renderer==RenderType::OPENCSG || renderer==RenderType::THROWNTOGETHER) : false;
+	const bool preview = png_output_file ? (viewOptions.renderer == RenderType::OPENCSG || viewOptions.renderer == RenderType::THROWNTOGETHER) : false;
 	top_ctx.set_variable("$preview", ValuePtr(preview));
 #ifdef DEBUG
 	PRINTDB("BuiltinContext:\n%s", top_ctx.dump(nullptr, nullptr));
@@ -458,14 +458,13 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	}
 	else {
 #ifdef ENABLE_CGAL
-		if ((echo_output_file || png_output_file) &&
-				(renderer == RenderType::OPENCSG || renderer == RenderType::THROWNTOGETHER)) {
+		if ((echo_output_file || png_output_file) && (viewOptions.renderer == RenderType::OPENCSG || viewOptions.renderer == RenderType::THROWNTOGETHER)) {
 			// echo or OpenCSG png -> don't necessarily need geometry evaluation
 		} else {
 			// Force creation of CGAL objects (for testing)
 			root_geom = geomevaluator.evaluateGeometry(*tree.root(), true);
 			if (!root_geom) root_geom.reset(new CGAL_Nef_polyhedron());
-			if (renderer == RenderType::CGAL && root_geom->getDimension() == 3) {
+			if (viewOptions.renderer == RenderType::CGAL && root_geom->getDimension() == 3) {
 				auto N = dynamic_cast<const CGAL_Nef_polyhedron*>(root_geom.get());
 				if (!N) {
 					N = CGALUtils::createNefPolyhedronFromGeometry(*root_geom);
@@ -515,12 +514,10 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 				success = false;
 			}
 			else {
-				if (renderer == RenderType::CGAL || renderer == RenderType::GEOMETRY) {
-					success = export_png(root_geom, camera, fstream);
-				} else if (renderer == RenderType::THROWNTOGETHER) {
-					success = export_png_with_throwntogether(tree, camera, fstream);
+				if (viewOptions.renderer == RenderType::CGAL || viewOptions.renderer == RenderType::GEOMETRY) {
+					success = export_png(root_geom, viewOptions, fstream);
 				} else {
-					success = export_png_with_opencsg(tree, camera, fstream);
+					success = export_preview_png(tree, viewOptions, fstream);
 				}
 				fstream.close();
 			}
@@ -824,6 +821,20 @@ std::pair<string, string> customSyntax(const string&)
 
 	return {};
 }
+/*!
+	This makes boost::program_option parse comma-separated values
+ */
+struct CommaSeparatedVector
+{
+	std::vector<std::string> values;
+
+	friend std::istream &operator>>(std::istream &in, CommaSeparatedVector &value) {
+		std::string token;
+		in >> token;
+		boost::split(value.values, token, boost::is_any_of(","));
+		return in;
+	}
+};
 
 int main(int argc, char **argv)
 {
@@ -895,6 +906,7 @@ int main(int argc, char **argv)
 		("imgsize", po::value<string>(), "=width,height of exported png")
 		("render", po::value<string>()->implicit_value(""), "for full geometry evaluation when exporting png")
 		("preview", po::value<string>()->implicit_value(""), "[=throwntogether] -for ThrownTogether preview png")
+		("view", po::value<CommaSeparatedVector>()->value_name("axes|scaleMarkers|showEdges"), "view options")
 		("projection", po::value<string>(), "=(o)rtho or (p)erspective when exporting png")
 		("csglimit", po::value<unsigned int>(), "=n -stop rendering at n CSG elements when exporting png")
 		("colorscheme", po::value<string>(), ("=colorscheme: " + colorSchemeNames + "\n").c_str())
@@ -941,14 +953,24 @@ int main(int argc, char **argv)
 	if (vm.count("version")) version();
 	if (vm.count("info")) arg_info = true;
 
-	auto renderer = RenderType::OPENCSG;
+	ViewOptions viewOptions{};
 	if (vm.count("preview")) {
 		if (vm["preview"].as<string>() == "throwntogether")
-			renderer = RenderType::THROWNTOGETHER;
+			viewOptions.renderer = RenderType::THROWNTOGETHER;
 	}
 	else if (vm.count("render")) {
-		if (vm["render"].as<string>() == "cgal") renderer = RenderType::CGAL;
-		else renderer = RenderType::GEOMETRY;
+		if (vm["render"].as<string>() == "cgal") viewOptions.renderer = RenderType::CGAL;
+		else viewOptions.renderer = RenderType::GEOMETRY;
+	}
+
+        viewOptions.previewer = (viewOptions.renderer == RenderType::THROWNTOGETHER) ? Previewer::THROWNTOGETHER : Previewer::OPENCSG;
+	if (vm.count("view")) {
+		const auto &viewOptionValues = vm["view"].as<CommaSeparatedVector>();
+		for (const auto &option : viewOptionValues.values) {
+			if (option == "axes") viewOptions.showAxes = true;
+			else if (option == "scaleMarkers") viewOptions.showScaleMarkers = true;
+			else if (option == "showEdges") viewOptions.showEdges = true;
+		}
 	}
 
 	if (vm.count("csglimit")) {
@@ -1028,7 +1050,7 @@ int main(int argc, char **argv)
 
 	currentdir = fs::current_path().generic_string();
 
-	Camera camera = get_camera(vm);
+	viewOptions.camera = get_camera(vm);
 
 	auto cmdlinemode = false;
 	if (output_file) { // cmd-line mode
@@ -1038,7 +1060,7 @@ int main(int argc, char **argv)
 
 	if (arg_info || cmdlinemode) {
 		if (inputFiles.size() > 1) help(argv[0], desc, true);
-		rc = cmdline(deps_output_file, inputFiles[0], camera, output_file, original_path, renderer, parameterFile, parameterSet);
+		rc = cmdline(deps_output_file, inputFiles[0], output_file, original_path, parameterFile, parameterSet, viewOptions);
 	}
 	else if (QtUseGUI()) {
 		rc = gui(inputFiles, original_path, argc, argv);
