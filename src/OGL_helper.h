@@ -26,8 +26,6 @@
 #include <CGAL/Nef_3/SNC_decorator.h>
 #include "system-gl.h"
 #include <cstdlib>
-#include <QScreen>
-#include <QGuiApplication>
 
 // Overridden in CGAL_renderer
 /*
@@ -363,11 +361,6 @@ namespace OGL {
     void set_style(int index) {
       style = index;
     }
-    
-    qreal get_dpi() const {
-      QScreen *screen = QGuiApplication::primaryScreen();
-      return screen->devicePixelRatio();
-    }
 
     bool is_initialized() const { return init_; }
 
@@ -390,7 +383,8 @@ namespace OGL {
       PRINTD("draw( Vertex_iterator )");
       //      CGAL_NEF_TRACEN("drawing vertex "<<*v);
       CGAL::Color c = getVertexColor(v);
-      glPointSize(3*get_dpi());
+      glPointSize(10);
+      //glPointSize(1);
       glColor3ub(c.red(), c.green(), c.blue());
       glBegin(GL_POINTS);
       glVertex3d(v->x(),v->y(),v->z());
@@ -419,7 +413,8 @@ namespace OGL {
       //      CGAL_NEF_TRACEN("drawing edge "<<*e);
       Double_point p = e->source(), q = e->target();
       CGAL::Color c = getEdgeColor(e);
-      glLineWidth(get_dpi());
+      glLineWidth(5);
+      //glLineWidth(1);
       glColor3ub(c.red(),c.green(),c.blue());
       glBegin(GL_LINE_STRIP);
       glVertex3d(p.x(), p.y(), p.z());
