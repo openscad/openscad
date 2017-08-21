@@ -27,7 +27,7 @@
 #include "system-gl.h"
 #include <cstdlib>
 #include <QScreen>
-#include <QApplication>
+#include <QGuiApplication>
 
 // Overridden in CGAL_renderer
 /*
@@ -365,12 +365,8 @@ namespace OGL {
     }
     
     qreal get_dpi() const {
-      #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-        QScreen *screen = QGuiApplication::primaryScreen();
-        return screen->devicePixelRatio();
-      #else
-        return 1;
-      #endif
+      QScreen *screen = QGuiApplication::primaryScreen();
+      return screen->devicePixelRatio();
     }
 
     bool is_initialized() const { return init_; }
