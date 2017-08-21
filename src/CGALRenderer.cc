@@ -44,6 +44,7 @@
 
 CGALRenderer::CGALRenderer(shared_ptr<const class Geometry> geom)
 {
+	this->dpi = 1;
 	if (auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
 		assert(ps->getDimension() == 3);
 		// We need to tessellate here, in case the generated PolySet contains concave polygons
@@ -66,6 +67,11 @@ CGALRenderer::CGALRenderer(shared_ptr<const class Geometry> geom)
 
 CGALRenderer::~CGALRenderer()
 {
+}
+
+void CGALRenderer::setDPI(float dpi)
+{
+	this->dpi = dpi;
 }
 
 shared_ptr<class CGAL_OGL_Polyhedron> CGALRenderer::getPolyhedron() const

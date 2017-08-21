@@ -11,6 +11,7 @@ public:
 	virtual void draw(bool showfaces, bool showedges) const;
 	virtual void setColorScheme(const ColorScheme &cs);
 	virtual BoundingBox getBoundingBox() const;
+	void setDPI(float dpi);
 
 private:
 	shared_ptr<class CGAL_OGL_Polyhedron> getPolyhedron() const;
@@ -19,4 +20,5 @@ private:
 	mutable shared_ptr<class CGAL_OGL_Polyhedron> polyhedron;
 	shared_ptr<const CGAL_Nef_polyhedron> N;
 	shared_ptr<const class PolySet> polyset;
+	float dpi;
 };
