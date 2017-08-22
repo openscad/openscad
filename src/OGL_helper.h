@@ -286,6 +286,8 @@ namespace OGL {
 
     int style;
     std::vector<bool> switches;
+    
+    float dpi;
 
     typedef std::list<DPoint>::const_iterator   Vertex_iterator;
     typedef std::list<DSegment>::const_iterator Edge_iterator;
@@ -297,6 +299,7 @@ namespace OGL {
       init_ = false;
       style = SNC_BOUNDARY;
       switches[SNC_AXES] = false; 
+      dpi = 1;
     }
 
     /*
@@ -420,6 +423,10 @@ namespace OGL {
       glVertex3d(p.x(), p.y(), p.z());
       glVertex3d(q.x(), q.y(), q.z());
       glEnd();
+    }
+
+    void set_dpi(float dpi) {
+      this->dpi = dpi;
     }
 
 
