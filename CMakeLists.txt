@@ -92,7 +92,9 @@ if(NOT HEADLESS)
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
   endif()
 
-  add_definitions(-DUSE_QOPENGLWIDGET)
+  if ("${Qt5_VERSION}" VERSION_GREATER_EQUAL "5.4")
+    add_definitions(-DUSE_QOPENGLWIDGET)
+  endif()
 
   find_package(Qt5QScintilla 2.8.0 REQUIRED QUIET)
   message(STATUS "QScintilla: ${QT5QSCINTILLA_VERSION_STRING}")
