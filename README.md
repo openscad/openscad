@@ -144,17 +144,17 @@ Prerequisites:
 
 Install Dependencies:
 
-After building dependencies, follow the instructions in the *Compilation* section.
+After building dependencies using one of the following three options, follow the instructions in the *Compilation* section.
 
 1. **From source**
 
-Run the script that sets up the environment variables:
+    Run the script that sets up the environment variables:
 
-    source setenv_mac.sh
+        source setenv_mac.sh
 
-Then run the script to compile all the dependencies:
+    Then run the script to compile all the dependencies:
 
-    ./scripts/macosx-build-dependencies.sh
+        ./scripts/macosx-build-dependencies.sh
 
 1. **Homebrew** (assumes [Homebrew](http://brew.sh) is already installed)
 

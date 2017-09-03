@@ -50,3 +50,4 @@ src/*.org
 src/*.old
 src/*.debug
 /Testing
+.DS_Store
