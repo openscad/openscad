@@ -50,6 +50,7 @@ set(CMAKE_PREFIX_PATH "$ENV{OPENSCAD_LIBRARIES}")
 find_package(Eigen3 REQUIRED QUIET)
 message(STATUS "Eigen3: ${EIGEN3_VERSION_STRING}")
 include_directories(${EIGEN3_INCLUDE_DIRS})
+add_definitions(-DEIGEN_DONT_ALIGN)
 
 find_package(Boost 1.36 REQUIRED COMPONENTS filesystem system thread regex program_options QUIET)
 message(STATUS "Boost: ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
