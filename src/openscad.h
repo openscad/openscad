@@ -46,3 +46,5 @@ extern std::string openscad_versionnumber;
 extern std::string openscad_displayversionnumber;
 // Version used for detailed display
 extern std::string openscad_detailedversionnumber;
+// Custom argument parser
+std::pair<std::string, std::string> customSyntax(const std::string& s);
