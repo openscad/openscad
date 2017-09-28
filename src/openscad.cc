@@ -146,8 +146,8 @@ static void help(const char *progname, bool failure = false)
          "%2%[ --imgsize=width,height ] [ --projection=(o)rtho|(p)ersp] \\\n"
          "%2%[ --render | --preview[=throwntogether] ] \\\n"
          "%2%[ --colorscheme=[Cornfield|Sunset|Metallic|Starnight|BeforeDawn|Nature|DeepOcean|LineArt] ] \\\n"
-		 "%2%[ --csglimit=num ]"
-		 "%2%[ --showedges ]"
+		 "%2%[ --csglimit=num ] \\\n"
+		 "%2%[ --showedges ] \\\n"
 #ifdef ENABLE_EXPERIMENTAL
          " [ --enable=<feature> ] \\\n"
          "%2%[ -p <Parameter Filename>] [-P <Parameter Set>] "
