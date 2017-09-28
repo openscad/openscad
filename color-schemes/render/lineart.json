@@ -1,0 +1,19 @@
+{
+    "name" : "LineArt",
+    "index" : 1550,
+    "show-in-gui" : true,
+
+    "colors" : {
+        "background" :         "#ffffff",
+        "axes-color" :         "#191816",
+        "opencsg-face-front" : "#ffffff",
+        "opencsg-face-back" :  "#a2a0a0",
+        "cgal-face-front" :    "#ffffff",
+        "cgal-face-back" :     "#a2a0a0",
+        "cgal-face-2d" :       "#6c71c4",
+        "cgal-edge-front" :    "#000000",
+        "cgal-edge-back" :     "#000000",
+        "cgal-edge-2d" :       "#000000",
+        "crosshair" :          "#800000"
+    }
+}

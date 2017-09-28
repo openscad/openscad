@@ -145,8 +145,9 @@ static void help(const char *progname, bool failure = false)
          "%2%[ --viewall ] \\\n"
          "%2%[ --imgsize=width,height ] [ --projection=(o)rtho|(p)ersp] \\\n"
          "%2%[ --render | --preview[=throwntogether] ] \\\n"
-         "%2%[ --colorscheme=[Cornfield|Sunset|Metallic|Starnight|BeforeDawn|Nature|DeepOcean] ] \\\n"
-         "%2%[ --csglimit=num ]"
+         "%2%[ --colorscheme=[Cornfield|Sunset|Metallic|Starnight|BeforeDawn|Nature|DeepOcean|LineArt] ] \\\n"
+		 "%2%[ --csglimit=num ] \\\n"
+		 "%2%[ --showedges ] \\\n"
 #ifdef ENABLE_EXPERIMENTAL
          " [ --enable=<feature> ] \\\n"
          "%2%[ -p <Parameter Filename>] [-P <Parameter Set>] "
@@ -318,7 +319,7 @@ void set_render_color_scheme(const std::string color_scheme, const bool exit_if_
 
 #include <QCoreApplication>
 
-int cmdline(const char *deps_output_file, const std::string &filename, Camera &camera, const char *output_file, const fs::path &original_path, RenderType renderer,const std::string &parameterFile,const std::string &setName, int argc, char ** argv )
+int cmdline(const char *deps_output_file, const std::string &filename, Camera &camera, const char *output_file, const fs::path &original_path, RenderType renderer,const std::string &parameterFile,const std::string &setName, bool show_edges, int argc, char ** argv )
 {
 #ifdef OPENSCAD_QTGUI
 	QCoreApplication app(argc, argv);
@@ -550,7 +551,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 			}
 			else {
 				if (renderer == RenderType::CGAL || renderer == RenderType::GEOMETRY) {
-					success = export_png(root_geom, camera, fstream);
+					success = export_png(root_geom, camera, fstream, show_edges);
 				} else if (renderer == RenderType::THROWNTOGETHER) {
 					success = export_png_with_throwntogether(tree, camera, fstream);
 				} else {
@@ -832,6 +833,7 @@ int main(int argc, char **argv)
 		("imgsize", po::value<string>(), "=width,height for exporting png")
 		("projection", po::value<string>(), "(o)rtho or (p)erspective when exporting png")
 		("colorscheme", po::value<string>(), "colorscheme")
+		("showedges", po::value<string>()->implicit_value(""), "Show edges if using CGAL renderer")
 		("debug", po::value<string>(), "special debug info")
 		("quiet,q", "quiet mode (don't print anything *except* errors)")
 		("o,o", po::value<string>(), "out-file")
@@ -880,6 +882,9 @@ int main(int argc, char **argv)
 	if (vm.count("help")) help(argv[0]);
 	if (vm.count("version")) version();
 	if (vm.count("info")) arg_info = true;
+
+	static bool show_edges = false;
+	if (vm.count("showedges")) show_edges = true;
 
 	auto renderer = RenderType::OPENCSG;
 	if (vm.count("preview")) {
@@ -982,7 +987,7 @@ int main(int argc, char **argv)
 
 	if (arg_info || cmdlinemode) {
 		if (inputFiles.size() > 1) help(argv[0], true);
-		rc = cmdline(deps_output_file, inputFiles[0], camera, output_file, original_path, renderer, parameterFile, parameterSet, argc, argv);
+		rc = cmdline(deps_output_file, inputFiles[0], camera, output_file, original_path, renderer, parameterFile, parameterSet, show_edges, argc, argv);
 	}
 	else if (QtUseGUI()) {
 		rc = gui(inputFiles, original_path, argc, argv);

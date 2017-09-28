@@ -19,7 +19,7 @@ static void setupCamera(Camera &cam, const BoundingBox &bbox)
 	if (cam.viewall) cam.viewAll(bbox);
 }
 
-bool export_png(const shared_ptr<const Geometry> &root_geom, Camera &cam, std::ostream &output)
+bool export_png(const shared_ptr<const Geometry> &root_geom, Camera &cam, std::ostream &output, bool &show_edges)
 {
 	PRINTD("export_png geom");
 	OffscreenView *glview;
@@ -33,9 +33,9 @@ bool export_png(const shared_ptr<const Geometry> &root_geom, Camera &cam, std::o
 
 	BoundingBox bbox = cgalRenderer.getBoundingBox();
 	setupCamera(cam, bbox);
-
 	glview->setCamera(cam);
 	glview->setRenderer(&cgalRenderer);
+	glview->showedges = show_edges;
 	glview->setColorScheme(RenderSettings::inst()->colorscheme);
 	glview->paintGL();
 	glview->save(output);
