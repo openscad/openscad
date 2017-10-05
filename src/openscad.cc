@@ -147,7 +147,8 @@ static void help(const char *progname, bool failure = false)
          "%2%[ --imgsize=width,height ] [ --projection=(o)rtho|(p)ersp] \\\n"
          "%2%[ --render | --preview[=throwntogether] ] \\\n"
          "%2%[ --colorscheme=[Cornfield|Sunset|Metallic|Starnight|BeforeDawn|Nature|DeepOcean] ] \\\n"
-         "%2%[ --csglimit=num ]"
+         "%2%[ --csglimit=num ] \\\n"
+         "%2%[ --view=[axes,showEdges,scaleMarkers] ] \\\n"
 #ifdef ENABLE_EXPERIMENTAL
          " [ --enable=<feature> ] \\\n"
          "%2%[ -p <Parameter Filename>] [-P <Parameter Set>] "
@@ -839,7 +840,7 @@ int main(int argc, char **argv)
 		("info", "print information about the building process")
 		("render", po::value<string>()->implicit_value(""), "if exporting a png image, do a full geometry evaluation")
 		("preview", po::value<string>()->implicit_value(""), "if exporting a png image, do an OpenCSG(default) or ThrownTogether preview")
-		("view", po::value<CommaSeparatedVector>()->value_name("axes|scalemarkers"), "view options")
+		("view", po::value<CommaSeparatedVector>()->value_name("axes|scaleMarkers|showEdges"), "view options")
 		("csglimit", po::value<unsigned int>(), "if exporting a png image, stop rendering at the given number of CSG elements")
 		("camera", po::value<string>(), "parameters for camera when exporting png")
 		("autocenter", "adjust camera to look at object center")
@@ -913,6 +914,7 @@ int main(int argc, char **argv)
 		for (const auto &option : viewOptionValues.values) {
 			if (option == "axes") viewOptions.showAxes = true;
 			else if (option == "scaleMarkers") viewOptions.showScaleMarkers = true;
+			else if (option == "showEdges") viewOptions.showEdges = true;
 			std::cout << option << "\n";
 		}
 	}
