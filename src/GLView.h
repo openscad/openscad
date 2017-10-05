@@ -47,7 +47,9 @@ public:
 	void setShowAxes(bool enabled) { this->showaxes = enabled; }
 	bool showScaleProportional() const { return this->showscale; }
 	void setShowScaleProportional(bool enabled) { this->showscale = enabled; }
-	
+	bool showEdges() const { return this->showedges; }
+	void setShowEdges(bool enabled) { this->showedges = enabled; }
+
 	virtual bool save(const char *filename) = 0;
 	virtual std::string getRendererInfo() const = 0;
 	virtual float getDPI() { return 1.0f; }
