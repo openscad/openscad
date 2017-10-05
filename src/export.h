@@ -34,6 +34,7 @@ struct ViewOptions {
 	bool showAxes;
 	bool showScaleMarkers;
 	bool showEdges;
+
 	Previewer previewer{Previewer::OPENCSG};
 };
 
