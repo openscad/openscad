@@ -39,6 +39,7 @@ bool export_png(const shared_ptr<const Geometry> &root_geom, Camera &cam, const 
 	glview->setColorScheme(RenderSettings::inst()->colorscheme);
 	glview->setShowAxes(options.showAxes);
 	glview->setShowScaleProportional(options.showScaleMarkers);
+	glview->setShowEdges(options.showEdges);
 	glview->paintGL();
 	glview->save(output);
 	return true;
@@ -91,6 +92,7 @@ bool export_preview_png(Tree &tree, Camera &cam, const ViewOptions& options, std
 	glview->setColorScheme(RenderSettings::inst()->colorscheme);
 	glview->setShowAxes(options.showAxes);
 	glview->setShowScaleProportional(options.showScaleMarkers);
+	glview->setShowEdges(options.showEdges);
 	glview->paintGL();
 	glview->save(output);
 	return true;
