@@ -785,6 +785,21 @@ int gui(const vector<string> &inputFiles, const fs::path &original_path, int arg
 }
 #endif // OPENSCAD_QTGUI
 
+/*!
+	This makes boost::program_option parse comma-separated values
+ */
+struct CommaSeparatedVector
+{
+	std::vector<std::string> values;
+
+	friend std::istream &operator>>(std::istream &in, CommaSeparatedVector &value) {
+		std::string token;
+		in >> token;
+		boost::split(value.values, token, boost::is_any_of(","));
+		return in;
+	}
+};
+
 std::pair<string, string> customSyntax(const string& s)
 {
 #if defined(Q_OS_MACX)
