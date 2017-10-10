@@ -799,6 +799,16 @@ struct CommaSeparatedVector
 	}
 };
 
+std::pair<string, string> customSyntax(const string& s)
+{
+#if defined(Q_OS_MACX)
+	if (s.find("-psn_") == 0)
+		return {"psn", s.substr(5)};
+#endif
+
+	return {};
+}
+
 int main(int argc, char **argv)
 {
 	int rc = 0;
@@ -848,6 +858,9 @@ int main(int argc, char **argv)
 		("d,d", po::value<string>(), "deps-file")
 		("m,m", po::value<string>(), "makefile")
 		("D,D", po::value<vector<string>>(), "var=val")
+#ifdef Q_OS_MACX
+		("psn", po::value<string>(), "process serial number")
+#endif
 #ifdef ENABLE_EXPERIMENTAL
 		("enable", po::value<vector<string>>(), "enable experimental features")
 #endif
@@ -865,7 +878,7 @@ int main(int argc, char **argv)
 
 	po::variables_map vm;
 	try {
-		po::store(po::command_line_parser(argc, argv).options(all_options).allow_unregistered().positional(p).run(), vm);
+		po::store(po::command_line_parser(argc, argv).options(all_options).allow_unregistered().positional(p).extra_parser(customSyntax).run(), vm);
 	}
 	catch(const std::exception &e) { // Catches e.g. unknown options
 		PRINTB("%s\n", e.what());

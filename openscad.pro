@@ -19,7 +19,7 @@
 # Please see the 'Building' sections of the OpenSCAD user manual 
 # for updated tips & workarounds.
 #
-# http://en.wikibooks.org/wiki/OpenSCAD_User_Manual
+# https://en.wikibooks.org/wiki/OpenSCAD_User_Manual
 
 !experimental {
   message("If you're building a development binary, consider adding CONFIG+=experimental")

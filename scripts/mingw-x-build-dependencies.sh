@@ -20,6 +20,10 @@
 #
 # Also see http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Cross-compiling_for_Windows_on_Linux_or_Mac_OS_X
 #
+# Also note due to https://github.com/openscad/openscad/pull/2030 we
+# are using the experimental .posix version of the mxe build. This lets
+# us work with std::mutex in CGAL, as well as DrCodeWizzards Qsettings mutex
+#
 # Notes:
 #
 # Originally this was based on Tony Theodore's branch of MXE, which is now
@@ -30,10 +34,10 @@
 # MXE allows 4 separate targets with the MXE_TARGETS environment variable.
 # As of 2015 shared are not guaranteed to work.
 #
-# 64 bit static linked libraries MXE_TARGETS=x86_64-w64-mingw32.static
-# 32 bit static linked libraries MXE_TARGETS=i686-w64-mingw32.static
-# 64 bit shared libraries        MXE_TARGETS=x86_64-w64-mingw32.shared
-# 32 bit shared libraries        MXE_TARGETS=i686-w64-mingw32.shared
+# 64 bit static linked libraries MXE_TARGETS=x86_64-w64-mingw32.static.posix
+# 32 bit static linked libraries MXE_TARGETS=i686-w64-mingw32.static.posix
+# 64 bit shared libraries        MXE_TARGETS=x86_64-w64-mingw32.shared.posix
+# 32 bit shared libraries        MXE_TARGETS=i686-w64-mingw32.shared.posix
 #
 
 OPENSCADDIR=$PWD
@@ -74,14 +78,14 @@ cd $MXEDIR
 echo 'checkout openscad-snapshot-build branch'
 git checkout openscad-snapshot-build
 if [ "`echo $* | grep 64`" ]; then
- MXE_TARGETS='x86_64-w64-mingw32.static'
+ MXE_TARGETS='x86_64-w64-mingw32.static.posix'
  if [ "`echo $* | grep download`" ]; then
   PACKAGES='download-mpfr download-eigen download-opencsg download-cgal download-qtbase download-glib download-libxml2 download-freetype download-fontconfig download-harfbuzz'
  else
   PACKAGES='qtbase qscintilla2 mpfr eigen opencsg cgal glib libxml2 freetype fontconfig harfbuzz'
  fi
 else
- MXE_TARGETS='i686-w64-mingw32.static'
+ MXE_TARGETS='i686-w64-mingw32.static.posix'
  if [ "`echo $* | grep download`" ]; then
   PACKAGES='download-mpfr download-eigen download-opencsg download-cgal download-qtbase download-nsis download-glib download-libxml2 download-freetype download-fontconfig download-harfbuzz'
  else
