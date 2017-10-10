@@ -171,8 +171,6 @@ void GLView::paintGL()
 	// mark the scale along the axis lines
 	if (showaxes && showscale) GLView::showScalemarkers(axescolor);
 
-	if (showedges) GLView::showedges = true;
-
   glEnable(GL_LIGHTING);
   glDepthFunc(GL_LESS);
   glCullFace(GL_BACK);
