@@ -55,8 +55,6 @@ namespace ClipperUtils {
  */
 	Polygon2d *toPolygon2d(const ClipperLib::PolyTree &poly)
 	{
-		const double CLEANING_DISTANCE = 0.001 * CLIPPER_SCALE;
-
 		auto result = new Polygon2d;
 		auto node = poly.GetFirst();
 		while (node) {
@@ -66,7 +64,7 @@ namespace ClipperUtils {
 			outline.positive = Orientation(node->Contour);
 
 			ClipperLib::Path cleaned_path;
-			ClipperLib::CleanPolygon(node->Contour, cleaned_path, CLEANING_DISTANCE);
+			ClipperLib::CleanPolygon(node->Contour, cleaned_path);
 
 			// CleanPolygon can in some cases reduce the polygon down to no vertices
 			if (cleaned_path.size() >= 3)  {
