@@ -7,7 +7,7 @@
 #undef NDEBUG
 #endif
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
-#include <CGAL/Triangulation_2_filtered_projection_traits_3.h>
+#include <CGAL/Triangulation_2_projection_traits_3.h>
 #include <CGAL/Triangulation_face_base_with_info_2.h>
 #ifdef PREV_NDEBUG
 #define NDEBUG PREV_NDEBUG
