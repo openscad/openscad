@@ -92,7 +92,7 @@ if(NOT HEADLESS)
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
   endif()
 
-  if ("${Qt5_VERSION}" VERSION_GREATER_EQUAL "5.4")
+  if (("${Qt5_VERSION}" VERSION_EQUAL "5.4") OR ("${Qt5_VERSION}" VERSION_GREATER "5.4"))
     add_definitions(-DUSE_QOPENGLWIDGET)
   endif()
 
