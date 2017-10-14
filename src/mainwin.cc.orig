@@ -604,6 +604,7 @@ void MainWindow::updateActionUndoState()
     editActionUndo->setEnabled(editor->canUndo());
 }
 
+<<<<<<< HEAD
 /**
  * Update window settings that get overwritten by the restoreState()
  * Qt call. So the values are loaded before the call and restored here
@@ -628,6 +629,9 @@ void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer
 	}
 }
 
+void MainWindow::loadViewSettings() {
+	QSettingsCached settings;
+=======
 void MainWindow::onAxisChanged(InputEventAxisChanged *event)
 {
 
@@ -681,8 +685,9 @@ void MainWindow::onZoomEvent(InputEventZoom *event)
     qglview->zoom(event->zoom, event->relative);
 }
 
-void MainWindow::loadViewSettings() {
-	QSettingsCached settings;
+void MainWindow::loadViewSettings(){
+	QSettings settings;
+>>>>>>> origin/inputdriver3
 	if (settings.value("view/showEdges").toBool()) {
 		viewActionShowEdges->setChecked(true);
 		viewModeShowEdges();

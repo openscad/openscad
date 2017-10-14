@@ -100,8 +100,11 @@ signals:
 	void syntaxHighlightChanged(const QString &s) const;
 	void editorTypeChanged(const QString &type);
 	void editorConfigChanged() const;
+<<<<<<< HEAD
 	void ExperimentalChanged() const ;
+=======
         void inputMappingChanged() const;
+>>>>>>> origin/inputdriver3
 
 private:
     Preferences(QWidget *parent = nullptr);
