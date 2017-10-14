@@ -92,9 +92,13 @@ void Camera::viewAll(const BoundingBox &bbox)
 	PRINTDB("modified obj rot   x y z %f %f %f",object_rot.x() % object_rot.y() % object_rot.z());
 }
 
-void Camera::zoom(int delta)
+void Camera::zoom(int zoom, bool relative)
 {
-	this->viewer_distance *= pow(0.9, delta / 120.0);
+    if (relative) {
+	this->viewer_distance *= pow(0.9, zoom / 120.0);
+    } else {
+        this->viewer_distance = zoom;
+    }
 }
 
 void Camera::setProjection(ProjectionType type)

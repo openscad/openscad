@@ -243,14 +243,23 @@ void QGLView::normalizeAngle(GLdouble& angle)
 
 void QGLView::mouseMoveEvent(QMouseEvent *event)
 {
+<<<<<<< HEAD
   auto this_mouse = event->globalPos();
   double dx = (this_mouse.x() - last_mouse.x()) * 0.7;
   double dy = (this_mouse.y() - last_mouse.y()) * 0.7;
   if (mouse_drag_active) {
     if (event->buttons() & Qt::LeftButton
+=======
+    QPoint this_mouse = event->globalPos();
+    double dx = (this_mouse.x() - last_mouse.x()) * 0.7;
+    double dy = (this_mouse.y() - last_mouse.y()) * 0.7;
+    if (mouse_drag_active) {
+        if (event->buttons() & Qt::LeftButton
+>>>>>>> origin/inputdriver3
 #ifdef Q_OS_MAC
-        && !(event->modifiers() & Qt::MetaModifier)
+            && !(event->modifiers() & Qt::MetaModifier)
 #endif
+<<<<<<< HEAD
       ) {
       // Left button rotates in xz, Shift-left rotates in xy
       // On Mac, Ctrl-Left is handled as right button on other platforms
@@ -270,18 +279,38 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
       // Middle button pans in the xy plane
       // Shift-right and Shift-middle zooms
       if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
-	      cam.zoom(-12.0 * dy,true);
+	      cam.zoom(-12.0 * dy);
       } else {
 
       double mx = +(dx) * 3.0 * cam.zoomValue() / QWidget::width();
       double mz = -(dy) * 3.0 * cam.zoomValue() / QWidget::height();
+=======
+            ) {
+            // Left button rotates in xz, Shift-left rotates in xy
+            // On Mac, Ctrl-Left is handled as right button on other platforms
+            if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
+                rotate(dy, dx, 0.0, true);
+            } else {
+                rotate(dy, 0.0, dx, true);
+            }
+        } else {
+            // Right button pans in the xz plane
+            // Middle button pans in the xy plane
+            // Shift-right and Shift-middle zooms
+            if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
+                zoom(-12.0 * dy, true);
+            } else {
+                double mx = +(dx) * 3.0 * cam.zoomValue() / QWidget::width();
+                double my = 0;
+                double mz = -(dy) * 3.0 * cam.zoomValue() / QWidget::height();
+>>>>>>> origin/inputdriver3
 
-      double my = 0;
 #if (QT_VERSION < QT_VERSION_CHECK(4, 7, 0))
-      if (event->buttons() & Qt::MidButton) {
+                if (event->buttons() & Qt::MidButton) {
 #else
-      if (event->buttons() & Qt::MiddleButton) {
+                if (event->buttons() & Qt::MiddleButton) {
 #endif
+<<<<<<< HEAD
         my = mz;
         mz = 0;
         // actually lock the x-position
@@ -311,11 +340,20 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
       cam.object_trans.y() += tm(1,3);
       cam.object_trans.z() += tm(2,3);
       }
+=======
+                    my = mz;
+                    mz = 0;
+                    // actually lock the x-position
+                    // (turns out to be easier to use than xy panning)
+                    mx = 0;
+                }
+
+                translate(mx, my, mz, true);
+            }
+        }
+>>>>>>> origin/inputdriver3
     }
-    updateGL();
-    emit doAnimateUpdate();
-  }
-  last_mouse = this_mouse;
+    last_mouse = this_mouse;
 }
 
 void QGLView::mouseReleaseEvent(QMouseEvent*)
@@ -340,23 +378,21 @@ bool QGLView::save(const char *filename)
 void QGLView::wheelEvent(QWheelEvent *event)
 {
 #if QT_VERSION >= 0x050000
-	this->cam.zoom(event->angleDelta().y(),true);
+    int v = event->angleDelta().y();
 #else
-	this->cam.zoom(event->delta(),true);
+    int v = event->delta();
 #endif
-  updateGL();
+    zoom(v, true);
 }
 
 void QGLView::ZoomIn(void)
 {
-  this->cam.zoom(120,true);
-  updateGL();
+    zoom(120, true);
 }
 
 void QGLView::ZoomOut(void)
 {
-  this->cam.zoom(-120,true);
-  updateGL();
+    zoom(-120, true);
 }
 
 void QGLView::zoom(double v, bool relative)

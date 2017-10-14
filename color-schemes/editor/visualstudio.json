@@ -36,6 +36,6 @@
     "keywords" : {
         "keyword-set1" : "if else let for module function true false undef include use",
         "keyword-set2" : "abs sign rands min max sin cos asin acos tan atan atan2 round ceil floor pow sqrt exp len log ln str chr concat lookup search version version_num norm cross parent_module dxf_dim dxf_cross",
-        "keyword-set3" : "cube sphere cylinder polyhedron square circle polygon text minkowski hull resize child echo union difference intersection linear_extrude rotate_extrude import group projection render surface scale rotate mirror translate multmatrix color offset"
+        "keyword-set3" : "cube sphere cylinder polyhedron square circle polygon text minkowski hull resize child echo union difference intersection linear_extrude rotate_extrude import group projection render surface scale rotate mirror translate multmatrix color offset children assert"
     }
 }

@@ -14,6 +14,7 @@
 #include <Eigen/Geometry>
 #include "GLView.h"
 #include "renderer.h"
+#include "input/InputDriver.h"
 
 class QGLView :
 #ifdef USE_QOPENGLWIDGET
@@ -71,6 +72,12 @@ public:
 #ifdef USE_QOPENGLWIDGET
 	inline QImage grabFrameBuffer() { return grabFramebuffer(); }
 #endif
+
+	void zoom(double v, bool relative);
+	void rotate(double x, double y, double z, bool relative);
+	void rotate2(double x, double y, double z);
+	void translate(double x, double y, double z, bool relative, bool viewPortRelative = true);
+
 private:
 	void init();
 
@@ -88,6 +95,7 @@ private:
 	void resizeGL(int w, int h);
 
 	void paintGL();
+
 	void normalizeAngle(GLdouble& angle);
 
 #ifdef ENABLE_OPENCSG

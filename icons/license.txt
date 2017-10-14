@@ -2,6 +2,10 @@ Taken from http://tango.freedesktop.org/Tango_Icon_Library, version 0.8.90 / pub
 
 - prefsFeatures.png (converted from preferences-system.svg)
 
+https://openclipart.org/detail/35425/tango-desktop-peripherals / public domain:
+
+- prefsInput.png
+
 https://openclipart.org/detail/2281/information-icons-set-by-kuba / public domain:
 
 - information-icons-error.png
