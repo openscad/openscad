@@ -1480,35 +1480,14 @@
               </property>
              </widget>
             </item>
-            <item row="9" column="0">
-             <widget class="QLabel" name="label_16">
-              <property name="text">
-               <string>Button 6</string>
-              </property>
-             </widget>
-            </item>
             <item row="0" column="3">
              <widget class="QComboBox" name="comboBoxTranslationZ"/>
             </item>
             <item row="0" column="2">
              <widget class="QComboBox" name="comboBoxTranslationY"/>
             </item>
-            <item row="10" column="0">
-             <widget class="QLabel" name="label_17">
-              <property name="text">
-               <string>Button 7</string>
-              </property>
-             </widget>
-            </item>
             <item row="2" column="1">
              <widget class="QComboBox" name="comboBoxZoom"/>
-            </item>
-            <item row="6" column="0">
-             <widget class="QLabel" name="label_11">
-              <property name="text">
-               <string>Button 3</string>
-              </property>
-             </widget>
             </item>
             <item row="2" column="0">
              <widget class="QLabel" name="labelInputZoom">
@@ -1523,36 +1502,12 @@
             <item row="1" column="1">
              <widget class="QComboBox" name="comboBoxRotationX"/>
             </item>
-            <item row="7" column="0">
-             <widget class="QLabel" name="label_14">
-              <property name="text">
-               <string>Button 4</string>
-              </property>
-             </widget>
-            </item>
-            <item row="8" column="0">
-             <widget class="QLabel" name="label_15">
-              <property name="text">
-               <string>Button 5</string>
-              </property>
-             </widget>
-            </item>
-            <item row="11" column="0">
-             <widget class="QLabel" name="label_18">
-              <property name="text">
-               <string>Button 8</string>
-              </property>
-             </widget>
-            </item>
             <item row="4" column="0">
              <widget class="QLabel" name="labelInputButton1">
               <property name="text">
                <string>Button 1</string>
               </property>
              </widget>
-            </item>
-            <item row="1" column="2">
-             <widget class="QComboBox" name="comboBoxRotationY"/>
             </item>
             <item row="5" column="0">
              <widget class="QLabel" name="labelInputButton2">
@@ -1561,6 +1516,53 @@
               </property>
              </widget>
             </item>
+            <item row="6" column="0">
+             <widget class="QLabel" name="labelInputButton3">
+              <property name="text">
+               <string>Button 3</string>
+              </property>
+             </widget>
+            </item>
+            <item row="7" column="0">
+             <widget class="QLabel" name="labelInputButton4">
+              <property name="text">
+               <string>Button 4</string>
+              </property>
+             </widget>
+            </item>
+            <item row="8" column="0">
+             <widget class="QLabel" name="labelInputButton5">
+              <property name="text">
+               <string>Button 5</string>
+              </property>
+             </widget>
+            </item>
+             <item row="9" column="0">
+             <widget class="QLabel" name="labelInputButton6">
+              <property name="text">
+               <string>Button 6</string>
+              </property>
+             </widget>
+            </item>
+             <item row="10" column="0">
+             <widget class="QLabel" name="labelInputButton7">
+              <property name="text">
+               <string>Button 7</string>
+              </property>
+             </widget>
+            </item>
+            <item row="11" column="0">
+             <widget class="QLabel" name="labelInputButton8">
+              <property name="text">
+               <string>Button 8</string>
+              </property>
+             </widget>
+            </item>
+
+            <item row="1" column="2">
+             <widget class="QComboBox" name="comboBoxRotationY"/>
+            </item>
+
             <item row="1" column="3">
              <widget class="QComboBox" name="comboBoxRotationZ"/>
             </item>
