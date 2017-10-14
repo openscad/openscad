@@ -248,7 +248,7 @@ public:
     stream << '[';
     for (size_t i = 0; i < v.size(); i++) {
       if (i > 0) stream << ", ";
-      stream << *v[i];
+      stream << v[i]->toEchoString();
     }
     stream << ']';
     return stream.str();
