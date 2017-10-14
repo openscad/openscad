@@ -1,5 +1,7 @@
 function s() = 20;
 
 module used(r) {
- sphere(r);
+  color("Green") sphere(r);
 }
+
+used(10);

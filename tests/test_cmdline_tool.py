@@ -111,7 +111,7 @@ def normalize_string(s):
         if abs(value) >= 10**6:
             return "%d"%value
         return "%.6g"%value
-    s = re.sub('(-?[0-9]+\\.[0-9]+(e[+-][0-9]+)?)', floatrep, s)
+    s = re.sub('(-?[0-9]+(\\.[0-9]+)?(e[+-][0-9]+)?)', floatrep, s)
 
     def pathrep(match):
         return match.groups()[0] + match.groups()[2]

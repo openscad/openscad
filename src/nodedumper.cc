@@ -44,7 +44,7 @@ std::string NodeDumper::dumpChildBlock(const AbstractNode &node)
 	std::stringstream dump;
 	if (!this->visitedchildren[node.index()].empty()) {
 		dump << " {\n";
-		const std::string &chstr = dumpChildren(node);
+		const auto &chstr = dumpChildren(node);
 		if (!chstr.empty()) dump << chstr << "\n";
 		dump << this->currindent << "}";
 	}
@@ -57,15 +57,13 @@ std::string NodeDumper::dumpChildBlock(const AbstractNode &node)
 std::string NodeDumper::dumpChildren(const AbstractNode &node)
 {
 	std::stringstream dump;
-	for (ChildList::const_iterator iter = this->visitedchildren[node.index()].begin();
-			 iter != this->visitedchildren[node.index()].end();
-			 iter++) {
-		assert(isCached(**iter));
-		const std::string &str = this->cache[**iter];
+	for (auto child : this->visitedchildren[node.index()]) {
+		assert(isCached(*child));
+		const auto &str = this->cache[*child];
 		if (!str.empty()) {
-            if (iter != this->visitedchildren[node.index()].begin()) dump << "\n";
-			if ((*iter)->modinst->isBackground()) dump << "%";
-			if ((*iter)->modinst->isHighlight()) dump << "#";
+			if (child != this->visitedchildren[node.index()].front()) dump << "\n";
+			if (child->modinst->isBackground()) dump << "%";
+			if (child->modinst->isHighlight()) dump << "#";
 			dump << str;
 		}
 	}
@@ -78,7 +76,7 @@ std::string NodeDumper::dumpChildren(const AbstractNode &node)
 */
 Response NodeDumper::visit(State &state, const AbstractNode &node)
 {
-	if (isCached(node)) return PruneTraversal;
+	if (isCached(node)) return Response::PruneTraversal;
 
 	handleIndent(state);
 	if (state.isPostfix()) {
@@ -91,7 +89,7 @@ Response NodeDumper::visit(State &state, const AbstractNode &node)
 	}
 
 	handleVisitedChildren(state, node);
-	return ContinueTraversal;
+	return Response::ContinueTraversal;
 }
 
 /*!
@@ -99,7 +97,7 @@ Response NodeDumper::visit(State &state, const AbstractNode &node)
 */
 Response NodeDumper::visit(State &state, const RootNode &node)
 {
-	if (isCached(node)) return PruneTraversal;
+	if (isCached(node)) return Response::PruneTraversal;
 
 	if (state.isPostfix()) {
 		std::stringstream dump;
@@ -108,7 +106,7 @@ Response NodeDumper::visit(State &state, const RootNode &node)
 	}
 
 	handleVisitedChildren(state, node);
-	return ContinueTraversal;
+	return Response::ContinueTraversal;
 }
 
 /*!

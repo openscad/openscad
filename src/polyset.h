@@ -40,7 +40,7 @@ public:
 	void insert_vertex(const Vector3f &v);
 	void append(const PolySet &ps);
 
-	void render_surface(Renderer::csgmode_e csgmode, const Transform3d &m, GLint *shaderinfo = NULL) const;
+	void render_surface(Renderer::csgmode_e csgmode, const Transform3d &m, GLint *shaderinfo = nullptr) const;
 	void render_edges(Renderer::csgmode_e csgmode) const;
 
 	void transform(const Transform3d &mat);

@@ -13,7 +13,7 @@ public:
         /*! If idPrefix is true, we will output "n<id>:" in front of each node,
           which is useful for debugging. */
         NodeDumper(NodeCache &cache, bool idPrefix = false) :
-                cache(cache), idprefix(idPrefix), root(NULL) { }
+                cache(cache), idprefix(idPrefix), root(nullptr) { }
         virtual ~NodeDumper() {}
 
         virtual Response visit(State &state, const AbstractNode &node);

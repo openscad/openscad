@@ -50,11 +50,11 @@ const std::string &Tree::getIdString(const AbstractNode &node) const
 		boost::sregex_token_iterator i(nodestr.begin(), nodestr.end(), re, 0);
 		std::copy(i, boost::sregex_token_iterator(), std::ostream_iterator<std::string>(sstream));
 
-		const std::string & result = this->nodeidcache.insert(node, sstream.str());
+		const auto &result = this->nodeidcache.insert(node, sstream.str());
 		PRINTDB("Id Cache MISS: %s", result);
 		return result;
 	} else {
-		const std::string & result = this->nodeidcache[node];
+		const auto & result = this->nodeidcache[node];
 		PRINTDB("Id Cache HIT:  %s", result);
 		return result;
 	}

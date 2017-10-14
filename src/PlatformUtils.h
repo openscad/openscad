@@ -6,7 +6,7 @@
 namespace fs=boost::filesystem;
 
 #define STACK_BUFFER_SIZE (64 * 1024)
-#define STACK_LIMIT_DEFAULT (8 * 1024 * 1024 - STACK_BUFFER_SIZE)
+#define STACK_LIMIT_DEFAULT (STACKSIZE - STACK_BUFFER_SIZE)
 
 namespace PlatformUtils {
         extern const char *OPENSCAD_FOLDER_NAME;

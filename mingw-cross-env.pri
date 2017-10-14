@@ -33,9 +33,6 @@ CONFIG(mingw-cross-env-shared) {
 
 CONFIG(mingw-cross-env)|CONFIG(mingw-cross-env-shared) {
   QMAKE_CXXFLAGS += -fpermissive
-  WINSTACKSIZE = 8388608 # 8MB # github issue 116
-  QMAKE_CXXFLAGS += -Wl,--stack,$$WINSTACKSIZE
-  LIBS += -Wl,--stack,$$WINSTACKSIZE 
   QMAKE_DEL_FILE = rm -f
   QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-local-typedefs #eigen3
 }

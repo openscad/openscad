@@ -15,12 +15,12 @@ namespace PolysetUtils {
   // It's important to select all faces, since filtering by normal vector here
 	// will trigger floating point incertainties and cause problems later.
 	Polygon2d *project(const PolySet &ps) {
-		Polygon2d *poly = new Polygon2d;
+		auto poly = new Polygon2d;
 
-		for(const auto &p : ps.polygons) {
+		for (const auto &p : ps.polygons) {
 			Outline2d outline;
-			for(const auto &v : p) {
-				outline.vertices.push_back(Vector2d(v[0], v[1]));
+			for (const auto &v : p) {
+				outline.vertices.emplace_back(v[0], v[1]);
 			}
 			poly->addOutline(outline);
 		}
@@ -55,49 +55,46 @@ namespace PolysetUtils {
 		Reindexer<Vector3f> allVertices;
 		std::vector<std::vector<IndexedFace>> polygons;
 
-		for(const auto &pgon : inps.polygons) {
+		for (const auto &pgon : inps.polygons) {
 			if (pgon.size() < 3) {
 				degeneratePolygons++;
 				continue;
 			}
-			if (pgon.size() == 3) { // Short-circuit
-				outps.append_poly(pgon);
-				continue;
-			}
 			
-			polygons.push_back(std::vector<IndexedFace>());
-			std::vector<IndexedFace> &faces = polygons.back();
+			polygons.push_back({});
+			auto &faces = polygons.back();
 			faces.push_back(IndexedFace());
-			IndexedFace &currface = faces.back();
-			for(const auto &v : pgon) {
+			auto &currface = faces.back();
+			for (const auto &v : pgon) {
 				// Create vertex indices and remove consecutive duplicate vertices
-				int idx = allVertices.lookup(v.cast<float>());
+				auto idx = allVertices.lookup(v.cast<float>());
 				if (currface.empty() || idx != currface.back()) currface.push_back(idx);
 			}
 			if (currface.front() == currface.back()) currface.pop_back();
-                    if (currface.size() < 3) {
-                        faces.pop_back(); // Cull empty triangles
-                        if (faces.empty()) polygons.pop_back(); // All faces were culled
-                    }
+			if (currface.size() < 3) {
+				faces.pop_back(); // Cull empty triangles
+				if (faces.empty()) polygons.pop_back(); // All faces were culled
+			}
 		}
 
 		// Tessellate indexed mesh
-		const Vector3f *verts = allVertices.getArray();
+		const auto *verts = allVertices.getArray();
 		std::vector<IndexedTriangle> allTriangles;
-		for(const auto &faces : polygons) {
+		for (const auto &faces : polygons) {
 			std::vector<IndexedTriangle> triangles;
+			auto err = false;
 			if (faces[0].size() == 3) {
-				triangles.push_back(IndexedTriangle(faces[0][0], faces[0][1], faces[0][2]));
+				triangles.emplace_back(faces[0][0], faces[0][1], faces[0][2]);
 			}
 			else {
-				bool err = GeometryUtils::tessellatePolygonWithHoles(verts, faces, triangles, NULL);
-				if (!err) {
-					for(const auto &t : triangles) {
-						outps.append_poly();
-						outps.append_vertex(verts[t[0]]);
-						outps.append_vertex(verts[t[1]]);
-						outps.append_vertex(verts[t[2]]);
-					}
+				err = GeometryUtils::tessellatePolygonWithHoles(verts, faces, triangles, nullptr);
+			}
+			if (!err) {
+				for (const auto &t : triangles) {
+					outps.append_poly();
+					outps.append_vertex(verts[t[0]]);
+					outps.append_vertex(verts[t[1]]);
+					outps.append_vertex(verts[t[2]]);
 				}
 			}
 		}
