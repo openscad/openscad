@@ -8,8 +8,8 @@
 namespace fs = boost::filesystem;
 
 std::list<std::string> print_messages_stack;
-OutputHandlerFunc *outputhandler = NULL;
-void *outputhandler_data = NULL;
+OutputHandlerFunc *outputhandler = nullptr;
+void *outputhandler_data = nullptr;
 std::string OpenSCAD::debug("");
 bool OpenSCAD::quiet = false;
 
@@ -119,7 +119,8 @@ void printDeprecation(const std::string &str)
 	}
 }
 
-void resetPrintedDeprecations()
+void resetSuppressedMessages()
 {
 	printedDeprecations.clear();
+	lastmessages.clear();
 }

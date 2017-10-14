@@ -2,7 +2,7 @@
 #include "printutils.h"
 #include "CGAL_Nef_polyhedron.h"
 
-CGALCache *CGALCache::inst = NULL;
+CGALCache *CGALCache::inst = nullptr;
 
 CGALCache::CGALCache(size_t limit) : cache(limit)
 {
@@ -10,7 +10,7 @@ CGALCache::CGALCache(size_t limit) : cache(limit)
 
 shared_ptr<const CGAL_Nef_polyhedron> CGALCache::get(const std::string &id) const
 {
-	const shared_ptr<const CGAL_Nef_polyhedron> &N = this->cache[id]->N;
+	const auto &N = this->cache[id]->N;
 #ifdef DEBUG
 	PRINTB("CGAL Cache hit: %s (%d bytes)", id.substr(0, 40) % (N ? N->memsize() : 0));
 #endif
@@ -19,7 +19,7 @@ shared_ptr<const CGAL_Nef_polyhedron> CGALCache::get(const std::string &id) cons
 
 bool CGALCache::insert(const std::string &id, const shared_ptr<const CGAL_Nef_polyhedron> &N)
 {
-	bool inserted = this->cache.insert(id, new cache_entry(N), N ? N->memsize() : 0);
+	auto inserted = this->cache.insert(id, new cache_entry(N), N ? N->memsize() : 0);
 #ifdef DEBUG
 	if (inserted) PRINTB("CGAL Cache insert: %s (%d bytes)", id.substr(0, 40) % (N ? N->memsize() : 0));
 	else PRINTB("CGAL Cache insert failed: %s (%d bytes)", id.substr(0, 40) % (N ? N->memsize() : 0));

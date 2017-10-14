@@ -3,7 +3,7 @@
 #include <iostream>
 
 // FIXME: Default constructor Response()
-enum Response {ContinueTraversal, AbortTraversal, PruneTraversal};
+enum class Response {ContinueTraversal, AbortTraversal, PruneTraversal};
 
 class BaseVisitor
 {
@@ -32,7 +32,7 @@ protected:
 		// FIXME: If we want to allow for missing nodes in visitors, we need
 		// to handle it here, e.g. by calling some handler.
 		// See e.g. page 225 of Alexandrescu's "Modern C++ Design" 
-		return AbortTraversal;
+		return Response::AbortTraversal;
 	}
 };
 

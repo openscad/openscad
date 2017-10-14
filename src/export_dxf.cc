@@ -94,7 +94,7 @@ void export_dxf(const Polygon2d &poly, std::ostream &output)
 
 void export_dxf(const shared_ptr<const Geometry> &geom, std::ostream &output)
 {
-	if (const PolySet *ps = dynamic_cast<const PolySet *>(geom.get())) {
+	if (dynamic_cast<const PolySet *>(geom.get())) {
 		assert(false && "Unsupported file format");
 	}
 	else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(geom.get())) {

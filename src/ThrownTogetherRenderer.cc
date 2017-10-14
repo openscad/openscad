@@ -64,39 +64,39 @@ void ThrownTogetherRenderer::renderChainObject(const CSGChainObject &csgobj, boo
 		(highlight_mode ? 
 		 CSGMODE_HIGHLIGHT :
 		 (background_mode ? CSGMODE_BACKGROUND : CSGMODE_NORMAL)) |
-		(type == OPENSCAD_DIFFERENCE ? CSGMODE_DIFFERENCE : CSGMODE_NONE));
+		(type == OpenSCADOperator::DIFFERENCE ? CSGMODE_DIFFERENCE : CSGMODE_NONE));
 
-	ColorMode colormode = COLORMODE_NONE;
-	ColorMode edge_colormode = COLORMODE_NONE;
+	ColorMode colormode = ColorMode::NONE;
+	ColorMode edge_colormode = ColorMode::NONE;
 	
 	if (highlight_mode) {
-		colormode = COLORMODE_HIGHLIGHT;
-		edge_colormode = COLORMODE_HIGHLIGHT_EDGES;
+		colormode = ColorMode::HIGHLIGHT;
+		edge_colormode = ColorMode::HIGHLIGHT_EDGES;
 	} else if (background_mode) {
 		if (csgobj.flags & CSGNode::FLAG_HIGHLIGHT) {
-			colormode = COLORMODE_HIGHLIGHT;
+			colormode = ColorMode::HIGHLIGHT;
 		}
 		else {
-			colormode = COLORMODE_BACKGROUND;
+			colormode = ColorMode::BACKGROUND;
 		}
-		edge_colormode = COLORMODE_BACKGROUND_EDGES;
+		edge_colormode = ColorMode::BACKGROUND_EDGES;
 	} else if (fberror) {
-	} else if (type == OPENSCAD_DIFFERENCE) {
+	} else if (type == OpenSCADOperator::DIFFERENCE) {
 		if (csgobj.flags & CSGNode::FLAG_HIGHLIGHT) {
-			colormode = COLORMODE_HIGHLIGHT;
+			colormode = ColorMode::HIGHLIGHT;
 		}
 		else {
-			colormode = COLORMODE_CUTOUT;
+			colormode = ColorMode::CUTOUT;
 		}
-		edge_colormode = COLORMODE_CUTOUT_EDGES;
+		edge_colormode = ColorMode::CUTOUT_EDGES;
 	} else {
 		if (csgobj.flags & CSGNode::FLAG_HIGHLIGHT) {
-			colormode = COLORMODE_HIGHLIGHT;
+			colormode = ColorMode::HIGHLIGHT;
 		}
 		else {
-			colormode = COLORMODE_MATERIAL;
+			colormode = ColorMode::MATERIAL;
 		}
-		edge_colormode = COLORMODE_MATERIAL_EDGES;
+		edge_colormode = ColorMode::MATERIAL_EDGES;
 	}
 	
 	const Transform3d &m = csgobj.leaf->matrix;
@@ -123,10 +123,10 @@ void ThrownTogetherRenderer::renderCSGProducts(const CSGProducts &products, bool
 
 	for(const auto &product : products.products) {
 		for(const auto &csgobj : product.intersections) {
-			renderChainObject(csgobj, highlight_mode, background_mode, showedges, fberror, OPENSCAD_INTERSECTION);
+			renderChainObject(csgobj, highlight_mode, background_mode, showedges, fberror, OpenSCADOperator::INTERSECTION);
 		}
 		for(const auto &csgobj : product.subtractions) {
-			renderChainObject(csgobj, highlight_mode, background_mode, showedges, fberror, OPENSCAD_DIFFERENCE);
+			renderChainObject(csgobj, highlight_mode, background_mode, showedges, fberror, OpenSCADOperator::DIFFERENCE);
 		}
 	}
 }

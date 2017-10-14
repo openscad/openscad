@@ -41,7 +41,7 @@ AbstractNode *UserModule::instantiate(const Context *ctx, const ModuleInstantiat
 {
 	if (StackCheck::inst()->check()) {
 		throw RecursionException::create("module", inst->name());
-		return NULL;
+		return nullptr;
 	}
 
 	// At this point we know that nobody will modify the dependencies of the local scope

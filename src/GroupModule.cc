@@ -34,7 +34,7 @@ AbstractNode *GroupModule::instantiate(const Context *ctx, const ModuleInstantia
 {
 	(void)ctx; // avoid unusued parameter warning
 
-	AbstractNode *node = new GroupNode(inst);
+	auto node = new GroupNode(inst);
 
 	node->children = inst->instantiateChildren(evalctx);
 

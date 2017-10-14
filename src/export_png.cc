@@ -14,8 +14,8 @@
 
 static void setupCamera(Camera &cam, const BoundingBox &bbox)
 {
-	PRINTDB("setupCamera() %i",cam.type);
-	if (cam.type == Camera::NONE) cam.viewall = true;
+	PRINTDB("setupCamera() %i", static_cast<int>(cam.type));
+	if (cam.type == Camera::CameraType::NONE) cam.viewall = true;
 	if (cam.viewall) cam.viewAll(bbox);
 }
 
@@ -42,7 +42,7 @@ bool export_png(const shared_ptr<const Geometry> &root_geom, Camera &cam, std::o
 	return true;
 }
 
-enum Previewer { OPENCSG, THROWNTOGETHER } previewer;
+enum class Previewer { OPENCSG, THROWNTOGETHER } previewer;
 
 #ifdef ENABLE_OPENCSG
 #include "OpenCSGRenderer.h"
@@ -50,7 +50,7 @@ enum Previewer { OPENCSG, THROWNTOGETHER } previewer;
 #endif
 #include "ThrownTogetherRenderer.h"
 
-bool export_png_preview_common(Tree &tree, Camera &cam, std::ostream &output, Previewer previewer = OPENCSG)
+bool export_png_preview_common(Tree &tree, Camera &cam, std::ostream &output, Previewer previewer = Previewer::OPENCSG)
 {
 	PRINTD("export_png_preview_common");
 	CsgInfo csgInfo = CsgInfo();
@@ -70,7 +70,7 @@ bool export_png_preview_common(Tree &tree, Camera &cam, std::ostream &output, Pr
 	ThrownTogetherRenderer thrownTogetherRenderer(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products);
 
 #ifdef ENABLE_OPENCSG
-	if (previewer == OPENCSG)
+	if (previewer == Previewer::OPENCSG)
 		glview->setRenderer(&openCSGRenderer);
 	else
 #endif
@@ -93,7 +93,7 @@ bool export_png_with_opencsg(Tree &tree, Camera &cam, std::ostream &output)
 {
 	PRINTD("export_png_w_opencsg");
 #ifdef ENABLE_OPENCSG
-	return export_png_preview_common(tree, cam, output, OPENCSG);
+	return export_png_preview_common(tree, cam, output, Previewer::OPENCSG);
 #else
 	fprintf(stderr,"This openscad was built without OpenCSG support\n");
 	return false;
@@ -103,7 +103,7 @@ bool export_png_with_opencsg(Tree &tree, Camera &cam, std::ostream &output)
 bool export_png_with_throwntogether(Tree &tree, Camera &cam, std::ostream &output)
 {
 	PRINTD("export_png_w_thrown");
-	return export_png_preview_common(tree, cam, output, THROWNTOGETHER);
+	return export_png_preview_common(tree, cam, output, Previewer::THROWNTOGETHER);
 }
 
 #endif // ENABLE_CGAL

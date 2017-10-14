@@ -30,6 +30,9 @@
 #include "module.h"
 #include "ModuleInstantiation.h"
 #include "polyset.h"
+#ifdef ENABLE_CGAL
+#include "CGAL_Nef_polyhedron.h"
+#endif
 #include "Polygon2d.h"
 #include "evalcontext.h"
 #include "builtin.h"
@@ -37,6 +40,7 @@
 #include "printutils.h"
 #include "fileutils.h"
 #include "feature.h"
+#include "handle_dep.h"
 
 #include <sys/types.h>
 #include <sstream>
@@ -49,20 +53,24 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 #include <boost/detail/endian.hpp>
 #include <cstdint>
 
+extern PolySet * import_amf(std::string);
+	
 class ImportModule : public AbstractModule
 {
 public:
-	import_type_e type;
-	ImportModule(import_type_e type = TYPE_UNKNOWN) : type(type) { }
+	ImportType type;
+	ImportModule(ImportType type = ImportType::UNKNOWN) : type(type) { }
 	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
 };
 
 AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
-	AssignmentList args;
-	args += Assignment("file"), Assignment("layer"), Assignment("convexity"), Assignment("origin"), Assignment("scale");
-	args += Assignment("filename"), Assignment("layername");
-
+  AssignmentList args{
+    Assignment("file"), Assignment("layer"), Assignment("convexity"),
+		Assignment("origin"), Assignment("scale"), Assignment("filename"),
+		Assignment("layername")
+	};
+	
   // FIXME: This is broken. Tag as deprecated and fix
 	// Map old argnames to new argnames for compatibility
 	// To fix: 
@@ -84,7 +92,7 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 	c.dump(this, inst);
 #endif
 
-	ValuePtr v = c.lookup_variable("file");
+	auto v = c.lookup_variable("file");
 	if (v->isUndefined()) {
 		v = c.lookup_variable("filename");
 		if (!v->isUndefined()) {
@@ -92,24 +100,27 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 		}
 	}
 	std::string filename = lookup_file(v->isUndefined() ? "" : v->toString(), inst->path(), ctx->documentPath());
-	import_type_e actualtype = this->type;
-	if (actualtype == TYPE_UNKNOWN) {
+	if (!filename.empty()) handle_dep(filename);
+	ImportType actualtype = this->type;
+	if (actualtype == ImportType::UNKNOWN) {
 		std::string extraw = fs::path(filename).extension().generic_string();
 		std::string ext = boost::algorithm::to_lower_copy(extraw);
-		if (ext == ".stl") actualtype = TYPE_STL;
-		else if (ext == ".off") actualtype = TYPE_OFF;
-		else if (ext == ".dxf") actualtype = TYPE_DXF;
-		else if (Feature::ExperimentalSvgImport.is_enabled() && ext == ".svg") actualtype = TYPE_SVG;
+		if (ext == ".stl") actualtype = ImportType::STL;
+		else if (ext == ".off") actualtype = ImportType::OFF;
+		else if (ext == ".dxf") actualtype = ImportType::DXF;
+		else if (ext == ".nef3") actualtype = ImportType::NEF3;
+		else if (Feature::ExperimentalAmfImport.is_enabled() && ext == ".amf") actualtype = ImportType::AMF;
+		else if (Feature::ExperimentalSvgImport.is_enabled() && ext == ".svg") actualtype = ImportType::SVG;
 	}
 
-	ImportNode *node = new ImportNode(inst, actualtype);
+	auto node = new ImportNode(inst, actualtype);
 
 	node->fn = c.lookup_variable("$fn")->toDouble();
 	node->fs = c.lookup_variable("$fs")->toDouble();
 	node->fa = c.lookup_variable("$fa")->toDouble();
 
 	node->filename = filename;
-	Value layerval = *c.lookup_variable("layer", true);
+	auto layerval = *c.lookup_variable("layer", true);
 	if (layerval.isUndefined()) {
 		layerval = *c.lookup_variable("layername");
 		if (!layerval.isUndefined()) {
@@ -121,7 +132,7 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 
 	if (node->convexity <= 0) node->convexity = 1;
 
-	ValuePtr origin = c.lookup_variable("origin", true);
+	auto origin = c.lookup_variable("origin", true);
 	node->origin_x = node->origin_y = 0;
 	origin->getVec2(node->origin_x, node->origin_y);
 
@@ -129,41 +140,49 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 
 	if (node->scale <= 0) node->scale = 1;
 
-	ValuePtr width = c.lookup_variable("width", true);
-	ValuePtr height = c.lookup_variable("height", true);
-	node->width = (width->type() == Value::NUMBER) ? width->toDouble() : -1;
-	node->height = (height->type() == Value::NUMBER) ? height->toDouble() : -1;
+	auto width = c.lookup_variable("width", true);
+	auto height = c.lookup_variable("height", true);
+	node->width = (width->type() == Value::ValueType::NUMBER) ? width->toDouble() : -1;
+	node->height = (height->type() == Value::ValueType::NUMBER) ? height->toDouble() : -1;
 	
 	return node;
 }
 
 /*!
-	Will return an empty geometry if the import failed, but not NULL
+	Will return an empty geometry if the import failed, but not nullptr
 */
 const Geometry *ImportNode::createGeometry() const
 {
-	Geometry *g = NULL;
+	Geometry *g = nullptr;
 
 	switch (this->type) {
-	case TYPE_STL: {
-		PolySet *p = import_stl(this->filename);
-		g = p;
+	case ImportType::STL: {
+		g = import_stl(this->filename);
 		break;
 	}
-	case TYPE_OFF: {
-		PolySet *p = import_off(this->filename);
-		g = p;
+	case ImportType::AMF: {
+		g = import_amf(this->filename);
 		break;
 	}
-	case TYPE_SVG: {
+	case ImportType::OFF: {
+		g = import_off(this->filename);
+		break;
+	}
+	case ImportType::SVG: {
 		g = import_svg(this->filename);
  		break;
 	}
-	case TYPE_DXF: {
+	case ImportType::DXF: {
 		DxfData dd(this->fn, this->fs, this->fa, this->filename, this->layername, this->origin_x, this->origin_y, this->scale);
 		g = dd.toPolygon2d();
 		break;
 	}
+#ifdef ENABLE_CGAL
+	case ImportType::NEF3: {
+		g = import_nef3(this->filename);
+		break;
+	}
+#endif
 	default:
 		PRINTB("ERROR: Unsupported file format while trying to import file '%s'", this->filename);
 		g = new PolySet(0);
@@ -199,8 +218,8 @@ std::string ImportNode::name() const
 
 void register_builtin_import()
 {
-	Builtins::init("import_stl", new ImportModule(TYPE_STL));
-	Builtins::init("import_off", new ImportModule(TYPE_OFF));
-	Builtins::init("import_dxf", new ImportModule(TYPE_DXF));
+	Builtins::init("import_stl", new ImportModule(ImportType::STL));
+	Builtins::init("import_off", new ImportModule(ImportType::OFF));
+	Builtins::init("import_dxf", new ImportModule(ImportType::DXF));
 	Builtins::init("import", new ImportModule());
 }

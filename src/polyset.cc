@@ -209,16 +209,15 @@ void PolySet::resize(const Vector3d &newsize, const Eigen::Matrix<bool,3,1> &aut
 void PolySet::quantizeVertices()
 {
 	Grid3d<int> grid(GRID_FINE);
-	int numverts = 0;
 	std::vector<int> indices; // Vertex indices in one polygon
 	for (std::vector<Polygon>::iterator iter = this->polygons.begin(); iter != this->polygons.end();) {
 		Polygon &p = *iter;
 		indices.resize(p.size());
 		// Quantize all vertices. Build index list
-		for (int i=0;i<p.size();i++) indices[i] = grid.align(p[i]);
+		for (unsigned int i=0;i<p.size();i++) indices[i] = grid.align(p[i]);
 		// Remove consequtive duplicate vertices
 		Polygon::iterator currp = p.begin();
-		for (int i=0;i<indices.size();i++) {
+		for (unsigned int i=0;i<indices.size();i++) {
 			if (indices[i] != indices[(i+1)%indices.size()]) {
 				(*currp++) = p[i];
 			}

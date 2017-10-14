@@ -36,12 +36,13 @@
 #include <QMouseEvent>
 #include <QMessageBox>
 #include <QPushButton>
-#include <QSettings>
 #include <QTimer>
 #include <QTextEdit>
 #include <QVBoxLayout>
 #include <QErrorMessage>
 #include "OpenCSGWarningDialog.h"
+#include "QSettingsCached.h"
+
 
 #include <stdio.h>
 #include <sstream>
@@ -69,7 +70,7 @@ void QGLView::init()
   resetView();
 
   this->mouse_drag_active = false;
-  this->statusLabel = NULL;
+  this->statusLabel = nullptr;
 
   setMouseTracking(true);
 
@@ -92,17 +93,17 @@ void QGLView::resetView()
 
 void QGLView::viewAll()
 {
-	if (Renderer *r = this->getRenderer()) {
-		BoundingBox bbox = r->getBoundingBox();
+	if (auto renderer = this->getRenderer()) {
+		auto bbox = renderer->getBoundingBox();
 		cam.object_trans = -bbox.center();
-		cam.viewAll(r->getBoundingBox());
+		cam.viewAll(renderer->getBoundingBox());
 	}
 }
 
 void QGLView::initializeGL()
 {
-  GLenum err = glewInit();
-  if (GLEW_OK != err) {
+  auto err = glewInit();
+  if (err != GLEW_OK) {
     fprintf(stderr, "GLEW Error: %s\n", glewGetErrorString(err));
   }
   GLView::initializeGL();
@@ -115,13 +116,13 @@ std::string QGLView::getRendererInfo() const
   // Don't translate as translated text in the Library Info dialog is not wanted
 #ifdef USE_QOPENGLWIDGET
   info << "\nQt graphics widget: QOpenGLWidget";
-  QSurfaceFormat qsf = this->format();
-  int rbits = qsf.redBufferSize();
-  int gbits = qsf.greenBufferSize();
-  int bbits = qsf.blueBufferSize();
-  int abits = qsf.alphaBufferSize();
-  int dbits = qsf.depthBufferSize();
-  int sbits = qsf.stencilBufferSize();
+  auto qsf = this->format();
+  auto rbits = qsf.redBufferSize();
+  auto gbits = qsf.greenBufferSize();
+  auto bbits = qsf.blueBufferSize();
+  auto abits = qsf.alphaBufferSize();
+  auto dbits = qsf.depthBufferSize();
+  auto sbits = qsf.stencilBufferSize();
   info << boost::format("\nQSurfaceFormat: RGBA(%d%d%d%d), depth(%d), stencil(%d)\n\n") %
     rbits % gbits % bbits % abits % dbits % sbits;
 #else
@@ -134,14 +135,14 @@ std::string QGLView::getRendererInfo() const
 #ifdef ENABLE_OPENCSG
 void QGLView::display_opencsg_warning()
 {
-    if (Preferences::inst()->getValue("advanced/opencsg_show_warning").toBool()) {
-      QTimer::singleShot(0, this, SLOT(display_opencsg_warning_dialog()));
-    }
+	if (Preferences::inst()->getValue("advanced/opencsg_show_warning").toBool()) {
+		QTimer::singleShot(0, this, SLOT(display_opencsg_warning_dialog()));
+	}
 }
 
 void QGLView::display_opencsg_warning_dialog()
 {
-  OpenCSGWarningDialog *dialog = new OpenCSGWarningDialog(this);
+	auto dialog = new OpenCSGWarningDialog(this);
 
   QString message;
   if (this->is_opencsg_capable) {
@@ -152,13 +153,13 @@ void QGLView::display_opencsg_warning_dialog()
     dialog->enableOpenCSGBox->hide();
   }
   message += _("It is highly recommended to use OpenSCAD on a system with "
-    "OpenGL 2.0 or later.\n"
-    "Your renderer information is as follows:\n");
+							 "OpenGL 2.0 or later.\n"
+							 "Your renderer information is as follows:\n");
   QString rendererinfo(_("GLEW version %1\n%2 (%3)\nOpenGL version %4\n"));
   message += rendererinfo.arg((const char *)glewGetString(GLEW_VERSION),
-                       (const char *)glGetString(GL_RENDERER),
-                       (const char *)glGetString(GL_VENDOR),
-                       (const char *)glGetString(GL_VERSION));
+															(const char *)glGetString(GL_RENDERER),
+															(const char *)glGetString(GL_VENDOR),
+															(const char *)glGetString(GL_VERSION));
 
   dialog->setText(message);
   dialog->enableOpenCSGBox->setChecked(Preferences::inst()->getValue("advanced/enable_opencsg_opengl1x").toBool());
@@ -180,10 +181,10 @@ void QGLView::paintGL()
   if (statusLabel) {
     Camera nc(cam);
     nc.gimbalDefaultTranslate();
-	const QString status = QString("%1 (%2x%3)")
-		.arg(QString::fromStdString(nc.statusText()))
-		.arg(size().rwidth())
-		.arg(size().rheight());
+		auto status = QString("%1 (%2x%3)")
+			.arg(QString::fromStdString(nc.statusText()))
+			.arg(size().rwidth())
+			.arg(size().rheight());
     statusLabel->setText(status);
   }
 
@@ -216,7 +217,7 @@ void QGLView::mouseDoubleClickEvent (QMouseEvent *event) {
 
 	glGetError(); // clear error state so we don't pick up previous errors
 	glReadPixels(x, y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &z);
-	GLenum glError = glGetError();
+	auto glError = glGetError();
 	if (glError != GL_NO_ERROR) {
 		return;
 	}
@@ -225,10 +226,10 @@ void QGLView::mouseDoubleClickEvent (QMouseEvent *event) {
 
 	GLdouble px, py, pz;
 
-	GLint success = gluUnProject(x, y, z, modelview, projection, viewport, &px, &py, &pz);
+	auto success = gluUnProject(x, y, z, modelview, projection, viewport, &px, &py, &pz);
 
 	if (success == GL_TRUE) {
-            cam.object_trans -= Vector3d(px, py, pz);
+		cam.object_trans -= Vector3d(px, py, pz);
 		updateGL();
 		emit doAnimateUpdate();
 	}
@@ -236,58 +237,85 @@ void QGLView::mouseDoubleClickEvent (QMouseEvent *event) {
 
 void QGLView::normalizeAngle(GLdouble& angle)
 {
-  while(angle < 0)
-    angle += 360;
-  while(angle > 360)
-    angle -= 360;
+  while(angle < 0) angle += 360;
+  while(angle > 360) angle -= 360;
 }
 
 void QGLView::mouseMoveEvent(QMouseEvent *event)
 {
-    QPoint this_mouse = event->globalPos();
-    double dx = (this_mouse.x() - last_mouse.x()) * 0.7;
-    double dy = (this_mouse.y() - last_mouse.y()) * 0.7;
-    if (mouse_drag_active) {
-        if (event->buttons() & Qt::LeftButton
+  auto this_mouse = event->globalPos();
+  double dx = (this_mouse.x() - last_mouse.x()) * 0.7;
+  double dy = (this_mouse.y() - last_mouse.y()) * 0.7;
+  if (mouse_drag_active) {
+    if (event->buttons() & Qt::LeftButton
 #ifdef Q_OS_MAC
-            && !(event->modifiers() & Qt::MetaModifier)
+        && !(event->modifiers() & Qt::MetaModifier)
 #endif
-            ) {
-            // Left button rotates in xz, Shift-left rotates in xy
-            // On Mac, Ctrl-Left is handled as right button on other platforms
-            if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
-                rotate(dy, dx, 0.0, true);
-            } else {
-                rotate(dy, 0.0, dx, true);
-            }
-        } else {
-            // Right button pans in the xz plane
-            // Middle button pans in the xy plane
-            // Shift-right and Shift-middle zooms
-            if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
-                zoom(-12.0 * dy, true);
-            } else {
-                double mx = +(dx) * 3.0 * cam.zoomValue() / QWidget::width();
-                double my = 0;
-                double mz = -(dy) * 3.0 * cam.zoomValue() / QWidget::height();
+      ) {
+      // Left button rotates in xz, Shift-left rotates in xy
+      // On Mac, Ctrl-Left is handled as right button on other platforms
+      cam.object_rot.x() += dy;
+      if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
+        cam.object_rot.y() += dx;
+			}
+      else {
+        cam.object_rot.z() += dx;
+			}
 
+      normalizeAngle(cam.object_rot.x());
+      normalizeAngle(cam.object_rot.y());
+      normalizeAngle(cam.object_rot.z());
+    } else {
+      // Right button pans in the xz plane
+      // Middle button pans in the xy plane
+      // Shift-right and Shift-middle zooms
+      if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
+	      cam.zoom(-12.0 * dy,true);
+      } else {
+
+      double mx = +(dx) * 3.0 * cam.zoomValue() / QWidget::width();
+      double mz = -(dy) * 3.0 * cam.zoomValue() / QWidget::height();
+
+      double my = 0;
 #if (QT_VERSION < QT_VERSION_CHECK(4, 7, 0))
-                if (event->buttons() & Qt::MidButton) {
+      if (event->buttons() & Qt::MidButton) {
 #else
-                if (event->buttons() & Qt::MiddleButton) {
+      if (event->buttons() & Qt::MiddleButton) {
 #endif
-                    my = mz;
-                    mz = 0;
-                    // actually lock the x-position
-                    // (turns out to be easier to use than xy panning)
-                    mx = 0;
-                }
+        my = mz;
+        mz = 0;
+        // actually lock the x-position
+        // (turns out to be easier to use than xy panning)
+        mx = 0;
+      }
 
-                translate(mx, my, mz, true);
-            }
-        }
+      Matrix3d aax, aay, aaz;
+      aax = Eigen::AngleAxisd(-(cam.object_rot.x()/180) * M_PI, Vector3d::UnitX());
+      aay = Eigen::AngleAxisd(-(cam.object_rot.y()/180) * M_PI, Vector3d::UnitY());
+      aaz = Eigen::AngleAxisd(-(cam.object_rot.z()/180) * M_PI, Vector3d::UnitZ());
+      Matrix3d tm3 = Matrix3d::Identity();
+      tm3 = aaz * (aay * (aax * tm3));
+
+      Matrix4d tm = Matrix4d::Identity();
+      for (int i=0;i<3;i++) for (int j=0;j<3;j++) tm(j,i) = tm3(j,i);
+
+      Matrix4d vec;
+      vec <<
+        0,  0,  0,  mx,
+        0,  0,  0,  my,
+        0,  0,  0,  mz,
+        0,  0,  0,  1
+      ;
+      tm = tm * vec;
+      cam.object_trans.x() += tm(0,3);
+      cam.object_trans.y() += tm(1,3);
+      cam.object_trans.z() += tm(2,3);
+      }
     }
-    last_mouse = this_mouse;
+    updateGL();
+    emit doAnimateUpdate();
+  }
+  last_mouse = this_mouse;
 }
 
 void QGLView::mouseReleaseEvent(QMouseEvent*)
@@ -312,21 +340,23 @@ bool QGLView::save(const char *filename)
 void QGLView::wheelEvent(QWheelEvent *event)
 {
 #if QT_VERSION >= 0x050000
-    int v = event->angleDelta().y();
+	this->cam.zoom(event->angleDelta().y(),true);
 #else
-    int v = event->delta();
+	this->cam.zoom(event->delta(),true);
 #endif
-    zoom(v, true);
+  updateGL();
 }
 
 void QGLView::ZoomIn(void)
 {
-    zoom(120, true);
+  this->cam.zoom(120,true);
+  updateGL();
 }
 
 void QGLView::ZoomOut(void)
 {
-    zoom(-120, true);
+  this->cam.zoom(-120,true);
+  updateGL();
 }
 
 void QGLView::zoom(double v, bool relative)
@@ -427,7 +457,8 @@ void QGLView::rotate2(double x, double y, double z)
     emit doAnimateUpdate();
 }
 
-void QGLView::setOrthoMode(bool enabled) {
-	if (enabled) this->cam.setProjection(Camera::ORTHOGONAL);
-	else this->cam.setProjection(Camera::PERSPECTIVE);
+void QGLView::setOrthoMode(bool enabled)
+{
+	if (enabled) this->cam.setProjection(Camera::ProjectionType::ORTHOGONAL);
+	else this->cam.setProjection(Camera::ProjectionType::PERSPECTIVE);
 }
