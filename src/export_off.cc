@@ -70,7 +70,7 @@ void append_geometry(const shared_ptr<const Geometry> &geom, IndexedMesh &mesh)
 	else if (const PolySet *ps = dynamic_cast<const PolySet *>(geom.get())) {
 		append_geometry(*ps, mesh);
 	}
-	else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(geom.get())) {
+	else if (dynamic_cast<const Polygon2d *>(geom.get())) {
 		assert(false && "Unsupported file format");
 	} else {
 		assert(false && "Not implemented");

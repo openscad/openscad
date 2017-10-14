@@ -7,7 +7,7 @@ ScadLexer::ScadLexer(QObject *parent) : QsciLexerCPP(parent)
 	// -> Style: Keyword (lexer.l)
 	keywordSet[0] =
 		"if else let for each module function true false undef "
-		"include use";
+		"include use assert";
 
 	// -> Style: KeywordSet2 (func.cc)
 	keywordSet[1] =
@@ -24,7 +24,7 @@ ScadLexer::ScadLexer(QObject *parent) : QsciLexerCPP(parent)
 	// -> Style: GlobalClass
 	keywordSet[3] =
 		"cube sphere cylinder polyhedron square circle polygon text "
-		"minkowski hull resize child echo union difference "
+		"minkowski hull resize child children echo union difference "
 		"intersection linear_extrude rotate_extrude import group  "
 		"projection render surface scale rotate mirror translate "
 		"multmatrix color offset ";

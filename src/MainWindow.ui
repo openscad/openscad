@@ -401,6 +401,7 @@
     <addaction name="viewActionHideToolBars"/>
     <addaction name="viewActionHideEditor"/>
     <addaction name="viewActionHideConsole"/>
+    <addaction name="viewActionHideParameters"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -419,7 +420,14 @@
    <addaction name="menu_View"/>
    <addaction name="menuHelp"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QStatusBar" name="statusbar">
+   <property name="maximumSize">
+    <size>
+     <width>16777215</width>
+     <height>23</height>
+    </size>
+   </property>
+  </widget>
   <widget class="Dock" name="editorDock">
    <attribute name="dockWidgetArea">
     <number>1</number>
@@ -488,66 +496,66 @@
         <property name="verticalSpacing">
          <number>0</number>
         </property>
+        <item row="0" column="0">
+         <widget class="QComboBox" name="findTypeComboBox"> 
+          <item>
+           <property name="text">
+            <string>Find</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Replace</string>
+           </property>
+          </item>
+         </widget>
+        </item>
         <item row="0" column="1">
-         <widget class="QLineEdit" name="findInputField">
+         <widget class="QWordSearchField" name="findInputField">
           <property name="placeholderText">
-           <string/>
+           <string>Search string</string>
           </property>
          </widget>
         </item>
         <item row="0" column="2">
          <widget class="QPushButton" name="findPrevButton">
           <property name="text">
-           <string>Find Previous</string>
+           <string>Prev.</string> 
           </property>
          </widget>
         </item>
         <item row="0" column="3">
          <widget class="QPushButton" name="findNextButton">
           <property name="text">
-           <string>Find Next</string>
+           <string>Next</string> 
           </property>
          </widget>
         </item>
         <item row="0" column="4">
          <widget class="QPushButton" name="cancelButton">
           <property name="text">
-           <string>Cancel</string>
+           <string>Done</string> 
           </property>
          </widget>
         </item>
         <item row="1" column="1">
          <widget class="QLineEdit" name="replaceInputField">
           <property name="placeholderText">
-           <string/>
+           <string>Replacement string</string> 
           </property>
          </widget>
         </item>
-        <item row="0" column="0">
-         <widget class="QLabel" name="findLabel">
-          <property name="text">
-           <string>Find:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="2">
+        <item row="1" column="2" colspan="2"> 
          <widget class="QPushButton" name="replaceButton">
           <property name="text">
-           <string>Replace</string>
+           <string>Replace</string> 
           </property>
          </widget>
         </item>
-        <item row="1" column="3">
+        <item row="1" column="4">
          <widget class="QPushButton" name="replaceAllButton">
           <property name="text">
-           <string>Replace All</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="replaceLabel">
-          <property name="text">
-           <string>Replace with:</string>
+           <string>All</string> 
           </property>
          </widget>
         </item>
@@ -591,6 +599,36 @@
         <bool>true</bool>
        </property>
       </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="Dock" name="parameterDock">
+   <property name="windowTitle">
+    <string>Parameter Widget</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents">
+    <layout class="QGridLayout" name="gridLayout_2">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <property name="spacing">
+      <number>0</number>
+     </property>
+     <item row="0" column="0">
+      <widget class="ParameterWidget" name="parameterWidget" native="true"/>
      </item>
     </layout>
    </widget>
@@ -1331,6 +1369,17 @@
     <string>Ctrl+Shift+C</string>
    </property>
   </action>
+  <action name="viewActionHideParameters">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Hide Customizer</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -1343,6 +1392,18 @@
    <class>Dock</class>
    <extends>QDockWidget</extends>
    <header>Dock.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ParameterWidget</class>
+   <extends>QWidget</extends>
+   <header>parameter/ParameterWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QWordSearchField</class>
+   <extends>QFrame</extends>
+   <header>QWordSearchField.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

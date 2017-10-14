@@ -32,24 +32,25 @@ OPTION_CXX11=true
 
 PACKAGES=(
     # NB! For eigen, also update the path in the function
-    "eigen 3.2.8"
+    "eigen 3.3.1"
     "gmp 6.1.1"
     "mpfr 3.1.4"
     "boost 1.61.0"
     "qt5 5.7.0"
-    "qscintilla 2.9.2"
+    "qscintilla 2.9.3"
     # NB! For CGAL, also update the actual download URL in the function
     "cgal 4.8.1"
     "glew 1.13.0"
     "gettext 0.19.8"
     "libffi 3.2.1"
-    "glib2 2.46.1"
+    "glib2 2.50.1"
     "opencsg 1.4.2"
     "freetype 2.6.3"
     "ragel 6.9"
     "harfbuzz 1.2.7"
+    "libzip 1.1.3"
     "libxml2 2.9.4"
-    "fontconfig 2.12.0"
+    "fontconfig 2.12.1"
     "hidapi 0.7.0"
 )
 DEPLOY_PACKAGES=(
@@ -216,6 +217,8 @@ build_qt5()
   fi
   tar xzf qt-everywhere-opensource-src-$version.tar.gz
   cd qt-everywhere-opensource-src-$version
+  patch -d qtbase -p1 < $OPENSCADDIR/patches/qt5/QTBUG-56004.patch
+  patch -d qtbase -p1 < $OPENSCADDIR/patches/qt5/QTBUG-56004b.patch
   if ! $USING_CXX11; then
     QT_EXTRA_FLAGS="-no-c++11"
   fi
@@ -251,6 +254,7 @@ build_qscintilla()
   fi
   tar xzf QScintilla_gpl-$version.tar.gz
   cd QScintilla_gpl-$version/Qt4Qt5
+  patch -p2 < $OPENSCADDIR/patches/QScintilla-2.9.3-xcode8.patch
   qmake QMAKE_CXXFLAGS+="$CXXSTDFLAGS" QMAKE_LFLAGS+="$CXXSTDFLAGS" qscintilla.pro
   make -j"$NUMCPU" install
   install_name_tool -id @rpath/libqscintilla2.dylib $DEPLOYDIR/lib/libqscintilla2.dylib
@@ -273,7 +277,8 @@ build_gmp()
   fi
   tar xjf gmp-$version.tar.bz2
   cd gmp-$version
-  ./configure --prefix=$DEPLOYDIR CXXFLAGS="$CXXSTDFLAGS" CFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64" LDFLAGS="$LDSTDFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64" ABI=64 --enable-cxx
+  # Note: We're building against the core2 CPU profile as that's the minimum required hardware for running OS X 10.8
+  ./configure --prefix=$DEPLOYDIR CXXFLAGS="$CXXSTDFLAGS" CFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="$LDSTDFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN" --enable-cxx --host=core2-apple-darwin12.0.0
   make -j"$NUMCPU" install
 
   install_name_tool -id @rpath/libgmp.dylib $DEPLOYDIR/lib/libgmp.dylib
@@ -447,29 +452,11 @@ build_eigen()
   cd $BASEDIR/src
   rm -rf eigen-$version
 
-  EIGENDIR="none"
-  if [ $version = "3.1.2" ]; then EIGENDIR=eigen-eigen-5097c01bcdc4;
-  elif [ $version = "3.1.3" ]; then EIGENDIR=eigen-eigen-2249f9c22fe8;
-  elif [ $version = "3.1.4" ]; then EIGENDIR=eigen-eigen-36bf2ceaf8f5;
-  elif [ $version = "3.2.0" ]; then EIGENDIR=eigen-eigen-ffa86ffb5570;
-  elif [ $version = "3.2.1" ]; then EIGENDIR=eigen-eigen-6b38706d90a9;
-  elif [ $version = "3.2.2" ]; then EIGENDIR=eigen-eigen-1306d75b4a21;
-  elif [ $version = "3.2.3" ]; then EIGENDIR=eigen-eigen-36fd1ba04c12;
-  elif [ $version = "3.2.4" ]; then EIGENDIR=eigen-eigen-10219c95fe65;
-  elif [ $version = "3.2.6" ]; then EIGENDIR=eigen-eigen-c58038c56923;
-  elif [ $version = "3.2.8" ]; then EIGENDIR=eigen-eigen-07105f7124f9;
-  fi  
-  
-  if [ $EIGENDIR = "none" ]; then
-    echo Unknown eigen version. Please edit script.
-    exit 1
-  fi
-  rm -rf ./$EIGENDIR
-
   if [ ! -f eigen-$version.tar.bz2 ]; then
     curl -LO http://bitbucket.org/eigen/eigen/get/$version.tar.bz2
     mv $version.tar.bz2 eigen-$version.tar.bz2
   fi
+  EIGENDIR=`tar tjf eigen-$version.tar.bz2 | head -1 | cut -f1 -d"/"`
   tar xjf eigen-$version.tar.bz2
   ln -s ./$EIGENDIR eigen-$version
   cd eigen-$version
@@ -552,9 +539,32 @@ build_freetype()
   PKG_CONFIG_LIBDIR="$DEPLOYDOR/lib/pkgconfig" ./configure --prefix="$DEPLOYDIR" CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN $extra_config_flags
   make -j"$NUMCPU"
   make install
-  install_name_tool -id @rpath/libfreetype.dylib $DEPLOYDIR/lib/libfreetype.dylib
+  install_name_tool -id $DEPLOYDIR/lib/libfreetype.dylib $DEPLOYDIR/lib/libfreetype.dylib
 }
  
+check_libzip()
+{
+    check_file lib/libzip.dylib
+}
+
+build_libzip()
+{
+  version="$1"
+
+  echo "Building libzip $version..."
+  cd "$BASEDIR"/src
+  rm -rf "libzip-$version"
+  if [ ! -f "libxml2-$version.tar.gz" ]; then
+    curl --insecure -LO "https://nih.at/libzip/libzip-1.1.3.tar.gz"
+  fi
+  tar xzf "libzip-$version.tar.gz"
+  cd "libzip-$version"
+  ./configure --prefix="$DEPLOYDIR" CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN
+  make -j$NUMCPU
+  make install
+  install_name_tool -id @rpath/libzip.dylib $DEPLOYDIR/lib/libzip.dylib
+}
+
 check_libxml2()
 {
     check_file lib/libxml2.dylib
@@ -572,10 +582,10 @@ build_libxml2()
   fi
   tar xzf "libxml2-$version.tar.gz"
   cd "libxml2-$version"
-  ./configure --prefix="$DEPLOYDIR" --with-zlib=/usr -without-lzma --without-ftp --without-http --without-python CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN
+  ./configure --prefix="$DEPLOYDIR" --with-zlib=/usr --without-lzma --without-ftp --without-http --without-python CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN
   make -j$NUMCPU
   make install
-  install_name_tool -id @rpath/libxml2.dylib $DEPLOYDIR/lib/libxml2.dylib
+  install_name_tool -id $DEPLOYDIR/lib/libxml2.dylib $DEPLOYDIR/lib/libxml2.dylib
 }
 
 check_fontconfig()
@@ -596,7 +606,9 @@ build_fontconfig()
   tar xzf "fontconfig-$version.tar.gz"
   cd "fontconfig-$version"
   export PKG_CONFIG_PATH="$DEPLOYDIR/lib/pkgconfig"
-  ./configure --prefix="$DEPLOYDIR" --enable-libxml2 CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN
+  # FIXME: The "ac_cv_func_mkostemp=no" is a workaround for fontconfig's autotools config not respecting any passed
+  # -no_weak_imports linker flag. This may be improved in future versions of fontconfig
+  ./configure --prefix="$DEPLOYDIR" --enable-libxml2 CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN ac_cv_func_mkostemp=no
   unset PKG_CONFIG_PATH
   make -j$NUMCPU
   make install
@@ -638,16 +650,16 @@ build_gettext()
   echo "Building gettext $version..."
   cd "$BASEDIR"/src
   rm -rf "gettext-$version"
-  if [ ! -f "gettext-$version.tar.xz" ]; then
+  if [ ! -f "gettext-$version.tar.gz" ]; then
     curl --insecure -LO "http://ftpmirror.gnu.org/gettext/gettext-$version.tar.gz"
   fi
   tar xzf "gettext-$version.tar.gz"
   cd "gettext-$version"
-
-  ./configure --prefix="$DEPLOYDIR" CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN
+  patch -p1 < $OPENSCADDIR/patches/gettext.patch
+  ./configure --with-included-glib --prefix="$DEPLOYDIR" CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN
   make -j$NUMCPU
   make install
-  install_name_tool -id @rpath/libintl.dylib $DEPLOYDIR/lib/libintl.dylib
+  install_name_tool -id $DEPLOYDIR/lib/libintl.dylib $DEPLOYDIR/lib/libintl.dylib
 }
 
 check_glib2()
@@ -671,7 +683,7 @@ build_glib2()
   cd "glib-$version"
 
   export PKG_CONFIG_PATH="$DEPLOYDIR/lib/pkgconfig"
-  ./configure --disable-gtk-doc --disable-man --prefix="$DEPLOYDIR" CFLAGS="-I$DEPLOYDIR/include -mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-L$DEPLOYDIR/lib -mmacosx-version-min=$MAC_OSX_VERSION_MIN"
+  ./configure --disable-gtk-doc --disable-man --without-pcre --prefix="$DEPLOYDIR" CFLAGS="-I$DEPLOYDIR/include -mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-L$DEPLOYDIR/lib -mmacosx-version-min=$MAC_OSX_VERSION_MIN"
   unset PKG_CONFIG_PATH
   make -j$NUMCPU
   make install

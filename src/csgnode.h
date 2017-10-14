@@ -112,7 +112,7 @@ public:
 	}
 	~CSGProducts() {}
 
-	void import(shared_ptr<CSGNode> csgtree, OpenSCADOperator type = OPENSCAD_UNION, CSGNode::Flag flags = CSGNode::FLAG_NONE);
+	void import(shared_ptr<CSGNode> csgtree, OpenSCADOperator type = OpenSCADOperator::UNION, CSGNode::Flag flags = CSGNode::FLAG_NONE);
 	std::string dump() const;
 	BoundingBox getBoundingBox() const;
 

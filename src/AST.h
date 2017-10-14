@@ -12,7 +12,8 @@ public:
 	int lastColumn() const { return last_col; }
 
 
-	static Location NONE;
+	static const Location NONE;
+;
 private:
 	int first_line;
 	int first_col;

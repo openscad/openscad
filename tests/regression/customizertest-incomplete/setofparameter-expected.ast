@@ -1,0 +1,52 @@
+//Group("Drop down box:")
+//Description("combo box for nunber")
+//Parameter([0, 1, 2, 3])
+Numbers = 2;
+//Group("Drop down box:")
+//Description("combo box for string")
+//Parameter("")
+Strings = "foo";
+//Group("Drop down box:")
+//Description("labeled combo box for numbers")
+//Parameter([[10, "L"], [20, "M"], [30, "L"]])
+Labeled_values = 10;
+//Group("Drop down box:")
+//Description("labeled combo box for string")
+//Parameter([["S", "Small"], ["M", "Medium"], ["L", "Large"]])
+Labeled_value = "S new";
+//Group(" Slider ")
+//Description("slider widget for number")
+//Parameter([10 : 100])
+slider = 34;
+//Group(" Slider ")
+//Description("step slider for number")
+//Parameter([0 : 5 : 100])
+stepSlider = 2;
+//Group("Checkbox")
+//Description("description")
+//Parameter("comment")
+Variable = true;
+//Group("Spinbox")
+//Description("spinbox with step size 23")
+//Parameter(23)
+Spinbox = 5;
+//Group("Textbox")
+//Description("Text box for vector with more than 4 elements")
+//Parameter("comment")
+Vector = [12, 34, 44, 43, 23, 23];
+//Group("Textbox")
+//Description("Text box for string")
+//Parameter("comment")
+String = "hello";
+//Group("Special vector")
+//Description("Text box for vector with less than or equal to 4 elements")
+//Parameter("any thing")
+Vector2 = [12, 34, 45, 23];
+//Group("Special vector")
+//Parameter("")
+nonparameter = "second";
+//Group("Special vector")
+//Parameter("")
+stringVector = [" hello", " new "];
+echo(String);
+

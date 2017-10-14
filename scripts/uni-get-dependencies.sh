@@ -56,14 +56,29 @@ get_netbsd_deps()
 
 get_opensuse_deps()
 {
- zypper install libeigen3-devel mpfr-devel gmp-devel boost-devel \
-  libqt4-devel glew-devel cmake git bison flex cgal-devel curl \
-  glib2-devel gettext freetype-devel harfbuzz-devel libqscintilla-devel \
-  xvfb-run imagemagick opencsg-devel
-  echo if you are missing opencsg, please add the -graphics- repository
-  echo find your version from cat /etc/issue, then replace it below, then run
-  echo " zypper ar -f http://download.opensuse.org/repositories/graphics/openSUSE_13.2 graphics"
-  echo " zypper install opencsg-devel"
+ zypper install  mpfr-devel gmp-devel boost-devel \
+  glew-devel cmake git bison flex cgal-devel curl \
+  glib2-devel gettext freetype-devel harfbuzz-devel  \
+  libqscintilla-qt5-devel libqt5-qtbase-devel libQt5OpenGL-devel \
+  xvfb-run libzip-devel
+ zypper install libeigen3-devel
+ if [ $? -ne 0 ]; then
+  zypper install libeigen3
+ fi
+ zypper install ImageMagick
+ if [ $? -ne 0 ]; then
+  zypper install imagemagick
+ fi
+ zypper install opencsg-devel
+ if [ $? -ne 0 ]; then
+  pver=`cat /etc/os-release | grep -i pretty_name | sed s/PRETTY_NAME=//g`
+  pver=`echo $pver | sed s/\"//g | sed s/\ /_/g `
+  echo attempting to add graphics repository for opencsg...
+  set +x
+  zypper ar -f http://download.opensuse.org/repositories/graphics/$pver graphics
+  zypper install opencsg-devel
+  set -x
+ fi
 }
 
 get_mageia_deps()
@@ -83,7 +98,7 @@ get_debian_deps()
   libeigen3-dev libcgal-dev libopencsg-dev libgmp3-dev libgmp-dev \
   imagemagick libfreetype6-dev \
   gtk-doc-tools libglib2.0-dev gettext xvfb pkg-config ragel
- apt-get -y install libXi-dev libfontconfig-dev
+ apt-get -y install libxi-dev libfontconfig-dev libzip-dev
 }
 
 get_debian_7_deps()
@@ -152,6 +167,12 @@ get_ubuntu_14_deps()
   get_debian_8_deps
 }
 
+get_arch_deps()
+{
+  pacman -S --noconfirm qt5 qscintilla-qt5 cgal gmp mpfr boost \
+    opencsg glew eigen glib2 fontconfig freetype2 harfbuzz bison flex make
+}
+
 get_ubuntu_16_deps()
 {
   apt-get -y install libxi-dev libxml2-dev libfontconfig1-dev
@@ -216,6 +237,8 @@ if [ -e /etc/issue ]; then
   get_mageia_deps
  elif [ "`grep -i qomo /etc/issue`" ]; then
   get_qomo_deps
+ elif [ "`grep -i arch /etc/issue`" ]; then
+   get_arch_deps
  elif [ -e /etc/fedora-release ]; then
   if [ "`grep -i fedora.release /etc/fedora-release`" ]; then
     get_fedora_deps_dnf

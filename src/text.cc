@@ -46,29 +46,28 @@ public:
 
 AbstractNode *TextModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
-	TextNode *node = new TextNode(inst);
+	auto node = new TextNode(inst);
 
-	AssignmentList args;
-	args += Assignment("text"), Assignment("size"), Assignment("font");
+	AssignmentList args{Assignment("text"), Assignment("size"), Assignment("font")};
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);
 
-	double fn = c.lookup_variable("$fn")->toDouble();
-	double fa = c.lookup_variable("$fa")->toDouble();
-	double fs = c.lookup_variable("$fs")->toDouble();
+	auto fn = c.lookup_variable("$fn")->toDouble();
+	auto fa = c.lookup_variable("$fa")->toDouble();
+	auto fs = c.lookup_variable("$fs")->toDouble();
 
 	node->params.set_fn(fn);
 	node->params.set_fa(fa);
 	node->params.set_fs(fs);
 
-	double size = lookup_double_variable_with_default(c, "size", 10.0);
-	int segments = Calc::get_fragments_from_r(size, fn, fs, fa);
+	auto size = lookup_double_variable_with_default(c, "size", 10.0);
+	auto segments = Calc::get_fragments_from_r(size, fn, fs, fa);
 	// The curved segments of most fonts are relatively short, so
 	// by using a fraction of the number of full circle segments
 	// the resolution will be better matching the detail level of
 	// other objects.
-	int text_segments = std::max(((int)floor(segments / 8)) + 1, 2);
+	auto text_segments = std::max(floor(segments / 8) + 1, 2.0);
 
 	node->params.set_size(size);
 	node->params.set_segments(text_segments);

@@ -16,8 +16,8 @@ void progress_report_prep(AbstractNode *root, void (*f)(const class AbstractNode
 void progress_report_fin()
 {
 	progress_report_count = 0;
-	progress_report_f = NULL;
-	progress_report_userdata = NULL;
+	progress_report_f = nullptr;
+	progress_report_userdata = nullptr;
 }
 
 void progress_update(const AbstractNode *node, int mark)
