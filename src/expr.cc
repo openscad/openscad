@@ -27,6 +27,7 @@
 #include "value.h"
 #include "evalcontext.h"
 #include <cstdint>
+#include <cmath>
 #include <assert.h>
 #include <sstream>
 #include <algorithm>
@@ -141,6 +142,13 @@ ValuePtr BinaryOp::evaluate(const Context *context) const
 	case Op::LogicalOr:
 		return this->left->evaluate(context) || this->right->evaluate(context);
 		break;
+	case Op::Exponent: {
+		ValuePtr left = this->left->evaluate(context), right = this->right->evaluate(context);
+		if (left->type() == Value::ValueType::NUMBER && right->type() == Value::ValueType::NUMBER)
+			return ValuePtr(pow(left->toDouble(), right->toDouble()));
+		else
+			return ValuePtr::undefined;
+	}
 	case Op::Multiply:
 		return this->left->evaluate(context) * this->right->evaluate(context);
 		break;
@@ -188,6 +196,9 @@ const char *BinaryOp::opString() const
 		break;
 	case Op::LogicalOr:
 		return "||";
+		break;
+	case Op::Exponent:
+		return "^";
 		break;
 	case Op::Multiply:
 		return "*";

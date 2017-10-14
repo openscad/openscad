@@ -121,6 +121,7 @@ fs::path parser_sourcefile;
 
 %left '!' '+' '-'
 %left '*' '/' '%'
+%right '^'
 %left '[' ']'
 %left '.'
 
@@ -362,6 +363,10 @@ expr:
         | '[' vector_expr optional_commas ']'
             {
               $$ = $2;
+            }
+        | expr '^' expr
+            {
+              $$ = new BinaryOp($1, BinaryOp::Op::Exponent, $3, LOC(@$));
             }
         | expr '*' expr
             {
