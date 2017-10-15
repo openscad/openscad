@@ -93,7 +93,7 @@ void HidApiInputDriver::hidapi_decode_axis1(const unsigned char *buf, unsigned i
     }
 
     if (event) {
-        InputDriverManager::instance()->postEvent(event);
+        InputDriverManager::instance()->sendEvent(event);
     }
 }
 
@@ -114,8 +114,8 @@ void HidApiInputDriver::hidapi_decode_button1(const unsigned char *buf, unsigned
             buttons |= bitmask;
         }
         if (down != 0 || up != 0) {
-            InputEvent *event = new InputEventButton(down, up);
-            InputDriverManager::instance()->postEvent(event);
+            InputEvent *event = new InputEventButtonChanged(down, up);
+            InputDriverManager::instance()->sendEvent(event);
         }
     }
 }
@@ -154,11 +154,11 @@ void HidApiInputDriver::hidapi_decode_axis2(const unsigned char *buf, unsigned i
     double rz = calc2(buf[11], buf[12]);
     if ((fabs(tx) > threshold) || (fabs(ty) > threshold) || (fabs(tz) > threshold)) {
         InputEvent *event = new InputEventTranslate(tx, -ty, -tz);
-        InputDriverManager::instance()->postEvent(event);
+        InputDriverManager::instance()->sendEvent(event);
     }
     if ((fabs(rx) > threshold) || (fabs(ry) > threshold) || (fabs(rz) > threshold)) {
         InputEvent *event = new InputEventRotate(rx, -ry, -rz);
-        InputDriverManager::instance()->postEvent(event);
+        InputDriverManager::instance()->sendEvent(event);
     }
 }
 
@@ -178,8 +178,8 @@ void HidApiInputDriver::hidapi_decode_button2(const unsigned char *buf, unsigned
 
     for (int idx = 0;idx < 2;idx++) {
         if (changed & (1 << idx)) {
-            InputEvent *event = new InputEventButton(idx, current & (1 << idx));
-            InputDriverManager::instance()->postEvent(event);
+            InputEvent *event = new InputEventButtonChanged(idx, current & (1 << idx));
+            InputDriverManager::instance()->sendEvent(event);
         }
     }
 

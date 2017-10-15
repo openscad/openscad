@@ -34,25 +34,80 @@ public:
 
     virtual ~InputEventHandler(void) { };
 
-    virtual void onTranslateEvent(const class InputEventTranslate *event) = 0;
-    virtual void onRotateEvent(const class InputEventRotate *event) = 0;
-    virtual void onButtonEvent(const class InputEventButton *event) = 0;
-    virtual void onZoomEvent(const class InputEventZoom *event) = 0;
+    virtual void onAxisChanged(class InputEventAxisChanged *event) = 0;
+    virtual void onButtonChanged(class InputEventButtonChanged *event) = 0;
+
+    virtual void onTranslateEvent(class InputEventTranslate *event) = 0;
+    virtual void onRotateEvent(class InputEventRotate *event) = 0;
+    virtual void onActionEvent(class InputEventAction *event) = 0;
+    virtual void onZoomEvent(class InputEventZoom *event) = 0;
 };
 
 class InputEvent : public QEvent
 {
 public:
+    const bool activeOnly;
 
-    InputEvent(void) : QEvent(eventType) { };
+    InputEvent(const bool activeOnly = true);
 
-    virtual ~InputEvent(void) { };
+    virtual ~InputEvent(void);
 
     virtual void deliver(InputEventHandler *receiver) = 0;
 
     static const QEvent::Type eventType;
 };
 
+class GenericInputEvent : public InputEvent
+{
+public:
+    GenericInputEvent(const bool activeOnly = true) : InputEvent(activeOnly) { }
+    ~GenericInputEvent() { }
+};
+
+/**
+ * Generic event for use by input drivers to report the change of
+ * one axis. The value is assumed to be an absolute value in the
+ * range -1.0 to 1.0.
+ */
+class InputEventAxisChanged : public GenericInputEvent
+{
+public:
+    const unsigned int axis;
+    const double value;
+    
+    InputEventAxisChanged(const unsigned int axis, const double value, const bool activeOnly = true) : GenericInputEvent(activeOnly), axis(axis), value(value) { }
+
+    void deliver(InputEventHandler *receiver)
+    {
+        receiver->onAxisChanged(this);
+    }
+};
+
+/**
+ * Generic event for use by input drivers to report button press
+ * and button release events.
+ */
+class InputEventButtonChanged : public GenericInputEvent
+{
+public:
+    const int button;
+    const bool down;
+
+    InputEventButtonChanged(const int button, const bool down, const bool activeOnly = true) : GenericInputEvent(activeOnly), button(button), down(down) { }
+
+    void deliver(InputEventHandler *receiver)
+    {
+        receiver->onButtonChanged(this);
+    }
+};
+
+/**
+ * Event to trigger view translation. In general this should be used
+ * only by the event mapper to ensure the action can be configured by
+ * the user. In special cases it is still possible to create this event
+ * type in the driver itself (e.g. the DBus driver uses this to report
+ * calls to the translate method).
+ */
 class InputEventTranslate : public InputEvent
 {
 public:
@@ -61,7 +116,7 @@ public:
     const double z;
     const bool relative;
 
-    InputEventTranslate(double x, double y, double z, bool relative = true) : x(x), y(y), z(z), relative(relative) { }
+    InputEventTranslate(const double x, const double y, const double z, const bool relative = true, const bool activeOnly = true) : InputEvent(activeOnly), x(x), y(y), z(z), relative(relative) { }
 
     void deliver(InputEventHandler *receiver)
     {
@@ -77,7 +132,7 @@ public:
     const double z;
     const bool relative;
 
-    InputEventRotate(double x, double y, double z, bool relative = true) : x(x), y(y), z(z), relative(relative) { }
+    InputEventRotate(const double x, const double y, const double z, const bool relative = true, const bool activeOnly = true) : InputEvent(activeOnly), x(x), y(y), z(z), relative(relative) { }
 
     void deliver(InputEventHandler *receiver)
     {
@@ -91,7 +146,7 @@ public:
     const double zoom;
     const bool relative;
 
-    InputEventZoom(double zoom, bool relative = true) : zoom(zoom), relative(relative) { }
+    InputEventZoom(const double zoom, const bool relative = true, const bool activeOnly = true) : InputEvent(activeOnly), zoom(zoom), relative(relative) { }
 
     void deliver(InputEventHandler *receiver)
     {
@@ -99,17 +154,16 @@ public:
     }
 };
 
-class InputEventButton : public InputEvent
+class InputEventAction : public InputEvent
 {
 public:
-    const int idx;
-    const bool down;
+    const std::string action;
 
-    InputEventButton(int idx, bool down) : idx(idx), down(down) { }
+    InputEventAction(const std::string action, const bool activeOnly = true) : InputEvent(activeOnly), action(action) { }
 
     void deliver(InputEventHandler *receiver)
     {
-        receiver->onButtonEvent(this);
+        receiver->onActionEvent(this);
     }
 };
 

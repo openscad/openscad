@@ -358,6 +358,7 @@ HEADERS += src/version_check.h \
            src/QWordSearchField.h \
            src/QSettingsCached.h \
            src/input/InputDriver.h \
+           src/input/InputEventMapper.h \
            src/input/InputDriverManager.h
 
 SOURCES += \
@@ -504,6 +505,7 @@ SOURCES += \
            src/QSettingsCached.cc \
            \
            src/input/InputDriver.cc \
+           src/input/InputEventMapper.cc \
            src/input/InputDriverManager.cc
 
 # ClipperLib

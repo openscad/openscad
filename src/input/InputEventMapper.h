@@ -25,33 +25,33 @@
  */
 #pragma once
 
-#include "InputDriver.h"
+#include <QTimer>
+#include <QObject>
 
-class DBusInputDriver : public InputDriver
+#include "input/InputDriver.h"
+
+class InputEventMapper : public QObject, public InputEventHandler
 {
     Q_OBJECT
 
-    bool is_open;
+private:
+    QTimer *timer;
+    double axis[10];
 
-    std::string name;
+    double scale(double val);
 
 public:
-    DBusInputDriver();
-    virtual ~DBusInputDriver();
-    virtual void run();
-    virtual bool open();
-    virtual void close();
-    virtual bool isOpen();
-    virtual bool openOnce();
+    InputEventMapper();
+    virtual ~InputEventMapper();
 
-    virtual const std::string & get_name() const;
+    void onAxisChanged(class InputEventAxisChanged *event);
+    void onButtonChanged(class InputEventButtonChanged *event);
+
+    void onTranslateEvent(class InputEventTranslate *event);
+    void onRotateEvent(class InputEventRotate *event);
+    void onActionEvent(class InputEventAction *event);
+    void onZoomEvent(class InputEventZoom *event);
 
 private slots:
-    void zoom(double zoom);
-    void zoomTo(double zoom);
-    void rotate(double x, double y, double z);
-    void rotateTo(double x, double y, double z);
-    void translate(double x, double y, double z);
-    void translateTo(double x, double y, double z);
-    void action(QString action);
+    void onTimer();
 };

@@ -59,6 +59,24 @@ void InputDriverManager::unregisterDriver(InputDriver *driver)
     this->drivers.remove(driver);
 }
 
+void InputDriverManager::registerActions(const QList<QAction *> &actions, const int level)
+{
+    foreach(QAction *action, actions) {
+        if (!action->objectName().isEmpty()) {
+            for (int a = 0;a < level;a++) {
+                printf("  ");
+            }
+            printf("%s - %s - %d\n",
+                action->toolTip().toStdString().c_str(),
+                action->objectName().toStdString().c_str(),
+                action->menu() ? action->menu()->actions().size() : 0);
+        }
+        if (action->menu()) {
+            registerActions(action->menu()->actions(), level + 1);
+        }
+    }
+}
+
 void InputDriverManager::init()
 {
     doOpen(true);
@@ -117,9 +135,14 @@ std::string InputDriverManager::listDrivers()
     return stream.str();
 }
 
-void InputDriverManager::postEvent(InputEvent *event, bool activeOnly)
+void InputDriverManager::sendEvent(InputEvent *event)
 {
-    QWidget *window = activeOnly ? QApplication::activeWindow() : currentWindow;
+    event->deliver(&mapper);
+}
+
+void InputDriverManager::postEvent(InputEvent *event)
+{
+    QWidget *window = event->activeOnly ? QApplication::activeWindow() : currentWindow;
     if (window) {
         QCoreApplication::postEvent(window, event);
     }

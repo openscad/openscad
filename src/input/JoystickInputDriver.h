@@ -39,8 +39,6 @@ public:
     virtual const std::string & get_name() const;
 
 private:
-    double calc(double val);
-
     int fd;
     int version;
     unsigned char axes;
