@@ -70,24 +70,24 @@ static Value values(std::string s1, std::string s1disp, std::string s2, std::str
 static Value axisValues() {
 	Value::VectorType v;
 	v += ValuePtr(value("None", _("None")));
-	v += ValuePtr(value("+1", _("Axis 1")));
-	v += ValuePtr(value("-1", _("Axis 1 (inverted)")));
-	v += ValuePtr(value("+2", _("Axis 2")));
-	v += ValuePtr(value("-2", _("Axis 2 (inverted)")));
-	v += ValuePtr(value("+3", _("Axis 3")));
-	v += ValuePtr(value("-3", _("Axis 3 (inverted)")));
-	v += ValuePtr(value("+4", _("Axis 4")));
-	v += ValuePtr(value("-4", _("Axis 4 (inverted)")));
-	v += ValuePtr(value("+5", _("Axis 5")));
-	v += ValuePtr(value("-5", _("Axis 5 (inverted)")));
-	v += ValuePtr(value("+6", _("Axis 6")));
-	v += ValuePtr(value("-6", _("Axis 6 (inverted)")));
-	v += ValuePtr(value("+7", _("Axis 7")));
-	v += ValuePtr(value("-7", _("Axis 7 (inverted)")));
-	v += ValuePtr(value("+8", _("Axis 8")));
-	v += ValuePtr(value("-8", _("Axis 8 (inverted)")));
-	v += ValuePtr(value("+9", _("Axis 9")));
-	v += ValuePtr(value("-9", _("Axis 9 (inverted)")));
+	v += ValuePtr(value("+1", _("Axis 0")));
+	v += ValuePtr(value("-1", _("Axis 0 (inverted)")));
+	v += ValuePtr(value("+2", _("Axis 1")));
+	v += ValuePtr(value("-2", _("Axis 1 (inverted)")));
+	v += ValuePtr(value("+3", _("Axis 2")));
+	v += ValuePtr(value("-3", _("Axis 2 (inverted)")));
+	v += ValuePtr(value("+4", _("Axis 3")));
+	v += ValuePtr(value("-4", _("Axis 3 (inverted)")));
+	v += ValuePtr(value("+5", _("Axis 4")));
+	v += ValuePtr(value("-5", _("Axis 4 (inverted)")));
+	v += ValuePtr(value("+6", _("Axis 5")));
+	v += ValuePtr(value("-6", _("Axis 5 (inverted)")));
+	v += ValuePtr(value("+7", _("Axis 6")));
+	v += ValuePtr(value("-7", _("Axis 6 (inverted)")));
+	v += ValuePtr(value("+8", _("Axis 7")));
+	v += ValuePtr(value("-8", _("Axis 7 (inverted)")));
+	v += ValuePtr(value("+9", _("Axis 8")));
+	v += ValuePtr(value("-9", _("Axis 8 (inverted)")));
 	return v;
 }
 
@@ -259,6 +259,7 @@ SettingsEntry Settings::inputRotateX("input", "rotateX", axisValues(), Value("+4
 SettingsEntry Settings::inputRotateY("input", "rotateY", axisValues(), Value("-5"));
 SettingsEntry Settings::inputRotateZ("input", "rotateZ", axisValues(), Value("-6"));
 SettingsEntry Settings::inputZoom("input", "zoom", axisValues(), Value("None"));
+SettingsEntry Settings::inputButton0("input", "button0", buttonValues(), Value("None"));
 SettingsEntry Settings::inputButton1("input", "button1", buttonValues(), Value("viewActionResetView"));
 SettingsEntry Settings::inputButton2("input", "button2", buttonValues(), Value("None"));
 SettingsEntry Settings::inputButton3("input", "button3", buttonValues(), Value("None"));
@@ -267,4 +268,5 @@ SettingsEntry Settings::inputButton5("input", "button5", buttonValues(), Value("
 SettingsEntry Settings::inputButton6("input", "button6", buttonValues(), Value("None"));
 SettingsEntry Settings::inputButton7("input", "button7", buttonValues(), Value("None"));
 SettingsEntry Settings::inputButton8("input", "button8", buttonValues(), Value("None"));
+SettingsEntry Settings::inputButton9("input", "button9", buttonValues(), Value("None"));
 }

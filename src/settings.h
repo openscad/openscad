@@ -59,6 +59,7 @@ public:
     static SettingsEntry inputRotateY;
     static SettingsEntry inputRotateZ;
     static SettingsEntry inputZoom;
+    static SettingsEntry inputButton0;
     static SettingsEntry inputButton1;
     static SettingsEntry inputButton2;
     static SettingsEntry inputButton3;
@@ -67,6 +68,7 @@ public:
     static SettingsEntry inputButton6;
     static SettingsEntry inputButton7;
     static SettingsEntry inputButton8;
+    static SettingsEntry inputButton9;
 
     static Settings *inst(bool erase = false);
 
