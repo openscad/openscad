@@ -80,6 +80,7 @@ public slots:
         void on_comboBoxRotationY_activated(int val);
         void on_comboBoxRotationZ_activated(int val);
         void on_comboBoxZoom_activated(int val);
+        void on_comboBoxButton0_activated(int val);
         void on_comboBoxButton1_activated(int val);
         void on_comboBoxButton2_activated(int val);
         void on_comboBoxButton3_activated(int val);
@@ -88,6 +89,7 @@ public slots:
         void on_comboBoxButton6_activated(int val);
         void on_comboBoxButton7_activated(int val);
         void on_comboBoxButton8_activated(int val);
+        void on_comboBoxButton9_activated(int val);
 
 signals:
 	void requestRedraw() const;

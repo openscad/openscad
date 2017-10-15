@@ -221,6 +221,7 @@ void Preferences::init() {
         initComboBox(this->comboBoxRotationY, Settings::Settings::inputRotateY);
         initComboBox(this->comboBoxRotationZ, Settings::Settings::inputRotateZ);
         initComboBox(this->comboBoxZoom, Settings::Settings::inputZoom);
+        initComboBox(this->comboBoxButton0, Settings::Settings::inputButton0);
         initComboBox(this->comboBoxButton1, Settings::Settings::inputButton1);
         initComboBox(this->comboBoxButton2, Settings::Settings::inputButton2);
         initComboBox(this->comboBoxButton3, Settings::Settings::inputButton3);
@@ -229,6 +230,7 @@ void Preferences::init() {
         initComboBox(this->comboBoxButton6, Settings::Settings::inputButton6);
         initComboBox(this->comboBoxButton7, Settings::Settings::inputButton7);
         initComboBox(this->comboBoxButton8, Settings::Settings::inputButton8);
+        initComboBox(this->comboBoxButton9, Settings::Settings::inputButton9);
 
 	SettingsReader settingsReader;
 	Settings::Settings::inst()->visit(settingsReader);
@@ -638,6 +640,12 @@ void Preferences::on_comboBoxZoom_activated(int val)
         emit inputMappingChanged();
 }
 
+void Preferences::on_comboBoxButton0_activated(int val)
+{
+	applyComboBox(comboBoxButton0, val, Settings::Settings::inputButton0);
+        emit inputMappingChanged();
+}
+
 void Preferences::on_comboBoxButton1_activated(int val)
 {
 	applyComboBox(comboBoxButton1, val, Settings::Settings::inputButton1);
@@ -683,6 +691,12 @@ void Preferences::on_comboBoxButton7_activated(int val)
 void Preferences::on_comboBoxButton8_activated(int val)
 {
 	applyComboBox(comboBoxButton8, val, Settings::Settings::inputButton8);
+        emit inputMappingChanged();
+}
+
+void Preferences::on_comboBoxButton9_activated(int val)
+{
+	applyComboBox(comboBoxButton9, val, Settings::Settings::inputButton9);
         emit inputMappingChanged();
 }
 
@@ -819,6 +833,7 @@ void Preferences::updateGUI()
 	updateComboBox(this->comboBoxRotationY, Settings::Settings::inputRotateY);
 	updateComboBox(this->comboBoxRotationZ, Settings::Settings::inputRotateZ);
 	updateComboBox(this->comboBoxZoom, Settings::Settings::inputZoom);
+	updateComboBox(this->comboBoxButton0, Settings::Settings::inputButton0);
 	updateComboBox(this->comboBoxButton1, Settings::Settings::inputButton1);
 	updateComboBox(this->comboBoxButton2, Settings::Settings::inputButton2);
 	updateComboBox(this->comboBoxButton3, Settings::Settings::inputButton3);
@@ -827,6 +842,7 @@ void Preferences::updateGUI()
 	updateComboBox(this->comboBoxButton6, Settings::Settings::inputButton6);
 	updateComboBox(this->comboBoxButton7, Settings::Settings::inputButton7);
 	updateComboBox(this->comboBoxButton8, Settings::Settings::inputButton8);
+	updateComboBox(this->comboBoxButton9, Settings::Settings::inputButton9);
 }
 
 void Preferences::initComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry)
