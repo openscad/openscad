@@ -249,7 +249,6 @@ HEADERS += src/version_check.h \
            src/ThrownTogetherRenderer.h \
            src/CGAL_OGL_Polyhedron.h \
            src/OGL_helper.h \
-           src/input/SixDoFDev.h \
            src/QGLView.h \
            src/GLView.h \
            src/MainWindow.h \
