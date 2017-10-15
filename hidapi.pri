@@ -37,7 +37,11 @@ win*: {
   isEmpty(HIDAPI_LIBPATH) {
     HIDAPI_LIBS = $$system("pkg-config --silence-errors --libs hidapi-libusb")
   } else {
-    HIDAPI_LIBS = -L$$HIDAPI_LIBPATH -lhidapi-libusb
+    macx: {
+      HIDAPI_LIBS = -L$$HIDAPI_LIBPATH -lhidapi -framework IOKit -framework CoreFoundation
+    } else {
+      HIDAPI_LIBS = -L$$HIDAPI_LIBPATH -lhidapi-libusb
+    }
   }
 }
 
