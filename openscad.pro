@@ -131,7 +131,6 @@ netbsd* {
 # See Dec 2011 OpenSCAD mailing list, re: CGAL/GCC bugs.
 *g++* {
   QMAKE_CXXFLAGS *= -fno-strict-aliasing
-  QMAKE_CXXFLAGS += -std=c++11
   QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-local-typedefs # ignored before 4.8
 }
 
@@ -250,7 +249,7 @@ HEADERS += src/version_check.h \
            src/ThrownTogetherRenderer.h \
            src/CGAL_OGL_Polyhedron.h \
            src/OGL_helper.h \
-           src/SixDoFDev.h \
+           src/input/SixDoFDev.h \
            src/QGLView.h \
            src/GLView.h \
            src/MainWindow.h \
@@ -357,7 +356,9 @@ HEADERS += src/version_check.h \
            src/parameter/groupwidget.h \
            src/parameter/parameterset.h \
            src/QWordSearchField.h \
-           src/QSettingsCached.h
+           src/QSettingsCached.h \
+           src/input/InputDriver.h \
+           src/input/InputDriverManager.h
 
 SOURCES += \
            src/libsvg/libsvg.cc \
@@ -374,7 +375,9 @@ SOURCES += \
            src/libsvg/transformation.cc \
            src/libsvg/util.cc \
            \
-           src/version_check.cc \
+           src/version_check.cc
+
+SOURCES += \
            src/ProgressWidget.cc \
            src/linalg.cc \
            src/Camera.cc \
@@ -438,9 +441,11 @@ SOURCES += \
            src/OpenCSGWarningDialog.cc \
            src/editor.cc \
            src/GLView.cc \
-           src/SixDoFDev.cc \
            src/QGLView.cc \
            src/AutoUpdater.cc \
+           src/input/SixDoFDev.cc \
+           src/input/InputDriver.cc \
+           src/input/InputDriverManager.cc \
            \
            src/grid.cc \
            src/hash.cc \
@@ -499,9 +504,7 @@ SOURCES += \
            src/parameter/parameterset.cpp \
            src/parameter/parametervirtualwidget.cpp\
            src/QWordSearchField.cc\
-           \
            src/QSettingsCached.cc
-
 
 # ClipperLib
 SOURCES += src/polyclipping/clipper.cpp

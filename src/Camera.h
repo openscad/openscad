@@ -29,7 +29,7 @@ public:
 	void setup(std::vector<double> params);
 	void gimbalDefaultTranslate();
 	void setProjection(ProjectionType type);
-	void zoom(int delta);
+	void zoom(int zoom, bool relative);
 	double zoomValue();
 	void resetView();
 	void viewAll(const BoundingBox &bbox);

@@ -60,7 +60,6 @@
 #include "ThrownTogetherRenderer.h"
 #include "CSGTreeNormalizer.h"
 #include "QGLView.h"
-#include "SixDoFDev.h"
 #ifdef Q_OS_MAC
 #include "CocoaUtils.h"
 #endif
@@ -1623,8 +1622,11 @@ void MainWindow::findBufferChanged()
 }
 
 bool MainWindow::event(QEvent* event) {
-	if (event->type() == SixDoFDevEvent::my_type) {
-		static_cast< SixDoFDevEvent*>( event)->deliver( qglview);
+	if (event->type() == InputEvent::eventType) {
+		InputEvent *inputEvent = dynamic_cast<InputEvent *>(event);
+		if (inputEvent) {
+			inputEvent->deliver(qglview);
+		}
 		event->accept();
 		return true;
 	}
