@@ -60,7 +60,6 @@
 #include "CsgInfo.h"
 #include "csgnode.h"
 #include "CSGTreeEvaluator.h"
-#include "input/SixDoFDev.h"
 
 #include <sstream>
 
@@ -594,8 +593,9 @@ Q_IMPORT_PLUGIN(qtaccessiblewidgets)
 #include "OpenSCADApp.h"
 #include "launchingscreen.h"
 #include "QSettingsCached.h"
-#include "input/SixDoFDev.h"
 #include "input/InputDriverManager.h"
+#include "input/HidApiInputDriver.h"
+#include "input/SpaceNavInputDriver.h"
 #include <QString>
 #include <QDir>
 #include <QFileInfo>
@@ -775,7 +775,8 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	}
 
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
-        InputDriverManager::instance()->registerDriver(new SixDoFDev());
+        InputDriverManager::instance()->registerDriver(new HidApiInputDriver());
+        InputDriverManager::instance()->registerDriver(new SpaceNavInputDriver());
 	int rc = app.exec();
 	for (auto &mainw : scadApp->windowManager.getWindows()) delete mainw;
 	return rc;

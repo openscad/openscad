@@ -30,20 +30,19 @@
 
 #include "input/InputDriver.h"
 
-class SixDoFDev : public InputDriver
+class HidApiInputDriver : public InputDriver
 {
     Q_OBJECT
 
+    hid_device* hid_dev;
+
 public:
-    SixDoFDev();
-    virtual ~SixDoFDev();
+    HidApiInputDriver();
+    virtual ~HidApiInputDriver();
     virtual void run();
     virtual void open();
     virtual void close();
 
 private:
     void hidapi_input(hid_device* hid_dev);
-    void spnav_input();
 };
-
-extern SixDoFDev spacenav;

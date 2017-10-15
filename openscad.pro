@@ -358,7 +358,9 @@ HEADERS += src/version_check.h \
            src/QWordSearchField.h \
            src/QSettingsCached.h \
            src/input/InputDriver.h \
-           src/input/InputDriverManager.h
+           src/input/InputDriverManager.h \
+           src/input/HidApiInputDriver.h \
+           src/input/SpaceNavInputDriver.h
 
 SOURCES += \
            src/libsvg/libsvg.cc \
@@ -443,9 +445,6 @@ SOURCES += \
            src/GLView.cc \
            src/QGLView.cc \
            src/AutoUpdater.cc \
-           src/input/SixDoFDev.cc \
-           src/input/InputDriver.cc \
-           src/input/InputDriverManager.cc \
            \
            src/grid.cc \
            src/hash.cc \
@@ -504,7 +503,12 @@ SOURCES += \
            src/parameter/parameterset.cpp \
            src/parameter/parametervirtualwidget.cpp\
            src/QWordSearchField.cc\
-           src/QSettingsCached.cc
+           src/QSettingsCached.cc \
+           \
+           src/input/InputDriver.cc \
+           src/input/InputDriverManager.cc \
+           src/input/HidApiInputDriver.cc \
+           src/input/SpaceNavInputDriver.cc
 
 # ClipperLib
 SOURCES += src/polyclipping/clipper.cpp
