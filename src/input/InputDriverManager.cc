@@ -148,3 +148,8 @@ void InputDriverManager::onFocusChanged(QWidget *, QWidget *current)
         currentWindow = dynamic_cast<MainWindow *>(current->window());
     }
 }
+
+void InputDriverManager::onInputMappingUpdated()
+{
+    mapper.onInputMappingUpdated();
+}

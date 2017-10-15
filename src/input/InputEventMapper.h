@@ -40,9 +40,11 @@ private:
     QString actions[10];
     int translate[3];
     int rotate[3];
+    int zoom;
 
     double scale(double val);
     double getAxisValue(int config);
+    int parseSettingValue(const std::string val);
 
 public:
     InputEventMapper();
@@ -55,6 +57,8 @@ public:
     void onRotateEvent(class InputEventRotate *event);
     void onActionEvent(class InputEventAction *event);
     void onZoomEvent(class InputEventZoom *event);
+
+    void onInputMappingUpdated();
 
 private slots:
     void onTimer();

@@ -67,6 +67,9 @@ public:
 
     static InputDriverManager * instance();
 
+public slots:
+    void onInputMappingUpdated();
+
 private slots:
     void onTimeout();
     void doOpen(bool firstOpen);

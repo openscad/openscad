@@ -52,6 +52,21 @@ public:
     static SettingsEntry highlightCurrentLine;
     static SettingsEntry enableBraceMatching;
     static SettingsEntry enableLineNumbers;
+    static SettingsEntry inputTranslationX;
+    static SettingsEntry inputTranslationY;
+    static SettingsEntry inputTranslationZ;
+    static SettingsEntry inputRotateX;
+    static SettingsEntry inputRotateY;
+    static SettingsEntry inputRotateZ;
+    static SettingsEntry inputZoom;
+    static SettingsEntry inputButton1;
+    static SettingsEntry inputButton2;
+    static SettingsEntry inputButton3;
+    static SettingsEntry inputButton4;
+    static SettingsEntry inputButton5;
+    static SettingsEntry inputButton6;
+    static SettingsEntry inputButton7;
+    static SettingsEntry inputButton8;
 
     static Settings *inst(bool erase = false);
 

@@ -67,6 +67,114 @@ static Value values(std::string s1, std::string s1disp, std::string s2, std::str
 	return v;
 }
 
+static Value axisValues() {
+	Value::VectorType v;
+	v += ValuePtr(value("None", _("None")));
+	v += ValuePtr(value("+1", _("Axis 1")));
+	v += ValuePtr(value("-1", _("Axis 1 (inverted)")));
+	v += ValuePtr(value("+2", _("Axis 2")));
+	v += ValuePtr(value("-2", _("Axis 2 (inverted)")));
+	v += ValuePtr(value("+3", _("Axis 3")));
+	v += ValuePtr(value("-3", _("Axis 3 (inverted)")));
+	v += ValuePtr(value("+4", _("Axis 4")));
+	v += ValuePtr(value("-4", _("Axis 4 (inverted)")));
+	v += ValuePtr(value("+5", _("Axis 5")));
+	v += ValuePtr(value("-5", _("Axis 5 (inverted)")));
+	v += ValuePtr(value("+6", _("Axis 6")));
+	v += ValuePtr(value("-6", _("Axis 6 (inverted)")));
+	v += ValuePtr(value("+7", _("Axis 7")));
+	v += ValuePtr(value("-7", _("Axis 7 (inverted)")));
+	v += ValuePtr(value("+8", _("Axis 8")));
+	v += ValuePtr(value("-8", _("Axis 8 (inverted)")));
+	v += ValuePtr(value("+9", _("Axis 9")));
+	v += ValuePtr(value("-9", _("Axis 9 (inverted)")));
+	return v;
+}
+
+static Value buttonValues() {
+	Value::VectorType v;
+	v += ValuePtr(value("None", _("None")));
+	v += ValuePtr(value("designActionAutoReload", _("designActionAutoReload")));
+	v += ValuePtr(value("designActionDisplayAST", _("designActionDisplayAST")));
+	v += ValuePtr(value("designActionDisplayCSGProducts", _("designActionDisplayCSGProducts")));
+	v += ValuePtr(value("designActionDisplayCSGTree", _("designActionDisplayCSGTree")));
+	v += ValuePtr(value("designActionFlushCaches", _("designActionFlushCaches")));
+	v += ValuePtr(value("designActionPreview", _("designActionPreview")));
+	v += ValuePtr(value("designActionReloadAndPreview", _("designActionReloadAndPreview")));
+	v += ValuePtr(value("designActionRender", _("designActionRender")));
+	v += ValuePtr(value("designCheckValidity", _("designCheckValidity")));
+	v += ValuePtr(value("editActionComment", _("editActionComment")));
+	v += ValuePtr(value("editActionConvertTabsToSpaces", _("editActionConvertTabsToSpaces")));
+	v += ValuePtr(value("editActionCopy", _("editActionCopy")));
+	v += ValuePtr(value("editActionCopyViewport", _("editActionCopyViewport")));
+	v += ValuePtr(value("editActionCut", _("editActionCut")));
+	v += ValuePtr(value("editActionFind", _("editActionFind")));
+	v += ValuePtr(value("editActionFindAndReplace", _("editActionFindAndReplace")));
+	v += ValuePtr(value("editActionFindNext", _("editActionFindNext")));
+	v += ValuePtr(value("editActionFindPrevious", _("editActionFindPrevious")));
+	v += ValuePtr(value("editActionIndent", _("editActionIndent")));
+	v += ValuePtr(value("editActionPaste", _("editActionPaste")));
+	v += ValuePtr(value("editActionPasteVPR", _("editActionPasteVPR")));
+	v += ValuePtr(value("editActionPasteVPT", _("editActionPasteVPT")));
+	v += ValuePtr(value("editActionPreferences", _("editActionPreferences")));
+	v += ValuePtr(value("editActionRedo", _("editActionRedo")));
+	v += ValuePtr(value("editActionUncomment", _("editActionUncomment")));
+	v += ValuePtr(value("editActionUndo", _("editActionUndo")));
+	v += ValuePtr(value("editActionUnindent", _("editActionUnindent")));
+	v += ValuePtr(value("editActionUseSelectionForFind", _("editActionUseSelectionForFind")));
+	v += ValuePtr(value("editActionZoomTextIn", _("editActionZoomTextIn")));
+	v += ValuePtr(value("editActionZoomTextOut", _("editActionZoomTextOut")));
+	v += ValuePtr(value("fileActionClearRecent", _("fileActionClearRecent")));
+	v += ValuePtr(value("fileActionClose", _("fileActionClose")));
+	v += ValuePtr(value("fileActionExportAMF", _("fileActionExportAMF")));
+	v += ValuePtr(value("fileActionExportCSG", _("fileActionExportCSG")));
+	v += ValuePtr(value("fileActionExportDXF", _("fileActionExportDXF")));
+	v += ValuePtr(value("fileActionExportImage", _("fileActionExportImage")));
+	v += ValuePtr(value("fileActionExportOFF", _("fileActionExportOFF")));
+	v += ValuePtr(value("fileActionExportSTL", _("fileActionExportSTL")));
+	v += ValuePtr(value("fileActionExportSVG", _("fileActionExportSVG")));
+	v += ValuePtr(value("fileActionNew", _("fileActionNew")));
+	v += ValuePtr(value("fileActionOpen", _("fileActionOpen")));
+	v += ValuePtr(value("fileActionQuit", _("fileActionQuit")));
+	v += ValuePtr(value("fileActionReload", _("fileActionReload")));
+	v += ValuePtr(value("fileActionSave", _("fileActionSave")));
+	v += ValuePtr(value("fileActionSaveAs", _("fileActionSaveAs")));
+	v += ValuePtr(value("fileShowLibraryFolder", _("fileShowLibraryFolder")));
+	v += ValuePtr(value("helpActionAbout", _("helpActionAbout")));
+	v += ValuePtr(value("helpActionCheatSheet", _("helpActionCheatSheet")));
+	v += ValuePtr(value("helpActionFontInfo", _("helpActionFontInfo")));
+	v += ValuePtr(value("helpActionHomepage", _("helpActionHomepage")));
+	v += ValuePtr(value("helpActionLibraryInfo", _("helpActionLibraryInfo")));
+	v += ValuePtr(value("helpActionManual", _("helpActionManual")));
+	v += ValuePtr(value("viewActionAnimate", _("viewActionAnimate")));
+	v += ValuePtr(value("viewActionBack", _("viewActionBack")));
+	v += ValuePtr(value("viewActionBottom", _("viewActionBottom")));
+	v += ValuePtr(value("viewActionCenter", _("viewActionCenter")));
+	v += ValuePtr(value("viewActionDiagonal", _("viewActionDiagonal")));
+	v += ValuePtr(value("viewActionFront", _("viewActionFront")));
+	v += ValuePtr(value("viewActionHideConsole", _("viewActionHideConsole")));
+	v += ValuePtr(value("viewActionHideEditor", _("viewActionHideEditor")));
+	v += ValuePtr(value("viewActionHideToolBars", _("viewActionHideToolBars")));
+	v += ValuePtr(value("viewActionLeft", _("viewActionLeft")));
+	v += ValuePtr(value("viewActionOrthogonal", _("viewActionOrthogonal")));
+	v += ValuePtr(value("viewActionPerspective", _("viewActionPerspective")));
+	v += ValuePtr(value("viewActionPreview", _("viewActionPreview")));
+	v += ValuePtr(value("viewActionResetView", _("viewActionResetView")));
+	v += ValuePtr(value("viewActionRight", _("viewActionRight")));
+	v += ValuePtr(value("viewActionShowAxes", _("viewActionShowAxes")));
+	v += ValuePtr(value("viewActionShowCrosshairs", _("viewActionShowCrosshairs")));
+	v += ValuePtr(value("viewActionShowEdges", _("viewActionShowEdges")));
+	v += ValuePtr(value("viewActionShowScaleProportional", _("viewActionShowScaleProportional")));
+	v += ValuePtr(value("viewActionSurfaces", _("viewActionSurfaces")));
+	v += ValuePtr(value("viewActionThrownTogether", _("viewActionThrownTogether")));
+	v += ValuePtr(value("viewActionTop", _("viewActionTop")));
+	v += ValuePtr(value("viewActionViewAll", _("viewActionViewAll")));
+	v += ValuePtr(value("viewActionWireframe", _("viewActionWireframe")));
+	v += ValuePtr(value("viewActionZoomIn", _("viewActionZoomIn")));
+	v += ValuePtr(value("viewActionZoomOut", _("viewActionZoomOut")));
+	return v;
+}
+
 Settings *Settings::inst(bool erase)
 {
 	static Settings *instance = new Settings;
@@ -143,4 +251,20 @@ SettingsEntry Settings::tabKeyFunction("editor", "tabKeyFunction", values("Inden
 SettingsEntry Settings::highlightCurrentLine("editor", "highlightCurrentLine", Value(true), Value(true));
 SettingsEntry Settings::enableBraceMatching("editor", "enableBraceMatching", Value(true), Value(true));
 SettingsEntry Settings::enableLineNumbers("editor", "enableLineNumbers", Value(true), Value(true));
+
+SettingsEntry Settings::inputTranslationX("input", "translationX", axisValues(), Value("+1"));
+SettingsEntry Settings::inputTranslationY("input", "translationY", axisValues(), Value("-2"));
+SettingsEntry Settings::inputTranslationZ("input", "translationZ", axisValues(), Value("-3"));
+SettingsEntry Settings::inputRotateX("input", "rotateX", axisValues(), Value("+4"));
+SettingsEntry Settings::inputRotateY("input", "rotateY", axisValues(), Value("-5"));
+SettingsEntry Settings::inputRotateZ("input", "rotateZ", axisValues(), Value("-6"));
+SettingsEntry Settings::inputZoom("input", "zoom", axisValues(), Value("None"));
+SettingsEntry Settings::inputButton1("input", "button1", buttonValues(), Value("viewActionResetView"));
+SettingsEntry Settings::inputButton2("input", "button2", buttonValues(), Value("None"));
+SettingsEntry Settings::inputButton3("input", "button3", buttonValues(), Value("None"));
+SettingsEntry Settings::inputButton4("input", "button4", buttonValues(), Value("None"));
+SettingsEntry Settings::inputButton5("input", "button5", buttonValues(), Value("None"));
+SettingsEntry Settings::inputButton6("input", "button6", buttonValues(), Value("None"));
+SettingsEntry Settings::inputButton7("input", "button7", buttonValues(), Value("None"));
+SettingsEntry Settings::inputButton8("input", "button8", buttonValues(), Value("None"));
 }
