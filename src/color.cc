@@ -213,6 +213,47 @@ ColorModule::~ColorModule()
 {
 }
 
+// Parses hex colors according to: https://drafts.csswg.org/css-color/#typedef-hex-color.
+// If the input is invalid, returns boost::none.
+// Supports the following formats:
+// * "#rrggbb"
+// * "#rrggbbaa"
+// * "#rgb"
+// * "#rgba"
+boost::optional<Color4f> parse_hex_color(const std::string& hex) {
+	// validate size. short syntax uses one hex digit per color channel instead of 2.
+	const bool short_syntax = hex.size() == 4 || hex.size() == 5;
+	const bool long_syntax = hex.size() == 7 || hex.size() == 9;
+	if (!short_syntax && !long_syntax) return boost::none;
+
+	if (hex[0] != '#') return boost::none;
+
+	// number of characters per color channel
+	const int stride = short_syntax ? 1 : 2;
+	const float channel_max = short_syntax ? 15 : 255;
+
+	std::array<int,4> rgba;
+	rgba[3] = channel_max; // default alpha channel to 100%
+
+	for (unsigned i = 0; i < (hex.size() - 1) / stride; i++) {
+		const std::string chunk = hex.substr(1 + i*stride, stride);
+
+		// validate - only [0-9a-fA-F] are allowed
+		for (char c : chunk) {
+			if (!std::isdigit(c) && !('a' <= c && c <= 'f') && !('A' <= c && c <= 'F')) return boost::none;
+		}
+
+		// convert the hex character(s) from base 16 to base 10
+		rgba[i] = stoi(chunk, nullptr, 16);
+	}
+
+	return Color4f(
+		rgba[0] / channel_max,
+		rgba[1] / channel_max,
+		rgba[2] / channel_max,
+		rgba[3] / channel_max);
+}
+
 AbstractNode *ColorModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	auto node = new ColorNode(inst);
@@ -236,8 +277,14 @@ AbstractNode *ColorModule::instantiate(const Context *ctx, const ModuleInstantia
 		if (webcolors.find(colorname) != webcolors.end())	{
 			node->color = webcolors.at(colorname);
 		} else {
-			PRINTB_NOCACHE("WARNING: Color name \"%s\" unknown. Please see", colorname);
-			PRINT_NOCACHE("WARNING: http://en.wikipedia.org/wiki/Web_colors");
+			// Try parsing it as a hex color such as "#rrggbb".
+			boost::optional<Color4f> hexColor = parse_hex_color(colorname);
+			if (hexColor) {
+				node->color = *hexColor;
+			} else {
+				PRINTB_NOCACHE("WARNING: Unable to parse color \"%s\". Please see", colorname);
+				PRINT_NOCACHE("WARNING: http://en.wikipedia.org/wiki/Web_colors");
+			}
 		}
 	}
 	auto alpha = c.lookup_variable("alpha");
