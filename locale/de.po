@@ -1879,8 +1879,8 @@ msgstr "nach Einrückung"
 #~ msgid "Can't open file \"%s\" for export"
 #~ msgstr "Can't open file \"%s\" for export"
 
-#~ msgid "%s export finished."
-#~ msgstr "%s export finished."
+#~ msgid "%s export finished: %s"
+#~ msgstr "%s export finished: %s"
 
 #~ msgid "Current top level object is not a 2D object."
 #~ msgstr "Current top level object is not a 2D object."
