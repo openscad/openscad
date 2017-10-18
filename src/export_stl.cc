@@ -51,6 +51,8 @@ static void append_stl(const PolySet &ps, std::ostream &output)
 		stream.str("");
 		stream << p[2][0] << " " << p[2][1] << " " << p[2][2];
 		std::string vs3 = stream.str();
+		
+		
 		if (vs1 != vs2 && vs1 != vs3 && vs2 != vs3) {
 			// The above condition ensures that there are 3 distinct vertices, but
 			// they may be collinear. If they are, the unit normal is meaningless
@@ -58,7 +60,29 @@ static void append_stl(const PolySet &ps, std::ostream &output)
 			// collinear then the unit normal must be calculated from the
 			// components.
 			output << "  facet normal ";
-			Vector3d normal = (p[1] - p[0]).cross(p[2] - p[0]);
+			std::string temp;
+			size_t sz = 0;
+			
+			double p0x = std::stod(vs1, &sz);
+			temp = vs1.substr(sz);
+			double p0y = std::stod(temp, &sz);
+			double p0z = std::stod(temp.substr(sz));
+
+			double p1x = std::stod(vs2, &sz);
+			temp = vs2.substr(sz);
+			double p1y = std::stod(temp, &sz);
+			double p1z = std::stod(temp.substr(sz));
+			
+			double p2x = std::stod(vs3, &sz);
+			temp = vs3.substr(sz);
+			double p2y = std::stod(temp, &sz);
+			double p2z = std::stod(temp.substr(sz));
+
+			Vector3d p0 = Vector3d(p0x,p0y,p0z);
+			Vector3d p1 = Vector3d(p1x,p1y,p1z);
+			Vector3d p2 = Vector3d(p2x,p2y,p2z);
+			
+			Vector3d normal = (p1 - p0).cross(p2 - p0);
 			normal.normalize();
 			if (is_finite(normal) && !is_nan(normal)) {
 				output << normal[0] << " " << normal[1] << " " << normal[2] << "\n";
