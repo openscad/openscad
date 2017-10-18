@@ -11,6 +11,9 @@ matrix:
     - os: osx
       compiler: clang
       env: DIST="osx"
+      cache:
+        directories:
+          - "$HOME/Library/Caches/Homebrew"
 
 notifications:
   irc:
