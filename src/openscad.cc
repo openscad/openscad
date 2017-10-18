@@ -809,21 +809,6 @@ struct CommaSeparatedVector
 	}
 };
 
-/*!
-	This makes boost::program_option parse comma-separated values
- */
-struct CommaSeparatedVector
-{
-	std::vector<std::string> values;
-
-	friend std::istream &operator>>(std::istream &in, CommaSeparatedVector &value) {
-		std::string token;
-		in >> token;
-		boost::split(value.values, token, boost::is_any_of(","));
-		return in;
-	}
-};
-
 int main(int argc, char **argv)
 {
 	int rc = 0;
