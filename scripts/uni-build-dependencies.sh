@@ -813,7 +813,7 @@ if [ $1 ]; then
     exit $?
   fi
   if [ $1 = "opencsg" ]; then
-    build_opencsg 1.3.2
+    build_opencsg 1.4.2
     exit $?
   fi
   if [ $1 = "qt4" ]; then
@@ -874,7 +874,7 @@ build_boost 1.56.0
 # NB! For CGAL, also update the actual download URL in the function
 build_cgal 4.7
 build_glew 1.9.0
-build_opencsg 1.3.2
+build_opencsg 1.4.2
 build_gettext 0.18.3.1
 build_glib2 2.38.2
 
