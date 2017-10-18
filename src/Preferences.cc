@@ -181,11 +181,13 @@ void Preferences::init() {
 #endif
 #ifdef ENABLE_EXPERIMENTAL
 	addPrefPage(group, prefsActionFeatures, pageFeatures);
+	addPrefPage(group, prefsActionInput, pageInput);
 #else
 	this->toolBar->removeAction(prefsActionFeatures);
+	this->toolBar->removeAction(prefsActionInput);
 #endif
 	addPrefPage(group, prefsActionAdvanced, pageAdvanced);
-	addPrefPage(group, prefsActionInput, pageInput);
+	
 	connect(group, SIGNAL(triggered(QAction*)), this, SLOT(actionTriggered(QAction*)));
 
 	prefsAction3DView->setChecked(true);
