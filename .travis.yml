@@ -7,10 +7,14 @@ matrix:
       dist: trusty
       env: DIST="trusty"
       sudo: required
-      cache: apt
+      cache:
+        - apt
+        - ccache
     - os: osx
       compiler: clang
       env: DIST="osx"
+      cache:
+        - ccache
 
 notifications:
   irc:
