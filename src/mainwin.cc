@@ -643,7 +643,13 @@ void MainWindow::onButtonChanged(InputEventButtonChanged *event)
 void MainWindow::onTranslateEvent(InputEventTranslate *event)
 {
     double zoomFactor = 0.001 * qglview->cam.zoomValue();
-    qglview->translate(zoomFactor * event->x, event->y, zoomFactor * event->z, event->relative, false);
+    
+    if(event->viewPortRelative){
+		qglview->translate(event->x, event->y, event->z, event->relative, true);
+	}else{
+		qglview->translate(zoomFactor * event->x, event->y, zoomFactor * event->z, event->relative, false);
+	}
+
 }
 
 void MainWindow::onRotateEvent(InputEventRotate *event)

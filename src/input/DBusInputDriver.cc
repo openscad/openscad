@@ -112,12 +112,12 @@ void DBusInputDriver::rotateTo(double x, double y, double z)
 
 void DBusInputDriver::translate(double x, double y, double z)
 {
-    InputDriverManager::instance()->sendEvent(new InputEventTranslate(x, y, z, true, false));
+    InputDriverManager::instance()->sendEvent(new InputEventTranslate(x, y, z, true, false, false));
 }
 
 void DBusInputDriver::translateTo(double x, double y, double z)
 {
-    InputDriverManager::instance()->sendEvent(new InputEventTranslate(x, y, z, false, false));
+    InputDriverManager::instance()->sendEvent(new InputEventTranslate(x, y, z, false, false, false));
 }
 
 void DBusInputDriver::action(QString name)
