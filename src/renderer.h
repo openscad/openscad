@@ -16,6 +16,7 @@ public:
 	virtual ~Renderer() {}
 	virtual void draw(bool showfaces, bool showedges) const = 0;
 	virtual BoundingBox getBoundingBox() const = 0;
+	void setBWmode(bool flag) { black_and_white_mode=flag; }
 	
 #define CSGMODE_DIFFERENCE_FLAG 0x10
 	enum csgmode_e {
@@ -53,4 +54,5 @@ public:
 protected:
 	std::map<ColorMode,Color4f> colormap;
 	const ColorScheme *colorscheme;
+	bool black_and_white_mode;
 };

@@ -390,6 +390,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->viewActionViewAll, SIGNAL(triggered()), this, SLOT(viewAll()));
 	connect(this->viewActionPerspective, SIGNAL(triggered()), this, SLOT(viewPerspective()));
 	connect(this->viewActionOrthogonal, SIGNAL(triggered()), this, SLOT(viewOrthogonal()));
+	connect(this->viewActionAnaglyph, SIGNAL(triggered()), this, SLOT(viewModeAnaglyph()));
 	connect(this->viewActionZoomIn, SIGNAL(triggered()), qglview, SLOT(ZoomIn()));
 	connect(this->viewActionZoomOut, SIGNAL(triggered()), qglview, SLOT(ZoomOut()));
 	connect(this->viewActionHideToolBars, SIGNAL(triggered()), this, SLOT(hideToolbars()));
@@ -2380,6 +2381,14 @@ void MainWindow::viewModeShowScaleProportional()
 	settings.setValue("view/showScaleProportional",viewActionShowScaleProportional->isChecked());
 	this->qglview->setShowScaleProportional(viewActionShowScaleProportional->isChecked());
 	this->qglview->updateGL();
+}
+
+void MainWindow::viewModeAnaglyph()
+{
+    QSettings settings;
+//    settings.setValue("view/showScaleProportional",viewActionShowScaleProportional->isChecked());
+    this->qglview->setShowAnaglyph(viewActionAnaglyph->isChecked());
+    this->qglview->updateGL();
 }
 
 void MainWindow::viewModeAnimate()

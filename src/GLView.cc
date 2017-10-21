@@ -57,6 +57,8 @@ Renderer attached to this GLView as well. */
 void GLView::setColorScheme(const ColorScheme &cs)
 {
   this->colorscheme = &cs;
+  this->colorschemeColor = &cs;
+  this->colorschemeBW=cs.toBlackAndWhite();
   this->updateColorScheme();
 }
 
@@ -69,6 +71,14 @@ void GLView::setColorScheme(const std::string &cs)
   else {
     PRINTB("WARNING: GLView: unknown colorscheme %s", cs);
   }
+}
+
+void GLView::setColorSchemeBW(bool bw_mode)
+{
+  const ColorScheme *cs=this->colorscheme;
+  this->colorscheme=(bw_mode)?&this->colorschemeBW:this->colorschemeColor;
+  if (cs!=this->colorscheme) this->updateColorScheme();
+  if (this->renderer) renderer->setBWmode(bw_mode);
 }
 
 void GLView::resizeGL(int w, int h)
@@ -88,11 +98,10 @@ void GLView::setCamera(const Camera &cam)
   this->cam = cam;
 }
 
-void GLView::setupCamera()
+void GLView::setupCamera(Camera::Eye eye)
 {
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
 	switch (this->cam.type) {
 	case Camera::CameraType::GIMBAL: {
 		auto dist = cam.zoomValue();
@@ -109,7 +118,7 @@ void GLView::setupCamera()
 			break;
 		}
 		}
-		gluLookAt(0.0, -dist, 0.0,
+		gluLookAt((float)eye*cam.eye_distance*dist, -dist, 0.0,
 							0.0, 0.0, 0.0,
 							0.0, 0.0, 1.0);
 		glMatrixMode(GL_MODELVIEW);
@@ -121,6 +130,7 @@ void GLView::setupCamera()
 	}
 	case Camera::CameraType::VECTOR: {
 		auto dist = (cam.center - cam.eye).norm();
+		Vector3d currentEye(cam.eye+Vector3d((float)eye*cam.eye_distance*dist,0.0,0.0));
 		switch (this->cam.projection) {
 		case Camera::ProjectionType::PERSPECTIVE: {
 			gluPerspective(cam.fov, aspectratio, 0.1*dist, 100*dist);
@@ -137,15 +147,15 @@ void GLView::setupCamera()
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 
-		Vector3d dir(cam.eye - cam.center);
+		Vector3d dir(currentEye - cam.center);
 		Vector3d up(0.0,0.0,1.0);
 		if (dir.cross(up).norm() < 0.001) { // View direction is ~parallel with up vector
 			up << 0.0,1.0,0.0;
 		}
 
-		gluLookAt(cam.eye[0], cam.eye[1], cam.eye[2],
-							cam.center[0], cam.center[1], cam.center[2],
-							up[0], up[1], up[2]);
+		gluLookAt(currentEye[0], currentEye[1], currentEye[2],
+			cam.center[0], cam.center[1], cam.center[2],
+			up[0], up[1], up[2]);
 		break;
 	}
 	default:
@@ -156,13 +166,35 @@ void GLView::setupCamera()
 void GLView::paintGL()
 {
   glDisable(GL_LIGHTING);
-
+  setColorSchemeBW(cam.anaglyph);
   auto bgcol = ColorMap::getColor(*this->colorscheme, RenderColor::BACKGROUND_COLOR);
   auto axescolor = ColorMap::getColor(*this->colorscheme, RenderColor::AXES_COLOR);
   glClearColor(bgcol[0], bgcol[1], bgcol[2], 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-  setupCamera();
+  if (cam.anaglyph) {
+    setupCamera(Camera::LEFT);
+    glColorMask(true, false, false, false);
+    paintGL_oneEye(axescolor);
+
+    glClear(GL_DEPTH_BUFFER_BIT);
+    setupCamera(Camera::RIGHT);
+    glColorMask(false, true, true, false);
+    paintGL_oneEye(axescolor);
+
+    glColorMask(true, true, true, true);
+  } else {
+    setupCamera();
+    paintGL_oneEye(axescolor);
+  }
+
+  // Only for GIMBAL
+  glDisable(GL_LIGHTING);
+  if (showaxes) GLView::showSmallaxes(axescolor);
+}
+
+void GLView::paintGL_oneEye(const Color4f& axescolor)
+{
   if (this->cam.type == Camera::CameraType::GIMBAL) {
     // Only for GIMBAL cam
     // The crosshair should be fixed at the center of the viewport...
@@ -189,9 +221,6 @@ void GLView::paintGL()
     this->renderer->draw(showfaces, showedges);
   }
 
-  // Only for GIMBAL
-  glDisable(GL_LIGHTING);
-  if (showaxes) GLView::showSmallaxes(axescolor);
 }
 
 #ifdef ENABLE_OPENCSG
