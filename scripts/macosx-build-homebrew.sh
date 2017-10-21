@@ -28,6 +28,12 @@ fi
 log "Listing homebrew configuration"
 brew config
 
+log "Listing homebrew cache dir"
+brew --cache
+
+log "Listing cache contents"
+ls $(brew --cache)
+
 log "Updating homebrew"
 brew update
 # Install special packages not yet in upstream homebrew repo.
