@@ -93,3 +93,4 @@ addons:
     build_command_prepend: qmake CONFIG+=experimental CONFIG+=nogui
     build_command: make
     branch_pattern: coverity_scan
+
