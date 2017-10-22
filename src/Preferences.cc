@@ -217,6 +217,9 @@ void Preferences::init() {
         initComboBox(this->comboBoxTranslationX, Settings::Settings::inputTranslationX);
         initComboBox(this->comboBoxTranslationY, Settings::Settings::inputTranslationY);
         initComboBox(this->comboBoxTranslationZ, Settings::Settings::inputTranslationZ);
+        initComboBox(this->comboBoxTranslationXVPRel, Settings::Settings::inputTranslationXVPRel);
+        initComboBox(this->comboBoxTranslationYVPRel, Settings::Settings::inputTranslationYVPRel);
+        initComboBox(this->comboBoxTranslationZVPRel, Settings::Settings::inputTranslationZVPRel);
         initComboBox(this->comboBoxRotationX, Settings::Settings::inputRotateX);
         initComboBox(this->comboBoxRotationY, Settings::Settings::inputRotateY);
         initComboBox(this->comboBoxRotationZ, Settings::Settings::inputRotateZ);
@@ -616,6 +619,23 @@ void Preferences::on_comboBoxTranslationZ_activated(int val)
         emit inputMappingChanged();
 }
 
+void Preferences::on_comboBoxTranslationXVPRel_activated(int val)
+{
+	applyComboBox(comboBoxTranslationXVPRel, val, Settings::Settings::inputTranslationXVPRel);
+        emit inputMappingChanged();
+}
+
+void Preferences::on_comboBoxTranslationYVPRel_activated(int val)
+{
+	applyComboBox(comboBoxTranslationYVPRel, val, Settings::Settings::inputTranslationYVPRel);
+        emit inputMappingChanged();
+}
+
+void Preferences::on_comboBoxTranslationZVPRel_activated(int val)
+{
+	applyComboBox(comboBoxTranslationZVPRel, val, Settings::Settings::inputTranslationZVPRel);
+        emit inputMappingChanged();
+}
 void Preferences::on_comboBoxRotationX_activated(int val)
 {
 	applyComboBox(comboBoxRotationX, val, Settings::Settings::inputRotateX);
@@ -829,6 +849,9 @@ void Preferences::updateGUI()
 	updateComboBox(this->comboBoxTranslationX, Settings::Settings::inputTranslationX);
 	updateComboBox(this->comboBoxTranslationY, Settings::Settings::inputTranslationY);
 	updateComboBox(this->comboBoxTranslationZ, Settings::Settings::inputTranslationZ);
+	updateComboBox(this->comboBoxTranslationXVPRel, Settings::Settings::inputTranslationXVPRel);
+	updateComboBox(this->comboBoxTranslationYVPRel, Settings::Settings::inputTranslationYVPRel);
+	updateComboBox(this->comboBoxTranslationZVPRel, Settings::Settings::inputTranslationZVPRel);
 	updateComboBox(this->comboBoxRotationX, Settings::Settings::inputRotateX);
 	updateComboBox(this->comboBoxRotationY, Settings::Settings::inputRotateY);
 	updateComboBox(this->comboBoxRotationZ, Settings::Settings::inputRotateZ);

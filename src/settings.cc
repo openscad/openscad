@@ -255,6 +255,9 @@ SettingsEntry Settings::enableLineNumbers("editor", "enableLineNumbers", Value(t
 SettingsEntry Settings::inputTranslationX("input", "translationX", axisValues(), Value("+1"));
 SettingsEntry Settings::inputTranslationY("input", "translationY", axisValues(), Value("-2"));
 SettingsEntry Settings::inputTranslationZ("input", "translationZ", axisValues(), Value("-3"));
+SettingsEntry Settings::inputTranslationXVPRel("input", "translationXVPRel", axisValues(), Value(""));
+SettingsEntry Settings::inputTranslationYVPRel("input", "translationYVPRel", axisValues(), Value(""));
+SettingsEntry Settings::inputTranslationZVPRel("input", "translationZVPRel", axisValues(), Value(""));
 SettingsEntry Settings::inputRotateX("input", "rotateX", axisValues(), Value("+4"));
 SettingsEntry Settings::inputRotateY("input", "rotateY", axisValues(), Value("-5"));
 SettingsEntry Settings::inputRotateZ("input", "rotateZ", axisValues(), Value("-6"));

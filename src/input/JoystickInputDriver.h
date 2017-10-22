@@ -37,7 +37,6 @@ public:
     virtual void close();
 
     virtual const std::string & get_name() const;
-
 private:
     int fd;
     int version;
