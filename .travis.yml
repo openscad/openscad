@@ -7,7 +7,9 @@ matrix:
       dist: trusty
       env: DIST="trusty"
       sudo: required
-      cache: apt
+      cache:
+        - apt
+        - ccache
     - os: osx
       compiler: clang
       env: DIST="osx"
@@ -15,6 +17,7 @@ matrix:
         directories:
           - "$HOME/Library/Caches/Homebrew"
           - "$(brew --cache)"
+        ccache: true
 
 notifications:
   irc:

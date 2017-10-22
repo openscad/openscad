@@ -2183,7 +2183,8 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
 	exportFileByName(this->root_geom, format,
 		export_filename.toLocal8Bit().constData(),
 		export_filename.toUtf8());
-	PRINTB("%s export finished.", type_name);
+	PRINTB("%s export finished: %s",
+		type_name % export_filename.toUtf8().constData());
 
 	clearCurrentOutput();
 #endif /* ENABLE_CGAL */
