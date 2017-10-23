@@ -7,10 +7,17 @@ matrix:
       dist: trusty
       env: DIST="trusty"
       sudo: required
-      cache: apt
+      cache:
+        - apt
+        - ccache
     - os: osx
       compiler: clang
       env: DIST="osx"
+      cache:
+        directories:
+          - "$HOME/Library/Caches/Homebrew"
+          - "$(brew --cache)"
+        ccache: true
 
 notifications:
   irc:
@@ -90,3 +97,6 @@ addons:
     build_command_prepend: qmake CONFIG+=experimental CONFIG+=nogui
     build_command: make
     branch_pattern: coverity_scan
+
+
+
