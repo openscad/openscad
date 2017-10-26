@@ -76,6 +76,7 @@ public:
     static Settings *inst(bool erase = false);
 
     void visit(class SettingsVisitor& visitor);
+    SettingsEntry* getSettingEntryByName(std::string name);
 
     const Value &defaultValue(const SettingsEntry& entry);
     const Value &get(const SettingsEntry& entry);
