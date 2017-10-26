@@ -71,6 +71,8 @@ void InputDriverManager::registerActions(const QList<QAction *> &actions)
     }
 }
 
+
+
 void InputDriverManager::init()
 {
     doOpen(true);
@@ -127,6 +129,18 @@ std::string InputDriverManager::listDrivers()
         sep = ", ";
     }
     return stream.str();
+}
+
+void InputDriverManager::closeDrivers()
+{
+	stopRequest = true;
+	timer->stop();
+	InputEventMapper::instance()->stop();
+
+    for (drivers_t::iterator it = drivers.begin();it != drivers.end();it++) {
+        InputDriver *driver = (*it);
+        driver->close();
+    }
 }
 
 void InputDriverManager::sendEvent(InputEvent *event)

@@ -41,6 +41,7 @@
 #include "colormap.h"
 #include "rendersettings.h"
 #include "QSettingsCached.h"
+#include "input/InputDriverManager.h"
 
 Preferences *Preferences::instance = nullptr;
 
@@ -296,6 +297,11 @@ void Preferences::featuresCheckBoxToggled(bool state)
 	QSettingsCached settings;
 	settings.setValue(QString("feature/%1").arg(QString::fromStdString(feature->get_name())), state);
 	emit ExperimentalChanged();
+
+	if (!Feature::ExperimentalInputDriver.is_enabled()) {
+		this->toolBar->removeAction(prefsActionInput);
+		InputDriverManager::instance()->closeDrivers();
+	}
 }
 
 /**
