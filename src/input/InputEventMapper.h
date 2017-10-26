@@ -38,7 +38,7 @@ private:
     QTimer *timer;
     double axisValue[10];
     QString actions[10];
-    int translate[3];
+    int translate[6];
     int rotate[3];
     int zoom;
     volatile bool stopRequest;

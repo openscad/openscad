@@ -55,6 +55,9 @@ public:
     static SettingsEntry inputTranslationX;
     static SettingsEntry inputTranslationY;
     static SettingsEntry inputTranslationZ;
+    static SettingsEntry inputTranslationXVPRel;
+    static SettingsEntry inputTranslationYVPRel;
+    static SettingsEntry inputTranslationZVPRel;
     static SettingsEntry inputRotateX;
     static SettingsEntry inputRotateY;
     static SettingsEntry inputRotateZ;

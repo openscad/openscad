@@ -88,7 +88,15 @@ void InputEventMapper::onTimer()
         InputEvent *inputEvent = new InputEventTranslate(tx, ty, tz);
         InputDriverManager::instance()->postEvent(inputEvent);
     }
-
+    
+    double txVPRel = getAxisValue(translate[3]);
+    double tyVPRel = getAxisValue(translate[4]);
+    double tzVPRel = getAxisValue(translate[5]);
+    if ((fabs(txVPRel) > threshold) || (fabs(tyVPRel) > threshold) || (fabs(tzVPRel) > threshold)) {
+        InputEvent *inputEvent = new InputEventTranslate(txVPRel, tyVPRel, tzVPRel, true, true, false);
+        InputDriverManager::instance()->postEvent(inputEvent);
+    }
+    
     double rx = getAxisValue(rotate[0]);
     double ry = getAxisValue(rotate[1]);
     double rz = getAxisValue(rotate[2]);
@@ -169,6 +177,9 @@ void InputEventMapper::onInputMappingUpdated()
     translate[0] = parseSettingValue(s->get(Settings::Settings::inputTranslationX).toString());
     translate[1] = parseSettingValue(s->get(Settings::Settings::inputTranslationY).toString());
     translate[2] = parseSettingValue(s->get(Settings::Settings::inputTranslationZ).toString());
+    translate[3] = parseSettingValue(s->get(Settings::Settings::inputTranslationXVPRel).toString());
+    translate[4] = parseSettingValue(s->get(Settings::Settings::inputTranslationYVPRel).toString());
+    translate[5] = parseSettingValue(s->get(Settings::Settings::inputTranslationZVPRel).toString());
     rotate[0] = parseSettingValue(s->get(Settings::Settings::inputRotateX).toString());
     rotate[1] = parseSettingValue(s->get(Settings::Settings::inputRotateY).toString());
     rotate[2] = parseSettingValue(s->get(Settings::Settings::inputRotateZ).toString());

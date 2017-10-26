@@ -76,6 +76,9 @@ public slots:
         void on_comboBoxTranslationX_activated(int val);
         void on_comboBoxTranslationY_activated(int val);
         void on_comboBoxTranslationZ_activated(int val);
+        void on_comboBoxTranslationXVPRel_activated(int val);
+        void on_comboBoxTranslationYVPRel_activated(int val);
+        void on_comboBoxTranslationZVPRel_activated(int val);
         void on_comboBoxRotationX_activated(int val);
         void on_comboBoxRotationY_activated(int val);
         void on_comboBoxRotationZ_activated(int val);

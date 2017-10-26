@@ -115,8 +115,8 @@ public:
     const double y;
     const double z;
     const bool relative;
-
-    InputEventTranslate(const double x, const double y, const double z, const bool relative = true, const bool activeOnly = true) : InputEvent(activeOnly), x(x), y(y), z(z), relative(relative) { }
+	const bool viewPortRelative;
+    InputEventTranslate(const double x, const double y, const double z, const bool relative = true, const bool viewPortRelative=false, const bool activeOnly = true) : InputEvent(activeOnly), x(x), y(y), z(z), relative(relative), viewPortRelative(viewPortRelative) { }
 
     void deliver(InputEventHandler *receiver)
     {
