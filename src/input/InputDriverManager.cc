@@ -71,8 +71,6 @@ void InputDriverManager::registerActions(const QList<QAction *> &actions)
     }
 }
 
-
-
 void InputDriverManager::init()
 {
     doOpen(true);
