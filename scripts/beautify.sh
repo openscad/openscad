@@ -12,11 +12,8 @@ FORMAT_CMD="clang-format -i -style=file"
 #       which files would have been excluded.
 FILTER_CMD="grep -v -E objects|src/polyclipping|src/CGAL_Nef3_workaround.h|src/CGAL_workaround_Mark_bounded_volumes.h|src/convex_hull_3_bugfix.h|src/OGL_helper.h"
 
-# C++ file extensions
-SRC_PATTERN=".*\.(h|hpp|cc|cpp)"
-
 function reformat_all() {
-    find . -regextype posix-extended -regex "$SRC_PATTERN" \
+    find . -name "*.h" -o -name "*.hpp" -o -name "*.cc" -o -name "*.cpp" \
         | $FILTER_CMD \
         | xargs $FORMAT_CMD
 }
@@ -25,7 +22,7 @@ function reformat_all() {
 DIFFBASE="origin/master"
 function reformat_changed() {
     ANCESTOR=$(git merge-base HEAD "$DIFFBASE")
-    FILES=$(git --no-pager diff --name-only $ANCESTOR | grep -E "$SRC_PATTERN" | $FILTER_CMD)
+    FILES=$(git --no-pager diff --name-only $ANCESTOR | grep -E "\.h|\.hpp|\.cc|\.cpp" | $FILTER_CMD)
     if [ $? -ne 0 ]; then
         echo "No files to format, exiting..."
     else
