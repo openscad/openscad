@@ -1,7 +1,21 @@
 ---
-BasedOnStyle: Google
-IndentWidth: 4
-AccessModifierOffset: -4
-UseTab: ForIndentation
-TabWidth: 4
-BreakBeforeBraces: Linux
+Language:     Cpp
+BasedOnStyle: LLVM
+
+AlignEscapedNewlinesLeft: true
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: true
+AllowShortLoopsOnASingleLine: true
+AlwaysBreakTemplateDeclarations: true
+BraceWrapping:
+   AfterClass:            true
+   AfterFunction:         true
+BreakBeforeBraces: Custom
+ColumnLimit:     100
+ConstructorInitializerIndentWidth: 2
+NamespaceIndentation: All
+PenaltyReturnTypeOnItsOwnLine: 1000
+SortIncludes: false
+TabWidth:        2
+UseTab:          ForContinuationAndIndentation
+...
