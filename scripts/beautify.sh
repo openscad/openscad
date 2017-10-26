@@ -22,7 +22,7 @@ function reformat_all() {
 DIFFBASE="origin/master"
 function reformat_changed() {
     ANCESTOR=$(git merge-base HEAD "$DIFFBASE")
-    FILES=$(git --no-pager diff --name-only $ANCESTOR | grep -E "\.h|\.hpp|\.cc|\.cpp" | $FILTER_CMD)
+    FILES=$(git --no-pager diff --name-only $ANCESTOR | grep -E "\.(h|hpp|cc|cpp)" | $FILTER_CMD)
     if [ $? -ne 0 ]; then
         echo "No files to format, exiting..."
     else
