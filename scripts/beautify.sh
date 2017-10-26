@@ -13,7 +13,7 @@ FORMAT_CMD="clang-format -i -style=file"
 FILTER_CMD="grep -v -E objects|src/polyclipping|src/CGAL_Nef3_workaround.h|src/CGAL_workaround_Mark_bounded_volumes.h|src/convex_hull_3_bugfix.h|src/OGL_helper.h"
 
 function reformat_all() {
-    find . -name "*.h" -o -name "*.hpp" -o -name "*.cc" -o -name "*.cpp" \
+    find src -name "*.h" -o -name "*.hpp" -o -name "*.cc" -o -name "*.cpp" \
         | $FILTER_CMD \
         | xargs $FORMAT_CMD
 }
