@@ -204,8 +204,8 @@ void Settings::visit(SettingsVisitor& visitor)
 
 SettingsEntry* Settings::getSettingEntryByName(const std::string &name)
 {
-	for (SettingsEntry* entry : entries) {
-		if((entry->name().compare(name))== 0){
+	for (auto entry : entries) {
+		if (entry->name() == name){
 			return (entry);
 		}
 	}
