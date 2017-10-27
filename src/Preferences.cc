@@ -226,13 +226,13 @@ void Preferences::init() {
         initComboBox(this->comboBoxZoom, Settings::Settings::inputZoom);
 
         for (int i = 0; i < 10; i++ ){ 
-			std::string s = std::to_string(i);
+            std::string s = std::to_string(i);
             QComboBox* box = this->centralwidget->findChild<QComboBox *>(QString::fromStdString("comboBoxButton"+s));
-			Settings::SettingsEntry* ent = Settings::Settings::inst()->getSettingEntryByName("button" +s );
-			if(box != 0 && ent != nullptr){
-				initComboBox(box,*ent);
-			}
-		}
+            Settings::SettingsEntry* ent = Settings::Settings::inst()->getSettingEntryByName("button" +s );
+            if(box && ent){
+                initComboBox(box,*ent);
+            }
+        }
 
 	SettingsReader settingsReader;
 	Settings::Settings::inst()->visit(settingsReader);
