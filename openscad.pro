@@ -1,4 +1,3 @@
-CONFIG+=experimental
 # Environment variables which can be set to specify library locations:
 # MPIRDIR
 # MPFRDIR
