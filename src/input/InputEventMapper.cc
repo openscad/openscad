@@ -152,7 +152,7 @@ void InputEventMapper::onInputMappingUpdated()
     for (int i = 0; i < 10; i++ ){
 		std::string is = std::to_string(i);
 		Settings::SettingsEntry* ent =s->getSettingEntryByName("button" +is);
-		actions[i] =(s->get(*ent).toString().c_str());
+		actions[i] =QString::fromStdString(s->get(*ent).toString());
 	}
     
     translate[0] = parseSettingValue(s->get(Settings::Settings::inputTranslationX).toString());
