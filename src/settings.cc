@@ -89,9 +89,9 @@ Settings::~Settings()
 
 void Settings::visit(SettingsVisitor& visitor)
 {
-	for (std::list<SettingsEntry *>::iterator it = entries.begin();it != entries.end();it++) {
-		visitor.handle(*(*it));
-	}
+    for (SettingsEntry* entry : entries) {
+        visitor.handle(*entry);
+    }
 }
 
 const Value &Settings::defaultValue(const SettingsEntry& entry)
