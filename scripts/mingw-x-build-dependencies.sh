@@ -70,7 +70,7 @@ if [ ! -e $MXEDIR ]; then
 	mkdir -p $MXEDIR
 	cd $MXEDIR/..
 	echo "Downloading MXE into " $PWD
-	git clone git://github.com/openscad/mxe.git $MXEDIR
+	git clone https://github.com/mxe/mxe.git $MXEDIR
 fi
 
 echo "entering" $MXEDIR
