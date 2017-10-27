@@ -204,9 +204,9 @@ void Settings::visit(SettingsVisitor& visitor)
 
 SettingsEntry* Settings::getSettingEntryByName(std::string name)
 {
-	for (std::list<SettingsEntry *>::iterator it = entries.begin();it != entries.end();it++) {
-		if(((*it)->name().compare(name))== 0){
-			return (*it);
+	for (SettingsEntry* entry : entries) {
+		if((entry->name().compare(name))== 0){
+			return (entry);
 		}
 	}
 	return nullptr;
