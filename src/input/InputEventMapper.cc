@@ -187,6 +187,6 @@ void InputEventMapper::onInputMappingUpdated()
 }
 
 void InputEventMapper::stop(){
-	stopRequest=true;
-	timer->stop();
+    stopRequest=true;
+    timer->stop();
 }

@@ -131,9 +131,9 @@ std::string InputDriverManager::listDrivers()
 
 void InputDriverManager::closeDrivers()
 {
-	stopRequest = true;
-	timer->stop();
-	InputEventMapper::instance()->stop();
+    stopRequest = true;
+    timer->stop();
+    InputEventMapper::instance()->stop();
 
     for (drivers_t::iterator it = drivers.begin();it != drivers.end();it++) {
         InputDriver *driver = (*it);

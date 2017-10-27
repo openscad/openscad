@@ -62,7 +62,7 @@ JoystickInputDriver::~JoystickInputDriver()
 
 bool JoystickInputDriver::open()
 {
-	stopRequest = false;
+    stopRequest = false;
 
     fd = ::open("/dev/input/js0", O_RDONLY);
     if (fd < 0) {
@@ -85,7 +85,7 @@ bool JoystickInputDriver::open()
 
 void JoystickInputDriver::close()
 {
-	stopRequest=true;
+    stopRequest=true;
 }
 
 const std::string & JoystickInputDriver::get_name() const
