@@ -80,8 +80,7 @@ void InputDriverManager::init()
 
 void InputDriverManager::onTimeout()
 {
-    for (drivers_t::iterator it = drivers.begin(); it != drivers.end(); it++) {
-        InputDriver *driver = (*it);
+    for (auto driver : drivers) {
         if (driver->openOnce()) {
             continue;
         }
@@ -94,8 +93,7 @@ void InputDriverManager::onTimeout()
 
 void InputDriverManager::doOpen(bool firstOpen)
 {
-    for (drivers_t::iterator it = drivers.begin();it != drivers.end();it++) {
-        InputDriver *driver = (*it);
+    for (auto driver : drivers) {
         if (driver->openOnce()) {
             continue;
         }
@@ -105,8 +103,7 @@ void InputDriverManager::doOpen(bool firstOpen)
     }
 
     if (firstOpen) {
-        for (drivers_t::iterator it = drivers.begin();it != drivers.end();it++) {
-            InputDriver *driver = (*it);
+        for (auto driver : drivers) {
             if (driver->openOnce()) {
                 driver->open();
             }
@@ -118,8 +115,7 @@ std::string InputDriverManager::listDrivers()
 {
     std::stringstream stream;
     const char *sep = "";
-    for (drivers_t::iterator it = drivers.begin();it != drivers.end();it++) {
-        InputDriver *driver = (*it);
+    for (auto driver : drivers) {
         stream << sep << driver->get_name();
         if (driver->isOpen()) {
             stream << "*";
@@ -127,6 +123,17 @@ std::string InputDriverManager::listDrivers()
         sep = ", ";
     }
     return stream.str();
+}
+
+void InputDriverManager::closeDrivers()
+{
+    stopRequest = true;
+    timer->stop();
+    InputEventMapper::instance()->stop();
+
+    for (auto driver : drivers) {
+        driver->close();
+    }
 }
 
 void InputDriverManager::sendEvent(InputEvent *event)

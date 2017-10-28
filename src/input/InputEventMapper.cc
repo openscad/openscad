@@ -30,8 +30,12 @@
 #include <math.h>
 #include <QSettings>
 
+InputEventMapper * InputEventMapper::self = 0;
+
 InputEventMapper::InputEventMapper()
 {
+    stopRequest=false;
+
     for (int a = 0;a < 10;a++) {
         axisValue[a] = 0;
     }
@@ -41,11 +45,21 @@ InputEventMapper::InputEventMapper()
     timer->start(30);
 
     onInputMappingUpdated();
+
+    self=this;
 }
 
 InputEventMapper::~InputEventMapper()
 {
 
+}
+
+InputEventMapper * InputEventMapper::instance()
+{
+    if (!self) {
+        self = new InputEventMapper();
+    }
+    return self;
 }
 
 double InputEventMapper::scale(double val)
@@ -170,4 +184,9 @@ void InputEventMapper::onInputMappingUpdated()
     rotate[1] = parseSettingValue(s->get(Settings::Settings::inputRotateY).toString());
     rotate[2] = parseSettingValue(s->get(Settings::Settings::inputRotateZ).toString());
     zoom = parseSettingValue(s->get(Settings::Settings::inputZoom).toString());
+}
+
+void InputEventMapper::stop(){
+    stopRequest=true;
+    timer->stop();
 }

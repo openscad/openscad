@@ -41,14 +41,19 @@ private:
     int translate[6];
     int rotate[3];
     int zoom;
+    volatile bool stopRequest;
 
     double scale(double val);
     double getAxisValue(int config);
     int parseSettingValue(const std::string val);
 
+    static InputEventMapper *self;
+
 public:
     InputEventMapper();
     virtual ~InputEventMapper();
+
+    void stop();
 
     void onAxisChanged(class InputEventAxisChanged *event);
     void onButtonChanged(class InputEventButtonChanged *event);
@@ -59,6 +64,8 @@ public:
     void onZoomEvent(class InputEventZoom *event);
 
     void onInputMappingUpdated();
+
+    static InputEventMapper * instance();
 
 private slots:
     void onTimer();

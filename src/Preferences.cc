@@ -41,6 +41,7 @@
 #include "colormap.h"
 #include "rendersettings.h"
 #include "QSettingsCached.h"
+#include "input/InputDriverManager.h"
 
 Preferences *Preferences::instance = nullptr;
 
@@ -181,11 +182,13 @@ void Preferences::init() {
 #endif
 #ifdef ENABLE_EXPERIMENTAL
 	addPrefPage(group, prefsActionFeatures, pageFeatures);
+	addPrefPage(group, prefsActionInput, pageInput);
 #else
 	this->toolBar->removeAction(prefsActionFeatures);
+	this->toolBar->removeAction(prefsActionInput);
 #endif
 	addPrefPage(group, prefsActionAdvanced, pageAdvanced);
-	addPrefPage(group, prefsActionInput, pageInput);
+	
 	connect(group, SIGNAL(triggered(QAction*)), this, SLOT(actionTriggered(QAction*)));
 
 	prefsAction3DView->setChecked(true);
@@ -297,6 +300,11 @@ void Preferences::featuresCheckBoxToggled(bool state)
 	QSettingsCached settings;
 	settings.setValue(QString("feature/%1").arg(QString::fromStdString(feature->get_name())), state);
 	emit ExperimentalChanged();
+
+	if (!Feature::ExperimentalInputDriver.is_enabled()) {
+		this->toolBar->removeAction(prefsActionInput);
+		InputDriverManager::instance()->closeDrivers();
+	}
 }
 
 /**
