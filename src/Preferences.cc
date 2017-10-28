@@ -942,6 +942,18 @@ void Preferences::create(QStringList colorSchemes)
     instance->updateGUI();
 }
 
+void Preferences::ButtonPressed(int nr, bool pressed) const{
+	QString Style = Preferences::EmptyString;
+	if(pressed){
+		Style=Preferences::ActiveStyleString;
+	}
+	std::string number = std::to_string(nr);
+
+	QLabel* label = this->centralwidget->findChild<QLabel *>(QString::fromStdString("labelInputButton"+number));
+	if(label==0) return;
+	label->setStyleSheet(Style);
+}
+
 Preferences *Preferences::inst() {
     assert(instance != nullptr);
     
