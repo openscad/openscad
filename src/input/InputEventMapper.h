@@ -47,6 +47,9 @@ private:
     double getAxisValue(int config);
     int parseSettingValue(const std::string val);
 
+    bool button_state[10];
+    bool button_state_last[10];
+    
     static InputEventMapper *self;
 
 public:

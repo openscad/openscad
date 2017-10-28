@@ -21,6 +21,7 @@ public:
 	void init();
 	void apply() const;
 	void fireEditorConfigChanged() const;
+	void updateButtonState(int,bool) const;
 
 public slots:
 	void actionTriggered(class QAction *);
@@ -131,4 +132,7 @@ private:
 
 	static Preferences *instance;
 	static const char *featurePropertyName;
+
+	const QString EmptyString= QString("");
+	const QString ActiveStyleString= QString("font-weight: bold; color: red");
 };
