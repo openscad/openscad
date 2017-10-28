@@ -202,6 +202,16 @@ void Settings::visit(SettingsVisitor& visitor)
 	}
 }
 
+SettingsEntry* Settings::getSettingEntryByName(const std::string &name)
+{
+	for (auto entry : entries) {
+		if (entry->name() == name){
+			return (entry);
+		}
+	}
+	return nullptr;
+}
+
 const Value &Settings::defaultValue(const SettingsEntry& entry)
 {
     return entry._default;
