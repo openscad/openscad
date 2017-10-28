@@ -942,7 +942,7 @@ void Preferences::create(QStringList colorSchemes)
     instance->updateGUI();
 }
 
-void Preferences::ButtonPressed(int nr, bool pressed) const{
+void Preferences::updateButtonState(int nr, bool pressed) const{
 	QString Style = Preferences::EmptyString;
 	if(pressed){
 		Style=Preferences::ActiveStyleString;

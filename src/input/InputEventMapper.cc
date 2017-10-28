@@ -36,7 +36,11 @@ InputEventMapper::InputEventMapper()
     for (int a = 0;a < 10;a++) {
         axisValue[a] = 0;
     }
-
+    for (int a = 0;a < 10;a++) {
+        button_state[a]=false;
+        button_state_last[a]=false;
+    }
+    
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(onTimer()));
     timer->start(30);
@@ -102,7 +106,7 @@ void InputEventMapper::onTimer()
     for (int i = 0; i < 10; i++ ){
         if(button_state[i] != button_state_last[i]){
             button_state_last[i] = button_state[i];
-            Preferences::inst()->ButtonPressed(i,button_state[i]);
+            Preferences::inst()->updateButtonState(i,button_state[i]);
         }
     }
 }
