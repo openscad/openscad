@@ -41,6 +41,7 @@
 #include "colormap.h"
 #include "rendersettings.h"
 #include "QSettingsCached.h"
+#include "input/InputDriverManager.h"
 
 Preferences *Preferences::instance = nullptr;
 
@@ -181,11 +182,13 @@ void Preferences::init() {
 #endif
 #ifdef ENABLE_EXPERIMENTAL
 	addPrefPage(group, prefsActionFeatures, pageFeatures);
+	addPrefPage(group, prefsActionInput, pageInput);
 #else
 	this->toolBar->removeAction(prefsActionFeatures);
+	this->toolBar->removeAction(prefsActionInput);
 #endif
 	addPrefPage(group, prefsActionAdvanced, pageAdvanced);
-	addPrefPage(group, prefsActionInput, pageInput);
+	
 	connect(group, SIGNAL(triggered(QAction*)), this, SLOT(actionTriggered(QAction*)));
 
 	prefsAction3DView->setChecked(true);
@@ -224,16 +227,15 @@ void Preferences::init() {
         initComboBox(this->comboBoxRotationY, Settings::Settings::inputRotateY);
         initComboBox(this->comboBoxRotationZ, Settings::Settings::inputRotateZ);
         initComboBox(this->comboBoxZoom, Settings::Settings::inputZoom);
-        initComboBox(this->comboBoxButton0, Settings::Settings::inputButton0);
-        initComboBox(this->comboBoxButton1, Settings::Settings::inputButton1);
-        initComboBox(this->comboBoxButton2, Settings::Settings::inputButton2);
-        initComboBox(this->comboBoxButton3, Settings::Settings::inputButton3);
-        initComboBox(this->comboBoxButton4, Settings::Settings::inputButton4);
-        initComboBox(this->comboBoxButton5, Settings::Settings::inputButton5);
-        initComboBox(this->comboBoxButton6, Settings::Settings::inputButton6);
-        initComboBox(this->comboBoxButton7, Settings::Settings::inputButton7);
-        initComboBox(this->comboBoxButton8, Settings::Settings::inputButton8);
-        initComboBox(this->comboBoxButton9, Settings::Settings::inputButton9);
+
+        for (int i = 0; i < 10; i++ ){ 
+            std::string s = std::to_string(i);
+            QComboBox* box = this->centralwidget->findChild<QComboBox *>(QString::fromStdString("comboBoxButton"+s));
+            Settings::SettingsEntry* ent = Settings::Settings::inst()->getSettingEntryByName("button" +s );
+            if(box && ent){
+                initComboBox(box,*ent);
+            }
+        }
 
 	SettingsReader settingsReader;
 	Settings::Settings::inst()->visit(settingsReader);
@@ -297,6 +299,11 @@ void Preferences::featuresCheckBoxToggled(bool state)
 	QSettingsCached settings;
 	settings.setValue(QString("feature/%1").arg(QString::fromStdString(feature->get_name())), state);
 	emit ExperimentalChanged();
+
+	if (!Feature::ExperimentalInputDriver.is_enabled()) {
+		this->toolBar->removeAction(prefsActionInput);
+		InputDriverManager::instance()->closeDrivers();
+	}
 }
 
 /**

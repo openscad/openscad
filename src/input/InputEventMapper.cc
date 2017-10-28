@@ -31,8 +31,12 @@
 #include <math.h>
 #include <QSettings>
 
+InputEventMapper * InputEventMapper::self = 0;
+
 InputEventMapper::InputEventMapper()
 {
+    stopRequest=false;
+
     for (int a = 0;a < 10;a++) {
         axisValue[a] = 0;
     }
@@ -46,11 +50,21 @@ InputEventMapper::InputEventMapper()
     timer->start(30);
 
     onInputMappingUpdated();
+
+    self=this;
 }
 
 InputEventMapper::~InputEventMapper()
 {
 
+}
+
+InputEventMapper * InputEventMapper::instance()
+{
+    if (!self) {
+        self = new InputEventMapper();
+    }
+    return self;
 }
 
 double InputEventMapper::scale(double val)
@@ -170,16 +184,11 @@ int InputEventMapper::parseSettingValue(const std::string val)
 void InputEventMapper::onInputMappingUpdated()
 {
     Settings::Settings *s = Settings::Settings::inst();
-    actions[0] = QString(s->get(Settings::Settings::inputButton0).toString().c_str());
-    actions[1] = QString(s->get(Settings::Settings::inputButton1).toString().c_str());
-    actions[2] = QString(s->get(Settings::Settings::inputButton2).toString().c_str());
-    actions[3] = QString(s->get(Settings::Settings::inputButton3).toString().c_str());
-    actions[4] = QString(s->get(Settings::Settings::inputButton4).toString().c_str());
-    actions[5] = QString(s->get(Settings::Settings::inputButton5).toString().c_str());
-    actions[6] = QString(s->get(Settings::Settings::inputButton6).toString().c_str());
-    actions[7] = QString(s->get(Settings::Settings::inputButton7).toString().c_str());
-    actions[8] = QString(s->get(Settings::Settings::inputButton8).toString().c_str());
-    actions[9] = QString(s->get(Settings::Settings::inputButton9).toString().c_str());
+    for (int i = 0; i < 10; i++ ){
+		std::string is = std::to_string(i);
+		Settings::SettingsEntry* ent =s->getSettingEntryByName("button" +is);
+		actions[i] =QString::fromStdString(s->get(*ent).toString());
+	}
     
     translate[0] = parseSettingValue(s->get(Settings::Settings::inputTranslationX).toString());
     translate[1] = parseSettingValue(s->get(Settings::Settings::inputTranslationY).toString());
@@ -191,4 +200,9 @@ void InputEventMapper::onInputMappingUpdated()
     rotate[1] = parseSettingValue(s->get(Settings::Settings::inputRotateY).toString());
     rotate[2] = parseSettingValue(s->get(Settings::Settings::inputRotateZ).toString());
     zoom = parseSettingValue(s->get(Settings::Settings::inputZoom).toString());
+}
+
+void InputEventMapper::stop(){
+    stopRequest=true;
+    timer->stop();
 }

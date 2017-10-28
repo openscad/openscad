@@ -37,7 +37,7 @@ void JoystickInputDriver::run()
 {
     struct js_event js;
 
-    while (read(fd, &js, sizeof(struct js_event)) > 0) {
+    while (read(fd, &js, sizeof(struct js_event)) > 0 && !stopRequest) {
         switch (js.type & ~JS_EVENT_INIT) {
         case JS_EVENT_BUTTON:
             InputDriverManager::instance()->sendEvent(new InputEventButtonChanged(js.number, js.value != 0));
@@ -62,6 +62,8 @@ JoystickInputDriver::~JoystickInputDriver()
 
 bool JoystickInputDriver::open()
 {
+    stopRequest = false;
+
     fd = ::open("/dev/input/js0", O_RDONLY);
     if (fd < 0) {
         return false;
@@ -83,7 +85,7 @@ bool JoystickInputDriver::open()
 
 void JoystickInputDriver::close()
 {
-
+    stopRequest=true;
 }
 
 const std::string & JoystickInputDriver::get_name() const
