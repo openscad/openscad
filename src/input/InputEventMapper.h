@@ -30,17 +30,17 @@
 
 #include "input/InputDriver.h"
 
-#define MAX_AXIS 9
-#define MAX_BUTTONS 10
-
 class InputEventMapper : public QObject, public InputEventHandler
 {
     Q_OBJECT
 
 private:
+    const static int max_axis = 9;
+    const static int max_buttons = 10;
+
     QTimer *timer;
-    double axisValue[MAX_AXIS];
-    QString actions[MAX_BUTTONS];
+    double axisValue[max_axis];
+    QString actions[max_buttons];
     int translate[6];
     int rotate[3];
     int zoom;
@@ -49,9 +49,8 @@ private:
     double scale(double val);
     double getAxisValue(int config);
     int parseSettingValue(const std::string val);
-
-    bool button_state[MAX_BUTTONS];
-    bool button_state_last[MAX_BUTTONS];
+    bool button_state[max_buttons];
+    bool button_state_last[max_buttons];
     
     static InputEventMapper *self;
 
