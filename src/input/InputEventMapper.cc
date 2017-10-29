@@ -37,10 +37,10 @@ InputEventMapper::InputEventMapper()
 {
     stopRequest=false;
 
-    for (int a = 0;a < 10;a++) {
+    for (int a = 0;a < max_axis;a++) {
         axisValue[a] = 0;
     }
-    for (int a = 0;a < 10;a++) {
+    for (int a = 0;a < max_buttons;a++) {
         button_state[a]=false;
         button_state_last[a]=false;
     }
@@ -117,7 +117,7 @@ void InputEventMapper::onTimer()
     }
 
     //update the UI on time, NOT on event as a joystick can fire a high rate of events
-    for (int i = 0; i < 10; i++ ){
+    for (int i = 0; i < max_buttons; i++ ){
         if(button_state[i] != button_state_last[i]){
             button_state_last[i] = button_state[i];
             Preferences::inst()->updateButtonState(i,button_state[i]);
@@ -134,7 +134,7 @@ void InputEventMapper::onButtonChanged(InputEventButtonChanged *event)
 {
     int button = event->button;
 
-    if (button < 10) {
+    if (button < max_buttons) {
         if (event->down) {
             this->button_state[button]=true;
         }else{
@@ -184,7 +184,7 @@ int InputEventMapper::parseSettingValue(const std::string val)
 void InputEventMapper::onInputMappingUpdated()
 {
     Settings::Settings *s = Settings::Settings::inst();
-    for (int i = 0; i < 10; i++ ){
+    for (int i = 0; i < max_buttons; i++ ){
 		std::string is = std::to_string(i);
 		Settings::SettingsEntry* ent =s->getSettingEntryByName("button" +is);
 		actions[i] =QString::fromStdString(s->get(*ent).toString());
