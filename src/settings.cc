@@ -282,4 +282,24 @@ SettingsEntry Settings::inputButton6("input", "button6", buttonValues(), Value("
 SettingsEntry Settings::inputButton7("input", "button7", buttonValues(), Value("None"));
 SettingsEntry Settings::inputButton8("input", "button8", buttonValues(), Value("None"));
 SettingsEntry Settings::inputButton9("input", "button9", buttonValues(), Value("None"));
+SettingsEntry Settings::axisTrimm0("input", "axisTrimm0", RangeType(-1.0, 1.0), Value("0.00"));
+SettingsEntry Settings::axisTrimm1("input", "axisTrimm1", RangeType(-1.0, 1.0), Value("0.00"));
+SettingsEntry Settings::axisTrimm2("input", "axisTrimm2", RangeType(-1.0, 1.0), Value("0.00"));
+SettingsEntry Settings::axisTrimm3("input", "axisTrimm3", RangeType(-1.0, 1.0), Value("0.00"));
+SettingsEntry Settings::axisTrimm4("input", "axisTrimm4", RangeType(-1.0, 1.0), Value("0.00"));
+SettingsEntry Settings::axisTrimm5("input", "axisTrimm5", RangeType(-1.0, 1.0), Value("0.00"));
+SettingsEntry Settings::axisTrimm6("input", "axisTrimm6", RangeType(-1.0, 1.0), Value("0.00"));
+SettingsEntry Settings::axisTrimm7("input", "axisTrimm7", RangeType(-1.0, 1.0), Value("0.00"));
+SettingsEntry Settings::axisTrimm8("input", "axisTrimm8", RangeType(-1.0, 1.0), Value("0.00"));
+SettingsEntry Settings::axisTrimm9("input", "axisTrimm9", RangeType(-1.0, 1.0), Value("0.00"));
+SettingsEntry Settings::axisDeadzone0("input", "axisDeadzone0", RangeType(0.0, 1.0), Value("0.10"));
+SettingsEntry Settings::axisDeadzone1("input", "axisDeadzone1", RangeType(0.0, 1.0), Value("0.10"));
+SettingsEntry Settings::axisDeadzone2("input", "axisDeadzone2", RangeType(0.0, 1.0), Value("0.10"));
+SettingsEntry Settings::axisDeadzone3("input", "axisDeadzone3", RangeType(0.0, 1.0), Value("0.10"));
+SettingsEntry Settings::axisDeadzone4("input", "axisDeadzone4", RangeType(0.0, 1.0), Value("0.10"));
+SettingsEntry Settings::axisDeadzone5("input", "axisDeadzone5", RangeType(0.0, 1.0), Value("0.10"));
+SettingsEntry Settings::axisDeadzone6("input", "axisDeadzone6", RangeType(0.0, 1.0), Value("0.10"));
+SettingsEntry Settings::axisDeadzone7("input", "axisDeadzone7", RangeType(0.0, 1.0), Value("0.10"));
+SettingsEntry Settings::axisDeadzone8("input", "axisDeadzone8", RangeType(0.0, 1.0), Value("0.10"));
+SettingsEntry Settings::axisDeadzone9("input", "axisDeadzone9", RangeType(0.0, 1.0), Value("0.10"));
 }

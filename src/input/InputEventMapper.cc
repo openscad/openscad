@@ -39,6 +39,8 @@ InputEventMapper::InputEventMapper()
 
     for (int a = 0;a < max_axis;a++) {
         axisValue[a] = 0;
+        axisTrimmValue[a] = 0;
+        axisDeadzone[a] = 0.1;
     }
     for (int a = 0;a < max_buttons;a++) {
         button_state[a]=false;
@@ -50,6 +52,7 @@ InputEventMapper::InputEventMapper()
     timer->start(30);
 
     onInputMappingUpdated();
+    onInputCalibrationUpdated();
 
     self=this;
 }
@@ -79,12 +82,15 @@ double InputEventMapper::getAxisValue(int config)
     int idx = abs(config) - 1;
     bool neg = config < 0;
     double val = neg ? -axisValue[idx] : axisValue[idx];
+    if(val < axisDeadzone[idx] and -val < axisDeadzone[idx]){
+        val=0;
+    }
     return scale(val);
 }
 
 void InputEventMapper::onTimer()
 {
-    const double threshold = 0.1;
+    const double threshold = 0.01;
 
     double tx = getAxisValue(translate[0]);
     double ty = getAxisValue(translate[1]);
@@ -200,6 +206,55 @@ void InputEventMapper::onInputMappingUpdated()
     rotate[1] = parseSettingValue(s->get(Settings::Settings::inputRotateY).toString());
     rotate[2] = parseSettingValue(s->get(Settings::Settings::inputRotateZ).toString());
     zoom = parseSettingValue(s->get(Settings::Settings::inputZoom).toString());
+}
+
+void InputEventMapper::onInputCalibrationUpdated()
+{
+    //Axis
+    for (int a = 0;a < max_axis;a++) {
+        std::string s = std::to_string(a);
+        Settings::Settings *setting = Settings::Settings::inst();
+        Settings::SettingsEntry* ent;
+        
+        ent = Settings::Settings::inst()->getSettingEntryByName("axisTrimm" + s );
+        if(ent != nullptr){
+            axisTrimmValue[a] = (double)setting->get(*ent).toDouble();
+        }
+        ent = Settings::Settings::inst()->getSettingEntryByName("axisDeadzone" + s );
+        if(ent != nullptr){
+            axisDeadzone[a] = (double)setting->get(*ent).toDouble();
+        }
+        
+        axisValue[a] = axisRawValue[a]+axisTrimmValue[a];
+    }
+}
+
+void InputEventMapper::onAxisAutoTrimm()
+{
+    Settings::Settings *s = Settings::Settings::inst();
+    for (int i = 0; i < max_axis; i++ ){ 
+        std::string is = std::to_string(i);
+        
+        axisTrimmValue[i] = -axisRawValue[i];
+        axisValue[i] = axisRawValue[i]+axisTrimmValue[i];
+        
+        Settings::SettingsEntry* ent =s->getSettingEntryByName("axisTrimm" +is);
+        s->set(*ent, axisTrimmValue[i]);
+    }
+}
+
+void InputEventMapper::onAxisTrimmReset()
+{
+    Settings::Settings *s = Settings::Settings::inst();
+    for (int i = 0; i < max_axis; i++ ){ 
+        std::string is = std::to_string(i);
+        
+        axisTrimmValue[i] = 0.00;
+        axisValue[i] = axisRawValue[i]+axisTrimmValue[i];
+        
+        Settings::SettingsEntry* ent =s->getSettingEntryByName("axisTrimm" +is);
+        s->set(*ent, axisTrimmValue[i]);
+    }
 }
 
 void InputEventMapper::stop(){

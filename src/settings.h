@@ -72,6 +72,26 @@ public:
     static SettingsEntry inputButton7;
     static SettingsEntry inputButton8;
     static SettingsEntry inputButton9;
+    static SettingsEntry axisTrimm0;
+    static SettingsEntry axisTrimm1;
+    static SettingsEntry axisTrimm2;
+    static SettingsEntry axisTrimm3;
+    static SettingsEntry axisTrimm4;
+    static SettingsEntry axisTrimm5;
+    static SettingsEntry axisTrimm6;
+    static SettingsEntry axisTrimm7;
+    static SettingsEntry axisTrimm8;
+    static SettingsEntry axisTrimm9;
+    static SettingsEntry axisDeadzone0;
+    static SettingsEntry axisDeadzone1;
+    static SettingsEntry axisDeadzone2;
+    static SettingsEntry axisDeadzone3;
+    static SettingsEntry axisDeadzone4;
+    static SettingsEntry axisDeadzone5;
+    static SettingsEntry axisDeadzone6;
+    static SettingsEntry axisDeadzone7;
+    static SettingsEntry axisDeadzone8;
+    static SettingsEntry axisDeadzone9;
 
     static Settings *inst(bool erase = false);
 
