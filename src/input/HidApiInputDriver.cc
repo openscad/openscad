@@ -31,7 +31,7 @@
 
 #include <iomanip>
 #include <iostream>
-#include <hidapi.h>
+#include <hidapi/hidapi.h>
 
 #include "input/HidApiInputDriver.h"
 #include "input/InputDriverManager.h"
