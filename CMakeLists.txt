@@ -410,7 +410,11 @@ if(APPLE)
     MACOSX_BUNDLE_SHORT_VERSION_STRING 2017.03
     RESOURCE "${RESOURCE_FILES}"
   )
-endif(APPLE)
+elseif(UNIX)
+  set_target_properties(OpenSCAD PROPERTIES
+    OUTPUT_NAME openscad
+  )
+endif()
 
 set(COMMON_LIBRARIES
     ${CGAL_LIBRARY}
