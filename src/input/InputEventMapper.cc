@@ -70,6 +70,14 @@ InputEventMapper * InputEventMapper::instance()
     return self;
 }
 
+int InputEventMapper::getMaxButtons(){
+    return max_buttons;
+}
+
+int InputEventMapper::getMaxAxis(){
+    return max_axis;
+}
+
 double InputEventMapper::scale(double val)
 {
     double x = 4 * val;

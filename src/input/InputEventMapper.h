@@ -36,7 +36,7 @@ class InputEventMapper : public QObject, public InputEventHandler
 
 private:
     const static int max_axis = 9;
-    const static int max_buttons = 10;
+    const static int max_buttons = 16;
 
     QTimer *timer;
     double axisRawValue[max_axis];
@@ -77,6 +77,8 @@ public:
     void onAxisTrimmReset();
 
     static InputEventMapper * instance();
+    static int getMaxButtons();
+    static int getMaxAxis();
 
 private slots:
     void onTimer();

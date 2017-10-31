@@ -282,6 +282,12 @@ SettingsEntry Settings::inputButton6("input", "button6", buttonValues(), Value("
 SettingsEntry Settings::inputButton7("input", "button7", buttonValues(), Value("None"));
 SettingsEntry Settings::inputButton8("input", "button8", buttonValues(), Value("None"));
 SettingsEntry Settings::inputButton9("input", "button9", buttonValues(), Value("None"));
+SettingsEntry Settings::inputButton10("input", "button10", buttonValues(), Value("None"));
+SettingsEntry Settings::inputButton11("input", "button11", buttonValues(), Value("None"));
+SettingsEntry Settings::inputButton12("input", "button12", buttonValues(), Value("None"));
+SettingsEntry Settings::inputButton13("input", "button13", buttonValues(), Value("None"));
+SettingsEntry Settings::inputButton14("input", "button14", buttonValues(), Value("None"));
+SettingsEntry Settings::inputButton15("input", "button15", buttonValues(), Value("None"));
 SettingsEntry Settings::axisTrimm0("input", "axisTrimm0", RangeType(-1.0, 1.0), Value("0.00"));
 SettingsEntry Settings::axisTrimm1("input", "axisTrimm1", RangeType(-1.0, 1.0), Value("0.00"));
 SettingsEntry Settings::axisTrimm2("input", "axisTrimm2", RangeType(-1.0, 1.0), Value("0.00"));

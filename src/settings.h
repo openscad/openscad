@@ -72,6 +72,12 @@ public:
     static SettingsEntry inputButton7;
     static SettingsEntry inputButton8;
     static SettingsEntry inputButton9;
+    static SettingsEntry inputButton10;
+    static SettingsEntry inputButton11;
+    static SettingsEntry inputButton12;
+    static SettingsEntry inputButton13;
+    static SettingsEntry inputButton14;
+    static SettingsEntry inputButton15;
     static SettingsEntry axisTrimm0;
     static SettingsEntry axisTrimm1;
     static SettingsEntry axisTrimm2;
