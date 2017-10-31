@@ -19,6 +19,7 @@ message(STATUS "Configuration: ${CONFIG_OPTIONS}")
 
 project(openscad)
 
+set(CMAKE_CXX_FLAGS "-O2")
 set(CMAKE_CXX_STANDARD 11)
 if(APPLE)
   # Needed for deployment target 10.8 as cmake doesn't know about the libc++
