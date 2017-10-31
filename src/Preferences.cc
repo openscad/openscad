@@ -252,11 +252,14 @@ void Preferences::init() {
 
 			spin = this->centralwidget->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrimm"+s));
 			ent = Settings::Settings::inst()->getSettingEntryByName("axisTrimm" +s);
-			initDoubleSpinBox(spin,*ent);
-
+			if(spin && ent){
+				initDoubleSpinBox(spin,*ent);
+			}
 			spin = this->centralwidget->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxDeadzone"+s));
 			ent = Settings::Settings::inst()->getSettingEntryByName("axisDeadzone" +s);
-			initDoubleSpinBox(spin,*ent);
+			if(spin && ent){
+				initDoubleSpinBox(spin,*ent);
+			}
 		}
 
 	SettingsReader settingsReader;
@@ -795,8 +798,6 @@ void Preferences::on_comboBoxButton9_activated(int val)
         emit inputMappingChanged();
 }
 
-
-
 void Preferences::on_comboBoxButton10_activated(int val)
 {
 	applyComboBox(comboBoxButton10, val, Settings::Settings::inputButton10);
@@ -1104,7 +1105,8 @@ void Preferences::updateGUI()
 			updateComboBox(box,*ent);
 		}
 	}
-    for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
+
+	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
 		std::string s = std::to_string(i);
 		Settings::Settings *setting = Settings::Settings::inst();
 
@@ -1113,11 +1115,15 @@ void Preferences::updateGUI()
 
 		spin= this->centralwidget->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrimm"+s));
 		ent = Settings::Settings::inst()->getSettingEntryByName("axisTrimm" +s );
-		spin->setValue((double)setting->get(*ent).toDouble());
+		if(spin != 0 && ent != nullptr){
+			spin->setValue((double)setting->get(*ent).toDouble());
+		}
 
 		spin= this->centralwidget->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxDeadzone"+s));
 		ent = Settings::Settings::inst()->getSettingEntryByName("axisDeadzone" +s );
-		spin->setValue((double)setting->get(*ent).toDouble());
+		if(spin != 0 && ent != nullptr){
+			spin->setValue((double)setting->get(*ent).toDouble());
+		}
 	}
 }
 
