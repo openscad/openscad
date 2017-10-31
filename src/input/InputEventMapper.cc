@@ -39,6 +39,7 @@ InputEventMapper::InputEventMapper()
 
     for (int a = 0;a < max_axis;a++) {
         axisValue[a] = 0;
+        axisRawValue[a]=0;
         axisTrimmValue[a] = 0;
         axisDeadzone[a] = 0.1;
     }
@@ -129,11 +130,15 @@ void InputEventMapper::onTimer()
             Preferences::inst()->updateButtonState(i,button_state[i]);
         }
     }
+    for (int i = 0; i < max_axis; i++ ){ 
+       Preferences::inst()->AxesChanged(i,axisValue[i]);
+    }
 }
 
 void InputEventMapper::onAxisChanged(InputEventAxisChanged *event)
 {
-    axisValue[event->axis] = event->value;
+    axisRawValue[event->axis] = event->value;
+    axisValue[event->axis] = event->value + axisTrimmValue[event->axis];
 }
 
 void InputEventMapper::onButtonChanged(InputEventButtonChanged *event)
