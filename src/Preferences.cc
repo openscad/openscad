@@ -964,6 +964,10 @@ void Preferences::updateButtonState(int nr, bool pressed) const{
 	label->setStyleSheet(Style);
 }
 
+void Preferences::AxesChanged(int nr, double val) const{
+	//will follow
+}
+
 Preferences *Preferences::inst() {
     assert(instance != nullptr);
     

@@ -38,16 +38,15 @@ InputEventMapper::InputEventMapper()
     stopRequest=false;
 
     for (int a = 0;a < max_axis;a++) {
-        axisValue[a] = 0;
-        axisRawValue[a]=0;
-        axisTrimmValue[a] = 0;
+        axisRawValue[a] = 0.0;
+        axisTrimmValue[a] = 0.0;
         axisDeadzone[a] = 0.1;
     }
     for (int a = 0;a < max_buttons;a++) {
         button_state[a]=false;
         button_state_last[a]=false;
     }
-    
+
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(onTimer()));
     timer->start(30);
@@ -82,7 +81,8 @@ double InputEventMapper::getAxisValue(int config)
 {
     int idx = abs(config) - 1;
     bool neg = config < 0;
-    double val = neg ? -axisValue[idx] : axisValue[idx];
+    double trimmedVal = axisRawValue[idx] + axisTrimmValue[idx];
+    double val = neg ? -trimmedVal : trimmedVal;
     if(val < axisDeadzone[idx] and -val < axisDeadzone[idx]){
         val=0;
     }
@@ -131,14 +131,13 @@ void InputEventMapper::onTimer()
         }
     }
     for (int i = 0; i < max_axis; i++ ){ 
-       Preferences::inst()->AxesChanged(i,axisValue[i]);
+       Preferences::inst()->AxesChanged(i,axisRawValue[i] + axisTrimmValue[i]);
     }
 }
 
 void InputEventMapper::onAxisChanged(InputEventAxisChanged *event)
 {
     axisRawValue[event->axis] = event->value;
-    axisValue[event->axis] = event->value + axisTrimmValue[event->axis];
 }
 
 void InputEventMapper::onButtonChanged(InputEventButtonChanged *event)
@@ -215,12 +214,11 @@ void InputEventMapper::onInputMappingUpdated()
 
 void InputEventMapper::onInputCalibrationUpdated()
 {
-    //Axis
     for (int a = 0;a < max_axis;a++) {
         std::string s = std::to_string(a);
         Settings::Settings *setting = Settings::Settings::inst();
         Settings::SettingsEntry* ent;
-        
+
         ent = Settings::Settings::inst()->getSettingEntryByName("axisTrimm" + s );
         if(ent != nullptr){
             axisTrimmValue[a] = (double)setting->get(*ent).toDouble();
@@ -229,8 +227,6 @@ void InputEventMapper::onInputCalibrationUpdated()
         if(ent != nullptr){
             axisDeadzone[a] = (double)setting->get(*ent).toDouble();
         }
-        
-        axisValue[a] = axisRawValue[a]+axisTrimmValue[a];
     }
 }
 
@@ -239,10 +235,7 @@ void InputEventMapper::onAxisAutoTrimm()
     Settings::Settings *s = Settings::Settings::inst();
     for (int i = 0; i < max_axis; i++ ){ 
         std::string is = std::to_string(i);
-        
         axisTrimmValue[i] = -axisRawValue[i];
-        axisValue[i] = axisRawValue[i]+axisTrimmValue[i];
-        
         Settings::SettingsEntry* ent =s->getSettingEntryByName("axisTrimm" +is);
         s->set(*ent, axisTrimmValue[i]);
     }
@@ -253,10 +246,7 @@ void InputEventMapper::onAxisTrimmReset()
     Settings::Settings *s = Settings::Settings::inst();
     for (int i = 0; i < max_axis; i++ ){ 
         std::string is = std::to_string(i);
-        
         axisTrimmValue[i] = 0.00;
-        axisValue[i] = axisRawValue[i]+axisTrimmValue[i];
-        
         Settings::SettingsEntry* ent =s->getSettingEntryByName("axisTrimm" +is);
         s->set(*ent, axisTrimmValue[i]);
     }

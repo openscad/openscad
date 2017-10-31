@@ -39,7 +39,6 @@ private:
     const static int max_buttons = 10;
 
     QTimer *timer;
-    double axisValue[max_axis];
     double axisRawValue[max_axis];
     double axisTrimmValue[max_axis];
     double axisDeadzone[max_axis];
