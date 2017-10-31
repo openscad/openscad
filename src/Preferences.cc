@@ -195,8 +195,8 @@ void Preferences::init() {
 	addPrefPage(group, prefsActionAdvanced, pageAdvanced);
 	
 	connect(group, SIGNAL(triggered(QAction*)), this, SLOT(actionTriggered(QAction*)));
-	connect(this->pushButtonAxisTrimm, SIGNAL(clicked()), this, SLOT(on_AxisTrimm()));
-	connect(this->pushButtonAxisTrimmReset, SIGNAL(clicked()), this, SLOT(on_AxisTrimmReset()));
+	connect(this->pushButtonAxisTrim, SIGNAL(clicked()), this, SLOT(on_AxisTrim()));
+	connect(this->pushButtonAxisTrimReset, SIGNAL(clicked()), this, SLOT(on_AxisTrimReset()));
 
 	prefsAction3DView->setChecked(true);
 	this->actionTriggered(this->prefsAction3DView);
@@ -250,8 +250,8 @@ void Preferences::init() {
 			QDoubleSpinBox* spin;
 			Settings::SettingsEntry* ent;
 
-			spin = this->centralwidget->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrimm"+s));
-			ent = Settings::Settings::inst()->getSettingEntryByName("axisTrimm" +s);
+			spin = this->centralwidget->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrim"+s));
+			ent = Settings::Settings::inst()->getSettingEntryByName("axisTrim" +s);
 			if(spin && ent){
 				initDoubleSpinBox(spin,*ent);
 			}
@@ -544,9 +544,9 @@ void Preferences::on_checkBoxShowWarningsIn3dView_toggled(bool val)
 	writeSettings();
 }
 
-void Preferences::on_AxisTrimm()
+void Preferences::on_AxisTrim()
 {
-	InputEventMapper::instance()->onAxisAutoTrimm();
+	InputEventMapper::instance()->onAxisAutoTrim();
 
 	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
 		std::string s = std::to_string(i);
@@ -554,8 +554,8 @@ void Preferences::on_AxisTrimm()
 		QDoubleSpinBox* spin;
 		Settings::SettingsEntry* ent;
 
-		spin = this->centralwidget->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrimm"+s));
-		ent = Settings::Settings::inst()->getSettingEntryByName("axisTrimm" +s);
+		spin = this->centralwidget->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrim"+s));
+		ent = Settings::Settings::inst()->getSettingEntryByName("axisTrim" +s);
 
 		if(spin && ent){
 			spin->setValue((double)Settings::Settings::inst()->get(*ent).toDouble());
@@ -565,21 +565,21 @@ void Preferences::on_AxisTrimm()
 	writeSettings();
 }
 
-void Preferences::on_AxisTrimmReset()
+void Preferences::on_AxisTrimReset()
 {
-	InputEventMapper::instance()->onAxisTrimmReset();
+	InputEventMapper::instance()->onAxisTrimReset();
 	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
 		std::string s = std::to_string(i);
 
 		QDoubleSpinBox* spin;
 		Settings::SettingsEntry* ent;
 
-		ent = Settings::Settings::inst()->getSettingEntryByName("axisTrimm" +s);
+		ent = Settings::Settings::inst()->getSettingEntryByName("axisTrim" +s);
 		if(ent){
 			Settings::Settings::inst()->set(*ent, 0.00);
 		}
 
-		spin = this->centralwidget->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrimm"+s));
+		spin = this->centralwidget->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrim"+s));
 		if(spin){
 			spin->setValue(0.00);
 		}
@@ -835,64 +835,64 @@ void Preferences::on_comboBoxButton15_activated(int val)
 }
 
 
-void Preferences::on_doubleSpinBoxTrimm0_valueChanged(double val)
+void Preferences::on_doubleSpinBoxTrim0_valueChanged(double val)
 {
-	Settings::Settings::inst()->set(Settings::Settings::axisTrimm0, Value(val));
+	Settings::Settings::inst()->set(Settings::Settings::axisTrim0, Value(val));
 	emit inputCalibrationChanged();
 	writeSettings();
 }
 
-void Preferences::on_doubleSpinBoxTrimm1_valueChanged(double val)
+void Preferences::on_doubleSpinBoxTrim1_valueChanged(double val)
 {
-	Settings::Settings::inst()->set(Settings::Settings::axisTrimm1, Value(val));
+	Settings::Settings::inst()->set(Settings::Settings::axisTrim1, Value(val));
 	emit inputCalibrationChanged();
 	writeSettings();
 }
 
-void Preferences::on_doubleSpinBoxTrimm2_valueChanged(double val)
+void Preferences::on_doubleSpinBoxTrim2_valueChanged(double val)
 {
-	Settings::Settings::inst()->set(Settings::Settings::axisTrimm2, Value(val));
+	Settings::Settings::inst()->set(Settings::Settings::axisTrim2, Value(val));
 	emit inputCalibrationChanged();
 	writeSettings();
 }
 
-void Preferences::on_doubleSpinBoxTrimm3_valueChanged(double val)
+void Preferences::on_doubleSpinBoxTrim3_valueChanged(double val)
 {
-	Settings::Settings::inst()->set(Settings::Settings::axisTrimm3, Value(val));
+	Settings::Settings::inst()->set(Settings::Settings::axisTrim3, Value(val));
 	emit inputCalibrationChanged();
 	writeSettings();
 }
 
-void Preferences::on_doubleSpinBoxTrimm4_valueChanged(double val)
+void Preferences::on_doubleSpinBoxTrim4_valueChanged(double val)
 {
-	Settings::Settings::inst()->set(Settings::Settings::axisTrimm4, Value(val));
+	Settings::Settings::inst()->set(Settings::Settings::axisTrim4, Value(val));
 	emit inputCalibrationChanged();
 	writeSettings();
 }
 
-void Preferences::on_doubleSpinBoxTrimm5_valueChanged(double val)
+void Preferences::on_doubleSpinBoxTrim5_valueChanged(double val)
 {
-	Settings::Settings::inst()->set(Settings::Settings::axisTrimm5, Value(val));
+	Settings::Settings::inst()->set(Settings::Settings::axisTrim5, Value(val));
 	emit inputCalibrationChanged();
 	writeSettings();
 }
 
-void Preferences::on_doubleSpinBoxTrimm6_valueChanged(double val)
+void Preferences::on_doubleSpinBoxTrim6_valueChanged(double val)
 {
-	Settings::Settings::inst()->set(Settings::Settings::axisTrimm6, Value(val));
+	Settings::Settings::inst()->set(Settings::Settings::axisTrim6, Value(val));
 	emit inputCalibrationChanged();
 	writeSettings();
 }
 
-void Preferences::on_doubleSpinBoxTrimm7_valueChanged(double val)
+void Preferences::on_doubleSpinBoxTrim7_valueChanged(double val)
 {
-	Settings::Settings::inst()->set(Settings::Settings::axisTrimm7, Value(val));
+	Settings::Settings::inst()->set(Settings::Settings::axisTrim7, Value(val));
 	emit inputCalibrationChanged();
 }
 
-void Preferences::on_doubleSpinBoxTrimm8_valueChanged(double val)
+void Preferences::on_doubleSpinBoxTrim8_valueChanged(double val)
 {
-	Settings::Settings::inst()->set(Settings::Settings::axisTrimm8, Value(val));
+	Settings::Settings::inst()->set(Settings::Settings::axisTrim8, Value(val));
 	emit inputCalibrationChanged();
 	writeSettings();
 }
@@ -1101,7 +1101,7 @@ void Preferences::updateGUI()
 		std::string s = std::to_string(i);
 		QComboBox* box = this->centralwidget->findChild<QComboBox *>(QString::fromStdString("comboBoxButton"+s));
 		Settings::SettingsEntry* ent = Settings::Settings::inst()->getSettingEntryByName("button" +s );
-		if(box != 0 && ent != nullptr){
+		if(box && ent){
 			updateComboBox(box,*ent);
 		}
 	}
@@ -1113,15 +1113,15 @@ void Preferences::updateGUI()
 		QDoubleSpinBox* spin;
 		Settings::SettingsEntry* ent;
 
-		spin= this->centralwidget->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrimm"+s));
-		ent = Settings::Settings::inst()->getSettingEntryByName("axisTrimm" +s );
-		if(spin != 0 && ent != nullptr){
+		spin= this->centralwidget->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrim"+s));
+		ent = Settings::Settings::inst()->getSettingEntryByName("axisTrim" +s );
+		if(spin && ent){
 			spin->setValue((double)setting->get(*ent).toDouble());
 		}
 
 		spin= this->centralwidget->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxDeadzone"+s));
 		ent = Settings::Settings::inst()->getSettingEntryByName("axisDeadzone" +s );
-		if(spin != 0 && ent != nullptr){
+		if(spin && ent){
 			spin->setValue((double)setting->get(*ent).toDouble());
 		}
 	}

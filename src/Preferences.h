@@ -76,8 +76,8 @@ public slots:
 	void on_checkBoxEnableLineNumbers_toggled(bool);
 
 	// Input Driver
-        void on_AxisTrimm();
-        void on_AxisTrimmReset();
+        void on_AxisTrim();
+        void on_AxisTrimReset();
         void on_comboBoxTranslationX_activated(int val);
         void on_comboBoxTranslationY_activated(int val);
         void on_comboBoxTranslationZ_activated(int val);
@@ -115,15 +115,15 @@ public slots:
 	void on_doubleSpinBoxDeadzone7_valueChanged(double);
 	void on_doubleSpinBoxDeadzone8_valueChanged(double);
 
-	void on_doubleSpinBoxTrimm0_valueChanged(double);
-	void on_doubleSpinBoxTrimm1_valueChanged(double);
-	void on_doubleSpinBoxTrimm2_valueChanged(double);
-	void on_doubleSpinBoxTrimm3_valueChanged(double);
-	void on_doubleSpinBoxTrimm4_valueChanged(double);
-	void on_doubleSpinBoxTrimm5_valueChanged(double);
-	void on_doubleSpinBoxTrimm6_valueChanged(double);
-	void on_doubleSpinBoxTrimm7_valueChanged(double);
-	void on_doubleSpinBoxTrimm8_valueChanged(double);
+	void on_doubleSpinBoxTrim0_valueChanged(double);
+	void on_doubleSpinBoxTrim1_valueChanged(double);
+	void on_doubleSpinBoxTrim2_valueChanged(double);
+	void on_doubleSpinBoxTrim3_valueChanged(double);
+	void on_doubleSpinBoxTrim4_valueChanged(double);
+	void on_doubleSpinBoxTrim5_valueChanged(double);
+	void on_doubleSpinBoxTrim6_valueChanged(double);
+	void on_doubleSpinBoxTrim7_valueChanged(double);
+	void on_doubleSpinBoxTrim8_valueChanged(double);
     
 signals:
 	void requestRedraw() const;

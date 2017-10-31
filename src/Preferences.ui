@@ -1485,14 +1485,14 @@
             <item row="18" column="0" colspan="4">
              <layout class="QGridLayout" name="gridLayout_10">
               <item row="7" column="2">
-               <widget class="QLabel" name="labelAxisTrimm3">
+               <widget class="QLabel" name="labelAxisTrim3">
                 <property name="font">
                  <font>
                   <pointsize>8</pointsize>
                  </font>
                 </property>
                 <property name="text">
-                 <string>Trimm</string>
+                 <string>Trim</string>
                 </property>
                </widget>
               </item>
@@ -1504,14 +1504,14 @@
                </widget>
               </item>
               <item row="0" column="2">
-               <widget class="QLabel" name="labelAxisTrimm0">
+               <widget class="QLabel" name="labelAxisTrim0">
                 <property name="font">
                  <font>
                   <pointsize>8</pointsize>
                  </font>
                 </property>
                 <property name="text">
-                 <string>Trimm</string>
+                 <string>Trim</string>
                 </property>
                </widget>
               </item>
@@ -1529,16 +1529,16 @@
                </widget>
               </item>
               <item row="1" column="2">
-               <widget class="QDoubleSpinBox" name="doubleSpinBoxTrimm0">
+               <widget class="QDoubleSpinBox" name="doubleSpinBoxTrim0">
                 <property name="singleStep">
                  <double>0.010000000000000</double>
                 </property>
                </widget>
               </item>
               <item row="13" column="0" colspan="3">
-               <widget class="QPushButton" name="pushButtonAxisTrimmReset">
+               <widget class="QPushButton" name="pushButtonAxisTrimReset">
                 <property name="text">
-                 <string>Reset Trimm</string>
+                 <string>Reset Trim</string>
                 </property>
                </widget>
               </item>
@@ -1615,14 +1615,14 @@
                </widget>
               </item>
               <item row="1" column="5">
-               <widget class="QDoubleSpinBox" name="doubleSpinBoxTrimm1">
+               <widget class="QDoubleSpinBox" name="doubleSpinBoxTrim1">
                 <property name="singleStep">
                  <double>0.010000000000000</double>
                 </property>
                </widget>
               </item>
               <item row="11" column="2">
-               <widget class="QDoubleSpinBox" name="doubleSpinBoxTrimm6">
+               <widget class="QDoubleSpinBox" name="doubleSpinBoxTrim6">
                 <property name="singleStep">
                  <double>0.010000000000000</double>
                 </property>
@@ -1642,23 +1642,23 @@
                </widget>
               </item>
               <item row="1" column="8">
-               <widget class="QDoubleSpinBox" name="doubleSpinBoxTrimm2">
+               <widget class="QDoubleSpinBox" name="doubleSpinBoxTrim2">
                 <property name="singleStep">
                  <double>0.010000000000000</double>
                 </property>
                </widget>
               </item>
               <item row="8" column="8">
-               <widget class="QDoubleSpinBox" name="doubleSpinBoxTrimm5">
+               <widget class="QDoubleSpinBox" name="doubleSpinBoxTrim5">
                 <property name="singleStep">
                  <double>0.010000000000000</double>
                 </property>
                </widget>
               </item>
               <item row="13" column="6" colspan="3">
-               <widget class="QPushButton" name="pushButtonAxisTrimm">
+               <widget class="QPushButton" name="pushButtonAxisTrim">
                 <property name="text">
-                 <string>Auto Trimm Axis</string>
+                 <string>Auto Trim Axis</string>
                 </property>
                </widget>
               </item>
@@ -1697,28 +1697,28 @@
                </widget>
               </item>
               <item row="8" column="2">
-               <widget class="QDoubleSpinBox" name="doubleSpinBoxTrimm3">
+               <widget class="QDoubleSpinBox" name="doubleSpinBoxTrim3">
                 <property name="singleStep">
                  <double>0.010000000000000</double>
                 </property>
                </widget>
               </item>
               <item row="8" column="5">
-               <widget class="QDoubleSpinBox" name="doubleSpinBoxTrimm4">
+               <widget class="QDoubleSpinBox" name="doubleSpinBoxTrim4">
                 <property name="singleStep">
                  <double>0.010000000000000</double>
                 </property>
                </widget>
               </item>
               <item row="11" column="8">
-               <widget class="QDoubleSpinBox" name="doubleSpinBoxTrimm8">
+               <widget class="QDoubleSpinBox" name="doubleSpinBoxTrim8">
                 <property name="singleStep">
                  <double>0.010000000000000</double>
                 </property>
                </widget>
               </item>
               <item row="11" column="5">
-               <widget class="QDoubleSpinBox" name="doubleSpinBoxTrimm7">
+               <widget class="QDoubleSpinBox" name="doubleSpinBoxTrim7">
                 <property name="singleStep">
                  <double>0.010000000000000</double>
                 </property>
@@ -1778,14 +1778,14 @@
                </widget>
               </item>
               <item row="10" column="2">
-               <widget class="QLabel" name="labelAxisTrimm6">
+               <widget class="QLabel" name="labelAxisTrim6">
                 <property name="font">
                  <font>
                   <pointsize>8</pointsize>
                  </font>
                 </property>
                 <property name="text">
-                 <string>Trimm</string>
+                 <string>Trim</string>
                 </property>
                </widget>
               </item>
@@ -1826,14 +1826,14 @@
                </widget>
               </item>
               <item row="10" column="5">
-               <widget class="QLabel" name="labelAxisTrimm7">
+               <widget class="QLabel" name="labelAxisTrim7">
                 <property name="font">
                  <font>
                   <pointsize>8</pointsize>
                  </font>
                 </property>
                 <property name="text">
-                 <string>Trimm</string>
+                 <string>Trim</string>
                 </property>
                </widget>
               </item>
@@ -1850,14 +1850,14 @@
                </widget>
               </item>
               <item row="10" column="8">
-               <widget class="QLabel" name="labelAxisTrimm8">
+               <widget class="QLabel" name="labelAxisTrim8">
                 <property name="font">
                  <font>
                   <pointsize>8</pointsize>
                  </font>
                 </property>
                 <property name="text">
-                 <string>Trimm</string>
+                 <string>Trim</string>
                 </property>
                </widget>
               </item>
@@ -1874,14 +1874,14 @@
                </widget>
               </item>
               <item row="7" column="8">
-               <widget class="QLabel" name="labelAxisTrimm5">
+               <widget class="QLabel" name="labelAxisTrim5">
                 <property name="font">
                  <font>
                   <pointsize>8</pointsize>
                  </font>
                 </property>
                 <property name="text">
-                 <string>Trimm</string>
+                 <string>Trim</string>
                 </property>
                </widget>
               </item>
@@ -1898,14 +1898,14 @@
                </widget>
               </item>
               <item row="7" column="5">
-               <widget class="QLabel" name="labelAxisTrimm4">
+               <widget class="QLabel" name="labelAxisTrim4">
                 <property name="font">
                  <font>
                   <pointsize>8</pointsize>
                  </font>
                 </property>
                 <property name="text">
-                 <string>Trimm</string>
+                 <string>Trim</string>
                 </property>
                </widget>
               </item>
@@ -1922,14 +1922,14 @@
                </widget>
               </item>
               <item row="0" column="8">
-               <widget class="QLabel" name="labelAxisTrimm2">
+               <widget class="QLabel" name="labelAxisTrim2">
                 <property name="font">
                  <font>
                   <pointsize>8</pointsize>
                  </font>
                 </property>
                 <property name="text">
-                 <string>Trimm</string>
+                 <string>Trim</string>
                 </property>
                </widget>
               </item>
@@ -2090,14 +2090,14 @@
                </widget>
               </item>
               <item row="0" column="5">
-               <widget class="QLabel" name="labelAxisTrimm1">
+               <widget class="QLabel" name="labelAxisTrim1">
                 <property name="font">
                  <font>
                   <pointsize>8</pointsize>
                  </font>
                 </property>
                 <property name="text">
-                 <string>Trimm</string>
+                 <string>Trim</string>
                 </property>
                </widget>
               </item>
