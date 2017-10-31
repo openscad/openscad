@@ -39,7 +39,9 @@ private:
     const static int max_buttons = 10;
 
     QTimer *timer;
-    double axisValue[max_axis];
+    double axisRawValue[max_axis];
+    double axisTrimmValue[max_axis];
+    double axisDeadzone[max_axis];
     QString actions[max_buttons];
     int translate[6];
     int rotate[3];
@@ -69,6 +71,10 @@ public:
     void onZoomEvent(class InputEventZoom *event);
 
     void onInputMappingUpdated();
+    void onInputCalibrationUpdated();
+    
+    void onAxisAutoTrimm();
+    void onAxisTrimmReset();
 
     static InputEventMapper * instance();
 

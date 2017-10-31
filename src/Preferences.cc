@@ -62,8 +62,11 @@ class SettingsReader : public Settings::SettingsVisitor
 	try {
 		switch (entry.defaultValue().type()) {
 		case Value::ValueType::STRING:
+			if(entry.defaultValue()=="0.00" || entry.defaultValue()=="0.10"){ //ToDo: Clean me up
+				return Value(boost::lexical_cast<double>(trimmed_value));
+			}
 			return Value(trimmed_value);
-		case Value::ValueType::NUMBER:
+		case Value::ValueType::NUMBER: //ToDo: Clean me up - Number is actually a double
 			return Value(boost::lexical_cast<int>(trimmed_value));
 		case Value::ValueType::BOOL:
 			boost::to_lower(trimmed_value);
@@ -959,6 +962,10 @@ void Preferences::updateButtonState(int nr, bool pressed) const{
 	QLabel* label = this->centralwidget->findChild<QLabel *>(QString::fromStdString("labelInputButton"+number));
 	if(label==0) return;
 	label->setStyleSheet(Style);
+}
+
+void Preferences::AxesChanged(int nr, double val) const{
+	//will follow
 }
 
 Preferences *Preferences::inst() {
