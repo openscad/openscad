@@ -66,6 +66,9 @@ message(STATUS "Flex: ${FLEX_VERSION}")
 find_package(BISON REQUIRED QUIET)
 message(STATUS "Bison: ${BISON_VERSION}")
 
+find_package(LibZip REQUIRED QUIET)
+message(STATUS "LibZip: ${LIBZIP_VERSION}")
+
 include(CheckIncludeFileCXX)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -122,7 +125,9 @@ if(NULLGL)
 else()
   add_definitions(-DENABLE_OPENCSG)
 endif()
-# -DENABLE_LIBZIP -DDEBUG
+
+# -DDEBUG
+add_definitions(-DENABLE_LIBZIP)
 add_definitions(-DENABLE_EXPERIMENTAL)
 
 # Stack size 8MB; github issue 116
@@ -426,6 +431,7 @@ set(COMMON_LIBRARIES
     ${FREETYPE_LIBRARIES}
     ${GLIB2_LIBRARIES}
     ${LIBXML2_LIBRARIES}
+    ${LIBZIP_LIBRARY}
     ${OPENGL_LIBRARIES}
     ${GLEW_LIBRARY}
     ${OPENCSG_LIBRARY}
