@@ -81,8 +81,6 @@ void HidApiInputDriver::run()
  */
 void HidApiInputDriver::hidapi_decode_axis1(const unsigned char *buf, unsigned int len)
 {
-    InputEvent *event = 0;
-
     if ((buf[ 0] == 1 || buf[ 0] == 2) && len == 7) {
         // Values are in the range -10..10 at min. speed and -2595..2595 at max. speed.
         int16_t x_value = buf[ 1] | buf[ 2] << 8;
@@ -91,15 +89,18 @@ void HidApiInputDriver::hidapi_decode_axis1(const unsigned char *buf, unsigned i
         if (x_value == 0 && y_value == 0 && z_value == 0) {
             return;
         }
+        double x = x_value/350.0;
+        double y = y_value/350.0;
+        double z = z_value/350.0;
         if (buf[ 0] == 1) {
-            event = new InputEventTranslate(0.1 * x_value, 0.1 * y_value, 0.1 * z_value);
+            InputDriverManager::instance()->sendEvent(new InputEventAxisChanged(0, x));
+            InputDriverManager::instance()->sendEvent(new InputEventAxisChanged(1, y));
+            InputDriverManager::instance()->sendEvent(new InputEventAxisChanged(2, z)); 
         } else {
-            event = new InputEventRotate(0.01 * x_value, 0.01 * y_value, 0.01 * z_value);
+            InputDriverManager::instance()->sendEvent(new InputEventAxisChanged(3, x));
+            InputDriverManager::instance()->sendEvent(new InputEventAxisChanged(4, y));
+            InputDriverManager::instance()->sendEvent(new InputEventAxisChanged(5, z));
         }
-    }
-
-    if (event) {
-        InputDriverManager::instance()->sendEvent(event);
     }
 }
 
