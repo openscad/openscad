@@ -35,9 +35,8 @@ void ParameterComboBox::setParameterFocus()
 
 void ParameterComboBox::setValue()
 {
-	this->stackedWidget->setCurrentWidget(this->pageComboBox);
-	this->stackedWidget_2->setCurrentWidget(this->pageComboBox_2);
-	this->stackedWidget_2->hide();
+	this->stackedWidgetBelow->setCurrentWidget(this->pageComboBox);
+	this->stackedWidgetRight->hide();
 	comboBox->clear();
 	const Value::VectorType& vec = object->values->toVector();
 	for (Value::VectorType::const_iterator it = vec.begin(); it != vec.end(); it++)	{

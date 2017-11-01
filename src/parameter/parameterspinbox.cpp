@@ -38,10 +38,8 @@ void ParameterSpinBox::setValue()
 		this->doubleSpinBox->setSingleStep(1/pow(10,decimalPrecision));
 	}
 	this->doubleSpinBox->setDecimals(decimalPrecision);
-	this->stackedWidget->setCurrentWidget(this->pageVector);
-	this->stackedWidget_2->setCurrentWidget(this->pageVector_2);
+	this->stackedWidgetRight->setCurrentWidget(this->pageSpin);
+	this->stackedWidgetBelow->hide();
 	this->doubleSpinBox->setRange(object->value->toDouble()-1000, object->value->toDouble()+1000);
 	this->doubleSpinBox->setValue(object->value->toDouble());
-	
-	this->stackedWidget->hide();
 }
