@@ -54,6 +54,7 @@ void GroupWidget::setContentLayout(QLayout & contentLayout)
 {
 	delete contentArea.layout();
 	contentArea.setLayout(&contentLayout);
+
 	const int collapsedHeight = sizeHint().height() - contentArea.maximumHeight();
 	int contentHeight = contentLayout.sizeHint().height();
 	for (int i = 0; i < toggleAnimation.animationCount() - 1; ++i) {
