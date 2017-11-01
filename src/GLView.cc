@@ -514,16 +514,11 @@ void GLView::showScalemarkers(const Color4f &col)
 	// Take log of l, discretize, then exponentiate. This is done so that the tick
 	// denominations change every time the viewport gets 10x bigger or smaller,
 	// but stays constant in-between. l_adjusted is a step function of l.
-	const int log_l = static_cast<int>(log10(l));
+	const int log_l = static_cast<int>(floor(log10(l)));
 	const double l_adjusted = pow(10, log_l);
 
-	// Calculate tick width. Make them smaller if the viewport is small.
-	double tick_width;
-	if (l < 1.5){
-		tick_width = l_adjusted / 100.0;
-	} else {
-		tick_width = l_adjusted / 10.0;
-	}
+	// Calculate tick width.
+	const double tick_width = l_adjusted / 10.0;
 
 	const int size_div_sm = 60; // divisor for l to determine minor tick size
 	int line_cnt = 0;
