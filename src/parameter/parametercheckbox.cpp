@@ -28,8 +28,7 @@ void ParameterCheckBox::setParameterFocus()
 }
 
 void ParameterCheckBox::setValue() {
-	this->stackedWidget->setCurrentWidget(this->pageCheckBox);
-	this->stackedWidget_2->setCurrentWidget(this->pageCheckBox_2);
-	this->stackedWidget->hide();
+	this->stackedWidgetRight->setCurrentWidget(this->pageCheckBox);
+	this->stackedWidgetBelow->hide();
 	this->checkBox->setChecked(object->value->toBool());
 }
