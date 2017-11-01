@@ -19,7 +19,19 @@ message(STATUS "Configuration: ${CONFIG_OPTIONS}")
 
 project(openscad)
 
-set(CMAKE_CXX_FLAGS "-O2")
+# Default to Release build
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
+
+# overrride cmake build type default flags:
+# set(CMAKE_C_FLAGS_DEBUG "-g -DDEBUG" CACHE STRING "Set C Debug flags" FORCE)
+# set(CMAKE_C_FLAGS_RELEASE "-O2 -DNDEBUG" CACHE STRING "Set C Release flags" FORCE)
+
+# set(CMAKE_CXX_FLAGS_DEBUG "-g -DDEBUG" CACHE STRING "Set C++ Debug flags" FORCE)
+# set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG" CACHE STRING "Set C++ Release flags" FORCE)
+
 set(CMAKE_CXX_STANDARD 11)
 if(APPLE)
   # Needed for deployment target 10.8 as cmake doesn't know about the libc++
@@ -127,7 +139,6 @@ else()
   add_definitions(-DENABLE_OPENCSG)
 endif()
 
-# -DDEBUG
 add_definitions(-DENABLE_LIBZIP)
 add_definitions(-DENABLE_EXPERIMENTAL)
 
@@ -442,4 +453,3 @@ target_link_libraries(OpenSCAD ${COMMON_LIBRARIES})
 if(NOT HEADLESS)
   target_link_libraries(OpenSCAD Qt5::Core Qt5::Widgets Qt5::OpenGL Qt5::Concurrent ${QT5QSCINTILLA_LIBRARY})
 endif()
-
