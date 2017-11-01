@@ -1,5 +1,5 @@
 /*[ Candle Stand ]*/
-//Lenght of candle stand
+//Length of candle stand
 length=50; // [70:large,50:medium,30:small]
 
 // Center stand
