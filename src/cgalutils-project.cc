@@ -229,7 +229,7 @@ namespace CGALUtils {
 				for (i = newN.p3->volumes_begin(); i != newN.p3->volumes_end(); ++i) {
 					PRINTDB("<!-- volume. mark: %s -->",i->mark());
 					for (j = i->shells_begin(); j != i->shells_end(); ++j) {
-						PRINTDB("<!-- shell. (vol mark was: %i)", i->mark());;
+						PRINTDB("<!-- shell. (vol mark was: %i)", i->mark());
 						sface_handle = CGAL_Nef_polyhedron3::SFace_const_handle(j);
 						newN.p3->visit_shell_objects(sface_handle , zremover);
 						PRINTD("<!-- shell. end. -->");
