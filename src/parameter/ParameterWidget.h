@@ -56,7 +56,7 @@ public:
 	virtual ~ParameterWidget();
 	void readFile(QString scadFile);
 	void writeFile(QString scadFile);
-																
+
 protected slots:
 	void onValueChanged();
 	void onPreviewTimerElapsed();
@@ -65,10 +65,10 @@ protected slots:
 	void onSetAdd();
 	void onSetDelete();
 	void resetParameter();
-	
+
 signals:
 	void previewRequested();
-	
+
 protected:
 	void connectWidget();
 	void begin();
