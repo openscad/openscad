@@ -6,6 +6,7 @@
 #include <QWidget>
 #include <QVBoxLayout>
 #include <Qsci/qsciscintilla.h>
+#include <Qsci/qsciapis.h>
 #include <QVBoxLayout>
 #include "editor.h"
 #include "scadlexer.h"
@@ -14,6 +15,27 @@
 #include "memory.h"
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+
+class Abbreviation {
+private:
+	QString _key, _left, _right;
+public:
+	Abbreviation()
+	{
+	}
+	Abbreviation(QString key, QString left, QString right)
+	{
+		_key=key;
+		_left=left;
+		_right=right;
+	}
+	QString left() {
+		return _left;
+	}
+	QString right() {
+		return _right;
+	}
+};
 
 class EditorColorScheme
 {
@@ -69,6 +91,7 @@ private:
         virtual bool eventFilter(QObject* obj, QEvent *event);
         void navigateOnNumber(int key);
         bool modifyNumber(int key);
+	void loadAbbreviations(const fs::path path);
 
 signals:
 	void previewRequest(void);
@@ -94,6 +117,11 @@ public slots:
 	void copy();
 	void paste();
 	void initFont(const QString&, uint);
+        void expandAbbreviation();
+        void toggleCurrentFold();
+        void toggleAllFolds();
+        void completeWord();
+        void completeSymbol();
 
 private slots:
 	void onTextChanged();
@@ -106,4 +134,6 @@ private:
 	static const int markerNumber = 2;
 	ScadLexer *lexer;
 	QFont currentFont;
+	QMap<QString,Abbreviation> abbreviations;
+	QsciAPIs *api;
 };
