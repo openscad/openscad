@@ -4,14 +4,16 @@
 
 GroupWidget::GroupWidget(bool &show, const QString & title, const int animationDuration, QWidget *parent) : QWidget(parent), animationDuration(animationDuration)
 {
-	toggleButton.setStyleSheet("QToolButton { border: none; }");
-	toggleButton.setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+	//toggleButton.setStyleSheet("QToolButton { border: none; }");
+    //toggleButton.setLayoutDirection(Qt::RightToLeft);
 	toggleButton.setText(title);
+    toggleButton.setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Maximum);
+	toggleButton.setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
 	toggleButton.setCheckable(true);
 	
-	headerLine.setFrameShape(QFrame::HLine);
-	headerLine.setFrameShadow(QFrame::Sunken);
-	headerLine.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
+	//headerLine.setFrameShape(QFrame::HLine);
+	//headerLine.setFrameShadow(QFrame::Sunken);
+	//headerLine.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 	
 	contentArea.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 	// start out collapsed
@@ -28,10 +30,12 @@ GroupWidget::GroupWidget(bool &show, const QString & title, const int animationD
 	// don't waste space
 	mainLayout.setVerticalSpacing(0);
 	mainLayout.setContentsMargins(0, 0, 0, 0);
-	int row = 0;
-	mainLayout.addWidget(&toggleButton, row, 0, 1, 1, Qt::AlignLeft);
-	mainLayout.addWidget(&headerLine, row++, 2, 1, 1);
-	mainLayout.addWidget(&contentArea, row, 0, 1, 3);
+    //contentArea.setVerticalSpacing(0);
+    contentArea.setContentsMargins(0, 0, 0, 0);
+    
+	//int row = 0;
+	mainLayout.addWidget(&toggleButton, 0, 0, 0);
+	mainLayout.addWidget(&contentArea, 1, 0, 0);
 	setLayout(&mainLayout);
 	QObject::connect(&toggleButton, SIGNAL(toggled(bool)),this, SLOT(onclicked(bool)));
 }
