@@ -11,7 +11,7 @@
 //
 
 
-//Below comment tells the group to which a varaible will belong
+//Below comment tells the group to which a variable will belong
 /*[ properties of Sign]*/
 
 //The resolution of the curves. Higher values give smoother curves but may increase the model render time.
