@@ -13,7 +13,7 @@ ParameterVector::ParameterVector(ParameterObject *parameterobject, bool showDesc
 		setDescription(object->description);
 	}
 	else {
-		frame->setToolTip(object->description);
+		this->setToolTip(object->description);
 	}
 }
 
@@ -48,6 +48,7 @@ void ParameterVector::setParameterFocus()
 void ParameterVector::setValue()
 {
 	this->stackedWidget->setCurrentWidget(this->pageVector);
+	this->stackedWidget_2->setCurrentWidget(this->pageVector_2);
 	Value::VectorType vec = object->value->toVector();
 	if (vec.size() < 4) {
 		this->doubleSpinBox4->hide();
