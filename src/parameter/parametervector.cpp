@@ -47,8 +47,9 @@ void ParameterVector::setParameterFocus()
 
 void ParameterVector::setValue()
 {
-	this->stackedWidget->setCurrentWidget(this->pageVector);
-	this->stackedWidget_2->setCurrentWidget(this->pageVector_2);
+	this->stackedWidgetBelow->setCurrentWidget(this->pageVector);
+	this->stackedWidgetRight->hide();
+
 	Value::VectorType vec = object->value->toVector();
 	if (vec.size() < 4) {
 		this->doubleSpinBox4->hide();
