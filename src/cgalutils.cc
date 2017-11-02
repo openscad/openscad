@@ -58,7 +58,7 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 			}
 		}
 
-		if (points.size() <= 3) return new CGAL_Nef_polyhedron();;
+		if (points.size() <= 3) return new CGAL_Nef_polyhedron();
 
 		// Apply hull
 		CGAL::Polyhedron_3<K> r;

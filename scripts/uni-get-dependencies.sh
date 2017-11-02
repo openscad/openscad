@@ -217,8 +217,10 @@ if [ -e /etc/issue ]; then
   get_debian_deps
  elif [ "`grep -i linux.mint.2 /etc/issue`" ]; then
   get_ubuntu_14_deps
- elif [ "`grep -i linux.mint.1[789] /etc/issue`" ]; then
+ elif [ "`grep -i linux.mint.17 /etc/issue`" ]; then
   get_ubuntu_14_deps
+ elif [ "`grep -i linux.mint.1[89] /etc/issue`" ]; then
+  get_ubuntu_16_deps
  elif [ "`grep -i mint /etc/issue`" ]; then
   get_debian_7_deps
  elif [ "`grep -i suse /etc/issue`" ]; then
