@@ -21,16 +21,23 @@ project(openscad)
 
 # Default to Release build
 if(NOT CMAKE_BUILD_TYPE)
+  message(STATUS "CMAKE_BUILD_TYPE not specified.  Defaulting to 'Release'")
+  message(STATUS "Usage: cmake -DCMAKE_BUILD_TYPE=[Debug|Release|RelWithDebInfo|MinSizeRel] .")
   set(CMAKE_BUILD_TYPE Release)
+else()
+  message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 endif()
-message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 
-# overrride cmake build type default flags:
-# set(CMAKE_C_FLAGS_DEBUG "-g -DDEBUG" CACHE STRING "Set C Debug flags" FORCE)
-# set(CMAKE_C_FLAGS_RELEASE "-O2 -DNDEBUG" CACHE STRING "Set C Release flags" FORCE)
-
-# set(CMAKE_CXX_FLAGS_DEBUG "-g -DDEBUG" CACHE STRING "Set C++ Debug flags" FORCE)
-# set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG" CACHE STRING "Set C++ Release flags" FORCE)
+# cmake default flags include "-DNDEBUG" on all non-Debug build types, and does not put "-DDEBUG" on Debug builds
+# OpenSCAD does the opposite of that, so we override those build-type-specific flags here
+set(CMAKE_C_FLAGS_DEBUG          "-g -DDEBUG" CACHE STRING "Set Debug flags" FORCE)
+set(CMAKE_C_FLAGS_RELEASE        "-O2" CACHE STRING "Set Release flags" FORCE)
+set(CMAKE_C_FLAGS_RELWITHDEBINFO "-O2 -g" CACHE STRING "Set RelWithDebInfo flags" FORCE)
+set(CMAKE_C_FLAGS_MINSIZEREL     "-Os" CACHE STRING "Set MinSizeRel flags" FORCE)
+set(CMAKE_CXX_FLAGS_DEBUG          "-g -DDEBUG" CACHE STRING "Set Debug flags" FORCE)
+set(CMAKE_CXX_FLAGS_RELEASE        "-O2" CACHE STRING "Set Release flags" FORCE)
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g" CACHE STRING "Set RelWithDebInfo flags" FORCE)
+set(CMAKE_CXX_FLAGS_MINSIZEREL     "-Os" CACHE STRING "Set MinSizeRel flags" FORCE)
 
 set(CMAKE_CXX_STANDARD 11)
 if(APPLE)
@@ -453,3 +460,4 @@ target_link_libraries(OpenSCAD ${COMMON_LIBRARIES})
 if(NOT HEADLESS)
   target_link_libraries(OpenSCAD Qt5::Core Qt5::Widgets Qt5::OpenGL Qt5::Concurrent ${QT5QSCINTILLA_LIBRARY})
 endif()
+
