@@ -93,8 +93,8 @@ void ParameterWidget::onSetAdd()
 void ParameterWidget::readFile(QString scadFile)
 {
 	this->jsonFile = scadFile.replace(".scad", ".json").toStdString();
-	bool readonly=readParameterSet(this->jsonFile);
-	if(readonly){
+	bool readable=readParameterSet(this->jsonFile);
+	if(readable){
 		connect(this->addButton, SIGNAL(clicked()), this, SLOT(onSetAdd()));
 		connect(this->deleteButton, SIGNAL(clicked()), this, SLOT(onSetDelete()));
 	}
