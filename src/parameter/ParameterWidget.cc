@@ -87,6 +87,15 @@ void ParameterWidget::onSetAdd()
 		pt::ptree setRoot;
 		root.add_child(ParameterSet::parameterSetsKey, setRoot);
 	}
+	updateParameterSet("");
+}
+
+void ParameterWidget::onSetSaveButton()
+{
+	if (root.empty()) {
+		pt::ptree setRoot;
+		root.add_child(ParameterSet::parameterSetsKey, setRoot);
+	}
 	updateParameterSet(comboBoxPreset->itemData(this->comboBoxPreset->currentIndex()).toString().toStdString());
 }
 
@@ -96,13 +105,19 @@ void ParameterWidget::readFile(QString scadFile)
 	bool readable=readParameterSet(this->jsonFile);
 	if(readable){
 		connect(this->addButton, SIGNAL(clicked()), this, SLOT(onSetAdd()));
+		this->addButton->setToolTip("add new preset");
 		connect(this->deleteButton, SIGNAL(clicked()), this, SLOT(onSetDelete()));
+		this->deleteButton->setToolTip("remove current preset");
+		connect(this->presetSaveButton, SIGNAL(clicked()), this, SLOT(onPresetSaveButton()));
+		this->presetSaveButton->setToolTip("save current preset");
 	}
 	else{
 		this->addButton->setDisabled(true);
 		this->addButton->setToolTip("JSON file read only");
 		this->deleteButton->setDisabled(true);
 		this->deleteButton->setToolTip("JSON file read only");
+		this->presetSaveButton->setDisabled(true);
+		this->presetSaveButton->setToolTip("JSON file read only");
 	}
 	disconnect(comboBoxPreset, SIGNAL(currentIndexChanged(int)), this, SLOT(onSetChanged(int)));
 	this->comboBoxPreset->clear();
@@ -118,7 +133,7 @@ void ParameterWidget::writeFile(QString scadFile)
 
 void ParameterWidget::setComboBoxPresetForSet()
 {
-	this->comboBoxPreset->addItem("No Set Selected", QVariant(QString::fromStdString("")));
+	this->comboBoxPreset->addItem("no preset selected", QVariant(QString::fromStdString("")));
 	if (root.empty()) return;
 	for (const auto &name : getParameterNames()) {
 		const QString n = QString::fromStdString(name);

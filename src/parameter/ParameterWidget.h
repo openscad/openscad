@@ -70,6 +70,7 @@ protected slots:
 	void onDescriptionShow();
 	void onSetChanged(int idx);
 	void onSetAdd();
+	void onSetSaveButton();
 	void onSetDelete();
 	void resetParameter();
 
