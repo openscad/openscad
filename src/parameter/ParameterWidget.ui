@@ -27,7 +27,7 @@
     <number>0</number>
    </property>
    <item row="7" column="0">
-    <widget class="QComboBox" name="comboBox">
+    <widget class="QComboBox" name="comboBoxPreset">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
        <horstretch>1</horstretch>

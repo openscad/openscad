@@ -54,7 +54,7 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 	connect(&autoPreviewTimer, SIGNAL(timeout()), this, SLOT(onPreviewTimerElapsed()));
 	connect(checkBoxAutoPreview, SIGNAL(toggled(bool)), this, SLOT(onValueChanged()));
 	connect(checkBoxDetailedDescription,SIGNAL(toggled(bool)), this,SLOT(onDescriptionShow()));
-	connect(comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onSetChanged(int)));
+	connect(comboBoxPreset, SIGNAL(currentIndexChanged(int)), this, SLOT(onSetChanged(int)));
 	connect(reset, SIGNAL(clicked()), this, SLOT(resetParameter()));
 }
 
@@ -71,14 +71,14 @@ ParameterWidget::~ParameterWidget()
 void ParameterWidget::onSetDelete()
 {
 	if (root.empty()) return;
-	std::string setName=comboBox->itemData(this->comboBox->currentIndex()).toString().toStdString();
+	std::string setName=comboBoxPreset->itemData(this->comboBoxPreset->currentIndex()).toString().toStdString();
 	boost::optional<pt::ptree &> sets = parameterSets();
 	if (sets.is_initialized()) {
 		sets.get().erase(pt::ptree::key_type(setName));
 	}
 	writeParameterSet(this->jsonFile);
-	this->comboBox->clear();
-	setComboBoxForSet();
+	this->comboBoxPreset->clear();
+	setComboBoxPresetForSet();
 }
 
 void ParameterWidget::onSetAdd()
@@ -87,7 +87,7 @@ void ParameterWidget::onSetAdd()
 		pt::ptree setRoot;
 		root.add_child(ParameterSet::parameterSetsKey, setRoot);
 	}
-	updateParameterSet(comboBox->itemData(this->comboBox->currentIndex()).toString().toStdString());
+	updateParameterSet(comboBoxPreset->itemData(this->comboBoxPreset->currentIndex()).toString().toStdString());
 }
 
 void ParameterWidget::readFile(QString scadFile)
@@ -104,10 +104,10 @@ void ParameterWidget::readFile(QString scadFile)
 		this->deleteButton->setDisabled(true);
 		this->deleteButton->setToolTip("JSON file read only");
 	}
-	disconnect(comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onSetChanged(int)));
-	this->comboBox->clear();
-	setComboBoxForSet();
-	connect(comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onSetChanged(int)));
+	disconnect(comboBoxPreset, SIGNAL(currentIndexChanged(int)), this, SLOT(onSetChanged(int)));
+	this->comboBoxPreset->clear();
+	setComboBoxPresetForSet();
+	connect(comboBoxPreset, SIGNAL(currentIndexChanged(int)), this, SLOT(onSetChanged(int)));
 
 }
 
@@ -116,19 +116,19 @@ void ParameterWidget::writeFile(QString scadFile)
 	writeParameterSet(scadFile.replace(".scad", ".json").toStdString());
 }
 
-void ParameterWidget::setComboBoxForSet()
+void ParameterWidget::setComboBoxPresetForSet()
 {
-	this->comboBox->addItem("No Set Selected", QVariant(QString::fromStdString("")));
+	this->comboBoxPreset->addItem("No Set Selected", QVariant(QString::fromStdString("")));
 	if (root.empty()) return;
 	for (const auto &name : getParameterNames()) {
 		const QString n = QString::fromStdString(name);
-		this->comboBox->addItem(n, QVariant(n));
+		this->comboBoxPreset->addItem(n, QVariant(n));
 	}
 }
 
 void ParameterWidget::onSetChanged(int idx)
 {
-	const std::string v = comboBox->itemData(idx).toString().toUtf8().constData();
+	const std::string v = comboBoxPreset->itemData(idx).toString().toUtf8().constData();
 	applyParameterSet(v);
 	emit previewRequested();
 }
@@ -363,9 +363,9 @@ void ParameterWidget::updateParameterSet(std::string setName)
 		}
 		addParameterSet(setName, iroot);
 		const QString s(QString::fromStdString(setName));
-		if (this->comboBox->findText(s) == -1) {
-			this->comboBox->addItem(s, QVariant(s));
-			this->comboBox->setCurrentIndex(this->comboBox->findText(s));
+		if (this->comboBoxPreset->findText(s) == -1) {
+			this->comboBoxPreset->addItem(s, QVariant(s));
+			this->comboBoxPreset->setCurrentIndex(this->comboBoxPreset->findText(s));
 		}
 		writeParameterSet(this->jsonFile);
 	}
