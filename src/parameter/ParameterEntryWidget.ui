@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>350</width>
-    <height>104</height>
+    <width>308</width>
+    <height>70</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -30,7 +30,7 @@
     <number>4</number>
    </property>
    <property name="topMargin">
-    <number>4</number>
+    <number>0</number>
    </property>
    <property name="rightMargin">
     <number>4</number>
@@ -87,22 +87,6 @@
        <property name="spacing">
         <number>0</number>
        </property>
-       <item row="0" column="1">
-        <widget class="QLabel" name="labelSliderValue">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>Value</string>
-         </property>
-         <property name="margin">
-          <number>4</number>
-         </property>
-        </widget>
-       </item>
        <item row="0" column="0">
         <widget class="QSlider" name="slider">
          <property name="sizePolicy">
@@ -208,6 +192,21 @@
        </sizepolicy>
       </property>
       <layout class="QGridLayout" name="gridLayout_2">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>4</number>
+       </property>
+       <property name="spacing">
+        <number>0</number>
+       </property>
        <item row="0" column="1">
         <widget class="QDoubleSpinBox" name="doubleSpinBox2">
          <property name="sizePolicy">
@@ -308,6 +307,15 @@
      </property>
      <item>
       <layout class="QVBoxLayout" name="verticalLayout">
+       <property name="spacing">
+        <number>2</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
        <item>
         <widget class="QLabel" name="labelParameter">
          <property name="sizePolicy">
@@ -369,7 +377,7 @@
         <number>0</number>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>2</number>
        </property>
        <widget class="QWidget" name="pageCheckBox">
         <property name="sizePolicy">
@@ -426,6 +434,21 @@ height: 20px;
          </sizepolicy>
         </property>
         <layout class="QGridLayout">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <property name="spacing">
+          <number>0</number>
+         </property>
          <item row="0" column="0">
           <widget class="QDoubleSpinBox" name="doubleSpinBox">
            <property name="sizePolicy">
@@ -445,6 +468,64 @@ height: 20px;
            </property>
           </widget>
          </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="pageSliderValue">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <layout class="QGridLayout">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <item row="0" column="0">
+        <widget class="QLabel" name="labelSliderValue">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>-10</y>
+           <width>47</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>40</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Value</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+         <property name="margin">
+          <number>4</number>
+         </property>
+        </widget>
+        </item>
         </layout>
        </widget>
       </widget>
