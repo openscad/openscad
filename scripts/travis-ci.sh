@@ -2,7 +2,7 @@
 
 set -x
 
-cmake -DHEADLESS=ON .
+qmake CONFIG+=experimental CONFIG+=nogui
 make
 
 cd tests
