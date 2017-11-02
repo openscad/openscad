@@ -4,36 +4,30 @@
 
 GroupWidget::GroupWidget(bool &show, const QString & title, const int animationDuration, QWidget *parent) : QWidget(parent), animationDuration(animationDuration)
 {
-	//toggleButton.setStyleSheet("QToolButton { border: none; }");
-    //toggleButton.setLayoutDirection(Qt::RightToLeft);
 	toggleButton.setText(title);
-    toggleButton.setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Maximum);
+	toggleButton.setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Maximum);
 	toggleButton.setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
 	toggleButton.setCheckable(true);
-	
-	//headerLine.setFrameShape(QFrame::HLine);
-	//headerLine.setFrameShadow(QFrame::Sunken);
-	//headerLine.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
-	
+
 	contentArea.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
 	// start out collapsed
 	contentArea.setMaximumHeight(0);
 	contentArea.setMinimumHeight(0);
+
 	// let the entire widget grow and shrink with its content
 	toggleAnimation.addAnimation(new QPropertyAnimation(this, "minimumHeight"));
 	toggleAnimation.addAnimation(new QPropertyAnimation(this, "maximumHeight"));
 	toggleAnimation.addAnimation(new QPropertyAnimation(&contentArea, "maximumHeight"));
-	
+
 	this->show = &show;
 	toggleButton.setChecked(show);
-	
+
 	// don't waste space
 	mainLayout.setVerticalSpacing(0);
 	mainLayout.setContentsMargins(0, 0, 0, 0);
-    //contentArea.setVerticalSpacing(0);
     contentArea.setContentsMargins(0, 0, 0, 0);
-    
-	//int row = 0;
+
 	mainLayout.addWidget(&toggleButton, 0, 0, 0);
 	mainLayout.addWidget(&contentArea, 1, 0, 0);
 	setLayout(&mainLayout);
@@ -51,7 +45,6 @@ void GroupWidget::onclicked(const bool /*checked*/)
 	} else {
 		*(this->show) = false;
 	}
-	this->animationDuration = 300;
 }
 
 void GroupWidget::setContentLayout(QLayout & contentLayout)
@@ -71,7 +64,7 @@ void GroupWidget::setContentLayout(QLayout & contentLayout)
 	contentAnimation->setDuration(animationDuration);
 	contentAnimation->setStartValue(0);
 	contentAnimation->setEndValue(contentHeight);
-	
+
 	if (*(this->show)) {
 		toggleButton.setArrowType(Qt::DownArrow);
 		toggleAnimation.start();
