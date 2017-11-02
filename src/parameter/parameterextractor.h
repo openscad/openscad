@@ -15,11 +15,8 @@ public:
 	virtual ~ParameterExtractor();
 	void setParameters(const FileModule* module);
 	void applyParameters(FileModule *fileModule);
-	
+
 protected:
-	virtual void begin() = 0;
-	virtual void addEntry(ParameterVirtualWidget *entry) = 0;
-	virtual void end() = 0;
 	virtual void connectWidget() = 0;
 	bool resetPara;
 };
