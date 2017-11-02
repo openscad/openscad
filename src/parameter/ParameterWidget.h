@@ -46,7 +46,6 @@ private:
 	group_map groupMap;
 	QTimer autoPreviewTimer;
 	bool descriptionShow;
-	QVBoxLayout * anyLayout;
 	std::string jsonFile;
 	bool anyfocused;
 	ParameterVirtualWidget *entryToFocus;
@@ -72,10 +71,10 @@ signals:
 protected:
 	void connectWidget();
 	void begin();
-	void addEntry(class ParameterVirtualWidget *entry);
+	void addEntry(QVBoxLayout* anylayout, class ParameterVirtualWidget *entry);
 	void end();
 	void clear();
-	void AddParameterWidget(std::string parameterName);
+	void AddParameterWidget(QVBoxLayout* anylayout, std::string parameterName);
 	void setComboBoxForSet();
 	void applyParameterSet(std::string setName);
 	void updateParameterSet(std::string setName);

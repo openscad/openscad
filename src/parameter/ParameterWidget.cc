@@ -164,14 +164,14 @@ void ParameterWidget::begin()
 		this->scrollAreaWidgetContents->layout()->removeWidget(w);
 		delete w;
 	}
-	anyLayout = new QVBoxLayout();
+
 }
 
-void ParameterWidget::addEntry(ParameterVirtualWidget *entry)
+void ParameterWidget::addEntry(QVBoxLayout* anyLayout, ParameterVirtualWidget *entry)
 {
 	QSizePolicy policy;
 	policy.setHorizontalPolicy(QSizePolicy::Expanding);
-	policy.setVerticalPolicy(QSizePolicy::Preferred);
+	policy.setVerticalPolicy(QSizePolicy::Minimum);
 	policy.setHorizontalStretch(0);
 	policy.setVerticalStretch(0);
 	entry->setSizePolicy(policy);
@@ -215,19 +215,19 @@ void ParameterWidget::connectWidget()
 	}
 	begin();
 	for (std::vector<std::string>::iterator it = groupPos.begin(); it != groupPos.end(); it++) {
-		anyLayout->setSpacing(0);
-		anyLayout->setContentsMargins(0,0,0,0);
-		if(groupMap.find(*it)==groupMap.end())
-			continue;
-		std::vector<std::string> gr;
-		gr = groupMap[*it].parameterVector;
-		for(unsigned int i=0;i < gr.size();i++) {
-			AddParameterWidget(gr[i]);
+		if(groupMap.find(*it)!=groupMap.end()){
+			QVBoxLayout* anyLayout = new QVBoxLayout();
+			anyLayout->setSpacing(0);
+			anyLayout->setContentsMargins(0,0,0,0);
+			std::vector<std::string> gr;
+			gr = groupMap[*it].parameterVector;
+			for(unsigned int i=0;i < gr.size();i++) {
+				AddParameterWidget(anyLayout, gr[i]);
+			}
+			GroupWidget *groupWidget = new GroupWidget(groupMap[*it].show, QString::fromStdString(*it));
+			groupWidget->setContentLayout(*anyLayout);
+			this->scrollAreaWidgetContents->layout()->addWidget(groupWidget);
 		}
-		GroupWidget *groupWidget = new GroupWidget(groupMap[*it].show, QString::fromStdString(*it));
-		groupWidget->setContentLayout(*anyLayout);
-		this->scrollAreaWidgetContents->layout()->addWidget(groupWidget);
-		anyLayout = new QVBoxLayout();
 	}
 	end();
 	if (anyfocused != 0){
@@ -269,7 +269,7 @@ void ParameterWidget::clear(){
 	}
 }
 
-void ParameterWidget::AddParameterWidget(std::string parameterName)
+void ParameterWidget::AddParameterWidget(QVBoxLayout* anylayout, std::string parameterName)
 {
     ParameterVirtualWidget *entry = nullptr;
     switch(entries[parameterName]->target) {
@@ -303,7 +303,7 @@ void ParameterWidget::AddParameterWidget(std::string parameterName)
     }
     if (entries[parameterName]->target != ParameterObject::UNDEFINED) {
 			connect(entry, SIGNAL(changed()), this, SLOT(onValueChanged()));
-			addEntry(entry);
+			addEntry(anylayout, entry);
 			if (entries[parameterName]->focus){
 				entryToFocus = entry;
 				anyfocused = true;
