@@ -169,13 +169,15 @@ void ParameterWidget::begin()
 
 void ParameterWidget::addEntry(QVBoxLayout* anyLayout, ParameterVirtualWidget *entry)
 {
-	QSizePolicy policy;
-	policy.setHorizontalPolicy(QSizePolicy::Expanding);
-	policy.setVerticalPolicy(QSizePolicy::Minimum);
-	policy.setHorizontalStretch(0);
-	policy.setVerticalStretch(0);
-	entry->setSizePolicy(policy);
-	anyLayout->addWidget(entry);
+    if(entry){
+		QSizePolicy policy;
+		policy.setHorizontalPolicy(QSizePolicy::Expanding);
+		policy.setVerticalPolicy(QSizePolicy::Minimum);
+		policy.setHorizontalStretch(0);
+		policy.setVerticalStretch(0);
+		entry->setSizePolicy(policy);
+		anyLayout->addWidget(entry);
+	}
 }
 
 void ParameterWidget::end()
@@ -222,7 +224,8 @@ void ParameterWidget::connectWidget()
 			std::vector<std::string> gr;
 			gr = groupMap[*it].parameterVector;
 			for(unsigned int i=0;i < gr.size();i++) {
-				AddParameterWidget(anyLayout, gr[i]);
+				ParameterVirtualWidget * entry = CreateParameterWidget(gr[i]);
+				addEntry(anyLayout, entry);
 			}
 			GroupWidget *groupWidget = new GroupWidget(groupMap[*it].show, QString::fromStdString(*it));
 			groupWidget->setContentLayout(*anyLayout);
@@ -269,10 +272,10 @@ void ParameterWidget::clear(){
 	}
 }
 
-void ParameterWidget::AddParameterWidget(QVBoxLayout* anylayout, std::string parameterName)
+ParameterVirtualWidget* ParameterWidget::CreateParameterWidget(std::string parameterName)
 {
-    ParameterVirtualWidget *entry = nullptr;
-    switch(entries[parameterName]->target) {
+	ParameterVirtualWidget *entry = nullptr;
+	switch(entries[parameterName]->target) {
 		case ParameterObject::COMBOBOX:{
 			entry = new ParameterComboBox(entries[parameterName], descriptionShow);
 			break;
@@ -301,14 +304,14 @@ void ParameterWidget::AddParameterWidget(QVBoxLayout* anylayout, std::string par
 			break;
 		}
     }
-    if (entries[parameterName]->target != ParameterObject::UNDEFINED) {
-			connect(entry, SIGNAL(changed()), this, SLOT(onValueChanged()));
-			addEntry(anylayout, entry);
-			if (entries[parameterName]->focus){
-				entryToFocus = entry;
-				anyfocused = true;
-			}
-    }
+    if (entry) {
+		connect(entry, SIGNAL(changed()), this, SLOT(onValueChanged()));
+		if (entries[parameterName]->focus){
+			entryToFocus = entry;
+			anyfocused = true;
+		}
+	}
+	return entry;
 }
 
 void ParameterWidget::applyParameterSet(std::string setName)

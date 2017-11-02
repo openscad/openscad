@@ -71,10 +71,10 @@ signals:
 protected:
 	void connectWidget();
 	void begin();
-	void addEntry(QVBoxLayout* anylayout, class ParameterVirtualWidget *entry);
+	void addEntry(QVBoxLayout* anylayout, ParameterVirtualWidget *entry);
 	void end();
 	void clear();
-	void AddParameterWidget(QVBoxLayout* anylayout, std::string parameterName);
+	ParameterVirtualWidget* CreateParameterWidget(std::string parameterName);
 	void setComboBoxForSet();
 	void applyParameterSet(std::string setName);
 	void updateParameterSet(std::string setName);
