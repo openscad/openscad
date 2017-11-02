@@ -11,6 +11,7 @@ ParameterCheckBox::ParameterCheckBox(ParameterObject *parameterobject, bool show
 	}
 	else {
 		checkBox->setToolTip(object->description);
+		checkBox->setStyleSheet(""); //small checkbox, when description not shown
 	}
 }
 
