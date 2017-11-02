@@ -15,7 +15,7 @@
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <property name="leftMargin">
-    <number>4</number>
+    <number>0</number>
    </property>
    <property name="topMargin">
     <number>4</number>
@@ -164,7 +164,7 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>409</width>
+        <width>413</width>
         <height>522</height>
        </rect>
       </property>
