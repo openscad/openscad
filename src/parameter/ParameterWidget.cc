@@ -156,7 +156,7 @@ void ParameterWidget::onPreviewTimerElapsed()
 	emit previewRequested();
 }
 
-void ParameterWidget::begin()
+void ParameterWidget::cleanScrollArea()
 {
 	QLayoutItem *child;
 	while ((child = this->scrollAreaWidgetContents->layout()->takeAt(0)) != 0) {
@@ -164,12 +164,11 @@ void ParameterWidget::begin()
 		this->scrollAreaWidgetContents->layout()->removeWidget(w);
 		delete w;
 	}
-
 }
 
 void ParameterWidget::addEntry(QVBoxLayout* anyLayout, ParameterVirtualWidget *entry)
 {
-    if(entry){
+	if(entry){
 		QSizePolicy policy;
 		policy.setHorizontalPolicy(QSizePolicy::Expanding);
 		policy.setVerticalPolicy(QSizePolicy::Minimum);
@@ -215,7 +214,7 @@ void ParameterWidget::connectWidget()
 			it++;
 		}
 	}
-	begin();
+	cleanScrollArea();
 	for (std::vector<std::string>::iterator it = groupPos.begin(); it != groupPos.end(); it++) {
 		if(groupMap.find(*it)!=groupMap.end()){
 			QVBoxLayout* anyLayout = new QVBoxLayout();

@@ -50,6 +50,14 @@ private:
 	bool anyfocused;
 	ParameterVirtualWidget *entryToFocus;
 
+	void connectWidget();
+	void cleanScrollArea();
+	void addEntry(QVBoxLayout* anylayout, ParameterVirtualWidget *entry);
+	void end();
+	void clear();
+	ParameterVirtualWidget* CreateParameterWidget(std::string parameterName);
+	void setComboBoxForSet();
+
 public:
 	ParameterWidget(QWidget *parent = 0);
 	virtual ~ParameterWidget();
@@ -69,13 +77,6 @@ signals:
 	void previewRequested();
 
 protected:
-	void connectWidget();
-	void begin();
-	void addEntry(QVBoxLayout* anylayout, ParameterVirtualWidget *entry);
-	void end();
-	void clear();
-	ParameterVirtualWidget* CreateParameterWidget(std::string parameterName);
-	void setComboBoxForSet();
 	void applyParameterSet(std::string setName);
 	void updateParameterSet(std::string setName);
 };
