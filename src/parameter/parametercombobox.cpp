@@ -1,15 +1,16 @@
 #include "parametercombobox.h"
 
-ParameterComboBox::ParameterComboBox(ParameterObject *parameterobject, bool showDescription)
+ParameterComboBox::ParameterComboBox(ParameterObject *parameterobject, int showDescription)
 {
 	object = parameterobject;
 	setName(QString::fromStdString(object->name));
 	setValue();
 	connect(comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onChanged(int)));
-	if (showDescription == true) {
+	if (showDescription == 0) {
 		setDescription(object->description);
-	}
-	else{
+	}else if(showDescription == 1){
+		addInline(object->description);
+	}else {
 		comboBox->setToolTip(object->description);
 	}
 }

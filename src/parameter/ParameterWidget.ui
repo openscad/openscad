@@ -127,13 +127,22 @@
       </widget>
      </item>
      <item>
-      <widget class="QCheckBox" name="checkBoxDetailedDescription">
-       <property name="text">
-        <string>Show Details</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
-       </property>
+      <widget class="QComboBox" name="comboBoxDetails">
+       <item>
+        <property name="text">
+         <string>Show Details</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Inline Details</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Hide Details</string>
+        </property>
+       </item>
       </widget>
      </item>
      <item>

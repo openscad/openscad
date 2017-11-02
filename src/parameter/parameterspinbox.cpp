@@ -1,15 +1,16 @@
 #include "parameterspinbox.h"
 
-ParameterSpinBox::ParameterSpinBox(ParameterObject *parameterobject, bool showDescription)
+ParameterSpinBox::ParameterSpinBox(ParameterObject *parameterobject, int showDescription)
 {
 	object = parameterobject;
 	setName(QString::fromStdString(object->name));
 	setValue();
 	connect(doubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(onChanged(double)));
-	if (showDescription == true) {
+	if (showDescription == 0) {
 		setDescription(object->description);
-	}
-	else {
+	}else if(showDescription == 1){
+		addInline(object->description);
+	}else {
 		doubleSpinBox->setToolTip(object->description);
 	}
 }

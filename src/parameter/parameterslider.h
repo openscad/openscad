@@ -6,7 +6,7 @@ class ParameterSlider : public ParameterVirtualWidget
 {
 	Q_OBJECT
 public:
-	ParameterSlider(ParameterObject *parameterobject, bool showDescription);
+	ParameterSlider(ParameterObject *parameterobject, int showDescription);
 	void setValue();
 	void setParameterFocus();
 	

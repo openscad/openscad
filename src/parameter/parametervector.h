@@ -6,7 +6,7 @@ class ParameterVector : public ParameterVirtualWidget
 {
 	Q_OBJECT
 public:
-	ParameterVector(ParameterObject *parameterobject, bool showDescription);
+	ParameterVector(ParameterObject *parameterobject, int showDescription);
 	void setValue();
 	void setParameterFocus();
 

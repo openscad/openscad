@@ -2,16 +2,17 @@
 #include "modcontext.h"
 #include "comment.h"
 
-ParameterText::ParameterText(ParameterObject *parameterobject, bool showDescription)
+ParameterText::ParameterText(ParameterObject *parameterobject, int showDescription)
 {
 	object = parameterobject;
 	setName(QString::fromStdString(object->name));
 	setValue();
 	connect(lineEdit, SIGNAL(textChanged(QString)), this, SLOT(onChanged(QString)));
-	if (showDescription == true){
+	if (showDescription == 0) {
 		setDescription(object->description);
-	}
-	else{
+	}else if(showDescription == 1){
+		addInline(object->description);
+	}else {
 		lineEdit->setToolTip(object->description);
 	}
 }

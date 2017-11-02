@@ -1,6 +1,6 @@
 #include "parameterslider.h"
 
-ParameterSlider::ParameterSlider(ParameterObject *parameterobject, bool showDescription)
+ParameterSlider::ParameterSlider(ParameterObject *parameterobject, int showDescription)
 {
 	this->pressed = true;
 	object = parameterobject;
@@ -9,10 +9,11 @@ ParameterSlider::ParameterSlider(ParameterObject *parameterobject, bool showDesc
 	connect(slider, SIGNAL(sliderPressed()), this, SLOT(onPressed()));
 	connect(slider, SIGNAL(sliderReleased()), this, SLOT(onReleased()));
 	connect(slider, SIGNAL(valueChanged(int)), this, SLOT(onChanged(int)));
-	if (showDescription == true) {
+	if (showDescription == 0) {
 		setDescription(object->description);
-	}
-	else {
+	}else if(showDescription == 1){
+		addInline(object->description);
+	}else {
 		slider->setToolTip(object->description);
 	}
 }

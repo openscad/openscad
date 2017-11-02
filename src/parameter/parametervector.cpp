@@ -1,6 +1,6 @@
 #include "parametervector.h"
 
-ParameterVector::ParameterVector(ParameterObject *parameterobject, bool showDescription)
+ParameterVector::ParameterVector(ParameterObject *parameterobject, int showDescription)
 {
 	object = parameterobject;
 	setName(QString::fromStdString(object->name));
@@ -9,10 +9,11 @@ ParameterVector::ParameterVector(ParameterObject *parameterobject, bool showDesc
 	connect(doubleSpinBox2,SIGNAL(valueChanged(double)),this,SLOT(onChanged(double)));
 	connect(doubleSpinBox3,SIGNAL(valueChanged(double)),this,SLOT(onChanged(double)));
 	connect(doubleSpinBox4,SIGNAL(valueChanged(double)),this,SLOT(onChanged(double)));
-	if (showDescription == true) {
+	if (showDescription == 0) {
 		setDescription(object->description);
-	}
-	else {
+	}else if(showDescription == 1){
+		addInline(object->description);
+	}else {
 		this->setToolTip(object->description);
 	}
 }

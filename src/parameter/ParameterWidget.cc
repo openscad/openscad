@@ -48,12 +48,12 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 {
 	setupUi(this);
 
-	descriptionShow = true;
+	descriptionShow = 0;
 	autoPreviewTimer.setInterval(500);
 	autoPreviewTimer.setSingleShot(true);
 	connect(&autoPreviewTimer, SIGNAL(timeout()), this, SLOT(onPreviewTimerElapsed()));
 	connect(checkBoxAutoPreview, SIGNAL(toggled(bool)), this, SLOT(onValueChanged()));
-	connect(checkBoxDetailedDescription,SIGNAL(toggled(bool)), this,SLOT(onDescriptionShow()));
+	connect(comboBoxDetails,SIGNAL(currentIndexChanged(int)), this,SLOT(onDescriptionShow()));
 	connect(comboBoxPreset, SIGNAL(currentIndexChanged(int)), this, SLOT(onSetChanged(int)));
 	connect(reset, SIGNAL(clicked()), this, SLOT(resetParameter()));
 }
@@ -108,7 +108,7 @@ void ParameterWidget::readFile(QString scadFile)
 		this->addButton->setToolTip("add new preset");
 		connect(this->deleteButton, SIGNAL(clicked()), this, SLOT(onSetDelete()));
 		this->deleteButton->setToolTip("remove current preset");
-		connect(this->presetSaveButton, SIGNAL(clicked()), this, SLOT(onPresetSaveButton()));
+		connect(this->presetSaveButton, SIGNAL(clicked()), this, SLOT(onSetSaveButton()));
 		this->presetSaveButton->setToolTip("save current preset");
 	}
 	else{
@@ -150,11 +150,7 @@ void ParameterWidget::onSetChanged(int idx)
 
 void ParameterWidget::onDescriptionShow()
 {
-	if (checkBoxDetailedDescription->isChecked()) {
-		descriptionShow = true;
-	} else {
-		descriptionShow = false;
-	}
+	descriptionShow =comboBoxDetails->currentIndex();
 	emit previewRequested();
 }
 

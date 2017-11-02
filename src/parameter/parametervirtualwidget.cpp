@@ -14,9 +14,15 @@ ParameterVirtualWidget::~ParameterVirtualWidget(){
 void ParameterVirtualWidget::setName(QString name) {
 	this->labelDescription->hide();
 	name.replace(QRegExp("([_]+)"), " ");
-	this->labelParameter->setText(name);
+	this->labelParameter->setText("<b>"+name+"</b>");
 }
 
+void ParameterVirtualWidget::addInline(QString addTxt) {
+	QString txt = this->labelParameter->text();
+	if(addTxt!=""){
+		this->labelParameter->setText(txt + " - " + addTxt);
+	}
+}
 
 void ParameterVirtualWidget::setPrecision(double number){
 	

@@ -45,7 +45,7 @@ private:
 	typedef std::map<std::string,groupInst > group_map;
 	group_map groupMap;
 	QTimer autoPreviewTimer;
-	bool descriptionShow;
+	int descriptionShow;
 	std::string jsonFile;
 	bool anyfocused;
 	ParameterVirtualWidget *entryToFocus;
