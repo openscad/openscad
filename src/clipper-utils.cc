@@ -37,7 +37,7 @@ namespace ClipperUtils {
 		try {
 			clipper.AddPaths(paths, ClipperLib::ptSubject, true);
 		}
-		catch(...) {
+		catch (...) {
 			// Most likely caught a RangeTest exception from clipper
 			// Note that Clipper up to v6.2.1 incorrectly throws
 			// an exception of type char* rather than a clipperException()

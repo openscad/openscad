@@ -101,7 +101,7 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 		// At this point, the for loop variables have been set and we can initialize
 		// the local scope (as they may depend on the for loop variables
 		Context c(ctx);
-		for(const auto &ass : inst.scope.assignments) {
+		for (const auto &ass : inst.scope.assignments) {
 			c.set_variable(ass.name, ass.expr->evaluate(&c));
 		}
 
@@ -226,7 +226,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 			else if (value->type() == Value::ValueType::VECTOR) {
 				AbstractNode* node = new GroupNode(inst);
 				const Value::VectorType& vect = value->toVector();
-				for(const auto &vectvalue : vect) {
+				for (const auto &vectvalue : vect) {
 					AbstractNode* childnode = getChild(vectvalue,modulectx);
 					if (childnode==nullptr) continue; // error
 					node->children.push_back(childnode);

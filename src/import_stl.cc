@@ -26,16 +26,16 @@ union stl_facet {
 static void uint32_byte_swap(uint32_t &x)
 {
 # if __GNUC__ >= 4 && __GNUC_MINOR__ >= 3
-	x = __builtin_bswap32( x );
+	x = __builtin_bswap32(x);
 # elif defined(__clang__)
-	x = __builtin_bswap32( x );
+	x = __builtin_bswap32(x);
 # elif defined(_MSC_VER)
-	x = _byteswap_ulong( x );
+	x = _byteswap_ulong(x);
 # else
-	uint32_t b1 = ( 0x000000FF & x ) << 24;
-	uint32_t b2 = ( 0x0000FF00 & x ) << 8;
-	uint32_t b3 = ( 0x00FF0000 & x ) >> 8;
-	uint32_t b4 = ( 0xFF000000 & x ) >> 24;
+	uint32_t b1 = (0x000000FF & x) << 24;
+	uint32_t b2 = (0x0000FF00 & x) << 8;
+	uint32_t b3 = (0x00FF0000 & x) >> 8;
+	uint32_t b4 = (0xFF000000 & x) >> 24;
 	x = b1 | b2 | b3 | b4;
 # endif
 }
@@ -43,10 +43,10 @@ static void uint32_byte_swap(uint32_t &x)
 
 static void read_stl_facet(std::ifstream &f, stl_facet &facet)
 {
-	f.read( (char*)facet.data8, STL_FACET_NUMBYTES );
+	f.read((char*)facet.data8, STL_FACET_NUMBYTES);
 #ifdef BOOST_BIG_ENDIAN
-	for ( int i = 0; i < 12; i++ ) {
-		uint32_byte_swap( facet.data32[ i ] );
+	for (int i = 0; i < 12; i++) {
+		uint32_byte_swap(facet.data32[ i ]);
 	}
 	// we ignore attribute byte count
 #endif
@@ -75,7 +75,7 @@ PolySet *import_stl(const std::string &filename)
 		uint32_t facenum = 0;
 		f.read((char *)&facenum, sizeof(uint32_t));
 #ifdef BOOST_BIG_ENDIAN
-		uint32_byte_swap( facenum );
+		uint32_byte_swap(facenum);
 #endif
 		if (file_size ==  static_cast<std::streamoff>(80 + 4 + 50*facenum)) {
 			binary = true;
@@ -126,7 +126,7 @@ PolySet *import_stl(const std::string &filename)
 		f.ignore(80-5+4);
 		while (1) {
 			stl_facet facet;
-			read_stl_facet( f, facet );
+			read_stl_facet(f, facet);
 			if (f.eof()) break;
 			p->append_poly();
 			p->append_vertex(facet.data.x1, facet.data.y1, facet.data.z1);

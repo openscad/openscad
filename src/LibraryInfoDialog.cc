@@ -31,7 +31,7 @@ void LibraryInfoDialog::update_library_info(const QString& rendererInfo)
 	int startIndex = 0;
 	while (!end) {
 		int endIndex = info.indexOf(":", startIndex);
-		if(endIndex != -1) {
+		if (endIndex != -1) {
 			//add bold to property name
 			info = info.insert(startIndex, "<b>");
 			endIndex += 3;

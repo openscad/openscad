@@ -7,7 +7,7 @@
 
 #include <libintl.h>
 #include <locale.h>
-inline char * _( const char * msgid ) { return gettext( msgid ); }
+inline char * _(const char * msgid) { return gettext(msgid); }
 
 typedef void (OutputHandlerFunc)(const std::string &msg, void *userdata);
 extern OutputHandlerFunc *outputhandler;
@@ -53,10 +53,10 @@ void PRINT_CONTEXT(const class Context *ctx, const class Module *mod, const clas
 
 void PRINTDEBUG(const std::string &filename,const std::string &msg);
 #define PRINTD(_arg) do { PRINTDEBUG(std::string(__FILE__),_arg); } while (0)
-#define PRINTDB(_fmt, _arg) do { try { PRINTDEBUG(std::string(__FILE__),str(boost::format(_fmt) % _arg)); } catch(const boost::io::format_error &e) { PRINTDEBUG(std::string(__FILE__),"bad PRINTDB usage"); } } while (0)
+#define PRINTDB(_fmt, _arg) do { try { PRINTDEBUG(std::string(__FILE__),str(boost::format(_fmt) % _arg)); } catch (const boost::io::format_error &e) { PRINTDEBUG(std::string(__FILE__),"bad PRINTDB usage"); } } while (0)
 
-std::string two_digit_exp_format( std::string doublestr );
-std::string two_digit_exp_format( double x );
+std::string two_digit_exp_format(std::string doublestr);
+std::string two_digit_exp_format(double x);
 
 // extremely simple logging, eventually replace with something like boost.log
 // usage: logstream out(5); openscad_loglevel=6; out << "hi";
@@ -66,11 +66,11 @@ class logstream
 public:
 	std::ostream *out;
 	int loglevel;
-	logstream( int level = 0 ) {
+	logstream(int level = 0) {
 		loglevel = level;
 		out = &(std::cout);
 	}
-	template <typename T> logstream & operator<<( T const &t ) {
+	template <typename T> logstream & operator<<(T const &t) {
 		if (out && loglevel <= openscad_loglevel) {
 			(*out) << t;
 			out->flush();

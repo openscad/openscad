@@ -48,8 +48,8 @@ struct IndexedMesh {
 
 static void append_geometry(const PolySet &ps, IndexedMesh &mesh)
 {
-	for(const auto &p : ps.polygons) {
-		for(const auto &v : p) {
+	for (const auto &p : ps.polygons) {
+		for (const auto &v : p) {
 			mesh.indices.push_back(mesh.vertices.lookup(v));
 		}
 		mesh.numfaces++;

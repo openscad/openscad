@@ -127,8 +127,8 @@ BoundingBox PolySet::getBoundingBox() const
 {
 	if (this->dirty) {
 		this->bbox.setNull();
-		for(const auto &poly : polygons) {
-			for(const auto &p : poly) {
+		for (const auto &poly : polygons) {
+			for (const auto &p : poly) {
 				this->bbox.extend(p);
 			}
 		}
@@ -140,7 +140,7 @@ BoundingBox PolySet::getBoundingBox() const
 size_t PolySet::memsize() const
 {
 	size_t mem = 0;
-	for(const auto &p : this->polygons) mem += p.size() * sizeof(Vector3d);
+	for (const auto &p : this->polygons) mem += p.size() * sizeof(Vector3d);
 	mem += this->polygon.memsize() - sizeof(this->polygon);
 	mem += sizeof(PolySet);
 	return mem;
@@ -159,8 +159,8 @@ void PolySet::transform(const Transform3d &mat)
 	// If mirroring transform, flip faces to avoid the object to end up being inside-out
 	bool mirrored = mat.matrix().determinant() < 0;
 
-	for(auto &p : this->polygons) {
-		for(auto &v : p) {
+	for (auto &p : this->polygons) {
+		for (auto &v : p) {
 			v = mat * v;
 		}
 		if (mirrored) std::reverse(p.begin(), p.end());
@@ -210,7 +210,7 @@ void PolySet::quantizeVertices()
 {
 	Grid3d<int> grid(GRID_FINE);
 	std::vector<int> indices; // Vertex indices in one polygon
-	for (std::vector<Polygon>::iterator iter = this->polygons.begin(); iter != this->polygons.end();) {
+	for (std::vector<Polygon>::iterator iter = this->polygons.begin(); iter != this->polygons.end(); ) {
 		Polygon &p = *iter;
 		indices.resize(p.size());
 		// Quantize all vertices. Build index list

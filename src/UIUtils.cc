@@ -108,7 +108,7 @@ QStringList UIUtils::exampleCategories()
 	QStringList categories;
 	ptree *pt = examplesTree();
 	if (pt) {
-		for(const auto &v : *pt) {
+		for (const auto &v : *pt) {
 			// v.first is the name of the child.
 			// v.second is the child tree.
 			categories << QString::fromStdString(v.first);
@@ -124,7 +124,7 @@ QFileInfoList UIUtils::exampleFiles(const QString &category)
 	ptree *pt = examplesTree();
 	if (pt) {
 		fs::path examplesPath = PlatformUtils::resourcePath("examples") / category.toStdString();
-		for(const auto &v : pt->get_child(category.toStdString())) {
+		for (const auto &v : pt->get_child(category.toStdString())) {
 			examples << QFileInfo(QString::fromStdString((examplesPath / v.second.data()).string()));
 		}
 	}

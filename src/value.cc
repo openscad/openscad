@@ -525,7 +525,7 @@ Value Value::multvecnum(const Value &vecval, const Value &numval)
 {
 // Vector * Number
 	VectorType dstv;
-	for(const auto &val : vecval.toVector()) {
+	for (const auto &val : vecval.toVector()) {
 		dstv.push_back(ValuePtr(*val * numval));
 	}
 	return {dstv};
@@ -714,7 +714,7 @@ public:
 
 	Value operator()(const RangeType &range, const double &idx) const {
 		const auto i = convert_to_uint32(idx);
-		switch(i) {
+		switch (i) {
 		case 0: return {range.begin_val};
 		case 1: return {range.step_val};
 		case 2: return {range.end_val};

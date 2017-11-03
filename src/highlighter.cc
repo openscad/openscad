@@ -203,10 +203,10 @@ void Highlighter::assignFormatsToTokens(const QString &s)
 
 	QList<QString>::iterator ki;
 	QList<QString> toktypes = tokentypes.keys();
-	for ( ki=toktypes.begin(); ki!=toktypes.end(); ++ki ) {
+	for (ki=toktypes.begin(); ki!=toktypes.end(); ++ki) {
 		QString toktype = *ki;
 		QStringList::iterator it;
-		for ( it = tokentypes[toktype].begin(); it < tokentypes[toktype].end(); ++it) {
+		for (it = tokentypes[toktype].begin(); it < tokentypes[toktype].end(); ++it) {
 			QString token = *it;
 			//PRINTB("set format for %s: type %s", token.toStdString()%toktype.toStdString() );
 			tokenFormats[ token ] = typeformats [ toktype ];
@@ -246,7 +246,7 @@ void Highlighter::highlightError(int error_pos)
 	errorState = true;
 	errorPos = error_pos;
 
-	QTextBlock err_block = document()->findBlock( errorPos );
+	QTextBlock err_block = document()->findBlock(errorPos);
 	//PRINTB( "error pos: %i doc len: %i ", error_pos % document()->characterCount() );
 
 	while (err_block.text().remove(QRegExp("\\s+")).size()==0) {
@@ -254,18 +254,18 @@ void Highlighter::highlightError(int error_pos)
 		err_block = err_block.previous();
 		errorPos = err_block.position()+err_block.length() - 2;
 	}
-	if ( errorPos == lastDocumentPos()-1 ) {
+	if (errorPos == lastDocumentPos()-1) {
 		errorPos--;
 	}
 
 	int block_last_pos = err_block.position() + err_block.length() - 1;
-	if ( errorPos == block_last_pos ) {
+	if (errorPos == block_last_pos) {
 		//PRINT( "special case - errors at ends of certain blocks");
 		errorPos--;
 	}
 	err_block = document()->findBlock(errorPos);
 
-	portable_rehighlightBlock( err_block );
+	portable_rehighlightBlock(err_block);
 
 	errorState = false;
 	lastErrorBlock = err_block;
@@ -273,13 +273,13 @@ void Highlighter::highlightError(int error_pos)
 
 void Highlighter::unhighlightLastError()
 {
-	portable_rehighlightBlock( lastErrorBlock );
+	portable_rehighlightBlock(lastErrorBlock);
 }
 
-void Highlighter::portable_rehighlightBlock( const QTextBlock &block )
+void Highlighter::portable_rehighlightBlock(const QTextBlock &block)
 {
 #if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 0))
-	rehighlightBlock( block );
+	rehighlightBlock(block);
 #else
 	rehighlight(); // slow on very large files
 #endif
@@ -306,7 +306,7 @@ void Highlighter::highlightBlock(const QString &text)
 	// If desired, skip all highlighting .. except for error highlighting.
 	if (Preferences::inst()->getValue("editor/syntaxhighlight").toString()==QString("Off")) {
 		if (errorState)
-			setFormat( errorPos - block_first_pos, 1, errorFormat);
+			setFormat(errorPos - block_first_pos, 1, errorFormat);
 		return;
 	}
 
@@ -323,25 +323,25 @@ void Highlighter::highlightBlock(const QString &text)
 	// splitHelpers - so "{[a+b]}" is treated as " { [ a + b ] } "
 	splitHelpers << tokentypes["operator"] << tokentypes["bracket"]
 							 << tokentypes["curlies"] << ":" << ",";
-	for ( sh = splitHelpers.begin(); sh!=splitHelpers.end(); ++sh ) {
-		newtext = newtext.replace( *sh, " " + *sh + " ");
+	for (sh = splitHelpers.begin(); sh!=splitHelpers.end(); ++sh) {
+		newtext = newtext.replace(*sh, " " + *sh + " ");
 	}
 	//PRINTB("\nnewtext: %s", newtext.toStdString() );
 	QStringList tokens = newtext.split(QRegExp("\\s"));
 	int tokindex = 0; // tokindex helps w duplicate tokens in a single block
 	bool numtest;
-	for ( token = tokens.begin(); token!=tokens.end(); ++token ) {
-		if ( tokenFormats.contains( *token ) ) {
-			tokindex = text.indexOf( *token, tokindex );
-			setFormat( tokindex, token->size(), tokenFormats[ *token ]);
+	for (token = tokens.begin(); token!=tokens.end(); ++token) {
+		if (tokenFormats.contains(*token)) {
+			tokindex = text.indexOf(*token, tokindex);
+			setFormat(tokindex, token->size(), tokenFormats[ *token ]);
 			std::string tokprint = (*token).toStdString();
 			//PRINTB("found tok '%s' at %i", tokprint % tokindex );
 			tokindex += token->size();
 		} else {
-			(*token).toDouble( &numtest );
-			if ( numtest ) {
-				tokindex = text.indexOf( *token, tokindex );
-				setFormat( tokindex, token->size(), numberFormat );
+			(*token).toDouble(&numtest);
+			if (numtest) {
+				tokindex = text.indexOf(*token, tokindex);
+				setFormat(tokindex, token->size(), numberFormat);
 				std::string tokprint = (*token).toStdString();
 				//PRINTB("found num '%s' at %i", tokprint % tokindex );
 				tokindex += token->size();
@@ -358,10 +358,10 @@ void Highlighter::highlightBlock(const QString &text)
 				state = state_e::QUOTE;
 				setFormat(n,1,quoteFormat);
 			} else if (text[n] == '/') {
-				if ( n+1 < text.size() && text[n+1] == '/') {
+				if (n+1 < text.size() && text[n+1] == '/') {
 					setFormat(n,text.size(),commentFormat);
 					break;
-				} else if ( n+1 < text.size() && text[n+1] == '*') {
+				} else if (n+1 < text.size() && text[n+1] == '*') {
 					setFormat(n++,2,commentFormat);
 					state = state_e::COMMENT;
 				}
@@ -386,7 +386,7 @@ void Highlighter::highlightBlock(const QString &text)
 
 	// Highlight an error. Do it last to 'overwrite' other formatting.
 	if (errorState) {
-		setFormat( errorPos - block_first_pos, 1, errorFormat);
+		setFormat(errorPos - block_first_pos, 1, errorFormat);
 	}
 
 }

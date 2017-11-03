@@ -15,8 +15,8 @@ bool write_png(std::ostream &output, unsigned char *pixels, int width, int heigh
 	state.info_png.color.colortype = LCT_RGB;
 	state.info_png.color.bitdepth = 8;
 	unsigned err = lodepng::encode(dataout, pixels, width, height, state);
-	if ( err ) return false;
-	output.write( reinterpret_cast<const char *>(&dataout[0]), dataout.size());
-	if ( output.bad() ) std::cerr << "Error writing to ostream\n";
+	if (err) return false;
+	output.write(reinterpret_cast<const char *>(&dataout[0]), dataout.size());
+	if (output.bad()) std::cerr << "Error writing to ostream\n";
 	return output.good();
 }

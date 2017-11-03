@@ -117,7 +117,7 @@ const char *UnaryOp::opString() const
 
 bool UnaryOp::isLiteral() const {
 
-	if(this->expr->isLiteral())
+	if (this->expr->isLiteral())
 		return true;
 	return false;
 }
@@ -316,11 +316,11 @@ void Range::print(std::ostream &stream) const
 }
 
 bool Range::isLiteral() const {
-	if(!this->step) {
-		if( begin->isLiteral() && end->isLiteral())
+	if (!this->step) {
+		if (begin->isLiteral() && end->isLiteral())
 			return true;
 	}else{
-		if( begin->isLiteral() && end->isLiteral() && step->isLiteral())
+		if (begin->isLiteral() && end->isLiteral() && step->isLiteral())
 			return true;
 	}
 	return false;
@@ -331,7 +331,7 @@ Vector::Vector(const Location &loc) : Expression(loc)
 }
 
 bool Vector::isLiteral() const {
-	for(const auto &e : this->children) {
+	for (const auto &e : this->children) {
 		if (!e->isLiteral()) {
 			return false;
 		}
@@ -347,7 +347,7 @@ void Vector::push_back(Expression *expr)
 ValuePtr Vector::evaluate(const Context *context) const
 {
 	Value::VectorType vec;
-	for(const auto &e : this->children) {
+	for (const auto &e : this->children) {
 		ValuePtr tmpval = e->evaluate(context);
 		if (isListComprehension(e)) {
 			const Value::VectorType result = tmpval->toVector();

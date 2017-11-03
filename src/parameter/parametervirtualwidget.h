@@ -26,7 +26,7 @@ protected:
 	virtual void setValue() = 0;
 	void setName(QString name);
 	void setDescription(const QString& description) {
-		if(!description.isEmpty()) {
+		if (!description.isEmpty()) {
 			this->labelDescription->show();
 			this->labelDescription->setText(description);
 		}

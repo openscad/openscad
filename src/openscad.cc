@@ -117,7 +117,7 @@ class Echostream : public std::ofstream
 {
 public:
 	Echostream(const char * filename) : std::ofstream(filename) {
-		set_output_handler( &Echostream::output, this );
+		set_output_handler(&Echostream::output, this);
 	}
 	static void output(const std::string &msg, void *userdata) {
 		auto thisp = static_cast<Echostream*>(userdata);
@@ -256,7 +256,7 @@ Camera get_camera(po::variables_map vm)
 	if (vm.count("imgsize")) {
 		vector<string> strs;
 		split(strs, vm["imgsize"].as<string>(), is_any_of(","));
-		if ( strs.size() != 2 ) {
+		if (strs.size() != 2) {
 			PRINT("Need 2 numbers for imgsize");
 			exit(1);
 		} else {
@@ -307,7 +307,7 @@ void set_render_color_scheme(const std::string color_scheme, const bool exit_if_
 
 	if (exit_if_not_found) {
 		PRINTB("Unknown color scheme '%s'. Valid schemes:", color_scheme);
-		for(const auto &name : ColorMap::inst()->colorSchemeNames()) {
+		for (const auto &name : ColorMap::inst()->colorSchemeNames()) {
 			PRINT(name);
 		}
 		exit(1);
@@ -318,7 +318,7 @@ void set_render_color_scheme(const std::string color_scheme, const bool exit_if_
 
 #include <QCoreApplication>
 
-int cmdline(const char *deps_output_file, const std::string &filename, Camera &camera, const char *output_file, const fs::path &original_path, RenderType renderer,const std::string &parameterFile,const std::string &setName, int argc, char ** argv )
+int cmdline(const char *deps_output_file, const std::string &filename, Camera &camera, const char *output_file, const fs::path &original_path, RenderType renderer,const std::string &parameterFile,const std::string &setName, int argc, char ** argv)
 {
 #ifdef OPENSCAD_QTGUI
 	QCoreApplication app(argc, argv);
@@ -763,7 +763,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 
 	auto isMdi = settings.value("advanced/mdi", true).toBool();
 	if (isMdi) {
-		for(const auto &infile : inputFiles) {
+		for (const auto &infile : inputFiles) {
 			new MainWindow(assemblePath(original_path, infile));
 		}
 	} else {
@@ -864,7 +864,7 @@ int main(int argc, char **argv)
 	try {
 		po::store(po::command_line_parser(argc, argv).options(all_options).allow_unregistered().positional(p).extra_parser(customSyntax).run(), vm);
 	}
-	catch(const std::exception &e) { // Catches e.g. unknown options
+	catch (const std::exception &e) { // Catches e.g. unknown options
 		PRINTB("%s\n", e.what());
 		help(argv[0], true);
 	}
@@ -920,14 +920,14 @@ int main(int argc, char **argv)
 	}
 
 	if (vm.count("D")) {
-		for(const auto &cmd : vm["D"].as<vector<string>>()) {
+		for (const auto &cmd : vm["D"].as<vector<string>>()) {
 			commandline_commands += cmd;
 			commandline_commands += ";\n";
 		}
 	}
 #ifdef ENABLE_EXPERIMENTAL
 	if (vm.count("enable")) {
-		for(const auto &feature : vm["enable"].as<vector<string>>()) {
+		for (const auto &feature : vm["enable"].as<vector<string>>()) {
 			Feature::enable_feature(feature);
 		}
 	}

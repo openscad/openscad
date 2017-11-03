@@ -15,7 +15,7 @@
 #include "cgal.h"
 #include <boost/algorithm/string.hpp>
 #if defined(__GNUG__)
-#define GCC_INT_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 )
+#define GCC_INT_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100)
 #if GCC_INT_VERSION > 40600 || defined(__clang__)
 #include <cxxabi.h>
 #define __openscad_info_demangle__ 1
@@ -45,18 +45,18 @@ std::string LibraryInfo::info()
 #endif
 
 #if defined(__GNUG__) && !defined(__clang__)
-	std::string compiler_info( "GCC " + std::string(TOSTRING(__VERSION__)) + bits);
+	std::string compiler_info("GCC " + std::string(TOSTRING(__VERSION__)) + bits);
 #elif defined(_MSC_VER)
-	std::string compiler_info( "MSVC " + std::string(TOSTRING(_MSC_FULL_VER)) + bits);
+	std::string compiler_info("MSVC " + std::string(TOSTRING(_MSC_FULL_VER)) + bits);
 #elif defined(__clang__)
-	std::string compiler_info( "Clang " + std::string(TOSTRING(__clang_version__)) + bits);
+	std::string compiler_info("Clang " + std::string(TOSTRING(__clang_version__)) + bits);
 #else
-	std::string compiler_info( "unknown compiler" );
+	std::string compiler_info("unknown compiler");
 #endif
 
-#if defined( __MINGW64__ )
+#if defined(__MINGW64__)
 	std::string mingwstatus("MingW64");
-#elif defined( __MINGW32__ )
+#elif defined(__MINGW32__)
 	std::string mingwstatus("MingW32");
 #else
 	std::string mingwstatus("No");
@@ -78,13 +78,13 @@ std::string LibraryInfo::info()
 	std::string cgal_2d_kernelEx = typeid(CGAL_ExactKernel2).name();
 #if defined(__openscad_info_demangle__)
 	int status;
-	cgal_3d_kernel = std::string( abi::__cxa_demangle( cgal_3d_kernel.c_str(), 0, 0, &status ) );
-	cgal_2d_kernel = std::string( abi::__cxa_demangle( cgal_2d_kernel.c_str(), 0, 0, &status ) );
-	cgal_2d_kernelEx = std::string( abi::__cxa_demangle( cgal_2d_kernelEx.c_str(), 0, 0, &status ) );
+	cgal_3d_kernel = std::string(abi::__cxa_demangle(cgal_3d_kernel.c_str(), 0, 0, &status));
+	cgal_2d_kernel = std::string(abi::__cxa_demangle(cgal_2d_kernel.c_str(), 0, 0, &status));
+	cgal_2d_kernelEx = std::string(abi::__cxa_demangle(cgal_2d_kernelEx.c_str(), 0, 0, &status));
 #endif // demangle
-	boost::replace_all( cgal_3d_kernel, "CGAL::", "" );
-	boost::replace_all( cgal_2d_kernel, "CGAL::", "" );
-	boost::replace_all( cgal_2d_kernelEx, "CGAL::", "" );
+	boost::replace_all(cgal_3d_kernel, "CGAL::", "");
+	boost::replace_all(cgal_2d_kernel, "CGAL::", "");
+	boost::replace_all(cgal_2d_kernelEx, "CGAL::", "");
 #else // ENABLE_CGAL
 	std::string cgal_3d_kernel = "";
 	std::string cgal_2d_kernel = "";

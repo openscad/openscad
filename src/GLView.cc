@@ -716,7 +716,7 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
 		}
 
 		// walk through and render the characters of the string
-		for(std::string::size_type char_num = 0; char_num < digit.size(); ++char_num) {
+		for (std::string::size_type char_num = 0; char_num < digit.size(); ++char_num) {
 			// setup the vertices for the char rendering based on the axis and position
 			double dig_vrt[6][3] = {
 				{polarity*((i+((char_num)*dig_wk))-(dig_w/2)),dig_h,0},
@@ -734,7 +734,7 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
 			// C--D
 			// |  |
 			// E--F
-			switch(digit[char_num]) {
+			switch (digit[char_num]) {
 			case '1':
 				glBegin(GL_LINES);
 				glVertex3d(dig_vrt[0][ax[di][0]],dig_vrt[0][ax[di][1]],dig_vrt[0][ax[di][2]]);  //a

@@ -68,7 +68,7 @@ int process_id = getpid();
 #endif
 
 boost::mt19937 deterministic_rng;
-boost::mt19937 lessdeterministic_rng( std::time(0) + process_id );
+boost::mt19937 lessdeterministic_rng(std::time(0) + process_id);
 
 static inline double deg2rad(double x)
 {
@@ -128,20 +128,20 @@ ValuePtr builtin_rands(const Context *, const EvalContext *evalctx)
 		}
 		ValuePtr v2 = evalctx->getArgValue(2);
 		if (v2->type() != Value::ValueType::NUMBER) goto quit;
-		double numresultsd = std::abs( v2->toDouble() );
+		double numresultsd = std::abs(v2->toDouble());
 		if (std::isinf(numresultsd)) {
 			PRINT("WARNING: rands() cannot create an infinite number of results");
 			PRINT("WARNING: resetting number of results to 1");
 			numresultsd = 1;
 		}
-		size_t numresults = boost_numeric_cast<size_t,double>( numresultsd );
+		size_t numresults = boost_numeric_cast<size_t,double>(numresultsd);
 
 		bool deterministic = false;
 		if (n > 3) {
 			ValuePtr v3 = evalctx->getArgValue(3);
 			if (v3->type() != Value::ValueType::NUMBER) goto quit;
-			uint32_t seed = static_cast<uint32_t>(hash_floating_point( v3->toDouble() ));
-			deterministic_rng.seed( seed );
+			uint32_t seed = static_cast<uint32_t>(hash_floating_point(v3->toDouble()));
+			deterministic_rng.seed(seed);
 			deterministic = true;
 		}
 		Value::VectorType vec;
@@ -149,9 +149,9 @@ ValuePtr builtin_rands(const Context *, const EvalContext *evalctx)
 			for (size_t i=0; i < numresults; i++)
 				vec.push_back(ValuePtr(min));
 		} else {
-			boost::uniform_real<> distributor( min, max );
+			boost::uniform_real<> distributor(min, max);
 			for (size_t i=0; i < numresults; i++) {
-				if ( deterministic ) {
+				if (deterministic) {
 					vec.push_back(ValuePtr(distributor(deterministic_rng)));
 				} else {
 					vec.push_back(ValuePtr(distributor(lessdeterministic_rng)));
@@ -442,7 +442,7 @@ ValuePtr builtin_length(const Context *, const EvalContext *evalctx)
 		if (v->type() == Value::ValueType::STRING) {
 			//Unicode glyph count for the length -- rather than the string (num. of bytes) length.
 			std::string text = v->toString();
-			return ValuePtr(int( g_utf8_strlen( text.c_str(), text.size() ) ));
+			return ValuePtr(int( g_utf8_strlen(text.c_str(), text.size()) ));
 		}
 	}
 	return ValuePtr::undefined;
@@ -505,7 +505,7 @@ ValuePtr builtin_concat(const Context *, const EvalContext *evalctx)
 	for (size_t i = 0; i < evalctx->numArgs(); i++) {
 		ValuePtr val = evalctx->getArgValue(i);
 		if (val->type() == Value::ValueType::VECTOR) {
-			for(const auto &v : val->toVector()) {
+			for (const auto &v : val->toVector()) {
 				result.push_back(v);
 			}
 		} else {
@@ -613,7 +613,7 @@ static Value::VectorType search(const std::string &find, const std::string &tabl
 		const gchar *ptr_ft = g_utf8_offset_to_pointer(find.c_str(), i);
 		for (size_t j = 0; j < searchTableSize; j++) {
 			const gchar *ptr_st = g_utf8_offset_to_pointer(table.c_str(), j);
-			if (ptr_ft && ptr_st && (g_utf8_get_char(ptr_ft) == g_utf8_get_char(ptr_st)) ) {
+			if (ptr_ft && ptr_st && (g_utf8_get_char(ptr_ft) == g_utf8_get_char(ptr_st))) {
 				matchCount++;
 				if (num_returns_per_match == 1) {
 					returnvec.push_back(ValuePtr(double(j)));
@@ -655,7 +655,7 @@ static Value::VectorType search(const std::string &find, const Value::VectorType
 				return Value::VectorType();
 			}
 			const gchar *ptr_st = g_utf8_offset_to_pointer(entryVec[index_col_num]->toString().c_str(), 0);
-			if (ptr_ft && ptr_st && (g_utf8_get_char(ptr_ft) == g_utf8_get_char(ptr_st)) ) {
+			if (ptr_ft && ptr_st && (g_utf8_get_char(ptr_ft) == g_utf8_get_char(ptr_st))) {
 				matchCount++;
 				if (num_returns_per_match == 1) {
 					returnvec.push_back(ValuePtr(double(j)));

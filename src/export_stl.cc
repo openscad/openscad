@@ -40,7 +40,7 @@ static void append_stl(const PolySet &ps, std::ostream &output)
 	PolysetUtils::tessellate_faces(ps, triangulated);
 
 	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
-	for(const auto &p : triangulated.polygons) {
+	for (const auto &p : triangulated.polygons) {
 		assert(p.size() == 3); // STL only allows triangles
 		std::stringstream stream;
 		stream << p[0][0] << " " << p[0][1] << " " << p[0][2];
@@ -68,7 +68,7 @@ static void append_stl(const PolySet &ps, std::ostream &output)
 			}
 			output << "    outer loop\n";
 
-			for(const auto &v : p) {
+			for (const auto &v : p) {
 				output << "      vertex " << v[0] << " " << v[1] << " " << v[2] << "\n";
 			}
 			output << "    endloop\n";
@@ -164,7 +164,7 @@ static void append_stl(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 		try {
 			CGAL_Polyhedron P;
 			//root_N.p3->convert_to_Polyhedron(P);
-			bool err = nefworkaround::convert_to_Polyhedron<CGAL_Kernel3>( *(root_N.p3), P );
+			bool err = nefworkaround::convert_to_Polyhedron<CGAL_Kernel3>(*(root_N.p3), P);
 			if (err) {
 				PRINT("ERROR: CGAL NefPolyhedron->Polyhedron conversion failed");
 				return;

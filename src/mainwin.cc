@@ -984,7 +984,7 @@ void MainWindow::compile(bool reload, bool forcedone)
 		if (!animate_panel->isVisible()) {
 			emit unhighlightLastError();
 			if (!this->root_module) {
-				emit highlightError( parser_error_pos );
+				emit highlightError(parser_error_pos);
 			}
 		}
 	}
@@ -1103,7 +1103,7 @@ void MainWindow::instantiateRoot()
 		AbstractNode::resetIndexCounter();
 
 		// split these two lines - gcc 4.7 bug
-		auto mi = ModuleInstantiation( "group" );
+		auto mi = ModuleInstantiation("group");
 		this->root_inst = mi;
 
 		FileContext filectx(&top_ctx);

@@ -121,11 +121,11 @@ void ThrownTogetherRenderer::renderCSGProducts(const CSGProducts &products, bool
 	glDepthFunc(GL_LEQUAL);
 	this->geomVisitMark.clear();
 
-	for(const auto &product : products.products) {
-		for(const auto &csgobj : product.intersections) {
+	for (const auto &product : products.products) {
+		for (const auto &csgobj : product.intersections) {
 			renderChainObject(csgobj, highlight_mode, background_mode, showedges, fberror, OpenSCADOperator::INTERSECTION);
 		}
-		for(const auto &csgobj : product.subtractions) {
+		for (const auto &csgobj : product.subtractions) {
 			renderChainObject(csgobj, highlight_mode, background_mode, showedges, fberror, OpenSCADOperator::DIFFERENCE);
 		}
 	}

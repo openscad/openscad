@@ -77,17 +77,17 @@ shared_ptr<CSGNode> CSGOperation::createCSGNode(OpenSCADOperator type, shared_pt
 	const auto &rightbox = right->getBoundingBox();
 	Vector3d newmin, newmax;
 	if (type == OpenSCADOperator::INTERSECTION) {
-		newmin = leftbox.min().array().cwiseMax( rightbox.min().array() );
-		newmax = leftbox.max().array().cwiseMin( rightbox.max().array() );
+		newmin = leftbox.min().array().cwiseMax(rightbox.min().array());
+		newmax = leftbox.max().array().cwiseMin(rightbox.max().array());
 		BoundingBox newbox(newmin, newmax);
 		if (newbox.isNull()) {
 			return shared_ptr<CSGNode>(); // Prune entire product
 		}
 	}
 	else if (type == OpenSCADOperator::DIFFERENCE) {
-		newmin = leftbox.min().array().cwiseMax( rightbox.min().array() );
-		newmax = leftbox.max().array().cwiseMin( rightbox.max().array() );
-		BoundingBox newbox( newmin, newmax );
+		newmin = leftbox.min().array().cwiseMax(rightbox.min().array());
+		newmax = leftbox.max().array().cwiseMin(rightbox.max().array());
+		BoundingBox newbox(newmin, newmax);
 		if (newbox.isNull()) {
 			return left; // Prune the negative component
 		}
@@ -132,14 +132,14 @@ void CSGOperation::initBoundingBox()
 	Vector3d newmin, newmax;
 	switch (this->type) {
 	case OpenSCADOperator::UNION:
-		newmin = leftbox.min().array().cwiseMin( rightbox.min().array() );
-		newmax = leftbox.max().array().cwiseMax( rightbox.max().array() );
-		this->bbox = BoundingBox( newmin, newmax );
+		newmin = leftbox.min().array().cwiseMin(rightbox.min().array());
+		newmax = leftbox.max().array().cwiseMax(rightbox.max().array());
+		this->bbox = BoundingBox(newmin, newmax);
 		break;
 	case OpenSCADOperator::INTERSECTION:
-		newmin = leftbox.min().array().cwiseMax( rightbox.min().array() );
-		newmax = leftbox.max().array().cwiseMin( rightbox.max().array() );
-		this->bbox = BoundingBox( newmin, newmax );
+		newmin = leftbox.min().array().cwiseMax(rightbox.min().array());
+		newmax = leftbox.max().array().cwiseMin(rightbox.max().array());
+		this->bbox = BoundingBox(newmin, newmax);
 		break;
 	case OpenSCADOperator::DIFFERENCE:
 		this->bbox = leftbox;
@@ -196,12 +196,12 @@ std::string CSGProduct::dump() const
 {
 	std::stringstream dump;
 	dump << this->intersections.front().leaf->label;
-	for(const auto &csgobj :
-			boost::make_iterator_range(this->intersections.begin() + 1,
-																 this->intersections.end())) {
+	for (const auto &csgobj :
+			 boost::make_iterator_range(this->intersections.begin() + 1,
+																	this->intersections.end())) {
 		dump << " *" << csgobj.leaf->label;
 	}
-	for(const auto &csgobj : this->subtractions) {
+	for (const auto &csgobj : this->subtractions) {
 		dump << " -" << csgobj.leaf->label;
 	}
 	return dump.str();
@@ -210,7 +210,7 @@ std::string CSGProduct::dump() const
 BoundingBox CSGProduct::getBoundingBox() const
 {
 	BoundingBox bbox;
-	for(const auto &csgobj : this->intersections) {
+	for (const auto &csgobj : this->intersections) {
 		if (csgobj.leaf->geom) {
 			auto psbox = csgobj.leaf->geom->getBoundingBox();
 			// FIXME: Should intersect rather than extend
@@ -224,7 +224,7 @@ std::string CSGProducts::dump() const
 {
 	std::stringstream dump;
 
-	for(const auto &product : this->products) {
+	for (const auto &product : this->products) {
 		dump << "+" << product.dump() << "\n";
 	}
 	return dump.str();
@@ -233,7 +233,7 @@ std::string CSGProducts::dump() const
 BoundingBox CSGProducts::getBoundingBox() const
 {
 	BoundingBox bbox;
-	for(const auto &product : this->products) {
+	for (const auto &product : this->products) {
 		bbox.extend(product.getBoundingBox());
 	}
 	return bbox;
@@ -242,7 +242,7 @@ BoundingBox CSGProducts::getBoundingBox() const
 size_t CSGProducts::size() const
 {
 	size_t count = 0;
-	for(const auto &product : this->products) {
+	for (const auto &product : this->products) {
 		count += product.intersections.size() + product.subtractions.size();
 	}
 	return count;

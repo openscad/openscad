@@ -584,7 +584,7 @@ std::string DxfData::dump() const
 			<< "\n num paths: " << paths.size()
 			<< "\n num dims: " << dims.size()
 			<< "\n points: ";
-	for (size_t k = 0; k < points.size(); k++ ) {
+	for (size_t k = 0; k < points.size(); k++) {
 		out << "\n  x y: " << points[k].transpose();
 	}
 	out << "\n paths: ";

@@ -112,7 +112,7 @@ static int XCreateWindow_error(Display *dpy, XErrorEvent *event)
 						<< " request: " << static_cast<int>(event->request_code)
 						<< " minor: " << static_cast<int>(event->minor_code) << "\n";
 	char description[1024];
-	XGetErrorText( dpy, event->error_code, description, 1023 );
+	XGetErrorText(dpy, event->error_code, description, 1023);
 	std::cerr << " error message: " << description << "\n";
 	XCreateWindow_failed = true;
 	return 0;
@@ -146,13 +146,13 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
 	auto dpy = ctx.xdisplay;
 
 	int num_returned = 0;
-	auto fbconfigs = glXChooseFBConfig( dpy, DefaultScreen(dpy), attributes, &num_returned );
+	auto fbconfigs = glXChooseFBConfig(dpy, DefaultScreen(dpy), attributes, &num_returned);
 	if (fbconfigs == nullptr) {
 		std::cerr << "glXChooseFBConfig failed\n";
 		return false;
 	}
 
-	auto visinfo = glXGetVisualFromFBConfig( dpy, fbconfigs[0] );
+	auto visinfo = glXGetVisualFromFBConfig(dpy, fbconfigs[0]);
 	if (visinfo == nullptr) {
 		std::cerr << "glXGetVisualFromFBConfig failed\n";
 		XFree(fbconfigs);
@@ -169,13 +169,13 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
 	xwin_attr.background_pixmap = None;
 	xwin_attr.background_pixel = 0;
 	xwin_attr.border_pixel = 0;
-	xwin_attr.colormap = XCreateColormap( dpy, root, visinfo->visual, AllocNone);
+	xwin_attr.colormap = XCreateColormap(dpy, root, visinfo->visual, AllocNone);
 	xwin_attr.event_mask = StructureNotifyMask | ExposureMask | KeyPressMask;
 	unsigned long int mask = CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
 
-	auto xWin = XCreateWindow( dpy, root, 0, 0, width, height,
-														 0, visinfo->depth, InputOutput,
-														 visinfo->visual, mask, &xwin_attr );
+	auto xWin = XCreateWindow(dpy, root, 0, 0, width, height,
+														0, visinfo->depth, InputOutput,
+														visinfo->visual, mask, &xwin_attr);
 
 	// Window xWin = XCreateSimpleWindow( dpy, DefaultRootWindow(dpy), 0,0,42,42, 0,0,0 );
 
@@ -201,7 +201,7 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
 
 	//GLXWindow glxWin = glXCreateWindow( dpy, fbconfigs[0], xWin, nullptr );
 
-	if (!glXMakeContextCurrent( dpy, xWin, xWin, context )) {
+	if (!glXMakeContextCurrent(dpy, xWin, xWin, context)) {
 		//if (!glXMakeContextCurrent( dpy, glxWin, glxWin, context )) {
 		std::cerr << "glXMakeContextCurrent failed\n";
 		glXDestroyContext(dpy, context);
@@ -242,9 +242,9 @@ bool teardown_offscreen_context(OffscreenContext *ctx)
 	if (ctx) {
 		fbo_unbind(ctx->fbo);
 		fbo_delete(ctx->fbo);
-		XDestroyWindow( ctx->xdisplay, ctx->xwindow );
-		glXDestroyContext( ctx->xdisplay, ctx->openGLContext );
-		XCloseDisplay( ctx->xdisplay );
+		XDestroyWindow(ctx->xdisplay, ctx->xwindow);
+		glXDestroyContext(ctx->xdisplay, ctx->openGLContext);
+		XCloseDisplay(ctx->xdisplay);
 		return true;
 	}
 	return false;

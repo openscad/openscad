@@ -93,7 +93,7 @@ string offscreen_context_getinfo(OffscreenContext * /*ctx*/)
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
 {
-	return DefWindowProc( hwnd, message, wparam, lparam );
+	return DefWindowProc(hwnd, message, wparam, lparam);
 }
 
 bool create_wgl_dummy_context(OffscreenContext &ctx)
@@ -105,14 +105,14 @@ bool create_wgl_dummy_context(OffscreenContext &ctx)
 
 	HINSTANCE inst = GetModuleHandle(0);
 	WNDCLASS wc;
-	ZeroMemory( &wc, sizeof( wc ) );
+	ZeroMemory(&wc, sizeof(wc));
 	wc.style = CS_OWNDC;
 	wc.lpfnWndProc = WndProc;
 	wc.hInstance = inst;
 	wc.lpszClassName = L"OpenSCAD";
-	ATOM class_atom = RegisterClassW( &wc );
+	ATOM class_atom = RegisterClassW(&wc);
 
-	if ( class_atom == 0 ) {
+	if (class_atom == 0) {
 		cerr << "MS GDI - RegisterClass failed\n";
 		cerr << "last-error code: " << GetLastError() << "\n";
 		return false;
@@ -130,10 +130,10 @@ bool create_wgl_dummy_context(OffscreenContext &ctx)
 	HINSTANCE hInstance = inst;
 	LPVOID lpParam = nullptr;
 
-	HWND window = CreateWindowW( lpClassName, lpWindowName, dwStyle, x, y,
-															 nWidth, nHeight, hWndParent, hMenu, hInstance, lpParam );
+	HWND window = CreateWindowW(lpClassName, lpWindowName, dwStyle, x, y,
+															nWidth, nHeight, hWndParent, hMenu, hInstance, lpParam);
 
-	if ( window==nullptr ) {
+	if (window==nullptr) {
 		cerr << "MS GDI - CreateWindow failed\n";
 		cerr << "last-error code: " << GetLastError() << "\n";
 		return false;
@@ -143,15 +143,15 @@ bool create_wgl_dummy_context(OffscreenContext &ctx)
 
 	PIXELFORMATDESCRIPTOR pixformat;
 	int chosenformat;
-	HDC dev_context = GetDC( window );
-	if ( dev_context == nullptr ) {
+	HDC dev_context = GetDC(window);
+	if (dev_context == nullptr) {
 		cerr << "MS GDI - GetDC failed\n";
 		cerr << "last-error code: " << GetLastError() << "\n";
 		return false;
 	}
 
-	ZeroMemory( &pixformat, sizeof( pixformat ) );
-	pixformat.nSize = sizeof( pixformat );
+	ZeroMemory(&pixformat, sizeof(pixformat));
+	pixformat.nSize = sizeof(pixformat);
 	pixformat.nVersion = 1;
 	pixformat.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
 	pixformat.iPixelType = PFD_TYPE_RGBA;
@@ -162,29 +162,29 @@ bool create_wgl_dummy_context(OffscreenContext &ctx)
 	pixformat.cDepthBits = 24;
 	pixformat.cStencilBits = 8;
 
-	chosenformat = ChoosePixelFormat( dev_context, &pixformat );
+	chosenformat = ChoosePixelFormat(dev_context, &pixformat);
 	if (chosenformat==0) {
 		cerr << "MS GDI - ChoosePixelFormat failed\n";
 		cerr << "last-error code: " << GetLastError() << "\n";
 		return false;
 	}
 
-	bool spfok = SetPixelFormat( dev_context, chosenformat, &pixformat );
+	bool spfok = SetPixelFormat(dev_context, chosenformat, &pixformat);
 	if (!spfok) {
 		cerr << "MS GDI - SetPixelFormat failed\n";
 		cerr << "last-error code: " << GetLastError() << "\n";
 		return false;
 	}
 
-	HGLRC gl_render_context = wglCreateContext( dev_context );
-	if ( gl_render_context == nullptr ) {
+	HGLRC gl_render_context = wglCreateContext(dev_context);
+	if (gl_render_context == nullptr) {
 		cerr << "MS WGL - wglCreateContext failed\n";
 		cerr << "last-error code: " << GetLastError() << "\n";
-		ReleaseDC( ctx.window, ctx.dev_context );
+		ReleaseDC(ctx.window, ctx.dev_context);
 		return false;
 	}
 
-	bool mcok = wglMakeCurrent( dev_context, gl_render_context );
+	bool mcok = wglMakeCurrent(dev_context, gl_render_context);
 	if (!mcok) {
 		cerr << "MS WGL - wglMakeCurrent failed\n";
 		cerr << "last-error code: " << GetLastError() << "\n";
@@ -202,16 +202,16 @@ bool create_wgl_dummy_context(OffscreenContext &ctx)
 OffscreenContext *create_offscreen_context(int w, int h)
 {
 	OffscreenContext *ctx = new OffscreenContext;
-	offscreen_context_init( *ctx, w, h );
+	offscreen_context_init(*ctx, w, h);
 
 	// Before an FBO can be setup, a WGL context must be created.
 	// This call alters ctx->window and ctx->openGLContext
 	//  and ctx->dev_context if successfull
-	if (!create_wgl_dummy_context( *ctx )) {
+	if (!create_wgl_dummy_context(*ctx)) {
 		return nullptr;
 	}
 
-	return create_offscreen_context_common( ctx );
+	return create_offscreen_context_common(ctx);
 }
 
 bool teardown_offscreen_context(OffscreenContext *ctx)
@@ -220,9 +220,9 @@ bool teardown_offscreen_context(OffscreenContext *ctx)
 		fbo_unbind(ctx->fbo);
 		fbo_delete(ctx->fbo);
 
-		wglMakeCurrent( nullptr, nullptr );
-		wglDeleteContext( ctx->openGLContext );
-		ReleaseDC( ctx->window, ctx->dev_context );
+		wglMakeCurrent(nullptr, nullptr);
+		wglDeleteContext(ctx->openGLContext);
+		ReleaseDC(ctx->window, ctx->dev_context);
 
 		return true;
 	}
@@ -232,7 +232,7 @@ bool teardown_offscreen_context(OffscreenContext *ctx)
 bool save_framebuffer(OffscreenContext *ctx, std::ostream &output)
 {
 	if (!ctx) return false;
-	wglSwapLayerBuffers( ctx->dev_context, WGL_SWAP_MAIN_PLANE );
-	return save_framebuffer_common( ctx, output );
+	wglSwapLayerBuffers(ctx->dev_context, WGL_SWAP_MAIN_PLANE);
+	return save_framebuffer_common(ctx, output);
 }
 

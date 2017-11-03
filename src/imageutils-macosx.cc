@@ -7,12 +7,12 @@ CGDataConsumerCallbacks dc_callbacks;
 
 size_t write_bytes_to_ostream (void *info,const void *buffer,size_t count)
 {
-	assert( info && buffer );
+	assert(info && buffer);
 	std::ostream *output = (std::ostream *)info;
 	size_t startpos = output->tellp();
 	size_t endpos = startpos;
 	try {
-		output->write( (const char *)buffer, count );
+		output->write((const char *)buffer, count);
 		endpos = output->tellp();
 	} catch (const std::ios_base::failure& e) {
 		std::cerr << "Error writing to ostream:" << e.what() << "\n";
@@ -24,7 +24,7 @@ CGDataConsumerRef CGDataConsumerCreateWithOstream(std::ostream &output)
 {
 	dc_callbacks.putBytes = write_bytes_to_ostream;
 	dc_callbacks.releaseConsumer = nullptr; // ostream closed by caller of write_png
-	CGDataConsumerRef dc = CGDataConsumerCreate ( (void *)(&output), &dc_callbacks );
+	CGDataConsumerRef dc = CGDataConsumerCreate ((void *)(&output), &dc_callbacks);
 	return dc;
 }
 
