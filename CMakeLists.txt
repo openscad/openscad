@@ -28,16 +28,11 @@ else()
   message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 endif()
 
-# cmake default flags include "-DNDEBUG" on all non-Debug build types, and does not put "-DDEBUG" on Debug builds
-# OpenSCAD does the opposite of that, so we override those build-type-specific flags here
-set(CMAKE_C_FLAGS_DEBUG          "-g -DDEBUG" CACHE STRING "Set Debug flags" FORCE)
-set(CMAKE_C_FLAGS_RELEASE        "-O2" CACHE STRING "Set Release flags" FORCE)
-set(CMAKE_C_FLAGS_RELWITHDEBINFO "-O2 -g" CACHE STRING "Set RelWithDebInfo flags" FORCE)
-set(CMAKE_C_FLAGS_MINSIZEREL     "-Os" CACHE STRING "Set MinSizeRel flags" FORCE)
-set(CMAKE_CXX_FLAGS_DEBUG          "-g -DDEBUG" CACHE STRING "Set Debug flags" FORCE)
-set(CMAKE_CXX_FLAGS_RELEASE        "-O2" CACHE STRING "Set Release flags" FORCE)
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g" CACHE STRING "Set RelWithDebInfo flags" FORCE)
-set(CMAKE_CXX_FLAGS_MINSIZEREL     "-Os" CACHE STRING "Set MinSizeRel flags" FORCE)
+add_compile_options("$<$<CONFIG:DEBUG>:-DDEBUG>")
+
+# cmake default flags include -DNDEBUG for non-Debug builds, 
+# which is know to cause problems with current OpenSCAD codebase (due to skipping assertions?) so make sure it gets unset
+add_compile_options("-UNDEBUG")
 
 set(CMAKE_CXX_STANDARD 11)
 if(APPLE)
