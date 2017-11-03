@@ -69,7 +69,7 @@ AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstant
 	auto path = ValuePtr::undefined;
 	auto subdiv_type = ValuePtr::undefined;
 	auto level = ValuePtr::undefined;
-	
+
 	if (type == CgaladvType::MINKOWSKI) {
 		convexity = c.lookup_variable("convexity", true);
 	}
@@ -164,10 +164,10 @@ std::string CgaladvNode::toString() const
 		break;
 	case CgaladvType::RESIZE:
 		stream << "(newsize = ["
-		  << this->newsize[0] << "," << this->newsize[1] << "," << this->newsize[2] << "]"
-		  << ", auto = ["
-		  << this->autosize[0] << "," << this->autosize[1] << "," << this->autosize[2] << "]"
-		  << ")";
+					 << this->newsize[0] << "," << this->newsize[1] << "," << this->newsize[2] << "]"
+					 << ", auto = ["
+					 << this->autosize[0] << "," << this->autosize[1] << "," << this->autosize[2] << "]"
+					 << ")";
 		break;
 	default:
 		assert(false);

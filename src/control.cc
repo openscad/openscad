@@ -48,7 +48,7 @@ public: // types
 		LET,
 		INT_FOR,
 		IF
-    };
+	};
 public: // methods
 	ControlModule(Type type) : type(type) { }
 
@@ -56,11 +56,11 @@ public: // methods
 
 	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
 
-	static void for_eval(AbstractNode &node, const ModuleInstantiation &inst, size_t l, 
-						 const Context *ctx, const EvalContext *evalctx);
+	static void for_eval(AbstractNode &node, const ModuleInstantiation &inst, size_t l,
+											 const Context *ctx, const EvalContext *evalctx);
 
 	static const EvalContext* getLastModuleCtx(const EvalContext *evalctx);
-	
+
 	static AbstractNode* getChild(const ValuePtr &value, const EvalContext* modulectx);
 
 private: // data
@@ -68,8 +68,8 @@ private: // data
 
 }; // class ControlModule
 
-void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst, size_t l, 
-							const Context *ctx, const EvalContext *evalctx)
+void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst, size_t l,
+														 const Context *ctx, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() > l) {
 		const std::string &it_name = evalctx->getArgName(l);
@@ -81,7 +81,7 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 			if (steps >= 10000) {
 				PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu).", steps);
 			} else {
-				for (RangeType::iterator it = range.begin();it != range.end();it++) {
+				for (RangeType::iterator it = range.begin(); it != range.end(); it++) {
 					c.set_variable(it_name, ValuePtr(*it));
 					for_eval(node, inst, l+1, &c, evalctx);
 				}
@@ -104,7 +104,7 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 		for(const auto &ass : inst.scope.assignments) {
 			c.set_variable(ass.name, ass.expr->evaluate(&c));
 		}
-		
+
 		std::vector<AbstractNode *> instantiatednodes = inst.instantiateChildren(&c);
 		node.children.insert(node.children.end(), instantiatednodes.begin(), instantiatednodes.end());
 	}
@@ -144,7 +144,7 @@ AbstractNode* ControlModule::getChild(const ValuePtr &value, const EvalContext* 
 		PRINTB("WARNING: Bad parameter type (%s) for children, only accept: empty, number, vector, range.", value->toString());
 		return nullptr;
 	}
-		
+
 	int n = static_cast<int>(trunc(v));
 	if (n < 0) {
 		PRINTB("WARNING: Negative children index (%d) not allowed", n);
@@ -154,7 +154,7 @@ AbstractNode* ControlModule::getChild(const ValuePtr &value, const EvalContext* 
 		// How to deal with negative objects in this case?
 		// (e.g. first child of difference is invalid)
 		PRINTB("WARNING: Children index (%d) out of bounds (%d children)"
-			, n % modulectx->numChildren());
+					 , n % modulectx->numChildren());
 		return nullptr;
 	}
 	// OK
@@ -166,7 +166,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 	AbstractNode *node = nullptr;
 
 	switch (this->type) {
-	case Type::CHILD:	{
+	case Type::CHILD: {
 		printDeprecation("child() will be removed in future releases. Use children() instead.");
 		int n = 0;
 		if (evalctx->numArgs() > 0) {
@@ -187,18 +187,18 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 			return nullptr;
 		}
 		// This will trigger if trying to invoke child from the root of any file
-        if (n < (int)modulectx->numChildren()) {
+		if (n < (int)modulectx->numChildren()) {
 			node = modulectx->getChild(n)->evaluate(modulectx);
 		}
 		else {
 			// How to deal with negative objects in this case?
-            // (e.g. first child of difference is invalid)
-			PRINTB("WARNING: Child index (%d) out of bounds (%d children)", 
-				   n % modulectx->numChildren());
+			// (e.g. first child of difference is invalid)
+			PRINTB("WARNING: Child index (%d) out of bounds (%d children)",
+						 n % modulectx->numChildren());
 		}
 		return node;
 	}
-		break;
+										break;
 
 	case Type::CHILDREN: {
 		const EvalContext *modulectx = getLastModuleCtx(evalctx);
@@ -241,7 +241,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 					return nullptr;
 				}
 				AbstractNode* node = new GroupNode(inst);
-				for (RangeType::iterator it = range.begin();it != range.end();it++) {
+				for (RangeType::iterator it = range.begin(); it != range.end(); it++) {
 					AbstractNode* childnode = getChild(ValuePtr(*it),modulectx); // with error cases
 					if (childnode==nullptr) continue; // error
 					node->children.push_back(childnode);
@@ -257,7 +257,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 		}
 		return nullptr;
 	}
-		break;
+											 break;
 
 	case Type::ECHO: {
 		node = new GroupNode(inst);
@@ -265,7 +265,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 		msg << "ECHO: " << *evalctx;
 		PRINTB("%s", msg.str());
 	}
-		break;
+									 break;
 
 	case Type::ASSERT: {
 		node = new GroupNode(inst);
@@ -275,7 +275,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 		inst->scope.apply(c);
 		node->children = inst->instantiateChildren(&c);
 	}
-		break;
+										 break;
 
 	case Type::LET: {
 		node = new GroupNode(inst);
@@ -287,7 +287,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 		std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(&c);
 		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 	}
-		break;
+									break;
 
 	case Type::ASSIGN: {
 		node = new GroupNode(inst);
@@ -303,7 +303,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 		std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(&c);
 		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 	}
-		break;
+										 break;
 
 	case Type::FOR:
 		node = new GroupNode(inst);
@@ -329,7 +329,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 			node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 		}
 	}
-		break;
+								 break;
 	}
 	return node;
 }

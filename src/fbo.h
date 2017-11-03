@@ -5,11 +5,11 @@
 
 struct fbo_t
 {
-  GLuint fbo_id;
-  GLuint old_fbo_id;
+	GLuint fbo_id;
+	GLuint old_fbo_id;
 
-  GLuint renderbuf_id;
-  GLuint depthbuf_id;
+	GLuint renderbuf_id;
+	GLuint depthbuf_id;
 };
 
 fbo_t *fbo_new();

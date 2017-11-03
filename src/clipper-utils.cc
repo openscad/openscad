@@ -9,10 +9,10 @@ namespace ClipperUtils {
 		for (const auto &v : outline.vertices) {
 			p.emplace_back(v[0]*CLIPPER_SCALE, v[1]*CLIPPER_SCALE);
 		}
-		// Make sure all polygons point up, since we project also 
+		// Make sure all polygons point up, since we project also
 		// back-facing polygon in PolysetUtils::project()
 		if (!keep_orientation && !ClipperLib::Orientation(p)) std::reverse(p.begin(), p.end());
-		
+
 		return p;
 	}
 
@@ -38,21 +38,21 @@ namespace ClipperUtils {
 			clipper.AddPaths(paths, ClipperLib::ptSubject, true);
 		}
 		catch(...) {
-		  // Most likely caught a RangeTest exception from clipper
-		  // Note that Clipper up to v6.2.1 incorrectly throws
+			// Most likely caught a RangeTest exception from clipper
+			// Note that Clipper up to v6.2.1 incorrectly throws
 			// an exception of type char* rather than a clipperException()
-		  PRINT("WARNING: Range check failed for polygon. skipping");
+			PRINT("WARNING: Range check failed for polygon. skipping");
 		}
 		clipper.Execute(ClipperLib::ctUnion, result, ClipperLib::pftEvenOdd);
 		return result;
 	}
-	
- /*!
-	 We want to use a PolyTree to convert to Polygon2d, since only PolyTrees
-	 have an explicit notion of holes.
-	 We could use a Paths structure, but we'd have to check the orientation of each
-	 path before adding it to the Polygon2d.
- */
+
+	/*!
+	   We want to use a PolyTree to convert to Polygon2d, since only PolyTrees
+	   have an explicit notion of holes.
+	   We could use a Paths structure, but we'd have to check the orientation of each
+	   path before adding it to the Polygon2d.
+	 */
 	Polygon2d *toPolygon2d(const ClipperLib::PolyTree &poly)
 	{
 		const double CLEANING_DISTANCE = 0.001 * CLIPPER_SCALE;
@@ -82,7 +82,7 @@ namespace ClipperUtils {
 		return result;
 	}
 
-	ClipperLib::Paths process(const ClipperLib::Paths &polygons, 
+	ClipperLib::Paths process(const ClipperLib::Paths &polygons,
 														ClipperLib::ClipType cliptype,
 														ClipperLib::PolyFillType polytype)
 	{
@@ -94,9 +94,9 @@ namespace ClipperUtils {
 	}
 
 	/*!
-		Apply the clipper operator to the given paths.
+	   Apply the clipper operator to the given paths.
 
-     May return an empty Polygon2d, but will not return nullptr.
+	   May return an empty Polygon2d, but will not return nullptr.
 	 */
 	Polygon2d *apply(const std::vector<ClipperLib::Paths> &pathsvector,
 									 ClipperLib::ClipType clipType)
@@ -126,18 +126,18 @@ namespace ClipperUtils {
 		}
 		ClipperLib::PolyTree sumresult;
 		clipper.Execute(clipType, sumresult, ClipperLib::pftNonZero, ClipperLib::pftNonZero);
-		// The returned result will have outlines ordered according to whether 
-		// they're positive or negative: Positive outlines counter-clockwise and 
+		// The returned result will have outlines ordered according to whether
+		// they're positive or negative: Positive outlines counter-clockwise and
 		// negative outlines clockwise.
 		return ClipperUtils::toPolygon2d(sumresult);
 	}
 
-  /*!
-		Apply the clipper operator to the given polygons.
-		
-		May return an empty Polygon2d, but will not return nullptr.
+	/*!
+	   Apply the clipper operator to the given polygons.
+
+	   May return an empty Polygon2d, but will not return nullptr.
 	 */
-	Polygon2d *apply(const std::vector<const Polygon2d*> &polygons, 
+	Polygon2d *apply(const std::vector<const Polygon2d*> &polygons,
 									 ClipperLib::ClipType clipType)
 	{
 		std::vector<ClipperLib::Paths> pathsvector;
@@ -196,11 +196,11 @@ namespace ClipperUtils {
 				quads.push_back(quad);
 			}
 	}
-	
+
 	// Add the polygon a translated to an arbitrary point of each separate component of b.
-  // Ideally, we would translate to the midpoint of component b, but the point can
+	// Ideally, we would translate to the midpoint of component b, but the point can
 	// be chosen arbitrarily since the translated object would always stay inside
-	// the minkowski sum. 
+	// the minkowski sum.
 	static void fill_minkowski_insides(const ClipperLib::Paths &a,
 																		 const ClipperLib::Paths &b,
 																		 ClipperLib::Paths &target)
@@ -239,7 +239,7 @@ namespace ClipperUtils {
 					minkowski_terms.insert(minkowski_terms.end(), result.begin(), result.end());
 				}
 			}
-			
+
 			// Then, fill the central parts
 			fill_minkowski_insides(lhs, rhs, minkowski_terms);
 			fill_minkowski_insides(rhs, lhs, minkowski_terms);

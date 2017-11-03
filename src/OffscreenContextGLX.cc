@@ -1,17 +1,17 @@
 /*
 
-Create an OpenGL context without creating an OpenGL Window. for Linux.
+   Create an OpenGL context without creating an OpenGL Window. for Linux.
 
-See also
+   See also
 
-glxgears.c by Brian Paul from mesa-demos (mesa3d.org)
-http://cgit.freedesktop.org/mesa/demos/tree/src/xdemos?id=mesa-demos-8.0.1
-http://www.opengl.org/sdk/docs/man/xhtml/glXIntro.xml
-http://www.mesa3d.org/brianp/sig97/offscrn.htm
-http://glprogramming.com/blue/ch07.html
-OffscreenContext.mm (Mac OSX version)
+   glxgears.c by Brian Paul from mesa-demos (mesa3d.org)
+   http://cgit.freedesktop.org/mesa/demos/tree/src/xdemos?id=mesa-demos-8.0.1
+   http://www.opengl.org/sdk/docs/man/xhtml/glXIntro.xml
+   http://www.mesa3d.org/brianp/sig97/offscrn.htm
+   http://glprogramming.com/blue/ch07.html
+   OffscreenContext.mm (Mac OSX version)
 
-*/
+ */
 
 /*
  * Some portions of the code below are:
@@ -76,9 +76,9 @@ std::string get_os_info()
 	}
 	else {
 		out << "OS info: "
-		    << u.sysname << " "
-		    << u.release << " "
-		    << u.version << "\n";
+				<< u.sysname << " "
+				<< u.release << " "
+				<< u.version << "\n";
 		out << "Machine: " << u.machine;
 	}
 	return out.str();
@@ -97,9 +97,9 @@ std::string offscreen_context_getinfo(OffscreenContext *ctx)
 
 	std::stringstream out;
 	out << "GL context creator: GLX\n"
-	    << "PNG generator: lodepng\n"
-	    << "GLX version: " << major << "." << minor << "\n"
-	    << get_os_info();
+			<< "PNG generator: lodepng\n"
+			<< "GLX version: " << major << "." << minor << "\n"
+			<< get_os_info();
 
 	return out.str();
 }
@@ -109,8 +109,8 @@ static auto XCreateWindow_failed = false;
 static int XCreateWindow_error(Display *dpy, XErrorEvent *event)
 {
 	std::cerr << "XCreateWindow failed: XID: " << event->resourceid
-	     << " request: " << static_cast<int>(event->request_code)
-	     << " minor: " << static_cast<int>(event->minor_code) << "\n";
+						<< " request: " << static_cast<int>(event->request_code)
+						<< " minor: " << static_cast<int>(event->minor_code) << "\n";
 	char description[1024];
 	XGetErrorText( dpy, event->error_code, description, 1023 );
 	std::cerr << " error message: " << description << "\n";
@@ -123,7 +123,7 @@ static int XCreateWindow_error(Display *dpy, XErrorEvent *event)
    and save information to the ctx.
 
    This purposely does not use glxCreateWindow, to avoid crashes,
-   "failed to create drawable" errors, and Mesa "WARNING: Application calling 
+   "failed to create drawable" errors, and Mesa "WARNING: Application calling
    GLX 1.3 function when GLX 1.3 is not supported! This is an application bug!"
 
    This function will alter ctx.openGLContext and ctx.xwindow if successfull
@@ -227,7 +227,7 @@ OffscreenContext *create_offscreen_context(int w, int h)
 	auto ctx = new OffscreenContext(w, h);
 
 	// before an FBO can be setup, a GLX context must be created
-	// this call alters ctx->xDisplay and ctx->openGLContext 
+	// this call alters ctx->xDisplay and ctx->openGLContext
 	// and ctx->xwindow if successful
 	if (!create_glx_dummy_context(*ctx)) {
 		delete ctx;
@@ -268,7 +268,7 @@ bool create_glx_dummy_context(OffscreenContext &ctx)
 	if (ctx.xdisplay == nullptr) {
 		std::cerr << "Unable to open a connection to the X server.\n";
 		auto dpyenv = getenv("DISPLAY");
-		std::cerr << "DISPLAY=" << (dpyenv?dpyenv:"") << "\n";
+		std::cerr << "DISPLAY=" << (dpyenv ? dpyenv : "") << "\n";
 		return false;
 	}
 
@@ -278,7 +278,7 @@ bool create_glx_dummy_context(OffscreenContext &ctx)
 	glXQueryVersion(ctx.xdisplay, &major, &minor);
 	if (major==1 && minor<=2 && glXGetVisualFromFBConfig==nullptr) {
 		std::cerr << "Error: GLX version 1.3 functions missing. "
-			<< "Your GLX version: " << major << "." << minor << std::endl;
+							<< "Your GLX version: " << major << "." << minor << std::endl;
 	} else {
 		result = create_glx_dummy_window(ctx);
 	}

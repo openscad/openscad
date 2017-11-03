@@ -9,7 +9,7 @@
 
 /**
  * Feature registration map/list for later lookup. This must be initialized
- * before the static feature instances as those register with this map. 
+ * before the static feature instances as those register with this map.
  */
 Feature::map_t Feature::feature_map;
 Feature::list_t Feature::feature_list;
@@ -44,12 +44,12 @@ const std::string &Feature::get_name() const
 {
 	return name;
 }
-    
+
 const std::string &Feature::get_description() const
 {
 	return description;
 }
-    
+
 bool Feature::is_enabled() const
 {
 	return enabled;
@@ -59,7 +59,7 @@ void Feature::enable(bool status)
 {
 	enabled = status;
 }
-    
+
 void Feature::enable_feature(const std::string &feature_name, bool status)
 {
 	auto it = feature_map.find(feature_name);
@@ -71,7 +71,7 @@ void Feature::enable_feature(const std::string &feature_name, bool status)
 }
 
 Feature::iterator Feature::begin()
-{	
+{
 	return feature_list.begin();
 }
 
@@ -88,7 +88,7 @@ void Feature::dump_features()
 }
 
 ExperimentalFeatureException::ExperimentalFeatureException(const std::string &what_arg)
-    : EvaluationException(what_arg)
+	: EvaluationException(what_arg)
 {
 
 }

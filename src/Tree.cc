@@ -14,9 +14,9 @@ Tree::~Tree()
 }
 
 /*!
-	Returns the cached string representation of the subtree rooted by \a node.
-	If node is not cached, the cache will be rebuilt.
-*/
+   Returns the cached string representation of the subtree rooted by \a node.
+   If node is not cached, the cache will be rebuilt.
+ */
 const std::string &Tree::getString(const AbstractNode &node) const
 {
 	assert(this->root_node);
@@ -32,13 +32,13 @@ const std::string &Tree::getString(const AbstractNode &node) const
 }
 
 /*!
-	Returns the cached ID string representation of the subtree rooted by \a node.
-	If node is not cached, the cache will be rebuilt.
+   Returns the cached ID string representation of the subtree rooted by \a node.
+   If node is not cached, the cache will be rebuilt.
 
-	The difference between this method and getString() is that the ID string
-	is stripped for whitespace. Especially indentation whitespace is important to
-	strip to enable cache hits for equivalent nodes from different scopes.
-*/
+   The difference between this method and getString() is that the ID string
+   is stripped for whitespace. Especially indentation whitespace is important to
+   strip to enable cache hits for equivalent nodes from different scopes.
+ */
 const std::string &Tree::getIdString(const AbstractNode &node) const
 {
 	assert(this->root_node);
@@ -61,10 +61,10 @@ const std::string &Tree::getIdString(const AbstractNode &node) const
 }
 
 /*!
-	Sets a new root. Will clear the existing cache.
+   Sets a new root. Will clear the existing cache.
  */
 void Tree::setRoot(const AbstractNode *root)
 {
-	this->root_node = root; 
+	this->root_node = root;
 	this->nodecache.clear();
 }

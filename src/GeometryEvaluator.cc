@@ -32,15 +32,15 @@
 #include <CGAL/convex_hull_2.h>
 #include <CGAL/Point_2.h>
 
-GeometryEvaluator::GeometryEvaluator(const class Tree &tree):
+GeometryEvaluator::GeometryEvaluator(const class Tree &tree) :
 	tree(tree)
 {
 }
 
 /*!
-	Set allownef to false to force the result to _not_ be a Nef polyhedron
-*/
-shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNode &node, 
+   Set allownef to false to force the result to _not_ be a Nef polyhedron
+ */
+shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNode &node,
 																															 bool allownef)
 {
 	if (!GeometryCache::instance()->contains(this->tree.getIdString(node))) {
@@ -52,8 +52,8 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 		// If not found in any caches, we need to evaluate the geometry
 		if (N) {
 			this->root = N;
-		}	
-    else {
+		}
+		else {
 			this->traverse(node);
 		}
 
@@ -88,20 +88,20 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const Abstrac
 			}
 		}
 	}
-    if (dim == 2) {
-        Polygon2d *p2d = applyToChildren2D(node, op);
-        assert(p2d);
-        return ResultObject(p2d);
-    }
-    else if (dim == 3) return applyToChildren3D(node, op);
+	if (dim == 2) {
+		Polygon2d *p2d = applyToChildren2D(node, op);
+		assert(p2d);
+		return ResultObject(p2d);
+	}
+	else if (dim == 3) return applyToChildren3D(node, op);
 	return ResultObject();
 }
 
 /*!
-	Applies the operator to all child nodes of the given node.
-	
-	May return nullptr or any 3D Geometry object (can be either PolySet or CGAL_Nef_polyhedron)
-*/
+   Applies the operator to all child nodes of the given node.
+
+   May return nullptr or any 3D Geometry object (can be either PolySet or CGAL_Nef_polyhedron)
+ */
 GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const AbstractNode &node, OpenSCADOperator op)
 {
 	Geometry::Geometries children = collectChildren3D(node);
@@ -117,7 +117,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 		delete ps;
 		return ResultObject();
 	}
-	
+
 	// Only one child -> this is a noop
 	if (children.size() == 1) return ResultObject(children.front().second);
 
@@ -140,10 +140,10 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 
 
 /*!
-	Apply 2D hull.
+   Apply 2D hull.
 
-	May return an empty geometry but will not return nullptr.
-*/
+   May return an empty geometry but will not return nullptr.
+ */
 Polygon2d *GeometryEvaluator::applyHull2D(const AbstractNode &node)
 {
 	std::vector<const Polygon2d *> children = collectChildren2D(node);
@@ -196,9 +196,9 @@ Polygon2d *GeometryEvaluator::applyMinkowski2D(const AbstractNode &node)
 }
 
 /*!
-	Returns a list of Polygon2d children of the given node.
-	May return empty Polygon2d object, but not nullptr objects
-*/
+   Returns a list of Polygon2d children of the given node.
+   May return empty Polygon2d object, but not nullptr objects
+ */
 std::vector<const class Polygon2d *> GeometryEvaluator::collectChildren2D(const AbstractNode &node)
 {
 	std::vector<const Polygon2d *> children;
@@ -208,11 +208,11 @@ std::vector<const class Polygon2d *> GeometryEvaluator::collectChildren2D(const 
 		if (chnode->modinst->isBackground()) continue;
 
 		// NB! We insert into the cache here to ensure that all children of
-		// a node is a valid object. If we inserted as we created them, the 
+		// a node is a valid object. If we inserted as we created them, the
 		// cache could have been modified before we reach this point due to a large
-		// sibling object. 
+		// sibling object.
 		smartCacheInsert(*chnode, chgeom);
-		
+
 		if (chgeom) {
 			if (chgeom->getDimension() == 2) {
 				const Polygon2d *polygons = dynamic_cast<const Polygon2d *>(chgeom.get());
@@ -228,11 +228,11 @@ std::vector<const class Polygon2d *> GeometryEvaluator::collectChildren2D(const 
 }
 
 /*!
-	Since we can generate both Nef and non-Nef geometry, we need to insert it into
-	the appropriate cache.
-	This method inserts the geometry into the appropriate cache if it's not already cached.
-*/
-void GeometryEvaluator::smartCacheInsert(const AbstractNode &node, 
+   Since we can generate both Nef and non-Nef geometry, we need to insert it into
+   the appropriate cache.
+   This method inserts the geometry into the appropriate cache if it's not already cached.
+ */
+void GeometryEvaluator::smartCacheInsert(const AbstractNode &node,
 																				 const shared_ptr<const Geometry> &geom)
 {
 	const std::string &key = this->tree.getIdString(node);
@@ -269,9 +269,9 @@ shared_ptr<const Geometry> GeometryEvaluator::smartCacheGet(const AbstractNode &
 }
 
 /*!
-	Returns a list of 3D Geometry children of the given node.
-	May return empty geometries, but not nullptr objects
-*/
+   Returns a list of 3D Geometry children of the given node.
+   May return empty geometries, but not nullptr objects
+ */
 Geometry::Geometries GeometryEvaluator::collectChildren3D(const AbstractNode &node)
 {
 	Geometry::Geometries children;
@@ -281,11 +281,11 @@ Geometry::Geometries GeometryEvaluator::collectChildren3D(const AbstractNode &no
 		if (chnode->modinst->isBackground()) continue;
 
 		// NB! We insert into the cache here to ensure that all children of
-		// a node is a valid object. If we inserted as we created them, the 
+		// a node is a valid object. If we inserted as we created them, the
 		// cache could have been modified before we reach this point due to a large
-		// sibling object. 
+		// sibling object.
 		smartCacheInsert(*chnode, chgeom);
-		
+
 		if (chgeom) {
 			if (chgeom->getDimension() == 2) {
 				PRINT("WARNING: Ignoring 2D child object for 3D operation");
@@ -299,8 +299,8 @@ Geometry::Geometries GeometryEvaluator::collectChildren3D(const AbstractNode &no
 }
 
 /*!
-	
-*/
+
+ */
 Polygon2d *GeometryEvaluator::applyToChildren2D(const AbstractNode &node, OpenSCADOperator op)
 {
 	node.progress_report();
@@ -342,16 +342,16 @@ Polygon2d *GeometryEvaluator::applyToChildren2D(const AbstractNode &node, OpenSC
 }
 
 /*!
-	Adds ourself to our parent's list of traversed children.
-	Call this for _every_ node which affects output during traversal.
-	Usually, this should be called from the postfix stage, but for some nodes, 
-	we defer traversal letting other components (e.g. CGAL) render the subgraph, 
-	and we'll then call this from prefix and prune further traversal.
+   Adds ourself to our parent's list of traversed children.
+   Call this for _every_ node which affects output during traversal.
+   Usually, this should be called from the postfix stage, but for some nodes,
+   we defer traversal letting other components (e.g. CGAL) render the subgraph,
+   and we'll then call this from prefix and prune further traversal.
 
-	The added geometry can be nullptr if it wasn't possible to evaluate it.
-*/
-void GeometryEvaluator::addToParent(const State &state, 
-																		const AbstractNode &node, 
+   The added geometry can be nullptr if it wasn't possible to evaluate it.
+ */
+void GeometryEvaluator::addToParent(const State &state,
+																		const AbstractNode &node,
 																		const shared_ptr<const Geometry> &geom)
 {
 	this->visitedchildren.erase(node.index());
@@ -367,7 +367,7 @@ void GeometryEvaluator::addToParent(const State &state,
 
 /*!
    Custom nodes are handled here => implicit union
-*/
+ */
 Response GeometryEvaluator::visit(State &state, const AbstractNode &node)
 {
 	if (state.isPrefix()) {
@@ -389,7 +389,7 @@ Response GeometryEvaluator::visit(State &state, const AbstractNode &node)
 }
 
 /*!
-*/
+ */
 Response GeometryEvaluator::visit(State &state, const GroupNode &node)
 {
 	return visit(state, (const AbstractNode &)node);
@@ -412,7 +412,7 @@ Response GeometryEvaluator::visit(State &state, const OffsetNode &node)
 				const Polygon2d *polygon = dynamic_cast<const Polygon2d*>(geometry);
 				// ClipperLib documentation: The formula for the number of steps in a full
 				// circular arc is ... Pi / acos(1 - arc_tolerance / abs(delta))
-                double n = Calc::get_fragments_from_r(std::abs(node.delta), node.fn, node.fs, node.fa);
+				double n = Calc::get_fragments_from_r(std::abs(node.delta), node.fn, node.fs, node.fa);
 				double arc_tolerance = std::abs(node.delta) * (1 - cos(M_PI / n));
 				const Polygon2d *result = ClipperUtils::applyOffset(*polygon, node.delta, node.join_type, node.miter_limit, arc_tolerance);
 				assert(result);
@@ -431,7 +431,7 @@ Response GeometryEvaluator::visit(State &state, const OffsetNode &node)
 
 /*!
    RenderNodes just pass on convexity
-*/
+ */
 Response GeometryEvaluator::visit(State &state, const RenderNode &node)
 {
 	if (state.isPrefix()) {
@@ -471,18 +471,18 @@ Response GeometryEvaluator::visit(State &state, const RenderNode &node)
 }
 
 /*!
-	Leaf nodes can create their own geometry, so let them do that
+   Leaf nodes can create their own geometry, so let them do that
 
-	input: None
-	output: PolySet or Polygon2d
-*/
+   input: None
+   output: PolySet or Polygon2d
+ */
 Response GeometryEvaluator::visit(State &state, const LeafNode &node)
 {
 	if (state.isPrefix()) {
 		shared_ptr<const Geometry> geom;
 		if (!isSmartCached(node)) {
 			const Geometry *geometry = node.createGeometry();
-            assert(geometry);
+			assert(geometry);
 			if (const Polygon2d *polygon = dynamic_cast<const Polygon2d*>(geometry)) {
 				if (!polygon->isSanitized()) {
 					Polygon2d *p = ClipperUtils::sanitize(*polygon);
@@ -490,7 +490,7 @@ Response GeometryEvaluator::visit(State &state, const LeafNode &node)
 					geometry = p;
 				}
 			}
-            geom.reset(geometry);
+			geom.reset(geometry);
 		}
 		else geom = smartCacheGet(node, state.preferNef());
 		addToParent(state, node, geom);
@@ -522,11 +522,11 @@ Response GeometryEvaluator::visit(State &state, const TextNode &node)
 
 
 /*!
-	input: List of 2D or 3D objects (not mixed)
-	output: Polygon2d or 3D PolySet
-	operation:
-	  o Perform csg op on children
- */			
+   input: List of 2D or 3D objects (not mixed)
+   output: Polygon2d or 3D PolySet
+   operation:
+    o Perform csg op on children
+ */
 Response GeometryEvaluator::visit(State &state, const CsgOpNode &node)
 {
 	if (state.isPrefix()) {
@@ -548,12 +548,12 @@ Response GeometryEvaluator::visit(State &state, const CsgOpNode &node)
 }
 
 /*!
-	input: List of 2D or 3D objects (not mixed)
-	output: Polygon2d or 3D PolySet
-	operation:
-	  o Union all children
-	  o Perform transform
- */			
+   input: List of 2D or 3D objects (not mixed)
+   output: Polygon2d or 3D PolySet
+   operation:
+    o Union all children
+    o Perform transform
+ */
 Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 {
 	if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;
@@ -571,14 +571,14 @@ Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 					if (geom->getDimension() == 2) {
 						shared_ptr<const Polygon2d> polygons = dynamic_pointer_cast<const Polygon2d>(geom);
 						assert(polygons);
-						
+
 						// If we got a const object, make a copy
 						shared_ptr<Polygon2d> newpoly;
 						if (res.isConst()) newpoly.reset(new Polygon2d(*polygons));
 						else newpoly = dynamic_pointer_cast<Polygon2d>(res.ptr());
-						
+
 						Transform2d mat2;
-						mat2.matrix() << 
+						mat2.matrix() <<
 							node.matrix(0,0), node.matrix(0,1), node.matrix(0,3),
 							node.matrix(1,0), node.matrix(1,1), node.matrix(1,3),
 							node.matrix(3,0), node.matrix(3,1), node.matrix(3,3);
@@ -632,24 +632,24 @@ static void translate_PolySet(PolySet &ps, const Vector3d &translation)
 	}
 }
 
-static void add_slice(PolySet *ps, const Polygon2d &poly, 
-											double rot1, double rot2, 
-											double h1, double h2, 
+static void add_slice(PolySet *ps, const Polygon2d &poly,
+											double rot1, double rot2,
+											double h1, double h2,
 											const Vector2d &scale1,
 											const Vector2d &scale2)
 {
 	Eigen::Affine2d trans1(Eigen::Scaling(scale1) * Eigen::Rotation2D<double>(-rot1*M_PI/180));
 	Eigen::Affine2d trans2(Eigen::Scaling(scale2) * Eigen::Rotation2D<double>(-rot2*M_PI/180));
-	
+
 	bool splitfirst = sin((rot1 - rot2)*M_PI/180) > 0.0;
 	for(const auto &o : poly.outlines()) {
 		Vector2d prev1 = trans1 * o.vertices[0];
 		Vector2d prev2 = trans2 * o.vertices[0];
-		for (size_t i=1;i<=o.vertices.size();i++) {
+		for (size_t i=1; i<=o.vertices.size(); i++) {
 			Vector2d curr1 = trans1 * o.vertices[i % o.vertices.size()];
 			Vector2d curr2 = trans2 * o.vertices[i % o.vertices.size()];
 			ps->append_poly();
-			
+
 			// Make sure to split negative outlines correctly
 			if (splitfirst xor !o.positive) {
 				ps->insert_vertex(prev1[0], prev1[1], h1);
@@ -680,9 +680,9 @@ static void add_slice(PolySet *ps, const Polygon2d &poly,
 }
 
 /*!
-	Input to extrude should be sanitized. This means non-intersecting, correct winding order
-	etc., the input coming from a library like Clipper.
-*/
+   Input to extrude should be sanitized. This means non-intersecting, correct winding order
+   etc., the input coming from a library like Clipper.
+ */
 static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &poly)
 {
 	bool cvx = poly.is_convex();
@@ -701,7 +701,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &
 	}
 
 	PolySet *ps_bottom = poly.tessellate(); // bottom
-	
+
 	// Flip vertex ordering for bottom polygon
 	for(auto &p : ps_bottom->polygons) {
 		std::reverse(p.begin(), p.end());
@@ -713,14 +713,14 @@ static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &
 	if (node.scale_x > 0 || node.scale_y > 0) {
 		Polygon2d top_poly(poly);
 		Eigen::Affine2d trans(Eigen::Scaling(node.scale_x, node.scale_y) *
-													 Eigen::Rotation2D<double>(-node.twist*M_PI/180));
+													Eigen::Rotation2D<double>(-node.twist*M_PI/180));
 		top_poly.transform(trans); // top
 		PolySet *ps_top = top_poly.tessellate();
 		translate_PolySet(*ps_top, Vector3d(0,0,h2));
 		ps->append(*ps_top);
 		delete ps_top;
 	}
-    size_t slices = node.slices;
+	size_t slices = node.slices;
 
 	for (unsigned int j = 0; j < slices; j++) {
 		double rot1 = node.twist*j / slices;
@@ -738,12 +738,12 @@ static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &
 }
 
 /*!
-	input: List of 2D objects
-	output: 3D PolySet
-	operation:
-	  o Union all children
-	  o Perform extrude
- */			
+   input: List of 2D objects
+   output: 3D PolySet
+   operation:
+    o Union all children
+    o Perform extrude
+ */
 Response GeometryEvaluator::visit(State &state, const LinearExtrudeNode &node)
 {
 	if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;
@@ -782,13 +782,13 @@ static void fill_ring(std::vector<Vector3d> &ring, const Outline2d &o, double a,
 {
 	if (flip) {
 		unsigned int l = o.vertices.size()-1;
-		for (unsigned int i=0 ;i<o.vertices.size();i++) {
+		for (unsigned int i=0; i<o.vertices.size(); i++) {
 			ring[i][0] = o.vertices[l-i][0] * sin(a);
 			ring[i][1] = o.vertices[l-i][0] * cos(a);
 			ring[i][2] = o.vertices[l-i][1];
 		}
 	} else {
-		for (unsigned int i=0 ;i<o.vertices.size();i++) {
+		for (unsigned int i=0; i<o.vertices.size(); i++) {
 			ring[i][0] = o.vertices[i][0] * sin(a);
 			ring[i][1] = o.vertices[i][0] * cos(a);
 			ring[i][2] = o.vertices[i][1];
@@ -797,30 +797,30 @@ static void fill_ring(std::vector<Vector3d> &ring, const Outline2d &o, double a,
 }
 
 /*!
-	Input to extrude should be clean. This means non-intersecting, correct winding order
-	etc., the input coming from a library like Clipper.
+   Input to extrude should be clean. This means non-intersecting, correct winding order
+   etc., the input coming from a library like Clipper.
 
-	FIXME: We should handle some common corner cases better:
-  o 2D polygon having an edge being on the Y axis:
-	  In this case, we don't need to generate geometry involving this edge as it
-		will be an internal edge.
-  o 2D polygon having a vertex touching the Y axis:
+   FIXME: We should handle some common corner cases better:
+   o 2D polygon having an edge being on the Y axis:
+    In this case, we don't need to generate geometry involving this edge as it
+    will be an internal edge.
+   o 2D polygon having a vertex touching the Y axis:
     This is more complex as the resulting geometry will (may?) be nonmanifold.
-		In any case, the previous case is a specialization of this, so the following
-		should be handled for both cases:
-		Since the ring associated with this vertex will have a radius of zero, it will
-		collapse to one vertex. Any quad using this ring will be collapsed to a triangle.
+    In any case, the previous case is a specialization of this, so the following
+    should be handled for both cases:
+    Since the ring associated with this vertex will have a radius of zero, it will
+    collapse to one vertex. Any quad using this ring will be collapsed to a triangle.
 
-	Currently, we generate a lot of zero-area triangles
+   Currently, we generate a lot of zero-area triangles
 
-*/
+ */
 static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &poly)
 {
-	if (node.angle == 0) return nullptr; 
+	if (node.angle == 0) return nullptr;
 
 	PolySet *ps = new PolySet(3);
 	ps->setConvexity(node.convexity);
-	
+
 	double min_x = 0;
 	double max_x = 0;
 	int fragments = 0;
@@ -839,7 +839,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 	}
 
 	bool flip_faces = (min_x >= 0 && node.angle > 0 && node.angle != 360) || (min_x < 0 && (node.angle < 0 || node.angle == 360));
-	
+
 	if (node.angle != 360) {
 		PolySet *ps_start = poly.tessellate(); // starting face
 		Transform3d rot(Eigen::AngleAxisd(M_PI/2, Vector3d::UnitX()));
@@ -874,12 +874,12 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 		for (int j = 0; j < fragments; j++) {
 			double a;
 			if (node.angle == 360)
-			    a = -M_PI/2 + ((j+1)%fragments*2*M_PI) / fragments; // start on the -X axis, for legacy support
+				a = -M_PI/2 + ((j+1)%fragments*2*M_PI) / fragments;   // start on the -X axis, for legacy support
 			else
 				a = M_PI/2 - (j+1)*(node.angle*M_PI/180) / fragments; // start on the X axis
 			fill_ring(rings[(j+1)%2], o, a, flip_faces);
 
-			for (size_t i=0;i<o.vertices.size();i++) {
+			for (size_t i=0; i<o.vertices.size(); i++) {
 				ps->append_poly();
 				ps->insert_vertex(rings[j%2][i]);
 				ps->insert_vertex(rings[(j+1)%2][(i+1)%o.vertices.size()]);
@@ -891,17 +891,17 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 			}
 		}
 	}
-	
+
 	return ps;
 }
 
 /*!
-	input: List of 2D objects
-	output: 3D PolySet
-	operation:
-	  o Union all children
-	  o Perform extrude
- */			
+   input: List of 2D objects
+   output: 3D PolySet
+   operation:
+    o Union all children
+    o Perform extrude
+ */
 Response GeometryEvaluator::visit(State &state, const RotateExtrudeNode &node)
 {
 	if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;
@@ -935,8 +935,8 @@ Response GeometryEvaluator::visit(State &state, const RotateExtrudeNode &node)
 }
 
 /*!
-	FIXME: Not in use
-*/
+   FIXME: Not in use
+ */
 Response GeometryEvaluator::visit(State & /*state*/, const AbstractPolyNode & /*node*/)
 {
 	assert(false);
@@ -944,12 +944,12 @@ Response GeometryEvaluator::visit(State & /*state*/, const AbstractPolyNode & /*
 }
 
 /*!
-	input: List of 3D objects
-	output: Polygon2d
-	operation:
-	  o Union all children
-		o Perform projection
- */			
+   input: List of 3D objects
+   output: Polygon2d
+   operation:
+    o Union all children
+    o Perform projection
+ */
 Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 {
 	if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;
@@ -1014,8 +1014,8 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 						ClipperLib::Paths result = ClipperUtils::fromPolygon2d(*poly);
 						// Using NonZero ensures that we don't create holes from polygons sharing
 						// edges since we're unioning a mesh
-						result = ClipperUtils::process(result, 
-																					 ClipperLib::ctUnion, 
+						result = ClipperUtils::process(result,
+																					 ClipperLib::ctUnion,
 																					 ClipperLib::pftNonZero);
 						// Add correctly winded polygons to the main clipper
 						sumclipper.AddPaths(result, ClipperLib::ptSubject, true);
@@ -1053,14 +1053,14 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 		node.progress_report();
 	}
 	return Response::ContinueTraversal;
-}		
+}
 
 /*!
-	input: List of 2D or 3D objects (not mixed)
-	output: any Geometry
-	operation:
-	  o Perform cgal operation
- */			
+   input: List of 2D or 3D objects (not mixed)
+   output: any Geometry
+   operation:
+    o Perform cgal operation
+ */
 Response GeometryEvaluator::visit(State &state, const CgaladvNode &node)
 {
 	if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;

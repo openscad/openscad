@@ -20,8 +20,8 @@ PolySet *import_off(const std::string &filename)
 		bool err = CGALUtils::createPolySetFromPolyhedron(poly, *p);
 	}
 #else
-  PRINT("WARNING: OFF import requires CGAL.");
+	PRINT("WARNING: OFF import requires CGAL.");
 #endif
 	return p;
 }
-	
+

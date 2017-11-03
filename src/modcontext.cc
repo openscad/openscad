@@ -25,20 +25,20 @@ void ModuleContext::evaluateAssignments(const AssignmentList &assignments)
 {
 	// First, assign all simple variables
 	std::list<std::string> undefined_vars;
- 	for (const auto &ass : assignments) {
+	for (const auto &ass : assignments) {
 		ValuePtr tmpval = ass.second->evaluate(this);
 		if (tmpval->isUndefined()) undefined_vars.push_back(ass.first);
- 		else this->set_variable(ass.first, tmpval);
- 	}
+		else this->set_variable(ass.first, tmpval);
+	}
 
 	// Variables which couldn't be evaluated in the first pass is attempted again,
-  // to allow for initialization out of order
+	// to allow for initialization out of order
 
 	std::unordered_map<std::string, Expression *> tmpass;
 	for(const auto &ass : assignments) {
 		tmpass[ass.first] = ass.second;
 	}
-		
+
 	bool changed = true;
 	while (changed) {
 		changed = false;
@@ -79,8 +79,8 @@ void ModuleContext::initializeModule(const UserModule &module)
 }
 
 /*!
-	Only used to initialize builtins for the top-level root context
-*/
+   Only used to initialize builtins for the top-level root context
+ */
 void ModuleContext::registerBuiltin()
 {
 	const auto &scope = Builtins::instance()->getGlobalScope();
@@ -125,8 +125,8 @@ const AbstractModule *ModuleContext::findLocalModule(const std::string &name) co
 	return nullptr;
 }
 
-ValuePtr ModuleContext::evaluate_function(const std::string &name, 
-																												 const EvalContext *evalctx) const
+ValuePtr ModuleContext::evaluate_function(const std::string &name,
+																					const EvalContext *evalctx) const
 {
 	const auto foundf = findLocalFunction(name);
 	if (foundf) return foundf->evaluate(this, evalctx);
@@ -181,7 +181,7 @@ FileContext::FileContext(const Context *parent) : ModuleContext(parent), usedlib
 {
 }
 
-ValuePtr FileContext::sub_evaluate_function(const std::string &name, 
+ValuePtr FileContext::sub_evaluate_function(const std::string &name,
 																						const EvalContext *evalctx,
 																						FileModule *usedmod) const
 {
@@ -195,8 +195,8 @@ ValuePtr FileContext::sub_evaluate_function(const std::string &name,
 	return usedmod->scope.functions[name]->evaluate(&ctx, evalctx);
 }
 
-ValuePtr FileContext::evaluate_function(const std::string &name, 
-																											 const EvalContext *evalctx) const
+ValuePtr FileContext::evaluate_function(const std::string &name,
+																				const EvalContext *evalctx) const
 {
 	const auto foundf = findLocalFunction(name);
 	if (foundf) return foundf->evaluate(this, evalctx);

@@ -5,11 +5,11 @@
 namespace fs = boost::filesystem;
 
 /*!
-	Returns the absolute path to the given filename, unless it's empty.
-	If the file isn't found in the given path, the fallback path will be
-	used to be backwards compatible with <= 2013.01 (see issue #217).
-*/
-std::string lookup_file(const std::string &filename, 
+   Returns the absolute path to the given filename, unless it's empty.
+   If the file isn't found in the given path, the fallback path will be
+   used to be backwards compatible with <= 2013.01 (see issue #217).
+ */
+std::string lookup_file(const std::string &filename,
 												const std::string &path, const std::string &fallbackpath)
 {
 	std::string resultfile;

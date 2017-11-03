@@ -8,7 +8,7 @@ ParameterText::ParameterText(ParameterObject *parameterobject, bool showDescript
 	setName(QString::fromStdString(object->name));
 	setValue();
 	connect(lineEdit, SIGNAL(textChanged(QString)), this, SLOT(onChanged(QString)));
-	if (showDescription == true){
+	if (showDescription == true) {
 		setDescription(object->description);
 	}
 	else{

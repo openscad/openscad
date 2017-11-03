@@ -47,7 +47,7 @@
 #include "OffscreenView.h"
 #include "GeometryEvaluator.h"
 
-#include"parameter/parameterset.h"
+#include "parameter/parameterset.h"
 #include <string>
 #include <vector>
 #include <fstream>
@@ -69,9 +69,9 @@
 
 #ifdef __APPLE__
 #include "AppleEvents.h"
-  #ifdef OPENSCAD_UPDATER
-    #include "SparkleAutoUpdater.h"
-  #endif
+	#ifdef OPENSCAD_UPDATER
+		#include "SparkleAutoUpdater.h"
+	#endif
 #endif
 
 #ifdef _MSC_VER
@@ -98,19 +98,19 @@ static std::string arg_colorscheme;
 std::string openscad_shortversionnumber = QUOTED(OPENSCAD_SHORTVERSION);
 std::string openscad_versionnumber = QUOTED(OPENSCAD_VERSION);
 
-std::string openscad_displayversionnumber = 
+std::string openscad_displayversionnumber =
 #ifdef OPENSCAD_COMMIT
-  QUOTED(OPENSCAD_VERSION)
-  " (git " QUOTED(OPENSCAD_COMMIT) ")";
+	QUOTED(OPENSCAD_VERSION)
+	" (git " QUOTED(OPENSCAD_COMMIT) ")";
 #else
-  QUOTED(OPENSCAD_SHORTVERSION);
+	QUOTED(OPENSCAD_SHORTVERSION);
 #endif
 
 std::string openscad_detailedversionnumber =
 #ifdef OPENSCAD_COMMIT
-  openscad_displayversionnumber;
+	openscad_displayversionnumber;
 #else
-  openscad_versionnumber;
+	openscad_versionnumber;
 #endif
 
 class Echostream : public std::ofstream
@@ -130,33 +130,33 @@ public:
 
 static void help(const char *progname, bool failure = false)
 {
-  int tablen = strlen(progname)+8;
-  char tabstr[tablen+1];
-  for (int i=0;i<tablen;i++) tabstr[i] = ' ';
-  tabstr[tablen] = '\0';
+	int tablen = strlen(progname)+8;
+	char tabstr[tablen+1];
+	for (int i=0; i<tablen; i++) tabstr[i] = ' ';
+	tabstr[tablen] = '\0';
 
 	PRINTB("Usage: %1% [ -o output_file [ -d deps_file ] ]\\\n"
-         "%2%[ -m make_command ] [ -D var=val [..] ] \\\n"
-	 "%2%[ --help ] print this help message and exit \\\n"
-         "%2%[ --version ] [ --info ] \\\n"
-         "%2%[ --camera=translatex,y,z,rotx,y,z,dist | \\\n"
-         "%2%  --camera=eyex,y,z,centerx,y,z ] \\\n"
-         "%2%[ --autocenter ] \\\n"
-         "%2%[ --viewall ] \\\n"
-         "%2%[ --imgsize=width,height ] [ --projection=(o)rtho|(p)ersp] \\\n"
-         "%2%[ --render | --preview[=throwntogether] ] \\\n"
-         "%2%[ --colorscheme=[Cornfield|Sunset|Metallic|Starnight|BeforeDawn|Nature|DeepOcean] ] \\\n"
-         "%2%[ --csglimit=num ]"
+				 "%2%[ -m make_command ] [ -D var=val [..] ] \\\n"
+				 "%2%[ --help ] print this help message and exit \\\n"
+				 "%2%[ --version ] [ --info ] \\\n"
+				 "%2%[ --camera=translatex,y,z,rotx,y,z,dist | \\\n"
+				 "%2%  --camera=eyex,y,z,centerx,y,z ] \\\n"
+				 "%2%[ --autocenter ] \\\n"
+				 "%2%[ --viewall ] \\\n"
+				 "%2%[ --imgsize=width,height ] [ --projection=(o)rtho|(p)ersp] \\\n"
+				 "%2%[ --render | --preview[=throwntogether] ] \\\n"
+				 "%2%[ --colorscheme=[Cornfield|Sunset|Metallic|Starnight|BeforeDawn|Nature|DeepOcean] ] \\\n"
+				 "%2%[ --csglimit=num ]"
 #ifdef ENABLE_EXPERIMENTAL
-         " [ --enable=<feature> ] \\\n"
-         "%2%[ -p <Parameter Filename>] [-P <Parameter Set>] "
+				 " [ --enable=<feature> ] \\\n"
+				 "%2%[ -p <Parameter Filename>] [-P <Parameter Set>] "
 #endif
-         "\\\n"
+				 "\\\n"
 #ifdef DEBUG
 				 "%2%[ --debug=module ] \\\n"
 #endif
-         "%2%filename\n",
- 				 progname % (const char *)tabstr);
+				 "%2%filename\n",
+				 progname % (const char *)tabstr);
 	exit(failure ? 1 : 0);
 }
 
@@ -299,12 +299,12 @@ void set_render_color_scheme(const std::string color_scheme, const bool exit_if_
 	if (color_scheme.empty()) {
 		return;
 	}
-	
+
 	if (ColorMap::inst()->findColorScheme(color_scheme)) {
 		RenderSettings::inst()->colorscheme = color_scheme;
 		return;
 	}
-		
+
 	if (exit_if_not_found) {
 		PRINTB("Unknown color scheme '%s'. Valid schemes:", color_scheme);
 		for(const auto &name : ColorMap::inst()->colorSchemeNames()) {
@@ -325,7 +325,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	const std::string application_path = QCoreApplication::instance()->applicationDirPath().toLocal8Bit().constData();
 #else
 	const std::string application_path = fs::absolute(boost::filesystem::path(argv[0]).parent_path()).generic_string();
-#endif	
+#endif
 	PlatformUtils::registerApplicationPath(application_path);
 	parser_init();
 	localization_init();
@@ -335,9 +335,9 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	GeometryEvaluator geomevaluator(tree);
 #endif
 	if (arg_info) {
-	    info();
+		info();
 	}
-	
+
 	const char *stl_output_file = nullptr;
 	const char *off_output_file = nullptr;
 	const char *amf_output_file = nullptr;
@@ -372,7 +372,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	}
 
 	set_render_color_scheme(arg_colorscheme, true);
-	
+
 	// Top context - this context only holds builtins
 	ModuleContext top_ctx;
 	top_ctx.registerBuiltin();
@@ -420,7 +420,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 			param.applyParameterSet(root_module, setName);
 		}
 	}
-    
+
 	root_module->handleDependencies();
 
 	auto fpath = fs::absolute(fs::path(filename));
@@ -534,7 +534,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 				return 1;
 			}
 		}
-		
+
 		if (svg_output_file) {
 			if (!checkAndExport(root_geom, 2, FileFormat::SVG, svg_output_file)) {
 				return 1;
@@ -605,13 +605,13 @@ Q_DECLARE_METATYPE(shared_ptr<const Geometry>);
 
 // Only if "fileName" is not absolute, prepend the "absoluteBase".
 static QString assemblePath(const fs::path& absoluteBaseDir,
-                            const string& fileName) {
-  if (fileName.empty()) return "";
-  auto qsDir = QString::fromLocal8Bit(absoluteBaseDir.generic_string().c_str());
-  auto qsFile = QString::fromLocal8Bit(fileName.c_str());
-  // if qsfile is absolute, dir is ignored. (see documentation of QFileInfo)
-  QFileInfo info(qsDir, qsFile);
-  return info.absoluteFilePath();
+														const string& fileName) {
+	if (fileName.empty()) return "";
+	auto qsDir = QString::fromLocal8Bit(absoluteBaseDir.generic_string().c_str());
+	auto qsFile = QString::fromLocal8Bit(fileName.c_str());
+	// if qsfile is absolute, dir is ignored. (see documentation of QFileInfo)
+	QFileInfo info(qsDir, qsFile);
+	return info.absoluteFilePath();
 }
 
 bool QtUseGUI()
@@ -631,7 +631,7 @@ bool QtUseGUI()
 
 void dialogThreadFunc(FontCacheInitializer *initializer)
 {
-	 initializer->run();
+	initializer->run();
 }
 
 void dialogInitHandler(FontCacheInitializer *initializer, void *)
@@ -648,7 +648,7 @@ void dialogInitHandler(FontCacheInitializer *initializer, void *)
 	// Block, in case we're in a separate thread, or the dialog was closed by the user
 	futureWatcher.waitForFinished();
 
-	// We don't always receive the finished signal. We still need the signal to break 
+	// We don't always receive the finished signal. We still need the signal to break
 	// out of the exec() though.
 	QMetaObject::invokeMethod(scadApp, "hideFontCacheDialog");
 }
@@ -682,10 +682,10 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 #else
 	app.setWindowIcon(QIcon(":/icons/openscad.png"));
 #endif
-	
+
 	// Other global settings
 	qRegisterMetaType<shared_ptr<const Geometry>>();
-	
+
 	const auto &app_path = app.applicationDirPath();
 	PlatformUtils::registerApplicationPath(app_path.toLocal8Bit().constData());
 
@@ -734,7 +734,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 #endif
 
 	set_render_color_scheme(arg_colorscheme, false);
-	
+
 	auto noInputFiles = false;
 	if (!inputFiles.size()) {
 		noInputFiles = true;
@@ -764,10 +764,10 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	auto isMdi = settings.value("advanced/mdi", true).toBool();
 	if (isMdi) {
 		for(const auto &infile : inputFiles) {
-		   new MainWindow(assemblePath(original_path, infile));
-	    }
+			new MainWindow(assemblePath(original_path, infile));
+		}
 	} else {
-	   new MainWindow(assemblePath(original_path, inputFiles[0]));
+		new MainWindow(assemblePath(original_path, inputFiles[0]));
 	}
 
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
@@ -798,7 +798,7 @@ int main(int argc, char **argv)
 {
 	int rc = 0;
 	StackCheck::inst()->init();
-	
+
 #ifdef Q_OS_MAC
 	bool isGuiLaunched = getenv("GUI_LAUNCHED") != 0;
 	if (isGuiLaunched) set_output_handler(CocoaUtils::nslog, nullptr);
@@ -843,12 +843,12 @@ int main(int argc, char **argv)
 		("m,m", po::value<string>(), "makefile")
 		("D,D", po::value<vector<string>>(), "var=val")
 #ifdef Q_OS_MACX
-		("psn", po::value<string>(), "process serial number")
+	("psn", po::value<string>(), "process serial number")
 #endif
 #ifdef ENABLE_EXPERIMENTAL
-		("enable", po::value<vector<string>>(), "enable experimental features")
+	("enable", po::value<vector<string>>(), "enable experimental features")
 #endif
-		;
+	;
 
 	po::options_description hidden("Hidden options");
 	hidden.add_options()
@@ -905,7 +905,7 @@ int main(int argc, char **argv)
 		if (output_file) help(argv[0], true);
 		output_file = vm["s"].as<string>().c_str();
 	}
-	if (vm.count("x")) { 
+	if (vm.count("x")) {
 		printDeprecation("The -x option is deprecated. Use -o instead.\n");
 		if (output_file) help(argv[0], true);
 		output_file = vm["x"].as<string>().c_str();
@@ -935,17 +935,17 @@ int main(int argc, char **argv)
 
 	string parameterFile;
 	string parameterSet;
-	
+
 	if (Feature::ExperimentalCustomizer.is_enabled()) {
 		if (vm.count("p")) {
 			if (!parameterFile.empty()) help(argv[0], true);
-			
+
 			parameterFile = vm["p"].as<string>().c_str();
 		}
-		
+
 		if (vm.count("P")) {
 			if (!parameterSet.empty()) help(argv[0], true);
-			
+
 			parameterSet = vm["P"].as<string>().c_str();
 		}
 	}
@@ -956,9 +956,9 @@ int main(int argc, char **argv)
 			help(argv[0], true);
 		}
 	}
-	
+
 	vector<string> inputFiles;
-	if (vm.count("input-file"))	{
+	if (vm.count("input-file")) {
 		inputFiles = vm["input-file"].as<vector<string>>();
 	}
 

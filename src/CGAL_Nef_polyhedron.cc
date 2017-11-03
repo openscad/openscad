@@ -55,10 +55,10 @@ bool CGAL_Nef_polyhedron::isEmpty() const
 }
 
 /*!
-	Creates a new PolySet and initializes it with the data from this polyhedron
+   Creates a new PolySet and initializes it with the data from this polyhedron
 
-	Note: Can return nullptr if an error occurred
-*/
+   Note: Can return nullptr if an error occurred
+ */
 // FIXME: Deprecated by CGALUtils::createPolySetFromNefPolyhedron3
 #if 0
 PolySet *CGAL_Nef_polyhedron::convertToPolyset() const
@@ -72,7 +72,7 @@ PolySet *CGAL_Nef_polyhedron::convertToPolyset() const
 	std::string errmsg("");
 	CGAL_Polyhedron P;
 	try {
-		// Cast away constness: 
+		// Cast away constness:
 		// convert_to_Polyhedron() wasn't const in earlier versions of CGAL.
 		CGAL_Nef_polyhedron3 *nonconst_nef3 = const_cast<CGAL_Nef_polyhedron3*>(this->p3.get());
 		err = nefworkaround::convert_to_Polyhedron<CGAL_Kernel3>( *(nonconst_nef3), P );
@@ -93,7 +93,7 @@ PolySet *CGAL_Nef_polyhedron::convertToPolyset() const
 }
 #endif
 
-void CGAL_Nef_polyhedron::resize(const Vector3d &newsize, 
+void CGAL_Nef_polyhedron::resize(const Vector3d &newsize,
 																 const Eigen::Matrix<bool,3,1> &autosize)
 {
 	// Based on resize() in Giles Bathgate's RapCAD (but not exactly)
@@ -102,12 +102,12 @@ void CGAL_Nef_polyhedron::resize(const Vector3d &newsize,
 	auto bb = CGALUtils::boundingBox(*this->p3);
 
 	std::vector<NT3> scale, bbox_size;
-	for (unsigned int i=0;i<3;i++) {
+	for (unsigned int i=0; i<3; i++) {
 		scale.push_back(NT3(1));
 		bbox_size.push_back(bb.max_coord(i) - bb.min_coord(i));
 	}
 	int newsizemax_index = 0;
-	for (unsigned int i=0;i<this->getDimension();i++) {
+	for (unsigned int i=0; i<this->getDimension(); i++) {
 		if (newsize[i]) {
 			if (bbox_size[i] == NT3(0)) {
 				PRINT("WARNING: Resize in direction normal to flat object is not implemented");
@@ -124,15 +124,15 @@ void CGAL_Nef_polyhedron::resize(const Vector3d &newsize,
 	if (newsize[newsizemax_index] != 0) {
 		autoscale = NT3(newsize[newsizemax_index]) / bbox_size[newsizemax_index];
 	}
-	for (unsigned int i=0;i<this->getDimension();i++) {
+	for (unsigned int i=0; i<this->getDimension(); i++) {
 		if (autosize[i] && newsize[i]==0) scale[i] = autoscale;
 	}
 
 	Eigen::Matrix4d t;
 	t << CGAL::to_double(scale[0]),           0,        0,        0,
-	     0,        CGAL::to_double(scale[1]),           0,        0,
-	     0,        0,        CGAL::to_double(scale[2]),           0,
-	     0,        0,        0,                                   1;
+		0,        CGAL::to_double(scale[1]),           0,        0,
+		0,        0,        CGAL::to_double(scale[2]),           0,
+		0,        0,        0,                                   1;
 
 	this->transform(Transform3d(t));
 }

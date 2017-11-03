@@ -35,10 +35,10 @@ static void append_svg(const Polygon2d &poly, std::ostream &output)
 		if (o.vertices.empty()) {
 			continue;
 		}
-		
+
 		const Eigen::Vector2d& p0 = o.vertices[0];
 		output << "M " << p0.x() << "," << -p0.y();
-		for (unsigned int idx = 1;idx < o.vertices.size();idx++) {
+		for (unsigned int idx = 1; idx < o.vertices.size(); idx++) {
 			const Eigen::Vector2d& p = o.vertices[idx];
 			output << " L " << p.x() << "," << -p.y();
 			if ((idx % 6) == 5) {
@@ -66,7 +66,7 @@ static void append_svg(const shared_ptr<const Geometry> &geom, std::ostream &out
 void export_svg(const shared_ptr<const Geometry> &geom, std::ostream &output)
 {
 	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
-	
+
 	BoundingBox bbox = geom->getBoundingBox();
 	int minx = floor(bbox.min().x());
 	int miny = floor(-bbox.max().y());
@@ -85,6 +85,6 @@ void export_svg(const shared_ptr<const Geometry> &geom, std::ostream &output)
 
 	append_svg(geom, output);
 
-	output << "</svg>\n";	
+	output << "</svg>\n";
 	setlocale(LC_NUMERIC, "");      // Set default locale
 }

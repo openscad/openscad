@@ -52,9 +52,9 @@ extern void register_builtin_text();
 extern void initialize_builtin_dxf_dim();
 
 /*!
-	Registers all builtin functions.
-	Call once for the whole app.
-*/
+   Registers all builtin functions.
+   Call once for the whole app.
+ */
 void Builtins::initialize()
 {
 	register_builtin_functions();

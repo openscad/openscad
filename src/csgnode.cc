@@ -31,32 +31,32 @@
 #include <boost/range/iterator_range.hpp>
 
 /*!
-	\class CSGNode
+   \class CSGNode
 
-	CSG trees consiste of CSGNode instances; either a CSGLeaf node
-	containing geometry or a CSGOperation performing a basic CSG
-	operation on its operands.
+   CSG trees consiste of CSGNode instances; either a CSGLeaf node
+   containing geometry or a CSGOperation performing a basic CSG
+   operation on its operands.
 
-	Note: To distinguish between geometry evaluated to an empty volume
-	and non-geometric nodes (e.g. echo), a nullptr CSGLeaf is considered a
-	non-geometric node, while a CSGLeaf with a nullptr geometry is
-	considered empty geometry. This is important when e.g. establishing
-	positive vs. negative volumes using the difference operator.
+   Note: To distinguish between geometry evaluated to an empty volume
+   and non-geometric nodes (e.g. echo), a nullptr CSGLeaf is considered a
+   non-geometric node, while a CSGLeaf with a nullptr geometry is
+   considered empty geometry. This is important when e.g. establishing
+   positive vs. negative volumes using the difference operator.
  */
 
 /*!
-	\class CSGProducts
+   \class CSGProducts
 
-	A CSGProducts is just a vector of CSGProduct nodes.
-primitives, each having a CSG type associated with it.
-	It's created by importing a CSGTerm tree.
+   A CSGProducts is just a vector of CSGProduct nodes.
+   primitives, each having a CSG type associated with it.
+   It's created by importing a CSGTerm tree.
 
  */
 /*!
-	\class CSGProduct
+   \class CSGProduct
 
-	A CSGProduct is a vector of intersections and a vector of subtractions, used for CSG rendering.
-*/
+   A CSGProduct is a vector of intersections and a vector of subtractions, used for CSG rendering.
+ */
 
 
 shared_ptr<CSGNode> CSGOperation::createCSGNode(OpenSCADOperator type, shared_ptr<CSGNode> left, shared_ptr<CSGNode> right)
@@ -71,8 +71,8 @@ shared_ptr<CSGNode> CSGOperation::createCSGNode(OpenSCADOperator type, shared_pt
 		else return left;
 	}
 
-  // Pruning the tree. For details, see "Solid Modeling" by Goldfeather:
-  // http://www.cc.gatech.edu/~turk/my_papers/pxpl_csg.pdf
+	// Pruning the tree. For details, see "Solid Modeling" by Goldfeather:
+	// http://www.cc.gatech.edu/~turk/my_papers/pxpl_csg.pdf
 	const auto &leftbox = left->getBoundingBox();
 	const auto &rightbox = right->getBoundingBox();
 	Vector3d newmin, newmax;
@@ -164,7 +164,7 @@ std::string CSGOperation::dump()
 		dump << "(" << left()->dump() << " * " << right()->dump() << ")";
 	else if (type == OpenSCADOperator::DIFFERENCE)
 		dump << "(" << left()->dump() << " - " << right()->dump() << ")";
-	else 
+	else
 		assert(false);
 
 	return dump.str();
@@ -197,8 +197,8 @@ std::string CSGProduct::dump() const
 	std::stringstream dump;
 	dump << this->intersections.front().leaf->label;
 	for(const auto &csgobj :
-								boost::make_iterator_range(this->intersections.begin() + 1,
-																					 this->intersections.end())) {
+			boost::make_iterator_range(this->intersections.begin() + 1,
+																 this->intersections.end())) {
 		dump << " *" << csgobj.leaf->label;
 	}
 	for(const auto &csgobj : this->subtractions) {

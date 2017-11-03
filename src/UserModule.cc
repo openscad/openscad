@@ -47,7 +47,7 @@ AbstractNode *UserModule::instantiate(const Context *ctx, const ModuleInstantiat
 	// At this point we know that nobody will modify the dependencies of the local scope
 	// passed to this instance, so we can populate the context
 	inst->scope.apply(*evalctx);
-    
+
 	ModuleContext c(ctx, evalctx);
 	// set $children first since we might have variables depending on it
 	c.set_variable("$children", ValuePtr(double(inst->scope.children.size())));

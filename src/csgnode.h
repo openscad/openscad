@@ -47,7 +47,7 @@ public:
 	shared_ptr<CSGNode> &right() { return this->children[1]; }
 
 	OpenSCADOperator getType() const { return this->type; }
-	
+
 	static shared_ptr<CSGNode> createCSGNode(OpenSCADOperator type, shared_ptr<CSGNode> left, shared_ptr<CSGNode> right);
 	static shared_ptr<CSGNode> createCSGNode(OpenSCADOperator type, CSGNode *left, CSGNode *right) {
 		return createCSGNode(type, shared_ptr<CSGNode>(left), shared_ptr<CSGNode>(right));
@@ -58,7 +58,7 @@ private:
 	CSGOperation(OpenSCADOperator type, CSGNode *left, CSGNode *right);
 
 	OpenSCADOperator type;
-	std::vector<shared_ptr<CSGNode> > children;
+	std::vector<shared_ptr<CSGNode>> children;
 };
 
 class CSGLeaf : public CSGNode
@@ -78,9 +78,9 @@ public:
 };
 
 /*
-	Flags are accumulated in the CSG tree, so the rendered object may
-	have different flags than the corresponding leaf node.
-*/
+   Flags are accumulated in the CSG tree, so the rendered object may
+   have different flags than the corresponding leaf node.
+ */
 class CSGChainObject
 {
 public:
@@ -108,7 +108,7 @@ class CSGProducts
 {
 public:
 	CSGProducts() {
-    this->createProduct();
+		this->createProduct();
 	}
 	~CSGProducts() {}
 
@@ -119,12 +119,12 @@ public:
 	std::vector<CSGProduct> products;
 
 	size_t size() const;
-	
+
 private:
 	void createProduct() {
 		this->products.push_back(CSGProduct());
 		this->currentproduct = &this->products.back();
-    this->currentlist = &this->currentproduct->intersections;
+		this->currentlist = &this->currentproduct->intersections;
 	}
 
 	std::vector<CSGChainObject> *currentlist;

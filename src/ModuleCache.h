@@ -4,8 +4,8 @@
 #include <unordered_map>
 
 /*!
-	Caches FileModules based on their filenames
-*/
+   Caches FileModules based on their filenames
+ */
 class ModuleCache
 {
 public:

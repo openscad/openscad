@@ -67,7 +67,7 @@ static void append_stl(const PolySet &ps, std::ostream &output)
 				output << "0 0 0\n";
 			}
 			output << "    outer loop\n";
-		
+
 			for(const auto &v : p) {
 				output << "      vertex " << v[0] << " " << v[1] << " " << v[2] << "\n";
 			}
@@ -80,9 +80,9 @@ static void append_stl(const PolySet &ps, std::ostream &output)
 
 static void append_stl(const CGAL_Polyhedron &P, std::ostream &output)
 {
-	typedef CGAL_Polyhedron::Vertex                                 Vertex;
-	typedef CGAL_Polyhedron::Vertex_const_iterator                  VCI;
-	typedef CGAL_Polyhedron::Facet_const_iterator                   FCI;
+	typedef CGAL_Polyhedron::Vertex Vertex;
+	typedef CGAL_Polyhedron::Vertex_const_iterator VCI;
+	typedef CGAL_Polyhedron::Facet_const_iterator FCI;
 	typedef CGAL_Polyhedron::Halfedge_around_facet_const_circulator HFCC;
 
 	for (FCI fi = P.facets_begin(); fi != P.facets_end(); ++fi) {
@@ -141,8 +141,8 @@ static void append_stl(const CGAL_Polyhedron &P, std::ostream &output)
 }
 
 /*!
-	Saves the current 3D CGAL Nef polyhedron as STL to the given file.
-	The file must be open.
+   Saves the current 3D CGAL Nef polyhedron as STL to the given file.
+   The file must be open.
  */
 static void append_stl(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 {

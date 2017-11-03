@@ -17,11 +17,11 @@
 
 class QGLView :
 #ifdef USE_QOPENGLWIDGET
-		public QOpenGLWidget,
+	public QOpenGLWidget,
 #else
-		public QGLWidget,
+	public QGLWidget,
 #endif
-		public GLView
+	public GLView
 {
 	Q_OBJECT
 	Q_PROPERTY(bool showFaces READ showFaces WRITE setShowFaces);
@@ -53,7 +53,7 @@ public:
 #if QT_VERSION >= 0x050100
 	float getDPI() { return this->devicePixelRatio(); }
 #endif
-	
+
 	const QImage & grabFrame();
 	bool save(const char *filename);
 	void resetView();

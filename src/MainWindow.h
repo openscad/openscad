@@ -41,11 +41,11 @@ public:
 	QTime renderingTime;
 
 	ModuleContext top_ctx;
-	FileModule *root_module;		  // Result of parsing
-	FileModule *parsed_module;		// Last parse for include list
-	ModuleInstantiation root_inst;	// Top level instance
+	FileModule *root_module;      // Result of parsing
+	FileModule *parsed_module;    // Last parse for include list
+	ModuleInstantiation root_inst;  // Top level instance
 	AbstractNode *absolute_root_node; // Result of tree evaluation
-	AbstractNode *root_node;		  // Root if the root modifier (!) is used
+	AbstractNode *root_node;      // Root if the root modifier (!) is used
 	Tree tree;
 
 #ifdef ENABLE_CGAL
@@ -60,18 +60,18 @@ public:
 	QString last_compiled_doc;
 
 	QAction *actionRecentFile[UIUtils::maxRecentFiles];
-		QMap<QString, QString> knownFileExtensions;
+	QMap<QString, QString> knownFileExtensions;
 
-		QLabel *versionLabel;
-		QWidget *editorDockTitleWidget;
-		QWidget *consoleDockTitleWidget;
-		QWidget *parameterDockTitleWidget;
+	QLabel *versionLabel;
+	QWidget *editorDockTitleWidget;
+	QWidget *consoleDockTitleWidget;
+	QWidget *parameterDockTitleWidget;
 
-	QString editortype;	
+	QString editortype;
 	bool useScintilla;
 
-		int compileErrors;
-		int compileWarnings;
+	int compileErrors;
+	int compileWarnings;
 
 	MainWindow(const QString &filename);
 	~MainWindow();
@@ -85,9 +85,9 @@ private slots:
 	void updatedAnimSteps();
 	void updatedAnimDump(bool checked);
 	void updateTVal();
-		void updateMdiMode(bool mdi);
-		void updateUndockMode(bool undockMode);
-		void updateReorderMode(bool reorderMode);
+	void updateMdiMode(bool mdi);
+	void updateUndockMode(bool undockMode);
+	void updateReorderMode(bool reorderMode);
 	void setFileName(const QString &filename);
 	void setFont(const QString &family, uint size);
 	void setColorScheme(const QString &cs);
@@ -97,18 +97,18 @@ private slots:
 	void updateActionUndoState();
 
 private:
-		void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
-		void handleFileDrop(const QString &filename);
+	void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
+	void handleFileDrop(const QString &filename);
 	void refreshDocument();
 	void updateCamera(const class FileContext &ctx);
 	void updateTemporalVariables();
 	bool fileChangedOnDisk();
 	void compileTopLevelDocument();
-		void updateCompileResult();
+	void updateCompileResult();
 	void compile(bool reload, bool forcedone = false);
 	void compileCSG(bool procevents);
 	bool maybeSave();
-		void saveError(const QIODevice &file, const std::string &msg);
+	void saveError(const QIODevice &file, const std::string &msg);
 	bool checkEditorModified();
 	QString dumpCSGTree(AbstractNode *root);
 	static void consoleOutput(const std::string &msg, void *userdata);
@@ -120,13 +120,13 @@ private:
 	QString get2dExportFilename(QString format, QString extension);
 	void show_examples();
 	void setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel);
-		void addKeyboardShortCut(const QList<QAction *> &actions);
-		void updateStatusBar(class ProgressWidget *progressWidget);
+	void addKeyboardShortCut(const QList<QAction *> &actions);
+	void updateStatusBar(class ProgressWidget *progressWidget);
 
 	EditorInterface *editor;
 
-  class LibraryInfoDialog* library_info_dialog;
-  class FontListDialog *font_list_dialog;
+	class LibraryInfoDialog* library_info_dialog;
+	class FontListDialog *font_list_dialog;
 
 private slots:
 	void actionNew();
@@ -140,7 +140,7 @@ private slots:
 	void actionSaveAs();
 	void actionReload();
 	void actionShowLibraryFolder();
-		void convertTabsToSpaces();
+	void convertTabsToSpaces();
 
 	void instantiateRoot();
 	void compileDone(bool didchange);
@@ -203,18 +203,18 @@ public:
 	void viewModeActionsUncheck();
 	void setCurrentOutput();
 	void clearCurrentOutput();
-  bool isEmpty();
+	bool isEmpty();
 
 public slots:
 	void openFile(const QString &filename);
 	void actionReloadRenderPreview();
-		void on_editorDock_visibilityChanged(bool);
-		void on_consoleDock_visibilityChanged(bool);
-		void on_parameterDock_visibilityChanged(bool);
-		void on_toolButtonCompileResultClose_clicked();
-		void editorTopLevelChanged(bool);
-		void consoleTopLevelChanged(bool);
-		void parameterTopLevelChanged(bool);
+	void on_editorDock_visibilityChanged(bool);
+	void on_consoleDock_visibilityChanged(bool);
+	void on_parameterDock_visibilityChanged(bool);
+	void on_toolButtonCompileResultClose_clicked();
+	void editorTopLevelChanged(bool);
+	void consoleTopLevelChanged(bool);
+	void parameterTopLevelChanged(bool);
 
 #ifdef ENABLE_OPENCSG
 	void viewModePreview();
@@ -264,9 +264,9 @@ private:
 	static bool reorderMode;
 	static const int tabStopWidth;
 
-	shared_ptr<class CSGNode> csgRoot;		   // Result of the CSGTreeEvaluator
-	shared_ptr<CSGNode> normalizedRoot;		  // Normalized CSG tree
- 	shared_ptr<class CSGProducts> root_products;
+	shared_ptr<class CSGNode> csgRoot;       // Result of the CSGTreeEvaluator
+	shared_ptr<CSGNode> normalizedRoot;     // Normalized CSG tree
+	shared_ptr<class CSGProducts> root_products;
 	shared_ptr<CSGProducts> highlights_products;
 	shared_ptr<CSGProducts> background_products;
 
@@ -278,7 +278,7 @@ private:
 	QMutex consolemutex;
 	bool contentschanged; // Set if the source code has changes since the last render (F6)
 	time_t includes_mtime;   // latest include mod time
-	time_t deps_mtime;	  // latest dependency mod time
+	time_t deps_mtime;    // latest dependency mod time
 
 signals:
 	void highlightError(int);
@@ -303,5 +303,5 @@ public:
 	}
 
 private:
- 	static unsigned int gui_locked;
+	static unsigned int gui_locked;
 };

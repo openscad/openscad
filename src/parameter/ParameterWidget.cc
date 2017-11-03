@@ -94,7 +94,7 @@ void ParameterWidget::readFile(QString scadFile)
 {
 	this->jsonFile = scadFile.replace(".scad", ".json").toStdString();
 	bool readonly=readParameterSet(this->jsonFile);
-	if(readonly){
+	if(readonly) {
 		connect(this->addButton, SIGNAL(clicked()), this, SLOT(onSetAdd()));
 		connect(this->deleteButton, SIGNAL(clicked()), this, SLOT(onSetDelete()));
 	}
@@ -195,13 +195,13 @@ void ParameterWidget::connectWidget()
 	anyfocused = false;
 	// clear previous entries in groupMap and entries
 	clear();
-	
+
 	std::vector<std::string> global;
 	if (groupMap.find("Global") != groupMap.end()) {
 		global = groupMap["Global"].parameterVector;
 		groupMap["Global"].parameterVector.clear();
 	}
-	
+
 	for (group_map::iterator it = groupMap.begin(); it != groupMap.end(); ) {
 		std::vector<std::string> gr;
 		gr = it->second.parameterVector;
@@ -221,7 +221,7 @@ void ParameterWidget::connectWidget()
 			continue;
 		std::vector<std::string> gr;
 		gr = groupMap[*it].parameterVector;
-		for(unsigned int i=0;i < gr.size();i++) {
+		for(unsigned int i=0; i < gr.size(); i++) {
 			AddParameterWidget(gr[i]);
 		}
 		GroupWidget *groupWidget = new GroupWidget(groupMap[*it].show, QString::fromStdString(*it));
@@ -230,7 +230,7 @@ void ParameterWidget::connectWidget()
 		anyLayout = new QVBoxLayout();
 	}
 	end();
-	if (anyfocused != 0){
+	if (anyfocused != 0) {
 		entryToFocus->setParameterFocus();
 	}
 }
@@ -243,7 +243,7 @@ void ParameterWidget::clear(){
 			it++;
 		}
 	}
-	for (group_map::iterator it = groupMap.begin(); it != groupMap.end(); it++){
+	for (group_map::iterator it = groupMap.begin(); it != groupMap.end(); it++) {
 		it->second.parameterVector.clear();
 		it->second.inList=false;
 	}
@@ -260,7 +260,7 @@ void ParameterWidget::clear(){
 			groupMap[groupName] = enter;
 		}
 		else {
-			if(groupMap[groupName].inList == false){
+			if(groupMap[groupName].inList == false) {
 				groupMap[groupName].inList=true;
 				groupPos.push_back(groupName);
 			}
@@ -271,44 +271,44 @@ void ParameterWidget::clear(){
 
 void ParameterWidget::AddParameterWidget(std::string parameterName)
 {
-    ParameterVirtualWidget *entry = nullptr;
-    switch(entries[parameterName]->target) {
-		case ParameterObject::COMBOBOX:{
-			entry = new ParameterComboBox(entries[parameterName], descriptionShow);
-			break;
+	ParameterVirtualWidget *entry = nullptr;
+	switch(entries[parameterName]->target) {
+	case ParameterObject::COMBOBOX: {
+		entry = new ParameterComboBox(entries[parameterName], descriptionShow);
+		break;
+	}
+	case ParameterObject::SLIDER: {
+		entry = new ParameterSlider(entries[parameterName], descriptionShow);
+		break;
+	}
+	case ParameterObject::CHECKBOX: {
+		entry = new ParameterCheckBox(entries[parameterName], descriptionShow);
+		break;
+	}
+	case ParameterObject::TEXT: {
+		entry = new ParameterText(entries[parameterName], descriptionShow);
+		break;
+	}
+	case ParameterObject::NUMBER: {
+		entry = new ParameterSpinBox(entries[parameterName], descriptionShow);
+		break;
+	}
+	case ParameterObject::VECTOR: {
+		entry = new ParameterVector(entries[parameterName], descriptionShow);
+		break;
+	}
+	case ParameterObject::UNDEFINED: {
+		break;
+	}
+	}
+	if (entries[parameterName]->target != ParameterObject::UNDEFINED) {
+		connect(entry, SIGNAL(changed()), this, SLOT(onValueChanged()));
+		addEntry(entry);
+		if (entries[parameterName]->focus) {
+			entryToFocus = entry;
+			anyfocused = true;
 		}
-		case ParameterObject::SLIDER:{
-			entry = new ParameterSlider(entries[parameterName], descriptionShow);
-			break;
-		}
-		case ParameterObject::CHECKBOX:{
-			entry = new ParameterCheckBox(entries[parameterName], descriptionShow);
-			break;
-		}
-		case ParameterObject::TEXT:{
-			entry = new ParameterText(entries[parameterName], descriptionShow);
-			break;
-		}
-		case ParameterObject::NUMBER:{
-			entry = new ParameterSpinBox(entries[parameterName], descriptionShow);
-			break;
-		}
-		case ParameterObject::VECTOR:{
-			entry = new ParameterVector(entries[parameterName], descriptionShow);
-			break;
-		}
-		case ParameterObject::UNDEFINED:{
-			break;
-		}
-    }
-    if (entries[parameterName]->target != ParameterObject::UNDEFINED) {
-			connect(entry, SIGNAL(changed()), this, SLOT(onValueChanged()));
-			addEntry(entry);
-			if (entries[parameterName]->focus){
-				entryToFocus = entry;
-				anyfocused = true;
-			}
-    }
+	}
 }
 
 void ParameterWidget::applyParameterSet(std::string setName)
@@ -328,7 +328,7 @@ void ParameterWidget::applyParameterSet(std::string setName)
 			} else {
 				shared_ptr<Expression> params = CommentParser::parser(v.second.data().c_str());
 				if (!params) continue;
-				
+
 				ModuleContext ctx;
 				ValuePtr newValue = params->evaluate(&ctx);
 				if (entry->second->dvt == newValue->type()) {
@@ -346,8 +346,8 @@ void ParameterWidget::updateParameterSet(std::string setName)
 
 		bool ok = true;
 		const QString result = setDialog->getText(this,
-			"Create new set of parameter", "Enter name of the parameter set",
-			QLineEdit::Normal, "", &ok);
+																							"Create new set of parameter", "Enter name of the parameter set",
+																							QLineEdit::Normal, "", &ok);
 
 		if (ok) {
 			setName = result.trimmed().toStdString();

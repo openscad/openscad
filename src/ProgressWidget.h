@@ -8,7 +8,7 @@ class ProgressWidget : public QWidget, public Ui::ProgressWidget
 {
 	Q_OBJECT;
 	Q_PROPERTY(bool wasCanceled READ wasCanceled);
-	
+
 public:
 	ProgressWidget(QWidget *parent = nullptr);
 	bool wasCanceled() const;

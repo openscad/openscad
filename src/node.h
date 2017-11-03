@@ -11,18 +11,18 @@ extern void *progress_report_vp;
 void progress_report_prep(class AbstractNode *root, void (*f)(const class AbstractNode *node, void *vp, int mark), void *vp);
 void progress_report_fin();
 
-/*!  
+/*!
 
-	The node tree is the result of evaluation of a module instantiation
-	tree.  Both the module tree and the node tree are regenerated from
-	scratch for each compile.
+   The node tree is the result of evaluation of a module instantiation
+   tree.  Both the module tree and the node tree are regenerated from
+   scratch for each compile.
 
  */
 class AbstractNode : public BaseVisitable
 {
 	// FIXME: the idx_counter/idx is mostly (only?) for debugging.
 	// We can hash on pointer value or smth. else.
-  //  -> remove and
+	//  -> remove and
 	// use smth. else to display node identifier in CSG tree output?
 	static size_t idx_counter;   // Node instantiation index
 public:
@@ -30,12 +30,12 @@ public:
 	AbstractNode(const class ModuleInstantiation *mi);
 	virtual ~AbstractNode();
 	virtual std::string toString() const;
-	/*! The 'OpenSCAD name' of this node, defaults to classname, but can be 
+	/*! The 'OpenSCAD name' of this node, defaults to classname, but can be
 	    overloaded to provide specialization for e.g. CSG nodes, primitive nodes etc.
 	    Used for human-readable output. */
 	virtual std::string name() const = 0;
 
-	const std::vector<AbstractNode*> &getChildren() const { 
+	const std::vector<AbstractNode*> &getChildren() const {
 		return this->children;
 	}
 	size_t index() const { return this->idx; }
@@ -79,8 +79,8 @@ public:
 };
 
 /*!
-  Logically groups objects together. Used as a way of passing
-	objects around without having to perform unions on them.
+   Logically groups objects together. Used as a way of passing
+   objects around without having to perform unions on them.
  */
 class GroupNode : public AbstractNode
 {
@@ -92,8 +92,8 @@ public:
 };
 
 /*!
-	Only instantiated once, for the top-level file.
-*/
+   Only instantiated once, for the top-level file.
+ */
 class RootNode : public GroupNode
 {
 public:

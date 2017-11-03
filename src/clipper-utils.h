@@ -12,7 +12,7 @@ namespace ClipperUtils {
 	ClipperLib::PolyTree sanitize(const ClipperLib::Paths &paths);
 	Polygon2d *sanitize(const Polygon2d &poly);
 	Polygon2d *toPolygon2d(const ClipperLib::PolyTree &poly);
-	ClipperLib::Paths process(const ClipperLib::Paths &polygons, 
+	ClipperLib::Paths process(const ClipperLib::Paths &polygons,
 														ClipperLib::ClipType, ClipperLib::PolyFillType);
 	Polygon2d *applyOffset(const Polygon2d& poly, double offset, ClipperLib::JoinType joinType, double miter_limit, double arc_tolerance);
 	Polygon2d *applyMinkowski(const std::vector<const Polygon2d*> &polygons);

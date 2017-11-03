@@ -11,12 +11,12 @@ Camera::Camera(CameraType camtype) :
 	object_trans << 0,0,0;
 	object_rot << 35,0,25;
 	viewer_distance = 500;
-	
+
 	// vector cam values
 	center << 0,0,0;
 	Eigen::Vector3d cameradir(1, 1, -0.5);
 	eye = center - 500 * cameradir;
-	
+
 	pixel_width = RenderSettings::inst()->img_width;
 	pixel_height = RenderSettings::inst()->img_height;
 	autocenter = false;
@@ -39,7 +39,7 @@ void Camera::setup(std::vector<double> params)
 }
 
 void Camera::gimbalDefaultTranslate()
-{	// match the GUI viewport numbers (historical reasons)
+{ // match the GUI viewport numbers (historical reasons)
 	object_trans.x() *= -1;
 	object_trans.y() *= -1;
 	object_trans.z() *= -1;
@@ -49,8 +49,8 @@ void Camera::gimbalDefaultTranslate()
 }
 
 /*!
-	Moves camera so that the given bbox is fully visible.
-*/
+   Moves camera so that the given bbox is fully visible.
+ */
 void Camera::viewAll(const BoundingBox &bbox)
 {
 	if (this->type == CameraType::NONE) {
@@ -61,14 +61,14 @@ void Camera::viewAll(const BoundingBox &bbox)
 
 	if (this->autocenter) {
 		// autocenter = point camera at the center of the bounding box.
-        if (this->type == CameraType::GIMBAL) {
-            this->object_trans = -bbox.center(); // for Gimbal cam
-        }
-        else if (this->type == CameraType::VECTOR) {
-            Vector3d dir = this->center - this->eye;
-            this->center = bbox.center(); // for Vector cam
-            this->eye = this->center - dir;
-        }
+		if (this->type == CameraType::GIMBAL) {
+			this->object_trans = -bbox.center();       // for Gimbal cam
+		}
+		else if (this->type == CameraType::VECTOR) {
+			Vector3d dir = this->center - this->eye;
+			this->center = bbox.center();       // for Vector cam
+			this->eye = this->center - dir;
+		}
 	}
 
 	double bboxRadius = bbox.diagonal().norm()/2;
@@ -119,7 +119,7 @@ std::string Camera::statusText()
 {
 	boost::format fmt(_("Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], distance = %.2f"));
 	fmt % object_trans.x() % object_trans.y() % object_trans.z()
-		% object_rot.x() % object_rot.y() % object_rot.z()
-		% viewer_distance;
+	% object_rot.x() % object_rot.y() % object_rot.z()
+	% viewer_distance;
 	return fmt.str();
 }

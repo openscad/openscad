@@ -71,7 +71,7 @@ AbstractNode *OffsetModule::instantiate(const Context *ctx, const ModuleInstanti
 	const auto r = c.lookup_variable("r", true);
 	const auto delta = c.lookup_variable("delta", true);
 	const auto chamfer = c.lookup_variable("chamfer", true);
-	
+
 	if (r->isDefinedAs(Value::ValueType::NUMBER)) {
 		r->getDouble(node->delta);
 	} else if (delta->isDefinedAs(Value::ValueType::NUMBER)) {
@@ -82,7 +82,7 @@ AbstractNode *OffsetModule::instantiate(const Context *ctx, const ModuleInstanti
 			node->join_type = ClipperLib::jtSquare;
 		}
 	}
-	
+
 	auto instantiatednodes = inst->instantiateChildren(evalctx);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 
@@ -96,13 +96,13 @@ std::string OffsetNode::toString() const
 	bool isRadius = this->join_type == ClipperLib::jtRound;
 	auto var = isRadius ? "(r = " : "(delta = ";
 
-	stream  << this->name() << var << std::dec << this->delta;
+	stream << this->name() << var << std::dec << this->delta;
 	if (!isRadius) {
-	    stream << ", chamfer = " << (this->chamfer ? "true" : "false");
+		stream << ", chamfer = " << (this->chamfer ? "true" : "false");
 	}
-	stream  << ", $fn = " << this->fn
-		<< ", $fa = " << this->fa
-		<< ", $fs = " << this->fs << ")";
+	stream << ", $fn = " << this->fn
+				 << ", $fa = " << this->fa
+				 << ", $fs = " << this->fs << ")";
 
 	return stream.str();
 }

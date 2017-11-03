@@ -2,19 +2,19 @@
 
 /*
 
-Camera
+   Camera
 
-For usage, see QGLView.cc, GLView.cc, export_png.cc, openscad.cc
+   For usage, see QGLView.cc, GLView.cc, export_png.cc, openscad.cc
 
-There are two different types of cameras represented in this class:
+   There are two different types of cameras represented in this class:
 
-*Gimbal camera - uses Euler Angles, object translation, and viewer distance
-*Vector camera - uses 'eye', 'center', and 'up' vectors ('lookat' style)
+ * Gimbal camera - uses Euler Angles, object translation, and viewer distance
+ * Vector camera - uses 'eye', 'center', and 'up' vectors ('lookat' style)
 
-They are not necessarily kept in sync. There are two modes of
-projection, Perspective and Orthogonal.
+   They are not necessarily kept in sync. There are two modes of
+   projection, Perspective and Orthogonal.
 
-*/
+ */
 
 #include "linalg.h"
 #include <vector>
@@ -59,7 +59,7 @@ public:
 	unsigned int pixel_height;
 
 protected:
-        // Perspective settings
+	// Perspective settings
 	double viewer_distance;
 	// Orthographic settings
 	double height; // world-space height of viewport

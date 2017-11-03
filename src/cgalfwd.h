@@ -7,17 +7,17 @@
 
 #include <memory>
 
-namespace CGAL { 
+namespace CGAL {
 	class Gmpq;
 	template <class T> class Extended_cartesian;
 	class HDS_items;
-  template <class A, typename Items_, typename Mark_> class Nef_polyhedron_2;
+	template <class A, typename Items_, typename Mark_> class Nef_polyhedron_2;
 }
 typedef CGAL::Gmpq NT;
 typedef CGAL::Extended_cartesian<NT> CGAL_Kernel2;
 typedef CGAL::Nef_polyhedron_2<CGAL_Kernel2, CGAL::HDS_items, bool> CGAL_Nef_polyhedron2;
-	
-namespace CGAL { 
+
+namespace CGAL {
 	template <class T> class Cartesian;
 	template<class T> struct Default_items;
 	class SNC_indexed_items;

@@ -26,8 +26,8 @@ bool save_framebuffer(OffscreenContext *ctx, const char *filename)
 }
 
 /*!
-  Capture framebuffer from OpenGL and write it to the given ostream.
-  Called by save_framebuffer() from platform-specific code.
+   Capture framebuffer from OpenGL and write it to the given ostream.
+   Called by save_framebuffer() from platform-specific code.
  */
 bool save_framebuffer_common(OffscreenContext *ctx, std::ostream &output)
 {

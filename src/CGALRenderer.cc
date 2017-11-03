@@ -24,7 +24,7 @@
  *
  */
 
-#ifdef _MSC_VER 
+#ifdef _MSC_VER
 // Boost conflicts with MPFR under MSVC (google it)
 #include <mpfr.h>
 #endif
@@ -47,7 +47,7 @@ CGALRenderer::CGALRenderer(shared_ptr<const class Geometry> geom)
 	if (auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
 		assert(ps->getDimension() == 3);
 		// We need to tessellate here, in case the generated PolySet contains concave polygons
-    // See testdata/scad/3D/features/polyhedron-concave-test.scad
+		// See testdata/scad/3D/features/polyhedron-concave-test.scad
 		auto ps_tri = new PolySet(3, ps->convexValue());
 		ps_tri->setConvexity(ps->getConvexity());
 		PolysetUtils::tessellate_faces(*ps, *ps_tri);
@@ -113,7 +113,7 @@ void CGALRenderer::draw(bool showfaces, bool showedges) const
 				}
 				glEnd();
 			}
-		
+
 			// Draw 2D edges
 			glDisable(GL_DEPTH_TEST);
 
@@ -125,7 +125,7 @@ void CGALRenderer::draw(bool showfaces, bool showedges) const
 		}
 		else {
 			// Draw 3D polygons
-			const Color4f c(-1,-1,-1,-1);	
+			const Color4f c(-1,-1,-1,-1);
 			setColor(ColorMode::MATERIAL, c.data(), nullptr);
 			this->polyset->render_surface(CSGMODE_NORMAL, Transform3d::Identity(), nullptr);
 		}
@@ -154,8 +154,8 @@ BoundingBox CGALRenderer::getBoundingBox() const
 		if (polyhedron) {
 			auto cgalbbox = polyhedron->bbox();
 			bbox = BoundingBox(
-				Vector3d(cgalbbox.xmin(), cgalbbox.ymin(), cgalbbox.zmin()),
-				Vector3d(cgalbbox.xmax(), cgalbbox.ymax(), cgalbbox.zmax()));
+					Vector3d(cgalbbox.xmin(), cgalbbox.ymin(), cgalbbox.zmin()),
+					Vector3d(cgalbbox.xmax(), cgalbbox.ymax(), cgalbbox.zmax()));
 		}
 	}
 	return bbox;

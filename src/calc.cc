@@ -29,9 +29,9 @@
 #include <cmath>
 
 /*!
-	Returns the number of subdivision of a whole circle, given radius and
-	the three special variables $fn, $fs and $fa
-*/
+   Returns the number of subdivision of a whole circle, given radius and
+   the three special variables $fn, $fs and $fa
+ */
 int Calc::get_fragments_from_r(double r, double fn, double fs, double fa)
 {
 	// FIXME: It would be better to refuse to create an object. Let's do more strict error handling

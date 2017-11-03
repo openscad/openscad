@@ -8,7 +8,7 @@
 class EventFilter : public QObject
 {
 	Q_OBJECT;
-	
+
 public:
 	EventFilter(QObject *parent) : QObject(parent) {}
 protected:

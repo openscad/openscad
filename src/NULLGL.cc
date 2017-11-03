@@ -15,10 +15,10 @@ void GLView::setColorScheme(const std::string &cs) {assert(false && "not impleme
 #include "ThrownTogetherRenderer.h"
 
 ThrownTogetherRenderer::ThrownTogetherRenderer(CSGChain *root_chain,
- CSGChain *highlights_chain, CSGChain *background_chain) {}
+																							 CSGChain *highlights_chain, CSGChain *background_chain) {}
 void ThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges) const {}
 void ThrownTogetherRenderer::renderCSGChain(CSGChain *chain, bool
-  highlight, bool background, bool showedges, bool fberror) const {}
+																						highlight, bool background, bool showedges, bool fberror) const {}
 BoundingBox ThrownTogetherRenderer::getBoundingBox() const {assert(false && "not implemented");}
 
 #include "CGALRenderer.h"

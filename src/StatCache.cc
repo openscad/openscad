@@ -66,4 +66,4 @@ int StatCache::stat(const char *path, struct stat *st)
 	statMap[path] = entry;
 	*st = entry.st;
 	return 0;
-}   
+}

@@ -79,29 +79,29 @@ public:
 												shared_ptr<Expression> endexpr, bool invert,
 												const Location &loc)
 		: UserFunction(name, definition_arguments, expr, loc),
-			invert(invert), op(expr), call(call), endexpr(endexpr) {
+		invert(invert), op(expr), call(call), endexpr(endexpr) {
 	}
 
 	virtual ~FunctionTailRecursion() { }
 
 	virtual ValuePtr evaluate(const Context *ctx, const EvalContext *evalctx) const {
 		if (!expr) return ValuePtr::undefined;
-		
+
 		Context c(ctx);
 		c.setVariables(definition_arguments, evalctx);
-		
+
 		EvalContext ec(&c, call->arguments);
 		Context tmp(&c);
 		unsigned int counter = 0;
 		while (invert ^ this->op->cond->evaluate(&c)) {
 			tmp.setVariables(definition_arguments, &ec);
 			c.apply_variables(tmp);
-			
+
 			if (counter++ == 1000000) throw RecursionException::create("function", this->name);
 		}
-		
+
 		ValuePtr result = endexpr->evaluate(&c);
-		
+
 		return result;
 	}
 };

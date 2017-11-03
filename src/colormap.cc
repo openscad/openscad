@@ -12,24 +12,24 @@ static const char *DEFAULT_COLOR_SCHEME_NAME = "Cornfield";
 // See http://lolengine.net/blog/2013/01/13/fast-rgb-to-hsv
 static void rgbtohsv(float r, float g, float b, float &h, float &s, float &v)
 {
-    float K = 0.f;
+	float K = 0.f;
 
-    if (g < b)
-    {
-        std::swap(g, b);
-        K = -1.f;
-    }
+	if (g < b)
+	{
+		std::swap(g, b);
+		K = -1.f;
+	}
 
-    if (r < g)
-    {
-        std::swap(r, g);
-        K = -2.f / 6.f - K;
-    }
+	if (r < g)
+	{
+		std::swap(r, g);
+		K = -2.f / 6.f - K;
+	}
 
-    float chroma = r - std::min(g, b);
-    h = fabs(K + (g - b) / (6.f * chroma + 1e-20f));
-    s = chroma / (r + 1e-20f);
-    v = r;
+	float chroma = r - std::min(g, b);
+	h = fabs(K + (g - b) / (6.f * chroma + 1e-20f));
+	s = chroma / (r + 1e-20f);
+	v = r;
 }
 
 RenderColorScheme::RenderColorScheme() : _path("")
@@ -53,30 +53,30 @@ RenderColorScheme::RenderColorScheme() : _path("")
 
 RenderColorScheme::RenderColorScheme(fs::path path) : _path(path)
 {
-    try {
-	boost::property_tree::read_json(path.generic_string().c_str(), pt);
-	_name = pt.get<std::string>("name");
-	_index = pt.get<int>("index");
-	_show_in_gui = pt.get<bool>("show-in-gui");
-	
-	addColor(RenderColor::BACKGROUND_COLOR, "background");
-	addColor(RenderColor::AXES_COLOR, "axes-color");
-	addColor(RenderColor::OPENCSG_FACE_FRONT_COLOR, "opencsg-face-front");
-	addColor(RenderColor::OPENCSG_FACE_BACK_COLOR, "opencsg-face-back");
-	addColor(RenderColor::CGAL_FACE_FRONT_COLOR, "cgal-face-front");
-	addColor(RenderColor::CGAL_FACE_2D_COLOR, "cgal-face-2d");
-	addColor(RenderColor::CGAL_FACE_BACK_COLOR, "cgal-face-back");
-	addColor(RenderColor::CGAL_EDGE_FRONT_COLOR, "cgal-edge-front");
-	addColor(RenderColor::CGAL_EDGE_BACK_COLOR, "cgal-edge-back");
-	addColor(RenderColor::CGAL_EDGE_2D_COLOR, "cgal-edge-2d");
-	addColor(RenderColor::CROSSHAIR_COLOR, "crosshair");
-    } catch (const std::exception & e) {
-			PRINTB("Error reading color scheme file '%s': %s", path.generic_string().c_str() % e.what());
-	_error = e.what();
-	_name = "";
-	_index = 0;
-	_show_in_gui = false;
-    }
+	try {
+		boost::property_tree::read_json(path.generic_string().c_str(), pt);
+		_name = pt.get<std::string>("name");
+		_index = pt.get<int>("index");
+		_show_in_gui = pt.get<bool>("show-in-gui");
+
+		addColor(RenderColor::BACKGROUND_COLOR, "background");
+		addColor(RenderColor::AXES_COLOR, "axes-color");
+		addColor(RenderColor::OPENCSG_FACE_FRONT_COLOR, "opencsg-face-front");
+		addColor(RenderColor::OPENCSG_FACE_BACK_COLOR, "opencsg-face-back");
+		addColor(RenderColor::CGAL_FACE_FRONT_COLOR, "cgal-face-front");
+		addColor(RenderColor::CGAL_FACE_2D_COLOR, "cgal-face-2d");
+		addColor(RenderColor::CGAL_FACE_BACK_COLOR, "cgal-face-back");
+		addColor(RenderColor::CGAL_EDGE_FRONT_COLOR, "cgal-edge-front");
+		addColor(RenderColor::CGAL_EDGE_BACK_COLOR, "cgal-edge-back");
+		addColor(RenderColor::CGAL_EDGE_2D_COLOR, "cgal-edge-2d");
+		addColor(RenderColor::CROSSHAIR_COLOR, "crosshair");
+	} catch (const std::exception & e) {
+		PRINTB("Error reading color scheme file '%s': %s", path.generic_string().c_str() % e.what());
+		_error = e.what();
+		_name = "";
+		_index = 0;
+		_show_in_gui = false;
+	}
 }
 
 RenderColorScheme::~RenderColorScheme()
@@ -85,58 +85,58 @@ RenderColorScheme::~RenderColorScheme()
 
 bool RenderColorScheme::valid() const
 {
-    return !_name.empty();
+	return !_name.empty();
 }
 
 const std::string & RenderColorScheme::name() const
 {
-    return _name;
+	return _name;
 }
 
 int RenderColorScheme::index() const
 {
-    return _index;
+	return _index;
 }
 
 bool RenderColorScheme::showInGui() const
 {
-    return _show_in_gui;
+	return _show_in_gui;
 }
 
 std::string RenderColorScheme::path() const
 {
-    return _path.string();
+	return _path.string();
 }
 
 std::string RenderColorScheme::error() const
 {
-    return _error;
+	return _error;
 }
 
 ColorScheme & RenderColorScheme::colorScheme()
 {
-    return _color_scheme;
+	return _color_scheme;
 }
 
 const boost::property_tree::ptree & RenderColorScheme::propertyTree() const
 {
-    return pt;
+	return pt;
 }
 
 void RenderColorScheme::addColor(RenderColor colorKey, std::string key)
 {
-    const boost::property_tree::ptree& colors = pt.get_child("colors");
-    std::string color = colors.get<std::string>(key);
-    if ((color.length() == 7) && (color.at(0) == '#')) {
-	char *endptr;
-	unsigned int val = strtol(color.substr(1).c_str(), &endptr, 16);
-	int r = (val >> 16) & 0xff;
-	int g = (val >> 8) & 0xff;
-	int b = val & 0xff;
-	_color_scheme.insert(ColorScheme::value_type(colorKey, Color4f(r, g, b)));
-    } else {
-	throw std::invalid_argument(std::string("invalid color value for key '") + key + "': '" + color + "'");
-    }
+	const boost::property_tree::ptree& colors = pt.get_child("colors");
+	std::string color = colors.get<std::string>(key);
+	if ((color.length() == 7) && (color.at(0) == '#')) {
+		char *endptr;
+		unsigned int val = strtol(color.substr(1).c_str(), &endptr, 16);
+		int r = (val >> 16) & 0xff;
+		int g = (val >> 8) & 0xff;
+		int b = val & 0xff;
+		_color_scheme.insert(ColorScheme::value_type(colorKey, Color4f(r, g, b)));
+	} else {
+		throw std::invalid_argument(std::string("invalid color value for key '") + key + "': '" + color + "'");
+	}
 }
 
 ColorMap *ColorMap::inst(bool erase)
@@ -151,9 +151,9 @@ ColorMap *ColorMap::inst(bool erase)
 
 ColorMap::ColorMap()
 {
-    colorSchemeSet = enumerateColorSchemes();
+	colorSchemeSet = enumerateColorSchemes();
 
-    dump();
+	dump();
 }
 
 ColorMap::~ColorMap()
@@ -162,60 +162,60 @@ ColorMap::~ColorMap()
 
 const char * ColorMap::defaultColorSchemeName() const
 {
-    return DEFAULT_COLOR_SCHEME_NAME;
+	return DEFAULT_COLOR_SCHEME_NAME;
 }
 
 const ColorScheme &ColorMap::defaultColorScheme() const
 {
-    return *findColorScheme(DEFAULT_COLOR_SCHEME_NAME);
+	return *findColorScheme(DEFAULT_COLOR_SCHEME_NAME);
 }
 
 const ColorScheme *ColorMap::findColorScheme(const std::string &name) const
 {
-    for (colorscheme_set_t::const_iterator it = colorSchemeSet.begin();it != colorSchemeSet.end();it++) {
-	RenderColorScheme *scheme = (*it).second.get();
-	if (name == scheme->name()) {
-	    return &scheme->colorScheme();
+	for (colorscheme_set_t::const_iterator it = colorSchemeSet.begin(); it != colorSchemeSet.end(); it++) {
+		RenderColorScheme *scheme = (*it).second.get();
+		if (name == scheme->name()) {
+			return &scheme->colorScheme();
+		}
 	}
-    }
 
-    return nullptr;
+	return nullptr;
 }
 
 void ColorMap::dump() const
 {
-    PRINTD("Listing available color schemes...");
-    
-    std::list<std::string> names = colorSchemeNames();
-    unsigned int length = 0;
-    for (std::list<std::string>::const_iterator it = names.begin();it != names.end();it++) {
-	length = (*it).length() > length ? (*it).length() : length;
-    }
+	PRINTD("Listing available color schemes...");
 
-    for (colorscheme_set_t::const_iterator it = colorSchemeSet.begin();it != colorSchemeSet.end();it++) {
-	const RenderColorScheme *cs = (*it).second.get();
-	const char gui = cs->showInGui() ? 'G' : '-';
-	if (cs->path().empty()) {
-	    PRINTDB("%6d:%c: %s (built-in)", cs->index() % gui % boost::io::group(std::setw(length), cs->name()));
-	} else {
-	    PRINTDB("%6d:%c: %s from %s", cs->index() % gui % boost::io::group(std::setw(length), cs->name()) % cs->path());
+	std::list<std::string> names = colorSchemeNames();
+	unsigned int length = 0;
+	for (std::list<std::string>::const_iterator it = names.begin(); it != names.end(); it++) {
+		length = (*it).length() > length ? (*it).length() : length;
 	}
-    }
-    PRINTD("done.");
+
+	for (colorscheme_set_t::const_iterator it = colorSchemeSet.begin(); it != colorSchemeSet.end(); it++) {
+		const RenderColorScheme *cs = (*it).second.get();
+		const char gui = cs->showInGui() ? 'G' : '-';
+		if (cs->path().empty()) {
+			PRINTDB("%6d:%c: %s (built-in)", cs->index() % gui % boost::io::group(std::setw(length), cs->name()));
+		} else {
+			PRINTDB("%6d:%c: %s from %s", cs->index() % gui % boost::io::group(std::setw(length), cs->name()) % cs->path());
+		}
+	}
+	PRINTD("done.");
 }
 
 std::list<std::string> ColorMap::colorSchemeNames(bool guiOnly) const
 {
-    std::list<std::string> colorSchemeNames;
-    for (colorscheme_set_t::const_iterator it = colorSchemeSet.begin();it != colorSchemeSet.end();it++) {
-	const RenderColorScheme *scheme = (*it).second.get();
-	if (guiOnly && !scheme->showInGui()) {
-	    continue;
+	std::list<std::string> colorSchemeNames;
+	for (colorscheme_set_t::const_iterator it = colorSchemeSet.begin(); it != colorSchemeSet.end(); it++) {
+		const RenderColorScheme *scheme = (*it).second.get();
+		if (guiOnly && !scheme->showInGui()) {
+			continue;
+		}
+		colorSchemeNames.push_back(scheme->name());
 	}
-        colorSchemeNames.push_back(scheme->name());
-    }
-	
-    return colorSchemeNames;
+
+	return colorSchemeNames;
 }
 
 Color4f ColorMap::getColor(const ColorScheme &cs, const RenderColor rc)
@@ -233,9 +233,9 @@ Color4f ColorMap::getColorHSV(const Color4f &col)
 }
 
 /**
- * Calculate contrast color. Based on the article 
+ * Calculate contrast color. Based on the article
  * http://gamedev.stackexchange.com/questions/38536/given-a-rgb-color-x-how-to-find-the-most-contrasting-color-y
- * 
+ *
  * @param col the input color
  * @return a color with high contrast to the input color
  */
@@ -263,45 +263,45 @@ Color4f ColorMap::getContrastColor(const Color4f &col)
 
 void ColorMap::enumerateColorSchemesInPath(colorscheme_set_t &result_set, const fs::path basePath)
 {
-    const fs::path color_schemes = basePath / "color-schemes" / "render";
+	const fs::path color_schemes = basePath / "color-schemes" / "render";
 
-    PRINTDB("Enumerating color schemes from '%s'", color_schemes.generic_string().c_str());
-    
-    fs::directory_iterator end_iter;
-    
-    if (fs::exists(color_schemes) && fs::is_directory(color_schemes)) {
-	for (fs::directory_iterator dir_iter(color_schemes); dir_iter != end_iter; ++dir_iter) {
-	    if (!fs::is_regular_file(dir_iter->status())) {
-		continue;
-	    }
-	    
-	    const fs::path path = (*dir_iter).path();
-	    if (!(path.extension() == ".json")) {
-		continue;
-	    }
-	    
-	    RenderColorScheme *colorScheme = new RenderColorScheme(path);
-	    if (colorScheme->valid() && (findColorScheme(colorScheme->name()) == 0)) {
-		result_set.insert(colorscheme_set_t::value_type(colorScheme->index(), shared_ptr<RenderColorScheme>(colorScheme)));
-		PRINTDB("Found file '%s' with color scheme '%s' and index %d",
-			colorScheme->path() % colorScheme->name() % colorScheme->index());
-	    } else {
-		PRINTDB("Invalid file '%s': %s", colorScheme->path() % colorScheme->error());
-		delete colorScheme;
-	    }
+	PRINTDB("Enumerating color schemes from '%s'", color_schemes.generic_string().c_str());
+
+	fs::directory_iterator end_iter;
+
+	if (fs::exists(color_schemes) && fs::is_directory(color_schemes)) {
+		for (fs::directory_iterator dir_iter(color_schemes); dir_iter != end_iter; ++dir_iter) {
+			if (!fs::is_regular_file(dir_iter->status())) {
+				continue;
+			}
+
+			const fs::path path = (*dir_iter).path();
+			if (!(path.extension() == ".json")) {
+				continue;
+			}
+
+			RenderColorScheme *colorScheme = new RenderColorScheme(path);
+			if (colorScheme->valid() && (findColorScheme(colorScheme->name()) == 0)) {
+				result_set.insert(colorscheme_set_t::value_type(colorScheme->index(), shared_ptr<RenderColorScheme>(colorScheme)));
+				PRINTDB("Found file '%s' with color scheme '%s' and index %d",
+								colorScheme->path() % colorScheme->name() % colorScheme->index());
+			} else {
+				PRINTDB("Invalid file '%s': %s", colorScheme->path() % colorScheme->error());
+				delete colorScheme;
+			}
+		}
 	}
-    }
 }
 
 ColorMap::colorscheme_set_t ColorMap::enumerateColorSchemes()
 {
-    colorscheme_set_t result_set;
+	colorscheme_set_t result_set;
 
-    RenderColorScheme *defaultColorScheme = new RenderColorScheme();
-    result_set.insert(colorscheme_set_t::value_type(defaultColorScheme->index(),
-	    shared_ptr<RenderColorScheme>(defaultColorScheme)));
-    enumerateColorSchemesInPath(result_set, PlatformUtils::resourceBasePath());
-    enumerateColorSchemesInPath(result_set, PlatformUtils::userConfigPath());
-    
-    return result_set;
+	RenderColorScheme *defaultColorScheme = new RenderColorScheme();
+	result_set.insert(colorscheme_set_t::value_type(defaultColorScheme->index(),
+																									shared_ptr<RenderColorScheme>(defaultColorScheme)));
+	enumerateColorSchemesInPath(result_set, PlatformUtils::resourceBasePath());
+	enumerateColorSchemesInPath(result_set, PlatformUtils::userConfigPath());
+
+	return result_set;
 }

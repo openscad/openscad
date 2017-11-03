@@ -19,30 +19,30 @@ namespace /* anonymous */ {
 	{
 		typedef typename Polyhedron::HalfedgeDS HDS;
 		typedef CGAL::Polyhedron_incremental_builder_3<typename Polyhedron::HalfedgeDS> CGAL_Polybuilder;
-	public:
+public:
 		typedef typename CGAL_Polybuilder::Point_3 CGALPoint;
 
 		const PolySet &ps;
 		CGAL_Build_PolySet(const PolySet &ps) : ps(ps) { }
 
 /*
-	Using Grid here is important for performance reasons. See following model.
-	If we don't grid the geometry before converting to a Nef Polyhedron, the quads
-	in the cylinders to tessellated into triangles since floating point
-	incertainty causes the faces to not be 100% planar. The incertainty is exaggerated
-	by the transform. This wasn't a problem earlier since we used Nef for everything,
-	but optimizations since then has made us keep it in floating point space longer.
+   Using Grid here is important for performance reasons. See following model.
+   If we don't grid the geometry before converting to a Nef Polyhedron, the quads
+   in the cylinders to tessellated into triangles since floating point
+   incertainty causes the faces to not be 100% planar. The incertainty is exaggerated
+   by the transform. This wasn't a problem earlier since we used Nef for everything,
+   but optimizations since then has made us keep it in floating point space longer.
 
-  minkowski() {
-	cube([200, 50, 7], center = true);
-	rotate([90,0,0]) cylinder($fn = 8, h = 1, r = 8.36, center = true);
-	rotate([0,90,0]) cylinder($fn = 8, h = 1, r = 8.36, center = true);
-  }
-*/
+   minkowski() {
+   cube([200, 50, 7], center = true);
+   rotate([90,0,0]) cylinder($fn = 8, h = 1, r = 8.36, center = true);
+   rotate([0,90,0]) cylinder($fn = 8, h = 1, r = 8.36, center = true);
+   }
+ */
 #if 1 // Use Grid
 		void operator()(HDS& hds) {
 			CGAL_Polybuilder B(hds, true);
-		
+
 			Grid3d<int> grid(GRID_FINE);
 			std::vector<CGALPoint> vertices;
 			std::vector<std::vector<size_t>> indices;
@@ -100,7 +100,7 @@ namespace /* anonymous */ {
 #endif
 #ifdef GEN_SURFACE_DEBUG
 			printf("points=[");
-			for (int i=0;i<vertices.size();i++) {
+			for (int i=0; i<vertices.size(); i++) {
 				if (i > 0) printf(",");
 				const CGALPoint &p = vertices[i];
 				printf("[%g,%g,%g]", CGAL::to_double(p.x()), CGAL::to_double(p.y()), CGAL::to_double(p.z()));
@@ -110,68 +110,68 @@ namespace /* anonymous */ {
 		}
 #else // Don't use Grid
 		void operator()(HDS& hds)
-			{
-				CGAL_Polybuilder B(hds, true);
-				Reindexer<Vector3d> vertices;
-				std::vector<size_t> indices(3);
+		{
+			CGAL_Polybuilder B(hds, true);
+			Reindexer<Vector3d> vertices;
+			std::vector<size_t> indices(3);
 
-				// Estimating same # of vertices as polygons (very rough)
-				B.begin_surface(ps.polygons.size(), ps.polygons.size());
-				int pidx = 0;
+			// Estimating same # of vertices as polygons (very rough)
+			B.begin_surface(ps.polygons.size(), ps.polygons.size());
+			int pidx = 0;
 #ifdef GEN_SURFACE_DEBUG
-				printf("polyhedron(faces=[");
+			printf("polyhedron(faces=[");
 #endif
-				for(const auto &p : ps.polygons) {
+			for(const auto &p : ps.polygons) {
 #ifdef GEN_SURFACE_DEBUG
-					if (pidx++ > 0) printf(",");
+				if (pidx++ > 0) printf(",");
 #endif
-					indices.clear();
-					for (const auto &v, boost::adaptors::reverse(p)) {
-						size_t s = vertices.size();
-						size_t idx = vertices.lookup(v);
-						// If we added a vertex, also add it to the CGAL builder
-						if (idx == s) B.add_vertex(CGALPoint(v[0], v[1], v[2]));
-						indices.push_back(idx);
-					}
-					// We perform this test since there is a bug in CGAL's
-					// Polyhedron_incremental_builder_3::test_facet() which
-					// fails to detect duplicate indices
-					bool err = false;
-					for (std::size_t i = 0; i < indices.size(); ++i) {
-						// check if vertex indices[i] is already in the sequence [0..i-1]
-						for (std::size_t k = 0; k < i && !err; ++k) {
-							if (indices[k] == indices[i]) {
-								err = true;
-								break;
-							}
+				indices.clear();
+				for (const auto &v, boost::adaptors::reverse(p)) {
+					size_t s = vertices.size();
+					size_t idx = vertices.lookup(v);
+					// If we added a vertex, also add it to the CGAL builder
+					if (idx == s) B.add_vertex(CGALPoint(v[0], v[1], v[2]));
+					indices.push_back(idx);
+				}
+				// We perform this test since there is a bug in CGAL's
+				// Polyhedron_incremental_builder_3::test_facet() which
+				// fails to detect duplicate indices
+				bool err = false;
+				for (std::size_t i = 0; i < indices.size(); ++i) {
+					// check if vertex indices[i] is already in the sequence [0..i-1]
+					for (std::size_t k = 0; k < i && !err; ++k) {
+						if (indices[k] == indices[i]) {
+							err = true;
+							break;
 						}
 					}
-					if (!err && B.test_facet(indices.begin(), indices.end())) {
-						B.add_facet(indices.begin(), indices.end());
+				}
+				if (!err && B.test_facet(indices.begin(), indices.end())) {
+					B.add_facet(indices.begin(), indices.end());
 #ifdef GEN_SURFACE_DEBUG
-						printf("[");
-						int fidx = 0;
-						for(auto i : indices) {
-							if (fidx++ > 0) printf(",");
-							printf("%ld", i);
-						}
-						printf("]");
-#endif
+					printf("[");
+					int fidx = 0;
+					for(auto i : indices) {
+						if (fidx++ > 0) printf(",");
+						printf("%ld", i);
 					}
-				}
-				B.end_surface();
-#ifdef GEN_SURFACE_DEBUG
-				printf("],\n");
-
-				printf("points=[");
-				for (int vidx=0;vidx<vertices.size();vidx++) {
-					if (vidx > 0) printf(",");
-					const Vector3d &v = vertices.getArray()[vidx];
-					printf("[%g,%g,%g]", v[0], v[1], v[2]);
-				}
-				printf("]);\n");
+					printf("]");
 #endif
+				}
 			}
+			B.end_surface();
+#ifdef GEN_SURFACE_DEBUG
+			printf("],\n");
+
+			printf("points=[");
+			for (int vidx=0; vidx<vertices.size(); vidx++) {
+				if (vidx > 0) printf(",");
+				const Vector3d &v = vertices.getArray()[vidx];
+				printf("[%g,%g,%g]", v[0], v[1], v[2]);
+			}
+			printf("]);\n");
+#endif
+		}
 #endif
 	};
 
@@ -189,19 +189,19 @@ namespace /* anonymous */ {
 			CGAL::Polyhedron_incremental_builder_3<Output_HDS> builder(out_hds);
 
 			typedef typename Polyhedron_input::Vertex_const_iterator Vertex_const_iterator;
-			typedef typename Polyhedron_input::Facet_const_iterator  Facet_const_iterator;
+			typedef typename Polyhedron_input::Facet_const_iterator Facet_const_iterator;
 			typedef typename Polyhedron_input::Halfedge_around_facet_const_circulator HFCC;
 
 			builder.begin_surface(in_poly.size_of_vertices(),
 														in_poly.size_of_facets(),
 														in_poly.size_of_halfedges());
-			
+
 			for (Vertex_const_iterator
-						vi = in_poly.vertices_begin(), end = in_poly.vertices_end();
-					vi != end ; ++vi) {
+					 vi = in_poly.vertices_begin(), end = in_poly.vertices_end();
+					 vi != end; ++vi) {
 				typename Polyhedron_output::Point_3 p(::CGAL::to_double(vi->point().x()),
-													  ::CGAL::to_double(vi->point().y()),
-													  ::CGAL::to_double(vi->point().z()));
+																							::CGAL::to_double(vi->point().y()),
+																							::CGAL::to_double(vi->point().z()));
 				builder.add_vertex(p);
 			}
 
@@ -209,7 +209,7 @@ namespace /* anonymous */ {
 			Index index(in_poly.vertices_begin(), in_poly.vertices_end());
 
 			for (Facet_const_iterator
-						 fi = in_poly.facets_begin(), end = in_poly.facets_end();
+					 fi = in_poly.facets_begin(), end = in_poly.facets_end();
 					 fi != end; ++fi) {
 				HFCC hc = fi->facet_begin();
 				HFCC hc_end = hc;
@@ -224,7 +224,7 @@ namespace /* anonymous */ {
 			}
 			builder.end_surface();
 		} // end operator()(..)
-	private:
+private:
 		const Polyhedron_input& in_poly;
 	}; // end Copy_polyhedron_to<>
 
@@ -266,11 +266,11 @@ namespace CGALUtils {
 	bool createPolySetFromPolyhedron(const Polyhedron &p, PolySet &ps)
 	{
 		bool err = false;
-		typedef typename Polyhedron::Vertex                                 Vertex;
-		typedef typename Polyhedron::Vertex_const_iterator                  VCI;
-		typedef typename Polyhedron::Facet_const_iterator                   FCI;
+		typedef typename Polyhedron::Vertex Vertex;
+		typedef typename Polyhedron::Vertex_const_iterator VCI;
+		typedef typename Polyhedron::Facet_const_iterator FCI;
 		typedef typename Polyhedron::Halfedge_around_facet_const_circulator HFCC;
-		
+
 		for (FCI fi = p.facets_begin(); fi != p.facets_end(); ++fi) {
 			HFCC hc = fi->facet_begin();
 			HFCC hc_end = hc;
@@ -292,47 +292,47 @@ namespace CGALUtils {
 	template bool createPolySetFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Simple_cartesian<long>> &p, PolySet &ps);
 
 	class Polyhedron_writer {
-    std::ostream *out;
+		std::ostream *out;
 		bool firstv;
 		std::vector<int> indices;
-	public:
-    Polyhedron_writer() {}
-    void write_header(std::ostream &stream,
+public:
+		Polyhedron_writer() {}
+		void write_header(std::ostream &stream,
 											std::size_t /*vertices*/,
 											std::size_t /*halfedges*/,
 											std::size_t /*facets*/
-											/*bool normals = false*/) {
+		                  /*bool normals = false*/) {
 			this->out = &stream;
 			*out << "polyhedron(points=[";
 			firstv = true;
 		}
-    void write_footer() {
+		void write_footer() {
 			*out << "]);" << std::endl;
 		}
-    void write_vertex( const double& x, const double& y, const double& z) {
+		void write_vertex( const double& x, const double& y, const double& z) {
 			*out << (firstv ? "" : ",") << '[' << x << ',' << y << ',' << z << ']';
 			firstv = false;
-    }
-    void write_facet_header() {
+		}
+		void write_facet_header() {
 			*out << "], faces=[";
 			firstv = true;
-    }
-    void write_facet_begin( std::size_t /*no*/) {
+		}
+		void write_facet_begin( std::size_t /*no*/) {
 			*out << (firstv ? "" : ",") << '[';
 			indices.clear();
 			firstv = false;
-    }
-    void write_facet_vertex_index( std::size_t index) {
+		}
+		void write_facet_vertex_index( std::size_t index) {
 			indices.push_back(index);
-    }
-    void write_facet_end() {
+		}
+		void write_facet_end() {
 			bool firsti = true;
 			for (auto i : boost::adaptors::reverse(indices)) {
 				*out << (firsti ? "" : ",") << i;
 				firsti = false;
 			}
 			*out << ']';
-    }
+		}
 	};
 
 	template <typename Polyhedron>
@@ -340,9 +340,9 @@ namespace CGALUtils {
 		std::stringstream sstream;
 		sstream.precision(20);
 
-    Polyhedron_writer writer;
-    generic_print_polyhedron(sstream, p, writer);
-		
+		Polyhedron_writer writer;
+		generic_print_polyhedron(sstream, p, writer);
+
 		return sstream.str();
 	}
 

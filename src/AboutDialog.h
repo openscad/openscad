@@ -17,5 +17,5 @@ public:
 	}
 
 public slots:
-        void on_okPushButton_clicked() { accept(); }
+	void on_okPushButton_clicked() { accept(); }
 };

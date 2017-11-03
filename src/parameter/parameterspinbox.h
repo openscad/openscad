@@ -2,7 +2,7 @@
 
 #include "parametervirtualwidget.h"
 
-class ParameterSpinBox :public ParameterVirtualWidget
+class ParameterSpinBox : public ParameterVirtualWidget
 {
 	Q_OBJECT
 public:

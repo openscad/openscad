@@ -10,11 +10,11 @@ class Annotation
 public:
 	Annotation(const std::string &name, shared_ptr<class Expression> expr);
 	virtual ~Annotation();
-	
+
 	std::string dump() const;
 	const std::string &getName() const;
 	virtual ValuePtr evaluate(class Context *ctx) const;
-	
+
 private:
 	std::string name;
 	shared_ptr<Expression> expr;

@@ -2,20 +2,20 @@
 
 /* GLView: A basic OpenGL rectangle for rendering images.
 
-This class is inherited by:
+   This class is inherited by:
 
-*QGLview - for Qt GUI
-*OffscreenView - for offscreen rendering, in tests and from command-line
-(This class is also overridden by NULLGL.cc for special experiments)
+ * QGLview - for Qt GUI
+ * OffscreenView - for offscreen rendering, in tests and from command-line
+   (This class is also overridden by NULLGL.cc for special experiments)
 
-The view assumes either a Gimbal Camera (rotation,translation,distance)
-or Vector Camera (eye,center/target) is being used. See Camera.h. The
-cameras are not kept in sync.
+   The view assumes either a Gimbal Camera (rotation,translation,distance)
+   or Vector Camera (eye,center/target) is being used. See Camera.h. The
+   cameras are not kept in sync.
 
-QGLView only uses GimbalCamera while OffscreenView can use either one.
-Some actions (showCrossHairs) only work properly on Gimbal Camera.
+   QGLView only uses GimbalCamera while OffscreenView can use either one.
+   Some actions (showCrossHairs) only work properly on Gimbal Camera.
 
-*/
+ */
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>

@@ -42,45 +42,45 @@
 
 QFileInfo UIUtils::openFile(QWidget *parent)
 {
-    QSettingsCached settings;
-    QString last_dirname = settings.value("lastOpenDirName").toString();
-    QString new_filename = QFileDialog::getOpenFileName(parent, "Open File",
-	    last_dirname, "OpenSCAD Designs (*.scad *.csg)");
+	QSettingsCached settings;
+	QString last_dirname = settings.value("lastOpenDirName").toString();
+	QString new_filename = QFileDialog::getOpenFileName(parent, "Open File",
+																											last_dirname, "OpenSCAD Designs (*.scad *.csg)");
 
-    if (new_filename.isEmpty()) {
-	return QFileInfo();
-    }
+	if (new_filename.isEmpty()) {
+		return QFileInfo();
+	}
 
-    QFileInfo fileInfo(new_filename);
-    QDir last_dir = fileInfo.dir();
-    last_dirname = last_dir.path();
-    settings.setValue("lastOpenDirName", last_dirname);
-    return fileInfo;
+	QFileInfo fileInfo(new_filename);
+	QDir last_dir = fileInfo.dir();
+	last_dirname = last_dir.path();
+	settings.setValue("lastOpenDirName", last_dirname);
+	return fileInfo;
 }
 
 QStringList UIUtils::recentFiles()
 {
-    QSettingsCached settings; // set up project and program properly in main.cpp
-    QStringList files = settings.value("recentFileList").toStringList();
+	QSettingsCached settings;   // set up project and program properly in main.cpp
+	QStringList files = settings.value("recentFileList").toStringList();
 
-    // Remove any duplicate or empty entries from the list
+	// Remove any duplicate or empty entries from the list
 #if (QT_VERSION >= QT_VERSION_CHECK(4, 5, 0))
-    files.removeDuplicates();
+	files.removeDuplicates();
 #endif
-    files.removeAll(QString());
-    // Now remove any entries which do not exist
-    for (int i = files.size() - 1; i >= 0; --i) {
-	QFileInfo fileInfo(files[i]);
-	if (!QFile(fileInfo.absoluteFilePath()).exists())
-	    files.removeAt(i);
-    }
-    
-    while (files.size() > UIUtils::maxRecentFiles) {
-	files.removeAt(files.size() - 1);
-    }
+	files.removeAll(QString());
+	// Now remove any entries which do not exist
+	for (int i = files.size() - 1; i >= 0; --i) {
+		QFileInfo fileInfo(files[i]);
+		if (!QFile(fileInfo.absoluteFilePath()).exists())
+			files.removeAt(i);
+	}
 
-    settings.setValue("recentFileList", files);
-    return files;
+	while (files.size() > UIUtils::maxRecentFiles) {
+		files.removeAt(files.size() - 1);
+	}
+
+	settings.setValue("recentFileList", files);
+	return files;
 }
 
 using namespace boost::property_tree;
@@ -114,7 +114,7 @@ QStringList UIUtils::exampleCategories()
 			categories << QString::fromStdString(v.first);
 		}
 	}
-  
+
 	return categories;
 }
 
@@ -133,20 +133,20 @@ QFileInfoList UIUtils::exampleFiles(const QString &category)
 
 void UIUtils::openHomepageURL()
 {
-    QDesktopServices::openUrl(QUrl("http://openscad.org/"));
+	QDesktopServices::openUrl(QUrl("http://openscad.org/"));
 }
 
 static void openVersionedURL(QString url)
 {
-    QDesktopServices::openUrl(QUrl(url.arg(openscad_shortversionnumber.c_str())));
+	QDesktopServices::openUrl(QUrl(url.arg(openscad_shortversionnumber.c_str())));
 }
 
 void UIUtils::openUserManualURL()
 {
-    openVersionedURL("http://www.openscad.org/documentation.html?version=%1");
+	openVersionedURL("http://www.openscad.org/documentation.html?version=%1");
 }
 
 void UIUtils::openCheatSheetURL()
 {
-    openVersionedURL("http://www.openscad.org/cheatsheet/index.html?version=%1");
+	openVersionedURL("http://www.openscad.org/cheatsheet/index.html?version=%1");
 }

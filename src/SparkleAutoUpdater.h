@@ -14,7 +14,7 @@ class SparkleAutoUpdater : public AutoUpdater
 public:
 	SparkleAutoUpdater();
 	~SparkleAutoUpdater();
-	
+
 	void checkForUpdates();
 	void setAutomaticallyChecksForUpdates(bool on);
 	bool automaticallyChecksForUpdates();

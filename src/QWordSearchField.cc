@@ -42,7 +42,7 @@ void QWordSearchField::updateFieldLabel()
 	}
 	resizeSearchField();
 }
-    
+
 void QWordSearchField::setFindCount(int value)
 {
 	if (value != findcount) {

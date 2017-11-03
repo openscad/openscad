@@ -43,7 +43,7 @@
 #define SCRIPT_UNTAG(tag)   ((uint8_t)((tag)>>24)) % ((uint8_t)((tag)>>16)) % ((uint8_t)((tag)>>8)) % ((uint8_t)(tag))
 
 static inline Vector2d get_scaled_vector(const FT_Vector *ft_vector, double scale) {
-    return Vector2d(ft_vector->x / scale, ft_vector->y / scale);
+	return Vector2d(ft_vector->x / scale, ft_vector->y / scale);
 }
 
 const double FreetypeRenderer::scale = 1000;
@@ -65,7 +65,7 @@ FreetypeRenderer::~FreetypeRenderer()
 int FreetypeRenderer::outline_move_to_func(const FT_Vector *to, void *user)
 {
 	DrawingCallback *cb = reinterpret_cast<DrawingCallback *>(user);
-	
+
 	cb->move_to(get_scaled_vector(to, scale));
 	return 0;
 }
@@ -73,7 +73,7 @@ int FreetypeRenderer::outline_move_to_func(const FT_Vector *to, void *user)
 int FreetypeRenderer::outline_line_to_func(const FT_Vector *to, void *user)
 {
 	DrawingCallback *cb = reinterpret_cast<DrawingCallback *>(user);
-	
+
 	cb->line_to(get_scaled_vector(to, scale));
 	return 0;
 }
@@ -89,9 +89,9 @@ int FreetypeRenderer::outline_conic_to_func(const FT_Vector *c1, const FT_Vector
 int FreetypeRenderer::outline_cubic_to_func(const FT_Vector *c1, const FT_Vector *c2, const FT_Vector *to, void *user)
 {
 	DrawingCallback *cb = reinterpret_cast<DrawingCallback *>(user);
-	
+
 	cb->curve_to(get_scaled_vector(c1, scale), get_scaled_vector(c2, scale), get_scaled_vector(to, scale));
-	return 0; 
+	return 0;
 }
 
 double FreetypeRenderer::calc_x_offset(std::string halign, double width) const
@@ -157,7 +157,7 @@ hb_script_t FreetypeRenderer::get_script(const FreetypeRenderer::Params &params,
 	}
 
 	hb_script_t script = HB_SCRIPT_INVALID;
-	for (unsigned int idx = 0;idx < glyph_count;idx++) {
+	for (unsigned int idx = 0; idx < glyph_count; idx++) {
 		hb_codepoint_t cp = glyph_info[idx].codepoint;
 		hb_script_t s = hb_unicode_script(hb_unicode_funcs_get_default(), cp);
 		if (!is_ignored_script(s)) {
@@ -178,7 +178,7 @@ void FreetypeRenderer::detect_properties(FreetypeRenderer::Params &params) const
 	hb_buffer_add_utf8(hb_buf, params.text.c_str(), strlen(params.text.c_str()), 0, strlen(params.text.c_str()));
 
 	unsigned int glyph_count;
-        hb_glyph_info_t *glyph_info = hb_buffer_get_glyph_infos(hb_buf, &glyph_count);
+	hb_glyph_info_t *glyph_info = hb_buffer_get_glyph_infos(hb_buf, &glyph_count);
 
 	hb_script_t script = get_script(params, glyph_info, glyph_count);
 	hb_buffer_destroy(hb_buf);
@@ -198,7 +198,7 @@ std::vector<const Geometry *> FreetypeRenderer::render(const FreetypeRenderer::P
 	FT_Face face;
 	FT_Error error;
 	DrawingCallback callback(params.segments);
-	
+
 	FontCache *cache = FontCache::instance();
 	if (!cache->is_init_ok()) {
 		return std::vector<const Geometry *>();
@@ -208,13 +208,13 @@ std::vector<const Geometry *> FreetypeRenderer::render(const FreetypeRenderer::P
 	if (face == nullptr) {
 		return std::vector<const Geometry *>();
 	}
-	
+
 	error = FT_Set_Char_Size(face, 0, params.size * scale, 100, 100);
 	if (error) {
 		PRINTB("Can't set font size for font %s", params.font);
 		return std::vector<const Geometry *>();
 	}
-	
+
 	hb_font_t *hb_ft_font = hb_ft_font_create(face, nullptr);
 
 	hb_buffer_t *hb_buf = hb_buffer_create();
@@ -237,7 +237,7 @@ std::vector<const Geometry *> FreetypeRenderer::render(const FreetypeRenderer::P
 				memset(buf, 0, 8);
 				gunichar c = g_utf8_get_char(p);
 				c = (c < 0x0100) ? 0xf000 + c : c;
-			        g_unichar_to_utf8(c, buf);
+				g_unichar_to_utf8(c, buf);
 				hb_buffer_add_utf8(hb_buf, buf, strlen(buf), 0, strlen(buf));
 				p = g_utf8_next_char(p);
 			}
@@ -248,13 +248,13 @@ std::vector<const Geometry *> FreetypeRenderer::render(const FreetypeRenderer::P
 		hb_buffer_add_utf8(hb_buf, params.text.c_str(), strlen(params.text.c_str()), 0, strlen(params.text.c_str()));
 	}
 	hb_shape(hb_ft_font, hb_buf, nullptr, 0);
-	
+
 	unsigned int glyph_count;
-        hb_glyph_info_t *glyph_info = hb_buffer_get_glyph_infos(hb_buf, &glyph_count);
-        hb_glyph_position_t *glyph_pos = hb_buffer_get_glyph_positions(hb_buf, &glyph_count);
+	hb_glyph_info_t *glyph_info = hb_buffer_get_glyph_infos(hb_buf, &glyph_count);
+	hb_glyph_position_t *glyph_pos = hb_buffer_get_glyph_positions(hb_buf, &glyph_count);
 
 	GlyphArray glyph_array;
-	for (unsigned int idx = 0;idx < glyph_count;idx++) {
+	for (unsigned int idx = 0; idx < glyph_count; idx++) {
 		FT_UInt glyph_index = glyph_info[idx].codepoint;
 		error = FT_Load_Glyph(face, glyph_index, FT_LOAD_DEFAULT);
 		if (error) {
@@ -273,12 +273,12 @@ std::vector<const Geometry *> FreetypeRenderer::render(const FreetypeRenderer::P
 	}
 
 	double width = 0, ascend = 0, descend = 0;
-	for (GlyphArray::iterator it = glyph_array.begin();it != glyph_array.end();it++) {
+	for (GlyphArray::iterator it = glyph_array.begin(); it != glyph_array.end(); it++) {
 		const GlyphData *glyph = (*it);
-		
+
 		FT_BBox bbox;
 		FT_Glyph_Get_CBox(glyph->get_glyph(), FT_GLYPH_BBOX_GRIDFIT, &bbox);
-		
+
 		if (HB_DIRECTION_IS_HORIZONTAL(hb_buffer_get_direction(hb_buf))) {
 			double asc = std::max(0.0, bbox.yMax / 64.0 / 16.0);
 			double desc = std::max(0.0, -bbox.yMin / 64.0 / 16.0);
@@ -291,13 +291,13 @@ std::vector<const Geometry *> FreetypeRenderer::render(const FreetypeRenderer::P
 			ascend += glyph->get_y_advance() * params.spacing;
 		}
 	}
-	
+
 	double x_offset = calc_x_offset(params.halign, width);
 	double y_offset = calc_y_offset(params.valign, ascend, descend);
 
-	for (GlyphArray::iterator it = glyph_array.begin();it != glyph_array.end();it++) {
+	for (GlyphArray::iterator it = glyph_array.begin(); it != glyph_array.end(); it++) {
 		const GlyphData *glyph = (*it);
-		
+
 		callback.start_glyph();
 		callback.set_glyph_offset(x_offset + glyph->get_x_offset(), y_offset + glyph->get_y_offset());
 		FT_Outline outline = reinterpret_cast<FT_OutlineGlyph>(glyph->get_glyph())->outline;
@@ -310,7 +310,7 @@ std::vector<const Geometry *> FreetypeRenderer::render(const FreetypeRenderer::P
 	}
 
 	hb_buffer_destroy(hb_buf);
-        hb_font_destroy(hb_ft_font);
-	
+	hb_font_destroy(hb_ft_font);
+
 	return callback.get_result();
 }

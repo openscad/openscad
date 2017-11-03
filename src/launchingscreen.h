@@ -10,7 +10,7 @@
 class LaunchingScreen : public QDialog, public Ui::LaunchingScreen
 {
 	Q_OBJECT
-	
+
 public:
 	static LaunchingScreen *getDialog();
 	explicit LaunchingScreen(QWidget *parent = nullptr);
@@ -28,10 +28,10 @@ private slots:
 	void openRecent();
 	void openExample();
 	void openUserManualURL() const;
-	
+
 private:
 	void checkOpen(const QVariant &data);
-  
+
 	QStringList files;
-  static LaunchingScreen *inst;
+	static LaunchingScreen *inst;
 };

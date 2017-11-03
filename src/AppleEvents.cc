@@ -26,10 +26,10 @@ OSErr eventHandler(const AppleEvent *, AppleEvent *, SRefCon )
 void installAppleEventHandlers()
 {
 	// Reload handler
-  auto err = AEInstallEventHandler('SCAD', 'relo', NewAEEventHandlerUPP(eventHandler), 0, true);
-  __Require_noErr(err, CantInstallAppleEventHandler);
+	auto err = AEInstallEventHandler('SCAD', 'relo', NewAEEventHandlerUPP(eventHandler), 0, true);
+	__Require_noErr(err, CantInstallAppleEventHandler);
 	return;
 
 CantInstallAppleEventHandler:
-	fprintf(stderr, "AEInstallEventHandler() failed: %d\n", err);	;
+	fprintf(stderr, "AEInstallEventHandler() failed: %d\n", err);;
 }

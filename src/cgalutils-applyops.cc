@@ -16,11 +16,11 @@
 #include <CGAL/normal_vector_newell_3.h>
 #include <CGAL/Handle_hash_function.h>
 
-#include <CGAL/config.h> 
-#include <CGAL/version.h> 
+#include <CGAL/config.h>
+#include <CGAL/version.h>
 
 // Apply CGAL bugfix for CGAL-4.5.x
-#if CGAL_VERSION_NR > CGAL_VERSION_NUMBER(4,5,1) || CGAL_VERSION_NR < CGAL_VERSION_NUMBER(4,5,0) 
+#if CGAL_VERSION_NR > CGAL_VERSION_NUMBER(4,5,1) || CGAL_VERSION_NR < CGAL_VERSION_NUMBER(4,5,0)
 #include <CGAL/convex_hull_3.h>
 #else
 #include "convex_hull_3_bugfix.h"
@@ -41,7 +41,7 @@ namespace CGALUtils {
 		for (typename Polyhedron::Edge_const_iterator i = p.edges_begin(); i != p.edges_end(); ++i) {
 			typename Polyhedron::Plane_3 p(i->opposite()->vertex()->point(), i->vertex()->point(), i->next()->vertex()->point());
 			if (p.has_on_positive_side(i->opposite()->next()->vertex()->point()) &&
-				CGAL::squared_distance(p, i->opposite()->next()->vertex()->point()) > 1e-8) {
+					CGAL::squared_distance(p, i->opposite()->next()->vertex()->point()) > 1e-8) {
 				return false;
 			}
 		}
@@ -73,9 +73,9 @@ namespace CGALUtils {
 	}
 
 /*!
-	Applies op to all children and returns the result.
-	The child list should be guaranteed to contain non-NULL 3D or empty Geometry objects
-*/
+   Applies op to all children and returns the result.
+   The child list should be guaranteed to contain non-NULL 3D or empty Geometry objects
+ */
 	CGAL_Nef_polyhedron *applyOperator(const Geometry::Geometries &children, OpenSCADOperator op)
 	{
 		CGAL_Nef_polyhedron *N = nullptr;
@@ -84,16 +84,16 @@ namespace CGALUtils {
 			// Speeds up n-ary union operations significantly
 			CGAL::Nef_nary_union_3<CGAL_Nef_polyhedron3> nary_union;
 			int nary_union_num_inserted = 0;
-			
+
 			for(const auto &item : children) {
 				const shared_ptr<const Geometry> &chgeom = item.second;
-				shared_ptr<const CGAL_Nef_polyhedron> chN = 
+				shared_ptr<const CGAL_Nef_polyhedron> chN =
 					dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
 				if (!chN) {
 					const PolySet *chps = dynamic_cast<const PolySet*>(chgeom.get());
 					if (chps) chN.reset(createNefPolyhedronFromGeometry(*chps));
 				}
-				
+
 				if (op == OpenSCADOperator::UNION) {
 					if (!chN->isEmpty()) {
 						// nary_union.add_polyhedron() can issue assertion errors:
@@ -108,16 +108,16 @@ namespace CGALUtils {
 					N = new CGAL_Nef_polyhedron(*chN);
 					continue;
 				}
-				
+
 				// Intersecting something with nothing results in nothing
 				if (chN->isEmpty()) {
 					if (op == OpenSCADOperator::INTERSECTION) *N = *chN;
 					continue;
 				}
-				
+
 				// empty op <something> => empty
 				if (N->isEmpty()) continue;
-				
+
 				switch (op) {
 				case OpenSCADOperator::INTERSECTION:
 					*N *= *chN;
@@ -138,7 +138,7 @@ namespace CGALUtils {
 				N = new CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3(nary_union.get_union()));
 			}
 		}
-	// union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad and testdata/scad/bugs/issue204.scad
+		// union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad and testdata/scad/bugs/issue204.scad
 		catch (const CGAL::Failure_exception &e) {
 			std::string opstr = op == OpenSCADOperator::INTERSECTION ? "intersection" : op == OpenSCADOperator::DIFFERENCE ? "difference" : op == OpenSCADOperator::UNION ? "union" : "UNKNOWN";
 			PRINTB("ERROR: CGAL error in CGALUtils::applyBinaryOperator %s: %s", opstr % e.what());
@@ -187,10 +187,10 @@ namespace CGALUtils {
 			try {
 				CGAL::Polyhedron_3<K> r;
 				CGAL::convex_hull_3(points.begin(), points.end(), r);
-                            PRINTDB("After hull vertices: %d", r.size_of_vertices());
-                            PRINTDB("After hull facets: %d", r.size_of_facets());
-                            PRINTDB("After hull closed: %d", r.is_closed());
-                            PRINTDB("After hull valid: %d", r.is_valid());
+				PRINTDB("After hull vertices: %d", r.size_of_vertices());
+				PRINTDB("After hull facets: %d", r.size_of_facets());
+				PRINTDB("After hull closed: %d", r.is_closed());
+				PRINTDB("After hull valid: %d", r.is_valid());
 				success = !createPolySetFromPolyhedron(r, result);
 			}
 			catch (const CGAL::Failure_exception &e) {
@@ -203,8 +203,8 @@ namespace CGALUtils {
 
 
 	/*!
-		children cannot contain nullptr objects
-	*/
+	   children cannot contain nullptr objects
+	 */
 	Geometry const * applyMinkowski(const Geometry::Geometries &children)
 	{
 		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
@@ -235,7 +235,7 @@ namespace CGALUtils {
 
 					if ((ps && ps->is_convex()) ||
 							(!ps && is_weakly_convex(poly))) {
-						PRINTDB("Minkowski: child %d is convex and %s",i % (ps?"PolySet":"Nef"));
+						PRINTDB("Minkowski: child %d is convex and %s",i % (ps ? "PolySet" : "Nef"));
 						P[i].push_back(poly);
 					} else {
 						CGAL_Nef_polyhedron3 decomposed_nef;
@@ -281,7 +281,7 @@ namespace CGALUtils {
 
 						for (int k = 0; k < 2; k++) {
 							std::list<CGAL_Polyhedron>::iterator it = P[k].begin();
-							std::advance(it, k==0?i:j);
+							std::advance(it, k==0 ? i : j);
 
 							CGAL_Polyhedron const& poly = *it;
 							points[k].reserve(poly.size_of_vertices());
@@ -330,15 +330,15 @@ namespace CGALUtils {
 							do {
 								Hull_kernel::Point_3 const& q = h->opposite()->vertex()->point();
 								if (coplanar && !CGAL::coplanar(p,q,
-																h->next_on_vertex()->opposite()->vertex()->point(),
-																h->next_on_vertex()->next_on_vertex()->opposite()->vertex()->point())) {
+																								h->next_on_vertex()->opposite()->vertex()->point(),
+																								h->next_on_vertex()->next_on_vertex()->opposite()->vertex()->point())) {
 									coplanar = false;
 								}
 
 
 								for (CGAL::Polyhedron_3<Hull_kernel>::Vertex::Halfedge_handle j = h->next_on_vertex();
-									 j != h && !collinear && ! coplanar;
-									 j = j->next_on_vertex()) {
+										 j != h && !collinear && !coplanar;
+										 j = j->next_on_vertex()) {
 
 									Hull_kernel::Point_3 const& r = j->opposite()->vertex()->point();
 									if (CGAL::collinear(p,q,r)) {
@@ -380,7 +380,7 @@ namespace CGALUtils {
 						PolySet ps(3,true);
 						createPolySetFromPolyhedron(*i, ps);
 						fake_children.push_back(std::make_pair((const AbstractNode*)nullptr,
-															   shared_ptr<const Geometry>(createNefPolyhedronFromGeometry(ps))));
+																									 shared_ptr<const Geometry>(createNefPolyhedronFromGeometry(ps))));
 					}
 					CGAL_Nef_polyhedron *N = CGALUtils::applyOperator(fake_children, OpenSCADOperator::UNION);
 					// FIXME: This hould really never throw.
@@ -391,7 +391,7 @@ namespace CGALUtils {
 					t.reset();
 					operands[0] = N;
 				} else {
-                    operands[0] = new CGAL_Nef_polyhedron();
+					operands[0] = new CGAL_Nef_polyhedron();
 				}
 			}
 

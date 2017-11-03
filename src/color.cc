@@ -202,7 +202,7 @@ std::unordered_map<std::string, Color4f> ColorModule::webcolors{
 	{"yellow", {255, 255, 0}},
 	{"yellowgreen", {154, 205, 50}},
 
-	    // additional OpenSCAD specific entry
+	// additional OpenSCAD specific entry
 	{"transparent", {0, 0, 0, 0}}
 };
 
@@ -230,9 +230,9 @@ boost::optional<Color4f> parse_hex_color(const std::string& hex) {
 	// validate
 	if (hex[0] != '#') return boost::none;
 	if (!std::all_of(std::begin(hex)+1, std::end(hex),
-					[](char c) {
-						return std::isxdigit(static_cast<unsigned char>(c));
-					})) {
+									 [](char c) {
+		return std::isxdigit(static_cast<unsigned char>(c));
+	})) {
 		return boost::none;
 	}
 
@@ -273,7 +273,7 @@ AbstractNode *ColorModule::instantiate(const Context *ctx, const ModuleInstantia
 	} else if (v->type() == Value::ValueType::STRING) {
 		auto colorname = v->toString();
 		boost::algorithm::to_lower(colorname);
-		if (webcolors.find(colorname) != webcolors.end())	{
+		if (webcolors.find(colorname) != webcolors.end()) {
 			node->color = webcolors.at(colorname);
 		} else {
 			// Try parsing it as a hex color such as "#rrggbb".

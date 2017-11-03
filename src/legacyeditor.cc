@@ -23,7 +23,7 @@ LegacyEditor::LegacyEditor(QWidget *parent) : EditorInterface(parent)
 }
 
 void LegacyEditor::indentSelection()
-{	
+{
 	QTextCursor cursor = this->textedit->textCursor();
 	int p1 = cursor.selectionStart();
 	QString txt = cursor.selectedText();
@@ -97,7 +97,7 @@ void LegacyEditor::zoomIn()
 {
 	// See also QT's implementation in QLegacyEditor.cpp
 	QSettingsCached settings;
-	QFont tmp_font = this->textedit->font() ;
+	QFont tmp_font = this->textedit->font();
 	if (font().pointSize() >= 1)
 		tmp_font.setPointSize(1 + font().pointSize());
 	else
@@ -139,9 +139,9 @@ void LegacyEditor::setPlainText(const QString &text)
 void LegacyEditor::highlightError(int error_pos)
 {
 	highlighter->highlightError(error_pos);
-        QTextCursor cursor = this->textedit->textCursor();
-        cursor.setPosition(error_pos);
-        this->textedit->setTextCursor(cursor);
+	QTextCursor cursor = this->textedit->textCursor();
+	cursor.setPosition(error_pos);
+	this->textedit->setTextCursor(cursor);
 
 }
 
@@ -169,7 +169,7 @@ void LegacyEditor::setInitialSizeHint(const QSize &size)
 {
 	initialSizeHint = size;
 }
- 
+
 QString LegacyEditor::toPlainText()
 {
 	return this->textedit->toPlainText();
@@ -188,7 +188,7 @@ void LegacyEditor::setText(const QString &text)
 
 bool LegacyEditor::canUndo()
 {
-    return (this->textedit->document()->availableUndoSteps() != 0);
+	return (this->textedit->document()->availableUndoSteps() != 0);
 }
 
 void LegacyEditor::undo()
@@ -235,7 +235,7 @@ void LegacyEditor::replaceAll(const QString &findText, const QString &replaceTex
 	cursor.setPosition(0);
 	this->textedit->setTextCursor(cursor);
 	this->textedit->find(findText);
-	while (this->textedit->textCursor().hasSelection()){
+	while (this->textedit->textCursor().hasSelection()) {
 		this->textedit->textCursor().insertText(replaceText);
 		this->textedit->find(findText);
 	}
@@ -248,9 +248,9 @@ bool LegacyEditor::findString(const QString & exp, bool findBackwards) const
 
 int LegacyEditor::resetFindIndicators(const QString & /*findText*/, bool /*visibility*/)//incomplete-place-holder
 {
-    int findwordcount = 0;
-    // blank see scintillaeditor.cpp
-    return findwordcount;
+	int findwordcount = 0;
+	// blank see scintillaeditor.cpp
+	return findwordcount;
 }
 
 bool LegacyEditor::find(const QString &newText, bool /*findNext*/, bool findBackwards)
@@ -276,7 +276,7 @@ void LegacyEditor::initFont(const QString& family, uint size)
 	QFont font;
 	if (!family.isEmpty()) font.setFamily(family);
 	else font.setFixedPitch(true);
-	if (size > 0)	font.setPointSize(size);
+	if (size > 0) font.setPointSize(size);
 	font.setStyleHint(QFont::TypeWriter);
 	this->textedit->setFont(font);
 
@@ -300,11 +300,11 @@ bool LegacyEditor::isContentModified()
 QStringList LegacyEditor::colorSchemes()
 {
 	QStringList colorSchemes;
-    
+
 	colorSchemes
-	    << "For Light Background"
-	    << "For Dark Background"
-	    << "Off";
-	
+		<< "For Light Background"
+		<< "For Dark Background"
+		<< "Off";
+
 	return colorSchemes;
 }
