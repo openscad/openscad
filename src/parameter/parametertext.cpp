@@ -44,6 +44,7 @@ void ParameterText::setParameterFocus()
 void ParameterText::setValue()
 {
 	this->stackedWidgetBelow->setCurrentWidget(this->pageText);
+	this->pageText->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 	this->stackedWidgetRight->hide();
 	this->lineEdit->setText(QString::fromStdString(object->value->toString()));
 	if (object->values->toDouble() > 0) {

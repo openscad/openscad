@@ -49,6 +49,7 @@ void ParameterVector::setParameterFocus()
 void ParameterVector::setValue()
 {
 	this->stackedWidgetBelow->setCurrentWidget(this->pageVector);
+	this->pageVector->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 	this->stackedWidgetRight->hide();
 
 	Value::VectorType vec = object->value->toVector();

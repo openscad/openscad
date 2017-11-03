@@ -58,6 +58,7 @@ void ParameterSlider::setValue()
 	int max=object->values->toRange().end_value()/step;
 	int current=object->value->toDouble()/step;
 	this->stackedWidgetBelow->setCurrentWidget(this->pageSlider);
+	this->pageSlider->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 	this->stackedWidgetRight->setCurrentWidget(this->pageSliderValue);
 	this->slider->setRange(min,max);
 	this->slider->setValue(current);

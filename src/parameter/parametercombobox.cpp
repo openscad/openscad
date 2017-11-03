@@ -37,6 +37,7 @@ void ParameterComboBox::setParameterFocus()
 void ParameterComboBox::setValue()
 {
 	this->stackedWidgetBelow->setCurrentWidget(this->pageComboBox);
+	this->pageComboBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 	this->stackedWidgetRight->hide();
 	comboBox->clear();
 	const Value::VectorType& vec = object->values->toVector();
