@@ -12,7 +12,7 @@ FORMAT_CMD=$FORMAT_CMD_CLANG_FORMAT
 # note: -v flag inverts selection - this tells grep to *filter out* anything
 #       that matches the pattern. For testing, you can remove the -v to ssee
 #       which files would have been excluded.
-FILTER_CMD="grep -v -E objects|src/libsvg|src/libtess2|src/polyclipping|src/CGAL_Nef3_workaround.h|src/CGAL_workaround_Mark_bounded_volumes.h|src/convex_hull_3_bugfix.h|src/OGL_helper.h|src/lodepng.h|src/lodepng.cpp"
+FILTER_CMD="grep -v -E objects|src/libsvg|src/libtess2|src/polyclipping|src/CGAL_Nef3_workaround.h|src/CGAL_workaround_Mark_bounded_volumes.h|src/convex_hull_3_bugfix.h|src/OGL_helper.h|src/lodepng.h|src/lodepng.cpp|src/Polygon2d-CGAL.cc"
 
 function reformat_all() {
     find src -name "*.h" -o -name "*.hpp" -o -name "*.cc" -o -name "*.cpp" \
