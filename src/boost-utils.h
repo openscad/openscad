@@ -19,7 +19,7 @@ fs::path boostfs_uncomplete(fs::path const p, fs::path const base);
    For positive overflow, return max of Tout template type
    For negative overflow, return min of Tout template type
    On other conversion failures, return 0. */
-template <class Tout,class Tin> Tout boost_numeric_cast( Tin input )
+template <class Tout,class Tin> Tout boost_numeric_cast(Tin input)
 {
 	Tout result = 0;
 	std::stringstream status;
@@ -40,7 +40,7 @@ template <class Tout,class Tin> Tout boost_numeric_cast( Tin input )
 		std::stringstream tmp;
 		tmp << input;
 		PRINTB("WARNING: problem converting this number: %s",tmp.str());
-		PRINTB("WARNING: %s", status.str() );
+		PRINTB("WARNING: %s", status.str());
 		PRINTB("WARNING: setting result to %u",result);
 	}
 	return result;

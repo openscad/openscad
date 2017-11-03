@@ -29,7 +29,7 @@ public:
 	CGAL_Nef_polyhedron &minkowski(const CGAL_Nef_polyhedron &other);
 // FIXME: Deprecated by CGALUtils::createPolySetFromNefPolyhedron3
 //	class PolySet *convertToPolyset() const;
-	void transform( const Transform3d &matrix );
+	void transform(const Transform3d &matrix);
 	void resize(const Vector3d &newsize, const Eigen::Matrix<bool,3,1> &autosize);
 
 	shared_ptr<CGAL_Nef_polyhedron3> p3;

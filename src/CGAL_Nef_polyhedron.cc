@@ -75,7 +75,7 @@ PolySet *CGAL_Nef_polyhedron::convertToPolyset() const
 		// Cast away constness:
 		// convert_to_Polyhedron() wasn't const in earlier versions of CGAL.
 		CGAL_Nef_polyhedron3 *nonconst_nef3 = const_cast<CGAL_Nef_polyhedron3*>(this->p3.get());
-		err = nefworkaround::convert_to_Polyhedron<CGAL_Kernel3>( *(nonconst_nef3), P );
+		err = nefworkaround::convert_to_Polyhedron<CGAL_Kernel3>(*(nonconst_nef3), P);
 		//this->p3->convert_to_Polyhedron(P);
 	}
 	catch (const CGAL::Failure_exception &e) {
@@ -139,11 +139,11 @@ void CGAL_Nef_polyhedron::resize(const Vector3d &newsize,
 
 std::string CGAL_Nef_polyhedron::dump() const
 {
-	return OpenSCAD::dump_svg( *this->p3 );
+	return OpenSCAD::dump_svg(*this->p3);
 }
 
 
-void CGAL_Nef_polyhedron::transform( const Transform3d &matrix )
+void CGAL_Nef_polyhedron::transform(const Transform3d &matrix)
 {
 	if (!this->isEmpty()) {
 		if (matrix.matrix().determinant() == 0) {

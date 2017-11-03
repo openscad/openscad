@@ -81,7 +81,7 @@ void QGLView::init()
 #include <windows.h>
 	HMODULE hntdll = GetModuleHandle(L"ntdll.dll");
 	if (hntdll)
-		if ( (void *)GetProcAddress(hntdll, "wine_get_version") )
+		if ((void *)GetProcAddress(hntdll, "wine_get_version"))
 			running_under_wine = true;
 #endif
 }
@@ -207,7 +207,7 @@ void QGLView::mouseDoubleClickEvent (QMouseEvent *event) {
 	GLdouble modelview[16];
 	GLdouble projection[16];
 
-	glGetIntegerv( GL_VIEWPORT, viewport);
+	glGetIntegerv(GL_VIEWPORT, viewport);
 	glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
 	glGetDoublev(GL_PROJECTION_MATRIX, projection);
 
@@ -237,8 +237,8 @@ void QGLView::mouseDoubleClickEvent (QMouseEvent *event) {
 
 void QGLView::normalizeAngle(GLdouble& angle)
 {
-	while(angle < 0) angle += 360;
-	while(angle > 360) angle -= 360;
+	while (angle < 0) angle += 360;
+	while (angle > 360) angle -= 360;
 }
 
 void QGLView::mouseMoveEvent(QMouseEvent *event)

@@ -94,7 +94,7 @@ void ParameterWidget::readFile(QString scadFile)
 {
 	this->jsonFile = scadFile.replace(".scad", ".json").toStdString();
 	bool readonly=readParameterSet(this->jsonFile);
-	if(readonly) {
+	if (readonly) {
 		connect(this->addButton, SIGNAL(clicked()), this, SLOT(onSetAdd()));
 		connect(this->deleteButton, SIGNAL(clicked()), this, SLOT(onSetDelete()));
 	}
@@ -217,11 +217,11 @@ void ParameterWidget::connectWidget()
 	for (std::vector<std::string>::iterator it = groupPos.begin(); it != groupPos.end(); it++) {
 		anyLayout->setSpacing(0);
 		anyLayout->setContentsMargins(0,0,0,0);
-		if(groupMap.find(*it)==groupMap.end())
+		if (groupMap.find(*it)==groupMap.end())
 			continue;
 		std::vector<std::string> gr;
 		gr = groupMap[*it].parameterVector;
-		for(unsigned int i=0; i < gr.size(); i++) {
+		for (unsigned int i=0; i < gr.size(); i++) {
 			AddParameterWidget(gr[i]);
 		}
 		GroupWidget *groupWidget = new GroupWidget(groupMap[*it].show, QString::fromStdString(*it));
@@ -236,7 +236,7 @@ void ParameterWidget::connectWidget()
 }
 
 void ParameterWidget::clear(){
-	for (entry_map_t::iterator it = entries.begin(); it != entries.end();) {
+	for (entry_map_t::iterator it = entries.begin(); it != entries.end(); ) {
 		if (!(*it).second->set) {
 			it = entries.erase(it);
 		} else {
@@ -260,7 +260,7 @@ void ParameterWidget::clear(){
 			groupMap[groupName] = enter;
 		}
 		else {
-			if(groupMap[groupName].inList == false) {
+			if (groupMap[groupName].inList == false) {
 				groupMap[groupName].inList=true;
 				groupPos.push_back(groupName);
 			}
@@ -272,7 +272,7 @@ void ParameterWidget::clear(){
 void ParameterWidget::AddParameterWidget(std::string parameterName)
 {
 	ParameterVirtualWidget *entry = nullptr;
-	switch(entries[parameterName]->target) {
+	switch (entries[parameterName]->target) {
 	case ParameterObject::COMBOBOX: {
 		entry = new ParameterComboBox(entries[parameterName], descriptionShow);
 		break;

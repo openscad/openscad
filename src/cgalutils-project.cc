@@ -110,16 +110,16 @@ public:
 	CGAL::Direction_3<CGAL_Kernel3> up;
 	ZRemover()
 	{
-		output_nefpoly2d.reset( new CGAL_Nef_polyhedron2() );
+		output_nefpoly2d.reset(new CGAL_Nef_polyhedron2());
 		boundary = CGAL_Nef_polyhedron2::INCLUDED;
 		up = CGAL::Direction_3<CGAL_Kernel3>(0,0,1);
 	}
-	void visit( CGAL_Nef_polyhedron3::Vertex_const_handle ) {}
-	void visit( CGAL_Nef_polyhedron3::Halfedge_const_handle ) {}
-	void visit( CGAL_Nef_polyhedron3::SHalfedge_const_handle ) {}
-	void visit( CGAL_Nef_polyhedron3::SHalfloop_const_handle ) {}
-	void visit( CGAL_Nef_polyhedron3::SFace_const_handle ) {}
-	void visit( CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet );
+	void visit(CGAL_Nef_polyhedron3::Vertex_const_handle) {}
+	void visit(CGAL_Nef_polyhedron3::Halfedge_const_handle) {}
+	void visit(CGAL_Nef_polyhedron3::SHalfedge_const_handle) {}
+	void visit(CGAL_Nef_polyhedron3::SHalfloop_const_handle) {}
+	void visit(CGAL_Nef_polyhedron3::SFace_const_handle) {}
+	void visit(CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet);
 };
 
 
@@ -201,7 +201,7 @@ namespace CGALUtils {
 					double inf = 1e8;
 					double eps = 0.001;
 					CGAL_Point_3 minpt(-inf, -inf, -eps);
-					CGAL_Point_3 maxpt( inf,  inf,  eps);
+					CGAL_Point_3 maxpt(inf,  inf,  eps);
 					CGAL_Iso_cuboid_3 bigcuboid(minpt, maxpt);
 					for (int i=0; i<8; i++) pts.push_back(bigcuboid.vertex(i));
 					CGAL_Polyhedron bigbox;

@@ -27,7 +27,7 @@ BoundingBox operator*(const Transform3d &m, const BoundingBox &box)
 	return newbox;
 }
 
-bool matrix_contains_infinity( const Transform3d &m )
+bool matrix_contains_infinity(const Transform3d &m)
 {
 	for (int i=0; i<m.matrix().rows(); i++) {
 		for (int j=0; j<m.matrix().cols(); j++) {
@@ -37,7 +37,7 @@ bool matrix_contains_infinity( const Transform3d &m )
 	return false;
 }
 
-bool matrix_contains_nan( const Transform3d &m )
+bool matrix_contains_nan(const Transform3d &m)
 {
 	for (int i=0; i<m.matrix().rows(); i++) {
 		for (int j=0; j<m.matrix().cols(); j++) {

@@ -83,27 +83,27 @@ void PRINTDEBUG(const std::string &filename, const std::string &msg)
 	boost::algorithm::to_lower(lowdebug);
 	if (OpenSCAD::debug=="all" ||
 			lowdebug.find(lowshortfname) != std::string::npos) {
-		PRINT_NOCACHE( shortfname+": "+ msg );
+		PRINT_NOCACHE(shortfname+": "+ msg);
 	}
 }
 
-std::string two_digit_exp_format( std::string doublestr )
+std::string two_digit_exp_format(std::string doublestr)
 {
 #ifdef _WIN32
 	size_t exppos = doublestr.find('e');
-	if ( exppos != std::string::npos) {
+	if (exppos != std::string::npos) {
 		exppos += 2;
-		if ( doublestr[exppos] == '0' ) doublestr.erase(exppos,1);
+		if (doublestr[exppos] == '0') doublestr.erase(exppos,1);
 	}
 #endif
 	return doublestr;
 }
 
-std::string two_digit_exp_format( double x )
+std::string two_digit_exp_format(double x)
 {
 	std::stringstream s;
 	s << x;
-	return two_digit_exp_format( s.str() );
+	return two_digit_exp_format(s.str());
 }
 
 #include <set>

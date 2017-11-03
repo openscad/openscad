@@ -48,7 +48,7 @@ public:
 			std::vector<std::vector<size_t>> indices;
 
 			// Align all vertices to grid and build vertex array in vertices
-			for(const auto &p : ps.polygons) {
+			for (const auto &p : ps.polygons) {
 				indices.push_back(std::vector<size_t>());
 				indices.back().reserve(p.size());
 				for (auto v : boost::adaptors::reverse(p)) {
@@ -67,10 +67,10 @@ public:
 			int pidx = 0;
 #endif
 			B.begin_surface(vertices.size(), ps.polygons.size());
-			for(const auto &p : vertices) {
+			for (const auto &p : vertices) {
 				B.add_vertex(p);
 			}
-			for(auto &pindices : indices) {
+			for (auto &pindices : indices) {
 #ifdef GEN_SURFACE_DEBUG
 				if (pidx++ > 0) printf(",");
 #endif
@@ -121,7 +121,7 @@ public:
 #ifdef GEN_SURFACE_DEBUG
 			printf("polyhedron(faces=[");
 #endif
-			for(const auto &p : ps.polygons) {
+			for (const auto &p : ps.polygons) {
 #ifdef GEN_SURFACE_DEBUG
 				if (pidx++ > 0) printf(",");
 #endif
@@ -151,7 +151,7 @@ public:
 #ifdef GEN_SURFACE_DEBUG
 					printf("[");
 					int fidx = 0;
-					for(auto i : indices) {
+					for (auto i : indices) {
 						if (fidx++ > 0) printf(",");
 						printf("%ld", i);
 					}
@@ -219,7 +219,7 @@ public:
 				do {
 					builder.add_vertex_to_facet(index[hc->vertex()]);
 					++hc;
-				} while(hc != hc_end);
+				} while (hc != hc_end);
 				builder.end_facet();
 			}
 			builder.end_surface();
@@ -309,7 +309,7 @@ public:
 		void write_footer() {
 			*out << "]);" << std::endl;
 		}
-		void write_vertex( const double& x, const double& y, const double& z) {
+		void write_vertex(const double& x, const double& y, const double& z) {
 			*out << (firstv ? "" : ",") << '[' << x << ',' << y << ',' << z << ']';
 			firstv = false;
 		}
@@ -317,12 +317,12 @@ public:
 			*out << "], faces=[";
 			firstv = true;
 		}
-		void write_facet_begin( std::size_t /*no*/) {
+		void write_facet_begin(std::size_t /*no*/) {
 			*out << (firstv ? "" : ",") << '[';
 			indices.clear();
 			firstv = false;
 		}
-		void write_facet_vertex_index( std::size_t index) {
+		void write_facet_vertex_index(std::size_t index) {
 			indices.push_back(index);
 		}
 		void write_facet_end() {

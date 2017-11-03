@@ -17,7 +17,7 @@ std::string PlatformUtils::pathSeparatorChar()
 }
 
 // convert from windows api w_char strings (usually utf16) to utf8 std::string
-std::string winapi_wstr_to_utf8( std::wstring wstr )
+std::string winapi_wstr_to_utf8(std::wstring wstr)
 {
 	UINT CodePage = CP_UTF8;
 	DWORD dwFlags = 0;
@@ -28,8 +28,8 @@ std::string winapi_wstr_to_utf8( std::wstring wstr )
 	LPCSTR lpDefaultChar = nullptr;
 	LPBOOL lpUsedDefaultChar = nullptr;
 
-	int numbytes = WideCharToMultiByte( CodePage, dwFlags, lpWideCharStr,
-																			cchWideChar, lpMultiByteStr, cbMultiByte, lpDefaultChar, lpUsedDefaultChar );
+	int numbytes = WideCharToMultiByte(CodePage, dwFlags, lpWideCharStr,
+																		 cchWideChar, lpMultiByteStr, cbMultiByte, lpDefaultChar, lpUsedDefaultChar);
 
 	//PRINTB("utf16 to utf8 conversion: numbytes %i",numbytes);
 
@@ -37,8 +37,8 @@ std::string winapi_wstr_to_utf8( std::wstring wstr )
 	lpMultiByteStr = &utf8_str[0];
 	cbMultiByte = numbytes;
 
-	int result = WideCharToMultiByte( CodePage, dwFlags, lpWideCharStr,
-																		cchWideChar, lpMultiByteStr, cbMultiByte, lpDefaultChar, lpUsedDefaultChar );
+	int result = WideCharToMultiByte(CodePage, dwFlags, lpWideCharStr,
+																	 cchWideChar, lpMultiByteStr, cbMultiByte, lpDefaultChar, lpUsedDefaultChar);
 
 	if (result != numbytes) {
 		DWORD errcode = GetLastError();
@@ -59,10 +59,10 @@ static const std::string getFolderPath(int nFolder)
 	DWORD dwFlags = SHGFP_TYPE_CURRENT;
 	LPTSTR pszPath = &path[0];
 
-	int result = SHGetFolderPathW( hwndOwner, nFolder, hToken, dwFlags, pszPath );
+	int result = SHGetFolderPathW(hwndOwner, nFolder, hToken, dwFlags, pszPath);
 
 	if (result == S_OK) {
-		path = std::wstring( path.c_str() );     // strip extra nullptrs
+		path = std::wstring(path.c_str());       // strip extra nullptrs
 		// Use boost::filesystem to decide how to convert from wstring
 		// to string. Normally the path encoding is system local and
 		// we don't want to force conversion to UTF-8.

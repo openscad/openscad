@@ -62,9 +62,9 @@ public:
 
 	void draw(bool showedges) const {
 		PRINTD("draw()");
-		if(this->style == SNC_BOUNDARY) {
+		if (this->style == SNC_BOUNDARY) {
 			glCallList(this->object_list_+2);
-			if(showedges) {
+			if (showedges) {
 				glDisable(GL_LIGHTING);
 				glCallList(this->object_list_+1);
 				glCallList(this->object_list_);

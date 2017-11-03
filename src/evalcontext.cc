@@ -102,7 +102,7 @@ std::string EvalContext::dump(const AbstractModule *mod, const ModuleInstantiati
 	}
 	if (this->scope && this->scope->children.size() > 0) {
 		s << boost::format("    children:");
-		for(const auto &ch : this->scope->children) {
+		for (const auto &ch : this->scope->children) {
 			s << boost::format("      %s") % ch->name();
 		}
 	}
@@ -110,7 +110,7 @@ std::string EvalContext::dump(const AbstractModule *mod, const ModuleInstantiati
 		const UserModule *m = dynamic_cast<const UserModule*>(mod);
 		if (m) {
 			s << boost::format("  module args:");
-			for(const auto &arg : m->definition_arguments) {
+			for (const auto &arg : m->definition_arguments) {
 				s << boost::format("    %s = %s") % arg.name % *(variables[arg.name]);
 			}
 		}

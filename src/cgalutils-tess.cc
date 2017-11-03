@@ -65,7 +65,7 @@ static void  mark_domains(CDT &ct,
 //Facets in the domain are those with an odd nesting level.
 static void mark_domains(CDT& cdt)
 {
-	for(CDT::All_faces_iterator it = cdt.all_faces_begin(); it != cdt.all_faces_end(); ++it) {
+	for (CDT::All_faces_iterator it = cdt.all_faces_begin(); it != cdt.all_faces_end(); ++it) {
 		it->info().nesting_level = -1;
 	}
 	std::list<CDT::Edge> border;
@@ -119,7 +119,7 @@ namespace CGALUtils {
 		// the Constrained Delaunay Triangulator.
 		Projection actualProjection(normalvec);
 		CDT cdt(actualProjection);
-		for(const auto &poly : polygons) {
+		for (const auto &poly : polygons) {
 			for (size_t i=0; i<poly.size(); i++) {
 				cdt.insert_constraint(poly[i], poly[(i+1)%poly.size()]);
 			}

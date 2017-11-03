@@ -15,11 +15,11 @@ using namespace boost;
 
 double gl_version()
 {
-	string tmp((const char*)glGetString( GL_VERSION ));
+	string tmp((const char*)glGetString(GL_VERSION));
 	vector<string> strs;
 	split(strs, tmp, is_any_of("."));
 	stringstream out;
-	if ( strs.size() >= 2)
+	if (strs.size() >= 2)
 		out << strs[0] << "." << strs[1];
 	else
 		out << "0.0";
@@ -31,10 +31,10 @@ double gl_version()
 string glew_extensions_dump()
 {
 	std::string tmp;
-	if ( gl_version() >= 3.0 ) {
+	if (gl_version() >= 3.0) {
 		GLint numexts = 0;
 		glGetIntegerv(GL_NUM_EXTENSIONS, &numexts);
-		for ( int i=0; i<numexts; i++ ) {
+		for (int i=0; i<numexts; i++) {
 			tmp += (const char *) glGetStringi(GL_EXTENSIONS, i);
 			tmp += " ";
 		}
@@ -42,11 +42,11 @@ string glew_extensions_dump()
 		tmp = (const char *) glGetString(GL_EXTENSIONS);
 	}
 	vector<string> extensions;
-	split( extensions, tmp, is_any_of(" "));
-	sort( extensions.begin(), extensions.end() );
+	split(extensions, tmp, is_any_of(" "));
+	sort(extensions.begin(), extensions.end());
 	stringstream out;
 	out << "GL Extensions:";
-	for ( unsigned int i=0; i<extensions.size(); i++ )
+	for (unsigned int i=0; i<extensions.size(); i++)
 		out << extensions[i] << "\n";
 	return out.str();
 }

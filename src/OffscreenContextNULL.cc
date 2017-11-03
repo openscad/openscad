@@ -37,7 +37,7 @@ string offscreen_context_getinfo(OffscreenContext *ctx)
 OffscreenContext *create_offscreen_context(int w, int h)
 {
 	OffscreenContext *ctx = new OffscreenContext;
-	offscreen_context_init( *ctx, w, h );
+	offscreen_context_init(*ctx, w, h);
 }
 
 bool teardown_offscreen_context(OffscreenContext *ctx)

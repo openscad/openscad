@@ -35,7 +35,7 @@ void ModuleContext::evaluateAssignments(const AssignmentList &assignments)
 	// to allow for initialization out of order
 
 	std::unordered_map<std::string, Expression *> tmpass;
-	for(const auto &ass : assignments) {
+	for (const auto &ass : assignments) {
 		tmpass[ass.first] = ass.second;
 	}
 
@@ -157,20 +157,20 @@ std::string ModuleContext::dump(const AbstractModule *mod, const ModuleInstantia
 		const UserModule *m = dynamic_cast<const UserModule*>(mod);
 		if (m) {
 			s << "  module args:";
-			for(const auto &arg : m->definition_arguments) {
+			for (const auto &arg : m->definition_arguments) {
 				s << boost::format("    %s = %s") % arg.name % variables[arg.name];
 			}
 		}
 	}
 	typedef std::pair<std::string, ValuePtr> ValueMapType;
 	s << "  vars:";
-	for(const auto &v : constants) {
+	for (const auto &v : constants) {
 		s << boost::format("    %s = %s") % v.first % v.second;
 	}
-	for(const auto &v : variables) {
+	for (const auto &v : variables) {
 		s << boost::format("    %s = %s") % v.first % v.second;
 	}
-	for(const auto &v : config_variables) {
+	for (const auto &v : config_variables) {
 		s << boost::format("    %s = %s") % v.first % v.second;
 	}
 	return s.str();

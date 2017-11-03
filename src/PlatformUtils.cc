@@ -97,10 +97,10 @@ bool PlatformUtils::createUserLibraryPath()
 	try {
 		if (!fs::exists(fs::path(path))) {
 			//PRINTB("Creating library folder %s", path );
-			OK = fs::create_directories( path );
+			OK = fs::create_directories(path);
 		}
 		if (!OK) {
-			PRINTB("ERROR: Cannot create %s", path );
+			PRINTB("ERROR: Cannot create %s", path);
 		}
 	} catch (const fs::filesystem_error& ex) {
 		PRINTB("ERROR: %s",ex.what());
@@ -114,9 +114,9 @@ std::string PlatformUtils::userLibraryPath()
 	try {
 		std::string pathstr = PlatformUtils::documentsPath();
 		if (pathstr=="") return "";
-		path = fs::path( pathstr );
+		path = fs::path(pathstr);
 		if (!fs::exists(path)) return "";
-		path = boosty::canonical( path );
+		path = boosty::canonical(path);
 		//PRINTB("path size %i",boosty::stringy(path).size());
 		//PRINTB("lib path found: [%s]", path );
 		if (path.empty()) return "";
@@ -137,9 +137,9 @@ std::string PlatformUtils::backupPath()
 	try {
 		std::string pathstr = PlatformUtils::documentsPath();
 		if (pathstr=="") return "";
-		path = fs::path( pathstr );
+		path = fs::path(pathstr);
 		if (!fs::exists(path)) return "";
-		path = boosty::canonical( path );
+		path = boosty::canonical(path);
 		if (path.empty()) return "";
 		path /= OPENSCAD_FOLDER_NAME;
 		path /= "backups";
@@ -155,10 +155,10 @@ bool PlatformUtils::createBackupPath()
 	bool OK = false;
 	try {
 		if (!fs::exists(fs::path(path))) {
-			OK = fs::create_directories( path );
+			OK = fs::create_directories(path);
 		}
 		if (!OK) {
-			PRINTB("ERROR: Cannot create %s", path );
+			PRINTB("ERROR: Cannot create %s", path);
 		}
 	} catch (const fs::filesystem_error& ex) {
 		PRINTB("ERROR: %s",ex.what());

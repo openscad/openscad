@@ -85,7 +85,7 @@ namespace CGALUtils {
 			CGAL::Nef_nary_union_3<CGAL_Nef_polyhedron3> nary_union;
 			int nary_union_num_inserted = 0;
 
-			for(const auto &item : children) {
+			for (const auto &item : children) {
 				const shared_ptr<const Geometry> &chgeom = item.second;
 				shared_ptr<const CGAL_Nef_polyhedron> chN =
 					dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
@@ -157,7 +157,7 @@ namespace CGALUtils {
 		// instead.
 		std::list<K::Point_3> points;
 
-		for(const auto &item : children) {
+		for (const auto &item : children) {
 			const shared_ptr<const Geometry> &chgeom = item.second;
 			const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(chgeom.get());
 			if (N) {
@@ -169,8 +169,8 @@ namespace CGALUtils {
 			} else {
 				const PolySet *ps = dynamic_cast<const PolySet *>(chgeom.get());
 				if (ps) {
-					for(const auto &p : ps->polygons) {
-						for(const auto &v : p) {
+					for (const auto &p : ps->polygons) {
+						for (const auto &v : p) {
 							points.push_back(K::Point_3(v[0], v[1], v[2]));
 						}
 					}
@@ -255,8 +255,8 @@ namespace CGALUtils {
 
 						// the first volume is the outer volume, which ignored in the decomposition
 						CGAL_Nef_polyhedron3::Volume_const_iterator ci = ++decomposed_nef.volumes_begin();
-						for(; ci != decomposed_nef.volumes_end(); ++ci) {
-							if(ci->mark()) {
+						for (; ci != decomposed_nef.volumes_end(); ++ci) {
+							if (ci->mark()) {
 								CGAL_Polyhedron poly;
 								decomposed_nef.convert_inner_shell_to_polyhedron(ci->shells_begin(), poly);
 								P[i].push_back(poly);

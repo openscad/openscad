@@ -35,7 +35,7 @@ bool write_deps(const std::string &filename, const std::string &output_file)
 	}
 	fprintf(fp, "%s:", output_file.c_str());
 
-	for(const auto &str : dependencies) {
+	for (const auto &str : dependencies) {
 		fprintf(fp, " \\\n\t%s", str.c_str());
 	}
 	fprintf(fp, "\n");

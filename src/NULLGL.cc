@@ -4,7 +4,7 @@ GLView::GLView() {}
 void GLView::setRenderer(Renderer* r) {}
 void GLView::initializeGL() {}
 void GLView::resizeGL(int w, int h) {}
-void GLView::setCamera(const Camera &cam ) {assert(false && "not implemented");}
+void GLView::setCamera(const Camera &cam) {assert(false && "not implemented");}
 void GLView::paintGL() {}
 void GLView::showSmallaxes(const Color4f &col) {}
 void GLView::showAxes(const Color4f &col) {}

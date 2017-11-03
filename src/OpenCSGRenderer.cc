@@ -93,12 +93,12 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 																				bool highlight_mode, bool background_mode) const
 {
 #ifdef ENABLE_OPENCSG
-	for(const auto &product : products.products) {
+	for (const auto &product : products.products) {
 		std::vector<OpenCSG::Primitive*> primitives;
-		for(const auto &csgobj : product.intersections) {
+		for (const auto &csgobj : product.intersections) {
 			if (csgobj.leaf->geom) primitives.push_back(createCSGPrimitive(csgobj, OpenCSG::Intersection, highlight_mode, background_mode, OpenSCADOperator::INTERSECTION));
 		}
-		for(const auto &csgobj : product.subtractions) {
+		for (const auto &csgobj : product.subtractions) {
 			if (csgobj.leaf->geom) primitives.push_back(createCSGPrimitive(csgobj, OpenCSG::Subtraction, highlight_mode, background_mode, OpenSCADOperator::DIFFERENCE));
 		}
 		if (primitives.size() > 1) {
@@ -107,7 +107,7 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 		}
 		if (shaderinfo) glUseProgram(shaderinfo[0]);
 
-		for(const auto &csgobj : product.intersections) {
+		for (const auto &csgobj : product.intersections) {
 			const Color4f &c = csgobj.leaf->color;
 			csgmode_e csgmode = csgmode_e(
 					highlight_mode ?
@@ -129,7 +129,7 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 			render_surface(csgobj.leaf->geom, csgmode, csgobj.leaf->matrix, shaderinfo);
 			glPopMatrix();
 		}
-		for(const auto &csgobj : product.subtractions) {
+		for (const auto &csgobj : product.subtractions) {
 			const Color4f &c = csgobj.leaf->color;
 			csgmode_e csgmode = csgmode_e(
 					(highlight_mode ?
@@ -153,7 +153,7 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 		}
 
 		if (shaderinfo) glUseProgram(0);
-		for(auto &p : primitives) delete p;
+		for (auto &p : primitives) delete p;
 		glDepthFunc(GL_LEQUAL);
 	}
 #endif

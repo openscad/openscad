@@ -31,7 +31,7 @@
 static void append_svg(const Polygon2d &poly, std::ostream &output)
 {
 	output << "<path d=\"\n";
-	for(const auto &o : poly.outlines()) {
+	for (const auto &o : poly.outlines()) {
 		if (o.vertices.empty()) {
 			continue;
 		}

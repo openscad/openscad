@@ -13,7 +13,7 @@
 #else // NULLGL
 #define GLint int
 #define GLuint unsigned int
-inline void glColor4fv( float *c ) {}
+inline void glColor4fv(float *c) {}
 #endif // NULLGL
 
 #include <string>

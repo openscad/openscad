@@ -43,7 +43,7 @@ public:
 		}
 
 		if (highlightNodes.size() > 0) {
-			PRINTB("Compiling highlights (%i CSG Trees)...", highlightNodes.size() );
+			PRINTB("Compiling highlights (%i CSG Trees)...", highlightNodes.size());
 			this->highlights_products.reset(new CSGProducts());
 			for (unsigned int i = 0; i < highlightNodes.size(); i++) {
 				highlightNodes[i] = normalizer.normalize(highlightNodes[i]);

@@ -186,7 +186,7 @@ void ScintillaEditor::applySettings()
 	bool value = s->get(Settings::Settings::enableLineNumbers).toBool();
 	qsci->setMarginLineNumbers(1,value);
 
-	if(!value)
+	if (!value)
 	{
 		qsci->setMarginWidth(1,20);
 	}
@@ -513,7 +513,7 @@ void ScintillaEditor::onTextChanged()
 	QFontMetrics fontmetrics(this->currentFont);
 	bool value = s->get(Settings::Settings::enableLineNumbers).toBool();
 
-	if(!value)
+	if (!value)
 	{
 		qsci->setMarginWidth(1,20);
 	}
@@ -677,9 +677,9 @@ bool ScintillaEditor::eventFilter(QObject* obj, QEvent *e)
 
 	if (obj != qsci) return EditorInterface::eventFilter(obj, e);
 
-	if (  e->type()==QEvent::KeyPress
-				|| e->type()==QEvent::KeyRelease
-				) {
+	if (e->type()==QEvent::KeyPress
+			|| e->type()==QEvent::KeyRelease
+			) {
 		QKeyEvent *ke = static_cast<QKeyEvent*>(e);
 		if ((ke->modifiers() & ~Qt::KeypadModifier) == Qt::AltModifier) {
 			switch (ke->key())
@@ -709,9 +709,9 @@ bool ScintillaEditor::eventFilter(QObject* obj, QEvent *e)
 			if (wasChanged) qsci->endUndoAction();
 			wasChanged=false;
 			QsciCommand *cmd=qsci->standardCommands()->boundTo(k);
-			if ( cmd && ( cmd->command()==QsciCommand::Undo || cmd->command()==QsciCommand::Redo ) )
+			if (cmd && (cmd->command()==QsciCommand::Undo || cmd->command()==QsciCommand::Redo))
 				QTimer::singleShot(0,this,SIGNAL(previewRequest()));
-			else if ( cmd || !ke->text().isEmpty() ) {
+			else if (cmd || !ke->text().isEmpty()) {
 				// any insert or command (but not undo/redo) cancels the preview after undo
 				previewAfterUndo=false;
 			}
@@ -771,7 +771,7 @@ bool ScintillaEditor::modifyNumber(int key)
 	int end=text.indexOf(QRegExp("[^0-9.]"),index);
 	if (end<0) end=text.length();
 	QString nr=text.mid(begin,end-begin);
-	if ( !(nr.contains(QRegExp("^[-+]?\\d*\\.?\\d*$")) && nr.contains(QRegExp("\\d"))) ) return false;
+	if (!(nr.contains(QRegExp("^[-+]?\\d*\\.?\\d*$")) && nr.contains(QRegExp("\\d")))) return false;
 	bool sign=nr[0]=='+'||nr[0]=='-';
 	if (nr.endsWith('.')) nr=nr.left(nr.length()-1);
 	int curpos=index-begin;

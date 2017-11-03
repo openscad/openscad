@@ -16,7 +16,7 @@ public:
 	Highlighter(QTextDocument *parent);
 	void highlightBlock(const QString &text);
 	void assignFormatsToTokens(const QString &);
-	void portable_rehighlightBlock( const QTextBlock &text );
+	void portable_rehighlightBlock(const QTextBlock &text);
 	void highlightError(int error_pos);
 	void unhighlightLastError();
 private:

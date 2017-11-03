@@ -144,7 +144,7 @@ void Preferences::init() {
 
 	uint savedsize = getValue("editor/fontsize").toUInt();
 	QFontDatabase db;
-	for(auto size : db.standardSizes()) {
+	for (auto size : db.standardSizes()) {
 		this->fontSize->addItem(QString::number(size));
 		if (static_cast<uint>(size) == savedsize) {
 			this->fontSize->setCurrentIndex(this->fontSize->count()-1);
@@ -152,7 +152,7 @@ void Preferences::init() {
 	}
 
 	// reset GUI fontsize if fontSize->addItem emitted signals that changed it.
-	this->fontSize->setEditText( QString("%1").arg( savedsize ) );
+	this->fontSize->setEditText(QString("%1").arg(savedsize));
 
 	// Setup default settings
 	this->defaultmap["advanced/opencsg_show_warning"] = true;
@@ -327,7 +327,7 @@ void Preferences::on_colorSchemeChooser_itemSelectionChanged()
 	QString scheme = this->colorSchemeChooser->currentItem()->text();
 	QSettingsCached settings;
 	settings.setValue("3dview/colorscheme", scheme);
-	emit colorSchemeChanged( scheme );
+	emit colorSchemeChanged(scheme);
 }
 
 void Preferences::on_fontChooser_activated(const QString &family)
@@ -708,7 +708,7 @@ void Preferences::initComboBox(QComboBox *comboBox, const Settings::SettingsEntr
 {
 	comboBox->clear();
 	// Range is a vector of 2D vectors: [[name, value], ...]
-	for(const auto &v : entry.range().toVector()) {
+	for (const auto &v : entry.range().toVector()) {
 		QString val = QString::fromStdString(v[0]->toString());
 		QString qtext = QString::fromStdString(gettext(v[1]->toString().c_str()));
 		comboBox->addItem(qtext, val);
@@ -766,7 +766,7 @@ void Preferences::create(QStringList colorSchemes)
 
 	std::list<std::string> names = ColorMap::inst()->colorSchemeNames(true);
 	QStringList renderColorSchemes;
-	for(const auto &name : names) renderColorSchemes << name.c_str();
+	for (const auto &name : names) renderColorSchemes << name.c_str();
 
 	instance = new Preferences();
 	instance->syntaxHighlight->clear();

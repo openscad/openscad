@@ -218,7 +218,7 @@ namespace CGALUtils {
 		facets_to_visit.push(0);
 		explored_facets.insert(0);
 
-		while(!facets_to_visit.empty()) {
+		while (!facets_to_visit.empty()) {
 			int f = facets_to_visit.front(); facets_to_visit.pop();
 
 			for (size_t i = 0; i < ps.polygons[f].size(); i++) {
@@ -314,16 +314,16 @@ namespace CGALUtils {
 		for (const auto &faces : polygons) {
 #if 0 // For debugging
 			std::cerr << "---\n";
-			for(const auto &poly : faces) {
-				for(auto i : poly) {
+			for (const auto &poly : faces) {
+				for (auto i : poly) {
 					std::cerr << i << " ";
 				}
 				std::cerr << "\n";
 			}
 #if 0 // debug
 			std::cerr.precision(20);
-			for(const auto &poly : faces) {
-				for(auto i : poly) {
+			for (const auto &poly : faces) {
+				for (auto i : poly) {
 					std::cerr << verts[i][0] << "," << verts[i][1] << "," << verts[i][2] << "\n";
 				}
 				std::cerr << "\n";
@@ -363,7 +363,7 @@ namespace CGALUtils {
 		}
 
 #if 0 // For debugging
-		for(const auto &t : allTriangles) {
+		for (const auto &t : allTriangles) {
 			std::cerr << t[0] << " " << t[1] << " " << t[2] << "\n";
 		}
 #endif // debug
@@ -473,7 +473,7 @@ namespace CGALUtils {
 			std::vector<Polygon> triangles;
 			bool err = CGALUtils::tessellate3DFaceWithHolesNew(polyholes, triangles, plane);
 			if (!err) {
-				for(const auto &p : triangles) {
+				for (const auto &p : triangles) {
 					if (p.size() != 3) {
 						PRINT("WARNING: triangle doesn't have 3 points. skipping");
 						continue;
@@ -538,7 +538,7 @@ namespace CGALUtils {
 			std::vector<Polygon> triangles;
 			bool err = CGALUtils::tessellatePolygonWithHolesNew(polyholes, triangles, nullptr);
 			if (!err) {
-				for(const auto &p : triangles) {
+				for (const auto &p : triangles) {
 					if (p.size() != 3) {
 						PRINT("WARNING: triangle doesn't have 3 points. skipping");
 						continue;
@@ -577,8 +577,8 @@ namespace CGALUtils {
 			}
 
 			std::cout << "---\n";
-			for(const auto &poly : polyholes) {
-				for(const auto &v : poly) {
+			for (const auto &poly : polyholes) {
+				for (const auto &v : poly) {
 					std::cout << v.x() << "," << v.y() << "," << v.z() << "\n";
 				}
 				std::cout << "\n";
@@ -600,7 +600,7 @@ namespace CGALUtils {
 			std::vector<Polygon> triangles;
 			bool err = CGALUtils::tessellatePolygonWithHolesNew(polyholes, triangles, nullptr);
 			if (!err) {
-				for(const auto &p : triangles) {
+				for (const auto &p : triangles) {
 					if (p.size() != 3) {
 						PRINT("WARNING: triangle doesn't have 3 points. skipping");
 						continue;
@@ -652,8 +652,8 @@ namespace CGALUtils {
 #if 0 // For debugging
 			std::cerr << "---\n";
 			std::cerr.precision(20);
-			for(const auto &poly : polyhole.faces) {
-				for(auto i : poly) {
+			for (const auto &poly : polyhole.faces) {
+				for (auto i : poly) {
 					std::cerr << polyhole.vertices[i][0] << "," << polyhole.vertices[i][1] << "," << polyhole.vertices[i][2] << "\n";
 				}
 				std::cerr << "\n";

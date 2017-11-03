@@ -72,7 +72,7 @@ std::string LocalScope::dump(const std::string &indent) const
 std::vector<AbstractNode*> LocalScope::instantiateChildren(const Context *evalctx) const
 {
 	std::vector<AbstractNode*> childnodes;
-	for(const auto &modinst : this->children) {
+	for (const auto &modinst : this->children) {
 		AbstractNode *node = modinst->evaluate(evalctx);
 		if (node) childnodes.push_back(node);
 	}
@@ -89,7 +89,7 @@ std::vector<AbstractNode*> LocalScope::instantiateChildren(const Context *evalct
  */
 void LocalScope::apply(Context &ctx) const
 {
-	for(const auto &ass : this->assignments) {
+	for (const auto &ass : this->assignments) {
 		ctx.set_variable(ass.name, ass.expr->evaluate(&ctx));
 	}
 }

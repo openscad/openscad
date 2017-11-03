@@ -17,7 +17,7 @@ typedef std::vector <GroupInfo> GroupList;
 
  */
 
-static int getLineToStop( const std::string &fulltext){
+static int getLineToStop(const std::string &fulltext){
 	int lineNo=1;
 	bool inString=false;
 	for (unsigned int i=0; i<fulltext.length(); i++) {
@@ -49,7 +49,7 @@ static int getLineToStop( const std::string &fulltext){
 		//start of multi line comment if check is true
 		if (!inString && fulltext.compare(i, 2, "/*") == 0) {
 			i++;
-			if(i<fulltext.length()) {
+			if (i<fulltext.length()) {
 				i++;
 			}
 			else {
@@ -57,7 +57,7 @@ static int getLineToStop( const std::string &fulltext){
 			}
 			// till */ every character is comment
 			while (fulltext.compare(i, 2, "*/") != 0 && i<fulltext.length()) {
-				if(fulltext[i]=='\n') {
+				if (fulltext[i]=='\n') {
 					lineNo++;
 				}
 				i++;
@@ -228,7 +228,7 @@ static GroupList collectGroups(const std::string &fulltext)
 
 		if (!inString && fulltext.compare(i, 2, "//") == 0) {
 			i++;
-			while (fulltext[i] != '\n' && i<fulltext.length() ) i++;
+			while (fulltext[i] != '\n' && i<fulltext.length()) i++;
 			lineNo++;
 			continue;
 		}
@@ -238,7 +238,7 @@ static GroupList collectGroups(const std::string &fulltext)
 			//store comment
 			std::string comment;
 			i++;
-			if(i<fulltext.length()) {
+			if (i<fulltext.length()) {
 				i++;
 			}
 			else {
@@ -247,7 +247,7 @@ static GroupList collectGroups(const std::string &fulltext)
 			bool isGroup=true;
 			// till */ every character is comment
 			while (fulltext.compare(i, 2, "*/") != 0 && i<fulltext.length()) {
-				if(fulltext[i]=='\n') {
+				if (fulltext[i]=='\n') {
 					lineNo++;
 					isGroup=false;
 				}
@@ -255,7 +255,7 @@ static GroupList collectGroups(const std::string &fulltext)
 				i++;
 			}
 
-			if(isGroup)
+			if (isGroup)
 				groupList.push_back(createGroup(comment,lineNo));
 		}
 	}
@@ -279,7 +279,7 @@ void CommentParser::collectParameters(const char *fulltext, FileModule *root_mod
 
 		// get location of assignment node
 		int firstLine = assignment.location().firstLine();
-		if(firstLine>=parseTill ) continue;
+		if (firstLine>=parseTill) continue;
 
 		// making list to add annotations
 		AnnotationList *annotationList = new AnnotationList();

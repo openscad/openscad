@@ -9,7 +9,7 @@ extern "C" {
 	OSErr eventHandler(const AppleEvent *ev, AppleEvent *reply, SRefCon refcon);
 }
 
-OSErr eventHandler(const AppleEvent *, AppleEvent *, SRefCon )
+OSErr eventHandler(const AppleEvent *, AppleEvent *, SRefCon)
 {
 // FIXME: Ugly hack; just using the first MainWindow we can find
 	MainWindow *mainwin = nullptr;
