@@ -15,7 +15,7 @@ public:
 	virtual ~AssertionFailedException() throw() {}
 };
 
-class RecursionException: public EvaluationException {
+class RecursionException : public EvaluationException {
 public:
 	static RecursionException create(const char *recursiontype, const std::string &name) {
 		std::stringstream out;

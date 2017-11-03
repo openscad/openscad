@@ -16,11 +16,11 @@
 #include <CGAL/normal_vector_newell_3.h>
 #include <CGAL/Handle_hash_function.h>
 
-#include <CGAL/config.h> 
-#include <CGAL/version.h> 
+#include <CGAL/config.h>
+#include <CGAL/version.h>
 
 // Apply CGAL bugfix for CGAL-4.5.x
-#if CGAL_VERSION_NR > CGAL_VERSION_NUMBER(4,5,1) || CGAL_VERSION_NR < CGAL_VERSION_NUMBER(4,5,0) 
+#if CGAL_VERSION_NR > CGAL_VERSION_NUMBER(4,5,1) || CGAL_VERSION_NR < CGAL_VERSION_NUMBER(4,5,0)
 #include <CGAL/convex_hull_3.h>
 #else
 #include "convex_hull_3_bugfix.h"
@@ -33,17 +33,17 @@
 #include <queue>
 
 static void add_outline_to_poly(CGAL_Nef_polyhedron2::Explorer &explorer,
-								CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator circ,
-								CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator end,
-								bool positive,
-								Polygon2d *poly) {
+																CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator circ,
+																CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator end,
+																bool positive,
+																Polygon2d *poly) {
 	Outline2d outline;
 
 	CGAL_For_all(circ, end) {
 		if (explorer.is_standard(explorer.target(circ))) {
 			CGAL_Nef_polyhedron2::Explorer::Point ep = explorer.point(explorer.target(circ));
 			outline.vertices.push_back(Vector2d(to_double(ep.x()),
-												to_double(ep.y())));
+																					to_double(ep.y())));
 		}
 	}
 
@@ -56,19 +56,19 @@ static void add_outline_to_poly(CGAL_Nef_polyhedron2::Explorer &explorer,
 static Polygon2d *convertToPolygon2d(const CGAL_Nef_polyhedron2 &p2)
 {
 	Polygon2d *poly = new Polygon2d;
-	
+
 	typedef CGAL_Nef_polyhedron2::Explorer Explorer;
 	typedef Explorer::Face_const_iterator fci_t;
 	typedef Explorer::Halfedge_around_face_const_circulator heafcc_t;
 	Explorer E = p2.explorer();
 	for (fci_t fit = E.faces_begin(), facesend = E.faces_end(); fit != facesend; ++fit) {
 		if (!fit->mark()) continue;
-			heafcc_t fcirc(E.face_cycle(fit)), fend(fcirc);
-			add_outline_to_poly(E, fcirc, fend, true, poly);
-			for (CGAL_Nef_polyhedron2::Explorer::Hole_const_iterator j = E.holes_begin(fit);j != E.holes_end(fit); ++j) {
-				CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator hcirc(j), hend(hcirc);
-				add_outline_to_poly(E, hcirc, hend, false, poly);
-			}
+		heafcc_t fcirc(E.face_cycle(fit)), fend(fcirc);
+		add_outline_to_poly(E, fcirc, fend, true, poly);
+		for (CGAL_Nef_polyhedron2::Explorer::Hole_const_iterator j = E.holes_begin(fit); j != E.holes_end(fit); ++j) {
+			CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator hcirc(j), hend(hcirc);
+			add_outline_to_poly(E, hcirc, hend, false, poly);
+		}
 	}
 	poly->setSanitized(true);
 	return poly;
@@ -76,31 +76,31 @@ static Polygon2d *convertToPolygon2d(const CGAL_Nef_polyhedron2 &p2)
 
 /*
 
-ZRemover
+   ZRemover
 
-This class converts one or more Nef3 polyhedra into a Nef2 polyhedron by
-stripping off the 'z' coordinates from the vertices. The resulting Nef2
-poly is accumulated in the 'output_nefpoly2d' member variable.
+   This class converts one or more Nef3 polyhedra into a Nef2 polyhedron by
+   stripping off the 'z' coordinates from the vertices. The resulting Nef2
+   poly is accumulated in the 'output_nefpoly2d' member variable.
 
-The 'z' coordinates will either be all 0s, for an xy-plane intersected Nef3,
-or, they will be a mixture of -eps and +eps, for a thin-box intersected Nef3.
+   The 'z' coordinates will either be all 0s, for an xy-plane intersected Nef3,
+   or, they will be a mixture of -eps and +eps, for a thin-box intersected Nef3.
 
-Notes on CGAL's Nef Polyhedron2:
+   Notes on CGAL's Nef Polyhedron2:
 
-1. The 'mark' on a 2d Nef face is important when doing unions/intersections.
- If the 'mark' of a face is wrong the resulting nef2 poly will be unexpected.
-2. The 'mark' can be dependent on the points fed to the Nef2 constructor.
- This is why we iterate through the 3d faces using the halfedge cycle
- source()->target() instead of the ordinary source()->source(). The
- the latter can generate sequences of points that will fail the
- the CGAL::is_simple_2() test, resulting in improperly marked nef2 polys.
-3. 3d facets have 'two sides'. we throw out the 'down' side to prevent dups.
+   1. The 'mark' on a 2d Nef face is important when doing unions/intersections.
+   If the 'mark' of a face is wrong the resulting nef2 poly will be unexpected.
+   2. The 'mark' can be dependent on the points fed to the Nef2 constructor.
+   This is why we iterate through the 3d faces using the halfedge cycle
+   source()->target() instead of the ordinary source()->source(). The
+   the latter can generate sequences of points that will fail the
+   the CGAL::is_simple_2() test, resulting in improperly marked nef2 polys.
+   3. 3d facets have 'two sides'. we throw out the 'down' side to prevent dups.
 
-The class uses the 'visitor' pattern from the CGAL manual. See also
-http://www.cgal.org/Manual/latest/doc_html/cgal_manual/Nef_3/Chapter_main.html
-http://www.cgal.org/Manual/latest/doc_html/cgal_manual/Nef_3_ref/Class_Nef_polyhedron3.html
-OGL_helper.h
-*/
+   The class uses the 'visitor' pattern from the CGAL manual. See also
+   http://www.cgal.org/Manual/latest/doc_html/cgal_manual/Nef_3/Chapter_main.html
+   http://www.cgal.org/Manual/latest/doc_html/cgal_manual/Nef_3_ref/Class_Nef_polyhedron3.html
+   OGL_helper.h
+ */
 
 class ZRemover {
 public:
@@ -163,9 +163,9 @@ void ZRemover::visit(CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet)
 			}
 
 			/*log << "\n<!-- ======== output tmp nef: ==== -->\n"
-				<< OpenSCAD::dump_svg(*tmpnef2d) << "\n"
-				<< "\n<!-- ======== output accumulator: ==== -->\n"
-				<< OpenSCAD::dump_svg(*output_nefpoly2d) << "\n";*/
+			   << OpenSCAD::dump_svg(*tmpnef2d) << "\n"
+			   << "\n<!-- ======== output accumulator: ==== -->\n"
+			   << OpenSCAD::dump_svg(*output_nefpoly2d) << "\n";*/
 
 			contour_counter++;
 		} else {
@@ -203,7 +203,7 @@ namespace CGALUtils {
 					CGAL_Point_3 minpt(-inf, -inf, -eps);
 					CGAL_Point_3 maxpt( inf,  inf,  eps);
 					CGAL_Iso_cuboid_3 bigcuboid(minpt, maxpt);
-					for (int i=0;i<8;i++) pts.push_back(bigcuboid.vertex(i));
+					for (int i=0; i<8; i++) pts.push_back(bigcuboid.vertex(i));
 					CGAL_Polyhedron bigbox;
 					CGAL::convex_hull_3(pts.begin(), pts.end(), bigbox);
 					CGAL_Nef_polyhedron3 nef_bigbox(bigbox);
@@ -213,13 +213,13 @@ namespace CGALUtils {
 					PRINTB("ERROR: CGAL error in CGALUtils::project during bigbox intersection: %s", e.what());
 				}
 			}
-				
+
 			if (!newN.p3 || newN.p3->is_empty()) {
 				CGAL::set_error_behaviour(old_behaviour);
 				PRINT("WARNING: projection() failed.");
 				return poly;
 			}
-				
+
 			PRINTDB("%s",OpenSCAD::svg_header(480, 100000));
 			try {
 				ZRemover zremover;
@@ -231,17 +231,17 @@ namespace CGALUtils {
 					for (j = i->shells_begin(); j != i->shells_end(); ++j) {
 						PRINTDB("<!-- shell. (vol mark was: %i)", i->mark());
 						sface_handle = CGAL_Nef_polyhedron3::SFace_const_handle(j);
-						newN.p3->visit_shell_objects(sface_handle , zremover);
+						newN.p3->visit_shell_objects(sface_handle, zremover);
 						PRINTD("<!-- shell. end. -->");
 					}
 					PRINTD("<!-- volume end. -->");
 				}
 				poly = convertToPolygon2d(*zremover.output_nefpoly2d);
-			}	catch (const CGAL::Failure_exception &e) {
+			} catch (const CGAL::Failure_exception &e) {
 				PRINTB("ERROR: CGAL error in CGALUtils::project while flattening: %s", e.what());
 			}
 			PRINTD("</svg>");
-				
+
 			CGAL::set_error_behaviour(old_behaviour);
 		}
 		// In projection mode all the triangles are projected manually into the XY plane

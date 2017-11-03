@@ -54,7 +54,7 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 #include <cstdint>
 
 extern PolySet * import_amf(std::string);
-	
+
 class ImportModule : public AbstractModule
 {
 public:
@@ -65,16 +65,16 @@ public:
 
 AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
-  AssignmentList args{
-    Assignment("file"), Assignment("layer"), Assignment("convexity"),
+	AssignmentList args{
+		Assignment("file"), Assignment("layer"), Assignment("convexity"),
 		Assignment("origin"), Assignment("scale"), Assignment("filename"),
 		Assignment("layername")
 	};
-	
-  // FIXME: This is broken. Tag as deprecated and fix
+
+	// FIXME: This is broken. Tag as deprecated and fix
 	// Map old argnames to new argnames for compatibility
-	// To fix: 
-  // o after c.setVariables()
+	// To fix:
+	// o after c.setVariables()
 	//   - if "filename" in evalctx: deprecated-warning && v.set_variable("file", value);
 	//   - if "layername" in evalctx: deprecated-warning && v.set_variable("layer", value);
 #if 0
@@ -144,13 +144,13 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 	auto height = c.lookup_variable("height", true);
 	node->width = (width->type() == Value::ValueType::NUMBER) ? width->toDouble() : -1;
 	node->height = (height->type() == Value::ValueType::NUMBER) ? height->toDouble() : -1;
-	
+
 	return node;
 }
 
 /*!
-	Will return an empty geometry if the import failed, but not nullptr
-*/
+   Will return an empty geometry if the import failed, but not nullptr
+ */
 const Geometry *ImportNode::createGeometry() const
 {
 	Geometry *g = nullptr;
@@ -170,7 +170,7 @@ const Geometry *ImportNode::createGeometry() const
 	}
 	case ImportType::SVG: {
 		g = import_svg(this->filename);
- 		break;
+		break;
 	}
 	case ImportType::DXF: {
 		DxfData dd(this->fn, this->fs, this->fa, this->filename, this->layername, this->origin_x, this->origin_y, this->scale);

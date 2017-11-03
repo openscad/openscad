@@ -2,19 +2,19 @@
 #include "printutils.h"
 
 /*!
-	Class for holding 2D geometry.
-	
-	This class will hold 2D geometry consisting of a number of closed
-	polygons. Each polygon can contain holes and islands. Both polygons,
-	holes and island contours may intersect each other.
- 
-	We can store sanitized vs. unsanitized polygons. Sanitized polygons
-	will have opposite winding order for holes and is guaranteed to not
-	have intersecting geometry. The winding order will be counter-clockwise 
-	for positive outlines and clockwise for holes. Sanitization is typically 
-	done by ClipperUtils, but if you create geometry which you know is sanitized, 
-	the flag can be set manually.
-*/
+   Class for holding 2D geometry.
+
+   This class will hold 2D geometry consisting of a number of closed
+   polygons. Each polygon can contain holes and islands. Both polygons,
+   holes and island contours may intersect each other.
+
+   We can store sanitized vs. unsanitized polygons. Sanitized polygons
+   will have opposite winding order for holes and is guaranteed to not
+   have intersecting geometry. The winding order will be counter-clockwise
+   for positive outlines and clockwise for holes. Sanitization is typically
+   done by ClipperUtils, but if you create geometry which you know is sanitized,
+   the flag can be set manually.
+ */
 
 size_t Polygon2d::memsize() const
 {
@@ -73,20 +73,20 @@ void Polygon2d::resize(const Vector2d &newsize, const Eigen::Matrix<bool,2,1> &a
 {
 	auto bbox = this->getBoundingBox();
 
-  // Find largest dimension
+	// Find largest dimension
 	int maxdim = (newsize[1] && newsize[1] > newsize[0]) ? 1 : 0;
 
 	// Default scale (scale with 1 if the new size is 0)
 	Vector2d scale(newsize[0] > 0 ? newsize[0] / bbox.sizes()[0] : 1,
 								 newsize[1] > 0 ? newsize[1] / bbox.sizes()[1] : 1);
 
-  // Autoscale where applicable 
+	// Autoscale where applicable
 	double autoscale = newsize[maxdim] > 0 ? newsize[maxdim] / bbox.sizes()[maxdim] : 1;
 	Vector2d newscale(!autosize[0] || (newsize[0] > 0) ? scale[0] : autoscale,
 										!autosize[1] || (newsize[1] > 0) ? scale[1] : autoscale);
-	
+
 	Transform2d t;
-	t.matrix() << 
+	t.matrix() <<
 		newscale[0], 0, 0,
 		0, newscale[1], 0,
 		0, 0, 1;

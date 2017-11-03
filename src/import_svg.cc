@@ -11,13 +11,13 @@ Polygon2d *import_svg(const std::string &filename)
 	double x_max = -1.0/0.0;
 	double y_min = 1.0/0.0;
 	double y_max = -1.0/0.0;
-	for (libsvg::shapes_list_t::iterator it = shapes->begin();it != shapes->end();it++) {
+	for (libsvg::shapes_list_t::iterator it = shapes->begin(); it != shapes->end(); it++) {
 		PRINTD("SVG shape");
 		libsvg::shape *s = (*it);
-		for (libsvg::path_list_t::iterator it = s->get_path_list().begin();it != s->get_path_list().end();it++) {
+		for (libsvg::path_list_t::iterator it = s->get_path_list().begin(); it != s->get_path_list().end(); it++) {
 			PRINTD("SVG path");
 			libsvg::path_t& p = *it;
-			for (libsvg::path_t::iterator it2 = p.begin();it2 != p.end();it2++) {
+			for (libsvg::path_t::iterator it2 = p.begin(); it2 != p.end(); it2++) {
 				Eigen::Vector3d& v = *it2;
 				if (v.x() < x_min) {
 					x_min = v.x();
@@ -34,19 +34,19 @@ Polygon2d *import_svg(const std::string &filename)
 			}
 		}
 	}
-	
+
 	double cx = (x_min + x_max) / 2;
 	double cy = (y_min + y_max) / 2;
-	
+
 	std::vector<const Polygon2d*> polygons;
-	for (libsvg::shapes_list_t::iterator it = shapes->begin();it != shapes->end();it++) {
+	for (libsvg::shapes_list_t::iterator it = shapes->begin(); it != shapes->end(); it++) {
 		Polygon2d *poly = new Polygon2d();
 		libsvg::shape *s = (*it);
-		for (libsvg::path_list_t::iterator it = s->get_path_list().begin();it != s->get_path_list().end();it++) {
+		for (libsvg::path_list_t::iterator it = s->get_path_list().begin(); it != s->get_path_list().end(); it++) {
 			libsvg::path_t& p = *it;
-			
+
 			Outline2d outline;
-			for (libsvg::path_t::iterator it2 = p.begin();it2 != p.end();it2++) {
+			for (libsvg::path_t::iterator it2 = p.begin(); it2 != p.end(); it2++) {
 				Eigen::Vector3d& v = *it2;
 				double x = v.x() - cx;
 				double y = -v.y() + cy;
@@ -59,4 +59,4 @@ Polygon2d *import_svg(const std::string &filename)
 	}
 	return ClipperUtils::apply(polygons, ClipperLib::ctUnion);
 }
-	
+

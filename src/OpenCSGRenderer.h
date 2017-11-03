@@ -20,8 +20,8 @@ private:
 #ifdef ENABLE_OPENCSG
 	class OpenCSGPrim *createCSGPrimitive(const class CSGChainObject &csgobj, OpenCSG::Operation operation, bool highlight_mode, bool background_mode, OpenSCADOperator type) const;
 #endif
-	void renderCSGProducts(const class CSGProducts &products, GLint *shaderinfo, 
-											bool highlight_mode, bool background_mode) const;
+	void renderCSGProducts(const class CSGProducts &products, GLint *shaderinfo,
+													 bool highlight_mode, bool background_mode) const;
 
 	shared_ptr<CSGProducts> root_products;
 	shared_ptr<CSGProducts> highlights_products;

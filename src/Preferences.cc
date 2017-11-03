@@ -49,65 +49,65 @@ Q_DECLARE_METATYPE(Feature *);
 
 class SettingsReader : public Settings::SettingsVisitor
 {
-    QSettingsCached settings;
-    Value getValue(const Settings::SettingsEntry& entry, const std::string& value) const {
-	std::string trimmed_value(value);
-	boost::trim(trimmed_value);
+	QSettingsCached settings;
+	Value getValue(const Settings::SettingsEntry& entry, const std::string& value) const {
+		std::string trimmed_value(value);
+		boost::trim(trimmed_value);
 
-	if (trimmed_value.empty()) {
-		return entry.defaultValue();
-	}
-
-	try {
-		switch (entry.defaultValue().type()) {
-		case Value::ValueType::STRING:
-			return Value(trimmed_value);
-		case Value::ValueType::NUMBER:
-			return Value(boost::lexical_cast<int>(trimmed_value));
-		case Value::ValueType::BOOL:
-			boost::to_lower(trimmed_value);
-			if ("false" == trimmed_value) {
-				return Value(false);
-			} else if ("true" == trimmed_value) {
-				return Value(true);
-			}
-			return Value(boost::lexical_cast<bool>(trimmed_value));
-		default:
-			assert(false && "invalid value type for settings");
-			return 0; // keep compiler happy
+		if (trimmed_value.empty()) {
+			return entry.defaultValue();
 		}
-	} catch (const boost::bad_lexical_cast& e) {
-		return entry.defaultValue();
+
+		try {
+			switch (entry.defaultValue().type()) {
+			case Value::ValueType::STRING:
+				return Value(trimmed_value);
+			case Value::ValueType::NUMBER:
+				return Value(boost::lexical_cast<int>(trimmed_value));
+			case Value::ValueType::BOOL:
+				boost::to_lower(trimmed_value);
+				if ("false" == trimmed_value) {
+					return Value(false);
+				} else if ("true" == trimmed_value) {
+					return Value(true);
+				}
+				return Value(boost::lexical_cast<bool>(trimmed_value));
+			default:
+				assert(false && "invalid value type for settings");
+				return 0; // keep compiler happy
+			}
+		} catch (const boost::bad_lexical_cast& e) {
+			return entry.defaultValue();
+		}
 	}
-    }
 
-    virtual void handle(Settings::SettingsEntry& entry) const {
-	Settings::Settings *s = Settings::Settings::inst();
+	virtual void handle(Settings::SettingsEntry& entry) const {
+		Settings::Settings *s = Settings::Settings::inst();
 
-	std::string key = entry.category() + "/" + entry.name();
-	std::string value = settings.value(QString::fromStdString(key)).toString().toStdString();
-	const Value v = getValue(entry, value);
-	PRINTDB("SettingsReader R: %s = '%s' => '%s'", key.c_str() % value.c_str() % v.toString());
-	s->set(entry, v);
-    }
+		std::string key = entry.category() + "/" + entry.name();
+		std::string value = settings.value(QString::fromStdString(key)).toString().toStdString();
+		const Value v = getValue(entry, value);
+		PRINTDB("SettingsReader R: %s = '%s' => '%s'", key.c_str() % value.c_str() % v.toString());
+		s->set(entry, v);
+	}
 };
 
 class SettingsWriter : public Settings::SettingsVisitor
 {
-    virtual void handle(Settings::SettingsEntry& entry) const {
-	Settings::Settings *s = Settings::Settings::inst();
+	virtual void handle(Settings::SettingsEntry& entry) const {
+		Settings::Settings *s = Settings::Settings::inst();
 
-	QSettingsCached settings;
-	QString key = QString::fromStdString(entry.category() + "/" + entry.name());
-	if (entry.is_default()) {
-	    settings.remove(key);
-	    PRINTDB("SettingsWriter D: %s", key.toStdString().c_str());
-	} else {
-	    const Value &value = s->get(entry);
-	    settings.setValue(key, QString::fromStdString(value.toString()));
-	    PRINTDB("SettingsWriter W: %s = '%s'", key.toStdString().c_str() % value.toString().c_str());
+		QSettingsCached settings;
+		QString key = QString::fromStdString(entry.category() + "/" + entry.name());
+		if (entry.is_default()) {
+			settings.remove(key);
+			PRINTDB("SettingsWriter D: %s", key.toStdString().c_str());
+		} else {
+			const Value &value = s->get(entry);
+			settings.setValue(key, QString::fromStdString(value.toString()));
+			PRINTDB("SettingsWriter W: %s = '%s'", key.toStdString().c_str() % value.toString().c_str());
+		}
 	}
-    }
 };
 
 Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
@@ -116,7 +116,7 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 }
 
 void Preferences::init() {
-	
+
 	// Editor pane
 	// Setup default font (Try to use a nice monospace font)
 	QString fontfamily;
@@ -132,7 +132,7 @@ void Preferences::init() {
 	font.setFamily(fontfamily); // this runs Qt's font matching algorithm
 	QString found_family(QFontInfo(font).family());
 	this->defaultmap["editor/fontfamily"] = found_family;
- 	this->defaultmap["editor/fontsize"] = 12;
+	this->defaultmap["editor/fontsize"] = 12;
 	this->defaultmap["editor/syntaxhighlight"] = "For Light Background";
 	this->defaultmap["editor/editortype"] = "QScintilla Editor";
 
@@ -153,7 +153,7 @@ void Preferences::init() {
 
 	// reset GUI fontsize if fontSize->addItem emitted signals that changed it.
 	this->fontSize->setEditText( QString("%1").arg( savedsize ) );
-	
+
 	// Setup default settings
 	this->defaultmap["advanced/opencsg_show_warning"] = true;
 	this->defaultmap["advanced/enable_opencsg_opengl1x"] = true;
@@ -192,7 +192,7 @@ void Preferences::init() {
 	// 3D View pane
 	this->defaultmap["3dview/colorscheme"] = "Cornfield";
 
-  // Advanced pane	
+	// Advanced pane
 	QValidator *validator = new QIntValidator(this);
 #ifdef ENABLE_CGAL
 	this->cgalCacheSizeEdit->setValidator(validator);
@@ -227,7 +227,7 @@ Preferences::~Preferences()
  * Add a page for the preferences GUI. This handles both the action grouping
  * and the registration of the widget for each action to have a generalized
  * callback to switch pages.
- * 
+ *
  * @param group The action group for all page actions. This one will have the
  *              callback attached after creating all actions/pages.
  * @param action The action specific for the added page.
@@ -243,7 +243,7 @@ Preferences::addPrefPage(QActionGroup *group, QAction *action, QWidget *widget)
 
 /**
  * Callback to switch pages in the preferences GUI.
- * 
+ *
  * @param action The action triggered by the user.
  */
 void
@@ -256,7 +256,7 @@ Preferences::actionTriggered(QAction *action)
  * Callback for the dynamically created checkboxes on the features
  * page. The specific Feature object is associated as property with
  * the callback.
- * 
+ *
  * @param state the state of the checkbox.
  */
 void Preferences::featuresCheckBoxToggled(bool state)
@@ -278,7 +278,7 @@ void Preferences::featuresCheckBoxToggled(bool state)
 
 /**
  * Setup feature GUI and synchronize the Qt settings with the feature values.
- * 
+ *
  * When running in GUI mode, the feature setting that might have been set
  * from commandline is ignored. This always uses the value coming from the
  * QSettings.
@@ -287,9 +287,9 @@ void
 Preferences::setupFeaturesPage()
 {
 	int row = 0;
-	for (Feature::iterator it = Feature::begin();it != Feature::end();it++) {
+	for (Feature::iterator it = Feature::begin(); it != Feature::end(); it++) {
 		Feature *feature = *it;
-		
+
 		QString featurekey = QString("feature/%1").arg(QString::fromStdString(feature->get_name()));
 		this->defaultmap[featurekey] = false;
 
@@ -306,16 +306,16 @@ Preferences::setupFeaturesPage()
 		feature->enable(value);
 		cb->setChecked(value);
 		cb->setProperty(featurePropertyName, QVariant::fromValue<Feature *>(feature));
-		connect(cb, SIGNAL(toggled(bool)), this, SLOT(featuresCheckBoxToggled(bool)));		
+		connect(cb, SIGNAL(toggled(bool)), this, SLOT(featuresCheckBoxToggled(bool)));
 		gridLayoutExperimentalFeatures->addWidget(cb, row, 0, 1, 2, Qt::AlignLeading);
 		row++;
-		
+
 		QLabel *l = new QLabel(QString::fromStdString(feature->get_description()), pageFeatures);
 		l->setTextFormat(Qt::RichText);
 		gridLayoutExperimentalFeatures->addWidget(l, row, 1, 1, 1, Qt::AlignLeading);
 		row++;
 	}
-	// Force fixed indentation, the checkboxes use column span of 2 so 
+	// Force fixed indentation, the checkboxes use column span of 2 so
 	// first row is not constrained in size by the visible controls. The
 	// fixed size space essentially gives the first row the width of the
 	// spacer item itself.
@@ -360,7 +360,7 @@ void Preferences::on_syntaxHighlight_activated(const QString &s)
 
 void unimplemented_msg()
 {
-  QMessageBox mbox;
+	QMessageBox mbox;
 	mbox.setText("Sorry, this feature is not implemented on your Operating System");
 	mbox.exec();
 }
@@ -479,7 +479,7 @@ void Preferences::on_mouseWheelZoomBox_toggled(bool state)
 void Preferences::on_launcherBox_toggled(bool state)
 {
 	QSettingsCached settings;
- 	settings.setValue("launcher/showOnStartup", state);	
+	settings.setValue("launcher/showOnStartup", state);
 }
 
 void Preferences::on_checkBoxShowWarningsIn3dView_toggled(bool val)
@@ -546,8 +546,8 @@ void Preferences::on_checkBoxAutoIndent_toggled(bool val)
 
 void Preferences::on_checkBoxBackspaceUnindents_toggled(bool val)
 {
-    Settings::Settings::inst()->set(Settings::Settings::backspaceUnindents, Value(val));
-    writeSettings();
+	Settings::Settings::inst()->set(Settings::Settings::backspaceUnindents, Value(val));
+	writeSettings();
 }
 
 void Preferences::on_comboBoxIndentUsing_activated(int val)
@@ -573,8 +573,8 @@ void Preferences::on_checkBoxEnableBraceMatching_toggled(bool val)
 }
 void Preferences::on_checkBoxEnableLineNumbers_toggled(bool checked)
 {
-    Settings::Settings::inst()->set(Settings::Settings::enableLineNumbers, Value(checked));
-    writeSettings();
+	Settings::Settings::inst()->set(Settings::Settings::enableLineNumbers, Value(checked));
+	writeSettings();
 }
 
 void Preferences::writeSettings()
@@ -596,15 +596,15 @@ void Preferences::keyPressEvent(QKeyEvent *e)
 		close();
 	} else
 #endif
-		if ((e->modifiers() == Qt::ControlModifier && e->key() == Qt::Key_W) ||
-				e->key() == Qt::Key_Escape) {
-			close();
-		}
+	if ((e->modifiers() == Qt::ControlModifier && e->key() == Qt::Key_W) ||
+			e->key() == Qt::Key_Escape) {
+		close();
+	}
 }
 
 /*!
-  Removes settings that are the same as the default settings to avoid
-	overwriting future changes to default settings.
+   Removes settings that are the same as the default settings to avoid
+   overwriting future changes to default settings.
  */
 void Preferences::removeDefaultSettings()
 {
@@ -627,7 +627,7 @@ QVariant Preferences::getValue(const QString &key) const
 
 void Preferences::updateGUI()
 {
-	QList<QListWidgetItem *> found = 
+	QList<QListWidgetItem *> found =
 		this->colorSchemeChooser->findItems(getValue("3dview/colorscheme").toString(),
 																				Qt::MatchExactly);
 	if (!found.isEmpty()) this->colorSchemeChooser->setCurrentItem(found.first());
@@ -650,12 +650,12 @@ void Preferences::updateGUI()
 	QString shighlight = getValue("editor/syntaxhighlight").toString();
 	int shidx = this->syntaxHighlight->findText(shighlight);
 	if (shidx >= 0) {
-	    this->syntaxHighlight->setCurrentIndex(shidx);
+		this->syntaxHighlight->setCurrentIndex(shidx);
 	} else {
-	    int offidx = this->syntaxHighlight->findText("Off");
-	    if (offidx >= 0) {
-		this->syntaxHighlight->setCurrentIndex(offidx);
-	    }
+		int offidx = this->syntaxHighlight->findText("Off");
+		if (offidx >= 0) {
+			this->syntaxHighlight->setCurrentIndex(offidx);
+		}
 	}
 
 	QString editortypevar = getValue("editor/editortype").toString();
@@ -760,26 +760,26 @@ void Preferences::apply() const
 
 void Preferences::create(QStringList colorSchemes)
 {
-    if (instance != nullptr) {
-	return;
-    }
+	if (instance != nullptr) {
+		return;
+	}
 
-    std::list<std::string> names = ColorMap::inst()->colorSchemeNames(true);
-    QStringList renderColorSchemes;
-    for(const auto &name : names) renderColorSchemes << name.c_str();
-    
-    instance = new Preferences();
-    instance->syntaxHighlight->clear();
-    instance->syntaxHighlight->addItems(colorSchemes);
-    instance->colorSchemeChooser->clear();
-    instance->colorSchemeChooser->addItems(renderColorSchemes);
-    instance->init();
-    instance->setupFeaturesPage();
-    instance->updateGUI();
+	std::list<std::string> names = ColorMap::inst()->colorSchemeNames(true);
+	QStringList renderColorSchemes;
+	for(const auto &name : names) renderColorSchemes << name.c_str();
+
+	instance = new Preferences();
+	instance->syntaxHighlight->clear();
+	instance->syntaxHighlight->addItems(colorSchemes);
+	instance->colorSchemeChooser->clear();
+	instance->colorSchemeChooser->addItems(renderColorSchemes);
+	instance->init();
+	instance->setupFeaturesPage();
+	instance->updateGUI();
 }
 
 Preferences *Preferences::inst() {
-    assert(instance != nullptr);
-    
-    return instance;
+	assert(instance != nullptr);
+
+	return instance;
 }

@@ -14,11 +14,11 @@ union stl_facet {
 	uint8_t data8[ STL_FACET_NUMBYTES ];
 	uint32_t data32[4*3];
 	struct facet_data {
-	  float i, j, k;
-	  float x1, y1, z1;
-	  float x2, y2, z2;
-	  float x3, y3, z3;
-	  uint16_t attribute_byte_count;
+		float i, j, k;
+		float x1, y1, z1;
+		float x2, y2, z2;
+		float x3, y3, z3;
+		uint16_t attribute_byte_count;
 	} data;
 };
 
@@ -62,12 +62,12 @@ PolySet *import_stl(const std::string &filename)
 		PRINTB("WARNING: Can't open import file '%s'.", filename);
 		return p;
 	}
-	
+
 	boost::regex ex_sfe("solid|facet|endloop");
 	boost::regex ex_outer("outer loop");
 	boost::regex ex_vertex("vertex");
 	boost::regex ex_vertices("\\s*vertex\\s+([^\\s]+)\\s+([^\\s]+)\\s+([^\\s]+)");
-	
+
 	bool binary = false;
 	std::streampos file_size = f.tellg();
 	f.seekg(80);
@@ -82,7 +82,7 @@ PolySet *import_stl(const std::string &filename)
 		}
 	}
 	f.seekg(0);
-	
+
 	char data[5];
 	f.read(data, 5);
 	if (!binary && !f.eof() && f.good() && !memcmp(data, "solid", 5)) {
@@ -103,7 +103,7 @@ PolySet *import_stl(const std::string &filename)
 			boost::smatch results;
 			if (boost::regex_search(line, results, ex_vertices)) {
 				try {
-					for (int v=0;v<3;v++) {
+					for (int v=0; v<3; v++) {
 						vdata[i][v] = boost::lexical_cast<double>(results[v+1]);
 					}
 				}

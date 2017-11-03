@@ -30,17 +30,17 @@
 #include "dxfdata.h"
 
 /*!
-	Saves the current Polygon2d as DXF to the given absolute filename.
+   Saves the current Polygon2d as DXF to the given absolute filename.
  */
 void export_dxf(const Polygon2d &poly, std::ostream &output)
 {
 	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
 	// Some importers (e.g. Inkscape) needs a BLOCKS section to be present
 	output << "  0\n"
-				 <<	"SECTION\n"
-				 <<	"  2\n"
-				 <<	"BLOCKS\n"
-				 <<	"  0\n"
+				 << "SECTION\n"
+				 << "  2\n"
+				 << "BLOCKS\n"
+				 << "  0\n"
 				 << "ENDSEC\n"
 				 << "  0\n"
 				 << "SECTION\n"
@@ -48,7 +48,7 @@ void export_dxf(const Polygon2d &poly, std::ostream &output)
 				 << "ENTITIES\n";
 
 	for(const auto &o : poly.outlines()) {
-		for (unsigned int i=0;i<o.vertices.size();i++) {
+		for (unsigned int i=0; i<o.vertices.size(); i++) {
 			const Vector2d &p1 = o.vertices[i];
 			const Vector2d &p2 = o.vertices[(i+1)%o.vertices.size()];
 			double x1 = p1[0];
@@ -58,7 +58,7 @@ void export_dxf(const Polygon2d &poly, std::ostream &output)
 			output << "  0\n"
 						 << "LINE\n";
 			// Some importers (e.g. Inkscape) needs a layer to be specified
-      // The [X1 Y1 X2 Y2] order is the most common and can be parsed linearly.
+			// The [X1 Y1 X2 Y2] order is the most common and can be parsed linearly.
 			// Some libraries, like the python libraries dxfgrabber and ezdxf, cannot open [X1 X2 Y1 Y2] order.
 			output << "  8\n"
 						 << "0\n"

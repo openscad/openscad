@@ -52,7 +52,7 @@ void FileModule::registerUse(const std::string path)
 {
 	auto extraw = fs::path(path).extension().generic_string();
 	auto ext = boost::algorithm::to_lower_copy(extraw);
-	
+
 	if ((ext == ".otf") || (ext == ".ttf")) {
 		if (fs::is_regular(path)) {
 			FontCache::instance()->register_font_file(path);
@@ -86,14 +86,14 @@ time_t FileModule::include_modified(const IncludeFile &inc) const
 	if (StatCache::stat(inc.filename.c_str(), &st) == 0) {
 		return st.st_mtime;
 	}
-	
+
 	return 0;
 }
 
 /*!
-	Check if any dependencies have been modified and recompile them.
-	Returns true if anything was recompiled.
-*/
+   Check if any dependencies have been modified and recompile them.
+   Returns true if anything was recompiled.
+ */
 time_t FileModule::handleDependencies()
 {
 	if (this->is_handling_dependencies) return 0;
@@ -159,7 +159,7 @@ AbstractNode *FileModule::instantiate(const Context *ctx, const ModuleInstantiat
 																			EvalContext *evalctx) const
 {
 	assert(evalctx == nullptr);
-	
+
 	FileContext context(ctx);
 	return this->instantiateWithFileContext(&context, inst, evalctx);
 }
@@ -168,7 +168,7 @@ AbstractNode *FileModule::instantiateWithFileContext(FileContext *ctx, const Mod
 																										 EvalContext *evalctx) const
 {
 	assert(evalctx == nullptr);
-	
+
 	auto node = new RootNode(inst);
 	try {
 		ctx->initializeModule(*this); // May throw an ExperimentalFeatureException

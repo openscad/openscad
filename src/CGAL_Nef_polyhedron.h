@@ -18,7 +18,7 @@ public:
 	virtual BoundingBox getBoundingBox() const { assert(false && "not implemented"); return BoundingBox(); }
 	virtual std::string dump() const;
 	virtual unsigned int getDimension() const { return 3; }
-  // Empty means it is a geometric node which has zero area/volume
+	// Empty means it is a geometric node which has zero area/volume
 	virtual bool isEmpty() const;
 	virtual Geometry *copy() const { return new CGAL_Nef_polyhedron(*this); }
 

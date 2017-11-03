@@ -317,7 +317,7 @@ FT_Face FontCache::find_face_fontconfig(const std::string &font) const
 	if (FcPatternGet(match, FC_INDEX, 0, &font_index)) {
 		return nullptr;
 	}
-	
+
 	FT_Face face;
 	FT_Error error = FT_New_Face(this->library, (const char *) file_value.u.s, font_index.u.i, &face);
 
@@ -350,7 +350,7 @@ FT_Face FontCache::find_face_fontconfig(const std::string &font) const
 		if (!charmap_set)
 			PRINTB("Warning: Could not select a char map for font %s/%s", face->family_name % face->style_name);
 	}
-	
+
 	return error ? nullptr : face;
 }
 
@@ -386,6 +386,6 @@ bool FontCache::is_windows_symbol_font(const FT_Face &face) const
 	if ((gindex == 0) || (charcode < 0xf000)) {
 		return false;
 	}
-	
+
 	return true;
 }

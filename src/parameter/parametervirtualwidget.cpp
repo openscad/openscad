@@ -7,7 +7,7 @@ ParameterVirtualWidget::ParameterVirtualWidget(QWidget *parent) : QWidget(parent
 }
 
 ParameterVirtualWidget::~ParameterVirtualWidget(){
-	
+
 }
 
 
@@ -19,7 +19,7 @@ void ParameterVirtualWidget::setName(QString name) {
 
 
 void ParameterVirtualWidget::setPrecision(double number){
-	
+
 	decimalPrecision = 0;
 	long double diff, rn; //rn stands for real number
 	unsigned long long intNumber, multi = 1;

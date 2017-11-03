@@ -3,7 +3,7 @@
 
 OpenCSGWarningDialog::OpenCSGWarningDialog(QWidget*)
 {
-  setupUi(this);
+	setupUi(this);
 
 	connect(this->showBox, SIGNAL(toggled(bool)),
 					Preferences::inst()->openCSGWarningBox, SLOT(setChecked(bool)));
@@ -18,6 +18,6 @@ OpenCSGWarningDialog::OpenCSGWarningDialog(QWidget*)
 
 void OpenCSGWarningDialog::setText(const QString &text)
 {
-  this->warningText->setPlainText(text);
+	this->warningText->setPlainText(text);
 }
 

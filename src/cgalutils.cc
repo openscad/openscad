@@ -16,11 +16,11 @@
 #include <CGAL/normal_vector_newell_3.h>
 #include <CGAL/Handle_hash_function.h>
 
-#include <CGAL/config.h> 
-#include <CGAL/version.h> 
+#include <CGAL/config.h>
+#include <CGAL/version.h>
 
 // Apply CGAL bugfix for CGAL-4.5.x
-#if CGAL_VERSION_NR > CGAL_VERSION_NUMBER(4,5,1) || CGAL_VERSION_NR < CGAL_VERSION_NUMBER(4,5,0) 
+#if CGAL_VERSION_NR > CGAL_VERSION_NUMBER(4,5,1) || CGAL_VERSION_NR < CGAL_VERSION_NUMBER(4,5,0)
 #include <CGAL/convex_hull_3.h>
 #else
 #include "convex_hull_3_bugfix.h"
@@ -74,10 +74,10 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 	try {
 		CGAL_Polyhedron P;
 		auto err = CGALUtils::createPolyhedronFromPolySet(psq, P);
-		 if (!err) {
-		 	PRINTDB("Polyhedron is closed: %d", P.is_closed());
-		 	PRINTDB("Polyhedron is valid: %d", P.is_valid(false, 0));
-		 }
+		if (!err) {
+			PRINTDB("Polyhedron is closed: %d", P.is_closed());
+			PRINTDB("Polyhedron is valid: %d", P.is_valid(false, 0));
+		}
 
 		if (!err) N = new CGAL_Nef_polyhedron3(P);
 	}
@@ -93,10 +93,10 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 	if (plane_error) try {
 			CGAL_Polyhedron P;
 			auto err = CGALUtils::createPolyhedronFromPolySet(ps_tri, P);
-            if (!err) {
-                PRINTDB("Polyhedron is closed: %d", P.is_closed());
-                PRINTDB("Polyhedron is valid: %d", P.is_valid(false, 0));
-            }
+			if (!err) {
+				PRINTDB("Polyhedron is closed: %d", P.is_closed());
+				PRINTDB("Polyhedron is valid: %d", P.is_valid(false, 0));
+			}
 			if (!err) N = new CGAL_Nef_polyhedron3(P);
 		}
 		catch (const CGAL::Assertion_exception &e) {
@@ -140,19 +140,19 @@ namespace CGALUtils {
 
 	struct VecPairCompare {
 		bool operator ()(std::pair<Vector3d, Vector3d> const& a,
-						 std::pair<Vector3d, Vector3d> const& b) const {
+										 std::pair<Vector3d, Vector3d> const& b) const {
 			return a.first < b.first || (!(b.first < a.first) && a.second < b.second);
 		}
 	};
 
 
-  /*!
-		Check if all faces of a polyset is within 0.1 degree of being convex.
-		
-		NB! This function can give false positives if the polyset contains
-		non-planar faces. To be on the safe side, consider passing a tessellated polyset.
-		See issue #1061.
-	*/
+	/*!
+	   Check if all faces of a polyset is within 0.1 degree of being convex.
+
+	   NB! This function can give false positives if the polyset contains
+	   non-planar faces. To be on the safe side, consider passing a tessellated polyset.
+	   See issue #1061.
+	 */
 	bool is_approximately_convex(const PolySet &ps) {
 
 		const double angle_threshold = cos(.1/180*M_PI); // .1°
@@ -192,7 +192,7 @@ namespace CGALUtils {
 			if (N < 3) continue;
 			for (size_t j = 0; j < N; j++) {
 				Edge other_edge(ps.polygons[i][(j+1)%N], ps.polygons[i][j]);
-				if (edge_to_facet_map.count(other_edge) == 0) return false;//
+				if (edge_to_facet_map.count(other_edge) == 0) return false; //
 				//Edge_to_facet_map::const_iterator it = edge_to_facet_map.find(other_edge);
 				//if (it == edge_to_facet_map.end()) return false; // not a closed manifold
 				//int other_facet = it->second;
@@ -252,12 +252,12 @@ namespace CGALUtils {
 	}
 
 /*
-	Create a PolySet from a Nef Polyhedron 3. return false on success, 
-	true on failure. The trick to this is that Nef Polyhedron3 faces have 
-	'holes' in them. . . while PolySet (and many other 3d polyhedron 
-	formats) do not allow for holes in their faces. The function documents 
-	the method used to deal with this
-*/
+   Create a PolySet from a Nef Polyhedron 3. return false on success,
+   true on failure. The trick to this is that Nef Polyhedron3 faces have
+   'holes' in them. . . while PolySet (and many other 3d polyhedron
+   formats) do not allow for holes in their faces. The function documents
+   the method used to deal with this
+ */
 #if 1
 	bool createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3 &N, PolySet &ps)
 	{
@@ -332,18 +332,18 @@ namespace CGALUtils {
 			std::cerr << "-\n";
 #endif // debug
 #if 0 // For debugging
-		std::cerr.precision(20);
-		for (size_t i=0;i<allVertices.size();i++) {
-			std::cerr << verts[i][0] << ", " << verts[i][1] << ", " << verts[i][2] << "\n";
-		}		
+			std::cerr.precision(20);
+			for (size_t i=0; i<allVertices.size(); i++) {
+				std::cerr << verts[i][0] << ", " << verts[i][1] << ", " << verts[i][2] << "\n";
+			}
 #endif // debug
 
 			/* at this stage, we have a sequence of polygons. the first
-				 is the "outside edge' or 'body' or 'border', and the rest of the
-				 polygons are 'holes' within the first. there are several
-				 options here to get rid of the holes. we choose to go ahead
-				 and let the tessellater deal with the holes, and then
-				 just output the resulting 3d triangles*/
+			   is the "outside edge' or 'body' or 'border', and the rest of the
+			   polygons are 'holes' within the first. there are several
+			   options here to get rid of the holes. we choose to go ahead
+			   and let the tessellater deal with the holes, and then
+			   just output the resulting 3d triangles*/
 
 			// We cannot trust the plane from Nef polyhedron to be correct.
 			// Passing an incorrect normal vector can cause a crash in the constrained delaunay triangulator
@@ -382,9 +382,9 @@ namespace CGALUtils {
 
 #if 0 // For debugging
 		std::cerr.precision(20);
-		for (size_t i=0;i<allVertices.size();i++) {
+		for (size_t i=0; i<allVertices.size(); i++) {
 			std::cerr << verts[i][0] << ", " << verts[i][1] << ", " << verts[i][2] << "\n";
-		}		
+		}
 #endif // debug
 
 		return err;
@@ -413,11 +413,11 @@ namespace CGALUtils {
 			}
 
 			/* at this stage, we have a sequence of polygons. the first
-				 is the "outside edge' or 'body' or 'border', and the rest of the
-				 polygons are 'holes' within the first. there are several
-				 options here to get rid of the holes. we choose to go ahead
-				 and let the tessellater deal with the holes, and then
-				 just output the resulting 3d triangles*/
+			   is the "outside edge' or 'body' or 'border', and the rest of the
+			   polygons are 'holes' within the first. there are several
+			   options here to get rid of the holes. we choose to go ahead
+			   and let the tessellater deal with the holes, and then
+			   just output the resulting 3d triangles*/
 
 			auto nvec = plane.orthogonal_vector();
 			K::Vector_3 normal(CGAL::to_double(nvec.x()), CGAL::to_double(nvec.y()), CGAL::to_double(nvec.z()));
@@ -462,11 +462,11 @@ namespace CGALUtils {
 			}
 
 			/* at this stage, we have a sequence of polygons. the first
-				 is the "outside edge' or 'body' or 'border', and the rest of the
-				 polygons are 'holes' within the first. there are several
-				 options here to get rid of the holes. we choose to go ahead
-				 and let the tessellater deal with the holes, and then
-				 just output the resulting 3d triangles*/
+			   is the "outside edge' or 'body' or 'border', and the rest of the
+			   polygons are 'holes' within the first. there are several
+			   options here to get rid of the holes. we choose to go ahead
+			   and let the tessellater deal with the holes, and then
+			   just output the resulting 3d triangles*/
 
 			CGAL::Vector_3<CGAL_Kernel3> nvec = plane.orthogonal_vector();
 			K::Vector_3 normal(CGAL::to_double(nvec.x()), CGAL::to_double(nvec.y()), CGAL::to_double(nvec.z()));
@@ -514,7 +514,7 @@ namespace CGALUtils {
 				}
 				// Remove consecutive duplicate vertices
 				PolygonK::iterator currp = polygon.begin();
-				for (size_t i=0;i<indices.size();i++) {
+				for (size_t i=0; i<indices.size(); i++) {
 					if (indices[i] != indices[(i+1)%indices.size()]) {
 						(*currp++) = polygon[i];
 					}
@@ -524,11 +524,11 @@ namespace CGALUtils {
 			}
 
 			/* at this stage, we have a sequence of polygons. the first
-				 is the "outside edge' or 'body' or 'border', and the rest of the
-				 polygons are 'holes' within the first. there are several
-				 options here to get rid of the holes. we choose to go ahead
-				 and let the tessellater deal with the holes, and then
-				 just output the resulting 3d triangles*/
+			   is the "outside edge' or 'body' or 'border', and the rest of the
+			   polygons are 'holes' within the first. there are several
+			   options here to get rid of the holes. we choose to go ahead
+			   and let the tessellater deal with the holes, and then
+			   just output the resulting 3d triangles*/
 
 			// We cannot trust the plane from Nef polyhedron to be correct.
 			// Passing an incorrect normal vector can cause a crash in the constrained delaunay triangulator
@@ -586,11 +586,11 @@ namespace CGALUtils {
 			std::cout << "-\n";
 
 			/* at this stage, we have a sequence of polygons. the first
-				 is the "outside edge' or 'body' or 'border', and the rest of the
-				 polygons are 'holes' within the first. there are several
-				 options here to get rid of the holes. we choose to go ahead
-				 and let the tessellater deal with the holes, and then
-				 just output the resulting 3d triangles*/
+			   is the "outside edge' or 'body' or 'border', and the rest of the
+			   polygons are 'holes' within the first. there are several
+			   options here to get rid of the holes. we choose to go ahead
+			   and let the tessellater deal with the holes, and then
+			   just output the resulting 3d triangles*/
 
 			// We cannot trust the plane from Nef polyhedron to be correct.
 			// Passing an incorrect normal vector can cause a crash in the constrained delaunay triangulator
@@ -662,11 +662,11 @@ namespace CGALUtils {
 #endif // debug
 
 			/* at this stage, we have a sequence of polygons. the first
-				 is the "outside edge' or 'body' or 'border', and the rest of the
-				 polygons are 'holes' within the first. there are several
-				 options here to get rid of the holes. we choose to go ahead
-				 and let the tessellater deal with the holes, and then
-				 just output the resulting 3d triangles*/
+			   is the "outside edge' or 'body' or 'border', and the rest of the
+			   polygons are 'holes' within the first. there are several
+			   options here to get rid of the holes. we choose to go ahead
+			   and let the tessellater deal with the holes, and then
+			   just output the resulting 3d triangles*/
 
 			// We cannot trust the plane from Nef polyhedron to be correct.
 			// Passing an incorrect normal vector can cause a crash in the constrained delaunay triangulator

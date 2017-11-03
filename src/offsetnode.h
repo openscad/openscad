@@ -12,8 +12,8 @@ public:
 	virtual std::string toString() const;
 	virtual std::string name() const { return "offset"; }
 
-        bool chamfer;
+	bool chamfer;
 	double fn, fs, fa, delta;
-        double miter_limit; // currently fixed high value to disable chamfers with jtMiter
-        ClipperLib::JoinType join_type;
+	double miter_limit;       // currently fixed high value to disable chamfers with jtMiter
+	ClipperLib::JoinType join_type;
 };

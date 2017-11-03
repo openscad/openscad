@@ -8,11 +8,11 @@ GroupWidget::GroupWidget(bool &show, const QString & title, const int animationD
 	toggleButton.setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
 	toggleButton.setText(title);
 	toggleButton.setCheckable(true);
-	
+
 	headerLine.setFrameShape(QFrame::HLine);
 	headerLine.setFrameShadow(QFrame::Sunken);
 	headerLine.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
-	
+
 	contentArea.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 	// start out collapsed
 	contentArea.setMaximumHeight(0);
@@ -21,10 +21,10 @@ GroupWidget::GroupWidget(bool &show, const QString & title, const int animationD
 	toggleAnimation.addAnimation(new QPropertyAnimation(this, "minimumHeight"));
 	toggleAnimation.addAnimation(new QPropertyAnimation(this, "maximumHeight"));
 	toggleAnimation.addAnimation(new QPropertyAnimation(&contentArea, "maximumHeight"));
-	
+
 	this->show = &show;
 	toggleButton.setChecked(show);
-	
+
 	// don't waste space
 	mainLayout.setVerticalSpacing(0);
 	mainLayout.setContentsMargins(0, 0, 0, 0);
@@ -67,7 +67,7 @@ void GroupWidget::setContentLayout(QLayout & contentLayout)
 	contentAnimation->setDuration(animationDuration);
 	contentAnimation->setStartValue(0);
 	contentAnimation->setEndValue(contentHeight);
-	
+
 	if (*(this->show)) {
 		toggleButton.setArrowType(Qt::DownArrow);
 		toggleAnimation.start();

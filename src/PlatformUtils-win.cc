@@ -29,7 +29,7 @@ std::string winapi_wstr_to_utf8( std::wstring wstr )
 	LPBOOL lpUsedDefaultChar = nullptr;
 
 	int numbytes = WideCharToMultiByte( CodePage, dwFlags, lpWideCharStr,
-	  cchWideChar, lpMultiByteStr, cbMultiByte, lpDefaultChar, lpUsedDefaultChar );
+																			cchWideChar, lpMultiByteStr, cbMultiByte, lpDefaultChar, lpUsedDefaultChar );
 
 	//PRINTB("utf16 to utf8 conversion: numbytes %i",numbytes);
 
@@ -38,7 +38,7 @@ std::string winapi_wstr_to_utf8( std::wstring wstr )
 	cbMultiByte = numbytes;
 
 	int result = WideCharToMultiByte( CodePage, dwFlags, lpWideCharStr,
-	  cchWideChar, lpMultiByteStr, cbMultiByte, lpDefaultChar, lpUsedDefaultChar );
+																		cchWideChar, lpMultiByteStr, cbMultiByte, lpDefaultChar, lpUsedDefaultChar );
 
 	if (result != numbytes) {
 		DWORD errcode = GetLastError();
@@ -62,12 +62,12 @@ static const std::string getFolderPath(int nFolder)
 	int result = SHGetFolderPathW( hwndOwner, nFolder, hToken, dwFlags, pszPath );
 
 	if (result == S_OK) {
-        path = std::wstring( path.c_str() ); // strip extra nullptrs
-        // Use boost::filesystem to decide how to convert from wstring
-        // to string. Normally the path encoding is system local and
-        // we don't want to force conversion to UTF-8.
-        fs::path p(path);
-        return p.string();
+		path = std::wstring( path.c_str() );     // strip extra nullptrs
+		// Use boost::filesystem to decide how to convert from wstring
+		// to string. Normally the path encoding is system local and
+		// we don't want to force conversion to UTF-8.
+		fs::path p(path);
+		return p.string();
 	}
 	return "";
 }
@@ -81,7 +81,7 @@ std::string PlatformUtils::documentsPath()
 {
 	const std::string retval = getFolderPath(CSIDL_PERSONAL);
 	if (retval.empty()) {
-	    PRINT("ERROR: Could not find My Documents location");
+		PRINT("ERROR: Could not find My Documents location");
 	}
 	return retval;
 }
@@ -90,35 +90,35 @@ std::string PlatformUtils::userConfigPath()
 {
 	const std::string retval = getFolderPath(CSIDL_LOCAL_APPDATA);
 	if (retval.empty()) {
-	    PRINT("ERROR: Could not find Local AppData location");
+		PRINT("ERROR: Could not find Local AppData location");
 	}
 	return retval + std::string("/") + PlatformUtils::OPENSCAD_FOLDER_NAME;
 }
 
 unsigned long PlatformUtils::stackLimit()
 {
-    return STACK_LIMIT_DEFAULT;
+	return STACK_LIMIT_DEFAULT;
 }
 
-typedef BOOL (WINAPI *LPFN_ISWOW64PROCESS) (HANDLE, PBOOL);
+typedef BOOL (WINAPI *LPFN_ISWOW64PROCESS)(HANDLE, PBOOL);
 
 // see http://msdn.microsoft.com/en-us/library/windows/desktop/ms684139%28v=vs.85%29.aspx
 static BOOL IsWow64()
 {
-    BOOL bIsWow64 = FALSE;
+	BOOL bIsWow64 = FALSE;
 
-    //IsWow64Process is not available on all supported versions of Windows.
-    //Use GetModuleHandle to get a handle to the DLL that contains the function
-    //and GetProcAddress to get a pointer to the function if available.
-    LPFN_ISWOW64PROCESS fnIsWow64Process = (LPFN_ISWOW64PROCESS)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "IsWow64Process");
+	//IsWow64Process is not available on all supported versions of Windows.
+	//Use GetModuleHandle to get a handle to the DLL that contains the function
+	//and GetProcAddress to get a pointer to the function if available.
+	LPFN_ISWOW64PROCESS fnIsWow64Process = (LPFN_ISWOW64PROCESS)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "IsWow64Process");
 
-    if (nullptr != fnIsWow64Process) {
-        if (!fnIsWow64Process(GetCurrentProcess(), &bIsWow64))
-        {
-	    return false;
-        }
-    }
-    return bIsWow64;
+	if (nullptr != fnIsWow64Process) {
+		if (!fnIsWow64Process(GetCurrentProcess(), &bIsWow64))
+		{
+			return false;
+		}
+	}
+	return bIsWow64;
 }
 
 std::string PlatformUtils::sysinfo(bool extended)
@@ -132,9 +132,9 @@ std::string PlatformUtils::sysinfo(bool extended)
 		result += "Unknown Windows(TM)";
 	} else {
 		boost::format fmt("Windows(TM) %d.%d SP %d.%d NTW %i MSDN 724833");
-		fmt 	% osinfo.dwMajorVersion % osinfo.dwMinorVersion
-			% osinfo.wServicePackMajor % osinfo.wServicePackMinor
-			% (osinfo.wProductType == VER_NT_WORKSTATION);
+		fmt   % osinfo.dwMajorVersion % osinfo.dwMinorVersion
+		% osinfo.wServicePackMajor % osinfo.wServicePackMinor
+		% (osinfo.wProductType == VER_NT_WORKSTATION);
 		result += fmt.str();
 	}
 
@@ -159,7 +159,7 @@ std::string PlatformUtils::sysinfo(bool extended)
 			result += PlatformUtils::toMemorySizeString(memoryinfo.ullTotalPhys, 2);
 			result += " RAM";
 		}
-  	}
+	}
 
 	return result;
 }

@@ -5,9 +5,9 @@
 #include <vector>
 
 /*!
-	A single contour.
-	positive is (optionally) used to distinguish between polygon contours and hold contours.
-*/
+   A single contour.
+   positive is (optionally) used to distinguish between polygon contours and hold contours.
+ */
 struct Outline2d {
 	Outline2d() : positive(true) {}
 	std::vector<Vector2d> vertices;

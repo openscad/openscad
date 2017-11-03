@@ -52,15 +52,15 @@ ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 	double yorigin = 0;
 	double scale = 1;
 
-  // FIXME: We don't lookup the file relative to where this function was instantiated
+	// FIXME: We don't lookup the file relative to where this function was instantiated
 	// since the path is only available for ModuleInstantiations, not function expressions.
 	// See issue #217
 	for (size_t i = 0; i < evalctx->numArgs(); i++) {
 		ValuePtr n = evalctx->getArgName(i);
 		ValuePtr v = evalctx->getArgValue(i);
 		if (evalctx->getArgName(i) == "file") {
-			filename = lookup_file(v->toString(), 
-			evalctx->documentPath(), ctx->documentPath());
+			filename = lookup_file(v->toString(),
+														 evalctx->documentPath(), ctx->documentPath());
 		}
 		if (n == "layer") layername = v->toString();
 		if (n == "origin") v->getVec2(xorigin, yorigin);
@@ -127,7 +127,7 @@ ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 			return dxf_dim_cache[key] = ValuePtr((d->type & 64) ? d->coords[3][0] : d->coords[3][1]);
 		}
 
-		PRINTB("WARNING: Dimension '%s' in '%s', layer '%s' has unsupported type!", 
+		PRINTB("WARNING: Dimension '%s' in '%s', layer '%s' has unsupported type!",
 					 name % filename % layername);
 		return ValuePtr::undefined;
 	}
@@ -146,7 +146,7 @@ ValuePtr builtin_dxf_cross(const Context *ctx, const EvalContext *evalctx)
 	double yorigin = 0;
 	double scale = 1;
 
-  // FIXME: We don't lookup the file relative to where this function was instantiated
+	// FIXME: We don't lookup the file relative to where this function was instantiated
 	// since the path is only available for ModuleInstantiations, not function expressions.
 	// See isse #217
 	for (size_t i = 0; i < evalctx->numArgs(); i++) {

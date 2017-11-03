@@ -74,7 +74,7 @@ bool export_png_preview_common(Tree &tree, Camera &cam, std::ostream &output, Pr
 		glview->setRenderer(&openCSGRenderer);
 	else
 #endif
-		glview->setRenderer(&thrownTogetherRenderer);
+	glview->setRenderer(&thrownTogetherRenderer);
 #ifdef ENABLE_OPENCSG
 	BoundingBox bbox = glview->getRenderer()->getBoundingBox();
 	setupCamera(cam, bbox);

@@ -132,7 +132,7 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 	else if (this->type == transform_type_e::MIRROR) {
 		auto val_v = c.lookup_variable("v");
 		double x = 1.0, y = 0.0, z = 0.0;
-	
+
 		if (val_v->getVec3(x, y, z)) {
 			if (x != 0.0 || y != 0.0 || z != 0.0) {
 				double sn = 1.0 / sqrt(x*x + y*y + z*z);
@@ -140,7 +140,7 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 			}
 		}
 
-		if (x != 0.0 || y != 0.0 || z != 0.0)	{
+		if (x != 0.0 || y != 0.0 || z != 0.0) {
 			Matrix4d m;
 			m << 1-2*x*x, -2*y*x, -2*z*x, 0,
 				-2*x*y, 1-2*y*y, -2*z*y, 0,
@@ -149,7 +149,7 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 			node->matrix = m;
 		}
 	}
-	else if (this->type == transform_type_e::TRANSLATE)	{
+	else if (this->type == transform_type_e::TRANSLATE) {
 		auto v = c.lookup_variable("v");
 		Vector3d translatevec(0,0,0);
 		v->getVec3(translatevec[0], translatevec[1], translatevec[2]);
@@ -161,7 +161,7 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 			Matrix4d rawmatrix{Matrix4d::Identity()};
 			for (int i = 0; i < 16; i++) {
 				size_t x = i / 4, y = i % 4;
-				if (y < v->toVector().size() && v->toVector()[y]->type() == 
+				if (y < v->toVector().size() && v->toVector()[y]->type() ==
 						Value::ValueType::VECTOR && x < v->toVector()[y]->toVector().size())
 					v->toVector()[y]->toVector()[x]->getDouble(rawmatrix(y, x));
 			}
@@ -182,9 +182,9 @@ std::string TransformNode::toString() const
 	std::stringstream stream;
 
 	stream << "multmatrix([";
-	for (int j=0;j<4;j++) {
+	for (int j=0; j<4; j++) {
 		stream << "[";
-		for (int i=0;i<4;i++) {
+		for (int i=0; i<4; i++) {
 			Value v(this->matrix(j, i));
 			stream << v;
 			if (i != 3) stream << ", ";

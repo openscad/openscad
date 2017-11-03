@@ -38,9 +38,9 @@
 #define QUOTED(x__) QUOTE(x__)
 
 struct triangle {
-    std::string vs1;
-    std::string vs2;
-    std::string vs3;
+	std::string vs1;
+	std::string vs2;
+	std::string vs3;
 };
 
 static int objectid;
@@ -180,9 +180,9 @@ void export_amf(const shared_ptr<const Geometry> &geom, std::ostream &output)
 				 << "<amf unit=\"millimeter\">\r\n"
 				 << " <metadata type=\"producer\">OpenSCAD " << QUOTED(OPENSCAD_VERSION)
 #ifdef OPENSCAD_COMMIT
-				 << " (git " << QUOTED(OPENSCAD_COMMIT) << ")"
+		<< " (git " << QUOTED(OPENSCAD_COMMIT) << ")"
 #endif
-				 << "</metadata>\r\n";
+		<< "</metadata>\r\n";
 
 	objectid = 0;
 	append_amf(geom, output);

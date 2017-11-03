@@ -10,18 +10,18 @@
 #ifdef ENABLE_OPENCSG
 static void draw_triangle(GLint *shaderinfo, const Vector3d &p0, const Vector3d &p1, const Vector3d &p2,
 													double e0f, double e1f, double e2f, double z, bool mirror)
-{  
+{
 	glVertexAttrib3d(shaderinfo[3], e0f, e1f, e2f);
 	glVertexAttrib3d(shaderinfo[4], p1[0], p1[1], p1[2] + z);
 	glVertexAttrib3d(shaderinfo[5], p2[0], p2[1], p2[2] + z);
 	glVertexAttrib3d(shaderinfo[6], 0.0, 1.0, 0.0);
-	glVertex3d(p0[0], p0[1], p0[2] + z); 
+	glVertex3d(p0[0], p0[1], p0[2] + z);
 	if (!mirror) {
 		glVertexAttrib3d(shaderinfo[3], e0f, e1f, e2f);
 		glVertexAttrib3d(shaderinfo[4], p0[0], p0[1], p0[2] + z);
 		glVertexAttrib3d(shaderinfo[5], p2[0], p2[1], p2[2] + z);
 		glVertexAttrib3d(shaderinfo[6], 0.0, 0.0, 1.0);
-		glVertex3d(p1[0], p1[1], p1[2] + z); 
+		glVertex3d(p1[0], p1[1], p1[2] + z);
 	}
 	glVertexAttrib3d(shaderinfo[3], e0f, e1f, e2f);
 	glVertexAttrib3d(shaderinfo[4], p0[0], p0[1], p0[2] + z);
@@ -43,7 +43,7 @@ static void draw_tri(const Vector3d &p0, const Vector3d &p1, const Vector3d &p2,
 	glVertex3d(p0[0], p0[1], p0[2] + z);
 	if (!mirror) glVertex3d(p1[0], p1[1], p1[2] + z);
 	glVertex3d(p2[0], p2[1], p2[2] + z);
-	if (mirror) glVertex3d(p1[0], p1[1], p1[2] + z); 
+	if (mirror) glVertex3d(p1[0], p1[1], p1[2] + z);
 }
 
 #ifndef NULLGL
@@ -117,10 +117,10 @@ void PolySet::render_surface(Renderer::csgmode_e csgmode, const Transform3d &m, 
 					for (size_t j = 1; j <= poly->size(); j++) {
 						if (z < 0) {
 							gl_draw_triangle(shaderinfo, center, poly->at(j % poly->size()), poly->at(j - 1),
-									false, true, false, z, mirrored);
+															 false, true, false, z, mirrored);
 						} else {
 							gl_draw_triangle(shaderinfo, center, poly->at(j - 1), poly->at(j % poly->size()),
-									false, true, false, z, mirrored);
+															 false, true, false, z, mirrored);
 						}
 					}
 				}
@@ -192,10 +192,10 @@ void PolySet::render_surface(Renderer::csgmode_e csgmode, const Transform3d &m, 
 
 /*! This is used in throwntogether and CGAL mode
 
-	csgmode is set to CSGMODE_NONE in CGAL mode. In this mode a pure 2D rendering is performed.
+   csgmode is set to CSGMODE_NONE in CGAL mode. In this mode a pure 2D rendering is performed.
 
-	For some reason, this is not used to render edges in Preview mode
-*/
+   For some reason, this is not used to render edges in Preview mode
+ */
 void PolySet::render_edges(Renderer::csgmode_e csgmode) const
 {
 	glDisable(GL_LIGHTING);

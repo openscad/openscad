@@ -27,8 +27,8 @@ public:
 	virtual bool canUndo() = 0;
 
 signals:
-  void contentsChanged();
-  void modificationChanged(bool);												
+	void contentsChanged();
+	void modificationChanged(bool);
 
 public slots:
 	virtual void zoomIn() = 0;

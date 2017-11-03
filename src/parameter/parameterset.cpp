@@ -57,8 +57,8 @@ void ParameterSet::addParameterSet(const std::string setName, const pt::ptree & 
 }
 
 /*!
-	Returns true if the file is writable
-*/
+   Returns true if the file is writable
+ */
 bool ParameterSet::readParameterSet(const std::string &filename)
 {
 	try {

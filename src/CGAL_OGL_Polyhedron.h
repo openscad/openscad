@@ -104,7 +104,7 @@ public:
 	}
 
 	void setColor(CGAL_OGL_Polyhedron::CGALColorIndex color_index,
-				  unsigned char r, unsigned char g, unsigned char b) {
+								unsigned char r, unsigned char g, unsigned char b) {
 		PRINTDB("setColor %i %i %i %i",color_index%r%g%b);
 		this->colors[color_index] = CGAL::Color(r,g,b);
 	}

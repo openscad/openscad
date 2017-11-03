@@ -45,27 +45,27 @@ LaunchingScreen::LaunchingScreen(QWidget *parent) : QDialog(parent)
 		auto examples = UIUtils::exampleFiles(category);
 		auto categoryItem = new QTreeWidgetItem(QStringList(gettext(category.toStdString().c_str())));
 
-		for (const auto &example : examples)	{
-	    auto exampleItem = new QTreeWidgetItem(QStringList(example.fileName()));
-	    exampleItem->setData(0, Qt::UserRole, example.canonicalFilePath());
-	    categoryItem->addChild(exampleItem);
+		for (const auto &example : examples)  {
+			auto exampleItem = new QTreeWidgetItem(QStringList(example.fileName()));
+			exampleItem->setData(0, Qt::UserRole, example.canonicalFilePath());
+			categoryItem->addChild(exampleItem);
 		}
-	
+
 		this->treeWidget->addTopLevelItem(categoryItem);
 	}
 
 	connect(this->pushButtonNew, SIGNAL(clicked()), this, SLOT(accept()));
 	connect(this->pushButtonOpen, SIGNAL(clicked()), this, SLOT(openUserFile()));
 	connect(this->pushButtonHelp, SIGNAL(clicked()), this, SLOT(openUserManualURL()));
-	connect(this->recentList->selectionModel(), SIGNAL(currentRowChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(enableRecentButton(const QModelIndex &, const QModelIndex &)));
+	connect(this->recentList->selectionModel(), SIGNAL(currentRowChanged(const QModelIndex&,const QModelIndex&)), this, SLOT(enableRecentButton(const QModelIndex&,const QModelIndex&)));
 
 	connect(this->recentList, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(openRecent()));
-	connect(this->treeWidget, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)), this, SLOT(enableExampleButton(QTreeWidgetItem *, QTreeWidgetItem *)));
+	connect(this->treeWidget, SIGNAL(currentItemChanged(QTreeWidgetItem *,QTreeWidgetItem *)), this, SLOT(enableExampleButton(QTreeWidgetItem *,QTreeWidgetItem *)));
 
 	connect(this->treeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem *,int)), this, SLOT(openExample()));
 	connect(this->openRecentButton, SIGNAL(clicked()), this, SLOT(openRecent()));
 	connect(this->openExampleButton, SIGNAL(clicked()), this, SLOT(openExample()));
-	connect(this->checkBox, SIGNAL(toggled(bool)), this, SLOT(checkboxState(bool)));	
+	connect(this->checkBox, SIGNAL(toggled(bool)), this, SLOT(checkboxState(bool)));
 }
 
 LaunchingScreen::~LaunchingScreen()
@@ -96,9 +96,9 @@ void LaunchingScreen::openRecent()
 
 void LaunchingScreen::enableExampleButton(QTreeWidgetItem *current, QTreeWidgetItem *)
 {
-  const bool enable = current->childCount() == 0;
-  this->openExampleButton->setEnabled(enable);
-  this->openExampleButton->setDefault(true);
+	const bool enable = current->childCount() == 0;
+	this->openExampleButton->setEnabled(enable);
+	this->openExampleButton->setDefault(true);
 }
 
 void LaunchingScreen::openExample()
@@ -117,7 +117,7 @@ void LaunchingScreen::checkOpen(const QVariant &data)
 	if (path.isEmpty()) {
 		return;
 	}
-    
+
 	this->files.append(path);
 	accept();
 }

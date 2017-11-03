@@ -31,7 +31,7 @@ protected:
 		}
 		// FIXME: If we want to allow for missing nodes in visitors, we need
 		// to handle it here, e.g. by calling some handler.
-		// See e.g. page 225 of Alexandrescu's "Modern C++ Design" 
+		// See e.g. page 225 of Alexandrescu's "Modern C++ Design"
 		return Response::AbortTraversal;
 	}
 };
@@ -39,4 +39,4 @@ protected:
 #define VISITABLE() \
 	virtual Response accept(class State &state, BaseVisitor &visitor) const { \
 		return acceptImpl(state, *this, visitor); \
-  }
+	}

@@ -44,13 +44,13 @@
 #include <algorithm>
 
 /*
- Random numbers
+   Random numbers
 
- Newer versions of boost/C++ include a non-deterministic random_device and
- auto/bind()s for random function objects, but we are supporting older systems.
-*/
+   Newer versions of boost/C++ include a non-deterministic random_device and
+   auto/bind()s for random function objects, but we are supporting older systems.
+ */
 
-#include"boost-utils.h"
+#include "boost-utils.h"
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_real.hpp>
 /*Unicode support for string lengths and array accesses*/
@@ -490,7 +490,7 @@ ValuePtr builtin_str(const Context *, const EvalContext *evalctx)
 ValuePtr builtin_chr(const Context *, const EvalContext *evalctx)
 {
 	std::stringstream stream;
-	
+
 	for (size_t i = 0; i < evalctx->numArgs(); i++) {
 		ValuePtr v = evalctx->getArgValue(i);
 		stream << v->chrString();
@@ -505,7 +505,7 @@ ValuePtr builtin_concat(const Context *, const EvalContext *evalctx)
 	for (size_t i = 0; i < evalctx->numArgs(); i++) {
 		ValuePtr val = evalctx->getArgValue(i);
 		if (val->type() == Value::ValueType::VECTOR) {
-			for(const auto &v : val->toVector()) { 
+			for(const auto &v : val->toVector()) {
 				result.push_back(v);
 			}
 		} else {
@@ -519,7 +519,7 @@ ValuePtr builtin_lookup(const Context *, const EvalContext *evalctx)
 {
 	double p, low_p, low_v, high_p, high_v;
 	if (evalctx->numArgs() < 2 ||                     // Needs two args
-	    !evalctx->getArgValue(0)->getDouble(p)) // First must be a number
+			!evalctx->getArgValue(0)->getDouble(p)) // First must be a number
 		return ValuePtr::undefined;
 
 	ValuePtr v1 = evalctx->getArgValue(1);
@@ -551,21 +551,21 @@ ValuePtr builtin_lookup(const Context *, const EvalContext *evalctx)
 }
 
 /*
- Pattern:
+   Pattern:
 
-  "search" "(" ( match_value | list_of_match_values ) "," vector_of_vectors
+   "search" "(" ( match_value | list_of_match_values ) "," vector_of_vectors
         ("," num_returns_per_match
           ("," index_col_num )? )?
         ")";
-  match_value : ( Value::ValueType::NUMBER | Value::ValueType::STRING );
-  list_of_values : "[" match_value ("," match_value)* "]";
-  vector_of_vectors : "[" ("[" Value ("," Value)* "]")+ "]";
-  num_returns_per_match : int;
-  index_col_num : int;
+   match_value : ( Value::ValueType::NUMBER | Value::ValueType::STRING );
+   list_of_values : "[" match_value ("," match_value)* "]";
+   vector_of_vectors : "[" ("[" Value ("," Value)* "]")+ "]";
+   num_returns_per_match : int;
+   index_col_num : int;
 
- The search string and searched strings can be unicode strings.
- Examples:
-  Index values return as list:
+   The search string and searched strings can be unicode strings.
+   Examples:
+   Index values return as list:
     search("a","abcdabcd");
         - returns [0]
     search("Л","Л");  //A unicode string
@@ -581,11 +581,11 @@ ValuePtr builtin_lookup(const Context *, const EvalContext *evalctx)
     search("a",[ ["a",1],["b",2],["c",3],["d",4],["a",5],["b",6],["c",7],["d",8],["e",9] ]);
         - returns [0,4]
 
-  Search on different column; return Index values:
+   Search on different column; return Index values:
     search(3,[ ["a",1],["b",2],["c",3],["d",4],["a",5],["b",6],["c",7],["d",8],["e",3] ], 0, 1);
         - returns [0,8]
 
-  Search on list of values:
+   Search on list of values:
     Return all matches per search vector element:
       search("abc",[ ["a",1],["b",2],["c",3],["d",4],["a",5],["b",6],["c",7],["d",8],["e",9] ], 0);
         - returns [[0,4],[1,5],[2,6]]
@@ -598,7 +598,7 @@ ValuePtr builtin_lookup(const Context *, const EvalContext *evalctx)
       search("abce",[ ["a",1],["b",2],["c",3],["d",4],["a",5],["b",6],["c",7],["d",8],["e",9] ], 2);
         - returns [[0,4],[1,5],[2,6],[8]]
 
-*/
+ */
 
 static Value::VectorType search(const std::string &find, const std::string &table,
 																unsigned int num_returns_per_match)
@@ -714,7 +714,7 @@ ValuePtr builtin_search(const Context *, const EvalContext *evalctx)
 		}
 	} else if (findThis->type() == Value::ValueType::VECTOR) {
 		for (size_t i = 0; i < findThis->toVector().size(); i++) {
-		  unsigned int matchCount = 0;
+			unsigned int matchCount = 0;
 			Value::VectorType resultvec;
 
 			const ValuePtr &find_value = findThis->toVector()[i];
@@ -727,20 +727,20 @@ ValuePtr builtin_search(const Context *, const EvalContext *evalctx)
 						(index_col_num < search_element->toVector().size() &&
 						 find_value    == search_element->toVector()[index_col_num])) {
 					ValuePtr resultValue((double(j)));
-		      matchCount++;
-		      if (num_returns_per_match == 1) {
+					matchCount++;
+					if (num_returns_per_match == 1) {
 						returnvec.push_back(resultValue);
 						break;
-		      } else {
+					} else {
 						resultvec.push_back(resultValue);
-		      }
-		      if (num_returns_per_match > 1 && matchCount >= num_returns_per_match) break;
-		    }
-		  }
-		  if (num_returns_per_match == 1 && matchCount == 0) {
-		    returnvec.push_back(ValuePtr(resultvec));
-		  }
-		  if (num_returns_per_match == 0 || num_returns_per_match > 1) {
+					}
+					if (num_returns_per_match > 1 && matchCount >= num_returns_per_match) break;
+				}
+			}
+			if (num_returns_per_match == 1 && matchCount == 0) {
+				returnvec.push_back(ValuePtr(resultvec));
+			}
+			if (num_returns_per_match == 0 || num_returns_per_match > 1) {
 				returnvec.push_back(ValuePtr(resultvec));
 			}
 		}
@@ -789,7 +789,7 @@ ValuePtr builtin_parent_module(const Context *, const EvalContext *evalctx)
 		if (v->type() != Value::ValueType::NUMBER) return ValuePtr::undefined;
 		v->getDouble(d);
 	} else
-			return ValuePtr::undefined;
+		return ValuePtr::undefined;
 	n=trunc(d);
 	if (n < 0) {
 		PRINTB("WARNING: Negative parent module index (%d) not allowed", n);
@@ -805,7 +805,7 @@ ValuePtr builtin_parent_module(const Context *, const EvalContext *evalctx)
 ValuePtr builtin_norm(const Context *, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
-		 ValuePtr val = evalctx->getArgValue(0);
+		ValuePtr val = evalctx->getArgValue(0);
 		if (val->type() == Value::ValueType::VECTOR) {
 			double sum = 0;
 			const Value::VectorType &v = val->toVector();
@@ -831,14 +831,14 @@ ValuePtr builtin_cross(const Context *, const EvalContext *evalctx)
 		PRINT("WARNING: Invalid number of parameters for cross()");
 		return ValuePtr::undefined;
 	}
-	
+
 	ValuePtr arg0 = evalctx->getArgValue(0);
 	ValuePtr arg1 = evalctx->getArgValue(1);
 	if ((arg0->type() != Value::ValueType::VECTOR) || (arg1->type() != Value::ValueType::VECTOR)) {
 		PRINT("WARNING: Invalid type of parameters for cross()");
 		return ValuePtr::undefined;
 	}
-	
+
 	const Value::VectorType &v0 = arg0->toVector();
 	const Value::VectorType &v1 = arg1->toVector();
 	if ((v0.size() == 2) && (v1.size() == 2)) {
@@ -849,7 +849,7 @@ ValuePtr builtin_cross(const Context *, const EvalContext *evalctx)
 		PRINT("WARNING: Invalid vector size of parameter for cross()");
 		return ValuePtr::undefined;
 	}
-	for (unsigned int a = 0;a < 3;a++) {
+	for (unsigned int a = 0; a < 3; a++) {
 		if ((v0[a]->type() != Value::ValueType::NUMBER) || (v1[a]->type() != Value::ValueType::NUMBER)) {
 			PRINT("WARNING: Invalid value in parameter vector for cross()");
 			return ValuePtr::undefined;
@@ -865,11 +865,11 @@ ValuePtr builtin_cross(const Context *, const EvalContext *evalctx)
 			return ValuePtr::undefined;
 		}
 	}
-	
+
 	double x = v0[1]->toDouble() * v1[2]->toDouble() - v0[2]->toDouble() * v1[1]->toDouble();
 	double y = v0[2]->toDouble() * v1[0]->toDouble() - v0[0]->toDouble() * v1[2]->toDouble();
 	double z = v0[0]->toDouble() * v1[1]->toDouble() - v0[1]->toDouble() * v1[0]->toDouble();
-	
+
 	Value::VectorType result;
 	result.push_back(ValuePtr(x));
 	result.push_back(ValuePtr(y));

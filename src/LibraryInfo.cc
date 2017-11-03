@@ -43,7 +43,7 @@ std::string LibraryInfo::info()
 #else
 	std::string bits("");
 #endif
-	
+
 #if defined(__GNUG__) && !defined(__clang__)
 	std::string compiler_info( "GCC " + std::string(TOSTRING(__VERSION__)) + bits);
 #elif defined(_MSC_VER)
@@ -93,38 +93,38 @@ std::string LibraryInfo::info()
 
 	const char *env_path = getenv("OPENSCADPATH");
 	const char *env_font_path = getenv("OPENSCAD_FONT_PATH");
-	
-	s << "OpenSCAD Version: " << openscad_detailedversionnumber
-	  << "\nSystem information: " << PlatformUtils::sysinfo()
-		<< "\nCompiler: " << compiler_info
-	  << "\nBoost version: " << BOOST_LIB_VERSION
-	  << "\nEigen version: " << EIGEN_WORLD_VERSION << "." << EIGEN_MAJOR_VERSION << "." << EIGEN_MINOR_VERSION
-	  << "\nCGAL version, kernels: " << TOSTRING(CGAL_VERSION) << ", " << cgal_3d_kernel << ", " << cgal_2d_kernel << ", " << cgal_2d_kernelEx
-	  << "\nOpenCSG version: " << OPENCSG_VERSION_STRING
-	  << "\nQt version: " << qtVersion
-#ifdef USE_SCINTILLA_EDITOR
-	  << "\nQScintilla version: " << QSCINTILLA_VERSION_STR
-#endif
-	  << "\nMingW build: " << mingwstatus
-	  << "\nGLib version: "       << GLIB_MAJOR_VERSION << "." << GLIB_MINOR_VERSION << "." << GLIB_MICRO_VERSION
-	  << "\nlibzip version: " << LIBZIP_VERSION
-	  << "\nApplication Path: " << PlatformUtils::applicationPath()
-	  << "\nDocuments Path: " << PlatformUtils::documentsPath()
-	  << "\nResource Path: " << PlatformUtils::resourceBasePath()
-	  << "\nUser Library Path: " << PlatformUtils::userLibraryPath()
-	  << "\nUser Config Path: " << PlatformUtils::userConfigPath()
-	  << "\nBackup Path: " << PlatformUtils::backupPath()
-	  << "\nOPENSCADPATH: " << (env_path == nullptr ? "<not set>" : env_path)
-	  << "\nOpenSCAD library path:\n";
 
-	for (std::vector<std::string>::iterator it = librarypath.begin();it != librarypath.end();it++) {
+	s << "OpenSCAD Version: " << openscad_detailedversionnumber
+		<< "\nSystem information: " << PlatformUtils::sysinfo()
+		<< "\nCompiler: " << compiler_info
+		<< "\nBoost version: " << BOOST_LIB_VERSION
+		<< "\nEigen version: " << EIGEN_WORLD_VERSION << "." << EIGEN_MAJOR_VERSION << "." << EIGEN_MINOR_VERSION
+		<< "\nCGAL version, kernels: " << TOSTRING(CGAL_VERSION) << ", " << cgal_3d_kernel << ", " << cgal_2d_kernel << ", " << cgal_2d_kernelEx
+		<< "\nOpenCSG version: " << OPENCSG_VERSION_STRING
+		<< "\nQt version: " << qtVersion
+#ifdef USE_SCINTILLA_EDITOR
+		<< "\nQScintilla version: " << QSCINTILLA_VERSION_STR
+#endif
+		<< "\nMingW build: " << mingwstatus
+		<< "\nGLib version: "       << GLIB_MAJOR_VERSION << "." << GLIB_MINOR_VERSION << "." << GLIB_MICRO_VERSION
+		<< "\nlibzip version: " << LIBZIP_VERSION
+		<< "\nApplication Path: " << PlatformUtils::applicationPath()
+		<< "\nDocuments Path: " << PlatformUtils::documentsPath()
+		<< "\nResource Path: " << PlatformUtils::resourceBasePath()
+		<< "\nUser Library Path: " << PlatformUtils::userLibraryPath()
+		<< "\nUser Config Path: " << PlatformUtils::userConfigPath()
+		<< "\nBackup Path: " << PlatformUtils::backupPath()
+		<< "\nOPENSCADPATH: " << (env_path == nullptr ? "<not set>" : env_path)
+		<< "\nOpenSCAD library path:\n";
+
+	for (std::vector<std::string>::iterator it = librarypath.begin(); it != librarypath.end(); it++) {
 		s << "  " << *it << "\n";
 	}
 
 	s << "\nOPENSCAD_FONT_PATH: " << (env_font_path == nullptr ? "<not set>" : env_font_path)
-	  << "\nOpenSCAD font path:\n";
-	
-	for (std::vector<std::string>::iterator it = fontpath.begin();it != fontpath.end();it++) {
+		<< "\nOpenSCAD font path:\n";
+
+	for (std::vector<std::string>::iterator it = fontpath.begin(); it != fontpath.end(); it++) {
 		s << "  " << *it << "\n";
 	}
 

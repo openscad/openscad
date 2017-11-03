@@ -27,6 +27,6 @@ public:
 	std::vector<std::pair<std::string, AbstractFunction*>> astFunctions;
 
 	typedef std::unordered_map<std::string, class AbstractModule*> AbstractModuleContainer;
-	AbstractModuleContainer	modules;
+	AbstractModuleContainer modules;
 	std::vector<std::pair<std::string, AbstractModule*>> astModules;
 };

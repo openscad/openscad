@@ -2,7 +2,7 @@
 #include <QTimer>
 
 ProgressWidget::ProgressWidget(QWidget *parent)
-	:QWidget(parent)
+	: QWidget(parent)
 {
 	setupUi(this);
 	setRange(0, 1000);
@@ -20,8 +20,8 @@ bool ProgressWidget::wasCanceled() const
 }
 
 /*!
-	Returns milliseconds since this widget was created
-*/
+   Returns milliseconds since this widget was created
+ */
 int ProgressWidget::elapsedTime() const
 {
 	return this->starttime.elapsed();

@@ -22,11 +22,11 @@ bool matrix_contains_nan( const Transform3d &m );
 int32_t hash_floating_point( double v );
 
 template<typename Derived> bool is_finite(const Eigen::MatrixBase<Derived>& x) {
-   return ( (x - x).array() == (x - x).array()).all();
+	return ( (x - x).array() == (x - x).array()).all();
 }
 
 template<typename Derived> bool is_nan(const Eigen::MatrixBase<Derived>& x) {
-   return !((x.array() == x.array())).all();
+	return !((x.array() == x.array())).all();
 }
 
 BoundingBox operator*(const Transform3d &m, const BoundingBox &box);

@@ -13,7 +13,7 @@ public:
 
 
 	static const Location NONE;
-;
+	;
 private:
 	int first_line;
 	int first_col;
@@ -24,7 +24,7 @@ private:
 class ASTNode
 {
 public:
-  ASTNode(const Location &loc) : loc(loc) {}
+	ASTNode(const Location &loc) : loc(loc) {}
 	virtual ~ASTNode() {}
 
 	const Location &location() const { return loc; }

@@ -79,16 +79,16 @@ void Renderer::setColor(ColorMode colormode, const float color[4], GLint *shader
 }
 
 void Renderer::setColor(ColorMode colormode, GLint *shaderinfo) const
-{	
+{
 	PRINTD("setColor c");
 	float c[4] = {-1,-1,-1,-1};
 	setColor(colormode, c, shaderinfo);
 }
 
-/* fill this->colormap with matching entries from the colorscheme. note 
-this does not change Highlight or Background colors as they are not 
-represented in the colorscheme (yet). Also edgecolors are currently the 
-same for CGAL & OpenCSG */
+/* fill this->colormap with matching entries from the colorscheme. note
+   this does not change Highlight or Background colors as they are not
+   represented in the colorscheme (yet). Also edgecolors are currently the
+   same for CGAL & OpenCSG */
 void Renderer::setColorScheme(const ColorScheme &cs) {
 	PRINTD("setColorScheme");
 	colormap[ColorMode::MATERIAL] = ColorMap::getColor(cs, RenderColor::OPENCSG_FACE_FRONT_COLOR);

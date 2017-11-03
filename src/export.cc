@@ -63,7 +63,7 @@ void exportFile(const shared_ptr<const Geometry> &root_geom, std::ostream &outpu
 }
 
 void exportFileByName(const shared_ptr<const Geometry> &root_geom, FileFormat format,
-	const char *name2open, const char *name2display)
+											const char *name2open, const char *name2display)
 {
 	std::ofstream fstream(name2open);
 	if (!fstream.is_open()) {
