@@ -3,12 +3,15 @@
 ParameterSlider::ParameterSlider(ParameterObject *parameterobject, int showDescription)
 {
 	this->pressed = true;
+	this->suppressUpdate=false;
+
 	object = parameterobject;
 	setName(QString::fromStdString(object->name));
 	setValue();
 	connect(slider, SIGNAL(sliderPressed()), this, SLOT(onPressed()));
 	connect(slider, SIGNAL(sliderReleased()), this, SLOT(onReleased()));
-	connect(slider, SIGNAL(valueChanged(int)), this, SLOT(onChanged(int)));
+	connect(slider, SIGNAL(valueChanged(int)), this, SLOT(onSliderChanged(int)));
+	connect(doubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(onSpinBoxChanged(double)));
 	if (showDescription == 0) {
 		setDescription(object->description);
 	}else if(showDescription == 1){
@@ -18,14 +21,33 @@ ParameterSlider::ParameterSlider(ParameterObject *parameterobject, int showDescr
 	}
 }
 
-void ParameterSlider::onChanged(int)
+void ParameterSlider::onSliderChanged(int)
 {
 	double v = slider->value()*step;
-	this->labelSliderValue->setText(QString::number(v, 'f', decimalPrecision));
+
+	if (!this->suppressUpdate) {
+		suppressUpdate=true;
+		this->doubleSpinBox->setValue(v);
+		suppressUpdate=false;
+	}
+
 	if (this->pressed) {
 		object->focus = true;
 		object->value = ValuePtr(v);
 		emit changed();
+	}
+}
+
+void ParameterSlider::onSpinBoxChanged(double v)
+{
+	if (!this->suppressUpdate) {
+		suppressUpdate=true;
+		if(v>0){
+			this->slider->setValue((int)((v+step/2.0)/step));
+        }else{
+			this->slider->setValue((int)((v-step/2.0)/step));
+        }
+		suppressUpdate=false;
 	}
 }
 
@@ -42,7 +64,7 @@ void ParameterSlider::onPressed()
 
 void ParameterSlider::onReleased(){
 	this->pressed = true;
-	onChanged(0);
+	onSliderChanged(0);
 }
 
 void ParameterSlider::setValue()
@@ -59,8 +81,14 @@ void ParameterSlider::setValue()
 	int current=object->value->toDouble()/step;
 	this->stackedWidgetBelow->setCurrentWidget(this->pageSlider);
 	this->pageSlider->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
-	this->stackedWidgetRight->setCurrentWidget(this->pageSliderValue);
+
 	this->slider->setRange(min,max);
 	this->slider->setValue(current);
-	this->labelSliderValue->setText(QString::number(current*step, 'f',decimalPrecision));
+
+	this->stackedWidgetRight->setCurrentWidget(this->pageSpin);
+	this->doubleSpinBox->setMinimum(object->values->toRange().begin_value());
+	this->doubleSpinBox->setMaximum(object->values->toRange().end_value());
+	this->doubleSpinBox->setSingleStep(object->values->toRange().step_value());
+	this->doubleSpinBox->setDecimals(decimalPrecision);
+	this->doubleSpinBox->setValue(object->value->toDouble());
 }

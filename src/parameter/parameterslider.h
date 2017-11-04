@@ -13,8 +13,10 @@ public:
 private:
 	double step;
 	bool pressed;
+	bool volatile suppressUpdate; 
 protected slots:
-	void onChanged(int);
+	void onSliderChanged(int);
+	void onSpinBoxChanged(double);
 	void onReleased();
 	void onPressed();
 };

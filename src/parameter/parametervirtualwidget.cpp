@@ -24,8 +24,9 @@ void ParameterVirtualWidget::addInline(QString addTxt) {
 	}
 }
 
+//calculate the required decimal precision.
+//the result is stored in th member variable "decimalPrecision"
 void ParameterVirtualWidget::setPrecision(double number){
-	
 	decimalPrecision = 0;
 	long double diff, rn; //rn stands for real number
 	unsigned long long intNumber, multi = 1;
