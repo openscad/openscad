@@ -190,9 +190,9 @@ void format_colors_for_dark_background(QMap<QString,QTextCharFormat> &formats)
 void Highlighter::assignFormatsToTokens(const QString &s)
 {
 	//PRINTB("assign fmts %s",s.toStdString());
-	if (s=="For Light Background") {
+	if (s == "For Light Background") {
 		format_colors_for_light_background(this->typeformats);
-	} else if (s=="For Dark Background") {
+	} else if (s == "For Dark Background") {
 		format_colors_for_dark_background(this->typeformats);
 	} else return;
 
@@ -203,7 +203,7 @@ void Highlighter::assignFormatsToTokens(const QString &s)
 
 	QList<QString>::iterator ki;
 	QList<QString> toktypes = tokentypes.keys();
-	for (ki=toktypes.begin(); ki!=toktypes.end(); ++ki) {
+	for (ki = toktypes.begin(); ki != toktypes.end(); ++ki) {
 		QString toktype = *ki;
 		QStringList::iterator it;
 		for (it = tokentypes[toktype].begin(); it < tokentypes[toktype].end(); ++it) {
@@ -219,7 +219,7 @@ Highlighter::Highlighter(QTextDocument *parent)
 {
 	tokentypes["operator"] << "=" << "!" << "&&" << "||" << "+" << "-" << "*" << "/" << "%" << "!" << "#" << ";";
 	tokentypes["math"] << "abs" << "sign" << "acos" << "asin" << "atan" << "atan2" << "sin" << "cos" << "floor" << "round" << "ceil" << "ln" << "log" << "lookup" << "min" << "max" << "pow" << "sqrt" << "exp" << "rands";
-	tokentypes["keyword"] << "module" << "function" << "for" << "intersection_for" << "if" << "assign" << "echo"<< "search" << "str" << "let" << "each" << "assert";
+	tokentypes["keyword"] << "module" << "function" << "for" << "intersection_for" << "if" << "assign" << "echo" << "search" << "str" << "let" << "each" << "assert";
 	tokentypes["transform"] << "scale" << "translate" << "rotate" << "multmatrix" << "color" << "projection" << "hull" << "resize" << "mirror" << "minkowski";
 	tokentypes["csgop"] << "union" << "intersection" << "difference" << "render";
 	tokentypes["prim3d"] << "cube" << "cylinder" << "sphere" << "polyhedron";
@@ -249,12 +249,12 @@ void Highlighter::highlightError(int error_pos)
 	QTextBlock err_block = document()->findBlock(errorPos);
 	//PRINTB( "error pos: %i doc len: %i ", error_pos % document()->characterCount() );
 
-	while (err_block.text().remove(QRegExp("\\s+")).size()==0) {
+	while (err_block.text().remove(QRegExp("\\s+")).size() == 0) {
 		//PRINT("special case - errors at end of file w whitespace";
 		err_block = err_block.previous();
-		errorPos = err_block.position()+err_block.length() - 2;
+		errorPos = err_block.position() + err_block.length() - 2;
 	}
-	if (errorPos == lastDocumentPos()-1) {
+	if (errorPos == lastDocumentPos() - 1) {
 		errorPos--;
 	}
 
@@ -304,7 +304,7 @@ void Highlighter::highlightBlock(const QString &text)
 	//  << ", text:'" << text.toStdString() << "'\n";
 
 	// If desired, skip all highlighting .. except for error highlighting.
-	if (Preferences::inst()->getValue("editor/syntaxhighlight").toString()==QString("Off")) {
+	if (Preferences::inst()->getValue("editor/syntaxhighlight").toString() == QString("Off")) {
 		if (errorState)
 			setFormat(errorPos - block_first_pos, 1, errorFormat);
 		return;
@@ -323,14 +323,14 @@ void Highlighter::highlightBlock(const QString &text)
 	// splitHelpers - so "{[a+b]}" is treated as " { [ a + b ] } "
 	splitHelpers << tokentypes["operator"] << tokentypes["bracket"]
 							 << tokentypes["curlies"] << ":" << ",";
-	for (sh = splitHelpers.begin(); sh!=splitHelpers.end(); ++sh) {
+	for (sh = splitHelpers.begin(); sh != splitHelpers.end(); ++sh) {
 		newtext = newtext.replace(*sh, " " + *sh + " ");
 	}
 	//PRINTB("\nnewtext: %s", newtext.toStdString() );
 	QStringList tokens = newtext.split(QRegExp("\\s"));
 	int tokindex = 0; // tokindex helps w duplicate tokens in a single block
 	bool numtest;
-	for (token = tokens.begin(); token!=tokens.end(); ++token) {
+	for (token = tokens.begin(); token != tokens.end(); ++token) {
 		if (tokenFormats.contains(*token)) {
 			tokindex = text.indexOf(*token, tokindex);
 			setFormat(tokindex, token->size(), tokenFormats[ *token ]);
@@ -358,10 +358,10 @@ void Highlighter::highlightBlock(const QString &text)
 				state = state_e::QUOTE;
 				setFormat(n,1,quoteFormat);
 			} else if (text[n] == '/') {
-				if (n+1 < text.size() && text[n+1] == '/') {
+				if (n + 1 < text.size() && text[n + 1] == '/') {
 					setFormat(n,text.size(),commentFormat);
 					break;
-				} else if (n+1 < text.size() && text[n+1] == '*') {
+				} else if (n + 1 < text.size() && text[n + 1] == '*') {
 					setFormat(n++,2,commentFormat);
 					state = state_e::COMMENT;
 				}
@@ -376,7 +376,7 @@ void Highlighter::highlightBlock(const QString &text)
 				state = state_e::NORMAL;
 		} else if (state == state_e::COMMENT) {
 			setFormat(n,1,commentFormat);
-			if (text[n] == '*' && n+1 < text.size() && text[n+1] == '/') {
+			if (text[n] == '*' && n + 1 < text.size() && text[n + 1] == '/') {
 				setFormat(++n,1,commentFormat);
 				state = state_e::NORMAL;
 			}

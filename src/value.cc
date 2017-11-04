@@ -35,7 +35,7 @@
 #include <boost/format.hpp>
 #include "boost-utils.h"
 #include <boost/filesystem.hpp>
-namespace fs=boost::filesystem;
+namespace fs = boost::filesystem;
 /*Unicode support for string lengths and array accesses*/
 #include <glib.h>
 
@@ -165,7 +165,7 @@ bool Value::toBool() const
 		return boost::get<bool>(this->value);
 		break;
 	case ValueType::NUMBER:
-		return boost::get<double>(this->value)!= 0;
+		return boost::get<double>(this->value) != 0;
 		break;
 	case ValueType::STRING:
 		return boost::get<std::string>(this->value).size() > 0;
@@ -535,13 +535,13 @@ Value Value::multmatvec(const VectorType &matrixvec, const VectorType &vectorvec
 {
 // Matrix * Vector
 	VectorType dstv;
-	for (size_t i=0; i<matrixvec.size(); i++) {
+	for (size_t i = 0; i < matrixvec.size(); i++) {
 		if (matrixvec[i]->type() != ValueType::VECTOR ||
 				matrixvec[i]->toVector().size() != vectorvec.size()) {
 			return Value();
 		}
 		double r_e = 0.0;
-		for (size_t j=0; j<matrixvec[i]->toVector().size(); j++) {
+		for (size_t j = 0; j < matrixvec[i]->toVector().size(); j++) {
 			if (matrixvec[i]->toVector()[j]->type() != ValueType::NUMBER || vectorvec[j]->type() != ValueType::NUMBER) {
 				return Value();
 			}
@@ -557,9 +557,9 @@ Value Value::multvecmat(const VectorType &vectorvec, const VectorType &matrixvec
 	assert(vectorvec.size() == matrixvec.size());
 // Vector * Matrix
 	VectorType dstv;
-	for (size_t i=0; i<matrixvec[0]->toVector().size(); i++) {
+	for (size_t i = 0; i < matrixvec[0]->toVector().size(); i++) {
 		double r_e = 0.0;
-		for (size_t j=0; j<vectorvec.size(); j++) {
+		for (size_t j = 0; j < vectorvec.size(); j++) {
 			if (matrixvec[j]->type() != ValueType::VECTOR ||
 					matrixvec[j]->toVector()[i]->type() != ValueType::NUMBER ||
 					vectorvec[j]->type() != ValueType::NUMBER) {
@@ -592,7 +592,7 @@ Value Value::operator*(const Value &v) const
 				vec1.size() == vec2.size()) {
 			// Vector dot product.
 			auto r = 0.0;
-			for (size_t i=0; i<vec1.size(); i++) {
+			for (size_t i = 0; i < vec1.size(); i++) {
 				if (vec1[i]->type() != ValueType::NUMBER || vec2[i]->type() != ValueType::NUMBER) {
 					return Value::undefined;
 				}
@@ -735,7 +735,7 @@ Value Value::operator[](const Value &v) const
 
 void RangeType::normalize()
 {
-	if ((step_val>0) && (end_val < begin_val)) {
+	if ((step_val > 0) && (end_val < begin_val)) {
 		std::swap(begin_val,end_val);
 		printDeprecation("Using ranges of the form [begin:end] with begin value greater than the end value is deprecated.");
 	}

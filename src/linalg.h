@@ -39,7 +39,7 @@ public:
 	Color4f(float r, float g, float b, float a = 1.0f) : Eigen::Vector4f(r, g, b, a) { }
 
 	void setRgb(int r, int g, int b, int a = 255) {
-		*this << r/255.0f, g/255.0f, b/255.0f, a/255.0f;
+		*this << r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f;
 	}
 
 	bool isValid() const { return this->minCoeff() >= 0.0f; }

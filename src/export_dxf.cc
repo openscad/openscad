@@ -48,9 +48,9 @@ void export_dxf(const Polygon2d &poly, std::ostream &output)
 				 << "ENTITIES\n";
 
 	for (const auto &o : poly.outlines()) {
-		for (unsigned int i=0; i<o.vertices.size(); i++) {
+		for (unsigned int i = 0; i < o.vertices.size(); i++) {
 			const Vector2d &p1 = o.vertices[i];
-			const Vector2d &p2 = o.vertices[(i+1)%o.vertices.size()];
+			const Vector2d &p2 = o.vertices[(i + 1) % o.vertices.size()];
 			double x1 = p1[0];
 			double y1 = p1[1];
 			double x2 = p2[0];
@@ -87,7 +87,7 @@ void export_dxf(const Polygon2d &poly, std::ostream &output)
 				 << "ENDSEC\n";
 
 	output << "  0\n"
-				 <<"EOF\n";
+				 << "EOF\n";
 
 	setlocale(LC_NUMERIC, "");      // Set default locale
 }

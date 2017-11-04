@@ -12,7 +12,7 @@
 
 #include "PlatformUtils.h"
 
-namespace fs=boost::filesystem;
+namespace fs = boost::filesystem;
 
 std::string PlatformUtils::pathSeparatorChar()
 {

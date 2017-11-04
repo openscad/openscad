@@ -106,7 +106,7 @@ std::string LibraryInfo::info()
 		<< "\nQScintilla version: " << QSCINTILLA_VERSION_STR
 #endif
 		<< "\nMingW build: " << mingwstatus
-		<< "\nGLib version: "       << GLIB_MAJOR_VERSION << "." << GLIB_MINOR_VERSION << "." << GLIB_MICRO_VERSION
+		<< "\nGLib version: " << GLIB_MAJOR_VERSION << "." << GLIB_MINOR_VERSION << "." << GLIB_MICRO_VERSION
 		<< "\nlibzip version: " << LIBZIP_VERSION
 		<< "\nApplication Path: " << PlatformUtils::applicationPath()
 		<< "\nDocuments Path: " << PlatformUtils::documentsPath()

@@ -147,7 +147,7 @@ void Preferences::init() {
 	for (auto size : db.standardSizes()) {
 		this->fontSize->addItem(QString::number(size));
 		if (static_cast<uint>(size) == savedsize) {
-			this->fontSize->setCurrentIndex(this->fontSize->count()-1);
+			this->fontSize->setCurrentIndex(this->fontSize->count() - 1);
 		}
 	}
 
@@ -367,7 +367,7 @@ void unimplemented_msg()
 
 void Preferences::on_updateCheckBox_toggled(bool on)
 {
-	if (AutoUpdater *updater =AutoUpdater::updater()) {
+	if (AutoUpdater *updater = AutoUpdater::updater()) {
 		updater->setAutomaticallyChecksForUpdates(on);
 	} else {
 		unimplemented_msg();
@@ -376,7 +376,7 @@ void Preferences::on_updateCheckBox_toggled(bool on)
 
 void Preferences::on_snapshotCheckBox_toggled(bool on)
 {
-	if (AutoUpdater *updater =AutoUpdater::updater()) {
+	if (AutoUpdater *updater = AutoUpdater::updater()) {
 		updater->setEnableSnapshots(on);
 	} else {
 		unimplemented_msg();
@@ -660,7 +660,7 @@ void Preferences::updateGUI()
 
 	QString editortypevar = getValue("editor/editortype").toString();
 	int edidx = this->editorType->findText(editortypevar);
-	if (edidx >=0) this->editorType->setCurrentIndex(edidx);
+	if (edidx >= 0) this->editorType->setCurrentIndex(edidx);
 
 	this->mouseWheelZoomBox->setChecked(getValue("editor/ctrlmousewheelzoom").toBool());
 

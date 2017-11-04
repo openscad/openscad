@@ -18,9 +18,9 @@ typedef std::vector <GroupInfo> GroupList;
  */
 
 static int getLineToStop(const std::string &fulltext){
-	int lineNo=1;
-	bool inString=false;
-	for (unsigned int i=0; i<fulltext.length(); i++) {
+	int lineNo = 1;
+	bool inString = false;
+	for (unsigned int i = 0; i < fulltext.length(); i++) {
 		// increase line number
 		if (fulltext[i] == '\n') {
 			lineNo++;
@@ -41,7 +41,7 @@ static int getLineToStop(const std::string &fulltext){
 
 		if (!inString && fulltext.compare(i, 2, "//") == 0) {
 			i++;
-			while (fulltext[i] != '\n' && i<fulltext.length()) i++;
+			while (fulltext[i] != '\n' && i < fulltext.length()) i++;
 			lineNo++;
 			continue;
 		}
@@ -49,22 +49,22 @@ static int getLineToStop(const std::string &fulltext){
 		//start of multi line comment if check is true
 		if (!inString && fulltext.compare(i, 2, "/*") == 0) {
 			i++;
-			if (i<fulltext.length()) {
+			if (i < fulltext.length()) {
 				i++;
 			}
 			else {
 				continue;
 			}
 			// till */ every character is comment
-			while (fulltext.compare(i, 2, "*/") != 0 && i<fulltext.length()) {
-				if (fulltext[i]=='\n') {
+			while (fulltext.compare(i, 2, "*/") != 0 && i < fulltext.length()) {
+				if (fulltext[i] == '\n') {
 					lineNo++;
 				}
 				i++;
 			}
 		}
 
-		if (fulltext[i]== '{') {
+		if (fulltext[i] == '{') {
 			return lineNo;
 		}
 	}
@@ -82,7 +82,7 @@ static std::string getComment(const std::string &fulltext, int line)
 
 	// Locate line
 	unsigned int start = 0;
-	for (; start<fulltext.length(); start++) {
+	for (; start < fulltext.length(); start++) {
 		if (line <= 1) break;
 		if (fulltext[start] == '\n') line--;
 	}
@@ -124,7 +124,7 @@ static std::string getDescription(const std::string &fulltext, int line)
 	if (line < 1) return "";
 
 	unsigned int start = 0;
-	for (; start<fulltext.length(); start++) {
+	for (; start < fulltext.length(); start++) {
 		if (line <= 1) break;
 		if (fulltext[start] == '\n') line--;
 	}
@@ -133,7 +133,7 @@ static std::string getDescription(const std::string &fulltext, int line)
 	if (fulltext.compare(start, 2, "//") != 0) return "";
 
 	// Jump over the two forward slashes
-	start = start+2;
+	start = start + 2;
 
 	//Jump over all the spaces
 	while (fulltext[start] == ' ' || fulltext[start] == '\t') start++;
@@ -207,7 +207,7 @@ static GroupList collectGroups(const std::string &fulltext)
 	bool inString = false; // check if its string or (line-) comment
 
 	// iterate through whole scad file
-	for (unsigned int i=0; i<fulltext.length(); i++) {
+	for (unsigned int i = 0; i < fulltext.length(); i++) {
 		// increase line number
 		if (fulltext[i] == '\n') {
 			lineNo++;
@@ -228,7 +228,7 @@ static GroupList collectGroups(const std::string &fulltext)
 
 		if (!inString && fulltext.compare(i, 2, "//") == 0) {
 			i++;
-			while (fulltext[i] != '\n' && i<fulltext.length()) i++;
+			while (fulltext[i] != '\n' && i < fulltext.length()) i++;
 			lineNo++;
 			continue;
 		}
@@ -238,18 +238,18 @@ static GroupList collectGroups(const std::string &fulltext)
 			//store comment
 			std::string comment;
 			i++;
-			if (i<fulltext.length()) {
+			if (i < fulltext.length()) {
 				i++;
 			}
 			else {
 				continue;
 			}
-			bool isGroup=true;
+			bool isGroup = true;
 			// till */ every character is comment
-			while (fulltext.compare(i, 2, "*/") != 0 && i<fulltext.length()) {
-				if (fulltext[i]=='\n') {
+			while (fulltext.compare(i, 2, "*/") != 0 && i < fulltext.length()) {
+				if (fulltext[i] == '\n') {
 					lineNo++;
-					isGroup=false;
+					isGroup = false;
 				}
 				comment += fulltext[i];
 				i++;
@@ -272,14 +272,14 @@ void CommentParser::collectParameters(const char *fulltext, FileModule *root_mod
 {
 	// Get all groups of parameters
 	GroupList groupList = collectGroups(std::string(fulltext));
-	int parseTill=getLineToStop(fulltext);
+	int parseTill = getLineToStop(fulltext);
 	// Extract parameters for all literal assignments
 	for (auto &assignment : root_module->scope.assignments) {
 		if (!assignment.expr.get()->isLiteral()) continue; // Only consider literals
 
 		// get location of assignment node
 		int firstLine = assignment.location().firstLine();
-		if (firstLine>=parseTill) continue;
+		if (firstLine >= parseTill) continue;
 
 		// making list to add annotations
 		AnnotationList *annotationList = new AnnotationList();

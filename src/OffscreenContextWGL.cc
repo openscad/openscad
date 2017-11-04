@@ -133,7 +133,7 @@ bool create_wgl_dummy_context(OffscreenContext &ctx)
 	HWND window = CreateWindowW(lpClassName, lpWindowName, dwStyle, x, y,
 															nWidth, nHeight, hWndParent, hMenu, hInstance, lpParam);
 
-	if (window==nullptr) {
+	if (window == nullptr) {
 		cerr << "MS GDI - CreateWindow failed\n";
 		cerr << "last-error code: " << GetLastError() << "\n";
 		return false;
@@ -163,7 +163,7 @@ bool create_wgl_dummy_context(OffscreenContext &ctx)
 	pixformat.cStencilBits = 8;
 
 	chosenformat = ChoosePixelFormat(dev_context, &pixformat);
-	if (chosenformat==0) {
+	if (chosenformat == 0) {
 		cerr << "MS GDI - ChoosePixelFormat failed\n";
 		cerr << "last-error code: " << GetLastError() << "\n";
 		return false;

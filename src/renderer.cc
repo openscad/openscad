@@ -8,7 +8,7 @@
 
 bool Renderer::getColor(Renderer::ColorMode colormode, Color4f &col) const
 {
-	if (colormode==ColorMode::NONE) return false;
+	if (colormode == ColorMode::NONE) return false;
 	if (colormap.count(colormode) > 0) {
 		col = colormap.at(colormode);
 		return true;
@@ -52,7 +52,7 @@ void Renderer::setColor(const float color[4], GLint *shaderinfo) const
 #ifdef ENABLE_OPENCSG
 	if (shaderinfo) {
 		glUniform4f(shaderinfo[1], c[0], c[1], c[2], c[3]);
-		glUniform4f(shaderinfo[2], (c[0]+1)/2, (c[1]+1)/2, (c[2]+1)/2, 1.0);
+		glUniform4f(shaderinfo[2], (c[0] + 1) / 2, (c[1] + 1) / 2, (c[2] + 1) / 2, 1.0);
 	}
 #endif
 }

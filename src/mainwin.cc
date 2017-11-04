@@ -290,7 +290,7 @@ MainWindow::MainWindow(const QString &filename)
 	this->fileActionReload->setShortcuts(shortcuts);
 #endif
 	// Open Recent
-	for (int i = 0; i<UIUtils::maxRecentFiles; i++) {
+	for (int i = 0; i < UIUtils::maxRecentFiles; i++) {
 		this->actionRecentFile[i] = new QAction(this);
 		this->actionRecentFile[i]->setVisible(false);
 		this->menuOpenRecent->addAction(this->actionRecentFile[i]);
@@ -410,7 +410,7 @@ MainWindow::MainWindow(const QString &filename)
 
 	setCurrentOutput();
 
-	std::string helptitle = "OpenSCAD " + openscad_versionnumber +  "\nhttp://www.openscad.org\n\n";
+	std::string helptitle = "OpenSCAD " + openscad_versionnumber + "\nhttp://www.openscad.org\n\n";
 	PRINT(helptitle);
 	PRINT(copyrighttext);
 	PRINT("");
@@ -734,7 +734,7 @@ void MainWindow::showProgress()
 void MainWindow::report_func(const class AbstractNode *, void *vp, int mark)
 {
 	auto thisp = static_cast<MainWindow *>(vp);
-	auto v = static_cast<int>((mark*1000.0) / progress_report_count);
+	auto v = static_cast<int>((mark * 1000.0) / progress_report_count);
 	auto permille = v < 1000 ? v : 999;
 	if (permille > thisp->progresswidget->value()) {
 		QMetaObject::invokeMethod(thisp->progresswidget, "setValue", Qt::QueuedConnection,
@@ -863,7 +863,7 @@ void MainWindow::updatedAnimSteps()
 	else {
 		this->anim_numsteps = 0;
 	}
-	anim_dumping=false;
+	anim_dumping = false;
 }
 
 void MainWindow::updatedAnimDump(bool checked)
@@ -1244,7 +1244,7 @@ void MainWindow::compileCSG(bool procevents)
 																														this->background_products);
 	PRINT("Compile and preview finished.");
 	int s = this->renderingTime.elapsed() / 1000;
-	PRINTB("Total rendering time: %d hours, %d minutes, %d seconds", (s / (60*60)) % ((s / 60) % 60) % (s % 60));
+	PRINTB("Total rendering time: %d hours, %d minutes, %d seconds", (s / (60 * 60)) % ((s / 60) % 60) % (s % 60));
 	if (procevents) QApplication::processEvents();
 }
 
@@ -1753,7 +1753,7 @@ void MainWindow::compileTopLevelDocument()
 	this->root_module = parse(this->parsed_module, fulltext.c_str(), fs::path(fname), false) ? this->parsed_module : nullptr;
 
 	if (Feature::ExperimentalCustomizer.is_enabled()) {
-		if (this->root_module!=nullptr) {
+		if (this->root_module != nullptr) {
 			//add parameters as annotation in AST
 			CommentParser::collectParameters(fulltext.c_str(),this->root_module);
 		}
@@ -1846,11 +1846,11 @@ void MainWindow::actionRenderPreview()
 {
 	static bool preview_requested;
 
-	preview_requested=true;
+	preview_requested = true;
 	if (GuiLocker::isLocked()) return;
 	GuiLocker::lock();
 	autoReloadTimer->stop();
-	preview_requested=false;
+	preview_requested = false;
 	setCurrentOutput();
 
 	PRINT("Parsing design (AST generation)...");
@@ -1885,7 +1885,7 @@ void MainWindow::csgRender()
 
 	if (e_dump->isChecked() && animate_timer->isActive()) {
 		if (anim_dumping && anim_dump_start_step == anim_step) {
-			anim_dumping=false;
+			anim_dumping = false;
 			e_dump->setChecked(false);
 		} else {
 			if (!anim_dumping) {
@@ -1954,7 +1954,7 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 #endif
 
 		int s = this->renderingTime.elapsed() / 1000;
-		PRINTB("Total rendering time: %d hours, %d minutes, %d seconds", (s / (60*60)) % ((s / 60) % 60) % (s % 60));
+		PRINTB("Total rendering time: %d hours, %d minutes, %d seconds", (s / (60 * 60)) % ((s / 60) % 60) % (s % 60));
 
 		if (root_geom && !root_geom->isEmpty()) {
 			if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(root_geom.get())) {
@@ -2226,7 +2226,7 @@ void MainWindow::actionExportCSG()
 	}
 
 	auto csg_filename = QFileDialog::getSaveFileName(this, _("Export CSG File"),
-																									 this->fileName.isEmpty() ? _("Untitled.csg") : QFileInfo(this->fileName).baseName()+".csg",
+																									 this->fileName.isEmpty() ? _("Untitled.csg") : QFileInfo(this->fileName).baseName() + ".csg",
 																									 _("CSG Files (*.csg)"));
 
 	if (csg_filename.isEmpty()) {

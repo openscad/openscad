@@ -73,7 +73,7 @@ std::string UserModule::dump(const std::string &indent, const std::string &name)
 	std::string tab;
 	if (!name.empty()) {
 		dump << indent << "module " << name << "(";
-		for (size_t i=0; i < this->definition_arguments.size(); i++) {
+		for (size_t i = 0; i < this->definition_arguments.size(); i++) {
 			const Assignment &arg = this->definition_arguments[i];
 			if (i > 0) dump << ", ";
 			dump << arg.name;

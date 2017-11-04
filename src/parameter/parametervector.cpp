@@ -65,26 +65,26 @@ void ParameterVector::setValue()
 	}
 	setPrecision(vec.at(0)->toDouble());
 	this->doubleSpinBox1->setDecimals(decimalPrecision);
-	this->doubleSpinBox1->setRange(vec.at(0)->toDouble()-1000,vec.at(0)->toDouble()+1000);
+	this->doubleSpinBox1->setRange(vec.at(0)->toDouble() - 1000,vec.at(0)->toDouble() + 1000);
 	this->doubleSpinBox1->setValue(vec.at(0)->toDouble());
 	if (vec.size() > 1) {
 		setPrecision(vec.at(1)->toDouble());
 		this->doubleSpinBox2->setDecimals(decimalPrecision);
-		this->doubleSpinBox2->setRange(vec.at(1)->toDouble()-1000,vec.at(1)->toDouble()+1000);
+		this->doubleSpinBox2->setRange(vec.at(1)->toDouble() - 1000,vec.at(1)->toDouble() + 1000);
 		this->doubleSpinBox2->setValue(vec.at(1)->toDouble());
 		this->doubleSpinBox2->setReadOnly(false);
 	}
 	if (vec.size() > 2) {
 		setPrecision(vec.at(2)->toDouble());
 		this->doubleSpinBox3->setDecimals(decimalPrecision);
-		this->doubleSpinBox3->setRange(vec.at(2)->toDouble()-1000,vec.at(2)->toDouble()+1000);
+		this->doubleSpinBox3->setRange(vec.at(2)->toDouble() - 1000,vec.at(2)->toDouble() + 1000);
 		this->doubleSpinBox3->setValue(vec.at(2)->toDouble());
 		this->doubleSpinBox3->setReadOnly(false);
 	}
 	if (vec.size() > 3) {
 		setPrecision(vec.at(3)->toDouble());
 		this->doubleSpinBox4->setDecimals(decimalPrecision);
-		this->doubleSpinBox4->setRange(vec.at(3)->toDouble()-1000,vec.at(3)->toDouble()+1000);
+		this->doubleSpinBox4->setRange(vec.at(3)->toDouble() - 1000,vec.at(3)->toDouble() + 1000);
 		this->doubleSpinBox4->setValue(vec.at(3)->toDouble());
 		this->doubleSpinBox4->setReadOnly(false);
 	}

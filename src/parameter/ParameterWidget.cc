@@ -71,7 +71,7 @@ ParameterWidget::~ParameterWidget()
 void ParameterWidget::onSetDelete()
 {
 	if (root.empty()) return;
-	std::string setName=comboBox->itemData(this->comboBox->currentIndex()).toString().toStdString();
+	std::string setName = comboBox->itemData(this->comboBox->currentIndex()).toString().toStdString();
 	boost::optional<pt::ptree &> sets = parameterSets();
 	if (sets.is_initialized()) {
 		sets.get().erase(pt::ptree::key_type(setName));
@@ -93,7 +93,7 @@ void ParameterWidget::onSetAdd()
 void ParameterWidget::readFile(QString scadFile)
 {
 	this->jsonFile = scadFile.replace(".scad", ".json").toStdString();
-	bool readonly=readParameterSet(this->jsonFile);
+	bool readonly = readParameterSet(this->jsonFile);
 	if (readonly) {
 		connect(this->addButton, SIGNAL(clicked()), this, SLOT(onSetAdd()));
 		connect(this->deleteButton, SIGNAL(clicked()), this, SLOT(onSetDelete()));
@@ -217,11 +217,11 @@ void ParameterWidget::connectWidget()
 	for (std::vector<std::string>::iterator it = groupPos.begin(); it != groupPos.end(); it++) {
 		anyLayout->setSpacing(0);
 		anyLayout->setContentsMargins(0,0,0,0);
-		if (groupMap.find(*it)==groupMap.end())
+		if (groupMap.find(*it) == groupMap.end())
 			continue;
 		std::vector<std::string> gr;
 		gr = groupMap[*it].parameterVector;
-		for (unsigned int i=0; i < gr.size(); i++) {
+		for (unsigned int i = 0; i < gr.size(); i++) {
 			AddParameterWidget(gr[i]);
 		}
 		GroupWidget *groupWidget = new GroupWidget(groupMap[*it].show, QString::fromStdString(*it));
@@ -245,23 +245,23 @@ void ParameterWidget::clear(){
 	}
 	for (group_map::iterator it = groupMap.begin(); it != groupMap.end(); it++) {
 		it->second.parameterVector.clear();
-		it->second.inList=false;
+		it->second.inList = false;
 	}
 
 	groupPos.clear();
-	for (unsigned int it=0; it<ParameterPos.size(); it++) {
-		std::string groupName=entries[ParameterPos[it]]->groupName;
+	for (unsigned int it = 0; it < ParameterPos.size(); it++) {
+		std::string groupName = entries[ParameterPos[it]]->groupName;
 		if (groupMap.find(groupName) == groupMap.end()) {
 			groupPos.push_back(groupName);
 			groupInst enter;
 			enter.parameterVector.push_back(ParameterPos[it]);
 			enter.show = false;
-			enter.inList=true;
+			enter.inList = true;
 			groupMap[groupName] = enter;
 		}
 		else {
 			if (groupMap[groupName].inList == false) {
-				groupMap[groupName].inList=true;
+				groupMap[groupName].inList = true;
 				groupPos.push_back(groupName);
 			}
 			groupMap[groupName].parameterVector.push_back(ParameterPos[it]);
@@ -322,7 +322,7 @@ void ParameterWidget::applyParameterSet(std::string setName)
 		entry_map_t::iterator entry = entries.find(v.first);
 		if (entry != entries.end()) {
 			if (entry->second->dvt == Value::ValueType::STRING) {
-				entry->second->value=ValuePtr(v.second.data());
+				entry->second->value = ValuePtr(v.second.data());
 			} else if (entry->second->dvt == Value::ValueType::BOOL) {
 				entry->second->value = ValuePtr(v.second.get_value<bool>());
 			} else {

@@ -17,7 +17,7 @@ size_t write_bytes_to_ostream (void *info,const void *buffer,size_t count)
 	} catch (const std::ios_base::failure &e) {
 		std::cerr << "Error writing to ostream:" << e.what() << "\n";
 	}
-	return (endpos-startpos);
+	return (endpos - startpos);
 }
 
 CGDataConsumerRef CGDataConsumerCreateWithOstream(std::ostream &output)
@@ -45,7 +45,7 @@ bool write_png(std::ostream &output, unsigned char *pixels, int width, int heigh
 
 	CGImageRef imageRef = CGBitmapContextCreateImage(contextRef);
 	if (!imageRef) {
-		std::cerr <<  "Unable to create CGImageRef.";
+		std::cerr << "Unable to create CGImageRef.";
 		return false;
 	}
 
@@ -63,15 +63,15 @@ bool write_png(std::ostream &output, unsigned char *pixels, int width, int heigh
 	 */
 
 	CFIndex fileImageIndex = 1;
-	CFMutableDictionaryRef fileDict       = nullptr;
-	CFStringRef fileUTType     = kUTTypePNG;
+	CFMutableDictionaryRef fileDict = nullptr;
+	CFStringRef fileUTType = kUTTypePNG;
 	// Create an image destination opaque reference for authoring an image file
 	CGImageDestinationRef imageDest = CGImageDestinationCreateWithDataConsumer(dataconsumer,
 																																						 fileUTType,
 																																						 fileImageIndex,
 																																						 fileDict);
 	if (!imageDest) {
-		std::cerr <<  "Unable to create CGImageDestinationRef.";
+		std::cerr << "Unable to create CGImageDestinationRef.";
 		return false;
 	}
 

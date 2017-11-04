@@ -104,8 +104,8 @@ bool Polygon2d::is_convex() const
 
 	// Check for a right turn. This assumes the polygon is simple.
 	for (int i = 0; i < N; i++) {
-		const auto &d1 = pts[(i+1)%N] - pts[i];
-		const auto &d2 = pts[(i+2)%N] - pts[(i+1)%N];
+		const auto &d1 = pts[(i + 1) % N] - pts[i];
+		const auto &d2 = pts[(i + 2) % N] - pts[(i + 1) % N];
 		double zcross = d1[0] * d2[1] - d1[1] * d2[0];
 		if (zcross < 0) return false;
 	}

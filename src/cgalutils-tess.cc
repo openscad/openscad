@@ -19,7 +19,7 @@
 
 struct FaceInfo {
 	int nesting_level;
-	bool in_domain() { return nesting_level%2 == 1; }
+	bool in_domain() { return nesting_level % 2 == 1; }
 };
 
 typedef CGAL::Triangulation_2_filtered_projection_traits_3<K> Projection;
@@ -75,7 +75,7 @@ static void mark_domains(CDT &cdt)
 		border.pop_front();
 		CDT::Face_handle n = e.first->neighbor(e.second);
 		if (n->info().nesting_level == -1) {
-			mark_domains(cdt, n, e.first->info().nesting_level+1, border);
+			mark_domains(cdt, n, e.first->info().nesting_level + 1, border);
 		}
 	}
 }
@@ -120,8 +120,8 @@ namespace CGALUtils {
 		Projection actualProjection(normalvec);
 		CDT cdt(actualProjection);
 		for (const auto &poly : polygons) {
-			for (size_t i=0; i<poly.size(); i++) {
-				cdt.insert_constraint(poly[i], poly[(i+1)%poly.size()]);
+			for (size_t i = 0; i < poly.size(); i++) {
+				cdt.insert_constraint(poly[i], poly[(i + 1) % poly.size()]);
 			}
 		}
 
@@ -133,7 +133,7 @@ namespace CGALUtils {
 				 fit != cdt.finite_faces_end(); fit++) {
 			if (fit->info().in_domain()) {
 				Polygon tri;
-				for (int i=0; i<3; i++) {
+				for (int i = 0; i < 3; i++) {
 					Vertex3K v = cdt.triangle(fit)[i];
 					tri.push_back(Vector3d(v.x(), v.y(), v.z()));
 				}
@@ -176,8 +176,8 @@ namespace CGALUtils {
 		// the Constrained Delaunay Triangulator.
 		Projection actualProjection(normalvec);
 		CDT cdt(actualProjection);
-		for (size_t i=0; i<polygon.size(); i++) {
-			cdt.insert_constraint(polygon[i], polygon[(i+1)%polygon.size()]);
+		for (size_t i = 0; i < polygon.size(); i++) {
+			cdt.insert_constraint(polygon[i], polygon[(i + 1) % polygon.size()]);
 		}
 
 		//Mark facets that are inside the domain bounded by the polygon
@@ -185,10 +185,10 @@ namespace CGALUtils {
 
 		// Iterate over the resulting faces
 		CDT::Finite_faces_iterator fit;
-		for (fit=cdt.finite_faces_begin(); fit!=cdt.finite_faces_end(); fit++) {
+		for (fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); fit++) {
 			if (fit->info().in_domain()) {
 				Polygon tri;
-				for (int i=0; i<3; i++) {
+				for (int i = 0; i < 3; i++) {
 					K::Point_3 v = cdt.triangle(fit)[i];
 					tri.push_back(Vector3d(v.x(), v.y(), v.z()));
 				}

@@ -55,7 +55,7 @@ std::string UserFunction::dump(const std::string &indent, const std::string &nam
 {
 	std::stringstream dump;
 	dump << indent << "function " << name << "(";
-	for (size_t i=0; i < definition_arguments.size(); i++) {
+	for (size_t i = 0; i < definition_arguments.size(); i++) {
 		const Assignment &arg = definition_arguments[i];
 		if (i > 0) dump << ", ";
 		dump << arg.name;

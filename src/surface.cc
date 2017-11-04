@@ -121,7 +121,7 @@ void SurfaceNode::convert_image(img_data_t &data, std::vector<uint8_t> &img, uns
 		for (unsigned int x = 0; x < width; x++) {
 			long idx = 4 * (y * width + x);
 			double pixel = 0.2126 * img[idx] + 0.7152 * img[idx + 1] + 0.0722 * img[idx + 2];
-			double z = 100.0/255 * (invert ? 1 - pixel : pixel);
+			double z = 100.0 / 255 * (invert ? 1 - pixel : pixel);
 			data[std::make_pair(height - 1 - y, x)] = z;
 		}
 	}
@@ -191,7 +191,7 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
 				auto v = boost::lexical_cast<double>(token);
 				data[std::make_pair(lines, col++)] = v;
 				if (col > columns) columns = col;
-				min_val = std::min(v-1, min_val);
+				min_val = std::min(v - 1, min_val);
 			}
 		}
 		catch (const boost::bad_lexical_cast &blc) {
@@ -222,78 +222,78 @@ const Geometry *SurfaceNode::createGeometry() const
 		min_val = std::min(entry.second - 1, min_val);
 	}
 
-	double ox = center ? -(columns-1)/2.0 : 0;
-	double oy = center ? -(lines-1)/2.0 : 0;
+	double ox = center ? -(columns - 1) / 2.0 : 0;
+	double oy = center ? -(lines - 1) / 2.0 : 0;
 
 	for (int i = 1; i < lines; i++)
 		for (int j = 1; j < columns; j++)
 		{
-			double v1 = data[std::make_pair(i-1, j-1)];
-			double v2 = data[std::make_pair(i-1, j)];
-			double v3 = data[std::make_pair(i, j-1)];
+			double v1 = data[std::make_pair(i - 1, j - 1)];
+			double v2 = data[std::make_pair(i - 1, j)];
+			double v3 = data[std::make_pair(i, j - 1)];
 			double v4 = data[std::make_pair(i, j)];
 			double vx = (v1 + v2 + v3 + v4) / 4;
 
 			p->append_poly();
-			p->append_vertex(ox + j-1, oy + i-1, v1);
-			p->append_vertex(ox + j, oy + i-1, v2);
-			p->append_vertex(ox + j-0.5, oy + i-0.5, vx);
+			p->append_vertex(ox + j - 1, oy + i - 1, v1);
+			p->append_vertex(ox + j, oy + i - 1, v2);
+			p->append_vertex(ox + j - 0.5, oy + i - 0.5, vx);
 
 			p->append_poly();
-			p->append_vertex(ox + j, oy + i-1, v2);
+			p->append_vertex(ox + j, oy + i - 1, v2);
 			p->append_vertex(ox + j, oy + i, v4);
-			p->append_vertex(ox + j-0.5, oy + i-0.5, vx);
+			p->append_vertex(ox + j - 0.5, oy + i - 0.5, vx);
 
 			p->append_poly();
 			p->append_vertex(ox + j, oy + i, v4);
-			p->append_vertex(ox + j-1, oy + i, v3);
-			p->append_vertex(ox + j-0.5, oy + i-0.5, vx);
+			p->append_vertex(ox + j - 1, oy + i, v3);
+			p->append_vertex(ox + j - 0.5, oy + i - 0.5, vx);
 
 			p->append_poly();
-			p->append_vertex(ox + j-1, oy + i, v3);
-			p->append_vertex(ox + j-1, oy + i-1, v1);
-			p->append_vertex(ox + j-0.5, oy + i-0.5, vx);
+			p->append_vertex(ox + j - 1, oy + i, v3);
+			p->append_vertex(ox + j - 1, oy + i - 1, v1);
+			p->append_vertex(ox + j - 0.5, oy + i - 0.5, vx);
 		}
 
 	for (int i = 1; i < lines; i++)
 	{
 		p->append_poly();
-		p->append_vertex(ox + 0, oy + i-1, min_val);
-		p->append_vertex(ox + 0, oy + i-1, data[std::make_pair(i-1, 0)]);
+		p->append_vertex(ox + 0, oy + i - 1, min_val);
+		p->append_vertex(ox + 0, oy + i - 1, data[std::make_pair(i - 1, 0)]);
 		p->append_vertex(ox + 0, oy + i, data[std::make_pair(i, 0)]);
 		p->append_vertex(ox + 0, oy + i, min_val);
 
 		p->append_poly();
-		p->insert_vertex(ox + columns-1, oy + i-1, min_val);
-		p->insert_vertex(ox + columns-1, oy + i-1, data[std::make_pair(i-1, columns-1)]);
-		p->insert_vertex(ox + columns-1, oy + i, data[std::make_pair(i, columns-1)]);
-		p->insert_vertex(ox + columns-1, oy + i, min_val);
+		p->insert_vertex(ox + columns - 1, oy + i - 1, min_val);
+		p->insert_vertex(ox + columns - 1, oy + i - 1, data[std::make_pair(i - 1, columns - 1)]);
+		p->insert_vertex(ox + columns - 1, oy + i, data[std::make_pair(i, columns - 1)]);
+		p->insert_vertex(ox + columns - 1, oy + i, min_val);
 	}
 
 	for (int i = 1; i < columns; i++)
 	{
 		p->append_poly();
-		p->insert_vertex(ox + i-1, oy + 0, min_val);
-		p->insert_vertex(ox + i-1, oy + 0, data[std::make_pair(0, i-1)]);
+		p->insert_vertex(ox + i - 1, oy + 0, min_val);
+		p->insert_vertex(ox + i - 1, oy + 0, data[std::make_pair(0, i - 1)]);
 		p->insert_vertex(ox + i, oy + 0, data[std::make_pair(0, i)]);
 		p->insert_vertex(ox + i, oy + 0, min_val);
 
 		p->append_poly();
-		p->append_vertex(ox + i-1, oy + lines-1, min_val);
-		p->append_vertex(ox + i-1, oy + lines-1, data[std::make_pair(lines-1, i-1)]);
-		p->append_vertex(ox + i, oy + lines-1, data[std::make_pair(lines-1, i)]);
-		p->append_vertex(ox + i, oy + lines-1, min_val);
+		p->append_vertex(ox + i - 1, oy + lines - 1, min_val);
+		p->append_vertex(ox + i - 1, oy + lines - 1, data[std::make_pair(lines - 1, i - 1)]);
+		p->append_vertex(ox + i, oy + lines - 1, data[std::make_pair(lines - 1, i)]);
+		p->append_vertex(ox + i, oy + lines - 1, min_val);
 	}
 
 	if (columns > 1 && lines > 1) {
 		p->append_poly();
-		for (int i = 0; i < columns-1; i++)
+		for (int i = 0; i < columns - 1; i++)
 			p->insert_vertex(ox + i, oy + 0, min_val);
-		for (int i = 0; i < lines-1; i++)
-			p->insert_vertex(ox + columns-1, oy + i, min_val);
-		for (int i = columns-1; i > 0; i--)
-			p->insert_vertex(ox + i, oy + lines-1, min_val);
-		for (int i = lines-1; i > 0; i--)
+		for (int i = 0; i < lines - 1; i++)
+			p->insert_vertex(ox + columns - 1, oy + i, min_val);
+		for (int i = columns - 1; i > 0; i--)
+			p->insert_vertex(ox + i, oy + lines - 1, min_val);
+		for (int i = lines - 1; i > 0; i--)
 			p->insert_vertex(ox + 0, oy + i, min_val);
 	}
 

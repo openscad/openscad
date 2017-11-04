@@ -54,8 +54,8 @@ namespace OpenSCAD {
 		std::stringstream out;
 		out << " <!-- border -->\n";
 		out << "  <polyline points='0,0 "
-				<< svg_px_width  << ",0 "
-				<< svg_px_width  << "," << svg_px_height
+				<< svg_px_width << ",0 "
+				<< svg_px_width << "," << svg_px_height
 				<< " 0," << svg_px_height << "'"
 				<< " style='fill:none;stroke:black' />\n";
 		out << " <!-- /border -->";
@@ -100,14 +100,14 @@ namespace OpenSCAD {
 		double screenh = svg_px_height;
 		double borderw = screenw * 0.1618;
 		double borderh = screenh * 0.1618;
-		double vizw = screenw - borderw*2;
-		double vizh = screenh - borderh*2;
+		double vizw = screenw - borderw * 2;
+		double vizh = screenh - borderh * 2;
 		double bboxw = CGAL::to_double(bbox.xmax() - bbox.xmin());
 		double bboxh = CGAL::to_double(bbox.ymax() - bbox.ymin());
 		double xinbox = CGAL::to_double(p.x()) - CGAL::to_double(bbox.xmin());
 		double yinbox = CGAL::to_double(p.y()) - CGAL::to_double(bbox.ymin());
-		double tx = borderw + (xinbox / (bboxw==0 ? 1 : bboxw)) * (vizw);
-		double ty = screenh - borderh - (yinbox / (bboxh==0 ? 1 : bboxh)) * (vizh);
+		double tx = borderw + (xinbox / (bboxw == 0 ? 1 : bboxw)) * (vizw);
+		double ty = screenh - borderh - (yinbox / (bboxh == 0 ? 1 : bboxh)) * (vizh);
 		return {tx, ty};
 	}
 
@@ -164,7 +164,7 @@ namespace OpenSCAD {
 		out << "<!--CGAL_Nef_polyhedron2 dump begin-->\n";
 		out << svg_header() << "\n" << svg_styleblock(linewidth) << "\n";
 
-		for (auto i = explorer.faces_begin(); i!= explorer.faces_end(); ++i) {
+		for (auto i = explorer.faces_begin(); i != explorer.faces_end(); ++i) {
 			out << "  <!-- face begin. mark: " << i->mark() << "  -->\n";
 			out << "   <!-- body begin -->\n";
 			auto c1(explorer.face_cycle(i));
@@ -172,7 +172,7 @@ namespace OpenSCAD {
 			out << dump_cgal_nef_polyhedron2_face_svg(c1, c2, explorer, i->mark(), true);
 			out << "   <!-- body end -->\n";
 
-			for (auto j = explorer.holes_begin(i); j!= explorer.holes_end(i); ++j) {
+			for (auto j = explorer.holes_begin(i); j != explorer.holes_end(i); ++j) {
 				out << "   <!-- hole begin. mark: " << j->mark() << " -->\n";
 				CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator c3(j), c4(c3);
 				out << dump_cgal_nef_polyhedron2_face_svg(c3, c4, explorer, "green", j->mark());
@@ -231,7 +231,7 @@ namespace OpenSCAD {
 		Vertex_const_iterator v;
 		out << "<!-- sphere map begin -->\n";
 		int counter = 0;
-		for (v = N.vertices_begin(); v!= N.vertices_end(); v++) {
+		for (v = N.vertices_begin(); v != N.vertices_end(); v++) {
 			counter++;
 			out << "<!-- vertex sphere map begin. vertex counter is " << counter << "\n";
 			out << "     vertex coordinates: " << vert_dump(v) << "-->\n";
@@ -247,7 +247,7 @@ namespace OpenSCAD {
 			out << "  integrity check...(asserts if not OK)\n";
 			S.check_integrity_and_topological_planarity();
 // S.print_statistics( out );
-			int i=0;
+			int i = 0;
 			SFace_const_iterator sf;
 			for (sf = S.sfaces_begin(); sf != S.sfaces_end(); sf++) {
 				SFace_cycle_const_iterator it;

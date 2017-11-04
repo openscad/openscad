@@ -7,7 +7,7 @@ namespace ClipperUtils {
 	{
 		ClipperLib::Path p;
 		for (const auto &v : outline.vertices) {
-			p.emplace_back(v[0]*CLIPPER_SCALE, v[1]*CLIPPER_SCALE);
+			p.emplace_back(v[0] * CLIPPER_SCALE, v[1] * CLIPPER_SCALE);
 		}
 		// Make sure all polygons point up, since we project also
 		// back-facing polygon in PolysetUtils::project()
@@ -71,7 +71,7 @@ namespace ClipperUtils {
 			// CleanPolygon can in some cases reduce the polygon down to no vertices
 			if (cleaned_path.size() >= 3)  {
 				for (const auto &ip : cleaned_path) {
-					outline.vertices.emplace_back(1.0*ip.X/CLIPPER_SCALE, 1.0*ip.Y/CLIPPER_SCALE);
+					outline.vertices.emplace_back(1.0 * ip.X / CLIPPER_SCALE, 1.0 * ip.Y / CLIPPER_SCALE);
 				}
 				result->addOutline(outline);
 			}
@@ -111,7 +111,7 @@ namespace ClipperUtils {
 				clipper.AddPaths(source, ClipperLib::ptSubject, true);
 				clipper.AddPaths(pathsvector[i], ClipperLib::ptClip, true);
 				clipper.Execute(clipType, result, ClipperLib::pftNonZero, ClipperLib::pftNonZero);
-				if (i != pathsvector.size()-1) {
+				if (i != pathsvector.size() - 1) {
 					ClipperLib::PolyTreeToPaths(result, source);
 					clipper.Clear();
 				}
@@ -227,7 +227,7 @@ namespace ClipperUtils {
 		ClipperLib::Clipper c;
 		auto lhs = ClipperUtils::fromPolygon2d(*polygons[0]);
 
-		for (size_t i=1; i<polygons.size(); i++) {
+		for (size_t i = 1; i < polygons.size(); i++) {
 			ClipperLib::Paths minkowski_terms;
 			auto rhs = ClipperUtils::fromPolygon2d(*polygons[i]);
 

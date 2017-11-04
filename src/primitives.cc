@@ -280,10 +280,10 @@ struct point2d {
 
 static void generate_circle(point2d *circle, double r, int fragments)
 {
-	for (int i=0; i<fragments; i++) {
-		double phi = (M_PI*2*i) / fragments;
-		circle[i].x = r*cos(phi);
-		circle[i].y = r*sin(phi);
+	for (int i = 0; i < fragments; i++) {
+		double phi = (M_PI * 2 * i) / fragments;
+		circle[i].x = r * cos(phi);
+		circle[i].y = r * sin(phi);
 	}
 }
 
@@ -303,12 +303,12 @@ const Geometry *PrimitiveNode::createGeometry() const
 				!std::isinf(this->x) > 0 && !std::isinf(this->y) > 0 && !std::isinf(this->z) > 0) {
 			double x1, x2, y1, y2, z1, z2;
 			if (this->center) {
-				x1 = -this->x/2;
-				x2 = +this->x/2;
-				y1 = -this->y/2;
-				y2 = +this->y/2;
-				z1 = -this->z/2;
-				z2 = +this->z/2;
+				x1 = -this->x / 2;
+				x2 = +this->x / 2;
+				y1 = -this->y / 2;
+				y2 = +this->y / 2;
+				z1 = -this->z / 2;
+				z2 = +this->z / 2;
 			} else {
 				x1 = y1 = z1 = 0;
 				x2 = this->x;
@@ -364,7 +364,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 			};
 
 			auto fragments = Calc::get_fragments_from_r(r1, fn, fs, fa);
-			int rings = (fragments+1)/2;
+			int rings = (fragments + 1) / 2;
 // Uncomment the following three lines to enable experimental sphere tesselation
 //		if (rings % 2 == 0) rings++; // To ensure that the middle ring is at phi == 0 degrees
 
@@ -384,9 +384,9 @@ const Geometry *PrimitiveNode::createGeometry() const
 			for (int i = 0; i < fragments; i++)
 				p->append_vertex(ring[0].points[i].x, ring[0].points[i].y, ring[0].z);
 
-			for (int i = 0; i < rings-1; i++) {
+			for (int i = 0; i < rings - 1; i++) {
 				auto r1 = &ring[i];
-				auto r2 = &ring[i+1];
+				auto r2 = &ring[i + 1];
 				int r1i = 0, r2i = 0;
 				while (r1i < fragments || r2i < fragments) {
 					if (r1i >= fragments) goto sphere_next_r2;
@@ -394,7 +394,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 					if ((double)r1i / fragments < (double)r2i / fragments) {
 sphere_next_r1:
 						p->append_poly();
-						int r1j = (r1i+1) % fragments;
+						int r1j = (r1i + 1) % fragments;
 						p->insert_vertex(r1->points[r1i].x, r1->points[r1i].y, r1->z);
 						p->insert_vertex(r1->points[r1j].x, r1->points[r1j].y, r1->z);
 						p->insert_vertex(r2->points[r2i % fragments].x, r2->points[r2i % fragments].y, r2->z);
@@ -402,7 +402,7 @@ sphere_next_r1:
 					} else {
 sphere_next_r2:
 						p->append_poly();
-						int r2j = (r2i+1) % fragments;
+						int r2j = (r2i + 1) % fragments;
 						p->append_vertex(r2->points[r2i].x, r2->points[r2i].y, r2->z);
 						p->append_vertex(r2->points[r2j].x, r2->points[r2j].y, r2->z);
 						p->append_vertex(r1->points[r1i % fragments].x, r1->points[r1i % fragments].y, r1->z);
@@ -413,9 +413,9 @@ sphere_next_r2:
 
 			p->append_poly();
 			for (int i = 0; i < fragments; i++) {
-				p->insert_vertex(ring[rings-1].points[i].x,
-												 ring[rings-1].points[i].y,
-												 ring[rings-1].z);
+				p->insert_vertex(ring[rings - 1].points[i].x,
+												 ring[rings - 1].points[i].y,
+												 ring[rings - 1].z);
 			}
 
 			for (int i = 0; i < rings; i++) {
@@ -429,14 +429,14 @@ sphere_next_r2:
 		auto p = new PolySet(3,true);
 		g = p;
 		if (this->h > 0 && !std::isinf(this->h) &&
-				this->r1 >=0 && this->r2 >= 0 && (this->r1 > 0 || this->r2 > 0) &&
+				this->r1 >= 0 && this->r2 >= 0 && (this->r1 > 0 || this->r2 > 0) &&
 				!std::isinf(this->r1) && !std::isinf(this->r2)) {
 			auto fragments = Calc::get_fragments_from_r(std::fmax(this->r1, this->r2), this->fn, this->fs, this->fa);
 
 			double z1, z2;
 			if (this->center) {
-				z1 = -this->h/2;
-				z2 = +this->h/2;
+				z1 = -this->h / 2;
+				z2 = +this->h / 2;
 			} else {
 				z1 = 0;
 				z2 = this->h;
@@ -448,8 +448,8 @@ sphere_next_r2:
 			generate_circle(circle1, r1, fragments);
 			generate_circle(circle2, r2, fragments);
 
-			for (int i=0; i<fragments; i++) {
-				int j = (i+1) % fragments;
+			for (int i = 0; i < fragments; i++) {
+				int j = (i + 1) % fragments;
 				if (r1 == r2) {
 					p->append_poly();
 					p->insert_vertex(circle1[i].x, circle1[i].y, z1);
@@ -474,13 +474,13 @@ sphere_next_r2:
 
 			if (this->r1 > 0) {
 				p->append_poly();
-				for (int i=0; i<fragments; i++)
+				for (int i = 0; i < fragments; i++)
 					p->insert_vertex(circle1[i].x, circle1[i].y, z1);
 			}
 
 			if (this->r2 > 0) {
 				p->append_poly();
-				for (int i=0; i<fragments; i++)
+				for (int i = 0; i < fragments; i++)
 					p->append_vertex(circle2[i].x, circle2[i].y, z2);
 			}
 
@@ -493,10 +493,10 @@ sphere_next_r2:
 		auto p = new PolySet(3);
 		g = p;
 		p->setConvexity(this->convexity);
-		for (size_t i=0; i<this->faces->toVector().size(); i++) {
+		for (size_t i = 0; i < this->faces->toVector().size(); i++) {
 			p->append_poly();
 			const auto &vec = this->faces->toVector()[i]->toVector();
-			for (size_t j=0; j<vec.size(); j++) {
+			for (size_t j = 0; j < vec.size(); j++) {
 				size_t pt = vec[j]->toDouble();
 				if (pt < this->points->toVector().size()) {
 					double px, py, pz;
@@ -519,8 +519,8 @@ sphere_next_r2:
 			Vector2d v1(0, 0);
 			Vector2d v2(this->x, this->y);
 			if (this->center) {
-				v1 -= Vector2d(this->x/2, this->y/2);
-				v2 -= Vector2d(this->x/2, this->y/2);
+				v1 -= Vector2d(this->x / 2, this->y / 2);
+				v2 -= Vector2d(this->x / 2, this->y / 2);
 			}
 
 			Outline2d o;
@@ -538,9 +538,9 @@ sphere_next_r2:
 
 			Outline2d o;
 			o.vertices.resize(fragments);
-			for (int i=0; i < fragments; i++) {
-				double phi = (M_PI*2*i) / fragments;
-				o.vertices[i] = {this->r1*cos(phi), this->r1*sin(phi)};
+			for (int i = 0; i < fragments; i++) {
+				double phi = (M_PI * 2 * i) / fragments;
+				o.vertices[i] = {this->r1 * cos(phi), this->r1 * sin(phi)};
 			}
 			p->addOutline(o);
 		}
@@ -554,7 +554,7 @@ sphere_next_r2:
 		Outline2d outline;
 		double x,y;
 		const auto &vec = this->points->toVector();
-		for (unsigned int i=0; i<vec.size(); i++) {
+		for (unsigned int i = 0; i < vec.size(); i++) {
 			const auto &val = *vec[i];
 			if (!val.getVec2(x, y) || std::isinf(x) || std::isinf(y)) {
 				PRINTB("ERROR: Unable to convert point %s at index %d to a vec2 of numbers",

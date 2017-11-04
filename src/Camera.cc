@@ -71,16 +71,16 @@ void Camera::viewAll(const BoundingBox &bbox)
 		}
 	}
 
-	double bboxRadius = bbox.diagonal().norm()/2;
-	double radius = (bbox.center()-this->center).norm() + bboxRadius;
-	double distance = radius / sin(this->fov/2*M_PI/180);
+	double bboxRadius = bbox.diagonal().norm() / 2;
+	double radius = (bbox.center() - this->center).norm() + bboxRadius;
+	double distance = radius / sin(this->fov / 2 * M_PI / 180);
 	switch (this->type) {
 	case CameraType::GIMBAL:
 		this->viewer_distance = distance;
 		break;
 	case CameraType::VECTOR: {
 		Vector3d cameradir = (this->center - this->eye).normalized();
-		this->eye = this->center - distance*cameradir;
+		this->eye = this->center - distance * cameradir;
 		break;
 	}
 	default:

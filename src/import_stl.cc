@@ -7,12 +7,12 @@
 #include <boost/lexical_cast.hpp>
 #include <fstream>
 
-#define STL_FACET_NUMBYTES 4*3*4+2
+#define STL_FACET_NUMBYTES 4 * 3 * 4 + 2
 // as there is no 'float32_t' standard, we assume the systems 'float'
 // is a 'binary32' aka 'single' standard IEEE 32-bit floating point type
 union stl_facet {
 	uint8_t data8[ STL_FACET_NUMBYTES ];
-	uint32_t data32[4*3];
+	uint32_t data32[4 * 3];
 	struct facet_data {
 		float i, j, k;
 		float x1, y1, z1;
@@ -77,7 +77,7 @@ PolySet *import_stl(const std::string &filename)
 #ifdef BOOST_BIG_ENDIAN
 		uint32_byte_swap(facenum);
 #endif
-		if (file_size ==  static_cast<std::streamoff>(80 + 4 + 50*facenum)) {
+		if (file_size == static_cast<std::streamoff>(80 + 4 + 50 * facenum)) {
 			binary = true;
 		}
 	}
@@ -103,8 +103,8 @@ PolySet *import_stl(const std::string &filename)
 			boost::smatch results;
 			if (boost::regex_search(line, results, ex_vertices)) {
 				try {
-					for (int v=0; v<3; v++) {
-						vdata[i][v] = boost::lexical_cast<double>(results[v+1]);
+					for (int v = 0; v < 3; v++) {
+						vdata[i][v] = boost::lexical_cast<double>(results[v + 1]);
 					}
 				}
 				catch (const boost::bad_lexical_cast &blc) {
@@ -123,7 +123,7 @@ PolySet *import_stl(const std::string &filename)
 	}
 	else if (binary && !f.eof() && f.good())
 	{
-		f.ignore(80-5+4);
+		f.ignore(80 - 5 + 4);
 		while (1) {
 			stl_facet facet;
 			read_stl_facet(f, facet);

@@ -56,7 +56,7 @@ void PRINT_NOCACHE(const std::string &msg)
 
 	if (boost::starts_with(msg, "WARNING") || boost::starts_with(msg, "ERROR")) {
 		size_t i;
-		for (i=0; i<lastmessages.size(); i++) {
+		for (i = 0; i < lastmessages.size(); i++) {
 			if (lastmessages[i] != msg) break;
 		}
 		if (i == 5) return; // Suppress output after 5 equal ERROR or WARNING outputs.
@@ -75,15 +75,15 @@ void PRINT_NOCACHE(const std::string &msg)
 void PRINTDEBUG(const std::string &filename, const std::string &msg)
 {
 	// see printutils.h for usage instructions
-	if (OpenSCAD::debug=="") return;
+	if (OpenSCAD::debug == "") return;
 	std::string shortfname = fs::path(filename).stem().generic_string();
 	std::string lowshortfname(shortfname);
 	boost::algorithm::to_lower(lowshortfname);
 	std::string lowdebug(OpenSCAD::debug);
 	boost::algorithm::to_lower(lowdebug);
-	if (OpenSCAD::debug=="all" ||
+	if (OpenSCAD::debug == "all" ||
 			lowdebug.find(lowshortfname) != std::string::npos) {
-		PRINT_NOCACHE(shortfname+": "+ msg);
+		PRINT_NOCACHE(shortfname + ": " + msg);
 	}
 }
 

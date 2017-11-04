@@ -36,7 +36,7 @@ boost::optional<pt::ptree &> ParameterSet::getParameterSet(const std::string &se
 	}
 
 	pt::ptree::assoc_iterator set = sets.get().find(pt::ptree::key_type(setName));
-	if (set!=sets.get().not_found()) {
+	if (set != sets.get().not_found()) {
 		return set->second;
 	}
 	return sets;

@@ -79,7 +79,7 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 	//   - if "layername" in evalctx: deprecated-warning && v.set_variable("layer", value);
 #if 0
 	std::vector<std::string> inst_argnames = inst->argnames;
-	for (size_t i=0; i<inst_argnames.size(); i++) {
+	for (size_t i = 0; i < inst_argnames.size(); i++) {
 		if (inst_argnames[i] == "filename") inst_argnames[i] = "file";
 		if (inst_argnames[i] == "layername") inst_argnames[i] = "layer";
 	}

@@ -7,10 +7,10 @@
 Polygon2d *import_svg(const std::string &filename)
 {
 	libsvg::shapes_list_t *shapes = libsvg::libsvg_read_file(filename.c_str());
-	double x_min = 1.0/0.0;
-	double x_max = -1.0/0.0;
-	double y_min = 1.0/0.0;
-	double y_max = -1.0/0.0;
+	double x_min = 1.0 / 0.0;
+	double x_max = -1.0 / 0.0;
+	double y_min = 1.0 / 0.0;
+	double y_max = -1.0 / 0.0;
 	for (libsvg::shapes_list_t::iterator it = shapes->begin(); it != shapes->end(); it++) {
 		PRINTD("SVG shape");
 		libsvg::shape *s = (*it);
@@ -51,7 +51,7 @@ Polygon2d *import_svg(const std::string &filename)
 				double x = v.x() - cx;
 				double y = -v.y() + cy;
 				outline.vertices.push_back(Vector2d(x, y));
-				outline.positive=true;
+				outline.positive = true;
 			}
 			poly->addOutline(outline);
 		}

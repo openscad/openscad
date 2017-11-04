@@ -83,19 +83,19 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 			} else {
 				for (RangeType::iterator it = range.begin(); it != range.end(); it++) {
 					c.set_variable(it_name, ValuePtr(*it));
-					for_eval(node, inst, l+1, &c, evalctx);
+					for_eval(node, inst, l + 1, &c, evalctx);
 				}
 			}
 		}
 		else if (it_values->type() == Value::ValueType::VECTOR) {
 			for (size_t i = 0; i < it_values->toVector().size(); i++) {
 				c.set_variable(it_name, it_values->toVector()[i]);
-				for_eval(node, inst, l+1, &c, evalctx);
+				for_eval(node, inst, l + 1, &c, evalctx);
 			}
 		}
 		else if (it_values->type() != Value::ValueType::UNDEFINED) {
 			c.set_variable(it_name, it_values);
-			for_eval(node, inst, l+1, &c, evalctx);
+			for_eval(node, inst, l + 1, &c, evalctx);
 		}
 	} else if (l > 0) {
 		// At this point, the for loop variables have been set and we can initialize
@@ -133,7 +133,7 @@ const EvalContext *ControlModule::getLastModuleCtx(const EvalContext *evalctx)
 // static
 AbstractNode *ControlModule::getChild(const ValuePtr &value, const EvalContext *modulectx)
 {
-	if (value->type()!=Value::ValueType::NUMBER) {
+	if (value->type() != Value::ValueType::NUMBER) {
 		// Invalid parameter
 		// (e.g. first child of difference is invalid)
 		PRINTB("WARNING: Bad parameter type (%s) for children, only accept: empty, number, vector, range.", value->toString());
@@ -183,7 +183,7 @@ AbstractNode *ControlModule::instantiate(const Context * /*ctx*/, const ModuleIn
 		// Find the last custom module invocation, which will contain
 		// an eval context with the children of the module invokation
 		const EvalContext *modulectx = getLastModuleCtx(evalctx);
-		if (modulectx==nullptr) {
+		if (modulectx == nullptr) {
 			return nullptr;
 		}
 		// This will trigger if trying to invoke child from the root of any file
@@ -202,22 +202,22 @@ AbstractNode *ControlModule::instantiate(const Context * /*ctx*/, const ModuleIn
 
 	case Type::CHILDREN: {
 		const EvalContext *modulectx = getLastModuleCtx(evalctx);
-		if (modulectx==nullptr) {
+		if (modulectx == nullptr) {
 			return nullptr;
 		}
 		// This will trigger if trying to invoke child from the root of any file
 		// assert(filectx->evalctx);
-		if (evalctx->numArgs()<=0) {
+		if (evalctx->numArgs() <= 0) {
 			// no parameters => all children
 			AbstractNode *node = new GroupNode(inst);
 			for (int n = 0; n < (int)modulectx->numChildren(); ++n) {
 				AbstractNode *childnode = modulectx->getChild(n)->evaluate(modulectx);
-				if (childnode==nullptr) continue; // error
+				if (childnode == nullptr) continue; // error
 				node->children.push_back(childnode);
 			}
 			return node;
 		}
-		else if (evalctx->numArgs()>0) {
+		else if (evalctx->numArgs() > 0) {
 			// one (or more ignored) parameter
 			ValuePtr value = evalctx->getArgValue(0);
 			if (value->type() == Value::ValueType::NUMBER) {
@@ -228,7 +228,7 @@ AbstractNode *ControlModule::instantiate(const Context * /*ctx*/, const ModuleIn
 				const Value::VectorType &vect = value->toVector();
 				for (const auto &vectvalue : vect) {
 					AbstractNode *childnode = getChild(vectvalue,modulectx);
-					if (childnode==nullptr) continue; // error
+					if (childnode == nullptr) continue; // error
 					node->children.push_back(childnode);
 				}
 				return node;
@@ -243,7 +243,7 @@ AbstractNode *ControlModule::instantiate(const Context * /*ctx*/, const ModuleIn
 				AbstractNode *node = new GroupNode(inst);
 				for (RangeType::iterator it = range.begin(); it != range.end(); it++) {
 					AbstractNode *childnode = getChild(ValuePtr(*it),modulectx); // with error cases
-					if (childnode==nullptr) continue; // error
+					if (childnode == nullptr) continue; // error
 					node->children.push_back(childnode);
 				}
 				return node;

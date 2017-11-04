@@ -96,9 +96,9 @@ namespace PolysetUtils {
 //the tessellation algorithm.
 	Vector2d get_projected_point(Vector3d v, projection_t projection) {
 		Vector2d v2(0,0);
-		if (projection==XYPLANE) { v2.x() = v.x(); v2.y() = v.y(); }
-		else if (projection==XZPLANE) { v2.x() = v.x(); v2.y() = v.z(); }
-		else if (projection==YZPLANE) { v2.x() = v.y(); v2.y() = v.z(); }
+		if (projection == XYPLANE) { v2.x() = v.x(); v2.y() = v.y(); }
+		else if (projection == XZPLANE) { v2.x() = v.x(); v2.y() = v.z(); }
+		else if (projection == YZPLANE) { v2.x() = v.y(); v2.y() = v.z(); }
 		return v2;
 	}
 
@@ -112,16 +112,16 @@ namespace PolysetUtils {
    plane.*/
 	projection_t find_good_projection(PolySet::Polygon pgon) {
 		// step 1 - find 3 non-collinear points in the input
-		if (pgon.size()<3) return NONE;
+		if (pgon.size() < 3) return NONE;
 		Vector3d v1,v2,v3;
 		v1 = v2 = v3 = pgon[0];
-		for (size_t i=0; i<pgon.size(); i++) {
-			if (pgon[i]!=v1) { v2=pgon[i]; break; }
+		for (size_t i = 0; i < pgon.size(); i++) {
+			if (pgon[i] != v1) { v2 = pgon[i]; break; }
 		}
-		if (v1==v2) return NONE;
-		for (size_t i=0; i<pgon.size(); i++) {
+		if (v1 == v2) return NONE;
+		for (size_t i = 0; i < pgon.size(); i++) {
 			if (!CGAL::collinear(cgp(v1), cgp(v2), cgp(pgon[i]))) {
-				v3=pgon[i]; break;
+				v3 = pgon[i]; break;
 			}
 		}
 		if (CGAL::collinear(cgp(v1), cgp(v2), cgp(v3))) return NONE;
@@ -131,12 +131,12 @@ namespace PolysetUtils {
 		// would make the smallest shadow if projected onto the XY, YZ, or XZ
 		// plane. 'quadrance' (distance squared) can tell this w/o using sqrt.
 		CGAL::Plane_3<CGAL_Kernel3> pl(cgp(v1), cgp(v2), cgp(v3));
-		NT3 qxy = pl.a()*pl.a()+pl.b()*pl.b();
-		NT3 qyz = pl.b()*pl.b()+pl.c()*pl.c();
-		NT3 qxz = pl.c()*pl.c()+pl.a()*pl.a();
+		NT3 qxy = pl.a() * pl.a() + pl.b() * pl.b();
+		NT3 qyz = pl.b() * pl.b() + pl.c() * pl.c();
+		NT3 qxz = pl.c() * pl.c() + pl.a() * pl.a();
 		NT3 min = std::min(qxy,std::min(qyz,qxz));
-		if (min==qxy) return XYPLANE;
-		else if (min==qyz) return YZPLANE;
+		if (min == qxy) return XYPLANE;
+		else if (min == qyz) return YZPLANE;
 		return XZPLANE;
 	}
 
@@ -166,8 +166,8 @@ namespace PolysetUtils {
 			}
 			original_orientation = CGAL::orientation_2(orienpgon.begin(),orienpgon.end());
 			for (size_t i = 0; i < vhandles.size(); i++) {
-				int vindex1 = (i+0);
-				int vindex2 = (i+1)%vhandles.size();
+				int vindex1 = (i + 0);
+				int vindex2 = (i + 1) % vhandles.size();
 				cdt.insert_constraint(vhandles[vindex1], vhandles[vindex2]);
 			}
 			std::list<CDTPoint> list_of_seeds;
@@ -175,7 +175,7 @@ namespace PolysetUtils {
 																													 list_of_seeds.begin(), list_of_seeds.end(), DummyCriteria<CDT>());
 
 			CDT::Finite_faces_iterator fit;
-			for (fit=cdt.finite_faces_begin(); fit!=cdt.finite_faces_end(); fit++)
+			for (fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); fit++)
 			{
 				if (fit->is_in_domain()) {
 					CDTPoint p1 = cdt.triangle(fit)[0];
@@ -185,7 +185,7 @@ namespace PolysetUtils {
 					Vector3d v2 = vertmap[p2];
 					Vector3d v3 = vertmap[p3];
 					PolySet::Polygon pgon;
-					if (CGAL::orientation(p1,p2,p3)==original_orientation) {
+					if (CGAL::orientation(p1,p2,p3) == original_orientation) {
 						pgon.push_back(v1);
 						pgon.push_back(v2);
 						pgon.push_back(v3);
@@ -226,14 +226,14 @@ namespace PolysetUtils {
 			}
 			else {
 				projection_t goodproj = find_good_projection(pgon);
-				if (goodproj==NONE) {
+				if (goodproj == NONE) {
 					degeneratePolygons++;
 					continue;
 				}
 				bool err = triangulate_polygon(pgon, triangles, goodproj);
 				if (err) continue;
 			}
-			for (size_t j=0; j<triangles.size(); j++) {
+			for (size_t j = 0; j < triangles.size(); j++) {
 				PolySet::Polygon t = triangles[j];
 				outps.append_poly();
 				outps.append_vertex(t[0].x(),t[0].y(),t[0].z());

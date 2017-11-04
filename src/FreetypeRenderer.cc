@@ -40,7 +40,7 @@
 
 #include FT_OUTLINE_H
 
-#define SCRIPT_UNTAG(tag)   ((uint8_t)((tag)>>24)) % ((uint8_t)((tag)>>16)) % ((uint8_t)((tag)>>8)) % ((uint8_t)(tag))
+#define SCRIPT_UNTAG(tag)   ((uint8_t)((tag) >> 24)) % ((uint8_t)((tag) >> 16)) % ((uint8_t)((tag) >> 8)) % ((uint8_t)(tag))
 
 static inline Vector2d get_scaled_vector(const FT_Vector *ft_vector, double scale) {
 	return Vector2d(ft_vector->x / scale, ft_vector->y / scale);
@@ -303,8 +303,8 @@ std::vector<const Geometry *> FreetypeRenderer::render(const FreetypeRenderer::P
 		FT_Outline outline = reinterpret_cast<FT_OutlineGlyph>(glyph->get_glyph())->outline;
 		FT_Outline_Decompose(&outline, &funcs, &callback);
 
-		double adv_x  = glyph->get_x_advance() * params.spacing;
-		double adv_y  = glyph->get_y_advance() * params.spacing;
+		double adv_x = glyph->get_x_advance() * params.spacing;
+		double adv_y = glyph->get_y_advance() * params.spacing;
 		callback.add_glyph_advance(adv_x, adv_y);
 		callback.finish_glyph();
 	}

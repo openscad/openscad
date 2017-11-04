@@ -194,7 +194,7 @@ bool CSGTreeNormalizer::match_and_replace(shared_ptr<CSGNode> &node)
 	shared_ptr<CSGOperation> leftop = dynamic_pointer_cast<CSGOperation>(op->left());
 	if (leftop) {
 		// Part B: The '(x . y) . z' expressions
-		shared_ptr<CSGNode> x  = leftop->left();
+		shared_ptr<CSGNode> x = leftop->left();
 		shared_ptr<CSGNode> y = leftop->right();
 		shared_ptr<CSGNode> z = op->right();
 

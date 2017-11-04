@@ -14,7 +14,7 @@
 #include <sys/stat.h>
 #include <algorithm>
 
-namespace fs=boost::filesystem;
+namespace fs = boost::filesystem;
 //#include "parsersettings.h"
 /*!
    FIXME: Implement an LRU scheme to avoid having an ever-growing module cache

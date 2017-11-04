@@ -82,10 +82,10 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 		if (!err) N = new CGAL_Nef_polyhedron3(P);
 	}
 	catch (const CGAL::Assertion_exception &e) {
-		if (std::string(e.what()).find("Plane_constructor")!=std::string::npos &&
-				std::string(e.what()).find("has_on")!=std::string::npos) {
+		if (std::string(e.what()).find("Plane_constructor") != std::string::npos &&
+				std::string(e.what()).find("has_on") != std::string::npos) {
 			PRINT("PolySet has nonplanar faces. Attempting alternate construction");
-			plane_error=true;
+			plane_error = true;
 		} else {
 			PRINTB("ERROR: CGAL error in CGAL_Nef_polyhedron3(): %s", e.what());
 		}
@@ -155,7 +155,7 @@ namespace CGALUtils {
 	 */
 	bool is_approximately_convex(const PolySet &ps) {
 
-		const double angle_threshold = cos(.1/180*M_PI); // .1°
+		const double angle_threshold = cos(.1 / 180 * M_PI); // .1°
 
 		typedef CGAL::Simple_cartesian<double> K;
 		typedef K::Vector_3 Vector;
@@ -176,7 +176,7 @@ namespace CGALUtils {
 				std::vector<Point> v(N);
 				for (size_t j = 0; j < N; j++) {
 					v[j] = vector_convert<Point>(ps.polygons[i][j]);
-					Edge edge(ps.polygons[i][j],ps.polygons[i][(j+1)%N]);
+					Edge edge(ps.polygons[i][j],ps.polygons[i][(j + 1) % N]);
 					if (edge_to_facet_map.count(edge)) return false; // edge already exists: nonmanifold
 					edge_to_facet_map[edge] = i;
 				}
@@ -191,21 +191,21 @@ namespace CGALUtils {
 			auto N = ps.polygons[i].size();
 			if (N < 3) continue;
 			for (size_t j = 0; j < N; j++) {
-				Edge other_edge(ps.polygons[i][(j+1)%N], ps.polygons[i][j]);
+				Edge other_edge(ps.polygons[i][(j + 1) % N], ps.polygons[i][j]);
 				if (edge_to_facet_map.count(other_edge) == 0) return false; //
 				//Edge_to_facet_map::const_iterator it = edge_to_facet_map.find(other_edge);
 				//if (it == edge_to_facet_map.end()) return false; // not a closed manifold
 				//int other_facet = it->second;
 				int other_facet = edge_to_facet_map[other_edge];
 
-				auto p = vector_convert<Point>(ps.polygons[i][(j+2)%N]);
+				auto p = vector_convert<Point>(ps.polygons[i][(j + 2) % N]);
 
 				if (facet_planes[other_facet].has_on_positive_side(p)) {
 					// Check angle
 					const auto &u = facet_planes[other_facet].orthogonal_vector();
 					const auto &v = facet_planes[i].orthogonal_vector();
 
-					double cos_angle = u / sqrt(u*u) * v / sqrt(v*v);
+					double cos_angle = u / sqrt(u * u) * v / sqrt(v * v);
 					if (cos_angle < angle_threshold) {
 						return false;
 					}
@@ -222,7 +222,7 @@ namespace CGALUtils {
 			int f = facets_to_visit.front(); facets_to_visit.pop();
 
 			for (size_t i = 0; i < ps.polygons[f].size(); i++) {
-				int j = (i+1) % ps.polygons[f].size();
+				int j = (i + 1) % ps.polygons[f].size();
 				auto it = edge_to_facet_map.find(Edge(ps.polygons[f][j], ps.polygons[f][i]));
 				if (it == edge_to_facet_map.end()) return false; // Nonmanifold
 				if (!explored_facets.count(it->second)) {
@@ -333,7 +333,7 @@ namespace CGALUtils {
 #endif // debug
 #if 0 // For debugging
 			std::cerr.precision(20);
-			for (size_t i=0; i<allVertices.size(); i++) {
+			for (size_t i = 0; i < allVertices.size(); i++) {
 				std::cerr << verts[i][0] << ", " << verts[i][1] << ", " << verts[i][2] << "\n";
 			}
 #endif // debug
@@ -382,7 +382,7 @@ namespace CGALUtils {
 
 #if 0 // For debugging
 		std::cerr.precision(20);
-		for (size_t i=0; i<allVertices.size(); i++) {
+		for (size_t i = 0; i < allVertices.size(); i++) {
 			std::cerr << verts[i][0] << ", " << verts[i][1] << ", " << verts[i][2] << "\n";
 		}
 #endif // debug
@@ -514,8 +514,8 @@ namespace CGALUtils {
 				}
 				// Remove consecutive duplicate vertices
 				PolygonK::iterator currp = polygon.begin();
-				for (size_t i=0; i<indices.size(); i++) {
-					if (indices[i] != indices[(i+1)%indices.size()]) {
+				for (size_t i = 0; i < indices.size(); i++) {
+					if (indices[i] != indices[(i + 1) % indices.size()]) {
 						(*currp++) = polygon[i];
 					}
 				}

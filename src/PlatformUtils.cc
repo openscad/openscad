@@ -113,7 +113,7 @@ std::string PlatformUtils::userLibraryPath()
 	fs::path path;
 	try {
 		std::string pathstr = PlatformUtils::documentsPath();
-		if (pathstr=="") return "";
+		if (pathstr == "") return "";
 		path = fs::path(pathstr);
 		if (!fs::exists(path)) return "";
 		path = boosty::canonical(path);
@@ -136,7 +136,7 @@ std::string PlatformUtils::backupPath()
 	fs::path path;
 	try {
 		std::string pathstr = PlatformUtils::documentsPath();
-		if (pathstr=="") return "";
+		if (pathstr == "") return "";
 		path = fs::path(pathstr);
 		if (!fs::exists(path)) return "";
 		path = boosty::canonical(path);
