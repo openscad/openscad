@@ -51,9 +51,9 @@ void PRINT_CONTEXT(const class Context *ctx, const class Module *mod, const clas
    if (OpenSCAD::debug!="") PRINTDB("PolySet dump: %s",ps->dump());
  */
 
-void PRINTDEBUG(const std::string &filename,const std::string &msg);
-#define PRINTD(_arg) do { PRINTDEBUG(std::string(__FILE__),_arg); } while (0)
-#define PRINTDB(_fmt, _arg) do { try { PRINTDEBUG(std::string(__FILE__),str(boost::format(_fmt) % _arg)); } catch (const boost::io::format_error &e) { PRINTDEBUG(std::string(__FILE__),"bad PRINTDB usage"); } } while (0)
+void PRINTDEBUG(const std::string &filename, const std::string &msg);
+#define PRINTD(_arg) do { PRINTDEBUG(std::string(__FILE__), _arg); } while (0)
+#define PRINTDB(_fmt, _arg) do { try { PRINTDEBUG(std::string(__FILE__), str(boost::format(_fmt) % _arg)); } catch (const boost::io::format_error &e) { PRINTDEBUG(std::string(__FILE__), "bad PRINTDB usage"); } } while (0)
 
 std::string two_digit_exp_format(std::string doublestr);
 std::string two_digit_exp_format(double x);

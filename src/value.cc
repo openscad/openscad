@@ -384,7 +384,7 @@ RangeType Value::toRange() const
 	if (val) {
 		return *val;
 	}
-	else return RangeType(0,0,0);
+	else return RangeType(0, 0, 0);
 }
 
 Value &Value::operator=(const Value &v)
@@ -417,7 +417,7 @@ bool Value::operator!=(const Value &v) const
 	return !(*this == v);
 }
 
-#define DEFINE_VISITOR(name,op)                                         \
+#define DEFINE_VISITOR(name, op)                                         \
 	class name : public boost::static_visitor<bool>                       \
 	{                                                                     \
 public:                                                               \
@@ -736,7 +736,7 @@ Value Value::operator[](const Value &v) const
 void RangeType::normalize()
 {
 	if ((step_val > 0) && (end_val < begin_val)) {
-		std::swap(begin_val,end_val);
+		std::swap(begin_val, end_val);
 		printDeprecation("Using ranges of the form [begin:end] with begin value greater than the end value is deprecated.");
 	}
 }

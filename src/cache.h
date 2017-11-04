@@ -55,7 +55,7 @@ class Cache
 		inline Node() : keyPtr(0) {}
 		inline Node(T *data, int cost)
 			: keyPtr(0), t(data), c(cost), p(0), n(0) {}
-		const Key *keyPtr; T *t; int c; Node *p,*n;
+		const Key *keyPtr; T *t; int c; Node *p, *n;
 	};
 	typedef typename std::unordered_map<Key, Node> map_type;
 	typedef typename map_type::iterator iterator_type;
@@ -111,7 +111,7 @@ public:
 	}
 
 	bool insert(const Key &key, T *object, int cost = 1);
-	T *object(const Key &key) const { return const_cast<Cache<Key,T> *>(this)->relink(key); }
+	T *object(const Key &key) const { return const_cast<Cache<Key, T> *>(this)->relink(key); }
 	inline bool contains(const Key &key) const { return hash.find(key) != hash.end(); }
 	T *operator[](const Key &key) const { return object(key); }
 
@@ -123,7 +123,7 @@ private:
 };
 
 template <class Key, class T>
-inline bool Cache<Key,T>::remove(const Key &key)
+inline bool Cache<Key, T>::remove(const Key &key)
 {
 	iterator_type i = hash.find(key);
 	if (i == hash.end()) {
@@ -135,7 +135,7 @@ inline bool Cache<Key,T>::remove(const Key &key)
 }
 
 template <class Key, class T>
-inline T *Cache<Key,T>::take(const Key &key)
+inline T *Cache<Key, T>::take(const Key &key)
 {
 	iterator_type i = hash.find(key);
 	if (i == hash.end()) return 0;
@@ -148,7 +148,7 @@ inline T *Cache<Key,T>::take(const Key &key)
 }
 
 template <class Key, class T>
-bool Cache<Key,T>::insert(const Key &akey, T *aobject, int acost)
+bool Cache<Key, T>::insert(const Key &akey, T *aobject, int acost)
 {
 	remove(akey);
 	if (acost > mx) {
@@ -170,7 +170,7 @@ bool Cache<Key,T>::insert(const Key &akey, T *aobject, int acost)
 }
 
 template <class Key, class T>
-void Cache<Key,T>::trim(int m)
+void Cache<Key, T>::trim(int m)
 {
 	Node *n = l;
 	while (n && total > m) {

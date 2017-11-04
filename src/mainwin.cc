@@ -1469,7 +1469,7 @@ void MainWindow::actionShowLibraryFolder()
 	if (!fs::exists(path)) {
 		PRINTB("WARNING: Library path %s doesnt exist. Creating", path);
 		if (!PlatformUtils::createUserLibraryPath()) {
-			PRINTB("ERROR: Cannot create library path: %s",path);
+			PRINTB("ERROR: Cannot create library path: %s", path);
 		}
 	}
 	auto url = QString::fromStdString(path);
@@ -1755,7 +1755,7 @@ void MainWindow::compileTopLevelDocument()
 	if (Feature::ExperimentalCustomizer.is_enabled()) {
 		if (this->root_module != nullptr) {
 			//add parameters as annotation in AST
-			CommentParser::collectParameters(fulltext.c_str(),this->root_module);
+			CommentParser::collectParameters(fulltext.c_str(), this->root_module);
 		}
 		this->parameterWidget->setParameters(this->root_module);
 		this->parameterWidget->applyParameters(this->root_module);
@@ -1785,7 +1785,7 @@ void MainWindow::checkAutoReload()
 void MainWindow::autoReloadSet(bool on)
 {
 	QSettingsCached settings;
-	settings.setValue("design/autoReload",designActionAutoReload->isChecked());
+	settings.setValue("design/autoReload", designActionAutoReload->isChecked());
 	if (on) {
 		autoReloadTimer->start(200);
 	} else {
@@ -2351,7 +2351,7 @@ void MainWindow::viewModeThrownTogether()
 void MainWindow::viewModeShowEdges()
 {
 	QSettingsCached settings;
-	settings.setValue("view/showEdges",viewActionShowEdges->isChecked());
+	settings.setValue("view/showEdges", viewActionShowEdges->isChecked());
 	this->qglview->setShowEdges(viewActionShowEdges->isChecked());
 	this->qglview->updateGL();
 }
@@ -2369,7 +2369,7 @@ void MainWindow::viewModeShowAxes()
 void MainWindow::viewModeShowCrosshairs()
 {
 	QSettingsCached settings;
-	settings.setValue("view/showCrosshairs",viewActionShowCrosshairs->isChecked());
+	settings.setValue("view/showCrosshairs", viewActionShowCrosshairs->isChecked());
 	this->qglview->setShowCrosshairs(viewActionShowCrosshairs->isChecked());
 	this->qglview->updateGL();
 }
@@ -2377,7 +2377,7 @@ void MainWindow::viewModeShowCrosshairs()
 void MainWindow::viewModeShowScaleProportional()
 {
 	QSettingsCached settings;
-	settings.setValue("view/showScaleProportional",viewActionShowScaleProportional->isChecked());
+	settings.setValue("view/showScaleProportional", viewActionShowScaleProportional->isChecked());
 	this->qglview->setShowScaleProportional(viewActionShowScaleProportional->isChecked());
 	this->qglview->updateGL();
 }
@@ -2423,56 +2423,56 @@ void MainWindow::animateUpdate()
 
 void MainWindow::viewAngleTop()
 {
-	qglview->cam.object_rot << 90,0,0;
+	qglview->cam.object_rot << 90, 0, 0;
 	this->qglview->updateGL();
 }
 
 void MainWindow::viewAngleBottom()
 {
-	qglview->cam.object_rot << 270,0,0;
+	qglview->cam.object_rot << 270, 0, 0;
 	this->qglview->updateGL();
 }
 
 void MainWindow::viewAngleLeft()
 {
-	qglview->cam.object_rot << 0,0,90;
+	qglview->cam.object_rot << 0, 0, 90;
 	this->qglview->updateGL();
 }
 
 void MainWindow::viewAngleRight()
 {
-	qglview->cam.object_rot << 0,0,270;
+	qglview->cam.object_rot << 0, 0, 270;
 	this->qglview->updateGL();
 }
 
 void MainWindow::viewAngleFront()
 {
-	qglview->cam.object_rot << 0,0,0;
+	qglview->cam.object_rot << 0, 0, 0;
 	this->qglview->updateGL();
 }
 
 void MainWindow::viewAngleBack()
 {
-	qglview->cam.object_rot << 0,0,180;
+	qglview->cam.object_rot << 0, 0, 180;
 	this->qglview->updateGL();
 }
 
 void MainWindow::viewAngleDiagonal()
 {
-	qglview->cam.object_rot << 35,0,-25;
+	qglview->cam.object_rot << 35, 0, -25;
 	this->qglview->updateGL();
 }
 
 void MainWindow::viewCenter()
 {
-	qglview->cam.object_trans << 0,0,0;
+	qglview->cam.object_trans << 0, 0, 0;
 	this->qglview->updateGL();
 }
 
 void MainWindow::viewPerspective()
 {
 	QSettingsCached settings;
-	settings.setValue("view/orthogonalProjection",false);
+	settings.setValue("view/orthogonalProjection", false);
 	viewActionPerspective->setChecked(true);
 	viewActionOrthogonal->setChecked(false);
 	this->qglview->setOrthoMode(false);
@@ -2482,7 +2482,7 @@ void MainWindow::viewPerspective()
 void MainWindow::viewOrthogonal()
 {
 	QSettingsCached settings;
-	settings.setValue("view/orthogonalProjection",true);
+	settings.setValue("view/orthogonalProjection", true);
 	viewActionPerspective->setChecked(false);
 	viewActionOrthogonal->setChecked(true);
 	this->qglview->setOrthoMode(true);

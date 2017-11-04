@@ -141,7 +141,7 @@
 #include <QColor>
 //#include "printutils.h"
 
-void format_colors_for_light_background(QMap<QString,QTextCharFormat> &formats)
+void format_colors_for_light_background(QMap<QString, QTextCharFormat> &formats)
 {
 	//PRINT("format for light");
 	formats["operator"].setForeground(Qt::blue);
@@ -156,7 +156,7 @@ void format_colors_for_light_background(QMap<QString,QTextCharFormat> &formats)
 	formats["special"].setForeground(Qt::darkGreen);
 	formats["extrude"].setForeground(Qt::darkGreen);
 	formats["bracket"].setForeground(QColor("Green"));
-	formats["curlies"].setForeground(QColor(32,32,20));
+	formats["curlies"].setForeground(QColor(32, 32, 20));
 	formats["bool"].setForeground(QColor("DarkRed"));
 
 	formats["_$quote"].setForeground(Qt::darkMagenta);
@@ -164,7 +164,7 @@ void format_colors_for_light_background(QMap<QString,QTextCharFormat> &formats)
 	formats["_$number"].setForeground(QColor("DarkRed"));
 }
 
-void format_colors_for_dark_background(QMap<QString,QTextCharFormat> &formats)
+void format_colors_for_dark_background(QMap<QString, QTextCharFormat> &formats)
 {
 	//PRINT("format for dark");
 	formats["operator"].setForeground(QColor("SkyBlue"));
@@ -356,18 +356,18 @@ void Highlighter::highlightBlock(const QString &text)
 		if (state == state_e::NORMAL) {
 			if (text[n] == '"') {
 				state = state_e::QUOTE;
-				setFormat(n,1,quoteFormat);
+				setFormat(n, 1, quoteFormat);
 			} else if (text[n] == '/') {
 				if (n + 1 < text.size() && text[n + 1] == '/') {
-					setFormat(n,text.size(),commentFormat);
+					setFormat(n, text.size(), commentFormat);
 					break;
 				} else if (n + 1 < text.size() && text[n + 1] == '*') {
-					setFormat(n++,2,commentFormat);
+					setFormat(n++, 2, commentFormat);
 					state = state_e::COMMENT;
 				}
 			}
 		} else if (state == state_e::QUOTE) {
-			setFormat(n,1,quoteFormat);
+			setFormat(n, 1, quoteFormat);
 			if (quote_esc_state > 0)
 				quote_esc_state = 0;
 			else if (text[n] == '\\')
@@ -375,9 +375,9 @@ void Highlighter::highlightBlock(const QString &text)
 			else if (text[n] == '"')
 				state = state_e::NORMAL;
 		} else if (state == state_e::COMMENT) {
-			setFormat(n,1,commentFormat);
+			setFormat(n, 1, commentFormat);
 			if (text[n] == '*' && n + 1 < text.size() && text[n + 1] == '/') {
-				setFormat(++n,1,commentFormat);
+				setFormat(++n, 1, commentFormat);
 				state = state_e::NORMAL;
 			}
 		}

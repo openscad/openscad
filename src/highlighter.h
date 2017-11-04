@@ -10,7 +10,7 @@ class Highlighter : public QSyntaxHighlighter
 {
 	Q_OBJECT
 public:
-	enum class state_e {NORMAL=-1,QUOTE,COMMENT};
+	enum class state_e {NORMAL=-1, QUOTE, COMMENT};
 	QHash<QString, QTextCharFormat> tokenFormats;
 	QTextCharFormat errorFormat;
 	Highlighter(QTextDocument *parent);
@@ -23,7 +23,7 @@ private:
 	QTextBlock lastErrorBlock;
 	int errorPos;
 	bool errorState;
-	QMap<QString,QStringList> tokentypes;
-	QMap<QString,QTextCharFormat> typeformats;
+	QMap<QString, QStringList> tokentypes;
+	QMap<QString, QTextCharFormat> typeformats;
 	int lastDocumentPos();
 };

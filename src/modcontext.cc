@@ -190,7 +190,7 @@ ValuePtr FileContext::sub_evaluate_function(const std::string &name,
 	// FIXME: Set document path
 #ifdef DEBUG
 	PRINTDB("New lib Context for %s func:", name);
-	PRINTDB("%s",ctx.dump(nullptr, nullptr));
+	PRINTDB("%s", ctx.dump(nullptr, nullptr));
 #endif
 	return usedmod->scope.functions[name]->evaluate(&ctx, evalctx);
 }
@@ -226,7 +226,7 @@ AbstractNode *FileContext::instantiate_module(const ModuleInstantiation &inst, E
 			// FIXME: Set document path
 #ifdef DEBUG
 			PRINTD("New file Context:");
-			PRINTDB("%s",ctx.dump(nullptr, &inst));
+			PRINTDB("%s", ctx.dump(nullptr, &inst));
 #endif
 			return usedmod->scope.modules[inst.name()]->instantiate(&ctx, &inst, evalctx);
 		}

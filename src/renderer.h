@@ -51,6 +51,6 @@ public:
 	static void render_edges(shared_ptr<const Geometry> geom, csgmode_e csgmode);
 
 protected:
-	std::map<ColorMode,Color4f> colormap;
+	std::map<ColorMode, Color4f> colormap;
 	const ColorScheme *colorscheme;
 };

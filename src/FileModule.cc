@@ -99,7 +99,7 @@ time_t FileModule::handleDependencies()
 	if (this->is_handling_dependencies) return 0;
 	this->is_handling_dependencies = true;
 
-	std::vector<std::pair<std::string,std::string>> updates;
+	std::vector<std::pair<std::string, std::string>> updates;
 
 	// If a lib in usedlibs was previously missing, we need to relocate it
 	// by searching the applicable paths. We can identify a previously missing module
@@ -146,7 +146,7 @@ time_t FileModule::handleDependencies()
 	}
 
 	// Relative filenames which were located are reinserted as absolute filenames
-	typedef std::pair<std::string,std::string> stringpair;
+	typedef std::pair<std::string, std::string> stringpair;
 	for (const auto &files : updates) {
 		this->usedlibs.erase(files.first);
 		this->usedlibs.insert(files.second);

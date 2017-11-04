@@ -35,7 +35,7 @@ class Color4f : public Eigen::Vector4f
 {
 public:
 	Color4f() { }
-	Color4f(int r, int g, int b, int a = 255) { setRgb(r,g,b,a); }
+	Color4f(int r, int g, int b, int a = 255) { setRgb(r, g, b, a); }
 	Color4f(float r, float g, float b, float a = 1.0f) : Eigen::Vector4f(r, g, b, a) { }
 
 	void setRgb(int r, int g, int b, int a = 255) {

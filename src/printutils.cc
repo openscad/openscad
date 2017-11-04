@@ -93,7 +93,7 @@ std::string two_digit_exp_format(std::string doublestr)
 	size_t exppos = doublestr.find('e');
 	if (exppos != std::string::npos) {
 		exppos += 2;
-		if (doublestr[exppos] == '0') doublestr.erase(exppos,1);
+		if (doublestr[exppos] == '0') doublestr.erase(exppos, 1);
 	}
 #endif
 	return doublestr;

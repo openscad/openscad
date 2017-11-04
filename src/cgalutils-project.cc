@@ -20,7 +20,7 @@
 #include <CGAL/version.h>
 
 // Apply CGAL bugfix for CGAL-4.5.x
-#if CGAL_VERSION_NR > CGAL_VERSION_NUMBER(4,5,1) || CGAL_VERSION_NR < CGAL_VERSION_NUMBER(4,5,0)
+#if CGAL_VERSION_NR > CGAL_VERSION_NUMBER(4, 5, 1) || CGAL_VERSION_NR < CGAL_VERSION_NUMBER(4, 5, 0)
 #include <CGAL/convex_hull_3.h>
 #else
 #include "convex_hull_3_bugfix.h"
@@ -112,7 +112,7 @@ public:
 	{
 		output_nefpoly2d.reset(new CGAL_Nef_polyhedron2());
 		boundary = CGAL_Nef_polyhedron2::INCLUDED;
-		up = CGAL::Direction_3<CGAL_Kernel3>(0,0,1);
+		up = CGAL::Direction_3<CGAL_Kernel3>(0, 0, 1);
 	}
 	void visit(CGAL_Nef_polyhedron3::Vertex_const_handle) {}
 	void visit(CGAL_Nef_polyhedron3::Halfedge_const_handle) {}
@@ -125,7 +125,7 @@ public:
 
 void ZRemover::visit(CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet)
 {
-	PRINTDB(" <!-- ZRemover Halffacet visit. Mark: %i --> ",hfacet->mark());
+	PRINTDB(" <!-- ZRemover Halffacet visit. Mark: %i --> ", hfacet->mark());
 	if (hfacet->plane().orthogonal_direction() != this->up) {
 		PRINTD("  <!-- ZRemover down-facing half-facet. skipping -->");
 		PRINTD(" <!-- ZRemover Halffacet visit end-->");
@@ -189,7 +189,7 @@ namespace CGALUtils {
 		if (cut) {
 			CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 			try {
-				CGAL_Nef_polyhedron3::Plane_3 xy_plane = CGAL_Nef_polyhedron3::Plane_3(0,0,1,0);
+				CGAL_Nef_polyhedron3::Plane_3 xy_plane = CGAL_Nef_polyhedron3::Plane_3(0, 0, 1, 0);
 				newN.p3.reset(new CGAL_Nef_polyhedron3(N.p3->intersection(xy_plane, CGAL_Nef_polyhedron3::PLANE_ONLY)));
 			}
 			catch (const CGAL::Failure_exception &e) {
@@ -220,14 +220,14 @@ namespace CGALUtils {
 				return poly;
 			}
 
-			PRINTDB("%s",OpenSCAD::svg_header(480, 100000));
+			PRINTDB("%s", OpenSCAD::svg_header(480, 100000));
 			try {
 				ZRemover zremover;
 				CGAL_Nef_polyhedron3::Volume_const_iterator i;
 				CGAL_Nef_polyhedron3::Shell_entry_const_iterator j;
 				CGAL_Nef_polyhedron3::SFace_const_handle sface_handle;
 				for (i = newN.p3->volumes_begin(); i != newN.p3->volumes_end(); ++i) {
-					PRINTDB("<!-- volume. mark: %s -->",i->mark());
+					PRINTDB("<!-- volume. mark: %s -->", i->mark());
 					for (j = i->shells_begin(); j != i->shells_end(); ++j) {
 						PRINTDB("<!-- shell. (vol mark was: %i)", i->mark());
 						sface_handle = CGAL_Nef_polyhedron3::SFace_const_handle(j);

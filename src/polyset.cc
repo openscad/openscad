@@ -174,7 +174,7 @@ bool PolySet::is_convex() const {
 	return PolysetUtils::is_approximately_convex(*this);
 }
 
-void PolySet::resize(const Vector3d &newsize, const Eigen::Matrix<bool,3,1> &autosize)
+void PolySet::resize(const Vector3d &newsize, const Eigen::Matrix<bool, 3, 1> &autosize)
 {
 	BoundingBox bbox = this->getBoundingBox();
 
@@ -183,7 +183,7 @@ void PolySet::resize(const Vector3d &newsize, const Eigen::Matrix<bool,3,1> &aut
 	for (int i = 1; i < 3; i++) if (newsize[i] > newsize[maxdim]) maxdim = i;
 
 	// Default scale (scale with 1 if the new size is 0)
-	Vector3d scale(1,1,1);
+	Vector3d scale(1, 1, 1);
 	for (int i = 0; i < 3; i++) if (newsize[i] > 0) scale[i] = newsize[i] / bbox.sizes()[i];
 
 	// Autoscale where applicable

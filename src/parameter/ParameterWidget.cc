@@ -53,7 +53,7 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 	autoPreviewTimer.setSingleShot(true);
 	connect(&autoPreviewTimer, SIGNAL(timeout()), this, SLOT(onPreviewTimerElapsed()));
 	connect(checkBoxAutoPreview, SIGNAL(toggled(bool)), this, SLOT(onValueChanged()));
-	connect(checkBoxDetailedDescription,SIGNAL(toggled(bool)), this,SLOT(onDescriptionShow()));
+	connect(checkBoxDetailedDescription, SIGNAL(toggled(bool)), this, SLOT(onDescriptionShow()));
 	connect(comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onSetChanged(int)));
 	connect(reset, SIGNAL(clicked()), this, SLOT(resetParameter()));
 }
@@ -216,7 +216,7 @@ void ParameterWidget::connectWidget()
 	begin();
 	for (std::vector<std::string>::iterator it = groupPos.begin(); it != groupPos.end(); it++) {
 		anyLayout->setSpacing(0);
-		anyLayout->setContentsMargins(0,0,0,0);
+		anyLayout->setContentsMargins(0, 0, 0, 0);
 		if (groupMap.find(*it) == groupMap.end())
 			continue;
 		std::vector<std::string> gr;
@@ -357,7 +357,7 @@ void ParameterWidget::updateParameterSet(std::string setName)
 	if (!setName.empty()) {
 		pt::ptree iroot;
 		for (entry_map_t::iterator it = entries.begin(); it != entries.end(); it++) {
-			iroot.put(it->first,it->second->value->toString());
+			iroot.put(it->first, it->second->value->toString());
 		}
 		addParameterSet(setName, iroot);
 		const QString s(QString::fromStdString(setName));

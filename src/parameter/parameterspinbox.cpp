@@ -35,7 +35,7 @@ void ParameterSpinBox::setValue()
 	}
 	else {
 		setPrecision(object->defaultValue->toDouble());
-		this->doubleSpinBox->setSingleStep(1 / pow(10,decimalPrecision));
+		this->doubleSpinBox->setSingleStep(1 / pow(10, decimalPrecision));
 	}
 	this->doubleSpinBox->setDecimals(decimalPrecision);
 	this->stackedWidgetRight->setCurrentWidget(this->pageSpin);

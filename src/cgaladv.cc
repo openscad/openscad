@@ -87,7 +87,7 @@ AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstant
 
 	if (type == CgaladvType::RESIZE) {
 		auto ns = c.lookup_variable("newsize");
-		node->newsize << 0,0,0;
+		node->newsize << 0, 0, 0;
 		if (ns->type() == Value::ValueType::VECTOR) {
 			const Value::VectorType &vs = ns->toVector();
 			if (vs.size() >= 1) node->newsize[0] = vs[0]->toDouble();
@@ -103,7 +103,7 @@ AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstant
 			if (va.size() >= 3) node->autosize[2] = va[2]->toBool();
 		}
 		else if (autosize->type() == Value::ValueType::BOOL) {
-			node->autosize << autosize->toBool(),autosize->toBool(),autosize->toBool();
+			node->autosize << autosize->toBool(), autosize->toBool(), autosize->toBool();
 		}
 	}
 

@@ -59,9 +59,9 @@ typedef CGAL_Kernel3 Kernel;
 typedef CGAL::Triangulation_vertex_base_2<Kernel> Vb;
 //typedef CGAL::Constrained_triangulation_face_base_2<Kernel> Fb;
 typedef CGAL::Delaunay_mesh_face_base_2<Kernel> Fb;
-typedef CGAL::Triangulation_data_structure_2<Vb,Fb> TDS;
+typedef CGAL::Triangulation_data_structure_2<Vb, Fb> TDS;
 typedef CGAL::Exact_intersections_tag ITAG;
-typedef CGAL::Constrained_Delaunay_triangulation_2<Kernel,TDS,ITAG> CDT;
+typedef CGAL::Constrained_Delaunay_triangulation_2<Kernel, TDS, ITAG> CDT;
 //typedef CGAL::Constrained_Delaunay_triangulation_2<Kernel,TDS> CDT;
 
 typedef CDT::Vertex_handle Vertex_handle;
@@ -188,33 +188,33 @@ struct projection_t {
 };
 
 CGAL_Point_2 get_projected_point(CGAL_Point_3 &p3, projection_t projection) {
-	NT3 x,y;
+	NT3 x, y;
 	if (projection.plane == XYPLANE) { x = p3.x(); y = p3.y(); }
 	else if (projection.plane == XZPLANE) { x = p3.x(); y = p3.z(); }
 	else if (projection.plane == YZPLANE) { x = p3.y(); y = p3.z(); }
 	else if (projection.plane == NONE) { x = 0; y = 0; }
-	if (projection.flip) return CGAL_Point_2(y,x);
-	return CGAL_Point_2(x,y);
+	if (projection.flip) return CGAL_Point_2(y, x);
+	return CGAL_Point_2(x, y);
 }
 
 /* given 2d point, 3d plane, and 3d->2d projection, 'deproject' from
    2d back onto a point on the 3d plane. true on failure, false on success */
 bool deproject(CGAL_Point_2 &p2, projection_t &projection, CGAL_Plane_3 &plane, CGAL_Point_3 &p3)
 {
-	NT3 x,y;
+	NT3 x, y;
 	CGAL_Line_3 l;
 	CGAL_Point_3 p;
 	CGAL_Point_2 pf(p2.x(), p2.y());
 	if (projection.flip) pf = CGAL_Point_2(p2.y(), p2.x());
 	if (projection.plane == XYPLANE) {
 		p = CGAL_Point_3(pf.x(), pf.y(), 0);
-		l = CGAL_Line_3(p, CGAL_Direction_3(0,0,1));
+		l = CGAL_Line_3(p, CGAL_Direction_3(0, 0, 1));
 	} else if (projection.plane == XZPLANE) {
 		p = CGAL_Point_3(pf.x(), 0, pf.y());
-		l = CGAL_Line_3(p, CGAL_Direction_3(0,1,0));
+		l = CGAL_Line_3(p, CGAL_Direction_3(0, 1, 0));
 	} else if (projection.plane == YZPLANE) {
 		p = CGAL_Point_3(0, pf.x(), pf.y());
-		l = CGAL_Line_3(p, CGAL_Direction_3(1,0,0));
+		l = CGAL_Line_3(p, CGAL_Direction_3(1, 0, 0));
 	}
 	CGAL::Object obj = CGAL::intersection(l, plane);
 	const CGAL_Point_3 *point_test = CGAL::object_cast<CGAL_Point_3>(&obj);
@@ -265,11 +265,11 @@ NT3 wedge(CGAL_Vector_2 &v1, CGAL_Vector_2 &v2) {
    point is inside the polygon or not, using the given winding rule. note
    that even_odd is not implemented. */
 typedef enum { NONZERO_WINDING, EVEN_ODD } winding_rule_t;
-bool inside(CGAL_Point_2 &p1,std::vector<CGAL_Point_2> &pgon, winding_rule_t winding_rule)
+bool inside(CGAL_Point_2 &p1, std::vector<CGAL_Point_2> &pgon, winding_rule_t winding_rule)
 {
 	NT3 winding_sum = NT3(0);
 	CGAL_Point_2 p2;
-	CGAL_Ray_2 eastray(p1,CGAL_Direction_2(1,0));
+	CGAL_Ray_2 eastray(p1, CGAL_Direction_2(1, 0));
 	for (size_t i = 0; i < pgon.size(); i++) {
 		CGAL_Point_2 tail = pgon[i];
 		CGAL_Point_2 head = pgon[(i + 1) % pgon.size()];
@@ -298,7 +298,7 @@ projection_t find_good_projection(CGAL_Plane_3 &plane)
 	NT3 qxy = plane.a() * plane.a() + plane.b() * plane.b();
 	NT3 qyz = plane.b() * plane.b() + plane.c() * plane.c();
 	NT3 qxz = plane.a() * plane.a() + plane.c() * plane.c();
-	NT3 min = std::min(qxy,std::min(qyz,qxz));
+	NT3 min = std::min(qxy, std::min(qyz, qxz));
 	if (min == qxy) {
 		goodproj.plane = XYPLANE;
 		if (sign(plane.c()) > 0) goodproj.flip = true;
@@ -332,13 +332,13 @@ namespace CGALUtils {
 		}
 		bool err = false;
 		CDT cdt;
-		std::map<CDTPoint,CGAL_Point_3> vertmap;
+		std::map<CDTPoint, CGAL_Point_3> vertmap;
 
 		PRINTD("finding good projection");
 		projection_t goodproj = find_good_projection(plane);
 
-		PRINTDB("plane %s",plane);
-		PRINTDB("proj: %i %i",goodproj.plane % goodproj.flip);
+		PRINTDB("plane %s", plane);
+		PRINTDB("proj: %i %i", goodproj.plane % goodproj.flip);
 		PRINTD("Inserting points and edges into Constrained Delaunay Triangulation");
 		std::vector< std::vector<CGAL_Point_2>> polygons2d;
 		for (size_t i = 0; i < polygons.size(); i++) {
@@ -368,7 +368,7 @@ namespace CGALUtils {
 		}
 
 		size_t numholes = polygons2d.size() - 1;
-		PRINTDB("seeding %i holes",numholes);
+		PRINTDB("seeding %i holes", numholes);
 		std::list<CDTPoint> list_of_seeds;
 		for (size_t i = 1; i < polygons2d.size(); i++) {
 			std::vector<CGAL_Point_2> &pgon = polygons2d[i];
@@ -376,8 +376,8 @@ namespace CGALUtils {
 				CGAL_Point_2 p1 = pgon[(j + 0)];
 				CGAL_Point_2 p2 = pgon[(j + 1) % pgon.size()];
 				CGAL_Point_2 p3 = pgon[(j + 2) % pgon.size()];
-				CGAL_Point_2 mp = CGAL::midpoint(p1,CGAL::midpoint(p2,p3));
-				if (inside(mp,pgon,NONZERO_WINDING)) {
+				CGAL_Point_2 mp = CGAL::midpoint(p1, CGAL::midpoint(p2, p3));
+				if (inside(mp, pgon, NONZERO_WINDING)) {
 					CDTPoint cdtpt(mp.x(), mp.y());
 					list_of_seeds.push_back(cdtpt);
 					break;
@@ -389,7 +389,7 @@ namespace CGALUtils {
 			//PRINTB("seed %s",*li);
 			double x = CGAL::to_double(li->x());
 			double y = CGAL::to_double(li->y());
-			PRINTDB("seed %f,%f",x % y);
+			PRINTDB("seed %f,%f", x % y);
 		}
 		PRINTD("seeding done");
 
@@ -411,7 +411,7 @@ namespace CGALUtils {
 				CDTPoint p1 = cdt.triangle(fit)[0];
 				CDTPoint p2 = cdt.triangle(fit)[1];
 				CDTPoint p3 = cdt.triangle(fit)[2];
-				CGAL_Point_3 cp1,cp2,cp3;
+				CGAL_Point_3 cp1, cp2, cp3;
 				if (vertmap.count(p1)) cp1 = vertmap[p1];
 				else err = deproject(p1, goodproj, plane, cp1);
 				if (vertmap.count(p2)) cp2 = vertmap[p2];
@@ -427,7 +427,7 @@ namespace CGALUtils {
 			}
 		}
 
-		PRINTDB("built %i triangles",triangles.size());
+		PRINTDB("built %i triangles", triangles.size());
 		return err;
 	}
 
@@ -451,13 +451,13 @@ namespace CGALUtils {
 		}
 		bool err = false;
 		CDT cdt;
-		std::map<CDTPoint,CGAL_Point_3> vertmap;
+		std::map<CDTPoint, CGAL_Point_3> vertmap;
 
 		PRINTD("finding good projection");
 		projection_t goodproj = find_good_projection(plane);
 
-		PRINTDB("plane %s",plane);
-		PRINTDB("proj: %i %i",goodproj.plane % goodproj.flip);
+		PRINTDB("plane %s", plane);
+		PRINTDB("proj: %i %i", goodproj.plane % goodproj.flip);
 		PRINTD("Inserting points and edges into Constrained Delaunay Triangulation");
 		std::vector< std::vector<CGAL_Point_2>> polygons2d;
 		for (size_t i = 0; i < polygons.size(); i++) {
@@ -487,7 +487,7 @@ namespace CGALUtils {
 		}
 
 		size_t numholes = polygons2d.size() - 1;
-		PRINTDB("seeding %i holes",numholes);
+		PRINTDB("seeding %i holes", numholes);
 		std::list<CDTPoint> list_of_seeds;
 		for (size_t i = 1; i < polygons2d.size(); i++) {
 			std::vector<CGAL_Point_2> &pgon = polygons2d[i];
@@ -495,8 +495,8 @@ namespace CGALUtils {
 				CGAL_Point_2 p1 = pgon[(j + 0)];
 				CGAL_Point_2 p2 = pgon[(j + 1) % pgon.size()];
 				CGAL_Point_2 p3 = pgon[(j + 2) % pgon.size()];
-				CGAL_Point_2 mp = CGAL::midpoint(p1,CGAL::midpoint(p2,p3));
-				if (inside(mp,pgon,NONZERO_WINDING)) {
+				CGAL_Point_2 mp = CGAL::midpoint(p1, CGAL::midpoint(p2, p3));
+				if (inside(mp, pgon, NONZERO_WINDING)) {
 					CDTPoint cdtpt(mp.x(), mp.y());
 					list_of_seeds.push_back(cdtpt);
 					break;
@@ -508,7 +508,7 @@ namespace CGALUtils {
 			//PRINTB("seed %s",*li);
 			double x = CGAL::to_double(li->x());
 			double y = CGAL::to_double(li->y());
-			PRINTDB("seed %f,%f",x % y);
+			PRINTDB("seed %f,%f", x % y);
 		}
 		PRINTD("seeding done");
 
@@ -530,7 +530,7 @@ namespace CGALUtils {
 				CDTPoint p1 = cdt.triangle(fit)[0];
 				CDTPoint p2 = cdt.triangle(fit)[1];
 				CDTPoint p3 = cdt.triangle(fit)[2];
-				CGAL_Point_3 cp1,cp2,cp3;
+				CGAL_Point_3 cp1, cp2, cp3;
 				CGAL_Polygon_3 pgon;
 				if (vertmap.count(p1)) cp1 = vertmap[p1];
 				else err = deproject(p1, goodproj, plane, cp1);
@@ -546,7 +546,7 @@ namespace CGALUtils {
 			}
 		}
 
-		PRINTDB("built %i triangles",triangles.size());
+		PRINTDB("built %i triangles", triangles.size());
 		return err;
 	}
 

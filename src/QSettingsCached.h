@@ -21,7 +21,7 @@ public:
 	}
 
 	inline void setValue(const QString &key, const QVariant &value) {
-		qsettingsPointer->setValue(key,value);         // It is safe to access qsettings from Multiple sources. it is thread safe
+		qsettingsPointer->setValue(key, value);         // It is safe to access qsettings from Multiple sources. it is thread safe
 		// Disabling forced sync to persisted storage on write. Will rely on automatic behavior of QSettings
 		// qsettingsPointer->sync(); // force write to file system on each modification of open scad settings
 	}

@@ -20,7 +20,7 @@
 #include <CGAL/version.h>
 
 // Apply CGAL bugfix for CGAL-4.5.x
-#if CGAL_VERSION_NR > CGAL_VERSION_NUMBER(4,5,1) || CGAL_VERSION_NR < CGAL_VERSION_NUMBER(4,5,0)
+#if CGAL_VERSION_NR > CGAL_VERSION_NUMBER(4, 5, 1) || CGAL_VERSION_NR < CGAL_VERSION_NUMBER(4, 5, 0)
 #include <CGAL/convex_hull_3.h>
 #else
 #include "convex_hull_3_bugfix.h"
@@ -59,7 +59,7 @@ namespace CGALUtils {
 			to_explore.pop();
 			typename Polyhedron::Facet::Halfedge_around_facet_const_circulator he, end;
 			end = he = f->facet_begin();
-			CGAL_For_all(he,end) {
+			CGAL_For_all(he, end) {
 				typename Polyhedron::Facet_const_handle o = he->opposite()->facet();
 
 				if (!visited.count(o)) {
@@ -208,7 +208,7 @@ namespace CGALUtils {
 	Geometry const *applyMinkowski(const Geometry::Geometries &children)
 	{
 		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
-		CGAL::Timer t,t_tot;
+		CGAL::Timer t, t_tot;
 		assert(children.size() >= 2);
 		Geometry::Geometries::const_iterator it = children.begin();
 		t_tot.start();
@@ -235,7 +235,7 @@ namespace CGALUtils {
 
 					if ((ps && ps->is_convex()) ||
 							(!ps && is_weakly_convex(poly))) {
-						PRINTDB("Minkowski: child %d is convex and %s",i % (ps ? "PolySet" : "Nef"));
+						PRINTDB("Minkowski: child %d is convex and %s", i % (ps ? "PolySet" : "Nef"));
 						P[i].push_back(poly);
 					} else {
 						CGAL_Nef_polyhedron3 decomposed_nef;
@@ -246,7 +246,7 @@ namespace CGALUtils {
 							if (!p->isEmpty()) decomposed_nef = *p->p3;
 							delete p;
 						} else {
-							PRINTDB("Minkowski: child %d is nonconvex Nef, decomposing...",i);
+							PRINTDB("Minkowski: child %d is nonconvex Nef, decomposing...", i);
 							decomposed_nef = *nef->p3;
 						}
 
@@ -288,7 +288,7 @@ namespace CGALUtils {
 
 							for (CGAL_Polyhedron::Vertex_const_iterator pi = poly.vertices_begin(); pi != poly.vertices_end(); ++pi) {
 								CGAL_Polyhedron::Point_3 const &p = pi->point();
-								points[k].push_back(Hull_kernel::Point_3(to_double(p[0]),to_double(p[1]),to_double(p[2])));
+								points[k].push_back(Hull_kernel::Point_3(to_double(p[0]), to_double(p[1]), to_double(p[2])));
 							}
 						}
 
@@ -321,7 +321,7 @@ namespace CGALUtils {
 						for (CGAL::Polyhedron_3<Hull_kernel>::Vertex_iterator i = result.vertices_begin(); i != result.vertices_end(); ++i) {
 							Hull_kernel::Point_3 const &p = i->point();
 
-							CGAL::Polyhedron_3<Hull_kernel>::Vertex::Halfedge_handle h,e;
+							CGAL::Polyhedron_3<Hull_kernel>::Vertex::Halfedge_handle h, e;
 							h = i->halfedge();
 							e = h;
 							bool collinear = false;
@@ -329,7 +329,7 @@ namespace CGALUtils {
 
 							do {
 								Hull_kernel::Point_3 const &q = h->opposite()->vertex()->point();
-								if (coplanar && !CGAL::coplanar(p,q,
+								if (coplanar && !CGAL::coplanar(p, q,
 																								h->next_on_vertex()->opposite()->vertex()->point(),
 																								h->next_on_vertex()->next_on_vertex()->opposite()->vertex()->point())) {
 									coplanar = false;
@@ -341,7 +341,7 @@ namespace CGALUtils {
 										 j = j->next_on_vertex()) {
 
 									Hull_kernel::Point_3 const &r = j->opposite()->vertex()->point();
-									if (CGAL::collinear(p,q,r)) {
+									if (CGAL::collinear(p, q, r)) {
 										collinear = true;
 									}
 								}
@@ -369,15 +369,15 @@ namespace CGALUtils {
 					delete operands[0];
 
 				if (result_parts.size() == 1) {
-					PolySet *ps = new PolySet(3,true);
+					PolySet *ps = new PolySet(3, true);
 					createPolySetFromPolyhedron(*result_parts.begin(), *ps);
 					operands[0] = ps;
 				} else if (!result_parts.empty()) {
 					t.start();
-					PRINTDB("Minkowski: Computing union of %d parts",result_parts.size());
+					PRINTDB("Minkowski: Computing union of %d parts", result_parts.size());
 					Geometry::Geometries fake_children;
 					for (std::list<CGAL::Polyhedron_3<Hull_kernel>>::iterator i = result_parts.begin(); i != result_parts.end(); ++i) {
-						PolySet ps(3,true);
+						PolySet ps(3, true);
 						createPolySetFromPolyhedron(*i, ps);
 						fake_children.push_back(std::make_pair((const AbstractNode *)nullptr,
 																									 shared_ptr<const Geometry>(createNefPolyhedronFromGeometry(ps))));
@@ -387,7 +387,7 @@ namespace CGALUtils {
 					// Assert once we figured out what went wrong with issue #1069?
 					if (!N) throw 0;
 					t.stop();
-					PRINTDB("Minkowski: Union done: %f s",t.time());
+					PRINTDB("Minkowski: Union done: %f s", t.time());
 					t.reset();
 					operands[0] = N;
 				} else {

@@ -18,7 +18,7 @@ static void stdFree(void *userData, void *ptr) {
 	free(ptr);
 }
 
-typedef std::pair<int,int> IndexedEdge;
+typedef std::pair<int, int> IndexedEdge;
 
 /*!
    Helper class for keeping track of edges in a mesh.
@@ -58,7 +58,7 @@ public:
 	}
 
 	void add(int start, int end) {
-		this->add(IndexedEdge(start,end));
+		this->add(IndexedEdge(start, end));
 	}
 
 	void add(const IndexedEdge &e) {
@@ -67,7 +67,7 @@ public:
 	}
 
 	void remove(int start, int end) {
-		this->remove(IndexedEdge(start,end));
+		this->remove(IndexedEdge(start, end));
 	}
 
 	void remove(const IndexedEdge &e) {

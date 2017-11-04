@@ -57,7 +57,7 @@ public:
 	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
 };
 
-typedef std::unordered_map<std::pair<int,int>, double, boost::hash<std::pair<int,int>>> img_data_t;
+typedef std::unordered_map<std::pair<int, int>, double, boost::hash<std::pair<int, int>>> img_data_t;
 
 class SurfaceNode : public LeafNode
 {

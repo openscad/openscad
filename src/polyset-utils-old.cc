@@ -95,7 +95,7 @@ namespace PolysetUtils {
 // this is how we make 3d points appear as though they were 2d points to
 //the tessellation algorithm.
 	Vector2d get_projected_point(Vector3d v, projection_t projection) {
-		Vector2d v2(0,0);
+		Vector2d v2(0, 0);
 		if (projection == XYPLANE) { v2.x() = v.x(); v2.y() = v.y(); }
 		else if (projection == XZPLANE) { v2.x() = v.x(); v2.y() = v.z(); }
 		else if (projection == YZPLANE) { v2.x() = v.y(); v2.y() = v.z(); }
@@ -113,7 +113,7 @@ namespace PolysetUtils {
 	projection_t find_good_projection(PolySet::Polygon pgon) {
 		// step 1 - find 3 non-collinear points in the input
 		if (pgon.size() < 3) return NONE;
-		Vector3d v1,v2,v3;
+		Vector3d v1, v2, v3;
 		v1 = v2 = v3 = pgon[0];
 		for (size_t i = 0; i < pgon.size(); i++) {
 			if (pgon[i] != v1) { v2 = pgon[i]; break; }
@@ -134,7 +134,7 @@ namespace PolysetUtils {
 		NT3 qxy = pl.a() * pl.a() + pl.b() * pl.b();
 		NT3 qyz = pl.b() * pl.b() + pl.c() * pl.c();
 		NT3 qxz = pl.c() * pl.c() + pl.a() * pl.a();
-		NT3 min = std::min(qxy,std::min(qyz,qxz));
+		NT3 min = std::min(qxy, std::min(qyz, qxz));
 		if (min == qxy) return XYPLANE;
 		else if (min == qyz) return YZPLANE;
 		return XZPLANE;
@@ -152,19 +152,19 @@ namespace PolysetUtils {
 		try {
 			CDT cdt;
 			std::vector<Vertex_handle> vhandles;
-			std::map<CDTPoint,Vector3d> vertmap;
+			std::map<CDTPoint, Vector3d> vertmap;
 			CGAL::Orientation original_orientation;
 			std::vector<CDTPoint> orienpgon;
 			for (size_t i = 0; i < pgon.size(); i++) {
 				Vector3d v3 = pgon.at(i);
 				Vector2d v2 = get_projected_point(v3, projection);
-				CDTPoint cdtpoint = CDTPoint(v2.x(),v2.y());
+				CDTPoint cdtpoint = CDTPoint(v2.x(), v2.y());
 				vertmap[ cdtpoint ] = v3;
 				Vertex_handle vh = cdt.insert(cdtpoint);
 				vhandles.push_back(vh);
 				orienpgon.push_back(cdtpoint);
 			}
-			original_orientation = CGAL::orientation_2(orienpgon.begin(),orienpgon.end());
+			original_orientation = CGAL::orientation_2(orienpgon.begin(), orienpgon.end());
 			for (size_t i = 0; i < vhandles.size(); i++) {
 				int vindex1 = (i + 0);
 				int vindex2 = (i + 1) % vhandles.size();
@@ -185,7 +185,7 @@ namespace PolysetUtils {
 					Vector3d v2 = vertmap[p2];
 					Vector3d v3 = vertmap[p3];
 					PolySet::Polygon pgon;
-					if (CGAL::orientation(p1,p2,p3) == original_orientation) {
+					if (CGAL::orientation(p1, p2, p3) == original_orientation) {
 						pgon.push_back(v1);
 						pgon.push_back(v2);
 						pgon.push_back(v3);
@@ -236,9 +236,9 @@ namespace PolysetUtils {
 			for (size_t j = 0; j < triangles.size(); j++) {
 				PolySet::Polygon t = triangles[j];
 				outps.append_poly();
-				outps.append_vertex(t[0].x(),t[0].y(),t[0].z());
-				outps.append_vertex(t[1].x(),t[1].y(),t[1].z());
-				outps.append_vertex(t[2].x(),t[2].y(),t[2].z());
+				outps.append_vertex(t[0].x(), t[0].y(), t[0].z());
+				outps.append_vertex(t[1].x(), t[1].y(), t[1].z());
+				outps.append_vertex(t[2].x(), t[2].y(), t[2].z());
 			}
 		}
 		if (degeneratePolygons > 0) PRINT("WARNING: PolySet has degenerate polygons");

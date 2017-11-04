@@ -22,7 +22,7 @@ private:
 	shared_ptr<CSGProducts> root_products;
 	shared_ptr<CSGProducts> highlight_products;
 	shared_ptr<CSGProducts> background_products;
-	mutable std::unordered_map<std::pair<const Geometry *,const Transform3d *>,
+	mutable std::unordered_map<std::pair<const Geometry *, const Transform3d *>,
 														 int,
-														 boost::hash<std::pair<const Geometry *,const Transform3d *>>> geomVisitMark;
+														 boost::hash<std::pair<const Geometry *, const Transform3d *>>> geomVisitMark;
 };

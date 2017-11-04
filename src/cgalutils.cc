@@ -20,7 +20,7 @@
 #include <CGAL/version.h>
 
 // Apply CGAL bugfix for CGAL-4.5.x
-#if CGAL_VERSION_NR > CGAL_VERSION_NUMBER(4,5,1) || CGAL_VERSION_NR < CGAL_VERSION_NUMBER(4,5,0)
+#if CGAL_VERSION_NR > CGAL_VERSION_NUMBER(4, 5, 1) || CGAL_VERSION_NR < CGAL_VERSION_NUMBER(4, 5, 0)
 #include <CGAL/convex_hull_3.h>
 #else
 #include "convex_hull_3_bugfix.h"
@@ -116,7 +116,7 @@ namespace CGALUtils {
 
 	CGAL_Iso_cuboid_3 boundingBox(const CGAL_Nef_polyhedron3 &N)
 	{
-		CGAL_Iso_cuboid_3 result(0,0,0,0,0,0);
+		CGAL_Iso_cuboid_3 result(0, 0, 0, 0, 0, 0);
 		CGAL_Nef_polyhedron3::Vertex_const_iterator vi;
 		std::vector<CGAL_Nef_polyhedron3::Point_3> points;
 		// can be optimized by rewriting bounding_box to accept vertices
@@ -163,7 +163,7 @@ namespace CGALUtils {
 		typedef K::Plane_3 Plane;
 
 		// compute edge to face relations and plane equations
-		typedef std::pair<Vector3d,Vector3d> Edge;
+		typedef std::pair<Vector3d, Vector3d> Edge;
 		typedef std::map<Edge, int, VecPairCompare> Edge_to_facet_map;
 		Edge_to_facet_map edge_to_facet_map;
 		std::vector<Plane> facet_planes;
@@ -176,7 +176,7 @@ namespace CGALUtils {
 				std::vector<Point> v(N);
 				for (size_t j = 0; j < N; j++) {
 					v[j] = vector_convert<Point>(ps.polygons[i][j]);
-					Edge edge(ps.polygons[i][j],ps.polygons[i][(j + 1) % N]);
+					Edge edge(ps.polygons[i][j], ps.polygons[i][(j + 1) % N]);
 					if (edge_to_facet_map.count(edge)) return false; // edge already exists: nonmanifold
 					edge_to_facet_map[edge] = i;
 				}

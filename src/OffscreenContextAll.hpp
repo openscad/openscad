@@ -14,7 +14,7 @@ void bind_offscreen_context(OffscreenContext *ctx)
  */
 bool save_framebuffer(OffscreenContext *ctx, const char *filename)
 {
-	std::ofstream fstream(filename,std::ios::out | std::ios::binary);
+	std::ofstream fstream(filename, std::ios::out | std::ios::binary);
 	if (!fstream.is_open()) {
 		std::cerr << "Can't open file " << filename << " for writing";
 		return false;

@@ -113,7 +113,7 @@ ValuePtr builtin_rands(const Context *, const EvalContext *evalctx)
 		if (std::isinf(min)) {
 			PRINT("WARNING: rands() range min cannot be infinite");
 			min = -std::numeric_limits<double>::max() / 2;
-			PRINTB("WARNING: resetting to %f",min);
+			PRINTB("WARNING: resetting to %f", min);
 		}
 		ValuePtr v1 = evalctx->getArgValue(1);
 		if (v1->type() != Value::ValueType::NUMBER) goto quit;
@@ -121,7 +121,7 @@ ValuePtr builtin_rands(const Context *, const EvalContext *evalctx)
 		if (std::isinf(max)) {
 			PRINT("WARNING: rands() range max cannot be infinite");
 			max = std::numeric_limits<double>::max() / 2;
-			PRINTB("WARNING: resetting to %f",max);
+			PRINTB("WARNING: resetting to %f", max);
 		}
 		if (max < min) {
 			double tmp = min; min = max; max = tmp;
@@ -134,7 +134,7 @@ ValuePtr builtin_rands(const Context *, const EvalContext *evalctx)
 			PRINT("WARNING: resetting number of results to 1");
 			numresultsd = 1;
 		}
-		size_t numresults = boost_numeric_cast<size_t,double>(numresultsd);
+		size_t numresults = boost_numeric_cast<size_t, double>(numresultsd);
 
 		bool deterministic = false;
 		if (n > 3) {

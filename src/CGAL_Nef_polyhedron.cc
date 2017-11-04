@@ -85,7 +85,7 @@ PolySet *CGAL_Nef_polyhedron::convertToPolyset() const
 	if (!err) err = CGALUtils::createPolySetFromPolyhedron(P, *ps);
 	if (err) {
 		PRINT("ERROR: CGAL NefPolyhedron->Polyhedron conversion failed.");
-		if (errmsg != "") PRINTB("ERROR: %s",errmsg);
+		if (errmsg != "") PRINTB("ERROR: %s", errmsg);
 		delete ps; ps = nullptr;
 	}
 	CGAL::set_error_behaviour(old_behaviour);
@@ -94,7 +94,7 @@ PolySet *CGAL_Nef_polyhedron::convertToPolyset() const
 #endif
 
 void CGAL_Nef_polyhedron::resize(const Vector3d &newsize,
-																 const Eigen::Matrix<bool,3,1> &autosize)
+																 const Eigen::Matrix<bool, 3, 1> &autosize)
 {
 	// Based on resize() in Giles Bathgate's RapCAD (but not exactly)
 	if (this->isEmpty()) return;
@@ -152,9 +152,9 @@ void CGAL_Nef_polyhedron::transform(const Transform3d &matrix)
 		}
 		else {
 			CGAL_Aff_transformation t(
-				matrix(0,0), matrix(0,1), matrix(0,2), matrix(0,3),
-				matrix(1,0), matrix(1,1), matrix(1,2), matrix(1,3),
-				matrix(2,0), matrix(2,1), matrix(2,2), matrix(2,3), matrix(3,3));
+				matrix(0, 0), matrix(0, 1), matrix(0, 2), matrix(0, 3),
+				matrix(1, 0), matrix(1, 1), matrix(1, 2), matrix(1, 3),
+				matrix(2, 0), matrix(2, 1), matrix(2, 2), matrix(2, 3), matrix(3, 3));
 			this->p3->transform(t);
 		}
 	}

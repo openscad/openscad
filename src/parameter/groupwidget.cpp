@@ -33,7 +33,7 @@ GroupWidget::GroupWidget(bool &show, const QString &title, const int animationDu
 	mainLayout.addWidget(&headerLine, row++, 2, 1, 1);
 	mainLayout.addWidget(&contentArea, row, 0, 1, 3);
 	setLayout(&mainLayout);
-	QObject::connect(&toggleButton, SIGNAL(toggled(bool)),this, SLOT(onclicked(bool)));
+	QObject::connect(&toggleButton, SIGNAL(toggled(bool)), this, SLOT(onclicked(bool)));
 }
 
 

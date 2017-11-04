@@ -7,7 +7,7 @@
 #undef NDEBUG
 #endif
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
-#if CGAL_VERSION_NR >= CGAL_VERSION_NUMBER(4,11,0)
+#if CGAL_VERSION_NR >= CGAL_VERSION_NUMBER(4, 11, 0)
 	#include <CGAL/Triangulation_2_projection_traits_3.h>
 #else
 	#include <CGAL/Triangulation_2_filtered_projection_traits_3.h>
@@ -45,7 +45,7 @@ static void  mark_domains(CDT &ct,
 		if (fh->info().nesting_level == -1) {
 			fh->info().nesting_level = index;
 			for (int i = 0; i < 3; i++) {
-				CDT::Edge e(fh,i);
+				CDT::Edge e(fh, i);
 				CDT::Face_handle n = fh->neighbor(i);
 				if (n->info().nesting_level == -1) {
 					if (ct.is_constrained(e)) border.push_back(e);

@@ -579,9 +579,9 @@ Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 
 						Transform2d mat2;
 						mat2.matrix() <<
-							node.matrix(0,0), node.matrix(0,1), node.matrix(0,3),
-							node.matrix(1,0), node.matrix(1,1), node.matrix(1,3),
-							node.matrix(3,0), node.matrix(3,1), node.matrix(3,3);
+							node.matrix(0, 0), node.matrix(0, 1), node.matrix(0, 3),
+							node.matrix(1, 0), node.matrix(1, 1), node.matrix(1, 3),
+							node.matrix(3, 0), node.matrix(3, 1), node.matrix(3, 3);
 						newpoly->transform(mat2);
 						// A 2D transformation may flip the winding order of a polygon.
 						// If that happens with a sanitized polygon, we need to reverse
@@ -706,7 +706,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &
 	for (auto &p : ps_bottom->polygons) {
 		std::reverse(p.begin(), p.end());
 	}
-	translate_PolySet(*ps_bottom, Vector3d(0,0,h1));
+	translate_PolySet(*ps_bottom, Vector3d(0, 0, h1));
 
 	ps->append(*ps_bottom);
 	delete ps_bottom;
@@ -716,7 +716,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &
 													Eigen::Rotation2D<double>(-node.twist *M_PI / 180));
 		top_poly.transform(trans); // top
 		PolySet *ps_top = top_poly.tessellate();
-		translate_PolySet(*ps_top, Vector3d(0,0,h2));
+		translate_PolySet(*ps_top, Vector3d(0, 0, h2));
 		ps->append(*ps_top);
 		delete ps_top;
 	}
@@ -1104,7 +1104,7 @@ Response GeometryEvaluator::visit(State &state, const CgaladvNode &node)
 						shared_ptr<Polygon2d> poly = dynamic_pointer_cast<Polygon2d>(editablegeom);
 						if (poly) {
 							poly->resize(Vector2d(node.newsize[0], node.newsize[1]),
-													 Eigen::Matrix<bool,2,1>(node.autosize[0], node.autosize[1]));
+													 Eigen::Matrix<bool, 2, 1>(node.autosize[0], node.autosize[1]));
 						}
 						else {
 							shared_ptr<PolySet> ps = dynamic_pointer_cast<PolySet>(editablegeom);
