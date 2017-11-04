@@ -915,7 +915,7 @@ void MainWindow::refreshDocument()
 /*!
 	compiles the design. Calls compileDone() if anything was compiled
 */
-void MainWindow::compile(bool reload, bool forcedone, bool AnimTvalUpdate)
+void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidget)
 {
 	bool shouldcompiletoplevel = false;
 	bool didcompile = false;
@@ -956,7 +956,7 @@ void MainWindow::compile(bool reload, bool forcedone, bool AnimTvalUpdate)
 	if (shouldcompiletoplevel) {
 		console->clear();
 		if (editor->isContentModified()) saveBackup();
-		compileTopLevelDocument(AnimTvalUpdate);
+		compileTopLevelDocument(rebuildParameterWidget);
 		didcompile = true;
 	}
 
@@ -1737,7 +1737,7 @@ bool MainWindow::fileChangedOnDisk()
 /*!
 	Returns true if anything was compiled.
 */
-void MainWindow::compileTopLevelDocument(bool AnimTvalUpdate)
+void MainWindow::compileTopLevelDocument(bool rebuildParameterWidget)
 {
 	resetSuppressedMessages();
 
@@ -1757,7 +1757,7 @@ void MainWindow::compileTopLevelDocument(bool AnimTvalUpdate)
 			//add parameters as annotation in AST
 			CommentParser::collectParameters(fulltext.c_str(),this->root_module);
 		}
-		if(!AnimTvalUpdate){
+		if(rebuildParameterWidget){
 			this->parameterWidget->setParameters(this->root_module);
 		}
 		this->parameterWidget->applyParameters(this->root_module);
@@ -1844,9 +1844,13 @@ void MainWindow::csgReloadRender()
 	compileEnded();
 }
 
-void MainWindow::actionRenderPreview(bool AnimTvalUpdate)
+void MainWindow::actionRenderPreview(bool rebuildParameterWidget)
 {
 	static bool preview_requested;
+
+	if(QObject::sender() ==this->parameterWidget){
+		rebuildParameterWidget=false;
+	}
 
 	preview_requested=true;
 	if (GuiLocker::isLocked()) return;
@@ -1860,7 +1864,7 @@ void MainWindow::actionRenderPreview(bool AnimTvalUpdate)
 	this->afterCompileSlot = "csgRender";
 	this->procevents = !viewActionAnimate->isChecked();
 	this->top_ctx.set_variable("$preview", ValuePtr(true));
-	compile(false,false,AnimTvalUpdate);
+	compile(false,false,rebuildParameterWidget);
 	if (preview_requested) {
 		// if the action was called when the gui was locked, we must request it one more time
 		// however, it's not possible to call it directly NOR make the loop

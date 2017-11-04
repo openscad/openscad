@@ -105,7 +105,7 @@ private:
 	bool fileChangedOnDisk();
 	void compileTopLevelDocument(bool AnimTvalUpdate);
 		void updateCompileResult();
-	void compile(bool reload, bool forcedone = false, bool AnimTvalUpdate=false);
+	void compile(bool reload, bool forcedone = false, bool rebuildParameterWidget=true);
 	void compileCSG(bool procevents);
 	bool maybeSave();
 		void saveError(const QIODevice &file, const std::string &msg);
@@ -176,7 +176,7 @@ protected:
 	virtual bool eventFilter(QObject* obj, QEvent *event);
 
 private slots:
-	void actionRenderPreview(bool AnimTvalUpdate=false);
+	void actionRenderPreview(bool rebuildParameterWidget=true);
 	void csgRender();
 	void csgReloadRender();
 #ifdef ENABLE_CGAL
