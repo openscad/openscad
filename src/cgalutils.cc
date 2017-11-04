@@ -128,7 +128,7 @@ namespace CGALUtils {
 	namespace {
 
 		// lexicographic comparison
-		bool operator < (Vector3d const& a, Vector3d const& b) {
+		bool operator < (Vector3d const &a, Vector3d const &b) {
 			for (int i = 0; i < 3; i++) {
 				if (a[i] < b[i]) return true;
 				else if (a[i] == b[i]) continue;
@@ -139,8 +139,8 @@ namespace CGALUtils {
 	}
 
 	struct VecPairCompare {
-		bool operator ()(std::pair<Vector3d, Vector3d> const& a,
-										 std::pair<Vector3d, Vector3d> const& b) const {
+		bool operator ()(std::pair<Vector3d, Vector3d> const &a,
+										 std::pair<Vector3d, Vector3d> const &b) const {
 			return a.first < b.first || (!(b.first < a.first) && a.second < b.second);
 		}
 	};
@@ -202,8 +202,8 @@ namespace CGALUtils {
 
 				if (facet_planes[other_facet].has_on_positive_side(p)) {
 					// Check angle
-					const auto& u = facet_planes[other_facet].orthogonal_vector();
-					const auto& v = facet_planes[i].orthogonal_vector();
+					const auto &u = facet_planes[other_facet].orthogonal_vector();
+					const auto &v = facet_planes[i].orthogonal_vector();
 
 					double cos_angle = u / sqrt(u*u) * v / sqrt(v*v);
 					if (cos_angle < angle_threshold) {
@@ -239,12 +239,12 @@ namespace CGALUtils {
 
 	CGAL_Nef_polyhedron *createNefPolyhedronFromGeometry(const Geometry &geom)
 	{
-		auto ps = dynamic_cast<const PolySet*>(&geom);
+		auto ps = dynamic_cast<const PolySet *>(&geom);
 		if (ps) {
 			return createNefPolyhedronFromPolySet(*ps);
 		}
 		else {
-			auto poly2d = dynamic_cast<const Polygon2d*>(&geom);
+			auto poly2d = dynamic_cast<const Polygon2d *>(&geom);
 			if (poly2d) return createNefPolyhedronFromPolygon2d(*poly2d);
 		}
 		assert(false && "createNefPolyhedronFromGeometry(): Unsupported geometry type");

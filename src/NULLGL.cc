@@ -1,7 +1,7 @@
 #include "GLView.h"
 
 GLView::GLView() {}
-void GLView::setRenderer(Renderer* r) {}
+void GLView::setRenderer(Renderer *r) {}
 void GLView::initializeGL() {}
 void GLView::resizeGL(int w, int h) {}
 void GLView::setCamera(const Camera &cam) {assert(false && "not implemented");}
@@ -35,5 +35,5 @@ void CGALRenderer::setColorScheme(const ColorScheme &cs){assert(false && "not im
 double gl_version() { return -1; }
 std::string glew_dump() { return std::string("NULLGL Glew"); }
 std::string glew_extensions_dump() { return std::string("NULLGL Glew Extensions"); }
-bool report_glerror(const char * function) { return false; }
+bool report_glerror(const char *function) { return false; }
 

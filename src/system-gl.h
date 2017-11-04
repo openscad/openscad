@@ -20,4 +20,4 @@ inline void glColor4fv(float *c) {}
 
 std::string glew_dump();
 std::string glew_extensions_dump();
-bool report_glerror(const char * function);
+bool report_glerror(const char *function);

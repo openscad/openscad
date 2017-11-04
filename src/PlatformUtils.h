@@ -16,7 +16,7 @@ namespace PlatformUtils {
 
 	std::string documentsPath();
 	std::string resourceBasePath();
-	fs::path resourcePath(const std::string& resource);
+	fs::path resourcePath(const std::string &resource);
 	std::string userLibraryPath();
 
 	/**

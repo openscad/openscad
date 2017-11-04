@@ -45,8 +45,8 @@ public:
 public:
 		typedef iterator self_type;
 		typedef double value_type;
-		typedef double& reference;
-		typedef double* pointer;
+		typedef double &reference;
+		typedef double *pointer;
 		typedef std::forward_iterator_tag iterator_category;
 		typedef double difference_type;
 		iterator(RangeType &range, type_t type);
@@ -54,8 +54,8 @@ public:
 		self_type operator++(int junk);
 		reference operator*();
 		pointer operator->();
-		bool operator==(const self_type& other) const;
-		bool operator!=(const self_type& other) const;
+		bool operator==(const self_type &other) const;
+		bool operator!=(const self_type &other) const;
 private:
 		RangeType &range;
 		double val;

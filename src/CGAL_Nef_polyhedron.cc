@@ -16,19 +16,19 @@ CGAL_Nef_polyhedron::CGAL_Nef_polyhedron(const CGAL_Nef_polyhedron &src)
 	if (src.p3) this->p3.reset(new CGAL_Nef_polyhedron3(*src.p3));
 }
 
-CGAL_Nef_polyhedron& CGAL_Nef_polyhedron::operator+=(const CGAL_Nef_polyhedron &other)
+CGAL_Nef_polyhedron &CGAL_Nef_polyhedron::operator+=(const CGAL_Nef_polyhedron &other)
 {
 	(*this->p3) += (*other.p3);
 	return *this;
 }
 
-CGAL_Nef_polyhedron& CGAL_Nef_polyhedron::operator*=(const CGAL_Nef_polyhedron &other)
+CGAL_Nef_polyhedron &CGAL_Nef_polyhedron::operator*=(const CGAL_Nef_polyhedron &other)
 {
 	(*this->p3) *= (*other.p3);
 	return *this;
 }
 
-CGAL_Nef_polyhedron& CGAL_Nef_polyhedron::operator-=(const CGAL_Nef_polyhedron &other)
+CGAL_Nef_polyhedron &CGAL_Nef_polyhedron::operator-=(const CGAL_Nef_polyhedron &other)
 {
 	(*this->p3) -= (*other.p3);
 	return *this;
@@ -74,7 +74,7 @@ PolySet *CGAL_Nef_polyhedron::convertToPolyset() const
 	try {
 		// Cast away constness:
 		// convert_to_Polyhedron() wasn't const in earlier versions of CGAL.
-		CGAL_Nef_polyhedron3 *nonconst_nef3 = const_cast<CGAL_Nef_polyhedron3*>(this->p3.get());
+		CGAL_Nef_polyhedron3 *nonconst_nef3 = const_cast<CGAL_Nef_polyhedron3 *>(this->p3.get());
 		err = nefworkaround::convert_to_Polyhedron<CGAL_Kernel3>(*(nonconst_nef3), P);
 		//this->p3->convert_to_Polyhedron(P);
 	}

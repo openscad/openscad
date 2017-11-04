@@ -4,7 +4,7 @@
 #include "localscope.h"
 #include <vector>
 
-typedef std::vector<class ModuleInstantiation*> ModuleInstantiationList;
+typedef std::vector<class ModuleInstantiation *> ModuleInstantiationList;
 
 class ModuleInstantiation : public ASTNode
 {
@@ -15,7 +15,7 @@ public:
 
 	virtual std::string dump(const std::string &indent) const;
 	class AbstractNode *evaluate(const class Context *ctx) const;
-	std::vector<AbstractNode*> instantiateChildren(const Context *evalctx) const;
+	std::vector<AbstractNode *> instantiateChildren(const Context *evalctx) const;
 
 	// This is only needed for import() and the deprecated *_extrude() modules
 	const std::string &path() const { return this->modpath; }
@@ -41,7 +41,7 @@ class IfElseModuleInstantiation : public ModuleInstantiation {
 public:
 	IfElseModuleInstantiation(shared_ptr<class Expression> expr, const std::string &source_path, const Location &loc) : ModuleInstantiation("if", AssignmentList{Assignment("", expr)}, source_path, loc) { }
 	virtual ~IfElseModuleInstantiation();
-	std::vector<AbstractNode*> instantiateElseChildren(const Context *evalctx) const;
+	std::vector<AbstractNode *> instantiateElseChildren(const Context *evalctx) const;
 	virtual std::string dump(const std::string &indent) const;
 
 	LocalScope else_scope;

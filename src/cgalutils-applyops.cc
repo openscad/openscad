@@ -37,7 +37,7 @@
 namespace CGALUtils {
 
 	template<typename Polyhedron>
-	bool is_weakly_convex(Polyhedron const& p) {
+	bool is_weakly_convex(Polyhedron const &p) {
 		for (typename Polyhedron::Edge_const_iterator i = p.edges_begin(); i != p.edges_end(); ++i) {
 			typename Polyhedron::Plane_3 p(i->opposite()->vertex()->point(), i->vertex()->point(), i->next()->vertex()->point());
 			if (p.has_on_positive_side(i->opposite()->next()->vertex()->point()) &&
@@ -90,7 +90,7 @@ namespace CGALUtils {
 				shared_ptr<const CGAL_Nef_polyhedron> chN =
 					dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
 				if (!chN) {
-					const PolySet *chps = dynamic_cast<const PolySet*>(chgeom.get());
+					const PolySet *chps = dynamic_cast<const PolySet *>(chgeom.get());
 					if (chps) chN.reset(createNefPolyhedronFromGeometry(*chps));
 				}
 
@@ -205,14 +205,14 @@ namespace CGALUtils {
 	/*!
 	   children cannot contain nullptr objects
 	 */
-	Geometry const * applyMinkowski(const Geometry::Geometries &children)
+	Geometry const *applyMinkowski(const Geometry::Geometries &children)
 	{
 		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 		CGAL::Timer t,t_tot;
 		assert(children.size() >= 2);
 		Geometry::Geometries::const_iterator it = children.begin();
 		t_tot.start();
-		Geometry const* operands[2] = {it->second.get(), nullptr};
+		Geometry const *operands[2] = {it->second.get(), nullptr};
 		try {
 			while (++it != children.end()) {
 				operands[1] = it->second.get();
@@ -225,9 +225,9 @@ namespace CGALUtils {
 				for (size_t i = 0; i < 2; i++) {
 					CGAL_Polyhedron poly;
 
-					const PolySet * ps = dynamic_cast<const PolySet *>(operands[i]);
+					const PolySet *ps = dynamic_cast<const PolySet *>(operands[i]);
 
-					const CGAL_Nef_polyhedron * nef = dynamic_cast<const CGAL_Nef_polyhedron *>(operands[i]);
+					const CGAL_Nef_polyhedron *nef = dynamic_cast<const CGAL_Nef_polyhedron *>(operands[i]);
 
 					if (ps) CGALUtils::createPolyhedronFromPolySet(*ps, poly);
 					else if (nef && nef->p3->is_simple()) nefworkaround::convert_to_Polyhedron<CGAL_Kernel3>(*nef->p3, poly);
@@ -283,11 +283,11 @@ namespace CGALUtils {
 							std::list<CGAL_Polyhedron>::iterator it = P[k].begin();
 							std::advance(it, k==0 ? i : j);
 
-							CGAL_Polyhedron const& poly = *it;
+							CGAL_Polyhedron const &poly = *it;
 							points[k].reserve(poly.size_of_vertices());
 
 							for (CGAL_Polyhedron::Vertex_const_iterator pi = poly.vertices_begin(); pi != poly.vertices_end(); ++pi) {
-								CGAL_Polyhedron::Point_3 const& p = pi->point();
+								CGAL_Polyhedron::Point_3 const &p = pi->point();
 								points[k].push_back(Hull_kernel::Point_3(to_double(p[0]),to_double(p[1]),to_double(p[2])));
 							}
 						}
@@ -319,7 +319,7 @@ namespace CGALUtils {
 						strict_points.reserve(minkowski_points.size());
 
 						for (CGAL::Polyhedron_3<Hull_kernel>::Vertex_iterator i = result.vertices_begin(); i != result.vertices_end(); ++i) {
-							Hull_kernel::Point_3 const& p = i->point();
+							Hull_kernel::Point_3 const &p = i->point();
 
 							CGAL::Polyhedron_3<Hull_kernel>::Vertex::Halfedge_handle h,e;
 							h = i->halfedge();
@@ -328,7 +328,7 @@ namespace CGALUtils {
 							bool coplanar = true;
 
 							do {
-								Hull_kernel::Point_3 const& q = h->opposite()->vertex()->point();
+								Hull_kernel::Point_3 const &q = h->opposite()->vertex()->point();
 								if (coplanar && !CGAL::coplanar(p,q,
 																								h->next_on_vertex()->opposite()->vertex()->point(),
 																								h->next_on_vertex()->next_on_vertex()->opposite()->vertex()->point())) {
@@ -340,7 +340,7 @@ namespace CGALUtils {
 										 j != h && !collinear && !coplanar;
 										 j = j->next_on_vertex()) {
 
-									Hull_kernel::Point_3 const& r = j->opposite()->vertex()->point();
+									Hull_kernel::Point_3 const &r = j->opposite()->vertex()->point();
 									if (CGAL::collinear(p,q,r)) {
 										collinear = true;
 									}
@@ -379,7 +379,7 @@ namespace CGALUtils {
 					for (std::list<CGAL::Polyhedron_3<Hull_kernel>>::iterator i = result_parts.begin(); i != result_parts.end(); ++i) {
 						PolySet ps(3,true);
 						createPolySetFromPolyhedron(*i, ps);
-						fake_children.push_back(std::make_pair((const AbstractNode*)nullptr,
+						fake_children.push_back(std::make_pair((const AbstractNode *)nullptr,
 																									 shared_ptr<const Geometry>(createNefPolyhedronFromGeometry(ps))));
 					}
 					CGAL_Nef_polyhedron *N = CGALUtils::applyOperator(fake_children, OpenSCADOperator::UNION);

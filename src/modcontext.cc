@@ -154,7 +154,7 @@ std::string ModuleContext::dump(const AbstractModule *mod, const ModuleInstantia
 	}
 	s << boost::format("  document path: %s") % this->document_path;
 	if (mod) {
-		const UserModule *m = dynamic_cast<const UserModule*>(mod);
+		const UserModule *m = dynamic_cast<const UserModule *>(mod);
 		if (m) {
 			s << "  module args:";
 			for (const auto &arg : m->definition_arguments) {

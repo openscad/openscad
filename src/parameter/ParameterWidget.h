@@ -46,7 +46,7 @@ private:
 	group_map groupMap;
 	QTimer autoPreviewTimer;
 	bool descriptionShow;
-	QVBoxLayout * anyLayout;
+	QVBoxLayout *anyLayout;
 	std::string jsonFile;
 	bool anyfocused;
 	ParameterVirtualWidget *entryToFocus;

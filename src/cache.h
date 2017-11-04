@@ -111,7 +111,7 @@ public:
 	}
 
 	bool insert(const Key &key, T *object, int cost = 1);
-	T *object(const Key &key) const { return const_cast<Cache<Key,T>*>(this)->relink(key); }
+	T *object(const Key &key) const { return const_cast<Cache<Key,T> *>(this)->relink(key); }
 	inline bool contains(const Key &key) const { return hash.find(key) != hash.end(); }
 	T *operator[](const Key &key) const { return object(key); }
 

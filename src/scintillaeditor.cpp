@@ -76,7 +76,7 @@ EditorColorScheme::EditorColorScheme(fs::path path) : path(path)
 		boost::property_tree::read_json(path.generic_string().c_str(), pt);
 		_name = QString(pt.get<std::string>("name").c_str());
 		_index = pt.get<int>("index");
-	} catch (const std::exception & e) {
+	} catch (const std::exception &e) {
 		PRINTB("Error reading color scheme file '%s': %s", path.generic_string().c_str() % e.what());
 		_name = "";
 		_index = 0;
@@ -93,7 +93,7 @@ bool EditorColorScheme::valid() const
 	return !_name.isEmpty();
 }
 
-const QString & EditorColorScheme::name() const
+const QString &EditorColorScheme::name() const
 {
 	return _name;
 }
@@ -103,7 +103,7 @@ int EditorColorScheme::index() const
 	return _index;
 }
 
-const boost::property_tree::ptree & EditorColorScheme::propertyTree() const
+const boost::property_tree::ptree &EditorColorScheme::propertyTree() const
 {
 	return pt;
 }
@@ -279,7 +279,7 @@ int ScintillaEditor::readInt(const boost::property_tree::ptree &pt, const std::s
 
 void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 {
-	const boost::property_tree::ptree & pt = colorScheme->propertyTree();
+	const boost::property_tree::ptree &pt = colorScheme->propertyTree();
 
 	try {
 		QFont font = lexer->font(lexer->defaultStyle());
@@ -290,7 +290,7 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 
 		// Keywords must be set before the lexer is attached to QScintilla
 		// as they seem to be read and cached at attach time.
-		boost::optional<const boost::property_tree::ptree&> keywords = pt.get_child_optional("keywords");
+		boost::optional<const boost::property_tree::ptree &> keywords = pt.get_child_optional("keywords");
 		if (keywords.is_initialized()) {
 			l->setKeywords(1, readString(keywords.get(), "keyword-set1", ""));
 			l->setKeywords(2, readString(keywords.get(), "keyword-set2", ""));
@@ -310,7 +310,7 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 		// Somehow, the margin font got lost when we deleted the old lexer
 		qsci->setMarginsFont(font);
 
-		const boost::property_tree::ptree& colors = pt.get_child("colors");
+		const boost::property_tree::ptree &colors = pt.get_child("colors");
 		l->setColor(readColor(colors, "keyword1", textColor), QsciLexerCPP::Keyword);
 		l->setColor(readColor(colors, "keyword2", textColor), QsciLexerCPP::KeywordSet2);
 		l->setColor(readColor(colors, "keyword3", textColor), QsciLexerCPP::GlobalClass);
@@ -324,7 +324,7 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 		l->setColor(readColor(colors, "commentdoc", textColor), QsciLexerCPP::CommentLineDoc);
 		l->setColor(readColor(colors, "commentdockeyword", textColor), QsciLexerCPP::CommentDocKeyword);
 
-		const boost::property_tree::ptree& caret = pt.get_child("caret");
+		const boost::property_tree::ptree &caret = pt.get_child("caret");
 		qsci->setCaretWidth(readInt(caret, "width", 1));
 		qsci->setCaretForegroundColor(readColor(caret, "foreground", textColor));
 		qsci->setCaretLineBackgroundColor(readColor(caret, "line-background", paperColor));
@@ -492,7 +492,7 @@ void ScintillaEditor::zoomOut()
 	qsci->zoomOut();
 }
 
-void ScintillaEditor::initFont(const QString& fontName, uint size)
+void ScintillaEditor::initFont(const QString &fontName, uint size)
 {
 	this->currentFont = QFont(fontName, size);
 	this->currentFont.setFixedPitch(true);
@@ -670,7 +670,7 @@ QString ScintillaEditor::selectedText()
 	return qsci->selectedText();
 }
 
-bool ScintillaEditor::eventFilter(QObject* obj, QEvent *e)
+bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
 {
 	static bool wasChanged=false;
 	static bool previewAfterUndo=false;
@@ -680,7 +680,7 @@ bool ScintillaEditor::eventFilter(QObject* obj, QEvent *e)
 	if (e->type()==QEvent::KeyPress
 			|| e->type()==QEvent::KeyRelease
 			) {
-		QKeyEvent *ke = static_cast<QKeyEvent*>(e);
+		QKeyEvent *ke = static_cast<QKeyEvent *>(e);
 		if ((ke->modifiers() & ~Qt::KeypadModifier) == Qt::AltModifier) {
 			switch (ke->key())
 			{

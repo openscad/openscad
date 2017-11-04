@@ -8,8 +8,8 @@
 class Builtins
 {
 public:
-	typedef std::unordered_map<std::string, class AbstractFunction*> FunctionContainer;
-	typedef std::unordered_map<std::string, class AbstractModule*> ModuleContainer;
+	typedef std::unordered_map<std::string, class AbstractFunction *> FunctionContainer;
+	typedef std::unordered_map<std::string, class AbstractModule *> ModuleContainer;
 
 	static Builtins *instance(bool erase = false);
 	static void init(const char *name, class AbstractModule *module);

@@ -241,7 +241,7 @@ void LegacyEditor::replaceAll(const QString &findText, const QString &replaceTex
 	}
 }
 
-bool LegacyEditor::findString(const QString & exp, bool findBackwards) const
+bool LegacyEditor::findString(const QString &exp, bool findBackwards) const
 {
 	return this->textedit->find(exp, findBackwards ? QTextDocument::FindBackward : QTextDocument::FindFlags(0));
 }
@@ -271,7 +271,7 @@ bool LegacyEditor::find(const QString &newText, bool /*findNext*/, bool findBack
 
 }
 
-void LegacyEditor::initFont(const QString& family, uint size)
+void LegacyEditor::initFont(const QString &family, uint size)
 {
 	QFont font;
 	if (!family.isEmpty()) font.setFamily(family);

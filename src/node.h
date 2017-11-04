@@ -5,7 +5,7 @@
 #include "BaseVisitable.h"
 
 extern int progress_report_count;
-extern void (*progress_report_f)(const class AbstractNode*, void*, int);
+extern void (*progress_report_f)(const class AbstractNode *, void *, int);
 extern void *progress_report_vp;
 
 void progress_report_prep(class AbstractNode *root, void (*f)(const class AbstractNode *node, void *vp, int mark), void *vp);
@@ -35,7 +35,7 @@ public:
 	    Used for human-readable output. */
 	virtual std::string name() const = 0;
 
-	const std::vector<AbstractNode*> &getChildren() const {
+	const std::vector<AbstractNode *> &getChildren() const {
 		return this->children;
 	}
 	size_t index() const { return this->idx; }
@@ -43,7 +43,7 @@ public:
 	static void resetIndexCounter() { idx_counter = 1; }
 
 	// FIXME: Make protected
-	std::vector<AbstractNode*> children;
+	std::vector<AbstractNode *> children;
 	const ModuleInstantiation *modinst;
 
 	// progress_mark is a running number used for progress indication

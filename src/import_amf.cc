@@ -240,7 +240,7 @@ int AmfImporter::streamFile(const char *filename)
 	return ret;
 }
 
-PolySet * AmfImporter::read(const std::string filename)
+PolySet *AmfImporter::read(const std::string filename)
 {
 	funcs[coordinates_x] = set_x;
 	funcs[coordinates_y] = set_y;
@@ -262,7 +262,7 @@ PolySet * AmfImporter::read(const std::string filename)
 	} if (polySets.size() > 1) {
 		Geometry::Geometries children;
 		for (std::vector<PolySet *>::iterator it = polySets.begin(); it != polySets.end(); it++) {
-			children.push_back(std::make_pair((const AbstractNode*)nullptr,  shared_ptr<const Geometry>(*it)));
+			children.push_back(std::make_pair((const AbstractNode *)nullptr,  shared_ptr<const Geometry>(*it)));
 		}
 		CGAL_Nef_polyhedron *N = CGALUtils::applyOperator(children, OpenSCADOperator::UNION);
 		PolySet *result = new PolySet(3);

@@ -54,7 +54,7 @@ public:
 	float getDPI() { return this->devicePixelRatio(); }
 #endif
 
-	const QImage & grabFrame();
+	const QImage &grabFrame();
 	bool save(const char *filename);
 	void resetView();
 	void viewAll();
@@ -88,7 +88,7 @@ private:
 	void resizeGL(int w, int h);
 
 	void paintGL();
-	void normalizeAngle(GLdouble& angle);
+	void normalizeAngle(GLdouble &angle);
 
 #ifdef ENABLE_OPENCSG
 	void display_opencsg_warning();

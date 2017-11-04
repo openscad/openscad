@@ -40,7 +40,7 @@ public:
    }
  */
 #if 1 // Use Grid
-		void operator()(HDS& hds) {
+		void operator()(HDS &hds) {
 			CGAL_Polybuilder B(hds, true);
 
 			Grid3d<int> grid(GRID_FINE);
@@ -109,7 +109,7 @@ public:
 #endif
 		}
 #else // Don't use Grid
-		void operator()(HDS& hds)
+		void operator()(HDS &hds)
 		{
 			CGAL_Polybuilder B(hds, true);
 			Reindexer<Vector3d> vertices;
@@ -180,9 +180,9 @@ public:
 	template <class Polyhedron_input, class Polyhedron_output>
 	struct Copy_polyhedron_to : public CGAL::Modifier_base<typename Polyhedron_output::HalfedgeDS>
 	{
-		Copy_polyhedron_to(const Polyhedron_input& in_poly) : in_poly(in_poly) {}
+		Copy_polyhedron_to(const Polyhedron_input &in_poly) : in_poly(in_poly) {}
 
-		void operator()(typename Polyhedron_output::HalfedgeDS& out_hds)
+		void operator()(typename Polyhedron_output::HalfedgeDS &out_hds)
 		{
 			typedef typename Polyhedron_output::HalfedgeDS Output_HDS;
 
@@ -225,7 +225,7 @@ public:
 			builder.end_surface();
 		} // end operator()(..)
 private:
-		const Polyhedron_input& in_poly;
+		const Polyhedron_input &in_poly;
 	}; // end Copy_polyhedron_to<>
 
 }
@@ -276,7 +276,7 @@ namespace CGALUtils {
 			HFCC hc_end = hc;
 			ps.append_poly();
 			do {
-				Vertex const& v = *((hc++)->vertex());
+				Vertex const &v = *((hc++)->vertex());
 				double x = CGAL::to_double(v.point().x());
 				double y = CGAL::to_double(v.point().y());
 				double z = CGAL::to_double(v.point().z());
@@ -309,7 +309,7 @@ public:
 		void write_footer() {
 			*out << "]);" << std::endl;
 		}
-		void write_vertex(const double& x, const double& y, const double& z) {
+		void write_vertex(const double &x, const double &y, const double &z) {
 			*out << (firstv ? "" : ",") << '[' << x << ',' << y << ',' << z << ']';
 			firstv = false;
 		}

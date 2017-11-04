@@ -13,7 +13,7 @@ typedef std::vector<PolygonK> PolyholeK;
 
 namespace /* anonymous */ {
 	template<typename Result, typename V>
-	Result vector_convert(V const& v) {
+	Result vector_convert(V const &v) {
 		return Result(CGAL::to_double(v[0]),CGAL::to_double(v[1]),CGAL::to_double(v[2]));
 	}
 }
@@ -26,7 +26,7 @@ namespace CGALUtils {
 	Polygon2d *project(const CGAL_Nef_polyhedron &N, bool cut);
 	CGAL_Iso_cuboid_3 boundingBox(const CGAL_Nef_polyhedron3 &N);
 	bool is_approximately_convex(const PolySet &ps);
-	Geometry const* applyMinkowski(const Geometry::Geometries &children);
+	Geometry const *applyMinkowski(const Geometry::Geometries &children);
 
 	template <typename Polyhedron> std::string printPolyhedron(const Polyhedron &p);
 	template <typename Polyhedron> bool createPolySetFromPolyhedron(const Polyhedron &p, PolySet &ps);

@@ -13,7 +13,7 @@ class AbstractFunction
 private:
 	const Feature *feature;
 public:
-	AbstractFunction(const Feature& feature) : feature(&feature) {}
+	AbstractFunction(const Feature &feature) : feature(&feature) {}
 	AbstractFunction() : feature(nullptr) {}
 	virtual ~AbstractFunction();
 	virtual bool is_experimental() const { return feature != nullptr; }
@@ -29,7 +29,7 @@ public:
 	eval_func_t eval_func;
 
 	BuiltinFunction(eval_func_t f) : eval_func(f) { }
-	BuiltinFunction(eval_func_t f, const Feature& feature) : AbstractFunction(feature), eval_func(f) { }
+	BuiltinFunction(eval_func_t f, const Feature &feature) : AbstractFunction(feature), eval_func(f) { }
 	virtual ~BuiltinFunction();
 
 	virtual ValuePtr evaluate(const Context *ctx, const EvalContext *evalctx) const;

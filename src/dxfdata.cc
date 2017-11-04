@@ -405,7 +405,7 @@ DxfData::DxfData(double fn, double fs, double fa,
 		catch (boost::bad_lexical_cast &blc) {
 			PRINTB("WARNING: Illegal value %s in '%s'", data % filename);
 		}
-		catch (const std::out_of_range& oor) {
+		catch (const std::out_of_range &oor) {
 			PRINTB("WARNING: not enough input values for %s in '%s'", data % filename);
 		}
 	}
@@ -486,7 +486,7 @@ found_next_line_in_open_path:;
 		int current_point = 0;
 
 		this->paths.push_back(Path());
-		auto& this_path = this->paths.back();
+		auto &this_path = this->paths.back();
 		this_path.is_closed = true;
 
 		this_path.indices.push_back(lines[current_line].idx[current_point]);

@@ -409,7 +409,7 @@ Response GeometryEvaluator::visit(State &state, const OffsetNode &node)
 		if (!isSmartCached(node)) {
 			const Geometry *geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
 			if (geometry) {
-				const Polygon2d *polygon = dynamic_cast<const Polygon2d*>(geometry);
+				const Polygon2d *polygon = dynamic_cast<const Polygon2d *>(geometry);
 				// ClipperLib documentation: The formula for the number of steps in a full
 				// circular arc is ... Pi / acos(1 - arc_tolerance / abs(delta))
 				double n = Calc::get_fragments_from_r(std::abs(node.delta), node.fn, node.fs, node.fa);
@@ -455,7 +455,7 @@ Response GeometryEvaluator::visit(State &state, const RenderNode &node)
 			else if (shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
 				// If we got a const object, make a copy
 				shared_ptr<CGAL_Nef_polyhedron> newN;
-				if (res.isConst()) newN.reset((CGAL_Nef_polyhedron*)N->copy());
+				if (res.isConst()) newN.reset((CGAL_Nef_polyhedron *)N->copy());
 				else newN = dynamic_pointer_cast<CGAL_Nef_polyhedron>(res.ptr());
 				newN->setConvexity(node.convexity);
 				geom = newN;
@@ -483,7 +483,7 @@ Response GeometryEvaluator::visit(State &state, const LeafNode &node)
 		if (!isSmartCached(node)) {
 			const Geometry *geometry = node.createGeometry();
 			assert(geometry);
-			if (const Polygon2d *polygon = dynamic_cast<const Polygon2d*>(geometry)) {
+			if (const Polygon2d *polygon = dynamic_cast<const Polygon2d *>(geometry)) {
 				if (!polygon->isSanitized()) {
 					Polygon2d *p = ClipperUtils::sanitize(*polygon);
 					delete geometry;
@@ -507,7 +507,7 @@ Response GeometryEvaluator::visit(State &state, const TextNode &node)
 			std::vector<const Geometry *> geometrylist = node.createGeometryList();
 			std::vector<const Polygon2d *> polygonlist;
 			for (const auto &geometry : geometrylist) {
-				const Polygon2d *polygon = dynamic_cast<const Polygon2d*>(geometry);
+				const Polygon2d *polygon = dynamic_cast<const Polygon2d *>(geometry);
 				assert(polygon);
 				polygonlist.push_back(polygon);
 			}
@@ -605,7 +605,7 @@ Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 							assert(N);
 							// If we got a const object, make a copy
 							shared_ptr<CGAL_Nef_polyhedron> newN;
-							if (res.isConst()) newN.reset((CGAL_Nef_polyhedron*)N->copy());
+							if (res.isConst()) newN.reset((CGAL_Nef_polyhedron *)N->copy());
 							else newN = dynamic_pointer_cast<CGAL_Nef_polyhedron>(res.ptr());
 							newN->transform(node.matrix);
 							geom = newN;
@@ -638,8 +638,8 @@ static void add_slice(PolySet *ps, const Polygon2d &poly,
 											const Vector2d &scale1,
 											const Vector2d &scale2)
 {
-	Eigen::Affine2d trans1(Eigen::Scaling(scale1) * Eigen::Rotation2D<double>(-rot1*M_PI/180));
-	Eigen::Affine2d trans2(Eigen::Scaling(scale2) * Eigen::Rotation2D<double>(-rot2*M_PI/180));
+	Eigen::Affine2d trans1(Eigen::Scaling(scale1) * Eigen::Rotation2D<double>(-rot1 *M_PI/180));
+	Eigen::Affine2d trans2(Eigen::Scaling(scale2) * Eigen::Rotation2D<double>(-rot2 *M_PI/180));
 
 	bool splitfirst = sin((rot1 - rot2)*M_PI/180) > 0.0;
 	for (const auto &o : poly.outlines()) {
@@ -713,7 +713,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &
 	if (node.scale_x > 0 || node.scale_y > 0) {
 		Polygon2d top_poly(poly);
 		Eigen::Affine2d trans(Eigen::Scaling(node.scale_x, node.scale_y) *
-													Eigen::Rotation2D<double>(-node.twist*M_PI/180));
+													Eigen::Rotation2D<double>(-node.twist *M_PI/180));
 		top_poly.transform(trans); // top
 		PolySet *ps_top = top_poly.tessellate();
 		translate_PolySet(*ps_top, Vector3d(0,0,h2));
@@ -762,7 +762,7 @@ Response GeometryEvaluator::visit(State &state, const LinearExtrudeNode &node)
 				geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
 			}
 			if (geometry) {
-				const Polygon2d *polygons = dynamic_cast<const Polygon2d*>(geometry);
+				const Polygon2d *polygons = dynamic_cast<const Polygon2d *>(geometry);
 				Geometry *extruded = extrudePolygon(node, *polygons);
 				assert(extruded);
 				geom.reset(extruded);
@@ -854,7 +854,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 		delete ps_start;
 
 		PolySet *ps_end = poly.tessellate();
-		Transform3d rot2(Eigen::AngleAxisd(node.angle*M_PI/180, Vector3d::UnitZ()) * Eigen::AngleAxisd(M_PI/2, Vector3d::UnitX()));
+		Transform3d rot2(Eigen::AngleAxisd(node.angle *M_PI/180, Vector3d::UnitZ()) * Eigen::AngleAxisd(M_PI/2, Vector3d::UnitX()));
 		ps_end->transform(rot2);
 		if (flip_faces) {
 			for (auto &p : ps_end->polygons) {
@@ -919,7 +919,7 @@ Response GeometryEvaluator::visit(State &state, const RotateExtrudeNode &node)
 				geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
 			}
 			if (geometry) {
-				const Polygon2d *polygons = dynamic_cast<const Polygon2d*>(geometry);
+				const Polygon2d *polygons = dynamic_cast<const Polygon2d *>(geometry);
 				Geometry *rotated = rotatePolygon(node, *polygons);
 				geom.reset(rotated);
 				delete geometry;

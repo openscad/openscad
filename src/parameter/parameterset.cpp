@@ -42,7 +42,7 @@ boost::optional<pt::ptree &> ParameterSet::getParameterSet(const std::string &se
 	return sets;
 }
 
-void ParameterSet::addParameterSet(const std::string setName, const pt::ptree & set)
+void ParameterSet::addParameterSet(const std::string setName, const pt::ptree &set)
 {
 	boost::optional<pt::ptree &> sets = parameterSets();
 	if (sets.is_initialized()) {
@@ -117,7 +117,7 @@ void ParameterSet::applyParameterSet(FileModule *fileModule, const std::string &
 			}
 		}
 	}
-	catch (std::exception const& e) {
+	catch (std::exception const &e) {
 		PRINTB("ERROR: Cannot apply parameter Set: %s", e.what());
 	}
 }

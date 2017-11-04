@@ -34,7 +34,7 @@ typedef CGAL::Constrained_Delaunay_triangulation_2<
 static void  mark_domains(CDT &ct,
 													CDT::Face_handle start,
 													int index,
-													std::list<CDT::Edge>& border)
+													std::list<CDT::Edge> &border)
 {
 	if (start->info().nesting_level != -1) return;
 	std::list<CDT::Face_handle> queue;
@@ -63,7 +63,7 @@ static void  mark_domains(CDT &ct,
 //level of 0. Then we recursively consider the non-explored facets incident
 //to constrained edges bounding the former set and increase the nesting level by 1.
 //Facets in the domain are those with an odd nesting level.
-static void mark_domains(CDT& cdt)
+static void mark_domains(CDT &cdt)
 {
 	for (CDT::All_faces_iterator it = cdt.all_faces_begin(); it != cdt.all_faces_end(); ++it) {
 		it->info().nesting_level = -1;

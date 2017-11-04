@@ -46,7 +46,7 @@ private:
 	};
 
 	unsigned int flags;
-	const AbstractNode * parentnode;
+	const AbstractNode *parentnode;
 	unsigned int numchildren;
 
 	// Transformation matrix and color. FIXME: Generalize such state variables?

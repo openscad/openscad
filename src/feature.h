@@ -24,8 +24,8 @@ public:
 	static const Feature ExperimentalCustomizer;
 
 
-	const std::string& get_name() const;
-	const std::string& get_description() const;
+	const std::string &get_name() const;
+	const std::string &get_description() const;
 
 	bool is_enabled() const;
 	void enable(bool status);

@@ -54,7 +54,7 @@ const std::string &Tree::getIdString(const AbstractNode &node) const
 		PRINTDB("Id Cache MISS: %s", result);
 		return result;
 	} else {
-		const auto & result = this->nodeidcache[node];
+		const auto &result = this->nodeidcache[node];
 		PRINTDB("Id Cache HIT:  %s", result);
 		return result;
 	}

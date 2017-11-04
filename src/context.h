@@ -11,7 +11,7 @@
 class Context
 {
 public:
-	typedef std::vector<const Context*> Stack;
+	typedef std::vector<const Context *> Stack;
 
 	Context(const Context *parent = nullptr);
 	virtual ~Context();

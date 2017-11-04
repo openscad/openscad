@@ -94,7 +94,7 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 {
 #ifdef ENABLE_OPENCSG
 	for (const auto &product : products.products) {
-		std::vector<OpenCSG::Primitive*> primitives;
+		std::vector<OpenCSG::Primitive *> primitives;
 		for (const auto &csgobj : product.intersections) {
 			if (csgobj.leaf->geom) primitives.push_back(createCSGPrimitive(csgobj, OpenCSG::Intersection, highlight_mode, background_mode, OpenSCADOperator::INTERSECTION));
 		}

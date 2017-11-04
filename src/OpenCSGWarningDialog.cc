@@ -1,7 +1,7 @@
 #include "OpenCSGWarningDialog.h"
 #include "Preferences.h"
 
-OpenCSGWarningDialog::OpenCSGWarningDialog(QWidget*)
+OpenCSGWarningDialog::OpenCSGWarningDialog(QWidget *)
 {
 	setupUi(this);
 

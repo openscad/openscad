@@ -24,7 +24,7 @@
 #define FV_MIN_VALUE 0
 #define FV_MINOR_VERSION_MAX_VALUE 16
 
-int testValue(OSVERSIONINFOEX * value, DWORD verPart, DWORDLONG eq, DWORDLONG gt)
+int testValue(OSVERSIONINFOEX *value, DWORD verPart, DWORDLONG eq, DWORDLONG gt)
 {
 	if (VerifyVersionInfo(value, verPart, eq) == FALSE)
 	{
@@ -54,7 +54,7 @@ DWORDLONG eqFor(DWORD target)
 		DWORDLONG const eq = eqFor(partType); \
 		DWORDLONG const gt = gtFor(partType); \
 \
-		T * p = part; \
+		T *p = part; \
 \
 		*p = (a + b) / 2; \
 \
@@ -97,7 +97,7 @@ findPartTemplate(DWORD)
 findPartTemplate(WORD)
 findPartTemplate(BYTE)
 
-BOOL GetVersionExEx(OSVERSIONINFOEX * osVer)
+BOOL GetVersionExEx(OSVERSIONINFOEX *osVer)
 {
 	BOOL ret = TRUE;
 

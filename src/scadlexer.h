@@ -13,7 +13,7 @@ public:
 	const char *language() const;
 	const char *keywords(int set) const;
 
-	void setKeywords(int set, const std::string& keywords);
+	void setKeywords(int set, const std::string &keywords);
 private:
 	std::string keywordSet[4];
 	ScadLexer(const ScadLexer &);

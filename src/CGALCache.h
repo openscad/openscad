@@ -8,7 +8,7 @@
 class CGALCache
 {
 public:
-	CGALCache(size_t limit = 100*1024*1024);
+	CGALCache(size_t limit = 100 *1024 *1024);
 
 	static CGALCache *instance() { if (!inst) inst = new CGALCache; return inst; }
 

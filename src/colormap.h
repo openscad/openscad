@@ -51,12 +51,12 @@ public:
 	RenderColorScheme(const fs::path path);
 	virtual ~RenderColorScheme();
 
-	const std::string & name() const;
+	const std::string &name() const;
 	int index() const;
 	bool valid() const;
 	bool showInGui() const;
-	ColorScheme & colorScheme();
-	const boost::property_tree::ptree & propertyTree() const;
+	ColorScheme &colorScheme();
+	const boost::property_tree::ptree &propertyTree() const;
 
 private:
 	std::string path() const;
@@ -73,8 +73,8 @@ class ColorMap
 public:
 	static ColorMap *inst(bool erase = false);
 
-	const char * defaultColorSchemeName() const;
-	const ColorScheme & defaultColorScheme() const;
+	const char *defaultColorSchemeName() const;
+	const ColorScheme &defaultColorScheme() const;
 	const ColorScheme *findColorScheme(const std::string &name) const;
 	std::list<std::string> colorSchemeNames(bool guiOnly = false) const;
 

@@ -53,7 +53,7 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 #include <boost/detail/endian.hpp>
 #include <cstdint>
 
-extern PolySet * import_amf(std::string);
+extern PolySet *import_amf(std::string);
 
 class ImportModule : public AbstractModule
 {

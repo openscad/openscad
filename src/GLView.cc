@@ -40,7 +40,7 @@ GLView::GLView()
 #endif
 }
 
-void GLView::setRenderer(Renderer* r)
+void GLView::setRenderer(Renderer *r)
 {
 	renderer = r;
 }
@@ -291,11 +291,11 @@ void GLView::enable_opencsg_shaders()
 			"}\n";
 
 		auto vs = glCreateShader(GL_VERTEX_SHADER);
-		glShaderSource(vs, 1, (const GLchar**)&vs_source, nullptr);
+		glShaderSource(vs, 1, (const GLchar **)&vs_source, nullptr);
 		glCompileShader(vs);
 
 		auto fs = glCreateShader(GL_FRAGMENT_SHADER);
-		glShaderSource(fs, 1, (const GLchar**)&fs_source, nullptr);
+		glShaderSource(fs, 1, (const GLchar **)&fs_source, nullptr);
 		glCompileShader(fs);
 
 		auto edgeshader_prog = glCreateProgram();
@@ -719,12 +719,12 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
 		for (std::string::size_type char_num = 0; char_num < digit.size(); ++char_num) {
 			// setup the vertices for the char rendering based on the axis and position
 			double dig_vrt[6][3] = {
-				{polarity*((i+((char_num)*dig_wk))-(dig_w/2)),dig_h,0},
-				{polarity*((i+((char_num)*dig_wk))+(dig_w/2)),dig_h,0},
-				{polarity*((i+((char_num)*dig_wk))-(dig_w/2)),dig_h/2+dig_buf,0},
-				{polarity*((i+((char_num)*dig_wk))+(dig_w/2)),dig_h/2+dig_buf,0},
-				{polarity*((i+((char_num)*dig_wk))-(dig_w/2)),dig_buf,0},
-				{polarity*((i+((char_num)*dig_wk))+(dig_w/2)),dig_buf,0}
+				{polarity *((i+((char_num)*dig_wk))-(dig_w/2)),dig_h,0},
+				{polarity *((i+((char_num)*dig_wk))+(dig_w/2)),dig_h,0},
+				{polarity *((i+((char_num)*dig_wk))-(dig_w/2)),dig_h/2+dig_buf,0},
+				{polarity *((i+((char_num)*dig_wk))+(dig_w/2)),dig_h/2+dig_buf,0},
+				{polarity *((i+((char_num)*dig_wk))-(dig_w/2)),dig_buf,0},
+				{polarity *((i+((char_num)*dig_wk))+(dig_w/2)),dig_buf,0}
 			};
 
 			// convert the char into lines appropriate for the axis being used

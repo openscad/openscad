@@ -221,7 +221,7 @@ ColorModule::~ColorModule()
 // * "#rrggbbaa"
 // * "#rgb"
 // * "#rgba"
-boost::optional<Color4f> parse_hex_color(const std::string& hex) {
+boost::optional<Color4f> parse_hex_color(const std::string &hex) {
 	// validate size. short syntax uses one hex digit per color channel instead of 2.
 	const bool short_syntax = hex.size() == 4 || hex.size() == 5;
 	const bool long_syntax = hex.size() == 7 || hex.size() == 9;

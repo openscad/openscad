@@ -728,12 +728,12 @@ MainWindow::~MainWindow()
 
 void MainWindow::showProgress()
 {
-	updateStatusBar(qobject_cast<ProgressWidget*>(sender()));
+	updateStatusBar(qobject_cast<ProgressWidget *>(sender()));
 }
 
-void MainWindow::report_func(const class AbstractNode*, void *vp, int mark)
+void MainWindow::report_func(const class AbstractNode *, void *vp, int mark)
 {
-	auto thisp = static_cast<MainWindow*>(vp);
+	auto thisp = static_cast<MainWindow *>(vp);
 	auto v = static_cast<int>((mark*1000.0) / progress_report_count);
 	auto permille = v < 1000 ? v : 999;
 	if (permille > thisp->progresswidget->value()) {
@@ -1620,11 +1620,11 @@ void MainWindow::findBufferChanged()
 	}
 }
 
-bool MainWindow::eventFilter(QObject* obj, QEvent *event)
+bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
 	if (obj == find_panel) {
 		if (event->type() == QEvent::KeyPress) {
-			auto keyEvent = static_cast<QKeyEvent*>(event);
+			auto keyEvent = static_cast<QKeyEvent *>(event);
 			if (keyEvent->key() == Qt::Key_Escape) {
 				this->hideFind();
 				return true;
@@ -1748,7 +1748,7 @@ void MainWindow::compileTopLevelDocument()
 		"\n" + commandline_commands;
 
 	auto fnameba = this->fileName.toLocal8Bit();
-	const char* fname = this->fileName.isEmpty() ? "" : fnameba;
+	const char *fname = this->fileName.isEmpty() ? "" : fnameba;
 	delete this->parsed_module;
 	this->root_module = parse(this->parsed_module, fulltext.c_str(), fs::path(fname), false) ? this->parsed_module : nullptr;
 
@@ -2753,7 +2753,7 @@ void MainWindow::consoleOutput(const std::string &msg, void *userdata)
 {
 	// Invoke the method in the main thread in case the output
 	// originates in a worker thread.
-	auto thisp = static_cast<MainWindow*>(userdata);
+	auto thisp = static_cast<MainWindow *>(userdata);
 	QMetaObject::invokeMethod(thisp, "consoleOutput", Q_ARG(QString, QString::fromStdString(msg)));
 }
 

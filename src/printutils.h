@@ -7,7 +7,7 @@
 
 #include <libintl.h>
 #include <locale.h>
-inline char * _(const char * msgid) { return gettext(msgid); }
+inline char *_(const char *msgid) { return gettext(msgid); }
 
 typedef void (OutputHandlerFunc)(const std::string &msg, void *userdata);
 extern OutputHandlerFunc *outputhandler;
@@ -70,7 +70,7 @@ public:
 		loglevel = level;
 		out = &(std::cout);
 	}
-	template <typename T> logstream & operator<<(T const &t) {
+	template <typename T> logstream &operator<<(T const &t) {
 		if (out && loglevel <= openscad_loglevel) {
 			(*out) << t;
 			out->flush();

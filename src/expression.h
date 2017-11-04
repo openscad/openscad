@@ -157,7 +157,7 @@ public:
 	FunctionCall(const std::string &funcname, const AssignmentList &arglist, const Location &loc);
 	ValuePtr evaluate(const class Context *context) const;
 	virtual void print(std::ostream &stream) const;
-	static Expression * create(const std::string &funcname, const AssignmentList &arglist, Expression *expr, const Location &loc);
+	static Expression *create(const std::string &funcname, const AssignmentList &arglist, Expression *expr, const Location &loc);
 public:
 	std::string name;
 	AssignmentList arguments;

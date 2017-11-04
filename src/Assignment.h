@@ -31,4 +31,4 @@ protected:
 
 
 typedef std::vector<Assignment> AssignmentList;
-typedef std::unordered_map<std::string, const Expression*> AssignmentMap;
+typedef std::unordered_map<std::string, const Expression *> AssignmentMap;

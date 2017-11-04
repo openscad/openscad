@@ -84,12 +84,12 @@ AbstractNode *ModuleInstantiation::evaluate(const Context *ctx) const
 	return node;
 }
 
-std::vector<AbstractNode*> ModuleInstantiation::instantiateChildren(const Context *evalctx) const
+std::vector<AbstractNode *> ModuleInstantiation::instantiateChildren(const Context *evalctx) const
 {
 	return this->scope.instantiateChildren(evalctx);
 }
 
-std::vector<AbstractNode*> IfElseModuleInstantiation::instantiateElseChildren(const Context *evalctx) const
+std::vector<AbstractNode *> IfElseModuleInstantiation::instantiateElseChildren(const Context *evalctx) const
 {
 	return this->else_scope.instantiateChildren(evalctx);
 }

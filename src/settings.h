@@ -18,11 +18,11 @@ private:
 		Value _default;
 
 public:
-		const std::string & category() const;
-		const std::string & name() const;
+		const std::string &category() const;
+		const std::string &name() const;
 
-		virtual const Value & defaultValue() const;
-		virtual const Value & range() const;
+		virtual const Value &defaultValue() const;
+		virtual const Value &range() const;
 		virtual bool is_default() const;
 
 protected:
@@ -55,11 +55,11 @@ public:
 
 		static Settings *inst(bool erase = false);
 
-		void visit(class SettingsVisitor& visitor);
+		void visit(class SettingsVisitor &visitor);
 
-		const Value &defaultValue(const SettingsEntry& entry);
-		const Value &get(const SettingsEntry& entry);
-		void set(SettingsEntry& entry, const Value &val);
+		const Value &defaultValue(const SettingsEntry &entry);
+		const Value &get(const SettingsEntry &entry);
+		void set(SettingsEntry &entry, const Value &val);
 
 private:
 		Settings();
@@ -72,7 +72,7 @@ public:
 		SettingsVisitor();
 		virtual ~SettingsVisitor();
 
-		virtual void handle(SettingsEntry& entry) const = 0;
+		virtual void handle(SettingsEntry &entry) const = 0;
 	};
 
 }

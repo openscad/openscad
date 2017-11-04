@@ -19,7 +19,7 @@ void WindowManager::remove(MainWindow *mainwin)
 	this->windows.remove(mainwin);
 }
 
-const QSet<MainWindow*> &WindowManager::getWindows() const
+const QSet<MainWindow *> &WindowManager::getWindows() const
 {
 	return this->windows;
 }
