@@ -305,8 +305,7 @@ void Highlighter::highlightBlock(const QString &text)
 
 	// If desired, skip all highlighting .. except for error highlighting.
 	if (Preferences::inst()->getValue("editor/syntaxhighlight").toString() == QString("Off")) {
-		if (errorState)
-			setFormat(errorPos - block_first_pos, 1, errorFormat);
+		if (errorState) setFormat(errorPos - block_first_pos, 1, errorFormat);
 		return;
 	}
 
@@ -368,12 +367,9 @@ void Highlighter::highlightBlock(const QString &text)
 			}
 		} else if (state == state_e::QUOTE) {
 			setFormat(n, 1, quoteFormat);
-			if (quote_esc_state > 0)
-				quote_esc_state = 0;
-			else if (text[n] == '\\')
-				quote_esc_state = 1;
-			else if (text[n] == '"')
-				state = state_e::NORMAL;
+			if (quote_esc_state > 0) quote_esc_state = 0;
+			else if (text[n] == '\\') quote_esc_state = 1;
+			else if (text[n] == '"') state = state_e::NORMAL;
 		} else if (state == state_e::COMMENT) {
 			setFormat(n, 1, commentFormat);
 			if (text[n] == '*' && n + 1 < text.size() && text[n + 1] == '/') {

@@ -80,10 +80,8 @@ Py_hash_t hash_floating_point(Float_t v)
 	Py_uhash_t x, y;
 
 	if (!std::isfinite(v)) {
-		if (std::isinf(v))
-			return v > 0 ? _PyHASH_INF : -_PyHASH_INF;
-		else
-			return _PyHASH_NAN;
+		if (std::isinf(v)) return v > 0 ? _PyHASH_INF : -_PyHASH_INF;
+		else return _PyHASH_NAN;
 	}
 
 	m = frexp(v, &e);
@@ -104,8 +102,7 @@ Py_hash_t hash_floating_point(Float_t v)
 		y = (Py_uhash_t)m;      /* pull out integer part */
 		m -= y;
 		x += y;
-		if (x >= _PyHASH_MODULUS)
-			x -= _PyHASH_MODULUS;
+		if (x >= _PyHASH_MODULUS) x -= _PyHASH_MODULUS;
 	}
 
 	/* adjust for the exponent;  first reduce it modulo _PyHASH_BITS */

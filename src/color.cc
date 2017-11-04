@@ -267,8 +267,7 @@ AbstractNode *ColorModule::instantiate(const Context *ctx, const ModuleInstantia
 	if (v->type() == Value::ValueType::VECTOR) {
 		for (size_t i = 0; i < 4; i++) {
 			node->color[i] = i < v->toVector().size() ? v->toVector()[i]->toDouble() : 1.0;
-			if (node->color[i] > 1)
-				PRINTB_NOCACHE("WARNING: color() expects numbers between 0.0 and 1.0. Value of %.1f is too large.", node->color[i]);
+			if (node->color[i] > 1) PRINTB_NOCACHE("WARNING: color() expects numbers between 0.0 and 1.0. Value of %.1f is too large.", node->color[i]);
 		}
 	} else if (v->type() == Value::ValueType::STRING) {
 		auto colorname = v->toString();

@@ -162,8 +162,7 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 			for (int i = 0; i < 16; i++) {
 				size_t x = i / 4, y = i % 4;
 				if (y < v->toVector().size() && v->toVector()[y]->type() ==
-						Value::ValueType::VECTOR && x < v->toVector()[y]->toVector().size())
-					v->toVector()[y]->toVector()[x]->getDouble(rawmatrix(y, x));
+						Value::ValueType::VECTOR && x < v->toVector()[y]->toVector().size()) v->toVector()[y]->toVector()[x]->getDouble(rawmatrix(y, x));
 			}
 			double w = rawmatrix(3, 3);
 			if (w != 1.0) node->matrix = rawmatrix / w;

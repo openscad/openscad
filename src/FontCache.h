@@ -42,7 +42,8 @@
 #include <hb.h>
 #include <hb-ft.h>
 
-class FontInfo {
+class FontInfo
+{
 public:
 	FontInfo(const std::string &family, const std::string &style, const std::string &file);
 	virtual ~FontInfo();
@@ -64,7 +65,8 @@ typedef std::vector<FontInfo> FontInfoList;
  * can be passed to the GUI to run in a separate thread while showing a
  * progress dialog.
  */
-class FontCacheInitializer {
+class FontCacheInitializer
+{
 public:
 	FontCacheInitializer(FcConfig *config) : config(config) { }
 	void run() { FcConfigBuildFonts(config); }
@@ -72,7 +74,8 @@ private:
 	FcConfig *config;
 };
 
-class FontCache {
+class FontCache
+{
 public:
 	const static std::string DEFAULT_FONT;
 	const static unsigned int MAX_NR_OF_CACHE_ENTRIES = 3;

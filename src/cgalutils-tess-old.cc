@@ -228,10 +228,12 @@ bool deproject(CGAL_Point_2 &p2, projection_t &projection, CGAL_Plane_3 &plane, 
 
 /* this simple criteria guarantees CGALs triangulation algorithm will
    terminate (i.e. not lock up and freeze the program) */
-template <class T> class DummyCriteria {
+template <class T> class DummyCriteria
+{
 public:
 	typedef double Quality;
-	class Is_bad {
+	class Is_bad
+	{
 public:
 		CGAL::Mesh_2::Face_badness operator()(const Quality) const {
 			return CGAL::Mesh_2::NOT_BAD;

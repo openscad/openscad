@@ -253,18 +253,15 @@ namespace OpenSCAD {
 				SFace_cycle_const_iterator it;
 				out << " the sface cycles of sface " << i++ << " start with an\n";
 				for (it = sf->sface_cycles_begin(); it != sf->sface_cycles_end(); it++) {
-					if (it.is_svertex())
-						out << "  svertex at position "
-								<< vert_dump(SVertex_const_handle(it)) << "\n";
+					if (it.is_svertex()) out << "  svertex at position "
+																	 << vert_dump(SVertex_const_handle(it)) << "\n";
 					else if (it.is_shalfedge())
 						out << "  shalfedge from "
 								<< vert_dump(SHalfedge_const_handle(it)->source()) << " to "
 								<< vert_dump(SHalfedge_const_handle(it)->target()) << std::endl;
-					else if (it.is_shalfloop())
-						out << "  shalfloop lying in the plane "
-								<< SHalfloop_const_handle(it)->circle() << std::endl;
-					else
-						out << "  unknown bug\n";
+					else if (it.is_shalfloop()) out << "  shalfloop lying in the plane "
+																					<< SHalfloop_const_handle(it)->circle() << std::endl;
+					else out << "  unknown bug\n";
 				}
 			}
 			out << "\n  vertex sphere map end -->\n";
@@ -275,7 +272,8 @@ namespace OpenSCAD {
 
 // This uses the Shell Explorer pattern from the CGAL Manual to dump the 3d Nef Polyhedron information
 // http://www.cgal.org/Manual/latest/doc_html/cgal_manual/Nef_3/Chapter_main.html#Subsection_29.7.2
-	class NefPoly3_dumper_svg {
+	class NefPoly3_dumper_svg
+	{
 public:
 		std::stringstream out;
 		CGAL_Iso_cuboid_3 bbox;

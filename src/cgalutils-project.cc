@@ -102,7 +102,8 @@ static Polygon2d *convertToPolygon2d(const CGAL_Nef_polyhedron2 &p2)
    OGL_helper.h
  */
 
-class ZRemover {
+class ZRemover
+{
 public:
 	CGAL_Nef_polyhedron2::Boundary boundary;
 	shared_ptr<CGAL_Nef_polyhedron2> tmpnef2d;
@@ -149,8 +150,7 @@ void ZRemover::visit(CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet)
 			}
 			if (contour.size() == 0) continue;
 
-			if (OpenSCAD::debug != "")
-				PRINTDB(" <!-- is_simple_2: %i -->", CGAL::is_simple_2(contour.begin(), contour.end()));
+			if (OpenSCAD::debug != "") PRINTDB(" <!-- is_simple_2: %i -->", CGAL::is_simple_2(contour.begin(), contour.end()));
 
 			tmpnef2d.reset(new CGAL_Nef_polyhedron2(contour.begin(), contour.end(), boundary));
 

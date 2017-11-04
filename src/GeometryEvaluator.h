@@ -37,7 +37,8 @@ public:
 	const Tree &getTree() const { return this->tree; }
 
 private:
-	class ResultObject {
+	class ResultObject
+	{
 public:
 		ResultObject() : is_const(true) {}
 		ResultObject(const Geometry *g) : is_const(true), const_pointer(g) {}

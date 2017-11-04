@@ -204,8 +204,7 @@ ValuePtr FileContext::evaluate_function(const std::string &name,
 	for (const auto &m : *this->usedlibs_p) {
 		// usedmod is nullptr if the library wasn't be compiled (error or file-not-found)
 		auto usedmod = ModuleCache::instance()->lookup(m);
-		if (usedmod && usedmod->scope.functions.find(name) != usedmod->scope.functions.end())
-			return sub_evaluate_function(name, evalctx, usedmod);
+		if (usedmod && usedmod->scope.functions.find(name) != usedmod->scope.functions.end()) return sub_evaluate_function(name, evalctx, usedmod);
 	}
 
 	return ModuleContext::evaluate_function(name, evalctx);

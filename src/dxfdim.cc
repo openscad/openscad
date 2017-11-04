@@ -80,15 +80,13 @@ ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 						<< "|" << yorigin << "|" << scale << "|" << lastwritetime
 						<< "|" << filesize;
 	std::string key = keystream.str();
-	if (dxf_dim_cache.find(key) != dxf_dim_cache.end())
-		return dxf_dim_cache.find(key)->second;
+	if (dxf_dim_cache.find(key) != dxf_dim_cache.end()) return dxf_dim_cache.find(key)->second;
 	handle_dep(filepath.string());
 	DxfData dxf(36, 0, 0, filename, layername, xorigin, yorigin, scale);
 
 	for (size_t i = 0; i < dxf.dims.size(); i++)
 	{
-		if (!name.empty() && dxf.dims[i].name != name)
-			continue;
+		if (!name.empty() && dxf.dims[i].name != name) continue;
 
 		DxfData::Dim *d = &dxf.dims[i];
 		int type = d->type & 7;
@@ -180,8 +178,7 @@ ValuePtr builtin_dxf_cross(const Context *ctx, const EvalContext *evalctx)
 	double coords[4][2];
 
 	for (size_t i = 0, j = 0; i < dxf.paths.size(); i++) {
-		if (dxf.paths[i].indices.size() != 2)
-			continue;
+		if (dxf.paths[i].indices.size() != 2) continue;
 		coords[j][0] = dxf.points[dxf.paths[i].indices[0]][0];
 		coords[j++][1] = dxf.points[dxf.paths[i].indices[0]][1];
 		coords[j][0] = dxf.points[dxf.paths[i].indices[1]][0];
@@ -193,8 +190,7 @@ ValuePtr builtin_dxf_cross(const Context *ctx, const EvalContext *evalctx)
 			double x3 = coords[2][0], y3 = coords[2][1];
 			double x4 = coords[3][0], y4 = coords[3][1];
 			double dem = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1);
-			if (dem == 0)
-				break;
+			if (dem == 0) break;
 			double ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / dem;
 			// double ub = ((x2 - x1)*(y1 - y3) - (y2 - y1)*(x1 - x3)) / dem;
 			double x = x1 + ua * (x2 - x1);

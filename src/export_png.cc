@@ -70,8 +70,7 @@ bool export_png_preview_common(Tree &tree, Camera &cam, std::ostream &output, Pr
 	ThrownTogetherRenderer thrownTogetherRenderer(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products);
 
 #ifdef ENABLE_OPENCSG
-	if (previewer == Previewer::OPENCSG)
-		glview->setRenderer(&openCSGRenderer);
+	if (previewer == Previewer::OPENCSG) glview->setRenderer(&openCSGRenderer);
 	else
 #endif
 	glview->setRenderer(&thrownTogetherRenderer);

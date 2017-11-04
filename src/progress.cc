@@ -22,7 +22,6 @@ void progress_report_fin()
 
 void progress_update(const AbstractNode *node, int mark)
 {
-	if (progress_report_f)
-		progress_report_f(node, progress_report_userdata, mark);
+	if (progress_report_f) progress_report_f(node, progress_report_userdata, mark);
 }
 

@@ -117,8 +117,7 @@ const char *UnaryOp::opString() const
 
 bool UnaryOp::isLiteral() const {
 
-	if (this->expr->isLiteral())
-		return true;
+	if (this->expr->isLiteral()) return true;
 	return false;
 }
 
@@ -317,11 +316,9 @@ void Range::print(std::ostream &stream) const
 
 bool Range::isLiteral() const {
 	if (!this->step) {
-		if (begin->isLiteral() && end->isLiteral())
-			return true;
+		if (begin->isLiteral() && end->isLiteral()) return true;
 	}else{
-		if (begin->isLiteral() && end->isLiteral() && step->isLiteral())
-			return true;
+		if (begin->isLiteral() && end->isLiteral() && step->isLiteral()) return true;
 	}
 	return false;
 }

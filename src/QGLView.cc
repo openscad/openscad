@@ -81,8 +81,7 @@ void QGLView::init()
 #include <windows.h>
 	HMODULE hntdll = GetModuleHandle(L"ntdll.dll");
 	if (hntdll)
-		if ((void *)GetProcAddress(hntdll, "wine_get_version"))
-			running_under_wine = true;
+		if ((void *)GetProcAddress(hntdll, "wine_get_version")) running_under_wine = true;
 #endif
 }
 

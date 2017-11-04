@@ -28,12 +28,10 @@ int testValue(OSVERSIONINFOEX *value, DWORD verPart, DWORDLONG eq, DWORDLONG gt)
 {
 	if (VerifyVersionInfo(value, verPart, eq) == FALSE)
 	{
-		if (VerifyVersionInfo(value, verPart, gt) == TRUE)
-			return FV_GREAT;
+		if (VerifyVersionInfo(value, verPart, gt) == TRUE) return FV_GREAT;
 		return FV_LESS;
 	}
-	else
-		return FV_EQUAL;
+	else return FV_EQUAL;
 }
 
 DWORDLONG gtFor(DWORD target)
@@ -70,13 +68,11 @@ DWORDLONG eqFor(DWORD target)
 \
 			if (*p == a) \
 			{ \
-				if (testValue(ret, partType, eq, gt) == FV_EQUAL) \
-					return TRUE; \
+				if (testValue(ret, partType, eq, gt) == FV_EQUAL) return TRUE; \
 \
 				*p = b; \
 \
-				if (testValue(ret, partType, eq, gt) == FV_EQUAL) \
-					return TRUE; \
+				if (testValue(ret, partType, eq, gt) == FV_EQUAL) return TRUE; \
 \
 				a = 0; \
 				b = 0; \

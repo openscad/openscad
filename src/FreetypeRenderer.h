@@ -34,9 +34,11 @@
 #include FT_FREETYPE_H
 #include FT_GLYPH_H
 
-class FreetypeRenderer {
+class FreetypeRenderer
+{
 public:
-	class Params {
+	class Params
+	{
 public:
 		void set_size(double size) {
 			this->size = size;
@@ -108,7 +110,8 @@ private:
 	const static double scale;
 	FT_Outline_Funcs funcs;
 
-	class GlyphData {
+	class GlyphData
+	{
 public:
 		GlyphData(FT_Glyph glyph, unsigned int idx, hb_glyph_position_t *glyph_pos) : glyph(glyph), idx(idx), glyph_pos(glyph_pos) {}
 		unsigned int get_idx() const { return idx; };
@@ -130,7 +133,8 @@ private:
 		}
 	};
 
-	class GlyphArray : public std::vector<const GlyphData *> {
+	class GlyphArray : public std::vector<const GlyphData *>
+	{
 public:
 		virtual ~GlyphArray() {
 			std::for_each(begin(), end(), done_glyph());

@@ -29,10 +29,12 @@ typedef CGAL::Constrained_Delaunay_triangulation_2<K, Tds, CGAL::Exact_predicate
 typedef CDT::Vertex_handle Vertex_handle;
 typedef CDT::Point CDTPoint;
 
-template <class T> class DummyCriteria {
+template <class T> class DummyCriteria
+{
 public:
 	typedef double Quality;
-	class Is_bad {
+	class Is_bad
+	{
 public:
 		CGAL::Mesh_2::Face_badness operator()(const Quality) const {
 			return CGAL::Mesh_2::NOT_BAD;

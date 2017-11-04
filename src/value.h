@@ -29,7 +29,8 @@ public:
 };
 std::ostream &operator<<(std::ostream &stream, const Filename &filename);
 
-class RangeType {
+class RangeType
+{
 private:
 	double begin_val;
 	double step_val;
@@ -41,7 +42,8 @@ private:
 public:
 	enum class type_t { RANGE_TYPE_BEGIN, RANGE_TYPE_RUNNING, RANGE_TYPE_END };
 
-	class iterator {
+	class iterator
+	{
 public:
 		typedef iterator self_type;
 		typedef double value_type;

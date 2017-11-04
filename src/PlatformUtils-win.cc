@@ -177,8 +177,7 @@ void PlatformUtils::ensureStdIO(void)
 	HANDLE hWrite = (HANDLE)_get_osfhandle(_fileno(stdout));
 	HANDLE hError = (HANDLE)_get_osfhandle(_fileno(stderr));
 
-	if (/* INVALID_HANDLE_VALUE != hRead && */ INVALID_HANDLE_VALUE != hWrite && INVALID_HANDLE_VALUE != hError)
-		return;
+	if (/* INVALID_HANDLE_VALUE != hRead && */ INVALID_HANDLE_VALUE != hWrite && INVALID_HANDLE_VALUE != hError) return;
 
 	// I see nothing to do about error(s) here.
 	if (!AttachConsole(ATTACH_PARENT_PROCESS)) return;

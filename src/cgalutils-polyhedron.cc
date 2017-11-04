@@ -291,7 +291,8 @@ namespace CGALUtils {
 	template bool createPolySetFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Epeck> &p, PolySet &ps);
 	template bool createPolySetFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Simple_cartesian<long>> &p, PolySet &ps);
 
-	class Polyhedron_writer {
+	class Polyhedron_writer
+	{
 		std::ostream *out;
 		bool firstv;
 		std::vector<int> indices;

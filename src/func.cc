@@ -84,8 +84,7 @@ ValuePtr builtin_abs(const Context *, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
-		if (v->type() == Value::ValueType::NUMBER)
-			return ValuePtr(std::fabs(v->toDouble()));
+		if (v->type() == Value::ValueType::NUMBER) return ValuePtr(std::fabs(v->toDouble()));
 	}
 	return ValuePtr::undefined;
 }
@@ -259,8 +258,7 @@ double sin_degrees(double x)
 	if (x < 45.0) {
 		if (x == 30.0) x = 0.5;
 		else x = sin(deg2rad(x));
-	} else if (x == 45.0)
-		x = M_SQRT1_2;
+	} else if (x == 45.0) x = M_SQRT1_2;
 	else // Inf/Nan would fall here
 		x = cos(deg2rad(90.0 - x));
 
@@ -271,8 +269,7 @@ ValuePtr builtin_sin(const Context *, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
-		if (v->type() == Value::ValueType::NUMBER)
-			return ValuePtr(sin_degrees(v->toDouble()));
+		if (v->type() == Value::ValueType::NUMBER) return ValuePtr(sin_degrees(v->toDouble()));
 	}
 	return ValuePtr::undefined;
 }
@@ -306,8 +303,7 @@ double cos_degrees(double x)
 	if (x > 45.0) {
 		if (x == 60.0) x = 0.5;
 		else x = sin(deg2rad(90.0 - x));
-	} else if (x == 45.0)
-		x = M_SQRT1_2;
+	} else if (x == 45.0) x = M_SQRT1_2;
 	else // Inf/Nan would fall here
 		x = cos(deg2rad(x));
 
@@ -318,8 +314,7 @@ ValuePtr builtin_cos(const Context *, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
-		if (v->type() == Value::ValueType::NUMBER)
-			return ValuePtr(cos_degrees(v->toDouble()));
+		if (v->type() == Value::ValueType::NUMBER) return ValuePtr(cos_degrees(v->toDouble()));
 	}
 	return ValuePtr::undefined;
 }
@@ -328,8 +323,7 @@ ValuePtr builtin_asin(const Context *, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
-		if (v->type() == Value::ValueType::NUMBER)
-			return ValuePtr(rad2deg(asin(v->toDouble())));
+		if (v->type() == Value::ValueType::NUMBER) return ValuePtr(rad2deg(asin(v->toDouble())));
 	}
 	return ValuePtr::undefined;
 }
@@ -338,8 +332,7 @@ ValuePtr builtin_acos(const Context *, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
-		if (v->type() == Value::ValueType::NUMBER)
-			return ValuePtr(rad2deg(acos(v->toDouble())));
+		if (v->type() == Value::ValueType::NUMBER) return ValuePtr(rad2deg(acos(v->toDouble())));
 	}
 	return ValuePtr::undefined;
 }
@@ -348,8 +341,7 @@ ValuePtr builtin_tan(const Context *, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
-		if (v->type() == Value::ValueType::NUMBER)
-			return ValuePtr(tan(deg2rad(v->toDouble())));
+		if (v->type() == Value::ValueType::NUMBER) return ValuePtr(tan(deg2rad(v->toDouble())));
 	}
 	return ValuePtr::undefined;
 }
@@ -358,8 +350,7 @@ ValuePtr builtin_atan(const Context *, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
-		if (v->type() == Value::ValueType::NUMBER)
-			return ValuePtr(rad2deg(atan(v->toDouble())));
+		if (v->type() == Value::ValueType::NUMBER) return ValuePtr(rad2deg(atan(v->toDouble())));
 	}
 	return ValuePtr::undefined;
 }
@@ -368,8 +359,7 @@ ValuePtr builtin_atan2(const Context *, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 2) {
 		ValuePtr v0 = evalctx->getArgValue(0), v1 = evalctx->getArgValue(1);
-		if (v0->type() == Value::ValueType::NUMBER && v1->type() == Value::ValueType::NUMBER)
-			return ValuePtr(rad2deg(atan2(v0->toDouble(), v1->toDouble())));
+		if (v0->type() == Value::ValueType::NUMBER && v1->type() == Value::ValueType::NUMBER) return ValuePtr(rad2deg(atan2(v0->toDouble(), v1->toDouble())));
 	}
 	return ValuePtr::undefined;
 }
@@ -378,8 +368,7 @@ ValuePtr builtin_pow(const Context *, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 2) {
 		ValuePtr v0 = evalctx->getArgValue(0), v1 = evalctx->getArgValue(1);
-		if (v0->type() == Value::ValueType::NUMBER && v1->type() == Value::ValueType::NUMBER)
-			return ValuePtr(pow(v0->toDouble(), v1->toDouble()));
+		if (v0->type() == Value::ValueType::NUMBER && v1->type() == Value::ValueType::NUMBER) return ValuePtr(pow(v0->toDouble(), v1->toDouble()));
 	}
 	return ValuePtr::undefined;
 }
@@ -388,8 +377,7 @@ ValuePtr builtin_round(const Context *, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
-		if (v->type() == Value::ValueType::NUMBER)
-			return ValuePtr(round(v->toDouble()));
+		if (v->type() == Value::ValueType::NUMBER) return ValuePtr(round(v->toDouble()));
 	}
 	return ValuePtr::undefined;
 }
@@ -398,8 +386,7 @@ ValuePtr builtin_ceil(const Context *, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
-		if (v->type() == Value::ValueType::NUMBER)
-			return ValuePtr(ceil(v->toDouble()));
+		if (v->type() == Value::ValueType::NUMBER) return ValuePtr(ceil(v->toDouble()));
 	}
 	return ValuePtr::undefined;
 }
@@ -408,8 +395,7 @@ ValuePtr builtin_floor(const Context *, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
-		if (v->type() == Value::ValueType::NUMBER)
-			return ValuePtr(floor(v->toDouble()));
+		if (v->type() == Value::ValueType::NUMBER) return ValuePtr(floor(v->toDouble()));
 	}
 	return ValuePtr::undefined;
 }
@@ -418,8 +404,7 @@ ValuePtr builtin_sqrt(const Context *, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
-		if (v->type() == Value::ValueType::NUMBER)
-			return ValuePtr(sqrt(v->toDouble()));
+		if (v->type() == Value::ValueType::NUMBER) return ValuePtr(sqrt(v->toDouble()));
 	}
 	return ValuePtr::undefined;
 }
@@ -428,8 +413,7 @@ ValuePtr builtin_exp(const Context *, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
-		if (v->type() == Value::ValueType::NUMBER)
-			return ValuePtr(exp(v->toDouble()));
+		if (v->type() == Value::ValueType::NUMBER) return ValuePtr(exp(v->toDouble()));
 	}
 	return ValuePtr::undefined;
 }
@@ -471,8 +455,7 @@ ValuePtr builtin_ln(const Context *, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
-		if (v->type() == Value::ValueType::NUMBER)
-			return ValuePtr(log(v->toDouble()));
+		if (v->type() == Value::ValueType::NUMBER) return ValuePtr(log(v->toDouble()));
 	}
 	return ValuePtr::undefined;
 }
@@ -527,8 +510,7 @@ ValuePtr builtin_lookup(const Context *, const EvalContext *evalctx)
 	if (vec.empty()) return ValuePtr::undefined; // Second must be a vector
 	if (vec[0]->toVector().size() < 2) return ValuePtr::undefined; // ..of vectors
 
-	if (!vec[0]->getVec2(low_p, low_v) || !vec[0]->getVec2(high_p, high_v))
-		return ValuePtr::undefined;
+	if (!vec[0]->getVec2(low_p, low_v) || !vec[0]->getVec2(high_p, high_v)) return ValuePtr::undefined;
 	for (size_t i = 1; i < vec.size(); i++) {
 		double this_p, this_v;
 		if (vec[i]->getVec2(this_p, this_v)) {
@@ -542,10 +524,8 @@ ValuePtr builtin_lookup(const Context *, const EvalContext *evalctx)
 			}
 		}
 	}
-	if (p <= low_p)
-		return ValuePtr(high_v);
-	if (p >= high_p)
-		return ValuePtr(low_v);
+	if (p <= low_p) return ValuePtr(high_v);
+	if (p >= high_p) return ValuePtr(low_v);
 	double f = (p - low_p) / (high_p - low_p);
 	return ValuePtr(high_v * f + low_v * (1 - f));
 }
@@ -782,14 +762,12 @@ ValuePtr builtin_parent_module(const Context *, const EvalContext *evalctx)
 	int n;
 	double d;
 	int s = UserModule::stack_size();
-	if (evalctx->numArgs() == 0)
-		d = 1; // parent module
+	if (evalctx->numArgs() == 0) d = 1; // parent module
 	else if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
 		if (v->type() != Value::ValueType::NUMBER) return ValuePtr::undefined;
 		v->getDouble(d);
-	} else
-		return ValuePtr::undefined;
+	} else return ValuePtr::undefined;
 	n = trunc(d);
 	if (n < 0) {
 		PRINTB("WARNING: Negative parent module index (%d) not allowed", n);

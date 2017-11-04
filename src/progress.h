@@ -10,4 +10,6 @@ void progress_report_prep(AbstractNode *root, void (*f)(const class AbstractNode
 void progress_report_fin();
 void progress_update(const AbstractNode *node, int mark);
 
-class ProgressCancelException { };
+class ProgressCancelException
+{
+};

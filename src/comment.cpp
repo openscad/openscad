@@ -255,8 +255,7 @@ static GroupList collectGroups(const std::string &fulltext)
 				i++;
 			}
 
-			if (isGroup)
-				groupList.push_back(createGroup(comment, lineNo));
+			if (isGroup) groupList.push_back(createGroup(comment, lineNo));
 		}
 	}
 	return groupList;

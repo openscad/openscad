@@ -10,7 +10,8 @@
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
-class SettingsConverter {
+class SettingsConverter
+{
 public:
 	QsciScintilla::WrapMode toWrapMode(Value val);
 	QsciScintilla::WrapVisualFlag toLineWrapVisualization(Value val);
@@ -709,8 +710,7 @@ bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
 			if (wasChanged) qsci->endUndoAction();
 			wasChanged = false;
 			QsciCommand *cmd = qsci->standardCommands()->boundTo(k);
-			if (cmd && (cmd->command() == QsciCommand::Undo || cmd->command() == QsciCommand::Redo))
-				QTimer::singleShot(0, this, SIGNAL(previewRequest()));
+			if (cmd && (cmd->command() == QsciCommand::Undo || cmd->command() == QsciCommand::Redo)) QTimer::singleShot(0, this, SIGNAL(previewRequest()));
 			else if (cmd || !ke->text().isEmpty()) {
 				// any insert or command (but not undo/redo) cancels the preview after undo
 				previewAfterUndo = false;
@@ -736,13 +736,11 @@ void ScintillaEditor::navigateOnNumber(int key)
 	switch (key)
 	{
 	case Qt::Key_Left:
-		if (numOnLeft)
-			qsci->setCursorPosition(line, index - (dotJustLeft ? 2 : 1));
+		if (numOnLeft) qsci->setCursorPosition(line, index - (dotJustLeft ? 2 : 1));
 		break;
 
 	case Qt::Key_Right:
-		if (numOnRight)
-			qsci->setCursorPosition(line, index + (dotJustRight ? 2 : 1));
+		if (numOnRight) qsci->setCursorPosition(line, index + (dotJustRight ? 2 : 1));
 		else if (numOnLeft) {
 			// add trailing zero
 			if (!dotOnLeft) {

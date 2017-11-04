@@ -8,7 +8,8 @@
 #include <mutex>
 #include <thread>
 
-class QSettingsCached {
+class QSettingsCached
+{
 public:
 
 	QSettingsCached() {

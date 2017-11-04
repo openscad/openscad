@@ -52,7 +52,8 @@ static const std::string triangle_v1 = triangle + "/v1";
 static const std::string triangle_v2 = triangle + "/v2";
 static const std::string triangle_v3 = triangle + "/v3";
 
-class AmfImporter {
+class AmfImporter
+{
 private:
 	fs::path path;
 
@@ -166,8 +167,7 @@ void AmfImporter::end_triangle(AmfImporter *importer, const xmlChar *)
 void AmfImporter::processNode(xmlTextReaderPtr reader)
 {
 	const char *name = reinterpret_cast<const char *> (xmlTextReaderName(reader));
-	if (name == nullptr)
-		name = reinterpret_cast<const char *> (xmlStrdup(BAD_CAST "--"));
+	if (name == nullptr) name = reinterpret_cast<const char *> (xmlStrdup(BAD_CAST "--"));
 
 	xmlChar *value = xmlTextReaderValue(reader);
 	int node_type = xmlTextReaderNodeType(reader);

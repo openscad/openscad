@@ -482,8 +482,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 			PRINTB("Can't open file \"%s\" for export", term_output_file);
 		}
 		else {
-			if (!root_raw_term)
-				fstream << "No top-level CSG object\n";
+			if (!root_raw_term) fstream << "No top-level CSG object\n";
 			else {
 				fstream << root_raw_term->dump() << "\n";
 			}
@@ -787,8 +786,7 @@ int gui(const vector<string> &inputFiles, const fs::path &original_path, int arg
 std::pair<string, string> customSyntax(const string &s)
 {
 #if defined(Q_OS_MACX)
-	if (s.find("-psn_") == 0)
-		return {"psn", s.substr(5)};
+	if (s.find("-psn_") == 0) return {"psn", s.substr(5)};
 #endif
 
 	return {};
@@ -883,8 +881,7 @@ int main(int argc, char **argv)
 
 	auto renderer = RenderType::OPENCSG;
 	if (vm.count("preview")) {
-		if (vm["preview"].as<string>() == "throwntogether")
-			renderer = RenderType::THROWNTOGETHER;
+		if (vm["preview"].as<string>() == "throwntogether") renderer = RenderType::THROWNTOGETHER;
 	}
 	else if (vm.count("render")) {
 		if (vm["render"].as<string>() == "cgal") renderer = RenderType::CGAL;

@@ -49,10 +49,8 @@ void ThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges) const
 		renderCSGProducts(*this->root_products, false, false, showedges, true);
 		glDisable(GL_CULL_FACE);
 	}
-	if (this->background_products)
-		renderCSGProducts(*this->background_products, false, true, showedges, false);
-	if (this->highlight_products)
-		renderCSGProducts(*this->highlight_products, true, false, showedges, false);
+	if (this->background_products) renderCSGProducts(*this->background_products, false, true, showedges, false);
+	if (this->highlight_products) renderCSGProducts(*this->highlight_products, true, false, showedges, false);
 }
 
 void ThrownTogetherRenderer::renderChainObject(const CSGChainObject &csgobj, bool highlight_mode,

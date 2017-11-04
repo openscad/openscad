@@ -8,7 +8,8 @@
 #include <QWidget>
 #include <vector>
 
-class GroupWidget : public QWidget {
+class GroupWidget : public QWidget
+{
 	Q_OBJECT
 private:
 	QGridLayout mainLayout;
