@@ -30,6 +30,8 @@ void ParameterSpinBox::setParameterFocus()
 
 void ParameterSpinBox::setValue()
 {
+	if(hasFocus())return; //refuse programmatic updates, when the widget is in the focus of the user
+
 	if (object->values->toDouble() > 0) {
 		setPrecision(object->values->toDouble());
 		this->doubleSpinBox->setSingleStep(object->values->toDouble());

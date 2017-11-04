@@ -69,6 +69,8 @@ void ParameterSlider::onReleased(){
 
 void ParameterSlider::setValue()
 {
+	if(hasFocus())return; //refuse programmatic updates, when the widget is in the focus of the user
+
 	if (object->values->toRange().step_value() > 0) {
 		setPrecision(object->values->toRange().step_value());
 		step = object->values->toRange().step_value();

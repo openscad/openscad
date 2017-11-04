@@ -48,6 +48,8 @@ void ParameterVector::setParameterFocus()
 
 void ParameterVector::setValue()
 {
+	if(hasFocus())return; //refuse programmatic updates, when the widget is in the focus of the user
+
 	this->stackedWidgetBelow->setCurrentWidget(this->pageVector);
 	this->pageVector->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 	this->stackedWidgetRight->hide();
