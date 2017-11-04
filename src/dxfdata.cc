@@ -94,20 +94,16 @@ DxfData::DxfData(double fn, double fs, double fa,
 
 #define ADD_LINE(_x1, _y1, _x2, _y2) do {                   \
 		double _p1x = _x1, _p1y = _y1, _p2x = _x2, _p2y = _y2;  \
-		if (!in_entities_section && !in_blocks_section)         \
-			break;                                                \
+		if (!in_entities_section && !in_blocks_section) break;                                                \
 		if (in_entities_section &&                              \
-				!(layername.empty() || layername == layer))         \
-			break;                                                \
+				!(layername.empty() || layername == layer)) break;                                                \
 		grid.align(_p1x, _p1y);                                 \
 		grid.align(_p2x, _p2y);                                 \
 		grid.data(_p1x, _p1y).push_back(lines.size());          \
 		grid.data(_p2x, _p2y).push_back(lines.size());          \
-		if (in_entities_section)                                \
-			lines.emplace_back(                                   \
+		if (in_entities_section) lines.emplace_back(                                   \
 				addPoint(_p1x, _p1y), addPoint(_p2x, _p2y));        \
-		if (in_blocks_section && !current_block.empty())        \
-			blockdata[current_block].emplace_back(                \
+		if (in_blocks_section && !current_block.empty()) blockdata[current_block].emplace_back(                \
 				addPoint(_p1x, _p1y), addPoint(_p2x, _p2y));        \
 } while (0)
 

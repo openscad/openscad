@@ -90,10 +90,8 @@ std::ostream &operator<<(std::ostream &stream, const EvalContext &ec)
 std::string EvalContext::dump(const AbstractModule *mod, const ModuleInstantiation *inst)
 {
 	std::stringstream s;
-	if (inst)
-		s << boost::format("EvalContext %p (%p) for %s inst (%p)") % this % this->parent % inst->name() % inst;
-	else
-		s << boost::format("Context: %p (%p)") % this % this->parent;
+	if (inst) s << boost::format("EvalContext %p (%p) for %s inst (%p)") % this % this->parent % inst->name() % inst;
+	else s << boost::format("Context: %p (%p)") % this % this->parent;
 	s << boost::format("  document path: %s") % this->document_path;
 
 	s << boost::format("  eval args:");

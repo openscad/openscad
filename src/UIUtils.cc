@@ -71,8 +71,7 @@ QStringList UIUtils::recentFiles()
 	// Now remove any entries which do not exist
 	for (int i = files.size() - 1; i >= 0; --i) {
 		QFileInfo fileInfo(files[i]);
-		if (!QFile(fileInfo.absoluteFilePath()).exists())
-			files.removeAt(i);
+		if (!QFile(fileInfo.absoluteFilePath()).exists()) files.removeAt(i);
 	}
 
 	while (files.size() > UIUtils::maxRecentFiles) {

@@ -1,6 +1,7 @@
 #pragma once
 
-class Location {
+class Location
+{
 public:
 	Location(int firstLine, int firstCol, int lastLine, int lastCol)
 		: first_line(firstLine), first_col(firstCol), last_line(lastLine), last_col(lastCol) {

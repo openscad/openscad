@@ -101,13 +101,11 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	scale->getFiniteDouble(node->scale_y);
 	scale->getVec2(node->scale_x, node->scale_y, true);
 
-	if (center->type() == Value::ValueType::BOOL)
-		node->center = center->toBool();
+	if (center->type() == Value::ValueType::BOOL) node->center = center->toBool();
 
 	if (node->height <= 0) node->height = 0;
 
-	if (node->convexity <= 0)
-		node->convexity = 1;
+	if (node->convexity <= 0) node->convexity = 1;
 
 	if (node->scale_x < 0) node->scale_x = 0;
 	if (node->scale_y < 0) node->scale_y = 0;

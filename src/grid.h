@@ -41,8 +41,7 @@ public:
 			int dist = 10;
 			for (int64_t jx = ix - 1; jx <= ix + 1; jx++) {
 				for (int64_t jy = iy - 1; jy <= iy + 1; jy++) {
-					if (db.find(std::make_pair(jx, jy)) == db.end())
-						continue;
+					if (db.find(std::make_pair(jx, jy)) == db.end()) continue;
 					int d = abs(int(ix - jx)) + abs(int(iy - jy));
 					if (d < dist) {
 						dist = d;
@@ -59,12 +58,10 @@ public:
 	bool has(double x, double y) const {
 		int64_t ix = (int64_t)std::round(x / res);
 		int64_t iy = (int64_t)std::round(y / res);
-		if (db.find(std::make_pair(ix, iy)) != db.end())
-			return true;
+		if (db.find(std::make_pair(ix, iy)) != db.end()) return true;
 		for (int64_t jx = ix - 1; jx <= ix + 1; jx++)
 			for (int64_t jy = iy - 1; jy <= iy + 1; jy++) {
-				if (db.find(std::make_pair(jx, jy)) != db.end())
-					return true;
+				if (db.find(std::make_pair(jx, jy)) != db.end()) return true;
 			}
 		return false;
 	}
@@ -72,8 +69,7 @@ public:
 	bool eq(double x1, double y1, double x2, double y2) {
 		align(x1, y1);
 		align(x2, y2);
-		if (fabs(x1 - x2) < res && fabs(y1 - y2) < res)
-			return true;
+		if (fabs(x1 - x2) < res && fabs(y1 - y2) < res) return true;
 		return false;
 	}
 	T &data(double x, double y) {

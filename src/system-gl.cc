@@ -19,10 +19,8 @@ double gl_version()
 	vector<string> strs;
 	split(strs, tmp, is_any_of("."));
 	stringstream out;
-	if (strs.size() >= 2)
-		out << strs[0] << "." << strs[1];
-	else
-		out << "0.0";
+	if (strs.size() >= 2) out << strs[0] << "." << strs[1];
+	else out << "0.0";
 	double d;
 	out >> d;
 	return d;

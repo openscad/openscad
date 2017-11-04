@@ -1253,8 +1253,7 @@ void MainWindow::actionNew()
 	if (MainWindow::mdiMode) {
 		new MainWindow(QString());
 	} else {
-		if (!maybeSave())
-			return;
+		if (!maybeSave()) return;
 
 		setFileName("");
 		editor->setPlainText("");

@@ -333,22 +333,14 @@ FT_Face FontCache::find_face_fontconfig(const std::string &font) const
 		PRINTDB("Successfully selected unicode charmap: %s/%s", face->family_name % face->style_name);
 	} else {
 		bool charmap_set = false;
-		if (!charmap_set)
-			charmap_set = try_charmap(face, TT_PLATFORM_MICROSOFT, TT_MS_ID_UNICODE_CS);
-		if (!charmap_set)
-			charmap_set = try_charmap(face, TT_PLATFORM_ISO, TT_ISO_ID_10646);
-		if (!charmap_set)
-			charmap_set = try_charmap(face, TT_PLATFORM_APPLE_UNICODE, -1);
-		if (!charmap_set)
-			charmap_set = try_charmap(face, TT_PLATFORM_MICROSOFT, TT_MS_ID_SYMBOL_CS);
-		if (!charmap_set)
-			charmap_set = try_charmap(face, TT_PLATFORM_MACINTOSH, TT_MAC_ID_ROMAN);
-		if (!charmap_set)
-			charmap_set = try_charmap(face, TT_PLATFORM_ISO, TT_ISO_ID_8859_1);
-		if (!charmap_set)
-			charmap_set = try_charmap(face, TT_PLATFORM_ISO, TT_ISO_ID_7BIT_ASCII);
-		if (!charmap_set)
-			PRINTB("Warning: Could not select a char map for font %s/%s", face->family_name % face->style_name);
+		if (!charmap_set) charmap_set = try_charmap(face, TT_PLATFORM_MICROSOFT, TT_MS_ID_UNICODE_CS);
+		if (!charmap_set) charmap_set = try_charmap(face, TT_PLATFORM_ISO, TT_ISO_ID_10646);
+		if (!charmap_set) charmap_set = try_charmap(face, TT_PLATFORM_APPLE_UNICODE, -1);
+		if (!charmap_set) charmap_set = try_charmap(face, TT_PLATFORM_MICROSOFT, TT_MS_ID_SYMBOL_CS);
+		if (!charmap_set) charmap_set = try_charmap(face, TT_PLATFORM_MACINTOSH, TT_MAC_ID_ROMAN);
+		if (!charmap_set) charmap_set = try_charmap(face, TT_PLATFORM_ISO, TT_ISO_ID_8859_1);
+		if (!charmap_set) charmap_set = try_charmap(face, TT_PLATFORM_ISO, TT_ISO_ID_7BIT_ASCII);
+		if (!charmap_set) PRINTB("Warning: Could not select a char map for font %s/%s", face->family_name % face->style_name);
 	}
 
 	return error ? nullptr : face;

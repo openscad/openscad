@@ -349,8 +349,7 @@ namespace CGALUtils {
 								h = h->next_on_vertex();
 							} while (h != e && !collinear);
 
-							if (!collinear && !coplanar)
-								strict_points.push_back(p);
+							if (!collinear && !coplanar) strict_points.push_back(p);
 						}
 
 						result.clear();
@@ -365,8 +364,7 @@ namespace CGALUtils {
 					}
 				}
 
-				if (it != boost::next(children.begin()))
-					delete operands[0];
+				if (it != boost::next(children.begin())) delete operands[0];
 
 				if (result_parts.size() == 1) {
 					PolySet *ps = new PolySet(3, true);

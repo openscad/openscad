@@ -217,8 +217,7 @@ void ParameterWidget::connectWidget()
 	for (std::vector<std::string>::iterator it = groupPos.begin(); it != groupPos.end(); it++) {
 		anyLayout->setSpacing(0);
 		anyLayout->setContentsMargins(0, 0, 0, 0);
-		if (groupMap.find(*it) == groupMap.end())
-			continue;
+		if (groupMap.find(*it) == groupMap.end()) continue;
 		std::vector<std::string> gr;
 		gr = groupMap[*it].parameterVector;
 		for (unsigned int i = 0; i < gr.size(); i++) {

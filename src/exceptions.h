@@ -3,19 +3,22 @@
 #include <stdexcept>
 #include <sstream>
 
-class EvaluationException : public std::runtime_error {
+class EvaluationException : public std::runtime_error
+{
 public:
 	EvaluationException(const std::string &what_arg) : std::runtime_error(what_arg) {}
 	virtual ~EvaluationException() throw() {}
 };
 
-class AssertionFailedException : public EvaluationException {
+class AssertionFailedException : public EvaluationException
+{
 public:
 	AssertionFailedException(const std::string &what_arg) : EvaluationException(what_arg) {}
 	virtual ~AssertionFailedException() throw() {}
 };
 
-class RecursionException : public EvaluationException {
+class RecursionException : public EvaluationException
+{
 public:
 	static RecursionException create(const char *recursiontype, const std::string &name) {
 		std::stringstream out;

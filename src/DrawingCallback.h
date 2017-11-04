@@ -30,7 +30,8 @@
 #include <Eigen/Core>
 #include "Polygon2d.h"
 
-class DrawingCallback {
+class DrawingCallback
+{
 public:
 	DrawingCallback(unsigned long fn);
 	virtual ~DrawingCallback();

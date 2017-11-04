@@ -95,12 +95,9 @@ static void append_amf(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 				stream.str("");
 				stream << x3 << " " << y3 << " " << z3;
 				std::string vs3 = stream.str();
-				if (std::find(vertices.begin(), vertices.end(), vs1) == vertices.end())
-					vertices.push_back(vs1);
-				if (std::find(vertices.begin(), vertices.end(), vs2) == vertices.end())
-					vertices.push_back(vs2);
-				if (std::find(vertices.begin(), vertices.end(), vs3) == vertices.end())
-					vertices.push_back(vs3);
+				if (std::find(vertices.begin(), vertices.end(), vs1) == vertices.end()) vertices.push_back(vs1);
+				if (std::find(vertices.begin(), vertices.end(), vs2) == vertices.end()) vertices.push_back(vs2);
+				if (std::find(vertices.begin(), vertices.end(), vs3) == vertices.end()) vertices.push_back(vs3);
 
 				if (vs1 != vs2 && vs1 != vs3 && vs2 != vs3) {
 					// The above condition ensures that there are 3 distinct vertices, but

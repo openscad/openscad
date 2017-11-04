@@ -24,7 +24,8 @@ typedef std::pair<int, int> IndexedEdge;
    Helper class for keeping track of edges in a mesh.
    Can probably be replaced with a proper HalfEdge mesh later on
  */
-class EdgeDict {
+class EdgeDict
+{
 public:
 // Counts occurrences of edges
 	typedef std::unordered_map<IndexedEdge, int, boost::hash<IndexedEdge>> IndexedEdgeDict;

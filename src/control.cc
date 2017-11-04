@@ -295,8 +295,7 @@ AbstractNode *ControlModule::instantiate(const Context * /*ctx*/, const ModuleIn
 		// -> parallel evaluation. This is to be backwards compatible.
 		Context c(evalctx);
 		for (size_t i = 0; i < evalctx->numArgs(); i++) {
-			if (!evalctx->getArgName(i).empty())
-				c.set_variable(evalctx->getArgName(i), evalctx->getArgValue(i));
+			if (!evalctx->getArgName(i).empty()) c.set_variable(evalctx->getArgName(i), evalctx->getArgValue(i));
 		}
 		// Let any local variables override the parameters
 		inst->scope.apply(c);

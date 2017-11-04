@@ -137,10 +137,8 @@ boostfs_uncomplete(fs::path const p, fs::path const base)
 			// write to output, ../ times the number of remaining elements in base;
 			// this is how far we've had to come down the tree from base to get to the common root
 			for (; base_it != base_end; ++base_it) {
-				if (*base_it == _dot)
-					continue;
-				else if (*base_it == _sep)
-					continue;
+				if (*base_it == _dot) continue;
+				else if (*base_it == _sep) continue;
 
 				output /= "../";
 			}

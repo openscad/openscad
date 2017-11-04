@@ -37,7 +37,8 @@ protected:
 	std::string modpath;
 };
 
-class IfElseModuleInstantiation : public ModuleInstantiation {
+class IfElseModuleInstantiation : public ModuleInstantiation
+{
 public:
 	IfElseModuleInstantiation(shared_ptr<class Expression> expr, const std::string &source_path, const Location &loc) : ModuleInstantiation("if", AssignmentList{Assignment("", expr)}, source_path, loc) { }
 	virtual ~IfElseModuleInstantiation();

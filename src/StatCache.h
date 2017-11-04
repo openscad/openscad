@@ -26,7 +26,8 @@
 
 #pragma once
 
-class StatCache {
+class StatCache
+{
 public:
 	static int stat(const char *, struct stat *);
 };

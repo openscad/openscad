@@ -60,10 +60,8 @@ namespace boosty {
 		boost::split(pieces, tmps, boost::is_any_of("/"));
 		for (pi = pieces.begin(); pi != pieces.end(); ++pi)
 		{
-			if (*pi == "..")
-				resultv.erase(resultv.end());
-			else
-				resultv.push_back(*pi);
+			if (*pi == "..") resultv.erase(resultv.end());
+			else resultv.push_back(*pi);
 		}
 		for (pi = resultv.begin(); pi != resultv.end(); ++pi)
 		{

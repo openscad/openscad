@@ -72,8 +72,7 @@ string get_os_info()
 			<< "Microsoft(TM) Windows(TM) " << osvi.dwMajorVersion << " "
 			<< osvi.dwMinorVersion << " " << osvi.dwBuildNumber << " "
 			<< osvi.szCSDVersion;
-	if (archs.find(si.wProcessorArchitecture) != archs.end())
-		out << " " << archs[si.wProcessorArchitecture];
+	if (archs.find(si.wProcessorArchitecture) != archs.end()) out << " " << archs[si.wProcessorArchitecture];
 	out << "\n";
 
 	out << "Machine: " << si.dwProcessorType;

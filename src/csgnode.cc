@@ -158,14 +158,10 @@ std::string CSGOperation::dump()
 {
 	std::stringstream dump;
 
-	if (type == OpenSCADOperator::UNION)
-		dump << "(" << left()->dump() << " + " << right()->dump() << ")";
-	else if (type == OpenSCADOperator::INTERSECTION)
-		dump << "(" << left()->dump() << " * " << right()->dump() << ")";
-	else if (type == OpenSCADOperator::DIFFERENCE)
-		dump << "(" << left()->dump() << " - " << right()->dump() << ")";
-	else
-		assert(false);
+	if (type == OpenSCADOperator::UNION) dump << "(" << left()->dump() << " + " << right()->dump() << ")";
+	else if (type == OpenSCADOperator::INTERSECTION) dump << "(" << left()->dump() << " * " << right()->dump() << ")";
+	else if (type == OpenSCADOperator::DIFFERENCE) dump << "(" << left()->dump() << " - " << right()->dump() << ")";
+	else assert(false);
 
 	return dump.str();
 }
