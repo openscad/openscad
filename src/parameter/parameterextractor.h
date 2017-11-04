@@ -13,7 +13,7 @@ protected:
 public:
 	ParameterExtractor();
 	virtual ~ParameterExtractor();
-	void setParameters(const FileModule* module);
+	void setParameters(const FileModule *module);
 	void applyParameters(FileModule *fileModule);
 
 protected:

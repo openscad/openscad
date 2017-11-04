@@ -8,12 +8,12 @@
 
 #include <boost/functional/hash.hpp>
 
-static void *stdAlloc(void* userData, unsigned int size) {
+static void *stdAlloc(void *userData, unsigned int size) {
 	TESS_NOTUSED(userData);
 	return malloc(size);
 }
 
-static void stdFree(void* userData, void* ptr) {
+static void stdFree(void *userData, void *ptr) {
 	TESS_NOTUSED(userData);
 	free(ptr);
 }
@@ -265,7 +265,7 @@ bool GeometryUtils::tessellatePolygonWithHoles(const Vector3f *vertices,
 	}
 
 	TESSalloc ma;
-	TESStesselator* tess = 0;
+	TESStesselator *tess = 0;
 
 	memset(&ma, 0, sizeof(ma));
 	ma.memalloc = stdAlloc;

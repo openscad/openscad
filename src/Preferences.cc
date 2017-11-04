@@ -44,13 +44,13 @@
 
 Preferences *Preferences::instance = nullptr;
 
-const char * Preferences::featurePropertyName = "FeatureProperty";
+const char *Preferences::featurePropertyName = "FeatureProperty";
 Q_DECLARE_METATYPE(Feature *);
 
 class SettingsReader : public Settings::SettingsVisitor
 {
 	QSettingsCached settings;
-	Value getValue(const Settings::SettingsEntry& entry, const std::string& value) const {
+	Value getValue(const Settings::SettingsEntry &entry, const std::string &value) const {
 		std::string trimmed_value(value);
 		boost::trim(trimmed_value);
 
@@ -76,12 +76,12 @@ class SettingsReader : public Settings::SettingsVisitor
 				assert(false && "invalid value type for settings");
 				return 0; // keep compiler happy
 			}
-		} catch (const boost::bad_lexical_cast& e) {
+		} catch (const boost::bad_lexical_cast &e) {
 			return entry.defaultValue();
 		}
 	}
 
-	virtual void handle(Settings::SettingsEntry& entry) const {
+	virtual void handle(Settings::SettingsEntry &entry) const {
 		Settings::Settings *s = Settings::Settings::inst();
 
 		std::string key = entry.category() + "/" + entry.name();
@@ -94,7 +94,7 @@ class SettingsReader : public Settings::SettingsVisitor
 
 class SettingsWriter : public Settings::SettingsVisitor
 {
-	virtual void handle(Settings::SettingsEntry& entry) const {
+	virtual void handle(Settings::SettingsEntry &entry) const {
 		Settings::Settings *s = Settings::Settings::inst();
 
 		QSettingsCached settings;
@@ -184,7 +184,7 @@ void Preferences::init() {
 	this->toolBar->removeAction(prefsActionFeatures);
 #endif
 	addPrefPage(group, prefsActionAdvanced, pageAdvanced);
-	connect(group, SIGNAL(triggered(QAction*)), this, SLOT(actionTriggered(QAction*)));
+	connect(group, SIGNAL(triggered(QAction *)), this, SLOT(actionTriggered(QAction *)));
 
 	prefsAction3DView->setChecked(true);
 	this->actionTriggered(this->prefsAction3DView);
@@ -704,7 +704,7 @@ void Preferences::updateGUI()
 	this->spinBoxLineWrapIndentationIndent->setDisabled(this->comboBoxLineWrapIndentationStyle->currentText() == "Same");
 }
 
-void Preferences::initComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry)
+void Preferences::initComboBox(QComboBox *comboBox, const Settings::SettingsEntry &entry)
 {
 	comboBox->clear();
 	// Range is a vector of 2D vectors: [[name, value], ...]
@@ -715,14 +715,14 @@ void Preferences::initComboBox(QComboBox *comboBox, const Settings::SettingsEntr
 	}
 }
 
-void Preferences::initSpinBox(QSpinBox *spinBox, const Settings::SettingsEntry& entry)
+void Preferences::initSpinBox(QSpinBox *spinBox, const Settings::SettingsEntry &entry)
 {
 	RangeType range = entry.range().toRange();
 	spinBox->setMinimum(range.begin_value());
 	spinBox->setMaximum(range.end_value());
 }
 
-void Preferences::updateComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry)
+void Preferences::updateComboBox(QComboBox *comboBox, const Settings::SettingsEntry &entry)
 {
 	Settings::Settings *s = Settings::Settings::inst();
 
@@ -743,7 +743,7 @@ void Preferences::updateComboBox(QComboBox *comboBox, const Settings::SettingsEn
 	}
 }
 
-void Preferences::applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntry& entry)
+void Preferences::applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntry &entry)
 {
 	QString s = comboBox->itemData(val).toString();
 	Settings::Settings::inst()->set(entry, Value(s.toStdString()));

@@ -42,7 +42,7 @@ const char *ScadLexer::language() const
 	return "SCAD";
 }
 
-void ScadLexer::setKeywords(int set, const std::string& keywords)
+void ScadLexer::setKeywords(int set, const std::string &keywords)
 {
 	if ((set < 1) || (set > 4)) {
 		return;

@@ -23,7 +23,7 @@ void ParameterExtractor::applyParameters(FileModule *fileModule)
 	}
 }
 
-void ParameterExtractor::setParameters(const FileModule* module)
+void ParameterExtractor::setParameters(const FileModule *module)
 {
 	if (!module) return;
 

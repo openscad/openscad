@@ -45,7 +45,7 @@ bool teardown_offscreen_context(OffscreenContext *ctx)
 	return true;
 }
 
-bool save_framebuffer(OffscreenContext *ctx, char const * filename)
+bool save_framebuffer(OffscreenContext *ctx, char const *filename)
 {
 	std::ofstream fstream(filename,std::ios::out|std::ios::binary);
 	if (!fstream.is_open()) {

@@ -43,7 +43,7 @@ static void uint32_byte_swap(uint32_t &x)
 
 static void read_stl_facet(std::ifstream &f, stl_facet &facet)
 {
-	f.read((char*)facet.data8, STL_FACET_NUMBYTES);
+	f.read((char *)facet.data8, STL_FACET_NUMBYTES);
 #ifdef BOOST_BIG_ENDIAN
 	for (int i = 0; i < 12; i++) {
 		uint32_byte_swap(facet.data32[ i ]);

@@ -236,7 +236,7 @@ public:
 		CGAL::Mesh_2::Face_badness operator()(const Quality) const {
 			return CGAL::Mesh_2::NOT_BAD;
 		}
-		CGAL::Mesh_2::Face_badness operator()(const typename T::Face_handle&, Quality&q) const {
+		CGAL::Mesh_2::Face_badness operator()(const typename T::Face_handle &, Quality &q) const {
 			q = 1;
 			return CGAL::Mesh_2::NOT_BAD;
 		}

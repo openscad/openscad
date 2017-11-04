@@ -70,7 +70,7 @@ RenderColorScheme::RenderColorScheme(fs::path path) : _path(path)
 		addColor(RenderColor::CGAL_EDGE_BACK_COLOR, "cgal-edge-back");
 		addColor(RenderColor::CGAL_EDGE_2D_COLOR, "cgal-edge-2d");
 		addColor(RenderColor::CROSSHAIR_COLOR, "crosshair");
-	} catch (const std::exception & e) {
+	} catch (const std::exception &e) {
 		PRINTB("Error reading color scheme file '%s': %s", path.generic_string().c_str() % e.what());
 		_error = e.what();
 		_name = "";
@@ -88,7 +88,7 @@ bool RenderColorScheme::valid() const
 	return !_name.empty();
 }
 
-const std::string & RenderColorScheme::name() const
+const std::string &RenderColorScheme::name() const
 {
 	return _name;
 }
@@ -113,19 +113,19 @@ std::string RenderColorScheme::error() const
 	return _error;
 }
 
-ColorScheme & RenderColorScheme::colorScheme()
+ColorScheme &RenderColorScheme::colorScheme()
 {
 	return _color_scheme;
 }
 
-const boost::property_tree::ptree & RenderColorScheme::propertyTree() const
+const boost::property_tree::ptree &RenderColorScheme::propertyTree() const
 {
 	return pt;
 }
 
 void RenderColorScheme::addColor(RenderColor colorKey, std::string key)
 {
-	const boost::property_tree::ptree& colors = pt.get_child("colors");
+	const boost::property_tree::ptree &colors = pt.get_child("colors");
 	std::string color = colors.get<std::string>(key);
 	if ((color.length() == 7) && (color.at(0) == '#')) {
 		char *endptr;
@@ -160,7 +160,7 @@ ColorMap::~ColorMap()
 {
 }
 
-const char * ColorMap::defaultColorSchemeName() const
+const char *ColorMap::defaultColorSchemeName() const
 {
 	return DEFAULT_COLOR_SCHEME_NAME;
 }

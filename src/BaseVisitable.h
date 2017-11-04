@@ -15,18 +15,18 @@ template <class T>
 class Visitor
 {
 public:
-	virtual Response visit(class State &state, const T&) = 0;
+	virtual Response visit(class State &state, const T &) = 0;
 };
 
 class BaseVisitable
 {
 public:
 	virtual ~BaseVisitable() {}
-	virtual Response accept(class State&, BaseVisitor&) const = 0;
+	virtual Response accept(class State &, BaseVisitor &) const = 0;
 protected:
 	template <class T>
 	static Response acceptImpl(class State &state, const T &node, BaseVisitor &visitor) {
-		if (Visitor<T> *p = dynamic_cast<Visitor<T>*>(&visitor)) {
+		if (Visitor<T> *p = dynamic_cast<Visitor<T> *>(&visitor)) {
 			return p->visit(state, node);
 		}
 		// FIXME: If we want to allow for missing nodes in visitors, we need

@@ -218,7 +218,7 @@ namespace OpenSCAD {
    Dump the 'sphere map' of every vertex in a CGAL Nef Polyhedron3
    see http://doc.cgal.org/latest/Nef_3/index.html
  */
-	std::string sphere_map_dump(const CGAL_Nef_polyhedron3& N)
+	std::string sphere_map_dump(const CGAL_Nef_polyhedron3 &N)
 	{
 		std::stringstream out;
 		typedef CGAL_Nef_polyhedron3::Vertex_const_iterator Vertex_const_iterator;
@@ -279,7 +279,7 @@ namespace OpenSCAD {
 public:
 		std::stringstream out;
 		CGAL_Iso_cuboid_3 bbox;
-		NefPoly3_dumper_svg(const CGAL_Nef_polyhedron3& N)
+		NefPoly3_dumper_svg(const CGAL_Nef_polyhedron3 &N)
 		{
 			bbox = CGALUtils::boundingBox(N);
 		}
@@ -361,7 +361,7 @@ public:
 				<< "\nnumber of facets " << N.number_of_facets()
 				<< "\nnumber of volumes " << N.number_of_volumes()
 				<< "\nis_simple()? " << N.is_simple()
-				<< "\nis_valid()? " << (const_cast<CGAL_Nef_polyhedron3&>(N)).is_valid()
+				<< "\nis_valid()? " << (const_cast<CGAL_Nef_polyhedron3 &>(N)).is_valid()
 				<< "\n -->\n";
 		out << "<!-- CGAL Nef Polyhedron sphere map: -->\n";
 		out << sphere_map_dump(N);

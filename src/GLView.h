@@ -29,7 +29,7 @@ class GLView
 {
 public:
 	GLView();
-	void setRenderer(class Renderer* r);
+	void setRenderer(class Renderer *r);
 	Renderer *getRenderer() const { return this->renderer; }
 
 	void initializeGL();

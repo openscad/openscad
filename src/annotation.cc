@@ -43,7 +43,7 @@ ValuePtr Annotation::evaluate(class Context *ctx) const
 	return this->expr->evaluate(ctx);
 }
 
-const std::string & Annotation::getName() const
+const std::string &Annotation::getName() const
 {
 	return name;
 }

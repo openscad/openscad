@@ -45,7 +45,7 @@ namespace {
 		return dynamic_cast<const ListComprehension *>(e.get());
 	}
 
-	Value::VectorType flatten(Value::VectorType const& vec) {
+	Value::VectorType flatten(Value::VectorType const &vec) {
 		int n = 0;
 		for (unsigned int i = 0; i < vec.size(); i++) {
 			assert(vec[i]->type() == Value::ValueType::VECTOR);
@@ -66,7 +66,7 @@ namespace {
 
 namespace /* anonymous*/ {
 
-	std::ostream &operator << (std::ostream &o, AssignmentList const& l) {
+	std::ostream &operator << (std::ostream &o, AssignmentList const &l) {
 		for (size_t i=0; i < l.size(); i++) {
 			const Assignment &arg = l[i];
 			if (i > 0) o << ", ";
@@ -434,7 +434,7 @@ void FunctionCall::print(std::ostream &stream) const
 	stream << this->name << "(" << this->arguments << ")";
 }
 
-Expression * FunctionCall::create(const std::string &funcname, const AssignmentList &arglist, Expression *expr, const Location &loc)
+Expression *FunctionCall::create(const std::string &funcname, const AssignmentList &arglist, Expression *expr, const Location &loc)
 {
 	if (funcname == "assert" && Feature::ExperimentalAssertExpression.is_enabled()) {
 		return new Assert(arglist, expr, loc);

@@ -15,7 +15,7 @@ using namespace boost;
 
 double gl_version()
 {
-	string tmp((const char*)glGetString(GL_VERSION));
+	string tmp((const char *)glGetString(GL_VERSION));
 	vector<string> strs;
 	split(strs, tmp, is_any_of("."));
 	stringstream out;
@@ -78,7 +78,7 @@ string glew_dump()
 	return out.str();
 };
 
-bool report_glerror(const char * function)
+bool report_glerror(const char *function)
 {
 	GLenum tGLErr = glGetError();
 	if (tGLErr != GL_NO_ERROR) {

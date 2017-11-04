@@ -6,7 +6,7 @@
 #include <QTextEdit>
 #include "LibraryInfo.h"
 
-LibraryInfoDialog::LibraryInfoDialog(const QString& rendererInfo)
+LibraryInfoDialog::LibraryInfoDialog(const QString &rendererInfo)
 {
 	setupUi(this);
 	connect(this->okButton, SIGNAL(clicked()), this, SLOT(accept()));
@@ -18,7 +18,7 @@ LibraryInfoDialog::~LibraryInfoDialog()
 
 }
 
-void LibraryInfoDialog::update_library_info(const QString& rendererInfo)
+void LibraryInfoDialog::update_library_info(const QString &rendererInfo)
 {
 	//Get library infos
 	QString info(LibraryInfo::info().c_str());

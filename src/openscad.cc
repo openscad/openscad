@@ -116,11 +116,11 @@ std::string openscad_detailedversionnumber =
 class Echostream : public std::ofstream
 {
 public:
-	Echostream(const char * filename) : std::ofstream(filename) {
+	Echostream(const char *filename) : std::ofstream(filename) {
 		set_output_handler(&Echostream::output, this);
 	}
 	static void output(const std::string &msg, void *userdata) {
-		auto thisp = static_cast<Echostream*>(userdata);
+		auto thisp = static_cast<Echostream *>(userdata);
 		*thisp << msg << "\n";
 	}
 	~Echostream() {
@@ -318,7 +318,7 @@ void set_render_color_scheme(const std::string color_scheme, const bool exit_if_
 
 #include <QCoreApplication>
 
-int cmdline(const char *deps_output_file, const std::string &filename, Camera &camera, const char *output_file, const fs::path &original_path, RenderType renderer,const std::string &parameterFile,const std::string &setName, int argc, char ** argv)
+int cmdline(const char *deps_output_file, const std::string &filename, Camera &camera, const char *output_file, const fs::path &original_path, RenderType renderer,const std::string &parameterFile,const std::string &setName, int argc, char **argv)
 {
 #ifdef OPENSCAD_QTGUI
 	QCoreApplication app(argc, argv);
@@ -500,7 +500,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 			root_geom = geomevaluator.evaluateGeometry(*tree.root(), true);
 			if (!root_geom) root_geom.reset(new CGAL_Nef_polyhedron());
 			if (renderer == RenderType::CGAL && root_geom->getDimension() == 3) {
-				auto N = dynamic_cast<const CGAL_Nef_polyhedron*>(root_geom.get());
+				auto N = dynamic_cast<const CGAL_Nef_polyhedron *>(root_geom.get());
 				if (!N) {
 					N = CGALUtils::createNefPolyhedronFromGeometry(*root_geom);
 					root_geom.reset(N);
@@ -604,8 +604,8 @@ Q_IMPORT_PLUGIN(qtaccessiblewidgets)
 Q_DECLARE_METATYPE(shared_ptr<const Geometry>);
 
 // Only if "fileName" is not absolute, prepend the "absoluteBase".
-static QString assemblePath(const fs::path& absoluteBaseDir,
-														const string& fileName) {
+static QString assemblePath(const fs::path &absoluteBaseDir,
+														const string &fileName) {
 	if (fileName.empty()) return "";
 	auto qsDir = QString::fromLocal8Bit(absoluteBaseDir.generic_string().c_str());
 	auto qsFile = QString::fromLocal8Bit(fileName.c_str());
@@ -653,7 +653,7 @@ void dialogInitHandler(FontCacheInitializer *initializer, void *)
 	QMetaObject::invokeMethod(scadApp, "hideFontCacheDialog");
 }
 
-int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, char ** argv)
+int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, char **argv)
 {
 #ifdef Q_OS_MACX
 	if (QSysInfo::MacintoshVersion > QSysInfo::MV_10_8) {
@@ -777,14 +777,14 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 }
 #else // OPENSCAD_QTGUI
 bool QtUseGUI() { return false; }
-int gui(const vector<string> &inputFiles, const fs::path &original_path, int argc, char ** argv)
+int gui(const vector<string> &inputFiles, const fs::path &original_path, int argc, char **argv)
 {
 	PRINT("Error: compiled without QT, but trying to run GUI\n");
 	return 1;
 }
 #endif // OPENSCAD_QTGUI
 
-std::pair<string, string> customSyntax(const string& s)
+std::pair<string, string> customSyntax(const string &s)
 {
 #if defined(Q_OS_MACX)
 	if (s.find("-psn_") == 0)

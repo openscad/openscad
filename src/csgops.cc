@@ -42,7 +42,7 @@ public:
 	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
 };
 
-AbstractNode *CsgModule::instantiate(const Context*, const ModuleInstantiation *inst, EvalContext *evalctx) const
+AbstractNode *CsgModule::instantiate(const Context *, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	inst->scope.apply(*evalctx);
 	auto node = new CsgOpNode(inst, type);

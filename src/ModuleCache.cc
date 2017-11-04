@@ -32,7 +32,7 @@ ModuleCache *ModuleCache::inst = nullptr;
 
    Returns the latest mod time of the modul or its dependencies or includes.
  */
-time_t ModuleCache::evaluate(const std::string &filename, FileModule *&module)
+time_t ModuleCache::evaluate(const std::string &filename, FileModule * &module)
 {
 	module = nullptr;
 	FileModule *lib_mod = nullptr;

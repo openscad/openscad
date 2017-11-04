@@ -137,7 +137,7 @@ namespace ClipperUtils {
 
 	   May return an empty Polygon2d, but will not return nullptr.
 	 */
-	Polygon2d *apply(const std::vector<const Polygon2d*> &polygons,
+	Polygon2d *apply(const std::vector<const Polygon2d *> &polygons,
 									 ClipperLib::ClipType clipType)
 	{
 		std::vector<ClipperLib::Paths> pathsvector;
@@ -155,8 +155,8 @@ namespace ClipperUtils {
 	// The reason is numeric robustness. With the insides missing, the intersection points created by the union operation may
 	// (due to rounding) be located at slightly different locations than the original geometry and this
 	// can give rise to cracks
-	static void minkowski_outline(const ClipperLib::Path& poly, const ClipperLib::Path& path,
-																ClipperLib::Paths& quads, bool isSum, bool isClosed)
+	static void minkowski_outline(const ClipperLib::Path &poly, const ClipperLib::Path &path,
+																ClipperLib::Paths &quads, bool isSum, bool isClosed)
 	{
 		int delta = (isClosed ? 1 : 0);
 		size_t polyCnt = poly.size();
@@ -220,7 +220,7 @@ namespace ClipperUtils {
 		}
 	}
 
-	Polygon2d *applyMinkowski(const std::vector<const Polygon2d*> &polygons)
+	Polygon2d *applyMinkowski(const std::vector<const Polygon2d *> &polygons)
 	{
 		if (polygons.size() == 1) return new Polygon2d(*polygons[0]); // Just copy
 
@@ -232,8 +232,8 @@ namespace ClipperUtils {
 			auto rhs = ClipperUtils::fromPolygon2d(*polygons[i]);
 
 			// First, convolve each outline of lhs with the outlines of rhs
-			for (auto const& rhs_path : rhs) {
-				for (auto const& lhs_path : lhs) {
+			for (auto const &rhs_path : rhs) {
+				for (auto const &lhs_path : lhs) {
 					ClipperLib::Paths result;
 					minkowski_outline(lhs_path, rhs_path, result, true, true);
 					minkowski_terms.insert(minkowski_terms.end(), result.begin(), result.end());
@@ -260,9 +260,9 @@ namespace ClipperUtils {
 		return toPolygon2d(polytree);
 	}
 
-	Polygon2d *applyOffset(const Polygon2d& poly, double offset, ClipperLib::JoinType joinType, double miter_limit, double arc_tolerance)
+	Polygon2d *applyOffset(const Polygon2d &poly, double offset, ClipperLib::JoinType joinType, double miter_limit, double arc_tolerance)
 	{
-		ClipperLib::ClipperOffset co(miter_limit, arc_tolerance * CLIPPER_SCALE);
+		ClipperLib::ClipperOffset co(miter_limit, arc_tolerance *CLIPPER_SCALE);
 		co.AddPaths(fromPolygon2d(poly), joinType, ClipperLib::etClosedPolygon);
 		ClipperLib::PolyTree result;
 		co.Execute(result, offset * CLIPPER_SCALE);

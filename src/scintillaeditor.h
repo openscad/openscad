@@ -28,10 +28,10 @@ public:
 	EditorColorScheme(const fs::path path);
 	virtual ~EditorColorScheme();
 
-	const QString & name() const;
+	const QString &name() const;
 	int index() const;
 	bool valid() const;
-	const boost::property_tree::ptree & propertyTree() const;
+	const boost::property_tree::ptree &propertyTree() const;
 
 };
 
@@ -52,7 +52,7 @@ public:
 	QString selectedText();
 	int resetFindIndicators(const QString &findText, bool visibility = true);
 	bool find(const QString &, bool findNext = false, bool findBackwards = false);
-	void replaceSelectedText(const QString&);
+	void replaceSelectedText(const QString &);
 	void replaceAll(const QString &findText, const QString &replaceText);
 	QStringList colorSchemes();
 	bool canUndo();
@@ -66,7 +66,7 @@ private:
 	void enumerateColorSchemesInPath(colorscheme_set_t &result_set, const fs::path path);
 	colorscheme_set_t enumerateColorSchemes();
 
-	virtual bool eventFilter(QObject* obj, QEvent *event);
+	virtual bool eventFilter(QObject *obj, QEvent *event);
 	void navigateOnNumber(int key);
 	bool modifyNumber(int key);
 
@@ -76,24 +76,24 @@ signals:
 public slots:
 	void zoomIn();
 	void zoomOut();
-	void setPlainText(const QString&);
+	void setPlainText(const QString &);
 	void setContentModified(bool);
 	bool isContentModified();
 	void highlightError(int);
 	void unhighlightLastError();
-	void setHighlightScheme(const QString&);
+	void setHighlightScheme(const QString &);
 	void indentSelection();
 	void unindentSelection();
 	void commentSelection();
 	void uncommentSelection();
-	void insert(const QString&);
-	void setText(const QString&);
+	void insert(const QString &);
+	void setText(const QString &);
 	void undo();
 	void redo();
 	void cut();
 	void copy();
 	void paste();
-	void initFont(const QString&, uint);
+	void initFont(const QString &, uint);
 
 private slots:
 	void onTextChanged();

@@ -91,7 +91,7 @@ std::ostream &operator<<(std::ostream &stream, const AbstractNode &node)
 // Do we have an explicit root node (! modifier)?
 AbstractNode *find_root_tag(AbstractNode *n)
 {
-	std::vector<AbstractNode*> rootTags;
+	std::vector<AbstractNode *> rootTags;
 
 	std::function <void (AbstractNode *n)> find_root_tags = [&](AbstractNode *n) {
 			for (auto v : n->children) {
@@ -104,7 +104,7 @@ AbstractNode *find_root_tag(AbstractNode *n)
 
 	if (rootTags.size() == 0) return nullptr;
 	if (rootTags.size() > 1) {
-		for (const auto& rootTag : rootTags) {
+		for (const auto &rootTag : rootTags) {
 			PRINTB("WARNING: Root Modifier (!) Added At Line%d \n", rootTag->modinst->location().firstLine());
 		}
 	}

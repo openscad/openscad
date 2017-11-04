@@ -133,7 +133,7 @@ void FontListDialog::update_font_list()
  * @param text unquoted string
  * @return quoted text
  */
-QString FontListDialog::quote(const QString& text)
+QString FontListDialog::quote(const QString &text)
 {
 	QString result = text;
 	result.replace('\\', "\\\\\\\\")

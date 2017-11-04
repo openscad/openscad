@@ -20,8 +20,8 @@ private:
 	bool *show;
 
 public:
-	explicit GroupWidget(bool &show,const QString & title = "", const int animationDuration = 0, QWidget *parent = 0);
-	void setContentLayout(QLayout & contentLayout);
+	explicit GroupWidget(bool &show,const QString &title = "", const int animationDuration = 0, QWidget *parent = 0);
+	void setContentLayout(QLayout &contentLayout);
 
 private slots:
 	void onclicked(bool);

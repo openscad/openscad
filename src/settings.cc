@@ -18,22 +18,22 @@ namespace Settings {
 	{
 	}
 
-	const std::string & SettingsEntry::category() const
+	const std::string &SettingsEntry::category() const
 	{
 		return _category;
 	}
 
-	const std::string & SettingsEntry::name() const
+	const std::string &SettingsEntry::name() const
 	{
 		return _name;
 	}
 
-	const Value & SettingsEntry::defaultValue() const
+	const Value &SettingsEntry::defaultValue() const
 	{
 		return _default;
 	}
 
-	const Value & SettingsEntry::range() const
+	const Value &SettingsEntry::range() const
 	{
 		return _range;
 	}
@@ -87,24 +87,24 @@ namespace Settings {
 	{
 	}
 
-	void Settings::visit(SettingsVisitor& visitor)
+	void Settings::visit(SettingsVisitor &visitor)
 	{
-		for (SettingsEntry* entry : entries) {
+		for (SettingsEntry *entry : entries) {
 			visitor.handle(*entry);
 		}
 	}
 
-	const Value &Settings::defaultValue(const SettingsEntry& entry)
+	const Value &Settings::defaultValue(const SettingsEntry &entry)
 	{
 		return entry._default;
 	}
 
-	const Value &Settings::get(const SettingsEntry& entry)
+	const Value &Settings::get(const SettingsEntry &entry)
 	{
 		return entry._value;
 	}
 
-	void Settings::set(SettingsEntry& entry, const Value &val)
+	void Settings::set(SettingsEntry &entry, const Value &val)
 	{
 		entry._value = val;
 	}

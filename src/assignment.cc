@@ -39,7 +39,7 @@ bool Assignment::hasAnnotations() const
 	return !annotations.empty();
 }
 
-const Annotation * Assignment::annotation(const std::string &name) const
+const Annotation *Assignment::annotation(const std::string &name) const
 {
 	auto found = annotations.find(name);
 	return found == annotations.end() ? nullptr : found->second;

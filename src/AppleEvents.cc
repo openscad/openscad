@@ -14,7 +14,7 @@ OSErr eventHandler(const AppleEvent *, AppleEvent *, SRefCon)
 // FIXME: Ugly hack; just using the first MainWindow we can find
 	MainWindow *mainwin = nullptr;
 	for (auto &w : QApplication::topLevelWidgets()) {
-		mainwin = qobject_cast<MainWindow*>(w);
+		mainwin = qobject_cast<MainWindow *>(w);
 		if (mainwin) break;
 	}
 	if (mainwin) {

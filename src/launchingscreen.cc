@@ -33,7 +33,7 @@ LaunchingScreen::LaunchingScreen(QWidget *parent) : QDialog(parent)
 	this->versionNumberLabel->setText("OpenSCAD " + QString::fromStdString(openscad_displayversionnumber));
 
 	QStringList recentFiles = UIUtils::recentFiles();
-	for (const auto& recentFile : recentFiles) {
+	for (const auto &recentFile : recentFiles) {
 		QFileInfo fileInfo(recentFile);
 		auto item = new QListWidgetItem(fileInfo.fileName());
 		item->setData(Qt::ToolTipRole, fileInfo.canonicalPath());
@@ -59,7 +59,7 @@ LaunchingScreen::LaunchingScreen(QWidget *parent) : QDialog(parent)
 	connect(this->pushButtonHelp, SIGNAL(clicked()), this, SLOT(openUserManualURL()));
 	connect(this->recentList->selectionModel(), SIGNAL(currentRowChanged(const QModelIndex&,const QModelIndex&)), this, SLOT(enableRecentButton(const QModelIndex&,const QModelIndex&)));
 
-	connect(this->recentList, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(openRecent()));
+	connect(this->recentList, SIGNAL(itemDoubleClicked(QListWidgetItem *)), this, SLOT(openRecent()));
 	connect(this->treeWidget, SIGNAL(currentItemChanged(QTreeWidgetItem *,QTreeWidgetItem *)), this, SLOT(enableExampleButton(QTreeWidgetItem *,QTreeWidgetItem *)));
 
 	connect(this->treeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem *,int)), this, SLOT(openExample()));

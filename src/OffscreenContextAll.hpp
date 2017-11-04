@@ -33,7 +33,7 @@ bool save_framebuffer_common(OffscreenContext *ctx, std::ostream &output)
 {
 	if (!ctx) return false;
 	int samplesPerPixel = 4; // R, G, B and A
-	std::vector<GLubyte> pixels(ctx->width * ctx->height * samplesPerPixel);
+	std::vector<GLubyte> pixels(ctx->width *ctx->height *samplesPerPixel);
 	glReadPixels(0, 0, ctx->width, ctx->height, GL_RGBA, GL_UNSIGNED_BYTE, &pixels[0]);
 
 	// Flip it vertically - images read from OpenGL buffers are upside-down

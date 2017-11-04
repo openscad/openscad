@@ -125,7 +125,7 @@ private:
 
 	EditorInterface *editor;
 
-	class LibraryInfoDialog* library_info_dialog;
+	class LibraryInfoDialog *library_info_dialog;
 	class FontListDialog *font_list_dialog;
 
 private slots:
@@ -173,7 +173,7 @@ private slots:
 	void findBufferChanged();
 	void updateFindBuffer(QString);
 protected:
-	virtual bool eventFilter(QObject* obj, QEvent *event);
+	virtual bool eventFilter(QObject *obj, QEvent *event);
 
 private slots:
 	void actionRenderPreview();
@@ -258,7 +258,7 @@ public slots:
 	void setContentsChanged();
 
 private:
-	static void report_func(const class AbstractNode*, void *vp, int mark);
+	static void report_func(const class AbstractNode *, void *vp, int mark);
 	static bool mdiMode;
 	static bool undockMode;
 	static bool reorderMode;
@@ -270,7 +270,7 @@ private:
 	shared_ptr<CSGProducts> highlights_products;
 	shared_ptr<CSGProducts> background_products;
 
-	char const * afterCompileSlot;
+	char const *afterCompileSlot;
 	bool procevents;
 	class QTemporaryFile *tempFile;
 	class ProgressWidget *progresswidget;

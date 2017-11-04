@@ -69,9 +69,9 @@ std::string LocalScope::dump(const std::string &indent) const
 	return dump.str();
 }
 
-std::vector<AbstractNode*> LocalScope::instantiateChildren(const Context *evalctx) const
+std::vector<AbstractNode *> LocalScope::instantiateChildren(const Context *evalctx) const
 {
-	std::vector<AbstractNode*> childnodes;
+	std::vector<AbstractNode *> childnodes;
 	for (const auto &modinst : this->children) {
 		AbstractNode *node = modinst->evaluate(evalctx);
 		if (node) childnodes.push_back(node);

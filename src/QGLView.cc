@@ -235,7 +235,7 @@ void QGLView::mouseDoubleClickEvent (QMouseEvent *event) {
 	}
 }
 
-void QGLView::normalizeAngle(GLdouble& angle)
+void QGLView::normalizeAngle(GLdouble &angle)
 {
 	while (angle < 0) angle += 360;
 	while (angle > 360) angle -= 360;
@@ -318,13 +318,13 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
 	last_mouse = this_mouse;
 }
 
-void QGLView::mouseReleaseEvent(QMouseEvent*)
+void QGLView::mouseReleaseEvent(QMouseEvent *)
 {
 	mouse_drag_active = false;
 	releaseMouse();
 }
 
-const QImage & QGLView::grabFrame()
+const QImage &QGLView::grabFrame()
 {
 	// Force reading from front buffer. Some configurations will read from the back buffer here.
 	glReadBuffer(GL_FRONT);

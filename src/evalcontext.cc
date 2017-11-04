@@ -107,7 +107,7 @@ std::string EvalContext::dump(const AbstractModule *mod, const ModuleInstantiati
 		}
 	}
 	if (mod) {
-		const UserModule *m = dynamic_cast<const UserModule*>(mod);
+		const UserModule *m = dynamic_cast<const UserModule *>(mod);
 		if (m) {
 			s << boost::format("  module args:");
 			for (const auto &arg : m->definition_arguments) {

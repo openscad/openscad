@@ -77,7 +77,7 @@ public:
 		void set_valign(std::string valign) {
 			this->valign = valign;
 		}
-		friend std ::ostream & operator << (std::ostream &stream, const FreetypeRenderer::Params &params) {
+		friend std ::ostream &operator << (std::ostream &stream, const FreetypeRenderer::Params &params) {
 			return stream
 						 << "text = \"" << params.text
 						 << "\", size = " << params.size

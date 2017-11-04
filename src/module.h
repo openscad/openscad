@@ -10,7 +10,7 @@ private:
 	const Feature *feature;
 public:
 	AbstractModule() : feature(nullptr) {}
-	AbstractModule(const Feature& feature) : feature(&feature) {}
+	AbstractModule(const Feature &feature) : feature(&feature) {}
 	virtual ~AbstractModule();
 	virtual bool is_experimental() const { return feature != nullptr; }
 	virtual bool is_enabled() const { return (feature == nullptr) || feature->is_enabled(); }

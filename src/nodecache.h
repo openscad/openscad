@@ -24,7 +24,7 @@ public:
 	/*! Returns a reference to the cached string copy. NB! don't rely on
 	 *  this reference to be valid for long - if the cache is resized
 	 *  internally, existing values are lost.  */
-	const std::string & operator[](const AbstractNode &node) const {
+	const std::string &operator[](const AbstractNode &node) const {
 		if (this->cache.size() > node.index()) return *this->cache[node.index()];
 		else return this->nullvalue;
 	}
@@ -32,7 +32,7 @@ public:
 	/*! Returns a reference to the cached string copy. NB! don't rely on
 	 *  this reference to be valid for long - if the cache is resized
 	 *  internally, existing values are lost. */
-	const std::string &insert(const class AbstractNode &node, const std::string & value) {
+	const std::string &insert(const class AbstractNode &node, const std::string &value) {
 		if (this->cache.size() <= node.index()) this->cache.resize(node.index() + 1);
 		this->cache[node.index()].reset(new std::string(value));
 		return *this->cache[node.index()];
