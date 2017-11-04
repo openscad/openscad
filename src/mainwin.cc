@@ -260,7 +260,7 @@ MainWindow::MainWindow(const QString &filename)
 	waitAfterReloadTimer->setSingleShot(true);
 	waitAfterReloadTimer->setInterval(200);
 	connect(waitAfterReloadTimer, SIGNAL(timeout()), this, SLOT(waitAfterReload()));
-	connect(this->parameterWidget, SIGNAL(previewRequested()), this, SLOT(actionRenderPreview()));
+	connect(this->parameterWidget, SIGNAL(previewRequested(bool)), this, SLOT(actionRenderPreview(bool)));
 	connect(Preferences::inst(), SIGNAL(ExperimentalChanged()), this, SLOT(changeParameterWidget()));
 	connect(this->e_tval, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimTval()));
 	connect(this->e_fps, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimFps()));
@@ -836,7 +836,7 @@ void MainWindow::updatedAnimTval()
 	else {
 		this->anim_tval = 0.0;
 	}
-	actionRenderPreview(true);
+	emit actionRenderPreview(true);
 }
 
 void MainWindow::updatedAnimFps()
@@ -1847,10 +1847,6 @@ void MainWindow::csgReloadRender()
 void MainWindow::actionRenderPreview(bool rebuildParameterWidget)
 {
 	static bool preview_requested;
-
-	if(QObject::sender() ==this->parameterWidget){
-		rebuildParameterWidget=false;
-	}
 
 	preview_requested=true;
 	if (GuiLocker::isLocked()) return;

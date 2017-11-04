@@ -164,7 +164,7 @@ void ParameterWidget::onValueChanged()
 
 void ParameterWidget::onPreviewTimerElapsed()
 {
-	emit previewRequested();
+	emit previewRequested(false);
 }
 
 void ParameterWidget::cleanScrollArea()

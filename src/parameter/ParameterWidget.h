@@ -75,7 +75,7 @@ protected slots:
 	void resetParameter();
 
 signals:
-	void previewRequested();
+	void previewRequested(bool rebuildParameterUI=true);
 
 protected:
 	void applyParameterSet(std::string setName);
