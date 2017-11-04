@@ -58,7 +58,7 @@ void ParameterSlider::setValue()
 	int current = object->value->toDouble() / step;
 	this->stackedWidgetBelow->setCurrentWidget(this->pageSlider);
 	this->stackedWidgetRight->hide();
-	this->slider->setRange(min,max);
+	this->slider->setRange(min, max);
 	this->slider->setValue(current);
-	this->labelSliderValue->setText(QString::number(current * step, 'f',decimalPrecision));
+	this->labelSliderValue->setText(QString::number(current * step, 'f', decimalPrecision));
 }

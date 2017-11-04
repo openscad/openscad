@@ -28,6 +28,6 @@ public:
 	unsigned int convexity;
 	int level;
 	Vector3d newsize;
-	Eigen::Matrix<bool,3,1> autosize;
+	Eigen::Matrix<bool, 3, 1> autosize;
 	CgaladvType type;
 };

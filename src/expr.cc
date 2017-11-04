@@ -53,7 +53,7 @@ namespace {
 		}
 		Value::VectorType ret; ret.reserve(n);
 		for (unsigned int i = 0; i < vec.size(); i++) {
-			std::copy(vec[i]->toVector().begin(),vec[i]->toVector().end(),std::back_inserter(ret));
+			std::copy(vec[i]->toVector().begin(), vec[i]->toVector().end(), std::back_inserter(ret));
 		}
 		return ret;
 	}

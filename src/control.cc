@@ -227,7 +227,7 @@ AbstractNode *ControlModule::instantiate(const Context * /*ctx*/, const ModuleIn
 				AbstractNode *node = new GroupNode(inst);
 				const Value::VectorType &vect = value->toVector();
 				for (const auto &vectvalue : vect) {
-					AbstractNode *childnode = getChild(vectvalue,modulectx);
+					AbstractNode *childnode = getChild(vectvalue, modulectx);
 					if (childnode == nullptr) continue; // error
 					node->children.push_back(childnode);
 				}
@@ -242,7 +242,7 @@ AbstractNode *ControlModule::instantiate(const Context * /*ctx*/, const ModuleIn
 				}
 				AbstractNode *node = new GroupNode(inst);
 				for (RangeType::iterator it = range.begin(); it != range.end(); it++) {
-					AbstractNode *childnode = getChild(ValuePtr(*it),modulectx); // with error cases
+					AbstractNode *childnode = getChild(ValuePtr(*it), modulectx); // with error cases
 					if (childnode == nullptr) continue; // error
 					node->children.push_back(childnode);
 				}

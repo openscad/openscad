@@ -118,8 +118,8 @@ static void append_stl(const CGAL_Polyhedron &P, std::ostream &output)
 				// so the default value of "1 0 0" can be used. If the vertices are not
 				// collinear then the unit normal must be calculated from the
 				// components.
-				if (!CGAL::collinear(v1.point(),v2.point(),v3.point())) {
-					CGAL_Polyhedron::Traits::Vector_3 normal = CGAL::normal(v1.point(),v2.point(),v3.point());
+				if (!CGAL::collinear(v1.point(), v2.point(), v3.point())) {
+					CGAL_Polyhedron::Traits::Vector_3 normal = CGAL::normal(v1.point(), v2.point(), v3.point());
 					output << "  facet normal "
 								 << CGAL::sign(normal.x()) * sqrt(CGAL::to_double(normal.x() * normal.x() / normal.squared_length()))
 								 << " "

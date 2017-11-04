@@ -184,15 +184,15 @@ void ScintillaEditor::applySettings()
 	qsci->setBraceMatching(s->get(Settings::Settings::enableBraceMatching).toBool() ? QsciScintilla::SloppyBraceMatch : QsciScintilla::NoBraceMatch);
 	qsci->setCaretLineVisible(s->get(Settings::Settings::highlightCurrentLine).toBool());
 	bool value = s->get(Settings::Settings::enableLineNumbers).toBool();
-	qsci->setMarginLineNumbers(1,value);
+	qsci->setMarginLineNumbers(1, value);
 
 	if (!value)
 	{
-		qsci->setMarginWidth(1,20);
+		qsci->setMarginWidth(1, 20);
 	}
 	else
 	{
-		qsci->setMarginWidth(1,QString(trunc(log10(qsci->lines()) + 4), '0'));
+		qsci->setMarginWidth(1, QString(trunc(log10(qsci->lines()) + 4), '0'));
 	}
 }
 
@@ -515,11 +515,11 @@ void ScintillaEditor::onTextChanged()
 
 	if (!value)
 	{
-		qsci->setMarginWidth(1,20);
+		qsci->setMarginWidth(1, 20);
 	}
 	else
 	{
-		qsci->setMarginWidth(1,QString(trunc(log10(qsci->lines()) + 4), '0'));
+		qsci->setMarginWidth(1, QString(trunc(log10(qsci->lines()) + 4), '0'));
 	}
 }
 
@@ -710,7 +710,7 @@ bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
 			wasChanged = false;
 			QsciCommand *cmd = qsci->standardCommands()->boundTo(k);
 			if (cmd && (cmd->command() == QsciCommand::Undo || cmd->command() == QsciCommand::Redo))
-				QTimer::singleShot(0,this,SIGNAL(previewRequest()));
+				QTimer::singleShot(0, this, SIGNAL(previewRequest()));
 			else if (cmd || !ke->text().isEmpty()) {
 				// any insert or command (but not undo/redo) cancels the preview after undo
 				previewAfterUndo = false;
@@ -731,7 +731,7 @@ void ScintillaEditor::navigateOnNumber(int key)
 	bool dotJustLeft = index > 1 && text[index - 2] == '.';
 	bool dotJustRight = text[index] == '.';
 	bool numOnLeft = left.contains(QRegExp("\\d\\.?$")) || left.endsWith("-.");
-	bool numOnRight = text.indexOf(QRegExp("\\.?\\d"),index) == index;
+	bool numOnRight = text.indexOf(QRegExp("\\.?\\d"), index) == index;
 
 	switch (key)
 	{
@@ -768,9 +768,9 @@ bool ScintillaEditor::modifyNumber(int key)
 	bool hadSelection = qsci->hasSelectedText();
 
 	int begin = QRegExp("[-+]?\\d*\\.?\\d*$").indexIn(text.left(index));
-	int end = text.indexOf(QRegExp("[^0-9.]"),index);
+	int end = text.indexOf(QRegExp("[^0-9.]"), index);
 	if (end < 0) end = text.length();
-	QString nr = text.mid(begin,end - begin);
+	QString nr = text.mid(begin, end - begin);
 	if (!(nr.contains(QRegExp("^[-+]?\\d*\\.?\\d*$")) && nr.contains(QRegExp("\\d")))) return false;
 	bool sign = nr[0] == '+'||nr[0] == '-';
 	if (nr.endsWith('.')) nr = nr.left(nr.length() - 1);
@@ -791,11 +791,11 @@ bool ScintillaEditor::modifyNumber(int key)
 	if (negative) number = -number;
 	QString newnr = QString::number(number);
 	if (decimals) {
-		if (newnr.length() <= decimals) newnr.prepend(QString(decimals - newnr.length() + 1,'0'));
+		if (newnr.length() <= decimals) newnr.prepend(QString(decimals - newnr.length() + 1, '0'));
 		newnr = newnr.left(newnr.length() - decimals) + "." + newnr.right(decimals);
 	}
 	if (tail > newnr.length()) {
-		newnr.prepend(QString(tail - newnr.length(),'0'));
+		newnr.prepend(QString(tail - newnr.length(), '0'));
 	}
 	if (negative) newnr.prepend('-');
 	else if (sign) newnr.prepend('+');

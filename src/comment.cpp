@@ -156,7 +156,7 @@ static std::string getDescription(const std::string &fulltext, int line)
 /*
    Create groups by parsing the multi line comment provided
  */
-static GroupInfo createGroup(std::string comment,int lineNo)
+static GroupInfo createGroup(std::string comment, int lineNo)
 {
 	//store info related to group
 	GroupInfo groupInfo;
@@ -256,7 +256,7 @@ static GroupList collectGroups(const std::string &fulltext)
 			}
 
 			if (isGroup)
-				groupList.push_back(createGroup(comment,lineNo));
+				groupList.push_back(createGroup(comment, lineNo));
 		}
 	}
 	return groupList;

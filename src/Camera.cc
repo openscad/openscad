@@ -8,12 +8,12 @@ Camera::Camera(CameraType camtype) :
 	PRINTD("Camera()");
 
 	// gimbal cam values
-	object_trans << 0,0,0;
-	object_rot << 35,0,25;
+	object_trans << 0, 0, 0;
+	object_rot << 35, 0, 25;
 	viewer_distance = 500;
 
 	// vector cam values
-	center << 0,0,0;
+	center << 0, 0, 0;
 	Eigen::Vector3d cameradir(1, 1, -0.5);
 	eye = center - 500 * cameradir;
 
@@ -56,7 +56,7 @@ void Camera::viewAll(const BoundingBox &bbox)
 	if (this->type == CameraType::NONE) {
 		this->type = CameraType::VECTOR;
 		this->center = bbox.center();
-		this->eye = this->center - Vector3d(1,1,-0.5);
+		this->eye = this->center - Vector3d(1, 1, -0.5);
 	}
 
 	if (this->autocenter) {
@@ -86,10 +86,10 @@ void Camera::viewAll(const BoundingBox &bbox)
 	default:
 		assert(false && "Camera type not specified");
 	}
-	PRINTDB("modified center x y z %f %f %f",center.x() % center.y() % center.z());
-	PRINTDB("modified eye    x y z %f %f %f",eye.x() % eye.y() % eye.z());
-	PRINTDB("modified obj trans x y z %f %f %f",object_trans.x() % object_trans.y() % object_trans.z());
-	PRINTDB("modified obj rot   x y z %f %f %f",object_rot.x() % object_rot.y() % object_rot.z());
+	PRINTDB("modified center x y z %f %f %f", center.x() % center.y() % center.z());
+	PRINTDB("modified eye    x y z %f %f %f", eye.x() % eye.y() % eye.z());
+	PRINTDB("modified obj trans x y z %f %f %f", object_trans.x() % object_trans.y() % object_trans.z());
+	PRINTDB("modified obj rot   x y z %f %f %f", object_rot.x() % object_rot.y() % object_rot.z());
 }
 
 void Camera::zoom(int delta)

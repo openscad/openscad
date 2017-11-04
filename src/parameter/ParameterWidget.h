@@ -42,7 +42,7 @@ private:
 		bool inList;
 	};
 	std::vector<std::string> groupPos;
-	typedef std::map<std::string,groupInst > group_map;
+	typedef std::map<std::string, groupInst > group_map;
 	group_map groupMap;
 	QTimer autoPreviewTimer;
 	bool descriptionShow;

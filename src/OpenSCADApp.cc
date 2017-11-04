@@ -8,7 +8,7 @@
 #include <iostream>
 #include <boost/foreach.hpp>
 
-OpenSCADApp::OpenSCADApp(int &argc,char **argv)
+OpenSCADApp::OpenSCADApp(int &argc, char **argv)
 	: QApplication(argc, argv), fontCacheDialog(nullptr)
 {
 #ifdef Q_OS_MAC

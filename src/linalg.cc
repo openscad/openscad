@@ -31,7 +31,7 @@ bool matrix_contains_infinity(const Transform3d &m)
 {
 	for (int i = 0; i < m.matrix().rows(); i++) {
 		for (int j = 0; j < m.matrix().cols(); j++) {
-			if ((std::isinf)(m(i,j))) return true;
+			if ((std::isinf)(m(i, j))) return true;
 		}
 	}
 	return false;
@@ -41,7 +41,7 @@ bool matrix_contains_nan(const Transform3d &m)
 {
 	for (int i = 0; i < m.matrix().rows(); i++) {
 		for (int j = 0; j < m.matrix().cols(); j++) {
-			if ((std::isnan)(m(i,j))) return true;
+			if ((std::isnan)(m(i, j))) return true;
 		}
 	}
 	return false;

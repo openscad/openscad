@@ -33,7 +33,7 @@ std::string winapi_wstr_to_utf8(std::wstring wstr)
 
 	//PRINTB("utf16 to utf8 conversion: numbytes %i",numbytes);
 
-	std::string utf8_str(numbytes,0);
+	std::string utf8_str(numbytes, 0);
 	lpMultiByteStr = &utf8_str[0];
 	cbMultiByte = numbytes;
 
@@ -43,7 +43,7 @@ std::string winapi_wstr_to_utf8(std::wstring wstr)
 	if (result != numbytes) {
 		DWORD errcode = GetLastError();
 		PRINT("ERROR: error converting w_char str to utf8 string");
-		PRINTB("ERROR: error code %i",errcode);
+		PRINTB("ERROR: error code %i", errcode);
 	}
 
 	return utf8_str;
@@ -52,7 +52,7 @@ std::string winapi_wstr_to_utf8(std::wstring wstr)
 // see http://msdn.microsoft.com/en-us/library/windows/desktop/bb762494%28v=vs.85%29.aspx
 static const std::string getFolderPath(int nFolder)
 {
-	std::wstring path(MAX_PATH,0);
+	std::wstring path(MAX_PATH, 0);
 
 	HWND hwndOwner = 0;
 	HANDLE hToken = nullptr;

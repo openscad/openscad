@@ -297,7 +297,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 
 	switch (this->type) {
 	case primitive_type_e::CUBE: {
-		auto p = new PolySet(3,true);
+		auto p = new PolySet(3, true);
 		g = p;
 		if (this->x > 0 && this->y > 0 && this->z > 0 &&
 				!std::isinf(this->x) > 0 && !std::isinf(this->y) > 0 && !std::isinf(this->z) > 0) {
@@ -355,7 +355,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 	}
 															 break;
 	case primitive_type_e::SPHERE: {
-		auto p = new PolySet(3,true);
+		auto p = new PolySet(3, true);
 		g = p;
 		if (this->r1 > 0 && !std::isinf(this->r1)) {
 			struct ring_s {
@@ -426,7 +426,7 @@ sphere_next_r2:
 	}
 																 break;
 	case primitive_type_e::CYLINDER: {
-		auto p = new PolySet(3,true);
+		auto p = new PolySet(3, true);
 		g = p;
 		if (this->h > 0 && !std::isinf(this->h) &&
 				this->r1 >= 0 && this->r2 >= 0 && (this->r1 > 0 || this->r2 > 0) &&
@@ -552,7 +552,7 @@ sphere_next_r2:
 		g = p;
 
 		Outline2d outline;
-		double x,y;
+		double x, y;
 		const auto &vec = this->points->toVector();
 		for (unsigned int i = 0; i < vec.size(); i++) {
 			const auto &val = *vec[i];

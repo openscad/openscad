@@ -47,12 +47,12 @@ void ParameterSet::addParameterSet(const std::string setName, const pt::ptree &s
 	boost::optional<pt::ptree &> sets = parameterSets();
 	if (sets.is_initialized()) {
 		sets.get().erase(pt::ptree::key_type(setName));
-		sets.get().push_back(pt::ptree::value_type(setName,set));
+		sets.get().push_back(pt::ptree::value_type(setName, set));
 	}
 	else {
 		pt::ptree child;
-		child.push_back(pt::ptree::value_type(setName,set));
-		root.push_back(pt::ptree::value_type(ParameterSet::parameterSetsKey,child));
+		child.push_back(pt::ptree::value_type(setName, set));
+		root.push_back(pt::ptree::value_type(ParameterSet::parameterSetsKey, child));
 	}
 }
 

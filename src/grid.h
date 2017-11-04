@@ -24,7 +24,7 @@ class Grid2d
 {
 public:
 	double res;
-	std::unordered_map<std::pair<int64_t,int64_t>, T, boost::hash<std::pair<int64_t,int64_t>>> db;
+	std::unordered_map<std::pair<int64_t, int64_t>, T, boost::hash<std::pair<int64_t, int64_t>>> db;
 
 	Grid2d(double resolution) {
 		res = resolution;

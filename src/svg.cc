@@ -150,7 +150,7 @@ namespace OpenSCAD {
 			if (explorer.is_standard(vi)) points.push_back(explorer.point(vi));
 		}
 		if (points.size() > 0) return CGAL::bounding_box(points.begin(), points.end());
-		return {0,0,0,0};
+		return {0, 0, 0, 0};
 	}
 
 	std::string dump_svg(const CGAL_Nef_polyhedron2 &N)
@@ -367,11 +367,11 @@ public:
 		out << sphere_map_dump(N);
 
 		CGAL_Nef_polyhedron3::Volume_const_iterator c;
-		CGAL_forall_volumes(c,N) {
+		CGAL_forall_volumes(c, N) {
 			out << " <!--Volume begin-->\n";
 			out << "  <!--Mark: " << (*c).mark() << "-->\n";
 			CGAL_Nef_polyhedron3::Shell_entry_const_iterator it;
-			CGAL_forall_shells_of(it,c) {
+			CGAL_forall_shells_of(it, c) {
 				out << "  <!--Shell begin-->\n";
 				NefPoly3_dumper_svg dumper_svg(N);
 				N.visit_shell_objects(CGAL_Nef_polyhedron3::SFace_const_handle(it), dumper_svg);

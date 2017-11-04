@@ -31,13 +31,13 @@
 
 
 #include <mpfr.h>
-#if MPFR_VERSION < MPFR_VERSION_NUM(3,0,0)
+#if MPFR_VERSION < MPFR_VERSION_NUM(3, 0, 0)
 #error GNU MPFR library missing or version too old. See README.md. To force compile, run qmake CONFIG+=skip-version-check
 #else
 
 
 #include <Eigen/Core>
-#if not EIGEN_VERSION_AT_LEAST(3,0,0)
+#if not EIGEN_VERSION_AT_LEAST(3, 0, 0)
 #error eigen library missing or version too old. See README.md. To force compile, run qmake CONFIG+=skip-version-check
 #else
 

@@ -171,7 +171,7 @@ void QGLView::display_opencsg_warning_dialog()
 
 void QGLView::resizeGL(int w, int h)
 {
-	GLView::resizeGL(w,h);
+	GLView::resizeGL(w, h);
 }
 
 void QGLView::paintGL()
@@ -297,7 +297,7 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
 				tm3 = aaz * (aay * (aax * tm3));
 
 				Matrix4d tm = Matrix4d::Identity();
-				for (int i = 0; i < 3; i++) for (int j = 0; j < 3; j++) tm(j,i) = tm3(j,i);
+				for (int i = 0; i < 3; i++) for (int j = 0; j < 3; j++) tm(j, i) = tm3(j, i);
 
 				Matrix4d vec;
 				vec <<
@@ -307,9 +307,9 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
 					0,  0,  0,  1
 				;
 				tm = tm * vec;
-				cam.object_trans.x() += tm(0,3);
-				cam.object_trans.y() += tm(1,3);
-				cam.object_trans.z() += tm(2,3);
+				cam.object_trans.x() += tm(0, 3);
+				cam.object_trans.y() += tm(1, 3);
+				cam.object_trans.z() += tm(2, 3);
 			}
 		}
 		updateGL();

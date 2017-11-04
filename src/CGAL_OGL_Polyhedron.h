@@ -53,8 +53,8 @@ public:
 	CGAL_OGL_Polyhedron(const ColorScheme &cs) {
 		PRINTD("CGAL_OGL_Polyhedron()");
 		// Set default colors.
-		setColor(CGALColorIndex::MARKED_VERTEX_COLOR,0xb7,0xe8,0x5c);
-		setColor(CGALColorIndex::UNMARKED_VERTEX_COLOR,0xff,0xf6,0x7c);
+		setColor(CGALColorIndex::MARKED_VERTEX_COLOR, 0xb7, 0xe8, 0x5c);
+		setColor(CGALColorIndex::UNMARKED_VERTEX_COLOR, 0xff, 0xf6, 0x7c);
 		// Face and Edge colors are taken from default colorscheme
 		setColorScheme(cs);
 		PRINTD("CGAL_OGL_Polyhedron() end");
@@ -99,14 +99,14 @@ public:
 	}
 
 	void setColor(CGAL_OGL_Polyhedron::CGALColorIndex color_index, const Color4f &c) {
-		PRINTDB("setColor %i %f %f %f",color_index % c[0] % c[1] % c[2]);
-		this->colors[color_index] = CGAL::Color(c[0] * 255,c[1] * 255,c[2] * 255);
+		PRINTDB("setColor %i %f %f %f", color_index % c[0] % c[1] % c[2]);
+		this->colors[color_index] = CGAL::Color(c[0] * 255, c[1] * 255, c[2] * 255);
 	}
 
 	void setColor(CGAL_OGL_Polyhedron::CGALColorIndex color_index,
 								unsigned char r, unsigned char g, unsigned char b) {
-		PRINTDB("setColor %i %i %i %i",color_index % r % g % b);
-		this->colors[color_index] = CGAL::Color(r,g,b);
+		PRINTDB("setColor %i %i %i %i", color_index % r % g % b);
+		this->colors[color_index] = CGAL::Color(r, g, b);
 	}
 
 	// set this->colors based on the given colorscheme. vertex colors
@@ -136,7 +136,7 @@ class CGAL_OGL_Polyhedron
 public:
 	CGAL_OGL_Polyhedron() {}
 	void draw(bool showedges) const {}
-	CGAL::Bbox_3 bbox() const { return CGAL::Bbox_3(-1,-1,-1,1,1,1); }
+	CGAL::Bbox_3 bbox() const { return CGAL::Bbox_3(-1, -1, -1, 1, 1, 1); }
 };
 
 #endif // NULLGL

@@ -69,7 +69,7 @@ void Polygon2d::transform(const Transform2d &mat)
 	}
 }
 
-void Polygon2d::resize(const Vector2d &newsize, const Eigen::Matrix<bool,2,1> &autosize)
+void Polygon2d::resize(const Vector2d &newsize, const Eigen::Matrix<bool, 2, 1> &autosize)
 {
 	auto bbox = this->getBoundingBox();
 

@@ -151,7 +151,7 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 	}
 	else if (this->type == transform_type_e::TRANSLATE) {
 		auto v = c.lookup_variable("v");
-		Vector3d translatevec(0,0,0);
+		Vector3d translatevec(0, 0, 0);
 		v->getVec3(translatevec[0], translatevec[1], translatevec[2]);
 		node->matrix.translate(translatevec);
 	}
@@ -165,7 +165,7 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 						Value::ValueType::VECTOR && x < v->toVector()[y]->toVector().size())
 					v->toVector()[y]->toVector()[x]->getDouble(rawmatrix(y, x));
 			}
-			double w = rawmatrix(3,3);
+			double w = rawmatrix(3, 3);
 			if (w != 1.0) node->matrix = rawmatrix / w;
 			else node->matrix = rawmatrix;
 		}

@@ -5,7 +5,7 @@
 
 CGDataConsumerCallbacks dc_callbacks;
 
-size_t write_bytes_to_ostream (void *info,const void *buffer,size_t count)
+size_t write_bytes_to_ostream (void *info, const void *buffer, size_t count)
 {
 	assert(info && buffer);
 	std::ostream *output = (std::ostream *)info;

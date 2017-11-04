@@ -42,7 +42,7 @@ void Renderer::setColor(const float color[4], GLint *shaderinfo) const
 {
 	PRINTD("setColor a");
 	Color4f col;
-	getColor(ColorMode::MATERIAL,col);
+	getColor(ColorMode::MATERIAL, col);
 	float c[4] = {color[0], color[1], color[2], color[3]};
 	if (c[0] < 0) c[0] = col[0];
 	if (c[1] < 0) c[1] = col[1];
@@ -81,7 +81,7 @@ void Renderer::setColor(ColorMode colormode, const float color[4], GLint *shader
 void Renderer::setColor(ColorMode colormode, GLint *shaderinfo) const
 {
 	PRINTD("setColor c");
-	float c[4] = {-1,-1,-1,-1};
+	float c[4] = {-1, -1, -1, -1};
 	setColor(colormode, c, shaderinfo);
 }
 

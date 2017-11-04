@@ -7,7 +7,7 @@ class ParameterComboBox : public ParameterVirtualWidget
 	Q_OBJECT
 
 public:
-	ParameterComboBox(ParameterObject *parameterobject,bool showDescription);
+	ParameterComboBox(ParameterObject *parameterobject, bool showDescription);
 	void setValue();
 	void setParameterFocus();
 

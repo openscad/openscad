@@ -173,7 +173,7 @@ static void info()
 	std::cout << LibraryInfo::info() << "\n\n";
 
 	try {
-		OffscreenView glview(512,512);
+		OffscreenView glview(512, 512);
 		std::cout << glview.getRendererInfo() << "\n";
 	} catch (int error) {
 		PRINTB("Can't create OpenGL OffscreenView. Code: %i. Exiting.\n", error);
@@ -318,7 +318,7 @@ void set_render_color_scheme(const std::string color_scheme, const bool exit_if_
 
 #include <QCoreApplication>
 
-int cmdline(const char *deps_output_file, const std::string &filename, Camera &camera, const char *output_file, const fs::path &original_path, RenderType renderer,const std::string &parameterFile,const std::string &setName, int argc, char **argv)
+int cmdline(const char *deps_output_file, const std::string &filename, Camera &camera, const char *output_file, const fs::path &original_path, RenderType renderer, const std::string &parameterFile, const std::string &setName, int argc, char **argv)
 {
 #ifdef OPENSCAD_QTGUI
 	QCoreApplication app(argc, argv);
@@ -379,7 +379,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	bool preview = png_output_file ? (renderer == RenderType::OPENCSG || renderer == RenderType::THROWNTOGETHER) : false;
 	top_ctx.set_variable("$preview", ValuePtr(preview));
 #ifdef DEBUG
-	PRINTDB("Top ModuleContext:\n%s",top_ctx.dump(nullptr, nullptr));
+	PRINTDB("Top ModuleContext:\n%s", top_ctx.dump(nullptr, nullptr));
 #endif
 	shared_ptr<Echostream> echostream;
 	if (echo_output_file) {
@@ -543,7 +543,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 
 		if (png_output_file) {
 			auto success = true;
-			std::ofstream fstream(png_output_file,std::ios::out | std::ios::binary);
+			std::ofstream fstream(png_output_file, std::ios::out | std::ios::binary);
 			if (!fstream.is_open()) {
 				PRINTB("Can't open file \"%s\" for export", png_output_file);
 				success = false;
@@ -705,7 +705,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 #ifdef Q_OS_WIN
 	QSettings reg_setting(QLatin1String("HKEY_CURRENT_USER"), QSettings::NativeFormat);
 	auto appPath = QDir::toNativeSeparators(app.applicationFilePath() + QLatin1String(",1"));
-	reg_setting.setValue(QLatin1String("Software/Classes/OpenSCAD_File/DefaultIcon/Default"),QVariant(appPath));
+	reg_setting.setValue(QLatin1String("Software/Classes/OpenSCAD_File/DefaultIcon/Default"), QVariant(appPath));
 #endif
 
 #ifdef OPENSCAD_UPDATER
@@ -872,7 +872,7 @@ int main(int argc, char **argv)
 	OpenSCAD::debug = "";
 	if (vm.count("debug")) {
 		OpenSCAD::debug = vm["debug"].as<string>();
-		PRINTB("Debug on. --debug=%s",OpenSCAD::debug);
+		PRINTB("Debug on. --debug=%s", OpenSCAD::debug);
 	}
 	if (vm.count("quiet")) {
 		OpenSCAD::quiet = true;
