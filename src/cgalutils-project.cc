@@ -147,9 +147,9 @@ void ZRemover::visit(CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet)
 																											CGAL::to_double(point3d.y()));
 				contour.push_back(point2d);
 			}
-			if (contour.size()==0) continue;
+			if (contour.size() == 0) continue;
 
-			if (OpenSCAD::debug!="")
+			if (OpenSCAD::debug != "")
 				PRINTDB(" <!-- is_simple_2: %i -->", CGAL::is_simple_2(contour.begin(), contour.end()));
 
 			tmpnef2d.reset(new CGAL_Nef_polyhedron2(contour.begin(), contour.end(), boundary));
@@ -203,7 +203,7 @@ namespace CGALUtils {
 					CGAL_Point_3 minpt(-inf, -inf, -eps);
 					CGAL_Point_3 maxpt(inf,  inf,  eps);
 					CGAL_Iso_cuboid_3 bigcuboid(minpt, maxpt);
-					for (int i=0; i<8; i++) pts.push_back(bigcuboid.vertex(i));
+					for (int i = 0; i < 8; i++) pts.push_back(bigcuboid.vertex(i));
 					CGAL_Polyhedron bigbox;
 					CGAL::convex_hull_3(pts.begin(), pts.end(), bigbox);
 					CGAL_Nef_polyhedron3 nef_bigbox(bigbox);

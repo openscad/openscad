@@ -17,9 +17,9 @@ BoundingBox operator*(const Transform3d &m, const BoundingBox &box)
 	if (box.isEmpty()) return box;
 	BoundingBox newbox;
 	Vector3d boxvec[2] = { box.min(), box.max() };
-	for (int k=0; k<2; k++) {
-		for (int j=0; j<2; j++) {
-			for (int i=0; i<2; i++) {
+	for (int k = 0; k < 2; k++) {
+		for (int j = 0; j < 2; j++) {
+			for (int i = 0; i < 2; i++) {
 				newbox.extend(m * Vector3d(boxvec[i][0], boxvec[j][1], boxvec[k][2]));
 			}
 		}
@@ -29,8 +29,8 @@ BoundingBox operator*(const Transform3d &m, const BoundingBox &box)
 
 bool matrix_contains_infinity(const Transform3d &m)
 {
-	for (int i=0; i<m.matrix().rows(); i++) {
-		for (int j=0; j<m.matrix().cols(); j++) {
+	for (int i = 0; i < m.matrix().rows(); i++) {
+		for (int j = 0; j < m.matrix().cols(); j++) {
 			if ((std::isinf)(m(i,j))) return true;
 		}
 	}
@@ -39,8 +39,8 @@ bool matrix_contains_infinity(const Transform3d &m)
 
 bool matrix_contains_nan(const Transform3d &m)
 {
-	for (int i=0; i<m.matrix().rows(); i++) {
-		for (int j=0; j<m.matrix().cols(); j++) {
+	for (int i = 0; i < m.matrix().rows(); i++) {
+		for (int j = 0; j < m.matrix().cols(); j++) {
 			if ((std::isnan)(m(i,j))) return true;
 		}
 	}
@@ -109,7 +109,7 @@ Py_hash_t hash_floating_point(Float_t v)
 	}
 
 	/* adjust for the exponent;  first reduce it modulo _PyHASH_BITS */
-	e = e >= 0 ? e % _PyHASH_BITS : _PyHASH_BITS-1-((-1-e) % _PyHASH_BITS);
+	e = e >= 0 ? e % _PyHASH_BITS : _PyHASH_BITS - 1 - ((-1 - e) % _PyHASH_BITS);
 	x = ((x << e) & _PyHASH_MODULUS) | x >> (_PyHASH_BITS - e);
 
 	x = x * sign;

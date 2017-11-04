@@ -290,14 +290,14 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
 				}
 
 				Matrix3d aax, aay, aaz;
-				aax = Eigen::AngleAxisd(-(cam.object_rot.x()/180) * M_PI, Vector3d::UnitX());
-				aay = Eigen::AngleAxisd(-(cam.object_rot.y()/180) * M_PI, Vector3d::UnitY());
-				aaz = Eigen::AngleAxisd(-(cam.object_rot.z()/180) * M_PI, Vector3d::UnitZ());
+				aax = Eigen::AngleAxisd(-(cam.object_rot.x() / 180) * M_PI, Vector3d::UnitX());
+				aay = Eigen::AngleAxisd(-(cam.object_rot.y() / 180) * M_PI, Vector3d::UnitY());
+				aaz = Eigen::AngleAxisd(-(cam.object_rot.z() / 180) * M_PI, Vector3d::UnitZ());
 				Matrix3d tm3 = Matrix3d::Identity();
 				tm3 = aaz * (aay * (aax * tm3));
 
 				Matrix4d tm = Matrix4d::Identity();
-				for (int i=0; i<3; i++) for (int j=0; j<3; j++) tm(j,i) = tm3(j,i);
+				for (int i = 0; i < 3; i++) for (int j = 0; j < 3; j++) tm(j,i) = tm3(j,i);
 
 				Matrix4d vec;
 				vec <<

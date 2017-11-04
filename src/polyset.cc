@@ -180,16 +180,16 @@ void PolySet::resize(const Vector3d &newsize, const Eigen::Matrix<bool,3,1> &aut
 
 	// Find largest dimension
 	int maxdim = 0;
-	for (int i=1; i<3; i++) if (newsize[i] > newsize[maxdim]) maxdim = i;
+	for (int i = 1; i < 3; i++) if (newsize[i] > newsize[maxdim]) maxdim = i;
 
 	// Default scale (scale with 1 if the new size is 0)
 	Vector3d scale(1,1,1);
-	for (int i=0; i<3; i++) if (newsize[i] > 0) scale[i] = newsize[i] / bbox.sizes()[i];
+	for (int i = 0; i < 3; i++) if (newsize[i] > 0) scale[i] = newsize[i] / bbox.sizes()[i];
 
 	// Autoscale where applicable
 	double autoscale = scale[maxdim];
 	Vector3d newscale;
-	for (int i=0; i<3; i++) newscale[i] = !autosize[i] || (newsize[i] > 0) ? scale[i] : autoscale;
+	for (int i = 0; i < 3; i++) newscale[i] = !autosize[i] || (newsize[i] > 0) ? scale[i] : autoscale;
 
 	Transform3d t;
 	t.matrix() <<
@@ -214,11 +214,11 @@ void PolySet::quantizeVertices()
 		Polygon &p = *iter;
 		indices.resize(p.size());
 		// Quantize all vertices. Build index list
-		for (unsigned int i=0; i<p.size(); i++) indices[i] = grid.align(p[i]);
+		for (unsigned int i = 0; i < p.size(); i++) indices[i] = grid.align(p[i]);
 		// Remove consequtive duplicate vertices
 		Polygon::iterator currp = p.begin();
-		for (unsigned int i=0; i<indices.size(); i++) {
-			if (indices[i] != indices[(i+1)%indices.size()]) {
+		for (unsigned int i = 0; i < indices.size(); i++) {
+			if (indices[i] != indices[(i + 1) % indices.size()]) {
 				(*currp++) = p[i];
 			}
 		}

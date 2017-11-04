@@ -105,9 +105,9 @@ void CGALRenderer::draw(bool showfaces, bool showedges) const
 // FIXME:		const QColor &col = Preferences::inst()->color(Preferences::CGAL_FACE_2D_COLOR);
 			glColor3f(0.0f, 0.75f, 0.60f);
 
-			for (size_t i=0; i < this->polyset->polygons.size(); i++) {
+			for (size_t i = 0; i < this->polyset->polygons.size(); i++) {
 				glBegin(GL_POLYGON);
-				for (size_t j=0; j < this->polyset->polygons[i].size(); j++) {
+				for (size_t j = 0; j < this->polyset->polygons[i].size(); j++) {
 					const auto &p = this->polyset->polygons[i][j];
 					glVertex3d(p[0], p[1], 0);
 				}

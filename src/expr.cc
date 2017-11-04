@@ -67,10 +67,10 @@ namespace {
 namespace /* anonymous*/ {
 
 	std::ostream &operator << (std::ostream &o, AssignmentList const &l) {
-		for (size_t i=0; i < l.size(); i++) {
+		for (size_t i = 0; i < l.size(); i++) {
 			const Assignment &arg = l[i];
 			if (i > 0) o << ", ";
-			if (!arg.name.empty()) o << arg.name  << " = ";
+			if (!arg.name.empty()) o << arg.name << " = ";
 			o << *arg.expr;
 		}
 		return o;
@@ -364,7 +364,7 @@ ValuePtr Vector::evaluate(const Context *context) const
 void Vector::print(std::ostream &stream) const
 {
 	stream << "[";
-	for (size_t i=0; i < this->children.size(); i++) {
+	for (size_t i = 0; i < this->children.size(); i++) {
 		if (i > 0) stream << ", ";
 		stream << *this->children[i];
 	}

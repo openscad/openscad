@@ -130,9 +130,9 @@ public:
 
 static void help(const char *progname, bool failure = false)
 {
-	int tablen = strlen(progname)+8;
-	char tabstr[tablen+1];
-	for (int i=0; i<tablen; i++) tabstr[i] = ' ';
+	int tablen = strlen(progname) + 8;
+	char tabstr[tablen + 1];
+	for (int i = 0; i < tablen; i++) tabstr[i] = ' ';
 	tabstr[tablen] = '\0';
 
 	PRINTB("Usage: %1% [ -o output_file [ -d deps_file ] ]\\\n"
@@ -242,7 +242,7 @@ Camera get_camera(po::variables_map vm)
 		if (proj == "o" || proj == "ortho" || proj == "orthogonal") {
 			camera.projection = Camera::ProjectionType::ORTHOGONAL;
 		}
-		else if (proj=="p" || proj=="perspective") {
+		else if (proj == "p" || proj == "perspective") {
 			camera.projection = Camera::ProjectionType::PERSPECTIVE;
 		}
 		else {
@@ -376,7 +376,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	// Top context - this context only holds builtins
 	ModuleContext top_ctx;
 	top_ctx.registerBuiltin();
-	bool preview = png_output_file ? (renderer==RenderType::OPENCSG || renderer==RenderType::THROWNTOGETHER) : false;
+	bool preview = png_output_file ? (renderer == RenderType::OPENCSG || renderer == RenderType::THROWNTOGETHER) : false;
 	top_ctx.set_variable("$preview", ValuePtr(preview));
 #ifdef DEBUG
 	PRINTDB("Top ModuleContext:\n%s",top_ctx.dump(nullptr, nullptr));
@@ -543,7 +543,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 
 		if (png_output_file) {
 			auto success = true;
-			std::ofstream fstream(png_output_file,std::ios::out|std::ios::binary);
+			std::ofstream fstream(png_output_file,std::ios::out | std::ios::binary);
 			if (!fstream.is_open()) {
 				PRINTB("Can't open file \"%s\" for export", png_output_file);
 				success = false;

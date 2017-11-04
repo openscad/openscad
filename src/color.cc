@@ -229,7 +229,7 @@ boost::optional<Color4f> parse_hex_color(const std::string &hex) {
 
 	// validate
 	if (hex[0] != '#') return boost::none;
-	if (!std::all_of(std::begin(hex)+1, std::end(hex),
+	if (!std::all_of(std::begin(hex) + 1, std::end(hex),
 									 [](char c) {
 		return std::isxdigit(static_cast<unsigned char>(c));
 	})) {
@@ -244,7 +244,7 @@ boost::optional<Color4f> parse_hex_color(const std::string &hex) {
 	rgba[3] = 1.0; // default alpha to 100%
 
 	for (unsigned i = 0; i < (hex.size() - 1) / stride; i++) {
-		const std::string chunk = hex.substr(1 + i*stride, stride);
+		const std::string chunk = hex.substr(1 + i * stride, stride);
 
 		// convert the hex character(s) from base 16 to base 10
 		rgba[i] = stoi(chunk, nullptr, 16) / channel_max;

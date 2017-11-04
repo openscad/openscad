@@ -33,7 +33,7 @@ std::string ModuleInstantiation::dump(const std::string &indent) const
 	std::stringstream dump;
 	dump << indent;
 	dump << modname + "(";
-	for (size_t i=0; i < this->arguments.size(); i++) {
+	for (size_t i = 0; i < this->arguments.size(); i++) {
 		const Assignment &arg = this->arguments[i];
 		if (i > 0) dump << ", ";
 		if (!arg.name.empty()) dump << arg.name << " = ";

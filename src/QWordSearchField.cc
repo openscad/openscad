@@ -27,7 +27,7 @@ void QWordSearchField::resizeSearchField()
 {
 	auto size = fieldLabel->sizeHint();
 	auto frameWidth = style()->pixelMetric(QStyle::PM_DefaultFrameWidth);
-	fieldLabel->move(rect().right() - frameWidth - size.width(), (rect().bottom() + 1 - size.height())/2);
+	fieldLabel->move(rect().right() - frameWidth - size.width(), (rect().bottom() + 1 - size.height()) / 2);
 }
 
 

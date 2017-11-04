@@ -638,14 +638,14 @@ static void add_slice(PolySet *ps, const Polygon2d &poly,
 											const Vector2d &scale1,
 											const Vector2d &scale2)
 {
-	Eigen::Affine2d trans1(Eigen::Scaling(scale1) * Eigen::Rotation2D<double>(-rot1 *M_PI/180));
-	Eigen::Affine2d trans2(Eigen::Scaling(scale2) * Eigen::Rotation2D<double>(-rot2 *M_PI/180));
+	Eigen::Affine2d trans1(Eigen::Scaling(scale1) * Eigen::Rotation2D<double>(-rot1 *M_PI / 180));
+	Eigen::Affine2d trans2(Eigen::Scaling(scale2) * Eigen::Rotation2D<double>(-rot2 *M_PI / 180));
 
-	bool splitfirst = sin((rot1 - rot2)*M_PI/180) > 0.0;
+	bool splitfirst = sin((rot1 - rot2) * M_PI / 180) > 0.0;
 	for (const auto &o : poly.outlines()) {
 		Vector2d prev1 = trans1 * o.vertices[0];
 		Vector2d prev2 = trans2 * o.vertices[0];
-		for (size_t i=1; i<=o.vertices.size(); i++) {
+		for (size_t i = 1; i <= o.vertices.size(); i++) {
 			Vector2d curr1 = trans1 * o.vertices[i % o.vertices.size()];
 			Vector2d curr2 = trans2 * o.vertices[i % o.vertices.size()];
 			ps->append_poly();
@@ -693,8 +693,8 @@ static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &
 	double h1, h2;
 
 	if (node.center) {
-		h1 = -node.height/2.0;
-		h2 = +node.height/2.0;
+		h1 = -node.height / 2.0;
+		h2 = +node.height / 2.0;
 	} else {
 		h1 = 0;
 		h2 = node.height;
@@ -713,7 +713,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &
 	if (node.scale_x > 0 || node.scale_y > 0) {
 		Polygon2d top_poly(poly);
 		Eigen::Affine2d trans(Eigen::Scaling(node.scale_x, node.scale_y) *
-													Eigen::Rotation2D<double>(-node.twist *M_PI/180));
+													Eigen::Rotation2D<double>(-node.twist *M_PI / 180));
 		top_poly.transform(trans); // top
 		PolySet *ps_top = top_poly.tessellate();
 		translate_PolySet(*ps_top, Vector3d(0,0,h2));
@@ -723,14 +723,14 @@ static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &
 	size_t slices = node.slices;
 
 	for (unsigned int j = 0; j < slices; j++) {
-		double rot1 = node.twist*j / slices;
-		double rot2 = node.twist*(j+1) / slices;
-		double height1 = h1 + (h2-h1)*j / slices;
-		double height2 = h1 + (h2-h1)*(j+1) / slices;
-		Vector2d scale1(1 - (1-node.scale_x)*j / slices,
-										1 - (1-node.scale_y)*j / slices);
-		Vector2d scale2(1 - (1-node.scale_x)*(j+1) / slices,
-										1 - (1-node.scale_y)*(j+1) / slices);
+		double rot1 = node.twist * j / slices;
+		double rot2 = node.twist * (j + 1) / slices;
+		double height1 = h1 + (h2 - h1) * j / slices;
+		double height2 = h1 + (h2 - h1) * (j + 1) / slices;
+		Vector2d scale1(1 - (1 - node.scale_x) * j / slices,
+										1 - (1 - node.scale_y) * j / slices);
+		Vector2d scale2(1 - (1 - node.scale_x) * (j + 1) / slices,
+										1 - (1 - node.scale_y) * (j + 1) / slices);
 		add_slice(ps, poly, rot1, rot2, height1, height2, scale1, scale2);
 	}
 
@@ -781,14 +781,14 @@ Response GeometryEvaluator::visit(State &state, const LinearExtrudeNode &node)
 static void fill_ring(std::vector<Vector3d> &ring, const Outline2d &o, double a, bool flip)
 {
 	if (flip) {
-		unsigned int l = o.vertices.size()-1;
-		for (unsigned int i=0; i<o.vertices.size(); i++) {
-			ring[i][0] = o.vertices[l-i][0] * sin(a);
-			ring[i][1] = o.vertices[l-i][0] * cos(a);
-			ring[i][2] = o.vertices[l-i][1];
+		unsigned int l = o.vertices.size() - 1;
+		for (unsigned int i = 0; i < o.vertices.size(); i++) {
+			ring[i][0] = o.vertices[l - i][0] * sin(a);
+			ring[i][1] = o.vertices[l - i][0] * cos(a);
+			ring[i][2] = o.vertices[l - i][1];
 		}
 	} else {
-		for (unsigned int i=0; i<o.vertices.size(); i++) {
+		for (unsigned int i = 0; i < o.vertices.size(); i++) {
 			ring[i][0] = o.vertices[i][0] * sin(a);
 			ring[i][1] = o.vertices[i][0] * cos(a);
 			ring[i][2] = o.vertices[i][1];
@@ -842,7 +842,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 
 	if (node.angle != 360) {
 		PolySet *ps_start = poly.tessellate(); // starting face
-		Transform3d rot(Eigen::AngleAxisd(M_PI/2, Vector3d::UnitX()));
+		Transform3d rot(Eigen::AngleAxisd(M_PI / 2, Vector3d::UnitX()));
 		ps_start->transform(rot);
 		// Flip vertex ordering
 		if (!flip_faces) {
@@ -854,7 +854,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 		delete ps_start;
 
 		PolySet *ps_end = poly.tessellate();
-		Transform3d rot2(Eigen::AngleAxisd(node.angle *M_PI/180, Vector3d::UnitZ()) * Eigen::AngleAxisd(M_PI/2, Vector3d::UnitX()));
+		Transform3d rot2(Eigen::AngleAxisd(node.angle *M_PI / 180, Vector3d::UnitZ()) * Eigen::AngleAxisd(M_PI / 2, Vector3d::UnitX()));
 		ps_end->transform(rot2);
 		if (flip_faces) {
 			for (auto &p : ps_end->polygons) {
@@ -870,24 +870,24 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 		rings[0].resize(o.vertices.size());
 		rings[1].resize(o.vertices.size());
 
-		fill_ring(rings[0], o, (node.angle == 360) ? -M_PI/2 : M_PI/2, flip_faces); // first ring
+		fill_ring(rings[0], o, (node.angle == 360) ? -M_PI / 2 : M_PI / 2, flip_faces); // first ring
 		for (int j = 0; j < fragments; j++) {
 			double a;
 			if (node.angle == 360)
-				a = -M_PI/2 + ((j+1)%fragments*2*M_PI) / fragments;   // start on the -X axis, for legacy support
+				a = -M_PI / 2 + ((j + 1) % fragments * 2 * M_PI) / fragments; // start on the -X axis, for legacy support
 			else
-				a = M_PI/2 - (j+1)*(node.angle*M_PI/180) / fragments; // start on the X axis
-			fill_ring(rings[(j+1)%2], o, a, flip_faces);
+				a = M_PI / 2 - (j + 1) * (node.angle * M_PI / 180) / fragments; // start on the X axis
+			fill_ring(rings[(j + 1) % 2], o, a, flip_faces);
 
-			for (size_t i=0; i<o.vertices.size(); i++) {
+			for (size_t i = 0; i < o.vertices.size(); i++) {
 				ps->append_poly();
-				ps->insert_vertex(rings[j%2][i]);
-				ps->insert_vertex(rings[(j+1)%2][(i+1)%o.vertices.size()]);
-				ps->insert_vertex(rings[j%2][(i+1)%o.vertices.size()]);
+				ps->insert_vertex(rings[j % 2][i]);
+				ps->insert_vertex(rings[(j + 1) % 2][(i + 1) % o.vertices.size()]);
+				ps->insert_vertex(rings[j % 2][(i + 1) % o.vertices.size()]);
 				ps->append_poly();
-				ps->insert_vertex(rings[j%2][i]);
-				ps->insert_vertex(rings[(j+1)%2][i]);
-				ps->insert_vertex(rings[(j+1)%2][(i+1)%o.vertices.size()]);
+				ps->insert_vertex(rings[j % 2][i]);
+				ps->insert_vertex(rings[(j + 1) % 2][i]);
+				ps->insert_vertex(rings[(j + 1) % 2][(i + 1) % o.vertices.size()]);
 			}
 		}
 	}

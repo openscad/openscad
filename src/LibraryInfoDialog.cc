@@ -43,7 +43,7 @@ void LibraryInfoDialog::update_library_info(const QString &rendererInfo)
 			if (endInd != -1) {
 				QStringRef lines(&info, startIndex, endInd - startIndex);
 				auto lastIndex = lines.lastIndexOf("<br/>");
-				startIndex = lastIndex != -1 ? lastIndex+startIndex : startIndex;
+				startIndex = lastIndex != -1 ? lastIndex + startIndex : startIndex;
 			}
 		}
 		else {

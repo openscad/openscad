@@ -121,11 +121,11 @@ static void append_stl(const CGAL_Polyhedron &P, std::ostream &output)
 				if (!CGAL::collinear(v1.point(),v2.point(),v3.point())) {
 					CGAL_Polyhedron::Traits::Vector_3 normal = CGAL::normal(v1.point(),v2.point(),v3.point());
 					output << "  facet normal "
-								 << CGAL::sign(normal.x()) * sqrt(CGAL::to_double(normal.x()*normal.x()/normal.squared_length()))
+								 << CGAL::sign(normal.x()) * sqrt(CGAL::to_double(normal.x() * normal.x() / normal.squared_length()))
 								 << " "
-								 << CGAL::sign(normal.y()) * sqrt(CGAL::to_double(normal.y()*normal.y()/normal.squared_length()))
+								 << CGAL::sign(normal.y()) * sqrt(CGAL::to_double(normal.y() * normal.y() / normal.squared_length()))
 								 << " "
-								 << CGAL::sign(normal.z()) * sqrt(CGAL::to_double(normal.z()*normal.z()/normal.squared_length()))
+								 << CGAL::sign(normal.z()) * sqrt(CGAL::to_double(normal.z() * normal.z() / normal.squared_length()))
 								 << "\n";
 				}
 				else output << "  facet normal 1 0 0\n";

@@ -40,7 +40,7 @@ AssignmentMap EvalContext::resolveArguments(const AssignmentList &args) const
 	AssignmentMap resolvedArgs;
 	size_t posarg = 0;
 	// Iterate over positional args
-	for (size_t i=0; i<this->numArgs(); i++) {
+	for (size_t i = 0; i < this->numArgs(); i++) {
 		const auto &name = this->getArgName(i); // name is optional
 		const auto expr = this->getArgs()[i].expr.get();
 		if (!name.empty()) {
@@ -97,7 +97,7 @@ std::string EvalContext::dump(const AbstractModule *mod, const ModuleInstantiati
 	s << boost::format("  document path: %s") % this->document_path;
 
 	s << boost::format("  eval args:");
-	for (size_t i=0; i<this->eval_arguments.size(); i++) {
+	for (size_t i = 0; i < this->eval_arguments.size(); i++) {
 		s << boost::format("    %s = %s") % this->eval_arguments[i].name % this->eval_arguments[i].expr;
 	}
 	if (this->scope && this->scope->children.size() > 0) {

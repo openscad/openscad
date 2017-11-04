@@ -281,7 +281,7 @@ namespace CGALUtils {
 
 						for (int k = 0; k < 2; k++) {
 							std::list<CGAL_Polyhedron>::iterator it = P[k].begin();
-							std::advance(it, k==0 ? i : j);
+							std::advance(it, k == 0 ? i : j);
 
 							CGAL_Polyhedron const &poly = *it;
 							points[k].reserve(poly.size_of_vertices());
@@ -296,7 +296,7 @@ namespace CGALUtils {
 						minkowski_points.reserve(points[0].size() * points[1].size());
 						for (size_t i = 0; i < points[0].size(); i++) {
 							for (size_t j = 0; j < points[1].size(); j++) {
-								minkowski_points.push_back(points[0][i]+(points[1][j]-CGAL::ORIGIN));
+								minkowski_points.push_back(points[0][i] + (points[1][j] - CGAL::ORIGIN));
 							}
 						}
 
@@ -308,7 +308,7 @@ namespace CGALUtils {
 
 						CGAL::Polyhedron_3<Hull_kernel> result;
 						t.stop();
-						PRINTDB("Minkowski: Point cloud creation (%d ⨉ %d -> %d) took %f ms", points[0].size() % points[1].size() % minkowski_points.size() % (t.time()*1000));
+						PRINTDB("Minkowski: Point cloud creation (%d ⨉ %d -> %d) took %f ms", points[0].size() % points[1].size() % minkowski_points.size() % (t.time() * 1000));
 						t.reset();
 
 						t.start();

@@ -17,7 +17,7 @@
    for ctest -R CGAL. We choose 1/1024 and 1/(1024*1024) In python: print
    '%.64f' % float(fractions.Fraction(1,1024)) */
 const double GRID_COARSE = 0.0009765625;
-const double GRID_FINE   = 0.00000095367431640625;
+const double GRID_FINE = 0.00000095367431640625;
 
 template <typename T>
 class Grid2d
@@ -43,7 +43,7 @@ public:
 				for (int64_t jy = iy - 1; jy <= iy + 1; jy++) {
 					if (db.find(std::make_pair(jx, jy)) == db.end())
 						continue;
-					int d = abs(int(ix-jx)) + abs(int(iy-jy));
+					int d = abs(int(ix - jx)) + abs(int(iy - jy));
 					if (d < dist) {
 						dist = d;
 						ix = jx;
@@ -117,7 +117,7 @@ public:
 						Vector3l k(jx, jy, jz);
 						typename GridContainer::iterator tmpiter = db.find(k);
 						if (tmpiter == db.end()) continue;
-						float d = sqrt((key-k).squaredNorm());
+						float d = sqrt((key - k).squaredNorm());
 						if (d < dist) {
 							dist = d;
 							iter = tmpiter;

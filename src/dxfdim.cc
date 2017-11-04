@@ -77,7 +77,7 @@ ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 		lastwritetime = fs::last_write_time(filepath);
 	}
 	keystream << filename << "|" << layername << "|" << name << "|" << xorigin
-						<< "|" << yorigin <<"|" << scale << "|" << lastwritetime
+						<< "|" << yorigin << "|" << scale << "|" << lastwritetime
 						<< "|" << filesize;
 	std::string key = keystream.str();
 	if (dxf_dim_cache.find(key) != dxf_dim_cache.end())
@@ -98,14 +98,14 @@ ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 			double x = d->coords[4][0] - d->coords[3][0];
 			double y = d->coords[4][1] - d->coords[3][1];
 			double angle = d->angle;
-			double distance_projected_on_line = std::fabs(x * cos(angle*M_PI/180) + y * sin(angle*M_PI/180));
+			double distance_projected_on_line = std::fabs(x * cos(angle * M_PI / 180) + y * sin(angle * M_PI / 180));
 			return dxf_dim_cache[key] = ValuePtr(distance_projected_on_line);
 		}
 		else if (type == 1) {
 			// Aligned
 			double x = d->coords[4][0] - d->coords[3][0];
 			double y = d->coords[4][1] - d->coords[3][1];
-			return dxf_dim_cache[key] = ValuePtr(sqrt(x*x + y*y));
+			return dxf_dim_cache[key] = ValuePtr(sqrt(x * x + y * y));
 		}
 		else if (type == 2) {
 			// Angular
@@ -117,7 +117,7 @@ ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 			// Diameter or Radius
 			double x = d->coords[5][0] - d->coords[0][0];
 			double y = d->coords[5][1] - d->coords[0][1];
-			return dxf_dim_cache[key] = ValuePtr(sqrt(x*x + y*y));
+			return dxf_dim_cache[key] = ValuePtr(sqrt(x * x + y * y));
 		}
 		else if (type == 5) {
 			// Angular 3 Point
@@ -192,13 +192,13 @@ ValuePtr builtin_dxf_cross(const Context *ctx, const EvalContext *evalctx)
 			double x2 = coords[1][0], y2 = coords[1][1];
 			double x3 = coords[2][0], y3 = coords[2][1];
 			double x4 = coords[3][0], y4 = coords[3][1];
-			double dem = (y4 - y3)*(x2 - x1) - (x4 - x3)*(y2 - y1);
+			double dem = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1);
 			if (dem == 0)
 				break;
-			double ua = ((x4 - x3)*(y1 - y3) - (y4 - y3)*(x1 - x3)) / dem;
+			double ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / dem;
 			// double ub = ((x2 - x1)*(y1 - y3) - (y2 - y1)*(x1 - x3)) / dem;
-			double x = x1 + ua*(x2 - x1);
-			double y = y1 + ua*(y2 - y1);
+			double x = x1 + ua * (x2 - x1);
+			double y = y1 + ua * (y2 - y1);
 			Value::VectorType ret;
 			ret.push_back(ValuePtr(x));
 			ret.push_back(ValuePtr(y));

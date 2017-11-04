@@ -52,7 +52,7 @@ namespace boosty {
 #endif
 		// based on the code in boost
 		fs::path result;
-		if (p=="") p=p2;
+		if (p == "") p = p2;
 		std::string result_s;
 		std::vector<std::string> resultv, pieces;
 		std::vector<std::string>::iterator pi;
@@ -67,7 +67,7 @@ namespace boosty {
 		}
 		for (pi = resultv.begin(); pi != resultv.end(); ++pi)
 		{
-			if ((*pi).length()>0) result_s = result_s + "/" + *pi;
+			if ((*pi).length() > 0) result_s = result_s + "/" + *pi;
 		}
 		result = fs::path(result_s);
 		if (fs::is_symlink(result))

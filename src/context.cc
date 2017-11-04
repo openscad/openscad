@@ -129,7 +129,7 @@ ValuePtr Context::lookup_variable(const std::string &name, bool silent) const
 		return ValuePtr::undefined;
 	}
 	if (is_config_variable(name)) {
-		for (int i = this->ctx_stack->size()-1; i >= 0; i--) {
+		for (int i = this->ctx_stack->size() - 1; i >= 0; i--) {
 			const auto &confvars = ctx_stack->at(i)->config_variables;
 			if (confvars.find(name) != confvars.end()) {
 				return confvars.find(name)->second;

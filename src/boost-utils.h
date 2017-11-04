@@ -36,7 +36,7 @@ template <class Tout,class Tin> Tout boost_numeric_cast(Tin input)
 		status << e.what();
 		result = 0;
 	}
-	if (status.str()!="ok") {
+	if (status.str() != "ok") {
 		std::stringstream tmp;
 		tmp << input;
 		PRINTB("WARNING: problem converting this number: %s",tmp.str());

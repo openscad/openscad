@@ -8,7 +8,7 @@
 #include "PlatformUtils.h"
 #include "settings.h"
 #include <boost/filesystem.hpp>
-namespace fs=boost::filesystem;
+namespace fs = boost::filesystem;
 
 class SettingsConverter {
 public:
@@ -192,7 +192,7 @@ void ScintillaEditor::applySettings()
 	}
 	else
 	{
-		qsci->setMarginWidth(1,QString(trunc(log10(qsci->lines())+4), '0'));
+		qsci->setMarginWidth(1,QString(trunc(log10(qsci->lines()) + 4), '0'));
 	}
 }
 
@@ -519,7 +519,7 @@ void ScintillaEditor::onTextChanged()
 	}
 	else
 	{
-		qsci->setMarginWidth(1,QString(trunc(log10(qsci->lines())+4), '0'));
+		qsci->setMarginWidth(1,QString(trunc(log10(qsci->lines()) + 4), '0'));
 	}
 }
 
@@ -672,13 +672,13 @@ QString ScintillaEditor::selectedText()
 
 bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
 {
-	static bool wasChanged=false;
-	static bool previewAfterUndo=false;
+	static bool wasChanged = false;
+	static bool previewAfterUndo = false;
 
 	if (obj != qsci) return EditorInterface::eventFilter(obj, e);
 
-	if (e->type()==QEvent::KeyPress
-			|| e->type()==QEvent::KeyRelease
+	if (e->type() == QEvent::KeyPress
+			|| e->type() == QEvent::KeyRelease
 			) {
 		QKeyEvent *ke = static_cast<QKeyEvent *>(e);
 		if ((ke->modifiers() & ~Qt::KeypadModifier) == Qt::AltModifier) {
@@ -686,34 +686,34 @@ bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
 			{
 			case Qt::Key_Left:
 			case Qt::Key_Right:
-				if (e->type()==QEvent::KeyPress) {
+				if (e->type() == QEvent::KeyPress) {
 					navigateOnNumber(ke->key());
 				}
 				return true;
 
 			case Qt::Key_Up:
 			case Qt::Key_Down:
-				if (e->type()==QEvent::KeyPress) {
+				if (e->type() == QEvent::KeyPress) {
 					if (!wasChanged) qsci->beginUndoAction();
 					if (modifyNumber(ke->key())) {
-						wasChanged=true;
-						previewAfterUndo=true;
+						wasChanged = true;
+						previewAfterUndo = true;
 					}
 					if (!wasChanged) qsci->endUndoAction();
 				}
 				return true;
 			}
 		}
-		if (previewAfterUndo && e->type()==QEvent::KeyPress) {
-			int k=ke->key() | ke->modifiers();
+		if (previewAfterUndo && e->type() == QEvent::KeyPress) {
+			int k = ke->key() | ke->modifiers();
 			if (wasChanged) qsci->endUndoAction();
-			wasChanged=false;
-			QsciCommand *cmd=qsci->standardCommands()->boundTo(k);
-			if (cmd && (cmd->command()==QsciCommand::Undo || cmd->command()==QsciCommand::Redo))
+			wasChanged = false;
+			QsciCommand *cmd = qsci->standardCommands()->boundTo(k);
+			if (cmd && (cmd->command() == QsciCommand::Undo || cmd->command() == QsciCommand::Redo))
 				QTimer::singleShot(0,this,SIGNAL(previewRequest()));
 			else if (cmd || !ke->text().isEmpty()) {
 				// any insert or command (but not undo/redo) cancels the preview after undo
-				previewAfterUndo=false;
+				previewAfterUndo = false;
 			}
 		}
 	}
@@ -725,24 +725,24 @@ void ScintillaEditor::navigateOnNumber(int key)
 {
 	int line, index;
 	qsci->getCursorPosition(&line, &index);
-	QString text=qsci->text(line);
-	QString left=text.left(index);
-	bool dotOnLeft=left.contains(QRegExp("\\.\\d*$"));
-	bool dotJustLeft=index>1 && text[index-2]=='.';
-	bool dotJustRight=text[index]=='.';
-	bool numOnLeft=left.contains(QRegExp("\\d\\.?$")) || left.endsWith("-.");
-	bool numOnRight=text.indexOf(QRegExp("\\.?\\d"),index)==index;
+	QString text = qsci->text(line);
+	QString left = text.left(index);
+	bool dotOnLeft = left.contains(QRegExp("\\.\\d*$"));
+	bool dotJustLeft = index > 1 && text[index - 2] == '.';
+	bool dotJustRight = text[index] == '.';
+	bool numOnLeft = left.contains(QRegExp("\\d\\.?$")) || left.endsWith("-.");
+	bool numOnRight = text.indexOf(QRegExp("\\.?\\d"),index) == index;
 
 	switch (key)
 	{
 	case Qt::Key_Left:
 		if (numOnLeft)
-			qsci->setCursorPosition(line, index-(dotJustLeft ? 2 : 1));
+			qsci->setCursorPosition(line, index - (dotJustLeft ? 2 : 1));
 		break;
 
 	case Qt::Key_Right:
 		if (numOnRight)
-			qsci->setCursorPosition(line, index+(dotJustRight ? 2 : 1));
+			qsci->setCursorPosition(line, index + (dotJustRight ? 2 : 1));
 		else if (numOnLeft) {
 			// add trailing zero
 			if (!dotOnLeft) {
@@ -751,7 +751,7 @@ void ScintillaEditor::navigateOnNumber(int key)
 			} else {
 				qsci->insert("0");
 			}
-			qsci->setCursorPosition(line, index+1);
+			qsci->setCursorPosition(line, index + 1);
 		}
 		break;
 	}
@@ -761,41 +761,41 @@ bool ScintillaEditor::modifyNumber(int key)
 {
 	int line, index;
 	qsci->getCursorPosition(&line, &index);
-	QString text=qsci->text(line);
+	QString text = qsci->text(line);
 
 	int lineFrom, indexFrom, lineTo, indexTo;
 	qsci->getSelection(&lineFrom, &indexFrom, &lineTo, &indexTo);
-	bool hadSelection=qsci->hasSelectedText();
+	bool hadSelection = qsci->hasSelectedText();
 
-	int begin=QRegExp("[-+]?\\d*\\.?\\d*$").indexIn(text.left(index));
-	int end=text.indexOf(QRegExp("[^0-9.]"),index);
-	if (end<0) end=text.length();
-	QString nr=text.mid(begin,end-begin);
+	int begin = QRegExp("[-+]?\\d*\\.?\\d*$").indexIn(text.left(index));
+	int end = text.indexOf(QRegExp("[^0-9.]"),index);
+	if (end < 0) end = text.length();
+	QString nr = text.mid(begin,end - begin);
 	if (!(nr.contains(QRegExp("^[-+]?\\d*\\.?\\d*$")) && nr.contains(QRegExp("\\d")))) return false;
-	bool sign=nr[0]=='+'||nr[0]=='-';
-	if (nr.endsWith('.')) nr=nr.left(nr.length()-1);
-	int curpos=index-begin;
-	int dotpos=nr.indexOf('.');
-	int decimals=dotpos<0 ? 0 : nr.length()-dotpos-1;
-	long long int number=(dotpos<0) ? nr.toLongLong() : (nr.left(dotpos)+nr.mid(dotpos+1)).toLongLong();
-	int tail=nr.length()-curpos;
-	int exponent=tail-((dotpos>=curpos) ? 1 : 0);
-	long long int step=1;
-	for (int i=exponent; i>0; i--) step*=10;
+	bool sign = nr[0] == '+'||nr[0] == '-';
+	if (nr.endsWith('.')) nr = nr.left(nr.length() - 1);
+	int curpos = index - begin;
+	int dotpos = nr.indexOf('.');
+	int decimals = dotpos < 0 ? 0 : nr.length() - dotpos - 1;
+	long long int number = (dotpos < 0) ? nr.toLongLong() : (nr.left(dotpos) + nr.mid(dotpos + 1)).toLongLong();
+	int tail = nr.length() - curpos;
+	int exponent = tail - ((dotpos >= curpos) ? 1 : 0);
+	long long int step = 1;
+	for (int i = exponent; i > 0; i--) step *= 10;
 
 	switch (key) {
-	case Qt::Key_Up:   number+=step; break;
-	case Qt::Key_Down: number-=step; break;
+	case Qt::Key_Up:   number += step; break;
+	case Qt::Key_Down: number -= step; break;
 	}
-	bool negative=number<0;
-	if (negative) number=-number;
-	QString newnr=QString::number(number);
+	bool negative = number < 0;
+	if (negative) number = -number;
+	QString newnr = QString::number(number);
 	if (decimals) {
-		if (newnr.length()<=decimals) newnr.prepend(QString(decimals-newnr.length()+1,'0'));
-		newnr=newnr.left(newnr.length()-decimals)+"."+newnr.right(decimals);
+		if (newnr.length() <= decimals) newnr.prepend(QString(decimals - newnr.length() + 1,'0'));
+		newnr = newnr.left(newnr.length() - decimals) + "." + newnr.right(decimals);
 	}
-	if (tail>newnr.length()) {
-		newnr.prepend(QString(tail-newnr.length(),'0'));
+	if (tail > newnr.length()) {
+		newnr.prepend(QString(tail - newnr.length(),'0'));
 	}
 	if (negative) newnr.prepend('-');
 	else if (sign) newnr.prepend('+');
@@ -807,7 +807,7 @@ bool ScintillaEditor::modifyNumber(int key)
 	{
 		qsci->setSelection(lineFrom, indexFrom, lineTo, indexTo);
 	}
-	qsci->setCursorPosition(line, begin+newnr.length()-tail);
+	qsci->setCursorPosition(line, begin + newnr.length() - tail);
 	emit previewRequest();
 	return true;
 }

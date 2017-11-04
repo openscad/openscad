@@ -96,7 +96,7 @@ ValuePtr builtin_sign(const Context *, const EvalContext *evalctx)
 		ValuePtr v = evalctx->getArgValue(0);
 		if (v->type() == Value::ValueType::NUMBER) {
 			double x = v->toDouble();
-			return ValuePtr((x<0) ? -1.0 : ((x>0) ? 1.0 : 0.0));
+			return ValuePtr((x < 0) ? -1.0 : ((x > 0) ? 1.0 : 0.0));
 		}
 	}
 	return ValuePtr::undefined;
@@ -112,7 +112,7 @@ ValuePtr builtin_rands(const Context *, const EvalContext *evalctx)
 
 		if (std::isinf(min)) {
 			PRINT("WARNING: rands() range min cannot be infinite");
-			min = -std::numeric_limits<double>::max()/2;
+			min = -std::numeric_limits<double>::max() / 2;
 			PRINTB("WARNING: resetting to %f",min);
 		}
 		ValuePtr v1 = evalctx->getArgValue(1);
@@ -120,7 +120,7 @@ ValuePtr builtin_rands(const Context *, const EvalContext *evalctx)
 		double max = v1->toDouble();
 		if (std::isinf(max)) {
 			PRINT("WARNING: rands() range max cannot be infinite");
-			max = std::numeric_limits<double>::max()/2;
+			max = std::numeric_limits<double>::max() / 2;
 			PRINTB("WARNING: resetting to %f",max);
 		}
 		if (max < min) {
@@ -145,12 +145,12 @@ ValuePtr builtin_rands(const Context *, const EvalContext *evalctx)
 			deterministic = true;
 		}
 		Value::VectorType vec;
-		if (min==max) { // Boost doesn't allow min == max
-			for (size_t i=0; i < numresults; i++)
+		if (min == max) { // Boost doesn't allow min == max
+			for (size_t i = 0; i < numresults; i++)
 				vec.push_back(ValuePtr(min));
 		} else {
 			boost::uniform_real<> distributor(min, max);
-			for (size_t i=0; i < numresults; i++) {
+			for (size_t i = 0; i < numresults; i++) {
 				if (deterministic) {
 					vec.push_back(ValuePtr(distributor(deterministic_rng)));
 				} else {
@@ -231,7 +231,7 @@ quit:
 
 // this limit assumes 26+26=52 bits mantissa
 // comment/undefine it to disable domain check
-#define TRIG_HUGE_VAL ((1L<<26)*360.0*(1L<<26))
+#define TRIG_HUGE_VAL ((1L << 26) * 360.0 * (1L << 26))
 
 double sin_degrees(double x)
 {
@@ -243,8 +243,8 @@ double sin_degrees(double x)
 	if (x < TRIG_HUGE_VAL && x > -TRIG_HUGE_VAL)
 #endif
 	{
-		double revolutions = floor(x/360.0);
-		x -= 360.0*revolutions;
+		double revolutions = floor(x / 360.0);
+		x -= 360.0 * revolutions;
 	}
 #ifdef TRIG_HUGE_VAL
 	else {
@@ -262,7 +262,7 @@ double sin_degrees(double x)
 	} else if (x == 45.0)
 		x = M_SQRT1_2;
 	else // Inf/Nan would fall here
-		x = cos(deg2rad(90.0-x));
+		x = cos(deg2rad(90.0 - x));
 
 	return oppose ? -x : x;
 }
@@ -287,8 +287,8 @@ double cos_degrees(double x)
 	if (x < TRIG_HUGE_VAL && x > -TRIG_HUGE_VAL)
 #endif
 	{
-		double revolutions = floor(x/360.0);
-		x -= 360.0*revolutions;
+		double revolutions = floor(x / 360.0);
+		x -= 360.0 * revolutions;
 	}
 #ifdef TRIG_HUGE_VAL
 	else {
@@ -305,7 +305,7 @@ double cos_degrees(double x)
 	}
 	if (x > 45.0) {
 		if (x == 60.0) x = 0.5;
-		else x = sin(deg2rad(90.0-x));
+		else x = sin(deg2rad(90.0 - x));
 	} else if (x == 45.0)
 		x = M_SQRT1_2;
 	else // Inf/Nan would fall here
@@ -546,8 +546,8 @@ ValuePtr builtin_lookup(const Context *, const EvalContext *evalctx)
 		return ValuePtr(high_v);
 	if (p >= high_p)
 		return ValuePtr(low_v);
-	double f = (p-low_p) / (high_p-low_p);
-	return ValuePtr(high_v * f + low_v * (1-f));
+	double f = (p - low_p) / (high_p - low_p);
+	return ValuePtr(high_v * f + low_v * (1 - f));
 }
 
 /*
@@ -642,7 +642,7 @@ static Value::VectorType search(const std::string &find, const Value::VectorType
 {
 	Value::VectorType returnvec;
 	//Unicode glyph count for the length
-	unsigned int findThisSize =  g_utf8_strlen(find.c_str(), find.size());
+	unsigned int findThisSize = g_utf8_strlen(find.c_str(), find.size());
 	unsigned int searchTableSize = table.size();
 	for (size_t i = 0; i < findThisSize; i++) {
 		unsigned int matchCount = 0;
@@ -699,7 +699,7 @@ ValuePtr builtin_search(const Context *, const EvalContext *evalctx)
 
 			if ((index_col_num == 0 && findThis == search_element) ||
 					(index_col_num < search_element->toVector().size() &&
-					 findThis      == search_element->toVector()[index_col_num])) {
+					 findThis == search_element->toVector()[index_col_num])) {
 				returnvec.push_back(ValuePtr(double(j)));
 				matchCount++;
 				if (num_returns_per_match != 0 && matchCount >= num_returns_per_match) break;
@@ -725,7 +725,7 @@ ValuePtr builtin_search(const Context *, const EvalContext *evalctx)
 
 				if ((index_col_num == 0 && find_value == search_element) ||
 						(index_col_num < search_element->toVector().size() &&
-						 find_value    == search_element->toVector()[index_col_num])) {
+						 find_value == search_element->toVector()[index_col_num])) {
 					ValuePtr resultValue((double(j)));
 					matchCount++;
 					if (num_returns_per_match == 1) {
@@ -783,14 +783,14 @@ ValuePtr builtin_parent_module(const Context *, const EvalContext *evalctx)
 	double d;
 	int s = UserModule::stack_size();
 	if (evalctx->numArgs() == 0)
-		d=1; // parent module
+		d = 1; // parent module
 	else if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
 		if (v->type() != Value::ValueType::NUMBER) return ValuePtr::undefined;
 		v->getDouble(d);
 	} else
 		return ValuePtr::undefined;
-	n=trunc(d);
+	n = trunc(d);
 	if (n < 0) {
 		PRINTB("WARNING: Negative parent module index (%d) not allowed", n);
 		return ValuePtr::undefined;
@@ -814,7 +814,7 @@ ValuePtr builtin_norm(const Context *, const EvalContext *evalctx)
 				if (v[i]->type() == Value::ValueType::NUMBER) {
 					// sum += pow(v[i].toDouble(),2);
 					double x = v[i]->toDouble();
-					sum += x*x;
+					sum += x * x;
 				} else {
 					PRINT("WARNING: Incorrect arguments to norm()");
 					return ValuePtr::undefined;

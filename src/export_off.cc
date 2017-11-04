@@ -85,16 +85,16 @@ void export_off(const shared_ptr<const Geometry> &geom, std::ostream &output)
 	output << "OFF " << mesh.vertices.size() << " " << mesh.numfaces << " 0\n";
 	const Vector3d *v = mesh.vertices.getArray();
 	size_t numverts = mesh.vertices.size();
-	for (size_t i=0; i<numverts; i++) {
+	for (size_t i = 0; i < numverts; i++) {
 		output << v[i][0] << " " << v[i][1] << " " << v[i][2] << " " << "\n";
 	}
 	size_t cnt = 0;
-	for (size_t i=0; i<mesh.numfaces; i++) {
+	for (size_t i = 0; i < mesh.numfaces; i++) {
 		size_t nverts = 0;
 		while (mesh.indices[cnt++] != -1) nverts++;
 		output << nverts;
 		cnt -= nverts + 1;
-		for (size_t n=0; n<nverts; n++) output << " " << mesh.indices[cnt++];
+		for (size_t n = 0; n < nverts; n++) output << " " << mesh.indices[cnt++];
 		output << "\n";
 		cnt++;     // Skip the -1 marker
 	}

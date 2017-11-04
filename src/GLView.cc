@@ -80,7 +80,7 @@ void GLView::resizeGL(int w, int h)
 	cam.pixel_width = w;
 	cam.pixel_height = h;
 	glViewport(0, 0, w, h);
-	aspectratio = 1.0*w/h;
+	aspectratio = 1.0 * w / h;
 }
 
 void GLView::setCamera(const Camera &cam)
@@ -98,14 +98,14 @@ void GLView::setupCamera()
 		auto dist = cam.zoomValue();
 		switch (this->cam.projection) {
 		case Camera::ProjectionType::PERSPECTIVE: {
-			gluPerspective(cam.fov, aspectratio, 0.1*dist, 100*dist);
+			gluPerspective(cam.fov, aspectratio, 0.1 * dist, 100 * dist);
 			break;
 		}
 		case Camera::ProjectionType::ORTHOGONAL: {
-			auto height = dist * tan(cam.fov/2*M_PI/180);
-			glOrtho(-height*aspectratio, height*aspectratio,
+			auto height = dist * tan(cam.fov / 2 * M_PI / 180);
+			glOrtho(-height * aspectratio, height * aspectratio,
 							-height, height,
-							-100*dist, +100*dist);
+							-100 * dist, +100 * dist);
 			break;
 		}
 		}
@@ -123,14 +123,14 @@ void GLView::setupCamera()
 		auto dist = (cam.center - cam.eye).norm();
 		switch (this->cam.projection) {
 		case Camera::ProjectionType::PERSPECTIVE: {
-			gluPerspective(cam.fov, aspectratio, 0.1*dist, 100*dist);
+			gluPerspective(cam.fov, aspectratio, 0.1 * dist, 100 * dist);
 			break;
 		}
 		case Camera::ProjectionType::ORTHOGONAL: {
-			auto height = dist * tan(cam.fov/2*M_PI/180);
-			glOrtho(-height*aspectratio, height*aspectratio,
+			auto height = dist * tan(cam.fov / 2 * M_PI / 180);
+			glOrtho(-height * aspectratio, height * aspectratio,
 							-height, height,
-							-100*dist, +100*dist);
+							-100 * dist, +100 * dist);
 			break;
 		}
 		}
@@ -385,9 +385,9 @@ void GLView::showSmallaxes(const Color4f &col)
 	glLoadIdentity();
 	glTranslatef(-0.8f, -0.8f, 0.0f);
 	auto scale = 90;
-	glOrtho(-scale*dpi*aspectratio,scale*dpi*aspectratio,
-					-scale*dpi,scale*dpi,
-					-scale*dpi,scale*dpi);
+	glOrtho(-scale * dpi * aspectratio,scale * dpi * aspectratio,
+					-scale * dpi,scale * dpi,
+					-scale * dpi,scale * dpi);
 	gluLookAt(0.0, -1.0, 0.0,
 						0.0, 0.0, 0.0,
 						0.0, 0.0, 1.0);
@@ -401,11 +401,11 @@ void GLView::showSmallaxes(const Color4f &col)
 	glLineWidth(dpi);
 	glBegin(GL_LINES);
 	glColor3d(1.0, 0.0, 0.0);
-	glVertex3d(0, 0, 0); glVertex3d(10*dpi, 0, 0);
+	glVertex3d(0, 0, 0); glVertex3d(10 * dpi, 0, 0);
 	glColor3d(0.0, 1.0, 0.0);
-	glVertex3d(0, 0, 0); glVertex3d(0, 10*dpi, 0);
+	glVertex3d(0, 0, 0); glVertex3d(0, 10 * dpi, 0);
 	glColor3d(0.0, 0.0, 1.0);
-	glVertex3d(0, 0, 0); glVertex3d(0, 0, 10*dpi);
+	glVertex3d(0, 0, 0); glVertex3d(0, 0, 10 * dpi);
 	glEnd();
 
 	GLdouble mat_model[16];
@@ -418,39 +418,39 @@ void GLView::showSmallaxes(const Color4f &col)
 	glGetIntegerv(GL_VIEWPORT, viewport);
 
 	GLdouble xlabel_x, xlabel_y, xlabel_z;
-	gluProject(12*dpi, 0, 0, mat_model, mat_proj, viewport, &xlabel_x, &xlabel_y, &xlabel_z);
+	gluProject(12 * dpi, 0, 0, mat_model, mat_proj, viewport, &xlabel_x, &xlabel_y, &xlabel_z);
 	xlabel_x = std::round(xlabel_x); xlabel_y = std::round(xlabel_y);
 
 	GLdouble ylabel_x, ylabel_y, ylabel_z;
-	gluProject(0, 12*dpi, 0, mat_model, mat_proj, viewport, &ylabel_x, &ylabel_y, &ylabel_z);
+	gluProject(0, 12 * dpi, 0, mat_model, mat_proj, viewport, &ylabel_x, &ylabel_y, &ylabel_z);
 	ylabel_x = std::round(ylabel_x); ylabel_y = std::round(ylabel_y);
 
 	GLdouble zlabel_x, zlabel_y, zlabel_z;
-	gluProject(0, 0, 12*dpi, mat_model, mat_proj, viewport, &zlabel_x, &zlabel_y, &zlabel_z);
+	gluProject(0, 0, 12 * dpi, mat_model, mat_proj, viewport, &zlabel_x, &zlabel_y, &zlabel_z);
 	zlabel_x = std::round(zlabel_x); zlabel_y = std::round(zlabel_y);
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glTranslated(-1, -1, 0);
-	glScaled(2.0/viewport[2], 2.0/viewport[3], 1);
+	glScaled(2.0 / viewport[2], 2.0 / viewport[3], 1);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
 	glColor3f(col[0], col[1], col[2]);
 
-	float d = 3*dpi;
+	float d = 3 * dpi;
 	glBegin(GL_LINES);
 	// X Label
-	glVertex3d(xlabel_x-d, xlabel_y-d, 0); glVertex3d(xlabel_x+d, xlabel_y+d, 0);
-	glVertex3d(xlabel_x-d, xlabel_y+d, 0); glVertex3d(xlabel_x+d, xlabel_y-d, 0);
+	glVertex3d(xlabel_x - d, xlabel_y - d, 0); glVertex3d(xlabel_x + d, xlabel_y + d, 0);
+	glVertex3d(xlabel_x - d, xlabel_y + d, 0); glVertex3d(xlabel_x + d, xlabel_y - d, 0);
 	// Y Label
-	glVertex3d(ylabel_x-d, ylabel_y-d, 0); glVertex3d(ylabel_x+d, ylabel_y+d, 0);
-	glVertex3d(ylabel_x-d, ylabel_y+d, 0); glVertex3d(ylabel_x, ylabel_y, 0);
+	glVertex3d(ylabel_x - d, ylabel_y - d, 0); glVertex3d(ylabel_x + d, ylabel_y + d, 0);
+	glVertex3d(ylabel_x - d, ylabel_y + d, 0); glVertex3d(ylabel_x, ylabel_y, 0);
 	// Z Label
-	glVertex3d(zlabel_x-d, zlabel_y-d, 0); glVertex3d(zlabel_x+d, zlabel_y-d, 0);
-	glVertex3d(zlabel_x-d, zlabel_y+d, 0); glVertex3d(zlabel_x+d, zlabel_y+d, 0);
-	glVertex3d(zlabel_x-d, zlabel_y-d, 0); glVertex3d(zlabel_x+d, zlabel_y+d, 0);
+	glVertex3d(zlabel_x - d, zlabel_y - d, 0); glVertex3d(zlabel_x + d, zlabel_y - d, 0);
+	glVertex3d(zlabel_x - d, zlabel_y + d, 0); glVertex3d(zlabel_x + d, zlabel_y + d, 0);
+	glVertex3d(zlabel_x - d, zlabel_y - d, 0); glVertex3d(zlabel_x + d, zlabel_y + d, 0);
 	// FIXME - depends on gimbal camera 'viewer distance'.. how to fix this
 	//         for VectorCamera?
 	glEnd();
@@ -497,9 +497,9 @@ void GLView::showCrosshairs()
 	glBegin(GL_LINES);
 	for (double xf = -1; xf <= +1; xf += 2)
 		for (double yf = -1; yf <= +1; yf += 2) {
-			auto vd = cam.zoomValue()/8;
-			glVertex3d(-xf*vd, -yf*vd, -vd);
-			glVertex3d(+xf*vd, +yf*vd, +vd);
+			auto vd = cam.zoomValue() / 8;
+			glVertex3d(-xf * vd, -yf * vd, -vd);
+			glVertex3d(+xf * vd, +yf * vd, +vd);
 		}
 	glEnd();
 }
@@ -522,7 +522,7 @@ void GLView::showScalemarkers(const Color4f &col)
 
 	const int size_div_sm = 60; // divisor for l to determine minor tick size
 	int line_cnt = 0;
-	for (double i=0; i<l; i+=tick_width) { // i represents the position along the axis
+	for (double i = 0; i < l; i += tick_width) { // i represents the position along the axis
 		int size_div;
 		if (line_cnt > 0 && line_cnt % 10 == 0) { // major tick
 			size_div = size_div_sm * .5; // resize to a major tick
@@ -560,17 +560,17 @@ void GLView::showScalemarkers(const Color4f &col)
 		// positive axes
 		glBegin(GL_LINES);
 		// x
-		glVertex3d(i,0,0); glVertex3d(i,-l/size_div,0); // 1 arm
+		glVertex3d(i,0,0); glVertex3d(i,-l / size_div,0); // 1 arm
 		//glVertex3d(i,-l/size_div,0); glVertex3d(i,l/size_div,0); // 2 arms
 		//glVertex3d(i,0,-l/size_div); glVertex3d(i,0,l/size_div); // 4 arms (w/ 2 arms line)
 
 		// y
-		glVertex3d(0,i,0); glVertex3d(-l/size_div,i,0); // 1 arm
+		glVertex3d(0,i,0); glVertex3d(-l / size_div,i,0); // 1 arm
 		//glVertex3d(-l/size_div,i,0); glVertex3d(l/size_div,i,0); // 2 arms
 		//glVertex3d(0,i,-l/size_div); glVertex3d(0,i,l/size_div); // 4 arms (w/ 2 arms line)
 
 		// z
-		glVertex3d(0,0,i); glVertex3d(-l/size_div,0,i); // 1 arm
+		glVertex3d(0,0,i); glVertex3d(-l / size_div,0,i); // 1 arm
 		//glVertex3d(-l/size_div,0,i); glVertex3d(l/size_div,0,i); // 2 arms
 		//glVertex3d(0,-l/size_div,i); glVertex3d(0,l/size_div,i); // 4 arms (w/ 2 arms line)
 		glEnd();
@@ -581,17 +581,17 @@ void GLView::showScalemarkers(const Color4f &col)
 		glLineStipple(3, 0xAAAA);
 		glBegin(GL_LINES);
 		// x
-		glVertex3d(-i,0,0); glVertex3d(-i,-l/size_div,0); // 1 arm
+		glVertex3d(-i,0,0); glVertex3d(-i,-l / size_div,0); // 1 arm
 		//glVertex3d(-i,-l/size_div,0); glVertex3d(-i,l/size_div,0); // 2 arms
 		//glVertex3d(-i,0,-l/size_div); glVertex3d(-i,0,l/size_div); // 4 arms (w/ 2 arms line)
 
 		// y
-		glVertex3d(0,-i,0); glVertex3d(-l/size_div,-i,0); // 1 arm
+		glVertex3d(0,-i,0); glVertex3d(-l / size_div,-i,0); // 1 arm
 		//glVertex3d(-l/size_div,-i,0); glVertex3d(l/size_div,-i,0); // 2 arms
 		//glVertex3d(0,-i,-l/size_div); glVertex3d(0,-i,l/size_div); // 4 arms (w/ 2 arms line)
 
 		// z
-		glVertex3d(0,0,-i); glVertex3d(-l/size_div,0,-i); // 1 arm
+		glVertex3d(0,0,-i); glVertex3d(-l / size_div,0,-i); // 1 arm
 		//glVertex3d(-l/size_div,0,-i); glVertex3d(l/size_div,0,-i); // 2 arms
 		//glVertex3d(0,-l/size_div,-i); glVertex3d(0,l/size_div,-i); // 4 arms (w/ 2 arms line)
 		glEnd();
@@ -607,10 +607,10 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
 	auto digit = oss.str();
 
 	// setup how far above the axis (or tick TBD) to draw the number
-	double dig_buf = (l/size_div_sm)/4;
+	double dig_buf = (l / size_div_sm) / 4;
 	// setup the size of the character box
-	double dig_w = (l/size_div_sm)/2;
-	double dig_h = (l/size_div_sm) + dig_buf;
+	double dig_w = (l / size_div_sm) / 2;
+	double dig_h = (l / size_div_sm) + dig_buf;
 	// setup the distance between characters
 	double kern = dig_buf;
 	double dig_wk = (dig_w) + kern;
@@ -626,7 +626,7 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
 	};
 
 	// set up character vertex seqeunces for different axes
-	int or_2[6][6]={
+	int or_2[6][6] = {
 		{0,1,3,2,4,5},
 		{1,0,2,3,5,4},
 		{1,0,2,3,5,4},
@@ -635,7 +635,7 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
 		{0,1,3,2,4,5}
 	};
 
-	int or_3[6][7]={
+	int or_3[6][7] = {
 		{0,1,3,2,3,5,4},
 		{1,0,2,3,2,4,5},
 		{1,0,2,3,2,4,5},
@@ -644,7 +644,7 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
 		{0,1,3,2,3,5,4}
 	};
 
-	int or_4[6][5]={
+	int or_4[6][5] = {
 		{0,2,3,1,5},
 		{1,3,2,0,4},
 		{1,3,2,0,4},
@@ -653,7 +653,7 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
 		{0,2,3,1,5}
 	};
 
-	int or_5[6][6]={
+	int or_5[6][6] = {
 		{1,0,2,3,5,4},
 		{0,1,3,2,4,5},
 		{0,1,3,2,4,5},
@@ -662,7 +662,7 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
 		{1,0,2,3,5,4}
 	};
 
-	int or_6[6][6]={
+	int or_6[6][6] = {
 		{1,0,4,5,3,2},
 		{0,1,5,4,2,3},
 		{0,1,5,4,2,3},
@@ -671,7 +671,7 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
 		{1,0,4,5,3,2}
 	};
 
-	int or_7[6][3]={
+	int or_7[6][3] = {
 		{0,1,4},
 		{1,0,5},
 		{1,0,5},
@@ -680,7 +680,7 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
 		{0,1,4}
 	};
 
-	int or_9[6][5]={
+	int or_9[6][5] = {
 		{5,1,0,2,3},
 		{4,0,1,3,2},
 		{4,0,1,3,2},
@@ -689,7 +689,7 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
 		{5,1,0,2,3}
 	};
 
-	int or_e[6][7]={
+	int or_e[6][7] = {
 		{1,0,2,3,2,4,5},
 		{0,1,3,2,3,5,4},
 		{0,1,3,2,3,5,4},
@@ -701,17 +701,17 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
 	auto stash_digit = digit;
 
 	// walk through axes
-	for (int di=0; di<6; di++) {
+	for (int di = 0; di < 6; di++) {
 
 		// setup negative axes
 		double polarity = 1;
-		if (di>2) {
+		if (di > 2) {
 			polarity = -1;
 			digit = "-" + stash_digit;
 		}
 
 		// fix the axes that need to run the opposite direction
-		if (di>0 && di<4) {
+		if (di > 0 && di < 4) {
 			std::reverse(digit.begin(),digit.end());
 		}
 
@@ -719,12 +719,12 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
 		for (std::string::size_type char_num = 0; char_num < digit.size(); ++char_num) {
 			// setup the vertices for the char rendering based on the axis and position
 			double dig_vrt[6][3] = {
-				{polarity *((i+((char_num)*dig_wk))-(dig_w/2)),dig_h,0},
-				{polarity *((i+((char_num)*dig_wk))+(dig_w/2)),dig_h,0},
-				{polarity *((i+((char_num)*dig_wk))-(dig_w/2)),dig_h/2+dig_buf,0},
-				{polarity *((i+((char_num)*dig_wk))+(dig_w/2)),dig_h/2+dig_buf,0},
-				{polarity *((i+((char_num)*dig_wk))-(dig_w/2)),dig_buf,0},
-				{polarity *((i+((char_num)*dig_wk))+(dig_w/2)),dig_buf,0}
+				{polarity *((i + ((char_num) * dig_wk)) - (dig_w / 2)),dig_h,0},
+				{polarity *((i + ((char_num) * dig_wk)) + (dig_w / 2)),dig_h,0},
+				{polarity *((i + ((char_num) * dig_wk)) - (dig_w / 2)),dig_h / 2 + dig_buf,0},
+				{polarity *((i + ((char_num) * dig_wk)) + (dig_w / 2)),dig_h / 2 + dig_buf,0},
+				{polarity *((i + ((char_num) * dig_wk)) - (dig_w / 2)),dig_buf,0},
+				{polarity *((i + ((char_num) * dig_wk)) + (dig_w / 2)),dig_buf,0}
 			};
 
 			// convert the char into lines appropriate for the axis being used

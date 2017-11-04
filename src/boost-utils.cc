@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <iostream>
 
-namespace fs=boost::filesystem;
+namespace fs = boost::filesystem;
 // If the given (absolute) path is relative to the relative_to path, return a new
 // relative path. Will normalize the given path first
 fs::path boostfs_relative_path(const fs::path &path, const fs::path &relative_to)
@@ -57,7 +57,7 @@ fs::path boostfs_normalize(const fs::path &path)
 		result /= *it;
 	}
 	result = boosty::canonical(result.parent_path());
-	if (it!=absPath.begin()) it--;
+	if (it != absPath.begin()) it--;
 
 	// For the rest remove ".." and "." in a path with no symlinks
 	for (; it != absPath.end(); ++it) {
@@ -123,7 +123,7 @@ boostfs_uncomplete(fs::path const p, fs::path const base)
 #endif
 
 	// Cache system-dependent dot, double-dot and slash strings
-	const std::string _dot  = ".";
+	const std::string _dot = ".";
 	const std::string _dots = "..";
 	const std::string _sep = "/";
 

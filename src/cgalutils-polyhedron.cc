@@ -81,7 +81,7 @@ public:
 				std::advance(last, -1);
 				if (*last != pindices.front()) last++; // In case the first & last are equal
 				pindices.erase(last, pindices.end());
-				if (pindices.size() >=3 && B.test_facet(pindices.begin(), pindices.end())) {
+				if (pindices.size() >= 3 && B.test_facet(pindices.begin(), pindices.end())) {
 					B.add_facet(pindices.begin(), pindices.end());
 				}
 #ifdef GEN_SURFACE_DEBUG
@@ -100,7 +100,7 @@ public:
 #endif
 #ifdef GEN_SURFACE_DEBUG
 			printf("points=[");
-			for (int i=0; i<vertices.size(); i++) {
+			for (int i = 0; i < vertices.size(); i++) {
 				if (i > 0) printf(",");
 				const CGALPoint &p = vertices[i];
 				printf("[%g,%g,%g]", CGAL::to_double(p.x()), CGAL::to_double(p.y()), CGAL::to_double(p.z()));
@@ -164,7 +164,7 @@ public:
 			printf("],\n");
 
 			printf("points=[");
-			for (int vidx=0; vidx<vertices.size(); vidx++) {
+			for (int vidx = 0; vidx < vertices.size(); vidx++) {
 				if (vidx > 0) printf(",");
 				const Vector3d &v = vertices.getArray()[vidx];
 				printf("[%g,%g,%g]", v[0], v[1], v[2]);

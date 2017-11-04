@@ -70,7 +70,7 @@ void exportFileByName(const shared_ptr<const Geometry> &root_geom, FileFormat fo
 		PRINTB(_("Can't open file \"%s\" for export"), name2display);
 	} else {
 		bool onerror = false;
-		fstream.exceptions(std::ios::badbit|std::ios::failbit);
+		fstream.exceptions(std::ios::badbit | std::ios::failbit);
 		try {
 			exportFile(root_geom, fstream, format);
 		} catch (std::ios::failure x) {

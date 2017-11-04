@@ -63,15 +63,15 @@ public:
 	void draw(bool showedges) const {
 		PRINTD("draw()");
 		if (this->style == SNC_BOUNDARY) {
-			glCallList(this->object_list_+2);
+			glCallList(this->object_list_ + 2);
 			if (showedges) {
 				glDisable(GL_LIGHTING);
-				glCallList(this->object_list_+1);
+				glCallList(this->object_list_ + 1);
 				glCallList(this->object_list_);
 			}
 		} else {
 			glDisable(GL_LIGHTING);
-			glCallList(this->object_list_+1);
+			glCallList(this->object_list_ + 1);
 			glCallList(this->object_list_);
 		}
 		PRINTD("draw() end");
@@ -99,13 +99,13 @@ public:
 	}
 
 	void setColor(CGAL_OGL_Polyhedron::CGALColorIndex color_index, const Color4f &c) {
-		PRINTDB("setColor %i %f %f %f",color_index%c[0]%c[1]%c[2]);
-		this->colors[color_index] = CGAL::Color(c[0]*255,c[1]*255,c[2]*255);
+		PRINTDB("setColor %i %f %f %f",color_index % c[0] % c[1] % c[2]);
+		this->colors[color_index] = CGAL::Color(c[0] * 255,c[1] * 255,c[2] * 255);
 	}
 
 	void setColor(CGAL_OGL_Polyhedron::CGALColorIndex color_index,
 								unsigned char r, unsigned char g, unsigned char b) {
-		PRINTDB("setColor %i %i %i %i",color_index%r%g%b);
+		PRINTDB("setColor %i %i %i %i",color_index % r % g % b);
 		this->colors[color_index] = CGAL::Color(r,g,b);
 	}
 

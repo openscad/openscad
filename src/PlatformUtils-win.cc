@@ -100,7 +100,7 @@ unsigned long PlatformUtils::stackLimit()
 	return STACK_LIMIT_DEFAULT;
 }
 
-typedef BOOL (WINAPI *LPFN_ISWOW64PROCESS)(HANDLE, PBOOL);
+typedef BOOL (WINAPI * LPFN_ISWOW64PROCESS)(HANDLE, PBOOL);
 
 // see http://msdn.microsoft.com/en-us/library/windows/desktop/ms684139%28v=vs.85%29.aspx
 static BOOL IsWow64()
@@ -132,7 +132,7 @@ std::string PlatformUtils::sysinfo(bool extended)
 		result += "Unknown Windows(TM)";
 	} else {
 		boost::format fmt("Windows(TM) %d.%d SP %d.%d NTW %i MSDN 724833");
-		fmt   % osinfo.dwMajorVersion % osinfo.dwMinorVersion
+		fmt % osinfo.dwMajorVersion % osinfo.dwMinorVersion
 		% osinfo.wServicePackMajor % osinfo.wServicePackMinor
 		% (osinfo.wProductType == VER_NT_WORKSTATION);
 		result += fmt.str();

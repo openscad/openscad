@@ -152,25 +152,25 @@ DxfData::DxfData(double fn, double fs, double fa,
 		try {
 			if (id >= 10 && id <= 16) {
 				if (in_blocks_section) {
-					coords[id-10][0] = boost::lexical_cast<double>(data);
+					coords[id - 10][0] = boost::lexical_cast<double>(data);
 				}
 				else if (id == 11 || id == 12 || id == 16) {
-					coords[id-10][0] = boost::lexical_cast<double>(data) * scale;
+					coords[id - 10][0] = boost::lexical_cast<double>(data) * scale;
 				}
 				else {
-					coords[id-10][0] = (boost::lexical_cast<double>(data) - xorigin) * scale;
+					coords[id - 10][0] = (boost::lexical_cast<double>(data) - xorigin) * scale;
 				}
 			}
 
 			if (id >= 20 && id <= 26) {
 				if (in_blocks_section) {
-					coords[id-20][1] = boost::lexical_cast<double>(data);
+					coords[id - 20][1] = boost::lexical_cast<double>(data);
 				}
 				else if (id == 21 || id == 22 || id == 26) {
-					coords[id-20][1] = boost::lexical_cast<double>(data) * scale;
+					coords[id - 20][1] = boost::lexical_cast<double>(data) * scale;
 				}
 				else {
-					coords[id-20][1] = (boost::lexical_cast<double>(data) - yorigin) * scale;
+					coords[id - 20][1] = (boost::lexical_cast<double>(data) - yorigin) * scale;
 				}
 			}
 
@@ -187,22 +187,22 @@ DxfData::DxfData(double fn, double fs, double fa,
 					// assert(xverts.size() == yverts.size());
 					// Get maximum to enforce managed exception if xverts.size() != yverts.size()
 					int numverts = std::max(xverts.size(), yverts.size());
-					for (int i=1; i<numverts; i++) {
-						ADD_LINE(xverts.at(i-1), yverts.at(i-1), xverts.at(i%numverts), yverts.at(i%numverts));
+					for (int i = 1; i < numverts; i++) {
+						ADD_LINE(xverts.at(i - 1), yverts.at(i - 1), xverts.at(i % numverts), yverts.at(i % numverts));
 					}
 					// polyline flag is stored in 'dimtype'
 					if (dimtype & 0x01) { // closed polyline
-						ADD_LINE(xverts.at(numverts-1), yverts.at(numverts-1), xverts.at(0), yverts.at(0));
+						ADD_LINE(xverts.at(numverts - 1), yverts.at(numverts - 1), xverts.at(0), yverts.at(0));
 					}
 				}
 				else if (mode == "CIRCLE") {
 					int n = Calc::get_fragments_from_r(radius, fn, fs, fa);
 					Vector2d center(xverts.at(0), yverts.at(0));
 					for (int i = 0; i < n; i++) {
-						double a1 = (2*M_PI*i)/n;
-						double a2 = (2*M_PI*(i+1))/n;
-						ADD_LINE(cos(a1)*radius + center[0], sin(a1)*radius + center[1],
-										 cos(a2)*radius + center[0], sin(a2)*radius + center[1]);
+						double a1 = (2 * M_PI * i) / n;
+						double a2 = (2 * M_PI * (i + 1)) / n;
+						ADD_LINE(cos(a1) * radius + center[0], sin(a1) * radius + center[1],
+										 cos(a2) * radius + center[0], sin(a2) * radius + center[1]);
 					}
 				}
 				else if (mode == "ARC") {
@@ -211,14 +211,14 @@ DxfData::DxfData(double fn, double fs, double fa,
 					while (arc_start_angle > arc_stop_angle) {
 						arc_stop_angle += 360.0;
 					}
-					n = static_cast<int>(ceil(n * (arc_stop_angle-arc_start_angle) / 360));
+					n = static_cast<int>(ceil(n * (arc_stop_angle - arc_start_angle) / 360));
 					for (int i = 0; i < n; i++) {
-						double a1 = ((arc_stop_angle-arc_start_angle)*i)/n;
-						double a2 = ((arc_stop_angle-arc_start_angle)*(i+1))/n;
+						double a1 = ((arc_stop_angle - arc_start_angle) * i) / n;
+						double a2 = ((arc_stop_angle - arc_start_angle) * (i + 1)) / n;
 						a1 = (arc_start_angle + a1) * M_PI / 180.0;
 						a2 = (arc_start_angle + a2) * M_PI / 180.0;
-						ADD_LINE(cos(a1)*radius + center[0], sin(a1)*radius + center[1],
-										 cos(a2)*radius + center[0], sin(a2)*radius + center[1]);
+						ADD_LINE(cos(a1) * radius + center[0], sin(a1) * radius + center[1],
+										 cos(a2) * radius + center[0], sin(a2) * radius + center[1]);
 					}
 				}
 				else if (mode == "ELLIPSE") {
@@ -229,7 +229,7 @@ DxfData::DxfData(double fn, double fs, double fa,
 //				Vector2d ce(xverts[1], yverts[1]);
 					Vector2d ce(xverts.at(1), yverts.at(1));
 //				double r_major = ce.length();
-					double r_major = sqrt(ce[0]*ce[0] + ce[1]*ce[1]);
+					double r_major = sqrt(ce[0] * ce[0] + ce[1] * ce[1]);
 //				double rot_angle = ce.angle();
 					double rot_angle;
 					{
@@ -244,18 +244,18 @@ DxfData::DxfData(double fn, double fs, double fa,
 
 					// the ratio stored in 'radius; due to the parser code not checking entity type
 					double r_minor = r_major * radius;
-					double sweep_angle = ellipse_stop_angle-ellipse_start_angle;
+					double sweep_angle = ellipse_stop_angle - ellipse_start_angle;
 					int n = Calc::get_fragments_from_r(r_major, fn, fs, fa);
 					n = static_cast<int>(ceil(n * sweep_angle / (2 * M_PI)));
 //				Vector2d p1;
 					Vector2d p1{0.0, 0.0};
-					for (int i=0; i<=n; i++) {
-						double a = (ellipse_start_angle + sweep_angle*i/n);
+					for (int i = 0; i <= n; i++) {
+						double a = (ellipse_start_angle + sweep_angle * i / n);
 //					Vector2d p2(cos(a)*r_major, sin(a)*r_minor);
-						Vector2d p2(cos(a)*r_major, sin(a)*r_minor);
+						Vector2d p2(cos(a) * r_major, sin(a) * r_minor);
 //					p2.rotate(rot_angle);
-						Vector2d p2_rot(cos(rot_angle)*p2[0] - sin(rot_angle)*p2[1],
-														sin(rot_angle)*p2[0] + cos(rot_angle)*p2[1]);
+						Vector2d p2_rot(cos(rot_angle) * p2[0] - sin(rot_angle) * p2[1],
+														sin(rot_angle) * p2[0] + cos(rot_angle) * p2[1]);
 //					p2 += center;
 						p2_rot[0] += center[0];
 						p2_rot[1] += center[1];
@@ -278,10 +278,10 @@ DxfData::DxfData(double fn, double fs, double fa,
 						double ly1 = this->points[blockdata[iddata][i].idx[0]][1] * ellipse_stop_angle;
 						double lx2 = this->points[blockdata[iddata][i].idx[1]][0] * ellipse_start_angle;
 						double ly2 = this->points[blockdata[iddata][i].idx[1]][1] * ellipse_stop_angle;
-						double px1 = (cos(a)*lx1 - sin(a)*ly1) * scale + xverts.at(0);
-						double py1 = (sin(a)*lx1 + cos(a)*ly1) * scale + yverts.at(0);
-						double px2 = (cos(a)*lx2 - sin(a)*ly2) * scale + xverts.at(0);
-						double py2 = (sin(a)*lx2 + cos(a)*ly2) * scale + yverts.at(0);
+						double px1 = (cos(a) * lx1 - sin(a) * ly1) * scale + xverts.at(0);
+						double py1 = (sin(a) * lx1 + cos(a) * ly1) * scale + yverts.at(0);
+						double px2 = (cos(a) * lx2 - sin(a) * ly2) * scale + xverts.at(0);
+						double py2 = (sin(a) * lx2 + cos(a) * ly2) * scale + yverts.at(0);
 						ADD_LINE(px1, py1, px2, py2);
 					}
 				}
@@ -614,7 +614,7 @@ Polygon2d *DxfData::toPolygon2d() const
 		// We don't support open paths; closing them to be compatible with existing behavior
 		if (!path.is_closed) endidx++;
 		for (size_t j = 1; j < endidx; j++) {
-			outline.vertices.push_back(this->points[path.indices[path.indices.size()-j]]);
+			outline.vertices.push_back(this->points[path.indices[path.indices.size() - j]]);
 		}
 		poly->addOutline(outline);
 	}

@@ -54,7 +54,7 @@ void ParameterObject::setAssignment(Context *ctx, const Assignment *assignment, 
 	if (desc) {
 		const ValuePtr v = desc->evaluate(ctx);
 		if (v->type() == Value::ValueType::STRING) {
-			description=QString::fromStdString(v->toString());
+			description = QString::fromStdString(v->toString());
 		}
 	}
 
@@ -62,16 +62,16 @@ void ParameterObject::setAssignment(Context *ctx, const Assignment *assignment, 
 	if (group) {
 		const ValuePtr v = group->evaluate(ctx);
 		if (v->type() == Value::ValueType::STRING) {
-			groupName=v->toString();
+			groupName = v->toString();
 		}
 	} else {
-		groupName="Parameters";
+		groupName = "Parameters";
 	}
 }
 
 bool ParameterObject::operator == (const ParameterObject &second)
 {
-	return (this->defaultValue == second.defaultValue && this->values==second.values &&
+	return (this->defaultValue == second.defaultValue && this->values == second.values &&
 					this->description == second.description && this->groupName == second.groupName);
 }
 
