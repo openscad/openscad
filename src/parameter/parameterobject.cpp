@@ -69,7 +69,7 @@ void ParameterObject::setAssignment(Context *ctx, const Assignment *assignment, 
 	}
 }
 
-bool ParameterObject::operator == (const ParameterObject &second)
+bool ParameterObject::operator==(const ParameterObject &second)
 {
 	return (this->defaultValue == second.defaultValue && this->values == second.values &&
 					this->description == second.description && this->groupName == second.groupName);

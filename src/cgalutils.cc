@@ -128,7 +128,7 @@ namespace CGALUtils {
 	namespace {
 
 		// lexicographic comparison
-		bool operator < (Vector3d const &a, Vector3d const &b) {
+		bool operator<(Vector3d const &a, Vector3d const &b) {
 			for (int i = 0; i < 3; i++) {
 				if (a[i] < b[i]) return true;
 				else if (a[i] == b[i]) continue;
@@ -139,8 +139,8 @@ namespace CGALUtils {
 	}
 
 	struct VecPairCompare {
-		bool operator ()(std::pair<Vector3d, Vector3d> const &a,
-										 std::pair<Vector3d, Vector3d> const &b) const {
+		bool operator()(std::pair<Vector3d, Vector3d> const &a,
+										std::pair<Vector3d, Vector3d> const &b) const {
 			return a.first < b.first || (!(b.first < a.first) && a.second < b.second);
 		}
 	};

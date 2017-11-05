@@ -66,7 +66,7 @@ namespace {
 
 namespace /* anonymous*/ {
 
-	std::ostream &operator << (std::ostream &o, AssignmentList const &l) {
+	std::ostream &operator<<(std::ostream &o, AssignmentList const &l) {
 		for (size_t i = 0; i < l.size(); i++) {
 			const Assignment &arg = l[i];
 			if (i > 0) o << ", ";
