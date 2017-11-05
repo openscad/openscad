@@ -14,9 +14,9 @@ extern std::vector<std::string> librarypath;
 extern std::vector<std::string> fontpath;
 
 namespace {
-	bool path_initialized = false;
-	std::string applicationpath;
-	std::string resourcespath;
+bool path_initialized = false;
+std::string applicationpath;
+std::string resourcespath;
 }
 
 const char *PlatformUtils::OPENSCAD_FOLDER_NAME = "OpenSCAD";

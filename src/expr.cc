@@ -41,40 +41,40 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 
 // unnamed namespace
 namespace {
-	bool isListComprehension(const shared_ptr<Expression> &e) {
-		return dynamic_cast<const ListComprehension *>(e.get());
-	}
+bool isListComprehension(const shared_ptr<Expression> &e) {
+	return dynamic_cast<const ListComprehension *>(e.get());
+}
 
-	Value::VectorType flatten(Value::VectorType const &vec) {
-		int n = 0;
-		for (unsigned int i = 0; i < vec.size(); i++) {
-			assert(vec[i]->type() == Value::ValueType::VECTOR);
-			n += vec[i]->toVector().size();
-		}
-		Value::VectorType ret; ret.reserve(n);
-		for (unsigned int i = 0; i < vec.size(); i++) {
-			std::copy(vec[i]->toVector().begin(), vec[i]->toVector().end(), std::back_inserter(ret));
-		}
-		return ret;
+Value::VectorType flatten(Value::VectorType const &vec) {
+	int n = 0;
+	for (unsigned int i = 0; i < vec.size(); i++) {
+		assert(vec[i]->type() == Value::ValueType::VECTOR);
+		n += vec[i]->toVector().size();
 	}
+	Value::VectorType ret; ret.reserve(n);
+	for (unsigned int i = 0; i < vec.size(); i++) {
+		std::copy(vec[i]->toVector().begin(), vec[i]->toVector().end(), std::back_inserter(ret));
+	}
+	return ret;
+}
 
-	void evaluate_sequential_assignment(const AssignmentList &assignment_list, Context *context) {
-		EvalContext ctx(context, assignment_list);
-		ctx.assignTo(*context);
-	}
+void evaluate_sequential_assignment(const AssignmentList &assignment_list, Context *context) {
+	EvalContext ctx(context, assignment_list);
+	ctx.assignTo(*context);
+}
 }
 
 namespace /* anonymous*/ {
 
-	std::ostream &operator<<(std::ostream &o, AssignmentList const &l) {
-		for (size_t i = 0; i < l.size(); i++) {
-			const Assignment &arg = l[i];
-			if (i > 0) o << ", ";
-			if (!arg.name.empty()) o << arg.name << " = ";
-			o << *arg.expr;
-		}
-		return o;
+std::ostream &operator<<(std::ostream &o, AssignmentList const &l) {
+	for (size_t i = 0; i < l.size(); i++) {
+		const Assignment &arg = l[i];
+		if (i > 0) o << ", ";
+		if (!arg.name.empty()) o << arg.name << " = ";
+		o << *arg.expr;
 	}
+	return o;
+}
 
 }
 

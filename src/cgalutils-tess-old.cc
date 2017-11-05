@@ -333,235 +333,235 @@ namespace CGALUtils {
    sequence of polygons without holes. as of writing, this means conversion
    into a sequence of 3d triangles. the given plane should be the same plane
    holding the polygon and it's holes. */
-	bool tessellate3DFaceWithHolesNew(std::vector<CGAL_Polygon_3> &polygons,
-																		Polygons &triangles,
-																		CGAL_Plane_3 &plane)
-	{
-		if (polygons.size() == 1 && polygons[0].size() == 3) {
-			PRINTD("input polygon has 3 points. shortcut tessellation.");
-			Polygon t;
-			t.push_back(Vector3d(CGAL::to_double(polygons[0][0].x()), CGAL::to_double(polygons[0][0].y()), CGAL::to_double(polygons[0][0].z())));
-			t.push_back(Vector3d(CGAL::to_double(polygons[0][1].x()), CGAL::to_double(polygons[0][1].y()), CGAL::to_double(polygons[0][1].z())));
-			t.push_back(Vector3d(CGAL::to_double(polygons[0][2].x()), CGAL::to_double(polygons[0][2].y()), CGAL::to_double(polygons[0][2].z())));
-			triangles.push_back(t);
-			return false;
-		}
-		bool err = false;
-		CDT cdt;
-		std::map<CDTPoint, CGAL_Point_3> vertmap;
-
-		PRINTD("finding good projection");
-		projection_t goodproj = find_good_projection(plane);
-
-		PRINTDB("plane %s", plane);
-		PRINTDB("proj: %i %i", goodproj.plane % goodproj.flip);
-		PRINTD("Inserting points and edges into Constrained Delaunay Triangulation");
-		std::vector<std::vector<CGAL_Point_2>> polygons2d;
-		for (size_t i = 0; i < polygons.size(); i++) {
-			std::vector<Vertex_handle> vhandles;
-			std::vector<CGAL_Point_2> polygon2d;
-			for (size_t j = 0; j < polygons[i].size(); j++) {
-				CGAL_Point_3 p3 = polygons[i][j];
-				CGAL_Point_2 p2 = get_projected_point(p3, goodproj);
-				CDTPoint cdtpoint = CDTPoint(p2.x(), p2.y());
-				vertmap[ cdtpoint ] = p3;
-				Vertex_handle vh = cdt.push_back(cdtpoint);
-				vhandles.push_back(vh);
-				polygon2d.push_back(p2);
-			}
-			polygons2d.push_back(polygon2d);
-			for (size_t k = 0; k < vhandles.size(); k++) {
-				int vindex1 = (k + 0);
-				int vindex2 = (k + 1) % vhandles.size();
-				CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
-				try {
-					cdt.insert_constraint(vhandles[vindex1], vhandles[vindex2]);
-				} catch (const CGAL::Failure_exception &e) {
-					PRINTB("WARNING: Constraint insertion failure %s", e.what());
-				}
-				CGAL::set_error_behaviour(old_behaviour);
-			}
-		}
-
-		size_t numholes = polygons2d.size() - 1;
-		PRINTDB("seeding %i holes", numholes);
-		std::list<CDTPoint> list_of_seeds;
-		for (size_t i = 1; i < polygons2d.size(); i++) {
-			std::vector<CGAL_Point_2> &pgon = polygons2d[i];
-			for (size_t j = 0; j < pgon.size(); j++) {
-				CGAL_Point_2 p1 = pgon[(j + 0)];
-				CGAL_Point_2 p2 = pgon[(j + 1) % pgon.size()];
-				CGAL_Point_2 p3 = pgon[(j + 2) % pgon.size()];
-				CGAL_Point_2 mp = CGAL::midpoint(p1, CGAL::midpoint(p2, p3));
-				if (inside(mp, pgon, NONZERO_WINDING)) {
-					CDTPoint cdtpt(mp.x(), mp.y());
-					list_of_seeds.push_back(cdtpt);
-					break;
-				}
-			}
-		}
-		std::list<CDTPoint>::iterator li = list_of_seeds.begin();
-		for (; li != list_of_seeds.end(); li++) {
-			//PRINTB("seed %s",*li);
-			double x = CGAL::to_double(li->x());
-			double y = CGAL::to_double(li->y());
-			PRINTDB("seed %f,%f", x % y);
-		}
-		PRINTD("seeding done");
-
-		PRINTD("meshing");
-		CGAL::refine_Delaunay_mesh_2_without_edge_refinement(cdt,
-																												 list_of_seeds.begin(), list_of_seeds.end(),
-																												 DummyCriteria<CDT>());
-
-		PRINTD("meshing done");
-		// this fails because it calls is_simple and is_simple fails on many
-		// Nef Polyhedron faces
-		//CGAL::Orientation original_orientation =
-		//	CGAL::orientation_2( orienpgon.begin(), orienpgon.end() );
-
-		CDT::Finite_faces_iterator fit;
-		for (fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); fit++) {
-			if (fit->is_in_domain()) {
-				CDTPoint p1 = cdt.triangle(fit)[0];
-				CDTPoint p2 = cdt.triangle(fit)[1];
-				CDTPoint p3 = cdt.triangle(fit)[2];
-				CGAL_Point_3 cp1, cp2, cp3;
-				if (vertmap.count(p1)) cp1 = vertmap[p1];
-				else err = deproject(p1, goodproj, plane, cp1);
-				if (vertmap.count(p2)) cp2 = vertmap[p2];
-				else err = deproject(p2, goodproj, plane, cp2);
-				if (vertmap.count(p3)) cp3 = vertmap[p3];
-				else err = deproject(p3, goodproj, plane, cp3);
-				if (err) PRINT("WARNING: 2d->3d deprojection failure");
-				Polygon tri;
-				tri.push_back(Vector3d(CGAL::to_double(cp1.x()), CGAL::to_double(cp1.y()), CGAL::to_double(cp1.z())));
-				tri.push_back(Vector3d(CGAL::to_double(cp2.x()), CGAL::to_double(cp2.y()), CGAL::to_double(cp2.z())));
-				tri.push_back(Vector3d(CGAL::to_double(cp3.x()), CGAL::to_double(cp3.y()), CGAL::to_double(cp3.z())));
-				triangles.push_back(tri);
-			}
-		}
-
-		PRINTDB("built %i triangles", triangles.size());
-		return err;
+bool tessellate3DFaceWithHolesNew(std::vector<CGAL_Polygon_3> &polygons,
+																	Polygons &triangles,
+																	CGAL_Plane_3 &plane)
+{
+	if (polygons.size() == 1 && polygons[0].size() == 3) {
+		PRINTD("input polygon has 3 points. shortcut tessellation.");
+		Polygon t;
+		t.push_back(Vector3d(CGAL::to_double(polygons[0][0].x()), CGAL::to_double(polygons[0][0].y()), CGAL::to_double(polygons[0][0].z())));
+		t.push_back(Vector3d(CGAL::to_double(polygons[0][1].x()), CGAL::to_double(polygons[0][1].y()), CGAL::to_double(polygons[0][1].z())));
+		t.push_back(Vector3d(CGAL::to_double(polygons[0][2].x()), CGAL::to_double(polygons[0][2].y()), CGAL::to_double(polygons[0][2].z())));
+		triangles.push_back(t);
+		return false;
 	}
+	bool err = false;
+	CDT cdt;
+	std::map<CDTPoint, CGAL_Point_3> vertmap;
+
+	PRINTD("finding good projection");
+	projection_t goodproj = find_good_projection(plane);
+
+	PRINTDB("plane %s", plane);
+	PRINTDB("proj: %i %i", goodproj.plane % goodproj.flip);
+	PRINTD("Inserting points and edges into Constrained Delaunay Triangulation");
+	std::vector<std::vector<CGAL_Point_2>> polygons2d;
+	for (size_t i = 0; i < polygons.size(); i++) {
+		std::vector<Vertex_handle> vhandles;
+		std::vector<CGAL_Point_2> polygon2d;
+		for (size_t j = 0; j < polygons[i].size(); j++) {
+			CGAL_Point_3 p3 = polygons[i][j];
+			CGAL_Point_2 p2 = get_projected_point(p3, goodproj);
+			CDTPoint cdtpoint = CDTPoint(p2.x(), p2.y());
+			vertmap[ cdtpoint ] = p3;
+			Vertex_handle vh = cdt.push_back(cdtpoint);
+			vhandles.push_back(vh);
+			polygon2d.push_back(p2);
+		}
+		polygons2d.push_back(polygon2d);
+		for (size_t k = 0; k < vhandles.size(); k++) {
+			int vindex1 = (k + 0);
+			int vindex2 = (k + 1) % vhandles.size();
+			CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+			try {
+				cdt.insert_constraint(vhandles[vindex1], vhandles[vindex2]);
+			} catch (const CGAL::Failure_exception &e) {
+				PRINTB("WARNING: Constraint insertion failure %s", e.what());
+			}
+			CGAL::set_error_behaviour(old_behaviour);
+		}
+	}
+
+	size_t numholes = polygons2d.size() - 1;
+	PRINTDB("seeding %i holes", numholes);
+	std::list<CDTPoint> list_of_seeds;
+	for (size_t i = 1; i < polygons2d.size(); i++) {
+		std::vector<CGAL_Point_2> &pgon = polygons2d[i];
+		for (size_t j = 0; j < pgon.size(); j++) {
+			CGAL_Point_2 p1 = pgon[(j + 0)];
+			CGAL_Point_2 p2 = pgon[(j + 1) % pgon.size()];
+			CGAL_Point_2 p3 = pgon[(j + 2) % pgon.size()];
+			CGAL_Point_2 mp = CGAL::midpoint(p1, CGAL::midpoint(p2, p3));
+			if (inside(mp, pgon, NONZERO_WINDING)) {
+				CDTPoint cdtpt(mp.x(), mp.y());
+				list_of_seeds.push_back(cdtpt);
+				break;
+			}
+		}
+	}
+	std::list<CDTPoint>::iterator li = list_of_seeds.begin();
+	for (; li != list_of_seeds.end(); li++) {
+		//PRINTB("seed %s",*li);
+		double x = CGAL::to_double(li->x());
+		double y = CGAL::to_double(li->y());
+		PRINTDB("seed %f,%f", x % y);
+	}
+	PRINTD("seeding done");
+
+	PRINTD("meshing");
+	CGAL::refine_Delaunay_mesh_2_without_edge_refinement(cdt,
+																											 list_of_seeds.begin(), list_of_seeds.end(),
+																											 DummyCriteria<CDT>());
+
+	PRINTD("meshing done");
+	// this fails because it calls is_simple and is_simple fails on many
+	// Nef Polyhedron faces
+	//CGAL::Orientation original_orientation =
+	//	CGAL::orientation_2( orienpgon.begin(), orienpgon.end() );
+
+	CDT::Finite_faces_iterator fit;
+	for (fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); fit++) {
+		if (fit->is_in_domain()) {
+			CDTPoint p1 = cdt.triangle(fit)[0];
+			CDTPoint p2 = cdt.triangle(fit)[1];
+			CDTPoint p3 = cdt.triangle(fit)[2];
+			CGAL_Point_3 cp1, cp2, cp3;
+			if (vertmap.count(p1)) cp1 = vertmap[p1];
+			else err = deproject(p1, goodproj, plane, cp1);
+			if (vertmap.count(p2)) cp2 = vertmap[p2];
+			else err = deproject(p2, goodproj, plane, cp2);
+			if (vertmap.count(p3)) cp3 = vertmap[p3];
+			else err = deproject(p3, goodproj, plane, cp3);
+			if (err) PRINT("WARNING: 2d->3d deprojection failure");
+			Polygon tri;
+			tri.push_back(Vector3d(CGAL::to_double(cp1.x()), CGAL::to_double(cp1.y()), CGAL::to_double(cp1.z())));
+			tri.push_back(Vector3d(CGAL::to_double(cp2.x()), CGAL::to_double(cp2.y()), CGAL::to_double(cp2.z())));
+			tri.push_back(Vector3d(CGAL::to_double(cp3.x()), CGAL::to_double(cp3.y()), CGAL::to_double(cp3.z())));
+			triangles.push_back(tri);
+		}
+	}
+
+	PRINTDB("built %i triangles", triangles.size());
+	return err;
+}
 
 
 /* given a single near-planar 3d polygon with holes, tessellate into a
    sequence of polygons without holes. as of writing, this means conversion
    into a sequence of 3d triangles. the given plane should be the same plane
    holding the polygon and it's holes. */
-	bool tessellate3DFaceWithHoles(std::vector<CGAL_Polygon_3> &polygons,
-																 std::vector<CGAL_Polygon_3> &triangles,
-																 CGAL_Plane_3 &plane)
-	{
-		if (polygons.size() == 1 && polygons[0].size() == 3) {
-			PRINTD("input polygon has 3 points. shortcut tessellation.");
-			CGAL_Polygon_3 t;
-			t.push_back(polygons[0][2]);
-			t.push_back(polygons[0][1]);
-			t.push_back(polygons[0][0]);
-			triangles.push_back(t);
-			return false;
-		}
-		bool err = false;
-		CDT cdt;
-		std::map<CDTPoint, CGAL_Point_3> vertmap;
-
-		PRINTD("finding good projection");
-		projection_t goodproj = find_good_projection(plane);
-
-		PRINTDB("plane %s", plane);
-		PRINTDB("proj: %i %i", goodproj.plane % goodproj.flip);
-		PRINTD("Inserting points and edges into Constrained Delaunay Triangulation");
-		std::vector<std::vector<CGAL_Point_2>> polygons2d;
-		for (size_t i = 0; i < polygons.size(); i++) {
-			std::vector<Vertex_handle> vhandles;
-			std::vector<CGAL_Point_2> polygon2d;
-			for (size_t j = 0; j < polygons[i].size(); j++) {
-				CGAL_Point_3 p3 = polygons[i][j];
-				CGAL_Point_2 p2 = get_projected_point(p3, goodproj);
-				CDTPoint cdtpoint = CDTPoint(p2.x(), p2.y());
-				vertmap[ cdtpoint ] = p3;
-				Vertex_handle vh = cdt.push_back(cdtpoint);
-				vhandles.push_back(vh);
-				polygon2d.push_back(p2);
-			}
-			polygons2d.push_back(polygon2d);
-			for (size_t k = 0; k < vhandles.size(); k++) {
-				int vindex1 = (k + 0);
-				int vindex2 = (k + 1) % vhandles.size();
-				CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
-				try {
-					cdt.insert_constraint(vhandles[vindex1], vhandles[vindex2]);
-				} catch (const CGAL::Failure_exception &e) {
-					PRINTB("WARNING: Constraint insertion failure %s", e.what());
-				}
-				CGAL::set_error_behaviour(old_behaviour);
-			}
-		}
-
-		size_t numholes = polygons2d.size() - 1;
-		PRINTDB("seeding %i holes", numholes);
-		std::list<CDTPoint> list_of_seeds;
-		for (size_t i = 1; i < polygons2d.size(); i++) {
-			std::vector<CGAL_Point_2> &pgon = polygons2d[i];
-			for (size_t j = 0; j < pgon.size(); j++) {
-				CGAL_Point_2 p1 = pgon[(j + 0)];
-				CGAL_Point_2 p2 = pgon[(j + 1) % pgon.size()];
-				CGAL_Point_2 p3 = pgon[(j + 2) % pgon.size()];
-				CGAL_Point_2 mp = CGAL::midpoint(p1, CGAL::midpoint(p2, p3));
-				if (inside(mp, pgon, NONZERO_WINDING)) {
-					CDTPoint cdtpt(mp.x(), mp.y());
-					list_of_seeds.push_back(cdtpt);
-					break;
-				}
-			}
-		}
-		std::list<CDTPoint>::iterator li = list_of_seeds.begin();
-		for (; li != list_of_seeds.end(); li++) {
-			//PRINTB("seed %s",*li);
-			double x = CGAL::to_double(li->x());
-			double y = CGAL::to_double(li->y());
-			PRINTDB("seed %f,%f", x % y);
-		}
-		PRINTD("seeding done");
-
-		PRINTD("meshing");
-		CGAL::refine_Delaunay_mesh_2_without_edge_refinement(cdt,
-																												 list_of_seeds.begin(), list_of_seeds.end(),
-																												 DummyCriteria<CDT>());
-
-		PRINTD("meshing done");
-		// this fails because it calls is_simple and is_simple fails on many
-		// Nef Polyhedron faces
-		//CGAL::Orientation original_orientation =
-		//	CGAL::orientation_2( orienpgon.begin(), orienpgon.end() );
-
-		CDT::Finite_faces_iterator fit;
-		for (fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); fit++) {
-			if (fit->is_in_domain()) {
-				CDTPoint p1 = cdt.triangle(fit)[0];
-				CDTPoint p2 = cdt.triangle(fit)[1];
-				CDTPoint p3 = cdt.triangle(fit)[2];
-				CGAL_Point_3 cp1, cp2, cp3;
-				CGAL_Polygon_3 pgon;
-				if (vertmap.count(p1)) cp1 = vertmap[p1];
-				else err = deproject(p1, goodproj, plane, cp1);
-				if (vertmap.count(p2)) cp2 = vertmap[p2];
-				else err = deproject(p2, goodproj, plane, cp2);
-				if (vertmap.count(p3)) cp3 = vertmap[p3];
-				else err = deproject(p3, goodproj, plane, cp3);
-				if (err) PRINT("WARNING: 2d->3d deprojection failure");
-				pgon.push_back(cp1);
-				pgon.push_back(cp2);
-				pgon.push_back(cp3);
-				triangles.push_back(pgon);
-			}
-		}
-
-		PRINTDB("built %i triangles", triangles.size());
-		return err;
+bool tessellate3DFaceWithHoles(std::vector<CGAL_Polygon_3> &polygons,
+															 std::vector<CGAL_Polygon_3> &triangles,
+															 CGAL_Plane_3 &plane)
+{
+	if (polygons.size() == 1 && polygons[0].size() == 3) {
+		PRINTD("input polygon has 3 points. shortcut tessellation.");
+		CGAL_Polygon_3 t;
+		t.push_back(polygons[0][2]);
+		t.push_back(polygons[0][1]);
+		t.push_back(polygons[0][0]);
+		triangles.push_back(t);
+		return false;
 	}
+	bool err = false;
+	CDT cdt;
+	std::map<CDTPoint, CGAL_Point_3> vertmap;
+
+	PRINTD("finding good projection");
+	projection_t goodproj = find_good_projection(plane);
+
+	PRINTDB("plane %s", plane);
+	PRINTDB("proj: %i %i", goodproj.plane % goodproj.flip);
+	PRINTD("Inserting points and edges into Constrained Delaunay Triangulation");
+	std::vector<std::vector<CGAL_Point_2>> polygons2d;
+	for (size_t i = 0; i < polygons.size(); i++) {
+		std::vector<Vertex_handle> vhandles;
+		std::vector<CGAL_Point_2> polygon2d;
+		for (size_t j = 0; j < polygons[i].size(); j++) {
+			CGAL_Point_3 p3 = polygons[i][j];
+			CGAL_Point_2 p2 = get_projected_point(p3, goodproj);
+			CDTPoint cdtpoint = CDTPoint(p2.x(), p2.y());
+			vertmap[ cdtpoint ] = p3;
+			Vertex_handle vh = cdt.push_back(cdtpoint);
+			vhandles.push_back(vh);
+			polygon2d.push_back(p2);
+		}
+		polygons2d.push_back(polygon2d);
+		for (size_t k = 0; k < vhandles.size(); k++) {
+			int vindex1 = (k + 0);
+			int vindex2 = (k + 1) % vhandles.size();
+			CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+			try {
+				cdt.insert_constraint(vhandles[vindex1], vhandles[vindex2]);
+			} catch (const CGAL::Failure_exception &e) {
+				PRINTB("WARNING: Constraint insertion failure %s", e.what());
+			}
+			CGAL::set_error_behaviour(old_behaviour);
+		}
+	}
+
+	size_t numholes = polygons2d.size() - 1;
+	PRINTDB("seeding %i holes", numholes);
+	std::list<CDTPoint> list_of_seeds;
+	for (size_t i = 1; i < polygons2d.size(); i++) {
+		std::vector<CGAL_Point_2> &pgon = polygons2d[i];
+		for (size_t j = 0; j < pgon.size(); j++) {
+			CGAL_Point_2 p1 = pgon[(j + 0)];
+			CGAL_Point_2 p2 = pgon[(j + 1) % pgon.size()];
+			CGAL_Point_2 p3 = pgon[(j + 2) % pgon.size()];
+			CGAL_Point_2 mp = CGAL::midpoint(p1, CGAL::midpoint(p2, p3));
+			if (inside(mp, pgon, NONZERO_WINDING)) {
+				CDTPoint cdtpt(mp.x(), mp.y());
+				list_of_seeds.push_back(cdtpt);
+				break;
+			}
+		}
+	}
+	std::list<CDTPoint>::iterator li = list_of_seeds.begin();
+	for (; li != list_of_seeds.end(); li++) {
+		//PRINTB("seed %s",*li);
+		double x = CGAL::to_double(li->x());
+		double y = CGAL::to_double(li->y());
+		PRINTDB("seed %f,%f", x % y);
+	}
+	PRINTD("seeding done");
+
+	PRINTD("meshing");
+	CGAL::refine_Delaunay_mesh_2_without_edge_refinement(cdt,
+																											 list_of_seeds.begin(), list_of_seeds.end(),
+																											 DummyCriteria<CDT>());
+
+	PRINTD("meshing done");
+	// this fails because it calls is_simple and is_simple fails on many
+	// Nef Polyhedron faces
+	//CGAL::Orientation original_orientation =
+	//	CGAL::orientation_2( orienpgon.begin(), orienpgon.end() );
+
+	CDT::Finite_faces_iterator fit;
+	for (fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); fit++) {
+		if (fit->is_in_domain()) {
+			CDTPoint p1 = cdt.triangle(fit)[0];
+			CDTPoint p2 = cdt.triangle(fit)[1];
+			CDTPoint p3 = cdt.triangle(fit)[2];
+			CGAL_Point_3 cp1, cp2, cp3;
+			CGAL_Polygon_3 pgon;
+			if (vertmap.count(p1)) cp1 = vertmap[p1];
+			else err = deproject(p1, goodproj, plane, cp1);
+			if (vertmap.count(p2)) cp2 = vertmap[p2];
+			else err = deproject(p2, goodproj, plane, cp2);
+			if (vertmap.count(p3)) cp3 = vertmap[p3];
+			else err = deproject(p3, goodproj, plane, cp3);
+			if (err) PRINT("WARNING: 2d->3d deprojection failure");
+			pgon.push_back(cp1);
+			pgon.push_back(cp2);
+			pgon.push_back(cp3);
+			triangles.push_back(pgon);
+		}
+	}
+
+	PRINTDB("built %i triangles", triangles.size());
+	return err;
+}
 
 };

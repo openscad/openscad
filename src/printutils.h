@@ -13,8 +13,8 @@ typedef void (OutputHandlerFunc)(const std::string &msg, void *userdata);
 extern OutputHandlerFunc *outputhandler;
 extern void *outputhandler_data;
 namespace OpenSCAD {
-	extern std::string debug;
-	extern bool quiet;
+extern std::string debug;
+extern bool quiet;
 }
 
 void set_output_handler(OutputHandlerFunc *newhandler, void *userdata);

@@ -182,82 +182,82 @@ void ZRemover::visit(CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet)
 
 namespace CGALUtils {
 
-	Polygon2d *project(const CGAL_Nef_polyhedron &N, bool cut)
-	{
-		Polygon2d *poly = nullptr;
-		if (N.getDimension() != 3) return poly;
+Polygon2d *project(const CGAL_Nef_polyhedron &N, bool cut)
+{
+	Polygon2d *poly = nullptr;
+	if (N.getDimension() != 3) return poly;
 
-		CGAL_Nef_polyhedron newN;
-		if (cut) {
-			CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+	CGAL_Nef_polyhedron newN;
+	if (cut) {
+		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+		try {
+			CGAL_Nef_polyhedron3::Plane_3 xy_plane = CGAL_Nef_polyhedron3::Plane_3(0, 0, 1, 0);
+			newN.p3.reset(new CGAL_Nef_polyhedron3(N.p3->intersection(xy_plane, CGAL_Nef_polyhedron3::PLANE_ONLY)));
+		}
+		catch (const CGAL::Failure_exception &e) {
+			PRINTDB("CGALUtils::project during plane intersection: %s", e.what());
 			try {
-				CGAL_Nef_polyhedron3::Plane_3 xy_plane = CGAL_Nef_polyhedron3::Plane_3(0, 0, 1, 0);
-				newN.p3.reset(new CGAL_Nef_polyhedron3(N.p3->intersection(xy_plane, CGAL_Nef_polyhedron3::PLANE_ONLY)));
+				PRINTD("Trying alternative intersection using very large thin box: ");
+				std::vector<CGAL_Point_3> pts;
+				// dont use z of 0. there are bugs in CGAL.
+				double inf = 1e8;
+				double eps = 0.001;
+				CGAL_Point_3 minpt(-inf, -inf, -eps);
+				CGAL_Point_3 maxpt(inf,  inf,  eps);
+				CGAL_Iso_cuboid_3 bigcuboid(minpt, maxpt);
+				for (int i = 0; i < 8; i++) pts.push_back(bigcuboid.vertex(i));
+				CGAL_Polyhedron bigbox;
+				CGAL::convex_hull_3(pts.begin(), pts.end(), bigbox);
+				CGAL_Nef_polyhedron3 nef_bigbox(bigbox);
+				newN.p3.reset(new CGAL_Nef_polyhedron3(nef_bigbox.intersection(*N.p3)));
 			}
 			catch (const CGAL::Failure_exception &e) {
-				PRINTDB("CGALUtils::project during plane intersection: %s", e.what());
-				try {
-					PRINTD("Trying alternative intersection using very large thin box: ");
-					std::vector<CGAL_Point_3> pts;
-					// dont use z of 0. there are bugs in CGAL.
-					double inf = 1e8;
-					double eps = 0.001;
-					CGAL_Point_3 minpt(-inf, -inf, -eps);
-					CGAL_Point_3 maxpt(inf,  inf,  eps);
-					CGAL_Iso_cuboid_3 bigcuboid(minpt, maxpt);
-					for (int i = 0; i < 8; i++) pts.push_back(bigcuboid.vertex(i));
-					CGAL_Polyhedron bigbox;
-					CGAL::convex_hull_3(pts.begin(), pts.end(), bigbox);
-					CGAL_Nef_polyhedron3 nef_bigbox(bigbox);
-					newN.p3.reset(new CGAL_Nef_polyhedron3(nef_bigbox.intersection(*N.p3)));
-				}
-				catch (const CGAL::Failure_exception &e) {
-					PRINTB("ERROR: CGAL error in CGALUtils::project during bigbox intersection: %s", e.what());
-				}
+				PRINTB("ERROR: CGAL error in CGALUtils::project during bigbox intersection: %s", e.what());
 			}
+		}
 
-			if (!newN.p3 || newN.p3->is_empty()) {
-				CGAL::set_error_behaviour(old_behaviour);
-				PRINT("WARNING: projection() failed.");
-				return poly;
-			}
-
-			PRINTDB("%s", OpenSCAD::svg_header(480, 100000));
-			try {
-				ZRemover zremover;
-				CGAL_Nef_polyhedron3::Volume_const_iterator i;
-				CGAL_Nef_polyhedron3::Shell_entry_const_iterator j;
-				CGAL_Nef_polyhedron3::SFace_const_handle sface_handle;
-				for (i = newN.p3->volumes_begin(); i != newN.p3->volumes_end(); ++i) {
-					PRINTDB("<!-- volume. mark: %s -->", i->mark());
-					for (j = i->shells_begin(); j != i->shells_end(); ++j) {
-						PRINTDB("<!-- shell. (vol mark was: %i)", i->mark());
-						sface_handle = CGAL_Nef_polyhedron3::SFace_const_handle(j);
-						newN.p3->visit_shell_objects(sface_handle, zremover);
-						PRINTD("<!-- shell. end. -->");
-					}
-					PRINTD("<!-- volume end. -->");
-				}
-				poly = convertToPolygon2d(*zremover.output_nefpoly2d);
-			} catch (const CGAL::Failure_exception &e) {
-				PRINTB("ERROR: CGAL error in CGALUtils::project while flattening: %s", e.what());
-			}
-			PRINTD("</svg>");
-
+		if (!newN.p3 || newN.p3->is_empty()) {
 			CGAL::set_error_behaviour(old_behaviour);
+			PRINT("WARNING: projection() failed.");
+			return poly;
 		}
-		// In projection mode all the triangles are projected manually into the XY plane
-		else {
-			PolySet ps(3);
-			bool err = CGALUtils::createPolySetFromNefPolyhedron3(*N.p3, ps);
-			if (err) {
-				PRINT("ERROR: Nef->PolySet failed");
-				return poly;
+
+		PRINTDB("%s", OpenSCAD::svg_header(480, 100000));
+		try {
+			ZRemover zremover;
+			CGAL_Nef_polyhedron3::Volume_const_iterator i;
+			CGAL_Nef_polyhedron3::Shell_entry_const_iterator j;
+			CGAL_Nef_polyhedron3::SFace_const_handle sface_handle;
+			for (i = newN.p3->volumes_begin(); i != newN.p3->volumes_end(); ++i) {
+				PRINTDB("<!-- volume. mark: %s -->", i->mark());
+				for (j = i->shells_begin(); j != i->shells_end(); ++j) {
+					PRINTDB("<!-- shell. (vol mark was: %i)", i->mark());
+					sface_handle = CGAL_Nef_polyhedron3::SFace_const_handle(j);
+					newN.p3->visit_shell_objects(sface_handle, zremover);
+					PRINTD("<!-- shell. end. -->");
+				}
+				PRINTD("<!-- volume end. -->");
 			}
-			poly = PolysetUtils::project(ps);
+			poly = convertToPolygon2d(*zremover.output_nefpoly2d);
+		} catch (const CGAL::Failure_exception &e) {
+			PRINTB("ERROR: CGAL error in CGALUtils::project while flattening: %s", e.what());
 		}
-		return poly;
+		PRINTD("</svg>");
+
+		CGAL::set_error_behaviour(old_behaviour);
 	}
+	// In projection mode all the triangles are projected manually into the XY plane
+	else {
+		PolySet ps(3);
+		bool err = CGALUtils::createPolySetFromNefPolyhedron3(*N.p3, ps);
+		if (err) {
+			PRINT("ERROR: Nef->PolySet failed");
+			return poly;
+		}
+		poly = PolysetUtils::project(ps);
+	}
+	return poly;
+}
 
 } // namespace
 

@@ -33,50 +33,50 @@ namespace boosty {
 
 #if BOOST_VERSION >= 104800
 
-	inline fs::path canonical(fs::path p, fs::path p2)
-	{
-		return fs::canonical(p, p2);
-	}
+inline fs::path canonical(fs::path p, fs::path p2)
+{
+	return fs::canonical(p, p2);
+}
 
-	inline fs::path canonical(fs::path p)
-	{
-		return fs::canonical(p);
-	}
+inline fs::path canonical(fs::path p)
+{
+	return fs::canonical(p);
+}
 
 #else
 
-	inline fs::path canonical(fs::path p, fs::path p2)
-	{
+inline fs::path canonical(fs::path p, fs::path p2)
+{
 #if defined (__WIN32__) || defined(__APPLE__)
 #error you should be using a newer version of boost on win/mac
 #endif
-		// based on the code in boost
-		fs::path result;
-		if (p == "") p = p2;
-		std::string result_s;
-		std::vector<std::string> resultv, pieces;
-		std::vector<std::string>::iterator pi;
-		std::string tmps = p.generic_string();
-		boost::split(pieces, tmps, boost::is_any_of("/"));
-		for (pi = pieces.begin(); pi != pieces.end(); ++pi) {
-			if (*pi == "..") resultv.erase(resultv.end());
-			else resultv.push_back(*pi);
-		}
-		for (pi = resultv.begin(); pi != resultv.end(); ++pi) {
-			if ((*pi).length() > 0) result_s = result_s + "/" + *pi;
-		}
-		result = fs::path(result_s);
-		if (fs::is_symlink(result)) {
-			PRINT("WARNING: canonical() wrapper can't do symlinks. rebuild openscad with boost >=1.48");
-			PRINT("WARNING: or don't use symbolic links");
-		}
-		return result;
+	// based on the code in boost
+	fs::path result;
+	if (p == "") p = p2;
+	std::string result_s;
+	std::vector<std::string> resultv, pieces;
+	std::vector<std::string>::iterator pi;
+	std::string tmps = p.generic_string();
+	boost::split(pieces, tmps, boost::is_any_of("/"));
+	for (pi = pieces.begin(); pi != pieces.end(); ++pi) {
+		if (*pi == "..") resultv.erase(resultv.end());
+		else resultv.push_back(*pi);
 	}
+	for (pi = resultv.begin(); pi != resultv.end(); ++pi) {
+		if ((*pi).length() > 0) result_s = result_s + "/" + *pi;
+	}
+	result = fs::path(result_s);
+	if (fs::is_symlink(result)) {
+		PRINT("WARNING: canonical() wrapper can't do symlinks. rebuild openscad with boost >=1.48");
+		PRINT("WARNING: or don't use symbolic links");
+	}
+	return result;
+}
 
-	inline fs::path canonical(fs::path p)
-	{
-		return canonical(p, fs::current_path());
-	}
+inline fs::path canonical(fs::path p)
+{
+	return canonical(p, fs::current_path());
+}
 
 #endif
 
