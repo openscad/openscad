@@ -75,7 +75,7 @@ string glew_dump()
 			<< (glewIsSupported("GL_EXT_packed_depth_stencil") ? "yes" : "no")
 			<< "\n";
 	return out.str();
-};
+}
 
 bool report_glerror(const char *function)
 {

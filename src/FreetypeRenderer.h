@@ -114,12 +114,12 @@ private:
 	{
 public:
 		GlyphData(FT_Glyph glyph, unsigned int idx, hb_glyph_position_t *glyph_pos) : glyph(glyph), idx(idx), glyph_pos(glyph_pos) {}
-		unsigned int get_idx() const { return idx; };
-		FT_Glyph get_glyph() const { return glyph; };
-		double get_x_offset() const { return glyph_pos->x_offset / 64.0 / 16.0; };
-		double get_y_offset() const { return glyph_pos->y_offset / 64.0 / 16.0; };
-		double get_x_advance() const { return glyph_pos->x_advance / 64.0 / 16.0; };
-		double get_y_advance() const { return glyph_pos->y_advance / 64.0 / 16.0; };
+		unsigned int get_idx() const { return idx; }
+		FT_Glyph get_glyph() const { return glyph; }
+		double get_x_offset() const { return glyph_pos->x_offset / 64.0 / 16.0; }
+		double get_y_offset() const { return glyph_pos->y_offset / 64.0 / 16.0; }
+		double get_x_advance() const { return glyph_pos->x_advance / 64.0 / 16.0; }
+		double get_y_advance() const { return glyph_pos->y_advance / 64.0 / 16.0; }
 private:
 		FT_Glyph glyph;
 		unsigned int idx;

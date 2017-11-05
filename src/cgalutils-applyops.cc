@@ -413,7 +413,7 @@ Geometry const *applyMinkowski(const Geometry::Geometries &children)
 		return N;
 	}
 }
-}; // namespace CGALUtils
+}  // namespace CGALUtils
 
 
 #endif // ENABLE_CGAL

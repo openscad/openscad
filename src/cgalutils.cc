@@ -690,7 +690,7 @@ bool createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3 &N, PolySet &ps)
 #endif // createPolySetFromNefPolyhedron3
 
 
-}; // namespace CGALUtils
+}  // namespace CGALUtils
 
 #endif /* ENABLE_CGAL */
 

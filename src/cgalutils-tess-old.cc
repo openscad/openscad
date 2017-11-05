@@ -564,4 +564,4 @@ bool tessellate3DFaceWithHoles(std::vector<CGAL_Polygon_3> &polygons,
 	return err;
 }
 
-};
+}

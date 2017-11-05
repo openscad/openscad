@@ -46,4 +46,4 @@ bool tessellatePolygonWithHoles(const PolyholeK &polygons,
 bool tessellate3DFaceWithHoles(std::vector<CGAL_Polygon_3> &polygons,
 															 std::vector<CGAL_Polygon_3> &triangles,
 															 CGAL::Plane_3<CGAL_Kernel3> &plane);
-};
+}

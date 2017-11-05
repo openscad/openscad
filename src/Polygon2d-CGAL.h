@@ -6,4 +6,4 @@
 
 namespace Polygon2DCGAL {
 CGAL_Nef_polyhedron toNefPolyhedron();
-};
+}

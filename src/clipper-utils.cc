@@ -265,4 +265,4 @@ Polygon2d *applyOffset(const Polygon2d &poly, double offset, ClipperLib::JoinTyp
 	co.Execute(result, offset * CLIPPER_SCALE);
 	return toPolygon2d(result);
 }
-};
+}

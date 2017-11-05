@@ -59,8 +59,8 @@ class AbstractIntersectionNode : public AbstractNode
 {
 public:
 	VISITABLE();
-	AbstractIntersectionNode(const ModuleInstantiation *mi) : AbstractNode(mi) { };
-	virtual ~AbstractIntersectionNode() { };
+	AbstractIntersectionNode(const ModuleInstantiation *mi) : AbstractNode(mi) { }
+	virtual ~AbstractIntersectionNode() { }
 	virtual std::string toString() const;
 	virtual std::string name() const;
 };
@@ -69,8 +69,8 @@ class AbstractPolyNode : public AbstractNode
 {
 public:
 	VISITABLE();
-	AbstractPolyNode(const ModuleInstantiation *mi) : AbstractNode(mi) { };
-	virtual ~AbstractPolyNode() { };
+	AbstractPolyNode(const ModuleInstantiation *mi) : AbstractNode(mi) { }
+	virtual ~AbstractPolyNode() { }
 
 	enum class render_mode_e {
 		RENDER_CGAL,
@@ -108,8 +108,8 @@ class LeafNode : public AbstractPolyNode
 {
 public:
 	VISITABLE();
-	LeafNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) { };
-	virtual ~LeafNode() { };
+	LeafNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) { }
+	virtual ~LeafNode() { }
 	virtual const class Geometry *createGeometry() const = 0;
 };
 

@@ -349,7 +349,7 @@ std::string printPolyhedron(const Polyhedron &p) {
 
 template std::string printPolyhedron(const CGAL_Polyhedron &p);
 
-}; // namespace CGALUtils
+}  // namespace CGALUtils
 
 #endif /* ENABLE_CGAL */
 

@@ -31,5 +31,5 @@ void installAppleEventHandlers()
 	return;
 
 CantInstallAppleEventHandler:
-	fprintf(stderr, "AEInstallEventHandler() failed: %d\n", err);;
+	fprintf(stderr, "AEInstallEventHandler() failed: %d\n", err);
 }

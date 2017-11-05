@@ -199,5 +199,5 @@ bool tessellatePolygon(const PolygonK &polygon,
 	return false;
 }
 
-}; // namespace CGALUtils
+}  // namespace CGALUtils
 
