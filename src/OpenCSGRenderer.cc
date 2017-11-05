@@ -48,7 +48,7 @@ public:
 	}
 };
 
-#endif
+#endif // ifdef ENABLE_OPENCSG
 
 OpenCSGRenderer::OpenCSGRenderer(shared_ptr<CSGProducts> root_products,
 																 shared_ptr<CSGProducts> highlights_products,
@@ -160,7 +160,7 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 		for (auto &p : primitives) delete p;
 		glDepthFunc(GL_LEQUAL);
 	}
-#endif
+#endif // ifdef ENABLE_OPENCSG
 }
 
 BoundingBox OpenCSGRenderer::getBoundingBox() const

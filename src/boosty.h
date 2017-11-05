@@ -78,7 +78,7 @@ inline fs::path canonical(fs::path p)
 	return canonical(p, fs::current_path());
 }
 
-#endif
+#endif // if BOOST_VERSION >= 104800
 
 
 

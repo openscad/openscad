@@ -116,5 +116,5 @@ std::string EvalContext::dump(const AbstractModule *mod, const ModuleInstantiati
 	}
 	return s.str();
 }
-#endif
+#endif // ifdef DEBUG
 

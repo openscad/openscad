@@ -126,7 +126,7 @@ std::string QGLView::getRendererInfo() const
 		rbits % gbits % bbits % abits % dbits % sbits;
 #else
 	info << "\nQt graphics widget: QGLWidget";
-#endif
+#endif // ifdef USE_QOPENGLWIDGET
 	info << glew_extensions_dump();
 	return info.str();
 }
@@ -166,7 +166,7 @@ void QGLView::display_opencsg_warning_dialog()
 
 	opencsg_support = this->is_opencsg_capable && Preferences::inst()->getValue("advanced/enable_opencsg_opengl1x").toBool();
 }
-#endif
+#endif // ifdef ENABLE_OPENCSG
 
 void QGLView::resizeGL(int w, int h)
 {

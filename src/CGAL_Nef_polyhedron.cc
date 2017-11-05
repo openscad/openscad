@@ -91,7 +91,7 @@ PolySet *CGAL_Nef_polyhedron::convertToPolyset() const
 	CGAL::set_error_behaviour(old_behaviour);
 	return ps;
 }
-#endif
+#endif // if 0
 
 void CGAL_Nef_polyhedron::resize(const Vector3d &newsize,
 																 const Eigen::Matrix<bool, 3, 1> &autosize)

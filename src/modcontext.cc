@@ -62,7 +62,7 @@ void ModuleContext::evaluateAssignments(const AssignmentList &assignments)
 		}
 	}
 }
-#endif
+#endif // if 0
 
 void ModuleContext::initializeModule(const UserModule &module)
 {
@@ -175,7 +175,7 @@ std::string ModuleContext::dump(const AbstractModule *mod, const ModuleInstantia
 	}
 	return s.str();
 }
-#endif
+#endif // ifdef DEBUG
 
 FileContext::FileContext(const Context *parent) : ModuleContext(parent), usedlibs_p(nullptr)
 {

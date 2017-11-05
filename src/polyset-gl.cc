@@ -36,7 +36,7 @@ static void draw_triangle(GLint *shaderinfo, const Vector3d &p0, const Vector3d 
 		glVertex3d(p1[0], p1[1], p1[2] + z);
 	}
 }
-#endif
+#endif // ifdef ENABLE_OPENCSG
 
 static void draw_tri(const Vector3d &p0, const Vector3d &p1, const Vector3d &p2, double z, bool mirror)
 {

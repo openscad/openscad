@@ -48,4 +48,4 @@ private:
 
 };
 
-#endif
+#endif // ifndef __openscad_qsettingscached_h__

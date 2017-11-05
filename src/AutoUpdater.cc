@@ -19,5 +19,5 @@ void AutoUpdater::init()
 		this->updateMenu->addAction(this->updateAction);
 
 	}
-#endif
+#endif // ifdef OPENSCAD_UPDATER
 }

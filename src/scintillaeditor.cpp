@@ -598,7 +598,7 @@ void ScintillaEditor::replaceAll(const QString &findText, const QString &replace
 	if (qsci->findFirst(findText,
 											false /*re*/, false /*cs*/, false /*wo*/,
 											false /*wrap*/, true /*forward*/, 0, 0)) {
-#endif
+#endif // if QSCINTILLA_VERSION >= 0x020903
 		qsci->replace(replaceText);
 		while (qsci->findNext()) {
 			qsci->replace(replaceText);

@@ -29,5 +29,5 @@ inline QString _(const char *msgid, const char *disambiguation)
 	return QString::fromUtf8(_(msgid));
 }
 
-#endif
+#endif // ifndef __openscad_qtgettext_h__
 

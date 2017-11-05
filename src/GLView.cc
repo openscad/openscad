@@ -340,7 +340,7 @@ void GLView::enable_opencsg_shaders()
 		}
 	}
 }
-#endif
+#endif // ifdef ENABLE_OPENCSG
 
 void GLView::initializeGL()
 {

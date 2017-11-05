@@ -53,4 +53,4 @@ void export_nef3(const shared_ptr<const Geometry> &geom, std::ostream &output)
 		PRINT("Not a CGALNefPoly. Add some CSG ops?");
 	}
 }
-#endif
+#endif // ifdef ENABLE_CGAL

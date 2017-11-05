@@ -37,9 +37,9 @@ static void uint32_byte_swap(uint32_t &x)
 	uint32_t b3 = (0x00FF0000 & x) >> 8;
 	uint32_t b4 = (0xFF000000 & x) >> 24;
 	x = b1 | b2 | b3 | b4;
-# endif
+# endif // if __GNUC__ >= 4 && __GNUC_MINOR__ >= 3
 }
-#endif
+#endif // ifdef BOOST_BIG_ENDIAN
 
 static void read_stl_facet(std::ifstream &f, stl_facet &facet)
 {

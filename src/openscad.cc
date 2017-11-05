@@ -581,7 +581,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 #else
 		PRINT("OpenSCAD has been compiled without CGAL support!\n");
 		return 1;
-#endif
+#endif // ifdef ENABLE_CGAL
 	}
 	delete root_node;
 	return 0;
@@ -737,7 +737,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	// (see https://bugreports.qt-project.org/browse/QTBUG-39370
 	fmt.setSwapInterval(0);
 	QGLFormat::setDefaultFormat(fmt);
-#endif
+#endif // ifndef USE_QOPENGLWIDGET
 
 	set_render_color_scheme(arg_colorscheme, false);
 

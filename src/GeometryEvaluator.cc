@@ -1008,7 +1008,7 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 						}
 					}
 					if (chPS) poly = PolysetUtils::project(*chPS);
-#endif
+#endif // if 1
 
 					if (poly) {
 						ClipperLib::Paths result = ClipperUtils::fromPolygon2d(*poly);

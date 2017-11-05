@@ -172,7 +172,7 @@ public:
 		printf("]);\n");
 #endif
 	}
-#endif
+#endif // if 1
 };
 
 // This code is from CGAL/demo/Polyhedron/Scene_nef_polyhedron_item.cpp

@@ -39,4 +39,4 @@ typedef CGAL::Polyhedron_3<CGAL_Kernel3, CGAL::Polyhedron_items_3, CGAL::Halfedg
 
 #endif /* ENABLE_CGAL */
 
-#endif
+#endif // ifndef CGAL_FORWARD

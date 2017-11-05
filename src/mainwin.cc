@@ -551,7 +551,7 @@ MainWindow::MainWindow(const QString &filename)
 			move(windowRect.topLeft());
 			resize(windowRect.size());
 		}
-#endif
+#endif // ifdef Q_OS_WIN
 	}
 
 	connect(this->editorDock, SIGNAL(topLevelChanged(bool)), this, SLOT(editorTopLevelChanged(bool)));

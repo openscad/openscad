@@ -112,4 +112,4 @@ BOOL GetVersionExEx(OSVERSIONINFOEX *osVer)
 	return ret;
 }
 
-#endif
+#endif // ifndef __FIND_VERSION__

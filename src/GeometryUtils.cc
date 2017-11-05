@@ -407,7 +407,7 @@ bool GeometryUtils::tessellatePolygonWithHoles(const Vector3f *vertices,
 			i = j;
 		}
 	}
-#endif
+#endif // if 0
 
 	tessDeleteTess(tess);
 

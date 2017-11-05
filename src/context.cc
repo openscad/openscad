@@ -236,5 +236,5 @@ std::string Context::dump(const AbstractModule *mod, const ModuleInstantiation *
 	}
 	return s.str();
 }
-#endif
+#endif // ifdef DEBUG
 

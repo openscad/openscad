@@ -21,7 +21,7 @@ PolySet *import_off(const std::string &filename)
 	}
 #else
 	PRINT("WARNING: OFF import requires CGAL.");
-#endif
+#endif // ifdef ENABLE_CGAL
 	return p;
 }
 

@@ -50,8 +50,8 @@ static std::string lookupResourcesPath()
 		"../..",
 		nullptr
 	};
-#endif
-#endif
+#endif // ifdef _WIN32
+#endif // ifdef __APPLE__
 
 	fs::path tmpdir;
 	for (int a = 0; searchpath[a] != nullptr; a++) {

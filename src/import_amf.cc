@@ -276,7 +276,7 @@ PolySet *AmfImporter::read(const std::string filename)
 			p = result;
 		}
 	}
-#endif
+#endif // ifdef ENABLE_CGAL
 	if (!p) {
 		p = new PolySet(3);
 	}
@@ -364,4 +364,4 @@ PolySet *import_amf(const std::string filename) {
 	return importer.read(filename);
 }
 
-#endif
+#endif // if ENABLE_LIBZIP
