@@ -14,12 +14,19 @@ ParameterVirtualWidget::~ParameterVirtualWidget(){
 void ParameterVirtualWidget::setName(QString name) {
 	this->labelDescription->hide();
 	name.replace(QRegExp("([_]+)"), " ");
-	this->labelParameter->setText(name);
+	this->labelParameter->setText("<b>"+name+"</b>");
 }
 
+void ParameterVirtualWidget::addInline(QString addTxt) {
+	QString txt = this->labelParameter->text();
+	if(addTxt!=""){
+		this->labelParameter->setText(txt + " - " + addTxt);
+	}
+}
 
+//calculate the required decimal precision.
+//the result is stored in th member variable "decimalPrecision"
 void ParameterVirtualWidget::setPrecision(double number){
-	
 	decimalPrecision = 0;
 	long double diff, rn; //rn stands for real number
 	unsigned long long intNumber, multi = 1;

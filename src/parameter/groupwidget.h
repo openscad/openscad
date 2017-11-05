@@ -13,7 +13,6 @@ class GroupWidget : public QWidget {
 private:
 	QGridLayout mainLayout;
 	QToolButton toggleButton;
-	QFrame headerLine;
 	QParallelAnimationGroup toggleAnimation;
 	QScrollArea contentArea;
 	int animationDuration;

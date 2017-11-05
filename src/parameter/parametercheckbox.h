@@ -6,10 +6,13 @@ class ParameterCheckBox : public ParameterVirtualWidget
 {
 	Q_OBJECT
 public:
-	ParameterCheckBox(ParameterObject *parameterobject,bool);
+	ParameterCheckBox(ParameterObject *parameterobject, int showDescription);
 	void setValue();
 	void setParameterFocus();
 
 protected slots:
 	void onChanged();
+
+private:
+	bool volatile suppressUpdate; 
 };
