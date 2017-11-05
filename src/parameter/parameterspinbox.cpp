@@ -42,6 +42,7 @@ void ParameterSpinBox::setValue()
 	}
 	this->doubleSpinBox->setDecimals(decimalPrecision);
 	this->stackedWidgetRight->setCurrentWidget(this->pageSpin);
+	this->pageSpin->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Expanding);
 	this->stackedWidgetBelow->hide();
 	this->doubleSpinBox->setRange(object->value->toDouble()-1000, object->value->toDouble()+1000);
 	this->doubleSpinBox->setValue(object->value->toDouble());

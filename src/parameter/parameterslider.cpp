@@ -88,6 +88,7 @@ void ParameterSlider::setValue()
 	this->slider->setValue(current);
 
 	this->stackedWidgetRight->setCurrentWidget(this->pageSpin);
+	this->pageSpin->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Expanding);
 	this->doubleSpinBox->setMinimum(object->values->toRange().begin_value());
 	this->doubleSpinBox->setMaximum(object->values->toRange().end_value());
 	this->doubleSpinBox->setSingleStep(object->values->toRange().step_value());
