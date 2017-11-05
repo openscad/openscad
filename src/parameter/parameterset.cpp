@@ -105,7 +105,8 @@ void ParameterSet::applyParameterSet(FileModule *fileModule, const std::string &
 					}
 					else if (defaultValue->type() == Value::ValueType::BOOL) {
 						assignment.expr = shared_ptr<Expression>(new Literal(ValuePtr(v.second.get_value<bool>())));
-					} else {
+					}
+					else {
 						shared_ptr<Expression> params = CommentParser::parser(v.second.data().c_str());
 						if (!params) continue;
 						ModuleContext ctx;

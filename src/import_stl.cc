@@ -121,8 +121,7 @@ PolySet *import_stl(const std::string &filename)
 			}
 		}
 	}
-	else if (binary && !f.eof() && f.good())
-	{
+	else if (binary && !f.eof() && f.good()) {
 		f.ignore(80 - 5 + 4);
 		while (1) {
 			stl_facet facet;

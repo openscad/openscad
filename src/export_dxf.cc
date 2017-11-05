@@ -99,7 +99,8 @@ void export_dxf(const shared_ptr<const Geometry> &geom, std::ostream &output)
 	}
 	else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(geom.get())) {
 		export_dxf(*poly, output);
-	} else {
+	}
+	else {
 		assert(false && "Export as DXF for this geometry type is not supported");
 	}
 }

@@ -24,9 +24,11 @@ QsciScintilla::WrapMode SettingsConverter::toWrapMode(Value val)
 	std::string v = val.toString();
 	if (v == "Char") {
 		return QsciScintilla::WrapCharacter;
-	} else if (v == "Word") {
+	}
+	else if (v == "Word") {
 		return QsciScintilla::WrapWord;
-	} else {
+	}
+	else {
 		return QsciScintilla::WrapNone;
 	}
 }
@@ -36,13 +38,16 @@ QsciScintilla::WrapVisualFlag SettingsConverter::toLineWrapVisualization(Value v
 	std::string v = val.toString();
 	if (v == "Text") {
 		return QsciScintilla::WrapFlagByText;
-	} else if (v == "Border") {
+	}
+	else if (v == "Border") {
 		return QsciScintilla::WrapFlagByBorder;
 #if QSCINTILLA_VERSION >= 0x020700
-	} else if (v == "Margin") {
+	}
+	else if (v == "Margin") {
 		return QsciScintilla::WrapFlagInMargin;
 #endif
-	} else {
+	}
+	else {
 		return QsciScintilla::WrapFlagNone;
 	}
 }
@@ -52,9 +57,11 @@ QsciScintilla::WrapIndentMode SettingsConverter::toLineWrapIndentationStyle(Valu
 	std::string v = val.toString();
 	if (v == "Same") {
 		return QsciScintilla::WrapIndentSame;
-	} else if (v == "Indented") {
+	}
+	else if (v == "Indented") {
 		return QsciScintilla::WrapIndentIndented;
-	} else {
+	}
+	else {
 		return QsciScintilla::WrapIndentFixed;
 	}
 }
@@ -64,9 +71,11 @@ QsciScintilla::WhitespaceVisibility SettingsConverter::toShowWhitespaces(Value v
 	std::string v = val.toString();
 	if (v == "Always") {
 		return QsciScintilla::WsVisible;
-	} else if (v == "AfterIndentation") {
+	}
+	else if (v == "AfterIndentation") {
 		return QsciScintilla::WsVisibleAfterIndent;
-	} else {
+	}
+	else {
 		return QsciScintilla::WsInvisible;
 	}
 }
@@ -187,12 +196,10 @@ void ScintillaEditor::applySettings()
 	bool value = s->get(Settings::Settings::enableLineNumbers).toBool();
 	qsci->setMarginLineNumbers(1, value);
 
-	if (!value)
-	{
+	if (!value) {
 		qsci->setMarginWidth(1, 20);
 	}
-	else
-	{
+	else {
 		qsci->setMarginWidth(1, QString(trunc(log10(qsci->lines()) + 4), '0'));
 	}
 }
@@ -397,7 +404,8 @@ void ScintillaEditor::enumerateColorSchemesInPath(ScintillaEditor::colorscheme_s
 			EditorColorScheme *colorScheme = new EditorColorScheme(path);
 			if (colorScheme->valid()) {
 				result_set.insert(colorscheme_set_t::value_type(colorScheme->index(), shared_ptr<EditorColorScheme>(colorScheme)));
-			} else {
+			}
+			else {
 				delete colorScheme;
 			}
 		}
@@ -514,12 +522,10 @@ void ScintillaEditor::onTextChanged()
 	QFontMetrics fontmetrics(this->currentFont);
 	bool value = s->get(Settings::Settings::enableLineNumbers).toBool();
 
-	if (!value)
-	{
+	if (!value) {
 		qsci->setMarginWidth(1, 20);
 	}
-	else
-	{
+	else {
 		qsci->setMarginWidth(1, QString(trunc(log10(qsci->lines()) + 4), '0'));
 	}
 }
@@ -609,7 +615,8 @@ void ScintillaEditor::getRange(int *lineFrom, int *lineTo)
 		if (indexTo == 0) {
 			*lineTo = *lineTo - 1;
 		}
-	} else {
+	}
+	else {
 		qsci->getCursorPosition(lineFrom, &indexFrom);
 		*lineTo = *lineFrom;
 	}
@@ -683,8 +690,7 @@ bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
 			) {
 		QKeyEvent *ke = static_cast<QKeyEvent *>(e);
 		if ((ke->modifiers() & ~Qt::KeypadModifier) == Qt::AltModifier) {
-			switch (ke->key())
-			{
+			switch (ke->key()) {
 			case Qt::Key_Left:
 			case Qt::Key_Right:
 				if (e->type() == QEvent::KeyPress) {
@@ -733,8 +739,7 @@ void ScintillaEditor::navigateOnNumber(int key)
 	bool numOnLeft = left.contains(QRegExp("\\d\\.?$")) || left.endsWith("-.");
 	bool numOnRight = text.indexOf(QRegExp("\\.?\\d"), index) == index;
 
-	switch (key)
-	{
+	switch (key) {
 	case Qt::Key_Left:
 		if (numOnLeft) qsci->setCursorPosition(line, index - (dotJustLeft ? 2 : 1));
 		break;
@@ -746,7 +751,8 @@ void ScintillaEditor::navigateOnNumber(int key)
 			if (!dotOnLeft) {
 				qsci->insert(".0");
 				index++;
-			} else {
+			}
+			else {
 				qsci->insert("0");
 			}
 			qsci->setCursorPosition(line, index + 1);
@@ -801,8 +807,7 @@ bool ScintillaEditor::modifyNumber(int key)
 	qsci->replaceSelectedText(newnr);
 
 	qsci->selectAll(false);
-	if (hadSelection)
-	{
+	if (hadSelection) {
 		qsci->setSelection(lineFrom, indexFrom, lineTo, indexTo);
 	}
 	qsci->setCursorPosition(line, begin + newnr.length() - tail);

@@ -134,7 +134,8 @@ namespace OpenSCAD {
 						<< " x2='" << CGAL::to_double(target.x()) << "'"
 						<< " y2='" << CGAL::to_double(target.y()) << "'"
 						<< " class='" << styleclass + he_mark << "' />\n";
-			} else {
+			}
+			else {
 				out << "     <!-- 2d Nef Rays - not implemented -->\n";
 			}
 		}
@@ -314,7 +315,8 @@ public:
 				out << "   <!-- Halffacet cycle begin: -->\n";
 				if (contour_count == 0) {
 					out << "    <!-- Body contour:--> \n";
-				} else {
+				}
+				else {
 					out << "    <!-- Hole contour:--> \n";
 				}
 				CGAL_Nef_polyhedron3::SHalfedge_around_facet_const_circulator c1(i), c2(c1);

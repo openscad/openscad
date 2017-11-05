@@ -86,7 +86,8 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 				std::string(e.what()).find("has_on") != std::string::npos) {
 			PRINT("PolySet has nonplanar faces. Attempting alternate construction");
 			plane_error = true;
-		} else {
+		}
+		else {
 			PRINTB("ERROR: CGAL error in CGAL_Nef_polyhedron3(): %s", e.what());
 		}
 	}

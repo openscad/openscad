@@ -98,9 +98,15 @@ namespace PolysetUtils {
 //the tessellation algorithm.
 	Vector2d get_projected_point(Vector3d v, projection_t projection) {
 		Vector2d v2(0, 0);
-		if (projection == XYPLANE) { v2.x() = v.x(); v2.y() = v.y(); }
-		else if (projection == XZPLANE) { v2.x() = v.x(); v2.y() = v.z(); }
-		else if (projection == YZPLANE) { v2.x() = v.y(); v2.y() = v.z(); }
+		if (projection == XYPLANE) {
+			v2.x() = v.x(); v2.y() = v.y();
+		}
+		else if (projection == XZPLANE) {
+			v2.x() = v.x(); v2.y() = v.z();
+		}
+		else if (projection == YZPLANE) {
+			v2.x() = v.y(); v2.y() = v.z();
+		}
 		return v2;
 	}
 
@@ -118,7 +124,9 @@ namespace PolysetUtils {
 		Vector3d v1, v2, v3;
 		v1 = v2 = v3 = pgon[0];
 		for (size_t i = 0; i < pgon.size(); i++) {
-			if (pgon[i] != v1) { v2 = pgon[i]; break; }
+			if (pgon[i] != v1) {
+				v2 = pgon[i]; break;
+			}
 		}
 		if (v1 == v2) return NONE;
 		for (size_t i = 0; i < pgon.size(); i++) {
@@ -177,8 +185,7 @@ namespace PolysetUtils {
 																													 list_of_seeds.begin(), list_of_seeds.end(), DummyCriteria<CDT>());
 
 			CDT::Finite_faces_iterator fit;
-			for (fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); fit++)
-			{
+			for (fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); fit++) {
 				if (fit->is_in_domain()) {
 					CDTPoint p1 = cdt.triangle(fit)[0];
 					CDTPoint p2 = cdt.triangle(fit)[1];
@@ -191,7 +198,8 @@ namespace PolysetUtils {
 						pgon.push_back(v1);
 						pgon.push_back(v2);
 						pgon.push_back(v3);
-					} else {
+					}
+					else {
 						pgon.push_back(v3);
 						pgon.push_back(v2);
 						pgon.push_back(v1);

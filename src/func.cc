@@ -147,12 +147,14 @@ ValuePtr builtin_rands(const Context *, const EvalContext *evalctx)
 		if (min == max) { // Boost doesn't allow min == max
 			for (size_t i = 0; i < numresults; i++)
 				vec.push_back(ValuePtr(min));
-		} else {
+		}
+		else {
 			boost::uniform_real<> distributor(min, max);
 			for (size_t i = 0; i < numresults; i++) {
 				if (deterministic) {
 					vec.push_back(ValuePtr(distributor(deterministic_rng)));
-				} else {
+				}
+				else {
 					vec.push_back(ValuePtr(distributor(lessdeterministic_rng)));
 				}
 			}
@@ -237,7 +239,8 @@ double sin_degrees(double x)
 	// use positive tests because of possible Inf/NaN
 	if (x < 360.0 && x >= 0.0) {
 		// Ok for now
-	} else
+	}
+	else
 #ifdef TRIG_HUGE_VAL
 	if (x < TRIG_HUGE_VAL && x > -TRIG_HUGE_VAL)
 #endif
@@ -258,7 +261,8 @@ double sin_degrees(double x)
 	if (x < 45.0) {
 		if (x == 30.0) x = 0.5;
 		else x = sin(deg2rad(x));
-	} else if (x == 45.0) x = M_SQRT1_2;
+	}
+	else if (x == 45.0) x = M_SQRT1_2;
 	else // Inf/Nan would fall here
 		x = cos(deg2rad(90.0 - x));
 
@@ -279,7 +283,8 @@ double cos_degrees(double x)
 	// use positive tests because of possible Inf/NaN
 	if (x < 360.0 && x >= 0.0) {
 		// Ok for now
-	} else
+	}
+	else
 #ifdef TRIG_HUGE_VAL
 	if (x < TRIG_HUGE_VAL && x > -TRIG_HUGE_VAL)
 #endif
@@ -303,7 +308,8 @@ double cos_degrees(double x)
 	if (x > 45.0) {
 		if (x == 60.0) x = 0.5;
 		else x = sin(deg2rad(90.0 - x));
-	} else if (x == 45.0) x = M_SQRT1_2;
+	}
+	else if (x == 45.0) x = M_SQRT1_2;
 	else // Inf/Nan would fall here
 		x = cos(deg2rad(x));
 
@@ -491,7 +497,8 @@ ValuePtr builtin_concat(const Context *, const EvalContext *evalctx)
 			for (const auto &v : val->toVector()) {
 				result.push_back(v);
 			}
-		} else {
+		}
+		else {
 			result.push_back(val);
 		}
 	}
@@ -598,7 +605,8 @@ static Value::VectorType search(const std::string &find, const std::string &tabl
 				if (num_returns_per_match == 1) {
 					returnvec.push_back(ValuePtr(double(j)));
 					break;
-				} else {
+				}
+				else {
 					resultvec.push_back(ValuePtr(double(j)));
 				}
 				if (num_returns_per_match > 1 && matchCount >= num_returns_per_match) {
@@ -640,7 +648,8 @@ static Value::VectorType search(const std::string &find, const Value::VectorType
 				if (num_returns_per_match == 1) {
 					returnvec.push_back(ValuePtr(double(j)));
 					break;
-				} else {
+				}
+				else {
 					resultvec.push_back(ValuePtr(double(j)));
 				}
 				if (num_returns_per_match > 1 && matchCount >= num_returns_per_match) {
@@ -685,14 +694,16 @@ ValuePtr builtin_search(const Context *, const EvalContext *evalctx)
 				if (num_returns_per_match != 0 && matchCount >= num_returns_per_match) break;
 			}
 		}
-	} else if (findThis->type() == Value::ValueType::STRING) {
+	}
+	else if (findThis->type() == Value::ValueType::STRING) {
 		if (searchTable->type() == Value::ValueType::STRING) {
 			returnvec = search(findThis->toString(), searchTable->toString(), num_returns_per_match);
 		}
 		else {
 			returnvec = search(findThis->toString(), searchTable->toVector(), num_returns_per_match, index_col_num);
 		}
-	} else if (findThis->type() == Value::ValueType::VECTOR) {
+	}
+	else if (findThis->type() == Value::ValueType::VECTOR) {
 		for (size_t i = 0; i < findThis->toVector().size(); i++) {
 			unsigned int matchCount = 0;
 			Value::VectorType resultvec;
@@ -711,7 +722,8 @@ ValuePtr builtin_search(const Context *, const EvalContext *evalctx)
 					if (num_returns_per_match == 1) {
 						returnvec.push_back(resultValue);
 						break;
-					} else {
+					}
+					else {
 						resultvec.push_back(resultValue);
 					}
 					if (num_returns_per_match > 1 && matchCount >= num_returns_per_match) break;
@@ -724,7 +736,8 @@ ValuePtr builtin_search(const Context *, const EvalContext *evalctx)
 				returnvec.push_back(ValuePtr(resultvec));
 			}
 		}
-	} else {
+	}
+	else {
 		return ValuePtr::undefined;
 	}
 	return ValuePtr(returnvec);
@@ -767,7 +780,8 @@ ValuePtr builtin_parent_module(const Context *, const EvalContext *evalctx)
 		ValuePtr v = evalctx->getArgValue(0);
 		if (v->type() != Value::ValueType::NUMBER) return ValuePtr::undefined;
 		v->getDouble(d);
-	} else return ValuePtr::undefined;
+	}
+	else return ValuePtr::undefined;
 	n = trunc(d);
 	if (n < 0) {
 		PRINTB("WARNING: Negative parent module index (%d) not allowed", n);
@@ -793,7 +807,8 @@ ValuePtr builtin_norm(const Context *, const EvalContext *evalctx)
 					// sum += pow(v[i].toDouble(),2);
 					double x = v[i]->toDouble();
 					sum += x * x;
-				} else {
+				}
+				else {
 					PRINT("WARNING: Incorrect arguments to norm()");
 					return ValuePtr::undefined;
 				}

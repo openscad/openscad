@@ -45,7 +45,7 @@ LaunchingScreen::LaunchingScreen(QWidget *parent) : QDialog(parent)
 		auto examples = UIUtils::exampleFiles(category);
 		auto categoryItem = new QTreeWidgetItem(QStringList(gettext(category.toStdString().c_str())));
 
-		for (const auto &example : examples)  {
+		for (const auto &example : examples) {
 			auto exampleItem = new QTreeWidgetItem(QStringList(example.fileName()));
 			exampleItem->setData(0, Qt::UserRole, example.canonicalFilePath());
 			categoryItem->addChild(exampleItem);

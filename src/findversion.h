@@ -26,8 +26,7 @@
 
 int testValue(OSVERSIONINFOEX *value, DWORD verPart, DWORDLONG eq, DWORDLONG gt)
 {
-	if (VerifyVersionInfo(value, verPart, eq) == FALSE)
-	{
+	if (VerifyVersionInfo(value, verPart, eq) == FALSE) {
 		if (VerifyVersionInfo(value, verPart, gt) == TRUE) return FV_GREAT;
 		return FV_LESS;
 	}

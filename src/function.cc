@@ -115,7 +115,8 @@ UserFunction *UserFunction::create(const char *name, AssignmentList &definition_
 			if (name == ifcall->name) {
 				return new FunctionTailRecursion(name, definition_arguments, ternary, ifcall, ternary->elseexpr, false, loc);
 			}
-		} else if (elsecall && !ifcall) {
+		}
+		else if (elsecall && !ifcall) {
 			if (name == elsecall->name) {
 				return new FunctionTailRecursion(name, definition_arguments, ternary, elsecall, ternary->ifexpr, true, loc);
 			}

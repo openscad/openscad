@@ -36,7 +36,8 @@ void QWordSearchField::updateFieldLabel()
 	if (findcount > 0) {
 		fieldLabel->setText(QString::number(findcount));
 		fieldLabel->setVisible(true);
-	} else {
+	}
+	else {
 		fieldLabel->setText(QString(""));
 		fieldLabel->setVisible(false);
 	}

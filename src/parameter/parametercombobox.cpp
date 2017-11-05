@@ -9,7 +9,7 @@ ParameterComboBox::ParameterComboBox(ParameterObject *parameterobject, bool show
 	if (showDescription == true) {
 		setDescription(object->description);
 	}
-	else{
+	else {
 		comboBox->setToolTip(object->description);
 	}
 }
@@ -19,7 +19,8 @@ void ParameterComboBox::onChanged(int idx)
 	if (object->dvt == Value::ValueType::STRING) {
 		const std::string v = comboBox->itemData(idx).toString().toStdString();
 		object->value = ValuePtr(v);
-	} else {
+	}
+	else {
 		const double v = comboBox->itemData(idx).toDouble();
 		object->value = ValuePtr(v);
 	}

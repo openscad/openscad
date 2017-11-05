@@ -58,18 +58,15 @@ namespace boosty {
 		std::vector<std::string>::iterator pi;
 		std::string tmps = p.generic_string();
 		boost::split(pieces, tmps, boost::is_any_of("/"));
-		for (pi = pieces.begin(); pi != pieces.end(); ++pi)
-		{
+		for (pi = pieces.begin(); pi != pieces.end(); ++pi) {
 			if (*pi == "..") resultv.erase(resultv.end());
 			else resultv.push_back(*pi);
 		}
-		for (pi = resultv.begin(); pi != resultv.end(); ++pi)
-		{
+		for (pi = resultv.begin(); pi != resultv.end(); ++pi) {
 			if ((*pi).length() > 0) result_s = result_s + "/" + *pi;
 		}
 		result = fs::path(result_s);
-		if (fs::is_symlink(result))
-		{
+		if (fs::is_symlink(result)) {
 			PRINT("WARNING: canonical() wrapper can't do symlinks. rebuild openscad with boost >=1.48");
 			PRINT("WARNING: or don't use symbolic links");
 		}

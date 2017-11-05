@@ -166,7 +166,8 @@ namespace CGALUtils {
 						points.push_back(vector_convert<K::Point_3>(i->point()));
 					}
 				}
-			} else {
+			}
+			else {
 				const PolySet *ps = dynamic_cast<const PolySet *>(chgeom.get());
 				if (ps) {
 					for (const auto &p : ps->polygons) {
@@ -237,7 +238,8 @@ namespace CGALUtils {
 							(!ps && is_weakly_convex(poly))) {
 						PRINTDB("Minkowski: child %d is convex and %s", i % (ps ? "PolySet" : "Nef"));
 						P[i].push_back(poly);
-					} else {
+					}
+					else {
 						CGAL_Nef_polyhedron3 decomposed_nef;
 
 						if (ps) {
@@ -245,7 +247,8 @@ namespace CGALUtils {
 							CGAL_Nef_polyhedron *p = createNefPolyhedronFromGeometry(*ps);
 							if (!p->isEmpty()) decomposed_nef = *p->p3;
 							delete p;
-						} else {
+						}
+						else {
 							PRINTDB("Minkowski: child %d is nonconvex Nef, decomposing...", i);
 							decomposed_nef = *nef->p3;
 						}
@@ -370,7 +373,8 @@ namespace CGALUtils {
 					PolySet *ps = new PolySet(3, true);
 					createPolySetFromPolyhedron(*result_parts.begin(), *ps);
 					operands[0] = ps;
-				} else if (!result_parts.empty()) {
+				}
+				else if (!result_parts.empty()) {
 					t.start();
 					PRINTDB("Minkowski: Computing union of %d parts", result_parts.size());
 					Geometry::Geometries fake_children;
@@ -388,7 +392,8 @@ namespace CGALUtils {
 					PRINTDB("Minkowski: Union done: %f s", t.time());
 					t.reset();
 					operands[0] = N;
-				} else {
+				}
+				else {
 					operands[0] = new CGAL_Nef_polyhedron();
 				}
 			}

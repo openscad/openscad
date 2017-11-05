@@ -181,7 +181,8 @@ void CSGProducts::import(shared_ptr<CSGNode> csgnode, OpenSCADOperator type, CSG
 			this->currentlist = &this->currentproduct->intersections;
 		}
 		this->currentlist->push_back(CSGChainObject(leaf, newflags));
-	} else if (auto op = dynamic_pointer_cast<CSGOperation>(csgnode)) {
+	}
+	else if (auto op = dynamic_pointer_cast<CSGOperation>(csgnode)) {
 		assert(op->left() && op->right());
 		import(op->left(), type, newflags);
 		import(op->right(), op->getType(), newflags);

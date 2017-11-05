@@ -51,7 +51,8 @@ bool save_framebuffer(OffscreenContext *ctx, char const *filename)
 	if (!fstream.is_open()) {
 		std::cerr << "Can't open file " << filename << " for writing";
 		return false;
-	} else {
+	}
+	else {
 		save_framebuffer(ctx, fstream);
 		fstream.close();
 	}

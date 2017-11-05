@@ -58,7 +58,8 @@ static void append_svg(const shared_ptr<const Geometry> &geom, std::ostream &out
 	}
 	else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(geom.get())) {
 		append_svg(*poly, output);
-	} else {
+	}
+	else {
 		assert(false && "Export as SVG for this geometry type is not supported");
 	}
 }

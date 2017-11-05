@@ -127,9 +127,11 @@ Value PrimitiveModule::lookup_radius(const Context &ctx, const std::string &diam
 			PRINTB("WARNING: Ignoring radius variable '%s' as diameter '%s' is defined too.", radius_var % diameter_var);
 		}
 		return {d->toDouble() / 2.0};
-	} else if (r_defined) {
+	}
+	else if (r_defined) {
 		return *r;
-	} else {
+	}
+	else {
 		return Value::undefined;
 	}
 }
@@ -185,7 +187,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		node->fa = F_MINIMUM;
 	}
 
-	switch (this->type)  {
+	switch (this->type) {
 	case primitive_type_e::CUBE: {
 		auto size = c.lookup_variable("size");
 		auto center = c.lookup_variable("center");
@@ -309,7 +311,8 @@ const Geometry *PrimitiveNode::createGeometry() const
 				y2 = +this->y / 2;
 				z1 = -this->z / 2;
 				z2 = +this->z / 2;
-			} else {
+			}
+			else {
 				x1 = y1 = z1 = 0;
 				x2 = this->x;
 				y2 = this->y;
@@ -399,7 +402,8 @@ sphere_next_r1:
 						p->insert_vertex(r1->points[r1j].x, r1->points[r1j].y, r1->z);
 						p->insert_vertex(r2->points[r2i % fragments].x, r2->points[r2i % fragments].y, r2->z);
 						r1i++;
-					} else {
+					}
+					else {
 sphere_next_r2:
 						p->append_poly();
 						int r2j = (r2i + 1) % fragments;
@@ -437,7 +441,8 @@ sphere_next_r2:
 			if (this->center) {
 				z1 = -this->h / 2;
 				z2 = +this->h / 2;
-			} else {
+			}
+			else {
 				z1 = 0;
 				z2 = this->h;
 			}
@@ -456,7 +461,8 @@ sphere_next_r2:
 					p->insert_vertex(circle2[i].x, circle2[i].y, z2);
 					p->insert_vertex(circle2[j].x, circle2[j].y, z2);
 					p->insert_vertex(circle1[j].x, circle1[j].y, z1);
-				} else {
+				}
+				else {
 					if (r1 > 0) {
 						p->append_poly();
 						p->insert_vertex(circle1[i].x, circle1[i].y, z1);
@@ -533,7 +539,7 @@ sphere_next_r2:
 	case primitive_type_e::CIRCLE: {
 		auto p = new Polygon2d();
 		g = p;
-		if (this->r1 > 0 && !std::isinf(this->r1))  {
+		if (this->r1 > 0 && !std::isinf(this->r1)) {
 			auto fragments = Calc::get_fragments_from_r(this->r1, this->fn, this->fs, this->fa);
 
 			Outline2d o;

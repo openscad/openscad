@@ -98,7 +98,7 @@ void ParameterWidget::readFile(QString scadFile)
 		connect(this->addButton, SIGNAL(clicked()), this, SLOT(onSetAdd()));
 		connect(this->deleteButton, SIGNAL(clicked()), this, SLOT(onSetDelete()));
 	}
-	else{
+	else {
 		this->addButton->setDisabled(true);
 		this->addButton->setToolTip("JSON file read only");
 		this->deleteButton->setDisabled(true);
@@ -137,7 +137,8 @@ void ParameterWidget::onDescriptionShow()
 {
 	if (checkBoxDetailedDescription->isChecked()) {
 		descriptionShow = true;
-	} else {
+	}
+	else {
 		descriptionShow = false;
 	}
 	emit previewRequested();
@@ -238,7 +239,8 @@ void ParameterWidget::clear(){
 	for (entry_map_t::iterator it = entries.begin(); it != entries.end(); ) {
 		if (!(*it).second->set) {
 			it = entries.erase(it);
-		} else {
+		}
+		else {
 			it++;
 		}
 	}
@@ -322,9 +324,11 @@ void ParameterWidget::applyParameterSet(std::string setName)
 		if (entry != entries.end()) {
 			if (entry->second->dvt == Value::ValueType::STRING) {
 				entry->second->value = ValuePtr(v.second.data());
-			} else if (entry->second->dvt == Value::ValueType::BOOL) {
+			}
+			else if (entry->second->dvt == Value::ValueType::BOOL) {
 				entry->second->value = ValuePtr(v.second.get_value<bool>());
-			} else {
+			}
+			else {
 				shared_ptr<Expression> params = CommentParser::parser(v.second.data().c_str());
 				if (!params) continue;
 

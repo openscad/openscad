@@ -294,7 +294,8 @@ ValuePtr Range::evaluate(const Context *context) const
 			if (!this->step) {
 				RangeType range(beginValue->toDouble(), endValue->toDouble());
 				return ValuePtr(range);
-			} else {
+			}
+			else {
 				ValuePtr stepValue = this->step->evaluate(context);
 				if (stepValue->type() == Value::ValueType::NUMBER) {
 					RangeType range(beginValue->toDouble(), stepValue->toDouble(), endValue->toDouble());
@@ -317,7 +318,8 @@ void Range::print(std::ostream &stream) const
 bool Range::isLiteral() const {
 	if (!this->step) {
 		if (begin->isLiteral() && end->isLiteral()) return true;
-	}else{
+	}
+	else {
 		if (begin->isLiteral() && end->isLiteral() && step->isLiteral()) return true;
 	}
 	return false;
@@ -351,7 +353,8 @@ ValuePtr Vector::evaluate(const Context *context) const
 			for (size_t i = 0; i < result.size(); i++) {
 				vec.push_back(result[i]);
 			}
-		} else {
+		}
+		else {
 			vec.push_back(tmpval);
 		}
 	}
@@ -395,7 +398,8 @@ ValuePtr MemberLookup::evaluate(const Context *context) const
 		if (this->member == "x") return v[0];
 		if (this->member == "y") return v[1];
 		if (this->member == "z") return v[2];
-	} else if (v->type() == Value::ValueType::RANGE) {
+	}
+	else if (v->type() == Value::ValueType::RANGE) {
 		if (this->member == "begin") return v[0];
 		if (this->member == "step") return v[1];
 		if (this->member == "end") return v[2];
@@ -435,9 +439,11 @@ Expression *FunctionCall::create(const std::string &funcname, const AssignmentLi
 {
 	if (funcname == "assert" && Feature::ExperimentalAssertExpression.is_enabled()) {
 		return new Assert(arglist, expr, loc);
-	} else if (funcname == "echo" && Feature::ExperimentalEchoExpression.is_enabled()) {
+	}
+	else if (funcname == "echo" && Feature::ExperimentalEchoExpression.is_enabled()) {
 		return new Echo(arglist, expr, loc);
-	} else if (funcname == "let") {
+	}
+	else if (funcname == "let") {
 		return new Let(arglist, expr, loc);
 	}
 
@@ -532,7 +538,8 @@ ValuePtr LcIf::evaluate(const Context *context) const
 	if (expr) {
 		if (isListComprehension(expr)) {
 			return expr->evaluate(context);
-		} else {
+		}
+		else {
 			vec.push_back(expr->evaluate(context));
 		}
 	}
@@ -565,23 +572,27 @@ ValuePtr LcEach::evaluate(const Context *context) const
 		uint32_t steps = range.numValues();
 		if (steps >= 1000000) {
 			PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu).", steps);
-		} else {
+		}
+		else {
 			for (RangeType::iterator it = range.begin(); it != range.end(); it++) {
 				vec.push_back(ValuePtr(*it));
 			}
 		}
-	} else if (v->type() == Value::ValueType::VECTOR) {
+	}
+	else if (v->type() == Value::ValueType::VECTOR) {
 		Value::VectorType vector = v->toVector();
 		for (size_t i = 0; i < v->toVector().size(); i++) {
 			vec.push_back(vector[i]);
 		}
-	} else if (v->type() != Value::ValueType::UNDEFINED) {
+	}
+	else if (v->type() != Value::ValueType::UNDEFINED) {
 		vec.push_back(v);
 	}
 
 	if (isListComprehension(this->expr)) {
 		return ValuePtr(flatten(vec));
-	} else {
+	}
+	else {
 		return ValuePtr(vec);
 	}
 }
@@ -615,25 +626,29 @@ ValuePtr LcFor::evaluate(const Context *context) const
 		uint32_t steps = range.numValues();
 		if (steps >= 1000000) {
 			PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu).", steps);
-		} else {
+		}
+		else {
 			for (RangeType::iterator it = range.begin(); it != range.end(); it++) {
 				c.set_variable(it_name, ValuePtr(*it));
 				vec.push_back(this->expr->evaluate(&c));
 			}
 		}
-	} else if (it_values->type() == Value::ValueType::VECTOR) {
+	}
+	else if (it_values->type() == Value::ValueType::VECTOR) {
 		for (size_t i = 0; i < it_values->toVector().size(); i++) {
 			c.set_variable(it_name, it_values->toVector()[i]);
 			vec.push_back(this->expr->evaluate(&c));
 		}
-	} else if (it_values->type() != Value::ValueType::UNDEFINED) {
+	}
+	else if (it_values->type() != Value::ValueType::UNDEFINED) {
 		c.set_variable(it_name, it_values);
 		vec.push_back(this->expr->evaluate(&c));
 	}
 
 	if (isListComprehension(this->expr)) {
 		return ValuePtr(flatten(vec));
-	} else {
+	}
+	else {
 		return ValuePtr(vec);
 	}
 }
@@ -670,7 +685,8 @@ ValuePtr LcForC::evaluate(const Context *context) const
 
 	if (isListComprehension(this->expr)) {
 		return ValuePtr(flatten(vec));
-	} else {
+	}
+	else {
 		return ValuePtr(vec);
 	}
 }

@@ -226,8 +226,7 @@ const Geometry *SurfaceNode::createGeometry() const
 	double oy = center ? -(lines - 1) / 2.0 : 0;
 
 	for (int i = 1; i < lines; i++)
-		for (int j = 1; j < columns; j++)
-		{
+		for (int j = 1; j < columns; j++) {
 			double v1 = data[std::make_pair(i - 1, j - 1)];
 			double v2 = data[std::make_pair(i - 1, j)];
 			double v3 = data[std::make_pair(i, j - 1)];
@@ -255,8 +254,7 @@ const Geometry *SurfaceNode::createGeometry() const
 			p->append_vertex(ox + j - 0.5, oy + i - 0.5, vx);
 		}
 
-	for (int i = 1; i < lines; i++)
-	{
+	for (int i = 1; i < lines; i++) {
 		p->append_poly();
 		p->append_vertex(ox + 0, oy + i - 1, min_val);
 		p->append_vertex(ox + 0, oy + i - 1, data[std::make_pair(i - 1, 0)]);
@@ -270,8 +268,7 @@ const Geometry *SurfaceNode::createGeometry() const
 		p->insert_vertex(ox + columns - 1, oy + i, min_val);
 	}
 
-	for (int i = 1; i < columns; i++)
-	{
+	for (int i = 1; i < columns; i++) {
 		p->append_poly();
 		p->insert_vertex(ox + i - 1, oy + 0, min_val);
 		p->insert_vertex(ox + i - 1, oy + 0, data[std::make_pair(0, i - 1)]);

@@ -40,7 +40,8 @@ std::string PlatformUtils::userConfigPath()
 	const char *xdg_env = getenv("XDG_CONFIG_HOME");
 	if (xdg_env && fs::exists(fs::path(xdg_env))) {
 		config_path = fs::path(xdg_env) / OPENSCAD_FOLDER_NAME;
-	} else {
+	}
+	else {
 		const char *home = getenv("HOME");
 		if (home) {
 			config_path = fs::path(home) / ".config" / OPENSCAD_FOLDER_NAME;
@@ -150,7 +151,8 @@ std::string PlatformUtils::sysinfo(bool extended)
 		result += osinfo.version;
 		result += " ";
 		result += osinfo.machine;
-	} else {
+	}
+	else {
 		result += "Unknown Linux";
 	}
 

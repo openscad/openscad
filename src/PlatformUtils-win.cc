@@ -113,8 +113,7 @@ static BOOL IsWow64()
 	LPFN_ISWOW64PROCESS fnIsWow64Process = (LPFN_ISWOW64PROCESS)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "IsWow64Process");
 
 	if (nullptr != fnIsWow64Process) {
-		if (!fnIsWow64Process(GetCurrentProcess(), &bIsWow64))
-		{
+		if (!fnIsWow64Process(GetCurrentProcess(), &bIsWow64)) {
 			return false;
 		}
 	}
@@ -130,7 +129,8 @@ std::string PlatformUtils::sysinfo(bool extended)
 
 	if (GetVersionExEx(&osinfo) == 0) {
 		result += "Unknown Windows(TM)";
-	} else {
+	}
+	else {
 		boost::format fmt("Windows(TM) %d.%d SP %d.%d NTW %i MSDN 724833");
 		fmt % osinfo.dwMajorVersion % osinfo.dwMinorVersion
 		% osinfo.wServicePackMajor % osinfo.wServicePackMinor
@@ -142,7 +142,8 @@ std::string PlatformUtils::sysinfo(bool extended)
 	bool isWow64 = IsWow64();
 	if (isWow64) {
 		GetNativeSystemInfo(&systeminfo);
-	} else {
+	}
+	else {
 		GetSystemInfo(&systeminfo);
 	}
 

@@ -64,7 +64,8 @@ void CSGTreeEvaluator::applyToChildren(State & /*state*/, const AbstractNode &no
 		this->stored_term.erase(chnode->index());
 		if (t2 && !t1) {
 			t1 = t2;
-		} else if (t2 && t1) {
+		}
+		else if (t2 && t1) {
 
 			shared_ptr<CSGNode> t;
 			// Handle background

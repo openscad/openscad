@@ -74,7 +74,8 @@ AbstractNode *OffsetModule::instantiate(const Context *ctx, const ModuleInstanti
 
 	if (r->isDefinedAs(Value::ValueType::NUMBER)) {
 		r->getDouble(node->delta);
-	} else if (delta->isDefinedAs(Value::ValueType::NUMBER)) {
+	}
+	else if (delta->isDefinedAs(Value::ValueType::NUMBER)) {
 		delta->getDouble(node->delta);
 		node->join_type = ClipperLib::jtMiter;
 		if (chamfer->isDefinedAs(Value::ValueType::BOOL) && chamfer->toBool()) {

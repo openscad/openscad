@@ -27,7 +27,8 @@ protected:
 				scadApp->requestOpenFile(filename);
 			}
 			return true;
-		} else {
+		}
+		else {
 			// standard event processing
 			return QObject::eventFilter(obj, event);
 		}

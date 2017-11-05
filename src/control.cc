@@ -80,7 +80,8 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 			uint32_t steps = range.numValues();
 			if (steps >= 10000) {
 				PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu).", steps);
-			} else {
+			}
+			else {
 				for (RangeType::iterator it = range.begin(); it != range.end(); it++) {
 					c.set_variable(it_name, ValuePtr(*it));
 					for_eval(node, inst, l + 1, &c, evalctx);
@@ -97,7 +98,8 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 			c.set_variable(it_name, it_values);
 			for_eval(node, inst, l + 1, &c, evalctx);
 		}
-	} else if (l > 0) {
+	}
+	else if (l > 0) {
 		// At this point, the for loop variables have been set and we can initialize
 		// the local scope (as they may depend on the for loop variables
 		Context c(ctx);

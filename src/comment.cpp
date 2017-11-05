@@ -145,7 +145,8 @@ static std::string getDescription(const std::string &fulltext, int line)
 		if (fulltext.compare(start, 2, "//") == 0) {
 			retString += " ";
 			start++;
-		} else {
+		}
+		else {
 			retString += fulltext[start];
 		}
 		start++;
@@ -177,7 +178,8 @@ static GroupInfo createGroup(std::string comment, int lineNo)
 			//Setting of group name
 			if (!finalGroupName.empty()) {
 				finalGroupName = finalGroupName + "-" + groupName;
-			} else {
+			}
+			else {
 				finalGroupName = finalGroupName + groupName;
 			}
 			groupName.clear();

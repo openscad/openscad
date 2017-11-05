@@ -269,17 +269,20 @@ AbstractNode *ColorModule::instantiate(const Context *ctx, const ModuleInstantia
 			node->color[i] = i < v->toVector().size() ? v->toVector()[i]->toDouble() : 1.0;
 			if (node->color[i] > 1) PRINTB_NOCACHE("WARNING: color() expects numbers between 0.0 and 1.0. Value of %.1f is too large.", node->color[i]);
 		}
-	} else if (v->type() == Value::ValueType::STRING) {
+	}
+	else if (v->type() == Value::ValueType::STRING) {
 		auto colorname = v->toString();
 		boost::algorithm::to_lower(colorname);
 		if (webcolors.find(colorname) != webcolors.end()) {
 			node->color = webcolors.at(colorname);
-		} else {
+		}
+		else {
 			// Try parsing it as a hex color such as "#rrggbb".
 			const auto hexColor = parse_hex_color(colorname);
 			if (hexColor) {
 				node->color = *hexColor;
-			} else {
+			}
+			else {
 				PRINTB_NOCACHE("WARNING: Unable to parse color \"%s\". Please see", colorname);
 				PRINT_NOCACHE("WARNING: http://en.wikipedia.org/wiki/Web_colors");
 			}

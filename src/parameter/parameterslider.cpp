@@ -49,7 +49,8 @@ void ParameterSlider::setValue()
 	if (object->values->toRange().step_value() > 0) {
 		setPrecision(object->values->toRange().step_value());
 		step = object->values->toRange().step_value();
-	} else {
+	}
+	else {
 		decimalPrecision = 1;
 		step = 1;
 	}

@@ -410,7 +410,8 @@ DxfData::DxfData(double fn, double fs, double fa,
 		if (layername.empty()) {
 			PRINTB("WARNING: Unsupported DXF Entity '%s' (%x) in %s.",
 						 i.first % i.second % QuotedString(boostfs_uncomplete(filename, fs::current_path()).generic_string()));
-		} else {
+		}
+		else {
 			PRINTB("WARNING: Unsupported DXF Entity '%s' (%x) in layer '%s' of %s.",
 						 i.first % i.second % layername % QuotedString(boostfs_uncomplete(filename, fs::current_path()).generic_string()));
 		}

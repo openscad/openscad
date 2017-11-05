@@ -264,13 +264,15 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
 			normalizeAngle(cam.object_rot.x());
 			normalizeAngle(cam.object_rot.y());
 			normalizeAngle(cam.object_rot.z());
-		} else {
+		}
+		else {
 			// Right button pans in the xz plane
 			// Middle button pans in the xy plane
 			// Shift-right and Shift-middle zooms
 			if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
 				cam.zoom(-12.0 * dy);
-			} else {
+			}
+			else {
 
 				double mx = +(dx) * 3.0 * cam.zoomValue() / QWidget::width();
 				double mz = -(dy) * 3.0 * cam.zoomValue() / QWidget::height();

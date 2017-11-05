@@ -272,7 +272,8 @@ std::string Value::toEchoString() const
 {
 	if (type() == Value::ValueType::STRING) {
 		return std::string("\"") + toString() + '"';
-	} else {
+	}
+	else {
 		return toString();
 	}
 }
@@ -599,14 +600,17 @@ Value Value::operator*(const Value &v) const
 				r += (vec1[i]->toDouble() * vec2[i]->toDouble());
 			}
 			return Value(r);
-		} else if (vec1[0]->type() == ValueType::VECTOR && vec2[0]->type() == ValueType::NUMBER &&
-							 vec1[0]->toVector().size() == vec2.size()) {
+		}
+		else if (vec1[0]->type() == ValueType::VECTOR && vec2[0]->type() == ValueType::NUMBER &&
+						 vec1[0]->toVector().size() == vec2.size()) {
 			return multmatvec(vec1, vec2);
-		} else if (vec1[0]->type() == ValueType::NUMBER && vec2[0]->type() == ValueType::VECTOR &&
-							 vec1.size() == vec2.size()) {
+		}
+		else if (vec1[0]->type() == ValueType::NUMBER && vec2[0]->type() == ValueType::VECTOR &&
+						 vec1.size() == vec2.size()) {
 			return multvecmat(vec1, vec2);
-		} else if (vec1[0]->type() == ValueType::VECTOR && vec2[0]->type() == ValueType::VECTOR &&
-							 vec1[0]->toVector().size() == vec2.size()) {
+		}
+		else if (vec1[0]->type() == ValueType::VECTOR && vec2[0]->type() == ValueType::VECTOR &&
+						 vec1[0]->toVector().size() == vec2.size()) {
 			// Matrix * Matrix
 			VectorType dstv;
 			for (const auto &srcrow : vec1) {
@@ -694,7 +698,7 @@ public:
 		const auto i = convert_to_uint32(idx);
 		if (i < str.size()) {
 			//Ensure character (not byte) index is inside the character/glyph array
-			if (i < static_cast<unsigned int>(g_utf8_strlen(str.c_str(), str.size())))  {
+			if (i < static_cast<unsigned int>(g_utf8_strlen(str.c_str(), str.size()))) {
 				gchar utf8_of_cp[6] = ""; //A buffer for a single unicode character to be copied into
 				auto ptr = g_utf8_offset_to_pointer(str.c_str(), i);
 				if (ptr) {
@@ -765,7 +769,8 @@ uint32_t RangeType::numValues() const
 			return 0;
 		}
 		numvals = (begin_val - end_val) / (-step_val) + 1;
-	} else {
+	}
+	else {
 		if (begin_val > end_val) {
 			return 0;
 		}
@@ -784,11 +789,13 @@ void RangeType::iterator::update_type()
 {
 	if (range.step_val == 0) {
 		type = type_t::RANGE_TYPE_END;
-	} else if (range.step_val < 0) {
+	}
+	else if (range.step_val < 0) {
 		if (val < range.end_val) {
 			type = type_t::RANGE_TYPE_END;
 		}
-	} else {
+	}
+	else {
 		if (val > range.end_val) {
 			type = type_t::RANGE_TYPE_END;
 		}
@@ -825,7 +832,8 @@ bool RangeType::iterator::operator==(const self_type &other) const
 {
 	if (type == type_t::RANGE_TYPE_RUNNING) {
 		return (type == other.type) && (val == other.val) && (range == other.range);
-	} else {
+	}
+	else {
 		return (type == other.type) && (range == other.range);
 	}
 }

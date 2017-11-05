@@ -117,9 +117,11 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 			ColorMode colormode = ColorMode::NONE;
 			if (highlight_mode) {
 				colormode = ColorMode::HIGHLIGHT;
-			} else if (background_mode) {
+			}
+			else if (background_mode) {
 				colormode = ColorMode::BACKGROUND;
-			} else {
+			}
+			else {
 				colormode = ColorMode::MATERIAL;
 			}
 
@@ -139,9 +141,11 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 			ColorMode colormode = ColorMode::NONE;
 			if (highlight_mode) {
 				colormode = ColorMode::HIGHLIGHT;
-			} else if (background_mode) {
+			}
+			else if (background_mode) {
 				colormode = ColorMode::BACKGROUND;
-			} else {
+			}
+			else {
 				colormode = ColorMode::CUTOUT;
 			}
 
