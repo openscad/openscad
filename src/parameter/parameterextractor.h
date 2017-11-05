@@ -13,10 +13,11 @@ protected:
 public:
 	ParameterExtractor();
 	virtual ~ParameterExtractor();
-	void setParameters(const FileModule* module);
+	void setParameters(const FileModule* module,bool);
 	void applyParameters(FileModule *fileModule);
 
 protected:
 	virtual void connectWidget() = 0;
+	virtual void updateWidget() = 0;
 	bool resetPara;
 };

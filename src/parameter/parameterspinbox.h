@@ -12,4 +12,7 @@ public:
 
 protected slots:
 	void onChanged(double);
+
+private:
+	bool volatile suppressUpdate; 
 };

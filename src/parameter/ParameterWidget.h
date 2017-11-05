@@ -51,6 +51,7 @@ private:
 	ParameterVirtualWidget *entryToFocus;
 
 	void connectWidget();
+	void updateWidget();
 	void cleanScrollArea();
 	void addEntry(QVBoxLayout* anylayout, ParameterVirtualWidget *entry);
 	void end();

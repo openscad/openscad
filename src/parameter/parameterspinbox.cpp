@@ -17,9 +17,11 @@ ParameterSpinBox::ParameterSpinBox(ParameterObject *parameterobject, int showDes
 
 void ParameterSpinBox::onChanged(double)
 {
-	object->focus = true;
-	object->value = ValuePtr(doubleSpinBox->value());
-	emit changed();
+	if(!suppressUpdate){
+		object->focus = true;
+		object->value = ValuePtr(doubleSpinBox->value());
+		emit changed();
+	}
 }
 
 void ParameterSpinBox::setParameterFocus()
@@ -32,6 +34,7 @@ void ParameterSpinBox::setValue()
 {
 	if(hasFocus())return; //refuse programmatic updates, when the widget is in the focus of the user
 
+	suppressUpdate=true;
 	if (object->values->toDouble() > 0) {
 		setPrecision(object->values->toDouble());
 		this->doubleSpinBox->setSingleStep(object->values->toDouble());
@@ -46,4 +49,5 @@ void ParameterSpinBox::setValue()
 	this->stackedWidgetBelow->hide();
 	this->doubleSpinBox->setRange(object->value->toDouble()-1000, object->value->toDouble()+1000);
 	this->doubleSpinBox->setValue(object->value->toDouble());
+	suppressUpdate=false;
 }

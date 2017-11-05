@@ -248,6 +248,13 @@ void ParameterWidget::connectWidget()
 	}
 }
 
+void ParameterWidget::updateWidget()
+{
+	QList<ParameterVirtualWidget *> parameterWidgets = this->findChildren<ParameterVirtualWidget *>();
+	foreach(ParameterVirtualWidget* widget, parameterWidgets)
+		widget->setValue();
+}
+
 void ParameterWidget::clear(){
 	for (entry_map_t::iterator it = entries.begin(); it != entries.end();) {
 		if (!(*it).second->set) {

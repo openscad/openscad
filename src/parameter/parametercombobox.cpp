@@ -17,15 +17,17 @@ ParameterComboBox::ParameterComboBox(ParameterObject *parameterobject, int showD
 
 void ParameterComboBox::onChanged(int idx)
 {
-	if (object->dvt == Value::ValueType::STRING) {
-		const std::string v = comboBox->itemData(idx).toString().toStdString();
-		object->value = ValuePtr(v);
-	} else {
-		const double v = comboBox->itemData(idx).toDouble();
-		object->value = ValuePtr(v);
+	if(!suppressUpdate){
+		if (object->dvt == Value::ValueType::STRING) {
+			const std::string v = comboBox->itemData(idx).toString().toStdString();
+			object->value = ValuePtr(v);
+		} else {
+			const double v = comboBox->itemData(idx).toDouble();
+			object->value = ValuePtr(v);
+		}
+		object->focus = true;
+		emit changed();
 	}
-	object->focus = true;
-	emit changed();
 }
 
 void ParameterComboBox::setParameterFocus()
@@ -36,6 +38,7 @@ void ParameterComboBox::setParameterFocus()
 
 void ParameterComboBox::setValue()
 {
+	suppressUpdate=true;
 	this->stackedWidgetBelow->setCurrentWidget(this->pageComboBox);
 	this->pageComboBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 	this->stackedWidgetRight->hide();
@@ -57,4 +60,5 @@ void ParameterComboBox::setValue()
 	if (idx >= 0) {
 		comboBox->setCurrentIndex(idx);
 	}
+	suppressUpdate=false;
 }

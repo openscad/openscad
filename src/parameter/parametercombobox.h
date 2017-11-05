@@ -11,6 +11,9 @@ public:
 	void setValue();
 	void setParameterFocus();
 
-public slots:
+protected slots:
 	void onChanged(int idx);
+
+private:
+	bool volatile suppressUpdate; 
 };

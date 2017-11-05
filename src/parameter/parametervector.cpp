@@ -20,24 +20,26 @@ ParameterVector::ParameterVector(ParameterObject *parameterobject, int showDescr
 
 void ParameterVector::onChanged(double)
 {
-	object->focus = true;
-	if (object->target == 5) {
-		object->value = ValuePtr(doubleSpinBox1->value());
-	} else {
-		Value::VectorType vt;
-		vt.push_back(this->doubleSpinBox1->value());
-		if (!this->doubleSpinBox2->isReadOnly()) {
-			vt.push_back(this->doubleSpinBox2->value());
+	if(!suppressUpdate){
+		object->focus = true;
+		if (object->target == 5) {
+			object->value = ValuePtr(doubleSpinBox1->value());
+		} else {
+			Value::VectorType vt;
+			vt.push_back(this->doubleSpinBox1->value());
+			if (!this->doubleSpinBox2->isReadOnly()) {
+				vt.push_back(this->doubleSpinBox2->value());
+			}
+			if (!this->doubleSpinBox3->isReadOnly()) {
+				vt.push_back(this->doubleSpinBox3->value());
+			}
+			if (!this->doubleSpinBox4->isReadOnly()) {
+				vt.push_back(this->doubleSpinBox4->value());
+			}
+			object->value = ValuePtr(vt);
 		}
-		if (!this->doubleSpinBox3->isReadOnly()) {
-			vt.push_back(this->doubleSpinBox3->value());
-		}
-		if (!this->doubleSpinBox4->isReadOnly()) {
-			vt.push_back(this->doubleSpinBox4->value());
-		}
-		object->value = ValuePtr(vt);
+		emit changed();
 	}
-	emit changed();
 }
 
 void ParameterVector::setParameterFocus()
@@ -50,6 +52,7 @@ void ParameterVector::setValue()
 {
 	if(hasFocus())return; //refuse programmatic updates, when the widget is in the focus of the user
 
+	suppressUpdate=true;
 	this->stackedWidgetBelow->setCurrentWidget(this->pageVector);
 	this->pageVector->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 	this->stackedWidgetRight->hide();
@@ -79,4 +82,5 @@ void ParameterVector::setValue()
 		boxes[i]->hide();
 		boxes[i]->setReadOnly(true);
 	}
+	suppressUpdate=false;
 }

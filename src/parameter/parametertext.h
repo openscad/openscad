@@ -12,4 +12,7 @@ public:
 
 protected slots:
 	void onChanged(QString);
+
+private:
+	bool volatile suppressUpdate; 
 };

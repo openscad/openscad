@@ -26,9 +26,7 @@ void ParameterSlider::onSliderChanged(int)
 	double v = slider->value()*step;
 
 	if (!this->suppressUpdate) {
-		suppressUpdate=true;
 		this->doubleSpinBox->setValue(v);
-		suppressUpdate=false;
 	}
 
 	if (this->pressed) {
@@ -41,13 +39,11 @@ void ParameterSlider::onSliderChanged(int)
 void ParameterSlider::onSpinBoxChanged(double v)
 {
 	if (!this->suppressUpdate) {
-		suppressUpdate=true;
 		if(v>0){
 			this->slider->setValue((int)((v+step/2.0)/step));
-        }else{
+		}else{
 			this->slider->setValue((int)((v-step/2.0)/step));
-        }
-		suppressUpdate=false;
+		}
 	}
 }
 
@@ -71,6 +67,7 @@ void ParameterSlider::setValue()
 {
 	if(hasFocus())return; //refuse programmatic updates, when the widget is in the focus of the user
 
+	suppressUpdate=true;
 	if (object->values->toRange().step_value() > 0) {
 		setPrecision(object->values->toRange().step_value());
 		step = object->values->toRange().step_value();
@@ -94,4 +91,5 @@ void ParameterSlider::setValue()
 	this->doubleSpinBox->setSingleStep(object->values->toRange().step_value());
 	this->doubleSpinBox->setDecimals(decimalPrecision);
 	this->doubleSpinBox->setValue(object->value->toDouble());
+	suppressUpdate=false;
 }

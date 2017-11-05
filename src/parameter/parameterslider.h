@@ -14,6 +14,7 @@ private:
 	double step;
 	bool pressed;
 	bool volatile suppressUpdate; 
+
 protected slots:
 	void onSliderChanged(int);
 	void onSpinBoxChanged(double);
