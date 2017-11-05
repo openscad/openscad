@@ -79,7 +79,7 @@ public:
 		void set_valign(std::string valign) {
 			this->valign = valign;
 		}
-		friend std ::ostream &operator << (std::ostream &stream, const FreetypeRenderer::Params &params) {
+		friend std ::ostream &operator<<(std::ostream &stream, const FreetypeRenderer::Params &params) {
 			return stream
 						 << "text = \"" << params.text
 						 << "\", size = " << params.size
@@ -127,7 +127,7 @@ private:
 	};
 
 	struct done_glyph : public std::unary_function<const GlyphData *, void> {
-		void operator() (const GlyphData *glyph_data) {
+		void operator()(const GlyphData *glyph_data) {
 			FT_Done_Glyph(glyph_data->get_glyph());
 			delete glyph_data;
 		}
