@@ -13,7 +13,7 @@
    The latter is necessary for VBO's or for unifying texture coordinate indices to
    multiple texture coordinate arrays.
  */
-template<typename T>
+template <typename T>
 class Reindexer
 {
 public:

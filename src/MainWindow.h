@@ -181,7 +181,7 @@ private slots:
 	void csgReloadRender();
 #ifdef ENABLE_CGAL
 	void actionRender();
-	void actionRenderDone(shared_ptr<const class Geometry>);
+	void actionRenderDone(shared_ptr<const class Geometry> );
 	void cgalRender();
 #endif
 	void actionCheckValidity();

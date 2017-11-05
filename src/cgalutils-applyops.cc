@@ -36,7 +36,7 @@
 
 namespace CGALUtils {
 
-	template<typename Polyhedron>
+	template <typename Polyhedron>
 	bool is_weakly_convex(Polyhedron const &p) {
 		for (typename Polyhedron::Edge_const_iterator i = p.edges_begin(); i != p.edges_end(); ++i) {
 			typename Polyhedron::Plane_3 p(i->opposite()->vertex()->point(), i->vertex()->point(), i->next()->vertex()->point());

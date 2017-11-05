@@ -17,7 +17,7 @@ protected slots:
 	void work();
 
 signals:
-	void done(shared_ptr<const class Geometry>);
+	void done(shared_ptr<const class Geometry> );
 
 protected:
 

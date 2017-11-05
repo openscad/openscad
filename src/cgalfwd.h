@@ -19,7 +19,7 @@ typedef CGAL::Nef_polyhedron_2<CGAL_Kernel2, CGAL::HDS_items, bool> CGAL_Nef_pol
 
 namespace CGAL {
 	template <class T> class Cartesian;
-	template<class T> struct Default_items;
+	template <class T> struct Default_items;
 	class SNC_indexed_items;
 	template <typename Kernel_, typename Items_, typename Mark_> class Nef_polyhedron_3;
 }
@@ -28,7 +28,7 @@ typedef CGAL::Nef_polyhedron_3<CGAL_Kernel3, CGAL::SNC_indexed_items, bool> CGAL
 
 namespace CGAL {
 #ifndef CGAL_ALLOCATOR
-#  define CGAL_ALLOCATOR(T) std::allocator< T >
+#  define CGAL_ALLOCATOR(T) std::allocator<T>
 #endif
 	class HalfedgeDS_items_2;
 	template <class Traits_, class HalfedgeDSItems, class Alloc> class HalfedgeDS_default;

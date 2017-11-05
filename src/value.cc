@@ -171,7 +171,7 @@ bool Value::toBool() const
 		return boost::get<std::string>(this->value).size() > 0;
 		break;
 	case ValueType::VECTOR:
-		return boost::get<VectorType >(this->value).size() > 0;
+		return boost::get<VectorType>(this->value).size() > 0;
 		break;
 	case ValueType::RANGE:
 		return true;
