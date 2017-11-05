@@ -201,7 +201,7 @@ public:
 		return stream;
 	}
 
-	typedef boost::variant< boost::blank, bool, double, std::string, VectorType, RangeType > Variant;
+	typedef boost::variant<boost::blank, bool, double, std::string, VectorType, RangeType> Variant;
 
 private:
 	static Value multvecnum(const Value &vecval, const Value &numval);

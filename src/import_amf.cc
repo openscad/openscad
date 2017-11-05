@@ -166,8 +166,8 @@ void AmfImporter::end_triangle(AmfImporter *importer, const xmlChar *)
 
 void AmfImporter::processNode(xmlTextReaderPtr reader)
 {
-	const char *name = reinterpret_cast<const char *> (xmlTextReaderName(reader));
-	if (name == nullptr) name = reinterpret_cast<const char *> (xmlStrdup(BAD_CAST "--"));
+	const char *name = reinterpret_cast<const char *>(xmlTextReaderName(reader));
+	if (name == nullptr) name = reinterpret_cast<const char *>(xmlStrdup(BAD_CAST "--"));
 
 	xmlChar *value = xmlTextReaderValue(reader);
 	int node_type = xmlTextReaderNodeType(reader);

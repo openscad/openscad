@@ -10,7 +10,7 @@ struct GroupInfo {
 	int lineNo;
 };
 
-typedef std::vector <GroupInfo> GroupList;
+typedef std::vector<GroupInfo> GroupList;
 
 /*
    Finds line to break stop parsing parsing parameters

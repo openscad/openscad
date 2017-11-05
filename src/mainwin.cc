@@ -202,8 +202,8 @@ MainWindow::MainWindow(const QString &filename)
 
 #ifdef ENABLE_CGAL
 	this->cgalworker = new CGALWorker();
-	connect(this->cgalworker, SIGNAL(done(shared_ptr<const Geometry>)),
-					this, SLOT(actionRenderDone(shared_ptr<const Geometry>)));
+	connect(this->cgalworker, SIGNAL(done(shared_ptr<const Geometry> )),
+					this, SLOT(actionRenderDone(shared_ptr<const Geometry> )));
 #endif
 
 	top_ctx.registerBuiltin();

@@ -5,9 +5,9 @@
 typedef Eigen::Matrix<int64_t, 3, 1> Vector3l;
 
 namespace std {
-	template<> struct hash<Vector3f> { std::size_t operator()(const Vector3f &s) const; };
-	template<> struct hash<Vector3d> { std::size_t operator()(const Vector3d &s) const; };
-	template<> struct hash<Vector3l> { std::size_t operator()(const Vector3l &s) const; };
+	template <> struct hash<Vector3f> { std::size_t operator()(const Vector3f &s) const; };
+	template <> struct hash<Vector3d> { std::size_t operator()(const Vector3d &s) const; };
+	template <> struct hash<Vector3l> { std::size_t operator()(const Vector3l &s) const; };
 }
 
 namespace Eigen {

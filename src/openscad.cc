@@ -600,7 +600,7 @@ Q_IMPORT_PLUGIN(qtaccessiblewidgets)
 #include <QFutureWatcher>
 #include <QtConcurrentRun>
 
-Q_DECLARE_METATYPE(shared_ptr<const Geometry>);
+Q_DECLARE_METATYPE(shared_ptr<const Geometry> );
 
 // Only if "fileName" is not absolute, prepend the "absoluteBase".
 static QString assemblePath(const fs::path &absoluteBaseDir,
@@ -850,7 +850,7 @@ int main(int argc, char **argv)
 
 	po::options_description hidden("Hidden options");
 	hidden.add_options()
-		("input-file", po::value< vector<string>>(), "input file");
+		("input-file", po::value<vector<string>>(), "input file");
 
 	po::positional_options_description p;
 	p.add("input-file", -1);

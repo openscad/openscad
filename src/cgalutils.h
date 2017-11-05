@@ -12,7 +12,7 @@ typedef std::vector<Vertex3K> PolygonK;
 typedef std::vector<PolygonK> PolyholeK;
 
 namespace /* anonymous */ {
-	template<typename Result, typename V>
+	template <typename Result, typename V>
 	Result vector_convert(V const &v) {
 		return Result(CGAL::to_double(v[0]), CGAL::to_double(v[1]), CGAL::to_double(v[2]));
 	}
