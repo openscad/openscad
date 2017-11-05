@@ -2,6 +2,8 @@
 Language:     Cpp
 BasedOnStyle: LLVM
 
+TabWidth: 2
+UseTab: ForContinuationAndIndentation
 AlignEscapedNewlinesLeft: true
 AllowShortFunctionsOnASingleLine: Inline
 AllowShortIfStatementsOnASingleLine: true
@@ -10,12 +12,11 @@ AlwaysBreakTemplateDeclarations: true
 BraceWrapping:
    AfterClass:            true
    AfterFunction:         true
+   BeforeElse:		  true
 BreakBeforeBraces: Custom
 ColumnLimit:     100
 ConstructorInitializerIndentWidth: 2
-NamespaceIndentation: All
+NamespaceIndentation: None
 PenaltyReturnTypeOnItsOwnLine: 1000
 SortIncludes: false
-TabWidth:        2
-UseTab:          ForContinuationAndIndentation
 ...
