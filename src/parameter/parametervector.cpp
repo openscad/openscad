@@ -54,42 +54,29 @@ void ParameterVector::setValue()
 	this->pageVector->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 	this->stackedWidgetRight->hide();
 
+	double minV = object->values->toRange().begin_value();
+	double step = object->values->toRange().step_value();
+	double maxV = object->values->toRange().end_value();
+	if(step==0){
+		step=1;
+	}
+
+	QDoubleSpinBox* boxes[4] = {this->doubleSpinBox1,this->doubleSpinBox2,this->doubleSpinBox3,this->doubleSpinBox4};
 	Value::VectorType vec = object->value->toVector();
-	if (vec.size() < 4) {
-		this->doubleSpinBox4->hide();
-		this->doubleSpinBox4->setReadOnly(true);
-	}
-	if (vec.size() < 3) {
-		this->doubleSpinBox3->hide();
-		this->doubleSpinBox3->setReadOnly(true);
-	}
-	if (vec.size() < 2) {
-		this->doubleSpinBox2->hide();
-		this->doubleSpinBox2->setReadOnly(true);
-	}
 	setPrecision(vec.at(0)->toDouble());
-	this->doubleSpinBox1->setDecimals(decimalPrecision);
-	this->doubleSpinBox1->setRange(vec.at(0)->toDouble()-1000,vec.at(0)->toDouble()+1000);
-	this->doubleSpinBox1->setValue(vec.at(0)->toDouble());
-	if (vec.size() > 1) {
-		setPrecision(vec.at(1)->toDouble());
-		this->doubleSpinBox2->setDecimals(decimalPrecision);
-		this->doubleSpinBox2->setRange(vec.at(1)->toDouble()-1000,vec.at(1)->toDouble()+1000);
-		this->doubleSpinBox2->setValue(vec.at(1)->toDouble());
-		this->doubleSpinBox2->setReadOnly(false);
+	for(unsigned int i = 0; i < vec.size(); i++) {
+		boxes[i]->setDecimals(decimalPrecision);
+		boxes[i]->setValue(vec.at(i)->toDouble());
+		if(minV==0 && maxV ==0){
+			boxes[i]->setRange(vec.at(i)->toDouble()-1000,vec.at(i)->toDouble()+1000);
+		}else{
+			boxes[i]->setMinimum(minV);
+			boxes[i]->setMaximum(maxV);
+			boxes[i]->setSingleStep(step);
+		}
 	}
-	if (vec.size() > 2) {
-		setPrecision(vec.at(2)->toDouble());
-		this->doubleSpinBox3->setDecimals(decimalPrecision);
-		this->doubleSpinBox3->setRange(vec.at(2)->toDouble()-1000,vec.at(2)->toDouble()+1000);
-		this->doubleSpinBox3->setValue(vec.at(2)->toDouble());
-		this->doubleSpinBox3->setReadOnly(false);
-	}
-	if (vec.size() > 3) {
-		setPrecision(vec.at(3)->toDouble());
-		this->doubleSpinBox4->setDecimals(decimalPrecision);
-		this->doubleSpinBox4->setRange(vec.at(3)->toDouble()-1000,vec.at(3)->toDouble()+1000);
-		this->doubleSpinBox4->setValue(vec.at(3)->toDouble());
-		this->doubleSpinBox4->setReadOnly(false);
+	for(unsigned int i = vec.size(); i < 4; i++) {
+		boxes[i]->hide();
+		boxes[i]->setReadOnly(true);
 	}
 }
