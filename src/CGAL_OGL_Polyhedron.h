@@ -69,7 +69,8 @@ public:
 				glCallList(this->object_list_ + 1);
 				glCallList(this->object_list_);
 			}
-		} else {
+		}
+		else {
 			glDisable(GL_LIGHTING);
 			glCallList(this->object_list_ + 1);
 			glCallList(this->object_list_);

@@ -53,7 +53,8 @@ const std::string &Tree::getIdString(const AbstractNode &node) const
 		const auto &result = this->nodeidcache.insert(node, sstream.str());
 		PRINTDB("Id Cache MISS: %s", result);
 		return result;
-	} else {
+	}
+	else {
 		const auto &result = this->nodeidcache[node];
 		PRINTDB("Id Cache HIT:  %s", result);
 		return result;

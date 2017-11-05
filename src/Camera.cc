@@ -29,11 +29,13 @@ void Camera::setup(std::vector<double> params)
 		object_trans << params[0], params[1], params[2];
 		object_rot << params[3], params[4], params[5];
 		viewer_distance = params[6];
-	} else if (params.size() == 6) {
+	}
+	else if (params.size() == 6) {
 		type = CameraType::VECTOR;
 		eye << params[0], params[1], params[2];
 		center << params[3], params[4], params[5];
-	} else {
+	}
+	else {
 		assert("Gimbal cam needs 7 numbers, Vector camera needs 6");
 	}
 }

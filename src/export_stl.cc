@@ -154,7 +154,9 @@ static void append_stl(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 	if (usePolySet) {
 		PolySet ps(3);
 		bool err = CGALUtils::createPolySetFromNefPolyhedron3(*(root_N.p3), ps);
-		if (err) { PRINT("ERROR: Nef->PolySet failed"); }
+		if (err) {
+			PRINT("ERROR: Nef->PolySet failed");
+		}
 		else {
 			append_stl(ps, output);
 		}
@@ -191,7 +193,8 @@ static void append_stl(const shared_ptr<const Geometry> &geom, std::ostream &out
 	}
 	else if (dynamic_cast<const Polygon2d *>(geom.get())) {
 		assert(false && "Unsupported file format");
-	} else {
+	}
+	else {
 		assert(false && "Not implemented");
 	}
 }

@@ -56,10 +56,12 @@ void FileModule::registerUse(const std::string path)
 	if ((ext == ".otf") || (ext == ".ttf")) {
 		if (fs::is_regular(path)) {
 			FontCache::instance()->register_font_file(path);
-		} else {
+		}
+		else {
 			PRINTB("ERROR: Can't read font with path '%s'", path);
 		}
-	} else {
+	}
+	else {
 		usedlibs.insert(path);
 	}
 }

@@ -62,7 +62,9 @@ void append_geometry(const shared_ptr<const Geometry> &geom, IndexedMesh &mesh)
 	if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(geom.get())) {
 		PolySet ps(3);
 		bool err = CGALUtils::createPolySetFromNefPolyhedron3(*(N->p3), ps);
-		if (err) { PRINT("ERROR: Nef->PolySet failed"); }
+		if (err) {
+			PRINT("ERROR: Nef->PolySet failed");
+		}
 		else {
 			append_geometry(ps, mesh);
 		}
@@ -72,7 +74,8 @@ void append_geometry(const shared_ptr<const Geometry> &geom, IndexedMesh &mesh)
 	}
 	else if (dynamic_cast<const Polygon2d *>(geom.get())) {
 		assert(false && "Unsupported file format");
-	} else {
+	}
+	else {
 		assert(false && "Not implemented");
 	}
 }

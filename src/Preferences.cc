@@ -68,7 +68,8 @@ class SettingsReader : public Settings::SettingsVisitor
 				boost::to_lower(trimmed_value);
 				if ("false" == trimmed_value) {
 					return Value(false);
-				} else if ("true" == trimmed_value) {
+				}
+				else if ("true" == trimmed_value) {
 					return Value(true);
 				}
 				return Value(boost::lexical_cast<bool>(trimmed_value));
@@ -102,7 +103,8 @@ class SettingsWriter : public Settings::SettingsVisitor
 		if (entry.is_default()) {
 			settings.remove(key);
 			PRINTDB("SettingsWriter D: %s", key.toStdString().c_str());
-		} else {
+		}
+		else {
 			const Value &value = s->get(entry);
 			settings.setValue(key, QString::fromStdString(value.toString()));
 			PRINTDB("SettingsWriter W: %s = '%s'", key.toStdString().c_str() % value.toString().c_str());
@@ -369,7 +371,8 @@ void Preferences::on_updateCheckBox_toggled(bool on)
 {
 	if (AutoUpdater *updater = AutoUpdater::updater()) {
 		updater->setAutomaticallyChecksForUpdates(on);
-	} else {
+	}
+	else {
 		unimplemented_msg();
 	}
 }
@@ -378,7 +381,8 @@ void Preferences::on_snapshotCheckBox_toggled(bool on)
 {
 	if (AutoUpdater *updater = AutoUpdater::updater()) {
 		updater->setEnableSnapshots(on);
-	} else {
+	}
+	else {
 		unimplemented_msg();
 	}
 }
@@ -387,7 +391,8 @@ void Preferences::on_checkNowButton_clicked()
 {
 	if (AutoUpdater *updater = AutoUpdater::updater()) {
 		updater->checkForUpdates();
-	} else {
+	}
+	else {
 		unimplemented_msg();
 	}
 }
@@ -594,7 +599,8 @@ void Preferences::keyPressEvent(QKeyEvent *e)
 #ifdef Q_OS_MAC
 	if (e->modifiers() == Qt::ControlModifier && e->key() == Qt::Key_Period) {
 		close();
-	} else
+	}
+	else
 #endif
 	if ((e->modifiers() == Qt::ControlModifier && e->key() == Qt::Key_W) ||
 			e->key() == Qt::Key_Escape) {
@@ -651,7 +657,8 @@ void Preferences::updateGUI()
 	int shidx = this->syntaxHighlight->findText(shighlight);
 	if (shidx >= 0) {
 		this->syntaxHighlight->setCurrentIndex(shidx);
-	} else {
+	}
+	else {
 		int offidx = this->syntaxHighlight->findText("Off");
 		if (offidx >= 0) {
 			this->syntaxHighlight->setCurrentIndex(offidx);
@@ -731,13 +738,15 @@ void Preferences::updateComboBox(QComboBox *comboBox, const Settings::SettingsEn
 	int idx = comboBox->findData(text);
 	if (idx >= 0) {
 		comboBox->setCurrentIndex(idx);
-	} else {
+	}
+	else {
 		const Value &defaultValue = entry.defaultValue();
 		QString defaultText = QString::fromStdString(defaultValue.toString());
 		int defIdx = comboBox->findData(defaultText);
 		if (defIdx >= 0) {
 			comboBox->setCurrentIndex(defIdx);
-		} else {
+		}
+		else {
 			comboBox->setCurrentIndex(0);
 		}
 	}

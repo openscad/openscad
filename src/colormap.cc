@@ -14,14 +14,12 @@ static void rgbtohsv(float r, float g, float b, float &h, float &s, float &v)
 {
 	float K = 0.f;
 
-	if (g < b)
-	{
+	if (g < b) {
 		std::swap(g, b);
 		K = -1.f;
 	}
 
-	if (r < g)
-	{
+	if (r < g) {
 		std::swap(r, g);
 		K = -2.f / 6.f - K;
 	}
@@ -134,7 +132,8 @@ void RenderColorScheme::addColor(RenderColor colorKey, std::string key)
 		int g = (val >> 8) & 0xff;
 		int b = val & 0xff;
 		_color_scheme.insert(ColorScheme::value_type(colorKey, Color4f(r, g, b)));
-	} else {
+	}
+	else {
 		throw std::invalid_argument(std::string("invalid color value for key '") + key + "': '" + color + "'");
 	}
 }
@@ -197,7 +196,8 @@ void ColorMap::dump() const
 		const char gui = cs->showInGui() ? 'G' : '-';
 		if (cs->path().empty()) {
 			PRINTDB("%6d:%c: %s (built-in)", cs->index() % gui % boost::io::group(std::setw(length), cs->name()));
-		} else {
+		}
+		else {
 			PRINTDB("%6d:%c: %s from %s", cs->index() % gui % boost::io::group(std::setw(length), cs->name()) % cs->path());
 		}
 	}
@@ -249,13 +249,16 @@ Color4f ColorMap::getContrastColor(const Color4f &col)
 		// low saturation, choose between black / white based on luminance Y
 		float val = Y > 0.5 ? 0.0f : 1.0f;
 		return Color4f(val, val, val, 1.0f);
-	} else {
+	}
+	else {
 		float H = 360 * hsv[0];
 		if ((H < 60) || (H > 300)) {
 			return Color4f(0.0f, 1.0f, 1.0f, 1.0f); // red -> cyan
-		} else if (H < 180) {
+		}
+		else if (H < 180) {
 			return Color4f(1.0f, 0.0f, 1.0f, 1.0f); // green -> magenta
-		} else {
+		}
+		else {
 			return Color4f(1.0f, 1.0f, 0.0f, 1.0f); // blue -> yellow
 		}
 	}
@@ -285,7 +288,8 @@ void ColorMap::enumerateColorSchemesInPath(colorscheme_set_t &result_set, const 
 				result_set.insert(colorscheme_set_t::value_type(colorScheme->index(), shared_ptr<RenderColorScheme>(colorScheme)));
 				PRINTDB("Found file '%s' with color scheme '%s' and index %d",
 								colorScheme->path() % colorScheme->name() % colorScheme->index());
-			} else {
+			}
+			else {
 				PRINTDB("Invalid file '%s': %s", colorScheme->path() % colorScheme->error());
 				delete colorScheme;
 			}

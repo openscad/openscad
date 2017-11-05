@@ -46,13 +46,15 @@ void ParameterExtractor::setParameters(const FileModule *module)
 			//if object doen't exist
 			//or we have reset Parameters then add new entry
 			entries[assignment.name] = entryObject;
-		} else {
+		}
+		else {
 			//if entry object is already exist we check if its modified
 			//or not
 			if (*entryObject == *entries[assignment.name]) {
 				//if entry is not modified then we don't add new entry
 				entryObject = entries[assignment.name];
-			} else {
+			}
+			else {
 				//if entry is modified then we add new entry
 				entries[assignment.name] = entryObject;
 			}

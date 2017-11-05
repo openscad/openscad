@@ -88,7 +88,8 @@ shared_ptr<CSGNode> CSGTreeNormalizer::normalizePass(shared_ptr<CSGNode> node)
 
 	if (dynamic_pointer_cast<CSGLeaf>(node)) return node;
 	do {
-		while (node && match_and_replace(node)) { }
+		while (node && match_and_replace(node)) {
+		}
 		this->nodecount++;
 		if (nodecount > this->limit) {
 			PRINTB("WARNING: Normalized tree is growing past %d elements. Aborting normalization.\n", this->limit);

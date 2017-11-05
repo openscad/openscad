@@ -20,7 +20,8 @@ bool write_png(const char *filename, unsigned char *pixels, int width, int heigh
 		write_png(fstream, pixels, width, height);
 		fstream.close();
 		return true;
-	} else {
+	}
+	else {
 		std::cerr << "Can't open file " << filename << " for export.";
 		return false;
 	}

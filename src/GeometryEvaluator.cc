@@ -695,7 +695,8 @@ static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &
 	if (node.center) {
 		h1 = -node.height / 2.0;
 		h2 = +node.height / 2.0;
-	} else {
+	}
+	else {
 		h1 = 0;
 		h2 = node.height;
 	}
@@ -787,7 +788,8 @@ static void fill_ring(std::vector<Vector3d> &ring, const Outline2d &o, double a,
 			ring[i][1] = o.vertices[l - i][0] * cos(a);
 			ring[i][2] = o.vertices[l - i][1];
 		}
-	} else {
+	}
+	else {
 		for (unsigned int i = 0; i < o.vertices.size(); i++) {
 			ring[i][0] = o.vertices[i][0] * sin(a);
 			ring[i][1] = o.vertices[i][0] * cos(a);

@@ -11,7 +11,7 @@ ParameterText::ParameterText(ParameterObject *parameterobject, bool showDescript
 	if (showDescription == true) {
 		setDescription(object->description);
 	}
-	else{
+	else {
 		lineEdit->setToolTip(object->description);
 	}
 }

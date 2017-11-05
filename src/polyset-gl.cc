@@ -93,7 +93,8 @@ void PolySet::render_surface(Renderer::csgmode_e csgmode, const Transform3d &m, 
 				if (poly->size() == 3) {
 					if (z < 0) {
 						gl_draw_triangle(shaderinfo, poly->at(0), poly->at(2), poly->at(1), true, true, true, z, mirrored);
-					} else {
+					}
+					else {
 						gl_draw_triangle(shaderinfo, poly->at(0), poly->at(1), poly->at(2), true, true, true, z, mirrored);
 					}
 				}
@@ -101,7 +102,8 @@ void PolySet::render_surface(Renderer::csgmode_e csgmode, const Transform3d &m, 
 					if (z < 0) {
 						gl_draw_triangle(shaderinfo, poly->at(0), poly->at(3), poly->at(1), true, false, true, z, mirrored);
 						gl_draw_triangle(shaderinfo, poly->at(2), poly->at(1), poly->at(3), true, false, true, z, mirrored);
-					} else {
+					}
+					else {
 						gl_draw_triangle(shaderinfo, poly->at(0), poly->at(1), poly->at(3), true, false, true, z, mirrored);
 						gl_draw_triangle(shaderinfo, poly->at(2), poly->at(3), poly->at(1), true, false, true, z, mirrored);
 					}
@@ -118,7 +120,8 @@ void PolySet::render_surface(Renderer::csgmode_e csgmode, const Transform3d &m, 
 						if (z < 0) {
 							gl_draw_triangle(shaderinfo, center, poly->at(j % poly->size()), poly->at(j - 1),
 															 false, true, false, z, mirrored);
-						} else {
+						}
+						else {
 							gl_draw_triangle(shaderinfo, center, poly->at(j - 1), poly->at(j % poly->size()),
 															 false, true, false, z, mirrored);
 						}
@@ -157,7 +160,8 @@ void PolySet::render_surface(Renderer::csgmode_e csgmode, const Transform3d &m, 
 			}
 		}
 		glEnd();
-	} else if (this->dim == 3) {
+	}
+	else if (this->dim == 3) {
 		for (size_t i = 0; i < polygons.size(); i++) {
 			const Polygon *poly = &polygons[i];
 			glBegin(GL_TRIANGLES);
@@ -232,7 +236,8 @@ void PolySet::render_edges(Renderer::csgmode_e csgmode) const
 				glEnd();
 			}
 		}
-	} else if (dim == 3) {
+	}
+	else if (dim == 3) {
 		for (size_t i = 0; i < polygons.size(); i++) {
 			const Polygon *poly = &polygons[i];
 			glBegin(GL_LINE_LOOP);

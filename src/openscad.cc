@@ -197,7 +197,8 @@ void localization_init() {
 		bindtextdomain("openscad", locale_path.c_str());
 		bind_textdomain_codeset("openscad", "UTF-8");
 		textdomain("openscad");
-	} else {
+	}
+	else {
 		PRINT("Could not initialize localization.");
 	}
 }
@@ -218,7 +219,8 @@ Camera get_camera(po::variables_map vm)
 			catch (bad_lexical_cast &) {
 				PRINT("Camera setup requires numbers as parameters");
 			}
-		} else {
+		}
+		else {
 			PRINT("Camera setup requires either 7 numbers for Gimbal Camera");
 			PRINT("or 6 numbers for Vector Camera");
 			exit(1);
@@ -259,7 +261,8 @@ Camera get_camera(po::variables_map vm)
 		if (strs.size() != 2) {
 			PRINT("Need 2 numbers for imgsize");
 			exit(1);
-		} else {
+		}
+		else {
 			try {
 				w = lexical_cast<int>(strs[0]);
 				h = lexical_cast<int>(strs[1]);
@@ -311,7 +314,8 @@ void set_render_color_scheme(const std::string color_scheme, const bool exit_if_
 			PRINT(name);
 		}
 		exit(1);
-	} else {
+	}
+	else {
 		PRINTB("Unknown color scheme '%s', using default '%s'.", arg_colorscheme % ColorMap::inst()->defaultColorSchemeName());
 	}
 }
@@ -494,7 +498,8 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		if ((echo_output_file || png_output_file) &&
 				(renderer == RenderType::OPENCSG || renderer == RenderType::THROWNTOGETHER)) {
 			// echo or OpenCSG png -> don't necessarily need geometry evaluation
-		} else {
+		}
+		else {
 			// Force creation of CGAL objects (for testing)
 			root_geom = geomevaluator.evaluateGeometry(*tree.root(), true);
 			if (!root_geom) root_geom.reset(new CGAL_Nef_polyhedron());
@@ -550,9 +555,11 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 			else {
 				if (renderer == RenderType::CGAL || renderer == RenderType::GEOMETRY) {
 					success = export_png(root_geom, camera, fstream);
-				} else if (renderer == RenderType::THROWNTOGETHER) {
+				}
+				else if (renderer == RenderType::THROWNTOGETHER) {
 					success = export_png_with_throwntogether(tree, camera, fstream);
-				} else {
+				}
+				else {
 					success = export_png_with_opencsg(tree, camera, fstream);
 				}
 				fstream.close();
@@ -755,7 +762,8 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 				}
 			}
 			delete launcher;
-		} else {
+		}
+		else {
 			return 0;
 		}
 	}
@@ -765,7 +773,8 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 		for (const auto &infile : inputFiles) {
 			new MainWindow(assemblePath(original_path, infile));
 		}
-	} else {
+	}
+	else {
 		new MainWindow(assemblePath(original_path, inputFiles[0]));
 	}
 

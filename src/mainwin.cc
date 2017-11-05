@@ -417,7 +417,8 @@ MainWindow::MainWindow(const QString &filename)
 
 	if (!filename.isEmpty()) {
 		openFile(filename);
-	} else {
+	}
+	else {
 		setFileName("");
 	}
 	updateRecentFileActions();
@@ -532,7 +533,8 @@ MainWindow::MainWindow(const QString &filename)
 		 * fill the available space.
 		 */
 		editor->setInitialSizeHint(QSize((5 * this->width() / 11), 100));
-	} else {
+	}
+	else {
 #ifdef Q_OS_WIN
 		// Try moving the main window into the display range, this
 		// can occur when closing OpenSCAD on a second monitor which
@@ -618,7 +620,8 @@ void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer
 	if (Feature::ExperimentalCustomizer.is_enabled()) {
 		viewActionHideParameters->setChecked(customizer);
 		hideParameters();
-	} else {
+	}
+	else {
 		viewActionHideParameters->setChecked(true);
 		hideParameters();
 		viewActionHideParameters->setVisible(false);
@@ -645,7 +648,8 @@ void MainWindow::loadViewSettings() {
 	}
 	if (settings.value("view/orthogonalProjection").toBool()) {
 		viewOrthogonal();
-	} else {
+	}
+	else {
 		viewPerspective();
 	}
 
@@ -680,7 +684,8 @@ void MainWindow::updateUndockMode(bool undockMode)
 		editorDock->setFeatures(editorDock->features() | QDockWidget::DockWidgetFloatable);
 		consoleDock->setFeatures(consoleDock->features() | QDockWidget::DockWidgetFloatable);
 		parameterDock->setFeatures(parameterDock->features() | QDockWidget::DockWidgetFloatable);
-	} else {
+	}
+	else {
 		if (editorDock->isFloating()) {
 			editorDock->setFloating(false);
 		}
@@ -772,7 +777,8 @@ void MainWindow::openFile(const QString &new_filename)
 	if (knownFileType && cmd.isEmpty()) {
 		setFileName(new_filename);
 		updateRecentFiles();
-	} else {
+	}
+	else {
 		setFileName("");
 		editor->setPlainText(cmd.arg(new_filename));
 	}
@@ -789,7 +795,8 @@ void MainWindow::setFileName(const QString &filename)
 		setWindowFilePath(_("Untitled.scad"));
 
 		this->top_ctx.setDocumentPath(currentdir);
-	} else {
+	}
+	else {
 		QFileInfo fileinfo(filename);
 		this->fileName = fileinfo.absoluteFilePath();
 		setWindowFilePath(this->fileName);
@@ -1026,12 +1033,14 @@ void MainWindow::updateCompileResult()
 	if (compileErrors > 0) {
 		if (fileName.isEmpty()) {
 			msg = QString(_("Compile error."));
-		} else {
+		}
+		else {
 			QFileInfo fileInfo(fileName);
 			msg = QString(_("Error while compiling '%1'.")).arg(fileInfo.fileName());
 		}
 		toolButtonCompileResultIcon->setIcon(QIcon(QString::fromUtf8(":/icons/information-icons-error.png")));
-	} else {
+	}
+	else {
 		const char *fmt = ngettext("Compilation generated %1 warning.", "Compilation generated %1 warnings.", compileWarnings);
 		msg = QString(fmt).arg(compileWarnings);
 		toolButtonCompileResultIcon->setIcon(QIcon(QString::fromUtf8(":/icons/information-icons-warning.png")));
@@ -1126,7 +1135,8 @@ void MainWindow::instantiateRoot()
 	if (!this->root_node) {
 		if (parser_error_pos < 0) {
 			PRINT("ERROR: Compilation failed! (no top level object found)");
-		} else {
+		}
+		else {
 			PRINT("ERROR: Compilation failed!");
 		}
 		if (this->procevents) QApplication::processEvents();
@@ -1252,7 +1262,8 @@ void MainWindow::actionNew()
 {
 	if (MainWindow::mdiMode) {
 		new MainWindow(QString());
-	} else {
+	}
+	else {
 		if (!maybeSave()) return;
 
 		setFileName("");
@@ -1427,7 +1438,8 @@ void MainWindow::actionSave()
 		if (saveOk) {
 			PRINTB(_("Saved design '%s'."), this->fileName.toLocal8Bit().constData());
 			this->editor->setContentModified(false);
-		} else {
+		}
+		else {
 			saveError(file, _("Error saving design"));
 		}
 	}
@@ -1579,7 +1591,8 @@ void MainWindow::convertTabsToSpaces()
 			for (; cnt > 0; cnt--) {
 				converted.append(' ');
 			}
-		} else {
+		}
+		else {
 			converted.append(c);
 		}
 		if (cnt <= 0 || c == '\n') {
@@ -1787,7 +1800,8 @@ void MainWindow::autoReloadSet(bool on)
 	settings.setValue("design/autoReload", designActionAutoReload->isChecked());
 	if (on) {
 		autoReloadTimer->start(200);
-	} else {
+	}
+	else {
 		autoReloadTimer->stop();
 	}
 }
@@ -1886,7 +1900,8 @@ void MainWindow::csgRender()
 		if (anim_dumping && anim_dump_start_step == anim_step) {
 			anim_dumping = false;
 			e_dump->setChecked(false);
-		} else {
+		}
+		else {
 			if (!anim_dumping) {
 				anim_dumping = true;
 				anim_dump_start_step = anim_step;
@@ -1976,10 +1991,12 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 				assert(ps->getDimension() == 3);
 				PRINT("   Top level object is a 3D object:");
 				PRINTB("   Facets:     %6d", ps->numPolygons());
-			} else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(root_geom.get())) {
+			}
+			else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(root_geom.get())) {
 				PRINT("   Top level object is a 2D object:");
 				PRINTB("   Contours:     %6d", poly->outlines().size());
-			} else {
+			}
+			else {
 				assert(false && "Unknown geometry type");
 			}
 		}
@@ -2026,7 +2043,8 @@ void MainWindow::updateStatusBar(ProgressWidget *progressWidget)
 			versionLabel = new QLabel("OpenSCAD " + QString::fromStdString(openscad_displayversionnumber));
 			sb->addPermanentWidget(this->versionLabel);
 		}
-	} else {
+	}
+	else {
 		if (this->versionLabel != nullptr) {
 			sb->removeWidget(this->versionLabel);
 			delete this->versionLabel;
@@ -2046,7 +2064,8 @@ void MainWindow::actionDisplayAST()
 	e->setReadOnly(true);
 	if (root_module) {
 		e->setPlainText(QString::fromUtf8(root_module->dump("", "").c_str()));
-	} else {
+	}
+	else {
 		e->setPlainText("No AST to dump. Please try compiling first...");
 	}
 	e->show();
@@ -2064,7 +2083,8 @@ void MainWindow::actionDisplayCSGTree()
 	e->setReadOnly(true);
 	if (this->root_node) {
 		e->setPlainText(QString::fromUtf8(this->tree.getString(*this->root_node).c_str()));
-	} else {
+	}
+	else {
 		e->setPlainText("No CSG to dump. Please try compiling first...");
 	}
 	e->show();
@@ -2307,7 +2327,8 @@ void MainWindow::viewModePreview()
 		this->qglview->setRenderer(this->opencsgRenderer ? (Renderer *)this->opencsgRenderer : (Renderer *)this->thrownTogetherRenderer);
 		this->qglview->updateColorScheme();
 		this->qglview->updateGL();
-	} else {
+	}
+	else {
 		viewModeThrownTogether();
 	}
 }
@@ -2387,7 +2408,8 @@ void MainWindow::viewModeAnimate()
 		animate_panel->show();
 		actionRenderPreview();
 		updatedAnimFps();
-	} else {
+	}
+	else {
 		animate_panel->hide();
 		animate_timer->stop();
 	}
@@ -2549,7 +2571,8 @@ void MainWindow::hideToolbars()
 	if (shouldHide) {
 		viewerToolBar->hide();
 		editortoolbar->hide();
-	} else {
+	}
+	else {
 		viewerToolBar->show();
 		editortoolbar->show();
 	}
@@ -2559,7 +2582,8 @@ void MainWindow::hideEditor()
 {
 	if (viewActionHideEditor->isChecked()) {
 		editorDock->close();
-	} else {
+	}
+	else {
 		editorDock->show();
 	}
 }
@@ -2575,7 +2599,8 @@ void MainWindow::hideConsole()
 {
 	if (viewActionHideConsole->isChecked()) {
 		consoleDock->hide();
-	} else {
+	}
+	else {
 		consoleDock->show();
 	}
 }
@@ -2584,7 +2609,8 @@ void MainWindow::hideParameters()
 {
 	if (viewActionHideParameters->isChecked()) {
 		parameterDock->hide();
-	} else {
+	}
+	else {
 		parameterDock->show();
 	}
 }
@@ -2617,7 +2643,8 @@ void MainWindow::handleFileDrop(const QString &filename)
 			return;
 		}
 		openFile(filename);
-	} else {
+	}
+	else {
 		editor->insert(cmd.arg(filename));
 	}
 }
@@ -2708,7 +2735,8 @@ void MainWindow::closeEvent(QCloseEvent *event)
 			this->tempFile = nullptr;
 		}
 		event->accept();
-	} else {
+	}
+	else {
 		event->ignore();
 	}
 }
@@ -2762,7 +2790,8 @@ void MainWindow::consoleOutput(const QString &msg)
 	if (msg.startsWith("WARNING:") || msg.startsWith("DEPRECATED:")) {
 		this->compileWarnings++;
 		qmsg = "<html><span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span></html>\n";
-	} else if (msg.startsWith("ERROR:")) {
+	}
+	else if (msg.startsWith("ERROR:")) {
 		this->compileErrors++;
 		qmsg = "<html><span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span></html>\n";
 	}

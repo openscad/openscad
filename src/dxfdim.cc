@@ -84,8 +84,7 @@ ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 	handle_dep(filepath.string());
 	DxfData dxf(36, 0, 0, filename, layername, xorigin, yorigin, scale);
 
-	for (size_t i = 0; i < dxf.dims.size(); i++)
-	{
+	for (size_t i = 0; i < dxf.dims.size(); i++) {
 		if (!name.empty() && dxf.dims[i].name != name) continue;
 
 		DxfData::Dim *d = &dxf.dims[i];

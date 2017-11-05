@@ -267,7 +267,8 @@ FT_Face FontCache::get_font(const std::string &font)
 			return nullptr;
 		}
 		check_cleanup();
-	} else {
+	}
+	else {
 		face = (*it).second.first;
 	}
 	this->cache[font] = cache_entry_t(face, time(nullptr));
@@ -331,7 +332,8 @@ FT_Face FontCache::find_face_fontconfig(const std::string &font) const
 
 	if (FT_Select_Charmap(face, ft_encoding_unicode) == 0) {
 		PRINTDB("Successfully selected unicode charmap: %s/%s", face->family_name % face->style_name);
-	} else {
+	}
+	else {
 		bool charmap_set = false;
 		if (!charmap_set) charmap_set = try_charmap(face, TT_PLATFORM_MICROSOFT, TT_MS_ID_UNICODE_CS);
 		if (!charmap_set) charmap_set = try_charmap(face, TT_PLATFORM_ISO, TT_ISO_ID_10646);

@@ -20,7 +20,8 @@ bool use_ext()
 	// do we need to use the EXT or ARB version?
 	if (!glewIsSupported("GL_ARB_framebuffer_object") && glewIsSupported("GL_EXT_framebuffer_object")) {
 		return true;
-	} else {
+	}
+	else {
 		return false;
 	}
 }
@@ -213,7 +214,8 @@ bool fbo_resize(fbo_t *fbo, size_t width, size_t height)
 		glBindRenderbufferEXT(GL_RENDERBUFFER, fbo->renderbuf_id);
 		glRenderbufferStorageEXT(GL_RENDERBUFFER, GL_RGBA8, width, height);
 		if (report_glerror("creating EXT color render buffer")) return false;
-	} else {
+	}
+	else {
 		glBindRenderbuffer(GL_RENDERBUFFER, fbo->renderbuf_id);
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, width, height);
 		if (report_glerror("creating color render buffer")) return false;

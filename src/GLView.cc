@@ -209,7 +209,6 @@ void GLView::enable_opencsg_shaders()
 			this->has_shaders = true;
 		}
 	}
-
 	// If OpenGL < 2, check for extensions
 	else {
 		if (GLEW_ARB_framebuffer_object) this->is_opencsg_capable = true;
@@ -325,7 +324,8 @@ void GLView::enable_opencsg_shaders()
 			char logbuffer[1000];
 			glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
 			fprintf(stderr, "OpenGL Program Linker Error:\n%.*s", loglen, logbuffer);
-		} else {
+		}
+		else {
 			int loglen;
 			char logbuffer[1000];
 			glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
@@ -527,7 +527,8 @@ void GLView::showScalemarkers(const Color4f &col)
 		if (line_cnt > 0 && line_cnt % 10 == 0) { // major tick
 			size_div = size_div_sm * .5; // resize to a major tick
 			GLView::decodeMarkerValue(i, l, size_div_sm);    // print number
-		} else {                    // minor tick
+		}
+		else {                      // minor tick
 			size_div = size_div_sm;      // set the minor tick to the standard size
 
 			// Draw additional labels if there are few major tick labels visible due to

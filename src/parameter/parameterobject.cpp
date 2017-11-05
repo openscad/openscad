@@ -28,15 +28,20 @@ int ParameterObject::setValue(const class ValuePtr defaultValue, const class Val
 
 	if (dvt == Value::ValueType::BOOL) {
 		target = CHECKBOX;
-	} else if ((dvt == Value::ValueType::VECTOR) && (defaultValue->toVector().size() <= 4)) {
+	}
+	else if ((dvt == Value::ValueType::VECTOR) && (defaultValue->toVector().size() <= 4)) {
 		checkVectorWidget();
-	} else if ((vt == Value::ValueType::VECTOR) && ((dvt == Value::ValueType::NUMBER) || (dvt == Value::ValueType::STRING))) {
+	}
+	else if ((vt == Value::ValueType::VECTOR) && ((dvt == Value::ValueType::NUMBER) || (dvt == Value::ValueType::STRING))) {
 		target = COMBOBOX;
-	} else if ((vt == Value::ValueType::RANGE) && (dvt == Value::ValueType::NUMBER)) {
+	}
+	else if ((vt == Value::ValueType::RANGE) && (dvt == Value::ValueType::NUMBER)) {
 		target = SLIDER;
-	} else if (dvt == Value::ValueType::NUMBER) {
+	}
+	else if (dvt == Value::ValueType::NUMBER) {
 		target = NUMBER;
-	} else {
+	}
+	else {
 		target = TEXT;
 	}
 
@@ -64,7 +69,8 @@ void ParameterObject::setAssignment(Context *ctx, const Assignment *assignment, 
 		if (v->type() == Value::ValueType::STRING) {
 			groupName = v->toString();
 		}
-	} else {
+	}
+	else {
 		groupName = "Parameters";
 	}
 }

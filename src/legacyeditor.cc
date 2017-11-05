@@ -152,7 +152,8 @@ QSize LegacyEditor::sizeHint() const
 {
 	if (initialSizeHint.width() <= 0) {
 		return this->textedit->sizeHint();
-	} else {
+	}
+	else {
 		return initialSizeHint;
 	}
 }

@@ -44,7 +44,8 @@ void GroupWidget::onclicked(const bool /*checked*/)
 	toggleAnimation.start();
 	if (toggleButton.isChecked()) {
 		*(this->show) = true;
-	} else {
+	}
+	else {
 		*(this->show) = false;
 	}
 	this->animationDuration = 300;
@@ -71,7 +72,8 @@ void GroupWidget::setContentLayout(QLayout &contentLayout)
 	if (*(this->show)) {
 		toggleButton.setArrowType(Qt::DownArrow);
 		toggleAnimation.start();
-	} else {
+	}
+	else {
 		toggleButton.setArrowType(Qt::RightArrow);
 	}
 }

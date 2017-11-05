@@ -157,7 +157,8 @@ void ZRemover::visit(CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet)
 			if (contour_counter == 0) {
 				PRINTDB(" <!-- contour is a body. make union(). %i  points -->", contour.size());
 				*(output_nefpoly2d) += *(tmpnef2d);
-			} else {
+			}
+			else {
 				PRINTDB(" <!-- contour is a hole. make intersection(). %i  points -->", contour.size());
 				*(output_nefpoly2d) *= *(tmpnef2d);
 			}
@@ -168,7 +169,8 @@ void ZRemover::visit(CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet)
 			   << OpenSCAD::dump_svg(*output_nefpoly2d) << "\n";*/
 
 			contour_counter++;
-		} else {
+		}
+		else {
 			PRINTD(" <!-- ZRemover trivial facet cycle skipped -->");
 		}
 		PRINTD(" <!-- ZRemover Halffacet cycle end -->");

@@ -9,7 +9,8 @@ void EditorInterface::wheelEvent(QWheelEvent *event)
 	if ((event->modifiers() == Qt::ControlModifier) && wheelzoom_enabled) {
 		if (event->delta() > 0) zoomIn();
 		else if (event->delta() < 0) zoomOut();
-	} else {
+	}
+	else {
 		QWidget::wheelEvent(event);
 	}
 }

@@ -36,7 +36,8 @@ string glew_extensions_dump()
 			tmp += (const char *) glGetStringi(GL_EXTENSIONS, i);
 			tmp += " ";
 		}
-	} else {
+	}
+	else {
 		tmp = (const char *) glGetString(GL_EXTENSIONS);
 	}
 	vector<string> extensions;

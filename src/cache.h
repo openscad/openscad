@@ -106,7 +106,9 @@ public:
 	inline bool empty() const { return hash.empty(); }
 
 	void clear() {
-		while (f) { delete f->t; f = f->n; }
+		while (f) {
+			delete f->t; f = f->n;
+		}
 		hash.clear(); l = 0; total = 0;
 	}
 
@@ -128,7 +130,8 @@ inline bool Cache<Key, T>::remove(const Key &key)
 	iterator_type i = hash.find(key);
 	if (i == hash.end()) {
 		return false;
-	} else {
+	}
+	else {
 		unlink(i->second);
 		return true;
 	}

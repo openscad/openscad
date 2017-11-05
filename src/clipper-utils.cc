@@ -69,7 +69,7 @@ namespace ClipperUtils {
 			ClipperLib::CleanPolygon(node->Contour, cleaned_path, CLEANING_DISTANCE);
 
 			// CleanPolygon can in some cases reduce the polygon down to no vertices
-			if (cleaned_path.size() >= 3)  {
+			if (cleaned_path.size() >= 3) {
 				for (const auto &ip : cleaned_path) {
 					outline.vertices.emplace_back(1.0 * ip.X / CLIPPER_SCALE, 1.0 * ip.Y / CLIPPER_SCALE);
 				}
@@ -164,8 +164,7 @@ namespace ClipperUtils {
 		ClipperLib::Paths pp;
 		pp.reserve(pathCnt);
 		if (isSum)
-			for (size_t i = 0; i < pathCnt; ++i)
-			{
+			for (size_t i = 0; i < pathCnt; ++i) {
 				ClipperLib::Path p;
 				p.reserve(polyCnt);
 				for (size_t j = 0; j < poly.size(); ++j)
@@ -173,8 +172,7 @@ namespace ClipperUtils {
 				pp.push_back(p);
 			}
 		else
-			for (size_t i = 0; i < pathCnt; ++i)
-			{
+			for (size_t i = 0; i < pathCnt; ++i) {
 				ClipperLib::Path p;
 				p.reserve(polyCnt);
 				for (size_t j = 0; j < poly.size(); ++j)
@@ -184,8 +182,7 @@ namespace ClipperUtils {
 
 		quads.reserve((pathCnt + delta) * (polyCnt + 1));
 		for (size_t i = 0; i < pathCnt - 1 + delta; ++i)
-			for (size_t j = 0; j < polyCnt; ++j)
-			{
+			for (size_t j = 0; j < polyCnt; ++j) {
 				ClipperLib::Path quad;
 				quad.reserve(4);
 				quad.push_back(pp[i % pathCnt][j % polyCnt]);

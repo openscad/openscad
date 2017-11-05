@@ -189,10 +189,18 @@ struct projection_t {
 
 CGAL_Point_2 get_projected_point(CGAL_Point_3 &p3, projection_t projection) {
 	NT3 x, y;
-	if (projection.plane == XYPLANE) { x = p3.x(); y = p3.y(); }
-	else if (projection.plane == XZPLANE) { x = p3.x(); y = p3.z(); }
-	else if (projection.plane == YZPLANE) { x = p3.y(); y = p3.z(); }
-	else if (projection.plane == NONE) { x = 0; y = 0; }
+	if (projection.plane == XYPLANE) {
+		x = p3.x(); y = p3.y();
+	}
+	else if (projection.plane == XZPLANE) {
+		x = p3.x(); y = p3.z();
+	}
+	else if (projection.plane == YZPLANE) {
+		x = p3.y(); y = p3.z();
+	}
+	else if (projection.plane == NONE) {
+		x = 0; y = 0;
+	}
 	if (projection.flip) return CGAL_Point_2(y, x);
 	return CGAL_Point_2(x, y);
 }
@@ -209,10 +217,12 @@ bool deproject(CGAL_Point_2 &p2, projection_t &projection, CGAL_Plane_3 &plane, 
 	if (projection.plane == XYPLANE) {
 		p = CGAL_Point_3(pf.x(), pf.y(), 0);
 		l = CGAL_Line_3(p, CGAL_Direction_3(0, 0, 1));
-	} else if (projection.plane == XZPLANE) {
+	}
+	else if (projection.plane == XZPLANE) {
 		p = CGAL_Point_3(pf.x(), 0, pf.y());
 		l = CGAL_Line_3(p, CGAL_Direction_3(0, 1, 0));
-	} else if (projection.plane == YZPLANE) {
+	}
+	else if (projection.plane == YZPLANE) {
 		p = CGAL_Point_3(0, pf.x(), pf.y());
 		l = CGAL_Line_3(p, CGAL_Direction_3(1, 0, 0));
 	}
@@ -284,7 +294,8 @@ bool inside(CGAL_Point_2 &p1, std::vector<CGAL_Point_2> &pgon, winding_rule_t wi
 			CGAL_Vector_2 v2(p2, head);
 			NT3 this_winding = wedge(v1, v2);
 			winding_sum += sign(this_winding);
-		} else {
+		}
+		else {
 			continue;
 		}
 	}
@@ -304,13 +315,16 @@ projection_t find_good_projection(CGAL_Plane_3 &plane)
 	if (min == qxy) {
 		goodproj.plane = XYPLANE;
 		if (sign(plane.c()) > 0) goodproj.flip = true;
-	} else if (min == qyz) {
+	}
+	else if (min == qyz) {
 		goodproj.plane = YZPLANE;
 		if (sign(plane.a()) > 0) goodproj.flip = true;
-	} else if (min == qxz) {
+	}
+	else if (min == qxz) {
 		goodproj.plane = XZPLANE;
 		if (sign(plane.b()) < 0) goodproj.flip = true;
-	} else PRINT("ERROR: failed to find projection");
+	}
+	else PRINT("ERROR: failed to find projection");
 	return goodproj;
 }
 
@@ -407,8 +421,7 @@ namespace CGALUtils {
 		//	CGAL::orientation_2( orienpgon.begin(), orienpgon.end() );
 
 		CDT::Finite_faces_iterator fit;
-		for (fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); fit++)
-		{
+		for (fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); fit++) {
 			if (fit->is_in_domain()) {
 				CDTPoint p1 = cdt.triangle(fit)[0];
 				CDTPoint p2 = cdt.triangle(fit)[1];
@@ -526,8 +539,7 @@ namespace CGALUtils {
 		//	CGAL::orientation_2( orienpgon.begin(), orienpgon.end() );
 
 		CDT::Finite_faces_iterator fit;
-		for (fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); fit++)
-		{
+		for (fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); fit++) {
 			if (fit->is_in_domain()) {
 				CDTPoint p1 = cdt.triangle(fit)[0];
 				CDTPoint p2 = cdt.triangle(fit)[1];

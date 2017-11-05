@@ -66,7 +66,8 @@ void PRINT_NOCACHE(const std::string &msg)
 	if (!OpenSCAD::quiet || boost::starts_with(msg, "ERROR")) {
 		if (!outputhandler) {
 			fprintf(stderr, "%s\n", msg.c_str());
-		} else {
+		}
+		else {
 			outputhandler(msg, outputhandler_data);
 		}
 	}

@@ -98,9 +98,11 @@ double FreetypeRenderer::calc_x_offset(std::string halign, double width) const
 {
 	if (halign == "right") {
 		return -width;
-	} else if (halign == "center") {
+	}
+	else if (halign == "center") {
 		return -width / 2.0;
-	} else {
+	}
+	else {
 		if (halign != "left") {
 			PRINTB("Unknown value for the halign parameter (use \"left\", \"right\" or \"center\"): '%s'", halign);
 		}
@@ -112,11 +114,14 @@ double FreetypeRenderer::calc_y_offset(std::string valign, double ascend, double
 {
 	if (valign == "top") {
 		return -ascend;
-	} else if (valign == "center") {
+	}
+	else if (valign == "center") {
 		return descend / 2.0 - ascend / 2.0;
-	} else if (valign == "bottom") {
+	}
+	else if (valign == "bottom") {
 		return descend;
-	} else {
+	}
+	else {
 		if (valign != "baseline") {
 			PRINTB("Unknown value for the valign parameter (use \"baseline\", \"bottom\", \"top\" or \"center\"): '%s'", valign);
 		}
@@ -163,7 +168,8 @@ hb_script_t FreetypeRenderer::get_script(const FreetypeRenderer::Params &params,
 		if (!is_ignored_script(s)) {
 			if (script == HB_SCRIPT_INVALID) {
 				script = s;
-			} else if ((script != s) && (script != HB_SCRIPT_UNKNOWN)) {
+			}
+			else if ((script != s) && (script != HB_SCRIPT_UNKNOWN)) {
 				script = HB_SCRIPT_UNKNOWN;
 			}
 		}
@@ -241,10 +247,12 @@ std::vector<const Geometry *> FreetypeRenderer::render(const FreetypeRenderer::P
 				hb_buffer_add_utf8(hb_buf, buf, strlen(buf), 0, strlen(buf));
 				p = g_utf8_next_char(p);
 			}
-		} else {
+		}
+		else {
 			PRINTB("Warning: Ignoring text with invalid UTF-8 encoding: \"%s\"", params.text.c_str());
 		}
-	} else {
+	}
+	else {
 		hb_buffer_add_utf8(hb_buf, params.text.c_str(), strlen(params.text.c_str()), 0, strlen(params.text.c_str()));
 	}
 	hb_shape(hb_ft_font, hb_buf, nullptr, 0);
@@ -285,7 +293,8 @@ std::vector<const Geometry *> FreetypeRenderer::render(const FreetypeRenderer::P
 			width += glyph->get_x_advance() * params.spacing;
 			ascend = std::max(ascend, asc);
 			descend = std::max(descend, desc);
-		} else {
+		}
+		else {
 			double w_bbox = (bbox.xMax - bbox.xMin) / 64.0 / 16.0;
 			width = std::max(width, w_bbox);
 			ascend += glyph->get_y_advance() * params.spacing;

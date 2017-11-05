@@ -259,7 +259,8 @@ PolySet *AmfImporter::read(const std::string filename)
 #ifdef ENABLE_CGAL
 	if (polySets.size() == 1) {
 		p = polySets[0];
-	} if (polySets.size() > 1) {
+	}
+	if (polySets.size() > 1) {
 		Geometry::Geometries children;
 		for (std::vector<PolySet *>::iterator it = polySets.begin(); it != polySets.end(); it++) {
 			children.push_back(std::make_pair((const AbstractNode *)nullptr,  shared_ptr<const Geometry>(*it)));
@@ -270,7 +271,8 @@ PolySet *AmfImporter::read(const std::string filename)
 			delete result;
 			p = new PolySet(3);
 			PRINTB("ERROR: Error importing multi-object AMF file '%s'", filename);
-		} else {
+		}
+		else {
 			p = result;
 		}
 	}
@@ -338,12 +340,14 @@ xmlTextReaderPtr AmfImporterZIP::createXmlReader(const char *filename)
 		if (zipfile) {
 			return xmlReaderForIO(read_callback, close_callback, this, f.filename().c_str(), nullptr,
 														XML_PARSE_NOENT | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
-		} else {
+		}
+		else {
 			zip_close(archive);
 			zipfile = nullptr;
 			return nullptr;
 		}
-	} else {
+	}
+	else {
 		return AmfImporter::createXmlReader(filename);
 	}
 }

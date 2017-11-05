@@ -192,9 +192,11 @@ void Highlighter::assignFormatsToTokens(const QString &s)
 	//PRINTB("assign fmts %s",s.toStdString());
 	if (s == "For Light Background") {
 		format_colors_for_light_background(this->typeformats);
-	} else if (s == "For Dark Background") {
+	}
+	else if (s == "For Dark Background") {
 		format_colors_for_dark_background(this->typeformats);
-	} else return;
+	}
+	else return;
 
 	// Put each token into single QHash, and map it to it's appropriate
 	// qtextchar format (color, bold, etc). For example, '(' is type
@@ -336,7 +338,8 @@ void Highlighter::highlightBlock(const QString &text)
 			std::string tokprint = (*token).toStdString();
 			//PRINTB("found tok '%s' at %i", tokprint % tokindex );
 			tokindex += token->size();
-		} else {
+		}
+		else {
 			(*token).toDouble(&numtest);
 			if (numtest) {
 				tokindex = text.indexOf(*token, tokindex);
@@ -356,21 +359,25 @@ void Highlighter::highlightBlock(const QString &text)
 			if (text[n] == '"') {
 				state = state_e::QUOTE;
 				setFormat(n, 1, quoteFormat);
-			} else if (text[n] == '/') {
+			}
+			else if (text[n] == '/') {
 				if (n + 1 < text.size() && text[n + 1] == '/') {
 					setFormat(n, text.size(), commentFormat);
 					break;
-				} else if (n + 1 < text.size() && text[n + 1] == '*') {
+				}
+				else if (n + 1 < text.size() && text[n + 1] == '*') {
 					setFormat(n++, 2, commentFormat);
 					state = state_e::COMMENT;
 				}
 			}
-		} else if (state == state_e::QUOTE) {
+		}
+		else if (state == state_e::QUOTE) {
 			setFormat(n, 1, quoteFormat);
 			if (quote_esc_state > 0) quote_esc_state = 0;
 			else if (text[n] == '\\') quote_esc_state = 1;
 			else if (text[n] == '"') state = state_e::NORMAL;
-		} else if (state == state_e::COMMENT) {
+		}
+		else if (state == state_e::COMMENT) {
 			setFormat(n, 1, commentFormat);
 			if (text[n] == '*' && n + 1 < text.size() && text[n + 1] == '/') {
 				setFormat(++n, 1, commentFormat);

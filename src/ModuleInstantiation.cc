@@ -41,10 +41,12 @@ std::string ModuleInstantiation::dump(const std::string &indent) const
 	}
 	if (scope.numElements() == 0) {
 		dump << ");\n";
-	} else if (scope.numElements() == 1) {
+	}
+	else if (scope.numElements() == 1) {
 		dump << ") ";
 		dump << scope.dump("");
-	} else {
+	}
+	else {
 		dump << ") {\n";
 		dump << scope.dump(indent + "\t");
 		dump << indent << "}\n";

@@ -69,7 +69,8 @@ void EvalContext::assignTo(Context &target) const
 		if (assignment.expr) v = assignment.expr->evaluate(&target);
 		if (target.has_local_variable(assignment.name)) {
 			PRINTB("WARNING: Ignoring duplicate variable assignment %s = %s", assignment.name % v->toString());
-		} else {
+		}
+		else {
 			target.set_variable(assignment.name, v);
 		}
 	}

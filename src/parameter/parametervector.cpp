@@ -22,7 +22,8 @@ void ParameterVector::onChanged(double)
 	object->focus = true;
 	if (object->target == 5) {
 		object->value = ValuePtr(doubleSpinBox1->value());
-	} else {
+	}
+	else {
 		Value::VectorType vt;
 		vt.push_back(this->doubleSpinBox1->value());
 		if (!this->doubleSpinBox2->isReadOnly()) {

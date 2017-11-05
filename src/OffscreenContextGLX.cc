@@ -279,7 +279,8 @@ bool create_glx_dummy_context(OffscreenContext &ctx)
 	if (major == 1 && minor <= 2 && glXGetVisualFromFBConfig == nullptr) {
 		std::cerr << "Error: GLX version 1.3 functions missing. "
 							<< "Your GLX version: " << major << "." << minor << std::endl;
-	} else {
+	}
+	else {
 		result = create_glx_dummy_window(ctx);
 	}
 
