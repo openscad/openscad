@@ -92,7 +92,8 @@ static ptree *examplesTree()
 		try {
 			examples_tree = new ptree;
 			read_json(path, *examples_tree);
-		} catch (const std::exception &e) {
+		}
+		catch (const std::exception &e) {
 			PRINTB("Error reading examples.json: %s", e.what());
 			delete examples_tree;
 			examples_tree = nullptr;

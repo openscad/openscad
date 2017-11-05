@@ -77,7 +77,8 @@ class SettingsReader : public Settings::SettingsVisitor
 				assert(false && "invalid value type for settings");
 				return 0; // keep compiler happy
 			}
-		} catch (const boost::bad_lexical_cast &e) {
+		}
+		catch (const boost::bad_lexical_cast &e) {
 			return entry.defaultValue();
 		}
 	}

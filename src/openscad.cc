@@ -175,7 +175,8 @@ static void info()
 	try {
 		OffscreenView glview(512, 512);
 		std::cout << glview.getRendererInfo() << "\n";
-	} catch (int error) {
+	}
+	catch (int error) {
 		PRINTB("Can't create OpenGL OffscreenView. Code: %i. Exiting.\n", error);
 		exit(1);
 	}

@@ -376,7 +376,8 @@ bool tessellate3DFaceWithHolesNew(std::vector<CGAL_Polygon_3> &polygons,
 			CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 			try {
 				cdt.insert_constraint(vhandles[vindex1], vhandles[vindex2]);
-			} catch (const CGAL::Failure_exception &e) {
+			}
+			catch (const CGAL::Failure_exception &e) {
 				PRINTB("WARNING: Constraint insertion failure %s", e.what());
 			}
 			CGAL::set_error_behaviour(old_behaviour);
@@ -494,7 +495,8 @@ bool tessellate3DFaceWithHoles(std::vector<CGAL_Polygon_3> &polygons,
 			CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 			try {
 				cdt.insert_constraint(vhandles[vindex1], vhandles[vindex2]);
-			} catch (const CGAL::Failure_exception &e) {
+			}
+			catch (const CGAL::Failure_exception &e) {
 				PRINTB("WARNING: Constraint insertion failure %s", e.what());
 			}
 			CGAL::set_error_behaviour(old_behaviour);

@@ -231,7 +231,8 @@ int AmfImporter::streamFile(const char *filename)
 			ret = xmlTextReaderRead(reader);
 		}
 		xmlFreeTextReader(reader);
-	} catch (boost::bad_lexical_cast &) {
+	}
+	catch (boost::bad_lexical_cast &) {
 		ret = -1;
 	}
 	if (ret != 0) {

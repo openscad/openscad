@@ -26,13 +26,16 @@ template <class Tout, class Tin> Tout boost_numeric_cast(Tin input)
 	status.str("ok");
 	try {
 		result = boost::numeric_cast<Tout>(input);
-	} catch (boost::numeric::negative_overflow &e) {
+	}
+	catch (boost::numeric::negative_overflow &e) {
 		status << e.what();
 		result = std::numeric_limits<Tout>::min();
-	} catch (boost::numeric::positive_overflow &e) {
+	}
+	catch (boost::numeric::positive_overflow &e) {
 		status << e.what();
 		result = std::numeric_limits<Tout>::max();
-	} catch (boost::numeric::bad_numeric_cast &e) {
+	}
+	catch (boost::numeric::bad_numeric_cast &e) {
 		status << e.what();
 		result = 0;
 	}

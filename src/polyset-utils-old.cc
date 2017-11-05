@@ -207,7 +207,8 @@ bool triangulate_polygon(const PolySet::Polygon &pgon, std::vector<PolySet::Poly
 				triangles.push_back(pgon);
 			}
 		}
-	} catch (const CGAL::Failure_exception &e) {
+	}
+	catch (const CGAL::Failure_exception &e) {
 		// Using failure exception to catch precondition errors for malformed polygons
 		// in e.g. CGAL::orientation_2().
 		PRINTB("CGAL error in triangulate_polygon(): %s", e.what());

@@ -14,7 +14,8 @@ size_t write_bytes_to_ostream(void *info, const void *buffer, size_t count)
 	try {
 		output->write((const char *)buffer, count);
 		endpos = output->tellp();
-	} catch (const std::ios_base::failure &e) {
+	}
+	catch (const std::ios_base::failure &e) {
 		std::cerr << "Error writing to ostream:" << e.what() << "\n";
 	}
 	return (endpos - startpos);

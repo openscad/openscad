@@ -86,7 +86,8 @@ EditorColorScheme::EditorColorScheme(fs::path path) : path(path)
 		boost::property_tree::read_json(path.generic_string().c_str(), pt);
 		_name = QString(pt.get<std::string>("name").c_str());
 		_index = pt.get<int>("index");
-	} catch (const std::exception &e) {
+	}
+	catch (const std::exception &e) {
 		PRINTB("Error reading color scheme file '%s': %s", path.generic_string().c_str() % e.what());
 		_name = "";
 		_index = 0;
@@ -260,7 +261,8 @@ QColor ScintillaEditor::readColor(const boost::property_tree::ptree &pt, const s
 		}
 #endif
 		return QColor(val.c_str());
-	} catch (std::exception e) {
+	}
+	catch (std::exception e) {
 		return defaultColor;
 	}
 }
@@ -270,7 +272,8 @@ std::string ScintillaEditor::readString(const boost::property_tree::ptree &pt, c
 	try {
 		const std::string val = pt.get<std::string>(name);
 		return val;
-	} catch (std::exception e) {
+	}
+	catch (std::exception e) {
 		return defaultValue;
 	}
 }
@@ -280,7 +283,8 @@ int ScintillaEditor::readInt(const boost::property_tree::ptree &pt, const std::s
 	try {
 		const int val = pt.get<int>(name);
 		return val;
-	} catch (std::exception e) {
+	}
+	catch (std::exception e) {
 		return defaultValue;
 	}
 }
@@ -354,7 +358,8 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 		qsci->setSelectionForegroundColor(readColor(colors, "selection-foreground", paperColor));
 		qsci->setSelectionBackgroundColor(readColor(colors, "selection-background", textColor));
 		qsci->setEdgeColor(readColor(colors, "edge", textColor));
-	} catch (std::exception e) {
+	}
+	catch (std::exception e) {
 		noColor();
 	}
 }

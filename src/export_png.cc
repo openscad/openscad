@@ -25,7 +25,8 @@ bool export_png(const shared_ptr<const Geometry> &root_geom, Camera &cam, std::o
 	OffscreenView *glview;
 	try {
 		glview = new OffscreenView(cam.pixel_width, cam.pixel_height);
-	} catch (int error) {
+	}
+	catch (int error) {
 		fprintf(stderr, "Can't create OpenGL OffscreenView. Code: %i.\n", error);
 		return false;
 	}
@@ -59,7 +60,8 @@ bool export_png_preview_common(Tree &tree, Camera &cam, std::ostream &output, Pr
 	OffscreenView *glview;
 	try {
 		glview = new OffscreenView(cam.pixel_width, cam.pixel_height);
-	} catch (int error) {
+	}
+	catch (int error) {
 		fprintf(stderr, "Can't create OpenGL OffscreenView. Code: %i.\n", error);
 		return false;
 	}

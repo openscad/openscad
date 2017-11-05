@@ -239,7 +239,8 @@ Polygon2d *project(const CGAL_Nef_polyhedron &N, bool cut)
 				PRINTD("<!-- volume end. -->");
 			}
 			poly = convertToPolygon2d(*zremover.output_nefpoly2d);
-		} catch (const CGAL::Failure_exception &e) {
+		}
+		catch (const CGAL::Failure_exception &e) {
 			PRINTB("ERROR: CGAL error in CGALUtils::project while flattening: %s", e.what());
 		}
 		PRINTD("</svg>");
