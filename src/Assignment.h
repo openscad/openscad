@@ -9,7 +9,7 @@
 #include "memory.h"
 #include "annotation.h"
 
-class Assignment :  public ASTNode
+class Assignment : public ASTNode
 {
 public:
 	Assignment(std::string name, const Location &loc)
