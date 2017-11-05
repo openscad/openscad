@@ -145,7 +145,7 @@ void ParameterWidget::onSetChanged(int idx)
 {
 	const std::string v = comboBoxPreset->itemData(idx).toString().toUtf8().constData();
 	applyParameterSet(v);
-	emit previewRequested();
+	emit previewRequested(false);
 }
 
 void ParameterWidget::onDescriptionShow()
