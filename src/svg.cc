@@ -322,8 +322,8 @@ public:
 					// don't know why we use source()->source(), except thats what CGAL does internally
 					auto source = c1->source()->source()->point();
 					auto target = c1->source()->target()->point();
-					auto tp1 = project_svg_3to2 (source, bbox);
-					auto tp2 = project_svg_3to2 (target, bbox);
+					auto tp1 = project_svg_3to2(source, bbox);
+					auto tp2 = project_svg_3to2(target, bbox);
 					out << "     <!-- " << CGAL::to_double(source.x()) << ","
 							<< CGAL::to_double(source.y()) << ","
 							<< CGAL::to_double(source.z()) << " -->\n";

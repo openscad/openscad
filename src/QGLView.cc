@@ -198,7 +198,7 @@ void QGLView::mousePressEvent(QMouseEvent *event)
 	last_mouse = event->globalPos();
 }
 
-void QGLView::mouseDoubleClickEvent (QMouseEvent *event) {
+void QGLView::mouseDoubleClickEvent(QMouseEvent *event) {
 
 	setupCamera();
 
