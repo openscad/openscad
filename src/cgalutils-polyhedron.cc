@@ -215,7 +215,7 @@ public:
 				HFCC hc_end = hc;
 				//     std::size_t n = circulator_size(hc);
 				//     CGAL_assertion(n >= 3);
-				builder.begin_facet ();
+				builder.begin_facet();
 				do {
 					builder.add_vertex_to_facet(index[hc->vertex()]);
 					++hc;
