@@ -30,8 +30,8 @@ endif()
 
 add_compile_options("$<$<CONFIG:DEBUG>:-DDEBUG>")
 
-# cmake default flags include -DNDEBUG for non-Debug builds, 
-# which is know to cause problems with current OpenSCAD codebase (due to skipping assertions?) so make sure it gets unset
+# cmake default flags include -DNDEBUG for non-Debug builds.
+# NDEBUG is known to cause OpenSCAD to crash in some case, so make sure it is unset.  Issue #2180 for details.
 add_compile_options("-UNDEBUG")
 
 set(CMAKE_CXX_STANDARD 11)
