@@ -604,7 +604,7 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
 	// convert the axis position to a string
 	std::ostringstream oss;
 	oss << i;
-	auto digit = oss.str();
+	const auto unsigned_digit = oss.str();
 
 	// setup how far above the axis (or tick TBD) to draw the number
 	double dig_buf = (l/size_div_sm)/4;
@@ -689,16 +689,15 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
 		{1,0,2,3,2,4,5},
 		{1,0,2,3,2,4,5}};
 
-	auto stash_digit = digit;
-
 	// walk through axes
 	for (int di=0;di<6;di++){
 
 		// setup negative axes
 		double polarity = 1;
+		auto digit = unsigned_digit;
 		if (di>2){
 			polarity = -1;
-			digit = "-" + stash_digit;
+			digit.insert(0, "-");
 		}
 
 		// fix the axes that need to run the opposite direction
