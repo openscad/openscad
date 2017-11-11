@@ -1,125 +1,133 @@
+%glr-parser
+
 %{
-    #include <sstream>
-    #include <string.h>
-    #include "Assignment.h"
-    #include "expression.h"
-    #include "printutils.h"
-    #include "value.h" 
-    #include "comment.h" 
-    void yyerror(const char *);
-    int comment_lexerlex(void);
-    int comment_parserlex(void);
-    extern void comment_lexer_scan_string ( const char *str );
-    Expression *params;
+	#include <sstream>
+	#include <string.h>
+	#include "Assignment.h"
+	#include "expression.h"
+	#include "printutils.h"
+	#include "value.h" 
+	#include "comment.h" 
+	void yyerror(const char *);
+	int comment_lexerlex(void);
+	int comment_parserlex(void);
+	extern void comment_lexer_scan_string ( const char *str );
+	Expression *params;
 %}
 %union {
-    char *text;
-    char ch;
-    double num;
-    class Vector *vec;
-    class Expression *expr;
+	char *text;
+	char ch;
+	double num;
+	class Vector *vec;
+	class Expression *expr;
 };
 
 
 %token<num> NUM
-
 %token<text> WORD
+
 %type <text> word
 %type <expr> expr
+%type <expr> num
+%type <expr> value
+%type <vec> values
+%type <expr> wordexpr
 %type <expr> params
-%type <vec> vector_expr
-%type <vec> labled_vector
+%type <vec> labeled_vectors
 
 %%
 
 
 params:
-          expr
-            {
-                $$ = $1;
-                params = $$;
-            }			
-            ;
-            
-expr: 
-         NUM 
-            {
-                $$ = new Literal(ValuePtr($1));
-                
-            }
-        | word
-            {
-                $$ = new Literal(ValuePtr(std::string($1)));
-                free($1);
-            }
-        | '[' optional_commas ']'
-            {
-                $$ = new Literal(ValuePtr(Value::VectorType()));
-            }
-        | '[' vector_expr optional_commas ']'
-            {
-                $$ = $2;
-            }            
-        | '[' expr ':' expr ']'
-            {
-                $$ = new Range($2, $4,Location::NONE);
-            }
-        | '[' expr ':' expr ':' expr ']'
-            {
-                $$ = new Range($2, $4, $6,Location::NONE);
-            }
-        | labled_vector { $$=$1;}
-        ;
-                
-labled_vector: 
-        expr ':' expr {
-            $$ = new Vector(Location::NONE);
-            $$->push_back($1);
-            $$->push_back($3);
-        }
-		;
+	expr
+		{
+			$$ = $1;
+			params = $$;
+		}
+	;
 
-optional_commas:
-          ',' optional_commas
-        | /* empty */
-        ;
-       
-vector_expr:
-          expr
-            {
-                $$ = new Vector(Location::NONE);
-                $$->push_back($1);
-            }
-            | vector_expr ',' optional_commas expr
-            {
-                $$ = $1;
-                $$->push_back($4);
-            }
-            ;		
+expr: 
+	'[' values ',' value ']'
+	{
+		$$ = $2;
+		$2->push_back($4);
+	}
+	| '[' num ':' num']'
+	{
+		$$ = new Range($2, $4, Location::NONE);
+	}
+	| '[' num ':' num ':' num ']'
+	{
+		$$ = new Range($2, $4, $6, Location::NONE);
+	}
+	;
+
+num:
+	NUM
+	{
+		$$ = new Literal(ValuePtr($1));
+	}
+	;
+
+value:
+	wordexpr
+	{
+		$$ = $1;
+	}
+	|labeled_vectors
+	{
+		$$ = $1;
+	}
+	;
+
+values:
+	value
+	{
+		$$ = new Vector(Location::NONE);
+		$$->push_back($1);
+	}
+	|values ',' value
+	{
+		$$ = $1;
+		$$->push_back($3);
+	}
+	;
+
+labeled_vectors: 
+	wordexpr ':' wordexpr
+	{
+		$$ = new Vector(Location::NONE);
+		$$->push_back($1);
+		$$->push_back($3);
+	}
+	;
+
+wordexpr:
+	 word
+	{
+		$$ = new Literal(ValuePtr(std::string($1)));
+		free($1);
+	}
+	;
 
 word:   
-    WORD
-    {
-        $$=$1;    
-    }
-    | word NUM
-    {
-        std::ostringstream strs;
-        strs << $1 << " " << $2;
-        $$ = strdup(strs.str().c_str());
-    }
-    | NUM word
-    {
-        std::ostringstream strs;
-        strs << $1 << " " << $2;
-        $$ = strdup(strs.str().c_str());
-    }
-    | word WORD
-    {
-        std::ostringstream strs;
-        strs << $1 << " " << $2;
-        $$ = strdup(strs.str().c_str());
-    }
+	WORD
+	{
+		$$=$1;    
+	}
+	| NUM
+	{
+		std::ostringstream strs;
+		strs << $1;
+		$$ = strdup(strs.str().c_str());
+	}
+	| word WORD
+	{
+		std::ostringstream strs;
+		strs << $1 << " " << $2;
+		$$ = strdup(strs.str().c_str());
+	}
+	
 %%
 
 int comment_parserlex(void)
@@ -128,8 +136,8 @@ int comment_parserlex(void)
 }
 
 void yyerror(const char * /*msg*/) {
-    PRINTD("ERROR IN PARAMETER: Parser error in comments of file \n "); 
-    params = NULL;
+	PRINTD("ERROR IN PARAMETER: Parser error in comments of file \n "); 
+	params = NULL;
 }
 
 shared_ptr<Expression> CommentParser::parser(const char *text)
