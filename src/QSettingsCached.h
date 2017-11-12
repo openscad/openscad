@@ -40,6 +40,10 @@ class QSettingsCached {
             return qsettingsPointer->contains(key);
         }
 
+        void release() {
+            delete qsettingsPointer.release();
+        }
+
 
     private:
         static std::unique_ptr<QSettings> qsettingsPointer;
