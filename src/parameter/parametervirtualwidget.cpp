@@ -14,13 +14,13 @@ ParameterVirtualWidget::~ParameterVirtualWidget(){
 void ParameterVirtualWidget::setName(QString name) {
 	this->labelDescription->hide();
 	name.replace(QRegExp("([_]+)"), " ");
-	this->labelParameter->setText("<b>"+name+"</b>");
+	this->labelParameter->setText(name);
+	this->labelInline->setText("");
 }
 
 void ParameterVirtualWidget::addInline(QString addTxt) {
-	QString txt = this->labelParameter->text();
 	if(addTxt!=""){
-		this->labelParameter->setText(txt + " - " + addTxt);
+		this->labelInline->setText(" - "+ addTxt);
 	}
 }
 
