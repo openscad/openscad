@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>308</width>
-    <height>56</height>
+    <height>54</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -313,6 +313,12 @@
      </property>
      <item>
       <layout class="QFormLayout" name="formLayout">
+       <property name="horizontalSpacing">
+        <number>0</number>
+       </property>
+       <property name="verticalSpacing">
+        <number>0</number>
+       </property>
        <property name="topMargin">
         <number>0</number>
        </property>
@@ -355,11 +361,6 @@
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
-         <property name="font">
-          <font>
-           <pointsize>11</pointsize>
-          </font>
-         </property>
          <property name="lineWidth">
           <number>0</number>
          </property>
@@ -377,15 +378,10 @@
        <item row="0" column="1">
         <widget class="QLabel" name="labelInline">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+          <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
-         </property>
-         <property name="font">
-          <font>
-           <pointsize>11</pointsize>
-          </font>
          </property>
          <property name="lineWidth">
           <number>0</number>
@@ -395,9 +391,6 @@
          </property>
          <property name="textFormat">
           <enum>Qt::PlainText</enum>
-         </property>
-         <property name="wordWrap">
-          <bool>true</bool>
          </property>
         </widget>
        </item>
