@@ -54,7 +54,6 @@ private:
 	void updateWidget();
 	void cleanScrollArea();
 	void addEntry(QVBoxLayout* anylayout, ParameterVirtualWidget *entry);
-	void end();
 	void clear();
 	ParameterVirtualWidget* CreateParameterWidget(std::string parameterName);
 	void setComboBoxPresetForSet();

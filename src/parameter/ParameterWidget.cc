@@ -169,6 +169,7 @@ void ParameterWidget::onPreviewTimerElapsed()
 
 void ParameterWidget::cleanScrollArea()
 {
+	this->scrollAreaWidgetContents->layout()->setAlignment(Qt::AlignTop);
 	QLayoutItem *child;
 	while ((child = this->scrollAreaWidgetContents->layout()->takeAt(0)) != 0) {
 		QWidget *w = child->widget();
@@ -188,18 +189,6 @@ void ParameterWidget::addEntry(QVBoxLayout* anyLayout, ParameterVirtualWidget *e
 		entry->setSizePolicy(policy);
 		anyLayout->addWidget(entry);
 	}
-}
-
-void ParameterWidget::end()
-{
-	QSizePolicy policy;
-	policy.setHorizontalPolicy(QSizePolicy::Expanding);
-	policy.setVerticalPolicy(QSizePolicy::Preferred);
-	policy.setHorizontalStretch(0);
-	policy.setVerticalStretch(1);
-	QLabel *label = new QLabel("");
-	label->setSizePolicy(policy);
-	this->scrollAreaWidgetContents->layout()->addWidget(label);
 }
 
 void ParameterWidget::connectWidget()
@@ -242,7 +231,6 @@ void ParameterWidget::connectWidget()
 			this->scrollAreaWidgetContents->layout()->addWidget(groupWidget);
 		}
 	}
-	end();
 	if (anyfocused != 0){
 		entryToFocus->setParameterFocus();
 	}
