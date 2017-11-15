@@ -13,13 +13,11 @@ class GroupWidget : public QWidget {
 private:
 	QGridLayout mainLayout;
 	QToolButton toggleButton;
-	QParallelAnimationGroup toggleAnimation;
-	QScrollArea contentArea;
-	int animationDuration;
+	QWidget contentArea;
 	bool *show;
 
 public:
-	explicit GroupWidget(bool &show,const QString & title = "", const int animationDuration = 0, QWidget *parent = 0);
+	explicit GroupWidget(bool &show,const QString & title = "", QWidget *parent = 0);
 	void setContentLayout(QLayout & contentLayout);
 
 private slots:

@@ -2,23 +2,12 @@
 
 #include <QPropertyAnimation>
 
-GroupWidget::GroupWidget(bool &show, const QString & title, const int animationDuration, QWidget *parent) : QWidget(parent), animationDuration(animationDuration)
+GroupWidget::GroupWidget(bool &show, const QString & title, QWidget *parent) : QWidget(parent)
 {
 	toggleButton.setText(title);
 	toggleButton.setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Maximum);
 	toggleButton.setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
 	toggleButton.setCheckable(true);
-
-	contentArea.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-
-	// start out collapsed
-	contentArea.setMaximumHeight(0);
-	contentArea.setMinimumHeight(0);
-
-	// let the entire widget grow and shrink with its content
-	toggleAnimation.addAnimation(new QPropertyAnimation(this, "minimumHeight"));
-	toggleAnimation.addAnimation(new QPropertyAnimation(this, "maximumHeight"));
-	toggleAnimation.addAnimation(new QPropertyAnimation(&contentArea, "maximumHeight"));
 
 	this->show = &show;
 	toggleButton.setChecked(show);
@@ -30,6 +19,7 @@ GroupWidget::GroupWidget(bool &show, const QString & title, const int animationD
 
 	mainLayout.addWidget(&toggleButton, 0, 0, 0);
 	mainLayout.addWidget(&contentArea, 1, 0, 0);
+	setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Maximum);
 	setLayout(&mainLayout);
 	QObject::connect(&toggleButton, SIGNAL(toggled(bool)),this, SLOT(onclicked(bool)));
 }
@@ -38,37 +28,21 @@ GroupWidget::GroupWidget(bool &show, const QString & title, const int animationD
 void GroupWidget::onclicked(const bool /*checked*/)
 {
 	toggleButton.setArrowType(toggleButton.isChecked() ? Qt::DownArrow : Qt::RightArrow);
-	toggleAnimation.setDirection(toggleButton.isChecked() ? QAbstractAnimation::Forward : QAbstractAnimation::Backward);
-	toggleAnimation.start();
+
 	if (toggleButton.isChecked()) {
 		*(this->show) = true;
+		contentArea.show();
 	} else {
 		*(this->show) = false;
+		contentArea.hide();
 	}
 }
 
 void GroupWidget::setContentLayout(QLayout & contentLayout)
 {
 	delete contentArea.layout();
+
 	contentArea.setLayout(&contentLayout);
 
-	const int collapsedHeight = sizeHint().height() - contentArea.maximumHeight();
-	int contentHeight = contentLayout.sizeHint().height();
-	for (int i = 0; i < toggleAnimation.animationCount() - 1; ++i) {
-		QPropertyAnimation * GroupWidgetAnimation = static_cast<QPropertyAnimation *>(toggleAnimation.animationAt(i));
-		GroupWidgetAnimation->setDuration(animationDuration);
-		GroupWidgetAnimation->setStartValue(collapsedHeight);
-		GroupWidgetAnimation->setEndValue(collapsedHeight + contentHeight);
-	}
-	QPropertyAnimation * contentAnimation = static_cast<QPropertyAnimation *>(toggleAnimation.animationAt(toggleAnimation.animationCount() - 1));
-	contentAnimation->setDuration(animationDuration);
-	contentAnimation->setStartValue(0);
-	contentAnimation->setEndValue(contentHeight);
-
-	if (*(this->show)) {
-		toggleButton.setArrowType(Qt::DownArrow);
-		toggleAnimation.start();
-	} else {
-		toggleButton.setArrowType(Qt::RightArrow);
-	}
+	onclicked(toggleButton.isChecked());
 }
