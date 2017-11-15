@@ -182,8 +182,8 @@ void ParameterWidget::addEntry(QVBoxLayout* anyLayout, ParameterVirtualWidget *e
 {
 	if(entry){
 		QSizePolicy policy;
-		policy.setHorizontalPolicy(QSizePolicy::Expanding);
-		policy.setVerticalPolicy(QSizePolicy::Minimum);
+		policy.setHorizontalPolicy(QSizePolicy::Ignored);
+		policy.setVerticalPolicy(QSizePolicy::Maximum);
 		policy.setHorizontalStretch(0);
 		policy.setVerticalStretch(0);
 		entry->setSizePolicy(policy);
@@ -220,12 +220,14 @@ void ParameterWidget::connectWidget()
 			QVBoxLayout* anyLayout = new QVBoxLayout();
 			anyLayout->setSpacing(0);
 			anyLayout->setContentsMargins(0,0,0,0);
+
 			std::vector<std::string> gr;
 			gr = groupMap[*it].parameterVector;
 			for(unsigned int i=0;i < gr.size();i++) {
 				ParameterVirtualWidget * entry = CreateParameterWidget(gr[i]);
 				addEntry(anyLayout, entry);
 			}
+
 			GroupWidget *groupWidget = new GroupWidget(groupMap[*it].show, QString::fromStdString(*it));
 			groupWidget->setContentLayout(*anyLayout);
 			this->scrollAreaWidgetContents->layout()->addWidget(groupWidget);
