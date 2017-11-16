@@ -52,10 +52,12 @@ void ParameterVirtualWidget::setDescription(const QString& description) {
 	
 void ParameterVirtualWidget::resizeEvent(QResizeEvent * event){
 	//bodge code to adjust the label height
-	int w=this->labelDescription->width();
+	QLabel* label = this->labelDescription;
+	
+	int w=label->width();
 	if(w!=LabelWidth){
 		LabelWidth=w;
-		this->labelDescription->setMinimumHeight(0);
-		this->labelDescription->setMinimumHeight(this->labelDescription->heightForWidth(w));
+		label->setMinimumHeight(0);
+		label->setMinimumHeight(label->heightForWidth(w));
 	}
 }
