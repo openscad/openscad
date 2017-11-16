@@ -42,3 +42,20 @@ void ParameterVirtualWidget::setPrecision(double number){
 		decimalPrecision++;
 	}
 }
+
+void ParameterVirtualWidget::setDescription(const QString& description) {
+	if(!description.isEmpty()){
+		this->labelDescription->show();
+		this->labelDescription->setText(description);
+	}
+}
+	
+void ParameterVirtualWidget::resizeEvent(QResizeEvent * event){
+	//bodge code to adjust the label height
+	int w=this->labelDescription->width();
+	if(w!=LabelWidth){
+		LabelWidth=w;
+		this->labelDescription->setMinimumHeight(0);
+		this->labelDescription->setMinimumHeight(this->labelDescription->heightForWidth(w));
+	}
+}
