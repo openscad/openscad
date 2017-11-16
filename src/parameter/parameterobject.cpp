@@ -30,10 +30,10 @@ int ParameterObject::setValue(const class ValuePtr defaultValue, const class Val
     target = CHECKBOX;
   } else if ((dvt == Value::ValueType::VECTOR) && (defaultValue->toVector().size() <= 4)) {
     target = checkVectorWidget();
+  } else if ((vt == Value::ValueType::RANGE || vt == Value::ValueType::VECTOR && values->toVector().size() == 1 && values->toVector()[0]->toVector().size() ==0) && (dvt == Value::ValueType::NUMBER)) {
+    target = SLIDER;
   } else if ((vt == Value::ValueType::VECTOR) && ((dvt == Value::ValueType::NUMBER) || (dvt == Value::ValueType::STRING))) {
     target = COMBOBOX;
-  } else if ((vt == Value::ValueType::RANGE) && (dvt == Value::ValueType::NUMBER)) {
-    target = SLIDER;
   } else if (dvt == Value::ValueType::NUMBER) {
     target = NUMBER;
   } else {
