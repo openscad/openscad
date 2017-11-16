@@ -14,16 +14,17 @@ private:
 
 protected:
 	ParameterObject *object;
-	
+
 public:
 	ParameterVirtualWidget(QWidget *parent = 0);
 	virtual ~ParameterVirtualWidget();
 	virtual void setParameterFocus() = 0;
 	virtual void setValue() = 0;
 	void resizeEvent(QResizeEvent * event);
+
 signals:
 	void changed();
-	
+
 protected:
 	int decimalPrecision;
 	virtual void setPrecision(double number);
