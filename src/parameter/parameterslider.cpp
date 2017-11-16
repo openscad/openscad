@@ -80,13 +80,13 @@ void ParameterSlider::setValue()
 	int maxSlider = 0;
 	double min=0;
 	double max=0;
-	if(object->values->type() == Value::ValueType::RANGE ){
+	if(object->values->type() == Value::ValueType::RANGE ){ // [min:max] and [min:step:max] format
 		minSlider = object->values->toRange().begin_value()/step;
 		maxSlider = object->values->toRange().end_value()/step;
 		
 		min = object->values->toRange().begin_value();
 		max = object->values->toRange().end_value();
-	}else{
+	}else{ // [max] format from makerbot customizer
 		step = 1;
 		maxSlider =  std::stoi(object->values->toVector()[0]->toString(),nullptr,0);
 		max = maxSlider;

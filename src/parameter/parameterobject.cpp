@@ -25,12 +25,14 @@ int ParameterObject::setValue(const class ValuePtr defaultValue, const class Val
   this->defaultValue = defaultValue;
   this->vt = values->type();
   this->dvt = defaultValue->type();
-  
+ 
+  bool makerBotMax = (vt == Value::ValueType::VECTOR && values->toVector().size() == 1 && values->toVector()[0]->toVector().size() ==0) // [max] format from makerbot customizer
+
   if (dvt == Value::ValueType::BOOL) {
     target = CHECKBOX;
   } else if ((dvt == Value::ValueType::VECTOR) && (defaultValue->toVector().size() <= 4)) {
     target = checkVectorWidget();
-  } else if ((vt == Value::ValueType::RANGE || vt == Value::ValueType::VECTOR && values->toVector().size() == 1 && values->toVector()[0]->toVector().size() ==0) && (dvt == Value::ValueType::NUMBER)) {
+  } else if ((vt == Value::ValueType::RANGE || makerBotMax) && (dvt == Value::ValueType::NUMBER)) {
     target = SLIDER;
   } else if ((vt == Value::ValueType::VECTOR) && ((dvt == Value::ValueType::NUMBER) || (dvt == Value::ValueType::STRING))) {
     target = COMBOBOX;
