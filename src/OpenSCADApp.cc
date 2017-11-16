@@ -7,6 +7,7 @@
 #include <QProgressDialog>
 #include <iostream>
 #include <boost/foreach.hpp>
+#include "QSettingsCached.h"
 
 OpenSCADApp::OpenSCADApp(int &argc ,char **argv)
 	: QApplication(argc, argv), fontCacheDialog(nullptr)
@@ -71,4 +72,9 @@ void OpenSCADApp::hideFontCacheDialog()
 {
 	assert(this->fontCacheDialog);
 	this->fontCacheDialog->reset();
+}
+
+
+void OpenSCADApp::releaseQSettingsCached() {
+	QSettingsCached{}.release();
 }

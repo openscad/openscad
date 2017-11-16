@@ -23,7 +23,7 @@ void ParameterExtractor::applyParameters(FileModule *fileModule)
   }
 }
 
-void ParameterExtractor::setParameters(const FileModule* module)
+void ParameterExtractor::setParameters(const FileModule* module, bool rebuildParameterWidget)
 {
   if (!module) return;
 
@@ -60,6 +60,10 @@ void ParameterExtractor::setParameters(const FileModule* module)
     entryObject->set = true;
     ParameterPos.push_back(assignment.name);
   }
-  connectWidget();
+  if(rebuildParameterWidget){
+    connectWidget();
+  }else{
+    updateWidget();
+  }
   this->resetPara = false;
 }

@@ -45,38 +45,40 @@ private:
 	typedef std::map<std::string,groupInst > group_map;
 	group_map groupMap;
 	QTimer autoPreviewTimer;
-	bool descriptionShow;
-	QVBoxLayout * anyLayout;
+	int descriptionShow;
 	std::string jsonFile;
 	bool anyfocused;
 	ParameterVirtualWidget *entryToFocus;
+
+	void connectWidget();
+	void updateWidget();
+	void cleanScrollArea();
+	void addEntry(QVBoxLayout* anylayout, ParameterVirtualWidget *entry);
+	void end();
+	void clear();
+	ParameterVirtualWidget* CreateParameterWidget(std::string parameterName);
+	void setComboBoxPresetForSet();
 
 public:
 	ParameterWidget(QWidget *parent = 0);
 	virtual ~ParameterWidget();
 	void readFile(QString scadFile);
 	void writeFile(QString scadFile);
-																
+
 protected slots:
 	void onValueChanged();
 	void onPreviewTimerElapsed();
 	void onDescriptionShow();
 	void onSetChanged(int idx);
 	void onSetAdd();
+	void onSetSaveButton();
 	void onSetDelete();
 	void resetParameter();
-	
+
 signals:
-	void previewRequested();
-	
+	void previewRequested(bool rebuildParameterUI=true);
+
 protected:
-	void connectWidget();
-	void begin();
-	void addEntry(class ParameterVirtualWidget *entry);
-	void end();
-	void clear();
-	void AddParameterWidget(std::string parameterName);
-	void setComboBoxForSet();
 	void applyParameterSet(std::string setName);
 	void updateParameterSet(std::string setName);
 };

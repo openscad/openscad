@@ -260,7 +260,7 @@ MainWindow::MainWindow(const QString &filename)
 	waitAfterReloadTimer->setSingleShot(true);
 	waitAfterReloadTimer->setInterval(200);
 	connect(waitAfterReloadTimer, SIGNAL(timeout()), this, SLOT(waitAfterReload()));
-	connect(this->parameterWidget, SIGNAL(previewRequested()), this, SLOT(actionRenderPreview()));
+	connect(this->parameterWidget, SIGNAL(previewRequested(bool)), this, SLOT(actionRenderPreview(bool)));
 	connect(Preferences::inst(), SIGNAL(ExperimentalChanged()), this, SLOT(changeParameterWidget()));
 	connect(this->e_tval, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimTval()));
 	connect(this->e_fps, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimFps()));
@@ -836,7 +836,7 @@ void MainWindow::updatedAnimTval()
 	else {
 		this->anim_tval = 0.0;
 	}
-	actionRenderPreview();
+	emit actionRenderPreview(true);
 }
 
 void MainWindow::updatedAnimFps()
@@ -915,7 +915,7 @@ void MainWindow::refreshDocument()
 /*!
 	compiles the design. Calls compileDone() if anything was compiled
 */
-void MainWindow::compile(bool reload, bool forcedone)
+void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidget)
 {
 	bool shouldcompiletoplevel = false;
 	bool didcompile = false;
@@ -956,7 +956,7 @@ void MainWindow::compile(bool reload, bool forcedone)
 	if (shouldcompiletoplevel) {
 		console->clear();
 		if (editor->isContentModified()) saveBackup();
-		compileTopLevelDocument();
+		compileTopLevelDocument(rebuildParameterWidget);
 		didcompile = true;
 	}
 
@@ -1737,7 +1737,7 @@ bool MainWindow::fileChangedOnDisk()
 /*!
 	Returns true if anything was compiled.
 */
-void MainWindow::compileTopLevelDocument()
+void MainWindow::compileTopLevelDocument(bool rebuildParameterWidget)
 {
 	resetSuppressedMessages();
 
@@ -1757,7 +1757,7 @@ void MainWindow::compileTopLevelDocument()
 			//add parameters as annotation in AST
 			CommentParser::collectParameters(fulltext.c_str(),this->root_module);
 		}
-		this->parameterWidget->setParameters(this->root_module);
+		this->parameterWidget->setParameters(this->root_module,rebuildParameterWidget);
 		this->parameterWidget->applyParameters(this->root_module);
 	}
 }
@@ -1842,7 +1842,7 @@ void MainWindow::csgReloadRender()
 	compileEnded();
 }
 
-void MainWindow::actionRenderPreview()
+void MainWindow::actionRenderPreview(bool rebuildParameterWidget)
 {
 	static bool preview_requested;
 
@@ -1858,7 +1858,7 @@ void MainWindow::actionRenderPreview()
 	this->afterCompileSlot = "csgRender";
 	this->procevents = !viewActionAnimate->isChecked();
 	this->top_ctx.set_variable("$preview", ValuePtr(true));
-	compile(false);
+	compile(false,false,rebuildParameterWidget);
 	if (preview_requested) {
 		// if the action was called when the gui was locked, we must request it one more time
 		// however, it's not possible to call it directly NOR make the loop

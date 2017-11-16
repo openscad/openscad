@@ -510,16 +510,11 @@ void GLView::showScalemarkers(const Color4f &col)
 	// Take log of l, discretize, then exponentiate. This is done so that the tick
 	// denominations change every time the viewport gets 10x bigger or smaller,
 	// but stays constant in-between. l_adjusted is a step function of l.
-	const int log_l = static_cast<int>(log10(l));
+	const int log_l = static_cast<int>(floor(log10(l)));
 	const double l_adjusted = pow(10, log_l);
 
-	// Calculate tick width. Make them smaller if the viewport is small.
-	double tick_width;
-	if (l < 1.5){
-		tick_width = l_adjusted / 100.0;
-	} else {
-		tick_width = l_adjusted / 10.0;
-	}
+	// Calculate tick width.
+	const double tick_width = l_adjusted / 10.0;
 
 	const int size_div_sm = 60; // divisor for l to determine minor tick size
 	int line_cnt = 0;
@@ -605,7 +600,7 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
 	// convert the axis position to a string
 	std::ostringstream oss;
 	oss << i;
-	auto digit = oss.str();
+	const auto unsigned_digit = oss.str();
 
 	// setup how far above the axis (or tick TBD) to draw the number
 	double dig_buf = (l/size_div_sm)/4;
@@ -690,16 +685,15 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
 		{1,0,2,3,2,4,5},
 		{1,0,2,3,2,4,5}};
 
-	auto stash_digit = digit;
-
 	// walk through axes
 	for (int di=0;di<6;di++){
 
 		// setup negative axes
 		double polarity = 1;
+		auto digit = unsigned_digit;
 		if (di>2){
 			polarity = -1;
-			digit = "-" + stash_digit;
+			digit.insert(0, "-");
 		}
 
 		// fix the axes that need to run the opposite direction

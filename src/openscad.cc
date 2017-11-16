@@ -654,6 +654,8 @@ void dialogInitHandler(FontCacheInitializer *initializer, void *)
 	QMetaObject::invokeMethod(scadApp, "hideFontCacheDialog");
 }
 
+
+
 int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, char ** argv)
 {
 #ifdef Q_OS_MACX
@@ -770,7 +772,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	} else {
 	   new MainWindow(assemblePath(original_path, inputFiles[0]));
 	}
-
+    app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(releaseQSettingsCached()));
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 	int rc = app.exec();
 	for (auto &mainw : scadApp->windowManager.getWindows()) delete mainw;
