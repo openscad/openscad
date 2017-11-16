@@ -1,7 +1,5 @@
 #include "groupwidget.h"
 
-#include <QPropertyAnimation>
-
 GroupWidget::GroupWidget(bool &show, const QString & title, QWidget *parent) : QWidget(parent)
 {
 	toggleButton.setText(title);
