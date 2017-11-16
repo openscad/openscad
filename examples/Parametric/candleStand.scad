@@ -89,8 +89,8 @@ module make(radius, count,candleSize,length){
                 }
             }
             
-            //make ring
-            linear_extrude(heightOfRing)
+            // make ring
+            linear_extrude(heightOfRing, convexity=2)
             difference(){    
                 circle(radius);
                 circle(widthOfRing);

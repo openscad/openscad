@@ -1,4 +1,4 @@
-//Description("combo box for nunber")
+//Description("combo box for number")
 //Parameter([0, 1, 2, 3])
 Numbers = 2;
 //Description("combo box for string")

@@ -1,5 +1,5 @@
 //Group("Drop down box:")
-//Description("combo box for nunber")
+//Description("combo box for number")
 //Parameter([0, 1, 2, 3])
 Numbers = 1;
 //Group("Drop down box:")

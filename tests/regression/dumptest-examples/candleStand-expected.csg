@@ -87,7 +87,7 @@ multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 46.5], [0, 0, 0, 1]]) {
 						}
 					}
 				}
-				linear_extrude(height = 4, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 0.5, $fs = 0.5) {
+				linear_extrude(height = 4, center = false, convexity = 2, scale = [1, 1], $fn = 0, $fa = 0.5, $fs = 0.5) {
 					difference() {
 						circle($fn = 0, $fa = 0.5, $fs = 0.5, r = 25);
 						circle($fn = 0, $fa = 0.5, $fs = 0.5, r = 23);
