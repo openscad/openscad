@@ -2,20 +2,23 @@
 
 # Reformat C++ code using clang-format
 
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+ROOT_DIR=$SCRIPT_DIR/..
+
 # note: with the -style=file option, clang-format reads the config from ./.clang-format
 # See here for the full list of supported options: https://clang.llvm.org/docs/ClangFormatStyleOptions.html
 FORMAT_CMD_CLANG_FORMAT="clang-format -i -style=file"
-FORMAT_CMD_UNCRUSTIFY="uncrustify -c .uncrustify.cfg --no-backup"
-FORMAT_CMD=$FORMAT_CMD_CLANG_FORMAT
+FORMAT_CMD_UNCRUSTIFY="uncrustify -c "$ROOT_DIR/.uncrustify.cfg" --no-backup"
+FORMAT_CMD=$FORMAT_CMD_UNCRUSTIFY
 
 # Filter out any files that shouldn't be auto-formatted.
 # note: -v flag inverts selection - this tells grep to *filter out* anything
 #       that matches the pattern. For testing, you can remove the -v to ssee
 #       which files would have been excluded.
-FILTER_CMD="grep -v -E objects|src/libsvg|src/libtess2|src/polyclipping|src/CGAL_Nef3_workaround.h|src/CGAL_workaround_Mark_bounded_volumes.h|src/convex_hull_3_bugfix.h|src/OGL_helper.h|src/lodepng.h|src/lodepng.cpp|src/Polygon2d-CGAL.cc"
+FILTER_CMD="grep -v -E libsvg/|libtess2/|polyclipping/|CGAL_Nef3_workaround.h|CGAL_workaround_Mark_bounded_volumes.h|convex_hull_3_bugfix.h|OGL_helper.h|lodepng.h|lodepng.cpp|Polygon2d-CGAL.cc"
 
 function reformat_all() {
-    find src -name "*.h" -o -name "*.hpp" -o -name "*.cc" -o -name "*.cpp" \
+    find "$ROOT_DIR/src" -name "*.h" -o -name "*.hpp" -o -name "*.cc" -o -name "*.cpp" \
         | $FILTER_CMD \
         | xargs $FORMAT_CMD
 }
@@ -34,8 +37,8 @@ function reformat_changed() {
 }
 
 # main
-if [ "`echo $* | grep uncrust`" ]; then
-    FORMAT_CMD=$FORMAT_CMD_UNCRUSTIFY
+if [ "`echo $* | grep clang`" ]; then
+    FORMAT_CMD=$FORMAT_CMD_CLANG_FORMAT
 fi
 if [ "`echo $* | grep -- --all`" ]; then
     echo "Reformatting all files..."
