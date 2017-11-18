@@ -248,7 +248,6 @@ HEADERS += src/version_check.h \
            src/colormap.h \
            src/ThrownTogetherRenderer.h \
            src/CGAL_OGL_Polyhedron.h \
-           src/OGL_helper.h \
            src/QGLView.h \
            src/GLView.h \
            src/MainWindow.h \
@@ -325,7 +324,6 @@ HEADERS += src/version_check.h \
            src/LibraryInfo.h \
            src/svg.h \
            \
-           src/lodepng.h \
            src/OffscreenView.h \
            src/OffscreenContext.h \
            src/OffscreenContextAll.hpp \
@@ -467,7 +465,6 @@ SOURCES += \
            src/fbo.cc \
            src/system-gl.cc \
            src/imageutils.cc \
-           src/lodepng.cpp \
            \
            src/openscad.cc \
            src/mainwin.cc \
@@ -499,28 +496,37 @@ SOURCES += \
            \
            src/QSettingsCached.cc
 
+# CGAL
+HEADERS += src/ext/CGAL/convex_hull_3_bugfix.h \
+           src/ext/CGAL/OGL_helper.h \
+           src/ext/CGAL/CGAL_workaround_Mark_bounded_volumes.h \
+           src/ext/CGAL/CGAL_Nef3_workaround.h
 
+# LodePNG
+SOURCES += src/ext/lodepng/lodepng.cpp
+HEADERS += src/ext/lodepng/lodepng.h
+           
 # ClipperLib
-SOURCES += src/polyclipping/clipper.cpp
-HEADERS += src/polyclipping/clipper.hpp
+SOURCES += src/ext/polyclipping/clipper.cpp
+HEADERS += src/ext/polyclipping/clipper.hpp
 
 # libtess2
-INCLUDEPATH += src/libtess2/Include
-SOURCES += src/libtess2/Source/bucketalloc.c \
-           src/libtess2/Source/dict.c \
-           src/libtess2/Source/geom.c \
-           src/libtess2/Source/mesh.c \
-           src/libtess2/Source/priorityq.c \
-           src/libtess2/Source/sweep.c \
-           src/libtess2/Source/tess.c
-HEADERS += src/libtess2/Include/tesselator.h \
-           src/libtess2/Source/bucketalloc.h \
-           src/libtess2/Source/dict.h \
-           src/libtess2/Source/geom.h \
-           src/libtess2/Source/mesh.h \
-           src/libtess2/Source/priorityq.h \
-           src/libtess2/Source/sweep.h \
-           src/libtess2/Source/tess.h
+INCLUDEPATH += src/ext/libtess2/Include
+SOURCES += src/ext/libtess2/Source/bucketalloc.c \
+           src/ext/libtess2/Source/dict.c \
+           src/ext/libtess2/Source/geom.c \
+           src/ext/libtess2/Source/mesh.c \
+           src/ext/libtess2/Source/priorityq.c \
+           src/ext/libtess2/Source/sweep.c \
+           src/ext/libtess2/Source/tess.c
+HEADERS += src/ext/libtess2/Include/tesselator.h \
+           src/ext/libtess2/Source/bucketalloc.h \
+           src/ext/libtess2/Source/dict.h \
+           src/ext/libtess2/Source/geom.h \
+           src/ext/libtess2/Source/mesh.h \
+           src/ext/libtess2/Source/priorityq.h \
+           src/ext/libtess2/Source/sweep.h \
+           src/ext/libtess2/Source/tess.h
 
 unix:!macx {
   SOURCES += src/imageutils-lodepng.cc
@@ -548,8 +554,6 @@ HEADERS += src/cgal.h \
            src/CGALCache.h \
            src/CGALRenderer.h \
            src/CGAL_Nef_polyhedron.h \
-           src/CGAL_Nef3_workaround.h \
-           src/convex_hull_3_bugfix.h \
            src/cgalworker.h \
            src/Polygon2d-CGAL.h
 

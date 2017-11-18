@@ -33,7 +33,7 @@
 #include "printutils.h"
 #include "fileutils.h"
 #include "handle_dep.h"
-#include "lodepng.h"
+#include "ext/lodepng/lodepng.h"
 
 #include <cstdint>
 #include <array>
