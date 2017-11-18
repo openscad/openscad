@@ -57,6 +57,7 @@ void Renderer::setColor(const float color[4], GLint *shaderinfo) const
 #endif
 }
 
+// returns true if the color which is set has 100% alpha (fully opaque object)
 bool Renderer::setColor(ColorMode colormode, const float color[4], GLint *shaderinfo) const
 {
 	PRINTD("setColor b");
