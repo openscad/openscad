@@ -15,7 +15,7 @@ FORMAT_CMD=$FORMAT_CMD_UNCRUSTIFY
 # note: -v flag inverts selection - this tells grep to *filter out* anything
 #       that matches the pattern. For testing, you can remove the -v to ssee
 #       which files would have been excluded.
-FILTER_CMD="grep -v -E libsvg/|libtess2/|polyclipping/|CGAL_Nef3_workaround.h|CGAL_workaround_Mark_bounded_volumes.h|convex_hull_3_bugfix.h|OGL_helper.h|lodepng.h|lodepng.cpp|Polygon2d-CGAL.cc"
+FILTER_CMD="grep -v -E libtess2/|polyclipping/|CGAL_Nef3_workaround.h|CGAL_workaround_Mark_bounded_volumes.h|convex_hull_3_bugfix.h|OGL_helper.h|lodepng.h|lodepng.cpp|Polygon2d-CGAL.cc"
 
 function reformat_all() {
     find "$ROOT_DIR/src" -name "*.h" -o -name "*.hpp" -o -name "*.cc" -o -name "*.cpp" \
