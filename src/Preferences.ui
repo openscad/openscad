@@ -1467,22 +1467,22 @@
         <property name="bottomMargin">
          <number>0</number>
         </property>
-        <item row="3" column="1">
-         <widget class="QScrollArea" name="scrollArea_3">
+        <item row="0" column="0">
+         <widget class="QScrollArea" name="scrollArea_InputAxis">
           <property name="widgetResizable">
            <bool>true</bool>
           </property>
-          <widget class="QWidget" name="scrollAreaWidgetContents_3">
+          <widget class="QWidget" name="scrollAreaWidgetInputContents">
            <property name="geometry">
             <rect>
              <x>0</x>
              <y>0</y>
              <width>655</width>
-             <height>470</height>
+             <height>444</height>
             </rect>
            </property>
-           <layout class="QGridLayout" name="gridLayout_7" columnstretch="0,0,0,0">
-            <item row="18" column="0" colspan="4">
+           <layout class="QGridLayout" name="gridLayout_7" columnstretch="0,0,0,0,0">
+            <item row="24" column="0" colspan="5">
              <layout class="QGridLayout" name="gridLayout_10">
               <item row="7" column="2">
                <widget class="QLabel" name="labelAxisTrim3">
@@ -2103,56 +2103,7 @@
               </item>
              </layout>
             </item>
-            <item row="14" column="2">
-             <widget class="QComboBox" name="comboBoxTranslationYVPRel"/>
-            </item>
-            <item row="14" column="1">
-             <widget class="QComboBox" name="comboBoxTranslationXVPRel"/>
-            </item>
-            <item row="14" column="3">
-             <widget class="QComboBox" name="comboBoxTranslationZVPRel"/>
-            </item>
-            <item row="13" column="0">
-             <widget class="QLabel" name="labelInputTranslation">
-              <property name="text">
-               <string>Translation</string>
-              </property>
-             </widget>
-            </item>
-            <item row="15" column="1">
-             <widget class="QComboBox" name="comboBoxRotationX"/>
-            </item>
-            <item row="16" column="0">
-             <widget class="QLabel" name="labelInputZoom">
-              <property name="text">
-               <string>Zoom</string>
-              </property>
-             </widget>
-            </item>
-            <item row="14" column="0">
-             <widget class="QLabel" name="labelInputTranslationViewPortRelative">
-              <property name="text">
-               <string>ViewPort rel.&lt;br/&gt;Translation</string>
-              </property>
-             </widget>
-            </item>
-            <item row="16" column="1">
-             <widget class="QComboBox" name="comboBoxZoom"/>
-            </item>
-            <item row="15" column="3">
-             <widget class="QComboBox" name="comboBoxRotationZ"/>
-            </item>
-            <item row="13" column="3">
-             <widget class="QComboBox" name="comboBoxTranslationZ"/>
-            </item>
-            <item row="15" column="0">
-             <widget class="QLabel" name="labelInputRotation">
-              <property name="text">
-               <string>Rotation</string>
-              </property>
-             </widget>
-            </item>
-            <item row="28" column="0">
+            <item row="34" column="0">
              <spacer name="verticalSpacer_4">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
@@ -2165,21 +2116,74 @@
               </property>
              </spacer>
             </item>
-            <item row="13" column="2">
-             <widget class="QComboBox" name="comboBoxTranslationY"/>
-            </item>
-            <item row="13" column="1">
-             <widget class="QComboBox" name="comboBoxTranslationX"/>
-            </item>
-            <item row="17" column="0" colspan="4">
+            <item row="23" column="0" colspan="5">
              <widget class="Line" name="line">
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
               </property>
              </widget>
             </item>
-            <item row="15" column="2">
-             <widget class="QComboBox" name="comboBoxRotationY"/>
+            <item row="12" column="0" colspan="5">
+             <layout class="QGridLayout" name="gridLayout_11">
+              <item row="2" column="1">
+               <widget class="QComboBox" name="comboBoxTranslationXVPRel"/>
+              </item>
+              <item row="2" column="2">
+               <widget class="QComboBox" name="comboBoxTranslationYVPRel"/>
+              </item>
+              <item row="3" column="3">
+               <widget class="QComboBox" name="comboBoxRotationZ"/>
+              </item>
+              <item row="1" column="3">
+               <widget class="QComboBox" name="comboBoxTranslationZ"/>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="labelInputTranslation">
+                <property name="text">
+                 <string>Translation</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="0">
+               <widget class="QLabel" name="labelInputRotation">
+                <property name="text">
+                 <string>Rotation</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="2">
+               <widget class="QComboBox" name="comboBoxTranslationY"/>
+              </item>
+              <item row="1" column="1">
+               <widget class="QComboBox" name="comboBoxTranslationX"/>
+              </item>
+              <item row="4" column="0">
+               <widget class="QLabel" name="labelInputZoom">
+                <property name="text">
+                 <string>Zoom</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="3">
+               <widget class="QComboBox" name="comboBoxTranslationZVPRel"/>
+              </item>
+              <item row="3" column="2">
+               <widget class="QComboBox" name="comboBoxRotationY"/>
+              </item>
+              <item row="4" column="1">
+               <widget class="QComboBox" name="comboBoxZoom"/>
+              </item>
+              <item row="3" column="1">
+               <widget class="QComboBox" name="comboBoxRotationX"/>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="labelInputTranslationViewPortRelative">
+                <property name="text">
+                 <string>ViewPort rel.&lt;br/&gt;Translation</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </item>
            </layout>
           </widget>
@@ -2202,11 +2206,11 @@
          <number>0</number>
         </property>
         <item row="3" column="1">
-         <widget class="QScrollArea" name="scrollArea_4">
+         <widget class="QScrollArea" name="scrollArea_InputButton">
           <property name="widgetResizable">
            <bool>true</bool>
           </property>
-          <widget class="QWidget" name="scrollAreaWidgetContents_3">
+          <widget class="QWidget" name="scrollAreaWidgetInputButtonContents">
            <property name="geometry">
             <rect>
              <x>0</x>
