@@ -9,7 +9,7 @@
 if(APPLE)
   set(CMAKE_OSX_DEPLOYMENT_TARGET 10.8)
 endif()
-cmake_minimum_required(VERSION 3.5.0)
+cmake_minimum_required(VERSION 3.2.2)
 
 
 if(HEADLESS)
@@ -18,6 +18,21 @@ endif(HEADLESS)
 message(STATUS "Configuration: ${CONFIG_OPTIONS}")
 
 project(openscad)
+
+# Default to Release build
+if(NOT CMAKE_BUILD_TYPE)
+  message(STATUS "CMAKE_BUILD_TYPE not specified.  Defaulting to 'Release'")
+  message(STATUS "Usage: cmake -DCMAKE_BUILD_TYPE=[Debug|Release|RelWithDebInfo|MinSizeRel] .")
+  set(CMAKE_BUILD_TYPE Release)
+else()
+  message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
+endif()
+
+add_compile_options("$<$<CONFIG:DEBUG>:-DDEBUG>")
+
+# cmake default flags include -DNDEBUG for non-Debug builds.
+# NDEBUG is known to cause OpenSCAD to crash in some case, so make sure it is unset.  Issue #2180 for details.
+add_compile_options("-UNDEBUG")
 
 set(CMAKE_CXX_STANDARD 11)
 if(APPLE)
@@ -128,7 +143,6 @@ else()
   add_definitions(-DENABLE_OPENCSG)
 endif()
 
-# -DDEBUG
 add_definitions(-DENABLE_LIBZIP)
 add_definitions(-DENABLE_EXPERIMENTAL)
 
