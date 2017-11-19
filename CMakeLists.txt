@@ -68,6 +68,8 @@ message(STATUS "Bison: ${BISON_VERSION}")
 
 find_package(LibZip REQUIRED QUIET)
 message(STATUS "LibZip: ${LIBZIP_VERSION}")
+include_directories(${LIBZIP_INCLUDE_DIR_ZIP})
+include_directories(${LIBZIP_INCLUDE_DIR_ZIPCONF})
 
 include(CheckIncludeFileCXX)
 
