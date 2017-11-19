@@ -170,7 +170,7 @@ endif()
 #
 if(APPLE)
   message(STATUS "Offscreen OpenGL Context - using Apple CGL")
-  set(PLATFORM_SOURCES src/PlatformUtils-mac.mm src/OffscreenContextCGL.mm src/imageutils-macosx.cc src/CocoaUtils.mm src/AppleEvents.cc src/EventFilter.cc)
+  set(PLATFORM_SOURCES src/PlatformUtils-mac.mm src/OffscreenContextCGL.mm src/imageutils-macosx.cc src/CocoaUtils.mm src/AppleEvents.cc)
   find_library(COCOA_LIBRARY Cocoa)
   set(PLATFORM_LIBS ${COCOA_LIBRARY})
 elseif(UNIX)
@@ -335,6 +335,7 @@ set(OFFSCREEN_SOURCES
 set(GUI_SOURCES
   src/mainwin.cc
   src/OpenSCADApp.cc
+  src/EventFilter.h
   src/WindowManager.cc
   src/Preferences.cc
   src/FontListDialog.cc
