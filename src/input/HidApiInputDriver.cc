@@ -32,6 +32,7 @@
 #include <iomanip>
 #include <iostream>
 #include <hidapi.h>
+#include <bitset>
 
 #include "input/HidApiInputDriver.h"
 #include "input/InputDriverManager.h"
@@ -114,16 +115,18 @@ void HidApiInputDriver::hidapi_decode_button1(const unsigned char *buf, unsigned
         uint16_t bitmask = buf[1] | buf[2] << 8;
         uint16_t down = bitmask;
         uint16_t up = 0;
-        if (bitmask == 0) {
-            up = buttons;
-            buttons = 0;
-        } else {
-            buttons |= bitmask;
+
+        std::bitset<16> bits_curr (down);
+        std::bitset<16> bits_last (buttons);
+
+        for (int i = 0;i < 16;i++) {
+            if(bits_curr.test(i) != bits_last.test(i)){
+                InputEvent *event = new InputEventButtonChanged(i, bits_curr.test(i));
+                InputDriverManager::instance()->sendEvent(event);
+            }
         }
-        if (down != 0 || up != 0) {
-            InputEvent *event = new InputEventButtonChanged(down, up);
-            InputDriverManager::instance()->sendEvent(event);
-        }
+
+        buttons = down;
     }
 }
 
