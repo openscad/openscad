@@ -46,11 +46,11 @@ InputEventMapper::InputEventMapper()
         button_state[a]=false;
         button_state_last[a]=false;
     }
-    
-	translationGain=1.00;
-	translationVPRelGain=1.00;
-	rotateGain=1.00;
-	zoomGain=1.00;
+
+    translationGain=1.00;
+    translationVPRelGain=1.00;
+    rotateGain=1.00;
+    zoomGain=1.00;
 
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(onTimer()));
