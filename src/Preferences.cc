@@ -62,7 +62,7 @@ class SettingsReader : public Settings::SettingsVisitor
 	try {
 		switch (entry.defaultValue().type()) {
 		case Value::ValueType::STRING:
-			if(entry.defaultValue()=="0.00" || entry.defaultValue()=="0.10"){ //ToDo: Clean me up
+			if(entry.defaultValue()=="0.00" || entry.defaultValue()=="0.10"|| entry.defaultValue()=="1.00"){ //ToDo: Clean me up
 				return Value(boost::lexical_cast<double>(trimmed_value));
 			}
 			return Value(trimmed_value);
@@ -261,6 +261,11 @@ void Preferences::init() {
 				initDoubleSpinBox(spin,*ent);
 			}
 		}
+
+	initDoubleSpinBox(this->doubleSpinBoxTranslationGain, Settings::Settings::inputTranslationGain);
+	initDoubleSpinBox(this->doubleSpinBoxTranslationVPRelGain, Settings::Settings::inputTranslationVPRelGain);
+	initDoubleSpinBox(this->doubleSpinBoxRotateGain, Settings::Settings::inputRotateGain);
+	initDoubleSpinBox(this->doubleSpinBoxZoomGain, Settings::Settings::inputZoomGain);
 
 	SettingsReader settingsReader;
 	Settings::Settings::inst()->visit(settingsReader);
@@ -960,6 +965,34 @@ void Preferences::on_doubleSpinBoxDeadzone8_valueChanged(double val)
 	writeSettings();
 }
 
+void Preferences::on_doubleSpinBoxRotateGain_valueChanged(double val)
+{
+	Settings::Settings::inst()->set(Settings::Settings::inputRotateGain, Value(val));
+	emit inputGainChanged();
+	writeSettings();
+}
+
+void Preferences::on_doubleSpinBoxTranslationGain_valueChanged(double val)
+{
+	Settings::Settings::inst()->set(Settings::Settings::inputTranslationGain, Value(val));
+	emit inputGainChanged();
+	writeSettings();
+}
+
+void Preferences::on_doubleSpinBoxTranslationVPRelGain_valueChanged(double val)
+{
+	Settings::Settings::inst()->set(Settings::Settings::inputTranslationVPRelGain, Value(val));
+	emit inputGainChanged();
+	writeSettings();
+}
+
+void Preferences::on_doubleSpinBoxZoomGain_valueChanged(double val)
+{
+	Settings::Settings::inst()->set(Settings::Settings::inputZoomGain, Value(val));
+	emit inputGainChanged();
+	writeSettings();
+}
+
 void Preferences::writeSettings()
 {
 	SettingsWriter settingsWriter;
@@ -1125,6 +1158,11 @@ void Preferences::updateGUI()
 			spin->setValue((double)setting->get(*ent).toDouble());
 		}
 	}
+
+	this->doubleSpinBoxRotateGain->setValue((double)s->get(Settings::Settings::inputRotateGain).toDouble());
+	this->doubleSpinBoxTranslationGain->setValue((double)s->get(Settings::Settings::inputTranslationGain).toDouble());
+	this->doubleSpinBoxTranslationVPRelGain->setValue((double)s->get(Settings::Settings::inputTranslationVPRelGain).toDouble());
+	this->doubleSpinBoxZoomGain->setValue((double)s->get(Settings::Settings::inputZoomGain).toDouble());
 }
 
 void Preferences::initComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry)

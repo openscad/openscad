@@ -73,6 +73,7 @@ public:
 public slots:
     void onInputMappingUpdated();
     void onInputCalibrationUpdated();
+    void onInputGainUpdated();
 
 private slots:
     void onTimeout();

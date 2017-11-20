@@ -56,6 +56,11 @@ private:
     
     static InputEventMapper *self;
 
+	double translationGain;
+	double translationVPRelGain;
+	double rotateGain;
+	double zoomGain;
+
 public:
     InputEventMapper();
     virtual ~InputEventMapper();
@@ -72,7 +77,8 @@ public:
 
     void onInputMappingUpdated();
     void onInputCalibrationUpdated();
-    
+    void onInputGainUpdated();
+
     void onAxisAutoTrim();
     void onAxisTrimReset();
 

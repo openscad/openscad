@@ -47,12 +47,18 @@ InputEventMapper::InputEventMapper()
         button_state_last[a]=false;
     }
 
+    translationGain=1.00;
+    translationVPRelGain=1.00;
+    rotateGain=1.00;
+    zoomGain=1.00;
+
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(onTimer()));
     timer->start(30);
 
     onInputMappingUpdated();
     onInputCalibrationUpdated();
+    onInputGainUpdated();
 
     self=this;
 }
@@ -101,31 +107,31 @@ void InputEventMapper::onTimer()
 {
     const double threshold = 0.01;
 
-    double tx = getAxisValue(translate[0]);
-    double ty = getAxisValue(translate[1]);
-    double tz = getAxisValue(translate[2]);
+    double tx = getAxisValue(translate[0])*translationGain;
+    double ty = getAxisValue(translate[1])*translationGain;
+    double tz = getAxisValue(translate[2])*translationGain;
     if ((fabs(tx) > threshold) || (fabs(ty) > threshold) || (fabs(tz) > threshold)) {
         InputEvent *inputEvent = new InputEventTranslate(tx, ty, tz);
         InputDriverManager::instance()->postEvent(inputEvent);
     }
     
-    double txVPRel = getAxisValue(translate[3]);
-    double tyVPRel = getAxisValue(translate[4]);
-    double tzVPRel = getAxisValue(translate[5]);
+    double txVPRel = getAxisValue(translate[3])*translationVPRelGain;
+    double tyVPRel = getAxisValue(translate[4])*translationVPRelGain;
+    double tzVPRel = getAxisValue(translate[5])*translationVPRelGain;
     if ((fabs(txVPRel) > threshold) || (fabs(tyVPRel) > threshold) || (fabs(tzVPRel) > threshold)) {
         InputEvent *inputEvent = new InputEventTranslate(txVPRel, tyVPRel, tzVPRel, true, true, false);
         InputDriverManager::instance()->postEvent(inputEvent);
     }
     
-    double rx = getAxisValue(rotate[0]);
-    double ry = getAxisValue(rotate[1]);
-    double rz = getAxisValue(rotate[2]);
+    double rx = getAxisValue(rotate[0])*rotateGain;
+    double ry = getAxisValue(rotate[1])*rotateGain;
+    double rz = getAxisValue(rotate[2])*rotateGain;
     if ((fabs(rx) > threshold) || (fabs(ry) > threshold) || (fabs(rz) > threshold)) {
         InputEvent *inputEvent = new InputEventRotate(rx, ry, rz);
         InputDriverManager::instance()->postEvent(inputEvent);
     }
 
-    double z = getAxisValue(zoom);
+    double z = getAxisValue(zoom)*zoomGain;
     if (fabs(z) > threshold) {
         InputEvent *inputEvent = new InputEventZoom(z);
         InputDriverManager::instance()->postEvent(inputEvent);
@@ -218,6 +224,19 @@ void InputEventMapper::onInputMappingUpdated()
     rotate[1] = parseSettingValue(s->get(Settings::Settings::inputRotateY).toString());
     rotate[2] = parseSettingValue(s->get(Settings::Settings::inputRotateZ).toString());
     zoom = parseSettingValue(s->get(Settings::Settings::inputZoom).toString());
+}
+
+void InputEventMapper::onInputGainUpdated()
+{
+    Settings::Settings *s = Settings::Settings::inst();
+
+    translationGain = (double)s->get(Settings::Settings::inputTranslationGain).toDouble();
+
+    translationVPRelGain = (double)s->get(Settings::Settings::inputTranslationVPRelGain).toDouble();
+
+    rotateGain = (double)s->get(Settings::Settings::inputRotateGain).toDouble();
+
+    zoomGain = (double)s->get(Settings::Settings::inputZoomGain).toDouble();
 }
 
 void InputEventMapper::onInputCalibrationUpdated()

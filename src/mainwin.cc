@@ -183,6 +183,7 @@ MainWindow::MainWindow(const QString &filename)
 	Preferences::create(editor->colorSchemes());
         connect(Preferences::inst(), SIGNAL(inputMappingChanged()), InputDriverManager::instance(), SLOT(onInputMappingUpdated()), Qt::UniqueConnection);
         connect(Preferences::inst(), SIGNAL(inputCalibrationChanged()), InputDriverManager::instance(), SLOT(onInputCalibrationUpdated()), Qt::UniqueConnection);
+        connect(Preferences::inst(), SIGNAL(inputGainChanged()), InputDriverManager::instance(), SLOT(onInputGainUpdated()), Qt::UniqueConnection);
 
 #ifdef USE_SCINTILLA_EDITOR
 	if (useScintilla) {
