@@ -104,7 +104,12 @@ public slots:
         void on_comboBoxButton13_activated(int val);
         void on_comboBoxButton14_activated(int val);
         void on_comboBoxButton15_activated(int val);
-        
+
+	void on_doubleSpinBoxRotateGain_valueChanged(double val);
+	void on_doubleSpinBoxTranslationGain_valueChanged(double val);
+	void on_doubleSpinBoxTranslationVPRelGain_valueChanged(double val);
+	void on_doubleSpinBoxZoomGain_valueChanged(double val);
+
 	void on_doubleSpinBoxDeadzone0_valueChanged(double);
 	void on_doubleSpinBoxDeadzone1_valueChanged(double);
 	void on_doubleSpinBoxDeadzone2_valueChanged(double);
@@ -139,6 +144,7 @@ signals:
 	void ExperimentalChanged() const ;
         void inputMappingChanged() const;
         void inputCalibrationChanged() const;
+        void inputGainChanged() const;
 
 private:
     Preferences(QWidget *parent = nullptr);

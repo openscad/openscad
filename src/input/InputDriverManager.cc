@@ -165,3 +165,8 @@ void InputDriverManager::onInputCalibrationUpdated()
 {
     mapper.onInputCalibrationUpdated();
 }
+
+void InputDriverManager::onInputGainUpdated()
+{
+    mapper.onInputGainUpdated();
+}
