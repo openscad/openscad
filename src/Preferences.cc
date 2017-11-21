@@ -1187,6 +1187,7 @@ void Preferences::initDoubleSpinBox(QDoubleSpinBox *spinBox, const Settings::Set
 {
 	RangeType range = entry.range().toRange();
 	spinBox->setMinimum(range.begin_value());
+	spinBox->setSingleStep(range.step_value());
 	spinBox->setMaximum(range.end_value());
 }
 
