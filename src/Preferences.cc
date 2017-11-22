@@ -234,6 +234,7 @@ void Preferences::init() {
         initComboBox(this->comboBoxRotationY, Settings::Settings::inputRotateY);
         initComboBox(this->comboBoxRotationZ, Settings::Settings::inputRotateZ);
         initComboBox(this->comboBoxZoom, Settings::Settings::inputZoom);
+        initComboBox(this->comboBoxZoom2, Settings::Settings::inputZoom2);
 
 		for (int i = 0; i < InputEventMapper::getMaxButtons(); i++ ){
 			std::string s = std::to_string(i);
@@ -743,6 +744,12 @@ void Preferences::on_comboBoxZoom_activated(int val)
         emit inputMappingChanged();
 }
 
+void Preferences::on_comboBoxZoom2_activated(int val)
+{
+	applyComboBox(comboBoxZoom, val, Settings::Settings::inputZoom);
+        emit inputMappingChanged();
+}
+
 void Preferences::on_comboBoxButton0_activated(int val)
 {
 	applyComboBox(comboBoxButton0, val, Settings::Settings::inputButton0);
@@ -1129,6 +1136,7 @@ void Preferences::updateGUI()
 	updateComboBox(this->comboBoxRotationY, Settings::Settings::inputRotateY);
 	updateComboBox(this->comboBoxRotationZ, Settings::Settings::inputRotateZ);
 	updateComboBox(this->comboBoxZoom, Settings::Settings::inputZoom);
+	updateComboBox(this->comboBoxZoom2, Settings::Settings::inputZoom2);
 
 	for (int i = 0; i < InputEventMapper::getMaxButtons(); i++ ){
 		std::string s = std::to_string(i);

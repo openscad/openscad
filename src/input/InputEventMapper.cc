@@ -131,7 +131,7 @@ void InputEventMapper::onTimer()
         InputDriverManager::instance()->postEvent(inputEvent);
     }
 
-    double z = getAxisValue(zoom)*zoomGain;
+    double z = (getAxisValue(zoom)+getAxisValue(zoom2))*zoomGain;
     if (fabs(z) > threshold) {
         InputEvent *inputEvent = new InputEventZoom(z);
         InputDriverManager::instance()->postEvent(inputEvent);
@@ -224,6 +224,7 @@ void InputEventMapper::onInputMappingUpdated()
     rotate[1] = parseSettingValue(s->get(Settings::Settings::inputRotateY).toString());
     rotate[2] = parseSettingValue(s->get(Settings::Settings::inputRotateZ).toString());
     zoom = parseSettingValue(s->get(Settings::Settings::inputZoom).toString());
+    zoom2 = parseSettingValue(s->get(Settings::Settings::inputZoom2).toString());
 }
 
 void InputEventMapper::onInputGainUpdated()

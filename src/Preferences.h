@@ -88,6 +88,7 @@ public slots:
         void on_comboBoxRotationY_activated(int val);
         void on_comboBoxRotationZ_activated(int val);
         void on_comboBoxZoom_activated(int val);
+        void on_comboBoxZoom2_activated(int val);
         void on_comboBoxButton0_activated(int val);
         void on_comboBoxButton1_activated(int val);
         void on_comboBoxButton2_activated(int val);

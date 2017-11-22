@@ -1220,8 +1220,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>100</width>
-               <height>30</height>
+               <width>84</width>
+               <height>26</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_10">
@@ -1478,7 +1478,7 @@
              <x>0</x>
              <y>0</y>
              <width>655</width>
-             <height>470</height>
+             <height>479</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_7" columnstretch="0,0,0,0,0">
@@ -2179,53 +2179,6 @@
             </item>
             <item row="12" column="0" colspan="5">
              <layout class="QGridLayout" name="gridLayout_11">
-              <item row="2" column="1">
-               <widget class="QComboBox" name="comboBoxTranslationXVPRel">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                  <horstretch>1</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="2">
-               <widget class="QComboBox" name="comboBoxTranslationYVPRel">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                  <horstretch>1</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="3">
-               <widget class="QComboBox" name="comboBoxRotationZ">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                  <horstretch>1</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="3">
-               <widget class="QComboBox" name="comboBoxTranslationZ">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                  <horstretch>1</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="0">
-               <widget class="QLabel" name="labelInputTranslation">
-                <property name="text">
-                 <string>Translation</string>
-                </property>
-               </widget>
-              </item>
               <item row="3" column="0">
                <widget class="QLabel" name="labelInputRotation">
                 <property name="text">
@@ -2233,8 +2186,25 @@
                 </property>
                </widget>
               </item>
-              <item row="1" column="2">
-               <widget class="QComboBox" name="comboBoxTranslationY">
+              <item row="3" column="1">
+               <widget class="QComboBox" name="comboBoxRotationX">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>1</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="0">
+               <widget class="QLabel" name="labelInputZoom">
+                <property name="text">
+                 <string>Zoom</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="1">
+               <widget class="QComboBox" name="comboBoxZoom">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                   <horstretch>1</horstretch>
@@ -2253,13 +2223,6 @@
                 </property>
                </widget>
               </item>
-              <item row="4" column="0">
-               <widget class="QLabel" name="labelInputZoom">
-                <property name="text">
-                 <string>Zoom</string>
-                </property>
-               </widget>
-              </item>
               <item row="2" column="3">
                <widget class="QComboBox" name="comboBoxTranslationZVPRel">
                 <property name="sizePolicy">
@@ -2267,6 +2230,74 @@
                   <horstretch>1</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="3">
+               <widget class="QComboBox" name="comboBoxTranslationZ">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>1</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="4">
+               <widget class="QDoubleSpinBox" name="doubleSpinBoxTranslationGain">
+                <property name="correctionMode">
+                 <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
+                </property>
+                <property name="minimum">
+                 <double>0.100000000000000</double>
+                </property>
+                <property name="maximum">
+                 <double>9.990000000000000</double>
+                </property>
+                <property name="singleStep">
+                 <double>0.100000000000000</double>
+                </property>
+                <property name="value">
+                 <double>1.000000000000000</double>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QLabel" name="label_11">
+                <property name="text">
+                 <string>X</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="4">
+               <widget class="QLabel" name="label_16">
+                <property name="text">
+                 <string>Gain</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="4">
+               <widget class="QDoubleSpinBox" name="doubleSpinBoxRotateGain">
+                <property name="correctionMode">
+                 <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
+                </property>
+                <property name="minimum">
+                 <double>0.100000000000000</double>
+                </property>
+                <property name="maximum">
+                 <double>9.990000000000000</double>
+                </property>
+                <property name="singleStep">
+                 <double>0.100000000000000</double>
+                </property>
+                <property name="value">
+                 <double>1.000000000000000</double>
                 </property>
                </widget>
               </item>
@@ -2280,38 +2311,18 @@
                 </property>
                </widget>
               </item>
-              <item row="4" column="1">
-               <widget class="QComboBox" name="comboBoxZoom">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                  <horstretch>1</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="1">
-               <widget class="QComboBox" name="comboBoxRotationX">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                  <horstretch>1</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="0">
-               <widget class="QLabel" name="labelInputTranslationViewPortRelative">
+              <item row="0" column="2">
+               <widget class="QLabel" name="label_14">
                 <property name="text">
-                 <string>ViewPort rel.&lt;br/&gt;Translation</string>
+                 <string>Y</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
                 </property>
                </widget>
               </item>
-              <item row="1" column="4">
-               <widget class="QDoubleSpinBox" name="doubleSpinBoxTranslationGain">
-                <property name="correctionMode">
-                 <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
-                </property>
+              <item row="5" column="4">
+               <widget class="QDoubleSpinBox" name="doubleSpinBoxZoomGain">
                 <property name="minimum">
                  <double>0.100000000000000</double>
                 </property>
@@ -2345,61 +2356,6 @@
                 </property>
                </widget>
               </item>
-              <item row="3" column="4">
-               <widget class="QDoubleSpinBox" name="doubleSpinBoxRotateGain">
-                <property name="correctionMode">
-                 <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
-                </property>
-                <property name="minimum">
-                 <double>0.100000000000000</double>
-                </property>
-                <property name="maximum">
-                 <double>9.990000000000000</double>
-                </property>
-                <property name="singleStep">
-                 <double>0.100000000000000</double>
-                </property>
-                <property name="value">
-                 <double>1.000000000000000</double>
-                </property>
-               </widget>
-              </item>
-              <item row="4" column="4">
-               <widget class="QDoubleSpinBox" name="doubleSpinBoxZoomGain">
-                <property name="minimum">
-                 <double>0.100000000000000</double>
-                </property>
-                <property name="maximum">
-                 <double>9.990000000000000</double>
-                </property>
-                <property name="singleStep">
-                 <double>0.100000000000000</double>
-                </property>
-                <property name="value">
-                 <double>1.000000000000000</double>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="1">
-               <widget class="QLabel" name="label_11">
-                <property name="text">
-                 <string>X</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="2">
-               <widget class="QLabel" name="label_14">
-                <property name="text">
-                 <string>Y</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
               <item row="0" column="3">
                <widget class="QLabel" name="label_15">
                 <property name="text">
@@ -2410,13 +2366,74 @@
                 </property>
                </widget>
               </item>
-              <item row="0" column="4">
-               <widget class="QLabel" name="label_16">
-                <property name="text">
-                 <string>Gain</string>
+              <item row="1" column="2">
+               <widget class="QComboBox" name="comboBoxTranslationY">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>1</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
                 </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
+               </widget>
+              </item>
+              <item row="2" column="2">
+               <widget class="QComboBox" name="comboBoxTranslationYVPRel">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>1</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QComboBox" name="comboBoxTranslationXVPRel">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>1</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="labelInputTranslation">
+                <property name="text">
+                 <string>Translation</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="3">
+               <widget class="QComboBox" name="comboBoxRotationZ">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>1</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="labelInputTranslationViewPortRelative">
+                <property name="text">
+                 <string>ViewPort rel.&lt;br/&gt;Translation</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="2">
+               <widget class="QComboBox" name="comboBoxZoom2">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>1</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="1" colspan="3">
+               <widget class="Line" name="line_2">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
                 </property>
                </widget>
               </item>
