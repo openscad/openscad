@@ -5,8 +5,6 @@
 /*.png
 /*.pyc
 out.*
-/CMakeFiles
-/CMakeCache.txt
 /CTestTestfile.cmake
 /Testing
 /cmake_install.cmake
