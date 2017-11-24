@@ -317,7 +317,7 @@ build_mpfr()
   cd $BASEDIR/src
   rm -rf mpfr-$version
   if [ ! -f mpfr-$version.tar.bz2 ]; then
-    curl --insecure -O http://www.mpfr.org/mpfr-$version/mpfr-$version.tar.bz2
+    curl --insecure -O ftp.gnu.org/gnu/mpfr/mpfr-$version.tar.bz2
   fi
   tar xjf mpfr-$version.tar.bz2
   cd mpfr-$version
