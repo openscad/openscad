@@ -1456,7 +1456,7 @@ void MainWindow::actionSaveAs()
 			}
 		}
 		if (Feature::ExperimentalCustomizer.is_enabled()) {
-			this->parameterWidget->writeFile(new_filename);
+			this->parameterWidget->writeFileIfNotEmpty(new_filename);
 		}
 		setFileName(new_filename);
 		actionSave();

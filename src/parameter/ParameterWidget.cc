@@ -126,7 +126,7 @@ void ParameterWidget::readFile(QString scadFile)
 
 }
 
-void ParameterWidget::writeFile(QString scadFile)
+void ParameterWidget::writeFileIfNotEmpty(QString scadFile)
 {
 	if (!root.empty()){
 		writeParameterSet(scadFile.replace(".scad", ".json").toStdString());

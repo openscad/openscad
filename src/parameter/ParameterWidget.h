@@ -62,7 +62,7 @@ public:
 	ParameterWidget(QWidget *parent = 0);
 	virtual ~ParameterWidget();
 	void readFile(QString scadFile);
-	void writeFile(QString scadFile);
+	void writeFileIfNotEmpty(QString scadFile);
 
 protected slots:
 	void onValueChanged();
