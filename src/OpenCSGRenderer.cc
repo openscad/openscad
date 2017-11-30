@@ -126,7 +126,8 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 			glPushMatrix();
 			glMultMatrixd(csgobj.leaf->matrix.data());
 			
-			if (setColor(colormode, c.data(), shaderinfo)) {
+			const Color4f c1 = setColor(colormode, c.data(), shaderinfo);
+			if (c1[3] == 1.0f) {
 				// object is opaque, draw normally
 				render_surface(csgobj.leaf->geom, csgmode, csgobj.leaf->matrix, shaderinfo);
 			} else {
