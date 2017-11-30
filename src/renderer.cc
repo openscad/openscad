@@ -57,8 +57,8 @@ void Renderer::setColor(const float color[4], GLint *shaderinfo) const
 #endif
 }
 
-// returns true if the color which is set has 100% alpha (fully opaque object)
-bool Renderer::setColor(ColorMode colormode, const float color[4], GLint *shaderinfo) const
+// returns the color which has been set, which may differ from the color input parameter
+Color4f Renderer::setColor(ColorMode colormode, const float color[4], GLint *shaderinfo) const
 {
 	PRINTD("setColor b");
 	Color4f basecol;
@@ -76,8 +76,8 @@ bool Renderer::setColor(ColorMode colormode, const float color[4], GLint *shader
 								 color[3] >= 0 ? color[3] : basecol[3]};
 		}
 		setColor(basecol.data(), shaderinfo);
-		return basecol[3] == 1;
 	}
+	return basecol;
 }
 
 void Renderer::setColor(ColorMode colormode, GLint *shaderinfo) const
