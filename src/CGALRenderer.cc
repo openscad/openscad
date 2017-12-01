@@ -44,6 +44,7 @@
 
 CGALRenderer::CGALRenderer(shared_ptr<const class Geometry> geom)
 {
+	this->dpi = 1;
 	if (auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
 		assert(ps->getDimension() == 3);
 		// We need to tessellate here, in case the generated PolySet contains concave polygons
@@ -68,6 +69,11 @@ CGALRenderer::~CGALRenderer()
 {
 }
 
+void CGALRenderer::setDPI(float dpi)
+{
+	this->dpi = dpi;
+}
+
 shared_ptr<class CGAL_OGL_Polyhedron> CGALRenderer::getPolyhedron() const
 {
 	if (this->N && !this->polyhedron) buildPolyhedron();
@@ -81,6 +87,7 @@ void CGALRenderer::buildPolyhedron() const
 	CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(*this->N->p3, this->polyhedron.get());
 	// CGAL_NEF3_MARKED_FACET_COLOR <- CGAL_FACE_BACK_COLOR
 	// CGAL_NEF3_UNMARKED_FACET_COLOR <- CGAL_FACE_FRONT_COLOR
+	this->polyhedron->set_dpi(this->dpi);
 	this->polyhedron->init();
 	PRINTD("buildPolyhedron() end");
 }

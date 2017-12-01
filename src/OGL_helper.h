@@ -286,6 +286,8 @@ namespace OGL {
 
     int style;
     std::vector<bool> switches;
+    
+    float dpi;
 
     typedef std::list<DPoint>::const_iterator   Vertex_iterator;
     typedef std::list<DSegment>::const_iterator Edge_iterator;
@@ -297,6 +299,7 @@ namespace OGL {
       init_ = false;
       style = SNC_BOUNDARY;
       switches[SNC_AXES] = false; 
+      dpi = 1;
     }
 
     /*
@@ -383,8 +386,7 @@ namespace OGL {
       PRINTD("draw( Vertex_iterator )");
       //      CGAL_NEF_TRACEN("drawing vertex "<<*v);
       CGAL::Color c = getVertexColor(v);
-      glPointSize(10);
-      //glPointSize(1);
+      glPointSize(3*dpi);
       glColor3ub(c.red(), c.green(), c.blue());
       glBegin(GL_POINTS);
       glVertex3d(v->x(),v->y(),v->z());
@@ -413,13 +415,16 @@ namespace OGL {
       //      CGAL_NEF_TRACEN("drawing edge "<<*e);
       Double_point p = e->source(), q = e->target();
       CGAL::Color c = getEdgeColor(e);
-      glLineWidth(5);
-      //glLineWidth(1);
+      glLineWidth(1*dpi);
       glColor3ub(c.red(),c.green(),c.blue());
       glBegin(GL_LINE_STRIP);
       glVertex3d(p.x(), p.y(), p.z());
       glVertex3d(q.x(), q.y(), q.z());
       glEnd();
+    }
+
+    void set_dpi(float dpi) {
+      this->dpi = dpi;
     }
 
 

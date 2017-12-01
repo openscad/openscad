@@ -1988,6 +1988,7 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 
 		this->root_geom = root_geom;
 		this->cgalRenderer = new CGALRenderer(root_geom);
+		this->cgalRenderer->setDPI(qglview->getDPI());
 		// Go to CGAL view mode
 		if (viewActionWireframe->isChecked()) viewModeWireframe();
 		else viewModeSurface();
