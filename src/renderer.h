@@ -44,7 +44,7 @@ public:
 	virtual bool getColor(ColorMode colormode, Color4f &col) const;
 	virtual void setColor(const float color[4], GLint *shaderinfo = nullptr) const;
 	virtual void setColor(ColorMode colormode, GLint *shaderinfo = nullptr) const;
-	virtual void setColor(ColorMode colormode, const float color[4], GLint *shaderinfo = nullptr) const;
+	virtual Color4f setColor(ColorMode colormode, const float color[4], GLint *shaderinfo = nullptr) const;
 	virtual void setColorScheme(const ColorScheme &cs);
 
 	static void render_surface(shared_ptr<const class Geometry> geom, csgmode_e csgmode, const Transform3d &m, GLint *shaderinfo = nullptr);
