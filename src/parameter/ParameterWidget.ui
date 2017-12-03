@@ -69,6 +69,9 @@
          <height>16777215</height>
         </size>
        </property>
+       <property name="toolTip">
+        <string>delete current preset</string>
+       </property>
        <property name="text">
         <string>-</string>
        </property>
@@ -106,6 +109,9 @@
          <width>40</width>
          <height>16777215</height>
         </size>
+       </property>
+       <property name="toolTip">
+        <string>add new preset</string>
        </property>
        <property name="text">
         <string>+</string>
@@ -147,6 +153,9 @@
      </item>
      <item>
       <widget class="QPushButton" name="reset">
+       <property name="toolTip">
+        <string>reset the parameters to the selected preset</string>
+       </property>
        <property name="text">
         <string>Reset</string>
        </property>
