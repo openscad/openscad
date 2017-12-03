@@ -1847,7 +1847,11 @@ void MainWindow::csgRender()
 			}
 			// Force reading from front buffer. Some configurations will read from the back buffer here.
 			glReadBuffer(GL_FRONT);
-			QImage img = this->qglview->grabFrameBuffer(true);
+			#ifdef USE_QOPENGLWIDGET
+				QImage img = this->qglview->grabFrameBuffer();
+			#else
+				QImage img = this->qglview->grabFrameBuffer(true); // include alpha
+			#endif
 			QString filename = QString("frame%1.png").arg(this->anim_step, 5, 10, QChar('0'));
 			img.save(filename, "PNG");
 		}

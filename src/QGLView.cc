@@ -302,7 +302,11 @@ const QImage & QGLView::grabFrame()
 {
 	// Force reading from front buffer. Some configurations will read from the back buffer here.
 	glReadBuffer(GL_FRONT);
-	this->frame = grabFrameBuffer(true); // include alpha
+	#ifdef USE_QOPENGLWIDGET
+		this->frame = grabFrameBuffer();
+	#else
+		this->frame = grabFrameBuffer(true); // include alpha
+	#endif
 	return this->frame;
 }
 
