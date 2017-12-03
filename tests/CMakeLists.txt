@@ -1480,7 +1480,6 @@ list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue13.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue945d.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue945e.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue945f.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue999.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1455.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1529.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1580-back-to-back.scad
