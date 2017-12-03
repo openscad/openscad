@@ -103,7 +103,7 @@ private:
 	void updateCamera(const class FileContext &ctx);
 	void updateTemporalVariables();
 	bool fileChangedOnDisk();
-	void compileTopLevelDocument(bool AnimTvalUpdate);
+	void compileTopLevelDocument(bool rebuildParameterWidget);
 		void updateCompileResult();
 	void compile(bool reload, bool forcedone = false, bool rebuildParameterWidget=true);
 	void compileCSG(bool procevents);
