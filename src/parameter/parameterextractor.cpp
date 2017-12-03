@@ -42,10 +42,10 @@ void ParameterExtractor::setParameters(const FileModule* module, bool rebuildPar
 
     //check whether object exist or not previously
     if (entries.find(assignment.name) == entries.end() || resetPara) {
-
       //if object doen't exist
       //or we have reset Parameters then add new entry
       entries[assignment.name] = entryObject;
+      rebuildParameterWidget = true;
     } else {
       //if entry object is already exist we check if its modified
       //or not
