@@ -213,8 +213,8 @@ FORMS   += src/MainWindow.ui \
            src/LibraryInfoDialog.ui \
            src/parameter/ParameterWidget.ui \
            src/parameter/ParameterEntryWidget.ui \
-           src/input/Button.ui \
-           src/input/Axis.ui
+           src/input/ButtonConfigWidget.ui \
+           src/input/AxisConfigWidget.ui
 
 # AST nodes
 FLEXSOURCES += src/lexer.l 
@@ -361,7 +361,9 @@ HEADERS += src/version_check.h \
            src/QSettingsCached.h \
            src/input/InputDriver.h \
            src/input/InputEventMapper.h \
-           src/input/InputDriverManager.h
+           src/input/InputDriverManager.h \
+           src/input/AxisConfigWidget.h \
+           src/input/ButtonConfigWidget.h
 
 SOURCES += \
            src/libsvg/libsvg.cc \
@@ -508,7 +510,9 @@ SOURCES += \
            \
            src/input/InputDriver.cc \
            src/input/InputEventMapper.cc \
-           src/input/InputDriverManager.cc
+           src/input/InputDriverManager.cc \
+           src/input/AxisConfigWidget.cc \
+           src/input/ButtonConfigWidget.cc
 
 # ClipperLib
 SOURCES += src/polyclipping/clipper.cpp
