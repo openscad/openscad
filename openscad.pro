@@ -1,3 +1,4 @@
+CONFIG+=experimental
 # Environment variables which can be set to specify library locations:
 # MPIRDIR
 # MPFRDIR
@@ -211,7 +212,9 @@ FORMS   += src/MainWindow.ui \
            src/launchingscreen.ui \
            src/LibraryInfoDialog.ui \
            src/parameter/ParameterWidget.ui \
-           src/parameter/ParameterEntryWidget.ui
+           src/parameter/ParameterEntryWidget.ui \
+           src/input/Button.ui \
+           src/input/Axis.ui
 
 # AST nodes
 FLEXSOURCES += src/lexer.l 
