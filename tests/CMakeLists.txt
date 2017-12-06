@@ -595,7 +595,7 @@ if ( not ${IMAGEMACIK_NOBINARY} )
 
   message(STATUS "Comparing magicktest1.png with magicktest2.png")
   set(IM_TEST_FILES "${CMAKE_CURRENT_SOURCE_DIR}/magicktest1.png" "${CMAKE_CURRENT_SOURCE_DIR}/magicktest2.png")
-  set(COMPARE_ARGS ${IMAGE_COMPARE_EXECUTABLE} ${IM_TEST_FILES} -alpha Off -compose difference -composite -threshold 10% -morphology Erode Square -format %[fx:w*h*mean] info:)
+  set(COMPARE_ARGS ${IMAGE_COMPARE_EXECUTABLE} ${IM_TEST_FILES} -alpha On -compose difference -composite -threshold 10% -morphology Erode Square -format %[fx:w*h*mean] info:)
   # compare arguments taken from test_cmdline_tool.py
   message(STATUS "Running ImageMagick compare: ${COMPARE_ARGS}")
   execute_process(COMMAND ${COMPARE_ARGS} RESULT_VARIABLE IM_RESULT OUTPUT_VARIABLE IM_OUT )
@@ -1692,7 +1692,7 @@ add_failing_test(parsererrors EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR
 
 # Verify that test framework is paying attention to alpha channel, issue 1492
 add_cmdline_test(openscad-colorscheme-cornfield-alphafail EXE ${OPENSCAD_BINPATH} ARGS --colorscheme=Cornfield -o SUFFIX png FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/logo.scad)
-# expected image for "alphafail" has background pixels alpha zero'd out, when they should be opaque for this colorscheme.  so if test framework is functioning properly then the image comparison should fail
+# The "expected image" supplied for this "alphafail" test has the alpha channel for all background pixels cleared (a==0), when they should be opaque (a==1) for this colorscheme.  so if test framework is functioning properly then the image comparison should fail
 set_property(TEST openscad-colorscheme-cornfield-alphafail_logo PROPERTY WILL_FAIL TRUE)
 
 #
