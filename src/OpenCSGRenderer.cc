@@ -81,11 +81,7 @@ OpenCSGPrim *OpenCSGRenderer::createCSGPrimitive(const CSGChainObject &csgobj, O
 	OpenCSGPrim *prim = new OpenCSGPrim(operation, csgobj.leaf->geom->getConvexity());
 	prim->geom = csgobj.leaf->geom;
 	prim->m = csgobj.leaf->matrix;
-	prim->csgmode = csgmode_e(
-		(highlight_mode ? 
-		 CSGMODE_HIGHLIGHT :
-		 (background_mode ? CSGMODE_BACKGROUND : CSGMODE_NORMAL)) |
-		(type == OpenSCADOperator::DIFFERENCE ? CSGMODE_DIFFERENCE : CSGMODE_NONE));
+    prim->csgmode = get_csgmode(highlight_mode, background_mode, type);
 	return prim;
 }
 
@@ -109,10 +105,7 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 
 		for(const auto &csgobj : product.intersections) {
 			const Color4f &c = csgobj.leaf->color;
-				csgmode_e csgmode = csgmode_e(
-					highlight_mode ? 
-					CSGMODE_HIGHLIGHT :
-					(background_mode ? CSGMODE_BACKGROUND : CSGMODE_NORMAL));
+				csgmode_e csgmode = get_csgmode(highlight_mode, background_mode);
 			
 			ColorMode colormode = ColorMode::NONE;
 			if (highlight_mode) {
@@ -144,10 +137,7 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 		}
 		for(const auto &csgobj : product.subtractions) {
 			const Color4f &c = csgobj.leaf->color;
-				csgmode_e csgmode = csgmode_e(
-					(highlight_mode ? 
-					 CSGMODE_HIGHLIGHT :
-					 (background_mode ? CSGMODE_BACKGROUND : CSGMODE_NORMAL)) | CSGMODE_DIFFERENCE);
+				csgmode_e csgmode = get_csgmode(highlight_mode, background_mode, OpenSCADOperator::DIFFERENCE);
 			
 			ColorMode colormode = ColorMode::NONE;
 			if (highlight_mode) {

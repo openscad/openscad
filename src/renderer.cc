@@ -16,6 +16,12 @@ bool Renderer::getColor(Renderer::ColorMode colormode, Color4f &col) const
 	return false;
 }
 
+Renderer::csgmode_e Renderer::get_csgmode(const bool highlight_mode, const bool background_mode, const OpenSCADOperator type) {
+    int csgmode = highlight_mode ? CSGMODE_HIGHLIGHT : (background_mode ? CSGMODE_BACKGROUND : CSGMODE_NORMAL);
+    if (type == OpenSCADOperator::DIFFERENCE) csgmode |= CSGMODE_DIFFERENCE_FLAG;
+    return csgmode_e(csgmode);
+}
+
 Renderer::Renderer() : colorscheme(nullptr)
 {
 	PRINTD("Renderer() start");
