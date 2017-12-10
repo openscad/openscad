@@ -504,51 +504,6 @@ void Preferences::on_checkBoxShowWarningsIn3dView_toggled(bool val)
 	writeSettings();
 }
 
-void Preferences::on_AxisTrim()
-{
-	InputEventMapper::instance()->onAxisAutoTrim();
-
-	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
-		std::string s = std::to_string(i);
-
-		QDoubleSpinBox* spin;
-		Settings::SettingsEntry* ent;
-
-		spin = this->centralwidget->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrim"+s));
-		ent = Settings::Settings::inst()->getSettingEntryByName("axisTrim" +s);
-
-		if(spin && ent){
-			spin->setValue((double)Settings::Settings::inst()->get(*ent).toDouble());
-		}
-	}
-	emit inputCalibrationChanged();
-	writeSettings();
-}
-
-void Preferences::on_AxisTrimReset()
-{
-	InputEventMapper::instance()->onAxisTrimReset();
-	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
-		std::string s = std::to_string(i);
-
-		QDoubleSpinBox* spin;
-		Settings::SettingsEntry* ent;
-
-		ent = Settings::Settings::inst()->getSettingEntryByName("axisTrim" +s);
-		if(ent){
-			Settings::Settings::inst()->set(*ent, 0.00);
-		}
-
-		spin = this->centralwidget->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrim"+s));
-		if(spin){
-			spin->setValue(0.00);
-		}
-	}
-	emit inputCalibrationChanged();
-	writeSettings();
-}
-
-
 void Preferences::on_spinBoxIndentationWidth_valueChanged(int val)
 {
 	Settings::Settings::inst()->set(Settings::Settings::indentationWidth, Value(val));

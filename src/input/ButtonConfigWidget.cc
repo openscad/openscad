@@ -26,6 +26,12 @@
 #include "Preferences.h"
 #include <QWidget>
 #include "ButtonConfigWidget.h"
+#include "settings.h"
+
+ButtonConfigWidget::ButtonConfigWidget(QWidget *parent) : QWidget(parent)
+{
+	setupUi(this);
+}
 
 void ButtonConfigWidget::updateButtonState(int nr, bool pressed) const{
 	QString Style = Preferences::EmptyString;
@@ -154,4 +160,53 @@ void ButtonConfigWidget::on_comboBoxButton15_activated(int val)
 {
 	applyComboBox(comboBoxButton15, val, Settings::Settings::inputButton15);
         emit inputMappingChanged();
+}
+
+void ButtonConfigWidget::applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntry& entry)
+{
+	QString s = comboBox->itemData(val).toString();
+	Settings::Settings::inst()->set(entry, Value(s.toStdString()));
+	writeSettings();
+}
+
+void ButtonConfigWidget::initSpinBox(QSpinBox *spinBox, const Settings::SettingsEntry& entry)
+{
+	RangeType range = entry.range().toRange();
+	spinBox->setMinimum(range.begin_value());
+	spinBox->setMaximum(range.end_value());
+}
+
+void ButtonConfigWidget::initDoubleSpinBox(QDoubleSpinBox *spinBox, const Settings::SettingsEntry& entry)
+{
+	RangeType range = entry.range().toRange();
+	spinBox->setMinimum(range.begin_value());
+	spinBox->setMaximum(range.end_value());
+}
+
+void ButtonConfigWidget::updateComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry)
+{
+	Settings::Settings *s = Settings::Settings::inst();
+
+	const Value &value = s->get(entry);
+	QString text = QString::fromStdString(value.toString());
+	int idx = comboBox->findData(text);
+	if (idx >= 0) {
+		comboBox->setCurrentIndex(idx);
+	} else {
+		const Value &defaultValue = entry.defaultValue();
+		QString defaultText = QString::fromStdString(defaultValue.toString());
+		int defIdx = comboBox->findData(defaultText);
+		if (defIdx >= 0) {
+			comboBox->setCurrentIndex(defIdx);
+		} else {
+			comboBox->setCurrentIndex(0);
+		}
+	}
+}
+
+void ButtonConfigWidget::applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntry& entry)
+{
+	QString s = comboBox->itemData(val).toString();
+	Settings::Settings::inst()->set(entry, Value(s.toStdString()));
+	writeSettings();
 }

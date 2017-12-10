@@ -87,9 +87,6 @@ signals:
 	void editorTypeChanged(const QString &type);
 	void editorConfigChanged() const;
 	void ExperimentalChanged() const ;
-        void inputMappingChanged() const;
-        void inputCalibrationChanged() const;
-        void inputGainChanged() const;
 
 private:
     Preferences(QWidget *parent = nullptr);

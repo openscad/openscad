@@ -27,6 +27,13 @@
 #include <QWidget>
 #include "AxisConfigWidget.h"
 
+#include "settings.h"
+
+AxisConfigWidget::AxisConfigWidget(QWidget *parent) : QWidget(parent)
+{
+	setupUi(this);
+}
+
 void AxisConfigWidget::AxesChanged(int nr, double val) const{
 	int value = val *100;
 
@@ -331,5 +338,98 @@ void AxisConfigWidget::on_doubleSpinBoxZoomGain_valueChanged(double val)
 {
 	Settings::Settings::inst()->set(Settings::Settings::inputZoomGain, Value(val));
 	emit inputGainChanged();
+	writeSettings();
+}
+
+void AxisConfigWidget::on_AxisTrim()
+{
+	InputEventMapper::instance()->onAxisAutoTrim();
+
+	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
+		std::string s = std::to_string(i);
+
+		QDoubleSpinBox* spin;
+		Settings::SettingsEntry* ent;
+
+		spin = this->centralwidget->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrim"+s));
+		ent = Settings::Settings::inst()->getSettingEntryByName("axisTrim" +s);
+
+		if(spin && ent){
+			spin->setValue((double)Settings::Settings::inst()->get(*ent).toDouble());
+		}
+	}
+	emit inputCalibrationChanged();
+	writeSettings();
+}
+
+void AxisConfigWidget::on_AxisTrimReset()
+{
+	InputEventMapper::instance()->onAxisTrimReset();
+	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
+		std::string s = std::to_string(i);
+
+		QDoubleSpinBox* spin;
+		Settings::SettingsEntry* ent;
+
+		ent = Settings::Settings::inst()->getSettingEntryByName("axisTrim" +s);
+		if(ent){
+			Settings::Settings::inst()->set(*ent, 0.00);
+		}
+
+		spin = this->centralwidget->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrim"+s));
+		if(spin){
+			spin->setValue(0.00);
+		}
+	}
+	emit inputCalibrationChanged();
+	writeSettings();
+}
+
+void AxisConfigWidget::applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntry& entry)
+{
+	QString s = comboBox->itemData(val).toString();
+	Settings::Settings::inst()->set(entry, Value(s.toStdString()));
+	writeSettings();
+}
+
+void AxisConfigWidget::initSpinBox(QSpinBox *spinBox, const Settings::SettingsEntry& entry)
+{
+	RangeType range = entry.range().toRange();
+	spinBox->setMinimum(range.begin_value());
+	spinBox->setMaximum(range.end_value());
+}
+
+void AxisConfigWidget::initDoubleSpinBox(QDoubleSpinBox *spinBox, const Settings::SettingsEntry& entry)
+{
+	RangeType range = entry.range().toRange();
+	spinBox->setMinimum(range.begin_value());
+	spinBox->setMaximum(range.end_value());
+}
+
+void AxisConfigWidget::updateComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry)
+{
+	Settings::Settings *s = Settings::Settings::inst();
+
+	const Value &value = s->get(entry);
+	QString text = QString::fromStdString(value.toString());
+	int idx = comboBox->findData(text);
+	if (idx >= 0) {
+		comboBox->setCurrentIndex(idx);
+	} else {
+		const Value &defaultValue = entry.defaultValue();
+		QString defaultText = QString::fromStdString(defaultValue.toString());
+		int defIdx = comboBox->findData(defaultText);
+		if (defIdx >= 0) {
+			comboBox->setCurrentIndex(defIdx);
+		} else {
+			comboBox->setCurrentIndex(0);
+		}
+	}
+}
+
+void AxisConfigWidget::applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntry& entry)
+{
+	QString s = comboBox->itemData(val).toString();
+	Settings::Settings::inst()->set(entry, Value(s.toStdString()));
 	writeSettings();
 }
