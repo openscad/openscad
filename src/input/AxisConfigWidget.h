@@ -1,6 +1,5 @@
 #pragma once
 
-#include <QMainWindow>
 #include <QSettings>
 
 #include "qtgettext.h"
@@ -8,13 +7,15 @@
 #include "settings.h"
 #include "ui_AxisConfigWidget.h"
 
-class AxisConfigWidget : public QWidget, public Ui::AxisConfigWidget
+class AxisConfigWidget : public QWidget, public Ui::Axis
 {
 	Q_OBJECT
 
 public:
-	~AxisConfigWidget();
+	//~AxisConfigWidget();
 	void updateButtonState(int,bool) const;
+	void AxesChanged(int nr, double val) const;
+	void init();
 
 public slots:
 	// Input Driver
@@ -73,4 +74,5 @@ private:
 	void updateComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry);
 	/** Set value from combobox to settings */
 	void applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntry& entry);
+	void writeSettings();
 };

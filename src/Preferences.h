@@ -112,7 +112,4 @@ private:
 
 	static Preferences *instance;
 	static const char *featurePropertyName;
-
-	const QString EmptyString= QString("");
-	const QString ActiveStyleString= QString("font-weight: bold; color: red");
 };

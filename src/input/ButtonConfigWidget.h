@@ -5,16 +5,17 @@
 
 #include "qtgettext.h"
 
-
 #include "ui_ButtonConfigWidget.h"
+#include "settings.h"
 
-class ButtonConfigWidget: public QWidget, public Ui::ButtonConfigWidget
+class ButtonConfigWidget: public QWidget, public Ui::Button
 {
-//	Q_OBJECT;
+	Q_OBJECT
 
 public:
-	~ButtonConfigWidget();
+	//~ButtonConfigWidget();
 	void updateButtonState(int,bool) const;
+	void init();
 
 public slots:
         void on_comboBoxButton0_activated(int val);
@@ -41,10 +42,14 @@ private:
 	/** Initialize combobox list values from the settings range values */
 	void initComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry);
 	/** Initialize spinbox min/max values from the settings range values */
-	void initSpinBox(QSpinBox *spinBox, const Settings::SettingsEntry& entry);
-	void initDoubleSpinBox(QDoubleSpinBox *spinBox, const Settings::SettingsEntry& entry);
+	//void initSpinBox(QSpinBox *spinBox, const Settings::SettingsEntry& entry);
+	//void initDoubleSpinBox(QDoubleSpinBox *spinBox, const Settings::SettingsEntry& entry);
 	/** Update combobox from current settings */
 	void updateComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry);
 	/** Set value from combobox to settings */
 	void applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntry& entry);
+	void writeSettings();
+
+	const QString EmptyString= QString("");
+	const QString ActiveStyleString= QString("font-weight: bold; color: red");
 };

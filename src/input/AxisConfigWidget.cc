@@ -23,16 +23,18 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#include "Preferences.h"
+
 #include <QWidget>
 #include "AxisConfigWidget.h"
 
 #include "settings.h"
+#include "QSettingsCached.h"
+#include "input/InputDriverManager.h"
 
-AxisConfigWidget::AxisConfigWidget(QWidget *parent) : QWidget(parent)
+/*AxisConfigWidget::AxisConfigWidget(QWidget *parent) : QWidget(parent)
 {
 	setupUi(this);
-}
+}*/
 
 void AxisConfigWidget::AxesChanged(int nr, double val) const{
 	int value = val *100;
@@ -115,7 +117,7 @@ void AxisConfigWidget::init() {
 	initDoubleSpinBox(this->doubleSpinBoxTranslationVPRelGain, Settings::Settings::inputTranslationVPRelGain);
 	initDoubleSpinBox(this->doubleSpinBoxRotateGain, Settings::Settings::inputRotateGain);
 	initDoubleSpinBox(this->doubleSpinBoxZoomGain, Settings::Settings::inputZoomGain);
-
+	Settings::Settings *s = Settings::Settings::inst();
 	this->doubleSpinBoxRotateGain->setValue((double)s->get(Settings::Settings::inputRotateGain).toDouble());
 	this->doubleSpinBoxTranslationGain->setValue((double)s->get(Settings::Settings::inputTranslationGain).toDouble());
 	this->doubleSpinBoxTranslationVPRelGain->setValue((double)s->get(Settings::Settings::inputTranslationVPRelGain).toDouble());
@@ -427,9 +429,19 @@ void AxisConfigWidget::updateComboBox(QComboBox *comboBox, const Settings::Setti
 	}
 }
 
-void AxisConfigWidget::applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntry& entry)
+void AxisConfigWidget::writeSettings()
 {
-	QString s = comboBox->itemData(val).toString();
-	Settings::Settings::inst()->set(entry, Value(s.toStdString()));
-	writeSettings();
+	//SettingsWriter settingsWriter;
+	//Settings::Settings::inst()->visit(settingsWriter);
+}
+
+void AxisConfigWidget::initComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry)
+{
+	comboBox->clear();
+	// Range is a vector of 2D vectors: [[name, value], ...]
+	for(const auto &v : entry.range().toVector()) {
+		QString val = QString::fromStdString(v[0]->toString());
+		QString qtext = QString::fromStdString(gettext(v[1]->toString().c_str()));
+		comboBox->addItem(qtext, val);
+	}
 }

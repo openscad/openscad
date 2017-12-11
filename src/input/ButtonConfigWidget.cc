@@ -23,20 +23,22 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#include "Preferences.h"
+
 #include <QWidget>
 #include "ButtonConfigWidget.h"
 #include "settings.h"
+#include "QSettingsCached.h"
+#include "input/InputDriverManager.h"
 
-ButtonConfigWidget::ButtonConfigWidget(QWidget *parent) : QWidget(parent)
+/*ButtonConfigWidget::ButtonConfigWidget(QWidget *parent) : QWidget(parent)
 {
 	setupUi(this);
-}
+}*/
 
 void ButtonConfigWidget::updateButtonState(int nr, bool pressed) const{
-	QString Style = Preferences::EmptyString;
+	QString Style = ButtonConfigWidget::EmptyString;
 	if(pressed){
-		Style=Preferences::ActiveStyleString;
+		Style=ButtonConfigWidget::ActiveStyleString;
 	}
 	std::string number = std::to_string(nr);
 
@@ -168,21 +170,22 @@ void ButtonConfigWidget::applyComboBox(QComboBox *comboBox, int val, Settings::S
 	Settings::Settings::inst()->set(entry, Value(s.toStdString()));
 	writeSettings();
 }
-
+/*
 void ButtonConfigWidget::initSpinBox(QSpinBox *spinBox, const Settings::SettingsEntry& entry)
 {
 	RangeType range = entry.range().toRange();
 	spinBox->setMinimum(range.begin_value());
 	spinBox->setMaximum(range.end_value());
 }
-
+*/
+/*
 void ButtonConfigWidget::initDoubleSpinBox(QDoubleSpinBox *spinBox, const Settings::SettingsEntry& entry)
 {
 	RangeType range = entry.range().toRange();
 	spinBox->setMinimum(range.begin_value());
 	spinBox->setMaximum(range.end_value());
 }
-
+*/
 void ButtonConfigWidget::updateComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry)
 {
 	Settings::Settings *s = Settings::Settings::inst();
@@ -204,9 +207,20 @@ void ButtonConfigWidget::updateComboBox(QComboBox *comboBox, const Settings::Set
 	}
 }
 
-void ButtonConfigWidget::applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntry& entry)
+void ButtonConfigWidget::writeSettings()
 {
-	QString s = comboBox->itemData(val).toString();
-	Settings::Settings::inst()->set(entry, Value(s.toStdString()));
-	writeSettings();
+	//SettingsWriter settingsWriter;
+	//Settings::Settings::inst()->visit(settingsWriter);
+}
+
+
+void ButtonConfigWidget::initComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry)
+{
+	comboBox->clear();
+	// Range is a vector of 2D vectors: [[name, value], ...]
+	for(const auto &v : entry.range().toVector()) {
+		QString val = QString::fromStdString(v[0]->toString());
+		QString qtext = QString::fromStdString(gettext(v[1]->toString().c_str()));
+		comboBox->addItem(qtext, val);
+	}
 }

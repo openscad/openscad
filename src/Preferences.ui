@@ -27,7 +27,7 @@
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>5</number>
+       <number>6</number>
       </property>
       <widget class="QWidget" name="page3DView">
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -1220,8 +1220,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>84</width>
-               <height>26</height>
+               <width>100</width>
+               <height>30</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_10">
@@ -1472,7 +1472,7 @@
           <property name="widgetResizable">
            <bool>true</bool>
           </property>
-          <widget class="AxisConfigWidget" name="scrollAreaWidgetInputContents">
+          <widget class="QWidget" name="scrollAreaWidgetInputContents">
            <property name="geometry">
             <rect>
              <x>0</x>
@@ -1506,7 +1506,7 @@
           <property name="widgetResizable">
            <bool>true</bool>
           </property>
-          <widget class="ButtonConfigWidget" name="scrollAreaWidgetInputButtonContents">
+          <widget class="QWidget" name="scrollAreaWidgetInputButtonContents">
            <property name="geometry">
             <rect>
              <x>0</x>
@@ -1646,20 +1646,6 @@
    </property>
   </action>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>ButtonConfigWidget</class>
-   <extends>QWidget</extends>
-   <header>input/ButtonConfigWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>AxisConfigWidget</class>
-   <extends>QWidget</extends>
-   <header>input/AxisConfigWidget.h</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
  <resources>
   <include location="../openscad.qrc"/>
  </resources>
