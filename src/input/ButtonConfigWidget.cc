@@ -30,10 +30,15 @@
 #include "QSettingsCached.h"
 #include "input/InputDriverManager.h"
 
-/*ButtonConfigWidget::ButtonConfigWidget(QWidget *parent) : QWidget(parent)
+ButtonConfigWidget::ButtonConfigWidget(QWidget *parent) : QWidget(parent)
 {
 	setupUi(this);
-}*/
+	init();
+}
+
+ButtonConfigWidget::~ButtonConfigWidget()
+{
+}
 
 void ButtonConfigWidget::updateButtonState(int nr, bool pressed) const{
 	QString Style = ButtonConfigWidget::EmptyString;

@@ -13,7 +13,8 @@ class ButtonConfigWidget: public QWidget, public Ui::Button
 	Q_OBJECT
 
 public:
-	//~ButtonConfigWidget();
+	ButtonConfigWidget(QWidget *parent = 0);
+	virtual ~ButtonConfigWidget();
 	void updateButtonState(int,bool) const;
 	void init();
 

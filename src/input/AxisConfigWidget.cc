@@ -31,10 +31,15 @@
 #include "QSettingsCached.h"
 #include "input/InputDriverManager.h"
 
-/*AxisConfigWidget::AxisConfigWidget(QWidget *parent) : QWidget(parent)
+AxisConfigWidget::AxisConfigWidget(QWidget *parent) : QWidget(parent)
 {
 	setupUi(this);
-}*/
+	init();
+}
+
+AxisConfigWidget::~AxisConfigWidget()
+{
+}
 
 void AxisConfigWidget::AxesChanged(int nr, double val) const{
 	int value = val *100;
