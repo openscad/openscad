@@ -102,7 +102,7 @@ mingw* {
 }
 
 CONFIG += qt
-QT += widgets concurrent
+QT += widgets concurrent network
 
 netbsd* {
    QMAKE_LFLAGS += -L/usr/X11R7/lib

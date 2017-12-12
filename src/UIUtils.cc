@@ -29,6 +29,7 @@
 #include <QUrl>
 #include <QFileDialog>
 #include <QDesktopServices>
+#include <QtNetwork>
 
 #include "qtgettext.h"
 #include "UIUtils.h"
@@ -148,5 +149,22 @@ void UIUtils::openUserManualURL()
 
 void UIUtils::openCheatSheetURL()
 {
-    openVersionedURL("http://www.openscad.org/cheatsheet/index.html?version=%1");
+    QNetworkConfigurationManager mgr;
+    if (mgr.isOnline()) {
+        openVersionedURL("http://www.openscad.org/cheatsheet/index.html?version=%1");
+    } else {
+        // provides minimal documentation even on very broken or offline installs
+        QString newdir = QString::fromStdString(PlatformUtils::documentsPath());
+        newdir += "/" + QString::fromStdString(PlatformUtils::OPENSCAD_FOLDER_NAME) + "/offlinedoc";
+        QDir qnewdir(newdir);
+        qnewdir.mkpath( newdir );
+        qnewdir.mkpath( newdir + "/css" );
+        QFile::copy(":/doc/OfflineCheat.html",newdir + "/OfflineCheat.html");
+        QFile::copy(":/doc/css/normalize.css",newdir + "/css/normalize.css");
+        QFile::copy(":/doc/css/print.css",newdir + "/css/print.css");
+        QFile::copy(":/doc/css/fonts.css",newdir + "/css/fonts.css");
+        QFile::copy(":/doc/css/main.css",newdir + "/css/main.css");
+        QDesktopServices::openUrl(QUrl(newdir + "/OfflineCheat.html"));
+    }
 }
+
