@@ -55,7 +55,7 @@ void ButtonConfigWidget::updateButtonState(int nr, bool pressed) const{
 void ButtonConfigWidget::init() {
 		for (int i = 0; i < InputEventMapper::getMaxButtons(); i++ ){
 			std::string s = std::to_string(i);
-			QComboBox* box = this->centralwidget->findChild<QComboBox *>(QString::fromStdString("comboBoxButton"+s));
+			QComboBox* box = this->findChild<QComboBox *>(QString::fromStdString("comboBoxButton"+s));
 			Settings::SettingsEntry* ent = Settings::Settings::inst()->getSettingEntryByName("button" +s );
 			if(box && ent){
 				initComboBox(box,*ent);
@@ -64,7 +64,7 @@ void ButtonConfigWidget::init() {
 		
 	for (int i = 0; i < InputEventMapper::getMaxButtons(); i++ ){
 		std::string s = std::to_string(i);
-		QComboBox* box = this->centralwidget->findChild<QComboBox *>(QString::fromStdString("comboBoxButton"+s));
+		QComboBox* box = this->findChild<QComboBox *>(QString::fromStdString("comboBoxButton"+s));
 		Settings::SettingsEntry* ent = Settings::Settings::inst()->getSettingEntryByName("button" +s );
 		if(box && ent){
 			updateComboBox(box,*ent);

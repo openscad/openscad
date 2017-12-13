@@ -86,12 +86,12 @@ void AxisConfigWidget::init() {
 		QDoubleSpinBox* spin;
 		Settings::SettingsEntry* ent;
 
-		spin = this->centralwidget->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrim"+s));
+		spin = this->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrim"+s));
 		ent = Settings::Settings::inst()->getSettingEntryByName("axisTrim" +s);
 		if(spin && ent){
 			initDoubleSpinBox(spin,*ent);
 		}
-		spin = this->centralwidget->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxDeadzone"+s));
+		spin = this->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxDeadzone"+s));
 		ent = Settings::Settings::inst()->getSettingEntryByName("axisDeadzone" +s);
 		if(spin && ent){
 			initDoubleSpinBox(spin,*ent);
@@ -105,13 +105,13 @@ void AxisConfigWidget::init() {
 		QDoubleSpinBox* spin;
 		Settings::SettingsEntry* ent;
 
-		spin= this->centralwidget->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrim"+s));
+		spin= this->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrim"+s));
 		ent = Settings::Settings::inst()->getSettingEntryByName("axisTrim" +s );
 		if(spin && ent){
 			spin->setValue((double)setting->get(*ent).toDouble());
 		}
 
-		spin= this->centralwidget->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxDeadzone"+s));
+		spin= this->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxDeadzone"+s));
 		ent = Settings::Settings::inst()->getSettingEntryByName("axisDeadzone" +s );
 		if(spin && ent){
 			spin->setValue((double)setting->get(*ent).toDouble());
@@ -357,7 +357,7 @@ void AxisConfigWidget::on_AxisTrim()
 		QDoubleSpinBox* spin;
 		Settings::SettingsEntry* ent;
 
-		spin = this->centralwidget->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrim"+s));
+		spin = this->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrim"+s));
 		ent = Settings::Settings::inst()->getSettingEntryByName("axisTrim" +s);
 
 		if(spin && ent){
@@ -382,7 +382,7 @@ void AxisConfigWidget::on_AxisTrimReset()
 			Settings::Settings::inst()->set(*ent, 0.00);
 		}
 
-		spin = this->centralwidget->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrim"+s));
+		spin = this->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrim"+s));
 		if(spin){
 			spin->setValue(0.00);
 		}
