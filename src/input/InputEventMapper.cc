@@ -27,6 +27,8 @@
 #include "InputDriverManager.h"
 #include "settings.h"
 #include "Preferences.h"
+#include "AxisConfigWidget.h"
+#include "ButtonConfigWidget.h"
 
 #include <math.h>
 #include <QSettings>
@@ -136,17 +138,22 @@ void InputEventMapper::onTimer()
         InputEvent *inputEvent = new InputEventZoom(z);
         InputDriverManager::instance()->postEvent(inputEvent);
     }
-
+    
+    //std::printf("test\n");
     //update the UI on time, NOT on event as a joystick can fire a high rate of events
     for (int i = 0; i < max_buttons; i++ ){
         if(button_state[i] != button_state_last[i]){
+		    std::printf("button ");
+		        //std::printf(i);
+		            std::printf("\n");
             button_state_last[i] = button_state[i];
-            Preferences::inst()->updateButtonState(i,button_state[i]);
+            Preferences::inst()->ButtonConfig->updateButtonState(i,button_state[i]);
         }
     }
     for (int i = 0; i < max_axis; i++ ){ 
-       Preferences::inst()->AxesChanged(i,axisRawValue[i] + axisTrimValue[i]);
+       Preferences::inst()->AxisConfig->AxesChanged(i,axisRawValue[i] + axisTrimValue[i]);
     }
+
 }
 
 void InputEventMapper::onAxisChanged(InputEventAxisChanged *event)

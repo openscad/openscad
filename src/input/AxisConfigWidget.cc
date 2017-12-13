@@ -79,25 +79,25 @@ void AxisConfigWidget::init() {
 	updateComboBox(this->comboBoxRotationZ, Settings::Settings::inputRotateZ);
 	updateComboBox(this->comboBoxZoom, Settings::Settings::inputZoom);
 	updateComboBox(this->comboBoxZoom2, Settings::Settings::inputZoom2);
-	
-		for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
-			std::string s = std::to_string(i);
 
-			QDoubleSpinBox* spin;
-			Settings::SettingsEntry* ent;
+	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
+		std::string s = std::to_string(i);
 
-			spin = this->centralwidget->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrim"+s));
-			ent = Settings::Settings::inst()->getSettingEntryByName("axisTrim" +s);
-			if(spin && ent){
-				initDoubleSpinBox(spin,*ent);
-			}
-			spin = this->centralwidget->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxDeadzone"+s));
-			ent = Settings::Settings::inst()->getSettingEntryByName("axisDeadzone" +s);
-			if(spin && ent){
-				initDoubleSpinBox(spin,*ent);
-			}
+		QDoubleSpinBox* spin;
+		Settings::SettingsEntry* ent;
+
+		spin = this->centralwidget->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrim"+s));
+		ent = Settings::Settings::inst()->getSettingEntryByName("axisTrim" +s);
+		if(spin && ent){
+			initDoubleSpinBox(spin,*ent);
 		}
-		
+		spin = this->centralwidget->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxDeadzone"+s));
+		ent = Settings::Settings::inst()->getSettingEntryByName("axisDeadzone" +s);
+		if(spin && ent){
+			initDoubleSpinBox(spin,*ent);
+		}
+	}
+
 	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
 		std::string s = std::to_string(i);
 		Settings::Settings *setting = Settings::Settings::inst();
@@ -127,7 +127,6 @@ void AxisConfigWidget::init() {
 	this->doubleSpinBoxTranslationGain->setValue((double)s->get(Settings::Settings::inputTranslationGain).toDouble());
 	this->doubleSpinBoxTranslationVPRelGain->setValue((double)s->get(Settings::Settings::inputTranslationVPRelGain).toDouble());
 	this->doubleSpinBoxZoomGain->setValue((double)s->get(Settings::Settings::inputZoomGain).toDouble());
-
 }
 
 void AxisConfigWidget::on_comboBoxTranslationX_activated(int val)

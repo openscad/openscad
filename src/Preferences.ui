@@ -126,7 +126,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>536</width>
+             <width>655</width>
              <height>693</height>
             </rect>
            </property>
@@ -1472,7 +1472,7 @@
           <property name="widgetResizable">
            <bool>true</bool>
           </property>
-          <widget class="AxisConfigWidget" name="scrollAreaWidgetInputContents">
+          <widget class="AxisConfigWidget" name="AxisConfig">
            <property name="geometry">
             <rect>
              <x>0</x>
@@ -1506,7 +1506,7 @@
           <property name="widgetResizable">
            <bool>true</bool>
           </property>
-          <widget class="ButtonConfigWidget" name="scrollAreaWidgetInputButtonContents">
+          <widget class="ButtonConfigWidget" name="ButtonConfig">
            <property name="geometry">
             <rect>
              <x>0</x>
