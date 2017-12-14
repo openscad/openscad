@@ -191,7 +191,7 @@ void AxisConfigWidget::on_comboBoxZoom_activated(int val)
 
 void AxisConfigWidget::on_comboBoxZoom2_activated(int val)
 {
-	applyComboBox(comboBoxZoom, val, Settings::Settings::inputZoom);
+	applyComboBox(comboBoxZoom2, val, Settings::Settings::inputZoom2);
         emit inputMappingChanged();
 }
 
