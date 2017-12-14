@@ -29,11 +29,12 @@
 #include "settings.h"
 #include "QSettingsCached.h"
 #include "input/InputDriverManager.h"
+#include "SettingsWriter.h"
 
 ButtonConfigWidget::ButtonConfigWidget(QWidget *parent) : QWidget(parent)
 {
 	setupUi(this);
-	init();
+	//init();
 }
 
 ButtonConfigWidget::~ButtonConfigWidget()
@@ -53,15 +54,15 @@ void ButtonConfigWidget::updateButtonState(int nr, bool pressed) const{
 }
 
 void ButtonConfigWidget::init() {
-		for (int i = 0; i < InputEventMapper::getMaxButtons(); i++ ){
-			std::string s = std::to_string(i);
-			QComboBox* box = this->findChild<QComboBox *>(QString::fromStdString("comboBoxButton"+s));
-			Settings::SettingsEntry* ent = Settings::Settings::inst()->getSettingEntryByName("button" +s );
-			if(box && ent){
-				initComboBox(box,*ent);
-			}
+	for (int i = 0; i < InputEventMapper::getMaxButtons(); i++ ){
+		std::string s = std::to_string(i);
+		QComboBox* box = this->findChild<QComboBox *>(QString::fromStdString("comboBoxButton"+s));
+		Settings::SettingsEntry* ent = Settings::Settings::inst()->getSettingEntryByName("button" +s );
+		if(box && ent){
+			initComboBox(box,*ent);
 		}
-		
+	}
+	
 	for (int i = 0; i < InputEventMapper::getMaxButtons(); i++ ){
 		std::string s = std::to_string(i);
 		QComboBox* box = this->findChild<QComboBox *>(QString::fromStdString("comboBoxButton"+s));
@@ -214,8 +215,8 @@ void ButtonConfigWidget::updateComboBox(QComboBox *comboBox, const Settings::Set
 
 void ButtonConfigWidget::writeSettings()
 {
-	//SettingsWriter settingsWriter;
-	//Settings::Settings::inst()->visit(settingsWriter);
+	SettingsWriter settingsWriter;
+	Settings::Settings::inst()->visit(settingsWriter);
 }
 
 

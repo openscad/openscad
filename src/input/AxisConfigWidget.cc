@@ -30,11 +30,12 @@
 #include "settings.h"
 #include "QSettingsCached.h"
 #include "input/InputDriverManager.h"
+#include "SettingsWriter.h"
 
 AxisConfigWidget::AxisConfigWidget(QWidget *parent) : QWidget(parent)
 {
 	setupUi(this);
-	init();
+	//init();
 }
 
 AxisConfigWidget::~AxisConfigWidget()
@@ -56,18 +57,18 @@ void AxisConfigWidget::init() {
 	connect(this->pushButtonAxisTrim, SIGNAL(clicked()), this, SLOT(on_AxisTrim()));
 	connect(this->pushButtonAxisTrimReset, SIGNAL(clicked()), this, SLOT(on_AxisTrimReset()));
 
-        initComboBox(this->comboBoxTranslationX, Settings::Settings::inputTranslationX);
-        initComboBox(this->comboBoxTranslationY, Settings::Settings::inputTranslationY);
-        initComboBox(this->comboBoxTranslationZ, Settings::Settings::inputTranslationZ);
-        initComboBox(this->comboBoxTranslationXVPRel, Settings::Settings::inputTranslationXVPRel);
-        initComboBox(this->comboBoxTranslationYVPRel, Settings::Settings::inputTranslationYVPRel);
-        initComboBox(this->comboBoxTranslationZVPRel, Settings::Settings::inputTranslationZVPRel);
-        initComboBox(this->comboBoxRotationX, Settings::Settings::inputRotateX);
-        initComboBox(this->comboBoxRotationY, Settings::Settings::inputRotateY);
-        initComboBox(this->comboBoxRotationZ, Settings::Settings::inputRotateZ);
-        initComboBox(this->comboBoxZoom, Settings::Settings::inputZoom);
-        initComboBox(this->comboBoxZoom2, Settings::Settings::inputZoom2);
-        
+	initComboBox(this->comboBoxTranslationX, Settings::Settings::inputTranslationX);
+	initComboBox(this->comboBoxTranslationY, Settings::Settings::inputTranslationY);
+	initComboBox(this->comboBoxTranslationZ, Settings::Settings::inputTranslationZ);
+	initComboBox(this->comboBoxTranslationXVPRel, Settings::Settings::inputTranslationXVPRel);
+	initComboBox(this->comboBoxTranslationYVPRel, Settings::Settings::inputTranslationYVPRel);
+	initComboBox(this->comboBoxTranslationZVPRel, Settings::Settings::inputTranslationZVPRel);
+	initComboBox(this->comboBoxRotationX, Settings::Settings::inputRotateX);
+	initComboBox(this->comboBoxRotationY, Settings::Settings::inputRotateY);
+	initComboBox(this->comboBoxRotationZ, Settings::Settings::inputRotateZ);
+	initComboBox(this->comboBoxZoom, Settings::Settings::inputZoom);
+	initComboBox(this->comboBoxZoom2, Settings::Settings::inputZoom2);
+
 	updateComboBox(this->comboBoxTranslationX, Settings::Settings::inputTranslationX);
 	updateComboBox(this->comboBoxTranslationY, Settings::Settings::inputTranslationY);
 	updateComboBox(this->comboBoxTranslationZ, Settings::Settings::inputTranslationZ);
@@ -435,8 +436,8 @@ void AxisConfigWidget::updateComboBox(QComboBox *comboBox, const Settings::Setti
 
 void AxisConfigWidget::writeSettings()
 {
-	//SettingsWriter settingsWriter;
-	//Settings::Settings::inst()->visit(settingsWriter);
+	SettingsWriter settingsWriter;
+	Settings::Settings::inst()->visit(settingsWriter);
 }
 
 void AxisConfigWidget::initComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry)

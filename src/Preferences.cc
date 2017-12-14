@@ -42,6 +42,7 @@
 #include "rendersettings.h"
 #include "QSettingsCached.h"
 #include "input/InputDriverManager.h"
+#include "SettingsWriter.h"
 
 Preferences *Preferences::instance = nullptr;
 
@@ -97,23 +98,7 @@ class SettingsReader : public Settings::SettingsVisitor
     }
 };
 
-class SettingsWriter : public Settings::SettingsVisitor
-{
-    virtual void handle(Settings::SettingsEntry& entry) const {
-	Settings::Settings *s = Settings::Settings::inst();
 
-	QSettingsCached settings;
-	QString key = QString::fromStdString(entry.category() + "/" + entry.name());
-	if (entry.is_default()) {
-	    settings.remove(key);
-	    PRINTDB("SettingsWriter D: %s", key.toStdString().c_str());
-	} else {
-	    const Value &value = s->get(entry);
-	    settings.setValue(key, QString::fromStdString(value.toString()));
-	    PRINTDB("SettingsWriter W: %s = '%s'", key.toStdString().c_str() % value.toString().c_str());
-	}
-    }
-};
 
 Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 {
@@ -121,7 +106,6 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 }
 
 void Preferences::init() {
-	
 	// Editor pane
 	// Setup default font (Try to use a nice monospace font)
 	QString fontfamily;
@@ -299,8 +283,7 @@ void Preferences::featuresCheckBoxToggled(bool state)
  * from commandline is ignored. This always uses the value coming from the
  * QSettings.
  */
-void
-Preferences::setupFeaturesPage()
+void Preferences::setupFeaturesPage()
 {
 	int row = 0;
 	for (Feature::iterator it = Feature::begin();it != Feature::end();it++) {
@@ -798,6 +781,8 @@ void Preferences::create(QStringList colorSchemes)
     instance->colorSchemeChooser->clear();
     instance->colorSchemeChooser->addItems(renderColorSchemes);
     instance->init();
+    instance->AxisConfig->init();
+    instance->ButtonConfig->init();
     instance->setupFeaturesPage();
     instance->updateGUI();
 }

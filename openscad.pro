@@ -258,6 +258,7 @@ HEADERS += src/version_check.h \
            src/OpenSCADApp.h \
            src/WindowManager.h \
            src/Preferences.h \
+           src/SettingsWriter.h \
            src/OpenCSGWarningDialog.h \
            src/AboutDialog.h \
            src/FontListDialog.h \
@@ -443,6 +444,7 @@ SOURCES += \
            src/rendersettings.cc \
            src/highlighter.cc \
            src/Preferences.cc \
+           src/SettingsWriter.cc \
            src/OpenCSGWarningDialog.cc \
            src/editor.cc \
            src/GLView.cc \
