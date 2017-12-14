@@ -35,7 +35,6 @@
 class ParameterWidget : public QWidget, public Ui::ParameterWidget, public ParameterExtractor, public ParameterSet
 {
 	Q_OBJECT
-	
 private:
 	struct groupInst {
 		std::vector<std::string> parameterVector;

@@ -42,9 +42,6 @@ signals:
 private:
 	/** Initialize combobox list values from the settings range values */
 	void initComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry);
-	/** Initialize spinbox min/max values from the settings range values */
-	//void initSpinBox(QSpinBox *spinBox, const Settings::SettingsEntry& entry);
-	//void initDoubleSpinBox(QDoubleSpinBox *spinBox, const Settings::SettingsEntry& entry);
 	/** Update combobox from current settings */
 	void updateComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry);
 	/** Set value from combobox to settings */

@@ -176,22 +176,7 @@ void ButtonConfigWidget::applyComboBox(QComboBox *comboBox, int val, Settings::S
 	Settings::Settings::inst()->set(entry, Value(s.toStdString()));
 	writeSettings();
 }
-/*
-void ButtonConfigWidget::initSpinBox(QSpinBox *spinBox, const Settings::SettingsEntry& entry)
-{
-	RangeType range = entry.range().toRange();
-	spinBox->setMinimum(range.begin_value());
-	spinBox->setMaximum(range.end_value());
-}
-*/
-/*
-void ButtonConfigWidget::initDoubleSpinBox(QDoubleSpinBox *spinBox, const Settings::SettingsEntry& entry)
-{
-	RangeType range = entry.range().toRange();
-	spinBox->setMinimum(range.begin_value());
-	spinBox->setMaximum(range.end_value());
-}
-*/
+
 void ButtonConfigWidget::updateComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry)
 {
 	Settings::Settings *s = Settings::Settings::inst();
