@@ -353,6 +353,7 @@ ValuePtr builtin_acos(const Context *, const EvalContext *evalctx)
 
 double tan_degrees(double x)
 {
+	int cycles = floor((x) / 180.0);
 	// use positive tests because of possible Inf/NaN
 	if (x < 180.0 && x >= 0.0) {
 		// Ok for now
@@ -361,7 +362,6 @@ double tan_degrees(double x)
 	if (x < TRIG_HUGE_VAL && x > -TRIG_HUGE_VAL)
 #endif
 	{
-		double cycles = floor((x) / 180.0);
 		x -= 180.0*cycles;
 	}
 #ifdef TRIG_HUGE_VAL
@@ -380,7 +380,9 @@ double tan_degrees(double x)
 	} else if (x == 60.0) {
 		x = M_SQRT3;
 	} else if (x == 90.0) {
-		x = std::numeric_limits<double>::quiet_NaN();
+		x = (cycles % 2) == 0 ? 
+			std::numeric_limits<double>::infinity() :
+			-std::numeric_limits<double>::infinity();
 	} else {
 		x = tan(deg2rad(x));
 	}

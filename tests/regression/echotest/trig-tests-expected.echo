@@ -35,7 +35,7 @@ ECHO: "cos(315) == sqrt(2)/2  ", true
 ECHO: "cos(330) == sqrt(3)/2  ", true
 ECHO: "cos(360) == 1          ", true
 ECHO: 
-ECHO: "isNan(tan(-90)) == 0   ", true
+ECHO: "tan(-90) == -1/0       ", true
 ECHO: "tan(-60) == -sqrt(3)   ", true
 ECHO: "tan(-45) == -1         ", true
 ECHO: "tan(-30) == -sqrt(3)/3 ", true
@@ -43,7 +43,7 @@ ECHO: "tan(  0) == 0          ", true
 ECHO: "tan( 30) == sqrt(3)/3  ", true
 ECHO: "tan( 45) == 1          ", true
 ECHO: "tan( 60) == sqrt(3)    ", true
-ECHO: "isNan(tan(90))         ", true
+ECHO: "tan( 90) == 1/0        ", true
 ECHO: 
 ECHO: "***Verify functions are Odd/Even***"
 ECHO: "sin()  odd check PASSED"
