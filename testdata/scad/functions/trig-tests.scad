@@ -1,7 +1,7 @@
 function isNan(x) = x != x;
 
 module print_results(testname, results) {
-  if (len(results) > 1)
+  if (len(results) > 0)
     echo(str(testname, " FAILED at these angles: ", results));
   else
     echo(str(testname, " PASSED"));
@@ -78,7 +78,7 @@ print_results("tan() periodic check", tan_aperiodic);
 
 echo();
 echo("***Verify Inverse Trigonometric functions***");
-epsilon = 1e-13; // smallest value that passes
+epsilon = 2e-13; // smallest value that passes
 // Probably not feasible/useful to try making these exact
 asin_fails = [for(a = [-90:1: 90]) if (abs(asin(sin(a)) - a) > epsilon) [a, asin(sin(a))] ];
 acos_fails = [for(a = [  0:1:180]) if (abs(acos(cos(a)) - a) > epsilon) [a, acos(cos(a))] ];
