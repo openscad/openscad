@@ -787,14 +787,6 @@ void Preferences::create(QStringList colorSchemes)
     instance->updateGUI();
 }
 
-void Preferences::updateButtonState(int nr, bool pressed) const{
-	//Todo: clean me up
-}
-
-void Preferences::AxesChanged(int nr, double val) const{
-	//Todo: clean me up
-}
-
 Preferences *Preferences::inst() {
     assert(instance != nullptr);
     

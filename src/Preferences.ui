@@ -1481,7 +1481,6 @@
              <height>392</height>
             </rect>
            </property>
-           <layout class="QGridLayout" name="gridLayout_7" columnstretch="0"/>
           </widget>
          </widget>
         </item>
@@ -1515,7 +1514,6 @@
              <height>392</height>
             </rect>
            </property>
-           <layout class="QGridLayout" name="gridLayout_8" columnstretch="0"/>
           </widget>
          </widget>
         </item>
