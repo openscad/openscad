@@ -59,6 +59,7 @@ class Cache
 	};
 	typedef typename std::unordered_map<Key, Node> map_type;
 	typedef typename map_type::iterator iterator_type;
+	typedef typename map_type::const_iterator const_iterator_type;
 	typedef typename map_type::value_type value_type;
 
 	std::unordered_map<Key, Node> hash;
@@ -117,6 +118,9 @@ public:
 
 	bool remove(const Key &key);
 	T *take(const Key &key);
+
+	const_iterator_type begin() const {return hash.cbegin(); }
+	const_iterator_type end() const {return hash.cend(); }
 
 private:
 	void trim(int m);
