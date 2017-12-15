@@ -1,3 +1,6 @@
+// Tests for Trigonometry functions
+// See github issue #2195 for discussion/reasoning behind these
+
 module print_results(testname, results) {
   if (len(results) > 0)
     echo(str(testname, " FAILED at these angles: ", results));
@@ -25,7 +28,6 @@ echo("sin(330) == -1/2       ", sin(330) == -1/2);
 echo("sin(360) == 0          ", sin(360) == 0);
 echo();
 
-
 echo("cos(  0) == 1          ", cos(  0) == 1);
 echo("cos( 30) == sqrt(3)/2  ", cos( 30) == sqrt(3)/2);
 echo("cos( 45) == sqrt(2)/2  ", cos( 45) == sqrt(2)/2);
@@ -44,17 +46,34 @@ echo("cos(315) == sqrt(2)/2  ", cos(315) == sqrt(2)/2);
 echo("cos(330) == sqrt(3)/2  ", cos(330) == sqrt(3)/2);
 echo("cos(360) == 1          ", cos(360) == 1);
 
+// (0 == -0), so do some special checks to differentiate between these values
+function isNeg0(x) = 1/x == -1/0;
+function isPos0(x) = 1/x == 1/0;
+echo();
+echo("// Quick test of signed zero checks");
+echo(" isNeg0(-0) ",  isNeg0(-0));
+echo("!isNeg0( 0) ", !isNeg0( 0));
+echo("!isPos0(-0) ", !isPos0(-0));
+echo(" isPos0( 0) ",  isPos0( 0));
 
 echo();
+echo("isNeg0(tan(-180))      ", isNeg0(tan(-180)));
+echo("tan(-150)== sqrt(3)/3  ", tan(-150) == sqrt(3)/3);
+echo("tan(-135)== 1          ", tan(-135) == 1);
+echo("tan(-120)== sqrt(3)    ", tan(-120) == sqrt(3));
 echo("tan(-90) == -1/0       ", tan(-90) == -1/0);
 echo("tan(-60) == -sqrt(3)   ", tan(-60) == -sqrt(3));
 echo("tan(-45) == -1         ", tan(-45) == -1);
 echo("tan(-30) == -sqrt(3)/3 ", tan(-30) == -sqrt(3)/3);
-echo("tan(  0) == 0          ", tan(  0) == 0);
+echo("isPos0(tan(  0))       ", isPos0(tan(  0)));
 echo("tan( 30) == sqrt(3)/3  ", tan( 30) == sqrt(3)/3);
 echo("tan( 45) == 1          ", tan( 45) == 1);
 echo("tan( 60) == sqrt(3)    ", tan( 60) == sqrt(3));
 echo("tan( 90) == 1/0        ", tan( 90) == 1/0);
+echo("tan(120) == -sqrt(3)   ", tan(120) == -sqrt(3));
+echo("tan(135) == -1         ", tan(135) == -1);
+echo("tan(150) == -sqrt(3)/3 ", tan(150) == -sqrt(3)/3);
+echo("isNeg0(tan(180))       ", isNeg0(tan(180)));
 
 echo();
 echo("***Verify functions are Odd/Even***");

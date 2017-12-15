@@ -35,15 +35,29 @@ ECHO: "cos(315) == sqrt(2)/2  ", true
 ECHO: "cos(330) == sqrt(3)/2  ", true
 ECHO: "cos(360) == 1          ", true
 ECHO: 
+ECHO: "// Quick test of signed zero checks"
+ECHO: " isNeg0(-0) ", true
+ECHO: "!isNeg0( 0) ", true
+ECHO: "!isPos0(-0) ", true
+ECHO: " isPos0( 0) ", true
+ECHO: 
+ECHO: "isNeg0(tan(-180))      ", true
+ECHO: "tan(-150)== sqrt(3)/3  ", true
+ECHO: "tan(-135)== 1          ", true
+ECHO: "tan(-120)== sqrt(3)    ", true
 ECHO: "tan(-90) == -1/0       ", true
 ECHO: "tan(-60) == -sqrt(3)   ", true
 ECHO: "tan(-45) == -1         ", true
 ECHO: "tan(-30) == -sqrt(3)/3 ", true
-ECHO: "tan(  0) == 0          ", true
+ECHO: "isPos0(tan(  0))       ", true
 ECHO: "tan( 30) == sqrt(3)/3  ", true
 ECHO: "tan( 45) == 1          ", true
 ECHO: "tan( 60) == sqrt(3)    ", true
 ECHO: "tan( 90) == 1/0        ", true
+ECHO: "tan(120) == -sqrt(3)   ", true
+ECHO: "tan(135) == -1         ", true
+ECHO: "tan(150) == -sqrt(3)/3 ", true
+ECHO: "isNeg0(tan(180))       ", true
 ECHO: 
 ECHO: "***Verify functions are Odd/Even***"
 ECHO: "sin()  odd check PASSED"
