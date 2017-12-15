@@ -373,6 +373,9 @@ double tan_degrees(double x)
 #endif
 	bool oppose = x > 90.0;
 	if (oppose) x = 180.0-x;
+	if (x == 0.0) {
+		x = (cycles % 2) == 0 ? 0.0 : -0.0;
+	}
 	if (x == 30.0) {
 		x = M_SQRT1_3;
 	} else if (x == 45.0) {
