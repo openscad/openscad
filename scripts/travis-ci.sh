@@ -20,11 +20,11 @@ travis_finish() {
   echo -en "\ntravis_time:end:$travis_timer_id:start=$travis_start_time,finish=$travis_end_time,duration=$duration\r\033[0m"
 }
 
-PARALLEL=-j8
+PARALLEL=-j2
 if [[ "$DIST" == "trusty" ]]; then
     PARALLEL_CTEST=-j1
 else
-    PARALLEL_CTEST=-j8
+    PARALLEL_CTEST=-j2
 fi
 
 travis_start qmake "Building OpenSCAD using qmake"
