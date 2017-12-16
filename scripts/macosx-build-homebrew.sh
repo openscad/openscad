@@ -26,10 +26,10 @@ if [ ! -f $OPENSCADDIR/openscad.pro ]; then
 fi
 
 log "Listing homebrew configuration"
-brew config
+time brew config
 
 log "Updating homebrew"
-brew update
+time brew update
 # Install special packages not yet in upstream homebrew repo.
 # Check if there's already an active openscad tap and skip
 # tap/untap in that case.
@@ -52,7 +52,7 @@ done
 
 for formula in gettext qt5 qscintilla2; do
   log "Linking formula $formula"
-  brew link --force $formula
+  time brew link --force $formula
 done
 
 $TAP untap openscad/homebrew-tap

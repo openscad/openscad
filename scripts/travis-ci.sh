@@ -20,8 +20,15 @@ travis_finish() {
   echo -en "\ntravis_time:end:$travis_timer_id:start=$travis_start_time,finish=$travis_end_time,duration=$duration\r\033[0m"
 }
 
+PARALLEL=-j2
+if [[ "$DIST" == "trusty" ]]; then
+    PARALLEL_CTEST=-j1
+else
+    PARALLEL_CTEST=-j2
+fi
+
 travis_start qmake "Building OpenSCAD using qmake"
-qmake CONFIG+=experimental CONFIG+=nogui && make -j2
+qmake CONFIG+=experimental CONFIG+=nogui && make $PARALLEL
 travis_finish qmake
 
 travis_start cmake "Building tests using cmake"
@@ -32,19 +39,13 @@ if [[ $? != 0 ]]; then
   echo "Error configuring test suite"
   exit 1
 fi
-make -j2
+make $PARALLEL
 if [[ $? != 0 ]]; then
   echo "Error building test suite"
   exit 1
 fi
 
 travis_finish cmake
-
-if [[ "$DIST" == "trusty" ]]; then
-    PARALLEL=-j1
-else
-    PARALLEL=-j8
-fi
 
 travis_start ctest "Running tests using ctest"
 
@@ -58,7 +59,7 @@ travis_start ctest "Running tests using ctest"
 # opencsgtest_issue1258
 # throwntogethertest_issue1089
 # throwntogethertest_issue1215
-ctest $PARALLEL -E "\
+ctest $PARALLEL_CTEST -E "\
 opencsgtest_rotate_extrude-tests|\
 opencsgtest_render-tests|\
 opencsgtest_rotate_extrude-hole|\
