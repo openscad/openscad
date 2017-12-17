@@ -26,7 +26,6 @@
 #include "Preferences.h"
 #include "SettingsWriter.h"
 #include "QSettingsCached.h"
-#include <boost/algorithm/string.hpp>
 
 void SettingsWriter::handle(Settings::SettingsEntry& entry) const {
 	Settings::Settings *s = Settings::Settings::inst();

@@ -138,7 +138,7 @@ void InputEventMapper::onTimer()
         InputEvent *inputEvent = new InputEventZoom(z);
         InputDriverManager::instance()->postEvent(inputEvent);
     }
-    
+
     //update the UI on time, NOT on event as a joystick can fire a high rate of events
     for (int i = 0; i < max_buttons; i++ ){
         if(button_state[i] != button_state_last[i]){

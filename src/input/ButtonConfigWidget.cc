@@ -34,7 +34,6 @@
 ButtonConfigWidget::ButtonConfigWidget(QWidget *parent) : QWidget(parent)
 {
 	setupUi(this);
-	//init();
 }
 
 ButtonConfigWidget::~ButtonConfigWidget()

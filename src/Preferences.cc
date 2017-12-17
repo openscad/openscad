@@ -319,6 +319,12 @@ void Preferences::setupFeaturesPage()
 	// fixed size space essentially gives the first row the width of the
 	// spacer item itself.
 	gridLayoutExperimentalFeatures->addItem(new QSpacerItem(20, 0, QSizePolicy::Fixed, QSizePolicy::Fixed), 1, 0, 1, 1, Qt::AlignLeading);
+
+	if (!Feature::ExperimentalInputDriver.is_enabled()) {
+		this->toolBar->removeAction(prefsActionInput);
+		this->toolBar->removeAction(prefsActionInputButton);
+		InputDriverManager::instance()->closeDrivers();
+	}
 }
 
 void Preferences::on_colorSchemeChooser_itemSelectionChanged()
@@ -716,13 +722,6 @@ void Preferences::initComboBox(QComboBox *comboBox, const Settings::SettingsEntr
 }
 
 void Preferences::initSpinBox(QSpinBox *spinBox, const Settings::SettingsEntry& entry)
-{
-	RangeType range = entry.range().toRange();
-	spinBox->setMinimum(range.begin_value());
-	spinBox->setMaximum(range.end_value());
-}
-
-void Preferences::initDoubleSpinBox(QDoubleSpinBox *spinBox, const Settings::SettingsEntry& entry)
 {
 	RangeType range = entry.range().toRange();
 	spinBox->setMinimum(range.begin_value());

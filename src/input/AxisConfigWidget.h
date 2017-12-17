@@ -1,9 +1,6 @@
 #pragma once
 
-#include <QSettings>
-
 #include "qtgettext.h"
-
 #include "settings.h"
 #include "ui_AxisConfigWidget.h"
 

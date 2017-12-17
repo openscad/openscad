@@ -1,10 +1,6 @@
 #pragma once
 
-#include <QMainWindow>
-#include <QSettings>
-
 #include "qtgettext.h"
-
 #include "ui_ButtonConfigWidget.h"
 #include "settings.h"
 
