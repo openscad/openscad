@@ -24,7 +24,7 @@ PARALLEL=-j2
 if [[ "$DIST" == "trusty" ]]; then
     PARALLEL_CTEST=-j1
 else
-    PARALLEL_CTEST=-j2
+    PARALLEL_CTEST=-j4
 fi
 
 travis_start qmake "Building OpenSCAD using qmake"
