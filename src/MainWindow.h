@@ -215,6 +215,7 @@ public slots:
 		void editorTopLevelChanged(bool);
 		void consoleTopLevelChanged(bool);
 		void parameterTopLevelChanged(bool);
+		void processEvents();
 
 #ifdef ENABLE_OPENCSG
 	void viewModePreview();

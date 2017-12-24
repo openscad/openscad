@@ -1098,7 +1098,7 @@ void MainWindow::instantiateRoot()
 	if (this->root_module) {
 		// Evaluate CSG tree
 		PRINT("Compiling design (CSG Tree generation)...");
-		if (this->procevents) QApplication::processEvents();
+		this->processEvents();
 
 		AbstractNode::resetIndexCounter();
 
@@ -1129,7 +1129,7 @@ void MainWindow::instantiateRoot()
 		} else {
 			PRINT("ERROR: Compilation failed!");
 		}
-		if (this->procevents) QApplication::processEvents();
+		this->processEvents();
 	}
 }
 
@@ -1141,7 +1141,7 @@ void MainWindow::compileCSG(bool procevents)
 {
 	assert(this->root_node);
 	PRINT("Compiling design (CSG Products generation)...");
-	if (procevents) QApplication::processEvents();
+	this->processEvents();
 
 	// Main CSG evaluation
 	this->progresswidget = new ProgressWidget(this);
@@ -1159,14 +1159,14 @@ void MainWindow::compileCSG(bool procevents)
 	progress_report_prep(this->root_node, report_func, this);
 	try {
 #ifdef ENABLE_OPENCSG
-		if (procevents) QApplication::processEvents();
+		this->processEvents();
 		this->csgRoot = csgrenderer.buildCSGTree(*root_node);
 #endif
 		GeometryCache::instance()->print();
 #ifdef ENABLE_CGAL
 		CGALCache::instance()->print();
 #endif
-		if (procevents) QApplication::processEvents();
+		this->processEvents();
 	}
 	catch (const ProgressCancelException &e) {
 		PRINT("CSG generation cancelled.");
@@ -1175,7 +1175,7 @@ void MainWindow::compileCSG(bool procevents)
 	updateStatusBar(nullptr);
 
 	PRINT("Compiling design (CSG Products normalization)...");
-	if (procevents) QApplication::processEvents();
+	this->processEvents();
 
 	size_t normalizelimit = 2 * Preferences::inst()->getValue("advanced/openCSGLimit").toUInt();
 	CSGTreeNormalizer normalizer(normalizelimit);
@@ -1189,14 +1189,14 @@ void MainWindow::compileCSG(bool procevents)
 		else {
 			this->root_products.reset();
 			PRINT("WARNING: CSG normalization resulted in an empty tree");
-			if (procevents) QApplication::processEvents();
+			this->processEvents();
 		}
 	}
 
 	const std::vector<shared_ptr<CSGNode> > &highlight_terms = csgrenderer.getHighlightNodes();
 	if (highlight_terms.size() > 0) {
 		PRINTB("Compiling highlights (%d CSG Trees)...", highlight_terms.size());
-		if (procevents) QApplication::processEvents();
+		this->processEvents();
 		
 		this->highlights_products.reset(new CSGProducts());
 		for (unsigned int i = 0; i < highlight_terms.size(); i++) {
@@ -1211,7 +1211,7 @@ void MainWindow::compileCSG(bool procevents)
 	const auto &background_terms = csgrenderer.getBackgroundNodes();
 	if (background_terms.size() > 0) {
 		PRINTB("Compiling background (%d CSG Trees)...", background_terms.size());
-		if (procevents) QApplication::processEvents();
+		this->processEvents();
 		
 		this->background_products.reset(new CSGProducts());
 		for (unsigned int i = 0; i < background_terms.size(); i++) {
@@ -1245,7 +1245,7 @@ void MainWindow::compileCSG(bool procevents)
 	PRINT("Compile and preview finished.");
 	int s = this->renderingTime.elapsed() / 1000;
 	PRINTB("Total rendering time: %d hours, %d minutes, %d seconds", (s / (60*60)) % ((s / 60) % 60) % (s % 60));
-	if (procevents) QApplication::processEvents();
+	this->processEvents();
 }
 
 void MainWindow::actionNew()
@@ -1506,13 +1506,13 @@ void MainWindow::hideFind()
 {
 	find_panel->hide();
 	this->findInputField->setFindCount(editor->resetFindIndicators(this->findInputField->text(), false));
-	QApplication::processEvents();
+	this->processEvents();
 }
 
 void MainWindow::showFind()
 {
 	this->findInputField->setFindCount(editor->resetFindIndicators(this->findInputField->text()));
-	QApplication::processEvents();
+	this->processEvents();
 	findTypeComboBox->setCurrentIndex(0);
 	replaceInputField->hide();
 	replaceButton->hide();
@@ -1529,14 +1529,14 @@ void MainWindow::showFind()
 void MainWindow::findString(QString textToFind)
 {
 	this->findInputField->setFindCount(editor->resetFindIndicators(textToFind));
-	QApplication::processEvents();
+	this->processEvents();
 	editor->find(textToFind);
 }
 
 void MainWindow::showFindAndReplace()
 {
-	this->findInputField->setFindCount(editor->resetFindIndicators(this->findInputField->text()));
-	QApplication::processEvents();
+	this->findInputField->setFindCount(editor->resetFindIndicators(this->findInputField->text()));	
+	this->processEvents();
 	findTypeComboBox->setCurrentIndex(1); 
 	replaceInputField->show();
 	replaceButton->show();
@@ -1816,7 +1816,7 @@ void MainWindow::actionReloadRenderPreview()
 	setCurrentOutput();
 
 	// PRINT("Parsing design (AST generation)...");
-	// QApplication::processEvents();
+	// this->processEvents();
 	this->afterCompileSlot = "csgReloadRender";
 	this->procevents = true;
 	this->top_ctx.set_variable("$preview", ValuePtr(true));
@@ -1854,7 +1854,7 @@ void MainWindow::actionRenderPreview(bool rebuildParameterWidget)
 	setCurrentOutput();
 
 	PRINT("Parsing design (AST generation)...");
-	QApplication::processEvents();
+	this->processEvents();
 	this->afterCompileSlot = "csgRender";
 	this->procevents = !viewActionAnimate->isChecked();
 	this->top_ctx.set_variable("$preview", ValuePtr(true));
@@ -1914,7 +1914,7 @@ void MainWindow::actionRender()
 	setCurrentOutput();
 
 	PRINT("Parsing design (AST generation)...");
-	QApplication::processEvents();
+	this->processEvents();
 	this->afterCompileSlot = "cgalRender";
 	this->procevents = true;
 	this->top_ctx.set_variable("$preview", ValuePtr(false));
@@ -2774,7 +2774,7 @@ void MainWindow::consoleOutput(const QString &msg)
 	c.movePosition(QTextCursor::End);
 	this->console->setTextCursor(c);
 	this->console->append(qmsg);
-	if (this->procevents) QApplication::processEvents();
+	this->processEvents();
 }
 
 void MainWindow::setCurrentOutput()
@@ -2800,3 +2800,7 @@ void MainWindow::setContentsChanged()
 	this->contentschanged = true;
 }
 
+void MainWindow::processEvents()
+{
+	if (this->procevents) QApplication::processEvents();
+}
