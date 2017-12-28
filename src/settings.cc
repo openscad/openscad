@@ -272,6 +272,7 @@ SettingsEntry Settings::inputRotateX("input", "rotateX", axisValues(), Value("+4
 SettingsEntry Settings::inputRotateY("input", "rotateY", axisValues(), Value("-5"));
 SettingsEntry Settings::inputRotateZ("input", "rotateZ", axisValues(), Value("-6"));
 SettingsEntry Settings::inputZoom("input", "zoom", axisValues(), Value("None"));
+SettingsEntry Settings::inputZoom2("input", "zoom2", axisValues(), Value("None"));
 
 SettingsEntry Settings::inputTranslationGain("input", "translationGain", Value(RangeType(0.01, 9.99)), Value("1.00"));
 SettingsEntry Settings::inputTranslationVPRelGain("input", "translationVPRelGain", Value(RangeType(0.01, 9.99)), Value("1.00"));

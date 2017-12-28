@@ -27,6 +27,8 @@
 #include "InputDriverManager.h"
 #include "settings.h"
 #include "Preferences.h"
+#include "AxisConfigWidget.h"
+#include "ButtonConfigWidget.h"
 
 #include <math.h>
 #include <QSettings>
@@ -131,7 +133,7 @@ void InputEventMapper::onTimer()
         InputDriverManager::instance()->postEvent(inputEvent);
     }
 
-    double z = getAxisValue(zoom)*zoomGain;
+    double z = (getAxisValue(zoom)+getAxisValue(zoom2))*zoomGain;
     if (fabs(z) > threshold) {
         InputEvent *inputEvent = new InputEventZoom(z);
         InputDriverManager::instance()->postEvent(inputEvent);
@@ -141,12 +143,13 @@ void InputEventMapper::onTimer()
     for (int i = 0; i < max_buttons; i++ ){
         if(button_state[i] != button_state_last[i]){
             button_state_last[i] = button_state[i];
-            Preferences::inst()->updateButtonState(i,button_state[i]);
+            Preferences::inst()->ButtonConfig->updateButtonState(i,button_state[i]);
         }
     }
     for (int i = 0; i < max_axis; i++ ){ 
-       Preferences::inst()->AxesChanged(i,axisRawValue[i] + axisTrimValue[i]);
+       Preferences::inst()->AxisConfig->AxesChanged(i,axisRawValue[i] + axisTrimValue[i]);
     }
+
 }
 
 void InputEventMapper::onAxisChanged(InputEventAxisChanged *event)
@@ -224,6 +227,7 @@ void InputEventMapper::onInputMappingUpdated()
     rotate[1] = parseSettingValue(s->get(Settings::Settings::inputRotateY).toString());
     rotate[2] = parseSettingValue(s->get(Settings::Settings::inputRotateZ).toString());
     zoom = parseSettingValue(s->get(Settings::Settings::inputZoom).toString());
+    zoom2 = parseSettingValue(s->get(Settings::Settings::inputZoom2).toString());
 }
 
 void InputEventMapper::onInputGainUpdated()

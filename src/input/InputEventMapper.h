@@ -46,6 +46,7 @@ private:
     int translate[6];
     int rotate[3];
     int zoom;
+    int zoom2;
     volatile bool stopRequest;
 
     double scale(double val);
