@@ -72,22 +72,22 @@ msgid ""
 "<html><head/><body><p>This list shows the fonts currently registered with "
 "OpenSCAD.</p><p>Example:</p><pre style=\" margin-top:12px; margin-"
 "bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-"
-"indent:0px;\"><span style=\" font-family:'Courier New,courier';\">  text(t = "
-"&quot;OpenSCAD&quot;, font = &quot;DejaVu Sans&quot;);</span></pre><pre "
+"indent:0px;\"><span style=\" font-family:'Courier New,courier';\">  "
+"text(&quot;OpenSCAD&quot;, font = &quot;DejaVu Sans&quot;);</span></pre><pre "
 "style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-"
 "right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-"
-"family:'Courier New,courier';\">  text(t = &quot;OpenSCAD&quot;, font = "
-"&quot;Liberation Sans:style=Italic&quot;);</span></pre></body></html>"
+"family:'Courier New,courier';\">  text(&quot;OpenSCAD&quot;, font = &quot;"
+"Liberation Sans:style=Italic&quot;);</span></pre></body></html>"
 msgstr ""
 "<html><head/><body><p>Na liście są fonty aktualnie zarejestrowane z "
 "programem OpenSCAD.</p><p>Przykład:</p><pre style=\" margin-top:12px; margin-"
 "bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-"
-"indent:0px;\"><span style=\" font-family:'Courier New,courier';\">  text(t = "
-"&quot;OpenSCAD&quot;, font = &quot;DejaVu Sans&quot;);</span></pre><pre "
+"indent:0px;\"><span style=\" font-family:'Courier New,courier';\">  "
+"text(&quot;OpenSCAD&quot;, font = &quot;DejaVu Sans&quot;);</span></pre><pre "
 "style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-"
 "right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-"
-"family:'Courier New,courier';\">  text(t = &quot;OpenSCAD&quot;, font = "
-"&quot;Liberation Sans:style=Italic&quot;);</span></pre></body></html>"
+"family:'Courier New,courier';\">  text(&quot;OpenSCAD&quot;, font = &quot;"
+"Liberation Sans:style=Italic&quot;);</span></pre></body></html>"
 
 #: objects/ui_launchingscreen.h:296
 msgid "Welcome to OpenSCAD"
@@ -1189,15 +1189,15 @@ msgstr "Dokument został zmodyfikowany."
 msgid "Do you want to save your changes?"
 msgstr "Czy chcesz zapisać zmiany?"
 
-#: src/OpenSCADApp.cc:36
+#: src/OpenSCADApp.cc:37
 msgid "Unknown error"
 msgstr "Nieznany błąd"
 
-#: src/OpenSCADApp.cc:39
+#: src/OpenSCADApp.cc:40
 msgid "Critical Error"
 msgstr "Błąd krytyczny"
 
-#: src/OpenSCADApp.cc:39
+#: src/OpenSCADApp.cc:40
 msgid ""
 "A critical error was caught. The application may have become unstable:\n"
 "%1"
@@ -1205,7 +1205,7 @@ msgstr ""
 "Złapano krytyczny błąd. Aplikacja może się zachowywać niestabilnie:\n"
 "%1"
 
-#: src/OpenSCADApp.cc:63
+#: src/OpenSCADApp.cc:64
 msgid ""
 "Fontconfig needs to update its font cache.\n"
 "This can take up to a couple of minutes."
