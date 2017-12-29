@@ -63,11 +63,11 @@ class SettingsReader : public Settings::SettingsVisitor
 	try {
 		switch (entry.defaultValue().type()) {
 		case Value::ValueType::STRING:
-			if(entry.defaultValue()=="0.00" || entry.defaultValue()=="0.10"|| entry.defaultValue()=="1.00"){ //ToDo: Clean me up
+			return Value(trimmed_value);
+		case Value::ValueType::NUMBER: 
+			if(entry.range().toRange().step_value()<1 && entry.range().toRange().step_value()>0){
 				return Value(boost::lexical_cast<double>(trimmed_value));
 			}
-			return Value(trimmed_value);
-		case Value::ValueType::NUMBER: //ToDo: Clean me up - Number is actually a double
 			return Value(boost::lexical_cast<int>(trimmed_value));
 		case Value::ValueType::BOOL:
 			boost::to_lower(trimmed_value);
