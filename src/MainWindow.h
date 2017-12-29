@@ -17,6 +17,7 @@
 #include <QMutex>
 #include <QTime>
 #include <QIODevice>
+#include "input/InputDriver.h"
 
 class MainWindow : public QMainWindow, public Ui::MainWindow, public InputEventHandler
 {
