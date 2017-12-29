@@ -42,6 +42,7 @@
 #include "rendersettings.h"
 #include "QSettingsCached.h"
 #include "input/InputDriverManager.h"
+#include "SettingsWriter.h"
 
 Preferences *Preferences::instance = nullptr;
 
@@ -97,23 +98,7 @@ class SettingsReader : public Settings::SettingsVisitor
     }
 };
 
-class SettingsWriter : public Settings::SettingsVisitor
-{
-    virtual void handle(Settings::SettingsEntry& entry) const {
-	Settings::Settings *s = Settings::Settings::inst();
 
-	QSettingsCached settings;
-	QString key = QString::fromStdString(entry.category() + "/" + entry.name());
-	if (entry.is_default()) {
-	    settings.remove(key);
-	    PRINTDB("SettingsWriter D: %s", key.toStdString().c_str());
-	} else {
-	    const Value &value = s->get(entry);
-	    settings.setValue(key, QString::fromStdString(value.toString()));
-	    PRINTDB("SettingsWriter W: %s = '%s'", key.toStdString().c_str() % value.toString().c_str());
-	}
-    }
-};
 
 Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 {
@@ -121,7 +106,6 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 }
 
 void Preferences::init() {
-	
 	// Editor pane
 	// Setup default font (Try to use a nice monospace font)
 	QString fontfamily;
@@ -195,8 +179,6 @@ void Preferences::init() {
 	addPrefPage(group, prefsActionAdvanced, pageAdvanced);
 	
 	connect(group, SIGNAL(triggered(QAction*)), this, SLOT(actionTriggered(QAction*)));
-	connect(this->pushButtonAxisTrim, SIGNAL(clicked()), this, SLOT(on_AxisTrim()));
-	connect(this->pushButtonAxisTrimReset, SIGNAL(clicked()), this, SLOT(on_AxisTrimReset()));
 
 	prefsAction3DView->setChecked(true);
 	this->actionTriggered(this->prefsAction3DView);
@@ -223,49 +205,6 @@ void Preferences::init() {
 	initSpinBox(this->spinBoxLineWrapIndentationIndent, Settings::Settings::lineWrapIndentation);
 	initSpinBox(this->spinBoxShowWhitespaceSize, Settings::Settings::showWhitespaceSize);
 	initSpinBox(this->spinBoxTabWidth, Settings::Settings::tabWidth);
-
-        initComboBox(this->comboBoxTranslationX, Settings::Settings::inputTranslationX);
-        initComboBox(this->comboBoxTranslationY, Settings::Settings::inputTranslationY);
-        initComboBox(this->comboBoxTranslationZ, Settings::Settings::inputTranslationZ);
-        initComboBox(this->comboBoxTranslationXVPRel, Settings::Settings::inputTranslationXVPRel);
-        initComboBox(this->comboBoxTranslationYVPRel, Settings::Settings::inputTranslationYVPRel);
-        initComboBox(this->comboBoxTranslationZVPRel, Settings::Settings::inputTranslationZVPRel);
-        initComboBox(this->comboBoxRotationX, Settings::Settings::inputRotateX);
-        initComboBox(this->comboBoxRotationY, Settings::Settings::inputRotateY);
-        initComboBox(this->comboBoxRotationZ, Settings::Settings::inputRotateZ);
-        initComboBox(this->comboBoxZoom, Settings::Settings::inputZoom);
-
-		for (int i = 0; i < InputEventMapper::getMaxButtons(); i++ ){
-			std::string s = std::to_string(i);
-			QComboBox* box = this->centralwidget->findChild<QComboBox *>(QString::fromStdString("comboBoxButton"+s));
-			Settings::SettingsEntry* ent = Settings::Settings::inst()->getSettingEntryByName("button" +s );
-			if(box && ent){
-				initComboBox(box,*ent);
-			}
-		}
-
-		for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
-			std::string s = std::to_string(i);
-
-			QDoubleSpinBox* spin;
-			Settings::SettingsEntry* ent;
-
-			spin = this->centralwidget->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrim"+s));
-			ent = Settings::Settings::inst()->getSettingEntryByName("axisTrim" +s);
-			if(spin && ent){
-				initDoubleSpinBox(spin,*ent);
-			}
-			spin = this->centralwidget->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxDeadzone"+s));
-			ent = Settings::Settings::inst()->getSettingEntryByName("axisDeadzone" +s);
-			if(spin && ent){
-				initDoubleSpinBox(spin,*ent);
-			}
-		}
-
-	initDoubleSpinBox(this->doubleSpinBoxTranslationGain, Settings::Settings::inputTranslationGain);
-	initDoubleSpinBox(this->doubleSpinBoxTranslationVPRelGain, Settings::Settings::inputTranslationVPRelGain);
-	initDoubleSpinBox(this->doubleSpinBoxRotateGain, Settings::Settings::inputRotateGain);
-	initDoubleSpinBox(this->doubleSpinBoxZoomGain, Settings::Settings::inputZoomGain);
 
 	SettingsReader settingsReader;
 	Settings::Settings::inst()->visit(settingsReader);
@@ -344,8 +283,7 @@ void Preferences::featuresCheckBoxToggled(bool state)
  * from commandline is ignored. This always uses the value coming from the
  * QSettings.
  */
-void
-Preferences::setupFeaturesPage()
+void Preferences::setupFeaturesPage()
 {
 	int row = 0;
 	for (Feature::iterator it = Feature::begin();it != Feature::end();it++) {
@@ -381,6 +319,12 @@ Preferences::setupFeaturesPage()
 	// fixed size space essentially gives the first row the width of the
 	// spacer item itself.
 	gridLayoutExperimentalFeatures->addItem(new QSpacerItem(20, 0, QSizePolicy::Fixed, QSizePolicy::Fixed), 1, 0, 1, 1, Qt::AlignLeading);
+
+	if (!Feature::ExperimentalInputDriver.is_enabled()) {
+		this->toolBar->removeAction(prefsActionInput);
+		this->toolBar->removeAction(prefsActionInputButton);
+		InputDriverManager::instance()->closeDrivers();
+	}
 }
 
 void Preferences::on_colorSchemeChooser_itemSelectionChanged()
@@ -549,51 +493,6 @@ void Preferences::on_checkBoxShowWarningsIn3dView_toggled(bool val)
 	writeSettings();
 }
 
-void Preferences::on_AxisTrim()
-{
-	InputEventMapper::instance()->onAxisAutoTrim();
-
-	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
-		std::string s = std::to_string(i);
-
-		QDoubleSpinBox* spin;
-		Settings::SettingsEntry* ent;
-
-		spin = this->centralwidget->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrim"+s));
-		ent = Settings::Settings::inst()->getSettingEntryByName("axisTrim" +s);
-
-		if(spin && ent){
-			spin->setValue((double)Settings::Settings::inst()->get(*ent).toDouble());
-		}
-	}
-	emit inputCalibrationChanged();
-	writeSettings();
-}
-
-void Preferences::on_AxisTrimReset()
-{
-	InputEventMapper::instance()->onAxisTrimReset();
-	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
-		std::string s = std::to_string(i);
-
-		QDoubleSpinBox* spin;
-		Settings::SettingsEntry* ent;
-
-		ent = Settings::Settings::inst()->getSettingEntryByName("axisTrim" +s);
-		if(ent){
-			Settings::Settings::inst()->set(*ent, 0.00);
-		}
-
-		spin = this->centralwidget->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrim"+s));
-		if(spin){
-			spin->setValue(0.00);
-		}
-	}
-	emit inputCalibrationChanged();
-	writeSettings();
-}
-
-
 void Preferences::on_spinBoxIndentationWidth_valueChanged(int val)
 {
 	Settings::Settings::inst()->set(Settings::Settings::indentationWidth, Value(val));
@@ -681,315 +580,6 @@ void Preferences::on_checkBoxEnableBraceMatching_toggled(bool val)
 void Preferences::on_checkBoxEnableLineNumbers_toggled(bool checked)
 {
 	Settings::Settings::inst()->set(Settings::Settings::enableLineNumbers, Value(checked));
-	writeSettings();
-}
-
-void Preferences::on_comboBoxTranslationX_activated(int val)
-{
-	applyComboBox(comboBoxTranslationX, val, Settings::Settings::inputTranslationX);
-        emit inputMappingChanged();
-}
-
-void Preferences::on_comboBoxTranslationY_activated(int val)
-{
-	applyComboBox(comboBoxTranslationY, val, Settings::Settings::inputTranslationY);
-        emit inputMappingChanged();
-}
-
-void Preferences::on_comboBoxTranslationZ_activated(int val)
-{
-	applyComboBox(comboBoxTranslationZ, val, Settings::Settings::inputTranslationZ);
-        emit inputMappingChanged();
-}
-
-void Preferences::on_comboBoxTranslationXVPRel_activated(int val)
-{
-	applyComboBox(comboBoxTranslationXVPRel, val, Settings::Settings::inputTranslationXVPRel);
-        emit inputMappingChanged();
-}
-
-void Preferences::on_comboBoxTranslationYVPRel_activated(int val)
-{
-	applyComboBox(comboBoxTranslationYVPRel, val, Settings::Settings::inputTranslationYVPRel);
-        emit inputMappingChanged();
-}
-
-void Preferences::on_comboBoxTranslationZVPRel_activated(int val)
-{
-	applyComboBox(comboBoxTranslationZVPRel, val, Settings::Settings::inputTranslationZVPRel);
-        emit inputMappingChanged();
-}
-void Preferences::on_comboBoxRotationX_activated(int val)
-{
-	applyComboBox(comboBoxRotationX, val, Settings::Settings::inputRotateX);
-        emit inputMappingChanged();
-}
-
-void Preferences::on_comboBoxRotationY_activated(int val)
-{
-	applyComboBox(comboBoxRotationY, val, Settings::Settings::inputRotateY);
-        emit inputMappingChanged();
-}
-
-void Preferences::on_comboBoxRotationZ_activated(int val)
-{
-	applyComboBox(comboBoxRotationZ, val, Settings::Settings::inputRotateZ);
-        emit inputMappingChanged();
-}
-
-void Preferences::on_comboBoxZoom_activated(int val)
-{
-	applyComboBox(comboBoxZoom, val, Settings::Settings::inputZoom);
-        emit inputMappingChanged();
-}
-
-void Preferences::on_comboBoxButton0_activated(int val)
-{
-	applyComboBox(comboBoxButton0, val, Settings::Settings::inputButton0);
-        emit inputMappingChanged();
-}
-
-void Preferences::on_comboBoxButton1_activated(int val)
-{
-	applyComboBox(comboBoxButton1, val, Settings::Settings::inputButton1);
-        emit inputMappingChanged();
-}
-
-void Preferences::on_comboBoxButton2_activated(int val)
-{
-	applyComboBox(comboBoxButton2, val, Settings::Settings::inputButton2);
-        emit inputMappingChanged();
-}
-
-void Preferences::on_comboBoxButton3_activated(int val)
-{
-	applyComboBox(comboBoxButton3, val, Settings::Settings::inputButton3);
-        emit inputMappingChanged();
-}
-
-void Preferences::on_comboBoxButton4_activated(int val)
-{
-	applyComboBox(comboBoxButton4, val, Settings::Settings::inputButton4);
-        emit inputMappingChanged();
-}
-
-void Preferences::on_comboBoxButton5_activated(int val)
-{
-	applyComboBox(comboBoxButton5, val, Settings::Settings::inputButton5);
-        emit inputMappingChanged();
-}
-
-void Preferences::on_comboBoxButton6_activated(int val)
-{
-	applyComboBox(comboBoxButton6, val, Settings::Settings::inputButton6);
-        emit inputMappingChanged();
-}
-
-void Preferences::on_comboBoxButton7_activated(int val)
-{
-	applyComboBox(comboBoxButton7, val, Settings::Settings::inputButton7);
-        emit inputMappingChanged();
-}
-
-void Preferences::on_comboBoxButton8_activated(int val)
-{
-	applyComboBox(comboBoxButton8, val, Settings::Settings::inputButton8);
-        emit inputMappingChanged();
-}
-
-void Preferences::on_comboBoxButton9_activated(int val)
-{
-	applyComboBox(comboBoxButton9, val, Settings::Settings::inputButton9);
-        emit inputMappingChanged();
-}
-
-void Preferences::on_comboBoxButton10_activated(int val)
-{
-	applyComboBox(comboBoxButton10, val, Settings::Settings::inputButton10);
-        emit inputMappingChanged();
-}
-
-void Preferences::on_comboBoxButton11_activated(int val)
-{
-	applyComboBox(comboBoxButton11, val, Settings::Settings::inputButton11);
-        emit inputMappingChanged();
-}
-
-void Preferences::on_comboBoxButton12_activated(int val)
-{
-	applyComboBox(comboBoxButton12, val, Settings::Settings::inputButton12);
-        emit inputMappingChanged();
-}
-
-void Preferences::on_comboBoxButton13_activated(int val)
-{
-	applyComboBox(comboBoxButton13, val, Settings::Settings::inputButton13);
-        emit inputMappingChanged();
-}
-
-void Preferences::on_comboBoxButton14_activated(int val)
-{
-	applyComboBox(comboBoxButton14, val, Settings::Settings::inputButton14);
-        emit inputMappingChanged();
-}
-
-void Preferences::on_comboBoxButton15_activated(int val)
-{
-	applyComboBox(comboBoxButton15, val, Settings::Settings::inputButton15);
-        emit inputMappingChanged();
-}
-
-
-void Preferences::on_doubleSpinBoxTrim0_valueChanged(double val)
-{
-	Settings::Settings::inst()->set(Settings::Settings::axisTrim0, Value(val));
-	emit inputCalibrationChanged();
-	writeSettings();
-}
-
-void Preferences::on_doubleSpinBoxTrim1_valueChanged(double val)
-{
-	Settings::Settings::inst()->set(Settings::Settings::axisTrim1, Value(val));
-	emit inputCalibrationChanged();
-	writeSettings();
-}
-
-void Preferences::on_doubleSpinBoxTrim2_valueChanged(double val)
-{
-	Settings::Settings::inst()->set(Settings::Settings::axisTrim2, Value(val));
-	emit inputCalibrationChanged();
-	writeSettings();
-}
-
-void Preferences::on_doubleSpinBoxTrim3_valueChanged(double val)
-{
-	Settings::Settings::inst()->set(Settings::Settings::axisTrim3, Value(val));
-	emit inputCalibrationChanged();
-	writeSettings();
-}
-
-void Preferences::on_doubleSpinBoxTrim4_valueChanged(double val)
-{
-	Settings::Settings::inst()->set(Settings::Settings::axisTrim4, Value(val));
-	emit inputCalibrationChanged();
-	writeSettings();
-}
-
-void Preferences::on_doubleSpinBoxTrim5_valueChanged(double val)
-{
-	Settings::Settings::inst()->set(Settings::Settings::axisTrim5, Value(val));
-	emit inputCalibrationChanged();
-	writeSettings();
-}
-
-void Preferences::on_doubleSpinBoxTrim6_valueChanged(double val)
-{
-	Settings::Settings::inst()->set(Settings::Settings::axisTrim6, Value(val));
-	emit inputCalibrationChanged();
-	writeSettings();
-}
-
-void Preferences::on_doubleSpinBoxTrim7_valueChanged(double val)
-{
-	Settings::Settings::inst()->set(Settings::Settings::axisTrim7, Value(val));
-	emit inputCalibrationChanged();
-}
-
-void Preferences::on_doubleSpinBoxTrim8_valueChanged(double val)
-{
-	Settings::Settings::inst()->set(Settings::Settings::axisTrim8, Value(val));
-	emit inputCalibrationChanged();
-	writeSettings();
-}
-
-void Preferences::on_doubleSpinBoxDeadzone0_valueChanged(double val)
-{
-	Settings::Settings::inst()->set(Settings::Settings::axisDeadzone0, Value(val));
-	emit inputCalibrationChanged();
-	writeSettings();
-}
-
-void Preferences::on_doubleSpinBoxDeadzone1_valueChanged(double val)
-{
-	Settings::Settings::inst()->set(Settings::Settings::axisDeadzone1, Value(val));
-	emit inputCalibrationChanged();
-	writeSettings();
-}
-
-void Preferences::on_doubleSpinBoxDeadzone2_valueChanged(double val)
-{
-	Settings::Settings::inst()->set(Settings::Settings::axisDeadzone2, Value(val));
-	emit inputCalibrationChanged();
-	writeSettings();
-}
-
-void Preferences::on_doubleSpinBoxDeadzone3_valueChanged(double val)
-{
-	Settings::Settings::inst()->set(Settings::Settings::axisDeadzone3, Value(val));
-	emit inputCalibrationChanged();
-	writeSettings();
-}
-
-void Preferences::on_doubleSpinBoxDeadzone4_valueChanged(double val)
-{
-	Settings::Settings::inst()->set(Settings::Settings::axisDeadzone4, Value(val));
-	emit inputCalibrationChanged();
-	writeSettings();
-}
-
-void Preferences::on_doubleSpinBoxDeadzone5_valueChanged(double val)
-{
-	Settings::Settings::inst()->set(Settings::Settings::axisDeadzone5, Value(val));
-	emit inputCalibrationChanged();
-	writeSettings();
-}
-
-void Preferences::on_doubleSpinBoxDeadzone6_valueChanged(double val)
-{
-	Settings::Settings::inst()->set(Settings::Settings::axisDeadzone6, Value(val));
-	emit inputCalibrationChanged();
-	writeSettings();
-}
-
-void Preferences::on_doubleSpinBoxDeadzone7_valueChanged(double val)
-{
-	Settings::Settings::inst()->set(Settings::Settings::axisDeadzone7, Value(val));
-	emit inputCalibrationChanged();
-	writeSettings();
-}
-
-void Preferences::on_doubleSpinBoxDeadzone8_valueChanged(double val)
-{
-	Settings::Settings::inst()->set(Settings::Settings::axisDeadzone8, Value(val));
-	emit inputCalibrationChanged();
-	writeSettings();
-}
-
-void Preferences::on_doubleSpinBoxRotateGain_valueChanged(double val)
-{
-	Settings::Settings::inst()->set(Settings::Settings::inputRotateGain, Value(val));
-	emit inputGainChanged();
-	writeSettings();
-}
-
-void Preferences::on_doubleSpinBoxTranslationGain_valueChanged(double val)
-{
-	Settings::Settings::inst()->set(Settings::Settings::inputTranslationGain, Value(val));
-	emit inputGainChanged();
-	writeSettings();
-}
-
-void Preferences::on_doubleSpinBoxTranslationVPRelGain_valueChanged(double val)
-{
-	Settings::Settings::inst()->set(Settings::Settings::inputTranslationVPRelGain, Value(val));
-	emit inputGainChanged();
-	writeSettings();
-}
-
-void Preferences::on_doubleSpinBoxZoomGain_valueChanged(double val)
-{
-	Settings::Settings::inst()->set(Settings::Settings::inputZoomGain, Value(val));
-	emit inputGainChanged();
 	writeSettings();
 }
 
@@ -1118,51 +708,6 @@ void Preferences::updateGUI()
 	this->checkBoxShowWarningsIn3dView->setChecked(s->get(Settings::Settings::showWarningsIn3dView).toBool());
 	this->checkBoxEnableLineNumbers->setChecked(s->get(Settings::Settings::enableLineNumbers).toBool());
 	this->spinBoxLineWrapIndentationIndent->setDisabled(this->comboBoxLineWrapIndentationStyle->currentText() == "Same");
-
-	updateComboBox(this->comboBoxTranslationX, Settings::Settings::inputTranslationX);
-	updateComboBox(this->comboBoxTranslationY, Settings::Settings::inputTranslationY);
-	updateComboBox(this->comboBoxTranslationZ, Settings::Settings::inputTranslationZ);
-	updateComboBox(this->comboBoxTranslationXVPRel, Settings::Settings::inputTranslationXVPRel);
-	updateComboBox(this->comboBoxTranslationYVPRel, Settings::Settings::inputTranslationYVPRel);
-	updateComboBox(this->comboBoxTranslationZVPRel, Settings::Settings::inputTranslationZVPRel);
-	updateComboBox(this->comboBoxRotationX, Settings::Settings::inputRotateX);
-	updateComboBox(this->comboBoxRotationY, Settings::Settings::inputRotateY);
-	updateComboBox(this->comboBoxRotationZ, Settings::Settings::inputRotateZ);
-	updateComboBox(this->comboBoxZoom, Settings::Settings::inputZoom);
-
-	for (int i = 0; i < InputEventMapper::getMaxButtons(); i++ ){
-		std::string s = std::to_string(i);
-		QComboBox* box = this->centralwidget->findChild<QComboBox *>(QString::fromStdString("comboBoxButton"+s));
-		Settings::SettingsEntry* ent = Settings::Settings::inst()->getSettingEntryByName("button" +s );
-		if(box && ent){
-			updateComboBox(box,*ent);
-		}
-	}
-
-	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
-		std::string s = std::to_string(i);
-		Settings::Settings *setting = Settings::Settings::inst();
-
-		QDoubleSpinBox* spin;
-		Settings::SettingsEntry* ent;
-
-		spin= this->centralwidget->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrim"+s));
-		ent = Settings::Settings::inst()->getSettingEntryByName("axisTrim" +s );
-		if(spin && ent){
-			spin->setValue((double)setting->get(*ent).toDouble());
-		}
-
-		spin= this->centralwidget->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxDeadzone"+s));
-		ent = Settings::Settings::inst()->getSettingEntryByName("axisDeadzone" +s );
-		if(spin && ent){
-			spin->setValue((double)setting->get(*ent).toDouble());
-		}
-	}
-
-	this->doubleSpinBoxRotateGain->setValue((double)s->get(Settings::Settings::inputRotateGain).toDouble());
-	this->doubleSpinBoxTranslationGain->setValue((double)s->get(Settings::Settings::inputTranslationGain).toDouble());
-	this->doubleSpinBoxTranslationVPRelGain->setValue((double)s->get(Settings::Settings::inputTranslationVPRelGain).toDouble());
-	this->doubleSpinBoxZoomGain->setValue((double)s->get(Settings::Settings::inputZoomGain).toDouble());
 }
 
 void Preferences::initComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry)
@@ -1180,14 +725,6 @@ void Preferences::initSpinBox(QSpinBox *spinBox, const Settings::SettingsEntry& 
 {
 	RangeType range = entry.range().toRange();
 	spinBox->setMinimum(range.begin_value());
-	spinBox->setMaximum(range.end_value());
-}
-
-void Preferences::initDoubleSpinBox(QDoubleSpinBox *spinBox, const Settings::SettingsEntry& entry)
-{
-	RangeType range = entry.range().toRange();
-	spinBox->setMinimum(range.begin_value());
-	spinBox->setSingleStep(range.step_value());
 	spinBox->setMaximum(range.end_value());
 }
 
@@ -1243,31 +780,10 @@ void Preferences::create(QStringList colorSchemes)
     instance->colorSchemeChooser->clear();
     instance->colorSchemeChooser->addItems(renderColorSchemes);
     instance->init();
+    instance->AxisConfig->init();
+    instance->ButtonConfig->init();
     instance->setupFeaturesPage();
     instance->updateGUI();
-}
-
-void Preferences::updateButtonState(int nr, bool pressed) const{
-	QString Style = Preferences::EmptyString;
-	if(pressed){
-		Style=Preferences::ActiveStyleString;
-	}
-	std::string number = std::to_string(nr);
-
-	QLabel* label = this->centralwidget->findChild<QLabel *>(QString::fromStdString("labelInputButton"+number));
-	if(label==0) return;
-	label->setStyleSheet(Style);
-}
-
-void Preferences::AxesChanged(int nr, double val) const{
-	int value = val *100;
-
-	QString s =  QString::number(val, 'f', 2 );
-	std::string number = std::to_string(nr);
-	QProgressBar* progressBar = this->centralwidget->findChild<QProgressBar *>(QString::fromStdString("progressBarAxis"+number));
-	if(progressBar==0) return;
-	progressBar->setValue(value);
-	progressBar->setFormat(s);
 }
 
 Preferences *Preferences::inst() {
