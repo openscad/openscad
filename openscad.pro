@@ -554,7 +554,7 @@ unix:!macx {
   SOURCES += src/input/JoystickInputDriver.cc
 }
 
-contains(QT_VERSION, ^5\\..*) {
+!lessThan(QT_MAJOR_VERSION, 5) {
   qtHaveModule(gamepad) {
     QT += gamepad
     DEFINES += ENABLE_QGAMEPAD
