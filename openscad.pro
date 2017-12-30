@@ -554,6 +554,15 @@ unix:!macx {
   SOURCES += src/input/JoystickInputDriver.cc
 }
 
+!lessThan(QT_MAJOR_VERSION, 5) {
+  qtHaveModule(gamepad) {
+    QT += gamepad
+    DEFINES += ENABLE_QGAMEPAD
+    HEADERS += src/input/QGamepadInputDriver.h
+    SOURCES += src/input/QGamepadInputDriver.cc
+  }
+}
+
 unix:!macx {
   SOURCES += src/imageutils-lodepng.cc
   SOURCES += src/OffscreenContextGLX.cc

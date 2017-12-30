@@ -606,6 +606,9 @@ Q_IMPORT_PLUGIN(qtaccessiblewidgets)
 #ifdef ENABLE_DBUS
 #include "input/DBusInputDriver.h"
 #endif
+#ifdef ENABLE_QGAMEPAD
+#include "input/QGamepadInputDriver.h"
+#endif
 #include <QString>
 #include <QDir>
 #include <QFileInfo>
@@ -794,6 +797,9 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 #endif
 #ifdef ENABLE_JOYSTICK
         InputDriverManager::instance()->registerDriver(new JoystickInputDriver());
+#endif
+#ifdef ENABLE_QGAMEPAD
+        InputDriverManager::instance()->registerDriver(new QGamepadInputDriver());
 #endif
 #ifdef ENABLE_DBUS
         InputDriverManager::instance()->registerDriver(new DBusInputDriver());
