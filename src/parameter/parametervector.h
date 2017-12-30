@@ -7,8 +7,8 @@ class ParameterVector : public ParameterVirtualWidget
 	Q_OBJECT
 public:
 	ParameterVector(ParameterObject *parameterobject, int showDescription);
-	void setValue();
-	void setParameterFocus();
+	void setValue() override;
+	void setParameterFocus() override;
 
 protected slots:
 	void onChanged(double);

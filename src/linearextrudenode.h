@@ -14,8 +14,8 @@ public:
 		scale_x = scale_y = 1;
 		center = has_twist = false;
 	}
-	virtual std::string toString() const;
-	virtual std::string name() const { return "linear_extrude"; }
+	std::string toString() const override;
+	std::string name() const override { return "linear_extrude"; }
 
 	int convexity, slices;
 	double fn, fs, fa, height, twist;

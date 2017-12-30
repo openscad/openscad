@@ -11,7 +11,7 @@ public:
         void setDragText(const QString &text);
 
 protected:
-        void startDrag(Qt::DropActions supportedActions);
+        void startDrag(Qt::DropActions supportedActions) override;
 
 private:
         QString text;

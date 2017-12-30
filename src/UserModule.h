@@ -11,10 +11,10 @@ class UserModule : public AbstractModule, public ASTNode
 public:
 	UserModule(const Location &loc) : ASTNode(loc) { }
 	UserModule(const class Feature& feature, const Location &loc) : AbstractModule(feature), ASTNode(loc) { }
-	virtual ~UserModule() {}
+	~UserModule() {}
 
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx = nullptr) const;
-	virtual std::string dump(const std::string &indent, const std::string &name) const;
+	AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx = nullptr) const override;
+	std::string dump(const std::string &indent, const std::string &name) const override;
 	static const std::string& stack_element(int n) { return module_stack[n]; };
 	static int stack_size() { return module_stack.size(); };
 

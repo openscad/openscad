@@ -14,10 +14,10 @@ public:
           which is useful for debugging. */
         NodeDumper(NodeCache &cache, bool idPrefix = false) :
                 cache(cache), idprefix(idPrefix), root(nullptr) { }
-        virtual ~NodeDumper() {}
+        ~NodeDumper() {}
 
-        virtual Response visit(State &state, const AbstractNode &node);
-        virtual Response visit(State &state, const RootNode &node);
+        Response visit(State &state, const AbstractNode &node) override;
+        Response visit(State &state, const RootNode &node) override;
 
 private:
         void handleVisitedChildren(const State &state, const AbstractNode &node);

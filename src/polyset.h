@@ -19,14 +19,14 @@ public:
 
 	PolySet(unsigned int dim, boost::tribool convex = unknown);
 	PolySet(const Polygon2d &origin);
-	virtual ~PolySet();
+	~PolySet();
 
-	virtual size_t memsize() const;
-	virtual BoundingBox getBoundingBox() const;
-	virtual std::string dump() const;
-	virtual unsigned int getDimension() const { return this->dim; }
-	virtual bool isEmpty() const { return polygons.size() == 0; }
-	virtual Geometry *copy() const { return new PolySet(*this); }
+	size_t memsize() const override;
+	BoundingBox getBoundingBox() const override;
+	std::string dump() const override;
+	unsigned int getDimension() const override { return this->dim; }
+	bool isEmpty() const override { return polygons.size() == 0; }
+	Geometry *copy() const override { return new PolySet(*this); }
 
 	void quantizeVertices();
 	size_t numPolygons() const { return polygons.size(); }
