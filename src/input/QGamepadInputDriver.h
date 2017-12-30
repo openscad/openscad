@@ -27,6 +27,7 @@
 
 #include "InputDriver.h"
 
+#include <memory>
 #include <QtGamepad/QGamepad>
 
 class QGamepadInputDriver : public InputDriver
@@ -40,7 +41,5 @@ public:
 
     virtual const std::string & get_name() const;
 private:
-    QGamepad *gamepad;
-    char name[1024];
-    volatile bool stopRequest;
+	std::unique_ptr<QGamepad> gamepad;
 };

@@ -50,49 +50,49 @@ bool QGamepadInputDriver::open()
 		return false;
 	}
 
-    this->gamepad = new QGamepad(*gamepads.begin(), this);
+    this->gamepad.reset(new QGamepad(*gamepads.begin(), this));
 
-    connect(this->gamepad, &QGamepad::axisLeftXChanged, this, [](double value){
+    connect(this->gamepad.get(), &QGamepad::axisLeftXChanged, this, [](double value){
         InputDriverManager::instance()->sendEvent(new InputEventAxisChanged(0, value));
     });
-    connect(this->gamepad, &QGamepad::axisLeftYChanged, this, [](double value){
+    connect(this->gamepad.get(), &QGamepad::axisLeftYChanged, this, [](double value){
         InputDriverManager::instance()->sendEvent(new InputEventAxisChanged(1, value));
     });
-    connect(this->gamepad, &QGamepad::axisRightXChanged, this, [](double value){
+    connect(this->gamepad.get(), &QGamepad::axisRightXChanged, this, [](double value){
         InputDriverManager::instance()->sendEvent(new InputEventAxisChanged(2, value));
     });
-    connect(this->gamepad, &QGamepad::axisRightYChanged, this, [](double value){
+    connect(this->gamepad.get(), &QGamepad::axisRightYChanged, this, [](double value){
         InputDriverManager::instance()->sendEvent(new InputEventAxisChanged(3, value));
     });
-    connect(this->gamepad, &QGamepad::buttonL2Changed, this, [](double value){
+    connect(this->gamepad.get(), &QGamepad::buttonL2Changed, this, [](double value){
         InputDriverManager::instance()->sendEvent(new InputEventAxisChanged(4, value));
     });
-    connect(this->gamepad, &QGamepad::buttonR2Changed, this, [](double value){
+    connect(this->gamepad.get(), &QGamepad::buttonR2Changed, this, [](double value){
         InputDriverManager::instance()->sendEvent(new InputEventAxisChanged(5, value));
     });
 
-    connect(this->gamepad, &QGamepad::buttonAChanged, this, [](bool pressed){
+    connect(this->gamepad.get(), &QGamepad::buttonAChanged, this, [](bool pressed){
 		InputDriverManager::instance()->sendEvent(new InputEventButtonChanged(0, pressed));
     });
-    connect(this->gamepad, &QGamepad::buttonBChanged, this, [](bool pressed){
+    connect(this->gamepad.get(), &QGamepad::buttonBChanged, this, [](bool pressed){
 		InputDriverManager::instance()->sendEvent(new InputEventButtonChanged(1, pressed));
     });
-    connect(this->gamepad, &QGamepad::buttonXChanged, this, [](bool pressed){
+    connect(this->gamepad.get(), &QGamepad::buttonXChanged, this, [](bool pressed){
 		InputDriverManager::instance()->sendEvent(new InputEventButtonChanged(2, pressed));
     });
-    connect(this->gamepad, &QGamepad::buttonYChanged, this, [](bool pressed){
+    connect(this->gamepad.get(), &QGamepad::buttonYChanged, this, [](bool pressed){
 		InputDriverManager::instance()->sendEvent(new InputEventButtonChanged(3, pressed));
     });
-    connect(this->gamepad, &QGamepad::buttonL1Changed, this, [](bool pressed){
+    connect(this->gamepad.get(), &QGamepad::buttonL1Changed, this, [](bool pressed){
 		InputDriverManager::instance()->sendEvent(new InputEventButtonChanged(4, pressed));
     });
-    connect(this->gamepad, &QGamepad::buttonR1Changed, this, [](bool pressed){
+    connect(this->gamepad.get(), &QGamepad::buttonR1Changed, this, [](bool pressed){
 		InputDriverManager::instance()->sendEvent(new InputEventButtonChanged(5, pressed));
     });
-    connect(this->gamepad, &QGamepad::buttonSelectChanged, this, [](bool pressed){
+    connect(this->gamepad.get(), &QGamepad::buttonSelectChanged, this, [](bool pressed){
 		InputDriverManager::instance()->sendEvent(new InputEventButtonChanged(6, pressed));
     });
-    connect(this->gamepad, &QGamepad::buttonStartChanged, this, [](bool pressed){
+    connect(this->gamepad.get(), &QGamepad::buttonStartChanged, this, [](bool pressed){
 		InputDriverManager::instance()->sendEvent(new InputEventButtonChanged(7, pressed));
     });
 
@@ -101,8 +101,7 @@ bool QGamepadInputDriver::open()
 
 void QGamepadInputDriver::close()
 {
-	delete this->gamepad;
-	this->gamepad = nullptr;
+	gamepad.reset();
 }
 
 const std::string & QGamepadInputDriver::get_name() const
