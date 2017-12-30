@@ -14,7 +14,6 @@
 #include <Eigen/Geometry>
 #include "GLView.h"
 #include "renderer.h"
-#include "input/InputDriver.h"
 
 class QGLView :
 #ifdef USE_QOPENGLWIDGET
