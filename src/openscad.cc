@@ -802,7 +802,7 @@ int main(int argc, char **argv)
 	StackCheck::inst()->init();
 	
 #ifdef Q_OS_MAC
-	bool isGuiLaunched = getenv("GUI_LAUNCHED") != 0;
+	bool isGuiLaunched = getenv("GUI_LAUNCHED") != nullptr;
 	if (isGuiLaunched) set_output_handler(CocoaUtils::nslog, nullptr);
 #else
 	PlatformUtils::ensureStdIO();

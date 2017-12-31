@@ -49,13 +49,13 @@ public:
 	void setOrthoMode(bool enabled);
 	bool showScaleProportional() const { return this->showscale; }
 	void setShowScaleProportional(bool enabled) { this->showscale = enabled; }
-	std::string getRendererInfo() const;
+	std::string getRendererInfo() const override;
 #if QT_VERSION >= 0x050100
-	float getDPI() { return this->devicePixelRatio(); }
+	float getDPI() override { return this->devicePixelRatio(); }
 #endif
 	
 	const QImage & grabFrame();
-	bool save(const char *filename);
+	bool save(const char *filename) override;
 	void resetView();
 	void viewAll();
 
@@ -78,20 +78,20 @@ private:
 	QPoint last_mouse;
 	QImage frame; // Used by grabFrame() and save()
 
-	void wheelEvent(QWheelEvent *event);
-	void mousePressEvent(QMouseEvent *event);
-	void mouseMoveEvent(QMouseEvent *event);
-	void mouseReleaseEvent(QMouseEvent *event);
-	void mouseDoubleClickEvent(QMouseEvent *event);
+	void wheelEvent(QWheelEvent *event) override;
+	void mousePressEvent(QMouseEvent *event) override;
+	void mouseMoveEvent(QMouseEvent *event) override;
+	void mouseReleaseEvent(QMouseEvent *event) override;
+	void mouseDoubleClickEvent(QMouseEvent *event) override;
 
-	void initializeGL();
-	void resizeGL(int w, int h);
+	void initializeGL() override;
+	void resizeGL(int w, int h) override;
 
-	void paintGL();
+	void paintGL() override;
 	void normalizeAngle(GLdouble& angle);
 
 #ifdef ENABLE_OPENCSG
-	void display_opencsg_warning();
+	void display_opencsg_warning() override;
 private slots:
 	void display_opencsg_warning_dialog();
 #endif

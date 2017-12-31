@@ -13,14 +13,14 @@ class ModuleContext : public Context
 {
 public:
 	ModuleContext(const Context *parent = nullptr, const EvalContext *evalctx = nullptr);
-	virtual ~ModuleContext();
+	~ModuleContext();
 
 	void initializeModule(const class UserModule &m);
 	void registerBuiltin();
-	virtual ValuePtr evaluate_function(const std::string &name, 
-																										const EvalContext *evalctx) const;
-	virtual AbstractNode *instantiate_module(const ModuleInstantiation &inst, 
-																					 EvalContext *evalctx) const;
+	ValuePtr evaluate_function(const std::string &name, 
+																										const EvalContext *evalctx) const override;
+	AbstractNode *instantiate_module(const ModuleInstantiation &inst, 
+																					 EvalContext *evalctx) const override;
 
 	const AbstractModule *findLocalModule(const std::string &name) const;
 	const AbstractFunction *findLocalFunction(const std::string &name) const;
@@ -43,12 +43,12 @@ class FileContext : public ModuleContext
 {
 public:
 	FileContext(const Context *parent);
-	virtual ~FileContext() {}
+	~FileContext() {}
 	void initializeModule(const FileModule &module);
-	virtual ValuePtr evaluate_function(const std::string &name, 
-																		 const EvalContext *evalctx) const;
-	virtual AbstractNode *instantiate_module(const ModuleInstantiation &inst, 
-																					 EvalContext *evalctx) const;
+	ValuePtr evaluate_function(const std::string &name, 
+																		 const EvalContext *evalctx) const override;
+	AbstractNode *instantiate_module(const ModuleInstantiation &inst, 
+																					 EvalContext *evalctx) const override;
 
 private:
 	const FileModule::ModuleContainer *usedlibs_p;

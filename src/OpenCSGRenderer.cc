@@ -40,7 +40,7 @@ public:
 	shared_ptr<const Geometry> geom;
 	Transform3d m;
 	Renderer::csgmode_e csgmode;
-	virtual void render() {
+	void render() override {
 		glPushMatrix();
 		glMultMatrixd(m.data());
 		Renderer::render_surface(geom, csgmode, m);

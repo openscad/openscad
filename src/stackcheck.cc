@@ -32,7 +32,7 @@ bool StackCheck::check()
 
 StackCheck *StackCheck::inst()
 {
-	if (self == 0) {
+	if (self == nullptr) {
 		self = new StackCheck();
 	}
 	return self;

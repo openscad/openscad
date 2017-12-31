@@ -40,7 +40,7 @@ namespace /* anonymous */ {
   }
 */
 #if 1 // Use Grid
-		void operator()(HDS& hds) {
+		void operator()(HDS& hds) override {
 			CGAL_Polybuilder B(hds, true);
 		
 			Grid3d<int> grid(GRID_FINE);
@@ -182,7 +182,7 @@ namespace /* anonymous */ {
 	{
 		Copy_polyhedron_to(const Polyhedron_input& in_poly) : in_poly(in_poly) {}
 
-		void operator()(typename Polyhedron_output::HalfedgeDS& out_hds)
+		void operator()(typename Polyhedron_output::HalfedgeDS& out_hds) override
 		{
 			typedef typename Polyhedron_output::HalfedgeDS Output_HDS;
 

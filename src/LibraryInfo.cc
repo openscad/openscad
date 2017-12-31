@@ -78,9 +78,9 @@ std::string LibraryInfo::info()
 	std::string cgal_2d_kernelEx = typeid(CGAL_ExactKernel2).name();
 #if defined(__openscad_info_demangle__)
 	int status;
-	cgal_3d_kernel = std::string( abi::__cxa_demangle( cgal_3d_kernel.c_str(), 0, 0, &status ) );
-	cgal_2d_kernel = std::string( abi::__cxa_demangle( cgal_2d_kernel.c_str(), 0, 0, &status ) );
-	cgal_2d_kernelEx = std::string( abi::__cxa_demangle( cgal_2d_kernelEx.c_str(), 0, 0, &status ) );
+	cgal_3d_kernel = std::string( abi::__cxa_demangle( cgal_3d_kernel.c_str(), nullptr, nullptr, &status ) );
+	cgal_2d_kernel = std::string( abi::__cxa_demangle( cgal_2d_kernel.c_str(), nullptr, nullptr, &status ) );
+	cgal_2d_kernelEx = std::string( abi::__cxa_demangle( cgal_2d_kernelEx.c_str(), nullptr, nullptr, &status ) );
 #endif // demangle
 	boost::replace_all( cgal_3d_kernel, "CGAL::", "" );
 	boost::replace_all( cgal_2d_kernel, "CGAL::", "" );

@@ -37,6 +37,6 @@ protected:
 };
 
 #define VISITABLE() \
-	virtual Response accept(class State &state, BaseVisitor &visitor) const { \
+	Response accept(class State &state, BaseVisitor &visitor) const override { \
 		return acceptImpl(state, *this, visitor); \
   }

@@ -286,7 +286,7 @@ public:
     Build_polyhedron(const typename Nef::SNC_const_decorator& s) : error(false),
       scd(s), VI(s.vertices_begin(),s.vertices_end(),'V') {}
     
-    void operator()( HDS& hds) {
+    void operator()( HDS& hds) override {
       CGAL::Polyhedron_incremental_builder_3<HDS> B(hds, true);
 
       int skip_volumes;

@@ -50,8 +50,8 @@ private:
 	bool anyfocused;
 	ParameterVirtualWidget *entryToFocus;
 
-	void connectWidget();
-	void updateWidget();
+	void connectWidget() override;
+	void updateWidget() override;
 	void cleanScrollArea();
 	void addEntry(QVBoxLayout* anylayout, ParameterVirtualWidget *entry);
 	void clear();
@@ -59,8 +59,8 @@ private:
 	void setComboBoxPresetForSet();
 
 public:
-	ParameterWidget(QWidget *parent = 0);
-	virtual ~ParameterWidget();
+	ParameterWidget(QWidget *parent = nullptr);
+	~ParameterWidget();
 	void readFile(QString scadFile);
 	void writeFileIfNotEmpty(QString scadFile);
 

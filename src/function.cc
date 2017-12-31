@@ -82,9 +82,9 @@ public:
 			invert(invert), op(expr), call(call), endexpr(endexpr) {
 	}
 
-	virtual ~FunctionTailRecursion() { }
+	~FunctionTailRecursion() { }
 
-	virtual ValuePtr evaluate(const Context *ctx, const EvalContext *evalctx) const {
+	ValuePtr evaluate(const Context *ctx, const EvalContext *evalctx) const override {
 		if (!expr) return ValuePtr::undefined;
 		
 		Context c(ctx);

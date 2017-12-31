@@ -8,8 +8,8 @@ class ParameterComboBox : public ParameterVirtualWidget
 
 public:
 	ParameterComboBox(ParameterObject *parameterobject, int showDescription);
-	void setValue();
-	void setParameterFocus();
+	void setValue() override;
+	void setParameterFocus() override;
 
 protected slots:
 	void onChanged(int idx);

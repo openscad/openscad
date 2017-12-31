@@ -13,8 +13,8 @@ public:
 	VISITABLE();
 	TextNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) {}
 	
-	virtual std::string toString() const;
-	virtual std::string name() const { return "text"; }
+	std::string toString() const override;
+	std::string name() const override { return "text"; }
 	
 	virtual std::vector<const class Geometry *> createGeometryList() const;
   

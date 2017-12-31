@@ -7,15 +7,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2014.01.05\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-10-30 08:02+0100\n"
-"PO-Revision-Date: 2017-10-30 08:13+0100\n"
+"POT-Creation-Date: 2017-12-28 16:30+0100\n"
+"PO-Revision-Date: 2017-12-28 16:36+0100\n"
 "Last-Translator: Torsten Paul <Torsten.Paul@gmx.de>\n"
 "Language-Team: German\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.0.4\n"
+"X-Generator: Poedit 2.0.5\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
@@ -72,22 +72,22 @@ msgid ""
 "<html><head/><body><p>This list shows the fonts currently registered with "
 "OpenSCAD.</p><p>Example:</p><pre style=\" margin-top:12px; margin-"
 "bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-"
-"indent:0px;\"><span style=\" font-family:'Courier New,courier';\">  text(t = "
-"&quot;OpenSCAD&quot;, font = &quot;DejaVu Sans&quot;);</span></pre><pre "
+"indent:0px;\"><span style=\" font-family:'Courier New,courier';\">  "
+"text(&quot;OpenSCAD&quot;, font = &quot;DejaVu Sans&quot;);</span></pre><pre "
 "style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-"
 "right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-"
-"family:'Courier New,courier';\">  text(t = &quot;OpenSCAD&quot;, font = "
-"&quot;Liberation Sans:style=Italic&quot;);</span></pre></body></html>"
+"family:'Courier New,courier';\">  text(&quot;OpenSCAD&quot;, font = &quot;"
+"Liberation Sans:style=Italic&quot;);</span></pre></body></html>"
 msgstr ""
 "<html><head/><body><p>Diese Liste zeigt die Fonts, die momentan mit OpenSCAD "
 "registriert sind.</p><p>Beispiele:</p><pre style=\" margin-top:12px; margin-"
 "bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-"
-"indent:0px;\"><span style=\" font-family:'Courier New,courier';\">  text(t = "
-"&quot;OpenSCAD&quot;, font = &quot;DejaVu Sans&quot;);</span></pre><pre "
+"indent:0px;\"><span style=\" font-family:'Courier New,courier';\">  "
+"text(&quot;OpenSCAD&quot;, font = &quot;DejaVu Sans&quot;);</span></pre><pre "
 "style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-"
 "right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-"
-"family:'Courier New,courier';\">  text(t = &quot;OpenSCAD&quot;, font = "
-"&quot;Liberation Sans:style=Italic&quot;);</span></pre></body></html>"
+"family:'Courier New,courier';\">  text(&quot;OpenSCAD&quot;, font = &quot;"
+"Liberation Sans:style=Italic&quot;);</span></pre></body></html>"
 
 #: objects/ui_launchingscreen.h:296
 msgid "Welcome to OpenSCAD"
@@ -1191,21 +1191,21 @@ msgstr "Das Dokument ist verändert."
 msgid "Do you want to save your changes?"
 msgstr "Möchten Sie die Änderungen speichern?"
 
-#: src/OpenSCADApp.cc:36
+#: src/OpenSCADApp.cc:37
 msgid "Unknown error"
 msgstr "Unbekannter Fehler"
 
-#: src/OpenSCADApp.cc:39
+#: src/OpenSCADApp.cc:40
 msgid "Critical Error"
 msgstr "Kritischer Fehler"
 
-#: src/OpenSCADApp.cc:39
+#: src/OpenSCADApp.cc:40
 msgid ""
 "A critical error was caught. The application may have become unstable:\n"
 "%1"
 msgstr ""
 
-#: src/OpenSCADApp.cc:63
+#: src/OpenSCADApp.cc:64
 msgid ""
 "Fontconfig needs to update its font cache.\n"
 "This can take up to a couple of minutes."

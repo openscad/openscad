@@ -52,9 +52,9 @@ template <class Key, class T>
 class Cache
 {
 	struct Node {
-		inline Node() : keyPtr(0) {}
+		inline Node() : keyPtr(nullptr) {}
 		inline Node(T *data, int cost)
-			: keyPtr(0), t(data), c(cost), p(0), n(0) {}
+			: keyPtr(nullptr), t(data), c(cost), p(nullptr), n(nullptr) {}
 		const Key *keyPtr; T *t; int c; Node *p,*n;
 	};
 	typedef typename std::unordered_map<Key, Node> map_type;
@@ -78,14 +78,14 @@ class Cache
 	}
 	inline T *relink(const Key &key) {
 		iterator_type i = hash.find(key);
-		if (i == hash.end()) return 0;
+		if (i == hash.end()) return nullptr;
 
 		Node &n = i->second;
 		if (f != &n) {
 			if (n.p) n.p->n = n.n;
 			if (n.n) n.n->p = n.p;
 			if (l == &n) l = n.p;
-			n.p = 0;
+			n.p = nullptr;
 			n.n = f;
 			f->p = &n;
 			f = &n;
@@ -95,7 +95,7 @@ class Cache
 
 public:
 	inline explicit Cache(int maxCost = 100)
-		: f(0), l(0), unused(0), mx(maxCost), total(0) { }
+		: f(nullptr), l(nullptr), unused(nullptr), mx(maxCost), total(0) { }
 	inline ~Cache() { clear(); }
 
 	inline int maxCost() const { return mx; }
@@ -107,7 +107,7 @@ public:
 
 	void clear() {
 		while (f) { delete f->t; f = f->n; }
-		hash.clear(); l = 0; total = 0;
+		hash.clear(); l = nullptr; total = 0;
 	}
 
 	bool insert(const Key &key, T *object, int cost = 1);

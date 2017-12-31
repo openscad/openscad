@@ -92,7 +92,7 @@ void ParameterSet::writeParameterSet(const std::string &filename)
 
 void ParameterSet::applyParameterSet(FileModule *fileModule, const std::string &setName)
 {
-	if (fileModule == NULL || this->root.empty()) return;
+	if (fileModule == nullptr || this->root.empty()) return;
 	try {
 		ModuleContext ctx;
 		boost::optional<pt::ptree &> set = getParameterSet(setName);

@@ -11,7 +11,7 @@ public:
 	OpenSCADApp(int &argc ,char **argv);
 	~OpenSCADApp();
 
-	bool notify(QObject *object, QEvent *event);
+	bool notify(QObject *object, QEvent *event) override;
 	void requestOpenFile(const QString &filename);
 
 public slots:
