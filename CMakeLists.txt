@@ -86,6 +86,8 @@ message(STATUS "LibZip: ${LIBZIP_VERSION}")
 include_directories(${LIBZIP_INCLUDE_DIR_ZIP})
 include_directories(${LIBZIP_INCLUDE_DIR_ZIPCONF})
 
+# Output compilation database (compile_commands.json), so we can e.g. run clang-tidy or other tools separately
+set(CMAKE_EXPORT_COMPILE_COMMANDS "ON")
 # Use clang-tidy if run with -DCLANG_TIDY=1
 find_program(CLANG_TIDY_EXE NAMES clang-tidy)
 set(CLANG_TIDY ${CLANG_TIDY} CACHE BOOL "Enable clang-tidy")
