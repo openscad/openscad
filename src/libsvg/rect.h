@@ -16,12 +16,12 @@ protected:
 public:
     rect();
     rect(const rect& orig);
-    ~rect() override;
+    ~rect();
 
-    virtual double get_width() { return width; }
-    virtual double get_height() { return height; }
-    virtual double get_rx() { return rx; }
-    virtual double get_ry() { return ry; }
+    double get_width() { return width; }
+    double get_height() { return height; }
+    double get_rx() { return rx; }
+    double get_ry() { return ry; }
     
     void set_attrs(attr_map_t& attrs) override;
     void dump() override;

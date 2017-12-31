@@ -15,8 +15,8 @@ public:
     svgpage(const svgpage& orig);
     ~svgpage() override;
 
-    virtual double get_width() { return width; }
-    virtual double get_height() { return height; }
+    double get_width() { return width; }
+    double get_height() { return height; }
     bool is_container() override { return true; }
     
     void set_attrs(attr_map_t& attrs) override;

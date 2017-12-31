@@ -24,7 +24,7 @@ private:
 public:
     path();
     path(const path& orig);
-    ~path() override;
+    ~path();
 
     void set_attrs(attr_map_t& attrs) override;
     void dump() override;
