@@ -1010,7 +1010,7 @@
           </font>
          </property>
          <property name="text">
-          <string>Driver selection:</string>
+          <string>Driver selection: (changes requires restarting OpenSCAD)</string>
          </property>
         </widget>
        </item>
