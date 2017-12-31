@@ -64,7 +64,7 @@ void OpenSCADApp::showFontCacheDialog()
 	this->fontCacheDialog->setLabelText(_("Fontconfig needs to update its font cache.\nThis can take up to a couple of minutes."));
 	this->fontCacheDialog->setMinimum(0);
 	this->fontCacheDialog->setMaximum(0);
-	this->fontCacheDialog->setCancelButton(0);
+	this->fontCacheDialog->setCancelButton(nullptr);
 	this->fontCacheDialog->exec();
 }
 

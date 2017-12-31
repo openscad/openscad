@@ -17,7 +17,7 @@ private:
 	bool *show;
 
 public:
-	explicit GroupWidget(bool &show,const QString & title = "", QWidget *parent = 0);
+	explicit GroupWidget(bool &show,const QString & title = "", QWidget *parent = nullptr);
 	void setContentLayout(QLayout & contentLayout);
 
 private slots:
