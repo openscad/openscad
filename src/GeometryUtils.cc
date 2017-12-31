@@ -265,7 +265,7 @@ bool GeometryUtils::tessellatePolygonWithHoles(const Vector3f *vertices,
   }
 
   TESSalloc ma;
-  TESStesselator* tess = 0;
+  TESStesselator* tess = nullptr;
 
   memset(&ma, 0, sizeof(ma));
   ma.memalloc = stdAlloc;
