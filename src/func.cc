@@ -67,7 +67,7 @@ int process_id = getpid();
 #endif
 
 boost::mt19937 deterministic_rng;
-boost::mt19937 lessdeterministic_rng( std::time(0) + process_id );
+boost::mt19937 lessdeterministic_rng( std::time(nullptr) + process_id );
 
 #define M_SQRT3   1.73205080756887719318 /* sqrt(3)   */
 #define M_SQRT3_4 0.86602540378443859659 /* sqrt(3/4) == sqrt(3)/2 */

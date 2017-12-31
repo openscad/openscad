@@ -60,7 +60,7 @@ void ScadLexer::setKeywords(int set, const std::string& keywords)
 const char *ScadLexer::keywords(int set) const
 {
 	if ((set < 1) || (set > 4)) {
-		return 0;
+		return nullptr;
 	}
 	return keywordSet[set - 1].c_str();
 }

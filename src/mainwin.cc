@@ -699,9 +699,9 @@ void MainWindow::updateUndockMode(bool undockMode)
 void MainWindow::updateReorderMode(bool reorderMode)
 {
 	MainWindow::reorderMode = reorderMode;
-	editorDock->setTitleBarWidget(reorderMode ? 0 : editorDockTitleWidget);
-	consoleDock->setTitleBarWidget(reorderMode ? 0 : consoleDockTitleWidget);
-	parameterDock->setTitleBarWidget(reorderMode ? 0 : parameterDockTitleWidget);
+	editorDock->setTitleBarWidget(reorderMode ? nullptr : editorDockTitleWidget);
+	consoleDock->setTitleBarWidget(reorderMode ? nullptr : consoleDockTitleWidget);
+	parameterDock->setTitleBarWidget(reorderMode ? nullptr : parameterDockTitleWidget);
 }
 
 MainWindow::~MainWindow()

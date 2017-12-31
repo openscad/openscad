@@ -59,7 +59,7 @@ private:
 	void setComboBoxPresetForSet();
 
 public:
-	ParameterWidget(QWidget *parent = 0);
+	ParameterWidget(QWidget *parent = nullptr);
 	virtual ~ParameterWidget();
 	void readFile(QString scadFile);
 	void writeFileIfNotEmpty(QString scadFile);
