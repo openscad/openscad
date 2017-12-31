@@ -20,60 +20,60 @@ public:
     transformation(const std::string op, const std::string name);
     virtual ~transformation();
     
-    virtual const std::string& get_op();
-    virtual const std::string& get_name();
-    virtual const std::string get_args();
+    const std::string& get_op();
+    const std::string& get_name();
+    const std::string get_args();
     
-    virtual void add_arg(const std::string arg);
+    void add_arg(const std::string arg);
     virtual std::vector<Eigen::Matrix3d> get_matrices() = 0;
 };
 
 class matrix : public transformation {
 public:
     matrix();
-    virtual ~matrix();
+    ~matrix();
     
-    virtual std::vector<Eigen::Matrix3d> get_matrices();
+    std::vector<Eigen::Matrix3d> get_matrices() override;
 };
 
 class translate : public transformation {
 public:
     translate();
-    virtual ~translate();
+    ~translate();
     
-    virtual std::vector<Eigen::Matrix3d> get_matrices();
+    std::vector<Eigen::Matrix3d> get_matrices() override;
 };
 
 class scale : public transformation {
 public:
     scale();
-    virtual ~scale();
+    ~scale();
     
-    virtual std::vector<Eigen::Matrix3d> get_matrices();
+    std::vector<Eigen::Matrix3d> get_matrices() override;
 };
 
 class rotate : public transformation {
 public:
     rotate();
-    virtual ~rotate();
+    ~rotate();
     
-    virtual std::vector<Eigen::Matrix3d> get_matrices();
+    std::vector<Eigen::Matrix3d> get_matrices() override;
 };
 
 class skew_x : public transformation {
 public:
     skew_x();
-    virtual ~skew_x();
+    ~skew_x();
     
-    virtual std::vector<Eigen::Matrix3d> get_matrices();
+    std::vector<Eigen::Matrix3d> get_matrices() override;
 };
 
 class skew_y : public transformation {
 public:
     skew_y();
-    virtual ~skew_y();
+    ~skew_y();
     
-    virtual std::vector<Eigen::Matrix3d> get_matrices();
+    std::vector<Eigen::Matrix3d> get_matrices() override;
 };
 
 }

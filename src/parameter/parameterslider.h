@@ -7,8 +7,8 @@ class ParameterSlider : public ParameterVirtualWidget
 	Q_OBJECT
 public:
 	ParameterSlider(ParameterObject *parameterobject, int showDescription);
-	void setValue();
-	void setParameterFocus();
+	void setValue() override;
+	void setParameterFocus() override;
 	
 private:
 	double step;

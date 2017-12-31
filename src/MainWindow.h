@@ -77,7 +77,7 @@ public:
 	~MainWindow();
 
 protected:
-	void closeEvent(QCloseEvent *event);
+	void closeEvent(QCloseEvent *event) override;
 
 private slots:
 	void updatedAnimTval();
@@ -173,7 +173,7 @@ private slots:
 	void findBufferChanged();
 	void updateFindBuffer(QString);
 protected:
-	virtual bool eventFilter(QObject* obj, QEvent *event);
+	bool eventFilter(QObject* obj, QEvent *event) override;
 
 private slots:
 	void actionRenderPreview(bool rebuildParameterWidget=true);
@@ -244,8 +244,8 @@ public slots:
 	void viewAll();
 	void animateUpdateDocChanged();
 	void animateUpdate();
-	void dragEnterEvent(QDragEnterEvent *event);
-	void dropEvent(QDropEvent *event);
+	void dragEnterEvent(QDragEnterEvent *event) override;
+	void dropEvent(QDropEvent *event) override;
 	void helpAbout();
 	void helpHomepage();
 	void helpManual();

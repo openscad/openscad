@@ -14,7 +14,7 @@ class LaunchingScreen : public QDialog, public Ui::LaunchingScreen
 public:
 	static LaunchingScreen *getDialog();
 	explicit LaunchingScreen(QWidget *parent = nullptr);
-	virtual ~LaunchingScreen();
+	~LaunchingScreen();
 	QStringList selectedFiles() const;
 
 public slots:

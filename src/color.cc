@@ -43,8 +43,8 @@ class ColorModule : public AbstractModule
 {
 public:
 	ColorModule();
-	virtual ~ColorModule();
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
+	~ColorModule();
+	AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const override;
 
 private:
 	static std::unordered_map<std::string, Color4f> webcolors;

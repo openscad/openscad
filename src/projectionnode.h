@@ -10,8 +10,8 @@ public:
 	ProjectionNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) {
 		cut_mode = false;
 	}
-	virtual std::string toString() const;
-	virtual std::string name() const { return "projection"; }
+	std::string toString() const override;
+	std::string name() const override { return "projection"; }
 
 	int convexity;
 	bool cut_mode;

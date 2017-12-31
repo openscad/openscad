@@ -17,10 +17,10 @@ protected:
 
 public:
 	ParameterVirtualWidget(QWidget *parent = nullptr);
-	virtual ~ParameterVirtualWidget();
+	~ParameterVirtualWidget();
 	virtual void setParameterFocus() = 0;
 	virtual void setValue() = 0;
-	void resizeEvent(QResizeEvent * event);
+	void resizeEvent(QResizeEvent * event) override;
 
 signals:
 	void changed();

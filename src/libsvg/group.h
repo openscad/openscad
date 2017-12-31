@@ -11,13 +11,13 @@ protected:
 public:
     group();
     group(const group& orig);
-    virtual ~group();
+    ~group();
 
-    virtual bool is_container() { return true; }
+    bool is_container() override { return true; }
     
-    virtual void set_attrs(attr_map_t& attrs);
-    virtual void dump();
-    const std::string& get_name() const { return group::name; };
+    void set_attrs(attr_map_t& attrs) override;
+    void dump() override;
+    const std::string& get_name() const override { return group::name; };
     
     static const std::string name;
 };

@@ -14,16 +14,16 @@ public:
 	CSGTreeEvaluator(const class Tree &tree, class GeometryEvaluator *geomevaluator = nullptr)
 		: tree(tree), geomevaluator(geomevaluator) {
 	}
-  virtual ~CSGTreeEvaluator() {}
+  ~CSGTreeEvaluator() {}
 
-  virtual Response visit(State &state, const class AbstractNode &node);
- 	virtual Response visit(State &state, const class AbstractIntersectionNode &node);
- 	virtual Response visit(State &state, const class AbstractPolyNode &node);
- 	virtual Response visit(State &state, const class CsgOpNode &node);
- 	virtual Response visit(State &state, const class TransformNode &node);
-	virtual Response visit(State &state, const class ColorNode &node);
- 	virtual Response visit(State &state, const class RenderNode &node);
- 	virtual Response visit(State &state, const class CgaladvNode &node);
+  Response visit(State &state, const class AbstractNode &node) override;
+ 	Response visit(State &state, const class AbstractIntersectionNode &node) override;
+ 	Response visit(State &state, const class AbstractPolyNode &node) override;
+ 	Response visit(State &state, const class CsgOpNode &node) override;
+ 	Response visit(State &state, const class TransformNode &node) override;
+	Response visit(State &state, const class ColorNode &node) override;
+ 	Response visit(State &state, const class RenderNode &node) override;
+ 	Response visit(State &state, const class CgaladvNode &node) override;
 
 	shared_ptr<class CSGNode> buildCSGTree(const AbstractNode &node);
 

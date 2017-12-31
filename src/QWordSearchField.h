@@ -13,7 +13,7 @@ public:
     int findCount() const { return findcount; }
     
 protected:
-    void resizeEvent(QResizeEvent *);
+    void resizeEvent(QResizeEvent *) override;
     void resizeSearchField();
     
 private slots:

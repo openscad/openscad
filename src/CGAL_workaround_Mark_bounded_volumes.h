@@ -97,7 +97,7 @@ public:
       }
    }
 
-   void operator()(SNC_structure &snc)
+   void operator()(SNC_structure &snc) override
    {  // mark bounded volumes
       Volume_iterator vol_it = snc.volumes_begin();
       CGAL_assertion ( vol_it != snc.volumes_end() );

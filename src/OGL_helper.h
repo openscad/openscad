@@ -354,11 +354,11 @@ namespace OGL {
     void push_back(const DFacet& f) 
     { halffacets_.push_back(f); }
  
-    void toggle(int index) { 
+    void toggle(int index) override { 
       switches[index] = !switches[index]; 
     }
     
-    void set_style(int index) {
+    void set_style(int index) override {
       style = index;
     }
 
@@ -562,7 +562,7 @@ namespace OGL {
 
     }
 
-    void init() { 
+    void init() override { 
       PRINTD("init()");
       if (init_) return;
       init_ = true;
@@ -575,7 +575,7 @@ namespace OGL {
     }
 
 
-    void draw() const
+    void draw() const override
     { 
       PRINTD("draw()");
       if (!is_initialized()) const_cast<Polyhedron&>(*this).init();

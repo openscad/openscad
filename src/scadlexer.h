@@ -9,9 +9,9 @@ class ScadLexer : public QsciLexerCPP
 {
 public:
 	ScadLexer(QObject *parent);
-	virtual ~ScadLexer();
-	const char *language() const;
-	const char *keywords(int set) const;	
+	~ScadLexer();
+	const char *language() const override;
+	const char *keywords(int set) const override;	
 
         void setKeywords(int set, const std::string& keywords);
 private:
