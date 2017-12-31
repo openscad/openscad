@@ -81,20 +81,32 @@ void AxisConfigWidget::init() {
 	updateComboBox(this->comboBoxZoom, Settings::Settings::inputZoom);
 	updateComboBox(this->comboBoxZoom2, Settings::Settings::inputZoom2);
 
+
+	QString NotEnabledDuringBuild =_("This driver was not enabled during build time and is thus not available.");
 #ifdef ENABLE_HIDAPI
 	this->checkBoxHIDAPI->setEnabled(true);
+#else
+	this->checkBoxHIDAPI->setToolTip(NotEnabledDuringBuild);
 #endif
 #ifdef ENABLE_SPNAV
 	this->checkBoxSpaceNav->setEnabled(true);
+#else
+	this->checkBoxSpaceNav->setToolTip(NotEnabledDuringBuild);
 #endif
 #ifdef ENABLE_JOYSTICK
 	this->checkBoxJoystick->setEnabled(true);
+#else
+	this->checkBoxJoystick->setToolTip(NotEnabledDuringBuild);
 #endif
 #ifdef ENABLE_QGAMEPAD
 	this->checkBoxQGamepad->setEnabled(true);
+#else
+	this->checkBoxQGamepad->setToolTip(NotEnabledDuringBuild);
 #endif
 #ifdef ENABLE_DBUS
 	this->checkBoxDBus->setEnabled(true);
+#else
+	this->checkBoxDBus->setToolTip(NotEnabledDuringBuild);
 #endif
 
 	initCheckBox(this->checkBoxHIDAPI,   Settings::Settings::inputEnableDriverHIDAPI);
