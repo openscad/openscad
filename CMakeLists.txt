@@ -86,10 +86,18 @@ message(STATUS "LibZip: ${LIBZIP_VERSION}")
 include_directories(${LIBZIP_INCLUDE_DIR_ZIP})
 include_directories(${LIBZIP_INCLUDE_DIR_ZIPCONF})
 
-include(CheckIncludeFileCXX)
+# Output compilation database (compile_commands.json), so we can e.g. run clang-tidy or other tools separately
+set(CMAKE_EXPORT_COMPILE_COMMANDS "ON")
+# Use clang-tidy if run with -DCLANG_TIDY=1
+find_program(CLANG_TIDY_EXE NAMES clang-tidy)
+set(CLANG_TIDY ${CLANG_TIDY} CACHE BOOL "Enable clang-tidy")
+if(CLANG_TIDY AND CLANG_TIDY_EXE)
+  include(RegexUtils)
+  escape_string_as_regex(regex "${CMAKE_SOURCE_DIR}/src")
+  set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE};-header-filter=${regex}")
+endif()
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
 include_directories(src)
 
 FLEX_TARGET(openscad_lexer src/lexer.l ${CMAKE_CURRENT_BINARY_DIR}/lexer.cxx DEFINES_FILE ${CMAKE_CURRENT_BINARY_DIR}/lexer.hxx)
