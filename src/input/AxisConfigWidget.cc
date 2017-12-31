@@ -81,6 +81,28 @@ void AxisConfigWidget::init() {
 	updateComboBox(this->comboBoxZoom, Settings::Settings::inputZoom);
 	updateComboBox(this->comboBoxZoom2, Settings::Settings::inputZoom2);
 
+#ifdef ENABLE_HIDAPI
+	this->checkBoxHIDAPI->setEnabled(true);
+#endif
+#ifdef ENABLE_SPNAV
+	this->checkBoxSpaceNav->setEnabled(true);
+#endif
+#ifdef ENABLE_JOYSTICK
+	this->checkBoxJoystick->setEnabled(true);
+#endif
+#ifdef ENABLE_QGAMEPAD
+	this->checkBoxQGamepad->setEnabled(true);
+#endif
+#ifdef ENABLE_DBUS
+	this->checkBoxDBus->setEnabled(true);
+#endif
+
+	initCheckBox(this->checkBoxHIDAPI,   Settings::Settings::inputEnableDriverHIDAPI);
+	initCheckBox(this->checkBoxSpaceNav, Settings::Settings::inputEnableDriverSPNAV);
+	initCheckBox(this->checkBoxJoystick, Settings::Settings::inputEnableDriverJOYSTICK);
+	initCheckBox(this->checkBoxQGamepad, Settings::Settings::inputEnableDriverQGAMEPAD);
+	initCheckBox(this->checkBoxDBus,     Settings::Settings::inputEnableDriverDBUS);
+
 	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
 		std::string s = std::to_string(i);
 
@@ -392,6 +414,36 @@ void AxisConfigWidget::on_AxisTrimReset()
 	writeSettings();
 }
 
+void AxisConfigWidget::on_checkBoxHIDAPI_toggled(bool val)
+{
+	Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverHIDAPI, Value(val));
+	writeSettings();
+}
+
+void AxisConfigWidget::on_checkBoxSpaceNav_toggled(bool val)
+{
+	Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverSPNAV, Value(val));
+	writeSettings();
+}
+
+void AxisConfigWidget::on_checkBoxJoystick_toggled(bool val)
+{
+	Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverJOYSTICK, Value(val));
+	writeSettings();
+}
+
+void AxisConfigWidget::on_checkBoxQGamepad_toggled(bool val)
+{
+	Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverQGAMEPAD, Value(val));
+	writeSettings();
+}
+
+void AxisConfigWidget::on_checkBoxDBus_toggled(bool val)
+{
+	Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverDBUS, Value(val));
+	writeSettings();
+}
+
 void AxisConfigWidget::applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntry& entry)
 {
 	QString s = comboBox->itemData(val).toString();
@@ -411,6 +463,15 @@ void AxisConfigWidget::initDoubleSpinBox(QDoubleSpinBox *spinBox, const Settings
 	RangeType range = entry.range().toRange();
 	spinBox->setMinimum(range.begin_value());
 	spinBox->setMaximum(range.end_value());
+}
+
+void AxisConfigWidget::initCheckBox(QCheckBox *checkBox, const Settings::SettingsEntry& entry)
+{
+	Settings::Settings *s = Settings::Settings::inst();
+	const Value &value = s->get(entry);
+	bool state = value.toBool();
+
+	checkBox->setChecked(state);
 }
 
 void AxisConfigWidget::updateComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry)

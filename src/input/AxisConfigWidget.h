@@ -57,6 +57,12 @@ public slots:
 	void on_doubleSpinBoxTrim7_valueChanged(double);
 	void on_doubleSpinBoxTrim8_valueChanged(double);
 
+	void on_checkBoxHIDAPI_toggled(bool);
+	void on_checkBoxSpaceNav_toggled(bool);
+	void on_checkBoxJoystick_toggled(bool);
+	void on_checkBoxQGamepad_toggled(bool);
+	void on_checkBoxDBus_toggled(bool);
+
 signals:
         void inputMappingChanged() const;
         void inputCalibrationChanged() const;
@@ -68,6 +74,8 @@ private:
 	/** Initialize spinbox min/max values from the settings range values */
 	void initSpinBox(QSpinBox *spinBox, const Settings::SettingsEntry& entry);
 	void initDoubleSpinBox(QDoubleSpinBox *spinBox, const Settings::SettingsEntry& entry);
+	/** Initialize checkbox from the settings */
+	void initCheckBox(QCheckBox *checkBox, const Settings::SettingsEntry& entry);
 	/** Update combobox from current settings */
 	void updateComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry);
 	/** Set value from combobox to settings */
