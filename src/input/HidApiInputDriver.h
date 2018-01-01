@@ -41,10 +41,10 @@ class HidApiInputDriver : public InputDriver
 
 public:
     HidApiInputDriver();
-    virtual ~HidApiInputDriver();
-    virtual void run();
-    virtual bool open();
-    virtual void close();
+    ~HidApiInputDriver();
+    void run() override;
+    bool open() override;
+    void close() override;
 
     virtual const std::string & get_name() const;
 

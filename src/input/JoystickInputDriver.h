@@ -31,12 +31,12 @@ class JoystickInputDriver : public InputDriver
 {
 public:
     JoystickInputDriver();
-    virtual ~JoystickInputDriver();
-    virtual void run();
-    virtual bool open();
-    virtual void close();
+    ~JoystickInputDriver();
+    void run() override;
+    bool open() override;
+    void close() override;
 
-    virtual const std::string & get_name() const;
+    const std::string & get_name() const  override;
 private:
     int fd;
     int version;

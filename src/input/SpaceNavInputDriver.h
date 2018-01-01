@@ -34,12 +34,12 @@ class SpaceNavInputDriver : public InputDriver
 
 public:
     SpaceNavInputDriver();
-    virtual ~SpaceNavInputDriver();
-    virtual void run();
-    virtual bool open();
-    virtual void close();
+    ~SpaceNavInputDriver();
+    void run() override;
+    bool open() override;
+    void close() override;
 
-    virtual const std::string & get_name() const;
+    const std::string & get_name() const override;
 
 private:
     bool spnav_input();
