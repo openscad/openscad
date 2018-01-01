@@ -61,16 +61,6 @@ void ButtonConfigWidget::init() {
 			initComboBox(box,*ent);
 		}
 	}
-	
-	for (int i = 0; i < InputEventMapper::getMaxButtons(); i++ ){
-		std::string s = std::to_string(i);
-		QComboBox* box = this->findChild<QComboBox *>(QString::fromStdString("comboBoxButton"+s));
-		Settings::SettingsEntry* ent = Settings::Settings::inst()->getSettingEntryByName("button" +s );
-		if(box && ent){
-			updateComboBox(box,*ent);
-		}
-	}
-
 }
 
 void ButtonConfigWidget::on_comboBoxButton0_activated(int val)
@@ -203,7 +193,6 @@ void ButtonConfigWidget::writeSettings()
 	Settings::Settings::inst()->visit(settingsWriter);
 }
 
-
 void ButtonConfigWidget::initComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry)
 {
 	comboBox->clear();
@@ -213,4 +202,5 @@ void ButtonConfigWidget::initComboBox(QComboBox *comboBox, const Settings::Setti
 		QString qtext = QString::fromStdString(gettext(v[1]->toString().c_str()));
 		comboBox->addItem(qtext, val);
 	}
+	updateComboBox(comboBox, entry);
 }
