@@ -615,7 +615,7 @@ if ( ${DIFFPNG} )
 endif()
 
 # Internal includes
-include_directories(../src ../src/libtess2/Include)
+include_directories(../src ../src/ext/libtess2/Include)
 
 # Handle OpenSCAD version based on VERSION env. variable.
 # Use current timestamp if not specified (development builds)
@@ -730,7 +730,7 @@ set(CORE_SOURCES
   ../src/FontCache.cc
   ../src/DrawingCallback.cc
   ../src/FreetypeRenderer.cc
-  ../src/lodepng.cpp
+  ../src/ext/lodepng/lodepng.cpp
   ../src/PlatformUtils.cc 
   ../src/libsvg/circle.cc
   ../src/libsvg/ellipse.cc
@@ -748,7 +748,7 @@ set(CORE_SOURCES
   ../src/clipper-utils.cc
   ../src/assignment.cc
   ../src/annotation.cc 
-  ../src/polyclipping/clipper.cpp
+  ../src/ext/polyclipping/clipper.cpp
   ../src/${PLATFORMUTILS_SOURCE}
   ${FLEX_OpenSCADlexer_OUTPUTS}
   ${BISON_OpenSCADparser_OUTPUTS})
@@ -792,14 +792,14 @@ set(COMMON_SOURCES
   ../src/GeometryCache.cc 
   ../src/clipper-utils.cc 
   ../src/Tree.cc
-  ../src/polyclipping/clipper.cpp
-  ../src/libtess2/Source/bucketalloc.c
-  ../src/libtess2/Source/dict.c
-  ../src/libtess2/Source/geom.c
-  ../src/libtess2/Source/mesh.c
-  ../src/libtess2/Source/priorityq.c
-  ../src/libtess2/Source/sweep.c
-  ../src/libtess2/Source/tess.c
+  ../src/ext/polyclipping/clipper.cpp
+  ../src/ext/libtess2/Source/bucketalloc.c
+  ../src/ext/libtess2/Source/dict.c
+  ../src/ext/libtess2/Source/geom.c
+  ../src/ext/libtess2/Source/mesh.c
+  ../src/ext/libtess2/Source/priorityq.c
+  ../src/ext/libtess2/Source/sweep.c
+  ../src/ext/libtess2/Source/tess.c
   ../src/Tree.cc)
 
 #

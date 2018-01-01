@@ -59,3 +59,4 @@ tests/parser.hxx
 CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
+OpenSCAD_autogen

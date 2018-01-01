@@ -30,7 +30,7 @@
 
 #include "colormap.h"
 #include "rendersettings.h"
-#include "OGL_helper.h"
+#include "ext/CGAL/OGL_helper.h"
 #include "printutils.h"
 
 using CGAL::OGL::SNC_BOUNDARY;
