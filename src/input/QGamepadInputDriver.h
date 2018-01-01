@@ -39,7 +39,7 @@ public:
     bool open() override;
     void close() override;
 
-    virtual const std::string & get_name() const;
+    const std::string & get_name() const override;
 private:
 	std::unique_ptr<QGamepad> gamepad;
 };
