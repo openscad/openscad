@@ -83,31 +83,45 @@ void AxisConfigWidget::init() {
 
 
 	QString NotEnabledDuringBuild =_("This driver was not enabled during build time and is thus not available.");
+	QString ToolTip = _("The HIDAPI driver communicates directly with the 3D mice, Windows and macOS.");
 #ifdef ENABLE_HIDAPI
 	this->checkBoxHIDAPI->setEnabled(true);
 #else
-	this->checkBoxHIDAPI->setToolTip(NotEnabledDuringBuild);
+	ToolTip += "\n\r" + NotEnabledDuringBuild;
 #endif
+	this->checkBoxHIDAPI->setToolTip(ToolTip);
+
+	ToolTip = _("The SpaceNav driver enables 3D-input-devices using the spacenavd daemon, Linux only.");
 #ifdef ENABLE_SPNAV
 	this->checkBoxSpaceNav->setEnabled(true);
 #else
-	this->checkBoxSpaceNav->setToolTip(NotEnabledDuringBuild);
+	ToolTip += "\n\r" + NotEnabledDuringBuild;
 #endif
+	this->checkBoxSpaceNav->setToolTip(ToolTip);
+
+	ToolTip = _("The Joystick driver uses the Linux joystick device (fixed to /dev/input/js0), Linux only.");
 #ifdef ENABLE_JOYSTICK
 	this->checkBoxJoystick->setEnabled(true);
 #else
-	this->checkBoxJoystick->setToolTip(NotEnabledDuringBuild);
+	ToolTip += "\n\r" + NotEnabledDuringBuild;
 #endif
+	this->checkBoxJoystick->setToolTip(ToolTip);
+
+	ToolTip = _("The QGAMEPAD driver is for multiplattform Gamepad Support.");
 #ifdef ENABLE_QGAMEPAD
 	this->checkBoxQGamepad->setEnabled(true);
 #else
-	this->checkBoxQGamepad->setToolTip(NotEnabledDuringBuild);
+	ToolTip += "\n\r" + NotEnabledDuringBuild;
 #endif
+	this->checkBoxQGamepad->setToolTip(ToolTip);
+
+	ToolTip = _("The DBUS driver is not for actual devices but for remote control, Linux only.");
 #ifdef ENABLE_DBUS
 	this->checkBoxDBus->setEnabled(true);
 #else
-	this->checkBoxDBus->setToolTip(NotEnabledDuringBuild);
+	ToolTip += "\n\r" + NotEnabledDuringBuild;
 #endif
+	this->checkBoxDBus->setToolTip(ToolTip);
 
 	initCheckBox(this->checkBoxHIDAPI,   Settings::Settings::inputEnableDriverHIDAPI);
 	initCheckBox(this->checkBoxSpaceNav, Settings::Settings::inputEnableDriverSPNAV);
