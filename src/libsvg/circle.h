@@ -12,13 +12,13 @@ protected:
 public:
     circle();
     circle(const circle& orig);
-    virtual ~circle();
+    ~circle();
 
-    virtual double get_radius() { return r; }
+    double get_radius() { return r; }
 
-    virtual void set_attrs(attr_map_t& attrs);
-    virtual void dump();
-    const std::string& get_name() const { return circle::name; };
+    void set_attrs(attr_map_t& attrs) override;
+    void dump() override;
+    const std::string& get_name() const override { return circle::name; };
 
     static const std::string name;
 };

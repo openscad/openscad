@@ -33,7 +33,7 @@
 #include "printutils.h"
 #include "fileutils.h"
 #include "handle_dep.h"
-#include "lodepng.h"
+#include "ext/lodepng/lodepng.h"
 
 #include <cstdint>
 #include <array>
@@ -54,7 +54,7 @@ class SurfaceModule : public AbstractModule
 {
 public:
 	SurfaceModule() { }
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
+	AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const override;
 };
 
 typedef std::unordered_map<std::pair<int,int>, double, boost::hash<std::pair<int,int>>> img_data_t;
@@ -64,15 +64,15 @@ class SurfaceNode : public LeafNode
 public:
 	VISITABLE();
 	SurfaceNode(const ModuleInstantiation *mi) : LeafNode(mi) { }
-	virtual std::string toString() const;
-	virtual std::string name() const { return "surface"; }
+	std::string toString() const override;
+	std::string name() const override { return "surface"; }
 
 	Filename filename;
 	bool center;
 	bool invert;
 	int convexity;
 	
-	virtual const Geometry *createGeometry() const;
+	const Geometry *createGeometry() const override;
 private:
 	void convert_image(img_data_t &data, std::vector<uint8_t> &img, unsigned int width, unsigned int height) const;
 	bool is_png(std::vector<uint8_t> &img) const;

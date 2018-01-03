@@ -73,7 +73,7 @@ OffscreenContext *create_offscreen_context(int w, int h)
   ctx->openGLContext = [[NSOpenGLContext alloc] initWithFormat:pixFormat shareContext:nil];
   if (!ctx->openGLContext) {
     std::cerr << "Unable to create NSOpenGLContext\n";
-    return NULL;
+    return nullptr;
   }
 
   [ctx->openGLContext makeCurrentContext];
@@ -82,13 +82,13 @@ OffscreenContext *create_offscreen_context(int w, int h)
   GLenum err = glewInit();
   if (GLEW_OK != err) {
     std::cerr << "Unable to init GLEW: " << glewGetErrorString(err) << std::endl;
-    return NULL;
+    return nullptr;
   }
   glew_dump();
 
   ctx->fbo = fbo_new();
   if (!fbo_init(ctx->fbo, w, h)) {
-    return NULL;
+    return nullptr;
   }
 
   return ctx;

@@ -39,9 +39,9 @@ class CSGOperation : public CSGNode
 {
 public:
 	CSGOperation() {}
-	virtual ~CSGOperation() {}
-	virtual void initBoundingBox();
-	virtual std::string dump();
+	~CSGOperation() {}
+	void initBoundingBox() override;
+	std::string dump() override;
 
 	shared_ptr<CSGNode> &left() { return this->children[0]; }
 	shared_ptr<CSGNode> &right() { return this->children[1]; }
@@ -65,9 +65,9 @@ class CSGLeaf : public CSGNode
 {
 public:
 	CSGLeaf(const shared_ptr<const class Geometry> &geom, const Transform3d &matrix, const Color4f &color, const std::string &label);
-	virtual ~CSGLeaf() {}
-	virtual void initBoundingBox();
-	virtual std::string dump();
+	~CSGLeaf() {}
+	void initBoundingBox() override;
+	std::string dump() override;
 
 	std::string label;
 	shared_ptr<const Geometry> geom;

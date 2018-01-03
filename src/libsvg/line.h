@@ -13,14 +13,14 @@ private:
 public:
     line();
     line(const line& orig);
-    virtual ~line();
+    ~line();
 
-    virtual double get_x2() { return x2; }
-    virtual double get_y2() { return y2; }
+    double get_x2() { return x2; }
+    double get_y2() { return y2; }
 
-    virtual void set_attrs(attr_map_t& attrs);
-    virtual void dump();
-    const std::string& get_name() const { return line::name; };
+    void set_attrs(attr_map_t& attrs) override;
+    void dump() override;
+    const std::string& get_name() const override { return line::name; };
     
     static const std::string name;
 };

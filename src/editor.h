@@ -12,10 +12,10 @@ class EditorInterface : public QWidget
 	Q_OBJECT
 public:
 	EditorInterface(QWidget *parent) : QWidget(parent) {}
-	virtual ~EditorInterface() {}
+	~EditorInterface() {}
 	virtual QSize sizeHint(){ QSize size; return size;}
 	virtual void setInitialSizeHint(const QSize&) { }
-	virtual void wheelEvent(QWheelEvent*);
+	void wheelEvent(QWheelEvent*) override;
 	virtual QString toPlainText() = 0;
 	virtual QTextDocument *document(){QTextDocument *t = new QTextDocument; return t;}
 	virtual QString selectedText() = 0;

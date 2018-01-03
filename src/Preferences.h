@@ -88,7 +88,7 @@ signals:
 
 private:
     Preferences(QWidget *parent = nullptr);
-	void keyPressEvent(QKeyEvent *e);
+	void keyPressEvent(QKeyEvent *e) override;
 	void updateGUI();
 	void removeDefaultSettings();
 	void setupFeaturesPage();

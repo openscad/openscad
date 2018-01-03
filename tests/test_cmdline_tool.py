@@ -151,7 +151,7 @@ def compare_default(resultfilename):
 def compare_png(resultfilename):
     compare_method = 'pixel'
     #args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-composite", "-threshold", "10%", "-blur", "2", "-threshold", "30%", "-format", "%[fx:w*h*mean]", "info:"]
-    args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-composite", "-threshold", "10%", "-morphology", "Erode", "Square", "-format", "%[fx:w*h*mean]", "info:"]
+    args = [expectedfilename, resultfilename, "-alpha", "On", "-compose", "difference", "-composite", "-threshold", "10%", "-morphology", "Erode", "Square", "-format", "%[fx:w*h*mean]", "info:"]
 
     # for systems with older imagemagick that doesnt support '-morphology'
     # http://www.imagemagick.org/Usage/morphology/#alturnative

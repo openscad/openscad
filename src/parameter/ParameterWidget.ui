@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>486</width>
+    <width>419</width>
     <height>590</height>
    </rect>
   </property>
@@ -14,25 +14,160 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="7" column="0">
-    <widget class="QComboBox" name="comboBox">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-       <horstretch>1</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-    </widget>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>4</number>
+   </property>
+   <property name="rightMargin">
+    <number>4</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <property name="spacing">
+    <number>4</number>
+   </property>
+   <item row="8" column="0" colspan="3">
+    <layout class="QGridLayout" name="gridLayout_2">
+     <item row="0" column="4">
+      <widget class="QPushButton" name="presetSaveButton">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>11</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>save preset</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="3">
+      <widget class="QPushButton" name="deleteButton">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Minimum">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>40</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>40</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>delete current preset</string>
+       </property>
+       <property name="text">
+        <string>-</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0" colspan="2">
+      <widget class="QComboBox" name="comboBoxPreset">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+         <horstretch>1</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="toolTip">
+        <string>preset selection</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2">
+      <widget class="QPushButton" name="addButton">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Minimum">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>40</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>40</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>add new preset</string>
+       </property>
+       <property name="text">
+        <string>+</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
-   <item row="7" column="1">
-    <widget class="QPushButton" name="addButton">
-     <property name="text">
-      <string>+</string>
-     </property>
-    </widget>
+   <item row="3" column="0" rowspan="2" colspan="3">
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QCheckBox" name="checkBoxAutoPreview">
+       <property name="text">
+        <string>Automatic Preview</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="comboBoxDetails">
+       <item>
+        <property name="text">
+         <string>Show Details</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Inline Details</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Hide Details</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="reset">
+       <property name="toolTip">
+        <string>reset the parameters to the selected preset</string>
+       </property>
+       <property name="text">
+        <string>Reset</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
-   <item row="11" column="0" colspan="4">
+   <item row="12" column="0" colspan="3">
     <widget class="QScrollArea" name="scrollArea">
+     <property name="horizontalScrollBarPolicy">
+      <enum>Qt::ScrollBarAlwaysOff</enum>
+     </property>
      <property name="widgetResizable">
       <bool>true</bool>
      </property>
@@ -41,8 +176,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>472</width>
-        <height>496</height>
+        <width>413</width>
+        <height>522</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
@@ -63,47 +198,6 @@
        </property>
       </layout>
      </widget>
-    </widget>
-   </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>Preset:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="0">
-    <widget class="QCheckBox" name="checkBoxAutoPreview">
-     <property name="text">
-      <string>Automatic Preview</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="7" column="2">
-    <widget class="QPushButton" name="deleteButton">
-     <property name="text">
-      <string>-</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="1">
-    <widget class="QCheckBox" name="checkBoxDetailedDescription">
-     <property name="text">
-      <string>Show Details</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="2">
-    <widget class="QPushButton" name="reset">
-     <property name="text">
-      <string>Reset</string>
-     </property>
     </widget>
    </item>
   </layout>

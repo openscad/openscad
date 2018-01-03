@@ -56,7 +56,7 @@ class PrimitiveModule : public AbstractModule
 public:
 	primitive_type_e type;
 	PrimitiveModule(primitive_type_e type) : type(type) { }
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
+	AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const override;
 private:
 	Value lookup_radius(const Context &ctx, const std::string &radius_var, const std::string &diameter_var) const;
 };
@@ -66,8 +66,8 @@ class PrimitiveNode : public LeafNode
 public:
 	VISITABLE();
 	PrimitiveNode(const ModuleInstantiation *mi, primitive_type_e type) : LeafNode(mi), type(type) { }
-	virtual std::string toString() const;
-	virtual std::string name() const {
+	std::string toString() const override;
+	std::string name() const override {
 		switch (this->type) {
 		case primitive_type_e::CUBE:
 			return "cube";
@@ -102,7 +102,7 @@ public:
 	primitive_type_e type;
 	int convexity;
 	ValuePtr points, paths, faces;
-	virtual const Geometry *createGeometry() const;
+	const Geometry *createGeometry() const override;
 };
 
 /**

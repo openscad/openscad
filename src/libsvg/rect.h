@@ -16,16 +16,16 @@ protected:
 public:
     rect();
     rect(const rect& orig);
-    virtual ~rect();
+    ~rect();
 
-    virtual double get_width() { return width; }
-    virtual double get_height() { return height; }
-    virtual double get_rx() { return rx; }
-    virtual double get_ry() { return ry; }
+    double get_width() { return width; }
+    double get_height() { return height; }
+    double get_rx() { return rx; }
+    double get_ry() { return ry; }
     
-    virtual void set_attrs(attr_map_t& attrs);
-    virtual void dump();
-    const std::string& get_name() const { return rect::name; };
+    void set_attrs(attr_map_t& attrs) override;
+    void dump() override;
+    const std::string& get_name() const override { return rect::name; };
     
     static const std::string name;
 };

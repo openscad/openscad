@@ -193,7 +193,7 @@ void FontCache::add_font_dir(const std::string &path)
 
 FontInfoList *FontCache::list_fonts() const
 {
-	FcObjectSet *object_set = FcObjectSetBuild(FC_FAMILY, FC_STYLE, FC_FILE, (char *) 0);
+	FcObjectSet *object_set = FcObjectSetBuild(FC_FAMILY, FC_STYLE, FC_FILE, nullptr);
 	FcPattern *pattern = FcPatternCreate();
 	init_pattern(pattern);
 	FcFontSet *font_set = FcFontList(this->config, pattern, object_set);

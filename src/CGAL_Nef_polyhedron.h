@@ -13,14 +13,14 @@ public:
 	CGAL_Nef_polyhedron(const CGAL_Nef_polyhedron &src);
 	~CGAL_Nef_polyhedron() {}
 
-	virtual size_t memsize() const;
+	size_t memsize() const override;
 	// FIXME: Implement, but we probably want a high-resolution BBox..
-	virtual BoundingBox getBoundingBox() const { assert(false && "not implemented"); return BoundingBox(); }
-	virtual std::string dump() const;
-	virtual unsigned int getDimension() const { return 3; }
+	BoundingBox getBoundingBox() const override { assert(false && "not implemented"); return BoundingBox(); }
+	std::string dump() const override;
+	unsigned int getDimension() const override { return 3; }
   // Empty means it is a geometric node which has zero area/volume
-	virtual bool isEmpty() const;
-	virtual Geometry *copy() const { return new CGAL_Nef_polyhedron(*this); }
+	bool isEmpty() const override;
+	Geometry *copy() const override { return new CGAL_Nef_polyhedron(*this); }
 
 	void reset() { p3.reset(); }
 	CGAL_Nef_polyhedron &operator+=(const CGAL_Nef_polyhedron &other);
