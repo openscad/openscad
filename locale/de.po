@@ -1423,8 +1423,8 @@ msgstr "nach Einrückung"
 #~ "WARNING: color() expects numbers between 0.0 and 1.0. Value of %.1f is "
 #~ "too large."
 
-#~ msgid "WARNING: Color name \"%s\" unknown. Please see"
-#~ msgstr "WARNING: Color name \"%s\" unknown. Please see"
+#~ msgid "WARNING: Unable to parse color \"%s\". Please see"
+#~ msgstr "WARNING: Unable to parse color \"%s\". Please see"
 
 #~ msgid "WARNING: http://en.wikipedia.org/wiki/Web_colors"
 #~ msgstr "WARNING: http://en.wikipedia.org/wiki/Web_colors"
@@ -1879,8 +1879,8 @@ msgstr "nach Einrückung"
 #~ msgid "Can't open file \"%s\" for export"
 #~ msgstr "Can't open file \"%s\" for export"
 
-#~ msgid "%s export finished."
-#~ msgstr "%s export finished."
+#~ msgid "%s export finished: %s"
+#~ msgstr "%s export finished: %s"
 
 #~ msgid "Current top level object is not a 2D object."
 #~ msgstr "Current top level object is not a 2D object."

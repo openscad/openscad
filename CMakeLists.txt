@@ -128,6 +128,15 @@ add_definitions(-DENABLE_EXPERIMENTAL)
 # Stack size 8MB; github issue 116
 add_definitions(-DSTACKSIZE=8388608)
 
+# Setup ccache (if available) to speed up recompiles. It's especially useful
+# when switching back and forth between branches where large numbers of files
+# would otherwise need to be re-compiled each time.
+find_program(CCACHE_PATH ccache)
+if (CCACHE_PATH)
+  set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ${CCACHE_PATH})
+  set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ${CCACHE_PATH})
+endif()
+
 #
 # Version
 #

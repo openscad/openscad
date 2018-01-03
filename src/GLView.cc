@@ -506,42 +506,59 @@ void GLView::showCrosshairs()
 
 void GLView::showScalemarkers(const Color4f &col)
 {
-	// Add scale tics on large axes
+	// Add scale ticks on large axes
 	auto l = cam.zoomValue();
 	glLineWidth(this->getDPI());
 	glColor3f(col[0], col[1], col[2]);
 
-	// determine the log value to provide proportional tics
-	auto log_l = static_cast<int>(log10(l));
+	// Take log of l, discretize, then exponentiate. This is done so that the tick
+	// denominations change every time the viewport gets 10x bigger or smaller,
+	// but stays constant in-between. l_adjusted is a step function of l.
+	const int log_l = static_cast<int>(log10(l));
+	const double l_adjusted = pow(10, log_l);
 
-	// j represents the increment for each minor tic
-	auto j = 10.0;
-	// deal with 0 log values
+	// Calculate tick width. Make them smaller if the viewport is small.
+	double tick_width;
 	if (l < 1.5){
-		j = pow(10,log_l-2);
+		tick_width = l_adjusted / 100.0;
 	} else {
-		j = pow(10,log_l-1);
+		tick_width = l_adjusted / 10.0;
 	}
 
-	int size_div_sm = 60;       // divisor for l to determine minor tic size
-	int size_div = size_div_sm;
+	const int size_div_sm = 60; // divisor for l to determine minor tick size
 	int line_cnt = 0;
-
-	for (double i=0;i<l;i+=j){      // i represents the position along the axis
-		if (line_cnt++ == 10){      // major tic
-			size_div = size_div_sm * .5; // resize to a major tic
-			line_cnt = 1;                // reset the major tic counter
+	for (double i=0; i<l; i+=tick_width){ // i represents the position along the axis
+		int size_div;
+		if (line_cnt > 0 && line_cnt % 10 == 0){ // major tick
+			size_div = size_div_sm * .5; // resize to a major tick
 			GLView::decodeMarkerValue(i, l, size_div_sm);    // print number
-		} else {                    // minor tic
-			size_div = size_div_sm;      // set the minor tic to the standard size
+		} else {                    // minor tick
+			size_div = size_div_sm;      // set the minor tick to the standard size
+
+			// Draw additional labels if there are few major tick labels visible due to
+			// zoom. Because the spacing/units of major tick marks only change when the
+			// viewport changes size by a factor of 10, it can be hard to see the
+			// major tick labels when when the viewport is slightly larger than size at
+			// which the last tick spacing change occurred. When zoom level is such
+			// that very few major tick marks are visible, additional labels are drawn
+			// every 2 minor ticks. We can detect that very few major ticks are visible
+			// by checking if the viewport size is larger than the adjusted scale by
+			// only a small ratio.
+			const double more_labels_threshold = 3;
+			// draw additional labels every 2 minor ticks
+			const int more_labels_freq = 2;
+			if (line_cnt > 0 && line_cnt % more_labels_freq == 0 && l / l_adjusted < more_labels_threshold) {
+				GLView::decodeMarkerValue(i, l, size_div_sm);    // print number
+			}
 		}
+		line_cnt++;
 
 		/*
-		 * The length of each tic is proportional to the length of the axis
+		 * The length of each tick is proportional to the length of the axis
 		 * (which changes with the zoom value.)  l/size_div provides the
 		 * proportional length
 		 *
-		 * Commented glVertex3d lines provide additional 'arms' for the tic
+		 * Commented glVertex3d lines provide additional 'arms' for the tick
 		 * the number of arms will (hopefully) eventually be driven via Preferences
 		 */
 
@@ -594,7 +611,7 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
 	oss << i;
 	auto digit = oss.str();
 
-	// setup how far above the axis (or tic TBD) to draw the number
+	// setup how far above the axis (or tick TBD) to draw the number
 	double dig_buf = (l/size_div_sm)/4;
 	// setup the size of the character box
 	double dig_w = (l/size_div_sm)/2;

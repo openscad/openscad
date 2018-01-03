@@ -91,6 +91,15 @@ else()
   endforeach()
 endif()
 
+# Setup ccache (if available) to speed up recompiles. It's especially useful
+# when switching back and forth between branches where large numbers of files
+# would otherwise need to be re-compiled each time.
+find_program(CCACHE_PATH ccache)
+if (CCACHE_PATH)
+  set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ${CCACHE_PATH})
+  set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ${CCACHE_PATH})
+endif()
+
 # MCAD
 if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../libraries/MCAD/__init__.py)
   message(FATAL_ERROR "MCAD not found. You can install from the OpenSCAD root as follows: \n  git submodule update --init")
