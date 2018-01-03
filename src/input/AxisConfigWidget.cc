@@ -35,7 +35,6 @@
 AxisConfigWidget::AxisConfigWidget(QWidget *parent) : QWidget(parent)
 {
 	setupUi(this);
-	//init();
 }
 
 AxisConfigWidget::~AxisConfigWidget()
@@ -69,18 +68,6 @@ void AxisConfigWidget::init() {
 	initComboBox(this->comboBoxZoom, Settings::Settings::inputZoom);
 	initComboBox(this->comboBoxZoom2, Settings::Settings::inputZoom2);
 
-	updateComboBox(this->comboBoxTranslationX, Settings::Settings::inputTranslationX);
-	updateComboBox(this->comboBoxTranslationY, Settings::Settings::inputTranslationY);
-	updateComboBox(this->comboBoxTranslationZ, Settings::Settings::inputTranslationZ);
-	updateComboBox(this->comboBoxTranslationXVPRel, Settings::Settings::inputTranslationXVPRel);
-	updateComboBox(this->comboBoxTranslationYVPRel, Settings::Settings::inputTranslationYVPRel);
-	updateComboBox(this->comboBoxTranslationZVPRel, Settings::Settings::inputTranslationZVPRel);
-	updateComboBox(this->comboBoxRotationX, Settings::Settings::inputRotateX);
-	updateComboBox(this->comboBoxRotationY, Settings::Settings::inputRotateY);
-	updateComboBox(this->comboBoxRotationZ, Settings::Settings::inputRotateZ);
-	updateComboBox(this->comboBoxZoom, Settings::Settings::inputZoom);
-	updateComboBox(this->comboBoxZoom2, Settings::Settings::inputZoom2);
-
 	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
 		std::string s = std::to_string(i);
 
@@ -99,35 +86,10 @@ void AxisConfigWidget::init() {
 		}
 	}
 
-	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
-		std::string s = std::to_string(i);
-		Settings::Settings *setting = Settings::Settings::inst();
-
-		QDoubleSpinBox* spin;
-		Settings::SettingsEntry* ent;
-
-		spin= this->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrim"+s));
-		ent = Settings::Settings::inst()->getSettingEntryByName("axisTrim" +s );
-		if(spin && ent){
-			spin->setValue((double)setting->get(*ent).toDouble());
-		}
-
-		spin= this->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxDeadzone"+s));
-		ent = Settings::Settings::inst()->getSettingEntryByName("axisDeadzone" +s );
-		if(spin && ent){
-			spin->setValue((double)setting->get(*ent).toDouble());
-		}
-	}
-	
 	initDoubleSpinBox(this->doubleSpinBoxTranslationGain, Settings::Settings::inputTranslationGain);
 	initDoubleSpinBox(this->doubleSpinBoxTranslationVPRelGain, Settings::Settings::inputTranslationVPRelGain);
 	initDoubleSpinBox(this->doubleSpinBoxRotateGain, Settings::Settings::inputRotateGain);
 	initDoubleSpinBox(this->doubleSpinBoxZoomGain, Settings::Settings::inputZoomGain);
-	Settings::Settings *s = Settings::Settings::inst();
-	this->doubleSpinBoxRotateGain->setValue((double)s->get(Settings::Settings::inputRotateGain).toDouble());
-	this->doubleSpinBoxTranslationGain->setValue((double)s->get(Settings::Settings::inputTranslationGain).toDouble());
-	this->doubleSpinBoxTranslationVPRelGain->setValue((double)s->get(Settings::Settings::inputTranslationVPRelGain).toDouble());
-	this->doubleSpinBoxZoomGain->setValue((double)s->get(Settings::Settings::inputZoomGain).toDouble());
 }
 
 void AxisConfigWidget::on_comboBoxTranslationX_activated(int val)
@@ -408,9 +370,13 @@ void AxisConfigWidget::initSpinBox(QSpinBox *spinBox, const Settings::SettingsEn
 
 void AxisConfigWidget::initDoubleSpinBox(QDoubleSpinBox *spinBox, const Settings::SettingsEntry& entry)
 {
+	Settings::Settings *s = Settings::Settings::inst();
+
 	RangeType range = entry.range().toRange();
 	spinBox->setMinimum(range.begin_value());
+	spinBox->setSingleStep(range.step_value());
 	spinBox->setMaximum(range.end_value());
+	spinBox->setValue((double)s->get(entry).toDouble());
 }
 
 void AxisConfigWidget::updateComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry)
@@ -449,4 +415,5 @@ void AxisConfigWidget::initComboBox(QComboBox *comboBox, const Settings::Setting
 		QString qtext = QString::fromStdString(gettext(v[1]->toString().c_str()));
 		comboBox->addItem(qtext, val);
 	}
+	updateComboBox(comboBox, entry);
 }
