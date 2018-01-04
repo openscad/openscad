@@ -82,4 +82,6 @@ private:
 	/** Set value from combobox to settings */
 	void applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntry& entry);
 	void writeSettings();
+	
+	bool initizalied = false;
 };

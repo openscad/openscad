@@ -137,6 +137,8 @@ void AxisConfigWidget::init() {
 	initDoubleSpinBox(this->doubleSpinBoxTranslationVPRelGain, Settings::Settings::inputTranslationVPRelGain);
 	initDoubleSpinBox(this->doubleSpinBoxRotateGain, Settings::Settings::inputRotateGain);
 	initDoubleSpinBox(this->doubleSpinBoxZoomGain, Settings::Settings::inputZoomGain);
+
+	initizalied = true;
 }
 
 void AxisConfigWidget::on_comboBoxTranslationX_activated(int val)
@@ -403,32 +405,58 @@ void AxisConfigWidget::on_AxisTrimReset()
 
 void AxisConfigWidget::on_checkBoxHIDAPI_toggled(bool val)
 {
-	Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverHIDAPI, Value(val));
-	writeSettings();
+	if(initizalied){
+		Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverHIDAPI, Value(val));
+		writeSettings();
+
+		QFont font;
+		font.setItalic(true);
+		checkBoxHIDAPI->setFont(font);
+	}
 }
 
 void AxisConfigWidget::on_checkBoxSpaceNav_toggled(bool val)
 {
-	Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverSPNAV, Value(val));
-	writeSettings();
+	if(initizalied){
+		Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverSPNAV, Value(val));
+		writeSettings();
+		QFont font;
+		font.setItalic(true);
+		checkBoxSpaceNav->setFont(font);
+	}
 }
 
 void AxisConfigWidget::on_checkBoxJoystick_toggled(bool val)
 {
-	Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverJOYSTICK, Value(val));
-	writeSettings();
+	if(initizalied){
+		Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverJOYSTICK, Value(val));
+		writeSettings();
+		QFont font;
+		font.setItalic(true);
+		checkBoxJoystick->setFont(font);
+	}
 }
 
 void AxisConfigWidget::on_checkBoxQGamepad_toggled(bool val)
 {
-	Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverQGAMEPAD, Value(val));
-	writeSettings();
+	if(initizalied){
+		Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverQGAMEPAD, Value(val));
+		writeSettings();
+		QFont font;
+		font.setItalic(true);
+		checkBoxQGamepad->setFont(font);
+	}
 }
 
 void AxisConfigWidget::on_checkBoxDBus_toggled(bool val)
 {
-	Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverDBUS, Value(val));
-	writeSettings();
+	if(initizalied){
+		Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverDBUS, Value(val));
+		writeSettings();
+		QFont font;
+		font.setItalic(true);
+		checkBoxDBus->setFont(font);
+	}
 }
 
 void AxisConfigWidget::applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntry& entry)

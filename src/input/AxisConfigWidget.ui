@@ -1003,14 +1003,8 @@
        </item>
        <item row="0" column="0" colspan="2">
         <widget class="QLabel" name="label">
-         <property name="font">
-          <font>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
-         </property>
          <property name="text">
-          <string>Driver selection: (changes requires restarting OpenSCAD)</string>
+          <string>&lt;b&gt;Driver selection:&lt;/b&gt; &lt;i&gt;(changes requires restarting OpenSCAD)&lt;/i&gt;</string>
          </property>
         </widget>
        </item>
