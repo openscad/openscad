@@ -20,6 +20,7 @@ message(STATUS "Configuration: ${CONFIG_OPTIONS}")
 project(openscad)
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/objects")
+set(AUTOGEN_BUILD_DIR "${CMAKE_BINARY_DIR}/objects")
 
 # Default to Release build
 if(NOT CMAKE_BUILD_TYPE)
