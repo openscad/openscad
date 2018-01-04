@@ -8,27 +8,27 @@
 class ParameterVirtualWidget : public QWidget, public Ui::ParameterEntryWidget
 {
 	Q_OBJECT
-	
+
+private:
+	int LabelWidth=0;
+
 protected:
 	ParameterObject *object;
-	
+
 public:
-	ParameterVirtualWidget(QWidget *parent = 0);
-	virtual ~ParameterVirtualWidget();
+	ParameterVirtualWidget(QWidget *parent = nullptr);
+	~ParameterVirtualWidget();
 	virtual void setParameterFocus() = 0;
-	
+	virtual void setValue() = 0;
+	void resizeEvent(QResizeEvent * event) override;
+
 signals:
 	void changed();
-	
+
 protected:
 	int decimalPrecision;
 	virtual void setPrecision(double number);
-	virtual void setValue() = 0;
-    void setName(QString name);
-	void setDescription(const QString& description) {
-		if(!description.isEmpty()){
-			this->labelDescription->show();
-			this->labelDescription->setText(description);
-		}
-	}
+	void setName(QString name);
+	void setDescription(const QString& description);
+	void addInline(QString txt);
 };

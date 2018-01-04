@@ -37,14 +37,14 @@ class DBusInputDriver : public InputDriver
 
 public:
     DBusInputDriver();
-    virtual ~DBusInputDriver();
-    virtual void run();
-    virtual bool open();
-    virtual void close();
-    virtual bool isOpen();
-    virtual bool openOnce();
+    ~DBusInputDriver();
+    void run() override;
+    bool open() override;
+    void close() override;
+    bool isOpen() override;
+    bool openOnce() override;
 
-    virtual const std::string & get_name() const;
+    const std::string & get_name() const override;
 
 private slots:
     void zoom(double zoom);

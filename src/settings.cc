@@ -197,8 +197,8 @@ Settings::~Settings()
 
 void Settings::visit(SettingsVisitor& visitor)
 {
-	for (std::list<SettingsEntry *>::iterator it = entries.begin();it != entries.end();it++) {
-		visitor.handle(*(*it));
+	for (SettingsEntry* entry : entries) {
+		visitor.handle(*entry);
 	}
 }
 
@@ -214,17 +214,17 @@ SettingsEntry* Settings::getSettingEntryByName(const std::string &name)
 
 const Value &Settings::defaultValue(const SettingsEntry& entry)
 {
-    return entry._default;
+	return entry._default;
 }
 
 const Value &Settings::get(const SettingsEntry& entry)
 {
-    return entry._value;
+	return entry._value;
 }
 
 void Settings::set(SettingsEntry& entry, const Value &val)
 {
-    entry._value = val;
+	entry._value = val;
 }
 
 SettingsVisitor::SettingsVisitor()

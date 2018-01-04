@@ -6,13 +6,13 @@
 class EvaluationException : public std::runtime_error {
 public:
 	EvaluationException(const std::string &what_arg) : std::runtime_error(what_arg) {}
-	virtual ~EvaluationException() throw() {}
+	~EvaluationException() throw() {}
 };
 
 class AssertionFailedException : public EvaluationException {
 public:
 	AssertionFailedException(const std::string &what_arg) : EvaluationException(what_arg) {}
-	virtual ~AssertionFailedException() throw() {}
+	~AssertionFailedException() throw() {}
 };
 
 class RecursionException: public EvaluationException {
@@ -22,7 +22,7 @@ public:
 		out << "ERROR: Recursion detected calling " << recursiontype << " '" << name << "'";
 		return RecursionException(out.str());
 	}
-	virtual ~RecursionException() throw() {}
+	~RecursionException() throw() {}
 
 private:
 	RecursionException(const std::string &what_arg) : EvaluationException(what_arg) {}

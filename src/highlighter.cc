@@ -208,7 +208,7 @@ void Highlighter::assignFormatsToTokens(const QString &s)
 		QStringList::iterator it;
 		for ( it = tokentypes[toktype].begin(); it < tokentypes[toktype].end(); ++it) {
 			QString token = *it;
-			//PRINTB("set format for %s: type %s", token.toStdString()%toktype.toStdString() );;
+			//PRINTB("set format for %s: type %s", token.toStdString()%toktype.toStdString() );
 			tokenFormats[ token ] = typeformats [ toktype ];
 		}
 	}

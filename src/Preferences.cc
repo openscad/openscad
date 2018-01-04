@@ -87,7 +87,7 @@ class SettingsReader : public Settings::SettingsVisitor
 	return entry.defaultValue();
     }
 
-    virtual void handle(Settings::SettingsEntry& entry) const {
+    void handle(Settings::SettingsEntry& entry) const override {
 	Settings::Settings *s = Settings::Settings::inst();
 
 	std::string key = entry.category() + "/" + entry.name();
@@ -97,8 +97,6 @@ class SettingsReader : public Settings::SettingsVisitor
 	s->set(entry, v);
     }
 };
-
-
 
 Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 {

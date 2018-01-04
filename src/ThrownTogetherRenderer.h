@@ -11,8 +11,8 @@ public:
 	ThrownTogetherRenderer(shared_ptr<class CSGProducts> root_products,
 												 shared_ptr<CSGProducts> highlight_products,
 												 shared_ptr<CSGProducts> background_products);
-	virtual void draw(bool showfaces, bool showedges) const;
-	virtual BoundingBox getBoundingBox() const;
+	void draw(bool showfaces, bool showedges) const override;
+	BoundingBox getBoundingBox() const override;
 private:
 	void renderCSGProducts(const CSGProducts &products, bool highlight_mode, bool background_mode, bool showedges, 
 											bool fberror) const;

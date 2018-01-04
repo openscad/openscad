@@ -13,10 +13,10 @@ class FileModule : public AbstractModule
 {
 public:
 	FileModule() : is_handling_dependencies(false) {}
-	virtual ~FileModule();
+	~FileModule();
 
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx = nullptr) const;
-	virtual std::string dump(const std::string &indent, const std::string &name) const;
+	AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx = nullptr) const override;
+	std::string dump(const std::string &indent, const std::string &name) const override;
 	AbstractNode *instantiateWithFileContext(class FileContext *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
 
 	void setModulePath(const std::string &path) { this->path = path; }

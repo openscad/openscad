@@ -39,7 +39,7 @@ class CsgModule : public AbstractModule
 public:
 	OpenSCADOperator type;
 	CsgModule(OpenSCADOperator type) : type(type) { }
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
+	AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const override;
 };
 
 AbstractNode *CsgModule::instantiate(const Context*, const ModuleInstantiation *inst, EvalContext *evalctx) const

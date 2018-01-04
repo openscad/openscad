@@ -34,12 +34,12 @@ class QGamepadInputDriver : public InputDriver
 {
 public:
     QGamepadInputDriver();
-    virtual ~QGamepadInputDriver();
-    virtual void run();
-    virtual bool open();
-    virtual void close();
+    ~QGamepadInputDriver();
+    void run() override;
+    bool open() override;
+    void close() override;
 
-    virtual const std::string & get_name() const;
+    const std::string & get_name() const override;
 private:
 	std::unique_ptr<QGamepad> gamepad;
 };

@@ -13,14 +13,14 @@ protected:
 public:
     ellipse();
     ellipse(const ellipse& orig);
-    virtual ~ellipse();
+    ~ellipse();
     
-    virtual double get_radius_x() { return rx; }
-    virtual double get_radius_y() { return ry; }
+    double get_radius_x() { return rx; }
+    double get_radius_y() { return ry; }
 
-    virtual void set_attrs(attr_map_t& attrs);
-    virtual void dump();
-    const std::string& get_name() const { return ellipse::name; };
+    void set_attrs(attr_map_t& attrs) override;
+    void dump() override;
+    const std::string& get_name() const override { return ellipse::name; };
 
     static const std::string name;
 };

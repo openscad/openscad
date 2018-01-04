@@ -1,5 +1,5 @@
 #include "GeometryUtils.h"
-#include "tesselator.h"
+#include "ext/libtess2/Include/tesselator.h"
 #include "printutils.h"
 #include "Reindexer.h"
 #include <boost/lexical_cast.hpp>
@@ -265,7 +265,7 @@ bool GeometryUtils::tessellatePolygonWithHoles(const Vector3f *vertices,
   }
 
   TESSalloc ma;
-  TESStesselator* tess = 0;
+  TESStesselator* tess = nullptr;
 
   memset(&ma, 0, sizeof(ma));
   ma.memalloc = stdAlloc;

@@ -671,6 +671,8 @@ void dialogInitHandler(FontCacheInitializer *initializer, void *)
 	QMetaObject::invokeMethod(scadApp, "hideFontCacheDialog");
 }
 
+
+
 int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, char ** argv)
 {
 #ifdef Q_OS_MACX
@@ -787,7 +789,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	} else {
 	   new MainWindow(assemblePath(original_path, inputFiles[0]));
 	}
-
+    app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(releaseQSettingsCached()));
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 	if (Feature::ExperimentalInputDriver.is_enabled()) {
 		Settings::Settings *s = Settings::Settings::inst();
@@ -847,7 +849,7 @@ int main(int argc, char **argv)
 	StackCheck::inst()->init();
 
 #ifdef Q_OS_MAC
-	bool isGuiLaunched = getenv("GUI_LAUNCHED") != 0;
+	bool isGuiLaunched = getenv("GUI_LAUNCHED") != nullptr;
 	if (isGuiLaunched) set_output_handler(CocoaUtils::nslog, nullptr);
 #else
 	PlatformUtils::ensureStdIO();

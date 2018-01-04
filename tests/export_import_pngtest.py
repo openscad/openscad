@@ -30,10 +30,10 @@ import sys, os, re, subprocess, argparse
 from validatestl import validateSTL
 
 def failquit(*args):
-	if len(args)!=0: print(args)
-	print('export_import_pngtest args:',str(sys.argv))
-	print('exiting export_import_pngtest.py with failure')
-	sys.exit(1)
+    if len(args)!=0: print(args)
+    print('export_import_pngtest args:',str(sys.argv))
+    print('exiting export_import_pngtest.py with failure')
+    sys.exit(1)
 
 def createImport(inputfile, scadfile):
         print ('createImport: ' + inputfile + " " + scadfile)
@@ -64,9 +64,9 @@ pngfile = remaining_args[-1]
 remaining_args = remaining_args[1:-1] # Passed on to the OpenSCAD executable
 
 if not os.path.exists(inputfile):
-	failquit('cant find input file named: ' + inputfile)
+    failquit('cant find input file named: ' + inputfile)
 if not os.path.exists(args.openscad):
-	failquit('cant find openscad executable named: ' + args.openscad)
+    failquit('cant find openscad executable named: ' + args.openscad)
 
 outputdir = os.path.dirname(pngfile)
 inputpath, inputfilename = os.path.split(inputfile)
@@ -97,11 +97,11 @@ print >> sys.stderr, 'Running OpenSCAD #1:'
 print >> sys.stderr, ' '.join(export_cmd)
 result = subprocess.call(export_cmd)
 if result != 0:
-	failquit('OpenSCAD #1 failed with return code ' + str(result))
+    failquit('OpenSCAD #1 failed with return code ' + str(result))
 
 if args.format == 'stl' and args.requiremanifold:
-        if not validateSTL(exportfile):
-                failquit("Error: Non-manifold STL file exported from OpenSCAD")
+    if not validateSTL(exportfile):
+        failquit("Error: Non-manifold STL file exported from OpenSCAD")
 
 
 #
@@ -110,8 +110,8 @@ if args.format == 'stl' and args.requiremanifold:
 newscadfile = exportfile
 # If we didn't export a .csg file, we need to import it
 if args.format != 'csg':
-        newscadfile += '.scad'
-        createImport(exportfile, newscadfile)
+    newscadfile += '.scad'
+    createImport(exportfile, newscadfile)
 
 create_png_cmd = [args.openscad, newscadfile, '-o', pngfile] + remaining_args
 print >> sys.stderr, 'Running OpenSCAD #2:'
@@ -121,10 +121,10 @@ fontenv = os.environ.copy();
 fontenv["OPENSCAD_FONT_PATH"] = fontdir;
 result = subprocess.call(create_png_cmd, env = fontenv);
 if result != 0:
-	failquit('OpenSCAD #2 failed with return code ' + str(result))
+    failquit('OpenSCAD #2 failed with return code ' + str(result))
 
 try:    os.remove(exportfile)
 except: failquit('failure at os.remove('+exportfile+')')
 if newscadfile != exportfile:
-        try:	os.remove(newscadfile)
-        except: failquit('failure at os.remove('+newscadfile+')')
+    try: os.remove(newscadfile)
+    except: failquit('failure at os.remove('+newscadfile+')')

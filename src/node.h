@@ -28,7 +28,7 @@ class AbstractNode : public BaseVisitable
 public:
 	VISITABLE();
 	AbstractNode(const class ModuleInstantiation *mi);
-	virtual ~AbstractNode();
+	~AbstractNode();
 	virtual std::string toString() const;
 	/*! The 'OpenSCAD name' of this node, defaults to classname, but can be 
 	    overloaded to provide specialization for e.g. CSG nodes, primitive nodes etc.
@@ -60,9 +60,9 @@ class AbstractIntersectionNode : public AbstractNode
 public:
 	VISITABLE();
 	AbstractIntersectionNode(const ModuleInstantiation *mi) : AbstractNode(mi) { };
-	virtual ~AbstractIntersectionNode() { };
-	virtual std::string toString() const;
-	virtual std::string name() const;
+	~AbstractIntersectionNode() { };
+	std::string toString() const override;
+	std::string name() const override;
 };
 
 class AbstractPolyNode : public AbstractNode
@@ -70,7 +70,7 @@ class AbstractPolyNode : public AbstractNode
 public:
 	VISITABLE();
 	AbstractPolyNode(const ModuleInstantiation *mi) : AbstractNode(mi) { };
-	virtual ~AbstractPolyNode() { };
+	~AbstractPolyNode() { };
 
 	enum class render_mode_e {
 		RENDER_CGAL,
@@ -87,8 +87,8 @@ class GroupNode : public AbstractNode
 public:
 	VISITABLE();
 	GroupNode(const class ModuleInstantiation *mi) : AbstractNode(mi) { }
-	virtual ~GroupNode() { }
-	virtual std::string name() const;
+	~GroupNode() { }
+	std::string name() const override;
 };
 
 /*!
@@ -100,8 +100,8 @@ public:
 	VISITABLE();
 
 	RootNode(const class ModuleInstantiation *mi) : GroupNode(mi) { }
-	virtual ~RootNode() { }
-	virtual std::string name() const;
+	~RootNode() { }
+	std::string name() const override;
 };
 
 class LeafNode : public AbstractPolyNode
@@ -109,7 +109,7 @@ class LeafNode : public AbstractPolyNode
 public:
 	VISITABLE();
 	LeafNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) { };
-	virtual ~LeafNode() { };
+	~LeafNode() { };
 	virtual const class Geometry *createGeometry() const = 0;
 };
 

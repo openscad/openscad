@@ -43,19 +43,19 @@ class ScintillaEditor : public EditorInterface
         
 public:
 	ScintillaEditor(QWidget *parent);
-	virtual ~ScintillaEditor() {}
+	~ScintillaEditor() {}
 	QsciScintilla *qsci;
-	QString toPlainText();
+	QString toPlainText() override;
 	void initMargin();
 	void initLexer();
 	void noColor();
-	QString selectedText();
-	int resetFindIndicators(const QString &findText, bool visibility = true);
-    bool find(const QString &, bool findNext = false, bool findBackwards = false);
-	void replaceSelectedText(const QString&);
-	void replaceAll(const QString &findText, const QString &replaceText);
-	QStringList colorSchemes();
-    bool canUndo();
+	QString selectedText() override;
+	int resetFindIndicators(const QString &findText, bool visibility = true) override;
+    bool find(const QString &, bool findNext = false, bool findBackwards = false) override;
+	void replaceSelectedText(const QString&) override;
+	void replaceAll(const QString &findText, const QString &replaceText) override;
+	QStringList colorSchemes() override;
+    bool canUndo() override;
 
 private:
         void getRange(int *lineFrom, int *lineTo);
@@ -66,7 +66,7 @@ private:
         void enumerateColorSchemesInPath(colorscheme_set_t &result_set, const fs::path path);
         colorscheme_set_t enumerateColorSchemes();
 
-        virtual bool eventFilter(QObject* obj, QEvent *event);
+        bool eventFilter(QObject* obj, QEvent *event) override;
         void navigateOnNumber(int key);
         bool modifyNumber(int key);
 
@@ -74,26 +74,26 @@ signals:
 	void previewRequest(void);
 	
 public slots:
-	void zoomIn();
-	void zoomOut();  
-	void setPlainText(const QString&);
-	void setContentModified(bool);
-	bool isContentModified();
-	void highlightError(int);
-	void unhighlightLastError();
-	void setHighlightScheme(const QString&);
-	void indentSelection();
-	void unindentSelection();
-	void commentSelection();
-	void uncommentSelection();
-	void insert(const QString&);
-	void setText(const QString&);
-	void undo();
-	void redo();
-	void cut();
-	void copy();
-	void paste();
-	void initFont(const QString&, uint);
+	void zoomIn() override;
+	void zoomOut() override;  
+	void setPlainText(const QString&) override;
+	void setContentModified(bool) override;
+	bool isContentModified() override;
+	void highlightError(int) override;
+	void unhighlightLastError() override;
+	void setHighlightScheme(const QString&) override;
+	void indentSelection() override;
+	void unindentSelection() override;
+	void commentSelection() override;
+	void uncommentSelection() override;
+	void insert(const QString&) override;
+	void setText(const QString&) override;
+	void undo() override;
+	void redo() override;
+	void cut() override;
+	void copy() override;
+	void paste() override;
+	void initFont(const QString&, uint) override;
 
 private slots:
 	void onTextChanged();

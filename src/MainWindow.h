@@ -78,7 +78,7 @@ public:
 	~MainWindow();
 
 protected:
-	void closeEvent(QCloseEvent *event);
+	void closeEvent(QCloseEvent *event) override;
 
 private slots:
 	void updatedAnimTval();
@@ -104,9 +104,9 @@ private:
 	void updateCamera(const class FileContext &ctx);
 	void updateTemporalVariables();
 	bool fileChangedOnDisk();
-	void compileTopLevelDocument();
+	void compileTopLevelDocument(bool rebuildParameterWidget);
 		void updateCompileResult();
-	void compile(bool reload, bool forcedone = false);
+	void compile(bool reload, bool forcedone = false, bool rebuildParameterWidget=true);
 	void compileCSG(bool procevents);
 	bool maybeSave();
 		void saveError(const QIODevice &file, const std::string &msg);
@@ -176,10 +176,10 @@ private slots:
 	void updateFindBuffer(QString);
 	bool event(QEvent* event);
 protected:
-	virtual bool eventFilter(QObject* obj, QEvent *event);
+	bool eventFilter(QObject* obj, QEvent *event) override;
 
 private slots:
-	void actionRenderPreview();
+	void actionRenderPreview(bool rebuildParameterWidget=true);
 	void csgRender();
 	void csgReloadRender();
 #ifdef ENABLE_CGAL
@@ -226,6 +226,7 @@ public slots:
 		void editorTopLevelChanged(bool);
 		void consoleTopLevelChanged(bool);
 		void parameterTopLevelChanged(bool);
+		void processEvents();
 
 #ifdef ENABLE_OPENCSG
 	void viewModePreview();
@@ -254,8 +255,8 @@ public slots:
 	void viewAll();
 	void animateUpdateDocChanged();
 	void animateUpdate();
-	void dragEnterEvent(QDragEnterEvent *event);
-	void dropEvent(QDropEvent *event);
+	void dragEnterEvent(QDragEnterEvent *event) override;
+	void dropEvent(QDropEvent *event) override;
 	void helpAbout();
 	void helpHomepage();
 	void helpManual();

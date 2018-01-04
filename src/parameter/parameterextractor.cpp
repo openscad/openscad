@@ -23,7 +23,7 @@ void ParameterExtractor::applyParameters(FileModule *fileModule)
   }
 }
 
-void ParameterExtractor::setParameters(const FileModule* module)
+void ParameterExtractor::setParameters(const FileModule* module, bool rebuildParameterWidget)
 {
   if (!module) return;
 
@@ -42,10 +42,10 @@ void ParameterExtractor::setParameters(const FileModule* module)
 
     //check whether object exist or not previously
     if (entries.find(assignment.name) == entries.end() || resetPara) {
-
       //if object doen't exist
       //or we have reset Parameters then add new entry
       entries[assignment.name] = entryObject;
+      rebuildParameterWidget = true;
     } else {
       //if entry object is already exist we check if its modified
       //or not
@@ -60,6 +60,10 @@ void ParameterExtractor::setParameters(const FileModule* module)
     entryObject->set = true;
     ParameterPos.push_back(assignment.name);
   }
-  connectWidget();
+  if(rebuildParameterWidget){
+    connectWidget();
+  }else{
+    updateWidget();
+  }
   this->resetPara = false;
 }
