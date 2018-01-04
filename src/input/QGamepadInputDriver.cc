@@ -96,6 +96,31 @@ bool QGamepadInputDriver::open()
 		InputDriverManager::instance()->sendEvent(new InputEventButtonChanged(7, pressed));
     });
 
+    connect(this->gamepad.get(), &QGamepad::buttonL3Changed, this, [](bool pressed){
+        InputDriverManager::instance()->sendEvent(new InputEventButtonChanged(8, pressed));
+    });
+    connect(this->gamepad.get(), &QGamepad::buttonR3Changed, this, [](bool pressed){
+        InputDriverManager::instance()->sendEvent(new InputEventButtonChanged(9, pressed));
+    });
+    connect(this->gamepad.get(), &QGamepad::buttonCenterChanged, this, [](bool pressed){
+        InputDriverManager::instance()->sendEvent(new InputEventButtonChanged(10, pressed));
+    });
+    connect(this->gamepad.get(), &QGamepad::buttonUpChanged, this, [](bool pressed){
+        InputDriverManager::instance()->sendEvent(new InputEventButtonChanged(11, pressed));
+    });
+    connect(this->gamepad.get(), &QGamepad::buttonDownChanged, this, [](bool pressed){
+        InputDriverManager::instance()->sendEvent(new InputEventButtonChanged(12, pressed));
+    });
+    connect(this->gamepad.get(), &QGamepad::buttonLeftChanged, this, [](bool pressed){
+        InputDriverManager::instance()->sendEvent(new InputEventButtonChanged(13, pressed));
+    });
+    connect(this->gamepad.get(), &QGamepad::buttonRightChanged, this, [](bool pressed){
+        InputDriverManager::instance()->sendEvent(new InputEventButtonChanged(14, pressed));
+    });
+    connect(this->gamepad.get(), &QGamepad::buttonGuideChanged, this, [](bool pressed){
+        InputDriverManager::instance()->sendEvent(new InputEventButtonChanged(15, pressed));
+    });
+
 	return true;
 }
 
