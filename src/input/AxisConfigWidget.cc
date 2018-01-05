@@ -31,6 +31,7 @@
 #include "QSettingsCached.h"
 #include "input/InputDriverManager.h"
 #include "SettingsWriter.h"
+#include "WheelIgnorer.h"
 
 AxisConfigWidget::AxisConfigWidget(QWidget *parent) : QWidget(parent)
 {
@@ -67,6 +68,12 @@ void AxisConfigWidget::init() {
 	initComboBox(this->comboBoxRotationZ, Settings::Settings::inputRotateZ);
 	initComboBox(this->comboBoxZoom, Settings::Settings::inputZoom);
 	initComboBox(this->comboBoxZoom2, Settings::Settings::inputZoom2);
+
+	WheelIgnorer *wheelIgnorer = new WheelIgnorer();
+	QList<QComboBox *> widgets = this->findChildren<QComboBox *>();
+	foreach (QComboBox* b, widgets) {
+		b->installEventFilter(wheelIgnorer);
+	}
 
 	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
 		std::string s = std::to_string(i);
