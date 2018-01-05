@@ -352,6 +352,7 @@ HEADERS += src/version_check.h \
            src/parameter/parametervector.h \
            src/parameter/groupwidget.h \
            src/parameter/parameterset.h \
+           src/parameter/ignoreWheelWhenNotFocused.h \
            src/QWordSearchField.h \
            src/QSettingsCached.h
 
@@ -491,7 +492,8 @@ SOURCES += \
            src/parameter/parametervector.cpp \
            src/parameter/groupwidget.cpp \
            src/parameter/parameterset.cpp \
-           src/parameter/parametervirtualwidget.cpp\
+           src/parameter/parametervirtualwidget.cpp \
+           src/parameter/ignoreWheelWhenNotFocused.cpp \
            src/QWordSearchField.cc\
            \
            src/QSettingsCached.cc

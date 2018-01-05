@@ -1,4 +1,5 @@
 #include "parametercombobox.h"
+#include "ignoreWheelWhenNotFocused.h"
 
 ParameterComboBox::ParameterComboBox(ParameterObject *parameterobject, int showDescription)
 {
@@ -13,6 +14,9 @@ ParameterComboBox::ParameterComboBox(ParameterObject *parameterobject, int showD
 	}else {
 		comboBox->setToolTip(object->description);
 	}
+
+	IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused();
+	comboBox->installEventFilter(ignoreWheelWhenNotFocused);
 }
 
 void ParameterComboBox::onChanged(int idx)
