@@ -12,14 +12,5 @@ bool IgnoreWheelWhenNotFocused::eventFilter(QObject *obj, QEvent *event)
 	}else{
 		return QObject::eventFilter(obj, event);
 	}
-/*        else if(event->type() == QEvent::FocusIn)
-        {
-            spinBox->setFocusPolicy(Qt::WheelFocus);
-        }
-        else if(event->type() == QEvent::FocusOut)
-        {
-            spinBox->setFocusPolicy(Qt::StrongFocus);
-        }
-    }*/
 }
 
