@@ -176,7 +176,7 @@ void ButtonConfigWidget::updateComboBox(QComboBox *comboBox, const Settings::Set
 	if (idx >= 0) {
 		comboBox->setCurrentIndex(idx);
 	} else {
-		comboBox->addItem(text + " (not supported)", text);
+		comboBox->addItem(QIcon::fromTheme("emblem-unreadable"), text + " " + _("(not supported)"), text);
 		int defIdx = comboBox->findData(text);
 		if (defIdx >= 0) {
 			comboBox->setCurrentIndex(defIdx);
