@@ -158,6 +158,7 @@ static Value buttonValues() {
 	v += ValuePtr(value("viewActionLeft", _("viewActionLeft")));
 	v += ValuePtr(value("viewActionOrthogonal", _("viewActionOrthogonal")));
 	v += ValuePtr(value("viewActionPerspective", _("viewActionPerspective")));
+	v += ValuePtr(value("viewActionTogglePerspective", _("viewActionTogglePerspective")));
 	v += ValuePtr(value("viewActionPreview", _("viewActionPreview")));
 	v += ValuePtr(value("viewActionResetView", _("viewActionResetView")));
 	v += ValuePtr(value("viewActionRight", _("viewActionRight")));
