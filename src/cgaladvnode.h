@@ -22,7 +22,6 @@ public:
 	std::string name() const override;
 
 	ValuePtr path;
-	std::string subdiv_type;
 	unsigned int convexity;
 	int level;
 	Vector3d newsize;

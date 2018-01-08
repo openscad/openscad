@@ -2361,12 +2361,6 @@ msgstr ""
 #~ msgid "WARNING: Cannot resize to sizes less than 0."
 #~ msgstr "WARNING: Cannot resize to sizes less than 0."
 
-#~ msgid "WARNING: glide() is not implemented yet!"
-#~ msgstr "WARNING: glide() is not implemented yet!"
-
-#~ msgid "WARNING: subdiv() is not implemented yet!"
-#~ msgstr "WARNING: subdiv() is not implemented yet!"
-
 #~ msgid "Warning: Scaling a 2D object with 0 - removing object"
 #~ msgstr "Warning: Scaling a 2D object with 0 - removing object"
 
