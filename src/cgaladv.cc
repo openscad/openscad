@@ -91,8 +91,6 @@ AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstant
 	node->convexity = static_cast<int>(convexity->toDouble());
 	node->path = path;
 
-	if (node->level <= 1) node->level = 1;
-
 	auto instantiatednodes = inst->instantiateChildren(evalctx);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 
