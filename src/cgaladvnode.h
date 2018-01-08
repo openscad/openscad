@@ -6,8 +6,6 @@
 
 enum class CgaladvType {
 	MINKOWSKI,
-	GLIDE,
-	SUBDIV,
 	HULL,
 	RESIZE
 };
