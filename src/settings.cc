@@ -1,5 +1,6 @@
 #include "settings.h"
 #include "printutils.h"
+#include "input/InputEventMapper.h"
 
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
@@ -70,24 +71,18 @@ static Value values(std::string s1, std::string s1disp, std::string s2, std::str
 static Value axisValues() {
 	Value::VectorType v;
 	v += ValuePtr(value("None", _("None")));
-	v += ValuePtr(value("+1", _("Axis 0")));
-	v += ValuePtr(value("-1", _("Axis 0 (inverted)")));
-	v += ValuePtr(value("+2", _("Axis 1")));
-	v += ValuePtr(value("-2", _("Axis 1 (inverted)")));
-	v += ValuePtr(value("+3", _("Axis 2")));
-	v += ValuePtr(value("-3", _("Axis 2 (inverted)")));
-	v += ValuePtr(value("+4", _("Axis 3")));
-	v += ValuePtr(value("-4", _("Axis 3 (inverted)")));
-	v += ValuePtr(value("+5", _("Axis 4")));
-	v += ValuePtr(value("-5", _("Axis 4 (inverted)")));
-	v += ValuePtr(value("+6", _("Axis 5")));
-	v += ValuePtr(value("-6", _("Axis 5 (inverted)")));
-	v += ValuePtr(value("+7", _("Axis 6")));
-	v += ValuePtr(value("-7", _("Axis 6 (inverted)")));
-	v += ValuePtr(value("+8", _("Axis 7")));
-	v += ValuePtr(value("-8", _("Axis 7 (inverted)")));
-	v += ValuePtr(value("+9", _("Axis 8")));
-	v += ValuePtr(value("-9", _("Axis 8 (inverted)")));
+	char userData [5];
+	char text [40];
+
+	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
+		snprintf(userData, 5, "+%d", i+1);
+		snprintf(text, 40,_("Axis %d"), i);
+		v += ValuePtr(value(userData, text));
+
+		snprintf(userData, 5, "-%d", i+1);
+		snprintf(text, 40, _("Axis %d (inverted)"), i);
+		v += ValuePtr(value(userData, text));
+	}
 	return v;
 }
 
