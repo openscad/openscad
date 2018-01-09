@@ -1,6 +1,4 @@
 minkowski(convexity = 0);
-glide(path = undef, convexity = 0);
-subdiv(level = 1, convexity = 0);
 hull();
 resize(newsize = [0,0,0], auto = [0,0,0]);
 group();
