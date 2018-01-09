@@ -64,6 +64,7 @@ void InputDriverManager::registerActions(const QList<QAction *> &actions)
     foreach(QAction *action, actions) {
         if (!action->objectName().isEmpty()) {
             this->actions.append(action->objectName());
+            this->actionDescriptions.append(action->text());
         }
         if (action->menu()) {
             registerActions(action->menu()->actions());

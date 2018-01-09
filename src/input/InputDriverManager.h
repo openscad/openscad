@@ -41,8 +41,6 @@ private:
 
     drivers_t drivers;
 
-    QStringList actions;
-
     InputEventMapper mapper;
 
     MainWindow *currentWindow;
@@ -69,6 +67,9 @@ public:
     void registerActions(const QList<QAction *> &actions);
 
     static InputDriverManager * instance();
+
+    QStringList actions=QStringList("None");
+    QStringList actionDescriptions=QStringList( _("None"));
 
 public slots:
     void onInputMappingUpdated();

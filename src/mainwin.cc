@@ -473,7 +473,9 @@ MainWindow::MainWindow(const QString &filename)
 	addKeyboardShortCut(this->editortoolbar->actions());
 
         InputDriverManager::instance()->registerActions(this->menuBar()->actions());
-	
+	Preferences* instance = Preferences::inst();
+	instance->ButtonConfig->init();
+
 	initActionIcon(fileActionNew, ":/images/blackNew.png", ":/images/Document-New-128.png");
 	initActionIcon(fileActionOpen, ":/images/Open-32.png", ":/images/Open-128.png");
 	initActionIcon(fileActionSave, ":/images/Save-32.png", ":/images/Save-128.png");

@@ -779,7 +779,7 @@ void Preferences::create(QStringList colorSchemes)
     instance->colorSchemeChooser->addItems(renderColorSchemes);
     instance->init();
     instance->AxisConfig->init();
-    instance->ButtonConfig->init();
+    //instance->ButtonConfig->init();
     instance->setupFeaturesPage();
     instance->updateGUI();
 }
