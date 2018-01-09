@@ -201,7 +201,9 @@ void ButtonConfigWidget::initComboBox(QComboBox *comboBox, const Settings::Setti
 	QStringList actions = manager->actions;
 	QStringList actionDescriptions = manager->actionDescriptions;
 	for (int i = 0; i < actions.size(); ++i){
-		comboBox->addItem(actionDescriptions.at(i), actions.at(i));
+		QString desc   = actionDescriptions.at(i);
+		QString action = actions.at(i);
+		comboBox->addItem(desc.remove(QChar('&'), Qt::CaseInsensitive),action);
 	}
 
 	updateComboBox(comboBox, entry);
