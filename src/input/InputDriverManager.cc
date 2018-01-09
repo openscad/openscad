@@ -34,6 +34,11 @@ InputDriverManager::InputDriverManager(void)
     currentWindow = 0;
     connect(QApplication::instance(), SIGNAL(focusChanged(QWidget *, QWidget *)), this, SLOT(onFocusChanged(QWidget *, QWidget *)));
     timer = new QTimer(this);
+
+    actionStruct* entry = new actionStruct;
+    entry->name = "None";
+    entry->description = _("None");
+    this->actions.push_back(*entry);
 }
 
 InputDriverManager::~InputDriverManager(void)
@@ -63,8 +68,12 @@ void InputDriverManager::registerActions(const QList<QAction *> &actions, QStrin
 {
     foreach(QAction *action, actions) {
         if (!action->objectName().isEmpty()) {
-            this->actions.append(action->objectName());
-            this->actionDescriptions.append(parent + action->text());
+            actionStruct* entry = new actionStruct;
+            entry->name = action->objectName();
+            entry->description = parent + action->text();
+            entry->icon = action->icon();
+
+            this->actions.push_back(*entry);
         }
         if (action->menu()) {
             registerActions(action->menu()->actions(), parent + action->text() +  " -> ");

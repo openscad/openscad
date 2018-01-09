@@ -33,6 +33,12 @@
 #include "InputEventMapper.h"
 #include "MainWindow.h"
 
+struct actionStruct {
+  QString name;
+  QString description;
+  QIcon icon;
+} ;
+
 class InputDriverManager : public QObject
 {
     Q_OBJECT
@@ -68,8 +74,7 @@ public:
 
     static InputDriverManager * instance();
 
-    QStringList actions=QStringList("None");
-    QStringList actionDescriptions=QStringList( _("None"));
+	std::list<actionStruct> actions;
 
 public slots:
     void onInputMappingUpdated();

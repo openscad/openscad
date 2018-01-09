@@ -198,12 +198,13 @@ void ButtonConfigWidget::initComboBox(QComboBox *comboBox, const Settings::Setti
 	comboBox->clear();
 
 	InputDriverManager* manager = InputDriverManager::instance();
-	QStringList actions = manager->actions;
-	QStringList actionDescriptions = manager->actionDescriptions;
-	for (int i = 0; i < actions.size(); ++i){
-		QString desc   = actionDescriptions.at(i);
-		QString action = actions.at(i);
-		comboBox->addItem(desc.remove(QChar('&'), Qt::CaseInsensitive),action);
+	std::list<actionStruct> actions = manager->actions;
+
+	for (std::list<actionStruct>::iterator action=actions.begin(); action != actions.end(); ++action){
+		QIcon   icon  = (*action).icon;
+		QString desc  = (*action).description;
+		QString actionName = (*action).name;
+		comboBox->addItem(icon,desc.remove(QChar('&'), Qt::CaseInsensitive),actionName);
 	}
 
 	updateComboBox(comboBox, entry);
