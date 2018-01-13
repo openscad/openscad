@@ -35,11 +35,13 @@ public:
     void run() override;
     bool open() override;
     void close() override;
-
     const std::string & get_name() const  override;
+    void setJoystickNr(std::string jnr);
+
 private:
     int fd;
     int version;
+    std::string nr="0";
     unsigned char axes;
     unsigned char buttons;
     char name[1024];

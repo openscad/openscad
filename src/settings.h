@@ -103,6 +103,7 @@ public:
     static SettingsEntry axisDeadzone7;
     static SettingsEntry axisDeadzone8;
     static SettingsEntry axisDeadzone9;
+    static SettingsEntry joystickNr;
 
     static Settings *inst(bool erase = false);
 

@@ -617,6 +617,7 @@ Q_IMPORT_PLUGIN(qtaccessiblewidgets)
 #include <QProgressDialog>
 #include <QFutureWatcher>
 #include <QtConcurrentRun>
+#include "settings.h"
 
 Q_DECLARE_METATYPE(shared_ptr<const Geometry>);
 
@@ -791,6 +792,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
     app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(releaseQSettingsCached()));
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 	if (Feature::ExperimentalInputDriver.is_enabled()) {
+		Settings::Settings *s = Settings::Settings::inst();
 #ifdef ENABLE_HIDAPI
         InputDriverManager::instance()->registerDriver(new HidApiInputDriver());
 #endif
@@ -798,7 +800,10 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
         InputDriverManager::instance()->registerDriver(new SpaceNavInputDriver());
 #endif
 #ifdef ENABLE_JOYSTICK
-        InputDriverManager::instance()->registerDriver(new JoystickInputDriver());
+        std::string nr = s->get(Settings::Settings::joystickNr).toString();
+        JoystickInputDriver* joyDriver = new JoystickInputDriver();
+        joyDriver->setJoystickNr(nr);
+        InputDriverManager::instance()->registerDriver(joyDriver);
 #endif
 #ifdef ENABLE_QGAMEPAD
         InputDriverManager::instance()->registerDriver(new QGamepadInputDriver());
