@@ -1625,10 +1625,13 @@
    </property>
    <property name="icon">
     <iconset resource="../openscad.qrc">
-     <normaloff>:/icons/prefsInput.png</normaloff>:/icons/prefsInput.png</iconset>
+     <normaloff>:/icons/prefsInputAxis.png</normaloff>:/icons/prefsInputAxis.png</iconset>
    </property>
    <property name="text">
     <string>Axis</string>
+   </property>
+   <property name="toolTip">
+    <string>Input driver configuration and Axis mapping</string>
    </property>
   </action>
   <action name="prefsActionInputButton">
@@ -1637,10 +1640,10 @@
    </property>
    <property name="icon">
     <iconset resource="../openscad.qrc">
-     <normaloff>:/icons/prefsInput.png</normaloff>:/icons/prefsInput.png</iconset>
+     <normaloff>:/icons/prefsInputButtons.png</normaloff>:/icons/prefsInputButtons.png</iconset>
    </property>
    <property name="text">
-    <string>Button</string>
+    <string>Buttons</string>
    </property>
   </action>
  </widget>
