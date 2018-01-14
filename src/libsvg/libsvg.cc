@@ -47,8 +47,7 @@ attr_map_t read_attributes(xmlTextReaderPtr reader)
 void processNode(xmlTextReaderPtr reader)
 {
 	const char *name = reinterpret_cast<const char *> (xmlTextReaderName(reader));
-	if (name == NULL)
-		name = reinterpret_cast<const char *> (xmlStrdup(BAD_CAST "--"));
+	if (name == nullptr) name = reinterpret_cast<const char *> (xmlStrdup(BAD_CAST "--"));
 
 	bool isEmpty;
 	xmlChar *value = xmlTextReaderValue(reader);
@@ -120,7 +119,7 @@ int streamFile(const char *filename)
 	in_defs = false;
 	reader = xmlNewTextReaderFilename(filename);
 	xmlTextReaderSetParserProp(reader, XML_PARSER_SUBST_ENTITIES, 1);
-	if (reader != NULL) {
+	if (reader != nullptr) {
 		int ret = xmlTextReaderRead(reader);
 		while (ret == 1) {
 			processNode(reader);

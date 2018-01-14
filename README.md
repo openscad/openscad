@@ -250,11 +250,11 @@ For a 32-bit Windows cross-build, replace 64 with 32 in the above instructions.
 
 ### Compilation
 
-First, run 'qmake openscad.pro' from Qt to generate a Makefile.
+First, run `qmake openscad.pro` from Qt to generate a Makefile.
 
-On some systems, depending on which version(s) of Qt you have installed, you may need to specify which version you want to use, e.g. by running 'qmake4', 'qmake-qt4', 'qmake -qt=qt5', or something alike. 
+On some systems, depending on which version(s) of Qt you have installed, you may need to specify which version you want to use, e.g. by running `qmake4`, `qmake-qt4`, `qmake -qt=qt5`, or something alike. 
 
-Then run make. Finally you might run 'make install' as root or simply copy the
+Then run `make`. Finally you might run `make install` as root or simply copy the
 'openscad' binary (OpenSCAD.app on Mac OS X) to the bin directory of your choice.
 
 If you had problems compiling from source, raise a new issue in the

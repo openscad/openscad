@@ -23,7 +23,7 @@
 #if CGAL_VERSION_NR > CGAL_VERSION_NUMBER(4,5,1) || CGAL_VERSION_NR < CGAL_VERSION_NUMBER(4,5,0) 
 #include <CGAL/convex_hull_3.h>
 #else
-#include "convex_hull_3_bugfix.h"
+#include "ext/CGAL/convex_hull_3_bugfix.h"
 #endif
 
 #include "svg.h"
@@ -58,7 +58,7 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 			}
 		}
 
-		if (points.size() <= 3) return new CGAL_Nef_polyhedron();;
+		if (points.size() <= 3) return new CGAL_Nef_polyhedron();
 
 		// Apply hull
 		CGAL::Polyhedron_3<K> r;
@@ -82,8 +82,11 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 		if (!err) N = new CGAL_Nef_polyhedron3(P);
 	}
 	catch (const CGAL::Assertion_exception &e) {
-		if (std::string(e.what()).find("Plane_constructor")!=std::string::npos &&
-				std::string(e.what()).find("has_on")!=std::string::npos) {
+		// First two tests matches against CGAL < 4.10, the last two tests matches against CGAL >= 4.10
+		if ((std::string(e.what()).find("Plane_constructor") != std::string::npos &&
+				 std::string(e.what()).find("has_on") != std::string::npos) ||
+				std::string(e.what()).find("ss_plane.has_on(sv_prev->point())") != std::string::npos ||
+				std::string(e.what()).find("ss_circle.has_on(sp)") != std::string::npos) {
 			PRINT("PolySet has nonplanar faces. Attempting alternate construction");
 			plane_error=true;
 		} else {

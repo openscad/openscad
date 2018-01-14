@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2013.02.24\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-05 16:09-0500\n"
+"POT-Creation-Date: 2017-10-30 08:24+0100\n"
 "PO-Revision-Date: 2015-03-06 10:27+0100\n"
 "Last-Translator: Miro Hrončok <miro@hroncok.cz>\n"
 "Language-Team: Czech <miro@hroncok.cz>\n"
@@ -23,7 +23,7 @@ msgstr ""
 msgid "About OpenSCAD"
 msgstr "O aplikaci OpenSCAD"
 
-#: objects/ui_AboutDialog.h:105 objects/ui_launchingscreen.h:305
+#: objects/ui_AboutDialog.h:105 objects/ui_launchingscreen.h:307
 msgid ""
 "<html><head/><body>\n"
 "<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-"
@@ -62,22 +62,62 @@ msgid ""
 "<html><head/><body><p>This list shows the fonts currently registered with "
 "OpenSCAD.</p><p>Example:</p><pre style=\" margin-top:12px; margin-"
 "bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-"
-"indent:0px;\"><span style=\" font-family:'Courier New,courier';\">  text(t = "
-"&quot;OpenSCAD&quot;, font = &quot;DejaVu Sans&quot;);</span></pre><pre "
+"indent:0px;\"><span style=\" font-family:'Courier New,courier';\">  "
+"text(&quot;OpenSCAD&quot;, font = &quot;DejaVu Sans&quot;);</span></pre><pre "
 "style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-"
 "right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-"
-"family:'Courier New,courier';\">  text(t = &quot;OpenSCAD&quot;, font = "
-"&quot;Liberation Sans:style=Italic&quot;);</span></pre></body></html>"
+"family:'Courier New,courier';\">  text(&quot;OpenSCAD&quot;, font = &quot;"
+"Liberation Sans:style=Italic&quot;);</span></pre></body></html>"
 msgstr ""
 "<html><head/><body><p>Tento seznam zobrazuje písma momentálně dostupná pro "
 "OpenSCAD.</p><p>Příklad:</p><pre style=\" margin-top:12px; margin-"
 "bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-"
-"indent:0px;\"><span style=\" font-family:'Courier New,courier';\">  text(t = "
-"&quot;OpenSCAD&quot;, font = &quot;DejaVu Sans&quot;);</span></pre><pre "
+"indent:0px;\"><span style=\" font-family:'Courier New,courier';\">  "
+"text(&quot;OpenSCAD&quot;, font = &quot;DejaVu Sans&quot;);</span></pre><pre "
 "style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-"
 "right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-"
-"family:'Courier New,courier';\">  text(t = &quot;OpenSCAD&quot;, font = "
-"&quot;Liberation Sans:style=Italic&quot;);</span></pre></body></html>"
+"family:'Courier New,courier';\">  text(&quot;OpenSCAD&quot;, font = &quot;"
+"Liberation Sans:style=Italic&quot;);</span></pre></body></html>"
+
+#: objects/ui_launchingscreen.h:296
+msgid "Welcome to OpenSCAD"
+msgstr "Vítá vás OpenSCAD"
+
+#: objects/ui_launchingscreen.h:297
+msgid "New"
+msgstr "Nový"
+
+#: objects/ui_launchingscreen.h:298
+msgid "Open"
+msgstr "Otevřít"
+
+#: objects/ui_launchingscreen.h:299
+msgid "Help"
+msgstr "Nápověda"
+
+#: objects/ui_launchingscreen.h:300
+msgid "Recents"
+msgstr "Nedávné"
+
+#: objects/ui_launchingscreen.h:301
+msgid "Open Recent"
+msgstr "Otevřít nedávný soubor"
+
+#: objects/ui_launchingscreen.h:302 objects/ui_launchingscreen.h:304
+msgid "Examples"
+msgstr "Příklady"
+
+#: objects/ui_launchingscreen.h:305
+msgid "Open Example"
+msgstr "Otevřít příklad"
+
+#: objects/ui_launchingscreen.h:314
+msgid "Don't show again"
+msgstr "Příště nezobrazovat"
+
+#: objects/ui_launchingscreen.h:315
+msgid "Version"
+msgstr "Verze"
 
 #: objects/ui_LibraryInfoDialog.h:75
 msgid "Lib & Build Info"
@@ -87,569 +127,598 @@ msgstr "Info o knihovnách a sestavení"
 msgid "OpenSCAD Detailed Library and Build Information"
 msgstr "Podrobné informace o tomto sestavení OpenSCADu a použitých knihovnách"
 
-#: objects/ui_MainWindow.h:837
+#: objects/ui_MainWindow.h:876
 msgid "&New"
 msgstr "&Nový"
 
-#: objects/ui_MainWindow.h:838
+#: objects/ui_MainWindow.h:878
 msgid "Ctrl+N"
 msgstr "Ctrl+N"
 
-#: objects/ui_MainWindow.h:839
+#: objects/ui_MainWindow.h:880
 msgid "&Open..."
 msgstr "&Otevřít..."
 
-#: objects/ui_MainWindow.h:840
+#: objects/ui_MainWindow.h:882
 msgid "Ctrl+O"
 msgstr "Ctrl+O"
 
-#: objects/ui_MainWindow.h:841
+#: objects/ui_MainWindow.h:884
 msgid "&Save"
 msgstr "&Uložit"
 
-#: objects/ui_MainWindow.h:842
+#: objects/ui_MainWindow.h:886
 msgid "Ctrl+S"
 msgstr "Ctrl+S"
 
-#: objects/ui_MainWindow.h:843
+#: objects/ui_MainWindow.h:888
 msgid "Save &As..."
 msgstr "Uložit &jako..."
 
-#: objects/ui_MainWindow.h:844
+#: objects/ui_MainWindow.h:890
 msgid "Ctrl+Shift+S"
 msgstr "Ctrl+Shift+S"
 
-#: objects/ui_MainWindow.h:845
+#: objects/ui_MainWindow.h:892
 msgid "&Reload"
 msgstr "Zno&vu načíst"
 
-#: objects/ui_MainWindow.h:846
+#: objects/ui_MainWindow.h:894
 msgid "Ctrl+R"
 msgstr "Ctrl+R"
 
-#: objects/ui_MainWindow.h:847
+#: objects/ui_MainWindow.h:896
 msgid "&Quit"
 msgstr "U&končit"
 
-#: objects/ui_MainWindow.h:848
+#: objects/ui_MainWindow.h:898
 msgid "Ctrl+Q"
 msgstr "Ctrl+Q"
 
-#: objects/ui_MainWindow.h:849
+#: objects/ui_MainWindow.h:900
 msgid "&Undo"
 msgstr "&Zpět"
 
-#: objects/ui_MainWindow.h:850
+#: objects/ui_MainWindow.h:902
 msgid "Ctrl+Z"
 msgstr "Ctrl+Z"
 
-#: objects/ui_MainWindow.h:851
+#: objects/ui_MainWindow.h:904
 msgid "&Redo"
 msgstr "Znov&u"
 
-#: objects/ui_MainWindow.h:852
+#: objects/ui_MainWindow.h:906
 msgid "Ctrl+Shift+Z"
 msgstr "Ctrl+Shift+Z"
 
-#: objects/ui_MainWindow.h:853
+#: objects/ui_MainWindow.h:909
+#, fuzzy
+msgid "Ctrl+Y"
+msgstr "Ctrl+N"
+
+#: objects/ui_MainWindow.h:911
 msgid "Cu&t"
 msgstr "Vy&jmout"
 
-#: objects/ui_MainWindow.h:854
+#: objects/ui_MainWindow.h:913
 msgid "Ctrl+X"
 msgstr "Ctrl+X"
 
-#: objects/ui_MainWindow.h:855
+#: objects/ui_MainWindow.h:915
 msgid "&Copy"
 msgstr "&Kopírovat"
 
-#: objects/ui_MainWindow.h:856
+#: objects/ui_MainWindow.h:917
 msgid "Ctrl+C"
 msgstr "Ctrl+C"
 
-#: objects/ui_MainWindow.h:857
+#: objects/ui_MainWindow.h:919
 msgid "&Paste"
 msgstr "V&ložit"
 
-#: objects/ui_MainWindow.h:858
+#: objects/ui_MainWindow.h:921
 msgid "Ctrl+V"
 msgstr "Ctrl+V"
 
-#: objects/ui_MainWindow.h:859
+#: objects/ui_MainWindow.h:923
 msgid "&Indent"
 msgstr "Odsad&it"
 
-#: objects/ui_MainWindow.h:860
+#: objects/ui_MainWindow.h:925
 msgid "Ctrl+I"
 msgstr "Ctrl+I"
 
-#: objects/ui_MainWindow.h:861
+#: objects/ui_MainWindow.h:927
 msgid "C&omment"
 msgstr "Zakomen&tovat"
 
-#: objects/ui_MainWindow.h:862
+#: objects/ui_MainWindow.h:929
 msgid "Ctrl+D"
 msgstr "Ctrl+D"
 
-#: objects/ui_MainWindow.h:863
+#: objects/ui_MainWindow.h:931
 msgid "Unco&mment"
 msgstr "&Odkomentovat"
 
-#: objects/ui_MainWindow.h:864
+#: objects/ui_MainWindow.h:933
 msgid "Ctrl+Shift+D"
 msgstr "Ctrl+Shift+D"
 
-#: objects/ui_MainWindow.h:865
+#: objects/ui_MainWindow.h:935
 msgid "P&aste viewport translation"
 msgstr "Vložit posun pohl&edu"
 
-#: objects/ui_MainWindow.h:866
+#: objects/ui_MainWindow.h:937
 msgid "Ctrl+T"
 msgstr "Ctrl+T"
 
-#: objects/ui_MainWindow.h:867
+#: objects/ui_MainWindow.h:939
 msgid "Past&e viewport rotation"
 msgstr "Vlo&žit rotaci pohledu"
 
-#: objects/ui_MainWindow.h:868
+#: objects/ui_MainWindow.h:940
 msgid "Increase Font &Size"
 msgstr "Zv&ětšit písmo"
 
-#: objects/ui_MainWindow.h:869
+#: objects/ui_MainWindow.h:942
 msgid "Ctrl++"
 msgstr "Ctrl++"
 
-#: objects/ui_MainWindow.h:870
+#: objects/ui_MainWindow.h:944
 msgid "Decrease Font Si&ze"
 msgstr "Z&menšit písmo"
 
-#: objects/ui_MainWindow.h:871
+#: objects/ui_MainWindow.h:946
 msgid "Ctrl+-"
 msgstr "Ctrl+-"
 
-#: objects/ui_MainWindow.h:872
+#: objects/ui_MainWindow.h:948
 msgid "H&ide editor"
 msgstr "Skrýt &editor"
 
-#: objects/ui_MainWindow.h:873
+#: objects/ui_MainWindow.h:949
 msgid "&Reload and Preview"
 msgstr "Znovu &načíst a zobrazit"
 
-#: objects/ui_MainWindow.h:874
+#: objects/ui_MainWindow.h:951
 msgid "F4"
 msgstr "F4"
 
-#: objects/ui_MainWindow.h:875
+#: objects/ui_MainWindow.h:953
 msgid "&Preview"
 msgstr "&Zobrazit"
 
-#: objects/ui_MainWindow.h:876
+#: objects/ui_MainWindow.h:955
 msgid "F5"
 msgstr "F5"
 
-#: objects/ui_MainWindow.h:877
+#: objects/ui_MainWindow.h:957
 msgid "R&ender"
 msgstr "Vy&renderovat"
 
-#: objects/ui_MainWindow.h:878
+#: objects/ui_MainWindow.h:959
 msgid "F6"
 msgstr "F6"
 
-#: objects/ui_MainWindow.h:879
+#: objects/ui_MainWindow.h:961
 msgid "&Check Validity"
 msgstr "Zkontrolovat &správnost"
 
-#: objects/ui_MainWindow.h:880
+#: objects/ui_MainWindow.h:962
 msgid "Display A&ST..."
 msgstr "&Ukázat ATS..."
 
-#: objects/ui_MainWindow.h:881
+#: objects/ui_MainWindow.h:963
 msgid "Display CSG &Tree..."
 msgstr "Ukázat CSG s&trom..."
 
-#: objects/ui_MainWindow.h:882
+#: objects/ui_MainWindow.h:964
 msgid "Display CSG Pr&oducts..."
 msgstr "Ukázat CSG &produkty..."
 
-#: objects/ui_MainWindow.h:883
+#: objects/ui_MainWindow.h:965
 msgid "Export as &STL..."
 msgstr "Exportovat jako &STL..."
 
-#: objects/ui_MainWindow.h:884
+#: objects/ui_MainWindow.h:966
 msgid "Export as &OFF..."
 msgstr "Exportovat jako &OFF..."
 
-#: objects/ui_MainWindow.h:885
+#: objects/ui_MainWindow.h:967
 msgid "Preview"
 msgstr "Náhled"
 
-#: objects/ui_MainWindow.h:886
+#: objects/ui_MainWindow.h:969
 msgid "F9"
 msgstr "F9"
 
-#: objects/ui_MainWindow.h:887
+#: objects/ui_MainWindow.h:971
 msgid "Surfaces"
 msgstr "Povrchy"
 
-#: objects/ui_MainWindow.h:888
+#: objects/ui_MainWindow.h:973
 msgid "F10"
 msgstr "F10"
 
-#: objects/ui_MainWindow.h:889
+#: objects/ui_MainWindow.h:975
 msgid "Wireframe"
 msgstr "Drátové zobrazení"
 
-#: objects/ui_MainWindow.h:890
+#: objects/ui_MainWindow.h:977
 msgid "F11"
 msgstr "F11"
 
-#: objects/ui_MainWindow.h:891
+#: objects/ui_MainWindow.h:979
 msgid "Thrown Together"
 msgstr "Vše společně"
 
-#: objects/ui_MainWindow.h:892
+#: objects/ui_MainWindow.h:981
 msgid "F12"
 msgstr "F12"
 
-#: objects/ui_MainWindow.h:893
+#: objects/ui_MainWindow.h:983
 msgid "Show Edges"
 msgstr "Zobrazit hrany"
 
-#: objects/ui_MainWindow.h:894
+#: objects/ui_MainWindow.h:985
 msgid "Ctrl+1"
 msgstr "Ctrl+1"
 
-#: objects/ui_MainWindow.h:895
+#: objects/ui_MainWindow.h:987
 msgid "Show Axes"
 msgstr "Zobrazit osy"
 
-#: objects/ui_MainWindow.h:896
+#: objects/ui_MainWindow.h:989
 msgid "Ctrl+2"
 msgstr "Ctrl+2"
 
-#: objects/ui_MainWindow.h:897
+#: objects/ui_MainWindow.h:991
 msgid "Show Crosshairs"
 msgstr "Zobrazit zaměřovač"
 
-#: objects/ui_MainWindow.h:898
+#: objects/ui_MainWindow.h:993
 msgid "Ctrl+3"
 msgstr "Ctrl+3"
 
-#: objects/ui_MainWindow.h:899
+#: objects/ui_MainWindow.h:995
 msgid "Show Scale Markers"
 msgstr "Zobrazit pravítko"
 
-#: objects/ui_MainWindow.h:900
+#: objects/ui_MainWindow.h:996
 msgid "Animate"
 msgstr "Animovat"
 
-#: objects/ui_MainWindow.h:901
+#: objects/ui_MainWindow.h:997
 msgid "&Top"
 msgstr "Ses&hora"
 
-#: objects/ui_MainWindow.h:902
+#: objects/ui_MainWindow.h:999
 msgid "Ctrl+4"
 msgstr "Ctrl+4"
 
-#: objects/ui_MainWindow.h:903
+#: objects/ui_MainWindow.h:1001
 msgid "&Bottom"
 msgstr "Ze&spoda"
 
-#: objects/ui_MainWindow.h:904
+#: objects/ui_MainWindow.h:1003
 msgid "Ctrl+5"
 msgstr "Ctrl+5"
 
-#: objects/ui_MainWindow.h:905
+#: objects/ui_MainWindow.h:1005
 msgid "&Left"
 msgstr "Z&leva"
 
-#: objects/ui_MainWindow.h:906
+#: objects/ui_MainWindow.h:1007
 msgid "Ctrl+6"
 msgstr "Ctrl+6"
 
-#: objects/ui_MainWindow.h:907
+#: objects/ui_MainWindow.h:1009
 msgid "&Right"
 msgstr "Z&prava"
 
-#: objects/ui_MainWindow.h:908
+#: objects/ui_MainWindow.h:1011
 msgid "Ctrl+7"
 msgstr "Ctrl+7"
 
-#: objects/ui_MainWindow.h:909
+#: objects/ui_MainWindow.h:1013
 msgid "&Front"
 msgstr "Zepře&du"
 
-#: objects/ui_MainWindow.h:910
+#: objects/ui_MainWindow.h:1015
 msgid "Ctrl+8"
 msgstr "Ctrl+8"
 
-#: objects/ui_MainWindow.h:911
+#: objects/ui_MainWindow.h:1017
 msgid "Bac&k"
 msgstr "Ze&zadu"
 
-#: objects/ui_MainWindow.h:912
+#: objects/ui_MainWindow.h:1019
 msgid "Ctrl+9"
 msgstr "Ctrl+9"
 
-#: objects/ui_MainWindow.h:913
+#: objects/ui_MainWindow.h:1021
 msgid "&Diagonal"
 msgstr "Dia&gonálně"
 
-#: objects/ui_MainWindow.h:914
+#: objects/ui_MainWindow.h:1023
 msgid "Ctrl+0"
 msgstr "Ctrl+0"
 
-#: objects/ui_MainWindow.h:915
+#: objects/ui_MainWindow.h:1025
 msgid "Ce&nter"
 msgstr "Vy&centrovat"
 
-#: objects/ui_MainWindow.h:916
+#: objects/ui_MainWindow.h:1026
 msgid "&Perspective"
 msgstr "Pe&rspektivně"
 
-#: objects/ui_MainWindow.h:917
+#: objects/ui_MainWindow.h:1027
 msgid "&Orthogonal"
 msgstr "&Ortogonálně"
 
-#: objects/ui_MainWindow.h:918
+#: objects/ui_MainWindow.h:1028
 msgid "H&ide console"
 msgstr "Skrýt &terminál"
 
-#: objects/ui_MainWindow.h:919
+#: objects/ui_MainWindow.h:1029
 msgid "&About"
 msgstr "&O aplikaci"
 
-#: objects/ui_MainWindow.h:920
+#: objects/ui_MainWindow.h:1030
 msgid "&Documentation"
 msgstr "&Dokumentace"
 
-#: objects/ui_MainWindow.h:921
+#: objects/ui_MainWindow.h:1031
 msgid "Clear Recent"
 msgstr "Zapomenout nedávné"
 
-#: objects/ui_MainWindow.h:922
+#: objects/ui_MainWindow.h:1032
 msgid "Export as &DXF..."
 msgstr "Exportovat jako &DXF..."
 
-#: objects/ui_MainWindow.h:923
+#: objects/ui_MainWindow.h:1033
 msgid "&Close"
 msgstr "&Zavřít"
 
-#: objects/ui_MainWindow.h:924
+#: objects/ui_MainWindow.h:1035
 msgid "Ctrl+W"
 msgstr "Ctrl+W"
 
-#: objects/ui_MainWindow.h:925
+#: objects/ui_MainWindow.h:1037
 msgid "&Preferences"
 msgstr "Předvolb&y"
 
-#: objects/ui_MainWindow.h:926
+#: objects/ui_MainWindow.h:1038
 msgid "&Find..."
 msgstr "&Najít..."
 
-#: objects/ui_MainWindow.h:927
+#: objects/ui_MainWindow.h:1040
 msgid "Ctrl+F"
 msgstr "Ctrl+F"
 
-#: objects/ui_MainWindow.h:928
+#: objects/ui_MainWindow.h:1042
 msgid "Fin&d and Replace..."
 msgstr "Najít a na&hradit..."
 
-#: objects/ui_MainWindow.h:929
+#: objects/ui_MainWindow.h:1044
 msgid "Ctrl+Alt+F"
 msgstr "Ctrl+Alt+F"
 
-#: objects/ui_MainWindow.h:930
+#: objects/ui_MainWindow.h:1046
 msgid "Find Ne&xt"
 msgstr "Najít &další"
 
-#: objects/ui_MainWindow.h:931
+#: objects/ui_MainWindow.h:1048
 msgid "Ctrl+G"
 msgstr "Ctrl+G"
 
-#: objects/ui_MainWindow.h:932
+#: objects/ui_MainWindow.h:1050
 msgid "Find Pre&vious"
 msgstr "Najít &předchozí"
 
-#: objects/ui_MainWindow.h:933
+#: objects/ui_MainWindow.h:1052
 msgid "Ctrl+Shift+G"
 msgstr "Ctrl+Shift+G"
 
-#: objects/ui_MainWindow.h:934
+#: objects/ui_MainWindow.h:1054
 msgid "Use Se&lection for Find"
 msgstr "Hledat vybraný řetěze&c"
 
-#: objects/ui_MainWindow.h:935
+#: objects/ui_MainWindow.h:1056
 msgid "Ctrl+E"
 msgstr "Ctrl+E"
 
-#: objects/ui_MainWindow.h:936
+#: objects/ui_MainWindow.h:1058
 msgid "&Flush Caches"
 msgstr "&Vyprázdnit mezipaměť"
 
-#: objects/ui_MainWindow.h:937
+#: objects/ui_MainWindow.h:1059
 msgid "&OpenSCAD Homepage"
 msgstr "Domovská &stránka OpenSCADu"
 
-#: objects/ui_MainWindow.h:938
+#: objects/ui_MainWindow.h:1060
 msgid "&Automatic Reload and Preview"
 msgstr "&Automaticky načítat a zobrazovat"
 
-#: objects/ui_MainWindow.h:939
+#: objects/ui_MainWindow.h:1061
 msgid "Export as &Image..."
 msgstr "Exportovat jako &obrázek..."
 
-#: objects/ui_MainWindow.h:940
+#: objects/ui_MainWindow.h:1062
 msgid "Export as &CSG..."
 msgstr "Exportovat jako &CSG..."
 
-#: objects/ui_MainWindow.h:941
+#: objects/ui_MainWindow.h:1063
 msgid "&Library info"
 msgstr "&Informace o knihovnách"
 
-#: objects/ui_MainWindow.h:942
+#: objects/ui_MainWindow.h:1064
 msgid "Show &Library Folder..."
 msgstr "&Adresář s knihovnami..."
 
-#: objects/ui_MainWindow.h:943
+#: objects/ui_MainWindow.h:1065
 msgid "Reset View"
 msgstr "Výchozí pohled"
 
-#: objects/ui_MainWindow.h:944
+#: objects/ui_MainWindow.h:1066
 msgid "&Font List"
 msgstr "Seznam &písem"
 
-#: objects/ui_MainWindow.h:945
+#: objects/ui_MainWindow.h:1067
 msgid "Export as S&VG..."
 msgstr "Exportovat jako S&VG..."
 
-#: objects/ui_MainWindow.h:946
+#: objects/ui_MainWindow.h:1068
 msgid "Export as &AMF..."
 msgstr "Exportovat jako &AMF..."
 
-#: objects/ui_MainWindow.h:947
+#: objects/ui_MainWindow.h:1069
 msgid "Zoom In"
 msgstr "Přiblížit"
 
-#: objects/ui_MainWindow.h:948
+#: objects/ui_MainWindow.h:1071
 msgid "Ctrl+]"
 msgstr "Ctrl+]"
 
-#: objects/ui_MainWindow.h:949
+#: objects/ui_MainWindow.h:1073
 msgid "Zoom Out"
 msgstr "Oddálit"
 
-#: objects/ui_MainWindow.h:950
+#: objects/ui_MainWindow.h:1075
 msgid "Ctrl+["
 msgstr "Ctrl+["
 
-#: objects/ui_MainWindow.h:951
+#: objects/ui_MainWindow.h:1077
 msgid "View All"
 msgstr "Zobrazit vše"
 
-#: objects/ui_MainWindow.h:952
+#: objects/ui_MainWindow.h:1079
+#, fuzzy
+msgid "Ctrl+Shift+V"
+msgstr "Ctrl+Shift+S"
+
+#: objects/ui_MainWindow.h:1081
 msgid "Conv&ert Tabs to Spaces"
 msgstr "Pře&vést tabulátory na mezery"
 
-#: objects/ui_MainWindow.h:953
+#: objects/ui_MainWindow.h:1082
 msgid "Hide toolbars"
 msgstr "Skrýt nástrojové lišty"
 
-#: objects/ui_MainWindow.h:954
+#: objects/ui_MainWindow.h:1083
 msgid "U&nindent"
 msgstr "Z&rušit odsazení"
 
-#: objects/ui_MainWindow.h:955
+#: objects/ui_MainWindow.h:1085
 msgid "Ctrl+Shift+I"
 msgstr "Ctrl+Shift+I"
 
-#: objects/ui_MainWindow.h:956
+#: objects/ui_MainWindow.h:1087
 msgid "&Cheat Sheet"
 msgstr "&Tahák"
 
-#: objects/ui_MainWindow.h:957
+#: objects/ui_MainWindow.h:1088
+#, fuzzy
+msgid "Copy Viewport"
+msgstr "Kopírovat do schránky"
+
+#: objects/ui_MainWindow.h:1090
+#, fuzzy
+msgid "Ctrl+Shift+C"
+msgstr "Ctrl+Shift+S"
+
+#: objects/ui_MainWindow.h:1092
+msgid "Hide Customizer"
+msgstr ""
+
+#: objects/ui_MainWindow.h:1093
 msgid "Message"
 msgstr "Zpráva"
 
-#: objects/ui_MainWindow.h:960
+#: objects/ui_MainWindow.h:1096
 msgid "Time:"
 msgstr "Čas:"
 
-#: objects/ui_MainWindow.h:961
+#: objects/ui_MainWindow.h:1097
 msgid "FPS:"
 msgstr "FPS:"
 
-#: objects/ui_MainWindow.h:962
+#: objects/ui_MainWindow.h:1098
 msgid "Steps:"
 msgstr "Kroky:"
 
-#: objects/ui_MainWindow.h:963
+#: objects/ui_MainWindow.h:1099
 msgid "Dump Pictures"
 msgstr "Ukládat obrázky"
 
-#: objects/ui_MainWindow.h:964
+#: objects/ui_MainWindow.h:1100
 msgid "&File"
 msgstr "&Soubor"
 
-#: objects/ui_MainWindow.h:965
+#: objects/ui_MainWindow.h:1101
 msgid "Recen&t Files"
 msgstr "Nedávné &soubory"
 
-#: objects/ui_MainWindow.h:966
+#: objects/ui_MainWindow.h:1102
 msgid "&Examples"
 msgstr "&Příklady"
 
-#: objects/ui_MainWindow.h:967
+#: objects/ui_MainWindow.h:1103
 msgid "E&xport"
 msgstr "&Exportovat"
 
-#: objects/ui_MainWindow.h:968
+#: objects/ui_MainWindow.h:1104
 msgid "&Edit"
 msgstr "&Upravit"
 
-#: objects/ui_MainWindow.h:969
+#: objects/ui_MainWindow.h:1105
 msgid "&Design"
 msgstr "&Design"
 
-#: objects/ui_MainWindow.h:970
+#: objects/ui_MainWindow.h:1106
 msgid "&View"
 msgstr "&Zobrazit"
 
-#: objects/ui_MainWindow.h:971
+#: objects/ui_MainWindow.h:1107
 msgid "&Help"
 msgstr "&Nápověda"
 
-#: objects/ui_MainWindow.h:974
+#: objects/ui_MainWindow.h:1110
 msgid "Find"
 msgstr "Najít"
 
-#: objects/ui_MainWindow.h:975 objects/ui_MainWindow.h:982
+#: objects/ui_MainWindow.h:1111 objects/ui_MainWindow.h:1118
 msgid "Replace"
 msgstr "Nahradit"
 
-#: objects/ui_MainWindow.h:977
+#: objects/ui_MainWindow.h:1113
 msgid "Search string"
 msgstr "Hledaný řetězec"
 
-#: objects/ui_MainWindow.h:978
-msgid "<"
-msgstr "<"
+#: objects/ui_MainWindow.h:1114
+#, fuzzy
+msgid "Prev."
+msgstr "Náhled"
 
-#: objects/ui_MainWindow.h:979
-msgid ">"
-msgstr ">"
+#: objects/ui_MainWindow.h:1115
+msgid "Next"
+msgstr ""
 
-#: objects/ui_MainWindow.h:980
+#: objects/ui_MainWindow.h:1116
 msgid "Done"
 msgstr "Hotovo"
 
-#: objects/ui_MainWindow.h:981
+#: objects/ui_MainWindow.h:1117
 msgid "Replacement string"
 msgstr "Nahradit za"
 
-#: objects/ui_MainWindow.h:983
+#: objects/ui_MainWindow.h:1119
 msgid "All"
 msgstr "Vše"
+
+#: objects/ui_MainWindow.h:1120
+msgid "Parameter Widget"
+msgstr ""
 
 #: objects/ui_OpenCSGWarningDialog.h:86
 msgid "OpenGL Warning"
@@ -681,277 +750,285 @@ msgstr "Zobrazit tuto zprávu znovu"
 msgid "Close"
 msgstr "Zavřít"
 
-#: objects/ui_Preferences.h:1061
+#: objects/ui_Preferences.h:1080
 msgid "Preferences"
 msgstr "Předvolby"
 
-#: objects/ui_Preferences.h:1062
+#: objects/ui_Preferences.h:1081
 msgid "3D View"
 msgstr "3D zobrazení"
 
-#: objects/ui_Preferences.h:1063 src/UIUtils.cc:109
+#: objects/ui_Preferences.h:1082 examples/examples.json:19
 msgid "Advanced"
 msgstr "Pokročilé"
 
-#: objects/ui_Preferences.h:1064 src/mainwin.cc:2422
+#: objects/ui_Preferences.h:1083 src/mainwin.cc:2521
 msgid "Editor"
 msgstr "Editor"
 
-#: objects/ui_Preferences.h:1065
+#: objects/ui_Preferences.h:1084
 msgid "Update"
 msgstr "Aktualizace"
 
-#: objects/ui_Preferences.h:1066 objects/ui_Preferences.h:1147
+#: objects/ui_Preferences.h:1085 objects/ui_Preferences.h:1168
 msgid "Features"
 msgstr "Funkce"
 
-#: objects/ui_Preferences.h:1068
+#: objects/ui_Preferences.h:1087
 msgid "Enable/Disable experimental features"
 msgstr "Povolit/Zakázat experimentální funkce"
 
-#: objects/ui_Preferences.h:1070
+#: objects/ui_Preferences.h:1089
 msgid "Color scheme:"
 msgstr "Barevné téma:"
 
-#: objects/ui_Preferences.h:1071
+#: objects/ui_Preferences.h:1090
 msgid "Show Warnings and Errors in 3D View"
 msgstr "Zobrazovat varování a chyby v 3D okně"
 
-#: objects/ui_Preferences.h:1072
+#: objects/ui_Preferences.h:1091
 msgid "Editor Type"
 msgstr "Varianta editoru"
 
-#: objects/ui_Preferences.h:1075
+#: objects/ui_Preferences.h:1094
 msgid "Simple Editor"
 msgstr "Jednoduchý editor"
 
-#: objects/ui_Preferences.h:1076
+#: objects/ui_Preferences.h:1095
 msgid "QScintilla Editor"
 msgstr "Editor QScintilla"
 
-#: objects/ui_Preferences.h:1078
+#: objects/ui_Preferences.h:1097
 msgid "(requires restart)"
 msgstr "(vyžaduje restart aplikace)"
 
-#: objects/ui_Preferences.h:1079
+#: objects/ui_Preferences.h:1098
 msgid "Font"
 msgstr "Písmo"
 
-#: objects/ui_Preferences.h:1080
+#: objects/ui_Preferences.h:1099
 msgid "Color syntax highlighting"
 msgstr "Barva zvýrazňování syntaxe"
 
-#: objects/ui_Preferences.h:1081
+#: objects/ui_Preferences.h:1100
 msgid "Ctrl/Cmd-Mouse-wheel zooms text"
 msgstr "Ctrl/Cmd a kolečko myši mění velikost písma"
 
-#: objects/ui_Preferences.h:1082
+#: objects/ui_Preferences.h:1101
 msgid "Indentation"
 msgstr "Odsazování"
 
-#: objects/ui_Preferences.h:1083
+#: objects/ui_Preferences.h:1102
 msgid "Auto Indent"
 msgstr "Automatické odsazování"
 
-#: objects/ui_Preferences.h:1084
+#: objects/ui_Preferences.h:1103
+msgid "Backspace unindents"
+msgstr ""
+
+#: objects/ui_Preferences.h:1104
 msgid "Indent using"
 msgstr "Odsazovat pomocí"
 
-#: objects/ui_Preferences.h:1087 src/settings.cc:135
+#: objects/ui_Preferences.h:1107 src/settings.cc:141
 msgid "Spaces"
 msgstr "mezer"
 
-#: objects/ui_Preferences.h:1088 src/settings.cc:135
+#: objects/ui_Preferences.h:1108 src/settings.cc:141
 msgid "Tabs"
 msgstr "tabulátorů"
 
-#: objects/ui_Preferences.h:1090
+#: objects/ui_Preferences.h:1110
 msgid "Indentation width"
 msgstr "Velikost odsazení"
 
-#: objects/ui_Preferences.h:1091
+#: objects/ui_Preferences.h:1111
 msgid "Tab width"
 msgstr "Šířka tabulátoru"
 
-#: objects/ui_Preferences.h:1092
+#: objects/ui_Preferences.h:1112
 msgid "Tab key function"
 msgstr "Funkce klávesy tabulátor"
 
-#: objects/ui_Preferences.h:1095 objects/ui_Preferences.h:1125
-#: src/settings.cc:136
+#: objects/ui_Preferences.h:1115 objects/ui_Preferences.h:1146
+#: src/settings.cc:142
 msgid "Indent"
 msgstr "odsadí"
 
-#: objects/ui_Preferences.h:1096 src/settings.cc:136
+#: objects/ui_Preferences.h:1116 src/settings.cc:142
 msgid "Insert Tab"
 msgstr "vloží znak tabulátoru"
 
-#: objects/ui_Preferences.h:1098
+#: objects/ui_Preferences.h:1118
 msgid "Show whitespace"
 msgstr "Zobrazovat mazery"
 
-#: objects/ui_Preferences.h:1101 src/settings.cc:132
+#: objects/ui_Preferences.h:1121 src/settings.cc:137
 msgid "Never"
 msgstr "nikdy"
 
-#: objects/ui_Preferences.h:1102 src/settings.cc:132
+#: objects/ui_Preferences.h:1122 src/settings.cc:137
 msgid "Always"
 msgstr "vždy"
 
-#: objects/ui_Preferences.h:1103
+#: objects/ui_Preferences.h:1123
 msgid "Only after indentation"
 msgstr "pouze za odsazením"
 
-#: objects/ui_Preferences.h:1105
+#: objects/ui_Preferences.h:1125
 msgid "Size"
 msgstr "Velikost"
 
-#: objects/ui_Preferences.h:1106
+#: objects/ui_Preferences.h:1126
 msgid "Display"
 msgstr "Vzhled"
 
-#: objects/ui_Preferences.h:1107
+#: objects/ui_Preferences.h:1127
 msgid "Enable brace matching"
 msgstr "Zvýrazňovat párové závorky"
 
-#: objects/ui_Preferences.h:1108
+#: objects/ui_Preferences.h:1128
 msgid "Highlight current line"
 msgstr "Zvýrazňovat aktuální řádek"
 
-#: objects/ui_Preferences.h:1109 objects/ui_Preferences.h:1142
+#: objects/ui_Preferences.h:1129
+msgid "Display Line Numbers"
+msgstr ""
+
+#: objects/ui_Preferences.h:1130 objects/ui_Preferences.h:1163
 msgid "Line wrap"
 msgstr "Zalamování řádek"
 
-#: objects/ui_Preferences.h:1112 objects/ui_Preferences.h:1129
-#: objects/ui_Preferences.h:1137 src/settings.cc:127 src/settings.cc:130
-#: src/settings.cc:131
+#: objects/ui_Preferences.h:1133 objects/ui_Preferences.h:1150
+#: objects/ui_Preferences.h:1158 src/settings.cc:132 src/settings.cc:135
+#: src/settings.cc:136
 msgid "None"
 msgstr "vypnout"
 
-#: objects/ui_Preferences.h:1113 src/settings.cc:127
+#: objects/ui_Preferences.h:1134 src/settings.cc:132
 msgid "Wrap at character boundaries"
 msgstr "zalamovat na úrovni znaků"
 
-#: objects/ui_Preferences.h:1114 src/settings.cc:127
+#: objects/ui_Preferences.h:1135 src/settings.cc:132
 msgid "Wrap at word boundaries"
 msgstr "zalamovat na úrovni slov"
 
-#: objects/ui_Preferences.h:1116
+#: objects/ui_Preferences.h:1137
 msgid "Line wrap indentation"
 msgstr "Odsazení zalomených řádek"
 
-#: objects/ui_Preferences.h:1117
+#: objects/ui_Preferences.h:1138
 msgid "Line wrap visualization"
 msgstr "Pozice symbolu zalomení"
 
-#: objects/ui_Preferences.h:1118
+#: objects/ui_Preferences.h:1139
 msgid "Style"
 msgstr "Styl"
 
-#: objects/ui_Preferences.h:1121 src/settings.cc:128
+#: objects/ui_Preferences.h:1142 src/settings.cc:133
 msgid "Fixed"
 msgstr "vždy stejný"
 
-#: objects/ui_Preferences.h:1122 src/settings.cc:128
+#: objects/ui_Preferences.h:1143 src/settings.cc:133
 msgid "Same"
 msgstr "jako počátek"
 
-#: objects/ui_Preferences.h:1123 src/settings.cc:128
+#: objects/ui_Preferences.h:1144 src/settings.cc:133
 msgid "Indented"
 msgstr "odsazený"
 
-#: objects/ui_Preferences.h:1126
+#: objects/ui_Preferences.h:1147
 msgid "Start"
 msgstr "Začátek"
 
-#: objects/ui_Preferences.h:1130 objects/ui_Preferences.h:1138
-#: src/settings.cc:130 src/settings.cc:131
+#: objects/ui_Preferences.h:1151 objects/ui_Preferences.h:1159
+#: src/settings.cc:135 src/settings.cc:136
 msgid "Text"
 msgstr "za textem"
 
-#: objects/ui_Preferences.h:1131 objects/ui_Preferences.h:1139
-#: src/settings.cc:130 src/settings.cc:131
+#: objects/ui_Preferences.h:1152 objects/ui_Preferences.h:1160
+#: src/settings.cc:135 src/settings.cc:136
 msgid "Border"
 msgstr "konec řádky"
 
-#: objects/ui_Preferences.h:1132 objects/ui_Preferences.h:1140
-#: src/settings.cc:130 src/settings.cc:131
+#: objects/ui_Preferences.h:1153 objects/ui_Preferences.h:1161
+#: src/settings.cc:135 src/settings.cc:136
 msgid "Margin"
 msgstr "levý okraj"
 
-#: objects/ui_Preferences.h:1134
+#: objects/ui_Preferences.h:1155
 msgid "End"
 msgstr "Konec"
 
-#: objects/ui_Preferences.h:1143
+#: objects/ui_Preferences.h:1164
 msgid "Automatically check for updates"
 msgstr "Automaticky vyhledávat aktualizace"
 
-#: objects/ui_Preferences.h:1144
+#: objects/ui_Preferences.h:1165
 msgid "Include development snapshots"
 msgstr "Včetně nestabilních verzí"
 
-#: objects/ui_Preferences.h:1145
+#: objects/ui_Preferences.h:1166
 msgid "Check Now"
 msgstr "Zkontrolovat nyní"
 
-#: objects/ui_Preferences.h:1146
+#: objects/ui_Preferences.h:1167
 msgid "Last checked: "
 msgstr "Poslední kontrola:"
 
-#: objects/ui_Preferences.h:1148
+#: objects/ui_Preferences.h:1169
 msgid "OpenCSG"
 msgstr "OpenCSG"
 
-#: objects/ui_Preferences.h:1149
+#: objects/ui_Preferences.h:1170
 msgid "Show capability warning"
 msgstr "Zobrazovat varování o vlastnostech"
 
-#: objects/ui_Preferences.h:1150
+#: objects/ui_Preferences.h:1171
 msgid "Enable for OpenGL 1.x"
 msgstr "Povolit pro OpenGL 1.x"
 
-#: objects/ui_Preferences.h:1151
+#: objects/ui_Preferences.h:1172
 msgid "Turn off rendering at "
 msgstr "Vypnout renderování při"
 
-#: objects/ui_Preferences.h:1152
+#: objects/ui_Preferences.h:1173
 msgid "elements"
 msgstr "prvcích"
 
-#: objects/ui_Preferences.h:1153
+#: objects/ui_Preferences.h:1174
 msgid "Force Goldfeather"
 msgstr "Vynutit zobrazení Goldfeather"
 
-#: objects/ui_Preferences.h:1154
+#: objects/ui_Preferences.h:1175
 msgid "CGAL Cache size"
 msgstr "Velikost CGAL cache"
 
-#: objects/ui_Preferences.h:1155 objects/ui_Preferences.h:1157
+#: objects/ui_Preferences.h:1176 objects/ui_Preferences.h:1178
 msgid "bytes"
 msgstr "bytů"
 
-#: objects/ui_Preferences.h:1156
+#: objects/ui_Preferences.h:1177
 msgid "PolySet Cache size"
 msgstr "Velikost PolySet cache"
 
-#: objects/ui_Preferences.h:1158
+#: objects/ui_Preferences.h:1179
 msgid "Allow opening multiple documents"
 msgstr "Povolit současné otevření více dokumentů"
 
-#: objects/ui_Preferences.h:1159
+#: objects/ui_Preferences.h:1180
 msgid "Enable docking of Editor and Console in different places"
 msgstr "Povolit zaparkování editoru a konzole na různá místa"
 
-#: objects/ui_Preferences.h:1160
+#: objects/ui_Preferences.h:1181
 msgid "Enable undocking of Editor and Console to separate windows"
 msgstr "Povolit plovoucí editor a konzoli"
 
-#: objects/ui_Preferences.h:1161
+#: objects/ui_Preferences.h:1182
 msgid "Show Welcome Screen"
 msgstr "Zobrazovat uvítací obrazovku"
 
-#: objects/ui_Preferences.h:1162
+#: objects/ui_Preferences.h:1183
 msgid "Enable user interface localization (requires restart of OpenSCAD)"
 msgstr "Povolit lokalizaci rozhraní OpenSCADu (vyžaduje restart aplikace)"
 
@@ -959,47 +1036,7 @@ msgstr "Povolit lokalizaci rozhraní OpenSCADu (vyžaduje restart aplikace)"
 msgid "%v / %m"
 msgstr "%v / %m"
 
-#: objects/ui_launchingscreen.h:294
-msgid "Welcome to OpenSCAD"
-msgstr "Vítá vás OpenSCAD"
-
-#: objects/ui_launchingscreen.h:295
-msgid "New"
-msgstr "Nový"
-
-#: objects/ui_launchingscreen.h:296
-msgid "Open"
-msgstr "Otevřít"
-
-#: objects/ui_launchingscreen.h:297
-msgid "Help"
-msgstr "Nápověda"
-
-#: objects/ui_launchingscreen.h:298
-msgid "Recents"
-msgstr "Nedávné"
-
-#: objects/ui_launchingscreen.h:299
-msgid "Open Recent"
-msgstr "Otevřít nedávný soubor"
-
-#: objects/ui_launchingscreen.h:300 objects/ui_launchingscreen.h:302
-msgid "Examples"
-msgstr "Příklady"
-
-#: objects/ui_launchingscreen.h:303
-msgid "Open Example"
-msgstr "Otevřít příklad"
-
-#: objects/ui_launchingscreen.h:312
-msgid "Don't show again"
-msgstr "Příště nezobrazovat"
-
-#: objects/ui_launchingscreen.h:313
-msgid "Version"
-msgstr "Verze"
-
-#: src/Camera.cc:126
+#: src/Camera.cc:120
 #, c-format
 msgid ""
 "Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], "
@@ -1008,7 +1045,157 @@ msgstr ""
 "Pohled: posun = [ %.2f %.2f %.2f ], rotace = [ %.2f %.2f %.2f ], vzdálenost "
 "= %.2f"
 
-#: src/QGLView.cc:129
+#: src/export.cc:70
+#, c-format
+msgid "Can't open file \"%s\" for export"
+msgstr ""
+
+#: src/export.cc:85
+#, c-format
+msgid "ERROR: \"%s\" write error. (Disk full?)"
+msgstr ""
+
+#: src/mainwin.cc:789 src/mainwin.cc:1441
+msgid "Untitled.scad"
+msgstr "Bezejmenný.scad"
+
+#: src/mainwin.cc:1028
+msgid "Compile error."
+msgstr "Chyba kompilace."
+
+#: src/mainwin.cc:1031
+msgid "Error while compiling '%1'."
+msgstr "Chyba při kompilaci '%1'."
+
+#: src/mainwin.cc:1035
+msgid "Compilation generated %1 warning."
+msgid_plural "Compilation generated %1 warnings."
+msgstr[0] "Kompilace vyvolala %1 varování."
+msgstr[1] "Kompilace vyvolala %1 varování."
+msgstr[2] "Kompilace vyvolala %1 varování."
+
+#: src/mainwin.cc:1045
+msgid " For details see <a href=\"#console\">console window</a>."
+msgstr " Pro podrobnosti nahlédněte do <a href=\"#console\">konzole</a>."
+
+#: src/mainwin.cc:1419
+#, fuzzy
+msgid "Failed to open file for writing"
+msgstr "Nepodařilo se otevřít soubor %s: %s"
+
+#: src/mainwin.cc:1429
+#, fuzzy, c-format
+msgid "Saved design '%s'."
+msgstr "Načten design '%s'."
+
+#: src/mainwin.cc:1432
+msgid "Error saving design"
+msgstr ""
+
+#: src/mainwin.cc:1440
+msgid "Save File"
+msgstr "Uložit soubor"
+
+#: src/mainwin.cc:1442
+msgid "OpenSCAD Designs (*.scad)"
+msgstr "OpenSCAD designy(*.scad)"
+
+#: src/mainwin.cc:1452
+msgid ""
+"%1 already exists.\n"
+"Do you want to replace it?"
+msgstr ""
+"%1 již existuje.\n"
+"Chcete jej nahradit?"
+
+#: src/mainwin.cc:1799
+msgid "Application"
+msgstr "Aplikace"
+
+#: src/mainwin.cc:1800
+msgid ""
+"The document has been modified.\n"
+"Do you really want to reload the file?"
+msgstr ""
+"Dokument byl pozměněn.\n"
+"Opravdu jej chcete znovu načíst?"
+
+#: src/mainwin.cc:2174
+msgid "Export %1 File"
+msgstr "Exportovat %s soubor(ů)"
+
+#: src/mainwin.cc:2175
+msgid "%1 Files (*%2)"
+msgstr "%1 Soubor(ů) (*%2)"
+
+#: src/mainwin.cc:2176
+msgid "Untitled"
+msgstr "Bezejmenný"
+
+#: src/mainwin.cc:2228
+msgid "Export CSG File"
+msgstr "Exportovat CSG soubor"
+
+#: src/mainwin.cc:2229
+msgid "Untitled.csg"
+msgstr "Bezejmenný.csg"
+
+#: src/mainwin.cc:2230
+msgid "CSG Files (*.csg)"
+msgstr "CSG soubory (*.csg)"
+
+#: src/mainwin.cc:2256
+#, fuzzy
+msgid "Untitled.png"
+msgstr "Bezejmenný.csg"
+
+#: src/mainwin.cc:2258
+msgid "Export Image"
+msgstr "Exportovat obrázek"
+
+#: src/mainwin.cc:2258
+msgid "PNG Files (*.png)"
+msgstr "PNG Soubory (*.png)"
+
+#: src/mainwin.cc:2526
+msgid "Console"
+msgstr "Konzole"
+
+#: src/mainwin.cc:2531
+msgid "Customizer"
+msgstr ""
+
+#: src/mainwin.cc:2675
+msgid "The document has been modified."
+msgstr "Dokument byl pozměněn."
+
+#: src/mainwin.cc:2676
+msgid "Do you want to save your changes?"
+msgstr "Chcete uložit změny?"
+
+#: src/OpenSCADApp.cc:37
+msgid "Unknown error"
+msgstr ""
+
+#: src/OpenSCADApp.cc:40
+msgid "Critical Error"
+msgstr ""
+
+#: src/OpenSCADApp.cc:40
+msgid ""
+"A critical error was caught. The application may have become unstable:\n"
+"%1"
+msgstr ""
+
+#: src/OpenSCADApp.cc:64
+msgid ""
+"Fontconfig needs to update its font cache.\n"
+"This can take up to a couple of minutes."
+msgstr ""
+"Fontconfig potřebuje aktualizovat cache.\n"
+"To může trvat až několik minut."
+
+#: src/QGLView.cc:149
 msgid ""
 "Warning: You may experience OpenCSG rendering errors.\n"
 "\n"
@@ -1016,7 +1203,7 @@ msgstr ""
 "Varování: Můžete zaznamenat chyby zobrazení pomocí OpenCSG.\n"
 "\n"
 
-#: src/QGLView.cc:132
+#: src/QGLView.cc:152
 msgid ""
 "Warning: Missing OpenGL capabilities for OpenCSG - OpenCSG has been "
 "disabled.\n"
@@ -1025,7 +1212,7 @@ msgstr ""
 "Varování: Chybí OpenGL funkce pro OpenCSG - OpenCSG bylo vypnuto.\n"
 "\n"
 
-#: src/QGLView.cc:135
+#: src/QGLView.cc:155
 msgid ""
 "It is highly recommended to use OpenSCAD on a system with OpenGL 2.0 or "
 "later.\n"
@@ -1034,147 +1221,89 @@ msgstr ""
 "Vysoce doporučujeme používat OpenSCAD na systému s OpenGL 2.0 nebo novější.\n"
 "Zde je informace o vašem vykreslovacím systému:\n"
 
-#: src/QGLView.cc:139
-#, c-format
+#: src/QGLView.cc:158
+#, fuzzy
 msgid ""
-"GLEW version %s\n"
-"%s (%s)\n"
-"OpenGL version %s\n"
+"GLEW version %1\n"
+"%2 (%3)\n"
+"OpenGL version %4\n"
 msgstr ""
 "GLEW verze %s\n"
 "%s (%s)\n"
 "OpenGL verze %s\n"
 
-#: src/UIUtils.cc:109
+#: src/settings.cc:137
+msgid "After indentation"
+msgstr "za odsazením"
+
+#: examples/examples.json:2
 msgid "Basics"
 msgstr "Základy"
 
-#: src/UIUtils.cc:109
+#: examples/examples.json:13
 msgid "Functions"
 msgstr "Funkce"
 
-#: src/UIUtils.cc:109
-msgid "Shapes"
-msgstr "Tvary"
+#: examples/examples.json:28
+msgid "Parametric"
+msgstr ""
 
-#: src/UIUtils.cc:109
-msgid "Extrusion"
-msgstr "Vytažení"
-
-#: src/UIUtils.cc:109
+#: examples/examples.json:32
 msgid "Old"
 msgstr "Staré"
 
-#: src/mainwin.cc:779 src/mainwin.cc:1356
-msgid "Untitled.scad"
-msgstr "Bezejmenný.scad"
-
-#: src/mainwin.cc:973
-msgid "Compile error."
-msgstr "Chyba kompilace."
-
-#: src/mainwin.cc:976
-msgid "Error while compiling '%1'."
-msgstr "Chyba při kompilaci '%1'."
-
-#: src/mainwin.cc:980
-msgid "Compilation generated %1 warning."
-msgid_plural "Compilation generated %1 warnings."
-msgstr[0] "Kompilace vyvolala %1 varování."
-msgstr[1] "Kompilace vyvolala %1 varování."
-msgstr[2] "Kompilace vyvolala %1 varování."
-
-#: src/mainwin.cc:990
-msgid " For details see <a href=\"#console\">console window</a>."
-msgstr " Pro podrobnosti nahlédněte do <a href=\"#console\">konzole</a>."
-
-#: src/mainwin.cc:1355
-msgid "Save File"
-msgstr "Uložit soubor"
-
-#: src/mainwin.cc:1357
-msgid "OpenSCAD Designs (*.scad)"
-msgstr "OpenSCAD designy(*.scad)"
-
-#: src/mainwin.cc:1367
-msgid ""
-"%1 already exists.\n"
-"Do you want to replace it?"
+#. (itstool) path: component/summary
+#: openscad.appdata.xml.in:7
+msgid "The Programmers Solid 3D CAD Modeller"
 msgstr ""
-"%1 již existuje.\n"
-"Chcete jej nahradit?"
 
-#: src/mainwin.cc:1686
-msgid "Application"
-msgstr "Aplikace"
-
-#: src/mainwin.cc:1687
+#. (itstool) path: description/p
+#: openscad.appdata.xml.in:9
 msgid ""
-"The document has been modified.\n"
-"Do you really want to reload the file?"
+"OpenSCAD is a software for creating solid 3D CAD models. Unlike most free "
+"software for creating 3D models (such as Blender) it does not focus on the "
+"artistic aspects of 3D modelling but instead on the CAD aspects. Thus it "
+"might be the application you are looking for when you are planning to create "
+"3D models of machine parts but pretty sure is not what you are looking for "
+"when you are more interested in creating computer-animated movies."
 msgstr ""
-"Dokument byl pozměněn.\n"
-"Opravdu jej chcete znovu načíst?"
 
-#: src/mainwin.cc:2040 src/mainwin.cc:2096
-msgid "Export %1 File"
-msgstr "Exportovat %s soubor(ů)"
-
-#: src/mainwin.cc:2041 src/mainwin.cc:2100
-msgid "%1 Files (*%2)"
-msgstr "%1 Soubor(ů) (*%2)"
-
-#: src/mainwin.cc:2042
-msgid "Untitled"
-msgstr "Bezejmenný"
-
-#: src/mainwin.cc:2098
-msgid "Untitled%1"
-msgstr "Bezejmenný%1"
-
-#: src/mainwin.cc:2149
-msgid "Export CSG File"
-msgstr "Exportovat CSG soubor"
-
-#: src/mainwin.cc:2150
-msgid "Untitled.csg"
-msgstr "Bezejmenný.csg"
-
-#: src/mainwin.cc:2151
-msgid "CSG Files (*.csg)"
-msgstr "CSG soubory (*.csg)"
-
-#: src/mainwin.cc:2177
-msgid "Export Image"
-msgstr "Exportovat obrázek"
-
-#: src/mainwin.cc:2177
-msgid "PNG Files (*.png)"
-msgstr "PNG Soubory (*.png)"
-
-#: src/mainwin.cc:2427
-msgid "Console"
-msgstr "Konzole"
-
-#: src/mainwin.cc:2564
-msgid "The document has been modified."
-msgstr "Dokument byl pozměněn."
-
-#: src/mainwin.cc:2565
-msgid "Do you want to save your changes?"
-msgstr "Chcete uložit změny?"
-
-#: src/mainwin.cc:2697
+#. (itstool) path: description/p
+#: openscad.appdata.xml.in:10
 msgid ""
-"Fontconfig needs to update its font cache.\n"
-"This can take up to a couple of minutes."
+"OpenSCAD is not an interactive modeller. Instead it is something like a 3D-"
+"compiler that reads in a script file that describes the object and renders "
+"the 3D model from this script file. This gives you (the designer) full "
+"control over the modelling process and enables you to easily change any step "
+"in the modelling process or make designs that are defined by configurable "
+"parameters."
 msgstr ""
-"Fontconfig potřebuje aktualizovat cache.\n"
-"To může trvat až několik minut."
 
-#: src/settings.cc:132
-msgid "After indentation"
-msgstr "za odsazením"
+#. (itstool) path: description/p
+#: openscad.appdata.xml.in:11
+msgid ""
+"OpenSCAD provides two main modelling techniques: First there is constructive "
+"solid geometry (aka CSG) and second there is extrusion of 2D outlines. As "
+"data exchange format format for this 2D outlines Autocad DXF files are used. "
+"In addition to 2D paths for extrusion it is also possible to read design "
+"parameters from DXF files. Besides DXF files OpenSCAD can read and create 3D "
+"models in the STL and OFF file formats."
+msgstr ""
+
+#~ msgid "<"
+#~ msgstr "<"
+
+#~ msgid ">"
+#~ msgstr ">"
+
+#~ msgid "Shapes"
+#~ msgstr "Tvary"
+
+#~ msgid "Extrusion"
+#~ msgstr "Vytažení"
+
+#~ msgid "Untitled%1"
+#~ msgstr "Bezejmenný%1"
 
 #~ msgid "Top"
 #~ msgstr "Shora"
@@ -1279,12 +1408,6 @@ msgstr "za odsazením"
 
 #~ msgid "OpenSCAD - New Document[*]"
 #~ msgstr "OpenSCAD - Nový dokument[*]"
-
-#~ msgid "Failed to open file %s: %s"
-#~ msgstr "Nepodařilo se otevřít soubor %s: %s"
-
-#~ msgid "Loaded design '%s'."
-#~ msgstr "Načten design '%s'."
 
 #~ msgid "ERROR: Compilation failed! (no top level object found)"
 #~ msgstr "CHYBA: Kompilace selhala! (nenalezen hlavní objekt)"

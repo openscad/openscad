@@ -40,7 +40,7 @@ class CgaladvModule : public AbstractModule
 public:
 	CgaladvType type;
 	CgaladvModule(CgaladvType type) : type(type) { }
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
+	AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const override;
 };
 
 AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
@@ -52,12 +52,6 @@ AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstant
 	if (type == CgaladvType::MINKOWSKI)
 		args += Assignment("convexity");
 
-	if (type == CgaladvType::GLIDE)
-		args += Assignment("path"), Assignment("convexity");
-
-	if (type == CgaladvType::SUBDIV)
-		args += Assignment("type"), Assignment("level"), Assignment("convexity");
-
 	if (type == CgaladvType::RESIZE)
 		args += Assignment("newsize"), Assignment("auto");
 
@@ -67,22 +61,9 @@ AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstant
 
 	auto convexity = ValuePtr::undefined;
 	auto path = ValuePtr::undefined;
-	auto subdiv_type = ValuePtr::undefined;
-	auto level = ValuePtr::undefined;
 	
 	if (type == CgaladvType::MINKOWSKI) {
 		convexity = c.lookup_variable("convexity", true);
-	}
-
-	if (type == CgaladvType::GLIDE) {
-		convexity = c.lookup_variable("convexity", true);
-		path = c.lookup_variable("path", false);
-	}
-
-	if (type == CgaladvType::SUBDIV) {
-		convexity = c.lookup_variable("convexity", true);
-		subdiv_type = c.lookup_variable("type", false);
-		level = c.lookup_variable("level", true);
 	}
 
 	if (type == CgaladvType::RESIZE) {
@@ -109,10 +90,6 @@ AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstant
 
 	node->convexity = static_cast<int>(convexity->toDouble());
 	node->path = path;
-	node->subdiv_type = subdiv_type->toString();
-	node->level = static_cast<int>(level->toDouble());
-
-	if (node->level <= 1) node->level = 1;
 
 	auto instantiatednodes = inst->instantiateChildren(evalctx);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
@@ -125,12 +102,6 @@ std::string CgaladvNode::name() const
 	switch (this->type) {
 	case CgaladvType::MINKOWSKI:
 		return "minkowski";
-		break;
-	case CgaladvType::GLIDE:
-		return "glide";
-		break;
-	case CgaladvType::SUBDIV:
-		return "subdiv";
 		break;
 	case CgaladvType::HULL:
 		return "hull";
@@ -153,12 +124,6 @@ std::string CgaladvNode::toString() const
 	case CgaladvType::MINKOWSKI:
 		stream << "(convexity = " << this->convexity << ")";
 		break;
-	case CgaladvType::GLIDE:
-		stream << "(path = " << *this->path << ", convexity = " << this->convexity << ")";
-		break;
-	case CgaladvType::SUBDIV:
-		stream << "(level = " << this->level << ", convexity = " << this->convexity << ")";
-		break;
 	case CgaladvType::HULL:
 		stream << "()";
 		break;
@@ -179,8 +144,6 @@ std::string CgaladvNode::toString() const
 void register_builtin_cgaladv()
 {
 	Builtins::init("minkowski", new CgaladvModule(CgaladvType::MINKOWSKI));
-	Builtins::init("glide", new CgaladvModule(CgaladvType::GLIDE));
-	Builtins::init("subdiv", new CgaladvModule(CgaladvType::SUBDIV));
 	Builtins::init("hull", new CgaladvModule(CgaladvType::HULL));
 	Builtins::init("resize", new CgaladvModule(CgaladvType::RESIZE));
 }

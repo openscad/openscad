@@ -14,12 +14,14 @@
 	Also Published on Thingiverse:
 		http://www.thingiverse.com/thing:15244/
 		
-	Based on OpenSCAD 2014.03, documented here:
+	Based on OpenSCAD 2015.03, documented here:
+		http://www.openscad.org/cheatsheet/
 		http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/The_OpenSCAD_Language
 
-	Version History		
+	Version History
 		2011-12-31	Initial version
 		2014-05-24	Updated for OpenSCAD 2014.03
+		2017-10-17	Updated for OpenSCAD 2015.03 (by michael.frey@gmx.ch)
 -->
 
 <dict>
@@ -44,6 +46,7 @@
 		<string>false</string>
 		<string>undef</string>
 		<string>PI</string>
+		<string>text</string>
 
 		<!--	Parameters	 -->
 		<string>auto</string>
@@ -53,16 +56,16 @@
 		<string>points</string>
 		<string>faces</string>
 		<string>convexity</string>
-		<string>file</string>		
-		<string>layer</string>		
-		<string>origin</string>		
+		<string>file</string>
+		<string>layer</string>
+		<string>origin</string>
 
 		<!--	Modifier Characters	 -->
 		<string>%</string>
 		<string>#</string>	<!--	Not highlighted?	 -->
 		<string>!</string>
 		<string>*</string>
-		
+
 		<!--	Special Variables	 -->
 		<string>$fa</string>
 		<string>$fs</string>
@@ -70,13 +73,15 @@
 		<string>$t</string>
 		<string>$vpr</string>
 		<string>$vpt</string>
+		<string>$vpd</string>
+		<string>$children</string>
 	</array>
 
 	<key>BBLMKeywordList</key>
 	<array>
 		<!--	
-			Based on OpenSCAD 2014.3, documented here:
-			http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/The_OpenSCAD_Language
+			Based on OpenSCAD 2015.3, documented here:
+			http://www.openscad.org/cheatsheet/
 		 -->
 		<!--	2D Primitives	 -->
 		<string>square</string>
@@ -94,7 +99,7 @@
 		<string>intersection_for</string>
 		<string>if</string>
 		<string>else</string>
-		<string>assign</string>
+		<string>assign</string>	<!--	Since 2015.03 deprecated	 -->
 
 		<!--	Mathematical Operators	 -->
 		<string>?</string>		<!--	Not highlighted?	 -->
@@ -126,6 +131,7 @@
 		<string>round</string>
 		<string>sign</string>
 		<string>sqrt</string>
+		<string>let</string>
 
 		<!--	String Functions	 -->
 		<string>str</string>
@@ -140,6 +146,7 @@
 		<string>color</string>
 		<string>minkowski</string>
 		<string>hull</string>
+		<string>offset</string>
 
 		<!--	CSG Modelling	 -->
 		<string>union</string>
@@ -151,7 +158,7 @@
 		<string>module</string>
 		<string>children</string>
 		<string>function</string>
-		
+
 		<!--	Importing Geometry	 -->
 		<string>import</string>
 		<string>include</string>
@@ -159,10 +166,10 @@
 		<string>dxf_cross</string>
 
 		<!--	Other Language Features	 -->
-		
+
 		<!--	Echo Statements	 -->
 		<string>echo</string>
-		
+
 		<!--	Render	 -->
 		<string>render</string>
 
@@ -180,7 +187,12 @@
 		<string>version_num</string>
 		<string>parent_module</string>
 		<string>$parent_modules</string>
-		
+
+		<!--	Concat	 -->
+		<string>concat</string>
+
+		<!--	chr	 -->
+		<string>chr</string>
 	</array>
 	<key>BBLMLanguageCode</key>
 	<string>Oscd</string>

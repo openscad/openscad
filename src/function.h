@@ -30,10 +30,10 @@ public:
 
 	BuiltinFunction(eval_func_t f) : eval_func(f) { }
 	BuiltinFunction(eval_func_t f, const Feature& feature) : AbstractFunction(feature), eval_func(f) { }
-	virtual ~BuiltinFunction();
+	~BuiltinFunction();
 
-	virtual ValuePtr evaluate(const Context *ctx, const EvalContext *evalctx) const;
-	virtual std::string dump(const std::string &indent, const std::string &name) const;
+	ValuePtr evaluate(const Context *ctx, const EvalContext *evalctx) const override;
+	std::string dump(const std::string &indent, const std::string &name) const override;
 };
 
 class UserFunction : public AbstractFunction, public ASTNode
@@ -45,10 +45,10 @@ public:
 	shared_ptr<Expression> expr;
 
 	UserFunction(const char *name, AssignmentList &definition_arguments, shared_ptr<Expression> expr, const Location &loc);
-	virtual ~UserFunction();
+	~UserFunction();
 
-	virtual ValuePtr evaluate(const Context *ctx, const EvalContext *evalctx) const;
-	virtual std::string dump(const std::string &indent, const std::string &name) const;
+	ValuePtr evaluate(const Context *ctx, const EvalContext *evalctx) const override;
+	std::string dump(const std::string &indent, const std::string &name) const override;
         
 	static UserFunction *create(const char *name, AssignmentList &definition_arguments, shared_ptr<Expression> expr, const Location &loc);
 };

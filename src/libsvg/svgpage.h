@@ -13,15 +13,15 @@ protected:
 public:
     svgpage();
     svgpage(const svgpage& orig);
-    virtual ~svgpage();
+    ~svgpage() override;
 
-    virtual double get_width() { return width; }
-    virtual double get_height() { return height; }
-    virtual bool is_container() { return true; }
+    double get_width() { return width; }
+    double get_height() { return height; }
+    bool is_container() override { return true; }
     
-    virtual void set_attrs(attr_map_t& attrs);
-    virtual void dump();
-    const std::string& get_name() const { return svgpage::name; };
+    void set_attrs(attr_map_t& attrs) override;
+    void dump() override;
+    const std::string& get_name() const override { return svgpage::name; };
     
     static const std::string name;
 };

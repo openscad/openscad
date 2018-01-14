@@ -9,7 +9,7 @@
 if(APPLE)
   set(CMAKE_OSX_DEPLOYMENT_TARGET 10.8)
 endif()
-cmake_minimum_required(VERSION 3.5.0)
+cmake_minimum_required(VERSION 3.2.2)
 
 
 if(HEADLESS)
@@ -18,6 +18,24 @@ endif(HEADLESS)
 message(STATUS "Configuration: ${CONFIG_OPTIONS}")
 
 project(openscad)
+
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/objects")
+set(AUTOGEN_BUILD_DIR "${CMAKE_BINARY_DIR}/objects")
+
+# Default to Release build
+if(NOT CMAKE_BUILD_TYPE)
+  message(STATUS "CMAKE_BUILD_TYPE not specified.  Defaulting to 'Release'")
+  message(STATUS "Usage: cmake -DCMAKE_BUILD_TYPE=[Debug|Release|RelWithDebInfo|MinSizeRel] .")
+  set(CMAKE_BUILD_TYPE Release)
+else()
+  message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
+endif()
+
+add_compile_options("$<$<CONFIG:DEBUG>:-DDEBUG>")
+
+# cmake default flags include -DNDEBUG for non-Debug builds.
+# NDEBUG is known to cause OpenSCAD to crash in some case, so make sure it is unset.  Issue #2180 for details.
+add_compile_options("-UNDEBUG")
 
 set(CMAKE_CXX_STANDARD 11)
 if(APPLE)
@@ -66,18 +84,31 @@ message(STATUS "Flex: ${FLEX_VERSION}")
 find_package(BISON REQUIRED QUIET)
 message(STATUS "Bison: ${BISON_VERSION}")
 
-include(CheckIncludeFileCXX)
+find_package(LibZip REQUIRED QUIET)
+message(STATUS "LibZip: ${LIBZIP_VERSION}")
+include_directories(${LIBZIP_INCLUDE_DIR_ZIP})
+include_directories(${LIBZIP_INCLUDE_DIR_ZIPCONF})
+
+# Output compilation database (compile_commands.json), so we can e.g. run clang-tidy or other tools separately
+set(CMAKE_EXPORT_COMPILE_COMMANDS "ON")
+# Use clang-tidy if run with -DCLANG_TIDY=1
+find_program(CLANG_TIDY_EXE NAMES clang-tidy)
+set(CLANG_TIDY ${CLANG_TIDY} CACHE BOOL "Enable clang-tidy")
+if(CLANG_TIDY AND CLANG_TIDY_EXE)
+  include(RegexUtils)
+  escape_string_as_regex(regex "${CMAKE_SOURCE_DIR}/src")
+  set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE};-header-filter=${regex}")
+endif()
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
 include_directories(src)
 
-FLEX_TARGET(openscad_lexer src/lexer.l ${CMAKE_CURRENT_BINARY_DIR}/lexer.cxx DEFINES_FILE ${CMAKE_CURRENT_BINARY_DIR}/lexer.hxx)
-BISON_TARGET(openscad_parser src/parser.y ${CMAKE_CURRENT_BINARY_DIR}/parser.cxx DEFINES_FILE ${CMAKE_CURRENT_BINARY_DIR}/parser.hxx COMPILE_FLAGS "-d -p parser")
+FLEX_TARGET(openscad_lexer src/lexer.l ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/lexer.cxx DEFINES_FILE ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/lexer.hxx)
+BISON_TARGET(openscad_parser src/parser.y ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/parser.cxx DEFINES_FILE ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/parser.hxx COMPILE_FLAGS "-d -p parser")
 ADD_FLEX_BISON_DEPENDENCY(openscad_lexer openscad_parser)
 
-FLEX_TARGET(comment_lexer src/comment_lexer.l ${CMAKE_CURRENT_BINARY_DIR}/comment_lexer.cxx DEFINES_FILE ${CMAKE_CURRENT_BINARY_DIR}/comment_lexer.hxx)
-BISON_TARGET(comment_parser src/comment_parser.y ${CMAKE_CURRENT_BINARY_DIR}/comment_parser.cxx DEFINES_FILE ${CMAKE_CURRENT_BINARY_DIR}/comment_parser.hxx COMPILE_FLAGS "-d -p comment_parser")
+FLEX_TARGET(comment_lexer src/comment_lexer.l ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/comment_lexer.cxx DEFINES_FILE ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/comment_lexer.hxx)
+BISON_TARGET(comment_parser src/comment_parser.y ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/comment_parser.cxx DEFINES_FILE ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/comment_parser.hxx COMPILE_FLAGS "-d -p comment_parser")
 ADD_FLEX_BISON_DEPENDENCY(comment_lexer comment_parser)
 
 if(NOT HEADLESS)
@@ -92,7 +123,7 @@ if(NOT HEADLESS)
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
   endif()
 
-  if ("${Qt5_VERSION}" VERSION_GREATER_EQUAL "5.4")
+  if (("${Qt5_VERSION}" VERSION_EQUAL "5.4") OR ("${Qt5_VERSION}" VERSION_GREATER "5.4"))
     add_definitions(-DUSE_QOPENGLWIDGET)
   endif()
 
@@ -122,11 +153,21 @@ if(NULLGL)
 else()
   add_definitions(-DENABLE_OPENCSG)
 endif()
-# -DENABLE_LIBZIP -DDEBUG
+
+add_definitions(-DENABLE_LIBZIP)
 add_definitions(-DENABLE_EXPERIMENTAL)
 
 # Stack size 8MB; github issue 116
 add_definitions(-DSTACKSIZE=8388608)
+
+# Setup ccache (if available) to speed up recompiles. It's especially useful
+# when switching back and forth between branches where large numbers of files
+# would otherwise need to be re-compiled each time.
+find_program(CCACHE_PATH ccache)
+if (CCACHE_PATH)
+  set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ${CCACHE_PATH})
+  set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ${CCACHE_PATH})
+endif()
 
 #
 # Version
@@ -154,7 +195,7 @@ endif()
 #
 if(APPLE)
   message(STATUS "Offscreen OpenGL Context - using Apple CGL")
-  set(PLATFORM_SOURCES src/PlatformUtils-mac.mm src/OffscreenContextCGL.mm src/imageutils-macosx.cc src/CocoaUtils.mm src/AppleEvents.cc src/EventFilter.cc)
+  set(PLATFORM_SOURCES src/PlatformUtils-mac.mm src/OffscreenContextCGL.mm src/imageutils-macosx.cc src/CocoaUtils.mm src/AppleEvents.cc)
   find_library(COCOA_LIBRARY Cocoa)
   set(PLATFORM_LIBS ${COCOA_LIBRARY})
 elseif(UNIX)
@@ -224,7 +265,7 @@ set(CORE_SOURCES
   src/FontCache.cc
   src/DrawingCallback.cc
   src/FreetypeRenderer.cc
-  src/lodepng.cpp
+  src/ext/lodepng/lodepng.cpp
   src/PlatformUtils.cc 
   src/libsvg/circle.cc
   src/libsvg/ellipse.cc
@@ -242,7 +283,7 @@ set(CORE_SOURCES
   src/clipper-utils.cc
   src/assignment.cc
   src/annotation.cc 
-  src/polyclipping/clipper.cpp
+  src/ext/polyclipping/clipper.cpp
   ${PLATFORM_SOURCES}
   ${FLEX_openscad_lexer_OUTPUTS}
   ${BISON_openscad_parser_OUTPUTS}
@@ -284,20 +325,20 @@ set(CGAL_SOURCES
   src/svg.cc
   src/GeometryEvaluator.cc)
 
-include_directories("src/libtess2/Include")
+include_directories("src/ext/libtess2/Include")
 set(COMMON_SOURCES
   src/nodedumper.cc 
   src/GeometryCache.cc 
   src/clipper-utils.cc 
   src/Tree.cc
-  src/polyclipping/clipper.cpp
-  src/libtess2/Source/bucketalloc.c
-  src/libtess2/Source/dict.c
-  src/libtess2/Source/geom.c
-  src/libtess2/Source/mesh.c
-  src/libtess2/Source/priorityq.c
-  src/libtess2/Source/sweep.c
-  src/libtess2/Source/tess.c
+  src/ext/polyclipping/clipper.cpp
+  src/ext/libtess2/Source/bucketalloc.c
+  src/ext/libtess2/Source/dict.c
+  src/ext/libtess2/Source/geom.c
+  src/ext/libtess2/Source/mesh.c
+  src/ext/libtess2/Source/priorityq.c
+  src/ext/libtess2/Source/sweep.c
+  src/ext/libtess2/Source/tess.c
   src/Tree.cc)
 
 #
@@ -319,6 +360,7 @@ set(OFFSCREEN_SOURCES
 set(GUI_SOURCES
   src/mainwin.cc
   src/OpenSCADApp.cc
+  src/EventFilter.h
   src/WindowManager.cc
   src/Preferences.cc
   src/FontListDialog.cc
@@ -401,7 +443,11 @@ if(APPLE)
     MACOSX_BUNDLE_SHORT_VERSION_STRING 2017.03
     RESOURCE "${RESOURCE_FILES}"
   )
-endif(APPLE)
+elseif(UNIX)
+  set_target_properties(OpenSCAD PROPERTIES
+    OUTPUT_NAME openscad
+  )
+endif()
 
 set(COMMON_LIBRARIES
     ${CGAL_LIBRARY}
@@ -413,6 +459,7 @@ set(COMMON_LIBRARIES
     ${FREETYPE_LIBRARIES}
     ${GLIB2_LIBRARIES}
     ${LIBXML2_LIBRARIES}
+    ${LIBZIP_LIBRARY}
     ${OPENGL_LIBRARIES}
     ${GLEW_LIBRARY}
     ${OPENCSG_LIBRARY}

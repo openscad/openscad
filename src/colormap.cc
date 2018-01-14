@@ -281,7 +281,7 @@ void ColorMap::enumerateColorSchemesInPath(colorscheme_set_t &result_set, const 
 	    }
 	    
 	    RenderColorScheme *colorScheme = new RenderColorScheme(path);
-	    if (colorScheme->valid() && (findColorScheme(colorScheme->name()) == 0)) {
+	    if (colorScheme->valid() && (findColorScheme(colorScheme->name()) == nullptr)) {
 		result_set.insert(colorscheme_set_t::value_type(colorScheme->index(), shared_ptr<RenderColorScheme>(colorScheme)));
 		PRINTDB("Found file '%s' with color scheme '%s' and index %d",
 			colorScheme->path() % colorScheme->name() % colorScheme->index());

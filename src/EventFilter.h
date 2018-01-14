@@ -12,7 +12,7 @@ class EventFilter : public QObject
 public:
 	EventFilter(QObject *parent) : QObject(parent) {}
 protected:
-	bool eventFilter(QObject *obj, QEvent *event) {
+	bool eventFilter(QObject *obj, QEvent *event) override {
 		// Handle Apple event for opening files, only available on OS X
 		if (event->type() == QEvent::FileOpen) {
 			QFileOpenEvent *foe = static_cast<QFileOpenEvent *>(event);

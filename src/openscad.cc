@@ -654,6 +654,8 @@ void dialogInitHandler(FontCacheInitializer *initializer, void *)
 	QMetaObject::invokeMethod(scadApp, "hideFontCacheDialog");
 }
 
+
+
 int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, char ** argv)
 {
 #ifdef Q_OS_MACX
@@ -770,7 +772,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	} else {
 	   new MainWindow(assemblePath(original_path, inputFiles[0]));
 	}
-
+    app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(releaseQSettingsCached()));
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 	int rc = app.exec();
 	for (auto &mainw : scadApp->windowManager.getWindows()) delete mainw;
@@ -794,20 +796,6 @@ std::pair<string, string> customSyntax(const string& s)
 
 	return {};
 }
-/*!
-	This makes boost::program_option parse comma-separated values
- */
-struct CommaSeparatedVector
-{
-	std::vector<std::string> values;
-
-	friend std::istream &operator>>(std::istream &in, CommaSeparatedVector &value) {
-		std::string token;
-		in >> token;
-		boost::split(value.values, token, boost::is_any_of(","));
-		return in;
-	}
-};
 
 /*!
 	This makes boost::program_option parse comma-separated values
@@ -830,7 +818,7 @@ int main(int argc, char **argv)
 	StackCheck::inst()->init();
 	
 #ifdef Q_OS_MAC
-	bool isGuiLaunched = getenv("GUI_LAUNCHED") != 0;
+	bool isGuiLaunched = getenv("GUI_LAUNCHED") != nullptr;
 	if (isGuiLaunched) set_output_handler(CocoaUtils::nslog, nullptr);
 #else
 	PlatformUtils::ensureStdIO();

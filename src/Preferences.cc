@@ -81,7 +81,7 @@ class SettingsReader : public Settings::SettingsVisitor
 	}
     }
 
-    virtual void handle(Settings::SettingsEntry& entry) const {
+    void handle(Settings::SettingsEntry& entry) const override {
 	Settings::Settings *s = Settings::Settings::inst();
 
 	std::string key = entry.category() + "/" + entry.name();
@@ -94,7 +94,7 @@ class SettingsReader : public Settings::SettingsVisitor
 
 class SettingsWriter : public Settings::SettingsVisitor
 {
-    virtual void handle(Settings::SettingsEntry& entry) const {
+    void handle(Settings::SettingsEntry& entry) const override {
 	Settings::Settings *s = Settings::Settings::inst();
 
 	QSettingsCached settings;

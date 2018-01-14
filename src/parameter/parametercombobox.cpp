@@ -1,30 +1,37 @@
 #include "parametercombobox.h"
+#include "ignoreWheelWhenNotFocused.h"
 
-ParameterComboBox::ParameterComboBox(ParameterObject *parameterobject, bool showDescription)
+ParameterComboBox::ParameterComboBox(ParameterObject *parameterobject, int showDescription)
 {
 	object = parameterobject;
 	setName(QString::fromStdString(object->name));
 	setValue();
 	connect(comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onChanged(int)));
-	if (showDescription == true) {
+	if (showDescription == 0) {
 		setDescription(object->description);
-	}
-	else{
+	}else if(showDescription == 1){
+		addInline(object->description);
+	}else {
 		comboBox->setToolTip(object->description);
 	}
+
+	IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused();
+	comboBox->installEventFilter(ignoreWheelWhenNotFocused);
 }
 
 void ParameterComboBox::onChanged(int idx)
 {
-	if (object->dvt == Value::ValueType::STRING) {
-		const std::string v = comboBox->itemData(idx).toString().toStdString();
-		object->value = ValuePtr(v);
-	} else {
-		const double v = comboBox->itemData(idx).toDouble();
-		object->value = ValuePtr(v);
+	if(!suppressUpdate){
+		if (object->dvt == Value::ValueType::STRING) {
+			const std::string v = comboBox->itemData(idx).toString().toStdString();
+			object->value = ValuePtr(v);
+		} else {
+			const double v = comboBox->itemData(idx).toDouble();
+			object->value = ValuePtr(v);
+		}
+		object->focus = true;
+		emit changed();
 	}
-	object->focus = true;
-	emit changed();
 }
 
 void ParameterComboBox::setParameterFocus()
@@ -35,7 +42,10 @@ void ParameterComboBox::setParameterFocus()
 
 void ParameterComboBox::setValue()
 {
-	this->stackedWidget->setCurrentWidget(this->pageComboBox);
+	suppressUpdate=true;
+	this->stackedWidgetBelow->setCurrentWidget(this->pageComboBox);
+	this->pageComboBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
+	this->stackedWidgetRight->hide();
 	comboBox->clear();
 	const Value::VectorType& vec = object->values->toVector();
 	for (Value::VectorType::const_iterator it = vec.begin(); it != vec.end(); it++)	{
@@ -54,4 +64,5 @@ void ParameterComboBox::setValue()
 	if (idx >= 0) {
 		comboBox->setCurrentIndex(idx);
 	}
+	suppressUpdate=false;
 }

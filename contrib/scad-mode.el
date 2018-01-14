@@ -90,7 +90,7 @@
     "import"                                                            ;;import.cc
     "group"                                                             ;;builtin.cc
     "projection"                                                        ;;projection.cc
-    "minkowski" "glide" "subdiv" "hull" "resize"                        ;;cgaladv.cc
+    "minkowski" "hull" "resize"                                         ;;cgaladv.cc
     "parent_module"                                                     ;;2014.03
     "let" "offset" "text"                                               ;;2015.03
     )

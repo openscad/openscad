@@ -286,7 +286,7 @@ void CommentParser::collectParameters(const char *fulltext, FileModule *root_mod
  
 		// Extracting the parameter comment
 		std::string comment = getComment(std::string(fulltext), firstLine);
-		// getting the node for parameter annnotataion
+		// getting the node for parameter annotation
 		shared_ptr<Expression> params = CommentParser::parser(comment.c_str());
 		if (!params) {
 			params = shared_ptr<Expression>(new Literal(ValuePtr(std::string(""))));

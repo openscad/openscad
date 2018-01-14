@@ -4,6 +4,7 @@
 #include "linalg.h"
 #include "memory.h"
 #include "colormap.h"
+#include "enums.h"
 
 #ifdef _MSC_VER // NULL
 #include <cstdlib>
@@ -44,9 +45,10 @@ public:
 	virtual bool getColor(ColorMode colormode, Color4f &col) const;
 	virtual void setColor(const float color[4], GLint *shaderinfo = nullptr) const;
 	virtual void setColor(ColorMode colormode, GLint *shaderinfo = nullptr) const;
-	virtual void setColor(ColorMode colormode, const float color[4], GLint *shaderinfo = nullptr) const;
+	virtual Color4f setColor(ColorMode colormode, const float color[4], GLint *shaderinfo = nullptr) const;
 	virtual void setColorScheme(const ColorScheme &cs);
 
+	static csgmode_e get_csgmode(const bool highlight_mode, const bool background_mode, const OpenSCADOperator type=OpenSCADOperator::UNION);
 	static void render_surface(shared_ptr<const class Geometry> geom, csgmode_e csgmode, const Transform3d &m, GLint *shaderinfo = nullptr);
 	static void render_edges(shared_ptr<const Geometry> geom, csgmode_e csgmode);
 

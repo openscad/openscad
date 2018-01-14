@@ -297,9 +297,9 @@ private:
 
 public:
 	AmfImporterZIP();
-	virtual ~AmfImporterZIP();
+	~AmfImporterZIP();
 
-	virtual xmlTextReaderPtr createXmlReader(const char *filename);
+	xmlTextReaderPtr createXmlReader(const char *filename) override;
 };
 
 AmfImporterZIP::AmfImporterZIP()
