@@ -104,6 +104,7 @@ public:
     static SettingsEntry axisDeadzone8;
     static SettingsEntry axisDeadzone9;
     static SettingsEntry joystickNr;
+    static SettingsEntry spaceNavDominantAxisOnly;
 
     static Settings *inst(bool erase = false);
 

@@ -68,7 +68,7 @@ bool SpaceNavInputDriver::spnav_input(void)
 
     do {
         if (ev.type == SPNAV_EVENT_MOTION) {
-            if (true) {
+            if (DominantAxisOnly) {
                 // dominant axis only
                 int m=ev.motion.x;
                 if (abs(m) < abs(ev.motion.y)) m=ev.motion.y;
@@ -113,6 +113,10 @@ bool SpaceNavInputDriver::open()
 void SpaceNavInputDriver::close()
 {
 
+}
+
+void SpaceNavInputDriver::setDominantAxisOnly(bool var){
+    DominantAxisOnly = var;
 }
 
 const std::string & SpaceNavInputDriver::get_name() const

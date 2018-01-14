@@ -38,9 +38,11 @@ public:
     void run() override;
     bool open() override;
     void close() override;
+    void setDominantAxisOnly(bool var);
 
     const std::string & get_name() const override;
 
 private:
     bool spnav_input();
+    bool DominantAxisOnly=true;
 };

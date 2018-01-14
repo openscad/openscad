@@ -797,7 +797,11 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
         InputDriverManager::instance()->registerDriver(new HidApiInputDriver());
 #endif
 #ifdef ENABLE_SPNAV
-        InputDriverManager::instance()->registerDriver(new SpaceNavInputDriver());
+        SpaceNavInputDriver spaceNav = new SpaceNavInputDriver();
+        bool spaceNavDominantAxisOnly = s->get(Settings::Settings::inputEnableDriverHIDAPI).toBool())
+        spaceNav->setDominantAxisOnly(spaceNavDominantAxisOnly);
+        InputDriverManager::instance()->registerDriver(spaceNav);
+
 #endif
 #ifdef ENABLE_JOYSTICK
         std::string nr = s->get(Settings::Settings::joystickNr).toString();
