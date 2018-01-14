@@ -1,4 +1,5 @@
 #include "parametervector.h"
+#include "ignoreWheelWhenNotFocused.h"
 
 ParameterVector::ParameterVector(ParameterObject *parameterobject, int showDescription)
 {
@@ -16,6 +17,12 @@ ParameterVector::ParameterVector(ParameterObject *parameterobject, int showDescr
 	}else {
 		this->setToolTip(object->description);
 	}
+
+	IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused();
+	doubleSpinBox1->installEventFilter(ignoreWheelWhenNotFocused);
+	doubleSpinBox2->installEventFilter(ignoreWheelWhenNotFocused);
+	doubleSpinBox3->installEventFilter(ignoreWheelWhenNotFocused);
+	doubleSpinBox4->installEventFilter(ignoreWheelWhenNotFocused);
 }
 
 void ParameterVector::onChanged(double)

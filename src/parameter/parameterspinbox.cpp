@@ -1,4 +1,5 @@
 #include "parameterspinbox.h"
+#include "ignoreWheelWhenNotFocused.h"
 
 ParameterSpinBox::ParameterSpinBox(ParameterObject *parameterobject, int showDescription)
 {
@@ -13,6 +14,8 @@ ParameterSpinBox::ParameterSpinBox(ParameterObject *parameterobject, int showDes
 	}else {
 		doubleSpinBox->setToolTip(object->description);
 	}
+	IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused();
+	doubleSpinBox->installEventFilter(ignoreWheelWhenNotFocused);
 }
 
 void ParameterSpinBox::onChanged(double)

@@ -1,4 +1,5 @@
 #include "parameterslider.h"
+#include "ignoreWheelWhenNotFocused.h"
 
 ParameterSlider::ParameterSlider(ParameterObject *parameterobject, int showDescription)
 {
@@ -19,6 +20,10 @@ ParameterSlider::ParameterSlider(ParameterObject *parameterobject, int showDescr
 	}else {
 		slider->setToolTip(object->description);
 	}
+
+	IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused();
+	slider->installEventFilter(ignoreWheelWhenNotFocused);
+	doubleSpinBox->installEventFilter(ignoreWheelWhenNotFocused);
 }
 
 void ParameterSlider::onSliderChanged(int)
