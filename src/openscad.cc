@@ -320,7 +320,7 @@ void set_render_color_scheme(const std::string color_scheme, const bool exit_if_
 
 #include <QCoreApplication>
 
-int cmdline(const char *deps_output_file, const std::string &filename, Camera &camera, const char *output_file, const fs::path &original_path, RenderType renderer,const std::string &parameterFile,const std::string &setName, ViewOptions& viewOptions, int argc, char ** argv )
+int cmdline(const char *deps_output_file, const std::string &filename, const char *output_file, const fs::path &original_path, RenderType renderer,const std::string &parameterFile,const std::string &setName, ViewOptions& viewOptions, int argc, char ** argv )
 {
 #ifdef OPENSCAD_QTGUI
 	QCoreApplication app(argc, argv);
@@ -552,10 +552,10 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 			}
 			else {
 				if (renderer == RenderType::CGAL || renderer == RenderType::GEOMETRY) {
-					success = export_png(root_geom, camera, viewOptions, fstream);
+					success = export_png(root_geom, viewOptions, fstream);
 				} else {
 					viewOptions.previewer = (renderer == RenderType::THROWNTOGETHER) ? Previewer::THROWNTOGETHER : Previewer::OPENCSG;
-					success = export_preview_png(tree, camera, viewOptions, fstream);
+					success = export_preview_png(tree, viewOptions, fstream);
 				}
 				fstream.close();
 			}
@@ -999,7 +999,7 @@ int main(int argc, char **argv)
 
 	currentdir = fs::current_path().generic_string();
 
-	Camera camera = get_camera(vm);
+	viewOptions.camera = get_camera(vm);
 
 	// Initialize global visitors
 	NodeCache nodecache;
@@ -1013,7 +1013,7 @@ int main(int argc, char **argv)
 
 	if (arg_info || cmdlinemode) {
 		if (inputFiles.size() > 1) help(argv[0], true);
-		rc = cmdline(deps_output_file, inputFiles[0], camera, output_file, original_path, renderer, parameterFile, parameterSet, viewOptions, argc, argv);
+		rc = cmdline(deps_output_file, inputFiles[0], output_file, original_path, renderer, parameterFile, parameterSet, viewOptions, argc, argv);
 	}
 	else if (QtUseGUI()) {
 		rc = gui(inputFiles, original_path, argc, argv);

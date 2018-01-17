@@ -35,7 +35,8 @@ struct ViewOptions {
 	bool showScaleMarkers;
 	bool showEdges;
 	Previewer previewer{Previewer::OPENCSG};
+	Camera camera;
 };
 
-bool export_png(const shared_ptr<const class Geometry> &root_geom, Camera &c, const ViewOptions& options, std::ostream &output);
-bool export_preview_png(Tree &tree, Camera &c, const ViewOptions& options, std::ostream &output);
+bool export_png(const shared_ptr<const class Geometry> &root_geom, ViewOptions options, std::ostream &output);
+bool export_preview_png(Tree &tree, ViewOptions options, std::ostream &output);
