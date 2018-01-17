@@ -127,9 +127,9 @@ Install git (http://git-scm.com/) onto your system. Then run a clone:
 
     git clone git://github.com/openscad/openscad.git
 
-This will download the latest sources into a directory named 'openscad'. 
+This will download the latest sources into a directory named 'openscad'.
 
-To pull the MCAD library (http://reprap.org/wiki/MCAD), do the following:
+To pull the MCAD library (https://github.com/openscad/MCAD), do the following:
 
     cd openscad
     git submodule update --init
