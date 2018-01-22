@@ -152,6 +152,19 @@ ValuePtr Context::lookup_variable(const std::string &name, bool silent) const
 	return ValuePtr::undefined;
 }
 
+
+double Context::lookup_variable_with_default(const std::string &variable, const double &def) const
+{
+	ValuePtr v = this->lookup_variable(variable, true);
+	return (v->type() == Value::ValueType::NUMBER) ? v->toDouble() : def;
+}
+
+std::string Context::lookup_variable_with_default(const std::string &variable, const std::string &def) const
+{
+	ValuePtr v = this->lookup_variable(variable, true);
+	return (v->type() == Value::ValueType::STRING) ? v->toString() : def;
+}
+
 bool Context::has_local_variable(const std::string &name) const
 {
 	if (is_config_variable(name)) {
