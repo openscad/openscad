@@ -12,7 +12,7 @@
 class FileModule : public AbstractModule
 {
 public:
-	FileModule() : is_handling_dependencies(false) {}
+	FileModule(const std::string &path, const std::string &filename);
 	~FileModule();
 
 	AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx = nullptr) const override;
@@ -42,5 +42,7 @@ private:
 	typedef std::unordered_map<std::string, struct IncludeFile> IncludeContainer;
 	IncludeContainer includes;
 	bool is_handling_dependencies;
+
 	std::string path;
+	std::string filename;
 };

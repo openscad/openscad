@@ -28,7 +28,7 @@
 
 #include <boost/filesystem.hpp>
 
-extern bool parse(class FileModule *&module, const char *text, const boost::filesystem::path &filename, int debug);
+extern bool parse(class FileModule *&module, const char *text, const std::string &filename, int debug);
 
 #include <string>
 extern std::string commandline_commands;

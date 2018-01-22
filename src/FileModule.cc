@@ -39,6 +39,11 @@ namespace fs = boost::filesystem;
 #include "FontCache.h"
 #include <sys/stat.h>
 
+FileModule::FileModule(const std::string &path, const std::string &filename)
+	: is_handling_dependencies(false), path(path), filename(filename)
+{
+}
+
 FileModule::~FileModule()
 {
 }

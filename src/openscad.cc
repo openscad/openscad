@@ -401,8 +401,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	}
 	std::string text((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 	text += "\n" + commandline_commands;
-	auto abspath = fs::absolute(filename);
-	if (!parse(root_module, text.c_str(), abspath, false)) {
+	if (!parse(root_module, text.c_str(), filename, false)) {
 		delete root_module;  // parse failed
 		root_module = nullptr;
 	}
