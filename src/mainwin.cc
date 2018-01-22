@@ -41,6 +41,7 @@
 #include "builtin.h"
 #include "memory.h"
 #include "expression.h"
+#include "modcontext.h"
 #include "progress.h"
 #include "dxfdim.h"
 #include "legacyeditor.h"
