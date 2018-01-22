@@ -228,12 +228,12 @@ HEADERS += src/AST.h \
 
 SOURCES += src/AST.cc \
            src/ModuleInstantiation.cc \
+           src/Assignment.cc \
            src/expr.cc \
            src/function.cc \
            src/module.cc \
            src/UserModule.cc \
-           src/annotation.cc \
-           src/assignment.cc
+           src/annotation.cc
 
 # Comment parser
 FLEXSOURCES += src/comment_lexer.l
