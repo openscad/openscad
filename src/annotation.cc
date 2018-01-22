@@ -48,9 +48,7 @@ const std::string & Annotation::getName() const
 	return name;
 }
 
-std::string Annotation::dump() const
+void Annotation::print(std::ostream &stream, const std::string &indent) const
 {
-	std::stringstream dump;
-	dump << "//" << name << "(" << *this->expr << ")" << std::endl;
-	return dump.str();
+	stream << indent << "//" << name << "(" << *this->expr << ")" << std::endl;
 }

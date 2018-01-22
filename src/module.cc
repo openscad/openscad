@@ -32,10 +32,3 @@
 AbstractModule::~AbstractModule()
 {
 }
-
-std::string AbstractModule::dump(const std::string &indent, const std::string &name) const
-{
-	std::stringstream dump;
-	dump << indent << "abstract module " << name << "();\n";
-	return dump.str();
-}

@@ -170,7 +170,7 @@ statement:
         | assignment
         | TOK_MODULE TOK_ID '(' arguments_decl optional_commas ')'
             {
-              UserModule *newmodule = new UserModule(LOC(@$));
+              UserModule *newmodule = new UserModule($2, LOC(@$));
               newmodule->definition_arguments = *$4;
               scope_stack.top()->addModule($2, newmodule);
               scope_stack.push(&newmodule->scope);

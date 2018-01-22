@@ -9,14 +9,14 @@
 #include "value.h"
 #include "localscope.h"
 
-class FileModule : public AbstractModule
+class FileModule : public AbstractModule, public ASTNode
 {
 public:
 	FileModule(const std::string &path, const std::string &filename);
 	~FileModule();
 
 	AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx = nullptr) const override;
-	std::string dump(const std::string &indent, const std::string &name) const override;
+	void print(std::ostream &stream, const std::string &indent) const override;
 	AbstractNode *instantiateWithFileContext(class FileContext *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
 
 	void setModulePath(const std::string &path) { this->path = path; }

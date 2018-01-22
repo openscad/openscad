@@ -40,7 +40,7 @@ namespace fs = boost::filesystem;
 #include <sys/stat.h>
 
 FileModule::FileModule(const std::string &path, const std::string &filename)
-	: is_handling_dependencies(false), path(path), filename(filename)
+	: ASTNode(Location::NONE), is_handling_dependencies(false), path(path), filename(filename)
 {
 }
 
@@ -48,9 +48,9 @@ FileModule::~FileModule()
 {
 }
 
-std::string FileModule::dump(const std::string &indent, const std::string & /*name*/) const
+void FileModule::print(std::ostream &stream, const std::string &indent) const
 {
-	return scope.dump(indent);
+	scope.print(stream, indent);
 }
 
 void FileModule::registerUse(const std::string path)

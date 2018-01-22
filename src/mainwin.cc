@@ -2047,7 +2047,7 @@ void MainWindow::actionDisplayAST()
 	e->setWindowTitle("AST Dump");
 	e->setReadOnly(true);
 	if (root_module) {
-		e->setPlainText(QString::fromUtf8(root_module->dump("", "").c_str()));
+		e->setPlainText(QString::fromUtf8(root_module->dump("").c_str()));
 	} else {
 		e->setPlainText("No AST to dump. Please try compiling first...");
 	}
