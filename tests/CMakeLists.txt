@@ -746,7 +746,7 @@ set(CORE_SOURCES
   ../src/libsvg/transformation.cc
   ../src/libsvg/util.cc
   ../src/clipper-utils.cc
-  ../src/assignment.cc
+  ../src/Assignment.cc
   ../src/annotation.cc 
   ../src/ext/polyclipping/clipper.cpp
   ../src/${PLATFORMUTILS_SOURCE}
