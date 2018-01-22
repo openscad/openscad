@@ -27,9 +27,9 @@
 #include "openscad.h"
 #include "comment.h"
 #include "node.h"
-#include "module.h"
+#include "FileModule.h"
 #include "ModuleInstantiation.h"
-#include "modcontext.h"
+#include "builtincontext.h"
 #include "value.h"
 #include "export.h"
 #include "builtin.h"
@@ -374,12 +374,11 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	set_render_color_scheme(arg_colorscheme, true);
 	
 	// Top context - this context only holds builtins
-	ModuleContext top_ctx;
-	top_ctx.registerBuiltin();
+	BuiltinContext top_ctx;
 	bool preview = png_output_file ? (renderer==RenderType::OPENCSG || renderer==RenderType::THROWNTOGETHER) : false;
 	top_ctx.set_variable("$preview", ValuePtr(preview));
 #ifdef DEBUG
-	PRINTDB("Top ModuleContext:\n%s",top_ctx.dump(nullptr, nullptr));
+	PRINTDB("BuiltinContext:\n%s", top_ctx.dump(nullptr, nullptr));
 #endif
 	shared_ptr<Echostream> echostream;
 	if (echo_output_file) {

@@ -207,8 +207,6 @@ MainWindow::MainWindow(const QString &filename)
 					this, SLOT(actionRenderDone(shared_ptr<const Geometry>)));
 #endif
 
-	top_ctx.registerBuiltin();
-
 	root_module = nullptr;
 	parsed_module = nullptr;
 	absolute_root_node = nullptr;

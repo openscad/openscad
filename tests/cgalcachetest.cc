@@ -31,7 +31,8 @@
 #include "node.h"
 #include "module.h"
 #include "ModuleInstantiation.h"
-#include "modcontext.h"
+#include "builtincontext.h"
+#include "FileModule.h"
 #include "value.h"
 #include "export.h"
 #include "builtin.h"
@@ -123,8 +124,7 @@ int main(int argc, char **argv)
 	PlatformUtils::registerApplicationPath(fs::path(argv[0]).branch_path().generic_string());
 	parser_init();
 
-	ModuleContext top_ctx;
-	top_ctx.registerBuiltin();
+	BuiltinContext top_ctx;
 
 	FileModule *root_module;
 	ModuleInstantiation root_inst("group");

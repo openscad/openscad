@@ -22,11 +22,11 @@ public:
 	std::vector<ModuleInstantiation*> children;
 
 	// Modules and functions are stored twice; once for lookup and once for AST serialization
-	typedef std::unordered_map<std::string, class AbstractFunction*> FunctionContainer;
+	typedef std::unordered_map<std::string, class UserFunction*> FunctionContainer;
 	FunctionContainer functions;
-	std::vector<std::pair<std::string, AbstractFunction*>> astFunctions;
+	std::vector<std::pair<std::string, UserFunction*>> astFunctions;
 
-	typedef std::unordered_map<std::string, class AbstractModule*> AbstractModuleContainer;
-	AbstractModuleContainer	modules;
-	std::vector<std::pair<std::string, AbstractModule*>> astModules;
+	typedef std::unordered_map<std::string, class UserModule*> ModuleContainer;
+	ModuleContainer	modules;
+	std::vector<std::pair<std::string, UserModule*>> astModules;
 };

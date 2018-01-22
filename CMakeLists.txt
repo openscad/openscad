@@ -234,6 +234,7 @@ set(CORE_SOURCES
   src/node.cc 
   src/NodeVisitor.cc 
   src/context.cc 
+  src/builtincontext.cc
   src/modcontext.cc 
   src/evalcontext.cc 
   src/feature.cc
