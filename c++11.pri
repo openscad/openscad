@@ -3,7 +3,8 @@ macx {
   # We attempt to auto-detect it by inspecting Boost
   dirs = $${BOOSTDIR} $${QMAKE_LIBDIR}
   for(dir, dirs) {
-    system(grep -q __112basic_string $${dir}/libboost_thread* >& /dev/null) {
+    #system(grep -q __112basic_string $${dir}/libboost_thread* >& /dev/null) {
+    system(otool -L /usr/local/lib/libboost_thread*  | grep libc++ >& /dev/null ) {
       message("Using libc++11")
       CONFIG += libc++
     }
