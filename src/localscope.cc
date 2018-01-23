@@ -6,6 +6,7 @@
 #include "expression.h"
 #include "function.h"
 #include "annotation.h"
+#include "UserModule.h"
 
 LocalScope::LocalScope()
 {
@@ -43,30 +44,20 @@ void LocalScope::addAssignment(const Assignment &ass)
 	this->assignments.push_back(ass);
 }
 
-std::string LocalScope::dump(const std::string &indent) const
+void LocalScope::print(std::ostream &stream, const std::string &indent) const
 {
-	std::stringstream dump;
 	for (const auto &f : this->astFunctions) {
-		dump << f.second->dump(indent, f.first);
+		f.second->print(stream, indent);
 	}
 	for (const auto &m : this->astModules) {
-		dump << m.second->dump(indent, m.first);
+		m.second->print(stream, indent);
 	}
 	for (const auto &ass : this->assignments) {
-		if (ass.hasAnnotations()) {
-			const Annotation *group = ass.annotation("Group");
-			if (group != nullptr) dump << group->dump();
-			const Annotation *Description = ass.annotation("Description");
-			if (Description != nullptr) dump << Description->dump();
-			const Annotation *parameter = ass.annotation("Parameter");
-			if (parameter != nullptr) dump << parameter->dump();
-		}
-		dump << indent << ass.name << " = " << *ass.expr << ";\n";
+		ass.print(stream, indent);
 	}
 	for (const auto &inst : this->children) {
-		dump << inst->dump(indent);
+		inst->print(stream, indent);
 	}
-	return dump.str();
 }
 
 std::vector<AbstractNode*> LocalScope::instantiateChildren(const Context *evalctx) const

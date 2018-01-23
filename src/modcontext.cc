@@ -78,26 +78,9 @@ void ModuleContext::initializeModule(const UserModule &module)
 //	evaluateAssignments(module.scope.assignments);
 }
 
-/*!
-	Only used to initialize builtins for the top-level root context
-*/
-void ModuleContext::registerBuiltin()
+const UserFunction *ModuleContext::findLocalFunction(const std::string &name) const
 {
-	const auto &scope = Builtins::instance()->getGlobalScope();
-
-	// FIXME: Don't access module members directly
-	this->functions_p = &scope.functions;
-	this->modules_p = &scope.modules;
-	for (const auto &ass : scope.assignments) {
-		this->set_variable(ass.name, ass.expr->evaluate(this));
-	}
-
-	this->set_constant("PI", ValuePtr(M_PI));
-}
-
-const AbstractFunction *ModuleContext::findLocalFunction(const std::string &name) const
-{
-	if (this->functions_p && this->functions_p->find(name) != this->functions_p->end()) {
+ 	if (this->functions_p && this->functions_p->find(name) != this->functions_p->end()) {
 		auto f = this->functions_p->find(name)->second;
 		if (!f->is_enabled()) {
 			PRINTB("WARNING: Experimental builtin function '%s' is not enabled.", name);
@@ -108,7 +91,7 @@ const AbstractFunction *ModuleContext::findLocalFunction(const std::string &name
 	return nullptr;
 }
 
-const AbstractModule *ModuleContext::findLocalModule(const std::string &name) const
+const UserModule *ModuleContext::findLocalModule(const std::string &name) const
 {
 	if (this->modules_p && this->modules_p->find(name) != this->modules_p->end()) {
 		auto m = this->modules_p->find(name)->second;

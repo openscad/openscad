@@ -41,6 +41,7 @@
 #include "builtin.h"
 #include "memory.h"
 #include "expression.h"
+#include "modcontext.h"
 #include "progress.h"
 #include "dxfdim.h"
 #include "legacyeditor.h"
@@ -205,8 +206,6 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->cgalworker, SIGNAL(done(shared_ptr<const Geometry>)), 
 					this, SLOT(actionRenderDone(shared_ptr<const Geometry>)));
 #endif
-
-	top_ctx.registerBuiltin();
 
 	root_module = nullptr;
 	parsed_module = nullptr;
@@ -1750,7 +1749,7 @@ void MainWindow::compileTopLevelDocument(bool rebuildParameterWidget)
 	auto fnameba = this->fileName.toLocal8Bit();
 	const char* fname = this->fileName.isEmpty() ? "" : fnameba;
 	delete this->parsed_module;
-	this->root_module = parse(this->parsed_module, fulltext.c_str(), fs::path(fname), false) ? this->parsed_module : nullptr;
+	this->root_module = parse(this->parsed_module, fulltext.c_str(), fname, false) ? this->parsed_module : nullptr;
 
 	if (Feature::ExperimentalCustomizer.is_enabled()) {
 		if (this->root_module!=nullptr) {
@@ -2046,7 +2045,7 @@ void MainWindow::actionDisplayAST()
 	e->setWindowTitle("AST Dump");
 	e->setReadOnly(true);
 	if (root_module) {
-		e->setPlainText(QString::fromUtf8(root_module->dump("", "").c_str()));
+		e->setPlainText(QString::fromUtf8(root_module->dump("").c_str()));
 	} else {
 		e->setPlainText("No AST to dump. Please try compiling first...");
 	}

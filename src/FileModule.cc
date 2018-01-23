@@ -39,13 +39,18 @@ namespace fs = boost::filesystem;
 #include "FontCache.h"
 #include <sys/stat.h>
 
+FileModule::FileModule(const std::string &path, const std::string &filename)
+	: ASTNode(Location::NONE), is_handling_dependencies(false), path(path), filename(filename)
+{
+}
+
 FileModule::~FileModule()
 {
 }
 
-std::string FileModule::dump(const std::string &indent, const std::string & /*name*/) const
+void FileModule::print(std::ostream &stream, const std::string &indent) const
 {
-	return scope.dump(indent);
+	scope.print(stream, indent);
 }
 
 void FileModule::registerUse(const std::string path)
@@ -83,7 +88,7 @@ time_t FileModule::include_modified(const IncludeFile &inc) const
 {
 	struct stat st;
 
-	if (StatCache::stat(inc.filename.c_str(), &st) == 0) {
+	if (StatCache::stat(inc.filename.c_str(), st) == 0) {
 		return st.st_mtime;
 	}
 	

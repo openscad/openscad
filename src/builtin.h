@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include "module.h"
 #include "localscope.h"
+#include "Assignment.h"
 
 class Builtins
 {
@@ -17,13 +18,17 @@ public:
 	void initialize();
 	std::string isDeprecated(const std::string &name);
 
-	const LocalScope &getGlobalScope() { return this->globalscope; }
-
+	const AssignmentList &getAssignments() { return this->assignments; }
+	const FunctionContainer &getFunctions() { return this->functions; }
+	const ModuleContainer &getModules() { return modules; }
+	
 private:
 	Builtins();
 	~Builtins();
 
-	LocalScope globalscope;
+	AssignmentList assignments;
+	FunctionContainer functions;
+	ModuleContainer modules;
 
 	std::unordered_map<std::string, std::string> deprecations;
 };

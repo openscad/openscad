@@ -229,12 +229,12 @@ HEADERS += src/AST.h \
 
 SOURCES += src/AST.cc \
            src/ModuleInstantiation.cc \
+           src/Assignment.cc \
            src/expr.cc \
            src/function.cc \
            src/module.cc \
            src/UserModule.cc \
-           src/annotation.cc \
-           src/assignment.cc
+           src/annotation.cc
 
 # Comment parser
 FLEXSOURCES += src/comment_lexer.l
@@ -265,6 +265,7 @@ HEADERS += src/version_check.h \
            src/builtin.h \
            src/calc.h \
            src/context.h \
+           src/builtincontext.h \
            src/modcontext.h \
            src/evalcontext.h \
            src/csgops.h \
@@ -384,6 +385,7 @@ SOURCES += \
            src/feature.cc \
            src/node.cc \
            src/context.cc \
+           src/builtincontext.cc \
            src/modcontext.cc \
            src/evalcontext.cc \
            src/csgnode.cc \

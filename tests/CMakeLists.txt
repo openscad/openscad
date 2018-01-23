@@ -701,6 +701,7 @@ set(CORE_SOURCES
   ../src/NodeVisitor.cc 
   ../src/context.cc 
   ../src/modcontext.cc 
+  ../src/builtincontext.cc 
   ../src/evalcontext.cc 
   ../src/feature.cc
   ../src/csgnode.cc 
@@ -746,7 +747,7 @@ set(CORE_SOURCES
   ../src/libsvg/transformation.cc
   ../src/libsvg/util.cc
   ../src/clipper-utils.cc
-  ../src/assignment.cc
+  ../src/Assignment.cc
   ../src/annotation.cc 
   ../src/ext/polyclipping/clipper.cpp
   ../src/${PLATFORMUTILS_SOURCE}
