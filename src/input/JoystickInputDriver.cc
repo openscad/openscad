@@ -64,8 +64,8 @@ bool JoystickInputDriver::open()
 {
     stopRequest = false;
 
-    char* path=const_cast<char*> (("/dev/input/js" + nr).c_str());
-    fd = ::open(path, O_RDONLY);
+    auto path = boost::format("/dev/input/js%d") % this->nr;
+    this->fd = ::open(path.str().c_str(), O_RDONLY);
 
     if (fd < 0) {
         return false;
@@ -98,5 +98,5 @@ const std::string & JoystickInputDriver::get_name() const
 
 void JoystickInputDriver::setJoystickNr(std::string jnr)
 {
-    nr=jnr;
+    this->nr=jnr;
 }

@@ -41,7 +41,7 @@ public:
 private:
     int fd;
     int version;
-    std::string nr="0";
+    std::string nr{"0"};
     unsigned char axes;
     unsigned char buttons;
     char name[1024];

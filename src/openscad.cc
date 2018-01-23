@@ -791,29 +791,31 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	}
     app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(releaseQSettingsCached()));
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
-	if (Feature::ExperimentalInputDriver.is_enabled()) {
-		Settings::Settings *s = Settings::Settings::inst();
+    if (Feature::ExperimentalInputDriver.is_enabled()) {
+        auto *s = Settings::Settings::inst();
 #ifdef ENABLE_HIDAPI
-        InputDriverManager::instance()->registerDriver(new HidApiInputDriver());
+        auto hidApi = new HidApiInputDriver();
+        InputDriverManager::instance()->registerDriver(hidApi);
 #endif
 #ifdef ENABLE_SPNAV
-        SpaceNavInputDriver spaceNav = new SpaceNavInputDriver();
+        auto spaceNavDriver = new SpaceNavInputDriver();
         bool spaceNavDominantAxisOnly = s->get(Settings::Settings::inputEnableDriverHIDAPI).toBool())
-        spaceNav->setDominantAxisOnly(spaceNavDominantAxisOnly);
-        InputDriverManager::instance()->registerDriver(spaceNav);
-
+        spaceNavDriver->setDominantAxisOnly(spaceNavDominantAxisOnly);
+        InputDriverManager::instance()->registerDriver(spaceNavDriver);
 #endif
 #ifdef ENABLE_JOYSTICK
         std::string nr = s->get(Settings::Settings::joystickNr).toString();
-        JoystickInputDriver* joyDriver = new JoystickInputDriver();
+        auto joyDriver = new JoystickInputDriver();
         joyDriver->setJoystickNr(nr);
         InputDriverManager::instance()->registerDriver(joyDriver);
 #endif
 #ifdef ENABLE_QGAMEPAD
-        InputDriverManager::instance()->registerDriver(new QGamepadInputDriver());
+        auto qGamepadDriver = new QGamepadInputDriver();
+        InputDriverManager::instance()->registerDriver(qGamepadDriver);
 #endif
 #ifdef ENABLE_DBUS
-        InputDriverManager::instance()->registerDriver(new DBusInputDriver());
+        auto dBusDriver =new DBusInputDriver();
+        InputDriverManager::instance()->registerDriver(dBusDriver);
 #endif
         InputDriverManager::instance()->init();
     }

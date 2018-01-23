@@ -44,5 +44,5 @@ public:
 
 private:
     bool spnav_input();
-    bool DominantAxisOnly=true;
+    bool dominantAxisOnly{true};
 };
