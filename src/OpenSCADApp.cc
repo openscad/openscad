@@ -13,7 +13,7 @@ OpenSCADApp::OpenSCADApp(int &argc ,char **argv)
 	: QApplication(argc, argv), fontCacheDialog(nullptr)
 {
 #ifdef Q_OS_MAC
-	this->installEventFilter(new EventFilter(this));
+	this->installEventFilter(new SCADEventFilter(this));
 #endif
 }
 
