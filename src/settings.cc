@@ -71,16 +71,14 @@ static Value values(std::string s1, std::string s1disp, std::string s2, std::str
 static Value axisValues() {
 	Value::VectorType v;
 	v += ValuePtr(value("None", _("None")));
-	char userData [5];
-	char text [40];
 
 	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
-		snprintf(userData, 5, "+%d", i+1);
-		snprintf(text, 40,_("Axis %d"), i);
+		auto userData = (boost::format("+%d") % (i+1)).str();
+		auto text = (boost::format(_("Axis %d")) % i).str();
 		v += ValuePtr(value(userData, text));
 
-		snprintf(userData, 5, "-%d", i+1);
-		snprintf(text, 40, _("Axis %d (inverted)"), i);
+		userData = (boost::format("-%d") % (i+1)).str();
+		text = (boost::format(_("Axis %d (inverted)")) % i).str();
 		v += ValuePtr(value(userData, text));
 	}
 	return v;
