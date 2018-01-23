@@ -701,6 +701,7 @@ set(CORE_SOURCES
   ../src/NodeVisitor.cc 
   ../src/context.cc 
   ../src/modcontext.cc 
+  ../src/builtincontext.cc 
   ../src/evalcontext.cc 
   ../src/feature.cc
   ../src/csgnode.cc 

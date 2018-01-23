@@ -67,24 +67,22 @@ AbstractNode *UserModule::instantiate(const Context *ctx, const ModuleInstantiat
 	return node;
 }
 
-std::string UserModule::dump(const std::string &indent, const std::string &name) const
+void UserModule::print(std::ostream &stream, const std::string &indent) const
 {
-	std::stringstream dump;
 	std::string tab;
-	if (!name.empty()) {
-		dump << indent << "module " << name << "(";
+	if (!this->name.empty()) {
+		stream << indent << "module " << this->name << "(";
 		for (size_t i=0; i < this->definition_arguments.size(); i++) {
 			const Assignment &arg = this->definition_arguments[i];
-			if (i > 0) dump << ", ";
-			dump << arg.name;
-			if (arg.expr) dump << " = " << *arg.expr;
+			if (i > 0) stream << ", ";
+			stream << arg.name;
+			if (arg.expr) stream << " = " << *arg.expr;
 		}
-		dump << ") {\n";
+		stream << ") {\n";
 		tab = "\t";
 	}
-	dump << scope.dump(indent + tab);
-	if (!name.empty()) {
-		dump << indent << "}\n";
+	scope.print(stream, indent + tab);
+	if (!this->name.empty()) {
+		stream << indent << "}\n";
 	}
-	return dump.str();
 }

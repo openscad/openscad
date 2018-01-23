@@ -13,7 +13,7 @@ public:
 		: ASTNode(loc), arguments(args), tag_root(false), tag_highlight(false), tag_background(false), modname(name), modpath(source_path) { }
 	~ModuleInstantiation();
 
-	virtual std::string dump(const std::string &indent) const;
+	virtual void print(std::ostream &stream, const std::string &indent) const;
 	class AbstractNode *evaluate(const class Context *ctx) const;
 	std::vector<AbstractNode*> instantiateChildren(const Context *evalctx) const;
 
@@ -42,7 +42,7 @@ public:
 	IfElseModuleInstantiation(shared_ptr<class Expression> expr, const std::string &source_path, const Location &loc) : ModuleInstantiation("if", AssignmentList{Assignment("", expr)}, source_path, loc) { }
 	~IfElseModuleInstantiation();
 	std::vector<AbstractNode*> instantiateElseChildren(const Context *evalctx) const;
-	std::string dump(const std::string &indent) const override;
+	void print(std::ostream &stream, const std::string &indent) const override;
 
 	LocalScope else_scope;
 };
