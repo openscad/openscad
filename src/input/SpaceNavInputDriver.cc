@@ -116,7 +116,7 @@ void SpaceNavInputDriver::close()
 }
 
 void SpaceNavInputDriver::setDominantAxisOnly(bool var){
-    DominantAxisOnly = var;
+    this->dominantAxisOnly = var;
 }
 
 const std::string & SpaceNavInputDriver::get_name() const
