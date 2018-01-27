@@ -63,10 +63,11 @@ void ButtonConfigWidget::init() {
 		}
 	}
 
-	WheelIgnorer *wheelIgnorer = new WheelIgnorer();
-	QList<QComboBox *> widgets = this->findChildren<QComboBox *>();
-	foreach (QComboBox* b, widgets) {
-		b->installEventFilter(wheelIgnorer);
+	auto *wheelIgnorer = new WheelIgnorer();
+	wheelIgnorer->setParent(this);
+	auto comboBoxes = this->findChildren<QComboBox *>();
+	for (auto comboBox : comboBoxes) {
+		comboBox->installEventFilter(wheelIgnorer);
 	}
 }
 

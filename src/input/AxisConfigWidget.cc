@@ -69,10 +69,11 @@ void AxisConfigWidget::init() {
 	initComboBox(this->comboBoxZoom, Settings::Settings::inputZoom);
 	initComboBox(this->comboBoxZoom2, Settings::Settings::inputZoom2);
 
-	WheelIgnorer *wheelIgnorer = new WheelIgnorer();
-	QList<QComboBox *> widgets = this->findChildren<QComboBox *>();
-	foreach (QComboBox* b, widgets) {
-		b->installEventFilter(wheelIgnorer);
+	auto *wheelIgnorer = new WheelIgnorer();
+	wheelIgnorer->setParent(this);
+	auto comboBoxes = this->findChildren<QComboBox *>();
+	for (auto comboBox : comboBoxes) {
+		comboBox->installEventFilter(wheelIgnorer);
 	}
 
 	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
