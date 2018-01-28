@@ -251,6 +251,7 @@ public slots:
 	void viewCenter();
 	void viewPerspective();
 	void viewOrthogonal();
+	void viewTogglePerspective();
 	void viewResetView();
 	void viewAll();
 	void animateUpdateDocChanged();
