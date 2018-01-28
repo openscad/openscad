@@ -184,9 +184,8 @@ void ButtonConfigWidget::updateComboBox(QComboBox *comboBox, const Settings::Set
 	if (idx >= 0) {
 		comboBox->setCurrentIndex(idx);
 	} else {
-		const Value &defaultValue = entry.defaultValue();
-		QString defaultText = QString::fromStdString(defaultValue.toString());
-		int defIdx = comboBox->findData(defaultText);
+		comboBox->addItem(QIcon::fromTheme("emblem-unreadable"), text + " " + _("(not supported)"), text);
+		int defIdx = comboBox->findData(text);
 		if (defIdx >= 0) {
 			comboBox->setCurrentIndex(defIdx);
 		} else {
