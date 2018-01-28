@@ -1293,7 +1293,8 @@ list(APPEND EXPORT3D_CGAL_TEST_FILES
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1105b.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1105c.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1215b.scad
-                                ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1258.scad)
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1258.scad
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue2259.scad)
 
 list(APPEND EXPORT3D_TEST_FILES 
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/nonmanifold-polyhedron.scad
