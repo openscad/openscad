@@ -685,8 +685,10 @@ static void add_slice(PolySet *ps, const Polygon2d &poly,
 */
 static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &poly)
 {
-	bool cvx = poly.is_convex();
-	PolySet *ps = new PolySet(3, !cvx ? boost::tribool(false) : node.twist == 0 ? boost::tribool(true) : unknown);
+	boost::tribool isConvex{poly.is_convex()};
+	// Twise or non-uniform scale makes convex polygons into unknown polyhedrons
+	if (isConvex && (node.twist != 0 || node.scale_x != node.scale_y)) isConvex = unknown;
+	PolySet *ps = new PolySet(3, isConvex);
 	ps->setConvexity(node.convexity);
 	if (node.height <= 0) return ps;
 
