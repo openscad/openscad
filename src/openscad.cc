@@ -792,31 +792,41 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
     app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(releaseQSettingsCached()));
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 
-    if (Feature::ExperimentalInputDriver.is_enabled()) {
-        auto *s = Settings::Settings::inst();
+	if (Feature::ExperimentalInputDriver.is_enabled()) {
+		auto *s = Settings::Settings::inst();
 #ifdef ENABLE_HIDAPI
-        auto hidApi = new HidApiInputDriver();
-        InputDriverManager::instance()->registerDriver(hidApi);
+		if(s->get(Settings::Settings::inputEnableDriverHIDAPI).toBool()){
+			auto hidApi = new HidApiInputDriver();
+			InputDriverManager::instance()->registerDriver(hidApi);
+		}
 #endif
 #ifdef ENABLE_SPNAV
-        auto spaceNavDriver = new SpaceNavInputDriver();
-        bool spaceNavDominantAxisOnly = s->get(Settings::Settings::inputEnableDriverHIDAPI).toBool();
-        spaceNavDriver->setDominantAxisOnly(spaceNavDominantAxisOnly);
-        InputDriverManager::instance()->registerDriver(spaceNavDriver);
+		if(s->get(Settings::Settings::inputEnableDriverSPNAV).toBool()){
+			auto spaceNavDriver = new SpaceNavInputDriver();
+			bool spaceNavDominantAxisOnly = s->get(Settings::Settings::inputEnableDriverHIDAPI).toBool();
+			spaceNavDriver->setDominantAxisOnly(spaceNavDominantAxisOnly);
+			InputDriverManager::instance()->registerDriver(spaceNavDriver);
+        }
 #endif
 #ifdef ENABLE_JOYSTICK
-        std::string nr = s->get(Settings::Settings::joystickNr).toString();
-        auto joyDriver = new JoystickInputDriver();
-        joyDriver->setJoystickNr(nr);
-        InputDriverManager::instance()->registerDriver(joyDriver);
+		if(s->get(Settings::Settings::inputEnableDriverJOYSTICK).toBool()){
+			std::string nr = s->get(Settings::Settings::joystickNr).toString();
+			auto joyDriver = new JoystickInputDriver();
+			joyDriver->setJoystickNr(nr);
+			InputDriverManager::instance()->registerDriver(joyDriver);
+		}
 #endif
 #ifdef ENABLE_QGAMEPAD
-        auto qGamepadDriver = new QGamepadInputDriver();
-        InputDriverManager::instance()->registerDriver(qGamepadDriver);
+		if(s->get(Settings::Settings::inputEnableDriverQGAMEPAD).toBool()){
+			auto qGamepadDriver = new QGamepadInputDriver();
+			InputDriverManager::instance()->registerDriver(qGamepadDriver);
+		}
 #endif
 #ifdef ENABLE_DBUS
-        auto dBusDriver =new DBusInputDriver();
-        InputDriverManager::instance()->registerDriver(dBusDriver);
+	if(s->get(Settings::Settings::inputEnableDriverDBUS).toBool()){
+			auto dBusDriver =new DBusInputDriver();
+			InputDriverManager::instance()->registerDriver(dBusDriver);
+		}
 #endif
 		InputDriverManager::instance()->init();
 	}
