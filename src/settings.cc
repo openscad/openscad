@@ -1,5 +1,6 @@
 #include "settings.h"
 #include "printutils.h"
+#include "input/InputEventMapper.h"
 
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
@@ -70,30 +71,23 @@ static Value values(std::string s1, std::string s1disp, std::string s2, std::str
 static Value axisValues() {
 	Value::VectorType v;
 	v += ValuePtr(value("None", _("None")));
-	v += ValuePtr(value("+1", _("Axis 0")));
-	v += ValuePtr(value("-1", _("Axis 0 (inverted)")));
-	v += ValuePtr(value("+2", _("Axis 1")));
-	v += ValuePtr(value("-2", _("Axis 1 (inverted)")));
-	v += ValuePtr(value("+3", _("Axis 2")));
-	v += ValuePtr(value("-3", _("Axis 2 (inverted)")));
-	v += ValuePtr(value("+4", _("Axis 3")));
-	v += ValuePtr(value("-4", _("Axis 3 (inverted)")));
-	v += ValuePtr(value("+5", _("Axis 4")));
-	v += ValuePtr(value("-5", _("Axis 4 (inverted)")));
-	v += ValuePtr(value("+6", _("Axis 5")));
-	v += ValuePtr(value("-6", _("Axis 5 (inverted)")));
-	v += ValuePtr(value("+7", _("Axis 6")));
-	v += ValuePtr(value("-7", _("Axis 6 (inverted)")));
-	v += ValuePtr(value("+8", _("Axis 7")));
-	v += ValuePtr(value("-8", _("Axis 7 (inverted)")));
-	v += ValuePtr(value("+9", _("Axis 8")));
-	v += ValuePtr(value("-9", _("Axis 8 (inverted)")));
+
+	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
+		auto userData = (boost::format("+%d") % (i+1)).str();
+		auto text = (boost::format(_("Axis %d")) % i).str();
+		v += ValuePtr(value(userData, text));
+
+		userData = (boost::format("-%d") % (i+1)).str();
+		text = (boost::format(_("Axis %d (inverted)")) % i).str();
+		v += ValuePtr(value(userData, text));
+	}
 	return v;
 }
 
 static Value buttonValues() {
 	Value::VectorType v;
 	v += ValuePtr(value("None", _("None")));
+	v += ValuePtr(value("viewActionTogglePerspective", _("viewActionTogglePerspective")));
 	return v;
 }
 
@@ -183,6 +177,12 @@ SettingsEntry Settings::tabKeyFunction("editor", "tabKeyFunction", values("Inden
 SettingsEntry Settings::highlightCurrentLine("editor", "highlightCurrentLine", Value(true), Value(true));
 SettingsEntry Settings::enableBraceMatching("editor", "enableBraceMatching", Value(true), Value(true));
 SettingsEntry Settings::enableLineNumbers("editor", "enableLineNumbers", Value(true), Value(true));
+
+SettingsEntry Settings::inputEnableDriverHIDAPI("input", "enableDriverHIDAPI", Value(true), Value(false));
+SettingsEntry Settings::inputEnableDriverSPNAV("input", "enableDriverSPNAV", Value(true), Value(false));
+SettingsEntry Settings::inputEnableDriverJOYSTICK("input", "enableDriverJOYSTICK", Value(true), Value(false));
+SettingsEntry Settings::inputEnableDriverQGAMEPAD("input", "enableDriverQGAMEPAD", Value(true), Value(false));
+SettingsEntry Settings::inputEnableDriverDBUS("input", "enableDriverDBUS", Value(true), Value(false));
 
 SettingsEntry Settings::inputTranslationX("input", "translationX", axisValues(), Value("+1"));
 SettingsEntry Settings::inputTranslationY("input", "translationY", axisValues(), Value("-2"));

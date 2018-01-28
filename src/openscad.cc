@@ -617,6 +617,7 @@ Q_IMPORT_PLUGIN(qtaccessiblewidgets)
 #include <QProgressDialog>
 #include <QFutureWatcher>
 #include <QtConcurrentRun>
+#include "settings.h"
 
 Q_DECLARE_METATYPE(shared_ptr<const Geometry>);
 
@@ -791,23 +792,34 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
     app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(releaseQSettingsCached()));
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 	if (Feature::ExperimentalInputDriver.is_enabled()) {
+		Settings::Settings *s = Settings::Settings::inst();
 #ifdef ENABLE_HIDAPI
-        InputDriverManager::instance()->registerDriver(new HidApiInputDriver());
+		if(s->get(Settings::Settings::inputEnableDriverHIDAPI).toBool()){
+			InputDriverManager::instance()->registerDriver(new HidApiInputDriver());
+		}
 #endif
 #ifdef ENABLE_SPNAV
-        InputDriverManager::instance()->registerDriver(new SpaceNavInputDriver());
+		if(s->get(Settings::Settings::inputEnableDriverSPNAV).toBool()){
+			InputDriverManager::instance()->registerDriver(new SpaceNavInputDriver());
+		}
 #endif
 #ifdef ENABLE_JOYSTICK
-        InputDriverManager::instance()->registerDriver(new JoystickInputDriver());
+		if(s->get(Settings::Settings::inputEnableDriverJOYSTICK).toBool()){
+			InputDriverManager::instance()->registerDriver(new JoystickInputDriver());
+		}
 #endif
 #ifdef ENABLE_QGAMEPAD
-        InputDriverManager::instance()->registerDriver(new QGamepadInputDriver());
+		if(s->get(Settings::Settings::inputEnableDriverQGAMEPAD).toBool()){
+			InputDriverManager::instance()->registerDriver(new QGamepadInputDriver());
+		}
 #endif
 #ifdef ENABLE_DBUS
-        InputDriverManager::instance()->registerDriver(new DBusInputDriver());
+		if(s->get(Settings::Settings::inputEnableDriverDBUS).toBool()){
+			InputDriverManager::instance()->registerDriver(new DBusInputDriver());
+		}
 #endif
-        InputDriverManager::instance()->init();
-    }
+		InputDriverManager::instance()->init();
+	}
 	int rc = app.exec();
 	for (auto &mainw : scadApp->windowManager.getWindows()) delete mainw;
 	return rc;

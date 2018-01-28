@@ -31,6 +31,7 @@
 #include "QSettingsCached.h"
 #include "input/InputDriverManager.h"
 #include "SettingsWriter.h"
+#include "WheelIgnorer.h"
 
 AxisConfigWidget::AxisConfigWidget(QWidget *parent) : QWidget(parent)
 {
@@ -68,6 +69,54 @@ void AxisConfigWidget::init() {
 	initComboBox(this->comboBoxZoom, Settings::Settings::inputZoom);
 	initComboBox(this->comboBoxZoom2, Settings::Settings::inputZoom2);
 
+#ifdef ENABLE_HIDAPI
+	this->checkBoxHIDAPI->setEnabled(true);
+	this->checkBoxHIDAPI->setToolTip(HidApiInputDriverDescription);
+#else
+	this->checkBoxHIDAPI->setToolTip(HidApiInputDriverDescription + "\n\r" + NotEnabledDuringBuild);
+#endif
+
+#ifdef ENABLE_SPNAV
+	this->checkBoxSpaceNav->setEnabled(true);
+	this->checkBoxSpaceNav->setToolTip(SpaceNavInputDriverDescription);
+#else
+	this->checkBoxSpaceNav->setToolTip(SpaceNavInputDriverDescription + "\n\r" + NotEnabledDuringBuild);
+#endif
+
+#ifdef ENABLE_JOYSTICK
+	this->checkBoxJoystick->setEnabled(true);
+	this->checkBoxJoystick->setToolTip(JoystickInputDriverDescription);
+#else
+	this->checkBoxJoystick->setToolTip(JoystickInputDriverDescription + "\n\r" + NotEnabledDuringBuild);
+#endif
+
+#ifdef ENABLE_QGAMEPAD
+	this->checkBoxQGamepad->setEnabled(true);
+	this->checkBoxQGamepad->setToolTip(QGamepadInputDriverDescription );
+#else
+	this->checkBoxQGamepad->setToolTip(QGamepadInputDriverDescription  + "\n\r" + NotEnabledDuringBuild);
+#endif
+
+#ifdef ENABLE_DBUS
+	this->checkBoxDBus->setEnabled(true);
+	this->checkBoxDBus->setToolTip(DBusInputDriverDescription);
+#else
+	this->checkBoxDBus->setToolTip(DBusInputDriverDescription + "\n\r" + NotEnabledDuringBuild);
+#endif
+
+	initCheckBox(this->checkBoxHIDAPI,   Settings::Settings::inputEnableDriverHIDAPI);
+	initCheckBox(this->checkBoxSpaceNav, Settings::Settings::inputEnableDriverSPNAV);
+	initCheckBox(this->checkBoxJoystick, Settings::Settings::inputEnableDriverJOYSTICK);
+	initCheckBox(this->checkBoxQGamepad, Settings::Settings::inputEnableDriverQGAMEPAD);
+	initCheckBox(this->checkBoxDBus,     Settings::Settings::inputEnableDriverDBUS);
+
+	auto *wheelIgnorer = new WheelIgnorer();
+	wheelIgnorer->setParent(this);
+	auto comboBoxes = this->findChildren<QComboBox *>();
+	for (auto comboBox : comboBoxes) {
+		comboBox->installEventFilter(wheelIgnorer);
+	}
+
 	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
 		std::string s = std::to_string(i);
 
@@ -90,6 +139,8 @@ void AxisConfigWidget::init() {
 	initDoubleSpinBox(this->doubleSpinBoxTranslationVPRelGain, Settings::Settings::inputTranslationVPRelGain);
 	initDoubleSpinBox(this->doubleSpinBoxRotateGain, Settings::Settings::inputRotateGain);
 	initDoubleSpinBox(this->doubleSpinBoxZoomGain, Settings::Settings::inputZoomGain);
+
+	initizalied = true;
 }
 
 void AxisConfigWidget::on_comboBoxTranslationX_activated(int val)
@@ -354,6 +405,62 @@ void AxisConfigWidget::on_AxisTrimReset()
 	writeSettings();
 }
 
+void AxisConfigWidget::on_checkBoxHIDAPI_toggled(bool val)
+{
+	if(initizalied){
+		Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverHIDAPI, Value(val));
+		writeSettings();
+
+		QFont font;
+		font.setItalic(true);
+		checkBoxHIDAPI->setFont(font);
+	}
+}
+
+void AxisConfigWidget::on_checkBoxSpaceNav_toggled(bool val)
+{
+	if(initizalied){
+		Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverSPNAV, Value(val));
+		writeSettings();
+		QFont font;
+		font.setItalic(true);
+		checkBoxSpaceNav->setFont(font);
+	}
+}
+
+void AxisConfigWidget::on_checkBoxJoystick_toggled(bool val)
+{
+	if(initizalied){
+		Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverJOYSTICK, Value(val));
+		writeSettings();
+		QFont font;
+		font.setItalic(true);
+		checkBoxJoystick->setFont(font);
+	}
+}
+
+void AxisConfigWidget::on_checkBoxQGamepad_toggled(bool val)
+{
+	if(initizalied){
+		Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverQGAMEPAD, Value(val));
+		writeSettings();
+		QFont font;
+		font.setItalic(true);
+		checkBoxQGamepad->setFont(font);
+	}
+}
+
+void AxisConfigWidget::on_checkBoxDBus_toggled(bool val)
+{
+	if(initizalied){
+		Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverDBUS, Value(val));
+		writeSettings();
+		QFont font;
+		font.setItalic(true);
+		checkBoxDBus->setFont(font);
+	}
+}
+
 void AxisConfigWidget::applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntry& entry)
 {
 	QString s = comboBox->itemData(val).toString();
@@ -377,6 +484,15 @@ void AxisConfigWidget::initDoubleSpinBox(QDoubleSpinBox *spinBox, const Settings
 	spinBox->setSingleStep(range.step_value());
 	spinBox->setMaximum(range.end_value());
 	spinBox->setValue((double)s->get(entry).toDouble());
+}
+
+void AxisConfigWidget::initCheckBox(QCheckBox *checkBox, const Settings::SettingsEntry& entry)
+{
+	Settings::Settings *s = Settings::Settings::inst();
+	const Value &value = s->get(entry);
+	bool state = value.toBool();
+
+	checkBox->setChecked(state);
 }
 
 void AxisConfigWidget::updateComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry)

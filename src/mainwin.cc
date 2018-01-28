@@ -472,7 +472,7 @@ MainWindow::MainWindow(const QString &filename)
 	addKeyboardShortCut(this->viewerToolBar->actions());
 	addKeyboardShortCut(this->editortoolbar->actions());
 
-        InputDriverManager::instance()->registerActions(this->menuBar()->actions(),"");
+  InputDriverManager::instance()->registerActions(this->menuBar()->actions(),"");
 	Preferences* instance = Preferences::inst();
 	instance->ButtonConfig->init();
 
@@ -664,11 +664,12 @@ void MainWindow::onRotateEvent(InputEventRotate *event)
 
 void MainWindow::onActionEvent(InputEventAction *event)
 {
-    QAction *action = findAction(this->menuBar()->actions(), event->action);
-    if (!action) {
-        return;
-    }
-    action->trigger();
+	QAction *action = findAction(this->menuBar()->actions(), event->action);
+	if (action) {
+		action->trigger();
+	}else if("viewActionTogglePerspective" == event->action){
+		viewTogglePerspective();
+	}
 }
 
 QAction * MainWindow::findAction(const QList<QAction *> &actions, const std::string &name)
@@ -2604,6 +2605,15 @@ void MainWindow::viewOrthogonal()
 	this->qglview->updateGL();
 }
 
+void MainWindow::viewTogglePerspective()
+{
+	QSettingsCached settings;
+	if (settings.value("view/orthogonalProjection").toBool()) {
+		viewPerspective();
+	} else {
+		viewOrthogonal();
+	}
+}
 void MainWindow::viewResetView()
 {
 	this->qglview->resetView();

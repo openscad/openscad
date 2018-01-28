@@ -66,21 +66,13 @@ bool DBusInputDriver::open()
     }
 
     new OpenSCADAdaptor(this);
-    QDBusConnection::sessionBus().registerObject("/org/openscad/OpenSCAD/Application", this);
-
+    connection.registerObject("/org/openscad/OpenSCAD/Application", this);
+    connection.registerService("org.openscad.OpenSCAD");
     org::openscad::OpenSCAD *iface;
     iface = new org::openscad::OpenSCAD(QString(), QString(), connection, this);
 
     name = "DBusInputDriver (" + connection.baseService().toStdString() + ")";
 
-    connect(iface, SIGNAL(zoom(double)), this, SLOT(zoom(double)));
-    connect(iface, SIGNAL(zoomTo(double)), this, SLOT(zoomTo(double)));
-    connect(iface, SIGNAL(rotate(double, double, double)), this, SLOT(rotate(double, double, double)));
-    connect(iface, SIGNAL(rotateTo(double, double, double)), this, SLOT(rotateTo(double, double, double)));
-    connect(iface, SIGNAL(translate(double, double, double)), this, SLOT(translate(double, double, double)));
-    connect(iface, SIGNAL(translateTo(double, double, double)), this, SLOT(translateTo(double, double, double)));
-    connect(iface, SIGNAL(action(QString)), this, SLOT(action(QString)));
-    connect(iface, SIGNAL(buttonPress(uint)), this, SLOT(buttonPress(uint)));
     is_open = true;
     return true;
 }
