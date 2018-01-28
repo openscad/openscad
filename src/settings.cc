@@ -315,4 +315,7 @@ SettingsEntry Settings::axisDeadzone6("input", "axisDeadzone6", Value(RangeType(
 SettingsEntry Settings::axisDeadzone7("input", "axisDeadzone7", Value(RangeType(0.0, 0.01, 1.0)), Value(0.10));
 SettingsEntry Settings::axisDeadzone8("input", "axisDeadzone8", Value(RangeType(0.0, 0.01, 1.0)), Value(0.10));
 SettingsEntry Settings::axisDeadzone9("input", "axisDeadzone9", Value(RangeType(0.0, 0.01, 1.0)), Value(0.10));
+
+SettingsEntry Settings::joystickNr("input", "joystickNr", Value(RangeType(0, 9)), Value(0));
+SettingsEntry Settings::spaceNavDominantAxisOnly("input", "spaceNavDominantAxisOnly", Value(true), Value(true));
 }

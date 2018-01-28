@@ -114,7 +114,6 @@ void HidApiInputDriver::hidapi_decode_button1(const unsigned char *buf, unsigned
         // Is either 0, 1 or 2 on MacOS.
         uint16_t bitmask = buf[1] | buf[2] << 8;
         uint16_t down = bitmask;
-        uint16_t up = 0;
 
         std::bitset<16> bits_curr (down);
         std::bitset<16> bits_last (buttons);
