@@ -31,6 +31,7 @@
 #include "QSettingsCached.h"
 #include "input/InputDriverManager.h"
 #include "SettingsWriter.h"
+#include "WheelIgnorer.h"
 
 AxisConfigWidget::AxisConfigWidget(QWidget *parent) : QWidget(parent)
 {
@@ -108,6 +109,13 @@ void AxisConfigWidget::init() {
 	initCheckBox(this->checkBoxJoystick, Settings::Settings::inputEnableDriverJOYSTICK);
 	initCheckBox(this->checkBoxQGamepad, Settings::Settings::inputEnableDriverQGAMEPAD);
 	initCheckBox(this->checkBoxDBus,     Settings::Settings::inputEnableDriverDBUS);
+
+	auto *wheelIgnorer = new WheelIgnorer();
+	wheelIgnorer->setParent(this);
+	auto comboBoxes = this->findChildren<QComboBox *>();
+	for (auto comboBox : comboBoxes) {
+		comboBox->installEventFilter(wheelIgnorer);
+	}
 
 	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
 		std::string s = std::to_string(i);

@@ -363,7 +363,8 @@ HEADERS += src/version_check.h \
            src/input/InputEventMapper.h \
            src/input/InputDriverManager.h \
            src/input/AxisConfigWidget.h \
-           src/input/ButtonConfigWidget.h
+           src/input/ButtonConfigWidget.h \
+           src/input/WheelIgnorer.h
 
 SOURCES += \
            src/libsvg/libsvg.cc \
@@ -512,7 +513,8 @@ SOURCES += \
            src/input/InputEventMapper.cc \
            src/input/InputDriverManager.cc \
            src/input/AxisConfigWidget.cc \
-           src/input/ButtonConfigWidget.cc
+           src/input/ButtonConfigWidget.cc \
+           src/input/WheelIgnorer.cc
 
 # CGAL
 HEADERS += src/ext/CGAL/convex_hull_3_bugfix.h \

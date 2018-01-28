@@ -30,6 +30,7 @@
 #include "QSettingsCached.h"
 #include "input/InputDriverManager.h"
 #include "SettingsWriter.h"
+#include "WheelIgnorer.h"
 
 ButtonConfigWidget::ButtonConfigWidget(QWidget *parent) : QWidget(parent)
 {
@@ -60,6 +61,13 @@ void ButtonConfigWidget::init() {
 		if(box && ent){
 			initComboBox(box,*ent);
 		}
+	}
+
+	auto *wheelIgnorer = new WheelIgnorer();
+	wheelIgnorer->setParent(this);
+	auto comboBoxes = this->findChildren<QComboBox *>();
+	for (auto comboBox : comboBoxes) {
+		comboBox->installEventFilter(wheelIgnorer);
 	}
 }
 
