@@ -39,6 +39,11 @@ InputDriverManager::InputDriverManager(void)
     entry->name = "None";
     entry->description = _("None");
     this->actions.push_back(*entry);
+    
+	new actionStruct;
+    entry->name = "viewActionTogglePerspective";
+    entry->description = _("viewActionTogglePerspective");
+    this->actions.push_back(*entry);
 }
 
 InputDriverManager::~InputDriverManager(void)

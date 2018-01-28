@@ -87,7 +87,6 @@ static Value axisValues() {
 static Value buttonValues() {
 	Value::VectorType v;
 	v += ValuePtr(value("None", _("None")));
-	v += ValuePtr(value("viewActionTogglePerspective", _("viewActionTogglePerspective")));
 	return v;
 }
 
