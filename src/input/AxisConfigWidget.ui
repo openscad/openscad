@@ -34,11 +34,11 @@
         <x>0</x>
         <y>0</y>
         <width>599</width>
-        <height>479</height>
+        <height>570</height>
        </rect>
       </property>
-      <layout class="QGridLayout" name="gridLayout_7" columnstretch="0,0,0,0,0">
-       <item row="24" column="0" colspan="5">
+      <layout class="QGridLayout" name="gridLayout_7" columnstretch="0,0">
+       <item row="24" column="0" colspan="2">
         <layout class="QGridLayout" name="gridLayout_10">
          <item row="7" column="2">
           <widget class="QLabel" name="labelAxisTrim3">
@@ -726,14 +726,7 @@
          </property>
         </spacer>
        </item>
-       <item row="23" column="0" colspan="5">
-        <widget class="Line" name="line">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="12" column="0" colspan="5">
+       <item row="13" column="0" colspan="2">
         <layout class="QGridLayout" name="gridLayout_11">
          <item row="3" column="0">
           <widget class="QLabel" name="labelInputRotation">
@@ -994,6 +987,93 @@
           </widget>
          </item>
         </layout>
+       </item>
+       <item row="14" column="0" colspan="2">
+        <widget class="QLabel" name="label_3">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Axis Setup:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0" colspan="2">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>&lt;b&gt;Driver selection:&lt;/b&gt; &lt;i&gt;(changes requires restarting OpenSCAD)&lt;/i&gt;</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0" colspan="2">
+        <layout class="QGridLayout" name="gridLayout_2">
+         <item row="2" column="1">
+          <widget class="QCheckBox" name="checkBoxSpaceNav">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="text">
+            <string>SpaceNav</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QCheckBox" name="checkBoxHIDAPI">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="text">
+            <string>HIDAPI</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="3">
+          <widget class="QCheckBox" name="checkBoxQGamepad">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="text">
+            <string>QGamepad</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="2">
+          <widget class="QCheckBox" name="checkBoxJoystick">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="text">
+            <string>Joystick</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="4">
+          <widget class="QCheckBox" name="checkBoxDBus">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="text">
+            <string>DBus</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="2" column="0" colspan="2">
+        <widget class="QLabel" name="label_2">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Axis Mapping:</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>

@@ -57,6 +57,12 @@ public slots:
 	void on_doubleSpinBoxTrim7_valueChanged(double);
 	void on_doubleSpinBoxTrim8_valueChanged(double);
 
+	void on_checkBoxHIDAPI_toggled(bool);
+	void on_checkBoxSpaceNav_toggled(bool);
+	void on_checkBoxJoystick_toggled(bool);
+	void on_checkBoxQGamepad_toggled(bool);
+	void on_checkBoxDBus_toggled(bool);
+
 signals:
         void inputMappingChanged() const;
         void inputCalibrationChanged() const;
@@ -69,9 +75,21 @@ private:
 	void initSpinBox(QSpinBox *spinBox, const Settings::SettingsEntry& entry);
 	/** Initialize double spinbox min/max/step values from the settings range values */
 	void initDoubleSpinBox(QDoubleSpinBox *spinBox, const Settings::SettingsEntry& entry);
+	/** Initialize checkbox from the settings */
+	void initCheckBox(QCheckBox *checkBox, const Settings::SettingsEntry& entry);
 	/** Update combobox from current settings */
 	void updateComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry);
 	/** Set value from combobox to settings */
 	void applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntry& entry);
 	void writeSettings();
+	
+	bool initizalied = false;
+
+	QString NotEnabledDuringBuild =_("This driver was not enabled during build time and is thus not available.");
+
+	QString DBusInputDriverDescription     = _("The DBUS driver is not for actual devices but for remote control, Linux only.");
+	QString HidApiInputDriverDescription   = _("The HIDAPI driver communicates directly with the 3D mice, Windows and macOS.");
+	QString SpaceNavInputDriverDescription = _("The SpaceNav driver enables 3D-input-devices using the spacenavd daemon, Linux only.");
+	QString JoystickInputDriverDescription = _("The Joystick driver uses the Linux joystick device (fixed to /dev/input/js0), Linux only.");
+	QString QGamepadInputDriverDescription = _("The QGAMEPAD driver is for multiplattform Gamepad Support.");
 };
