@@ -360,6 +360,7 @@ set(GUI_SOURCES
   src/EventFilter.h
   src/WindowManager.cc
   src/Preferences.cc
+  src/SettingsWriter.cc
   src/FontListDialog.cc
   src/FontListTableView.cc
   src/LibraryInfoDialog.cc
@@ -391,6 +392,12 @@ set(GUI_SOURCES
   src/parameter/parametertext.cpp
   src/parameter/parametervector.cpp
   src/parameter/parametervirtualwidget.cpp
+  src/input/AxisConfigWidget.cc
+  src/input/ButtonConfigWidget.cc
+  src/input/InputDriver.cc
+  src/input/InputDriverManager.cc
+  src/input/InputEventMapper.cc
+  src/input/WheelIgnorer.cc
   )
 
 # header-only code
