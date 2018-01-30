@@ -34,17 +34,6 @@ InputDriverManager::InputDriverManager(void)
     currentWindow = 0;
     connect(QApplication::instance(), SIGNAL(focusChanged(QWidget *, QWidget *)), this, SLOT(onFocusChanged(QWidget *, QWidget *)));
     timer = new QTimer(this);
-
-    actionStruct* entry = new actionStruct;
-    entry->name = "None";
-    entry->description = _("None");
-    this->actions.push_back(*entry);
-
-    entry = new actionStruct;
-    entry->name = "viewActionTogglePerspective";
-    entry->description = _("Toggle Perspective");
-
-    this->actions.push_back(*entry);
 }
 
 InputDriverManager::~InputDriverManager(void)

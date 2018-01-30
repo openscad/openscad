@@ -212,6 +212,13 @@ void ButtonConfigWidget::initComboBox(QComboBox *comboBox, const Settings::Setti
 	map.fill(Qt::transparent);
 	QIcon emptyIcon  = QIcon(map);
 
+	for(const auto &v : entry.range().toVector()) {
+		QIcon icon  =  emptyIcon;
+		QString desc  = QString::fromStdString(gettext(v[1]->toString().c_str()));
+		QString actionName = QString::fromStdString(v[0]->toString());
+		comboBox->addItem(icon,desc,actionName);
+	}
+
 	for (std::list<actionStruct>::iterator action=actions.begin(); action != actions.end(); ++action){
 		QIcon icon  = (*action).icon;
 		QString desc  = (*action).description;
