@@ -203,11 +203,33 @@ void ButtonConfigWidget::writeSettings()
 void ButtonConfigWidget::initComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry)
 {
 	comboBox->clear();
-	// Range is a vector of 2D vectors: [[name, value], ...]
+
+	InputDriverManager* manager = InputDriverManager::instance();
+	std::list<actionStruct> actions = manager->actions;
+
+	//Create an empty icon, so that all comboboxes have the same alignment
+	QPixmap map = QPixmap(16,16);
+	map.fill(Qt::transparent);
+	QIcon emptyIcon  = QIcon(map);
+
 	for(const auto &v : entry.range().toVector()) {
-		QString val = QString::fromStdString(v[0]->toString());
-		QString qtext = QString::fromStdString(gettext(v[1]->toString().c_str()));
-		comboBox->addItem(qtext, val);
+		QIcon icon  =  emptyIcon;
+		QString desc  = QString::fromStdString(gettext(v[1]->toString().c_str()));
+		QString actionName = QString::fromStdString(v[0]->toString());
+		comboBox->addItem(icon,desc,actionName);
 	}
+
+	for (std::list<actionStruct>::iterator action=actions.begin(); action != actions.end(); ++action){
+		QIcon icon  = (*action).icon;
+		QString desc  = (*action).description;
+		QString actionName = (*action).name;
+
+		if(icon.isNull()){
+			icon = emptyIcon;
+		}
+
+		comboBox->addItem(icon,desc.remove(QChar('&'), Qt::CaseInsensitive),actionName);
+	}
+
 	updateComboBox(comboBox, entry);
 }

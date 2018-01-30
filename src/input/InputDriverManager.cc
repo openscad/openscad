@@ -59,14 +59,19 @@ void InputDriverManager::unregisterDriver(InputDriver *driver)
     this->drivers.remove(driver);
 }
 
-void InputDriverManager::registerActions(const QList<QAction *> &actions)
+void InputDriverManager::registerActions(const QList<QAction *> &actions, QString parent=QString(""))
 {
     foreach(QAction *action, actions) {
         if (!action->objectName().isEmpty()) {
-            this->actions.append(action->objectName());
+            actionStruct* entry = new actionStruct;
+            entry->name = action->objectName();
+            entry->description = parent + action->text();
+            entry->icon = action->icon();
+
+            this->actions.push_back(*entry);
         }
         if (action->menu()) {
-            registerActions(action->menu()->actions());
+            registerActions(action->menu()->actions(), parent + action->text() +  QString::fromUtf8(" \u2192 "));
         }
     }
 }
