@@ -1,5 +1,9 @@
 #include "ignoreWheelWhenNotFocused.h"
 
+IgnoreWheelWhenNotFocused::IgnoreWheelWhenNotFocused(QWidget *parent) : QObject(parent)
+{
+}
+
 //https://stackoverflow.com/questions/5821802/qspinbox-inside-a-qscrollarea-how-to-prevent-spin-box-from-stealing-focus-when
 bool IgnoreWheelWhenNotFocused::eventFilter(QObject *obj, QEvent *event)
 {

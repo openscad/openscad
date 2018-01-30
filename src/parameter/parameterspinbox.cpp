@@ -14,7 +14,7 @@ ParameterSpinBox::ParameterSpinBox(ParameterObject *parameterobject, int showDes
 	}else {
 		doubleSpinBox->setToolTip(object->description);
 	}
-	IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused();
+	IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
 	doubleSpinBox->installEventFilter(ignoreWheelWhenNotFocused);
 }
 
