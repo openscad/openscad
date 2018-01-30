@@ -39,10 +39,11 @@ InputDriverManager::InputDriverManager(void)
     entry->name = "None";
     entry->description = _("None");
     this->actions.push_back(*entry);
-    
-	new actionStruct;
+
+    entry = new actionStruct;
     entry->name = "viewActionTogglePerspective";
-    entry->description = _("viewActionTogglePerspective");
+    entry->description = _("Toggle Perspective");
+
     this->actions.push_back(*entry);
 }
 
@@ -81,7 +82,7 @@ void InputDriverManager::registerActions(const QList<QAction *> &actions, QStrin
             this->actions.push_back(*entry);
         }
         if (action->menu()) {
-            registerActions(action->menu()->actions(), parent + action->text() +  " -> ");
+            registerActions(action->menu()->actions(), parent + action->text() +  QString::fromUtf8(" \u2192 "));
         }
     }
 }
