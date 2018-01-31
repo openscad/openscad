@@ -21,7 +21,7 @@ ParameterSlider::ParameterSlider(ParameterObject *parameterobject, int showDescr
 		slider->setToolTip(object->description);
 	}
 
-	IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused();
+	IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
 	slider->installEventFilter(ignoreWheelWhenNotFocused);
 	doubleSpinBox->installEventFilter(ignoreWheelWhenNotFocused);
 }

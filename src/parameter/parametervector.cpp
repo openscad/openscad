@@ -18,7 +18,7 @@ ParameterVector::ParameterVector(ParameterObject *parameterobject, int showDescr
 		this->setToolTip(object->description);
 	}
 
-	IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused();
+	IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
 	doubleSpinBox1->installEventFilter(ignoreWheelWhenNotFocused);
 	doubleSpinBox2->installEventFilter(ignoreWheelWhenNotFocused);
 	doubleSpinBox3->installEventFilter(ignoreWheelWhenNotFocused);

@@ -15,7 +15,7 @@ ParameterComboBox::ParameterComboBox(ParameterObject *parameterobject, int showD
 		comboBox->setToolTip(object->description);
 	}
 
-	IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused();
+	IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
 	comboBox->installEventFilter(ignoreWheelWhenNotFocused);
 }
 

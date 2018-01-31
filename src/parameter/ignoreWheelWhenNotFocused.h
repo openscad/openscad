@@ -16,6 +16,8 @@
 class IgnoreWheelWhenNotFocused : public QObject
 {
     Q_OBJECT
+public:
+	IgnoreWheelWhenNotFocused(QWidget *parent);
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event);
