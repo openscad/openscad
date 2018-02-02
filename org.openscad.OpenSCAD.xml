@@ -34,5 +34,8 @@
     <method name="buttonPress">
       <arg name="idx" type="u" direction="in"/>
     </method>
+    <method name="actions">
+      <arg name="names" type="s" direction="out"/>
+    </method>
   </interface>
 </node>
