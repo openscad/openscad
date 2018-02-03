@@ -44,7 +44,7 @@ private:
     double axisDeadzone[max_axis];
     QString actions[max_buttons];
     int translate[6];
-    int rotate[3];
+    int rotate[6];
     int zoom;
     int zoom2;
     volatile bool stopRequest;
@@ -60,6 +60,7 @@ private:
 	double translationGain;
 	double translationVPRelGain;
 	double rotateGain;
+	double rotateVPRelGain;
 	double zoomGain;
 
 public:

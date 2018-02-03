@@ -66,6 +66,9 @@ void AxisConfigWidget::init() {
 	initComboBox(this->comboBoxRotationX, Settings::Settings::inputRotateX);
 	initComboBox(this->comboBoxRotationY, Settings::Settings::inputRotateY);
 	initComboBox(this->comboBoxRotationZ, Settings::Settings::inputRotateZ);
+	initComboBox(this->comboBoxRotationXVPRel, Settings::Settings::inputRotateXVPRel);
+	initComboBox(this->comboBoxRotationYVPRel, Settings::Settings::inputRotateYVPRel);
+	initComboBox(this->comboBoxRotationZVPRel, Settings::Settings::inputRotateZVPRel);
 	initComboBox(this->comboBoxZoom, Settings::Settings::inputZoom);
 	initComboBox(this->comboBoxZoom2, Settings::Settings::inputZoom2);
 
@@ -192,6 +195,24 @@ void AxisConfigWidget::on_comboBoxRotationY_activated(int val)
 void AxisConfigWidget::on_comboBoxRotationZ_activated(int val)
 {
 	applyComboBox(comboBoxRotationZ, val, Settings::Settings::inputRotateZ);
+        emit inputMappingChanged();
+}
+
+void AxisConfigWidget::on_comboBoxRotationXVPRel_activated(int val)
+{
+	applyComboBox(comboBoxRotationXVPRel, val, Settings::Settings::inputRotateXVPRel);
+        emit inputMappingChanged();
+}
+
+void AxisConfigWidget::on_comboBoxRotationYVPRel_activated(int val)
+{
+	applyComboBox(comboBoxRotationYVPRel, val, Settings::Settings::inputRotateYVPRel);
+        emit inputMappingChanged();
+}
+
+void AxisConfigWidget::on_comboBoxRotationZVPRel_activated(int val)
+{
+	applyComboBox(comboBoxRotationZVPRel, val, Settings::Settings::inputRotateZVPRel);
         emit inputMappingChanged();
 }
 

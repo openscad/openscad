@@ -52,6 +52,7 @@ InputEventMapper::InputEventMapper()
     translationGain=1.00;
     translationVPRelGain=1.00;
     rotateGain=1.00;
+    rotateVPRelGain=1.00;
     zoomGain=1.00;
 
     timer = new QTimer(this);
@@ -132,7 +133,16 @@ void InputEventMapper::onTimer()
         InputEvent *inputEvent = new InputEventRotate(rx, ry, rz);
         InputDriverManager::instance()->postEvent(inputEvent);
     }
-
+    
+    double rxVPRel = getAxisValue(rotate[3])*rotateVPRelGain;
+    double ryVPRel = getAxisValue(rotate[4])*rotateVPRelGain;
+    double rzVPRel = getAxisValue(rotate[5])*rotateVPRelGain;
+    if ((fabs(rxVPRel) > threshold) || (fabs(ryVPRel) > threshold) || (fabs(rzVPRel) > threshold)) {
+        //FIXME
+        InputEvent *inputEvent = new InputEventRotate(rxVPRel, ryVPRel, rzVPRel);
+        InputDriverManager::instance()->postEvent(inputEvent);
+    }
+    
     double z = (getAxisValue(zoom)+getAxisValue(zoom2))*zoomGain;
     if (fabs(z) > threshold) {
         InputEvent *inputEvent = new InputEventZoom(z);
@@ -226,6 +236,9 @@ void InputEventMapper::onInputMappingUpdated()
     rotate[0] = parseSettingValue(s->get(Settings::Settings::inputRotateX).toString());
     rotate[1] = parseSettingValue(s->get(Settings::Settings::inputRotateY).toString());
     rotate[2] = parseSettingValue(s->get(Settings::Settings::inputRotateZ).toString());
+    rotate[3] = parseSettingValue(s->get(Settings::Settings::inputRotateXVPRel).toString());
+    rotate[4] = parseSettingValue(s->get(Settings::Settings::inputRotateYVPRel).toString());
+    rotate[5] = parseSettingValue(s->get(Settings::Settings::inputRotateZVPRel).toString());
     zoom = parseSettingValue(s->get(Settings::Settings::inputZoom).toString());
     zoom2 = parseSettingValue(s->get(Settings::Settings::inputZoom2).toString());
 }
@@ -239,6 +252,8 @@ void InputEventMapper::onInputGainUpdated()
     translationVPRelGain = (double)s->get(Settings::Settings::inputTranslationVPRelGain).toDouble();
 
     rotateGain = (double)s->get(Settings::Settings::inputRotateGain).toDouble();
+
+    rotateVPRelGain = (double)s->get(Settings::Settings::inputRotateVPRelGain).toDouble();
 
     zoomGain = (double)s->get(Settings::Settings::inputZoomGain).toDouble();
 }
