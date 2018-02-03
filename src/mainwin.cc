@@ -1573,6 +1573,15 @@ void MainWindow::pasteViewportRotation()
 	this->editor->insert(txt);
 }
 
+std::array<double, 3>  MainWindow::getTranslation()
+{
+	std::array<double, 3>  ret;
+	ret[0] =qglview->cam.object_trans.x();
+	ret[1] =qglview->cam.object_trans.y();
+	ret[2] =qglview->cam.object_trans.z();
+	return ret;
+}
+
 void MainWindow::hideFind()
 {
 	find_panel->hide();

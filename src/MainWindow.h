@@ -18,6 +18,7 @@
 #include <QTime>
 #include <QIODevice>
 #include "input/InputDriver.h"
+#include <array>
 
 class MainWindow : public QMainWindow, public Ui::MainWindow, public InputEventHandler
 {
@@ -215,6 +216,8 @@ public:
         void onRotateEvent(InputEventRotate *event);
         void onActionEvent(InputEventAction *event);
         void onZoomEvent(InputEventZoom *event);
+
+	std::array<double, 3>  getTranslation();
 
 public slots:
 	void openFile(const QString &filename);

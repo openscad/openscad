@@ -32,6 +32,7 @@
 #include "InputDriver.h"
 #include "InputEventMapper.h"
 #include "MainWindow.h"
+#include <array>
 
 struct actionStruct {
   QString name;
@@ -75,6 +76,7 @@ public:
     static InputDriverManager * instance();
 
 	std::list<actionStruct> actions;
+	std::array<double, 3>  getTranslation();
 
 public slots:
     void onInputMappingUpdated();

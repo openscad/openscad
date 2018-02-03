@@ -154,6 +154,15 @@ void InputDriverManager::postEvent(InputEvent *event)
     }
 }
 
+std::array<double, 3>  InputDriverManager::getTranslation()
+{
+    //QWidget *window = event->activeOnly ? QApplication::activeWindow() : currentWindow;
+    MainWindow  *window = currentWindow;
+    if (window) {
+        return window->getTranslation();
+    }
+}
+
 void InputDriverManager::onFocusChanged(QWidget *, QWidget *current)
 {
     if (current) {
