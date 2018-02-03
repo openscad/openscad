@@ -138,8 +138,7 @@ void InputEventMapper::onTimer()
     double ryVPRel = getAxisValue(rotate[4])*rotateVPRelGain;
     double rzVPRel = getAxisValue(rotate[5])*rotateVPRelGain;
     if ((fabs(rxVPRel) > threshold) || (fabs(ryVPRel) > threshold) || (fabs(rzVPRel) > threshold)) {
-        //FIXME
-        InputEvent *inputEvent = new InputEventRotate(rxVPRel, ryVPRel, rzVPRel);
+        InputEvent *inputEvent = new InputEventRotate2(rxVPRel, ryVPRel, rzVPRel);
         InputDriverManager::instance()->postEvent(inputEvent);
     }
     
@@ -196,6 +195,11 @@ void InputEventMapper::onTranslateEvent(InputEventTranslate *event)
 }
 
 void InputEventMapper::onRotateEvent(InputEventRotate *event)
+{
+    InputDriverManager::instance()->postEvent(event);
+}
+
+void InputEventMapper::onRotate2Event(InputEventRotate2 *event)
 {
     InputDriverManager::instance()->postEvent(event);
 }

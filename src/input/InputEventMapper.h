@@ -74,6 +74,7 @@ public:
 
     void onTranslateEvent(class InputEventTranslate *event);
     void onRotateEvent(class InputEventRotate *event);
+    void onRotate2Event(class InputEventRotate2 *event);
     void onActionEvent(class InputEventAction *event);
     void onZoomEvent(class InputEventZoom *event);
 

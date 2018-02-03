@@ -39,6 +39,7 @@ public:
 
     virtual void onTranslateEvent(class InputEventTranslate *event) = 0;
     virtual void onRotateEvent(class InputEventRotate *event) = 0;
+    virtual void onRotate2Event(class InputEventRotate2 *event) = 0;
     virtual void onActionEvent(class InputEventAction *event) = 0;
     virtual void onZoomEvent(class InputEventZoom *event) = 0;
 };
@@ -137,6 +138,21 @@ public:
     void deliver(InputEventHandler *receiver)
     {
         receiver->onRotateEvent(this);
+    }
+};
+
+class InputEventRotate2 : public InputEvent
+{
+public:
+    const double x;
+    const double y;
+    const double z;
+
+    InputEventRotate2(const double x, const double y, const double z, const bool activeOnly = true) : InputEvent(activeOnly), x(x), y(y), z(z) { }
+
+    void deliver(InputEventHandler *receiver)
+    {
+        receiver->onRotate2Event(this);
     }
 };
 

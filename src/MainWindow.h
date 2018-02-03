@@ -213,6 +213,7 @@ public:
 
         void onTranslateEvent(InputEventTranslate *event);
         void onRotateEvent(InputEventRotate *event);
+        void onRotate2Event(InputEventRotate2 *event);
         void onActionEvent(InputEventAction *event);
         void onZoomEvent(InputEventZoom *event);
 
