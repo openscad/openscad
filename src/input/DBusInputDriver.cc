@@ -117,14 +117,14 @@ void DBusInputDriver::action(QString name)
     InputDriverManager::instance()->sendEvent(new InputEventAction(name.toStdString(), false));
 }
 
-QString DBusInputDriver::actions()
+QStringList DBusInputDriver::actions()
 {
-	QString ret="";
+	QStringList ret;
 	InputDriverManager* manager = InputDriverManager::instance();
 	std::list<actionStruct> actions = manager->actions;
 
 	for (std::list<actionStruct>::iterator action=actions.begin(); action != actions.end(); ++action){
-		ret += (*action).name + "\n";
+		ret << (*action).name;
 	}
 	return ret;
 }

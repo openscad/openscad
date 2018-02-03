@@ -35,7 +35,8 @@
       <arg name="idx" type="u" direction="in"/>
     </method>
     <method name="actions">
-      <arg name="names" type="s" direction="out"/>
+      <arg name="names" type="as" direction="out"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QStringList&gt;"/>
     </method>
   </interface>
 </node>
