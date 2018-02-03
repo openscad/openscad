@@ -117,7 +117,7 @@ void DBusInputDriver::action(QString name)
     InputDriverManager::instance()->sendEvent(new InputEventAction(name.toStdString(), false));
 }
 
-QStringList DBusInputDriver::actions()
+QStringList DBusInputDriver::getActions()
 {
 	QStringList ret;
 	InputDriverManager* manager = InputDriverManager::instance();
