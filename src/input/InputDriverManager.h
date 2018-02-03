@@ -77,6 +77,7 @@ public:
 
 	std::list<actionStruct> actions;
 	std::array<double, 3>  getTranslation();
+	std::array<double, 3>  getRotation();
 
 public slots:
     void onInputMappingUpdated();

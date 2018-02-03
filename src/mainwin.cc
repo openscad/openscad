@@ -1582,6 +1582,15 @@ std::array<double, 3>  MainWindow::getTranslation()
 	return ret;
 }
 
+std::array<double, 3>  MainWindow::getRotation()
+{
+	std::array<double, 3>  ret;
+	ret[0] =qglview->cam.object_rot.x();
+	ret[1] =qglview->cam.object_rot.y();
+	ret[2] =qglview->cam.object_rot.z();
+	return ret;
+}
+
 void MainWindow::hideFind()
 {
 	find_panel->hide();

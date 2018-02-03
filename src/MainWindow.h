@@ -218,6 +218,7 @@ public:
         void onZoomEvent(InputEventZoom *event);
 
 	std::array<double, 3>  getTranslation();
+	std::array<double, 3>  getRotation();
 
 public slots:
 	void openFile(const QString &filename);
