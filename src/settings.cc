@@ -193,12 +193,16 @@ SettingsEntry Settings::inputTranslationZVPRel("input", "translationZVPRel", axi
 SettingsEntry Settings::inputRotateX("input", "rotateX", axisValues(), Value("+4"));
 SettingsEntry Settings::inputRotateY("input", "rotateY", axisValues(), Value("-5"));
 SettingsEntry Settings::inputRotateZ("input", "rotateZ", axisValues(), Value("-6"));
+SettingsEntry Settings::inputRotateXVPRel("input", "rotateXVPRel", axisValues(), Value(""));
+SettingsEntry Settings::inputRotateYVPRel("input", "rotateYVPRel", axisValues(), Value(""));
+SettingsEntry Settings::inputRotateZVPRel("input", "rotateZVPRel", axisValues(), Value(""));
 SettingsEntry Settings::inputZoom("input", "zoom", axisValues(), Value("None"));
 SettingsEntry Settings::inputZoom2("input", "zoom2", axisValues(), Value("None"));
 
 SettingsEntry Settings::inputTranslationGain("input", "translationGain", Value(RangeType(0.01, 0.01, 9.99)), Value(1.00));
 SettingsEntry Settings::inputTranslationVPRelGain("input", "translationVPRelGain", Value(RangeType(0.01, 0.01, 9.99)), Value(1.00));
 SettingsEntry Settings::inputRotateGain("input", "rotateGain", Value(RangeType(0.01, 0.01, 9.99)), Value(1.00));
+SettingsEntry Settings::inputRotateVPRelGain("input", "rotateVPRelGain", Value(RangeType(0.01, 0.01, 9.99)), Value(1.00));
 SettingsEntry Settings::inputZoomGain("input", "zoomGain", Value(RangeType(0.1, 0.1, 99.9)), Value(1.00));
 
 SettingsEntry Settings::inputButton0("input", "button0", buttonValues(), Value("None"));

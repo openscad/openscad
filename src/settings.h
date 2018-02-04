@@ -68,11 +68,15 @@ public:
     static SettingsEntry inputRotateX;
     static SettingsEntry inputRotateY;
     static SettingsEntry inputRotateZ;
+    static SettingsEntry inputRotateXVPRel;
+    static SettingsEntry inputRotateYVPRel;
+    static SettingsEntry inputRotateZVPRel;
     static SettingsEntry inputZoom;
     static SettingsEntry inputZoom2;
     static SettingsEntry inputTranslationGain;
     static SettingsEntry inputTranslationVPRelGain;
     static SettingsEntry inputRotateGain;
+    static SettingsEntry inputRotateVPRelGain;
     static SettingsEntry inputZoomGain;
     static SettingsEntry inputButton0;
     static SettingsEntry inputButton1;
