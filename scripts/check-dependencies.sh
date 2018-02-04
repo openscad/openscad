@@ -202,9 +202,16 @@ qt_sysver()
     qtver=`grep 'define  *QT_VERSION_STR  *' "$qtpath"/qglobal.h`
     # fix for Qt 5.7
     if [ -z "$qtver" ]; then
-	  qtver=`grep 'define  *QT_VERSION_STR  *' "$qtpath"/qconfig.h`
+      if [ -e "$qtpath/qconfig-32.h" ]; then
+        QCONFIG="qconfig-32.h"
+      elif [ -e "$qtpath/qconfig-64.h" ]; then
+        QCONFIG="qconfig-64.h"
+      else
+        QCONFIG="qconfig.h"
+      fi
+      qtver=`grep 'define  *QT_VERSION_STR  *' "$qtpath"/$QCONFIG`
     fi
-    
+
     qtver=`echo $qtver | awk '{print $3}' | sed s/'"'//g`
   fi
   qt_sysver_result=$qtver
