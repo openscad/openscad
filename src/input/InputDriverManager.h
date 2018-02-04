@@ -76,8 +76,8 @@ public:
     static InputDriverManager * instance();
 
 	std::list<actionStruct> actions;
-	std::array<double, 3>  getTranslation();
-	std::array<double, 3>  getRotation();
+	QList<double> getTranslation();
+	QList<double> getRotation();
 
 public slots:
     void onInputMappingUpdated();

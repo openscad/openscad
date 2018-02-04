@@ -154,7 +154,7 @@ void InputDriverManager::postEvent(InputEvent *event)
     }
 }
 
-std::array<double, 3>  InputDriverManager::getTranslation()
+QList<double> InputDriverManager::getTranslation()
 {
     MainWindow  *window = currentWindow;
     if (window) {
@@ -162,7 +162,7 @@ std::array<double, 3>  InputDriverManager::getTranslation()
     }
 }
 
-std::array<double, 3>  InputDriverManager::getRotation()
+QList<double> InputDriverManager::getRotation()
 {
     MainWindow  *window = currentWindow;
     if (window) {

@@ -124,21 +124,11 @@ void DBusInputDriver::buttonPress(uint idx)
 }
 
 QList<double> DBusInputDriver::getRotation(){
-	QList<double> ret;
-	std::array<double, 3>  res = InputDriverManager::instance()->getRotation();
-	ret.append(res[0]);
-	ret.append(res[1]);
-	ret.append(res[2]);
-	return ret;
+	return InputDriverManager::instance()->getRotation();;
 }
 
 QList<double> DBusInputDriver::getTranslation(){
-	QList<double> ret;
-	std::array<double, 3>  res = InputDriverManager::instance()->getTranslation();
-	ret.append(res[0]);
-	ret.append(res[1]);
-	ret.append(res[2]);
-	return ret;
+	return InputDriverManager::instance()->getTranslation();;
 }
 
 const std::string & DBusInputDriver::get_name() const

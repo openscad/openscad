@@ -1573,21 +1573,21 @@ void MainWindow::pasteViewportRotation()
 	this->editor->insert(txt);
 }
 
-std::array<double, 3>  MainWindow::getTranslation()
+QList<double> MainWindow::getTranslation()
 {
-	std::array<double, 3>  ret;
-	ret[0] =qglview->cam.object_trans.x();
-	ret[1] =qglview->cam.object_trans.y();
-	ret[2] =qglview->cam.object_trans.z();
+	QList<double> ret;
+	ret.append(qglview->cam.object_trans.x());
+	ret.append(qglview->cam.object_trans.y());
+	ret.append(qglview->cam.object_trans.z());
 	return ret;
 }
 
-std::array<double, 3>  MainWindow::getRotation()
+QList<double> MainWindow::getRotation()
 {
-	std::array<double, 3>  ret;
-	ret[0] =qglview->cam.object_rot.x();
-	ret[1] =qglview->cam.object_rot.y();
-	ret[2] =qglview->cam.object_rot.z();
+	QList<double> ret;
+	ret.append(qglview->cam.object_rot.x());
+	ret.append(qglview->cam.object_rot.y());
+	ret.append(qglview->cam.object_rot.z());
 	return ret;
 }
 
