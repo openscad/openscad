@@ -117,6 +117,18 @@ void DBusInputDriver::action(QString name)
     InputDriverManager::instance()->sendEvent(new InputEventAction(name.toStdString(), false));
 }
 
+QStringList DBusInputDriver::getActions()
+{
+	QStringList ret;
+	InputDriverManager* manager = InputDriverManager::instance();
+	std::list<actionStruct> actions = manager->actions;
+
+	for (std::list<actionStruct>::iterator action=actions.begin(); action != actions.end(); ++action){
+		ret << (*action).name;
+	}
+	return ret;
+}
+
 void DBusInputDriver::buttonPress(uint idx)
 {
     InputDriverManager::instance()->sendEvent(new InputEventButtonChanged(idx, true, false));
