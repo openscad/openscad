@@ -32,7 +32,6 @@
 #include "InputDriver.h"
 #include "InputEventMapper.h"
 #include "MainWindow.h"
-#include <array>
 
 struct actionStruct {
   QString name;
