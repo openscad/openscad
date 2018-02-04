@@ -128,6 +128,17 @@ if(NOT HEADLESS)
   message(STATUS "QScintilla: ${QT5QSCINTILLA_VERSION_STRING}")
   add_definitions(-DUSE_SCINTILLA_EDITOR)
   add_definitions(-DENABLE_MDI)
+
+  find_package(Qt5DBus QUIET)
+  if (Qt5DBus_FOUND)
+    message(STATUS "DBus input driver enabled")
+    add_definitions(-DENABLE_DBUS)
+    set(INPUT_DRIVER_DBUS_SOURCES src/input/DBusInputDriver.cc)
+    qt5_add_dbus_interface(INPUT_DRIVER_DBUS_SOURCES org.openscad.OpenSCAD.xml openscad_interface)
+    qt5_add_dbus_adaptor(INPUT_DRIVER_DBUS_SOURCES org.openscad.OpenSCAD.xml input/DBusInputDriver.h DBusInputDriver openscad_adaptor)
+  else()
+    message(STATUS "DBus input driver disabled as the QtDBus module could not be found.")
+  endif()
   
 #  add_definitions(${Qt5Widgets_DEFINITIONS})
 #  add_definitions(${Qt5OpenGL_DEFINITIONS})
@@ -354,6 +365,9 @@ set(OFFSCREEN_SOURCES
   src/render.cc
   src/OpenCSGRenderer.cc)
 
+set(INPUT_DRIVER_SOURCES
+  ${INPUT_DRIVER_DBUS_SOURCES})
+
 set(GUI_SOURCES
   src/mainwin.cc
   src/OpenSCADApp.cc
@@ -398,6 +412,7 @@ set(GUI_SOURCES
   src/input/InputDriverManager.cc
   src/input/InputEventMapper.cc
   src/input/WheelIgnorer.cc
+  ${INPUT_DRIVER_SOURCES}
   )
 
 # header-only code
@@ -471,6 +486,6 @@ set(COMMON_LIBRARIES
 
 target_link_libraries(OpenSCAD ${COMMON_LIBRARIES})
 if(NOT HEADLESS)
-  target_link_libraries(OpenSCAD Qt5::Core Qt5::Widgets Qt5::OpenGL Qt5::Concurrent ${QT5QSCINTILLA_LIBRARY})
+  target_link_libraries(OpenSCAD Qt5::Core Qt5::Widgets Qt5::OpenGL Qt5::Concurrent ${QT5QSCINTILLA_LIBRARY} ${Qt5DBus_LIBRARIES})
 endif()
 

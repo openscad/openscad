@@ -659,7 +659,12 @@ void MainWindow::onTranslateEvent(InputEventTranslate *event)
 
 void MainWindow::onRotateEvent(InputEventRotate *event)
 {
-    qglview->rotate(event->x, event->y, event->z, event->relative);
+	qglview->rotate(event->x, event->y, event->z, event->relative);
+}
+
+void MainWindow::onRotate2Event(InputEventRotate2 *event)
+{
+	qglview->rotate2(event->x, event->y, event->z);
 }
 
 void MainWindow::onActionEvent(InputEventAction *event)

@@ -46,7 +46,7 @@ public:
 
     const std::string & get_name() const override;
 
-private slots:
+public slots:
     void zoom(double zoom);
     void zoomTo(double zoom);
     void rotate(double x, double y, double z);
@@ -57,4 +57,5 @@ private slots:
     void buttonPress(uint idx);
     QList<double> getRotation();
     QList<double> getTranslation();
+    QStringList getActions();
 };
