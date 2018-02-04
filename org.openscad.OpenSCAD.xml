@@ -18,6 +18,11 @@
       <arg name="y" type="d" direction="in"/>
       <arg name="z" type="d" direction="in"/>
     </method>
+    <method name="rotate2">
+      <arg name="x" type="d" direction="in"/>
+      <arg name="y" type="d" direction="in"/>
+      <arg name="z" type="d" direction="in"/>
+    </method>
     <method name="translate">
       <arg name="x" type="d" direction="in"/>
       <arg name="y" type="d" direction="in"/>

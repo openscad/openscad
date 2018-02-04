@@ -51,6 +51,7 @@ private slots:
     void zoomTo(double zoom);
     void rotate(double x, double y, double z);
     void rotateTo(double x, double y, double z);
+    void rotate2(double x, double y, double z);
     void translate(double x, double y, double z);
     void translateTo(double x, double y, double z);
     void action(QString action);
