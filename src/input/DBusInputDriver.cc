@@ -132,6 +132,15 @@ QList<double> DBusInputDriver::getRotation(){
 	return ret;
 }
 
+QList<double> DBusInputDriver::getTranslation(){
+	QList<double> ret;
+	std::array<double, 3>  res = InputDriverManager::instance()->getTranslation();
+	ret.append(res[0]);
+	ret.append(res[1]);
+	ret.append(res[2]);
+	return ret;
+}
+
 const std::string & DBusInputDriver::get_name() const
 {
     return name;

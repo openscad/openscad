@@ -56,4 +56,5 @@ private slots:
     void action(QString action);
     void buttonPress(uint idx);
     QList<double> getRotation();
+    QList<double> getTranslation();
 };
