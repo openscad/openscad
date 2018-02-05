@@ -21,6 +21,7 @@ project(openscad)
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/objects")
 set(AUTOGEN_BUILD_DIR "${CMAKE_BINARY_DIR}/objects")
+add_custom_target(make-objects-directory ALL COMMAND ${CMAKE_COMMAND} -E make_directory ${AUTOGEN_BUILD_DIR})
 
 # Default to Release build
 if(NOT CMAKE_BUILD_TYPE)
