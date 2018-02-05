@@ -18,7 +18,7 @@
       <arg name="y" type="d" direction="in"/>
       <arg name="z" type="d" direction="in"/>
     </method>
-    <method name="rotate2">
+    <method name="rotateByVector">
       <arg name="x" type="d" direction="in"/>
       <arg name="y" type="d" direction="in"/>
       <arg name="z" type="d" direction="in"/>
