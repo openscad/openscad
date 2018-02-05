@@ -102,9 +102,6 @@ void DBusInputDriver::rotateTo(double x, double y, double z)
     InputDriverManager::instance()->sendEvent(new InputEventRotate(x, y, z, false, false));
 }
 
-// The vector [x,y,z] describes the rotation.
-// The direction of the vector is the angle around which to rotate,
-// and the length of the vector is the angle by which to rotate.
 void DBusInputDriver::rotateByVector(double x, double y, double z)
 {
     InputDriverManager::instance()->sendEvent(new InputEventRotate2(x, y, z, false));

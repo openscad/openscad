@@ -1,6 +1,6 @@
 <!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
 "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
-<node>
+<node  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
   <interface name="org.openscad.OpenSCAD">
     <method name="zoom">
       <arg name="zoom" type="d" direction="in"/>
@@ -19,6 +19,11 @@
       <arg name="z" type="d" direction="in"/>
     </method>
     <method name="rotateByVector">
+      <tp:docstring>
+        The vector [x,y,z] describes the rotation.
+        The direction of the vector is the angle around which to rotate,
+        and the length of the vector is the angle by which to rotate.
+      </tp:docstring>
       <arg name="x" type="d" direction="in"/>
       <arg name="y" type="d" direction="in"/>
       <arg name="z" type="d" direction="in"/>
