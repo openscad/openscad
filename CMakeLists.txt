@@ -385,6 +385,7 @@ set(GUI_SOURCES
   src/comment.cpp
   src/parameter/ParameterWidget.cc
   src/parameter/groupwidget.cpp
+  src/parameter/ignoreWheelWhenNotFocused.cpp
   src/parameter/parametercheckbox.cpp
   src/parameter/parametercombobox.cpp
   src/parameter/parameterextractor.cpp
