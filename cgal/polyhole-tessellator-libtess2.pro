@@ -97,7 +97,6 @@ HEADERS += ../src/GeometryUtils.cc \
 SOURCES += polyhole-tessellator-libtess2.cpp \
            ../src/GeometryUtils.cc \
            ../src/printutils.cc \
-           ../src/grid.cc \
            ../src/libtess2/Source/bucketalloc.c \
            ../src/libtess2/Source/dict.c \
            ../src/libtess2/Source/geom.c \

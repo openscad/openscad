@@ -217,7 +217,6 @@ set(CORE_SOURCES
   src/handle_dep.cc 
   src/value.cc 
   src/calc.cc 
-  src/grid.cc 
   src/hash.cc 
   src/expr.cc 
   src/func.cc 
