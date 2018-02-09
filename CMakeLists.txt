@@ -449,6 +449,11 @@ endif()
 
 set(RESOURCE_FILES icons/OpenSCAD.icns)
 
+if(ENABLE_SPNAV)
+  add_definitions(-DENABLE_SPNAV)
+  list(APPEND Sources src/input/SpaceNavInputDriver.cc)
+endif()
+
 add_executable(OpenSCAD ${Sources} ${RESOURCE_FILES})
 
 # FIXME: snapshot, ICON = icons/icon-nightly.icns
@@ -466,6 +471,10 @@ elseif(UNIX)
   set_target_properties(OpenSCAD PROPERTIES
     OUTPUT_NAME openscad
   )
+endif()
+
+if(ENABLE_SPNAV)
+  target_link_libraries(OpenSCAD spnav)
 endif()
 
 set(COMMON_LIBRARIES
