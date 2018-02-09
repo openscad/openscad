@@ -441,7 +441,6 @@ SOURCES += \
            src/QGLView.cc \
            src/AutoUpdater.cc \
            \
-           src/grid.cc \
            src/hash.cc \
            src/GroupModule.cc \
            src/FileModule.cc \
