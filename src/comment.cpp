@@ -161,17 +161,16 @@ static GroupInfo createGroup(std::string comment,int lineNo)
 {
 	//store info related to group
 	GroupInfo groupInfo;
-	std::string finalGroupName; //Final group name
-	std::string groupName; //group name
+	std::string finalGroupName;
 
 	std::regex regex("\\[(.*?{2})\\]");
 	std::smatch match;
 	while(std::regex_search(comment, match, regex)) {
-		groupName = match[1].str();
-		if (!finalGroupName.empty()) {
-			finalGroupName = finalGroupName + "-" + groupName;
+		std::string groupName = match[1].str();
+		if (finalGroupName.empty()) {
+			finalGroupName = groupName;
 		} else {
-			finalGroupName = finalGroupName + groupName;
+			finalGroupName = finalGroupName + "-" + groupName;
 		}
 		groupName.clear();
 		comment = match.suffix();
