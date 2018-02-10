@@ -624,7 +624,7 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
 		{1,0,2},
 		{1,2,0}};
 
-	// set up character vertex seqeunces for different axes
+	// set up character vertex sequences for different axes
 	int or_2[6][6]={
 		{0,1,3,2,4,5},
 		{1,0,2,3,5,4},
