@@ -184,7 +184,7 @@ static void info()
 }
 
 /**
- * Initialize gettext. This must be called after the appliation path was
+ * Initialize gettext. This must be called after the application path was
  * determined so we can lookup the resource path for the language translation
  * files.
  */
