@@ -82,6 +82,7 @@ void ParameterWidget::onSetDelete()
 	setComboBoxPresetForSet();
 }
 
+//adds a new parameter set
 void ParameterWidget::onSetAdd()
 {
 	if (root.empty()) {
@@ -144,7 +145,6 @@ void ParameterWidget::setComboBoxPresetForSet()
 	}
 }
 
-//adds a new parameter set
 void ParameterWidget::onSetChanged(int idx)
 {
 	const std::string v = comboBoxPreset->itemData(idx).toString().toUtf8().constData();
@@ -198,8 +198,8 @@ void ParameterWidget::addEntry(QVBoxLayout* anyLayout, ParameterVirtualWidget *e
 void ParameterWidget::connectWidget()
 {
 	anyfocused = false;
-	// clear previous entries in groupMap and entries
-	clear();
+
+	rebuildGroupMap();
 	
 	std::vector<std::string> global;
 	if (groupMap.find("Global") != groupMap.end()) {
@@ -249,7 +249,7 @@ void ParameterWidget::updateWidget()
 		widget->setValue();
 }
 
-void ParameterWidget::clear(){
+void ParameterWidget::rebuildGroupMap(){
 	for (entry_map_t::iterator it = entries.begin(); it != entries.end();) {
 		if (!(*it).second->set) {
 			it = entries.erase(it);
