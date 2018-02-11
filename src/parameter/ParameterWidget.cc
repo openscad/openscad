@@ -68,6 +68,7 @@ ParameterWidget::~ParameterWidget()
 {
 }
 
+//delets the currently selected/active Parameter set
 void ParameterWidget::onSetDelete()
 {
 	if (root.empty()) return;
@@ -143,6 +144,7 @@ void ParameterWidget::setComboBoxPresetForSet()
 	}
 }
 
+//adds a new parameter set
 void ParameterWidget::onSetChanged(int idx)
 {
 	const std::string v = comboBoxPreset->itemData(idx).toString().toUtf8().constData();
