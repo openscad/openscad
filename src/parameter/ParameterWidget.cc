@@ -173,11 +173,12 @@ void ParameterWidget::onPreviewTimerElapsed()
 
 void ParameterWidget::cleanScrollArea()
 {
-	this->scrollAreaWidgetContents->layout()->setAlignment(Qt::AlignTop);
+	auto layout = this->scrollAreaWidgetContents->layout();
+	layout->setAlignment(Qt::AlignTop);
 	QLayoutItem *child;
-	while ((child = this->scrollAreaWidgetContents->layout()->takeAt(0)) != nullptr) {
+	while ((child = layout->takeAt(0)) != nullptr) {
 		QWidget *w = child->widget();
-		this->scrollAreaWidgetContents->layout()->removeWidget(w);
+		layout->removeWidget(w);
 		delete w;
 	}
 }
