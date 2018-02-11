@@ -186,12 +186,6 @@ void ParameterWidget::cleanScrollArea()
 void ParameterWidget::addEntry(QVBoxLayout* anyLayout, ParameterVirtualWidget *entry)
 {
 	if(entry){
-		QSizePolicy policy;
-		policy.setHorizontalPolicy(QSizePolicy::Ignored);
-		policy.setVerticalPolicy(QSizePolicy::Maximum);
-		policy.setHorizontalStretch(0);
-		policy.setVerticalStretch(0);
-		entry->setSizePolicy(policy);
 		anyLayout->addWidget(entry);
 	}
 }
