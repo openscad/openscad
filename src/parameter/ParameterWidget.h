@@ -53,7 +53,6 @@ private:
 	void connectWidget() override;
 	void updateWidget() override;
 	void cleanScrollArea();
-	void addEntry(QVBoxLayout* anylayout, ParameterVirtualWidget *entry);
 	void rebuildGroupMap();
 	ParameterVirtualWidget* CreateParameterWidget(std::string parameterName);
 	void setComboBoxPresetForSet();

@@ -183,13 +183,6 @@ void ParameterWidget::cleanScrollArea()
 	}
 }
 
-void ParameterWidget::addEntry(QVBoxLayout* anyLayout, ParameterVirtualWidget *entry)
-{
-	if(entry){
-		anyLayout->addWidget(entry);
-	}
-}
-
 void ParameterWidget::connectWidget()
 {
 	anyfocused = false;
@@ -224,7 +217,9 @@ void ParameterWidget::connectWidget()
 			gr = groupMap[*it].parameterVector;
 			for(unsigned int i=0;i < gr.size();i++) {
 				ParameterVirtualWidget * entry = CreateParameterWidget(gr[i]);
-				addEntry(anyLayout, entry);
+				if(entry){
+					anyLayout->addWidget(entry);
+				}
 			}
 
 			GroupWidget *groupWidget = new GroupWidget(groupMap[*it].show, QString::fromStdString(*it));
