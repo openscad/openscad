@@ -53,7 +53,7 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 	autoPreviewTimer.setSingleShot(true);
 	connect(&autoPreviewTimer, SIGNAL(timeout()), this, SLOT(onPreviewTimerElapsed()));
 	connect(checkBoxAutoPreview, SIGNAL(toggled(bool)), this, SLOT(onValueChanged()));
-	connect(comboBoxDetails,SIGNAL(currentIndexChanged(int)), this,SLOT(onDescriptionShow()));
+	connect(comboBoxDetails,SIGNAL(currentIndexChanged(int)), this,SLOT(onDescriptionShowChanged()));
 	connect(comboBoxPreset, SIGNAL(currentIndexChanged(int)), this, SLOT(onSetChanged(int)));
 	connect(reset, SIGNAL(clicked()), this, SLOT(resetParameter()));
 }
@@ -152,7 +152,7 @@ void ParameterWidget::onSetChanged(int idx)
 	emit previewRequested(false);
 }
 
-void ParameterWidget::onDescriptionShow()
+void ParameterWidget::onDescriptionShowChanged()
 {
 	descriptionShow =comboBoxDetails->currentIndex();
 	emit previewRequested();
