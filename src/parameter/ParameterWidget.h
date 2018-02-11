@@ -45,7 +45,7 @@ private:
 	typedef std::map<std::string,groupInst > group_map;
 	group_map groupMap;
 	QTimer autoPreviewTimer;
-	int descriptionShow; //configuration if and how much of the description is shown
+	int descriptionLoD; //configuration if and how much of the description is shown
 	std::string jsonFile;
 	bool anyfocused;
 	ParameterVirtualWidget *entryToFocus;
@@ -67,7 +67,7 @@ public:
 protected slots:
 	void onValueChanged();
 	void onPreviewTimerElapsed();
-	void onDescriptionShowChanged();
+	void onDescriptionLoDChanged();
 	void onSetChanged(int idx);
 	void onSetAdd();
 	void onSetSaveButton();

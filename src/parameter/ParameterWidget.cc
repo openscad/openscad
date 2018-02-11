@@ -48,12 +48,12 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 {
 	setupUi(this);
 
-	descriptionShow = 0;
+	descriptionLoD = 0;
 	autoPreviewTimer.setInterval(500);
 	autoPreviewTimer.setSingleShot(true);
 	connect(&autoPreviewTimer, SIGNAL(timeout()), this, SLOT(onPreviewTimerElapsed()));
 	connect(checkBoxAutoPreview, SIGNAL(toggled(bool)), this, SLOT(onValueChanged()));
-	connect(comboBoxDetails,SIGNAL(currentIndexChanged(int)), this,SLOT(onDescriptionShowChanged()));
+	connect(comboBoxDetails,SIGNAL(currentIndexChanged(int)), this,SLOT(onDescriptionLoDChanged()));
 	connect(comboBoxPreset, SIGNAL(currentIndexChanged(int)), this, SLOT(onSetChanged(int)));
 	connect(reset, SIGNAL(clicked()), this, SLOT(resetParameter()));
 }
@@ -152,9 +152,9 @@ void ParameterWidget::onSetChanged(int idx)
 	emit previewRequested(false);
 }
 
-void ParameterWidget::onDescriptionShowChanged()
+void ParameterWidget::onDescriptionLoDChanged()
 {
-	descriptionShow =comboBoxDetails->currentIndex();
+	descriptionLoD =comboBoxDetails->currentIndex();
 	emit previewRequested();
 }
 
@@ -288,27 +288,27 @@ ParameterVirtualWidget* ParameterWidget::CreateParameterWidget(std::string param
 	ParameterVirtualWidget *entry = nullptr;
 	switch(entries[parameterName]->target) {
 		case ParameterObject::COMBOBOX:{
-			entry = new ParameterComboBox(entries[parameterName], descriptionShow);
+			entry = new ParameterComboBox(entries[parameterName], descriptionLoD);
 			break;
 		}
 		case ParameterObject::SLIDER:{
-			entry = new ParameterSlider(entries[parameterName], descriptionShow);
+			entry = new ParameterSlider(entries[parameterName], descriptionLoD);
 			break;
 		}
 		case ParameterObject::CHECKBOX:{
-			entry = new ParameterCheckBox(entries[parameterName], descriptionShow);
+			entry = new ParameterCheckBox(entries[parameterName], descriptionLoD);
 			break;
 		}
 		case ParameterObject::TEXT:{
-			entry = new ParameterText(entries[parameterName], descriptionShow);
+			entry = new ParameterText(entries[parameterName], descriptionLoD);
 			break;
 		}
 		case ParameterObject::NUMBER:{
-			entry = new ParameterSpinBox(entries[parameterName], descriptionShow);
+			entry = new ParameterSpinBox(entries[parameterName], descriptionLoD);
 			break;
 		}
 		case ParameterObject::VECTOR:{
-			entry = new ParameterVector(entries[parameterName], descriptionShow);
+			entry = new ParameterVector(entries[parameterName], descriptionLoD);
 			break;
 		}
 		case ParameterObject::UNDEFINED:{
