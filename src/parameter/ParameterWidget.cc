@@ -105,19 +105,19 @@ void ParameterWidget::readFile(QString scadFile)
 	bool readable=readParameterSet(this->jsonFile);
 	if(readable){
 		connect(this->addButton, SIGNAL(clicked()), this, SLOT(onSetAdd()));
-		this->addButton->setToolTip("add new preset");
+		this->addButton->setToolTip(_("add new preset"));
 		connect(this->deleteButton, SIGNAL(clicked()), this, SLOT(onSetDelete()));
-		this->deleteButton->setToolTip("remove current preset");
+		this->deleteButton->setToolTip(_("remove current preset"));
 		connect(this->presetSaveButton, SIGNAL(clicked()), this, SLOT(onSetSaveButton()));
-		this->presetSaveButton->setToolTip("save current preset");
+		this->presetSaveButton->setToolTip(_("save current preset"));
 	}
 	else{
 		this->addButton->setDisabled(true);
-		this->addButton->setToolTip("JSON file read only");
+		this->addButton->setToolTip(_("JSON file read only"));
 		this->deleteButton->setDisabled(true);
-		this->deleteButton->setToolTip("JSON file read only");
+		this->deleteButton->setToolTip(_("JSON file read only"));
 		this->presetSaveButton->setDisabled(true);
-		this->presetSaveButton->setToolTip("JSON file read only");
+		this->presetSaveButton->setToolTip(_("JSON file read only"));
 	}
 	disconnect(comboBoxPreset, SIGNAL(currentIndexChanged(int)), this, SLOT(onSetChanged(int)));
 	this->comboBoxPreset->clear();
