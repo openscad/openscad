@@ -48,7 +48,7 @@ public:
 	QString toPlainText() override;
 	void initMargin();
 	void initLexer();
-	void noColor();
+
 	QString selectedText() override;
 	int resetFindIndicators(const QString &findText, bool visibility = true) override;
     bool find(const QString &, bool findNext = false, bool findBackwards = false) override;
@@ -69,6 +69,7 @@ private:
         bool eventFilter(QObject* obj, QEvent *event) override;
         void navigateOnNumber(int key);
         bool modifyNumber(int key);
+        void noColor();
 
 signals:
 	void previewRequest(void);
