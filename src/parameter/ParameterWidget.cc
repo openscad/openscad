@@ -68,7 +68,7 @@ ParameterWidget::~ParameterWidget()
 {
 }
 
-//delets the currently selected/active Parameter set
+//deletes the currently selected/active parameter set
 void ParameterWidget::onSetDelete()
 {
 	if (root.empty()) return;
