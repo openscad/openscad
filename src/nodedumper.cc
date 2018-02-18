@@ -61,13 +61,11 @@ void NodeDumper::dumpChildren(const AbstractNode &node, std::stringstream &dump)
 		assert(isCached(*child));
 		const auto &str = this->cache[*child];
 		if (!str.empty()) {
-			if (child != it->second.front()) dump << "\n";
 			if (child->modinst->isBackground()) dump << "%";
 			if (child->modinst->isHighlight()) dump << "#";
-			dump << str;
+			dump << str << "\n";
 		}
 	}
-	dump << "\n";
 }
 
 /*!
