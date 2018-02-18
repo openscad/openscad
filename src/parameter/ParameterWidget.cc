@@ -104,16 +104,26 @@ void ParameterWidget::onSetSaveButton()
 void ParameterWidget::readFile(QString scadFile)
 {
 	this->jsonFile = scadFile.replace(".scad", ".json").toStdString();
-	bool readable=readParameterSet(this->jsonFile);
-	if(readable){
+	bool writeable = false;
+
+	bool readable = readParameterSet(this->jsonFile);
+
+	//check whether file is writeable
+	std::fstream file;
+	file.open(filename, std::ios::app);
+	if (file.is_open()) {
+		file.close();
+		writeable = true;
+	}
+
+	if(writeable){
 		connect(this->addButton, SIGNAL(clicked()), this, SLOT(onSetAdd()));
 		this->addButton->setToolTip(_("add new preset"));
 		connect(this->deleteButton, SIGNAL(clicked()), this, SLOT(onSetDelete()));
 		this->deleteButton->setToolTip(_("remove current preset"));
 		connect(this->presetSaveButton, SIGNAL(clicked()), this, SLOT(onSetSaveButton()));
 		this->presetSaveButton->setToolTip(_("save current preset"));
-	}
-	else{
+	}else{
 		this->addButton->setDisabled(true);
 		this->addButton->setToolTip(_("JSON file read only"));
 		this->deleteButton->setDisabled(true);
