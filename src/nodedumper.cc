@@ -39,24 +39,20 @@ void NodeDumper::handleIndent(const State &state)
 	including braces and indentation.
 	All children are assumed to be cached already.
  */
-std::string NodeDumper::dumpChildBlock(const AbstractNode &node)
+void NodeDumper::dumpChildBlock(const AbstractNode &node, std::stringstream &dump)
 {
-	std::stringstream dump;
 	if (!this->visitedchildren[node.index()].empty()) {
 		dump << " {\n";
-		const auto &chstr = dumpChildren(node);
-		if (!chstr.empty()) dump << chstr << "\n";
+		dumpChildren(node, dump);
 		dump << this->currindent << "}";
 	}
 	else {
 		dump << ";";
 	}
-	return dump.str();
 }
 
-std::string NodeDumper::dumpChildren(const AbstractNode &node)
+void NodeDumper::dumpChildren(const AbstractNode &node, std::stringstream &dump)
 {
-	std::stringstream dump;
 	for (auto child : this->visitedchildren[node.index()]) {
 		assert(isCached(*child));
 		const auto &str = this->cache[*child];
@@ -67,7 +63,6 @@ std::string NodeDumper::dumpChildren(const AbstractNode &node)
 			dump << str;
 		}
 	}
-	return dump.str();
 }
 
 /*!
@@ -84,7 +79,7 @@ Response NodeDumper::visit(State &state, const AbstractNode &node)
 		dump << this->currindent;
 		if (this->idprefix) dump << "n" << node.index() << ":";
 		dump << node;
-		dump << dumpChildBlock(node);
+		dumpChildBlock(node, dump);
 		this->cache.insert(node, dump.str());
 	}
 
@@ -101,7 +96,7 @@ Response NodeDumper::visit(State &state, const RootNode &node)
 
 	if (state.isPostfix()) {
 		std::stringstream dump;
-		dump << dumpChildren(node);
+		dumpChildren(node, dump);
 		this->cache.insert(node, dump.str());
 	}
 
