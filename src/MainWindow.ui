@@ -193,7 +193,7 @@
            <number>0</number>
           </property>
           <item>
-           <widget class="QLabel" name="label">
+           <widget class="QLabel" name="label_time">
             <property name="text">
              <string>Time:</string>
             </property>
@@ -203,7 +203,7 @@
            <widget class="QLineEdit" name="e_tval"/>
           </item>
           <item>
-           <widget class="QLabel" name="label_2">
+           <widget class="QLabel" name="label_fps">
             <property name="text">
              <string>FPS:</string>
             </property>
@@ -213,7 +213,7 @@
            <widget class="QLineEdit" name="e_fps"/>
           </item>
           <item>
-           <widget class="QLabel" name="label_3">
+           <widget class="QLabel" name="label_steps">
             <property name="text">
              <string>Steps:</string>
             </property>
