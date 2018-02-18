@@ -39,33 +39,35 @@ void NodeDumper::handleIndent(const State &state)
 	including braces and indentation.
 	All children are assumed to be cached already.
  */
-void NodeDumper::dumpChildBlock(const AbstractNode &node, std::stringstream &dump)
+void NodeDumper::dumpChildBlock(const AbstractNode &node, std::stringstream &dump) const
 {
-	if (!this->visitedchildren[node.index()].empty()) {
+	const auto &it = this->visitedchildren.find(node.index());
+
+	if (it == this->visitedchildren.end() || it->second.empty()) {
+		dump << ";";
+	} else {
 		dump << " {\n";
 		dumpChildren(node, dump);
 		dump << this->currindent << "}";
 	}
-	else {
-		dump << ";";
-	}
 }
 
-void NodeDumper::dumpChildren(const AbstractNode &node, std::stringstream &dump)
+void NodeDumper::dumpChildren(const AbstractNode &node, std::stringstream &dump) const
 {
-	bool empty = true;
-	for (auto child : this->visitedchildren[node.index()]) {
+	const auto &it = this->visitedchildren.find(node.index());
+	if (it == this->visitedchildren.end()) return;
+	
+	for (auto child : it->second) {
 		assert(isCached(*child));
 		const auto &str = this->cache[*child];
 		if (!str.empty()) {
-			if (child != this->visitedchildren[node.index()].front()) dump << "\n";
+			if (child != it->second.front()) dump << "\n";
 			if (child->modinst->isBackground()) dump << "%";
 			if (child->modinst->isHighlight()) dump << "#";
 			dump << str;
-			empty = false;
 		}
 	}
-	if (!empty) dump << "\n";
+	dump << "\n";
 }
 
 /*!
