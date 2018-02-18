@@ -53,6 +53,7 @@ void NodeDumper::dumpChildBlock(const AbstractNode &node, std::stringstream &dum
 
 void NodeDumper::dumpChildren(const AbstractNode &node, std::stringstream &dump)
 {
+	bool empty = true;
 	for (auto child : this->visitedchildren[node.index()]) {
 		assert(isCached(*child));
 		const auto &str = this->cache[*child];
@@ -61,8 +62,10 @@ void NodeDumper::dumpChildren(const AbstractNode &node, std::stringstream &dump)
 			if (child->modinst->isBackground()) dump << "%";
 			if (child->modinst->isHighlight()) dump << "#";
 			dump << str;
+			empty = false;
 		}
 	}
+	if (!empty) dump << "\n";
 }
 
 /*!
