@@ -48,12 +48,12 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 {
 	setupUi(this);
 
-	descriptionShow = 0;
+	descriptionLoD = 0;
 	autoPreviewTimer.setInterval(500);
 	autoPreviewTimer.setSingleShot(true);
 	connect(&autoPreviewTimer, SIGNAL(timeout()), this, SLOT(onPreviewTimerElapsed()));
 	connect(checkBoxAutoPreview, SIGNAL(toggled(bool)), this, SLOT(onValueChanged()));
-	connect(comboBoxDetails,SIGNAL(currentIndexChanged(int)), this,SLOT(onDescriptionShow()));
+	connect(comboBoxDetails,SIGNAL(currentIndexChanged(int)), this,SLOT(onDescriptionLoDChanged()));
 	connect(comboBoxPreset, SIGNAL(currentIndexChanged(int)), this, SLOT(onSetChanged(int)));
 	connect(reset, SIGNAL(clicked()), this, SLOT(resetParameter()));
 }
@@ -68,6 +68,7 @@ ParameterWidget::~ParameterWidget()
 {
 }
 
+//deletes the currently selected/active parameter set
 void ParameterWidget::onSetDelete()
 {
 	if (root.empty()) return;
@@ -81,6 +82,7 @@ void ParameterWidget::onSetDelete()
 	setComboBoxPresetForSet();
 }
 
+//adds a new parameter set
 void ParameterWidget::onSetAdd()
 {
 	if (root.empty()) {
@@ -105,19 +107,19 @@ void ParameterWidget::readFile(QString scadFile)
 	bool readable=readParameterSet(this->jsonFile);
 	if(readable){
 		connect(this->addButton, SIGNAL(clicked()), this, SLOT(onSetAdd()));
-		this->addButton->setToolTip("add new preset");
+		this->addButton->setToolTip(_("add new preset"));
 		connect(this->deleteButton, SIGNAL(clicked()), this, SLOT(onSetDelete()));
-		this->deleteButton->setToolTip("remove current preset");
+		this->deleteButton->setToolTip(_("remove current preset"));
 		connect(this->presetSaveButton, SIGNAL(clicked()), this, SLOT(onSetSaveButton()));
-		this->presetSaveButton->setToolTip("save current preset");
+		this->presetSaveButton->setToolTip(_("save current preset"));
 	}
 	else{
 		this->addButton->setDisabled(true);
-		this->addButton->setToolTip("JSON file read only");
+		this->addButton->setToolTip(_("JSON file read only"));
 		this->deleteButton->setDisabled(true);
-		this->deleteButton->setToolTip("JSON file read only");
+		this->deleteButton->setToolTip(_("JSON file read only"));
 		this->presetSaveButton->setDisabled(true);
-		this->presetSaveButton->setToolTip("JSON file read only");
+		this->presetSaveButton->setToolTip(_("JSON file read only"));
 	}
 	disconnect(comboBoxPreset, SIGNAL(currentIndexChanged(int)), this, SLOT(onSetChanged(int)));
 	this->comboBoxPreset->clear();
@@ -150,9 +152,9 @@ void ParameterWidget::onSetChanged(int idx)
 	emit previewRequested(false);
 }
 
-void ParameterWidget::onDescriptionShow()
+void ParameterWidget::onDescriptionLoDChanged()
 {
-	descriptionShow =comboBoxDetails->currentIndex();
+	descriptionLoD =comboBoxDetails->currentIndex();
 	emit previewRequested();
 }
 
@@ -171,33 +173,21 @@ void ParameterWidget::onPreviewTimerElapsed()
 
 void ParameterWidget::cleanScrollArea()
 {
-	this->scrollAreaWidgetContents->layout()->setAlignment(Qt::AlignTop);
+	auto layout = this->scrollAreaWidgetContents->layout();
+	layout->setAlignment(Qt::AlignTop);
 	QLayoutItem *child;
-	while ((child = this->scrollAreaWidgetContents->layout()->takeAt(0)) != nullptr) {
+	while ((child = layout->takeAt(0)) != nullptr) {
 		QWidget *w = child->widget();
-		this->scrollAreaWidgetContents->layout()->removeWidget(w);
+		layout->removeWidget(w);
 		delete w;
-	}
-}
-
-void ParameterWidget::addEntry(QVBoxLayout* anyLayout, ParameterVirtualWidget *entry)
-{
-	if(entry){
-		QSizePolicy policy;
-		policy.setHorizontalPolicy(QSizePolicy::Ignored);
-		policy.setVerticalPolicy(QSizePolicy::Maximum);
-		policy.setHorizontalStretch(0);
-		policy.setVerticalStretch(0);
-		entry->setSizePolicy(policy);
-		anyLayout->addWidget(entry);
 	}
 }
 
 void ParameterWidget::connectWidget()
 {
 	anyfocused = false;
-	// clear previous entries in groupMap and entries
-	clear();
+
+	rebuildGroupMap();
 	
 	std::vector<std::string> global;
 	if (groupMap.find("Global") != groupMap.end()) {
@@ -227,7 +217,9 @@ void ParameterWidget::connectWidget()
 			gr = groupMap[*it].parameterVector;
 			for(unsigned int i=0;i < gr.size();i++) {
 				ParameterVirtualWidget * entry = CreateParameterWidget(gr[i]);
-				addEntry(anyLayout, entry);
+				if(entry){
+					anyLayout->addWidget(entry);
+				}
 			}
 
 			GroupWidget *groupWidget = new GroupWidget(groupMap[*it].show, QString::fromStdString(*it));
@@ -247,7 +239,7 @@ void ParameterWidget::updateWidget()
 		widget->setValue();
 }
 
-void ParameterWidget::clear(){
+void ParameterWidget::rebuildGroupMap(){
 	for (entry_map_t::iterator it = entries.begin(); it != entries.end();) {
 		if (!(*it).second->set) {
 			it = entries.erase(it);
@@ -286,27 +278,27 @@ ParameterVirtualWidget* ParameterWidget::CreateParameterWidget(std::string param
 	ParameterVirtualWidget *entry = nullptr;
 	switch(entries[parameterName]->target) {
 		case ParameterObject::COMBOBOX:{
-			entry = new ParameterComboBox(entries[parameterName], descriptionShow);
+			entry = new ParameterComboBox(entries[parameterName], descriptionLoD);
 			break;
 		}
 		case ParameterObject::SLIDER:{
-			entry = new ParameterSlider(entries[parameterName], descriptionShow);
+			entry = new ParameterSlider(entries[parameterName], descriptionLoD);
 			break;
 		}
 		case ParameterObject::CHECKBOX:{
-			entry = new ParameterCheckBox(entries[parameterName], descriptionShow);
+			entry = new ParameterCheckBox(entries[parameterName], descriptionLoD);
 			break;
 		}
 		case ParameterObject::TEXT:{
-			entry = new ParameterText(entries[parameterName], descriptionShow);
+			entry = new ParameterText(entries[parameterName], descriptionLoD);
 			break;
 		}
 		case ParameterObject::NUMBER:{
-			entry = new ParameterSpinBox(entries[parameterName], descriptionShow);
+			entry = new ParameterSpinBox(entries[parameterName], descriptionLoD);
 			break;
 		}
 		case ParameterObject::VECTOR:{
-			entry = new ParameterVector(entries[parameterName], descriptionShow);
+			entry = new ParameterVector(entries[parameterName], descriptionLoD);
 			break;
 		}
 		case ParameterObject::UNDEFINED:{

@@ -2,11 +2,9 @@
 
 #include <QFrame>
 #include <QGridLayout>
-#include <QParallelAnimationGroup>
 #include <QScrollArea>
 #include <QToolButton>
 #include <QWidget>
-#include <vector>
 
 class GroupWidget : public QWidget {
 	Q_OBJECT

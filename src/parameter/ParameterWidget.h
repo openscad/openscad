@@ -45,7 +45,7 @@ private:
 	typedef std::map<std::string,groupInst > group_map;
 	group_map groupMap;
 	QTimer autoPreviewTimer;
-	int descriptionShow;
+	int descriptionLoD; //configuration if and how much of the description is shown
 	std::string jsonFile;
 	bool anyfocused;
 	ParameterVirtualWidget *entryToFocus;
@@ -53,8 +53,7 @@ private:
 	void connectWidget() override;
 	void updateWidget() override;
 	void cleanScrollArea();
-	void addEntry(QVBoxLayout* anylayout, ParameterVirtualWidget *entry);
-	void clear();
+	void rebuildGroupMap();
 	ParameterVirtualWidget* CreateParameterWidget(std::string parameterName);
 	void setComboBoxPresetForSet();
 
@@ -67,7 +66,7 @@ public:
 protected slots:
 	void onValueChanged();
 	void onPreviewTimerElapsed();
-	void onDescriptionShow();
+	void onDescriptionLoDChanged();
 	void onSetChanged(int idx);
 	void onSetAdd();
 	void onSetSaveButton();

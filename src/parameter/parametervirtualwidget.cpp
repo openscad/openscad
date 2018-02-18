@@ -4,6 +4,13 @@
 ParameterVirtualWidget::ParameterVirtualWidget(QWidget *parent) : QWidget(parent)
 {
 	setupUi(this);
+
+	QSizePolicy policy;
+	policy.setHorizontalPolicy(QSizePolicy::Ignored);
+	policy.setVerticalPolicy(QSizePolicy::Maximum);
+	policy.setHorizontalStretch(0);
+	policy.setVerticalStretch(0);
+	this->setSizePolicy(policy);
 }
 
 ParameterVirtualWidget::~ParameterVirtualWidget(){
