@@ -106,7 +106,8 @@ void ParameterWidget::onSetSaveButton()
 }
 
 void ParameterWidget::setFile(QString scadFile){
-	this->jsonFile = scadFile.replace(".scad", ".json").toStdString();
+	boost::filesystem::path p = scadFile.toStdString();
+	this->jsonFile = p.replace_extension(".json").string();
 }
 
 void ParameterWidget::readFile(QString scadFile)
