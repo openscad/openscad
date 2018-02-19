@@ -29,7 +29,7 @@ void NodeDumper::handleIndent(const State &state)
 		this->currindent++;
 	}
 	else if (state.isPostfix()) {
-		this->currindent = this->currindent > 0 ? this->currindent - 1 : 0;
+		this->currindent--;
 	}
 }
 
