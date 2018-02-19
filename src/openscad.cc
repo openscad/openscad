@@ -454,7 +454,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		}
 		else {
 			fs::current_path(fparent); // Force exported filenames to be relative to document path
-			fstream << tree.getString(*root_node, true) << "\n";
+			fstream << tree.getString(*root_node, "\t") << "\n";
 			fstream.close();
 		}
 	}
