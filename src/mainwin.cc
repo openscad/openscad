@@ -1116,9 +1116,6 @@ void MainWindow::instantiateRoot()
 			}
 			// FIXME: Consider giving away ownership of root_node to the Tree, or use reference counted pointers
 			this->tree.setRoot(this->root_node);
-			// Dump the tree (to initialize caches).
-			// FIXME: We shouldn't really need to do this explicitly..
-			this->tree.getString(*this->root_node);
 		}
 	}
 
@@ -2063,7 +2060,7 @@ void MainWindow::actionDisplayCSGTree()
 	e->setWindowTitle("CSG Tree Dump");
 	e->setReadOnly(true);
 	if (this->root_node) {
-		e->setPlainText(QString::fromUtf8(this->tree.getString(*this->root_node).c_str()));
+		e->setPlainText(QString::fromUtf8(this->tree.getString(*this->root_node, "  ").c_str()));
 	} else {
 		e->setPlainText("No CSG to dump. Please try compiling first...");
 	}
@@ -2238,7 +2235,7 @@ void MainWindow::actionExportCSG()
 		PRINTB("Can't open file \"%s\" for export", csg_filename.toLocal8Bit().constData());
 	}
 	else {
-		fstream << this->tree.getString(*this->root_node) << "\n";
+		fstream << this->tree.getString(*this->root_node, "\t") << "\n";
 		fstream.close();
 		PRINT("CSG export finished.");
 	}
