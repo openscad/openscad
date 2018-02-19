@@ -23,8 +23,8 @@ private:
         void handleVisitedChildren(const State &state, const AbstractNode &node);
         bool isCached(const AbstractNode &node) const;
         void handleIndent(const State &state);
-        std::string dumpChildBlock(const AbstractNode &node);
-        std::string dumpChildren(const AbstractNode &node);
+        void dumpChildBlock(const AbstractNode &node, std::stringstream &dump) const;
+        void dumpChildren(const AbstractNode &node, std::stringstream &dump) const;
 
         NodeCache &cache;
         bool idprefix;
