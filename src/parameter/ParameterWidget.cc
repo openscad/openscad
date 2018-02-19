@@ -37,8 +37,12 @@
 #include "modcontext.h"
 #include "comment.h"
 
+#include <boost/filesystem.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+
+#include <fstream>
+
 namespace pt = boost::property_tree;
 
 #include <QInputDialog>
@@ -104,19 +108,22 @@ void ParameterWidget::onSetSaveButton()
 void ParameterWidget::readFile(QString scadFile)
 {
 	this->jsonFile = scadFile.replace(".scad", ".json").toStdString();
+	bool exists = boost::filesystem::exists(this->jsonFile);
 	bool writeable = false;
 
-	bool readable = readParameterSet(this->jsonFile);
+	if(exists){
+		bool readable = readParameterSet(this->jsonFile);
 
-	//check whether file is writeable
-	std::fstream file;
-	file.open(filename, std::ios::app);
-	if (file.is_open()) {
-		file.close();
-		writeable = true;
+		//check whether file is writeable
+		std::fstream file;
+		file.open(this->jsonFile, std::ios::app);
+		if (file.is_open()) {
+			file.close();
+			writeable = true;
+		}
 	}
 
-	if(writeable){
+	if(writeable || !exists){
 		connect(this->addButton, SIGNAL(clicked()), this, SLOT(onSetAdd()));
 		this->addButton->setToolTip(_("add new preset"));
 		connect(this->deleteButton, SIGNAL(clicked()), this, SLOT(onSetDelete()));

@@ -3,7 +3,6 @@
 #include "modcontext.h"
 #include "expression.h"
 #include "printutils.h"
-#include <fstream>
 #include <boost/property_tree/json_parser.hpp>
 
 std::string ParameterSet::parameterSetsKey("parameterSets");
