@@ -168,10 +168,10 @@ bool Value::toBool() const
     return boost::get<double>(this->value)!= 0;
     break;
   case ValueType::STRING:
-    return boost::get<std::string>(this->value).size() > 0;
+    return !boost::get<str_utf8_wrapper>(this->value).empty();
     break;
   case ValueType::VECTOR:
-    return boost::get<VectorType >(this->value).size() > 0;
+    return !boost::get<VectorType >(this->value).empty();
     break;
   case ValueType::RANGE:
     return true;
@@ -688,13 +688,13 @@ Value Value::operator-() const
 class bracket_visitor : public boost::static_visitor<Value>
 {
 public:
-  Value operator()(const std::string &str, const double &idx) const {
+  Value operator()(const str_utf8_wrapper &str, const double &idx) const {
     Value v;
 
     const auto i = convert_to_uint32(idx);
     if (i < str.size()) {
-			//Ensure character (not byte) index is inside the character/glyph array
-			if (i < static_cast<unsigned int>(g_utf8_strlen(str.c_str(), str.size())))	{
+			// Ensure character (not byte) index is inside the character/glyph array
+			if (i < str.get_utf8_strlen())	{
 				gchar utf8_of_cp[6] = ""; //A buffer for a single unicode character to be copied into
 				auto ptr = g_utf8_offset_to_pointer(str.c_str(), i);
 				if (ptr) {
@@ -862,7 +862,7 @@ ValuePtr::ValuePtr(double v)
 
 ValuePtr::ValuePtr(const std::string &v)
 {
-	this->reset(new Value(v));
+	this->reset(new Value(str_utf8_wrapper(v)));
 }
 
 ValuePtr::ValuePtr(const char *v)

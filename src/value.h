@@ -9,6 +9,8 @@
 #ifndef Q_MOC_RUN
 #include <boost/variant.hpp>
 #include <boost/lexical_cast.hpp>
+#include <glib.h>
+
 #endif
 #include <cstdint>
 #include "memory.h"
@@ -133,6 +135,25 @@ public:
 private:
 };
 
+
+class str_utf8_wrapper : public std::string
+{
+public:
+	str_utf8_wrapper() : std::string(), cached_len(-1) { }
+	str_utf8_wrapper( const std::string& s ) : std::string( s ), cached_len(-1) { }
+	~str_utf8_wrapper() {}
+	
+	glong get_utf8_strlen() const {
+		if (cached_len < 0) {
+			cached_len = g_utf8_strlen(this->c_str(), this->size());
+		}
+		return cached_len;
+	};
+private:
+	mutable glong cached_len;
+};
+
+
 class Value
 {
 public:
@@ -199,7 +220,7 @@ public:
     return stream;
   }
 
-  typedef boost::variant< boost::blank, bool, double, std::string, VectorType, RangeType > Variant;
+  typedef boost::variant< boost::blank, bool, double, str_utf8_wrapper, VectorType, RangeType > Variant;
 
 private:
   static Value multvecnum(const Value &vecval, const Value &numval);

@@ -647,13 +647,13 @@ ValuePtr builtin_lookup(const Context *, const EvalContext *evalctx)
 
 */
 
-static Value::VectorType search(const std::string &find, const std::string &table,
+static Value::VectorType search(const str_utf8_wrapper &find, const str_utf8_wrapper &table,
 																unsigned int num_returns_per_match)
 {
 	Value::VectorType returnvec;
 	//Unicode glyph count for the length
-	size_t findThisSize = g_utf8_strlen(find.c_str(), find.size());
-	size_t searchTableSize = g_utf8_strlen(table.c_str(), table.size());
+	size_t findThisSize = find.get_utf8_strlen();
+	size_t searchTableSize = table.get_utf8_strlen();
 	for (size_t i = 0; i < findThisSize; i++) {
 		unsigned int matchCount = 0;
 		Value::VectorType resultvec;
@@ -684,12 +684,12 @@ static Value::VectorType search(const std::string &find, const std::string &tabl
 	return returnvec;
 }
 
-static Value::VectorType search(const std::string &find, const Value::VectorType &table,
+static Value::VectorType search(const str_utf8_wrapper &find, const Value::VectorType &table,
 																unsigned int num_returns_per_match, unsigned int index_col_num)
 {
 	Value::VectorType returnvec;
 	//Unicode glyph count for the length
-	unsigned int findThisSize =  g_utf8_strlen(find.c_str(), find.size());
+	unsigned int findThisSize =  find.get_utf8_strlen();
 	unsigned int searchTableSize = table.size();
 	for (size_t i = 0; i < findThisSize; i++) {
 		unsigned int matchCount = 0;
