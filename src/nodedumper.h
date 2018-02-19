@@ -12,8 +12,8 @@ class NodeDumper : public NodeVisitor
 public:
         /*! If idPrefix is true, we will output "n<id>:" in front of each node,
           which is useful for debugging. */
-        NodeDumper(NodeCache &cache, bool idPrefix = false) :
-                cache(cache), idprefix(idPrefix), root(nullptr) { }
+        NodeDumper(NodeCache &cache, bool indent = false, bool idPrefix = false) :
+                cache(cache), indent(indent), idprefix(idPrefix), root(nullptr) { }
         ~NodeDumper() {}
 
         Response visit(State &state, const AbstractNode &node) override;
@@ -27,6 +27,7 @@ private:
         void dumpChildren(const AbstractNode &node, std::stringstream &dump) const;
 
         NodeCache &cache;
+        bool indent;
         bool idprefix;
 
         std::string currindent;

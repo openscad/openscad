@@ -454,7 +454,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		}
 		else {
 			fs::current_path(fparent); // Force exported filenames to be relative to document path
-			fstream << tree.getString(*root_node) << "\n";
+			fstream << tree.getString(*root_node, true) << "\n";
 			fstream.close();
 		}
 	}
@@ -969,10 +969,6 @@ int main(int argc, char **argv)
 	currentdir = fs::current_path().generic_string();
 
 	Camera camera = get_camera(vm);
-
-	// Initialize global visitors
-	NodeCache nodecache;
-	NodeDumper dumper(nodecache);
 
 	auto cmdlinemode = false;
 	if (output_file) { // cmd-line mode

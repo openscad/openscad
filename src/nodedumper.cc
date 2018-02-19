@@ -76,10 +76,10 @@ Response NodeDumper::visit(State &state, const AbstractNode &node)
 {
 	if (isCached(node)) return Response::PruneTraversal;
 
-	handleIndent(state);
+	if (this->indent) handleIndent(state);
 	if (state.isPostfix()) {
 		std::stringstream dump;
-		dump << this->currindent;
+		if (this->indent) dump << this->currindent;
 		if (this->idprefix) dump << "n" << node.index() << ":";
 		dump << node;
 		dumpChildBlock(node, dump);
