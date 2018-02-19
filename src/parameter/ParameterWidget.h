@@ -57,6 +57,8 @@ private:
 	ParameterVirtualWidget* CreateParameterWidget(std::string parameterName);
 	void setComboBoxPresetForSet();
 
+	void setFile(QString File);
+
 public:
 	ParameterWidget(QWidget *parent = nullptr);
 	~ParameterWidget();

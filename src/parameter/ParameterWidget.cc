@@ -105,9 +105,13 @@ void ParameterWidget::onSetSaveButton()
 	updateParameterSet(comboBoxPreset->itemData(this->comboBoxPreset->currentIndex()).toString().toStdString());
 }
 
+void ParameterWidget::setFile(QString scadFile){
+	this->jsonFile = scadFile.replace(".scad", ".json").toStdString();
+}
+
 void ParameterWidget::readFile(QString scadFile)
 {
-	this->jsonFile = scadFile.replace(".scad", ".json").toStdString();
+	setFile(scadFile);
 	bool exists = boost::filesystem::exists(this->jsonFile);
 	bool writeable = false;
 
@@ -147,8 +151,9 @@ void ParameterWidget::readFile(QString scadFile)
 
 void ParameterWidget::writeFileIfNotEmpty(QString scadFile)
 {
+	setFile(scadFile);
 	if (!root.empty()){
-		writeParameterSet(scadFile.replace(".scad", ".json").toStdString());
+		writeParameterSet(this->jsonFile);
 	}
 }
 
