@@ -21,10 +21,6 @@ public:
 
 private:
         void handleVisitedChildren(const State &state, const AbstractNode &node);
-        bool isCached(const AbstractNode &node) const;
-        void handleIndent(const State &state);
-        void dumpChildBlock(const AbstractNode &node, std::stringstream &dump) const;
-        void dumpChildren(const AbstractNode &node, std::stringstream &dump) const;
 
         NodeCache &cache;
         std::string indent;
@@ -32,6 +28,6 @@ private:
 
         int currindent;
         const AbstractNode *root;
-        typedef std::list<const AbstractNode *> ChildList;
-        std::map<int, ChildList> visitedchildren;
+        std::stringstream dump;
+
 };

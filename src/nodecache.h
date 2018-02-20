@@ -2,14 +2,19 @@
 
 #include <vector>
 #include <string>
+#include <istream>
 #include "node.h"
 #include "memory.h"
+#include "assert.h"
 
 /*!
 	Caches string values per node based on the node.index().
 	The node index guaranteed to be unique per node tree since the index is reset
 	every time a new tree is generated.
 */
+
+typedef std::pair<std::streampos, std::streampos> IndexPair;
+
 class NodeCache
 {
 public:
@@ -17,36 +22,44 @@ public:
   virtual ~NodeCache() { }
 
 	bool contains(const AbstractNode &node) const {
-		if (this->cache.size() > node.index()) return this->cache[node.index()].get();
-		return false;
+        return this->root_stream.get();
 	}
 
-  /*! Returns a reference to the cached string copy. NB! don't rely on
-	 *  this reference to be valid for long - if the cache is resized
-	 *  internally, existing values are lost.  */
-  const std::string & operator[](const AbstractNode &node) const {
-    if (this->cache.size() > node.index()) return *this->cache[node.index()];
-    else return this->nullvalue;
+  const std::string operator[](const AbstractNode &node) const {
+    assert(this->cache.size() > node.index());
+    const IndexPair &p = this->cache[node.index()];
+    this->root_stream->seekg(p.first);
+    this->root_stream->read(p.second - p.first);
+    
   }
 
-  /*! Returns a reference to the cached string copy. NB! don't rely on
-	 *  this reference to be valid for long - if the cache is resized
-	 *  internally, existing values are lost. */
-  const std::string &insert(const class AbstractNode &node, const std::string & value) {
+  void insert(const class AbstractNode &node, std::stringstream &dump) {
     if (this->cache.size() <= node.index()) this->cache.resize(node.index() + 1);
-		this->cache[node.index()].reset(new std::string(value));
-    return *this->cache[node.index()];
+    const IndexPair &p = this->cache[node.index()];
+    if (p.second < 0) {
+        this->cache[node.index()] = std::make_pair(p.first, dump.tellp()));
+    } else {
+        this->cache[node.index()] = std::make_pair(dump.tellp(), -1);
+    }
   }
 
-  void remove(const class AbstractNode &node) {
-    if (this->cache.size() > node.index()) this->cache[node.index()].reset();
+  void set_root_stream(std::stringstream& dump) {
+      this->root_stream.reset(dump);
   }
+
+/*
+  void remove(const class AbstractNode &node) {
+     //;
+  }
+*/
 
 	void clear() {
 		this->cache.clear();
+        this->root_string.reset();
 	}
 
 private:
-  std::vector<shared_ptr<std::string>> cache;
-	std::string nullvalue;
+  std::vector<IndexPair> cache;
+  std::string nullvalue;
+  shared_ptr<std::stringstream> root_stream;
 };

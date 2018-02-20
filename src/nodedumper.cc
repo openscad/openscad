@@ -14,61 +14,12 @@
 	contains a cache for fast retrieval of the text representation of
 	any node or subtree.
 */
-
+/*
 bool NodeDumper::isCached(const AbstractNode &node) const
 {
 	return this->cache.contains(node);
 }
-
-/*!
-	Indent or deindent. Must be called before we output any children.
 */
-void NodeDumper::handleIndent(const State &state)
-{
-	if (state.isPrefix()) {
-		this->currindent++;
-	}
-	else if (state.isPostfix()) {
-		this->currindent--;
-	}
-}
-
-/*!
-	Dumps the block of children contained in this->visitedchildren,
-	including braces and indentation.
-	All children are assumed to be cached already.
- */
-void NodeDumper::dumpChildBlock(const AbstractNode &node, std::stringstream &dump) const
-{
-	const auto &it = this->visitedchildren.find(node.index());
-
-	if (it == this->visitedchildren.end() || it->second.empty()) {
-		dump << ";";
-	} else {
-		dump << " {\n";
-		dumpChildren(node, dump);
-		for(int i = 0; i < this->currindent; ++i) {
-			dump << this->indent;
-		}
-		dump << "}";
-	}
-}
-
-void NodeDumper::dumpChildren(const AbstractNode &node, std::stringstream &dump) const
-{
-	const auto &it = this->visitedchildren.find(node.index());
-	if (it == this->visitedchildren.end()) return;
-	
-	for (auto child : it->second) {
-		assert(isCached(*child));
-		const auto &str = this->cache[*child];
-		if (!str.empty()) {
-			if (child->modinst->isBackground()) dump << "%";
-			if (child->modinst->isHighlight()) dump << "#";
-			dump << str << "\n";
-		}
-	}
-}
 
 /*!
 	Called for each node in the tree.
@@ -76,21 +27,34 @@ void NodeDumper::dumpChildren(const AbstractNode &node, std::stringstream &dump)
 */
 Response NodeDumper::visit(State &state, const AbstractNode &node)
 {
-	if (isCached(node)) return Response::PruneTraversal;
+	std:stringstream& dump = this->dump;
+	if (state.isPrefix()) {
+		if (child->modinst->isBackground()) dump << "%";
+		if (child->modinst->isHighlight()) dump << "#";
 
-	handleIndent(state);
-	if (state.isPostfix()) {
-		std::stringstream dump;
+		// insert start index
+		this->cache.insert(node, dump);
+		
 		for(int i = 0; i < this->currindent; ++i) {
 			dump << this->indent;
 		}
-		if (this->idprefix) dump << "n" << node.index() << ":";
-		dump << node;
-		dumpChildBlock(node, dump);
-		this->cache.insert(node, dump.str());
+		dump << node << " {\n";
+		this->currindent++;
+		
+		if (this->idprefix) this->dump << "n" << node.index() << ":";
+
+	} else if (state.isPostfix()) {
+
+		this->currindent--;
+		for(int i = 0; i < this->currindent; ++i) {
+			dump << this->indent;
+		}
+		dump << "};";
+
+		// insert end index
+		this->cache.insert(node, dump);
 	}
 
-	handleVisitedChildren(state, node);
 	return Response::ContinueTraversal;
 }
 
@@ -101,29 +65,10 @@ Response NodeDumper::visit(State &state, const RootNode &node)
 {
 	if (isCached(node)) return Response::PruneTraversal;
 
+	visit(state, (const class AbstractNode &)node);
 	if (state.isPostfix()) {
-		std::stringstream dump;
-		dumpChildren(node, dump);
-		this->cache.insert(node, dump.str());
+		this->cache.set_root_string(this->dump.str());
 	}
 
-	handleVisitedChildren(state, node);
 	return Response::ContinueTraversal;
-}
-
-/*!
-	Adds this given node to its parent's child list.
-	Should be called for all nodes, including leaf nodes.
-*/
-void NodeDumper::handleVisitedChildren(const State &state, const AbstractNode &node)
-{
-	if (state.isPostfix()) {
-		this->visitedchildren.erase(node.index());
-		if (!state.parent()) {
-			this->root = &node;
-		}
-		else {
-			this->visitedchildren[state.parent()->index()].push_back(&node);
-		}
-	}
 }
