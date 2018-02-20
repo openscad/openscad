@@ -441,7 +441,7 @@ bool Value::operator!=(const Value &v) const
 			return op1 op op2;																								\
 		}																																		\
 																																				\
-		bool operator()(const std::string &op1, const std::string &op2) const {	\
+		bool operator()(const str_utf8_wrapper &op1, const str_utf8_wrapper &op2) const {	\
 			return op1 op op2;																								\
 		}																																		\
 	}
