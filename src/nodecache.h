@@ -24,26 +24,35 @@ public:
   virtual ~NodeCache() { }
 
 	bool contains(const AbstractNode &node) const {
-        return this->cache.size() > node.index();
+        return this->startcache.size() > node.index()-1 && 
+            this->endcache.size() > node.index()-1 &&
+            this->endcache[node.index()-1] >= 0;
 	}
 
   const std::string operator[](const AbstractNode &node) const {
-    assert(this->cache.size() > node.index());
+    assert(contains(node));
+    long start = this->startcache[node.index()-1];
+    long end = this->endcache[node.index()-1];
     std::stringstream &root_stream = *this->root_stream;
     std::stringstream o;
-    const IndexPair &p = this->cache[node.index()];
-    root_stream.seekg(p.first);
-    std::copy_n(std::istream_iterator<char>(root_stream), (p.second - p.first), std::ostream_iterator<char>(o));
+    root_stream.seekg(start);
+    std::copy_n(std::istream_iterator<char>(root_stream), (end - start), std::ostream_iterator<char>(o));
     return o.str();
   }
 
-  void insert(const class AbstractNode &node) {
-    if (this->cache.size() <= node.index()) {
-        this->cache.push_back(std::make_pair(this->root_stream->tellp(), -1));
+  void insert_start(const class AbstractNode &node) {
+      // node index is 1-based
+  if (this->startcache.size() <= node.index()) {
+        this->startcache.push_back(this->root_stream->tellp());
+        this->endcache.push_back(-1L);
     } else {
-        this->cache[node.index()] = std::make_pair(this->cache[node.index()].first, this->root_stream->tellp());
+        assert(false && "start index inserted twice");
     }
-        
+  }
+
+  void insert_end(const class AbstractNode &node) {
+      assert(this->endcache[node.index()-1] == -1L && "end index inserted twice");
+      this->endcache[node.index()-1] = this->root_stream->tellp();
   }
 
   void set_root_stream(std::shared_ptr<std::stringstream> dump) {
@@ -56,13 +65,16 @@ public:
   }
 */
 
-	void clear() {
-		this->cache.clear();
+    void clear() {
+        this->startcache.clear();
+        this->endcache.clear();
         this->root_stream.reset();
-	}
+    }
 
 private:
-  std::vector<IndexPair> cache;
+  std::vector<long> startcache;
+  std::vector<long> endcache;
+  
   std::string nullvalue;
   shared_ptr<std::stringstream> root_stream;
 };

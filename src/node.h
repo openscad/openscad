@@ -40,7 +40,7 @@ public:
 	}
 	size_t index() const { return this->idx; }
 
-	static void resetIndexCounter() { idx_counter = 0; }
+	static void resetIndexCounter() { idx_counter = 1; }
 
 	// FIXME: Make protected
 	std::vector<AbstractNode*> children;

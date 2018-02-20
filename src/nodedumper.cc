@@ -32,7 +32,7 @@ Response NodeDumper::visit(State &state, const AbstractNode &node)
 		if (node.modinst->isHighlight()) dump << "#";
 
 		// insert start index
-		this->cache.insert(node);
+		this->cache.insert_start(node);
 		
 		for(int i = 0; i < this->currindent; ++i) {
 			dump << this->indent;
@@ -51,7 +51,7 @@ Response NodeDumper::visit(State &state, const AbstractNode &node)
 		dump << "};";
 
 		// insert end index
-		this->cache.insert(node);
+		this->cache.insert_end(node);
 	}
 
 	return Response::ContinueTraversal;
@@ -65,31 +65,30 @@ Response NodeDumper::visit(State &state, const RootNode &node)
 	if (isCached(node)) return Response::PruneTraversal;
 
 	if (state.isPrefix()) {
-		std::stringstream& dump = *this->dump;
-
 		this->cache.clear();
 		// make a fresh stringstream
-		this->dump.reset(std::make_shared<std::stringstream>().get());
+		this->dump = std::make_shared<std::stringstream>();
 		this->cache.set_root_stream(this->dump);
+		std::stringstream &dump = *this->dump;
 
-		// FIXME duplicated from Response NodeDumper::visit(State &state, const AbstractNode &node)
+		// FIXME mostly duplicated from Response NodeDumper::visit(State &state, const AbstractNode &node)
 		// not sure I can call directly or if that falsely increments the AbstractNode idx 
 		if (node.modinst->isBackground()) dump << "%";
 		if (node.modinst->isHighlight()) dump << "#";
 
 		// insert start index
-		this->cache.insert(node);
-		
+		this->cache.insert_start(node);
+
 		for(int i = 0; i < this->currindent; ++i) {
 			dump << this->indent;
 		}
-		dump << node << " {\n";
+		dump << "root() {\n";
 		this->currindent++;
-		
+
 		if (this->idprefix) dump << "n" << node.index() << ":";
 
 	} else if (state.isPostfix()) {
-		std::stringstream& dump = *this->dump;
+		std::stringstream &dump = *this->dump;
 
 		this->currindent--;
 		for(int i = 0; i < this->currindent; ++i) {
@@ -98,8 +97,8 @@ Response NodeDumper::visit(State &state, const RootNode &node)
 		dump << "};";
 
 		// insert end index
-		this->cache.insert(node);
+		this->cache.insert_end(node);
 	}
 
-	return visit(state, (const class AbstractNode &)node);
+	return Response::ContinueTraversal;
 }
