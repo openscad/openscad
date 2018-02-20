@@ -14,12 +14,11 @@
 	contains a cache for fast retrieval of the text representation of
 	any node or subtree.
 */
-/*
+
 bool NodeDumper::isCached(const AbstractNode &node) const
 {
 	return this->cache.contains(node);
 }
-*/
 
 /*!
 	Called for each node in the tree.
@@ -27,13 +26,13 @@ bool NodeDumper::isCached(const AbstractNode &node) const
 */
 Response NodeDumper::visit(State &state, const AbstractNode &node)
 {
-	std:stringstream& dump = this->dump;
+	std::stringstream& dump = *this->dump;
 	if (state.isPrefix()) {
-		if (child->modinst->isBackground()) dump << "%";
-		if (child->modinst->isHighlight()) dump << "#";
+		if (node.modinst->isBackground()) dump << "%";
+		if (node.modinst->isHighlight()) dump << "#";
 
 		// insert start index
-		this->cache.insert(node, dump);
+		this->cache.insert(node);
 		
 		for(int i = 0; i < this->currindent; ++i) {
 			dump << this->indent;
@@ -41,7 +40,7 @@ Response NodeDumper::visit(State &state, const AbstractNode &node)
 		dump << node << " {\n";
 		this->currindent++;
 		
-		if (this->idprefix) this->dump << "n" << node.index() << ":";
+		if (this->idprefix) dump << "n" << node.index() << ":";
 
 	} else if (state.isPostfix()) {
 
@@ -52,7 +51,7 @@ Response NodeDumper::visit(State &state, const AbstractNode &node)
 		dump << "};";
 
 		// insert end index
-		this->cache.insert(node, dump);
+		this->cache.insert(node);
 	}
 
 	return Response::ContinueTraversal;
@@ -65,10 +64,42 @@ Response NodeDumper::visit(State &state, const RootNode &node)
 {
 	if (isCached(node)) return Response::PruneTraversal;
 
-	visit(state, (const class AbstractNode &)node);
-	if (state.isPostfix()) {
-		this->cache.set_root_string(this->dump.str());
+	if (state.isPrefix()) {
+		std::stringstream& dump = *this->dump;
+
+		this->cache.clear();
+		// make a fresh stringstream
+		this->dump.reset(std::make_shared<std::stringstream>().get());
+		this->cache.set_root_stream(this->dump);
+
+		// FIXME duplicated from Response NodeDumper::visit(State &state, const AbstractNode &node)
+		// not sure I can call directly or if that falsely increments the AbstractNode idx 
+		if (node.modinst->isBackground()) dump << "%";
+		if (node.modinst->isHighlight()) dump << "#";
+
+		// insert start index
+		this->cache.insert(node);
+		
+		for(int i = 0; i < this->currindent; ++i) {
+			dump << this->indent;
+		}
+		dump << node << " {\n";
+		this->currindent++;
+		
+		if (this->idprefix) dump << "n" << node.index() << ":";
+
+	} else if (state.isPostfix()) {
+		std::stringstream& dump = *this->dump;
+
+		this->currindent--;
+		for(int i = 0; i < this->currindent; ++i) {
+			dump << this->indent;
+		}
+		dump << "};";
+
+		// insert end index
+		this->cache.insert(node);
 	}
 
-	return Response::ContinueTraversal;
+	return visit(state, (const class AbstractNode &)node);
 }

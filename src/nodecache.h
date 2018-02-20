@@ -2,7 +2,9 @@
 
 #include <vector>
 #include <string>
-#include <istream>
+#include <iterator>
+#include <sstream>
+#include <algorithm>
 #include "node.h"
 #include "memory.h"
 #include "assert.h"
@@ -13,7 +15,7 @@
 	every time a new tree is generated.
 */
 
-typedef std::pair<std::streampos, std::streampos> IndexPair;
+typedef std::pair<long, long> IndexPair;
 
 class NodeCache
 {
@@ -22,29 +24,30 @@ public:
   virtual ~NodeCache() { }
 
 	bool contains(const AbstractNode &node) const {
-        return this->root_stream.get();
+        return this->cache.size() > node.index();
 	}
 
   const std::string operator[](const AbstractNode &node) const {
     assert(this->cache.size() > node.index());
+    std::stringstream &root_stream = *this->root_stream;
+    std::stringstream o;
     const IndexPair &p = this->cache[node.index()];
-    this->root_stream->seekg(p.first);
-    this->root_stream->read(p.second - p.first);
-    
+    root_stream.seekg(p.first);
+    std::copy_n(std::istream_iterator<char>(root_stream), (p.second - p.first), std::ostream_iterator<char>(o));
+    return o.str();
   }
 
-  void insert(const class AbstractNode &node, std::stringstream &dump) {
-    if (this->cache.size() <= node.index()) this->cache.resize(node.index() + 1);
-    const IndexPair &p = this->cache[node.index()];
-    if (p.second < 0) {
-        this->cache[node.index()] = std::make_pair(p.first, dump.tellp()));
+  void insert(const class AbstractNode &node) {
+    if (this->cache.size() <= node.index()) {
+        this->cache.push_back(std::make_pair(this->root_stream->tellp(), -1));
     } else {
-        this->cache[node.index()] = std::make_pair(dump.tellp(), -1);
+        this->cache[node.index()] = std::make_pair(this->cache[node.index()].first, this->root_stream->tellp());
     }
+        
   }
 
-  void set_root_stream(std::stringstream& dump) {
-      this->root_stream.reset(dump);
+  void set_root_stream(std::shared_ptr<std::stringstream> dump) {
+      this->root_stream = dump;
   }
 
 /*
@@ -55,7 +58,7 @@ public:
 
 	void clear() {
 		this->cache.clear();
-        this->root_string.reset();
+        this->root_stream.reset();
 	}
 
 private:
