@@ -2,7 +2,7 @@
 #include "state.h"
 #include "module.h"
 #include "ModuleInstantiation.h"
-
+#include "memory.h"
 #include <string>
 #include <sstream>
 #include <assert.h>
@@ -32,12 +32,15 @@ Response NodeDumper::visit(State &state, const AbstractNode &node)
 		if (node.modinst->isHighlight()) dump << "#";
 
 		// insert start index
-		this->cache.insert_start(node);
+		this->cache.insert_start(node, dump.tellp());
 		
 		for(int i = 0; i < this->currindent; ++i) {
 			dump << this->indent;
 		}
-		dump << node << " {\n";
+		
+		dump << node;
+		if (node.getChildren().size() > 0) 
+			dump << " {\n";
 		this->currindent++;
 		
 		if (this->idprefix) dump << "n" << node.index() << ":";
@@ -45,13 +48,18 @@ Response NodeDumper::visit(State &state, const AbstractNode &node)
 	} else if (state.isPostfix()) {
 
 		this->currindent--;
-		for(int i = 0; i < this->currindent; ++i) {
-			dump << this->indent;
+		
+		if (node.getChildren().size() > 0) {
+			for(int i = 0; i < this->currindent; ++i) {
+				dump << this->indent;
+			}
+			dump << "}\n";
+		} else {
+			dump << ";\n";
 		}
-		dump << "};";
-
+		
 		// insert end index
-		this->cache.insert_end(node);
+		this->cache.insert_end(node, dump.tellp());
 	}
 
 	return Response::ContinueTraversal;
@@ -68,36 +76,17 @@ Response NodeDumper::visit(State &state, const RootNode &node)
 		this->cache.clear();
 		// make a fresh stringstream
 		this->dump = std::make_shared<std::stringstream>();
-		this->cache.set_root_stream(this->dump);
 		std::stringstream &dump = *this->dump;
 
-		// FIXME mostly duplicated from Response NodeDumper::visit(State &state, const AbstractNode &node)
-		// not sure I can call directly or if that falsely increments the AbstractNode idx 
-		if (node.modinst->isBackground()) dump << "%";
-		if (node.modinst->isHighlight()) dump << "#";
-
 		// insert start index
-		this->cache.insert_start(node);
-
-		for(int i = 0; i < this->currindent; ++i) {
-			dump << this->indent;
-		}
-		dump << "root() {\n";
-		this->currindent++;
-
-		if (this->idprefix) dump << "n" << node.index() << ":";
+		this->cache.insert_start(node, dump.tellp());
 
 	} else if (state.isPostfix()) {
 		std::stringstream &dump = *this->dump;
-
-		this->currindent--;
-		for(int i = 0; i < this->currindent; ++i) {
-			dump << this->indent;
-		}
-		dump << "};";
-
 		// insert end index
-		this->cache.insert_end(node);
+		this->cache.insert_end(node, dump.tellp());
+		// finalize cache
+		this->cache.set_root_string(dump.str());
 	}
 
 	return Response::ContinueTraversal;

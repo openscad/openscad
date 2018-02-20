@@ -2,9 +2,6 @@
 
 #include <vector>
 #include <string>
-#include <iterator>
-#include <sstream>
-#include <algorithm>
 #include "node.h"
 #include "memory.h"
 #include "assert.h"
@@ -20,61 +17,51 @@ typedef std::pair<long, long> IndexPair;
 class NodeCache
 {
 public:
-  NodeCache() { }
-  virtual ~NodeCache() { }
+    NodeCache() { }
+    virtual ~NodeCache() { }
 
-	bool contains(const AbstractNode &node) const {
+    bool contains(const AbstractNode &node) const {
         return this->startcache.size() > node.index()-1 && 
             this->endcache.size() > node.index()-1 &&
             this->endcache[node.index()-1] >= 0;
-	}
-
-  const std::string operator[](const AbstractNode &node) const {
-    assert(contains(node));
-    long start = this->startcache[node.index()-1];
-    long end = this->endcache[node.index()-1];
-    std::stringstream &root_stream = *this->root_stream;
-    std::stringstream o;
-    root_stream.seekg(start);
-    std::copy_n(std::istream_iterator<char>(root_stream), (end - start), std::ostream_iterator<char>(o));
-    return o.str();
-  }
-
-  void insert_start(const class AbstractNode &node) {
-      // node index is 1-based
-  if (this->startcache.size() <= node.index()) {
-        this->startcache.push_back(this->root_stream->tellp());
-        this->endcache.push_back(-1L);
-    } else {
-        assert(false && "start index inserted twice");
     }
-  }
 
-  void insert_end(const class AbstractNode &node) {
-      assert(this->endcache[node.index()-1] == -1L && "end index inserted twice");
-      this->endcache[node.index()-1] = this->root_stream->tellp();
-  }
+    const std::string operator[](const AbstractNode &node) const {
+        assert(contains(node));
+        long start = this->startcache[node.index()-1];
+        long end = this->endcache[node.index()-1];
+        return this->root_string.substr(start, end-start);
+    }
 
-  void set_root_stream(std::shared_ptr<std::stringstream> dump) {
-      this->root_stream = dump;
-  }
+    void insert_start(const class AbstractNode &node, long index) {
+        // node index is 1-based
+        if (this->startcache.size() <= node.index()) {
+            this->startcache.push_back(index);
+            this->endcache.push_back(-1L);
+        } else {
+            assert(false && "start index inserted twice");
+        }
+    }
 
-/*
-  void remove(const class AbstractNode &node) {
-     //;
-  }
-*/
+    void insert_end(const class AbstractNode &node, long index) {
+        assert(this->endcache[node.index()-1] == -1L && "end index inserted twice");
+        this->endcache[node.index()-1] = index;
+    }
+
+    void set_root_string(const std::string &root_str) {
+        this->root_string = root_str;
+    }
 
     void clear() {
         this->startcache.clear();
         this->endcache.clear();
-        this->root_stream.reset();
+        this->root_string = "";
     }
 
 private:
-  std::vector<long> startcache;
-  std::vector<long> endcache;
-  
-  std::string nullvalue;
-  shared_ptr<std::stringstream> root_stream;
+    std::vector<long> startcache;
+    std::vector<long> endcache;
+
+    std::string nullvalue;
+    std::string root_string;
 };

@@ -13,9 +13,7 @@ public:
         /*! If idPrefix is true, we will output "n<id>:" in front of each node,
           which is useful for debugging. */
         NodeDumper(NodeCache &cache, const std::string& indent = "", bool idPrefix = false) :
-                cache(cache), indent(indent), idprefix(idPrefix), currindent(0), root(nullptr) { 
-                cache.set_root_stream(this->dump);
-        }
+                cache(cache), indent(indent), idprefix(idPrefix), currindent(0), root(nullptr) { }
         ~NodeDumper() {}
 
         Response visit(State &state, const AbstractNode &node) override;
