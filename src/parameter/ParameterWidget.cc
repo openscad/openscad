@@ -115,17 +115,13 @@ void ParameterWidget::readFile(QString scadFile)
 	setFile(scadFile);
 	bool exists = boost::filesystem::exists(this->jsonFile);
 	bool writeable = false;
+	bool readable = false;
 
 	if(exists){
-		bool readable = readParameterSet(this->jsonFile);
+		readable = readParameterSet(this->jsonFile);
 
-		//check whether file is writeable
-		std::fstream file;
-		file.open(this->jsonFile, std::ios::app);
-		if (file.is_open()) {
-			file.close();
-			writeable = true;
-		}
+		//check whether file is writeable or not
+		if (std::fstream(this->jsonFile, std::ios::app)) writeable = true;
 	}
 
 	if(writeable || !exists){
