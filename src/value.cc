@@ -113,17 +113,17 @@ Value::Value(double v) : value(v)
   //  std::cout << "creating double " << v << "\n";
 }
 
-Value::Value(const std::string &v) : value(v)
+Value::Value(const std::string &v) : value(str_utf8_wrapper(v))
 {
   //  std::cout << "creating string\n";
 }
 
-Value::Value(const char *v) : value(std::string(v))
+Value::Value(const char *v) : value(str_utf8_wrapper(v))
 {
   //  std::cout << "creating string from char *\n";
 }
 
-Value::Value(char v) : value(std::string(1, v))
+Value::Value(char v) : value(str_utf8_wrapper(1, v))
 {
   //  std::cout << "creating string from char\n";
 }
@@ -862,7 +862,7 @@ ValuePtr::ValuePtr(double v)
 
 ValuePtr::ValuePtr(const std::string &v)
 {
-	this->reset(new Value(str_utf8_wrapper(v)));
+	this->reset(new Value(v));
 }
 
 ValuePtr::ValuePtr(const char *v)

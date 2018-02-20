@@ -141,6 +141,7 @@ class str_utf8_wrapper : public std::string
 public:
 	str_utf8_wrapper() : std::string(), cached_len(-1) { }
 	str_utf8_wrapper( const std::string& s ) : std::string( s ), cached_len(-1) { }
+	str_utf8_wrapper( size_t n, char c ) : std::string(n, c), cached_len(-1) { }
 	~str_utf8_wrapper() {}
 	
 	glong get_utf8_strlen() const {
