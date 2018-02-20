@@ -137,7 +137,7 @@ void ParameterWidget::writeFileIfNotEmpty(QString scadFile)
 
 void ParameterWidget::setComboBoxPresetForSet()
 {
-	this->comboBoxPreset->addItem("no preset selected", QVariant(QString::fromStdString("")));
+	this->comboBoxPreset->addItem(_("no preset selected"), QVariant(QString::fromStdString("")));
 	if (root.empty()) return;
 	for (const auto &name : getParameterNames()) {
 		const QString n = QString::fromStdString(name);
@@ -350,7 +350,7 @@ void ParameterWidget::updateParameterSet(std::string setName)
 
 		bool ok = true;
 		const QString result = setDialog->getText(this,
-			"Create new set of parameter", "Enter name of the parameter set",
+			_("Create new set of parameter"), _("Enter name of the parameter set"),
 			QLineEdit::Normal, "", &ok);
 
 		if (ok) {
