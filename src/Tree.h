@@ -19,7 +19,7 @@ public:
 	const AbstractNode *root() const { return this->root_node; }
 
 	const std::string getString(const AbstractNode &node, const std::string &indent) const;
-	const size_t getId(const AbstractNode &node) const;
+	size_t getId(const AbstractNode &node) const;
 
 private:
 	const AbstractNode *root_node;

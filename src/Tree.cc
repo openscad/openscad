@@ -44,7 +44,7 @@ const std::string Tree::getString(const AbstractNode &node, const std::string &i
 	is stripped for whitespace. Especially indentation whitespace is important to
 	strip to enable cache hits for equivalent nodes from different scopes.
 */
-const size_t Tree::getId(const AbstractNode &node) const
+size_t Tree::getId(const AbstractNode &node) const
 {
 	assert(this->root_node);
 	const std::string indent = "";
