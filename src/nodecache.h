@@ -1,7 +1,7 @@
 #pragma once
 
-#include <vector>
 #include <string>
+#include <map>
 #include "node.h"
 #include "memory.h"
 #include "assert.h"
@@ -19,47 +19,37 @@ class NodeCache
 {
 public:
     NodeCache() { }
-    virtual ~NodeCache() { }
+    virtual ~NodeCache() { cache.clear(); }
 
     bool contains(const AbstractNode &node) const {
         auto i = node.index();
-        return i > 0 && 
-            endcache.size() >= i &&
-            endcache[i-1] >= 0; /*  && 
-            startcache.size() >= i && 
-            frontcache[i-1] >= 0;
-            */
+        auto result = cache.find(i); 
+        return result != cache.end() && result->second.second >= 0L;
     }
 
     const std::string operator[](const AbstractNode &node) const {
         auto i = node.index();
-        // node.index() is 1-based
-        assert(i >= 1 && "unexpected index < 1");
-        long start = startcache[i-1];
-        long end = endcache[i-1];
+        auto result = cache.find(i);
+        assert(result != cache.end() && "nodecache miss");
+        auto start = result->second.first;
+        auto end = result->second.second;
         return root_string.substr(start, end-start);
     }
 
-    void insert_start(const class AbstractNode &node, long strindex) {
+    void insert_start(const class AbstractNode &node, const long strindex) {
         auto i = node.index();
-        // node.index() is 1-based
-        assert(i >= 1 && "unexpected index < 1");
-        if (startcache.size() < i) {
-            startcache.resize(i, -1L);
-            endcache.resize(i, -1L);
-        }
-        assert(startcache[i-1] == -1L && "start index inserted twice");
-        startcache[i-1] = strindex;
+        assert(cache.find(i) == cache.end() && "start index inserted twice");
+        cache[i] = std::make_pair(strindex, -1L);
     }
 
-    void insert_end(const class AbstractNode &node, long strindex) {
+    void insert_end(const class AbstractNode &node, const long strindex) {
         auto i = node.index();
-        // node.index() is 1-based
-        assert(i >= 1 && "unexpected index < 1");
-        assert(endcache.size() >= i && "inserted end index before start?");
-        assert(endcache[i-1] == -1L && "end index inserted twice");
-        endcache[i-1] = strindex;
-        PRINTDB("NodeCache Insert nodecache[%i] = [%d:%d]", i % startcache[i-1] % endcache[i-1] );
+        auto result = cache.find(i);
+        assert(result != cache.end() && "end index inserted before start");
+        auto indexpair = result->second;
+        assert(indexpair.second == -1L && "end index inserted twice");
+        cache[i] = std::make_pair(indexpair.first, strindex);
+        PRINTDB("NodeCache Insert nodecache[%i] = [%d:%d]", i % indexpair.first % indexpair.second );
     }
 
     void set_root_string(const std::string &root_str) {
@@ -67,14 +57,12 @@ public:
     }
 
     void clear() {
-        startcache.clear();
-        endcache.clear();
+        cache.clear();
         root_string = "";
     }
 
 private:
-    std::vector<long> startcache;
-    std::vector<long> endcache;
+    std::map<size_t, std::pair<long,long>> cache;
 
     std::string nullvalue;
     std::string root_string;

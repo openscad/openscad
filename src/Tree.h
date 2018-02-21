@@ -19,10 +19,11 @@ public:
 	const AbstractNode *root() const { return this->root_node; }
 
 	const std::string getString(const AbstractNode &node, const std::string &indent) const;
-	const std::string getIdString(const AbstractNode &node) const;
+	const size_t getId(const AbstractNode &node) const;
 
 private:
 	const AbstractNode *root_node;
 	// keep a separate nodecache per tuple of NodeDumper constructor parameters
 	mutable std::map<std::tuple<std::string, bool, bool>, NodeCache>  nodecachemap;
+	mutable std::map<size_t, size_t> nodeidmap;
 };

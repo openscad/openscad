@@ -10,7 +10,7 @@
 
 GeometryCache *GeometryCache::inst = nullptr;
 
-shared_ptr<const Geometry> GeometryCache::get(const std::string &id) const
+shared_ptr<const Geometry> GeometryCache::get(const size_t id) const
 {
 	const auto &geom = this->cache[id]->geom;
 #ifdef DEBUG
@@ -19,7 +19,7 @@ shared_ptr<const Geometry> GeometryCache::get(const std::string &id) const
 	return geom;
 }
 
-bool GeometryCache::insert(const std::string &id, const shared_ptr<const Geometry> &geom)
+bool GeometryCache::insert(const size_t id, const shared_ptr<const Geometry> &geom)
 {
 	auto inserted = this->cache.insert(id, new cache_entry(geom), geom ? geom->memsize() : 0);
 #ifdef DEBUG
