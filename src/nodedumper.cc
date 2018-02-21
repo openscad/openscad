@@ -6,6 +6,7 @@
 #include <string>
 #include <sstream>
 #include <assert.h>
+#include <boost/regex.hpp>
 
 /*!
 	\class NodeDumper
@@ -33,28 +34,51 @@ Response NodeDumper::visit(State &state, const AbstractNode &node)
 		// insert start index
 		cache.insert_start(node, dump.tellp());
 		
-		for(int i = 0; i < currindent; ++i) {
-			dump << indent;
+		if (idString) {
+			
+			const boost::regex re("[^\\s\\\"]+|\\\"(?:[^\\\"\\\\]|\\\\.)*\\\"");
+			std::stringstream namestream;
+			namestream << node;
+			std::string name = namestream.str();
+			boost::sregex_token_iterator it(name.begin(), name.end(), re, 0);
+			std::copy(it, boost::sregex_token_iterator(), std::ostream_iterator<std::string>(dump));
+		
+			if (node.getChildren().size() > 0) 
+				dump << "{";
+
+		} else {
+
+			for(int i = 0; i < currindent; ++i) {
+				dump << indent;
+			}
+			dump << node;
+			if (node.getChildren().size() > 0) 
+				dump << " {\n";
 		}
-		
-		dump << node;
-		if (node.getChildren().size() > 0) 
-			dump << " {\n";
-		currindent++;
-		
+
 		if (idprefix) dump << "n" << node.index() << ":";
+
+		currindent++;
 
 	} else if (state.isPostfix()) {
 
 		currindent--;
 		
-		if (node.getChildren().size() > 0) {
-			for(int i = 0; i < currindent; ++i) {
-				dump << indent;
+		if (idString) {
+			if (node.getChildren().size() > 0) {
+				dump << "}";
+			} else {
+				dump << ";";
 			}
-			dump << "}\n";
 		} else {
-			dump << ";\n";
+			if (node.getChildren().size() > 0) {
+				for(int i = 0; i < currindent; ++i) {
+					dump << indent;
+				}
+				dump << "}\n";
+			} else {
+				dump << ";\n";
+			}
 		}
 		
 		// insert end index

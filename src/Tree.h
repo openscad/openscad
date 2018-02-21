@@ -23,7 +23,6 @@ public:
 
 private:
 	const AbstractNode *root_node;
-	// keep a separate nodecache per indentation string
-	// FIXME take a tuple of NodeDumper options, not just indent string
-	mutable std::map<std::string, NodeCache>  nodecachemap;
+	// keep a separate nodecache per tuple of NodeDumper constructor parameters
+	mutable std::map<std::tuple<std::string, bool, bool>, NodeCache>  nodecachemap;
 };
