@@ -32,7 +32,7 @@ void ParameterVirtualWidget::addInline(QString addTxt) {
 }
 
 //calculate the required decimal precision.
-//the result is stored in th member variable "decimalPrecision"
+//the result is stored in the member variable "decimalPrecision"
 void ParameterVirtualWidget::setPrecision(double number){
 	decimalPrecision = 0;
 	long double diff, rn; //rn stands for real number
@@ -59,12 +59,13 @@ void ParameterVirtualWidget::setDescription(const QString& description) {
 	
 void ParameterVirtualWidget::resizeEvent(QResizeEvent * event){
 	//bodge code to adjust the label height, when the label has to use multiple lines
+	static int prevLabelWidth;
 	QLabel* label = this->labelDescription;
 	
-	int w=label->width();
-	if(w!=LabelWidth){
-		LabelWidth=w;
+	int currLabelWidth=label->width();
+	if(currLabelWidth!=prevLabelWidth){
+		prevLabelWidth=currLabelWidth;
 		label->setMinimumHeight(0);
-		label->setMinimumHeight(label->heightForWidth(w));
+		label->setMinimumHeight(label->heightForWidth(currLabelWidth));
 	}
 }
