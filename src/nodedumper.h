@@ -28,6 +28,6 @@ private:
 
         int currindent;
         const AbstractNode *root;
-        std::shared_ptr<std::stringstream> dump;
+        std::stringstream dump;
 
 };

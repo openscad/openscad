@@ -17,7 +17,7 @@
 
 bool NodeDumper::isCached(const AbstractNode &node) const
 {
-	return this->cache.contains(node);
+	return cache.contains(node);
 }
 
 /*!
@@ -26,32 +26,31 @@ bool NodeDumper::isCached(const AbstractNode &node) const
 */
 Response NodeDumper::visit(State &state, const AbstractNode &node)
 {
-	std::stringstream& dump = *this->dump;
 	if (state.isPrefix()) {
 		if (node.modinst->isBackground()) dump << "%";
 		if (node.modinst->isHighlight()) dump << "#";
 
 		// insert start index
-		this->cache.insert_start(node, dump.tellp());
+		cache.insert_start(node, dump.tellp());
 		
-		for(int i = 0; i < this->currindent; ++i) {
-			dump << this->indent;
+		for(int i = 0; i < currindent; ++i) {
+			dump << indent;
 		}
 		
 		dump << node;
 		if (node.getChildren().size() > 0) 
 			dump << " {\n";
-		this->currindent++;
+		currindent++;
 		
-		if (this->idprefix) dump << "n" << node.index() << ":";
+		if (idprefix) dump << "n" << node.index() << ":";
 
 	} else if (state.isPostfix()) {
 
-		this->currindent--;
+		currindent--;
 		
 		if (node.getChildren().size() > 0) {
-			for(int i = 0; i < this->currindent; ++i) {
-				dump << this->indent;
+			for(int i = 0; i < currindent; ++i) {
+				dump << indent;
 			}
 			dump << "}\n";
 		} else {
@@ -59,7 +58,7 @@ Response NodeDumper::visit(State &state, const AbstractNode &node)
 		}
 		
 		// insert end index
-		this->cache.insert_end(node, dump.tellp());
+		cache.insert_end(node, dump.tellp());
 	}
 
 	return Response::ContinueTraversal;
@@ -73,20 +72,17 @@ Response NodeDumper::visit(State &state, const RootNode &node)
 	if (isCached(node)) return Response::PruneTraversal;
 
 	if (state.isPrefix()) {
-		this->cache.clear();
-		// make a fresh stringstream
-		this->dump = std::make_shared<std::stringstream>();
-		std::stringstream &dump = *this->dump;
-
+		dump.str("");
+		dump.clear();
+		cache.clear();
 		// insert start index
-		this->cache.insert_start(node, dump.tellp());
+		cache.insert_start(node, dump.tellp());
 
 	} else if (state.isPostfix()) {
-		std::stringstream &dump = *this->dump;
 		// insert end index
-		this->cache.insert_end(node, dump.tellp());
+		cache.insert_end(node, dump.tellp());
 		// finalize cache
-		this->cache.set_root_string(dump.str());
+		cache.set_root_string(dump.str());
 	}
 
 	return Response::ContinueTraversal;

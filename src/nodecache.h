@@ -5,6 +5,7 @@
 #include "node.h"
 #include "memory.h"
 #include "assert.h"
+#include "printutils.h"
 
 /*!
 	Caches string values per node based on the node.index().
@@ -21,41 +22,54 @@ public:
     virtual ~NodeCache() { }
 
     bool contains(const AbstractNode &node) const {
-        return this->startcache.size() > node.index()-1 && 
-            this->endcache.size() > node.index()-1 &&
-            this->endcache[node.index()-1] >= 0;
+        auto i = node.index();
+        return i > 0 && 
+            endcache.size() >= i &&
+            endcache[i-1] >= 0; /*  && 
+            startcache.size() >= i && 
+            frontcache[i-1] >= 0;
+            */
     }
 
     const std::string operator[](const AbstractNode &node) const {
-        assert(contains(node));
-        long start = this->startcache[node.index()-1];
-        long end = this->endcache[node.index()-1];
-        return this->root_string.substr(start, end-start);
+        auto i = node.index();
+        // node.index() is 1-based
+        assert(i >= 1 && "unexpected index < 1");
+        long start = startcache[i-1];
+        long end = endcache[i-1];
+        return root_string.substr(start, end-start);
     }
 
-    void insert_start(const class AbstractNode &node, long index) {
-        // node index is 1-based
-        if (this->startcache.size() <= node.index()) {
-            this->startcache.push_back(index);
-            this->endcache.push_back(-1L);
-        } else {
-            assert(false && "start index inserted twice");
+    void insert_start(const class AbstractNode &node, long strindex) {
+        auto i = node.index();
+        // node.index() is 1-based
+        assert(i >= 1 && "unexpected index < 1");
+        if (startcache.size() < i) {
+            startcache.resize(i, -1L);
+            endcache.resize(i, -1L);
         }
+        assert(startcache[i-1] == -1L && "start index inserted twice");
+        startcache[i-1] = strindex;
     }
 
-    void insert_end(const class AbstractNode &node, long index) {
-        assert(this->endcache[node.index()-1] == -1L && "end index inserted twice");
-        this->endcache[node.index()-1] = index;
+    void insert_end(const class AbstractNode &node, long strindex) {
+        auto i = node.index();
+        // node.index() is 1-based
+        assert(i >= 1 && "unexpected index < 1");
+        assert(endcache.size() >= i && "inserted end index before start?");
+        assert(endcache[i-1] == -1L && "end index inserted twice");
+        endcache[i-1] = strindex;
+        PRINTDB("NodeCache Insert nodecache[%i] = [%d:%d]", i % startcache[i-1] % endcache[i-1] );
     }
 
     void set_root_string(const std::string &root_str) {
-        this->root_string = root_str;
+        root_string = root_str;
     }
 
     void clear() {
-        this->startcache.clear();
-        this->endcache.clear();
-        this->root_string = "";
+        startcache.clear();
+        endcache.clear();
+        root_string = "";
     }
 
 private:
