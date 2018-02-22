@@ -16,9 +16,21 @@
 	any node or subtree.
 */
 
+void NodeDumper::initCache() 
+{
+	this->dumpstream.str("");
+	this->dumpstream.clear();
+	this->cache.clear();
+}
+
+void NodeDumper::finalizeCache()
+{
+	this->cache.setRootString(this->dumpstream.str());
+}
+
 bool NodeDumper::isCached(const AbstractNode &node) const
 {
-	return cache.contains(node);
+	return this->cache.contains(node);
 }
 
 /*!
@@ -32,71 +44,71 @@ Response NodeDumper::visit(State &state, const AbstractNode &node)
 		// For handling root modifier '!'
 		// Check if we are processing the root of the current Tree and init cache
 		if (this->root == &node) {
-			dump.str("");
-			dump.clear();
-			cache.clear();
+			this->initCache();
 		}
 
-		if (node.modinst->isBackground()) dump << "%";
-		if (node.modinst->isHighlight()) dump << "#";
+		if (node.modinst->isBackground()) this->dumpstream << "%";
+		if (node.modinst->isHighlight()) this->dumpstream << "#";
 
 		// insert start index
-		cache.insert_start(node.index(), dump.tellp());
+		this->cache.insert_start(node.index(), this->dumpstream.tellp());
 		
-		if (idString) {
+		if (this->idString) {
 			
 			const boost::regex re("[^\\s\\\"]+|\\\"(?:[^\\\"\\\\]|\\\\.)*\\\"");
 			std::stringstream namestream;
 			namestream << node;
 			std::string name = namestream.str();
 			boost::sregex_token_iterator it(name.begin(), name.end(), re, 0);
-			std::copy(it, boost::sregex_token_iterator(), std::ostream_iterator<std::string>(dump));
+			std::copy(it, boost::sregex_token_iterator(), std::ostream_iterator<std::string>(this->dumpstream));
 		
-			if (node.getChildren().size() > 0) 
-				dump << "{";
+			if (node.getChildren().size() > 0) {
+				this->dumpstream << "{";
+			}
 
 		} else {
 
-			for(int i = 0; i < currindent; ++i) {
-				dump << indent;
+			for(int i = 0; i < this->currindent; ++i) {
+				this->dumpstream << this->indent;
 			}
-			dump << node;
-			if (node.getChildren().size() > 0) 
-				dump << " {\n";
+			this->dumpstream << node;
+			if (node.getChildren().size() > 0) {
+				this->dumpstream << " {\n";
+			}
 		}
 
-		if (idprefix) dump << "n" << node.index() << ":";
+		if (this->idprefix) this->dumpstream << "n" << node.index() << ":";
 
-		currindent++;
+		this->currindent++;
 
 	} else if (state.isPostfix()) {
 
-		currindent--;
+		this->currindent--;
 		
-		if (idString) {
+		if (this->idString) {
 			if (node.getChildren().size() > 0) {
-				dump << "}";
+				this->dumpstream << "}";
 			} else {
-				dump << ";";
+				this->dumpstream << ";";
 			}
 		} else {
 			if (node.getChildren().size() > 0) {
-				for(int i = 0; i < currindent; ++i) {
-					dump << indent;
+				for(int i = 0; i < this->currindent; ++i) {
+					this->dumpstream << this->indent;
 				}
-				dump << "}\n";
+				this->dumpstream << "}\n";
 			} else {
-				dump << ";\n";
+				this->dumpstream << ";\n";
 			}
 		}
 	
 		// insert end index
-		cache.insert_end(node.index(), dump.tellp());
+		this->cache.insert_end(node.index(), this->dumpstream.tellp());
 
 		// For handling root modifier '!'
 		// Check if we are processing the root of the current Tree and finalize cache
 		if (this->root == &node) {
-			cache.set_root_string(dump.str());
+			this->finalizeCache();
 		}
 	}
 
@@ -111,17 +123,11 @@ Response NodeDumper::visit(State &state, const RootNode &node)
 	if (isCached(node)) return Response::PruneTraversal;
 
 	if (state.isPrefix()) {
-		dump.str("");
-		dump.clear();
-		cache.clear();
-		// insert start index
-		cache.insert_start(node.index(), dump.tellp());
-
+		this->initCache();
+		this->cache.insert_start(node.index(), this->dumpstream.tellp());
 	} else if (state.isPostfix()) {
-		// insert end index
-		cache.insert_end(node.index(), dump.tellp());
-		// finalize cache
-		cache.set_root_string(dump.str());
+		this->cache.insert_end(node.index(), this->dumpstream.tellp());
+		this->finalizeCache();
 	}
 
 	return Response::ContinueTraversal;

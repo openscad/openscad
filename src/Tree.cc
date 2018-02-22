@@ -71,9 +71,9 @@ size_t Tree::getId(const AbstractNode &node) const
 		#if DEBUG
 			const size_t HALFLENGTH = 40;
 			if (nodeidstr.size() > HALFLENGTH*2) {
-				PRINTB("nodeidmap insert {%1%,%2$X} => \"%3% ... %4%\"", i % idhash % nodeidstr.substr(0,HALFLENGTH) % nodeidstr.substr(nodeidstr.size()-HALFLENGTH,HALFLENGTH) );
+				PRINTDB("nodeidmap insert {%1%,%2$X} => \"%3% ... %4%\"", i % idhash % nodeidstr.substr(0,HALFLENGTH) % nodeidstr.substr(nodeidstr.size()-HALFLENGTH,HALFLENGTH) );
 			} else {
-				PRINTB("nodeidmap insert {%1%,%2$X} => \"%3%\"}", i % idhash % nodeidstr );
+				PRINTDB("nodeidmap insert {%1%,%2$X} => \"%3%\"}", i % idhash % nodeidstr );
 			}
 		#endif
 		

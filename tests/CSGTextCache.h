@@ -3,7 +3,6 @@
 
 #include "Tree.h"
 #include <string>
-#include <functional>
 #include <boost/unordered_map.hpp>
 
 using std::string;

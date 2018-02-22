@@ -13,55 +13,50 @@
 	every time a new tree is generated.
 */
 
-typedef std::pair<long, long> IndexPair;
-
 class NodeCache
 {
 public:
     NodeCache() { }
-    virtual ~NodeCache() { cache.clear(); }
+    virtual ~NodeCache() { }
 
     bool contains(const AbstractNode &node) const {
-        auto result = cache.find(node.index()); 
-        return result != cache.end() && result->second.second >= 0L;
+        auto result = this->cache.find(node.index()); 
+        return result != this->cache.end() && 
+            result->second.second >= 0L && 
+            this->rootString.size() >= result->second.second;
     }
 
-    const std::string operator[](const AbstractNode &node) const {
-        auto result = cache.find(node.index());
-        assert(result != cache.end() && "nodecache miss");
-        auto start = result->second.first;
-        auto end = result->second.second;
-        return root_string.substr(start, end-start);
+    std::string operator[](const AbstractNode &node) const {
+        // throws std::out_of_range on miss
+        auto indexpair = this->cache.at(node.index()); 
+        return rootString.substr(indexpair.first, indexpair.second - indexpair.first);
     }
 
     void insert_start(const size_t nodeidx, const long startindex) {
-        assert(cache.find(nodeidx) == cache.end() && "start index inserted twice");
-        cache[nodeidx] = std::make_pair(startindex, -1L);
+        assert(this->cache.count(nodeidx) == 0 && "start index inserted twice");
+        this->cache.emplace(nodeidx, std::make_pair(startindex, -1L));
     }
 
     void insert_end(const size_t nodeidx, const long endindex) {
-        auto result = cache.find(nodeidx);
-        assert(result != cache.end() && "end index inserted before start");
-        auto indexpair = result->second;
+        // throws std::out_of_range on miss
+        auto indexpair = this->cache.at(nodeidx); 
         assert(indexpair.second == -1L && "end index inserted twice");
-        cache[nodeidx] = std::make_pair(indexpair.first, endindex);
+        this->cache[nodeidx] = std::make_pair(indexpair.first, endindex);
 #if DEBUG
-        PRINTB("NodeCache insert {%i,[%d:%d]}", nodeidx % indexpair.first % endindex );
+        PRINTDB("NodeCache insert {%i,[%d:%d]}", nodeidx % indexpair.first % endindex );
 #endif
     }
 
-    void set_root_string(const std::string &root_str) {
-        root_string = root_str;
+    void setRootString(const std::string &rootString) {
+        this->rootString = rootString;
     }
 
     void clear() {
-        cache.clear();
-        root_string = "";
+        this->cache.clear();
+        this->rootString = "";
     }
 
 private:
     std::map<size_t, std::pair<long,long>> cache;
-
-    std::string nullvalue;
-    std::string root_string;
+    std::string rootString;
 };

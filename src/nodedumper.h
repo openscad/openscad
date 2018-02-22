@@ -21,15 +21,19 @@ public:
         Response visit(State &state, const RootNode &node) override;
 
 private:
+        void initCache();
+        void finalizeCache();
         bool isCached(const AbstractNode &node) const;
 
         NodeCache &cache;
+
+        // Output Formatting options
         std::string indent;
         bool idString;
         bool idprefix;
 
         int currindent;
         const AbstractNode *root;
-        std::stringstream dump;
+        std::ostringstream dumpstream;
 
 };
