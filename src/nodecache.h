@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <map>
+#include <unordered_map>
 #include "node.h"
 #include "memory.h"
 #include "assert.h"
@@ -57,6 +57,6 @@ public:
     }
 
 private:
-    std::map<size_t, std::pair<long,long>> cache;
+    std::unordered_map<size_t, std::pair<long,long>> cache;
     std::string rootString;
 };
