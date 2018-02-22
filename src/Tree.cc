@@ -66,7 +66,18 @@ size_t Tree::getId(const AbstractNode &node) const
 						 "NodeDumper failed to create id cache");
 		}
 		
-		return nodeidmap[i] = std::hash<std::string>{}(nodecache[node]);
+		const std::string &nodeidstr = nodecache[node];
+		size_t idhash = std::hash<std::string>{}(nodeidstr);
+		#if DEBUG
+			const size_t HALFLENGTH = 40;
+			if (nodeidstr.size() > HALFLENGTH*2) {
+				PRINTB("nodeidmap insert {%1%,%2$X} => \"%3% ... %4%\"", i % idhash % nodeidstr.substr(0,HALFLENGTH) % nodeidstr.substr(nodeidstr.size()-HALFLENGTH,HALFLENGTH) );
+			} else {
+				PRINTB("nodeidmap insert {%1%,%2$X} => \"%3%\"}", i % idhash % nodeidstr );
+			}
+		#endif
+		
+		return nodeidmap[i] = idhash;
 	} else {
 		return result->second;
 	}

@@ -22,8 +22,7 @@ public:
     virtual ~NodeCache() { cache.clear(); }
 
     bool contains(const AbstractNode &node) const {
-        auto i = node.index();
-        auto result = cache.find(i); 
+        auto result = cache.find(node.index()); 
         return result != cache.end() && result->second.second >= 0L;
     }
 
@@ -46,7 +45,9 @@ public:
         auto indexpair = result->second;
         assert(indexpair.second == -1L && "end index inserted twice");
         cache[nodeidx] = std::make_pair(indexpair.first, endindex);
-        PRINTDB("NodeCache Insert nodecache[%i] = [%d:%d]", nodeidx % indexpair.first % indexpair.second );
+#if DEBUG
+        PRINTB("NodeCache insert {%i,[%d:%d]}", nodeidx % indexpair.first % endindex );
+#endif
     }
 
     void set_root_string(const std::string &root_str) {
