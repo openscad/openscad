@@ -24,11 +24,11 @@ const std::string Tree::getString(const AbstractNode &node, const std::string &i
 	bool idString = false;
 	bool idPrefix = false;
 
-	// Retrieve a nodecache given a tuple of NodeDumper() options  
+	// Retrieve a nodecache given a tuple of NodeDumper constructor options
 	NodeCache &nodecache = this->nodecachemap[std::make_tuple(indent,idString,idPrefix)];
 
 	if (!nodecache.contains(node)) {
-		NodeDumper dumper(nodecache, indent, idString, idPrefix);
+		NodeDumper dumper(nodecache, this->root_node, indent, idString, idPrefix);
 		dumper.traverse(*this->root_node);
 		assert(nodecache.contains(*this->root_node) &&
 					 "NodeDumper failed to create a cache");
@@ -60,7 +60,7 @@ size_t Tree::getId(const AbstractNode &node) const
 		
 		if (!nodecache.contains(node)) {
 			nodecache.clear();
-			NodeDumper dumper(nodecache, indent, idString, idPrefix);
+			NodeDumper dumper(nodecache, this->root_node, indent, idString, idPrefix);
 			dumper.traverse(*this->root_node);
 			assert(nodecache.contains(*this->root_node) &&
 						 "NodeDumper failed to create id cache");

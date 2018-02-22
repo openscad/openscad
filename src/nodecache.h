@@ -28,28 +28,25 @@ public:
     }
 
     const std::string operator[](const AbstractNode &node) const {
-        auto i = node.index();
-        auto result = cache.find(i);
+        auto result = cache.find(node.index());
         assert(result != cache.end() && "nodecache miss");
         auto start = result->second.first;
         auto end = result->second.second;
         return root_string.substr(start, end-start);
     }
 
-    void insert_start(const class AbstractNode &node, const long strindex) {
-        auto i = node.index();
-        assert(cache.find(i) == cache.end() && "start index inserted twice");
-        cache[i] = std::make_pair(strindex, -1L);
+    void insert_start(const size_t nodeidx, const long startindex) {
+        assert(cache.find(nodeidx) == cache.end() && "start index inserted twice");
+        cache[nodeidx] = std::make_pair(startindex, -1L);
     }
 
-    void insert_end(const class AbstractNode &node, const long strindex) {
-        auto i = node.index();
-        auto result = cache.find(i);
+    void insert_end(const size_t nodeidx, const long endindex) {
+        auto result = cache.find(nodeidx);
         assert(result != cache.end() && "end index inserted before start");
         auto indexpair = result->second;
         assert(indexpair.second == -1L && "end index inserted twice");
-        cache[i] = std::make_pair(indexpair.first, strindex);
-        PRINTDB("NodeCache Insert nodecache[%i] = [%d:%d]", i % indexpair.first % indexpair.second );
+        cache[nodeidx] = std::make_pair(indexpair.first, endindex);
+        PRINTDB("NodeCache Insert nodecache[%i] = [%d:%d]", nodeidx % indexpair.first % indexpair.second );
     }
 
     void set_root_string(const std::string &root_str) {

@@ -28,11 +28,20 @@ bool NodeDumper::isCached(const AbstractNode &node) const
 Response NodeDumper::visit(State &state, const AbstractNode &node)
 {
 	if (state.isPrefix()) {
+
+		// For handling root modifier '!'
+		// Check if we are processing the root of the current Tree and init cache
+		if (this->root == &node) {
+			dump.str("");
+			dump.clear();
+			cache.clear();
+		}
+
 		if (node.modinst->isBackground()) dump << "%";
 		if (node.modinst->isHighlight()) dump << "#";
 
 		// insert start index
-		cache.insert_start(node, dump.tellp());
+		cache.insert_start(node.index(), dump.tellp());
 		
 		if (idString) {
 			
@@ -80,9 +89,15 @@ Response NodeDumper::visit(State &state, const AbstractNode &node)
 				dump << ";\n";
 			}
 		}
-		
+	
 		// insert end index
-		cache.insert_end(node, dump.tellp());
+		cache.insert_end(node.index(), dump.tellp());
+
+		// For handling root modifier '!'
+		// Check if we are processing the root of the current Tree and finalize cache
+		if (this->root == &node) {
+			cache.set_root_string(dump.str());
+		}
 	}
 
 	return Response::ContinueTraversal;
@@ -100,11 +115,11 @@ Response NodeDumper::visit(State &state, const RootNode &node)
 		dump.clear();
 		cache.clear();
 		// insert start index
-		cache.insert_start(node, dump.tellp());
+		cache.insert_start(node.index(), dump.tellp());
 
 	} else if (state.isPostfix()) {
 		// insert end index
-		cache.insert_end(node, dump.tellp());
+		cache.insert_end(node.index(), dump.tellp());
 		// finalize cache
 		cache.set_root_string(dump.str());
 	}
