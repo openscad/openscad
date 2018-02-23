@@ -32,12 +32,12 @@ public:
         return rootString.substr(indexpair.first, indexpair.second - indexpair.first);
     }
 
-    void insert_start(const size_t nodeidx, const long startindex) {
+    void insertStart(const size_t nodeidx, const long startindex) {
         assert(this->cache.count(nodeidx) == 0 && "start index inserted twice");
         this->cache.emplace(nodeidx, std::make_pair(startindex, -1L));
     }
 
-    void insert_end(const size_t nodeidx, const long endindex) {
+    void insertEnd(const size_t nodeidx, const long endindex) {
         // throws std::out_of_range on miss
         auto indexpair = this->cache.at(nodeidx); 
         assert(indexpair.second == -1L && "end index inserted twice");

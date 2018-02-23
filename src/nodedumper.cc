@@ -51,7 +51,7 @@ Response NodeDumper::visit(State &state, const AbstractNode &node)
 		if (node.modinst->isHighlight()) this->dumpstream << "#";
 
 		// insert start index
-		this->cache.insert_start(node.index(), this->dumpstream.tellp());
+		this->cache.insertStart(node.index(), this->dumpstream.tellp());
 		
 		if (this->idString) {
 			
@@ -103,7 +103,7 @@ Response NodeDumper::visit(State &state, const AbstractNode &node)
 		}
 	
 		// insert end index
-		this->cache.insert_end(node.index(), this->dumpstream.tellp());
+		this->cache.insertEnd(node.index(), this->dumpstream.tellp());
 
 		// For handling root modifier '!'
 		// Check if we are processing the root of the current Tree and finalize cache
@@ -124,9 +124,9 @@ Response NodeDumper::visit(State &state, const RootNode &node)
 
 	if (state.isPrefix()) {
 		this->initCache();
-		this->cache.insert_start(node.index(), this->dumpstream.tellp());
+		this->cache.insertStart(node.index(), this->dumpstream.tellp());
 	} else if (state.isPostfix()) {
-		this->cache.insert_end(node.index(), this->dumpstream.tellp());
+		this->cache.insertEnd(node.index(), this->dumpstream.tellp());
 		this->finalizeCache();
 	}
 
