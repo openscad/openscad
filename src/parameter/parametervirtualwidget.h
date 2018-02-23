@@ -9,9 +9,6 @@ class ParameterVirtualWidget : public QWidget, public Ui::ParameterEntryWidget
 {
 	Q_OBJECT
 
-private:
-	int LabelWidth=0;
-
 protected:
 	ParameterObject *object;
 
