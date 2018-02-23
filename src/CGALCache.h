@@ -12,9 +12,9 @@ public:
 
 	static CGALCache *instance() { if (!inst) inst = new CGALCache; return inst; }
 
-	bool contains(const size_t id) const { return this->cache.contains(id); }
-	shared_ptr<const class CGAL_Nef_polyhedron> get(const size_t id) const;
-	bool insert(const size_t id, const shared_ptr<const CGAL_Nef_polyhedron> &N);
+	bool contains(const std::string &id) const { return this->cache.contains(id); }
+	shared_ptr<const class CGAL_Nef_polyhedron> get(const std::string &id) const;
+	bool insert(const std::string &id, const shared_ptr<const CGAL_Nef_polyhedron> &N);
 	size_t maxSize() const;
 	void setMaxSize(size_t limit);
 	void clear();
@@ -30,5 +30,5 @@ private:
 		~cache_entry() { }
 	};
 
-	Cache<size_t, cache_entry> cache;
+	Cache<std::string, cache_entry> cache;
 };

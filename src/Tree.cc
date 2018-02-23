@@ -4,14 +4,12 @@
 
 #include <assert.h>
 #include <algorithm>
-#include <functional>
 #include <sstream>
 #include <tuple>
 
 Tree::~Tree()
 {
 	this->nodecachemap.clear();
-	this->nodeidmap.clear();
 }
 
 /*!
@@ -44,43 +42,24 @@ const std::string Tree::getString(const AbstractNode &node, const std::string &i
 	is stripped for whitespace. Especially indentation whitespace is important to
 	strip to enable cache hits for equivalent nodes from different scopes.
 */
-size_t Tree::getId(const AbstractNode &node) const
+const std::string Tree::getIdString(const AbstractNode &node) const
 {
 	assert(this->root_node);
 	const std::string indent = "";
 	const bool idString = true;
 	const bool idPrefix = false;
 
-	auto i = node.index();
-	auto result = nodeidmap.find(i);
-	if (result == nodeidmap.end()) {
-		
-		// Retrieve a nodecache given a tuple of NodeDumper() options  
-		NodeCache &nodecache = this->nodecachemap[make_tuple(indent,idString,idPrefix)];
-		
-		if (!nodecache.contains(node)) {
-			nodecache.clear();
-			NodeDumper dumper(nodecache, this->root_node, indent, idString, idPrefix);
-			dumper.traverse(*this->root_node);
-			assert(nodecache.contains(*this->root_node) &&
-						 "NodeDumper failed to create id cache");
-		}
-		
-		const std::string &nodeidstr = nodecache[node];
-		size_t idhash = std::hash<std::string>{}(nodeidstr);
-		#if DEBUG
-			const size_t HALFLENGTH = 40;
-			if (nodeidstr.size() > HALFLENGTH*2) {
-				PRINTDB("nodeidmap insert {%1%,%2$X} => \"%3% ... %4%\"", i % idhash % nodeidstr.substr(0,HALFLENGTH) % nodeidstr.substr(nodeidstr.size()-HALFLENGTH,HALFLENGTH) );
-			} else {
-				PRINTDB("nodeidmap insert {%1%,%2$X} => \"%3%\"}", i % idhash % nodeidstr );
-			}
-		#endif
-		
-		return nodeidmap[i] = idhash;
-	} else {
-		return result->second;
+	// Retrieve a nodecache given a tuple of NodeDumper constructor options
+	NodeCache &nodecache = this->nodecachemap[make_tuple(indent,idString,idPrefix)];
+
+	if (!nodecache.contains(node)) {
+		nodecache.clear();
+		NodeDumper dumper(nodecache, this->root_node, indent, idString, idPrefix);
+		dumper.traverse(*this->root_node);
+		assert(nodecache.contains(*this->root_node) &&
+					 "NodeDumper failed to create id cache");
 	}
+	return nodecache[node];
 }
 
 /*!
@@ -90,5 +69,4 @@ void Tree::setRoot(const AbstractNode *root)
 {
 	this->root_node = root; 
 	this->nodecachemap.clear();
-	this->nodeidmap.clear();
 }

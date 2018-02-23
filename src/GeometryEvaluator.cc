@@ -43,7 +43,7 @@ GeometryEvaluator::GeometryEvaluator(const class Tree &tree):
 shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNode &node, 
 																															 bool allownef)
 {
-	const size_t key = this->tree.getId(node);
+	const std::string &key = this->tree.getIdString(node);
 	if (!GeometryCache::instance()->contains(key)) {
 		shared_ptr<const CGAL_Nef_polyhedron> N;
 		if (CGALCache::instance()->contains(key)) {
@@ -236,7 +236,7 @@ std::vector<const class Polygon2d *> GeometryEvaluator::collectChildren2D(const 
 void GeometryEvaluator::smartCacheInsert(const AbstractNode &node, 
 																				 const shared_ptr<const Geometry> &geom)
 {
-	const size_t key = this->tree.getId(node);
+	const std::string &key = this->tree.getIdString(node);
 
 	shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom);
 	if (N) {
@@ -253,14 +253,14 @@ void GeometryEvaluator::smartCacheInsert(const AbstractNode &node,
 
 bool GeometryEvaluator::isSmartCached(const AbstractNode &node)
 {
-	const size_t key = this->tree.getId(node);
+	const std::string &key = this->tree.getIdString(node);
 	return (GeometryCache::instance()->contains(key) ||
 					CGALCache::instance()->contains(key));
 }
 
 shared_ptr<const Geometry> GeometryEvaluator::smartCacheGet(const AbstractNode &node, bool preferNef)
 {
-	const size_t key = this->tree.getId(node);
+	const std::string &key = this->tree.getIdString(node);
 	shared_ptr<const Geometry> geom;
 	bool hasgeom = GeometryCache::instance()->contains(key);
 	bool hascgal = CGALCache::instance()->contains(key);
@@ -514,7 +514,7 @@ Response GeometryEvaluator::visit(State &state, const TextNode &node)
 			}
 			geom.reset(ClipperUtils::apply(polygonlist, ClipperLib::ctUnion));
 		}
-		else geom = GeometryCache::instance()->get(this->tree.getId(node));
+		else geom = GeometryCache::instance()->get(this->tree.getIdString(node));
 		addToParent(state, node, geom);
 		node.progress_report();
 	}
