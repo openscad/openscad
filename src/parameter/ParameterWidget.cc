@@ -37,8 +37,12 @@
 #include "modcontext.h"
 #include "comment.h"
 
+#include <boost/filesystem.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+
+#include <fstream>
+
 namespace pt = boost::property_tree;
 
 #include <QInputDialog>
@@ -101,19 +105,33 @@ void ParameterWidget::onSetSaveButton()
 	updateParameterSet(comboBoxPreset->itemData(this->comboBoxPreset->currentIndex()).toString().toStdString());
 }
 
+void ParameterWidget::setFile(QString scadFile){
+	boost::filesystem::path p = scadFile.toStdString();
+	this->jsonFile = p.replace_extension(".json").string();
+}
+
 void ParameterWidget::readFile(QString scadFile)
 {
-	this->jsonFile = scadFile.replace(".scad", ".json").toStdString();
-	bool readable=readParameterSet(this->jsonFile);
-	if(readable){
+	setFile(scadFile);
+	bool exists = boost::filesystem::exists(this->jsonFile);
+	bool writeable = false;
+	bool readable = false;
+
+	if(exists){
+		readable = readParameterSet(this->jsonFile);
+
+		//check whether file is writeable or not
+		if (std::fstream(this->jsonFile, std::ios::app)) writeable = true;
+	}
+
+	if(writeable || !exists){
 		connect(this->addButton, SIGNAL(clicked()), this, SLOT(onSetAdd()));
 		this->addButton->setToolTip(_("add new preset"));
 		connect(this->deleteButton, SIGNAL(clicked()), this, SLOT(onSetDelete()));
 		this->deleteButton->setToolTip(_("remove current preset"));
 		connect(this->presetSaveButton, SIGNAL(clicked()), this, SLOT(onSetSaveButton()));
 		this->presetSaveButton->setToolTip(_("save current preset"));
-	}
-	else{
+	}else{
 		this->addButton->setDisabled(true);
 		this->addButton->setToolTip(_("JSON file read only"));
 		this->deleteButton->setDisabled(true);
@@ -130,8 +148,9 @@ void ParameterWidget::readFile(QString scadFile)
 
 void ParameterWidget::writeFileIfNotEmpty(QString scadFile)
 {
+	setFile(scadFile);
 	if (!root.empty()){
-		writeParameterSet(scadFile.replace(".scad", ".json").toStdString());
+		writeParameterSet(this->jsonFile);
 	}
 }
 
