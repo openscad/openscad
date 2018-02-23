@@ -26,10 +26,11 @@ bool NodeDumper::isCached(const AbstractNode &node) const
 void NodeDumper::handleIndent(const State &state)
 {
 	if (state.isPrefix()) {
-		this->currindent++;
+		this->currindent += "\t";
 	}
 	else if (state.isPostfix()) {
-		this->currindent--;
+		this->currindent.erase((this->currindent.length() >= 1) ? 
+													 this->currindent.length() - 1 : 0);
 	}
 }
 
@@ -47,10 +48,7 @@ void NodeDumper::dumpChildBlock(const AbstractNode &node, std::stringstream &dum
 	} else {
 		dump << " {\n";
 		dumpChildren(node, dump);
-		for(int i = 0; i < this->currindent; ++i) {
-			dump << this->indent;
-		}
-		dump << "}";
+		dump << this->currindent << "}";
 	}
 }
 
@@ -81,9 +79,7 @@ Response NodeDumper::visit(State &state, const AbstractNode &node)
 	handleIndent(state);
 	if (state.isPostfix()) {
 		std::stringstream dump;
-		for(int i = 0; i < this->currindent; ++i) {
-			dump << this->indent;
-		}
+		dump << this->currindent;
 		if (this->idprefix) dump << "n" << node.index() << ":";
 		dump << node;
 		dumpChildBlock(node, dump);

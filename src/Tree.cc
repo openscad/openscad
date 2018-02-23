@@ -17,13 +17,13 @@ Tree::~Tree()
 	Returns the cached string representation of the subtree rooted by \a node.
 	If node is not cached, the cache will be rebuilt.
 */
-const std::string &Tree::getString(const AbstractNode &node, const std::string &indent) const
+const std::string &Tree::getString(const AbstractNode &node) const
 {
 	assert(this->root_node);
 	if (!this->nodecache.contains(node)) {
 		this->nodecache.clear();
 		this->nodeidcache.clear();
-		NodeDumper dumper(this->nodecache, indent, false);
+		NodeDumper dumper(this->nodecache, false);
 		dumper.traverse(*this->root_node);
 		assert(this->nodecache.contains(*this->root_node) &&
 					 "NodeDumper failed to create a cache");
@@ -44,7 +44,7 @@ const std::string &Tree::getIdString(const AbstractNode &node) const
 	assert(this->root_node);
 
 	if (!this->nodeidcache.contains(node)) {
-		const std::string &nodestr = getString(node, "");
+		const std::string &nodestr = getString(node);
 		const boost::regex re("[^\\s\\\"]+|\\\"(?:[^\\\"\\\\]|\\\\.)*\\\"");
 		std::stringstream sstream;
 		boost::sregex_token_iterator i(nodestr.begin(), nodestr.end(), re, 0);
