@@ -17,7 +17,7 @@ ParameterText::ParameterText(ParameterObject *parameterobject, int showDescripti
 		lineEdit->setToolTip(object->description);
 	}
 
-	if (showDescription == 3){
+	if (showDescription == 3 && object->description !=""){
 		labelParameter->hide();
 	}else{
 		labelParameter->show();

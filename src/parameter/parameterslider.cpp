@@ -22,7 +22,7 @@ ParameterSlider::ParameterSlider(ParameterObject *parameterobject, int showDescr
 		slider->setToolTip(object->description);
 	}
 
-	if (showDescription == 3){
+	if (showDescription == 3 && object->description !=""){
 		this->labelParameter->hide();
 	}else{
 		this->labelParameter->show();

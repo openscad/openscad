@@ -19,7 +19,7 @@ ParameterVector::ParameterVector(ParameterObject *parameterobject, int showDescr
 		this->setToolTip(object->description);
 	}
 
-	if (showDescription == 3){
+	if (showDescription == 3 && object->description !=""){
 		labelParameter->hide();
 	}else{
 		labelParameter->show();

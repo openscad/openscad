@@ -27,6 +27,7 @@ void ParameterVirtualWidget::setName(QString name) {
 
 void ParameterVirtualWidget::addInline(QString addTxt) {
 	if(addTxt!=""){
+		this->labelInline->show();
 		this->labelInline->setText(" - "+ addTxt);
 	}
 }

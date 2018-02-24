@@ -16,7 +16,7 @@ ParameterSpinBox::ParameterSpinBox(ParameterObject *parameterobject, int showDes
 		doubleSpinBox->setToolTip(object->description);
 	}
 
-	if (showDescription == 3){
+	if (showDescription == 3 && object->description !=""){
 		this->labelParameter->hide();
 	}else{
 		this->labelParameter->show();
