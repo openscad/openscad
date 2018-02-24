@@ -46,6 +46,7 @@
 namespace pt = boost::property_tree;
 
 #include <QInputDialog>
+#include <QMessageBox>
 #include <fstream>
 
 ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
@@ -82,7 +83,7 @@ void ParameterWidget::onSetDelete()
 	if (sets.is_initialized()) {
 		sets.get().erase(pt::ptree::key_type(setName));
 	}
-	writeParameterSet(this->jsonFile);
+	writeParameterSets();
 	this->comboBoxPreset->clear();
 	setComboBoxPresetForSet();
 }
@@ -155,7 +156,7 @@ void ParameterWidget::writeFileIfNotEmpty(QString scadFile)
 {
 	setFile(scadFile);
 	if (!root.empty()){
-		writeParameterSet(this->jsonFile);
+		writeParameterSets();
 	}
 }
 
@@ -395,6 +396,24 @@ void ParameterWidget::updateParameterSet(std::string setName)
 			this->comboBoxPreset->addItem(s, QVariant(s));
 			this->comboBoxPreset->setCurrentIndex(this->comboBoxPreset->findText(s));
 		}
-		writeParameterSet(this->jsonFile);
+		writeParameterSets();
 	}
+}
+
+void ParameterWidget::writeParameterSets()
+{
+	if(this->unreadableFileExists){
+		bool ok = true;
+		QMessageBox msgBox;
+		msgBox.setText(_("Saving presets"));
+		msgBox.setInformativeText( _("A json file was found, but was unreadble. Do you want to overwrite it?"));
+		msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
+		msgBox.setDefaultButton(QMessageBox::Cancel);
+		int ret = msgBox.exec();
+
+		if (ret == QMessageBox::Cancel) {
+			return;
+		}
+	}
+	writeParameterSet(this->jsonFile);
 }
