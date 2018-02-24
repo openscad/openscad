@@ -43,10 +43,11 @@ GeometryEvaluator::GeometryEvaluator(const class Tree &tree):
 shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNode &node, 
 																															 bool allownef)
 {
-	if (!GeometryCache::instance()->contains(this->tree.getIdString(node))) {
+	const std::string &key = this->tree.getIdString(node);
+	if (!GeometryCache::instance()->contains(key)) {
 		shared_ptr<const CGAL_Nef_polyhedron> N;
-		if (CGALCache::instance()->contains(this->tree.getIdString(node))) {
-			N = CGALCache::instance()->get(this->tree.getIdString(node));
+		if (CGALCache::instance()->contains(key)) {
+			N = CGALCache::instance()->get(key);
 		}
 
 		// If not found in any caches, we need to evaluate the geometry
@@ -73,7 +74,7 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 		smartCacheInsert(node, this->root);
 		return this->root;
 	}
-	return GeometryCache::instance()->get(this->tree.getIdString(node));
+	return GeometryCache::instance()->get(key);
 }
 
 GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const AbstractNode &node, OpenSCADOperator op)

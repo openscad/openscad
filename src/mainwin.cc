@@ -1114,6 +1114,7 @@ void MainWindow::instantiateRoot()
 			if (!(this->root_node = find_root_tag(this->absolute_root_node))) {
 				this->root_node = this->absolute_root_node;
 			}
+
 			// FIXME: Consider giving away ownership of root_node to the Tree, or use reference counted pointers
 			this->tree.setRoot(this->root_node);
 		}
