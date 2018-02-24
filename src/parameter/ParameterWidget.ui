@@ -158,6 +158,11 @@
          <string>Hide Details</string>
         </property>
        </item>
+       <item>
+        <property name="text">
+         <string>Description Only</string>
+        </property>
+       </item>
       </widget>
      </item>
      <item>

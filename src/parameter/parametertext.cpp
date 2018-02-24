@@ -8,12 +8,19 @@ ParameterText::ParameterText(ParameterObject *parameterobject, int showDescripti
 	setName(QString::fromStdString(object->name));
 	setValue();
 	connect(lineEdit, SIGNAL(textChanged(QString)), this, SLOT(onChanged(QString)));
-	if (showDescription == 0) {
+	if (showDescription == 0 || showDescription == 3) {
 		setDescription(object->description);
+		this->labelInline->hide();
 	}else if(showDescription == 1){
 		addInline(object->description);
-	}else {
+	}else{
 		lineEdit->setToolTip(object->description);
+	}
+
+	if (showDescription == 3){
+		labelParameter->hide();
+	}else{
+		labelParameter->show();
 	}
 }
 
