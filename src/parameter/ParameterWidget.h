@@ -59,6 +59,8 @@ private:
 
 	void setFile(QString File);
 
+	bool unreadableFileExists=false;
+
 public:
 	ParameterWidget(QWidget *parent = nullptr);
 	~ParameterWidget();

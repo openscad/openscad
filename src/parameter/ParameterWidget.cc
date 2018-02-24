@@ -107,6 +107,7 @@ void ParameterWidget::onSetSaveButton()
 }
 
 void ParameterWidget::setFile(QString scadFile){
+	this->unreadableFileExists = false; // we can not know it, but we do not want to report a problem when there is none
 	boost::filesystem::path p = scadFile.toStdString();
 	this->jsonFile = p.replace_extension(".json").string();
 }
@@ -140,6 +141,8 @@ void ParameterWidget::readFile(QString scadFile)
 	this->addButton->setEnabled(writeable || !exists);
 	this->deleteButton->setEnabled(writeable || !exists);
 	this->presetSaveButton->setEnabled(writeable || !exists);
+
+	this->unreadableFileExists = (!readable) && exists;
 
 	disconnect(comboBoxPreset, SIGNAL(currentIndexChanged(int)), this, SLOT(onSetChanged(int)));
 	this->comboBoxPreset->clear();
