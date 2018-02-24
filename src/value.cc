@@ -113,17 +113,17 @@ Value::Value(double v) : value(v)
   //  std::cout << "creating double " << v << "\n";
 }
 
-Value::Value(const std::string &v) : value(v)
+Value::Value(const std::string &v) : value(str_utf8_wrapper(v))
 {
   //  std::cout << "creating string\n";
 }
 
-Value::Value(const char *v) : value(std::string(v))
+Value::Value(const char *v) : value(str_utf8_wrapper(v))
 {
   //  std::cout << "creating string from char *\n";
 }
 
-Value::Value(char v) : value(std::string(1, v))
+Value::Value(char v) : value(str_utf8_wrapper(1, v))
 {
   //  std::cout << "creating string from char\n";
 }
@@ -168,10 +168,10 @@ bool Value::toBool() const
     return boost::get<double>(this->value)!= 0;
     break;
   case ValueType::STRING:
-    return boost::get<std::string>(this->value).size() > 0;
+    return !boost::get<str_utf8_wrapper>(this->value).empty();
     break;
   case ValueType::VECTOR:
-    return boost::get<VectorType >(this->value).size() > 0;
+    return !boost::get<VectorType >(this->value).empty();
     break;
   case ValueType::RANGE:
     return true;
@@ -441,7 +441,7 @@ bool Value::operator!=(const Value &v) const
 			return op1 op op2;																								\
 		}																																		\
 																																				\
-		bool operator()(const std::string &op1, const std::string &op2) const {	\
+		bool operator()(const str_utf8_wrapper &op1, const str_utf8_wrapper &op2) const {	\
 			return op1 op op2;																								\
 		}																																		\
 	}
@@ -688,13 +688,13 @@ Value Value::operator-() const
 class bracket_visitor : public boost::static_visitor<Value>
 {
 public:
-  Value operator()(const std::string &str, const double &idx) const {
+  Value operator()(const str_utf8_wrapper &str, const double &idx) const {
     Value v;
 
     const auto i = convert_to_uint32(idx);
     if (i < str.size()) {
-			//Ensure character (not byte) index is inside the character/glyph array
-			if (i < static_cast<unsigned int>(g_utf8_strlen(str.c_str(), str.size())))	{
+			// Ensure character (not byte) index is inside the character/glyph array
+			if (i < str.get_utf8_strlen())	{
 				gchar utf8_of_cp[6] = ""; //A buffer for a single unicode character to be copied into
 				auto ptr = g_utf8_offset_to_pointer(str.c_str(), i);
 				if (ptr) {
