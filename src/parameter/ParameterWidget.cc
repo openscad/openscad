@@ -51,6 +51,7 @@ namespace pt = boost::property_tree;
 ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 {
 	setupUi(this);
+	this->setEnabled(false);
 
 	descriptionLoD = 0;
 	autoPreviewTimer.setInterval(500);
@@ -132,13 +133,14 @@ void ParameterWidget::readFile(QString scadFile)
 		connect(this->presetSaveButton, SIGNAL(clicked()), this, SLOT(onSetSaveButton()));
 		this->presetSaveButton->setToolTip(_("save current preset"));
 	}else{
-		this->addButton->setDisabled(true);
 		this->addButton->setToolTip(_("JSON file read only"));
-		this->deleteButton->setDisabled(true);
 		this->deleteButton->setToolTip(_("JSON file read only"));
-		this->presetSaveButton->setDisabled(true);
 		this->presetSaveButton->setToolTip(_("JSON file read only"));
 	}
+	this->addButton->setEnabled(writeable || !exists);
+	this->deleteButton->setEnabled(writeable || !exists);
+	this->presetSaveButton->setEnabled(writeable || !exists);
+
 	disconnect(comboBoxPreset, SIGNAL(currentIndexChanged(int)), this, SLOT(onSetChanged(int)));
 	this->comboBoxPreset->clear();
 	setComboBoxPresetForSet();
@@ -204,6 +206,8 @@ void ParameterWidget::cleanScrollArea()
 
 void ParameterWidget::connectWidget()
 {
+	this->setEnabled(true);
+
 	anyfocused = false;
 
 	rebuildGroupMap();
