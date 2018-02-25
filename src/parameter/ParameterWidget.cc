@@ -406,7 +406,7 @@ void ParameterWidget::writeParameterSets()
 		bool ok = true;
 		QMessageBox msgBox;
 		msgBox.setText(_("Saving presets"));
-		msgBox.setInformativeText( _("A json file was found, but was unreadble. Do you want to overwrite it?"));
+		msgBox.setInformativeText(QString(_("%1 was found, but was unreadble. Do you want to overwrite %1?")).arg(QString::fromStdString(jsonFile)));
 		msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
 		msgBox.setDefaultButton(QMessageBox::Cancel);
 		int ret = msgBox.exec();
