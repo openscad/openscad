@@ -403,15 +403,13 @@ void ParameterWidget::updateParameterSet(std::string setName)
 void ParameterWidget::writeParameterSets()
 {
 	if(this->unreadableFileExists){
-		bool ok = true;
 		QMessageBox msgBox;
 		msgBox.setText(_("Saving presets"));
-		msgBox.setInformativeText(QString(_("%1 was found, but was unreadble. Do you want to overwrite %1?")).arg(QString::fromStdString(jsonFile)));
+		msgBox.setInformativeText(QString(_("%1 was found, but was unreadble. Do you want to overwrite %1?")).arg(QString::fromStdString(this->jsonFile)));
 		msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
 		msgBox.setDefaultButton(QMessageBox::Cancel);
-		int ret = msgBox.exec();
 
-		if (ret == QMessageBox::Cancel) {
+		if (msgBox.exec() == QMessageBox::Cancel) {
 			return;
 		}
 	}
