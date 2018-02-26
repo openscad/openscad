@@ -7,12 +7,19 @@ ParameterSpinBox::ParameterSpinBox(ParameterObject *parameterobject, int showDes
 	setName(QString::fromStdString(object->name));
 	setValue();
 	connect(doubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(onChanged(double)));
-	if (showDescription == 0) {
+	if (showDescription == 0 || showDescription == 3) {
 		setDescription(object->description);
+		this->labelInline->hide();
 	}else if(showDescription == 1){
 		addInline(object->description);
-	}else {
+	}else{
 		doubleSpinBox->setToolTip(object->description);
+	}
+
+	if (showDescription == 3 && object->description !=""){
+		this->labelParameter->hide();
+	}else{
+		this->labelParameter->show();
 	}
 	IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
 	doubleSpinBox->installEventFilter(ignoreWheelWhenNotFocused);

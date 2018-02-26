@@ -3,6 +3,8 @@
 
 #include <string>
 
+#include <string>
+
 class Location {
 
 public:

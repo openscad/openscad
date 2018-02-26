@@ -8,7 +8,6 @@
 // #2291 and https://stackoverflow.com/questions/12530406/is-gcc-4-8-or-earlier-buggy-about-regular-expressions
 // therefor, we use boost::regex
 #include <boost/regex.hpp>
-
 #include "parsersettings.h"
 
 struct GroupInfo {
