@@ -23,7 +23,7 @@
 #if CGAL_VERSION_NR > CGAL_VERSION_NUMBER(4,5,1) || CGAL_VERSION_NR < CGAL_VERSION_NUMBER(4,5,0) 
 #include <CGAL/convex_hull_3.h>
 #else
-#include "convex_hull_3_bugfix.h"
+#include "ext/CGAL/convex_hull_3_bugfix.h"
 #endif
 
 #include "svg.h"
@@ -383,7 +383,7 @@ namespace CGALUtils {
 															   shared_ptr<const Geometry>(createNefPolyhedronFromGeometry(ps))));
 					}
 					CGAL_Nef_polyhedron *N = CGALUtils::applyOperator(fake_children, OpenSCADOperator::UNION);
-					// FIXME: This hould really never throw.
+					// FIXME: This should really never throw.
 					// Assert once we figured out what went wrong with issue #1069?
 					if (!N) throw 0;
 					t.stop();

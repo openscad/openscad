@@ -19,7 +19,7 @@
 # Please see the 'Building' sections of the OpenSCAD user manual 
 # for updated tips & workarounds.
 #
-# http://en.wikibooks.org/wiki/OpenSCAD_User_Manual
+# https://en.wikibooks.org/wiki/OpenSCAD_User_Manual
 
 !experimental {
   message("If you're building a development binary, consider adding CONFIG+=experimental")
@@ -87,6 +87,7 @@ macx {
 # Set same stack size for the linker and #define used in PlatformUtils.h
 STACKSIZE = 8388608 # 8MB # github issue 116
 QMAKE_CXXFLAGS += -DSTACKSIZE=$$STACKSIZE
+DEFINES += STACKSIZE=$$STACKSIZE
 
 win* {
   RC_FILE = openscad_win32.rc
@@ -146,6 +147,8 @@ netbsd* {
   # might want to actually turn this on once in a while
   QMAKE_CXXFLAGS_WARN_ON += -Wno-sign-compare
 }
+
+!lessThan(QT_VERSION, 5.9): CONFIG += ccache
 
 CONFIG(skip-version-check) {
   # force the use of outdated libraries
@@ -226,12 +229,12 @@ HEADERS += src/AST.h \
 
 SOURCES += src/AST.cc \
            src/ModuleInstantiation.cc \
+           src/Assignment.cc \
            src/expr.cc \
            src/function.cc \
            src/module.cc \
            src/UserModule.cc \
-           src/annotation.cc \
-           src/assignment.cc
+           src/annotation.cc
 
 # Comment parser
 FLEXSOURCES += src/comment_lexer.l
@@ -246,7 +249,6 @@ HEADERS += src/version_check.h \
            src/colormap.h \
            src/ThrownTogetherRenderer.h \
            src/CGAL_OGL_Polyhedron.h \
-           src/OGL_helper.h \
            src/QGLView.h \
            src/GLView.h \
            src/MainWindow.h \
@@ -263,6 +265,7 @@ HEADERS += src/version_check.h \
            src/builtin.h \
            src/calc.h \
            src/context.h \
+           src/builtincontext.h \
            src/modcontext.h \
            src/evalcontext.h \
            src/csgops.h \
@@ -323,7 +326,6 @@ HEADERS += src/version_check.h \
            src/LibraryInfo.h \
            src/svg.h \
            \
-           src/lodepng.h \
            src/OffscreenView.h \
            src/OffscreenContext.h \
            src/OffscreenContextAll.hpp \
@@ -352,6 +354,7 @@ HEADERS += src/version_check.h \
            src/parameter/parametervector.h \
            src/parameter/groupwidget.h \
            src/parameter/parameterset.h \
+           src/parameter/ignoreWheelWhenNotFocused.h \
            src/QWordSearchField.h \
            src/QSettingsCached.h
 
@@ -382,6 +385,7 @@ SOURCES += \
            src/feature.cc \
            src/node.cc \
            src/context.cc \
+           src/builtincontext.cc \
            src/modcontext.cc \
            src/evalcontext.cc \
            src/csgnode.cc \
@@ -437,7 +441,6 @@ SOURCES += \
            src/QGLView.cc \
            src/AutoUpdater.cc \
            \
-           src/grid.cc \
            src/hash.cc \
            src/GroupModule.cc \
            src/FileModule.cc \
@@ -465,7 +468,6 @@ SOURCES += \
            src/fbo.cc \
            src/system-gl.cc \
            src/imageutils.cc \
-           src/lodepng.cpp \
            \
            src/openscad.cc \
            src/mainwin.cc \
@@ -492,33 +494,43 @@ SOURCES += \
            src/parameter/parametervector.cpp \
            src/parameter/groupwidget.cpp \
            src/parameter/parameterset.cpp \
-           src/parameter/parametervirtualwidget.cpp\
+           src/parameter/parametervirtualwidget.cpp \
+           src/parameter/ignoreWheelWhenNotFocused.cpp \
            src/QWordSearchField.cc\
            \
            src/QSettingsCached.cc
 
+# CGAL
+HEADERS += src/ext/CGAL/convex_hull_3_bugfix.h \
+           src/ext/CGAL/OGL_helper.h \
+           src/ext/CGAL/CGAL_workaround_Mark_bounded_volumes.h \
+           src/ext/CGAL/CGAL_Nef3_workaround.h
 
+# LodePNG
+SOURCES += src/ext/lodepng/lodepng.cpp
+HEADERS += src/ext/lodepng/lodepng.h
+           
 # ClipperLib
-SOURCES += src/polyclipping/clipper.cpp
-HEADERS += src/polyclipping/clipper.hpp
+SOURCES += src/ext/polyclipping/clipper.cpp
+HEADERS += src/ext/polyclipping/clipper.hpp
 
 # libtess2
-INCLUDEPATH += src/libtess2/Include
-SOURCES += src/libtess2/Source/bucketalloc.c \
-           src/libtess2/Source/dict.c \
-           src/libtess2/Source/geom.c \
-           src/libtess2/Source/mesh.c \
-           src/libtess2/Source/priorityq.c \
-           src/libtess2/Source/sweep.c \
-           src/libtess2/Source/tess.c
-HEADERS += src/libtess2/Include/tesselator.h \
-           src/libtess2/Source/bucketalloc.h \
-           src/libtess2/Source/dict.h \
-           src/libtess2/Source/geom.h \
-           src/libtess2/Source/mesh.h \
-           src/libtess2/Source/priorityq.h \
-           src/libtess2/Source/sweep.h \
-           src/libtess2/Source/tess.h
+INCLUDEPATH += src/ext/libtess2/Include
+SOURCES += src/ext/libtess2/Source/bucketalloc.c \
+           src/ext/libtess2/Source/dict.c \
+           src/ext/libtess2/Source/geom.c \
+           src/ext/libtess2/Source/mesh.c \
+           src/ext/libtess2/Source/priorityq.c \
+           src/ext/libtess2/Source/sweep.c \
+           src/ext/libtess2/Source/tess.c
+HEADERS += src/ext/libtess2/Include/tesselator.h \
+           src/ext/libtess2/Source/bucketalloc.h \
+           src/ext/libtess2/Source/dict.h \
+           src/ext/libtess2/Source/geom.h \
+           src/ext/libtess2/Source/mesh.h \
+           src/ext/libtess2/Source/priorityq.h \
+           src/ext/libtess2/Source/sweep.h \
+           src/ext/libtess2/Source/tess.h
 
 unix:!macx {
   SOURCES += src/imageutils-lodepng.cc
@@ -546,8 +558,6 @@ HEADERS += src/cgal.h \
            src/CGALCache.h \
            src/CGALRenderer.h \
            src/CGAL_Nef_polyhedron.h \
-           src/CGAL_Nef3_workaround.h \
-           src/convex_hull_3_bugfix.h \
            src/cgalworker.h \
            src/Polygon2d-CGAL.h
 
@@ -624,7 +634,7 @@ colorschemes.files = color-schemes/*
 INSTALLS += colorschemes
 
 applications.path = $$PREFIX/share/applications
-applications.extra = cat icons/openscad.desktop | sed -e \"'s/^Icon=openscad/Icon=$${FULLNAME}/; s/^Exec=openscad/Exec=$${FULLNAME}/'\" > \"\$(INSTALL_ROOT)$${applications.path}/$${FULLNAME}.desktop\"
+applications.extra = mkdir -p \"\$(INSTALL_ROOT)$${applications.path}\" && cat icons/openscad.desktop | sed -e \"'s/^Icon=openscad/Icon=$${FULLNAME}/; s/^Exec=openscad/Exec=$${FULLNAME}/'\" > \"\$(INSTALL_ROOT)$${applications.path}/$${FULLNAME}.desktop\"
 INSTALLS += applications
 
 mimexml.path = $$PREFIX/share/mime/packages

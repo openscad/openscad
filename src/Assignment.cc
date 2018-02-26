@@ -26,6 +26,8 @@
 
 #include "Assignment.h"
 #include "annotation.h"
+#include "expression.h"
+#include <sstream>
 
 void Assignment::addAnnotations(AnnotationList *annotations)
 {
@@ -43,4 +45,18 @@ const Annotation * Assignment::annotation(const std::string &name) const
 {
 	auto found = annotations.find(name);
 	return found == annotations.end() ? nullptr : found->second;
+}
+
+
+void Assignment::print(std::ostream &stream, const std::string &indent) const
+{
+	if (this->hasAnnotations()) {
+		const Annotation *group = this->annotation("Group");
+		if (group) group->print(stream, indent);
+		const Annotation *description = this->annotation("Description");
+		if (description) description->print(stream, indent);
+		const Annotation *parameter = this->annotation("Parameter");
+		if (parameter) parameter->print(stream, indent);
+	}
+	stream << indent << this->name << " = " << *this->expr << ";\n";
 }

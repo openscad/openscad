@@ -12,10 +12,10 @@ private:
 public:
     polygon();
     polygon(const polygon& orig);
-    virtual ~polygon();
+    ~polygon();
 
-    virtual void set_attrs(attr_map_t& attrs);
-    const std::string& get_name() const { return polygon::name; };
+    void set_attrs(attr_map_t& attrs) override;
+    const std::string& get_name() const override { return polygon::name; };
 
     static const std::string name;
 };

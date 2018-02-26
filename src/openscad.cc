@@ -27,9 +27,9 @@
 #include "openscad.h"
 #include "comment.h"
 #include "node.h"
-#include "module.h"
+#include "FileModule.h"
 #include "ModuleInstantiation.h"
-#include "modcontext.h"
+#include "builtincontext.h"
 #include "value.h"
 #include "export.h"
 #include "builtin.h"
@@ -184,7 +184,7 @@ static void info()
 }
 
 /**
- * Initialize gettext. This must be called after the appliation path was
+ * Initialize gettext. This must be called after the application path was
  * determined so we can lookup the resource path for the language translation
  * files.
  */
@@ -374,12 +374,11 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	set_render_color_scheme(arg_colorscheme, true);
 	
 	// Top context - this context only holds builtins
-	ModuleContext top_ctx;
-	top_ctx.registerBuiltin();
+	BuiltinContext top_ctx;
 	bool preview = png_output_file ? (renderer==RenderType::OPENCSG || renderer==RenderType::THROWNTOGETHER) : false;
 	top_ctx.set_variable("$preview", ValuePtr(preview));
 #ifdef DEBUG
-	PRINTDB("Top ModuleContext:\n%s",top_ctx.dump(nullptr, nullptr));
+	PRINTDB("BuiltinContext:\n%s", top_ctx.dump(nullptr, nullptr));
 #endif
 	shared_ptr<Echostream> echostream;
 	if (echo_output_file) {
@@ -401,8 +400,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	}
 	std::string text((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 	text += "\n" + commandline_commands;
-	auto abspath = fs::absolute(filename);
-	if (!parse(root_module, text.c_str(), abspath, false)) {
+	if (!parse(root_module, text.c_str(), filename, false)) {
 		delete root_module;  // parse failed
 		root_module = nullptr;
 	}
@@ -456,7 +454,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		}
 		else {
 			fs::current_path(fparent); // Force exported filenames to be relative to document path
-			fstream << tree.getString(*root_node) << "\n";
+			fstream << tree.getString(*root_node, "\t") << "\n";
 			fstream.close();
 		}
 	}
@@ -468,7 +466,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		}
 		else {
 			fs::current_path(fparent); // Force exported filenames to be relative to document path
-			fstream << root_module->dump("", "");
+			fstream << root_module->dump("");
 			fstream.close();
 		}
 	}
@@ -653,6 +651,8 @@ void dialogInitHandler(FontCacheInitializer *initializer, void *)
 	QMetaObject::invokeMethod(scadApp, "hideFontCacheDialog");
 }
 
+
+
 int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, char ** argv)
 {
 #ifdef Q_OS_MACX
@@ -769,7 +769,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	} else {
 	   new MainWindow(assemblePath(original_path, inputFiles[0]));
 	}
-
+    app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(releaseQSettingsCached()));
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 	int rc = app.exec();
 	for (auto &mainw : scadApp->windowManager.getWindows()) delete mainw;
@@ -784,13 +784,23 @@ int gui(const vector<string> &inputFiles, const fs::path &original_path, int arg
 }
 #endif // OPENSCAD_QTGUI
 
+std::pair<string, string> customSyntax(const string& s)
+{
+#if defined(Q_OS_MACX)
+	if (s.find("-psn_") == 0)
+		return {"psn", s.substr(5)};
+#endif
+
+	return {};
+}
+
 int main(int argc, char **argv)
 {
 	int rc = 0;
 	StackCheck::inst()->init();
 	
 #ifdef Q_OS_MAC
-	bool isGuiLaunched = getenv("GUI_LAUNCHED") != 0;
+	bool isGuiLaunched = getenv("GUI_LAUNCHED") != nullptr;
 	if (isGuiLaunched) set_output_handler(CocoaUtils::nslog, nullptr);
 #else
 	PlatformUtils::ensureStdIO();
@@ -832,6 +842,9 @@ int main(int argc, char **argv)
 		("d,d", po::value<string>(), "deps-file")
 		("m,m", po::value<string>(), "makefile")
 		("D,D", po::value<vector<string>>(), "var=val")
+#ifdef Q_OS_MACX
+		("psn", po::value<string>(), "process serial number")
+#endif
 #ifdef ENABLE_EXPERIMENTAL
 		("enable", po::value<vector<string>>(), "enable experimental features")
 #endif
@@ -849,7 +862,7 @@ int main(int argc, char **argv)
 
 	po::variables_map vm;
 	try {
-		po::store(po::command_line_parser(argc, argv).options(all_options).allow_unregistered().positional(p).run(), vm);
+		po::store(po::command_line_parser(argc, argv).options(all_options).allow_unregistered().positional(p).extra_parser(customSyntax).run(), vm);
 	}
 	catch(const std::exception &e) { // Catches e.g. unknown options
 		PRINTB("%s\n", e.what());
@@ -956,10 +969,6 @@ int main(int argc, char **argv)
 	currentdir = fs::current_path().generic_string();
 
 	Camera camera = get_camera(vm);
-
-	// Initialize global visitors
-	NodeCache nodecache;
-	NodeDumper dumper(nodecache);
 
 	auto cmdlinemode = false;
 	if (output_file) { // cmd-line mode

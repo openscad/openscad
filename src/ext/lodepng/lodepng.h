@@ -799,7 +799,7 @@ class State : public LodePNGState
   public:
     State();
     State(const State& other);
-    virtual ~State();
+    ~State();
     State& operator=(const State& other);
 };
 

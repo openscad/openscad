@@ -14,7 +14,7 @@ public:
 
 	EvalContext(const Context *parent, 
 							const AssignmentList &args, const class LocalScope *const scope = nullptr);
-	virtual ~EvalContext() {}
+	~EvalContext() {}
 
 	size_t numArgs() const { return this->eval_arguments.size(); }
 	const std::string &getArgName(size_t i) const;

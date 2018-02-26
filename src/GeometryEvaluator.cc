@@ -43,10 +43,11 @@ GeometryEvaluator::GeometryEvaluator(const class Tree &tree):
 shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNode &node, 
 																															 bool allownef)
 {
-	if (!GeometryCache::instance()->contains(this->tree.getIdString(node))) {
+	const std::string &key = this->tree.getIdString(node);
+	if (!GeometryCache::instance()->contains(key)) {
 		shared_ptr<const CGAL_Nef_polyhedron> N;
-		if (CGALCache::instance()->contains(this->tree.getIdString(node))) {
-			N = CGALCache::instance()->get(this->tree.getIdString(node));
+		if (CGALCache::instance()->contains(key)) {
+			N = CGALCache::instance()->get(key);
 		}
 
 		// If not found in any caches, we need to evaluate the geometry
@@ -73,7 +74,7 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 		smartCacheInsert(node, this->root);
 		return this->root;
 	}
-	return GeometryCache::instance()->get(this->tree.getIdString(node));
+	return GeometryCache::instance()->get(key);
 }
 
 GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const AbstractNode &node, OpenSCADOperator op)
@@ -303,6 +304,7 @@ Geometry::Geometries GeometryEvaluator::collectChildren3D(const AbstractNode &no
 */
 Polygon2d *GeometryEvaluator::applyToChildren2D(const AbstractNode &node, OpenSCADOperator op)
 {
+	node.progress_report();
 	if (op == OpenSCADOperator::MINKOWSKI) {
 		return applyMinkowski2D(node);
 	}
@@ -382,6 +384,7 @@ Response GeometryEvaluator::visit(State &state, const AbstractNode &node)
 			geom = smartCacheGet(node, state.preferNef());
 		}
 		addToParent(state, node, geom);
+		node.progress_report();
 	}
 	return Response::ContinueTraversal;
 }
@@ -422,6 +425,7 @@ Response GeometryEvaluator::visit(State &state, const OffsetNode &node)
 			geom = smartCacheGet(node, false);
 		}
 		addToParent(state, node, geom);
+		node.progress_report();
 	}
 	return Response::ContinueTraversal;
 }
@@ -461,6 +465,7 @@ Response GeometryEvaluator::visit(State &state, const RenderNode &node)
 		else {
 			geom = smartCacheGet(node, state.preferNef());
 		}
+		node.progress_report();
 		addToParent(state, node, geom);
 	}
 	return Response::ContinueTraversal;
@@ -490,6 +495,7 @@ Response GeometryEvaluator::visit(State &state, const LeafNode &node)
 		}
 		else geom = smartCacheGet(node, state.preferNef());
 		addToParent(state, node, geom);
+		node.progress_report();
 	}
 	return Response::PruneTraversal;
 }
@@ -510,6 +516,7 @@ Response GeometryEvaluator::visit(State &state, const TextNode &node)
 		}
 		else geom = GeometryCache::instance()->get(this->tree.getIdString(node));
 		addToParent(state, node, geom);
+		node.progress_report();
 	}
 	return Response::PruneTraversal;
 }
@@ -536,6 +543,7 @@ Response GeometryEvaluator::visit(State &state, const CsgOpNode &node)
 			geom = smartCacheGet(node, state.preferNef());
 		}
 		addToParent(state, node, geom);
+		node.progress_report();
 	}
 	return Response::ContinueTraversal;
 }
@@ -611,6 +619,7 @@ Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 			geom = smartCacheGet(node, state.preferNef());
 		}
 		addToParent(state, node, geom);
+		node.progress_report();
 	}
 	return Response::ContinueTraversal;
 }
@@ -677,8 +686,10 @@ static void add_slice(PolySet *ps, const Polygon2d &poly,
 */
 static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &poly)
 {
-	bool cvx = poly.is_convex();
-	PolySet *ps = new PolySet(3, !cvx ? boost::tribool(false) : node.twist == 0 ? boost::tribool(true) : unknown);
+	boost::tribool isConvex{poly.is_convex()};
+	// Twise or non-uniform scale makes convex polygons into unknown polyhedrons
+	if (isConvex && (node.twist != 0 || node.scale_x != node.scale_y)) isConvex = unknown;
+	PolySet *ps = new PolySet(3, isConvex);
 	ps->setConvexity(node.convexity);
 	if (node.height <= 0) return ps;
 
@@ -765,6 +776,7 @@ Response GeometryEvaluator::visit(State &state, const LinearExtrudeNode &node)
 			geom = smartCacheGet(node, false);
 		}
 		addToParent(state, node, geom);
+		node.progress_report();
 	}
 	return Response::ContinueTraversal;
 }
@@ -920,6 +932,7 @@ Response GeometryEvaluator::visit(State &state, const RotateExtrudeNode &node)
 			geom = smartCacheGet(node, false);
 		}
 		addToParent(state, node, geom);
+		node.progress_report();
 	}
 	return Response::ContinueTraversal;
 }
@@ -1040,6 +1053,7 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 			geom = smartCacheGet(node, false);
 		}
 		addToParent(state, node, geom);
+		node.progress_report();
 	}
 	return Response::ContinueTraversal;
 }		
@@ -1116,6 +1130,7 @@ Response GeometryEvaluator::visit(State &state, const CgaladvNode &node)
 			geom = smartCacheGet(node, state.preferNef());
 		}
 		addToParent(state, node, geom);
+		node.progress_report();
 	}
 	return Response::ContinueTraversal;
 }
@@ -1135,6 +1150,7 @@ Response GeometryEvaluator::visit(State &state, const AbstractIntersectionNode &
 			geom = smartCacheGet(node, state.preferNef());
 		}
 		addToParent(state, node, geom);
+		node.progress_report();
 	}
 	return Response::ContinueTraversal;
 }

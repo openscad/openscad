@@ -7,12 +7,13 @@
 #include <QProgressDialog>
 #include <iostream>
 #include <boost/foreach.hpp>
+#include "QSettingsCached.h"
 
 OpenSCADApp::OpenSCADApp(int &argc ,char **argv)
 	: QApplication(argc, argv), fontCacheDialog(nullptr)
 {
 #ifdef Q_OS_MAC
-	this->installEventFilter(new EventFilter(this));
+	this->installEventFilter(new SCADEventFilter(this));
 #endif
 }
 
@@ -63,7 +64,7 @@ void OpenSCADApp::showFontCacheDialog()
 	this->fontCacheDialog->setLabelText(_("Fontconfig needs to update its font cache.\nThis can take up to a couple of minutes."));
 	this->fontCacheDialog->setMinimum(0);
 	this->fontCacheDialog->setMaximum(0);
-	this->fontCacheDialog->setCancelButton(0);
+	this->fontCacheDialog->setCancelButton(nullptr);
 	this->fontCacheDialog->exec();
 }
 
@@ -71,4 +72,9 @@ void OpenSCADApp::hideFontCacheDialog()
 {
 	assert(this->fontCacheDialog);
 	this->fontCacheDialog->reset();
+}
+
+
+void OpenSCADApp::releaseQSettingsCached() {
+	QSettingsCached{}.release();
 }

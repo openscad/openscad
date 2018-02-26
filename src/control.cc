@@ -54,7 +54,7 @@ public: // methods
 
 	ControlModule(Type type, const Feature& feature) : AbstractModule(feature), type(type) { }
 
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
+	AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const override;
 
 	static void for_eval(AbstractNode &node, const ModuleInstantiation &inst, size_t l, 
 						 const Context *ctx, const EvalContext *evalctx);

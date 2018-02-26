@@ -10,16 +10,15 @@ OpenSCAD is a software for creating solid 3D CAD objects. It is free software
 and available for Linux/UNIX, MS Windows and Mac OS X.
 
 Unlike most free software for creating 3D models (such as the famous
-application Blender) it does not focus on the artistic aspects of 3D modeling
-but instead on the CAD aspects. Thus it might be the application you are
+application Blender), OpenSCAD focuses on the CAD aspects rather than the 
+artistic aspects of 3D modeling. Thus this might be the application you are
 looking for when you are planning to create 3D models of machine parts but
-pretty sure is not what you are looking for when you are more interested in
-creating computer-animated movies.
+probably not the tool for creating computer-animated movies.
 
-OpenSCAD is not an interactive modeler. Instead it is something like a
-3D-compiler that reads in a script file that describes the object and renders
-the 3D model from this script file (see examples below). This gives you (the
-designer) full control over the modeling process and enables you to easily
+OpenSCAD is not an interactive modeler. Instead it is more like a
+3D-compiler that reads a script file that describes the object and renders
+the 3D model from this script file (see examples below). This gives you, the
+designer, complete control over the modeling process and enables you to easily
 change any step in the modeling process or make designs that are defined by
 configurable parameters.
 
@@ -127,9 +126,9 @@ Install git (http://git-scm.com/) onto your system. Then run a clone:
 
     git clone git://github.com/openscad/openscad.git
 
-This will download the latest sources into a directory named 'openscad'. 
+This will download the latest sources into a directory named 'openscad'.
 
-To pull the MCAD library (http://reprap.org/wiki/MCAD), do the following:
+To pull the MCAD library (https://github.com/openscad/MCAD), do the following:
 
     cd openscad
     git submodule update --init
@@ -144,17 +143,17 @@ Prerequisites:
 
 Install Dependencies:
 
-After building dependencies, follow the instructions in the *Compilation* section.
+After building dependencies using one of the following three options, follow the instructions in the *Compilation* section.
 
 1. **From source**
 
-Run the script that sets up the environment variables:
+    Run the script that sets up the environment variables:
 
-    source setenv_mac.sh
+        source setenv_mac.sh
 
-Then run the script to compile all the dependencies:
+    Then run the script to compile all the dependencies:
 
-    ./scripts/macosx-build-dependencies.sh
+        ./scripts/macosx-build-dependencies.sh
 
 1. **Homebrew** (assumes [Homebrew](http://brew.sh) is already installed)
 
@@ -250,11 +249,11 @@ For a 32-bit Windows cross-build, replace 64 with 32 in the above instructions.
 
 ### Compilation
 
-First, run 'qmake openscad.pro' from Qt to generate a Makefile.
+First, run `qmake openscad.pro` from Qt to generate a Makefile.
 
-On some systems, depending on which version(s) of Qt you have installed, you may need to specify which version you want to use, e.g. by running 'qmake4', 'qmake-qt4', 'qmake -qt=qt5', or something alike. 
+On some systems, depending on which version(s) of Qt you have installed, you may need to specify which version you want to use, e.g. by running `qmake4`, `qmake-qt4`, `qmake -qt=qt5`, or something alike. 
 
-Then run make. Finally you might run 'make install' as root or simply copy the
+Then run `make`. Finally you might run `make install` as root or simply copy the
 'openscad' binary (OpenSCAD.app on Mac OS X) to the bin directory of your choice.
 
 If you had problems compiling from source, raise a new issue in the

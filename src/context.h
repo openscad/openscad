@@ -29,6 +29,9 @@ public:
 
 	void apply_variables(const Context &other);
 	ValuePtr lookup_variable(const std::string &name, bool silent = false) const;
+	double lookup_variable_with_default(const std::string &variable, const double &def) const;
+  std::string lookup_variable_with_default(const std::string &variable, const std::string &def) const;
+
 	bool has_local_variable(const std::string &name) const;
 
 	void setDocumentPath(const std::string &path) { this->document_path = path; }

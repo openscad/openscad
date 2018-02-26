@@ -39,9 +39,9 @@ _debug_tcct = False
 def debug(*args):
     global _debug_tcct
     if _debug_tcct:
-	print 'test_cmdline_tool:',
-	for a in args: print a,
-	print
+        print 'test_cmdline_tool:',
+        for a in args: print a,
+        print
 
 def initialize_environment():
     if not options.generate: options.generate = bool(os.getenv("TEST_GENERATE"))
@@ -138,7 +138,7 @@ def compare_default(resultfilename):
     expected_text = get_normalized_text(expectedfilename)
     actual_text = get_normalized_text(resultfilename)
     if not expected_text == actual_text:
-	if resultfilename: 
+        if resultfilename: 
             differences = difflib.unified_diff(
                 [line.strip() for line in expected_text.splitlines()],
                 [line.strip() for line in actual_text.splitlines()])
@@ -151,7 +151,7 @@ def compare_default(resultfilename):
 def compare_png(resultfilename):
     compare_method = 'pixel'
     #args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-composite", "-threshold", "10%", "-blur", "2", "-threshold", "30%", "-format", "%[fx:w*h*mean]", "info:"]
-    args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-composite", "-threshold", "10%", "-morphology", "Erode", "Square", "-format", "%[fx:w*h*mean]", "info:"]
+    args = [expectedfilename, resultfilename, "-alpha", "On", "-compose", "difference", "-composite", "-threshold", "10%", "-morphology", "Erode", "Square", "-format", "%[fx:w*h*mean]", "info:"]
 
     # for systems with older imagemagick that doesnt support '-morphology'
     # http://www.imagemagick.org/Usage/morphology/#alturnative
@@ -187,11 +187,11 @@ def compare_png(resultfilename):
     (retval, output) = execute_and_redirect(options.comparison_exec, args, subprocess.PIPE)
     print "Image comparison return:", retval, "output:", output
     if retval == 0:
-	if compare_method=='pixel':
+        if compare_method=='pixel':
             pixelerr = int(float(output.strip()))
             if pixelerr < 32: return True
             else: print >> sys.stderr, pixelerr, ' pixel errors'
-	elif compare_method=='NCC':
+        elif compare_method=='NCC':
             thresh = 0.95
             ncc_err = float(output.strip())
             if ncc_err > thresh or ncc_err==0.0: return True
@@ -237,7 +237,7 @@ def run_test(testname, cmd, args):
         print 'using font directory:', fontdir
         sys.stdout.flush()
         proc = subprocess.Popen(cmdline, env = fontenv, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-	comresult = proc.communicate()
+        comresult = proc.communicate()
         stdouttext, errtext = comresult[0],comresult[1]
         if errtext != None and len(errtext) > 0:
             print >> sys.stderr, "stderr output: " + errtext

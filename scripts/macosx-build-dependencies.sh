@@ -32,25 +32,24 @@ OPTION_CXX11=true
 
 PACKAGES=(
     # NB! For eigen, also update the path in the function
-    "eigen 3.3.1"
-    "gmp 6.1.1"
-    "mpfr 3.1.4"
-    "boost 1.61.0"
+    "eigen 3.3.3"
+    "gmp 6.1.2"
+    "mpfr 3.1.6"
+    "boost 1.65.1"
     "qt5 5.7.0"
     "qscintilla 2.9.3"
-    # NB! For CGAL, also update the actual download URL in the function
-    "cgal 4.8.1"
+    "cgal 4.11"
     "glew 1.13.0"
     "gettext 0.19.8"
     "libffi 3.2.1"
-    "glib2 2.50.1"
+    "glib2 2.54.2"
     "opencsg 1.4.2"
-    "freetype 2.6.3"
-    "ragel 6.9"
-    "harfbuzz 1.2.7"
-    "libzip 1.1.3"
-    "libxml2 2.9.4"
-    "fontconfig 2.12.0"
+    "freetype 2.8.1"
+    "ragel 6.10"
+    "harfbuzz 1.7.1"
+    "libzip 1.3.2"
+    "libxml2 2.9.7"
+    "fontconfig 2.12.4"
 )
 DEPLOY_PACKAGES=(
     "sparkle 1.13.1"
@@ -359,7 +358,7 @@ build_cgal()
   cd $BASEDIR/src
   rm -rf CGAL-$version
   if [ ! -f CGAL-$version.tar.xz ]; then
-    # 4.8  
+    # 4.8->
     curl -LO https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-$version/CGAL-$version.tar.xz
     # 4.6.3 curl -O https://gforge.inria.fr/frs/download.php/file/35138/CGAL-$version.tar.gz
     # 4.5.2 curl -O https://gforge.inria.fr/frs/download.php/file/34512/CGAL-$version.tar.gz
@@ -378,7 +377,7 @@ build_cgal()
   fi
   tar xzf CGAL-$version.tar.xz
   cd CGAL-$version
-  CXXFLAGS="$CXXSTDFLAGS" cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.dylib -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.dylib -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.dylib -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DBUILD_SHARED_LIBS=TRUE -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="x86_64" -DBOOST_ROOT=$DEPLOYDIR -DBoost_USE_MULTITHREADED=false
+  CXXFLAGS="$CXXSTDFLAGS" cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.dylib -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.dylib -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.dylib -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_Qt5=OFF -DWITH_CGAL_ImageIO=OFF -DBUILD_SHARED_LIBS=TRUE -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="x86_64" -DBOOST_ROOT=$DEPLOYDIR -DBoost_USE_MULTITHREADED=false
   make -j"$NUMCPU" install
   make install
   install_name_tool -id @rpath/libCGAL.dylib $DEPLOYDIR/lib/libCGAL.dylib
@@ -456,6 +455,7 @@ build_eigen()
     mv $version.tar.bz2 eigen-$version.tar.bz2
   fi
   EIGENDIR=`tar tjf eigen-$version.tar.bz2 | head -1 | cut -f1 -d"/"`
+  rm -rf $EIGENDIR
   tar xjf eigen-$version.tar.bz2
   ln -s ./$EIGENDIR eigen-$version
   cd eigen-$version
@@ -553,8 +553,8 @@ build_libzip()
   echo "Building libzip $version..."
   cd "$BASEDIR"/src
   rm -rf "libzip-$version"
-  if [ ! -f "libxml2-$version.tar.gz" ]; then
-    curl --insecure -LO "https://nih.at/libzip/libzip-1.1.3.tar.gz"
+  if [ ! -f "libzip-$version.tar.gz" ]; then
+    curl -LO "https://libzip.org/download/libzip-$version.tar.gz"
   fi
   tar xzf "libzip-$version.tar.gz"
   cd "libzip-$version"
@@ -605,7 +605,9 @@ build_fontconfig()
   tar xzf "fontconfig-$version.tar.gz"
   cd "fontconfig-$version"
   export PKG_CONFIG_PATH="$DEPLOYDIR/lib/pkgconfig"
-  ./configure --prefix="$DEPLOYDIR" --enable-libxml2 CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN
+  # FIXME: The "ac_cv_func_mkostemp=no" is a workaround for fontconfig's autotools config not respecting any passed
+  # -no_weak_imports linker flag. This may be improved in future versions of fontconfig
+  ./configure --prefix="$DEPLOYDIR" --enable-libxml2 CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN ac_cv_func_mkostemp=no
   unset PKG_CONFIG_PATH
   make -j$NUMCPU
   make install
@@ -647,12 +649,12 @@ build_gettext()
   echo "Building gettext $version..."
   cd "$BASEDIR"/src
   rm -rf "gettext-$version"
-  if [ ! -f "gettext-$version.tar.xz" ]; then
+  if [ ! -f "gettext-$version.tar.gz" ]; then
     curl --insecure -LO "http://ftpmirror.gnu.org/gettext/gettext-$version.tar.gz"
   fi
   tar xzf "gettext-$version.tar.gz"
   cd "gettext-$version"
-
+  patch -p1 < $OPENSCADDIR/patches/gettext.patch
   ./configure --with-included-glib --prefix="$DEPLOYDIR" CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN
   make -j$NUMCPU
   make install

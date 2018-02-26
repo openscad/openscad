@@ -41,7 +41,7 @@ class TextModule : public AbstractModule
 {
 public:
 	TextModule() : AbstractModule() { }
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
+	AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const override;
 };
 
 AbstractNode *TextModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
@@ -61,7 +61,7 @@ AbstractNode *TextModule::instantiate(const Context *ctx, const ModuleInstantiat
 	node->params.set_fa(fa);
 	node->params.set_fs(fs);
 
-	auto size = lookup_double_variable_with_default(c, "size", 10.0);
+	auto size = c.lookup_variable_with_default("size", 10.0);
 	auto segments = Calc::get_fragments_from_r(size, fn, fs, fa);
 	// The curved segments of most fonts are relatively short, so
 	// by using a fraction of the number of full circle segments
@@ -71,14 +71,14 @@ AbstractNode *TextModule::instantiate(const Context *ctx, const ModuleInstantiat
 
 	node->params.set_size(size);
 	node->params.set_segments(text_segments);
-	node->params.set_text(lookup_string_variable_with_default(c, "text", ""));
-	node->params.set_spacing(lookup_double_variable_with_default(c, "spacing", 1.0));
-	node->params.set_font(lookup_string_variable_with_default(c, "font", ""));
-	node->params.set_direction(lookup_string_variable_with_default(c, "direction", ""));
-	node->params.set_language(lookup_string_variable_with_default(c, "language", "en"));
-	node->params.set_script(lookup_string_variable_with_default(c, "script", ""));
-	node->params.set_halign(lookup_string_variable_with_default(c, "halign", "left"));
-	node->params.set_valign(lookup_string_variable_with_default(c, "valign", "baseline"));
+	node->params.set_text(c.lookup_variable_with_default("text", ""));
+	node->params.set_spacing(c.lookup_variable_with_default("spacing", 1.0));
+	node->params.set_font(c.lookup_variable_with_default("font", ""));
+	node->params.set_direction(c.lookup_variable_with_default("direction", ""));
+	node->params.set_language(c.lookup_variable_with_default("language", "en"));
+	node->params.set_script(c.lookup_variable_with_default("script", ""));
+	node->params.set_halign(c.lookup_variable_with_default("halign", "left"));
+	node->params.set_valign(c.lookup_variable_with_default("valign", "baseline"));
 
 	FreetypeRenderer renderer;
 	renderer.detect_properties(node->params);

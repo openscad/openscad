@@ -3,7 +3,6 @@
 #include "modcontext.h"
 #include "expression.h"
 #include "printutils.h"
-#include <fstream>
 #include <boost/property_tree/json_parser.hpp>
 
 std::string ParameterSet::parameterSetsKey("parameterSets");
@@ -30,7 +29,7 @@ std::vector<std::string> ParameterSet::getParameterNames()
 
 boost::optional<pt::ptree &> ParameterSet::getParameterSet(const std::string &setName)
 {
-	boost::optional<pt::ptree &> sets = root.get_child_optional(ParameterSet::parameterSetsKey);
+	boost::optional<pt::ptree &> sets = parameterSets();
 	if (!sets.is_initialized()) {
 		return sets;
 	}
@@ -57,20 +56,13 @@ void ParameterSet::addParameterSet(const std::string setName, const pt::ptree & 
 }
 
 /*!
-	Returns true if the file is writable
+	Returns true if the file was succesfully read
 */
 bool ParameterSet::readParameterSet(const std::string &filename)
 {
 	try {
 		pt::read_json(filename, this->root);
-
-		//check whether file is read-only
-		std::fstream file;
-		file.open(filename, std::ios::app);
-		if (file.is_open()) {
-			file.close();
-			return true;
-		}
+		return true;
 	}
 	catch (const pt::json_parser_error &e) {
 		PRINTB("ERROR: Cannot open Parameter Set '%s': %s", filename % e.what());
@@ -92,7 +84,7 @@ void ParameterSet::writeParameterSet(const std::string &filename)
 
 void ParameterSet::applyParameterSet(FileModule *fileModule, const std::string &setName)
 {
-	if (fileModule == NULL || this->root.empty()) return;
+	if (fileModule == nullptr || this->root.empty()) return;
 	try {
 		ModuleContext ctx;
 		boost::optional<pt::ptree &> set = getParameterSet(setName);

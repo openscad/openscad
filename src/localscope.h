@@ -10,7 +10,7 @@ public:
 	~LocalScope();
 
 	size_t numElements() const { return assignments.size() + children.size(); }
-	std::string dump(const std::string &indent) const;
+	void print(std::ostream &stream, const std::string &indent) const;
 	std::vector<class AbstractNode*> instantiateChildren(const class Context *evalctx) const;
 	void addChild(class ModuleInstantiation *astnode);
 	void addModule(const std::string &name, class UserModule *module);
@@ -22,11 +22,11 @@ public:
 	std::vector<ModuleInstantiation*> children;
 
 	// Modules and functions are stored twice; once for lookup and once for AST serialization
-	typedef std::unordered_map<std::string, class AbstractFunction*> FunctionContainer;
+	typedef std::unordered_map<std::string, class UserFunction*> FunctionContainer;
 	FunctionContainer functions;
-	std::vector<std::pair<std::string, AbstractFunction*>> astFunctions;
+	std::vector<std::pair<std::string, UserFunction*>> astFunctions;
 
-	typedef std::unordered_map<std::string, class AbstractModule*> AbstractModuleContainer;
-	AbstractModuleContainer	modules;
-	std::vector<std::pair<std::string, AbstractModule*>> astModules;
+	typedef std::unordered_map<std::string, class UserModule*> ModuleContainer;
+	ModuleContainer	modules;
+	std::vector<std::pair<std::string, UserModule*>> astModules;
 };

@@ -23,7 +23,7 @@
 #if CGAL_VERSION_NR > CGAL_VERSION_NUMBER(4,5,1) || CGAL_VERSION_NR < CGAL_VERSION_NUMBER(4,5,0) 
 #include <CGAL/convex_hull_3.h>
 #else
-#include "convex_hull_3_bugfix.h"
+#include "ext/CGAL/convex_hull_3_bugfix.h"
 #endif
 
 #include "svg.h"
@@ -229,7 +229,7 @@ namespace CGALUtils {
 				for (i = newN.p3->volumes_begin(); i != newN.p3->volumes_end(); ++i) {
 					PRINTDB("<!-- volume. mark: %s -->",i->mark());
 					for (j = i->shells_begin(); j != i->shells_end(); ++j) {
-						PRINTDB("<!-- shell. (vol mark was: %i)", i->mark());;
+						PRINTDB("<!-- shell. (vol mark was: %i)", i->mark());
 						sface_handle = CGAL_Nef_polyhedron3::SFace_const_handle(j);
 						newN.p3->visit_shell_objects(sface_handle , zremover);
 						PRINTD("<!-- shell. end. -->");

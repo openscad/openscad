@@ -1,0 +1,75 @@
+ECHO: "***Test special angles***"
+ECHO: "sin(  0) == 0          ", true
+ECHO: "sin( 30) == 1/2        ", true
+ECHO: "sin( 45) == sqrt(2)/2  ", true
+ECHO: "sin( 60) == sqrt(3)/2  ", true
+ECHO: "sin( 90) == 1          ", true
+ECHO: "sin(120) == sqrt(3)/2  ", true
+ECHO: "sin(135) == sqrt(2)/2  ", true
+ECHO: "sin(150) == 1/2        ", true
+ECHO: "sin(180) == 0          ", true
+ECHO: "sin(210) == -1/2       ", true
+ECHO: "sin(225) == -sqrt(2)/2 ", true
+ECHO: "sin(240) == -sqrt(3)/2 ", true
+ECHO: "sin(270) == -1         ", true
+ECHO: "sin(300) == -sqrt(3)/2 ", true
+ECHO: "sin(315) == -sqrt(2)/2 ", true
+ECHO: "sin(330) == -1/2       ", true
+ECHO: "sin(360) == 0          ", true
+ECHO: 
+ECHO: "cos(  0) == 1          ", true
+ECHO: "cos( 30) == sqrt(3)/2  ", true
+ECHO: "cos( 45) == sqrt(2)/2  ", true
+ECHO: "cos( 60) == 1/2        ", true
+ECHO: "cos( 90) == 0          ", true
+ECHO: "cos(120) == -1/2       ", true
+ECHO: "cos(135) == -sqrt(2)/2 ", true
+ECHO: "cos(150) == -sqrt(3)/2 ", true
+ECHO: "cos(180) == -1         ", true
+ECHO: "cos(210) == -sqrt(3)/2 ", true
+ECHO: "cos(225) == -sqrt(2)/2 ", true
+ECHO: "cos(240) == -1/2       ", true
+ECHO: "cos(270) == 0          ", true
+ECHO: "cos(300) == 1/2        ", true
+ECHO: "cos(315) == sqrt(2)/2  ", true
+ECHO: "cos(330) == sqrt(3)/2  ", true
+ECHO: "cos(360) == 1          ", true
+ECHO: 
+ECHO: "// Quick test of signed zero checks"
+ECHO: " isNeg0(-0) ", true
+ECHO: "!isNeg0( 0) ", true
+ECHO: "!isPos0(-0) ", true
+ECHO: " isPos0( 0) ", true
+ECHO: 
+ECHO: "isNeg0(tan(-180))      ", true
+ECHO: "tan(-150)== sqrt(3)/3  ", true
+ECHO: "tan(-135)== 1          ", true
+ECHO: "tan(-120)== sqrt(3)    ", true
+ECHO: "tan(-90) == -1/0       ", true
+ECHO: "tan(-60) == -sqrt(3)   ", true
+ECHO: "tan(-45) == -1         ", true
+ECHO: "tan(-30) == -sqrt(3)/3 ", true
+ECHO: "isPos0(tan(  0))       ", true
+ECHO: "tan( 30) == sqrt(3)/3  ", true
+ECHO: "tan( 45) == 1          ", true
+ECHO: "tan( 60) == sqrt(3)    ", true
+ECHO: "tan( 90) == 1/0        ", true
+ECHO: "tan(120) == -sqrt(3)   ", true
+ECHO: "tan(135) == -1         ", true
+ECHO: "tan(150) == -sqrt(3)/3 ", true
+ECHO: "isNeg0(tan(180))       ", true
+ECHO: 
+ECHO: "***Verify functions are Odd/Even***"
+ECHO: "sin()  odd check PASSED"
+ECHO: "cos() even check PASSED"
+ECHO: "tan()  odd check PASSED"
+ECHO: 
+ECHO: "***Verify functions are Periodic over a few cycles***"
+ECHO: "sin() periodic check PASSED"
+ECHO: "cos() periodic check PASSED"
+ECHO: "tan() periodic check PASSED"
+ECHO: 
+ECHO: "***Verify Inverse Trigonometric functions***"
+ECHO: "asin() inverse check PASSED"
+ECHO: "acos() inverse check PASSED"
+ECHO: "atan() inverse check PASSED"

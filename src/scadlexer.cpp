@@ -7,7 +7,7 @@ ScadLexer::ScadLexer(QObject *parent) : QsciLexerCPP(parent)
 	// -> Style: Keyword (lexer.l)
 	keywordSet[0] =
 		"if else let for each module function true false undef "
-		"include use";
+		"include use assert";
 
 	// -> Style: KeywordSet2 (func.cc)
 	keywordSet[1] =
@@ -27,7 +27,7 @@ ScadLexer::ScadLexer(QObject *parent) : QsciLexerCPP(parent)
 		"minkowski hull resize child children echo union difference "
 		"intersection linear_extrude rotate_extrude import group  "
 		"projection render surface scale rotate mirror translate "
-		"multmatrix color offset ";
+		"multmatrix color offset intersection_for ";
 
     setFoldComments(true);
     setFoldAtElse(true);
@@ -60,7 +60,7 @@ void ScadLexer::setKeywords(int set, const std::string& keywords)
 const char *ScadLexer::keywords(int set) const
 {
 	if ((set < 1) || (set > 4)) {
-		return 0;
+		return nullptr;
 	}
 	return keywordSet[set - 1].c_str();
 }

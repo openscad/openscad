@@ -39,7 +39,6 @@
 #include <cmath>
 #include <sstream>
 #include <ctime>
-#include <cmath>
 #include <limits>
 #include <algorithm>
 
@@ -68,7 +67,11 @@ int process_id = getpid();
 #endif
 
 boost::mt19937 deterministic_rng;
-boost::mt19937 lessdeterministic_rng( std::time(0) + process_id );
+boost::mt19937 lessdeterministic_rng( std::time(nullptr) + process_id );
+
+#define M_SQRT3   1.73205080756887719318 /* sqrt(3)   */
+#define M_SQRT3_4 0.86602540378443859659 /* sqrt(3/4) == sqrt(3)/2 */
+#define M_SQRT1_3 0.57735026918962573106 /* sqrt(1/3) == sqrt(3)/3 */
 
 static inline double deg2rad(double x)
 {
@@ -259,11 +262,13 @@ double sin_degrees(double x)
 	if (x < 45.0) {
 		if (x == 30.0) x = 0.5;
 		else x = sin(deg2rad(x));
-	} else if (x == 45.0)
+	} else if (x == 45.0) {
 		x = M_SQRT1_2;
-	else // Inf/Nan would fall here
+	} else if (x == 60.0) {
+		x = M_SQRT3_4;
+	} else { // Inf/Nan would fall here
 		x = cos(deg2rad(90.0-x));
-
+	}
 	return oppose ? -x : x;
 }
 
@@ -306,11 +311,13 @@ double cos_degrees(double x)
 	if (x > 45.0) {
 		if (x == 60.0) x = 0.5;
 		else x = sin(deg2rad(90.0-x));
-	} else if (x == 45.0)
+	} else if (x == 45.0) {
 		x = M_SQRT1_2;
-	else // Inf/Nan would fall here
+	} else if (x == 30.0) {
+		x = M_SQRT3_4;
+	} else { // Inf/Nan would fall here
 		x = cos(deg2rad(x));
-
+	}
 	return oppose ? -x : x;
 }
 
@@ -344,12 +351,52 @@ ValuePtr builtin_acos(const Context *, const EvalContext *evalctx)
 	return ValuePtr::undefined;
 }
 
+double tan_degrees(double x)
+{
+	int cycles = floor((x) / 180.0);
+	// use positive tests because of possible Inf/NaN
+	if (x < 180.0 && x >= 0.0) {
+		// Ok for now
+	} else
+#ifdef TRIG_HUGE_VAL
+	if (x < TRIG_HUGE_VAL && x > -TRIG_HUGE_VAL)
+#endif
+	{
+		x -= 180.0*cycles;
+	}
+#ifdef TRIG_HUGE_VAL
+	else {
+		// total loss of computational accuracy
+		// the result would be meaningless
+		return std::numeric_limits<double>::quiet_NaN();
+	}
+#endif
+	bool oppose = x > 90.0;
+	if (oppose) x = 180.0-x;
+	if (x == 0.0) {
+		x = (cycles % 2) == 0 ? 0.0 : -0.0;
+	} else if (x == 30.0) {
+		x = M_SQRT1_3;
+	} else if (x == 45.0) {
+		x = 1.0;
+	} else if (x == 60.0) {
+		x = M_SQRT3;
+	} else if (x == 90.0) {
+		x = (cycles % 2) == 0 ? 
+			std::numeric_limits<double>::infinity() :
+			-std::numeric_limits<double>::infinity();
+	} else {
+		x = tan(deg2rad(x));
+	}
+	return oppose ? -x : x;
+}
+
 ValuePtr builtin_tan(const Context *, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
 		if (v->type() == Value::ValueType::NUMBER)
-			return ValuePtr(tan(deg2rad(v->toDouble())));
+			return ValuePtr(tan_degrees(v->toDouble()));
 	}
 	return ValuePtr::undefined;
 }
@@ -600,13 +647,13 @@ ValuePtr builtin_lookup(const Context *, const EvalContext *evalctx)
 
 */
 
-static Value::VectorType search(const std::string &find, const std::string &table,
+static Value::VectorType search(const str_utf8_wrapper &find, const str_utf8_wrapper &table,
 																unsigned int num_returns_per_match)
 {
 	Value::VectorType returnvec;
 	//Unicode glyph count for the length
-	size_t findThisSize = g_utf8_strlen(find.c_str(), find.size());
-	size_t searchTableSize = g_utf8_strlen(table.c_str(), table.size());
+	size_t findThisSize = find.get_utf8_strlen();
+	size_t searchTableSize = table.get_utf8_strlen();
 	for (size_t i = 0; i < findThisSize; i++) {
 		unsigned int matchCount = 0;
 		Value::VectorType resultvec;
@@ -637,12 +684,12 @@ static Value::VectorType search(const std::string &find, const std::string &tabl
 	return returnvec;
 }
 
-static Value::VectorType search(const std::string &find, const Value::VectorType &table,
+static Value::VectorType search(const str_utf8_wrapper &find, const Value::VectorType &table,
 																unsigned int num_returns_per_match, unsigned int index_col_num)
 {
 	Value::VectorType returnvec;
 	//Unicode glyph count for the length
-	unsigned int findThisSize =  g_utf8_strlen(find.c_str(), find.size());
+	unsigned int findThisSize =  find.get_utf8_strlen();
 	unsigned int searchTableSize = table.size();
 	for (size_t i = 0; i < findThisSize; i++) {
 		unsigned int matchCount = 0;

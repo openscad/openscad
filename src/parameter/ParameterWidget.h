@@ -45,38 +45,40 @@ private:
 	typedef std::map<std::string,groupInst > group_map;
 	group_map groupMap;
 	QTimer autoPreviewTimer;
-	bool descriptionShow;
-	QVBoxLayout * anyLayout;
+	int descriptionLoD; //configuration if and how much of the description is shown
 	std::string jsonFile;
 	bool anyfocused;
 	ParameterVirtualWidget *entryToFocus;
 
+	void connectWidget() override;
+	void updateWidget() override;
+	void cleanScrollArea();
+	void rebuildGroupMap();
+	ParameterVirtualWidget* CreateParameterWidget(std::string parameterName);
+	void setComboBoxPresetForSet();
+
+	void setFile(QString File);
+
 public:
-	ParameterWidget(QWidget *parent = 0);
-	virtual ~ParameterWidget();
+	ParameterWidget(QWidget *parent = nullptr);
+	~ParameterWidget();
 	void readFile(QString scadFile);
-	void writeFile(QString scadFile);
-																
+	void writeFileIfNotEmpty(QString scadFile);
+
 protected slots:
 	void onValueChanged();
 	void onPreviewTimerElapsed();
-	void onDescriptionShow();
+	void onDescriptionLoDChanged();
 	void onSetChanged(int idx);
 	void onSetAdd();
+	void onSetSaveButton();
 	void onSetDelete();
 	void resetParameter();
-	
+
 signals:
-	void previewRequested();
-	
+	void previewRequested(bool rebuildParameterUI=true);
+
 protected:
-	void connectWidget();
-	void begin();
-	void addEntry(class ParameterVirtualWidget *entry);
-	void end();
-	void clear();
-	void AddParameterWidget(std::string parameterName);
-	void setComboBoxForSet();
 	void applyParameterSet(std::string setName);
 	void updateParameterSet(std::string setName);
 };

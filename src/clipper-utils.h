@@ -1,6 +1,6 @@
 #pragma once
 
-#include "polyclipping/clipper.hpp"
+#include "ext/polyclipping/clipper.hpp"
 #include "Polygon2d.h"
 
 namespace ClipperUtils {

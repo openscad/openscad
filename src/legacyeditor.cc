@@ -243,7 +243,7 @@ void LegacyEditor::replaceAll(const QString &findText, const QString &replaceTex
 
 bool LegacyEditor::findString(const QString & exp, bool findBackwards) const
 {
-	return this->textedit->find(exp, findBackwards ? QTextDocument::FindBackward : QTextDocument::FindFlags(0));
+	return this->textedit->find(exp, findBackwards ? QTextDocument::FindBackward : QTextDocument::FindFlags(nullptr));
 }
 
 int LegacyEditor::resetFindIndicators(const QString & /*findText*/, bool /*visibility*/)//incomplete-place-holder
