@@ -168,6 +168,7 @@ void Preferences::init() {
 	this->defaultmap["advanced/reorderWindows"] = true;
 	this->defaultmap["launcher/showOnStartup"] = true;
 	this->defaultmap["advanced/localization"] = true;
+	this->defaultmap["advanced/autoReloadRaise"] = true;
 
 	// Toolbar
 	QActionGroup *group = new QActionGroup(this);
@@ -463,6 +464,12 @@ void Preferences::on_localizationCheckBox_toggled(bool state)
 	settings.setValue("advanced/localization", state);
 }
 
+void Preferences::on_autoReloadRaiseCheckBox_toggled(bool state)
+{
+	QSettingsCached settings;
+	settings.setValue("advanced/autoReloadRaise", state);
+}
+
 void Preferences::on_forceGoldfeatherBox_toggled(bool state)
 {
 	QSettingsCached settings;
@@ -676,6 +683,7 @@ void Preferences::updateGUI()
 	this->polysetCacheSizeEdit->setText(getValue("advanced/polysetCacheSize").toString());
 	this->opencsgLimitEdit->setText(getValue("advanced/openCSGLimit").toString());
 	this->localizationCheckBox->setChecked(getValue("advanced/localization").toBool());
+	this->autoReloadRaiseCheckBox->setChecked(getValue("advanced/autoReloadRaise").toBool());
 	this->forceGoldfeatherBox->setChecked(getValue("advanced/forceGoldfeather").toBool());
 	this->mdiCheckBox->setChecked(getValue("advanced/mdi").toBool());
 	this->reorderCheckBox->setChecked(getValue("advanced/reorderWindows").toBool());

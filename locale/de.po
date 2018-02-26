@@ -1051,6 +1051,10 @@ msgstr "Startbildschirm anzeigen"
 msgid "Enable user interface localization (requires restart of OpenSCAD)"
 msgstr "Lokalisierung der GUI einschalten (benötigt Neustart von OpenSCAD)"
 
+#: objects/ui_Preferences.h:1184
+msgid "Bring window to front after automatic reload"
+msgstr "Fenster nach vorne bringen nach automatischem Neuladen"
+
 #: objects/ui_ProgressWidget.h:72
 msgid "%v / %m"
 msgstr "%v / %m"

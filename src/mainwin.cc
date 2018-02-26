@@ -930,6 +930,10 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 		if (fileChangedOnDisk() && checkEditorModified()) {
 			shouldcompiletoplevel = true;
 			refreshDocument();
+			if (Preferences::inst()->getValue("advanced/autoReloadRaise").toBool()) {
+				// reloading the 'same' document brings the 'old' one to front.
+				this->raise();
+			}
 		}
 		// If the file hasn't changed, we might still need to compile it
 		// if we haven't yet compiled the current text.
