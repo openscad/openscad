@@ -9,6 +9,8 @@
 // therefor, we use boost::regex
 #include <boost/regex.hpp>
 
+#include "parsersettings.h"
+
 struct GroupInfo {
 	std::string commentString;
 	int lineNo;
@@ -268,7 +270,10 @@ void CommentParser::collectParameters(const char *fulltext, FileModule *root_mod
 
 		// get location of assignment node
 		int firstLine = assignment.location().firstLine();
-		if(firstLine>=parseTill || assignment.location().fileName() != root_module->getFullpath()) {
+		if(firstLine>=parseTill || (
+			assignment.location().fileName() != root_module->getFilename() && //FIXME: having to have two checks seams to me like an issue in FileModule
+			find_valid_path("",assignment.location().fileName()).generic_string() != root_module->getFullpath() //FIXME/CLEANUP
+			)) {
 			//std::printf("%s - %s\n",assignment.location().fileName().c_str(), root_module->getFullpath().c_str());
 			continue;
 		}
