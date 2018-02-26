@@ -86,7 +86,6 @@ extern FileModule *rootmodule;
 extern YYLTYPE parserlloc;
 int yycolumn = 1;
 #define YY_USER_ACTION {                                   \
-  parserlloc.filename = sourcefile().generic_string();     \
   parserlloc.first_line = yylineno;                        \
   parserlloc.first_column = yycolumn;                      \
   yycolumn = yycolumn + yyleng;                            \

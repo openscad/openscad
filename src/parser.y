@@ -49,9 +49,7 @@
 namespace fs = boost::filesystem;
 
 #define YYMAXDEPTH 20000
-#define LOC(loc)                                    \
-  Location(loc.first_line, loc.first_column,        \
-  loc.last_line, loc.last_column, loc.filename)
+#define LOC(loc) Location(loc.first_line, loc.first_column, loc.last_line, loc.last_column, sourcefile().generic_string())
   
 int parser_error_pos = -1;
 
@@ -73,41 +71,6 @@ const char *parser_input_buffer;
 fs::path parser_sourcefile;
 
 %}
-
-%code requires{
-
-/* current filename here for the lexer */
-typedef struct YYLTYPE {
-  int first_line;
-  int first_column;
-  int last_line;
-  int last_column;
-  std::string filename;
-} YYLTYPE;
-
-# define YYLTYPE_IS_DECLARED 1
-
-# define YYLLOC_DEFAULT(Current, Rhs, N)                          \
-  do                                                              \
-    if (N)                                                        \
-    {                                                             \
-      (Current).first_line = YYRHSLOC (Rhs, 1).first_line;        \
-      (Current).first_column = YYRHSLOC (Rhs, 1).first_column;    \
-      (Current).last_line= YYRHSLOC (Rhs, N).last_line;           \
-      (Current).last_column = YYRHSLOC (Rhs, N).last_column;      \
-      (Current).filename= YYRHSLOC (Rhs, 1).filename;             \
-    }                                                             \
-    else                                                          \
-    { /* empty RHS */                                             \
-      (Current).first_line = (Current).last_line =                \
-      YYRHSLOC (Rhs, 0).last_line;                                \
-      (Current).first_column = (Current).last_column =            \
-      YYRHSLOC (Rhs, 0).last_column;                              \
-      (Current).filename = " "; /* new */                         \
-    }                                                             \
-  while (0)
-}
-
 
 %union {
   char *text;
