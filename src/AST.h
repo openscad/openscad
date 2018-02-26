@@ -1,5 +1,4 @@
 #pragma once
-#include<string>
 
 #include <string>
 
@@ -28,8 +27,8 @@ private:
 	std::string filename;
 };
 
-class ASTNode {
-
+class ASTNode
+{
 public:
 	ASTNode(const Location &loc) : loc(loc) {}
 	virtual ~ASTNode() {}

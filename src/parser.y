@@ -638,7 +638,6 @@ bool parse(FileModule *&module, const char *text, const std::string &filename, i
   parser_sourcefile = path;
 
   rootmodule = new FileModule(path.parent_path().generic_string(), path.filename().generic_string());
-
   scope_stack.push(&rootmodule->scope);
   //        PRINTB_NOCACHE("New module: %s %p", "root" % rootmodule);
 

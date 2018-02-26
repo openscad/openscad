@@ -85,12 +85,12 @@ extern FileModule *rootmodule;
 */
 extern YYLTYPE parserlloc;
 int yycolumn = 1;
-#define YY_USER_ACTION {                                   \
-  parserlloc.first_line = yylineno;                        \
-  parserlloc.first_column = yycolumn;                      \
-  yycolumn = yycolumn + yyleng;                            \
-  parserlloc.last_column = yycolumn;                       \
-  parserlloc.last_line = yylineno;                         \
+#define YY_USER_ACTION {              \
+  parserlloc.first_line = yylineno;   \
+  parserlloc.first_column = yycolumn; \
+  yycolumn = yycolumn + yyleng;       \
+  parserlloc.last_column = yycolumn;  \
+  parserlloc.last_line = yylineno;    \
 }
 
 extern void parsererror(char const *s);
