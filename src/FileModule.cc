@@ -191,7 +191,7 @@ AbstractNode *FileModule::instantiateWithFileContext(FileContext *ctx, const Mod
 const std::string FileModule::getFullpath() const {
 	// Get an absolute filename for the module
 	if (!fs::path(filename).is_absolute()) {
-		auto fullpath = find_valid_path(this->path, filename);
+		auto fullpath = find_valid_path(this->path, this->filename);
 		if (!fullpath.empty()) {
 			return fullpath.generic_string();
 		}
