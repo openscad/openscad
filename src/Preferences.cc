@@ -168,7 +168,7 @@ void Preferences::init() {
 	this->defaultmap["advanced/reorderWindows"] = true;
 	this->defaultmap["launcher/showOnStartup"] = true;
 	this->defaultmap["advanced/localization"] = true;
-	this->defaultmap["advanced/autoReloadRaise"] = true;
+	this->defaultmap["advanced/autoReloadRaise"] = false;
 
 	// Toolbar
 	QActionGroup *group = new QActionGroup(this);
