@@ -32,6 +32,8 @@
 
 AbstractNode *GroupModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
+	(void)ctx; // avoid unusued parameter warning
+	
 	auto node = new GroupNode(inst);
 	inst->scope.apply(*evalctx);
 	auto instantiatednodes = inst->instantiateChildren(evalctx);
