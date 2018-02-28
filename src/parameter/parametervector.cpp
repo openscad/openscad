@@ -10,14 +10,20 @@ ParameterVector::ParameterVector(ParameterObject *parameterobject, int showDescr
 	connect(doubleSpinBox2,SIGNAL(valueChanged(double)),this,SLOT(onChanged(double)));
 	connect(doubleSpinBox3,SIGNAL(valueChanged(double)),this,SLOT(onChanged(double)));
 	connect(doubleSpinBox4,SIGNAL(valueChanged(double)),this,SLOT(onChanged(double)));
-	if (showDescription == 0) {
+	if (showDescription == 0 || showDescription == 3) {
 		setDescription(object->description);
+		this->labelInline->hide();
 	}else if(showDescription == 1){
 		addInline(object->description);
-	}else {
+	}else{
 		this->setToolTip(object->description);
 	}
 
+	if (showDescription == 3 && object->description !=""){
+		labelParameter->hide();
+	}else{
+		labelParameter->show();
+	}
 	IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
 	doubleSpinBox1->installEventFilter(ignoreWheelWhenNotFocused);
 	doubleSpinBox2->installEventFilter(ignoreWheelWhenNotFocused);

@@ -46,11 +46,13 @@
 namespace pt = boost::property_tree;
 
 #include <QInputDialog>
+#include <QMessageBox>
 #include <fstream>
 
 ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 {
 	setupUi(this);
+	this->setEnabled(false);
 
 	descriptionLoD = 0;
 	autoPreviewTimer.setInterval(500);
@@ -81,7 +83,7 @@ void ParameterWidget::onSetDelete()
 	if (sets.is_initialized()) {
 		sets.get().erase(pt::ptree::key_type(setName));
 	}
-	writeParameterSet(this->jsonFile);
+	writeParameterSets();
 	this->comboBoxPreset->clear();
 	setComboBoxPresetForSet();
 }
@@ -106,6 +108,7 @@ void ParameterWidget::onSetSaveButton()
 }
 
 void ParameterWidget::setFile(QString scadFile){
+	this->unreadableFileExists = false; // we can not know it, but we do not want to report a problem when there is none
 	boost::filesystem::path p = scadFile.toStdString();
 	this->jsonFile = p.replace_extension(".json").string();
 }
@@ -132,13 +135,15 @@ void ParameterWidget::readFile(QString scadFile)
 		connect(this->presetSaveButton, SIGNAL(clicked()), this, SLOT(onSetSaveButton()));
 		this->presetSaveButton->setToolTip(_("save current preset"));
 	}else{
-		this->addButton->setDisabled(true);
 		this->addButton->setToolTip(_("JSON file read only"));
-		this->deleteButton->setDisabled(true);
 		this->deleteButton->setToolTip(_("JSON file read only"));
-		this->presetSaveButton->setDisabled(true);
 		this->presetSaveButton->setToolTip(_("JSON file read only"));
 	}
+	this->addButton->setEnabled(writeable || !exists);
+	this->deleteButton->setEnabled(writeable || !exists);
+	this->presetSaveButton->setEnabled(writeable || !exists);
+
+	this->unreadableFileExists = (!readable) && exists;
 	disconnect(comboBoxPreset, SIGNAL(currentIndexChanged(int)), this, SLOT(onSetChanged(int)));
 	this->comboBoxPreset->clear();
 	setComboBoxPresetForSet();
@@ -150,7 +155,7 @@ void ParameterWidget::writeFileIfNotEmpty(QString scadFile)
 {
 	setFile(scadFile);
 	if (!root.empty()){
-		writeParameterSet(this->jsonFile);
+		writeParameterSets();
 	}
 }
 
@@ -204,6 +209,8 @@ void ParameterWidget::cleanScrollArea()
 
 void ParameterWidget::connectWidget()
 {
+	this->setEnabled(true);
+
 	anyfocused = false;
 
 	rebuildGroupMap();
@@ -388,6 +395,22 @@ void ParameterWidget::updateParameterSet(std::string setName)
 			this->comboBoxPreset->addItem(s, QVariant(s));
 			this->comboBoxPreset->setCurrentIndex(this->comboBoxPreset->findText(s));
 		}
-		writeParameterSet(this->jsonFile);
+		writeParameterSets();
 	}
+}
+
+void ParameterWidget::writeParameterSets()
+{
+	if(this->unreadableFileExists){
+		QMessageBox msgBox;
+		msgBox.setText(_("Saving presets"));
+		msgBox.setInformativeText(QString(_("%1 was found, but was unreadble. Do you want to overwrite %1?")).arg(QString::fromStdString(this->jsonFile)));
+		msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
+		msgBox.setDefaultButton(QMessageBox::Cancel);
+
+		if (msgBox.exec() == QMessageBox::Cancel) {
+			return;
+		}
+	}
+	writeParameterSet(this->jsonFile);
 }

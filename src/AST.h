@@ -5,6 +5,8 @@
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
+#include <string>
+
 class Location {
 
 public:

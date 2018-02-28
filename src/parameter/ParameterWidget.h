@@ -59,6 +59,8 @@ private:
 
 	void setFile(QString File);
 
+	bool unreadableFileExists=false;
+
 public:
 	ParameterWidget(QWidget *parent = nullptr);
 	~ParameterWidget();
@@ -81,5 +83,6 @@ signals:
 protected:
 	void applyParameterSet(std::string setName);
 	void updateParameterSet(std::string setName);
+	void writeParameterSets();
 };
 
