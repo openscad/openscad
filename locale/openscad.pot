@@ -1028,6 +1028,10 @@ msgstr ""
 msgid "Enable user interface localization (requires restart of OpenSCAD)"
 msgstr ""
 
+#: objects/ui_Preferences.h:1184
+msgid "Bring window to front after automatic reload"
+msgstr ""
+
 #: objects/ui_ProgressWidget.h:72
 msgid "%v / %m"
 msgstr ""
