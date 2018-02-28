@@ -24,6 +24,7 @@ ParameterVector::ParameterVector(ParameterObject *parameterobject, int showDescr
 	}else{
 		labelParameter->show();
 	}
+
 	IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
 	doubleSpinBox1->installEventFilter(ignoreWheelWhenNotFocused);
 	doubleSpinBox2->installEventFilter(ignoreWheelWhenNotFocused);

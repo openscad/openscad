@@ -144,6 +144,7 @@ void ParameterWidget::readFile(QString scadFile)
 	this->presetSaveButton->setEnabled(writeable || !exists);
 
 	this->unreadableFileExists = (!readable) && exists;
+
 	disconnect(comboBoxPreset, SIGNAL(currentIndexChanged(int)), this, SLOT(onSetChanged(int)));
 	this->comboBoxPreset->clear();
 	setComboBoxPresetForSet();

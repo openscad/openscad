@@ -13,7 +13,6 @@ ParameterSlider::ParameterSlider(ParameterObject *parameterobject, int showDescr
 	connect(slider, SIGNAL(sliderReleased()), this, SLOT(onReleased()));
 	connect(slider, SIGNAL(valueChanged(int)), this, SLOT(onSliderChanged(int)));
 	connect(doubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(onSpinBoxChanged(double)));
-
 	if (showDescription == 0 || showDescription == 3) {
 		setDescription(object->description);
 		this->labelInline->hide();
@@ -28,6 +27,7 @@ ParameterSlider::ParameterSlider(ParameterObject *parameterobject, int showDescr
 	}else{
 		this->labelParameter->show();
 	}
+
 	IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
 	slider->installEventFilter(ignoreWheelWhenNotFocused);
 	doubleSpinBox->installEventFilter(ignoreWheelWhenNotFocused);
