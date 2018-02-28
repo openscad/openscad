@@ -1,17 +1,19 @@
 #pragma once
 
 #include <string>
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
 
 class Location {
 
 public:
 	Location(int firstLine, int firstCol, int lastLine, int lastCol,
-			const std::string &filename)
+			fs::path path)
 		: first_line(firstLine), first_col(firstCol), last_line(lastLine),
-		last_col(lastCol), filename(filename) {
+		last_col(lastCol), path(path) {
 	}
 
-	std::string fileName() const { return filename; }
+	std::string fileName() const { return path.generic_string(); }
 	int firstLine() const { return first_line; }
 	int firstColumn() const { return first_col; }
 	int lastLine() const { return last_line; }
@@ -24,7 +26,7 @@ private:
 	int first_col;
 	int last_line;
 	int last_col;
-	std::string filename;
+	fs::path path;
 };
 
 class ASTNode

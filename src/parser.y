@@ -49,7 +49,7 @@
 namespace fs = boost::filesystem;
 
 #define YYMAXDEPTH 20000
-#define LOC(loc) Location(loc.first_line, loc.first_column, loc.last_line, loc.last_column, sourcefile().generic_string())
+#define LOC(loc) Location(loc.first_line, loc.first_column, loc.last_line, loc.last_column, sourcefile())
   
 int parser_error_pos = -1;
 
