@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <memory.h>
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
@@ -8,12 +9,12 @@ class Location {
 
 public:
 	Location(int firstLine, int firstCol, int lastLine, int lastCol,
-			fs::path path)
+			std::shared_ptr<fs::path> path)
 		: first_line(firstLine), first_col(firstCol), last_line(lastLine),
 		last_col(lastCol), path(path) {
 	}
 
-	std::string fileName() const { return path.generic_string(); }
+	std::string fileName() const { return path ? path->generic_string() : ""; }
 	int firstLine() const { return first_line; }
 	int firstColumn() const { return first_col; }
 	int lastLine() const { return last_line; }
@@ -26,7 +27,7 @@ private:
 	int first_col;
 	int last_line;
 	int last_col;
-	fs::path path;
+	std::shared_ptr<fs::path> path;
 };
 
 class ASTNode
