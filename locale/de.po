@@ -8,14 +8,14 @@ msgstr ""
 "Project-Id-Version: OpenSCAD 2014.01.05\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-03-01 07:23+0100\n"
-"PO-Revision-Date: 2017-12-28 16:36+0100\n"
+"PO-Revision-Date: 2018-03-01 07:41+0100\n"
 "Last-Translator: Torsten Paul <Torsten.Paul@gmx.de>\n"
 "Language-Team: German\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.0.5\n"
+"X-Generator: Poedit 2.0.4\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
@@ -639,7 +639,7 @@ msgstr "Ctrl+Shift+S"
 
 #: objects/ui_MainWindow.h:1092
 msgid "Hide Customizer"
-msgstr ""
+msgstr "Customizer verstecken"
 
 #: objects/ui_MainWindow.h:1093
 msgid "Message"
@@ -1181,7 +1181,7 @@ msgstr "Konsole"
 
 #: src/mainwin.cc:2528
 msgid "Customizer"
-msgstr ""
+msgstr "Customizer"
 
 #: src/mainwin.cc:2672
 msgid "The document has been modified."
@@ -1258,40 +1258,42 @@ msgstr "nach Einrückung"
 
 #: src/parameter/ParameterWidget.cc:132
 msgid "add new preset"
-msgstr ""
+msgstr "neue Voreinstellung hinzufügen"
 
 #: src/parameter/ParameterWidget.cc:134
 msgid "remove current preset"
-msgstr ""
+msgstr "aktuelle Voreinstellung löschen"
 
 #: src/parameter/ParameterWidget.cc:136
 msgid "save current preset"
-msgstr ""
+msgstr "aktuelle Voreinstellung speichern"
 
 #: src/parameter/ParameterWidget.cc:138 src/parameter/ParameterWidget.cc:139
 #: src/parameter/ParameterWidget.cc:140
 msgid "JSON file read only"
-msgstr ""
+msgstr "JSON file ist nicht schreibbar"
 
 #: src/parameter/ParameterWidget.cc:165
 msgid "no preset selected"
-msgstr ""
+msgstr "keine Voreinstellung ausgewählt"
 
 #: src/parameter/ParameterWidget.cc:380
 msgid "Create new set of parameter"
-msgstr ""
+msgstr "Einen neuen Satz Voreinstellung erzeugen"
 
 #: src/parameter/ParameterWidget.cc:380
 msgid "Enter name of the parameter set"
-msgstr ""
+msgstr "Bitte einen Namen für diese Voreinstellung eingeben"
 
 #: src/parameter/ParameterWidget.cc:407
 msgid "Saving presets"
-msgstr ""
+msgstr "Voreinstellung speichern"
 
 #: src/parameter/ParameterWidget.cc:408
 msgid "%1 was found, but was unreadble. Do you want to overwrite %1?"
 msgstr ""
+"%1 wurde gefunden, konnte aber nicht gelesen werden. Möchten Sie %1 "
+"überschreiben?"
 
 #: examples/examples.json:2
 msgid "Basics"
