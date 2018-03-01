@@ -13,7 +13,7 @@ public:
 	Location(int firstLine, int firstCol, int lastLine, int lastCol,
 			std::shared_ptr<fs::path> path)
 		: first_line(firstLine), first_col(firstCol), last_line(lastLine),
-		last_col(lastCol), path(path) {
+		last_col(lastCol), path(std::move(path)) {
 	}
 
 	std::string fileName() const { return path ? path->generic_string() : ""; }

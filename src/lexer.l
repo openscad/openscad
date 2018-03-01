@@ -298,7 +298,7 @@ void includefile()
   std::string fullname = fullpath.generic_string();
 
   filepath.clear();
-  filename_stack.push_back(std::make_shared<fs::path>(fs::path(fullpath.generic_string())));
+  filename_stack.push_back(std::make_shared<fs::path>(fullpath));
 
   handle_dep(fullname);
 
