@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2015.03.05\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-03-01 07:23+0100\n"
+"POT-Creation-Date: 2018-03-01 07:52+0100\n"
 "PO-Revision-Date: 2016-09-13 23:33+0200\n"
 "Last-Translator: Marek Pikuła <marek.pikula@sent.tech>\n"
 "Language-Team: \n"
@@ -1254,9 +1254,73 @@ msgstr ""
 msgid "After indentation"
 msgstr "Po wcięciu"
 
-#: src/parameter/ParameterWidget.cc:132
+#: objects/ui_ParameterEntryWidget.h:343 objects/ui_ParameterWidget.h:150
+msgid "Form"
+msgstr ""
+
+#: objects/ui_ParameterEntryWidget.h:345
+msgid "Parameter"
+msgstr ""
+
+#: objects/ui_ParameterEntryWidget.h:346 objects/ui_ParameterEntryWidget.h:347
+msgid "Description"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:151
+msgid "save preset"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:153
+msgid "delete current preset"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:155
+msgid "-"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:157
+msgid "preset selection"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:160 src/parameter/ParameterWidget.cc:132
 msgid "add new preset"
 msgstr ""
+
+#: objects/ui_ParameterWidget.h:162
+msgid "+"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:163
+#, fuzzy
+msgid "Automatic Preview"
+msgstr "&Automatycznie przeładuj i pokaż podgląd"
+
+#: objects/ui_ParameterWidget.h:166
+#, fuzzy
+msgid "Show Details"
+msgstr "Pokaż osie"
+
+#: objects/ui_ParameterWidget.h:167
+msgid "Inline Details"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:168
+#, fuzzy
+msgid "Hide Details"
+msgstr "Ukryj paski narzędzi"
+
+#: objects/ui_ParameterWidget.h:169
+msgid "Description Only"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:172
+msgid "reset the parameters to the selected preset"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:174
+#, fuzzy
+msgid "Reset"
+msgstr "Resetuj widok"
 
 #: src/parameter/ParameterWidget.cc:134
 msgid "remove current preset"

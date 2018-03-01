@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2013.02.24\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-03-01 07:23+0100\n"
+"POT-Creation-Date: 2018-03-01 07:52+0100\n"
 "PO-Revision-Date: 2015-03-06 10:27+0100\n"
 "Last-Translator: Miro Hrončok <miro@hroncok.cz>\n"
 "Language-Team: Czech <miro@hroncok.cz>\n"
@@ -1236,9 +1236,73 @@ msgstr ""
 msgid "After indentation"
 msgstr "za odsazením"
 
-#: src/parameter/ParameterWidget.cc:132
+#: objects/ui_ParameterEntryWidget.h:343 objects/ui_ParameterWidget.h:150
+msgid "Form"
+msgstr ""
+
+#: objects/ui_ParameterEntryWidget.h:345
+msgid "Parameter"
+msgstr ""
+
+#: objects/ui_ParameterEntryWidget.h:346 objects/ui_ParameterEntryWidget.h:347
+msgid "Description"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:151
+msgid "save preset"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:153
+msgid "delete current preset"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:155
+msgid "-"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:157
+msgid "preset selection"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:160 src/parameter/ParameterWidget.cc:132
 msgid "add new preset"
 msgstr ""
+
+#: objects/ui_ParameterWidget.h:162
+msgid "+"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:163
+#, fuzzy
+msgid "Automatic Preview"
+msgstr "&Automaticky načítat a zobrazovat"
+
+#: objects/ui_ParameterWidget.h:166
+#, fuzzy
+msgid "Show Details"
+msgstr "Zobrazit osy"
+
+#: objects/ui_ParameterWidget.h:167
+msgid "Inline Details"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:168
+#, fuzzy
+msgid "Hide Details"
+msgstr "Skrýt nástrojové lišty"
+
+#: objects/ui_ParameterWidget.h:169
+msgid "Description Only"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:172
+msgid "reset the parameters to the selected preset"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:174
+#, fuzzy
+msgid "Reset"
+msgstr "Výchozí pohled"
 
 #: src/parameter/ParameterWidget.cc:134
 msgid "remove current preset"

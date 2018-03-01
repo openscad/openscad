@@ -10,7 +10,7 @@ msgstr ""
 "#-#-#-#-#  openscad-tmp.pot (OpenSCAD 2018.03.01)  #-#-#-#-#\n"
 "Project-Id-Version: OpenSCAD 2018.03.01\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-03-01 07:23+0100\n"
+"POT-Creation-Date: 2018-03-01 07:52+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,7 +21,7 @@ msgstr ""
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 "#-#-#-#-#  appdata-strings.pot (PACKAGE VERSION)  #-#-#-#-#\n"
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2018-03-01 07:23+0100\n"
+"POT-Creation-Date: 2018-03-01 07:52+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1211,8 +1211,68 @@ msgstr ""
 msgid "After indentation"
 msgstr ""
 
-#: src/parameter/ParameterWidget.cc:132
+#: objects/ui_ParameterEntryWidget.h:343 objects/ui_ParameterWidget.h:150
+msgid "Form"
+msgstr ""
+
+#: objects/ui_ParameterEntryWidget.h:345
+msgid "Parameter"
+msgstr ""
+
+#: objects/ui_ParameterEntryWidget.h:346 objects/ui_ParameterEntryWidget.h:347
+msgid "Description"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:151
+msgid "save preset"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:153
+msgid "delete current preset"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:155
+msgid "-"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:157
+msgid "preset selection"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:160 src/parameter/ParameterWidget.cc:132
 msgid "add new preset"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:162
+msgid "+"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:163
+msgid "Automatic Preview"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:166
+msgid "Show Details"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:167
+msgid "Inline Details"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:168
+msgid "Hide Details"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:169
+msgid "Description Only"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:172
+msgid "reset the parameters to the selected preset"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:174
+msgid "Reset"
 msgstr ""
 
 #: src/parameter/ParameterWidget.cc:134

@@ -21,6 +21,19 @@ do
 	echo $src
 done
 
+for ui in src/parameter/*.ui
+do
+        UI="${ui#src/parameter/}"
+        UI="${UI%.ui}"
+        for d in mingw64 mingw32 .
+        do
+            if [ -f "$d/objects/ui_$UI.h" ]
+            then
+                echo "$d/objects/ui_$UI.h"
+            fi
+        done
+done
+
 for src in src/parameter/*.h src/parameter/*.cc src/parameter/*.cpp
 do
 	echo $src
