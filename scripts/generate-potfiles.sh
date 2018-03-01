@@ -20,3 +20,8 @@ for src in src/*.h src/*.cc src/*.cpp src/*.mm
 do
 	echo $src
 done
+
+for src in src/parameter/*.h src/parameter/*.cc src/parameter/*.cpp
+do
+	echo $src
+done

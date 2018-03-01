@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2015.03\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-03-01 07:06+0100\n"
+"POT-Creation-Date: 2018-03-01 07:23+0100\n"
 "PO-Revision-Date: 2016-04-13 01:56-0300\n"
 "Last-Translator: Javier del Álamo <javialamo+github@gmail.com>\n"
 "Language-Team: Español\n"
@@ -1296,6 +1296,43 @@ msgstr ""
 #: src/settings.cc:137
 msgid "After indentation"
 msgstr "Antes del indentado"
+
+#: src/parameter/ParameterWidget.cc:132
+msgid "add new preset"
+msgstr ""
+
+#: src/parameter/ParameterWidget.cc:134
+msgid "remove current preset"
+msgstr ""
+
+#: src/parameter/ParameterWidget.cc:136
+msgid "save current preset"
+msgstr ""
+
+#: src/parameter/ParameterWidget.cc:138 src/parameter/ParameterWidget.cc:139
+#: src/parameter/ParameterWidget.cc:140
+msgid "JSON file read only"
+msgstr ""
+
+#: src/parameter/ParameterWidget.cc:165
+msgid "no preset selected"
+msgstr ""
+
+#: src/parameter/ParameterWidget.cc:380
+msgid "Create new set of parameter"
+msgstr ""
+
+#: src/parameter/ParameterWidget.cc:380
+msgid "Enter name of the parameter set"
+msgstr ""
+
+#: src/parameter/ParameterWidget.cc:407
+msgid "Saving presets"
+msgstr ""
+
+#: src/parameter/ParameterWidget.cc:408
+msgid "%1 was found, but was unreadble. Do you want to overwrite %1?"
+msgstr ""
 
 #: examples/examples.json:2
 msgid "Basics"
