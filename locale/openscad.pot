@@ -1,4 +1,4 @@
-# #-#-#-#-#  openscad-tmp.pot (OpenSCAD 2017.12.28)  #-#-#-#-#
+# #-#-#-#-#  openscad-tmp.pot (OpenSCAD 2018.03.01)  #-#-#-#-#
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the OpenSCAD package.
@@ -7,10 +7,10 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"#-#-#-#-#  openscad-tmp.pot (OpenSCAD 2017.12.28)  #-#-#-#-#\n"
-"Project-Id-Version: OpenSCAD 2017.12.28\n"
+"#-#-#-#-#  openscad-tmp.pot (OpenSCAD 2018.03.01)  #-#-#-#-#\n"
+"Project-Id-Version: OpenSCAD 2018.03.01\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-12-28 16:30+0100\n"
+"POT-Creation-Date: 2018-03-01 07:06+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,7 +21,7 @@ msgstr ""
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 "#-#-#-#-#  appdata-strings.pot (PACKAGE VERSION)  #-#-#-#-#\n"
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2017-12-28 16:30+0100\n"
+"POT-Creation-Date: 2018-03-01 07:06+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -758,7 +758,7 @@ msgstr ""
 msgid "Advanced"
 msgstr ""
 
-#: objects/ui_Preferences.h:1083 src/mainwin.cc:2521
+#: objects/ui_Preferences.h:1083 src/mainwin.cc:2518
 msgid "Editor"
 msgstr ""
 
@@ -1049,114 +1049,114 @@ msgstr ""
 msgid "ERROR: \"%s\" write error. (Disk full?)"
 msgstr ""
 
-#: src/mainwin.cc:789 src/mainwin.cc:1441
+#: src/mainwin.cc:788 src/mainwin.cc:1438
 msgid "Untitled.scad"
 msgstr ""
 
-#: src/mainwin.cc:1028
+#: src/mainwin.cc:1027
 msgid "Compile error."
 msgstr ""
 
-#: src/mainwin.cc:1031
+#: src/mainwin.cc:1030
 msgid "Error while compiling '%1'."
 msgstr ""
 
-#: src/mainwin.cc:1035
+#: src/mainwin.cc:1034
 msgid "Compilation generated %1 warning."
 msgid_plural "Compilation generated %1 warnings."
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/mainwin.cc:1045
+#: src/mainwin.cc:1044
 msgid " For details see <a href=\"#console\">console window</a>."
 msgstr ""
 
-#: src/mainwin.cc:1419
+#: src/mainwin.cc:1416
 msgid "Failed to open file for writing"
 msgstr ""
 
-#: src/mainwin.cc:1429
+#: src/mainwin.cc:1426
 #, c-format
 msgid "Saved design '%s'."
 msgstr ""
 
-#: src/mainwin.cc:1432
+#: src/mainwin.cc:1429
 msgid "Error saving design"
 msgstr ""
 
-#: src/mainwin.cc:1440
+#: src/mainwin.cc:1437
 msgid "Save File"
 msgstr ""
 
-#: src/mainwin.cc:1442
+#: src/mainwin.cc:1439
 msgid "OpenSCAD Designs (*.scad)"
 msgstr ""
 
-#: src/mainwin.cc:1452
+#: src/mainwin.cc:1449
 msgid ""
 "%1 already exists.\n"
 "Do you want to replace it?"
 msgstr ""
 
-#: src/mainwin.cc:1799
+#: src/mainwin.cc:1796
 msgid "Application"
 msgstr ""
 
-#: src/mainwin.cc:1800
+#: src/mainwin.cc:1797
 msgid ""
 "The document has been modified.\n"
 "Do you really want to reload the file?"
 msgstr ""
 
-#: src/mainwin.cc:2174
+#: src/mainwin.cc:2171
 msgid "Export %1 File"
 msgstr ""
 
-#: src/mainwin.cc:2175
+#: src/mainwin.cc:2172
 msgid "%1 Files (*%2)"
 msgstr ""
 
-#: src/mainwin.cc:2176
+#: src/mainwin.cc:2173
 msgid "Untitled"
 msgstr ""
 
-#: src/mainwin.cc:2228
+#: src/mainwin.cc:2225
 msgid "Export CSG File"
 msgstr ""
 
-#: src/mainwin.cc:2229
+#: src/mainwin.cc:2226
 msgid "Untitled.csg"
 msgstr ""
 
-#: src/mainwin.cc:2230
+#: src/mainwin.cc:2227
 msgid "CSG Files (*.csg)"
 msgstr ""
 
-#: src/mainwin.cc:2256
+#: src/mainwin.cc:2253
 msgid "Untitled.png"
 msgstr ""
 
-#: src/mainwin.cc:2258
+#: src/mainwin.cc:2255
 msgid "Export Image"
 msgstr ""
 
-#: src/mainwin.cc:2258
+#: src/mainwin.cc:2255
 msgid "PNG Files (*.png)"
 msgstr ""
 
-#: src/mainwin.cc:2526
+#: src/mainwin.cc:2523
 msgid "Console"
 msgstr ""
 
-#: src/mainwin.cc:2531
+#: src/mainwin.cc:2528
 msgid "Customizer"
 msgstr ""
 
-#: src/mainwin.cc:2675
+#: src/mainwin.cc:2672
 msgid "The document has been modified."
 msgstr ""
 
-#: src/mainwin.cc:2676
+#: src/mainwin.cc:2673
 msgid "Do you want to save your changes?"
 msgstr ""
 

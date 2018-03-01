@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2013.02.07\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-10-30 08:24+0100\n"
+"POT-Creation-Date: 2018-03-01 07:06+0100\n"
 "PO-Revision-Date: 2015-03-05 17:28-0500\n"
 "Last-Translator: Keven Villeneuve <keven.villeneuve@gmail.com>\n"
 "Language-Team: French\n"
@@ -782,7 +782,7 @@ msgstr "&Vue 3D"
 msgid "Advanced"
 msgstr "Avancé"
 
-#: objects/ui_Preferences.h:1083 src/mainwin.cc:2521
+#: objects/ui_Preferences.h:1083 src/mainwin.cc:2518
 msgid "Editor"
 msgstr "Éditeur"
 
@@ -1078,50 +1078,50 @@ msgstr ""
 msgid "ERROR: \"%s\" write error. (Disk full?)"
 msgstr ""
 
-#: src/mainwin.cc:789 src/mainwin.cc:1441
+#: src/mainwin.cc:788 src/mainwin.cc:1438
 msgid "Untitled.scad"
 msgstr "Untitled.scad"
 
-#: src/mainwin.cc:1028
+#: src/mainwin.cc:1027
 msgid "Compile error."
 msgstr "Erreur de Compilation."
 
-#: src/mainwin.cc:1031
+#: src/mainwin.cc:1030
 msgid "Error while compiling '%1'."
 msgstr "Erreur lors de la compilation de '%1'."
 
-#: src/mainwin.cc:1035
+#: src/mainwin.cc:1034
 msgid "Compilation generated %1 warning."
 msgid_plural "Compilation generated %1 warnings."
 msgstr[0] "La compilation a généré %1 avertissement"
 msgstr[1] "La compilation a généré %1 avertissements"
 
-#: src/mainwin.cc:1045
+#: src/mainwin.cc:1044
 msgid " For details see <a href=\"#console\">console window</a>."
 msgstr " Pour détails voir <a href=\"#console\">Fenêtre de la Console</a>."
 
-#: src/mainwin.cc:1419
+#: src/mainwin.cc:1416
 msgid "Failed to open file for writing"
 msgstr ""
 
-#: src/mainwin.cc:1429
+#: src/mainwin.cc:1426
 #, c-format
 msgid "Saved design '%s'."
 msgstr ""
 
-#: src/mainwin.cc:1432
+#: src/mainwin.cc:1429
 msgid "Error saving design"
 msgstr ""
 
-#: src/mainwin.cc:1440
+#: src/mainwin.cc:1437
 msgid "Save File"
 msgstr "Enregistrer le Fichier"
 
-#: src/mainwin.cc:1442
+#: src/mainwin.cc:1439
 msgid "OpenSCAD Designs (*.scad)"
 msgstr "OpenSCAD Designs (*.scad)"
 
-#: src/mainwin.cc:1452
+#: src/mainwin.cc:1449
 msgid ""
 "%1 already exists.\n"
 "Do you want to replace it?"
@@ -1129,11 +1129,11 @@ msgstr ""
 "%1 existe déjà.\n"
 "Voulez-vous le remplacer?"
 
-#: src/mainwin.cc:1799
+#: src/mainwin.cc:1796
 msgid "Application"
 msgstr "Application"
 
-#: src/mainwin.cc:1800
+#: src/mainwin.cc:1797
 msgid ""
 "The document has been modified.\n"
 "Do you really want to reload the file?"
@@ -1141,56 +1141,56 @@ msgstr ""
 "Ce document a été modifié.\n"
 "Voulez-vous vraiment recharger le fichier?"
 
-#: src/mainwin.cc:2174
+#: src/mainwin.cc:2171
 msgid "Export %1 File"
 msgstr "Exporter %1 Fichier"
 
-#: src/mainwin.cc:2175
+#: src/mainwin.cc:2172
 msgid "%1 Files (*%2)"
 msgstr "%1 Fichiers (*%2)"
 
-#: src/mainwin.cc:2176
+#: src/mainwin.cc:2173
 msgid "Untitled"
 msgstr "Sans Titre"
 
-#: src/mainwin.cc:2228
+#: src/mainwin.cc:2225
 msgid "Export CSG File"
 msgstr "Exporter un fichier CSG"
 
-#: src/mainwin.cc:2229
+#: src/mainwin.cc:2226
 msgid "Untitled.csg"
 msgstr "SansTitre.csg"
 
-#: src/mainwin.cc:2230
+#: src/mainwin.cc:2227
 msgid "CSG Files (*.csg)"
 msgstr "Fichiers CSG (*.csg)"
 
-#: src/mainwin.cc:2256
+#: src/mainwin.cc:2253
 #, fuzzy
 msgid "Untitled.png"
 msgstr "SansTitre.csg"
 
-#: src/mainwin.cc:2258
+#: src/mainwin.cc:2255
 msgid "Export Image"
 msgstr "Exporter une Image"
 
-#: src/mainwin.cc:2258
+#: src/mainwin.cc:2255
 msgid "PNG Files (*.png)"
 msgstr "Fichiers PNG (*.png)"
 
-#: src/mainwin.cc:2526
+#: src/mainwin.cc:2523
 msgid "Console"
 msgstr "Console"
 
-#: src/mainwin.cc:2531
+#: src/mainwin.cc:2528
 msgid "Customizer"
 msgstr ""
 
-#: src/mainwin.cc:2675
+#: src/mainwin.cc:2672
 msgid "The document has been modified."
 msgstr "Ce document a été modifié"
 
-#: src/mainwin.cc:2676
+#: src/mainwin.cc:2673
 msgid "Do you want to save your changes?"
 msgstr "Voulez-vous enregistrer vos changements?"
 
