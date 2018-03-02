@@ -259,6 +259,8 @@ static GroupList collectGroups(const std::string &fulltext)
 */
 void CommentParser::collectParameters(const char *fulltext, FileModule *root_module)
 {
+	static auto EmptyStringLiteral(std::make_shared<Literal>(ValuePtr(std::string(""))));
+
 	// Get all groups of parameters
 	GroupList groupList = collectGroups(std::string(fulltext));
 	int parseTill=getLineToStop(fulltext);
@@ -278,7 +280,7 @@ void CommentParser::collectParameters(const char *fulltext, FileModule *root_mod
 		// getting the node for parameter annotation
 		shared_ptr<Expression> params = CommentParser::parser(comment.c_str());
 		if (!params) {
-			params = shared_ptr<Expression>(new Literal(ValuePtr(std::string(""))));
+			params = EmptyStringLiteral;
 		}
 
 		// adding parameter to the list
