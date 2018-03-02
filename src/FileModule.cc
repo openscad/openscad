@@ -55,9 +55,9 @@ void FileModule::print(std::ostream &stream, const std::string &indent) const
 
 void FileModule::registerUse(const std::string path)
 {
-	auto extraw = fs::path(path).extension().generic_string();
-	auto ext = boost::algorithm::to_lower_copy(extraw);
-	
+	auto ext = fs::path(path).extension().generic_string();
+	boost::to_lower(ext);
+
 	if ((ext == ".otf") || (ext == ".ttf")) {
 		if (fs::is_regular(path)) {
 			FontCache::instance()->register_font_file(path);
