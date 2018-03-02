@@ -7,15 +7,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2014.01.05\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-12-28 16:30+0100\n"
-"PO-Revision-Date: 2017-12-28 16:36+0100\n"
+"POT-Creation-Date: 2018-03-01 07:52+0100\n"
+"PO-Revision-Date: 2018-03-01 07:41+0100\n"
 "Last-Translator: Torsten Paul <Torsten.Paul@gmx.de>\n"
 "Language-Team: German\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.0.5\n"
+"X-Generator: Poedit 2.0.4\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
@@ -639,7 +639,7 @@ msgstr "Ctrl+Shift+S"
 
 #: objects/ui_MainWindow.h:1092
 msgid "Hide Customizer"
-msgstr ""
+msgstr "Customizer verstecken"
 
 #: objects/ui_MainWindow.h:1093
 msgid "Message"
@@ -781,7 +781,7 @@ msgstr "3D Ansicht"
 msgid "Advanced"
 msgstr "Erweitert"
 
-#: objects/ui_Preferences.h:1083 src/mainwin.cc:2521
+#: objects/ui_Preferences.h:1083 src/mainwin.cc:2518
 msgid "Editor"
 msgstr "Editor"
 
@@ -1078,52 +1078,52 @@ msgstr "Can't open file \"%s\" for export"
 msgid "ERROR: \"%s\" write error. (Disk full?)"
 msgstr "FEHLER:  \"%s\" Schreibfehler. (Speichervoll?)"
 
-#: src/mainwin.cc:789 src/mainwin.cc:1441
+#: src/mainwin.cc:788 src/mainwin.cc:1438
 msgid "Untitled.scad"
 msgstr "Unbenannt.scad"
 
-#: src/mainwin.cc:1028
+#: src/mainwin.cc:1027
 msgid "Compile error."
 msgstr "Fehler"
 
-#: src/mainwin.cc:1031
+#: src/mainwin.cc:1030
 msgid "Error while compiling '%1'."
 msgstr "Fehler beim Kompilieren von '%1'."
 
-#: src/mainwin.cc:1035
+#: src/mainwin.cc:1034
 msgid "Compilation generated %1 warning."
 msgid_plural "Compilation generated %1 warnings."
 msgstr[0] "%1 Warnung beim kompilieren."
 msgstr[1] "%1 Warnungen beim kompilieren."
 
-#: src/mainwin.cc:1045
+#: src/mainwin.cc:1044
 msgid " For details see <a href=\"#console\">console window</a>."
 msgstr " Für Details das <a href=\"#console\">Konsole Fenster</a> öffnen."
 
-#: src/mainwin.cc:1419
+#: src/mainwin.cc:1416
 #, fuzzy
 msgid "Failed to open file for writing"
 msgstr "Failed to open file for writing: %s (%s)"
 
-#: src/mainwin.cc:1429
+#: src/mainwin.cc:1426
 #, c-format
 msgid "Saved design '%s'."
 msgstr "Saved design '%s'."
 
-#: src/mainwin.cc:1432
+#: src/mainwin.cc:1429
 #, fuzzy
 msgid "Error saving design"
 msgstr "error writing deps"
 
-#: src/mainwin.cc:1440
+#: src/mainwin.cc:1437
 msgid "Save File"
 msgstr "Datei speichern"
 
-#: src/mainwin.cc:1442
+#: src/mainwin.cc:1439
 msgid "OpenSCAD Designs (*.scad)"
 msgstr "OpenSCAD Designs (*.scad)"
 
-#: src/mainwin.cc:1452
+#: src/mainwin.cc:1449
 msgid ""
 "%1 already exists.\n"
 "Do you want to replace it?"
@@ -1131,11 +1131,11 @@ msgstr ""
 "%1 existiert bereits.\n"
 "Mochten Sie die Datei ersetzen?"
 
-#: src/mainwin.cc:1799
+#: src/mainwin.cc:1796
 msgid "Application"
 msgstr "Application"
 
-#: src/mainwin.cc:1800
+#: src/mainwin.cc:1797
 msgid ""
 "The document has been modified.\n"
 "Do you really want to reload the file?"
@@ -1143,55 +1143,55 @@ msgstr ""
 "Das Dokument ist verändert.\n"
 "Möchten Sie die Datei wirklich neu laden?"
 
-#: src/mainwin.cc:2174
+#: src/mainwin.cc:2171
 msgid "Export %1 File"
 msgstr "%1 Datei exportieren"
 
-#: src/mainwin.cc:2175
+#: src/mainwin.cc:2172
 msgid "%1 Files (*%2)"
 msgstr "%1 Dateien (*%2)"
 
-#: src/mainwin.cc:2176
+#: src/mainwin.cc:2173
 msgid "Untitled"
 msgstr "Unbenannt"
 
-#: src/mainwin.cc:2228
+#: src/mainwin.cc:2225
 msgid "Export CSG File"
 msgstr "Export CSG File"
 
-#: src/mainwin.cc:2229
+#: src/mainwin.cc:2226
 msgid "Untitled.csg"
 msgstr "Unbenannt.csg"
 
-#: src/mainwin.cc:2230
+#: src/mainwin.cc:2227
 msgid "CSG Files (*.csg)"
 msgstr "CSG Dateien (*.csg)"
 
-#: src/mainwin.cc:2256
+#: src/mainwin.cc:2253
 msgid "Untitled.png"
 msgstr "Unbenannt.png"
 
-#: src/mainwin.cc:2258
+#: src/mainwin.cc:2255
 msgid "Export Image"
 msgstr "Image exportieren"
 
-#: src/mainwin.cc:2258
+#: src/mainwin.cc:2255
 msgid "PNG Files (*.png)"
 msgstr "PNG Dateien (*.png)"
 
-#: src/mainwin.cc:2526
+#: src/mainwin.cc:2523
 msgid "Console"
 msgstr "Konsole"
 
-#: src/mainwin.cc:2531
+#: src/mainwin.cc:2528
 msgid "Customizer"
-msgstr ""
+msgstr "Customizer"
 
-#: src/mainwin.cc:2675
+#: src/mainwin.cc:2672
 msgid "The document has been modified."
 msgstr "Das Dokument ist verändert."
 
-#: src/mainwin.cc:2676
+#: src/mainwin.cc:2673
 msgid "Do you want to save your changes?"
 msgstr "Möchten Sie die Änderungen speichern?"
 
@@ -1259,6 +1259,112 @@ msgstr ""
 #: src/settings.cc:137
 msgid "After indentation"
 msgstr "nach Einrückung"
+
+#: objects/ui_ParameterEntryWidget.h:343 objects/ui_ParameterWidget.h:150
+msgid "Form"
+msgstr "Form"
+
+#: objects/ui_ParameterEntryWidget.h:345
+msgid "Parameter"
+msgstr ""
+
+#: objects/ui_ParameterEntryWidget.h:346 objects/ui_ParameterEntryWidget.h:347
+msgid "Description"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:151
+#, fuzzy
+msgid "save preset"
+msgstr "aktuelle Voreinstellung speichern"
+
+#: objects/ui_ParameterWidget.h:153
+#, fuzzy
+msgid "delete current preset"
+msgstr "aktuelle Voreinstellung löschen"
+
+#: objects/ui_ParameterWidget.h:155
+msgid "-"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:157
+#, fuzzy
+msgid "preset selection"
+msgstr "keine Voreinstellung ausgewählt"
+
+#: objects/ui_ParameterWidget.h:160 src/parameter/ParameterWidget.cc:132
+msgid "add new preset"
+msgstr "neue Voreinstellung hinzufügen"
+
+#: objects/ui_ParameterWidget.h:162
+msgid "+"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:163
+#, fuzzy
+msgid "Automatic Preview"
+msgstr "&Automatisch neu Laden und Vorschau"
+
+#: objects/ui_ParameterWidget.h:166
+#, fuzzy
+msgid "Show Details"
+msgstr "Koordinaten&achsen anzeigen"
+
+#: objects/ui_ParameterWidget.h:167
+msgid "Inline Details"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:168
+#, fuzzy
+msgid "Hide Details"
+msgstr "Symbolleisten verstecken"
+
+#: objects/ui_ParameterWidget.h:169
+msgid "Description Only"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:172
+msgid "reset the parameters to the selected preset"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:174
+#, fuzzy
+msgid "Reset"
+msgstr "Ans&icht zurücksetzen"
+
+#: src/parameter/ParameterWidget.cc:134
+msgid "remove current preset"
+msgstr "aktuelle Voreinstellung löschen"
+
+#: src/parameter/ParameterWidget.cc:136
+msgid "save current preset"
+msgstr "aktuelle Voreinstellung speichern"
+
+#: src/parameter/ParameterWidget.cc:138 src/parameter/ParameterWidget.cc:139
+#: src/parameter/ParameterWidget.cc:140
+msgid "JSON file read only"
+msgstr "JSON file ist nicht schreibbar"
+
+#: src/parameter/ParameterWidget.cc:165
+msgid "no preset selected"
+msgstr "keine Voreinstellung ausgewählt"
+
+#: src/parameter/ParameterWidget.cc:380
+msgid "Create new set of parameter"
+msgstr "Einen neuen Satz Voreinstellung erzeugen"
+
+#: src/parameter/ParameterWidget.cc:380
+msgid "Enter name of the parameter set"
+msgstr "Bitte einen Namen für diese Voreinstellung eingeben"
+
+#: src/parameter/ParameterWidget.cc:407
+msgid "Saving presets"
+msgstr "Voreinstellung speichern"
+
+#: src/parameter/ParameterWidget.cc:408
+msgid "%1 was found, but was unreadble. Do you want to overwrite %1?"
+msgstr ""
+"%1 wurde gefunden, konnte aber nicht gelesen werden. Möchten Sie %1 "
+"überschreiben?"
 
 #: examples/examples.json:2
 msgid "Basics"
@@ -1338,9 +1444,6 @@ msgstr ""
 # This should not be visible (window title of the ToolBar).
 #~ msgid "toolBar"
 #~ msgstr "toolBar"
-
-#~ msgid "Form"
-#~ msgstr "Form"
 
 #~ msgid ""
 #~ "\n"

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2013.02.24\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-10-30 08:24+0100\n"
+"POT-Creation-Date: 2018-03-01 07:52+0100\n"
 "PO-Revision-Date: 2015-03-06 10:27+0100\n"
 "Last-Translator: Miro Hrončok <miro@hroncok.cz>\n"
 "Language-Team: Czech <miro@hroncok.cz>\n"
@@ -762,7 +762,7 @@ msgstr "3D zobrazení"
 msgid "Advanced"
 msgstr "Pokročilé"
 
-#: objects/ui_Preferences.h:1083 src/mainwin.cc:2521
+#: objects/ui_Preferences.h:1083 src/mainwin.cc:2518
 msgid "Editor"
 msgstr "Editor"
 
@@ -1055,52 +1055,52 @@ msgstr ""
 msgid "ERROR: \"%s\" write error. (Disk full?)"
 msgstr ""
 
-#: src/mainwin.cc:789 src/mainwin.cc:1441
+#: src/mainwin.cc:788 src/mainwin.cc:1438
 msgid "Untitled.scad"
 msgstr "Bezejmenný.scad"
 
-#: src/mainwin.cc:1028
+#: src/mainwin.cc:1027
 msgid "Compile error."
 msgstr "Chyba kompilace."
 
-#: src/mainwin.cc:1031
+#: src/mainwin.cc:1030
 msgid "Error while compiling '%1'."
 msgstr "Chyba při kompilaci '%1'."
 
-#: src/mainwin.cc:1035
+#: src/mainwin.cc:1034
 msgid "Compilation generated %1 warning."
 msgid_plural "Compilation generated %1 warnings."
 msgstr[0] "Kompilace vyvolala %1 varování."
 msgstr[1] "Kompilace vyvolala %1 varování."
 msgstr[2] "Kompilace vyvolala %1 varování."
 
-#: src/mainwin.cc:1045
+#: src/mainwin.cc:1044
 msgid " For details see <a href=\"#console\">console window</a>."
 msgstr " Pro podrobnosti nahlédněte do <a href=\"#console\">konzole</a>."
 
-#: src/mainwin.cc:1419
+#: src/mainwin.cc:1416
 #, fuzzy
 msgid "Failed to open file for writing"
 msgstr "Nepodařilo se otevřít soubor %s: %s"
 
-#: src/mainwin.cc:1429
+#: src/mainwin.cc:1426
 #, fuzzy, c-format
 msgid "Saved design '%s'."
 msgstr "Načten design '%s'."
 
-#: src/mainwin.cc:1432
+#: src/mainwin.cc:1429
 msgid "Error saving design"
 msgstr ""
 
-#: src/mainwin.cc:1440
+#: src/mainwin.cc:1437
 msgid "Save File"
 msgstr "Uložit soubor"
 
-#: src/mainwin.cc:1442
+#: src/mainwin.cc:1439
 msgid "OpenSCAD Designs (*.scad)"
 msgstr "OpenSCAD designy(*.scad)"
 
-#: src/mainwin.cc:1452
+#: src/mainwin.cc:1449
 msgid ""
 "%1 already exists.\n"
 "Do you want to replace it?"
@@ -1108,11 +1108,11 @@ msgstr ""
 "%1 již existuje.\n"
 "Chcete jej nahradit?"
 
-#: src/mainwin.cc:1799
+#: src/mainwin.cc:1796
 msgid "Application"
 msgstr "Aplikace"
 
-#: src/mainwin.cc:1800
+#: src/mainwin.cc:1797
 msgid ""
 "The document has been modified.\n"
 "Do you really want to reload the file?"
@@ -1120,56 +1120,56 @@ msgstr ""
 "Dokument byl pozměněn.\n"
 "Opravdu jej chcete znovu načíst?"
 
-#: src/mainwin.cc:2174
+#: src/mainwin.cc:2171
 msgid "Export %1 File"
 msgstr "Exportovat %s soubor(ů)"
 
-#: src/mainwin.cc:2175
+#: src/mainwin.cc:2172
 msgid "%1 Files (*%2)"
 msgstr "%1 Soubor(ů) (*%2)"
 
-#: src/mainwin.cc:2176
+#: src/mainwin.cc:2173
 msgid "Untitled"
 msgstr "Bezejmenný"
 
-#: src/mainwin.cc:2228
+#: src/mainwin.cc:2225
 msgid "Export CSG File"
 msgstr "Exportovat CSG soubor"
 
-#: src/mainwin.cc:2229
+#: src/mainwin.cc:2226
 msgid "Untitled.csg"
 msgstr "Bezejmenný.csg"
 
-#: src/mainwin.cc:2230
+#: src/mainwin.cc:2227
 msgid "CSG Files (*.csg)"
 msgstr "CSG soubory (*.csg)"
 
-#: src/mainwin.cc:2256
+#: src/mainwin.cc:2253
 #, fuzzy
 msgid "Untitled.png"
 msgstr "Bezejmenný.csg"
 
-#: src/mainwin.cc:2258
+#: src/mainwin.cc:2255
 msgid "Export Image"
 msgstr "Exportovat obrázek"
 
-#: src/mainwin.cc:2258
+#: src/mainwin.cc:2255
 msgid "PNG Files (*.png)"
 msgstr "PNG Soubory (*.png)"
 
-#: src/mainwin.cc:2526
+#: src/mainwin.cc:2523
 msgid "Console"
 msgstr "Konzole"
 
-#: src/mainwin.cc:2531
+#: src/mainwin.cc:2528
 msgid "Customizer"
 msgstr ""
 
-#: src/mainwin.cc:2675
+#: src/mainwin.cc:2672
 msgid "The document has been modified."
 msgstr "Dokument byl pozměněn."
 
-#: src/mainwin.cc:2676
+#: src/mainwin.cc:2673
 msgid "Do you want to save your changes?"
 msgstr "Chcete uložit změny?"
 
@@ -1235,6 +1235,107 @@ msgstr ""
 #: src/settings.cc:137
 msgid "After indentation"
 msgstr "za odsazením"
+
+#: objects/ui_ParameterEntryWidget.h:343 objects/ui_ParameterWidget.h:150
+msgid "Form"
+msgstr ""
+
+#: objects/ui_ParameterEntryWidget.h:345
+msgid "Parameter"
+msgstr ""
+
+#: objects/ui_ParameterEntryWidget.h:346 objects/ui_ParameterEntryWidget.h:347
+msgid "Description"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:151
+msgid "save preset"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:153
+msgid "delete current preset"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:155
+msgid "-"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:157
+msgid "preset selection"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:160 src/parameter/ParameterWidget.cc:132
+msgid "add new preset"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:162
+msgid "+"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:163
+#, fuzzy
+msgid "Automatic Preview"
+msgstr "&Automaticky načítat a zobrazovat"
+
+#: objects/ui_ParameterWidget.h:166
+#, fuzzy
+msgid "Show Details"
+msgstr "Zobrazit osy"
+
+#: objects/ui_ParameterWidget.h:167
+msgid "Inline Details"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:168
+#, fuzzy
+msgid "Hide Details"
+msgstr "Skrýt nástrojové lišty"
+
+#: objects/ui_ParameterWidget.h:169
+msgid "Description Only"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:172
+msgid "reset the parameters to the selected preset"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:174
+#, fuzzy
+msgid "Reset"
+msgstr "Výchozí pohled"
+
+#: src/parameter/ParameterWidget.cc:134
+msgid "remove current preset"
+msgstr ""
+
+#: src/parameter/ParameterWidget.cc:136
+msgid "save current preset"
+msgstr ""
+
+#: src/parameter/ParameterWidget.cc:138 src/parameter/ParameterWidget.cc:139
+#: src/parameter/ParameterWidget.cc:140
+msgid "JSON file read only"
+msgstr ""
+
+#: src/parameter/ParameterWidget.cc:165
+msgid "no preset selected"
+msgstr ""
+
+#: src/parameter/ParameterWidget.cc:380
+msgid "Create new set of parameter"
+msgstr ""
+
+#: src/parameter/ParameterWidget.cc:380
+msgid "Enter name of the parameter set"
+msgstr ""
+
+#: src/parameter/ParameterWidget.cc:407
+msgid "Saving presets"
+msgstr ""
+
+#: src/parameter/ParameterWidget.cc:408
+msgid "%1 was found, but was unreadble. Do you want to overwrite %1?"
+msgstr ""
 
 #: examples/examples.json:2
 msgid "Basics"
