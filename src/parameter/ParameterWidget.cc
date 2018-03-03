@@ -175,6 +175,26 @@ void ParameterWidget::setComboBoxPresetForSet()
 //set selection
 void ParameterWidget::onSetChanged(int idx)
 {
+	static int lastComboboxIndex(0);
+	if(lastComboboxIndex == idx) return; //nothing todo
+
+	//if necessary, confirm the change 
+	if(this->valueChanged){
+		QMessageBox msgBox;
+		msgBox.setText(_("changes on current preset not saved"));
+		msgBox.setInformativeText(
+			QString(_("The current preset %1 contains changes, but is not saved yet. Do you really want to change the preset and lose your changes?"))
+			.arg(comboBoxPreset->itemData(lastComboboxIndex).toString()));
+		msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+		msgBox.setDefaultButton(QMessageBox::Cancel);
+		if (msgBox.exec() == QMessageBox::Cancel) {
+			comboBoxPreset->setCurrentIndex(lastComboboxIndex);
+			return;
+		}
+	}
+
+	//apply the change
+	lastComboboxIndex = idx;
 	const std::string v = comboBoxPreset->itemData(idx).toString().toUtf8().constData();
 	applyParameterSet(v);
 	emit previewRequested(false);
@@ -355,8 +375,6 @@ ParameterVirtualWidget* ParameterWidget::CreateParameterWidget(std::string param
 
 void ParameterWidget::applyParameterSet(std::string setName)
 {
-	this->valueChanged=false;
-
 	boost::optional<pt::ptree &> set = getParameterSet(setName);
 	if (!set.is_initialized()) {
 		return;
@@ -427,4 +445,5 @@ void ParameterWidget::writeParameterSets()
 		}
 	}
 	writeParameterSet(this->jsonFile);
+	this->valueChanged=false;
 }
