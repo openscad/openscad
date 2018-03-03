@@ -48,6 +48,7 @@ private:
 	int descriptionLoD; //configuration if and how much of the description is shown
 	std::string jsonFile;
 	bool anyfocused;
+	bool valueChanged;
 	ParameterVirtualWidget *entryToFocus;
 
 	void connectWidget() override;

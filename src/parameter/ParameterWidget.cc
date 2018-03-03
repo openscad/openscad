@@ -62,6 +62,8 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 	connect(comboBoxDetails,SIGNAL(currentIndexChanged(int)), this,SLOT(onDescriptionLoDChanged()));
 	connect(comboBoxPreset, SIGNAL(currentIndexChanged(int)), this, SLOT(onSetChanged(int)));
 	connect(reset, SIGNAL(clicked()), this, SLOT(resetParameter()));
+
+	this->valueChanged=false;
 }
 
 void ParameterWidget::resetParameter()
@@ -170,6 +172,7 @@ void ParameterWidget::setComboBoxPresetForSet()
 	}
 }
 
+//set selection
 void ParameterWidget::onSetChanged(int idx)
 {
 	const std::string v = comboBoxPreset->itemData(idx).toString().toUtf8().constData();
@@ -185,10 +188,18 @@ void ParameterWidget::onDescriptionLoDChanged()
 
 void ParameterWidget::onValueChanged()
 {
+	if(!this->valueChanged){
+		this->comboBoxPreset->setItemText(
+			this->comboBoxPreset->currentIndex(),
+			this->comboBoxPreset->currentText() +" *"
+		);
+	}
+
 	autoPreviewTimer.stop();
 	if (checkBoxAutoPreview->isChecked()) {
 		autoPreviewTimer.start();
 	}
+	this->valueChanged=true;
 }
 
 void ParameterWidget::onPreviewTimerElapsed()
@@ -344,6 +355,8 @@ ParameterVirtualWidget* ParameterWidget::CreateParameterWidget(std::string param
 
 void ParameterWidget::applyParameterSet(std::string setName)
 {
+	this->valueChanged=false;
+
 	boost::optional<pt::ptree &> set = getParameterSet(setName);
 	if (!set.is_initialized()) {
 		return;
