@@ -14,7 +14,7 @@ ParameterText::ParameterText(ParameterObject *parameterobject, int showDescripti
 	}else if(showDescription == 1){
 		addInline(object->description);
 	}else{
-		lineEdit->setToolTip(object->description);
+		this->setToolTip(object->description);
 	}
 
 	if (showDescription == 3 && object->description !=""){

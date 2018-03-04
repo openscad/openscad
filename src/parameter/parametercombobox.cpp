@@ -13,7 +13,7 @@ ParameterComboBox::ParameterComboBox(ParameterObject *parameterobject, int showD
 	}else if(showDescription == 1){
 		addInline(object->description);
 	}else {
-		comboBox->setToolTip(object->description);
+		this->setToolTip(object->description);
 	}
 
 	if (showDescription == 3 && object->description !=""){

@@ -19,7 +19,7 @@ ParameterSlider::ParameterSlider(ParameterObject *parameterobject, int showDescr
 	}else if(showDescription == 1){
 		addInline(object->description);
 	}else {
-		slider->setToolTip(object->description);
+		this->setToolTip(object->description);
 	}
 
 	if (showDescription == 3 && object->description !=""){

@@ -13,7 +13,7 @@ ParameterSpinBox::ParameterSpinBox(ParameterObject *parameterobject, int showDes
 	}else if(showDescription == 1){
 		addInline(object->description);
 	}else{
-		doubleSpinBox->setToolTip(object->description);
+		this->setToolTip(object->description);
 	}
 
 	if (showDescription == 3 && object->description !=""){

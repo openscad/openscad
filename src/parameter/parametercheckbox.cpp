@@ -13,7 +13,7 @@ ParameterCheckBox::ParameterCheckBox(ParameterObject *parameterobject, int showD
 		addInline(object->description);
 		checkBox->setStyleSheet(""); //small checkbox, when description not shown
 	}else{
-		checkBox->setToolTip(object->description);
+		this->setToolTip(object->description);
 		checkBox->setStyleSheet(""); //small checkbox, when description not shown
 	}
 }
