@@ -494,8 +494,8 @@ def main():
     debug('found log file: '+logfilename+'\n')
     startdate, tests, enddate, imgcomparer = parselog(testlog)
     if debug_test_pp:
-        print('found sysinfo.txt,')
-        print('found', len(makefiles),'makefiles,')
+        print('found sysinfo.txt,', end=" ")
+        print('found', len(makefiles),'makefiles,', end=" ")
         print('found', len(tests),'test results')
         print('comparer', imgcomparer)
     html = to_html(project_name, startdate, tests, enddate, sysinfo, sysid, imgcomparer, makefiles)
