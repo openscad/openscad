@@ -62,11 +62,13 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 	connect(comboBoxDetails,SIGNAL(currentIndexChanged(int)), this,SLOT(onDescriptionLoDChanged()));
 	connect(comboBoxPreset, SIGNAL(currentIndexChanged(int)), this, SLOT(onSetChanged(int)));
 	connect(reset, SIGNAL(clicked()), this, SLOT(resetParameter()));
+
+	this->extractor = new ParameterExtractor();
 }
 
 void ParameterWidget::resetParameter()
 {
-	this->resetPara = true;
+	entries.clear(); //clearing the entries forces a reset
 	emit previewRequested();
 }
 
@@ -158,6 +160,21 @@ void ParameterWidget::writeFileIfNotEmpty(QString scadFile)
 	if (!root.empty()){
 		writeParameterSets();
 	}
+}
+
+void ParameterWidget::setParameters(const FileModule* module,bool rebuildParameterWidget)
+{
+	this->extractor->setParameters(module,this->entries,ParameterPos,rebuildParameterWidget);
+	if(rebuildParameterWidget){
+		connectWidget();
+	}else{
+		updateWidget();
+	}
+}
+
+void ParameterWidget::applyParameters(FileModule *fileModule)
+{
+	this->extractor->applyParameters(fileModule,entries);
 }
 
 void ParameterWidget::setComboBoxPresetForSet()

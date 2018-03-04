@@ -3,14 +3,14 @@
 
 ParameterExtractor::ParameterExtractor()
 {
-  resetPara = false;
+
 }
 
 ParameterExtractor::~ParameterExtractor()
 {
 }
 
-void ParameterExtractor::applyParameters(FileModule *fileModule)
+void ParameterExtractor::applyParameters(FileModule *fileModule, entry_map_t& entries)
 {
   if (!fileModule) return;
 
@@ -23,7 +23,7 @@ void ParameterExtractor::applyParameters(FileModule *fileModule)
   }
 }
 
-void ParameterExtractor::setParameters(const FileModule* module, bool rebuildParameterWidget)
+void ParameterExtractor::setParameters(const FileModule* module,entry_map_t& entries,std::vector<std::string>& ParameterPos, bool &rebuildParameterWidget)
 {
   if (!module) return;
 
@@ -41,9 +41,8 @@ void ParameterExtractor::setParameters(const FileModule* module, bool rebuildPar
     entryObject->setAssignment(&ctx, &assignment, defaultValue);
 
     //check whether object exist or not previously
-    if (entries.find(assignment.name) == entries.end() || resetPara) {
-      //if object doen't exist
-      //or we have reset Parameters then add new entry
+    if (entries.find(assignment.name) == entries.end()) {
+      //if object doen't exist, add new entry
       entries[assignment.name] = entryObject;
       rebuildParameterWidget = true;
     } else {
@@ -60,10 +59,4 @@ void ParameterExtractor::setParameters(const FileModule* module, bool rebuildPar
     entryObject->set = true;
     ParameterPos.push_back(assignment.name);
   }
-  if(rebuildParameterWidget){
-    connectWidget();
-  }else{
-    updateWidget();
-  }
-  this->resetPara = false;
 }
