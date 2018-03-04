@@ -124,7 +124,7 @@ def read_sysinfo(filename):
 
     # create 4 letter hash and stick on end of sysid
     nondate_data = re.sub("\n.*?ompile date.*?\n", "\n", data).strip()
-    hexhash = hashlib.md5(nondate_data).hexdigest()[-4:].upper()
+    hexhash = hashlib.md5(nondate_data.encode('utf-8')).hexdigest()[-4:].upper()
     hash_ = ''.join(chr(ord(c) + 97 - 48) for c in hexhash)
 
     sysid = '_'.join([osplain, machine, renderer, hash_])
