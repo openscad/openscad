@@ -6,8 +6,9 @@ ParameterCheckBox::ParameterCheckBox(QWidget *parent, ParameterObject *parameter
 	setValue();
 	connect(checkBox, SIGNAL(clicked()), this, SLOT(onChanged()));
 
-	if (!descriptionLoD == descLoD::ShowDetails){
-		checkBox->setStyleSheet(""); //small checkbox, when description not shown
+	if (descriptionLoD == descLoD::ShowDetails){
+		//large checkbox, when we have the space
+		checkBox->setStyleSheet("QCheckBox::indicator {\nwidth: 20px;\nheight: 20px;\n}");
 	}
 }
 
