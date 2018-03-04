@@ -71,8 +71,8 @@ def trysave(filename, data):
         f.write(data)
         f.close()
     except Exception as e:
-        print 'problem writing to',filename
-        print type(e), e
+        print('problem writing to',filename)
+        print(type(e), e)
         return None
     return True
 
@@ -219,7 +219,7 @@ def findlogfile(builddir):
     if not os.path.isfile(logfilename):
         logfilename = os.path.join(logpath, 'LastTest.log')
     if not os.path.isfile(logfilename):
-        print 'can\'t find and/or open logfile', logfilename
+        print('can\'t find and/or open logfile', logfilename)
         sys.exit()
     return logfilename
 
@@ -424,8 +424,8 @@ def upload_html(page_url, title, html):
     }
     try:
         response = urlopen(page_url, data=postify(data))
-    except URLError, e:
-        print 'Upload error: ' + str(e)
+    except (URLError) as e:
+        print('Upload error: ' + str(e))
         return False
     return 'success' in response.read().decode()
 
@@ -437,7 +437,7 @@ debugfile = None
 def debug(x):
     global debugfile
     if debug_test_pp:
-        print 'test_pretty_print debug: ' + x
+        print('test_pretty_print debug: ' + x)
     debugfile.write(x+'\n')
 
 builddir = os.getcwd()
@@ -469,8 +469,7 @@ def main():
     builddir = ezsearch('--builddir=(.*?) ', ' '.join(sys.argv) + ' ')
     if not builddir or not os.path.exists(builddir):
         builddir = os.getcwd()
-        print 'warning: couldnt find --builddir, trying to use current dir:',
-        print builddir
+        print('warning: couldnt find --builddir, trying to use current dir:', builddir)
     debug('build dir set to ' +  builddir)
 
     upload = False
@@ -492,16 +491,16 @@ def main():
     debug('found log file: '+logfilename+'\n')
     startdate, tests, enddate, imgcomparer = parselog(testlog)
     if debug_test_pp:
-        print 'found sysinfo.txt,',
-        print 'found', len(makefiles),'makefiles,',
-        print 'found', len(tests),'test results'
-        print 'comparer', imgcomparer
+        print('found sysinfo.txt,')
+        print('found', len(makefiles),'makefiles,')
+        print('found', len(tests),'test results')
+        print('comparer', imgcomparer)
     html = to_html(project_name, startdate, tests, enddate, sysinfo, sysid, imgcomparer, makefiles)
     html_basename = sysid + '_report.html'
     html_filename = os.path.join(builddir, 'Testing', 'Temporary', html_basename)
     debug('saving ' + html_filename + ' ' + str(len(html)) + ' bytes')
     trysave(html_filename, html)
-    print "report saved:\n", html_filename.replace(os.getcwd()+os.path.sep,'')
+    print("report saved:\n", html_filename.replace(os.getcwd()+os.path.sep,''))
 
     failed_tests = [test for test in tests if not test.passed]
     if upload and failed_tests:
@@ -511,15 +510,15 @@ def main():
         os.system('scp "%s" "%s:%s"' %
                   (html_filename, 'openscad@files.openscad.org', 'www/tests/' + filename) )
         share_url = 'http://files.openscad.org/tests/' + filename;
-        print 'html report uploaded:'
-        print share_url
+        print('html report uploaded:')
+        print(share_url)
 
 #        page_url = create_page()
 #        if upload_html(page_url, title='OpenSCAD test results', html=html):
 #            share_url = page_url.partition('?')[0]
-#            print 'html report uploaded at', share_url
+#            print('html report uploaded at', share_url)
 #        else:
-#            print 'could not upload html report'
+#            print('could not upload html report')
 
     debug('test_pretty_print complete')
 
