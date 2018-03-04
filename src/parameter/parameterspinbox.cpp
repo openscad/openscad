@@ -28,7 +28,7 @@ ParameterSpinBox::ParameterSpinBox(ParameterObject *parameterobject, int showDes
 
 void ParameterSpinBox::onChanged(double)
 {
-	if(!suppressUpdate){
+	if(!this->suppressUpdate){
 		object->focus = true;
 		object->value = ValuePtr(doubleSpinBox->value());
 		emit changed();

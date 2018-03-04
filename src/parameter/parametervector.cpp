@@ -3,7 +3,7 @@
 
 ParameterVector::ParameterVector(ParameterObject *parameterobject, int showDescription)
 {
-	object = parameterobject;
+	this->object = parameterobject;
 	setName(QString::fromStdString(object->name));
 	setValue();
 	connect(doubleSpinBox1,SIGNAL(valueChanged(double)),this,SLOT(onChanged(double)));
@@ -34,7 +34,7 @@ ParameterVector::ParameterVector(ParameterObject *parameterobject, int showDescr
 
 void ParameterVector::onChanged(double)
 {
-	if(!suppressUpdate){
+	if(!this->suppressUpdate){
 		object->focus = true;
 		if (object->target == 5) {
 			object->value = ValuePtr(doubleSpinBox1->value());
@@ -66,7 +66,7 @@ void ParameterVector::setValue()
 {
 	if(hasFocus())return; //refuse programmatic updates, when the widget is in the focus of the user
 
-	suppressUpdate=true;
+	this->suppressUpdate=true;
 	this->stackedWidgetBelow->setCurrentWidget(this->pageVector);
 	this->pageVector->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 	this->stackedWidgetRight->hide();
@@ -96,5 +96,5 @@ void ParameterVector::setValue()
 		boxes[i]->hide();
 		boxes[i]->setReadOnly(true);
 	}
-	suppressUpdate=false;
+	this->suppressUpdate=false;
 }

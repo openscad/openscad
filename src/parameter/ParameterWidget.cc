@@ -69,7 +69,7 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 
 void ParameterWidget::resetParameter()
 {
-	entries.clear(); //clearing the entries forces a reset
+	this->entries.clear(); //clearing the entries forces a reset
 	emit previewRequested();
 }
 
@@ -230,7 +230,7 @@ void ParameterWidget::connectWidget()
 {
 	this->setEnabled(true);
 
-	anyfocused = false;
+	this->anyfocused = false;
 
 	rebuildGroupMap();
 	

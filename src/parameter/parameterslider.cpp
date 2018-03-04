@@ -79,7 +79,7 @@ void ParameterSlider::setValue()
 {
 	if(hasFocus())return; //refuse programmatic updates, when the widget is in the focus of the user
 
-	suppressUpdate=true;
+	this->suppressUpdate=true;
 
 	if (object->values->toRange().step_value() > 0) {
 		setPrecision(object->values->toRange().step_value());
@@ -119,5 +119,5 @@ void ParameterSlider::setValue()
 	this->doubleSpinBox->setSingleStep(step);
 	this->doubleSpinBox->setDecimals(decimalPrecision);
 	this->doubleSpinBox->setValue(object->value->toDouble());
-	suppressUpdate=false;
+	this->suppressUpdate=false;
 }

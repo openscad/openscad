@@ -47,7 +47,7 @@ int ParameterObject::setValue(const class ValuePtr defaultValue, const class Val
 
 void ParameterObject::setAssignment(Context *ctx, const Assignment *assignment, const ValuePtr defaultValue)
 {
-  name = assignment->name;
+  this->name = assignment->name;
   const Annotation *param = assignment->annotation("Parameter");
   const ValuePtr values = param->evaluate(ctx);
   setValue(defaultValue, values);
