@@ -68,6 +68,18 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 
 void ParameterWidget::resetParameter()
 {
+	if(this->valueChanged){
+		QMessageBox msgBox;
+		msgBox.setText(_("changes on current preset not saved"));
+		msgBox.setInformativeText(
+			QString(_("The current preset %1 contains changes, but is not saved yet. Do you really want to reset the preset and lose your changes?"))
+			.arg(comboBoxPreset->itemData(this->comboBoxPreset->currentIndex()).toString()));
+		msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+		msgBox.setDefaultButton(QMessageBox::Cancel);
+		if (msgBox.exec() == QMessageBox::Cancel) {
+			return;
+		}
+	}
 	this->resetPara = true;
 	emit previewRequested();
 }
@@ -188,6 +200,7 @@ void ParameterWidget::onSetChanged(int idx)
 		msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
 		msgBox.setDefaultButton(QMessageBox::Cancel);
 		if (msgBox.exec() == QMessageBox::Cancel) {
+			//becareful to not cause a recursion
 			comboBoxPreset->setCurrentIndex(lastComboboxIndex);
 			return;
 		}
