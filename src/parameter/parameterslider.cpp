@@ -7,27 +7,11 @@ ParameterSlider::ParameterSlider(QWidget *parent, ParameterObject *parameterobje
 	this->pressed = true;
 	this->suppressUpdate=false;
 
-	object = parameterobject;
-	setName(QString::fromStdString(object->name));
 	setValue();
 	connect(slider, SIGNAL(sliderPressed()), this, SLOT(onPressed()));
 	connect(slider, SIGNAL(sliderReleased()), this, SLOT(onReleased()));
 	connect(slider, SIGNAL(valueChanged(int)), this, SLOT(onSliderChanged(int)));
 	connect(doubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(onSpinBoxChanged(double)));
-	if (descriptionLoD == descLoD::ShowDetails || descriptionLoD == descLoD::DescOnly) {
-		setDescription(object->description);
-		this->labelInline->hide();
-	}else if(descriptionLoD == descLoD::Inline){
-		addInline(object->description);
-	}else{
-		this->setToolTip(object->description);
-	}
-
-	if (descriptionLoD == descLoD::DescOnly && object->description !=""){
-		labelParameter->hide();
-	}else{
-		labelParameter->show();
-	}
 
 	IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
 	slider->installEventFilter(ignoreWheelWhenNotFocused);

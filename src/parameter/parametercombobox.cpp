@@ -4,24 +4,8 @@
 ParameterComboBox::ParameterComboBox(QWidget *parent, ParameterObject *parameterobject, int descriptionLoD)
 	: ParameterVirtualWidget(parent, parameterobject, descriptionLoD)
 {
-	object = parameterobject;
-	setName(QString::fromStdString(object->name));
 	setValue();
 	connect(comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onChanged(int)));
-	if (descriptionLoD == descLoD::ShowDetails || descriptionLoD == descLoD::DescOnly) {
-		setDescription(object->description);
-		this->labelInline->hide();
-	}else if(descriptionLoD == descLoD::Inline){
-		addInline(object->description);
-	}else{
-		this->setToolTip(object->description);
-	}
-
-	if (descriptionLoD == descLoD::DescOnly && object->description !=""){
-		labelParameter->hide();
-	}else{
-		labelParameter->show();
-	}
 
 	IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
 	comboBox->installEventFilter(ignoreWheelWhenNotFocused);

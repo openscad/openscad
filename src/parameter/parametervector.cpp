@@ -4,27 +4,12 @@
 ParameterVector::ParameterVector(QWidget *parent, ParameterObject *parameterobject, int descriptionLoD)
 	: ParameterVirtualWidget(parent, parameterobject, descriptionLoD)
 {
-	object = parameterobject;
-	setName(QString::fromStdString(object->name));
+
 	setValue();
 	connect(doubleSpinBox1,SIGNAL(valueChanged(double)),this,SLOT(onChanged(double)));
 	connect(doubleSpinBox2,SIGNAL(valueChanged(double)),this,SLOT(onChanged(double)));
 	connect(doubleSpinBox3,SIGNAL(valueChanged(double)),this,SLOT(onChanged(double)));
 	connect(doubleSpinBox4,SIGNAL(valueChanged(double)),this,SLOT(onChanged(double)));
-	if (descriptionLoD == descLoD::ShowDetails || descriptionLoD == descLoD::DescOnly) {
-		setDescription(object->description);
-		this->labelInline->hide();
-	}else if(descriptionLoD == descLoD::Inline){
-		addInline(object->description);
-	}else{
-		this->setToolTip(object->description);
-	}
-
-	if (descriptionLoD == descLoD::DescOnly && object->description !=""){
-		labelParameter->hide();
-	}else{
-		labelParameter->show();
-	}
 
 	IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
 	doubleSpinBox1->installEventFilter(ignoreWheelWhenNotFocused);
