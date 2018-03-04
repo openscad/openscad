@@ -181,14 +181,15 @@ def parsetest(teststring):
     return test
 
 def parselog(data):
-    startdate = ezsearch('Start testing: (.*?)\n', data)
-    enddate = ezsearch('End testing: (.*?)\n', data)
+    text = data.decode('utf-8')
+    startdate = ezsearch('Start testing: (.*?)\n', text)
+    enddate = ezsearch('End testing: (.*?)\n', text)
     pattern = '([0-9]*/[0-9]* Testing:.*?time elapsed.*?\n)'
-    test_chunks = re.findall(pattern,data, re.S)
+    test_chunks = re.findall(pattern,text, re.S)
     tests = map( parsetest, test_chunks )
     tests = sorted(tests, key = lambda t: t.passed)
     imgcomparer='ImageMagick'
-    if '--comparator=diffpng' in data: imgcomparer='diffpng'
+    if '--comparator=diffpng' in text: imgcomparer='diffpng'
     return startdate, tests, enddate, imgcomparer
 
 def load_makefiles(builddir):
