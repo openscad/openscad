@@ -26,6 +26,8 @@
 #
 # Authors: Torsten Paul, Don Bright, Marius Kintel
 
+from __future__ import print_function
+
 import sys, os, re, subprocess, argparse
 from validatestl import validateSTL
 
@@ -93,8 +95,8 @@ if inputsuffix != '.scad' and inputsuffix != '.csg':
 tmpargs =  ['--render=cgal' if arg.startswith('--render') else arg for arg in remaining_args]
 
 export_cmd = [args.openscad, inputfile, '-o', exportfile] + tmpargs
-print >> sys.stderr, 'Running OpenSCAD #1:'
-print >> sys.stderr, ' '.join(export_cmd)
+print('Running OpenSCAD #1:', file=sys.stderr)
+print(' '.join(export_cmd), file=sys.stderr)
 result = subprocess.call(export_cmd)
 if result != 0:
     failquit('OpenSCAD #1 failed with return code ' + str(result))
@@ -114,8 +116,8 @@ if args.format != 'csg':
     createImport(exportfile, newscadfile)
 
 create_png_cmd = [args.openscad, newscadfile, '-o', pngfile] + remaining_args
-print >> sys.stderr, 'Running OpenSCAD #2:'
-print >> sys.stderr, ' '.join(create_png_cmd)
+print('Running OpenSCAD #2:', file=sys.stderr)
+print(' '.join(create_png_cmd), file=sys.stderr)
 fontdir =  os.path.join(os.path.dirname(__file__), "..", "testdata");
 fontenv = os.environ.copy();
 fontenv["OPENSCAD_FONT_PATH"] = fontdir;

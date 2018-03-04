@@ -36,6 +36,7 @@ import subprocess
 import time
 import platform
 import cgi
+import base64
 try:
     from urllib.error import URLError
     from urllib.request import urlopen
@@ -68,7 +69,7 @@ def trysave(filename, data):
                 debug( 'creating' + dir)
                 os.mkdir(dir)
         f=open(filename,'wb')
-        f.write(data)
+        f.write(data.encode('utf-8'))
         f.close()
     except Exception as e:
         print('problem writing to',filename)
@@ -170,7 +171,7 @@ def parsetest(teststring):
         "^ expected .*?:(.*?)\n",
         'Command:.*?(testdata.*?)"' # scadfile 
         ]
-    hits = map( lambda pattern: ezsearch(pattern, teststring), patterns)
+    hits = list(map(lambda pattern: ezsearch(pattern, teststring), patterns))
     test = Test(hits[0], hits[1], hits[2]=='Passed', hits[3], hits[4], hits[5], 
                 hits[6], hits[7], teststring)
     if len(test.actualfile) > 0:
@@ -208,7 +209,7 @@ def load_makefiles(builddir):
 def png_encode64(fname, width=512, data=None, alt=''):
     # en.wikipedia.org/wiki/Data_URI_scheme
     data = data or tryread(fname) or ''
-    data_uri = data.encode('base64').replace('\n', '')
+    data_uri = base64.b64encode(bytes(data)).decode('ascii')
     tag = '''<img src="data:image/png;base64,%s" width="%s" %s/>'''
     if alt=="": alt = 'alt="openscad_test_image:' + fname + '" '
     tag %= (data_uri, width, alt)
