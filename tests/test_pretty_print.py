@@ -27,6 +27,8 @@
 #
 # 1. why is hash differing
 
+from __future__ import print_function
+
 import string
 import sys
 import re
@@ -145,7 +147,7 @@ class Test:
         self.actualfile_data = None
         self.expectedfile_data = None
         
-    def __str__(self):
+    def info(self):
         x = 'fullname: ' + self.fullname
         x+= '\nactualfile: ' + self.actualfile
         x+= '\nexpectedfile: ' + self.expectedfile
@@ -178,7 +180,7 @@ def parsetest(teststring):
         test.actualfile_data = tryread(test.actualfile)
     if len(test.expectedfile) > 0:
         test.expectedfile_data = tryread(test.expectedfile)
-    debug(" Parsed test\n" + str(test)+'\n')
+    debug(" Parsed test\n" + test.info() + '\n')
     return test
 
 def parselog(data):
@@ -209,7 +211,7 @@ def load_makefiles(builddir):
 def png_encode64(fname, width=512, data=None, alt=''):
     # en.wikipedia.org/wiki/Data_URI_scheme
     data = data or tryread(fname) or ''
-    data_uri = base64.b64encode(bytes(data)).decode('ascii')
+    data_uri = base64.b64encode(data).decode('ascii')
     tag = '''<img src="data:image/png;base64,%s" width="%s" %s/>'''
     if alt=="": alt = 'alt="openscad_test_image:' + fname + '" '
     tag %= (data_uri, width, alt)
@@ -441,7 +443,7 @@ def debug(x):
     global debugfile
     if debug_test_pp:
         print('test_pretty_print debug: ' + x)
-    debugfile.write(x+'\n')
+    debugfile.write((x + '\n').encode('utf-8'))
 
 builddir = os.getcwd()
 include_passed = False
@@ -526,6 +528,6 @@ def main():
     debug('test_pretty_print complete')
 
 if __name__=='__main__':
-    debugfile = open('test_pretty_print.log.txt','w')
+    debugfile = open('test_pretty_print.log.txt','wb')
     main()
     debugfile.close()
