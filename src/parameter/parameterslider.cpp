@@ -1,7 +1,7 @@
 #include "parameterslider.h"
 #include "ignoreWheelWhenNotFocused.h"
 
-ParameterSlider::ParameterSlider(ParameterObject *parameterobject, int showDescription)
+ParameterSlider::ParameterSlider(ParameterObject *parameterobject, int descriptionLoD)
 {
 	this->pressed = true;
 	this->suppressUpdate=false;
@@ -13,19 +13,19 @@ ParameterSlider::ParameterSlider(ParameterObject *parameterobject, int showDescr
 	connect(slider, SIGNAL(sliderReleased()), this, SLOT(onReleased()));
 	connect(slider, SIGNAL(valueChanged(int)), this, SLOT(onSliderChanged(int)));
 	connect(doubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(onSpinBoxChanged(double)));
-	if (showDescription == 0 || showDescription == 3) {
+	if (descriptionLoD == descLoD::ShowDetails || descriptionLoD == descLoD::DescOnly) {
 		setDescription(object->description);
 		this->labelInline->hide();
-	}else if(showDescription == 1){
+	}else if(descriptionLoD == descLoD::Inline){
 		addInline(object->description);
-	}else {
+	}else{
 		this->setToolTip(object->description);
 	}
 
-	if (showDescription == 3 && object->description !=""){
-		this->labelParameter->hide();
+	if (descriptionLoD == descLoD::DescOnly && object->description !=""){
+		labelParameter->hide();
 	}else{
-		this->labelParameter->show();
+		labelParameter->show();
 	}
 
 	IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);

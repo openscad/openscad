@@ -1,7 +1,7 @@
 #include "parametervector.h"
 #include "ignoreWheelWhenNotFocused.h"
 
-ParameterVector::ParameterVector(ParameterObject *parameterobject, int showDescription)
+ParameterVector::ParameterVector(ParameterObject *parameterobject, int descriptionLoD)
 {
 	object = parameterobject;
 	setName(QString::fromStdString(object->name));
@@ -10,16 +10,16 @@ ParameterVector::ParameterVector(ParameterObject *parameterobject, int showDescr
 	connect(doubleSpinBox2,SIGNAL(valueChanged(double)),this,SLOT(onChanged(double)));
 	connect(doubleSpinBox3,SIGNAL(valueChanged(double)),this,SLOT(onChanged(double)));
 	connect(doubleSpinBox4,SIGNAL(valueChanged(double)),this,SLOT(onChanged(double)));
-	if (showDescription == 0 || showDescription == 3) {
+	if (descriptionLoD == descLoD::ShowDetails || descriptionLoD == descLoD::DescOnly) {
 		setDescription(object->description);
 		this->labelInline->hide();
-	}else if(showDescription == 1){
+	}else if(descriptionLoD == descLoD::Inline){
 		addInline(object->description);
 	}else{
 		this->setToolTip(object->description);
 	}
 
-	if (showDescription == 3 && object->description !=""){
+	if (descriptionLoD == descLoD::DescOnly && object->description !=""){
 		labelParameter->hide();
 	}else{
 		labelParameter->show();

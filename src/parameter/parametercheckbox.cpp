@@ -1,19 +1,27 @@
 #include "parametercheckbox.h"
 
-ParameterCheckBox::ParameterCheckBox(ParameterObject *parameterobject, int showDescription)
+ParameterCheckBox::ParameterCheckBox(ParameterObject *parameterobject, int descriptionLoD)
 {
 	object = parameterobject;
 	setName(QString::fromStdString(object->name));
 	setValue();
 	connect(checkBox, SIGNAL(clicked()), this, SLOT(onChanged()));
-
-	if (showDescription == 0){
+	if (descriptionLoD == descLoD::ShowDetails || descriptionLoD == descLoD::DescOnly) {
 		setDescription(object->description);
-	}else if(showDescription == 1){
+		this->labelInline->hide();
+	}else if(descriptionLoD == descLoD::Inline){
 		addInline(object->description);
-		checkBox->setStyleSheet(""); //small checkbox, when description not shown
 	}else{
 		this->setToolTip(object->description);
+	}
+
+	if (descriptionLoD == descLoD::DescOnly && object->description !=""){
+		labelParameter->hide();
+	}else{
+		labelParameter->show();
+	}
+
+	if (!descriptionLoD == descLoD::ShowDetails){
 		checkBox->setStyleSheet(""); //small checkbox, when description not shown
 	}
 }

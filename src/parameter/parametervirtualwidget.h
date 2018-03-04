@@ -5,6 +5,8 @@
 #include "ui_ParameterEntryWidget.h"
 #include "parameterobject.h"
 
+enum descLoD {ShowDetails,Inline,HideDetails,DescOnly};
+
 class ParameterVirtualWidget : public QWidget, public Ui::ParameterEntryWidget
 {
 	Q_OBJECT

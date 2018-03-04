@@ -2,22 +2,22 @@
 #include "modcontext.h"
 #include "comment.h"
 
-ParameterText::ParameterText(ParameterObject *parameterobject, int showDescription)
+ParameterText::ParameterText(ParameterObject *parameterobject, int descriptionLoD)
 {
 	object = parameterobject;
 	setName(QString::fromStdString(object->name));
 	setValue();
 	connect(lineEdit, SIGNAL(textChanged(QString)), this, SLOT(onChanged(QString)));
-	if (showDescription == 0 || showDescription == 3) {
+	if (descriptionLoD == descLoD::ShowDetails || descriptionLoD == descLoD::DescOnly) {
 		setDescription(object->description);
 		this->labelInline->hide();
-	}else if(showDescription == 1){
+	}else if(descriptionLoD == descLoD::Inline){
 		addInline(object->description);
 	}else{
 		this->setToolTip(object->description);
 	}
 
-	if (showDescription == 3 && object->description !=""){
+	if (descriptionLoD == descLoD::DescOnly && object->description !=""){
 		labelParameter->hide();
 	}else{
 		labelParameter->show();
