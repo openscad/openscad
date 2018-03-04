@@ -104,6 +104,7 @@ def read_sysinfo(filename):
         sysid = platform.sys.platform+'_no_GL_renderer'
         return sinfo, sysid
 
+    data = data.decode('utf-8')
     machine = ezsearch('Machine:(.*?)\n',data)
     machine = machine.replace(' ','-').replace('/','-')
 
