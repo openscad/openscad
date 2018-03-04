@@ -70,8 +70,8 @@ void ParameterWidget::resetParameter()
 {
 	if(this->valueChanged){
 		QMessageBox msgBox;
-		msgBox.setText(_("changes on current preset not saved"));
-		msgBox.setInformativeText(
+		msgBox.setWindowTitle(_("changes on current preset not saved"));
+		msgBox.setText(
 			QString(_("The current preset %1 contains changes, but is not saved yet. Do you really want to reset the preset and lose your changes?"))
 			.arg(comboBoxPreset->itemData(this->comboBoxPreset->currentIndex()).toString()));
 		msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
@@ -193,8 +193,8 @@ void ParameterWidget::onSetChanged(int idx)
 	//if necessary, confirm the change 
 	if(this->valueChanged){
 		QMessageBox msgBox;
-		msgBox.setText(_("changes on current preset not saved"));
-		msgBox.setInformativeText(
+		msgBox.setWindowTitle(_("changes on current preset not saved"));
+		msgBox.setText(
 			QString(_("The current preset %1 contains changes, but is not saved yet. Do you really want to change the preset and lose your changes?"))
 			.arg(comboBoxPreset->itemData(lastComboboxIndex).toString()));
 		msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
@@ -448,8 +448,8 @@ void ParameterWidget::writeParameterSets()
 {
 	if(this->unreadableFileExists){
 		QMessageBox msgBox;
-		msgBox.setText(_("Saving presets"));
-		msgBox.setInformativeText(QString(_("%1 was found, but was unreadble. Do you want to overwrite %1?")).arg(QString::fromStdString(this->jsonFile)));
+		msgBox.setWindowTitle(_("Saving presets"));
+		msgBox.setText(QString(_("%1 was found, but was unreadble. Do you want to overwrite %1?")).arg(QString::fromStdString(this->jsonFile)));
 		msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
 		msgBox.setDefaultButton(QMessageBox::Cancel);
 
