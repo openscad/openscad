@@ -54,9 +54,9 @@ def init_expected_filename():
 
     expected_testname = options.testname
 
-    if hasattr(options, "expecteddir"):
+    try:
         expected_dirname = options.expecteddir
-    else:
+    except:
         expected_dirname = expected_testname
 
     expecteddir = os.path.join(options.regressiondir, expected_dirname)
@@ -319,13 +319,15 @@ if __name__ == '__main__':
         print(basename, file=sys.stderr)
         print(path, options.filename, file=sys.stderr)
 
-    if not hasattr(options, "filename"):
+    try:
+        print(options.filename, file=sys.stderr)
+    except:
         print("Filename cannot be deducted from arguments. Specify test filename using the -f option", file=sys.stderr)
         sys.exit(2)
-    else:
-        print(options.filename, file=sys.stderr)
 
-    if not hasattr(options, "testname"):
+    try:
+        dummy = options.testname
+    except:
         options.testname = os.path.split(args[0])[1]
 
     # Initialize and verify run-time environment
