@@ -115,7 +115,7 @@ def read_sysinfo(filename):
 
     renderer = ezsearch('GL Renderer:(.*?)\n',data)
     tmp = renderer.split(' ')
-    tmp = string.join(tmp[0:min(len(tmp),4)],'-')
+    tmp = "-".join(tmp[0:min(len(tmp),4)])
     tmp = tmp.split('/')[0]
     renderer = tmp
 
