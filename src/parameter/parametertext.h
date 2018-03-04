@@ -6,7 +6,7 @@ class ParameterText : public ParameterVirtualWidget
 {
 	Q_OBJECT
 public:
-	ParameterText(ParameterObject *parameterobject, int descriptionLoD);
+	ParameterText(QWidget *parent, ParameterObject *parameterobject, int descriptionLoD);
 	void setValue() override;
 	void setParameterFocus() override;
 

@@ -1,7 +1,7 @@
 #include "parametervirtualwidget.h"
 
 
-ParameterVirtualWidget::ParameterVirtualWidget(QWidget *parent) : QWidget(parent)
+ParameterVirtualWidget::ParameterVirtualWidget(QWidget *parent,ParameterObject *parameterobject, int descriptionLoD) : QWidget(parent)
 {
 	setupUi(this);
 

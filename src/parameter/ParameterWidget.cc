@@ -349,27 +349,27 @@ ParameterVirtualWidget* ParameterWidget::CreateParameterWidget(std::string param
 	ParameterVirtualWidget *entry = nullptr;
 	switch(entries[parameterName]->target) {
 		case ParameterObject::COMBOBOX:{
-			entry = new ParameterComboBox(entries[parameterName], descriptionLoD);
+			entry = new ParameterComboBox(this, entries[parameterName], descriptionLoD);
 			break;
 		}
 		case ParameterObject::SLIDER:{
-			entry = new ParameterSlider(entries[parameterName], descriptionLoD);
+			entry = new ParameterSlider(this, entries[parameterName], descriptionLoD);
 			break;
 		}
 		case ParameterObject::CHECKBOX:{
-			entry = new ParameterCheckBox(entries[parameterName], descriptionLoD);
+			entry = new ParameterCheckBox(this, entries[parameterName], descriptionLoD);
 			break;
 		}
 		case ParameterObject::TEXT:{
-			entry = new ParameterText(entries[parameterName], descriptionLoD);
+			entry = new ParameterText(this, entries[parameterName], descriptionLoD);
 			break;
 		}
 		case ParameterObject::NUMBER:{
-			entry = new ParameterSpinBox(entries[parameterName], descriptionLoD);
+			entry = new ParameterSpinBox(this, entries[parameterName], descriptionLoD);
 			break;
 		}
 		case ParameterObject::VECTOR:{
-			entry = new ParameterVector(entries[parameterName], descriptionLoD);
+			entry = new ParameterVector(this, entries[parameterName], descriptionLoD);
 			break;
 		}
 		case ParameterObject::UNDEFINED:{

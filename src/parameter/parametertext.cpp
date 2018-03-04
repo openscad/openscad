@@ -2,7 +2,8 @@
 #include "modcontext.h"
 #include "comment.h"
 
-ParameterText::ParameterText(ParameterObject *parameterobject, int descriptionLoD)
+ParameterText::ParameterText(QWidget *parent, ParameterObject *parameterobject, int descriptionLoD)
+	: ParameterVirtualWidget(parent, parameterobject, descriptionLoD)
 {
 	object = parameterobject;
 	setName(QString::fromStdString(object->name));

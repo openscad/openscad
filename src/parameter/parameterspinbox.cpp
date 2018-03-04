@@ -1,7 +1,8 @@
 #include "parameterspinbox.h"
 #include "ignoreWheelWhenNotFocused.h"
 
-ParameterSpinBox::ParameterSpinBox(ParameterObject *parameterobject, int descriptionLoD)
+ParameterSpinBox::ParameterSpinBox(QWidget *parent, ParameterObject *parameterobject, int descriptionLoD)
+	: ParameterVirtualWidget(parent, parameterobject, descriptionLoD)
 {
 	object = parameterobject;
 	setName(QString::fromStdString(object->name));

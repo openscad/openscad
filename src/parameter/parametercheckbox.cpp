@@ -1,6 +1,7 @@
 #include "parametercheckbox.h"
 
-ParameterCheckBox::ParameterCheckBox(ParameterObject *parameterobject, int descriptionLoD)
+ParameterCheckBox::ParameterCheckBox(QWidget *parent, ParameterObject *parameterobject, int descriptionLoD)
+	: ParameterVirtualWidget(parent, parameterobject, descriptionLoD)
 {
 	object = parameterobject;
 	setName(QString::fromStdString(object->name));

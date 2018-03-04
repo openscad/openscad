@@ -6,7 +6,7 @@ class ParameterVector : public ParameterVirtualWidget
 {
 	Q_OBJECT
 public:
-	ParameterVector(ParameterObject *parameterobject, int descriptionLoD);
+	ParameterVector(QWidget *parent, ParameterObject *parameterobject, int descriptionLoD);
 	void setValue() override;
 	void setParameterFocus() override;
 

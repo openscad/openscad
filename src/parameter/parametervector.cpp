@@ -1,7 +1,8 @@
 #include "parametervector.h"
 #include "ignoreWheelWhenNotFocused.h"
 
-ParameterVector::ParameterVector(ParameterObject *parameterobject, int descriptionLoD)
+ParameterVector::ParameterVector(QWidget *parent, ParameterObject *parameterobject, int descriptionLoD)
+	: ParameterVirtualWidget(parent, parameterobject, descriptionLoD)
 {
 	object = parameterobject;
 	setName(QString::fromStdString(object->name));

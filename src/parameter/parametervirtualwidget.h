@@ -15,7 +15,7 @@ protected:
 	ParameterObject *object;
 
 public:
-	ParameterVirtualWidget(QWidget *parent = nullptr);
+	ParameterVirtualWidget(QWidget *parent,ParameterObject *parameterobject, int descriptionLoD);
 	~ParameterVirtualWidget();
 	virtual void setParameterFocus() = 0;
 	virtual void setValue() = 0;
