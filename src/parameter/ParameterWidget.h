@@ -32,7 +32,7 @@
 #include "groupwidget.h"
 #include "parameterset.h"
 
-class ParameterWidget : public QWidget, public Ui::ParameterWidget, public ParameterSet
+class ParameterWidget : public QWidget, public Ui::ParameterWidget
 {
 	Q_OBJECT
 private:
@@ -63,7 +63,7 @@ private:
 	entry_map_t entries;
 	std::vector<std::string> ParameterPos;
 	ParameterExtractor *extractor;
-
+	ParameterSet *setMgr;
 public:
 	ParameterWidget(QWidget *parent = nullptr);
 	~ParameterWidget();
