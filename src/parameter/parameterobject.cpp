@@ -4,8 +4,30 @@
 #include "modcontext.h"
 #include "annotation.h"
 
-ParameterObject::ParameterObject() : focus(false)
+ParameterObject::ParameterObject(Context *ctx, const Assignment *assignment, const ValuePtr defaultValue) : focus(false)
 {
+  this->name = assignment->name;
+  const Annotation *param = assignment->annotation("Parameter");
+  const ValuePtr values = param->evaluate(ctx);
+  setValue(defaultValue, values);
+  const Annotation *desc = assignment->annotation("Description");
+
+  if (desc) {
+    const ValuePtr v = desc->evaluate(ctx);
+    if (v->type() == Value::ValueType::STRING) {
+      description=QString::fromStdString(v->toString());
+    }
+  }
+  
+  const Annotation *group = assignment->annotation("Group");
+  if (group) {
+    const ValuePtr v = group->evaluate(ctx);
+    if (v->type() == Value::ValueType::STRING) {
+      groupName=v->toString();
+    }
+  } else {
+    groupName="Parameters";
+  }
 }
 
 void ParameterObject::applyParameter(Assignment &assignment)
@@ -43,32 +65,6 @@ int ParameterObject::setValue(const class ValuePtr defaultValue, const class Val
   }
   
   return target;
-}
-
-void ParameterObject::setAssignment(Context *ctx, const Assignment *assignment, const ValuePtr defaultValue)
-{
-  this->name = assignment->name;
-  const Annotation *param = assignment->annotation("Parameter");
-  const ValuePtr values = param->evaluate(ctx);
-  setValue(defaultValue, values);
-  const Annotation *desc = assignment->annotation("Description");
-
-  if (desc) {
-    const ValuePtr v = desc->evaluate(ctx);
-    if (v->type() == Value::ValueType::STRING) {
-      description=QString::fromStdString(v->toString());
-    }
-  }
-  
-  const Annotation *group = assignment->annotation("Group");
-  if (group) {
-    const ValuePtr v = group->evaluate(ctx);
-    if (v->type() == Value::ValueType::STRING) {
-      groupName=v->toString();
-    }
-  } else {
-    groupName="Parameters";
-  }
 }
 
 bool ParameterObject::operator == (const ParameterObject &second)

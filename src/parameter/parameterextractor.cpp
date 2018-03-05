@@ -37,8 +37,7 @@ void ParameterExtractor::setParameters(const FileModule* module,entry_map_t& ent
     const ValuePtr defaultValue = assignment.expr->evaluate(&ctx);
     if (defaultValue->type() == Value::ValueType::UNDEFINED) continue;
 
-    ParameterObject *entryObject = new ParameterObject();
-    entryObject->setAssignment(&ctx, &assignment, defaultValue);
+    ParameterObject *entryObject = new ParameterObject(&ctx, &assignment, defaultValue);
 
     //check whether object exist or not previously
     if (entries.find(assignment.name) == entries.end()) {

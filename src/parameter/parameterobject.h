@@ -27,8 +27,7 @@ private:
 	parameter_type_t checkVectorWidget();
 	
 public:
-	ParameterObject();
-	void setAssignment(Context *context, const Assignment *assignment, const ValuePtr defaultValue);
+	ParameterObject(Context *context, const Assignment *assignment, const ValuePtr defaultValue);
 	void applyParameter(Assignment &assignment);
 	bool operator==(const ParameterObject &second);
 	
