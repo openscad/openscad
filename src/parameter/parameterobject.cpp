@@ -40,7 +40,7 @@ void ParameterObject::applyParameter(Assignment &assignment)
   }
 }
 
-int ParameterObject::setValue(const class ValuePtr defaultValue, const class ValuePtr values)
+void ParameterObject::setValue(const class ValuePtr defaultValue, const class ValuePtr values)
 {
   this->values = values;
   this->value = defaultValue;
@@ -51,20 +51,18 @@ int ParameterObject::setValue(const class ValuePtr defaultValue, const class Val
   bool makerBotMax = (vt == Value::ValueType::VECTOR && values->toVector().size() == 1 && values->toVector()[0]->toVector().size() ==0); // [max] format from makerbot customizer
 
   if (dvt == Value::ValueType::BOOL) {
-    target = CHECKBOX;
+    this->target = CHECKBOX;
   } else if ((dvt == Value::ValueType::VECTOR) && (defaultValue->toVector().size() <= 4)) {
-    target = checkVectorWidget();
+    this->target = checkVectorWidget();
   } else if ((vt == Value::ValueType::RANGE || makerBotMax) && (dvt == Value::ValueType::NUMBER)) {
-    target = SLIDER;
+    this->target = SLIDER;
   } else if ((vt == Value::ValueType::VECTOR) && ((dvt == Value::ValueType::NUMBER) || (dvt == Value::ValueType::STRING))) {
-    target = COMBOBOX;
+    this->target = COMBOBOX;
   } else if (dvt == Value::ValueType::NUMBER) {
-    target = NUMBER;
+    this->target = NUMBER;
   } else {
-    target = TEXT;
+    this->target = TEXT;
   }
-  
-  return target;
 }
 
 bool ParameterObject::operator == (const ParameterObject &second)
