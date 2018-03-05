@@ -12,7 +12,7 @@ public:
 	static std::string fileFormatVersionKey;
 	static std::string fileFormatVersionValue;
 
-protected:
+private:
 	pt::ptree root;
 
 public:
