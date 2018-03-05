@@ -1,8 +1,7 @@
 #include "AST.h"
 #include <sstream>
 
-const Location Location::NONE(0, 0, 0, 0);
-
+const Location Location::NONE(0, 0, 0, 0, nullptr);
 
 std::ostream &operator<<(std::ostream &stream, const ASTNode &ast)
 {
