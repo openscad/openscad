@@ -100,7 +100,7 @@ void ParameterSlider::setValue()
 		max = object->values->toRange().end_value();
 	}else{ // [max] format from makerbot customizer
 		step = 1;
-		maxSlider =  std::stoi(object->values->toVector()[0]->toString(),nullptr,0);
+		maxSlider =  std::stoi(object->values->toVector()[0]->toString());
 		max = maxSlider;
 		setPrecision(1);
 	}
