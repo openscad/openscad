@@ -48,9 +48,11 @@ void ParameterExtractor::setParameters(const FileModule* module,entry_map_t& ent
       //if entry object is already exist we check if its modified
       //or not
       if (*entryObject == *entries[assignment.name]) {
+        delete entryObject;
         //if entry is not modified then we don't add new entry
         entryObject = entries[assignment.name];
       } else {
+        delete entries[assignment.name];
         //if entry is modified then we add new entry
         entries[assignment.name] = entryObject;
       }
