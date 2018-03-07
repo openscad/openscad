@@ -102,7 +102,7 @@ void ParameterSlider::setValue()
 		step = 1;
 		maxSlider =  std::stoi(object->values->toVector()[0]->toString());
 		max = maxSlider;
-		setPrecision(1);
+		decimalPrecision = 1;
 	}
 
 	int current=object->value->toDouble()/step;
