@@ -45,7 +45,7 @@ STL and OFF file formats.
 # Getting started
 
 You can download the latest binaries of OpenSCAD at
-<http://www.openscad.org>. Install binaries as you would any other
+<http://www.openscad.org/downloads.html>. Install binaries as you would any other
 software.
 
 When you open OpenSCAD, you'll see three frames within the window. The
@@ -83,7 +83,7 @@ Manual](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual).
 
 # Documentation
 
-Have a look at the OpenSCAD Homepage (http://openscad.org/) for documentation.
+Have a look at the OpenSCAD Homepage (http://www.openscad.org/documentation.html) for documentation.
 
 ## Building OpenSCAD
 
@@ -126,7 +126,7 @@ Install git (http://git-scm.com/) onto your system. Then run a clone:
 
     git clone git://github.com/openscad/openscad.git
 
-This will download the latest sources into a directory named 'openscad'.
+This will download the latest sources into a directory named `openscad`.
 
 To pull the MCAD library (https://github.com/openscad/MCAD), do the following:
 
@@ -155,21 +155,21 @@ After building dependencies using one of the following three options, follow the
 
         ./scripts/macosx-build-dependencies.sh
 
-1. **Homebrew** (assumes [Homebrew](http://brew.sh) is already installed)
+1. **Homebrew** (assumes [Homebrew](https://brew.sh/) is already installed)
 
         ./scripts/macosx-build-homebrew.sh
 
-1. **MacPorts** (assumes [MacPorts](http://macports.org) is already installed)
+1. **MacPorts** (assumes [MacPorts](https://www.macports.org/) is already installed)
 
     For the adventurous, it might be possible to build OpenSCAD using _MacPorts_. The main challenge is that MacPorts have partially broken libraries, but that tends to change from time to time.
 
     NB! MacPorts currently doesn't support Qt5 very well, so using Qt4
     is the only working option at the moment. However, MacPorts' Qt4
     has a broken `moc` command, causing OpenSCAD compilation to
-    break. This may be fixed in MacPorts by the time you read this.
-
-        sudo port install opencsg qscintilla boost cgal pkgconfig eigen3 harfbuzz fontconfig
-
+    break. This may be fixed in MacPorts by the time you read this.
+```
+        sudo port install opencsg qscintilla boost cgal pkgconfig eigen3 harfbuzz fontconfig
+```
 
 
 ### Building for Linux/BSD
@@ -187,14 +187,14 @@ script to help you:
 
     ./scripts/check-dependencies.sh
 
-Take care that you don't have old local copies anywhere (/usr/local/). 
+Take care that you don't have old local copies anywhere (`/usr/local/`). 
 If all dependencies are present and of a high enough version, skip ahead 
 to the Compilation instructions. 
 
 ### Building for Linux/BSD on systems with older or missing dependencies
 
 If some of your system dependency libraries are missing or old, then you 
-can download and build newer versions into $HOME/openscad_deps by 
+can download and build newer versions into `$HOME/openscad_deps` by 
 following this process. First, run the script that sets up the 
 environment variables. 
 
@@ -220,7 +220,7 @@ http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Windows
 
 To cross-build, first make sure that you have all necessary dependencies 
 of the MXE project ( listed at http://mxe.cc/#requirements ). Don't install
-MXE itself, the scripts below will do that for you under $HOME/openscad_deps/mxe
+MXE itself, the scripts below will do that for you under `$HOME/openscad_deps/mxe`
 
 Then get your development tools installed to get GCC. Then after you've 
 cloned this git repository, start a new clean bash shell and run the 
@@ -233,13 +233,13 @@ Then run the script to download & compile all the prerequisite libraries above:
     ./scripts/mingw-x-build-dependencies.sh 64
 
 Note that this process can take several hours, and tens of gigabytes of 
-disk space, as it uses the http://mxe.cc system to cross-build many 
+disk space, as it uses the [http://mxe.cc](http://mxe.cc) system to cross-build many 
 libraries. After it is complete, build OpenSCAD and package it to an 
 installer:
 
     ./scripts/release-common.sh mingw64
 
-If you wish you can only build the openscad.exe binary:
+If you wish you can only build the `openscad.exe` binary:
 
     cd mingw64
     qmake ../openscad.pro CONFIG+=mingw-cross-env
@@ -254,7 +254,7 @@ First, run `qmake openscad.pro` from Qt to generate a Makefile.
 On some systems, depending on which version(s) of Qt you have installed, you may need to specify which version you want to use, e.g. by running `qmake4`, `qmake-qt4`, `qmake -qt=qt5`, or something alike. 
 
 Then run `make`. Finally you might run `make install` as root or simply copy the
-'openscad' binary (OpenSCAD.app on Mac OS X) to the bin directory of your choice.
+'openscad' binary (`OpenSCAD.app` on Mac OS X) to the bin directory of your choice.
 
 If you had problems compiling from source, raise a new issue in the
 [issue tracker on the github page](https://github.com/openscad/openscad/issues).
