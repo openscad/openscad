@@ -27,10 +27,8 @@ void GroupWidget::onclicked(const bool /*checked*/)
 	toggleButton.setArrowType(toggleButton.isChecked() ? Qt::DownArrow : Qt::RightArrow);
 
 	if (toggleButton.isChecked()) {
-		this->show = true;
 		contentArea.show();
 	} else {
-		this->show = false;
 		contentArea.hide();
 	}
 }

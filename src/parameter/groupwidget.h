@@ -12,7 +12,6 @@ private:
 	QGridLayout mainLayout;
 	QToolButton toggleButton;
 	QWidget contentArea;
-	bool show;
 
 public:
 	explicit GroupWidget(bool &show,const QString & title = "", QWidget *parent = nullptr);
