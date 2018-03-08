@@ -32,7 +32,7 @@
 #include "groupwidget.h"
 #include "parameterset.h"
 
-class ParameterWidget : public QWidget, public Ui::ParameterWidget, public ParameterExtractor, public ParameterSet
+class ParameterWidget : public QWidget, public Ui::ParameterWidget
 {
 	Q_OBJECT
 private:
@@ -51,8 +51,8 @@ private:
 	bool valueChanged;
 	ParameterVirtualWidget *entryToFocus;
 
-	void connectWidget() override;
-	void updateWidget() override;
+	void connectWidget();
+	void updateWidget();
 	void cleanScrollArea();
 	void rebuildGroupMap();
 	ParameterVirtualWidget* CreateParameterWidget(std::string parameterName);
@@ -61,12 +61,17 @@ private:
 	void setFile(QString File);
 
 	bool unreadableFileExists=false;
-
+	entry_map_t entries;
+	std::vector<std::string> ParameterPos;
+	ParameterExtractor *extractor;
+	ParameterSet *setMgr;
 public:
 	ParameterWidget(QWidget *parent = nullptr);
 	~ParameterWidget();
 	void readFile(QString scadFile);
 	void writeFileIfNotEmpty(QString scadFile);
+	void setParameters(const FileModule* module,bool);
+	void applyParameters(FileModule *fileModule);
 
 protected slots:
 	void onValueChanged();

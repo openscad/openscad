@@ -55,10 +55,9 @@ void FileModule::print(std::ostream &stream, const std::string &indent) const
 
 void FileModule::registerUse(const std::string path)
 {
-	auto extraw = fs::path(path).extension().generic_string();
-	auto ext = boost::algorithm::to_lower_copy(extraw);
+	auto ext = fs::path(path).extension().generic_string();
 	
-	if ((ext == ".otf") || (ext == ".ttf")) {
+	if (boost::iequals(ext, ".otf") || boost::iequals(ext, ".ttf")) {
 		if (fs::is_regular(path)) {
 			FontCache::instance()->register_font_file(path);
 		} else {
@@ -186,4 +185,17 @@ AbstractNode *FileModule::instantiateWithFileContext(FileContext *ctx, const Mod
 	}
 
 	return node;
+}
+
+//please preferably use getFilename
+//if you compare filenames (which is the origin of this methode),
+//please call getFilename first and use this methode only as a fallback
+const std::string FileModule::getFullpath() const {
+	if(fs::path(this->filename).is_absolute()){
+		return this->filename;
+	}else if(!this->path.empty()){
+		return (fs::path(this->path) / fs::path(this->filename)).string();
+	}else{
+		return "";
+	}
 }

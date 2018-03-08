@@ -13,7 +13,7 @@ ParameterComboBox::ParameterComboBox(QWidget *parent, ParameterObject *parameter
 
 void ParameterComboBox::onChanged(int idx)
 {
-	if(!suppressUpdate){
+	if(!this->suppressUpdate){
 		if (object->dvt == Value::ValueType::STRING) {
 			const std::string v = comboBox->itemData(idx).toString().toStdString();
 			object->value = ValuePtr(v);
@@ -34,7 +34,7 @@ void ParameterComboBox::setParameterFocus()
 
 void ParameterComboBox::setValue()
 {
-	suppressUpdate=true;
+	this->suppressUpdate=true;
 	this->stackedWidgetBelow->setCurrentWidget(this->pageComboBox);
 	this->pageComboBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 	this->stackedWidgetRight->hide();
@@ -56,5 +56,5 @@ void ParameterComboBox::setValue()
 	if (idx >= 0) {
 		comboBox->setCurrentIndex(idx);
 	}
-	suppressUpdate=false;
+	this->suppressUpdate=false;
 }

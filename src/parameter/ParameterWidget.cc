@@ -62,7 +62,8 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 	connect(comboBoxDetails,SIGNAL(currentIndexChanged(int)), this,SLOT(onDescriptionLoDChanged()));
 	connect(comboBoxPreset, SIGNAL(currentIndexChanged(int)), this, SLOT(onSetChanged(int)));
 	connect(reset, SIGNAL(clicked()), this, SLOT(resetParameter()));
-
+	this->extractor = new ParameterExtractor();
+	this->setMgr = new ParameterSet();
 	this->valueChanged=false;
 }
 
@@ -80,7 +81,7 @@ void ParameterWidget::resetParameter()
 			return;
 		}
 	}
-	this->resetPara = true;
+	this->entries.clear(); //clearing the entries forces a reset
 	emit previewRequested();
 }
 
@@ -91,9 +92,9 @@ ParameterWidget::~ParameterWidget()
 //deletes the currently selected/active parameter set
 void ParameterWidget::onSetDelete()
 {
-	if (root.empty()) return;
+	if (setMgr->isEmpty()) return;
 	std::string setName=comboBoxPreset->itemData(this->comboBoxPreset->currentIndex()).toString().toStdString();
-	boost::optional<pt::ptree &> sets = parameterSets();
+	boost::optional<pt::ptree &> sets = setMgr->parameterSets();
 	if (sets.is_initialized()) {
 		sets.get().erase(pt::ptree::key_type(setName));
 	}
@@ -105,18 +106,18 @@ void ParameterWidget::onSetDelete()
 //adds a new parameter set
 void ParameterWidget::onSetAdd()
 {
-	if (root.empty()) {
+	if (setMgr->isEmpty()) {
 		pt::ptree setRoot;
-		root.add_child(ParameterSet::parameterSetsKey, setRoot);
+		setMgr->addChild(ParameterSet::parameterSetsKey, setRoot);
 	}
 	updateParameterSet("");
 }
 
 void ParameterWidget::onSetSaveButton()
 {
-	if (root.empty()) {
+	if (setMgr->isEmpty()) {
 		pt::ptree setRoot;
-		root.add_child(ParameterSet::parameterSetsKey, setRoot);
+		setMgr->addChild(ParameterSet::parameterSetsKey, setRoot);
 	}
 	updateParameterSet(comboBoxPreset->itemData(this->comboBoxPreset->currentIndex()).toString().toStdString());
 }
@@ -135,7 +136,7 @@ void ParameterWidget::readFile(QString scadFile)
 	bool readable = false;
 
 	if(exists){
-		readable = readParameterSet(this->jsonFile);
+		readable = setMgr->readParameterSet(this->jsonFile);
 
 		//check whether file is writeable or not
 		if (std::fstream(this->jsonFile, std::ios::app)) writeable = true;
@@ -169,16 +170,31 @@ void ParameterWidget::readFile(QString scadFile)
 void ParameterWidget::writeFileIfNotEmpty(QString scadFile)
 {
 	setFile(scadFile);
-	if (!root.empty()){
+	if (!setMgr->isEmpty()){
 		writeParameterSets();
 	}
+}
+
+void ParameterWidget::setParameters(const FileModule* module,bool rebuildParameterWidget)
+{
+	this->extractor->setParameters(module,this->entries,ParameterPos,rebuildParameterWidget);
+	if(rebuildParameterWidget){
+		connectWidget();
+	}else{
+		updateWidget();
+	}
+}
+
+void ParameterWidget::applyParameters(FileModule *fileModule)
+{
+	this->extractor->applyParameters(fileModule,entries);
 }
 
 void ParameterWidget::setComboBoxPresetForSet()
 {
 	this->comboBoxPreset->addItem(_("no preset selected"), QVariant(QString::fromStdString("")));
-	if (root.empty()) return;
-	for (const auto &name : getParameterNames()) {
+	if (setMgr->isEmpty()) return;
+	for (const auto &name : setMgr->getParameterNames()) {
 		const QString n = QString::fromStdString(name);
 		this->comboBoxPreset->addItem(n, QVariant(n));
 	}
@@ -256,7 +272,7 @@ void ParameterWidget::connectWidget()
 {
 	this->setEnabled(true);
 
-	anyfocused = false;
+	this->anyfocused = false;
 
 	rebuildGroupMap();
 	
@@ -388,7 +404,7 @@ ParameterVirtualWidget* ParameterWidget::CreateParameterWidget(std::string param
 
 void ParameterWidget::applyParameterSet(std::string setName)
 {
-	boost::optional<pt::ptree &> set = getParameterSet(setName);
+	boost::optional<pt::ptree &> set = setMgr->getParameterSet(setName);
 	if (!set.is_initialized()) {
 		return;
 	}
@@ -434,7 +450,7 @@ void ParameterWidget::updateParameterSet(std::string setName)
 		for (entry_map_t::iterator it = entries.begin(); it != entries.end(); it++) {
 			iroot.put(it->first,it->second->value->toString());
 		}
-		addParameterSet(setName, iroot);
+		setMgr->addParameterSet(setName, iroot);
 		const QString s(QString::fromStdString(setName));
 		if (this->comboBoxPreset->findText(s) == -1) {
 			this->comboBoxPreset->addItem(s, QVariant(s));
@@ -457,6 +473,6 @@ void ParameterWidget::writeParameterSets()
 			return;
 		}
 	}
-	writeParameterSet(this->jsonFile);
+	setMgr->writeParameterSet(this->jsonFile);
 	this->valueChanged=false;
 }

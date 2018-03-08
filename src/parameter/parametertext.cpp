@@ -11,7 +11,7 @@ ParameterText::ParameterText(QWidget *parent, ParameterObject *parameterobject, 
 
 void ParameterText::onChanged(QString)
 {
-	if(!suppressUpdate){
+	if(!this->suppressUpdate){
 		if (object->dvt == Value::ValueType::STRING) {
 			object->value = ValuePtr(lineEdit->text().toStdString());
 		}else{
@@ -36,7 +36,7 @@ void ParameterText::setParameterFocus()
 
 void ParameterText::setValue()
 {
-	suppressUpdate=true;
+	this->suppressUpdate=true;
 	this->stackedWidgetBelow->setCurrentWidget(this->pageText);
 	this->pageText->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 	this->stackedWidgetRight->hide();
@@ -44,5 +44,5 @@ void ParameterText::setValue()
 	if (object->values->toDouble() > 0) {
 		this->lineEdit->setMaxLength(object->values->toDouble());
 	}
-	suppressUpdate=false;
+	this->suppressUpdate=false;
 }

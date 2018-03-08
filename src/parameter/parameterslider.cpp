@@ -64,7 +64,7 @@ void ParameterSlider::setValue()
 {
 	if(hasFocus())return; //refuse programmatic updates, when the widget is in the focus of the user
 
-	suppressUpdate=true;
+	this->suppressUpdate=true;
 
 	if (object->values->toRange().step_value() > 0) {
 		setPrecision(object->values->toRange().step_value());
@@ -85,9 +85,9 @@ void ParameterSlider::setValue()
 		max = object->values->toRange().end_value();
 	}else{ // [max] format from makerbot customizer
 		step = 1;
-		maxSlider =  std::stoi(object->values->toVector()[0]->toString(),nullptr,0);
+		maxSlider =  std::stoi(object->values->toVector()[0]->toString());
 		max = maxSlider;
-		setPrecision(1);
+		decimalPrecision = 1;
 	}
 
 	int current=object->value->toDouble()/step;
@@ -104,5 +104,5 @@ void ParameterSlider::setValue()
 	this->doubleSpinBox->setSingleStep(step);
 	this->doubleSpinBox->setDecimals(decimalPrecision);
 	this->doubleSpinBox->setValue(object->value->toDouble());
-	suppressUpdate=false;
+	this->suppressUpdate=false;
 }

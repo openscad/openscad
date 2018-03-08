@@ -7,7 +7,6 @@ GroupWidget::GroupWidget(bool &show, const QString & title, QWidget *parent) : Q
 	toggleButton.setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
 	toggleButton.setCheckable(true);
 
-	this->show = &show;
 	toggleButton.setChecked(show);
 
 	// don't waste space
@@ -15,8 +14,8 @@ GroupWidget::GroupWidget(bool &show, const QString & title, QWidget *parent) : Q
 	mainLayout.setContentsMargins(0, 0, 0, 0);
     contentArea.setContentsMargins(0, 0, 0, 0);
 
-	mainLayout.addWidget(&toggleButton, 0, 0, nullptr);
-	mainLayout.addWidget(&contentArea, 1, 0, nullptr);
+	mainLayout.addWidget(&toggleButton, 0, 0);
+	mainLayout.addWidget(&contentArea, 1, 0);
 	setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Maximum);
 	setLayout(&mainLayout);
 	QObject::connect(&toggleButton, SIGNAL(toggled(bool)),this, SLOT(onclicked(bool)));
@@ -28,10 +27,8 @@ void GroupWidget::onclicked(const bool /*checked*/)
 	toggleButton.setArrowType(toggleButton.isChecked() ? Qt::DownArrow : Qt::RightArrow);
 
 	if (toggleButton.isChecked()) {
-		*(this->show) = true;
 		contentArea.show();
 	} else {
-		*(this->show) = false;
 		contentArea.hide();
 	}
 }
