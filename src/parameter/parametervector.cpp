@@ -21,7 +21,7 @@ void ParameterVector::onChanged(double)
 {
 	if(!this->suppressUpdate){
 		object->focus = true;
-		if (object->target == 5) {
+		if (object->target == ParameterObject::NUMBER) {
 			object->value = ValuePtr(doubleSpinBox1->value());
 		} else {
 			Value::VectorType vt;
