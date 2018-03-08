@@ -7,6 +7,7 @@ GroupWidget::GroupWidget(bool &show, const QString & title, QWidget *parent) : Q
 	toggleButton.setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
 	toggleButton.setCheckable(true);
 
+	this->show = &show;
 	toggleButton.setChecked(show);
 
 	// don't waste space
@@ -27,8 +28,10 @@ void GroupWidget::onclicked(const bool /*checked*/)
 	toggleButton.setArrowType(toggleButton.isChecked() ? Qt::DownArrow : Qt::RightArrow);
 
 	if (toggleButton.isChecked()) {
+		*(this->show) = true; //update the show flag in the group map
 		contentArea.show();
 	} else {
+		*(this->show) = false; //update the show flag in the group map
 		contentArea.hide();
 	}
 }
