@@ -1740,6 +1740,10 @@ bool MainWindow::fileChangedOnDisk()
 */
 void MainWindow::compileTopLevelDocument(bool rebuildParameterWidget)
 {
+	if (Feature::ExperimentalCustomizer.is_enabled()) {
+		this->parameterWidget->setEnabled(false);
+	}
+
 	resetSuppressedMessages();
 
 	this->last_compiled_doc = editor->toPlainText();
@@ -1759,6 +1763,7 @@ void MainWindow::compileTopLevelDocument(bool rebuildParameterWidget)
 			CommentParser::collectParameters(fulltext.c_str(),this->root_module);
 			this->parameterWidget->setParameters(this->root_module,rebuildParameterWidget);
 			this->parameterWidget->applyParameters(this->root_module);
+			this->parameterWidget->setEnabled(true);
 		}
 	}
 }
