@@ -1757,9 +1757,9 @@ void MainWindow::compileTopLevelDocument(bool rebuildParameterWidget)
 		if (this->root_module!=nullptr) {
 			//add parameters as annotation in AST
 			CommentParser::collectParameters(fulltext.c_str(),this->root_module);
+			this->parameterWidget->setParameters(this->root_module,rebuildParameterWidget);
+			this->parameterWidget->applyParameters(this->root_module);
 		}
-		this->parameterWidget->setParameters(this->root_module,rebuildParameterWidget);
-		this->parameterWidget->applyParameters(this->root_module);
 	}
 }
 
