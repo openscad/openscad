@@ -56,16 +56,20 @@ void ParameterVector::setValue()
 	this->pageVector->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 	this->stackedWidgetRight->hide();
 
+	Value::VectorType vec = object->value->toVector();
+
 	double minV = object->values->toRange().begin_value();
 	double step = object->values->toRange().step_value();
 	double maxV = object->values->toRange().end_value();
 	if(step==0){
 		step=1;
+		setPrecision(vec.at(0)->toDouble());
+	}else{
+		setPrecision(step);
 	}
 
 	QDoubleSpinBox* boxes[4] = {this->doubleSpinBox1,this->doubleSpinBox2,this->doubleSpinBox3,this->doubleSpinBox4};
-	Value::VectorType vec = object->value->toVector();
-	setPrecision(vec.at(0)->toDouble());
+
 	for(unsigned int i = 0; i < vec.size(); i++) {
 		boxes[i]->setDecimals(decimalPrecision);
 		boxes[i]->setValue(vec.at(i)->toDouble());
