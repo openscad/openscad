@@ -194,7 +194,7 @@ const std::string FileModule::getFullpath() const {
 	if(fs::path(this->filename).is_absolute()){
 		return this->filename;
 	}else if(!this->path.empty()){
-		return (this->path + "/" + this->filename);
+		return (fs::path(this->path) / fs::path(this->filename)).generic_string();
 	}else{
 		return "";
 	}
