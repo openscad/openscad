@@ -728,7 +728,8 @@ void evaluate_assert(const Context &context, const class EvalContext *evalctx, c
 		msg << "ERROR: Assertion";
 		const Expression *expr = assignments["condition"];
 		if (expr) msg << " '" << *expr << "'";
-		msg << " failed, line " << loc.firstLine();
+		msg << " failed in file \"" << loc.fileName() <<"\",";
+		msg << " line " << loc.firstLine();
 		const ValuePtr message = c.lookup_variable("message", true);
 		if (message->isDefined()) {
 			msg << ": " << message->toEchoString();
