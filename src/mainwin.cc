@@ -1773,7 +1773,6 @@ void MainWindow::changeParameterWidget()
 		hideParameters();
 		viewActionHideParameters->setVisible(false);
 	}
-	emit actionRenderPreview();
 }
 
 void MainWindow::checkAutoReload()
