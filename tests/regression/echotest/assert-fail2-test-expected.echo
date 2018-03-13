@@ -1,1 +1,1 @@
-ERROR: Assertion '((a < 20) && (b < 20))' failed, line 3: "Test! <html>&</html>"
+ERROR: Assertion '((a < 20) && (b < 20))' failed in file "assert-fail2-test.scad", line 3: "Test! <html>&</html>"
