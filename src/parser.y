@@ -151,13 +151,13 @@ std::shared_ptr<fs::path> parser_sourcefile;
 %%
 
 input:    /* empty */
-        | TOK_USE
+        | input
+          TOK_USE
             {
-              rootmodule->registerUse(std::string($1));
-              free($1);
+              rootmodule->registerUse(std::string($2));
+              free($2);
             }
-          input
-        | statement input
+        | input statement
         ;
 
 statement:
