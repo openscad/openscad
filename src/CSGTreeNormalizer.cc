@@ -1,3 +1,5 @@
+#include <stack>
+
 #include "CSGTreeNormalizer.h"
 #include "csgnode.h"
 #include "printutils.h"
@@ -28,10 +30,10 @@ shared_ptr<CSGNode> CSGTreeNormalizer::normalize(const shared_ptr<CSGNode> &root
 		if (!n) return n; // If normalized to nothing
 		if (temp == n) break;
 		temp = n;
-
+		
 		if (this->nodecount > this->limit) {
 			PRINTB("WARNING: Normalized tree is growing past %d elements. Aborting normalization.\n", this->limit);
-      // Clean up any partially evaluated nodes
+			// Clean up any partially evaluated nodes
 			shared_ptr<CSGNode> newroot = root, tmproot;
 			while (newroot && newroot != tmproot) {
 				tmproot = newroot;
@@ -79,42 +81,139 @@ static bool hasLeftUnion(shared_ptr<CSGNode> node) {
 shared_ptr<CSGNode> CSGTreeNormalizer::normalizePass(shared_ptr<CSGNode> node)
 {
 	// This function implements the CSG normalization
-  // Reference:
+	// Reference:
 	// Goldfeather, J., Molnar, S., Turk, G., and Fuchs, H. Near
 	// Realtime CSG Rendering Using Tree Normalization and Geometric
 	// Pruning. IEEE Computer Graphics and Applications, 9(3):20-28,
 	// 1989.
-  // http://www.cc.gatech.edu/~turk/my_papers/pxpl_csg.pdf
+	// http://www.cc.gatech.edu/~turk/my_papers/pxpl_csg.pdf
 
-	if (dynamic_pointer_cast<CSGLeaf>(node)) return node;
+	// Iterative tree traversal used to workaround stack limits for very large inputs.
+	// TODO reference issues #____ and #____
+
+	// Keep a stack of visited parent nodes for iterative traversal
+	std::stack<shared_ptr<CSGOperation>> parentstack;
+	shared_ptr<CSGNode> currentnode = node;
+	// keep a copy of child node (before changes) to check if the processed node was the left or right child
+	shared_ptr<CSGNode> unalterednode; 
+
+	bool done = false;
 	do {
-		while (node && match_and_replace(node)) {	}
-		this->nodecount++;
-		if (nodecount > this->limit) {
-			PRINTB("WARNING: Normalized tree is growing past %d elements. Aborting normalization.\n", this->limit);
-			this->aborted = true;
-			return shared_ptr<CSGNode>();
+		
+		// handle current node, iterate into left branch
+		while(currentnode && !dynamic_pointer_cast<CSGLeaf>(currentnode)) {
+			// FIXME need to store unaltered node before match_and_replace?
+			unalterednode = currentnode;
+			
+			while (currentnode && match_and_replace(currentnode)) { }
+
+			this->nodecount++;
+			if (this->nodecount > this->limit) {
+				PRINTB("WARNING: Normalized tree is growing past %d elements. Aborting normalization.\n", this->limit);
+				this->aborted = true;
+				currentnode = shared_ptr<CSGNode>();
+				break; // return currentnode
+			}
+
+			if (!currentnode || dynamic_pointer_cast<CSGLeaf>(currentnode)) {
+				break; // return currentnode
+			}
+
+			// update parent to point to new currentnode if changed
+			if (currentnode != unalterednode && !parentstack.empty()) {
+				shared_ptr<CSGOperation> parent = parentstack.top();
+				if (unalterednode == parent->left()) {
+					parent->left() = currentnode;
+				} else if (unalterednode == parent->right()) {
+					parent->right() = currentnode;
+				} else {
+					assert(false && "Processed a node that is not left or right child of parent? (1)");
+				}
+			}
+			
+
+			if (shared_ptr<CSGOperation> op = dynamic_pointer_cast<CSGOperation>(currentnode)) {
+				// handle left child next iteration
+				parentstack.push(op);
+				unalterednode = op->left();
+				currentnode = unalterednode;
+				continue; // iterate with new currentnode
+			}
+			
 		}
-		if (!node || dynamic_pointer_cast<CSGLeaf>(node)) return node;
-		if (shared_ptr<CSGOperation> op = dynamic_pointer_cast<CSGOperation>(node)) {
-			op->left() = normalizePass(op->left());
-		}
-	} while (!this->aborted && !isUnion(node) && (hasRightNonLeaf(node) || hasLeftUnion(node)));
+		
+		bool continuePopping;
+		// after handling individual node, overwrite as the child of its parent 
+		do {
+			continuePopping = false;
 
-	if (!this->aborted) {
-		shared_ptr<CSGOperation> op = dynamic_pointer_cast<CSGOperation>(node);
-		assert(op);
-		op->right() = normalizePass(op->right());
-	}
-
-	// FIXME: Do we need to take into account any transformation of item here?
-	shared_ptr<CSGNode> t = collapse_null_terms(node);
-
-	if (this->aborted) {
-		if (t) t = cleanup_term(t);
-	}
-
-	return t;
+			// check if currentnode is the child of a parent
+			if (parentstack.empty()) { 
+				// just normalized the root node
+				done = true;
+			} else {
+				
+				// currentnode has a parent
+				shared_ptr<CSGOperation> parent = parentstack.top();
+				// check if node is left or right child of its parent
+				if (unalterednode == parent->left()) {
+					
+					// left child was just normalized
+					parent->left() = currentnode;
+					
+					// problem with unalterednode not having its own stack?
+					// when does the node actually change? 
+					//		match_and_replace
+					//			can this affect the left/right child comparison?
+					//		here in the stack popping section
+					// can the parentstack represent strictly unaltered nodes?
+					
+					if (this->aborted) {
+						// abort, do not normalize right child, pop stack
+						unalterednode = parent;
+						currentnode = unalterednode;
+						parentstack.pop();
+						continuePopping = true;
+					} else {
+						if (!isUnion(parent) && (hasRightNonLeaf(parent) || hasLeftUnion(parent))) {
+							// iterate over parent node again, don't process right child yet
+							unalterednode = parent;
+							currentnode = unalterednode;
+							parentstack.pop();
+						} else {
+							// handle right child next iteration
+							unalterednode = parent->right();
+							currentnode = unalterednode;
+							// don't pop parent from stack yet
+						}
+					}
+					
+				} else if (unalterednode == parent->right()) {
+					// right child was just normalized
+					parent->right() = currentnode;
+					
+					//   make a copy of unaltered parent, then collapse null terms, and pop
+					unalterednode = parent;
+					currentnode = unalterednode;
+					
+					// FIXME: Do we need to take into account any transformation of item here?
+					currentnode = collapse_null_terms(currentnode);
+					
+					if (this->aborted && currentnode) {
+						currentnode = cleanup_term(currentnode);
+					}
+					
+					parentstack.pop();
+					continuePopping = true;
+				} else {
+					assert(false && "Processed a node that is not left or right child of parent? (2)");
+				}
+			}
+		} while (continuePopping);
+		
+	} while(!done);
+	
+	return currentnode;
 }
 
 shared_ptr<CSGNode> CSGTreeNormalizer::collapse_null_terms(const shared_ptr<CSGNode> &node)
