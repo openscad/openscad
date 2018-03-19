@@ -23,6 +23,8 @@ shared_ptr<CSGNode> CSGTreeNormalizer::normalize(const shared_ptr<CSGNode> &root
 {
 	this->aborted = false;
 	shared_ptr<CSGNode> temp = root;
+	// track how many passes resulted in changed tree
+	int passCount = 0;
 	while (1) {
 		this->rootnode = temp;
 		this->nodecount = 0;
@@ -30,19 +32,11 @@ shared_ptr<CSGNode> CSGTreeNormalizer::normalize(const shared_ptr<CSGNode> &root
 		if (!n) return n; // If normalized to nothing
 		if (temp == n) break;
 		temp = n;
-		
-		if (this->nodecount > this->limit) {
-			PRINTB("WARNING: Normalized tree is growing past %d elements. Aborting normalization.\n", this->limit);
-			// Clean up any partially evaluated nodes
-			shared_ptr<CSGNode> newroot = root, tmproot;
-			while (newroot && newroot != tmproot) {
-				tmproot = newroot;
-				newroot = collapse_null_terms(tmproot);
-			}
-			newroot = cleanup_term(newroot);
-			return newroot;
-		}
+		passCount++;
 	}
+	// assert to test if we really need to traverse the tree more than once
+	// I think it should never trigger.  If correct we should get rid of loop above to avoid extraneous normalizePass calls.
+	assert(passCount <= 1);
 	this->rootnode.reset();
 	return temp;
 }
@@ -134,7 +128,7 @@ shared_ptr<CSGNode> CSGTreeNormalizer::normalizePass(shared_ptr<CSGNode> node)
 
 			if (shared_ptr<CSGOperation> op = dynamic_pointer_cast<CSGOperation>(currentnode)) {
 				// handle left child next iteration
-				parentstack.push(op);
+				parentstack.emplace(op);
 				unalterednode = op->left();
 				currentnode = unalterednode;
 				continue; // iterate with new currentnode
