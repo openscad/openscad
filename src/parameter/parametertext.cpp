@@ -8,18 +8,13 @@ ParameterText::ParameterText(ParameterObject *parameterobject, int showDescripti
 	setName(QString::fromStdString(object->name));
 	setValue();
 
-	double max=0;
+	double max=32767;
 	if(object->values->type() == Value::ValueType::RANGE ){ // [min:max] and [min:step:max] format;
 		max = object->values->toRange().end_value();
 	}else if(object->values->toVector().size() == 1){ // [max] format from makerbot customizer
-		
 		max = std::stoi(object->values->toVector()[0]->toString(),nullptr,0);
 	}
-	if(max > 0){
-		lineEdit->setMaxLength(max);
-	}else{
-		lineEdit->setMaxLength(32767);
-	}
+	lineEdit->setMaxLength(max);
 
 	connect(lineEdit, SIGNAL(textChanged(QString)), this, SLOT(onChanged(QString)));
 	if (showDescription == 0 || showDescription == 3) {
