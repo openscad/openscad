@@ -9,9 +9,7 @@ ParameterText::ParameterText(ParameterObject *parameterobject, int showDescripti
 	setValue();
 
 	double max=32767;
-	if(object->values->type() == Value::ValueType::RANGE ){ // [min:max] and [min:step:max] format;
-		max = object->values->toRange().end_value();
-	}else if(object->values->toVector().size() == 1){ // [max] format from makerbot customizer
+	if(object->values->toVector().size() == 1){ // [max] format from makerbot customizer
 		max = std::stoi(object->values->toVector()[0]->toString(),nullptr,0);
 	}
 	lineEdit->setMaxLength(max);

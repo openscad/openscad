@@ -34,7 +34,7 @@ int ParameterObject::setValue(const class ValuePtr defaultValue, const class Val
     target = checkVectorWidget();
   } else if ((vt == Value::ValueType::RANGE || makerBotMax) && (dvt == Value::ValueType::NUMBER)) {
     target = SLIDER;
-  } else if ((vt == Value::ValueType::RANGE || makerBotMax) && (dvt == Value::ValueType::STRING)){
+  } else if ((makerBotMax) && (dvt == Value::ValueType::STRING)){
     target = TEXT;
   } else if ((vt == Value::ValueType::VECTOR) && ((dvt == Value::ValueType::NUMBER) || (dvt == Value::ValueType::STRING))) {
     target = COMBOBOX;
