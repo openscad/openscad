@@ -11,10 +11,15 @@ ParameterText::ParameterText(ParameterObject *parameterobject, int showDescripti
 	double max=0;
 	if(object->values->type() == Value::ValueType::RANGE ){ // [min:max] and [min:step:max] format;
 		max = object->values->toRange().end_value();
-	}else{ // [max] format from makerbot customizer
+	}else if(object->values->toVector().size() == 1){ // [max] format from makerbot customizer
+		
 		max = std::stoi(object->values->toVector()[0]->toString(),nullptr,0);
 	}
-	lineEdit->setMaxLength(max);
+	if(max > 0){
+		lineEdit->setMaxLength(max);
+	}else{
+		lineEdit->setMaxLength(32767);
+	}
 
 	connect(lineEdit, SIGNAL(textChanged(QString)), this, SLOT(onChanged(QString)));
 	if (showDescription == 0 || showDescription == 3) {
