@@ -182,8 +182,8 @@ AbstractNode *FileModule::instantiateWithFileContext(FileContext *ctx, const Mod
 		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 	}
 	catch (AssertionFailedException &e) {
-		auto docPath = boost::filesystem::path( ctx->documentPath() );
-		auto uncPath = boostfs_uncomplete((*(e.loc.filePath())), docPath);
+		auto docPath = boost::filesystem::path(ctx->documentPath());
+		auto uncPath = boostfs_uncomplete(e.loc.filePath(), docPath);
 
 		std::stringstream msg;
 		msg << e.what();
