@@ -1037,11 +1037,11 @@ msgstr "Öffnen von mehreren Dokumenten erlauben"
 
 #: objects/ui_Preferences.h:1180
 msgid "Enable docking of Editor and Console in different places"
-msgstr "Verschieben des Editor und Konsole Fensters erlauben"
+msgstr "Verschieben des Editor und Konsolen-Fensters erlauben"
 
 #: objects/ui_Preferences.h:1181
 msgid "Enable undocking of Editor and Console to separate windows"
-msgstr "Separate Editor und Konsole Fenster erlauben"
+msgstr "Separate Editor und Konsolen-Fenster erlauben"
 
 #: objects/ui_Preferences.h:1182
 msgid "Show Welcome Screen"
@@ -1093,12 +1093,12 @@ msgstr "Fehler beim Kompilieren von '%1'."
 #: src/mainwin.cc:1034
 msgid "Compilation generated %1 warning."
 msgid_plural "Compilation generated %1 warnings."
-msgstr[0] "%1 Warnung beim kompilieren."
-msgstr[1] "%1 Warnungen beim kompilieren."
+msgstr[0] "%1 Warnung beim Kompilieren."
+msgstr[1] "%1 Warnungen beim Kompilieren."
 
 #: src/mainwin.cc:1044
 msgid " For details see <a href=\"#console\">console window</a>."
-msgstr " Für Details das <a href=\"#console\">Konsole Fenster</a> öffnen."
+msgstr " Für Details das <a href=\"#console\">Konsolen-Fenster</a> öffnen."
 
 #: src/mainwin.cc:1416
 #, fuzzy
