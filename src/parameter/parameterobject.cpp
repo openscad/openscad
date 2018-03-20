@@ -4,13 +4,13 @@
 #include "modcontext.h"
 #include "annotation.h"
 
-ParameterObject::ParameterObject(Context *ctx, const Assignment *assignment, const ValuePtr defaultValue) : focus(false)
+ParameterObject::ParameterObject(Context *ctx, const Assignment &assignment, const ValuePtr defaultValue) : focus(false)
 {
-  this->name = assignment->name;
-  const Annotation *param = assignment->annotation("Parameter");
+  this->name = assignment.name;
+  const Annotation *param = assignment.annotation("Parameter");
   const ValuePtr values = param->evaluate(ctx);
   setValue(defaultValue, values);
-  const Annotation *desc = assignment->annotation("Description");
+  const Annotation *desc = assignment.annotation("Description");
 
   if (desc) {
     const ValuePtr v = desc->evaluate(ctx);
@@ -19,7 +19,7 @@ ParameterObject::ParameterObject(Context *ctx, const Assignment *assignment, con
     }
   }
   
-  const Annotation *group = assignment->annotation("Group");
+  const Annotation *group = assignment.annotation("Group");
   if (group) {
     const ValuePtr v = group->evaluate(ctx);
     if (v->type() == Value::ValueType::STRING) {
