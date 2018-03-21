@@ -185,11 +185,7 @@ AbstractNode *FileModule::instantiateWithFileContext(FileContext *ctx, const Mod
 		auto docPath = boost::filesystem::path(ctx->documentPath());
 		auto uncPath = boostfs_uncomplete(e.loc.filePath(), docPath);
 
-		std::stringstream msg;
-		msg << e.what();
-		msg << " failed in file " << uncPath.generic_string() <<",";
-		msg << " line " << e.loc.firstLine();
-		PRINT(msg.str());
+		PRINTB("%s failed in file %s, line %d", e.what() % uncPath.generic_string() % e.loc.firstLine());
 	}
 	catch (EvaluationException &e) {
 		PRINT(e.what());
