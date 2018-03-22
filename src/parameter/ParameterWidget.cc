@@ -73,7 +73,7 @@ void ParameterWidget::resetParameter()
 		QMessageBox msgBox;
 		msgBox.setWindowTitle(_("changes on current preset not saved"));
 		msgBox.setText(
-			QString(_("The current preset %1 contains changes, but is not saved yet. Do you really want to reset the preset and lose your changes?"))
+			QString(_("The changes on the current preset %1 are not saved yet. Do you really want to reset the preset and lose your changes?"))
 			.arg(comboBoxPreset->itemData(this->comboBoxPreset->currentIndex()).toString()));
 		msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
 		msgBox.setDefaultButton(QMessageBox::Cancel);
