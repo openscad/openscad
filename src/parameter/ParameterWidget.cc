@@ -476,6 +476,12 @@ void ParameterWidget::updateParameterSet(std::string setName)
 		if (this->comboBoxPreset->findData(s) == -1) {
 			this->comboBoxPreset->addItem(s, QVariant(s));
 			this->comboBoxPreset->setCurrentIndex(this->comboBoxPreset->findData(s));
+		}else{
+			//remove the change indicator
+			this->comboBoxPreset->setItemText(
+				this->comboBoxPreset->currentIndex(),
+				s
+			);
 		}
 		writeParameterSets();
 	}
