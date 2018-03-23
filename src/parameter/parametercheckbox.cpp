@@ -20,7 +20,7 @@ ParameterCheckBox::ParameterCheckBox(ParameterObject *parameterobject, int showD
 
 void ParameterCheckBox::onChanged()
 {
-	if(!suppressUpdate){
+	if(!this->suppressUpdate){
 		object->focus = true;
 		object->value = ValuePtr(checkBox->isChecked());
 		emit changed();
@@ -34,10 +34,10 @@ void ParameterCheckBox::setParameterFocus()
 }
 
 void ParameterCheckBox::setValue() {
-	suppressUpdate=true;
+	this->suppressUpdate=true;
 	this->stackedWidgetRight->setCurrentWidget(this->pageCheckBox);
 	this->pageCheckBox->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Expanding);
 	this->stackedWidgetBelow->hide();
 	this->checkBox->setChecked(object->value->toBool());
-	suppressUpdate=false;
+	this->suppressUpdate=false;
 }

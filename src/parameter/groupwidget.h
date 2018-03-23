@@ -12,7 +12,7 @@ private:
 	QGridLayout mainLayout;
 	QToolButton toggleButton;
 	QWidget contentArea;
-	bool *show;
+	bool *show; //pointer to the show flag in the group map
 
 public:
 	explicit GroupWidget(bool &show,const QString & title = "", QWidget *parent = nullptr);
