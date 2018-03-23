@@ -473,9 +473,9 @@ void ParameterWidget::updateParameterSet(std::string setName)
 		}
 		setMgr->addParameterSet(setName, iroot);
 		const QString s(QString::fromStdString(setName));
-		if (this->comboBoxPreset->findText(s) == -1) {
+		if (this->comboBoxPreset->findData(s) == -1) {
 			this->comboBoxPreset->addItem(s, QVariant(s));
-			this->comboBoxPreset->setCurrentIndex(this->comboBoxPreset->findText(s));
+			this->comboBoxPreset->setCurrentIndex(this->comboBoxPreset->findData(s));
 		}
 		writeParameterSets();
 	}
