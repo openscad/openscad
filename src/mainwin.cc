@@ -1740,6 +1740,10 @@ bool MainWindow::fileChangedOnDisk()
 */
 void MainWindow::compileTopLevelDocument(bool rebuildParameterWidget)
 {
+	if (Feature::ExperimentalCustomizer.is_enabled()) {
+		this->parameterWidget->setEnabled(false);
+	}
+
 	resetSuppressedMessages();
 
 	this->last_compiled_doc = editor->toPlainText();
@@ -1757,9 +1761,10 @@ void MainWindow::compileTopLevelDocument(bool rebuildParameterWidget)
 		if (this->root_module!=nullptr) {
 			//add parameters as annotation in AST
 			CommentParser::collectParameters(fulltext.c_str(),this->root_module);
+			this->parameterWidget->setParameters(this->root_module,rebuildParameterWidget);
+			this->parameterWidget->applyParameters(this->root_module);
+			this->parameterWidget->setEnabled(true);
 		}
-		this->parameterWidget->setParameters(this->root_module,rebuildParameterWidget);
-		this->parameterWidget->applyParameters(this->root_module);
 	}
 }
 
@@ -1773,7 +1778,6 @@ void MainWindow::changeParameterWidget()
 		hideParameters();
 		viewActionHideParameters->setVisible(false);
 	}
-	emit actionRenderPreview();
 }
 
 void MainWindow::checkAutoReload()

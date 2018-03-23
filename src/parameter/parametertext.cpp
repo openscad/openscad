@@ -6,6 +6,13 @@ ParameterText::ParameterText(QWidget *parent, ParameterObject *parameterobject, 
 	: ParameterVirtualWidget(parent, parameterobject, descriptionLoD)
 {
 	setValue();
+
+	double max=32767;
+	if(object->values->toVector().size() == 1){ // [max] format from makerbot customizer
+		max = std::stoi(object->values->toVector()[0]->toString(),nullptr,0);
+	}
+	lineEdit->setMaxLength(max);
+
 	connect(lineEdit, SIGNAL(textChanged(QString)), this, SLOT(onChanged(QString)));
 }
 

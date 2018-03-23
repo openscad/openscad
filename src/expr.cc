@@ -728,11 +728,10 @@ void evaluate_assert(const Context &context, const class EvalContext *evalctx, c
 		msg << "ERROR: Assertion";
 		const Expression *expr = assignments["condition"];
 		if (expr) msg << " '" << *expr << "'";
-		msg << " failed, line " << loc.firstLine();
 		const ValuePtr message = c.lookup_variable("message", true);
 		if (message->isDefined()) {
 			msg << ": " << message->toEchoString();
 		}
-		throw AssertionFailedException(msg.str());
+		throw AssertionFailedException(msg.str(),loc);
 	}
 }

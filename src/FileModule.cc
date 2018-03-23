@@ -32,9 +32,10 @@
 #include "modcontext.h"
 #include "parsersettings.h"
 #include "StatCache.h"
-
+#include "evalcontext.h"
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
+#include "boost-utils.h"
 namespace fs = boost::filesystem;
 #include "FontCache.h"
 #include <sys/stat.h>
@@ -180,6 +181,12 @@ AbstractNode *FileModule::instantiateWithFileContext(FileContext *ctx, const Mod
 		auto instantiatednodes = this->scope.instantiateChildren(ctx);
 		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 	}
+	catch (AssertionFailedException &e) {
+		auto docPath = boost::filesystem::path(ctx->documentPath());
+		auto uncPath = boostfs_uncomplete(e.loc.filePath(), docPath);
+
+		PRINTB("%s failed in file %s, line %d", e.what() % uncPath.generic_string() % e.loc.firstLine());
+	}
 	catch (EvaluationException &e) {
 		PRINT(e.what());
 	}
@@ -194,7 +201,7 @@ const std::string FileModule::getFullpath() const {
 	if(fs::path(this->filename).is_absolute()){
 		return this->filename;
 	}else if(!this->path.empty()){
-		return (fs::path(this->path) / fs::path(this->filename)).string();
+		return (fs::path(this->path) / fs::path(this->filename)).generic_string();
 	}else{
 		return "";
 	}
