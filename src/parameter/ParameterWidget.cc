@@ -73,7 +73,7 @@ void ParameterWidget::resetParameter()
 		QMessageBox msgBox;
 		msgBox.setWindowTitle(_("changes on current preset not saved"));
 		msgBox.setText(
-			QString(_("The changes on the current preset %1 are not saved yet. Do you really want to reset the preset and lose your changes?"))
+			QString(_("The changes on the current preset %1 are not saved yet. Do you really want to reset this preset and lose your changes?"))
 			.arg(comboBoxPreset->itemData(this->comboBoxPreset->currentIndex()).toString()));
 		msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
 		msgBox.setDefaultButton(QMessageBox::Cancel);
@@ -81,7 +81,18 @@ void ParameterWidget::resetParameter()
 			return;
 		}
 	}
-	this->entries.clear(); //clearing the entries forces a reset
+	this->valueChanged=false;
+
+	int currPreset = this->comboBoxPreset->currentIndex();
+
+	disconnect(comboBoxPreset, SIGNAL(currentIndexChanged(int)), this, SLOT(onSetChanged(int)));
+	this->comboBoxPreset->clear();
+	setComboBoxPresetForSet();
+	this->comboBoxPreset->setCurrentIndex(currPreset);
+	connect(comboBoxPreset, SIGNAL(currentIndexChanged(int)), this, SLOT(onSetChanged(int)));
+
+	const std::string v = comboBoxPreset->itemData(currPreset).toString().toUtf8().constData();
+	applyParameterSet(v);
 	emit previewRequested();
 }
 
@@ -216,11 +227,19 @@ void ParameterWidget::onSetChanged(int idx)
 		msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
 		msgBox.setDefaultButton(QMessageBox::Cancel);
 		if (msgBox.exec() == QMessageBox::Cancel) {
-			//becareful to not cause a recursion
+			//be careful to not cause a recursion
 			comboBoxPreset->setCurrentIndex(lastComboboxIndex);
 			return;
 		}
 	}
+	this->valueChanged=false;
+	
+	//rebuild the combobox so set the change indicator "*" does not hang around
+	disconnect(comboBoxPreset, SIGNAL(currentIndexChanged(int)), this, SLOT(onSetChanged(int)));
+	this->comboBoxPreset->clear();
+	setComboBoxPresetForSet();
+	this->comboBoxPreset->setCurrentIndex(idx);
+	connect(comboBoxPreset, SIGNAL(currentIndexChanged(int)), this, SLOT(onSetChanged(int)));
 
 	//apply the change
 	lastComboboxIndex = idx;
@@ -243,12 +262,12 @@ void ParameterWidget::onValueChanged()
 			this->comboBoxPreset->currentText() +" *"
 		);
 	}
+	this->valueChanged=true;
 
 	autoPreviewTimer.stop();
 	if (checkBoxAutoPreview->isChecked()) {
 		autoPreviewTimer.start();
 	}
-	this->valueChanged=true;
 }
 
 void ParameterWidget::onPreviewTimerElapsed()
@@ -446,6 +465,8 @@ void ParameterWidget::updateParameterSet(std::string setName)
 	}
 
 	if (!setName.empty()) {
+		this->valueChanged=false;
+
 		pt::ptree iroot;
 		for (entry_map_t::iterator it = entries.begin(); it != entries.end(); it++) {
 			iroot.put(it->first,it->second->value->toString());
