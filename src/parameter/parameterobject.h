@@ -28,7 +28,7 @@ private:
 	void setValue(const ValuePtr defaultValue, const ValuePtr values);
 
 public:
-	ParameterObject(Context *context, const Assignment *assignment, const ValuePtr defaultValue);
+	ParameterObject(Context *context, const Assignment &assignment, const ValuePtr defaultValue);
 	void applyParameter(Assignment &assignment);
 	bool operator==(const ParameterObject &second);
 };
