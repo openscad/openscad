@@ -28,6 +28,8 @@
 #include "Geometry.h"
 #include "linalg.h"
 #include <sstream>
+#include <stack>
+#include <tuple>
 #include <boost/range/iterator_range.hpp>
 
 /*!
@@ -172,24 +174,35 @@ std::string CSGOperation::dump()
 
 void CSGProducts::import(shared_ptr<CSGNode> csgnode, OpenSCADOperator type, CSGNode::Flag flags)
 {
-	auto newflags = static_cast<CSGNode::Flag>(csgnode->getFlags() | flags);
+	std::stack<std::tuple<shared_ptr<CSGNode>, OpenSCADOperator, CSGNode::Flag>> callstack;
+	callstack.push(std::make_tuple(csgnode, type, flags));
 
-	if (auto leaf = dynamic_pointer_cast<CSGLeaf>(csgnode)) {
-		if (type == OpenSCADOperator::UNION && this->currentproduct->intersections.size() > 0) {
-			this->createProduct();
+	do {
+		auto args = callstack.top();
+		callstack.pop();
+		csgnode = std::get<0>(args); 
+		type = std::get<1>(args); 
+		flags = std::get<2>(args);
+			
+		auto newflags = static_cast<CSGNode::Flag>(csgnode->getFlags() | flags);
+
+		if (auto leaf = dynamic_pointer_cast<CSGLeaf>(csgnode)) {
+			if (type == OpenSCADOperator::UNION && this->currentproduct->intersections.size() > 0) {
+				this->createProduct();
+			}
+			else if (type == OpenSCADOperator::DIFFERENCE) {
+				this->currentlist = &this->currentproduct->subtractions;
+			}
+			else if (type == OpenSCADOperator::INTERSECTION) {
+				this->currentlist = &this->currentproduct->intersections;
+			}
+			this->currentlist->push_back(CSGChainObject(leaf, newflags));
+		} else if (auto op = dynamic_pointer_cast<CSGOperation>(csgnode)) {
+			assert(op->left() && op->right());
+			callstack.emplace(op->right(), op->getType(), newflags);
+			callstack.emplace(op->left(), type, newflags);
 		}
-		else if (type == OpenSCADOperator::DIFFERENCE) {
-			this->currentlist = &this->currentproduct->subtractions;
-		}
-		else if (type == OpenSCADOperator::INTERSECTION) {
-			this->currentlist = &this->currentproduct->intersections;
-		}
-		this->currentlist->push_back(CSGChainObject(leaf, newflags));
-	} else if (auto op = dynamic_pointer_cast<CSGOperation>(csgnode)) {
-		assert(op->left() && op->right());
-		import(op->left(), type, newflags);
-		import(op->right(), op->getType(), newflags);
-	}
+	} while(!callstack.empty());
 }
 
 std::string CSGProduct::dump() const
