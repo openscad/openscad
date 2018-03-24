@@ -22,21 +22,9 @@ static bool validate_tree(const shared_ptr<CSGNode> &node)
 shared_ptr<CSGNode> CSGTreeNormalizer::normalize(const shared_ptr<CSGNode> &root)
 {
 	this->aborted = false;
+	this->nodecount = 0;
 	shared_ptr<CSGNode> temp = root;
-	// track how many passes resulted in changed tree
-	int passCount = 0;
-	while (1) {
-		this->rootnode = temp;
-		this->nodecount = 0;
-		shared_ptr<CSGNode> n = normalizePass(temp);
-		if (!n) return n; // If normalized to nothing
-		if (temp == n) break;
-		temp = n;
-		passCount++;
-	}
-	// assert to test if we really need to traverse the tree more than once
-	// I think it should never trigger.  If correct we should get rid of loop above to avoid extraneous normalizePass calls.
-	assert(passCount <= 1);
+	temp = normalizePass(temp);
 	this->rootnode.reset();
 	return temp;
 }
