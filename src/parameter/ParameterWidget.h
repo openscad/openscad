@@ -57,6 +57,7 @@ private:
 	void rebuildGroupMap();
 	ParameterVirtualWidget* CreateParameterWidget(std::string parameterName);
 	void setComboBoxPresetForSet();
+	void removeChangeIndicator(int idx);
 
 	void setFile(QString File);
 

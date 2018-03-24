@@ -234,12 +234,7 @@ void ParameterWidget::onSetChanged(int idx)
 	}
 	this->valueChanged=false;
 	
-	//rebuild the combobox so set the change indicator "*" does not hang around
-	disconnect(comboBoxPreset, SIGNAL(currentIndexChanged(int)), this, SLOT(onSetChanged(int)));
-	this->comboBoxPreset->clear();
-	setComboBoxPresetForSet();
-	this->comboBoxPreset->setCurrentIndex(idx);
-	connect(comboBoxPreset, SIGNAL(currentIndexChanged(int)), this, SLOT(onSetChanged(int)));
+	removeChangeIndicator(lastComboboxIndex);
 
 	//apply the change
 	lastComboboxIndex = idx;
@@ -473,15 +468,12 @@ void ParameterWidget::updateParameterSet(std::string setName)
 		}
 		setMgr->addParameterSet(setName, iroot);
 		const QString s(QString::fromStdString(setName));
-		if (this->comboBoxPreset->findData(s) == -1) {
+		const int idx = this->comboBoxPreset->findData(s);
+		if (idx == -1) {
 			this->comboBoxPreset->addItem(s, QVariant(s));
 			this->comboBoxPreset->setCurrentIndex(this->comboBoxPreset->findData(s));
 		}else{
-			//remove the change indicator
-			this->comboBoxPreset->setItemText(
-				this->comboBoxPreset->currentIndex(),
-				s
-			);
+			removeChangeIndicator(idx);
 		}
 		writeParameterSets();
 	}
@@ -502,4 +494,12 @@ void ParameterWidget::writeParameterSets()
 	}
 	setMgr->writeParameterSet(this->jsonFile);
 	this->valueChanged=false;
+}
+
+void ParameterWidget::removeChangeIndicator(int idx)
+{
+	this->comboBoxPreset->setItemText(
+		idx,
+		comboBoxPreset->itemData(idx).toString()
+	);
 }
