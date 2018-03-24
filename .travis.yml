@@ -36,6 +36,7 @@ before_install:
 branches:
   only:
     - master
+    - coverity_scan
 
 before_script:
  - echo -e "Host files.openscad.org\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
