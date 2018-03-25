@@ -85,11 +85,7 @@ void ParameterWidget::resetParameter()
 
 	int currPreset = this->comboBoxPreset->currentIndex();
 
-	disconnect(comboBoxPreset, SIGNAL(currentIndexChanged(int)), this, SLOT(onSetChanged(int)));
-	this->comboBoxPreset->clear();
-	setComboBoxPresetForSet();
-	this->comboBoxPreset->setCurrentIndex(currPreset);
-	connect(comboBoxPreset, SIGNAL(currentIndexChanged(int)), this, SLOT(onSetChanged(int)));
+	removeChangeIndicator(currPreset);
 
 	const std::string v = comboBoxPreset->itemData(currPreset).toString().toUtf8().constData();
 	applyParameterSet(v);
