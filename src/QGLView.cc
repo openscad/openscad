@@ -176,6 +176,9 @@ void QGLView::resizeGL(int w, int h)
 
 void QGLView::paintGL()
 {
+  this->frameCount++;
+  PRINTDB("paintGL frame #%d", frameCount);
+
   GLView::paintGL();
 
   if (statusLabel) {

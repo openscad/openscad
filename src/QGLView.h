@@ -75,6 +75,7 @@ private:
 	void init();
 
 	bool mouse_drag_active;
+	uint frameCount = 0;
 	QPoint last_mouse;
 	QImage frame; // Used by grabFrame() and save()
 
