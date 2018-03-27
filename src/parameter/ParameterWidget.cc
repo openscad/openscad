@@ -406,9 +406,11 @@ void ParameterWidget::updateParameterSet(std::string setName)
 	if (!setName.empty()) {
 		pt::ptree iroot;
 		for (entry_map_t::iterator it = entries.begin(); it != entries.end(); it++) {
-			std::string groupName=entries[it->first]->groupName;
+			std::string VariableName = it->first;
+			std::string VariableValue = it->second->value->toString();
+			std::string groupName = entries[VariableName]->groupName;
 			if (groupName != "Hidden") {
-				iroot.put(it->first,it->second->value->toString());
+				iroot.put(VariableName, VariableValue);
 			}
 		}
 		setMgr->addParameterSet(setName, iroot);
