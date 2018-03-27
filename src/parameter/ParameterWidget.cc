@@ -408,7 +408,7 @@ void ParameterWidget::updateParameterSet(std::string setName)
 		for (entry_map_t::iterator it = entries.begin(); it != entries.end(); it++) {
 			std::string VariableName = it->first;
 			std::string VariableValue = it->second->value->toString();
-			std::string groupName = entries[VariableName]->groupName;
+			std::string groupName = it->second->groupName;
 			if (groupName != "Hidden") {
 				iroot.put(VariableName, VariableValue);
 			}
