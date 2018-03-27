@@ -207,6 +207,7 @@ void ParameterWidget::onValueChanged()
 	if (checkBoxAutoPreview->isChecked()) {
 		autoPreviewTimer.start();
 	}
+	applyCondition();
 }
 
 void ParameterWidget::onPreviewTimerElapsed()
@@ -300,6 +301,8 @@ void ParameterWidget::rebuildGroupMap(){
 	groupPos.clear();
 	for (unsigned int it=0; it<ParameterPos.size(); it++) {
 		std::string groupName=entries[ParameterPos[it]]->groupName;
+		std::string condition=entries[ParameterPos[it]]->condition;
+		groupCondition[groupName]=condition;
 		if (groupMap.find(groupName) == groupMap.end()) {
 			groupPos.push_back(groupName);
 			groupInst enter;
@@ -386,6 +389,7 @@ void ParameterWidget::applyParameterSet(std::string setName)
 			}
 		}
 	}
+	applyCondition();
 }
 
 void ParameterWidget::updateParameterSet(std::string setName)
@@ -432,4 +436,21 @@ void ParameterWidget::writeParameterSets()
 		}
 	}
 	setMgr->writeParameterSet(this->jsonFile);
+}
+
+void ParameterWidget::applyCondition(){
+	std::printf("Apply\n");
+	for (group_Condition::iterator it = groupCondition.begin(); it != groupCondition.end(); ) {
+		std::string condition = it->second;
+		GroupWidget* groupWidget = this->findChild<GroupWidget*>(QString(("GroupWidget"+it->first).c_str()));
+		std::cout << it->first << " ";
+		std::cout << condition.c_str();
+		std::cout << "\n";
+		if(condition!="" && entries[condition] && !entries[condition]->value->toBool()){
+			groupWidget->setVisible(false);
+		}else{
+			groupWidget->setVisible(true);
+		}
+		it++;
+	}
 }

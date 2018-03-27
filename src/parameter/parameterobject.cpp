@@ -23,10 +23,20 @@ ParameterObject::ParameterObject(Context *ctx, const Assignment &assignment, con
   if (group) {
     const ValuePtr v = group->evaluate(ctx);
     if (v->type() == Value::ValueType::STRING) {
-      groupName=v->toString();
+      this->groupName=v->toString();
     }
   } else {
-    groupName="Parameters";
+    this->groupName="Parameters";
+  }
+
+  const Annotation *group2 = assignment.annotation("GroupCondition");
+  if (group) {
+    const ValuePtr v = group2->evaluate(ctx);
+    if (v->type() == Value::ValueType::STRING) {
+      this->condition=v->toString();
+    }
+  } else {
+    this->condition="";
   }
 }
 

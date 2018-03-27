@@ -11,6 +11,7 @@
 
 struct GroupInfo {
 	std::string commentString;
+	std::string expr;
 	int lineNo;
 };
 
@@ -179,8 +180,18 @@ static GroupInfo createGroup(std::string comment,int lineNo)
 		comment = match.suffix();
 	}
 
+	std::string expr;
+	boost::regex regex2("show_if\\((.*?)\\)");
+	//while(
+	boost::regex_search(comment, match, regex2);
+	//) {
+		expr = match[1].str();
+		std::cout << expr << "\n";
+	//}
+
 	groupInfo.commentString = finalGroupName;
 	groupInfo.lineNo = lineNo;
+	groupInfo.expr = expr;
 	return groupInfo;
 }
 
@@ -303,8 +314,10 @@ void CommentParser::collectParameters(const char *fulltext, FileModule *root_mod
 		for (const auto &groupInfo :boost::adaptors::reverse(groupList)){
 			if (groupInfo.lineNo < firstLine) {
 				//creating node for description
-				shared_ptr<Expression> expr(new Literal(ValuePtr(groupInfo.commentString)));
-				annotationList->push_back(Annotation("Group", expr));
+				shared_ptr<Expression> commentStr(new Literal(ValuePtr(groupInfo.commentString)));
+				annotationList->push_back(Annotation("Group", commentStr));
+				shared_ptr<Expression> expr(new Literal(ValuePtr(groupInfo.expr)));
+				annotationList->push_back(Annotation("GroupCondition", expr));
 				break;
 			}
 		}
