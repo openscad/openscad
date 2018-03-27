@@ -15,6 +15,8 @@
 #include "GLView.h"
 #include "renderer.h"
 
+#define MAX_FPS 60
+
 class QGLView :
 #ifdef USE_QOPENGLWIDGET
 		public QOpenGLWidget,
@@ -65,6 +67,7 @@ public slots:
 #ifdef USE_QOPENGLWIDGET
 	inline void updateGL() { update(); }
 #endif
+	void renderFrame();
 
 public:
 	QLabel *statusLabel;
@@ -75,9 +78,11 @@ private:
 	void init();
 
 	bool mouse_drag_active;
-	uint frameCount = 0;
+	uint requestedFrame = 0;
+	uint currentFrame = 0;
 	QPoint last_mouse;
 	QImage frame; // Used by grabFrame() and save()
+	QTimer *frameTimer;
 
 	void wheelEvent(QWheelEvent *event) override;
 	void mousePressEvent(QMouseEvent *event) override;
