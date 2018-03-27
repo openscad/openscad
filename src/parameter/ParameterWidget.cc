@@ -439,18 +439,14 @@ void ParameterWidget::writeParameterSets()
 }
 
 void ParameterWidget::applyCondition(){
-	std::printf("Apply\n");
-	for (group_Condition::iterator it = groupCondition.begin(); it != groupCondition.end(); ) {
-		std::string condition = it->second;
-		GroupWidget* groupWidget = this->findChild<GroupWidget*>(QString(("GroupWidget"+it->first).c_str()));
-		std::cout << it->first << " ";
-		std::cout << condition.c_str();
-		std::cout << "\n";
+	for (const auto &it : groupCondition) {
+		std::string condition = it.second;
+		GroupWidget* groupWidget = this->findChild<GroupWidget*>(QString(("GroupWidget"+it.first).c_str()));
+
 		if(condition!="" && entries[condition] && !entries[condition]->value->toBool()){
 			groupWidget->setVisible(false);
 		}else{
 			groupWidget->setVisible(true);
 		}
-		it++;
 	}
 }

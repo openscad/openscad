@@ -182,12 +182,8 @@ static GroupInfo createGroup(std::string comment,int lineNo)
 
 	std::string expr;
 	boost::regex regex2("show_if\\((.*?)\\)");
-	//while(
 	boost::regex_search(comment, match, regex2);
-	//) {
-		expr = match[1].str();
-		std::cout << expr << "\n";
-	//}
+	expr = match[1].str();
 
 	groupInfo.commentString = finalGroupName;
 	groupInfo.lineNo = lineNo;
