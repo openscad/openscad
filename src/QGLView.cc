@@ -187,7 +187,7 @@ void QGLView::paintGL()
   PRINTDB("Requested frame #%d", this->requestedFrame);
 }
 
-// do actual rendering, called from renderThread
+// do actual rendering, invoked by frameTimer
 void QGLView::renderFrame()
 {
 	if (this->requestedFrame > this->currentFrame) {
