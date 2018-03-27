@@ -405,11 +405,10 @@ void ParameterWidget::updateParameterSet(std::string setName)
 
 	if (!setName.empty()) {
 		pt::ptree iroot;
-		for (entry_map_t::iterator it = entries.begin(); it != entries.end(); it++) {
-			std::string VariableName = it->first;
-			std::string VariableValue = it->second->value->toString();
-			std::string groupName = it->second->groupName;
-			if (groupName != "Hidden") {
+		for (const auto &entry : entries) {
+			if (entry.second->groupName != "Hidden") {
+				const auto &VariableName = entry.first;
+				const auto &VariableValue = entry.second->value->toString();
 				iroot.put(VariableName, VariableValue);
 			}
 		}
