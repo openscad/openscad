@@ -167,9 +167,9 @@ static GroupInfo createGroup(std::string comment,int lineNo)
 	GroupInfo groupInfo;
 	std::string finalGroupName;
 
-	boost::regex regex("\\[(.*?)\\]");
+	boost::regex regexName("\\[(.*?)\\]");
 	boost::match_results<std::string::const_iterator>  match;
-	while(boost::regex_search(comment, match, regex)) {
+	while(boost::regex_search(comment, match, regexName)) {
 		std::string groupName = match[1].str();
 		if (finalGroupName.empty()) {
 			finalGroupName = groupName;
@@ -181,8 +181,8 @@ static GroupInfo createGroup(std::string comment,int lineNo)
 	}
 
 	std::string expr;
-	boost::regex regex2("show_if\\((.*?)\\)");
-	boost::regex_search(comment, match, regex2);
+	boost::regex regexShowIf("show_if\\((.*?)\\)");
+	boost::regex_search(comment, match, regexShowIf);
 	expr = match[1].str();
 
 	groupInfo.commentString = finalGroupName;
