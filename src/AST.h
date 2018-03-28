@@ -2,6 +2,7 @@
 
 #include <string>
 #include <memory.h>
+#include <annotation.h>
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
@@ -22,7 +23,6 @@ public:
 	int firstColumn() const { return first_col; }
 	int lastLine() const { return last_line; }
 	int lastColumn() const { return last_col; }
-
 
 	static const Location NONE;
 private:
@@ -45,8 +45,13 @@ public:
 	const Location &location() const { return loc; }
 	void setLocation(const Location &loc) { this->loc = loc; }
 
+	virtual void addAnnotations(AnnotationList *annotations);
+	virtual bool hasAnnotations() const;
+	virtual const Annotation *annotation(const std::string &name) const;
+
 protected:
 	Location loc;
+	AnnotationMap annotations;
 };
 
 std::ostream &operator<<(std::ostream &stream, const ASTNode &ast);

@@ -29,25 +29,6 @@
 #include "expression.h"
 #include <sstream>
 
-void Assignment::addAnnotations(AnnotationList *annotations)
-{
-	for (auto &annotation : *annotations) {
-		this->annotations.insert({annotation.getName(), &annotation});
-	}
-}
-
-bool Assignment::hasAnnotations() const
-{
-	return !annotations.empty();
-}
-
-const Annotation * Assignment::annotation(const std::string &name) const
-{
-	auto found = annotations.find(name);
-	return found == annotations.end() ? nullptr : found->second;
-}
-
-
 void Assignment::print(std::ostream &stream, const std::string &indent) const
 {
 	if (this->hasAnnotations()) {
