@@ -405,8 +405,12 @@ void ParameterWidget::updateParameterSet(std::string setName)
 
 	if (!setName.empty()) {
 		pt::ptree iroot;
-		for (entry_map_t::iterator it = entries.begin(); it != entries.end(); it++) {
-			iroot.put(it->first,it->second->value->toString());
+		for (const auto &entry : entries) {
+			if (entry.second->groupName != "Hidden") {
+				const auto &VariableName = entry.first;
+				const auto &VariableValue = entry.second->value->toString();
+				iroot.put(VariableName, VariableValue);
+			}
 		}
 		setMgr->addParameterSet(setName, iroot);
 		const QString s(QString::fromStdString(setName));
