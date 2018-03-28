@@ -58,6 +58,7 @@ QGLView::QGLView(QWidget *parent) :
 	QGLWidget(parent)
 #endif
 {
+  installEventFilter(this);
   init();
 }
 
@@ -71,7 +72,9 @@ void QGLView::init()
 
   this->mouse_drag_active = false;
   this->statusLabel = nullptr;
+
   setMouseTracking(true);
+
   #ifdef USE_QOPENGLWIDGET
     setUpdateBehavior(QOpenGLWidget::PartialUpdate);
   #endif
@@ -108,10 +111,6 @@ void QGLView::initializeGL()
     fprintf(stderr, "GLEW Error: %s\n", glewGetErrorString(err));
   }
   GLView::initializeGL();
-
-  frameTimer = new QTimer(this);
-  QObject::connect(frameTimer, SIGNAL(timeout()), this, SLOT(renderFrame()));
-  frameTimer->start(1000 / MAX_FPS);
 }
 
 std::string QGLView::getRendererInfo() const
@@ -179,44 +178,48 @@ void QGLView::resizeGL(int w, int h)
   GLView::resizeGL(w,h);
 }
 
-// This may get called faster than we can paint frames so do minimal work here,
-// and let render thread handle painting.
 void QGLView::paintGL()
 {
-  this->requestedFrame++;
-  PRINTDB("Requested frame #%d", this->requestedFrame);
+	this->currentFrame = this->requestedFrame;
+	PRINTDB("Painting frame #%d", this->currentFrame);
+
+	GLView::paintGL();
+
+	if (statusLabel) {
+		Camera nc(cam);
+		nc.gimbalDefaultTranslate();
+			auto status = QString("%1 (%2x%3)")
+				.arg(QString::fromStdString(nc.statusText()))
+				.arg(size().rwidth())
+				.arg(size().rheight());
+		statusLabel->setText(status);
+	}
+
+#if defined(_WIN32) && !defined(USE_QOPENGLWIDGET)
+	if (running_under_wine) swapBuffers();
+#endif
+}
+
+
+bool QGLView::eventFilter(QObject *obj, QEvent *event)
+{
+	if (event->type() == QEvent::Paint) {
+		this->requestedFrame++;
+		PRINTDB("Requested frame #%d", this->requestedFrame);
+		if (this->requestedFrame - this->currentFrame > 1) {
+			PRINTDB("Frame DROPPED", NULL);
+			return true; // cancel redundant call
+		} else {
+			return QObject::eventFilter(obj, event);
+		}
+	}
+	return QObject::eventFilter(obj, event);
 }
 
 // do actual rendering, invoked by frameTimer
-void QGLView::renderFrame()
-{
-	if (this->requestedFrame > this->currentFrame) {
-		this->currentFrame = this->requestedFrame;
-		PRINTDB("Painting frame #%d", this->currentFrame);
-
-		// need to call this since no longer invoked via paintGL calls
-		makeCurrent();
-		
-		GLView::paintGL();
-
-		if (statusLabel) {
-			Camera nc(cam);
-			nc.gimbalDefaultTranslate();
-				auto status = QString("%1 (%2x%3)")
-					.arg(QString::fromStdString(nc.statusText()))
-					.arg(size().rwidth())
-					.arg(size().rheight());
-			statusLabel->setText(status);
-		}
-
-#if defined(_WIN32) && !defined(USE_QOPENGLWIDGET)
-		if (running_under_wine) swapBuffers();
-#endif
-
-		// need to call this since no longer invoked via paintGL calls
-		doneCurrent();
-	}
-}
+//void QGLView::renderFrame()
+//{
+//}
 
 void QGLView::mousePressEvent(QMouseEvent *event)
 {
