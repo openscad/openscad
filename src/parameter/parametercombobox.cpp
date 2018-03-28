@@ -62,13 +62,13 @@ void ParameterComboBox::setValue()
 			data = QString::fromStdString((*it).toVector()[0]->toString());
 		} else {
 			text = QString::fromStdString((*it).toString());
-			data = QString::fromStdString((*it).toString());
+			data = text;
 			
 		}
 		comboBox->addItem(text, QVariant(data));
 	}
-	QString defaultText = QString::fromStdString(object->value->toString());
-	int idx = comboBox->findData(QVariant(defaultText));
+	QString defaultData = QString::fromStdString(object->value->toString());
+	int idx = comboBox->findData(QVariant(defaultData));
 	if (idx >= 0) {
 		comboBox->setCurrentIndex(idx);
 	}
