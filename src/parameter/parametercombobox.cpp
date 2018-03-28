@@ -56,15 +56,16 @@ void ParameterComboBox::setValue()
 	comboBox->clear();
 	const Value::VectorType& vec = object->values->toVector();
 	for (const auto &it : vec) {
+		QString text, data;
 		if ((*it).toVector().size() > 1) {
-			comboBox->addItem(QString::fromStdString((*it).toVector()[1]->toString()),
-												QVariant(QString::fromStdString((*it).toVector()[0]->toString())));
-		}
-		else {
-			comboBox->addItem(QString::fromStdString((*it).toString()),
-												QVariant(QString::fromStdString((*it).toString())));
+			text = QString::fromStdString((*it).toVector()[1]->toString());
+			data = QString::fromStdString((*it).toVector()[0]->toString());
+		} else {
+			text = QString::fromStdString((*it).toString());
+			data = QString::fromStdString((*it).toString());
 			
 		}
+		comboBox->addItem(text, QVariant(data));
 	}
 	QString defaultText = QString::fromStdString(object->value->toString());
 	int idx = comboBox->findData(QVariant(defaultText));
