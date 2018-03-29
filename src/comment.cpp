@@ -320,7 +320,6 @@ void CommentParser::collectParameters(const char *fulltext, FileModule *root_mod
 
 	shared_ptr<Vector> Vector1 ( new Vector(Location::NONE));
 	for (const auto &groupInfo :groupList){
-		//AnnotationList *annotationList = new AnnotationList();
 		if(groupInfo.expr != ""){
 			auto* Vec = new Vector(Location::NONE);
 			auto* commentStr=(new Literal(ValuePtr(groupInfo.commentString)));
@@ -335,5 +334,4 @@ void CommentParser::collectParameters(const char *fulltext, FileModule *root_mod
 	AnnotationList *annotationList = new AnnotationList();
 	annotationList->push_back(Annotation("Groups", Vector1));
 	root_module->addAnnotations(annotationList);
-std::printf("attached group annotation\n");
 }
