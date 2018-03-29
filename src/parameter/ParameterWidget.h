@@ -44,7 +44,7 @@ private:
 	std::vector<std::string> groupPos;
 	typedef std::map<std::string,groupInst > group_map;
 	group_map groupMap;
-	typedef std::map<std::string,std::string > group_Condition;
+
 	group_Condition groupCondition;
 	QTimer autoPreviewTimer;
 	int descriptionLoD; //configuration if and how much of the description is shown

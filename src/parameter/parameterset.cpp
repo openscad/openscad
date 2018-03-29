@@ -60,6 +60,7 @@ void ParameterSet::addParameterSet(const std::string setName, const pt::ptree & 
 */
 bool ParameterSet::readParameterSet(const std::string &filename)
 {
+std::printf("readParameterSet\n");
 	try {
 		pt::read_json(filename, this->root);
 		return true;

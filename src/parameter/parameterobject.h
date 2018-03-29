@@ -20,7 +20,7 @@ public:
 	std::string name;
 	bool set;
 	std::string groupName;
-	std::string condition;
+	//std::string condition;
 	bool focus;
 
 private:

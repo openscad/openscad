@@ -165,7 +165,7 @@ void ParameterWidget::writeFileIfNotEmpty(QString scadFile)
 
 void ParameterWidget::setParameters(const FileModule* module,bool rebuildParameterWidget)
 {
-	this->extractor->setParameters(module,this->entries,ParameterPos,rebuildParameterWidget);
+	this->extractor->setParameters(module,this->entries,this->groupCondition,ParameterPos,rebuildParameterWidget);
 	if(rebuildParameterWidget){
 		connectWidget();
 	}else{
@@ -301,8 +301,6 @@ void ParameterWidget::rebuildGroupMap(){
 	groupPos.clear();
 	for (unsigned int it=0; it<ParameterPos.size(); it++) {
 		std::string groupName=entries[ParameterPos[it]]->groupName;
-		std::string condition=entries[ParameterPos[it]]->condition;
-		groupCondition[groupName]=condition;
 		if (groupMap.find(groupName) == groupMap.end()) {
 			groupPos.push_back(groupName);
 			groupInst enter;
@@ -319,6 +317,8 @@ void ParameterWidget::rebuildGroupMap(){
 			groupMap[groupName].parameterVector.push_back(ParameterPos[it]);
 		}
 	}
+//		std::string condition=entries[ParameterPos[it]]->condition;
+//		groupCondition[groupName]=condition;
 }
 
 ParameterVirtualWidget* ParameterWidget::CreateParameterWidget(std::string parameterName)
@@ -365,6 +365,7 @@ ParameterVirtualWidget* ParameterWidget::CreateParameterWidget(std::string param
 
 void ParameterWidget::applyParameterSet(std::string setName)
 {
+  std::printf("applyParameterSet\n");
 	boost::optional<pt::ptree &> set = setMgr->getParameterSet(setName);
 	if (!set.is_initialized()) {
 		return;

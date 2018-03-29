@@ -306,17 +306,35 @@ void CommentParser::collectParameters(const char *fulltext, FileModule *root_mod
 			annotationList->push_back(Annotation("Description", expr));
 		}
 
-		// Look for the group to which the given assignment belong
+		// Look for the group to which the given assignment belongs
 		for (const auto &groupInfo :boost::adaptors::reverse(groupList)){
 			if (groupInfo.lineNo < firstLine) {
 				//creating node for description
 				shared_ptr<Expression> commentStr(new Literal(ValuePtr(groupInfo.commentString)));
 				annotationList->push_back(Annotation("Group", commentStr));
-				shared_ptr<Expression> expr(new Literal(ValuePtr(groupInfo.expr)));
-				annotationList->push_back(Annotation("GroupCondition", expr));
 				break;
 			}
 		}
 		assignment.addAnnotations(annotationList);
 	}
+std::setbuf(stdout, NULL);
+std::printf("building the group annotation\n");
+	shared_ptr<Vector> Vector1 ( new Vector(Location::NONE));
+	for (const auto &groupInfo :groupList){
+		//AnnotationList *annotationList = new AnnotationList();
+		if(groupInfo.expr != ""){
+			auto* Vec = new Vector(Location::NONE);
+			auto* commentStr=(new Literal(ValuePtr(groupInfo.commentString)));
+			auto* expr=(new Literal(ValuePtr(groupInfo.expr)));
+
+			Vec->push_back(commentStr);
+			Vec->push_back(expr);
+			Vector1->push_back(Vec);
+		}
+	}
+std::printf("attaching group annotation\n");
+	AnnotationList *annotationList = new AnnotationList();
+	annotationList->push_back(Annotation("Groups", Vector1));
+	root_module->addAnnotations(annotationList);
+std::printf("attached group annotation\n");
 }
