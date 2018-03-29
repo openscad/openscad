@@ -25,13 +25,11 @@ void ParameterExtractor::applyParameters(FileModule *fileModule, entry_map_t& en
 
 void ParameterExtractor::setParameters(const FileModule* module,entry_map_t& entries,group_Condition& groupCondition,std::vector<std::string>& ParameterPos, bool &rebuildParameterWidget)
 {
-std::printf("setting parameters\n");
   if (!module) return;
 
   ModuleContext ctx;
 
   ParameterPos.clear();
-std::printf("parameter pos cleared\n");
   for (auto &assignment : module->scope.assignments) {
     const Annotation *param = assignment.annotation("Parameter");
     if (!param) continue;
@@ -62,15 +60,11 @@ std::printf("parameter pos cleared\n");
     entryObject->set = true;
     ParameterPos.push_back(assignment.name);
   }
-  std::printf("going trouhg the groups\n");
   auto groups = module->annotation("Groups")->evaluate(&ctx)->toVector();
   for (auto &group : groups){
 	auto a = group->toVector();
 	std::string groupName= a.at(0)->toString();
 	std::string condition= a.at(1)->toString();
-	std::printf(groupName.c_str());
-	std::printf(condition.c_str());
-	std::printf("\n");
 	groupCondition[groupName]=condition;
   }
 }

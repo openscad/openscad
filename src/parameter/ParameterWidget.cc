@@ -365,7 +365,6 @@ ParameterVirtualWidget* ParameterWidget::CreateParameterWidget(std::string param
 
 void ParameterWidget::applyParameterSet(std::string setName)
 {
-  std::printf("applyParameterSet\n");
 	boost::optional<pt::ptree &> set = setMgr->getParameterSet(setName);
 	if (!set.is_initialized()) {
 		return;
