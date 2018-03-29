@@ -253,14 +253,14 @@ void ParameterWidget::connectWidget()
 	}
 	cleanScrollArea();
 
-	for (const auto &it : groupPos) {
-		if(groupMap.find(it)!=groupMap.end()){
+	for (const auto &groupName : groupPos) {
+		if(groupMap.find(groupName)!=groupMap.end()){
 			QVBoxLayout* anyLayout = new QVBoxLayout();
 			anyLayout->setSpacing(0);
 			anyLayout->setContentsMargins(0,0,0,0);
 
 			std::vector<std::string> gr;
-			gr = groupMap[it].parameterVector;
+			gr = groupMap[groupName].parameterVector;
 			for(unsigned int i=0;i < gr.size();i++) {
 				ParameterVirtualWidget * entry = CreateParameterWidget(gr[i]);
 				if(entry){
@@ -268,7 +268,7 @@ void ParameterWidget::connectWidget()
 				}
 			}
 
-			GroupWidget *groupWidget = new GroupWidget(groupMap[it].show, QString::fromStdString(it));
+			GroupWidget *groupWidget = new GroupWidget(groupMap[groupName].show, QString::fromStdString(groupName));
 			groupWidget->setContentLayout(*anyLayout);
 			this->scrollAreaWidgetContents->layout()->addWidget(groupWidget);
 		}
@@ -293,9 +293,9 @@ void ParameterWidget::rebuildGroupMap(){
 			it++;
 		}
 	}
-	for (auto &it : groupMap) {
-		it.second.parameterVector.clear();
-		it.second.inList=false;
+	for (auto &elem : groupMap) {
+		elem.second.parameterVector.clear();
+		elem.second.inList=false;
 	}
 
 	groupPos.clear();

@@ -55,13 +55,13 @@ void ParameterComboBox::setValue()
 	this->stackedWidgetRight->hide();
 	comboBox->clear();
 	const Value::VectorType& vec = object->values->toVector();
-	for (const auto &it : vec) {
+	for (const auto &textData : vec) {
 		QString text, data;
-		if ((*it).toVector().size() > 1) {
-			text = QString::fromStdString((*it).toVector()[1]->toString());
-			data = QString::fromStdString((*it).toVector()[0]->toString());
+		if ((*textData).toVector().size() > 1) {
+			text = QString::fromStdString((*textData).toVector()[1]->toString());
+			data = QString::fromStdString((*textData).toVector()[0]->toString());
 		} else {
-			text = QString::fromStdString((*it).toString());
+			text = QString::fromStdString((*textData).toString());
 			data = text;
 			
 		}
