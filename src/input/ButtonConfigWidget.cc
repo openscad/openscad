@@ -48,22 +48,22 @@ void ButtonConfigWidget::updateButtonState(int nr, bool pressed) const{
 	}
 	std::string number = std::to_string(nr);
 
-	QLabel* label = this->findChild<QLabel *>(QString::fromStdString("labelInputButton"+number));
-	if(label==0) return;
+	auto label = this->findChild<QLabel *>(QString::fromStdString("labelInputButton"+number));
+	if(label==nullptr) return;
 	label->setStyleSheet(Style);
 }
 
 void ButtonConfigWidget::init() {
 	for (int i = 0; i < InputEventMapper::getMaxButtons(); i++ ){
 		std::string s = std::to_string(i);
-		QComboBox* box = this->findChild<QComboBox *>(QString::fromStdString("comboBoxButton"+s));
-		Settings::SettingsEntry* ent = Settings::Settings::inst()->getSettingEntryByName("button" +s );
+		auto box = this->findChild<QComboBox *>(QString::fromStdString("comboBoxButton"+s));
+		auto ent = Settings::Settings::inst()->getSettingEntryByName("button" +s );
 		if(box && ent){
 			initComboBox(box,*ent);
 		}
 	}
 
-	auto *wheelIgnorer = new WheelIgnorer(this);
+	auto wheelIgnorer = new WheelIgnorer(this);
 	auto comboBoxes = this->findChildren<QComboBox *>();
 	for (auto comboBox : comboBoxes) {
 		comboBox->installEventFilter(wheelIgnorer);

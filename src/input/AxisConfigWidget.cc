@@ -48,7 +48,7 @@ void AxisConfigWidget::AxesChanged(int nr, double val) const{
 	QString s =  QString::number(val, 'f', 2 );
 	std::string number = std::to_string(nr);
 	QProgressBar* progressBar = this->findChild<QProgressBar *>(QString::fromStdString("progressBarAxis"+number));
-	if(progressBar==0) return;
+	if(progressBar==nullptr) return;
 	progressBar->setValue(value);
 	progressBar->setFormat(s);
 }
@@ -122,11 +122,8 @@ void AxisConfigWidget::init() {
 	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
 		std::string s = std::to_string(i);
 
-		QDoubleSpinBox* spin;
-		Settings::SettingsEntry* ent;
-
-		spin = this->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrim"+s));
-		ent = Settings::Settings::inst()->getSettingEntryByName("axisTrim" +s);
+		auto spin = this->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrim"+s));
+		auto ent = Settings::Settings::inst()->getSettingEntryByName("axisTrim" +s);
 		if(spin && ent){
 			initDoubleSpinBox(spin,*ent);
 		}
@@ -388,11 +385,8 @@ void AxisConfigWidget::on_AxisTrim()
 	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
 		std::string s = std::to_string(i);
 
-		QDoubleSpinBox* spin;
-		Settings::SettingsEntry* ent;
-
-		spin = this->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrim"+s));
-		ent = Settings::Settings::inst()->getSettingEntryByName("axisTrim" +s);
+		auto spin = this->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrim"+s));
+		auto ent = Settings::Settings::inst()->getSettingEntryByName("axisTrim" +s);
 
 		if(spin && ent){
 			spin->setValue((double)Settings::Settings::inst()->get(*ent).toDouble());
@@ -408,15 +402,12 @@ void AxisConfigWidget::on_AxisTrimReset()
 	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
 		std::string s = std::to_string(i);
 
-		QDoubleSpinBox* spin;
-		Settings::SettingsEntry* ent;
-
-		ent = Settings::Settings::inst()->getSettingEntryByName("axisTrim" +s);
+		auto ent = Settings::Settings::inst()->getSettingEntryByName("axisTrim" +s);
 		if(ent){
 			Settings::Settings::inst()->set(*ent, 0.00);
 		}
 
-		spin = this->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrim"+s));
+		auto spin = this->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrim"+s));
 		if(spin){
 			spin->setValue(0.00);
 		}
