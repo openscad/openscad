@@ -68,8 +68,7 @@ bool DBusInputDriver::open()
     new OpenSCADAdaptor(this);
     connection.registerObject("/org/openscad/OpenSCAD/Application", this);
     connection.registerService("org.openscad.OpenSCAD");
-    org::openscad::OpenSCAD *iface;
-    iface = new org::openscad::OpenSCAD(QString(), QString(), connection, this);
+    org::openscad::OpenSCAD *iface = new org::openscad::OpenSCAD(QString(), QString(), connection, this);
 
     name = "DBusInputDriver (" + connection.baseService().toStdString() + ")";
 
