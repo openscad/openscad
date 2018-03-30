@@ -23,7 +23,7 @@ void ParameterExtractor::applyParameters(FileModule *fileModule, entry_map_t& en
   }
 }
 
-void ParameterExtractor::setParameters(const FileModule* module,entry_map_t& entries,std::vector<std::string>& ParameterPos, bool &rebuildParameterWidget)
+void ParameterExtractor::setParameters(const FileModule* module,entry_map_t& entries,group_Condition& groupCondition,std::vector<std::string>& ParameterPos, bool &rebuildParameterWidget)
 {
   if (!module) return;
 
@@ -59,5 +59,12 @@ void ParameterExtractor::setParameters(const FileModule* module,entry_map_t& ent
     }
     entryObject->set = true;
     ParameterPos.push_back(assignment.name);
+  }
+  auto groups = module->annotation("Groups")->evaluate(&ctx)->toVector();
+  for (auto &group : groups){
+	auto a = group->toVector();
+	std::string groupName= a.at(0)->toString();
+	std::string condition= a.at(1)->toString();
+	groupCondition[groupName]=condition;
   }
 }

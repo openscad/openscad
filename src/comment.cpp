@@ -11,6 +11,7 @@
 
 struct GroupInfo {
 	std::string commentString;
+	std::string expr;
 	int lineNo;
 };
 
@@ -166,9 +167,9 @@ static GroupInfo createGroup(std::string comment,int lineNo)
 	GroupInfo groupInfo;
 	std::string finalGroupName;
 
-	boost::regex regex("\\[(.*?)\\]");
+	boost::regex regexName("\\[(.*?)\\]");
 	boost::match_results<std::string::const_iterator>  match;
-	while(boost::regex_search(comment, match, regex)) {
+	while(boost::regex_search(comment, match, regexName)) {
 		std::string groupName = match[1].str();
 		if (finalGroupName.empty()) {
 			finalGroupName = groupName;
@@ -179,8 +180,13 @@ static GroupInfo createGroup(std::string comment,int lineNo)
 		comment = match.suffix();
 	}
 
+	boost::regex regexShowIf("show_if\\((.*?)\\)");
+	boost::regex_search(comment, match, regexShowIf);
+	std::string expr = match[1].str();
+
 	groupInfo.commentString = finalGroupName;
 	groupInfo.lineNo = lineNo;
+	groupInfo.expr = expr;
 	return groupInfo;
 }
 
@@ -278,7 +284,7 @@ void CommentParser::collectParameters(const char *fulltext, FileModule *root_mod
 			continue;
 		}
 		// making list to add annotations
-		AnnotationList *annotationList = new AnnotationList();
+		auto annotationList = new AnnotationList();
  
 		// Extracting the parameter comment
 		std::string comment = getComment(std::string(fulltext), firstLine);
@@ -299,15 +305,32 @@ void CommentParser::collectParameters(const char *fulltext, FileModule *root_mod
 			annotationList->push_back(Annotation("Description", expr));
 		}
 
-		// Look for the group to which the given assignment belong
+		// Look for the group to which the given assignment belongs
 		for (const auto &groupInfo :boost::adaptors::reverse(groupList)){
 			if (groupInfo.lineNo < firstLine) {
 				//creating node for description
-				shared_ptr<Expression> expr(new Literal(ValuePtr(groupInfo.commentString)));
-				annotationList->push_back(Annotation("Group", expr));
+				shared_ptr<Expression> commentStr(new Literal(ValuePtr(groupInfo.commentString)));
+				annotationList->push_back(Annotation("Group", commentStr));
 				break;
 			}
 		}
 		assignment.addAnnotations(annotationList);
 	}
+
+	shared_ptr<Vector> Vector1(new Vector(Location::NONE));
+	for (const auto &groupInfo :groupList){
+		if(groupInfo.expr != ""){
+			auto* Vec = new Vector(Location::NONE);
+			auto* commentStr = new Literal(ValuePtr(groupInfo.commentString));
+			auto* expr = new Literal(ValuePtr(groupInfo.expr));
+
+			Vec->push_back(commentStr);
+			Vec->push_back(expr);
+			Vector1->push_back(Vec);
+		}
+	}
+
+	auto annotationList = new AnnotationList();
+	annotationList->push_back(Annotation("Groups", Vector1));
+	root_module->addAnnotations(annotationList);
 }

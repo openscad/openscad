@@ -1122,6 +1122,13 @@ void MainWindow::instantiateRoot()
 			// FIXME: Consider giving away ownership of root_node to the Tree, or use reference counted pointers
 			this->tree.setRoot(this->root_node);
 		}
+
+		if (Feature::ExperimentalCustomizer.is_enabled()) {
+			if (this->root_module!=nullptr) {
+				this->parameterWidget->updateCondition(filectx);
+				this->parameterWidget->applyCondition();
+			}
+		}
 	}
 
 	if (!this->root_node) {

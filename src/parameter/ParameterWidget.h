@@ -39,11 +39,14 @@ private:
 	struct groupInst {
 		std::vector<std::string> parameterVector;
 		bool show;
+		bool hide=false;
 		bool inList;
 	};
 	std::vector<std::string> groupPos;
 	typedef std::map<std::string,groupInst > group_map;
 	group_map groupMap;
+
+	group_Condition groupConditions;
 	QTimer autoPreviewTimer;
 	int descriptionLoD; //configuration if and how much of the description is shown
 	std::string jsonFile;
@@ -64,6 +67,7 @@ private:
 	std::vector<std::string> ParameterPos;
 	ParameterExtractor *extractor;
 	ParameterSet *setMgr;
+
 public:
 	ParameterWidget(QWidget *parent = nullptr);
 	~ParameterWidget();
@@ -71,6 +75,8 @@ public:
 	void writeFileIfNotEmpty(QString scadFile);
 	void setParameters(const FileModule* module,bool);
 	void applyParameters(FileModule *fileModule);
+	void updateCondition(Context& top_ctx);
+	void applyCondition();
 
 protected slots:
 	void onValueChanged();

@@ -165,7 +165,7 @@ void ParameterWidget::writeFileIfNotEmpty(QString scadFile)
 
 void ParameterWidget::setParameters(const FileModule* module,bool rebuildParameterWidget)
 {
-	this->extractor->setParameters(module,this->entries,ParameterPos,rebuildParameterWidget);
+	this->extractor->setParameters(module,this->entries,this->groupConditions,ParameterPos,rebuildParameterWidget);
 	if(rebuildParameterWidget){
 		connectWidget();
 	}else{
@@ -270,6 +270,7 @@ void ParameterWidget::connectWidget()
 
 			GroupWidget *groupWidget = new GroupWidget(groupMap[groupName].show, QString::fromStdString(groupName));
 			groupWidget->setContentLayout(*anyLayout);
+			groupWidget->setVisible(!groupMap[groupName].hide);
 			this->scrollAreaWidgetContents->layout()->addWidget(groupWidget);
 		}
 	}
@@ -307,6 +308,7 @@ void ParameterWidget::rebuildGroupMap(){
 			enter.parameterVector.push_back(ParameterPos[it]);
 			enter.show = false;
 			enter.inList=true;
+			enter.hide=false;
 			groupMap[groupName] = enter;
 		}else {
 			if(groupMap[groupName].inList == false){
@@ -436,4 +438,28 @@ void ParameterWidget::writeParameterSets()
 		}
 	}
 	setMgr->writeParameterSet(this->jsonFile);
+}
+
+void ParameterWidget::updateCondition(Context& top_ctx){
+	for (const auto &groupCondition : groupConditions) {
+		std::string groupName = groupCondition.first; 
+		std::string condition = groupCondition.second;
+
+		if(condition!=""){
+			bool state = top_ctx.lookup_variable(condition,true)->toBool();
+			groupMap[groupName].hide=!state;
+			groupMap[groupName].show=state;
+		}else{
+			groupMap[groupName].hide=false;
+		}
+	}
+}
+
+void ParameterWidget::applyCondition(){
+	for (const auto &groupName : groupPos) {
+		if(groupMap.find(groupName)!=groupMap.end()){
+			GroupWidget* groupWidget = this->findChild<GroupWidget*>(QString(("GroupWidget"+groupName).c_str()));
+			groupWidget->setVisible(!groupMap[groupName].hide);
+		}
+	}
 }

@@ -2,6 +2,7 @@
 
 GroupWidget::GroupWidget(bool &show, const QString & title, QWidget *parent) : QWidget(parent)
 {
+	setObjectName("GroupWidget"+title);
 	toggleButton.setText(title);
 	toggleButton.setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Maximum);
 	toggleButton.setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
