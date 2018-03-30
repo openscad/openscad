@@ -55,19 +55,20 @@ void ParameterComboBox::setValue()
 	this->stackedWidgetRight->hide();
 	comboBox->clear();
 	const Value::VectorType& vec = object->values->toVector();
-	for (Value::VectorType::const_iterator it = vec.begin(); it != vec.end(); it++)	{
-		if ((*it)->toVector().size() > 1) {
-			comboBox->addItem(QString::fromStdString((*it)->toVector()[1]->toString()),
-												QVariant(QString::fromStdString((*it)->toVector()[0]->toString())));
-		}
-		else {
-			comboBox->addItem(QString::fromStdString((*it)->toString()),
-												QVariant(QString::fromStdString((*it)->toString())));
+	for (const auto &textData : vec) {
+		QString text, data;
+		if (textData->toVector().size() > 1) {
+			text = QString::fromStdString(textData->toVector()[1]->toString());
+			data = QString::fromStdString(textData->toVector()[0]->toString());
+		} else {
+			text = QString::fromStdString(textData->toString());
+			data = text;
 			
 		}
+		comboBox->addItem(text, QVariant(data));
 	}
-	QString defaultText = QString::fromStdString(object->value->toString());
-	int idx = comboBox->findData(QVariant(defaultText));
+	QString defaultData = QString::fromStdString(object->value->toString());
+	int idx = comboBox->findData(QVariant(defaultData));
 	if (idx >= 0) {
 		comboBox->setCurrentIndex(idx);
 	}

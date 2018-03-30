@@ -253,14 +253,15 @@ void ParameterWidget::connectWidget()
 		}
 	}
 	cleanScrollArea();
-	for (std::vector<std::string>::iterator it = groupPos.begin(); it != groupPos.end(); it++) {
-		if(groupMap.find(*it)!=groupMap.end()){
+
+	for (const auto &groupName : groupPos) {
+		if(groupMap.find(groupName)!=groupMap.end()){
 			QVBoxLayout* anyLayout = new QVBoxLayout();
 			anyLayout->setSpacing(0);
 			anyLayout->setContentsMargins(0,0,0,0);
 
 			std::vector<std::string> gr;
-			gr = groupMap[*it].parameterVector;
+			gr = groupMap[groupName].parameterVector;
 			for(unsigned int i=0;i < gr.size();i++) {
 				ParameterVirtualWidget * entry = CreateParameterWidget(gr[i]);
 				if(entry){
@@ -268,7 +269,7 @@ void ParameterWidget::connectWidget()
 				}
 			}
 
-			GroupWidget *groupWidget = new GroupWidget(groupMap[*it].show, QString::fromStdString(*it));
+			GroupWidget *groupWidget = new GroupWidget(groupMap[groupName].show, QString::fromStdString(groupName));
 			groupWidget->setContentLayout(*anyLayout);
 			groupWidget->setVisible(!groupMap[*it].hide);
 			this->scrollAreaWidgetContents->layout()->addWidget(groupWidget);
@@ -294,9 +295,9 @@ void ParameterWidget::rebuildGroupMap(){
 			it++;
 		}
 	}
-	for (group_map::iterator it = groupMap.begin(); it != groupMap.end(); it++){
-		it->second.parameterVector.clear();
-		it->second.inList=false;
+	for (auto &elem : groupMap) {
+		elem.second.parameterVector.clear();
+		elem.second.inList=false;
 	}
 
 	groupPos.clear();
@@ -310,8 +311,7 @@ void ParameterWidget::rebuildGroupMap(){
 			enter.inList=true;
 			enter.hide=false;
 			groupMap[groupName] = enter;
-		}
-		else {
+		}else {
 			if(groupMap[groupName].inList == false){
 				groupMap[groupName].inList=true;
 				groupPos.push_back(groupName);
@@ -409,8 +409,12 @@ void ParameterWidget::updateParameterSet(std::string setName)
 
 	if (!setName.empty()) {
 		pt::ptree iroot;
-		for (entry_map_t::iterator it = entries.begin(); it != entries.end(); it++) {
-			iroot.put(it->first,it->second->value->toString());
+		for (const auto &entry : entries) {
+			if (entry.second->groupName != "Hidden") {
+				const auto &VariableName = entry.first;
+				const auto &VariableValue = entry.second->value->toString();
+				iroot.put(VariableName, VariableValue);
+			}
 		}
 		setMgr->addParameterSet(setName, iroot);
 		const QString s(QString::fromStdString(setName));
