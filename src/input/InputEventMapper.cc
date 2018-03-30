@@ -33,7 +33,7 @@
 #include <math.h>
 #include <QSettings>
 
-InputEventMapper * InputEventMapper::self = 0;
+InputEventMapper * InputEventMapper::self = nullptr;
 
 InputEventMapper::InputEventMapper()
 {
