@@ -165,7 +165,7 @@ void ParameterWidget::writeFileIfNotEmpty(QString scadFile)
 
 void ParameterWidget::setParameters(const FileModule* module,bool rebuildParameterWidget)
 {
-	this->extractor->setParameters(module,this->entries,this->groupCondition,ParameterPos,rebuildParameterWidget);
+	this->extractor->setParameters(module,this->entries,this->groupConditions,ParameterPos,rebuildParameterWidget);
 	if(rebuildParameterWidget){
 		connectWidget();
 	}else{
@@ -207,7 +207,6 @@ void ParameterWidget::onValueChanged()
 	if (checkBoxAutoPreview->isChecked()) {
 		autoPreviewTimer.start();
 	}
-	//applyCondition();
 }
 
 void ParameterWidget::onPreviewTimerElapsed()
@@ -271,7 +270,7 @@ void ParameterWidget::connectWidget()
 
 			GroupWidget *groupWidget = new GroupWidget(groupMap[groupName].show, QString::fromStdString(groupName));
 			groupWidget->setContentLayout(*anyLayout);
-			groupWidget->setVisible(!groupMap[*it].hide);
+			groupWidget->setVisible(!groupMap[groupName].hide);
 			this->scrollAreaWidgetContents->layout()->addWidget(groupWidget);
 		}
 	}
@@ -389,7 +388,6 @@ void ParameterWidget::applyParameterSet(std::string setName)
 			}
 		}
 	}
-	//applyCondition();
 }
 
 void ParameterWidget::updateParameterSet(std::string setName)
@@ -443,24 +441,25 @@ void ParameterWidget::writeParameterSets()
 }
 
 void ParameterWidget::updateCondition(Context& top_ctx){
-	for (const auto &it : groupCondition) {
-		std::string condition = it.second;
+	for (const auto &groupCondition : groupConditions) {
+		std::string groupName = groupCondition.first; 
+		std::string condition = groupCondition.second;
 
 		if(condition!=""){
 			bool state = top_ctx.lookup_variable(condition,true)->toBool();
-			groupMap[it.first].hide=!state;
-			groupMap[it.first].show=state;
+			groupMap[groupName].hide=!state;
+			groupMap[groupName].show=state;
 		}else{
-			groupMap[it.first].hide=false;
+			groupMap[groupName].hide=false;
 		}
 	}
 }
 
 void ParameterWidget::applyCondition(){
-	for (std::vector<std::string>::iterator it = groupPos.begin(); it != groupPos.end(); it++) {
-		if(groupMap.find(*it)!=groupMap.end()){
-			GroupWidget* groupWidget = this->findChild<GroupWidget*>(QString(("GroupWidget"+*it).c_str()));
-			groupWidget->setVisible(!groupMap[*it].hide);
+	for (const auto &groupName : groupPos) {
+		if(groupMap.find(groupName)!=groupMap.end()){
+			GroupWidget* groupWidget = this->findChild<GroupWidget*>(QString(("GroupWidget"+groupName).c_str()));
+			groupWidget->setVisible(!groupMap[groupName].hide);
 		}
 	}
 }

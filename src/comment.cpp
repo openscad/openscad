@@ -180,10 +180,9 @@ static GroupInfo createGroup(std::string comment,int lineNo)
 		comment = match.suffix();
 	}
 
-	std::string expr;
 	boost::regex regexShowIf("show_if\\((.*?)\\)");
 	boost::regex_search(comment, match, regexShowIf);
-	expr = match[1].str();
+	std::string expr = match[1].str();
 
 	groupInfo.commentString = finalGroupName;
 	groupInfo.lineNo = lineNo;
@@ -285,7 +284,7 @@ void CommentParser::collectParameters(const char *fulltext, FileModule *root_mod
 			continue;
 		}
 		// making list to add annotations
-		AnnotationList *annotationList = new AnnotationList();
+		auto annotationList = new AnnotationList();
  
 		// Extracting the parameter comment
 		std::string comment = getComment(std::string(fulltext), firstLine);
@@ -318,12 +317,12 @@ void CommentParser::collectParameters(const char *fulltext, FileModule *root_mod
 		assignment.addAnnotations(annotationList);
 	}
 
-	shared_ptr<Vector> Vector1 ( new Vector(Location::NONE));
+	shared_ptr<Vector> Vector1(new Vector(Location::NONE));
 	for (const auto &groupInfo :groupList){
 		if(groupInfo.expr != ""){
 			auto* Vec = new Vector(Location::NONE);
-			auto* commentStr=(new Literal(ValuePtr(groupInfo.commentString)));
-			auto* expr=(new Literal(ValuePtr(groupInfo.expr)));
+			auto* commentStr = new Literal(ValuePtr(groupInfo.commentString));
+			auto* expr = new Literal(ValuePtr(groupInfo.expr));
 
 			Vec->push_back(commentStr);
 			Vec->push_back(expr);
@@ -331,7 +330,7 @@ void CommentParser::collectParameters(const char *fulltext, FileModule *root_mod
 		}
 	}
 
-	AnnotationList *annotationList = new AnnotationList();
+	auto annotationList = new AnnotationList();
 	annotationList->push_back(Annotation("Groups", Vector1));
 	root_module->addAnnotations(annotationList);
 }
