@@ -207,7 +207,7 @@ void ParameterWidget::onValueChanged()
 	if (checkBoxAutoPreview->isChecked()) {
 		autoPreviewTimer.start();
 	}
-	applyCondition();
+	//applyCondition();
 }
 
 void ParameterWidget::onPreviewTimerElapsed()
@@ -270,6 +270,7 @@ void ParameterWidget::connectWidget()
 
 			GroupWidget *groupWidget = new GroupWidget(groupMap[*it].show, QString::fromStdString(*it));
 			groupWidget->setContentLayout(*anyLayout);
+			groupWidget->setVisible(!groupMap[*it].hide);
 			this->scrollAreaWidgetContents->layout()->addWidget(groupWidget);
 		}
 	}
@@ -307,6 +308,7 @@ void ParameterWidget::rebuildGroupMap(){
 			enter.parameterVector.push_back(ParameterPos[it]);
 			enter.show = false;
 			enter.inList=true;
+			enter.hide=false;
 			groupMap[groupName] = enter;
 		}
 		else {
@@ -317,8 +319,6 @@ void ParameterWidget::rebuildGroupMap(){
 			groupMap[groupName].parameterVector.push_back(ParameterPos[it]);
 		}
 	}
-//		std::string condition=entries[ParameterPos[it]]->condition;
-//		groupCondition[groupName]=condition;
 }
 
 ParameterVirtualWidget* ParameterWidget::CreateParameterWidget(std::string parameterName)
@@ -389,7 +389,7 @@ void ParameterWidget::applyParameterSet(std::string setName)
 			}
 		}
 	}
-	applyCondition();
+	//applyCondition();
 }
 
 void ParameterWidget::updateParameterSet(std::string setName)
@@ -438,15 +438,30 @@ void ParameterWidget::writeParameterSets()
 	setMgr->writeParameterSet(this->jsonFile);
 }
 
-void ParameterWidget::applyCondition(){
+void ParameterWidget::updateCondition(Context& top_ctx){
+std::cout << "-------------\n";
+
 	for (const auto &it : groupCondition) {
 		std::string condition = it.second;
-		GroupWidget* groupWidget = this->findChild<GroupWidget*>(QString(("GroupWidget"+it.first).c_str()));
+		//GroupWidget* groupWidget = this->findChild<GroupWidget*>(QString(("GroupWidget"+it.first).c_str()));
 
-		if(condition!="" && entries[condition] && !entries[condition]->value->toBool()){
-			groupWidget->setVisible(false);
+std::cout << condition <<" " <<top_ctx.lookup_variable(condition,true)->toBool() << "\n";
+
+		if(condition!=""){
+			bool state = top_ctx.lookup_variable(condition,true)->toBool();
+			groupMap[it.first].hide=!state;
+			groupMap[it.first].show=state;
 		}else{
-			groupWidget->setVisible(true);
+			groupMap[it.first].hide=false;
+		}
+	}
+}
+
+void ParameterWidget::applyCondition(){
+	for (std::vector<std::string>::iterator it = groupPos.begin(); it != groupPos.end(); it++) {
+		if(groupMap.find(*it)!=groupMap.end()){
+			GroupWidget* groupWidget = this->findChild<GroupWidget*>(QString(("GroupWidget"+*it).c_str()));
+			groupWidget->setVisible(!groupMap[*it].hide);
 		}
 	}
 }

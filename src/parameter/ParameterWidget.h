@@ -39,6 +39,7 @@ private:
 	struct groupInst {
 		std::vector<std::string> parameterVector;
 		bool show;
+		bool hide=false;
 		bool inList;
 	};
 	std::vector<std::string> groupPos;
@@ -67,8 +68,6 @@ private:
 	ParameterExtractor *extractor;
 	ParameterSet *setMgr;
 
-	void applyCondition();
-
 public:
 	ParameterWidget(QWidget *parent = nullptr);
 	~ParameterWidget();
@@ -76,6 +75,8 @@ public:
 	void writeFileIfNotEmpty(QString scadFile);
 	void setParameters(const FileModule* module,bool);
 	void applyParameters(FileModule *fileModule);
+	void updateCondition(Context& top_ctx);
+	void applyCondition();
 
 protected slots:
 	void onValueChanged();
