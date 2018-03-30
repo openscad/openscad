@@ -439,13 +439,8 @@ void ParameterWidget::writeParameterSets()
 }
 
 void ParameterWidget::updateCondition(Context& top_ctx){
-std::cout << "-------------\n";
-
 	for (const auto &it : groupCondition) {
 		std::string condition = it.second;
-		//GroupWidget* groupWidget = this->findChild<GroupWidget*>(QString(("GroupWidget"+it.first).c_str()));
-
-std::cout << condition <<" " <<top_ctx.lookup_variable(condition,true)->toBool() << "\n";
 
 		if(condition!=""){
 			bool state = top_ctx.lookup_variable(condition,true)->toBool();

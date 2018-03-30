@@ -1123,13 +1123,12 @@ void MainWindow::instantiateRoot()
 			this->tree.setRoot(this->root_node);
 		}
 
-	if (Feature::ExperimentalCustomizer.is_enabled()) {
-		if (this->root_module!=nullptr) {
-			this->parameterWidget->updateCondition(filectx);
-this->parameterWidget->applyCondition();
+		if (Feature::ExperimentalCustomizer.is_enabled()) {
+			if (this->root_module!=nullptr) {
+				this->parameterWidget->updateCondition(filectx);
+				this->parameterWidget->applyCondition();
+			}
 		}
-	}
-
 	}
 
 	if (!this->root_node) {
