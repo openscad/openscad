@@ -1,7 +1,7 @@
 #include "parametercombobox.h"
 #include "ignoreWheelWhenNotFocused.h"
 
-ParameterComboBox::ParameterComboBox(QWidget *parent, ParameterObject *parameterobject, int descriptionLoD)
+ParameterComboBox::ParameterComboBox(QWidget *parent, ParameterObject *parameterobject, DescLoD descriptionLoD)
 	: ParameterVirtualWidget(parent, parameterobject, descriptionLoD)
 {
 	setValue();

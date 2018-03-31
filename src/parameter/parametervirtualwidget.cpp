@@ -1,7 +1,7 @@
 #include "parametervirtualwidget.h"
 
 
-ParameterVirtualWidget::ParameterVirtualWidget(QWidget *parent,ParameterObject *parameterobject, int descriptionLoD)
+ParameterVirtualWidget::ParameterVirtualWidget(QWidget *parent,ParameterObject *parameterobject, DescLoD descriptionLoD)
 	: QWidget(parent)
 {
 	setupUi(this);
@@ -16,16 +16,16 @@ ParameterVirtualWidget::ParameterVirtualWidget(QWidget *parent,ParameterObject *
 	this->object = parameterobject;
 	setName(QString::fromStdString(object->name));
 
-	if (descriptionLoD == descLoD::ShowDetails || descriptionLoD == descLoD::DescOnly) {
+	if (descriptionLoD == DescLoD::ShowDetails || descriptionLoD == DescLoD::DescOnly) {
 		setDescription(object->description);
 		this->labelInline->hide();
-	}else if(descriptionLoD == descLoD::Inline){
+	}else if(descriptionLoD == DescLoD::Inline){
 		addInline(object->description);
 	}else{
 		this->setToolTip(object->description);
 	}
 
-	if (descriptionLoD == descLoD::DescOnly && object->description !=""){
+	if (descriptionLoD == DescLoD::DescOnly && object->description !=""){
 		labelParameter->hide();
 	}else{
 		labelParameter->show();

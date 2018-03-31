@@ -45,7 +45,7 @@ private:
 	typedef std::map<std::string,groupInst > group_map;
 	group_map groupMap;
 	QTimer autoPreviewTimer;
-	int descriptionLoD; //configuration if and how much of the description is shown
+	DescLoD descriptionLoD; //configuration if and how much of the description is shown
 	std::string jsonFile;
 	bool anyfocused;
 	bool valueChanged;

@@ -1,7 +1,7 @@
 #include "parameterslider.h"
 #include "ignoreWheelWhenNotFocused.h"
 
-ParameterSlider::ParameterSlider(QWidget *parent, ParameterObject *parameterobject, int descriptionLoD)
+ParameterSlider::ParameterSlider(QWidget *parent, ParameterObject *parameterobject, DescLoD descriptionLoD)
 	: ParameterVirtualWidget(parent, parameterobject, descriptionLoD)
 {
 	this->pressed = true;

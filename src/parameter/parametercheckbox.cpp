@@ -1,12 +1,12 @@
 #include "parametercheckbox.h"
 
-ParameterCheckBox::ParameterCheckBox(QWidget *parent, ParameterObject *parameterobject, int descriptionLoD)
+ParameterCheckBox::ParameterCheckBox(QWidget *parent, ParameterObject *parameterobject, DescLoD descriptionLoD)
 	: ParameterVirtualWidget(parent, parameterobject, descriptionLoD)
 {
 	setValue();
 	connect(checkBox, SIGNAL(clicked()), this, SLOT(onChanged()));
 
-	if (descriptionLoD == descLoD::ShowDetails){
+	if (descriptionLoD == DescLoD::ShowDetails){
 		//large checkbox, when we have the space
 		checkBox->setStyleSheet("QCheckBox::indicator {\nwidth: 20px;\nheight: 20px;\n}");
 	}

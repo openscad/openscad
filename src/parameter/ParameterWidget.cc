@@ -54,7 +54,7 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 	setupUi(this);
 	this->setEnabled(false);
 
-	descriptionLoD = 0;
+	descriptionLoD = DescLoD::ShowDetails;
 	autoPreviewTimer.setInterval(500);
 	autoPreviewTimer.setSingleShot(true);
 	connect(&autoPreviewTimer, SIGNAL(timeout()), this, SLOT(onPreviewTimerElapsed()));
@@ -241,7 +241,7 @@ void ParameterWidget::onSetChanged(int idx)
 
 void ParameterWidget::onDescriptionLoDChanged()
 {
-	descriptionLoD =comboBoxDetails->currentIndex();
+	descriptionLoD =static_cast<DescLoD>(comboBoxDetails->currentIndex());
 	emit previewRequested();
 }
 
@@ -375,27 +375,27 @@ ParameterVirtualWidget* ParameterWidget::CreateParameterWidget(std::string param
 	ParameterVirtualWidget *entry = nullptr;
 	switch(entries[parameterName]->target) {
 		case ParameterObject::COMBOBOX:{
-			entry = new ParameterComboBox(this, entries[parameterName], descriptionLoD);
+			entry = new ParameterComboBox(this, entries[parameterName], this->descriptionLoD);
 			break;
 		}
 		case ParameterObject::SLIDER:{
-			entry = new ParameterSlider(this, entries[parameterName], descriptionLoD);
+			entry = new ParameterSlider(this, entries[parameterName], this->descriptionLoD);
 			break;
 		}
 		case ParameterObject::CHECKBOX:{
-			entry = new ParameterCheckBox(this, entries[parameterName], descriptionLoD);
+			entry = new ParameterCheckBox(this, entries[parameterName], this->descriptionLoD);
 			break;
 		}
 		case ParameterObject::TEXT:{
-			entry = new ParameterText(this, entries[parameterName], descriptionLoD);
+			entry = new ParameterText(this, entries[parameterName], this->descriptionLoD);
 			break;
 		}
 		case ParameterObject::NUMBER:{
-			entry = new ParameterSpinBox(this, entries[parameterName], descriptionLoD);
+			entry = new ParameterSpinBox(this, entries[parameterName], this->descriptionLoD);
 			break;
 		}
 		case ParameterObject::VECTOR:{
-			entry = new ParameterVector(this, entries[parameterName], descriptionLoD);
+			entry = new ParameterVector(this, entries[parameterName], this->descriptionLoD);
 			break;
 		}
 		case ParameterObject::UNDEFINED:{
