@@ -2,7 +2,7 @@
 
 
 ParameterVirtualWidget::ParameterVirtualWidget(QWidget *parent,ParameterObject *parameterobject, DescLoD descriptionLoD)
-	: QWidget(parent)
+	: object(parameterobject), QWidget(parent)
 {
 	setupUi(this);
 
@@ -13,7 +13,6 @@ ParameterVirtualWidget::ParameterVirtualWidget(QWidget *parent,ParameterObject *
 	policy.setVerticalStretch(0);
 	this->setSizePolicy(policy);
 
-	this->object = parameterobject;
 	setName(QString::fromStdString(object->name));
 
 	if (descriptionLoD == DescLoD::ShowDetails || descriptionLoD == DescLoD::DescOnly) {
