@@ -210,8 +210,7 @@ void ParameterWidget::setComboBoxPresetForSet()
 //set selection
 void ParameterWidget::onSetChanged(int idx)
 {
-	static int lastComboboxIndex(0);
-	if(lastComboboxIndex == idx) return; //nothing todo
+	if(this->lastComboboxIndex == idx) return; //nothing todo
 
 	//if necessary, confirm the change 
 	if(this->valueChanged){
@@ -233,7 +232,7 @@ void ParameterWidget::onSetChanged(int idx)
 	removeChangeIndicator(lastComboboxIndex);
 
 	//apply the change
-	lastComboboxIndex = idx;
+	this->lastComboboxIndex = idx;
 	const std::string v = comboBoxPreset->itemData(idx).toString().toUtf8().constData();
 	applyParameterSet(v);
 	emit previewRequested(false);

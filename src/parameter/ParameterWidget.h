@@ -50,6 +50,7 @@ private:
 	bool anyfocused;
 	bool valueChanged;
 	ParameterVirtualWidget *entryToFocus;
+	int lastComboboxIndex = 0;
 
 	void connectWidget();
 	void updateWidget();
