@@ -148,7 +148,7 @@ netbsd* {
   QMAKE_CXXFLAGS_WARN_ON += -Wno-sign-compare
 }
 
-!lessThan(QT_VERSION, 5.9): CONFIG += ccache
+has_ccache: CONFIG += ccache
 
 CONFIG(skip-version-check) {
   # force the use of outdated libraries

@@ -46,7 +46,7 @@ isEmpty(EIGEN_INCLUDEPATH) {
 }
 
 # EIGEN being under 'include/eigen3' needs special prepending
-contains(QT_VERSION, ^5\\..*) {
+has_qt5 {
   QMAKE_INCDIR = $$EIGEN_INCLUDEPATH $$QMAKE_INCDIR
 } else {
   QMAKE_INCDIR_QT = $$EIGEN_INCLUDEPATH $$QMAKE_INCDIR_QT
