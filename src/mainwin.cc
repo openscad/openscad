@@ -478,7 +478,7 @@ MainWindow::MainWindow(const QString &filename)
 	initActionIcon(viewActionZoomOut, ":/images/zoomout.png", ":/images/Zoom-Out-32.png");
 	initActionIcon(viewActionTop, ":/images/blackUp.png", ":/images/up.png");
 	initActionIcon(viewActionBottom, ":/images/blackbottom.png", ":/images/bottom.png");
-	initActionIcon(viewActionLeft, ":/images/blackleft (copy).png", ":/images/left.png");
+	initActionIcon(viewActionLeft, ":/images/blackleft.png", ":/images/left.png");
 	initActionIcon(viewActionRight, ":/images/rightright.png", ":/images/right.png");
 	initActionIcon(viewActionFront, ":/images/blackfront.png", ":/images/front.png");
 	initActionIcon(viewActionBack, ":/images/blackback.png", ":/images/back.png");
