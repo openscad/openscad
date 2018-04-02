@@ -12,6 +12,11 @@ class Preferences : public QMainWindow, public Ui::Preferences
 	Q_OBJECT;
 
 public:
+	static constexpr const char* PREF_EDITOR_TYPE = "editor/editortype";
+
+	static constexpr const char* EDITOR_TYPE_SIMPLE = "Simple Editor";
+	static constexpr const char* EDITOR_TYPE_QSCINTILLA = "QScintilla Editor";
+
 	~Preferences();
 	
 	static void create(QStringList colorSchemes);
@@ -45,7 +50,7 @@ public slots:
 	void on_undockCheckBox_toggled(bool);
 	void on_checkNowButton_clicked();
 	void on_launcherBox_toggled(bool);
-	void on_editorType_currentIndexChanged(const QString &);
+	void on_editorType_currentIndexChanged(int);
 
 	void on_checkBoxShowWarningsIn3dView_toggled(bool);
   //
