@@ -6,8 +6,6 @@
 # 2. OPENSCAD_LIBRARIES (environment variable)
 # 3. system's standard include paths from pkg-config
 
-harfbuzz {
-
 # read environment variables
 OPENSCAD_LIBRARIES_DIR = $$(OPENSCAD_LIBRARIES)
 HARFBUZZ_DIR = $$(HARFBUZZDIR)
@@ -35,4 +33,3 @@ isEmpty(HARFBUZZ_LIBPATH) {
 
 QMAKE_CXXFLAGS += $$HARFBUZZ_CFLAGS
 LIBS += $$HARFBUZZ_LIBS
-}
