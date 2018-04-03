@@ -62,16 +62,16 @@ void processNode(xmlTextReaderPtr reader)
 			in_defs = true;
 		}
 		
-		shape *s = shape::create_from_name(name);
+		auto s = shared_ptr<shape>(shape::create_from_name(name));
 		if (!in_defs && s) {
 			attr_map_t attrs = read_attributes(reader);
 			s->set_attrs(attrs);
 			shape_list->push_back(s);
 			if (!shapes.empty()) {
-				shapes.top()->add_child(s);
+				shapes.top()->add_child(s.get());
 			}
 			if (s->is_container()) {
-				shapes.push(s);
+				shapes.push(s.get());
 			}
 			s->apply_transform();
 		}

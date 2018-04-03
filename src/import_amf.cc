@@ -273,6 +273,7 @@ PolySet * AmfImporter::read(const std::string filename)
 		} else {
 			p = result;
 		}
+		delete N;
 	}
 #endif
 	if (!p) {
