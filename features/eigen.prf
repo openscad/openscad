@@ -5,8 +5,6 @@
 # 1. OPENSCAD_LIBRARIES eigen3
 # 3. system's standard include paths for eigen3
 
-eigen {
-
 # read environment variables
 OPENSCAD_LIBRARIES_DIR = $$(OPENSCAD_LIBRARIES)
 EIGEN_DIR = $$(EIGENDIR)
@@ -57,4 +55,3 @@ netbsd* {
   QMAKE_CXXFLAGS = -I$$EIGEN_INCLUDEPATH $$QMAKE_CXXFLAGS
 }
 
-} # eigen

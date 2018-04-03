@@ -6,7 +6,6 @@
 # 2. OPENSCAD_LIBRARIES (environment variable)
 # 3. system's standard include paths from pkg-config
 
-glib-2.0 {
 # read environment variables
 OPENSCAD_LIBRARIES_DIR = $$(OPENSCAD_LIBRARIES)
 GLIB2_DIR = $$(GLIB2DIR)
@@ -42,5 +41,4 @@ isEmpty(GLIB2_LIBPATH) {
 
 QMAKE_CXXFLAGS += $$GLIB2_CFLAGS
 LIBS += $$GLIB2_LIBS
-}
 

@@ -6,8 +6,6 @@
 # 2. OPENSCAD_LIBRARIES (environment variable)
 # 3. system's standard include paths from pkg-config
 
-fontconfig {
-
 # read environment variables
 OPENSCAD_LIBRARIES_DIR = $$(OPENSCAD_LIBRARIES)
 FONTCONFIG_DIR = $$(FONTCONFIGDIR)
@@ -35,4 +33,3 @@ isEmpty(FONTCONFIG_LIBPATH) {
 
 QMAKE_CXXFLAGS += $$FONTCONFIG_CFLAGS
 LIBS += $$FONTCONFIG_LIBS
-}

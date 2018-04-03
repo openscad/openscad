@@ -6,8 +6,6 @@
 # 2. OPENSCAD_LIBRARIES (environment variable)
 # 3. system's standard include paths from pkg-config
 
-gettext {
-
 # read environment variables
 OPENSCAD_LIBRARIES_DIR = $$(OPENSCAD_LIBRARIES)
 GETTEXT_DIR = $$(GETTEXTDIR)
@@ -26,4 +24,3 @@ macx: {
 
 QMAKE_CXXFLAGS += $$GETTEXT_CXXFLAGS
 LIBS += $$GETTEXT_LIBS
-}

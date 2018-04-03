@@ -5,8 +5,6 @@
 # 1. LIBZIP_INCLUDEPATH / LIBZIP_LIBPATH (qmake parameter, not checked it given on commandline)
 # 3. system's standard include paths from pkg-config
 
-libzip {
-
 exists($$LIBZIP_INCLUDEPATH/zip.h) {
   ENABLE_LIBZIP=yes
 } else {
@@ -36,6 +34,4 @@ isEmpty(LIBZIP_LIBPATH) {
   DEFINES += ENABLE_LIBZIP
   QMAKE_CXXFLAGS += $$LIBZIP_CFLAGS
   LIBS += $$LIBZIP_LIBS
-}
-
 }
