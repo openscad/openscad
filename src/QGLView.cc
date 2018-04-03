@@ -43,13 +43,47 @@
 #include "OpenCSGWarningDialog.h"
 #include "QSettingsCached.h"
 
-
 #include <stdio.h>
 #include <sstream>
 
 #ifdef ENABLE_OPENCSG
 #  include <opencsg.h>
 #endif
+
+ThreadedRenderer::ThreadedRenderer(QGLView *w)
+    : inited(false),
+      qglview(w),
+      exiting(false)
+{
+}
+
+// Handle threaded rendering
+void ThreadedRenderer::render()
+{
+    if (this->exiting || !this->inited)
+        return;
+
+    // Notify QGLView on the main thread that we are beginning render.
+    emit beginRender();
+
+	this->qglview->paintFrame();
+
+    // Notify QGLView on the main thread that render is complete.
+    emit endRender();
+
+    // Schedule composition. Note that this will use QueuedConnection, meaning
+    // that update() will be invoked on the gui thread.
+    QMetaObject::invokeMethod(this->qglview, "update");
+}
+
+void ThreadedRenderer::init() {
+    auto err = glewInit();
+    if (err != GLEW_OK) {
+      fprintf(stderr, "GLEW Error: %s\n", glewGetErrorString(err));
+    }
+    this->qglview->GLView::initializeGL();
+    this->inited = true;
+}
 
 QGLView::QGLView(QWidget *parent) :
 #ifdef USE_QOPENGLWIDGET
@@ -58,8 +92,69 @@ QGLView::QGLView(QWidget *parent) :
 	QGLWidget(parent)
 #endif
 {
-  installEventFilter(this);
-  init();
+
+	connect(this, &QOpenGLWidget::aboutToCompose, this, &QGLView::onAboutToCompose);
+	connect(this, &QOpenGLWidget::frameSwapped, this, &QGLView::onFrameSwapped);
+	connect(this, &QOpenGLWidget::aboutToResize, this, &QGLView::onAboutToResize);
+	connect(this, &QOpenGLWidget::resized, this, &QGLView::onResized);
+
+	this->renderThread = new QThread;
+	this->threadedRenderer = new ThreadedRenderer(this);
+	this->threadedRenderer->moveToThread(this->renderThread);
+	connect(this->renderThread, &QThread::finished, this->threadedRenderer, &QObject::deleteLater);
+
+
+    // BlockingQueuedConnection is used to ensure the signal 
+    // is handled in the main thread before continuing with render in ThreadedRenderer
+    connect(this->threadedRenderer, &ThreadedRenderer::beginRender, this, &QGLView::makeCurrent, Qt::BlockingQueuedConnection);
+    connect(this->threadedRenderer, &ThreadedRenderer::endRender, this, &QGLView::doneCurrent, Qt::BlockingQueuedConnection);
+
+	connect(this, &QGLView::renderRequested, this->threadedRenderer, &ThreadedRenderer::render);
+
+    // connect signals to threadedRenderer after thread is started
+    connect(this, &QGLView::initGL, this->threadedRenderer, &ThreadedRenderer::init, Qt::BlockingQueuedConnection);
+
+	this->renderThread->start();
+
+
+	init();
+}
+
+QGLView::~QGLView()
+{
+    this->threadedRenderer->prepareExit();
+    this->renderThread->quit();
+    this->renderThread->wait();
+    delete this->renderThread;
+}
+
+void QGLView::onAboutToCompose()
+{
+    this->threadedRenderer->lockRenderer();
+}
+
+void QGLView::onFrameSwapped()
+{
+    this->threadedRenderer->unlockRenderer();
+    emit renderRequested();
+}
+
+void QGLView::onAboutToResize()
+{
+    this->threadedRenderer->lockRenderer();
+}
+
+void QGLView::onResized()
+{
+    this->threadedRenderer->unlockRenderer();
+}
+
+void QGLView::paintEvent(QPaintEvent *) { 
+    this->requestedFrame++; 
+    PRINTDB("Requested Frame #%d", requestedFrame);
+    if (this->requestedFrame - this->currentFrame == 1) {
+        emit renderRequested();
+    }
 }
 
 #if defined(_WIN32) && !defined(USE_QOPENGLWIDGET)
@@ -106,11 +201,10 @@ void QGLView::viewAll()
 
 void QGLView::initializeGL()
 {
-  auto err = glewInit();
-  if (err != GLEW_OK) {
-    fprintf(stderr, "GLEW Error: %s\n", glewGetErrorString(err));
-  }
-  GLView::initializeGL();
+    context()->moveToThread(this->renderThread);
+
+    // need to initializeGL on the proper thread
+    emit initGL();
 }
 
 std::string QGLView::getRendererInfo() const
@@ -178,7 +272,7 @@ void QGLView::resizeGL(int w, int h)
   GLView::resizeGL(w,h);
 }
 
-void QGLView::paintGL()
+void QGLView::paintFrame()
 {
 	this->currentFrame = this->requestedFrame;
 	PRINTDB("Painting frame #%d", this->currentFrame);
@@ -199,27 +293,6 @@ void QGLView::paintGL()
 	if (running_under_wine) swapBuffers();
 #endif
 }
-
-
-bool QGLView::eventFilter(QObject *obj, QEvent *event)
-{
-	if (event->type() == QEvent::Paint) {
-		this->requestedFrame++;
-		PRINTDB("Requested frame #%d", this->requestedFrame);
-		if (this->requestedFrame - this->currentFrame > 1) {
-			PRINTDB("Frame DROPPED", NULL);
-			return true; // cancel redundant call
-		} else {
-			return QObject::eventFilter(obj, event);
-		}
-	}
-	return QObject::eventFilter(obj, event);
-}
-
-// do actual rendering, invoked by frameTimer
-//void QGLView::renderFrame()
-//{
-//}
 
 void QGLView::mousePressEvent(QMouseEvent *event)
 {
@@ -306,10 +379,11 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
 
       double my = 0;
 #if (QT_VERSION < QT_VERSION_CHECK(4, 7, 0))
-      if (event->buttons() & Qt::MidButton) {
+      if (event->buttons() & Qt::MidButton)
 #else
-      if (event->buttons() & Qt::MiddleButton) {
+      if (event->buttons() & Qt::MiddleButton)
 #endif
+      {
         my = mz;
         mz = 0;
         // actually lock the x-position

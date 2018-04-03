@@ -2,11 +2,17 @@
 
 #include "system-gl.h"
 #include <QtGlobal>
+#include <QMutex>
+#include <QWaitCondition>
+#include <QThread>
+#include <QPaintEvent>
 
 #ifdef USE_QOPENGLWIDGET
 #include <QOpenGLWidget>
+#include <QOpenGLContext>
 #else
 #include <QGLWidget>
+#include <QGLContext>
 #endif
 #include <QLabel>
 
@@ -14,6 +20,35 @@
 #include <Eigen/Geometry>
 #include "GLView.h"
 #include "renderer.h"
+
+class QGLView;
+
+class ThreadedRenderer : public QObject
+{
+    Q_OBJECT
+
+public:
+    ThreadedRenderer(QGLView *w);
+    void lockRenderer() { this->renderMutex.lock(); }
+    void unlockRenderer() { this->renderMutex.unlock(); }
+    void prepareExit() { this->exiting = true; }
+    void init();
+
+public slots:
+    void render();
+
+private:
+    bool inited;
+    QGLView *qglview;
+    QMutex renderMutex;
+    bool exiting;
+
+signals:
+    void beginRender();
+    void endRender();
+
+};
+
 
 class QGLView :
 #ifdef USE_QOPENGLWIDGET
@@ -33,6 +68,7 @@ class QGLView :
 
 public:
 	QGLView(QWidget *parent = nullptr);
+	~QGLView();
 #ifdef ENABLE_OPENCSG
 	bool hasOpenCSGSupport() { return this->opencsg_support; }
 #endif
@@ -54,6 +90,7 @@ public:
 	float getDPI() override { return this->devicePixelRatio(); }
 #endif
 	
+	void paintFrame();
 	const QImage & grabFrame();
 	bool save(const char *filename) override;
 	void resetView();
@@ -71,6 +108,10 @@ public:
 #ifdef USE_QOPENGLWIDGET
 	inline QImage grabFrameBuffer() { return grabFramebuffer(); }
 #endif
+
+protected:
+    void paintEvent(QPaintEvent *) override;
+
 private:
 	void init();
 
@@ -79,8 +120,9 @@ private:
 	uint currentFrame = 0;
 	QPoint last_mouse;
 	QImage frame; // Used by grabFrame() and save()
+	QThread *renderThread;
+	ThreadedRenderer *threadedRenderer;
 
-	bool eventFilter(QObject *obj, QEvent *event) override;
 	void wheelEvent(QWheelEvent *event) override;
 	void mousePressEvent(QMouseEvent *event) override;
 	void mouseMoveEvent(QMouseEvent *event) override;
@@ -88,15 +130,21 @@ private:
 	void mouseDoubleClickEvent(QMouseEvent *event) override;
 	void initializeGL() override;
 	void resizeGL(int w, int h) override;
-	void paintGL() override;
 	void normalizeAngle(GLdouble& angle);
 
 #ifdef ENABLE_OPENCSG
 	void display_opencsg_warning() override;
 private slots:
+	void onAboutToCompose();
+	void onFrameSwapped();
+	void onAboutToResize();
+	void onResized();
 	void display_opencsg_warning_dialog();
+
 #endif
 
 signals:
+	void renderRequested();
 	void doAnimateUpdate();
+    void initGL();
 };
