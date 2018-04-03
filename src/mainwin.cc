@@ -169,8 +169,8 @@ MainWindow::MainWindow(const QString &filename)
 	updateStatusBar(nullptr);
 
 	QSettingsCached settings;
-	editortype = settings.value("editor/editortype").toString();
-	useScintilla = (editortype != "Simple Editor");
+	editortype = settings.value(Preferences::PREF_EDITOR_TYPE).toString();
+	useScintilla = (editortype != Preferences::EDITOR_TYPE_SIMPLE);
 
 #ifdef USE_SCINTILLA_EDITOR
 	if (useScintilla) {
