@@ -63,13 +63,11 @@ void ThreadedRenderer::render()
     if (this->exiting || !this->inited)
         return;
 
-    // Notify QGLView on the main thread that we are beginning render.
-    emit beginRender();
+    this->qglview->makeCurrent();
 
 	this->qglview->paintFrame();
 
-    // Notify QGLView on the main thread that render is complete.
-    emit endRender();
+    this->qglview->doneCurrent();
 
     // Schedule composition. Note that this will use QueuedConnection, meaning
     // that update() will be invoked on the gui thread.
@@ -102,12 +100,6 @@ QGLView::QGLView(QWidget *parent) :
 	this->threadedRenderer = new ThreadedRenderer(this);
 	this->threadedRenderer->moveToThread(this->renderThread);
 	connect(this->renderThread, &QThread::finished, this->threadedRenderer, &QObject::deleteLater);
-
-
-    // BlockingQueuedConnection is used to ensure the signal 
-    // is handled in the main thread before continuing with render in ThreadedRenderer
-    connect(this->threadedRenderer, &ThreadedRenderer::beginRender, this, &QGLView::makeCurrent, Qt::BlockingQueuedConnection);
-    connect(this->threadedRenderer, &ThreadedRenderer::endRender, this, &QGLView::doneCurrent, Qt::BlockingQueuedConnection);
 
 	connect(this, &QGLView::renderRequested, this->threadedRenderer, &ThreadedRenderer::render);
 

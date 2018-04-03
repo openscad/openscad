@@ -43,10 +43,6 @@ private:
     QMutex renderMutex;
     bool exiting;
 
-signals:
-    void beginRender();
-    void endRender();
-
 };
 
 
