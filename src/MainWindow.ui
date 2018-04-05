@@ -1041,7 +1041,7 @@
   <action name="viewActionLeft">
    <property name="icon">
     <iconset resource="../openscad.qrc">
-     <normaloff>:/images/blackleft (copy).png</normaloff>:/images/blackleft (copy).png</iconset>
+     <normaloff>:/images/blackleft.png</normaloff>:/images/blackleft.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Left</string>
