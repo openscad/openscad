@@ -47,6 +47,7 @@ script: if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then ./scripts/travis-ci.sh ; fi
 
 env:
  global:
+ - QT_SELECT=qt5
  - OPENSCAD_UPLOAD_TESTS=yes 
  - secure: "mBWdnkXe8BL1SqYRBnOOpXn60xtHGfpeVOh+HrK8xZPflLyJLdgAz3jsrgPaaMibfuygOEfn86jm8dFZPDJSeGh+gGbcjbtOywvYtr0d/KJPk2ccCavlGEBsTSdfWVBMH2hqZ+OXrSn4amx12fmcF/rnpRZu0jHxRWrL4SbouXM="
  - secure: "gYPUvQekTxYW4bNIDvL6MFdPihd0HFGIq2saEbcOVyGYuZTdyBIzoh3tLIdG6jJNLWb/Nn2iWEsbsSsSIVk9UowW2qmuKVmzOyezKiu7wO2bdk08zeNtZLdFU4f8NsPz/ODXGQBCbjrBr8csnczQ9DKcxQeG2Lr9z1PjpJE43zY="
