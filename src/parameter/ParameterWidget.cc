@@ -479,7 +479,7 @@ void ParameterWidget::writeParameterSets()
 	if(this->unreadableFileExists){
 		QMessageBox msgBox;
 		msgBox.setWindowTitle(_("Saving presets"));
-		msgBox.setText(QString(_("%1 was found, but was unreadble. Do you want to overwrite %1?")).arg(QString::fromStdString(this->jsonFile)));
+		msgBox.setText(QString(_("%1 was found, but was unreadable. Do you want to overwrite %1?")).arg(QString::fromStdString(this->jsonFile)));
 		msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
 		msgBox.setDefaultButton(QMessageBox::Cancel);
 
