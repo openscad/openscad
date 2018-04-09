@@ -6,7 +6,7 @@ class ParameterSlider : public ParameterVirtualWidget
 {
 	Q_OBJECT
 public:
-	ParameterSlider(ParameterObject *parameterobject, int showDescription);
+	ParameterSlider(QWidget *parent, ParameterObject *parameterobject, DescLoD descriptionLoD);
 	void setValue() override;
 	void setParameterFocus() override;
 	

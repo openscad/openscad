@@ -25,6 +25,6 @@ public:
 	bool readParameterSet(const std::string &filename);
 	void writeParameterSet(const std::string &filename);
 	void applyParameterSet(class FileModule *fileModule, const std::string &setName);
-	const bool isEmpty(){return root.empty();}
+	bool isEmpty() const { return root.empty(); }
 	void addChild(const std::string name, const pt::ptree & tree){root.add_child(name,tree);};
 };

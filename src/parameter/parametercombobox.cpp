@@ -1,26 +1,11 @@
 #include "parametercombobox.h"
 #include "ignoreWheelWhenNotFocused.h"
 
-ParameterComboBox::ParameterComboBox(ParameterObject *parameterobject, int showDescription)
+ParameterComboBox::ParameterComboBox(QWidget *parent, ParameterObject *parameterobject, DescLoD descriptionLoD)
+	: ParameterVirtualWidget(parent, parameterobject, descriptionLoD)
 {
-	object = parameterobject;
-	setName(QString::fromStdString(object->name));
 	setValue();
 	connect(comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onChanged(int)));
-	if (showDescription == 0 || showDescription == 3) {
-		setDescription(object->description);
-		this->labelInline->hide();
-	}else if(showDescription == 1){
-		addInline(object->description);
-	}else {
-		comboBox->setToolTip(object->description);
-	}
-
-	if (showDescription == 3 && object->description !=""){
-		this->labelParameter->hide();
-	}else{
-		this->labelParameter->show();
-	}
 
 	IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
 	comboBox->installEventFilter(ignoreWheelWhenNotFocused);

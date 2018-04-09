@@ -54,7 +54,7 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 	setupUi(this);
 	this->setEnabled(false);
 
-	descriptionLoD = 0;
+	descriptionLoD = DescLoD::ShowDetails;
 	autoPreviewTimer.setInterval(500);
 	autoPreviewTimer.setSingleShot(true);
 	connect(&autoPreviewTimer, SIGNAL(timeout()), this, SLOT(onPreviewTimerElapsed()));
@@ -62,14 +62,33 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 	connect(comboBoxDetails,SIGNAL(currentIndexChanged(int)), this,SLOT(onDescriptionLoDChanged()));
 	connect(comboBoxPreset, SIGNAL(currentIndexChanged(int)), this, SLOT(onSetChanged(int)));
 	connect(reset, SIGNAL(clicked()), this, SLOT(resetParameter()));
-
 	this->extractor = new ParameterExtractor();
 	this->setMgr = new ParameterSet();
+	this->valueChanged=false;
 }
 
 void ParameterWidget::resetParameter()
 {
-	this->entries.clear(); //clearing the entries forces a reset
+	if(this->valueChanged){
+		QMessageBox msgBox;
+		msgBox.setWindowTitle(_("changes on current preset not saved"));
+		msgBox.setText(
+			QString(_("The changes on the current preset %1 are not saved yet. Do you really want to reset this preset and lose your changes?"))
+			.arg(comboBoxPreset->itemData(this->comboBoxPreset->currentIndex()).toString()));
+		msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+		msgBox.setDefaultButton(QMessageBox::Cancel);
+		if (msgBox.exec() == QMessageBox::Cancel) {
+			return;
+		}
+	}
+	this->valueChanged=false;
+
+	int currPreset = this->comboBoxPreset->currentIndex();
+
+	removeChangeIndicator(currPreset);
+
+	const std::string v = comboBoxPreset->itemData(currPreset).toString().toUtf8().constData();
+	applyParameterSet(v);
 	emit previewRequested();
 }
 
@@ -188,8 +207,32 @@ void ParameterWidget::setComboBoxPresetForSet()
 	}
 }
 
+//set selection
 void ParameterWidget::onSetChanged(int idx)
 {
+	if(this->lastComboboxIndex == idx) return; //nothing todo
+
+	//if necessary, confirm the change 
+	if(this->valueChanged){
+		QMessageBox msgBox;
+		msgBox.setWindowTitle(_("changes on current preset not saved"));
+		msgBox.setText(
+			QString(_("The current preset %1 contains changes, but is not saved yet. Do you really want to change the preset and lose your changes?"))
+			.arg(comboBoxPreset->itemData(lastComboboxIndex).toString()));
+		msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+		msgBox.setDefaultButton(QMessageBox::Cancel);
+		if (msgBox.exec() == QMessageBox::Cancel) {
+			//be careful to not cause a recursion
+			comboBoxPreset->setCurrentIndex(lastComboboxIndex);
+			return;
+		}
+	}
+	this->valueChanged=false;
+	
+	removeChangeIndicator(lastComboboxIndex);
+
+	//apply the change
+	this->lastComboboxIndex = idx;
 	const std::string v = comboBoxPreset->itemData(idx).toString().toUtf8().constData();
 	applyParameterSet(v);
 	emit previewRequested(false);
@@ -197,12 +240,20 @@ void ParameterWidget::onSetChanged(int idx)
 
 void ParameterWidget::onDescriptionLoDChanged()
 {
-	descriptionLoD =comboBoxDetails->currentIndex();
+	descriptionLoD =static_cast<DescLoD>(comboBoxDetails->currentIndex());
 	emit previewRequested();
 }
 
 void ParameterWidget::onValueChanged()
 {
+	if(!this->valueChanged){
+		this->comboBoxPreset->setItemText(
+			this->comboBoxPreset->currentIndex(),
+			this->comboBoxPreset->currentText() +" *"
+		);
+	}
+	this->valueChanged=true;
+
 	autoPreviewTimer.stop();
 	if (checkBoxAutoPreview->isChecked()) {
 		autoPreviewTimer.start();
@@ -323,27 +374,27 @@ ParameterVirtualWidget* ParameterWidget::CreateParameterWidget(std::string param
 	ParameterVirtualWidget *entry = nullptr;
 	switch(entries[parameterName]->target) {
 		case ParameterObject::COMBOBOX:{
-			entry = new ParameterComboBox(entries[parameterName], descriptionLoD);
+			entry = new ParameterComboBox(this, entries[parameterName], this->descriptionLoD);
 			break;
 		}
 		case ParameterObject::SLIDER:{
-			entry = new ParameterSlider(entries[parameterName], descriptionLoD);
+			entry = new ParameterSlider(this, entries[parameterName], this->descriptionLoD);
 			break;
 		}
 		case ParameterObject::CHECKBOX:{
-			entry = new ParameterCheckBox(entries[parameterName], descriptionLoD);
+			entry = new ParameterCheckBox(this, entries[parameterName], this->descriptionLoD);
 			break;
 		}
 		case ParameterObject::TEXT:{
-			entry = new ParameterText(entries[parameterName], descriptionLoD);
+			entry = new ParameterText(this, entries[parameterName], this->descriptionLoD);
 			break;
 		}
 		case ParameterObject::NUMBER:{
-			entry = new ParameterSpinBox(entries[parameterName], descriptionLoD);
+			entry = new ParameterSpinBox(this, entries[parameterName], this->descriptionLoD);
 			break;
 		}
 		case ParameterObject::VECTOR:{
-			entry = new ParameterVector(entries[parameterName], descriptionLoD);
+			entry = new ParameterVector(this, entries[parameterName], this->descriptionLoD);
 			break;
 		}
 		case ParameterObject::UNDEFINED:{
@@ -404,6 +455,8 @@ void ParameterWidget::updateParameterSet(std::string setName)
 	}
 
 	if (!setName.empty()) {
+		this->valueChanged=false;
+
 		pt::ptree iroot;
 		for (const auto &entry : entries) {
 			if (entry.second->groupName != "Hidden") {
@@ -414,9 +467,12 @@ void ParameterWidget::updateParameterSet(std::string setName)
 		}
 		setMgr->addParameterSet(setName, iroot);
 		const QString s(QString::fromStdString(setName));
-		if (this->comboBoxPreset->findText(s) == -1) {
+		const int idx = this->comboBoxPreset->findData(s);
+		if (idx == -1) {
 			this->comboBoxPreset->addItem(s, QVariant(s));
-			this->comboBoxPreset->setCurrentIndex(this->comboBoxPreset->findText(s));
+			this->comboBoxPreset->setCurrentIndex(this->comboBoxPreset->findData(s));
+		}else{
+			removeChangeIndicator(idx);
 		}
 		writeParameterSets();
 	}
@@ -426,8 +482,8 @@ void ParameterWidget::writeParameterSets()
 {
 	if(this->unreadableFileExists){
 		QMessageBox msgBox;
-		msgBox.setText(_("Saving presets"));
-		msgBox.setInformativeText(QString(_("%1 was found, but was unreadble. Do you want to overwrite %1?")).arg(QString::fromStdString(this->jsonFile)));
+		msgBox.setWindowTitle(_("Saving presets"));
+		msgBox.setText(QString(_("%1 was found, but was unreadable. Do you want to overwrite %1?")).arg(QString::fromStdString(this->jsonFile)));
 		msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
 		msgBox.setDefaultButton(QMessageBox::Cancel);
 
@@ -436,4 +492,13 @@ void ParameterWidget::writeParameterSets()
 		}
 	}
 	setMgr->writeParameterSet(this->jsonFile);
+	this->valueChanged=false;
+}
+
+void ParameterWidget::removeChangeIndicator(int idx)
+{
+	this->comboBoxPreset->setItemText(
+		idx,
+		comboBoxPreset->itemData(idx).toString()
+	);
 }

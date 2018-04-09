@@ -1,32 +1,17 @@
 #include "parameterslider.h"
 #include "ignoreWheelWhenNotFocused.h"
 
-ParameterSlider::ParameterSlider(ParameterObject *parameterobject, int showDescription)
+ParameterSlider::ParameterSlider(QWidget *parent, ParameterObject *parameterobject, DescLoD descriptionLoD)
+	: ParameterVirtualWidget(parent, parameterobject, descriptionLoD)
 {
 	this->pressed = true;
 	this->suppressUpdate=false;
 
-	object = parameterobject;
-	setName(QString::fromStdString(object->name));
 	setValue();
 	connect(slider, SIGNAL(sliderPressed()), this, SLOT(onPressed()));
 	connect(slider, SIGNAL(sliderReleased()), this, SLOT(onReleased()));
 	connect(slider, SIGNAL(valueChanged(int)), this, SLOT(onSliderChanged(int)));
 	connect(doubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(onSpinBoxChanged(double)));
-	if (showDescription == 0 || showDescription == 3) {
-		setDescription(object->description);
-		this->labelInline->hide();
-	}else if(showDescription == 1){
-		addInline(object->description);
-	}else {
-		slider->setToolTip(object->description);
-	}
-
-	if (showDescription == 3 && object->description !=""){
-		this->labelParameter->hide();
-	}else{
-		this->labelParameter->show();
-	}
 
 	IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
 	slider->installEventFilter(ignoreWheelWhenNotFocused);

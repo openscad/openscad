@@ -5,6 +5,8 @@
 #include "ui_ParameterEntryWidget.h"
 #include "parameterobject.h"
 
+enum class DescLoD {ShowDetails,Inline,HideDetails,DescOnly};
+
 class ParameterVirtualWidget : public QWidget, public Ui::ParameterEntryWidget
 {
 	Q_OBJECT
@@ -13,7 +15,7 @@ protected:
 	ParameterObject *object;
 
 public:
-	ParameterVirtualWidget(QWidget *parent = nullptr);
+	ParameterVirtualWidget(QWidget *parent,ParameterObject *parameterobject, DescLoD descriptionLoD);
 	~ParameterVirtualWidget();
 	virtual void setParameterFocus() = 0;
 	virtual void setValue() = 0;
@@ -25,6 +27,7 @@ signals:
 protected:
 	int decimalPrecision;
 	virtual void setPrecision(double number);
+private:
 	void setName(QString name);
 	void setDescription(const QString& description);
 	void addInline(QString txt);

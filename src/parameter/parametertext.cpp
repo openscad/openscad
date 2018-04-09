@@ -2,10 +2,9 @@
 #include "modcontext.h"
 #include "comment.h"
 
-ParameterText::ParameterText(ParameterObject *parameterobject, int showDescription)
+ParameterText::ParameterText(QWidget *parent, ParameterObject *parameterobject, DescLoD descriptionLoD)
+	: ParameterVirtualWidget(parent, parameterobject, descriptionLoD)
 {
-	object = parameterobject;
-	setName(QString::fromStdString(object->name));
 	setValue();
 
 	double max=32767;
@@ -15,20 +14,6 @@ ParameterText::ParameterText(ParameterObject *parameterobject, int showDescripti
 	lineEdit->setMaxLength(max);
 
 	connect(lineEdit, SIGNAL(textChanged(QString)), this, SLOT(onChanged(QString)));
-	if (showDescription == 0 || showDescription == 3) {
-		setDescription(object->description);
-		this->labelInline->hide();
-	}else if(showDescription == 1){
-		addInline(object->description);
-	}else{
-		lineEdit->setToolTip(object->description);
-	}
-
-	if (showDescription == 3 && object->description !=""){
-		labelParameter->hide();
-	}else{
-		labelParameter->show();
-	}
 }
 
 void ParameterText::onChanged(QString)
