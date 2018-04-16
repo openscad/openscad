@@ -23,8 +23,8 @@ change any step in the modeling process or make designs that are defined by
 configurable parameters.
 
 OpenSCAD provides two main modeling techniques: First there is constructive
-solid geometry (aka CSG) and second there is extrusion of 2D outlines. As data
-exchange format format for this 2D outlines Autocad DXF files are used. In
+solid geometry (aka CSG) and second there is extrusion of 2D outlines. As the data
+exchange format for these 2D outlines Autocad DXF files are used. In
 addition to 2D paths for extrusion it is also possible to read design parameters
 from DXF files. Besides DXF files OpenSCAD can read and create 3D models in the
 STL and OFF file formats.
