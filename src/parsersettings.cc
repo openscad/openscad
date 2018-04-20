@@ -97,7 +97,7 @@ void parser_init()
 		std::string sep = PlatformUtils::pathSeparatorChar();
 		typedef boost::split_iterator<std::string::iterator> string_split_iterator;
 		for (string_split_iterator it = boost::make_split_iterator(paths, boost::first_finder(sep, boost::is_iequal())); it != string_split_iterator(); ++it) {
-			add_librarydir(fs::absolute(fs::path(boost::copy_range<std::string>(*it))).string());
+			add_librarydir(fs::path(boost::copy_range<std::string>(*it)).string());
 		}
 	}
 
