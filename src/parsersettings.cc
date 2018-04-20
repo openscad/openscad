@@ -14,15 +14,43 @@ static void add_librarydir(const std::string &libdir)
 }
 
 /*!
+	Searches lib 'localpath' in 'libdirpath' relatevely to current dir 'sourcepath',
+	then, if not found, in 'libdirpath' relatively to 'sourcepath' parent dir,
+	then relatevely to parent-parent dir etc until reaches file system root.
+*/
+static fs::path search_libs_recursively(const fs::path &localpath, const fs::path &sourcepath, const fs::path &libdirpath) {
+	if(sourcepath.empty()) {
+		return fs::path();
+	} else {
+		fs::path usepath = sourcepath / libdirpath / localpath;
+		//PRINTB("INFO: search lib: %s", usepath);
+		if (fs::exists(usepath) && !fs::is_directory(usepath)) {
+			return usepath;
+		} else {
+			return search_libs_recursively(localpath, sourcepath.parent_path(), libdirpath);
+		}
+	}
+}
+
+/*!
 	Searces for the given file in library paths and returns the full path if found.
 	Returns an empty path if file cannot be found or filename is a directory.
 */
-fs::path search_libs(const fs::path &localpath)
+fs::path search_libs(const fs::path &localpath, const fs::path &sourcepath)
 {
 	for(const auto &dir : librarypath) {
-		fs::path usepath = fs::path(dir) / localpath;
-		if (fs::exists(usepath) && !fs::is_directory(usepath)) {
-			return usepath.string();
+		fs::path libdirpath = fs::path(dir);
+		if(libdirpath.is_absolute()) {
+			fs::path usepath = libdirpath / localpath;
+			if (fs::exists(usepath) && !fs::is_directory(usepath)) {
+				return usepath;
+			}
+		} else {
+			// relative path: search lib recursively
+			fs::path usepath = search_libs_recursively(localpath, sourcepath, libdirpath);
+			if (!usepath.empty()) {
+				return usepath;
+			}
 		}
 	}
 	return fs::path();
@@ -82,7 +110,7 @@ fs::path find_valid_path(const fs::path &sourcepath,
 		fs::path fpath = sourcepath / localpath;
 		if (fs::exists(fpath)) fpath = boosty::canonical(fpath);
 		if (check_valid(fpath, openfilenames)) return fpath;
-		fpath = search_libs(localpath);
+		fpath = search_libs(localpath, sourcepath);
 		if (!fpath.empty() && check_valid(fpath, openfilenames)) return fpath;
 	}
 	return fs::path();

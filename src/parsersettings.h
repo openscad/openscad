@@ -12,7 +12,7 @@ extern int parser_error_pos;
  */
 void parser_init();
 
-fs::path search_libs(const fs::path &localpath);
+fs::path search_libs(const fs::path &localpath, const fs::path &sourcepath);
 fs::path find_valid_path(const fs::path &sourcepath, 
                          const fs::path &localpath, 
                          const std::vector<std::string> *openfilenames = nullptr);
