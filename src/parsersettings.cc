@@ -132,4 +132,6 @@ void parser_init()
 	add_librarydir(PlatformUtils::userLibraryPath());
 
 	add_librarydir(fs::absolute(PlatformUtils::resourcePath("libraries")).string());
+	
+	add_librarydir("scad_modules");
 }
