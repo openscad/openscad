@@ -62,10 +62,6 @@ namespace PolysetUtils {
 				degeneratePolygons++;
 				continue;
 			}
-			if (pgon.size() == 3) { // Short-circuit
-				outps.append_poly(pgon);
-				continue;
-			}
 			
 			polygons.push_back(std::vector<IndexedFace>());
 			std::vector<IndexedFace> &faces = polygons.back();
@@ -88,18 +84,19 @@ namespace PolysetUtils {
 		std::vector<IndexedTriangle> allTriangles;
 		BOOST_FOREACH(const std::vector<IndexedFace> &faces, polygons) {
 			std::vector<IndexedTriangle> triangles;
+			bool err = false;
 			if (faces[0].size() == 3) {
 				triangles.push_back(IndexedTriangle(faces[0][0], faces[0][1], faces[0][2]));
 			}
 			else {
-				bool err = GeometryUtils::tessellatePolygonWithHoles(verts, faces, triangles, NULL);
-				if (!err) {
-					BOOST_FOREACH(const IndexedTriangle &t, triangles) {
-						outps.append_poly();
-						outps.append_vertex(verts[t[0]]);
-						outps.append_vertex(verts[t[1]]);
-						outps.append_vertex(verts[t[2]]);
-					}
+				err = GeometryUtils::tessellatePolygonWithHoles(verts, faces, triangles, NULL);
+			}
+			if (!err) {
+				BOOST_FOREACH(const IndexedTriangle &t, triangles) {
+					outps.append_poly();
+					outps.append_vertex(verts[t[0]]);
+					outps.append_vertex(verts[t[1]]);
+					outps.append_vertex(verts[t[2]]);
 				}
 			}
 		}
