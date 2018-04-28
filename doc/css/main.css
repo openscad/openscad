@@ -1,0 +1,123 @@
+body {
+	font-family: "UbuntuMonoRegular", "Ubuntu Mono", 'courier new', monospace, sans-serif;
+	font-size: 100%;
+	line-height: 1em;
+	color: #999;
+	padding: 0.6em;
+}
+
+a {
+	color: #447FFF;
+}
+
+h1 {
+	font-family: "UbuntuMonoBold", "Ubuntu Mono", 'courier new', monospace, sans-serif;
+	font-weight: normal;
+	font-style: normal;
+	font-size: 1.8em;
+	color: #DEBA00;
+	margin: 0 0 0.6em 0;
+}
+
+header h1 {
+	display: inline-block;
+	margin-right: 1ex;
+}
+
+h2 {
+	font-family: "UbuntuMonoBold", "Ubuntu Mono", 'courier new', monospace, sans-serif;
+	font-weight: normal;
+	font-style: normal;
+	font-size: 1.4em;
+	color: #79A22E;
+	margin: 0 0 10px 0;
+}
+
+header h2 {
+	display: inline;
+	color: #bbb;
+}
+
+section {
+	float: left;
+}
+
+section section article {
+	float: none;
+}
+
+article {
+	background: #FFFFDD;
+	-webkit-border-radius: 0.6em;
+	-moz-border-radius: 0.6em;
+	border-radius: 0.6em;
+	padding: 0.6em 0.6em 0.6em 0.6em;
+	float: left;
+	margin: 0 0.6em 0.6em 0;
+	border: 1px solid #DEBA00;
+}
+
+article.info {
+	background: #fff;
+	border: 1px solid #ddd;
+}
+
+article.info h2 {
+	color: #bbb;
+}
+
+code {
+	font-family: "UbuntuMonoRegular", "Ubuntu Mono", 'courier new', monospace, sans-serif;
+	color: #000;
+	display: block;
+	margin: 0 0 0.5em 0;
+}
+
+code span {
+	color: #999;
+}
+
+dt code {
+	display: inline;
+}
+
+dt {
+	float: left;
+	clear: left;
+}
+
+dd {
+	margin: 0 0 .5em 3em;
+}
+
+ul {
+	margin: 0 0 0.5em;
+	padding: 0 1em;
+}
+
+ul li {
+	/*margin: 0 0 0.2em 0;*/
+	line-height: 1.2em;
+}
+
+footer {
+	clear: both;
+	float: right;
+	font-size: 0.7em;
+	margin: 0 0.6em 0.6em 0;
+	text-align: right;
+}
+
+.clear {
+	clear: both;
+}
+
+.fork {
+	position: absolute;
+	top: 0;
+	right:0;
+}
+
+.fork img{
+	border: none;
+}

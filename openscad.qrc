@@ -30,6 +30,11 @@
     <file>icons/prefsEditor.png</file>
     <file>icons/prefsUpdate.png</file>
     <file>src/AboutDialog.html</file>
+    <file>doc/OfflineCheat.html</file>
+    <file>doc/css/main.css</file>
+    <file>doc/css/fonts.css</file>
+    <file>doc/css/print.css</file>
+    <file>doc/css/normalize.css</file>
     <file>images/export.png</file>
     <file>images/axes.png</file>
     <file>images/export-white.png</file>

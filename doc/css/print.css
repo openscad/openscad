@@ -1,0 +1,13 @@
+@page {
+	size: landscape;
+	margin: 12pt;
+}
+body {
+	font-size: 65%;
+}
+.fork {
+	display: none;
+}
+section section {
+	height: auto;
+}
