@@ -10,6 +10,7 @@ objects
 .gdbinit
 .qmake.stash
 .tags*
+.uuid
 **/#*#
 /.dir-locals.el
 testdata/scad/2D/features/import_dxf-tests.scad
