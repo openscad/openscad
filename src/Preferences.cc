@@ -169,6 +169,7 @@ void Preferences::init() {
 	this->defaultmap["launcher/showOnStartup"] = true;
 	this->defaultmap["advanced/localization"] = true;
 	this->defaultmap["advanced/autoReloadRaise"] = false;
+	this->defaultmap["advanced/enableSoundNotification"] = true;
 
 	// Toolbar
 	QActionGroup *group = new QActionGroup(this);
@@ -584,6 +585,12 @@ void Preferences::on_checkBoxEnableLineNumbers_toggled(bool checked)
     writeSettings();
 }
 
+void Preferences::on_enableSoundOnRenderCompleteCheckBox_toggled(bool state)
+{
+	QSettingsCached settings;
+	settings.setValue("advanced/enableSoundNotification", state);
+}
+
 void Preferences::writeSettings()
 {
 	SettingsWriter settingsWriter;
@@ -690,6 +697,7 @@ void Preferences::updateGUI()
 	this->undockCheckBox->setChecked(getValue("advanced/undockableWindows").toBool());
 	this->undockCheckBox->setEnabled(this->reorderCheckBox->isChecked());
 	this->launcherBox->setChecked(getValue("launcher/showOnStartup").toBool());
+	this->enableSoundOnRenderCompleteCheckBox->setChecked(getValue("advanced/enableSoundNotification").toBool());
 
 	Settings::Settings *s = Settings::Settings::inst();
 	updateComboBox(this->comboBoxLineWrap, Settings::Settings::lineWrap);
