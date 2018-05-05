@@ -104,6 +104,7 @@ mingw* {
 
 CONFIG += qt
 QT += widgets concurrent
+QT += multimedia
 
 netbsd* {
    QMAKE_LFLAGS += -L/usr/X11R7/lib
@@ -652,3 +653,6 @@ INSTALLS += icons
 man.path = $$PREFIX/share/man/man1
 man.extra = cp -f doc/openscad.1 \"\$(INSTALL_ROOT)$${man.path}/$${FULLNAME}.1\"
 INSTALLS += man
+
+DISTFILES += \
+    sounds/complete.wav
