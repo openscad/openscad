@@ -7,11 +7,9 @@ Response NodeVisitor::traverse(const AbstractNode &node, const State &state)
 {
 	State newstate = state;
 	newstate.setNumChildren(node.getChildren().size());
-	
-	Response response = ContinueTraversal;
 	newstate.setPrefix(true);
 	newstate.setParent(state.parent());
-	response = node.accept(newstate, *this);
+	Response response = node.accept(newstate, *this);
 
 	// Pruned traversals mean don't traverse children
 	if (response == ContinueTraversal) {

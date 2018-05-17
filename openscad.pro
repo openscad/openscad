@@ -25,6 +25,11 @@
   message("If you're building a development binary, consider adding CONFIG+=experimental")
 }
 
+CONFIG+=experimental
+# CONFIG+=debug
+
+DEFINES+=CGAL_DISABLE_ROUNDING_MATH_CHECK=ON
+
 isEmpty(QT_VERSION) {
   error("Please use qmake for Qt 4 or Qt 5 (probably qmake-qt4)")
 }
@@ -144,6 +149,9 @@ netbsd* {
   # might want to actually turn this on once in a while
   QMAKE_CXXFLAGS_WARN_ON += -Wno-sign-compare
 }
+
+# Valgrind
+QMAKE_CXXFLAGS += -frounding-math
 
 CONFIG(skip-version-check) {
   # force the use of outdated libraries
