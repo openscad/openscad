@@ -233,6 +233,7 @@ set(CORE_SOURCES
   src/StatCache.cc
   src/node.cc 
   src/NodeVisitor.cc 
+  src/ThreadedNodeVisitor.cc
   src/context.cc 
   src/builtincontext.cc
   src/modcontext.cc 
@@ -433,6 +434,7 @@ endif()
 set(RESOURCE_FILES icons/OpenSCAD.icns)
 
 add_executable(OpenSCAD ${Sources} ${RESOURCE_FILES})
+target_link_libraries(OpenSCAD pthread)
 
 # FIXME: snapshot, ICON = icons/icon-nightly.icns
 
