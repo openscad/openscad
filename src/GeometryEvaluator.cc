@@ -111,8 +111,8 @@ void getPolygons(const Geometry::Geometries &children, std::vector<shared_ptr<co
 	}
 }
 
-GeometryEvaluator::GeometryEvaluator(const class Tree &tree, bool threaded /*=false*/)
-	: ThreadedNodeVisitor(tree, threaded)
+GeometryEvaluator::GeometryEvaluator(const class Tree &tree)
+	: ThreadedNodeVisitor(tree)
 	, tree(tree)
 {
 }

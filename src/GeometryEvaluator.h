@@ -15,7 +15,7 @@
 class GeometryEvaluator : public ThreadedNodeVisitor
 {
 public:
-	GeometryEvaluator(const class Tree &tree, bool threaded = false);
+	GeometryEvaluator(const class Tree &tree);
 	virtual ~GeometryEvaluator() {}
 
 	shared_ptr<const Geometry> evaluateGeometry(const AbstractNode &node, bool allownef);

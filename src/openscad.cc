@@ -332,7 +332,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 
 	Tree tree;
 #ifdef ENABLE_CGAL
-	GeometryEvaluator geomevaluator(tree, true);
+	GeometryEvaluator geomevaluator(tree);
 #endif
 	if (arg_info) {
 	    info();
