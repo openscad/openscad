@@ -150,66 +150,72 @@ namespace CGALUtils {
 	CGAL_Nef_polyhedron *applyOperator(const Geometry::Geometries &children, OpenSCADOperator op)
 	{
 		CGAL_Nef_polyhedron *N = nullptr;
-		lockErrors(CGAL::THROW_EXCEPTION);
-		try {
+		if (op == OpenSCADOperator::UNION) {
 			// Speeds up n-ary union operations significantly
-			CGAL::Nef_nary_union_3<CGAL_Nef_polyhedron3> nary_union;
-			int nary_union_num_inserted = 0;
-			
-			for(const auto &item : children) {
-				const shared_ptr<const Geometry> &chgeom = item.second;
-				shared_ptr<const CGAL_Nef_polyhedron> chN = 
-					dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
-				if (!chN) {
-					const PolySet *chps = dynamic_cast<const PolySet*>(chgeom.get());
-					if (chps) chN.reset(createNefPolyhedronFromGeometry(*chps));
-				}
+			N = applyUnion(children);
+		} else {
+			lockErrors(CGAL::THROW_EXCEPTION); // TODO: outer scope
+			try {
+				// Speeds up n-ary union operations significantly
+				CGAL::Nef_nary_union_3<CGAL_Nef_polyhedron3> nary_union;
+				int nary_union_num_inserted = 0;
 				
-				if (op == OpenSCADOperator::UNION) {
-					if (!chN->isEmpty()) {
-						// nary_union.add_polyhedron() can issue assertion errors:
-						// https://github.com/openscad/openscad/issues/802
-						nary_union.add_polyhedron(*chN->p3);
-						nary_union_num_inserted++;
+				for(const auto &item : children) {
+					const shared_ptr<const Geometry> &chgeom = item.second;
+					shared_ptr<const CGAL_Nef_polyhedron> chN = 
+						dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
+					if (!chN) {
+						const PolySet *chps = dynamic_cast<const PolySet*>(chgeom.get());
+						if (chps) chN.reset(createNefPolyhedronFromGeometry(*chps));
 					}
-					continue;
+					
+					if (op == OpenSCADOperator::UNION) {
+						if (!chN->isEmpty()) {
+							// nary_union.add_polyhedron() can issue assertion errors:
+							// https://github.com/openscad/openscad/issues/802
+							nary_union.add_polyhedron(*chN->p3);
+							nary_union_num_inserted++;
+						}
+						continue;
+					}
+					// Initialize N with first expected geometric object
+					if (!N) {
+						N = new CGAL_Nef_polyhedron(*chN);
+						continue;
+					}
+					
+					// Intersecting something with nothing results in nothing
+					if (chN->isEmpty()) {
+						if (op == OpenSCADOperator::INTERSECTION) *N = *chN;
+						continue;
+					}
+					
+					// empty op <something> => empty
+					if (N->isEmpty()) continue;
+					
+					switch (op) {
+					case OpenSCADOperator::INTERSECTION:
+						*N *= *chN;
+						break;
+					case OpenSCADOperator::DIFFERENCE:
+						*N -= *chN;
+						break;
+					case OpenSCADOperator::MINKOWSKI:
+						N->minkowski(*chN);
+						break;
+					default:
+						PRINTB("ERROR: Unsupported CGAL operator: %d", static_cast<int>(op));
+					}
+					item.first->progress_report();
 				}
-				// Initialize N with first expected geometric object
-				if (!N) {
-					N = new CGAL_Nef_polyhedron(*chN);
-					continue;
-				}
-				
-				// Intersecting something with nothing results in nothing
-				if (chN->isEmpty()) {
-					if (op == OpenSCADOperator::INTERSECTION) *N = *chN;
-					continue;
-				}
-				
-				// empty op <something> => empty
-				if (N->isEmpty()) continue;
-				
-				switch (op) {
-				case OpenSCADOperator::INTERSECTION:
-					*N *= *chN;
-					break;
-				case OpenSCADOperator::DIFFERENCE:
-					*N -= *chN;
-					break;
-				case OpenSCADOperator::MINKOWSKI:
-					N->minkowski(*chN);
-					break;
-				default:
-					PRINTB("ERROR: Unsupported CGAL operator: %d", static_cast<int>(op));
-				}
-				item.first->progress_report();
+			}
+			// union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad and testdata/scad/bugs/issue204.scad
+			catch (const CGAL::Failure_exception &e) {
+				std::string opstr = op == OpenSCADOperator::INTERSECTION ? "intersection" : op == OpenSCADOperator::DIFFERENCE ? "difference" : op == OpenSCADOperator::UNION ? "union" : "UNKNOWN";
+				PRINTB("ERROR: CGAL error in CGALUtils::applyBinaryOperator %s: %s", opstr % e.what());
 			}
 		}
-		// union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad and testdata/scad/bugs/issue204.scad
-		catch (const CGAL::Failure_exception &e) {
-			std::string opstr = op == OpenSCADOperator::INTERSECTION ? "intersection" : op == OpenSCADOperator::DIFFERENCE ? "difference" : op == OpenSCADOperator::UNION ? "union" : "UNKNOWN";
-			PRINTB("ERROR: CGAL error in CGALUtils::applyBinaryOperator %s: %s", opstr % e.what());
-		}
+
 		unlockErrors();
 		return N;
 	}
