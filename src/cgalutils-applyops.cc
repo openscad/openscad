@@ -112,34 +112,40 @@ namespace CGALUtils {
 	*/
 	CGAL_Nef_polyhedron *applyUnion(const Geometry::Geometries &children)
 	{
-		CGAL_Nef_polyhedron *N = NULL;
+		CGAL_Nef_polyhedron *N = nullptr;
 		// Speeds up n-ary union operations significantly
 		CGAL::Nef_nary_union_3<CGAL_Nef_polyhedron3> nary_union;
 		int nary_union_num_inserted = 0;
 
 		for (const auto &item : children) {
 			const shared_ptr<const Geometry> &chgeom = item.second;
-			shared_ptr<const CGAL_Nef_polyhedron> chN =
+			shared_ptr<const CGAL_Nef_polyhedron> chNef =
 				dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
-			if (!chN) {
+
+			// create nef from polyset
+			if (!chNef) {
 				const PolySet *chps = dynamic_cast<const PolySet*>(chgeom.get());
-				if (chps) chN.reset(createNefPolyhedronFromGeometry(*chps));
+				if (chps) chNef.reset(createNefPolyhedronFromGeometry(*chps));
 			}
 
-			if (chN && !chN->isEmpty()) {
+			if (chNef && !chNef->isEmpty()) {
 				// nary_union.add_polyhedron() can issue assertion errors:
 				// https://github.com/openscad/openscad/issues/802
-				nary_union.add_polyhedron(*chN->p3);
+				nary_union.add_polyhedron(*chNef->p3);
 				nary_union_num_inserted++;
+			} else {
+				// TODO: error?
 			}
 
-			if (item.first)
+			if (item.first) {
 				item.first->progress_report();
+			}
 		}
-		
+
 		if (nary_union_num_inserted > 0) {
 			N = new CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3(nary_union.get_union()));
 		}
+
 		return N;
 	}
 
