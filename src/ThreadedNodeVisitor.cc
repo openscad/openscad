@@ -23,9 +23,11 @@ class ProcessingContext {
 public:
     ProcessingContext() : abort(false), finished(false) {}
     std::queue<std::shared_ptr<WorkItem>> workQueue;
+    // This lock is required when reading or writing the workQueue
     std::mutex queueMutex;
-
+    // The condition variable is signaled whenever a new item is added to the queue.
     std::condition_variable cv;
+
     std::atomic<bool> abort; // Threads check this to see if they need to abort
     std::atomic<bool> finished;
 
@@ -43,8 +45,11 @@ public:
 // or that it is finished.
 void ProcessWorkItems(ProcessingContext*ctx, NodeVisitor*visitor) {
     while (!ctx->abort && !ctx->finished) {
+        // Wait for a work item to process
         std::unique_lock<std::mutex> lk(ctx->queueMutex);
-        ctx->cv.wait(lk, [ctx] { return !ctx->workQueue.empty() || ctx->abort || ctx->finished;});
+        ctx->cv.wait(lk, [ctx]() {
+            return !ctx->workQueue.empty() || ctx->abort || ctx->finished;
+        });
 
         if (ctx->abort || ctx->finished) {
             return;
@@ -54,14 +59,10 @@ void ProcessWorkItems(ProcessingContext*ctx, NodeVisitor*visitor) {
             continue;
         }
 
+        // Get available work item
         auto workItem = ctx->workQueue.front();
         ctx->workQueue.pop();
         lk.unlock();
-
-        // no work to process
-        if (workItem->node == nullptr) {
-            continue;
-        }
 
         if (THREAD_DEBUG){
             // cout << "Processing item" << endl;
@@ -96,7 +97,8 @@ void ProcessWorkItems(ProcessingContext*ctx, NodeVisitor*visitor) {
                 cout << "Finished traversing root item" << endl;
             }
             ctx->finished = true;
-            ctx->cv.notify_all(); // wake up each thread so it can see we're done and exit
+            // wake up each thread so it can see we're done and exit
+            ctx->cv.notify_all();
         }
     }
 }
