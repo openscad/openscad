@@ -7,9 +7,6 @@
 class ThreadedNodeVisitor : public NodeVisitor {
   const Tree &_tree;
 
-protected:
-  virtual void smartCacheInsert(const AbstractNode &node, const shared_ptr<const Geometry> &geom);
-
 public:
   ThreadedNodeVisitor(const Tree &tree) : _tree(tree) {}
 

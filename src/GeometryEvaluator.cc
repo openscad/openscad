@@ -363,9 +363,6 @@ unsigned int GeometryEvaluator::collectChildren(const AbstractNode &node, Geomet
 void GeometryEvaluator::smartCacheInsert(const AbstractNode &node, 
 																				 const shared_ptr<const Geometry> &geom)
 {
-	// let the base class know
-	ThreadedNodeVisitor::smartCacheInsert(node, geom);
-
 	const std::string &key = this->tree.getIdString(node);
 
 	shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom);

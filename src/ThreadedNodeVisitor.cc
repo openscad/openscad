@@ -164,7 +164,3 @@ Response ThreadedNodeVisitor::traverseThreaded(const AbstractNode &node, const c
 
     return ctx.abort ? Response::AbortTraversal : Response::ContinueTraversal;
 }
-
-void ThreadedNodeVisitor::smartCacheInsert(const AbstractNode &node, const shared_ptr<const Geometry> &geom) {
- // TODO
-}
