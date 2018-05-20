@@ -1,4 +1,4 @@
-//Description("combo box for nunber")
+//Description("combo box for number")
 //Parameter([0, 1, 2, 3])
 Numbers = 2;
 //Description("combo box for string")
@@ -46,5 +46,7 @@ String2 = "hello";
 //Description("Text box for vector with less than or equal to 4 elements")
 //Parameter("any thing")
 Vector3 = [12, 34, 45, 23];
+//Group(" multiple - group - names ")
+//Parameter("empty vector see #2105 and #2183")
+Vector4 = [];
 echo(String);
-

@@ -32,7 +32,7 @@
 #include "groupwidget.h"
 #include "parameterset.h"
 
-class ParameterWidget : public QWidget, public Ui::ParameterWidget, public ParameterExtractor, public ParameterSet
+class ParameterWidget : public QWidget, public Ui::ParameterWidget
 {
 	Q_OBJECT
 private:
@@ -45,39 +45,52 @@ private:
 	typedef std::map<std::string,groupInst > group_map;
 	group_map groupMap;
 	QTimer autoPreviewTimer;
-	bool descriptionShow;
-	QVBoxLayout * anyLayout;
+	DescLoD descriptionLoD; //configuration if and how much of the description is shown
 	std::string jsonFile;
 	bool anyfocused;
+	bool valueChanged;
 	ParameterVirtualWidget *entryToFocus;
+	int lastComboboxIndex = 0;
 
+	void connectWidget();
+	void updateWidget();
+	void cleanScrollArea();
+	void rebuildGroupMap();
+	ParameterVirtualWidget* CreateParameterWidget(std::string parameterName);
+	void setComboBoxPresetForSet();
+	void removeChangeIndicator(int idx);
+
+	void setFile(QString File);
+
+	bool unreadableFileExists=false;
+	entry_map_t entries;
+	std::vector<std::string> ParameterPos;
+	ParameterExtractor *extractor;
+	ParameterSet *setMgr;
 public:
-	ParameterWidget(QWidget *parent = 0);
-	virtual ~ParameterWidget();
+	ParameterWidget(QWidget *parent = nullptr);
+	~ParameterWidget();
 	void readFile(QString scadFile);
-	void writeFile(QString scadFile);
-																
+	void writeFileIfNotEmpty(QString scadFile);
+	void setParameters(const FileModule* module,bool);
+	void applyParameters(FileModule *fileModule);
+
 protected slots:
 	void onValueChanged();
 	void onPreviewTimerElapsed();
-	void onDescriptionShow();
+	void onDescriptionLoDChanged();
 	void onSetChanged(int idx);
 	void onSetAdd();
+	void onSetSaveButton();
 	void onSetDelete();
 	void resetParameter();
-	
+
 signals:
-	void previewRequested();
-	
+	void previewRequested(bool rebuildParameterUI=true);
+
 protected:
-	void connectWidget();
-	void begin();
-	void addEntry(class ParameterVirtualWidget *entry);
-	void end();
-	void clear();
-	void AddParameterWidget(std::string parameterName);
-	void setComboBoxForSet();
 	void applyParameterSet(std::string setName);
 	void updateParameterSet(std::string setName);
+	void writeParameterSets();
 };
 

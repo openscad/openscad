@@ -7,15 +7,16 @@ matrix:
       dist: trusty
       env: DIST="trusty"
       sudo: required
-      cache: apt
-    - os: linux
-      compiler: gcc
-      dist: precise
-      env: DIST="precise"
-      cache: apt
+      cache:
+        - apt
+        - ccache
     - os: osx
       compiler: clang
       env: DIST="osx"
+      cache:
+        - ccache
+        - directories:
+          - $HOME/Library/Caches/Homebrew
 
 notifications:
   irc:
@@ -26,13 +27,15 @@ notifications:
     skip_join: true
 
 before_install:
- - if [[ "$DIST" == "trusty" ]]; then wget -qO - http://files.openscad.org/OBS-Repository-Key.pub | sudo apt-key add - ; echo 'yes' | sudo add-apt-repository 'deb http://download.opensuse.org/repositories/home:/t-paul:/lib3mf/xUbuntu_14.04/ ./' ; sudo apt-get update -qq ; sudo apt-get purge -qq fglrx ; sudo apt-get install -qq build-essential libqt4-dev libqt4-opengl-dev libxmu-dev cmake bison flex git-core libboost-all-dev libXi-dev libmpfr-dev libboost-dev libglew-dev libeigen3-dev libcgal-dev libgmp3-dev libgmp-dev curl imagemagick libfontconfig-dev libopencsg-dev libharfbuzz-dev libzip-dev lib3mf-dev ; fi
- - if [[ "$DIST" == "precise" ]]; then echo 'yes' | sudo add-apt-repository ppa:chrysn/openscad ; sudo apt-get update -qq ; sudo apt-get purge -qq fglrx ; sudo apt-get install -qq build-essential libqt4-dev libqt4-opengl-dev libxmu-dev cmake bison flex git-core libboost-all-dev libXi-dev libmpfr-dev libboost-dev libglew-dev libeigen3-dev libcgal-dev libgmp3-dev libgmp-dev curl imagemagick libfontconfig-dev ; sudo apt-get install -qq libopencsg-dev ; echo 'yes' | sudo add-apt-repository ppa:mapnik/nightly-trunk ; sudo apt-get update -qq ; sudo apt-get install -qq libharfbuzz-dev libzip-dev ; echo 'yes' | sudo add-apt-repository ppa:oibaf/graphics-drivers ; sudo apt-get update -qq ; sudo apt-get install --install-recommends libgl1-mesa-dev-lts-quantal ; fi
- - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update ; ./scripts/macosx-build-homebrew.sh ; fi
+ # Fix for "write error" build failures  ( https://github.com/travis-ci/travis-ci/issues/8920 )
+ - python -c "import fcntl; fcntl.fcntl(1, fcntl.F_SETFL, 0)"
+ - if [[ "$DIST" == "trusty" ]]; then wget -qO - http://files.openscad.org/OBS-Repository-Key.pub | sudo apt-key add - ; echo 'yes' | sudo add-apt-repository 'deb http://download.opensuse.org/repositories/home:/t-paul:/lib3mf/xUbuntu_14.04/ ./' ; sudo apt-get update -qq ; sudo apt-get purge -qq fglrx ; sudo apt-get install -qq build-essential qtbase5-dev libqt5opengl5-dev libxmu-dev cmake bison flex git-core libboost-all-dev libxi-dev libmpfr-dev libboost-dev libglew-dev libeigen3-dev libcgal-dev libgmp3-dev libgmp-dev curl imagemagick libfontconfig-dev libopencsg-dev libharfbuzz-dev libzip-dev lib3mf-dev ; fi
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ./scripts/macosx-build-homebrew.sh ; fi
 
 branches:
   only:
     - master
+    - coverity_scan
 
 before_script:
  - echo -e "Host files.openscad.org\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
@@ -44,6 +47,7 @@ script: if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then ./scripts/travis-ci.sh ; fi
 
 env:
  global:
+ - QT_SELECT=qt5
  - OPENSCAD_UPLOAD_TESTS=yes 
  - secure: "mBWdnkXe8BL1SqYRBnOOpXn60xtHGfpeVOh+HrK8xZPflLyJLdgAz3jsrgPaaMibfuygOEfn86jm8dFZPDJSeGh+gGbcjbtOywvYtr0d/KJPk2ccCavlGEBsTSdfWVBMH2hqZ+OXrSn4amx12fmcF/rnpRZu0jHxRWrL4SbouXM="
  - secure: "gYPUvQekTxYW4bNIDvL6MFdPihd0HFGIq2saEbcOVyGYuZTdyBIzoh3tLIdG6jJNLWb/Nn2iWEsbsSsSIVk9UowW2qmuKVmzOyezKiu7wO2bdk08zeNtZLdFU4f8NsPz/ODXGQBCbjrBr8csnczQ9DKcxQeG2Lr9z1PjpJE43zY="

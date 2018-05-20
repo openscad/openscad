@@ -1,8 +1,10 @@
 # Prefer QOpenGLWidget for non-Windows platforms
 # To explicitly enable QOpenGLWidget: qmake CONFIG += qopenglwidget
 # To explicitly enable QGLWidget: qmake CONFIG += qglwidget
-!win*: CONFIG += qopenglwidget
-qopenglwidget:!qglwidget:!lessThan(QT_VERSION, 5.4): CONFIG += using_qopenglwidget
+has_qopenglwidget {
+  !win*: CONFIG += qopenglwidget
+  qopenglwidget:!qglwidget: CONFIG += using_qopenglwidget
+}
 
 using_qopenglwidget {
   message("Using QOpenGLWidget")

@@ -21,11 +21,11 @@
 
 namespace libsvg {
 
-shape::shape() : parent(NULL), x(0), y(0)
+shape::shape() : parent(nullptr), x(0), y(0)
 {
 }
 
-shape::shape(const shape& orig)
+shape::shape(const shape& /*orig*/)
 {
 }
 
@@ -55,7 +55,7 @@ shape::create_from_name(const char *name)
 	} else if (group::name == name) {
 		return new group();
 	} else {
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -138,14 +138,14 @@ shape::collect_transform_matrices(std::vector<Eigen::Matrix3d>& matrices, shape 
 	boost::char_separator<char> sep(" ,()", commands.c_str());
 	tokenizer tokens(transform_arg, sep);
 
-	transformation *t = NULL;
+	transformation *t = nullptr;
 	std::vector<transformation *> transformations;
 	for (tokenizer::iterator it = tokens.begin();it != tokens.end();++it) {
 		std::string v = (*it);
 		if ((v.length() == 1) && (commands.find(v) != std::string::npos)) {
-			if (t != NULL) {
+			if (t != nullptr) {
 				transformations.push_back(t);
-				t = NULL;
+				t = nullptr;
 			}
 			switch (v[0]) {
 			case 'm':
@@ -168,7 +168,7 @@ shape::collect_transform_matrices(std::vector<Eigen::Matrix3d>& matrices, shape 
 				break;
 			default:
 				std::cout << "unknown transform op " << v << std::endl;
-				t = NULL;
+				t = nullptr;
 			}
 		} else {
 			if (t) {
@@ -176,7 +176,7 @@ shape::collect_transform_matrices(std::vector<Eigen::Matrix3d>& matrices, shape 
 			}
 		}
 	}
-	if (t != NULL) {
+	if (t != nullptr) {
 		transformations.push_back(t);
 	}
 	
@@ -192,7 +192,7 @@ void
 shape::apply_transform()
 {
 	std::vector<Eigen::Matrix3d> matrices;
-	for (shape *s = this;s->get_parent() != NULL;s = s->get_parent()) {
+	for (shape *s = this;s->get_parent() != nullptr;s = s->get_parent()) {
 		collect_transform_matrices(matrices, s);
 	}
 

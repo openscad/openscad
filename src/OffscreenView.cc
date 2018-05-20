@@ -10,7 +10,7 @@
 OffscreenView::OffscreenView(int width, int height)
 {
   this->ctx = create_offscreen_context(width, height);
-  if ( this->ctx == NULL ) throw -1;
+  if ( this->ctx == nullptr ) throw -1;
   GLView::initializeGL();
   GLView::resizeGL(width, height);
 }

@@ -44,19 +44,19 @@
 
 CGALRenderer::CGALRenderer(shared_ptr<const class Geometry> geom)
 {
-	if (shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(geom)) {
+	if (auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
 		assert(ps->getDimension() == 3);
 		// We need to tessellate here, in case the generated PolySet contains concave polygons
     // See testdata/scad/3D/features/polyhedron-concave-test.scad
-		PolySet *ps_tri = new PolySet(3, ps->convexValue());
+		auto ps_tri = new PolySet(3, ps->convexValue());
 		ps_tri->setConvexity(ps->getConvexity());
 		PolysetUtils::tessellate_faces(*ps, *ps_tri);
 		this->polyset.reset(ps_tri);
 	}
-	else if (shared_ptr<const Polygon2d> poly = dynamic_pointer_cast<const Polygon2d>(geom)) {
+	else if (auto poly = dynamic_pointer_cast<const Polygon2d>(geom)) {
 		this->polyset.reset(poly->tessellate());
 	}
-	else if (shared_ptr<const CGAL_Nef_polyhedron> new_N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+	else if (auto new_N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
 		assert(new_N->getDimension() == 3);
 		if (!new_N->isEmpty()) {
 			this->N = new_N;
@@ -108,7 +108,7 @@ void CGALRenderer::draw(bool showfaces, bool showedges) const
 			for (size_t i=0; i < this->polyset->polygons.size(); i++) {
 				glBegin(GL_POLYGON);
 				for (size_t j=0; j < this->polyset->polygons[i].size(); j++) {
-					const Vector3d &p = this->polyset->polygons[i][j];
+					const auto &p = this->polyset->polygons[i][j];
 					glVertex3d(p[0], p[1], 0);
 				}
 				glEnd();
@@ -126,18 +126,18 @@ void CGALRenderer::draw(bool showfaces, bool showedges) const
 		else {
 			// Draw 3D polygons
 			const Color4f c(-1,-1,-1,-1);	
-			setColor(COLORMODE_MATERIAL, c.data(), NULL);
-			this->polyset->render_surface(CSGMODE_NORMAL, Transform3d::Identity(), NULL);
+			setColor(ColorMode::MATERIAL, c.data(), nullptr);
+			this->polyset->render_surface(CSGMODE_NORMAL, Transform3d::Identity(), nullptr);
 		}
 	}
 	else {
-		shared_ptr<class CGAL_OGL_Polyhedron> polyhedron = getPolyhedron();
-        if (polyhedron) {
-            PRINTD("draw() polyhedron");
-            if (showfaces) polyhedron->set_style(SNC_BOUNDARY);
-            else polyhedron->set_style(SNC_SKELETON);
-            polyhedron->draw(showfaces && showedges);
-        }
+		auto polyhedron = getPolyhedron();
+		if (polyhedron) {
+			PRINTD("draw() polyhedron");
+			if (showfaces) polyhedron->set_style(SNC_BOUNDARY);
+			else polyhedron->set_style(SNC_SKELETON);
+			polyhedron->draw(showfaces && showedges);
+		}
 	}
 	PRINTD("draw() end");
 }
@@ -150,9 +150,9 @@ BoundingBox CGALRenderer::getBoundingBox() const
 		bbox = this->polyset->getBoundingBox();
 	}
 	else {
-		shared_ptr<class CGAL_OGL_Polyhedron> polyhedron = getPolyhedron();
+		auto polyhedron = getPolyhedron();
 		if (polyhedron) {
-			CGAL::Bbox_3 cgalbbox = polyhedron->bbox();
+			auto cgalbbox = polyhedron->bbox();
 			bbox = BoundingBox(
 				Vector3d(cgalbbox.xmin(), cgalbbox.ymin(), cgalbbox.zmin()),
 				Vector3d(cgalbbox.xmax(), cgalbbox.ymax(), cgalbbox.zmax()));

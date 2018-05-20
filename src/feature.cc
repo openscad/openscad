@@ -62,7 +62,7 @@ void Feature::enable(bool status)
     
 void Feature::enable_feature(const std::string &feature_name, bool status)
 {
-	map_t::iterator it = feature_map.find(feature_name);
+	auto it = feature_map.find(feature_name);
 	if (it != feature_map.end()) {
 		it->second->enable(status);
 	} else {
@@ -100,9 +100,9 @@ ExperimentalFeatureException::~ExperimentalFeatureException() throw()
 
 void ExperimentalFeatureException::check(const Feature &feature)
 {
-    if (!feature.is_enabled()) {
-        std::stringstream out;
-        out << "ERROR: Experimental feature not enabled: '" << feature.get_name() << "'. Please check preferences.";
-        throw ExperimentalFeatureException(out.str());
-    }
+	if (!feature.is_enabled()) {
+		std::stringstream out;
+		out << "ERROR: Experimental feature not enabled: '" << feature.get_name() << "'. Please check preferences.";
+		throw ExperimentalFeatureException(out.str());
+	}
 }

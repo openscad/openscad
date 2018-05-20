@@ -30,16 +30,16 @@ CSGTextRenderer::process(string &target, const string &src, OpenSCADOperator op)
 // 	}
 
 	switch (op) {
-	case OPENSCAD_UNION:
+	case OpenSCADOperator::UNION:
 		target += "+" + src;
 		break;
-	case OPENSCAD_INTERSECTION:
+	case OpenSCADOperator::INTERSECTION:
 		target += "*" + src;
 		break;
-	case OPENSCAD_DIFFERENCE:
+	case OpenSCADOperator::DIFFERENCE:
 		target += "-" + src;
 		break;
-	case OPENSCAD_MINKOWSKI:
+	case OpenSCADOperator::MINKOWSKI:
 		target += "M" + src;
 		break;
 	default:
@@ -85,48 +85,48 @@ void CSGTextRenderer::applyToChildren(const AbstractNode &node, OpenSCADOperator
 
 Response CSGTextRenderer::visit(State &state, const AbstractNode &node)
 {
-	if (state.isPrefix() && isCached(node)) return PruneTraversal;
+	if (state.isPrefix() && isCached(node)) return Response::PruneTraversal;
 	if (state.isPostfix()) {
-		if (!isCached(node)) applyToChildren(node, OPENSCAD_UNION);
+		if (!isCached(node)) applyToChildren(node, OpenSCADOperator::UNION);
 		addToParent(state, node);
 	}
-	return ContinueTraversal;
+	return Response::ContinueTraversal;
 }
 
 Response CSGTextRenderer::visit(State &state, const AbstractIntersectionNode &node)
 {
-	if (state.isPrefix() && isCached(node)) return PruneTraversal;
+	if (state.isPrefix() && isCached(node)) return Response::PruneTraversal;
 	if (state.isPostfix()) {
-		if (!isCached(node)) applyToChildren(node, OPENSCAD_INTERSECTION);
+		if (!isCached(node)) applyToChildren(node, OpenSCADOperator::INTERSECTION);
 		addToParent(state, node);
 	}
-	return ContinueTraversal;
+	return Response::ContinueTraversal;
 }
 
 Response CSGTextRenderer::visit(State &state, const CsgOpNode &node)
 {
-	if (state.isPrefix() && isCached(node)) return PruneTraversal;
+	if (state.isPrefix() && isCached(node)) return Response::PruneTraversal;
 	if (state.isPostfix()) {
 		if (!isCached(node)) {
 			applyToChildren(node, node.type);
 		}
 		addToParent(state, node);
 	}
-	return ContinueTraversal;
+	return Response::ContinueTraversal;
 }
 
 Response CSGTextRenderer::visit(State &state, const TransformNode &node)
 {
-	if (state.isPrefix() && isCached(node)) return PruneTraversal;
+	if (state.isPrefix() && isCached(node)) return Response::PruneTraversal;
 	if (state.isPostfix()) {
 		if (!isCached(node)) {
 			// First union all children
-			applyToChildren(node, OPENSCAD_UNION);
+			applyToChildren(node, OpenSCADOperator::UNION);
 			// FIXME: Then apply transform
 		}
 		addToParent(state, node);
 	}
-	return ContinueTraversal;
+	return Response::ContinueTraversal;
 }
 
 // FIXME: RenderNode: Union over children + some magic
@@ -140,7 +140,7 @@ Response CSGTextRenderer::visit(State &state, const TransformNode &node)
 // (PrimitiveNode)
 Response CSGTextRenderer::visit(State &state, const AbstractPolyNode &node)
 {
-	if (state.isPrefix() && isCached(node)) return PruneTraversal;
+	if (state.isPrefix() && isCached(node)) return Response::PruneTraversal;
 	if (state.isPostfix()) {
 		if (!isCached(node)) {
 
@@ -156,7 +156,7 @@ Response CSGTextRenderer::visit(State &state, const AbstractPolyNode &node)
 		addToParent(state, node);
 	}
 
-	return ContinueTraversal;
+	return Response::ContinueTraversal;
 }
 
 /*!

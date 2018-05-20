@@ -40,7 +40,7 @@ namespace /* anonymous */ {
   }
 */
 #if 1 // Use Grid
-		void operator()(HDS& hds) {
+		void operator()(HDS& hds) override {
 			CGAL_Polybuilder B(hds, true);
 		
 			Grid3d<int> grid(GRID_FINE);
@@ -182,7 +182,7 @@ namespace /* anonymous */ {
 	{
 		Copy_polyhedron_to(const Polyhedron_input& in_poly) : in_poly(in_poly) {}
 
-		void operator()(typename Polyhedron_output::HalfedgeDS& out_hds)
+		void operator()(typename Polyhedron_output::HalfedgeDS& out_hds) override
 		{
 			typedef typename Polyhedron_output::HalfedgeDS Output_HDS;
 
@@ -298,10 +298,10 @@ namespace CGALUtils {
 	public:
     Polyhedron_writer() {}
     void write_header(std::ostream &stream,
-											std::size_t vertices,
-											std::size_t halfedges,
-											std::size_t facets,
-											bool normals = false) {
+											std::size_t /*vertices*/,
+											std::size_t /*halfedges*/,
+											std::size_t /*facets*/
+											/*bool normals = false*/) {
 			this->out = &stream;
 			*out << "polyhedron(points=[";
 			firstv = true;
@@ -317,7 +317,7 @@ namespace CGALUtils {
 			*out << "], faces=[";
 			firstv = true;
     }
-    void write_facet_begin( std::size_t no) {
+    void write_facet_begin( std::size_t /*no*/) {
 			*out << (firstv ? "" : ",") << '[';
 			indices.clear();
 			firstv = false;

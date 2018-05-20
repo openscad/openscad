@@ -1,52 +1,62 @@
 #pragma once
 
-#include <vector>
 #include <string>
+#include <unordered_map>
 #include "node.h"
 #include "memory.h"
+#include "assert.h"
+#include "printutils.h"
 
 /*!
 	Caches string values per node based on the node.index().
 	The node index guaranteed to be unique per node tree since the index is reset
 	every time a new tree is generated.
 */
+
 class NodeCache
 {
 public:
-  NodeCache() { }
-  virtual ~NodeCache() { }
+    NodeCache() { }
+    virtual ~NodeCache() { }
 
-	bool contains(const AbstractNode &node) const {
-		if (this->cache.size() > node.index()) return this->cache[node.index()].get();
-		return false;
-	}
+    bool contains(const AbstractNode &node) const {
+        auto result = this->cache.find(node.index()); 
+        return result != this->cache.end() && 
+            result->second.second >= 0L && 
+            this->rootString.size() >= result->second.second;
+    }
 
-  /*! Returns a reference to the cached string copy. NB! don't rely on
-	 *  this reference to be valid for long - if the cache is resized
-	 *  internally, existing values are lost.  */
-  const std::string & operator[](const AbstractNode &node) const {
-    if (this->cache.size() > node.index()) return *this->cache[node.index()];
-    else return this->nullvalue;
-  }
+    std::string operator[](const AbstractNode &node) const {
+        // throws std::out_of_range on miss
+        auto indexpair = this->cache.at(node.index()); 
+        return rootString.substr(indexpair.first, indexpair.second - indexpair.first);
+    }
 
-  /*! Returns a reference to the cached string copy. NB! don't rely on
-	 *  this reference to be valid for long - if the cache is resized
-	 *  internally, existing values are lost. */
-  const std::string &insert(const class AbstractNode &node, const std::string & value) {
-    if (this->cache.size() <= node.index()) this->cache.resize(node.index() + 1);
-		this->cache[node.index()].reset(new std::string(value));
-    return *this->cache[node.index()];
-  }
+    void insertStart(const size_t nodeidx, const long startindex) {
+        assert(this->cache.count(nodeidx) == 0 && "start index inserted twice");
+        this->cache.emplace(nodeidx, std::make_pair(startindex, -1L));
+    }
 
-  void remove(const class AbstractNode &node) {
-    if (this->cache.size() > node.index()) this->cache[node.index()].reset();
-  }
+    void insertEnd(const size_t nodeidx, const long endindex) {
+        // throws std::out_of_range on miss
+        auto indexpair = this->cache.at(nodeidx); 
+        assert(indexpair.second == -1L && "end index inserted twice");
+        this->cache[nodeidx] = std::make_pair(indexpair.first, endindex);
+#if DEBUG
+        PRINTDB("NodeCache insert {%i,[%d:%d]}", nodeidx % indexpair.first % endindex );
+#endif
+    }
 
-	void clear() {
-		this->cache.clear();
-	}
+    void setRootString(const std::string &rootString) {
+        this->rootString = rootString;
+    }
+
+    void clear() {
+        this->cache.clear();
+        this->rootString = "";
+    }
 
 private:
-  std::vector<shared_ptr<std::string>> cache;
-	std::string nullvalue;
+    std::unordered_map<size_t, std::pair<long,long>> cache;
+    std::string rootString;
 };

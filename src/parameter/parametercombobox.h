@@ -7,10 +7,13 @@ class ParameterComboBox : public ParameterVirtualWidget
 	Q_OBJECT
 
 public:
-	ParameterComboBox(ParameterObject *parameterobject,bool showDescription);
-	void setValue();
-	void setParameterFocus();
+	ParameterComboBox(QWidget *parent, ParameterObject *parameterobject, DescLoD descriptionLoD);
+	void setValue() override;
+	void setParameterFocus() override;
 
-public slots:
+protected slots:
 	void onChanged(int idx);
+
+private:
+	bool volatile suppressUpdate; 
 };

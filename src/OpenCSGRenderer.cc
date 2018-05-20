@@ -28,7 +28,6 @@
 #include "OpenCSGRenderer.h"
 #include "polyset.h"
 #include "csgnode.h"
-#include "stl-utils.h"
 
 #ifdef ENABLE_OPENCSG
 #  include <opencsg.h>
@@ -41,7 +40,7 @@ public:
 	shared_ptr<const Geometry> geom;
 	Transform3d m;
 	Renderer::csgmode_e csgmode;
-	virtual void render() {
+	void render() override {
 		glPushMatrix();
 		glMultMatrixd(m.data());
 		Renderer::render_surface(geom, csgmode, m);
@@ -64,15 +63,15 @@ OpenCSGRenderer::OpenCSGRenderer(shared_ptr<CSGProducts> root_products,
 void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges) const
 {
 	GLint *shaderinfo = this->shaderinfo;
-	if (!shaderinfo[0]) shaderinfo = NULL;
+	if (!shaderinfo[0]) shaderinfo = nullptr;
 	if (this->root_products) {
-		renderCSGProducts(*this->root_products, showedges ? shaderinfo : NULL, false, false);
+		renderCSGProducts(*this->root_products, showedges ? shaderinfo : nullptr, false, false);
 	}
 	if (this->background_products) {
-		renderCSGProducts(*this->background_products, showedges ? shaderinfo : NULL, false, true);
+		renderCSGProducts(*this->background_products, showedges ? shaderinfo : nullptr, false, true);
 	}
 	if (this->highlights_products) {
-		renderCSGProducts(*this->highlights_products, showedges ? shaderinfo : NULL, true, false);
+		renderCSGProducts(*this->highlights_products, showedges ? shaderinfo : nullptr, true, false);
 	}
 }
 
@@ -82,25 +81,21 @@ OpenCSGPrim *OpenCSGRenderer::createCSGPrimitive(const CSGChainObject &csgobj, O
 	OpenCSGPrim *prim = new OpenCSGPrim(operation, csgobj.leaf->geom->getConvexity());
 	prim->geom = csgobj.leaf->geom;
 	prim->m = csgobj.leaf->matrix;
-	prim->csgmode = csgmode_e(
-		(highlight_mode ? 
-		 CSGMODE_HIGHLIGHT :
-		 (background_mode ? CSGMODE_BACKGROUND : CSGMODE_NORMAL)) |
-		(type == OPENSCAD_DIFFERENCE ? CSGMODE_DIFFERENCE : CSGMODE_NONE));
+    prim->csgmode = get_csgmode(highlight_mode, background_mode, type);
 	return prim;
 }
 
 void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shaderinfo, 
-																				bool highlight_mode, bool background_mode) const
+										bool highlight_mode, bool background_mode) const
 {
 #ifdef ENABLE_OPENCSG
 	for(const auto &product : products.products) {
 		std::vector<OpenCSG::Primitive*> primitives;
 		for(const auto &csgobj : product.intersections) {
-			if (csgobj.leaf->geom) primitives.push_back(createCSGPrimitive(csgobj, OpenCSG::Intersection, highlight_mode, background_mode, OPENSCAD_INTERSECTION));
+			if (csgobj.leaf->geom) primitives.push_back(createCSGPrimitive(csgobj, OpenCSG::Intersection, highlight_mode, background_mode, OpenSCADOperator::INTERSECTION));
 		}
 		for(const auto &csgobj : product.subtractions) {
-			if (csgobj.leaf->geom) primitives.push_back(createCSGPrimitive(csgobj, OpenCSG::Subtraction, highlight_mode, background_mode, OPENSCAD_DIFFERENCE));
+			if (csgobj.leaf->geom) primitives.push_back(createCSGPrimitive(csgobj, OpenCSG::Subtraction, highlight_mode, background_mode, OpenSCADOperator::DIFFERENCE));
 		}
 		if (primitives.size() > 1) {
 			OpenCSG::render(primitives);
@@ -108,49 +103,59 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 		}
 		if (shaderinfo) glUseProgram(shaderinfo[0]);
 
-		const CSGChainObject &parent_obj = product.intersections[0];
 		for(const auto &csgobj : product.intersections) {
 			const Color4f &c = csgobj.leaf->color;
-				csgmode_e csgmode = csgmode_e(
-					highlight_mode ? 
-					CSGMODE_HIGHLIGHT :
-					(background_mode ? CSGMODE_BACKGROUND : CSGMODE_NORMAL));
+				csgmode_e csgmode = get_csgmode(highlight_mode, background_mode);
 			
-			ColorMode colormode = COLORMODE_NONE;
+			ColorMode colormode = ColorMode::NONE;
 			if (highlight_mode) {
-				colormode = COLORMODE_HIGHLIGHT;
+				colormode = ColorMode::HIGHLIGHT;
 			} else if (background_mode) {
-				colormode = COLORMODE_BACKGROUND;
+				colormode = ColorMode::BACKGROUND;
 			} else {
-				colormode = COLORMODE_MATERIAL;
+				colormode = ColorMode::MATERIAL;
 			}
 			
-			setColor(colormode, c.data(), shaderinfo);
 			glPushMatrix();
 			glMultMatrixd(csgobj.leaf->matrix.data());
-			render_surface(csgobj.leaf->geom, csgmode, csgobj.leaf->matrix, shaderinfo);
+			
+			const Color4f c1 = setColor(colormode, c.data(), shaderinfo);
+			if (c1[3] == 1.0f) {
+				// object is opaque, draw normally
+				render_surface(csgobj.leaf->geom, csgmode, csgobj.leaf->matrix, shaderinfo);
+			} else {
+				// object is transparent, so draw rear faces first.  Issue #1496
+				glEnable(GL_CULL_FACE);
+				glCullFace(GL_FRONT);
+				render_surface(csgobj.leaf->geom, csgmode, csgobj.leaf->matrix, shaderinfo);
+				glCullFace(GL_BACK);
+				render_surface(csgobj.leaf->geom, csgmode, csgobj.leaf->matrix, shaderinfo);
+				glDisable(GL_CULL_FACE);
+			}
+
 			glPopMatrix();
 		}
 		for(const auto &csgobj : product.subtractions) {
 			const Color4f &c = csgobj.leaf->color;
-				csgmode_e csgmode = csgmode_e(
-					(highlight_mode ? 
-					 CSGMODE_HIGHLIGHT :
-					 (background_mode ? CSGMODE_BACKGROUND : CSGMODE_NORMAL)) | CSGMODE_DIFFERENCE);
+				csgmode_e csgmode = get_csgmode(highlight_mode, background_mode, OpenSCADOperator::DIFFERENCE);
 			
-			ColorMode colormode = COLORMODE_NONE;
+			ColorMode colormode = ColorMode::NONE;
 			if (highlight_mode) {
-				colormode = COLORMODE_HIGHLIGHT;
+				colormode = ColorMode::HIGHLIGHT;
 			} else if (background_mode) {
-				colormode = COLORMODE_BACKGROUND;
+				colormode = ColorMode::BACKGROUND;
 			} else {
-				colormode = COLORMODE_CUTOUT;
+				colormode = ColorMode::CUTOUT;
 			}
 			
 			setColor(colormode, c.data(), shaderinfo);
 			glPushMatrix();
 			glMultMatrixd(csgobj.leaf->matrix.data());
+			// negative objects should only render rear faces
+			glEnable(GL_CULL_FACE);
+			glCullFace(GL_FRONT);
 			render_surface(csgobj.leaf->geom, csgmode, csgobj.leaf->matrix, shaderinfo);
+			glDisable(GL_CULL_FACE);
 			glPopMatrix();
 		}
 

@@ -13,14 +13,14 @@ class Context
 public:
 	typedef std::vector<const Context*> Stack;
 
-	Context(const Context *parent = NULL);
+	Context(const Context *parent = nullptr);
 	virtual ~Context();
 
 	const Context *getParent() const { return this->parent; }
 	virtual ValuePtr evaluate_function(const std::string &name, const class EvalContext *evalctx) const;
 	virtual class AbstractNode *instantiate_module(const class ModuleInstantiation &inst, EvalContext *evalctx) const;
 
-	void setVariables(const AssignmentList &args, const class EvalContext *evalctx = NULL);
+	void setVariables(const AssignmentList &args, const class EvalContext *evalctx = nullptr);
 
 	void set_variable(const std::string &name, const ValuePtr &value);
 	void set_variable(const std::string &name, const Value &value);
@@ -29,6 +29,9 @@ public:
 
 	void apply_variables(const Context &other);
 	ValuePtr lookup_variable(const std::string &name, bool silent = false) const;
+	double lookup_variable_with_default(const std::string &variable, const double &def) const;
+  std::string lookup_variable_with_default(const std::string &variable, const std::string &def) const;
+
 	bool has_local_variable(const std::string &name) const;
 
 	void setDocumentPath(const std::string &path) { this->document_path = path; }

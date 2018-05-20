@@ -23,7 +23,7 @@
 #if CGAL_VERSION_NR > CGAL_VERSION_NUMBER(4,5,1) || CGAL_VERSION_NR < CGAL_VERSION_NUMBER(4,5,0) 
 #include <CGAL/convex_hull_3.h>
 #else
-#include "convex_hull_3_bugfix.h"
+#include "ext/CGAL/convex_hull_3_bugfix.h"
 #endif
 
 #include "svg.h"
@@ -149,75 +149,65 @@ namespace CGALUtils {
 */
 	CGAL_Nef_polyhedron *applyOperator(const Geometry::Geometries &children, OpenSCADOperator op)
 	{
-		CGAL_Nef_polyhedron *N = NULL;
+		CGAL_Nef_polyhedron *N = nullptr;
 		lockErrors(CGAL::THROW_EXCEPTION);
 		try {
-			if (op == OPENSCAD_UNION)
-			{
-				// Speeds up n-ary union operations significantly
-				N = applyUnion(children);
-			}
-			else
-			{
-				for (const auto &item : children) {
-					const shared_ptr<const Geometry> &chgeom = item.second;
-					shared_ptr<const CGAL_Nef_polyhedron> chN =
-						dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
-					if (!chN) {
-						const PolySet *chps = dynamic_cast<const PolySet*>(chgeom.get());
-						if (chps) chN.reset(createNefPolyhedronFromGeometry(*chps));
-					}
-					if (!chN) {
-						// ???
-						if (item.first)
-							item.first->progress_report();
-						continue;
-					}
-
-					// Initialize N with first expected geometric object
-					if (!N) {
-						N = new CGAL_Nef_polyhedron(*chN);
-						if (item.first)
-							item.first->progress_report();
-						continue;
-					}
-
-					// Intersecting something with nothing results in nothing
-					if (chN->isEmpty()) {
-						if (op == OPENSCAD_INTERSECTION) *N = *chN;
-						if (item.first)
-							item.first->progress_report();
-						continue;
-					}
-
-					// empty op <something> => empty
-					if (N->isEmpty()) {
-						if (item.first)
-							item.first->progress_report();
-						continue;
-					}
-
-					switch (op) {
-					case OPENSCAD_INTERSECTION:
-						*N *= *chN;
-						break;
-					case OPENSCAD_DIFFERENCE:
-						*N -= *chN;
-						break;
-					case OPENSCAD_MINKOWSKI:
-						N->minkowski(*chN);
-						break;
-					default:
-						PRINTB("ERROR: Unsupported CGAL operator: %d", op);
-					}
-					if (item.first)
-						item.first->progress_report();
+			// Speeds up n-ary union operations significantly
+			CGAL::Nef_nary_union_3<CGAL_Nef_polyhedron3> nary_union;
+			int nary_union_num_inserted = 0;
+			
+			for(const auto &item : children) {
+				const shared_ptr<const Geometry> &chgeom = item.second;
+				shared_ptr<const CGAL_Nef_polyhedron> chN = 
+					dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
+				if (!chN) {
+					const PolySet *chps = dynamic_cast<const PolySet*>(chgeom.get());
+					if (chps) chN.reset(createNefPolyhedronFromGeometry(*chps));
 				}
+				
+				if (op == OpenSCADOperator::UNION) {
+					if (!chN->isEmpty()) {
+						// nary_union.add_polyhedron() can issue assertion errors:
+						// https://github.com/openscad/openscad/issues/802
+						nary_union.add_polyhedron(*chN->p3);
+						nary_union_num_inserted++;
+					}
+					continue;
+				}
+				// Initialize N with first expected geometric object
+				if (!N) {
+					N = new CGAL_Nef_polyhedron(*chN);
+					continue;
+				}
+				
+				// Intersecting something with nothing results in nothing
+				if (chN->isEmpty()) {
+					if (op == OpenSCADOperator::INTERSECTION) *N = *chN;
+					continue;
+				}
+				
+				// empty op <something> => empty
+				if (N->isEmpty()) continue;
+				
+				switch (op) {
+				case OpenSCADOperator::INTERSECTION:
+					*N *= *chN;
+					break;
+				case OpenSCADOperator::DIFFERENCE:
+					*N -= *chN;
+					break;
+				case OpenSCADOperator::MINKOWSKI:
+					N->minkowski(*chN);
+					break;
+				default:
+					PRINTB("ERROR: Unsupported CGAL operator: %d", static_cast<int>(op));
+				}
+				item.first->progress_report();
 			}
 		}
 		// union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad and testdata/scad/bugs/issue204.scad
 		catch (const CGAL::Failure_exception &e) {
-			std::string opstr = op == OPENSCAD_INTERSECTION ? "intersection" : op == OPENSCAD_DIFFERENCE ? "difference" : op == OPENSCAD_UNION ? "union" : "UNKNOWN";
+			std::string opstr = op == OpenSCADOperator::INTERSECTION ? "intersection" : op == OpenSCADOperator::DIFFERENCE ? "difference" : op == OpenSCADOperator::UNION ? "union" : "UNKNOWN";
 			PRINTB("ERROR: CGAL error in CGALUtils::applyBinaryOperator %s: %s", opstr % e.what());
 		}
 		unlockErrors();
@@ -280,7 +270,7 @@ namespace CGALUtils {
 
 
 	/*!
-		children cannot contain NULL objects
+		children cannot contain nullptr objects
 	*/
 	Geometry const * applyMinkowski(const Geometry::Geometries &children)
 	{
@@ -289,7 +279,7 @@ namespace CGALUtils {
 		assert(children.size() >= 2);
 		Geometry::Geometries::const_iterator it = children.begin();
 		t_tot.start();
-		Geometry const* operands[2] = {it->second.get(), NULL};
+		Geometry const* operands[2] = {it->second.get(), nullptr};
 		try {
 			while (++it != children.end()) {
 				operands[1] = it->second.get();
@@ -456,11 +446,11 @@ namespace CGALUtils {
 					for (std::list<CGAL::Polyhedron_3<Hull_kernel>>::iterator i = result_parts.begin(); i != result_parts.end(); ++i) {
 						PolySet ps(3,true);
 						createPolySetFromPolyhedron(*i, ps);
-						fake_children.push_back(std::make_pair((const AbstractNode*)NULL,
+						fake_children.push_back(std::make_pair((const AbstractNode*)nullptr,
 															   shared_ptr<const Geometry>(createNefPolyhedronFromGeometry(ps))));
 					}
-					CGAL_Nef_polyhedron *N = CGALUtils::applyOperator(fake_children, OPENSCAD_UNION);
-					// FIXME: This hould really never throw.
+					CGAL_Nef_polyhedron *N = CGALUtils::applyOperator(fake_children, OpenSCADOperator::UNION);
+					// FIXME: This should really never throw.
 					// Assert once we figured out what went wrong with issue #1069?
 					if (!N) throw 0;
 					t.stop();
@@ -482,7 +472,7 @@ namespace CGALUtils {
 			// If anything throws we simply fall back to Nef Minkowski
 			PRINTD("Minkowski: Falling back to Nef Minkowski");
 
-			CGAL_Nef_polyhedron *N = applyOperator(children, OPENSCAD_MINKOWSKI);
+			CGAL_Nef_polyhedron *N = applyOperator(children, OpenSCADOperator::MINKOWSKI);
 			unlockErrors();
 			return N;
 		}
@@ -491,11 +481,3 @@ namespace CGALUtils {
 
 
 #endif // ENABLE_CGAL
-
-
-
-
-
-
-
-

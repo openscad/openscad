@@ -27,7 +27,6 @@
 #include "dxfdata.h"
 #include "grid.h"
 #include "printutils.h"
-#include "handle_dep.h"
 #include "calc.h"
 
 #include <fstream>
@@ -46,7 +45,7 @@
 #include "printutils.h"
 
 
-namespace fs=boost::filesystem;
+namespace fs = boost::filesystem;
 
 /*! \class DxfData
 
@@ -65,7 +64,7 @@ namespace fs=boost::filesystem;
 struct Line {
 	int idx[2]; // indices into DxfData::points
 	bool disabled;
-	Line(int i1 = -1, int i2 = -1) { idx[0] = i1; idx[1] = i2; disabled = false; }
+	Line(int i1 = -1, int i2 = -1) : idx{i1, i2}, disabled(false) { }
 };
 
 DxfData::DxfData()
@@ -79,20 +78,18 @@ DxfData::DxfData(double fn, double fs, double fa,
 								 const std::string &filename, const std::string &layername, 
 								 double xorigin, double yorigin, double scale)
 {
-	handle_dep(filename); // Register ourselves as a dependency
-
 	std::ifstream stream(filename.c_str());
 	if (!stream.good()) {
 		PRINTB("WARNING: Can't open DXF file '%s'.", filename);
 		return;
 	}
 
-	Grid2d< std::vector<int>> grid(GRID_COARSE);
+	Grid2d<std::vector<int>> grid(GRID_COARSE);
 	std::vector<Line> lines;                       // Global lines
-	std::unordered_map< std::string, std::vector<Line>> blockdata; // Lines in blocks
+	std::unordered_map<std::string, std::vector<Line>> blockdata; // Lines in blocks
 
-	bool in_entities_section = false;
-	bool in_blocks_section = false;
+	auto in_entities_section = false;
+	auto in_blocks_section = false;
 	std::string current_block;
 
 #define ADD_LINE(_x1, _y1, _x2, _y2) do {										\
@@ -107,11 +104,11 @@ DxfData::DxfData(double fn, double fs, double fa,
 		grid.data(_p1x, _p1y).push_back(lines.size());          \
 		grid.data(_p2x, _p2y).push_back(lines.size());          \
 		if (in_entities_section)                                \
-			lines.push_back(                                      \
-				Line(addPoint(_p1x, _p1y), addPoint(_p2x, _p2y)));	\
+			lines.emplace_back(                                   \
+			  addPoint(_p1x, _p1y), addPoint(_p2x, _p2y));        \
 		if (in_blocks_section && !current_block.empty())        \
-			blockdata[current_block].push_back(	                  \
-				Line(addPoint(_p1x, _p1y), addPoint(_p2x, _p2y)));	\
+			blockdata[current_block].emplace_back(	              \
+				addPoint(_p1x, _p1y), addPoint(_p2x, _p2y));      	\
 	} while (0)
 
 	std::string mode, layer, name, iddata;
@@ -123,9 +120,11 @@ DxfData::DxfData(double fn, double fs, double fa,
 	double arc_start_angle = 0, arc_stop_angle = 0;
 	double ellipse_start_angle = 0, ellipse_stop_angle = 0;
 
-	for (int i = 0; i < 7; i++)
-		for (int j = 0; j < 2; j++)
+	for (int i = 0; i < 7; i++) {
+		for (int j = 0; j < 2; j++) {
 			coords[i][j] = 0;
+		}
+	}
 
 	typedef std::unordered_map<std::string, int> EntityList;
 	EntityList unsupported_entities_list;
@@ -133,8 +132,7 @@ DxfData::DxfData(double fn, double fs, double fa,
 	//
 	// Parse DXF file. Will populate this->points, this->dims, lines and blockdata
 	//
-	while (!stream.eof())
-	{
+	while (!stream.eof())	{
 		std::string id_str, data;
 		std::getline(stream, id_str);
 		boost::trim(id_str);
@@ -153,25 +151,30 @@ DxfData::DxfData(double fn, double fs, double fa,
   	}
     try {
 		if (id >= 10 && id <= 16) {
-			if (in_blocks_section)
+			if (in_blocks_section) {
 				coords[id-10][0] = boost::lexical_cast<double>(data);
-			else if (id == 11 || id == 12 || id == 16)
+			}
+			else if (id == 11 || id == 12 || id == 16) {
 				coords[id-10][0] = boost::lexical_cast<double>(data) * scale;
-			else
+			}
+			else {
 				coords[id-10][0] = (boost::lexical_cast<double>(data) - xorigin) * scale;
+			}
 		}
 
 		if (id >= 20 && id <= 26) {
-			if (in_blocks_section)
+			if (in_blocks_section) {
 				coords[id-20][1] = boost::lexical_cast<double>(data);
-			else if (id == 21 || id == 22 || id == 26)
+			}
+			else if (id == 21 || id == 22 || id == 26) {
 				coords[id-20][1] = boost::lexical_cast<double>(data) * scale;
-			else
+			}
+			else {
 				coords[id-20][1] = (boost::lexical_cast<double>(data) - yorigin) * scale;
+			}
 		}
 
-		switch (id)
-		{
+		switch (id) {
 		case 0:
 			if (mode == "SECTION") {
 				in_entities_section = iddata == "ENTITIES";
@@ -205,9 +208,10 @@ DxfData::DxfData(double fn, double fs, double fa,
 			else if (mode == "ARC") {
 				Vector2d center(xverts.at(0), yverts.at(0));
 				int n = Calc::get_fragments_from_r(radius, fn, fs, fa);
-				while (arc_start_angle > arc_stop_angle)
+				while (arc_start_angle > arc_stop_angle) {
 					arc_stop_angle += 360.0;
-				n = (int)ceil(n * (arc_stop_angle-arc_start_angle) / 360);
+				}
+				n = static_cast<int>(ceil(n * (arc_stop_angle-arc_start_angle) / 360));
 				for (int i = 0; i < n; i++) {
 					double a1 = ((arc_stop_angle-arc_start_angle)*i)/n;
 					double a2 = ((arc_stop_angle-arc_start_angle)*(i+1))/n;
@@ -242,9 +246,9 @@ DxfData::DxfData(double fn, double fs, double fa,
 				double r_minor = r_major * radius;
 				double sweep_angle = ellipse_stop_angle-ellipse_start_angle;
 				int n = Calc::get_fragments_from_r(r_major, fn, fs, fa);
-				n = (int)ceil(n * sweep_angle / (2 * M_PI));
+				n = static_cast<int>(ceil(n * sweep_angle / (2 * M_PI)));
 //				Vector2d p1;
-				Vector2d p1; p1 << 0,0;
+				Vector2d p1{0.0, 0.0};
 				for (int i=0;i<=n;i++) {
 					double a = (ellipse_start_angle + sweep_angle*i/n);
 //					Vector2d p2(cos(a)*r_major, sin(a)*r_minor);
@@ -282,12 +286,14 @@ DxfData::DxfData(double fn, double fs, double fa,
 				}
 			}
 			else if (mode == "DIMENSION" &&
-					(layername.empty() || layername == layer)) {
+							 (layername.empty() || layername == layer)) {
 				this->dims.push_back(Dim());
 				this->dims.back().type = dimtype;
-				for (int i = 0; i < 7; i++)
-					for (int j = 0; j < 2; j++)
+				for (int i = 0; i < 7; i++) {
+					for (int j = 0; j < 2; j++) {
 						this->dims.back().coords[i][j] = coords[i][j];
+					}
+				}
 				this->dims.back().angle = arc_start_angle;
 				this->dims.back().length = radius;
 				this->dims.back().name = name;
@@ -301,7 +307,7 @@ DxfData::DxfData(double fn, double fs, double fa,
 			else if (mode == "ENDSEC") {
 			}
 			else if (in_blocks_section || (in_entities_section &&
-					(layername.empty() || layername == layer))) {
+																		 (layername.empty() || layername == layer))) {
 				unsupported_entities_list[mode]++;
 			}
 			mode = data;
@@ -309,9 +315,11 @@ DxfData::DxfData(double fn, double fs, double fa,
 			name.erase();
 			iddata.erase();
 			dimtype = 0;
-			for (int i = 0; i < 7; i++)
-				for (int j = 0; j < 2; j++)
+			for (int i = 0; i < 7; i++) {
+				for (int j = 0; j < 2; j++) {
 					coords[i][j] = 0;
+				}
+			}
 			xverts.clear();
 			yverts.clear();
 			radius = arc_start_angle = arc_stop_angle = 0;
@@ -330,28 +338,36 @@ DxfData::DxfData(double fn, double fs, double fa,
 			layer = data;
 			break;
 		case 10:
-			if (in_blocks_section)
+			if (in_blocks_section) {
 				xverts.push_back((boost::lexical_cast<double>(data)));
-			else
+			}
+			else {
 				xverts.push_back((boost::lexical_cast<double>(data) - xorigin) * scale);
+			}
 			break;
 		case 11:
-			if (in_blocks_section)
+			if (in_blocks_section) {
 				xverts.push_back((boost::lexical_cast<double>(data)));
-			else
+			}
+			else {
 				xverts.push_back((boost::lexical_cast<double>(data) - xorigin) * scale);
+			}
 			break;
 		case 20:
-			if (in_blocks_section)
+			if (in_blocks_section) {
 				yverts.push_back((boost::lexical_cast<double>(data)));
-			else
+			}
+			else {
 				yverts.push_back((boost::lexical_cast<double>(data) - yorigin) * scale);
+			}
 			break;
 		case 21:
-			if (in_blocks_section)
+			if (in_blocks_section) {
 				yverts.push_back((boost::lexical_cast<double>(data)));
-			else
+			}
+			else {
 				yverts.push_back((boost::lexical_cast<double>(data) - yorigin) * scale);
+			}
 			break;
 		case 40:
 			// CIRCLE, ARC: radius
@@ -394,7 +410,7 @@ DxfData::DxfData(double fn, double fs, double fa,
   	}
 	}
 
-	for(const auto &i : unsupported_entities_list) {
+	for (const auto &i : unsupported_entities_list) {
 		if (layername.empty()) {
 			PRINTB("WARNING: Unsupported DXF Entity '%s' (%x) in %s.",
 						 i.first % i.second % QuotedString(boostfs_uncomplete(filename, fs::current_path()).generic_string()));
@@ -413,18 +429,16 @@ DxfData::DxfData(double fn, double fs, double fa,
 	}
 
 	// extract all open paths
-	while (enabled_lines.size() > 0)
-	{
+	while (enabled_lines.size() > 0) {
 		int current_line, current_point;
 
-		for(const auto &l : enabled_lines) {
+		for (const auto &l : enabled_lines) {
 			int idx = l.second;
 			for (int j = 0; j < 2; j++) {
-				std::vector<int> *lv = &grid.data(this->points[lines[idx].idx[j]][0], this->points[lines[idx].idx[j]][1]);
-				for (size_t ki = 0; ki < lv->size(); ki++) {
-					int k = lv->at(ki);
-					if (k == idx || lines[k].disabled)
-						continue;
+				auto lv = grid.data(this->points[lines[idx].idx[j]][0], this->points[lines[idx].idx[j]][1]);
+				for (size_t ki = 0; ki < lv.size(); ki++) {
+					int k = lv.at(ki);
+					if (k == idx || lines[k].disabled) continue;
 					goto next_open_path_j;
 				}
 				current_line = idx;
@@ -443,14 +457,13 @@ DxfData::DxfData(double fn, double fs, double fa,
 		this_path->indices.push_back(lines[current_line].idx[current_point]);
 		while (1) {
 			this_path->indices.push_back(lines[current_line].idx[!current_point]);
-			const Vector2d &ref_point = this->points[lines[current_line].idx[!current_point]];
+			const auto &ref_point = this->points[lines[current_line].idx[!current_point]];
 			lines[current_line].disabled = true;
 			enabled_lines.erase(current_line);
-			std::vector<int> *lv = &grid.data(ref_point[0], ref_point[1]);
-			for (size_t ki = 0; ki < lv->size(); ki++) {
-				int k = lv->at(ki);
-				if (lines[k].disabled)
-					continue;
+			auto lv = grid.data(ref_point[0], ref_point[1]);
+			for (size_t ki = 0; ki < lv.size(); ki++) {
+				int k = lv.at(ki);
+				if (lines[k].disabled) continue;
 				if (grid.eq(ref_point[0], ref_point[1], this->points[lines[k].idx[0]][0], this->points[lines[k].idx[0]][1])) {
 					current_line = k;
 					current_point = 0;
@@ -468,25 +481,24 @@ DxfData::DxfData(double fn, double fs, double fa,
 	}
 
 	// extract all closed paths
-	while (enabled_lines.size() > 0)
-	{
-		int current_line = enabled_lines.begin()->second, current_point = 0;
+	while (enabled_lines.size() > 0) {
+		int current_line = enabled_lines.begin()->second;
+		int current_point = 0;
 
 		this->paths.push_back(Path());
-		Path *this_path = &this->paths.back();
-		this_path->is_closed = true;
+		auto& this_path = this->paths.back();
+		this_path.is_closed = true;
 		
-		this_path->indices.push_back(lines[current_line].idx[current_point]);
+		this_path.indices.push_back(lines[current_line].idx[current_point]);
 		while (1) {
-			this_path->indices.push_back(lines[current_line].idx[!current_point]);
-			const Vector2d &ref_point = this->points[lines[current_line].idx[!current_point]];
+			this_path.indices.push_back(lines[current_line].idx[!current_point]);
+			const auto &ref_point = this->points[lines[current_line].idx[!current_point]];
 			lines[current_line].disabled = true;
 			enabled_lines.erase(current_line);
-			std::vector<int> *lv = &grid.data(ref_point[0], ref_point[1]);
-			for (size_t ki = 0; ki < lv->size(); ki++) {
-				int k = lv->at(ki);
-				if (lines[k].disabled)
-					continue;
+			auto lv = grid.data(ref_point[0], ref_point[1]);
+			for (size_t ki = 0; ki < lv.size(); ki++) {
+				int k = lv.at(ki);
+				if (lines[k].disabled) continue;
 				if (grid.eq(ref_point[0], ref_point[1], this->points[lines[k].idx[0]][0], this->points[lines[k].idx[0]][1])) {
 					current_line = k;
 					current_point = 0;
@@ -524,8 +536,7 @@ DxfData::DxfData(double fn, double fs, double fa,
 void DxfData::fixup_path_direction()
 {
 	for (size_t i = 0; i < this->paths.size(); i++) {
-		if (!this->paths[i].is_closed)
-			break;
+		if (!this->paths[i].is_closed) break;
 		this->paths[i].is_inner = true;
 		double min_x = this->points[this->paths[i].indices[0]][0];
 		size_t min_x_point = 0;
@@ -561,8 +572,8 @@ void DxfData::fixup_path_direction()
  */
 int DxfData::addPoint(double x, double y)
 {
-	this->points.push_back(Vector2d(x, y));
-	return this->points.size()-1;
+	this->points.emplace_back(x, y);
+	return this->points.size() - 1;
 }
 
 std::string DxfData::dump() const
@@ -573,16 +584,16 @@ std::string DxfData::dump() const
 	  << "\n num paths: " << paths.size()
 	  << "\n num dims: " << dims.size()
 	  << "\n points: ";
-	for ( size_t k = 0 ; k < points.size() ; k++ ) {
+	for (size_t k = 0; k < points.size(); k++ ) {
 		out << "\n  x y: " << points[k].transpose();
 	}
 	out << "\n paths: ";
-	for ( size_t i = 0; i < paths.size(); i++ ) {
+	for (size_t i = 0; i < paths.size(); i++) {
 		out << "\n  path:" << i
 		  << "\n  is_closed: " << paths[i].is_closed
 		  << "\n  is_inner: " << paths[i].is_inner ;
 		DxfData::Path path = paths[i];
-		for ( size_t j = 0; j < path.indices.size(); j++ ) {
+		for (size_t j = 0; j < path.indices.size(); j++) {
 			out << "\n  index[" << j << "]==" << path.indices[j];
 		}
 	}
@@ -591,19 +602,19 @@ std::string DxfData::dump() const
 }
 
 /*
-    May return an empty polygon, but will not return NULL
+    May return an empty polygon, but will not return nullptr
  */
 Polygon2d *DxfData::toPolygon2d() const
 {
-	Polygon2d *poly = new Polygon2d();
+	auto poly = new Polygon2d();
 	for (size_t i = 0; i < this->paths.size(); i++) {
-		const DxfData::Path &path = this->paths[i];
+		const auto &path = this->paths[i];
 		Outline2d outline;
 		size_t endidx = path.indices.size();
 		// We don't support open paths; closing them to be compatible with existing behavior
 		if (!path.is_closed) endidx++;
 		for (size_t j = 1; j < endidx; j++) {
-			outline.vertices.push_back(Vector2d(this->points[path.indices[path.indices.size()-j]]));
+			outline.vertices.push_back(this->points[path.indices[path.indices.size()-j]]);
 		}
 		poly->addOutline(outline);
 	}

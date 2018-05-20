@@ -1,5 +1,5 @@
 /*[ Candle Stand ]*/
-//Lenght of candle stand
+//Length of candle stand
 length=50; // [70:large,50:medium,30:small]
 
 // Center stand
@@ -89,8 +89,8 @@ module make(radius, count,candleSize,length){
                 }
             }
             
-            //make ring
-            linear_extrude(heightOfRing)
+            // make ring
+            linear_extrude(heightOfRing, convexity=2)
             difference(){    
                 circle(radius);
                 circle(widthOfRing);
@@ -122,4 +122,3 @@ module make_ring_of(radius, count){
 // You should have received a copy of the CC0 Public Domain
 // Dedication along with this software.
 // If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-

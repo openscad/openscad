@@ -47,8 +47,7 @@ attr_map_t read_attributes(xmlTextReaderPtr reader)
 void processNode(xmlTextReaderPtr reader)
 {
 	const char *name = reinterpret_cast<const char *> (xmlTextReaderName(reader));
-	if (name == NULL)
-		name = reinterpret_cast<const char *> (xmlStrdup(BAD_CAST "--"));
+	if (name == nullptr) name = reinterpret_cast<const char *> (xmlStrdup(BAD_CAST "--"));
 
 	bool isEmpty;
 	xmlChar *value = xmlTextReaderValue(reader);
@@ -63,16 +62,16 @@ void processNode(xmlTextReaderPtr reader)
 			in_defs = true;
 		}
 		
-		shape *s = shape::create_from_name(name);
+		auto s = shared_ptr<shape>(shape::create_from_name(name));
 		if (!in_defs && s) {
 			attr_map_t attrs = read_attributes(reader);
 			s->set_attrs(attrs);
 			shape_list->push_back(s);
 			if (!shapes.empty()) {
-				shapes.top()->add_child(s);
+				shapes.top()->add_child(s.get());
 			}
 			if (s->is_container()) {
-				shapes.push(s);
+				shapes.push(s.get());
 			}
 			s->apply_transform();
 		}
@@ -120,7 +119,7 @@ int streamFile(const char *filename)
 	in_defs = false;
 	reader = xmlNewTextReaderFilename(filename);
 	xmlTextReaderSetParserProp(reader, XML_PARSER_SUBST_ENTITIES, 1);
-	if (reader != NULL) {
+	if (reader != nullptr) {
 		int ret = xmlTextReaderRead(reader);
 		while (ret == 1) {
 			processNode(reader);

@@ -28,3 +28,5 @@ ECHO: "h (undef)", undef
 ECHO: "override variable in assign scope:"
 DEPRECATED: The assign() module will be removed in future releases. Use a regular assignment instead.
 ECHO: "i (10)", 10
+ECHO: "group scope:"
+ECHO: "local a (11)", 11

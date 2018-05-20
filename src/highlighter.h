@@ -10,11 +10,11 @@ class Highlighter : public QSyntaxHighlighter
 {
 	Q_OBJECT
 public:
-	enum state_e {NORMAL=-1,QUOTE,COMMENT};
+	enum class state_e {NORMAL=-1,QUOTE,COMMENT};
 	QHash<QString, QTextCharFormat> tokenFormats;
 	QTextCharFormat errorFormat;
 	Highlighter(QTextDocument *parent);
-	void highlightBlock(const QString &text);
+	void highlightBlock(const QString &text) override;
 	void assignFormatsToTokens(const QString &);
 	void portable_rehighlightBlock( const QTextBlock &text );
 	void highlightError(int error_pos);

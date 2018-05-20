@@ -124,9 +124,9 @@ static void append_amf(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 			strcpy(chrs, s.c_str());
 			std::string coords = strtok(chrs, " ");
 			output << "     <x>" << coords << "</x>\r\n";
-			coords = strtok(NULL, " ");
+			coords = strtok(nullptr, " ");
 			output << "     <y>" << coords << "</y>\r\n";
-			coords = strtok(NULL, " ");
+			coords = strtok(nullptr, " ");
 			output << "     <z>" << coords << "</z>\r\n";
 			output << "    </coordinates></vertex>\r\n";
 			delete[] chrs;
@@ -165,7 +165,7 @@ static void append_amf(const shared_ptr<const Geometry> &geom, std::ostream &out
 		if (!N->isEmpty()) append_amf(*N, output);
 		delete N;
 	}
-	else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(geom.get())) {
+	else if (dynamic_cast<const Polygon2d *>(geom.get())) {
 		assert(false && "Unsupported file format");
 	} else {
 		assert(false && "Not implemented");

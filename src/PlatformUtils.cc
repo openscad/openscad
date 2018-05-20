@@ -31,7 +31,7 @@ static std::string lookupResourcesPath()
 	    "../Resources", 	// Resources can be bundled on Mac.
 	    "../../..",       // Dev location
 	    "..",          // Test location
-	    NULL
+	    nullptr
 	};
 #else
 #ifdef _WIN32
@@ -39,7 +39,7 @@ static std::string lookupResourcesPath()
         ".", // Release location
         RESOURCE_FOLDER("../share/openscad"), // MSYS2 location
         "..", // Dev location
-        NULL
+        nullptr
     };
 #else
     const char *searchpath[] = {
@@ -48,13 +48,13 @@ static std::string lookupResourcesPath()
 	    ".",
 	    "..",
 	    "../..",
-	    NULL
+	    nullptr
 	};
 #endif	
 #endif
 
 	fs::path tmpdir;
-	for (int a = 0;searchpath[a] != NULL;a++) {
+	for (int a = 0;searchpath[a] != nullptr;a++) {
 	    tmpdir = resourcedir / searchpath[a];
 	    
 			// The resource folder is the folder which contains "color-schemes" (as well as 
@@ -194,7 +194,7 @@ int PlatformUtils::setenv(const char *name, const char *value, int overwrite)
 {
 #if defined(_WIN32)
     const char *ptr = getenv(name);
-    if ((overwrite == 0) && (ptr != NULL)) {
+    if ((overwrite == 0) && (ptr != nullptr)) {
 	return 0;
     }
 
@@ -208,7 +208,7 @@ int PlatformUtils::setenv(const char *name, const char *value, int overwrite)
 
 std::string PlatformUtils::toMemorySizeString(uint64_t bytes, int digits)
 {
-	static const char *units[] = { "B", "kB", "MB", "GB", "TB", NULL };
+	static const char *units[] = { "B", "kB", "MB", "GB", "TB", nullptr };
 	
 	int idx = 0;
 	double val = bytes;
@@ -216,7 +216,7 @@ std::string PlatformUtils::toMemorySizeString(uint64_t bytes, int digits)
 		if (val < 1024.0) {
 			break;
 		}
-		if (units[idx + 1] == NULL) {
+		if (units[idx + 1] == nullptr) {
 			break;
 		}
 		idx++;

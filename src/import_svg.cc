@@ -13,7 +13,7 @@ Polygon2d *import_svg(const std::string &filename)
 	double y_max = -1.0/0.0;
 	for (libsvg::shapes_list_t::iterator it = shapes->begin();it != shapes->end();it++) {
 		PRINTD("SVG shape");
-		libsvg::shape *s = (*it);
+		libsvg::shape *s = it->get();
 		for (libsvg::path_list_t::iterator it = s->get_path_list().begin();it != s->get_path_list().end();it++) {
 			PRINTD("SVG path");
 			libsvg::path_t& p = *it;
@@ -41,7 +41,7 @@ Polygon2d *import_svg(const std::string &filename)
 	std::vector<const Polygon2d*> polygons;
 	for (libsvg::shapes_list_t::iterator it = shapes->begin();it != shapes->end();it++) {
 		Polygon2d *poly = new Polygon2d();
-		libsvg::shape *s = (*it);
+		libsvg::shape *s = it->get();
 		for (libsvg::path_list_t::iterator it = s->get_path_list().begin();it != s->get_path_list().end();it++) {
 			libsvg::path_t& p = *it;
 			

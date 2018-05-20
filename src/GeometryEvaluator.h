@@ -20,21 +20,21 @@ public:
 
 	shared_ptr<const Geometry> evaluateGeometry(const AbstractNode &node, bool allownef);
 
-	virtual Response visit(State &state, const AbstractNode &node);
-	virtual Response visit(State &state, const AbstractIntersectionNode &node);
-	virtual Response visit(State &state, const AbstractPolyNode &node);
-	virtual Response visit(State &state, const LinearExtrudeNode &node);
-	virtual Response visit(State &state, const RotateExtrudeNode &node);
-	virtual Response visit(State &state, const GroupNode &node);
-	virtual Response visit(State &state, const RootNode &node);
-	virtual Response visit(State &state, const LeafNode &node);
-	virtual Response visit(State &state, const TransformNode &node);
-	virtual Response visit(State &state, const CsgOpNode &node);
-	virtual Response visit(State &state, const CgaladvNode &node);
-	virtual Response visit(State &state, const ProjectionNode &node);
-	virtual Response visit(State &state, const RenderNode &node);
-	virtual Response visit(State &state, const TextNode &node);
-	virtual Response visit(State &state, const OffsetNode &node);
+	Response visit(State &state, const AbstractNode &node) override;
+	Response visit(State &state, const AbstractIntersectionNode &node) override;
+	Response visit(State &state, const AbstractPolyNode &node) override;
+	Response visit(State &state, const LinearExtrudeNode &node) override;
+	Response visit(State &state, const RotateExtrudeNode &node) override;
+	Response visit(State &state, const GroupNode &node) override;
+	Response visit(State &state, const RootNode &node) override;
+	Response visit(State &state, const LeafNode &node) override;
+	Response visit(State &state, const TransformNode &node) override;
+	Response visit(State &state, const CsgOpNode &node) override;
+	Response visit(State &state, const CgaladvNode &node) override;
+	Response visit(State &state, const ProjectionNode &node) override;
+	Response visit(State &state, const RenderNode &node) override;
+	Response visit(State &state, const TextNode &node) override;
+	Response visit(State &state, const OffsetNode &node) override;
 
 	const Tree &getTree() const { return this->tree; }
 
@@ -61,6 +61,8 @@ private:
 	void smartCacheInsert(const AbstractNode &node, const shared_ptr<const Geometry> &geom);
 	shared_ptr<const Geometry> smartCacheGet(const AbstractNode &node, bool preferNef);
 	bool isSmartCached(const AbstractNode &node);
+	// unsigned int collectChildren(const AbstractNode &node, Geometry::Geometries &dim2, Geometry::Geometries &dim3);
+	// std::vector<const class Polygon2d *> collectChildren2D(const AbstractNode &node,  Geometry::Geometries &dim2);
 	unsigned int collectChildren(const AbstractNode &node, Geometry::Geometries &dim2, Geometry::Geometries &dim3);
 	Polygon2d *applyMinkowski2D(const Geometry::Geometries &children);
 	Polygon2d *applyHull2D(const Geometry::Geometries &children);

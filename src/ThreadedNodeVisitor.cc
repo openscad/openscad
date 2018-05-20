@@ -71,7 +71,7 @@ void ProcessWorkItems(ProcessingContext*ctx, NodeVisitor*visitor) {
 
         // Run postfix
         Response response = workItem->node->accept(workItem->state, *visitor);
-        if (response == AbortTraversal) {
+        if (response == Response::AbortTraversal) {
             ctx->abort = true;
             return;
         }
@@ -113,7 +113,7 @@ void _traverseThreadedRecursive(ProcessingContext*ctx,  NodeVisitor*visitor,
     newstate.setParent(state.parent());
     Response response = node.accept(newstate, *visitor);
 
-    if (response == AbortTraversal) {
+    if (response == Response::AbortTraversal) {
         ctx->abort = true;
         return;
     }
@@ -126,7 +126,7 @@ void _traverseThreadedRecursive(ProcessingContext*ctx,  NodeVisitor*visitor,
     postfixWorkItem->node = &node;
     postfixWorkItem->parentWork = parentWorkItem;
 
-    if (response == PruneTraversal || node.getChildren().empty()) {
+    if (response == Response::PruneTraversal || node.getChildren().empty()) {
         // leaf node - queue parent work directly
         ctx->pushWorkItem(postfixWorkItem);
         return;
@@ -162,7 +162,7 @@ Response ThreadedNodeVisitor::traverseThreaded(const AbstractNode &node, const c
     // Wait for threads to finish processing all postfix traversals.
     for (auto& t : workers) t.join();
 
-    return ctx.abort ? AbortTraversal : ContinueTraversal;
+    return ctx.abort ? Response::AbortTraversal : Response::ContinueTraversal;
 }
 
 void ThreadedNodeVisitor::smartCacheInsert(const AbstractNode &node, const shared_ptr<const Geometry> &geom) {

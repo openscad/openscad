@@ -139,7 +139,7 @@ void AmfImporter::end_object(AmfImporter *importer, const xmlChar *)
 	PRINTDB("AMF: add object %d", importer->polySets.size());
 	importer->polySets.push_back(importer->polySet);
 	importer->vertex_list.clear();
-	importer->polySet = NULL;
+	importer->polySet = nullptr;
 }
 
 void AmfImporter::end_vertex(AmfImporter *importer, const xmlChar *)
@@ -166,7 +166,7 @@ void AmfImporter::end_triangle(AmfImporter *importer, const xmlChar *)
 void AmfImporter::processNode(xmlTextReaderPtr reader)
 {
 	const char *name = reinterpret_cast<const char *> (xmlTextReaderName(reader));
-	if (name == NULL)
+	if (name == nullptr)
 		name = reinterpret_cast<const char *> (xmlStrdup(BAD_CAST "--"));
 
 	xmlChar *value = xmlTextReaderValue(reader);
@@ -178,7 +178,7 @@ void AmfImporter::processNode(xmlTextReaderPtr reader)
 		cb_func startFunc = start_funcs[path.string()];
 		if (startFunc) {
 			PRINTDB("AMF: start %s", path.string());
-			startFunc(this, NULL);
+			startFunc(this, nullptr);
 		}
 	}
 		break;
@@ -209,7 +209,7 @@ void AmfImporter::processNode(xmlTextReaderPtr reader)
 
 xmlTextReaderPtr AmfImporter::createXmlReader(const char *filename)
 {
-	return xmlReaderForFile(filename, NULL, XML_PARSE_NOENT | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+	return xmlReaderForFile(filename, nullptr, XML_PARSE_NOENT | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 }
 
 int AmfImporter::streamFile(const char *filename)
@@ -218,7 +218,7 @@ int AmfImporter::streamFile(const char *filename)
 
 	xmlTextReaderPtr reader = createXmlReader(filename);
 	
-	if (reader == NULL) {
+	if (reader == nullptr) {
 		PRINTB("WARNING: Can't open import file '%s'.", filename);
 		return 1;
 	}
@@ -255,16 +255,16 @@ PolySet * AmfImporter::read(const std::string filename)
 	streamFile(filename.c_str());
 	vertex_list.clear();
 
-	PolySet *p = NULL;
+	PolySet *p = nullptr;
 #ifdef ENABLE_CGAL
 	if (polySets.size() == 1) {
 		p = polySets[0];
 	} if (polySets.size() > 1) {
 		Geometry::Geometries children;
 		for (std::vector<PolySet *>::iterator it = polySets.begin();it != polySets.end();it++) {
-			children.push_back(std::make_pair((const AbstractNode*)NULL,  shared_ptr<const Geometry>(*it)));
+			children.push_back(std::make_pair((const AbstractNode*)nullptr,  shared_ptr<const Geometry>(*it)));
 		}
-		CGAL_Nef_polyhedron *N = CGALUtils::applyOperator(children, OPENSCAD_UNION);
+		CGAL_Nef_polyhedron *N = CGALUtils::applyOperator(children, OpenSCADOperator::UNION);
 		PolySet *result = new PolySet(3);
 		if (CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, *result)) {
 			delete result;
@@ -273,6 +273,7 @@ PolySet * AmfImporter::read(const std::string filename)
 		} else {
 			p = result;
 		}
+		delete N;
 	}
 #endif
 	if (!p) {
@@ -297,9 +298,9 @@ private:
 
 public:
 	AmfImporterZIP();
-	virtual ~AmfImporterZIP();
+	~AmfImporterZIP();
 
-	virtual xmlTextReaderPtr createXmlReader(const char *filename);
+	xmlTextReaderPtr createXmlReader(const char *filename) override;
 };
 
 AmfImporterZIP::AmfImporterZIP()
@@ -324,24 +325,24 @@ int AmfImporterZIP::close_callback(void *context)
 
 xmlTextReaderPtr AmfImporterZIP::createXmlReader(const char *filename)
 {
-	archive = zip_open(filename, 0, NULL);
+	archive = zip_open(filename, 0, nullptr);
 	if (archive) {
 		fs::path f(filename);
 		zipfile = zip_fopen(archive, f.filename().c_str(), ZIP_FL_NODIR);
-		if (zipfile == NULL) {
+		if (zipfile == nullptr) {
 			PRINTB("WARNING: Can't read file '%s' from zipped AMF '%s'", f.filename().c_str() % filename);
 		}
-		if ((zipfile == NULL) && (zip_get_num_files(archive) == 1)) {
+		if ((zipfile == nullptr) && (zip_get_num_files(archive) == 1)) {
 			PRINTB("WARNING: Trying to read single entry '%s'", zip_get_name(archive, 0, 0));
 			zipfile = zip_fopen_index(archive, 0, 0);
 		}
 		if (zipfile) {
-			return xmlReaderForIO(read_callback, close_callback, this, f.filename().c_str(), NULL,
+			return xmlReaderForIO(read_callback, close_callback, this, f.filename().c_str(), nullptr,
 				XML_PARSE_NOENT | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 		} else {
 			zip_close(archive);
-			zipfile = NULL;
-			return NULL;
+			zipfile = nullptr;
+			return nullptr;
 		}
 	} else {
 		return AmfImporter::createXmlReader(filename);

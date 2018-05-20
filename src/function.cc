@@ -51,18 +51,16 @@ ValuePtr UserFunction::evaluate(const Context *ctx, const EvalContext *evalctx) 
 	return result;
 }
 
-std::string UserFunction::dump(const std::string &indent, const std::string &name) const
+void UserFunction::print(std::ostream &stream, const std::string &indent) const
 {
-	std::stringstream dump;
-	dump << indent << "function " << name << "(";
+	stream << indent << "function " << name << "(";
 	for (size_t i=0; i < definition_arguments.size(); i++) {
 		const Assignment &arg = definition_arguments[i];
-		if (i > 0) dump << ", ";
-		dump << arg.name;
-		if (arg.expr) dump << " = " << *arg.expr;
+		if (i > 0) stream << ", ";
+		stream << arg.name;
+		if (arg.expr) stream << " = " << *arg.expr;
 	}
-	dump << ") = " << *expr << ";\n";
-	return dump.str();
+	stream << ") = " << *expr << ";\n";
 }
 
 class FunctionTailRecursion : public UserFunction
@@ -82,9 +80,9 @@ public:
 			invert(invert), op(expr), call(call), endexpr(endexpr) {
 	}
 
-	virtual ~FunctionTailRecursion() { }
+	~FunctionTailRecursion() { }
 
-	virtual ValuePtr evaluate(const Context *ctx, const EvalContext *evalctx) const {
+	ValuePtr evaluate(const Context *ctx, const EvalContext *evalctx) const override {
 		if (!expr) return ValuePtr::undefined;
 		
 		Context c(ctx);
@@ -131,11 +129,4 @@ BuiltinFunction::~BuiltinFunction()
 ValuePtr BuiltinFunction::evaluate(const Context *ctx, const EvalContext *evalctx) const
 {
 	return eval_func(ctx, evalctx);
-}
-
-std::string BuiltinFunction::dump(const std::string &indent, const std::string &name) const
-{
-	std::stringstream dump;
-	dump << indent << "builtin function " << name << "();\n";
-	return dump.str();
 }

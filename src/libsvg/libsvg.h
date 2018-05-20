@@ -5,10 +5,11 @@
 #include "rect.h"
 #include "path.h"
 #include "svgpage.h"
+#include "memory.h"
 
 namespace libsvg {
 
-typedef std::vector<shape *> shapes_list_t;
+typedef std::vector<shared_ptr<shape>> shapes_list_t;
 
 shapes_list_t *
 libsvg_read_file(const char *filename);

@@ -9,14 +9,14 @@
 #include "value.h"
 #include "localscope.h"
 
-class FileModule : public AbstractModule
+class FileModule : public AbstractModule, public ASTNode
 {
 public:
-	FileModule() : is_handling_dependencies(false) {}
-	virtual ~FileModule();
+	FileModule(const std::string &path, const std::string &filename);
+	~FileModule();
 
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx = nullptr) const;
-	virtual std::string dump(const std::string &indent, const std::string &name) const;
+	AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx = nullptr) const override;
+	void print(std::ostream &stream, const std::string &indent) const override;
 	AbstractNode *instantiateWithFileContext(class FileContext *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
 
 	void setModulePath(const std::string &path) { this->path = path; }
@@ -28,10 +28,13 @@ public:
 	bool hasIncludes() const { return !this->includes.empty(); }
 	bool usesLibraries() const { return !this->usedlibs.empty(); }
 	bool isHandlingDependencies() const { return this->is_handling_dependencies; }
-
+	void setFilename(const std::string &filename) { this->filename = filename; }
+	const std::string &getFilename() const { return this->filename; }
+	const std::string getFullpath() const;
 	LocalScope scope;
 	typedef std::unordered_set<std::string> ModuleContainer;
 	ModuleContainer usedlibs;
+
 private:
 	struct IncludeFile {
 		std::string filename;
@@ -42,5 +45,7 @@ private:
 	typedef std::unordered_map<std::string, struct IncludeFile> IncludeContainer;
 	IncludeContainer includes;
 	bool is_handling_dependencies;
+
 	std::string path;
+	std::string filename;
 };

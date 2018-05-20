@@ -315,7 +315,7 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 		l->setColor(readColor(colors, "keyword2", textColor), QsciLexerCPP::KeywordSet2);
 		l->setColor(readColor(colors, "keyword3", textColor), QsciLexerCPP::GlobalClass);
 		l->setColor(readColor(colors, "number", textColor), QsciLexerCPP::Number);
-		l->setColor(readColor(colors, "string", textColor), QsciLexerCPP::SingleQuotedString);
+		//l->setColor(readColor(colors, "string", textColor), QsciLexerCPP::SingleQuotedString); //currently, we do not support SingleQuotedStrings
 		l->setColor(readColor(colors, "string", textColor), QsciLexerCPP::DoubleQuotedString);
 		l->setColor(readColor(colors, "operator", textColor), QsciLexerCPP::Operator);
 		l->setColor(readColor(colors, "comment", textColor), QsciLexerCPP::Comment);

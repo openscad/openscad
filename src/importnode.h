@@ -3,30 +3,30 @@
 #include "node.h"
 #include "value.h"
 
-enum import_type_e {
-	TYPE_UNKNOWN,
-	TYPE_AMF,
-	TYPE_STL,
-	TYPE_OFF,
-	TYPE_SVG,
-	TYPE_DXF,
-	TYPE_NEF3,
+enum class ImportType {
+	UNKNOWN,
+	AMF,
+	STL,
+	OFF,
+	SVG,
+	DXF,
+	NEF3,
 };
 
 class ImportNode : public LeafNode
 {
 public:
 	VISITABLE();
-	ImportNode(const ModuleInstantiation *mi, import_type_e type) : LeafNode(mi), type(type) { }
-	virtual std::string toString() const;
-	virtual std::string name() const;
+	ImportNode(const ModuleInstantiation *mi, ImportType type) : LeafNode(mi), type(type) { }
+	std::string toString() const override;
+	std::string name() const override;
 
-	import_type_e type;
+	ImportType type;
 	Filename filename;
 	std::string layername;
 	int convexity;
 	double fn, fs, fa;
 	double origin_x, origin_y, scale;
 	double width, height;
-	virtual const class Geometry *createGeometry() const;
+	const class Geometry *createGeometry() const override;
 };

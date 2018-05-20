@@ -11,7 +11,7 @@
 #include <Eigen/Geometry>
 
 #include "util.h"
-#include "polyclipping/clipper.hpp"
+#include "ext/polyclipping/clipper.hpp"
 
 namespace libsvg {
 

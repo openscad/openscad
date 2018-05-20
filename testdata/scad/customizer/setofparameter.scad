@@ -1,5 +1,5 @@
 /* [Drop down box:] */
-// combo box for nunber
+// combo box for number
 Numbers=2; // [0, 1, 2, 3]
 
 // combo box for string

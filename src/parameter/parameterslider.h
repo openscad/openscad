@@ -6,15 +6,18 @@ class ParameterSlider : public ParameterVirtualWidget
 {
 	Q_OBJECT
 public:
-	ParameterSlider(ParameterObject *parameterobject, bool showDescription);
-	void setValue();
-	void setParameterFocus();
+	ParameterSlider(QWidget *parent, ParameterObject *parameterobject, DescLoD descriptionLoD);
+	void setValue() override;
+	void setParameterFocus() override;
 	
 private:
 	double step;
 	bool pressed;
+	bool volatile suppressUpdate; 
+
 protected slots:
-	void onChanged(int);
+	void onSliderChanged(int);
+	void onSpinBoxChanged(double);
 	void onReleased();
 	void onPressed();
 };

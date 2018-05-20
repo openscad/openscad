@@ -1,6 +1,7 @@
 #include "legacyeditor.h"
 #include "Preferences.h"
 #include "highlighter.h"
+#include "QSettingsCached.h"
 
 LegacyEditor::LegacyEditor(QWidget *parent) : EditorInterface(parent)
 {
@@ -95,7 +96,7 @@ void LegacyEditor::uncommentSelection()
 void LegacyEditor::zoomIn()
 {
 	// See also QT's implementation in QLegacyEditor.cpp
-	QSettings settings;
+	QSettingsCached settings;
 	QFont tmp_font = this->textedit->font() ;
 	if (font().pointSize() >= 1)
 		tmp_font.setPointSize(1 + font().pointSize());
@@ -108,7 +109,7 @@ void LegacyEditor::zoomIn()
 void LegacyEditor::zoomOut()
 {
 
-	QSettings settings;
+	QSettingsCached settings;
 	QFont tmp_font = this->textedit->font();
 	if (font().pointSize() >= 2)
 		tmp_font.setPointSize(-1 + font().pointSize());
@@ -242,17 +243,17 @@ void LegacyEditor::replaceAll(const QString &findText, const QString &replaceTex
 
 bool LegacyEditor::findString(const QString & exp, bool findBackwards) const
 {
-	return this->textedit->find(exp, findBackwards ? QTextDocument::FindBackward : QTextDocument::FindFlags(0));
+	return this->textedit->find(exp, findBackwards ? QTextDocument::FindBackward : QTextDocument::FindFlags(nullptr));
 }
 
-int LegacyEditor::resetFindIndicators(const QString &findText, bool visibility)//incomplete-place-hoder
+int LegacyEditor::resetFindIndicators(const QString & /*findText*/, bool /*visibility*/)//incomplete-place-holder
 {
     int findwordcount = 0;
     // blank see scintillaeditor.cpp
     return findwordcount;
 }
 
-bool LegacyEditor::find(const QString &newText, bool findNext, bool findBackwards)
+bool LegacyEditor::find(const QString &newText, bool /*findNext*/, bool findBackwards)
 {
 	bool success = this->findString(newText, findBackwards);
 	if (!success) { // Implement wrap-around search behavior

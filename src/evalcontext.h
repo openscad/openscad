@@ -13,12 +13,12 @@ public:
 	typedef std::vector<class ModuleInstantiation *> InstanceList;
 
 	EvalContext(const Context *parent, 
-							const AssignmentList &args, const class LocalScope *const scope = NULL);
-	virtual ~EvalContext() {}
+							const AssignmentList &args, const class LocalScope *const scope = nullptr);
+	~EvalContext() {}
 
 	size_t numArgs() const { return this->eval_arguments.size(); }
 	const std::string &getArgName(size_t i) const;
-	ValuePtr getArgValue(size_t i, const Context *ctx = NULL) const;
+	ValuePtr getArgValue(size_t i, const Context *ctx = nullptr) const;
 	const AssignmentList & getArgs() const { return this->eval_arguments; }
 
 	AssignmentMap resolveArguments(const AssignmentList &args) const;

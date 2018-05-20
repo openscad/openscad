@@ -12,6 +12,11 @@ class Preferences : public QMainWindow, public Ui::Preferences
 	Q_OBJECT;
 
 public:
+	static constexpr const char* PREF_EDITOR_TYPE = "editor/editortype";
+
+	static constexpr const char* EDITOR_TYPE_SIMPLE = "Simple Editor";
+	static constexpr const char* EDITOR_TYPE_QSCINTILLA = "QScintilla Editor";
+
 	~Preferences();
 	
 	static void create(QStringList colorSchemes);
@@ -37,6 +42,7 @@ public slots:
 	void on_forceGoldfeatherBox_toggled(bool);
 	void on_mouseWheelZoomBox_toggled(bool);
 	void on_localizationCheckBox_toggled(bool);
+	void on_autoReloadRaiseCheckBox_toggled(bool);
 	void on_updateCheckBox_toggled(bool);
 	void on_snapshotCheckBox_toggled(bool);
 	void on_mdiCheckBox_toggled(bool);
@@ -44,7 +50,7 @@ public slots:
 	void on_undockCheckBox_toggled(bool);
 	void on_checkNowButton_clicked();
 	void on_launcherBox_toggled(bool);
-	void on_editorType_currentIndexChanged(const QString &);
+	void on_editorType_currentIndexChanged(int);
 
 	void on_checkBoxShowWarningsIn3dView_toggled(bool);
   //
@@ -87,8 +93,8 @@ signals:
 	void ExperimentalChanged() const ;
 
 private:
-    Preferences(QWidget *parent = NULL);
-	void keyPressEvent(QKeyEvent *e);
+    Preferences(QWidget *parent = nullptr);
+	void keyPressEvent(QKeyEvent *e) override;
 	void updateGUI();
 	void removeDefaultSettings();
 	void setupFeaturesPage();

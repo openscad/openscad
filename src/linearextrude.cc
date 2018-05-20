@@ -34,6 +34,7 @@
 #include "builtin.h"
 #include "calc.h"
 #include "polyset.h"
+#include "handle_dep.h"
 
 #include <cmath>
 #include <sstream>
@@ -47,15 +48,14 @@ class LinearExtrudeModule : public AbstractModule
 {
 public:
 	LinearExtrudeModule() { }
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
+	AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const override;
 };
 
 AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
-	LinearExtrudeNode *node = new LinearExtrudeNode(inst);
+	auto node = new LinearExtrudeNode(inst);
 
-	AssignmentList args;
-	args += Assignment("file"), Assignment("layer"), Assignment("height"), Assignment("origin"), Assignment("scale"), Assignment("center"), Assignment("twist"), Assignment("slices");
+	AssignmentList args{Assignment("file"), Assignment("layer"), Assignment("height"), Assignment("origin"), Assignment("scale"), Assignment("center"), Assignment("twist"), Assignment("slices")};
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);
@@ -65,19 +65,21 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	node->fs = c.lookup_variable("$fs")->toDouble();
 	node->fa = c.lookup_variable("$fa")->toDouble();
 
-	ValuePtr file = c.lookup_variable("file");
-	ValuePtr layer = c.lookup_variable("layer", true);
-	ValuePtr height = c.lookup_variable("height", true);
-	ValuePtr convexity = c.lookup_variable("convexity", true);
-	ValuePtr origin = c.lookup_variable("origin", true);
-	ValuePtr scale = c.lookup_variable("scale", true);
-	ValuePtr center = c.lookup_variable("center", true);
-	ValuePtr twist = c.lookup_variable("twist", true);
-	ValuePtr slices = c.lookup_variable("slices", true);
+	auto file = c.lookup_variable("file");
+	auto layer = c.lookup_variable("layer", true);
+	auto height = c.lookup_variable("height", true);
+	auto convexity = c.lookup_variable("convexity", true);
+	auto origin = c.lookup_variable("origin", true);
+	auto scale = c.lookup_variable("scale", true);
+	auto center = c.lookup_variable("center", true);
+	auto twist = c.lookup_variable("twist", true);
+	auto slices = c.lookup_variable("slices", true);
 
-	if (!file->isUndefined() && file->type() == Value::STRING) {
+	if (!file->isUndefined() && file->type() == Value::ValueType::STRING) {
 		printDeprecation("Support for reading files in linear_extrude will be removed in future releases. Use a child import() instead.");
-		node->filename = lookup_file(file->toString(), inst->path(), c.documentPath());
+		auto filename = lookup_file(file->toString(), inst->path(), c.documentPath());
+		node->filename = filename;
+		handle_dep(filename);
 	}
 
 	// if height not given, and first argument is a number,
@@ -85,21 +87,21 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	if (c.lookup_variable("height")->isUndefined() &&
 			evalctx->numArgs() > 0 &&
 			evalctx->getArgName(0) == "") {
-		ValuePtr val = evalctx->getArgValue(0);
-		if (val->type() == Value::NUMBER) height = val;
+		auto val = evalctx->getArgValue(0);
+		if (val->type() == Value::ValueType::NUMBER) height = val;
 	}
 
 	node->layername = layer->isUndefined() ? "" : layer->toString();
 	node->height = 100;
 	height->getFiniteDouble(node->height);
-	node->convexity = (int)convexity->toDouble();
+	node->convexity = static_cast<int>(convexity->toDouble());
 	origin->getVec2(node->origin_x, node->origin_y, true);
 	node->scale_x = node->scale_y = 1;
 	scale->getFiniteDouble(node->scale_x);
 	scale->getFiniteDouble(node->scale_y);
 	scale->getVec2(node->scale_x, node->scale_y, true);
 
-	if (center->type() == Value::BOOL)
+	if (center->type() == Value::ValueType::BOOL)
 		node->center = center->toBool();
 
 	if (node->height <= 0) node->height = 0;
@@ -112,20 +114,20 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 
 	double slicesVal = 0;
 	slices->getFiniteDouble(slicesVal);
-	node->slices = (int)slicesVal;
+	node->slices = static_cast<int>(slicesVal);
 
 	node->twist = 0.0;
 	twist->getFiniteDouble(node->twist);
 	if (node->twist != 0.0) {
 		if (node->slices == 0) {
-			node->slices = (int)fmax(2, fabs(Calc::get_fragments_from_r(node->height, node->fn, node->fs, node->fa) * node->twist / 360));
+			node->slices = static_cast<int>(fmax(2, fabs(Calc::get_fragments_from_r(node->height, node->fn, node->fs, node->fa) * node->twist / 360)));
 		}
 		node->has_twist = true;
 	}
 	node->slices = std::max(node->slices, 1);
 
 	if (node->filename.empty()) {
-		std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(evalctx);
+		auto instantiatednodes = inst->instantiateChildren(evalctx);
 		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 	}
 

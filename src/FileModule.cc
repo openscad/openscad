@@ -32,27 +32,33 @@
 #include "modcontext.h"
 #include "parsersettings.h"
 #include "StatCache.h"
-
+#include "evalcontext.h"
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
+#include "boost-utils.h"
 namespace fs = boost::filesystem;
 #include "FontCache.h"
 #include <sys/stat.h>
+
+FileModule::FileModule(const std::string &path, const std::string &filename)
+	: ASTNode(Location::NONE), is_handling_dependencies(false), path(path), filename(filename)
+{
+}
 
 FileModule::~FileModule()
 {
 }
 
-std::string FileModule::dump(const std::string &indent, const std::string &name) const
+void FileModule::print(std::ostream &stream, const std::string &indent) const
 {
-	return scope.dump(indent);
+	scope.print(stream, indent);
 }
 
-void FileModule::registerUse(const std::string path) {
-	std::string extraw = fs::path(path).extension().generic_string();
-	std::string ext = boost::algorithm::to_lower_copy(extraw);
+void FileModule::registerUse(const std::string path)
+{
+	auto ext = fs::path(path).extension().generic_string();
 	
-	if ((ext == ".otf") || (ext == ".ttf")) {
+	if (boost::iequals(ext, ".otf") || boost::iequals(ext, ".ttf")) {
 		if (fs::is_regular(path)) {
 			FontCache::instance()->register_font_file(path);
 		} else {
@@ -63,8 +69,7 @@ void FileModule::registerUse(const std::string path) {
 	}
 }
 
-void FileModule::registerInclude(const std::string &localpath,
-																 const std::string &fullpath)
+void FileModule::registerInclude(const std::string &localpath, const std::string &fullpath)
 {
 	this->includes[localpath] = {fullpath};
 }
@@ -73,7 +78,7 @@ time_t FileModule::includesChanged() const
 {
 	time_t latest = 0;
 	for (const auto &item : this->includes) {
-		time_t mtime = include_modified(item.second);
+		auto mtime = include_modified(item.second);
 		if (mtime > latest) latest = mtime;
 	}
 	return latest;
@@ -83,7 +88,7 @@ time_t FileModule::include_modified(const IncludeFile &inc) const
 {
 	struct stat st;
 
-	if (StatCache::stat(inc.filename.c_str(), &st) == 0) {
+	if (StatCache::stat(inc.filename.c_str(), st) == 0) {
 		return st.st_mtime;
 	}
 	
@@ -107,15 +112,15 @@ time_t FileModule::handleDependencies()
 	time_t latest = 0;
 	for (auto filename : this->usedlibs) {
 
-		bool wasmissing = false;
-		bool found = true;
+		auto wasmissing = false;
+		auto found = true;
 
 		// Get an absolute filename for the module
 		if (!fs::path(filename).is_absolute()) {
 			wasmissing = true;
-			fs::path fullpath = find_valid_path(this->path, filename);
+			auto fullpath = find_valid_path(this->path, filename);
 			if (!fullpath.empty()) {
-				updates.push_back(std::make_pair(filename, fullpath.generic_string()));
+				updates.emplace_back(filename, fullpath.generic_string());
 				filename = fullpath.generic_string();
 			}
 			else {
@@ -124,12 +129,12 @@ time_t FileModule::handleDependencies()
 		}
 
 		if (found) {
-			bool wascached = ModuleCache::instance()->isCached(filename);
-			FileModule *oldmodule = ModuleCache::instance()->lookup(filename);
+			auto wascached = ModuleCache::instance()->isCached(filename);
+			auto oldmodule = ModuleCache::instance()->lookup(filename);
 			FileModule *newmodule;
-			time_t mtime = ModuleCache::instance()->evaluate(filename, newmodule);
+			auto mtime = ModuleCache::instance()->evaluate(filename, newmodule);
 			if (mtime > latest) latest = mtime;
-			bool changed = newmodule && newmodule != oldmodule;
+			auto changed = newmodule && newmodule != oldmodule;
 			// Detect appearance but not removal of files, and keep old module
 			// on compile errors (FIXME: Is this correct behavior?)
 			if (changed) {
@@ -169,16 +174,35 @@ AbstractNode *FileModule::instantiateWithFileContext(FileContext *ctx, const Mod
 {
 	assert(evalctx == nullptr);
 	
-	AbstractNode *node = new RootNode(inst);
+	auto node = new RootNode(inst);
 	try {
 		ctx->initializeModule(*this); // May throw an ExperimentalFeatureException
 		// FIXME: Set document path to the path of the module
-		std::vector<AbstractNode *> instantiatednodes = this->scope.instantiateChildren(ctx);
+		auto instantiatednodes = this->scope.instantiateChildren(ctx);
 		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
+	}
+	catch (AssertionFailedException &e) {
+		auto docPath = boost::filesystem::path(ctx->documentPath());
+		auto uncPath = boostfs_uncomplete(e.loc.filePath(), docPath);
+
+		PRINTB("%s failed in file %s, line %d", e.what() % uncPath.generic_string() % e.loc.firstLine());
 	}
 	catch (EvaluationException &e) {
 		PRINT(e.what());
 	}
 
 	return node;
+}
+
+//please preferably use getFilename
+//if you compare filenames (which is the origin of this methode),
+//please call getFilename first and use this methode only as a fallback
+const std::string FileModule::getFullpath() const {
+	if(fs::path(this->filename).is_absolute()){
+		return this->filename;
+	}else if(!this->path.empty()){
+		return (fs::path(this->path) / fs::path(this->filename)).generic_string();
+	}else{
+		return "";
+	}
 }

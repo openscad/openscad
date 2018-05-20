@@ -9,6 +9,7 @@ Makefile
 objects
 .gdbinit
 .qmake.stash
+.tags*
 **/#*#
 /.dir-locals.el
 testdata/scad/2D/features/import_dxf-tests.scad
@@ -50,3 +51,12 @@ src/*.org
 src/*.old
 src/*.debug
 /Testing
+.DS_Store
+/build
+tests/lexer.cxx
+tests/parser.cxx
+tests/parser.hxx
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+OpenSCAD_autogen

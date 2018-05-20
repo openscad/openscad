@@ -78,9 +78,9 @@ std::string LibraryInfo::info()
 	std::string cgal_2d_kernelEx = typeid(CGAL_ExactKernel2).name();
 #if defined(__openscad_info_demangle__)
 	int status;
-	cgal_3d_kernel = std::string( abi::__cxa_demangle( cgal_3d_kernel.c_str(), 0, 0, &status ) );
-	cgal_2d_kernel = std::string( abi::__cxa_demangle( cgal_2d_kernel.c_str(), 0, 0, &status ) );
-	cgal_2d_kernelEx = std::string( abi::__cxa_demangle( cgal_2d_kernelEx.c_str(), 0, 0, &status ) );
+	cgal_3d_kernel = std::string( abi::__cxa_demangle( cgal_3d_kernel.c_str(), nullptr, nullptr, &status ) );
+	cgal_2d_kernel = std::string( abi::__cxa_demangle( cgal_2d_kernel.c_str(), nullptr, nullptr, &status ) );
+	cgal_2d_kernelEx = std::string( abi::__cxa_demangle( cgal_2d_kernelEx.c_str(), nullptr, nullptr, &status ) );
 #endif // demangle
 	boost::replace_all( cgal_3d_kernel, "CGAL::", "" );
 	boost::replace_all( cgal_2d_kernel, "CGAL::", "" );
@@ -114,14 +114,14 @@ std::string LibraryInfo::info()
 	  << "\nUser Library Path: " << PlatformUtils::userLibraryPath()
 	  << "\nUser Config Path: " << PlatformUtils::userConfigPath()
 	  << "\nBackup Path: " << PlatformUtils::backupPath()
-	  << "\nOPENSCADPATH: " << (env_path == NULL ? "<not set>" : env_path)
+	  << "\nOPENSCADPATH: " << (env_path == nullptr ? "<not set>" : env_path)
 	  << "\nOpenSCAD library path:\n";
 
 	for (std::vector<std::string>::iterator it = librarypath.begin();it != librarypath.end();it++) {
 		s << "  " << *it << "\n";
 	}
 
-	s << "\nOPENSCAD_FONT_PATH: " << (env_font_path == NULL ? "<not set>" : env_font_path)
+	s << "\nOPENSCAD_FONT_PATH: " << (env_font_path == nullptr ? "<not set>" : env_font_path)
 	  << "\nOpenSCAD font path:\n";
 	
 	for (std::vector<std::string>::iterator it = fontpath.begin();it != fontpath.end();it++) {

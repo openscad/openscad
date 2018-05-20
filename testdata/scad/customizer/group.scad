@@ -1,4 +1,4 @@
-// combo box for nunber
+// combo box for number
 Numbers=2; // [0, 1, 2, 3]
 
 // combo box for string
@@ -45,5 +45,8 @@ String2="hello"; //comment with "
 /* [group after " in previous comment ] */
 //Text box for vector with less than or equal to 4 elements
 Vector3=[12,34,45,23]; //any thing
+
+/* [ multiple ] [ group ] [ names ] */
+Vector4=[]; //empty vector (see #2105 and #2183)
 
 echo(String);

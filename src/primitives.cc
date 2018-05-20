@@ -41,7 +41,7 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 
 #define F_MINIMUM 0.01
 
-enum primitive_type_e {
+enum class primitive_type_e {
 	CUBE,
 	SPHERE,
 	CYLINDER,
@@ -56,7 +56,7 @@ class PrimitiveModule : public AbstractModule
 public:
 	primitive_type_e type;
 	PrimitiveModule(primitive_type_e type) : type(type) { }
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
+	AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const override;
 private:
 	Value lookup_radius(const Context &ctx, const std::string &radius_var, const std::string &diameter_var) const;
 };
@@ -66,28 +66,28 @@ class PrimitiveNode : public LeafNode
 public:
 	VISITABLE();
 	PrimitiveNode(const ModuleInstantiation *mi, primitive_type_e type) : LeafNode(mi), type(type) { }
-	virtual std::string toString() const;
-	virtual std::string name() const {
+	std::string toString() const override;
+	std::string name() const override {
 		switch (this->type) {
-		case CUBE:
+		case primitive_type_e::CUBE:
 			return "cube";
 			break;
-		case SPHERE:
+		case primitive_type_e::SPHERE:
 			return "sphere";
 			break;
-		case CYLINDER:
+		case primitive_type_e::CYLINDER:
 			return "cylinder";
 			break;
-		case POLYHEDRON:
+		case primitive_type_e::POLYHEDRON:
 			return "polyhedron";
 			break;
-		case SQUARE:
+		case primitive_type_e::SQUARE:
 			return "square";
 			break;
-		case CIRCLE:
+		case primitive_type_e::CIRCLE:
 			return "circle";
 			break;
-		case POLYGON:
+		case primitive_type_e::POLYGON:
 			return "polygon";
 			break;
 		default:
@@ -102,7 +102,7 @@ public:
 	primitive_type_e type;
 	int convexity;
 	ValuePtr points, paths, faces;
-	virtual const Geometry *createGeometry() const;
+	const Geometry *createGeometry() const override;
 };
 
 /**
@@ -113,20 +113,20 @@ public:
  * @param ctx data context with variable values.
  * @param radius_var name of the variable to lookup for the radius value.
  * @param diameter_var name of the variable to lookup for the diameter value.
- * @return radius value of type Value::NUMBER or Value::UNDEFINED if both
+ * @return radius value of type Value::ValueType::NUMBER or Value::ValueType::UNDEFINED if both
  *         variables are invalid or not set.
  */
 Value PrimitiveModule::lookup_radius(const Context &ctx, const std::string &diameter_var, const std::string &radius_var) const
 {
-	ValuePtr d = ctx.lookup_variable(diameter_var, true);
-	ValuePtr r = ctx.lookup_variable(radius_var, true);
-	const bool r_defined = (r->type() == Value::NUMBER);
+	auto d = ctx.lookup_variable(diameter_var, true);
+	auto r = ctx.lookup_variable(radius_var, true);
+	const auto r_defined = (r->type() == Value::ValueType::NUMBER);
 	
-	if (d->type() == Value::NUMBER) {
+	if (d->type() == Value::ValueType::NUMBER) {
 		if (r_defined) {
 			PRINTB("WARNING: Ignoring radius variable '%s' as diameter '%s' is defined too.", radius_var % diameter_var);
 		}
-		return Value(d->toDouble() / 2.0);
+		return {d->toDouble() / 2.0};
 	} else if (r_defined) {
 		return *r;
 	} else {
@@ -136,7 +136,7 @@ Value PrimitiveModule::lookup_radius(const Context &ctx, const std::string &diam
 
 AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
-	PrimitiveNode *node = new PrimitiveNode(inst, this->type);
+	auto node = new PrimitiveNode(inst, this->type);
 
 	node->center = false;
 	node->x = node->y = node->z = node->h = node->r1 = node->r2 = 1;
@@ -144,25 +144,25 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 	AssignmentList args;
 
 	switch (this->type) {
-	case CUBE:
+	case primitive_type_e::CUBE:
 		args += Assignment("size"), Assignment("center");
 		break;
-	case SPHERE:
+	case primitive_type_e::SPHERE:
 		args += Assignment("r");
 		break;
-	case CYLINDER:
+	case primitive_type_e::CYLINDER:
 		args += Assignment("h"), Assignment("r1"), Assignment("r2"), Assignment("center");
 		break;
-	case POLYHEDRON:
+	case primitive_type_e::POLYHEDRON:
 		args += Assignment("points"), Assignment("faces"), Assignment("convexity");
 		break;
-	case SQUARE:
+	case primitive_type_e::SQUARE:
 		args += Assignment("size"), Assignment("center");
 		break;
-	case CIRCLE:
+	case primitive_type_e::CIRCLE:
 		args += Assignment("r");
 		break;
-	case POLYGON:
+	case primitive_type_e::POLYGON:
 		args += Assignment("points"), Assignment("paths"), Assignment("convexity");
 		break;
 	default:
@@ -186,82 +186,82 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 	}
 
 	switch (this->type)  {
-	case CUBE: {
-		ValuePtr size = c.lookup_variable("size");
-		ValuePtr center = c.lookup_variable("center");
+	case primitive_type_e::CUBE: {
+		auto size = c.lookup_variable("size");
+		auto center = c.lookup_variable("center");
 		size->getDouble(node->x);
 		size->getDouble(node->y);
 		size->getDouble(node->z);
 		size->getVec3(node->x, node->y, node->z);
-		if (center->type() == Value::BOOL) {
+		if (center->type() == Value::ValueType::BOOL) {
 			node->center = center->toBool();
 		}
 		break;
 	}
-	case SPHERE: {
-		const Value r = lookup_radius(c, "d", "r");
-		if (r.type() == Value::NUMBER) {
+	case primitive_type_e::SPHERE: {
+		const auto r = lookup_radius(c, "d", "r");
+		if (r.type() == Value::ValueType::NUMBER) {
 			node->r1 = r.toDouble();
 		}
 		break;
 	}
-	case CYLINDER: {
-		ValuePtr h = c.lookup_variable("h");
-		if (h->type() == Value::NUMBER) {
+	case primitive_type_e::CYLINDER: {
+		const auto h = c.lookup_variable("h");
+		if (h->type() == Value::ValueType::NUMBER) {
 			node->h = h->toDouble();
 		}
 
-		const Value r = lookup_radius(c, "d", "r");
-		const Value r1 = lookup_radius(c, "d1", "r1");
-		const Value r2 = lookup_radius(c, "d2", "r2");
-		if (r.type() == Value::NUMBER) {
+		const auto r = lookup_radius(c, "d", "r");
+		const auto r1 = lookup_radius(c, "d1", "r1");
+		const auto r2 = lookup_radius(c, "d2", "r2");
+		if (r.type() == Value::ValueType::NUMBER) {
 			node->r1 = r.toDouble();
 			node->r2 = r.toDouble();
 		}
-		if (r1.type() == Value::NUMBER) {
+		if (r1.type() == Value::ValueType::NUMBER) {
 			node->r1 = r1.toDouble();
 		}
-		if (r2.type() == Value::NUMBER) {
+		if (r2.type() == Value::ValueType::NUMBER) {
 			node->r2 = r2.toDouble();
 		}
 		
-		ValuePtr center = c.lookup_variable("center");
-		if (center->type() == Value::BOOL) {
+		auto center = c.lookup_variable("center");
+		if (center->type() == Value::ValueType::BOOL) {
 			node->center = center->toBool();
 		}
 		break;
 	}
-	case POLYHEDRON: {
+	case primitive_type_e::POLYHEDRON: {
 		node->points = c.lookup_variable("points");
 		node->faces = c.lookup_variable("faces");
-		if (node->faces->type() == Value::UNDEFINED) {
+		if (node->faces->type() == Value::ValueType::UNDEFINED) {
 			// backwards compatible
 			node->faces = c.lookup_variable("triangles", true);
-			if (node->faces->type() != Value::UNDEFINED) {
+			if (node->faces->type() != Value::ValueType::UNDEFINED) {
 				printDeprecation("polyhedron(triangles=[]) will be removed in future releases. Use polyhedron(faces=[]) instead.");
 			}
 		}
 		break;
 	}
-	case SQUARE: {
-		ValuePtr size = c.lookup_variable("size");
-		ValuePtr center = c.lookup_variable("center");
+	case primitive_type_e::SQUARE: {
+		auto size = c.lookup_variable("size");
+		auto center = c.lookup_variable("center");
 		size->getDouble(node->x);
 		size->getDouble(node->y);
 		size->getVec2(node->x, node->y);
-		if (center->type() == Value::BOOL) {
+		if (center->type() == Value::ValueType::BOOL) {
 			node->center = center->toBool();
 		}
 		break;
 	}
-	case CIRCLE: {
-		const Value r = lookup_radius(c, "d", "r");
-		if (r.type() == Value::NUMBER) {
+	case primitive_type_e::CIRCLE: {
+		const auto r = lookup_radius(c, "d", "r");
+		if (r.type() == Value::ValueType::NUMBER) {
 			node->r1 = r.toDouble();
 		}
 		break;
 	}
-	case POLYGON: {
+	case primitive_type_e::POLYGON: {
 		node->points = c.lookup_variable("points");
 		node->paths = c.lookup_variable("paths");
 		break;
@@ -269,8 +269,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 	}
 
 	node->convexity = c.lookup_variable("convexity", true)->toDouble();
-	if (node->convexity < 1)
-		node->convexity = 1;
+	if (node->convexity < 1) node->convexity = 1;
 
 	return node;
 }
@@ -290,15 +289,15 @@ static void generate_circle(point2d *circle, double r, int fragments)
 
 /*!
 	Creates geometry for this node.
-	May return an empty Geometry creation failed, but will not return NULL.
+	May return an empty Geometry creation failed, but will not return nullptr.
 */
 const Geometry *PrimitiveNode::createGeometry() const
 {
-	Geometry *g = NULL;
+	Geometry *g = nullptr;
 
 	switch (this->type) {
-	case CUBE: {
-		PolySet *p = new PolySet(3,true);
+	case primitive_type_e::CUBE: {
+		auto p = new PolySet(3,true);
 		g = p;
 		if (this->x > 0 && this->y > 0 && this->z > 0 &&
 			!std::isinf(this->x) > 0 && !std::isinf(this->y) > 0 && !std::isinf(this->z) > 0) {
@@ -355,8 +354,8 @@ const Geometry *PrimitiveNode::createGeometry() const
 		}
 	}
 		break;
-	case SPHERE: {
-		PolySet *p = new PolySet(3,true);
+	case primitive_type_e::SPHERE: {
+		auto p = new PolySet(3,true);
 		g = p;
 		if (this->r1 > 0 && !std::isinf(this->r1)) {
 			struct ring_s {
@@ -364,12 +363,12 @@ const Geometry *PrimitiveNode::createGeometry() const
 				double z;
 			};
 
-			int fragments = Calc::get_fragments_from_r(r1, fn, fs, fa);
+			auto fragments = Calc::get_fragments_from_r(r1, fn, fs, fa);
 			int rings = (fragments+1)/2;
 // Uncomment the following three lines to enable experimental sphere tesselation
 //		if (rings % 2 == 0) rings++; // To ensure that the middle ring is at phi == 0 degrees
 
-			ring_s *ring = new ring_s[rings];
+			auto ring = new ring_s[rings];
 
 //		double offset = 0.5 * ((fragments / 2) % 2);
 			for (int i = 0; i < rings; i++) {
@@ -386,18 +385,13 @@ const Geometry *PrimitiveNode::createGeometry() const
 				p->append_vertex(ring[0].points[i].x, ring[0].points[i].y, ring[0].z);
 
 			for (int i = 0; i < rings-1; i++) {
-				ring_s *r1 = &ring[i];
-				ring_s *r2 = &ring[i+1];
+				auto r1 = &ring[i];
+				auto  r2 = &ring[i+1];
 				int r1i = 0, r2i = 0;
-				while (r1i < fragments || r2i < fragments)
-				{
-					if (r1i >= fragments)
-						goto sphere_next_r2;
-					if (r2i >= fragments)
-						goto sphere_next_r1;
-					if ((double)r1i / fragments <
-							(double)r2i / fragments)
-					{
+				while (r1i < fragments || r2i < fragments) {
+					if (r1i >= fragments) goto sphere_next_r2;
+					if (r2i >= fragments) goto sphere_next_r1;
+					if ((double)r1i / fragments < (double)r2i / fragments) {
 					sphere_next_r1:
 						p->append_poly();
 						int r1j = (r1i+1) % fragments;
@@ -418,10 +412,11 @@ const Geometry *PrimitiveNode::createGeometry() const
 			}
 
 			p->append_poly();
-			for (int i = 0; i < fragments; i++)
+			for (int i = 0; i < fragments; i++) {
 				p->insert_vertex(ring[rings-1].points[i].x, 
 												 ring[rings-1].points[i].y, 
 												 ring[rings-1].z);
+			}
 
 			for (int i = 0; i < rings; i++) {
 				delete[] ring[i].points;
@@ -430,13 +425,13 @@ const Geometry *PrimitiveNode::createGeometry() const
 		}
 	}
 		break;
-	case CYLINDER: {
-		PolySet *p = new PolySet(3,true);
+	case primitive_type_e::CYLINDER: {
+		auto p = new PolySet(3,true);
 		g = p;
 		if (this->h > 0 && !std::isinf(this->h) &&
 				this->r1 >=0 && this->r2 >= 0 && (this->r1 > 0 || this->r2 > 0) &&
 				!std::isinf(this->r1) && !std::isinf(this->r2)) {
-			int fragments = Calc::get_fragments_from_r(std::fmax(this->r1, this->r2), this->fn, this->fs, this->fa);
+			auto fragments = Calc::get_fragments_from_r(std::fmax(this->r1, this->r2), this->fn, this->fs, this->fa);
 
 			double z1, z2;
 			if (this->center) {
@@ -447,8 +442,8 @@ const Geometry *PrimitiveNode::createGeometry() const
 				z2 = this->h;
 			}
 
-			point2d *circle1 = new point2d[fragments];
-			point2d *circle2 = new point2d[fragments];
+			auto circle1 = new point2d[fragments];
+			auto circle2 = new point2d[fragments];
 
 			generate_circle(circle1, r1, fragments);
 			generate_circle(circle2, r2, fragments);
@@ -494,14 +489,13 @@ const Geometry *PrimitiveNode::createGeometry() const
 		}
 	}
 		break;
-	case POLYHEDRON: {
-		PolySet *p = new PolySet(3);
+	case primitive_type_e::POLYHEDRON: {
+		auto p = new PolySet(3);
 		g = p;
 		p->setConvexity(this->convexity);
-		for (size_t i=0; i<this->faces->toVector().size(); i++)
-		{
+		for (size_t i=0; i<this->faces->toVector().size(); i++)	{
 			p->append_poly();
-			const Value::VectorType &vec = this->faces->toVector()[i]->toVector();
+			const auto &vec = this->faces->toVector()[i]->toVector();
 			for (size_t j=0; j<vec.size(); j++) {
 				size_t pt = vec[j]->toDouble();
 				if (pt < this->points->toVector().size()) {
@@ -517,8 +511,8 @@ const Geometry *PrimitiveNode::createGeometry() const
 		}
 	}
 		break;
-	case SQUARE: {
-		Polygon2d *p = new Polygon2d();
+	case primitive_type_e::SQUARE: {
+		auto p = new Polygon2d();
 		g = p;
 		if (this->x > 0 && this->y > 0 &&
 				!std::isinf(this->x) && !std::isinf(this->y)) {
@@ -530,57 +524,53 @@ const Geometry *PrimitiveNode::createGeometry() const
 			}
 
 			Outline2d o;
-			o.vertices.resize(4);
-			o.vertices[0] = v1;
-			o.vertices[1] = Vector2d(v2[0], v1[1]);
-			o.vertices[2] = v2;
-			o.vertices[3] = Vector2d(v1[0], v2[1]);
+			o.vertices = {v1, {v2[0], v1[1]}, v2, {v1[0], v2[1]}};
 			p->addOutline(o);
 		}
 		p->setSanitized(true);
 	}
 		break;
-	case CIRCLE: {
-		Polygon2d *p = new Polygon2d();
+	case primitive_type_e::CIRCLE: {
+		auto p = new Polygon2d();
 		g = p;
 		if (this->r1 > 0 && !std::isinf(this->r1))	{
-			int fragments = Calc::get_fragments_from_r(this->r1, this->fn, this->fs, this->fa);
+			auto fragments = Calc::get_fragments_from_r(this->r1, this->fn, this->fs, this->fa);
 
 			Outline2d o;
 			o.vertices.resize(fragments);
 			for (int i=0; i < fragments; i++) {
 				double phi = (M_PI*2*i) / fragments;
-				o.vertices[i] = Vector2d(this->r1*cos(phi), this->r1*sin(phi));
+				o.vertices[i] = {this->r1*cos(phi), this->r1*sin(phi)};
 			}
 			p->addOutline(o);
 		}
 		p->setSanitized(true);
 	}
 		break;
-	case POLYGON:	{
-			Polygon2d *p = new Polygon2d();
+	case primitive_type_e::POLYGON:	{
+			auto p = new Polygon2d();
 			g = p;
 
 			Outline2d outline;
 			double x,y;
-			const Value::VectorType &vec = this->points->toVector();
+			const auto &vec = this->points->toVector();
 			for (unsigned int i=0;i<vec.size();i++) {
-				const Value &val = *vec[i];
+				const auto &val = *vec[i];
 				if (!val.getVec2(x, y) || std::isinf(x) || std::isinf(y)) {
 					PRINTB("ERROR: Unable to convert point %s at index %d to a vec2 of numbers", 
 								 val.toString() % i);
 					return p;
 				}
-				outline.vertices.push_back(Vector2d(x, y));
+				outline.vertices.emplace_back(x, y);
 			}
 
 			if (this->paths->toVector().size() == 0 && outline.vertices.size() > 2) {
 				p->addOutline(outline);
 			}
 			else {
-				for(const auto &polygon : this->paths->toVector()) {
+				for (const auto &polygon : this->paths->toVector()) {
 					Outline2d curroutline;
-					for(const auto &index : polygon->toVector()) {
+					for (const auto &index : polygon->toVector()) {
 						unsigned int idx = index->toDouble();
 						if (idx < outline.vertices.size()) {
 							curroutline.vertices.push_back(outline.vertices[idx]);
@@ -607,33 +597,33 @@ std::string PrimitiveNode::toString() const
 	stream << this->name();
 
 	switch (this->type) {
-	case CUBE:
+	case primitive_type_e::CUBE:
 		stream << "(size = [" << this->x << ", " << this->y << ", " << this->z << "], "
 					 <<	"center = " << (center ? "true" : "false") << ")";
 		break;
-	case SPHERE:
+	case primitive_type_e::SPHERE:
 		stream << "($fn = " << this->fn << ", $fa = " << this->fa
 					 << ", $fs = " << this->fs << ", r = " << this->r1 << ")";
 			break;
-	case CYLINDER:
+	case primitive_type_e::CYLINDER:
 		stream << "($fn = " << this->fn << ", $fa = " << this->fa
 					 << ", $fs = " << this->fs << ", h = " << this->h << ", r1 = " << this->r1
 					 << ", r2 = " << this->r2 << ", center = " << (center ? "true" : "false") << ")";
 			break;
-	case POLYHEDRON:
+	case primitive_type_e::POLYHEDRON:
 		stream << "(points = " << *this->points
 					 << ", faces = " << *this->faces
 					 << ", convexity = " << this->convexity << ")";
 			break;
-	case SQUARE:
+	case primitive_type_e::SQUARE:
 		stream << "(size = [" << this->x << ", " << this->y << "], "
 					 << "center = " << (center ? "true" : "false") << ")";
 			break;
-	case CIRCLE:
+	case primitive_type_e::CIRCLE:
 		stream << "($fn = " << this->fn << ", $fa = " << this->fa
 					 << ", $fs = " << this->fs << ", r = " << this->r1 << ")";
 		break;
-	case POLYGON:
+	case primitive_type_e::POLYGON:
 		stream << "(points = " << *this->points << ", paths = " << *this->paths << ", convexity = " << this->convexity << ")";
 			break;
 	default:
@@ -645,11 +635,11 @@ std::string PrimitiveNode::toString() const
 
 void register_builtin_primitives()
 {
-	Builtins::init("cube", new PrimitiveModule(CUBE));
-	Builtins::init("sphere", new PrimitiveModule(SPHERE));
-	Builtins::init("cylinder", new PrimitiveModule(CYLINDER));
-	Builtins::init("polyhedron", new PrimitiveModule(POLYHEDRON));
-	Builtins::init("square", new PrimitiveModule(SQUARE));
-	Builtins::init("circle", new PrimitiveModule(CIRCLE));
-	Builtins::init("polygon", new PrimitiveModule(POLYGON));
+	Builtins::init("cube", new PrimitiveModule(primitive_type_e::CUBE));
+	Builtins::init("sphere", new PrimitiveModule(primitive_type_e::SPHERE));
+	Builtins::init("cylinder", new PrimitiveModule(primitive_type_e::CYLINDER));
+	Builtins::init("polyhedron", new PrimitiveModule(primitive_type_e::POLYHEDRON));
+	Builtins::init("square", new PrimitiveModule(primitive_type_e::SQUARE));
+	Builtins::init("circle", new PrimitiveModule(primitive_type_e::CIRCLE));
+	Builtins::init("polygon", new PrimitiveModule(primitive_type_e::POLYGON));
 }

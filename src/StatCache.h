@@ -26,7 +26,11 @@
 
 #pragma once
 
-class StatCache {
-public:
-	static int stat(const char *, struct stat *);
-};
+#include <string>
+#include <sys/stat.h>
+
+namespace StatCache {
+
+	int stat(const std::string &path, struct ::stat &st);
+
+}

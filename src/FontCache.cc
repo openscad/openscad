@@ -40,11 +40,6 @@ std::vector<std::string> fontpath;
 
 namespace fs = boost::filesystem;
 
-static bool FontInfoSortPredicate(const FontInfo& fi1, const FontInfo& fi2)
-{
-	return (fi1 < fi2);
-}
-
 FontInfo::FontInfo(const std::string &family, const std::string &style, const std::string &file) : family(family), style(style), file(file)
 {
 }
@@ -79,9 +74,9 @@ const std::string &FontInfo::get_file() const
 	return file;
 }
 
-FontCache * FontCache::self = NULL;
+FontCache * FontCache::self = nullptr;
 FontCache::InitHandlerFunc *FontCache::cb_handler = FontCache::defaultInitHandler;
-void *FontCache::cb_userdata = NULL;
+void *FontCache::cb_userdata = nullptr;
 const std::string FontCache::DEFAULT_FONT("Liberation Sans:style=Regular");
 
 /**
@@ -129,7 +124,7 @@ FontCache::FontCache()
 	}
 
 	const char *env_font_path = getenv("OPENSCAD_FONT_PATH");
-	if (env_font_path != NULL) {
+	if (env_font_path != nullptr) {
 		std::string paths(env_font_path);
 		const std::string sep = PlatformUtils::pathSeparatorChar();
 		typedef boost::split_iterator<std::string::iterator> string_split_iterator;
@@ -198,7 +193,7 @@ void FontCache::add_font_dir(const std::string &path)
 
 FontInfoList *FontCache::list_fonts() const
 {
-	FcObjectSet *object_set = FcObjectSetBuild(FC_FAMILY, FC_STYLE, FC_FILE, (char *) 0);
+	FcObjectSet *object_set = FcObjectSetBuild(FC_FAMILY, FC_STYLE, FC_FILE, nullptr);
 	FcPattern *pattern = FcPatternCreate();
 	init_pattern(pattern);
 	FcFontSet *font_set = FcFontList(this->config, pattern, object_set);
@@ -269,13 +264,13 @@ FT_Face FontCache::get_font(const std::string &font)
 	if (it == this->cache.end()) {
 		face = find_face(font);
 		if (!face) {
-			return NULL;
+			return nullptr;
 		}
 		check_cleanup();
 	} else {
 		face = (*it).second.first;
 	}
-	this->cache[font] = cache_entry_t(face, time(NULL));
+	this->cache[font] = cache_entry_t(face, time(nullptr));
 	return face;
 }
 
@@ -315,12 +310,12 @@ FT_Face FontCache::find_face_fontconfig(const std::string &font) const
 
 	FcValue file_value;
 	if (FcPatternGet(match, FC_FILE, 0, &file_value) != FcResultMatch) {
-		return NULL;
+		return nullptr;
 	}
 
 	FcValue font_index;
 	if (FcPatternGet(match, FC_INDEX, 0, &font_index)) {
-		return NULL;
+		return nullptr;
 	}
 	
 	FT_Face face;
@@ -356,7 +351,7 @@ FT_Face FontCache::find_face_fontconfig(const std::string &font) const
 			PRINTB("Warning: Could not select a char map for font %s/%s", face->family_name % face->style_name);
 	}
 	
-	return error ? NULL : face;
+	return error ? nullptr : face;
 }
 
 bool FontCache::try_charmap(FT_Face face, int platform_id, int encoding_id) const

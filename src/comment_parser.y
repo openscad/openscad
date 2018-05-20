@@ -6,11 +6,11 @@
     #include "printutils.h"
     #include "value.h" 
     #include "comment.h" 
-    void yyerror(char *);
+    void yyerror(const char *);
     int comment_lexerlex(void);
     int comment_parserlex(void);
     extern void comment_lexer_scan_string ( const char *str );
-    Expression *params;
+    shared_ptr<Expression> params;
 %}
 %union {
     char *text;
@@ -37,8 +37,8 @@ params:
           expr
             {
                 $$ = $1;
-                params = $$;
-            }			
+                params = shared_ptr<Expression>($$);
+            }
             ;
             
 expr: 
@@ -127,7 +127,7 @@ int comment_parserlex(void)
   return comment_lexerlex();
 }
 
-void yyerror(char *msg) {
+void yyerror(const char * /*msg*/) {
     PRINTD("ERROR IN PARAMETER: Parser error in comments of file \n "); 
     params = NULL;
 }
@@ -136,6 +136,6 @@ shared_ptr<Expression> CommentParser::parser(const char *text)
 {
   comment_lexer_scan_string(text);
   int parserretval = comment_parserparse();
-  if (parserretval != 0) return NULL;
-  return shared_ptr<Expression>(params);
+  if (parserretval != 0) return nullptr;
+  return params;
 }

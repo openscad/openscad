@@ -8,6 +8,7 @@
 // is already defined, so the workaround defines sprintf as itself.
 #ifdef __MINGW32__
 #define _GL_STDIO_H
+#undef sprintf
 #define sprintf sprintf
 #endif
 

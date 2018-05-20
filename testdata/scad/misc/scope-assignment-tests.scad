@@ -15,7 +15,6 @@ module mymodule(b=6) {
 mymodule(); 
 mymodule(8); 
 
-
 echo("module children scope:");
 module mymodule2(b2=6) { 
   b2 = 2; 
@@ -83,3 +82,8 @@ assign(i=9) {
     echo("i (10)", i);
 }
 
+echo("group scope:");
+group() {
+  a=11;
+  echo("local a (11)", a);
+}
