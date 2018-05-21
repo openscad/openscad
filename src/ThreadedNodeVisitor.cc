@@ -44,25 +44,35 @@ public:
 // the work queue and processes them. It exits when the context signals to abort
 // or that it is finished.
 void ProcessWorkItems(ProcessingContext*ctx, NodeVisitor*visitor) {
+    std::shared_ptr<WorkItem> nextWorkItem;
+
     while (!ctx->abort && !ctx->finished) {
-        // Wait for a work item to process
-        std::unique_lock<std::mutex> lk(ctx->queueMutex);
-        ctx->cv.wait(lk, [ctx]() {
-            return !ctx->workQueue.empty() || ctx->abort || ctx->finished;
-        });
+        std::shared_ptr<WorkItem> workItem;
 
-        if (ctx->abort || ctx->finished) {
-            return;
+        if (nextWorkItem) {
+            workItem = nextWorkItem;
+            nextWorkItem = nullptr;
+        } else {
+            // Wait for a work item to process
+            std::unique_lock<std::mutex> lk(ctx->queueMutex);
+            ctx->cv.wait(lk, [ctx]() {
+                return !ctx->workQueue.empty() || ctx->abort || ctx->finished;
+            });
+
+            if (ctx->abort || ctx->finished) {
+                return;
+            }
+
+            if (ctx->workQueue.empty()) {
+                continue;
+            }
+
+            // Get available work item
+            workItem = ctx->workQueue.front();
+            ctx->workQueue.pop();
+            lk.unlock();
         }
 
-        if (ctx->workQueue.empty()) {
-            continue;
-        }
-
-        // Get available work item
-        auto workItem = ctx->workQueue.front();
-        ctx->workQueue.pop();
-        lk.unlock();
 
         if (THREAD_DEBUG){
             // cout << "Processing item" << endl;
@@ -77,8 +87,6 @@ void ProcessWorkItems(ProcessingContext*ctx, NodeVisitor*visitor) {
             return;
         }
 
-        // note: response from a postfix should never be PruneTraversal
-
         if (workItem->parentWork) {
             // decrement remaining child count for pending parent work item. If this
             // was the last one, push the parent work item onto the queue.
@@ -89,7 +97,8 @@ void ProcessWorkItems(ProcessingContext*ctx, NodeVisitor*visitor) {
                     cout << '^';
                     fflush(stdout);
                 }
-                ctx->pushWorkItem(workItem->parentWork);
+
+                nextWorkItem = workItem->parentWork;
             }
         } else {
             // A parentless item is the root
