@@ -8,7 +8,7 @@ using namespace std;
 
 namespace {
 
-constexpr bool THREAD_DEBUG = true;
+constexpr bool THREAD_DEBUG = false;
 
 class WorkItem {
 public:
