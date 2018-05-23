@@ -1,6 +1,7 @@
 #pragma once
 
 #include "NodeVisitor.h"
+#include "progress.h"
 #include "Tree.h"
 #include "CGAL_Nef_polyhedron.h"
 

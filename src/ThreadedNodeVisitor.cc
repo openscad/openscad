@@ -21,7 +21,7 @@ public:
 
 class ProcessingContext {
 public:
-    ProcessingContext() : abort(false), finished(false) {}
+    ProcessingContext() : abort(false), finished(false), canceled(false) {}
     std::queue<std::shared_ptr<WorkItem>> workQueue;
     // This lock is required when reading or writing the workQueue
     std::mutex queueMutex;
@@ -30,6 +30,11 @@ public:
 
     std::atomic<bool> abort; // Threads check this to see if they need to abort
     std::atomic<bool> finished;
+    std::atomic<bool> canceled;
+
+    bool exitNow() {
+        return abort || finished | canceled;
+    }
 
     void pushWorkItem(std::shared_ptr<WorkItem> item) {
         {
@@ -46,7 +51,7 @@ public:
 void ProcessWorkItems(ProcessingContext*ctx, NodeVisitor*visitor) {
     std::shared_ptr<WorkItem> nextWorkItem;
 
-    while (!ctx->abort && !ctx->finished) {
+    while (!ctx->exitNow()) {
         std::shared_ptr<WorkItem> workItem;
 
         if (nextWorkItem) {
@@ -56,10 +61,10 @@ void ProcessWorkItems(ProcessingContext*ctx, NodeVisitor*visitor) {
             // Wait for a work item to process
             std::unique_lock<std::mutex> lk(ctx->queueMutex);
             ctx->cv.wait(lk, [ctx]() {
-                return !ctx->workQueue.empty() || ctx->abort || ctx->finished;
+                return !ctx->workQueue.empty() || ctx->exitNow();
             });
 
-            if (ctx->abort || ctx->finished) {
+            if (ctx->exitNow()) {
                 return;
             }
 
@@ -81,9 +86,16 @@ void ProcessWorkItems(ProcessingContext*ctx, NodeVisitor*visitor) {
         }
 
         // Run postfix
-        Response response = workItem->node->accept(workItem->state, *visitor);
-        if (response == Response::AbortTraversal) {
-            ctx->abort = true;
+        try {
+            Response response = workItem->node->accept(workItem->state, *visitor);
+            if (response == Response::AbortTraversal) {
+                ctx->abort = true;
+                ctx->cv.notify_all();
+                return;
+            }
+        } catch (ProgressCancelException) {
+            ctx->canceled = true;
+            ctx->cv.notify_all();
             return;
         }
 
@@ -115,17 +127,25 @@ void ProcessWorkItems(ProcessingContext*ctx, NodeVisitor*visitor) {
 void _traverseThreadedRecursive(ProcessingContext*ctx,  NodeVisitor*visitor,
     std::shared_ptr<WorkItem> parentWorkItem, const AbstractNode &node, const class State &state) {
 
-    if (ctx->abort) return; // Abort immediately
+    if (ctx->exitNow()) return; // Abort immediately
 
     // Run prefix
     State newstate = state;
     newstate.setNumChildren(node.getChildren().size());
     newstate.setPrefix(true);
     newstate.setParent(state.parent());
-    Response response = node.accept(newstate, *visitor);
+    Response response;
+    try {
+        response = node.accept(newstate, *visitor);
+    } catch (ProgressCancelException) {
+        ctx->canceled = true;
+        ctx->cv.notify_all();
+        return;
+    }
 
     if (response == Response::AbortTraversal) {
         ctx->abort = true;
+        ctx->cv.notify_all();
         return;
     }
 
@@ -147,7 +167,7 @@ void _traverseThreadedRecursive(ProcessingContext*ctx,  NodeVisitor*visitor,
     newstate.setParent(&node);
     for(const auto &chnode : node.getChildren()) {
         _traverseThreadedRecursive(ctx, visitor, postfixWorkItem, *chnode, newstate);
-        if (ctx->abort) return; // Abort immediately
+        if (ctx->exitNow()) return; // Abort immediately
     }
 }
 
@@ -172,6 +192,15 @@ Response ThreadedNodeVisitor::traverseThreaded(const AbstractNode &node, const c
 
     // Wait for threads to finish processing all postfix traversals.
     for (auto& t : workers) t.join();
+
+    if (THREAD_DEBUG) {
+        cout << "JOINED THREADS" << endl;
+    }
+
+    // Re-throw exception if we ended early due to a user-requested cancel.
+    if (ctx.canceled) {
+        throw ProgressCancelException();
+    }
 
     return ctx.abort ? Response::AbortTraversal : Response::ContinueTraversal;
 }
