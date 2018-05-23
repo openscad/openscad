@@ -120,8 +120,7 @@ GeometryEvaluator::GeometryEvaluator(const class Tree &tree)
 /*!
 	Set allownef to false to force the result to _not_ be a Nef polyhedron
 */
-shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNode &node, 
-																															 bool allownef)
+shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNode &node, bool allownef, bool allowMultithreading)
 {
 	SPIN_LOCK(cacheLock);
 	const std::string key = this->tree.getIdString(node);
@@ -137,7 +136,7 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 			this->root = N;
 		}	
 		else {
-			if (Feature::ExperimentalThreadedTraversal.is_enabled())
+			if (Feature::ExperimentalThreadedTraversal.is_enabled() && allowMultithreading)
 			{
 				this->traverseThreaded(node);
 			}

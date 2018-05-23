@@ -18,7 +18,7 @@ public:
 	GeometryEvaluator(const class Tree &tree);
 	virtual ~GeometryEvaluator() {}
 
-	shared_ptr<const Geometry> evaluateGeometry(const AbstractNode &node, bool allownef);
+	shared_ptr<const Geometry> evaluateGeometry(const AbstractNode &node, bool allownef, bool allowMultithreading = false);
 
 	Response visit(State &state, const AbstractNode &node) override;
 	Response visit(State &state, const AbstractIntersectionNode &node) override;

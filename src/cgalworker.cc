@@ -30,7 +30,7 @@ void CGALWorker::work()
 	shared_ptr<const Geometry> root_geom;
 	try {
 		GeometryEvaluator evaluator(*this->tree);
-		root_geom = evaluator.evaluateGeometry(*this->tree->root(), true);
+		root_geom = evaluator.evaluateGeometry(*this->tree->root(), true, true /* allowMultithreading */);
 	}
 	catch (const ProgressCancelException &e) {
 		PRINT("Rendering cancelled.");
