@@ -148,7 +148,8 @@ static void help(const char *progname, bool failure = false)
          "%2%[ --colorscheme=[Cornfield|Sunset|Metallic|Starnight|BeforeDawn|Nature|DeepOcean] ] \\\n"
          "%2%[ --csglimit=num ]"
 #ifdef ENABLE_EXPERIMENTAL
-         " [ --enable=<feature> ] \\\n"
+         " [ --enable=<feature> ] "
+         " [ --parallelism=num ] \\\n"
          "%2%[ -p <Parameter Filename>] [-P <Parameter Set>] "
 #endif
          "\\\n"
@@ -847,6 +848,7 @@ int main(int argc, char **argv)
 #endif
 #ifdef ENABLE_EXPERIMENTAL
 		("enable", po::value<vector<string>>(), "enable experimental features")
+		("parallelism", po::value<string>(), "Maximum parallelism (# cores) to use for render operations. Only valid if the 'thread-traversal' feature is enabled.")
 #endif
 		;
 
@@ -930,6 +932,11 @@ int main(int argc, char **argv)
 		for(const auto &feature : vm["enable"].as<vector<string>>()) {
 			Feature::enable_feature(feature);
 		}
+	}
+
+	if (vm.count("parallelism")) {
+		// TODO: validate input
+		ThreadedNodeVisitor::Parallelism = std::stoi(vm["parallelism"].as<string>());
 	}
 #endif
 

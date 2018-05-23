@@ -6,6 +6,8 @@
 
 using namespace std;
 
+int ThreadedNodeVisitor::Parallelism = 0;
+
 namespace {
 
 constexpr bool THREAD_DEBUG = false;
@@ -200,14 +202,18 @@ Response ThreadedNodeVisitor::traverseThreaded(const AbstractNode &node, const c
     // Create the context that will be passed to all recursive calls
     ProcessingContext ctx;
 
-    // Start worker threads
-    const size_t maxThreads = std::thread::hardware_concurrency();
+    // Start worker threads. Use Parallism if nonzero, otherwise use as many
+    // threads as the system has cores.
+    const size_t numThreads = Parallelism != 0 ?
+                    Parallelism :
+                    std::thread::hardware_concurrency();
+
     std::vector<std::thread> workers;
-    for (int i = 0; i < maxThreads; i++) {
+    for (int i = 0; i < numThreads; i++) {
         std::thread t([&ctx, this](){ProcessWorkItems(&ctx, this);});
         workers.push_back(std::move(t));
     }
-    cout << "Started " << maxThreads << " worker threads" << endl;
+    cout << "Started " << numThreads << " worker threads" << endl;
 
     // Recursively do all prefix traversals and schedule postfix traversals to
     // happen later.
