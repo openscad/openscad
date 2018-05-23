@@ -173,6 +173,29 @@ void _traverseThreadedRecursive(ProcessingContext*ctx,  NodeVisitor*visitor,
 
 } // namespace
 
+// This begins by starting a fixed number of worker threads at the start of
+// traversal and scheduling work amongst them as it becomes available. A
+// condition variable is used to efficiently sleep threads while work is
+// unavailable.
+//
+// The geometry tree is traversed top-to-bottom recursively, running prefix
+// traversal for each of the nodes on the way down. This happens serially,
+// ensuring that each node's prefix traversal happens before any of it's
+// children's.
+//
+// The postfix traversals are usually (much) more expensive to run than the
+// prefix traversals and these are what we run in parallel. The important
+// constraint on running these in parallel is that a given node's postfix
+// traversal can not be run until the postfix traversals for each of the child
+// nodes is run.
+//
+// As the tree is recursively traversed top-to-bottom, a tree of pending postfix
+// traversals is built. In order to keep track of which nodes are ready to run,
+// each node keeps a counter of how many child nodes have yet to complete their
+// postfix traversals. Each time a postfix traversal is completed, the pending
+// child count of it's parent node is decremented. When the counter gets to
+// zero, that node is pushed onto the work queue and is executed as soon as a
+// thread is available.
 Response ThreadedNodeVisitor::traverseThreaded(const AbstractNode &node, const class State &state) {
     // Create the context that will be passed to all recursive calls
     ProcessingContext ctx;
