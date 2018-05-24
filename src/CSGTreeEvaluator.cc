@@ -254,7 +254,10 @@ Response CSGTreeEvaluator::visit(State &state, const RenderNode &node)
 		shared_ptr<CSGNode> t1;
 		shared_ptr<const Geometry> geom;
 		if (this->geomevaluator) {
-			geom = this->geomevaluator->evaluateGeometry(node, false);
+			// Note: multi-threading is allowed (assuming the thread-traversal
+			// feature is enabled) for render nodes because they are likely to
+			// be expensive and benefit from parallelism.
+			geom = this->geomevaluator->evaluateGeometry(node, false, true /* allowMultithreading */);
 			if (geom) {
 				t1 = evaluateCSGNodeFromGeometry(state, geom, node.modinst, node);
 			}
