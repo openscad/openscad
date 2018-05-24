@@ -237,7 +237,14 @@ Response ThreadedNodeVisitor::traverseThreaded(const AbstractNode &node, const c
 
     std::vector<std::thread> workers;
     for (int i = 0; i < numThreads; i++) {
-        std::thread t([&ctx, this](){ProcessWorkItems(&ctx, this);});
+        std::thread t([&ctx, this](){
+            try {
+                ProcessWorkItems(&ctx, this);
+            } catch (...) {
+                cerr << "UNHANDLED EXCEPTION IN WORKER THREAD" << endl;
+                exit(1);
+            }
+        });
         workers.push_back(std::move(t));
     }
     cout << "Started " << numThreads << " worker threads" << endl;
