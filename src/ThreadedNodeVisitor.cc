@@ -23,19 +23,47 @@ public:
 
 class ProcessingContext {
 public:
-    ProcessingContext() : abort(false), finished(false), canceled(false) {}
+    ProcessingContext() {}
     std::queue<std::shared_ptr<WorkItem>> workQueue;
     // This lock is required when reading or writing the workQueue
     std::mutex queueMutex;
     // The condition variable is signaled whenever a new item is added to the queue.
     std::condition_variable cv;
 
-    std::atomic<bool> abort; // Threads check this to see if they need to abort
-    std::atomic<bool> finished;
-    std::atomic<bool> canceled;
-
     bool exitNow() {
-        return abort || finished | canceled;
+        return _abort || _finished | _canceled;
+    }
+
+    void cancel() {
+        {
+            std::lock_guard<std::mutex> lock(queueMutex);
+            _canceled = true;
+        }
+        cv.notify_all();
+    }
+
+    bool isCanceled() const {
+        return _canceled;
+    }
+
+    void abort() {
+        {
+            std::lock_guard<std::mutex> lock(queueMutex);
+            _abort = true;
+        }
+        cv.notify_all();
+    }
+
+    bool isAborted() const {
+        return _abort;
+    }
+
+    void finish() {
+        {
+            std::lock_guard<std::mutex> lock(queueMutex);
+            _finished = true;
+        }
+        cv.notify_all();
     }
 
     void pushWorkItem(std::shared_ptr<WorkItem> item) {
@@ -45,6 +73,11 @@ public:
         }
         cv.notify_one();
     }
+
+private:
+    bool _abort = false;
+    bool _finished = false;
+    bool _canceled = false;
 };
 
 // This is the main function for each of the worker threads. It reads items from
@@ -91,13 +124,11 @@ void ProcessWorkItems(ProcessingContext*ctx, NodeVisitor*visitor) {
         try {
             Response response = workItem->node->accept(workItem->state, *visitor);
             if (response == Response::AbortTraversal) {
-                ctx->abort = true;
-                ctx->cv.notify_all();
+                ctx->abort();
                 return;
             }
         } catch (ProgressCancelException) {
-            ctx->canceled = true;
-            ctx->cv.notify_all();
+            ctx->cancel();
             return;
         }
 
@@ -119,9 +150,7 @@ void ProcessWorkItems(ProcessingContext*ctx, NodeVisitor*visitor) {
             if (THREAD_DEBUG) {
                 cout << "Finished traversing root item" << endl;
             }
-            ctx->finished = true;
-            // wake up each thread so it can see we're done and exit
-            ctx->cv.notify_all();
+            ctx->finish();
         }
     }
 }
@@ -140,14 +169,12 @@ void _traverseThreadedRecursive(ProcessingContext*ctx,  NodeVisitor*visitor,
     try {
         response = node.accept(newstate, *visitor);
     } catch (ProgressCancelException) {
-        ctx->canceled = true;
-        ctx->cv.notify_all();
+        ctx->cancel();
         return;
     }
 
     if (response == Response::AbortTraversal) {
-        ctx->abort = true;
-        ctx->cv.notify_all();
+        ctx->abort();
         return;
     }
 
@@ -227,9 +254,9 @@ Response ThreadedNodeVisitor::traverseThreaded(const AbstractNode &node, const c
     }
 
     // Re-throw exception if we ended early due to a user-requested cancel.
-    if (ctx.canceled) {
+    if (ctx.isCanceled()) {
         throw ProgressCancelException();
     }
 
-    return ctx.abort ? Response::AbortTraversal : Response::ContinueTraversal;
+    return ctx.isAborted() ? Response::AbortTraversal : Response::ContinueTraversal;
 }
