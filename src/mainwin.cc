@@ -96,6 +96,7 @@
 #include "QWordSearchField.h"
 #include <QSettings> //Include QSettings for direct operations on settings arrays
 #include "QSettingsCached.h"
+#include <QtMultimedia/QSound>
 
 #if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
 #include <QTextDocument>
@@ -2002,6 +2003,11 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 	}
 
 	updateStatusBar(nullptr);
+
+	if (Preferences::inst()->getValue("advanced/enableSoundNotification").toBool())
+	{
+		QSound::play(":sounds/complete.wav");
+	}
 
 	this->contentschanged = false;
 	compileEnded();

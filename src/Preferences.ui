@@ -1445,6 +1445,16 @@
              </widget>
             </item>
             <item>
+             <widget class="QCheckBox" name="enableSoundOnRenderCompleteCheckBox">
+              <property name="text">
+               <string>Play sound notification on render complete</string>
+              </property>
+              <property name="checked">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
              <spacer name="verticalSpacer">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
