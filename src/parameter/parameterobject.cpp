@@ -48,7 +48,7 @@ void ParameterObject::setValue(const class ValuePtr defaultValue, const class Va
   this->vt = values->type();
   this->dvt = defaultValue->type();
  
-  bool makerBotMax = (vt == Value::ValueType::VECTOR && values->toVector().size() == 1 && values->toVector()[0]->toVector().size() ==0); // [max] format from makerbot customizer
+  bool makerBotMax = (vt == Value::ValueType::VECTOR && values->toVector().size() == 1 && values->toVector()[0]->type() == Value::ValueType::NUMBER); // [max] format from makerbot customizer
 
   if (dvt == Value::ValueType::BOOL) {
     this->target = CHECKBOX;
