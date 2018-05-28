@@ -349,8 +349,6 @@ unsigned int GeometryEvaluator::collectChildren(const AbstractNode &node, Geomet
 	cacheLock.clear();
 	if (mixed)
 		PRINT("WARNING: Mixing 2D and 3D objects is not supported.");
-	if (dim == 0 && !dim2.empty())
-		PRINTB("WARNING: No 2D or 3D child objects, %d empties", dim2.size());
 	return dim;
 }
 
