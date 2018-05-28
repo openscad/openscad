@@ -3,11 +3,13 @@
 #include "cache.h"
 #include "memory.h"
 #include "Geometry.h"
+#include <atomic>
 
 class GeometryCache
 {
 public:	
-	GeometryCache(size_t memorylimit = 100*1024*1024) : cache(memorylimit) {}
+	GeometryCache(size_t memorylimit = 100*1024*1024) : cache(memorylimit),
+					cacheLock(ATOMIC_FLAG_INIT) {};
 
 	static GeometryCache *instance() { if (!inst) inst = new GeometryCache; return inst; }
 
@@ -18,6 +20,9 @@ public:
 	void setMaxSize(size_t limit);
 	void clear() { cache.clear(); }
 	void print();
+
+	// a mutex (spinlock) to guard access to the cache
+	std::atomic_flag cacheLock;
 
 private:
 	static GeometryCache *inst;

@@ -32,13 +32,6 @@
 #include <CGAL/convex_hull_2.h>
 #include <CGAL/Point_2.h>
 
-#include <atomic>
-
-namespace {
-	// a global mutex to guard access to the cache and visited children
-	std::atomic_flag cacheLock = ATOMIC_FLAG_INIT;
-}
-
 #define SPIN_LOCK(flag) do { } while(flag.test_and_set())
 
 // determines if kid is contained by parent
@@ -122,14 +115,14 @@ GeometryEvaluator::GeometryEvaluator(const class Tree &tree)
 */
 shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNode &node, bool allownef, bool allowMultithreading)
 {
-	SPIN_LOCK(cacheLock);
+	SPIN_LOCK(GeometryCache::instance()->cacheLock);
 	const std::string key = this->tree.getIdString(node);
 	if (!GeometryCache::instance()->contains(key)) {
 		shared_ptr<const CGAL_Nef_polyhedron> N;
 		if (CGALCache::instance()->contains(key)) {
 			N = CGALCache::instance()->get(key);
 		}
-		cacheLock.clear();
+		GeometryCache::instance()->cacheLock.clear();
 
 		// If not found in any caches, we need to evaluate the geometry
 		if (N) {
@@ -163,7 +156,7 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 		return this->root;
 	}
 	shared_ptr<const Geometry> result = GeometryCache::instance()->get(key);
-	cacheLock.clear();
+	GeometryCache::instance()->cacheLock.clear();
 	return result;
 }
 
@@ -311,17 +304,24 @@ unsigned int GeometryEvaluator::collectChildren(const AbstractNode &node, Geomet
 {
 	bool mixed = false;
 	unsigned int dim = 0;
-	SPIN_LOCK(cacheLock);
+	// TODO: avoid locking around this whole loop
+	SPIN_LOCK(GeometryCache::instance()->cacheLock);
 	for (const auto &item : getVisitedChildren(node)) {
 		const AbstractNode *chnode = item.first;
 		const shared_ptr<const Geometry> &chgeom = item.second;
 		if (chnode->modinst->isBackground()) continue;
+
+		// Unlock because smartCacheInsert requires the lock.
+		// TODO: use a recursive lock? The problem is that a recursive lock would probably be more expensive.
+		GeometryCache::instance()->cacheLock.clear();
 
 		// NB! We insert into the cache here to ensure that all children of
 		// a node is a valid object. If we inserted as we created them, the 
 		// cache could have been modified before we reach this point due to a large
 		// sibling object. 
 		smartCacheInsert(*chnode, chgeom);
+
+		SPIN_LOCK(GeometryCache::instance()->cacheLock);
 
 		if (chgeom) {
 			bool chempty = chgeom->isEmpty();
@@ -346,7 +346,7 @@ unsigned int GeometryEvaluator::collectChildren(const AbstractNode &node, Geomet
 			}
 		}
 	}
-	cacheLock.clear();
+	GeometryCache::instance()->cacheLock.clear();
 	if (mixed)
 		PRINT("WARNING: Mixing 2D and 3D objects is not supported.");
 	return dim;
@@ -363,6 +363,7 @@ void GeometryEvaluator::smartCacheInsert(const AbstractNode &node,
 	const std::string &key = this->tree.getIdString(node);
 
 	shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom);
+	SPIN_LOCK(GeometryCache::instance()->cacheLock);
 	if (N) {
 		if (!CGALCache::instance()->contains(key)) CGALCache::instance()->insert(key, N);
 	}
@@ -373,28 +374,29 @@ void GeometryEvaluator::smartCacheInsert(const AbstractNode &node,
 			}
 		}
 	}
+	GeometryCache::instance()->cacheLock.clear();
 }
 
 bool GeometryEvaluator::isSmartCached(const AbstractNode &node)
 {
-	SPIN_LOCK(cacheLock);
+	SPIN_LOCK(GeometryCache::instance()->cacheLock);
 	const std::string &key = this->tree.getIdString(node);
 	bool result = (GeometryCache::instance()->contains(key) ||
 					CGALCache::instance()->contains(key));
-	cacheLock.clear();
+	GeometryCache::instance()->cacheLock.clear();
 	return result;
 }
 
 shared_ptr<const Geometry> GeometryEvaluator::smartCacheGet(const AbstractNode &node, bool preferNef)
 {
-	SPIN_LOCK(cacheLock);
+	SPIN_LOCK(GeometryCache::instance()->cacheLock);
 	const std::string &key = this->tree.getIdString(node);
 	shared_ptr<const Geometry> geom;
 	bool hasgeom = GeometryCache::instance()->contains(key);
 	bool hascgal = CGALCache::instance()->contains(key);
 	if (hascgal && (preferNef || !hasgeom)) geom = CGALCache::instance()->get(key);
 	else if (hasgeom) geom = GeometryCache::instance()->get(key);
-	cacheLock.clear();
+	GeometryCache::instance()->cacheLock.clear();
 	return geom;
 }
 
@@ -456,7 +458,7 @@ void GeometryEvaluator::addToParent(const State &state,
 																		const AbstractNode &node, 
 																		const shared_ptr<const Geometry> &geom)
 {
-	SPIN_LOCK(cacheLock);
+	SPIN_LOCK(GeometryCache::instance()->cacheLock);
 	if (state.parent()) {
 		// erase the sorted children for this node's parent so they will be sorted when accessed
 		this->sortedchildren.erase(state.parent()->index());
@@ -476,7 +478,7 @@ void GeometryEvaluator::addToParent(const State &state,
 		assert(this->visitedchildren.empty());
 		assert(this->sortedchildren.empty());
 	}
-	cacheLock.clear();
+	GeometryCache::instance()->cacheLock.clear();
 }
 
 /*!
