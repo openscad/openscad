@@ -4,12 +4,15 @@
 #include "memory.h"
 #include "Geometry.h"
 #include <atomic>
+#include <boost/smart_ptr/detail/spinlock.hpp>
 
 class GeometryCache
 {
 public:	
-	GeometryCache(size_t memorylimit = 100*1024*1024) : cache(memorylimit),
-					cacheLock(ATOMIC_FLAG_INIT) {};
+	GeometryCache(size_t memorylimit = 100*1024*1024) : cache(memorylimit) {
+		// TODO: why is this needed? Shouldn't it start out unlocked?
+		cacheLock.unlock();
+	}
 
 	static GeometryCache *instance() { if (!inst) inst = new GeometryCache; return inst; }
 
@@ -22,7 +25,7 @@ public:
 	void print();
 
 	// a mutex (spinlock) to guard access to the cache
-	std::atomic_flag cacheLock;
+	boost::detail::spinlock cacheLock;
 
 private:
 	static GeometryCache *inst;
