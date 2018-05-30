@@ -49,7 +49,7 @@ const AbstractNode *childContaining(const AbstractNode *parent, const AbstractNo
 	for (auto child : parent->getChildren())
 		if (containsChild(child, kid))
 			return child;
-	return NULL;
+	return nullptr;
 }
 
 // compares the direct children of parent containing a and b
@@ -59,43 +59,37 @@ bool compareAncestors(const AbstractNode *parent, const AbstractNode *a, const A
 {
 	auto ca = childContaining(parent, a);
 	auto cb = childContaining(parent, b);
-	if (ca->index() < cb->index())
-		return true;
-	return false;
+	return ca->index() < cb->index();
 }
 
 // sorts children into result given a common parent node
-void sortGeometries(const AbstractNode &parent, const Geometry::Geometries &children, Geometry::Geometries &result)
+void sortGeometries(const AbstractNode &parent, const Geometry::Geometries &children, Geometry::Geometries* result)
 {
-	result.clear();
+	result->clear();
 	// early outs
 	if (children.empty())
 		return;
-	if (children.size() == 1)
-	{
-		result.push_back(children.front());
+	if (children.size() == 1) {
+		result->push_back(children.front());
 		return;
 	}
 	// std::list is not sortable, but std::vector is
 	std::vector<Geometry::GeometryItem> childVec{ std::begin(children), std::end(children) };
-	auto comp = [&parent](const Geometry::GeometryItem &a, const Geometry::GeometryItem &b) -> bool
-	{
+	auto comp = [&parent](const Geometry::GeometryItem &a, const Geometry::GeometryItem &b) -> bool {
 		return compareAncestors(&parent, a.first, b.first);
 	};
 	// sort the vector
 	std::sort(childVec.begin(), childVec.end(), comp);
 	// put the vector into the output list
-	result.assign(std::begin(childVec), std::end(childVec));
+	result->assign(std::begin(childVec), std::end(childVec));
 }
 
 // gets the Polygon2d*'s from children's shared_ptr's
 void getPolygons(const Geometry::Geometries &children, std::vector<shared_ptr<const Polygon2d>> &polys, std::vector<const Polygon2d *> &raw_polys)
 {
-	for (const auto &child : children)
-	{
+	for (const auto &child : children) {
 		shared_ptr<const Polygon2d> poly = dynamic_pointer_cast<const Polygon2d>(child.second);
-		if (poly != NULL)
-		{
+		if (poly != nullptr) {
 			polys.push_back(poly);
 			raw_polys.push_back(poly.get());
 		}
@@ -114,48 +108,46 @@ GeometryEvaluator::GeometryEvaluator(const class Tree &tree)
 shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNode &node, bool allownef, bool allowMultithreading)
 {
 	GeometryCache::instance()->cacheLock.lock();
+
 	const std::string key = this->tree.getIdString(node);
-	if (!GeometryCache::instance()->contains(key)) {
-		shared_ptr<const CGAL_Nef_polyhedron> N;
-		if (CGALCache::instance()->contains(key)) {
-			N = CGALCache::instance()->get(key);
-		}
+	if (GeometryCache::instance()->contains(key)) {
+		shared_ptr<const Geometry> result = GeometryCache::instance()->get(key);
 		GeometryCache::instance()->cacheLock.unlock();
+		return result;
+	}
 
-		// If not found in any caches, we need to evaluate the geometry
-		if (N) {
-			this->root = N;
-		}	
-		else {
-			if (Feature::ExperimentalThreadedTraversal.is_enabled() && allowMultithreading)
-			{
-				this->traverseThreaded(node);
-			}
-			else
-			{
-				this->traverse(node);
-			}
+	shared_ptr<const CGAL_Nef_polyhedron> N;
+	if (CGALCache::instance()->contains(key)) {
+		N = CGALCache::instance()->get(key);
+	}
+	GeometryCache::instance()->cacheLock.unlock();
+
+	// If not found in any caches, we need to evaluate the geometry
+	if (N) {
+		this->root = N;
+	} else {
+		if (Feature::ExperimentalThreadedTraversal.is_enabled() && allowMultithreading) {
+			this->traverseThreaded(node);
+		} else {
+			this->traverse(node);
 		}
+	}
 
-		if (!allownef) {
-			if (shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(this->root)) {
-				PolySet *ps = new PolySet(3);
-				ps->setConvexity(N->getConvexity());
-				this->root.reset(ps);
-				if (!N->isEmpty()) {
-					bool err = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, *ps);
-					if (err) {
-						PRINT("ERROR: Nef->PolySet failed");
-					}
+	if (!allownef) {
+		if (shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(this->root)) {
+			PolySet *ps = new PolySet(3);
+			ps->setConvexity(N->getConvexity());
+			this->root.reset(ps);
+			if (!N->isEmpty()) {
+				bool err = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, *ps);
+				if (err) {
+					PRINT("ERROR: Nef->PolySet failed");
 				}
 			}
 		}
-		smartCacheInsert(node, this->root);
-		return this->root;
 	}
-	shared_ptr<const Geometry> result = GeometryCache::instance()->get(key);
-	GeometryCache::instance()->cacheLock.unlock();
-	return result;
+	smartCacheInsert(node, this->root);
+	return this->root;
 }
 
 /*!
@@ -169,7 +161,7 @@ const Geometry::Geometries &GeometryEvaluator::getVisitedChildren(const Abstract
 	Geometry::Geometries &result = sortedchildren[node.index()];
 	// if that's empty, sort the visited children into the sorted children
 	if (result.empty())
-		sortGeometries(node, visitedchildren[node.index()], result);
+		sortGeometries(node, visitedchildren[node.index()], &result);
 	return result;
 }
 
@@ -841,7 +833,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &
 	}
 
 	// slices
-    size_t slices = node.slices;
+	size_t slices = node.slices;
 	for (unsigned int j = 0, k = 1; j < slices; j++, k++) {
 		double rot1 = node.twist*j / slices;
 		double rot2 = node.twist*k / slices;
