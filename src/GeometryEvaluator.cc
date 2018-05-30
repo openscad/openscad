@@ -312,27 +312,26 @@ unsigned int GeometryEvaluator::collectChildren(const AbstractNode &node, Geomet
 
 		GeometryCache::instance()->cacheLock.lock();
 
-		if (chgeom) {
-			bool chempty = chgeom->isEmpty();
-			unsigned int chdim = chempty ? dim : chgeom->getDimension();
-			if (chempty || chdim == 2) {
-				if (!chempty) {
-					if (dim == 0)
-						dim = 2;
-					else if (dim != 2)
-						mixed = true;
-				}
-				dim2->push_back(item);
+		if (!chgeom) {
+			continue;
+		}
+
+		const bool chempty = chgeom->isEmpty();
+		const unsigned int chdim = chempty ? dim : chgeom->getDimension();
+
+		if (!chempty) {
+			if (dim == 0) {
+				dim = chdim;
+			} else if (dim != chdim) {
+				mixed = true;
 			}
-			if (chempty || chdim == 3) {
-				if (!chempty) {
-					if (dim == 0)
-						dim = 3;
-					else if (dim != 3)
-						mixed = true;
-				}
-				dim3->push_back(item);
-			}
+		}
+
+		if (chempty || chdim == 2) {
+			dim2->push_back(item);
+		}
+		if (chempty || chdim == 3) {
+			dim3->push_back(item);
 		}
 	}
 	GeometryCache::instance()->cacheLock.unlock();
