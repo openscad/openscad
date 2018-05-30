@@ -1,5 +1,6 @@
 #include "ThreadedNodeVisitor.h"
 
+#include "printutils.h"
 #include <thread>
 #include <iostream>
 #include <condition_variable>
@@ -247,7 +248,7 @@ Response ThreadedNodeVisitor::traverseThreaded(const AbstractNode &node, const c
         });
         workers.push_back(std::move(t));
     }
-    cout << "Started " << numThreads << " worker threads" << endl;
+    PRINTB("Started %d worker threads", numThreads);
 
     // Recursively do all prefix traversals and schedule postfix traversals to
     // happen later.
