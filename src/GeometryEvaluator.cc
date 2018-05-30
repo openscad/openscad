@@ -174,9 +174,8 @@ const Geometry::Geometries &GeometryEvaluator::getVisitedChildren(const Abstract
 */
 GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const AbstractNode &node, OpenSCADOperator op)
 {
-	Geometry::Geometries dim2;
-	Geometry::Geometries dim3;
-	auto dim = collectChildren(node, dim2, dim3);
+	Geometry::Geometries dim2, dim3;
+	auto dim = collectChildren(node, &dim2, &dim3);
     if (dim == 2) {
         Polygon2d *p2d = applyToChildren2D(dim2, op);
         assert(p2d);
@@ -290,7 +289,7 @@ Polygon2d *GeometryEvaluator::applyMinkowski2D(const Geometry::Geometries &child
 	Returns a list of Polygon2d children of the given node.
 	May return empty Polygon2d object, but not nullptr objects
 */
-unsigned int GeometryEvaluator::collectChildren(const AbstractNode &node, Geometry::Geometries &dim2, Geometry::Geometries &dim3)
+unsigned int GeometryEvaluator::collectChildren(const AbstractNode &node, Geometry::Geometries *dim2, Geometry::Geometries *dim3)
 {
 	bool mixed = false;
 	unsigned int dim = 0;
@@ -323,7 +322,7 @@ unsigned int GeometryEvaluator::collectChildren(const AbstractNode &node, Geomet
 					else if (dim != 2)
 						mixed = true;
 				}
-				dim2.push_back(item);
+				dim2->push_back(item);
 			}
 			if (chempty || chdim == 3) {
 				if (!chempty) {
@@ -332,7 +331,7 @@ unsigned int GeometryEvaluator::collectChildren(const AbstractNode &node, Geomet
 					else if (dim != 3)
 						mixed = true;
 				}
-				dim3.push_back(item);
+				dim3->push_back(item);
 			}
 		}
 	}
@@ -513,9 +512,8 @@ Response GeometryEvaluator::visit(State &state, const OffsetNode &node)
 	if (state.isPostfix()) {
 		shared_ptr<const Geometry> geom;
 		if (!isSmartCached(node)) {
-			Geometry::Geometries dim2;
-			Geometry::Geometries dim3;
-			collectChildren(node, dim2, dim3);
+			Geometry::Geometries dim2, dim3;
+			collectChildren(node, &dim2, &dim3);
 			const Geometry *geometry = applyToChildren2D(dim2, OpenSCADOperator::UNION);
 			if (geometry) {
 				const Polygon2d *polygon = dynamic_cast<const Polygon2d*>(geometry);
@@ -871,9 +869,8 @@ Response GeometryEvaluator::visit(State &state, const LinearExtrudeNode &node)
 				delete p2d;
 			}
 			else {
-				Geometry::Geometries dim2;
-				Geometry::Geometries dim3;
-				collectChildren(node, dim2, dim3);
+				Geometry::Geometries dim2, dim3;
+				collectChildren(node, &dim2, &dim3);
 				geometry = applyToChildren2D(dim2, OpenSCADOperator::UNION);
 			}
 			if (geometry) {
@@ -1031,9 +1028,8 @@ Response GeometryEvaluator::visit(State &state, const RotateExtrudeNode &node)
 				delete p2d;
 			}
 			else {
-				Geometry::Geometries dim2;
-				Geometry::Geometries dim3;
-				collectChildren(node, dim2, dim3);
+				Geometry::Geometries dim2, dim3;
+				collectChildren(node, &dim2, &dim3);
 				geometry = applyToChildren2D(dim2, OpenSCADOperator::UNION);
 			}
 			if (geometry) {
@@ -1148,9 +1144,8 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 				if (sumresult.Total() > 0) geom.reset(ClipperUtils::toPolygon2d(sumresult));
 			}
 			else {
-				Geometry::Geometries dim2;
-				Geometry::Geometries dim3;
-				collectChildren(node, dim2, dim3);
+				Geometry::Geometries dim2, dim3;
+				collectChildren(node, &dim2, &dim3);
 				shared_ptr<const Geometry> newgeom = applyToChildren3D(dim3, OpenSCADOperator::UNION).constptr();
 				if (newgeom) {
 					shared_ptr<const CGAL_Nef_polyhedron> Nptr = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(newgeom);

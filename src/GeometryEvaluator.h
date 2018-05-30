@@ -63,7 +63,7 @@ private:
 	bool isSmartCached(const AbstractNode &node);
 	// unsigned int collectChildren(const AbstractNode &node, Geometry::Geometries &dim2, Geometry::Geometries &dim3);
 	// std::vector<const class Polygon2d *> collectChildren2D(const AbstractNode &node,  Geometry::Geometries &dim2);
-	unsigned int collectChildren(const AbstractNode &node, Geometry::Geometries &dim2, Geometry::Geometries &dim3);
+	unsigned int collectChildren(const AbstractNode &node, Geometry::Geometries *dim2, Geometry::Geometries *dim3);
 	Polygon2d *applyMinkowski2D(const Geometry::Geometries &children);
 	Polygon2d *applyHull2D(const Geometry::Geometries &children);
 	Geometry *applyHull3D(const Geometry::Geometries &children);
