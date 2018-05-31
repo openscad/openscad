@@ -32,35 +32,6 @@
 #include <CGAL/convex_hull_2.h>
 #include <CGAL/Point_2.h>
 
-// determines if kid is contained by parent
-bool containsChild(const AbstractNode *parent, const AbstractNode *kid)
-{
-	if (parent == kid)
-		return true;
-	for (auto child : parent->getChildren())
-		if (containsChild(child, kid))
-			return true;
-	return false;
-}
-
-// gets the direct child of parent containing kid
-const AbstractNode *childContaining(const AbstractNode *parent, const AbstractNode *kid)
-{
-	for (auto child : parent->getChildren())
-		if (containsChild(child, kid))
-			return child;
-	return nullptr;
-}
-
-// compares the direct children of parent containing a and b
-// returns true if the child indices are in order
-// this is used via a lambda to std::sort in sortGeometries
-bool compareAncestors(const AbstractNode *parent, const AbstractNode *a, const AbstractNode *b)
-{
-	auto ca = childContaining(parent, a);
-	auto cb = childContaining(parent, b);
-	return ca->index() < cb->index();
-}
 
 // sorts children into result given a common parent node
 void sortGeometries(const AbstractNode &parent, const Geometry::Geometries &children, Geometry::Geometries* result)
@@ -76,7 +47,7 @@ void sortGeometries(const AbstractNode &parent, const Geometry::Geometries &chil
 	// std::list is not sortable, but std::vector is
 	std::vector<Geometry::GeometryItem> childVec{ std::begin(children), std::end(children) };
 	auto comp = [&parent](const Geometry::GeometryItem &a, const Geometry::GeometryItem &b) -> bool {
-		return compareAncestors(&parent, a.first, b.first);
+		return a.first->index() < b.first->index();
 	};
 	// sort the vector
 	std::sort(childVec.begin(), childVec.end(), comp);
@@ -155,13 +126,14 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 	When multithreaded, the children were processed in a non-deterministic order. 
 	They need to be sorted so difference, minkowski and others(?) work correctly.
 */
-const Geometry::Geometries &GeometryEvaluator::getVisitedChildren(const AbstractNode &node)
+Geometry::Geometries GeometryEvaluator::getVisitedChildren(const AbstractNode &node)
 {
 	// check the sorted children first
-	Geometry::Geometries &result = sortedchildren[node.index()];
+	Geometry::Geometries result;
 	// if that's empty, sort the visited children into the sorted children
-	if (result.empty())
-		sortGeometries(node, visitedchildren[node.index()], &result);
+	GeometryCache::instance()->cacheLock.lock();
+	sortGeometries(node, visitedchildren[node.index()], &result);
+	GeometryCache::instance()->cacheLock.unlock();
 	return result;
 }
 
@@ -293,24 +265,16 @@ unsigned int GeometryEvaluator::collectChildren(const AbstractNode &node, Geomet
 {
 	bool mixed = false;
 	unsigned int dim = 0;
-	// TODO: avoid locking around this whole loop
-	GeometryCache::instance()->cacheLock.lock();
-	for (const auto &item : getVisitedChildren(node)) {
+	for (const auto &item : this->getVisitedChildren(node)) {
 		const AbstractNode *chnode = item.first;
 		const shared_ptr<const Geometry> &chgeom = item.second;
 		if (chnode->modinst->isBackground()) continue;
-
-		// Unlock because smartCacheInsert requires the lock.
-		// TODO: use a recursive lock? The problem is that a recursive lock would probably be more expensive.
-		GeometryCache::instance()->cacheLock.unlock();
 
 		// NB! We insert into the cache here to ensure that all children of
 		// a node is a valid object. If we inserted as we created them, the 
 		// cache could have been modified before we reach this point due to a large
 		// sibling object. 
 		smartCacheInsert(*chnode, chgeom);
-
-		GeometryCache::instance()->cacheLock.lock();
 
 		if (!chgeom) {
 			continue;
@@ -334,7 +298,6 @@ unsigned int GeometryEvaluator::collectChildren(const AbstractNode &node, Geomet
 			dim3->push_back(item);
 		}
 	}
-	GeometryCache::instance()->cacheLock.unlock();
 	if (mixed)
 		PRINT("WARNING: Mixing 2D and 3D objects is not supported.");
 	return dim;
@@ -448,23 +411,18 @@ void GeometryEvaluator::addToParent(const State &state,
 {
 	GeometryCache::instance()->cacheLock.lock();
 	if (state.parent()) {
-		// erase the sorted children for this node's parent so they will be sorted when accessed
-		this->sortedchildren.erase(state.parent()->index());
 		// put this node's geometry pointer into its parent's geometry list
 		this->visitedchildren[state.parent()->index()].push_back(std::make_pair(&node, geom));
 		// now, erase this node's copies of shared pointers
 		this->visitedchildren.erase(node.index());
-		this->sortedchildren.erase(node.index());
 	}
 	else {
 		// Root node
 		this->root = geom;
 		// now, erase this node's copies of shared pointers
 		this->visitedchildren.erase(node.index());
-		this->sortedchildren.erase(node.index());
 		// there shouldn't be any unvisited children!!!
 		assert(this->visitedchildren.empty());
-		assert(this->sortedchildren.empty());
 	}
 	GeometryCache::instance()->cacheLock.unlock();
 }
@@ -1065,6 +1023,7 @@ Response GeometryEvaluator::visit(State & /*state*/, const AbstractPolyNode & /*
  */			
 Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 {
+	// TODO: double-check locking in this function
 	if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;
 	if (state.isPostfix()) {
 		shared_ptr<const class Geometry> geom;

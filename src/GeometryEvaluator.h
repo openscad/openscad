@@ -61,8 +61,6 @@ private:
 	void smartCacheInsert(const AbstractNode &node, const shared_ptr<const Geometry> &geom);
 	shared_ptr<const Geometry> smartCacheGet(const AbstractNode &node, bool preferNef);
 	bool isSmartCached(const AbstractNode &node);
-	// unsigned int collectChildren(const AbstractNode &node, Geometry::Geometries &dim2, Geometry::Geometries &dim3);
-	// std::vector<const class Polygon2d *> collectChildren2D(const AbstractNode &node,  Geometry::Geometries &dim2);
 	unsigned int collectChildren(const AbstractNode &node, Geometry::Geometries *dim2, Geometry::Geometries *dim3);
 	Polygon2d *applyMinkowski2D(const Geometry::Geometries &children);
 	Polygon2d *applyHull2D(const Geometry::Geometries &children);
@@ -73,12 +71,9 @@ private:
 	ResultObject applyToChildren(const AbstractNode &node, OpenSCADOperator op);
 	void addToParent(const State &state, const AbstractNode &node, const shared_ptr<const Geometry> &geom);
 
-	const Geometry::Geometries &getVisitedChildren(const AbstractNode &node);
+	Geometry::Geometries getVisitedChildren(const AbstractNode &node);
 
-	std::map<int, Geometry::Geometries> sortedchildren;
 	std::map<int, Geometry::Geometries> visitedchildren;
 	const Tree &tree;
 	shared_ptr<const Geometry> root;
-
-public:
 };
