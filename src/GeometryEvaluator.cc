@@ -28,6 +28,7 @@
 #include "dxfdata.h"
 
 #include <algorithm>
+#include <mutex>
 
 #include <CGAL/convex_hull_2.h>
 #include <CGAL/Point_2.h>
@@ -78,20 +79,21 @@ GeometryEvaluator::GeometryEvaluator(const class Tree &tree)
 */
 shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNode &node, bool allownef, bool allowMultithreading)
 {
-	GeometryCache::instance()->cacheLock.lock();
-
 	const std::string key = this->tree.getIdString(node);
-	if (GeometryCache::instance()->contains(key)) {
-		shared_ptr<const Geometry> result = GeometryCache::instance()->get(key);
-		GeometryCache::instance()->cacheLock.unlock();
-		return result;
-	}
-
 	shared_ptr<const CGAL_Nef_polyhedron> N;
-	if (CGALCache::instance()->contains(key)) {
-		N = CGALCache::instance()->get(key);
+
+	{
+		std::lock_guard<boost::detail::spinlock> lk(GeometryCache::instance()->cacheLock);
+
+		if (GeometryCache::instance()->contains(key)) {
+			shared_ptr<const Geometry> result = GeometryCache::instance()->get(key);
+			return result;
+		}
+
+		if (CGALCache::instance()->contains(key)) {
+			N = CGALCache::instance()->get(key);
+		}
 	}
-	GeometryCache::instance()->cacheLock.unlock();
 
 	// If not found in any caches, we need to evaluate the geometry
 	if (N) {
@@ -131,9 +133,8 @@ Geometry::Geometries GeometryEvaluator::getVisitedChildren(const AbstractNode &n
 	// check the sorted children first
 	Geometry::Geometries result;
 	// if that's empty, sort the visited children into the sorted children
-	GeometryCache::instance()->cacheLock.lock();
+	std::lock_guard<boost::detail::spinlock> lk(GeometryCache::instance()->cacheLock);
 	sortGeometries(node, visitedchildren[node.index()], &result);
-	GeometryCache::instance()->cacheLock.unlock();
 	return result;
 }
 
@@ -314,40 +315,37 @@ void GeometryEvaluator::smartCacheInsert(const AbstractNode &node,
 	const std::string &key = this->tree.getIdString(node);
 
 	shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom);
-	GeometryCache::instance()->cacheLock.lock();
+
+	std::lock_guard<boost::detail::spinlock> lk(GeometryCache::instance()->cacheLock);
 	if (N) {
 		if (!CGALCache::instance()->contains(key)) CGALCache::instance()->insert(key, N);
-	}
-	else {
+	} else {
 		if (!GeometryCache::instance()->contains(key)) {
 			if (!GeometryCache::instance()->insert(key, geom)) {
 				PRINT("WARNING: GeometryEvaluator: Node didn't fit into cache");
 			}
 		}
 	}
-	GeometryCache::instance()->cacheLock.unlock();
 }
 
 bool GeometryEvaluator::isSmartCached(const AbstractNode &node)
 {
-	GeometryCache::instance()->cacheLock.lock();
+	std::lock_guard<boost::detail::spinlock> lk(GeometryCache::instance()->cacheLock);
 	const std::string &key = this->tree.getIdString(node);
 	bool result = (GeometryCache::instance()->contains(key) ||
 					CGALCache::instance()->contains(key));
-	GeometryCache::instance()->cacheLock.unlock();
 	return result;
 }
 
 shared_ptr<const Geometry> GeometryEvaluator::smartCacheGet(const AbstractNode &node, bool preferNef)
 {
-	GeometryCache::instance()->cacheLock.lock();
+	std::lock_guard<boost::detail::spinlock> lk(GeometryCache::instance()->cacheLock);
 	const std::string &key = this->tree.getIdString(node);
 	shared_ptr<const Geometry> geom;
 	bool hasgeom = GeometryCache::instance()->contains(key);
 	bool hascgal = CGALCache::instance()->contains(key);
 	if (hascgal && (preferNef || !hasgeom)) geom = CGALCache::instance()->get(key);
 	else if (hasgeom) geom = GeometryCache::instance()->get(key);
-	GeometryCache::instance()->cacheLock.unlock();
 	return geom;
 }
 
@@ -409,7 +407,7 @@ void GeometryEvaluator::addToParent(const State &state,
 																		const AbstractNode &node, 
 																		const shared_ptr<const Geometry> &geom)
 {
-	GeometryCache::instance()->cacheLock.lock();
+	std::lock_guard<boost::detail::spinlock> lk(GeometryCache::instance()->cacheLock);
 	if (state.parent()) {
 		// put this node's geometry pointer into its parent's geometry list
 		this->visitedchildren[state.parent()->index()].push_back(std::make_pair(&node, geom));
@@ -424,7 +422,6 @@ void GeometryEvaluator::addToParent(const State &state,
 		// there shouldn't be any unvisited children!!!
 		assert(this->visitedchildren.empty());
 	}
-	GeometryCache::instance()->cacheLock.unlock();
 }
 
 /*!
