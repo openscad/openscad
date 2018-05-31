@@ -282,14 +282,12 @@ unsigned int GeometryEvaluator::collectChildren(const AbstractNode &node, Geomet
 		}
 
 		const bool chempty = chgeom->isEmpty();
-		const unsigned int chdim = chempty ? dim : chgeom->getDimension();
+		const unsigned int chdim = chgeom->getDimension();
 
-		if (!chempty) {
-			if (dim == 0) {
-				dim = chdim;
-			} else if (dim != chdim) {
-				mixed = true;
-			}
+		if (dim == 0) {
+			dim = chdim;
+		} else if (dim != chdim) {
+			mixed = true;
 		}
 
 		if (chempty || chdim == 2) {
