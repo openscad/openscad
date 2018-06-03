@@ -642,7 +642,7 @@ static void add_slice(PolySet *ps, const Polygon2d &poly,
 	Eigen::Affine2d trans1(Eigen::Scaling(scale1) * Eigen::Rotation2D<double>(-rot1*M_PI/180));
 	Eigen::Affine2d trans2(Eigen::Scaling(scale2) * Eigen::Rotation2D<double>(-rot2*M_PI/180));
 	
-	bool splitfirst = sin((rot1 - rot2)*M_PI/180) > 0.0;
+	bool splitfirst = sin((rot2 - rot1)*M_PI/180) > 0.0;
 	for(const auto &o : poly.outlines()) {
 		Vector2d prev1 = trans1 * o.vertices[0];
 		Vector2d prev2 = trans2 * o.vertices[0];
