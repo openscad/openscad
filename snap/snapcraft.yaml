@@ -23,10 +23,36 @@ parts:
     qt-version: qt5
     project-files: [ "openscad.pro" ]
     options: [ "PREFIX=/usr", "CONFIG+=experimental", "CONFIG-=debug", "SUFFIX=-nightly" ]
-    override-build: |
-      qmake PREFIX=/usr CONFIG+=experimental CONFIG-=debug SUFFIX=-nightly
-      sed -i 's/QINSTALL_PROGRAM\s*=.*/QINSTALL_PROGRAM = $(INSTALL_PROGRAM)/g' "$SNAPCRAFT_PART_INSTALL/../build/Makefile"
-      sed -i 's/QINSTALL\s*=.*/QINSTALL = $(INSTALL_DIR)/g' "$SNAPCRAFT_PART_INSTALL/../build/Makefile"
-      export TMPDIR="$SNAPCRAFT_PART_INSTALL"
-      make install INSTALL_ROOT="$SNAPCRAFT_PART_INSTALL"
-
+    build-packages:
+    - ccache
+    - qt5-default
+    - qtbase5-dev
+    - qtmultimedia5-dev
+    - libqt5opengl5-dev
+    - qt5-qmake
+    - libcgal-dev
+    - libopencsg-dev
+    - libeigen3-dev
+    - libglib2.0-dev
+    - bison
+    - flex
+    - libglew-dev
+    - libgmp-dev
+    - libmpfr-dev
+    - python
+    - cmake
+    - libboost-dev
+    - libboost-regex-dev
+    - libboost-system-dev
+    - libboost-filesystem-dev
+    - chrpath
+    - gettext
+    - pkg-config
+    - imagemagick
+    - libzip-dev
+    - libgl-dev
+    - libxml2-dev
+    - libharfbuzz-dev
+    - libfreetype6-dev
+    - libfontconfig1-dev
+    - libqt5scintilla2-dev
