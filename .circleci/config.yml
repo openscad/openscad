@@ -1,0 +1,64 @@
+defaults: &defaults
+  working_directory: ~/workspace
+  docker:
+    - image: snapcore/snapcraft:edge
+
+version: 2
+jobs:
+  build:
+    <<: *defaults
+    steps:
+      - checkout
+
+      - run:
+          name: Update index
+          command: apt update
+
+      - run:
+          name: Build snap
+          command: snapcraft
+
+      - persist_to_workspace:
+          root: ~/workspace
+          paths: ['*.snap']
+
+  release:
+    <<: *defaults
+    steps:
+      - checkout
+
+      - attach_workspace:
+          at: ~/workspace
+
+      - run:
+          name: Install prerequisites
+          command: |
+            sudo apt update
+            apt install -y openssl
+
+      - run:
+          name: Decrypt credentials
+          command: |
+            openssl aes-256-cbc -d \
+              -in .circleci/credentials.enc \
+              -out credentials \
+              -k $SNAPCRAFT_CREDENTIALS_KEY
+
+      - run:
+          name: Authenticate snapcraft
+          command: snapcraft login --with credentials
+
+      - run:
+          name: Push/release snap
+          command: snapcraft push *.snap --release edge
+
+workflows:
+  version: 2
+  commit:
+    jobs:
+      - build
+      - release:
+          requires: [build]
+          filters:
+            branches:
+              only: master
