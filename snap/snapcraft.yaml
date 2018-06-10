@@ -17,13 +17,17 @@ description: |
 grade: devel
 confinement: devmode
 
+apps:
+  openscad-nightly:
+    command: ./bin/openscad-nightly
+
 parts:
   openscad-nightly:
     disable-parallel: true
     plugin: qmake
     qt-version: qt5
     project-files: [ "openscad.pro" ]
-    options: [ "PREFIX=/usr", "CONFIG+=experimental", "CONFIG-=debug", "SUFFIX=-nightly" ]
+    options: [ "PREFIX=/", "CONFIG+=experimental", "CONFIG-=debug", "SUFFIX=-nightly" ]
     build-packages:
     - ccache
     - qt5-default
