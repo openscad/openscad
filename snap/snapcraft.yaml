@@ -29,6 +29,7 @@ parts:
     project-files: [ "openscad.pro" ]
     options: [ "PREFIX=/", "CONFIG+=experimental", "CONFIG-=debug", "SUFFIX=-nightly" ]
     build-packages:
+    - git
     - ccache
     - qt5-default
     - qtbase5-dev
