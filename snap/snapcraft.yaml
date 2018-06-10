@@ -14,12 +14,13 @@ description: |
   NOTE: This is the development snapshot, automatically built from the source
   repository.
 
-grade: devel
-confinement: devmode
+grade: stable
+confinement: strict
 
 apps:
   openscad-nightly:
     command: desktop-launch openscad-nightly
+    plugs: [opengl, home]
 
 parts:
   openscad-nightly:
