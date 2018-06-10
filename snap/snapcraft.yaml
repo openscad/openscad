@@ -19,6 +19,7 @@ confinement: devmode
 
 parts:
   openscad-nightly:
+    disable-parallel: true
     plugin: qmake
     qt-version: qt5
     project-files: [ "openscad.pro" ]
