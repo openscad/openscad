@@ -19,13 +19,14 @@ confinement: devmode
 
 apps:
   openscad-nightly:
-    command: ./bin/openscad-nightly
+    command: desktop-launch openscad-nightly
 
 parts:
   openscad-nightly:
     disable-parallel: true
     plugin: qmake
     qt-version: qt5
+    after: [desktop-qt5]
     project-files: [ "openscad.pro" ]
     options: [ "PREFIX=/", "CONFIG+=experimental", "CONFIG-=debug", "SUFFIX=-nightly" ]
     build-packages:
