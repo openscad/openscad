@@ -162,16 +162,9 @@ gmp_sysver()
 
 qt_sysver()
 {
+  export QT_SELECT=5
   if [ "`command -v qtchooser`" ]; then
     qtver=`qtchooser -run-tool=qmake -qt=5 -v 2>&1`
-    if [ $? -eq 0 ] ; then
-      export QT_SELECT=5
-    else
-      qtver=`qtchooser -run-tool=qmake -qt=4 -v 2>&1`
-      if [ $? -eq 0 ] ; then
-	export QT_SELECT=4
-      fi
-    fi
     qtver=`echo "$qtver" | grep "Using Qt version" | awk '{print $4}'`
   else
     export QT_SELECT=5
@@ -183,15 +176,7 @@ qt_sysver()
       qtpath=$1/include/x86_64-linux-gnu/qt5/QtCore
     fi
     if [ ! -e $qtpath ]; then
-      export QT_SELECT=4
-      qtpath=$1/include/qt4/QtCore/
-    fi
-    if [ ! -e $qtpath ]; then
       qtpath=$1/include/QtCore
-    fi
-    if [ ! -e $qtpath ]; then
-      # netbsd
-      qtpath=$1/qt4/include/QtCore
     fi
   fi
   if [ -z "$qtver" ]; then
@@ -217,17 +202,19 @@ qt_sysver()
   qt_sysver_result=$qtver
 }
 
+qtmultimedia_sysver()
+{
+  QT_SELECT=5 qmake QT+=multimedia -o /dev/null /dev/null > /dev/null 2>&1
+  if [ $? = 0 ]; then
+    qtmultimedia_sysver_result="$qt_sysver_result"
+  else
+    qtmultimedia_sysver_result=""
+  fi
+}
+
 qscintilla2_sysver()
 {
-  # expecting the QT_SELECT already set in case we found qtchooser
-  if qmake -v >/dev/null 2>&1 ; then
-    QMAKE=qmake
-  elif [ "`command -v qmake-qt4`" ]; then
-    QMAKE=qmake-qt4
-  fi
-  debug using qmake: $QMAKE
-
-  qtincdir="`$QMAKE -query QT_INSTALL_HEADERS`"
+  qtincdir="`QT_SELECT=5 qmake -query QT_INSTALL_HEADERS`"
   qscipath="$qtincdir/Qsci/qsciglobal.h"
   debug using qtincdir: $qtincdir
   debug using qscipath: $qscipath
@@ -654,7 +641,7 @@ checkargs()
 
 main()
 {
-  deps="qt qscintilla2 cgal gmp mpfr boost opencsg glew eigen glib2 fontconfig freetype2 harfbuzz bison flex make"
+  deps="qt qtmultimedia qscintilla2 cgal gmp mpfr boost opencsg glew eigen glib2 fontconfig freetype2 harfbuzz bison flex make"
   #deps="$deps curl git" # not technically necessary for build
   #deps="$deps python cmake imagemagick" # only needed for tests
   #deps="cgal"
