@@ -4,7 +4,7 @@
 [![Visit our IRC channel](https://kiwiirc.com/buttons/irc.freenode.net/openscad.png)](https://kiwiirc.com/client/irc.freenode.net/#openscad)
 
 # What is OpenSCAD?
-[![Flattr this git repo](http://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=openscad&url=http://openscad.org&title=OpenSCAD&language=&tags=github&category=software)
+[![Flattr this git repo](https://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=openscad&url=http://openscad.org&title=OpenSCAD&language=&tags=github&category=software)
 
 OpenSCAD is a software for creating solid 3D CAD objects. It is free software
 and available for Linux/UNIX, MS Windows and Mac OS X.
@@ -102,27 +102,27 @@ are build scripts that download and compile the libraries from source.
 Follow the instructions for the platform you're compiling on below.
 
 * A C++ compiler supporting C++11
-* [Qt (4.4 -> 5.x)](http://qt.io/)
-* [QScintilla2 (2.7 ->)](http://www.riverbankcomputing.co.uk/software/qscintilla/)
-* [CGAL (3.6 ->)](http://www.cgal.org/)
- * [GMP (5.x)](http://www.gmplib.org/)
- * [MPFR (3.x)](http://www.mpfr.org/)
-* [cmake (2.8 ->, required by CGAL and the test framework)](http://www.cmake.org/)
-* [boost (1.35 ->)](http://www.boost.org/)
+* [Qt (4.4 -> 5.x)](https://qt.io/)
+* [QScintilla2 (2.7 ->)](https://riverbankcomputing.co.uk/software/qscintilla/)
+* [CGAL (3.6 ->)](https://www.cgal.org/)
+ * [GMP (5.x)](https://gmplib.org/)
+ * [MPFR (3.x)](https://www.mpfr.org/)
+* [cmake (2.8 ->, required by CGAL and the test framework)](https://cmake.org/)
+* [boost (1.35 ->)](https://www.boost.org/)
 * [OpenCSG (1.3.2 ->)](http://www.opencsg.org/)
 * [GLEW (1.5.4 ->)](http://glew.sourceforge.net/)
 * [Eigen (3.x)](http://eigen.tuxfamily.org/)
 * [glib2 (2.x)](https://developer.gnome.org/glib/)
 * [fontconfig (2.10 -> )](http://fontconfig.org/)
-* [freetype2 (2.4 -> )](http://freetype.org/)
+* [freetype2 (2.4 -> )](https://freetype.org/)
 * [harfbuzz (0.9.19 -> )](http://harfbuzz.org/)
-* [Bison (2.4 -> )](http://www.gnu.org/software/bison/)
+* [Bison (2.4 -> )](https://www.gnu.org/software/bison/)
 * [Flex (2.5.35 -> )](http://flex.sourceforge.net/)
-* [pkg-config (0.26 -> )](http://www.freedesktop.org/wiki/Software/pkg-config/)
+* [pkg-config (0.26 -> )](https://www.freedesktop.org/wiki/Software/pkg-config/)
 
 ### Getting the source code
 
-Install git (http://git-scm.com/) onto your system. Then run a clone:
+Install git (https://git-scm.com/) onto your system. Then run a clone:
 
     git clone git://github.com/openscad/openscad.git
 
@@ -216,7 +216,7 @@ After that, follow the Compilation instructions below.
 
 OpenSCAD for Windows is usually cross-compiled from Linux. If you wish to
 attempt an MSVC build on Windows, please see this site:
-http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Windows
+https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Windows
 
 To cross-build, first make sure that you have all necessary dependencies 
 of the MXE project ( listed at http://mxe.cc/#requirements ). Don't install
@@ -260,4 +260,4 @@ If you had problems compiling from source, raise a new issue in the
 [issue tracker on the github page](https://github.com/openscad/openscad/issues).
 
 This site and it's subpages can also be helpful:
-http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_OpenSCAD_from_Sources
+https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_OpenSCAD_from_Sources
