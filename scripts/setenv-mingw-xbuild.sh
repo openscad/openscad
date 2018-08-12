@@ -24,9 +24,9 @@ if [ ! $BASEDIR ]; then
 	BASEDIR=$HOME/openscad_deps
 fi
 
-MXELIBTYPE=static
+MXELIBTYPE=static.posix
 if [ "`echo $* | grep shared `" ]; then
-	MXELIBTYPE=shared
+	MXELIBTYPE=shared.posix
 fi
 
 DEPLOYDIR64=$OPENSCADDIR/mingw64.$MXELIBTYPE
