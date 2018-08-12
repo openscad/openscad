@@ -148,6 +148,28 @@ case $OS in
             exit 1
         fi
         echo NSIS makensis found: $MAKENSIS
+
+        WIXL=
+        if [ "`command -v wixl`" ]; then
+            WIXL=wixl
+        else
+            echo "wixl not found. please install wixl and msi tools"
+            echo "see https://wiki.gnome.org/msitools for info"
+            echo "on debian/ubuntu, please try apt install msitools wixl"
+            exit 1
+        fi
+        echo wixl found: $WIXL
+
+        PYTHON=
+        if [ "`command -v python`" ]; then
+            PYTHON=python
+        else
+            echo "python not found. please install python"
+            echo "see https://www.python.org for info"
+            echo "on debian/ubuntu, please try apt install python"
+            exit 1
+        fi
+        echo python found: $PYTHON
     ;;
 esac
 
@@ -429,6 +451,7 @@ case $OS in
         cd $DEPLOYDIR
         BINFILE=$DEPLOYDIR/OpenSCAD-$VERSION-x86-$ARCH.zip
         INSTFILE=$DEPLOYDIR/OpenSCAD-$VERSION-x86-$ARCH-Installer.exe
+        MSIFILE=$DEPLOYDIR/OpenSCAD-$VERSION-x86-$ARCH.msi
 
         #package
         if [ $MXELIBTYPE = "shared" ]; then
@@ -498,9 +521,9 @@ case $OS in
         cd $DEPLOYDIR
         cd ./openscad-$VERSION
         tar xvf $TMPTAR
+
         cd $DEPLOYDIR
         rm -f $TMPTAR
-
 
         echo "Creating binary zip package"
         rm -f OpenSCAD-$VERSION.x86-$ARCH.zip
@@ -508,7 +531,11 @@ case $OS in
         cd $OPENSCADDIR
         echo "Binary zip package created"
 
-        echo "Creating installer"
+        echo "Creating MSI file for Windows Installer(TM)"
+        $PYTHON $OPENSCADDIR/scripts/buildmsi.py $DEPLOYDIR $OPENSCADDIR $VERSION x86-$ARCH
+	cp openscad.msi $MSIFILE
+
+        echo "Creating Nullsoft installer exe"
         echo "Copying NSIS files to $DEPLOYDIR/openscad-$VERSION"
         cp ./scripts/installer$ARCH.nsi $DEPLOYDIR/openscad-$VERSION/installer_arch.nsi
         cp ./scripts/installer.nsi $DEPLOYDIR/openscad-$VERSION/

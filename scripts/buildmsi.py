@@ -173,7 +173,7 @@ def main(openscad_crossbuild_dir, openscad_src_dir, openscad_version, arch ):
 	cmd=['wixl','--verbose']
 	cmd+=['--arch',wixarchcodes[arch]]
 	cmd+=['--define','OPENSCADCROSSBUILDDIR='+openscad_crossbuild_dir]
-	cmd+=['--define','OPENSCADsrc_dir='+openscad_src_dir]
+	cmd+=['--define','OPENSCADSRCDIR='+openscad_src_dir]
 	cmd+=['--define','OPENSCADVERSION='+openscad_version]
 	cmd+=['--output',msi_filename]
 	cmd+=[mainwxs_filename,filelistwxs_filename]
@@ -185,7 +185,11 @@ def main(openscad_crossbuild_dir, openscad_src_dir, openscad_version, arch ):
 	verify_msi()
 
 if verify_deps():
-	main('./openscad32','/home/don/src/openscad','2018.08.12','x86-32')
+	args=sys.argv
+	if len(args)<5:
+		print('xbuilddir, srcdir, version, arch')
+		return
+	main(args[1],args[2],args[3],args[4])
 	#main('./openscad64','/home/don/src/openscad','2018.08.12','x86-64')
 else:
 	print("please install the MSI tools for your platform")
