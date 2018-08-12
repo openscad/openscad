@@ -154,6 +154,8 @@ def main(openscad_crossbuild_dir, openscad_src_dir, openscad_version, arch ):
 	# later on, when we call wixl, we will '--define' this variable
 	# so it will know what to do
 	cmd+=['--var','var.OPENSCADCROSSBUILDDIR']
+	if arch=='x86-64':
+		cmd += ['--win64']
 
 	print('calling',' '.join(cmd))
 	p2=subprocess.Popen(cmd,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
