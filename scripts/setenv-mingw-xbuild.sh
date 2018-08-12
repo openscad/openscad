@@ -29,6 +29,10 @@ if [ "`echo $* | grep shared `" ]; then
 	MXELIBTYPE=shared
 fi
 
+if [ "`echo $PATH | grep anaconda.*bin`" ]; then
+	echo please remove pytho anaconda/bin from your PATH before running
+	exit
+fi
 
 DEPLOYDIR64=$OPENSCADDIR/mingw64.$MXELIBTYPE
 DEPLOYDIR32=$OPENSCADDIR/mingw32.$MXELIBTYPE
