@@ -1,0 +1,94 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+  <Product Name='OpenSCAD-$(var.OPENSCADVERSION)' Id='*' 
+    UpgradeCode='*'
+    Language='1033' Codepage='1252' Version='1.0.0' 
+    Manufacturer='The OpenSCAD Developers'> 
+    <!-- i realize most instructions and tutorials say to never change 
+     the upgradecode. however. that is assuming you want to deal with
+     all of Windows Installer partial upgrade features, which we dont. 
+     we want to keep things as simple, brutally simple, as possible.
+     every version of OpenSCAD is treated like a new program, and can
+     be installed alongside any other version with 0 interference and 
+     0 overlap (except the users library dirs/settings but thats up to them) -->
+  
+  <Package Id='*' Keywords='Installer' Description="OpenSCAD-$(var.OPENSCADVERSION) installer"
+    Comments='OpenSCAD msi installer' Manufacturer='The OpenSCAD Developers'
+    InstallerVersion='100' Languages='1033'
+    Compressed='yes' SummaryCodepage='1252' />
+  <!-- version is important for 32bit/64bit, must be >200 for 64bit -->
+
+  <Media Id='1' Cabinet='openscad.cab'
+	 EmbedCab='yes' DiskPrompt="CD-ROM #1"/>
+  <Property Id='DiskPrompt' Value="OpenSCAD-$(var.OPENSCADVERSION) installation [1]" />
+
+  <Directory Id='TARGETDIR' Name='SourceDir'>
+    <Directory Id='ProgramFilesFolder' Name='PFiles'>
+      <Directory Id='OpenSCAD' Name='OpenSCAD'>
+        <Directory Id='INSTALLDIR' Name='OpenSCAD-$(var.OPENSCADVERSION)'>
+
+          <Component Id='OPENSCADEXE' Guid='*'>
+            <File Id='openscad_executable' Name='openscad.exe' DiskId='1' 
+                  Source='$(var.OPENSCADCROSSBUILDDIR)/openscad.exe' KeyPath='yes'>
+              <Shortcut Id="startmenuOpenSCAD" 
+                Directory="ProgramMenuDir" 
+                Name="OpenSCAD-$(var.OPENSCADVERSION)" 
+                WorkingDirectory='INSTALLDIR' 
+                Icon="openscad.exe"
+                IconIndex="0" Advertise="yes" />
+              <Shortcut Id="desktopOpenSCAD"
+                Directory="DesktopFolder"
+                Name="OpenSCAD$(var.OPENSCADVERSION)"
+                WorkingDirectory='INSTALLDIR'
+                Icon="openscad.exe"
+                IconIndex="0" Advertise="yes" />
+            </File>
+
+            <ProgId Id='SCADASSOCIATION'
+                    Description='OpenSCAD file'> 
+             <!-- Icon='openscad.exe'> --> <!-- wixl doesnt support icon here -->
+              <Extension Id='scad' ContentType='application/x-openscad'>
+                <Verb Id='open' Command='Open' 
+                      TargetFile='openscad_executable' Argument='"%1"' />
+              </Extension>
+            </ProgId>
+          </Component> <!-- openscad exe -->
+
+          <Component Id='OPENSCADCOM' Guid='*'>
+            <File Id='openscad_comfile' Name='openscad.com' DiskId='1' 
+                  Source='$(var.OPENSCADCROSSBUILDDIR)/openscad.com' KeyPath='yes'>
+            </File>
+          </Component>
+
+        </Directory>
+      </Directory>
+    </Directory>
+
+    <Directory Id="ProgramMenuFolder" Name="Programs">
+      <Directory Id="ProgramMenuDir" Name="OpenSCADv">
+        <Component Id="ProgramMenuDir" Guid="__guid_#__">
+          <RemoveFolder Id='ProgramMenuDir' On='uninstall' />
+          <RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]' Type='string' Value='' KeyPath='yes' />
+        </Component>
+      </Directory>
+    </Directory>
+
+    <Directory Id="DesktopFolder" Name="Desktop" />
+    </Directory>
+
+    <Feature Id='Complete' Level='1'>
+      <ComponentRef Id='OPENSCADEXE' />
+      <ComponentRef Id='OPENSCADCOM' />
+      <ComponentRef Id='ProgramMenuDir' />
+      <!-- This GroupRef links us to filelist.wxs, which is a generated
+        list of files besides openscad.exe + com, like examples.
+        it is created by the script calling wixl-heat with 
+        -component-group=OPENSCADFILELIST -->
+      <ComponentGroupRef Id='OPENSCADFILELIST' />
+    </Feature>
+
+    <Icon Id="openscad.png" SourceFile="$(var.OPENSCADSRCDIR)/icons/openscad.png" />
+    <!-- dont use .exe for icon, it doubles msi size -->
+
+  </Product>
+</Wix>
