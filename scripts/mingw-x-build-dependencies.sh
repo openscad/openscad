@@ -75,8 +75,10 @@ fi
 
 echo "entering" $MXEDIR
 cd $MXEDIR
-echo 'checkout openscad-snapshot-build branch'
-git checkout openscad-snapshot-build
+if [ "`git config --get remote.origin.url | grep github.com.openscad`" ]; then
+ echo 'checkout openscad-snapshot-build branch'
+ git checkout openscad-snapshot-build
+fi
 if [ "`echo $* | grep 64`" ]; then
  MXE_TARGETS='x86_64-w64-mingw32.static.posix'
  if [ "`echo $* | grep download`" ]; then
