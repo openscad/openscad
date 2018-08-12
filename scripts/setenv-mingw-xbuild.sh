@@ -29,11 +29,6 @@ if [ "`echo $* | grep shared `" ]; then
 	MXELIBTYPE=shared
 fi
 
-if [ "`echo $PATH | grep anaconda.*bin`" ]; then
-	echo please remove pytho anaconda/bin from your PATH before running
-	exit
-fi
-
 DEPLOYDIR64=$OPENSCADDIR/mingw64.$MXELIBTYPE
 DEPLOYDIR32=$OPENSCADDIR/mingw32.$MXELIBTYPE
 
@@ -126,5 +121,9 @@ if [ "`echo $* | grep clean`" ]; then
 else
   echo PATH modified: $MXEDIR/usr/bin
   echo PATH modified: $MXETARGETDIR/$MXEQTSUBDIR/bin
+fi
+
+if [ "`echo $PATH | grep anaconda.*bin`" ]; then
+  echo please remove pytho anaconda/bin from your PATH, exit, and rerun this
 fi
 
