@@ -26,6 +26,7 @@ macx:isEmpty(OPENSCAD_LIBDIR) {
 }
 
 
+isEmpty(PKG_CONFIG):PKG_CONFIG = pkg-config
 include(qt.pri)
 include(win.pri)
 include(flex.pri)
