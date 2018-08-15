@@ -12,6 +12,7 @@ public:
 
 protected slots:
 	void onChanged(double);
+	void editingFinished();
 
 private:
 	bool volatile suppressUpdate; 
