@@ -1,4 +1,4 @@
-# #-#-#-#-#  openscad-tmp.pot (OpenSCAD 2018.03.01)  #-#-#-#-#
+# #-#-#-#-#  openscad-tmp.pot (OpenSCAD 2018.08.15)  #-#-#-#-#
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the OpenSCAD package.
@@ -7,10 +7,10 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"#-#-#-#-#  openscad-tmp.pot (OpenSCAD 2018.03.01)  #-#-#-#-#\n"
-"Project-Id-Version: OpenSCAD 2018.03.01\n"
+"#-#-#-#-#  openscad-tmp.pot (OpenSCAD 2018.08.15)  #-#-#-#-#\n"
+"Project-Id-Version: OpenSCAD 2018.08.15\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-03-01 07:52+0100\n"
+"POT-Creation-Date: 2018-08-15 13:13+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,7 +21,7 @@ msgstr ""
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 "#-#-#-#-#  appdata-strings.pot (PACKAGE VERSION)  #-#-#-#-#\n"
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2018-03-01 07:52+0100\n"
+"POT-Creation-Date: 2018-08-15 13:13+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -746,290 +746,358 @@ msgstr ""
 msgid "Close"
 msgstr ""
 
-#: objects/ui_Preferences.h:1080
-msgid "Preferences"
+#: objects/ui_ParameterEntryWidget.h:339 objects/ui_ParameterWidget.h:150
+msgid "Form"
 msgstr ""
 
-#: objects/ui_Preferences.h:1081
-msgid "3D View"
+#: objects/ui_ParameterEntryWidget.h:341
+msgid "Parameter"
 msgstr ""
 
-#: objects/ui_Preferences.h:1082 examples/examples.json:19
-msgid "Advanced"
+#: objects/ui_ParameterEntryWidget.h:342 objects/ui_ParameterEntryWidget.h:343
+msgid "Description"
 msgstr ""
 
-#: objects/ui_Preferences.h:1083 src/mainwin.cc:2518
-msgid "Editor"
+#: objects/ui_ParameterWidget.h:151
+msgid "save preset"
 msgstr ""
 
-#: objects/ui_Preferences.h:1084
-msgid "Update"
+#: objects/ui_ParameterWidget.h:153
+msgid "delete current preset"
 msgstr ""
 
-#: objects/ui_Preferences.h:1085 objects/ui_Preferences.h:1168
-msgid "Features"
+#: objects/ui_ParameterWidget.h:155
+msgid "-"
 msgstr ""
 
-#: objects/ui_Preferences.h:1087
-msgid "Enable/Disable experimental features"
+#: objects/ui_ParameterWidget.h:157
+msgid "preset selection"
 msgstr ""
 
-#: objects/ui_Preferences.h:1089
-msgid "Color scheme:"
+#: objects/ui_ParameterWidget.h:160 src/parameter/ParameterWidget.cc:154
+msgid "add new preset"
 msgstr ""
 
-#: objects/ui_Preferences.h:1090
-msgid "Show Warnings and Errors in 3D View"
+#: objects/ui_ParameterWidget.h:162
+msgid "+"
 msgstr ""
 
-#: objects/ui_Preferences.h:1091
-msgid "Editor Type"
+#: objects/ui_ParameterWidget.h:163
+msgid "Automatic Preview"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:166
+msgid "Show Details"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:167
+msgid "Inline Details"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:168
+msgid "Hide Details"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:169
+msgid "Description Only"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:172
+msgid "reset the parameters to the selected preset"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:174
+msgid "Reset"
 msgstr ""
 
 #: objects/ui_Preferences.h:1094
-msgid "Simple Editor"
+msgid "Preferences"
 msgstr ""
 
 #: objects/ui_Preferences.h:1095
-msgid "QScintilla Editor"
+msgid "3D View"
 msgstr ""
 
-#: objects/ui_Preferences.h:1097
-msgid "(requires restart)"
+#: objects/ui_Preferences.h:1096 examples/examples.json:19
+msgid "Advanced"
+msgstr ""
+
+#: objects/ui_Preferences.h:1097 src/mainwin.cc:2532
+msgid "Editor"
 msgstr ""
 
 #: objects/ui_Preferences.h:1098
-msgid "Font"
+msgid "Update"
 msgstr ""
 
-#: objects/ui_Preferences.h:1099
-msgid "Color syntax highlighting"
-msgstr ""
-
-#: objects/ui_Preferences.h:1100
-msgid "Ctrl/Cmd-Mouse-wheel zooms text"
+#: objects/ui_Preferences.h:1099 objects/ui_Preferences.h:1182
+msgid "Features"
 msgstr ""
 
 #: objects/ui_Preferences.h:1101
-msgid "Indentation"
-msgstr ""
-
-#: objects/ui_Preferences.h:1102
-msgid "Auto Indent"
+msgid "Enable/Disable experimental features"
 msgstr ""
 
 #: objects/ui_Preferences.h:1103
-msgid "Backspace unindents"
+msgid "Color scheme:"
 msgstr ""
 
 #: objects/ui_Preferences.h:1104
-msgid "Indent using"
+msgid "Show Warnings and Errors in 3D View"
 msgstr ""
 
-#: objects/ui_Preferences.h:1107 src/settings.cc:141
-msgid "Spaces"
+#: objects/ui_Preferences.h:1105
+msgid "Editor Type"
 msgstr ""
 
-#: objects/ui_Preferences.h:1108 src/settings.cc:141
-msgid "Tabs"
+#: objects/ui_Preferences.h:1108
+msgid "Simple Editor"
 msgstr ""
 
-#: objects/ui_Preferences.h:1110
-msgid "Indentation width"
+#: objects/ui_Preferences.h:1109
+msgid "QScintilla Editor"
 msgstr ""
 
 #: objects/ui_Preferences.h:1111
-msgid "Tab width"
+msgid "(requires restart)"
 msgstr ""
 
 #: objects/ui_Preferences.h:1112
+msgid "Font"
+msgstr ""
+
+#: objects/ui_Preferences.h:1113
+msgid "Color syntax highlighting"
+msgstr ""
+
+#: objects/ui_Preferences.h:1114
+msgid "Ctrl/Cmd-Mouse-wheel zooms text"
+msgstr ""
+
+#: objects/ui_Preferences.h:1115
+msgid "Indentation"
+msgstr ""
+
+#: objects/ui_Preferences.h:1116
+msgid "Auto Indent"
+msgstr ""
+
+#: objects/ui_Preferences.h:1117
+msgid "Backspace unindents"
+msgstr ""
+
+#: objects/ui_Preferences.h:1118
+msgid "Indent using"
+msgstr ""
+
+#: objects/ui_Preferences.h:1121 src/settings.cc:141
+msgid "Spaces"
+msgstr ""
+
+#: objects/ui_Preferences.h:1122 src/settings.cc:141
+msgid "Tabs"
+msgstr ""
+
+#: objects/ui_Preferences.h:1124
+msgid "Indentation width"
+msgstr ""
+
+#: objects/ui_Preferences.h:1125
+msgid "Tab width"
+msgstr ""
+
+#: objects/ui_Preferences.h:1126
 msgid "Tab key function"
 msgstr ""
 
-#: objects/ui_Preferences.h:1115 objects/ui_Preferences.h:1146
+#: objects/ui_Preferences.h:1129 objects/ui_Preferences.h:1160
 #: src/settings.cc:142
 msgid "Indent"
 msgstr ""
 
-#: objects/ui_Preferences.h:1116 src/settings.cc:142
+#: objects/ui_Preferences.h:1130 src/settings.cc:142
 msgid "Insert Tab"
 msgstr ""
 
-#: objects/ui_Preferences.h:1118
+#: objects/ui_Preferences.h:1132
 msgid "Show whitespace"
 msgstr ""
 
-#: objects/ui_Preferences.h:1121 src/settings.cc:137
+#: objects/ui_Preferences.h:1135 src/settings.cc:137
 msgid "Never"
 msgstr ""
 
-#: objects/ui_Preferences.h:1122 src/settings.cc:137
+#: objects/ui_Preferences.h:1136 src/settings.cc:137
 msgid "Always"
 msgstr ""
 
-#: objects/ui_Preferences.h:1123
+#: objects/ui_Preferences.h:1137
 msgid "Only after indentation"
 msgstr ""
 
-#: objects/ui_Preferences.h:1125
+#: objects/ui_Preferences.h:1139
 msgid "Size"
 msgstr ""
 
-#: objects/ui_Preferences.h:1126
+#: objects/ui_Preferences.h:1140
 msgid "Display"
 msgstr ""
 
-#: objects/ui_Preferences.h:1127
+#: objects/ui_Preferences.h:1141
 msgid "Enable brace matching"
 msgstr ""
 
-#: objects/ui_Preferences.h:1128
+#: objects/ui_Preferences.h:1142
 msgid "Highlight current line"
 msgstr ""
 
-#: objects/ui_Preferences.h:1129
+#: objects/ui_Preferences.h:1143
 msgid "Display Line Numbers"
 msgstr ""
 
-#: objects/ui_Preferences.h:1130 objects/ui_Preferences.h:1163
+#: objects/ui_Preferences.h:1144 objects/ui_Preferences.h:1177
 msgid "Line wrap"
 msgstr ""
 
-#: objects/ui_Preferences.h:1133 objects/ui_Preferences.h:1150
-#: objects/ui_Preferences.h:1158 src/settings.cc:132 src/settings.cc:135
+#: objects/ui_Preferences.h:1147 objects/ui_Preferences.h:1164
+#: objects/ui_Preferences.h:1172 src/settings.cc:132 src/settings.cc:135
 #: src/settings.cc:136
 msgid "None"
 msgstr ""
 
-#: objects/ui_Preferences.h:1134 src/settings.cc:132
+#: objects/ui_Preferences.h:1148 src/settings.cc:132
 msgid "Wrap at character boundaries"
 msgstr ""
 
-#: objects/ui_Preferences.h:1135 src/settings.cc:132
+#: objects/ui_Preferences.h:1149 src/settings.cc:132
 msgid "Wrap at word boundaries"
 msgstr ""
 
-#: objects/ui_Preferences.h:1137
+#: objects/ui_Preferences.h:1151
 msgid "Line wrap indentation"
 msgstr ""
 
-#: objects/ui_Preferences.h:1138
+#: objects/ui_Preferences.h:1152
 msgid "Line wrap visualization"
 msgstr ""
 
-#: objects/ui_Preferences.h:1139
+#: objects/ui_Preferences.h:1153
 msgid "Style"
 msgstr ""
 
-#: objects/ui_Preferences.h:1142 src/settings.cc:133
+#: objects/ui_Preferences.h:1156 src/settings.cc:133
 msgid "Fixed"
 msgstr ""
 
-#: objects/ui_Preferences.h:1143 src/settings.cc:133
+#: objects/ui_Preferences.h:1157 src/settings.cc:133
 msgid "Same"
 msgstr ""
 
-#: objects/ui_Preferences.h:1144 src/settings.cc:133
+#: objects/ui_Preferences.h:1158 src/settings.cc:133
 msgid "Indented"
 msgstr ""
 
-#: objects/ui_Preferences.h:1147
+#: objects/ui_Preferences.h:1161
 msgid "Start"
 msgstr ""
 
-#: objects/ui_Preferences.h:1151 objects/ui_Preferences.h:1159
+#: objects/ui_Preferences.h:1165 objects/ui_Preferences.h:1173
 #: src/settings.cc:135 src/settings.cc:136
 msgid "Text"
 msgstr ""
 
-#: objects/ui_Preferences.h:1152 objects/ui_Preferences.h:1160
+#: objects/ui_Preferences.h:1166 objects/ui_Preferences.h:1174
 #: src/settings.cc:135 src/settings.cc:136
 msgid "Border"
 msgstr ""
 
-#: objects/ui_Preferences.h:1153 objects/ui_Preferences.h:1161
+#: objects/ui_Preferences.h:1167 objects/ui_Preferences.h:1175
 #: src/settings.cc:135 src/settings.cc:136
 msgid "Margin"
 msgstr ""
 
-#: objects/ui_Preferences.h:1155
+#: objects/ui_Preferences.h:1169
 msgid "End"
 msgstr ""
 
-#: objects/ui_Preferences.h:1164
+#: objects/ui_Preferences.h:1178
 msgid "Automatically check for updates"
 msgstr ""
 
-#: objects/ui_Preferences.h:1165
+#: objects/ui_Preferences.h:1179
 msgid "Include development snapshots"
 msgstr ""
 
-#: objects/ui_Preferences.h:1166
+#: objects/ui_Preferences.h:1180
 msgid "Check Now"
 msgstr ""
 
-#: objects/ui_Preferences.h:1167
+#: objects/ui_Preferences.h:1181
 msgid "Last checked: "
 msgstr ""
 
-#: objects/ui_Preferences.h:1169
+#: objects/ui_Preferences.h:1183
 msgid "OpenCSG"
 msgstr ""
 
-#: objects/ui_Preferences.h:1170
+#: objects/ui_Preferences.h:1184
 msgid "Show capability warning"
 msgstr ""
 
-#: objects/ui_Preferences.h:1171
+#: objects/ui_Preferences.h:1185
 msgid "Enable for OpenGL 1.x"
 msgstr ""
 
-#: objects/ui_Preferences.h:1172
+#: objects/ui_Preferences.h:1186
 msgid "Turn off rendering at "
 msgstr ""
 
-#: objects/ui_Preferences.h:1173
+#: objects/ui_Preferences.h:1187
 msgid "elements"
 msgstr ""
 
-#: objects/ui_Preferences.h:1174
+#: objects/ui_Preferences.h:1188
 msgid "Force Goldfeather"
 msgstr ""
 
-#: objects/ui_Preferences.h:1175
+#: objects/ui_Preferences.h:1189
 msgid "CGAL Cache size"
 msgstr ""
 
-#: objects/ui_Preferences.h:1176 objects/ui_Preferences.h:1178
+#: objects/ui_Preferences.h:1190 objects/ui_Preferences.h:1192
 msgid "bytes"
 msgstr ""
 
-#: objects/ui_Preferences.h:1177
+#: objects/ui_Preferences.h:1191
 msgid "PolySet Cache size"
 msgstr ""
 
-#: objects/ui_Preferences.h:1179
+#: objects/ui_Preferences.h:1193
 msgid "Allow opening multiple documents"
 msgstr ""
 
-#: objects/ui_Preferences.h:1180
+#: objects/ui_Preferences.h:1194
 msgid "Enable docking of Editor and Console in different places"
 msgstr ""
 
-#: objects/ui_Preferences.h:1181
+#: objects/ui_Preferences.h:1195
 msgid "Enable undocking of Editor and Console to separate windows"
 msgstr ""
 
-#: objects/ui_Preferences.h:1182
+#: objects/ui_Preferences.h:1196
 msgid "Show Welcome Screen"
 msgstr ""
 
-#: objects/ui_Preferences.h:1183
+#: objects/ui_Preferences.h:1197
 msgid "Enable user interface localization (requires restart of OpenSCAD)"
 msgstr ""
 
-#: objects/ui_Preferences.h:1184
+#: objects/ui_Preferences.h:1198
 msgid "Bring window to front after automatic reload"
+msgstr ""
+
+#: objects/ui_Preferences.h:1199
+msgid "Play sound notification on render complete"
 msgstr ""
 
 #: objects/ui_ProgressWidget.h:72
@@ -1053,114 +1121,114 @@ msgstr ""
 msgid "ERROR: \"%s\" write error. (Disk full?)"
 msgstr ""
 
-#: src/mainwin.cc:788 src/mainwin.cc:1438
+#: src/mainwin.cc:789 src/mainwin.cc:1443
 msgid "Untitled.scad"
 msgstr ""
 
-#: src/mainwin.cc:1027
+#: src/mainwin.cc:1032
 msgid "Compile error."
 msgstr ""
 
-#: src/mainwin.cc:1030
+#: src/mainwin.cc:1035
 msgid "Error while compiling '%1'."
 msgstr ""
 
-#: src/mainwin.cc:1034
+#: src/mainwin.cc:1039
 msgid "Compilation generated %1 warning."
 msgid_plural "Compilation generated %1 warnings."
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/mainwin.cc:1044
+#: src/mainwin.cc:1049
 msgid " For details see <a href=\"#console\">console window</a>."
 msgstr ""
 
-#: src/mainwin.cc:1416
+#: src/mainwin.cc:1421
 msgid "Failed to open file for writing"
 msgstr ""
 
-#: src/mainwin.cc:1426
+#: src/mainwin.cc:1431
 #, c-format
 msgid "Saved design '%s'."
 msgstr ""
 
-#: src/mainwin.cc:1429
+#: src/mainwin.cc:1434
 msgid "Error saving design"
 msgstr ""
 
-#: src/mainwin.cc:1437
+#: src/mainwin.cc:1442
 msgid "Save File"
 msgstr ""
 
-#: src/mainwin.cc:1439
+#: src/mainwin.cc:1444
 msgid "OpenSCAD Designs (*.scad)"
 msgstr ""
 
-#: src/mainwin.cc:1449
+#: src/mainwin.cc:1454
 msgid ""
 "%1 already exists.\n"
 "Do you want to replace it?"
 msgstr ""
 
-#: src/mainwin.cc:1796
+#: src/mainwin.cc:1805
 msgid "Application"
 msgstr ""
 
-#: src/mainwin.cc:1797
+#: src/mainwin.cc:1806
 msgid ""
 "The document has been modified.\n"
 "Do you really want to reload the file?"
 msgstr ""
 
-#: src/mainwin.cc:2171
+#: src/mainwin.cc:2185
 msgid "Export %1 File"
 msgstr ""
 
-#: src/mainwin.cc:2172
+#: src/mainwin.cc:2186
 msgid "%1 Files (*%2)"
 msgstr ""
 
-#: src/mainwin.cc:2173
+#: src/mainwin.cc:2187
 msgid "Untitled"
 msgstr ""
 
-#: src/mainwin.cc:2225
+#: src/mainwin.cc:2239
 msgid "Export CSG File"
 msgstr ""
 
-#: src/mainwin.cc:2226
+#: src/mainwin.cc:2240
 msgid "Untitled.csg"
 msgstr ""
 
-#: src/mainwin.cc:2227
+#: src/mainwin.cc:2241
 msgid "CSG Files (*.csg)"
 msgstr ""
 
-#: src/mainwin.cc:2253
+#: src/mainwin.cc:2267
 msgid "Untitled.png"
 msgstr ""
 
-#: src/mainwin.cc:2255
+#: src/mainwin.cc:2269
 msgid "Export Image"
 msgstr ""
 
-#: src/mainwin.cc:2255
+#: src/mainwin.cc:2269
 msgid "PNG Files (*.png)"
 msgstr ""
 
-#: src/mainwin.cc:2523
+#: src/mainwin.cc:2537
 msgid "Console"
 msgstr ""
 
-#: src/mainwin.cc:2528
+#: src/mainwin.cc:2542
 msgid "Customizer"
 msgstr ""
 
-#: src/mainwin.cc:2672
+#: src/mainwin.cc:2686
 msgid "The document has been modified."
 msgstr ""
 
-#: src/mainwin.cc:2673
+#: src/mainwin.cc:2687
 msgid "Do you want to save your changes?"
 msgstr ""
 
@@ -1215,101 +1283,53 @@ msgstr ""
 msgid "After indentation"
 msgstr ""
 
-#: objects/ui_ParameterEntryWidget.h:343 objects/ui_ParameterWidget.h:150
-msgid "Form"
+#: src/parameter/ParameterWidget.cc:74 src/parameter/ParameterWidget.cc:218
+msgid "changes on current preset not saved"
 msgstr ""
 
-#: objects/ui_ParameterEntryWidget.h:345
-msgid "Parameter"
+#: src/parameter/ParameterWidget.cc:76
+msgid ""
+"The changes on the current preset %1 are not saved yet. Do you really want "
+"to reset this preset and lose your changes?"
 msgstr ""
 
-#: objects/ui_ParameterEntryWidget.h:346 objects/ui_ParameterEntryWidget.h:347
-msgid "Description"
-msgstr ""
-
-#: objects/ui_ParameterWidget.h:151
-msgid "save preset"
-msgstr ""
-
-#: objects/ui_ParameterWidget.h:153
-msgid "delete current preset"
-msgstr ""
-
-#: objects/ui_ParameterWidget.h:155
-msgid "-"
-msgstr ""
-
-#: objects/ui_ParameterWidget.h:157
-msgid "preset selection"
-msgstr ""
-
-#: objects/ui_ParameterWidget.h:160 src/parameter/ParameterWidget.cc:132
-msgid "add new preset"
-msgstr ""
-
-#: objects/ui_ParameterWidget.h:162
-msgid "+"
-msgstr ""
-
-#: objects/ui_ParameterWidget.h:163
-msgid "Automatic Preview"
-msgstr ""
-
-#: objects/ui_ParameterWidget.h:166
-msgid "Show Details"
-msgstr ""
-
-#: objects/ui_ParameterWidget.h:167
-msgid "Inline Details"
-msgstr ""
-
-#: objects/ui_ParameterWidget.h:168
-msgid "Hide Details"
-msgstr ""
-
-#: objects/ui_ParameterWidget.h:169
-msgid "Description Only"
-msgstr ""
-
-#: objects/ui_ParameterWidget.h:172
-msgid "reset the parameters to the selected preset"
-msgstr ""
-
-#: objects/ui_ParameterWidget.h:174
-msgid "Reset"
-msgstr ""
-
-#: src/parameter/ParameterWidget.cc:134
+#: src/parameter/ParameterWidget.cc:156
 msgid "remove current preset"
 msgstr ""
 
-#: src/parameter/ParameterWidget.cc:136
+#: src/parameter/ParameterWidget.cc:158
 msgid "save current preset"
 msgstr ""
 
-#: src/parameter/ParameterWidget.cc:138 src/parameter/ParameterWidget.cc:139
-#: src/parameter/ParameterWidget.cc:140
+#: src/parameter/ParameterWidget.cc:160 src/parameter/ParameterWidget.cc:161
+#: src/parameter/ParameterWidget.cc:162
 msgid "JSON file read only"
 msgstr ""
 
-#: src/parameter/ParameterWidget.cc:165
+#: src/parameter/ParameterWidget.cc:202
 msgid "no preset selected"
 msgstr ""
 
-#: src/parameter/ParameterWidget.cc:380
+#: src/parameter/ParameterWidget.cc:220
+msgid ""
+"The current preset %1 contains changes, but is not saved yet. Do you really "
+"want to change the preset and lose your changes?"
+msgstr ""
+
+#: src/parameter/ParameterWidget.cc:449
 msgid "Create new set of parameter"
 msgstr ""
 
-#: src/parameter/ParameterWidget.cc:380
+#: src/parameter/ParameterWidget.cc:449
 msgid "Enter name of the parameter set"
 msgstr ""
 
-#: src/parameter/ParameterWidget.cc:407
+#: src/parameter/ParameterWidget.cc:485
 msgid "Saving presets"
 msgstr ""
 
-#: src/parameter/ParameterWidget.cc:408
-msgid "%1 was found, but was unreadble. Do you want to overwrite %1?"
+#: src/parameter/ParameterWidget.cc:486
+msgid "%1 was found, but was unreadable. Do you want to overwrite %1?"
 msgstr ""
 
 #: examples/examples.json:2
@@ -1329,12 +1349,12 @@ msgid "Old"
 msgstr ""
 
 #. (itstool) path: component/summary
-#: openscad.appdata.xml.in:7
+#: openscad.appdata.xml.in:6
 msgid "The Programmers Solid 3D CAD Modeller"
 msgstr ""
 
 #. (itstool) path: description/p
-#: openscad.appdata.xml.in:9
+#: openscad.appdata.xml.in:19
 msgid ""
 "OpenSCAD is a software for creating solid 3D CAD models. Unlike most free "
 "software for creating 3D models (such as Blender) it does not focus on the "
@@ -1345,7 +1365,7 @@ msgid ""
 msgstr ""
 
 #. (itstool) path: description/p
-#: openscad.appdata.xml.in:10
+#: openscad.appdata.xml.in:20
 msgid ""
 "OpenSCAD is not an interactive modeller. Instead it is something like a 3D-"
 "compiler that reads in a script file that describes the object and renders "
@@ -1356,12 +1376,12 @@ msgid ""
 msgstr ""
 
 #. (itstool) path: description/p
-#: openscad.appdata.xml.in:11
+#: openscad.appdata.xml.in:21
 msgid ""
 "OpenSCAD provides two main modelling techniques: First there is constructive "
 "solid geometry (aka CSG) and second there is extrusion of 2D outlines. As "
-"data exchange format format for this 2D outlines Autocad DXF files are used. "
-"In addition to 2D paths for extrusion it is also possible to read design "
+"data exchange format for this 2D outlines Autocad DXF files are used. In "
+"addition to 2D paths for extrusion it is also possible to read design "
 "parameters from DXF files. Besides DXF files OpenSCAD can read and create 3D "
 "models in the STL and OFF file formats."
 msgstr ""
