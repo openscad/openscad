@@ -12,6 +12,7 @@ public:
 
 protected slots:
 	void onChanged(QString);
+	void editingFinished();
 
 private:
 	bool volatile suppressUpdate; 
