@@ -21,22 +21,15 @@ LIBXML2_DIR = $$(LIBXML2DIR)
 }
 
 isEmpty(LIBXML2_INCLUDEPATH) {
-  LIBXML2_CFLAGS = $$system("pkg-config --cflags libxml-2.0")
+  LIBXML2_CFLAGS = $$system("$$PKG_CONFIG --cflags libxml-2.0")
 } else {
   LIBXML2_CFLAGS = -I$$LIBXML2_INCLUDEPATH
 }
 
 isEmpty(LIBXML2_LIBPATH) {
-  LIBXML2_LIBS = $$system("pkg-config --libs libxml-2.0")
+  LIBXML2_LIBS = $$system("$$PKG_CONFIG --libs libxml-2.0")
 } else {
   LIBXML2_LIBS = -L$$LIBXML2_LIBPATH -lxml2
-}
-
-CONFIG(mingw-cross-env): {
-  LIBXML2_LIBS += -llzma
-  !CONFIG(mingw-cross-env-shared) {
-    DEFINES += LIBXML_STATIC
-  }
 }
 
 QMAKE_CXXFLAGS += $$LIBXML2_CFLAGS
