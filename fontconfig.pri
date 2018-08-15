@@ -22,13 +22,13 @@ FONTCONFIG_DIR = $$(FONTCONFIGDIR)
 }
 
 isEmpty(FONTCONFIG_INCLUDEPATH) {
-  FONTCONFIG_CFLAGS = $$system("pkg-config --cflags fontconfig")
+  FONTCONFIG_CFLAGS = $$system("$$PKG_CONFIG --cflags fontconfig")
 } else {
   FONTCONFIG_CFLAGS = -I$$FONTCONFIG_INCLUDEPATH
 }
 
 isEmpty(FONTCONFIG_LIBPATH) {
-  FONTCONFIG_LIBS = $$system("pkg-config --libs fontconfig")
+  FONTCONFIG_LIBS = $$system("$$PKG_CONFIG --libs fontconfig")
 } else {
   FONTCONFIG_LIBS = -L$$FONTCONFIG_LIBPATH -lfontconfig
 }

@@ -34,7 +34,7 @@ isEmpty(EIGEN_INCLUDEPATH) {
 }
 
 !exists($$EIGEN_INCLUDEPATH/Eigen/Core) {
-  EIGEN_CFLAGS = $$system("pkg-config --cflags eigen3")
+  EIGEN_CFLAGS = $$system("$$PKG_CONFIG --cflags eigen3")
   EIGEN_INCLUDEPATH = $$replace(EIGEN_CFLAGS,"-I","")
 }
 
