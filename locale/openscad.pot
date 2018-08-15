@@ -10,7 +10,7 @@ msgstr ""
 "#-#-#-#-#  openscad-tmp.pot (OpenSCAD 2018.08.15)  #-#-#-#-#\n"
 "Project-Id-Version: OpenSCAD 2018.08.15\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-08-15 13:13+0200\n"
+"POT-Creation-Date: 2018-08-15 15:07+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,7 +21,7 @@ msgstr ""
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 "#-#-#-#-#  appdata-strings.pot (PACKAGE VERSION)  #-#-#-#-#\n"
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2018-08-15 13:13+0200\n"
+"POT-Creation-Date: 2018-08-15 15:07+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -818,7 +818,8 @@ msgstr ""
 msgid "3D View"
 msgstr ""
 
-#: objects/ui_Preferences.h:1096 examples/examples.json:19
+#: objects/ui_Preferences.h:1096
+msgctxt "preferences"
 msgid "Advanced"
 msgstr ""
 
@@ -1338,6 +1339,10 @@ msgstr ""
 
 #: examples/examples.json:13
 msgid "Functions"
+msgstr ""
+
+#: examples/examples.json:19
+msgid "Advanced"
 msgstr ""
 
 #: examples/examples.json:28

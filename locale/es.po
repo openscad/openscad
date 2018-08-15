@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2015.03\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-08-15 13:13+0200\n"
+"POT-Creation-Date: 2018-08-15 15:07+0200\n"
 "PO-Revision-Date: 2016-04-13 01:56-0300\n"
 "Last-Translator: Javier del Álamo <javialamo+github@gmail.com>\n"
 "Language-Team: Español\n"
@@ -883,7 +883,9 @@ msgstr "Preferencias"
 msgid "3D View"
 msgstr "Vista 3D"
 
-#: objects/ui_Preferences.h:1096 examples/examples.json:19
+#: objects/ui_Preferences.h:1096
+#, fuzzy
+msgctxt "preferences"
 msgid "Advanced"
 msgstr "Avanzado"
 
@@ -1430,6 +1432,10 @@ msgstr "Puntos Básicos"
 #: examples/examples.json:13
 msgid "Functions"
 msgstr "Funciones"
+
+#: examples/examples.json:19
+msgid "Advanced"
+msgstr "Avanzado"
 
 #: examples/examples.json:28
 msgid "Parametric"
