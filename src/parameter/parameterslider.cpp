@@ -12,7 +12,7 @@ ParameterSlider::ParameterSlider(QWidget *parent, ParameterObject *parameterobje
 	connect(slider, SIGNAL(sliderReleased()), this, SLOT(onReleased()));
 	connect(slider, SIGNAL(valueChanged(int)), this, SLOT(onSliderChanged(int)));
 	connect(doubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(onSpinBoxChanged(double)));
-	connect(doubleSpinBox, SIGNAL(editingFinished()), this, SLOT(editingFinished()));
+	connect(doubleSpinBox, SIGNAL(editingFinished()), this, SLOT(onEditingFinished()));
 
 	IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
 	slider->installEventFilter(ignoreWheelWhenNotFocused);
@@ -47,7 +47,7 @@ void ParameterSlider::onSpinBoxChanged(double v)
 	}
 }
 
-void ParameterSlider::editingFinished()
+void ParameterSlider::onEditingFinished()
 {
 	this->onSliderChanged(0);
 }

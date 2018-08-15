@@ -20,5 +20,5 @@ protected slots:
 	void onSpinBoxChanged(double);
 	void onReleased();
 	void onPressed();
-	void editingFinished();
+	void onEditingFinished();
 };
