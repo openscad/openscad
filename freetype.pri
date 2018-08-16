@@ -22,13 +22,13 @@ FREETYPE_DIR = $$(FREETYPEDIR)
 }
 
 isEmpty(FREETYPE_INCLUDEPATH) {
-  FREETYPE_CFLAGS = $$system("pkg-config --cflags freetype2")
+  FREETYPE_CFLAGS = $$system("$$PKG_CONFIG --cflags freetype2")
 } else {
   FREETYPE_CFLAGS = -I$$FREETYPE_INCLUDEPATH
 }
 
 isEmpty(FREETYPE_LIBPATH) {
-  FREETYPE_LIBS = $$system("pkg-config --libs freetype2")
+  FREETYPE_LIBS = $$system("$$PKG_CONFIG --libs freetype2")
 } else {
   FREETYPE_LIBS = -L$$FREETYPE_LIBPATH -lfreetype
 }

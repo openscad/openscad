@@ -15,7 +15,7 @@ exists($$LIBZIP_INCLUDEPATH/zip.h) {
 }
 
 isEmpty(LIBZIP_INCLUDEPATH) {
-  LIBZIP_CFLAGS = $$system("pkg-config --cflags libzip")
+  LIBZIP_CFLAGS = $$system("$$PKG_CONFIG --cflags libzip")
   !isEmpty(LIBZIP_CFLAGS) {
     ENABLE_LIBZIP=yes
   }
@@ -24,7 +24,7 @@ isEmpty(LIBZIP_INCLUDEPATH) {
 }
 
 isEmpty(LIBZIP_LIBPATH) {
-  LIBZIP_LIBS = $$system("pkg-config --libs libzip")
+  LIBZIP_LIBS = $$system("$$PKG_CONFIG --libs libzip")
 } else {
   LIBZIP_LIBS = -L$$LIBZIP_LIBPATH -lzip
 }

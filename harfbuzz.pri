@@ -22,13 +22,13 @@ HARFBUZZ_DIR = $$(HARFBUZZDIR)
 }
 
 isEmpty(HARFBUZZ_INCLUDEPATH) {
-  HARFBUZZ_CFLAGS = $$system("pkg-config --cflags harfbuzz")
+  HARFBUZZ_CFLAGS = $$system("$$PKG_CONFIG --cflags harfbuzz")
 } else {
   HARFBUZZ_CFLAGS = -I$$HARFBUZZ_INCLUDEPATH
 }
 
 isEmpty(HARFBUZZ_LIBPATH) {
-  HARFBUZZ_LIBS = $$system("pkg-config --libs harfbuzz")
+  HARFBUZZ_LIBS = $$system("$$PKG_CONFIG --libs harfbuzz")
 } else {
   HARFBUZZ_LIBS = -L$$HARFBUZZ_LIBPATH -lharfbuzz
 }
