@@ -771,7 +771,7 @@ void MainWindow::openFile(const QString &new_filename)
 	const auto cmd = knownFileExtensions[suffix];
 	if (knownFileType && cmd.isEmpty()) {
 		setFileName(new_filename);
-		updateRecentFiles();		
+		updateRecentFiles();
 	} else {
 		setFileName("");
 		editor->setPlainText(cmd.arg(new_filename));
@@ -780,6 +780,10 @@ void MainWindow::openFile(const QString &new_filename)
 	fileChangedOnDisk(); // force cached autoReloadId to update
 	refreshDocument();
 	clearCurrentOutput();
+
+	if (Feature::ExperimentalCustomizer.is_enabled()) {
+		compileTopLevelDocument(true);
+	}
 }
 
 void MainWindow::setFileName(const QString &filename)
