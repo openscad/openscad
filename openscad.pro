@@ -134,10 +134,12 @@ netbsd* {
   QMAKE_CXXFLAGS *= -fno-strict-aliasing
   QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-local-typedefs # ignored before 4.8
 
-  QMAKE_CXXFLAGS_WARN_ON += -Wno-int-in-bool-context # eigen+boost + new gcc
+  # stop warning spam from Qt, Eigen, Boost, with modern gcc
+  QMAKE_CXXFLAGS_WARN_ON += -Wno-int-in-bool-context
   QMAKE_CXXFLAGS_WARN_ON += -Wno-deprecated-declarations
   QMAKE_CXXFLAGS_WARN_ON += -Wno-attributes       
   QMAKE_CXXFLAGS_WARN_ON += -Wno-implicit-fallthrough
+  QMAKE_CXXFLAGS_WARN_ON += -Wno-expansion-to-defined
 
   QMAKE_CXXFLAGS_WARN_ON += -Wno-misleading-indentation  # this ain't python
 }

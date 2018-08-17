@@ -209,7 +209,9 @@ void AmfImporter::processNode(xmlTextReaderPtr reader)
 
 xmlTextReaderPtr AmfImporter::createXmlReader(std::string filename)
 {
-	return xmlReaderForFile(filename, nullptr, XML_PARSE_NOENT | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+	// eventually this becomes xmlWrapOpenUtf8 libxml/xmlIO.c
+	const char * xmllib_filename = filename.c_str();
+	return xmlReaderForFile(xmllib_filename, nullptr, XML_PARSE_NOENT | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 }
 
 int AmfImporter::streamFile(std::string filename)
@@ -325,19 +327,20 @@ int AmfImporterZIP::close_callback(void *context)
 
 xmlTextReaderPtr AmfImporterZIP::createXmlReader(std::string filename)
 {
-	archive = zip_open(filename, 0, nullptr);
+	const char * zipfilename = filename.c_str();
+	archive = zip_open( zipfilename, 0, nullptr);
 	if (archive) {
-		fs::path f(filename);
-		zipfile = zip_fopen(archive, f.filename().c_str(), ZIP_FL_NODIR);
+		//fs::path f(filename);
+		zipfile = zip_fopen(archive, zipfilename, ZIP_FL_NODIR);
 		if (zipfile == nullptr) {
-			PRINTB("WARNING: Can't read file '%s' from zipped AMF '%s'", f.filename().c_str() % filename);
+			PRINTB("WARNING: Can't read file '%s' from zipped AMF '%s'", zipfilename % zipfilename);
 		}
 		if ((zipfile == nullptr) && (zip_get_num_files(archive) == 1)) {
 			PRINTB("WARNING: Trying to read single entry '%s'", zip_get_name(archive, 0, 0));
 			zipfile = zip_fopen_index(archive, 0, 0);
 		}
 		if (zipfile) {
-			return xmlReaderForIO(read_callback, close_callback, this, f.filename().c_str(), nullptr,
+			return xmlReaderForIO(read_callback, close_callback, this, zipfilename, nullptr,
 				XML_PARSE_NOENT | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 		} else {
 			zip_close(archive);
