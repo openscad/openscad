@@ -80,7 +80,7 @@ private:
 	static void end_triangle(AmfImporter *importer, const xmlChar *vlue);
 	static void end_vertex(AmfImporter *importer, const xmlChar *value);
 	
-	int streamFile(const char *filename);
+	int streamFile(std::string filename);
 	void processNode(xmlTextReaderPtr reader);
 
 public:
@@ -88,7 +88,7 @@ public:
 	virtual ~AmfImporter();
 	PolySet *read(const std::string filename);
 	
-	virtual xmlTextReaderPtr createXmlReader(const char *filename);
+	virtual xmlTextReaderPtr createXmlReader(std::string filename);
 };
 
 AmfImporter::AmfImporter() : path("/")
@@ -207,12 +207,12 @@ void AmfImporter::processNode(xmlTextReaderPtr reader)
 	xmlFree((void *) (name));
 }
 
-xmlTextReaderPtr AmfImporter::createXmlReader(const char *filename)
+xmlTextReaderPtr AmfImporter::createXmlReader(std::string filename)
 {
 	return xmlReaderForFile(filename, nullptr, XML_PARSE_NOENT | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 }
 
-int AmfImporter::streamFile(const char *filename)
+int AmfImporter::streamFile(std::string filename)
 {
 	int ret;
 
@@ -300,7 +300,7 @@ public:
 	AmfImporterZIP();
 	~AmfImporterZIP();
 
-	xmlTextReaderPtr createXmlReader(const char *filename) override;
+	xmlTextReaderPtr createXmlReader(std::string filename) override;
 };
 
 AmfImporterZIP::AmfImporterZIP()
@@ -323,7 +323,7 @@ int AmfImporterZIP::close_callback(void *context)
 	return zip_fclose(importer->zipfile);
 }
 
-xmlTextReaderPtr AmfImporterZIP::createXmlReader(const char *filename)
+xmlTextReaderPtr AmfImporterZIP::createXmlReader(std::string filename)
 {
 	archive = zip_open(filename, 0, nullptr);
 	if (archive) {
