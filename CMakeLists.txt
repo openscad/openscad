@@ -155,7 +155,6 @@ else()
   add_definitions(-DENABLE_OPENCSG)
 endif()
 
-add_definitions(-DENABLE_LIBZIP)
 add_definitions(-DENABLE_EXPERIMENTAL)
 
 # Stack size 8MB; github issue 116

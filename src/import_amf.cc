@@ -39,6 +39,7 @@
 #include <assert.h>
 #include <libxml/xmlreader.h>
 #include <boost/filesystem.hpp>
+#include <zip.h>
 namespace fs = boost::filesystem;
 
 static const std::string text_node("#text");
@@ -285,10 +286,6 @@ PolySet * AmfImporter::read(const std::string filename)
 	return p;
 }
 
-#if ENABLE_LIBZIP
-
-#include <zip.h>
-
 class AmfImporterZIP : public AmfImporter
 {
 private:
@@ -357,11 +354,3 @@ PolySet *import_amf(const std::string filename) {
 	return importer.read(filename);
 }
 
-#else
-
-PolySet *import_amf(const std::string filename) {
-	AmfImporter importer;
-	return importer.read(filename);
-}
-
-#endif

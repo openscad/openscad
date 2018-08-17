@@ -23,11 +23,7 @@
 #endif // GNUG
 #endif // ENABLE_CGAL
 
-#ifdef ENABLE_LIBZIP
 #include <zip.h>
-#else
-#define LIBZIP_VERSION "<not enabled>"
-#endif
 
 extern std::vector<std::string> librarypath;
 extern std::vector<std::string> fontpath;
