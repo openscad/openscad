@@ -154,6 +154,22 @@ void InputDriverManager::postEvent(InputEvent *event)
     }
 }
 
+QList<double> InputDriverManager::getTranslation()
+{
+    MainWindow  *window = currentWindow;
+    if (window) {
+        return window->getTranslation();
+    }
+}
+
+QList<double> InputDriverManager::getRotation()
+{
+    MainWindow  *window = currentWindow;
+    if (window) {
+        return window->getRotation();
+    }
+}
+
 void InputDriverManager::onFocusChanged(QWidget *, QWidget *current)
 {
     if (current) {

@@ -217,6 +217,9 @@ public:
         void onActionEvent(InputEventAction *event);
         void onZoomEvent(InputEventZoom *event);
 
+	QList<double> getTranslation();
+	QList<double> getRotation();
+
 public slots:
 	void openFile(const QString &filename);
 	void actionReloadRenderPreview();

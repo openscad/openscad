@@ -34,6 +34,13 @@
     <method name="buttonPress">
       <arg name="idx" type="u" direction="in"/>
     </method>
+    <method name="getRotation">
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QList&lt;double>"/>
+      <arg name="rotation" type="ad" direction="out"/>
+    </method>
+    <method name="getTranslation">
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QList&lt;double>"/>
+      <arg name="rotation" type="ad" direction="out"/>
     <method name="getActions">
       <arg name="names" type="as" direction="out"/>
       <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QStringList&gt;"/>

@@ -134,6 +134,14 @@ void DBusInputDriver::buttonPress(uint idx)
     InputDriverManager::instance()->sendEvent(new InputEventButtonChanged(idx, false, false));
 }
 
+QList<double> DBusInputDriver::getRotation(){
+	return InputDriverManager::instance()->getRotation();;
+}
+
+QList<double> DBusInputDriver::getTranslation(){
+	return InputDriverManager::instance()->getTranslation();;
+}
+
 const std::string & DBusInputDriver::get_name() const
 {
     return name;

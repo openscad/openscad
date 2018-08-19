@@ -1578,6 +1578,24 @@ void MainWindow::pasteViewportRotation()
 	this->editor->insert(txt);
 }
 
+QList<double> MainWindow::getTranslation()
+{
+	QList<double> ret;
+	ret.append(qglview->cam.object_trans.x());
+	ret.append(qglview->cam.object_trans.y());
+	ret.append(qglview->cam.object_trans.z());
+	return ret;
+}
+
+QList<double> MainWindow::getRotation()
+{
+	QList<double> ret;
+	ret.append(qglview->cam.object_rot.x());
+	ret.append(qglview->cam.object_rot.y());
+	ret.append(qglview->cam.object_rot.z());
+	return ret;
+}
+
 void MainWindow::hideFind()
 {
 	find_panel->hide();

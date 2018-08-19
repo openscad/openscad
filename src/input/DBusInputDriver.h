@@ -56,5 +56,7 @@ public slots:
     void translateTo(double x, double y, double z);
     void action(QString action);
     void buttonPress(uint idx);
+    QList<double> getRotation();
+    QList<double> getTranslation();
     QStringList getActions();
 };
