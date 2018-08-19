@@ -101,6 +101,11 @@ void DBusInputDriver::rotateTo(double x, double y, double z)
     InputDriverManager::instance()->sendEvent(new InputEventRotate(x, y, z, false, false));
 }
 
+void DBusInputDriver::rotateByVector(double x, double y, double z)
+{
+    InputDriverManager::instance()->sendEvent(new InputEventRotate2(x, y, z, false));
+}
+
 void DBusInputDriver::translate(double x, double y, double z)
 {
     InputDriverManager::instance()->sendEvent(new InputEventTranslate(x, y, z, true, false, false));
