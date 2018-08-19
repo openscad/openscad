@@ -6,8 +6,6 @@
 
 enum class CgaladvType {
 	MINKOWSKI,
-	GLIDE,
-	SUBDIV,
 	HULL,
 	RESIZE
 };
@@ -24,9 +22,7 @@ public:
 	std::string name() const override;
 
 	ValuePtr path;
-	std::string subdiv_type;
 	unsigned int convexity;
-	int level;
 	Vector3d newsize;
 	Eigen::Matrix<bool,3,1> autosize;
 	CgaladvType type;

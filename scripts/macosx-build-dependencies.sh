@@ -36,7 +36,7 @@ PACKAGES=(
     "gmp 6.1.2"
     "mpfr 3.1.6"
     "boost 1.65.1"
-    "qt5 5.7.0"
+    "qt5 5.10.1"
     "qscintilla 2.9.3"
     "cgal 4.11"
     "glew 1.13.0"
@@ -210,14 +210,12 @@ build_qt5()
   echo "Building Qt" $version "..."
   cd $BASEDIR/src
   v=(${version//./ }) # Split into array
-  rm -rf qt-everywhere-opensource-src-$version
-  if [ ! -f qt-everywhere-opensource-src-$version.tar.gz ]; then
-     curl -O -L http://download.qt-project.org/official_releases/qt/${v[0]}.${v[1]}/$version/single/qt-everywhere-opensource-src-$version.tar.gz
+  rm -rf qt-opensource-src-$version
+  if [ ! -f qt-everywhere-src-$version.tar.xz ]; then
+      curl -O -L http://download.qt.io/official_releases/qt/${v[0]}.${v[1]}/$version/single/qt-everywhere-src-$version.tar.xz
   fi
-  tar xzf qt-everywhere-opensource-src-$version.tar.gz
-  cd qt-everywhere-opensource-src-$version
-  patch -d qtbase -p1 < $OPENSCADDIR/patches/qt5/QTBUG-56004.patch
-  patch -d qtbase -p1 < $OPENSCADDIR/patches/qt5/QTBUG-56004b.patch
+  tar xzf qt-everywhere-src-$version.tar.xz
+  cd qt-everywhere-src-$version
   if ! $USING_CXX11; then
     QT_EXTRA_FLAGS="-no-c++11"
   fi
@@ -229,7 +227,7 @@ build_qt5()
                 -skip qtactiveqt -skip qtxmlpatterns -skip qtdeclarative -skip qtscxml \
                 -skip qtpurchasing -skip qtcanvas3d -skip qtgamepad -skip qtwayland \
                 -skip qtconnectivity -skip qtwebsockets -skip qtwebchannel -skip qtsensors \
-                -skip qtmultimedia -skip qtdatavis3d -skip qtcharts -skip qtwinextras \
+                -skip qtdatavis3d -skip qtcharts -skip qtwinextras \
                 -skip qtgraphicaleffects -skip qtquickcontrols2 -skip qtquickcontrols \
                 -skip qtvirtualkeyboard -skip qtlocation -skip qtwebengine -skip qtwebview \
                 -skip qtscript -skip qttranslations -skip qtdoc

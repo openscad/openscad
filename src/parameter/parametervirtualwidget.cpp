@@ -1,9 +1,34 @@
 #include "parametervirtualwidget.h"
 
 
-ParameterVirtualWidget::ParameterVirtualWidget(QWidget *parent) : QWidget(parent)
+ParameterVirtualWidget::ParameterVirtualWidget(QWidget *parent,ParameterObject *parameterobject, DescLoD descriptionLoD)
+	: object(parameterobject), QWidget(parent)
 {
 	setupUi(this);
+
+	QSizePolicy policy;
+	policy.setHorizontalPolicy(QSizePolicy::Ignored);
+	policy.setVerticalPolicy(QSizePolicy::Maximum);
+	policy.setHorizontalStretch(0);
+	policy.setVerticalStretch(0);
+	this->setSizePolicy(policy);
+
+	setName(QString::fromStdString(object->name));
+
+	if (descriptionLoD == DescLoD::ShowDetails || descriptionLoD == DescLoD::DescOnly) {
+		setDescription(object->description);
+		this->labelInline->hide();
+	}else if(descriptionLoD == DescLoD::Inline){
+		addInline(object->description);
+	}else{
+		this->setToolTip(object->description);
+	}
+
+	if (descriptionLoD == DescLoD::DescOnly && object->description !=""){
+		labelParameter->hide();
+	}else{
+		labelParameter->show();
+	}
 }
 
 ParameterVirtualWidget::~ParameterVirtualWidget(){
@@ -20,14 +45,15 @@ void ParameterVirtualWidget::setName(QString name) {
 
 void ParameterVirtualWidget::addInline(QString addTxt) {
 	if(addTxt!=""){
+		this->labelInline->show();
 		this->labelInline->setText(" - "+ addTxt);
 	}
 }
 
 //calculate the required decimal precision.
-//the result is stored in th member variable "decimalPrecision"
+//the result is stored in the member variable "decimalPrecision"
 void ParameterVirtualWidget::setPrecision(double number){
-	decimalPrecision = 0;
+	this->decimalPrecision = 0;
 	long double diff, rn; //rn stands for real number
 	unsigned long long intNumber, multi = 1;
 	number = std::abs(number);
@@ -39,7 +65,7 @@ void ParameterVirtualWidget::setPrecision(double number){
 			break;
 		}
 		multi = multi * 10;
-		decimalPrecision++;
+		this->decimalPrecision++;
 	}
 }
 
@@ -52,12 +78,13 @@ void ParameterVirtualWidget::setDescription(const QString& description) {
 	
 void ParameterVirtualWidget::resizeEvent(QResizeEvent * event){
 	//bodge code to adjust the label height, when the label has to use multiple lines
+	static int prevLabelWidth(0);
 	QLabel* label = this->labelDescription;
 	
-	int w=label->width();
-	if(w!=LabelWidth){
-		LabelWidth=w;
+	int currLabelWidth=label->width();
+	if(currLabelWidth!=prevLabelWidth){
+		prevLabelWidth=currLabelWidth;
 		label->setMinimumHeight(0);
-		label->setMinimumHeight(label->heightForWidth(w));
+		label->setMinimumHeight(label->heightForWidth(currLabelWidth));
 	}
 }

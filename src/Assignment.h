@@ -2,7 +2,6 @@
 
 #include <string>
 #include <vector>
-#include <utility>
 
 #include "value.h"
 #include "AST.h"
@@ -18,13 +17,16 @@ public:
 						 shared_ptr<class Expression> expr = shared_ptr<class Expression>(),
 						 const Location &loc = Location::NONE)
 		: ASTNode(loc), name(name), expr(expr) { }
-	std::string name;
-	shared_ptr<class Expression> expr;
+	
+	void print(std::ostream &stream, const std::string &indent) const override;
 
 	virtual void addAnnotations(AnnotationList *annotations);
 	virtual bool hasAnnotations() const;
 	virtual const Annotation *annotation(const std::string &name) const;
 
+	// FIXME: Make protected
+	std::string name;
+	shared_ptr<class Expression> expr;
 protected:
 	AnnotationMap annotations;
 };

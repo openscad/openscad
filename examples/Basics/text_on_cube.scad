@@ -2,7 +2,7 @@
 
 echo(version=version());
 
-font = "Liberation Sans";
+font = "Liberation Sans"; //["Liberation Sans", "Liberation Sans:style=Bold", "Liberation Sans:style=Italic", "Liberation Mono", "Liberation Serif"]
 
 cube_size = 60;
 letter_size = 50;

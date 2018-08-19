@@ -27,43 +27,46 @@
 #include "StatCache.h"
 #include "printutils.h"
 
-#include <sys/stat.h>
 #include <sys/timeb.h>
 #include <string>
 #include <unordered_map>
 
+namespace {
+
 const float stale = 0.190;  // Maximum lifetime of a cache entry chosen to be shorter than the automatic reload poll time
 
-static double ms_clock(void)
+double millis_clock(void)
 {
 	struct timeb tb;
 	ftime(&tb);
 	return tb.time + double(tb.millitm) / 1000;
 }
 
-struct CacheEntry {
+struct CacheEntry
+{
 	struct stat st;        // result from stat
 	double timestamp;      // the time stat was called
 };
 
-typedef std::unordered_map<std::string, CacheEntry> StatMap;
+std::unordered_map<std::string, CacheEntry> statMap;
 
-static StatMap statMap;
+} // namespace
 
-int StatCache::stat(const char *path, struct stat *st)
+namespace StatCache {
+
+int stat(const std::string &path, struct ::stat &st)
 {
 	auto iter = statMap.find(path);
 	if (iter != statMap.end()) {                      // Have we got an entry for this file?
-		if (ms_clock() - iter->second.timestamp < stale) {
-			*st = iter->second.st;                        // Not stale yet so return it
+		if (millis_clock() - iter->second.timestamp < stale) {
+			st = iter->second.st;                        // Not stale yet so return it
 			return 0;
 		}
 		statMap.erase(iter);                            // Remove stale entry
 	}
-	CacheEntry entry;                                 // Make a new entry
-	entry.timestamp = ms_clock();
-	if (auto rv = ::stat(path, &entry.st)) return rv;  // stat failed
-	statMap[path] = entry;
-	*st = entry.st;
+	if (auto rv = ::stat(path.c_str(), &st)) return rv; // stat failed
+	statMap[path] = {st, millis_clock()};
 	return 0;
 }   
+
+} // namespace StatCache

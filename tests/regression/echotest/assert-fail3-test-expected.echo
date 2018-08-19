@@ -1,1 +1,1 @@
-ERROR: Assertion '(f(angle) > 0)' failed, line 4
+ERROR: Assertion '(f(angle) > 0)' failed in file ../../../../../testdata/scad/misc/assert-fail3-test.scad, line 4

@@ -33,6 +33,9 @@
     <layout class="QGridLayout" name="gridLayout_2">
      <item row="0" column="4">
       <widget class="QPushButton" name="presetSaveButton">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="sizePolicy">
         <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
          <horstretch>0</horstretch>
@@ -51,6 +54,9 @@
      </item>
      <item row="0" column="3">
       <widget class="QPushButton" name="deleteButton">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Minimum">
          <horstretch>0</horstretch>
@@ -92,6 +98,9 @@
      </item>
      <item row="0" column="2">
       <widget class="QPushButton" name="addButton">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Minimum">
          <horstretch>0</horstretch>
@@ -147,6 +156,11 @@
        <item>
         <property name="text">
          <string>Hide Details</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Description Only</string>
         </property>
        </item>
       </widget>

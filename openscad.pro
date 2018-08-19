@@ -87,6 +87,7 @@ macx {
 # Set same stack size for the linker and #define used in PlatformUtils.h
 STACKSIZE = 8388608 # 8MB # github issue 116
 QMAKE_CXXFLAGS += -DSTACKSIZE=$$STACKSIZE
+DEFINES += STACKSIZE=$$STACKSIZE
 
 win* {
   RC_FILE = openscad_win32.rc
@@ -102,7 +103,7 @@ mingw* {
 }
 
 CONFIG += qt
-QT += widgets concurrent
+QT += widgets concurrent multimedia
 
 netbsd* {
    QMAKE_LFLAGS += -L/usr/X11R7/lib
@@ -147,7 +148,7 @@ netbsd* {
   QMAKE_CXXFLAGS_WARN_ON += -Wno-sign-compare
 }
 
-!lessThan(QT_VERSION, 5.9): CONFIG += ccache
+has_ccache: CONFIG += ccache
 
 CONFIG(skip-version-check) {
   # force the use of outdated libraries
@@ -232,12 +233,12 @@ HEADERS += src/AST.h \
 
 SOURCES += src/AST.cc \
            src/ModuleInstantiation.cc \
+           src/Assignment.cc \
            src/expr.cc \
            src/function.cc \
            src/module.cc \
            src/UserModule.cc \
-           src/annotation.cc \
-           src/assignment.cc
+           src/annotation.cc
 
 # Comment parser
 FLEXSOURCES += src/comment_lexer.l
@@ -269,6 +270,7 @@ HEADERS += src/version_check.h \
            src/builtin.h \
            src/calc.h \
            src/context.h \
+           src/builtincontext.h \
            src/modcontext.h \
            src/evalcontext.h \
            src/csgops.h \
@@ -357,6 +359,7 @@ HEADERS += src/version_check.h \
            src/parameter/parametervector.h \
            src/parameter/groupwidget.h \
            src/parameter/parameterset.h \
+           src/parameter/ignoreWheelWhenNotFocused.h \
            src/QWordSearchField.h \
            src/QSettingsCached.h \
            src/input/InputDriver.h \
@@ -395,6 +398,7 @@ SOURCES += \
            src/feature.cc \
            src/node.cc \
            src/context.cc \
+           src/builtincontext.cc \
            src/modcontext.cc \
            src/evalcontext.cc \
            src/csgnode.cc \
@@ -451,7 +455,6 @@ SOURCES += \
            src/QGLView.cc \
            src/AutoUpdater.cc \
            \
-           src/grid.cc \
            src/hash.cc \
            src/GroupModule.cc \
            src/FileModule.cc \
@@ -505,7 +508,8 @@ SOURCES += \
            src/parameter/parametervector.cpp \
            src/parameter/groupwidget.cpp \
            src/parameter/parameterset.cpp \
-           src/parameter/parametervirtualwidget.cpp\
+           src/parameter/parametervirtualwidget.cpp \
+           src/parameter/ignoreWheelWhenNotFocused.cpp \
            src/QWordSearchField.cc\
            src/QSettingsCached.cc \
            \
@@ -698,3 +702,6 @@ INSTALLS += man
 info: {
     include(info.pri)
 }
+
+DISTFILES += \
+    sounds/complete.wav

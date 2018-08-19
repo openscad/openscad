@@ -1,24 +1,21 @@
 #include "parameterslider.h"
+#include "ignoreWheelWhenNotFocused.h"
 
-ParameterSlider::ParameterSlider(ParameterObject *parameterobject, int showDescription)
+ParameterSlider::ParameterSlider(QWidget *parent, ParameterObject *parameterobject, DescLoD descriptionLoD)
+	: ParameterVirtualWidget(parent, parameterobject, descriptionLoD)
 {
 	this->pressed = true;
 	this->suppressUpdate=false;
 
-	object = parameterobject;
-	setName(QString::fromStdString(object->name));
 	setValue();
 	connect(slider, SIGNAL(sliderPressed()), this, SLOT(onPressed()));
 	connect(slider, SIGNAL(sliderReleased()), this, SLOT(onReleased()));
 	connect(slider, SIGNAL(valueChanged(int)), this, SLOT(onSliderChanged(int)));
 	connect(doubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(onSpinBoxChanged(double)));
-	if (showDescription == 0) {
-		setDescription(object->description);
-	}else if(showDescription == 1){
-		addInline(object->description);
-	}else {
-		slider->setToolTip(object->description);
-	}
+
+	IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
+	slider->installEventFilter(ignoreWheelWhenNotFocused);
+	doubleSpinBox->installEventFilter(ignoreWheelWhenNotFocused);
 }
 
 void ParameterSlider::onSliderChanged(int)
@@ -67,7 +64,7 @@ void ParameterSlider::setValue()
 {
 	if(hasFocus())return; //refuse programmatic updates, when the widget is in the focus of the user
 
-	suppressUpdate=true;
+	this->suppressUpdate=true;
 
 	if (object->values->toRange().step_value() > 0) {
 		setPrecision(object->values->toRange().step_value());
@@ -88,9 +85,9 @@ void ParameterSlider::setValue()
 		max = object->values->toRange().end_value();
 	}else{ // [max] format from makerbot customizer
 		step = 1;
-		maxSlider =  std::stoi(object->values->toVector()[0]->toString(),nullptr,0);
+		maxSlider =  std::stoi(object->values->toVector()[0]->toString());
 		max = maxSlider;
-		setPrecision(1);
+		decimalPrecision = 0;
 	}
 
 	int current=object->value->toDouble()/step;
@@ -107,5 +104,5 @@ void ParameterSlider::setValue()
 	this->doubleSpinBox->setSingleStep(step);
 	this->doubleSpinBox->setDecimals(decimalPrecision);
 	this->doubleSpinBox->setValue(object->value->toDouble());
-	suppressUpdate=false;
+	this->suppressUpdate=false;
 }

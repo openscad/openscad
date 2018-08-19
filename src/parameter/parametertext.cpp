@@ -2,24 +2,23 @@
 #include "modcontext.h"
 #include "comment.h"
 
-ParameterText::ParameterText(ParameterObject *parameterobject, int showDescription)
+ParameterText::ParameterText(QWidget *parent, ParameterObject *parameterobject, DescLoD descriptionLoD)
+	: ParameterVirtualWidget(parent, parameterobject, descriptionLoD)
 {
-	object = parameterobject;
-	setName(QString::fromStdString(object->name));
 	setValue();
-	connect(lineEdit, SIGNAL(textChanged(QString)), this, SLOT(onChanged(QString)));
-	if (showDescription == 0) {
-		setDescription(object->description);
-	}else if(showDescription == 1){
-		addInline(object->description);
-	}else {
-		lineEdit->setToolTip(object->description);
+
+	double max=32767;
+	if(object->values->toVector().size() == 1){ // [max] format from makerbot customizer
+		max = std::stoi(object->values->toVector()[0]->toString(),nullptr,0);
 	}
+	lineEdit->setMaxLength(max);
+
+	connect(lineEdit, SIGNAL(textChanged(QString)), this, SLOT(onChanged(QString)));
 }
 
 void ParameterText::onChanged(QString)
 {
-	if(!suppressUpdate){
+	if(!this->suppressUpdate){
 		if (object->dvt == Value::ValueType::STRING) {
 			object->value = ValuePtr(lineEdit->text().toStdString());
 		}else{
@@ -44,7 +43,7 @@ void ParameterText::setParameterFocus()
 
 void ParameterText::setValue()
 {
-	suppressUpdate=true;
+	this->suppressUpdate=true;
 	this->stackedWidgetBelow->setCurrentWidget(this->pageText);
 	this->pageText->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 	this->stackedWidgetRight->hide();
@@ -52,5 +51,5 @@ void ParameterText::setValue()
 	if (object->values->toDouble() > 0) {
 		this->lineEdit->setMaxLength(object->values->toDouble());
 	}
-	suppressUpdate=false;
+	this->suppressUpdate=false;
 }

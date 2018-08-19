@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2015.03\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-10-30 08:24+0100\n"
+"POT-Creation-Date: 2018-03-01 07:52+0100\n"
 "PO-Revision-Date: 2016-04-13 01:56-0300\n"
 "Last-Translator: Javier del Álamo <javialamo+github@gmail.com>\n"
 "Language-Team: Español\n"
@@ -818,7 +818,7 @@ msgstr "Vista 3D"
 msgid "Advanced"
 msgstr "Avanzado"
 
-#: objects/ui_Preferences.h:1083 src/mainwin.cc:2521
+#: objects/ui_Preferences.h:1083 src/mainwin.cc:2518
 msgid "Editor"
 msgstr "Editar"
 
@@ -1114,52 +1114,52 @@ msgstr ""
 msgid "ERROR: \"%s\" write error. (Disk full?)"
 msgstr ""
 
-#: src/mainwin.cc:789 src/mainwin.cc:1441
+#: src/mainwin.cc:788 src/mainwin.cc:1438
 msgid "Untitled.scad"
 msgstr "Sintitulo.scad"
 
-#: src/mainwin.cc:1028
+#: src/mainwin.cc:1027
 msgid "Compile error."
 msgstr "Error de compilación"
 
-#: src/mainwin.cc:1031
+#: src/mainwin.cc:1030
 msgid "Error while compiling '%1'."
 msgstr "Error durante la compilación '%1'."
 
-#: src/mainwin.cc:1035
+#: src/mainwin.cc:1034
 #, fuzzy
 msgid "Compilation generated %1 warning."
 msgid_plural "Compilation generated %1 warnings."
 msgstr[0] "La compilación generó %1 advertencia"
 msgstr[1] "La compilación generó %1 advertencias"
 
-#: src/mainwin.cc:1045
+#: src/mainwin.cc:1044
 msgid " For details see <a href=\"#console\">console window</a>."
 msgstr ""
 " Para más detalles vea la <a href=\"#console\">ventana de la consola</a>."
 
-#: src/mainwin.cc:1419
+#: src/mainwin.cc:1416
 msgid "Failed to open file for writing"
 msgstr ""
 
-#: src/mainwin.cc:1429
+#: src/mainwin.cc:1426
 #, c-format
 msgid "Saved design '%s'."
 msgstr ""
 
-#: src/mainwin.cc:1432
+#: src/mainwin.cc:1429
 msgid "Error saving design"
 msgstr ""
 
-#: src/mainwin.cc:1440
+#: src/mainwin.cc:1437
 msgid "Save File"
 msgstr "Guardar archivo"
 
-#: src/mainwin.cc:1442
+#: src/mainwin.cc:1439
 msgid "OpenSCAD Designs (*.scad)"
 msgstr "Diseños OpenSCAD (*.scad)"
 
-#: src/mainwin.cc:1452
+#: src/mainwin.cc:1449
 msgid ""
 "%1 already exists.\n"
 "Do you want to replace it?"
@@ -1167,11 +1167,11 @@ msgstr ""
 "%1 ya existe.\n"
 "Desea reemplazarlo?"
 
-#: src/mainwin.cc:1799
+#: src/mainwin.cc:1796
 msgid "Application"
 msgstr "Aplicación"
 
-#: src/mainwin.cc:1800
+#: src/mainwin.cc:1797
 msgid ""
 "The document has been modified.\n"
 "Do you really want to reload the file?"
@@ -1179,56 +1179,56 @@ msgstr ""
 "El documento ha sido modificado.\n"
 "¿Realmente desea volver a cargar el archivo?"
 
-#: src/mainwin.cc:2174
+#: src/mainwin.cc:2171
 msgid "Export %1 File"
 msgstr "Exportar el archivo %1"
 
-#: src/mainwin.cc:2175
+#: src/mainwin.cc:2172
 msgid "%1 Files (*%2)"
 msgstr "%1 Archivos (*%2)"
 
-#: src/mainwin.cc:2176
+#: src/mainwin.cc:2173
 msgid "Untitled"
 msgstr "Sin título"
 
-#: src/mainwin.cc:2228
+#: src/mainwin.cc:2225
 msgid "Export CSG File"
 msgstr "Exportar archivo CSG"
 
-#: src/mainwin.cc:2229
+#: src/mainwin.cc:2226
 msgid "Untitled.csg"
 msgstr "Sintitulo.csg"
 
-#: src/mainwin.cc:2230
+#: src/mainwin.cc:2227
 msgid "CSG Files (*.csg)"
 msgstr "Archivos CSG (*.csg)"
 
-#: src/mainwin.cc:2256
+#: src/mainwin.cc:2253
 #, fuzzy
 msgid "Untitled.png"
 msgstr "Sintitulo.csg"
 
-#: src/mainwin.cc:2258
+#: src/mainwin.cc:2255
 msgid "Export Image"
 msgstr "Exportar una imagen"
 
-#: src/mainwin.cc:2258
+#: src/mainwin.cc:2255
 msgid "PNG Files (*.png)"
 msgstr "Archivos PNG (*.png)"
 
-#: src/mainwin.cc:2526
+#: src/mainwin.cc:2523
 msgid "Console"
 msgstr "Consola"
 
-#: src/mainwin.cc:2531
+#: src/mainwin.cc:2528
 msgid "Customizer"
 msgstr ""
 
-#: src/mainwin.cc:2675
+#: src/mainwin.cc:2672
 msgid "The document has been modified."
 msgstr "El documento ha sido modificado."
 
-#: src/mainwin.cc:2676
+#: src/mainwin.cc:2673
 msgid "Do you want to save your changes?"
 msgstr "¿Desea guardar los cambios?"
 
@@ -1296,6 +1296,108 @@ msgstr ""
 #: src/settings.cc:137
 msgid "After indentation"
 msgstr "Antes del indentado"
+
+#: objects/ui_ParameterEntryWidget.h:343 objects/ui_ParameterWidget.h:150
+msgid "Form"
+msgstr "Formulario"
+
+#: objects/ui_ParameterEntryWidget.h:345
+#, fuzzy
+msgid "Parameter"
+msgstr "Ocultar parámetros"
+
+#: objects/ui_ParameterEntryWidget.h:346 objects/ui_ParameterEntryWidget.h:347
+msgid "Description"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:151
+msgid "save preset"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:153
+msgid "delete current preset"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:155
+msgid "-"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:157
+msgid "preset selection"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:160 src/parameter/ParameterWidget.cc:132
+msgid "add new preset"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:162
+msgid "+"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:163
+#, fuzzy
+msgid "Automatic Preview"
+msgstr "Recargar y previsualizar automáticamente"
+
+#: objects/ui_ParameterWidget.h:166
+#, fuzzy
+msgid "Show Details"
+msgstr "Mostrar ejes"
+
+#: objects/ui_ParameterWidget.h:167
+msgid "Inline Details"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:168
+#, fuzzy
+msgid "Hide Details"
+msgstr "Ocultar barra de herramientas"
+
+#: objects/ui_ParameterWidget.h:169
+msgid "Description Only"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:172
+msgid "reset the parameters to the selected preset"
+msgstr ""
+
+#: objects/ui_ParameterWidget.h:174
+#, fuzzy
+msgid "Reset"
+msgstr "Reiniciar vista"
+
+#: src/parameter/ParameterWidget.cc:134
+msgid "remove current preset"
+msgstr ""
+
+#: src/parameter/ParameterWidget.cc:136
+msgid "save current preset"
+msgstr ""
+
+#: src/parameter/ParameterWidget.cc:138 src/parameter/ParameterWidget.cc:139
+#: src/parameter/ParameterWidget.cc:140
+msgid "JSON file read only"
+msgstr ""
+
+#: src/parameter/ParameterWidget.cc:165
+msgid "no preset selected"
+msgstr ""
+
+#: src/parameter/ParameterWidget.cc:380
+msgid "Create new set of parameter"
+msgstr ""
+
+#: src/parameter/ParameterWidget.cc:380
+msgid "Enter name of the parameter set"
+msgstr ""
+
+#: src/parameter/ParameterWidget.cc:407
+msgid "Saving presets"
+msgstr ""
+
+#: src/parameter/ParameterWidget.cc:408
+msgid "%1 was found, but was unreadble. Do you want to overwrite %1?"
+msgstr ""
 
 #: examples/examples.json:2
 msgid "Basics"
@@ -1366,9 +1468,6 @@ msgstr ""
 #~ msgid "Back"
 #~ msgstr "Atrás"
 
-#~ msgid "Hide parameters"
-#~ msgstr "Ocultar parámetros"
-
 #~ msgid "Hide library"
 #~ msgstr "Ocultar bibliotecas"
 
@@ -1377,9 +1476,6 @@ msgstr ""
 
 #~ msgid "toolBar"
 #~ msgstr "barra de herramientas"
-
-#~ msgid "Form"
-#~ msgstr "Formulario"
 
 #~ msgid ""
 #~ "\n"

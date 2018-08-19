@@ -474,6 +474,15 @@ if("${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}" VERSION_LESS 3.6)
 endif()
 inclusion(CGAL_DIR CGAL_INCLUDE_DIRS)
 
+# Trying to re-run boost after CGAL as workaround for homebrew build issue
+find_package( Boost 1.35.0 COMPONENTS thread program_options filesystem system regex REQUIRED)
+message(STATUS "Boost (2) ${Boost_VERSION} includes found: " ${Boost_INCLUDE_DIRS})
+message(STATUS "Boost (2) libraries found:")
+foreach(boostlib ${Boost_LIBRARIES})
+  message(STATUS "  " ${boostlib})
+endforeach()
+
+
 #Remove bad BOOST libraries from CGAL 3rd party dependencies when they don't exist (such as on 64-bit Ubuntu 13.10).
 #Libs of concern are /usr/lib/libboost_thread.so;/usr/lib/libboost_system.so;
 #Confirmed bug in CGAL @ https://bugs.launchpad.net/ubuntu/+source/cgal/+bug/1242111
@@ -682,7 +691,6 @@ set(CORE_SOURCES
   ../src/handle_dep.cc 
   ../src/value.cc 
   ../src/calc.cc 
-  ../src/grid.cc 
   ../src/hash.cc 
   ../src/expr.cc 
   ../src/func.cc 
@@ -701,6 +709,7 @@ set(CORE_SOURCES
   ../src/NodeVisitor.cc 
   ../src/context.cc 
   ../src/modcontext.cc 
+  ../src/builtincontext.cc 
   ../src/evalcontext.cc 
   ../src/feature.cc
   ../src/csgnode.cc 
@@ -746,7 +755,7 @@ set(CORE_SOURCES
   ../src/libsvg/transformation.cc
   ../src/libsvg/util.cc
   ../src/clipper-utils.cc
-  ../src/assignment.cc
+  ../src/Assignment.cc
   ../src/annotation.cc 
   ../src/ext/polyclipping/clipper.cpp
   ../src/${PLATFORMUTILS_SOURCE}
@@ -1292,7 +1301,8 @@ list(APPEND EXPORT3D_CGAL_TEST_FILES
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1105b.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1105c.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1215b.scad
-                                ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1258.scad)
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1258.scad
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue2259.scad)
 
 list(APPEND EXPORT3D_TEST_FILES 
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/nonmanifold-polyhedron.scad

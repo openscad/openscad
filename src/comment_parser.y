@@ -10,7 +10,7 @@
     int comment_lexerlex(void);
     int comment_parserlex(void);
     extern void comment_lexer_scan_string ( const char *str );
-    Expression *params;
+    shared_ptr<Expression> params;
 %}
 %union {
     char *text;
@@ -37,8 +37,8 @@ params:
           expr
             {
                 $$ = $1;
-                params = $$;
-            }			
+                params = shared_ptr<Expression>($$);
+            }
             ;
             
 expr: 
@@ -136,6 +136,6 @@ shared_ptr<Expression> CommentParser::parser(const char *text)
 {
   comment_lexer_scan_string(text);
   int parserretval = comment_parserparse();
-  if (parserretval != 0) return NULL;
-  return shared_ptr<Expression>(params);
+  if (parserretval != 0) return nullptr;
+  return params;
 }

@@ -27,9 +27,9 @@
 #include "openscad.h"
 #include "comment.h"
 #include "node.h"
-#include "module.h"
+#include "FileModule.h"
 #include "ModuleInstantiation.h"
-#include "modcontext.h"
+#include "builtincontext.h"
 #include "value.h"
 #include "export.h"
 #include "builtin.h"
@@ -185,7 +185,7 @@ static void info()
 }
 
 /**
- * Initialize gettext. This must be called after the appliation path was
+ * Initialize gettext. This must be called after the application path was
  * determined so we can lookup the resource path for the language translation
  * files.
  */
@@ -375,12 +375,11 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	set_render_color_scheme(arg_colorscheme, true);
 
 	// Top context - this context only holds builtins
-	ModuleContext top_ctx;
-	top_ctx.registerBuiltin();
+	BuiltinContext top_ctx;
 	bool preview = png_output_file ? (renderer==RenderType::OPENCSG || renderer==RenderType::THROWNTOGETHER) : false;
 	top_ctx.set_variable("$preview", ValuePtr(preview));
 #ifdef DEBUG
-	PRINTDB("Top ModuleContext:\n%s",top_ctx.dump(nullptr, nullptr));
+	PRINTDB("BuiltinContext:\n%s", top_ctx.dump(nullptr, nullptr));
 #endif
 	shared_ptr<Echostream> echostream;
 	if (echo_output_file) {
@@ -402,8 +401,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	}
 	std::string text((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 	text += "\n" + commandline_commands;
-	auto abspath = fs::absolute(filename);
-	if (!parse(root_module, text.c_str(), abspath, false)) {
+	if (!parse(root_module, text.c_str(), filename, false)) {
 		delete root_module;  // parse failed
 		root_module = nullptr;
 	}
@@ -457,7 +455,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		}
 		else {
 			fs::current_path(fparent); // Force exported filenames to be relative to document path
-			fstream << tree.getString(*root_node) << "\n";
+			fstream << tree.getString(*root_node, "\t") << "\n";
 			fstream.close();
 		}
 	}
@@ -469,7 +467,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		}
 		else {
 			fs::current_path(fparent); // Force exported filenames to be relative to document path
-			fstream << root_module->dump("", "");
+			fstream << root_module->dump("");
 			fstream.close();
 		}
 	}
@@ -1028,10 +1026,6 @@ int main(int argc, char **argv)
 	currentdir = fs::current_path().generic_string();
 
 	Camera camera = get_camera(vm);
-
-	// Initialize global visitors
-	NodeCache nodecache;
-	NodeDumper dumper(nodecache);
 
 	auto cmdlinemode = false;
 	if (output_file) { // cmd-line mode

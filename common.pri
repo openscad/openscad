@@ -26,6 +26,7 @@ macx:isEmpty(OPENSCAD_LIBDIR) {
 }
 
 
+include(qt.pri)
 include(win.pri)
 include(flex.pri)
 include(bison.pri)

@@ -25,13 +25,10 @@ public:
 private:
 	Value::ValueType vt;
 	parameter_type_t checkVectorWidget();
-	
+	void setValue(const ValuePtr defaultValue, const ValuePtr values);
+
 public:
-	ParameterObject();
-	void setAssignment(Context *context, const Assignment *assignment, const ValuePtr defaultValue);
+	ParameterObject(Context *context, const Assignment &assignment, const ValuePtr defaultValue);
 	void applyParameter(Assignment &assignment);
 	bool operator==(const ParameterObject &second);
-	
-protected:
-	int setValue(const ValuePtr defaultValue, const ValuePtr values);
 };

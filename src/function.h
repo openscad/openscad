@@ -19,7 +19,6 @@ public:
 	virtual bool is_experimental() const { return feature != nullptr; }
 	virtual bool is_enabled() const { return (feature == nullptr) || feature->is_enabled(); }
 	virtual ValuePtr evaluate(const class Context *ctx, const class EvalContext *evalctx) const = 0;
-	virtual std::string dump(const std::string &indent, const std::string &name) const = 0;
 };
 
 class BuiltinFunction : public AbstractFunction
@@ -33,7 +32,6 @@ public:
 	~BuiltinFunction();
 
 	ValuePtr evaluate(const Context *ctx, const EvalContext *evalctx) const override;
-	std::string dump(const std::string &indent, const std::string &name) const override;
 };
 
 class UserFunction : public AbstractFunction, public ASTNode
@@ -48,7 +46,7 @@ public:
 	~UserFunction();
 
 	ValuePtr evaluate(const Context *ctx, const EvalContext *evalctx) const override;
-	std::string dump(const std::string &indent, const std::string &name) const override;
+	void print(std::ostream &stream, const std::string &indent) const override;
         
 	static UserFunction *create(const char *name, AssignmentList &definition_arguments, shared_ptr<Expression> expr, const Location &loc);
 };

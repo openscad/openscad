@@ -383,7 +383,7 @@ namespace CGALUtils {
 															   shared_ptr<const Geometry>(createNefPolyhedronFromGeometry(ps))));
 					}
 					CGAL_Nef_polyhedron *N = CGALUtils::applyOperator(fake_children, OpenSCADOperator::UNION);
-					// FIXME: This hould really never throw.
+					// FIXME: This should really never throw.
 					// Assert once we figured out what went wrong with issue #1069?
 					if (!N) throw 0;
 					t.stop();

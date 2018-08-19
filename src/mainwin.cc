@@ -41,6 +41,7 @@
 #include "builtin.h"
 #include "memory.h"
 #include "expression.h"
+#include "modcontext.h"
 #include "progress.h"
 #include "dxfdim.h"
 #include "legacyeditor.h"
@@ -95,6 +96,7 @@
 #include "QWordSearchField.h"
 #include <QSettings> //Include QSettings for direct operations on settings arrays
 #include "QSettingsCached.h"
+#include <QtMultimedia/QSound>
 
 #if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
 #include <QTextDocument>
@@ -138,7 +140,7 @@
 unsigned int GuiLocker::gui_locked = 0;
 
 static char copyrighttext[] =
-	"Copyright (C) 2009-2017 The OpenSCAD Developers\n"
+	"Copyright (C) 2009-2018 The OpenSCAD Developers\n"
 	"\n"
 	"This program is free software; you can redistribute it and/or modify "
 	"it under the terms of the GNU General Public License as published by "
@@ -169,8 +171,8 @@ MainWindow::MainWindow(const QString &filename)
 	updateStatusBar(nullptr);
 
 	QSettingsCached settings;
-	editortype = settings.value("editor/editortype").toString();
-	useScintilla = (editortype != "Simple Editor");
+	editortype = settings.value(Preferences::PREF_EDITOR_TYPE).toString();
+	useScintilla = (editortype != Preferences::EDITOR_TYPE_SIMPLE);
 
 #ifdef USE_SCINTILLA_EDITOR
 	if (useScintilla) {
@@ -210,8 +212,6 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->cgalworker, SIGNAL(done(shared_ptr<const Geometry>)),
 					this, SLOT(actionRenderDone(shared_ptr<const Geometry>)));
 #endif
-
-	top_ctx.registerBuiltin();
 
 	root_module = nullptr;
 	parsed_module = nullptr;
@@ -488,7 +488,7 @@ MainWindow::MainWindow(const QString &filename)
 	initActionIcon(viewActionZoomOut, ":/images/zoomout.png", ":/images/Zoom-Out-32.png");
 	initActionIcon(viewActionTop, ":/images/blackUp.png", ":/images/up.png");
 	initActionIcon(viewActionBottom, ":/images/blackbottom.png", ":/images/bottom.png");
-	initActionIcon(viewActionLeft, ":/images/blackleft (copy).png", ":/images/left.png");
+	initActionIcon(viewActionLeft, ":/images/blackleft.png", ":/images/left.png");
 	initActionIcon(viewActionRight, ":/images/rightright.png", ":/images/right.png");
 	initActionIcon(viewActionFront, ":/images/blackfront.png", ":/images/front.png");
 	initActionIcon(viewActionBack, ":/images/blackback.png", ":/images/back.png");
@@ -1007,6 +1007,10 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 		if (fileChangedOnDisk() && checkEditorModified()) {
 			shouldcompiletoplevel = true;
 			refreshDocument();
+			if (Preferences::inst()->getValue("advanced/autoReloadRaise").toBool()) {
+				// reloading the 'same' document brings the 'old' one to front.
+				this->raise();
+			}
 		}
 		// If the file hasn't changed, we might still need to compile it
 		// if we haven't yet compiled the current text.
@@ -1191,11 +1195,9 @@ void MainWindow::instantiateRoot()
 			if (!(this->root_node = find_root_tag(this->absolute_root_node))) {
 				this->root_node = this->absolute_root_node;
 			}
+
 			// FIXME: Consider giving away ownership of root_node to the Tree, or use reference counted pointers
 			this->tree.setRoot(this->root_node);
-			// Dump the tree (to initialize caches).
-			// FIXME: We shouldn't really need to do this explicitly..
-			this->tree.getString(*this->root_node);
 		}
 	}
 
@@ -1848,6 +1850,10 @@ bool MainWindow::fileChangedOnDisk()
 */
 void MainWindow::compileTopLevelDocument(bool rebuildParameterWidget)
 {
+	if (Feature::ExperimentalCustomizer.is_enabled()) {
+		this->parameterWidget->setEnabled(false);
+	}
+
 	resetSuppressedMessages();
 
 	this->last_compiled_doc = editor->toPlainText();
@@ -1859,15 +1865,16 @@ void MainWindow::compileTopLevelDocument(bool rebuildParameterWidget)
 	auto fnameba = this->fileName.toLocal8Bit();
 	const char* fname = this->fileName.isEmpty() ? "" : fnameba;
 	delete this->parsed_module;
-	this->root_module = parse(this->parsed_module, fulltext.c_str(), fs::path(fname), false) ? this->parsed_module : nullptr;
+	this->root_module = parse(this->parsed_module, fulltext.c_str(), fname, false) ? this->parsed_module : nullptr;
 
 	if (Feature::ExperimentalCustomizer.is_enabled()) {
 		if (this->root_module!=nullptr) {
 			//add parameters as annotation in AST
 			CommentParser::collectParameters(fulltext.c_str(),this->root_module);
+			this->parameterWidget->setParameters(this->root_module,rebuildParameterWidget);
+			this->parameterWidget->applyParameters(this->root_module);
+			this->parameterWidget->setEnabled(true);
 		}
-		this->parameterWidget->setParameters(this->root_module,rebuildParameterWidget);
-		this->parameterWidget->applyParameters(this->root_module);
 	}
 }
 
@@ -1881,7 +1888,6 @@ void MainWindow::changeParameterWidget()
 		hideParameters();
 		viewActionHideParameters->setVisible(false);
 	}
-	emit actionRenderPreview();
 }
 
 void MainWindow::checkAutoReload()
@@ -2107,6 +2113,11 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 
 	updateStatusBar(nullptr);
 
+	if (Preferences::inst()->getValue("advanced/enableSoundNotification").toBool())
+	{
+		QSound::play(":sounds/complete.wav");
+	}
+
 	this->contentschanged = false;
 	compileEnded();
 }
@@ -2155,7 +2166,7 @@ void MainWindow::actionDisplayAST()
 	e->setWindowTitle("AST Dump");
 	e->setReadOnly(true);
 	if (root_module) {
-		e->setPlainText(QString::fromUtf8(root_module->dump("", "").c_str()));
+		e->setPlainText(QString::fromUtf8(root_module->dump("").c_str()));
 	} else {
 		e->setPlainText("No AST to dump. Please try compiling first...");
 	}
@@ -2173,7 +2184,7 @@ void MainWindow::actionDisplayCSGTree()
 	e->setWindowTitle("CSG Tree Dump");
 	e->setReadOnly(true);
 	if (this->root_node) {
-		e->setPlainText(QString::fromUtf8(this->tree.getString(*this->root_node).c_str()));
+		e->setPlainText(QString::fromUtf8(this->tree.getString(*this->root_node, "  ").c_str()));
 	} else {
 		e->setPlainText("No CSG to dump. Please try compiling first...");
 	}
@@ -2378,7 +2389,7 @@ void MainWindow::actionExportCSG()
 		PRINTB("Can't open file \"%s\" for export", csg_filename.toLocal8Bit().constData());
 	}
 	else {
-		fstream << this->tree.getString(*this->root_node) << "\n";
+		fstream << this->tree.getString(*this->root_node, "\t") << "\n";
 		fstream.close();
 		PRINT("CSG export finished.");
 	}

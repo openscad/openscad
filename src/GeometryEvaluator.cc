@@ -43,10 +43,11 @@ GeometryEvaluator::GeometryEvaluator(const class Tree &tree):
 shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNode &node, 
 																															 bool allownef)
 {
-	if (!GeometryCache::instance()->contains(this->tree.getIdString(node))) {
+	const std::string &key = this->tree.getIdString(node);
+	if (!GeometryCache::instance()->contains(key)) {
 		shared_ptr<const CGAL_Nef_polyhedron> N;
-		if (CGALCache::instance()->contains(this->tree.getIdString(node))) {
-			N = CGALCache::instance()->get(this->tree.getIdString(node));
+		if (CGALCache::instance()->contains(key)) {
+			N = CGALCache::instance()->get(key);
 		}
 
 		// If not found in any caches, we need to evaluate the geometry
@@ -73,7 +74,7 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 		smartCacheInsert(node, this->root);
 		return this->root;
 	}
-	return GeometryCache::instance()->get(this->tree.getIdString(node));
+	return GeometryCache::instance()->get(key);
 }
 
 GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const AbstractNode &node, OpenSCADOperator op)
@@ -685,8 +686,10 @@ static void add_slice(PolySet *ps, const Polygon2d &poly,
 */
 static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &poly)
 {
-	bool cvx = poly.is_convex();
-	PolySet *ps = new PolySet(3, !cvx ? boost::tribool(false) : node.twist == 0 ? boost::tribool(true) : unknown);
+	boost::tribool isConvex{poly.is_convex()};
+	// Twise or non-uniform scale makes convex polygons into unknown polyhedrons
+	if (isConvex && (node.twist != 0 || node.scale_x != node.scale_y)) isConvex = unknown;
+	PolySet *ps = new PolySet(3, isConvex);
 	ps->setConvexity(node.convexity);
 	if (node.height <= 0) return ps;
 

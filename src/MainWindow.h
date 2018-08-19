@@ -6,7 +6,7 @@
 #include "ui_MainWindow.h"
 #include "UIUtils.h"
 #include "openscad.h"
-#include "modcontext.h"
+#include "builtincontext.h"
 #include "module.h"
 #include "ModuleInstantiation.h"
 #include "Tree.h"
@@ -41,8 +41,8 @@ public:
 
 	QTime renderingTime;
 
-	ModuleContext top_ctx;
-	FileModule *root_module;		  // Result of parsing
+	BuiltinContext top_ctx;
+	FileModule *root_module;      // Result of parsing
 	FileModule *parsed_module;		// Last parse for include list
 	ModuleInstantiation root_inst;	// Top level instance
 	AbstractNode *absolute_root_node; // Result of tree evaluation

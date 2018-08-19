@@ -4,6 +4,10 @@
 #include <string>
 #include <vector>
 #include <boost/range/adaptor/reversed.hpp>
+// gcc 4.8 and earlier have issues with std::regex see
+// #2291 and https://stackoverflow.com/questions/12530406/is-gcc-4-8-or-earlier-buggy-about-regular-expressions
+// therefor, we use boost::regex
+#include <boost/regex.hpp>
 
 struct GroupInfo {
 	std::string commentString;
@@ -160,34 +164,19 @@ static GroupInfo createGroup(std::string comment,int lineNo)
 {
 	//store info related to group
 	GroupInfo groupInfo;
-	std::string finalGroupName; //Final group name
-	std::string groupName; //group name
-	bool isGroupName = false;
-	for (unsigned int it = 0; it < comment.length();it++) {
+	std::string finalGroupName;
 
-		//Start of Group Name
-		if (comment[it] == '[') {
-			isGroupName = true;
-			continue;
+	boost::regex regex("\\[(.*?)\\]");
+	boost::match_results<std::string::const_iterator>  match;
+	while(boost::regex_search(comment, match, regex)) {
+		std::string groupName = match[1].str();
+		if (finalGroupName.empty()) {
+			finalGroupName = groupName;
+		} else {
+			finalGroupName = finalGroupName + "-" + groupName;
 		}
-
-		//End of Group Name
-		if (comment[it] == ']') {
-			isGroupName = false;
-			//Setting of group name 
-			if (!finalGroupName.empty()) {
-				finalGroupName = finalGroupName + "-" + groupName;
-			} else {
-				finalGroupName = finalGroupName + groupName;
-			}
-			groupName.clear();
-			continue;
-		}
-
-		//collect characters if it belong to group name
-		if (isGroupName) {
-			groupName += comment[it];
-		}
+		groupName.clear();
+		comment = match.suffix();
 	}
 
 	groupInfo.commentString = finalGroupName;
@@ -270,6 +259,8 @@ static GroupList collectGroups(const std::string &fulltext)
 */
 void CommentParser::collectParameters(const char *fulltext, FileModule *root_module)
 {
+	static auto EmptyStringLiteral(std::make_shared<Literal>(ValuePtr(std::string(""))));
+
 	// Get all groups of parameters
 	GroupList groupList = collectGroups(std::string(fulltext));
 	int parseTill=getLineToStop(fulltext);
@@ -279,8 +270,13 @@ void CommentParser::collectParameters(const char *fulltext, FileModule *root_mod
 
 		// get location of assignment node
 		int firstLine = assignment.location().firstLine();
-		if(firstLine>=parseTill ) continue;
-
+		if(firstLine>=parseTill || (
+			assignment.location().fileName() != "" &&
+			assignment.location().fileName() != root_module->getFilename() &&
+			assignment.location().fileName() != root_module->getFullpath()
+			)) {
+			continue;
+		}
 		// making list to add annotations
 		AnnotationList *annotationList = new AnnotationList();
  
@@ -289,7 +285,7 @@ void CommentParser::collectParameters(const char *fulltext, FileModule *root_mod
 		// getting the node for parameter annotation
 		shared_ptr<Expression> params = CommentParser::parser(comment.c_str());
 		if (!params) {
-			params = shared_ptr<Expression>(new Literal(ValuePtr(std::string(""))));
+			params = EmptyStringLiteral;
 		}
 
 		// adding parameter to the list

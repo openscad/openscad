@@ -88,11 +88,11 @@ def validateSTL(filename):
     mesh = read_stl(filename);
     
     if len([n[i] for i in range(0,3) for n in mesh.points if math.isinf(n[i]) or math.isnan(n[i])]):
-        print "NaN of Inf vertices found"
+        print("NaN of Inf vertices found")
         return False
 
     if len([n[i] for i in range(0,3) for n in mesh.normals if math.isinf(n[i]) or math.isnan(n[i])]):
-        print "NaN of Inf normals found"
+        print("NaN of Inf normals found")
         return False
 
     edges = Counter((t[i], t[(i+1)%3]) for i in range(0,3) for t in mesh.triangles)
@@ -100,7 +100,7 @@ def validateSTL(filename):
     edges.subtract(reverse_edges)
     edges += Counter() # remove zero and negative counts
     if len(edges) > 0:
-        print "Non-manifold STL: " + str(edges)
+        print("Non-manifold STL: " + str(edges))
         return False
     return True
 

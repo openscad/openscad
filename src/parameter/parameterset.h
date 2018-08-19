@@ -12,7 +12,7 @@ public:
 	static std::string fileFormatVersionKey;
 	static std::string fileFormatVersionValue;
 
-protected:
+private:
 	pt::ptree root;
 
 public:
@@ -25,4 +25,6 @@ public:
 	bool readParameterSet(const std::string &filename);
 	void writeParameterSet(const std::string &filename);
 	void applyParameterSet(class FileModule *fileModule, const std::string &setName);
+	bool isEmpty() const { return root.empty(); }
+	void addChild(const std::string name, const pt::ptree & tree){root.add_child(name,tree);};
 };

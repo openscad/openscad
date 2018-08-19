@@ -1,23 +1,19 @@
 #include "parameterspinbox.h"
+#include "ignoreWheelWhenNotFocused.h"
 
-ParameterSpinBox::ParameterSpinBox(ParameterObject *parameterobject, int showDescription)
+ParameterSpinBox::ParameterSpinBox(QWidget *parent, ParameterObject *parameterobject, DescLoD descriptionLoD)
+	: ParameterVirtualWidget(parent, parameterobject, descriptionLoD)
 {
-	object = parameterobject;
-	setName(QString::fromStdString(object->name));
 	setValue();
 	connect(doubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(onChanged(double)));
-	if (showDescription == 0) {
-		setDescription(object->description);
-	}else if(showDescription == 1){
-		addInline(object->description);
-	}else {
-		doubleSpinBox->setToolTip(object->description);
-	}
+
+	IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
+	doubleSpinBox->installEventFilter(ignoreWheelWhenNotFocused);
 }
 
 void ParameterSpinBox::onChanged(double)
 {
-	if(!suppressUpdate){
+	if(!this->suppressUpdate){
 		object->focus = true;
 		object->value = ValuePtr(doubleSpinBox->value());
 		emit changed();

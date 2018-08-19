@@ -49,7 +49,7 @@
 namespace fs = boost::filesystem;
 
 #define YYMAXDEPTH 20000
-#define LOC(loc) Location(loc.first_line, loc.first_column, loc.last_line, loc.last_column)
+#define LOC(loc) Location(loc.first_line, loc.first_column, loc.last_line, loc.last_column, sourcefile())
   
 int parser_error_pos = -1;
 
@@ -57,7 +57,7 @@ int parserlex(void);
 void yyerror(char const *s);
 
 int lexerget_lineno(void);
-fs::path sourcefile(void);
+std::shared_ptr<fs::path> sourcefile(void);
 int lexerlex_destroy(void);
 int lexerlex(void);
 
@@ -68,7 +68,7 @@ extern void lexerdestroy();
 extern FILE *lexerin;
 extern const char *parser_input_buffer;
 const char *parser_input_buffer;
-fs::path parser_sourcefile;
+std::shared_ptr<fs::path> parser_sourcefile;
 
 %}
 
@@ -170,7 +170,7 @@ statement:
         | assignment
         | TOK_MODULE TOK_ID '(' arguments_decl optional_commas ')'
             {
-              UserModule *newmodule = new UserModule(LOC(@$));
+              UserModule *newmodule = new UserModule($2, LOC(@$));
               newmodule->definition_arguments = *$4;
               scope_stack.top()->addModule($2, newmodule);
               scope_stack.push(&newmodule->scope);
@@ -271,7 +271,7 @@ ifelse_statement:
 if_statement:
           TOK_IF '(' expr ')'
             {
-                $<ifelse>$ = new IfElseModuleInstantiation(shared_ptr<Expression>($3), parser_sourcefile.parent_path().generic_string(), LOC(@$));
+                $<ifelse>$ = new IfElseModuleInstantiation(shared_ptr<Expression>($3), parser_sourcefile->parent_path().generic_string(), LOC(@$));
                 scope_stack.push(&$<ifelse>$->scope);
             }
           child_statement
@@ -309,7 +309,7 @@ module_id:
 single_module_instantiation:
           module_id '(' arguments_call ')'
             {
-                $$ = new ModuleInstantiation($1, *$3, parser_sourcefile.parent_path().generic_string(), LOC(@$));
+                $$ = new ModuleInstantiation($1, *$3, parser_sourcefile->parent_path().generic_string(), LOC(@$));
                 free($1);
                 delete $3;
             }
@@ -625,23 +625,25 @@ void yyerror (char const *s)
 {
   // FIXME: We leak memory on parser errors...
   PRINTB("ERROR: Parser error in file %s, line %d: %s\n",
-         sourcefile() % lexerget_lineno() % s);
+         (*sourcefile()) % lexerget_lineno() % s);
 }
 
-bool parse(FileModule *&module, const char *text, const fs::path &filename, int debug)
+bool parse(FileModule *&module, const char *text, const std::string &filename, int debug)
 {
+  fs::path path = fs::absolute(fs::path(filename));
+  
   lexerin = NULL;
   parser_error_pos = -1;
   parser_input_buffer = text;
-  parser_sourcefile = fs::absolute(filename);
+  parser_sourcefile = std::make_shared<fs::path>(path);
 
-  rootmodule = new FileModule();
-  rootmodule->setModulePath(filename.parent_path().generic_string());
+  rootmodule = new FileModule(path.parent_path().generic_string(), path.filename().generic_string());
   scope_stack.push(&rootmodule->scope);
   //        PRINTB_NOCACHE("New module: %s %p", "root" % rootmodule);
 
   parserdebug = debug;
   int parserretval = parserparse();
+
   lexerdestroy();
   lexerlex_destroy();
 
@@ -650,5 +652,6 @@ bool parse(FileModule *&module, const char *text, const fs::path &filename, int 
 
   parser_error_pos = -1;
   scope_stack.pop();
+
   return true;
 }

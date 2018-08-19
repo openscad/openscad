@@ -121,7 +121,7 @@ void Preferences::init() {
 	this->defaultmap["editor/fontfamily"] = found_family;
  	this->defaultmap["editor/fontsize"] = 12;
 	this->defaultmap["editor/syntaxhighlight"] = "For Light Background";
-	this->defaultmap["editor/editortype"] = "QScintilla Editor";
+	this->defaultmap[Preferences::PREF_EDITOR_TYPE] = Preferences::EDITOR_TYPE_QSCINTILLA;
 
 #if defined (Q_OS_MAC)
 	this->defaultmap["editor/ctrlmousewheelzoom"] = false;
@@ -155,6 +155,8 @@ void Preferences::init() {
 	this->defaultmap["advanced/reorderWindows"] = true;
 	this->defaultmap["launcher/showOnStartup"] = true;
 	this->defaultmap["advanced/localization"] = true;
+	this->defaultmap["advanced/autoReloadRaise"] = false;
+	this->defaultmap["advanced/enableSoundNotification"] = true;
 
 	// Toolbar
 	QActionGroup *group = new QActionGroup(this);
@@ -348,10 +350,10 @@ void Preferences::on_fontSize_currentIndexChanged(const QString &size)
 	emit fontChanged(getValue("editor/fontfamily").toString(), intsize);
 }
 
-void Preferences::on_editorType_currentIndexChanged(const QString &type)
+void Preferences::on_editorType_currentIndexChanged(int idx)
 {
 	QSettingsCached settings;
-	settings.setValue("editor/editortype", type);
+	settings.setValue(Preferences::PREF_EDITOR_TYPE, idx == 0 ? Preferences::EDITOR_TYPE_SIMPLE : Preferences::EDITOR_TYPE_QSCINTILLA);
 }
 
 void Preferences::on_syntaxHighlight_activated(const QString &s)
@@ -464,6 +466,12 @@ void Preferences::on_localizationCheckBox_toggled(bool state)
 {
 	QSettingsCached settings;
 	settings.setValue("advanced/localization", state);
+}
+
+void Preferences::on_autoReloadRaiseCheckBox_toggled(bool state)
+{
+	QSettingsCached settings;
+	settings.setValue("advanced/autoReloadRaise", state);
 }
 
 void Preferences::on_forceGoldfeatherBox_toggled(bool state)
@@ -581,6 +589,12 @@ void Preferences::on_checkBoxEnableLineNumbers_toggled(bool checked)
 	writeSettings();
 }
 
+void Preferences::on_enableSoundOnRenderCompleteCheckBox_toggled(bool state)
+{
+	QSettingsCached settings;
+	settings.setValue("advanced/enableSoundNotification", state);
+}
+
 void Preferences::writeSettings()
 {
 	SettingsWriter settingsWriter;
@@ -662,9 +676,9 @@ void Preferences::updateGUI()
 	    }
 	}
 
-	QString editortypevar = getValue("editor/editortype").toString();
-	int edidx = this->editorType->findText(editortypevar);
-	if (edidx >=0) this->editorType->setCurrentIndex(edidx);
+	QString editortypevar = getValue(Preferences::PREF_EDITOR_TYPE).toString();
+	int edidx = editortypevar == Preferences::EDITOR_TYPE_SIMPLE ? 0 : 1;
+	this->editorType->setCurrentIndex(edidx);
 
 	this->mouseWheelZoomBox->setChecked(getValue("editor/ctrlmousewheelzoom").toBool());
 
@@ -680,12 +694,14 @@ void Preferences::updateGUI()
 	this->polysetCacheSizeEdit->setText(getValue("advanced/polysetCacheSize").toString());
 	this->opencsgLimitEdit->setText(getValue("advanced/openCSGLimit").toString());
 	this->localizationCheckBox->setChecked(getValue("advanced/localization").toBool());
+	this->autoReloadRaiseCheckBox->setChecked(getValue("advanced/autoReloadRaise").toBool());
 	this->forceGoldfeatherBox->setChecked(getValue("advanced/forceGoldfeather").toBool());
 	this->mdiCheckBox->setChecked(getValue("advanced/mdi").toBool());
 	this->reorderCheckBox->setChecked(getValue("advanced/reorderWindows").toBool());
 	this->undockCheckBox->setChecked(getValue("advanced/undockableWindows").toBool());
 	this->undockCheckBox->setEnabled(this->reorderCheckBox->isChecked());
 	this->launcherBox->setChecked(getValue("launcher/showOnStartup").toBool());
+	this->enableSoundOnRenderCompleteCheckBox->setChecked(getValue("advanced/enableSoundNotification").toBool());
 
 	Settings::Settings *s = Settings::Settings::inst();
 	updateComboBox(this->comboBoxLineWrap, Settings::Settings::lineWrap);
