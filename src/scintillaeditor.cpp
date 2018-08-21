@@ -540,15 +540,12 @@ int ScintillaEditor::updateFindIndicators(const QString &findText, bool visibili
     qsci->clearIndicatorRange(clearlineFrom, clearindexFrom, clearlineTo , clearindexTo, findIndicatorNumber);
 
     if (visibility && qsci->findFirst(findText, false /*re*/, false /*cs*/, false /*wo*/, false /*wrap*/, true /*forward*/, 0, 0, false)) {
-        findwordcount++;
         int lineFrom, indexFrom, lineTo, indexTo;
-        qsci->getSelection(&lineFrom, &indexFrom, &lineTo, &indexTo);
-        qsci->fillIndicatorRange(lineFrom, indexFrom, lineTo, indexTo, findIndicatorNumber); 
-        while (qsci->findNext()) {
+        do {
             findwordcount++;
             qsci->getSelection(&lineFrom, &indexFrom, &lineTo, &indexTo);
             qsci->fillIndicatorRange(lineFrom, indexFrom, lineTo, indexTo, findIndicatorNumber); 
-        }
+        }while (qsci->findNext());
     }
     if(savelineFrom!=-1){
         qsci->setSelection(savelineFrom, saveindexFrom, savelineTo, saveindexTo);
