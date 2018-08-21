@@ -5,19 +5,22 @@
 # 
 # This script must be run from the OpenSCAD source root directory
 #
-# Usage: macosx-build-dependencies.sh [-16lcdf] [<package>]
+# Usage: macosx-build-dependencies.sh [-16lcdfv] [<package>]
 #  -3   Build using C++03 and libstdc++ (default is C++11 and libc++)
 #  -l   Force use of LLVM compiler
 #  -c   Force use of clang compiler
 #  -d   Build for deployment (if not specified, e.g. Sparkle won't be built)
 #  -f   Force build even if package is installed
+#  -b   Force build even if homebrew installed
+#  -v   Verbose
 #
 # Prerequisites:
 # - MacPorts: curl, cmake
 #
-# FIXME:
-# o Verbose option
-#
+
+if [ "`echo $* | grep \\\-v `" ]; then
+  set -x
+fi
 
 BASEDIR=$PWD/../libraries
 OPENSCADDIR=$PWD
@@ -36,7 +39,7 @@ PACKAGES=(
     "gmp 6.1.2"
     "mpfr 3.1.6"
     "boost 1.65.1"
-    "qt5 5.10.1"
+    "qt5 5.11.1"
     "qscintilla 2.9.3"
     "cgal 4.11"
     "glew 1.13.0"
@@ -46,6 +49,7 @@ PACKAGES=(
     "opencsg 1.4.2"
     "freetype 2.8.1"
     "ragel 6.10"
+    "pkg-config 0.29.2"
     "harfbuzz 1.7.1"
     "libzip 1.3.2"
     "libxml2 2.9.7"
@@ -57,13 +61,14 @@ DEPLOY_PACKAGES=(
 
 printUsage()
 {
-  echo "Usage: $0 [-3lcdf] [<package>]"
+  echo "Usage: $0 [-3lcdfv] [<package>]"
   echo
   echo "  -3   Build using C++03 and libstdc++"
   echo "  -l   Force use of LLVM compiler"
   echo "  -c   Force use of clang compiler"
   echo "  -d   Build for deployment"
   echo "  -f   Force build even if package is installed"
+  echo "  -v   Verbose"
   echo
   echo "  If <package> is not specified, builds all packages"
 }
@@ -209,19 +214,22 @@ build_qt5()
   echo "Building Qt" $version "..."
   cd $BASEDIR/src
   v=(${version//./ }) # Split into array
-  rm -rf qt-opensource-src-$version
+  #rm -rf qt-opensource-src-$version
   if [ ! -f qt-everywhere-src-$version.tar.xz ]; then
       curl -O -L http://download.qt.io/official_releases/qt/${v[0]}.${v[1]}/$version/single/qt-everywhere-src-$version.tar.xz
   fi
-  tar xzf qt-everywhere-src-$version.tar.xz
+  #tar xzf qt-everywhere-src-$version.tar.xz
   cd qt-everywhere-src-$version
   if ! $USING_CXX11; then
     QT_EXTRA_FLAGS="-no-c++11"
   fi
+  if (( $OSX_VERSION <= 13 )) ; then
+    QT_EXTRA_FLAGS=$QT_EXTRA_FLAGS" -no-qml-debug"
+  fi
   CXXFLAGS="$CXXSTDFLAGS" ./configure -prefix $DEPLOYDIR $QT_EXTRA_FLAGS -release -opensource -confirm-license \
 		-nomake examples -nomake tests \
 		-no-xcb -no-glib -no-harfbuzz -no-sql-db2 -no-sql-ibase -no-sql-mysql -no-sql-oci -no-sql-odbc \
-		-no-sql-psql -no-sql-sqlite2 -no-sql-tds -no-cups -no-qml-debug \
+		-no-sql-psql -no-sql-sqlite2 -no-sql-tds -no-cups \
                 -skip qtx11extras -skip qtandroidextras -skip qtserialport -skip qtserialbus \
                 -skip qtactiveqt -skip qtxmlpatterns -skip qtdeclarative -skip qtscxml \
                 -skip qtpurchasing -skip qtcanvas3d -skip qtgamepad -skip qtwayland \
@@ -710,6 +718,28 @@ build_ragel()
   make install
 }
 
+check_pkgconfig()
+{
+    check_file bin/pkg-config
+}
+
+build_pkg-config()
+{
+  version=$1
+
+  echo "Building pkg-config $version..."
+  cd "$BASEDIR"/src
+  rm -rf "pkg-config-$version"
+  if [ ! -f "pkg-config-$version.tar.gz" ]; then
+    curl --insecure -LO "https://pkg-config.freedesktop.org/releases/pkg-config-$version.tar.gz"
+  fi
+  tar xf "pkg-config-$version.tar.gz"
+  cd "pkg-config-$version"
+  ./configure --prefix="$DEPLOYDIR" --with-internal-glib
+  make -j$NUMCPU
+  make install
+}
+
 check_harfbuzz()
 {
     check_file lib/libharfbuzz.dylib
@@ -743,7 +773,7 @@ if [ ! -f $OPENSCADDIR/openscad.pro ]; then
 fi
 OPENSCAD_SCRIPTDIR=$PWD/scripts
 
-while getopts '3lcdf' c
+while getopts '3lcdfv' c
 do
   case $c in
     3) USING_CXX11=false;;
@@ -751,6 +781,7 @@ do
     c) OPTION_CLANG=true;;
     d) OPTION_DEPLOY=true;;
     f) OPTION_FORCE=1;;
+    v) echo verbose on;;
     *) printUsage;exit 1;;
   esac
 done
@@ -758,7 +789,9 @@ done
 OPTION_PACKAGES="${@:$OPTIND}"
 
 OSX_VERSION=`sw_vers -productVersion | cut -d. -f2`
-if (( $OSX_VERSION >= 11 )); then
+if (( $OSX_VERSION >= 13 )); then
+  echo "Detected High Sierra (10.13) or later"
+elif (( $OSX_VERSION >= 11 )); then
   echo "Detected El Capitan (10.11) or later"
 elif (( $OSX_VERSION >= 10 )); then
   echo "Detected Yosemite (10.10) or later"
@@ -840,3 +873,7 @@ for package in $OPTION_PACKAGES; do
     echo "Skipping unknown package $package"
   fi
 done
+
+if [ "`echo $* | grep \\-v `" ]; then
+  set +x
+fi
