@@ -52,3 +52,7 @@ CONFIG(debug, debug|release) {
       }
     }
 }
+
+CONFIG(mingw-cross-env) {
+  LIBS -= -lqscintilla2
+}

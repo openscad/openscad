@@ -7,18 +7,13 @@
 
 libzip {
 
-exists($$LIBZIP_INCLUDEPATH/zip.h) {
-  ENABLE_LIBZIP=yes
-} else {
+!exists($$LIBZIP_INCLUDEPATH/zip.h) {
   LIBZIP_INCLUDEPATH =
   LIBZIP_LIBPATH =
 }
 
 isEmpty(LIBZIP_INCLUDEPATH) {
   LIBZIP_CFLAGS = $$system("pkg-config --cflags libzip")
-  !isEmpty(LIBZIP_CFLAGS) {
-    ENABLE_LIBZIP=yes
-  }
 } else {
   LIBZIP_CFLAGS = -I$$LIBZIP_INCLUDEPATH
 }
@@ -29,10 +24,7 @@ isEmpty(LIBZIP_LIBPATH) {
   LIBZIP_LIBS = -L$$LIBZIP_LIBPATH -lzip
 }
 
-!isEmpty(ENABLE_LIBZIP) {
-  DEFINES += ENABLE_LIBZIP
-  QMAKE_CXXFLAGS += $$LIBZIP_CFLAGS
-  LIBS += $$LIBZIP_LIBS
-}
+QMAKE_CXXFLAGS += $$LIBZIP_CFLAGS
+LIBS += $$LIBZIP_LIBS
 
 }
