@@ -31,6 +31,7 @@ OPTION_LLVM=false
 OPTION_CLANG=false
 OPTION_DEPLOY=false
 OPTION_FORCE=0
+OPTION_FORCE_BREW=0
 OPTION_CXX11=true
 
 PACKAGES=(
@@ -773,7 +774,7 @@ if [ ! -f $OPENSCADDIR/openscad.pro ]; then
 fi
 OPENSCAD_SCRIPTDIR=$PWD/scripts
 
-while getopts '3lcdfv' c
+while getopts '3lcdfvb' c
 do
   case $c in
     3) USING_CXX11=false;;
@@ -781,6 +782,7 @@ do
     c) OPTION_CLANG=true;;
     d) OPTION_DEPLOY=true;;
     f) OPTION_FORCE=1;;
+    b) OPTION_FORCE_BREW=1;;
     v) echo verbose on;;
     *) printUsage;exit 1;;
   esac
@@ -830,6 +832,16 @@ if $USING_CXX11; then
 else
   export CXXSTDFLAGS="-std=c++03 -stdlib=libstdc++"
   export LDSTDFLAGS="-stdlib=libstdc++"
+fi
+
+if [ "`command -v brew`" ]; then
+  if $OPTION_FORCE_BREW; then
+    echo overriding homebrew interlock
+  else
+    echo homebrew is installed, do you really want to build without it??
+    echo rerun this with -b to override this homebrew interlock
+    exit 1
+  fi
 fi
 
 echo "Building for $MAC_OSX_VERSION_MIN or later"
