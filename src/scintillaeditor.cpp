@@ -523,7 +523,7 @@ void ScintillaEditor::onTextChanged()
   }
 }
 
-int ScintillaEditor::resetFindIndicators(const QString &findText, bool visibility)
+int ScintillaEditor::updateFindIndicators(const QString &findText, bool visibility)
 {
     int findwordcount = 0;
     int savelineFrom, saveindexFrom, savelineTo, saveindexTo;

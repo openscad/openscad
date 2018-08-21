@@ -1507,13 +1507,13 @@ void MainWindow::pasteViewportRotation()
 void MainWindow::hideFind()
 {
 	find_panel->hide();
-	this->findInputField->setFindCount(editor->resetFindIndicators(this->findInputField->text(), false));
+	this->findInputField->setFindCount(editor->updateFindIndicators(this->findInputField->text(), false));
 	this->processEvents();
 }
 
 void MainWindow::showFind()
 {
-	this->findInputField->setFindCount(editor->resetFindIndicators(this->findInputField->text()));
+	this->findInputField->setFindCount(editor->updateFindIndicators(this->findInputField->text()));
 	this->processEvents();
 	findTypeComboBox->setCurrentIndex(0);
 	replaceInputField->hide();
@@ -1530,14 +1530,14 @@ void MainWindow::showFind()
 
 void MainWindow::findString(QString textToFind)
 {
-	this->findInputField->setFindCount(editor->resetFindIndicators(textToFind));
+	this->findInputField->setFindCount(editor->updateFindIndicators(textToFind));
 	this->processEvents();
 	editor->find(textToFind);
 }
 
 void MainWindow::showFindAndReplace()
 {
-	this->findInputField->setFindCount(editor->resetFindIndicators(this->findInputField->text()));	
+	this->findInputField->setFindCount(editor->updateFindIndicators(this->findInputField->text()));	
 	this->processEvents();
 	findTypeComboBox->setCurrentIndex(1); 
 	replaceInputField->show();
