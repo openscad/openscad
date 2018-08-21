@@ -138,6 +138,11 @@ Value::Value(const RangeType &v) : value(v)
   //  std::cout << "creating range\n";
 }
 
+Value::Value(const RecordType &v) : value(v)
+{
+  //  std::cout << "creating record\n";
+}
+
 Value::ValueType Value::type() const
 {
   return static_cast<ValueType>(this->value.which());
@@ -175,6 +180,9 @@ bool Value::toBool() const
     break;
   case ValueType::RANGE:
     return true;
+    break;
+  case ValueType::RECORD:
+    return !boost::get<RecordType>(this->value).empty();
     break;
   default:
     return false;
@@ -261,6 +269,20 @@ public:
   std::string operator()(const ValuePtr &v) const {
     return v->toString();
   }
+
+  std::string operator()(const Value::RecordType &v) const {
+    std::stringstream s;
+    s << '{';
+    bool first = true;
+    for (const auto &val : v) {
+      if (!first) {
+        s << ", ";
+      } else first = false;
+      s << val.first << ": " << val.second->toEchoString();
+    }
+    s << "}";
+    return s.str();
+  }
 };
 
 std::string Value::toString() const
@@ -335,6 +357,15 @@ const Value::VectorType &Value::toVector() const
   static VectorType empty;
   
   const VectorType *v = boost::get<VectorType>(&this->value);
+  if (v) return *v;
+  else return empty;
+}
+
+const Value::RecordType &Value::toRecord() const
+{
+  static RecordType empty;
+
+  const RecordType *v = boost::get<RecordType>(&this->value);
   if (v) return *v;
   else return empty;
 }
@@ -489,6 +520,15 @@ public:
 		}
 		return {sum};
 	}
+
+	Value operator()(const Value::RecordType &op1, const Value::RecordType &op2) const {
+	  //set union, with values from RHS overriding LHS
+	  Value::RecordType result = op1;
+	  for (const auto &pair : op2) {
+	    result[pair.first] = pair.second;
+	  }
+	  return result;
+	}
 };
 
 Value Value::operator+(const Value &v) const
@@ -513,6 +553,15 @@ public:
 			sum.push_back(ValuePtr(*op1[i] - *op2[i]));
 		}
 		return {sum};
+	}
+
+	Value operator()(const Value::RecordType &op1, const Value::RecordType &op2) const {
+	  //set difference, with values from RHS overriding LHS
+	  Value::RecordType result = op1;
+	  for (const auto &pair : op2) {
+	    result.erase(pair.first);
+	  }
+	  return result;
 	}
 };
 
@@ -617,6 +666,15 @@ Value Value::operator*(const Value &v) const
 			return {dstv};
 		}
 	}
+	else if (this->type() == ValueType::RECORD && v.type() == ValueType::RECORD) {
+	  //set intersection, with values from RHS overriding LHS
+	  RecordType LHS = this->toRecord();
+	  RecordType result;
+	  for (const auto &pair : v.toRecord()) {
+	    if (LHS.count(pair.first)) result[pair.first] = pair.second;
+	  }
+	  return result;
+	}
 	return Value::undefined;
 }
 
@@ -710,6 +768,14 @@ public:
     const auto i = convert_to_uint32(idx);
     if (i < vec.size()) return *vec[i];
     return Value::undefined;
+  }
+
+  Value operator()(const Value::RecordType &rec, const str_utf8_wrapper &key) const {
+    try {
+      return *rec.at(key);
+    } catch (std::out_of_range &e) {
+      return Value::undefined;
+    }
   }
 
   Value operator()(const RangeType &range, const double &idx) const {
@@ -881,6 +947,11 @@ ValuePtr::ValuePtr(const Value::VectorType &v)
 }
 
 ValuePtr::ValuePtr(const RangeType &v)
+{
+	this->reset(new Value(v));
+}
+
+ValuePtr::ValuePtr(const Value::RecordType &v)
 {
 	this->reset(new Value(v));
 }

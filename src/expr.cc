@@ -371,6 +371,45 @@ void Vector::print(std::ostream &stream, const std::string &indent) const
 	stream << "]";
 }
 
+Record::Record(const Location &loc) : Expression(loc)
+{
+}
+
+bool Record::isLiteral() const {
+    for(const auto &e : this->children) {
+        if (!e.second->isLiteral()){
+            return false;
+        }
+    }
+    return true;
+}
+
+ValuePtr Record::evaluate(const Context *context) const
+{
+	Value::RecordType rec;
+	for(const auto &e : this->children) {
+	    rec[e.first] = e.second->evaluate(context);
+	}
+	return ValuePtr(rec);
+}
+
+void Record::print(std::ostream &s, const std::string &indent) const
+{
+    s << '{';
+    bool first = true;
+    for (const auto &val : children) {
+      if (!first) {
+        s << ", ";
+      } else first = false;
+      s << val.first << ": " << *val.second;
+    }
+    s << "}";
+}
+
+void Record::add(const char *key, Expression *expr) {
+    children[std::string(key)] = shared_ptr<Expression>(expr);
+}
+
 Lookup::Lookup(const std::string &name, const Location &loc) : Expression(loc), name(name)
 {
 }
@@ -402,6 +441,8 @@ ValuePtr MemberLookup::evaluate(const Context *context) const
 		if (this->member == "begin") return v[0];
 		if (this->member == "step") return v[1];
 		if (this->member == "end") return v[2];
+	} else if (v->type() == Value::ValueType::RECORD) {
+	    return v[this->member];
 	}
 	return ValuePtr::undefined;
 }

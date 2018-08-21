@@ -4,6 +4,7 @@
 #include <string>
 #include <algorithm>
 #include <limits>
+#include <unordered_map>
 
 // Workaround for https://bugreports.qt-project.org/browse/QTBUG-22829
 #ifndef Q_MOC_RUN
@@ -112,6 +113,7 @@ public:
   ValuePtr(const char v);
   ValuePtr(const class std::vector<ValuePtr> &v);
   ValuePtr(const class RangeType &v);
+  ValuePtr(const class std::unordered_map<std::string, ValuePtr> &v);
 
 	operator bool() const;
 
@@ -159,6 +161,7 @@ class Value
 {
 public:
 	typedef std::vector<ValuePtr> VectorType;
+	typedef std::unordered_map<std::string, ValuePtr> RecordType;
 
   enum class ValueType {
     UNDEFINED,
@@ -166,7 +169,8 @@ public:
     NUMBER,
     STRING,
     VECTOR,
-    RANGE
+    RANGE,
+    RECORD
   };
   static const Value undefined;
 
@@ -179,6 +183,7 @@ public:
   Value(const char v);
   Value(const VectorType &v);
   Value(const RangeType &v);
+  Value(const RecordType &v);
   ~Value() {}
 
   ValueType type() const;
@@ -194,6 +199,7 @@ public:
   std::string toEchoString() const;
   std::string chrString() const;
   const VectorType &toVector() const;
+  const RecordType &toRecord() const;
   bool getVec2(double &x, double &y, bool ignoreInfinite = false) const;
   bool getVec3(double &x, double &y, double &z, double defaultval = 0.0) const;
   RangeType toRange() const;
@@ -221,7 +227,7 @@ public:
     return stream;
   }
 
-  typedef boost::variant< boost::blank, bool, double, str_utf8_wrapper, VectorType, RangeType > Variant;
+  typedef boost::variant< boost::blank, bool, double, str_utf8_wrapper, VectorType, RangeType, RecordType > Variant;
 
 private:
   static Value multvecnum(const Value &vecval, const Value &numval);

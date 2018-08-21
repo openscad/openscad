@@ -4,6 +4,7 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 #include "value.h"
 #include "memory.h"
 #include "Assignment.h"
@@ -125,6 +126,18 @@ public:
 	bool isLiteral() const override;
 private:
 	std::vector<shared_ptr<Expression>> children;
+};
+
+class Record : public Expression
+{
+public:
+	Record(const Location &loc);
+	ValuePtr evaluate(const class Context *context) const override;
+	void print(std::ostream &stream, const std::string &indent) const override;
+	bool isLiteral() const override;
+	void add(const char *key, Expression *expr);
+private:
+	std::unordered_map<std::string, shared_ptr<Expression>> children;
 };
 
 class Lookup : public Expression
