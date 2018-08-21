@@ -11,6 +11,7 @@ import sys,os,re,uuid,subprocess,shutil
 # MSI is a good choice for delivering programs to people using Windows.
 # MSI is in general less likely to get hacked and injected with a virus
 # versus other methods
+#
 # MSI is also less likely to get 'false positive' from virus scanners.
 # Lastly, MSI is also easier for schools to mass-deploy to their students
 # windows machines through Microsoft's special mass-deployment systems.
@@ -68,7 +69,7 @@ def verify_deps():
 
 def verify_msi(msi_filename):
 	if os.path.exists(msi_filename):
-		print('created',msi_filename,'size',os.path.getsize(msi_filename))
+		print('created',msi_filename,'size',os.path.getsize(msi_filename),'bytes')
 	else:
 		print('sorry something went awry. no',msi_filename,'created')
 		return False
@@ -120,7 +121,7 @@ def main(openscad_crossbuild_dir, openscad_src_dir, openscad_version, arch ):
 		print('cannot find arch',arch,'in ',wixarchcodes)
 		return
 
-	mainwxs_filename = 'openscad.wxs'
+	mainwxs_filename = os.path.join(openscad_src_dir,'scripts','openscad.wxs')
 	filelistwxs_filename = 'filelist.wxs'
 	msi_filename = 'openscad.msi'
 
@@ -184,13 +185,13 @@ def main(openscad_crossbuild_dir, openscad_src_dir, openscad_version, arch ):
 	print(p.stdout.read().decode('utf-8'))
 	print(p.stderr.read().decode('utf-8'))
 
-	verify_msi()
+	verify_msi(msi_filename)
 
 if verify_deps():
 	args=sys.argv
 	if len(args)<5:
 		print('xbuilddir, srcdir, version, arch')
-		return
+		sys.exit(1)
 	main(args[1],args[2],args[3],args[4])
 	#main('./openscad64','/home/don/src/openscad','2018.08.12','x86-64')
 else:

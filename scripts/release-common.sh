@@ -242,7 +242,7 @@ esac
 case $OS in
     UNIX_CROSS_WIN)
         cd $DEPLOYDIR
-        make clean ## comment out for test-run
+        #make clean ## comment out for test-run
         cd $OPENSCADDIR
     ;;
     *)
@@ -363,8 +363,8 @@ case $OS in
         FONTDIR=$DEPLOYDIR/openscad-$VERSION/fonts/
         TRANSLATIONDIR=$DEPLOYDIR/openscad-$VERSION/locale/
         COLORSCHEMESDIR=$DEPLOYDIR/openscad-$VERSION/color-schemes/
-        rm -rf $DEPLOYDIR/openscad-$VERSION
-        mkdir $DEPLOYDIR/openscad-$VERSION
+        #rm -rf $DEPLOYDIR/openscad-$VERSION
+        #mkdir $DEPLOYDIR/openscad-$VERSION
     ;;
     *)
         EXAMPLESDIR=openscad-$VERSION/examples/
@@ -532,7 +532,7 @@ case $OS in
         echo "Binary zip package created"
 
         echo "Creating MSI file for Windows Installer(TM)"
-        $PYTHON $OPENSCADDIR/scripts/buildmsi.py $DEPLOYDIR $OPENSCADDIR $VERSION x86-$ARCH
+        $PYTHON $OPENSCADDIR/scripts/buildmsi.py $DEPLOYDIR/openscad-$VERSION $OPENSCADDIR $VERSION x86-$ARCH
 	cp openscad.msi $MSIFILE
 
         echo "Creating Nullsoft installer exe"
@@ -558,6 +558,11 @@ case $OS in
                 echo
             else
                 echo "Build failed. Cannot find" $INSTFILE
+            fi
+            if [ -e $MSIFILE ]; then
+                echo "MSI install file created:" $MSIFILE
+            else
+                echo "Build failed. Cannot find" $MSIFILE
             fi
         else
             echo "Build failed. Cannot find" $BINFILE
