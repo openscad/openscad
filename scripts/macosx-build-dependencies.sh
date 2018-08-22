@@ -212,11 +212,11 @@ build_qt5()
   echo "Building Qt" $version "..."
   cd $BASEDIR/src
   v=(${version//./ }) # Split into array
-  #rm -rf qt-opensource-src-$version
+  rm -rf qt-opensource-src-$version
   if [ ! -f qt-everywhere-src-$version.tar.xz ]; then
       curl -O -L http://download.qt.io/official_releases/qt/${v[0]}.${v[1]}/$version/single/qt-everywhere-src-$version.tar.xz
   fi
-  #tar xzf qt-everywhere-src-$version.tar.xz
+  tar xzf qt-everywhere-src-$version.tar.xz
   cd qt-everywhere-src-$version
   if ! $USING_CXX11; then
     QT_EXTRA_FLAGS="-no-c++11"
