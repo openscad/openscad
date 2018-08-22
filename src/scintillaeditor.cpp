@@ -526,11 +526,6 @@ void ScintillaEditor::onTextChanged()
 int ScintillaEditor::updateFindIndicators(const QString &findText, bool visibility)
 {
     int findwordcount = 0;
-    int savelineFrom, saveindexFrom, savelineTo, saveindexTo;
-    qsci->getSelection(&savelineFrom, &saveindexFrom, &savelineTo, &saveindexTo);
-    
-    int savelineCrs, saveindexCrs;
-    qsci->getCursorPosition(&savelineCrs, &saveindexCrs);
     
     int clearlineFrom = 0;
     int clearindexFrom = 0;
@@ -539,18 +534,15 @@ int ScintillaEditor::updateFindIndicators(const QString &findText, bool visibili
     
     qsci->clearIndicatorRange(clearlineFrom, clearindexFrom, clearlineTo , clearindexTo, findIndicatorNumber);
 
-    if (visibility && qsci->findFirst(findText, false /*re*/, false /*cs*/, false /*wo*/, false /*wrap*/, true /*forward*/, 0, 0, false)) {
-        int lineFrom, indexFrom, lineTo, indexTo;
+    QString txt = qsci->text();
+    int pos = txt.indexOf(findText);
+    if (visibility && findText!="" && pos!=-1) {
         do {
             findwordcount++;
-            qsci->getSelection(&lineFrom, &indexFrom, &lineTo, &indexTo);
-            qsci->fillIndicatorRange(lineFrom, indexFrom, lineTo, indexTo, findIndicatorNumber); 
-        }while (qsci->findNext());
-    }
-    if(savelineFrom!=-1){
-        qsci->setSelection(savelineFrom, saveindexFrom, savelineTo, saveindexTo);
-    }else{
-        qsci->setCursorPosition(savelineCrs, saveindexCrs);
+            qsci->SendScintilla(qsci->SCI_SETINDICATORCURRENT, findIndicatorNumber);
+            qsci->SendScintilla(qsci->SCI_INDICATORFILLRANGE, pos, findText.length());
+            pos = txt.indexOf(findText,pos+findText.length());
+        }while (pos!=-1);
     }
     //qsci->findFirst(findText, false, false, false, true, true, savelineFrom, saveindexFrom);
     return findwordcount;
