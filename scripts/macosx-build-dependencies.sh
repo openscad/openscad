@@ -11,7 +11,6 @@
 #  -c   Force use of clang compiler
 #  -d   Build for deployment (if not specified, e.g. Sparkle won't be built)
 #  -f   Force build even if package is installed
-#  -b   Force build even if homebrew installed
 #  -v   Verbose
 #
 # Prerequisites:
@@ -31,7 +30,6 @@ OPTION_LLVM=false
 OPTION_CLANG=false
 OPTION_DEPLOY=false
 OPTION_FORCE=0
-OPTION_FORCE_BREW=0
 OPTION_CXX11=true
 
 PACKAGES=(
@@ -223,7 +221,7 @@ build_qt5()
   if ! $USING_CXX11; then
     QT_EXTRA_FLAGS="-no-c++11"
   fi
-  if (( $OSX_VERSION <= 13 )) ; then
+  if (( $version < 5.11 )) ; then
     QT_EXTRA_FLAGS=$QT_EXTRA_FLAGS" -no-qml-debug"
   fi
   CXXFLAGS="$CXXSTDFLAGS" ./configure -prefix $DEPLOYDIR $QT_EXTRA_FLAGS -release -opensource -confirm-license \
@@ -736,10 +734,6 @@ build_harfbuzz()
   fi
   tar xzf "harfbuzz-$version.tar.bz2"
   cd "harfbuzz-$version"
-  # disable doc directories as they make problems on Mac OS Build
-  #sed -e "s/SUBDIRS = src util test docs/SUBDIRS = src util test/g" Makefile.am > Makefile.am.bak && mv Makefile.am.bak Makefile.am
-  #sed -e "s/^docs.*$//" configure.ac > configure.ac.bak && mv configure.ac.bak configure.ac
-  #PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" ./autogen.sh --prefix="$DEPLOYDIR" --with-freetype=yes --with-gobject=no --with-cairo=no --with-icu=no CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN CXXFLAGS="$CXXFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="$CXXFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN" $extra_config_flags
   PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" ./configure --prefix="$DEPLOYDIR" --with-freetype=yes --with-gobject=no --with-cairo=no --with-icu=no CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN CXXFLAGS="$CXXFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="$CXXFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN" $extra_config_flags
   make -j$NUMCPU
   make install
@@ -752,7 +746,7 @@ if [ ! -f $OPENSCADDIR/openscad.pro ]; then
 fi
 OPENSCAD_SCRIPTDIR=$PWD/scripts
 
-while getopts '3lcdfvb' c
+while getopts '3lcdfv' c
 do
   case $c in
     3) USING_CXX11=false;;
@@ -760,7 +754,6 @@ do
     c) OPTION_CLANG=true;;
     d) OPTION_DEPLOY=true;;
     f) OPTION_FORCE=1;;
-    b) OPTION_FORCE_BREW=1;;
     v) echo verbose on;;
     *) printUsage;exit 1;;
   esac
@@ -810,16 +803,6 @@ if $USING_CXX11; then
 else
   export CXXSTDFLAGS="-std=c++03 -stdlib=libstdc++"
   export LDSTDFLAGS="-stdlib=libstdc++"
-fi
-
-if [ "`command -v brew`" ]; then
-  if $OPTION_FORCE_BREW; then
-    echo overriding homebrew interlock
-  else
-    echo homebrew is installed, do you really want to build without it??
-    echo rerun this with -b to override this homebrew interlock
-    exit 1
-  fi
 fi
 
 echo "Building for $MAC_OSX_VERSION_MIN or later"
