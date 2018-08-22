@@ -50,7 +50,6 @@ PACKAGES=(
     "opencsg 1.4.2"
     "freetype 2.8.1"
     "ragel 6.10"
-    "pkg-config 0.29.2"
     "harfbuzz 1.7.1"
     "libzip 1.3.2"
     "libxml2 2.9.7"
@@ -719,28 +718,6 @@ build_ragel()
   make install
 }
 
-check_pkgconfig()
-{
-    check_file bin/pkg-config
-}
-
-build_pkg-config()
-{
-  version=$1
-
-  echo "Building pkg-config $version..."
-  cd "$BASEDIR"/src
-  rm -rf "pkg-config-$version"
-  if [ ! -f "pkg-config-$version.tar.gz" ]; then
-    curl --insecure -LO "https://pkg-config.freedesktop.org/releases/pkg-config-$version.tar.gz"
-  fi
-  tar xf "pkg-config-$version.tar.gz"
-  cd "pkg-config-$version"
-  ./configure --prefix="$DEPLOYDIR" --with-internal-glib
-  make -j$NUMCPU
-  make install
-}
-
 check_harfbuzz()
 {
     check_file lib/libharfbuzz.dylib
@@ -749,20 +726,21 @@ check_harfbuzz()
 build_harfbuzz()
 {
   version=$1
-  extra_config_flags="--with-coretext=auto --with-glib=no"
+  extra_config_flags="--with-coretext=auto --with-glib=no --disable-gtk-doc-html"
 
   echo "Building harfbuzz $version..."
   cd "$BASEDIR"/src
   rm -rf "harfbuzz-$version"
   if [ ! -f "harfbuzz-$version.tar.gz" ]; then
-    curl --insecure -LO "http://cgit.freedesktop.org/harfbuzz/snapshot/harfbuzz-$version.tar.gz"
+    curl --insecure -LO "https://www.freedesktop.org/software/harfbuzz/release/harfbuzz-$version.tar.bz2"
   fi
-  tar xzf "harfbuzz-$version.tar.gz"
+  tar xzf "harfbuzz-$version.tar.bz2"
   cd "harfbuzz-$version"
   # disable doc directories as they make problems on Mac OS Build
-  sed -e "s/SUBDIRS = src util test docs/SUBDIRS = src util test/g" Makefile.am > Makefile.am.bak && mv Makefile.am.bak Makefile.am
-  sed -e "s/^docs.*$//" configure.ac > configure.ac.bak && mv configure.ac.bak configure.ac
-  PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" ./autogen.sh --prefix="$DEPLOYDIR" --with-freetype=yes --with-gobject=no --with-cairo=no --with-icu=no CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN CXXFLAGS="$CXXFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="$CXXFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN" $extra_config_flags
+  #sed -e "s/SUBDIRS = src util test docs/SUBDIRS = src util test/g" Makefile.am > Makefile.am.bak && mv Makefile.am.bak Makefile.am
+  #sed -e "s/^docs.*$//" configure.ac > configure.ac.bak && mv configure.ac.bak configure.ac
+  #PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" ./autogen.sh --prefix="$DEPLOYDIR" --with-freetype=yes --with-gobject=no --with-cairo=no --with-icu=no CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN CXXFLAGS="$CXXFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="$CXXFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN" $extra_config_flags
+  PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" ./configure --prefix="$DEPLOYDIR" --with-freetype=yes --with-gobject=no --with-cairo=no --with-icu=no CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN CXXFLAGS="$CXXFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="$CXXFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN" $extra_config_flags
   make -j$NUMCPU
   make install
   install_name_tool -id @rpath/libharfbuzz.dylib $DEPLOYDIR/lib/libharfbuzz.dylib
@@ -886,6 +864,7 @@ for package in $OPTION_PACKAGES; do
   fi
 done
 
-if [ "`echo $* | grep \\-v `" ]; then
+if [ "`echo $* | grep \\\-v `" ]; then
   set +x
+  echo verbose macosx dependency build finished running
 fi
