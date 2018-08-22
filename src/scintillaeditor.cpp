@@ -526,23 +526,20 @@ void ScintillaEditor::onTextChanged()
 int ScintillaEditor::updateFindIndicators(const QString &findText, bool visibility)
 {
     int findwordcount = 0;
-    
-    int clearlineFrom = 0;
-    int clearindexFrom = 0;
-    int clearlineTo = qsci->lines();
-    int clearindexTo = qsci->lineLength(clearlineTo);
-    
-    qsci->clearIndicatorRange(clearlineFrom, clearindexFrom, clearlineTo , clearindexTo, findIndicatorNumber);
 
     QString txt = qsci->text();
+
+    qsci->SendScintilla(qsci->SCI_INDICATORCLEARRANGE, 0, txt.length());
+
     int pos = txt.indexOf(findText);
-    if (visibility && findText!="" && pos!=-1) {
-        do {
+    int len = findText.length();
+    if (visibility && len>0) {
+        while (pos!=-1){
             findwordcount++;
             qsci->SendScintilla(qsci->SCI_SETINDICATORCURRENT, findIndicatorNumber);
-            qsci->SendScintilla(qsci->SCI_INDICATORFILLRANGE, pos, findText.length());
-            pos = txt.indexOf(findText,pos+findText.length());
-        }while (pos!=-1);
+            qsci->SendScintilla(qsci->SCI_INDICATORFILLRANGE, pos, len);
+            pos = txt.indexOf(findText,pos+len);
+        };
     }
     //qsci->findFirst(findText, false, false, false, true, true, savelineFrom, saveindexFrom);
     return findwordcount;
