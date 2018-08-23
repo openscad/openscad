@@ -22,6 +22,7 @@ scintilla {
   !isEmpty(BREW) {
     include(/usr/local/opt/qscintilla2//data/mkspecs/features/qscintilla2.prf)
     message("Using homebrew qscintilla2")
+    QSCILOADED=yes
   }
   
   # The qscintilla2.prf which ships with QScintilla is broken for Mac/Windows
