@@ -12,6 +12,7 @@ ParameterSlider::ParameterSlider(QWidget *parent, ParameterObject *parameterobje
 	connect(slider, SIGNAL(sliderReleased()), this, SLOT(onReleased()));
 	connect(slider, SIGNAL(valueChanged(int)), this, SLOT(onSliderChanged(int)));
 	connect(doubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(onSpinBoxChanged(double)));
+	connect(doubleSpinBox, SIGNAL(editingFinished()), this, SLOT(onEditingFinished()));
 
 	IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
 	slider->installEventFilter(ignoreWheelWhenNotFocused);
@@ -24,24 +25,31 @@ void ParameterSlider::onSliderChanged(int)
 
 	if (!this->suppressUpdate) {
 		this->doubleSpinBox->setValue(v);
-	}
-
-	if (this->pressed) {
-		object->focus = true;
-		object->value = ValuePtr(v);
-		emit changed();
+		
+		if (this->pressed) {
+			object->focus = true;
+			object->value = ValuePtr(v);
+			emit changed();
+		}
 	}
 }
 
 void ParameterSlider::onSpinBoxChanged(double v)
 {
 	if (!this->suppressUpdate) {
+		this->suppressUpdate=true;
 		if(v>0){
 			this->slider->setValue((int)((v+step/2.0)/step));
 		}else{
 			this->slider->setValue((int)((v-step/2.0)/step));
 		}
+		this->suppressUpdate=false;
 	}
+}
+
+void ParameterSlider::onEditingFinished()
+{
+	this->onSliderChanged(0);
 }
 
 void ParameterSlider::setParameterFocus()

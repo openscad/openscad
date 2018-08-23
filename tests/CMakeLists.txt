@@ -474,6 +474,15 @@ if("${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}" VERSION_LESS 3.6)
 endif()
 inclusion(CGAL_DIR CGAL_INCLUDE_DIRS)
 
+# Trying to re-run boost after CGAL as workaround for homebrew build issue
+find_package( Boost 1.35.0 COMPONENTS thread program_options filesystem system regex REQUIRED)
+message(STATUS "Boost (2) ${Boost_VERSION} includes found: " ${Boost_INCLUDE_DIRS})
+message(STATUS "Boost (2) libraries found:")
+foreach(boostlib ${Boost_LIBRARIES})
+  message(STATUS "  " ${boostlib})
+endforeach()
+
+
 #Remove bad BOOST libraries from CGAL 3rd party dependencies when they don't exist (such as on 64-bit Ubuntu 13.10).
 #Libs of concern are /usr/lib/libboost_thread.so;/usr/lib/libboost_system.so;
 #Confirmed bug in CGAL @ https://bugs.launchpad.net/ubuntu/+source/cgal/+bug/1242111

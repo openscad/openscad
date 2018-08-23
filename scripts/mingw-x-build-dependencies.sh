@@ -82,14 +82,14 @@ fi
 if [ "`echo $* | grep 64`" ]; then
  MXE_TARGETS='x86_64-w64-mingw32.static.posix'
  if [ "`echo $* | grep download`" ]; then
-  PACKAGES='download-qtbase download-qtmultimedia download-qscintilla2 download-mpfr download-eigen download-opencsg download-cgal download-qtbase download-glib download-libxml2 download-freetype download-fontconfig download-harfbuzz download-libzip'
+  PACKAGES='download-mpfr download-eigen download-opencsg download-cgal download-qtbase download-qtmultimedia download-glib download-libxml2 download-freetype download-fontconfig download-harfbuzz download-libzip'
  else
   PACKAGES='qtbase qtmultimedia qscintilla2 mpfr eigen opencsg cgal glib libxml2 freetype fontconfig harfbuzz libzip'
  fi
 else
  MXE_TARGETS='i686-w64-mingw32.static.posix'
  if [ "`echo $* | grep download`" ]; then
-  PACKAGES='download-qtbase download-qtmultimedia download-qscintilla2 download-mpfr download-eigen download-opencsg download-cgal download-qtbase download-nsis download-glib download-libxml2 download-freetype download-fontconfig download-harfbuzz download-libzip'
+  PACKAGES='download-mpfr download-eigen download-opencsg download-cgal download-qtbase download-qtmultimedia download-nsis download-glib download-libxml2 download-freetype download-fontconfig download-harfbuzz download-libzip'
  else
   PACKAGES='qtbase qtmultimedia qscintilla2 mpfr eigen opencsg cgal nsis glib libxml2 freetype fontconfig harfbuzz libzip'
  fi
