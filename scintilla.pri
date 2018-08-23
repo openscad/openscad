@@ -18,6 +18,12 @@ scintilla {
     }
   }
 
+  BREW=$$(OPENSCAD_HOMEBREW)
+  !isEmpty(BREW) {
+    include(/usr/local/opt/qscintilla2//data/mkspecs/features/qscintilla2.prf)
+    message("Using homebrew qscintilla2")
+  }
+  
   # The qscintilla2.prf which ships with QScintilla is broken for Mac/Windows
   # debug builds, so we supply our own
   isEmpty(QSCILOADED) {
