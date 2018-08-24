@@ -81,7 +81,7 @@ def verify_msi(msi_filename):
 		print('running',' '.join(cmd))
 		p=subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 		lines += p.stdout.readlines() + p.stderr.readlines()
-	sanity = [0,0]
+	sanity = [0,0,0,0]
 	for line in lines:
 		l = line.decode('utf-8').strip().replace('\t',' ')[:79]
 		if 'openscad_executable' in l:
@@ -90,7 +90,11 @@ def verify_msi(msi_filename):
 		if 'INSTALLDIR' in l:
 			sanity[1]=1
 			print(l)
-	if sanity[0]+sanity[1]<2:
+		if 'examples' in l:
+			sanity[2]=1
+		if 'locale' in l:
+			sanity[3]=1
+	if sanity[0]+sanity[1]+sanity[2]+sanity[3]<4:
 		print('sorry something went awry.',msi_filename,'appears')
 		print('to be missing openscad.exe and/or a proper INSTALLDIR')
 		return False
@@ -139,10 +143,10 @@ def main(openscad_crossbuild_dir, openscad_src_dir, openscad_version, arch ):
 	print('generated filelist, # of lines:',len(filelist.split('\n')))
 
 	cmd=['wixl-heat']
-	# note that prefix must end with '/' or else you wind up with
-	# paths like source//subdir/file which creates an 'empty' directory
+	# note that the dir for prefix must end with '/' or else you wind up
+	# with paths like source//subdir/file which creates an 'empty' directory
 	# between the two //, which crashes wixl during msi creation
-	cmd+=['--prefix','./openscad32/']
+	cmd+=['--prefix',openscad_crossbuild_dir+'/']
 	# component group is a way to 'communicate' between filelist.wxs
 	# and openscad.wxs, with a single line inside openscad.wxs
 	cmd+=['--component-group','OPENSCADFILELIST']
@@ -155,8 +159,8 @@ def main(openscad_crossbuild_dir, openscad_src_dir, openscad_version, arch ):
 	# later on, when we call wixl, we will '--define' this variable
 	# so it will know what to do
 	cmd+=['--var','var.OPENSCADCROSSBUILDDIR']
-	if arch=='x86-64':
-		cmd += ['--win64']
+	#if arch=='x86-64':
+	#	cmd += ['--win64']
 
 	print('calling',' '.join(cmd))
 	p2=subprocess.Popen(cmd,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)

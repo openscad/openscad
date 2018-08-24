@@ -12,9 +12,9 @@
      be installed alongside any other version with 0 interference and 
      0 overlap (except the users library dirs/settings but thats up to them) -->
   
-  <Package Id='*' Keywords='Installer' Description="OpenSCAD-$(var.OPENSCADVERSION) installer"
+  <Package Id='*' Keywords='OpenSCAD' Description="OpenSCAD-$(var.OPENSCADVERSION) installer"
     Comments='OpenSCAD msi installer' Manufacturer='The OpenSCAD Developers'
-    InstallerVersion='100' Languages='1033'
+    InstallerVersion='200' Languages='1033'
     Compressed='yes' SummaryCodepage='1252' />
   <!-- version is important for 32bit/64bit, must be >200 for 64bit -->
 
@@ -81,8 +81,8 @@
       <ComponentRef Id='OPENSCADCOM' />
       <ComponentRef Id='ProgramMenuDir' />
       <!-- This GroupRef links us to filelist.wxs, which is a generated
-        list of files besides openscad.exe + com, like examples.
-        it is created by the script calling wixl-heat with 
+        list of files besides openscad.exe + com, such as examples/*.
+        it is created by the buildmsi.py script calling wixl-heat with 
         -component-group=OPENSCADFILELIST -->
       <ComponentGroupRef Id='OPENSCADFILELIST' />
     </Feature>

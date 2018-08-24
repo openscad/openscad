@@ -25,6 +25,8 @@
 # .exe files
 #
 
+set -x
+
 # convert end-of-line in given file from unix \n to dos/windows(TM) \r\n
 # see https://kb.iu.edu/data/acux.html
 lf2crlf()
