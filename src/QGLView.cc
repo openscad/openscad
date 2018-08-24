@@ -95,7 +95,7 @@ void QGLView::viewAll()
 {
 	if (auto renderer = this->getRenderer()) {
 		auto bbox = renderer->getBoundingBox();
-		cam.object_trans = -bbox.center();
+		cam.autocenter = true;
 		cam.viewAll(renderer->getBoundingBox());
 	}
 }
