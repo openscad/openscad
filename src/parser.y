@@ -202,6 +202,7 @@ assignment:
                 bool found = false;
                 for (auto &assignment : scope_stack.top()->assignments) {
                     if (assignment.name == $1) {
+                        PRINTB("WARNING: %s was assigend on line %i but was overwritten on line %i",assignment.name%assignment.location().firstLine()%LOC(@$).firstLine());
                         assignment.expr = shared_ptr<Expression>($3);
                         assignment.setLocation(LOC(@$));
                         found = true;
