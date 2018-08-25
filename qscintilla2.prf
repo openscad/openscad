@@ -12,6 +12,11 @@ LIBS += -L$$[QT_INSTALL_LIBS]
 
 QT5LIB=qt5scintilla2
 
+CONFIG(mingw-cross-env) {
+../../openscad_deps/mxe/usr/i686-w64-mingw32.static.posix/qt5/mkspecs/features/qscintilla2.prf
+
+}
+
 unix:linux* {
     FEDORA32LIBS=/usr/lib/libqscintilla2-qt5.so
     FEDORA64LIBS=/usr/lib64/libqscintilla2-qt5.so

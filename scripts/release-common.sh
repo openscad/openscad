@@ -534,7 +534,7 @@ case $OS in
         echo "Binary zip package created"
 
         echo "Creating MSI file for Windows Installer(TM)"
-        $PYTHON $OPENSCADDIR/scripts/buildmsi.py $DEPLOYDIR/openscad-$VERSION $OPENSCADDIR $VERSION x86-$ARCH
+        $PYTHON $OPENSCADDIR/scripts/msibuild.py $DEPLOYDIR/openscad-$VERSION $OPENSCADDIR $VERSION x86-$ARCH
 	cp openscad.msi $MSIFILE
 
         echo "Creating Nullsoft installer exe"

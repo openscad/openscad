@@ -23,8 +23,6 @@ CONFIG(mingw-cross-env) {
   LIBS += mingw-cross-env/lib/libintl.a
   LIBS += mingw-cross-env/lib/libiconv.a
   LIBS += mingw-cross-env/qt5/lib/libqscintilla2_qt5.a
-  LIBS -= -lqscintilla2
-  LIBS -= -lboost_thread_win32
 }
 
 CONFIG(mingw-cross-env-shared) {

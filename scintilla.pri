@@ -18,6 +18,11 @@ scintilla {
     }
   }
 
+  CONFIG(mingw-cross-env) {
+    include( mingw-cross-env/qt5/mkspecs/features/qscintilla2.prf )
+    QSCILOADED=yes
+  }
+
   # The qscintilla2.prf which ships with QScintilla is broken for Mac/Windows
   # debug builds, so we supply our own
   isEmpty(QSCILOADED) {

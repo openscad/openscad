@@ -48,7 +48,6 @@ import sys,os,re,uuid,subprocess,shutil
 # Testing your msi file itself
 #
 # see handy utilities like msiextract, msidump, etc
-#
 # see also
 # https://docs.microsoft.com/en-us/windows/desktop/Msi/windows-installer-portal
 # https://blogs.msdn.microsoft.com/pusu/2009/06/10/what-are-upgrade-product-and-package-codes-used-for/
@@ -58,6 +57,13 @@ import sys,os,re,uuid,subprocess,shutil
 # https://github.com/ml-workshare/wix-msi-ui-example/blob/master/Product.wxs
 # https://wiki.gnome.org/msitools/HowTo/CreateLibraryWxi
 # wixl test suite (msitools 'make check-local')
+# log while installing: msiexec /i openscad.msi /l*v log.txt
+# 64bit vs 32bit:
+#  https://docs.microsoft.com/en-us/windows/desktop/msi/about-windows-installer-on-64-bit-operating-systems
+#  https://docs.microsoft.com/en-us/windows/desktop/msi/using-64-bit-windows-installer-packages
+#  https://stackoverflow.com/questions/16568901/what-exactly-does-the-arch-argument-on-the-candle-command-line-do
+#  i.e. the fourth column of the Component table is called Attributes, and
+#  on a 64bit MSI it should be set to the value '256'.
 
 def verify_deps():
 	score = 0
@@ -81,23 +87,19 @@ def verify_msi(msi_filename):
 		print('running',' '.join(cmd))
 		p=subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 		lines += p.stdout.readlines() + p.stderr.readlines()
-	sanity = [0,0,0,0]
+	needs = {'openscad_executable':0,'INSTALLDIR':0,'examples':0,'locale':0}
 	for line in lines:
 		l = line.decode('utf-8').strip().replace('\t',' ')[:79]
-		if 'openscad_executable' in l:
-			sanity[0]=1
-			print(l)
-		if 'INSTALLDIR' in l:
-			sanity[1]=1
-			print(l)
-		if 'examples' in l:
-			sanity[2]=1
-		if 'locale' in l:
-			sanity[3]=1
-	if sanity[0]+sanity[1]+sanity[2]+sanity[3]<4:
-		print('sorry something went awry.',msi_filename,'appears')
-		print('to be missing openscad.exe and/or a proper INSTALLDIR')
-		return False
+		for need in needs.keys():
+			if need in l:
+				needs[need]=1
+				print(l)
+	for need in needs.keys():
+		if needs[need]:
+			print('found need',need,' in .msi')
+		else:
+			print('need not found in .msi:',need)
+			return False
 	return True
 
 def verify_path(dir,file):
@@ -106,14 +108,23 @@ def verify_path(dir,file):
 		return False
 	return True
 
+def guessarch(arch):
+	# wixl needs the string 'intel' for 32 bit x86
+	# and it needs the string 'x64' for 64 bit amd64
+	a32='x32 686 586 486 386 32 x86-32 x86_32 x8632 amd32 intel'.split(' ')
+	a64='amd64 amd-64 amd_64 x86-64 x86_64 x8664 64 x64'.split(' ')
+	if arch in a32: return 'intel'
+	if arch in a64: return 'x64'
+	return None
+
 def main(openscad_crossbuild_dir, openscad_src_dir, openscad_version, arch ):
 	print('build MSI for openscad')
 	print('openscad_crossbuild_dir',openscad_crossbuild_dir)
 	print('openscad_src_dir',openscad_src_dir)
 	print('openscad_version',openscad_version)
-	print('architecture', arch)
-
-	wixarchcodes = {'x86-32':'intel','x86-64':'x64'}
+	print('architecture input from command line:', arch)
+	wixlarch = guessarch( arch )
+	print('wixl special name for input architecture:', wixlarch)
 
 	print('please cross-build before running this script')
 	if not verify_path(openscad_src_dir,'README.md'):
@@ -121,8 +132,8 @@ def main(openscad_crossbuild_dir, openscad_src_dir, openscad_version, arch ):
 	if not verify_path(openscad_crossbuild_dir,'openscad.exe'):
 		print('please cross-build openscad.exe before running this script')
 		return
-	if not arch in wixarchcodes.keys():
-		print('cannot find arch',arch,'in ',wixarchcodes)
+	if wixlarch==None:
+		print('cannot guess what this architecture is:',arch)
 		return
 
 	mainwxs_filename = os.path.join(openscad_src_dir,'scripts','openscad.wxs')
@@ -178,10 +189,14 @@ def main(openscad_crossbuild_dir, openscad_src_dir, openscad_version, arch ):
 	print('created ',filelistwxs_filename,' size',len(xml))
 
 	cmd=['wixl','--verbose']
-	cmd+=['--arch',wixarchcodes[arch]]
+	cmd+=['--arch',wixlarch]
 	cmd+=['--define','OPENSCADCROSSBUILDDIR='+openscad_crossbuild_dir]
 	cmd+=['--define','OPENSCADSRCDIR='+openscad_src_dir]
 	cmd+=['--define','OPENSCADVERSION='+openscad_version]
+	if arch=='x86-64':
+		cmd+=['--define','PROGFILESDIRNAME=ProgramFiles64Folder']
+	else:
+		cmd+=['--define','PROGFILESDIRNAME=ProgramFilesFolder']
 	cmd+=['--output',msi_filename]
 	cmd+=[mainwxs_filename,filelistwxs_filename]
 	print('calling',' '.join(cmd))
@@ -197,7 +212,8 @@ if verify_deps():
 		print('xbuilddir, srcdir, version, arch')
 		sys.exit(1)
 	main(args[1],args[2],args[3],args[4])
-	#main('./openscad64','/home/don/src/openscad','2018.08.12','x86-64')
+	#main('./osbuilddirx','/home/d/src/openscad','2018.08.12','x86-64')
+	#main('./osbuilddirx','/home/d/src/openscad','2018.08.12','x86-32')
 else:
 	print("please install the MSI tools for your platform")
 	print("i need msiinfo, wixl, and wixl-heat")
