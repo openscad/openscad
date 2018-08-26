@@ -15,6 +15,9 @@
 #  -snapshot Build a snapshot binary (make e.g. experimental features available, build with commit info)
 #  -tests   Build additional package containing the regression tests
 #
+# Environment variables PKCS12FILE and PKCS12PASS can be set to digitally sign
+# the Windows MSI binary.
+#
 # If no version string or version date is given, todays date will be used (YYYY-MM-DD)
 # If only version date is given, it will be used also as version string.
 # If no make target is given, release will be used on Windows, none one Mac OS X
@@ -25,7 +28,9 @@
 # .exe files
 #
 
-set -x
+if [ "`echo $* | grep debug`" ]; then
+	set -x
+fi
 
 # convert end-of-line in given file from unix \n to dos/windows(TM) \r\n
 # see https://kb.iu.edu/data/acux.html
@@ -85,6 +90,9 @@ if [ "`echo $* | grep mingw`" ]; then
     MXELIBTYPE=shared
   fi
   echo Mingw-cross build using ARCH=$ARCH MXELIBTYPE=$MXELIBTYPE
+if [ "`echo $* | grep debug`" ]; then
+	set -x
+fi
 fi
 
 if [ "`echo $* | grep snapshot`" ]; then
@@ -228,7 +236,11 @@ case $OS in
         if [ $MXELIBTYPE = "shared" ]; then
           MINGWCONFIG=mingw-cross-env-shared
         fi
-        qmake VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+="$CONFIG" CONFIG+=$MINGWCONFIG CONFIG-=debug ../openscad.pro
+        if [ "`echo $* | grep packagetest `" ]; then
+	  echo 'skipping qmake'
+	else
+          qmake VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+="$CONFIG" CONFIG+=$MINGWCONFIG CONFIG-=debug ../openscad.pro
+	fi
         cd $OPENSCADDIR
     ;;
     *)
@@ -244,7 +256,11 @@ esac
 case $OS in
     UNIX_CROSS_WIN)
         cd $DEPLOYDIR
-        #make clean ## comment out for test-run
+        if [ "`echo $* | grep packagetest `" ]; then
+          echo skip make clean
+        else
+          make clean
+        fi
         cd $OPENSCADDIR
     ;;
     *)
@@ -278,7 +294,11 @@ case $OS in
         if [ $FAKEMAKE ]; then
             echo "notexe. debugging build process" > $TARGET/openscad.exe
         else
-            make $TARGET -j$NUMCPU
+            if [ "`echo $* | grep packagetest `" ]; then
+                echo skip make
+            else
+                make $TARGET -j$NUMCPU
+            fi
         fi
         if [ ! -e $TARGET/openscad.exe ]; then
             echo "cant find $TARGET/openscad.exe. build failed. stopping."
@@ -365,8 +385,12 @@ case $OS in
         FONTDIR=$DEPLOYDIR/openscad-$VERSION/fonts/
         TRANSLATIONDIR=$DEPLOYDIR/openscad-$VERSION/locale/
         COLORSCHEMESDIR=$DEPLOYDIR/openscad-$VERSION/color-schemes/
-        #rm -rf $DEPLOYDIR/openscad-$VERSION
-        #mkdir $DEPLOYDIR/openscad-$VERSION
+        if [ "`echo $* | grep packagetest `" ]; then
+          echo skip rm of builddir
+        else
+          rm -rf $DEPLOYDIR/openscad-$VERSION
+          mkdir $DEPLOYDIR/openscad-$VERSION
+        fi
     ;;
     *)
         EXAMPLESDIR=openscad-$VERSION/examples/
@@ -534,7 +558,7 @@ case $OS in
         echo "Binary zip package created"
 
         echo "Creating MSI file for Windows Installer(TM)"
-        $PYTHON $OPENSCADDIR/scripts/msibuild.py $DEPLOYDIR/openscad-$VERSION $OPENSCADDIR $VERSION x86-$ARCH
+        $PYTHON $OPENSCADDIR/scripts/msibuild.py $DEPLOYDIR/openscad-$VERSION $OPENSCADDIR $VERSION x86-$ARCH $PKCS12FILE $PKCS12PASS
 	cp openscad.msi $MSIFILE
 
         echo "Creating Nullsoft installer exe"
@@ -550,6 +574,9 @@ case $OS in
         echo $MAKENSIS $NSISDEBUG "-DVERSION=$VERSION" installer.nsi
         $MAKENSIS $NSISDEBUG "-DVERSION=$VERSION" installer.nsi
         cp $DEPLOYDIR/openscad-$VERSION/openscad_setup.exe $INSTFILE
+        if [ "`echo $* | grep packagetest `" ]; then
+          rm $DEPLOYDIR/openscad-$VERSION/openscad_setup.exe
+        fi
         cd $OPENSCADDIR
 
         if [ -e $BINFILE ]; then

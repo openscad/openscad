@@ -5,24 +5,7 @@ import sys,os,re,uuid,subprocess,shutil
 # create MSI file for installation of OpenSCAD program on Microsoft Windows
 # computer operating system. from inside of a linux cross-build environment.
 # using Gnome's Wixl and Wixl-Heat which are based on the 'WiX' project.
-#
-# why:
-#
-# MSI is a good choice for delivering programs to people using Windows.
-# MSI is in general less likely to get hacked and injected with a virus
-# versus other methods
-#
-# MSI is also less likely to get 'false positive' from virus scanners.
-# Lastly, MSI is also easier for schools to mass-deploy to their students
-# windows machines through Microsoft's special mass-deployment systems.
-# Why? Because MSI is not an executable format. It is a database that contains
-# "components" such as files. It is like, in the linux world, the difference
-# between a dpkg or rpm file and a shell script.
-#
-# downside:
-# MSI files are bigger, slower to install, slower to uninstall. MSI is also
-# poorly documented and contains many extremely confusing options (all of which
-# we try to avoid here)
+# it requires the 'msitools' package on a linux distribution to run.
 #
 # overview of this script:
 #
@@ -30,8 +13,18 @@ import sys,os,re,uuid,subprocess,shutil
 # openscad.exe and the other files needed. see openscad README.md for
 # how to do this.
 #
-# the script 1. lists files for the windows bundle, 2. combines openscsad.wxs
-# and generated filelist.wxs, to 3. create openscad.msi
+#  0. we have scripts/openscad.wxs which has the info for the main components,
+#     openscad.exe and openscad.com, with some icons + such
+#  1. we create a list of other files (examples, translations) in to
+#     a filelist.wxs. This is done with 'wixl-heat', and excludes files
+#     already listed in openscad.wxs
+#  2. we set up various command line '-defines' to feed to wixl, which
+#     will replace a bunch of strings inside the wxs files, such as the build
+#     directory, icon location, 32bit/64bit, etc.
+#  3. we run wixl to combine pre-made openscad.wxs with generated filelist.wxs,
+#     creating openscad.msi
+#  4. we do some basic 'sanity check' on the resulting .msi
+#     does it contain at least the .exe and examples?
 #
 # checklist when woking on this script:
 #
@@ -43,7 +36,7 @@ import sys,os,re,uuid,subprocess,shutil
 # test file association works
 # uninstall, make sure directories are deleted
 # try installing twice, the uninstall, see what happens.
-# try installing two versions, should be OK
+# try installing two versions, see if both work
 #
 # Testing your msi file itself
 #
@@ -62,20 +55,42 @@ import sys,os,re,uuid,subprocess,shutil
 #  https://docs.microsoft.com/en-us/windows/desktop/msi/about-windows-installer-on-64-bit-operating-systems
 #  https://docs.microsoft.com/en-us/windows/desktop/msi/using-64-bit-windows-installer-packages
 #  https://stackoverflow.com/questions/16568901/what-exactly-does-the-arch-argument-on-the-candle-command-line-do
-#  i.e. the fourth column of the Component table is called Attributes, and
-#  on a 64bit MSI it should be set to the value '256'.
+# What does '64 bit' mean? In the MSI database there is a table, Component
+# you can dump with 'msidump' tool. The fourth column of this table is
+# the 'attribute'. For '64 bit' this should have a bit set, the 9th bit,
+# 0x0100, which typically shows up as the integer '256' in an information dump
+# This bit is called the msidbComponentAttributes64bit
+# For 32 bit MSI this value is 0, for 64, bit shoud be 1, and as i said,
+# since the other bits usually arent set, this shows up as '256' in an MSI dump.
+# Signing:
+# https://sourceforge.net/projects/osslsigncode/files/osslsigncode/
+# https://www.ibm.com/support/knowledgecenter/en/SSWHYP_4.0.0/com.ibm.apimgmt.cmc.doc/task_apionprem_gernerate_self_signed_openSSL.html
+# (use -sha256 on ibm link)
 
 def verify_deps():
 	score = 0
-	for exe in ['msiinfo','wixl-heat','wixl']:
-		check = shutil.which(exe)
+	for bin in ['msiinfo','wixl-heat','wixl','osslsigncode']:
+		check = shutil.which(bin)
 		if check!=None: score += 1
-		print(exe,'\t', check)
+		print(bin,'\t', check)
 	return score>0
+
+def sign_msi(msi_filename,pkcs12_file,pkcs12pwd):
+	cmd=['osslsigncode','sign']
+	cmd+=['-n','"OpenSCAD"']
+	cmd+=['-i','http://www.openscad.org']
+	cmd+=['-in',msi_filename,'-out','signed'+msi_filename]
+	print('calling',' '.join(cmd)+ ' ...')
+	cmd+=['-pkcs12',pkcs12_file]
+	cmd+=['-pass',pkcs12pwd]
+
+	p=subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+	print(p.stdout.read().decode('utf-8'))
+	print(p.stderr.read().decode('utf-8'))
 
 def verify_msi(msi_filename):
 	if os.path.exists(msi_filename):
-		print('created',msi_filename,'size',os.path.getsize(msi_filename),'bytes')
+		print('created',msi_filename,' bytes:',os.path.getsize(msi_filename),'bytes')
 	else:
 		print('sorry something went awry. no',msi_filename,'created')
 		return False
@@ -93,7 +108,7 @@ def verify_msi(msi_filename):
 		for need in needs.keys():
 			if need in l:
 				needs[need]=1
-				print(l)
+				#print(l)
 	for need in needs.keys():
 		if needs[need]:
 			print('found need',need,' in .msi')
@@ -117,35 +132,7 @@ def guessarch(arch):
 	if arch in a64: return 'x64'
 	return None
 
-def main(openscad_crossbuild_dir, openscad_src_dir, openscad_version, arch ):
-	print('build MSI for openscad')
-	print('openscad_crossbuild_dir',openscad_crossbuild_dir)
-	print('openscad_src_dir',openscad_src_dir)
-	print('openscad_version',openscad_version)
-	print('architecture input from command line:', arch)
-	wixlarch = guessarch( arch )
-	print('wixl special name for input architecture:', wixlarch)
-
-	print('please cross-build before running this script')
-	if not verify_path(openscad_src_dir,'README.md'):
-		return
-	if not verify_path(openscad_crossbuild_dir,'openscad.exe'):
-		print('please cross-build openscad.exe before running this script')
-		return
-	if wixlarch==None:
-		print('cannot guess what this architecture is:',arch)
-		return
-
-	mainwxs_filename = os.path.join(openscad_src_dir,'scripts','openscad.wxs')
-	filelistwxs_filename = 'filelist.wxs'
-	msi_filename = 'openscad.msi'
-
-	if 'clean' in ''.join(sys.argv[1:]):
-		for f in filelistwxs_filename,msi_filename:
-			if os.path.exists(f): os.remove(f)
-			print('clean',f)
-		return
-
+def make_filelist(openscad_crossbuild_dir,filelistwxs_filename,wixlarch):
 	filelist=''
 	for root,folder,files in os.walk(openscad_crossbuild_dir):
 		for file in files:
@@ -165,13 +152,18 @@ def main(openscad_crossbuild_dir, openscad_src_dir, openscad_version, arch ):
 	# which we want under Program Files\OpenSCAD\OpenSCAD-version
 	cmd+=['--directory-ref','INSTALLDIR']
 	# this "var" is not just any var, its the path 'source'
-	# of the files to be copied into the MSI. you can see
+	# of the files on our *nix build machine that will be
+        # copied into the MSI database file. you can see
 	# it in the output filelist.xml, its a prefix to all file paths
 	# later on, when we call wixl, we will '--define' this variable
 	# so it will know what to do
 	cmd+=['--var','var.OPENSCADCROSSBUILDDIR']
-	#if arch=='x86-64':
-	#	cmd += ['--win64']
+	# this makes the 'Win64=Yes' so the Component table has the Attribute
+	# for 64 bit MSI files set properly to 1 on a 64 bit build.
+	if wixlarch=='x64': cmd += ['--win64']
+	# dont want to pack twice
+	cmd+=['--exclude','openscad.exe']
+	cmd+=['--exclude','openscad.com']
 
 	print('calling',' '.join(cmd))
 	p2=subprocess.Popen(cmd,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
@@ -186,17 +178,53 @@ def main(openscad_crossbuild_dir, openscad_src_dir, openscad_version, arch ):
 	fxml = open(filelistwxs_filename,'w+')
 	fxml.write(xml)
 	fxml.close()
-	print('created ',filelistwxs_filename,' size',len(xml))
+	print('created ',filelistwxs_filename,' bytes:',len(xml))
+
+def main(openscad_crossbuild_dir, openscad_src_dir, openscad_version, arch, pkcs12_file, pkcs12pwd ):
+	print('build MSI for openscad')
+	print('openscad_crossbuild_dir',openscad_crossbuild_dir)
+	print('openscad_src_dir',openscad_src_dir)
+	print('openscad_version',openscad_version)
+	print('architecture input from command line:', arch)
+	wixlarch = guessarch( arch )
+	print('wixl special name for input architecture:', wixlarch)
+
+	if not verify_path(openscad_src_dir,'README.md'):
+		print('cant find openscad source dir, exiting')
+		return
+	if not verify_path(openscad_crossbuild_dir,'openscad.exe'):
+		print('please cross-build openscad.exe before running this script')
+		return
+	if wixlarch==None:
+		print('cannot guess what this architecture is:',arch)
+		return
+
+	mainwxs_filename = os.path.join(openscad_src_dir,'scripts','openscad.wxs')
+	filelistwxs_filename = 'filelist.wxs'
+	msi_filename = 'openscad.msi'
+	icon_filename = openscad_src_dir + '/icons/openscad.ico'
+	progfiles_dir = 'ProgramFilesFolder'
+	win64var = 'no'
+	if wixlarch=='x64':
+		progfiles_dir = 'ProgramFiles64Folder'
+		win64var = 'yes'
+
+	if 'clean' in ''.join(sys.argv[1:]):
+		for f in filelistwxs_filename,msi_filename:
+			if os.path.exists(f): os.remove(f)
+			print('clean',f)
+		return
+
+	make_filelist(openscad_crossbuild_dir,filelistwxs_filename,wixlarch)
 
 	cmd=['wixl','--verbose']
 	cmd+=['--arch',wixlarch]
 	cmd+=['--define','OPENSCADCROSSBUILDDIR='+openscad_crossbuild_dir]
 	cmd+=['--define','OPENSCADSRCDIR='+openscad_src_dir]
 	cmd+=['--define','OPENSCADVERSION='+openscad_version]
-	if arch=='x86-64':
-		cmd+=['--define','PROGFILESDIRNAME=ProgramFiles64Folder']
-	else:
-		cmd+=['--define','PROGFILESDIRNAME=ProgramFilesFolder']
+	cmd+=['--define','PROGFILESDIRNAME='+progfiles_dir]
+	cmd+=['--define','OPENSCADICO='+icon_filename]
+	cmd+=['--define','Win64='+win64var]
 	cmd+=['--output',msi_filename]
 	cmd+=[mainwxs_filename,filelistwxs_filename]
 	print('calling',' '.join(cmd))
@@ -205,13 +233,18 @@ def main(openscad_crossbuild_dir, openscad_src_dir, openscad_version, arch ):
 	print(p.stderr.read().decode('utf-8'))
 
 	verify_msi(msi_filename)
+	if pkcs12_file!='': sign_msi(msi_filename,pkcs12_file,pkcs12pwd)
+	else: print('skip signing')
 
 if verify_deps():
 	args=sys.argv
 	if len(args)<5:
 		print('xbuilddir, srcdir, version, arch')
 		sys.exit(1)
-	main(args[1],args[2],args[3],args[4])
+	pkcs12_file=pkcs12pwd=''
+	if len(args)>=5: pkcs12_file=args[5]
+	if len(args)>=5: pkcs12pwd=args[6]
+	main(args[1],args[2],args[3],args[4],pkcs12_file,pkcs12pwd)
 	#main('./osbuilddirx','/home/d/src/openscad','2018.08.12','x86-64')
 	#main('./osbuilddirx','/home/d/src/openscad','2018.08.12','x86-32')
 else:

@@ -27,20 +27,20 @@
       <Directory Id='OpenSCAD' Name='OpenSCAD'>
         <Directory Id='INSTALLDIR' Name='OpenSCAD-$(var.OPENSCADVERSION)'>
 
-          <Component Id='OPENSCADEXE' Guid='*'>
+          <Component Id='OPENSCADEXE' Guid='*' Win64="$(var.Win64)">
             <File Id='openscad_executable' Name='openscad.exe' DiskId='1' 
                   Source='$(var.OPENSCADCROSSBUILDDIR)/openscad.exe' KeyPath='yes'>
               <Shortcut Id="startmenuOpenSCAD" 
                 Directory="ProgramMenuDir" 
                 Name="OpenSCAD-$(var.OPENSCADVERSION)" 
                 WorkingDirectory='INSTALLDIR' 
-                Icon="openscad.exe"
+                Icon="$(var.OPENSCADICO)"
                 IconIndex="0" Advertise="yes" />
               <Shortcut Id="desktopOpenSCAD"
                 Directory="DesktopFolder"
                 Name="OpenSCAD$(var.OPENSCADVERSION)"
                 WorkingDirectory='INSTALLDIR'
-                Icon="openscad.exe"
+                Icon="$(var.OPENSCADICO)"
                 IconIndex="0" Advertise="yes" />
             </File>
 
@@ -54,7 +54,7 @@
             </ProgId>
           </Component> <!-- openscad exe -->
 
-          <Component Id='OPENSCADCOM' Guid='*'>
+          <Component Id='OPENSCADCOM' Guid='*' Win64="$(var.Win64)">
             <File Id='openscad_comfile' Name='openscad.com' DiskId='1' 
                   Source='$(var.OPENSCADCROSSBUILDDIR)/openscad.com' KeyPath='yes'>
             </File>
@@ -66,7 +66,7 @@
 
     <Directory Id="ProgramMenuFolder" Name="Programs">
       <Directory Id="ProgramMenuDir" Name="OpenSCAD-$(var.OPENSCADVERSION)">
-        <Component Id="ProgramMenuDir" Guid="*">
+        <Component Id="ProgramMenuDir" Guid="*" Win64="$(var.Win64)">
           <RemoveFolder Id='ProgramMenuDir' On='uninstall' />
           <RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]' Type='string' Value='' KeyPath='yes' />
         </Component>
@@ -82,13 +82,13 @@
       <ComponentRef Id='ProgramMenuDir' />
       <!-- This GroupRef links us to filelist.wxs, which is a generated
         list of files besides openscad.exe + com, such as examples/*.
-        it is created by the buildmsi.py script calling wixl-heat with 
+        it is created by the msibuild.py script calling wixl-heat with 
         -component-group=OPENSCADFILELIST -->
       <ComponentGroupRef Id='OPENSCADFILELIST' />
     </Feature>
 
-    <Icon Id="openscad.png" SourceFile="$(var.OPENSCADSRCDIR)/icons/openscad.png" />
-    <!-- dont use .exe for icon, it doubles msi size -->
+    <Icon Id="openscad.exe" SourceFile="$(var.OPENSCADICO)" />
+    <!-- https://stackoverflow.com/questions/22169837/wix-shortcut-icon-to-exe-adds-exe-twice#22177394 -->
 
   </Product>
 </Wix>
