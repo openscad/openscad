@@ -1755,7 +1755,7 @@ void MainWindow::compileTopLevelDocument(bool rebuildParameterWidget)
 
 	auto fulltext =
 		std::string(this->last_compiled_doc.toUtf8().constData()) +
-		"\n" + commandline_commands;
+		"\n\x03\n" + commandline_commands;
 	
 	auto fnameba = this->fileName.toLocal8Bit();
 	const char* fname = this->fileName.isEmpty() ? "" : fnameba;

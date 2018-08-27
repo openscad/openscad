@@ -104,7 +104,6 @@ std::vector<std::string> openfilenames;
 
 std::string filename;
 std::string filepath;
-
 %}
 
 %option yylineno
@@ -205,6 +204,8 @@ use[ \t\r\n]*"<"	{ BEGIN(cond_use); }
 	if (!YY_CURRENT_BUFFER)
 		yyterminate();
 }
+
+"\x03"		return TOK_EOT;
 
 "module"	return TOK_MODULE;
 "function"	return TOK_FUNCTION;
