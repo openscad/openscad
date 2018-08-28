@@ -177,6 +177,10 @@ void QGLView::resizeGL(int w, int h)
 void QGLView::paintGL()
 {
   GLView::paintGL();
+  if (mouseDoubleClicked) {
+    centerCameraOnMouse(mouseDoubleClicked);
+    mouseDoubleClicked = nullptr;
+  }
 
   if (statusLabel) {
     Camera nc(cam);
@@ -200,7 +204,16 @@ void QGLView::mousePressEvent(QMouseEvent *event)
 }
 
 void QGLView::mouseDoubleClickEvent (QMouseEvent *event) {
+#ifdef USE_QOPENGLWIDGET
+  glEnable(GL_DEPTH_TEST);
+  mouseDoubleClicked = event;
+  paintGL();
+#else
+  centerCameraOnMouse(event);
+#endif
+}
 
+void QGLView::centerCameraOnMouse(QMouseEvent *event) {
 	setupCamera();
 
 	int viewport[4];
@@ -211,8 +224,15 @@ void QGLView::mouseDoubleClickEvent (QMouseEvent *event) {
 	glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
 	glGetDoublev(GL_PROJECTION_MATRIX, projection);
 
+#ifdef USE_QOPENGLWIDGET
+  // Framebuffer gets resized to size of the window, so we need to scale mouse position
+  QSize windowSize = this->window()->size();
+  double x = event->pos().x() * this->getDPI()/size().width()*windowSize.width();
+  double y = viewport[3] - event->pos().y() * this->getDPI()/size().height()*windowSize.height();
+#else
 	double x = event->pos().x() * this->getDPI();
 	double y = viewport[3] - event->pos().y() * this->getDPI();
+#endif
 	GLfloat z = 0;
 
 	glGetError(); // clear error state so we don't pick up previous errors

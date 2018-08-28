@@ -90,6 +90,8 @@ private:
 	void paintGL() override;
 	void normalizeAngle(GLdouble& angle);
 
+	QMouseEvent *mouseDoubleClicked;
+	void centerCameraOnMouse(QMouseEvent *event);
 #ifdef ENABLE_OPENCSG
 	void display_opencsg_warning() override;
 private slots:
