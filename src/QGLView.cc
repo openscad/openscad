@@ -177,7 +177,7 @@ void QGLView::resizeGL(int w, int h)
 void QGLView::paintGL()
 {
   GLView::paintGL();
-  if (mouseDoubleClicked) {
+  if (mouseDoubleClicked != nullptr) {
     centerCameraOnMouse(mouseDoubleClicked);
     mouseDoubleClicked = nullptr;
   }
