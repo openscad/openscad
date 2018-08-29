@@ -177,10 +177,13 @@ void QGLView::resizeGL(int w, int h)
 void QGLView::paintGL()
 {
   GLView::paintGL();
+
+#ifdef USE_QOPENGLWIDGET
   if (mouseDoubleClicked != nullptr) {
     centerCameraOnMouse(mouseDoubleClicked);
     mouseDoubleClicked = nullptr;
   }
+#endif
 
   if (statusLabel) {
     Camera nc(cam);
