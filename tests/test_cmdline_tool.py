@@ -232,6 +232,7 @@ def run_test(testname, cmd, args):
 
     try:
         cmdline = [cmd] + args + [outputname]
+        sys.stderr.flush()
         print('run_test() cmdline:',cmdline)
         fontdir =  os.path.join(os.path.dirname(cmd), "testdata")
         fontenv = os.environ.copy()
