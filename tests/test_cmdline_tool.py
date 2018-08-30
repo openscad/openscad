@@ -234,7 +234,7 @@ def run_test(testname, cmd, args):
         cmdline = [cmd] + args + [outputname]
         sys.stderr.flush()
         print('run_test() cmdline:',cmdline)
-        fontdir =  os.path.join(os.path.dirname(cmd), "testdata")
+        fontdir =  os.path.join(os.path.dirname(__file__), "..", "testdata/ttf");
         fontenv = os.environ.copy()
         fontenv["OPENSCAD_FONT_PATH"] = fontdir
         print('using font directory:', fontdir)
