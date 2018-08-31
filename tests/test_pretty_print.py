@@ -210,7 +210,7 @@ def load_makefiles(builddir):
 
 def png_encode64(fname, width=512, data=None, alt=''):
     # en.wikipedia.org/wiki/Data_URI_scheme
-    data = data or tryread(fname) or ''
+    data = data or tryread(fname) or b''
     data_uri = base64.b64encode(data).decode('ascii')
     tag = '''<img src="data:image/png;base64,%s" width="%s" %s/>'''
     if alt=="": alt = 'alt="openscad_test_image:' + fname + '" '
