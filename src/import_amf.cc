@@ -324,21 +324,26 @@ int AmfImporterZIP::close_callback(void *context)
 	return zip_fclose(importer->zipfile);
 }
 
-xmlTextReaderPtr AmfImporterZIP::createXmlReader(const char *filename)
+xmlTextReaderPtr AmfImporterZIP::createXmlReader(const char *filepath)
 {
-	archive = zip_open(filename, 0, nullptr);
+	archive = zip_open(filepath, 0, nullptr);
 	if (archive) {
-		boost::filesystem::path f(filename);
-		zipfile = zip_fopen(archive, f.filename().c_str(), ZIP_FL_NODIR);
+		// Separate the filename without using filesystem::path because that gives wide result on Windows TM
+		const char *last_slash = strrchr(filepath,'/');
+		const char *last_bslash = strrchr(filepath,'\\');
+		if(last_bslash > last_slash)
+			last_slash = last_bslash;
+		const char *filename = last_slash ? last_slash + 1 : filepath;
+		zipfile = zip_fopen(archive, filename, ZIP_FL_NODIR);
 		if (zipfile == nullptr) {
-			PRINTB("WARNING: Can't read file '%s' from zipped AMF '%s'", f.filename().c_str() % filename);
+			PRINTB("WARNING: Can't read file '%s' from zipped AMF '%s'", filename % filepath);
 		}
 		if ((zipfile == nullptr) && (zip_get_num_files(archive) == 1)) {
 			PRINTB("WARNING: Trying to read single entry '%s'", zip_get_name(archive, 0, 0));
 			zipfile = zip_fopen_index(archive, 0, 0);
 		}
 		if (zipfile) {
-			return xmlReaderForIO(read_callback, close_callback, this, f.filename().c_str(), nullptr,
+			return xmlReaderForIO(read_callback, close_callback, this, filename, nullptr,
 				XML_PARSE_NOENT | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 		} else {
 			zip_close(archive);
@@ -346,7 +351,7 @@ xmlTextReaderPtr AmfImporterZIP::createXmlReader(const char *filename)
 			return nullptr;
 		}
 	} else {
-		return AmfImporter::createXmlReader(filename);
+		return AmfImporter::createXmlReader(filepath);
 	}
 }
 
