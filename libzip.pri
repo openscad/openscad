@@ -25,6 +25,9 @@ isEmpty(LIBZIP_INCLUDEPATH) {
 
 isEmpty(LIBZIP_LIBPATH) {
   LIBZIP_LIBS = $$system("$$PKG_CONFIG --libs libzip")
+  !isEmpty(LIBZIP_LIBS) {
+    ENABLE_LIBZIP=yes
+  }
 } else {
   LIBZIP_LIBS = -L$$LIBZIP_LIBPATH -lzip
 }
