@@ -67,6 +67,10 @@ static bool running_under_wine = false;
 
 void QGLView::init()
 {
+  QSurfaceFormat format;
+  format.setDepthBufferSize(24);
+  format.setSamples(0);
+  QSurfaceFormat::setDefaultFormat(format);
   resetView();
 
   this->mouse_drag_active = false;
@@ -179,7 +183,7 @@ void QGLView::paintGL()
   GLView::paintGL();
 
 #ifdef USE_QOPENGLWIDGET
-  if (mouseDoubleClicked != nullptr) {
+  if (mouseDoubleClicked) {
     centerCameraOnMouse(mouseDoubleClicked);
     mouseDoubleClicked = nullptr;
   }
