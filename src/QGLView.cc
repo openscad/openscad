@@ -67,10 +67,12 @@ static bool running_under_wine = false;
 
 void QGLView::init()
 {
+#ifdef USE_QOPENGLWIDGET
   QSurfaceFormat format;
   format.setDepthBufferSize(24);
   format.setSamples(0);
   QSurfaceFormat::setDefaultFormat(format);
+#endif
   resetView();
 
   this->mouse_drag_active = false;
