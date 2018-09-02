@@ -90,7 +90,7 @@ public:
 	virtual xmlTextReaderPtr createXmlReader(const char *filename);
 };
 
-AmfImporter::AmfImporter() : xpath("")
+AmfImporter::AmfImporter()
 {
 }
 
