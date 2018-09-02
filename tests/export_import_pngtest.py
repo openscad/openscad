@@ -38,12 +38,13 @@ def failquit(*args):
     sys.exit(1)
 
 def createImport(inputfile, scadfile):
+        inputfilename = os.path.split(inputfile)[1]
         print ('createImport: ' + inputfile + " " + scadfile)
         outputdir = os.path.dirname(scadfile)
         try:
                 if outputdir and not os.path.exists(outputdir): os.mkdir(outputdir)
                 f = open(scadfile,'w')
-                f.write('import("'+inputfile+'");'+os.linesep)
+                f.write('import("'+inputfilename+'");'+os.linesep)
                 f.close()
         except:
                 failquit('failure while opening/writing ' + scadfile + ': ' + str(sys.exc_info()))
@@ -118,7 +119,7 @@ if args.format != 'csg':
 create_png_cmd = [args.openscad, newscadfile, '-o', pngfile] + remaining_args
 print('Running OpenSCAD #2:', file=sys.stderr)
 print(' '.join(create_png_cmd), file=sys.stderr)
-fontdir =  os.path.join(os.path.dirname(__file__), "..", "testdata");
+fontdir =  os.path.join(os.path.dirname(__file__), "..", "testdata/ttf");
 fontenv = os.environ.copy();
 fontenv["OPENSCAD_FONT_PATH"] = fontdir;
 result = subprocess.call(create_png_cmd, env = fontenv);
