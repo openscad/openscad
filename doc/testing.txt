@@ -5,7 +5,7 @@ Running regression tests:
 
 Install the prerequisite helper programs on your system:
 
-     cmake, python2 (not 3), ImageMagick 6.5.9.3 or newer, diff
+     cmake, python3 (not 2), ImageMagick 6.5.9.3 or newer, diff
 
 There are binary installer packages of these tools available for Mac, 
 Win, Linux, BSD, and other systems. (except maybe diff for Win)
