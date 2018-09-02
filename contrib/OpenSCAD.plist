@@ -75,6 +75,7 @@
 		<string>$vpt</string>
 		<string>$vpd</string>
 		<string>$children</string>
+		<string>$preview</string>
 	</array>
 
 	<key>BBLMKeywordList</key>
