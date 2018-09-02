@@ -1,80 +1,89 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
-  <Product Name='OpenSCAD-$(var.OPENSCADVERSION)' Id='*' 
+<!-- this file is processed by msibuild.py to help create the .MSI -->
+  <Product Name='OpenSCAD-$(var.OPENSCADVERSION)' Id='*'
     UpgradeCode='*'
     Language='1033' Codepage='1252' Version='$(var.OPENSCADVERSIONFORWIN)' 
     Manufacturer='The OpenSCAD Developers'> 
-    <!-- UpgradeCode: i realize most instructions and tutorials say to never change 
-     the upgradecode. however. that is assuming you want to deal with
-     all of Windows Installer partial upgrade features, which we dont. 
-     we want to keep things as simple, brutally simple, as possible.
+    <!-- UpgradeCode: this is a bit unusual. This code is typically 
+     supposed to be constant, and stay the same for each build of a program.
+     this is what most tutorials and instructions say to do. however.
+     we do not want to deal with complicated MSI problems around partial
+     upgrades, repairs, etc, most of which is unnecessary for the small
+     size and self-contained nature of OpenSCAD.
+     Therefore we use a different upgradeCode for every build. 
      every version of OpenSCAD is treated like a new program, and can
-     be installed alongside any other version with 0 interference and 
-     0 overlap (except the users library dirs/settings but thats up to them) -->
+     be installed alongside any other version, hopefully without interference
+     and without overlap.  -->
     <!-- Manufacturer and Version: this information shows up when you click 
-     'more detail' on Windows 10 install of the .MSI file.
+     'more detail' on Windows install of the .MSI file.
      Version must be of a format acceptable to the MSI/Windows Installer
      system. -->
   
-  <Package Id='*' Keywords='OpenSCAD' Description="OpenSCAD-$(var.OPENSCADVERSION) installer"
-    Comments='OpenSCAD msi installer' Manufacturer='The OpenSCAD Developers'
+  <Package Id='*' Keywords='OpenSCAD'
+    Description="OpenSCAD-$(var.OPENSCADVERSION) installer"
+    Comments='OpenSCAD MSI install package'
+    Manufacturer='The OpenSCAD Developers'
     InstallerVersion='200' Languages='1033'
     Compressed='yes' SummaryCodepage='1252' />
-  <!-- InstallerVersion is the Windows Installer version. It is important 
-    for 32bit/64bit, must be >200 for 64bit.
-    The Manufacturer here is not the one that shows up during installation
-    in the 'more details' box. See the Product section for that info. -->
+    <!-- InstallerVersion is the Windows Installer version on the machine
+      that will be installing our MSI. This version # is important 
+      for 32bit/64bit, it must be >200 for 64bit.
+      The Manufacturer here is -not- the one that shows up during installation
+      in the 'more details' box. See the Product section for that info. -->
 
   <Media Id='1' Cabinet='openscad.cab'
 	 EmbedCab='yes' DiskPrompt="CD-ROM #1"/>
-  <Property Id='DiskPrompt' Value="OpenSCAD-$(var.OPENSCADVERSION) installation [1]" />
+  <Property Id='DiskPrompt' 
+         Value="OpenSCAD-$(var.OPENSCADVERSION) installation [1]" />
 
-  <Icon Id="icon.ico" SourceFile="$(var.OPENSCADICO)" />
+  <Icon Id="openscad.ico" SourceFile="$(var.OPENSCADICO)" />
+  <Icon Id="openscad_doc.ico" SourceFile="$(var.OPENSCADDOCICO)" />
+  <Property Id="ARPPRODUCTICON" Value="openscad.ico" />
   <!-- https://stackoverflow.com/questions/22169837/wix-shortcut-icon-to-exe-adds-exe-twice#22177394 -->
-  <Property Id="ARPPRODUCTICON" Value="$(var.OPENSCADICO)" />
-
 
   <Directory Id='TARGETDIR' Name='SourceDir'>
+  <!-- https://stackoverflow.com/questions/1641094/in-wix-files-what-does-name-sourcedir-refer-to -->
     <Directory Id='$(var.PROGFILESDIRNAME)' Name='PFiles'>
-      <Directory Id='OpenSCAD' Name='OpenSCAD'>
-        <Directory Id='INSTALLDIR' Name='OpenSCAD-$(var.OPENSCADVERSION)'>
+<!--      <Directory Id='OpenSCAD' Name='OpenSCAD'>-->
+         <Directory Id='INSTALLDIR' Name='OpenSCAD-$(var.OPENSCADVERSION)'>
 
           <Component Id='OPENSCADEXE' Guid='*' Win64="$(var.Win64)">
             <File Id='openscad_executable' Name='openscad.exe' DiskId='1' 
-                  Source='$(var.OPENSCADCROSSBUILDDIR)/openscad.exe' KeyPath='yes'>
-              <Shortcut Id="startmenuOpenSCAD" 
-                Directory="ProgramMenuDir" 
-                Name="OpenSCAD-$(var.OPENSCADVERSION)" 
-                WorkingDirectory='INSTALLDIR' 
-                Icon="icon.ico"
-                IconIndex="0" Advertise="yes" />
-              <Shortcut Id="desktopOpenSCAD"
-                Directory="DesktopFolder"
-                Name="OpenSCAD$(var.OPENSCADVERSION)"
+                  Source='$(var.OPENSCADCROSSBUILDDIR)/openscad.exe' 
+                  KeyPath='yes'>
+              <Shortcut Id="startmenuOpenSCAD" Directory="ProgramMenuDir" 
+                Name="OpenSCAD-$(var.OPENSCADVERSION)"
                 WorkingDirectory='INSTALLDIR'
-                Icon="icon.ico"
-                IconIndex="0" Advertise="yes" />
+                Icon="openscad.ico" IconIndex="0" Advertise="yes" />
+              <Shortcut Id="desktopOpenSCAD" Directory="DesktopFolder"
+                Name="OpenSCAD-$(var.OPENSCADVERSION)"
+                WorkingDirectory='INSTALLDIR'
+                Icon="openscad.ico" IconIndex="0" Advertise="yes" />
             </File>
 
             <ProgId Id='SCADASSOCIATION'
-                    Description='OpenSCAD file'> 
-             <!-- Icon='openscad.exe'> --> <!-- wixl doesnt support icon here -->
+                    Description='OpenSCAD file'>
+              <!-- would like to use Icon here but wixl doesnt implement it -->
               <Extension Id='scad' ContentType='application/x-openscad'>
                 <Verb Id='open' Command='Open' 
                       TargetFile='openscad_executable' Argument='"%1"' />
               </Extension>
             </ProgId>
+
           </Component> <!-- openscad exe -->
+
 
           <Component Id='OPENSCADCOM' Guid='*' Win64="$(var.Win64)">
             <File Id='openscad_comfile' Name='openscad.com' DiskId='1' 
-                  Source='$(var.OPENSCADCROSSBUILDDIR)/openscad.com' KeyPath='yes'>
+                  Source='$(var.OPENSCADCROSSBUILDDIR)/openscad.com'
+                  KeyPath='yes'>
             </File>
           </Component>
 
         </Directory>
       </Directory>
-    </Directory>
+<!--    </Directory> -->
 
     <Directory Id="ProgramMenuFolder" Name="Programs">
       <Directory Id="ProgramMenuDir" Name="OpenSCAD-$(var.OPENSCADVERSION)">
@@ -85,19 +94,23 @@
       </Directory>
     </Directory>
 
-    <Directory Id="DesktopFolder" Name="Desktop" />
+    <Directory Id="DesktopFolder" Name="Desktop">
     </Directory>
 
-    <Feature Id='Complete' Level='1'>
-      <ComponentRef Id='OPENSCADEXE' />
-      <ComponentRef Id='OPENSCADCOM' />
-      <ComponentRef Id='ProgramMenuDir' />
-      <!-- This GroupRef links us to filelist.wxs, which is a generated
-        list of files besides openscad.exe + com, such as examples/*.
-        it is created by the msibuild.py script calling wixl-heat with 
-        -component-group=OPENSCADFILELIST -->
-      <ComponentGroupRef Id='OPENSCADFILELIST' />
-    </Feature>
+  </Directory> <!-- targetdir sourcedir -->
 
+  <Feature Id='Complete' Level='1'>
+    <ComponentRef Id='OPENSCADEXE' />
+    <ComponentRef Id='OPENSCADCOM' />
+    <ComponentRef Id='ProgramMenuDir' />
+    <!-- The purpose of OPENSCADFILELIST groupref is to 
+        include entire subdirectories like examples/ or fonts/, without 
+        having to list the files one by one ourselves by hand.
+        The OPENSCADFILELIST GroupRef allows us to include filelist.wxs
+        which is created by msibuild.py calling wixl-heat, with the argument
+        -component-group=OPENSCADFILELIST. wixl-heat scans the directories
+        and creates filelist.wxs for us -->
+    <ComponentGroupRef Id='OPENSCADFILELIST' />
+  </Feature>
   </Product>
 </Wix>

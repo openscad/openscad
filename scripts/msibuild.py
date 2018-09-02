@@ -66,6 +66,8 @@ import sys,os,re,uuid,subprocess,shutil
 # https://sourceforge.net/projects/osslsigncode/files/osslsigncode/
 # https://www.ibm.com/support/knowledgecenter/en/SSWHYP_4.0.0/com.ibm.apimgmt.cmc.doc/task_apionprem_gernerate_self_signed_openSSL.html
 # (use -sha256 on ibm link)
+# File Association: (.scad file->open automatically)
+# https://docs.microsoft.com/en-gb/windows/desktop/shell/fa-file-types
 
 def verify_deps():
 	score = 0
@@ -96,19 +98,26 @@ def verify_msi(msi_filename):
 		return False
 
 	cmds = [['msiinfo','export',msi_filename,'File'],
-	        ['msiinfo','export',msi_filename,'Directory']]
+	        ['msiinfo','export',msi_filename,'Directory'],
+	        ['msiinfo','export',msi_filename,'Icon']]
 	lines = []
 	for cmd in cmds:
 		print('running',' '.join(cmd))
 		p=subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 		lines += p.stdout.readlines() + p.stderr.readlines()
-	needs = {'openscad_executable':0,'INSTALLDIR':0,'examples':0,'locale':0}
+	needs = {'openscad_executable':0,'INSTALLDIR':0,'examples':0,
+		'locale':0,'Icon':0}
+	noneeds = {'openscad_setup.exe':0}
 	for line in lines:
 		l = line.decode('utf-8').strip().replace('\t',' ')[:79]
 		for need in needs.keys():
 			if need in l:
 				needs[need]=1
 				#print(l)
+		for noneed in noneeds.keys():
+			if noneed in l:
+				print('dont want',noneed,'but found in ',l)
+				return False
 	for need in needs.keys():
 		if needs[need]:
 			print('found need',need,' in .msi')
@@ -161,7 +170,7 @@ def make_filelist(openscad_crossbuild_dir,filelistwxs_filename,wixlarch):
 	# this makes the 'Win64=Yes' so the Component table has the Attribute
 	# for 64 bit MSI files set properly to 1 on a 64 bit build.
 	if wixlarch=='x64': cmd += ['--win64']
-	# dont want to pack twice
+	# .exe and .com already in openscad.wxs, dont want to pack these twice
 	cmd+=['--exclude','openscad.exe']
 	cmd+=['--exclude','openscad.com']
 
@@ -205,6 +214,7 @@ def main(openscad_crossbuild_dir, openscad_src_dir, openscad_version, arch, pkcs
 	filelistwxs_filename = 'filelist.wxs'
 	msi_filename = 'openscad.msi'
 	icon_filename = openscad_src_dir + '/icons/openscad.ico'
+	icon_assoc_filename = openscad_src_dir + '/icons/openscad_doc.ico'
 	progfiles_dir = 'ProgramFilesFolder'
 	win64var = 'no'
 	if wixlarch=='x64':
@@ -227,6 +237,7 @@ def main(openscad_crossbuild_dir, openscad_src_dir, openscad_version, arch, pkcs
 	cmd+=['--define','OPENSCADVERSIONFORWIN='+openscad_version_for_win]
 	cmd+=['--define','PROGFILESDIRNAME='+progfiles_dir]
 	cmd+=['--define','OPENSCADICO='+icon_filename]
+	cmd+=['--define','OPENSCADDOCICO='+icon_assoc_filename]
 	cmd+=['--define','Win64='+win64var]
 	cmd+=['--output',msi_filename]
 	cmd+=[mainwxs_filename,filelistwxs_filename]
@@ -235,9 +246,12 @@ def main(openscad_crossbuild_dir, openscad_src_dir, openscad_version, arch, pkcs
 	print(p.stdout.read().decode('utf-8'))
 	print(p.stderr.read().decode('utf-8'))
 
-	verify_msi(msi_filename)
+	if not verify_msi(msi_filename):
+		print('build failed')
+		return 1
 	if pkcs12_file!='': sign_msi(msi_filename,pkcs12_file,pkcs12pwd)
 	else: print('skip signing')
+	return 0
 
 if verify_deps():
 	args=sys.argv
