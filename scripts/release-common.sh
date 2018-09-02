@@ -79,6 +79,14 @@ elif [[ $OSTYPE == "linux-gnu" ]]; then
   echo "Detected build-machine ARCH: $ARCH"
 fi
 
+if [ $PKCS12FILE ]; then
+ if [ $PKCS12PASS ]; then
+    echo "PKCS12FILE and PKCS12PASS env variable set, will use to sign windows .MSI file"
+  else
+    echo "PKCS12FILE and PKCS12PASS env variable unset, won't sign windows MSI file"
+  fi
+fi
+
 if [ "`echo $* | grep mingw`" ]; then
   OS=UNIX_CROSS_WIN
   ARCH=32

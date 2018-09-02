@@ -32,8 +32,8 @@ import sys,os,re,uuid,subprocess,shutil
 #
 # test in Windows(TM), look at directory where files acre copied/created
 # test run of openscad.exe and openscad.com
-# test if icons works
-# test file association works
+# test if icons works, in Program Files list, on Desktop Shortcut
+# test file association works, and icons for file associations too
 # uninstall, make sure directories are deleted
 # try installing twice, the uninstall, see what happens.
 # try installing two versions, see if both work
@@ -188,6 +188,8 @@ def main(openscad_crossbuild_dir, openscad_src_dir, openscad_version, arch, pkcs
 	print('architecture input from command line:', arch)
 	wixlarch = guessarch( arch )
 	print('wixl special name for input architecture:', wixlarch)
+	openscad_version_for_win = openscad_version
+	print('openscad_version_for_win',openscad_version_for_win)
 
 	if not verify_path(openscad_src_dir,'README.md'):
 		print('cant find openscad source dir, exiting')
@@ -222,6 +224,7 @@ def main(openscad_crossbuild_dir, openscad_src_dir, openscad_version, arch, pkcs
 	cmd+=['--define','OPENSCADCROSSBUILDDIR='+openscad_crossbuild_dir]
 	cmd+=['--define','OPENSCADSRCDIR='+openscad_src_dir]
 	cmd+=['--define','OPENSCADVERSION='+openscad_version]
+	cmd+=['--define','OPENSCADVERSIONFORWIN='+openscad_version_for_win]
 	cmd+=['--define','PROGFILESDIRNAME='+progfiles_dir]
 	cmd+=['--define','OPENSCADICO='+icon_filename]
 	cmd+=['--define','Win64='+win64var]
@@ -242,8 +245,8 @@ if verify_deps():
 		print('xbuilddir, srcdir, version, arch')
 		sys.exit(1)
 	pkcs12_file=pkcs12pwd=''
-	if len(args)>=5: pkcs12_file=args[5]
-	if len(args)>=5: pkcs12pwd=args[6]
+	if len(args)>=6: pkcs12_file=args[5]
+	if len(args)>=6: pkcs12pwd=args[6]
 	main(args[1],args[2],args[3],args[4],pkcs12_file,pkcs12pwd)
 	#main('./osbuilddirx','/home/d/src/openscad','2018.08.12','x86-64')
 	#main('./osbuilddirx','/home/d/src/openscad','2018.08.12','x86-32')

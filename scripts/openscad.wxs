@@ -2,25 +2,37 @@
 <Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
   <Product Name='OpenSCAD-$(var.OPENSCADVERSION)' Id='*' 
     UpgradeCode='*'
-    Language='1033' Codepage='1252' Version='1.0.0' 
+    Language='1033' Codepage='1252' Version='$(var.OPENSCADVERSIONFORWIN)' 
     Manufacturer='The OpenSCAD Developers'> 
-    <!-- i realize most instructions and tutorials say to never change 
+    <!-- UpgradeCode: i realize most instructions and tutorials say to never change 
      the upgradecode. however. that is assuming you want to deal with
      all of Windows Installer partial upgrade features, which we dont. 
      we want to keep things as simple, brutally simple, as possible.
      every version of OpenSCAD is treated like a new program, and can
      be installed alongside any other version with 0 interference and 
      0 overlap (except the users library dirs/settings but thats up to them) -->
+    <!-- Manufacturer and Version: this information shows up when you click 
+     'more detail' on Windows 10 install of the .MSI file.
+     Version must be of a format acceptable to the MSI/Windows Installer
+     system. -->
   
   <Package Id='*' Keywords='OpenSCAD' Description="OpenSCAD-$(var.OPENSCADVERSION) installer"
     Comments='OpenSCAD msi installer' Manufacturer='The OpenSCAD Developers'
     InstallerVersion='200' Languages='1033'
     Compressed='yes' SummaryCodepage='1252' />
-  <!-- version is important for 32bit/64bit, must be >200 for 64bit -->
+  <!-- InstallerVersion is the Windows Installer version. It is important 
+    for 32bit/64bit, must be >200 for 64bit.
+    The Manufacturer here is not the one that shows up during installation
+    in the 'more details' box. See the Product section for that info. -->
 
   <Media Id='1' Cabinet='openscad.cab'
 	 EmbedCab='yes' DiskPrompt="CD-ROM #1"/>
   <Property Id='DiskPrompt' Value="OpenSCAD-$(var.OPENSCADVERSION) installation [1]" />
+
+  <Icon Id="icon.ico" SourceFile="$(var.OPENSCADICO)" />
+  <!-- https://stackoverflow.com/questions/22169837/wix-shortcut-icon-to-exe-adds-exe-twice#22177394 -->
+  <Property Id="ARPPRODUCTICON" Value="$(var.OPENSCADICO)" />
+
 
   <Directory Id='TARGETDIR' Name='SourceDir'>
     <Directory Id='$(var.PROGFILESDIRNAME)' Name='PFiles'>
@@ -34,13 +46,13 @@
                 Directory="ProgramMenuDir" 
                 Name="OpenSCAD-$(var.OPENSCADVERSION)" 
                 WorkingDirectory='INSTALLDIR' 
-                Icon="$(var.OPENSCADICO)"
+                Icon="icon.ico"
                 IconIndex="0" Advertise="yes" />
               <Shortcut Id="desktopOpenSCAD"
                 Directory="DesktopFolder"
                 Name="OpenSCAD$(var.OPENSCADVERSION)"
                 WorkingDirectory='INSTALLDIR'
-                Icon="$(var.OPENSCADICO)"
+                Icon="icon.ico"
                 IconIndex="0" Advertise="yes" />
             </File>
 
@@ -86,9 +98,6 @@
         -component-group=OPENSCADFILELIST -->
       <ComponentGroupRef Id='OPENSCADFILELIST' />
     </Feature>
-
-    <Icon Id="openscad.exe" SourceFile="$(var.OPENSCADICO)" />
-    <!-- https://stackoverflow.com/questions/22169837/wix-shortcut-icon-to-exe-adds-exe-twice#22177394 -->
 
   </Product>
 </Wix>
