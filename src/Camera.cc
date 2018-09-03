@@ -62,7 +62,8 @@ void Camera::viewAll(const BoundingBox &bbox)
 	if (this->autocenter) {
 		// autocenter = point camera at the center of the bounding box.
         if (this->type == CameraType::GIMBAL) {
-            this->object_trans = -bbox.center(); // for Gimbal cam
+            this->center = bbox.center(); // for Gimbal cam
+            this->object_trans = -this->center;
         }
         else if (this->type == CameraType::VECTOR) {
             Vector3d dir = this->center - this->eye;
