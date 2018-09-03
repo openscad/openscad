@@ -19,7 +19,7 @@ scintilla {
   }
 
   CONFIG(mingw-cross-env) {
-    include( mingw-cross-env/qt5/mkspecs/features/qscintilla2.prf )
+    include( ./mingw-cross-env/qt5/mkspecs/features/qscintilla2.prf )
     QSCILOADED=yes
   }
 
