@@ -604,7 +604,7 @@ build_fontconfig()
   cd "$BASEDIR"/src
   rm -rf "fontconfig-$version"
   if [ ! -f "fontconfig-$version.tar.gz" ]; then
-    curl --insecure -LO "http://www.freedesktop.org/software/fontconfig/release/fontconfig-$version.tar.gz"
+    curl -LO "http://www.freedesktop.org/software/fontconfig/release/fontconfig-$version.tar.gz"
   fi
   tar xzf "fontconfig-$version.tar.gz"
   cd "fontconfig-$version"
@@ -762,8 +762,12 @@ done
 OPTION_PACKAGES="${@:$OPTIND}"
 
 OSX_VERSION=`sw_vers -productVersion | cut -d. -f2`
-if (( $OSX_VERSION >= 13 )); then
+if (( $OSX_VERSION >= 14 )); then
+  echo "Detected Mojave (10.14) or later"
+elif (( $OSX_VERSION >= 13 )); then
   echo "Detected High Sierra (10.13) or later"
+elif (( $OSX_VERSION >= 12 )); then
+  echo "Detected Sierra (10.12) or later"
 elif (( $OSX_VERSION >= 11 )); then
   echo "Detected El Capitan (10.11) or later"
 elif (( $OSX_VERSION >= 10 )); then
