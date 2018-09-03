@@ -604,7 +604,7 @@ build_fontconfig()
   cd "$BASEDIR"/src
   rm -rf "fontconfig-$version"
   if [ ! -f "fontconfig-$version.tar.gz" ]; then
-    curl -LO "http://www.freedesktop.org/software/fontconfig/release/fontconfig-$version.tar.gz"
+    curl -LO "https://www.freedesktop.org/software/fontconfig/release/fontconfig-$version.tar.gz"
   fi
   tar xzf "fontconfig-$version.tar.gz"
   cd "fontconfig-$version"
@@ -730,7 +730,7 @@ build_harfbuzz()
   cd "$BASEDIR"/src
   rm -rf "harfbuzz-$version"
   if [ ! -f "harfbuzz-$version.tar.gz" ]; then
-    curl --insecure -LO "https://www.freedesktop.org/software/harfbuzz/release/harfbuzz-$version.tar.bz2"
+    curl -LO "https://www.freedesktop.org/software/harfbuzz/release/harfbuzz-$version.tar.bz2"
   fi
   tar xzf "harfbuzz-$version.tar.bz2"
   cd "harfbuzz-$version"
