@@ -47,6 +47,19 @@ if [ ! -f $OPENSCADDIR/openscad.pro ]; then
 fi
 echo OPENSCADDIR: $OPENSCADDIR
 
+if [ "`echo $* | grep getdeps`" ]; then
+  # from mxe.cc
+  apt-get -y update
+  MXEDEPS="autoconf automake autopoint bash bison bzip2 flex g++ g++-multilib \
+    gettext git gperf intltool libc6-dev-i386 libgdk-pixbuf2.0-dev scons \
+    libltdl-dev libssl-dev libtool-bin libxml-parser-perl make openssl \
+    p7zip-full patch perl pkg-config python ruby sed unzip wget xz-utils \
+    msitools wixl nsis"
+  for pk in $MXEDEPS; do apt-get -y install $pk ; done
+  exit
+fi
+
+
 if [ ! $NUMCPU ]; then
 	echo "note: you can 'export NUMCPU=x' for multi-core compiles (x=number)";
 	NUMCPU=1

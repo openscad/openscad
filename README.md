@@ -215,33 +215,35 @@ After that, follow the Compilation instructions below.
 
 ### Building for Windows
 
-OpenSCAD for Windows is usually cross-compiled from Linux. If you wish to
-attempt an MSVC build on Windows, please see this site:
+OpenSCAD for Windows is usually cross-compiled from Linux using the 
+[http://mxe.cc](http://mxe.cc) system. However it can also be built under 
+Windows using Msys2 (http://www.msys2.org/). If you wish to attempt an 
+MSVC build on Windows, please see this site: 
 https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Windows
 
-To cross-build, first make sure that you have all necessary dependencies 
-of the MXE project ( listed at http://mxe.cc/#requirements ). Don't install
-MXE itself, the scripts below will do that for you under `$HOME/openscad_deps/mxe`
-
-Then get your development tools installed to get GCC. Then after you've 
-cloned this git repository, start a new clean bash shell and run the 
-script that sets up the environment variables.
+To cross-compile with mxe, clone this git repository, start a new clean 
+bash shell and run the script that sets up the environment variables.
 
     source ./scripts/setenv-mingw-xbuild.sh 64
 
-Then run the script to download & compile all the prerequisite libraries above:
+Then make sure you have the requirements for the MXE system, listed at 
+http://mxe.cc/#requirements . For debian/ubuntu, this will apt install them:
+
+    sudo ./scripts/mingw-x-build-dependencies.sh getdeps
+
+Now build MXE itself, under `$HOME/openscad_deps/mxe`, like so:
 
     ./scripts/mingw-x-build-dependencies.sh 64
 
 Note that this process can take several hours, and tens of gigabytes of 
-disk space, as it uses the [http://mxe.cc](http://mxe.cc) system to cross-build many 
-libraries. To build the openscad.exe binary:
+disk space, as all dependencies, including qt, must be cross-built. To 
+build the openscad.exe binary:
 
     cd mingw64.static.posix
-    qmake ../openscad.pro
+    qmake ..
     make
 
-To build installation packages:
+To build installation packages (setup.exe, .zip, .msi):
 
     ./scripts/release-common.sh mingw64
 
