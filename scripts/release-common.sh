@@ -179,12 +179,12 @@ case $OS in
         echo wixl found: $WIXL
 
         PYTHON=
-        if [ "`command -v python`" ]; then
-            PYTHON=python
+        if [ "`command -v python3`" ]; then
+            PYTHON=python3
         else
-            echo "python not found. please install python"
+            echo "python3 not found. please install python3"
             echo "see https://www.python.org for info"
-            echo "on debian/ubuntu, please try apt install python"
+            echo "on debian/ubuntu, please try apt install python3"
             exit 1
         fi
         echo python found: $PYTHON

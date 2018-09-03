@@ -235,16 +235,15 @@ Then run the script to download & compile all the prerequisite libraries above:
 
 Note that this process can take several hours, and tens of gigabytes of 
 disk space, as it uses the [http://mxe.cc](http://mxe.cc) system to cross-build many 
-libraries. After it is complete, build OpenSCAD and package it to an 
-installer:
+libraries. To build the openscad.exe binary:
+
+    cd mingw64.static.posix
+    qmake ../openscad.pro
+    make
+
+To build installation packages:
 
     ./scripts/release-common.sh mingw64
-
-If you wish you can only build the `openscad.exe` binary:
-
-    cd mingw64
-    qmake ../openscad.pro CONFIG+=mingw-cross-env
-    make
 
 For a 32-bit Windows cross-build, replace 64 with 32 in the above instructions. 
 
