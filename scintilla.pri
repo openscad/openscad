@@ -18,8 +18,9 @@ scintilla {
     }
   }
 
-  CONFIG(mingw-cross-env) {
-    include( mingw-cross-env/qt5/mkspecs/features/qscintilla2.prf )
+  BUILDTYPE=$$(OPENSCAD_BUILD)
+  contains( BUILDTYPE, MXECROSS ) {
+    include( $$(DEPLOYDIR)/mingw-cross-env/qt5/mkspecs/features/qscintilla2.prf )
     QSCILOADED=yes
   }
 

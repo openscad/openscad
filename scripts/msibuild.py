@@ -1,5 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import sys,os,re,uuid,subprocess,shutil
+if sys.version_info[0] < 3:
+	print( "Must be using Python 3" )
+	sys.exit(1)
 
 #
 # create MSI file for installation of OpenSCAD program on Microsoft Windows

@@ -40,26 +40,6 @@ isEmpty(GLIB2_LIBPATH) {
   GLIB2_LIBS = -L$$GLIB2_LIBPATH -lglib-2.0
 }
 
-CONFIG(mingw-cross-env)|CONFIG(mingw-cross-env-shared) {
-  #message("mingw")
-  isEmpty(GLIB2_INCLUDEPATH) {
-    MXE_TARGET_DIR=$$(MXETARGETDIR)
-    #message($$MXE_TARGET_DIR)
-    contains( MXE_TARGET_DIR, .*x86_64-w64-mingw32 ) {
-      GLIB2_CFLAGS = $$system("x86_64-w64-mingw32-pkg-config --cflags glib-2.0")
-      GLIB2_LIBS = $$system("x86_64-w64-mingw32-pkg-config --libs glib-2.0")
-    }
-    contains( MXE_TARGET_DIR, .*i686-w64-mingw32 ) {
-      GLIB2_CFLAGS = $$system("i686-w64-mingw32-pkg-config --cflags glib-2.0")
-      GLIB2_LIBS = $$system("i686-w64-mingw32-pkg-config --libs glib-2.0")
-    }
-    contains( MXE_TARGET_DIR, .*i686-pc-mingw32 ) {
-      GLIB2_CFLAGS = $$system("i686-pc-mingw32-pkg-config --cflags glib-2.0")
-      GLIB2_LIBS = $$system("i686-pc-mingw32-pkg-config --libs glib-2.0")
-    }
-  }
-}
-
 QMAKE_CXXFLAGS += $$GLIB2_CFLAGS
 LIBS += $$GLIB2_LIBS
 }

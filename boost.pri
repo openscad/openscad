@@ -1,4 +1,6 @@
 boost {
+BUILDTYPE=$$(OPENSCAD_BUILD)
+!contains( BUILDTYPE, MXECROSS ) {
 
   # Optionally specify location of boost using the
   # BOOSTDIR env. variable
@@ -12,17 +14,11 @@ boost {
   # See https://svn.boost.org/trac/boost/ticket/6219
   macx: DEFINES += __ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES=0
 
-  # MXE cross build
-  CONFIG(mingw-cross-env)|CONFIG(mingw-cross-env-shared) {
-    DEFINES += BOOST_THREAD_USE_LIB
-    !CONFIG(mingw-cross-env-shared) {
-      DEFINES += BOOST_STATIC
-      DEFINES += Boost_USE_STATIC_LIBS
-    }
-    BOOST_LINK_FLAGS = -lboost_thread_win32-mt -lboost_program_options-mt -lboost_filesystem-mt -lboost_system-mt -lboost_regex-mt -lboost_chrono-mt
-  }
+  # MXE  BOOST_LINK_FLAGS = -lboost_thread_win32-mt 
+  #  -lboost_program_options-mt -lboost_filesystem-mt -lboost_system-mt 
+  #  -lboost_regex-mt -lboost_chrono-mt
 
-  # MSYS2
+  # MSYS2 / MXE WIN
   isEmpty(BOOST_LINK_FLAGS):win32-g++ {
     DEFINES += BOOST_STATIC
     DEFINES += BOOST_THREAD_USE_LIB
@@ -78,5 +74,7 @@ boost {
   }
 
   LIBS += $$BOOST_LINK_FLAGS
+
+}
 
 }
