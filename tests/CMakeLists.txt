@@ -1778,6 +1778,11 @@ add_cmdline_test(openscad-camtrans-viewall EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=100,-20,-10,90,0,90,6000 --viewall -o
                  SUFFIX png
                  FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
+# Perspective gimbal cam, viewall, autocenter, off-center
+add_cmdline_test(openscad-camtrans-viewall-offcenter EXE ${OPENSCAD_BINPATH}
+                 ARGS --imgsize=500,500 --camera=0,0,0,30,40,50,10 --viewall --autocenter -o
+                 SUFFIX png
+                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests-offcenter.scad)
 # Orthographic gimbal cam
 add_cmdline_test(openscad-camortho EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=100,-20,-20,90,0,90,220 --projection=o -o
