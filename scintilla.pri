@@ -20,7 +20,6 @@ scintilla {
 
   BUILDTYPE=$$(OPENSCAD_BUILD)
   contains( BUILDTYPE, MXECROSS ) {
-    include( $$(DEPLOYDIR)/mingw-cross-env/qt5/mkspecs/features/qscintilla2.prf )
     QSCILOADED=yes
   }
 

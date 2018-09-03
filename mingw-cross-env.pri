@@ -26,7 +26,7 @@ contains( BUILDTYPE, MXECROSS ) {
   LIBS += mingw-cross-env/lib/libexpat.a
   LIBS += mingw-cross-env/lib/libintl.a
   LIBS += mingw-cross-env/lib/libiconv.a
-  LIBS -= -lremoveme
+  LIBS += mingw-cross-env/qt5/lib/libqscintilla2_qt5.a
   DEFINES += BOOST_THREAD_USE_LIB
   DEFINES += GLEW_STATIC
   DEFINES += LIBXML_STATIC
