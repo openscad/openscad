@@ -109,8 +109,8 @@ else
 fi
 
 # upgrade gcc, mxe dfaults with old gcc, which can crash during build
-if [ "`grep =.5.... ./src/gcc.mk`" ]; then
- sed -i s/"= 5...."/"= 7.3.0"/g ./src/gcc.mk
+if [ "`grep VERSION..:=.5.... ./src/gcc.mk`" ]; then
+ sed -i s/"VERSION  := 5...."/"VERSION  := 7.3.0"/g ./src/gcc.mk
  make update-checksum-gcc
 fi
 

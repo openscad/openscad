@@ -215,7 +215,7 @@ After that, follow the Compilation instructions below.
 
 ### Building for Windows
 
-OpenSCAD for Windows is usually cross-compiled from Linux using the 
+OpenSCAD for Windows is usually cross-compiled from Debian Linux using the 
 [http://mxe.cc](http://mxe.cc) system. However it can also be built under 
 Windows using Msys2 (http://www.msys2.org/). If you wish to attempt an 
 MSVC build on Windows, please see this site: 
