@@ -227,9 +227,7 @@ bash shell and run the script that sets up the environment variables.
     source ./scripts/setenv-mingw-xbuild.sh 64
 
 Then make sure you have the requirements for the MXE system, listed at 
-http://mxe.cc/#requirements . For debian/ubuntu, this will apt install them:
-
-    sudo ./scripts/mingw-x-build-dependencies.sh getdeps
+http://mxe.cc/#requirements .
 
 Now build MXE itself, under `$HOME/openscad_deps/mxe`, like so:
 
