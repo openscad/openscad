@@ -25,6 +25,8 @@ if [ ! -f $OPENSCADDIR/openscad.pro ]; then
   exit 0
 fi
 
+source $OPENSCADDIR/scripts/setenv_homebrew.sh
+
 log "Listing homebrew configuration"
 time brew config
 
