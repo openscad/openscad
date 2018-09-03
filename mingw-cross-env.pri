@@ -5,7 +5,7 @@ CONFIG(mingw-cross-env) {
   LIBS += mingw-cross-env/lib/libglew32s.a 
   LIBS += mingw-cross-env/lib/libglut.a 
   LIBS += mingw-cross-env/lib/libopengl32.a 
-  LIBS += mingw-cross-env/lib/libboost_thread_win32-mt.a
+#  LIBS += mingw-cross-env/lib/libboost_thread_win32-mt.a
   LIBS += mingw-cross-env/lib/libGLEW.a 
 #  exists( mingw-cross-env/lib/libglaux.a ) {
 #    LIBS += mingw-cross-env/lib/libglaux.a

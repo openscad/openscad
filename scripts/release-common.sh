@@ -308,6 +308,10 @@ case $OS in
                 make $TARGET -j$NUMCPU
             fi
         fi
+        if [[ $? != 0 ]]; then
+           echo "Error building OpenSCAD. Stopping."
+           exit 1
+        fi
         if [ ! -e $TARGET/openscad.exe ]; then
             echo "cant find $TARGET/openscad.exe. build failed. stopping."
             exit
