@@ -215,9 +215,10 @@ After that, follow the Compilation instructions below.
 
 ### Building for Windows
 
-OpenSCAD for Windows is usually cross-compiled from Debian Linux using the 
-[http://mxe.cc](http://mxe.cc) system. However it can also be built under 
-Windows using Msys2 (http://www.msys2.org/). If you wish to attempt an 
+OpenSCAD for Windows is usually cross-compiled from Debian Linux using a 
+[https://github.com/openscad/mxe](slightly tweaked) version of the 
+[http://mxe.cc](MXE) cross-build system. However it can also be built under 
+Windows using [http://www.msys2.org/](Msys2). If you wish to attempt an 
 MSVC build on Windows, please see this site: 
 https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Windows
 
@@ -234,8 +235,8 @@ Now build MXE itself, under `$HOME/openscad_deps/mxe`, like so:
     ./scripts/mingw-x-build-dependencies.sh 64
 
 Note that this process can take several hours, and tens of gigabytes of 
-disk space, as all dependencies, including qt, must be cross-built. To 
-build the openscad.exe binary:
+disk space, as all dependencies, including qt, must be cross-built. After
+that is complete, build the openscad.exe binary:
 
     cd mingw64.static.posix
     qmake ..
