@@ -18,7 +18,7 @@ scintilla {
     }
   }
 
-  BUILDTYPE=$$(OPENSCAD_BUILD)
+  BUILDTYPE=$$(OPENSCAD_BUILDTYPE)
   contains( BUILDTYPE, MXECROSS ) {
     QSCILOADED=yes
   }

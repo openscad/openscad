@@ -92,14 +92,14 @@ if [ "`echo $* | grep clean`" ]; then
   PATH=$MINGWX_SAVED_ORIGINAL_PATH
   MINGWX_SAVED_ORIGINAL_PATH=
   MXEQTSUBDIR=
-  OPENSCAD_BUILD=
+  OPENSCAD_BUILDTYPE=
 else
   echo 'linking' $MXETARGETDIR
   echo '     to' $DEPLOYDIR/mingw-cross-env
   rm -f $DEPLOYDIR/mingw-cross-env
   ln -s $MXETARGETDIR $DEPLOYDIR/mingw-cross-env
   PKG_CONFIG_PATH=$DEPLOYDIR/mingw-cross-env/lib/pkgconfig
-  OPENSCAD_BUILD=MXECROSS
+  OPENSCAD_BUILDTYPE=MXECROSS
 fi
 
 export OPENSCAD_LIBRARIES

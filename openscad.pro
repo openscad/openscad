@@ -201,7 +201,7 @@ mdi {
 include(common.pri)
 
 # mingw has to come after other items so OBJECT_DIRS will work properly
-BUILDTYPE=$$(OPENSCAD_BUILD)
+BUILDTYPE=$$(OPENSCAD_BUILDTYPE)
 contains( BUILDTYPE, MXECROSS ) {
   include(mingw-cross-env.pri)
 }

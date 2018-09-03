@@ -1,5 +1,5 @@
 boost {
-BUILDTYPE=$$(OPENSCAD_BUILD)
+BUILDTYPE=$$(OPENSCAD_BUILDTYPE)
 !contains( BUILDTYPE, MXECROSS ) {
 
   # Optionally specify location of boost using the

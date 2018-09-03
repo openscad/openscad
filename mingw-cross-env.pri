@@ -1,5 +1,5 @@
 # cross compilation unix->win32
-BUILDTYPE=$$(OPENSCAD_BUILD)
+BUILDTYPE=$$(OPENSCAD_BUILDTYPE)
 contains( BUILDTYPE, MXECROSS ) {
   message("mxe cross")
   LIBS += mingw-cross-env/lib/libglew32s.a 
