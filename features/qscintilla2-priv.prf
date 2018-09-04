@@ -13,7 +13,8 @@ LIBS += -L$$[QT_INSTALL_LIBS]
 mingw-cross-env* {
     CONFIG += qscintilla2
 } else {
-QT5LIB=qt5scintilla2
+    QT5LIB=qt5scintilla2
+}
 
 unix:linux* {
     FEDORA32LIBS=/usr/lib/libqscintilla2-qt5.so
@@ -54,5 +55,4 @@ CONFIG(debug, debug|release) {
         }
       }
     }
-}
 }

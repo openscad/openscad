@@ -21,7 +21,7 @@ OPENSCAD_LIBDIR = $$(OPENSCAD_LIBRARIES)
 # debug builds, so we supply our own
 isEmpty(QSCILOADED) {
   win32|macx: {
-    include(qscintilla2.prf)
+    include(qscintilla2-priv.prf)
     QSCILOADED=yes
   }
 }
@@ -41,6 +41,6 @@ isEmpty(QSCILOADED) {
   # prf file in the wrong location so it's not picked up by qmake
   #
   message("Using local copy of qscintilla2.prf instead.")
-  include(qscintilla2.prf)
+  include(qscintilla2-priv.prf)
   QSCILOADED=yes
 }
