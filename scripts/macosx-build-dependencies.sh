@@ -5,19 +5,21 @@
 # 
 # This script must be run from the OpenSCAD source root directory
 #
-# Usage: macosx-build-dependencies.sh [-16lcdf] [<package>]
+# Usage: macosx-build-dependencies.sh [-16lcdfv] [<package>]
 #  -3   Build using C++03 and libstdc++ (default is C++11 and libc++)
 #  -l   Force use of LLVM compiler
 #  -c   Force use of clang compiler
 #  -d   Build for deployment (if not specified, e.g. Sparkle won't be built)
 #  -f   Force build even if package is installed
+#  -v   Verbose
 #
 # Prerequisites:
 # - MacPorts: curl, cmake
 #
-# FIXME:
-# o Verbose option
-#
+
+if [ "`echo $* | grep \\\-v `" ]; then
+  set -x
+fi
 
 BASEDIR=$PWD/../libraries
 OPENSCADDIR=$PWD
@@ -36,7 +38,7 @@ PACKAGES=(
     "gmp 6.1.2"
     "mpfr 3.1.6"
     "boost 1.65.1"
-    "qt5 5.10.1"
+    "qt5 5.11.1"
     "qscintilla 2.9.3"
     "cgal 4.11"
     "glew 1.13.0"
@@ -57,13 +59,14 @@ DEPLOY_PACKAGES=(
 
 printUsage()
 {
-  echo "Usage: $0 [-3lcdf] [<package>]"
+  echo "Usage: $0 [-3lcdfv] [<package>]"
   echo
   echo "  -3   Build using C++03 and libstdc++"
   echo "  -l   Force use of LLVM compiler"
   echo "  -c   Force use of clang compiler"
   echo "  -d   Build for deployment"
   echo "  -f   Force build even if package is installed"
+  echo "  -v   Verbose"
   echo
   echo "  If <package> is not specified, builds all packages"
 }
@@ -218,10 +221,13 @@ build_qt5()
   if ! $USING_CXX11; then
     QT_EXTRA_FLAGS="-no-c++11"
   fi
+  if (( $version < 5.11 )) ; then
+    QT_EXTRA_FLAGS=$QT_EXTRA_FLAGS" -no-qml-debug"
+  fi
   CXXFLAGS="$CXXSTDFLAGS" ./configure -prefix $DEPLOYDIR $QT_EXTRA_FLAGS -release -opensource -confirm-license \
 		-nomake examples -nomake tests \
 		-no-xcb -no-glib -no-harfbuzz -no-sql-db2 -no-sql-ibase -no-sql-mysql -no-sql-oci -no-sql-odbc \
-		-no-sql-psql -no-sql-sqlite2 -no-sql-tds -no-cups -no-qml-debug \
+		-no-sql-psql -no-sql-sqlite2 -no-sql-tds -no-cups \
                 -skip qtx11extras -skip qtandroidextras -skip qtserialport -skip qtserialbus \
                 -skip qtactiveqt -skip qtxmlpatterns -skip qtdeclarative -skip qtscxml \
                 -skip qtpurchasing -skip qtcanvas3d -skip qtgamepad -skip qtwayland \
@@ -302,7 +308,7 @@ build_mpfr()
   cd $BASEDIR/src
   rm -rf mpfr-$version
   if [ ! -f mpfr-$version.tar.bz2 ]; then
-    curl -O http://www.mpfr.org/mpfr-$version/mpfr-$version.tar.bz2
+    curl -L -O http://www.mpfr.org/mpfr-$version/mpfr-$version.tar.bz2
   fi
   tar xjf mpfr-$version.tar.bz2
   cd mpfr-$version
@@ -598,7 +604,7 @@ build_fontconfig()
   cd "$BASEDIR"/src
   rm -rf "fontconfig-$version"
   if [ ! -f "fontconfig-$version.tar.gz" ]; then
-    curl --insecure -LO "http://www.freedesktop.org/software/fontconfig/release/fontconfig-$version.tar.gz"
+    curl -LO "https://www.freedesktop.org/software/fontconfig/release/fontconfig-$version.tar.gz"
   fi
   tar xzf "fontconfig-$version.tar.gz"
   cd "fontconfig-$version"
@@ -718,20 +724,17 @@ check_harfbuzz()
 build_harfbuzz()
 {
   version=$1
-  extra_config_flags="--with-coretext=auto --with-glib=no"
+  extra_config_flags="--with-coretext=auto --with-glib=no --disable-gtk-doc-html"
 
   echo "Building harfbuzz $version..."
   cd "$BASEDIR"/src
   rm -rf "harfbuzz-$version"
   if [ ! -f "harfbuzz-$version.tar.gz" ]; then
-    curl --insecure -LO "http://cgit.freedesktop.org/harfbuzz/snapshot/harfbuzz-$version.tar.gz"
+    curl -LO "https://www.freedesktop.org/software/harfbuzz/release/harfbuzz-$version.tar.bz2"
   fi
-  tar xzf "harfbuzz-$version.tar.gz"
+  tar xzf "harfbuzz-$version.tar.bz2"
   cd "harfbuzz-$version"
-  # disable doc directories as they make problems on Mac OS Build
-  sed -e "s/SUBDIRS = src util test docs/SUBDIRS = src util test/g" Makefile.am > Makefile.am.bak && mv Makefile.am.bak Makefile.am
-  sed -e "s/^docs.*$//" configure.ac > configure.ac.bak && mv configure.ac.bak configure.ac
-  PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" ./autogen.sh --prefix="$DEPLOYDIR" --with-freetype=yes --with-gobject=no --with-cairo=no --with-icu=no CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN CXXFLAGS="$CXXFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="$CXXFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN" $extra_config_flags
+  PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" ./configure --prefix="$DEPLOYDIR" --with-freetype=yes --with-gobject=no --with-cairo=no --with-icu=no CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN CXXFLAGS="$CXXFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="$CXXFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN" $extra_config_flags
   make -j$NUMCPU
   make install
   install_name_tool -id @rpath/libharfbuzz.dylib $DEPLOYDIR/lib/libharfbuzz.dylib
@@ -743,7 +746,7 @@ if [ ! -f $OPENSCADDIR/openscad.pro ]; then
 fi
 OPENSCAD_SCRIPTDIR=$PWD/scripts
 
-while getopts '3lcdf' c
+while getopts '3lcdfv' c
 do
   case $c in
     3) USING_CXX11=false;;
@@ -751,6 +754,7 @@ do
     c) OPTION_CLANG=true;;
     d) OPTION_DEPLOY=true;;
     f) OPTION_FORCE=1;;
+    v) echo verbose on;;
     *) printUsage;exit 1;;
   esac
 done
@@ -758,7 +762,13 @@ done
 OPTION_PACKAGES="${@:$OPTIND}"
 
 OSX_VERSION=`sw_vers -productVersion | cut -d. -f2`
-if (( $OSX_VERSION >= 11 )); then
+if (( $OSX_VERSION >= 14 )); then
+  echo "Detected Mojave (10.14) or later"
+elif (( $OSX_VERSION >= 13 )); then
+  echo "Detected High Sierra (10.13) or later"
+elif (( $OSX_VERSION >= 12 )); then
+  echo "Detected Sierra (10.12) or later"
+elif (( $OSX_VERSION >= 11 )); then
   echo "Detected El Capitan (10.11) or later"
 elif (( $OSX_VERSION >= 10 )); then
   echo "Detected Yosemite (10.10) or later"
@@ -840,3 +850,8 @@ for package in $OPTION_PACKAGES; do
     echo "Skipping unknown package $package"
   fi
 done
+
+if [ "`echo $* | grep \\\-v `" ]; then
+  set +x
+  echo verbose macosx dependency build finished running
+fi
