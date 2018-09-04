@@ -365,6 +365,7 @@ foreach(GLLIB ${OPENGL_LIBRARIES})
   message(STATUS "  " ${GLLIB})
 endforeach()
 if (UNIX)
+ if (NOT APPLE)
   # see github issue 1355. as of writing the code for offscreen GL context
   # setup requires X11 on Un*x like systems (not Apple/Win).
   find_package(X11 REQUIRED)
@@ -373,6 +374,7 @@ if (UNIX)
   foreach(XLIB ${X11_LIBRARIES})
     message(STATUS "  " ${XLIB})
   endforeach()
+ endif()
 endif()
 
 # GLEW

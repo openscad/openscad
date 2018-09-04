@@ -30,7 +30,7 @@ before_install:
  # Fix for "write error" build failures  ( https://github.com/travis-ci/travis-ci/issues/8920 )
  - python -c "import fcntl; fcntl.fcntl(1, fcntl.F_SETFL, 0)"
  - if [[ "$DIST" == "trusty" ]]; then wget -qO - http://files.openscad.org/OBS-Repository-Key.pub | sudo apt-key add - ; echo 'yes' | sudo add-apt-repository 'deb http://download.opensuse.org/repositories/home:/t-paul:/lib3mf/xUbuntu_14.04/ ./' ; sudo apt-get update -qq ; sudo apt-get purge -qq fglrx ; sudo apt-get install -qq build-essential qtbase5-dev libqt5opengl5-dev qtmultimedia5-dev libxmu-dev cmake bison flex git-core libboost-all-dev libxi-dev libmpfr-dev libboost-dev libglew-dev libeigen3-dev libcgal-dev libgmp3-dev libgmp-dev curl imagemagick libfontconfig-dev libopencsg-dev libharfbuzz-dev libzip-dev lib3mf-dev ; fi
- - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ./scripts/macosx-build-homebrew.sh ; fi
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then source ./scripts/setenv_homebrew.sh ; ./scripts/macosx-build-homebrew.sh ; fi
 
 branches:
   only:

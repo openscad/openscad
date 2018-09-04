@@ -157,6 +157,7 @@ After building dependencies using one of the following three options, follow the
 
 1. **Homebrew** (assumes [Homebrew](https://brew.sh/) is already installed)
 
+        source scripts/setenv_homebrew.sh
         ./scripts/macosx-build-homebrew.sh
 
 1. **MacPorts** (assumes [MacPorts](https://www.macports.org/) is already installed)

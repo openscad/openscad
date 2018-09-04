@@ -25,6 +25,8 @@ if [ ! -f $OPENSCADDIR/openscad.pro ]; then
   exit 0
 fi
 
+source $OPENSCADDIR/scripts/setenv_homebrew.sh
+
 log "Listing homebrew configuration"
 time brew config
 
@@ -44,7 +46,7 @@ $TAP tap openscad/homebrew-tap
 # FIXME: We used to require unlinking boost, but doing so also causes us to lose boost.
 # Disabling until we can figure out why we unlinked in the first place
 # brew unlink boost
-for formula in eigen boost cgal glew glib opencsg freetype libzip libxml2 fontconfig harfbuzz qt5 qscintilla2 imagemagick ccache; do
+for formula in eigen boost cgal glew glib opencsg freetype libzip libxml2 fontconfig harfbuzz qt5 qscintilla2 imagemagick ccache pkg-config cmake; do
   log "Installing formula $formula"
   brew ls --versions $formula
   time brew install $formula
