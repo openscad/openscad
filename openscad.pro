@@ -21,15 +21,12 @@
 #
 # https://en.wikibooks.org/wiki/OpenSCAD_User_Manual
 
-!experimental {
-  message("If you're building a development binary, consider adding CONFIG+=experimental")
-}
+include(defaults.pri)
 
-isEmpty(QT_VERSION) {
-  error("Please use qmake for Qt 4 or Qt 5 (probably qmake-qt4)")
-}
+# Local settings are read from local.pri
+exists(local.pri): include(local.pri)
 
-# Auto-include config_<variant>.pri if the VARIANT variable is give on the
+# Auto-include config_<variant>.pri if the VARIANT variable is given on the
 # command-line, e.g. qmake VARIANT=mybuild
 !isEmpty(VARIANT) {
   message("Variant: $${VARIANT}")
@@ -39,6 +36,15 @@ isEmpty(QT_VERSION) {
   }
 }
 
+debug {
+  experimental {
+    message("Building experimental debug version")
+  }
+  else {
+    message("If you're building a development binary, consider adding CONFIG+=experimental")
+  }
+}
+  
 # If VERSION is not set, populate VERSION, VERSION_YEAR, VERSION_MONTH from system date
 include(version.pri)
 
@@ -58,8 +64,10 @@ deploy {
     QMAKE_RPATHDIR = @executable_path/../Frameworks
   }
 }
-snapshot: DEFINES += OPENSCAD_SNAPSHOT
-
+snapshot {
+  DEFINES += OPENSCAD_SNAPSHOT
+}
+  
 macx {
   TARGET = OpenSCAD
 }
@@ -148,15 +156,12 @@ netbsd* {
   QMAKE_CXXFLAGS_WARN_ON += -Wno-sign-compare
 }
 
-has_ccache: CONFIG += ccache
-
-CONFIG(skip-version-check) {
+skip-version-check {
   # force the use of outdated libraries
   DEFINES += OPENSCAD_SKIP_VERSION_CHECK
 }
 
 # Application configuration
-macx:CONFIG += mdi
 CONFIG += c++11
 CONFIG += cgal
 CONFIG += opencsg
@@ -191,6 +196,8 @@ mdi {
 
 include(common.pri)
 
+!has_ccache: CONFIG -= ccache
+   
 # mingw has to come after other items so OBJECT_DIRS will work properly
 CONFIG(mingw-cross-env)|CONFIG(mingw-cross-env-shared) {
   include(mingw-cross-env.pri)
