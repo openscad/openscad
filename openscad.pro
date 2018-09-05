@@ -161,6 +161,8 @@ skip-version-check {
   DEFINES += OPENSCAD_SKIP_VERSION_CHECK
 }
 
+isEmpty(PKG_CONFIG):PKG_CONFIG = pkg-config
+
 # Application configuration
 CONFIG += c++11
 CONFIG += cgal

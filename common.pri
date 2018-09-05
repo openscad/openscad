@@ -25,8 +25,6 @@ macx:isEmpty(OPENSCAD_LIBDIR) {
   QMAKE_LIBDIR = $$OPENSCAD_LIBDIR/lib
 }
 
-isEmpty(PKG_CONFIG):PKG_CONFIG = pkg-config
-
 include(qt.pri)
 include(win.pri)
 include(flex.pri)
