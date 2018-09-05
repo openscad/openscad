@@ -6,8 +6,6 @@
 # 2. OPENSCAD_LIBRARIES (environment variable)
 # 3. system's standard include paths from pkg-config
 
-freetype {
-
 # read environment variables
 OPENSCAD_LIBRARIES_DIR = $$(OPENSCAD_LIBRARIES)
 FREETYPE_DIR = $$(FREETYPEDIR)
@@ -22,17 +20,16 @@ FREETYPE_DIR = $$(FREETYPEDIR)
 }
 
 isEmpty(FREETYPE_INCLUDEPATH) {
-  FREETYPE_CFLAGS = $$system("pkg-config --cflags freetype2")
+  FREETYPE_CFLAGS = $$system("$$PKG_CONFIG --cflags freetype2")
 } else {
   FREETYPE_CFLAGS = -I$$FREETYPE_INCLUDEPATH
 }
 
 isEmpty(FREETYPE_LIBPATH) {
-  FREETYPE_LIBS = $$system("pkg-config --libs freetype2")
+  FREETYPE_LIBS = $$system("$$PKG_CONFIG --libs freetype2")
 } else {
   FREETYPE_LIBS = -L$$FREETYPE_LIBPATH -lfreetype
 }
 
 QMAKE_CXXFLAGS += $$FREETYPE_CFLAGS
 LIBS += $$FREETYPE_LIBS
-}

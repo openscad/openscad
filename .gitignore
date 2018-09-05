@@ -46,8 +46,8 @@ testdata/scad/misc/use-tests.scad
 /locale/POTFILES
 /tmp
 /nbproject
-/mingw32
-/mingw64
+/mingw32.*
+/mingw64.*
 src/*.org
 src/*.old
 src/*.debug
@@ -61,3 +61,4 @@ CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
 OpenSCAD_autogen
+/local.pri

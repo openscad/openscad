@@ -25,24 +25,11 @@ macx:isEmpty(OPENSCAD_LIBDIR) {
   QMAKE_LIBDIR = $$OPENSCAD_LIBDIR/lib
 }
 
+isEmpty(PKG_CONFIG):PKG_CONFIG = pkg-config
 
 include(qt.pri)
 include(win.pri)
 include(flex.pri)
 include(bison.pri)
-include(cgal.pri)
-include(opencsg.pri)
 include(opengl.pri)
-include(glew.pri)
-include(eigen.pri)
-include(boost.pri)
-include(glib-2.0.pri)
-include(gettext.pri)
-include(libxml2.pri)
-include(sparkle.pri)
-include(harfbuzz.pri)
-include(freetype.pri)
-include(fontconfig.pri)
-include(scintilla.pri)
 include(c++11.pri)
-include(libzip.pri)

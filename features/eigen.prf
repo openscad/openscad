@@ -5,8 +5,6 @@
 # 1. OPENSCAD_LIBRARIES eigen3
 # 3. system's standard include paths for eigen3
 
-eigen {
-
 # read environment variables
 OPENSCAD_LIBRARIES_DIR = $$(OPENSCAD_LIBRARIES)
 EIGEN_DIR = $$(EIGENDIR)
@@ -34,7 +32,7 @@ isEmpty(EIGEN_INCLUDEPATH) {
 }
 
 !exists($$EIGEN_INCLUDEPATH/Eigen/Core) {
-  EIGEN_CFLAGS = $$system("pkg-config --cflags eigen3")
+  EIGEN_CFLAGS = $$system("$$PKG_CONFIG --cflags eigen3")
   EIGEN_INCLUDEPATH = $$replace(EIGEN_CFLAGS,"-I","")
 }
 
@@ -57,4 +55,3 @@ netbsd* {
   QMAKE_CXXFLAGS = -I$$EIGEN_INCLUDEPATH $$QMAKE_CXXFLAGS
 }
 
-} # eigen
