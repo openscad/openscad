@@ -17,6 +17,13 @@ OPENSCAD_LIBDIR = $$(OPENSCAD_LIBRARIES)
   }
 }
 
+mingw-cross-env*: {
+  load(qscintilla2) {
+    # MinGW/MXE has good *.prf file.
+    QSCILOADED=yes
+  }
+}
+
 # The qscintilla2.prf which ships with QScintilla is broken for Mac/Windows
 # debug builds, so we supply our own
 isEmpty(QSCILOADED) {
