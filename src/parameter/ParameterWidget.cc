@@ -67,7 +67,7 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 	this->valueChanged=false;
 }
 
-//resets all parameters to the currently parameter set
+//resets all parameters to the currently selected parameter set
 void ParameterWidget::resetParameter()
 {
 	if(this->valueChanged){
@@ -88,9 +88,11 @@ void ParameterWidget::resetParameter()
 
 	removeChangeIndicator(currPreset);
 
-	const std::string v = comboBoxPreset->itemData(currPreset).toString().toUtf8().constData();
 	defaultParameter();
-	applyParameterSet(v);
+	if(comboBoxPreset->currentIndex() != 0){ //0 is "design default values"
+		const std::string v = comboBoxPreset->itemData(currPreset).toString().toUtf8().constData();
+		applyParameterSet(v);
+	}
 	emit previewRequested();
 }
 
