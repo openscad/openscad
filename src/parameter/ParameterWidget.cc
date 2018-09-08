@@ -67,6 +67,7 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 	this->valueChanged=false;
 }
 
+//resets all parameters to the currently parameter set
 void ParameterWidget::resetParameter()
 {
 	if(this->valueChanged){
@@ -88,6 +89,7 @@ void ParameterWidget::resetParameter()
 	removeChangeIndicator(currPreset);
 
 	const std::string v = comboBoxPreset->itemData(currPreset).toString().toUtf8().constData();
+	defaultParameter();
 	applyParameterSet(v);
 	emit previewRequested();
 }
@@ -414,7 +416,7 @@ ParameterVirtualWidget* ParameterWidget::CreateParameterWidget(std::string param
 	return entry;
 }
 
-//reset all parameters to the default value
+//reset all parameters to the default value of the design file
 void ParameterWidget::defaultParameter(){
 	for (const auto &entry : entries) {
 		entry.second->value=entry.second->defaultValue;
