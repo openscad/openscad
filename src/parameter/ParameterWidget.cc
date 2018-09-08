@@ -463,7 +463,15 @@ void ParameterWidget::updateParameterSet(std::string setName)
 		msgBox.addButton(QMessageBox::No);
 		msgBox.setDefaultButton(QMessageBox::No);
 
-		if (msgBox.exec() != QMessageBox::Yes) {
+		if (msgBox.exec() == QMessageBox::Yes) {
+			//delete the preexisting preset to avoid side efects
+			boost::optional<pt::ptree &> sets = setMgr->parameterSets();
+			if (sets.is_initialized()) {
+				sets.get().erase(pt::ptree::key_type(setName));
+			}
+			
+			this->comboBoxPreset->removeItem(this->comboBoxPreset->findData(QString::fromStdString(setName)));
+		}else{
 			setName = "";
 		}
 	}
