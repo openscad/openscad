@@ -1358,6 +1358,10 @@ void MainWindow::writeBackup(QFile *file)
 	writer.setCodec("UTF-8");
 	writer << this->editor->toPlainText();
 
+	if (Feature::ExperimentalCustomizer.is_enabled()) {
+		this->parameterWidget->writeFileIfNotEmpty(file->fileName());
+	}
+	
 	PRINTB("Saved backup file: %s", file->fileName().toUtf8().constData());
 }
 
@@ -1463,6 +1467,7 @@ void MainWindow::actionSaveAs()
 		}
 		if (Feature::ExperimentalCustomizer.is_enabled()) {
 			this->parameterWidget->writeFileIfNotEmpty(new_filename);
+			this->parameterWidget->setFile(this->fileName);
 		}
 		setFileName(new_filename);
 		actionSave();
