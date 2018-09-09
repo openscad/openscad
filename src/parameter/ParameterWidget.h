@@ -60,6 +60,8 @@ private:
 	void setComboBoxPresetForSet();
 	void removeChangeIndicator(int idx);
 
+	void setFile(QString File);
+
 	bool unreadableFileExists=false;
 	entry_map_t entries;
 	std::vector<std::string> ParameterPos;
@@ -71,9 +73,9 @@ public:
 	~ParameterWidget();
 	void readFile(QString scadFile);
 	void writeFileIfNotEmpty(QString scadFile);
+	void writeBackupFile(QString scadFile);
 	void setParameters(const FileModule* module,bool);
 	void applyParameters(FileModule *fileModule);
-	void setFile(QString File);
 
 protected slots:
 	void onValueChanged();

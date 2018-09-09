@@ -174,12 +174,24 @@ void ParameterWidget::readFile(QString scadFile)
 
 }
 
+//Write the json file if the parameter sets are not empty.
+//This prevents creating unneccesary json filess.
+//This methode also updates the UI state (change indicator, file name, ...)
 void ParameterWidget::writeFileIfNotEmpty(QString scadFile)
 {
 	setFile(scadFile);
 	if (!setMgr->isEmpty()){
 		writeParameterSets();
 	}
+}
+
+//Write the json file without side effects (e.g. change indicator, file name)
+//This is e.g. useful when saving hidden back up files.
+void ParameterWidget::writeBackupFile(QString scadFile)
+{
+	boost::filesystem::path p = scadFile.toStdString();
+	auto jsonFile = p.replace_extension(".json").string();
+	setMgr->writeParameterSet(jsonFile);
 }
 
 void ParameterWidget::setParameters(const FileModule* module,bool rebuildParameterWidget)
