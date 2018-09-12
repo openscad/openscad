@@ -90,7 +90,7 @@ signals:
 
 protected:
 	void applyParameterSet(std::string setName);
-	void updateParameterSet(std::string setName);
+	void updateParameterSet(std::string setName, bool newSet=false);
 	void writeParameterSets();
 };
 

@@ -117,7 +117,7 @@ void ParameterWidget::onSetAdd()
 		pt::ptree setRoot;
 		setMgr->addChild(ParameterSet::parameterSetsKey, setRoot);
 	}
-	updateParameterSet("");
+	updateParameterSet("",true);
 }
 
 void ParameterWidget::onSetSaveButton()
@@ -439,9 +439,9 @@ void ParameterWidget::applyParameterSet(std::string setName)
 	}
 }
 
-void ParameterWidget::updateParameterSet(std::string setName)
+void ParameterWidget::updateParameterSet(std::string setName, bool newSet)
 {
-	if (setName == "") {
+	if (newSet && setName == "") {
 		QInputDialog *setDialog = new QInputDialog();
 
 		bool ok = true;
@@ -455,7 +455,7 @@ void ParameterWidget::updateParameterSet(std::string setName)
 	}
 
 	//check for duplicates
-	if(setMgr->setNameExists(setName)){
+	if(newSet && setMgr->setNameExists(setName)){
 		QMessageBox msgBox;
 		msgBox.setWindowTitle(QString(_("Set Name %1 allready exists")).arg(QString::fromStdString(setName)));
 		msgBox.setText(QString(_("The set name  %1 allready exists. Do you want overwrite it?")).arg(QString::fromStdString(setName)));
