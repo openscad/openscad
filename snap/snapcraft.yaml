@@ -20,7 +20,7 @@ confinement: strict
 apps:
   openscad-nightly:
     command: desktop-launch openscad-nightly
-    plugs: [opengl]
+    plugs: [desktop, x11, wayland, opengl]
 
 parts:
   openscad-nightly:
