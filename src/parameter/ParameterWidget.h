@@ -84,6 +84,7 @@ protected slots:
 	void onSetSaveButton();
 	void onSetDelete();
 	void resetParameter();
+	void defaultParameter();
 
 signals:
 	void previewRequested(bool rebuildParameterUI=true);

@@ -168,7 +168,7 @@
      <item>
       <widget class="QPushButton" name="reset">
        <property name="toolTip">
-        <string>reset the parameters to the selected preset</string>
+        <string>reset all parameters to the currently selected preset</string>
        </property>
        <property name="text">
         <string>Reset</string>

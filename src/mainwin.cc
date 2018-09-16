@@ -909,7 +909,7 @@ void MainWindow::refreshDocument()
 			PRINTB("Loaded design '%s'.", this->fileName.toLocal8Bit().constData());
 			if (editor->toPlainText() != text) {
 				editor->setPlainText(text);
-				this->contentschanged = true;
+				setContentsChanged();
 			}
 		}
 	}
@@ -2813,6 +2813,7 @@ void MainWindow::openCSGSettingsChanged()
 void MainWindow::setContentsChanged()
 {
 	this->contentschanged = true;
+	this->parameterWidget->setEnabled(false);
 }
 
 void MainWindow::processEvents()
