@@ -121,7 +121,7 @@ void ParameterWidget::onSetAdd()
 		pt::ptree setRoot;
 		setMgr->addChild(ParameterSet::parameterSetsKey, setRoot);
 	}
-	updateParameterSet("");
+	updateParameterSet("",true);
 }
 
 void ParameterWidget::onSetSaveButton()
@@ -453,9 +453,9 @@ void ParameterWidget::applyParameterSet(std::string setName)
 	}
 }
 
-void ParameterWidget::updateParameterSet(std::string setName)
+void ParameterWidget::updateParameterSet(std::string setName, bool newSet)
 {
-	if (setName == "") {
+	if (newSet && setName == "") {
 		QInputDialog *setDialog = new QInputDialog();
 
 		bool ok = true;
@@ -465,6 +465,28 @@ void ParameterWidget::updateParameterSet(std::string setName)
 
 		if (ok) {
 			setName = result.trimmed().toStdString();
+		}
+	}
+
+	//check for duplicates
+	if(newSet && setMgr->setNameExists(setName)){
+		QMessageBox msgBox;
+		msgBox.setWindowTitle(QString(_("Set Name %1 allready exists")).arg(QString::fromStdString(setName)));
+		msgBox.setText(QString(_("The set name  %1 allready exists. Do you want overwrite it?")).arg(QString::fromStdString(setName)));
+		msgBox.setStandardButtons(QMessageBox::Yes);
+		msgBox.addButton(QMessageBox::No);
+		msgBox.setDefaultButton(QMessageBox::No);
+
+		if (msgBox.exec() == QMessageBox::Yes) {
+			//delete the preexisting preset to avoid side efects
+			boost::optional<pt::ptree &> sets = setMgr->parameterSets();
+			if (sets.is_initialized()) {
+				sets.get().erase(pt::ptree::key_type(setName));
+			}
+			
+			this->comboBoxPreset->removeItem(this->comboBoxPreset->findData(QString::fromStdString(setName)));
+		}else{
+			setName = "";
 		}
 	}
 
