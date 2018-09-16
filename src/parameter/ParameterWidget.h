@@ -67,11 +67,13 @@ private:
 	std::vector<std::string> ParameterPos;
 	ParameterExtractor *extractor;
 	ParameterSet *setMgr;
+
 public:
 	ParameterWidget(QWidget *parent = nullptr);
 	~ParameterWidget();
 	void readFile(QString scadFile);
 	void writeFileIfNotEmpty(QString scadFile);
+	void writeBackupFile(QString scadFile);
 	void setParameters(const FileModule* module,bool);
 	void applyParameters(FileModule *fileModule);
 
