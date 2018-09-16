@@ -48,12 +48,19 @@ namespace {
 	Value::VectorType flatten(Value::VectorType const& vec) {
 		int n = 0;
 		for (unsigned int i = 0; i < vec.size(); i++) {
-			assert(vec[i]->type() == Value::ValueType::VECTOR);
-			n += vec[i]->toVector().size();
+			if (vec[i]->type() == Value::ValueType::VECTOR) {
+				n += vec[i]->toVector().size();
+			} else {
+				n++;
+			}
 		}
 		Value::VectorType ret; ret.reserve(n);
 		for (unsigned int i = 0; i < vec.size(); i++) {
-			std::copy(vec[i]->toVector().begin(),vec[i]->toVector().end(),std::back_inserter(ret));
+			if (vec[i]->type() == Value::ValueType::VECTOR) {
+				std::copy(vec[i]->toVector().begin(),vec[i]->toVector().end(),std::back_inserter(ret));
+			} else {
+				ret.push_back(vec[i]);
+			}
 		}
 		return ret;
 	}

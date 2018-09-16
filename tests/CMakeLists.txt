@@ -1218,6 +1218,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1528.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1923.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/preview_variable.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1851-each-fail-on-scalar.scad
             )
 
 list(APPEND ASTDUMPTEST_FILES ${MISC_FILES}
@@ -1419,7 +1420,8 @@ experimental_tests(astdumptest_list-comprehensions-experimental
                    astdumptest_assert-expression-tests
                    astdumptest_assert-expression-fail1-test
                    astdumptest_assert-expression-fail2-test
-                   astdumptest_assert-expression-fail3-test)
+                   astdumptest_assert-expression-fail3-test
+		   echotest_issue1851-each-fail-on-scalar)
 
 # Test config handling
 
