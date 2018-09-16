@@ -1529,7 +1529,7 @@
      <normaloff>:/icons/prefsAdvanced.png</normaloff>:/icons/prefsAdvanced.png</iconset>
    </property>
    <property name="text">
-    <string>Advanced</string>
+    <string comment="preferences">Advanced</string>
    </property>
   </action>
   <action name="prefsActionEditor">
