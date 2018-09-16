@@ -21,6 +21,7 @@ apps:
   openscad-nightly:
     command: desktop-launch openscad-nightly
     plugs: [desktop, x11, wayland, opengl]
+    desktop: usr/share/applications/openscad-nightly.desktop
 
 parts:
   openscad-nightly:
@@ -29,7 +30,7 @@ parts:
     qt-version: qt5
     after: [desktop-qt5]
     project-files: [ "openscad.pro" ]
-    options: [ "PREFIX=/", "CONFIG+=experimental", "CONFIG-=debug", "SUFFIX=-nightly" ]
+    options: [ "PREFIX=/usr", "CONFIG+=experimental", "CONFIG-=debug", "SUFFIX=-nightly" ]
     build-packages:
     - git
     - ccache
