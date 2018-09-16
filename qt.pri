@@ -5,7 +5,3 @@
 has_qt5:!lessThan(QT_MINOR_VERSION, 4) {
   CONFIG += has_qopenglwidget
 }
-
-has_qt5:!lessThan(QT_MINOR_VERSION, 9) {
-  CONFIG += has_ccache
-}
