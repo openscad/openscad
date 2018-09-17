@@ -61,7 +61,11 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 	connect(checkBoxAutoPreview, SIGNAL(toggled(bool)), this, SLOT(onValueChanged()));
 	connect(comboBoxDetails,SIGNAL(currentIndexChanged(int)), this,SLOT(onDescriptionLoDChanged()));
 	connect(comboBoxPreset, SIGNAL(currentIndexChanged(int)), this, SLOT(onSetChanged(int)));
+	connect(comboBoxPreset->lineEdit(), SIGNAL(editingFinished()), this, SLOT(onSetNameChanged()));
 	connect(reset, SIGNAL(clicked()), this, SLOT(resetParameter()));
+
+	comboBoxPreset->setInsertPolicy(QComboBox::InsertAtCurrent);
+
 	this->extractor = new ParameterExtractor();
 	this->setMgr = new ParameterSet();
 	this->valueChanged=false;
@@ -257,6 +261,56 @@ void ParameterWidget::onSetChanged(int idx)
 	emit previewRequested(false);
 }
 
+//if the set name is changed to "" asks if the user want to delete the current preset
+//if the set name is changed and  no  values are changed, rename the current preset
+//if the set name is changed and some values are changed, create a new set
+void ParameterWidget::onSetNameChanged(){
+	this->comboBoxPreset->lineEdit()->blockSignals(true); //prevent double firing
+
+	int idx =  comboBoxPreset->currentIndex();
+
+	QString newName = this->comboBoxPreset->currentText();
+	QString oldName = comboBoxPreset->itemData(idx).toString().toUtf8().constData();
+	if(oldName == newName){
+		//nothing to do
+	}else if(oldName ==""){
+		//ignore
+	}else if(newName =="" && idx!=0){
+		QMessageBox msgBox;
+		msgBox.setWindowTitle(_("Do you want to delete the current preset?"));
+		msgBox.setText(
+			QString(_("Do you want to delete the current preset '%1'?"))
+			.arg(oldName);
+		msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+		msgBox.setDefaultButton(QMessageBox::Cancel);
+
+		if (msgBox.exec() == QMessageBox::Cancel) {
+			comboBoxPreset->setCurrentText(oldName);
+		}else{
+			onSetDelete();
+		}
+	}else{
+		if(!this->valueChanged){
+			boost::optional<pt::ptree &> sets = setMgr->parameterSets();
+			if (sets.is_initialized()) {
+				sets.get().erase(pt::ptree::key_type(oldName.toStdString()));
+			}
+		}
+
+		if (setMgr->isEmpty()) {
+			pt::ptree setRoot;
+			setMgr->addChild(ParameterSet::parameterSetsKey, setRoot);
+		}
+
+		updateParameterSet(newName.toStdString(),true);
+
+		this->comboBoxPreset->clear();
+		setComboBoxPresetForSet();
+		this->comboBoxPreset->setCurrentIndex(this->comboBoxPreset->findData(newName));
+	}
+	this->comboBoxPreset->lineEdit()->blockSignals(false);
+}
+
 void ParameterWidget::onDescriptionLoDChanged()
 {
 	descriptionLoD =static_cast<DescLoD>(comboBoxDetails->currentIndex());
@@ -266,10 +320,7 @@ void ParameterWidget::onDescriptionLoDChanged()
 void ParameterWidget::onValueChanged()
 {
 	if(!this->valueChanged){
-		this->comboBoxPreset->setItemText(
-			this->comboBoxPreset->currentIndex(),
-			this->comboBoxPreset->currentText() +" *"
-		);
+		this->labelChangeIndicator->setText("*");
 	}
 	this->valueChanged=true;
 
@@ -543,8 +594,5 @@ void ParameterWidget::writeParameterSets()
 
 void ParameterWidget::removeChangeIndicator(int idx)
 {
-	this->comboBoxPreset->setItemText(
-		idx,
-		comboBoxPreset->itemData(idx).toString()
-	);
+	this->labelChangeIndicator->setText("");
 }

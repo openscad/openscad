@@ -82,6 +82,7 @@ protected slots:
 	void onPreviewTimerElapsed();
 	void onDescriptionLoDChanged();
 	void onSetChanged(int idx);
+	void onSetNameChanged();
 	void onSetAdd();
 	void onSetSaveButton();
 	void onSetDelete();
