@@ -71,6 +71,9 @@ void Camera::viewAll(const BoundingBox &bbox)
             this->eye = this->center - dir;
         }
 	}
+	else
+        if(this->type == CameraType::GIMBAL)
+            this->center = -this->object_trans;
 
 	double bboxRadius = bbox.diagonal().norm()/2;
 	double radius = (bbox.center()-this->center).norm() + bboxRadius;

@@ -109,11 +109,11 @@ void GLView::setupCamera()
 			break;
 		}
 		}
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
 		gluLookAt(0.0, -dist, 0.0,
 							0.0, 0.0, 0.0,
 							0.0, 0.0, 1.0);
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
 		glRotated(cam.object_rot.x(), 1.0, 0.0, 0.0);
 		glRotated(cam.object_rot.y(), 0.0, 1.0, 0.0);
 		glRotated(cam.object_rot.z(), 0.0, 0.0, 1.0);
@@ -351,8 +351,8 @@ void GLView::initializeGL()
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   GLfloat light_diffuse[] = {1.0, 1.0, 1.0, 1.0};
-  GLfloat light_position0[] = {-1.0, -1.0, +1.0, 0.0};
-  GLfloat light_position1[] = {+1.0, +1.0, -1.0, 0.0};
+  GLfloat light_position0[] = {-1.0, +1.0, +1.0, 0.0};
+  GLfloat light_position1[] = {+1.0, -1.0, -1.0, 0.0};
 
   glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
   glLightfv(GL_LIGHT0, GL_POSITION, light_position0);
