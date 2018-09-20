@@ -1798,6 +1798,31 @@ add_cmdline_test(openscad-cameye EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=120,80,60,0,0,0 -o
                  SUFFIX png
                  FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/camera-tests.scad)
+add_cmdline_test(openscad-cameye_front EXE ${OPENSCAD_BINPATH}
+                 ARGS --imgsize=500,500 --camera=0,-130,0,0,0,0 -o
+                 SUFFIX png
+                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/camera-tests.scad)
+add_cmdline_test(openscad-cameye_back EXE ${OPENSCAD_BINPATH}
+                 ARGS --imgsize=500,500 --camera=0,130,0,0,0,0 -o
+                 SUFFIX png
+                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/camera-tests.scad)
+add_cmdline_test(openscad-cameye_left EXE ${OPENSCAD_BINPATH}
+                 ARGS --imgsize=500,500 --camera=-130,0,0,0,0,0 -o
+                 SUFFIX png
+                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/camera-tests.scad)
+add_cmdline_test(openscad-cameye_right EXE ${OPENSCAD_BINPATH}
+                 ARGS --imgsize=500,500 --camera=130,0,0,0,0,0 -o
+                 SUFFIX png
+                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/camera-tests.scad)
+add_cmdline_test(openscad-cameye_top EXE ${OPENSCAD_BINPATH}
+                 ARGS --imgsize=500,500 --camera=0,0,130,0,0,0 -o
+                 SUFFIX png
+                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/camera-tests.scad)
+add_cmdline_test(openscad-cameye_bottom EXE ${OPENSCAD_BINPATH}
+                 ARGS --imgsize=500,500 --camera=0,0,-130,0,0,0 -o
+                 SUFFIX png
+                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/camera-tests.scad)
+
 # Perspective vector cam
 add_cmdline_test(openscad-cameye2 EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=160,140,130,0,0,0 -o
