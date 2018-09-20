@@ -1338,6 +1338,9 @@ disable_tests(
 
   # Has floating point rounding issues
   dumptest-examples_module_recursion
+
+  # z-fighting different on different machines
+  throwntogethertest_issue1803
 )
 
 # 2D tests
