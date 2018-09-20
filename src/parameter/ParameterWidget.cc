@@ -90,7 +90,7 @@ void ParameterWidget::resetParameter()
 
 	int currPreset = this->comboBoxPreset->currentIndex();
 
-	removeChangeIndicator(currPreset);
+	removeChangeIndicator();
 
 	defaultParameter();
 	if(comboBoxPreset->currentIndex() != 0){ //0 is "design default values"
@@ -249,7 +249,7 @@ void ParameterWidget::onSetChanged(int idx)
 	}
 	this->valueChanged=false;
 	
-	removeChangeIndicator(lastComboboxIndex);
+	removeChangeIndicator();
 
 	this->lastComboboxIndex = idx;
 	defaultParameter();
@@ -280,7 +280,7 @@ void ParameterWidget::onSetNameChanged(){
 		msgBox.setWindowTitle(_("Do you want to delete the current preset?"));
 		msgBox.setText(
 			QString(_("Do you want to delete the current preset '%1'?"))
-			.arg(oldName);
+			.arg(oldName));
 		msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
 		msgBox.setDefaultButton(QMessageBox::Cancel);
 
@@ -569,7 +569,7 @@ void ParameterWidget::updateParameterSet(std::string setName, bool newSet)
 			this->comboBoxPreset->addItem(s, QVariant(s));
 			this->comboBoxPreset->setCurrentIndex(this->comboBoxPreset->findData(s));
 		}else{
-			removeChangeIndicator(idx);
+			removeChangeIndicator();
 		}
 		writeParameterSets();
 	}
@@ -592,7 +592,7 @@ void ParameterWidget::writeParameterSets()
 	this->valueChanged=false;
 }
 
-void ParameterWidget::removeChangeIndicator(int idx)
+void ParameterWidget::removeChangeIndicator()
 {
 	this->labelChangeIndicator->setText("");
 }
