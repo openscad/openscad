@@ -179,10 +179,8 @@ void QGLView::paintGL()
   GLView::paintGL();
 
   if (statusLabel) {
-    Camera nc(cam);
-    nc.gimbalDefaultTranslate();
 		auto status = QString("%1 (%2x%3)")
-			.arg(QString::fromStdString(nc.statusText()))
+			.arg(QString::fromStdString(cam.statusText()))
 			.arg(size().rwidth())
 			.arg(size().rheight());
     statusLabel->setText(status);

@@ -224,9 +224,9 @@ Camera get_camera(po::variables_map vm)
 			exit(1);
 		}
 	}
-
-	if (camera.type == Camera::CameraType::GIMBAL) {
-		camera.gimbalDefaultTranslate();
+	else {
+		camera.viewall = true;
+		camera.autocenter = true;
 	}
 
 	if (vm.count("viewall")) {

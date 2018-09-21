@@ -23,22 +23,22 @@ projection, Perspective and Orthogonal.
 class Camera
 {
 public:
-	enum class CameraType { NONE, GIMBAL, VECTOR } type;
 	enum class ProjectionType { ORTHOGONAL, PERSPECTIVE } projection;
-	Camera(CameraType camtype = CameraType::NONE);
+	Camera();
 	void setup(std::vector<double> params);
-	void gimbalDefaultTranslate();
 	void setProjection(ProjectionType type);
 	void zoom(int delta);
-	double zoomValue();
+	double zoomValue() const;
 	void resetView();
 	void viewAll(const BoundingBox &bbox);
-	std::string statusText();
 
-	// Vectorcam
-	Eigen::Vector3d eye;
-	Eigen::Vector3d center; // (aka 'target')
-	Eigen::Vector3d up; // not used currently
+	// accessors to get and set camera settings in the user space format (different for historical reasons)
+	Eigen::Vector3d getVpt() const { return -object_trans; }
+	void setVpt(double x, double y, double z) { object_trans << -x, -y, -z; }
+	Eigen::Vector3d getVpr() const { return Eigen::Vector3d(wrap(90 -object_rot.x()), wrap(-object_rot.y()), wrap(-object_rot.z())); }
+	void setVpr(double x, double y, double z) { object_rot << wrap(90 - x), wrap(-y), wrap(-z); }
+	void setVpd(double d) { viewer_distance = d; }
+	std::string statusText() const;
 
 	// Gimbalcam
 	Eigen::Vector3d object_trans;
@@ -59,8 +59,12 @@ public:
 	unsigned int pixel_height;
 
 protected:
-        // Perspective settings
+	// Perspective settings
 	double viewer_distance;
 	// Orthographic settings
 	double height; // world-space height of viewport
+
+private:
+	// force angle to be 0-360
+	static double wrap(double angle) { return fmodf(360 + angle, 360); }
 };
