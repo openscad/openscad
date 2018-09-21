@@ -14,8 +14,6 @@
 
 static void setupCamera(Camera &cam, const BoundingBox &bbox)
 {
-	PRINTDB("setupCamera() %i", static_cast<int>(cam.type));
-	if (cam.type == Camera::CameraType::NONE) cam.viewall = true;
 	if (cam.viewall) cam.viewAll(bbox);
 }
 

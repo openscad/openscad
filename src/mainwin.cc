@@ -1494,17 +1494,16 @@ void MainWindow::actionReload()
 void MainWindow::pasteViewportTranslation()
 {
 	QString txt;
-	txt.sprintf("[ %.2f, %.2f, %.2f ]", -qglview->cam.object_trans.x(), -qglview->cam.object_trans.y(), -qglview->cam.object_trans.z());
+	auto vpt = qglview->cam.getVpt();
+	txt.sprintf("[ %.2f, %.2f, %.2f ]", vpt.x(), vpt.y(), vpt.z());
 	this->editor->insert(txt);
 }
 
 void MainWindow::pasteViewportRotation()
 {
 	QString txt;
-	txt.sprintf("[ %.2f, %.2f, %.2f ]",
-		fmodf(360 - qglview->cam.object_rot.x() + 90, 360),
-		fmodf(360 - qglview->cam.object_rot.y(), 360),
-		fmodf(360 - qglview->cam.object_rot.z(), 360));
+	auto vpr = qglview->cam.getVpr();
+	txt.sprintf("[ %.2f, %.2f, %.2f ]", vpr.x(), vpr.y(), vpr.z());
 	this->editor->insert(txt);
 }
 
@@ -1645,16 +1644,18 @@ void MainWindow::updateTemporalVariables()
 {
 	this->top_ctx.set_variable("$t", ValuePtr(this->anim_tval));
 
+	auto camVpt = qglview->cam.getVpt();
 	Value::VectorType vpt;
-	vpt.push_back(ValuePtr(-qglview->cam.object_trans.x()));
-	vpt.push_back(ValuePtr(-qglview->cam.object_trans.y()));
-	vpt.push_back(ValuePtr(-qglview->cam.object_trans.z()));
+	vpt.push_back(ValuePtr(camVpt.x()));
+	vpt.push_back(ValuePtr(camVpt.y()));
+	vpt.push_back(ValuePtr(camVpt.z()));
 	this->top_ctx.set_variable("$vpt", ValuePtr(vpt));
 
+	auto camVpr = qglview->cam.getVpr();
 	Value::VectorType vpr;
-	vpr.push_back(ValuePtr(fmodf(360 - qglview->cam.object_rot.x() + 90, 360)));
-	vpr.push_back(ValuePtr(fmodf(360 - qglview->cam.object_rot.y(), 360)));
-	vpr.push_back(ValuePtr(fmodf(360 - qglview->cam.object_rot.z(), 360)));
+	vpr.push_back(ValuePtr(camVpr.x()));
+	vpr.push_back(ValuePtr(camVpr.y()));
+	vpr.push_back(ValuePtr(camVpr.z()));
 	top_ctx.set_variable("$vpr", ValuePtr(vpr));
 
 	top_ctx.set_variable("$vpd", ValuePtr(qglview->cam.zoomValue()));
@@ -1668,53 +1669,18 @@ void MainWindow::updateTemporalVariables()
  */
 void MainWindow::updateCamera(const FileContext &ctx)
 {
-	bool camera_set = false;
-
-	Camera cam(qglview->cam);
-	cam.gimbalDefaultTranslate();
-	double tx = cam.object_trans.x();
-	double ty = cam.object_trans.y();
-	double tz = cam.object_trans.z();
-	double rx = cam.object_rot.x();
-	double ry = cam.object_rot.y();
-	double rz = cam.object_rot.z();
-	double d = cam.zoomValue();
-
 	double x, y, z;
 	const auto vpr = ctx.lookup_variable("$vpr");
-	if (vpr->getVec3(x, y, z)) {
-		rx = x;
-		ry = y;
-		rz = z;
-		camera_set = true;
-	}
+	if (vpr->getVec3(x, y, z))
+		qglview->cam.setVpr(x, y, z);
 
 	const auto vpt = ctx.lookup_variable("$vpt");
-	if (vpt->getVec3(x, y, z)) {
-		tx = x;
-		ty = y;
-		tz = z;
-		camera_set = true;
-	}
+	if (vpt->getVec3(x, y, z))
+		qglview->cam.setVpt(x, y, z);
 
 	const auto vpd = ctx.lookup_variable("$vpd");
-	if (vpd->type() == Value::ValueType::NUMBER) {
-		d = vpd->toDouble();
-		camera_set = true;
-	}
-
-	if (camera_set) {
-		std::vector<double> params;
-		params.push_back(tx);
-		params.push_back(ty);
-		params.push_back(tz);
-		params.push_back(rx);
-		params.push_back(ry);
-		params.push_back(rz);
-		params.push_back(d);
-		qglview->cam.setup(params);
-		qglview->cam.gimbalDefaultTranslate();
-	}
+	if (vpd->type() == Value::ValueType::NUMBER)
+		qglview->cam.setVpd(vpd->toDouble());
 }
 
 /*!

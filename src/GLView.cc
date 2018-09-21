@@ -92,65 +92,30 @@ void GLView::setupCamera()
 {
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-
-	switch (this->cam.type) {
-	case Camera::CameraType::GIMBAL: {
-		auto dist = cam.zoomValue();
-		switch (this->cam.projection) {
-		case Camera::ProjectionType::PERSPECTIVE: {
-			gluPerspective(cam.fov, aspectratio, 0.1*dist, 100*dist);
-			break;
-		}
-		case Camera::ProjectionType::ORTHOGONAL: {
-			auto height = dist * tan(cam.fov/2*M_PI/180);
-			glOrtho(-height*aspectratio, height*aspectratio,
-							-height, height,
-							-100*dist, +100*dist);
-			break;
-		}
-		}
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-		gluLookAt(0.0, -dist, 0.0,
-							0.0, 0.0, 0.0,
-							0.0, 0.0, 1.0);
-		glRotated(cam.object_rot.x(), 1.0, 0.0, 0.0);
-		glRotated(cam.object_rot.y(), 0.0, 1.0, 0.0);
-		glRotated(cam.object_rot.z(), 0.0, 0.0, 1.0);
-		break;
-	}
-	case Camera::CameraType::VECTOR: {
-		auto dist = (cam.center - cam.eye).norm();
-		switch (this->cam.projection) {
-		case Camera::ProjectionType::PERSPECTIVE: {
-			gluPerspective(cam.fov, aspectratio, 0.1*dist, 100*dist);
-			break;
-		}
-		case Camera::ProjectionType::ORTHOGONAL: {
-			auto height = dist * tan(cam.fov/2*M_PI/180);
-			glOrtho(-height*aspectratio, height*aspectratio,
-							-height, height,
-							-100*dist, +100*dist);
-			break;
-		}
-		}
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-
-		Vector3d dir(cam.eye - cam.center);
-		Vector3d up(0.0,0.0,1.0);
-		if (dir.cross(up).norm() < 0.001) { // View direction is ~parallel with up vector
-			up << 0.0,1.0,0.0;
-		}
-
-		gluLookAt(cam.eye[0], cam.eye[1], cam.eye[2],
-							cam.center[0], cam.center[1], cam.center[2],
-							up[0], up[1], up[2]);
+  auto dist = cam.zoomValue();
+  switch (this->cam.projection) {
+	case Camera::ProjectionType::PERSPECTIVE: {
+		gluPerspective(cam.fov, aspectratio, 0.1 * dist, 100 * dist);
 		break;
 	}
 	default:
+	case Camera::ProjectionType::ORTHOGONAL: {
+		auto height = dist * tan(cam.fov /2 * M_PI / 180);
+		glOrtho(-height * aspectratio, height * aspectratio,
+		        -height, height,
+		        -100 * dist, +100 * dist);
 		break;
 	}
+  }
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+  gluLookAt(0.0, -dist, 0.0,      // eye
+            0.0, 0.0,   0.0,      // center
+            0.0, 0.0,   1.0);     // up
+
+  glRotated(cam.object_rot.x(), 1.0, 0.0, 0.0);
+  glRotated(cam.object_rot.y(), 0.0, 1.0, 0.0);
+  glRotated(cam.object_rot.z(), 0.0, 0.0, 1.0);
 }
 
 void GLView::paintGL()
@@ -163,16 +128,13 @@ void GLView::paintGL()
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
   setupCamera();
-  if (this->cam.type == Camera::CameraType::GIMBAL) {
-    // Only for GIMBAL cam
-    // The crosshair should be fixed at the center of the viewport...
-    if (showcrosshairs) GLView::showCrosshairs();
-    glTranslated(cam.object_trans.x(), cam.object_trans.y(), cam.object_trans.z());
-    // ...the axis lines need to follow the object translation.
-    if (showaxes) GLView::showAxes(axescolor);
-    // mark the scale along the axis lines
-    if (showaxes && showscale) GLView::showScalemarkers(axescolor);
-  }
+  // The crosshair should be fixed at the center of the viewport...
+  if (showcrosshairs) GLView::showCrosshairs();
+  glTranslated(cam.object_trans.x(), cam.object_trans.y(), cam.object_trans.z());
+  // ...the axis lines need to follow the object translation.
+  if (showaxes) GLView::showAxes(axescolor);
+  // mark the scale along the axis lines
+  if (showaxes && showscale) GLView::showScalemarkers(axescolor);
 
   glEnable(GL_LIGHTING);
   glDepthFunc(GL_LESS);
@@ -354,6 +316,8 @@ void GLView::initializeGL()
   GLfloat light_position0[] = {-1.0, +1.0, +1.0, 0.0};
   GLfloat light_position1[] = {+1.0, -1.0, -1.0, 0.0};
 
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
   glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
   glLightfv(GL_LIGHT0, GL_POSITION, light_position0);
   glEnable(GL_LIGHT0);
