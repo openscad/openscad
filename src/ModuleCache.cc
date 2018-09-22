@@ -101,7 +101,7 @@ time_t ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 			}
 			textbuf << ifs.rdbuf();
 		}
-		textbuf << "\n" << commandline_commands;
+		textbuf << "\n\x03\n" << commandline_commands;
 		
 		print_messages_push();
 		

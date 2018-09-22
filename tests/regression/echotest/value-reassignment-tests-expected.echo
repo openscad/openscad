@@ -1,2 +1,3 @@
+WARNING: myval was assigned on line 5 but was overwritten on line 7
 WARNING: Ignoring unknown variable 'i'.
 ECHO: undef, 2

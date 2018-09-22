@@ -70,6 +70,7 @@ extern const char *parser_input_buffer;
 const char *parser_input_buffer;
 std::shared_ptr<fs::path> parser_sourcefile;
 
+bool assignmentWarning=true;
 %}
 
 %union {
@@ -85,6 +86,8 @@ std::shared_ptr<fs::path> parser_sourcefile;
 }
 
 %token TOK_ERROR
+
+%token TOK_EOT
 
 %token TOK_MODULE
 %token TOK_FUNCTION
@@ -189,6 +192,10 @@ statement:
               delete $4;
             }
           ';'
+        | TOK_EOT
+            {
+                assignmentWarning=false;
+            }
         ;
 
 inner_input:
@@ -202,6 +209,12 @@ assignment:
                 bool found = false;
                 for (auto &assignment : scope_stack.top()->assignments) {
                     if (assignment.name == $1) {
+                        if(assignmentWarning && rootmodule->getFullpath()==LOC(@$).fileName()){
+                            PRINTB("WARNING: %s was assigned on line %i but was overwritten on line %i",
+                                    assignment.name%
+                                    assignment.location().firstLine()%
+                                    LOC(@$).firstLine());
+                        }
                         assignment.expr = shared_ptr<Expression>($3);
                         assignment.setLocation(LOC(@$));
                         found = true;
