@@ -649,6 +649,7 @@ bool parse(FileModule *&module, const char *text, const std::string &filename, i
   parser_error_pos = -1;
   parser_input_buffer = text;
   parser_sourcefile = std::make_shared<fs::path>(path);
+  assignmentWarning=true;
 
   rootmodule = new FileModule(path.parent_path().generic_string(), path.filename().generic_string());
   scope_stack.push(&rootmodule->scope);
