@@ -1705,7 +1705,9 @@ add_failing_test(parsererrors EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR
 
 # Verify that test framework is paying attention to alpha channel, issue 1492
 #add_cmdline_test(openscad-colorscheme-cornfield-alphafail EXE ${OPENSCAD_BINPATH} ARGS --colorscheme=Cornfield -o SUFFIX png FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/logo.scad)
+
 # The "expected image" supplied for this "alphafail" test has the alpha channel for all background pixels cleared (a==0), when they should be opaque (a==1) for this colorscheme.  so if test framework is functioning properly then the image comparison should fail
+# Commented out because the master branch isn't capable of making the expected image yet. Also TEST_GENERATE=1 makes an expected image that makes the test fail.
 #set_property(TEST openscad-colorscheme-cornfield-alphafail_logo PROPERTY WILL_FAIL TRUE)
 
 #
