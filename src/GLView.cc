@@ -338,18 +338,16 @@ void GLView::initializeGL()
 
 void GLView::showSmallaxes(const Color4f &col)
 {
-  // Fixme - this doesnt work in Vector Camera mode
-
-	auto dpi = this->getDPI();
+  auto dpi = this->getDPI();
   // Small axis cross in the lower left corner
   glDepthFunc(GL_ALWAYS);
 
 	// Set up an orthographic projection of the axis cross in the corner
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-	glTranslatef(-0.8f, -0.8f, 0.0f);
-	auto scale = 90;
-	glOrtho(-scale*dpi*aspectratio,scale*dpi*aspectratio,
+  glTranslatef(-0.8f, -0.8f, 0.0f);
+  auto scale = 90;
+  glOrtho(-scale*dpi*aspectratio,scale*dpi*aspectratio,
 					-scale*dpi,scale*dpi,
 					-scale*dpi,scale*dpi);
   gluLookAt(0.0, -1.0, 0.0,
@@ -415,8 +413,6 @@ void GLView::showSmallaxes(const Color4f &col)
   glVertex3d(zlabel_x-d, zlabel_y-d, 0); glVertex3d(zlabel_x+d, zlabel_y-d, 0);
   glVertex3d(zlabel_x-d, zlabel_y+d, 0); glVertex3d(zlabel_x+d, zlabel_y+d, 0);
   glVertex3d(zlabel_x-d, zlabel_y-d, 0); glVertex3d(zlabel_x+d, zlabel_y+d, 0);
-  // FIXME - depends on gimbal camera 'viewer distance'.. how to fix this
-  //         for VectorCamera?
   glEnd();
 }
 
@@ -424,7 +420,6 @@ void GLView::showAxes(const Color4f &col)
 {
   auto l = cam.zoomValue();
   
-  // FIXME: doesn't work under Vector Camera
   // Large gray axis cross inline with the model
   glLineWidth(this->getDPI());
   glColor3f(col[0], col[1], col[2]);
@@ -454,7 +449,6 @@ void GLView::showAxes(const Color4f &col)
 
 void GLView::showCrosshairs()
 {
-  // FIXME: this might not work with Vector camera
   glLineWidth(this->getDPI());
   auto col = ColorMap::getColor(*this->colorscheme, RenderColor::CROSSHAIR_COLOR);
   glColor3f(col[0], col[1], col[2]);
