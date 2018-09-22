@@ -45,6 +45,7 @@
 #include "memory.h"
 #include <sstream>
 #include <boost/filesystem.hpp>
+#include "boost-utils.h"
 
 namespace fs = boost::filesystem;
 
@@ -209,11 +210,30 @@ assignment:
                 bool found = false;
                 for (auto &assignment : scope_stack.top()->assignments) {
                     if (assignment.name == $1) {
-                        if(assignmentWarning && rootmodule->getFullpath()==LOC(@$).fileName()){
+
+                        auto RootFile = rootmodule->getFullpath();
+                        auto prevFile = assignment.location().fileName();
+                        auto currFile = LOC(@$).fileName();
+                        
+                        if(assignmentWarning && prevFile==RootFile && currFile == RootFile){
+                            //both assigments in the RootModule
                             PRINTB("WARNING: %s was assigned on line %i but was overwritten on line %i",
                                     assignment.name%
                                     assignment.location().firstLine()%
                                     LOC(@$).firstLine());
+                        }else if(assignmentWarning && prevFile == RootFile && currFile != prevFile){
+                            //assigment from the RootModule overwritten by an include
+                            const auto docPath = boost::filesystem::path(RootFile).parent_path();
+
+                            const auto uncPathCurr = boostfs_uncomplete(currFile, docPath);
+                            const auto uncPathPrev = boostfs_uncomplete(prevFile, docPath);
+
+                            PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i  of %s",
+                                    assignment.name%
+                                    assignment.location().firstLine()%
+                                    uncPathPrev%
+                                    LOC(@$).firstLine()%
+                                    uncPathCurr);
                         }
                         assignment.expr = shared_ptr<Expression>($3);
                         assignment.setLocation(LOC(@$));
@@ -649,6 +669,7 @@ bool parse(FileModule *&module, const char *text, const std::string &filename, i
   parser_error_pos = -1;
   parser_input_buffer = text;
   parser_sourcefile = std::make_shared<fs::path>(path);
+  assignmentWarning=true;
 
   rootmodule = new FileModule(path.parent_path().generic_string(), path.filename().generic_string());
   scope_stack.push(&rootmodule->scope);

@@ -78,11 +78,12 @@ Adding a new test:
 2) if the test is non-obvious, create a human readable description as comments in the test (or in another file in the same directory in case the file isn't human readable)
 3) if a new test app was written, this must be added to tests/CMakeLists.txt
 4) Add the tests to the test apps for which you want them to run (in tests/CMakeLists.txt)
-5) run the test with the environment variable TEST_GENERATE=1, e.g.:
+5) rebuild the test environment
+6) run the test with the environment variable TEST_GENERATE=1, e.g.:
    $ TEST_GENERATE=1 ctest -R mytest
    (this will generate a mytest-expected.txt file which is used for regression testing)
-6) manually verify that the output is correct (tests/regression/<testapp>/mytest-expected.<suffix>)
-7) run the test normally and verify that it passes:
+7) manually verify that the output is correct (tests/regression/<testapp>/mytest-expected.<suffix>)
+8) run the test normally and verify that it passes:
   $ ctest -R mytest
 
 Adding a new example:

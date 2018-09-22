@@ -1158,6 +1158,7 @@ list(APPEND EXAMPLE_FILES ${EXAMPLE_3D_FILES} ${EXAMPLE_2D_FILES})
 
 list(APPEND MISC_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-tests.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-overwrite-main.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/use-tests.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/assert-tests.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/let-module-tests.scad
@@ -1211,6 +1212,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/nbsp-latin1-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/concat-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-recursive-test.scad
+            
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/operators-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1472.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/empty-stl.scad
