@@ -66,9 +66,9 @@ void Camera::setProjection(ProjectionType type)
 
 void Camera::resetView()
 {
-	object_rot << 20, 0, 45;
-	object_trans << -0.0, -0.0, -0.0;
-	viewer_distance = 140;
+	setVpr(55, 0, 25);  // set in user space units
+	setVpt(0, 0, 0);
+	setVpd(140);
 }
 
 double Camera::zoomValue() const
