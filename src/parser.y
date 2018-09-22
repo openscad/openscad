@@ -223,10 +223,10 @@ assignment:
                                     LOC(@$).firstLine());
                         }else if(assignmentWarning && prevFile == RootFile && currFile != prevFile){
                             //assigment from the RootModule overwritten by an include
-                            auto docPath = boost::filesystem::path(RootFile).parent_path();
+                            const auto docPath = boost::filesystem::path(RootFile).parent_path();
 
-                            auto uncPathCurr = boostfs_uncomplete(currFile, docPath);
-                            auto uncPathPrev = boostfs_uncomplete(prevFile, docPath);
+                            const auto uncPathCurr = boostfs_uncomplete(currFile, docPath);
+                            const auto uncPathPrev = boostfs_uncomplete(prevFile, docPath);
 
                             PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i  of %s",
                                     assignment.name%
