@@ -58,7 +58,7 @@ private:
 	void rebuildGroupMap();
 	ParameterVirtualWidget* CreateParameterWidget(std::string parameterName);
 	void setComboBoxPresetForSet();
-	void removeChangeIndicator(int idx);
+	void removeChangeIndicator();
 
 	void setFile(QString File);
 
@@ -82,6 +82,7 @@ protected slots:
 	void onPreviewTimerElapsed();
 	void onDescriptionLoDChanged();
 	void onSetChanged(int idx);
+	void onSetNameChanged();
 	void onSetAdd();
 	void onSetSaveButton();
 	void onSetDelete();
