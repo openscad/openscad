@@ -45,6 +45,7 @@
 #include "memory.h"
 #include <sstream>
 #include <boost/filesystem.hpp>
+#include "boost-utils.h"
 
 namespace fs = boost::filesystem;
 
@@ -222,12 +223,17 @@ assignment:
                                     LOC(@$).firstLine());
                         }else if(assignmentWarning && prevFile == RootFile && currFile != prevFile){
                             //assigment from the RootModule overwritten by an include
+                            auto docPath = boost::filesystem::path(RootFile).parent_path();
+
+                            auto uncPathCurr = boostfs_uncomplete(currFile, docPath);
+                            auto uncPathPrev = boostfs_uncomplete(prevFile, docPath);
+
                             PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i  of %s",
                                     assignment.name%
                                     assignment.location().firstLine()%
-                                    assignment.location().fileName()%
+                                    uncPathPrev%
                                     LOC(@$).firstLine()%
-                                    LOC(@$).fileName());
+                                    uncPathCurr);
                         }
                         assignment.expr = shared_ptr<Expression>($3);
                         assignment.setLocation(LOC(@$));
