@@ -8,13 +8,13 @@ Camera::Camera(CameraType camtype) :
 	PRINTD("Camera()");
 
 	// gimbal cam values
-	object_trans << 0,0,0;
-	object_rot << 35,0,25;
+	object_trans << -0.0,-0.0,-0.0;
+	object_rot << 20,0,45;
 	viewer_distance = 500;
 	
 	// vector cam values
 	center << 0,0,0;
-	Eigen::Vector3d cameradir(1, 1, -0.5);
+	Eigen::Vector3d cameradir(1, 1, -tan(20 * M_PI / 180) * sqrt(2));
 	eye = center - 500 * cameradir;
 	
 	pixel_width = RenderSettings::inst()->img_width;
@@ -56,7 +56,7 @@ void Camera::viewAll(const BoundingBox &bbox)
 	if (this->type == CameraType::NONE) {
 		this->type = CameraType::VECTOR;
 		this->center = bbox.center();
-		this->eye = this->center - Vector3d(1,1,-0.5);
+		this->eye = this->center - Vector3d(1,1, -tan(20 * M_PI / 180) * sqrt(2));
 	}
 
 	if (this->autocenter) {
@@ -71,6 +71,9 @@ void Camera::viewAll(const BoundingBox &bbox)
             this->eye = this->center - dir;
         }
 	}
+	else
+        if(this->type == CameraType::GIMBAL)
+            this->center = -this->object_trans;
 
 	double bboxRadius = bbox.diagonal().norm()/2;
 	double radius = (bbox.center()-this->center).norm() + bboxRadius;
@@ -106,8 +109,8 @@ void Camera::setProjection(ProjectionType type)
 void Camera::resetView()
 {
 	type = CameraType::GIMBAL;
-	object_rot << 35, 0, -25;
-	object_trans << 0, 0, 0;
+	object_rot << 20, 0, 45;
+	object_trans << -0.0, -0.0, -0.0;
 	viewer_distance = 140;
 }
 
