@@ -209,11 +209,25 @@ assignment:
                 bool found = false;
                 for (auto &assignment : scope_stack.top()->assignments) {
                     if (assignment.name == $1) {
-                        if(assignmentWarning && rootmodule->getFullpath()==LOC(@$).fileName()){
+
+                        auto RootFile = rootmodule->getFullpath();
+                        auto prevFile = assignment.location().fileName();
+                        auto currFile = LOC(@$).fileName();
+                        
+                        if(assignmentWarning && prevFile==RootFile && currFile == RootFile){
+                            //both assigments in the RootModule
                             PRINTB("WARNING: %s was assigned on line %i but was overwritten on line %i",
                                     assignment.name%
                                     assignment.location().firstLine()%
                                     LOC(@$).firstLine());
+                        }else if(assignmentWarning && prevFile == RootFile && currFile != prevFile){
+                            //assigment from the RootModule overwritten by an include
+                            PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i  of %s",
+                                    assignment.name%
+                                    assignment.location().firstLine()%
+                                    assignment.location().fileName()%
+                                    LOC(@$).firstLine()%
+                                    LOC(@$).fileName());
                         }
                         assignment.expr = shared_ptr<Expression>($3);
                         assignment.setLocation(LOC(@$));
