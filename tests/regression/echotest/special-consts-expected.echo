@@ -27,3 +27,6 @@ ECHO: -inf
 ECHO: -inf
 ECHO: "-- comparing inf --"
 ECHO: "inf == inf"
+ECHO: "-- 3d objects --"
+ECHO: "-- for loops --"
+WARNING: Bad range parameter in for statement: too many elements (4294967295).

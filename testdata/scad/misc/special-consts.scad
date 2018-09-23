@@ -62,3 +62,17 @@ if(d==e){
 }else{
     echo("inf != inf");
 }
+
+echo("-- 3d objects --");
+cube(a);
+sphere(e);
+cylinder(r=-1/0,h=e);
+
+echo("-- for loops --");
+for(j = [a : b]){
+    echo(j);
+}
+
+for(i = [-1/0 : 1/0]){
+    echo(i);
+}
