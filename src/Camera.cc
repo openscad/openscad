@@ -22,8 +22,8 @@ void Camera::setup(std::vector<double> params)
 		setVpr(params[3], params[4], params[5]);
 		viewer_distance = params[6];
 	} else if (params.size() == 6) {
-		Eigen::Vector3d eye(params[0], params[1], params[2]);
-		Eigen::Vector3d center(params[3], params[4], params[5]);
+		const Eigen::Vector3d eye(params[0], params[1], params[2]);
+		const Eigen::Vector3d center(params[3], params[4], params[5]);
 		object_trans = -center;
 		auto dir = center - eye;
 		viewer_distance = dir.norm();
@@ -71,6 +71,36 @@ void Camera::resetView()
 	setVpd(140);
 }
 
+Eigen::Vector3d Camera::getVpt() const
+{
+	return -object_trans;
+}
+
+void Camera::setVpt(double x, double y, double z)
+{
+	object_trans << -x, -y, -z;
+}
+
+static double wrap(double angle)
+{
+	return fmodf(360 + angle, 360); // force angle to be 0-360
+}
+
+Eigen::Vector3d Camera::getVpr() const
+{
+	return Eigen::Vector3d(wrap(90 -object_rot.x()), wrap(-object_rot.y()), wrap(-object_rot.z()));
+}
+
+void Camera::setVpr(double x, double y, double z)
+{
+	object_rot << wrap(90 - x), wrap(-y), wrap(-z);
+}
+
+void Camera::setVpd(double d)
+{
+    viewer_distance = d;
+}
+
 double Camera::zoomValue() const
 {
 	return viewer_distance;
@@ -78,8 +108,8 @@ double Camera::zoomValue() const
 
 std::string Camera::statusText() const
 {
-	auto vpt = getVpt();
-	auto vpr = getVpr();
+	const auto vpt = getVpt();
+	const auto vpr = getVpr();
 	boost::format fmt(_("Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], distance = %.2f"));
 	fmt % vpt.x() % vpt.y() % vpt.z()
 		% vpr.x() % vpr.y() % vpr.z()
