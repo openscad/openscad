@@ -17,7 +17,7 @@ static void setupCamera(Camera &cam, const BoundingBox &bbox)
 	if (cam.viewall) cam.viewAll(bbox);
 }
 
-bool export_png(const shared_ptr<const Geometry> &root_geom, Camera &cam, std::ostream &output)
+bool export_png(const shared_ptr<const Geometry> &root_geom, Camera &cam, std::ostream &output, bool showaxes, bool showscale, bool showcrosshairs)
 {
 	PRINTD("export_png geom");
 	OffscreenView *glview;
@@ -35,6 +35,9 @@ bool export_png(const shared_ptr<const Geometry> &root_geom, Camera &cam, std::o
 	glview->setCamera(cam);
 	glview->setRenderer(&cgalRenderer);
 	glview->setColorScheme(RenderSettings::inst()->colorscheme);
+	glview->showaxes = showaxes;
+	glview->showscale = showscale;
+	glview->showcrosshairs = showcrosshairs;
 	glview->paintGL();
 	glview->save(output);
 	return true;
@@ -48,7 +51,7 @@ enum class Previewer { OPENCSG, THROWNTOGETHER } previewer;
 #endif
 #include "ThrownTogetherRenderer.h"
 
-bool export_png_preview_common(Tree &tree, Camera &cam, std::ostream &output, Previewer previewer = Previewer::OPENCSG)
+static bool export_png_preview_common(Tree &tree, Camera &cam, std::ostream &output, Previewer previewer, bool showaxes, bool showscale, bool showcrosshairs)
 {
 	PRINTD("export_png_preview_common");
 	CsgInfo csgInfo = CsgInfo();
@@ -82,26 +85,29 @@ bool export_png_preview_common(Tree &tree, Camera &cam, std::ostream &output, Pr
 	OpenCSG::setOption(OpenCSG::OffscreenSetting, OpenCSG::FrameBufferObject);
 #endif
 	glview->setColorScheme(RenderSettings::inst()->colorscheme);
+	glview->showaxes = showaxes;
+	glview->showscale = showscale;
+	glview->showcrosshairs = showcrosshairs;
 	glview->paintGL();
 	glview->save(output);
 	return true;
 }
 
-bool export_png_with_opencsg(Tree &tree, Camera &cam, std::ostream &output)
+bool export_png_with_opencsg(Tree &tree, Camera &cam, std::ostream &output, bool showaxes, bool showscale, bool showcrosshairs)
 {
 	PRINTD("export_png_w_opencsg");
 #ifdef ENABLE_OPENCSG
-	return export_png_preview_common(tree, cam, output, Previewer::OPENCSG);
+	return export_png_preview_common(tree, cam, output, Previewer::OPENCSG, showaxes, showscale, showcrosshairs);
 #else
 	fprintf(stderr,"This openscad was built without OpenCSG support\n");
 	return false;
 #endif
 }
 
-bool export_png_with_throwntogether(Tree &tree, Camera &cam, std::ostream &output)
+bool export_png_with_throwntogether(Tree &tree, Camera &cam, std::ostream &output, bool showaxes, bool showscale, bool showcrosshairs)
 {
 	PRINTD("export_png_w_thrown");
-	return export_png_preview_common(tree, cam, output, Previewer::THROWNTOGETHER);
+	return export_png_preview_common(tree, cam, output, Previewer::THROWNTOGETHER, showaxes, showscale, showcrosshairs);
 }
 
 #endif // ENABLE_CGAL

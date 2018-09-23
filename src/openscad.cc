@@ -91,6 +91,7 @@ std::string commandline_commands;
 std::string currentdir;
 static bool arg_info = false;
 static std::string arg_colorscheme;
+static bool showaxes, showscale, showcrosshairs;
 
 #define QUOTE(x__) # x__
 #define QUOTED(x__) QUOTE(x__)
@@ -143,6 +144,9 @@ static void help(const char *progname, bool failure = false)
          "%2%  --camera=eyex,y,z,centerx,y,z ] \\\n"
          "%2%[ --autocenter ] \\\n"
          "%2%[ --viewall ] \\\n"
+         "%2%[ --showaxes ] \\\n"
+         "%2%[ --showscale ] \\\n"
+         "%2%[ --showcrosshairs ] \\\n"
          "%2%[ --imgsize=width,height ] [ --projection=(o)rtho|(p)ersp] \\\n"
          "%2%[ --render | --preview[=throwntogether] ] \\\n"
          "%2%[ --colorscheme=[Cornfield|Sunset|Metallic|Starnight|BeforeDawn|Nature|DeepOcean] ] \\\n"
@@ -548,11 +552,11 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 			}
 			else {
 				if (renderer == RenderType::CGAL || renderer == RenderType::GEOMETRY) {
-					success = export_png(root_geom, camera, fstream);
+					success = export_png(root_geom, camera, fstream, showaxes, showscale, showcrosshairs);
 				} else if (renderer == RenderType::THROWNTOGETHER) {
-					success = export_png_with_throwntogether(tree, camera, fstream);
+					success = export_png_with_throwntogether(tree, camera, fstream, showaxes, showscale, showcrosshairs);
 				} else {
-					success = export_png_with_opencsg(tree, camera, fstream);
+					success = export_png_with_opencsg(tree, camera, fstream, showaxes, showscale, showcrosshairs);
 				}
 				fstream.close();
 			}
@@ -829,6 +833,9 @@ int main(int argc, char **argv)
 		("camera", po::value<string>(), "parameters for camera when exporting png")
 		("autocenter", "adjust camera to look at object center")
 		("viewall", "adjust camera to fit object")
+		("showaxes", "show axes")
+		("showscale", "show scale markers on axes")
+		("showcrosshairs", "show cross hairs at the center of the view")
 		("imgsize", po::value<string>(), "=width,height for exporting png")
 		("projection", po::value<string>(), "(o)rtho or (p)erspective when exporting png")
 		("colorscheme", po::value<string>(), "colorscheme")
@@ -969,6 +976,10 @@ int main(int argc, char **argv)
 	currentdir = fs::current_path().generic_string();
 
 	Camera camera = get_camera(vm);
+
+	showscale = vm.count("showscale");
+	showaxes = vm.count("showaxes") || showscale;
+	showcrosshairs = vm.count("showcrosshairs");
 
 	auto cmdlinemode = false;
 	if (output_file) { // cmd-line mode
