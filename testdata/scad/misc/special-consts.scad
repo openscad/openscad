@@ -62,6 +62,26 @@ if(d==e){
 }else{
     echo("inf != inf");
 }
+echo("-- calculating with inf --");
+f = d+1;
+echo(str("inf + 1 is ",f));
+g = e -1000;
+echo(str("inf - 1000 is ",g));
+echo(str("inf * inf  is ",d*e));
+echo(str("inf /  -0  is ",d/-0));
+echo(str("inf / inf  is ",d/e));
+
+echo("-- comparing nan --");
+NotANumber = d/e;
+
+if(NotANumber == NotANumber){
+    echo("nan = nan");
+}else{
+    echo("nan != nan");
+}
+
+echo("-- 2d objects --");
+circle(NotANumber);
 
 echo("-- 3d objects --");
 cube(a);
@@ -69,6 +89,10 @@ sphere(e);
 cylinder(r=-1/0,h=e);
 
 echo("-- for loops --");
+for(y = [0:NotANumber]){
+    echo(y);
+}
+
 for(j = [a : b]){
     echo(j);
 }
