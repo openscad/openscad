@@ -1166,7 +1166,8 @@ list(APPEND MISC_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.sca
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/localfiles_dir/localfiles-compatibility-test.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allexpressions.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allfunctions.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allmodules.scad)
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allmodules.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/special-consts.scad)
 
 
 list(APPEND FAILING_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1890-comment.scad
