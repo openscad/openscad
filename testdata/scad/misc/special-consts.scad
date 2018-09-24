@@ -80,8 +80,10 @@ if(NotANumber == NotANumber){
     echo("nan != nan");
 }
 
-echo("-- 2d objects --");
-circle(NotANumber);
+//Do not output NotANumber in a test case
+//as the precise output varies with different c++ compilers.
+//echo(NotANumber);
+//circle(NotANumber);
 
 echo("-- 3d objects --");
 cube(a);
