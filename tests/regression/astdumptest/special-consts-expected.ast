@@ -41,8 +41,6 @@ echo(str("inf / inf  is ", (d / e)));
 echo("-- comparing nan --");
 if((NotANumber == NotANumber)) echo("nan = nan");
 else echo("nan != nan");
-echo("-- 2d objects --");
-circle(NotANumber);
 echo("-- 3d objects --");
 cube(a);
 sphere(e);
