@@ -128,35 +128,12 @@ public:
 	}
 };
 
-static void help(const char *progname, bool failure = false)
+static void help(const char *arg0, po::options_description &desc, bool failure = false)
 {
-  int tablen = strlen(progname)+8;
-  char tabstr[tablen+1];
-  for (int i=0;i<tablen;i++) tabstr[i] = ' ';
-  tabstr[tablen] = '\0';
-
-	PRINTB("Usage: %1% [ -o output_file [ -d deps_file ] ]\\\n"
-         "%2%[ -m make_command ] [ -D var=val [..] ] \\\n"
-	 "%2%[ --help ] print this help message and exit \\\n"
-         "%2%[ --version ] [ --info ] \\\n"
-         "%2%[ --camera=translatex,y,z,rotx,y,z,dist | \\\n"
-         "%2%  --camera=eyex,y,z,centerx,y,z ] \\\n"
-         "%2%[ --autocenter ] \\\n"
-         "%2%[ --viewall ] \\\n"
-         "%2%[ --imgsize=width,height ] [ --projection=(o)rtho|(p)ersp] \\\n"
-         "%2%[ --render | --preview[=throwntogether] ] \\\n"
-         "%2%[ --colorscheme=[Cornfield|Sunset|Metallic|Starnight|BeforeDawn|Nature|DeepOcean] ] \\\n"
-         "%2%[ --csglimit=num ]"
-#ifdef ENABLE_EXPERIMENTAL
-         " [ --enable=<feature> ] \\\n"
-         "%2%[ -p <Parameter Filename>] [-P <Parameter Set>] "
-#endif
-         "\\\n"
-#ifdef DEBUG
-				 "%2%[ --debug=module ] \\\n"
-#endif
-         "%2%filename\n",
- 				 progname % (const char *)tabstr);
+	std::stringstream ss;
+	ss << desc;
+	const fs::path progpath(arg0);
+	PRINTB("Usage: %s [options] file.scad\n%s", progpath.filename().string() % ss.str());
 	exit(failure ? 1 : 0);
 }
 
@@ -316,17 +293,8 @@ void set_render_color_scheme(const std::string color_scheme, const bool exit_if_
 	}
 }
 
-#include <QCoreApplication>
-
-int cmdline(const char *deps_output_file, const std::string &filename, Camera &camera, const char *output_file, const fs::path &original_path, RenderType renderer,const std::string &parameterFile,const std::string &setName, int argc, char ** argv )
+int cmdline(const char *deps_output_file, const std::string &filename, Camera &camera, const char *output_file, const fs::path &original_path, RenderType renderer,const std::string &parameterFile,const std::string &setName)
 {
-#ifdef OPENSCAD_QTGUI
-	QCoreApplication app(argc, argv);
-	const std::string application_path = QCoreApplication::instance()->applicationDirPath().toLocal8Bit().constData();
-#else
-	const std::string application_path = fs::absolute(boost::filesystem::path(argv[0]).parent_path()).generic_string();
-#endif	
-	PlatformUtils::registerApplicationPath(application_path);
 	parser_init();
 	localization_init();
 
@@ -685,9 +653,6 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	
 	// Other global settings
 	qRegisterMetaType<shared_ptr<const Geometry>>();
-	
-	const auto &app_path = app.applicationDirPath();
-	PlatformUtils::registerApplicationPath(app_path.toLocal8Bit().constData());
 
 	FontCache::registerProgressHandler(dialogInitHandler);
 
@@ -784,11 +749,14 @@ int gui(const vector<string> &inputFiles, const fs::path &original_path, int arg
 }
 #endif // OPENSCAD_QTGUI
 
+#if defined(Q_OS_MACX)
 std::pair<string, string> customSyntax(const string& s)
 {
-#if defined(Q_OS_MACX)
 	if (s.find("-psn_") == 0)
 		return {"psn", s.substr(5)};
+#else
+std::pair<string, string> customSyntax(const string&)
+{
 #endif
 
 	return {};
@@ -798,6 +766,12 @@ int main(int argc, char **argv)
 {
 	int rc = 0;
 	StackCheck::inst()->init();
+#ifdef OPENSCAD_QTGUI
+	const std::string application_path = QCoreApplication::applicationDirPath().toLocal8Bit().constData();
+#else
+	const std::string application_path = fs::absolute(boost::filesystem::path(argv[0]).parent_path()).generic_string();
+#endif
+	PlatformUtils::registerApplicationPath(application_path);
 	
 #ifdef Q_OS_MAC
 	bool isGuiLaunched = getenv("GUI_LAUNCHED") != nullptr;
@@ -817,37 +791,57 @@ int main(int argc, char **argv)
 
 	const char *output_file = nullptr;
 	const char *deps_output_file = nullptr;
+	
+	string colorSchemeNames;
+	for(const auto &name : ColorMap::inst()->colorSchemeNames()) {
+		if(!colorSchemeNames.empty())
+			colorSchemeNames.append(" | ");
+		if(name == ColorMap::inst()->defaultColorSchemeName())
+			colorSchemeNames.append("*");
+		colorSchemeNames.append(name);
+	}
 
+#ifdef ENABLE_EXPERIMENTAL
+	string features;
+	for(auto it = Feature::begin(); it != Feature::end(); ++it) {
+		if(!features.empty())
+			features.append(" | ");
+		features.append((*it)->get_name());
+	}
+#endif
+        
 	po::options_description desc("Allowed options");
 	desc.add_options()
-		("help,h", "help message")
+		("o,o", po::value<string>(), "out_file -output a file instead of running the GUI, the file extension specifies the type: stl, off, amf, csg, dxf, svg, png, echo, ast, term, nef3, nefdbg")
+		("D,D", po::value<vector<string>>(), "var=val -pre-define variables")
+		("p,p", po::value<string>(), "customizer parameter file")
+		("P,P", po::value<string>(), "customizer parameter set")
+#ifdef ENABLE_EXPERIMENTAL
+		("enable", po::value<vector<string>>(), ("enable experimental features: " + features + "\n").c_str())
+#endif
+		("help,h", "print this help message and exit")
 		("version,v", "print the version")
-		("info", "print information about the building process")
-		("render", po::value<string>()->implicit_value(""), "if exporting a png image, do a full geometry evaluation")
-		("preview", po::value<string>()->implicit_value(""), "if exporting a png image, do an OpenCSG(default) or ThrownTogether preview")
-		("csglimit", po::value<unsigned int>(), "if exporting a png image, stop rendering at the given number of CSG elements")
-		("camera", po::value<string>(), "parameters for camera when exporting png")
+		("info", "print information about the build process\n")
+
+		("camera", po::value<string>(), "camera parameters when exporting png: translate_x,y,z,rot_x,y,z,dist or eye_x,y,z,center_x,y,z")
 		("autocenter", "adjust camera to look at object center")
 		("viewall", "adjust camera to fit object")
 		("imgsize", po::value<string>(), "=width,height for exporting png")
+		("render", po::value<string>()->implicit_value(""), "if exporting a png image, do a full geometry evaluation")
+		("preview", po::value<string>()->implicit_value(""), "if exporting a png image, do an OpenCSG(default) or ThrownTogether preview")
 		("projection", po::value<string>(), "(o)rtho or (p)erspective when exporting png")
-		("colorscheme", po::value<string>(), "colorscheme")
+		("csglimit", po::value<unsigned int>(), "if exporting a png image, stop rendering at the given number of CSG elements")
+		("colorscheme", po::value<string>(), ("colorscheme: " + colorSchemeNames + "\n").c_str())
+
+		("d,d", po::value<string>(), "deps_file -generate a dependency file for make")
+		("m,m", po::value<string>(), "make_cmd -runs make_cmd file if file is missing")
 		("debug", po::value<string>(), "special debug info")
 		("quiet,q", "quiet mode (don't print anything *except* errors)")
-		("o,o", po::value<string>(), "out-file")
-		("p,p", po::value<string>(), "parameter file")
-		("P,P", po::value<string>(), "parameter set")
-		("s,s", po::value<string>(), "stl-file")
-		("x,x", po::value<string>(), "dxf-file")
-		("d,d", po::value<string>(), "deps-file")
-		("m,m", po::value<string>(), "makefile")
-		("D,D", po::value<vector<string>>(), "var=val")
 #ifdef Q_OS_MACX
 		("psn", po::value<string>(), "process serial number")
 #endif
-#ifdef ENABLE_EXPERIMENTAL
-		("enable", po::value<vector<string>>(), "enable experimental features")
-#endif
+		("s,s", po::value<string>(), "stl_file deprecated, use -o")
+		("x,x", po::value<string>(), "dxf_file deprecated, use -o")
 		;
 
 	po::options_description hidden("Hidden options");
@@ -862,11 +856,11 @@ int main(int argc, char **argv)
 
 	po::variables_map vm;
 	try {
-		po::store(po::command_line_parser(argc, argv).options(all_options).allow_unregistered().positional(p).extra_parser(customSyntax).run(), vm);
+		po::store(po::command_line_parser(argc, argv).options(all_options).positional(p).extra_parser(customSyntax).run(), vm);
 	}
 	catch(const std::exception &e) { // Catches e.g. unknown options
 		PRINTB("%s\n", e.what());
-		help(argv[0], true);
+		help(argv[0], desc, true);
 	}
 
 	OpenSCAD::debug = "";
@@ -877,7 +871,7 @@ int main(int argc, char **argv)
 	if (vm.count("quiet")) {
 		OpenSCAD::quiet = true;
 	}
-	if (vm.count("help")) help(argv[0]);
+	if (vm.count("help")) help(argv[0], desc);
 	if (vm.count("version")) version();
 	if (vm.count("info")) arg_info = true;
 
@@ -897,25 +891,25 @@ int main(int argc, char **argv)
 
 	if (vm.count("o")) {
 		// FIXME: Allow for multiple output files?
-		if (output_file) help(argv[0], true);
+		if (output_file) help(argv[0], desc, true);
 		output_file = vm["o"].as<string>().c_str();
 	}
 	if (vm.count("s")) {
 		printDeprecation("The -s option is deprecated. Use -o instead.\n");
-		if (output_file) help(argv[0], true);
+		if (output_file) help(argv[0], desc, true);
 		output_file = vm["s"].as<string>().c_str();
 	}
 	if (vm.count("x")) { 
 		printDeprecation("The -x option is deprecated. Use -o instead.\n");
-		if (output_file) help(argv[0], true);
+		if (output_file) help(argv[0], desc, true);
 		output_file = vm["x"].as<string>().c_str();
 	}
 	if (vm.count("d")) {
-		if (deps_output_file) help(argv[0], true);
+		if (deps_output_file) help(argv[0], desc, true);
 		deps_output_file = vm["d"].as<string>().c_str();
 	}
 	if (vm.count("m")) {
-		if (make_command) help(argv[0], true);
+		if (make_command) help(argv[0], desc, true);
 		make_command = vm["m"].as<string>().c_str();
 	}
 
@@ -938,22 +932,22 @@ int main(int argc, char **argv)
 	
 	if (Feature::ExperimentalCustomizer.is_enabled()) {
 		if (vm.count("p")) {
-			if (!parameterFile.empty()) help(argv[0], true);
+			if (!parameterFile.empty()) help(argv[0], desc, true);
 			
 			parameterFile = vm["p"].as<string>().c_str();
 		}
 		
 		if (vm.count("P")) {
-			if (!parameterSet.empty()) help(argv[0], true);
+			if (!parameterSet.empty()) help(argv[0], desc, true);
 			
 			parameterSet = vm["P"].as<string>().c_str();
 		}
 	}
 	else {
 		if (vm.count("p") || vm.count("P")) {
-			if (!parameterSet.empty()) help(argv[0], true);
+			if (!parameterSet.empty()) help(argv[0], desc, true);
 			PRINT("Customizer feature not activated\n");
-			help(argv[0], true);
+			help(argv[0], desc, true);
 		}
 	}
 	
@@ -973,19 +967,19 @@ int main(int argc, char **argv)
 	auto cmdlinemode = false;
 	if (output_file) { // cmd-line mode
 		cmdlinemode = true;
-		if (!inputFiles.size()) help(argv[0], true);
+		if (!inputFiles.size()) help(argv[0], desc, true);
 	}
 
 	if (arg_info || cmdlinemode) {
-		if (inputFiles.size() > 1) help(argv[0], true);
-		rc = cmdline(deps_output_file, inputFiles[0], camera, output_file, original_path, renderer, parameterFile, parameterSet, argc, argv);
+		if (inputFiles.size() > 1) help(argv[0], desc, true);
+		rc = cmdline(deps_output_file, inputFiles[0], camera, output_file, original_path, renderer, parameterFile, parameterSet);
 	}
 	else if (QtUseGUI()) {
 		rc = gui(inputFiles, original_path, argc, argv);
 	}
 	else {
 		PRINT("Requested GUI mode but can't open display!\n");
-		help(argv[0], true);
+		help(argv[0], desc, true);
 	}
 
 	Builtins::instance(true);
