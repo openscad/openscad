@@ -35,7 +35,6 @@ ECHO: "inf /  -0  is -inf"
 ECHO: "inf / inf  is nan"
 ECHO: "-- comparing nan --"
 ECHO: "nan != nan"
-ECHO: "-- 2d objects --"
 ECHO: "-- 3d objects --"
 ECHO: "-- for loops --"
 WARNING: Bad range parameter in for statement: too many elements (4294967295).
