@@ -128,7 +128,7 @@ public:
 	}
 };
 
-static void help(const char *arg0, po::options_description &desc, bool failure = false)
+static void help(const char *arg0, const po::options_description &desc, bool failure = false)
 {
 	std::stringstream ss;
 	ss << desc;
