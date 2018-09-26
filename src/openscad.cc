@@ -767,9 +767,9 @@ int main(int argc, char **argv)
 	int rc = 0;
 	StackCheck::inst()->init();
 #ifdef OPENSCAD_QTGUI
-	const std::string application_path = QCoreApplication::applicationDirPath().toLocal8Bit().constData();
+	const auto application_path = QCoreApplication::applicationDirPath().toLocal8Bit().constData();
 #else
-	const std::string application_path = fs::absolute(boost::filesystem::path(argv[0]).parent_path()).generic_string();
+	const auto application_path = fs::absolute(boost::filesystem::path(argv[0]).parent_path()).generic_string();
 #endif
 	PlatformUtils::registerApplicationPath(application_path);
 	
