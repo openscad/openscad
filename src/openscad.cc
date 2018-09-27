@@ -812,31 +812,31 @@ int main(int argc, char **argv)
         
 	po::options_description desc("Allowed options");
 	desc.add_options()
-		("o,o", po::value<string>(), "out_file -output a file instead of running the GUI, the file extension specifies the type: stl, off, amf, csg, dxf, svg, png, echo, ast, term, nef3, nefdbg")
+		("o,o", po::value<string>(), "output specified file instead of running the GUI, the file extension specifies the type: stl, off, amf, csg, dxf, svg, png, echo, ast, term, nef3, nefdbg\n")
 		("D,D", po::value<vector<string>>(), "var=val -pre-define variables")
+#ifdef ENABLE_EXPERIMENTAL
 		("p,p", po::value<string>(), "customizer parameter file")
 		("P,P", po::value<string>(), "customizer parameter set")
-#ifdef ENABLE_EXPERIMENTAL
 		("enable", po::value<vector<string>>(), ("enable experimental features: " + features + "\n").c_str())
 #endif
 		("help,h", "print this help message and exit")
 		("version,v", "print the version")
 		("info", "print information about the build process\n")
 
-		("camera", po::value<string>(), "camera parameters when exporting png: translate_x,y,z,rot_x,y,z,dist or eye_x,y,z,center_x,y,z")
-		("autocenter", "adjust camera to look at object center")
+		("camera", po::value<string>(), "camera parameters when exporting png: =translate_x,y,z,rot_x,y,z,dist or =eye_x,y,z,center_x,y,z")
+		("autocenter", "adjust camera to look at object's center")
 		("viewall", "adjust camera to fit object")
-		("imgsize", po::value<string>(), "=width,height for exporting png")
-		("render", po::value<string>()->implicit_value(""), "if exporting a png image, do a full geometry evaluation")
-		("preview", po::value<string>()->implicit_value(""), "if exporting a png image, do an OpenCSG(default) or ThrownTogether preview")
-		("projection", po::value<string>(), "(o)rtho or (p)erspective when exporting png")
-		("csglimit", po::value<unsigned int>(), "if exporting a png image, stop rendering at the given number of CSG elements")
-		("colorscheme", po::value<string>(), ("colorscheme: " + colorSchemeNames + "\n").c_str())
+		("imgsize", po::value<string>(), "=width,height of exported png")
+		("render", po::value<string>()->implicit_value(""), "for full geometry evaluation when exporting png")
+		("preview", po::value<string>()->implicit_value(""), "[=throwntogether] -for ThrownTogether preview png")
+		("projection", po::value<string>(), "=(o)rtho or (p)erspective when exporting png")
+		("csglimit", po::value<unsigned int>(), "=n -stop rendering at n CSG elements when exporting png")
+		("colorscheme", po::value<string>(), ("=colorscheme: " + colorSchemeNames + "\n").c_str())
 
 		("d,d", po::value<string>(), "deps_file -generate a dependency file for make")
 		("m,m", po::value<string>(), "make_cmd -runs make_cmd file if file is missing")
-		("debug", po::value<string>(), "special debug info")
 		("quiet,q", "quiet mode (don't print anything *except* errors)")
+		("debug", po::value<string>(), "special debug info")
 #ifdef Q_OS_MACX
 		("psn", po::value<string>(), "process serial number")
 #endif
