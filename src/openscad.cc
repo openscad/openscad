@@ -767,7 +767,7 @@ int main(int argc, char **argv)
 	int rc = 0;
 	StackCheck::inst()->init();
 #ifdef OPENSCAD_QTGUI
-    QCoreApplication *app = new QCoreApplication(argc, argv);
+	QCoreApplication *app = new QCoreApplication(argc, argv);
 	PlatformUtils::registerApplicationPath(app->applicationDirPath().toLocal8Bit().constData());
 	delete app;
 #else
