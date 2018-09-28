@@ -767,11 +767,12 @@ int main(int argc, char **argv)
 	int rc = 0;
 	StackCheck::inst()->init();
 #ifdef OPENSCAD_QTGUI
-	const auto application_path = QCoreApplication::applicationDirPath().toLocal8Bit().constData();
+    QCoreApplication *app = new QCoreApplication(argc, argv);
+	PlatformUtils::registerApplicationPath(app->applicationDirPath().toLocal8Bit().constData());
+    delete app;
 #else
-	const auto application_path = fs::absolute(boost::filesystem::path(argv[0]).parent_path()).generic_string();
+	PlatformUtils::registerApplicationPath(fs::absolute(boost::filesystem::path(argv[0]).parent_path()).generic_string());
 #endif
-	PlatformUtils::registerApplicationPath(application_path);
 	
 #ifdef Q_OS_MAC
 	bool isGuiLaunched = getenv("GUI_LAUNCHED") != nullptr;
