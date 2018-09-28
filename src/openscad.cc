@@ -767,7 +767,7 @@ int main(int argc, char **argv)
 	int rc = 0;
 	StackCheck::inst()->init();
 #ifdef OPENSCAD_QTGUI
-	{
+	{   // Need a dummy app instance to get the application path but it needs to be destroyed before the GUI is launched.
 		QCoreApplication app(argc, argv);
 		PlatformUtils::registerApplicationPath(app.applicationDirPath().toLocal8Bit().constData());
 	}
