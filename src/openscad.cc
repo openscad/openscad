@@ -767,9 +767,10 @@ int main(int argc, char **argv)
 	int rc = 0;
 	StackCheck::inst()->init();
 #ifdef OPENSCAD_QTGUI
-	QCoreApplication *app = new QCoreApplication(argc, argv);
-	PlatformUtils::registerApplicationPath(app->applicationDirPath().toLocal8Bit().constData());
-	delete app;
+	{
+		QCoreApplication app(argc, argv);
+		PlatformUtils::registerApplicationPath(app.applicationDirPath().toLocal8Bit().constData());
+	}
 #else
 	PlatformUtils::registerApplicationPath(fs::absolute(boost::filesystem::path(argv[0]).parent_path()).generic_string());
 #endif
