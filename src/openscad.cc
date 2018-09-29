@@ -839,15 +839,15 @@ int main(int argc, char **argv)
 		("m,m", po::value<string>(), "make_cmd -runs make_cmd file if file is missing")
 		("quiet,q", "quiet mode (don't print anything *except* errors)")
 		("debug", po::value<string>(), "special debug info")
-#ifdef Q_OS_MACX
-		("psn", po::value<string>(), "process serial number")
-#endif
 		("s,s", po::value<string>(), "stl_file deprecated, use -o")
 		("x,x", po::value<string>(), "dxf_file deprecated, use -o")
 		;
 
 	po::options_description hidden("Hidden options");
 	hidden.add_options()
+#ifdef Q_OS_MACX
+		("psn", po::value<string>(), "process serial number")
+#endif
 		("input-file", po::value< vector<string>>(), "input file");
 
 	po::positional_options_description p;
