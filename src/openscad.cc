@@ -619,7 +619,16 @@ void dialogInitHandler(FontCacheInitializer *initializer, void *)
 	QMetaObject::invokeMethod(scadApp, "hideFontCacheDialog");
 }
 
-
+void registerDefaultIcon(QString applicationFilePath) {
+#ifdef Q_OS_WIN
+	// Not using cached instance here, so this needs to be in a
+	// separate scope to ensure the QSettings instance is released
+	// directly after use.
+	QSettings reg_setting(QLatin1String("HKEY_CURRENT_USER"), QSettings::NativeFormat);
+	auto appPath = QDir::toNativeSeparators(applicationFilePath + QLatin1String(",1"));
+	reg_setting.setValue(QLatin1String("Software/Classes/OpenSCAD_File/DefaultIcon/Default"),QVariant(appPath));
+#endif
+}
 
 int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, char ** argv)
 {
@@ -658,7 +667,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 
 	parser_init();
 
-	QSettings settings;
+	QSettingsCached settings;
 	if (settings.value("advanced/localization", true).toBool()) {
 		localization_init();
 	}
@@ -667,11 +676,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	installAppleEventHandlers();
 #endif
 
-#ifdef Q_OS_WIN
-	QSettings reg_setting(QLatin1String("HKEY_CURRENT_USER"), QSettings::NativeFormat);
-	auto appPath = QDir::toNativeSeparators(app.applicationFilePath() + QLatin1String(",1"));
-	reg_setting.setValue(QLatin1String("Software/Classes/OpenSCAD_File/DefaultIcon/Default"),QVariant(appPath));
-#endif
+        registerDefaultIcon(app.applicationFilePath());
 
 #ifdef OPENSCAD_UPDATER
 	AutoUpdater *updater = new SparkleAutoUpdater;
@@ -734,7 +739,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	} else {
 	   new MainWindow(assemblePath(original_path, inputFiles[0]));
 	}
-    app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(releaseQSettingsCached()));
+	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(releaseQSettingsCached()));
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 	int rc = app.exec();
 	for (auto &mainw : scadApp->windowManager.getWindows()) delete mainw;
