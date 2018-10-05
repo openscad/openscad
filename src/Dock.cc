@@ -3,7 +3,7 @@
 
 #include "Dock.h"
 
-Dock::Dock(QWidget *parent) : QDockWidget(parent), action(nullptr)
+Dock::Dock(QWidget *parent) : QDockWidget(parent), action(nullptr), updateSettings(true)
 {
 }
 
@@ -11,10 +11,17 @@ Dock::~Dock()
 {
 }
 
+void Dock::disableSettingsUpdate()
+{
+	updateSettings = false;
+}
+
 void Dock::setVisible(bool visible)
 {
-	QSettingsCached settings;
-	settings.setValue(configKey, !visible);
+	if (updateSettings) {
+		QSettingsCached settings;
+		settings.setValue(configKey, !visible);
+	}
 	if (action != nullptr) {
 		action->setChecked(!visible);
 	}
