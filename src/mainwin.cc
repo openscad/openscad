@@ -2693,6 +2693,10 @@ void MainWindow::closeEvent(QCloseEvent *event)
 			delete this->tempFile;
 			this->tempFile = nullptr;
 		}
+		this->editorDock->disableSettingsUpdate();
+		this->consoleDock->disableSettingsUpdate();
+		this->parameterDock->disableSettingsUpdate();
+
 		event->accept();
 	} else {
 		event->ignore();
