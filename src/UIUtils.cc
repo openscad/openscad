@@ -148,5 +148,9 @@ void UIUtils::openUserManualURL()
 
 void UIUtils::openCheatSheetURL()
 {
+#ifdef OPENSCAD_SNAPSHOT
+    openVersionedURL("http://www.openscad.org/cheatsheet/snapshot.html?version=%1");
+#else
     openVersionedURL("http://www.openscad.org/cheatsheet/index.html?version=%1");
+#endif
 }
