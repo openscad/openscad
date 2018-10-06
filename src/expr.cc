@@ -445,7 +445,7 @@ Expression * FunctionCall::create(const std::string &funcname, const AssignmentL
 {
 	if (funcname == "assert" && Feature::ExperimentalAssertExpression.is_enabled()) {
 		return new Assert(arglist, expr, loc);
-	} else if (funcname == "echo" && Feature::ExperimentalEchoExpression.is_enabled()) {
+	} else if (funcname == "echo") {
 		return new Echo(arglist, expr, loc);
 	} else if (funcname == "let") {
 		return new Let(arglist, expr, loc);
@@ -486,8 +486,6 @@ Echo::Echo(const AssignmentList &args, Expression *expr, const Location &loc)
 
 ValuePtr Echo::evaluate(const Context *context) const
 {
-	ExperimentalFeatureException::check(Feature::ExperimentalEchoExpression);
-
 	std::stringstream msg;
 	EvalContext echo_context(context, this->arguments);
 	msg << "ECHO: " << echo_context;
