@@ -443,7 +443,7 @@ void FunctionCall::print(std::ostream &stream, const std::string &indent) const
 
 Expression * FunctionCall::create(const std::string &funcname, const AssignmentList &arglist, Expression *expr, const Location &loc)
 {
-	if (funcname == "assert" && Feature::ExperimentalAssertExpression.is_enabled()) {
+	if (funcname == "assert") {
 		return new Assert(arglist, expr, loc);
 	} else if (funcname == "echo") {
 		return new Echo(arglist, expr, loc);
@@ -711,8 +711,6 @@ void LcLet::print(std::ostream &stream, const std::string &indent) const
 
 void evaluate_assert(const Context &context, const class EvalContext *evalctx, const Location &loc)
 {
-	ExperimentalFeatureException::check(Feature::ExperimentalAssertExpression);
-
 	AssignmentList args;
 	args += Assignment("condition"), Assignment("message");
 
