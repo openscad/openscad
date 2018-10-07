@@ -24,7 +24,8 @@
     "children_indexed.scad",
     "GEB.scad",
     "animation.scad",
-    "module_recursion.scad"
+    "module_recursion.scad",
+    "assert.scad"
   ],
   "Parametric": [
     "sign.scad",
