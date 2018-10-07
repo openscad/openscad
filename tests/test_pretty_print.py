@@ -87,10 +87,10 @@ def ezsearch(pattern, str):
 def read_gitinfo():
     # won't work if run from outside of branch. 
     try:
-        data = subprocess.Popen(['git', 'remote', '-v'], stdout=subprocess.PIPE).stdout.read()
+        data = subprocess.Popen(['git', 'remote', '-v'], stdout=subprocess.PIPE).stdout.read().decode('utf-8')
         origin = ezsearch('^origin *?(.*?)\(fetch.*?$', data)
         upstream = ezsearch('^upstream *?(.*?)\(fetch.*?$', data)
-        data = subprocess.Popen(['git', 'branch'], stdout=subprocess.PIPE).stdout.read()
+        data = subprocess.Popen(['git', 'branch'], stdout=subprocess.PIPE).stdout.read().decode('utf-8')
         branch = ezsearch('^\*(.*?)$', data)
         out = 'Git branch: ' + branch + ' from origin ' + origin + '\n'
         out += 'Git upstream: ' + upstream + '\n'
@@ -210,7 +210,7 @@ def load_makefiles(builddir):
 
 def png_encode64(fname, width=512, data=None, alt=''):
     # en.wikipedia.org/wiki/Data_URI_scheme
-    data = data or tryread(fname) or ''
+    data = data or tryread(fname) or b''
     data_uri = base64.b64encode(data).decode('ascii')
     tag = '''<img src="data:image/png;base64,%s" width="%s" %s/>'''
     if alt=="": alt = 'alt="openscad_test_image:' + fname + '" '
@@ -233,6 +233,7 @@ def findlogfile(builddir):
 class Templates(object):
     html_template = '''<html>
     <head><title>Test run for {sysid}</title>
+    <meta charset="utf-8" />
     {style}
     </head>
     <body>

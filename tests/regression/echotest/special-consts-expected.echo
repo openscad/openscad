@@ -1,0 +1,40 @@
+ECHO: "-- comparing undef --"
+ECHO: "undef is undef"
+ECHO: "a is undef"
+ECHO: "undef is a"
+ECHO: "a is b"
+WARNING: Ignoring unknown variable 'c'.
+ECHO: "c is undef"
+WARNING: Ignoring unknown variable 'c'.
+ECHO: "undef is c"
+ECHO: "-- comparing undef --"
+ECHO: "undef evaluates false"
+WARNING: Ignoring unknown variable 'c'.
+ECHO: "undef evaluates false"
+ECHO: "-- echo undef --"
+ECHO: undef
+WARNING: Ignoring unknown variable 'c'.
+ECHO: undef
+ECHO: "-- calculating with undef --"
+ECHO: undef
+ECHO: undef
+ECHO: undef
+ECHO: "-- calculating resulting in +inf --"
+ECHO: inf
+ECHO: inf
+ECHO: "-- calculating resulting in -inf --"
+ECHO: -inf
+ECHO: -inf
+ECHO: "-- comparing inf --"
+ECHO: "inf == inf"
+ECHO: "-- calculating with inf --"
+ECHO: "inf + 1 is inf"
+ECHO: "inf - 1000 is inf"
+ECHO: "inf * inf  is inf"
+ECHO: "inf /  -0  is -inf"
+ECHO: "inf / inf  is nan"
+ECHO: "-- comparing nan --"
+ECHO: "nan != nan"
+ECHO: "-- 3d objects --"
+ECHO: "-- for loops --"
+WARNING: Bad range parameter in for statement: too many elements (4294967295).

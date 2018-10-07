@@ -11,6 +11,7 @@ objects
 .gdbinit
 .qmake.stash
 .tags*
+.uuid
 **/#*#
 /.dir-locals.el
 testdata/scad/2D/features/import_dxf-tests.scad
@@ -50,8 +51,8 @@ testdata/scad/misc/use-tests.scad
 /locale/POTFILES
 /tmp
 /nbproject
-/mingw32
-/mingw64
+/mingw32.*
+/mingw64.*
 src/*.org
 src/*.old
 src/*.debug
@@ -61,7 +62,9 @@ src/*.debug
 tests/lexer.cxx
 tests/parser.cxx
 tests/parser.hxx
+tests/DartConfiguration.tcl
 CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
 OpenSCAD_autogen
+/local.pri

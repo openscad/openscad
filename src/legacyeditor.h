@@ -12,7 +12,7 @@ public:
 	void setInitialSizeHint(const QSize&) override;
 	QString	toPlainText() override;
 	QString selectedText() override;
-    int resetFindIndicators(const QString &findText, bool visibility = true) override;
+    int updateFindIndicators(const QString &findText, bool visibility = true) override;
 	bool find(const QString &, bool findNext = false, bool findBackwards = false) override;
 	void replaceSelectedText(const QString &newText) override;	
 	void replaceAll(const QString &findText, const QString &replaceText) override;

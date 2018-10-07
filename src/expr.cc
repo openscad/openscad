@@ -48,12 +48,19 @@ namespace {
 	Value::VectorType flatten(Value::VectorType const& vec) {
 		int n = 0;
 		for (unsigned int i = 0; i < vec.size(); i++) {
-			assert(vec[i]->type() == Value::ValueType::VECTOR);
-			n += vec[i]->toVector().size();
+			if (vec[i]->type() == Value::ValueType::VECTOR) {
+				n += vec[i]->toVector().size();
+			} else {
+				n++;
+			}
 		}
 		Value::VectorType ret; ret.reserve(n);
 		for (unsigned int i = 0; i < vec.size(); i++) {
-			std::copy(vec[i]->toVector().begin(),vec[i]->toVector().end(),std::back_inserter(ret));
+			if (vec[i]->type() == Value::ValueType::VECTOR) {
+				std::copy(vec[i]->toVector().begin(),vec[i]->toVector().end(),std::back_inserter(ret));
+			} else {
+				ret.push_back(vec[i]);
+			}
 		}
 		return ret;
 	}
@@ -436,9 +443,9 @@ void FunctionCall::print(std::ostream &stream, const std::string &indent) const
 
 Expression * FunctionCall::create(const std::string &funcname, const AssignmentList &arglist, Expression *expr, const Location &loc)
 {
-	if (funcname == "assert" && Feature::ExperimentalAssertExpression.is_enabled()) {
+	if (funcname == "assert") {
 		return new Assert(arglist, expr, loc);
-	} else if (funcname == "echo" && Feature::ExperimentalEchoExpression.is_enabled()) {
+	} else if (funcname == "echo") {
 		return new Echo(arglist, expr, loc);
 	} else if (funcname == "let") {
 		return new Let(arglist, expr, loc);
@@ -479,8 +486,6 @@ Echo::Echo(const AssignmentList &args, Expression *expr, const Location &loc)
 
 ValuePtr Echo::evaluate(const Context *context) const
 {
-	ExperimentalFeatureException::check(Feature::ExperimentalEchoExpression);
-
 	std::stringstream msg;
 	EvalContext echo_context(context, this->arguments);
 	msg << "ECHO: " << echo_context;
@@ -706,8 +711,6 @@ void LcLet::print(std::ostream &stream, const std::string &indent) const
 
 void evaluate_assert(const Context &context, const class EvalContext *evalctx, const Location &loc)
 {
-	ExperimentalFeatureException::check(Feature::ExperimentalAssertExpression);
-
 	AssignmentList args;
 	args += Assignment("condition"), Assignment("message");
 

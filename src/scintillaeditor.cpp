@@ -523,29 +523,25 @@ void ScintillaEditor::onTextChanged()
   }
 }
 
-int ScintillaEditor::resetFindIndicators(const QString &findText, bool visibility)
+int ScintillaEditor::updateFindIndicators(const QString &findText, bool visibility)
 {
     int findwordcount = 0;
-    int savelineFrom, saveindexFrom, savelineTo, saveindexTo;
-    qsci->getSelection(&savelineFrom, &saveindexFrom, &savelineTo, &saveindexTo);
-    int clearlineFrom, clearindexFrom, clearlineTo, clearindexTo;
-    qsci->selectAll();
-    qsci->getSelection(&clearlineFrom, &clearindexFrom, &clearlineTo, &clearindexTo);
-    qsci->selectAll(false);
-    qsci->clearIndicatorRange(clearlineFrom, clearindexFrom, clearlineTo , clearindexTo, findIndicatorNumber);
-    if (visibility && qsci->findFirst(findText, false /*re*/, false /*cs*/, false /*wo*/, false /*wrap*/, true /*forward*/, 0, 0, false)) {
-        findwordcount++;
-        int lineFrom, indexFrom, lineTo, indexTo;
-        qsci->getSelection(&lineFrom, &indexFrom, &lineTo, &indexTo);
-        qsci->fillIndicatorRange(lineFrom, indexFrom, lineTo, indexTo, findIndicatorNumber); 
-        while (qsci->findNext()) {
+
+    QString txt = qsci->text();
+
+    qsci->SendScintilla(qsci->SCI_INDICATORCLEARRANGE, 0, txt.length());
+
+    int pos = txt.indexOf(findText);
+    int len = findText.length();
+    if (visibility && len>0) {
+        while (pos!=-1){
             findwordcount++;
-            qsci->getSelection(&lineFrom, &indexFrom, &lineTo, &indexTo);
-            qsci->fillIndicatorRange(lineFrom, indexFrom, lineTo, indexTo, findIndicatorNumber); 
-        }
+            qsci->SendScintilla(qsci->SCI_SETINDICATORCURRENT, findIndicatorNumber);
+            qsci->SendScintilla(qsci->SCI_INDICATORFILLRANGE, pos, len);
+            pos = txt.indexOf(findText,pos+len);
+        };
     }
-    //qsci->setSelection(savelineFrom, saveindexFrom, savelineTo, saveindexTo);
-    qsci->findFirst(findText, false, false, false, true, true, savelineFrom, saveindexFrom);
+    //qsci->findFirst(findText, false, false, false, true, true, savelineFrom, saveindexFrom);
     return findwordcount;
 }
 

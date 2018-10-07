@@ -45,6 +45,27 @@ module alignds420(position, rotation, screws = 0, axle_lenght = 0) {
 	if((axle_lenght > 0)) cylinder(r = 0.9, h = axle_lenght, center = true, $fn = 8);
 	}
 }
+module futabas3003(position, rotation) {
+	translate(position) rotate(rotation) union() {
+	translate([0, 0, 0]) {
+		cube([20.1, 39.9, 36.1], false);
+		translate([1.1, -7.6, 26.6]) difference() {
+	cube([18, 7.6, 2.5]);
+	translate([4, 3.5, 0]) cylinder(100, 2);
+	translate([14, 3.5, 0]) cylinder(100, 2);
+}
+		translate([1.1, 39.9, 26.6]) difference() {
+	cube([18, 7.6, 2.5]);
+	translate([4, 4.5, 0]) cylinder(100, 2);
+	translate([14, 4.5, 0]) cylinder(100, 2);
+}
+	}
+	translate([10, 30, 36.1]) {
+		cylinder(r = 6, h = 0.4, $fn = 30);
+		cylinder(r = 2.5, h = 4.9, $fn = 20);
+	}
+}
+}
 module test_alignds420() {
 	alignds420(screws = 1);
 }

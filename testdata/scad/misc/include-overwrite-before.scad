@@ -1,0 +1,2 @@
+echo("before");
+before = true;

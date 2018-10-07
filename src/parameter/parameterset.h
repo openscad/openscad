@@ -20,6 +20,7 @@ public:
 	~ParameterSet() {}
 	boost::optional<pt::ptree &> parameterSets();
 	std::vector<std::string> getParameterNames();
+	bool setNameExists(const std::string &setName);
 	boost::optional<pt::ptree &> getParameterSet(const std::string &setName);
 	void addParameterSet(const std::string setName, const pt::ptree & set);
 	bool readParameterSet(const std::string &filename);

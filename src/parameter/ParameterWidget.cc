@@ -61,12 +61,17 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 	connect(checkBoxAutoPreview, SIGNAL(toggled(bool)), this, SLOT(onValueChanged()));
 	connect(comboBoxDetails,SIGNAL(currentIndexChanged(int)), this,SLOT(onDescriptionLoDChanged()));
 	connect(comboBoxPreset, SIGNAL(currentIndexChanged(int)), this, SLOT(onSetChanged(int)));
+	connect(comboBoxPreset->lineEdit(), SIGNAL(editingFinished()), this, SLOT(onSetNameChanged()));
 	connect(reset, SIGNAL(clicked()), this, SLOT(resetParameter()));
+
+	comboBoxPreset->setInsertPolicy(QComboBox::InsertAtCurrent);
+
 	this->extractor = new ParameterExtractor();
 	this->setMgr = new ParameterSet();
 	this->valueChanged=false;
 }
 
+//resets all parameters to the currently selected parameter set
 void ParameterWidget::resetParameter()
 {
 	if(this->valueChanged){
@@ -85,10 +90,13 @@ void ParameterWidget::resetParameter()
 
 	int currPreset = this->comboBoxPreset->currentIndex();
 
-	removeChangeIndicator(currPreset);
+	removeChangeIndicator();
 
-	const std::string v = comboBoxPreset->itemData(currPreset).toString().toUtf8().constData();
-	applyParameterSet(v);
+	defaultParameter();
+	if(comboBoxPreset->currentIndex() != 0){ //0 is "design default values"
+		const std::string v = comboBoxPreset->itemData(currPreset).toString().toUtf8().constData();
+		applyParameterSet(v);
+	}
 	emit previewRequested();
 }
 
@@ -117,7 +125,7 @@ void ParameterWidget::onSetAdd()
 		pt::ptree setRoot;
 		setMgr->addChild(ParameterSet::parameterSetsKey, setRoot);
 	}
-	updateParameterSet("");
+	updateParameterSet("",true);
 }
 
 void ParameterWidget::onSetSaveButton()
@@ -174,12 +182,24 @@ void ParameterWidget::readFile(QString scadFile)
 
 }
 
+//Write the json file if the parameter sets are not empty.
+//This prevents creating unneccesary json filess.
+//This methode also updates the UI state (change indicator, file name, ...)
 void ParameterWidget::writeFileIfNotEmpty(QString scadFile)
 {
 	setFile(scadFile);
 	if (!setMgr->isEmpty()){
 		writeParameterSets();
 	}
+}
+
+//Write the json file without side effects (e.g. change indicator, file name)
+//This is e.g. useful when saving hidden back up files.
+void ParameterWidget::writeBackupFile(QString scadFile)
+{
+	boost::filesystem::path p = scadFile.toStdString();
+	auto jsonFile = p.replace_extension(".json").string();
+	setMgr->writeParameterSet(jsonFile);
 }
 
 void ParameterWidget::setParameters(const FileModule* module,bool rebuildParameterWidget)
@@ -199,7 +219,7 @@ void ParameterWidget::applyParameters(FileModule *fileModule)
 
 void ParameterWidget::setComboBoxPresetForSet()
 {
-	this->comboBoxPreset->addItem(_("no preset selected"), QVariant(QString::fromStdString("")));
+	this->comboBoxPreset->addItem(_("design default values"), QVariant(QString::fromStdString(_("design default values"))));
 	if (setMgr->isEmpty()) return;
 	for (const auto &name : setMgr->getParameterNames()) {
 		const QString n = QString::fromStdString(name);
@@ -229,13 +249,66 @@ void ParameterWidget::onSetChanged(int idx)
 	}
 	this->valueChanged=false;
 	
-	removeChangeIndicator(lastComboboxIndex);
+	removeChangeIndicator();
 
-	//apply the change
 	this->lastComboboxIndex = idx;
-	const std::string v = comboBoxPreset->itemData(idx).toString().toUtf8().constData();
-	applyParameterSet(v);
+	defaultParameter();
+	if(idx!=0){ //0 is "design default values"
+		//apply the change
+		const std::string v = comboBoxPreset->itemData(idx).toString().toUtf8().constData();
+		applyParameterSet(v);
+	}
 	emit previewRequested(false);
+}
+
+//if the set name is changed to "" asks if the user want to delete the current preset
+//if the set name is changed and  no  values are changed, rename the current preset
+//if the set name is changed and some values are changed, create a new set
+void ParameterWidget::onSetNameChanged(){
+	this->comboBoxPreset->lineEdit()->blockSignals(true); //prevent double firing
+
+	int idx =  comboBoxPreset->currentIndex();
+
+	QString newName = this->comboBoxPreset->currentText();
+	QString oldName = comboBoxPreset->itemData(idx).toString().toUtf8().constData();
+	if(oldName == newName){
+		//nothing to do
+	}else if(oldName ==""){
+		//ignore
+	}else if(newName =="" && idx!=0){
+		QMessageBox msgBox;
+		msgBox.setWindowTitle(_("Do you want to delete the current preset?"));
+		msgBox.setText(
+			QString(_("Do you want to delete the current preset '%1'?"))
+			.arg(oldName));
+		msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+		msgBox.setDefaultButton(QMessageBox::Cancel);
+
+		if (msgBox.exec() == QMessageBox::Cancel) {
+			comboBoxPreset->setCurrentText(oldName);
+		}else{
+			onSetDelete();
+		}
+	}else{
+		if(!this->valueChanged){
+			boost::optional<pt::ptree &> sets = setMgr->parameterSets();
+			if (sets.is_initialized()) {
+				sets.get().erase(pt::ptree::key_type(oldName.toStdString()));
+			}
+		}
+
+		if (setMgr->isEmpty()) {
+			pt::ptree setRoot;
+			setMgr->addChild(ParameterSet::parameterSetsKey, setRoot);
+		}
+
+		updateParameterSet(newName.toStdString(),true);
+
+		this->comboBoxPreset->clear();
+		setComboBoxPresetForSet();
+		this->comboBoxPreset->setCurrentIndex(this->comboBoxPreset->findData(newName));
+	}
+	this->comboBoxPreset->lineEdit()->blockSignals(false);
 }
 
 void ParameterWidget::onDescriptionLoDChanged()
@@ -247,10 +320,7 @@ void ParameterWidget::onDescriptionLoDChanged()
 void ParameterWidget::onValueChanged()
 {
 	if(!this->valueChanged){
-		this->comboBoxPreset->setItemText(
-			this->comboBoxPreset->currentIndex(),
-			this->comboBoxPreset->currentText() +" *"
-		);
+		this->labelChangeIndicator->setText("*");
 	}
 	this->valueChanged=true;
 
@@ -411,6 +481,13 @@ ParameterVirtualWidget* ParameterWidget::CreateParameterWidget(std::string param
 	return entry;
 }
 
+//reset all parameters to the default value of the design file
+void ParameterWidget::defaultParameter(){
+	for (const auto &entry : entries) {
+		entry.second->value=entry.second->defaultValue;
+	}
+}
+
 void ParameterWidget::applyParameterSet(std::string setName)
 {
 	boost::optional<pt::ptree &> set = setMgr->getParameterSet(setName);
@@ -439,9 +516,9 @@ void ParameterWidget::applyParameterSet(std::string setName)
 	}
 }
 
-void ParameterWidget::updateParameterSet(std::string setName)
+void ParameterWidget::updateParameterSet(std::string setName, bool newSet)
 {
-	if (setName == "") {
+	if (newSet && setName == "") {
 		QInputDialog *setDialog = new QInputDialog();
 
 		bool ok = true;
@@ -454,16 +531,36 @@ void ParameterWidget::updateParameterSet(std::string setName)
 		}
 	}
 
+	//check for duplicates
+	if(newSet && setMgr->setNameExists(setName)){
+		QMessageBox msgBox;
+		msgBox.setWindowTitle(QString(_("Set Name %1 allready exists")).arg(QString::fromStdString(setName)));
+		msgBox.setText(QString(_("The set name  %1 allready exists. Do you want overwrite it?")).arg(QString::fromStdString(setName)));
+		msgBox.setStandardButtons(QMessageBox::Yes);
+		msgBox.addButton(QMessageBox::No);
+		msgBox.setDefaultButton(QMessageBox::No);
+
+		if (msgBox.exec() == QMessageBox::Yes) {
+			//delete the preexisting preset to avoid side efects
+			boost::optional<pt::ptree &> sets = setMgr->parameterSets();
+			if (sets.is_initialized()) {
+				sets.get().erase(pt::ptree::key_type(setName));
+			}
+			
+			this->comboBoxPreset->removeItem(this->comboBoxPreset->findData(QString::fromStdString(setName)));
+		}else{
+			setName = "";
+		}
+	}
+
 	if (!setName.empty()) {
 		this->valueChanged=false;
 
 		pt::ptree iroot;
 		for (const auto &entry : entries) {
-			if (entry.second->groupName != "Hidden") {
-				const auto &VariableName = entry.first;
-				const auto &VariableValue = entry.second->value->toString();
-				iroot.put(VariableName, VariableValue);
-			}
+			const auto &VariableName = entry.first;
+			const auto &VariableValue = entry.second->value->toString();
+			iroot.put(VariableName, VariableValue);
 		}
 		setMgr->addParameterSet(setName, iroot);
 		const QString s(QString::fromStdString(setName));
@@ -472,7 +569,7 @@ void ParameterWidget::updateParameterSet(std::string setName)
 			this->comboBoxPreset->addItem(s, QVariant(s));
 			this->comboBoxPreset->setCurrentIndex(this->comboBoxPreset->findData(s));
 		}else{
-			removeChangeIndicator(idx);
+			removeChangeIndicator();
 		}
 		writeParameterSets();
 	}
@@ -495,10 +592,7 @@ void ParameterWidget::writeParameterSets()
 	this->valueChanged=false;
 }
 
-void ParameterWidget::removeChangeIndicator(int idx)
+void ParameterWidget::removeChangeIndicator()
 {
-	this->comboBoxPreset->setItemText(
-		idx,
-		comboBoxPreset->itemData(idx).toString()
-	);
+	this->labelChangeIndicator->setText("");
 }

@@ -96,7 +96,7 @@
 #include "QWordSearchField.h"
 #include <QSettings> //Include QSettings for direct operations on settings arrays
 #include "QSettingsCached.h"
-#include <QtMultimedia/QSound>
+#include <QSound>
 
 #if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
 #include <QTextDocument>
@@ -856,6 +856,10 @@ void MainWindow::openFile(const QString &new_filename)
 	fileChangedOnDisk(); // force cached autoReloadId to update
 	refreshDocument();
 	clearCurrentOutput();
+
+	if (Feature::ExperimentalCustomizer.is_enabled()) {
+		compileTopLevelDocument(true);
+	}
 }
 
 void MainWindow::setFileName(const QString &filename)
@@ -981,7 +985,7 @@ void MainWindow::refreshDocument()
 			PRINTB("Loaded design '%s'.", this->fileName.toLocal8Bit().constData());
 			if (editor->toPlainText() != text) {
 				editor->setPlainText(text);
-				this->contentschanged = true;
+				setContentsChanged();
 			}
 		}
 	}
@@ -1430,6 +1434,10 @@ void MainWindow::writeBackup(QFile *file)
 	writer.setCodec("UTF-8");
 	writer << this->editor->toPlainText();
 
+	if (Feature::ExperimentalCustomizer.is_enabled()) {
+		this->parameterWidget->writeBackupFile(file->fileName());
+	}
+	
 	PRINTB("Saved backup file: %s", file->fileName().toUtf8().constData());
 }
 
@@ -1566,17 +1574,16 @@ void MainWindow::actionReload()
 void MainWindow::pasteViewportTranslation()
 {
 	QString txt;
-	txt.sprintf("[ %.2f, %.2f, %.2f ]", -qglview->cam.object_trans.x(), -qglview->cam.object_trans.y(), -qglview->cam.object_trans.z());
+	auto vpt = qglview->cam.getVpt();
+	txt.sprintf("[ %.2f, %.2f, %.2f ]", vpt.x(), vpt.y(), vpt.z());
 	this->editor->insert(txt);
 }
 
 void MainWindow::pasteViewportRotation()
 {
 	QString txt;
-	txt.sprintf("[ %.2f, %.2f, %.2f ]",
-		fmodf(360 - qglview->cam.object_rot.x() + 90, 360),
-		fmodf(360 - qglview->cam.object_rot.y(), 360),
-		fmodf(360 - qglview->cam.object_rot.z(), 360));
+	auto vpr = qglview->cam.getVpr();
+	txt.sprintf("[ %.2f, %.2f, %.2f ]", vpr.x(), vpr.y(), vpr.z());
 	this->editor->insert(txt);
 }
 
@@ -1601,13 +1608,13 @@ QList<double> MainWindow::getRotation()
 void MainWindow::hideFind()
 {
 	find_panel->hide();
-	this->findInputField->setFindCount(editor->resetFindIndicators(this->findInputField->text(), false));
+	this->findInputField->setFindCount(editor->updateFindIndicators(this->findInputField->text(), false));
 	this->processEvents();
 }
 
 void MainWindow::showFind()
 {
-	this->findInputField->setFindCount(editor->resetFindIndicators(this->findInputField->text()));
+	this->findInputField->setFindCount(editor->updateFindIndicators(this->findInputField->text()));
 	this->processEvents();
 	findTypeComboBox->setCurrentIndex(0);
 	replaceInputField->hide();
@@ -1624,14 +1631,14 @@ void MainWindow::showFind()
 
 void MainWindow::findString(QString textToFind)
 {
-	this->findInputField->setFindCount(editor->resetFindIndicators(textToFind));
+	this->findInputField->setFindCount(editor->updateFindIndicators(textToFind));
 	this->processEvents();
 	editor->find(textToFind);
 }
 
 void MainWindow::showFindAndReplace()
 {
-	this->findInputField->setFindCount(editor->resetFindIndicators(this->findInputField->text()));	
+	this->findInputField->setFindCount(editor->updateFindIndicators(this->findInputField->text()));	
 	this->processEvents();
 	findTypeComboBox->setCurrentIndex(1); 
 	replaceInputField->show();
@@ -1747,16 +1754,18 @@ void MainWindow::updateTemporalVariables()
 {
 	this->top_ctx.set_variable("$t", ValuePtr(this->anim_tval));
 
+	auto camVpt = qglview->cam.getVpt();
 	Value::VectorType vpt;
-	vpt.push_back(ValuePtr(-qglview->cam.object_trans.x()));
-	vpt.push_back(ValuePtr(-qglview->cam.object_trans.y()));
-	vpt.push_back(ValuePtr(-qglview->cam.object_trans.z()));
+	vpt.push_back(ValuePtr(camVpt.x()));
+	vpt.push_back(ValuePtr(camVpt.y()));
+	vpt.push_back(ValuePtr(camVpt.z()));
 	this->top_ctx.set_variable("$vpt", ValuePtr(vpt));
 
+	auto camVpr = qglview->cam.getVpr();
 	Value::VectorType vpr;
-	vpr.push_back(ValuePtr(fmodf(360 - qglview->cam.object_rot.x() + 90, 360)));
-	vpr.push_back(ValuePtr(fmodf(360 - qglview->cam.object_rot.y(), 360)));
-	vpr.push_back(ValuePtr(fmodf(360 - qglview->cam.object_rot.z(), 360)));
+	vpr.push_back(ValuePtr(camVpr.x()));
+	vpr.push_back(ValuePtr(camVpr.y()));
+	vpr.push_back(ValuePtr(camVpr.z()));
 	top_ctx.set_variable("$vpr", ValuePtr(vpr));
 
 	top_ctx.set_variable("$vpd", ValuePtr(qglview->cam.zoomValue()));
@@ -1770,56 +1779,18 @@ void MainWindow::updateTemporalVariables()
  */
 void MainWindow::updateCamera(const FileContext &ctx)
 {
-	if (!root_module)
-		return;
-
-	bool camera_set = false;
-
-	Camera cam(qglview->cam);
-	cam.gimbalDefaultTranslate();
-	double tx = cam.object_trans.x();
-	double ty = cam.object_trans.y();
-	double tz = cam.object_trans.z();
-	double rx = cam.object_rot.x();
-	double ry = cam.object_rot.y();
-	double rz = cam.object_rot.z();
-	double d = cam.zoomValue();
-
 	double x, y, z;
 	const auto vpr = ctx.lookup_variable("$vpr");
-	if (vpr->getVec3(x, y, z)) {
-		rx = x;
-		ry = y;
-		rz = z;
-		camera_set = true;
-	}
+	if (vpr->getVec3(x, y, z))
+		qglview->cam.setVpr(x, y, z);
 
 	const auto vpt = ctx.lookup_variable("$vpt");
-	if (vpt->getVec3(x, y, z)) {
-		tx = x;
-		ty = y;
-		tz = z;
-		camera_set = true;
-	}
+	if (vpt->getVec3(x, y, z))
+		qglview->cam.setVpt(x, y, z);
 
 	const auto vpd = ctx.lookup_variable("$vpd");
-	if (vpd->type() == Value::ValueType::NUMBER) {
-		d = vpd->toDouble();
-		camera_set = true;
-	}
-
-	if (camera_set) {
-		std::vector<double> params;
-		params.push_back(tx);
-		params.push_back(ty);
-		params.push_back(tz);
-		params.push_back(rx);
-		params.push_back(ry);
-		params.push_back(rz);
-		params.push_back(d);
-		qglview->cam.setup(params);
-		qglview->cam.gimbalDefaultTranslate();
-	}
+	if (vpd->type() == Value::ValueType::NUMBER)
+		qglview->cam.setVpd(vpd->toDouble());
 }
 
 /*!
@@ -1860,7 +1831,7 @@ void MainWindow::compileTopLevelDocument(bool rebuildParameterWidget)
 
 	auto fulltext =
 		std::string(this->last_compiled_doc.toUtf8().constData()) +
-		"\n" + commandline_commands;
+		"\n\x03\n" + commandline_commands;
 	
 	auto fnameba = this->fileName.toLocal8Bit();
 	const char* fname = this->fileName.isEmpty() ? "" : fnameba;
@@ -2867,6 +2838,10 @@ void MainWindow::closeEvent(QCloseEvent *event)
 			delete this->tempFile;
 			this->tempFile = nullptr;
 		}
+		this->editorDock->disableSettingsUpdate();
+		this->consoleDock->disableSettingsUpdate();
+		this->parameterDock->disableSettingsUpdate();
+
 		event->accept();
 	} else {
 		event->ignore();
@@ -2957,6 +2932,7 @@ void MainWindow::openCSGSettingsChanged()
 void MainWindow::setContentsChanged()
 {
 	this->contentschanged = true;
+	this->parameterWidget->setEnabled(false);
 }
 
 void MainWindow::processEvents()

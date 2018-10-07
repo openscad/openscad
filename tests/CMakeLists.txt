@@ -1158,6 +1158,7 @@ list(APPEND EXAMPLE_FILES ${EXAMPLE_3D_FILES} ${EXAMPLE_2D_FILES})
 
 list(APPEND MISC_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-tests.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-overwrite-main.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/use-tests.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/assert-tests.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/let-module-tests.scad
@@ -1165,7 +1166,8 @@ list(APPEND MISC_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.sca
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/localfiles_dir/localfiles-compatibility-test.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allexpressions.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allfunctions.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allmodules.scad)
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allmodules.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/special-consts.scad)
 
 
 list(APPEND FAILING_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1890-comment.scad
@@ -1211,6 +1213,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/nbsp-latin1-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/concat-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-recursive-test.scad
+            
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/operators-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1472.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/empty-stl.scad
@@ -1218,6 +1221,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1528.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1923.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/preview_variable.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1851-each-fail-on-scalar.scad
             )
 
 list(APPEND ASTDUMPTEST_FILES ${MISC_FILES}
@@ -1335,6 +1339,9 @@ disable_tests(
 
   # Has floating point rounding issues
   dumptest-examples_module_recursion
+
+  # z-fighting different on different machines
+  throwntogethertest_issue1803
 )
 
 # 2D tests
@@ -1419,7 +1426,8 @@ experimental_tests(astdumptest_list-comprehensions-experimental
                    astdumptest_assert-expression-tests
                    astdumptest_assert-expression-fail1-test
                    astdumptest_assert-expression-fail2-test
-                   astdumptest_assert-expression-fail3-test)
+                   astdumptest_assert-expression-fail3-test
+		   echotest_issue1851-each-fail-on-scalar)
 
 # Test config handling
 
@@ -1701,9 +1709,11 @@ add_failing_test(offfailedtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DI
 add_failing_test(parsererrors EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/shouldfail.py ARGS --openscad=${OPENSCAD_BINPATH} --retval=1 -o SUFFIX stl FILES ${FAILING_FILES})
 
 # Verify that test framework is paying attention to alpha channel, issue 1492
-add_cmdline_test(openscad-colorscheme-cornfield-alphafail EXE ${OPENSCAD_BINPATH} ARGS --colorscheme=Cornfield -o SUFFIX png FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/logo.scad)
+#add_cmdline_test(openscad-colorscheme-cornfield-alphafail EXE ${OPENSCAD_BINPATH} ARGS --colorscheme=Cornfield -o SUFFIX png FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/logo.scad)
+
 # The "expected image" supplied for this "alphafail" test has the alpha channel for all background pixels cleared (a==0), when they should be opaque (a==1) for this colorscheme.  so if test framework is functioning properly then the image comparison should fail
-set_property(TEST openscad-colorscheme-cornfield-alphafail_logo PROPERTY WILL_FAIL TRUE)
+# Commented out because the master branch isn't capable of making the expected image yet. Also TEST_GENERATE=1 makes an expected image that makes the test fail.
+#set_property(TEST openscad-colorscheme-cornfield-alphafail_logo PROPERTY WILL_FAIL TRUE)
 
 #
 # Add experimental tests
@@ -1749,75 +1759,105 @@ endif()
 add_cmdline_test(openscad-imgsize EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize 100,100 -o 
                  SUFFIX png 
-                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
+                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/camera-tests.scad)
 add_cmdline_test(openscad-imgstretch EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize 500,100 -o 
                  SUFFIX png 
-                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
+                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/camera-tests.scad)
 add_cmdline_test(openscad-imgstretch2 EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize 100,500 -o 
                  SUFFIX png 
-                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
+                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/camera-tests.scad)
 # Perspective gimbal cam
 add_cmdline_test(openscad-camdist EXE ${OPENSCAD_BINPATH} 
                  ARGS --imgsize=500,500 --camera=0,0,0,90,0,90,200 -o
                  SUFFIX png
-                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
+                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/camera-tests.scad)
 # Perspective gimbal cam
 add_cmdline_test(openscad-camrot EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=0,0,0,440,337.5,315,200 -o
                  SUFFIX png
-                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
+                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/camera-tests.scad)
 # Perspective gimbal cam
 add_cmdline_test(openscad-camtrans EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=100,-20,-10,90,0,90,200 -o
                  SUFFIX png
-                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
+                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/camera-tests.scad)
 # Perspective gimbal cam, viewall
 add_cmdline_test(openscad-camtrans-viewall EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=100,-20,-10,90,0,90,6000 --viewall -o
                  SUFFIX png
-                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
+                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/camera-tests.scad)
+# Perspective gimbal cam, viewall, autocenter, off-center
+add_cmdline_test(openscad-camtrans-viewall-offcenter EXE ${OPENSCAD_BINPATH}
+                 ARGS --imgsize=500,500 --camera=0,0,0,30,40,50,10 --viewall --autocenter -o
+                 SUFFIX png
+                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/camera-tests-offcenter.scad)
 # Orthographic gimbal cam
 add_cmdline_test(openscad-camortho EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=100,-20,-20,90,0,90,220 --projection=o -o
                  SUFFIX png
-                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
+                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/camera-tests.scad)
 # Orthographic gimbal cam viewall
 add_cmdline_test(openscad-camortho-viewall EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=100,-20,-10,90,0,90,3000 --viewall --projection=o -o
                  SUFFIX png
-                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
+                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/camera-tests.scad)
 # Perspective vector cam
 add_cmdline_test(openscad-cameye EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=120,80,60,0,0,0 -o
                  SUFFIX png
-                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
+                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/camera-tests.scad)
+add_cmdline_test(openscad-cameye_front EXE ${OPENSCAD_BINPATH}
+                 ARGS --imgsize=500,500 --camera=0,-130,0,0,0,0 -o
+                 SUFFIX png
+                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/camera-tests.scad)
+add_cmdline_test(openscad-cameye_back EXE ${OPENSCAD_BINPATH}
+                 ARGS --imgsize=500,500 --camera=0,130,0,0,0,0 -o
+                 SUFFIX png
+                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/camera-tests.scad)
+add_cmdline_test(openscad-cameye_left EXE ${OPENSCAD_BINPATH}
+                 ARGS --imgsize=500,500 --camera=-130,0,0,0,0,0 -o
+                 SUFFIX png
+                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/camera-tests.scad)
+add_cmdline_test(openscad-cameye_right EXE ${OPENSCAD_BINPATH}
+                 ARGS --imgsize=500,500 --camera=130,0,0,0,0,0 -o
+                 SUFFIX png
+                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/camera-tests.scad)
+add_cmdline_test(openscad-cameye_top EXE ${OPENSCAD_BINPATH}
+                 ARGS --imgsize=500,500 --camera=0,0,130,0,0,0 -o
+                 SUFFIX png
+                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/camera-tests.scad)
+add_cmdline_test(openscad-cameye_bottom EXE ${OPENSCAD_BINPATH}
+                 ARGS --imgsize=500,500 --camera=0,0,-130,0,0,0 -o
+                 SUFFIX png
+                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/camera-tests.scad)
+
 # Perspective vector cam
 add_cmdline_test(openscad-cameye2 EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=160,140,130,0,0,0 -o
                  SUFFIX png
-                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
+                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/camera-tests.scad)
 # Perspective vector cam
 add_cmdline_test(openscad-camcenter EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=100,60,30,20,10,30  -o
                  SUFFIX png
-                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
+                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/camera-tests.scad)
 # Perspective vector cam viewall
 add_cmdline_test(openscad-camcenter-viewall EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=60,40,30,20,10,30 --viewall -o
                  SUFFIX png
-                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
+                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/camera-tests.scad)
 # Orthographic vector cam
 add_cmdline_test(openscad-cameyeortho EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=90,80,75,0,0,0 --projection=o -o 
                  SUFFIX png
-                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
+                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/camera-tests.scad)
 # Orthographic vector cam viewall
 add_cmdline_test(openscad-cameyeortho-viewall EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=16,14,13,0,0,0 --viewall --projection=o -o 
                  SUFFIX png
-                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
+                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/camera-tests.scad)
 
 # Colorscheme tests
 add_cmdline_test(openscad-colorscheme-cornfield EXE ${OPENSCAD_BINPATH}

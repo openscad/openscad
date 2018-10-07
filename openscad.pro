@@ -21,15 +21,12 @@
 #
 # https://en.wikibooks.org/wiki/OpenSCAD_User_Manual
 
-!experimental {
-  message("If you're building a development binary, consider adding CONFIG+=experimental")
-}
+include(defaults.pri)
 
-isEmpty(QT_VERSION) {
-  error("Please use qmake for Qt 4 or Qt 5 (probably qmake-qt4)")
-}
+# Local settings are read from local.pri
+exists(local.pri): include(local.pri)
 
-# Auto-include config_<variant>.pri if the VARIANT variable is give on the
+# Auto-include config_<variant>.pri if the VARIANT variable is given on the
 # command-line, e.g. qmake VARIANT=mybuild
 !isEmpty(VARIANT) {
   message("Variant: $${VARIANT}")
@@ -39,6 +36,15 @@ isEmpty(QT_VERSION) {
   }
 }
 
+debug {
+  experimental {
+    message("Building experimental debug version")
+  }
+  else {
+    message("If you're building a development binary, consider adding CONFIG+=experimental")
+  }
+}
+  
 # If VERSION is not set, populate VERSION, VERSION_YEAR, VERSION_MONTH from system date
 include(version.pri)
 
@@ -58,8 +64,10 @@ deploy {
     QMAKE_RPATHDIR = @executable_path/../Frameworks
   }
 }
-snapshot: DEFINES += OPENSCAD_SNAPSHOT
-
+snapshot {
+  DEFINES += OPENSCAD_SNAPSHOT
+}
+  
 macx {
   TARGET = OpenSCAD
 }
@@ -67,6 +75,7 @@ else {
   TARGET = openscad$${SUFFIX}
 }
 FULLNAME = openscad$${SUFFIX}
+APPLICATIONID = org.openscad.OpenSCAD
 !isEmpty(SUFFIX): DEFINES += INSTALL_SUFFIX="\"\\\"$${SUFFIX}\\\"\""
 
 macx {
@@ -148,15 +157,14 @@ netbsd* {
   QMAKE_CXXFLAGS_WARN_ON += -Wno-sign-compare
 }
 
-has_ccache: CONFIG += ccache
-
-CONFIG(skip-version-check) {
+skip-version-check {
   # force the use of outdated libraries
   DEFINES += OPENSCAD_SKIP_VERSION_CHECK
 }
 
+isEmpty(PKG_CONFIG):PKG_CONFIG = pkg-config
+
 # Application configuration
-macx:CONFIG += mdi
 CONFIG += c++11
 CONFIG += cgal
 CONFIG += opencsg
@@ -189,6 +197,11 @@ nogui {
 
 mdi {
   DEFINES += ENABLE_MDI
+}
+
+system("ccache -V >/dev/null 2>/dev/null") {
+  CONFIG += ccache
+  message("Using ccache")
 }
 
 include(common.pri)
@@ -687,8 +700,8 @@ mimexml.path = $$PREFIX/share/mime/packages
 mimexml.extra = cp -f icons/openscad.xml \"\$(INSTALL_ROOT)$${mimexml.path}/$${FULLNAME}.xml\"
 INSTALLS += mimexml
 
-appdata.path = $$PREFIX/share/appdata
-appdata.extra = cp -f openscad.appdata.xml \"\$(INSTALL_ROOT)$${appdata.path}/$${FULLNAME}.appdata.xml\"
+appdata.path = $$PREFIX/share/metainfo
+appdata.extra = mkdir -p \"\$(INSTALL_ROOT)$${appdata.path}\" && cat openscad.appdata.xml | sed -e \"'s/$${APPLICATIONID}/$${APPLICATIONID}$${SUFFIX}/; s/openscad.desktop/openscad$${SUFFIX}.desktop/; s/openscad.png/openscad$${SUFFIX}.png/'\" > \"\$(INSTALL_ROOT)$${appdata.path}/$${APPLICATIONID}$${SUFFIX}.appdata.xml\"
 INSTALLS += appdata
 
 icons.path = $$PREFIX/share/pixmaps

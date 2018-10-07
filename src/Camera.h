@@ -23,22 +23,23 @@ projection, Perspective and Orthogonal.
 class Camera
 {
 public:
-	enum class CameraType { NONE, GIMBAL, VECTOR } type;
 	enum class ProjectionType { ORTHOGONAL, PERSPECTIVE } projection;
-	Camera(CameraType camtype = CameraType::NONE);
+	Camera();
 	void setup(std::vector<double> params);
 	void gimbalDefaultTranslate();
 	void setProjection(ProjectionType type);
-	void zoom(int zoom, bool relative);
-	double zoomValue();
+	void zoom(int delta, bool relative);
+	double zoomValue() const;
 	void resetView();
 	void viewAll(const BoundingBox &bbox);
-	std::string statusText();
+	std::string statusText() const;
 
-	// Vectorcam
-	Eigen::Vector3d eye;
-	Eigen::Vector3d center; // (aka 'target')
-	Eigen::Vector3d up; // not used currently
+	// accessors to get and set camera settings in the user space format (different for historical reasons)
+	Eigen::Vector3d getVpt() const;
+	void setVpt(double x, double y, double z);
+	Eigen::Vector3d getVpr() const;
+	void setVpr(double x, double y, double z);
+	void setVpd(double d);
 
 	// Gimbalcam
 	Eigen::Vector3d object_trans;
@@ -59,7 +60,7 @@ public:
 	unsigned int pixel_height;
 
 protected:
-        // Perspective settings
+	// Perspective settings
 	double viewer_distance;
 	// Orthographic settings
 	double height; // world-space height of viewport

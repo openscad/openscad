@@ -39,7 +39,6 @@
 #include <assert.h>
 #include <libxml/xmlreader.h>
 #include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
 
 static const std::string text_node("#text");
 static const std::string object("/amf/object");
@@ -54,7 +53,7 @@ static const std::string triangle_v3 = triangle + "/v3";
 
 class AmfImporter {
 private:
-	fs::path path;
+	std::string xpath;   // element nesting stack
 
 	typedef void (*cb_func)(AmfImporter *, const xmlChar *);
 
@@ -91,7 +90,7 @@ public:
 	virtual xmlTextReaderPtr createXmlReader(const char *filename);
 };
 
-AmfImporter::AmfImporter() : path("/")
+AmfImporter::AmfImporter()
 {
 }
 
@@ -168,35 +167,37 @@ void AmfImporter::processNode(xmlTextReaderPtr reader)
 	const char *name = reinterpret_cast<const char *> (xmlTextReaderName(reader));
 	if (name == nullptr)
 		name = reinterpret_cast<const char *> (xmlStrdup(BAD_CAST "--"));
-
 	xmlChar *value = xmlTextReaderValue(reader);
 	int node_type = xmlTextReaderNodeType(reader);
 	switch (node_type) {
 	case XML_READER_TYPE_ELEMENT:
 	{
-		path /= name;
-		cb_func startFunc = start_funcs[path.string()];
+		xpath += '/';
+		xpath += name;
+		cb_func startFunc = start_funcs[xpath];
 		if (startFunc) {
-			PRINTDB("AMF: start %s", path.string());
+			PRINTDB("AMF: start %s", xpath);
 			startFunc(this, nullptr);
 		}
 	}
 		break;
 	case XML_READER_TYPE_END_ELEMENT:
 	{
-		cb_func endFunc = end_funcs[path.string()];
+		cb_func endFunc = end_funcs[xpath];
 		if (endFunc) {
-			PRINTDB("AMF: end   %s", path.string());
+			PRINTDB("AMF: end   %s", xpath);
 			endFunc(this, value);
 		}
-		path = path.parent_path();
+        size_t pos = xpath.find_last_of('/');
+        if(pos != std::string::npos)
+            xpath.erase(pos);
 	}
 		break;
 	case XML_READER_TYPE_TEXT:
 	{
-		cb_func textFunc = funcs[path.string()];
+		cb_func textFunc = funcs[xpath];
 		if (textFunc) {
-			PRINTDB("AMF: text  %s - '%s'", path.string() % value);
+			PRINTDB("AMF: text  %s - '%s'", xpath % value);
 			textFunc(this, value);
 		}
 	}
@@ -323,21 +324,26 @@ int AmfImporterZIP::close_callback(void *context)
 	return zip_fclose(importer->zipfile);
 }
 
-xmlTextReaderPtr AmfImporterZIP::createXmlReader(const char *filename)
+xmlTextReaderPtr AmfImporterZIP::createXmlReader(const char *filepath)
 {
-	archive = zip_open(filename, 0, nullptr);
+	archive = zip_open(filepath, 0, nullptr);
 	if (archive) {
-		fs::path f(filename);
-		zipfile = zip_fopen(archive, f.filename().c_str(), ZIP_FL_NODIR);
+		// Separate the filename without using filesystem::path because that gives wide result on Windows TM
+		const char *last_slash = strrchr(filepath,'/');
+		const char *last_bslash = strrchr(filepath,'\\');
+		if(last_bslash > last_slash)
+			last_slash = last_bslash;
+		const char *filename = last_slash ? last_slash + 1 : filepath;
+		zipfile = zip_fopen(archive, filename, ZIP_FL_NODIR);
 		if (zipfile == nullptr) {
-			PRINTB("WARNING: Can't read file '%s' from zipped AMF '%s'", f.filename().c_str() % filename);
+			PRINTB("WARNING: Can't read file '%s' from zipped AMF '%s'", filename % filepath);
 		}
 		if ((zipfile == nullptr) && (zip_get_num_files(archive) == 1)) {
 			PRINTB("WARNING: Trying to read single entry '%s'", zip_get_name(archive, 0, 0));
 			zipfile = zip_fopen_index(archive, 0, 0);
 		}
 		if (zipfile) {
-			return xmlReaderForIO(read_callback, close_callback, this, f.filename().c_str(), nullptr,
+			return xmlReaderForIO(read_callback, close_callback, this, filename, nullptr,
 				XML_PARSE_NOENT | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 		} else {
 			zip_close(archive);
@@ -345,7 +351,7 @@ xmlTextReaderPtr AmfImporterZIP::createXmlReader(const char *filename)
 			return nullptr;
 		}
 	} else {
-		return AmfImporter::createXmlReader(filename);
+		return AmfImporter::createXmlReader(filepath);
 	}
 }
 

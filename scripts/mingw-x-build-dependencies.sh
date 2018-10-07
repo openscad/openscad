@@ -94,8 +94,8 @@ else
   PACKAGES='qtbase qtmultimedia qscintilla2 mpfr eigen opencsg cgal nsis glib libxml2 freetype fontconfig harfbuzz libzip'
  fi
 fi
-echo make $PACKAGES MXE_TARGETS=$MXE_TARGETS -j $NUMCPU JOBS=$NUMJOBS
-make $PACKAGES MXE_TARGETS=$MXE_TARGETS -j $NUMCPU JOBS=$NUMJOBS
+echo make MXE_PLUGIN_DIRS=plugins/gcc7 $PACKAGES MXE_TARGETS=$MXE_TARGETS -j $NUMCPU JOBS=$NUMJOBS
+make MXE_PLUGIN_DIRS=plugins/gcc7 $PACKAGES MXE_TARGETS=$MXE_TARGETS -j $NUMCPU JOBS=$NUMJOBS
 
 echo "leaving" $MXEDIR
 
