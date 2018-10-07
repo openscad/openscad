@@ -339,7 +339,7 @@ void register_builtin_control()
 	Builtins::init("child", new ControlModule(ControlModule::Type::CHILD));
 	Builtins::init("children", new ControlModule(ControlModule::Type::CHILDREN));
 	Builtins::init("echo", new ControlModule(ControlModule::Type::ECHO));
-	Builtins::init("assert", new ControlModule(ControlModule::Type::ASSERT, Feature::ExperimentalAssertExpression));
+	Builtins::init("assert", new ControlModule(ControlModule::Type::ASSERT));
 	Builtins::init("assign", new ControlModule(ControlModule::Type::ASSIGN));
 	Builtins::init("for", new ControlModule(ControlModule::Type::FOR));
 	Builtins::init("let", new ControlModule(ControlModule::Type::LET));
