@@ -583,6 +583,18 @@ ValuePtr LcEach::evaluate(const Context *context) const
         for (size_t i = 0; i < v->toVector().size(); i++) {
             vec.push_back(vector[i]);
         }
+    } else if (v->type() == Value::ValueType::STRING) {
+        const std::string val = v->toString();
+        const char *ptr = val.c_str();
+
+        gchar outbuf[8];
+        const glong len = g_utf8_strlen(ptr, -1);
+        for (;*ptr && len > 0;ptr = g_utf8_next_char(ptr)) {
+            const gunichar c = g_utf8_get_char(ptr);
+            const gint end = g_unichar_to_utf8(c, outbuf);
+            outbuf[end] = 0;
+            vec.push_back(ValuePtr(outbuf));
+        }
     } else if (v->type() != Value::ValueType::UNDEFINED) {
         vec.push_back(v);
     }
@@ -632,6 +644,19 @@ ValuePtr LcFor::evaluate(const Context *context) const
     } else if (it_values->type() == Value::ValueType::VECTOR) {
         for (size_t i = 0; i < it_values->toVector().size(); i++) {
             c.set_variable(it_name, it_values->toVector()[i]);
+            vec.push_back(this->expr->evaluate(&c));
+        }
+    } else if (it_values->type() == Value::ValueType::STRING) {
+        const std::string val = it_values->toString();
+        const char *ptr = val.c_str();
+
+        gchar outbuf[8];
+        const glong len = g_utf8_strlen(ptr, -1);
+        for (;*ptr && len > 0;ptr = g_utf8_next_char(ptr)) {
+            const gunichar ch = g_utf8_get_char(ptr);
+            const gint end = g_unichar_to_utf8(ch, outbuf);
+            outbuf[end] = 0;
+            c.set_variable(it_name, ValuePtr(outbuf));
             vec.push_back(this->expr->evaluate(&c));
         }
     } else if (it_values->type() != Value::ValueType::UNDEFINED) {
