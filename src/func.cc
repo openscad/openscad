@@ -545,6 +545,41 @@ ValuePtr builtin_chr(const Context *, const EvalContext *evalctx)
 	return ValuePtr(stream.str());
 }
 
+ValuePtr builtin_ord(const Context *, const EvalContext *evalctx)
+{
+	Value::VectorType result;
+	ValuePtr emptyResult = ValuePtr::undefined;
+	for (size_t i = 0; i < evalctx->numArgs(); i++) {
+		const ValuePtr v = evalctx->getArgValue(i);
+		if (v->type() != Value::STRING) {
+			PRINTB("WARNING: ord() argument %s is not of type string.", v->toString());
+			continue;
+		}
+
+		const std::string arg = v->toString();
+		const char *ptr = arg.c_str();
+		if (!g_utf8_validate(ptr, -1, NULL)) {
+			PRINTB("WARNING: ord() argument '%s' is not valid utf8 string.", ptr);
+			continue;
+		}
+
+		emptyResult = ValuePtr(0.0);
+		const glong len = g_utf8_strlen(ptr, -1);
+		for (;*ptr && len > 0;ptr = g_utf8_next_char(ptr)) {
+			const gunichar c = g_utf8_get_char(ptr);
+			result.push_back(ValuePtr((double)c));
+		}
+	}
+
+	if (result.empty()) {
+		return emptyResult;
+	} else if (result.size() == 1) {
+		return ValuePtr(result[0]);
+	} else {
+		return ValuePtr(result);
+	}
+}
+
 ValuePtr builtin_concat(const Context *, const EvalContext *evalctx)
 {
 	Value::VectorType result;
@@ -949,6 +984,7 @@ void register_builtin_functions()
 	Builtins::init("ln", new BuiltinFunction(&builtin_ln));
 	Builtins::init("str", new BuiltinFunction(&builtin_str));
 	Builtins::init("chr", new BuiltinFunction(&builtin_chr));
+	Builtins::init("ord", new BuiltinFunction(&builtin_ord));
 	Builtins::init("concat", new BuiltinFunction(&builtin_concat));
 	Builtins::init("lookup", new BuiltinFunction(&builtin_lookup));
 	Builtins::init("search", new BuiltinFunction(&builtin_search));
