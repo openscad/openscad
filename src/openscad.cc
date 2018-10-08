@@ -57,7 +57,6 @@
 #include "cgalutils.h"
 #endif
 
-#include "CsgInfo.h"
 #include "csgnode.h"
 #include "CSGTreeEvaluator.h"
 

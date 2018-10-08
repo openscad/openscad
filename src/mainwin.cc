@@ -701,7 +701,7 @@ void MainWindow::onZoomEvent(InputEventZoom *event)
 }
 
 void MainWindow::loadViewSettings(){
-	QSettings settings;
+	QSettingsCached settings;
 
 	if (settings.value("view/showEdges").toBool()) {
 		viewActionShowEdges->setChecked(true);
@@ -2294,36 +2294,6 @@ void MainWindow::actionExportOFF()
 void MainWindow::actionExportAMF()
 {
 	actionExport(FileFormat::AMF, "AMF", ".amf", 3);
-}
-
-QString MainWindow::get2dExportFilename(QString format, QString extension) {
-	setCurrentOutput();
-
-	if (!this->root_geom) {
-		PRINT("WARNING: Nothing to export! Try building first (press F6).");
-		clearCurrentOutput();
-		return QString();
-	}
-
-	if (this->root_geom->getDimension() != 2) {
-		PRINT("WARNING: Current top level object is not a 2D object.");
-		clearCurrentOutput();
-		return QString();
-	}
-
-	QString caption = QString(_("Export %1 File")).arg(format);
-	QString suggestion = this->fileName.isEmpty()
-		? QString(_("Untitled%1")).arg(extension)
-		: QFileInfo(this->fileName).baseName() + extension;
-	QString filter = QString(_("%1 Files (*%2)")).arg(format, extension);
-	QString exportFilename = QFileDialog::getSaveFileName(this, caption, suggestion, filter);
-	if (exportFilename.isEmpty()) {
-		PRINT("No filename specified. DXF export aborted.");
-		clearCurrentOutput();
-		return QString();
-	}
-
-	return exportFilename;
 }
 
 void MainWindow::actionExportDXF()
