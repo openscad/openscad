@@ -1,5 +1,5 @@
-WARNING: overwritten was assigned on line 11 but was overwritten on line 15
-WARNING: after was assigned on line 14 of "../../../../../testdata/scad/misc/include-overwrite-main.scad" but was overwritten on line 2  of "../../../../../testdata/scad/misc/include-overwrite-after.scad"
+WARNING: overwritten was assigned on line 12 but was overwritten on line 16
+WARNING: after was assigned on line 15 of "../../../../../testdata/scad/misc/include-overwrite-main.scad" but was overwritten on line 2  of "../../../../../testdata/scad/misc/include-overwrite-after.scad"
 ECHO: "Can a variable be used when it assigned later? true"
 ECHO: "Does an include before the assigment take priority? false"
 ECHO: "Does an include after the assigment take priority? true"
