@@ -636,16 +636,18 @@ void dialogInitHandler(FontCacheInitializer *initializer, void *)
 	QMetaObject::invokeMethod(scadApp, "hideFontCacheDialog");
 }
 
-void registerDefaultIcon(QString applicationFilePath) {
 #ifdef Q_OS_WIN
+void registerDefaultIcon(QString applicationFilePath) {
 	// Not using cached instance here, so this needs to be in a
 	// separate scope to ensure the QSettings instance is released
 	// directly after use.
 	QSettings reg_setting(QLatin1String("HKEY_CURRENT_USER"), QSettings::NativeFormat);
 	auto appPath = QDir::toNativeSeparators(applicationFilePath + QLatin1String(",1"));
 	reg_setting.setValue(QLatin1String("Software/Classes/OpenSCAD_File/DefaultIcon/Default"),QVariant(appPath));
-#endif
 }
+#else
+void registerDefaultIcon(QString) { }
+#endif
 
 int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, char ** argv)
 {
