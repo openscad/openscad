@@ -252,7 +252,7 @@ QColor ScintillaEditor::readColor(const boost::property_tree::ptree &pt, const s
 		}
 #endif
 		return QColor(val.c_str());
-	} catch (std::exception e) {
+	} catch (std::exception&) {
 		return defaultColor;
 	}
 }
@@ -262,7 +262,7 @@ std::string ScintillaEditor::readString(const boost::property_tree::ptree &pt, c
 	try {
 		const std::string val = pt.get<std::string>(name);
 		return val;
-	} catch (std::exception e) {
+	} catch (std::exception&) {
 		return defaultValue;
 	}
 }
@@ -272,7 +272,7 @@ int ScintillaEditor::readInt(const boost::property_tree::ptree &pt, const std::s
 	try {
 		const int val = pt.get<int>(name);
 		return val;
-	} catch (std::exception e) {
+	} catch (std::exception&) {
 		return defaultValue;
 	}
 }
@@ -346,7 +346,7 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 		qsci->setSelectionForegroundColor(readColor(colors, "selection-foreground", paperColor));
 		qsci->setSelectionBackgroundColor(readColor(colors, "selection-background", textColor));
 		qsci->setEdgeColor(readColor(colors, "edge", textColor));
-	} catch (std::exception e) {
+	} catch (std::exception&) {
 		noColor();
 	}
 }

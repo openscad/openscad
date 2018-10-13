@@ -134,6 +134,7 @@
 #endif // ENABLE_CGAL
 
 #include "FontCache.h"
+#include "input/InputDriverManager.h"
 
 // Global application state
 unsigned int GuiLocker::gui_locked = 0;
@@ -149,6 +150,24 @@ bool MainWindow::mdiMode = false;
 bool MainWindow::undockMode = false;
 bool MainWindow::reorderMode = false;
 const int MainWindow::tabStopWidth = 15;
+
+namespace {
+
+QAction *findAction(const QList<QAction *> &actions, const std::string &name)
+{
+	for (const auto action : actions) {
+		if (action->objectName().toStdString() == name) {
+			return action;
+		}
+		if (action->menu()) {
+			auto foundAction = findAction(action->menu()->actions(), name);
+			if (foundAction) return foundAction;
+		}
+   }
+   return nullptr;
+}
+
+} // namespace
 
 MainWindow::MainWindow(const QString &filename)
 	: root_inst("group"), library_info_dialog(nullptr), font_list_dialog(nullptr), procevents(false), tempFile(nullptr), progresswidget(nullptr), contentschanged(false), includes_mtime(0), deps_mtime(0)
@@ -182,6 +201,10 @@ MainWindow::MainWindow(const QString &filename)
 		editor = new LegacyEditor(editorDockContents);
 
 	Preferences::create(editor->colorSchemes());
+        connect(Preferences::inst()->ButtonConfig, SIGNAL(inputMappingChanged()), InputDriverManager::instance(), SLOT(onInputMappingUpdated()), Qt::UniqueConnection);
+        connect(Preferences::inst()->AxisConfig, SIGNAL(inputMappingChanged()), InputDriverManager::instance(), SLOT(onInputMappingUpdated()), Qt::UniqueConnection);
+        connect(Preferences::inst()->AxisConfig, SIGNAL(inputCalibrationChanged()), InputDriverManager::instance(), SLOT(onInputCalibrationUpdated()), Qt::UniqueConnection);
+        connect(Preferences::inst()->AxisConfig, SIGNAL(inputGainChanged()), InputDriverManager::instance(), SLOT(onInputGainUpdated()), Qt::UniqueConnection);
 
 #ifdef USE_SCINTILLA_EDITOR
 	if (useScintilla) {
@@ -204,7 +227,7 @@ MainWindow::MainWindow(const QString &filename)
 
 #ifdef ENABLE_CGAL
 	this->cgalworker = new CGALWorker();
-	connect(this->cgalworker, SIGNAL(done(shared_ptr<const Geometry>)), 
+	connect(this->cgalworker, SIGNAL(done(shared_ptr<const Geometry>)),
 					this, SLOT(actionRenderDone(shared_ptr<const Geometry>)));
 #endif
 
@@ -238,7 +261,7 @@ MainWindow::MainWindow(const QString &filename)
 	knownFileExtensions["png"] = surfaceStatement;
 	knownFileExtensions["scad"] = "";
 	knownFileExtensions["csg"] = "";
-	
+
 	editActionZoomTextIn->setShortcuts(QList<QKeySequence>() << editActionZoomTextIn->shortcuts() << QKeySequence("CTRL+="));
 
 	connect(this, SIGNAL(highlightError(int)), editor, SLOT(highlightError(int)));
@@ -274,7 +297,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->labelCompileResultMessage, SIGNAL(linkActivated(QString)), SLOT(showConsole()));
 
 	// File menu
-	connect(this->fileActionNew, SIGNAL(triggered()), this, SLOT(actionNew())); 
+	connect(this->fileActionNew, SIGNAL(triggered()), this, SLOT(actionNew()));
 	connect(this->fileActionOpen, SIGNAL(triggered()), this, SLOT(actionOpen()));
 	connect(this->fileActionSave, SIGNAL(triggered()), this, SLOT(actionSave()));
 	connect(this->fileActionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs()));
@@ -431,13 +454,13 @@ MainWindow::MainWindow(const QString &filename)
 	connect(Preferences::inst(), SIGNAL(updateMdiMode(bool)), this, SLOT(updateMdiMode(bool)));
 	connect(Preferences::inst(), SIGNAL(updateReorderMode(bool)), this, SLOT(updateReorderMode(bool)));
 	connect(Preferences::inst(), SIGNAL(updateUndockMode(bool)), this, SLOT(updateUndockMode(bool)));
-	connect(Preferences::inst(), SIGNAL(fontChanged(const QString&,uint)), 
+	connect(Preferences::inst(), SIGNAL(fontChanged(const QString&,uint)),
 					editor, SLOT(initFont(const QString&,uint)));
 	connect(Preferences::inst(), SIGNAL(openCSGSettingsChanged()),
 					this, SLOT(openCSGSettingsChanged()));
 	connect(Preferences::inst(), SIGNAL(syntaxHighlightChanged(const QString&)),
 					editor, SLOT(setHighlightScheme(const QString&)));
-	connect(Preferences::inst(), SIGNAL(colorSchemeChanged(const QString&)), 
+	connect(Preferences::inst(), SIGNAL(colorSchemeChanged(const QString&)),
 					this, SLOT(setColorScheme(const QString&)));
 	Preferences::inst()->apply();
 
@@ -463,10 +486,14 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->replaceButton, SIGNAL(clicked()), this, SLOT(replace()));
 	connect(this->replaceAllButton, SIGNAL(clicked()), this, SLOT(replaceAll()));
 	connect(this->replaceInputField, SIGNAL(returnPressed()), this->replaceButton, SLOT(animateClick()));
-	
+
 	addKeyboardShortCut(this->viewerToolBar->actions());
 	addKeyboardShortCut(this->editortoolbar->actions());
-	
+
+	InputDriverManager::instance()->registerActions(this->menuBar()->actions(),"");
+	Preferences* instance = Preferences::inst();
+	instance->ButtonConfig->init();
+
 	initActionIcon(fileActionNew, ":/images/blackNew.png", ":/images/Document-New-128.png");
 	initActionIcon(fileActionOpen, ":/images/Open-32.png", ":/images/Open-128.png");
 	initActionIcon(fileActionSave, ":/images/Save-32.png", ":/images/Save-128.png");
@@ -549,12 +576,13 @@ MainWindow::MainWindow(const QString &filename)
 			move(windowRect.topLeft());
 			resize(windowRect.size());
 		}
-#endif	    
+#endif
 	}
-	
+
 	connect(this->editorDock, SIGNAL(topLevelChanged(bool)), this, SLOT(editorTopLevelChanged(bool)));
 	connect(this->consoleDock, SIGNAL(topLevelChanged(bool)), this, SLOT(consoleTopLevelChanged(bool)));
 	connect(this->parameterDock, SIGNAL(topLevelChanged(bool)), this, SLOT(parameterTopLevelChanged(bool)));
+
 	// display this window and check for OpenGL 2.0 (OpenCSG) support
 	viewModeThrownTogether();
 	show();
@@ -625,8 +653,56 @@ void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer
 	}
 }
 
-void MainWindow::loadViewSettings() {
+void MainWindow::onAxisChanged(InputEventAxisChanged *)
+{
+
+}
+
+void MainWindow::onButtonChanged(InputEventButtonChanged *)
+{
+
+}
+
+void MainWindow::onTranslateEvent(InputEventTranslate *event)
+{
+    double zoomFactor = 0.001 * qglview->cam.zoomValue();
+    
+    if(event->viewPortRelative){
+		qglview->translate(event->x, event->y, event->z, event->relative, true);
+	}else{
+		qglview->translate(zoomFactor * event->x, event->y, zoomFactor * event->z, event->relative, false);
+	}
+
+}
+
+void MainWindow::onRotateEvent(InputEventRotate *event)
+{
+	qglview->rotate(event->x, event->y, event->z, event->relative);
+}
+
+void MainWindow::onRotate2Event(InputEventRotate2 *event)
+{
+	qglview->rotate2(event->x, event->y, event->z);
+}
+
+void MainWindow::onActionEvent(InputEventAction *event)
+{
+	QAction *action = findAction(this->menuBar()->actions(), event->action);
+	if (action) {
+		action->trigger();
+	}else if("viewActionTogglePerspective" == event->action){
+		viewTogglePerspective();
+	}
+}
+
+void MainWindow::onZoomEvent(InputEventZoom *event)
+{
+    qglview->zoom(event->zoom, event->relative);
+}
+
+void MainWindow::loadViewSettings(){
 	QSettingsCached settings;
+
 	if (settings.value("view/showEdges").toBool()) {
 		viewActionShowEdges->setChecked(true);
 		viewModeShowEdges();
@@ -791,7 +867,7 @@ void MainWindow::setFileName(const QString &filename)
 	if (filename.isEmpty()) {
 		this->fileName.clear();
 		setWindowFilePath(_("Untitled.scad"));
-		
+
 		this->top_ctx.setDocumentPath(currentdir);
 	} else {
 		QFileInfo fileinfo(filename);
@@ -1277,7 +1353,7 @@ void MainWindow::actionOpen()
 	if (!MainWindow::mdiMode && !maybeSave()) {
 		return;
 	}
-	
+
 	openFile(fileInfo.filePath());
 }
 
@@ -1330,7 +1406,7 @@ void MainWindow::show_examples()
 			found_example = true;
 		}
 	}
-	
+
 	if (!found_example) {
 		delete this->menuExamples;
 		this->menuExamples = nullptr;
@@ -1511,6 +1587,24 @@ void MainWindow::pasteViewportRotation()
 	this->editor->insert(txt);
 }
 
+QList<double> MainWindow::getTranslation() const
+{
+	QList<double> ret;
+	ret.append(qglview->cam.object_trans.x());
+	ret.append(qglview->cam.object_trans.y());
+	ret.append(qglview->cam.object_trans.z());
+	return ret;
+}
+
+QList<double> MainWindow::getRotation() const
+{
+	QList<double> ret;
+	ret.append(qglview->cam.object_rot.x());
+	ret.append(qglview->cam.object_rot.y());
+	ret.append(qglview->cam.object_rot.z());
+	return ret;
+}
+
 void MainWindow::hideFind()
 {
 	find_panel->hide();
@@ -1629,6 +1723,18 @@ void MainWindow::findBufferChanged()
 	}
 }
 
+bool MainWindow::event(QEvent* event) {
+	if (event->type() == InputEvent::eventType) {
+		InputEvent *inputEvent = dynamic_cast<InputEvent *>(event);
+		if (inputEvent) {
+			inputEvent->deliver(this);
+		}
+		event->accept();
+		return true;
+	}
+	return QMainWindow::event(event);
+}
+
 bool MainWindow::eventFilter(QObject* obj, QEvent *event)
 {
 	if (obj == find_panel) {
@@ -1669,7 +1775,7 @@ void MainWindow::updateTemporalVariables()
 /*!
  * Update the viewport camera by evaluating the special variables. If they
  * are assigned on top-level, the values are used to change the camera
- * rotation, translation and distance. 
+ * rotation, translation and distance.
  */
 void MainWindow::updateCamera(const FileContext &ctx)
 {
@@ -1935,7 +2041,7 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 
 		int s = this->renderingTime.elapsed() / 1000;
 		PRINTB("Total rendering time: %d hours, %d minutes, %d seconds", (s / (60*60)) % ((s / 60) % 60) % (s % 60));
-			
+
 		if (root_geom && !root_geom->isEmpty()) {
 			if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(root_geom.get())) {
 				if (N->getDimension() == 3) {
@@ -2213,7 +2319,7 @@ void MainWindow::actionExportCSG()
 	auto csg_filename = QFileDialog::getSaveFileName(this, _("Export CSG File"),
 	    this->fileName.isEmpty() ? _("Untitled.csg") : QFileInfo(this->fileName).baseName()+".csg",
 	    _("CSG Files (*.csg)"));
-	
+
 	if (csg_filename.isEmpty()) {
 		clearCurrentOutput();
 		return;
@@ -2474,6 +2580,15 @@ void MainWindow::viewOrthogonal()
 	this->qglview->updateGL();
 }
 
+void MainWindow::viewTogglePerspective()
+{
+	QSettingsCached settings;
+	if (settings.value("view/orthogonalProjection").toBool()) {
+		viewPerspective();
+	} else {
+		viewOrthogonal();
+	}
+}
 void MainWindow::viewResetView()
 {
 	this->qglview->resetView();
@@ -2779,7 +2894,7 @@ void MainWindow::clearCurrentOutput()
 void MainWindow::openCSGSettingsChanged()
 {
 #ifdef ENABLE_OPENCSG
-	OpenCSG::setOption(OpenCSG::AlgorithmSetting, Preferences::inst()->getValue("advanced/forceGoldfeather").toBool() ? 
+	OpenCSG::setOption(OpenCSG::AlgorithmSetting, Preferences::inst()->getValue("advanced/forceGoldfeather").toBool() ?
 	OpenCSG::Goldfeather : OpenCSG::Automatic);
 #endif
 }

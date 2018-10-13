@@ -38,6 +38,10 @@ testdata/scad/misc/use-tests.scad
 /*.h
 /*.dump
 /*.pl
+/lexer_lex.cpp
+/parser_yacc.cpp
+/openscad_adaptor.cpp
+/openscad_interface.cpp
 /OpenSCAD.app
 /openscad.appdata.xml
 /openscad.pro.user

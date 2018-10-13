@@ -73,12 +73,12 @@ void exportFileByName(const shared_ptr<const Geometry> &root_geom, FileFormat fo
 		fstream.exceptions(std::ios::badbit|std::ios::failbit);
 		try {
 			exportFile(root_geom, fstream, format);
-		} catch (std::ios::failure x) {
+		} catch (std::ios::failure&) {
 			onerror = true;
 		}
 		try { // make sure file closed - resources released
 			fstream.close();
-		} catch (std::ios::failure x) {
+		} catch (std::ios::failure&) {
 			onerror = true;
 		}
 		if (onerror) {

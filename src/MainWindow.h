@@ -17,8 +17,9 @@
 #include <QMutex>
 #include <QTime>
 #include <QIODevice>
+#include "input/InputDriver.h"
 
-class MainWindow : public QMainWindow, public Ui::MainWindow
+class MainWindow : public QMainWindow, public Ui::MainWindow, public InputEventHandler
 {
 	Q_OBJECT
 
@@ -117,11 +118,10 @@ private:
 	void updateWindowSettings(bool console, bool editor, bool customizer, bool toolbar);
 	void saveBackup();
 	void writeBackup(class QFile *file);
-	QString get2dExportFilename(QString format, QString extension);
 	void show_examples();
 	void setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel);
-		void addKeyboardShortCut(const QList<QAction *> &actions);
-		void updateStatusBar(class ProgressWidget *progressWidget);
+	void addKeyboardShortCut(const QList<QAction *> &actions);
+	void updateStatusBar(class ProgressWidget *progressWidget);
 
 	EditorInterface *editor;
 
@@ -172,6 +172,7 @@ private slots:
 	// Mac OSX FindBuffer support
 	void findBufferChanged();
 	void updateFindBuffer(QString);
+	bool event(QEvent* event);
 protected:
 	bool eventFilter(QObject* obj, QEvent *event) override;
 
@@ -204,6 +205,18 @@ public:
 	void setCurrentOutput();
 	void clearCurrentOutput();
   bool isEmpty();
+
+        void onAxisChanged(InputEventAxisChanged *event) override;
+        void onButtonChanged(InputEventButtonChanged *event) override;
+
+        void onTranslateEvent(InputEventTranslate *event) override;
+        void onRotateEvent(InputEventRotate *event) override;
+        void onRotate2Event(InputEventRotate2 *event) override;
+        void onActionEvent(InputEventAction *event) override;
+        void onZoomEvent(InputEventZoom *event) override;
+
+	QList<double> getTranslation() const;
+	QList<double> getRotation() const;
 
 public slots:
 	void openFile(const QString &filename);
@@ -240,6 +253,7 @@ public slots:
 	void viewCenter();
 	void viewPerspective();
 	void viewOrthogonal();
+	void viewTogglePerspective();
 	void viewResetView();
 	void viewAll();
 	void animateUpdateDocChanged();
