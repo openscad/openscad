@@ -44,11 +44,11 @@ public:
      * Return if the driver is currently opened. The default implementation
      * simply returns the {@link #isRunning()} status of the thread.
      */
-    virtual bool isOpen();
+    virtual bool isOpen() const;
 
     /*
      * Drivers that are not connected to a device and can be opened on
      * application start. No attempt to re-open is made.
      */
-    virtual bool openOnce();
+    virtual bool openOnce() const;
 };

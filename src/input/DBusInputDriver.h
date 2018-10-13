@@ -42,8 +42,8 @@ public:
     void run() override;
     bool open() override;
     void close() override;
-    bool isOpen() override;
-    bool openOnce() override;
+    bool isOpen() const override;
+    bool openOnce() const override;
 
     const std::string & get_name() const override;
 

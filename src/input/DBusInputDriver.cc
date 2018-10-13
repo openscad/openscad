@@ -44,12 +44,12 @@ DBusInputDriver::~DBusInputDriver()
 
 }
 
-bool DBusInputDriver::openOnce()
+bool DBusInputDriver::openOnce() const
 {
     return true;
 }
 
-bool DBusInputDriver::isOpen()
+bool DBusInputDriver::isOpen() const
 {
     return is_open;
 }

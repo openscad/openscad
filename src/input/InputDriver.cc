@@ -47,12 +47,12 @@ InputDriver::~InputDriver()
 
 }
 
-bool InputDriver::isOpen()
+bool InputDriver::isOpen() const
 {
     return isRunning();
 }
 
-bool InputDriver::openOnce()
+bool InputDriver::openOnce() const
 {
     return false;
 }
