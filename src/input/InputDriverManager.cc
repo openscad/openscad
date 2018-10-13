@@ -29,9 +29,8 @@
 
 InputDriverManager * InputDriverManager::self = 0;
 
-InputDriverManager::InputDriverManager(void)
+InputDriverManager::InputDriverManager(void) : currentWindow(nullptr)
 {
-    currentWindow = 0;
     connect(QApplication::instance(), SIGNAL(focusChanged(QWidget *, QWidget *)), this, SLOT(onFocusChanged(QWidget *, QWidget *)));
     timer = new QTimer(this);
 }
@@ -59,11 +58,11 @@ void InputDriverManager::unregisterDriver(InputDriver *driver)
     this->drivers.remove(driver);
 }
 
-void InputDriverManager::registerActions(const QList<QAction *> &actions, QString parent=QString(""))
+void InputDriverManager::registerActions(const QList<QAction *> &actions, const QString parent)
 {
     foreach(QAction *action, actions) {
         if (!action->objectName().isEmpty()) {
-            actionStruct* entry = new actionStruct;
+            ActionStruct* entry = new ActionStruct;
             entry->name = action->objectName();
             entry->description = parent + action->text();
             entry->icon = action->icon();
@@ -132,7 +131,6 @@ std::string InputDriverManager::listDrivers() const
 
 void InputDriverManager::closeDrivers()
 {
-    stopRequest = true;
     timer->stop();
     InputEventMapper::instance()->stop();
 
@@ -154,7 +152,7 @@ void InputDriverManager::postEvent(InputEvent *event)
     }
 }
 
-const std::list<actionStruct> & InputDriverManager::getActions() const
+const std::list<ActionStruct> & InputDriverManager::getActions() const
 {
     return actions;
 }

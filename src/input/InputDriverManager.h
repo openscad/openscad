@@ -33,29 +33,27 @@
 #include "InputEventMapper.h"
 #include "MainWindow.h"
 
-struct actionStruct {
+struct ActionStruct {
   QString name;
   QString description;
   QIcon icon;
-} ;
+};
 
 class InputDriverManager : public QObject
 {
     Q_OBJECT
 private:
-    typedef std::list<InputDriver *> drivers_t;
+    using drivers_t = std::list<InputDriver *>;
 
     drivers_t drivers;
 
-    std::list<actionStruct> actions;
+    std::list<ActionStruct> actions;
 
     InputEventMapper mapper;
 
     MainWindow *currentWindow;
 
     QTimer *timer;
-
-    volatile bool stopRequest;
 
     static InputDriverManager *self;
 
@@ -72,11 +70,11 @@ public:
     void registerDriver(InputDriver *driver);
     void unregisterDriver(InputDriver *driver);
     void closeDrivers();
-    void registerActions(const QList<QAction *> &actions, QString Parent);
+    void registerActions(const QList<QAction *> &actions, const QString parent = QString(""));
 
     static InputDriverManager * instance();
 
-	const std::list<actionStruct> & getActions() const;
+	const std::list<ActionStruct> & getActions() const;
 	QList<double> getTranslation() const;
 	QList<double> getRotation() const;
 
