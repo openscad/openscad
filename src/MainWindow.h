@@ -122,7 +122,6 @@ private:
 	void setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel);
 	void addKeyboardShortCut(const QList<QAction *> &actions);
 	void updateStatusBar(class ProgressWidget *progressWidget);
-	QAction * findAction(const QList<QAction *> &actions, const std::string &name);
 
 	EditorInterface *editor;
 

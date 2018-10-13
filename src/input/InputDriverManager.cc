@@ -60,19 +60,15 @@ void InputDriverManager::unregisterDriver(InputDriver *driver)
 
 void InputDriverManager::registerActions(const QList<QAction *> &actions, const QString parent)
 {
-    foreach(QAction *action, actions) {
-        if (!action->objectName().isEmpty()) {
-            ActionStruct* entry = new ActionStruct;
-            entry->name = action->objectName();
-            entry->description = parent + action->text();
-            entry->icon = action->icon();
-
-            this->actions.push_back(*entry);
-        }
-        if (action->menu()) {
-            registerActions(action->menu()->actions(), parent + action->text() +  QString::fromUtf8(" \u2192 "));
-        }
-    }
+	for (const auto action : actions) {
+		const auto description = parent + action->text();
+		if (!action->objectName().isEmpty()) {
+			this->actions.push_back({objectName(), description, action->icon()});
+		}
+		if (action->menu()) {
+			registerActions(action->menu()->actions(), description +  QString::fromUtf8(" \u2192 "));
+		}
+	}
 }
 
 void InputDriverManager::init()

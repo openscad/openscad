@@ -151,6 +151,24 @@ bool MainWindow::undockMode = false;
 bool MainWindow::reorderMode = false;
 const int MainWindow::tabStopWidth = 15;
 
+namespace {
+
+QAction *findAction(const QList<QAction *> &actions, const std::string &name)
+{
+	for (const auto action : actions) {
+		if (action->objectName().toStdString() == name) {
+			return action;
+		}
+		if (action->menu()) {
+			auto foundAction = findAction(action->menu()->actions(), name);
+			if (foundAction) return foundAction;
+		}
+   }
+   return nullptr;
+}
+
+} // namespace
+
 MainWindow::MainWindow(const QString &filename)
 	: root_inst("group"), library_info_dialog(nullptr), font_list_dialog(nullptr), procevents(false), tempFile(nullptr), progresswidget(nullptr), contentschanged(false), includes_mtime(0), deps_mtime(0)
 {
@@ -675,24 +693,6 @@ void MainWindow::onActionEvent(InputEventAction *event)
 	}else if("viewActionTogglePerspective" == event->action){
 		viewTogglePerspective();
 	}
-}
-
-QAction * MainWindow::findAction(const QList<QAction *> &actions, const std::string &name)
-{
-    foreach(QAction *action, actions) {
-        if (!action->objectName().isEmpty()) {
-            if (action->objectName().toStdString() == name) {
-                return action;
-            }
-        }
-        if (action->menu()) {
-            QAction *result = findAction(action->menu()->actions(), name);
-            if (result) {
-                return result;
-            }
-        }
-    }
-    return NULL;
 }
 
 void MainWindow::onZoomEvent(InputEventZoom *event)
