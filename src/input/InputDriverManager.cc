@@ -154,6 +154,11 @@ void InputDriverManager::postEvent(InputEvent *event)
     }
 }
 
+const std::list<actionStruct> & InputDriverManager::getActions() const
+{
+    return actions;
+}
+
 QList<double> InputDriverManager::getTranslation() const
 {
     const MainWindow *window = currentWindow;

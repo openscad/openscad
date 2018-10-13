@@ -204,7 +204,7 @@ void ButtonConfigWidget::initComboBox(QComboBox *comboBox, const Settings::Setti
 	comboBox->clear();
 
 	InputDriverManager* manager = InputDriverManager::instance();
-	std::list<actionStruct> actions = manager->actions;
+	const std::list<actionStruct> & actions = manager->getActions();
 
 	//Create an empty icon, so that all comboboxes have the same alignment
 	QPixmap map = QPixmap(16,16);
@@ -218,7 +218,7 @@ void ButtonConfigWidget::initComboBox(QComboBox *comboBox, const Settings::Setti
 		comboBox->addItem(icon,desc,actionName);
 	}
 
-	for (std::list<actionStruct>::iterator action=actions.begin(); action != actions.end(); ++action){
+	for (std::list<actionStruct>::const_iterator action=actions.begin(); action != actions.end(); ++action){
 		QIcon icon  = (*action).icon;
 		QString desc  = (*action).description;
 		QString actionName = (*action).name;

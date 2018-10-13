@@ -47,6 +47,8 @@ private:
 
     drivers_t drivers;
 
+    std::list<actionStruct> actions;
+
     InputEventMapper mapper;
 
     MainWindow *currentWindow;
@@ -74,7 +76,7 @@ public:
 
     static InputDriverManager * instance();
 
-	std::list<actionStruct> actions;
+	const std::list<actionStruct> & getActions() const;
 	QList<double> getTranslation() const;
 	QList<double> getRotation() const;
 

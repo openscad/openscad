@@ -123,11 +123,11 @@ void DBusInputDriver::action(QString name) const
 
 QStringList DBusInputDriver::getActions() const
 {
-	QStringList ret;
-	InputDriverManager* manager = InputDriverManager::instance();
-	std::list<actionStruct> actions = manager->actions;
+	const InputDriverManager* manager = InputDriverManager::instance();
+	const std::list<actionStruct> & actions = manager->getActions();
 
-	for (std::list<actionStruct>::iterator action=actions.begin(); action != actions.end(); ++action){
+	QStringList ret;
+	for (std::list<actionStruct>::const_iterator action=actions.begin(); action != actions.end(); ++action){
 		ret << (*action).name;
 	}
 	return ret;
