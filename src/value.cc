@@ -49,7 +49,7 @@ static uint32_t convert_to_uint32(const double d)
 	if (std::isfinite(d)) {
 		try {
 			ret = boost::numeric_cast<uint32_t>(d);
-		} catch (boost::bad_numeric_cast) {
+		} catch (boost::bad_numeric_cast &) {
 			// ignore, leaving the default max() value
 		}
 	}
