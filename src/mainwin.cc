@@ -635,12 +635,12 @@ void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer
 	}
 }
 
-void MainWindow::onAxisChanged(InputEventAxisChanged *event)
+void MainWindow::onAxisChanged(InputEventAxisChanged *)
 {
 
 }
 
-void MainWindow::onButtonChanged(InputEventButtonChanged *event)
+void MainWindow::onButtonChanged(InputEventButtonChanged *)
 {
 
 }
@@ -1587,7 +1587,7 @@ void MainWindow::pasteViewportRotation()
 	this->editor->insert(txt);
 }
 
-QList<double> MainWindow::getTranslation()
+QList<double> MainWindow::getTranslation() const
 {
 	QList<double> ret;
 	ret.append(qglview->cam.object_trans.x());
@@ -1596,7 +1596,7 @@ QList<double> MainWindow::getTranslation()
 	return ret;
 }
 
-QList<double> MainWindow::getRotation()
+QList<double> MainWindow::getRotation() const
 {
 	QList<double> ret;
 	ret.append(qglview->cam.object_rot.x());

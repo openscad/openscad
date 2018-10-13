@@ -66,7 +66,7 @@ public:
     void sendEvent(InputEvent *event);
 
     void init();
-    std::string listDrivers();
+    std::string listDrivers() const;
     void registerDriver(InputDriver *driver);
     void unregisterDriver(InputDriver *driver);
     void closeDrivers();
@@ -75,8 +75,8 @@ public:
     static InputDriverManager * instance();
 
 	std::list<actionStruct> actions;
-	QList<double> getTranslation();
-	QList<double> getRotation();
+	QList<double> getTranslation() const;
+	QList<double> getRotation() const;
 
 public slots:
     void onInputMappingUpdated();

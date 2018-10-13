@@ -48,16 +48,16 @@ public:
     const std::string & get_name() const override;
 
 public slots:
-    void zoom(double zoom);
-    void zoomTo(double zoom);
-    void rotate(double x, double y, double z);
-    void rotateTo(double x, double y, double z);
-    void rotateByVector(double x, double y, double z);
-    void translate(double x, double y, double z);
-    void translateTo(double x, double y, double z);
-    void action(QString action);
-    void buttonPress(uint idx);
-    QList<double> getRotation();
-    QList<double> getTranslation();
-    QStringList getActions();
+    void zoom(double zoom) const;
+    void zoomTo(double zoom) const;
+    void rotate(double x, double y, double z) const;
+    void rotateTo(double x, double y, double z) const;
+    void rotateByVector(double x, double y, double z) const;
+    void translate(double x, double y, double z) const;
+    void translateTo(double x, double y, double z) const;
+    void action(QString action) const;
+    void buttonPress(uint idx) const;
+    QList<double> getRotation() const;
+    QList<double> getTranslation() const;
+    QStringList getActions() const;
 };

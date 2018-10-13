@@ -116,7 +116,7 @@ void InputDriverManager::doOpen(bool firstOpen)
     }
 }
 
-std::string InputDriverManager::listDrivers()
+std::string InputDriverManager::listDrivers() const
 {
     std::stringstream stream;
     const char *sep = "";
@@ -154,20 +154,22 @@ void InputDriverManager::postEvent(InputEvent *event)
     }
 }
 
-QList<double> InputDriverManager::getTranslation()
+QList<double> InputDriverManager::getTranslation() const
 {
-    MainWindow  *window = currentWindow;
+    const MainWindow *window = currentWindow;
     if (window) {
         return window->getTranslation();
     }
+    return QList<double>({0.0, 0.0, 0.0});
 }
 
-QList<double> InputDriverManager::getRotation()
+QList<double> InputDriverManager::getRotation() const
 {
-    MainWindow  *window = currentWindow;
+    const MainWindow *window = currentWindow;
     if (window) {
         return window->getRotation();
     }
+    return QList<double>({0.0, 0.0, 0.0});
 }
 
 void InputDriverManager::onFocusChanged(QWidget *, QWidget *current)

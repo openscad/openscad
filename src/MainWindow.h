@@ -207,17 +207,17 @@ public:
 	void clearCurrentOutput();
   bool isEmpty();
 
-        void onAxisChanged(InputEventAxisChanged *event);
-        void onButtonChanged(InputEventButtonChanged *event);
+        void onAxisChanged(InputEventAxisChanged *event) override;
+        void onButtonChanged(InputEventButtonChanged *event) override;
 
-        void onTranslateEvent(InputEventTranslate *event);
-        void onRotateEvent(InputEventRotate *event);
-        void onRotate2Event(InputEventRotate2 *event);
-        void onActionEvent(InputEventAction *event);
-        void onZoomEvent(InputEventZoom *event);
+        void onTranslateEvent(InputEventTranslate *event) override;
+        void onRotateEvent(InputEventRotate *event) override;
+        void onRotate2Event(InputEventRotate2 *event) override;
+        void onActionEvent(InputEventAction *event) override;
+        void onZoomEvent(InputEventZoom *event) override;
 
-	QList<double> getTranslation();
-	QList<double> getRotation();
+	QList<double> getTranslation() const;
+	QList<double> getRotation() const;
 
 public slots:
 	void openFile(const QString &filename);

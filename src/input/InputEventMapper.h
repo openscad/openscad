@@ -69,14 +69,14 @@ public:
 
     void stop();
 
-    void onAxisChanged(class InputEventAxisChanged *event);
-    void onButtonChanged(class InputEventButtonChanged *event);
+    void onAxisChanged(class InputEventAxisChanged *event) override;
+    void onButtonChanged(class InputEventButtonChanged *event) override;
 
-    void onTranslateEvent(class InputEventTranslate *event);
-    void onRotateEvent(class InputEventRotate *event);
-    void onRotate2Event(class InputEventRotate2 *event);
-    void onActionEvent(class InputEventAction *event);
-    void onZoomEvent(class InputEventZoom *event);
+    void onTranslateEvent(class InputEventTranslate *event) override;
+    void onRotateEvent(class InputEventRotate *event) override;
+    void onRotate2Event(class InputEventRotate2 *event) override;
+    void onActionEvent(class InputEventAction *event) override;
+    void onZoomEvent(class InputEventZoom *event) override;
 
     void onInputMappingUpdated();
     void onInputCalibrationUpdated();
