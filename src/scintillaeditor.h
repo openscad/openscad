@@ -39,7 +39,7 @@ class ScintillaEditor : public EditorInterface
 {        
 	Q_OBJECT;
 
-        typedef std::multimap<int, shared_ptr<EditorColorScheme>, std::less<int>> colorscheme_set_t;
+        using colorscheme_set_t = std::multimap<int, shared_ptr<EditorColorScheme>, std::less<int>>;
         
 public:
 	ScintillaEditor(QWidget *parent);
