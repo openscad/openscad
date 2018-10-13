@@ -251,15 +251,15 @@ void InputEventMapper::onInputGainUpdated()
 {
     Settings::Settings *s = Settings::Settings::inst();
 
-    translationGain = (double)s->get(Settings::Settings::inputTranslationGain).toDouble();
+    translationGain = s->get(Settings::Settings::inputTranslationGain).toDouble();
 
-    translationVPRelGain = (double)s->get(Settings::Settings::inputTranslationVPRelGain).toDouble();
+    translationVPRelGain = s->get(Settings::Settings::inputTranslationVPRelGain).toDouble();
 
-    rotateGain = (double)s->get(Settings::Settings::inputRotateGain).toDouble();
+    rotateGain = s->get(Settings::Settings::inputRotateGain).toDouble();
 
-    rotateVPRelGain = (double)s->get(Settings::Settings::inputRotateVPRelGain).toDouble();
+    rotateVPRelGain = s->get(Settings::Settings::inputRotateVPRelGain).toDouble();
 
-    zoomGain = (double)s->get(Settings::Settings::inputZoomGain).toDouble();
+    zoomGain = s->get(Settings::Settings::inputZoomGain).toDouble();
 }
 
 void InputEventMapper::onInputCalibrationUpdated()
@@ -271,11 +271,11 @@ void InputEventMapper::onInputCalibrationUpdated()
 
         ent = Settings::Settings::inst()->getSettingEntryByName("axisTrim" + s );
         if(ent != nullptr){
-            axisTrimValue[a] = (double)setting->get(*ent).toDouble();
+            axisTrimValue[a] = setting->get(*ent).toDouble();
         }
         ent = Settings::Settings::inst()->getSettingEntryByName("axisDeadzone" + s );
         if(ent != nullptr){
-            axisDeadzone[a] = (double)setting->get(*ent).toDouble();
+            axisDeadzone[a] = setting->get(*ent).toDouble();
         }
     }
 }
