@@ -121,14 +121,11 @@ void DBusInputDriver::action(QString name) const
     InputDriverManager::instance()->sendEvent(new InputEventAction(name.toStdString(), false));
 }
 
-QStringList DBusInputDriver::getActions() const
+const QStringList DBusInputDriver::getActions() const
 {
-	const InputDriverManager* manager = InputDriverManager::instance();
-	const std::list<ActionStruct> & actions = manager->getActions();
-
 	QStringList ret;
-	for (std::list<ActionStruct>::const_iterator action=actions.begin(); action != actions.end(); ++action){
-		ret << (*action).name;
+	for (const auto &action : InputDriverManager::instance()->getActions()) {
+		ret << action.name;
 	}
 	return ret;
 }
@@ -139,12 +136,12 @@ void DBusInputDriver::buttonPress(uint idx) const
     InputDriverManager::instance()->sendEvent(new InputEventButtonChanged(idx, false, false));
 }
 
-QList<double> DBusInputDriver::getRotation() const
+const QList<double> DBusInputDriver::getRotation() const
 {
 	return InputDriverManager::instance()->getRotation();;
 }
 
-QList<double> DBusInputDriver::getTranslation() const
+const QList<double> DBusInputDriver::getTranslation() const
 {
 	return InputDriverManager::instance()->getTranslation();;
 }

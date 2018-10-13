@@ -203,31 +203,23 @@ void ButtonConfigWidget::initComboBox(QComboBox *comboBox, const Settings::Setti
 {
 	comboBox->clear();
 
-	InputDriverManager* manager = InputDriverManager::instance();
-	const std::list<ActionStruct> & actions = manager->getActions();
-
-	//Create an empty icon, so that all comboboxes have the same alignment
-	QPixmap map = QPixmap(16,16);
+	// Create an empty icon, so that all comboboxes have the same alignment
+	QPixmap map = QPixmap(16, 16);
 	map.fill(Qt::transparent);
-	QIcon emptyIcon  = QIcon(map);
+	const QIcon emptyIcon = QIcon(map);
 
-	for(const auto &v : entry.range().toVector()) {
-		QIcon icon  =  emptyIcon;
-		QString desc  = QString::fromStdString(gettext(v[1]->toString().c_str()));
-		QString actionName = QString::fromStdString(v[0]->toString());
-		comboBox->addItem(icon,desc,actionName);
+	for (const auto &v : entry.range().toVector()) {
+		const auto icon = emptyIcon;
+		const auto desc = QString::fromStdString(gettext(v[1]->toString().c_str()));
+		const auto actionName = QString::fromStdString(v[0]->toString());
+		comboBox->addItem(icon, desc, actionName);
 	}
 
-	for (std::list<ActionStruct>::const_iterator action=actions.begin(); action != actions.end(); ++action){
-		QIcon icon  = (*action).icon;
-		QString desc  = (*action).description;
-		QString actionName = (*action).name;
-
-		if(icon.isNull()){
-			icon = emptyIcon;
-		}
-
-		comboBox->addItem(icon,desc.remove(QChar('&'), Qt::CaseInsensitive),actionName);
+	for (const auto &action : InputDriverManager::instance()->getActions()) {
+		const auto icon = action.icon;
+                const auto effectiveIcon = icon.isNull() ? emptyIcon : icon;
+		const auto desc = QString(action.description).remove(QChar('&'));
+		comboBox->addItem(effectiveIcon, desc, action.name);
 	}
 
 	updateComboBox(comboBox, entry);
