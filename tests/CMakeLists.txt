@@ -1029,7 +1029,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
       if (${EXPERIMENTAL} EQUAL -1)
         set(EXPERIMENTAL_OPTION "")
       else()
-        set(EXPERIMENTAL_OPTION "--enable=lc-each" "--enable=lc-else" "--enable=lc-for-c" "--enable=amf-import")
+        set(EXPERIMENTAL_OPTION "--enable=amf-import")
       endif()
 
       # 2D tests should be viewed from the top, not an angle.
@@ -1232,7 +1232,6 @@ list(APPEND ASTDUMPTEST_FILES ${MISC_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/echo-expression-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/let-test-single.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/let-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/list-comprehensions-experimental.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/list-comprehensions.scad
             )
 
@@ -1385,9 +1384,7 @@ disable_tests(csgpngtest_primitive-inf-tests
               cgalpngtest_empty-shape-tests
               csgpngtest_issue1258)
 
-experimental_tests(astdumptest_list-comprehensions-experimental
-                   echotest_list-comprehensions-experimental
-                   cgalpngtest_cube-with-hole
+experimental_tests(cgalpngtest_cube-with-hole
                    cgalpngtest_multi-volume-binary
                    cgalpngtest_sphere20face
                    cgalpngtest_split_pyramid
