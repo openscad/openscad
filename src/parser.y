@@ -73,7 +73,7 @@ const char *parser_input_buffer;
 std::shared_ptr<fs::path> parser_sourcefile;
 std::shared_ptr<fs::path> mainFile;
 
-bool assignmentWarning=true;
+bool fileEnded=false;
 %}
 
 %union {
@@ -197,7 +197,7 @@ statement:
           ';'
         | TOK_EOT
             {
-                assignmentWarning=false;
+                fileEnded=true;
             }
         ;
 
@@ -212,31 +212,35 @@ assignment:
                 bool found = false;
                 for (auto &assignment : scope_stack.top()->assignments) {
                     if (assignment.name == $1) {
-
-                        auto RootFile = (*mainFile).string();
+                        auto MainFile = (*mainFile).string();
                         auto prevFile = assignment.location().fileName();
                         auto currFile = LOC(@$).fileName();
 
-                        //fname
-                        if(assignmentWarning && prevFile==RootFile && currFile == RootFile){
-                            //both assigments in the RootModule
+                        if(fileEnded){
+                            //assigments via commandline
+                        }else if(prevFile==MainFile && currFile == MainFile){
+                            //both assigments in the MainFile
                             PRINTB("WARNING: %s was assigned on line %i but was overwritten on line %i",
                                     assignment.name%
                                     assignment.location().firstLine()%
                                     LOC(@$).firstLine());
-                        }else if(assignmentWarning &&  currFile == prevFile){
+                        }else if(currFile == prevFile){
                             //assigment overwritten within the same file
-                            const auto docPath = boost::filesystem::path(RootFile).parent_path();
+                            //the line number beeing equal happens, when a file is included multiple times
+                            if(assignment.location().firstLine() != LOC(@$).firstLine()){
+                                const auto docPath = boost::filesystem::path(MainFile).parent_path();
 
-                            const auto uncPathPrev = boostfs_uncomplete(prevFile, docPath);
+                                const auto uncPathPrev = boostfs_uncomplete(prevFile, docPath);
 
-                            PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i",
-                                    assignment.name%
-                                    assignment.location().firstLine()%
-                                    uncPathPrev%
-                                    LOC(@$).firstLine());
-                        }else if(assignmentWarning ){ //prevFile == RootFile &&
-                            const auto docPath = boost::filesystem::path(RootFile).parent_path();
+                                PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i",
+                                        assignment.name%
+                                        assignment.location().firstLine()%
+                                        uncPathPrev%
+                                        LOC(@$).firstLine());
+                                PRINTB("%s - %s", currFile % prevFile);
+                            }
+                        }else{
+                            const auto docPath = boost::filesystem::path(MainFile).parent_path();
 
                             const auto uncPathCurr = boostfs_uncomplete(currFile, docPath);
                             const auto uncPathPrev = boostfs_uncomplete(prevFile, docPath);
@@ -247,6 +251,7 @@ assignment:
                                     uncPathPrev%
                                     LOC(@$).firstLine()%
                                     uncPathCurr);
+                            PRINTB("%s ! %s", currFile % prevFile);
                         }
 
                         assignment.expr = shared_ptr<Expression>($3);
@@ -685,7 +690,7 @@ bool parse(FileModule *&module, const char *text, const std::string &filename, i
   parser_error_pos = -1;
   parser_input_buffer = text;
   parser_sourcefile = std::make_shared<fs::path>(path);
-  assignmentWarning=true;
+  fileEnded=false;
 
   rootmodule = new FileModule(path.parent_path().generic_string(), path.filename().generic_string());
   scope_stack.push(&rootmodule->scope);
