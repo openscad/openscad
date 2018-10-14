@@ -215,6 +215,9 @@ assignment:
                         auto MainFile = (*mainFile).string();
                         auto prevFile = assignment.location().fileName();
                         auto currFile = LOC(@$).fileName();
+                        
+                        const auto uncPathCurr = boostfs_uncomplete(currFile, (*mainFile).parent_path());
+                        const auto uncPathPrev = boostfs_uncomplete(prevFile, (*mainFile).parent_path());
 
                         if(fileEnded){
                             //assigments via commandline
@@ -224,34 +227,23 @@ assignment:
                                     assignment.name%
                                     assignment.location().firstLine()%
                                     LOC(@$).firstLine());
-                        }else if(currFile == prevFile){
+                        }else if(uncPathCurr == uncPathPrev){
                             //assigment overwritten within the same file
                             //the line number beeing equal happens, when a file is included multiple times
                             if(assignment.location().firstLine() != LOC(@$).firstLine()){
-                                const auto docPath = boost::filesystem::path(MainFile).parent_path();
-
-                                const auto uncPathPrev = boostfs_uncomplete(prevFile, docPath);
-
                                 PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i",
                                         assignment.name%
                                         assignment.location().firstLine()%
                                         uncPathPrev%
                                         LOC(@$).firstLine());
-                                PRINTB("%s - %s", currFile % prevFile);
                             }
                         }else{
-                            const auto docPath = boost::filesystem::path(MainFile).parent_path();
-
-                            const auto uncPathCurr = boostfs_uncomplete(currFile, docPath);
-                            const auto uncPathPrev = boostfs_uncomplete(prevFile, docPath);
-
                             PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i of %s",
                                     assignment.name%
                                     assignment.location().firstLine()%
                                     uncPathPrev%
                                     LOC(@$).firstLine()%
                                     uncPathCurr);
-                            PRINTB("%s ! %s", currFile % prevFile);
                         }
 
                         assignment.expr = shared_ptr<Expression>($3);
