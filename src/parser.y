@@ -64,6 +64,7 @@ int lexerlex(void);
 
 std::stack<LocalScope *> scope_stack;
 FileModule *rootmodule;
+bool bMainModule;
 
 extern void lexerdestroy();
 extern FILE *lexerin;
@@ -215,13 +216,13 @@ assignment:
                         auto prevFile = assignment.location().fileName();
                         auto currFile = LOC(@$).fileName();
                         
-                        if(assignmentWarning && prevFile==RootFile && currFile == RootFile){
+                        if(bMainModule && assignmentWarning && prevFile==RootFile && currFile == RootFile){
                             //both assigments in the RootModule
                             PRINTB("WARNING: %s was assigned on line %i but was overwritten on line %i",
                                     assignment.name%
                                     assignment.location().firstLine()%
                                     LOC(@$).firstLine());
-                        }else if(assignmentWarning && prevFile == RootFile && currFile != prevFile){
+                        }else if(bMainModule && assignmentWarning && prevFile == RootFile && currFile != prevFile){
                             //assigment from the RootModule overwritten by an include
                             const auto docPath = boost::filesystem::path(RootFile).parent_path();
 
@@ -661,9 +662,11 @@ void yyerror (char const *s)
          (*sourcefile()) % lexerget_lineno() % s);
 }
 
-bool parse(FileModule *&module, const char *text, const std::string &filename, int debug)
+bool parse(FileModule *&module, const char *text, const std::string &filename, int debug, bool mainModule)
 {
   fs::path path = fs::absolute(fs::path(filename));
+  
+  bMainModule = mainModule;
   
   lexerin = NULL;
   parser_error_pos = -1;
