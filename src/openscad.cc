@@ -368,7 +368,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	}
 	std::string text((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 	text += "\n\x03\n" + commandline_commands;
-	if (!parse(root_module, text.c_str(), filename, false,true)) {
+	if (!parse(root_module, text.c_str(), filename, false,filename)) {
 		delete root_module;  // parse failed
 		root_module = nullptr;
 	}

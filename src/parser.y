@@ -64,13 +64,14 @@ int lexerlex(void);
 
 std::stack<LocalScope *> scope_stack;
 FileModule *rootmodule;
-bool bMainModule;
+
 
 extern void lexerdestroy();
 extern FILE *lexerin;
 extern const char *parser_input_buffer;
 const char *parser_input_buffer;
 std::shared_ptr<fs::path> parser_sourcefile;
+std::shared_ptr<fs::path> mainFile;
 
 bool assignmentWarning=true;
 %}
@@ -212,30 +213,42 @@ assignment:
                 for (auto &assignment : scope_stack.top()->assignments) {
                     if (assignment.name == $1) {
 
-                        auto RootFile = rootmodule->getFullpath();
+                        auto RootFile = (*mainFile).string();
                         auto prevFile = assignment.location().fileName();
                         auto currFile = LOC(@$).fileName();
-                        
-                        if(bMainModule && assignmentWarning && prevFile==RootFile && currFile == RootFile){
+
+                        //fname
+                        if(assignmentWarning && prevFile==RootFile && currFile == RootFile){
                             //both assigments in the RootModule
                             PRINTB("WARNING: %s was assigned on line %i but was overwritten on line %i",
                                     assignment.name%
                                     assignment.location().firstLine()%
                                     LOC(@$).firstLine());
-                        }else if(bMainModule && assignmentWarning && prevFile == RootFile && currFile != prevFile){
-                            //assigment from the RootModule overwritten by an include
+                        }else if(assignmentWarning &&  currFile == prevFile){
+                            //assigment overwritten within the same file
+                            const auto docPath = boost::filesystem::path(RootFile).parent_path();
+
+                            const auto uncPathPrev = boostfs_uncomplete(prevFile, docPath);
+
+                            PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i",
+                                    assignment.name%
+                                    assignment.location().firstLine()%
+                                    uncPathPrev%
+                                    LOC(@$).firstLine());
+                        }else if(assignmentWarning ){ //prevFile == RootFile &&
                             const auto docPath = boost::filesystem::path(RootFile).parent_path();
 
                             const auto uncPathCurr = boostfs_uncomplete(currFile, docPath);
                             const auto uncPathPrev = boostfs_uncomplete(prevFile, docPath);
 
-                            PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i  of %s",
+                            PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i of %s",
                                     assignment.name%
                                     assignment.location().firstLine()%
                                     uncPathPrev%
                                     LOC(@$).firstLine()%
                                     uncPathCurr);
                         }
+
                         assignment.expr = shared_ptr<Expression>($3);
                         assignment.setLocation(LOC(@$));
                         found = true;
@@ -662,11 +675,11 @@ void yyerror (char const *s)
          (*sourcefile()) % lexerget_lineno() % s);
 }
 
-bool parse(FileModule *&module, const char *text, const std::string &filename, int debug, bool mainModule)
+bool parse(FileModule *&module, const char *text, const std::string &filename, int debug, const std::string &mainModule)
 {
   fs::path path = fs::absolute(fs::path(filename));
   
-  bMainModule = mainModule;
+  mainFile =  std::make_shared<fs::path>(mainModule);
   
   lexerin = NULL;
   parser_error_pos = -1;

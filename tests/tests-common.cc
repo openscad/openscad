@@ -30,7 +30,7 @@ FileModule *parsefile(const char *filename, const char *fakepath)
 		std::string pathname;
 		if (fakepath) pathname = fakepath;
 		else pathname = fs::path(filename).parent_path().generic_string();
-		if(!parse(root_module, text.c_str(), pathname.c_str(), false, true)) {
+		if(!parse(root_module, text.c_str(), pathname.c_str(), false, pathname.c_str())) {
 			delete root_module;             // parse failed
 			root_module = NULL;
 		}

@@ -1730,7 +1730,7 @@ void MainWindow::compileTopLevelDocument(bool rebuildParameterWidget)
 	auto fnameba = this->fileName.toLocal8Bit();
 	const char* fname = this->fileName.isEmpty() ? "" : fnameba;
 	delete this->parsed_module;
-	this->root_module = parse(this->parsed_module, fulltext.c_str(), fname, false, true) ? this->parsed_module : nullptr;
+	this->root_module = parse(this->parsed_module, fulltext.c_str(), fname, false, fname) ? this->parsed_module : nullptr;
 
 	if (Feature::ExperimentalCustomizer.is_enabled()) {
 		if (this->root_module!=nullptr) {
