@@ -65,7 +65,6 @@ int lexerlex(void);
 std::stack<LocalScope *> scope_stack;
 FileModule *rootmodule;
 
-
 extern void lexerdestroy();
 extern FILE *lexerin;
 extern const char *parser_input_buffer;
@@ -672,11 +671,11 @@ void yyerror (char const *s)
          (*sourcefile()) % lexerget_lineno() % s);
 }
 
-bool parse(FileModule *&module, const char *text, const std::string &filename, int debug, const std::string &mainModule)
+bool parse(FileModule *&module, const char *text, const std::string &filename, const std::string &pMainFile, int debug)
 {
   fs::path path = fs::absolute(fs::path(filename));
   
-  mainFile =  std::make_shared<fs::path>(mainModule);
+  mainFile =  std::make_shared<fs::path>(pMainFile);
   
   lexerin = NULL;
   parser_error_pos = -1;

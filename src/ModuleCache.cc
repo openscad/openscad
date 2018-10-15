@@ -29,7 +29,7 @@ ModuleCache *ModuleCache::inst = nullptr;
 
 	Returns the latest modification time of the module, its dependencies or includes.
 */
-time_t ModuleCache::evaluate(const std::string &rootModul,const std::string &filename, FileModule *&module)
+time_t ModuleCache::evaluate(const std::string &mainFile,const std::string &filename, FileModule *&module)
 {
 	module = nullptr;
 	auto entry = this->entries.find(filename);
@@ -106,7 +106,7 @@ time_t ModuleCache::evaluate(const std::string &rootModul,const std::string &fil
 		print_messages_push();
 		
 		delete cacheEntry.parsed_module;
-		lib_mod = parse(cacheEntry.parsed_module, textbuf.str().c_str(), filename, false, rootModul) ? cacheEntry.parsed_module : nullptr;
+		lib_mod = parse(cacheEntry.parsed_module, textbuf.str().c_str(), filename, mainFile, false) ? cacheEntry.parsed_module : nullptr;
 		PRINTDB("  compiled module: %p", lib_mod);
 		cacheEntry.module = lib_mod;
 		cacheEntry.cache_id = cache_id;
