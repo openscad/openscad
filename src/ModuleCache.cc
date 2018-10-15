@@ -35,7 +35,6 @@ time_t ModuleCache::evaluate(const std::string &rootModul,const std::string &fil
 	auto entry = this->entries.find(filename);
 	bool found{entry != this->entries.end()};
 	FileModule *lib_mod{found ? entry->second.module : nullptr};
-
   
 	// Don't try to recursively evaluate - if the file changes
 	// during evaluation, that would be really bad.
@@ -107,8 +106,6 @@ time_t ModuleCache::evaluate(const std::string &rootModul,const std::string &fil
 		print_messages_push();
 		
 		delete cacheEntry.parsed_module;
-		//std::cout << "------------"<<"\n" ;
-		//std::cout << filename << " - " << rootModul<<"\n" << std::flush;
 		lib_mod = parse(cacheEntry.parsed_module, textbuf.str().c_str(), filename, false, rootModul) ? cacheEntry.parsed_module : nullptr;
 		PRINTDB("  compiled module: %p", lib_mod);
 		cacheEntry.module = lib_mod;
