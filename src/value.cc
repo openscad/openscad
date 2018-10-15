@@ -35,9 +35,9 @@
 #include <boost/format.hpp>
 #include "boost-utils.h"
 #include <boost/filesystem.hpp>
+#include <utf8cpp/utf8.h>
+
 namespace fs=boost::filesystem;
-/*Unicode support for string lengths and array accesses*/
-#include <glib.h>
 
 const Value Value::undefined;
 const ValuePtr ValuePtr::undefined;
@@ -287,15 +287,15 @@ public:
 
 	std::string operator()(const double &v) const
 		{
-			char buf[8];
-			memset(buf, 0, 8);
+			std::string resultStr;
 			if (v > 0) {
-				const gunichar c = v;
-				if (g_unichar_validate(c) && (c != 0)) {
-			    g_unichar_to_utf8(c, buf);
+				const uint32_t c = v;
+				try {
+					utf8::utf32to8(&c, &c + 1, std::back_inserter(resultStr));
+				} catch (utf8::invalid_code_point &) {
 				}
 			}
-			return std::string(buf);
+			return resultStr;
 		}
 
 	std::string operator()(const Value::VectorType &v) const
@@ -692,17 +692,15 @@ public:
     Value v;
 
     const auto i = convert_to_uint32(idx);
-    if (i < str.size()) {
-			// Ensure character (not byte) index is inside the character/glyph array
-			if (i < str.get_utf8_strlen())	{
-				gchar utf8_of_cp[6] = ""; //A buffer for a single unicode character to be copied into
-				auto ptr = g_utf8_offset_to_pointer(str.c_str(), i);
-				if (ptr) {
-					g_utf8_strncpy(utf8_of_cp, ptr, 1);
-				}
-				v = std::string(utf8_of_cp);
-			}
-    }
+		try {
+			auto curr = str.begin();
+			utf8::advance(curr, i, str.end());
+			auto next = curr;
+			utf8::advance(next, 1, str.end());
+			v = std::string(curr, next);
+		}
+		catch (utf8::invalid_code_point &ex) {
+		}
     return v;
   }
 

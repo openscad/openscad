@@ -32,6 +32,7 @@
 #include "expression.h"
 #include "builtin.h"
 #include "printutils.h"
+
 #include <cstdint>
 #include <sstream>
 
@@ -93,20 +94,17 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 				for_eval(node, inst, l+1, &c, evalctx);
 			}
 		}
-                else if (it_values->type() == Value::ValueType::STRING) {
+		else if (it_values->type() == Value::ValueType::STRING) {
 			const std::string val = it_values->toString();
-			const char *ptr = val.c_str();
-
-			gchar outbuf[8];
-			const glong len = g_utf8_strlen(ptr, -1);
-			for (;*ptr && len > 0;ptr = g_utf8_next_char(ptr)) {
-				const gunichar ch = g_utf8_get_char(ptr);
-				const gint end = g_unichar_to_utf8(ch, outbuf);
-				outbuf[end] = 0;
-				c.set_variable(it_name, ValuePtr(outbuf));
+			auto prev = val.begin();
+			while (prev != val.end()) {
+				auto next = prev;
+				utf8::advance(next, 1, val.end());
+				c.set_variable(it_name, ValuePtr(std::string(prev, next)));
 				for_eval(node, inst, l+1, &c, evalctx);
+				prev = next;
 			}
-                }
+		}
 		else if (it_values->type() != Value::ValueType::UNDEFINED) {
 			c.set_variable(it_name, it_values);
 			for_eval(node, inst, l+1, &c, evalctx);
