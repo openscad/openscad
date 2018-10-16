@@ -26,6 +26,10 @@ if(undef == c){
     echo("undef is c");
 }
 
+if($customSpecialVariable == undef){
+    echo("$customSpecialVariable is undef");
+}
+
 echo("-- comparing undef --");
 if(a){
     echo("undef evaluates true");

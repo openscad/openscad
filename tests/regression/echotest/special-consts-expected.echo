@@ -7,6 +7,8 @@ WARNING: Ignoring unknown variable 'c'.
 ECHO: "c is undef"
 WARNING: Ignoring unknown variable 'c'.
 ECHO: "undef is c"
+WARNING: Ignoring unknown variable '$customSpecialVariable'.
+ECHO: "$customSpecialVariable is undef"
 ECHO: "-- comparing undef --"
 ECHO: "undef evaluates false"
 WARNING: Ignoring unknown variable 'c'.
