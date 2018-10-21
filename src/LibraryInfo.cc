@@ -30,6 +30,10 @@
 #define LIBZIP_VERSION "<not enabled>"
 #endif
 
+#ifdef ENABLE_LIB3MF
+#include "NMR_DLLInterfaces.h"
+#endif
+
 extern std::vector<std::string> librarypath;
 extern std::vector<std::string> fontpath;
 
@@ -92,6 +96,20 @@ std::string LibraryInfo::info()
 	std::string cgal_2d_kernelEx = "";
 #endif // ENABLE_CGAL
 
+#ifdef ENABLE_LIB3MF
+	std::ostringstream lib3mf_version_stream;
+	lib3mf_version_stream << NMR_APIVERSION_INTERFACE_MAJOR << '.' << NMR_APIVERSION_INTERFACE_MINOR << '.' << NMR_APIVERSION_INTERFACE_MICRO;
+	DWORD lib3mfMajor, lib3mfMinor, lib3mfMicro;
+	const HRESULT result = NMR::lib3mf_getinterfaceversion(&lib3mfMajor, &lib3mfMinor, &lib3mfMicro);
+        const bool lib3mfMinorMatch = (NMR_APIVERSION_INTERFACE_MAJOR == lib3mfMajor && NMR_APIVERSION_INTERFACE_MINOR == lib3mfMinor);
+	if (result == LIB3MF_OK && !lib3mfMinorMatch) {
+            lib3mf_version_stream << " (lib: " << lib3mfMajor << '.' << lib3mfMinor << '.' << lib3mfMicro << ')';
+        }
+	const std::string lib3mf_version = lib3mf_version_stream.str();
+#else
+	const std::string lib3mf_version = "<not enabled>";
+#endif
+
 	const char *env_path = getenv("OPENSCADPATH");
 	const char *env_font_path = getenv("OPENSCAD_FONT_PATH");
 	
@@ -110,6 +128,7 @@ std::string LibraryInfo::info()
 	  << "\nMingW build: " << mingwstatus
 	  << "\nGLib version: "       << GLIB_MAJOR_VERSION << "." << GLIB_MINOR_VERSION << "." << GLIB_MICRO_VERSION
 	  << "\nlibzip version: " << LIBZIP_VERSION
+	  << "\nlib3mf version: " << lib3mf_version
 	  << "\nApplication Path: " << PlatformUtils::applicationPath()
 	  << "\nDocuments Path: " << PlatformUtils::documentsPath()
 	  << "\nResource Path: " << PlatformUtils::resourceBasePath()
