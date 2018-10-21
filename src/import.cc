@@ -110,7 +110,7 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 		else if (ext == ".off") actualtype = ImportType::OFF;
 		else if (ext == ".dxf") actualtype = ImportType::DXF;
 		else if (ext == ".nef3") actualtype = ImportType::NEF3;
-		else if (ext == ".3mf") actualtype = ImportType::_3MF;
+		else if (Feature::Experimental3mfImport.is_enabled() && ext == ".3mf") actualtype = ImportType::_3MF;
 		else if (Feature::ExperimentalAmfImport.is_enabled() && ext == ".amf") actualtype = ImportType::AMF;
 		else if (Feature::ExperimentalSvgImport.is_enabled() && ext == ".svg") actualtype = ImportType::SVG;
 	}

@@ -326,7 +326,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	if (suffix == ".stl") stl_output_file = output_file;
 	else if (suffix == ".off") off_output_file = output_file;
 	else if (suffix == ".amf") amf_output_file = output_file;
-	else if (suffix == ".3mf") _3mf_output_file = output_file;
+	else if (Feature::Experimental3mfExport.is_enabled() && suffix == ".3mf") _3mf_output_file = output_file;
 	else if (suffix == ".dxf") dxf_output_file = output_file;
 	else if (suffix == ".svg") svg_output_file = output_file;
 	else if (suffix == ".csg") csg_output_file = output_file;
