@@ -530,6 +530,11 @@ find_package(GLIB2 2.2.0 REQUIRED)
 add_definitions(${GLIB2_DEFINITIONS})
 inclusion(GLIB2_DIR GLIB2_INCLUDE_DIRS)
 
+# 3MF
+include(FindLib3MF.cmake)
+add_definitions(${LIB3MF_CFLAGS})
+include_directories(${LIB3MF_INCLUDE_DIRS})
+
 # find libraries using pkg-config
 find_package(PkgConfig REQUIRED)
 include(PkgConfigTools.cmake)
@@ -769,6 +774,7 @@ set(NOCGAL_SOURCES
   ../src/import_amf.cc
   ../src/import_off.cc
   ../src/import_svg.cc
+  ../src/import_3mf.cc
   ../src/export.cc
   ../src/export_stl.cc
   ../src/export_amf.cc
@@ -845,7 +851,7 @@ if(NULLGL)
 endif()
 
 add_library(tests-core STATIC ${CORE_SOURCES})
-target_link_libraries(tests-core ${OPENGL_LIBRARIES} ${GLIB2_LIBRARIES} ${FONTCONFIG_LDFLAGS} ${FREETYPE_LDFLAGS} ${HARFBUZZ_LDFLAGS} ${LIBXML2_LIBRARIES} ${Boost_LIBRARIES} ${COCOA_LIBRARY})
+target_link_libraries(tests-core ${OPENGL_LIBRARIES} ${GLIB2_LIBRARIES} ${FONTCONFIG_LDFLAGS} ${FREETYPE_LDFLAGS} ${HARFBUZZ_LDFLAGS} ${LIBXML2_LIBRARIES} ${LIB3MF_LDFLAGS} ${Boost_LIBRARIES} ${COCOA_LIBRARY})
 
 add_library(tests-common STATIC ${COMMON_SOURCES})
 target_link_libraries(tests-common tests-core)
@@ -1126,6 +1132,8 @@ configure_file(${CMAKE_SOURCE_DIR}/../testdata/scad/templates/use-tests-template
                ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/use-tests.scad)
 configure_file(${CMAKE_SOURCE_DIR}/../testdata/scad/templates/import_stl-tests-template.scad
                ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/import_stl-tests.scad)
+configure_file(${CMAKE_SOURCE_DIR}/../testdata/scad/templates/import_3mf-tests-template.scad
+               ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/import_3mf-tests.scad)
 configure_file(${CMAKE_SOURCE_DIR}/../testdata/scad/templates/import_dxf-tests-template.scad
                ${CMAKE_SOURCE_DIR}/../testdata/scad/2D/features/import_dxf-tests.scad)
 
