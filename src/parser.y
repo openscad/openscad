@@ -70,7 +70,7 @@ extern FILE *lexerin;
 extern const char *parser_input_buffer;
 const char *parser_input_buffer;
 std::shared_ptr<fs::path> parser_sourcefile;
-std::shared_ptr<fs::path> mainFile;
+fs::path mainFile;
 
 bool fileEnded=false;
 %}
@@ -211,12 +211,12 @@ assignment:
                 bool found = false;
                 for (auto &assignment : scope_stack.top()->assignments) {
                     if (assignment.name == $1) {
-                        auto MainFile = (*mainFile).string();
+                        auto MainFile = mainFile.string();
                         auto prevFile = assignment.location().fileName();
                         auto currFile = LOC(@$).fileName();
                         
-                        const auto uncPathCurr = boostfs_uncomplete(currFile, (*mainFile).parent_path());
-                        const auto uncPathPrev = boostfs_uncomplete(prevFile, (*mainFile).parent_path());
+                        const auto uncPathCurr = boostfs_uncomplete(currFile, mainFile.parent_path());
+                        const auto uncPathPrev = boostfs_uncomplete(prevFile, mainFile.parent_path());
 
                         if(fileEnded){
                             //assigments via commandline
@@ -675,7 +675,7 @@ bool parse(FileModule *&module, const char *text, const std::string &filename, c
 {
   fs::path path = fs::absolute(fs::path(filename));
   
-  mainFile =  std::make_shared<fs::path>(pMainFile);
+  mainFile =  pMainFile;
   
   lexerin = NULL;
   parser_error_pos = -1;
