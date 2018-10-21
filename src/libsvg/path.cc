@@ -14,6 +14,8 @@
 
 namespace libsvg {
 
+using tokenizer = boost::tokenizer<boost::char_separator<char> >;
+
 const std::string path::name("path"); 
 
 /*
@@ -145,17 +147,54 @@ path::curve_to(path_t& path, double x, double y, double cx1, double cy1, double 
 	}
 }
 
+/**
+ * Workaround for parsing ",1-23.16.88" where the number split
+ * happens implicitly at the dot.
+ */
+static std::vector<std::string> split_dots(const std::string& str)
+{
+	std::vector<std::string> result;
+	const size_t n = std::count(str.begin(), str.end(), '.');
+	if (n < 2) {
+		result.push_back(str);
+		return result;
+	}
+
+	boost::char_separator<char> sep("", ".");
+	tokenizer tokens(str, sep);
+
+	std::string text;
+	bool dot_seen = false;
+	for (const auto& token : tokens) {
+		text += token;
+		if (token == ".") {
+			dot_seen = true;
+			continue;
+		} else if (dot_seen == true) {
+			result.push_back(text);
+			text.clear();
+		}
+	}
+
+	return result;
+}
+
 void
 path::set_attrs(attr_map_t& attrs)
 {
 	std::string commands = "-zmlcqahvstZMLCQAHVST";
-	
+
 	shape::set_attrs(attrs);
 	this->data = attrs["d"];
 
-	typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
 	boost::char_separator<char> sep(" ,", commands.c_str());
 	tokenizer tokens(this->data, sep);
+
+	std::vector<std::string> path_tokens;
+	for (const auto& token : tokens) {
+		const std::vector<std::string> parts = split_dots(token);
+		path_tokens.insert(path_tokens.end(), parts.begin(), parts.end());
+	}
 
 	double x = 0;
 	double y = 0;
@@ -179,8 +218,7 @@ path::set_attrs(attr_map_t& attrs)
 	bool path_closed = false;
 	std::string exp;
 	path_list.push_back(path_t());
-	for (tokenizer::iterator it = tokens.begin();it != tokens.end();++it) {
-		std::string v = (*it);
+	for (const auto& v : path_tokens) {
 
 		double p = 0;
 		if ((v.length() == 1) && (commands.find(v) != std::string::npos)) {
