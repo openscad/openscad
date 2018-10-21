@@ -215,10 +215,11 @@ def compare_with_expected(resultfilename):
 #  the XML content for easier comparison by the test framework.
 #
 def post_process_3mf(filename):
-    print 'post processing 3MF file (extracting XML data from ZIP): ', filename
+    print('post processing 3MF file (extracting XML data from ZIP): ', filename)
     xml_content = subprocess.check_output(["unzip", "-p", filename, "3D/3dmodel.model"])
+    xml_content = re.sub('UUID="[^"]*"', 'UUID="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXX"', xml_content.decode('utf-8'))
     with open(filename, 'wb') as xml_file:
-        xml_file.write(xml_content)
+        xml_file.write(xml_content.encode('utf-8'))
 
 def run_test(testname, cmd, args):
     cmdname = os.path.split(options.cmd)[1]
@@ -252,7 +253,7 @@ def run_test(testname, cmd, args):
         sys.stdout.flush()
         proc = subprocess.Popen(cmdline, env = fontenv, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         comresult = proc.communicate()
-        stdouttext, errtext = comresult[0],comresult[1]
+        stdouttext, errtext = comresult[0].decode('utf-8'),comresult[1].decode('utf-8')
         if errtext != None and len(errtext) > 0:
             print("stderr output: " + errtext, file=sys.stderr)
         if stdouttext != None and len(stdouttext) > 0:
