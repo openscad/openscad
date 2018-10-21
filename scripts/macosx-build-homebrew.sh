@@ -55,4 +55,15 @@ for formula in gettext qt5 qscintilla2; do
   time brew link --force $formula
 done
 
+# Install special packages not yet in upstream homebrew repo.
+# Check if there's already an active openscad tap and skip
+# tap/untap in that case.
+TAP=:
+if ! brew tap | grep ^openscad/ >/dev/null 2>/dev/null
+then
+	TAP=brew
+fi
+$TAP tap openscad/homebrew-tap
+brew install lib3mf
+
 $TAP untap openscad/homebrew-tap

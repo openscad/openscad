@@ -53,6 +53,7 @@ PACKAGES=(
     "libxml2 2.9.7"
     "fontconfig 2.12.4"
     "hidapi 0.7.0"
+    "lib3mf a466df47231c02298dde295adb6075b0fc649eba"
 )
 DEPLOY_PACKAGES=(
     "sparkle 1.13.1"
@@ -764,6 +765,25 @@ build_hidapi()
   libtool -static -o "$DEPLOYDIR"/lib/libhidapi.a mac/hid.o
   mkdir -p "$DEPLOYDIR"/include/hidapi
   cp hidapi/hidapi.h "$DEPLOYDIR"/include/hidapi/
+}
+
+build_lib3mf()
+{
+  version=$1
+
+  echo "Building lib3mf" $version "..."
+  cd $BASEDIR/src
+  rm -rf lib3mf-$version
+  if [ ! -f $version.tar.gz ]; then
+    curl -LO https://github.com/3MFConsortium/lib3mf/archive/$version.tar.gz
+  fi
+  tar xzf $version.tar.gz
+  cd lib3mf-$version
+  CXXFLAGS="$CXXSTDFLAGS" make CC=cc CXX=c++ LD=c++ LDFLAGS="$LDSTDFLAGS" -j"$NUMCPU" -C Project/Lib3MFGCC
+  make -j"$NUMCPU" -C Project/Lib3MFGCC install INSTALL_ROOT=$DEPLOYDIR
+#  install_name_tool -id @rpath/libCGAL.dylib $DEPLOYDIR/lib/libCGAL.dylib
+#  install_name_tool -id @rpath/libCGAL_Core.dylib $DEPLOYDIR/lib/libCGAL_Core.dylib
+#  install_name_tool -change libCGAL.11.dylib @rpath/libCGAL.dylib $DEPLOYDIR/lib/libCGAL_Core.dylib
 }
 
 if [ ! -f $OPENSCADDIR/openscad.pro ]; then
