@@ -1,6 +1,6 @@
 /*
  *  OpenSCAD (www.openscad.org)
- *  Copyright (C) 2009-2011 Clifford Wolf <clifford@clifford.at> and
+ *  Copyright (C) 2009-2016 Clifford Wolf <clifford@clifford.at> and
  *                          Marius Kintel <marius@kintel.net>
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -27,167 +27,189 @@
 #include "export.h"
 #include "polyset.h"
 #include "polyset-utils.h"
-#include "dxfdata.h"
+#include "printutils.h"
 
+#ifdef ENABLE_LIB3MF
 #ifdef ENABLE_CGAL
+#include "NMR_DLLInterfaces.h"
+#undef BOOL
+using namespace NMR;
+
+#include <algorithm>
+
 #include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"
 #include "cgalutils.h"
 
-static void append_stl(const PolySet &ps, std::ostream &output)
-{
-	PolySet triangulated(3);
-	PolysetUtils::tessellate_faces(ps, triangulated);
-
-	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
-	for(const auto &p : triangulated.polygons) {
-		assert(p.size() == 3); // STL only allows triangles
-		std::stringstream stream;
-		stream << p[0][0] << " " << p[0][1] << " " << p[0][2];
-		std::string vs1 = stream.str();
-		stream.str("");
-		stream << p[1][0] << " " << p[1][1] << " " << p[1][2];
-		std::string vs2 = stream.str();
-		stream.str("");
-		stream << p[2][0] << " " << p[2][1] << " " << p[2][2];
-		std::string vs3 = stream.str();
-		if (vs1 != vs2 && vs1 != vs3 && vs2 != vs3) {
-			// The above condition ensures that there are 3 distinct vertices, but
-			// they may be collinear. If they are, the unit normal is meaningless
-			// so the default value of "1 0 0" can be used. If the vertices are not
-			// collinear then the unit normal must be calculated from the
-			// components.
-			output << "  facet normal ";
-			Vector3d normal = (p[1] - p[0]).cross(p[2] - p[0]);
-			normal.normalize();
-			if (is_finite(normal) && !is_nan(normal)) {
-				output << normal[0] << " " << normal[1] << " " << normal[2] << "\n";
-			}
-			else {
-				output << "0 0 0\n";
-			}
-			output << "    outer loop\n";
-		
-			for(const auto &v : p) {
-				output << "      vertex " << v[0] << " " << v[1] << " " << v[2] << "\n";
-			}
-			output << "    endloop\n";
-			output << "  endfacet\n";
+bool triangle_sort_predicate (const CGAL_Triangle_3 t1, const CGAL_Triangle_3 t2) {
+	if (t1.vertex(0) == t2.vertex(0)) {
+		if (t1.vertex(1) == t2.vertex(1)) {
+			return t1.vertex(2) < t2.vertex(2);
 		}
+		return t1.vertex(1) < t2.vertex(1);
 	}
-	setlocale(LC_NUMERIC, "");      // Set default locale
+	return t1.vertex(0) < t2.vertex(0);
 }
 
-static void append_stl(const CGAL_Polyhedron &P, std::ostream &output)
+static uint32_t lib3mf_write_callback(const char *data, uint32_t bytes, std::ostream *stream)
 {
-	typedef CGAL_Polyhedron::Vertex                                 Vertex;
-	typedef CGAL_Polyhedron::Vertex_const_iterator                  VCI;
-	typedef CGAL_Polyhedron::Facet_const_iterator                   FCI;
-	typedef CGAL_Polyhedron::Halfedge_around_facet_const_circulator HFCC;
+	stream->write(data, bytes);
+	return !(*stream);
+}
 
-	for (FCI fi = P.facets_begin(); fi != P.facets_end(); ++fi) {
-		HFCC hc = fi->facet_begin();
-		HFCC hc_end = hc;
-		Vertex v1, v2, v3;
-		v1 = *VCI((hc++)->vertex());
-		v3 = *VCI((hc++)->vertex());
-		do {
-			v2 = v3;
-			v3 = *VCI((hc++)->vertex());
-			double x1 = CGAL::to_double(v1.point().x());
-			double y1 = CGAL::to_double(v1.point().y());
-			double z1 = CGAL::to_double(v1.point().z());
-			double x2 = CGAL::to_double(v2.point().x());
-			double y2 = CGAL::to_double(v2.point().y());
-			double z2 = CGAL::to_double(v2.point().z());
-			double x3 = CGAL::to_double(v3.point().x());
-			double y3 = CGAL::to_double(v3.point().y());
-			double z3 = CGAL::to_double(v3.point().z());
-			std::stringstream stream;
-			stream << x1 << " " << y1 << " " << z1;
-			std::string vs1 = stream.str();
-			stream.str("");
-			stream << x2 << " " << y2 << " " << z2;
-			std::string vs2 = stream.str();
-			stream.str("");
-			stream << x3 << " " << y3 << " " << z3;
-			std::string vs3 = stream.str();
-			if (vs1 != vs2 && vs1 != vs3 && vs2 != vs3) {
-				// The above condition ensures that there are 3 distinct vertices, but
-				// they may be collinear. If they are, the unit normal is meaningless
-				// so the default value of "1 0 0" can be used. If the vertices are not
-				// collinear then the unit normal must be calculated from the
-				// components.
-				if (!CGAL::collinear(v1.point(),v2.point(),v3.point())) {
-					CGAL_Polyhedron::Traits::Vector_3 normal = CGAL::normal(v1.point(),v2.point(),v3.point());
-					output << "  facet normal "
-								 << CGAL::sign(normal.x()) * sqrt(CGAL::to_double(normal.x()*normal.x()/normal.squared_length()))
-								 << " "
-								 << CGAL::sign(normal.y()) * sqrt(CGAL::to_double(normal.y()*normal.y()/normal.squared_length()))
-								 << " "
-								 << CGAL::sign(normal.z()) * sqrt(CGAL::to_double(normal.z()*normal.z()/normal.squared_length()))
-								 << "\n";
-				}
-				else output << "  facet normal 1 0 0\n";
-				output << "    outer loop\n";
-				output << "      vertex " << vs1 << "\n";
-				output << "      vertex " << vs2 << "\n";
-				output << "      vertex " << vs3 << "\n";
-				output << "    endloop\n";
-				output << "  endfacet\n";
-			}
-		} while (hc != hc_end);
+static uint32_t lib3mf_seek_callback(uint64_t pos, std::ostream *stream)
+{
+	stream->seekp(pos);
+	return !(*stream);
+}
+
+static void export_3mf_error(const std::string msg, PLib3MFModel *model = NULL)
+{
+	PRINT(msg);
+	if (model) {
+		lib3mf_release(model);
 	}
 }
 
 /*!
-	Saves the current 3D CGAL Nef polyhedron as STL to the given file.
-	The file must be open.
+    Saves the current 3D CGAL Nef polyhedron as 3MF to the given file.
+    The file must be open.
  */
-static void append_stl(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
+static void append_3mf(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 {
-	if (!root_N.p3->is_simple()) {
-		PRINT("WARNING: Exported object may not be a valid 2-manifold and may need repair");
+	if (!root_N.p3 || !root_N.p3->is_simple()) {
+		PRINT("WARNING: Export failed, the object isn't a valid 2-manifold.");
+		return;
 	}
 
-	bool usePolySet = true;
-	if (usePolySet) {
-		PolySet ps(3);
-		bool err = CGALUtils::createPolySetFromNefPolyhedron3(*(root_N.p3), ps);
-		if (err) { PRINT("ERROR: Nef->PolySet failed"); }
-		else {
-			append_stl(ps, output);
-		}
+	DWORD interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro;
+	HRESULT result = lib3mf_getinterfaceversion(&interfaceVersionMajor, &interfaceVersionMinor, &interfaceVersionMicro);
+	if (result != LIB3MF_OK) {
+		PRINT("ERROR: Error reading 3MF library version");
+		return;
 	}
-	else {
-		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
-		try {
-			CGAL_Polyhedron P;
-			//root_N.p3->convert_to_Polyhedron(P);
-			bool err = nefworkaround::convert_to_Polyhedron<CGAL_Kernel3>( *(root_N.p3), P );
-			if (err) {
-				PRINT("ERROR: CGAL NefPolyhedron->Polyhedron conversion failed");
+
+	if ((interfaceVersionMajor != NMR_APIVERSION_INTERFACE_MAJOR)) {
+		PRINTB("ERROR: Invalid 3MF library major version %d.%d.%d, expected %d.%d.%d",
+                        interfaceVersionMajor % interfaceVersionMinor % interfaceVersionMicro %
+                        NMR_APIVERSION_INTERFACE_MAJOR % NMR_APIVERSION_INTERFACE_MINOR % NMR_APIVERSION_INTERFACE_MICRO);
+		return;
+	}
+
+	PLib3MFModel *model;
+	result = lib3mf_createmodel(&model);
+	if (result != LIB3MF_OK) {
+		export_3mf_error("ERROR: Can't create 3MF model.");
+		return;
+	}
+
+	PLib3MFModelMeshObject *mesh;
+	if (lib3mf_model_addmeshobject(model, &mesh) != LIB3MF_OK) {
+		export_3mf_error("ERROR: Can't add mesh to 3MF model.", model);
+		return;
+	}
+	if (lib3mf_object_setnameutf8(mesh, "OpenSCAD Model") != LIB3MF_OK) {
+		export_3mf_error("ERROR: Can't set name for 3MF model.", model);
+		return;
+	}
+
+	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+	try {
+		CGAL_Polyhedron P;
+		root_N.p3->convert_to_Polyhedron(P);
+
+		typedef CGAL_Polyhedron::Vertex Vertex;
+		typedef CGAL_Polyhedron::Vertex_const_iterator VCI;
+		typedef CGAL_Polyhedron::Facet_const_iterator FCI;
+		typedef CGAL_Polyhedron::Halfedge_around_facet_const_circulator HFCC;
+
+		// use sorted sets to get a stable sort order in the exported file
+		typedef std::set<CGAL_Polyhedron::Point_3> vertex_set_t;
+		typedef std::vector<CGAL_Triangle_3> triangle_list_t;
+
+		vertex_set_t vertices;
+		triangle_list_t triangles;
+
+		for (FCI fi = P.facets_begin(); fi != P.facets_end(); ++fi) {
+			HFCC hc = fi->facet_begin();
+			HFCC hc_end = hc;
+			Vertex v1, v2, v3;
+			v1 = *VCI((hc++)->vertex());
+			vertices.insert(v1.point());
+			v3 = *VCI((hc++)->vertex());
+			vertices.insert(v3.point());
+			do {
+				v2 = v3;
+				v3 = *VCI((hc++)->vertex());
+
+				CGAL_Polyhedron::Point_3 p1, p2, p3;
+				p1 = v1.point();
+				p2 = v2.point();
+				p3 = v3.point();
+				vertices.insert(p3);
+
+				triangles.push_back(CGAL_Triangle_3(p1, p2, p3));
+			} while (hc != hc_end);
+		}
+
+		for (const auto &vertex : vertices) {
+			MODELMESHVERTEX v;
+			v.m_fPosition[0] = CGAL::to_double(vertex.x());
+			v.m_fPosition[1] = CGAL::to_double(vertex.y());
+			v.m_fPosition[2] = CGAL::to_double(vertex.z());
+			if (lib3mf_meshobject_addvertex(mesh, &v, NULL) != LIB3MF_OK) {
+				export_3mf_error("ERROR: Can't add vertex to 3MF model.", model);
 				return;
 			}
-			append_stl(P, output);
 		}
-		catch (const CGAL::Assertion_exception &e) {
-			PRINTB("ERROR: CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s", e.what());
+
+		std::sort(triangles.begin(), triangles.end(), triangle_sort_predicate);
+		for (const auto &triangle : triangles) {
+			MODELMESHTRIANGLE t;
+			t.m_nIndices[0] = std::distance(vertices.begin(), std::find(vertices.begin(), vertices.end(), triangle.vertex(0)));
+			t.m_nIndices[1] = std::distance(vertices.begin(), std::find(vertices.begin(), vertices.end(), triangle.vertex(1)));
+			t.m_nIndices[2] = std::distance(vertices.begin(), std::find(vertices.begin(), vertices.end(), triangle.vertex(2)));
+			if (lib3mf_meshobject_addtriangle(mesh, &t, NULL) != LIB3MF_OK) {
+				export_3mf_error("ERROR: Can't add triangle to 3MF model.", model);
+				return;
+			}
 		}
-		catch (...) {
-			PRINT("ERROR: CGAL unknown error in CGAL_Nef_polyhedron3::convert_to_Polyhedron()");
+
+		PLib3MFModelBuildItem *builditem;
+		if (lib3mf_model_addbuilditem(model, mesh, NULL, &builditem) != LIB3MF_OK) {
+			export_3mf_error("ERROR: Can't add triangle to 3MF model.", model);
+			return;
 		}
-		CGAL::set_error_behaviour(old_behaviour);
+
+		PLib3MFModelWriter *writer;
+		if (lib3mf_model_querywriter(model, "3mf", &writer) != LIB3MF_OK) {
+			export_3mf_error("ERROR: Can't get writer for 3MF model.", model);
+			return;
+		}
+
+		result = lib3mf_writer_writetocallback(writer, (void *)lib3mf_write_callback, (void *)lib3mf_seek_callback, &output);
+		output.flush();
+		lib3mf_release(writer);
+		lib3mf_release(model);
+		if (result != LIB3MF_OK) {
+			export_3mf_error("ERROR: Error writing 3MF model.");
+		}
+	} catch (CGAL::Assertion_exception& e) {
+		PRINTB("ERROR: CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s", e.what());
 	}
+	CGAL::set_error_behaviour(old_behaviour);
 }
 
-static void append_stl(const shared_ptr<const Geometry> &geom, std::ostream &output)
+static void append_3mf(const shared_ptr<const Geometry> &geom, std::ostream &output)
 {
 	if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(geom.get())) {
-		append_stl(*N, output);
+		append_3mf(*N, output);
 	}
 	else if (const PolySet *ps = dynamic_cast<const PolySet *>(geom.get())) {
-		append_stl(*ps, output);
+		// FIXME: Implement this without creating a Nef polyhedron
+		CGAL_Nef_polyhedron *N = CGALUtils::createNefPolyhedronFromGeometry(*ps);
+		append_3mf(*N, output);
+		delete N;
 	}
 	else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(geom.get())) {
 		assert(false && "Unsupported file format");
@@ -196,15 +218,18 @@ static void append_stl(const shared_ptr<const Geometry> &geom, std::ostream &out
 	}
 }
 
-void export_stl(const shared_ptr<const Geometry> &geom, std::ostream &output)
+void export_3mf(const shared_ptr<const Geometry> &geom, std::ostream &output)
 {
-	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
-	output << "solid OpenSCAD_Model\n";
-
-	append_stl(geom, output);
-
-	output << "endsolid OpenSCAD_Model\n";
-	setlocale(LC_NUMERIC, "");      // Set default locale
+	append_3mf(geom, output);
 }
 
 #endif // ENABLE_CGAL
+
+#else // ENABLE_LIB3MF
+
+void export_3mf(const shared_ptr<const Geometry> &, std::ostream &)
+{
+	PRINT("Export to 3MF format was not enabled when building the application.");
+}
+
+#endif // ENABLE_LIB3MF

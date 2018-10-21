@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<model xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" unit="millimeter" xml:lang="en-US" xmlns:m="http://schemas.microsoft.com/3dmanufacturing/material/2015/02">
+	<resources>
+		<object id="1" name="OpenSCAD Model" type="model">
+			<mesh>
+				<vertices>
+					<vertex x="0" y="0" z="0" />
+					<vertex x="0" y="0" z="10.000" />
+					<vertex x="0" y="10.000" z="0" />
+					<vertex x="0" y="10.000" z="10.000" />
+					<vertex x="1.000" y="1.000" z="10.000" />
+					<vertex x="1.000" y="1.000" z="17.000" />
+					<vertex x="1.000" y="9.000" z="10.000" />
+					<vertex x="1.000" y="9.000" z="17.000" />
+					<vertex x="9.000" y="1.000" z="10.000" />
+					<vertex x="9.000" y="1.000" z="17.000" />
+					<vertex x="9.000" y="9.000" z="10.000" />
+					<vertex x="9.000" y="9.000" z="17.000" />
+					<vertex x="10.000" y="0" z="0" />
+					<vertex x="10.000" y="0" z="10.000" />
+					<vertex x="10.000" y="10.000" z="0" />
+					<vertex x="10.000" y="10.000" z="10.000" />
+				</vertices>
+				<triangles>
+					<triangle v1="0" v2="1" v3="2" />
+					<triangle v1="0" v2="2" v3="12" />
+					<triangle v1="1" v2="0" v3="12" />
+					<triangle v1="2" v2="1" v3="3" />
+					<triangle v1="2" v2="3" v3="14" />
+					<triangle v1="3" v2="1" v3="4" />
+					<triangle v1="4" v2="1" v3="13" />
+					<triangle v1="4" v2="5" v3="6" />
+					<triangle v1="5" v2="4" v3="8" />
+					<triangle v1="6" v2="3" v3="4" />
+					<triangle v1="6" v2="5" v3="7" />
+					<triangle v1="6" v2="7" v3="10" />
+					<triangle v1="7" v2="5" v3="9" />
+					<triangle v1="8" v2="4" v3="13" />
+					<triangle v1="9" v2="5" v3="8" />
+					<triangle v1="9" v2="8" v3="10" />
+					<triangle v1="10" v2="7" v3="11" />
+					<triangle v1="10" v2="8" v3="13" />
+					<triangle v1="11" v2="7" v3="9" />
+					<triangle v1="11" v2="9" v3="10" />
+					<triangle v1="12" v2="2" v3="14" />
+					<triangle v1="13" v2="1" v3="12" />
+					<triangle v1="13" v2="12" v3="14" />
+					<triangle v1="14" v2="3" v3="15" />
+					<triangle v1="15" v2="3" v3="6" />
+					<triangle v1="15" v2="6" v3="10" />
+					<triangle v1="15" v2="10" v3="13" />
+					<triangle v1="15" v2="13" v3="14" />
+				</triangles>
+			</mesh>
+		</object>
+	</resources>
+	<build>
+		<item objectid="1" />
+	</build>
+</model>

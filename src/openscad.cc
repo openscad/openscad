@@ -309,6 +309,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	const char *stl_output_file = nullptr;
 	const char *off_output_file = nullptr;
 	const char *amf_output_file = nullptr;
+	const char *_3mf_output_file = nullptr;
 	const char *dxf_output_file = nullptr;
 	const char *svg_output_file = nullptr;
 	const char *csg_output_file = nullptr;
@@ -325,6 +326,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	if (suffix == ".stl") stl_output_file = output_file;
 	else if (suffix == ".off") off_output_file = output_file;
 	else if (suffix == ".amf") amf_output_file = output_file;
+	else if (suffix == ".3mf") _3mf_output_file = output_file;
 	else if (suffix == ".dxf") dxf_output_file = output_file;
 	else if (suffix == ".svg") svg_output_file = output_file;
 	else if (suffix == ".csg") csg_output_file = output_file;
@@ -493,6 +495,11 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 			if (!checkAndExport(root_geom, 3, FileFormat::AMF, amf_output_file)) {
 				return 1;
 			}
+		}
+
+		if (_3mf_output_file) {
+			if (!checkAndExport(root_geom, 3, FileFormat::_3MF, _3mf_output_file))
+				return 1;
 		}
 
 		if (dxf_output_file) {

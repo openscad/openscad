@@ -296,6 +296,7 @@
      <addaction name="fileActionExportSTL"/>
      <addaction name="fileActionExportOFF"/>
      <addaction name="fileActionExportAMF"/>
+     <addaction name="fileActionExport3MF"/>
      <addaction name="fileActionExportDXF"/>
      <addaction name="fileActionExportSVG"/>
      <addaction name="fileActionExportCSG"/>
@@ -1293,6 +1294,15 @@
    </property>
    <property name="text">
     <string>Export as &amp;AMF...</string>
+   </property>
+  </action>
+  <action name="fileActionExport3MF">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/3MF.png</normaloff>:/images/3MF.png</iconset>
+   </property>
+   <property name="text">
+    <string>Export as &amp;3MF...</string>
    </property>
   </action>
   <action name="viewActionZoomIn">

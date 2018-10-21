@@ -1277,6 +1277,8 @@ list(APPEND CGALSTLSANITYTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/no
 
 list(APPEND EXPORT_STL_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/stl/stl-export.scad)
 
+list(APPEND EXPORT_3MF_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3mf/3mf-export.scad)
+
 list(APPEND EXPORT3D_CGALCGAL_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/polyhedron-nonplanar-tests.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/rotate_extrude-tests.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/union-coincident-test.scad
@@ -1695,6 +1697,8 @@ add_cmdline_test(monotonepngtest EXE ${OPENSCAD_BINPATH} ARGS --colorscheme=Mono
 
 # Disabled for now, needs implementation of #420 to be stable
 # add_cmdline_test(stlexport EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX stl FILES ${EXPORT_STL_TEST_FILES})
+
+add_cmdline_test(3mfexport EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES})
 
 # stlpngtest: direct STL output, preview rendering
 add_cmdline_test(stlpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=STL EXPECTEDDIR monotonepngtest SUFFIX png FILES ${EXPORT3D_TEST_FILES})
