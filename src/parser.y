@@ -236,7 +236,8 @@ assignment:
                                         uncPathPrev%
                                         LOC(@$).firstLine());
                             }
-                        }else{
+                        }else if(prevFile==MainFile && currFile != MainFile){
+                            //assigment from the mainFile overwritten by an include
                             PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i of %s",
                                     assignment.name%
                                     assignment.location().firstLine()%

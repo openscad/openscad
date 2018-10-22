@@ -1,4 +1,3 @@
-WARNING: before was assigned on line 2 of "../../../../../testdata/scad/misc/include-overwrite-before.scad" but was overwritten on line 14 of "../../../../../testdata/scad/misc/include-overwrite-main.scad"
 WARNING: overwritten was assigned on line 12 but was overwritten on line 16
 WARNING: after was assigned on line 15 of "../../../../../testdata/scad/misc/include-overwrite-main.scad" but was overwritten on line 2 of "../../../../../testdata/scad/misc/include-overwrite-after.scad"
 WARNING: overwriteInuse was assigned on line 1 of "../../../../../testdata/scad/misc/include-overwrite-use.scad" but was overwritten on line 2
