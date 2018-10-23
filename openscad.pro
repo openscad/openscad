@@ -575,7 +575,7 @@ unix:!macx {
   SOURCES += src/input/DBusInputDriver.cc
 }
 
-unix:!macx {
+linux: {
   DEFINES += ENABLE_JOYSTICK
 
   HEADERS += src/input/JoystickInputDriver.h
