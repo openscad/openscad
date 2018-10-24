@@ -565,7 +565,7 @@ HEADERS += src/ext/libtess2/Include/tesselator.h \
            src/ext/libtess2/Source/sweep.h \
            src/ext/libtess2/Source/tess.h
 
-unix:!macx {
+has_qt5:unix:!macx {
   QT += dbus
   DEFINES += ENABLE_DBUS
   DBUS_ADAPTORS += org.openscad.OpenSCAD.xml
