@@ -132,6 +132,7 @@ class Lookup : public Expression
 public:
 	Lookup(const std::string &name, const Location &loc);
 	ValuePtr evaluate(const class Context *context) const override;
+	ValuePtr evaluateSilently(const class Context *context) const;
 	void print(std::ostream &stream, const std::string &indent) const override;
 private:
 	std::string name;

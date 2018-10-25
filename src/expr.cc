@@ -387,6 +387,11 @@ ValuePtr Lookup::evaluate(const Context *context) const
 	return context->lookup_variable(this->name);
 }
 
+ValuePtr Lookup::evaluateSilently(const Context *context) const
+{
+	return context->lookup_variable(this->name,true);
+}
+
 void Lookup::print(std::ostream &stream, const std::string &) const
 {
 	stream << this->name;
