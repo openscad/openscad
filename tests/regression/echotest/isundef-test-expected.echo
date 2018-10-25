@@ -1,0 +1,7 @@
+ECHO: true
+ECHO: false
+ECHO: true
+WARNING: Ignoring unknown variable 'a'.
+ECHO: undef
+ECHO: "hallo"
+ECHO: undef

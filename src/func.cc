@@ -954,6 +954,22 @@ ValuePtr builtin_cross(const Context *, const EvalContext *evalctx)
 	return ValuePtr(result);
 }
 
+ValuePtr builtin_isundef(const Context *, const EvalContext *evalctx)
+{
+	if (evalctx->numArgs() == 1) {
+		const auto &arg =evalctx->eval_arguments[0];
+		ValuePtr v;
+		if(const Lookup* lookup = dynamic_cast<const Lookup*> (arg.expr.get())){
+			v = lookup->evaluateSilently(evalctx);
+		}else{
+			v = evalctx->getArgValue(0);
+		}
+		return ValuePtr(v == ValuePtr::undefined);
+	}
+
+	return ValuePtr::undefined;
+}
+
 void register_builtin_functions()
 {
 	Builtins::init("abs", new BuiltinFunction(&builtin_abs));
@@ -988,4 +1004,5 @@ void register_builtin_functions()
 	Builtins::init("norm", new BuiltinFunction(&builtin_norm));
 	Builtins::init("cross", new BuiltinFunction(&builtin_cross));
 	Builtins::init("parent_module", new BuiltinFunction(&builtin_parent_module));
+	Builtins::init("isundef", new BuiltinFunction(&builtin_isundef));
 }
