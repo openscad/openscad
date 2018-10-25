@@ -41,6 +41,7 @@
 #include <ctime>
 #include <limits>
 #include <algorithm>
+#include <glib.h>
 
 /*
  Random numbers
@@ -52,8 +53,6 @@
 #include"boost-utils.h"
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_real.hpp>
-/*Unicode support for string lengths and array accesses*/
-#include <glib.h>
 // hash double
 #include "linalg.h"
 
@@ -489,7 +488,7 @@ ValuePtr builtin_length(const Context *, const EvalContext *evalctx)
 		if (v->type() == Value::ValueType::STRING) {
 			//Unicode glyph count for the length -- rather than the string (num. of bytes) length.
 			std::string text = v->toString();
-			return ValuePtr(int( g_utf8_strlen( text.c_str(), text.size() ) ));
+			return ValuePtr(int(utf8::distance(text.begin(), text.end())));
 		}
 	}
 	return ValuePtr::undefined;
@@ -543,6 +542,38 @@ ValuePtr builtin_chr(const Context *, const EvalContext *evalctx)
 		stream << v->chrString();
 	}
 	return ValuePtr(stream.str());
+}
+
+ValuePtr builtin_ord(const Context *, const EvalContext *evalctx)
+{
+	const size_t numArgs = evalctx->numArgs();
+
+	if (numArgs == 0) {
+		return ValuePtr::undefined;
+	} else if (numArgs > 1) {
+		PRINTB("WARNING: ord() called with %d arguments, only 1 argument expected.", numArgs);
+		return ValuePtr::undefined;
+	}
+
+	const ValuePtr& arg = evalctx->getArgValue(0);
+	const std::string arg_str = arg->toString();
+	const char *ptr = arg_str.c_str();
+
+	if (arg->type() != Value::ValueType::STRING) {
+		PRINTB("WARNING: ord() argument %s is not of type string.", arg_str);
+		return ValuePtr::undefined;
+	}
+
+	try {
+		auto curr = arg_str.begin();
+		auto ch = utf8::next(curr, arg_str.end());
+		return ValuePtr((double)ch);
+	}
+	catch (std::exception &ex) {
+//	catch (utf8::invalid_utf8 &ex) {
+		PRINTB("WARNING: ord() argument '%s' is not valid utf8 string.", arg_str);
+		return ValuePtr::undefined;
+	}
 }
 
 ValuePtr builtin_concat(const Context *, const EvalContext *evalctx)
@@ -949,6 +980,7 @@ void register_builtin_functions()
 	Builtins::init("ln", new BuiltinFunction(&builtin_ln));
 	Builtins::init("str", new BuiltinFunction(&builtin_str));
 	Builtins::init("chr", new BuiltinFunction(&builtin_chr));
+	Builtins::init("ord", new BuiltinFunction(&builtin_ord));
 	Builtins::init("concat", new BuiltinFunction(&builtin_concat));
 	Builtins::init("lookup", new BuiltinFunction(&builtin_lookup));
 	Builtins::init("search", new BuiltinFunction(&builtin_search));

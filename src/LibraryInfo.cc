@@ -1,5 +1,4 @@
 #include "LibraryInfo.h"
-#include <glib.h>
 #include <vector>
 #ifdef USE_SCINTILLA_EDITOR
 #include <Qsci/qsciglobal.h>
@@ -108,7 +107,6 @@ std::string LibraryInfo::info()
           << "\nInputDrivers: " << InputDriverManager::instance()->listDrivers()
 #endif
 	  << "\nMingW build: " << mingwstatus
-	  << "\nGLib version: "       << GLIB_MAJOR_VERSION << "." << GLIB_MINOR_VERSION << "." << GLIB_MICRO_VERSION
 	  << "\nlibzip version: " << LIBZIP_VERSION
 	  << "\nApplication Path: " << PlatformUtils::applicationPath()
 	  << "\nDocuments Path: " << PlatformUtils::documentsPath()

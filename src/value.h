@@ -9,7 +9,7 @@
 #ifndef Q_MOC_RUN
 #include <boost/variant.hpp>
 #include <boost/lexical_cast.hpp>
-#include <glib.h>
+#include <utf8cpp/utf8.h>
 
 #endif
 #include <cstdint>
@@ -139,19 +139,19 @@ private:
 class str_utf8_wrapper : public std::string
 {
 public:
-	str_utf8_wrapper() : std::string(), cached_len(-1) { }
-	str_utf8_wrapper( const std::string& s ) : std::string( s ), cached_len(-1) { }
-	str_utf8_wrapper( size_t n, char c ) : std::string(n, c), cached_len(-1) { }
+	str_utf8_wrapper() : cached_len(-1) {}
+	str_utf8_wrapper(const std::string& s) : std::string(s), cached_len(-1) {}
+	str_utf8_wrapper(size_t n, char c) : std::string(n, c), cached_len(-1) {}
 	~str_utf8_wrapper() {}
 	
-	glong get_utf8_strlen() const {
+	size_t get_utf8_strlen() const {
 		if (cached_len < 0) {
-			cached_len = g_utf8_strlen(this->c_str(), this->size());
+			cached_len = utf8::distance(this->begin(), this->end());
 		}
 		return cached_len;
 	};
 private:
-	mutable glong cached_len;
+	mutable int cached_len;
 };
 
 

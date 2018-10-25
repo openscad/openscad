@@ -583,6 +583,16 @@ ValuePtr LcEach::evaluate(const Context *context) const
         for (size_t i = 0; i < v->toVector().size(); i++) {
             vec.push_back(vector[i]);
         }
+    } else if (v->type() == Value::ValueType::STRING) {
+        const std::string val = v->toString();
+				auto prev = val.begin();
+				auto next = prev;
+				utf8::advance(next, 1, val.end());
+				while (prev != val.end()) {
+					vec.push_back(ValuePtr(std::string(prev, next)));
+					prev = next;
+					utf8::advance(next, 1, val.end());
+				}
     } else if (v->type() != Value::ValueType::UNDEFINED) {
         vec.push_back(v);
     }
@@ -634,7 +644,23 @@ ValuePtr LcFor::evaluate(const Context *context) const
             c.set_variable(it_name, it_values->toVector()[i]);
             vec.push_back(this->expr->evaluate(&c));
         }
-    } else if (it_values->type() != Value::ValueType::UNDEFINED) {
+    } else if (it_values->type() == Value::ValueType::STRING) {
+        const std::string val = it_values->toString();
+				auto prev = val.begin();
+				try {
+					while (prev != val.end()) {
+						auto next = prev;
+						try {
+							utf8::advance(next, 1, val.end());
+						} catch (utf8::invalid_code_point &) {
+						}
+						c.set_variable(it_name, ValuePtr(std::string(prev, next)));
+						vec.push_back(this->expr->evaluate(&c));
+						prev = next;
+					}
+				} catch (utf8::invalid_utf8 &) {
+				}
+		} else if (it_values->type() != Value::ValueType::UNDEFINED) {
         c.set_variable(it_name, it_values);
         vec.push_back(this->expr->evaluate(&c));
     }

@@ -28,7 +28,7 @@
 
 #include <iostream>
 
-#include <glib.h>
+#include <utf8cpp/utf8.h>
 
 #include <fontconfig/fontconfig.h>
 
@@ -230,19 +230,16 @@ std::vector<const Geometry *> FreetypeRenderer::render(const FreetypeRenderer::P
 		// to the 0xf000 page (Private Use Area of Unicode). All other
 		// values are untouched, so using the correct codepoint directly
 		// (e.g. \uf021 for the spider in Webdings) still works.
-		const char *p = params.text.c_str();
-		if (g_utf8_validate(p, -1, nullptr)) {
-			char buf[8];
-			while (*p != 0) {
-				memset(buf, 0, 8);
-				gunichar c = g_utf8_get_char(p);
-				c = (c < 0x0100) ? 0xf000 + c : c;
-			        g_unichar_to_utf8(c, buf);
-				hb_buffer_add_utf8(hb_buf, buf, strlen(buf), 0, strlen(buf));
-				p = g_utf8_next_char(p);
+
+		try {
+			std::vector<uint32_t> ucs4String;
+			utf8::utf8to32(std::begin(params.text), std::end(params.text), std::back_inserter(ucs4String));
+			for (auto &unichar : ucs4String) {
+				if (unichar < 0x0100) unichar += 0xf000;
 			}
-		} else {
-			PRINTB("Warning: Ignoring text with invalid UTF-8 encoding: \"%s\"", params.text.c_str());
+			hb_buffer_add_utf32(hb_buf, ucs4String.data(), -1, 0, -1);
+		} catch (utf8::invalid_utf8 &ex) {
+			PRINTB("Warning: Ignoring text with invalid UTF-8 encoding: \"%s\"", params.text);
 		}
 	} else {
 		hb_buffer_add_utf8(hb_buf, params.text.c_str(), strlen(params.text.c_str()), 0, strlen(params.text.c_str()));
