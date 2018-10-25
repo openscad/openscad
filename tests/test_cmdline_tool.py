@@ -241,7 +241,7 @@ def run_test(testname, cmd, args):
         sys.stdout.flush()
         proc = subprocess.Popen(cmdline, env = fontenv, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         comresult = proc.communicate()
-        stdouttext, errtext = comresult[0].decode('utf-8'),comresult[1].decode('utf-8')
+        stdouttext, errtext = comresult[0],comresult[1]
         if errtext != None and len(errtext) > 0:
             print("stderr output: " + errtext, file=sys.stderr)
         if stdouttext != None and len(stdouttext) > 0:
