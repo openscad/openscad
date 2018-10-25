@@ -5,3 +5,15 @@ WARNING: Ignoring unknown variable 'a'.
 ECHO: undef
 ECHO: "hallo"
 ECHO: undef
+ECHO: false
+ECHO: true
+ECHO: true
+ECHO: true
+WARNING: Ignoring unknown variable 'd'.
+ECHO: undef
+ECHO: true
+ECHO: false
+ECHO: true
+ECHO: undef
+ECHO: 132465
+ECHO: undef
