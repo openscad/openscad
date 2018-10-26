@@ -93,6 +93,12 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 				for_eval(node, inst, l+1, &c, evalctx);
 			}
 		}
+                else if (it_values->type() == Value::ValueType::STRING) {
+                        utf8_split(it_values->toString(), [&](ValuePtr v) {
+                            c.set_variable(it_name, v);
+                            for_eval(node, inst, l+1, &c, evalctx);
+                        });
+                }
 		else if (it_values->type() != Value::ValueType::UNDEFINED) {
 			c.set_variable(it_name, it_values);
 			for_eval(node, inst, l+1, &c, evalctx);

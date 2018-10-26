@@ -1029,7 +1029,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
       if (${EXPERIMENTAL} EQUAL -1)
         set(EXPERIMENTAL_OPTION "")
       else()
-        set(EXPERIMENTAL_OPTION "--enable=assert" "--enable=echo" "--enable=lc-each" "--enable=lc-else" "--enable=lc-for-c" "--enable=amf-import")
+        set(EXPERIMENTAL_OPTION "--enable=lc-each" "--enable=lc-else" "--enable=lc-for-c" "--enable=amf-import")
       endif()
 
       # 2D tests should be viewed from the top, not an angle.
@@ -1189,6 +1189,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/string-indexing.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/string-unicode.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/chr-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/ord-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/vector-values.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/search-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/search-tests-unicode.scad

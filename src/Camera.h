@@ -26,11 +26,13 @@ public:
 	enum class ProjectionType { ORTHOGONAL, PERSPECTIVE } projection;
 	Camera();
 	void setup(std::vector<double> params);
+	void gimbalDefaultTranslate();
 	void setProjection(ProjectionType type);
-	void zoom(int delta);
+	void zoom(int delta, bool relative);
 	double zoomValue() const;
 	void resetView();
 	void viewAll(const BoundingBox &bbox);
+	std::string statusText() const;
 
 	// accessors to get and set camera settings in the user space format (different for historical reasons)
 	Eigen::Vector3d getVpt() const;
@@ -38,7 +40,6 @@ public:
 	Eigen::Vector3d getVpr() const;
 	void setVpr(double x, double y, double z);
 	void setVpd(double d);
-	std::string statusText() const;
 
 	// Gimbalcam
 	Eigen::Vector3d object_trans;

@@ -43,6 +43,10 @@ for(r=[1:true:5]) translate([r*10-60,50,0]) cylinder(r=r);
 // Vector
 for(r=[1,2,5]) translate([r*10-30,0,0]) cylinder(r=r);
 
+// String
+for(c="") echo("never shown");
+for(c="a\u2191b\U01f600") echo(c);
+
 nan = 0/0;
 inf = 1/0;
 ninf = -1/0;

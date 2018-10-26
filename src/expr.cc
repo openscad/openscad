@@ -129,7 +129,7 @@ bool UnaryOp::isLiteral() const {
     return false;
 }
 
-void UnaryOp::print(std::ostream &stream, const std::string &indent) const
+void UnaryOp::print(std::ostream &stream, const std::string &) const
 {
 	stream << opString() << *this->expr;
 }
@@ -235,7 +235,7 @@ const char *BinaryOp::opString() const
 	}
 }
 
-void BinaryOp::print(std::ostream &stream, const std::string &indent) const
+void BinaryOp::print(std::ostream &stream, const std::string &) const
 {
 	stream << "(" << *this->left << " " << opString() << " " << *this->right << ")";
 }
@@ -250,7 +250,7 @@ ValuePtr TernaryOp::evaluate(const Context *context) const
 	return (this->cond->evaluate(context) ? this->ifexpr : this->elseexpr)->evaluate(context);
 }
 
-void TernaryOp::print(std::ostream &stream, const std::string &indent) const
+void TernaryOp::print(std::ostream &stream, const std::string &) const
 {
 	stream << "(" << *this->cond << " ? " << *this->ifexpr << " : " << *this->elseexpr << ")";
 }
@@ -264,7 +264,7 @@ ValuePtr ArrayLookup::evaluate(const Context *context) const {
 	return this->array->evaluate(context)[this->index->evaluate(context)];
 }
 
-void ArrayLookup::print(std::ostream &stream, const std::string &indent) const
+void ArrayLookup::print(std::ostream &stream, const std::string &) const
 {
 	stream << *array << "[" << *index << "]";
 }
@@ -278,7 +278,7 @@ ValuePtr Literal::evaluate(const class Context *) const
 	return this->value;
 }
 
-void Literal::print(std::ostream &stream, const std::string &indent) const
+void Literal::print(std::ostream &stream, const std::string &) const
 {
     stream << *this->value;
 }
@@ -314,7 +314,7 @@ ValuePtr Range::evaluate(const Context *context) const
 	return ValuePtr::undefined;
 }
 
-void Range::print(std::ostream &stream, const std::string &indent) const
+void Range::print(std::ostream &stream, const std::string &) const
 {
 	stream << "[" << *this->begin;
 	if (this->step) stream << " : " << *this->step;
@@ -368,7 +368,7 @@ ValuePtr Vector::evaluate(const Context *context) const
 	return ValuePtr(vec);
 }
 
-void Vector::print(std::ostream &stream, const std::string &indent) const
+void Vector::print(std::ostream &stream, const std::string &) const
 {
 	stream << "[";
 	for (size_t i=0; i < this->children.size(); i++) {
@@ -387,7 +387,7 @@ ValuePtr Lookup::evaluate(const Context *context) const
 	return context->lookup_variable(this->name);
 }
 
-void Lookup::print(std::ostream &stream, const std::string &indent) const
+void Lookup::print(std::ostream &stream, const std::string &) const
 {
 	stream << this->name;
 }
@@ -413,7 +413,7 @@ ValuePtr MemberLookup::evaluate(const Context *context) const
 	return ValuePtr::undefined;
 }
 
-void MemberLookup::print(std::ostream &stream, const std::string &indent) const
+void MemberLookup::print(std::ostream &stream, const std::string &) const
 {
 	stream << *this->expr << "." << this->member;
 }
@@ -436,7 +436,7 @@ ValuePtr FunctionCall::evaluate(const Context *context) const
 	return result;
 }
 
-void FunctionCall::print(std::ostream &stream, const std::string &indent) const
+void FunctionCall::print(std::ostream &stream, const std::string &) const
 {
 	stream << this->name << "(" << this->arguments << ")";
 }
@@ -472,7 +472,7 @@ ValuePtr Assert::evaluate(const Context *context) const
 	return result;
 }
 
-void Assert::print(std::ostream &stream, const std::string &indent) const
+void Assert::print(std::ostream &stream, const std::string &) const
 {
 	stream << "assert(" << this->arguments << ")";
 	if (this->expr) stream << " " << *this->expr;
@@ -495,7 +495,7 @@ ValuePtr Echo::evaluate(const Context *context) const
 	return result;
 }
 
-void Echo::print(std::ostream &stream, const std::string &indent) const
+void Echo::print(std::ostream &stream, const std::string &) const
 {
 	stream << "echo(" << this->arguments << ")";
 	if (this->expr) stream << " " << *this->expr;
@@ -514,7 +514,7 @@ ValuePtr Let::evaluate(const Context *context) const
 	return this->expr->evaluate(&c);
 }
 
-void Let::print(std::ostream &stream, const std::string &indent) const
+void Let::print(std::ostream &stream, const std::string &) const
 {
 	stream << "let(" << this->arguments << ") " << *expr;
 }
@@ -548,7 +548,7 @@ ValuePtr LcIf::evaluate(const Context *context) const
     return ValuePtr(vec);
 }
 
-void LcIf::print(std::ostream &stream, const std::string &indent) const
+void LcIf::print(std::ostream &stream, const std::string &) const
 {
     stream << "if(" << *this->cond << ") (" << *this->ifexpr << ")";
     if (this->elseexpr) {
@@ -583,6 +583,10 @@ ValuePtr LcEach::evaluate(const Context *context) const
         for (size_t i = 0; i < v->toVector().size(); i++) {
             vec.push_back(vector[i]);
         }
+    } else if (v->type() == Value::ValueType::STRING) {
+        utf8_split(v->toString(), [&](ValuePtr v) {
+            vec.push_back(v);
+        });
     } else if (v->type() != Value::ValueType::UNDEFINED) {
         vec.push_back(v);
     }
@@ -594,7 +598,7 @@ ValuePtr LcEach::evaluate(const Context *context) const
     }
 }
 
-void LcEach::print(std::ostream &stream, const std::string &indent) const
+void LcEach::print(std::ostream &stream, const std::string &) const
 {
     stream << "each (" << *this->expr << ")";
 }
@@ -634,6 +638,11 @@ ValuePtr LcFor::evaluate(const Context *context) const
             c.set_variable(it_name, it_values->toVector()[i]);
             vec.push_back(this->expr->evaluate(&c));
         }
+    } else if (it_values->type() == Value::ValueType::STRING) {
+        utf8_split(it_values->toString(), [&](ValuePtr v) {
+            c.set_variable(it_name, v);
+            vec.push_back(this->expr->evaluate(&c));
+        });
     } else if (it_values->type() != Value::ValueType::UNDEFINED) {
         c.set_variable(it_name, it_values);
         vec.push_back(this->expr->evaluate(&c));
@@ -646,7 +655,7 @@ ValuePtr LcFor::evaluate(const Context *context) const
     }
 }
 
-void LcFor::print(std::ostream &stream, const std::string &indent) const
+void LcFor::print(std::ostream &stream, const std::string &) const
 {
     stream << "for(" << this->arguments << ") (" << *this->expr << ")";
 }
@@ -683,7 +692,7 @@ ValuePtr LcForC::evaluate(const Context *context) const
     }
 }
 
-void LcForC::print(std::ostream &stream, const std::string &indent) const
+void LcForC::print(std::ostream &stream, const std::string &) const
 {
     stream
         << "for(" << this->arguments
@@ -704,7 +713,7 @@ ValuePtr LcLet::evaluate(const Context *context) const
     return this->expr->evaluate(&c);
 }
 
-void LcLet::print(std::ostream &stream, const std::string &indent) const
+void LcLet::print(std::ostream &stream, const std::string &) const
 {
     stream << "let(" << this->arguments << ") (" << *this->expr << ")";
 }

@@ -285,7 +285,7 @@ void ParameterWidget::onSetNameChanged(){
 		msgBox.setDefaultButton(QMessageBox::Cancel);
 
 		if (msgBox.exec() == QMessageBox::Cancel) {
-			comboBoxPreset->setCurrentText(oldName);
+			comboBoxPreset->lineEdit()->setText(oldName);
 		}else{
 			onSetDelete();
 		}
