@@ -32,9 +32,8 @@ public:
 	virtual std::string dump(const class AbstractModule *mod, const ModuleInstantiation *inst);
 #endif
 
-//private:
-	const AssignmentList &eval_arguments;
 private:
+	const AssignmentList &eval_arguments;
 	const LocalScope *const scope;
 };
 
