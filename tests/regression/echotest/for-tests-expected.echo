@@ -1,5 +1,9 @@
 DEPRECATED: Using ranges of the form [begin:end] with begin value greater than the end value is deprecated.
 WARNING: Bad range parameter in for statement: too many elements (4294967295).
+ECHO: "a"
+ECHO: "↑"
+ECHO: "b"
+ECHO: "😀"
 ECHO: nan
 ECHO: inf
 ECHO: -inf

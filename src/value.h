@@ -231,3 +231,4 @@ private:
   Variant value;
 };
 
+void utf8_split(const std::string& str, std::function<void(ValuePtr)> f);
