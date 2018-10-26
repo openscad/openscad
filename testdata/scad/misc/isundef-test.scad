@@ -1,28 +1,28 @@
-echo(isundef(a)); //no warning
+echo(is_undef(a)); //no warning
 b="hallo";
-echo(isundef(b));
+echo(is_undef(b));
 c=undef;
-echo(isundef(c));
+echo(is_undef(c));
 
 echo(a); //warns
 echo(b);
 echo(c);
 
 if(true){
-    echo(isundef(b));
+    echo(is_undef(b));
     
     d=true;
-    echo(isundef(c));
+    echo(is_undef(c));
     echo(d);
 }
-echo(isundef(d));
+echo(is_undef(d));
 echo(d);
 
-echo(isundef($a)); //no warning
+echo(is_undef($a)); //no warning
 $b=132465;
-echo(isundef($b));
+echo(is_undef($b));
 $c=undef;
-echo(isundef($c));
+echo(is_undef($c));
 
 echo($a);
 echo($b);
