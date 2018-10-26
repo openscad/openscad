@@ -927,7 +927,7 @@ ValuePtr builtin_cross(const Context *, const EvalContext *evalctx)
 ValuePtr builtin_is_undef(const Context *, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
-		const auto &arg =evalctx->eval_arguments[0];
+		const auto &arg =evalctx->getArgs()[0];
 		ValuePtr v;
 		if(const Lookup* lookup = dynamic_cast<const Lookup*> (arg.expr.get())){
 			v = lookup->evaluateSilently(evalctx);
