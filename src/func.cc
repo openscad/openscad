@@ -954,7 +954,7 @@ ValuePtr builtin_cross(const Context *, const EvalContext *evalctx)
 	return ValuePtr(result);
 }
 
-ValuePtr builtin_isundef(const Context *, const EvalContext *evalctx)
+ValuePtr builtin_is_undef(const Context *, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		const auto &arg =evalctx->eval_arguments[0];
@@ -1004,5 +1004,5 @@ void register_builtin_functions()
 	Builtins::init("norm", new BuiltinFunction(&builtin_norm));
 	Builtins::init("cross", new BuiltinFunction(&builtin_cross));
 	Builtins::init("parent_module", new BuiltinFunction(&builtin_parent_module));
-	Builtins::init("isundef", new BuiltinFunction(&builtin_isundef));
+	Builtins::init("is_undef", new BuiltinFunction(&builtin_is_undef));
 }
