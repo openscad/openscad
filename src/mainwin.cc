@@ -1781,11 +1781,11 @@ void MainWindow::updateCamera(const FileContext &ctx)
 {
 	double x, y, z;
 	const auto vpr = ctx.lookup_variable("$vpr");
-	if (vpr->getVec3(x, y, z))
+	if (vpr->getVec3(x, y, z, 0.0))
 		qglview->cam.setVpr(x, y, z);
 
 	const auto vpt = ctx.lookup_variable("$vpt");
-	if (vpt->getVec3(x, y, z))
+	if (vpt->getVec3(x, y, z, 0.0))
 		qglview->cam.setVpt(x, y, z);
 
 	const auto vpd = ctx.lookup_variable("$vpd");
