@@ -1052,7 +1052,6 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 	}
 
 	if (shouldcompiletoplevel) {
-		console->clear();
 		if (editor->isContentModified()) saveBackup();
 		compileTopLevelDocument(rebuildParameterWidget);
 		didcompile = true;
@@ -1340,7 +1339,7 @@ void MainWindow::compileCSG(bool procevents)
 																														this->background_products);
 	PRINT("Compile and preview finished.");
 	int s = this->renderingTime.elapsed() / 1000;
-	PRINTB("Total rendering time: %d hours, %d minutes, %d seconds", (s / (60*60)) % ((s / 60) % 60) % (s % 60));
+	PRINTB("Total rendering time: %d hours, %d minutes, %d seconds\n", (s / (60*60)) % ((s / 60) % 60) % (s % 60));
 	this->processEvents();
 }
 
@@ -2084,7 +2083,7 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 				assert(false && "Unknown geometry type");
 			}
 		}
-		PRINT("Rendering finished.");
+		PRINT("Rendering finished.\n");
 
 		this->root_geom = root_geom;
 		this->cgalRenderer = new CGALRenderer(root_geom);
@@ -2093,7 +2092,7 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 		else viewModeSurface();
 	}
 	else {
-		PRINT("WARNING: No top level geometry to render");
+		PRINT("WARNING: No top level geometry to render\n");
 	}
 
 	updateStatusBar(nullptr);
