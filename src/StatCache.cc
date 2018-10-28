@@ -37,7 +37,7 @@ const float stale = 0.190;  // Maximum lifetime of a cache entry chosen to be sh
 
 double millis_clock(void)
 {
-	return std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::system_clock::now().time_since_epoch()).count();
+	return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
 struct CacheEntry
