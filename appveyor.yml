@@ -4,17 +4,18 @@ image:
   - Visual Studio 2017
 
 cache:
-  - C:\msys64 -> appveyor.yml, openscad.pro
+  - C:\msys64 -> scripts/msys2-install-dependencies.sh
 
 install:
-  - C:\msys64\usr\bin\bash -lc "pacman -Sy"
-  - C:\msys64\usr\bin\bash -lc "pacman --force --noconfirm -S mingw-w64-x86_64-qt-creator mingw-w64-x86_64-gdb mingw-w64-x86_64-boost mingw-w64-x86_64-cgal mingw-w64-x86_64-eigen3 mingw-w64-x86_64-glew mingw-w64-x86_64-qscintilla mingw-w64-x86_64-opencsg mingw-w64-x86_64-libzip mingw-w64-x86_64-pkg-config mingw-w64-x86_64-cmake bison git"
+  - C:\msys64\usr\bin\bash -lc /c/projects/scripts/msys2-install-dependencies.sh
   - C:\msys64\usr\bin\bash -lc "echo 'export PATH=/mingw64/bin:$PATH' > ~/.bashrc"
   - C:\msys64\usr\bin\bash -lc "find /mingw64"
 
 build_script:
   - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad && qmake.exe openscad.pro CONFIG-=debug CONFIG+=experimental CONFIG+=snapshot CONFIG+=info"
   - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad && mingw32-make.exe -j2"
+  - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad && git submodule update --init"
+  - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad/tests && cmake.exe --system-information"
   - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad/tests && cmake.exe ."
   - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad/tests && mingw32-make.exe -j2"
 
