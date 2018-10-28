@@ -21,7 +21,7 @@ HIDAPI_DIR = $$(HIDAPIDIR)
 
 win*: {
   # Use included HIDAPI on MXE/Windows build.
-  HIDAPI_CFLAGS = -I$$PWD/src/hidapi
+  HIDAPI_CFLAGS = -I$$_PRO_FILE_PWD_/src/hidapi
   HIDAPI_LIBS = -lsetupapi
   HEADERS += src/hidapi/hidapi.h
   SOURCES += src/hidapi/hid.c
