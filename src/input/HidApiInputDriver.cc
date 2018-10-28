@@ -31,7 +31,6 @@
 
 #include <iomanip>
 #include <iostream>
-#include <hidapi.h>
 #include <bitset>
 
 #include "input/HidApiInputDriver.h"
