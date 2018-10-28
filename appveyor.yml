@@ -7,7 +7,7 @@ cache:
   - C:\msys64 -> scripts/msys2-install-dependencies.sh
 
 install:
-  - C:\msys64\usr\bin\bash -lc /c/projects/scripts/msys2-install-dependencies.sh
+  - C:\msys64\usr\bin\bash -lc /c/projects/openscad/scripts/msys2-install-dependencies.sh
   - C:\msys64\usr\bin\bash -lc "echo 'export PATH=/mingw64/bin:$PATH' > ~/.bashrc"
   - C:\msys64\usr\bin\bash -lc "find /mingw64"
 
