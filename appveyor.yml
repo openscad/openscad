@@ -6,6 +6,5 @@ install:
   - C:\msys64\usr\bin\bash -lc "pacman --force --noconfirm -S mingw-w64-x86_64-qt-creator mingw-w64-x86_64-gdb mingw-w64-x86_64-boost mingw-w64-x86_64-cgal mingw-w64-x86_64-eigen3 mingw-w64-x86_64-glew mingw-w64-x86_64-qscintilla mingw-w64-x86_64-opencsg bison mingw-w64-x86_64-pkg-config git"
 
 build_script:
-  - cd C:\projects\openscad
-  - C:\msys64\usr\bin\bash -lc "/mingw64/bin/qmake.exe openscad.pro CONFIG-=debug CONFIG+=experimental CONFIG+=snapshot CONFIG+=info"
-  - C:\msys64\usr\bin\bash -lc "mingw32-make.exe"
+  - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad && /mingw64/bin/qmake.exe openscad.pro CONFIG-=debug CONFIG+=experimental CONFIG+=snapshot CONFIG+=info"
+  - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad && mingw32-make.exe"
