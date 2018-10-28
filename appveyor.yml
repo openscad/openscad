@@ -15,6 +15,8 @@ install:
 build_script:
   - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad && qmake.exe openscad.pro CONFIG-=debug CONFIG+=experimental CONFIG+=snapshot CONFIG+=info"
   - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad && mingw32-make.exe -j2"
+  - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad/tests && cmake.exe ."
+  - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad/tests && mingw32-make.exe -j2"
 
 test_script:
-  - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad/tests && cmake.exe . && mingw32-make.exe -j2 && ctest.exe"
+  - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad/tests && ctest.exe"
