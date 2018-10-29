@@ -2892,7 +2892,7 @@ void MainWindow::consoleOutput(const QString &msg)
 	}
 	else {
 		qmsg = msg;
-        qmsg.replace("\n","<br>");
+		qmsg.replace("\n","<br>");
 	}
 	auto c = this->console->textCursor();
 	c.movePosition(QTextCursor::End);
