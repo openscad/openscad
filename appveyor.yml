@@ -32,7 +32,7 @@ test_script:
   - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad/tests && /mingw64/bin/ctest.exe"
 
 artifacts:
-  - path: 'tests/Testing/Temporary/*_report.html'
+  - path: 'tests\Testing\Temporary\*_report.html'
 
 on_finish:
   - echo "finished."
