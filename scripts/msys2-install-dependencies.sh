@@ -2,9 +2,6 @@
 
 pacman --query --explicit
 
-pacman --noconfirm --ask 20 --remove \
-	mingw-w64-x86_64-minizip
-
 pacman --noconfirm --ask 20 --sync \
 	mingw-w64-x86_64-gdb \
 	mingw-w64-x86_64-boost \
@@ -13,8 +10,11 @@ pacman --noconfirm --ask 20 --sync \
 	mingw-w64-x86_64-glew \
 	mingw-w64-x86_64-qscintilla \
 	mingw-w64-x86_64-opencsg \
-	mingw-w64-x86_64-libzip \
 	mingw-w64-x86_64-pkg-config \
 	mingw-w64-x86_64-cmake \
 	bison \
 	git
+
+# overwrite minizip which seems to come in via a dependency
+pacman --noconfirm --ask 20 --overwrite --sync \
+	mingw-w64-x86_64-libzip
