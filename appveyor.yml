@@ -30,6 +30,9 @@ build_script:
 test_script:
   - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad/tests && /mingw64/bin/ctest.exe"
 
+artifacts:
+  - path: 'tests/Testing/Temporary/*_report.html'
+
 on_finish:
   - echo "finished."
   - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
