@@ -1,5 +1,10 @@
 #!/bin/bash
 
+pacman --query --explicit
+
+pacman --noconfirm --ask 20 --remove \
+	mingw-w64-x86_64-minizip
+
 pacman --noconfirm --ask 20 --sync \
 	mingw-w64-x86_64-gdb \
 	mingw-w64-x86_64-boost \
