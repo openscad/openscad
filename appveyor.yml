@@ -28,6 +28,7 @@ build_script:
   - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad/tests && mingw32-make.exe -j2"
 
 test_script:
+  - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad/release && cp -v /mingw64/bin/opengl32.dll ."
   - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad/tests && /mingw64/bin/ctest.exe"
 
 artifacts:
