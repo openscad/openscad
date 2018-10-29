@@ -2,7 +2,7 @@
 
 pacman --query --explicit
 
-pacman --noconfirm --ask 20 --overwrite --sync \
+pacman --noconfirm --ask 20 --force --sync \
 	mingw-w64-x86_64-gdb \
 	mingw-w64-x86_64-boost \
 	mingw-w64-x86_64-cgal \
@@ -16,5 +16,5 @@ pacman --noconfirm --ask 20 --overwrite --sync \
 	git
 
 # overwrite minizip which seems to come in via a dependency
-pacman --noconfirm --ask 20 --overwrite --sync \
+pacman --noconfirm --ask 20 --force --sync \
 	mingw-w64-x86_64-libzip
