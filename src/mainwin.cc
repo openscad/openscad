@@ -140,12 +140,11 @@
 unsigned int GuiLocker::gui_locked = 0;
 
 static char copyrighttext[] =
-	"Copyright (C) 2009-2018 The OpenSCAD Developers\n"
-	"\n"
+	"Copyright (C) 2009-2018 The OpenSCAD Developers\n\n"
 	"This program is free software; you can redistribute it and/or modify "
 	"it under the terms of the GNU General Public License as published by "
 	"the Free Software Foundation; either version 2 of the License, or "
-	"(at your option) any later version.";
+	"(at your option) any later version.\n";
 bool MainWindow::mdiMode = false;
 bool MainWindow::undockMode = false;
 bool MainWindow::reorderMode = false;
@@ -607,6 +606,8 @@ MainWindow::MainWindow(const QString &filename)
 
 	setAcceptDrops(true);
 	clearCurrentOutput();
+
+	this->console->setMaximumBlockCount(500);
 }
 
 void MainWindow::initActionIcon(QAction *action, const char *darkResource, const char *lightResource)
@@ -1232,7 +1233,7 @@ void MainWindow::instantiateRoot()
 	Generates CSG tree for OpenCSG evaluation.
 	Assumes that the design has been parsed and evaluated (this->root_node is set)
 */
-void MainWindow::compileCSG(bool procevents)
+void MainWindow::compileCSG()
 {
 	assert(this->root_node);
 	PRINT("Compiling design (CSG Products generation)...");
@@ -1925,7 +1926,7 @@ void MainWindow::actionReloadRenderPreview()
 
 void MainWindow::csgReloadRender()
 {
-	if (this->root_node) compileCSG(true);
+	if (this->root_node) compileCSG();
 
 	// Go to non-CGAL view mode
 	if (viewActionThrownTogether->isChecked()) {
@@ -1968,7 +1969,7 @@ void MainWindow::actionRenderPreview(bool rebuildParameterWidget)
 
 void MainWindow::csgRender()
 {
-	if (this->root_node) compileCSG(!viewActionAnimate->isChecked());
+	if (this->root_node) compileCSG();
 
 	// Go to non-CGAL view mode
 	if (viewActionThrownTogether->isChecked()) {
@@ -2891,11 +2892,12 @@ void MainWindow::consoleOutput(const QString &msg)
 	}
 	else {
 		qmsg = msg;
+        qmsg.replace("\n","<br>");
 	}
 	auto c = this->console->textCursor();
 	c.movePosition(QTextCursor::End);
 	this->console->setTextCursor(c);
-	this->console->append(qmsg);
+	this->console->appendHtml(qmsg);
 	this->processEvents();
 }
 
