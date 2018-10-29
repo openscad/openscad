@@ -184,7 +184,7 @@ def parsetest(teststring):
     return test
 
 def parselog(data):
-    text = data.decode('utf-8')
+    text = data.decode('utf-8', 'replace')
     startdate = ezsearch('Start testing: (.*?)\n', text)
     enddate = ezsearch('End testing: (.*?)\n', text)
     pattern = '([0-9]*/[0-9]* Testing:.*?time elapsed.*?\n)'
