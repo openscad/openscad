@@ -2873,12 +2873,16 @@ void MainWindow::consoleOutput(const QString &msg)
 	}
 	else {
 		qmsg = msg;
-		qmsg.replace("\n","<br>");
 	}
 	auto c = this->console->textCursor();
 	c.movePosition(QTextCursor::End);
 	this->console->setTextCursor(c);
-	this->console->appendHtml(qmsg);
+	if(qmsg.contains('\t'))
+		this->console->appendPlainText(qmsg);
+	else {
+		qmsg.replace("\n","<br>");
+		this->console->appendHtml(qmsg);
+	}
 	this->processEvents();
 }
 
