@@ -2877,7 +2877,7 @@ void MainWindow::consoleOutput(const QString &msg)
 	auto c = this->console->textCursor();
 	c.movePosition(QTextCursor::End);
 	this->console->setTextCursor(c);
-	if(qmsg.contains('\t'))
+	if(qmsg.contains('\t') && !qmsg.contains("<pre>", Qt::CaseInsensitive))
 		this->console->appendPlainText(qmsg);
 	else {
 		qmsg.replace("\n","<br>");
