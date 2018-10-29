@@ -585,7 +585,7 @@
       <number>0</number>
      </property>
      <item>
-      <widget class="QTextEdit" name="console">
+      <widget class="QPlainTextEdit" name="console">
        <property name="minimumSize">
         <size>
          <width>10</width>
