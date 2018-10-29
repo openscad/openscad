@@ -9,12 +9,15 @@ image:
 on_finish:
   - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
+environment:
+  PATH: /msys64/usr/bin
+
 install:
   - C:\msys64\usr\bin\pacman --query --explicit
   - C:\msys64\usr\bin\pacman --noconfirm --ask 20 -Sy
   - C:\msys64\usr\bin\pacman --noconfirm --ask 20 -Su
-  - C:\msys64\usr\bin\pacman --noconfirm --ask 20 --force -S mingw-w64-x86_64-gdb mingw-w64-x86_64-boost mingw-w64-x86_64-cgal mingw-w64-x86_64-eigen3 mingw-w64-x86_64-glew mingw-w64-x86_64-qscintilla mingw-w64-x86_64-opencsg mingw-w64-x86_64-pkg-config mingw-w64-x86_64-cmake mingw-w64-x86_64-libzip bison git
-  - C:\msys64\usr\bin\bash -lc "echo 'export PATH=/mingw64/bin:$PATH' > ~/.bashrc"
+  - C:\msys64\usr\bin\bash -lc /c/projects/openscad/scripts/msys2-install-dependencies.sh
+  - C:\msys64\usr\bin\bash -lc "echo 'export PATH=/mingw64/bin:/usr/bin' > ~/.bashrc"
   - C:\msys64\usr\bin\bash -lc "find /mingw64"
 
 build_script:

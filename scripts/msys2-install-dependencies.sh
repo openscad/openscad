@@ -1,5 +1,8 @@
 #!/bin/bash
 
+pacman --noconfirm --ask 20 -Sy
+pacman --noconfirm --ask 20 -Su
+
 pacman --query --explicit
 
 pacman --noconfirm --ask 20 --force --sync \
