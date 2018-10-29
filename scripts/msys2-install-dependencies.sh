@@ -2,7 +2,7 @@
 
 pacman --query --explicit
 
-pacman --noconfirm --ask 20 --sync \
+pacman --noconfirm --ask 20 --overwrite --sync \
 	mingw-w64-x86_64-gdb \
 	mingw-w64-x86_64-boost \
 	mingw-w64-x86_64-cgal \
