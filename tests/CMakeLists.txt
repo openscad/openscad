@@ -624,7 +624,7 @@ if ( ${DIFFPNG} )
 endif()
 
 # Internal includes
-include_directories(../src ../src/ext/libtess2/Include)
+include_directories(../src ../src/ext/libtess2/Include ../src/ext/lodepng)
 
 # Handle OpenSCAD version based on VERSION env. variable.
 # Use current timestamp if not specified (development builds)
