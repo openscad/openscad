@@ -619,7 +619,7 @@ endif()
 if ( ${DIFFPNG} )
   set(IMAGE_COMPARE_EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/diffpng)
   set(COMPARATOR "diffpng")
-  add_executable(diffpng diffpng.cpp ../src/lodepng.cpp)
+  add_executable(diffpng diffpng.cpp ../src/ext/lodepng/lodepng.cpp)
   message(STATUS "using diffpng for image comparison")
 endif()
 
