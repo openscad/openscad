@@ -1,6 +1,6 @@
 #!/bin/bash
 
-pacman --noconfirm --ask 20 --sync --refresh --sysupgrade \
+pacman --noconfirm --ask 20 --sync \
 	mingw-w64-x86_64-gdb \
 	mingw-w64-x86_64-boost \
 	mingw-w64-x86_64-cgal \
