@@ -7,17 +7,20 @@ image:
 #  - C:\msys64 -> scripts/msys2-install-dependencies.sh
 
 init:
-#on_finish:
-  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+  - echo "init"
+  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 install:
-  - C:\msys64\usr\bin\pacman --query --explicit
+  - echo "install"
+  - set PATH=c:\msys64\usr\bin
+#  - C:\msys64\usr\bin\pacman --query --explicit
 #  - C:\msys64\usr\bin\pacman --noconfirm --ask 20 -Sy
 #  - C:\msys64\usr\bin\pacman --noconfirm --ask 20 -Su
-#  - C:\msys64\usr\bin\bash -lc /c/projects/openscad/scripts/msys2-install-dependencies.sh
-#  - C:\msys64\usr\bin\bash -lc "echo 'export PATH=/mingw64/bin:/usr/bin' > ~/.bashrc"
+  - C:\msys64\usr\bin\bash -lc /c/projects/openscad/scripts/msys2-install-dependencies.sh
+  - C:\msys64\usr\bin\bash -lc "echo 'export PATH=/mingw64/bin:/usr/bin' > ~/.bashrc"
 
 build_script:
+  - echo "build"
   - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad && qmake.exe openscad.pro CONFIG-=debug CONFIG+=experimental CONFIG+=snapshot CONFIG+=info"
 #  - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad && mingw32-make.exe -j2"
 #  - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad && git submodule update --init"
@@ -26,3 +29,8 @@ build_script:
 
 #test_script:
 #  - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad/tests && /mingw64/bin/ctest.exe"
+
+on_finish:
+  - echo "finished."
+# - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+  - pause
