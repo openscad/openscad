@@ -2885,10 +2885,10 @@ void MainWindow::consoleOutput(const QString &msg)
 	QString qmsg;
 	if (msg.startsWith("WARNING:") || msg.startsWith("DEPRECATED:")) {
 		this->compileWarnings++;
-		qmsg = "<html><span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span></html>\n";
+		qmsg = "<html><span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span></html>";
 	} else if (msg.startsWith("ERROR:")) {
 		this->compileErrors++;
-		qmsg = "<html><span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span></html>\n";
+		qmsg = "<html><span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span></html>";
 	}
 	else {
 		qmsg = msg;
