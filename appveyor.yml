@@ -3,8 +3,8 @@ skip_branch_with_pr: true
 image:
   - Visual Studio 2017
 
-#cache:
-#  - C:\msys64 -> scripts/msys2-install-dependencies.sh
+cache:
+  - C:\msys64 -> scripts/msys2-install-dependencies.sh
 
 init:
   - echo "init"
@@ -13,9 +13,6 @@ init:
 install:
   - echo "install"
   - set PATH=c:\msys64\usr\bin
-#  - C:\msys64\usr\bin\pacman --query --explicit
-#  - C:\msys64\usr\bin\pacman --noconfirm --ask 20 -Sy
-#  - C:\msys64\usr\bin\pacman --noconfirm --ask 20 -Su
   - C:\msys64\usr\bin\bash -lc "echo 'export PATH=/mingw64/bin:/usr/bin' > ~/.bashrc"
   - C:\msys64\usr\bin\bash -lc /c/projects/openscad/scripts/msys2-install-dependencies.sh
 
@@ -32,9 +29,9 @@ test_script:
   - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad/tests && /mingw64/bin/ctest.exe -j2 -E opencsgtest_issue1165|opencsgtest_issue1215|throwntogethertest_issue1089|throwntogethertest_issue1215|openscad-nonascii_sfære"
 
 artifacts:
-  - path: 'tests\Testing\Temporary\*_report.html'
+  - path: 'c:\projects\openscad\tests\Testing\Temporary\*_report.html'
 
 on_finish:
   - echo "finished."
-  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+#  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 #  - pause
