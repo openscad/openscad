@@ -29,7 +29,7 @@ test_script:
   - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad/tests && /mingw64/bin/ctest.exe -j2 -E 'opencsgtest_issue1165|opencsgtest_issue1215|throwntogethertest_issue1089|throwntogethertest_issue1215|openscad-nonascii'"
 
 artifacts:
-  - path: 'c:\projects\openscad\tests\Testing\Temporary\*_report.html'
+  - path: 'tests\Testing\Temporary\*_report.html'
 
 on_failure:
   - ps: Get-ChildItem c:\projects\openscad\tests\Testing\Temporary\*_report.html | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }
