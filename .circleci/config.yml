@@ -7,8 +7,10 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Build OpenSCAD (32bit)
           no_output_timeout: 18000
           command: |
+              export NUMCPU=2
               export MXEDIR=/mxe
               export SUFFIX=${CIRCLE_BRANCH}
               export OPENSCAD_VERSION="$(date +%Y.%m.%d).ci${CIRCLE_BUILD_NUM}"
@@ -25,8 +27,10 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Build OpenSCAD (64bit)
           no_output_timeout: 18000
           command: |
+              export NUMCPU=2
               export MXEDIR=/mxe
               export SUFFIX=${CIRCLE_BRANCH}
               export OPENSCAD_VERSION="$(date +%Y.%m.%d).ci${CIRCLE_BUILD_NUM}"
