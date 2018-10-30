@@ -28,9 +28,9 @@ public:
 	void set_constant(const std::string &name, const Value &value);
 
 	void apply_variables(const Context &other);
-	ValuePtr lookup_variable(const std::string &name, bool silent = false) const;
-	double lookup_variable_with_default(const std::string &variable, const double &def) const;
-  std::string lookup_variable_with_default(const std::string &variable, const std::string &def) const;
+	ValuePtr lookup_variable(const std::string &name, bool silent = false, const Location &loc=Location::NONE) const;
+	double lookup_variable_with_default(const std::string &variable, const double &def, const Location &loc=Location::NONE) const;
+	std::string lookup_variable_with_default(const std::string &variable, const std::string &def, const Location &loc=Location::NONE) const;
 
 	bool has_local_variable(const std::string &name) const;
 

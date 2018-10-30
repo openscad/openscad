@@ -122,7 +122,7 @@ void Context::apply_variables(const Context &other)
 	}
 }
 
-ValuePtr Context::lookup_variable(const std::string &name, bool silent) const
+ValuePtr Context::lookup_variable(const std::string &name, bool silent, const Location &loc) const
 {
 	if (!this->ctx_stack) {
 		PRINT("ERROR: Context had null stack in lookup_variable()!!");
@@ -144,24 +144,30 @@ ValuePtr Context::lookup_variable(const std::string &name, bool silent) const
 		return this->variables.find(name)->second;
 	}
 	if (this->parent) {
-		return this->parent->lookup_variable(name, silent);
+		return this->parent->lookup_variable(name, silent, loc);
 	}
 	if (!silent) {
-		PRINTB("WARNING: Ignoring unknown variable '%s'.", name);
+		
+		if(loc.isNone()){
+			PRINTB("WARNING: Ignoring unknown variable '%s'.", name);
+		}else{
+			PRINTB("WARNING: Ignoring unknown variable '%s'.", name);
+			//output line number
+		}
 	}
 	return ValuePtr::undefined;
 }
 
 
-double Context::lookup_variable_with_default(const std::string &variable, const double &def) const
+double Context::lookup_variable_with_default(const std::string &variable, const double &def, const Location &loc) const
 {
-	ValuePtr v = this->lookup_variable(variable, true);
+	ValuePtr v = this->lookup_variable(variable, true, loc);
 	return (v->type() == Value::ValueType::NUMBER) ? v->toDouble() : def;
 }
 
-std::string Context::lookup_variable_with_default(const std::string &variable, const std::string &def) const
+std::string Context::lookup_variable_with_default(const std::string &variable, const std::string &def, const Location &loc) const
 {
-	ValuePtr v = this->lookup_variable(variable, true);
+	ValuePtr v = this->lookup_variable(variable, true, loc);
 	return (v->type() == Value::ValueType::STRING) ? v->toString() : def;
 }
 

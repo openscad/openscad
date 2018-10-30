@@ -3,6 +3,10 @@
 
 const Location Location::NONE(0, 0, 0, 0, nullptr);
 
+bool Location::isNone() const{
+	return (firstLine()==0 && firstColumn()==0 && lastLine()==0 && lastColumn()==0 && filePath()==nullptr);
+}
+
 std::ostream &operator<<(std::ostream &stream, const ASTNode &ast)
 {
 	ast.print(stream, "");

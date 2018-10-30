@@ -22,7 +22,7 @@ public:
 	int firstColumn() const { return first_col; }
 	int lastLine() const { return last_line; }
 	int lastColumn() const { return last_col; }
-
+	bool isNone() const;
 
 	static const Location NONE;
 private:
