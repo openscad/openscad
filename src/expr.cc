@@ -384,7 +384,7 @@ Lookup::Lookup(const std::string &name, const Location &loc) : Expression(loc), 
 
 ValuePtr Lookup::evaluate(const Context *context) const
 {
-	return context->lookup_variable(this->name);
+	return context->lookup_variable(this->name,false,loc);
 }
 
 void Lookup::print(std::ostream &stream, const std::string &) const

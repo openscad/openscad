@@ -151,8 +151,7 @@ ValuePtr Context::lookup_variable(const std::string &name, bool silent, const Lo
 		if(loc.isNone()){
 			PRINTB("WARNING: Ignoring unknown variable '%s'.", name);
 		}else{
-			PRINTB("WARNING: Ignoring unknown variable '%s'.", name);
-			//output line number
+			PRINTB("WARNING: Ignoring unknown variable '%s', line %d.", name% loc.firstLine());
 		}
 	}
 	return ValuePtr::undefined;
