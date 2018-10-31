@@ -40,7 +40,10 @@ OPENSCAD_LIBRARIES_DIR = $$(OPENSCAD_LIBRARIES)
 LIB3MF_LIBS += -l3MF
 
 !isEmpty(LIB3MF_CFLAGS):!isEmpty(LIB3MF_LIBS) {
-  DEFINES += __GCC ENABLE_LIB3MF
+  DEFINES += ENABLE_LIB3MF
   QMAKE_CXXFLAGS += $$LIB3MF_CFLAGS
   LIBS += $$LIB3MF_LIBS
+  message("3MF Import/Export enabled")
+} else {
+  message("3MF Import/Export disabled")
 }
