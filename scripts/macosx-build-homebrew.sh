@@ -30,6 +30,7 @@ time brew config
 
 log "Updating homebrew"
 time brew update
+
 # Install special packages not yet in upstream homebrew repo.
 # Check if there's already an active openscad tap and skip
 # tap/untap in that case.
@@ -44,7 +45,7 @@ $TAP tap openscad/homebrew-tap
 # FIXME: We used to require unlinking boost, but doing so also causes us to lose boost.
 # Disabling until we can figure out why we unlinked in the first place
 # brew unlink boost
-for formula in eigen boost cgal glew glib opencsg freetype libzip libxml2 fontconfig harfbuzz qt5 qscintilla2 imagemagick ccache; do
+for formula in eigen boost cgal glew glib opencsg freetype libzip libxml2 fontconfig harfbuzz qt5 qscintilla2 lib3mf imagemagick ccache; do
   log "Installing formula $formula"
   brew ls --versions $formula
   time brew install $formula
@@ -54,16 +55,5 @@ for formula in gettext qt5 qscintilla2; do
   log "Linking formula $formula"
   time brew link --force $formula
 done
-
-# Install special packages not yet in upstream homebrew repo.
-# Check if there's already an active openscad tap and skip
-# tap/untap in that case.
-TAP=:
-if ! brew tap | grep ^openscad/ >/dev/null 2>/dev/null
-then
-	TAP=brew
-fi
-$TAP tap openscad/homebrew-tap
-brew install lib3mf
 
 $TAP untap openscad/homebrew-tap
