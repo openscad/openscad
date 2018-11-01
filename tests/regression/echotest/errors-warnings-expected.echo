@@ -1,2 +1,4 @@
 WARNING: Ignoring unknown variable 'a', line 1.
 ECHO: undef
+WARNING: Ignoring unknown module 'hello'.
+WARNING: Ignoring radius variable 'r' as diameter 'd' is defined too.
