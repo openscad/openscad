@@ -836,6 +836,14 @@ struct CommaSeparatedVector
 	}
 };
 
+static string join_feature_op(const string a, const Feature *f) {
+	return a.empty() ? f->get_name() : a + " | " + f->get_name();
+};
+
+static string join_view_option_op(const string a, const ViewOption &o) {
+	return a.empty() ? o.name : a + " | " + o.name;
+};
+
 int main(int argc, char **argv)
 {
 	int rc = 0;
@@ -878,15 +886,7 @@ int main(int argc, char **argv)
 		colorSchemeNames.append(name);
 	}
 
-#ifdef ENABLE_EXPERIMENTAL
-	string features;
-	for(auto it = Feature::begin(); it != Feature::end(); ++it) {
-		if(!features.empty())
-			features.append(" | ");
-		features.append((*it)->get_name());
-	}
-#endif
-        
+	ViewOptions viewOptions{};
 	po::options_description desc("Allowed options");
 	desc.add_options()
 		("o,o", po::value<string>(), "output specified file instead of running the GUI, the file extension specifies the type: stl, off, amf, csg, dxf, svg, png, echo, ast, term, nef3, nefdbg\n")
@@ -894,7 +894,7 @@ int main(int argc, char **argv)
 #ifdef ENABLE_EXPERIMENTAL
 		("p,p", po::value<string>(), "customizer parameter file")
 		("P,P", po::value<string>(), "customizer parameter set")
-		("enable", po::value<vector<string>>(), ("enable experimental features: " + features + "\n").c_str())
+		("enable", po::value<vector<string>>(), ("enable experimental features: " + accumulate(Feature::begin(), Feature::end(), string{}, join_feature_op) + "\n").c_str())
 #endif
 		("help,h", "print this help message and exit")
 		("version,v", "print the version")
@@ -906,7 +906,7 @@ int main(int argc, char **argv)
 		("imgsize", po::value<string>(), "=width,height of exported png")
 		("render", po::value<string>()->implicit_value(""), "for full geometry evaluation when exporting png")
 		("preview", po::value<string>()->implicit_value(""), "[=throwntogether] -for ThrownTogether preview png")
-		("view", po::value<CommaSeparatedVector>()->value_name("axes|scaleMarkers|showEdges"), "view options")
+		("view", po::value<CommaSeparatedVector>(), ("=view options: " + accumulate(viewOptions.optionList.begin(), viewOptions.optionList.end(), string{}, join_view_option_op)).c_str())
 		("projection", po::value<string>(), "=(o)rtho or (p)erspective when exporting png")
 		("csglimit", po::value<unsigned int>(), "=n -stop rendering at n CSG elements when exporting png")
 		("colorscheme", po::value<string>(), ("=colorscheme: " + colorSchemeNames + "\n").c_str())
@@ -953,7 +953,6 @@ int main(int argc, char **argv)
 	if (vm.count("version")) version();
 	if (vm.count("info")) arg_info = true;
 
-	ViewOptions viewOptions{};
 	if (vm.count("preview")) {
 		if (vm["preview"].as<string>() == "throwntogether")
 			viewOptions.renderer = RenderType::THROWNTOGETHER;
@@ -963,13 +962,21 @@ int main(int argc, char **argv)
 		else viewOptions.renderer = RenderType::GEOMETRY;
 	}
 
-        viewOptions.previewer = (viewOptions.renderer == RenderType::THROWNTOGETHER) ? Previewer::THROWNTOGETHER : Previewer::OPENCSG;
+	viewOptions.previewer = (viewOptions.renderer == RenderType::THROWNTOGETHER) ? Previewer::THROWNTOGETHER : Previewer::OPENCSG;
 	if (vm.count("view")) {
 		const auto &viewOptionValues = vm["view"].as<CommaSeparatedVector>();
 		for (const auto &option : viewOptionValues.values) {
-			if (option == "axes") viewOptions.showAxes = true;
-			else if (option == "scaleMarkers") viewOptions.showScaleMarkers = true;
-			else if (option == "showEdges") viewOptions.showEdges = true;
+			bool found = false;
+			for (auto &viewOption : viewOptions.optionList) {
+				if (viewOption.name == option) {
+					found = true;
+					viewOption.value = true;
+					break;
+				}
+			}
+			if (!found) {
+				PRINTB("Unknown --view option '%s' ignored. Use -h to list available options.", option);
+			}
 		}
 	}
 

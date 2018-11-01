@@ -31,13 +31,26 @@ void export_nef3(const shared_ptr<const Geometry> &geom, std::ostream &output);
 enum class Previewer { OPENCSG, THROWNTOGETHER };
 enum class RenderType { GEOMETRY, CGAL, OPENCSG, THROWNTOGETHER };
 
+struct ViewOption {
+	const std::string name;
+	bool& value;
+};
+
 struct ViewOptions {
 	bool showAxes;
 	bool showScaleMarkers;
 	bool showEdges;
 	Previewer previewer{Previewer::OPENCSG};
-        RenderType renderer{RenderType::OPENCSG};
-        Camera camera;
+	RenderType renderer{RenderType::OPENCSG};
+	Camera camera;
+
+	const std::vector<ViewOption> optionList{ViewOption{"axes", showAxes}, ViewOption{"scales", showScaleMarkers}, ViewOption{"edges", showEdges}};
+
+	const std::vector<std::string> names() {
+		std::vector<std::string> names;
+		std::transform(optionList.begin(), optionList.end(), names.end(), [](const ViewOption o){ return o.name; });
+		return names;
+	}
 };
 
 bool export_png(const shared_ptr<const class Geometry> &root_geom, ViewOptions options, std::ostream &output);
