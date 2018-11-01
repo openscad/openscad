@@ -49,6 +49,10 @@ public:
 	void setShowScaleProportional(bool enabled) { this->showscale = enabled; }
 	bool showEdges() const { return this->showedges; }
 	void setShowEdges(bool enabled) { this->showedges = enabled; }
+	bool showFaces() const { return this->showfaces; }
+	void setShowFaces(bool enabled) { this->showfaces = enabled; }
+	bool showCrosshairs() const { return this->showcrosshairs; }
+	void setShowCrosshairs(bool enabled) { this->showcrosshairs = enabled; }
 
 	virtual bool save(const char *filename) = 0;
 	virtual std::string getRendererInfo() const = 0;
@@ -78,7 +82,7 @@ public:
 	int opencsg_id;
 #endif
 private:
-	void showCrosshairs();
+	void showCrosshairs(const Color4f &col);
 	void showAxes(const Color4f &col);
 	void showSmallaxes(const Color4f &col);
 	void showScalemarkers(const Color4f &col);

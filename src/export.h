@@ -40,11 +40,19 @@ struct ViewOptions {
 	bool showAxes;
 	bool showScaleMarkers;
 	bool showEdges;
+	bool showWireFrame;
+	bool showCrosshairs;
 	Previewer previewer{Previewer::OPENCSG};
 	RenderType renderer{RenderType::OPENCSG};
 	Camera camera;
 
-	const std::vector<ViewOption> optionList{ViewOption{"axes", showAxes}, ViewOption{"scales", showScaleMarkers}, ViewOption{"edges", showEdges}};
+	const std::vector<ViewOption> optionList{
+		ViewOption{"axes", showAxes},
+		ViewOption{"scales", showScaleMarkers},
+		ViewOption{"edges", showEdges},
+		ViewOption{"wireframe", showWireFrame},
+		ViewOption{"crosshairs", showCrosshairs}
+	};
 
 	const std::vector<std::string> names() {
 		std::vector<std::string> names;

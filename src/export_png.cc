@@ -35,6 +35,8 @@ bool export_png(const shared_ptr<const Geometry> &root_geom, ViewOptions options
 	glview->setCamera(options.camera);
 	glview->setRenderer(&cgalRenderer);
 	glview->setColorScheme(RenderSettings::inst()->colorscheme);
+	glview->setShowFaces(!options.showWireFrame);
+	glview->setShowCrosshairs(options.showCrosshairs);
 	glview->setShowAxes(options.showAxes);
 	glview->setShowScaleProportional(options.showScaleMarkers);
 	glview->setShowEdges(options.showEdges);
