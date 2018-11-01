@@ -15,5 +15,7 @@ import("doesNotExist.aaa");
 import("doesNotExist.off");
 //unkown module
 hello();
+//unkown function
+b=test();
 //radius is ignored as a diameter is defined
 circle(r=1,d=4);

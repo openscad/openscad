@@ -431,7 +431,7 @@ ValuePtr FunctionCall::evaluate(const Context *context) const
 	}
     
 	EvalContext c(context, this->arguments);
-	ValuePtr result = context->evaluate_function(this->name, &c);
+	ValuePtr result = context->evaluate_function(this->name, &c,this->loc);
 
 	return result;
 }

@@ -14,7 +14,7 @@ BuiltinContext::BuiltinContext()
 	this->set_constant("PI", ValuePtr(M_PI));
 }
 
-ValuePtr BuiltinContext::evaluate_function(const std::string &name, const class EvalContext *evalctx) const
+ValuePtr BuiltinContext::evaluate_function(const std::string &name, const class EvalContext *evalctx, const Location &loc) const
 {
 	const auto &search = Builtins::instance()->getFunctions().find(name);
 	if (search != Builtins::instance()->getFunctions().end()) {
@@ -22,10 +22,10 @@ ValuePtr BuiltinContext::evaluate_function(const std::string &name, const class 
 		if (f->is_enabled()) return f->evaluate(this, evalctx);
 		else PRINTB("WARNING: Experimental builtin function '%s' is not enabled.", name);
 	}
-	return Context::evaluate_function(name, evalctx);
+	return Context::evaluate_function(name, evalctx, loc);
 }
 
-class AbstractNode *BuiltinContext::instantiate_module(const class ModuleInstantiation &inst, EvalContext *evalctx) const
+class AbstractNode *BuiltinContext::instantiate_module(const class ModuleInstantiation &inst, EvalContext *evalctx, const Location &loc) const
 {
 	const std::string &name = inst.name();
 	const auto &search = Builtins::instance()->getModules().find(name);
@@ -40,6 +40,6 @@ class AbstractNode *BuiltinContext::instantiate_module(const class ModuleInstant
 		}
 		return m->instantiate(this, &inst, evalctx);
 	}
-	return Context::instantiate_module(inst, evalctx);
+	return Context::instantiate_module(inst, evalctx, loc);
 }
 
