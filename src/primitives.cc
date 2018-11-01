@@ -37,6 +37,7 @@
 #include <assert.h>
 #include <cmath>
 #include <boost/assign/std/vector.hpp>
+#include "ModuleInstantiation.h"
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 #define F_MINIMUM 0.01
@@ -500,9 +501,14 @@ const Geometry *PrimitiveNode::createGeometry() const
 				size_t pt = vec[j]->toDouble();
 				if (pt < this->points->toVector().size()) {
 					double px, py, pz;
+
 					if (!this->points->toVector()[pt]->getVec3(px, py, pz) ||
 							std::isinf(px) || std::isinf(py) || std::isinf(pz)) {
-						PRINTB("ERROR: Unable to convert point at index %d to a vec3 of numbers", j);
+						if(this->modinst->location().isNone()){
+							PRINTB("ERROR: Unable to convert point at index %d to a vec3 of numbers", j);
+						}else{
+							PRINTB("ERROR: Unable to convert point at index %d to a vec3 of numbers, line %d", j % this->modinst->location().firstLine());
+						}
 						return p;
 					}
 					p->insert_vertex(px, py, pz);
@@ -557,8 +563,13 @@ const Geometry *PrimitiveNode::createGeometry() const
 			for (unsigned int i=0;i<vec.size();i++) {
 				const auto &val = *vec[i];
 				if (!val.getVec2(x, y) || std::isinf(x) || std::isinf(y)) {
-					PRINTB("ERROR: Unable to convert point %s at index %d to a vec2 of numbers", 
-								 val.toString() % i);
+					if(this->modinst->location().isNone()){
+						PRINTB("ERROR: Unable to convert point %s at index %d to a vec2 of numbers", 
+									 val.toString() % i);
+					}else{
+						PRINTB("ERROR: Unable to convert point %s at index %d to a vec2 of numbers, line %d", 
+									 val.toString() % i % this->modinst->location().firstLine());
+					}
 					return p;
 				}
 				outline.vertices.emplace_back(x, y);
