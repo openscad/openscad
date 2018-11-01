@@ -37,12 +37,6 @@ public:
 	bool hasOpenCSGSupport() { return this->opencsg_support; }
 #endif
 	// Properties
-	bool showFaces() const { return this->showfaces; }
-	void setShowFaces(bool enabled) { this->showfaces = enabled; }
-	bool showEdges() const { return this->showedges; }
-	void setShowEdges(bool enabled) { this->showedges = enabled; }
-	bool showCrosshairs() const { return this->showcrosshairs; }
-	void setShowCrosshairs(bool enabled) { this->showcrosshairs = enabled; }
 	bool orthoMode() const { return (this->cam.projection == Camera::ProjectionType::ORTHOGONAL); }
 	void setOrthoMode(bool enabled);
 	bool showScaleProportional() const { return this->showscale; }
