@@ -441,7 +441,7 @@ MainWindow::MainWindow(const QString &filename)
 
 	setCurrentOutput();
 
-	std::string helptitle = "OpenSCAD " + openscad_versionnumber +  "\nhttp://www.openscad.org\n\n";
+	std::string helptitle = "OpenSCAD " + openscad_versionnumber +  "\nhttp://www.openscad.org\n";
 	PRINT(helptitle);
 	PRINT(copyrighttext);
 	PRINT("");
@@ -1062,7 +1062,7 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 		auto mtime = this->root_module->handleDependencies();
 		if (mtime > this->deps_mtime) {
 			this->deps_mtime = mtime;
-			PRINTB("Module cache size: %d modules", ModuleCache::instance()->size());
+			PRINTB("Used file cache size: %d modules", ModuleCache::instance()->size());
 			didcompile = true;
 		}
 	}
