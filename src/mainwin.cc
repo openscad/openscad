@@ -2863,25 +2863,25 @@ void MainWindow::consoleOutput(const std::string &msg, void *userdata)
 
 void MainWindow::consoleOutput(const QString &msg)
 {
-	QString qmsg;
-	if (msg.startsWith("WARNING:") || msg.startsWith("DEPRECATED:")) {
-		this->compileWarnings++;
-		qmsg = "<html><span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span></html>";
-	} else if (msg.startsWith("ERROR:")) {
-		this->compileErrors++;
-		qmsg = "<html><span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span></html>";
-	}
-	else {
-		qmsg = msg;
-	}
 	auto c = this->console->textCursor();
 	c.movePosition(QTextCursor::End);
 	this->console->setTextCursor(c);
-	if(qmsg.contains('\t') && !qmsg.contains("<pre>", Qt::CaseInsensitive))
-		this->console->appendPlainText(qmsg);
+
+	if (msg.startsWith("WARNING:") || msg.startsWith("DEPRECATED:")) {
+		this->compileWarnings++;
+		this->console->appendHtml("<span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span>");
+	} else if (msg.startsWith("ERROR:")) {
+		this->compileErrors++;
+		this->console->appendHtml("<span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span>");
+	}
 	else {
-		qmsg.replace("\n","<br>");
-		this->console->appendHtml(qmsg);
+		QString qmsg = msg;
+		if(qmsg.contains('\t') && !qmsg.contains("<pre>", Qt::CaseInsensitive))
+			this->console->appendPlainText(qmsg);
+		else {
+			qmsg.replace("\n","<br>");
+			this->console->appendHtml(qmsg);
+		}
 	}
 	this->processEvents();
 }
