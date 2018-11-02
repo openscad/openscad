@@ -31,7 +31,7 @@
 #include "printutils.h"
 
 #ifdef ENABLE_LIB3MF
-#include "NMR_DLLInterfaces.h"
+#include <Model/COM/NMR_DLLInterfaces.h>
 #undef BOOL
 using namespace NMR;
 
