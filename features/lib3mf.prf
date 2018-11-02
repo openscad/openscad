@@ -2,15 +2,22 @@
 # which library to use:
 #
 # Priority
-# 1. LIB3MF_INCLUDEPATH / LIB3MF_LIBPATH (qmake parameter, not checked if given on commandline)
+# 1. LIB3MF_INCLUDEPATH / LIB3MF_LIBPATH (env or qmake)
 # 2. OPENSCAD_LIBRARIES (environment variable)
 # 3. system's standard include paths
 
-OPENSCAD_LIBRARIES_DIR = $$(OPENSCAD_LIBRARIES)
+# read environment variables if not set as qmake parameter
+isEmpty(LIB3MF_INCLUDEPATH) {
+  LIB3MF_INCLUDEPATH = $$(LIB3MF_INCLUDEPATH)
+}
+isEmpty(LIB3MF_LIBPATH) {
+  LIB3MF_LIBPATH = $$(LIB3MF_LIBPATH)
+}
 
 !isEmpty(LIB3MF_INCLUDEPATH) {
   LIB3MF_CFLAGS = -I$$LIB3MF_INCLUDEPATH
 } else {
+  OPENSCAD_LIBRARIES_DIR = $$(OPENSCAD_LIBRARIES)
   !isEmpty(OPENSCAD_LIBRARIES_DIR) {
     exists($$OPENSCAD_LIBRARIES_DIR/include/lib3mf/Model/COM/NMR_DLLInterfaces.h) {
       LIB3MF_CFLAGS = -I$$OPENSCAD_LIBRARIES_DIR/include/lib3mf
