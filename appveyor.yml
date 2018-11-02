@@ -6,8 +6,8 @@ image:
 cache:
   - C:\msys64 -> scripts/msys2-install-dependencies.sh
 
-init:
-  - echo "init"
+# Uncomment to enable RDP login at init time, this will not block job execution.
+#init:
 #  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 install:
@@ -34,7 +34,8 @@ artifacts:
 on_failure:
   - ps: Get-ChildItem c:\projects\openscad\tests\Testing\Temporary\*_report.html | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }
 
-on_finish:
-  - echo "finished."
+# Uncomment RDP login at job end with specical blocking flag to prevent the worker from exitting. Continue by deleting lock file on desktop.
+# Alternatively if RDP is already enabled earlier, just adding "pause" will block the worker till timeout (60 minutes).
+#on_finish:
 #  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 #  - pause
