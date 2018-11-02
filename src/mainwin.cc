@@ -1048,7 +1048,7 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 		auto mtime = this->root_module->handleDependencies();
 		if (mtime > this->deps_mtime) {
 			this->deps_mtime = mtime;
-			PRINTB("Used file cache size: %d modules", ModuleCache::instance()->size());
+			PRINTB("Used file cache size: %d files", ModuleCache::instance()->size());
 			didcompile = true;
 		}
 	}
