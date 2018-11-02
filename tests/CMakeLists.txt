@@ -619,12 +619,12 @@ endif()
 if ( ${DIFFPNG} )
   set(IMAGE_COMPARE_EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/diffpng)
   set(COMPARATOR "diffpng")
-  add_executable(diffpng diffpng.cpp ../src/lodepng.cpp)
+  add_executable(diffpng diffpng.cpp ../src/ext/lodepng/lodepng.cpp)
   message(STATUS "using diffpng for image comparison")
 endif()
 
 # Internal includes
-include_directories(../src ../src/ext/libtess2/Include)
+include_directories(../src ../src/ext/libtess2/Include ../src/ext/lodepng)
 
 # Handle OpenSCAD version based on VERSION env. variable.
 # Use current timestamp if not specified (development builds)
@@ -999,7 +999,7 @@ endfunction()
 #                        [SCRIPT <script>]
 #                        [EXPECTEDDIR <shared dir>] SUFFIX <suffix> FILES <test files>)
 #
-find_package(PythonInterp)
+find_package(PythonInterp 3.4 REQUIRED)
 function(add_cmdline_test TESTCMD_BASENAME)
   cmake_parse_arguments(TESTCMD "" "EXE;SCRIPT;SUFFIX;EXPECTEDDIR" "FILES;ARGS" ${ARGN})
 

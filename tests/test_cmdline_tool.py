@@ -86,7 +86,7 @@ def execute_and_redirect(cmd, params, outfile):
     retval = -1
     try:
         proc = subprocess.Popen([cmd] + params, stdout=outfile, stderr=subprocess.STDOUT)
-        out = proc.communicate()[0]
+        out = proc.communicate()[0].decode('utf-8')
         retval = proc.wait()
     except:
         print("Error running subprocess: ", sys.exc_info()[1], file=sys.stderr)
@@ -241,7 +241,7 @@ def run_test(testname, cmd, args):
         sys.stdout.flush()
         proc = subprocess.Popen(cmdline, env = fontenv, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         comresult = proc.communicate()
-        stdouttext, errtext = comresult[0],comresult[1]
+        stdouttext, errtext = comresult[0].decode('utf-8'),comresult[1].decode('utf-8')
         if errtext != None and len(errtext) > 0:
             print("stderr output: " + errtext, file=sys.stderr)
         if stdouttext != None and len(stdouttext) > 0:
