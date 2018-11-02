@@ -35,6 +35,24 @@
 #undef BOOL
 using namespace NMR;
 
+/*
+ * Provided here for reference in LibraryInfo.cc which can't include
+ * both Qt and lib3mf headers due to some conflicting definitions of
+ * windows types when compiling with MinGW.
+ */
+const std::string get_lib3mf_version() {
+	std::ostringstream lib3mf_version_stream;
+	lib3mf_version_stream << NMR_APIVERSION_INTERFACE_MAJOR << '.' << NMR_APIVERSION_INTERFACE_MINOR << '.' << NMR_APIVERSION_INTERFACE_MICRO;
+	DWORD lib3mfMajor, lib3mfMinor, lib3mfMicro;
+	const HRESULT result = NMR::lib3mf_getinterfaceversion(&lib3mfMajor, &lib3mfMinor, &lib3mfMicro);
+	const bool lib3mfMinorMatch = (NMR_APIVERSION_INTERFACE_MAJOR == lib3mfMajor && NMR_APIVERSION_INTERFACE_MINOR == lib3mfMinor);
+	if (result == LIB3MF_OK && !lib3mfMinorMatch) {
+		lib3mf_version_stream << " (lib: " << lib3mfMajor << '.' << lib3mfMinor << '.' << lib3mfMicro << ')';
+	}
+	const std::string lib3mf_version = lib3mf_version_stream.str();
+	return lib3mf_version;
+}
+
 #ifdef ENABLE_CGAL
 #include "cgalutils.h"
 #endif
@@ -188,6 +206,11 @@ Geometry * import_3mf(const std::string &filename)
 }
 
 #else // ENABLE_LIB3MF
+
+const std::string get_lib3mf_version() {
+	const std::string lib3mf_version = "<not enabled>";
+	return lib3mf_version;
+}
 
 Geometry * import_3mf(const std::string &)
 {
