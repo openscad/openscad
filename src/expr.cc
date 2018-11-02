@@ -427,7 +427,7 @@ FunctionCall::FunctionCall(const std::string &name,
 ValuePtr FunctionCall::evaluate(const Context *context) const
 {
 	if (StackCheck::inst()->check()) {
-		throw RecursionException::create("function", this->name);
+		throw RecursionException::create("function", this->name,loc);
 	}
     
 	EvalContext c(context, this->arguments);
@@ -678,7 +678,7 @@ ValuePtr LcForC::evaluate(const Context *context) const
     while (this->cond->evaluate(&c)) {
         vec.push_back(this->expr->evaluate(&c));
 
-		if (counter++ == 1000000) throw RecursionException::create("for loop", "");
+		if (counter++ == 1000000) throw RecursionException::create("for loop", "", loc);
 
         Context tmp(&c);
         evaluate_sequential_assignment(this->incr_arguments, &tmp);
