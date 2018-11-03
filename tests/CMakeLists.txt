@@ -1204,6 +1204,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/recursion-test-function.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/recursion-test-function2.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/recursion-test-function3.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/recursion-test-function4.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/recursion-test-module.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/recursion-test-vector.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/tail-recursion-tests.scad

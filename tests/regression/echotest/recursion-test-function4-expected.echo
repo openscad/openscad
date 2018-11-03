@@ -1,0 +1,1 @@
+ERROR: Recursion detected calling function 'max' in file ../../../../../testdata/scad/misc/recursion-test-function4.scad, line 2
