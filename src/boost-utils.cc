@@ -62,7 +62,7 @@ boostfs_uncomplete(fs::path const p, fs::path const base)
 
 	// create absolute paths
 	fs::path abs_p = fs::absolute(boostfs_normalize(p));
-	fs::path abs_base = fs::absolute(base);
+	fs::path abs_base = fs::absolute(boostfs_normalize(base));
 
 	fs::path from_path, from_base, output;
 
