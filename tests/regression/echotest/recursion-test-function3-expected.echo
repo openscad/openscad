@@ -1,1 +1,2 @@
-ERROR: Recursion detected calling function 'add_up_to' in file ../../../../../testdata/scad/misc/recursion-test-function3.scad, line 5
+ECHO: sum = 5.0005e+07
+ERROR: Recursion detected calling function 'add_up_to' in file ../../../../../testdata/scad/misc/recursion-test-function3.scad, line 9
