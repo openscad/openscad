@@ -1,1 +1,1 @@
-ERROR: Recursion detected calling module 'rec' in file ../../../../../testdata/scad/misc/recursion-test-vector.scad, line 6
+ERROR: Recursion detected calling module 'rec' in file recursion-test-vector.scad, line 6
