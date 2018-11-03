@@ -38,7 +38,7 @@ PACKAGES=(
     "gmp 6.1.2"
     "mpfr 3.1.6"
     "boost 1.65.1"
-    "qt5 5.11.1"
+    "qt5 5.11.2"
     "qscintilla 2.9.3"
     "cgal 4.11"
     "glew 1.13.0"
@@ -222,16 +222,13 @@ build_qt5()
   if ! $USING_CXX11; then
     QT_EXTRA_FLAGS="-no-c++11"
   fi
-  if (( $version < 5.11 )) ; then
-    QT_EXTRA_FLAGS=$QT_EXTRA_FLAGS" -no-qml-debug"
-  fi
   CXXFLAGS="$CXXSTDFLAGS" ./configure -prefix $DEPLOYDIR $QT_EXTRA_FLAGS -release -opensource -confirm-license \
 		-nomake examples -nomake tests \
 		-no-xcb -no-glib -no-harfbuzz -no-sql-db2 -no-sql-ibase -no-sql-mysql -no-sql-oci -no-sql-odbc \
 		-no-sql-psql -no-sql-sqlite2 -no-sql-tds -no-cups \
                 -skip qtx11extras -skip qtandroidextras -skip qtserialport -skip qtserialbus \
                 -skip qtactiveqt -skip qtxmlpatterns -skip qtdeclarative -skip qtscxml \
-                -skip qtpurchasing -skip qtcanvas3d -skip qtgamepad -skip qtwayland \
+                -skip qtpurchasing -skip qtcanvas3d -skip qtwayland \
                 -skip qtconnectivity -skip qtwebsockets -skip qtwebchannel -skip qtsensors \
                 -skip qtdatavis3d -skip qtcharts -skip qtwinextras \
                 -skip qtgraphicaleffects -skip qtquickcontrols2 -skip qtquickcontrols \
