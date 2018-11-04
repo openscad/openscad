@@ -65,6 +65,8 @@
 #include "Camera.h"
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/join.hpp>
+#include <boost/range/adaptor/transformed.hpp>
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 
@@ -186,7 +188,7 @@ Camera get_camera(po::variables_map vm)
 	if (vm.count("camera")) {
 		vector<string> strs;
 		vector<double> cam_parameters;
-		split(strs, vm["camera"].as<string>(), is_any_of(","));
+		boost::split(strs, vm["camera"].as<string>(), is_any_of(","));
 		if (strs.size() == 6 || strs.size() == 7) {
 			try {
 				for (const auto &s : strs) cam_parameters.push_back(lexical_cast<double>(s));
@@ -232,7 +234,7 @@ Camera get_camera(po::variables_map vm)
 	auto h = RenderSettings::inst()->img_height;
 	if (vm.count("imgsize")) {
 		vector<string> strs;
-		split(strs, vm["imgsize"].as<string>(), is_any_of(","));
+		boost::split(strs, vm["imgsize"].as<string>(), is_any_of(","));
 		if ( strs.size() != 2 ) {
 			PRINT("Need 2 numbers for imgsize");
 			exit(1);
@@ -284,9 +286,7 @@ void set_render_color_scheme(const std::string color_scheme, const bool exit_if_
 
 	if (exit_if_not_found) {
 		PRINTB("Unknown color scheme '%s'. Valid schemes:", color_scheme);
-		for(const auto &name : ColorMap::inst()->colorSchemeNames()) {
-			PRINT(name);
-		}
+		PRINT(boost::join(ColorMap::inst()->colorSchemeNames(), "\n"));
 		exit(1);
 	} else {
 		PRINTB("Unknown color scheme '%s', using default '%s'.", arg_colorscheme % ColorMap::inst()->defaultColorSchemeName());
@@ -836,13 +836,11 @@ struct CommaSeparatedVector
 	}
 };
 
-static string join_feature_op(const string a, const Feature *f) {
-	return a.empty() ? f->get_name() : a + " | " + f->get_name();
-};
-
-static string join_view_option_op(const string a, const ViewOption &o) {
-	return a.empty() ? o.name : a + " | " + o.name;
-};
+template <class Seq, typename ToString>
+std::string join(const Seq &seq, const std::string &sep, const ToString &toString)
+{
+    return boost::algorithm::join(boost::adaptors::transform(seq, toString), sep);
+}
 
 int main(int argc, char **argv)
 {
@@ -877,15 +875,6 @@ int main(int argc, char **argv)
 	const char *output_file = nullptr;
 	const char *deps_output_file = nullptr;
 	
-	string colorSchemeNames;
-	for(const auto &name : ColorMap::inst()->colorSchemeNames()) {
-		if(!colorSchemeNames.empty())
-			colorSchemeNames.append(" | ");
-		if(name == ColorMap::inst()->defaultColorSchemeName())
-			colorSchemeNames.append("*");
-		colorSchemeNames.append(name);
-	}
-
 	ViewOptions viewOptions{};
 	po::options_description desc("Allowed options");
 	desc.add_options()
@@ -894,7 +883,11 @@ int main(int argc, char **argv)
 #ifdef ENABLE_EXPERIMENTAL
 		("p,p", po::value<string>(), "customizer parameter file")
 		("P,P", po::value<string>(), "customizer parameter set")
-		("enable", po::value<vector<string>>(), ("enable experimental features: " + accumulate(Feature::begin(), Feature::end(), string{}, join_feature_op) + "\n").c_str())
+		("enable", po::value<vector<string>>(), ("enable experimental features: " +
+																						 join(boost::make_iterator_range(Feature::begin(), Feature::end()), " | ", [](const Feature *feature) {
+																								 return feature->get_name();
+																							 }) +
+																						 "\n").c_str())
 #endif
 		("help,h", "print this help message and exit")
 		("version,v", "print the version")
@@ -906,10 +899,14 @@ int main(int argc, char **argv)
 		("imgsize", po::value<string>(), "=width,height of exported png")
 		("render", po::value<string>()->implicit_value(""), "for full geometry evaluation when exporting png")
 		("preview", po::value<string>()->implicit_value(""), "[=throwntogether] -for ThrownTogether preview png")
-		("view", po::value<CommaSeparatedVector>(), ("=view options: " + accumulate(viewOptions.optionList.begin(), viewOptions.optionList.end(), string{}, join_view_option_op)).c_str())
+		("view", po::value<CommaSeparatedVector>(), ("=view options: " + boost::join(viewOptions.names(), " | ")).c_str())
 		("projection", po::value<string>(), "=(o)rtho or (p)erspective when exporting png")
 		("csglimit", po::value<unsigned int>(), "=n -stop rendering at n CSG elements when exporting png")
-		("colorscheme", po::value<string>(), ("=colorscheme: " + colorSchemeNames + "\n").c_str())
+		("colorscheme", po::value<string>(), ("=colorscheme: " +
+																					join(ColorMap::inst()->colorSchemeNames(), " | ", [](const std::string& colorScheme) {
+																							return (ColorMap::inst()->defaultColorSchemeName() ? "*" : "") + colorScheme;
+																						}) +
+																					"\n").c_str())
 
 		("d,d", po::value<string>(), "deps_file -generate a dependency file for make")
 		("m,m", po::value<string>(), "make_cmd -runs make_cmd file if file is missing")
@@ -965,16 +962,11 @@ int main(int argc, char **argv)
 	viewOptions.previewer = (viewOptions.renderer == RenderType::THROWNTOGETHER) ? Previewer::THROWNTOGETHER : Previewer::OPENCSG;
 	if (vm.count("view")) {
 		const auto &viewOptionValues = vm["view"].as<CommaSeparatedVector>();
+
 		for (const auto &option : viewOptionValues.values) {
-			bool found = false;
-			for (auto &viewOption : viewOptions.optionList) {
-				if (viewOption.name == option) {
-					found = true;
-					viewOption.value = true;
-					break;
-				}
-			}
-			if (!found) {
+			try {
+				viewOptions[option] = true;
+			} catch (const std::out_of_range &e) {
 				PRINTB("Unknown --view option '%s' ignored. Use -h to list available options.", option);
 			}
 		}
