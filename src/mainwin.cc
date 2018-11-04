@@ -444,7 +444,6 @@ MainWindow::MainWindow(const QString &filename)
 	std::string helptitle = "OpenSCAD " + openscad_versionnumber +  "\nhttp://www.openscad.org\n";
 	PRINT(helptitle);
 	PRINT(copyrighttext);
-	PRINT("");
 
 	if (!filename.isEmpty()) {
 		openFile(filename);
@@ -1225,6 +1224,7 @@ void MainWindow::instantiateRoot()
 		} else {
 			PRINT("ERROR: Compilation failed!");
 		}
+		PRINT(" ");
 		this->processEvents();
 	}
 }
@@ -2093,7 +2093,8 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 		else viewModeSurface();
 	}
 	else {
-		PRINT("WARNING: No top level geometry to render\n");
+		PRINT("WARNING: No top level geometry to render");
+		PRINT(" ");
 	}
 
 	updateStatusBar(nullptr);
