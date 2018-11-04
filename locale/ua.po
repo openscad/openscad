@@ -18,7 +18,8 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"Plural-Forms: nplurals=2; plural=(n%10>=1 && n%10<=4 && (n%100<11 || n%100>14) ? 0"
+" : n%10==0 && n%10>=5 && n%10<=9 ? 1);\n"
 "#-#-#-#-#  appdata-strings.pot (PACKAGE VERSION)  #-#-#-#-#\n"
 "Project-Id-Version: PACKAGE VERSION\n"
 "POT-Creation-Date: 2018-08-15 15:07+0200\n"
@@ -285,7 +286,7 @@ msgstr "Ctrl++"
 
 #: objects/ui_MainWindow.h:944
 msgid "Decrease Font Si&ze"
-msgstr "З&меншити розмір шрифту
+msgstr "З&меншити розмір шрифту"
 
 #: objects/ui_MainWindow.h:946
 msgid "Ctrl+-"
@@ -325,11 +326,11 @@ msgstr "Перевірити &валідніть"
 
 #: objects/ui_MainWindow.h:962
 msgid "Display A&ST..."
-msgstr "Показати Абстранкте &Дерево Синтаксису..."
+msgstr "Показати Абстрактне &Дерево Синтаксису..."
 
 #: objects/ui_MainWindow.h:963
 msgid "Display CSG &Tree..."
-msgstr "&Показати дерево CSG"...
+msgstr "&Показати дерево CSG..."
 
 #: objects/ui_MainWindow.h:964
 msgid "Display CSG Pr&oducts..."
