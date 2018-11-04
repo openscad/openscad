@@ -22,3 +22,6 @@ echo(chr([65, 66, 67, 97, 98, 99]), chr([49, "test", true, -1, 50]));
 
 // other (not supported) types
 echo(chr(undef), chr(true), chr("test"), chr(s));
+
+// (unevenly) nested vectors and ranges
+echo(chr([65,[66,[67],[[68:70]]]]));

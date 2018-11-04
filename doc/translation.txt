@@ -47,7 +47,7 @@ _("text"). In .ui files, #include "qtgettext.h" first in the .h file
 (see MainWindow.h). Then clean and rebuild to recreate the ui_xxxx.h 
 files.
 
-   $ make clean && qmake && make
+   $ make clean && qmake CONFIG+=experimental && make
 
 Then run the script to scan the source files, and regenerate .pot & .po files.
 You'll need itstool (http://itstool.org/) installed.

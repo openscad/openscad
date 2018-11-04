@@ -104,7 +104,6 @@ std::vector<std::string> openfilenames;
 
 std::string filename;
 std::string filepath;
-
 %}
 
 %option yylineno
@@ -206,6 +205,8 @@ use[ \t\r\n]*"<"	{ BEGIN(cond_use); }
 		yyterminate();
 }
 
+"\x03"		return TOK_EOT;
+
 "module"	return TOK_MODULE;
 "function"	return TOK_FUNCTION;
 "if"		return TOK_IF;
@@ -236,7 +237,7 @@ use[ \t\r\n]*"<"	{ BEGIN(cond_use); }
                             try {
                                 parserlval.number = boost::lexical_cast<double>(yytext);
                                 return TOK_NUMBER;
-                            } catch (boost::bad_lexical_cast) {}
+                            } catch (boost::bad_lexical_cast&) {}
                         }
 "$"?[a-zA-Z0-9_]+       { parserlval.text = strdup(yytext); return TOK_ID; }
 

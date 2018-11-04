@@ -51,6 +51,7 @@ public slots:
 	void on_checkNowButton_clicked();
 	void on_launcherBox_toggled(bool);
 	void on_editorType_currentIndexChanged(int);
+	void on_enableSoundOnRenderCompleteCheckBox_toggled(bool);
 
 	void on_checkBoxShowWarningsIn3dView_toggled(bool);
   //
@@ -77,7 +78,7 @@ public slots:
 	// Display
 	void on_checkBoxHighlightCurrentLine_toggled(bool);
 	void on_checkBoxEnableBraceMatching_toggled(bool);
-    void on_checkBoxEnableLineNumbers_toggled(bool);
+	void on_checkBoxEnableLineNumbers_toggled(bool);
 
 signals:
 	void requestRedraw() const;

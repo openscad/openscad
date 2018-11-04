@@ -17,8 +17,10 @@ void ParameterExtractor::applyParameters(FileModule *fileModule, entry_map_t& en
   for (auto &assignment : fileModule->scope.assignments) {
     auto entry = entries.find(assignment.name);
     if (entry != entries.end()) {
-      entry->second->applyParameter(assignment);
-      entry->second->set = false;
+      if (entry->second->groupName != "Hidden") {
+        entry->second->applyParameter(assignment);
+        entry->second->set = false;
+      }
     }
   }
 }

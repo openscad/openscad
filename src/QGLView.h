@@ -53,7 +53,7 @@ public:
 #if QT_VERSION >= 0x050100
 	float getDPI() override { return this->devicePixelRatio(); }
 #endif
-	
+
 	const QImage & grabFrame();
 	bool save(const char *filename) override;
 	void resetView();
@@ -68,9 +68,16 @@ public slots:
 
 public:
 	QLabel *statusLabel;
+
 #ifdef USE_QOPENGLWIDGET
 	inline QImage grabFrameBuffer() { return grabFramebuffer(); }
 #endif
+
+	void zoom(double v, bool relative);
+	void rotate(double x, double y, double z, bool relative);
+	void rotate2(double x, double y, double z);
+	void translate(double x, double y, double z, bool relative, bool viewPortRelative = true);
+
 private:
 	void init();
 

@@ -1,0 +1,67 @@
+name: openscad-nightly
+version: 'git'
+summary: Script file based graphical CAD environment
+description: |
+  OpenSCAD is a software for creating solid 3D CAD objects. It focuses on CAD
+  aspects rather than artistic ones.
+  .
+  OpenSCAD is not an interactive modeller. Instead it is something like a
+  3D-compiler that reads in a script file that describes the object and renders
+  the 3D model from this script. This gives the designer full control over the
+  modelling process and enables him to easily change any step in the modelling
+  process or make designes that are defined by configurable parameters.
+  .
+  NOTE: This is the development snapshot, automatically built from the source
+  repository.
+
+grade: stable
+confinement: strict
+
+apps:
+  openscad-nightly:
+    command: desktop-launch openscad-nightly
+    plugs: [desktop, x11, wayland, opengl, home, pulseaudio, network, removable-media]
+    desktop: usr/share/applications/openscad-nightly.desktop
+
+parts:
+  openscad-nightly:
+    disable-parallel: true
+    plugin: qmake
+    qt-version: qt5
+    after: [desktop-qt5]
+    project-files: [ "openscad.pro" ]
+    options: [ "PREFIX=/usr", "CONFIG+=experimental", "CONFIG-=debug", "SUFFIX=-nightly" ]
+    build-packages:
+    - git
+    - ccache
+    - qt5-default
+    - qtbase5-dev
+    - qtmultimedia5-dev
+    - libqt5opengl5-dev
+    - qt5-qmake
+    - libcgal-dev
+    - libopencsg-dev
+    - libeigen3-dev
+    - libglib2.0-dev
+    - bison
+    - flex
+    - libglew-dev
+    - libgmp-dev
+    - libmpfr-dev
+    - python
+    - cmake
+    - libboost-dev
+    - libboost-regex-dev
+    - libboost-system-dev
+    - libboost-filesystem-dev
+    - chrpath
+    - gettext
+    - pkg-config
+    - imagemagick
+    - libzip-dev
+    - libgl-dev
+    - libxml2-dev
+    - libharfbuzz-dev
+    - libfreetype6-dev
+    - libfontconfig1-dev
+    - libqt5scintilla2-dev

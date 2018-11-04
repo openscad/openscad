@@ -14,15 +14,14 @@ public:
 	typedef std::vector<Feature *> list_t;
 	typedef list_t::iterator iterator;
 
-	static const Feature ExperimentalAssertExpression;
-	static const Feature ExperimentalEchoExpression;
         static const Feature ExperimentalEachExpression;
         static const Feature ExperimentalElseExpression;
         static const Feature ExperimentalForCExpression;
         static const Feature ExperimentalAmfImport;
         static const Feature ExperimentalSvgImport;
         static const Feature ExperimentalCustomizer;
-	static const Feature ExperimentalThreadedTraversal;
+        static const Feature ExperimentalInputDriver;
+        static const Feature ExperimentalThreadedTraversal;
 
 	const std::string& get_name() const;
 	const std::string& get_description() const;

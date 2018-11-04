@@ -29,7 +29,7 @@
 #include <string>
 #include <iostream>
 
-#include <time.h>
+#include <ctime>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -93,7 +93,7 @@ public:
     static void registerProgressHandler(InitHandlerFunc *handler, void *userdata = nullptr);
 
 private:
-    typedef std::pair<FT_Face, time_t> cache_entry_t;
+    typedef std::pair<FT_Face, std::time_t> cache_entry_t;
     typedef std::map<std::string, cache_entry_t> cache_t;
 
     static FontCache *self;

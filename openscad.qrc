@@ -1,5 +1,8 @@
 <RCC>
   <qresource prefix="/">
+    <file>icons/prefsInput.png</file>
+    <file>icons/prefsInputAxis.png</file>
+    <file>icons/prefsInputButtons.png</file>
     <file>images/zoom-text-in-white.png</file>
     <file>images/zoom-text-in.png</file>
     <file>images/zoom-text-out-white.png</file>
@@ -94,5 +97,6 @@
     <file>images/STL-white.png</file>
     <file>images/SVG.png</file>
     <file>images/SVG-white.png</file>
+    <file>sounds/complete.wav</file>
   </qresource>
 </RCC>

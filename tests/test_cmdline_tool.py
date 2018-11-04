@@ -86,7 +86,7 @@ def execute_and_redirect(cmd, params, outfile):
     retval = -1
     try:
         proc = subprocess.Popen([cmd] + params, stdout=outfile, stderr=subprocess.STDOUT)
-        out = proc.communicate()[0]
+        out = proc.communicate()[0].decode('utf-8')
         retval = proc.wait()
     except:
         print("Error running subprocess: ", sys.exc_info()[1], file=sys.stderr)
@@ -232,8 +232,9 @@ def run_test(testname, cmd, args):
 
     try:
         cmdline = [cmd] + args + [outputname]
+        sys.stderr.flush()
         print('run_test() cmdline:',cmdline)
-        fontdir =  os.path.join(os.path.dirname(cmd), "testdata")
+        fontdir =  os.path.join(os.path.dirname(__file__), "..", "testdata/ttf");
         fontenv = os.environ.copy()
         fontenv["OPENSCAD_FONT_PATH"] = fontdir
         print('using font directory:', fontdir)

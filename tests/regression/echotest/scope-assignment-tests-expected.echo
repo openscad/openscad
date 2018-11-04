@@ -1,3 +1,7 @@
+WARNING: e was assigned on line 49 but was overwritten on line 52
+WARNING: f was assigned on line 58 but was overwritten on line 61
+WARNING: g was assigned on line 67 but was overwritten on line 69
+WARNING: h was assigned on line 73 but was overwritten on line 75
 WARNING: Ignoring unknown variable 'h'.
 ECHO: "union scope"
 ECHO: "local a (5):", 5

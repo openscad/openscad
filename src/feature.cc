@@ -19,14 +19,13 @@ Feature::list_t Feature::feature_list;
  * argument to enable the option and for saving the option value in GUI
  * context.
  */
-const Feature Feature::ExperimentalAssertExpression("assert", "Enable <code>assert</code>.");
-const Feature Feature::ExperimentalEchoExpression("echo", "Enable <code>echo</code> expression.");
 const Feature Feature::ExperimentalEachExpression("lc-each", "Enable <code>each</code> expression in list comprehensions.");
 const Feature Feature::ExperimentalElseExpression("lc-else", "Enable <code>else</code> expression in list comprehensions.");
 const Feature Feature::ExperimentalForCExpression("lc-for-c", "Enable C-style <code>for</code> expression in list comprehensions.");
 const Feature Feature::ExperimentalAmfImport("amf-import", "Enable AMF import.");
 const Feature Feature::ExperimentalSvgImport("svg-import", "Enable SVG import.");
 const Feature Feature::ExperimentalCustomizer("customizer", "Enable Customizer");
+const Feature Feature::ExperimentalInputDriver("input-driver", "Enable input drivers (requires restart)");
 const Feature Feature::ExperimentalThreadedTraversal("thread-traversal", "Enable threaded traversal.");
 
 Feature::Feature(const std::string &name, const std::string &description)

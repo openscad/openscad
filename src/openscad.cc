@@ -98,7 +98,7 @@ static std::string arg_colorscheme;
 std::string openscad_shortversionnumber = QUOTED(OPENSCAD_SHORTVERSION);
 std::string openscad_versionnumber = QUOTED(OPENSCAD_VERSION);
 
-std::string openscad_displayversionnumber = 
+std::string openscad_displayversionnumber =
 #ifdef OPENSCAD_COMMIT
   QUOTED(OPENSCAD_VERSION)
   " (git " QUOTED(OPENSCAD_COMMIT) ")";
@@ -128,36 +128,12 @@ public:
 	}
 };
 
-static void help(const char *progname, bool failure = false)
+static void help(const char *arg0, const po::options_description &desc, bool failure = false)
 {
-  int tablen = strlen(progname)+8;
-  char tabstr[tablen+1];
-  for (int i=0;i<tablen;i++) tabstr[i] = ' ';
-  tabstr[tablen] = '\0';
-
-	PRINTB("Usage: %1% [ -o output_file [ -d deps_file ] ]\\\n"
-         "%2%[ -m make_command ] [ -D var=val [..] ] \\\n"
-	 "%2%[ --help ] print this help message and exit \\\n"
-         "%2%[ --version ] [ --info ] \\\n"
-         "%2%[ --camera=translatex,y,z,rotx,y,z,dist | \\\n"
-         "%2%  --camera=eyex,y,z,centerx,y,z ] \\\n"
-         "%2%[ --autocenter ] \\\n"
-         "%2%[ --viewall ] \\\n"
-         "%2%[ --imgsize=width,height ] [ --projection=(o)rtho|(p)ersp] \\\n"
-         "%2%[ --render | --preview[=throwntogether] ] \\\n"
-         "%2%[ --colorscheme=[Cornfield|Sunset|Metallic|Starnight|BeforeDawn|Nature|DeepOcean] ] \\\n"
-         "%2%[ --csglimit=num ]"
-#ifdef ENABLE_EXPERIMENTAL
-         " [ --enable=<feature> ] "
-         " [ --parallelism=num ] \\\n"
-         "%2%[ -p <Parameter Filename>] [-P <Parameter Set>] "
-#endif
-         "\\\n"
-#ifdef DEBUG
-				 "%2%[ --debug=module ] \\\n"
-#endif
-         "%2%filename\n",
- 				 progname % (const char *)tabstr);
+	std::stringstream ss;
+	ss << desc;
+	const fs::path progpath(arg0);
+	PRINTB("Usage: %s [options] file.scad\n%s", progpath.filename().string() % ss.str());
 	exit(failure ? 1 : 0);
 }
 
@@ -225,9 +201,9 @@ Camera get_camera(po::variables_map vm)
 			exit(1);
 		}
 	}
-
-	if (camera.type == Camera::CameraType::GIMBAL) {
-		camera.gimbalDefaultTranslate();
+	else {
+		camera.viewall = true;
+		camera.autocenter = true;
 	}
 
 	if (vm.count("viewall")) {
@@ -300,12 +276,12 @@ void set_render_color_scheme(const std::string color_scheme, const bool exit_if_
 	if (color_scheme.empty()) {
 		return;
 	}
-	
+
 	if (ColorMap::inst()->findColorScheme(color_scheme)) {
 		RenderSettings::inst()->colorscheme = color_scheme;
 		return;
 	}
-		
+
 	if (exit_if_not_found) {
 		PRINTB("Unknown color scheme '%s'. Valid schemes:", color_scheme);
 		for(const auto &name : ColorMap::inst()->colorSchemeNames()) {
@@ -317,17 +293,8 @@ void set_render_color_scheme(const std::string color_scheme, const bool exit_if_
 	}
 }
 
-#include <QCoreApplication>
-
-int cmdline(const char *deps_output_file, const std::string &filename, Camera &camera, const char *output_file, const fs::path &original_path, RenderType renderer,const std::string &parameterFile,const std::string &setName, int argc, char ** argv )
+int cmdline(const char *deps_output_file, const std::string &filename, Camera &camera, const char *output_file, const fs::path &original_path, RenderType renderer,const std::string &parameterFile,const std::string &setName)
 {
-#ifdef OPENSCAD_QTGUI
-	QCoreApplication app(argc, argv);
-	const std::string application_path = QCoreApplication::instance()->applicationDirPath().toLocal8Bit().constData();
-#else
-	const std::string application_path = fs::absolute(boost::filesystem::path(argv[0]).parent_path()).generic_string();
-#endif	
-	PlatformUtils::registerApplicationPath(application_path);
 	parser_init();
 	localization_init();
 
@@ -373,7 +340,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	}
 
 	set_render_color_scheme(arg_colorscheme, true);
-	
+
 	// Top context - this context only holds builtins
 	BuiltinContext top_ctx;
 	bool preview = png_output_file ? (renderer==RenderType::OPENCSG || renderer==RenderType::THROWNTOGETHER) : false;
@@ -400,7 +367,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		return 1;
 	}
 	std::string text((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-	text += "\n" + commandline_commands;
+	text += "\n\x03\n" + commandline_commands;
 	if (!parse(root_module, text.c_str(), filename, false)) {
 		delete root_module;  // parse failed
 		root_module = nullptr;
@@ -533,7 +500,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 				return 1;
 			}
 		}
-		
+
 		if (svg_output_file) {
 			if (!checkAndExport(root_geom, 2, FileFormat::SVG, svg_output_file)) {
 				return 1;
@@ -591,6 +558,22 @@ Q_IMPORT_PLUGIN(qtaccessiblewidgets)
 #include "OpenSCADApp.h"
 #include "launchingscreen.h"
 #include "QSettingsCached.h"
+#include "input/InputDriverManager.h"
+#ifdef ENABLE_HIDAPI
+#include "input/HidApiInputDriver.h"
+#endif
+#ifdef ENABLE_SPNAV
+#include "input/SpaceNavInputDriver.h"
+#endif
+#ifdef ENABLE_JOYSTICK
+#include "input/JoystickInputDriver.h"
+#endif
+#ifdef ENABLE_DBUS
+#include "input/DBusInputDriver.h"
+#endif
+#ifdef ENABLE_QGAMEPAD
+#include "input/QGamepadInputDriver.h"
+#endif
 #include <QString>
 #include <QDir>
 #include <QFileInfo>
@@ -599,6 +582,7 @@ Q_IMPORT_PLUGIN(qtaccessiblewidgets)
 #include <QProgressDialog>
 #include <QFutureWatcher>
 #include <QtConcurrentRun>
+#include "settings.h"
 
 Q_DECLARE_METATYPE(shared_ptr<const Geometry>);
 
@@ -647,12 +631,23 @@ void dialogInitHandler(FontCacheInitializer *initializer, void *)
 	// Block, in case we're in a separate thread, or the dialog was closed by the user
 	futureWatcher.waitForFinished();
 
-	// We don't always receive the finished signal. We still need the signal to break 
+	// We don't always receive the finished signal. We still need the signal to break
 	// out of the exec() though.
 	QMetaObject::invokeMethod(scadApp, "hideFontCacheDialog");
 }
 
-
+#ifdef Q_OS_WIN
+void registerDefaultIcon(QString applicationFilePath) {
+	// Not using cached instance here, so this needs to be in a
+	// separate scope to ensure the QSettings instance is released
+	// directly after use.
+	QSettings reg_setting(QLatin1String("HKEY_CURRENT_USER"), QSettings::NativeFormat);
+	auto appPath = QDir::toNativeSeparators(applicationFilePath + QLatin1String(",1"));
+	reg_setting.setValue(QLatin1String("Software/Classes/OpenSCAD_File/DefaultIcon/Default"),QVariant(appPath));
+}
+#else
+void registerDefaultIcon(QString) { }
+#endif
 
 int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, char ** argv)
 {
@@ -683,18 +678,15 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 #else
 	app.setWindowIcon(QIcon(":/icons/openscad.png"));
 #endif
-	
+
 	// Other global settings
 	qRegisterMetaType<shared_ptr<const Geometry>>();
-	
-	const auto &app_path = app.applicationDirPath();
-	PlatformUtils::registerApplicationPath(app_path.toLocal8Bit().constData());
 
 	FontCache::registerProgressHandler(dialogInitHandler);
 
 	parser_init();
 
-	QSettings settings;
+	QSettingsCached settings;
 	if (settings.value("advanced/localization", true).toBool()) {
 		localization_init();
 	}
@@ -703,11 +695,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	installAppleEventHandlers();
 #endif
 
-#ifdef Q_OS_WIN
-	QSettings reg_setting(QLatin1String("HKEY_CURRENT_USER"), QSettings::NativeFormat);
-	auto appPath = QDir::toNativeSeparators(app.applicationFilePath() + QLatin1String(",1"));
-	reg_setting.setValue(QLatin1String("Software/Classes/OpenSCAD_File/DefaultIcon/Default"),QVariant(appPath));
-#endif
+        registerDefaultIcon(app.applicationFilePath());
 
 #ifdef OPENSCAD_UPDATER
 	AutoUpdater *updater = new SparkleAutoUpdater;
@@ -735,8 +723,8 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 #endif
 
 	set_render_color_scheme(arg_colorscheme, false);
-	
 	auto noInputFiles = false;
+
 	if (!inputFiles.size()) {
 		noInputFiles = true;
 		inputFiles.push_back("");
@@ -770,8 +758,47 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	} else {
 	   new MainWindow(assemblePath(original_path, inputFiles[0]));
 	}
-    app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(releaseQSettingsCached()));
+	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(releaseQSettingsCached()));
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
+
+	if (Feature::ExperimentalInputDriver.is_enabled()) {
+		auto *s = Settings::Settings::inst();
+#ifdef ENABLE_HIDAPI
+		if(s->get(Settings::Settings::inputEnableDriverHIDAPI).toBool()){
+			auto hidApi = new HidApiInputDriver();
+			InputDriverManager::instance()->registerDriver(hidApi);
+		}
+#endif
+#ifdef ENABLE_SPNAV
+		if(s->get(Settings::Settings::inputEnableDriverSPNAV).toBool()){
+			auto spaceNavDriver = new SpaceNavInputDriver();
+			bool spaceNavDominantAxisOnly = s->get(Settings::Settings::inputEnableDriverHIDAPI).toBool();
+			spaceNavDriver->setDominantAxisOnly(spaceNavDominantAxisOnly);
+			InputDriverManager::instance()->registerDriver(spaceNavDriver);
+        }
+#endif
+#ifdef ENABLE_JOYSTICK
+		if(s->get(Settings::Settings::inputEnableDriverJOYSTICK).toBool()){
+			std::string nr = s->get(Settings::Settings::joystickNr).toString();
+			auto joyDriver = new JoystickInputDriver();
+			joyDriver->setJoystickNr(nr);
+			InputDriverManager::instance()->registerDriver(joyDriver);
+		}
+#endif
+#ifdef ENABLE_QGAMEPAD
+		if(s->get(Settings::Settings::inputEnableDriverQGAMEPAD).toBool()){
+			auto qGamepadDriver = new QGamepadInputDriver();
+			InputDriverManager::instance()->registerDriver(qGamepadDriver);
+		}
+#endif
+#ifdef ENABLE_DBUS
+	if(s->get(Settings::Settings::inputEnableDriverDBUS).toBool()){
+			auto dBusDriver =new DBusInputDriver();
+			InputDriverManager::instance()->registerDriver(dBusDriver);
+		}
+#endif
+		InputDriverManager::instance()->init();
+	}
 	int rc = app.exec();
 	for (auto &mainw : scadApp->windowManager.getWindows()) delete mainw;
 	return rc;
@@ -785,11 +812,14 @@ int gui(const vector<string> &inputFiles, const fs::path &original_path, int arg
 }
 #endif // OPENSCAD_QTGUI
 
+#if defined(Q_OS_MACX)
 std::pair<string, string> customSyntax(const string& s)
 {
-#if defined(Q_OS_MACX)
 	if (s.find("-psn_") == 0)
 		return {"psn", s.substr(5)};
+#else
+std::pair<string, string> customSyntax(const string&)
+{
 #endif
 
 	return {};
@@ -800,6 +830,15 @@ int main(int argc, char **argv)
 	int rc = 0;
 	StackCheck::inst()->init();
 
+#ifdef OPENSCAD_QTGUI
+	{   // Need a dummy app instance to get the application path but it needs to be destroyed before the GUI is launched.
+		QCoreApplication app(argc, argv);
+		PlatformUtils::registerApplicationPath(app.applicationDirPath().toLocal8Bit().constData());
+	}
+#else
+	PlatformUtils::registerApplicationPath(fs::absolute(boost::filesystem::path(argv[0]).parent_path()).generic_string());
+#endif
+	
 #ifdef Q_OS_MAC
 	bool isGuiLaunched = getenv("GUI_LAUNCHED") != nullptr;
 	if (isGuiLaunched) set_output_handler(CocoaUtils::nslog, nullptr);
@@ -818,42 +857,62 @@ int main(int argc, char **argv)
 
 	const char *output_file = nullptr;
 	const char *deps_output_file = nullptr;
+	
+	string colorSchemeNames;
+	for(const auto &name : ColorMap::inst()->colorSchemeNames()) {
+		if(!colorSchemeNames.empty())
+			colorSchemeNames.append(" | ");
+		if(name == ColorMap::inst()->defaultColorSchemeName())
+			colorSchemeNames.append("*");
+		colorSchemeNames.append(name);
+	}
 
+#ifdef ENABLE_EXPERIMENTAL
+	string features;
+	for(auto it = Feature::begin(); it != Feature::end(); ++it) {
+		if(!features.empty())
+			features.append(" | ");
+		features.append((*it)->get_name());
+	}
+#endif
+        
 	po::options_description desc("Allowed options");
 	desc.add_options()
-		("help,h", "help message")
-		("version,v", "print the version")
-		("info", "print information about the building process")
-		("render", po::value<string>()->implicit_value(""), "if exporting a png image, do a full geometry evaluation")
-		("preview", po::value<string>()->implicit_value(""), "if exporting a png image, do an OpenCSG(default) or ThrownTogether preview")
-		("csglimit", po::value<unsigned int>(), "if exporting a png image, stop rendering at the given number of CSG elements")
-		("camera", po::value<string>(), "parameters for camera when exporting png")
-		("autocenter", "adjust camera to look at object center")
-		("viewall", "adjust camera to fit object")
-		("imgsize", po::value<string>(), "=width,height for exporting png")
-		("projection", po::value<string>(), "(o)rtho or (p)erspective when exporting png")
-		("colorscheme", po::value<string>(), "colorscheme")
-		("debug", po::value<string>(), "special debug info")
-		("quiet,q", "quiet mode (don't print anything *except* errors)")
-		("o,o", po::value<string>(), "out-file")
-		("p,p", po::value<string>(), "parameter file")
-		("P,P", po::value<string>(), "parameter set")
-		("s,s", po::value<string>(), "stl-file")
-		("x,x", po::value<string>(), "dxf-file")
-		("d,d", po::value<string>(), "deps-file")
-		("m,m", po::value<string>(), "makefile")
-		("D,D", po::value<vector<string>>(), "var=val")
-#ifdef Q_OS_MACX
-		("psn", po::value<string>(), "process serial number")
-#endif
+		("o,o", po::value<string>(), "output specified file instead of running the GUI, the file extension specifies the type: stl, off, amf, csg, dxf, svg, png, echo, ast, term, nef3, nefdbg\n")
+		("D,D", po::value<vector<string>>(), "var=val -pre-define variables")
 #ifdef ENABLE_EXPERIMENTAL
-		("enable", po::value<vector<string>>(), "enable experimental features")
+		("p,p", po::value<string>(), "customizer parameter file")
+		("P,P", po::value<string>(), "customizer parameter set")
+		("enable", po::value<vector<string>>(), ("enable experimental features: " + features + "\n").c_str())
 		("parallelism", po::value<string>(), "Maximum parallelism (# cores) to use for render operations. Only valid if the 'thread-traversal' feature is enabled.")
 #endif
+		("help,h", "print this help message and exit")
+		("version,v", "print the version")
+		("info", "print information about the build process\n")
+
+		("camera", po::value<string>(), "camera parameters when exporting png: =translate_x,y,z,rot_x,y,z,dist or =eye_x,y,z,center_x,y,z")
+		("autocenter", "adjust camera to look at object's center")
+		("viewall", "adjust camera to fit object")
+		("imgsize", po::value<string>(), "=width,height of exported png")
+		("render", po::value<string>()->implicit_value(""), "for full geometry evaluation when exporting png")
+		("preview", po::value<string>()->implicit_value(""), "[=throwntogether] -for ThrownTogether preview png")
+		("projection", po::value<string>(), "=(o)rtho or (p)erspective when exporting png")
+		("csglimit", po::value<unsigned int>(), "=n -stop rendering at n CSG elements when exporting png")
+		("colorscheme", po::value<string>(), ("=colorscheme: " + colorSchemeNames + "\n").c_str())
+
+		("d,d", po::value<string>(), "deps_file -generate a dependency file for make")
+		("m,m", po::value<string>(), "make_cmd -runs make_cmd file if file is missing")
+		("quiet,q", "quiet mode (don't print anything *except* errors)")
+		("debug", po::value<string>(), "special debug info")
+		("s,s", po::value<string>(), "stl_file deprecated, use -o")
+		("x,x", po::value<string>(), "dxf_file deprecated, use -o")
 		;
 
 	po::options_description hidden("Hidden options");
 	hidden.add_options()
+#ifdef Q_OS_MACX
+		("psn", po::value<string>(), "process serial number")
+#endif
 		("input-file", po::value< vector<string>>(), "input file");
 
 	po::positional_options_description p;
@@ -864,11 +923,11 @@ int main(int argc, char **argv)
 
 	po::variables_map vm;
 	try {
-		po::store(po::command_line_parser(argc, argv).options(all_options).allow_unregistered().positional(p).extra_parser(customSyntax).run(), vm);
+		po::store(po::command_line_parser(argc, argv).options(all_options).positional(p).extra_parser(customSyntax).run(), vm);
 	}
 	catch(const std::exception &e) { // Catches e.g. unknown options
 		PRINTB("%s\n", e.what());
-		help(argv[0], true);
+		help(argv[0], desc, true);
 	}
 
 	OpenSCAD::debug = "";
@@ -879,7 +938,7 @@ int main(int argc, char **argv)
 	if (vm.count("quiet")) {
 		OpenSCAD::quiet = true;
 	}
-	if (vm.count("help")) help(argv[0]);
+	if (vm.count("help")) help(argv[0], desc);
 	if (vm.count("version")) version();
 	if (vm.count("info")) arg_info = true;
 
@@ -899,25 +958,25 @@ int main(int argc, char **argv)
 
 	if (vm.count("o")) {
 		// FIXME: Allow for multiple output files?
-		if (output_file) help(argv[0], true);
+		if (output_file) help(argv[0], desc, true);
 		output_file = vm["o"].as<string>().c_str();
 	}
 	if (vm.count("s")) {
 		printDeprecation("The -s option is deprecated. Use -o instead.\n");
-		if (output_file) help(argv[0], true);
+		if (output_file) help(argv[0], desc, true);
 		output_file = vm["s"].as<string>().c_str();
 	}
-	if (vm.count("x")) { 
+	if (vm.count("x")) {
 		printDeprecation("The -x option is deprecated. Use -o instead.\n");
-		if (output_file) help(argv[0], true);
+		if (output_file) help(argv[0], desc, true);
 		output_file = vm["x"].as<string>().c_str();
 	}
 	if (vm.count("d")) {
-		if (deps_output_file) help(argv[0], true);
+		if (deps_output_file) help(argv[0], desc, true);
 		deps_output_file = vm["d"].as<string>().c_str();
 	}
 	if (vm.count("m")) {
-		if (make_command) help(argv[0], true);
+		if (make_command) help(argv[0], desc, true);
 		make_command = vm["m"].as<string>().c_str();
 	}
 
@@ -945,22 +1004,22 @@ int main(int argc, char **argv)
 	
 	if (Feature::ExperimentalCustomizer.is_enabled()) {
 		if (vm.count("p")) {
-			if (!parameterFile.empty()) help(argv[0], true);
+			if (!parameterFile.empty()) help(argv[0], desc, true);
 			
 			parameterFile = vm["p"].as<string>().c_str();
 		}
 		
 		if (vm.count("P")) {
-			if (!parameterSet.empty()) help(argv[0], true);
+			if (!parameterSet.empty()) help(argv[0], desc, true);
 			
 			parameterSet = vm["P"].as<string>().c_str();
 		}
 	}
 	else {
 		if (vm.count("p") || vm.count("P")) {
-			if (!parameterSet.empty()) help(argv[0], true);
+			if (!parameterSet.empty()) help(argv[0], desc, true);
 			PRINT("Customizer feature not activated\n");
-			help(argv[0], true);
+			help(argv[0], desc, true);
 		}
 	}
 	
@@ -980,19 +1039,19 @@ int main(int argc, char **argv)
 	auto cmdlinemode = false;
 	if (output_file) { // cmd-line mode
 		cmdlinemode = true;
-		if (!inputFiles.size()) help(argv[0], true);
+		if (!inputFiles.size()) help(argv[0], desc, true);
 	}
 
 	if (arg_info || cmdlinemode) {
-		if (inputFiles.size() > 1) help(argv[0], true);
-		rc = cmdline(deps_output_file, inputFiles[0], camera, output_file, original_path, renderer, parameterFile, parameterSet, argc, argv);
+		if (inputFiles.size() > 1) help(argv[0], desc, true);
+		rc = cmdline(deps_output_file, inputFiles[0], camera, output_file, original_path, renderer, parameterFile, parameterSet);
 	}
 	else if (QtUseGUI()) {
 		rc = gui(inputFiles, original_path, argc, argv);
 	}
 	else {
 		PRINT("Requested GUI mode but can't open display!\n");
-		help(argv[0], true);
+		help(argv[0], desc, true);
 	}
 
 	Builtins::instance(true);

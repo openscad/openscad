@@ -16,26 +16,20 @@
 #   resource folder. E.g. using SUFFIX=-nightly will name the
 #   resulting binary openscad-nightly.
 #
-# Please see the 'Building' sections of the OpenSCAD user manual 
+# Please see the 'Building' sections of the OpenSCAD user manual
 # for updated tips & workarounds.
 #
 # https://en.wikibooks.org/wiki/OpenSCAD_User_Manual
 
-!experimental {
-  message("If you're building a development binary, consider adding CONFIG+=experimental")
-}
+include(defaults.pri)
 
+# TODO(justbuchanan): remove before merging
 CONFIG+=experimental
 
-# Valgrind
-QMAKE_CXXFLAGS += -frounding-math
-DEFINES+=CGAL_DISABLE_ROUNDING_MATH_CHECK=ON
+# Local settings are read from local.pri
+exists(local.pri): include(local.pri)
 
-isEmpty(QT_VERSION) {
-  error("Please use qmake for Qt 4 or Qt 5 (probably qmake-qt4)")
-}
-
-# Auto-include config_<variant>.pri if the VARIANT variable is give on the
+# Auto-include config_<variant>.pri if the VARIANT variable is given on the
 # command-line, e.g. qmake VARIANT=mybuild
 !isEmpty(VARIANT) {
   message("Variant: $${VARIANT}")
@@ -45,6 +39,15 @@ isEmpty(QT_VERSION) {
   }
 }
 
+debug {
+  experimental {
+    message("Building experimental debug version")
+  }
+  else {
+    message("If you're building a development binary, consider adding CONFIG+=experimental")
+  }
+}
+  
 # If VERSION is not set, populate VERSION, VERSION_YEAR, VERSION_MONTH from system date
 include(version.pri)
 
@@ -64,8 +67,10 @@ deploy {
     QMAKE_RPATHDIR = @executable_path/../Frameworks
   }
 }
-snapshot: DEFINES += OPENSCAD_SNAPSHOT
-
+snapshot {
+  DEFINES += OPENSCAD_SNAPSHOT
+}
+  
 macx {
   TARGET = OpenSCAD
 }
@@ -73,6 +78,7 @@ else {
   TARGET = openscad$${SUFFIX}
 }
 FULLNAME = openscad$${SUFFIX}
+APPLICATIONID = org.openscad.OpenSCAD
 !isEmpty(SUFFIX): DEFINES += INSTALL_SUFFIX="\"\\\"$${SUFFIX}\\\"\""
 
 macx {
@@ -109,7 +115,7 @@ mingw* {
 }
 
 CONFIG += qt
-QT += widgets concurrent
+QT += widgets concurrent multimedia
 
 netbsd* {
    QMAKE_LFLAGS += -L/usr/X11R7/lib
@@ -154,15 +160,14 @@ netbsd* {
   QMAKE_CXXFLAGS_WARN_ON += -Wno-sign-compare
 }
 
-has_ccache: CONFIG += ccache
-
-CONFIG(skip-version-check) {
+skip-version-check {
   # force the use of outdated libraries
   DEFINES += OPENSCAD_SKIP_VERSION_CHECK
 }
 
+isEmpty(PKG_CONFIG):PKG_CONFIG = pkg-config
+
 # Application configuration
-macx:CONFIG += mdi
 CONFIG += c++11
 CONFIG += cgal
 CONFIG += opencsg
@@ -176,6 +181,8 @@ CONFIG += fontconfig
 CONFIG += gettext
 CONFIG += libxml2
 CONFIG += libzip
+CONFIG += hidapi
+CONFIG += spnav
 
 #Uncomment the following line to enable the QScintilla editor
 !nogui {
@@ -193,6 +200,11 @@ nogui {
 
 mdi {
   DEFINES += ENABLE_MDI
+}
+
+system("ccache -V >/dev/null 2>/dev/null") {
+  CONFIG += ccache
+  message("Using ccache")
 }
 
 include(common.pri)
@@ -218,7 +230,9 @@ FORMS   += src/MainWindow.ui \
            src/launchingscreen.ui \
            src/LibraryInfoDialog.ui \
            src/parameter/ParameterWidget.ui \
-           src/parameter/ParameterEntryWidget.ui
+           src/parameter/ParameterEntryWidget.ui \
+           src/input/ButtonConfigWidget.ui \
+           src/input/AxisConfigWidget.ui
 
 # AST nodes
 FLEXSOURCES += src/lexer.l 
@@ -261,6 +275,7 @@ HEADERS += src/version_check.h \
            src/OpenSCADApp.h \
            src/WindowManager.h \
            src/Preferences.h \
+           src/SettingsWriter.h \
            src/OpenCSGWarningDialog.h \
            src/AboutDialog.h \
            src/FontListDialog.h \
@@ -364,7 +379,13 @@ HEADERS += src/version_check.h \
            src/parameter/parameterset.h \
            src/parameter/ignoreWheelWhenNotFocused.h \
            src/QWordSearchField.h \
-           src/QSettingsCached.h
+           src/QSettingsCached.h \
+           src/input/InputDriver.h \
+           src/input/InputEventMapper.h \
+           src/input/InputDriverManager.h \
+           src/input/AxisConfigWidget.h \
+           src/input/ButtonConfigWidget.h \
+           src/input/WheelIgnorer.h
 
 SOURCES += \
            src/libsvg/libsvg.cc \
@@ -381,7 +402,9 @@ SOURCES += \
            src/libsvg/transformation.cc \
            src/libsvg/util.cc \
            \
-           src/version_check.cc \
+           src/version_check.cc
+
+SOURCES += \
            src/ProgressWidget.cc \
            src/linalg.cc \
            src/Camera.cc \
@@ -444,6 +467,7 @@ SOURCES += \
            src/rendersettings.cc \
            src/highlighter.cc \
            src/Preferences.cc \
+           src/SettingsWriter.cc \
            src/OpenCSGWarningDialog.cc \
            src/editor.cc \
            src/GLView.cc \
@@ -506,8 +530,14 @@ SOURCES += \
            src/parameter/parametervirtualwidget.cpp \
            src/parameter/ignoreWheelWhenNotFocused.cpp \
            src/QWordSearchField.cc\
+           src/QSettingsCached.cc \
            \
-           src/QSettingsCached.cc
+           src/input/InputDriver.cc \
+           src/input/InputEventMapper.cc \
+           src/input/InputDriverManager.cc \
+           src/input/AxisConfigWidget.cc \
+           src/input/ButtonConfigWidget.cc \
+           src/input/WheelIgnorer.cc
 
 # CGAL
 HEADERS += src/ext/CGAL/convex_hull_3_bugfix.h \
@@ -540,6 +570,32 @@ HEADERS += src/ext/libtess2/Include/tesselator.h \
            src/ext/libtess2/Source/priorityq.h \
            src/ext/libtess2/Source/sweep.h \
            src/ext/libtess2/Source/tess.h
+
+has_qt5:unix:!macx {
+  QT += dbus
+  DEFINES += ENABLE_DBUS
+  DBUS_ADAPTORS += org.openscad.OpenSCAD.xml
+  DBUS_INTERFACES += org.openscad.OpenSCAD.xml
+
+  HEADERS += src/input/DBusInputDriver.h
+  SOURCES += src/input/DBusInputDriver.cc
+}
+
+linux: {
+  DEFINES += ENABLE_JOYSTICK
+
+  HEADERS += src/input/JoystickInputDriver.h
+  SOURCES += src/input/JoystickInputDriver.cc
+}
+
+!lessThan(QT_MAJOR_VERSION, 5) {
+  qtHaveModule(gamepad) {
+    QT += gamepad
+    DEFINES += ENABLE_QGAMEPAD
+    HEADERS += src/input/QGamepadInputDriver.h
+    SOURCES += src/input/QGamepadInputDriver.cc
+  }
+}
 
 unix:!macx {
   SOURCES += src/imageutils-lodepng.cc
@@ -650,8 +706,8 @@ mimexml.path = $$PREFIX/share/mime/packages
 mimexml.extra = cp -f icons/openscad.xml \"\$(INSTALL_ROOT)$${mimexml.path}/$${FULLNAME}.xml\"
 INSTALLS += mimexml
 
-appdata.path = $$PREFIX/share/appdata
-appdata.extra = cp -f openscad.appdata.xml \"\$(INSTALL_ROOT)$${appdata.path}/$${FULLNAME}.appdata.xml\"
+appdata.path = $$PREFIX/share/metainfo
+appdata.extra = mkdir -p \"\$(INSTALL_ROOT)$${appdata.path}\" && cat openscad.appdata.xml | sed -e \"'s/$${APPLICATIONID}/$${APPLICATIONID}$${SUFFIX}/; s/openscad.desktop/openscad$${SUFFIX}.desktop/; s/openscad.png/openscad$${SUFFIX}.png/'\" > \"\$(INSTALL_ROOT)$${appdata.path}/$${APPLICATIONID}$${SUFFIX}.appdata.xml\"
 INSTALLS += appdata
 
 icons.path = $$PREFIX/share/pixmaps
@@ -661,3 +717,10 @@ INSTALLS += icons
 man.path = $$PREFIX/share/man/man1
 man.extra = cp -f doc/openscad.1 \"\$(INSTALL_ROOT)$${man.path}/$${FULLNAME}.1\"
 INSTALLS += man
+
+info: {
+    include(info.pri)
+}
+
+DISTFILES += \
+    sounds/complete.wav

@@ -21,7 +21,7 @@ get_fedora_deps_dnf()
   boost-devel mpfr-devel gmp-devel glew-devel CGAL-devel gcc gcc-c++ pkgconfig \
   opencsg-devel git libXmu-devel curl ImageMagick glib2-devel make \
   xorg-x11-server-Xvfb gettext qscintilla-devel qscintilla-qt5-devel \
-  mesa-dri-drivers libzip-devel ccache
+  mesa-dri-drivers libzip-devel ccache qt5-qtmultimedia-devel
  dnf -y install libxml2-devel
  dnf -y install libffi-devel
  dnf -y install redhat-rpm-config
@@ -60,7 +60,7 @@ get_opensuse_deps()
   glew-devel cmake git bison flex cgal-devel curl \
   glib2-devel gettext freetype-devel harfbuzz-devel  \
   libqscintilla-qt5-devel libqt5-qtbase-devel libQt5OpenGL-devel \
-  xvfb-run libzip-devel
+  xvfb-run libzip-devel libqt5-qtmultimedia-devel
  zypper install libeigen3-devel
  if [ $? -ne 0 ]; then
   zypper install libeigen3
@@ -142,7 +142,7 @@ get_qt4or5_deps_debian()
   fi
 
   if [ $useqt = 5 ]; then
-    apt-get -y install qtbase5-dev libqt5scintilla2-dev libqt5opengl5-dev qt5-qmake
+    apt-get -y install qtbase5-dev libqt5scintilla2-dev libqt5opengl5-dev qtmultimedia5-dev qt5-qmake
   else
     apt-get -y install libqt4-dev libqscintilla2-dev libqt4-opengl-dev
   fi

@@ -34,7 +34,7 @@ travis_finish qmake
 travis_start cmake "Building tests using cmake"
 
 cd tests
-cmake . 
+cmake .
 if [[ $? != 0 ]]; then
   echo "Error configuring test suite"
   exit 1

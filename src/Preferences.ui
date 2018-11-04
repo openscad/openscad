@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>675</width>
-    <height>476</height>
+    <width>689</width>
+    <height>480</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -23,11 +23,11 @@
    <bool>true</bool>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout_13">
-    <item>
+   <layout class="QGridLayout" name="gridLayout_6">
+    <item row="0" column="0">
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>6</number>
       </property>
       <widget class="QWidget" name="page3DView">
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -125,9 +125,9 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>-262</y>
-             <width>639</width>
-             <height>653</height>
+             <y>0</y>
+             <width>655</width>
+             <height>693</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_5">
@@ -244,7 +244,7 @@
                  <widget class="QFontComboBox" name="fontChooser">
                   <property name="currentFont">
                    <font>
-                    <family>TeX Gyre Heros</family>
+                    <family>Nimbus Sans L</family>
                     <pointsize>12</pointsize>
                    </font>
                   </property>
@@ -1220,7 +1220,7 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>82</width>
+               <width>84</width>
                <height>26</height>
               </rect>
              </property>
@@ -1283,8 +1283,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>490</width>
-             <height>383</height>
+             <width>485</width>
+             <height>393</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_12">
@@ -1445,6 +1445,16 @@
              </widget>
             </item>
             <item>
+             <widget class="QCheckBox" name="enableSoundOnRenderCompleteCheckBox">
+              <property name="text">
+               <string>Play sound notification on render complete</string>
+              </property>
+              <property name="checked">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
              <spacer name="verticalSpacer">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
@@ -1458,6 +1468,72 @@
              </spacer>
             </item>
            </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="pageInput">
+       <layout class="QGridLayout" name="gridLayout_13">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item row="0" column="0">
+         <widget class="QScrollArea" name="scrollArea_InputAxis">
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="AxisConfigWidget" name="AxisConfig">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>669</width>
+             <height>392</height>
+            </rect>
+           </property>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="pageInputButton">
+       <layout class="QGridLayout" name="gridLayout_14">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item row="3" column="1">
+         <widget class="QScrollArea" name="scrollArea_InputButton">
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="ButtonConfigWidget" name="ButtonConfig">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>669</width>
+             <height>392</height>
+            </rect>
+           </property>
           </widget>
          </widget>
         </item>
@@ -1497,6 +1573,8 @@
    <addaction name="prefsActionUpdate"/>
    <addaction name="prefsActionFeatures"/>
    <addaction name="prefsActionAdvanced"/>
+   <addaction name="prefsActionInput"/>
+   <addaction name="prefsActionInputButton"/>
   </widget>
   <action name="prefsAction3DView">
    <property name="checkable">
@@ -1519,7 +1597,7 @@
      <normaloff>:/icons/prefsAdvanced.png</normaloff>:/icons/prefsAdvanced.png</iconset>
    </property>
    <property name="text">
-    <string>Advanced</string>
+    <string comment="preferences">Advanced</string>
    </property>
   </action>
   <action name="prefsActionEditor">
@@ -1561,7 +1639,48 @@
     <string>Enable/Disable experimental features</string>
    </property>
   </action>
+  <action name="prefsActionInput">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/icons/prefsInputAxis.png</normaloff>:/icons/prefsInputAxis.png</iconset>
+   </property>
+   <property name="text">
+    <string>Axis</string>
+   </property>
+   <property name="toolTip">
+    <string>Input driver configuration and Axis mapping</string>
+   </property>
+  </action>
+  <action name="prefsActionInputButton">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/icons/prefsInputButtons.png</normaloff>:/icons/prefsInputButtons.png</iconset>
+   </property>
+   <property name="text">
+    <string>Buttons</string>
+   </property>
+  </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>AxisConfigWidget</class>
+   <extends>QWidget</extends>
+   <header>input/AxisConfigWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ButtonConfigWidget</class>
+   <extends>QWidget</extends>
+   <header>input/ButtonConfigWidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="../openscad.qrc"/>
  </resources>

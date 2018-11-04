@@ -39,7 +39,7 @@ class ScintillaEditor : public EditorInterface
 {        
 	Q_OBJECT;
 
-        typedef std::multimap<int, shared_ptr<EditorColorScheme>, std::less<int>> colorscheme_set_t;
+        using colorscheme_set_t = std::multimap<int, shared_ptr<EditorColorScheme>, std::less<int>>;
         
 public:
 	ScintillaEditor(QWidget *parent);
@@ -50,7 +50,7 @@ public:
 	void initLexer();
 
 	QString selectedText() override;
-	int resetFindIndicators(const QString &findText, bool visibility = true) override;
+	int updateFindIndicators(const QString &findText, bool visibility = true) override;
     bool find(const QString &, bool findNext = false, bool findBackwards = false) override;
 	void replaceSelectedText(const QString&) override;
 	void replaceAll(const QString &findText, const QString &replaceText) override;

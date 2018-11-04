@@ -42,6 +42,18 @@ namespace fs=boost::filesystem;
 const Value Value::undefined;
 const ValuePtr ValuePtr::undefined;
 
+void utf8_split(const std::string& str, std::function<void(ValuePtr)> f)
+{
+    const char *ptr = str.c_str();
+
+    while (*ptr) {
+        auto next = g_utf8_next_char(ptr);
+        const size_t length = next - ptr;
+        f(ValuePtr(std::string{ptr, length}));
+        ptr = next;
+    }
+}
+
 static uint32_t convert_to_uint32(const double d)
 {
 	auto ret = std::numeric_limits<uint32_t>::max();
@@ -49,7 +61,7 @@ static uint32_t convert_to_uint32(const double d)
 	if (std::isfinite(d)) {
 		try {
 			ret = boost::numeric_cast<uint32_t>(d);
-		} catch (boost::bad_numeric_cast) {
+		} catch (boost::bad_numeric_cast &) {
 			// ignore, leaving the default max() value
 		}
 	}

@@ -58,7 +58,7 @@ private:
 	void rebuildGroupMap();
 	ParameterVirtualWidget* CreateParameterWidget(std::string parameterName);
 	void setComboBoxPresetForSet();
-	void removeChangeIndicator(int idx);
+	void removeChangeIndicator();
 
 	void setFile(QString File);
 
@@ -67,11 +67,13 @@ private:
 	std::vector<std::string> ParameterPos;
 	ParameterExtractor *extractor;
 	ParameterSet *setMgr;
+
 public:
 	ParameterWidget(QWidget *parent = nullptr);
 	~ParameterWidget();
 	void readFile(QString scadFile);
 	void writeFileIfNotEmpty(QString scadFile);
+	void writeBackupFile(QString scadFile);
 	void setParameters(const FileModule* module,bool);
 	void applyParameters(FileModule *fileModule);
 
@@ -80,17 +82,19 @@ protected slots:
 	void onPreviewTimerElapsed();
 	void onDescriptionLoDChanged();
 	void onSetChanged(int idx);
+	void onSetNameChanged();
 	void onSetAdd();
 	void onSetSaveButton();
 	void onSetDelete();
 	void resetParameter();
+	void defaultParameter();
 
 signals:
 	void previewRequested(bool rebuildParameterUI=true);
 
 protected:
 	void applyParameterSet(std::string setName);
-	void updateParameterSet(std::string setName);
+	void updateParameterSet(std::string setName, bool newSet=false);
 	void writeParameterSets();
 };
 
