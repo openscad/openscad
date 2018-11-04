@@ -1,4 +1,6 @@
 [![Travis CI](https://api.travis-ci.org/openscad/openscad.png)](https://travis-ci.org/openscad/openscad)
+[![CircleCI](https://circleci.com/gh/openscad/openscad/tree/master.svg?style=svg)](https://circleci.com/gh/openscad/openscad/tree/master)
+[![AppVeyor](https://ci.appveyor.com/api/projects/status/github/openscad/openscad?branch=master&svg=false)](https://ci.appveyor.com/project/kintel/openscad)
 [![Coverity Status](https://scan.coverity.com/projects/2510/badge.svg)](https://scan.coverity.com/projects/2510)
 
 [![Visit our IRC channel](https://kiwiirc.com/buttons/irc.freenode.net/openscad.png)](https://kiwiirc.com/client/irc.freenode.net/#openscad)

@@ -624,12 +624,12 @@ endif()
 if ( ${DIFFPNG} )
   set(IMAGE_COMPARE_EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/diffpng)
   set(COMPARATOR "diffpng")
-  add_executable(diffpng diffpng.cpp ../src/lodepng.cpp)
+  add_executable(diffpng diffpng.cpp ../src/ext/lodepng/lodepng.cpp)
   message(STATUS "using diffpng for image comparison")
 endif()
 
 # Internal includes
-include_directories(../src ../src/ext/libtess2/Include)
+include_directories(../src ../src/ext/libtess2/Include ../src/ext/lodepng)
 
 # Handle OpenSCAD version based on VERSION env. variable.
 # Use current timestamp if not specified (development builds)
@@ -1353,6 +1353,7 @@ disable_tests(
 
   # z-fighting different on different machines
   throwntogethertest_issue1803
+  opencsgtest_issue1165
 )
 
 # 2D tests
@@ -1877,6 +1878,14 @@ add_cmdline_test(openscad-cameyeortho-viewall EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=16,14,13,0,0,0 --viewall --projection=o -o 
                  SUFFIX png
                  FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/camera-tests.scad)
+
+# View Options tests
+add_cmdline_test(openscad-viewoptions-axes EXE ${OPENSCAD_BINPATH} ARGS --imgsize=500,500 --camera=16,14,13,0,0,0 --viewall --view axes -o SUFFIX png FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/view-options-tests.scad)
+add_cmdline_test(openscad-viewoptions-axes-scales EXE ${OPENSCAD_BINPATH} ARGS --imgsize=500,500 --camera=16,14,13,0,0,0 --viewall --view axes,scales -o SUFFIX png FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/view-options-tests.scad)
+add_cmdline_test(openscad-viewoptions-edges EXE ${OPENSCAD_BINPATH} ARGS --imgsize=500,500 --camera=16,14,13,0,0,0 --viewall --view edges -o SUFFIX png FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/view-options-tests.scad)
+add_cmdline_test(openscad-viewoptions-axes-scales-edges EXE ${OPENSCAD_BINPATH} ARGS --imgsize=500,500 --camera=16,14,13,0,0,0 --viewall --view axes,scales,edges -o SUFFIX png FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/view-options-tests.scad)
+add_cmdline_test(openscad-viewoptions-wireframe EXE ${OPENSCAD_BINPATH} ARGS --imgsize=500,500 --camera=16,14,13,0,0,0 --viewall --render --view wireframe -o SUFFIX png FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/view-options-tests.scad)
+add_cmdline_test(openscad-viewoptions-crosshairs EXE ${OPENSCAD_BINPATH} ARGS --imgsize=500,500 --camera=16,14,13,0,0,0 --viewall --render --view crosshairs -o SUFFIX png FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/view-options-tests.scad)
 
 # Colorscheme tests
 add_cmdline_test(openscad-colorscheme-cornfield EXE ${OPENSCAD_BINPATH}
