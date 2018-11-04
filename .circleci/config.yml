@@ -12,7 +12,7 @@ jobs:
           command: |
               export NUMCPU=2
               export MXEDIR=/mxe
-              if [ x"${BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX=_${CIRCLE_BRANCH}; fi
+              if [ x"${BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,')"; fi
               export OPENSCAD_VERSION="$(date +%Y.%m.%d).ci${CIRCLE_BUILD_NUM}"
               . ./scripts/setenv-mingw-xbuild.sh 32 && ./scripts/release-common.sh -snapshot -mingw32 -v "$OPENSCAD_VERSION"
               mkdir -p /tmp/out
@@ -32,7 +32,7 @@ jobs:
           command: |
               export NUMCPU=2
               export MXEDIR=/mxe
-              if [ x"${BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX=_${CIRCLE_BRANCH}; fi
+              if [ x"${BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,')"; fi
               export OPENSCAD_VERSION="$(date +%Y.%m.%d).ci${CIRCLE_BUILD_NUM}"
               . ./scripts/setenv-mingw-xbuild.sh 64 && ./scripts/release-common.sh -snapshot -mingw64 -v "$OPENSCAD_VERSION"
               mkdir -p /tmp/out
