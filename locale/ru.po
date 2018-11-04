@@ -438,7 +438,7 @@ msgstr "Ctrl+8"
 
 #: objects/ui_MainWindow.h:1017
 msgid "Bac&k"
-msgstr "Назад"
+msgstr "Сзади"
 
 #: objects/ui_MainWindow.h:1019
 msgid "Ctrl+9"
@@ -1172,7 +1172,7 @@ msgstr[2] "При сборке выведено %1 предупреждений"
 
 #: src/mainwin.cc:1049
 msgid " For details see <a href=\"#console\">console window</a>."
-msgstr "Для подробностей смотреть <a href=\"#console\">окно консоли</a>."
+msgstr " Для подробностей смотреть <a href=\"#console\">окно консоли</a>."
 
 #: src/mainwin.cc:1421
 msgid "Failed to open file for writing"
