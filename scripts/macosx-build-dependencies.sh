@@ -53,7 +53,8 @@ PACKAGES=(
     "libxml2 2.9.7"
     "fontconfig 2.12.4"
     "hidapi 0.7.0"
-    "lib3mf a466df47231c02298dde295adb6075b0fc649eba"
+    "libuuid 1.6.2"
+    "lib3mf ca53e4d3d73b835ab9c0c00274a736eecf4f732f"
 )
 DEPLOY_PACKAGES=(
     "sparkle 1.13.1"
@@ -767,6 +768,33 @@ build_hidapi()
   cp hidapi/hidapi.h "$DEPLOYDIR"/include/hidapi/
 }
 
+check_libuuid()
+{
+    check_file lib/libuuid.dylib
+}
+
+build_libuuid()
+{
+  set -x
+  echo "Building libuuid" $version "..."
+  cd $BASEDIR/src
+  rm -rf uuid-$version
+  if [ ! -f uuid-$version.tar.gz ]; then
+    curl -L https://mirrors.ocf.berkeley.edu/debian/pool/main/o/ossp-uuid/ossp-uuid_1.6.2.orig.tar.gz -o uuid-$version.tar.gz
+  fi
+  tar xzf uuid-$version.tar.gz
+  cd uuid-$version
+  ./configure -prefix $DEPLOYDIR CFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN" --without-perl --without-php --without-pgsql
+  make -j"$NUMCPU"
+  make install
+  install_name_tool -id @rpath/libuuid.dylib $DEPLOYDIR/lib/libuuid.dylib
+}
+
+check_lib3mf()
+{
+    check_file lib/lib3mf.dylib
+}
+
 build_lib3mf()
 {
   version=$1
@@ -779,11 +807,8 @@ build_lib3mf()
   fi
   tar xzf $version.tar.gz
   cd lib3mf-$version
-  CXXFLAGS="$CXXSTDFLAGS" make CC=cc CXX=c++ LD=c++ LDFLAGS="$LDSTDFLAGS" -j"$NUMCPU" -C Project/Lib3MFGCC
-  make -j"$NUMCPU" -C Project/Lib3MFGCC install INSTALL_ROOT=$DEPLOYDIR
-#  install_name_tool -id @rpath/libCGAL.dylib $DEPLOYDIR/lib/libCGAL.dylib
-#  install_name_tool -id @rpath/libCGAL_Core.dylib $DEPLOYDIR/lib/libCGAL_Core.dylib
-#  install_name_tool -change libCGAL.11.dylib @rpath/libCGAL.dylib $DEPLOYDIR/lib/libCGAL_Core.dylib
+  CXXFLAGS="$CXXSTDFLAGS" cmake -DLIB3MF_TESTS=false -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR .
+  make -j"$NUMCPU" install
 }
 
 if [ ! -f $OPENSCADDIR/openscad.pro ]; then
