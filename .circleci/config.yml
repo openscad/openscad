@@ -13,7 +13,7 @@ jobs:
               export NUMCPU=2
               export MXEDIR=/mxe
               export LIB3MF_INCLUDEPATH=/mxe/usr/i686-w64-mingw32.static.posix/include/lib3mf
-              if [ x"${BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX=_${CIRCLE_BRANCH}; fi
+              if [ x"${BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,')"; fi
               export OPENSCAD_VERSION="$(date +%Y.%m.%d).ci${CIRCLE_BUILD_NUM}"
               . ./scripts/setenv-mingw-xbuild.sh 32 && ./scripts/release-common.sh -snapshot -mingw32 -v "$OPENSCAD_VERSION"
               mkdir -p /tmp/out
@@ -34,7 +34,7 @@ jobs:
               export NUMCPU=2
               export MXEDIR=/mxe
               export LIB3MF_INCLUDEPATH=/mxe/usr/x86_64-w64-mingw32.static.posix/include/lib3mf
-              if [ x"${BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX=_${CIRCLE_BRANCH}; fi
+              if [ x"${BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,')"; fi
               export OPENSCAD_VERSION="$(date +%Y.%m.%d).ci${CIRCLE_BUILD_NUM}"
               . ./scripts/setenv-mingw-xbuild.sh 64 && ./scripts/release-common.sh -snapshot -mingw64 -v "$OPENSCAD_VERSION"
               mkdir -p /tmp/out
