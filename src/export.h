@@ -1,9 +1,14 @@
 #pragma once
 
 #include <iostream>
+
+#include <boost/range/algorithm.hpp>
+#include <boost/range/adaptor/map.hpp>
+
 #include "Tree.h"
 #include "Camera.h"
 #include "memory.h"
+
 
 enum class FileFormat {
 	STL,
@@ -37,28 +42,32 @@ struct ViewOption {
 };
 
 struct ViewOptions {
-	bool showAxes;
-	bool showScaleMarkers;
-	bool showEdges;
-	bool showWireFrame;
-	bool showCrosshairs;
 	Previewer previewer{Previewer::OPENCSG};
 	RenderType renderer{RenderType::OPENCSG};
 	Camera camera;
 
-	const std::vector<ViewOption> optionList{
-		ViewOption{"axes", showAxes},
-		ViewOption{"scales", showScaleMarkers},
-		ViewOption{"edges", showEdges},
-		ViewOption{"wireframe", showWireFrame},
-		ViewOption{"crosshairs", showCrosshairs}
+	std::map<std::string, bool> flags{
+		{"axes", false},
+		{"scales", false},
+		{"edges", false},
+		{"wireframe", false},
+		{"crosshairs", false},
 	};
 
 	const std::vector<std::string> names() {
 		std::vector<std::string> names;
-		std::transform(optionList.begin(), optionList.end(), names.end(), [](const ViewOption o){ return o.name; });
+		boost::copy(flags | boost::adaptors::map_keys, std::back_inserter(names));
 		return names;
 	}
+
+	bool &operator[](const std::string &name) {
+		return flags.at(name);
+	}
+
+	bool operator[](const std::string &name) const {
+		return flags.at(name);
+	}
+	
 };
 
 bool export_png(const shared_ptr<const class Geometry> &root_geom, ViewOptions options, std::ostream &output);
