@@ -61,6 +61,7 @@ deploy {
   DEFINES += OPENSCAD_DEPLOY
   macx: {
     CONFIG += sparkle
+    OBJECTIVE_SOURCES += src/SparkleAutoUpdater.mm
     QMAKE_RPATHDIR = @executable_path/../Frameworks
   }
 }
