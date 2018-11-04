@@ -8,8 +8,7 @@ class ParameterSlider : public ParameterVirtualWidget
 public:
 	ParameterSlider(QWidget *parent, ParameterObject *parameterobject, DescLoD descriptionLoD);
 	void setValue() override;
-	void setParameterFocus() override;
-	
+
 private:
 	double step;
 	bool pressed;
