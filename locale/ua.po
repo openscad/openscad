@@ -285,7 +285,7 @@ msgstr "Ctrl++"
 
 #: objects/ui_MainWindow.h:944
 msgid "Decrease Font Si&ze"
-msgstr "З&меншити розмір шрифту
+msgstr "З&меншити розмір шрифту"
 
 #: objects/ui_MainWindow.h:946
 msgid "Ctrl+-"
@@ -325,11 +325,11 @@ msgstr "Перевірити &валідніть"
 
 #: objects/ui_MainWindow.h:962
 msgid "Display A&ST..."
-msgstr "Показати Абстранкте &Дерево Синтаксису..."
+msgstr "Показати Абстрактне &Дерево Синтаксису..."
 
 #: objects/ui_MainWindow.h:963
 msgid "Display CSG &Tree..."
-msgstr "&Показати дерево CSG"...
+msgstr "&Показати дерево CSG..."
 
 #: objects/ui_MainWindow.h:964
 msgid "Display CSG Pr&oducts..."
