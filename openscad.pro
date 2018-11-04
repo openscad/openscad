@@ -64,6 +64,7 @@ deploy {
   DEFINES += OPENSCAD_DEPLOY
   macx: {
     CONFIG += sparkle
+    OBJECTIVE_SOURCES += src/SparkleAutoUpdater.mm
     QMAKE_RPATHDIR = @executable_path/../Frameworks
   }
 }
@@ -178,6 +179,7 @@ CONFIG += glib-2.0
 CONFIG += harfbuzz
 CONFIG += freetype
 CONFIG += fontconfig
+CONFIG += lib3mf
 CONFIG += gettext
 CONFIG += libxml2
 CONFIG += libzip
@@ -483,6 +485,7 @@ SOURCES += \
            src/export.cc \
            src/export_stl.cc \
            src/export_amf.cc \
+           src/export_3mf.cc \
            src/export_off.cc \
            src/export_dxf.cc \
            src/export_svg.cc \
@@ -493,6 +496,7 @@ SOURCES += \
            src/import_off.cc \
            src/import_svg.cc \
            src/import_amf.cc \
+           src/import_3mf.cc \
            src/renderer.cc \
            src/colormap.cc \
            src/ThrownTogetherRenderer.cc \

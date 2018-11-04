@@ -18,6 +18,8 @@ public:
         static const Feature ExperimentalElseExpression;
         static const Feature ExperimentalForCExpression;
         static const Feature ExperimentalAmfImport;
+        static const Feature Experimental3mfImport;
+        static const Feature Experimental3mfExport;
         static const Feature ExperimentalSvgImport;
         static const Feature ExperimentalCustomizer;
         static const Feature ExperimentalInputDriver;
