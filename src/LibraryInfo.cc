@@ -32,6 +32,7 @@
 
 extern std::vector<std::string> librarypath;
 extern std::vector<std::string> fontpath;
+extern std::string get_lib3mf_version();
 
 std::string LibraryInfo::info()
 {
@@ -110,6 +111,7 @@ std::string LibraryInfo::info()
 	  << "\nMingW build: " << mingwstatus
 	  << "\nGLib version: "       << GLIB_MAJOR_VERSION << "." << GLIB_MINOR_VERSION << "." << GLIB_MICRO_VERSION
 	  << "\nlibzip version: " << LIBZIP_VERSION
+	  << "\nlib3mf version: " << get_lib3mf_version()
 	  << "\nApplication Path: " << PlatformUtils::applicationPath()
 	  << "\nDocuments Path: " << PlatformUtils::documentsPath()
 	  << "\nResource Path: " << PlatformUtils::resourceBasePath()

@@ -93,6 +93,16 @@
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>3mf</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>3MF file</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+		</dict>
 	</array>
 	<key>NSAppleScriptEnabled</key>
 	<true/>
