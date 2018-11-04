@@ -52,7 +52,7 @@ PACKAGES=(
     "libzip 1.3.2"
     "libxml2 2.9.7"
     "fontconfig 2.12.4"
-    "hidapi 0.7.0"
+    "hidapi 0.8.0-rc1"
     "libuuid 1.6.2"
     "lib3mf ca53e4d3d73b835ab9c0c00274a736eecf4f732f"
 )
@@ -751,21 +751,19 @@ check_hidapi()
 build_hidapi()
 {
   version=$1
-  extra_config_flags=""
 
   echo "Building hidapi $version..."
   cd "$BASEDIR"/src
-  rm -rf "hidapi-$version"
+  rm -rf "hidapi-hidapi-$version"
   if [ ! -f "hidapi-$version.zip" ]; then
-    curl --insecure -LO "http://github.com/downloads/signal11/hidapi/hidapi-${version}.zip"
+    curl --insecure -LO "https://github.com/signal11/hidapi/archive/hidapi-${version}.zip"
   fi
   unzip "hidapi-$version.zip"
-  cd "hidapi-$version"
-  make -C mac -j$NUMCPU
-  mkdir -p "$DEPLOYDIR"/lib
-  libtool -static -o "$DEPLOYDIR"/lib/libhidapi.a mac/hid.o
-  mkdir -p "$DEPLOYDIR"/include/hidapi
-  cp hidapi/hidapi.h "$DEPLOYDIR"/include/hidapi/
+  cd "hidapi-hidapi-$version"
+  ./bootstrap # Needed when building from github sources
+  ./configure --prefix=$DEPLOYDIR CXXFLAGS="$CXXSTDFLAGS" CFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="$LDSTDFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN"
+  make -j"$NUMCPU" install
+  install_name_tool -id @rpath/libhidapi.dylib $DEPLOYDIR/lib/libhidapi.dylib
 }
 
 check_libuuid()
@@ -775,12 +773,11 @@ check_libuuid()
 
 build_libuuid()
 {
-  set -x
-  echo "Building libuuid" $version "..."
+  version=$1
   cd $BASEDIR/src
   rm -rf uuid-$version
   if [ ! -f uuid-$version.tar.gz ]; then
-    curl -L https://mirrors.ocf.berkeley.edu/debian/pool/main/o/ossp-uuid/ossp-uuid_1.6.2.orig.tar.gz -o uuid-$version.tar.gz
+    curl -L https://mirrors.ocf.berkeley.edu/debian/pool/main/o/ossp-uuid/ossp-uuid_$version.orig.tar.gz -o uuid-$version.tar.gz
   fi
   tar xzf uuid-$version.tar.gz
   cd uuid-$version
