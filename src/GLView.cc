@@ -124,12 +124,13 @@ void GLView::paintGL()
 
   auto bgcol = ColorMap::getColor(*this->colorscheme, RenderColor::BACKGROUND_COLOR);
   auto axescolor = ColorMap::getColor(*this->colorscheme, RenderColor::AXES_COLOR);
+  auto crosshaircol = ColorMap::getColor(*this->colorscheme, RenderColor::CROSSHAIR_COLOR);
   glClearColor(bgcol[0], bgcol[1], bgcol[2], 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
   setupCamera();
   // The crosshair should be fixed at the center of the viewport...
-  if (showcrosshairs) GLView::showCrosshairs();
+  if (showcrosshairs) GLView::showCrosshairs(crosshaircol);
   glTranslated(cam.object_trans.x(), cam.object_trans.y(), cam.object_trans.z());
   // ...the axis lines need to follow the object translation.
   if (showaxes) GLView::showAxes(axescolor);
@@ -446,10 +447,9 @@ void GLView::showAxes(const Color4f &col)
   glPopAttrib();
 }
 
-void GLView::showCrosshairs()
+void GLView::showCrosshairs(const Color4f &col)
 {
   glLineWidth(this->getDPI());
-  auto col = ColorMap::getColor(*this->colorscheme, RenderColor::CROSSHAIR_COLOR);
   glColor3f(col[0], col[1], col[2]);
   glBegin(GL_LINES);
   for (double xf = -1; xf <= +1; xf += 2)
