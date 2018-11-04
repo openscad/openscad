@@ -8,7 +8,6 @@ class ParameterSpinBox :public ParameterVirtualWidget
 public:
 	ParameterSpinBox(QWidget *parent, ParameterObject *parameterobject, DescLoD descriptionLoD);
 	void setValue() override;
-	void setParameterFocus() override;
 
 protected slots:
 	void onChanged(double);

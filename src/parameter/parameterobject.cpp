@@ -4,7 +4,7 @@
 #include "modcontext.h"
 #include "annotation.h"
 
-ParameterObject::ParameterObject(Context *ctx, const Assignment &assignment, const ValuePtr defaultValue) : focus(false)
+ParameterObject::ParameterObject(Context *ctx, const Assignment &assignment, const ValuePtr defaultValue)
 {
   this->name = assignment.name;
   const Annotation *param = assignment.annotation("Parameter");

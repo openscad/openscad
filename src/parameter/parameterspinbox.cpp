@@ -15,7 +15,6 @@ ParameterSpinBox::ParameterSpinBox(QWidget *parent, ParameterObject *parameterob
 void ParameterSpinBox::onChanged(double)
 {
 	if(!this->suppressUpdate){
-		object->focus = true;
 		object->value = ValuePtr(doubleSpinBox->value());
 	}
 }
@@ -25,16 +24,8 @@ void ParameterSpinBox::onEditingFinished()
 	emit changed();
 }
 
-void ParameterSpinBox::setParameterFocus()
-{
-	this->doubleSpinBox->setFocus();
-	object->focus = false;
-}
-
 void ParameterSpinBox::setValue()
 {
-	if(hasFocus())return; //refuse programmatic updates, when the widget is in the focus of the user
-
 	suppressUpdate=true;
 	if (object->values->toDouble() > 0) {
 		setPrecision(object->values->toDouble());

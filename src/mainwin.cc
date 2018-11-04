@@ -966,6 +966,10 @@ void MainWindow::updateTVal()
 {
 	if (this->anim_numsteps == 0) return;
 
+	if (Feature::ExperimentalCustomizer.is_enabled() && viewActionHideParameters->isVisible()) {
+		if (this->parameterWidget->childHasFocus()) return;
+	}
+	
 	if (this->anim_numsteps > 1) {
 		this->anim_step = (this->anim_step + 1) % this->anim_numsteps;
 		this->anim_tval = 1.0 * this->anim_step / this->anim_numsteps;
