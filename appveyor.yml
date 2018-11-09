@@ -3,9 +3,6 @@ skip_branch_with_pr: true
 image:
   - Visual Studio 2017
 
-cache:
-  - C:\msys64 -> scripts/msys2-install-dependencies.sh
-
 # Uncomment to enable RDP login at init time, this will not block job execution.
 #init:
 #  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
