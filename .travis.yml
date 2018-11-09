@@ -5,7 +5,9 @@ matrix:
     - os: linux
       compiler: gcc
       dist: trusty
-      env: DIST="trusty"
+      env:
+        - DIST="trusty"
+        - PARALLEL_CTEST=-j1
       sudo: required
       cache:
         - apt
@@ -13,14 +15,18 @@ matrix:
     - os: linux
       compiler: gcc
       dist: xenial
-      env: DIST="xenial"
+      env:
+        - DIST="xenial"
+        - PARALLEL_CTEST=-j1
       sudo: required
       cache:
         - apt
         - ccache
     - os: osx
       compiler: clang
-      env: DIST="osx"
+      env:
+        - DIST="osx"
+        - PARALLEL_CTEST=-j4
       cache:
         - ccache
         - directories:
