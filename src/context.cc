@@ -147,11 +147,7 @@ ValuePtr Context::lookup_variable(const std::string &name, bool silent, const Lo
 		return this->parent->lookup_variable(name, silent, loc);
 	}
 	if (!silent) {
-		if(loc.isNone()){
-			PRINTB("WARNING: Ignoring unknown variable '%s'.", name);
-		}else{
-			PRINTB("WARNING: Ignoring unknown variable '%s', line %d.", name% loc.firstLine());
-		}
+		PRINTB("WARNING: Ignoring unknown variable '%s', %s.", name % loc.toString());
 	}
 	return ValuePtr::undefined;
 }
@@ -188,13 +184,8 @@ bool Context::has_local_variable(const std::string &name) const
  * @param what what is ignored
  * @param name name of the ignored object
  */
-static void print_ignore_warning(const char *what, const char *name, const Location &loc)
-{
-	if(loc.isNone()){
-		PRINTB("WARNING: Ignoring unknown %s '%s'.", what % name);
-	}else{
-		PRINTB("WARNING: Ignoring unknown %s '%s', line %d.", what % name % loc.firstLine());
-	}
+static void print_ignore_warning(const char *what, const char *name, const Location &loc){
+	PRINTB("WARNING: Ignoring unknown %s '%s', %s.", what % name % loc.toString());
 }
  
 ValuePtr Context::evaluate_function(const std::string &name, const EvalContext *evalctx, const Location &loc) const

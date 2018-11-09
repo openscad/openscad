@@ -24,6 +24,8 @@ public:
 	int lastColumn() const { return last_col; }
 	bool isNone() const;
 
+	std::string toString() const;
+
 	static const Location NONE;
 private:
 	int first_line;

@@ -504,11 +504,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 
 					if (!this->points->toVector()[pt]->getVec3(px, py, pz) ||
 							std::isinf(px) || std::isinf(py) || std::isinf(pz)) {
-						if(this->modinst->location().isNone()){
-							PRINTB("ERROR: Unable to convert point at index %d to a vec3 of numbers", j);
-						}else{
-							PRINTB("ERROR: Unable to convert point at index %d to a vec3 of numbers, line %d", j % this->modinst->location().firstLine());
-						}
+						PRINTB("ERROR: Unable to convert point at index %d to a vec3 of numbers, %s", j % this->modinst->location().toString());
 						return p;
 					}
 					p->insert_vertex(px, py, pz);
@@ -563,13 +559,8 @@ const Geometry *PrimitiveNode::createGeometry() const
 			for (unsigned int i=0;i<vec.size();i++) {
 				const auto &val = *vec[i];
 				if (!val.getVec2(x, y) || std::isinf(x) || std::isinf(y)) {
-					if(this->modinst->location().isNone()){
-						PRINTB("ERROR: Unable to convert point %s at index %d to a vec2 of numbers", 
-									 val.toString() % i);
-					}else{
-						PRINTB("ERROR: Unable to convert point %s at index %d to a vec2 of numbers, line %d", 
-									 val.toString() % i % this->modinst->location().firstLine());
-					}
+					PRINTB("ERROR: Unable to convert point %s at index %d to a vec2 of numbers, %s", 
+								 val.toString() % i % this->modinst->location().toString());
 					return p;
 				}
 				outline.vertices.emplace_back(x, y);

@@ -21,6 +21,11 @@ bool Location::isNone() const{
 	return ((*this)==Location::NONE);
 }
 
+std::string Location::toString() const{
+	if(this->isNone()) return "location unkown";
+	return "line " + std::to_string(this->firstLine());
+}
+
 std::ostream &operator<<(std::ostream &stream, const ASTNode &ast)
 {
 	ast.print(stream, "");
