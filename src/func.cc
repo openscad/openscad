@@ -847,9 +847,11 @@ ValuePtr builtin_version(const Context *, const EvalContext *evalctx)
 ValuePtr builtin_version_num(const Context *ctx, const EvalContext *evalctx)
 {
 	ValuePtr val = (evalctx->numArgs() == 0) ? builtin_version(ctx, evalctx) : evalctx->getArgValue(0);
-	double y, m, d;
-	if (!val->getVec3(y, m, d, 0)) {
-		return ValuePtr::undefined;
+	double y, m, d = 0;
+	if (!val->getVec3(y, m, d)) {
+		if (!val->getVec2(y, m)) {
+			return ValuePtr::undefined;
+		}
 	}
 	return ValuePtr(y * 10000 + m * 100 + d);
 }
