@@ -35,6 +35,9 @@ private:
 	std::shared_ptr<fs::path> path;
 };
 
+bool operator == (Location const& lhs, Location const& rhs);
+bool operator != (Location const& lhs, Location const& rhs);
+
 class ASTNode
 {
 public:
