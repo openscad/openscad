@@ -260,6 +260,7 @@ FLEXSOURCES += src/comment_lexer.l
 BISONSOURCES += src/comment_parser.y
 
 HEADERS += src/version_check.h \
+           src/version_helper.h \
            src/ProgressWidget.h \
            src/parsersettings.h \
            src/renderer.h \
