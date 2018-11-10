@@ -1,1 +1,1 @@
-ERROR: Recursion detected calling module 'crash'
+ERROR: Recursion detected calling module 'crash' in file recursion-test-module.scad, line 2

@@ -31,20 +31,12 @@ void ParameterText::onChanged(QString)
 				object->value = newValue;
 			}
 		}
-		object->focus = true;
-		
 	}
 }
 
 void ParameterText::onEditingFinished()
 {
 	emit changed();
-}
-
-void ParameterText::setParameterFocus()
-{
-	this->lineEdit->setFocus();
-	object->focus = false;
 }
 
 void ParameterText::setValue()

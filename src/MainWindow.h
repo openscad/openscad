@@ -191,6 +191,7 @@ private slots:
 	void actionDisplayCSGProducts();
 	void actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim);
 	void actionExportSTL();
+	void actionExport3MF();
 	void actionExportOFF();
 	void actionExportAMF();
 	void actionExportDXF();

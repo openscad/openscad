@@ -4,45 +4,6 @@
 #include <iostream>
 
 namespace fs=boost::filesystem;
-// If the given (absolute) path is relative to the relative_to path, return a new
-// relative path. Will normalize the given path first
-fs::path boostfs_relative_path(const fs::path &path, const fs::path &relative_to)
-{
-	// create absolute paths
-	auto p = fs::absolute(boostfs_normalize(path));
-	auto r = fs::absolute(relative_to);
-	
-	// if root paths are different, return absolute path
-	if (p.root_path() != r.root_path()) return p;
-	
-	// initialize relative path
-	fs::path result;
-	
-	// find out where the two paths diverge
-	auto itr_path = p.begin();
-	auto itr_relative_to = r.begin();
-	while (*itr_path == *itr_relative_to && itr_path != p.end() && itr_relative_to != r.end()) {
-		++itr_path;
-		++itr_relative_to;
-	}
-	
-	// add "../" for each remaining token in relative_to
-	if (itr_relative_to != r.end()) {
-		++itr_relative_to;
-		while (itr_relative_to != r.end()) {
-			result /= "..";
-			++itr_relative_to;
-		}
-	}
-	
-	// add remaining path
-	while (itr_path != p.end()) {
-		result /= *itr_path;
-		++itr_path;
-	}
-	
-	return result;
-}
 
 // Will normalize the given path, i.e. remove any redundant ".." path elements.
 fs::path boostfs_normalize(const fs::path &path)
@@ -101,7 +62,7 @@ boostfs_uncomplete(fs::path const p, fs::path const base)
 
 	// create absolute paths
 	fs::path abs_p = fs::absolute(boostfs_normalize(p));
-	fs::path abs_base = fs::absolute(base);
+	fs::path abs_base = fs::absolute(boostfs_normalize(base));
 
 	fs::path from_path, from_base, output;
 

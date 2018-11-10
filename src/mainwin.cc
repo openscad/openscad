@@ -253,6 +253,7 @@ MainWindow::MainWindow(const QString &filename)
 	const QString importStatement = "import(\"%1\");\n";
 	const QString surfaceStatement = "surface(\"%1\");\n";
 	knownFileExtensions["stl"] = importStatement;
+	if (Feature::Experimental3mfImport.is_enabled()) knownFileExtensions["3mf"] = importStatement;
 	knownFileExtensions["off"] = importStatement;
 	knownFileExtensions["dxf"] = importStatement;
 	if (Feature::ExperimentalSvgImport.is_enabled()) knownFileExtensions["svg"] = importStatement;
@@ -370,6 +371,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->designActionDisplayCSGTree, SIGNAL(triggered()), this, SLOT(actionDisplayCSGTree()));
 	connect(this->designActionDisplayCSGProducts, SIGNAL(triggered()), this, SLOT(actionDisplayCSGProducts()));
 	connect(this->fileActionExportSTL, SIGNAL(triggered()), this, SLOT(actionExportSTL()));
+	connect(this->fileActionExport3MF, SIGNAL(triggered()), this, SLOT(actionExport3MF()));
 	connect(this->fileActionExportOFF, SIGNAL(triggered()), this, SLOT(actionExportOFF()));
 	connect(this->fileActionExportAMF, SIGNAL(triggered()), this, SLOT(actionExportAMF()));
 	connect(this->fileActionExportDXF, SIGNAL(triggered()), this, SLOT(actionExportDXF()));
@@ -377,6 +379,13 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->fileActionExportCSG, SIGNAL(triggered()), this, SLOT(actionExportCSG()));
 	connect(this->fileActionExportImage, SIGNAL(triggered()), this, SLOT(actionExportImage()));
 	connect(this->designActionFlushCaches, SIGNAL(triggered()), this, SLOT(actionFlushCaches()));
+
+#ifdef ENABLE_LIB3MF
+	bool export3mfVisible = Feature::Experimental3mfExport.is_enabled();
+#else
+	bool export3mfVisible = false;
+#endif
+	this->fileActionExport3MF->setVisible(export3mfVisible);
 
 	// View menu
 #ifndef ENABLE_OPENCSG
@@ -519,6 +528,7 @@ MainWindow::MainWindow(const QString &filename)
 	initActionIcon(viewActionAnimate, ":/images/animate.png", ":/images/animate.png");
 	initActionIcon(fileActionExportSTL, ":/images/STL.png", ":/images/STL-white.png");
 	initActionIcon(fileActionExportAMF, ":/images/AMF.png", ":/images/AMF-white.png");
+	initActionIcon(fileActionExport3MF, ":/images/3MF.png", ":/images/3MF-white.png");
 	initActionIcon(fileActionExportOFF, ":/images/OFF.png", ":/images/OFF-white.png");
 	initActionIcon(fileActionExportDXF, ":/images/DXF.png", ":/images/DXF-white.png");
 	initActionIcon(fileActionExportSVG, ":/images/SVG.png", ":/images/SVG-white.png");
@@ -956,6 +966,10 @@ void MainWindow::updateTVal()
 {
 	if (this->anim_numsteps == 0) return;
 
+	if (Feature::ExperimentalCustomizer.is_enabled() && viewActionHideParameters->isVisible()) {
+		if (this->parameterWidget->childHasFocus()) return;
+	}
+	
 	if (this->anim_numsteps > 1) {
 		this->anim_step = (this->anim_step + 1) % this->anim_numsteps;
 		this->anim_tval = 1.0 * this->anim_step / this->anim_numsteps;
@@ -2284,6 +2298,11 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
 void MainWindow::actionExportSTL()
 {
 	actionExport(FileFormat::STL, "STL", ".stl", 3);
+}
+
+void MainWindow::actionExport3MF()
+{
+	actionExport(FileFormat::_3MF, "3MF", ".3mf", 3);
 }
 
 void MainWindow::actionExportOFF()

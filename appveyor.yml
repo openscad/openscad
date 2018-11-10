@@ -1,0 +1,38 @@
+skip_branch_with_pr: true
+
+image:
+  - Visual Studio 2017
+
+# Uncomment to enable RDP login at init time, this will not block job execution.
+#init:
+#  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+
+install:
+  - echo "install"
+  - set PATH=c:\msys64\usr\bin
+  - C:\msys64\usr\bin\bash -lc "echo 'export PATH=/mingw64/bin:/usr/bin' > ~/.bashrc"
+  - C:\msys64\usr\bin\bash -lc /c/projects/openscad/scripts/msys2-install-dependencies.sh
+
+build_script:
+  - echo "build"
+  - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad && qmake.exe openscad.pro CONFIG-=debug CONFIG+=experimental CONFIG+=snapshot CONFIG+=info"
+  - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad && mingw32-make.exe -j2"
+  - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad && git submodule update --init"
+  - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad/tests && EIGENDIR=/mingw64/include/eigen3 /mingw64/bin/cmake.exe -G 'MSYS Makefiles' ."
+  - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad/tests && mingw32-make.exe -j2"
+
+test_script:
+  - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad/release && cp -v /mingw64/bin/opengl32.dll ."
+  - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad/tests && /mingw64/bin/ctest.exe -j2 -E 'opencsgtest_issue1165|opencsgtest_issue1215|throwntogethertest_issue1089|throwntogethertest_issue1215|openscad-nonascii|import_3mf|3mfpngtest|3mfexport'"
+
+artifacts:
+  - path: 'tests\Testing\Temporary\*_report.html'
+
+on_failure:
+  - ps: Get-ChildItem c:\projects\openscad\tests\Testing\Temporary\*_report.html | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }
+
+# Uncomment RDP login at job end with specical blocking flag to prevent the worker from exitting. Continue by deleting lock file on desktop.
+# Alternatively if RDP is already enabled earlier, just adding "pause" will block the worker till timeout (60 minutes).
+#on_finish:
+#  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+#  - pause
