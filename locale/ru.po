@@ -1,21 +1,22 @@
 #
 # <soniczerops@gmail.com>, 2013, 2014, 2015.
-# Alexandre Prokoudine <alexandre.prokoudine@gmail.com>, 2015
+# Alexandre Prokoudine <alexandre.prokoudine@gmail.com>, 2015-2018.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2015.03\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-08-15 15:07+0200\n"
-"PO-Revision-Date: 2015-03-11 10:03+0300\n"
+"PO-Revision-Date: 2018-11-07 02:02+0300\n"
 "Last-Translator: Alexandre Prokoudine <alexandre.prokoudine@gmail.com>\n"
-"Language-Team: Russian\n"
+"Language-Team: русский <gnome-cyr@lists.gnome.org>\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Gtranslator 2.91.6\n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)\n"
+"X-Generator: Gtranslator 3.31.0\n"
 
 #: objects/ui_AboutDialog.h:103 src/AboutDialog.h:13
 msgid "About OpenSCAD"
@@ -200,9 +201,8 @@ msgid "Ctrl+Shift+Z"
 msgstr "Ctrl+Shift+Z"
 
 #: objects/ui_MainWindow.h:909
-#, fuzzy
 msgid "Ctrl+Y"
-msgstr "Ctrl+N"
+msgstr "Ctrl+Y"
 
 #: objects/ui_MainWindow.h:911
 msgid "Cu&t"
@@ -601,9 +601,8 @@ msgid "View All"
 msgstr "Показать все"
 
 #: objects/ui_MainWindow.h:1079
-#, fuzzy
 msgid "Ctrl+Shift+V"
-msgstr "Ctrl+Shift+S"
+msgstr "Ctrl+Shift+V"
 
 #: objects/ui_MainWindow.h:1081
 msgid "Conv&ert Tabs to Spaces"
@@ -626,14 +625,12 @@ msgid "&Cheat Sheet"
 msgstr "&Шпаргалка"
 
 #: objects/ui_MainWindow.h:1088
-#, fuzzy
 msgid "Copy Viewport"
-msgstr "Скопировать в буфер"
+msgstr "Скопировать вьюпорт"
 
 #: objects/ui_MainWindow.h:1090
-#, fuzzy
 msgid "Ctrl+Shift+C"
-msgstr "Ctrl+Shift+S"
+msgstr "Ctrl+Shift+C"
 
 #: objects/ui_MainWindow.h:1092
 msgid "Hide Customizer"
@@ -704,13 +701,12 @@ msgid "Search string"
 msgstr "Искать строчку"
 
 #: objects/ui_MainWindow.h:1114
-#, fuzzy
 msgid "Prev."
-msgstr "Предпросмотр"
+msgstr "Пред."
 
 #: objects/ui_MainWindow.h:1115
 msgid "Next"
-msgstr ""
+msgstr "След."
 
 #: objects/ui_MainWindow.h:1116
 msgid "Done"
@@ -774,67 +770,63 @@ msgstr ""
 
 #: objects/ui_ParameterEntryWidget.h:341
 msgid "Parameter"
-msgstr ""
+msgstr "Параметр"
 
 #: objects/ui_ParameterEntryWidget.h:342 objects/ui_ParameterEntryWidget.h:343
 msgid "Description"
-msgstr ""
+msgstr "Описание"
 
 #: objects/ui_ParameterWidget.h:151
 msgid "save preset"
-msgstr ""
+msgstr "Сохранить предустановку"
 
 #: objects/ui_ParameterWidget.h:153
 msgid "delete current preset"
-msgstr ""
+msgstr "Удалить выбранную предустановку"
 
 #: objects/ui_ParameterWidget.h:155
 msgid "-"
-msgstr ""
+msgstr "-"
 
 #: objects/ui_ParameterWidget.h:157
 msgid "preset selection"
-msgstr ""
+msgstr "Выбор предустановки"
 
 #: objects/ui_ParameterWidget.h:160 src/parameter/ParameterWidget.cc:154
 msgid "add new preset"
-msgstr ""
+msgstr "Создать предустановку"
 
 #: objects/ui_ParameterWidget.h:162
 msgid "+"
-msgstr ""
+msgstr "+"
 
 #: objects/ui_ParameterWidget.h:163
-#, fuzzy
 msgid "Automatic Preview"
-msgstr "&Автоматически обновлять и выполнять предпросмотр"
+msgstr "Автопредпросмотр"
 
 #: objects/ui_ParameterWidget.h:166
-#, fuzzy
 msgid "Show Details"
-msgstr "Показывать оси"
+msgstr "Показать подробности"
 
 #: objects/ui_ParameterWidget.h:167
 msgid "Inline Details"
 msgstr ""
 
 #: objects/ui_ParameterWidget.h:168
-#, fuzzy
 msgid "Hide Details"
-msgstr "Скрыть панели"
+msgstr "Скрыть подробности"
 
 #: objects/ui_ParameterWidget.h:169
 msgid "Description Only"
-msgstr ""
+msgstr "Только описание"
 
 #: objects/ui_ParameterWidget.h:172
 msgid "reset the parameters to the selected preset"
 msgstr ""
 
 #: objects/ui_ParameterWidget.h:174
-#, fuzzy
 msgid "Reset"
-msgstr "Сбросить вид"
+msgstr "Сбросить"
 
 #: objects/ui_Preferences.h:1094
 msgid "Preferences"
@@ -845,7 +837,6 @@ msgid "3D View"
 msgstr "Просмотр 3D"
 
 #: objects/ui_Preferences.h:1096
-#, fuzzy
 msgctxt "preferences"
 msgid "Advanced"
 msgstr "Дополнительные"
@@ -981,7 +972,7 @@ msgstr "Выделять текущую строку"
 
 #: objects/ui_Preferences.h:1143
 msgid "Display Line Numbers"
-msgstr ""
+msgstr "Показывать номера строк"
 
 #: objects/ui_Preferences.h:1144 objects/ui_Preferences.h:1177
 msgid "Line wrap"
@@ -1122,11 +1113,11 @@ msgstr "Включить локализацию интерфейса (необх
 
 #: objects/ui_Preferences.h:1198
 msgid "Bring window to front after automatic reload"
-msgstr ""
+msgstr "Вывести окно на передний план после автоматической перезагрузки"
 
 #: objects/ui_Preferences.h:1199
 msgid "Play sound notification on render complete"
-msgstr ""
+msgstr "Проигрывать звук при завершении рендеринга"
 
 #: objects/ui_ProgressWidget.h:72
 msgid "%v / %m"
@@ -1144,7 +1135,7 @@ msgstr ""
 #: src/export.cc:70
 #, c-format
 msgid "Can't open file \"%s\" for export"
-msgstr ""
+msgstr "Не удалось открыть файл \"%s\" для экспорта"
 
 #: src/export.cc:85
 #, c-format
@@ -1176,16 +1167,16 @@ msgstr "Для подробностей смотреть <a href=\"#console\">о
 
 #: src/mainwin.cc:1421
 msgid "Failed to open file for writing"
-msgstr ""
+msgstr "Не удалось открыть файл для записи"
 
 #: src/mainwin.cc:1431
 #, c-format
 msgid "Saved design '%s'."
-msgstr ""
+msgstr "Сохранён проект '%s'."
 
 #: src/mainwin.cc:1434
 msgid "Error saving design"
-msgstr ""
+msgstr "Ошибка при сохранении проекта"
 
 #: src/mainwin.cc:1442
 msgid "Save File"
@@ -1240,9 +1231,8 @@ msgid "CSG Files (*.csg)"
 msgstr "Файлы CSG (*.csg)"
 
 #: src/mainwin.cc:2267
-#, fuzzy
 msgid "Untitled.png"
-msgstr "Безымянный.csg"
+msgstr "Безымянный.png"
 
 #: src/mainwin.cc:2269
 msgid "Export Image"
@@ -1270,11 +1260,11 @@ msgstr "Сохранить изменения?"
 
 #: src/OpenSCADApp.cc:37
 msgid "Unknown error"
-msgstr ""
+msgstr "Неизвестная ошибка"
 
 #: src/OpenSCADApp.cc:40
 msgid "Critical Error"
-msgstr ""
+msgstr "Критическая ошибка"
 
 #: src/OpenSCADApp.cc:40
 msgid ""
@@ -1319,15 +1309,14 @@ msgstr ""
 "Информация о рендере:\n"
 
 #: src/QGLView.cc:158
-#, fuzzy
 msgid ""
 "GLEW version %1\n"
 "%2 (%3)\n"
 "OpenGL version %4\n"
 msgstr ""
-"Версия GLEW %s\n"
-"%s (%s)\n"
-"Версия OpenGL %s\n"
+"Версия GLEW %1\n"
+"%2 (%3)\n"
+"Версия OpenGL %4\n"
 
 #: src/settings.cc:137
 msgid "After indentation"
@@ -1345,11 +1334,11 @@ msgstr ""
 
 #: src/parameter/ParameterWidget.cc:156
 msgid "remove current preset"
-msgstr ""
+msgstr "Удалить выбранную предустановку"
 
 #: src/parameter/ParameterWidget.cc:158
 msgid "save current preset"
-msgstr ""
+msgstr "Сохранить выбранную предустановку"
 
 #: src/parameter/ParameterWidget.cc:160 src/parameter/ParameterWidget.cc:161
 #: src/parameter/ParameterWidget.cc:162
@@ -1358,7 +1347,7 @@ msgstr ""
 
 #: src/parameter/ParameterWidget.cc:202
 msgid "no preset selected"
-msgstr ""
+msgstr "Предустановка не выбрана"
 
 #: src/parameter/ParameterWidget.cc:220
 msgid ""
@@ -1368,19 +1357,19 @@ msgstr ""
 
 #: src/parameter/ParameterWidget.cc:449
 msgid "Create new set of parameter"
-msgstr ""
+msgstr "Создать новый набор параметров"
 
 #: src/parameter/ParameterWidget.cc:449
 msgid "Enter name of the parameter set"
-msgstr ""
+msgstr "Введите название нового набора параметров"
 
 #: src/parameter/ParameterWidget.cc:485
 msgid "Saving presets"
-msgstr ""
+msgstr "Сохранение предустановок"
 
 #: src/parameter/ParameterWidget.cc:486
 msgid "%1 was found, but was unreadable. Do you want to overwrite %1?"
-msgstr ""
+msgstr "Файл %1 обнаружен, но не может быть прочтён. Перезаписать %1?"
 
 #: examples/examples.json:2
 msgid "Basics"
@@ -1405,7 +1394,7 @@ msgstr "Старый"
 #. (itstool) path: component/summary
 #: openscad.appdata.xml.in:6
 msgid "The Programmers Solid 3D CAD Modeller"
-msgstr ""
+msgstr "Твердотельная 3D-САПР для программистов"
 
 #. (itstool) path: description/p
 #: openscad.appdata.xml.in:19

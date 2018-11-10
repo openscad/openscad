@@ -38,7 +38,7 @@ PACKAGES=(
     "gmp 6.1.2"
     "mpfr 3.1.6"
     "boost 1.65.1"
-    "qt5 5.11.1"
+    "qt5 5.11.2"
     "qscintilla 2.9.3"
     "cgal 4.11"
     "glew 1.13.0"
@@ -52,7 +52,9 @@ PACKAGES=(
     "libzip 1.3.2"
     "libxml2 2.9.7"
     "fontconfig 2.12.4"
-    "hidapi 0.7.0"
+    "hidapi 0.8.0-rc1"
+    "libuuid 1.6.2"
+    "lib3mf ca53e4d3d73b835ab9c0c00274a736eecf4f732f"
 )
 DEPLOY_PACKAGES=(
     "sparkle 1.13.1"
@@ -222,16 +224,13 @@ build_qt5()
   if ! $USING_CXX11; then
     QT_EXTRA_FLAGS="-no-c++11"
   fi
-  if (( $version < 5.11 )) ; then
-    QT_EXTRA_FLAGS=$QT_EXTRA_FLAGS" -no-qml-debug"
-  fi
   CXXFLAGS="$CXXSTDFLAGS" ./configure -prefix $DEPLOYDIR $QT_EXTRA_FLAGS -release -opensource -confirm-license \
 		-nomake examples -nomake tests \
 		-no-xcb -no-glib -no-harfbuzz -no-sql-db2 -no-sql-ibase -no-sql-mysql -no-sql-oci -no-sql-odbc \
 		-no-sql-psql -no-sql-sqlite2 -no-sql-tds -no-cups \
                 -skip qtx11extras -skip qtandroidextras -skip qtserialport -skip qtserialbus \
                 -skip qtactiveqt -skip qtxmlpatterns -skip qtdeclarative -skip qtscxml \
-                -skip qtpurchasing -skip qtcanvas3d -skip qtgamepad -skip qtwayland \
+                -skip qtpurchasing -skip qtcanvas3d -skip qtwayland \
                 -skip qtconnectivity -skip qtwebsockets -skip qtwebchannel -skip qtsensors \
                 -skip qtdatavis3d -skip qtcharts -skip qtwinextras \
                 -skip qtgraphicaleffects -skip qtquickcontrols2 -skip qtquickcontrols \
@@ -749,21 +748,61 @@ check_hidapi()
 build_hidapi()
 {
   version=$1
-  extra_config_flags=""
 
   echo "Building hidapi $version..."
   cd "$BASEDIR"/src
-  rm -rf "hidapi-$version"
+  rm -rf "hidapi-hidapi-$version"
   if [ ! -f "hidapi-$version.zip" ]; then
-    curl --insecure -LO "http://github.com/downloads/signal11/hidapi/hidapi-${version}.zip"
+    curl --insecure -LO "https://github.com/signal11/hidapi/archive/hidapi-${version}.zip"
   fi
   unzip "hidapi-$version.zip"
-  cd "hidapi-$version"
-  make -C mac -j$NUMCPU
-  mkdir -p "$DEPLOYDIR"/lib
-  libtool -static -o "$DEPLOYDIR"/lib/libhidapi.a mac/hid.o
-  mkdir -p "$DEPLOYDIR"/include/hidapi
-  cp hidapi/hidapi.h "$DEPLOYDIR"/include/hidapi/
+  cd "hidapi-hidapi-$version"
+  ./bootstrap # Needed when building from github sources
+  ./configure --prefix=$DEPLOYDIR CXXFLAGS="$CXXSTDFLAGS" CFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="$LDSTDFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN"
+  make -j"$NUMCPU" install
+  install_name_tool -id @rpath/libhidapi.dylib $DEPLOYDIR/lib/libhidapi.dylib
+}
+
+check_libuuid()
+{
+    check_file lib/libuuid.dylib
+}
+
+build_libuuid()
+{
+  version=$1
+  cd $BASEDIR/src
+  rm -rf uuid-$version
+  if [ ! -f uuid-$version.tar.gz ]; then
+    curl -L https://mirrors.ocf.berkeley.edu/debian/pool/main/o/ossp-uuid/ossp-uuid_$version.orig.tar.gz -o uuid-$version.tar.gz
+  fi
+  tar xzf uuid-$version.tar.gz
+  cd uuid-$version
+  ./configure -prefix $DEPLOYDIR CFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN" --without-perl --without-php --without-pgsql
+  make -j"$NUMCPU"
+  make install
+  install_name_tool -id @rpath/libuuid.dylib $DEPLOYDIR/lib/libuuid.dylib
+}
+
+check_lib3mf()
+{
+    check_file lib/lib3mf.dylib
+}
+
+build_lib3mf()
+{
+  version=$1
+
+  echo "Building lib3mf" $version "..."
+  cd $BASEDIR/src
+  rm -rf lib3mf-$version
+  if [ ! -f $version.tar.gz ]; then
+    curl -LO https://github.com/3MFConsortium/lib3mf/archive/$version.tar.gz
+  fi
+  tar xzf $version.tar.gz
+  cd lib3mf-$version
+  CXXFLAGS="$CXXSTDFLAGS" cmake -DLIB3MF_TESTS=false -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR .
+  make -j"$NUMCPU" install
 }
 
 if [ ! -f $OPENSCADDIR/openscad.pro ]; then
