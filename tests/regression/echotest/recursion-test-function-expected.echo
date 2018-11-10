@@ -1,1 +1,1 @@
-ERROR: Recursion detected calling function 'crash'
+ERROR: Recursion detected calling function 'crash' in file recursion-test-function.scad, line 1

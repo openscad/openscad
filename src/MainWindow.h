@@ -107,7 +107,7 @@ private:
 	void compileTopLevelDocument(bool rebuildParameterWidget);
 		void updateCompileResult();
 	void compile(bool reload, bool forcedone = false, bool rebuildParameterWidget=true);
-	void compileCSG(bool procevents);
+	void compileCSG();
 	bool maybeSave();
 		void saveError(const QIODevice &file, const std::string &msg);
 	bool checkEditorModified();
@@ -191,6 +191,7 @@ private slots:
 	void actionDisplayCSGProducts();
 	void actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim);
 	void actionExportSTL();
+	void actionExport3MF();
 	void actionExportOFF();
 	void actionExportAMF();
 	void actionExportDXF();
