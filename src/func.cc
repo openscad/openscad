@@ -961,7 +961,7 @@ ValuePtr builtin_is_undef(const Context *, const EvalContext *evalctx)
 	if (evalctx->numArgs() == 1) {
 		const auto &arg =evalctx->getArgs()[0];
 		ValuePtr v;
-		if(const Lookup* lookup = dynamic_cast<const Lookup*> (arg.expr.get())){
+		if(auto lookup = dynamic_pointer_cast<Lookup> (arg.expr)){
 			v = lookup->evaluateSilently(evalctx);
 		}else{
 			v = evalctx->getArgValue(0);
