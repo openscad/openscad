@@ -106,18 +106,22 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 void Preferences::init() {
 	// Editor pane
 	// Setup default font (Try to use a nice monospace font)
-	QString fontfamily;
-#ifdef Q_OS_X11
-	fontfamily = "Mono";
-#elif defined (Q_OS_WIN)
-	fontfamily = "Console";
+#if (QT_VERSION < QT_VERSION_CHECK(5, 2, 0))
+#if defined (Q_OS_WIN)
+	const QString fontfamily{"Console"};
 #elif defined (Q_OS_MAC)
-	fontfamily = "Monaco";
+	const QString fontfamily{"Monaco"};
+#else
+	const QString fontfamily{"Mono"};
 #endif
+
 	QFont font;
 	font.setStyleHint(QFont::TypeWriter);
 	font.setFamily(fontfamily); // this runs Qt's font matching algorithm
-	QString found_family(QFontInfo(font).family());
+#else
+	const QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+#endif
+	const QString found_family{QFontInfo{font}.family()};
 	this->defaultmap["editor/fontfamily"] = found_family;
  	this->defaultmap["editor/fontsize"] = 12;
 	this->defaultmap["editor/syntaxhighlight"] = "For Light Background";
