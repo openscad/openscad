@@ -79,12 +79,11 @@ class SettingsReader : public Settings::SettingsVisitor
 			return Value(boost::lexical_cast<bool>(trimmed_value));
 		default:
 			assert(false && "invalid value type for settings");
-			return 0; // keep compiler happy
+			return entry.defaultValue();
 		}
 	} catch (const boost::bad_lexical_cast& e) {
 		return entry.defaultValue();
 	}
-	return entry.defaultValue();
     }
 
     void handle(Settings::SettingsEntry& entry) const override {
