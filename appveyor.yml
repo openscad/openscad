@@ -28,6 +28,7 @@ build_script:
   - ps: Get-Date -UFormat '### %Y-%m-%d %T make'
   - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad/tests && mingw32-make.exe -j2"
   - ps: Get-Date -UFormat '### %Y-%m-%d %T build finished'
+  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 test_script:
   - ps: Get-Date -UFormat '### %Y-%m-%d %T test started'
