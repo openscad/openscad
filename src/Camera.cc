@@ -3,7 +3,7 @@
 #include "printutils.h"
 
 Camera::Camera() :
-	projection(ProjectionType::PERSPECTIVE), fov(22.5), viewall(false)
+	projection(ProjectionType::PERSPECTIVE), fov(22.5), viewall(false), autocenter(false), height(0.0)
 {
 	PRINTD("Camera()");
 
@@ -12,7 +12,6 @@ Camera::Camera() :
 
 	pixel_width = RenderSettings::inst()->img_width;
 	pixel_height = RenderSettings::inst()->img_height;
-	autocenter = false;
 }
 
 void Camera::setup(std::vector<double> params)
