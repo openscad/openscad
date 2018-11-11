@@ -17,12 +17,12 @@ static void setupCamera(Camera &cam, const BoundingBox &bbox)
 	if (cam.viewall) cam.viewAll(bbox);
 }
 
-bool export_png(const shared_ptr<const Geometry> &root_geom, ViewOptions options, std::ostream &output)
+bool export_png(const shared_ptr<const Geometry> &root_geom, const ViewOptions& options, Camera camera, std::ostream &output)
 {
 	PRINTD("export_png geom");
 	OffscreenView *glview;
 	try {
-		glview = new OffscreenView(options.camera.pixel_width, options.camera.pixel_height);
+		glview = new OffscreenView(camera.pixel_width, camera.pixel_height);
 	} catch (int error) {
 		fprintf(stderr,"Can't create OpenGL OffscreenView. Code: %i.\n", error);
 		return false;
@@ -30,9 +30,9 @@ bool export_png(const shared_ptr<const Geometry> &root_geom, ViewOptions options
 	CGALRenderer cgalRenderer(root_geom);
 
 	BoundingBox bbox = cgalRenderer.getBoundingBox();
-	setupCamera(options.camera, bbox);
+	setupCamera(camera, bbox);
 
-	glview->setCamera(options.camera);
+	glview->setCamera(camera);
 	glview->setRenderer(&cgalRenderer);
 	glview->setColorScheme(RenderSettings::inst()->colorscheme);
 	glview->setShowFaces(!options["wireframe"]);
@@ -51,7 +51,7 @@ bool export_png(const shared_ptr<const Geometry> &root_geom, ViewOptions options
 #endif
 #include "ThrownTogetherRenderer.h"
 
-bool export_preview_png(Tree &tree, ViewOptions options, std::ostream &output)
+bool export_preview_png(Tree &tree, const ViewOptions& options, Camera camera, std::ostream &output)
 {
 	PRINTD("export_png_preview_common");
 	CsgInfo csgInfo = CsgInfo();
@@ -59,7 +59,7 @@ bool export_preview_png(Tree &tree, ViewOptions options, std::ostream &output)
 
 	OffscreenView *glview;
 	try {
-		glview = new OffscreenView(options.camera.pixel_width, options.camera.pixel_height);
+		glview = new OffscreenView(camera.pixel_width, camera.pixel_height);
 	} catch (int error) {
 		fprintf(stderr,"Can't create OpenGL OffscreenView. Code: %i.\n", error);
 		return false;
@@ -83,9 +83,9 @@ bool export_preview_png(Tree &tree, ViewOptions options, std::ostream &output)
 	}
 #ifdef ENABLE_OPENCSG
 	BoundingBox bbox = glview->getRenderer()->getBoundingBox();
-	setupCamera(options.camera, bbox);
+	setupCamera(camera, bbox);
 
-	glview->setCamera(options.camera);
+	glview->setCamera(camera);
 	OpenCSG::setContext(0);
 	OpenCSG::setOption(OpenCSG::OffscreenSetting, OpenCSG::FrameBufferObject);
 #endif
