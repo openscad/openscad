@@ -40,7 +40,6 @@ artifacts:
   - path: 'tests\Testing\Temporary\*_report.html'
 
 on_failure:
-  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
   - ps: Get-ChildItem c:\projects\openscad\tests\Testing\Temporary\*_report.html | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }
 
 # Uncomment RDP login at job end with specical blocking flag to prevent the worker from exitting. Continue by deleting lock file on desktop.
