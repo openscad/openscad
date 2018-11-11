@@ -28,7 +28,6 @@ build_script:
   - ps: Get-Date -UFormat '### %Y-%m-%d %T make'
   - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad/tests && mingw32-make.exe -j2"
   - ps: Get-Date -UFormat '### %Y-%m-%d %T build finished'
-  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 test_script:
   - ps: Get-Date -UFormat '### %Y-%m-%d %T test started'
@@ -41,6 +40,7 @@ artifacts:
   - path: 'tests\Testing\Temporary\*_report.html'
 
 on_failure:
+  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
   - ps: Get-ChildItem c:\projects\openscad\tests\Testing\Temporary\*_report.html | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }
 
 # Uncomment RDP login at job end with specical blocking flag to prevent the worker from exitting. Continue by deleting lock file on desktop.
