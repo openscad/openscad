@@ -20,7 +20,6 @@ public:
 	std::string name;
 	bool set;
 	std::string groupName;
-	bool focus;
 
 private:
 	Value::ValueType vt;

@@ -23,6 +23,8 @@ const Feature Feature::ExperimentalEachExpression("lc-each", "Enable <code>each<
 const Feature Feature::ExperimentalElseExpression("lc-else", "Enable <code>else</code> expression in list comprehensions.");
 const Feature Feature::ExperimentalForCExpression("lc-for-c", "Enable C-style <code>for</code> expression in list comprehensions.");
 const Feature Feature::ExperimentalAmfImport("amf-import", "Enable AMF import.");
+const Feature Feature::Experimental3mfImport("3mf-import", "Enable 3MF import.");
+const Feature Feature::Experimental3mfExport("3mf-export", "Enable 3MF export.");
 const Feature Feature::ExperimentalSvgImport("svg-import", "Enable SVG import.");
 const Feature Feature::ExperimentalCustomizer("customizer", "Enable Customizer");
 const Feature Feature::ExperimentalInputDriver("input-driver", "Enable input drivers (requires restart)");

@@ -62,6 +62,14 @@ cgal_sysver()
   cgal_sysver_result=`grep "define  *CGAL_VERSION  *[0-9.]*" $cgalpath | awk '{print $3}'`
 }
 
+libzip_sysver()
+{
+  libzippath="$1/include/zipconf.h"
+  if [ ! -e "$libzippath" ]; then libzippath="$1/include/`gcc -dumpmachine 2>/dev/null`/zipconf.h"; fi
+  if [ ! -e "$libzippath" ]; then return; fi
+  libzip_sysver_result="`grep 'define  *LIBZIP_VERSION *"[0-9.]*"' "$libzippath" | awk '{print $3}' | tr -d '"' `"
+}
+
 glib2_sysver()
 {
   #Get architecture triplet - e.g. x86_64-linux-gnu
@@ -654,7 +662,7 @@ checkargs()
 
 main()
 {
-  deps="qt qscintilla2 cgal gmp mpfr boost opencsg glew eigen glib2 fontconfig freetype2 harfbuzz bison flex make"
+  deps="qt qscintilla2 cgal gmp mpfr boost opencsg glew eigen glib2 fontconfig freetype2 harfbuzz libzip bison flex make"
   #deps="$deps curl git" # not technically necessary for build
   #deps="$deps python cmake imagemagick" # only needed for tests
   #deps="cgal"

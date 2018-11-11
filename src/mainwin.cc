@@ -140,12 +140,11 @@
 unsigned int GuiLocker::gui_locked = 0;
 
 static char copyrighttext[] =
-	"Copyright (C) 2009-2018 The OpenSCAD Developers\n"
-	"\n"
+	"Copyright (C) 2009-2018 The OpenSCAD Developers\n\n"
 	"This program is free software; you can redistribute it and/or modify "
 	"it under the terms of the GNU General Public License as published by "
 	"the Free Software Foundation; either version 2 of the License, or "
-	"(at your option) any later version.";
+	"(at your option) any later version.\n";
 bool MainWindow::mdiMode = false;
 bool MainWindow::undockMode = false;
 bool MainWindow::reorderMode = false;
@@ -253,6 +252,7 @@ MainWindow::MainWindow(const QString &filename)
 	const QString importStatement = "import(\"%1\");\n";
 	const QString surfaceStatement = "surface(\"%1\");\n";
 	knownFileExtensions["stl"] = importStatement;
+	if (Feature::Experimental3mfImport.is_enabled()) knownFileExtensions["3mf"] = importStatement;
 	knownFileExtensions["off"] = importStatement;
 	knownFileExtensions["dxf"] = importStatement;
 	if (Feature::ExperimentalSvgImport.is_enabled()) knownFileExtensions["svg"] = importStatement;
@@ -370,6 +370,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->designActionDisplayCSGTree, SIGNAL(triggered()), this, SLOT(actionDisplayCSGTree()));
 	connect(this->designActionDisplayCSGProducts, SIGNAL(triggered()), this, SLOT(actionDisplayCSGProducts()));
 	connect(this->fileActionExportSTL, SIGNAL(triggered()), this, SLOT(actionExportSTL()));
+	connect(this->fileActionExport3MF, SIGNAL(triggered()), this, SLOT(actionExport3MF()));
 	connect(this->fileActionExportOFF, SIGNAL(triggered()), this, SLOT(actionExportOFF()));
 	connect(this->fileActionExportAMF, SIGNAL(triggered()), this, SLOT(actionExportAMF()));
 	connect(this->fileActionExportDXF, SIGNAL(triggered()), this, SLOT(actionExportDXF()));
@@ -377,6 +378,13 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->fileActionExportCSG, SIGNAL(triggered()), this, SLOT(actionExportCSG()));
 	connect(this->fileActionExportImage, SIGNAL(triggered()), this, SLOT(actionExportImage()));
 	connect(this->designActionFlushCaches, SIGNAL(triggered()), this, SLOT(actionFlushCaches()));
+
+#ifdef ENABLE_LIB3MF
+	bool export3mfVisible = Feature::Experimental3mfExport.is_enabled();
+#else
+	bool export3mfVisible = false;
+#endif
+	this->fileActionExport3MF->setVisible(export3mfVisible);
 
 	// View menu
 #ifndef ENABLE_OPENCSG
@@ -433,10 +441,9 @@ MainWindow::MainWindow(const QString &filename)
 
 	setCurrentOutput();
 
-	std::string helptitle = "OpenSCAD " + openscad_versionnumber +  "\nhttp://www.openscad.org\n\n";
+	std::string helptitle = "OpenSCAD " + openscad_versionnumber +  "\nhttp://www.openscad.org\n";
 	PRINT(helptitle);
 	PRINT(copyrighttext);
-	PRINT("");
 
 	if (!filename.isEmpty()) {
 		openFile(filename);
@@ -519,6 +526,7 @@ MainWindow::MainWindow(const QString &filename)
 	initActionIcon(viewActionAnimate, ":/images/animate.png", ":/images/animate.png");
 	initActionIcon(fileActionExportSTL, ":/images/STL.png", ":/images/STL-white.png");
 	initActionIcon(fileActionExportAMF, ":/images/AMF.png", ":/images/AMF-white.png");
+	initActionIcon(fileActionExport3MF, ":/images/3MF.png", ":/images/3MF-white.png");
 	initActionIcon(fileActionExportOFF, ":/images/OFF.png", ":/images/OFF-white.png");
 	initActionIcon(fileActionExportDXF, ":/images/DXF.png", ":/images/DXF-white.png");
 	initActionIcon(fileActionExportSVG, ":/images/SVG.png", ":/images/SVG-white.png");
@@ -597,6 +605,8 @@ MainWindow::MainWindow(const QString &filename)
 
 	setAcceptDrops(true);
 	clearCurrentOutput();
+
+	this->console->setMaximumBlockCount(500);
 }
 
 void MainWindow::initActionIcon(QAction *action, const char *darkResource, const char *lightResource)
@@ -956,6 +966,10 @@ void MainWindow::updateTVal()
 {
 	if (this->anim_numsteps == 0) return;
 
+	if (Feature::ExperimentalCustomizer.is_enabled() && viewActionHideParameters->isVisible()) {
+		if (this->parameterWidget->childHasFocus()) return;
+	}
+	
 	if (this->anim_numsteps > 1) {
 		this->anim_step = (this->anim_step + 1) % this->anim_numsteps;
 		this->anim_tval = 1.0 * this->anim_step / this->anim_numsteps;
@@ -1038,7 +1052,6 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 	}
 
 	if (shouldcompiletoplevel) {
-		console->clear();
 		if (editor->isContentModified()) saveBackup();
 		compileTopLevelDocument(rebuildParameterWidget);
 		didcompile = true;
@@ -1048,7 +1061,7 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 		auto mtime = this->root_module->handleDependencies();
 		if (mtime > this->deps_mtime) {
 			this->deps_mtime = mtime;
-			PRINTB("Module cache size: %d modules", ModuleCache::instance()->size());
+			PRINTB("Used file cache size: %d files", ModuleCache::instance()->size());
 			didcompile = true;
 		}
 	}
@@ -1211,6 +1224,7 @@ void MainWindow::instantiateRoot()
 		} else {
 			PRINT("ERROR: Compilation failed!");
 		}
+		PRINT(" ");
 		this->processEvents();
 	}
 }
@@ -1219,7 +1233,7 @@ void MainWindow::instantiateRoot()
 	Generates CSG tree for OpenCSG evaluation.
 	Assumes that the design has been parsed and evaluated (this->root_node is set)
 */
-void MainWindow::compileCSG(bool procevents)
+void MainWindow::compileCSG()
 {
 	assert(this->root_node);
 	PRINT("Compiling design (CSG Products generation)...");
@@ -1326,7 +1340,7 @@ void MainWindow::compileCSG(bool procevents)
 																														this->background_products);
 	PRINT("Compile and preview finished.");
 	int s = this->renderingTime.elapsed() / 1000;
-	PRINTB("Total rendering time: %d hours, %d minutes, %d seconds", (s / (60*60)) % ((s / 60) % 60) % (s % 60));
+	PRINTB("Total rendering time: %d hours, %d minutes, %d seconds\n", (s / (60*60)) % ((s / 60) % 60) % (s % 60));
 	this->processEvents();
 }
 
@@ -1912,7 +1926,7 @@ void MainWindow::actionReloadRenderPreview()
 
 void MainWindow::csgReloadRender()
 {
-	if (this->root_node) compileCSG(true);
+	if (this->root_node) compileCSG();
 
 	// Go to non-CGAL view mode
 	if (viewActionThrownTogether->isChecked()) {
@@ -1955,7 +1969,7 @@ void MainWindow::actionRenderPreview(bool rebuildParameterWidget)
 
 void MainWindow::csgRender()
 {
-	if (this->root_node) compileCSG(!viewActionAnimate->isChecked());
+	if (this->root_node) compileCSG();
 
 	// Go to non-CGAL view mode
 	if (viewActionThrownTogether->isChecked()) {
@@ -2070,7 +2084,7 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 				assert(false && "Unknown geometry type");
 			}
 		}
-		PRINT("Rendering finished.");
+		PRINT("Rendering finished.\n");
 
 		this->root_geom = root_geom;
 		this->cgalRenderer = new CGALRenderer(root_geom);
@@ -2080,6 +2094,7 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 	}
 	else {
 		PRINT("WARNING: No top level geometry to render");
+		PRINT(" ");
 	}
 
 	updateStatusBar(nullptr);
@@ -2284,6 +2299,11 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
 void MainWindow::actionExportSTL()
 {
 	actionExport(FileFormat::STL, "STL", ".stl", 3);
+}
+
+void MainWindow::actionExport3MF()
+{
+	actionExport(FileFormat::_3MF, "3MF", ".3mf", 3);
 }
 
 void MainWindow::actionExportOFF()
@@ -2863,21 +2883,26 @@ void MainWindow::consoleOutput(const std::string &msg, void *userdata)
 
 void MainWindow::consoleOutput(const QString &msg)
 {
-	QString qmsg;
-	if (msg.startsWith("WARNING:") || msg.startsWith("DEPRECATED:")) {
-		this->compileWarnings++;
-		qmsg = "<html><span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span></html>\n";
-	} else if (msg.startsWith("ERROR:")) {
-		this->compileErrors++;
-		qmsg = "<html><span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span></html>\n";
-	}
-	else {
-		qmsg = msg;
-	}
 	auto c = this->console->textCursor();
 	c.movePosition(QTextCursor::End);
 	this->console->setTextCursor(c);
-	this->console->append(qmsg);
+
+	if (msg.startsWith("WARNING:") || msg.startsWith("DEPRECATED:")) {
+		this->compileWarnings++;
+		this->console->appendHtml("<span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span>");
+	} else if (msg.startsWith("ERROR:")) {
+		this->compileErrors++;
+		this->console->appendHtml("<span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span>");
+	}
+	else {
+		QString qmsg = msg;
+		if(qmsg.contains('\t') && !qmsg.contains("<pre>", Qt::CaseInsensitive))
+			this->console->appendPlainText(qmsg);
+		else {
+			qmsg.replace("\n","<br>");
+			this->console->appendHtml(qmsg);
+		}
+	}
 	this->processEvents();
 }
 

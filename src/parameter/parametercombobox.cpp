@@ -21,15 +21,8 @@ void ParameterComboBox::onChanged(int idx)
 			const double v = comboBox->itemData(idx).toDouble();
 			object->value = ValuePtr(v);
 		}
-		object->focus = true;
 		emit changed();
 	}
-}
-
-void ParameterComboBox::setParameterFocus()
-{
-	this->comboBox->setFocus();
-	object->focus = false;
 }
 
 void ParameterComboBox::setValue()
