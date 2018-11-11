@@ -59,7 +59,7 @@ const std::string get_lib3mf_version() {
 
 typedef std::list<std::shared_ptr<PolySet>> polysets_t;
 
-static Geometry * import_3mf_error(PLib3MFModel *model = NULL, PLib3MFModelResourceIterator *object_it = NULL, PolySet *mesh = NULL)
+static Geometry * import_3mf_error(PLib3MFModel *model = nullptr, PLib3MFModelResourceIterator *object_it = nullptr, PolySet *mesh = nullptr, PolySet *mesh2 = nullptr)
 {
 	if (model) {
 		lib3mf_release(model);
@@ -69,6 +69,9 @@ static Geometry * import_3mf_error(PLib3MFModel *model = NULL, PLib3MFModelResou
 	}
 	if (mesh) {
 		delete mesh;
+	}
+	if (mesh2) {
+		delete mesh2;
 	}
 
 	return new PolySet(3);
@@ -153,18 +156,21 @@ Geometry * import_3mf(const std::string &filename)
 		for (DWORD idx = 0;idx < triangle_count;idx++) {
 			MODELMESHTRIANGLE triangle;
 			if (lib3mf_meshobject_gettriangle(object, idx, &triangle) != LIB3MF_OK) {
-				return import_3mf_error(model, object_it, first_mesh);
+				return import_3mf_error(model, object_it, first_mesh, p);
 			}
 			
 			MODELMESHVERTEX vertex1, vertex2, vertex3;
 			if (lib3mf_meshobject_getvertex(object, triangle.m_nIndices[0], &vertex1) != LIB3MF_OK) {
-				return import_3mf_error(model, object_it, first_mesh);
+				delete p;
+				return import_3mf_error(model, object_it, first_mesh, p);
 			}
 			if (lib3mf_meshobject_getvertex(object, triangle.m_nIndices[1], &vertex2) != LIB3MF_OK) {
-				return import_3mf_error(model, object_it, first_mesh);
+				delete p;
+				return import_3mf_error(model, object_it, first_mesh, p);
 			}
 			if (lib3mf_meshobject_getvertex(object, triangle.m_nIndices[2], &vertex3) != LIB3MF_OK) {
-				return import_3mf_error(model, object_it, first_mesh);
+				delete p;
+				return import_3mf_error(model, object_it, first_mesh, p);
 			}
 			
 			p->append_poly();
