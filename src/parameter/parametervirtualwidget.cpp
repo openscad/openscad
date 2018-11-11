@@ -2,7 +2,7 @@
 
 
 ParameterVirtualWidget::ParameterVirtualWidget(QWidget *parent,ParameterObject *parameterobject, DescLoD descriptionLoD)
-	: QWidget(parent), object(parameterobject)
+	: QWidget(parent), object(parameterobject), decimalPrecision(0)
 {
 	setupUi(this);
 
