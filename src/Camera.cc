@@ -3,7 +3,7 @@
 #include "printutils.h"
 
 Camera::Camera() :
-	projection(ProjectionType::PERSPECTIVE), fov(22.5), viewall(false), autocenter(false), height(0.0)
+	projection(ProjectionType::PERSPECTIVE), fov(22.5), viewall(false), autocenter(false)
 {
 	PRINTD("Camera()");
 
