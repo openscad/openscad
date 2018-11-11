@@ -501,7 +501,8 @@ const Geometry *PrimitiveNode::createGeometry() const
 				size_t pt = vec[j]->toDouble();
 				if (pt < this->points->toVector().size()) {
 					double px, py, pz;
-					if (!this->points->toVector()[pt]->getVec3(px, py, pz, 0.0) 							std::isinf(px) || std::isinf(py) || std::isinf(pz)) {
+					if (!this->points->toVector()[pt]->getVec3(px, py, pz, 0.0) ||
+					    std::isinf(px) || std::isinf(py) || std::isinf(pz)) {
 						PRINTB("ERROR: Unable to convert point at index %d to a vec3 of numbers, %s", j % this->modinst->location().toString());
 						return p;
 					}
