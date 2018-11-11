@@ -1,17 +1,14 @@
-# #-#-#-#-#  openscad-tmp.pot (OpenSCAD 2018.08.15)  #-#-#-#-#
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# Ukrainian translations for OpenSCAD package.
+# Copyright (C) 2018 THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the OpenSCAD package.
 # Kyrylo Romanenko <romanenko-kv@hotmail.com>, 2018.
 #
-#, fuzzy
 msgid ""
 msgstr ""
-"#-#-#-#-#  openscad-tmp.pot (OpenSCAD 2018.08.15)  #-#-#-#-#\n"
 "Project-Id-Version: OpenSCAD 2018.08.15\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-08-15 15:07+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"PO-Revision-Date: 2018-11-11 13:00+0200\n"
 "Last-Translator: Kyrylo Romanenko <romanenko-kv@hotmail.com>\n"
 "Language-Team: Ukrainian\n"
 "Language: uk\n"
@@ -20,15 +17,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10>=1 && n%10<=4 && (n%100<11 || n%100>14) ? 0"
 " : n%10==0 && n%10>=5 && n%10<=9 ? 1 : 2);\n"
-"#-#-#-#-#  appdata-strings.pot (PACKAGE VERSION)  #-#-#-#-#\n"
-"Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2018-08-15 15:07+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Kyrylo Romanenko <romanenko-kv@hotmail.com>\n"
-"Language-Team: Ukrainian\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
 
 #: objects/ui_AboutDialog.h:103 src/AboutDialog.h:13
 msgid "About OpenSCAD"
