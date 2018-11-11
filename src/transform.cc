@@ -152,8 +152,9 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 	else if (this->type == transform_type_e::TRANSLATE)	{
 		auto v = c.lookup_variable("v");
 		Vector3d translatevec(0,0,0);
-		v->getVec3(translatevec[0], translatevec[1], translatevec[2], 0.0);
-		node->matrix.translate(translatevec);
+		if (v->getVec3(translatevec[0], translatevec[1], translatevec[2], 0.0)) {
+			node->matrix.translate(translatevec);
+		}
 	}
 	else if (this->type == transform_type_e::MULTMATRIX) {
 		auto v = c.lookup_variable("m");

@@ -62,6 +62,4 @@ public:
 protected:
 	// Perspective settings
 	double viewer_distance;
-	// Orthographic settings
-	double height; // world-space height of viewport
 };
