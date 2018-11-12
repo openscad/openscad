@@ -41,6 +41,8 @@
 #include "colormap.h"
 #include "rendersettings.h"
 #include "QSettingsCached.h"
+#include "input/InputDriverManager.h"
+#include "SettingsWriter.h"
 
 Preferences *Preferences::instance = nullptr;
 
@@ -62,7 +64,10 @@ class SettingsReader : public Settings::SettingsVisitor
 		switch (entry.defaultValue().type()) {
 		case Value::ValueType::STRING:
 			return Value(trimmed_value);
-		case Value::ValueType::NUMBER:
+		case Value::ValueType::NUMBER: 
+			if(entry.range().toRange().step_value()<1 && entry.range().toRange().step_value()>0){
+				return Value(boost::lexical_cast<double>(trimmed_value));
+			}
 			return Value(boost::lexical_cast<int>(trimmed_value));
 		case Value::ValueType::BOOL:
 			boost::to_lower(trimmed_value);
@@ -74,7 +79,7 @@ class SettingsReader : public Settings::SettingsVisitor
 			return Value(boost::lexical_cast<bool>(trimmed_value));
 		default:
 			assert(false && "invalid value type for settings");
-			return 0; // keep compiler happy
+			return entry.defaultValue();
 		}
 	} catch (const boost::bad_lexical_cast& e) {
 		return entry.defaultValue();
@@ -92,45 +97,30 @@ class SettingsReader : public Settings::SettingsVisitor
     }
 };
 
-class SettingsWriter : public Settings::SettingsVisitor
-{
-    void handle(Settings::SettingsEntry& entry) const override {
-	Settings::Settings *s = Settings::Settings::inst();
-
-	QSettingsCached settings;
-	QString key = QString::fromStdString(entry.category() + "/" + entry.name());
-	if (entry.is_default()) {
-	    settings.remove(key);
-	    PRINTDB("SettingsWriter D: %s", key.toStdString().c_str());
-	} else {
-	    const Value &value = s->get(entry);
-	    settings.setValue(key, QString::fromStdString(value.toString()));
-	    PRINTDB("SettingsWriter W: %s = '%s'", key.toStdString().c_str() % value.toString().c_str());
-	}
-    }
-};
-
 Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 {
 	setupUi(this);
 }
 
 void Preferences::init() {
-	
 	// Editor pane
 	// Setup default font (Try to use a nice monospace font)
-	QString fontfamily;
-#ifdef Q_OS_X11
-	fontfamily = "Mono";
-#elif defined (Q_OS_WIN)
-	fontfamily = "Console";
+#if (QT_VERSION < QT_VERSION_CHECK(5, 2, 0))
+#if defined (Q_OS_WIN)
+	const QString fontfamily{"Console"};
 #elif defined (Q_OS_MAC)
-	fontfamily = "Monaco";
+	const QString fontfamily{"Monaco"};
+#else
+	const QString fontfamily{"Mono"};
 #endif
+
 	QFont font;
 	font.setStyleHint(QFont::TypeWriter);
 	font.setFamily(fontfamily); // this runs Qt's font matching algorithm
-	QString found_family(QFontInfo(font).family());
+#else
+	const QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+#endif
+	const QString found_family{QFontInfo{font}.family()};
 	this->defaultmap["editor/fontfamily"] = found_family;
  	this->defaultmap["editor/fontsize"] = 12;
 	this->defaultmap["editor/syntaxhighlight"] = "For Light Background";
@@ -182,10 +172,15 @@ void Preferences::init() {
 #endif
 #ifdef ENABLE_EXPERIMENTAL
 	addPrefPage(group, prefsActionFeatures, pageFeatures);
+	addPrefPage(group, prefsActionInput, pageInput);
+	addPrefPage(group, prefsActionInputButton, pageInputButton);
 #else
 	this->toolBar->removeAction(prefsActionFeatures);
+	this->toolBar->removeAction(prefsActionInput);
+	this->toolBar->removeAction(prefsActionInputButton);
 #endif
 	addPrefPage(group, prefsActionAdvanced, pageAdvanced);
+	
 	connect(group, SIGNAL(triggered(QAction*)), this, SLOT(actionTriggered(QAction*)));
 
 	prefsAction3DView->setChecked(true);
@@ -276,6 +271,12 @@ void Preferences::featuresCheckBoxToggled(bool state)
 	QSettingsCached settings;
 	settings.setValue(QString("feature/%1").arg(QString::fromStdString(feature->get_name())), state);
 	emit ExperimentalChanged();
+
+	if (!Feature::ExperimentalInputDriver.is_enabled()) {
+		this->toolBar->removeAction(prefsActionInput);
+		this->toolBar->removeAction(prefsActionInputButton);
+		InputDriverManager::instance()->closeDrivers();
+	}
 }
 
 /**
@@ -285,8 +286,7 @@ void Preferences::featuresCheckBoxToggled(bool state)
  * from commandline is ignored. This always uses the value coming from the
  * QSettings.
  */
-void
-Preferences::setupFeaturesPage()
+void Preferences::setupFeaturesPage()
 {
 	int row = 0;
 	for (Feature::iterator it = Feature::begin();it != Feature::end();it++) {
@@ -322,6 +322,12 @@ Preferences::setupFeaturesPage()
 	// fixed size space essentially gives the first row the width of the
 	// spacer item itself.
 	gridLayoutExperimentalFeatures->addItem(new QSpacerItem(20, 0, QSizePolicy::Fixed, QSizePolicy::Fixed), 1, 0, 1, 1, Qt::AlignLeading);
+
+	if (!Feature::ExperimentalInputDriver.is_enabled()) {
+		this->toolBar->removeAction(prefsActionInput);
+		this->toolBar->removeAction(prefsActionInputButton);
+		InputDriverManager::instance()->closeDrivers();
+	}
 }
 
 void Preferences::on_colorSchemeChooser_itemSelectionChanged()
@@ -579,10 +585,11 @@ void Preferences::on_checkBoxEnableBraceMatching_toggled(bool val)
 	Settings::Settings::inst()->set(Settings::Settings::enableBraceMatching, Value(val));
 	writeSettings();
 }
+
 void Preferences::on_checkBoxEnableLineNumbers_toggled(bool checked)
 {
-    Settings::Settings::inst()->set(Settings::Settings::enableLineNumbers, Value(checked));
-    writeSettings();
+	Settings::Settings::inst()->set(Settings::Settings::enableLineNumbers, Value(checked));
+	writeSettings();
 }
 
 void Preferences::on_enableSoundOnRenderCompleteCheckBox_toggled(bool state)
@@ -790,6 +797,7 @@ void Preferences::create(QStringList colorSchemes)
     instance->colorSchemeChooser->clear();
     instance->colorSchemeChooser->addItems(renderColorSchemes);
     instance->init();
+    instance->AxisConfig->init();
     instance->setupFeaturesPage();
     instance->updateGUI();
 }

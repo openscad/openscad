@@ -40,6 +40,30 @@ std::vector<std::string> fontpath;
 
 namespace fs = boost::filesystem;
 
+const std::string get_fontconfig_version()
+{
+	const int version = FcGetVersion();
+
+	const OpenSCAD::library_version_number header_version{FC_MAJOR, FC_MINOR, FC_REVISION};
+	const OpenSCAD::library_version_number runtime_version{version / 10000, (version / 100) % 100, version % 100};
+	return OpenSCAD::get_version_string(header_version, runtime_version);
+}
+
+const std::string get_harfbuzz_version()
+{
+	unsigned int major, minor, micro;
+	hb_version(&major, &minor, &micro);
+
+	const OpenSCAD::library_version_number header_version{HB_VERSION_MAJOR, HB_VERSION_MINOR, HB_VERSION_MICRO};
+	const OpenSCAD::library_version_number runtime_version{major, minor, micro};
+	return OpenSCAD::get_version_string(header_version, runtime_version);
+}
+
+const std::string get_freetype_version()
+{
+	return FontCache::instance()->get_freetype_version();
+}
+
 FontInfo::FontInfo(const std::string &family, const std::string &style, const std::string &file) : family(family), style(style), file(file)
 {
 }
@@ -166,6 +190,20 @@ FontCache * FontCache::instance()
 		self = new FontCache();
 	}
 	return self;
+}
+
+const std::string FontCache::get_freetype_version() const
+{
+	if (!this->is_init_ok()) {
+		return "(not initialized)";
+	}
+
+	FT_Int major, minor, micro;
+	FT_Library_Version(this->library, &major, &minor, &micro);
+
+	const OpenSCAD::library_version_number header_version{FREETYPE_MAJOR, FREETYPE_MINOR, FREETYPE_PATCH};
+	const OpenSCAD::library_version_number runtime_version{static_cast<unsigned>(major), static_cast<unsigned>(minor), static_cast<unsigned>(micro)};
+	return OpenSCAD::get_version_string(header_version, runtime_version);
 }
 
 void FontCache::registerProgressHandler(InitHandlerFunc *handler, void *userdata)

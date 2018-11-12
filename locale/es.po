@@ -115,7 +115,7 @@ msgstr "Ejemplos"
 
 #: objects/ui_launchingscreen.h:305
 msgid "Open Example"
-msgstr "Abrir ejemplos"
+msgstr "Abrir ejemplo"
 
 #: objects/ui_launchingscreen.h:314
 msgid "Don't show again"
@@ -127,7 +127,7 @@ msgstr "Versión"
 
 #: objects/ui_LibraryInfoDialog.h:75
 msgid "Lib & Build Info"
-msgstr "Información de las librerias y compilación"
+msgstr "Información de las librerías y compilación"
 
 #: objects/ui_LibraryInfoDialog.h:76
 msgid "OpenSCAD Detailed Library and Build Information"
@@ -554,7 +554,7 @@ msgstr "Ctrl+Shift+G"
 #: objects/ui_MainWindow.h:1054
 #, fuzzy
 msgid "Use Se&lection for Find"
-msgstr "Usar selección en Buscar"
+msgstr "Usar se&lección en Buscar"
 
 #: objects/ui_MainWindow.h:1056
 msgid "Ctrl+E"
@@ -602,7 +602,7 @@ msgstr "Reiniciar vista"
 #: objects/ui_MainWindow.h:1066
 #, fuzzy
 msgid "&Font List"
-msgstr "Lista de fuentes"
+msgstr "Lista de &fuentes"
 
 #: objects/ui_MainWindow.h:1067
 #, fuzzy
@@ -658,7 +658,7 @@ msgstr "Ctrl+Shift+I"
 
 #: objects/ui_MainWindow.h:1087
 msgid "&Cheat Sheet"
-msgstr "Hoja de referencia"
+msgstr "Hoja de referen&cia"
 
 #: objects/ui_MainWindow.h:1088
 #, fuzzy
@@ -668,7 +668,7 @@ msgstr "Copiar al portapapeles"
 #: objects/ui_MainWindow.h:1090
 #, fuzzy
 msgid "Ctrl+Shift+C"
-msgstr "Ctrl+Shift+S"
+msgstr "Ctrl+Shift+C"
 
 #: objects/ui_MainWindow.h:1092
 msgid "Hide Customizer"
@@ -748,7 +748,7 @@ msgstr "Previsualizar"
 
 #: objects/ui_MainWindow.h:1115
 msgid "Next"
-msgstr ""
+msgstr "Próximo"
 
 #: objects/ui_MainWindow.h:1116
 msgid "Done"
@@ -764,7 +764,7 @@ msgstr "Todo"
 
 #: objects/ui_MainWindow.h:1120
 msgid "Parameter Widget"
-msgstr ""
+msgstr "Widget de parámetros"
 
 #: objects/ui_OpenCSGWarningDialog.h:86
 msgid "OpenGL Warning"
@@ -817,31 +817,31 @@ msgstr "Ocultar parámetros"
 
 #: objects/ui_ParameterEntryWidget.h:342 objects/ui_ParameterEntryWidget.h:343
 msgid "Description"
-msgstr ""
+msgstr "Descripción"
 
 #: objects/ui_ParameterWidget.h:151
 msgid "save preset"
-msgstr ""
+msgstr "guardar preprogramado"
 
 #: objects/ui_ParameterWidget.h:153
 msgid "delete current preset"
-msgstr ""
+msgstr "eliminar actual preprogramado"
 
 #: objects/ui_ParameterWidget.h:155
 msgid "-"
-msgstr ""
+msgstr "-"
 
 #: objects/ui_ParameterWidget.h:157
 msgid "preset selection"
-msgstr ""
+msgstr "selección de preprogramados"
 
 #: objects/ui_ParameterWidget.h:160 src/parameter/ParameterWidget.cc:154
 msgid "add new preset"
-msgstr ""
+msgstr "agregar nuevo preprogramado"
 
 #: objects/ui_ParameterWidget.h:162
 msgid "+"
-msgstr ""
+msgstr "+"
 
 #: objects/ui_ParameterWidget.h:163
 #, fuzzy
@@ -864,16 +864,16 @@ msgstr "Ocultar barra de herramientas"
 
 #: objects/ui_ParameterWidget.h:169
 msgid "Description Only"
-msgstr ""
+msgstr "Sólo descripción"
 
 #: objects/ui_ParameterWidget.h:172
 msgid "reset the parameters to the selected preset"
-msgstr ""
+msgstr "restablecer los parámetros al preprogramado seleccionado"
 
 #: objects/ui_ParameterWidget.h:174
 #, fuzzy
 msgid "Reset"
-msgstr "Reiniciar vista"
+msgstr "Restablecer"
 
 #: objects/ui_Preferences.h:1094
 msgid "Preferences"
@@ -1020,7 +1020,7 @@ msgstr "Marcar línea actual"
 
 #: objects/ui_Preferences.h:1143
 msgid "Display Line Numbers"
-msgstr ""
+msgstr "Mostrar números de línea"
 
 #: objects/ui_Preferences.h:1144 objects/ui_Preferences.h:1177
 msgid "Line wrap"

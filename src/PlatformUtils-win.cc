@@ -9,6 +9,11 @@
 #ifndef _WIN32_IE
 #define _WIN32_IE 0x0501 // SHGFP_TYPE_CURRENT
 #endif
+
+// Ugly hack to disable definitions in shobjidl.h which use unavailable
+// structure LOGFONTW.
+#define __IPreviewHandlerVisuals_INTERFACE_DEFINED__
+#define __IVisualProperties_INTERFACE_DEFINED__
 #include <shlobj.h>
 
 std::string PlatformUtils::pathSeparatorChar()

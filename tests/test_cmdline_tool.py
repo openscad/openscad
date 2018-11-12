@@ -86,7 +86,7 @@ def execute_and_redirect(cmd, params, outfile):
     retval = -1
     try:
         proc = subprocess.Popen([cmd] + params, stdout=outfile, stderr=subprocess.STDOUT)
-        out = proc.communicate()[0]
+        out = proc.communicate()[0].decode('utf-8')
         retval = proc.wait()
     except:
         print("Error running subprocess: ", sys.exc_info()[1], file=sys.stderr)
@@ -208,6 +208,18 @@ def compare_with_expected(resultfilename):
         if "compare_" + options.suffix in globals(): return globals()["compare_" + options.suffix](resultfilename)
         else: return compare_default(resultfilename)
     return True
+
+#
+#  Extract the content of a 3MF file (which is a ZIP file having one main XML file
+#  and some additional meta data files) and replace the original file with just
+#  the XML content for easier comparison by the test framework.
+#
+def post_process_3mf(filename):
+    print('post processing 3MF file (extracting XML data from ZIP): ', filename)
+    xml_content = subprocess.check_output(["unzip", "-p", filename, "3D/3dmodel.model"])
+    xml_content = re.sub('UUID="[^"]*"', 'UUID="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXX"', xml_content.decode('utf-8'))
+    with open(filename, 'wb') as xml_file:
+        xml_file.write(xml_content.encode('utf-8'))
 
 def run_test(testname, cmd, args):
     cmdname = os.path.split(options.cmd)[1]
@@ -342,4 +354,5 @@ if __name__ == '__main__':
 
     resultfile = run_test(options.testname, options.cmd, args[1:])
     if not resultfile: exit(1)
+    if options.suffix == "3mf": post_process_3mf(resultfile)
     if not verification or not compare_with_expected(resultfile): exit(1)

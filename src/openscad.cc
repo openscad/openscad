@@ -64,6 +64,9 @@
 
 #include "Camera.h"
 #include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/join.hpp>
+#include <boost/range/adaptor/transformed.hpp>
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 
@@ -80,7 +83,6 @@
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
-enum class RenderType { GEOMETRY, CGAL, OPENCSG, THROWNTOGETHER };
 using std::string;
 using std::vector;
 using boost::lexical_cast;
@@ -98,7 +100,7 @@ static std::string arg_colorscheme;
 std::string openscad_shortversionnumber = QUOTED(OPENSCAD_SHORTVERSION);
 std::string openscad_versionnumber = QUOTED(OPENSCAD_VERSION);
 
-std::string openscad_displayversionnumber = 
+std::string openscad_displayversionnumber =
 #ifdef OPENSCAD_COMMIT
   QUOTED(OPENSCAD_VERSION)
   " (git " QUOTED(OPENSCAD_COMMIT) ")";
@@ -186,7 +188,7 @@ Camera get_camera(po::variables_map vm)
 	if (vm.count("camera")) {
 		vector<string> strs;
 		vector<double> cam_parameters;
-		split(strs, vm["camera"].as<string>(), is_any_of(","));
+		boost::split(strs, vm["camera"].as<string>(), is_any_of(","));
 		if (strs.size() == 6 || strs.size() == 7) {
 			try {
 				for (const auto &s : strs) cam_parameters.push_back(lexical_cast<double>(s));
@@ -232,7 +234,7 @@ Camera get_camera(po::variables_map vm)
 	auto h = RenderSettings::inst()->img_height;
 	if (vm.count("imgsize")) {
 		vector<string> strs;
-		split(strs, vm["imgsize"].as<string>(), is_any_of(","));
+		boost::split(strs, vm["imgsize"].as<string>(), is_any_of(","));
 		if ( strs.size() != 2 ) {
 			PRINT("Need 2 numbers for imgsize");
 			exit(1);
@@ -276,24 +278,22 @@ void set_render_color_scheme(const std::string color_scheme, const bool exit_if_
 	if (color_scheme.empty()) {
 		return;
 	}
-	
+
 	if (ColorMap::inst()->findColorScheme(color_scheme)) {
 		RenderSettings::inst()->colorscheme = color_scheme;
 		return;
 	}
-		
+
 	if (exit_if_not_found) {
 		PRINTB("Unknown color scheme '%s'. Valid schemes:", color_scheme);
-		for(const auto &name : ColorMap::inst()->colorSchemeNames()) {
-			PRINT(name);
-		}
+		PRINT(boost::join(ColorMap::inst()->colorSchemeNames(), "\n"));
 		exit(1);
 	} else {
 		PRINTB("Unknown color scheme '%s', using default '%s'.", arg_colorscheme % ColorMap::inst()->defaultColorSchemeName());
 	}
 }
 
-int cmdline(const char *deps_output_file, const std::string &filename, Camera &camera, const char *output_file, const fs::path &original_path, RenderType renderer,const std::string &parameterFile,const std::string &setName)
+int cmdline(const char *deps_output_file, const std::string &filename, const char *output_file, const fs::path &original_path, const std::string &parameterFile, const std::string &setName, const ViewOptions& viewOptions, Camera camera)
 {
 	parser_init();
 	localization_init();
@@ -309,6 +309,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	const char *stl_output_file = nullptr;
 	const char *off_output_file = nullptr;
 	const char *amf_output_file = nullptr;
+	const char *_3mf_output_file = nullptr;
 	const char *dxf_output_file = nullptr;
 	const char *svg_output_file = nullptr;
 	const char *csg_output_file = nullptr;
@@ -325,6 +326,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	if (suffix == ".stl") stl_output_file = output_file;
 	else if (suffix == ".off") off_output_file = output_file;
 	else if (suffix == ".amf") amf_output_file = output_file;
+	else if (Feature::Experimental3mfExport.is_enabled() && suffix == ".3mf") _3mf_output_file = output_file;
 	else if (suffix == ".dxf") dxf_output_file = output_file;
 	else if (suffix == ".svg") svg_output_file = output_file;
 	else if (suffix == ".csg") csg_output_file = output_file;
@@ -340,10 +342,10 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	}
 
 	set_render_color_scheme(arg_colorscheme, true);
-	
+
 	// Top context - this context only holds builtins
 	BuiltinContext top_ctx;
-	bool preview = png_output_file ? (renderer==RenderType::OPENCSG || renderer==RenderType::THROWNTOGETHER) : false;
+	const bool preview = png_output_file ? (viewOptions.renderer == RenderType::OPENCSG || viewOptions.renderer == RenderType::THROWNTOGETHER) : false;
 	top_ctx.set_variable("$preview", ValuePtr(preview));
 #ifdef DEBUG
 	PRINTDB("BuiltinContext:\n%s", top_ctx.dump(nullptr, nullptr));
@@ -458,14 +460,13 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	}
 	else {
 #ifdef ENABLE_CGAL
-		if ((echo_output_file || png_output_file) &&
-				(renderer == RenderType::OPENCSG || renderer == RenderType::THROWNTOGETHER)) {
+		if ((echo_output_file || png_output_file) && (viewOptions.renderer == RenderType::OPENCSG || viewOptions.renderer == RenderType::THROWNTOGETHER)) {
 			// echo or OpenCSG png -> don't necessarily need geometry evaluation
 		} else {
 			// Force creation of CGAL objects (for testing)
 			root_geom = geomevaluator.evaluateGeometry(*tree.root(), true);
 			if (!root_geom) root_geom.reset(new CGAL_Nef_polyhedron());
-			if (renderer == RenderType::CGAL && root_geom->getDimension() == 3) {
+			if (viewOptions.renderer == RenderType::CGAL && root_geom->getDimension() == 3) {
 				auto N = dynamic_cast<const CGAL_Nef_polyhedron*>(root_geom.get());
 				if (!N) {
 					N = CGALUtils::createNefPolyhedronFromGeometry(*root_geom);
@@ -495,12 +496,17 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 			}
 		}
 
+		if (_3mf_output_file) {
+			if (!checkAndExport(root_geom, 3, FileFormat::_3MF, _3mf_output_file))
+				return 1;
+		}
+
 		if (dxf_output_file) {
 			if (!checkAndExport(root_geom, 2, FileFormat::DXF, dxf_output_file)) {
 				return 1;
 			}
 		}
-		
+
 		if (svg_output_file) {
 			if (!checkAndExport(root_geom, 2, FileFormat::SVG, svg_output_file)) {
 				return 1;
@@ -515,12 +521,10 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 				success = false;
 			}
 			else {
-				if (renderer == RenderType::CGAL || renderer == RenderType::GEOMETRY) {
-					success = export_png(root_geom, camera, fstream);
-				} else if (renderer == RenderType::THROWNTOGETHER) {
-					success = export_png_with_throwntogether(tree, camera, fstream);
+				if (viewOptions.renderer == RenderType::CGAL || viewOptions.renderer == RenderType::GEOMETRY) {
+					success = export_png(root_geom, viewOptions, camera, fstream);
 				} else {
-					success = export_png_with_opencsg(tree, camera, fstream);
+					success = export_preview_png(tree, viewOptions, camera, fstream);
 				}
 				fstream.close();
 			}
@@ -558,6 +562,22 @@ Q_IMPORT_PLUGIN(qtaccessiblewidgets)
 #include "OpenSCADApp.h"
 #include "launchingscreen.h"
 #include "QSettingsCached.h"
+#include "input/InputDriverManager.h"
+#ifdef ENABLE_HIDAPI
+#include "input/HidApiInputDriver.h"
+#endif
+#ifdef ENABLE_SPNAV
+#include "input/SpaceNavInputDriver.h"
+#endif
+#ifdef ENABLE_JOYSTICK
+#include "input/JoystickInputDriver.h"
+#endif
+#ifdef ENABLE_DBUS
+#include "input/DBusInputDriver.h"
+#endif
+#ifdef ENABLE_QGAMEPAD
+#include "input/QGamepadInputDriver.h"
+#endif
 #include <QString>
 #include <QDir>
 #include <QFileInfo>
@@ -566,6 +586,7 @@ Q_IMPORT_PLUGIN(qtaccessiblewidgets)
 #include <QProgressDialog>
 #include <QFutureWatcher>
 #include <QtConcurrentRun>
+#include "settings.h"
 
 Q_DECLARE_METATYPE(shared_ptr<const Geometry>);
 
@@ -614,21 +635,23 @@ void dialogInitHandler(FontCacheInitializer *initializer, void *)
 	// Block, in case we're in a separate thread, or the dialog was closed by the user
 	futureWatcher.waitForFinished();
 
-	// We don't always receive the finished signal. We still need the signal to break 
+	// We don't always receive the finished signal. We still need the signal to break
 	// out of the exec() though.
 	QMetaObject::invokeMethod(scadApp, "hideFontCacheDialog");
 }
 
-void registerDefaultIcon(QString applicationFilePath) {
 #ifdef Q_OS_WIN
+void registerDefaultIcon(QString applicationFilePath) {
 	// Not using cached instance here, so this needs to be in a
 	// separate scope to ensure the QSettings instance is released
 	// directly after use.
 	QSettings reg_setting(QLatin1String("HKEY_CURRENT_USER"), QSettings::NativeFormat);
 	auto appPath = QDir::toNativeSeparators(applicationFilePath + QLatin1String(",1"));
 	reg_setting.setValue(QLatin1String("Software/Classes/OpenSCAD_File/DefaultIcon/Default"),QVariant(appPath));
-#endif
 }
+#else
+void registerDefaultIcon(QString) { }
+#endif
 
 int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, char ** argv)
 {
@@ -659,7 +682,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 #else
 	app.setWindowIcon(QIcon(":/icons/openscad.png"));
 #endif
-	
+
 	// Other global settings
 	qRegisterMetaType<shared_ptr<const Geometry>>();
 
@@ -704,8 +727,8 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 #endif
 
 	set_render_color_scheme(arg_colorscheme, false);
-	
 	auto noInputFiles = false;
+
 	if (!inputFiles.size()) {
 		noInputFiles = true;
 		inputFiles.push_back("");
@@ -741,6 +764,45 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	}
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(releaseQSettingsCached()));
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
+
+	if (Feature::ExperimentalInputDriver.is_enabled()) {
+		auto *s = Settings::Settings::inst();
+#ifdef ENABLE_HIDAPI
+		if(s->get(Settings::Settings::inputEnableDriverHIDAPI).toBool()){
+			auto hidApi = new HidApiInputDriver();
+			InputDriverManager::instance()->registerDriver(hidApi);
+		}
+#endif
+#ifdef ENABLE_SPNAV
+		if(s->get(Settings::Settings::inputEnableDriverSPNAV).toBool()){
+			auto spaceNavDriver = new SpaceNavInputDriver();
+			bool spaceNavDominantAxisOnly = s->get(Settings::Settings::inputEnableDriverHIDAPI).toBool();
+			spaceNavDriver->setDominantAxisOnly(spaceNavDominantAxisOnly);
+			InputDriverManager::instance()->registerDriver(spaceNavDriver);
+        }
+#endif
+#ifdef ENABLE_JOYSTICK
+		if(s->get(Settings::Settings::inputEnableDriverJOYSTICK).toBool()){
+			std::string nr = s->get(Settings::Settings::joystickNr).toString();
+			auto joyDriver = new JoystickInputDriver();
+			joyDriver->setJoystickNr(nr);
+			InputDriverManager::instance()->registerDriver(joyDriver);
+		}
+#endif
+#ifdef ENABLE_QGAMEPAD
+		if(s->get(Settings::Settings::inputEnableDriverQGAMEPAD).toBool()){
+			auto qGamepadDriver = new QGamepadInputDriver();
+			InputDriverManager::instance()->registerDriver(qGamepadDriver);
+		}
+#endif
+#ifdef ENABLE_DBUS
+	if(s->get(Settings::Settings::inputEnableDriverDBUS).toBool()){
+			auto dBusDriver =new DBusInputDriver();
+			InputDriverManager::instance()->registerDriver(dBusDriver);
+		}
+#endif
+		InputDriverManager::instance()->init();
+	}
 	int rc = app.exec();
 	for (auto &mainw : scadApp->windowManager.getWindows()) delete mainw;
 	return rc;
@@ -766,11 +828,32 @@ std::pair<string, string> customSyntax(const string&)
 
 	return {};
 }
+/*!
+	This makes boost::program_option parse comma-separated values
+ */
+struct CommaSeparatedVector
+{
+	std::vector<std::string> values;
+
+	friend std::istream &operator>>(std::istream &in, CommaSeparatedVector &value) {
+		std::string token;
+		in >> token;
+		boost::split(value.values, token, boost::is_any_of(","));
+		return in;
+	}
+};
+
+template <class Seq, typename ToString>
+std::string join(const Seq &seq, const std::string &sep, const ToString &toString)
+{
+    return boost::algorithm::join(boost::adaptors::transform(seq, toString), sep);
+}
 
 int main(int argc, char **argv)
 {
 	int rc = 0;
 	StackCheck::inst()->init();
+
 #ifdef OPENSCAD_QTGUI
 	{   // Need a dummy app instance to get the application path but it needs to be destroyed before the GUI is launched.
 		QCoreApplication app(argc, argv);
@@ -799,24 +882,7 @@ int main(int argc, char **argv)
 	const char *output_file = nullptr;
 	const char *deps_output_file = nullptr;
 	
-	string colorSchemeNames;
-	for(const auto &name : ColorMap::inst()->colorSchemeNames()) {
-		if(!colorSchemeNames.empty())
-			colorSchemeNames.append(" | ");
-		if(name == ColorMap::inst()->defaultColorSchemeName())
-			colorSchemeNames.append("*");
-		colorSchemeNames.append(name);
-	}
-
-#ifdef ENABLE_EXPERIMENTAL
-	string features;
-	for(auto it = Feature::begin(); it != Feature::end(); ++it) {
-		if(!features.empty())
-			features.append(" | ");
-		features.append((*it)->get_name());
-	}
-#endif
-        
+	ViewOptions viewOptions{};
 	po::options_description desc("Allowed options");
 	desc.add_options()
 		("o,o", po::value<string>(), "output specified file instead of running the GUI, the file extension specifies the type: stl, off, amf, csg, dxf, svg, png, echo, ast, term, nef3, nefdbg\n")
@@ -824,7 +890,11 @@ int main(int argc, char **argv)
 #ifdef ENABLE_EXPERIMENTAL
 		("p,p", po::value<string>(), "customizer parameter file")
 		("P,P", po::value<string>(), "customizer parameter set")
-		("enable", po::value<vector<string>>(), ("enable experimental features: " + features + "\n").c_str())
+		("enable", po::value<vector<string>>(), ("enable experimental features: " +
+																						 join(boost::make_iterator_range(Feature::begin(), Feature::end()), " | ", [](const Feature *feature) {
+																								 return feature->get_name();
+																							 }) +
+																						 "\n").c_str())
 #endif
 		("help,h", "print this help message and exit")
 		("version,v", "print the version")
@@ -836,9 +906,14 @@ int main(int argc, char **argv)
 		("imgsize", po::value<string>(), "=width,height of exported png")
 		("render", po::value<string>()->implicit_value(""), "for full geometry evaluation when exporting png")
 		("preview", po::value<string>()->implicit_value(""), "[=throwntogether] -for ThrownTogether preview png")
+		("view", po::value<CommaSeparatedVector>(), ("=view options: " + boost::join(viewOptions.names(), " | ")).c_str())
 		("projection", po::value<string>(), "=(o)rtho or (p)erspective when exporting png")
 		("csglimit", po::value<unsigned int>(), "=n -stop rendering at n CSG elements when exporting png")
-		("colorscheme", po::value<string>(), ("=colorscheme: " + colorSchemeNames + "\n").c_str())
+		("colorscheme", po::value<string>(), ("=colorscheme: " +
+																					join(ColorMap::inst()->colorSchemeNames(), " | ", [](const std::string& colorScheme) {
+																							return (ColorMap::inst()->defaultColorSchemeName() ? "*" : "") + colorScheme;
+																						}) +
+																					"\n").c_str())
 
 		("d,d", po::value<string>(), "deps_file -generate a dependency file for make")
 		("m,m", po::value<string>(), "make_cmd -runs make_cmd file if file is missing")
@@ -882,14 +957,26 @@ int main(int argc, char **argv)
 	if (vm.count("version")) version();
 	if (vm.count("info")) arg_info = true;
 
-	auto renderer = RenderType::OPENCSG;
 	if (vm.count("preview")) {
 		if (vm["preview"].as<string>() == "throwntogether")
-			renderer = RenderType::THROWNTOGETHER;
+			viewOptions.renderer = RenderType::THROWNTOGETHER;
 	}
 	else if (vm.count("render")) {
-		if (vm["render"].as<string>() == "cgal") renderer = RenderType::CGAL;
-		else renderer = RenderType::GEOMETRY;
+		if (vm["render"].as<string>() == "cgal") viewOptions.renderer = RenderType::CGAL;
+		else viewOptions.renderer = RenderType::GEOMETRY;
+	}
+
+	viewOptions.previewer = (viewOptions.renderer == RenderType::THROWNTOGETHER) ? Previewer::THROWNTOGETHER : Previewer::OPENCSG;
+	if (vm.count("view")) {
+		const auto &viewOptionValues = vm["view"].as<CommaSeparatedVector>();
+
+		for (const auto &option : viewOptionValues.values) {
+			try {
+				viewOptions[option] = true;
+			} catch (const std::out_of_range &e) {
+				PRINTB("Unknown --view option '%s' ignored. Use -h to list available options.", option);
+			}
+		}
 	}
 
 	if (vm.count("csglimit")) {
@@ -906,7 +993,7 @@ int main(int argc, char **argv)
 		if (output_file) help(argv[0], desc, true);
 		output_file = vm["s"].as<string>().c_str();
 	}
-	if (vm.count("x")) { 
+	if (vm.count("x")) {
 		printDeprecation("The -x option is deprecated. Use -o instead.\n");
 		if (output_file) help(argv[0], desc, true);
 		output_file = vm["x"].as<string>().c_str();
@@ -979,7 +1066,7 @@ int main(int argc, char **argv)
 
 	if (arg_info || cmdlinemode) {
 		if (inputFiles.size() > 1) help(argv[0], desc, true);
-		rc = cmdline(deps_output_file, inputFiles[0], camera, output_file, original_path, renderer, parameterFile, parameterSet);
+		rc = cmdline(deps_output_file, inputFiles[0], output_file, original_path, parameterFile, parameterSet, viewOptions, camera);
 	}
 	else if (QtUseGUI()) {
 		rc = gui(inputFiles, original_path, argc, argv);

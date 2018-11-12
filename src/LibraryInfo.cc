@@ -3,6 +3,7 @@
 #include <vector>
 #ifdef USE_SCINTILLA_EDITOR
 #include <Qsci/qsciglobal.h>
+#include "input/InputDriverManager.h"
 #endif
 
 #include "version_check.h"
@@ -31,6 +32,10 @@
 
 extern std::vector<std::string> librarypath;
 extern std::vector<std::string> fontpath;
+extern const std::string get_lib3mf_version();
+extern const std::string get_fontconfig_version();
+extern const std::string get_harfbuzz_version();
+extern const std::string get_freetype_version();
 
 std::string LibraryInfo::info()
 {
@@ -104,10 +109,15 @@ std::string LibraryInfo::info()
 	  << "\nQt version: " << qtVersion
 #ifdef USE_SCINTILLA_EDITOR
 	  << "\nQScintilla version: " << QSCINTILLA_VERSION_STR
+          << "\nInputDrivers: " << InputDriverManager::instance()->listDrivers()
 #endif
 	  << "\nMingW build: " << mingwstatus
 	  << "\nGLib version: "       << GLIB_MAJOR_VERSION << "." << GLIB_MINOR_VERSION << "." << GLIB_MICRO_VERSION
 	  << "\nlibzip version: " << LIBZIP_VERSION
+	  << "\nfontconfig version: " << get_fontconfig_version()
+	  << "\nfreetype version: " << get_freetype_version()
+	  << "\nharfbuzz version: " << get_harfbuzz_version()
+	  << "\nlib3mf version: " << get_lib3mf_version()
 	  << "\nApplication Path: " << PlatformUtils::applicationPath()
 	  << "\nDocuments Path: " << PlatformUtils::documentsPath()
 	  << "\nResource Path: " << PlatformUtils::resourceBasePath()

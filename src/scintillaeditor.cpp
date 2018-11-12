@@ -20,10 +20,10 @@ public:
 
 QsciScintilla::WrapMode SettingsConverter::toWrapMode(Value val)
 {
-	std::string v = val.toString();
-	if (v == "Char") {
+	auto strVal = val.toString();
+	if (strVal == "Char") {
 		return QsciScintilla::WrapCharacter;
-	} else if (v == "Word") {
+	} else if (strVal == "Word") {
 		return QsciScintilla::WrapWord;
 	} else {
 		return QsciScintilla::WrapNone;
@@ -32,13 +32,13 @@ QsciScintilla::WrapMode SettingsConverter::toWrapMode(Value val)
 
 QsciScintilla::WrapVisualFlag SettingsConverter::toLineWrapVisualization(Value val)
 {
-	std::string v = val.toString();
-	if (v == "Text") {
+	auto strVal = val.toString();
+	if (strVal == "Text") {
 		return QsciScintilla::WrapFlagByText;
-	} else if (v == "Border") {
+	} else if (strVal == "Border") {
 		return QsciScintilla::WrapFlagByBorder;
 #if QSCINTILLA_VERSION >= 0x020700
-	} else if (v == "Margin") {
+	} else if (strVal == "Margin") {
 		return QsciScintilla::WrapFlagInMargin;
 #endif
 	} else {
@@ -48,10 +48,10 @@ QsciScintilla::WrapVisualFlag SettingsConverter::toLineWrapVisualization(Value v
 
 QsciScintilla::WrapIndentMode SettingsConverter::toLineWrapIndentationStyle(Value val)
 {
-	std::string v = val.toString();
-	if (v == "Same") {
+	auto strVal = val.toString();
+	if (strVal == "Same") {
 		return QsciScintilla::WrapIndentSame;
-	} else if (v == "Indented") {
+	} else if (strVal == "Indented") {
 		return QsciScintilla::WrapIndentIndented;
 	} else {
 		return QsciScintilla::WrapIndentFixed;
@@ -60,10 +60,10 @@ QsciScintilla::WrapIndentMode SettingsConverter::toLineWrapIndentationStyle(Valu
 
 QsciScintilla::WhitespaceVisibility SettingsConverter::toShowWhitespaces(Value val)
 {
-	std::string v = val.toString();
-	if (v == "Always") {
+	auto strVal = val.toString();
+	if (strVal == "Always") {
 		return QsciScintilla::WsVisible;
-	} else if (v == "AfterIndentation") {
+	} else if (strVal == "AfterIndentation") {
 		return QsciScintilla::WsVisibleAfterIndent;
 	} else {
 		return QsciScintilla::WsInvisible;
@@ -73,11 +73,11 @@ QsciScintilla::WhitespaceVisibility SettingsConverter::toShowWhitespaces(Value v
 EditorColorScheme::EditorColorScheme(fs::path path) : path(path)
 {
 	try {
-		boost::property_tree::read_json(path.generic_string().c_str(), pt);
-		_name = QString(pt.get<std::string>("name").c_str());
+		boost::property_tree::read_json(path.generic_string(), pt);
+		_name = QString::fromStdString(pt.get<std::string>("name"));
 		_index = pt.get<int>("index");
 	} catch (const std::exception & e) {
-		PRINTB("Error reading color scheme file '%s': %s", path.generic_string().c_str() % e.what());
+		PRINTB("Error reading color scheme file '%s': %s", path.generic_string() % e.what());
 		_name = "";
 		_index = 0;
 	}
@@ -146,8 +146,8 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	qsci->setUtf8(true);
 	qsci->setFolding(QsciScintilla::BoxedTreeFoldStyle, 4);
 
-	lexer = new ScadLexer(this);
-	qsci->setLexer(lexer);
+	this->lexer = new ScadLexer(this);
+	qsci->setLexer(this->lexer);
 	initMargin();
 
 	connect(qsci, SIGNAL(textChanged()), this, SIGNAL(contentsChanged()));
@@ -162,7 +162,7 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 void ScintillaEditor::applySettings()
 {
 	SettingsConverter conv;
-	Settings::Settings *s = Settings::Settings::inst();
+	auto s = Settings::Settings::inst();
 
 	qsci->setIndentationWidth(s->get(Settings::Settings::indentationWidth).toDouble());
 	qsci->setTabWidth(s->get(Settings::Settings::tabWidth).toDouble());
@@ -176,24 +176,18 @@ void ScintillaEditor::applySettings()
 	qsci->setAutoIndent(s->get(Settings::Settings::autoIndent).toBool());
 	qsci->setBackspaceUnindents(s->get(Settings::Settings::backspaceUnindents).toBool());
 
-	std::string indentStyle = s->get(Settings::Settings::indentStyle).toString();
+	auto indentStyle = s->get(Settings::Settings::indentStyle).toString();
 	qsci->setIndentationsUseTabs(indentStyle == "Tabs");
-	std::string tabKeyFunction = s->get(Settings::Settings::tabKeyFunction).toString();
+	auto tabKeyFunction = s->get(Settings::Settings::tabKeyFunction).toString();
 	qsci->setTabIndents(tabKeyFunction == "Indent");
 
 	qsci->setBraceMatching(s->get(Settings::Settings::enableBraceMatching).toBool() ? QsciScintilla::SloppyBraceMatch : QsciScintilla::NoBraceMatch);
 	qsci->setCaretLineVisible(s->get(Settings::Settings::highlightCurrentLine).toBool());
-    bool value = s->get(Settings::Settings::enableLineNumbers).toBool();
+    auto value = s->get(Settings::Settings::enableLineNumbers).toBool();
     qsci->setMarginLineNumbers(1,value);
 
-    if(!value)
-    {
-             qsci->setMarginWidth(1,20);
-    }
-    else
-    {
-        qsci->setMarginWidth(1,QString(trunc(log10(qsci->lines())+4), '0'));
-    }
+    if (!value) qsci->setMarginWidth(1,20);
+    else qsci->setMarginWidth(1,QString(trunc(log10(qsci->lines())+4), '0'));
 }
 
 void ScintillaEditor::setPlainText(const QString &text)
@@ -231,7 +225,7 @@ void ScintillaEditor::highlightError(int error_pos)
 
 void ScintillaEditor::unhighlightLastError()
 {
-	int totalLength = qsci->text().length();
+	auto totalLength = qsci->text().length();
 	int line, index;
 	qsci->lineIndexFromPosition(totalLength, &line, &index);
 	qsci->clearIndicatorRange(0, 0, line, index, errorIndicatorNumber);
@@ -241,18 +235,18 @@ void ScintillaEditor::unhighlightLastError()
 QColor ScintillaEditor::readColor(const boost::property_tree::ptree &pt, const std::string name, const QColor defaultColor)
 {
 	try {
-		const std::string val = pt.get<std::string>(name);
+		const auto val = pt.get<std::string>(name);
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 		if ((val.length() == 9) && (val.at(0) == '#')) {
-			const std::string rgb = std::string("#") + val.substr(3);
+			const auto rgb = std::string("#") + val.substr(3);
 			QColor qcol(rgb.c_str());
-			unsigned long alpha = std::strtoul(val.substr(1, 2).c_str(), 0, 16);
+			auto alpha = std::strtoul(val.substr(1, 2).c_str(), 0, 16);
 			qcol.setAlpha(alpha);
 			return qcol;
 		}
 #endif
 		return QColor(val.c_str());
-	} catch (std::exception e) {
+	} catch (const std::exception &e) {
 		return defaultColor;
 	}
 }
@@ -260,9 +254,9 @@ QColor ScintillaEditor::readColor(const boost::property_tree::ptree &pt, const s
 std::string ScintillaEditor::readString(const boost::property_tree::ptree &pt, const std::string name, const std::string defaultValue)
 {
 	try {
-		const std::string val = pt.get<std::string>(name);
+		const auto val = pt.get<std::string>(name);
 		return val;
-	} catch (std::exception e) {
+	} catch (const std::exception &e) {
 		return defaultValue;
 	}
 }
@@ -270,61 +264,61 @@ std::string ScintillaEditor::readString(const boost::property_tree::ptree &pt, c
 int ScintillaEditor::readInt(const boost::property_tree::ptree &pt, const std::string name, const int defaultValue)
 {
 	try {
-		const int val = pt.get<int>(name);
+		const auto val = pt.get<int>(name);
 		return val;
-	} catch (std::exception e) {
+	} catch (const std::exception &e) {
 		return defaultValue;
 	}
 }
 
 void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 {
-	const boost::property_tree::ptree & pt = colorScheme->propertyTree();
+	const auto & pt = colorScheme->propertyTree();
 
 	try {
-          QFont font = lexer->font(lexer->defaultStyle());
+          auto font = this->lexer->font(this->lexer->defaultStyle());
 		const QColor textColor(pt.get<std::string>("text").c_str());
 		const QColor paperColor(pt.get<std::string>("paper").c_str());
 
-		ScadLexer *l = new ScadLexer(this);
+		auto *newLexer = new ScadLexer(this);
 
 		// Keywords must be set before the lexer is attached to QScintilla
 		// as they seem to be read and cached at attach time.
 		boost::optional<const boost::property_tree::ptree&> keywords = pt.get_child_optional("keywords");
 		if (keywords.is_initialized()) {
-			l->setKeywords(1, readString(keywords.get(), "keyword-set1", ""));
-			l->setKeywords(2, readString(keywords.get(), "keyword-set2", ""));
-			l->setKeywords(3, readString(keywords.get(), "keyword-set-doc", ""));
-			l->setKeywords(4, readString(keywords.get(), "keyword-set3", ""));
+			newLexer->setKeywords(1, readString(keywords.get(), "keyword-set1", ""));
+			newLexer->setKeywords(2, readString(keywords.get(), "keyword-set2", ""));
+			newLexer->setKeywords(3, readString(keywords.get(), "keyword-set-doc", ""));
+			newLexer->setKeywords(4, readString(keywords.get(), "keyword-set3", ""));
 		}
 
-		qsci->setLexer(l);
-		delete lexer;
-		lexer = l;
+		qsci->setLexer(newLexer);
+		delete this->lexer;
+		this->lexer = newLexer;
 
 		// All other properties must be set after attaching to QSCintilla so
 		// the editor gets the change events and updates itself to match
-		l->setFont(font);
-		l->setColor(textColor);
-		l->setPaper(paperColor);
+		newLexer->setFont(font);
+		newLexer->setColor(textColor);
+		newLexer->setPaper(paperColor);
                 // Somehow, the margin font got lost when we deleted the old lexer
                 qsci->setMarginsFont(font);
 
-		const boost::property_tree::ptree& colors = pt.get_child("colors");
-		l->setColor(readColor(colors, "keyword1", textColor), QsciLexerCPP::Keyword);
-		l->setColor(readColor(colors, "keyword2", textColor), QsciLexerCPP::KeywordSet2);
-		l->setColor(readColor(colors, "keyword3", textColor), QsciLexerCPP::GlobalClass);
-		l->setColor(readColor(colors, "number", textColor), QsciLexerCPP::Number);
-		//l->setColor(readColor(colors, "string", textColor), QsciLexerCPP::SingleQuotedString); //currently, we do not support SingleQuotedStrings
-		l->setColor(readColor(colors, "string", textColor), QsciLexerCPP::DoubleQuotedString);
-		l->setColor(readColor(colors, "operator", textColor), QsciLexerCPP::Operator);
-		l->setColor(readColor(colors, "comment", textColor), QsciLexerCPP::Comment);
-		l->setColor(readColor(colors, "commentline", textColor), QsciLexerCPP::CommentLine);
-		l->setColor(readColor(colors, "commentdoc", textColor), QsciLexerCPP::CommentDoc);
-		l->setColor(readColor(colors, "commentdoc", textColor), QsciLexerCPP::CommentLineDoc);
-		l->setColor(readColor(colors, "commentdockeyword", textColor), QsciLexerCPP::CommentDocKeyword);
+		const auto& colors = pt.get_child("colors");
+		newLexer->setColor(readColor(colors, "keyword1", textColor), QsciLexerCPP::Keyword);
+		newLexer->setColor(readColor(colors, "keyword2", textColor), QsciLexerCPP::KeywordSet2);
+		newLexer->setColor(readColor(colors, "keyword3", textColor), QsciLexerCPP::GlobalClass);
+		newLexer->setColor(readColor(colors, "number", textColor), QsciLexerCPP::Number);
+		//newLexer->setColor(readColor(colors, "string", textColor), QsciLexerCPP::SingleQuotedString); //currently, we do not support SingleQuotedStrings
+		newLexer->setColor(readColor(colors, "string", textColor), QsciLexerCPP::DoubleQuotedString);
+		newLexer->setColor(readColor(colors, "operator", textColor), QsciLexerCPP::Operator);
+		newLexer->setColor(readColor(colors, "comment", textColor), QsciLexerCPP::Comment);
+		newLexer->setColor(readColor(colors, "commentline", textColor), QsciLexerCPP::CommentLine);
+		newLexer->setColor(readColor(colors, "commentdoc", textColor), QsciLexerCPP::CommentDoc);
+		newLexer->setColor(readColor(colors, "commentdoc", textColor), QsciLexerCPP::CommentLineDoc);
+		newLexer->setColor(readColor(colors, "commentdockeyword", textColor), QsciLexerCPP::CommentDocKeyword);
 
-		const boost::property_tree::ptree& caret = pt.get_child("caret");
+		const auto& caret = pt.get_child("caret");
 		qsci->setCaretWidth(readInt(caret, "width", 1));
 		qsci->setCaretForegroundColor(readColor(caret, "foreground", textColor));
 		qsci->setCaretLineBackgroundColor(readColor(caret, "line-background", paperColor));
@@ -346,15 +340,15 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 		qsci->setSelectionForegroundColor(readColor(colors, "selection-foreground", paperColor));
 		qsci->setSelectionBackgroundColor(readColor(colors, "selection-background", textColor));
 		qsci->setEdgeColor(readColor(colors, "edge", textColor));
-	} catch (std::exception e) {
+	} catch (const std::exception &e) {
 		noColor();
 	}
 }
 
 void ScintillaEditor::noColor()
 {
-	lexer->setPaper(Qt::white);
-	lexer->setColor(Qt::black);
+	this->lexer->setPaper(Qt::white);
+	this->lexer->setColor(Qt::black);
 	qsci->setCaretWidth(2);
 	qsci->setCaretForegroundColor(Qt::black);
 	qsci->setMarkerBackgroundColor(QColor(255, 0, 0, 100), markerNumber);
@@ -378,26 +372,18 @@ void ScintillaEditor::noColor()
 
 void ScintillaEditor::enumerateColorSchemesInPath(ScintillaEditor::colorscheme_set_t &result_set, const fs::path path)
 {
-	const fs::path color_schemes = path / "color-schemes" / "editor";
-
-	fs::directory_iterator end_iter;
+	const auto color_schemes = path / "color-schemes" / "editor";
 
 	if (fs::exists(color_schemes) && fs::is_directory(color_schemes)) {
-		for (fs::directory_iterator dir_iter(color_schemes); dir_iter != end_iter; ++dir_iter) {
-			if (!fs::is_regular_file(dir_iter->status())) {
-				continue;
-			}
+		for (const auto& dirEntry : boost::make_iterator_range(fs::directory_iterator{color_schemes}, {})) {
+			if (!fs::is_regular_file(dirEntry.status())) continue;
 
-			const fs::path path = (*dir_iter).path();
-			if (!(path.extension() == ".json")) {
-				continue;
-			}
+			const auto &path = dirEntry.path();
+			if (!(path.extension() == ".json")) continue;
 
-			EditorColorScheme *colorScheme = new EditorColorScheme(path);
+			auto colorScheme = std::make_shared<EditorColorScheme>(path);
 			if (colorScheme->valid()) {
-				result_set.insert(colorscheme_set_t::value_type(colorScheme->index(), shared_ptr<EditorColorScheme>(colorScheme)));
-			} else {
-				delete colorScheme;
+				result_set.emplace(colorScheme->index(), colorScheme);
 			}
 		}
 	}
@@ -415,11 +401,9 @@ ScintillaEditor::colorscheme_set_t ScintillaEditor::enumerateColorSchemes()
 
 QStringList ScintillaEditor::colorSchemes()
 {
-	const colorscheme_set_t colorscheme_set = enumerateColorSchemes();
-
 	QStringList colorSchemes;
-	for (colorscheme_set_t::const_iterator it = colorscheme_set.begin(); it != colorscheme_set.end(); it++) {
-		colorSchemes << (*it).second.get()->name();
+	for (const auto &colorSchemeEntry : enumerateColorSchemes()) {
+		colorSchemes << colorSchemeEntry.second.get()->name();
 	}
 	colorSchemes << "Off";
 
@@ -433,10 +417,8 @@ bool ScintillaEditor::canUndo()
 
 void ScintillaEditor::setHighlightScheme(const QString &name)
 {
-	const colorscheme_set_t colorscheme_set = enumerateColorSchemes();
-
-	for (colorscheme_set_t::const_iterator it = colorscheme_set.begin(); it != colorscheme_set.end(); it++) {
-		const EditorColorScheme *colorScheme = (*it).second.get();
+	for (const auto &colorSchemeEntry : enumerateColorSchemes()) {
+		const auto colorScheme = colorSchemeEntry.second.get();
 		if (colorScheme->name() == name) {
 			setColormap(colorScheme);
 			return;
@@ -496,7 +478,7 @@ void ScintillaEditor::initFont(const QString& fontName, uint size)
 {
   this->currentFont = QFont(fontName, size);
   this->currentFont.setFixedPitch(true);
-  lexer->setFont(this->currentFont);
+  this->lexer->setFont(this->currentFont);
   qsci->setMarginsFont(this->currentFont);
   onTextChanged(); // Update margin width
 }
@@ -509,30 +491,24 @@ void ScintillaEditor::initMargin()
 
 void ScintillaEditor::onTextChanged()
 {
-  Settings::Settings *s = Settings::Settings::inst();
+  auto s = Settings::Settings::inst();
   QFontMetrics fontmetrics(this->currentFont);
-  bool value = s->get(Settings::Settings::enableLineNumbers).toBool();
+  auto enableLineNumbers = s->get(Settings::Settings::enableLineNumbers).toBool();
 
-  if(!value)
-  {
-           qsci->setMarginWidth(1,20);
-  }
-  else
-  {
-      qsci->setMarginWidth(1,QString(trunc(log10(qsci->lines())+4), '0'));
-  }
+  if (!enableLineNumbers) qsci->setMarginWidth(1, 20);
+  else qsci->setMarginWidth(1, QString(trunc(log10(qsci->lines()) + 4), '0'));
 }
 
 int ScintillaEditor::updateFindIndicators(const QString &findText, bool visibility)
 {
-    int findwordcount = 0;
+	int findwordcount{0};
 
-    QString txt = qsci->text();
+    auto txt = qsci->text();
 
     qsci->SendScintilla(qsci->SCI_INDICATORCLEARRANGE, 0, txt.length());
 
-    int pos = txt.indexOf(findText);
-    int len = findText.length();
+    auto pos = txt.indexOf(findText);
+    auto len = findText.length();
     if (visibility && len>0) {
         while (pos!=-1){
             findwordcount++;
@@ -630,7 +606,7 @@ void ScintillaEditor::unindentSelection()
 
 void ScintillaEditor::commentSelection()
 {
-	bool hasSelection = qsci->hasSelectedText();
+	auto hasSelection = qsci->hasSelectedText();
 
 	int lineFrom, lineTo;
 	getRange(&lineFrom, &lineTo);
@@ -645,7 +621,7 @@ void ScintillaEditor::commentSelection()
 
 void ScintillaEditor::uncommentSelection()
 {
-	bool hasSelection = qsci->hasSelectedText();
+	auto hasSelection = qsci->hasSelectedText();
 
 	int lineFrom, lineTo;
 	getRange(&lineFrom, &lineTo);
@@ -673,10 +649,8 @@ bool ScintillaEditor::eventFilter(QObject* obj, QEvent *e)
 
 	if (obj != qsci) return EditorInterface::eventFilter(obj, e);
 
-	if (	e->type()==QEvent::KeyPress
-		 || e->type()==QEvent::KeyRelease
-		 ) {
-		QKeyEvent *ke = static_cast<QKeyEvent*>(e);
+	if (e->type()==QEvent::KeyPress || e->type()==QEvent::KeyRelease) {
+		auto *ke = static_cast<QKeyEvent*>(e);
 		if ((ke->modifiers() & ~Qt::KeypadModifier) == Qt::AltModifier) {
 			switch (ke->key())
 			{
@@ -704,7 +678,7 @@ bool ScintillaEditor::eventFilter(QObject* obj, QEvent *e)
 			int k=ke->key() | ke->modifiers();
 			if (wasChanged) qsci->endUndoAction();
 			wasChanged=false;
-			QsciCommand *cmd=qsci->standardCommands()->boundTo(k);
+			auto *cmd=qsci->standardCommands()->boundTo(k);
 			if ( cmd && ( cmd->command()==QsciCommand::Undo || cmd->command()==QsciCommand::Redo ) )
 				QTimer::singleShot(0,this,SIGNAL(previewRequest()));
 			else if ( cmd || !ke->text().isEmpty() ) {
@@ -721,13 +695,13 @@ void ScintillaEditor::navigateOnNumber(int key)
 {
 	int line, index;
 	qsci->getCursorPosition(&line, &index);
-	QString text=qsci->text(line);
-	QString left=text.left(index);
-	bool dotOnLeft=left.contains(QRegExp("\\.\\d*$"));
-	bool dotJustLeft=index>1 && text[index-2]=='.';
-	bool dotJustRight=text[index]=='.';
-	bool numOnLeft=left.contains(QRegExp("\\d\\.?$")) || left.endsWith("-.");
-	bool numOnRight=text.indexOf(QRegExp("\\.?\\d"),index)==index;
+	auto text=qsci->text(line);
+	auto left=text.left(index);
+	auto dotOnLeft=left.contains(QRegExp("\\.\\d*$"));
+	auto dotJustLeft=index>1 && text[index-2]=='.';
+	auto dotJustRight=text[index]=='.';
+	auto numOnLeft=left.contains(QRegExp("\\d\\.?$")) || left.endsWith("-.");
+	auto numOnRight=text.indexOf(QRegExp("\\.?\\d"),index)==index;
 
 	switch (key)
 	{
@@ -757,25 +731,25 @@ bool ScintillaEditor::modifyNumber(int key)
 {
 	int line, index;
 	qsci->getCursorPosition(&line, &index);
-	QString text=qsci->text(line);
+	auto text=qsci->text(line);
 
 	int lineFrom, indexFrom, lineTo, indexTo;
 	qsci->getSelection(&lineFrom, &indexFrom, &lineTo, &indexTo);
-	bool hadSelection=qsci->hasSelectedText();
+	auto hadSelection=qsci->hasSelectedText();
 
-	int begin=QRegExp("[-+]?\\d*\\.?\\d*$").indexIn(text.left(index));
-	int end=text.indexOf(QRegExp("[^0-9.]"),index);
+	auto begin=QRegExp("[-+]?\\d*\\.?\\d*$").indexIn(text.left(index));
+	auto end=text.indexOf(QRegExp("[^0-9.]"),index);
 	if (end<0) end=text.length();
-	QString nr=text.mid(begin,end-begin);
+	auto nr=text.mid(begin,end-begin);
 	if ( !(nr.contains(QRegExp("^[-+]?\\d*\\.?\\d*$")) && nr.contains(QRegExp("\\d"))) ) return false;
-	bool sign=nr[0]=='+'||nr[0]=='-';
+	auto sign=nr[0]=='+'||nr[0]=='-';
 	if (nr.endsWith('.')) nr=nr.left(nr.length()-1);
-	int curpos=index-begin;
-	int dotpos=nr.indexOf('.');
-	int decimals=dotpos<0?0:nr.length()-dotpos-1;
-	long long int number=(dotpos<0)?nr.toLongLong():(nr.left(dotpos)+nr.mid(dotpos+1)).toLongLong();
-	int tail=nr.length()-curpos;
-	int exponent=tail-((dotpos>=curpos)?1:0);
+	auto curpos=index-begin;
+	auto dotpos=nr.indexOf('.');
+	auto decimals=dotpos<0?0:nr.length()-dotpos-1;
+	auto number=(dotpos<0)?nr.toLongLong():(nr.left(dotpos)+nr.mid(dotpos+1)).toLongLong();
+	auto tail=nr.length()-curpos;
+	auto exponent=tail-((dotpos>=curpos)?1:0);
 	long long int step=1;
 	for (int i=exponent; i>0; i--) step*=10;
 
@@ -783,9 +757,9 @@ bool ScintillaEditor::modifyNumber(int key)
 		case Qt::Key_Up:   number+=step; break;
 		case Qt::Key_Down: number-=step; break;
 	}
-	bool negative=number<0;
+	auto negative=number<0;
 	if (negative) number=-number;
-	QString newnr=QString::number(number);
+	auto newnr=QString::number(number);
 	if (decimals) {
 		if (newnr.length()<=decimals) newnr.prepend(QString(decimals-newnr.length()+1,'0'));
 		newnr=newnr.left(newnr.length()-decimals)+"."+newnr.right(decimals);

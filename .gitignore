@@ -16,6 +16,7 @@ objects
 /.dir-locals.el
 testdata/scad/2D/features/import_dxf-tests.scad
 testdata/scad/3D/features/import_stl-tests.scad
+testdata/scad/3D/features/import_3mf-tests.scad
 testdata/scad/misc/include-tests.scad
 testdata/scad/misc/use-tests.scad
 **/project.xcworkspace
@@ -38,6 +39,10 @@ testdata/scad/misc/use-tests.scad
 /*.h
 /*.dump
 /*.pl
+/lexer_lex.cpp
+/parser_yacc.cpp
+/openscad_adaptor.cpp
+/openscad_interface.cpp
 /OpenSCAD.app
 /openscad.appdata.xml
 /openscad.pro.user
@@ -59,6 +64,7 @@ tests/lexer.cxx
 tests/parser.cxx
 tests/parser.hxx
 tests/DartConfiguration.tcl
+tests/__pycache__/
 CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake

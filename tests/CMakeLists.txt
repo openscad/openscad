@@ -530,6 +530,11 @@ find_package(GLIB2 2.2.0 REQUIRED)
 add_definitions(${GLIB2_DEFINITIONS})
 inclusion(GLIB2_DIR GLIB2_INCLUDE_DIRS)
 
+# 3MF
+include(FindLib3MF.cmake)
+add_definitions(${LIB3MF_CFLAGS})
+include_directories(${LIB3MF_INCLUDE_DIRS})
+
 # find libraries using pkg-config
 find_package(PkgConfig REQUIRED)
 include(PkgConfigTools.cmake)
@@ -619,12 +624,12 @@ endif()
 if ( ${DIFFPNG} )
   set(IMAGE_COMPARE_EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/diffpng)
   set(COMPARATOR "diffpng")
-  add_executable(diffpng diffpng.cpp ../src/lodepng.cpp)
+  add_executable(diffpng diffpng.cpp ../src/ext/lodepng/lodepng.cpp)
   message(STATUS "using diffpng for image comparison")
 endif()
 
 # Internal includes
-include_directories(../src ../src/ext/libtess2/Include)
+include_directories(../src ../src/ext/libtess2/Include ../src/ext/lodepng)
 
 # Handle OpenSCAD version based on VERSION env. variable.
 # Use current timestamp if not specified (development builds)
@@ -769,6 +774,7 @@ set(NOCGAL_SOURCES
   ../src/import_amf.cc
   ../src/import_off.cc
   ../src/import_svg.cc
+  ../src/import_3mf.cc
   ../src/export.cc
   ../src/export_stl.cc
   ../src/export_amf.cc
@@ -845,7 +851,7 @@ if(NULLGL)
 endif()
 
 add_library(tests-core STATIC ${CORE_SOURCES})
-target_link_libraries(tests-core ${OPENGL_LIBRARIES} ${GLIB2_LIBRARIES} ${FONTCONFIG_LDFLAGS} ${FREETYPE_LDFLAGS} ${HARFBUZZ_LDFLAGS} ${LIBXML2_LIBRARIES} ${Boost_LIBRARIES} ${COCOA_LIBRARY})
+target_link_libraries(tests-core ${OPENGL_LIBRARIES} ${GLIB2_LIBRARIES} ${FONTCONFIG_LDFLAGS} ${FREETYPE_LDFLAGS} ${HARFBUZZ_LDFLAGS} ${LIBXML2_LIBRARIES} ${LIB3MF_LDFLAGS} ${Boost_LIBRARIES} ${COCOA_LIBRARY})
 
 add_library(tests-common STATIC ${COMMON_SOURCES})
 target_link_libraries(tests-common tests-core)
@@ -999,7 +1005,7 @@ endfunction()
 #                        [SCRIPT <script>]
 #                        [EXPECTEDDIR <shared dir>] SUFFIX <suffix> FILES <test files>)
 #
-find_package(PythonInterp)
+find_package(PythonInterp 3.4 REQUIRED)
 function(add_cmdline_test TESTCMD_BASENAME)
   cmake_parse_arguments(TESTCMD "" "EXE;SCRIPT;SUFFIX;EXPECTEDDIR" "FILES;ARGS" ${ARGN})
 
@@ -1029,7 +1035,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
       if (${EXPERIMENTAL} EQUAL -1)
         set(EXPERIMENTAL_OPTION "")
       else()
-        set(EXPERIMENTAL_OPTION "--enable=assert" "--enable=echo" "--enable=lc-each" "--enable=lc-else" "--enable=lc-for-c" "--enable=amf-import")
+        set(EXPERIMENTAL_OPTION "--enable=lc-each" "--enable=lc-else" "--enable=lc-for-c" "--enable=amf-import" "--enable=3mf-import" "--enable=3mf-export")
       endif()
 
       # 2D tests should be viewed from the top, not an angle.
@@ -1126,6 +1132,8 @@ configure_file(${CMAKE_SOURCE_DIR}/../testdata/scad/templates/use-tests-template
                ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/use-tests.scad)
 configure_file(${CMAKE_SOURCE_DIR}/../testdata/scad/templates/import_stl-tests-template.scad
                ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/import_stl-tests.scad)
+configure_file(${CMAKE_SOURCE_DIR}/../testdata/scad/templates/import_3mf-tests-template.scad
+               ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/import_3mf-tests.scad)
 configure_file(${CMAKE_SOURCE_DIR}/../testdata/scad/templates/import_dxf-tests-template.scad
                ${CMAKE_SOURCE_DIR}/../testdata/scad/2D/features/import_dxf-tests.scad)
 
@@ -1189,11 +1197,13 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/string-indexing.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/string-unicode.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/chr-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/ord-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/vector-values.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/search-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/search-tests-unicode.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/recursion-test-function.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/recursion-test-function2.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/recursion-test-function3.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/recursion-test-module.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/recursion-test-vector.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/tail-recursion-tests.scad
@@ -1213,6 +1223,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/nbsp-latin1-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/concat-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-recursive-test.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/isundef-test.scad
             
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/operators-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1472.scad
@@ -1267,6 +1278,8 @@ list(APPEND THROWNTOGETHERTEST_FILES ${OPENCSGTEST_FILES})
 list(APPEND CGALSTLSANITYTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/normal-nan.scad)
 
 list(APPEND EXPORT_STL_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/stl/stl-export.scad)
+
+list(APPEND EXPORT_3MF_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3mf/3mf-export.scad)
 
 list(APPEND EXPORT3D_CGALCGAL_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/polyhedron-nonplanar-tests.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/rotate_extrude-tests.scad
@@ -1342,6 +1355,7 @@ disable_tests(
 
   # z-fighting different on different machines
   throwntogethertest_issue1803
+  opencsgtest_issue1165
 )
 
 # 2D tests
@@ -1427,7 +1441,12 @@ experimental_tests(astdumptest_list-comprehensions-experimental
                    astdumptest_assert-expression-fail1-test
                    astdumptest_assert-expression-fail2-test
                    astdumptest_assert-expression-fail3-test
-		   echotest_issue1851-each-fail-on-scalar)
+		   echotest_issue1851-each-fail-on-scalar
+		   cgalpngtest_import_3mf-tests
+		   opencsgtest_import_3mf-tests
+		   csgpngtest_import_3mf-tests
+		   throwntogethertest_import_3mf-tests
+		   3mfexport_3mf-export)
 
 # Test config handling
 
@@ -1675,6 +1694,7 @@ add_cmdline_test(monotonepngtest EXE ${OPENSCAD_BINPATH} ARGS --colorscheme=Mono
 add_cmdline_test(stlpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=STL EXPECTEDDIR monotonepngtest SUFFIX png FILES ${TRIVIAL_IMPORT_EXPORT_3D_FILES})
 add_cmdline_test(offpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=OFF EXPECTEDDIR monotonepngtest SUFFIX png FILES ${TRIVIAL_IMPORT_EXPORT_3D_FILES})
 add_cmdline_test(amfpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=AMF --enable=amf-import EXPECTEDDIR monotonepngtest SUFFIX png FILES ${TRIVIAL_IMPORT_EXPORT_3D_FILES})
+add_cmdline_test(3mfpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=3MF --enable=3mf-import --enable=3mf-export EXPECTEDDIR monotonepngtest SUFFIX png FILES ${TRIVIAL_IMPORT_EXPORT_3D_FILES})
 add_cmdline_test(dxfpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=DXF --render=cgal EXPECTEDDIR monotonepngtest SUFFIX png FILES ${TRIVIAL_IMPORT_EXPORT_2D_FILES})
 add_cmdline_test(svgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=SVG --enable=svg-import --render=cgal EXPECTEDDIR monotonepngtest SUFFIX png FILES ${TRIVIAL_IMPORT_EXPORT_2D_FILES})
 
@@ -1686,6 +1706,8 @@ add_cmdline_test(monotonepngtest EXE ${OPENSCAD_BINPATH} ARGS --colorscheme=Mono
 
 # Disabled for now, needs implementation of #420 to be stable
 # add_cmdline_test(stlexport EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX stl FILES ${EXPORT_STL_TEST_FILES})
+
+add_cmdline_test(3mfexport EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES})
 
 # stlpngtest: direct STL output, preview rendering
 add_cmdline_test(stlpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=STL EXPECTEDDIR monotonepngtest SUFFIX png FILES ${EXPORT3D_TEST_FILES})
@@ -1858,6 +1880,14 @@ add_cmdline_test(openscad-cameyeortho-viewall EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=16,14,13,0,0,0 --viewall --projection=o -o 
                  SUFFIX png
                  FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/camera-tests.scad)
+
+# View Options tests
+add_cmdline_test(openscad-viewoptions-axes EXE ${OPENSCAD_BINPATH} ARGS --imgsize=500,500 --camera=16,14,13,0,0,0 --viewall --view axes -o SUFFIX png FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/view-options-tests.scad)
+add_cmdline_test(openscad-viewoptions-axes-scales EXE ${OPENSCAD_BINPATH} ARGS --imgsize=500,500 --camera=16,14,13,0,0,0 --viewall --view axes,scales -o SUFFIX png FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/view-options-tests.scad)
+add_cmdline_test(openscad-viewoptions-edges EXE ${OPENSCAD_BINPATH} ARGS --imgsize=500,500 --camera=16,14,13,0,0,0 --viewall --view edges -o SUFFIX png FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/view-options-tests.scad)
+add_cmdline_test(openscad-viewoptions-axes-scales-edges EXE ${OPENSCAD_BINPATH} ARGS --imgsize=500,500 --camera=16,14,13,0,0,0 --viewall --view axes,scales,edges -o SUFFIX png FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/view-options-tests.scad)
+add_cmdline_test(openscad-viewoptions-wireframe EXE ${OPENSCAD_BINPATH} ARGS --imgsize=500,500 --camera=16,14,13,0,0,0 --viewall --render --view wireframe -o SUFFIX png FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/view-options-tests.scad)
+add_cmdline_test(openscad-viewoptions-crosshairs EXE ${OPENSCAD_BINPATH} ARGS --imgsize=500,500 --camera=16,14,13,0,0,0 --viewall --render --view crosshairs -o SUFFIX png FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/misc/view-options-tests.scad)
 
 # Colorscheme tests
 add_cmdline_test(openscad-colorscheme-cornfield EXE ${OPENSCAD_BINPATH}

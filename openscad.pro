@@ -16,7 +16,7 @@
 #   resource folder. E.g. using SUFFIX=-nightly will name the
 #   resulting binary openscad-nightly.
 #
-# Please see the 'Building' sections of the OpenSCAD user manual 
+# Please see the 'Building' sections of the OpenSCAD user manual
 # for updated tips & workarounds.
 #
 # https://en.wikibooks.org/wiki/OpenSCAD_User_Manual
@@ -61,6 +61,7 @@ deploy {
   DEFINES += OPENSCAD_DEPLOY
   macx: {
     CONFIG += sparkle
+    OBJECTIVE_SOURCES += src/SparkleAutoUpdater.mm
     QMAKE_RPATHDIR = @executable_path/../Frameworks
   }
 }
@@ -175,9 +176,12 @@ CONFIG += glib-2.0
 CONFIG += harfbuzz
 CONFIG += freetype
 CONFIG += fontconfig
+CONFIG += lib3mf
 CONFIG += gettext
 CONFIG += libxml2
 CONFIG += libzip
+CONFIG += hidapi
+CONFIG += spnav
 
 #Uncomment the following line to enable the QScintilla editor
 !nogui {
@@ -225,7 +229,9 @@ FORMS   += src/MainWindow.ui \
            src/launchingscreen.ui \
            src/LibraryInfoDialog.ui \
            src/parameter/ParameterWidget.ui \
-           src/parameter/ParameterEntryWidget.ui
+           src/parameter/ParameterEntryWidget.ui \
+           src/input/ButtonConfigWidget.ui \
+           src/input/AxisConfigWidget.ui
 
 # AST nodes
 FLEXSOURCES += src/lexer.l 
@@ -254,6 +260,7 @@ FLEXSOURCES += src/comment_lexer.l
 BISONSOURCES += src/comment_parser.y
 
 HEADERS += src/version_check.h \
+           src/version_helper.h \
            src/ProgressWidget.h \
            src/parsersettings.h \
            src/renderer.h \
@@ -268,6 +275,7 @@ HEADERS += src/version_check.h \
            src/OpenSCADApp.h \
            src/WindowManager.h \
            src/Preferences.h \
+           src/SettingsWriter.h \
            src/OpenCSGWarningDialog.h \
            src/AboutDialog.h \
            src/FontListDialog.h \
@@ -369,7 +377,13 @@ HEADERS += src/version_check.h \
            src/parameter/parameterset.h \
            src/parameter/ignoreWheelWhenNotFocused.h \
            src/QWordSearchField.h \
-           src/QSettingsCached.h
+           src/QSettingsCached.h \
+           src/input/InputDriver.h \
+           src/input/InputEventMapper.h \
+           src/input/InputDriverManager.h \
+           src/input/AxisConfigWidget.h \
+           src/input/ButtonConfigWidget.h \
+           src/input/WheelIgnorer.h
 
 SOURCES += \
            src/libsvg/libsvg.cc \
@@ -386,7 +400,9 @@ SOURCES += \
            src/libsvg/transformation.cc \
            src/libsvg/util.cc \
            \
-           src/version_check.cc \
+           src/version_check.cc
+
+SOURCES += \
            src/ProgressWidget.cc \
            src/linalg.cc \
            src/Camera.cc \
@@ -448,6 +464,7 @@ SOURCES += \
            src/rendersettings.cc \
            src/highlighter.cc \
            src/Preferences.cc \
+           src/SettingsWriter.cc \
            src/OpenCSGWarningDialog.cc \
            src/editor.cc \
            src/GLView.cc \
@@ -463,6 +480,7 @@ SOURCES += \
            src/export.cc \
            src/export_stl.cc \
            src/export_amf.cc \
+           src/export_3mf.cc \
            src/export_off.cc \
            src/export_dxf.cc \
            src/export_svg.cc \
@@ -473,6 +491,7 @@ SOURCES += \
            src/import_off.cc \
            src/import_svg.cc \
            src/import_amf.cc \
+           src/import_3mf.cc \
            src/renderer.cc \
            src/colormap.cc \
            src/ThrownTogetherRenderer.cc \
@@ -510,8 +529,14 @@ SOURCES += \
            src/parameter/parametervirtualwidget.cpp \
            src/parameter/ignoreWheelWhenNotFocused.cpp \
            src/QWordSearchField.cc\
+           src/QSettingsCached.cc \
            \
-           src/QSettingsCached.cc
+           src/input/InputDriver.cc \
+           src/input/InputEventMapper.cc \
+           src/input/InputDriverManager.cc \
+           src/input/AxisConfigWidget.cc \
+           src/input/ButtonConfigWidget.cc \
+           src/input/WheelIgnorer.cc
 
 # CGAL
 HEADERS += src/ext/CGAL/convex_hull_3_bugfix.h \
@@ -544,6 +569,32 @@ HEADERS += src/ext/libtess2/Include/tesselator.h \
            src/ext/libtess2/Source/priorityq.h \
            src/ext/libtess2/Source/sweep.h \
            src/ext/libtess2/Source/tess.h
+
+has_qt5:unix:!macx {
+  QT += dbus
+  DEFINES += ENABLE_DBUS
+  DBUS_ADAPTORS += org.openscad.OpenSCAD.xml
+  DBUS_INTERFACES += org.openscad.OpenSCAD.xml
+
+  HEADERS += src/input/DBusInputDriver.h
+  SOURCES += src/input/DBusInputDriver.cc
+}
+
+linux: {
+  DEFINES += ENABLE_JOYSTICK
+
+  HEADERS += src/input/JoystickInputDriver.h
+  SOURCES += src/input/JoystickInputDriver.cc
+}
+
+!lessThan(QT_MAJOR_VERSION, 5) {
+  qtHaveModule(gamepad) {
+    QT += gamepad
+    DEFINES += ENABLE_QGAMEPAD
+    HEADERS += src/input/QGamepadInputDriver.h
+    SOURCES += src/input/QGamepadInputDriver.cc
+  }
+}
 
 unix:!macx {
   SOURCES += src/imageutils-lodepng.cc
@@ -665,6 +716,10 @@ INSTALLS += icons
 man.path = $$PREFIX/share/man/man1
 man.extra = cp -f doc/openscad.1 \"\$(INSTALL_ROOT)$${man.path}/$${FULLNAME}.1\"
 INSTALLS += man
+
+info: {
+    include(info.pri)
+}
 
 DISTFILES += \
     sounds/complete.wav

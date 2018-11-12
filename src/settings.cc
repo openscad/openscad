@@ -1,5 +1,6 @@
 #include "settings.h"
 #include "printutils.h"
+#include "input/InputEventMapper.h"
 
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
@@ -67,6 +68,29 @@ static Value values(std::string s1, std::string s1disp, std::string s2, std::str
 	return v;
 }
 
+static Value axisValues() {
+	Value::VectorType v;
+	v += ValuePtr(value("None", _("None")));
+
+	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
+		auto userData = (boost::format("+%d") % (i+1)).str();
+		auto text = (boost::format(_("Axis %d")) % i).str();
+		v += ValuePtr(value(userData, text));
+
+		userData = (boost::format("-%d") % (i+1)).str();
+		text = (boost::format(_("Axis %d (inverted)")) % i).str();
+		v += ValuePtr(value(userData, text));
+	}
+	return v;
+}
+
+static Value buttonValues() {
+	Value::VectorType v;
+	v += ValuePtr(value("None", _("None")));
+	v += ValuePtr(value("viewActionTogglePerspective", _("Toggle Perspective")));
+	return v;
+}
+
 Settings *Settings::inst(bool erase)
 {
 	static Settings *instance = new Settings;
@@ -94,6 +118,16 @@ void Settings::visit(SettingsVisitor& visitor)
 	}
 }
 
+SettingsEntry* Settings::getSettingEntryByName(const std::string &name)
+{
+	for (auto entry : entries) {
+		if (entry->name() == name){
+			return (entry);
+		}
+	}
+	return nullptr;
+}
+
 const Value &Settings::defaultValue(const SettingsEntry& entry)
 {
 	return entry._default;
@@ -118,7 +152,7 @@ SettingsVisitor::~SettingsVisitor()
 }
 
 /*
- * Supported settings entry types are: bool / int and string selection
+ * Supported settings entry types are: bool / int / double and string selection
  *
  * String selection is used to handle comboboxes and has two values
  * per config selection. The first value is used internally for both
@@ -143,4 +177,70 @@ SettingsEntry Settings::tabKeyFunction("editor", "tabKeyFunction", values("Inden
 SettingsEntry Settings::highlightCurrentLine("editor", "highlightCurrentLine", Value(true), Value(true));
 SettingsEntry Settings::enableBraceMatching("editor", "enableBraceMatching", Value(true), Value(true));
 SettingsEntry Settings::enableLineNumbers("editor", "enableLineNumbers", Value(true), Value(true));
+
+SettingsEntry Settings::inputEnableDriverHIDAPI("input", "enableDriverHIDAPI", Value(true), Value(false));
+SettingsEntry Settings::inputEnableDriverSPNAV("input", "enableDriverSPNAV", Value(true), Value(false));
+SettingsEntry Settings::inputEnableDriverJOYSTICK("input", "enableDriverJOYSTICK", Value(true), Value(false));
+SettingsEntry Settings::inputEnableDriverQGAMEPAD("input", "enableDriverQGAMEPAD", Value(true), Value(false));
+SettingsEntry Settings::inputEnableDriverDBUS("input", "enableDriverDBUS", Value(true), Value(false));
+
+SettingsEntry Settings::inputTranslationX("input", "translationX", axisValues(), Value("+1"));
+SettingsEntry Settings::inputTranslationY("input", "translationY", axisValues(), Value("-2"));
+SettingsEntry Settings::inputTranslationZ("input", "translationZ", axisValues(), Value("-3"));
+SettingsEntry Settings::inputTranslationXVPRel("input", "translationXVPRel", axisValues(), Value(""));
+SettingsEntry Settings::inputTranslationYVPRel("input", "translationYVPRel", axisValues(), Value(""));
+SettingsEntry Settings::inputTranslationZVPRel("input", "translationZVPRel", axisValues(), Value(""));
+SettingsEntry Settings::inputRotateX("input", "rotateX", axisValues(), Value("+4"));
+SettingsEntry Settings::inputRotateY("input", "rotateY", axisValues(), Value("-5"));
+SettingsEntry Settings::inputRotateZ("input", "rotateZ", axisValues(), Value("-6"));
+SettingsEntry Settings::inputRotateXVPRel("input", "rotateXVPRel", axisValues(), Value(""));
+SettingsEntry Settings::inputRotateYVPRel("input", "rotateYVPRel", axisValues(), Value(""));
+SettingsEntry Settings::inputRotateZVPRel("input", "rotateZVPRel", axisValues(), Value(""));
+SettingsEntry Settings::inputZoom("input", "zoom", axisValues(), Value("None"));
+SettingsEntry Settings::inputZoom2("input", "zoom2", axisValues(), Value("None"));
+
+SettingsEntry Settings::inputTranslationGain("input", "translationGain", Value(RangeType(0.01, 0.01, 9.99)), Value(1.00));
+SettingsEntry Settings::inputTranslationVPRelGain("input", "translationVPRelGain", Value(RangeType(0.01, 0.01, 9.99)), Value(1.00));
+SettingsEntry Settings::inputRotateGain("input", "rotateGain", Value(RangeType(0.01, 0.01, 9.99)), Value(1.00));
+SettingsEntry Settings::inputRotateVPRelGain("input", "rotateVPRelGain", Value(RangeType(0.01, 0.01, 9.99)), Value(1.00));
+SettingsEntry Settings::inputZoomGain("input", "zoomGain", Value(RangeType(0.1, 0.1, 99.9)), Value(1.00));
+
+SettingsEntry Settings::inputButton0("input", "button0", buttonValues(), Value("None"));
+SettingsEntry Settings::inputButton1("input", "button1", buttonValues(), Value("viewActionResetView"));
+SettingsEntry Settings::inputButton2("input", "button2", buttonValues(), Value("None"));
+SettingsEntry Settings::inputButton3("input", "button3", buttonValues(), Value("None"));
+SettingsEntry Settings::inputButton4("input", "button4", buttonValues(), Value("None"));
+SettingsEntry Settings::inputButton5("input", "button5", buttonValues(), Value("None"));
+SettingsEntry Settings::inputButton6("input", "button6", buttonValues(), Value("None"));
+SettingsEntry Settings::inputButton7("input", "button7", buttonValues(), Value("None"));
+SettingsEntry Settings::inputButton8("input", "button8", buttonValues(), Value("None"));
+SettingsEntry Settings::inputButton9("input", "button9", buttonValues(), Value("None"));
+SettingsEntry Settings::inputButton10("input", "button10", buttonValues(), Value("None"));
+SettingsEntry Settings::inputButton11("input", "button11", buttonValues(), Value("None"));
+SettingsEntry Settings::inputButton12("input", "button12", buttonValues(), Value("None"));
+SettingsEntry Settings::inputButton13("input", "button13", buttonValues(), Value("None"));
+SettingsEntry Settings::inputButton14("input", "button14", buttonValues(), Value("None"));
+SettingsEntry Settings::inputButton15("input", "button15", buttonValues(), Value("None"));
+SettingsEntry Settings::axisTrim0("input", "axisTrim0", Value(RangeType(-1.0, 0.01, 1.0)), Value(0.00));
+SettingsEntry Settings::axisTrim1("input", "axisTrim1", Value(RangeType(-1.0, 0.01, 1.0)), Value(0.00));
+SettingsEntry Settings::axisTrim2("input", "axisTrim2", Value(RangeType(-1.0, 0.01, 1.0)), Value(0.00));
+SettingsEntry Settings::axisTrim3("input", "axisTrim3", Value(RangeType(-1.0, 0.01, 1.0)), Value(0.00));
+SettingsEntry Settings::axisTrim4("input", "axisTrim4", Value(RangeType(-1.0, 0.01, 1.0)), Value(0.00));
+SettingsEntry Settings::axisTrim5("input", "axisTrim5", Value(RangeType(-1.0, 0.01, 1.0)), Value(0.00));
+SettingsEntry Settings::axisTrim6("input", "axisTrim6", Value(RangeType(-1.0, 0.01, 1.0)), Value(0.00));
+SettingsEntry Settings::axisTrim7("input", "axisTrim7", Value(RangeType(-1.0, 0.01, 1.0)), Value(0.00));
+SettingsEntry Settings::axisTrim8("input", "axisTrim8", Value(RangeType(-1.0, 0.01, 1.0)), Value(0.00));
+SettingsEntry Settings::axisTrim9("input", "axisTrim9", Value(RangeType(-1.0, 0.01, 1.0)), Value(0.00));
+SettingsEntry Settings::axisDeadzone0("input", "axisDeadzone0", Value(RangeType(0.0, 0.01, 1.0)), Value(0.10));
+SettingsEntry Settings::axisDeadzone1("input", "axisDeadzone1", Value(RangeType(0.0, 0.01, 1.0)), Value(0.10));
+SettingsEntry Settings::axisDeadzone2("input", "axisDeadzone2", Value(RangeType(0.0, 0.01, 1.0)), Value(0.10));
+SettingsEntry Settings::axisDeadzone3("input", "axisDeadzone3", Value(RangeType(0.0, 0.01, 1.0)), Value(0.10));
+SettingsEntry Settings::axisDeadzone4("input", "axisDeadzone4", Value(RangeType(0.0, 0.01, 1.0)), Value(0.10));
+SettingsEntry Settings::axisDeadzone5("input", "axisDeadzone5", Value(RangeType(0.0, 0.01, 1.0)), Value(0.10));
+SettingsEntry Settings::axisDeadzone6("input", "axisDeadzone6", Value(RangeType(0.0, 0.01, 1.0)), Value(0.10));
+SettingsEntry Settings::axisDeadzone7("input", "axisDeadzone7", Value(RangeType(0.0, 0.01, 1.0)), Value(0.10));
+SettingsEntry Settings::axisDeadzone8("input", "axisDeadzone8", Value(RangeType(0.0, 0.01, 1.0)), Value(0.10));
+SettingsEntry Settings::axisDeadzone9("input", "axisDeadzone9", Value(RangeType(0.0, 0.01, 1.0)), Value(0.10));
+
+SettingsEntry Settings::joystickNr("input", "joystickNr", Value(RangeType(0, 9)), Value(0));
 }

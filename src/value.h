@@ -195,7 +195,8 @@ public:
   std::string chrString() const;
   const VectorType &toVector() const;
   bool getVec2(double &x, double &y, bool ignoreInfinite = false) const;
-  bool getVec3(double &x, double &y, double &z, double defaultval = 0.0) const;
+  bool getVec3(double &x, double &y, double &z) const;
+  bool getVec3(double &x, double &y, double &z, double defaultval) const;
   RangeType toRange() const;
 
 	operator bool() const { return this->toBool(); }
@@ -231,3 +232,4 @@ private:
   Variant value;
 };
 
+void utf8_split(const std::string& str, std::function<void(ValuePtr)> f);

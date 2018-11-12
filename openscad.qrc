@@ -1,5 +1,8 @@
 <RCC>
   <qresource prefix="/">
+    <file>icons/prefsInput.png</file>
+    <file>icons/prefsInputAxis.png</file>
+    <file>icons/prefsInputButtons.png</file>
     <file>images/zoom-text-in-white.png</file>
     <file>images/zoom-text-in.png</file>
     <file>images/zoom-text-out-white.png</file>
@@ -82,6 +85,8 @@
     <file>images/scalemarkers-white.png</file>
     <file>images/AMF.png</file>
     <file>images/AMF-white.png</file>
+    <file>images/3MF.png</file>
+    <file>images/3MF-white.png</file>
     <file>images/CSG.png</file>
     <file>images/CSG-white.png</file>
     <file>images/DXF.png</file>
