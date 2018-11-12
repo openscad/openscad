@@ -847,11 +847,9 @@ ValuePtr builtin_version(const Context *, const EvalContext *evalctx)
 ValuePtr builtin_version_num(const Context *ctx, const EvalContext *evalctx)
 {
 	ValuePtr val = (evalctx->numArgs() == 0) ? builtin_version(ctx, evalctx) : evalctx->getArgValue(0);
-	double y, m, d = 0;
-	if (!val->getVec3(y, m, d)) {
-		if (!val->getVec2(y, m)) {
-			return ValuePtr::undefined;
-		}
+	double y, m, d;
+	if (!val->getVec3(y, m, d, 0)) {
+		return ValuePtr::undefined;
 	}
 	return ValuePtr(y * 10000 + m * 100 + d);
 }
@@ -956,6 +954,22 @@ ValuePtr builtin_cross(const Context *, const EvalContext *evalctx)
 	return ValuePtr(result);
 }
 
+ValuePtr builtin_is_undef(const Context *, const EvalContext *evalctx)
+{
+	if (evalctx->numArgs() == 1) {
+		const auto &arg =evalctx->getArgs()[0];
+		ValuePtr v;
+		if(auto lookup = dynamic_pointer_cast<Lookup> (arg.expr)){
+			v = lookup->evaluateSilently(evalctx);
+		}else{
+			v = evalctx->getArgValue(0);
+		}
+		return ValuePtr(v == ValuePtr::undefined);
+	}
+
+	return ValuePtr::undefined;
+}
+
 void register_builtin_functions()
 {
 	Builtins::init("abs", new BuiltinFunction(&builtin_abs));
@@ -990,4 +1004,5 @@ void register_builtin_functions()
 	Builtins::init("norm", new BuiltinFunction(&builtin_norm));
 	Builtins::init("cross", new BuiltinFunction(&builtin_cross));
 	Builtins::init("parent_module", new BuiltinFunction(&builtin_parent_module));
+	Builtins::init("is_undef", new BuiltinFunction(&builtin_is_undef));
 }

@@ -29,10 +29,12 @@
 
 InputDriverManager * InputDriverManager::self = 0;
 
-InputDriverManager::InputDriverManager(void) : currentWindow(nullptr)
+/**
+ * This can be called from non-GUI context, so no Qt initialization is done
+ * at this point.
+ */
+InputDriverManager::InputDriverManager(void) : currentWindow(nullptr), timer(nullptr)
 {
-    connect(QApplication::instance(), SIGNAL(focusChanged(QWidget *, QWidget *)), this, SLOT(onFocusChanged(QWidget *, QWidget *)));
-    timer = new QTimer(this);
 }
 
 InputDriverManager::~InputDriverManager(void)
@@ -73,6 +75,9 @@ void InputDriverManager::registerActions(const QList<QAction *> &actions, const 
 
 void InputDriverManager::init()
 {
+    timer = new QTimer(this);
+    connect(QApplication::instance(), SIGNAL(focusChanged(QWidget *, QWidget *)), this, SLOT(onFocusChanged(QWidget *, QWidget *)));
+
     doOpen(true);
     connect(timer, SIGNAL(timeout()), this, SLOT(onTimeout()));
     timer->start(10 * 1000);

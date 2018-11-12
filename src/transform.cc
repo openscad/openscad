@@ -120,7 +120,7 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 			val_a->getDouble(a);
 
 			Vector3d axis(0, 0, 1);
-			if (val_v->getVec3(axis[0], axis[1], axis[2])) {
+			if (val_v->getVec3(axis[0], axis[1], axis[2], 0.0)) {
 				if (axis.squaredNorm() > 0) axis.normalize();
 			}
 
@@ -133,7 +133,7 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 		auto val_v = c.lookup_variable("v");
 		double x = 1.0, y = 0.0, z = 0.0;
 	
-		if (val_v->getVec3(x, y, z)) {
+		if (val_v->getVec3(x, y, z, 0.0)) {
 			if (x != 0.0 || y != 0.0 || z != 0.0) {
 				double sn = 1.0 / sqrt(x*x + y*y + z*z);
 				x *= sn, y *= sn, z *= sn;
@@ -152,8 +152,9 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 	else if (this->type == transform_type_e::TRANSLATE)	{
 		auto v = c.lookup_variable("v");
 		Vector3d translatevec(0,0,0);
-		v->getVec3(translatevec[0], translatevec[1], translatevec[2]);
-		node->matrix.translate(translatevec);
+		if (v->getVec3(translatevec[0], translatevec[1], translatevec[2], 0.0)) {
+			node->matrix.translate(translatevec);
+		}
 	}
 	else if (this->type == transform_type_e::MULTMATRIX) {
 		auto v = c.lookup_variable("m");

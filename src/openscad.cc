@@ -293,7 +293,7 @@ void set_render_color_scheme(const std::string color_scheme, const bool exit_if_
 	}
 }
 
-int cmdline(const char *deps_output_file, const std::string &filename, const char *output_file, const fs::path &original_path, const std::string &parameterFile, const std::string &setName, const ViewOptions& viewOptions)
+int cmdline(const char *deps_output_file, const std::string &filename, const char *output_file, const fs::path &original_path, const std::string &parameterFile, const std::string &setName, const ViewOptions& viewOptions, Camera camera)
 {
 	parser_init();
 	localization_init();
@@ -522,9 +522,9 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 			}
 			else {
 				if (viewOptions.renderer == RenderType::CGAL || viewOptions.renderer == RenderType::GEOMETRY) {
-					success = export_png(root_geom, viewOptions, fstream);
+					success = export_png(root_geom, viewOptions, camera, fstream);
 				} else {
-					success = export_preview_png(tree, viewOptions, fstream);
+					success = export_preview_png(tree, viewOptions, camera, fstream);
 				}
 				fstream.close();
 			}
@@ -1056,7 +1056,7 @@ int main(int argc, char **argv)
 
 	currentdir = fs::current_path().generic_string();
 
-	viewOptions.camera = get_camera(vm);
+	Camera camera = get_camera(vm);
 
 	auto cmdlinemode = false;
 	if (output_file) { // cmd-line mode
@@ -1066,7 +1066,7 @@ int main(int argc, char **argv)
 
 	if (arg_info || cmdlinemode) {
 		if (inputFiles.size() > 1) help(argv[0], desc, true);
-		rc = cmdline(deps_output_file, inputFiles[0], output_file, original_path, parameterFile, parameterSet, viewOptions);
+		rc = cmdline(deps_output_file, inputFiles[0], output_file, original_path, parameterFile, parameterSet, viewOptions, camera);
 	}
 	else if (QtUseGUI()) {
 		rc = gui(inputFiles, original_path, argc, argv);

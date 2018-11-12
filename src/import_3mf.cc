@@ -29,6 +29,7 @@
 #include "polyset.h"
 #include "Geometry.h"
 #include "printutils.h"
+#include "version_helper.h"
 
 #ifdef ENABLE_LIB3MF
 #include <Model/COM/NMR_DLLInterfaces.h>
@@ -41,16 +42,12 @@ using namespace NMR;
  * windows types when compiling with MinGW.
  */
 const std::string get_lib3mf_version() {
-	std::ostringstream lib3mf_version_stream;
-	lib3mf_version_stream << NMR_APIVERSION_INTERFACE_MAJOR << '.' << NMR_APIVERSION_INTERFACE_MINOR << '.' << NMR_APIVERSION_INTERFACE_MICRO;
-	DWORD lib3mfMajor, lib3mfMinor, lib3mfMicro;
-	const HRESULT result = NMR::lib3mf_getinterfaceversion(&lib3mfMajor, &lib3mfMinor, &lib3mfMicro);
-	const bool lib3mfMinorMatch = (NMR_APIVERSION_INTERFACE_MAJOR == lib3mfMajor && NMR_APIVERSION_INTERFACE_MINOR == lib3mfMinor);
-	if (result == LIB3MF_OK && !lib3mfMinorMatch) {
-		lib3mf_version_stream << " (lib: " << lib3mfMajor << '.' << lib3mfMinor << '.' << lib3mfMicro << ')';
-	}
-	const std::string lib3mf_version = lib3mf_version_stream.str();
-	return lib3mf_version;
+	DWORD major, minor, micro;
+	NMR::lib3mf_getinterfaceversion(&major, &minor, &micro);
+
+	const OpenSCAD::library_version_number header_version{NMR_APIVERSION_INTERFACE_MAJOR, NMR_APIVERSION_INTERFACE_MINOR, NMR_APIVERSION_INTERFACE_MICRO};
+	const OpenSCAD::library_version_number runtime_version{major, minor, micro};
+	return OpenSCAD::get_version_string(header_version, runtime_version);
 }
 
 #ifdef ENABLE_CGAL
@@ -59,7 +56,7 @@ const std::string get_lib3mf_version() {
 
 typedef std::list<std::shared_ptr<PolySet>> polysets_t;
 
-static Geometry * import_3mf_error(PLib3MFModel *model = NULL, PLib3MFModelResourceIterator *object_it = NULL, PolySet *mesh = NULL)
+static Geometry * import_3mf_error(PLib3MFModel *model = nullptr, PLib3MFModelResourceIterator *object_it = nullptr, PolySet *mesh = nullptr, PolySet *mesh2 = nullptr)
 {
 	if (model) {
 		lib3mf_release(model);
@@ -69,6 +66,9 @@ static Geometry * import_3mf_error(PLib3MFModel *model = NULL, PLib3MFModelResou
 	}
 	if (mesh) {
 		delete mesh;
+	}
+	if (mesh2) {
+		delete mesh2;
 	}
 
 	return new PolySet(3);
@@ -153,18 +153,18 @@ Geometry * import_3mf(const std::string &filename)
 		for (DWORD idx = 0;idx < triangle_count;idx++) {
 			MODELMESHTRIANGLE triangle;
 			if (lib3mf_meshobject_gettriangle(object, idx, &triangle) != LIB3MF_OK) {
-				return import_3mf_error(model, object_it, first_mesh);
+				return import_3mf_error(model, object_it, first_mesh, p);
 			}
 			
 			MODELMESHVERTEX vertex1, vertex2, vertex3;
 			if (lib3mf_meshobject_getvertex(object, triangle.m_nIndices[0], &vertex1) != LIB3MF_OK) {
-				return import_3mf_error(model, object_it, first_mesh);
+				return import_3mf_error(model, object_it, first_mesh, p);
 			}
 			if (lib3mf_meshobject_getvertex(object, triangle.m_nIndices[1], &vertex2) != LIB3MF_OK) {
-				return import_3mf_error(model, object_it, first_mesh);
+				return import_3mf_error(model, object_it, first_mesh, p);
 			}
 			if (lib3mf_meshobject_getvertex(object, triangle.m_nIndices[2], &vertex3) != LIB3MF_OK) {
-				return import_3mf_error(model, object_it, first_mesh);
+				return import_3mf_error(model, object_it, first_mesh, p);
 			}
 			
 			p->append_poly();
@@ -208,7 +208,7 @@ Geometry * import_3mf(const std::string &filename)
 #else // ENABLE_LIB3MF
 
 const std::string get_lib3mf_version() {
-	const std::string lib3mf_version = "<not enabled>";
+	const std::string lib3mf_version = "(not enabled)";
 	return lib3mf_version;
 }
 
