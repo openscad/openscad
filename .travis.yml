@@ -2,7 +2,8 @@ language: cpp
 
 matrix:
   include:
-    - os: linux
+    - if: NOT branch = coverity_scan
+      os: linux
       compiler: gcc
       dist: trusty
       env:
@@ -22,7 +23,8 @@ matrix:
       cache:
         - apt
         - ccache
-    - os: osx
+    - if: NOT branch = coverity_scan
+      os: osx
       compiler: clang
       env:
         - DIST="osx"
@@ -111,6 +113,6 @@ addons:
       name: "openscad/openscad"
       description: "The Programmers Solid 3D CAD Modeller"
     notification_email: dev@openscad.org
-    build_command_prepend: qmake CONFIG+=experimental CONFIG+=nogui
+    build_command_prepend: qmake CONFIG-=debug CONFIG+=experimental CONFIG+=snapshot
     build_command: make
     branch_pattern: coverity_scan
