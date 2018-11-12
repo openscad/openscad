@@ -14,9 +14,11 @@ ECHO: true
 WARNING: Ignoring unknown variable 'd'.
 ECHO: undef
 ECHO: "Special variables"
+WARNING: Ignoring unknown variable '$a'.
 ECHO: true
 ECHO: false
 ECHO: true
+WARNING: Ignoring unknown variable '$a'.
 ECHO: undef
 ECHO: 132465
 ECHO: undef
