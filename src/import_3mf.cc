@@ -161,15 +161,12 @@ Geometry * import_3mf(const std::string &filename)
 			
 			MODELMESHVERTEX vertex1, vertex2, vertex3;
 			if (lib3mf_meshobject_getvertex(object, triangle.m_nIndices[0], &vertex1) != LIB3MF_OK) {
-				delete p;
 				return import_3mf_error(model, object_it, first_mesh, p);
 			}
 			if (lib3mf_meshobject_getvertex(object, triangle.m_nIndices[1], &vertex2) != LIB3MF_OK) {
-				delete p;
 				return import_3mf_error(model, object_it, first_mesh, p);
 			}
 			if (lib3mf_meshobject_getvertex(object, triangle.m_nIndices[2], &vertex3) != LIB3MF_OK) {
-				delete p;
 				return import_3mf_error(model, object_it, first_mesh, p);
 			}
 			
