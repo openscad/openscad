@@ -95,7 +95,7 @@ public:
 			tmp.setVariables(definition_arguments, &ec);
 			c.apply_variables(tmp);
 			
-			if (counter++ == 1000000) throw RecursionException::create("function", this->name);
+			if (counter++ == 1000000) throw RecursionException::create("function", this->name,loc);
 		}
 		
 		ValuePtr result = endexpr->evaluate(&c);

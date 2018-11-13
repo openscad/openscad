@@ -27,7 +27,6 @@ void ParameterSlider::onSliderChanged(int)
 		this->doubleSpinBox->setValue(v);
 		
 		if (this->pressed) {
-			object->focus = true;
 			object->value = ValuePtr(v);
 			emit changed();
 		}
@@ -52,12 +51,6 @@ void ParameterSlider::onEditingFinished()
 	this->onSliderChanged(0);
 }
 
-void ParameterSlider::setParameterFocus()
-{
-	slider->setFocus();
-	object->focus = false;
-}
-
 void ParameterSlider::onPressed()
 {
 	this->pressed = false;
@@ -70,8 +63,6 @@ void ParameterSlider::onReleased(){
 
 void ParameterSlider::setValue()
 {
-	if(hasFocus())return; //refuse programmatic updates, when the widget is in the focus of the user
-
 	this->suppressUpdate=true;
 
 	if (object->values->toRange().step_value() > 0) {

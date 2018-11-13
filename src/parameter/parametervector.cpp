@@ -20,7 +20,6 @@ ParameterVector::ParameterVector(QWidget *parent, ParameterObject *parameterobje
 void ParameterVector::onChanged(double)
 {
 	if(!this->suppressUpdate){
-		object->focus = true;
 		if (object->target == ParameterObject::NUMBER) {
 			object->value = ValuePtr(doubleSpinBox1->value());
 		} else {
@@ -41,16 +40,8 @@ void ParameterVector::onChanged(double)
 	}
 }
 
-void ParameterVector::setParameterFocus()
-{
-	this->doubleSpinBox1->setFocus();
-	object->focus = false;
-}
-
 void ParameterVector::setValue()
 {
-	if(hasFocus())return; //refuse programmatic updates, when the widget is in the focus of the user
-
 	this->suppressUpdate=true;
 	this->stackedWidgetBelow->setCurrentWidget(this->pageVector);
 	this->pageVector->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);

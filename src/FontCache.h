@@ -42,6 +42,8 @@
 #include <hb.h>
 #include <hb-ft.h>
 
+#include "version_helper.h"
+
 class FontInfo {
 public:
     FontInfo(const std::string &family, const std::string &style, const std::string &file);
@@ -86,6 +88,7 @@ public:
     void register_font_file(const std::string &path);
     void clear();
     FontInfoList *list_fonts() const;
+    const std::string get_freetype_version() const;
     
     static FontCache *instance();
 

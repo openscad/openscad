@@ -8,7 +8,6 @@ class ParameterVector : public ParameterVirtualWidget
 public:
 	ParameterVector(QWidget *parent, ParameterObject *parameterobject, DescLoD descriptionLoD);
 	void setValue() override;
-	void setParameterFocus() override;
 
 protected slots:
 	void onChanged(double);
