@@ -21,6 +21,7 @@
 
 GLView::GLView()
 {
+  aspectratio = 1;
   showedges = false;
   showfaces = true;
   showaxes = false;
