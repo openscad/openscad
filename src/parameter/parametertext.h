@@ -8,7 +8,6 @@ class ParameterText : public ParameterVirtualWidget
 public:
 	ParameterText(QWidget *parent, ParameterObject *parameterobject, DescLoD descriptionLoD);
 	void setValue() override;
-	void setParameterFocus() override;
 
 protected slots:
 	void onChanged(QString);
