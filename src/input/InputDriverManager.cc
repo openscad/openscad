@@ -132,7 +132,9 @@ std::string InputDriverManager::listDrivers() const
 
 void InputDriverManager::closeDrivers()
 {
-    timer->stop();
+    if (timer != nullptr) {
+        timer->stop();
+    }
     InputEventMapper::instance()->stop();
 
     for (auto driver : drivers) {
