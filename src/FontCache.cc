@@ -116,6 +116,7 @@ void FontCache::defaultInitHandler(FontCacheInitializer *initializer, void *)
 FontCache::FontCache()
 {
 	this->init_ok = false;
+	this->library = nullptr;
 
 	// If we've got a bundled fonts.conf, initialize fontconfig with our own config
 	// by overriding the built-in fontconfig path.
