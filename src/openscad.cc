@@ -181,7 +181,7 @@ void localization_init() {
 	}
 }
 
-Camera get_camera(po::variables_map vm)
+Camera get_camera(const po::variables_map &vm)
 {
 	Camera camera;
 
