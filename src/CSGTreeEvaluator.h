@@ -46,7 +46,6 @@ private:
 																									const AbstractNode &node);
 	void applyBackgroundAndHighlight(State &state, const AbstractNode &node);
 
-	const AbstractNode *root;
 	typedef std::list<const AbstractNode *> ChildList;
 	std::map<int, ChildList> visitedchildren;
 

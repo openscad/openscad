@@ -63,7 +63,7 @@ class SurfaceNode : public LeafNode
 {
 public:
 	VISITABLE();
-	SurfaceNode(const ModuleInstantiation *mi) : LeafNode(mi) { }
+	SurfaceNode(const ModuleInstantiation *mi) : LeafNode(mi), center(false), invert(false), convexity(1) { }
 	std::string toString() const override;
 	std::string name() const override { return "surface"; }
 
@@ -83,9 +83,6 @@ private:
 AbstractNode *SurfaceModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	auto node = new SurfaceNode(inst);
-	node->center = false;
-	node->invert = false;
-	node->convexity = 1;
 
 	AssignmentList args{Assignment("file"), Assignment("center"), Assignment("convexity")};
 
