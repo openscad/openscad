@@ -67,10 +67,9 @@ FileModule *rootmodule;
 
 extern void lexerdestroy();
 extern FILE *lexerin;
-extern const char *parser_input_buffer;
 const char *parser_input_buffer;
-std::shared_ptr<fs::path> parser_sourcefile;
 fs::path mainFile;
+fs::path parser_sourcefile;
 
 bool fileEnded=false;
 %}
@@ -315,7 +314,7 @@ ifelse_statement:
 if_statement:
           TOK_IF '(' expr ')'
             {
-                $<ifelse>$ = new IfElseModuleInstantiation(shared_ptr<Expression>($3), parser_sourcefile->parent_path().generic_string(), LOC(@$));
+                $<ifelse>$ = new IfElseModuleInstantiation(shared_ptr<Expression>($3), parser_sourcefile.parent_path().generic_string(), LOC(@$));
                 scope_stack.push(&$<ifelse>$->scope);
             }
           child_statement
@@ -353,7 +352,7 @@ module_id:
 single_module_instantiation:
           module_id '(' arguments_call ')'
             {
-                $$ = new ModuleInstantiation($1, *$3, parser_sourcefile->parent_path().generic_string(), LOC(@$));
+                $$ = new ModuleInstantiation($1, *$3, parser_sourcefile.parent_path().generic_string(), LOC(@$));
                 free($1);
                 delete $3;
             }
@@ -674,17 +673,17 @@ void yyerror (char const *s)
 
 bool parse(FileModule *&module, const char *text, const std::string &filename, const std::string &pMainFile, int debug)
 {
-  fs::path path = fs::absolute(fs::path(filename));
+  parser_sourcefile = fs::absolute(fs::path(filename));
   
   mainFile =  pMainFile;
   
   lexerin = NULL;
   parser_error_pos = -1;
   parser_input_buffer = text;
-  parser_sourcefile = std::make_shared<fs::path>(path);
   fileEnded=false;
+  assignmentWarning=true;
 
-  rootmodule = new FileModule(path.parent_path().generic_string(), path.filename().generic_string());
+  rootmodule = new FileModule(parser_sourcefile.parent_path().generic_string(), parser_sourcefile.filename().generic_string());
   scope_stack.push(&rootmodule->scope);
   //        PRINTB_NOCACHE("New module: %s %p", "root" % rootmodule);
 
@@ -700,5 +699,8 @@ bool parse(FileModule *&module, const char *text, const std::string &filename, c
   parser_error_pos = -1;
   scope_stack.pop();
 
+  parser_input_buffer = nullptr;
+  parser_sourcefile.clear();
+  
   return true;
 }
