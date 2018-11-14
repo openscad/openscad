@@ -681,7 +681,6 @@ bool parse(FileModule *&module, const char *text, const std::string &filename, c
   parser_error_pos = -1;
   parser_input_buffer = text;
   fileEnded=false;
-  assignmentWarning=true;
 
   rootmodule = new FileModule(parser_sourcefile.parent_path().generic_string(), parser_sourcefile.filename().generic_string());
   scope_stack.push(&rootmodule->scope);
