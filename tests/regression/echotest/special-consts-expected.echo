@@ -3,17 +3,17 @@ ECHO: "undef is undef"
 ECHO: "a is undef"
 ECHO: "undef is a"
 ECHO: "a is b"
-WARNING: Ignoring unknown variable 'c'.
+WARNING: Ignoring unknown variable 'c', line 21.
 ECHO: "c is undef"
-WARNING: Ignoring unknown variable 'c'.
+WARNING: Ignoring unknown variable 'c', line 25.
 ECHO: "undef is c"
 ECHO: "-- comparing undef --"
 ECHO: "undef evaluates false"
-WARNING: Ignoring unknown variable 'c'.
+WARNING: Ignoring unknown variable 'c', line 36.
 ECHO: "undef evaluates false"
 ECHO: "-- echo undef --"
 ECHO: undef
-WARNING: Ignoring unknown variable 'c'.
+WARNING: Ignoring unknown variable 'c', line 40.
 ECHO: undef
 ECHO: "-- calculating with undef --"
 ECHO: undef

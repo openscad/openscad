@@ -1,6 +1,6 @@
 ECHO: "special variable inheritance"
 ECHO: 23, 5
-WARNING: Ignoring unknown variable 'a'.
+WARNING: Ignoring unknown variable 'a', line 8.
 ECHO: undef
 ECHO: 23, 5
 ECHO: "$children scope"
@@ -19,7 +19,7 @@ ECHO: 7
 ECHO: 7
 ECHO: "assign only visible in children's scope"
 DEPRECATED: The assign() module will be removed in future releases. Use a regular assignment instead.
-WARNING: Ignoring unknown variable 'c'.
+WARNING: Ignoring unknown variable 'c', line 65.
 ECHO: undef
 ECHO: 5
 ECHO: "undeclared variable can still be passed and used"
