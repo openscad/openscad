@@ -7,7 +7,7 @@ namespace libsvg {
 
 const std::string ellipse::name("ellipse"); 
 
-ellipse::ellipse()
+ellipse::ellipse() : rx(0), ry(0)
 {
 }
 
