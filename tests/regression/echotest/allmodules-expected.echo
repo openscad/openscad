@@ -6,3 +6,6 @@ DEPRECATED: The dxf_rotate_extrude() module will be removed in future releases. 
 DEPRECATED: The import_stl() module will be removed in future releases. Use import() instead.
 DEPRECATED: The import_off() module will be removed in future releases. Use import() instead.
 DEPRECATED: The import_dxf() module will be removed in future releases. Use import() instead.
+WARNING: Unable to convert SCALE parameter undef to a number, a vec3 or vec2 of numbers or a number, line 32
+WARNING: Unable to convert MIRROR parameter undef to a vec3 or vec2 of numbers, line 34
+WARNING: Unable to convert TRANSLATE parameter undef to a vec3 or vec2 of numbers, line 35
