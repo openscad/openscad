@@ -304,7 +304,7 @@ public:
 	xmlTextReaderPtr createXmlReader(const char *filename) override;
 };
 
-AmfImporterZIP::AmfImporterZIP()
+AmfImporterZIP::AmfImporterZIP() : archive(nullptr), zipfile(nullptr)
 {
 }
 
