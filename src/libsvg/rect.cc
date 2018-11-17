@@ -10,7 +10,7 @@ namespace libsvg {
 
 const std::string rect::name("rect"); 
 
-rect::rect()
+rect::rect() : width(0), height(0), rx(0), ry(0)
 {
 }
 
