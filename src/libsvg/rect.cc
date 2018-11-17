@@ -14,14 +14,6 @@ rect::rect()
 {
 }
 
-rect::rect(const rect& orig) : path(orig)
-{
-	rx = orig.rx;
-	ry = orig.ry;
-	width = orig.width;
-	height = orig.height;
-}
-
 rect::~rect()
 {
 }

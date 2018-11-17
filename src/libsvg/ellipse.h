@@ -12,7 +12,6 @@ protected:
     
 public:
     ellipse();
-    ellipse(const ellipse& orig);
     ~ellipse();
     
     double get_radius_x() { return rx; }

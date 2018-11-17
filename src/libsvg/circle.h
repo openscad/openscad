@@ -11,7 +11,6 @@ protected:
     
 public:
     circle();
-    circle(const circle& orig);
     ~circle();
 
     double get_radius() { return r; }

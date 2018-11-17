@@ -11,12 +11,6 @@ svgpage::svgpage()
 {
 }
 
-svgpage::svgpage(const svgpage& orig) : shape(orig)
-{
-	width = orig.width;
-	height = orig.height;
-}
-
 svgpage::~svgpage()
 {
 }

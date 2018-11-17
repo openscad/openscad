@@ -8,11 +8,6 @@ circle::circle()
 {
 }
 
-circle::circle(const circle& orig) : shape(orig)
-{
-	r = orig.r;
-}
-
 circle::~circle()
 {
 }

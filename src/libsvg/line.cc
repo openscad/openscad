@@ -8,12 +8,6 @@ line::line()
 {
 }
 
-line::line(const line& orig) : shape(orig)
-{
-	x2 = orig.x2;
-	y2 = orig.y2;
-}
-
 line::~line()
 {
 }

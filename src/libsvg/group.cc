@@ -11,10 +11,6 @@ group::group()
 {
 }
 
-group::group(const group& orig) : shape(orig)
-{
-}
-
 group::~group()
 {
 }

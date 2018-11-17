@@ -11,7 +11,6 @@ private:
 
 public:
     polyline();
-    polyline(const polyline& orig);
     ~polyline();
 
     void set_attrs(attr_map_t& attrs) override;
@@ -23,4 +22,3 @@ public:
 }
 
 #endif	/* LIBSVG_POLYLINE_H */
-

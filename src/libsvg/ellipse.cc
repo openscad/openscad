@@ -11,12 +11,6 @@ ellipse::ellipse()
 {
 }
 
-ellipse::ellipse(const ellipse& orig) : shape(orig)
-{
-	rx = orig.rx;
-	ry = orig.ry;
-}
-
 ellipse::~ellipse()
 {
 }

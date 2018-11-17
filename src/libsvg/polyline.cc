@@ -10,11 +10,6 @@ polyline::polyline()
 {
 }
 
-polyline::polyline(const polyline& orig) : shape(orig)
-{
-	points = orig.points;
-}
-
 polyline::~polyline()
 {
 }
