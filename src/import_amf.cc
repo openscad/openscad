@@ -90,7 +90,7 @@ public:
 	virtual xmlTextReaderPtr createXmlReader(const char *filename);
 };
 
-AmfImporter::AmfImporter()
+AmfImporter::AmfImporter() : polySet(nullptr), x(0), y(0), z(0), idx_v1(0), idx_v2(0), idx_v3(0)
 {
 }
 
