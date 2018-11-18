@@ -181,9 +181,6 @@ AbstractNode *FileModule::instantiateWithFileContext(FileContext *ctx, const Mod
 		auto instantiatednodes = this->scope.instantiateChildren(ctx);
 		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 	}
-	catch (RecursionException &e) {
-		PRINTB("%s, %s", e.what() % e.loc.toString());
-	}
 	catch (AssertionFailedException &e) {
 		PRINTB("%s, %s", e.what() % e.loc.toString());
 	}
