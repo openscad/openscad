@@ -4,7 +4,7 @@
 #include "libsvg/libsvg.h"
 #include "clipper-utils.h"
 
-Polygon2d *import_svg(const std::string &filename)
+Polygon2d *import_svg(const std::string &filename, const bool center)
 {
 	libsvg::shapes_list_t *shapes = libsvg::libsvg_read_file(filename.c_str());
 	double x_min = 1.0/0.0;
@@ -35,8 +35,8 @@ Polygon2d *import_svg(const std::string &filename)
 		}
 	}
 	
-	double cx = (x_min + x_max) / 2;
-	double cy = (y_min + y_max) / 2;
+	double cx = center ? (x_min + x_max) / 2 : 0;
+	double cy = center ? (y_min + y_max) / 2 : 0;
 	
 	std::vector<const Polygon2d*> polygons;
 	for (libsvg::shapes_list_t::iterator it = shapes->begin();it != shapes->end();it++) {

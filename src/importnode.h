@@ -27,7 +27,7 @@ public:
 	std::string layername;
 	int convexity;
 	double fn, fs, fa;
-	double origin_x, origin_y, scale;
+	double origin_x, origin_y, center, scale;
 	double width, height;
 	const class Geometry *createGeometry() const override;
 };

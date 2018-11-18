@@ -138,6 +138,9 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 	node->origin_x = node->origin_y = 0;
 	origin->getVec2(node->origin_x, node->origin_y);
 
+	auto center = c.lookup_variable("center", true);
+	node->center = center->toBool();
+
 	node->scale = c.lookup_variable("scale", true)->toDouble();
 
 	if (node->scale <= 0) node->scale = 1;
@@ -175,7 +178,7 @@ const Geometry *ImportNode::createGeometry() const
 		break;
 	}
 	case ImportType::SVG: {
-		g = import_svg(this->filename);
+		g = import_svg(this->filename, this->center);
  		break;
 	}
 	case ImportType::DXF: {
@@ -204,15 +207,17 @@ std::string ImportNode::toString() const
 	fs::path path((std::string)this->filename);
 
 	stream << this->name();
-	stream << "(file = " << this->filename << ", "
-		"layer = " << QuotedString(this->layername) << ", "
-		"origin = [" << std::dec << this->origin_x << ", " << this->origin_y << "], "
-		"scale = " << this->scale << ", "
-		"convexity = " << this->convexity << ", "
-		"$fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs
-				 << ", " "timestamp = " << (fs::exists(path) ? fs::last_write_time(path) : 0)
-				 << ")";
-
+	stream << "(file = " << this->filename
+		<< ", layer = " << QuotedString(this->layername)
+		<< ", origin = [" << std::dec << this->origin_x << ", " << this->origin_y << "]";
+	if (this->type == ImportType::SVG) {
+		stream << ", center = " << (this->center ? "true" : "false");
+	}
+	stream << ", scale = " << this->scale
+		<< ", convexity = " << this->convexity
+		<< ", $fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs
+		<< ", timestamp = " << (fs::exists(path) ? fs::last_write_time(path) : 0)
+		<< ")";
 
 	return stream.str();
 }
