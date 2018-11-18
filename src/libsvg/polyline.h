@@ -1,5 +1,4 @@
-#ifndef LIBSVG_POLYLINE_H
-#define	LIBSVG_POLYLINE_H
+#pragma once
 
 #include "shape.h"
 
@@ -20,5 +19,3 @@ public:
 };
 
 }
-
-#endif	/* LIBSVG_POLYLINE_H */

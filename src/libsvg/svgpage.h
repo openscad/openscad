@@ -1,5 +1,4 @@
-#ifndef LIBSVG_SVGPAGE_H
-#define	LIBSVG_SVGPAGE_H
+#pragma once
 
 #include "shape.h"
 
@@ -26,5 +25,3 @@ public:
 };
 
 }
-
-#endif	/* LIBSVG_SVGPAGE_H */

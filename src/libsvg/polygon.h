@@ -1,5 +1,4 @@
-#ifndef LIBSVG_POLYGON_H
-#define	LIBSVG_POLYGON_H
+#pragma once
 
 #include "shape.h"
 
@@ -20,6 +19,3 @@ public:
 };
 
 }
-
-#endif	/* LIBSVG_POLYGON_H */
-

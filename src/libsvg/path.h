@@ -1,5 +1,4 @@
-#ifndef LIBSVG_PATH_H
-#define LIBSVG_PATH_H
+#pragma once
 
 #include <cmath>
 #include <string>
@@ -33,6 +32,3 @@ public:
 };
 
 }
-
-#endif	/* LIBSVG_PATH_H */
-

@@ -1,5 +1,4 @@
-#ifndef LIBSVG_LINE_H
-#define	LIBSVG_LINE_H
+#pragma once
 
 #include "shape.h"
 
@@ -25,6 +24,3 @@ public:
 };
 
 }
-
-#endif	/* LIBSVG_LINE_H */
-

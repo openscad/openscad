@@ -1,5 +1,4 @@
-#ifndef LIBSVG_RECT_H
-#define	LIBSVG_RECT_H
+#pragma once
 
 #include "path.h"
 
@@ -30,6 +29,3 @@ public:
 };
 
 }
-
-#endif	/* LIBSVG_RECT_H */
-

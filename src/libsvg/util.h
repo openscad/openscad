@@ -1,8 +1,9 @@
+#pragma once
+
 #include <string>
 
 namespace libsvg {
 
-double
-parse_double(const std::string& number);
+double parse_double(const std::string& number);
 
 }

@@ -1,5 +1,4 @@
-#ifndef LIBSVG_GROUP_H
-#define	LIBSVG_GROUP_H
+#pragma once
 
 #include "shape.h"
 
@@ -22,6 +21,3 @@ public:
 };
 
 }
-
-#endif	/* LIBSVG_GROUP_H */
-

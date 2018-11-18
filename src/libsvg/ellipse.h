@@ -1,5 +1,4 @@
-#ifndef LIBSVG_ELLIPSE_H
-#define	LIBSVG_ELLIPSE_H
+#pragma once
 
 #include "shape.h"
 
@@ -25,6 +24,3 @@ public:
 };
 
 }
-
-#endif	/* LIBSVG_ELLIPSE_H */
-

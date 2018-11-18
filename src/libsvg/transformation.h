@@ -1,5 +1,4 @@
-#ifndef LIBSVG_TRANSFORM_H
-#define	LIBSVG_TRANSFORM_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -77,5 +76,3 @@ public:
 };
 
 }
-
-#endif	/* LIBSVG_TRANSFORM_H */

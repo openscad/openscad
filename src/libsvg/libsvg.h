@@ -1,5 +1,4 @@
-#ifndef LIBSVG_LIBSVG_H
-#define	LIBSVG_LIBSVG_H
+#pragma once
 
 #include "shape.h"
 #include "rect.h"
@@ -18,5 +17,3 @@ void
 libsvg_free(shapes_list_t *shapes);
 
 }
-
-#endif	/* LIBSVG_LIBSVG_H */

@@ -1,5 +1,4 @@
-#ifndef LIBSVG_SHAPE_H
-#define	LIBSVG_SHAPE_H
+#pragma once
 
 #include <map>
 #include <string>
@@ -71,6 +70,3 @@ private:
 };
 
 }
-
-#endif	/* LIBSVG_SHAPE_H */
-

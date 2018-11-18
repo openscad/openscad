@@ -1,5 +1,4 @@
-#ifndef LIBSVG_CIRCLE_H
-#define	LIBSVG_CIRCLE_H
+#pragma once
 
 #include "shape.h"
 
@@ -23,6 +22,3 @@ public:
 };
 
 }
-
-#endif	/* LIBSVG_CIRCLE_H */
-
