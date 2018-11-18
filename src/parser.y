@@ -70,8 +70,9 @@ extern FILE *lexerin;
 extern const char *parser_input_buffer;
 const char *parser_input_buffer;
 std::shared_ptr<fs::path> parser_sourcefile;
+fs::path mainFile;
 
-bool assignmentWarning=true;
+bool fileEnded=false;
 %}
 
 %union {
@@ -195,7 +196,7 @@ statement:
           ';'
         | TOK_EOT
             {
-                assignmentWarning=false;
+                fileEnded=true;
             }
         ;
 
@@ -210,31 +211,41 @@ assignment:
                 bool found = false;
                 for (auto &assignment : scope_stack.top()->assignments) {
                     if (assignment.name == $1) {
-
-                        auto RootFile = rootmodule->getFullpath();
+                        auto MainFile = mainFile.string();
                         auto prevFile = assignment.location().fileName();
                         auto currFile = LOC(@$).fileName();
                         
-                        if(assignmentWarning && prevFile==RootFile && currFile == RootFile){
-                            //both assigments in the RootModule
+                        const auto uncPathCurr = boostfs_uncomplete(currFile, mainFile.parent_path());
+                        const auto uncPathPrev = boostfs_uncomplete(prevFile, mainFile.parent_path());
+
+                        if(fileEnded){
+                            //assigments via commandline
+                        }else if(prevFile==MainFile && currFile == MainFile){
+                            //both assigments in the MainFile
                             PRINTB("WARNING: %s was assigned on line %i but was overwritten on line %i",
                                     assignment.name%
                                     assignment.location().firstLine()%
                                     LOC(@$).firstLine());
-                        }else if(assignmentWarning && prevFile == RootFile && currFile != prevFile){
-                            //assigment from the RootModule overwritten by an include
-                            const auto docPath = boost::filesystem::path(RootFile).parent_path();
-
-                            const auto uncPathCurr = boostfs_uncomplete(currFile, docPath);
-                            const auto uncPathPrev = boostfs_uncomplete(prevFile, docPath);
-
-                            PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i  of %s",
+                        }else if(uncPathCurr == uncPathPrev){
+                            //assigment overwritten within the same file
+                            //the line number beeing equal happens, when a file is included multiple times
+                            if(assignment.location().firstLine() != LOC(@$).firstLine()){
+                                PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i",
+                                        assignment.name%
+                                        assignment.location().firstLine()%
+                                        uncPathPrev%
+                                        LOC(@$).firstLine());
+                            }
+                        }else if(prevFile==MainFile && currFile != MainFile){
+                            //assigment from the mainFile overwritten by an include
+                            PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i of %s",
                                     assignment.name%
                                     assignment.location().firstLine()%
                                     uncPathPrev%
                                     LOC(@$).firstLine()%
                                     uncPathCurr);
                         }
+
                         assignment.expr = shared_ptr<Expression>($3);
                         assignment.setLocation(LOC(@$));
                         found = true;
@@ -661,15 +672,17 @@ void yyerror (char const *s)
          (*sourcefile()) % lexerget_lineno() % s);
 }
 
-bool parse(FileModule *&module, const char *text, const std::string &filename, int debug)
+bool parse(FileModule *&module, const char *text, const std::string &filename, const std::string &pMainFile, int debug)
 {
   fs::path path = fs::absolute(fs::path(filename));
+  
+  mainFile =  pMainFile;
   
   lexerin = NULL;
   parser_error_pos = -1;
   parser_input_buffer = text;
   parser_sourcefile = std::make_shared<fs::path>(path);
-  assignmentWarning=true;
+  fileEnded=false;
 
   rootmodule = new FileModule(path.parent_path().generic_string(), path.filename().generic_string());
   scope_stack.push(&rootmodule->scope);

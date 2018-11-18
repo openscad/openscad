@@ -28,6 +28,7 @@ ECHO: false
 ECHO: "constants resulting in undef"
 ECHO: undef
 ECHO: undef
+ECHO: undef
 ECHO: "functions resulting in true"
 ECHO: true
 ECHO: true

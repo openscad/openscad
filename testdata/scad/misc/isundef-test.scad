@@ -39,6 +39,7 @@ echo(is_undef("Test"));
 echo(is_undef(123456));
 
 echo("constants resulting in undef");
+echo(is_undef());
 echo(is_undef("Test",123));
 echo(is_undef(123,456));
 

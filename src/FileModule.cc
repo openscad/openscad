@@ -132,7 +132,7 @@ time_t FileModule::handleDependencies()
 			auto wascached = ModuleCache::instance()->isCached(filename);
 			auto oldmodule = ModuleCache::instance()->lookup(filename);
 			FileModule *newmodule;
-			auto mtime = ModuleCache::instance()->evaluate(filename, newmodule);
+			auto mtime = ModuleCache::instance()->evaluate(this->getFullpath(),filename, newmodule);
 			if (mtime > latest) latest = mtime;
 			auto changed = newmodule && newmodule != oldmodule;
 			// Detect appearance but not removal of files, and keep old module
