@@ -11,9 +11,9 @@ class Location {
 
 public:
 	Location(int firstLine, int firstCol, int lastLine, int lastCol,
-			std::shared_ptr<fs::path> path)
+			std::shared_ptr<fs::path> path,std::shared_ptr<fs::path> mainfile)
 		: first_line(firstLine), first_col(firstCol), last_line(lastLine),
-		last_col(lastCol), path(std::move(path)) {
+		last_col(lastCol), path(std::move(path)), mainfile(std::move(mainfile)) {
 	}
 
 	std::string fileName() const { return path ? path->generic_string() : ""; }
@@ -33,6 +33,7 @@ private:
 	int last_line;
 	int last_col;
 	std::shared_ptr<fs::path> path;
+	std::shared_ptr<fs::path> mainfile;
 };
 
 bool operator == (Location const& lhs, Location const& rhs);

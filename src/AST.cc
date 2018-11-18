@@ -1,7 +1,8 @@
 #include "AST.h"
 #include <sstream>
+#include "boost-utils.h"
 
-const Location Location::NONE(0, 0, 0, 0, nullptr);
+const Location Location::NONE(0, 0, 0, 0, nullptr, nullptr);
 
 bool operator==(Location const& lhs, Location const& rhs){
 	return
@@ -23,6 +24,9 @@ bool Location::isNone() const{
 
 std::string Location::toString() const{
 	if(this->isNone()) return "location unkown";
+	if(mainfile && (*path)!=(*mainfile)){
+		return "in file "+boostfs_uncomplete((*path), (*mainfile)).generic_string()+ ", "+"line " + std::to_string(this->firstLine());
+	}
 	return "line " + std::to_string(this->firstLine());
 }
 

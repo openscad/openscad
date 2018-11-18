@@ -50,7 +50,7 @@
 namespace fs = boost::filesystem;
 
 #define YYMAXDEPTH 20000
-#define LOC(loc) Location(loc.first_line, loc.first_column, loc.last_line, loc.last_column, sourcefile())
+#define LOC(loc) Location(loc.first_line, loc.first_column, loc.last_line, loc.last_column, sourcefile(), mainFilePath)
   
 int parser_error_pos = -1;
 
@@ -69,7 +69,7 @@ FileModule *rootmodule;
 extern void lexerdestroy();
 extern FILE *lexerin;
 const char *parser_input_buffer;
-static fs::path mainFilePath;
+static shared_ptr<fs::path> mainFilePath;
 static std::string main_file_folder;
 
 bool fileEnded=false;
@@ -211,12 +211,12 @@ assignment:
                 bool found = false;
                 for (auto &assignment : scope_stack.top()->assignments) {
                     if (assignment.name == $1) {
-                        auto mainFile = mainFilePath.string();
+                        auto mainFile = (*mainFilePath).string();
                         auto prevFile = assignment.location().fileName();
                         auto currFile = LOC(@$).fileName();
                         
-                        const auto uncPathCurr = boostfs_uncomplete(currFile, mainFilePath.parent_path());
-                        const auto uncPathPrev = boostfs_uncomplete(prevFile, mainFilePath.parent_path());
+                        const auto uncPathCurr = boostfs_uncomplete(currFile, (*mainFilePath).parent_path());
+                        const auto uncPathPrev = boostfs_uncomplete(prevFile, (*mainFilePath).parent_path());
 
                         if(fileEnded){
                             //assigments via commandline
@@ -677,7 +677,7 @@ bool parse(FileModule *&module, const char *text, const std::string &filename, c
   fs::path parser_sourcefile = fs::absolute(fs::path(filename));
   main_file_folder = parser_sourcefile.parent_path().generic_string();
   lexer_set_parser_sourcefile(parser_sourcefile);
-  mainFilePath = mainFile;
+  mainFilePath = std::make_shared<fs::path>(mainFile);
 
   lexerin = NULL;
   parser_error_pos = -1;
