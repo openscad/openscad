@@ -4,13 +4,8 @@ namespace libsvg {
 
 const std::string circle::name("circle");
 
-circle::circle()
+circle::circle() : r(0)
 {
-}
-
-circle::circle(const circle& orig) : shape(orig)
-{
-	r = orig.r;
 }
 
 circle::~circle()

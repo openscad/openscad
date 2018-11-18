@@ -1850,12 +1850,12 @@ void MainWindow::compileTopLevelDocument(bool rebuildParameterWidget)
 	auto fnameba = this->fileName.toLocal8Bit();
 	const char* fname = this->fileName.isEmpty() ? "" : fnameba;
 	delete this->parsed_module;
-	this->root_module = parse(this->parsed_module, fulltext.c_str(), fname, fname, false) ? this->parsed_module : nullptr;
+	this->root_module = parse(this->parsed_module, fulltext, fname, fname, false) ? this->parsed_module : nullptr;
 
 	if (Feature::ExperimentalCustomizer.is_enabled()) {
 		if (this->root_module!=nullptr) {
 			//add parameters as annotation in AST
-			CommentParser::collectParameters(fulltext.c_str(),this->root_module);
+			CommentParser::collectParameters(fulltext,this->root_module);
 			this->parameterWidget->setParameters(this->root_module,rebuildParameterWidget);
 			this->parameterWidget->applyParameters(this->root_module);
 			this->parameterWidget->setEnabled(true);
