@@ -370,7 +370,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 	}
 	std::string text((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 	text += "\n\x03\n" + commandline_commands;
-	if (!parse(root_module, text.c_str(), filename, filename, false)) {
+	if (!parse(root_module, text, filename, filename, false)) {
 		delete root_module;  // parse failed
 		root_module = nullptr;
 	}
