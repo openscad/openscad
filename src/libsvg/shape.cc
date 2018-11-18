@@ -10,6 +10,8 @@
 #include "circle.h"
 #include "ellipse.h"
 #include "line.h"
+#include "text.h"
+#include "tspan.h"
 #include "polygon.h"
 #include "polyline.h"
 #include "rect.h"
@@ -38,6 +40,10 @@ shape::create_from_name(const char *name)
 		return new ellipse();
 	} else if (line::name == name) {
 		return new line();
+	} else if (text::name == name) {
+		return new text();
+	} else if (tspan::name == name) {
+		return new tspan();
 	} else if (polygon::name == name) {
 		return new polygon();
 	} else if (polyline::name == name) {
