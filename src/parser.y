@@ -59,6 +59,7 @@ void yyerror(char const *s);
 
 int lexerget_lineno(void);
 std::shared_ptr<fs::path> sourcefile(void);
+void lexer_set_parser_sourcefile(const fs::path& path);
 int lexerlex_destroy(void);
 int lexerlex(void);
 
@@ -69,7 +70,7 @@ extern void lexerdestroy();
 extern FILE *lexerin;
 const char *parser_input_buffer;
 fs::path mainFile;
-fs::path parser_sourcefile;
+static fs::path parser_sourcefile;
 
 bool fileEnded=false;
 %}
@@ -674,6 +675,7 @@ void yyerror (char const *s)
 bool parse(FileModule *&module, const char *text, const std::string &filename, const std::string &pMainFile, int debug)
 {
   parser_sourcefile = fs::absolute(fs::path(filename));
+  lexer_set_parser_sourcefile(parser_sourcefile);
   
   mainFile =  pMainFile;
   
