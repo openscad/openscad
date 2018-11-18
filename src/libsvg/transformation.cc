@@ -15,18 +15,6 @@ transformation::~transformation()
 {
 }
 
-const std::string&
-transformation::get_op()
-{
-	return op;
-}
-
-const std::string&
-transformation::get_name()
-{
-	return name;
-}
-
 void
 transformation::add_arg(const std::string arg)
 {
@@ -35,7 +23,7 @@ transformation::add_arg(const std::string arg)
 }
 
 const std::string
-transformation::get_args() {
+transformation::get_args() const {
 	std::stringstream str;
 	for (unsigned int a = 0;a < args.size();a++) {
 		str << ((a == 0) ? "(" : ", ") << args[a];

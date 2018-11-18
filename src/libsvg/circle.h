@@ -13,7 +13,7 @@ public:
     circle();
     ~circle();
 
-    double get_radius() { return r; }
+    double get_radius() const { return r; }
 
     void set_attrs(attr_map_t& attrs) override;
     void dump() override;

@@ -16,7 +16,7 @@ private:
 			return std::pow(1.0 - t, exp);
     }
 
-    bool is_open_path(path_t& path);
+    bool is_open_path(path_t& path) const;
     void arc_to(path_t& path, double x, double y, double rx, double ry, double x2, double y2, double angle, bool large, bool sweep);
     void curve_to(path_t& path, double x, double y, double cx1, double cy1, double x2, double y2);
     void curve_to(path_t& path, double x, double y, double cx1, double cy1, double cx2, double cy2, double x2, double y2);

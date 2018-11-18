@@ -20,15 +20,14 @@ polyline::set_attrs(attr_map_t& attrs)
 	shape::set_attrs(attrs);
 	this->points = attrs["points"];
 	
-	typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+	using tokenizer = boost::tokenizer<boost::char_separator<char> >;
 	boost::char_separator<char> sep(" ,");
 	tokenizer tokens(this->points, sep);
 
 	double x = 0.0;
 	path_t path;
 	bool first = true;
-	for (tokenizer::iterator it = tokens.begin();it != tokens.end();++it) {
-		std::string v = (*it);
+	for (const auto& v : tokens) {
 		double p = parse_double(v);
 		
 		if (first) {

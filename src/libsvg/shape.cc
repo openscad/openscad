@@ -65,15 +65,15 @@ shape::set_attrs(attr_map_t& attrs)
 	this->style = attrs["style"];
 }
 
-std::string
-shape::get_style(std::string name)
+const std::string
+shape::get_style(std::string name) const
 {
 	std::vector<std::string> styles;
 	boost::split(styles, this->style, boost::is_any_of(";"));
 	
-	for (std::vector<std::string>::iterator it = styles.begin();it != styles.end();it++) {
+	for (const auto& style : styles) {
 		std::vector<std::string> values;
-		boost::split(values, *it, boost::is_any_of(":"));
+		boost::split(values, style, boost::is_any_of(":"));
 		if (values.size() != 2) {
 			continue;
 		}
@@ -85,7 +85,7 @@ shape::get_style(std::string name)
 }
 
 double
-shape::get_stroke_width()
+shape::get_stroke_width() const
 {
 	double stroke_width;
 	if (this->stroke_width.empty()) {
@@ -97,7 +97,7 @@ shape::get_stroke_width()
 }
 
 ClipperLib::EndType
-shape::get_stroke_linecap()
+shape::get_stroke_linecap() const
 {
 	std::string cap;
 	if (this->stroke_linecap.empty()) {
@@ -130,14 +130,13 @@ shape::collect_transform_matrices(std::vector<Eigen::Matrix3d>& matrices, shape 
 
 	std::string commands = "mtsrxy";
 	
-	typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+	using tokenizer = boost::tokenizer<boost::char_separator<char> >;
 	boost::char_separator<char> sep(" ,()", commands.c_str());
 	tokenizer tokens(transform_arg, sep);
 
 	transformation *t = nullptr;
 	std::vector<transformation *> transformations;
-	for (tokenizer::iterator it = tokens.begin();it != tokens.end();++it) {
-		std::string v = (*it);
+	for (const auto& v : tokens) {
 		if ((v.length() == 1) && (commands.find(v) != std::string::npos)) {
 			if (t != nullptr) {
 				transformations.push_back(t);
@@ -193,16 +192,14 @@ shape::apply_transform()
 	}
 
 	path_list_t result_list;
-	for (path_list_t::iterator it = path_list.begin();it != path_list.end();it++) {
-		path_t& p = *it;
-		
+	for (const auto& p : path_list) {
 		result_list.push_back(path_t());
-		for (path_t::iterator it2 = p.begin();it2 != p.end();it2++) {
-			Eigen::Vector3d result((*it2).x(), (*it2).y(), 1);
+		for (const auto &v : p) {
+			Eigen::Vector3d result(v.x(), v.y(), 1);
 			for (std::vector<Eigen::Matrix3d>::reverse_iterator it3 = matrices.rbegin();it3 != matrices.rend();it3++) {
 				result = *it3 * result;
 			}
-			
+
 			result_list.back().push_back(result);
 		}
 	}
@@ -213,8 +210,7 @@ void
 shape::offset_path(path_list_t& path_list, path_t& path, double stroke_width, ClipperLib::EndType stroke_linecap) {
 	ClipperLib::Path line;
 	ClipperLib::Paths result;
-	for (path_t::iterator it = path.begin();it != path.end();it++) {
-		Eigen::Vector3d& v = *it;
+	for (const auto& v : path) {
 		line << ClipperLib::IntPoint(v.x() * 10000, v.y() * 10000);
 	}
 
@@ -222,11 +218,9 @@ shape::offset_path(path_list_t& path_list, path_t& path, double stroke_width, Cl
 	co.AddPath(line, ClipperLib::jtMiter, stroke_linecap);
 	co.Execute(result, stroke_width * 5000.0);
 
-	for (ClipperLib::Paths::iterator it = result.begin();it != result.end();it++) {
-		ClipperLib::Path& p = *it;
+	for (const auto& p : result) {
 		path_list.push_back(path_t());
-		for (ClipperLib::Path::iterator it2 = p.begin();it2 != p.end();it2++) {
-			ClipperLib::IntPoint& point = *it2;
+		for (const auto &point : p) {
 			path_list.back().push_back(Eigen::Vector3d(point.X / 10000.0, point.Y / 10000.0, 0));
 		}
 		path_list.back().push_back(Eigen::Vector3d(p[0].X / 10000.0, p[0].Y / 10000.0, 0));

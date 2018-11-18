@@ -6,19 +6,17 @@
 
 Polygon2d *import_svg(const std::string &filename, const bool center)
 {
-	libsvg::shapes_list_t *shapes = libsvg::libsvg_read_file(filename.c_str());
+	const libsvg::shapes_list_t *shapes = libsvg::libsvg_read_file(filename.c_str());
 	double x_min = 1.0/0.0;
 	double x_max = -1.0/0.0;
 	double y_min = 1.0/0.0;
 	double y_max = -1.0/0.0;
-	for (libsvg::shapes_list_t::iterator it = shapes->begin();it != shapes->end();it++) {
+	for (const auto& shape_ptr : *shapes) {
 		PRINTD("SVG shape");
-		libsvg::shape *s = it->get();
-		for (libsvg::path_list_t::iterator it = s->get_path_list().begin();it != s->get_path_list().end();it++) {
+		const auto& s = *shape_ptr;
+		for (const auto& p : s.get_path_list()) {
 			PRINTD("SVG path");
-			libsvg::path_t& p = *it;
-			for (libsvg::path_t::iterator it2 = p.begin();it2 != p.end();it2++) {
-				Eigen::Vector3d& v = *it2;
+			for (const auto& v : p) {
 				if (v.x() < x_min) {
 					x_min = v.x();
 				}
@@ -39,15 +37,12 @@ Polygon2d *import_svg(const std::string &filename, const bool center)
 	double cy = center ? (y_min + y_max) / 2 : 0;
 	
 	std::vector<const Polygon2d*> polygons;
-	for (libsvg::shapes_list_t::iterator it = shapes->begin();it != shapes->end();it++) {
+	for (const auto& shape_ptr : *shapes) {
 		Polygon2d *poly = new Polygon2d();
-		libsvg::shape *s = it->get();
-		for (libsvg::path_list_t::iterator it = s->get_path_list().begin();it != s->get_path_list().end();it++) {
-			libsvg::path_t& p = *it;
-			
+		const auto& s = *shape_ptr;
+		for (const auto& p : s.get_path_list()) {
 			Outline2d outline;
-			for (libsvg::path_t::iterator it2 = p.begin();it2 != p.end();it2++) {
-				Eigen::Vector3d& v = *it2;
+			for (const auto& v : p) {
 				double x = v.x() - cx;
 				double y = -v.y() + cy;
 				outline.vertices.push_back(Vector2d(x, y));

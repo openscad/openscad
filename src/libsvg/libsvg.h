@@ -9,7 +9,7 @@
 
 namespace libsvg {
 
-typedef std::vector<shared_ptr<shape>> shapes_list_t;
+using shapes_list_t = std::vector<shared_ptr<shape>>;
 
 shapes_list_t *
 libsvg_read_file(const char *filename);

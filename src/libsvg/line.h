@@ -14,8 +14,8 @@ public:
     line();
     ~line();
 
-    double get_x2() { return x2; }
-    double get_y2() { return y2; }
+    double get_x2() const { return x2; }
+    double get_y2() const { return y2; }
 
     void set_attrs(attr_map_t& attrs) override;
     void dump() override;

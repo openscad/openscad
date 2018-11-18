@@ -493,7 +493,7 @@ path::set_attrs(attr_map_t& attrs)
 }
 
 bool
-path::is_open_path(path_t& path)
+path::is_open_path(path_t& path) const
 {
 	const Eigen::Vector3d p1 = path[0];
 	const Eigen::Vector3d p2 = path.back();
@@ -507,11 +507,9 @@ path::dump()
 	std::cout << get_name()
 		<< ": x = " << this->x
 		<< ", y = " << this->y;
-	for (path_list_t::iterator it = path_list.begin();it != path_list.end();it++) {
-		path_t& p = *it;
+	for (const auto& p : path_list) {
 		std::cout << "[";
-		for (path_t::iterator it2 = p.begin();it2 != p.end();it2++) {
-			Eigen::Vector3d& v = *it2;
+		for (const auto& v : p) {
 			std::cout << " (" << v.x() << ", " << v.y() << ")";
 		}
 		std::cout << "]";

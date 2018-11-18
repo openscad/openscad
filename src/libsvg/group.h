@@ -12,7 +12,7 @@ public:
     group();
     ~group();
 
-    bool is_container() override { return true; }
+    bool is_container() const override { return true; }
     
     void set_attrs(attr_map_t& attrs) override;
     void dump() override;

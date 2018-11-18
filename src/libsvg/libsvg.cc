@@ -141,9 +141,8 @@ void dump(int idx, shape *s) {
 		std::cout << "  ";
 	}
 	std::cout << "=> " << *s << std::endl;
-	std::vector<shape *> children = s->get_children();
-	for (std::vector<shape *>::iterator it = children.begin();it != children.end();it++) {
-		dump(idx + 1, *it);
+	for (const auto& c : s->get_children()) {
+		dump(idx + 1, c);
 	} 
 }
 

@@ -14,8 +14,8 @@ public:
     ellipse();
     ~ellipse();
     
-    double get_radius_x() { return rx; }
-    double get_radius_y() { return ry; }
+    double get_radius_x() const { return rx; }
+    double get_radius_y() const { return ry; }
 
     void set_attrs(attr_map_t& attrs) override;
     void dump() override;
