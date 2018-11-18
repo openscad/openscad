@@ -1035,7 +1035,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
       if (${EXPERIMENTAL} EQUAL -1)
         set(EXPERIMENTAL_OPTION "")
       else()
-        set(EXPERIMENTAL_OPTION "--enable=lc-each" "--enable=lc-else" "--enable=lc-for-c" "--enable=amf-import" "--enable=3mf-import" "--enable=3mf-export")
+        set(EXPERIMENTAL_OPTION "--enable=lc-each" "--enable=lc-else" "--enable=lc-for-c" "--enable=svg-import" "--enable=amf-import" "--enable=3mf-import" "--enable=3mf-export")
       endif()
 
       # 2D tests should be viewed from the top, not an angle.
@@ -1144,6 +1144,7 @@ file(GLOB DEPRECATED_3D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/deprecated
 file(GLOB ISSUES_2D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/2D/issues/*.scad)
 file(GLOB ISSUES_3D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/*.scad)
 file(GLOB SCAD_DXF_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/dxf/*.scad)
+file(GLOB SCAD_SVG_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/svg/*.scad)
 file(GLOB SCAD_AMF_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/amf/*.scad)
 file(GLOB FUNCTION_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/*.scad)
 file(GLOB_RECURSE EXAMPLE_3D_FILES ${CMAKE_SOURCE_DIR}/../examples/*.scad)
@@ -1359,8 +1360,8 @@ disable_tests(
 )
 
 # 2D tests
-list(APPEND FILES_2D ${FEATURES_2D_FILES} ${SCAD_DXF_FILES} ${SCAD_SVG_FILES} ${ISSUES_2D_FILES} ${EXAMPLE_2D_FILES})
-list(APPEND ALL_2D_FILES ${FILES_2D})
+list(APPEND FILES_2D ${FEATURES_2D_FILES} ${ISSUES_2D_FILES} ${EXAMPLE_2D_FILES})
+list(APPEND ALL_2D_FILES ${FILES_2D} ${SCAD_DXF_FILES} ${SCAD_SVG_FILES})
 
 # FIXME: This test illustrates a weakness in child() combined with modifiers.
 # Reenable it when this is improved
@@ -1442,6 +1443,7 @@ experimental_tests(astdumptest_list-comprehensions-experimental
                    astdumptest_assert-expression-fail2-test
                    astdumptest_assert-expression-fail3-test
 		   echotest_issue1851-each-fail-on-scalar
+
 		   cgalpngtest_import_3mf-tests
 		   opencsgtest_import_3mf-tests
 		   csgpngtest_import_3mf-tests
@@ -1696,7 +1698,7 @@ add_cmdline_test(offpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/
 add_cmdline_test(amfpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=AMF --enable=amf-import EXPECTEDDIR monotonepngtest SUFFIX png FILES ${TRIVIAL_IMPORT_EXPORT_3D_FILES})
 add_cmdline_test(3mfpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=3MF --enable=3mf-import --enable=3mf-export EXPECTEDDIR monotonepngtest SUFFIX png FILES ${TRIVIAL_IMPORT_EXPORT_3D_FILES})
 add_cmdline_test(dxfpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=DXF --render=cgal EXPECTEDDIR monotonepngtest SUFFIX png FILES ${TRIVIAL_IMPORT_EXPORT_2D_FILES})
-add_cmdline_test(svgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=SVG --enable=svg-import --render=cgal EXPECTEDDIR monotonepngtest SUFFIX png FILES ${TRIVIAL_IMPORT_EXPORT_2D_FILES})
+add_cmdline_test(svgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=SVG --render=cgal --enable=svg-import EXPECTEDDIR monotonepngtest SUFFIX png FILES ${TRIVIAL_IMPORT_EXPORT_2D_FILES})
 
 #
 # Corner-case Export/Import tests
@@ -1719,9 +1721,9 @@ add_cmdline_test(cgalstlcgalpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOUR
 add_cmdline_test(offpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=OFF --render EXPECTEDDIR monotonepngtest SUFFIX png FILES ${EXPORT3D_TEST_FILES})
 add_cmdline_test(offcgalpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=OFF --render=cgal EXPECTEDDIR monotonepngtest SUFFIX png FILES ${EXPORT3D_CGAL_TEST_FILES})
 
-add_cmdline_test(dxfpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=DXF --render=cgal EXPECTEDDIR cgalpngtest SUFFIX png FILES ${FILES_2D})
+add_cmdline_test(dxfpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=DXF --render=cgal EXPECTEDDIR cgalpngtest SUFFIX png FILES ${FILES_2D} ${SCAD_DXF_FILES})
 
-add_cmdline_test(svgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=SVG --render=cgal --enable=svg-import EXPECTEDDIR cgalpngtest SUFFIX png FILES ${FILES_2D})
+add_cmdline_test(svgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=SVG --render=cgal --enable=svg-import EXPECTEDDIR cgalpngtest SUFFIX png FILES ${FILES_2D} ${SCAD_SVG_FILES})
 
 #
 # Failing tests
