@@ -69,7 +69,7 @@ FileModule *rootmodule;
 extern void lexerdestroy();
 extern FILE *lexerin;
 const char *parser_input_buffer;
-static fs::path mainFile;
+static fs::path mainFilePath;
 static std::string main_file_folder;
 
 bool fileEnded=false;
@@ -211,17 +211,17 @@ assignment:
                 bool found = false;
                 for (auto &assignment : scope_stack.top()->assignments) {
                     if (assignment.name == $1) {
-                        auto MainFile = mainFile.string();
+                        auto mainFile = mainFilePath.string();
                         auto prevFile = assignment.location().fileName();
                         auto currFile = LOC(@$).fileName();
                         
-                        const auto uncPathCurr = boostfs_uncomplete(currFile, mainFile.parent_path());
-                        const auto uncPathPrev = boostfs_uncomplete(prevFile, mainFile.parent_path());
+                        const auto uncPathCurr = boostfs_uncomplete(currFile, mainFilePath.parent_path());
+                        const auto uncPathPrev = boostfs_uncomplete(prevFile, mainFilePath.parent_path());
 
                         if(fileEnded){
                             //assigments via commandline
-                        }else if(prevFile==MainFile && currFile == MainFile){
-                            //both assigments in the MainFile
+                        }else if(prevFile==mainFile && currFile == mainFile){
+                            //both assigments in the mainFile
                             PRINTB("WARNING: %s was assigned on line %i but was overwritten on line %i",
                                     assignment.name%
                                     assignment.location().firstLine()%
@@ -236,7 +236,7 @@ assignment:
                                         uncPathPrev%
                                         LOC(@$).firstLine());
                             }
-                        }else if(prevFile==MainFile && currFile != MainFile){
+                        }else if(prevFile==mainFile && currFile != mainFile){
                             //assigment from the mainFile overwritten by an include
                             PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i of %s",
                                     assignment.name%
@@ -672,12 +672,12 @@ void yyerror (char const *s)
          (*sourcefile()) % lexerget_lineno() % s);
 }
 
-bool parse(FileModule *&module, const char *text, const std::string &filename, const std::string &pMainFile, int debug)
+bool parse(FileModule *&module, const char *text, const std::string &filename, const std::string &mainFile, int debug)
 {
   fs::path parser_sourcefile = fs::absolute(fs::path(filename));
   main_file_folder = parser_sourcefile.parent_path().generic_string();
   lexer_set_parser_sourcefile(parser_sourcefile);
-  mainFile =  pMainFile;
+  mainFilePath = mainFile;
 
   lexerin = NULL;
   parser_error_pos = -1;
