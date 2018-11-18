@@ -175,7 +175,7 @@ std::string dump_svg(const CGAL_Nef_polyhedron2 &N)
 		for (auto j = explorer.holes_begin( i ); j!= explorer.holes_end( i ); ++j) {
 			out << "   <!-- hole begin. mark: " << j->mark() << " -->\n";
 			CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator c3(j), c4(c3);
-			out << dump_cgal_nef_polyhedron2_face_svg(c3, c4, explorer, "green", j->mark());
+			out << dump_cgal_nef_polyhedron2_face_svg(c3, c4, explorer, j->mark(), false);
 			out << "   <!-- hole end -->\n";
 		}
 		out << "  <!-- face end -->\n";

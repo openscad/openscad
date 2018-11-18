@@ -147,7 +147,7 @@ static void version()
 	exit(0);
 }
 
-static void info()
+static int info()
 {
 	std::cout << LibraryInfo::info() << "\n\n";
 
@@ -156,10 +156,10 @@ static void info()
 		std::cout << glview.getRendererInfo() << "\n";
 	} catch (int error) {
 		PRINTB("Can't create OpenGL OffscreenView. Code: %i. Exiting.\n", error);
-		exit(1);
+		return 1;
 	}
 
-	exit(0);
+	return 0;
 }
 
 /**
@@ -181,7 +181,7 @@ void localization_init() {
 	}
 }
 
-Camera get_camera(po::variables_map vm)
+Camera get_camera(const po::variables_map &vm)
 {
 	Camera camera;
 
@@ -303,7 +303,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 	GeometryEvaluator geomevaluator(tree);
 #endif
 	if (arg_info) {
-	    info();
+	    return info();
 	}
 	
 	const char *stl_output_file = nullptr;
