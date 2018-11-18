@@ -182,16 +182,10 @@ AbstractNode *FileModule::instantiateWithFileContext(FileContext *ctx, const Mod
 		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 	}
 	catch (RecursionException &e) {
-		const auto docPath = boost::filesystem::path(ctx->documentPath());
-		const auto uncPath = boostfs_uncomplete(e.loc.filePath(), docPath);
-
-		PRINTB("%s in file %s, line %d", e.what() % uncPath.generic_string() % e.loc.firstLine());
+		PRINTB("%s, %s", e.what() % e.loc.toString());
 	}
 	catch (AssertionFailedException &e) {
-		const auto docPath = boost::filesystem::path(ctx->documentPath());
-		const auto uncPath = boostfs_uncomplete(e.loc.filePath(), docPath);
-
-		PRINTB("%s failed in file %s, line %d", e.what() % uncPath.generic_string() % e.loc.firstLine());
+		PRINTB("%s, %s", e.what() % e.loc.toString());
 	}
 	catch (EvaluationException &e) {
 		PRINT(e.what());

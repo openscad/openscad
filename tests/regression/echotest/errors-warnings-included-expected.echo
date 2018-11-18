@@ -10,4 +10,4 @@ ECHO: undef
 ECHO: "mainfile"
 WARNING: Ignoring unknown variable 'notDefinedVariable', line 7.
 ECHO: undef
-ERROR: Assertion 'false' failed in file errors-warnings-included.scad, line 8
+ERROR: Assertion 'false', line 8
