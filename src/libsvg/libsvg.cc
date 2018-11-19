@@ -20,16 +20,24 @@ namespace fs = boost::filesystem;
 
 namespace libsvg {
 
-fs::path path("/");
-
-typedef void (*cb_func)(const xmlChar *);
-
-std::map<const std::string, cb_func> funcs;
-std::map<const std::string, cb_func> end_funcs;
+#define SVG_DEBUG 0
 
 static bool in_defs = false;
-static std::stack<shape *> shapes;
+static shapes_list_t stack;
 static shapes_list_t *shape_list;
+
+#if SVG_DEBUG
+static std::string dump_stack() {
+	bool first = true;
+	std::stringstream s;
+	s << "[";
+	for (const auto &shape : stack) {
+		s << (first ? "" : "|") << shape->get_name();
+		first = false;
+	}
+	return s.str() + "]";
+}
+#endif
 
 attr_map_t read_attributes(xmlTextReaderPtr reader)
 {
@@ -56,8 +64,14 @@ void processNode(xmlTextReaderPtr reader)
 	case XML_READER_TYPE_ELEMENT:
 		isEmpty = xmlTextReaderIsEmptyElement(reader);
 	{
-		path /= name;
-		
+#if SVG_DEBUG
+		printf("XML_READER_TYPE_ELEMENT (%s %s): %d %d %s\n",
+			dump_stack().c_str(), name,
+			xmlTextReaderDepth(reader),
+			xmlTextReaderNodeType(reader),
+			value);
+#endif
+
 		if (std::string("defs") == name) {
 			in_defs = true;
 		}
@@ -67,11 +81,11 @@ void processNode(xmlTextReaderPtr reader)
 			attr_map_t attrs = read_attributes(reader);
 			s->set_attrs(attrs);
 			shape_list->push_back(s);
-			if (!shapes.empty()) {
-				shapes.top()->add_child(s.get());
+			if (!stack.empty()) {
+				stack.back()->add_child(s.get());
 			}
 			if (s->is_container()) {
-				shapes.push(s.get());
+				stack.push_back(s);
 			}
 			s->apply_transform();
 		}
@@ -84,26 +98,36 @@ void processNode(xmlTextReaderPtr reader)
 	{
 		if (std::string("defs") == name) {
 			in_defs = false;
-		} else if (std::string("g") == name) {
-			shapes.pop();
 		}
-		cb_func f1 = end_funcs[path.string()];
-		if (f1) {
-			f1(value);
+		if (in_defs) {
+			return;
 		}
-		path = path.parent_path();
+
+		if (std::string("g") == name) {
+			stack.pop_back();
+		} else if (std::string("tspan") == name) {
+			stack.pop_back();
+		} else if (std::string("text") == name) {
+			stack.pop_back();
+		}
+#if SVG_DEBUG
+		printf("XML_READER_TYPE_END_ELEMENT (%s %s): %d %d %s\n",
+			dump_stack().c_str(), name,
+			xmlTextReaderDepth(reader),
+			xmlTextReaderNodeType(reader),
+			value);
+#endif
 	}
 		break;
 	case XML_READER_TYPE_TEXT:
 	{
-//		printf("%d %d %s %s\n",
-//			xmlTextReaderDepth(reader),
-//			xmlTextReaderNodeType(reader),
-//			path.c_str(),
-//			value);
-		cb_func f = funcs[path.string()];
-		if (f) {
-			f(value);
+		attr_map_t attrs;
+		attrs["text"] = reinterpret_cast<const char *>(value);
+		auto s = shared_ptr<shape>(shape::create_from_name("data"));
+		s->set_attrs(attrs);
+		shape_list->push_back(s);
+		if (!stack.empty()) {
+			stack.back()->add_child(s.get());
 		}
 	}
 		break;

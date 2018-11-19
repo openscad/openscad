@@ -17,6 +17,8 @@ public:
     tspan();
     ~tspan();
 
+    bool is_container() const override { return true; }
+
     double get_dx() const { return dx; }
     double get_dy() const { return dy; }
     double get_rotate() const { return rotate; }

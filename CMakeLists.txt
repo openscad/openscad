@@ -286,6 +286,7 @@ set(CORE_SOURCES
   src/libsvg/line.cc
   src/libsvg/text.cc
   src/libsvg/tspan.cc
+  src/libsvg/data.cc
   src/libsvg/path.cc
   src/libsvg/polygon.cc
   src/libsvg/polyline.cc

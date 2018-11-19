@@ -392,6 +392,7 @@ SOURCES += \
            src/libsvg/line.cc \
            src/libsvg/text.cc \
            src/libsvg/tspan.cc \
+           src/libsvg/data.cc \
            src/libsvg/polygon.cc \
            src/libsvg/polyline.cc \
            src/libsvg/rect.cc \

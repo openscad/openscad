@@ -12,6 +12,7 @@
 #include "line.h"
 #include "text.h"
 #include "tspan.h"
+#include "data.h"
 #include "polygon.h"
 #include "polyline.h"
 #include "rect.h"
@@ -44,6 +45,8 @@ shape::create_from_name(const char *name)
 		return new text();
 	} else if (tspan::name == name) {
 		return new tspan();
+	} else if (data::name == name) {
+		return new data();
 	} else if (polygon::name == name) {
 		return new polygon();
 	} else if (polyline::name == name) {
