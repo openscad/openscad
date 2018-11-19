@@ -246,7 +246,7 @@ shape::draw_ellipse(path_t& path, double x, double y, double rx, double ry) {
 
 std::ostream & operator<<(std::ostream &os, const shape& s)
 {
-    return os << s.get_name() << " | id = '" << s.id << "', transform = '" << s.transform << "'";
+    return os << s.dump() << " | id = '" << s.id << "', transform = '" << s.transform << "'";
 }
 
 }

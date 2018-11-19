@@ -24,15 +24,16 @@ svgpage::set_attrs(attr_map_t& attrs)
 	this->height = parse_double(attrs["height"]);
 }
 
-void
-svgpage::dump()
+const std::string
+svgpage::dump() const
 {
-	std::cout << get_name()
+	std::stringstream s;
+	s << get_name()
 		<< ": x = " << this->x
 		<< ": y = " << this->y
 		<< ": width = " << this->width
-		<< ": height = " << this->height
-		<< std::endl;
+		<< ": height = " << this->height;
+	return s.str();
 }
 
 }

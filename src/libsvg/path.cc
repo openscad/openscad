@@ -501,20 +501,21 @@ path::is_open_path(path_t& path) const
 	return distance > 0.1;
 }
 
-void
-path::dump()
+const std::string
+path::dump() const
 {
-	std::cout << get_name()
+	std::stringstream s;
+	s << get_name()
 		<< ": x = " << this->x
 		<< ", y = " << this->y;
 	for (const auto& p : path_list) {
-		std::cout << "[";
+		s << "[";
 		for (const auto& v : p) {
-			std::cout << " (" << v.x() << ", " << v.y() << ")";
+			s << " (" << v.x() << ", " << v.y() << ")";
 		}
-		std::cout << "]";
+		s << "]";
 	}
-	std::cout << std::endl;
+	return s.str();
 }
 
 }

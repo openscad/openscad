@@ -22,15 +22,16 @@ text::set_attrs(attr_map_t& attrs)
 	this->dy = parse_double(attrs["dy"]);
 }
 
-void
-text::dump()
+const std::string
+text::dump() const
 {
-	std::cout << get_name()
+	std::stringstream s;
+	s << get_name()
 		<< ": x = " << this->x
 		<< ": y = " << this->y
 		<< ": dx = " << this->dx
-		<< ": dy = " << this->dy
-		<< std::endl;
+		<< ": dy = " << this->dy;
+	return s.str();
 }
 
 }

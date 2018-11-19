@@ -17,7 +17,7 @@ public:
     double get_y2() const { return y2; }
 
     void set_attrs(attr_map_t& attrs) override;
-    void dump() override;
+    const std::string dump() const override;
     const std::string& get_name() const override { return line::name; };
     
     static const std::string name;

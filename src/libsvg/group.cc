@@ -21,13 +21,14 @@ group::set_attrs(attr_map_t& attrs)
 	shape::set_attrs(attrs);
 }
 
-void
-group::dump()
+const std::string
+group::dump() const
 {
-	std::cout << get_name()
+	std::stringstream s;
+	s << get_name()
 		<< ": x = " << this->x
-		<< ": y = " << this->y
-		<< std::endl;
+		<< ": y = " << this->y;
+	return s.str();
 }
 
 }

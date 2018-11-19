@@ -25,14 +25,15 @@ circle::set_attrs(attr_map_t& attrs)
 	path_list.push_back(path);
 }
 
-void
-circle::dump()
+const std::string
+circle::dump() const
 {
-	std::cout << get_name()
+	std::stringstream s;
+	s << get_name()
 		<< ": x = " << this->x
 		<< ": y = " << this->y
-		<< ": r = " << this->r
-		<< std::endl;
+		<< ": r = " << this->r;
+	return s.str();
 }
 
 }

@@ -129,15 +129,16 @@ rect::set_attrs(attr_map_t& attrs)
 	}
 }
 
-void
-rect::dump()
+const std::string
+rect::dump() const
 {
-	std::cout << get_name()
+	std::stringstream s;
+	s << get_name()
 		<< ": x = " << this->x
 		<< ": y = " << this->y
 		<< ": width = " << this->width
-		<< ": height = " << this->height
-		<< std::endl;
+		<< ": height = " << this->height;
+	return s.str();
 }
 
 }

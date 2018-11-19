@@ -29,15 +29,16 @@ ellipse::set_attrs(attr_map_t& attrs)
 	path_list.push_back(path);
 }
 
-void
-ellipse::dump()
+const std::string
+ellipse::dump() const
 {
-	std::cout << get_name()
+	std::stringstream s;
+	s << get_name()
 		<< ": x = " << this->x
 		<< ": y = " << this->y
 		<< ": rx = " << this->rx
-		<< ": ry = " << this->ry
-		<< std::endl;
+		<< ": ry = " << this->ry;
+	return s.str();
 }
 
 }

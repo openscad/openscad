@@ -61,7 +61,7 @@ public:
    
     virtual const std::string& get_name() const = 0;
     virtual void set_attrs(attr_map_t& attrs);
-    virtual void dump() {}
+    virtual const std::string dump() const { return ""; }
 
     static shape * create_from_name(const char *name);
 

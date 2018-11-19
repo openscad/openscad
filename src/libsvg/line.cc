@@ -27,15 +27,16 @@ line::set_attrs(attr_map_t& attrs)
 	offset_path(path_list, path, get_stroke_width(), get_stroke_linecap());
 }
 
-void
-line::dump()
+const std::string
+line::dump() const
 {
-	std::cout << get_name()
+	std::stringstream s;
+	s << get_name()
 		<< ": x1 = " << this->x
 		<< ": y1 = " << this->y
 		<< ": x2 = " << this->x2
-		<< ": y2 = " << this->y2
-		<< std::endl;
+		<< ": y2 = " << this->y2;
+	return s.str();
 }
 
 }
