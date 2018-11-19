@@ -197,7 +197,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 			converted |= size->getDouble(node->z);
 			converted |= size->getVec3(node->x, node->y, node->z);
 			if(!converted){
-				PRINTB("WARNING: Unable to convert CUBE size=%s to a number or a vec3 of numbers, %s", size->toString() % inst->location().toString());
+				PRINTB("WARNING: Unable to convert cube(size=%s, ...) parameter to a number or a vec3 of numbers, %s", size->toEchoString() % inst->location().toString());
 			}
 		}
 		if (center->type() == Value::ValueType::BOOL) {
@@ -259,7 +259,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 			converted |= size->getDouble(node->y);
 			converted |= size->getVec2(node->x, node->y);
 			if(!converted){
-				PRINTB("WARNING: Unable to convert SQUARE size=%s to a number or a vec2 of numbers, %s", size->toString() % inst->location().toString());
+				PRINTB("WARNING: Unable to convert square(size=%s, ...) parameter to a number or a vec2 of numbers, %s", size->toEchoString() % inst->location().toString());
 			}
 		}
 		if (center->type() == Value::ValueType::BOOL) {

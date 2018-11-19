@@ -91,7 +91,7 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 			if (v->getDouble(num)){
 				scalevec.setConstant(num);
 			}else{
-				PRINTB("WARNING: Unable to convert SCALE parameter %s to a number, a vec3 or vec2 of numbers or a number, %s", v->toString() % inst->location().toString());
+				PRINTB("WARNING: Unable to convert scale(%s) parameter to a number, a vec3 or vec2 of numbers or a number, %s", v->toEchoString() % inst->location().toString());
 			}
 		}
 		node->matrix.scale(scalevec);
@@ -143,7 +143,7 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 				x *= sn, y *= sn, z *= sn;
 			}
 		}else{
-			PRINTB("WARNING: Unable to convert MIRROR parameter %s to a vec3 or vec2 of numbers, %s", val_v->toString() % inst->location().toString());
+			PRINTB("WARNING: Unable to convert mirror(%s) parameter to a vec3 or vec2 of numbers, %s", val_v->toEchoString() % inst->location().toString());
 		}
 
 		if (x != 0.0 || y != 0.0 || z != 0.0)	{
@@ -161,7 +161,7 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 		if (v->getVec3(translatevec[0], translatevec[1], translatevec[2], 0.0)) {
 			node->matrix.translate(translatevec);
 		}else{
-			PRINTB("WARNING: Unable to convert TRANSLATE parameter %s to a vec3 or vec2 of numbers, %s", v->toString() % inst->location().toString());
+			PRINTB("WARNING: Unable to convert translate(%s) parameter to a vec3 or vec2 of numbers, %s", v->toEchoString() % inst->location().toString());
 		}
 	}
 	else if (this->type == transform_type_e::MULTMATRIX) {
