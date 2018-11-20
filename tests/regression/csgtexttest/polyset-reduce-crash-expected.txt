@@ -1,1 +1,0 @@
-group1(transform2(union3(transform4(polygon+polygon+polygon+polygon+polygon+polygon+polygon+polygon)+circle)))
