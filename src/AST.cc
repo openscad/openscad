@@ -25,7 +25,7 @@ bool Location::isNone() const{
 std::string Location::toString() const{
 	if(this->isNone()) return "location unkown";
 	if(mainfile && (*path)!=(*mainfile)){
-		return "in file "+boostfs_uncomplete((*path), (*mainfile)).generic_string()+ ", "+"line " + std::to_string(this->firstLine());
+		return "in file "+boostfs_uncomplete((*path), (*mainfile).parent_path()).generic_string()+ ", "+"line " + std::to_string(this->firstLine());
 	}
 	return "line " + std::to_string(this->firstLine());
 }
