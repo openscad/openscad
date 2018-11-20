@@ -36,7 +36,7 @@ class OpenCSGPrim : public OpenCSG::Primitive
 {
 public:
 	OpenCSGPrim(OpenCSG::Operation operation, unsigned int convexity) :
-			OpenCSG::Primitive(operation, convexity) { }
+			OpenCSG::Primitive(operation, convexity), csgmode(Renderer::CSGMODE_NONE) { }
 	shared_ptr<const Geometry> geom;
 	Transform3d m;
 	Renderer::csgmode_e csgmode;

@@ -8,6 +8,7 @@
 
 CGALWorker::CGALWorker()
 {
+	this->tree = nullptr;
 	this->thread = new QThread();
 	if (this->thread->stackSize() < 1024*1024) this->thread->setStackSize(1024*1024);
 	connect(this->thread, SIGNAL(started()), this, SLOT(work()));

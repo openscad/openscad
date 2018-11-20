@@ -10,6 +10,6 @@ public:
 	BuiltinContext();
 	~BuiltinContext() {}
 
-	ValuePtr evaluate_function(const std::string &name, const class EvalContext *evalctx) const override;
-	class AbstractNode *instantiate_module(const class ModuleInstantiation &inst, EvalContext *evalctx) const override;
+	ValuePtr evaluate_function(const std::string &name, const class EvalContext *evalctx, const Location &loc) const override;
+	class AbstractNode *instantiate_module(const class ModuleInstantiation &inst, EvalContext *evalctx, const Location &loc) const override;
 };

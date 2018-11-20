@@ -12,7 +12,6 @@ private:
 
 public:
     line();
-    line(const line& orig);
     ~line();
 
     double get_x2() { return x2; }

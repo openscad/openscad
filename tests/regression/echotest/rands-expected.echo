@@ -1,4 +1,4 @@
-WARNING: Ignoring unknown variable 'v'.
+WARNING: Ignoring unknown variable 'v', line 28.
 ECHO: "i hope rands() did not crash"
 ECHO: [1, 1, 1, 1]
 ECHO: [1.4486, 1.96977, 1.8777]

@@ -1,5 +1,9 @@
 skip_branch_with_pr: true
 
+branches:
+  except:
+    - coverity_scan
+
 image:
   - Visual Studio 2017
 

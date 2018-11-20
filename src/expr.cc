@@ -384,7 +384,7 @@ Lookup::Lookup(const std::string &name, const Location &loc) : Expression(loc), 
 
 ValuePtr Lookup::evaluate(const Context *context) const
 {
-	return context->lookup_variable(this->name);
+	return context->lookup_variable(this->name,false,loc);
 }
 
 ValuePtr Lookup::evaluateSilently(const Context *context) const
@@ -436,7 +436,7 @@ ValuePtr FunctionCall::evaluate(const Context *context) const
 	}
     
 	EvalContext c(context, this->arguments);
-	ValuePtr result = context->evaluate_function(this->name, &c);
+	ValuePtr result = context->evaluate_function(this->name, &c,this->loc);
 
 	return result;
 }

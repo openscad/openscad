@@ -3,6 +3,29 @@
 
 const Location Location::NONE(0, 0, 0, 0, nullptr);
 
+bool operator==(Location const& lhs, Location const& rhs){
+	return
+		lhs.firstLine()   == rhs.firstLine() &&
+		lhs.firstColumn() == rhs.firstColumn() &&
+		lhs.lastLine()    == rhs.lastLine() &&
+		lhs.lastColumn()  == rhs.lastColumn() &&
+		lhs.filePath()    == rhs.filePath();
+}
+
+bool operator != (Location const& lhs, Location const& rhs)
+{
+  return ! (lhs==rhs);
+}
+
+bool Location::isNone() const{
+	return ((*this)==Location::NONE);
+}
+
+std::string Location::toString() const{
+	if(this->isNone()) return "location unkown";
+	return "line " + std::to_string(this->firstLine());
+}
+
 std::ostream &operator<<(std::ostream &stream, const ASTNode &ast)
 {
 	ast.print(stream, "");

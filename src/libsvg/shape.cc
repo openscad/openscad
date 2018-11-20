@@ -25,10 +25,6 @@ shape::shape() : parent(nullptr), x(0), y(0)
 {
 }
 
-shape::shape(const shape& /*orig*/)
-{
-}
-
 shape::~shape()
 {
 }

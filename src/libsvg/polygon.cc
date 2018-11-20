@@ -10,11 +10,6 @@ polygon::polygon()
 {
 }
 
-polygon::polygon(const polygon& orig) : shape(orig)
-{
-	points = orig.points;
-}
-
 polygon::~polygon()
 {
 }

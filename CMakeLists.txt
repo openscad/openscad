@@ -116,7 +116,7 @@ if(NOT HEADLESS)
   set(CMAKE_AUTOMOC ON)
   set(CMAKE_AUTOUIC ON)
   set(CMAKE_AUTORCC ON)
-  find_package(Qt5 COMPONENTS Core Widgets OpenGL Concurrent REQUIRED QUIET)
+  find_package(Qt5 COMPONENTS Core Widgets Multimedia OpenGL Concurrent REQUIRED QUIET)
   message(STATUS "Qt5: ${Qt5_VERSION}")
   set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -305,11 +305,13 @@ set(CORE_SOURCES
 set(NOCGAL_SOURCES
   src/builtin.cc 
   src/import.cc
+  src/import_3mf.cc
   src/import_stl.cc
   src/import_amf.cc
   src/import_off.cc
   src/import_svg.cc
   src/export.cc
+  src/export_3mf.cc
   src/export_stl.cc
   src/export_amf.cc
   src/export_off.cc
@@ -500,6 +502,6 @@ set(COMMON_LIBRARIES
 
 target_link_libraries(OpenSCAD ${COMMON_LIBRARIES})
 if(NOT HEADLESS)
-  target_link_libraries(OpenSCAD Qt5::Core Qt5::Widgets Qt5::OpenGL Qt5::Concurrent ${QT5QSCINTILLA_LIBRARY} ${Qt5DBus_LIBRARIES})
+  target_link_libraries(OpenSCAD Qt5::Core Qt5::Widgets Qt5::Multimedia Qt5::OpenGL Qt5::Concurrent ${QT5QSCINTILLA_LIBRARY} ${Qt5DBus_LIBRARIES})
 endif()
 

@@ -6,6 +6,7 @@
 
 ParameterObject::ParameterObject(Context *ctx, const Assignment &assignment, const ValuePtr defaultValue)
 {
+  this->set = false;
   this->name = assignment.name;
   const Annotation *param = assignment.annotation("Parameter");
   const ValuePtr values = param->evaluate(ctx);

@@ -2,7 +2,8 @@ language: cpp
 
 matrix:
   include:
-    - os: linux
+    - if: NOT branch = coverity_scan
+      os: linux
       compiler: gcc
       dist: trusty
       env:
@@ -22,7 +23,8 @@ matrix:
       cache:
         - apt
         - ccache
-    - os: osx
+    - if: NOT branch = coverity_scan
+      os: osx
       compiler: clang
       env:
         - DIST="osx"
@@ -44,7 +46,7 @@ before_install:
  # Fix for "write error" build failures  ( https://github.com/travis-ci/travis-ci/issues/8920 )
  - python -c "import fcntl; fcntl.fcntl(1, fcntl.F_SETFL, 0)"
  - if [[ "$DIST" == "trusty" ]]; then wget -qO - http://files.openscad.org/OBS-Repository-Key.pub | sudo apt-key add - ; echo 'yes' | sudo add-apt-repository 'deb http://download.opensuse.org/repositories/home:/t-paul:/lib3mf/xUbuntu_14.04/ ./' ; sudo apt-get update -qq ; sudo apt-get purge -qq fglrx ; sudo apt-get install -qq build-essential qtbase5-dev libqt5opengl5-dev qtmultimedia5-dev libxmu-dev cmake bison flex git-core libboost-all-dev libxi-dev libmpfr-dev libboost-dev libglew-dev libeigen3-dev libcgal-dev libgmp3-dev libgmp-dev curl imagemagick libfontconfig-dev libopencsg-dev libharfbuzz-dev libzip-dev lib3mf-dev ; fi
- - if [[ "$DIST" == "xenial" ]]; then wget -qO - http://files.openscad.org/OBS-Repository-Key.pub | sudo apt-key add - ; echo 'yes' | sudo add-apt-repository 'deb http://download.opensuse.org/repositories/home:/t-paul:/lib3mf/xUbuntu_16.04/ ./' ; sudo apt-get update -qq ; sudo apt-get purge -qq fglrx ; sudo apt-get install -qq build-essential qtbase5-dev libqt5opengl5-dev qtmultimedia5-dev libxmu-dev cmake bison flex git-core libboost-all-dev libxi-dev libmpfr-dev libboost-dev libglew-dev libeigen3-dev libcgal-dev libcgal-qt5-dev libgmp3-dev libgmp-dev curl imagemagick libfontconfig-dev libopencsg-dev libharfbuzz-dev libzip-dev lib3mf-dev ; fi
+ - if [[ "$DIST" == "xenial" ]]; then wget -qO - http://files.openscad.org/OBS-Repository-Key.pub | sudo apt-key add - ; echo 'yes' | sudo add-apt-repository 'deb http://download.opensuse.org/repositories/home:/t-paul:/lib3mf/xUbuntu_16.04/ ./' ; sudo apt-get update -qq ; sudo apt-get purge -qq fglrx ; sudo apt-get install -qq build-essential qtbase5-dev libqt5opengl5-dev qtmultimedia5-dev libqt5scintilla2-dev libxmu-dev cmake bison flex git-core libboost-all-dev libxi-dev libmpfr-dev libboost-dev libglew-dev libeigen3-dev libcgal-dev libcgal-qt5-dev libgmp3-dev libgmp-dev curl imagemagick libfontconfig-dev libopencsg-dev libharfbuzz-dev libzip-dev lib3mf-dev ; fi
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ./scripts/macosx-build-homebrew.sh ; fi
 
 branches:
@@ -58,7 +60,7 @@ before_script:
  - base64 --decode ~/.ssh/openscad_rsa_base64 > ~/.ssh/id_rsa
  - chmod 600 ~/.ssh/id_rsa
 
-script: if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then ./scripts/travis-ci.sh ; fi
+script: if [ "${COVERITY_SCAN_BRANCH}" = 1 ]; then ./scripts/coverity.sh ; else ./scripts/travis-ci.sh ; fi
 
 env:
  global:
@@ -111,6 +113,6 @@ addons:
       name: "openscad/openscad"
       description: "The Programmers Solid 3D CAD Modeller"
     notification_email: dev@openscad.org
-    build_command_prepend: qmake CONFIG+=experimental CONFIG+=nogui
+    build_command_prepend: qmake CONFIG-=debug CONFIG+=experimental CONFIG+=snapshot
     build_command: make
     branch_pattern: coverity_scan

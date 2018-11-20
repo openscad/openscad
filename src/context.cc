@@ -122,7 +122,7 @@ void Context::apply_variables(const Context &other)
 	}
 }
 
-ValuePtr Context::lookup_variable(const std::string &name, bool silent) const
+ValuePtr Context::lookup_variable(const std::string &name, bool silent, const Location &loc) const
 {
 	if (!this->ctx_stack) {
 		PRINT("ERROR: Context had null stack in lookup_variable()!!");
@@ -147,24 +147,24 @@ ValuePtr Context::lookup_variable(const std::string &name, bool silent) const
 		return this->variables.find(name)->second;
 	}
 	if (this->parent) {
-		return this->parent->lookup_variable(name, silent);
+		return this->parent->lookup_variable(name, silent, loc);
 	}
 	if (!silent) {
-		PRINTB("WARNING: Ignoring unknown variable '%s'.", name);
+		PRINTB("WARNING: Ignoring unknown variable '%s', %s.", name % loc.toString());
 	}
 	return ValuePtr::undefined;
 }
 
 
-double Context::lookup_variable_with_default(const std::string &variable, const double &def) const
+double Context::lookup_variable_with_default(const std::string &variable, const double &def, const Location &loc) const
 {
-	ValuePtr v = this->lookup_variable(variable, true);
+	ValuePtr v = this->lookup_variable(variable, true, loc);
 	return (v->type() == Value::ValueType::NUMBER) ? v->toDouble() : def;
 }
 
-std::string Context::lookup_variable_with_default(const std::string &variable, const std::string &def) const
+std::string Context::lookup_variable_with_default(const std::string &variable, const std::string &def, const Location &loc) const
 {
-	ValuePtr v = this->lookup_variable(variable, true);
+	ValuePtr v = this->lookup_variable(variable, true, loc);
 	return (v->type() == Value::ValueType::STRING) ? v->toString() : def;
 }
 
@@ -187,22 +187,21 @@ bool Context::has_local_variable(const std::string &name) const
  * @param what what is ignored
  * @param name name of the ignored object
  */
-static void print_ignore_warning(const char *what, const char *name)
-{
-	PRINTB("WARNING: Ignoring unknown %s '%s'.", what % name);
+static void print_ignore_warning(const char *what, const char *name, const Location &loc){
+	PRINTB("WARNING: Ignoring unknown %s '%s', %s.", what % name % loc.toString());
 }
  
-ValuePtr Context::evaluate_function(const std::string &name, const EvalContext *evalctx) const
+ValuePtr Context::evaluate_function(const std::string &name, const EvalContext *evalctx, const Location &loc) const
 {
-	if (this->parent) return this->parent->evaluate_function(name, evalctx);
-	print_ignore_warning("function", name.c_str());
+	if (this->parent) return this->parent->evaluate_function(name, evalctx,loc);
+	print_ignore_warning("function", name.c_str(),loc);
 	return ValuePtr::undefined;
 }
 
-AbstractNode *Context::instantiate_module(const ModuleInstantiation &inst, EvalContext *evalctx) const
+AbstractNode *Context::instantiate_module(const ModuleInstantiation &inst, EvalContext *evalctx, const Location &loc) const
 {
-	if (this->parent) return this->parent->instantiate_module(inst, evalctx);
-	print_ignore_warning("module", inst.name().c_str());
+	if (this->parent) return this->parent->instantiate_module(inst, evalctx, loc);
+	print_ignore_warning("module", inst.name().c_str(),loc);
 	return nullptr;
 }
 

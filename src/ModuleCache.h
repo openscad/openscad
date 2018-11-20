@@ -12,7 +12,7 @@ class ModuleCache
 public:
 	static ModuleCache *instance() { if (!inst) inst = new ModuleCache; return inst; }
 
-	std::time_t evaluate(const std::string &filename, class FileModule *&module);
+	std::time_t evaluate(const std::string &mainFile, const std::string &filename, class FileModule *&module);
 	class FileModule *lookup(const std::string &filename);
 	bool isCached(const std::string &filename);
 	size_t size() { return this->entries.size(); }
