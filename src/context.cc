@@ -136,7 +136,7 @@ ValuePtr Context::lookup_variable(const std::string &name, bool silent, const Lo
 			}
 		}
 		if (!silent) {
-			PRINTB("WARNING: Ignoring unknown variable '%s'.", name);
+			PRINTB("WARNING: Ignoring unknown variable '%s', %s.", name % loc.toString());
 		}
 		return ValuePtr::undefined;
 	}
