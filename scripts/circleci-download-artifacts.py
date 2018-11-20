@@ -26,11 +26,18 @@ cache_file = '.circleci-last-builds.json'
 circleci_url = 'https://circleci.com/api/v1.1/project/github/openscad/openscad'
 http = urllib3.PoolManager()
 
+def filter(x, job):
+	if x["status"] != 'success':
+		return False
+	if x["branch"] != 'master':
+		return False
+	return x["build_parameters"]["CIRCLE_JOB"] == job
+
 def latest_builds():
 	response = http.request('GET', circleci_url, headers={ 'Accept': 'application/json' })
 	data = json.loads(response.data.decode('UTF-8'))
-	builds32 = [ x["build_num"] for x in data if x["branch"] == 'master' and x["build_parameters"]["CIRCLE_JOB"] == 'openscad-mxe-32bit' ]
-	builds64 = [ x["build_num"] for x in data if x["branch"] == 'master' and x["build_parameters"]["CIRCLE_JOB"] == 'openscad-mxe-64bit' ]
+	builds32 = [ x["build_num"] for x in data if filter(x, 'openscad-mxe-32bit') ]
+	builds64 = [ x["build_num"] for x in data if filter(x, 'openscad-mxe-64bit') ]
 	builds = { '32bit': max(builds32), '64bit': max(builds64) }
 	return builds
 
