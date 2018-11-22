@@ -1,9 +1,13 @@
-WARNING: When parameter a is supplied as vector, v is ignored rotate(a=[45, 30, 15], v=[0, 0, 0]), line 29
-WARNING: Problem converting rotate(a=[45, 45, 45, 45]) parameter, line 37
-WARNING: Problem converting rotate(a=undef) parameter, line 40
-WARNING: Problem converting rotate(a="45") parameter, line 43
-WARNING: Problem converting rotate(..., v=[0, 1, 0, 0]) parameter, line 46
-WARNING: Problem converting rotate(a=undef) parameter, line 49
-WARNING: Problem converting rotate(a="a", v="v") parameter, line 52
-WARNING: Problem converting rotate(a="a", v="v") parameter, line 55
-WARNING: Problem converting rotate(a=["a"], v=["v"]) parameter, line 58
+WARNING: Problem converting rotate(a=undef) parameter, line 30
+WARNING: Problem converting rotate(a=undef) parameter, line 31
+WARNING: Problem converting rotate(a=inf) parameter, line 32
+WARNING: Problem converting rotate(a=[inf, inf]) parameter, line 33
+WARNING: When parameter a is supplied as vector, v is ignored rotate(a=[45, 30, 15], v=[0, 0, 0]), line 40
+WARNING: Problem converting rotate(a=[45, 45, 45, 45]) parameter, line 48
+WARNING: Problem converting rotate(a=undef) parameter, line 51
+WARNING: Problem converting rotate(a="45") parameter, line 54
+WARNING: Problem converting rotate(..., v=[0, 1, 0, 0]) parameter, line 57
+WARNING: Problem converting rotate(a=undef) parameter, line 60
+WARNING: Problem converting rotate(a="a", v="v") parameter, line 63
+WARNING: Problem converting rotate(a="a", v="v") parameter, line 66
+WARNING: Problem converting rotate(a=["a"], v=["v"]) parameter, line 69

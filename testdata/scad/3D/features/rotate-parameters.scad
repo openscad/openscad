@@ -24,6 +24,17 @@ translate([20,0,0])
 rotate([15,30,45])
 cube(s);
 
+//Edges cases
+translate([-12,0,0])
+{
+    rotate(undef)
+    rotate() //same as undef
+    rotate(1/0)
+    rotate([1/0,1/0])
+    rotate([])
+    cube(s);
+}
+
 //when deg_a is an array, the 'v' argument is ignored
 translate([24,0,0])
 rotate([45,30,15],v=[0,0,0])
