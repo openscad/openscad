@@ -51,4 +51,10 @@ translate([-6,0,0])
     
     rotate("a","v")
     sphere();
+
+    rotate(v="v",a="a")
+    sphere();
+
+    rotate(["a"],["v"])
+    sphere();
 }

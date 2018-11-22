@@ -120,13 +120,13 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 			bool v_supplied = (val_v != ValuePtr::undefined);
 			if(ok){
 				if(v_supplied){
-					PRINTB("WARNING: Parameter a supplied as vector, v ignored rotate(a=%s, v=%s), %s", val_a->toEchoString() % val_v->toEchoString() % inst->location().toString());
+					PRINTB("WARNING: When parameter a is supplied as vector, v is ignored rotate(a=%s, v=%s), %s", val_a->toEchoString() % val_v->toEchoString() % inst->location().toString());
 				}
 			}else{
 				if(v_supplied){
-					PRINTB("WARNING: Problem converting rotate(a=%s, v=%s), %s", val_a->toString() % val_v->toEchoString() % inst->location().toString());
+					PRINTB("WARNING: Problem converting rotate(a=%s, v=%s) parameter, %s", val_a->toString() % val_v->toEchoString() % inst->location().toString());
 				}else{
-					PRINTB("WARNING: Problem converting rotate(a=%s), %s", val_a->toEchoString() % inst->location().toString());
+					PRINTB("WARNING: Problem converting rotate(a=%s) parameter, %s", val_a->toEchoString() % inst->location().toString());
 				}
 			}
 			
@@ -147,12 +147,12 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 			
 			if(val_v != ValuePtr::undefined && ! vConverted){
 				if(aConverted){
-					PRINTB("WARNING: Problem converting rotate(..., v=%s), %s", val_v->toEchoString() % inst->location().toString());
+					PRINTB("WARNING: Problem converting rotate(..., v=%s) parameter, %s", val_v->toEchoString() % inst->location().toString());
 				}else{
-					PRINTB("WARNING: Problem converting rotate(a=%s, v=%s), %s", val_a->toEchoString() % val_v->toEchoString() % inst->location().toString());
+					PRINTB("WARNING: Problem converting rotate(a=%s, v=%s) parameter, %s", val_a->toEchoString() % val_v->toEchoString() % inst->location().toString());
 				}
 			}else if(!aConverted){
-				PRINTB("WARNING: Problem converting rotate(a=%s), %s", val_a->toEchoString() % inst->location().toString());
+				PRINTB("WARNING: Problem converting rotate(a=%s) parameter, %s", val_a->toEchoString() % inst->location().toString());
 			}
 		}
 	}
