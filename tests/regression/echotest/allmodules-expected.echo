@@ -6,3 +6,4 @@ DEPRECATED: The dxf_rotate_extrude() module will be removed in future releases. 
 DEPRECATED: The import_stl() module will be removed in future releases. Use import() instead.
 DEPRECATED: The import_off() module will be removed in future releases. Use import() instead.
 DEPRECATED: The import_dxf() module will be removed in future releases. Use import() instead.
+WARNING: Problem converting rotate(a=undef), line 33
