@@ -99,7 +99,7 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 			Eigen::AngleAxisd rotx(0, Vector3d::UnitX());
 			Eigen::AngleAxisd roty(0, Vector3d::UnitY());
 			Eigen::AngleAxisd rotz(0, Vector3d::UnitZ());
-			double a;
+			double a=0.0;
 			bool ok=true;
 			if (val_a->toVector().size() > 0) {
 				ok &= val_a->toVector()[0]->getDouble(a);
