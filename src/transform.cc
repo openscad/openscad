@@ -94,6 +94,7 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 	}
 	else if (this->type == transform_type_e::ROTATE) {
 		auto val_a = c.lookup_variable("a");
+		auto val_v = c.lookup_variable("v");
 		if (val_a->type() == Value::ValueType::VECTOR) {
 			Eigen::AngleAxisd rotx(0, Vector3d::UnitX());
 			Eigen::AngleAxisd roty(0, Vector3d::UnitY());
@@ -115,12 +116,22 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 			if (val_a->toVector().size() > 3) {
 				ok &= false;
 			}
-			if(!ok){
-				PRINTB("WARNING: Problem converting rotate(a=%s), %s", val_a->toString() % inst->location().toString());
+			
+			bool v_supplied = (val_v != ValuePtr::undefined);
+			if(ok){
+				if(v_supplied){
+					PRINTB("WARNING: Parameter a supplied as vector, v ignored rotate(a=%s, v=%s), %s", val_a->toEchoString() % val_v->toEchoString() % inst->location().toString());
+				}
+			}else{
+				if(v_supplied){
+					PRINTB("WARNING: Problem converting rotate(a=%s, v=%s), %s", val_a->toString() % val_v->toEchoString() % inst->location().toString());
+				}else{
+					PRINTB("WARNING: Problem converting rotate(a=%s), %s", val_a->toEchoString() % inst->location().toString());
+				}
 			}
+			
 			node->matrix.rotate(rotz * roty * rotx);
 		} else {
-			auto val_v = c.lookup_variable("v");
 			double a = 0.0;
 			bool aConverted = val_a->getDouble(a);
 
