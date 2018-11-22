@@ -19,3 +19,8 @@ hello();
 b=test();
 //radius is ignored as a diameter is defined
 circle(r=1,d=4);
+
+rotate(1/0)
+rotate([1/0,1/0])
+rotate((1/0)/(1/0))
+cube();

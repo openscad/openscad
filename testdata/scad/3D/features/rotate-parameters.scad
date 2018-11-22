@@ -29,8 +29,6 @@ translate([-12,0,0])
 {
     rotate(undef)
     rotate() //same as undef
-    rotate(1/0)
-    rotate([1/0,1/0])
     rotate([])
     cube(s);
 }

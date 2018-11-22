@@ -31,12 +31,8 @@ multmatrix([[1, 0, 0, 20], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 multmatrix([[1, 0, 0, -12], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 	multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 		multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-			multmatrix([[nan, nan, nan, 0], [nan, nan, nan, 0], [nan, nan, nan, 0], [0, 0, 0, 1]]) {
-				multmatrix([[nan, nan, nan, 0], [nan, nan, nan, 0], [nan, nan, nan, 0], [0, 0, 0, 1]]) {
-					multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-						cube(size = [1, 2, 3], center = false);
-					}
-				}
+			multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				cube(size = [1, 2, 3], center = false);
 			}
 		}
 	}
