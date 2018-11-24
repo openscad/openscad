@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2013.02.07\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-24 08:22+0100\n"
+"POT-Creation-Date: 2018-11-24 14:44+0100\n"
 "PO-Revision-Date: 2015-03-05 17:28-0500\n"
 "Last-Translator: Keven Villeneuve <keven.villeneuve@gmail.com>\n"
 "Language-Team: French\n"
@@ -124,6 +124,7 @@ msgstr "&Documentation"
 
 #: objects/ui_AxisConfigWidget.h:865
 #, fuzzy
+msgctxt "Inputdriver"
 msgid "Zoom"
 msgstr "Zoom Avant"
 
@@ -144,6 +145,7 @@ msgid "Z"
 msgstr ""
 
 #: objects/ui_AxisConfigWidget.h:870
+msgctxt "Inputdriver"
 msgid "Translation"
 msgstr ""
 
@@ -154,7 +156,7 @@ msgstr "C&oller la translation de la fenêtre de rendu"
 
 #: objects/ui_AxisConfigWidget.h:872
 #, fuzzy
-msgid "ViewPortrel.<br />Rotation"
+msgid "ViewPort rel.<br />Rotation"
 msgstr "C&oller la translation de la fenêtre de rendu"
 
 #: objects/ui_AxisConfigWidget.h:873
@@ -345,6 +347,8 @@ msgid "&New"
 msgstr "&Nouveau"
 
 #: objects/ui_MainWindow.h:886
+#, fuzzy
+msgctxt "new file shortcut"
 msgid "Ctrl+N"
 msgstr "Ctrl+N"
 
@@ -353,6 +357,8 @@ msgid "&Open..."
 msgstr "&Ouvrir..."
 
 #: objects/ui_MainWindow.h:890
+#, fuzzy
+msgctxt "open file shortcut"
 msgid "Ctrl+O"
 msgstr "Ctrl+O"
 
@@ -361,6 +367,8 @@ msgid "&Save"
 msgstr "Enregi&strer"
 
 #: objects/ui_MainWindow.h:894
+#, fuzzy
+msgctxt "save file shortcut"
 msgid "Ctrl+S"
 msgstr "Ctrl+S"
 
@@ -369,6 +377,8 @@ msgid "Save &As..."
 msgstr "Enregistrer &sous..."
 
 #: objects/ui_MainWindow.h:898
+#, fuzzy
+msgctxt "Save as Shortcut"
 msgid "Ctrl+Shift+S"
 msgstr "Ctrl+Shift+S"
 
@@ -377,6 +387,8 @@ msgid "&Reload"
 msgstr "&Recharger"
 
 #: objects/ui_MainWindow.h:902
+#, fuzzy
+msgctxt "file reload shortcut"
 msgid "Ctrl+R"
 msgstr "Ctrl+R"
 
@@ -385,6 +397,8 @@ msgid "&Quit"
 msgstr "&Quitter"
 
 #: objects/ui_MainWindow.h:906
+#, fuzzy
+msgctxt "quit shortcut"
 msgid "Ctrl+Q"
 msgstr "Ctrl+Q"
 
@@ -393,6 +407,8 @@ msgid "&Undo"
 msgstr "Ann&uler"
 
 #: objects/ui_MainWindow.h:910
+#, fuzzy
+msgctxt "undo shortcut"
 msgid "Ctrl+Z"
 msgstr "Ctrl+Z"
 
@@ -401,11 +417,14 @@ msgid "&Redo"
 msgstr "&Répéter"
 
 #: objects/ui_MainWindow.h:914
+#, fuzzy
+msgctxt "redo Shortcut"
 msgid "Ctrl+Shift+Z"
 msgstr "Ctrl+Shift+Z"
 
 #: objects/ui_MainWindow.h:917
 #, fuzzy
+msgctxt "redo shortcut"
 msgid "Ctrl+Y"
 msgstr "Ctrl+N"
 
@@ -414,6 +433,8 @@ msgid "Cu&t"
 msgstr "Co&uper"
 
 #: objects/ui_MainWindow.h:921
+#, fuzzy
+msgctxt "cut shortcut"
 msgid "Ctrl+X"
 msgstr "Ctrl+X"
 
@@ -422,6 +443,8 @@ msgid "&Copy"
 msgstr "&Copier"
 
 #: objects/ui_MainWindow.h:925
+#, fuzzy
+msgctxt "copy shortcut"
 msgid "Ctrl+C"
 msgstr "Ctrl+C"
 
@@ -430,6 +453,8 @@ msgid "&Paste"
 msgstr "&Coller"
 
 #: objects/ui_MainWindow.h:929
+#, fuzzy
+msgctxt "paste shortcut"
 msgid "Ctrl+V"
 msgstr "Ctrl+V"
 
@@ -438,6 +463,8 @@ msgid "&Indent"
 msgstr "&Indenter"
 
 #: objects/ui_MainWindow.h:933
+#, fuzzy
+msgctxt "indent shortcut"
 msgid "Ctrl+I"
 msgstr "Ctrl+I"
 
@@ -446,6 +473,8 @@ msgid "C&omment"
 msgstr "C&ommenter"
 
 #: objects/ui_MainWindow.h:937
+#, fuzzy
+msgctxt "comment shortcut"
 msgid "Ctrl+D"
 msgstr "Ctrl+D"
 
@@ -454,6 +483,8 @@ msgid "Unco&mment"
 msgstr "Déco&mmenter"
 
 #: objects/ui_MainWindow.h:941
+#, fuzzy
+msgctxt "uncomment shortcut"
 msgid "Ctrl+Shift+D"
 msgstr "Ctrl+Shift+D"
 
@@ -462,6 +493,8 @@ msgid "P&aste viewport translation"
 msgstr "C&oller la translation de la fenêtre de rendu"
 
 #: objects/ui_MainWindow.h:945
+#, fuzzy
+msgctxt "paste view port translation shortcut"
 msgid "Ctrl+T"
 msgstr "Ctrl+T"
 
@@ -474,6 +507,8 @@ msgid "Increase Font &Size"
 msgstr "&Agrandir la police"
 
 #: objects/ui_MainWindow.h:950
+#, fuzzy
+msgctxt "increase font size shortcut"
 msgid "Ctrl++"
 msgstr "Ctrl++"
 
@@ -482,6 +517,8 @@ msgid "Decrease Font Si&ze"
 msgstr "&Réduire la police"
 
 #: objects/ui_MainWindow.h:954
+#, fuzzy
+msgctxt "decrease font size shortcut"
 msgid "Ctrl+-"
 msgstr "Ctrl+-"
 
@@ -574,6 +611,8 @@ msgid "Show Edges"
 msgstr "Afficher les Arêtes"
 
 #: objects/ui_MainWindow.h:993
+#, fuzzy
+msgctxt "show edges shortcut"
 msgid "Ctrl+1"
 msgstr "Ctrl+1"
 
@@ -582,6 +621,8 @@ msgid "Show Axes"
 msgstr "Afficher les Axes"
 
 #: objects/ui_MainWindow.h:997
+#, fuzzy
+msgctxt "show axes shortcut"
 msgid "Ctrl+2"
 msgstr "Ctrl+2"
 
@@ -590,6 +631,8 @@ msgid "Show Crosshairs"
 msgstr "Afficher la Mire"
 
 #: objects/ui_MainWindow.h:1001
+#, fuzzy
+msgctxt "show crosshairs shortcut"
 msgid "Ctrl+3"
 msgstr "Ctrl+3"
 
@@ -606,6 +649,8 @@ msgid "&Top"
 msgstr "&Haut"
 
 #: objects/ui_MainWindow.h:1007
+#, fuzzy
+msgctxt "top view shortcut"
 msgid "Ctrl+4"
 msgstr "Ctrl+4"
 
@@ -614,6 +659,8 @@ msgid "&Bottom"
 msgstr "&Dessous"
 
 #: objects/ui_MainWindow.h:1011
+#, fuzzy
+msgctxt "bottom view shortcut"
 msgid "Ctrl+5"
 msgstr "Ctrl+5"
 
@@ -622,6 +669,8 @@ msgid "&Left"
 msgstr "&Gauche"
 
 #: objects/ui_MainWindow.h:1015
+#, fuzzy
+msgctxt "left view shortcut"
 msgid "Ctrl+6"
 msgstr "Ctrl+6"
 
@@ -630,6 +679,8 @@ msgid "&Right"
 msgstr "&Droite"
 
 #: objects/ui_MainWindow.h:1019
+#, fuzzy
+msgctxt "right view shortcut"
 msgid "Ctrl+7"
 msgstr "Ctrl+7"
 
@@ -638,6 +689,8 @@ msgid "&Front"
 msgstr "&Face"
 
 #: objects/ui_MainWindow.h:1023
+#, fuzzy
+msgctxt "front view shortcut"
 msgid "Ctrl+8"
 msgstr "Ctrl+8"
 
@@ -646,6 +699,8 @@ msgid "Bac&k"
 msgstr "&Arrière"
 
 #: objects/ui_MainWindow.h:1027
+#, fuzzy
+msgctxt "back view shortcut"
 msgid "Ctrl+9"
 msgstr "Ctrl+9"
 
@@ -654,6 +709,8 @@ msgid "&Diagonal"
 msgstr "&Diagonale"
 
 #: objects/ui_MainWindow.h:1031
+#, fuzzy
+msgctxt "diagonal view shortcut"
 msgid "Ctrl+0"
 msgstr "Ctrl+0"
 
@@ -694,6 +751,8 @@ msgid "&Close"
 msgstr "&Fermer"
 
 #: objects/ui_MainWindow.h:1043
+#, fuzzy
+msgctxt "file close shortcut"
 msgid "Ctrl+W"
 msgstr "Ctrl+W"
 
@@ -706,6 +765,8 @@ msgid "&Find..."
 msgstr "&Rechercher..."
 
 #: objects/ui_MainWindow.h:1048
+#, fuzzy
+msgctxt "find text shortcut"
 msgid "Ctrl+F"
 msgstr "Ctrl+F"
 
@@ -714,6 +775,8 @@ msgid "Fin&d and Replace..."
 msgstr "&Rechercher et remplacer..."
 
 #: objects/ui_MainWindow.h:1052
+#, fuzzy
+msgctxt "find and replace shortcut"
 msgid "Ctrl+Alt+F"
 msgstr "Ctrl+Alt+F"
 
@@ -722,6 +785,8 @@ msgid "Find Ne&xt"
 msgstr "Rechercher &Suivant"
 
 #: objects/ui_MainWindow.h:1056
+#, fuzzy
+msgctxt "find next shortcut"
 msgid "Ctrl+G"
 msgstr "Ctrl+G"
 
@@ -730,6 +795,8 @@ msgid "Find Pre&vious"
 msgstr "Rechercher &Précédent"
 
 #: objects/ui_MainWindow.h:1060
+#, fuzzy
+msgctxt "find previous shortcut"
 msgid "Ctrl+Shift+G"
 msgstr "Ctrl+Shift+G"
 
@@ -738,6 +805,8 @@ msgid "Use Se&lection for Find"
 msgstr "Utiliser la sé&lection pour Rechercher"
 
 #: objects/ui_MainWindow.h:1064
+#, fuzzy
+msgctxt "use selection for find shortcut"
 msgid "Ctrl+E"
 msgstr "Ctrl+E"
 
@@ -795,6 +864,8 @@ msgid "Zoom In"
 msgstr "Zoom Avant"
 
 #: objects/ui_MainWindow.h:1080
+#, fuzzy
+msgctxt "zoom in shortcut"
 msgid "Ctrl+]"
 msgstr "Ctrl+]"
 
@@ -803,6 +874,8 @@ msgid "Zoom Out"
 msgstr "Zoom Arrière"
 
 #: objects/ui_MainWindow.h:1084
+#, fuzzy
+msgctxt "zoom out shortcut"
 msgid "Ctrl+["
 msgstr "Ctrl+["
 
@@ -812,6 +885,7 @@ msgstr "&Voir Tout"
 
 #: objects/ui_MainWindow.h:1088
 #, fuzzy
+msgctxt "view all shortcut"
 msgid "Ctrl+Shift+V"
 msgstr "Ctrl+Shift+S"
 
@@ -828,6 +902,8 @@ msgid "U&nindent"
 msgstr "Dési&ndenter"
 
 #: objects/ui_MainWindow.h:1094
+#, fuzzy
+msgctxt "unindent shortcut"
 msgid "Ctrl+Shift+I"
 msgstr "Ctrl+Shift+I"
 
@@ -842,6 +918,7 @@ msgstr "Coller dans le presse-papier"
 
 #: objects/ui_MainWindow.h:1099
 #, fuzzy
+msgctxt "copy viewport shortcut"
 msgid "Ctrl+Shift+C"
 msgstr "Ctrl+Shift+S"
 
@@ -991,6 +1068,7 @@ msgid "Description"
 msgstr ""
 
 #: objects/ui_ParameterWidget.h:161
+msgctxt "customizer"
 msgid "save preset"
 msgstr ""
 
@@ -999,10 +1077,12 @@ msgid "delete current preset"
 msgstr ""
 
 #: objects/ui_ParameterWidget.h:165
+msgctxt "customizer delete current preset"
 msgid "-"
 msgstr ""
 
 #: objects/ui_ParameterWidget.h:167
+msgctxt "customizer"
 msgid "preset selection"
 msgstr ""
 
@@ -1011,6 +1091,7 @@ msgid "add new preset"
 msgstr ""
 
 #: objects/ui_ParameterWidget.h:172
+msgctxt "customizer add new preset"
 msgid "+"
 msgstr ""
 
@@ -1021,19 +1102,24 @@ msgstr "Recharger et Aperçu &Automatique"
 
 #: objects/ui_ParameterWidget.h:175
 #, fuzzy
+msgctxt "customizer"
 msgid "Show Details"
 msgstr "Afficher les Axes"
 
 #: objects/ui_ParameterWidget.h:176
+#, fuzzy
+msgctxt "customizer"
 msgid "Inline Details"
-msgstr ""
+msgstr "Cacher les boîtes à outils"
 
 #: objects/ui_ParameterWidget.h:177
 #, fuzzy
+msgctxt "customizer"
 msgid "Hide Details"
 msgstr "Cacher les boîtes à outils"
 
 #: objects/ui_ParameterWidget.h:178
+msgctxt "customizer"
 msgid "Description Only"
 msgstr ""
 
@@ -1043,6 +1129,7 @@ msgstr ""
 
 #: objects/ui_ParameterWidget.h:183
 #, fuzzy
+msgctxt "customizer"
 msgid "Reset"
 msgstr "Réinitialiser la vue"
 

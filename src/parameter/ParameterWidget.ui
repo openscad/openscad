@@ -48,7 +48,7 @@
         </font>
        </property>
        <property name="text">
-        <string>save preset</string>
+        <string comment="customizer">save preset</string>
        </property>
       </widget>
      </item>
@@ -79,7 +79,7 @@
         <string>delete current preset</string>
        </property>
        <property name="text">
-        <string>-</string>
+        <string comment="customizer delete current preset">-</string>
        </property>
       </widget>
      </item>
@@ -92,7 +92,7 @@
         </sizepolicy>
        </property>
        <property name="toolTip">
-        <string>preset selection</string>
+        <string comment="customizer">preset selection</string>
        </property>
        <property name="editable">
         <bool>true</bool>
@@ -126,7 +126,7 @@
         <string>add new preset</string>
        </property>
        <property name="text">
-        <string>+</string>
+        <string comment="customizer add new preset">+</string>
        </property>
       </widget>
      </item>
@@ -155,22 +155,22 @@
       <widget class="QComboBox" name="comboBoxDetails">
        <item>
         <property name="text">
-         <string>Show Details</string>
+         <string comment="customizer">Show Details</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>Inline Details</string>
+         <string comment="customizer">Inline Details</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>Hide Details</string>
+         <string comment="customizer">Hide Details</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>Description Only</string>
+         <string comment="customizer">Description Only</string>
         </property>
        </item>
       </widget>
@@ -181,7 +181,7 @@
         <string>reset all parameters to the currently selected preset</string>
        </property>
        <property name="text">
-        <string>Reset</string>
+        <string comment="customizer">Reset</string>
        </property>
       </widget>
      </item>

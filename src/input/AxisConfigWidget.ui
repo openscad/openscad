@@ -748,7 +748,7 @@
          <item row="6" column="0">
           <widget class="QLabel" name="labelInputZoom">
            <property name="text">
-            <string>Zoom</string>
+            <string comment="Inputdriver">Zoom</string>
            </property>
           </widget>
          </item>
@@ -948,7 +948,7 @@
          <item row="1" column="0">
           <widget class="QLabel" name="labelInputTranslation">
            <property name="text">
-            <string>Translation</string>
+            <string comment="Inputdriver">Translation</string>
            </property>
           </widget>
          </item>
@@ -999,7 +999,7 @@
          <item row="4" column="0">
           <widget class="QLabel" name="labelInputRotationViewPortRelative">
            <property name="text">
-            <string>ViewPortrel.&lt;br /&gt;Rotation</string>
+            <string>ViewPort rel.&lt;br /&gt;Rotation</string>
            </property>
           </widget>
          </item>

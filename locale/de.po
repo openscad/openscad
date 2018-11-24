@@ -7,15 +7,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2014.01.05\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-24 08:22+0100\n"
-"PO-Revision-Date: 2018-03-01 07:41+0100\n"
+"POT-Creation-Date: 2018-11-24 14:44+0100\n"
+"PO-Revision-Date: 2018-11-24 16:14+0100\n"
 "Last-Translator: Torsten Paul <Torsten.Paul@gmx.de>\n"
 "Language-Team: German\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.0.4\n"
+"X-Generator: Poedit 2.1.1\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
@@ -62,12 +62,11 @@ msgstr "Einstellungen"
 #: objects/ui_AxisConfigWidget.h:850 objects/ui_AxisConfigWidget.h:852
 #: objects/ui_AxisConfigWidget.h:863
 msgid "Trim"
-msgstr ""
+msgstr "Trim"
 
 #: objects/ui_AxisConfigWidget.h:837
-#, fuzzy
 msgid "Reset Trim"
-msgstr "Ans&icht zurücksetzen"
+msgstr "Trim zurücksetzen"
 
 #: objects/ui_AxisConfigWidget.h:838 objects/ui_AxisConfigWidget.h:841
 #: objects/ui_AxisConfigWidget.h:842 objects/ui_AxisConfigWidget.h:843
@@ -79,180 +78,183 @@ msgstr ""
 
 #: objects/ui_AxisConfigWidget.h:839
 msgid "Auto Trim Axis"
-msgstr ""
+msgstr "Achsen automatisch trimmen"
 
 #: objects/ui_AxisConfigWidget.h:853
 msgid "Axis2"
-msgstr ""
+msgstr "Achse 2"
 
 #: objects/ui_AxisConfigWidget.h:854
 msgid "Axis0"
-msgstr ""
+msgstr "Achse 0"
 
 #: objects/ui_AxisConfigWidget.h:855
 msgid "Axis3"
-msgstr ""
+msgstr "Achse 3"
 
 #: objects/ui_AxisConfigWidget.h:856
 msgid "Axis6"
-msgstr ""
+msgstr "Achse 6"
 
 #: objects/ui_AxisConfigWidget.h:857
 msgid "Axis8"
-msgstr ""
+msgstr "Achse 8"
 
 #: objects/ui_AxisConfigWidget.h:858
 msgid "Axis7"
-msgstr ""
+msgstr "Achse 7"
 
 #: objects/ui_AxisConfigWidget.h:859
 msgid "Axis5"
-msgstr ""
+msgstr "Achse 5"
 
 #: objects/ui_AxisConfigWidget.h:860
 msgid "Axis1"
-msgstr ""
+msgstr "Achse 1"
 
 #: objects/ui_AxisConfigWidget.h:861
 msgid "Axis4"
-msgstr ""
+msgstr "Achse 4"
 
 #: objects/ui_AxisConfigWidget.h:864
-#, fuzzy
 msgid "Rotation"
-msgstr "&Dokumentation"
+msgstr "Rotation"
 
 #: objects/ui_AxisConfigWidget.h:865
-#, fuzzy
+msgctxt "Inputdriver"
 msgid "Zoom"
-msgstr "Vergrößern"
+msgstr "Zoom"
 
 #: objects/ui_AxisConfigWidget.h:866
 msgid "X"
-msgstr ""
+msgstr "X"
 
 #: objects/ui_AxisConfigWidget.h:867
 msgid "Gain"
-msgstr ""
+msgstr "Verstärkung"
 
 #: objects/ui_AxisConfigWidget.h:868
 msgid "Y"
-msgstr ""
+msgstr "X"
 
 #: objects/ui_AxisConfigWidget.h:869
 msgid "Z"
-msgstr ""
+msgstr "Z"
 
 #: objects/ui_AxisConfigWidget.h:870
+msgctxt "Inputdriver"
 msgid "Translation"
-msgstr ""
+msgstr "Translation"
 
 #: objects/ui_AxisConfigWidget.h:871
-#, fuzzy
 msgid "ViewPort rel.<br/>Translation"
-msgstr "Aktuelle Versch&iebung einfügen"
+msgstr ""
+"Ansichtabhängige\n"
+"Translation"
 
 #: objects/ui_AxisConfigWidget.h:872
-#, fuzzy
-msgid "ViewPortrel.<br />Rotation"
-msgstr "Aktuelle Versch&iebung einfügen"
+msgid "ViewPort rel.<br />Rotation"
+msgstr ""
+"Ansichtabhängige\n"
+"Rotation"
 
 #: objects/ui_AxisConfigWidget.h:873
 msgid "Axis Setup:"
-msgstr ""
+msgstr "Achsen zuordnung:"
 
 #: objects/ui_AxisConfigWidget.h:874
 msgid "<b>Driver selection:</b> <i>(changes requires restarting OpenSCAD)</i>"
 msgstr ""
+"<b>Treiber Auswahl:</b><i>Änderungen erfordern einen Neustart von OpenSCAD)</"
+"i>"
 
 #: objects/ui_AxisConfigWidget.h:875
-#, fuzzy
 msgid "SpaceNav"
-msgstr "Leerzeichen"
+msgstr "SpaceNav"
 
 #: objects/ui_AxisConfigWidget.h:876
 msgid "HIDAPI"
-msgstr ""
+msgstr "HIDAPI"
 
 #: objects/ui_AxisConfigWidget.h:877
 msgid "QGamepad"
-msgstr ""
+msgstr "QGamepad"
 
 #: objects/ui_AxisConfigWidget.h:878
 msgid "Joystick"
-msgstr ""
+msgstr "Joystick"
 
 #: objects/ui_AxisConfigWidget.h:879
 msgid "DBus"
-msgstr ""
+msgstr "DBus"
 
 #: objects/ui_AxisConfigWidget.h:880
 msgid "Axis Mapping:"
-msgstr ""
+msgstr "Achsen Zuordnung:"
 
 #: objects/ui_ButtonConfigWidget.h:267
 msgid "Button 2"
-msgstr ""
+msgstr "Knopf 2"
 
 #: objects/ui_ButtonConfigWidget.h:268
 msgid "Button 3"
-msgstr ""
+msgstr "Knopf 3"
 
 #: objects/ui_ButtonConfigWidget.h:269
 msgid "Button 5"
-msgstr ""
+msgstr "Knopf 5"
 
 #: objects/ui_ButtonConfigWidget.h:270
 msgid "Button 6"
-msgstr ""
+msgstr "Knopf 6"
 
 #: objects/ui_ButtonConfigWidget.h:271
 msgid "Button 4"
-msgstr ""
+msgstr "Knopf 4"
 
 #: objects/ui_ButtonConfigWidget.h:272
 msgid "Button 9"
-msgstr ""
+msgstr "Knopf 9"
 
 #: objects/ui_ButtonConfigWidget.h:273
 msgid "Button 8"
-msgstr ""
+msgstr "Knopf 8"
 
 #: objects/ui_ButtonConfigWidget.h:274
 msgid "Button 7"
-msgstr ""
+msgstr "Knopf 7"
 
 #: objects/ui_ButtonConfigWidget.h:275
 msgid "Button 0"
-msgstr ""
+msgstr "Knopf 0"
 
 #: objects/ui_ButtonConfigWidget.h:276
 msgid "Button 1"
-msgstr ""
+msgstr "Knopf 1"
 
 #: objects/ui_ButtonConfigWidget.h:277
 msgid "Button 12"
-msgstr ""
+msgstr "Knopf 12"
 
 #: objects/ui_ButtonConfigWidget.h:278
 msgid "Button 10"
-msgstr ""
+msgstr "Knopf 10"
 
 #: objects/ui_ButtonConfigWidget.h:279
 msgid "Button 11"
-msgstr ""
+msgstr "Knopf 11"
 
 #: objects/ui_ButtonConfigWidget.h:280
 msgid "Button 13"
-msgstr ""
+msgstr "Knopf 13"
 
 #: objects/ui_ButtonConfigWidget.h:281
 msgid "Button 14"
-msgstr ""
+msgstr "Knopf 14"
 
 #: objects/ui_ButtonConfigWidget.h:282
 msgid "Button 15"
-msgstr ""
+msgstr "Knopf 15"
 
 #: objects/ui_FontListDialog.h:103
 msgid "OpenSCAD Font List"
@@ -345,6 +347,7 @@ msgid "&New"
 msgstr "&Neu"
 
 #: objects/ui_MainWindow.h:886
+msgctxt "new file shortcut"
 msgid "Ctrl+N"
 msgstr "Ctrl+N"
 
@@ -353,6 +356,7 @@ msgid "&Open..."
 msgstr "Ö&ffnen..."
 
 #: objects/ui_MainWindow.h:890
+msgctxt "open file shortcut"
 msgid "Ctrl+O"
 msgstr "Ctrl+O"
 
@@ -361,6 +365,7 @@ msgid "&Save"
 msgstr "&Speichern"
 
 #: objects/ui_MainWindow.h:894
+msgctxt "save file shortcut"
 msgid "Ctrl+S"
 msgstr "Ctrl+S"
 
@@ -369,6 +374,7 @@ msgid "Save &As..."
 msgstr "Speichern &Unter..."
 
 #: objects/ui_MainWindow.h:898
+msgctxt "Save as Shortcut"
 msgid "Ctrl+Shift+S"
 msgstr "Ctrl+Shift+S"
 
@@ -377,6 +383,7 @@ msgid "&Reload"
 msgstr "Neu &laden"
 
 #: objects/ui_MainWindow.h:902
+msgctxt "file reload shortcut"
 msgid "Ctrl+R"
 msgstr "Ctrl+R"
 
@@ -385,6 +392,7 @@ msgid "&Quit"
 msgstr "Beenden"
 
 #: objects/ui_MainWindow.h:906
+msgctxt "quit shortcut"
 msgid "Ctrl+Q"
 msgstr "Ctrl+Q"
 
@@ -393,6 +401,7 @@ msgid "&Undo"
 msgstr "&Rückgängig"
 
 #: objects/ui_MainWindow.h:910
+msgctxt "undo shortcut"
 msgid "Ctrl+Z"
 msgstr "Ctrl+Z"
 
@@ -401,11 +410,12 @@ msgid "&Redo"
 msgstr "&Wiederholen"
 
 #: objects/ui_MainWindow.h:914
+msgctxt "redo Shortcut"
 msgid "Ctrl+Shift+Z"
 msgstr "Ctrl+Shift+Z"
 
 #: objects/ui_MainWindow.h:917
-#, fuzzy
+msgctxt "redo shortcut"
 msgid "Ctrl+Y"
 msgstr "Ctrl+N"
 
@@ -414,6 +424,7 @@ msgid "Cu&t"
 msgstr "Ausschneiden"
 
 #: objects/ui_MainWindow.h:921
+msgctxt "cut shortcut"
 msgid "Ctrl+X"
 msgstr "Ctrl+X"
 
@@ -422,6 +433,7 @@ msgid "&Copy"
 msgstr "Kopieren"
 
 #: objects/ui_MainWindow.h:925
+msgctxt "copy shortcut"
 msgid "Ctrl+C"
 msgstr "Ctrl+C"
 
@@ -430,6 +442,7 @@ msgid "&Paste"
 msgstr "Einfügen"
 
 #: objects/ui_MainWindow.h:929
+msgctxt "paste shortcut"
 msgid "Ctrl+V"
 msgstr "Ctrl+V"
 
@@ -438,6 +451,7 @@ msgid "&Indent"
 msgstr "Einzug er&höhen"
 
 #: objects/ui_MainWindow.h:933
+msgctxt "indent shortcut"
 msgid "Ctrl+I"
 msgstr "Ctrl+I"
 
@@ -446,6 +460,7 @@ msgid "C&omment"
 msgstr "K&ommentieren"
 
 #: objects/ui_MainWindow.h:937
+msgctxt "comment shortcut"
 msgid "Ctrl+D"
 msgstr "Ctrl+D"
 
@@ -454,6 +469,7 @@ msgid "Unco&mment"
 msgstr "Kommentar ent&fernen"
 
 #: objects/ui_MainWindow.h:941
+msgctxt "uncomment shortcut"
 msgid "Ctrl+Shift+D"
 msgstr "Ctrl+Shift+D"
 
@@ -462,6 +478,7 @@ msgid "P&aste viewport translation"
 msgstr "Aktuelle Versch&iebung einfügen"
 
 #: objects/ui_MainWindow.h:945
+msgctxt "paste view port translation shortcut"
 msgid "Ctrl+T"
 msgstr "Ctrl+T"
 
@@ -474,6 +491,7 @@ msgid "Increase Font &Size"
 msgstr "Font&größe erhöhen"
 
 #: objects/ui_MainWindow.h:950
+msgctxt "increase font size shortcut"
 msgid "Ctrl++"
 msgstr "Ctrl++"
 
@@ -482,6 +500,7 @@ msgid "Decrease Font Si&ze"
 msgstr "Fontgröße &verringern"
 
 #: objects/ui_MainWindow.h:954
+msgctxt "decrease font size shortcut"
 msgid "Ctrl+-"
 msgstr "Ctrl+-"
 
@@ -574,6 +593,7 @@ msgid "Show Edges"
 msgstr "&Kanten anzeigen"
 
 #: objects/ui_MainWindow.h:993
+msgctxt "show edges shortcut"
 msgid "Ctrl+1"
 msgstr "Ctrl+1"
 
@@ -582,6 +602,7 @@ msgid "Show Axes"
 msgstr "Koordinaten&achsen anzeigen"
 
 #: objects/ui_MainWindow.h:997
+msgctxt "show axes shortcut"
 msgid "Ctrl+2"
 msgstr "Ctrl+2"
 
@@ -590,6 +611,7 @@ msgid "Show Crosshairs"
 msgstr "Rotations&mittelpunkt anzeigen"
 
 #: objects/ui_MainWindow.h:1001
+msgctxt "show crosshairs shortcut"
 msgid "Ctrl+3"
 msgstr "Ctrl+3"
 
@@ -606,6 +628,7 @@ msgid "&Top"
 msgstr "&Oben"
 
 #: objects/ui_MainWindow.h:1007
+msgctxt "top view shortcut"
 msgid "Ctrl+4"
 msgstr "Ctrl+4"
 
@@ -614,6 +637,7 @@ msgid "&Bottom"
 msgstr "&Unten"
 
 #: objects/ui_MainWindow.h:1011
+msgctxt "bottom view shortcut"
 msgid "Ctrl+5"
 msgstr "Ctrl+5"
 
@@ -622,6 +646,7 @@ msgid "&Left"
 msgstr "&Links"
 
 #: objects/ui_MainWindow.h:1015
+msgctxt "left view shortcut"
 msgid "Ctrl+6"
 msgstr "Ctrl+6"
 
@@ -630,6 +655,7 @@ msgid "&Right"
 msgstr "&Rechts"
 
 #: objects/ui_MainWindow.h:1019
+msgctxt "right view shortcut"
 msgid "Ctrl+7"
 msgstr "Ctrl+7"
 
@@ -638,6 +664,7 @@ msgid "&Front"
 msgstr "Vor&n"
 
 #: objects/ui_MainWindow.h:1023
+msgctxt "front view shortcut"
 msgid "Ctrl+8"
 msgstr "Ctrl+8"
 
@@ -646,6 +673,7 @@ msgid "Bac&k"
 msgstr "&Hinten"
 
 #: objects/ui_MainWindow.h:1027
+msgctxt "back view shortcut"
 msgid "Ctrl+9"
 msgstr "Ctrl+9"
 
@@ -654,6 +682,7 @@ msgid "&Diagonal"
 msgstr "&Diagonal"
 
 #: objects/ui_MainWindow.h:1031
+msgctxt "diagonal view shortcut"
 msgid "Ctrl+0"
 msgstr "Ctrl+0"
 
@@ -694,6 +723,7 @@ msgid "&Close"
 msgstr "Schließen"
 
 #: objects/ui_MainWindow.h:1043
+msgctxt "file close shortcut"
 msgid "Ctrl+W"
 msgstr "Ctrl+W"
 
@@ -706,6 +736,7 @@ msgid "&Find..."
 msgstr "&Suchen..."
 
 #: objects/ui_MainWindow.h:1048
+msgctxt "find text shortcut"
 msgid "Ctrl+F"
 msgstr "Ctrl+F"
 
@@ -714,6 +745,7 @@ msgid "Fin&d and Replace..."
 msgstr "Suchen und &Ersetzen..."
 
 #: objects/ui_MainWindow.h:1052
+msgctxt "find and replace shortcut"
 msgid "Ctrl+Alt+F"
 msgstr "Ctrl+Alt+F"
 
@@ -722,6 +754,7 @@ msgid "Find Ne&xt"
 msgstr "&Weiter suchen"
 
 #: objects/ui_MainWindow.h:1056
+msgctxt "find next shortcut"
 msgid "Ctrl+G"
 msgstr "Ctrl+G"
 
@@ -730,6 +763,7 @@ msgid "Find Pre&vious"
 msgstr "Rüc&kwärts suchen"
 
 #: objects/ui_MainWindow.h:1060
+msgctxt "find previous shortcut"
 msgid "Ctrl+Shift+G"
 msgstr "Ctrl+Shift+G"
 
@@ -738,6 +772,7 @@ msgid "Use Se&lection for Find"
 msgstr "&Auswahl suchen"
 
 #: objects/ui_MainWindow.h:1064
+msgctxt "use selection for find shortcut"
 msgid "Ctrl+E"
 msgstr "Ctrl+E"
 
@@ -779,22 +814,22 @@ msgstr "&Fontliste"
 
 #: objects/ui_MainWindow.h:1075
 msgid "Export as S&VG..."
-msgstr "SVG exportieren..."
+msgstr "S&VG exportieren..."
 
 #: objects/ui_MainWindow.h:1076
 msgid "Export as &AMF..."
-msgstr "AMF exportieren..."
+msgstr "&AMF exportieren..."
 
 #: objects/ui_MainWindow.h:1077
-#, fuzzy
 msgid "Export as &3MF..."
-msgstr "AMF exportieren..."
+msgstr "&3MF exportieren..."
 
 #: objects/ui_MainWindow.h:1078
 msgid "Zoom In"
 msgstr "Vergrößern"
 
 #: objects/ui_MainWindow.h:1080
+msgctxt "zoom in shortcut"
 msgid "Ctrl+]"
 msgstr "Ctrl+]"
 
@@ -803,6 +838,7 @@ msgid "Zoom Out"
 msgstr "Verkleinern"
 
 #: objects/ui_MainWindow.h:1084
+msgctxt "zoom out shortcut"
 msgid "Ctrl+["
 msgstr "Ctrl+["
 
@@ -811,9 +847,9 @@ msgid "View All"
 msgstr "Alle&s anzeigen"
 
 #: objects/ui_MainWindow.h:1088
-#, fuzzy
+msgctxt "view all shortcut"
 msgid "Ctrl+Shift+V"
-msgstr "Ctrl+Shift+S"
+msgstr "Ctrl+Shift+V"
 
 #: objects/ui_MainWindow.h:1090
 msgid "Conv&ert Tabs to Spaces"
@@ -828,6 +864,7 @@ msgid "U&nindent"
 msgstr "Einzug ver&mindern"
 
 #: objects/ui_MainWindow.h:1094
+msgctxt "unindent shortcut"
 msgid "Ctrl+Shift+I"
 msgstr "Ctrl+Shift+I"
 
@@ -836,14 +873,13 @@ msgid "&Cheat Sheet"
 msgstr "&Befehlsübersicht"
 
 #: objects/ui_MainWindow.h:1097
-#, fuzzy
 msgid "Copy Viewport"
-msgstr "Kopieren"
+msgstr "Viewport kopieren"
 
 #: objects/ui_MainWindow.h:1099
-#, fuzzy
+msgctxt "copy viewport shortcut"
 msgid "Ctrl+Shift+C"
-msgstr "Ctrl+Shift+S"
+msgstr "Ctrl+Shift+C"
 
 #: objects/ui_MainWindow.h:1101
 msgid "Hide Customizer"
@@ -983,77 +1019,78 @@ msgstr "Form"
 
 #: objects/ui_ParameterEntryWidget.h:341
 msgid "Parameter"
-msgstr ""
+msgstr "Parameter"
 
 #: objects/ui_ParameterEntryWidget.h:342 objects/ui_ParameterEntryWidget.h:343
 msgid "Description"
-msgstr ""
+msgstr "Beschreibung"
 
 #: objects/ui_ParameterWidget.h:161
-#, fuzzy
+msgctxt "customizer"
 msgid "save preset"
 msgstr "aktuelle Voreinstellung speichern"
 
 #: objects/ui_ParameterWidget.h:163
-#, fuzzy
 msgid "delete current preset"
 msgstr "aktuelle Voreinstellung löschen"
 
 #: objects/ui_ParameterWidget.h:165
+msgctxt "customizer delete current preset"
 msgid "-"
-msgstr ""
+msgstr "-"
 
 #: objects/ui_ParameterWidget.h:167
-#, fuzzy
+msgctxt "customizer"
 msgid "preset selection"
-msgstr "keine Voreinstellung ausgewählt"
+msgstr "Voreinstellungsauswahl"
 
 #: objects/ui_ParameterWidget.h:170 src/parameter/ParameterWidget.cc:162
 msgid "add new preset"
 msgstr "neue Voreinstellung hinzufügen"
 
 #: objects/ui_ParameterWidget.h:172
+msgctxt "customizer add new preset"
 msgid "+"
-msgstr ""
+msgstr "+"
 
 #: objects/ui_ParameterWidget.h:174
-#, fuzzy
 msgid "Automatic Preview"
-msgstr "&Automatisch neu Laden und Vorschau"
+msgstr "&Automatische Vorschau"
 
 #: objects/ui_ParameterWidget.h:175
-#, fuzzy
+msgctxt "customizer"
 msgid "Show Details"
-msgstr "Koordinaten&achsen anzeigen"
+msgstr "Details anzeigen"
 
 #: objects/ui_ParameterWidget.h:176
+msgctxt "customizer"
 msgid "Inline Details"
-msgstr ""
+msgstr "Details Inline anzeigen"
 
 #: objects/ui_ParameterWidget.h:177
-#, fuzzy
+msgctxt "customizer"
 msgid "Hide Details"
-msgstr "Symbolleisten verstecken"
+msgstr "Details verstecken"
 
 #: objects/ui_ParameterWidget.h:178
+msgctxt "customizer"
 msgid "Description Only"
-msgstr ""
+msgstr "Beschreibung"
 
 #: objects/ui_ParameterWidget.h:181
 msgid "reset all parameters to the currently selected preset"
 msgstr ""
 
 #: objects/ui_ParameterWidget.h:183
-#, fuzzy
+msgctxt "customizer"
 msgid "Reset"
-msgstr "Ans&icht zurücksetzen"
+msgstr "zurücksetzen"
 
 #: objects/ui_Preferences.h:1174
 msgid "3D View"
 msgstr "3D Ansicht"
 
 #: objects/ui_Preferences.h:1175
-#, fuzzy
 msgctxt "preferences"
 msgid "Advanced"
 msgstr "Erweitert"
@@ -1076,15 +1113,15 @@ msgstr "Experimentelle Erweiterungen ein-/ausschalten"
 
 #: objects/ui_Preferences.h:1182
 msgid "Axis"
-msgstr ""
+msgstr "Achse"
 
 #: objects/ui_Preferences.h:1184
 msgid "Input driver configuration and Axis mapping"
-msgstr ""
+msgstr "Treiberkonfiguration und Achsen Zuordnung"
 
 #: objects/ui_Preferences.h:1186
 msgid "Buttons"
-msgstr ""
+msgstr "Knöpfe"
 
 #: objects/ui_Preferences.h:1187
 msgid "Color scheme:"
@@ -1552,12 +1589,12 @@ msgstr ""
 #: src/settings.cc:77
 #, c-format
 msgid "Axis %d"
-msgstr ""
+msgstr "Achse %d"
 
 #: src/settings.cc:81
 #, c-format
 msgid "Axis %d (inverted)"
-msgstr ""
+msgstr "Achse %d (invertiert)"
 
 #: src/settings.cc:90
 #, fuzzy
@@ -1569,9 +1606,8 @@ msgid "After indentation"
 msgstr "nach Einrückung"
 
 #: src/parameter/ParameterWidget.cc:79 src/parameter/ParameterWidget.cc:238
-#, fuzzy
 msgid "changes on current preset not saved"
-msgstr "aktuelle Voreinstellung speichern"
+msgstr "Änderungen an den aktuelle Voreinstellung nicht gespeichert"
 
 #: src/parameter/ParameterWidget.cc:81
 msgid ""
@@ -1594,7 +1630,7 @@ msgstr "JSON file ist nicht schreibbar"
 
 #: src/parameter/ParameterWidget.cc:222
 msgid "design default values"
-msgstr ""
+msgstr "Standardwerte des Designs"
 
 #: src/parameter/ParameterWidget.cc:240
 msgid ""
@@ -1603,14 +1639,12 @@ msgid ""
 msgstr ""
 
 #: src/parameter/ParameterWidget.cc:280
-#, fuzzy
 msgid "Do you want to delete the current preset?"
-msgstr "aktuelle Voreinstellung löschen"
+msgstr "Möchten Sie die aktuelle Voreinstellung löschen?"
 
 #: src/parameter/ParameterWidget.cc:282
-#, fuzzy
 msgid "Do you want to delete the current preset '%1'?"
-msgstr "aktuelle Voreinstellung löschen"
+msgstr "Möchten Sie die aktuelle Voreinstellung '%1' löschen?"
 
 #: src/parameter/ParameterWidget.cc:517
 msgid "Create new set of parameter"
@@ -1625,18 +1659,14 @@ msgid "Set Name %1 allready exists"
 msgstr ""
 
 #: src/parameter/ParameterWidget.cc:529
-#, fuzzy
 msgid "The set name  %1 allready exists. Do you want overwrite it?"
-msgstr ""
-"%1 existiert bereits.\n"
-"Mochten Sie die Datei ersetzen?"
+msgstr "Set %1 existiert bereits. Mochten Sie das Set überschreiben?"
 
 #: src/parameter/ParameterWidget.cc:573
 msgid "Saving presets"
 msgstr "Voreinstellung speichern"
 
 #: src/parameter/ParameterWidget.cc:574
-#, fuzzy
 msgid "%1 was found, but was unreadable. Do you want to overwrite %1?"
 msgstr ""
 "%1 wurde gefunden, konnte aber nicht gelesen werden. Möchten Sie %1 "

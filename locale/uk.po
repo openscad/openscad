@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2018.08.15\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-24 08:22+0100\n"
+"POT-Creation-Date: 2018-11-24 14:44+0100\n"
 "PO-Revision-Date: 2018-11-11 13:00+0200\n"
 "Last-Translator: Kyrylo Romanenko <romanenko-kv@hotmail.com>\n"
 "Language-Team: Ukrainian\n"
@@ -123,6 +123,7 @@ msgstr "&Документація"
 
 #: objects/ui_AxisConfigWidget.h:865
 #, fuzzy
+msgctxt "Inputdriver"
 msgid "Zoom"
 msgstr "Приблизити"
 
@@ -143,6 +144,7 @@ msgid "Z"
 msgstr ""
 
 #: objects/ui_AxisConfigWidget.h:870
+msgctxt "Inputdriver"
 msgid "Translation"
 msgstr ""
 
@@ -152,8 +154,9 @@ msgid "ViewPort rel.<br/>Translation"
 msgstr "Вставити &зміщення видового екрану"
 
 #: objects/ui_AxisConfigWidget.h:872
-msgid "ViewPortrel.<br />Rotation"
-msgstr ""
+#, fuzzy
+msgid "ViewPort rel.<br />Rotation"
+msgstr "Вставити &зміщення видового екрану"
 
 #: objects/ui_AxisConfigWidget.h:873
 msgid "Axis Setup:"
@@ -343,6 +346,8 @@ msgid "&New"
 msgstr "&Новий"
 
 #: objects/ui_MainWindow.h:886
+#, fuzzy
+msgctxt "new file shortcut"
 msgid "Ctrl+N"
 msgstr "Ctrl+N"
 
@@ -351,6 +356,8 @@ msgid "&Open..."
 msgstr "&Відкрити..."
 
 #: objects/ui_MainWindow.h:890
+#, fuzzy
+msgctxt "open file shortcut"
 msgid "Ctrl+O"
 msgstr "Ctrl+O"
 
@@ -359,6 +366,8 @@ msgid "&Save"
 msgstr "&Зберегти"
 
 #: objects/ui_MainWindow.h:894
+#, fuzzy
+msgctxt "save file shortcut"
 msgid "Ctrl+S"
 msgstr "Ctrl+S"
 
@@ -367,6 +376,8 @@ msgid "Save &As..."
 msgstr "Зберегти &як..."
 
 #: objects/ui_MainWindow.h:898
+#, fuzzy
+msgctxt "Save as Shortcut"
 msgid "Ctrl+Shift+S"
 msgstr "Ctrl+Shift+S"
 
@@ -375,6 +386,8 @@ msgid "&Reload"
 msgstr "&Перезавантажити"
 
 #: objects/ui_MainWindow.h:902
+#, fuzzy
+msgctxt "file reload shortcut"
 msgid "Ctrl+R"
 msgstr "Ctrl+R"
 
@@ -383,6 +396,8 @@ msgid "&Quit"
 msgstr "Ви&йти"
 
 #: objects/ui_MainWindow.h:906
+#, fuzzy
+msgctxt "quit shortcut"
 msgid "Ctrl+Q"
 msgstr "Ctrl+Q"
 
@@ -391,6 +406,8 @@ msgid "&Undo"
 msgstr "Ві&дмінити"
 
 #: objects/ui_MainWindow.h:910
+#, fuzzy
+msgctxt "undo shortcut"
 msgid "Ctrl+Z"
 msgstr "Ctrl+Z"
 
@@ -399,10 +416,14 @@ msgid "&Redo"
 msgstr "Поверну&ти"
 
 #: objects/ui_MainWindow.h:914
+#, fuzzy
+msgctxt "redo Shortcut"
 msgid "Ctrl+Shift+Z"
 msgstr "Ctrl+Shift+Z"
 
 #: objects/ui_MainWindow.h:917
+#, fuzzy
+msgctxt "redo shortcut"
 msgid "Ctrl+Y"
 msgstr "Ctrl+Y"
 
@@ -411,6 +432,8 @@ msgid "Cu&t"
 msgstr "Ви&різати"
 
 #: objects/ui_MainWindow.h:921
+#, fuzzy
+msgctxt "cut shortcut"
 msgid "Ctrl+X"
 msgstr "Ctrl+X"
 
@@ -419,6 +442,8 @@ msgid "&Copy"
 msgstr "&Копіювати"
 
 #: objects/ui_MainWindow.h:925
+#, fuzzy
+msgctxt "copy shortcut"
 msgid "Ctrl+C"
 msgstr "Ctrl+C"
 
@@ -427,6 +452,8 @@ msgid "&Paste"
 msgstr "В&ставити"
 
 #: objects/ui_MainWindow.h:929
+#, fuzzy
+msgctxt "paste shortcut"
 msgid "Ctrl+V"
 msgstr "Ctrl+V"
 
@@ -435,6 +462,8 @@ msgid "&Indent"
 msgstr "В&ідступити"
 
 #: objects/ui_MainWindow.h:933
+#, fuzzy
+msgctxt "indent shortcut"
 msgid "Ctrl+I"
 msgstr "Ctrl+I"
 
@@ -443,6 +472,8 @@ msgid "C&omment"
 msgstr "К&оментувати"
 
 #: objects/ui_MainWindow.h:937
+#, fuzzy
+msgctxt "comment shortcut"
 msgid "Ctrl+D"
 msgstr "Ctrl+D"
 
@@ -451,6 +482,8 @@ msgid "Unco&mment"
 msgstr "Ро&зкоментувати"
 
 #: objects/ui_MainWindow.h:941
+#, fuzzy
+msgctxt "uncomment shortcut"
 msgid "Ctrl+Shift+D"
 msgstr "Ctrl+Shift+D"
 
@@ -459,6 +492,8 @@ msgid "P&aste viewport translation"
 msgstr "Вставити &зміщення видового екрану"
 
 #: objects/ui_MainWindow.h:945
+#, fuzzy
+msgctxt "paste view port translation shortcut"
 msgid "Ctrl+T"
 msgstr "Ctrl+T"
 
@@ -471,6 +506,8 @@ msgid "Increase Font &Size"
 msgstr "З&більшити розмір шрифту"
 
 #: objects/ui_MainWindow.h:950
+#, fuzzy
+msgctxt "increase font size shortcut"
 msgid "Ctrl++"
 msgstr "Ctrl++"
 
@@ -479,6 +516,8 @@ msgid "Decrease Font Si&ze"
 msgstr "З&меншити розмір шрифту"
 
 #: objects/ui_MainWindow.h:954
+#, fuzzy
+msgctxt "decrease font size shortcut"
 msgid "Ctrl+-"
 msgstr "Ctrl+-"
 
@@ -571,6 +610,8 @@ msgid "Show Edges"
 msgstr "Показувати ребра"
 
 #: objects/ui_MainWindow.h:993
+#, fuzzy
+msgctxt "show edges shortcut"
 msgid "Ctrl+1"
 msgstr "Ctrl+1"
 
@@ -579,6 +620,8 @@ msgid "Show Axes"
 msgstr "Показуваті вісі"
 
 #: objects/ui_MainWindow.h:997
+#, fuzzy
+msgctxt "show axes shortcut"
 msgid "Ctrl+2"
 msgstr "Ctrl+2"
 
@@ -587,6 +630,8 @@ msgid "Show Crosshairs"
 msgstr "Показувати перехрестя"
 
 #: objects/ui_MainWindow.h:1001
+#, fuzzy
+msgctxt "show crosshairs shortcut"
 msgid "Ctrl+3"
 msgstr "Ctrl+3"
 
@@ -603,6 +648,8 @@ msgid "&Top"
 msgstr "З&верху"
 
 #: objects/ui_MainWindow.h:1007
+#, fuzzy
+msgctxt "top view shortcut"
 msgid "Ctrl+4"
 msgstr "Ctrl+4"
 
@@ -611,6 +658,8 @@ msgid "&Bottom"
 msgstr "З&низу"
 
 #: objects/ui_MainWindow.h:1011
+#, fuzzy
+msgctxt "bottom view shortcut"
 msgid "Ctrl+5"
 msgstr "Ctrl+5"
 
@@ -619,6 +668,8 @@ msgid "&Left"
 msgstr "З&ліва"
 
 #: objects/ui_MainWindow.h:1015
+#, fuzzy
+msgctxt "left view shortcut"
 msgid "Ctrl+6"
 msgstr "Ctrl+6"
 
@@ -627,6 +678,8 @@ msgid "&Right"
 msgstr "С&права"
 
 #: objects/ui_MainWindow.h:1019
+#, fuzzy
+msgctxt "right view shortcut"
 msgid "Ctrl+7"
 msgstr "Ctrl+7"
 
@@ -635,6 +688,8 @@ msgid "&Front"
 msgstr "&Спереду"
 
 #: objects/ui_MainWindow.h:1023
+#, fuzzy
+msgctxt "front view shortcut"
 msgid "Ctrl+8"
 msgstr "Ctrl+8"
 
@@ -643,6 +698,8 @@ msgid "Bac&k"
 msgstr "Зза&ду"
 
 #: objects/ui_MainWindow.h:1027
+#, fuzzy
+msgctxt "back view shortcut"
 msgid "Ctrl+9"
 msgstr "Ctrl+9"
 
@@ -651,6 +708,8 @@ msgid "&Diagonal"
 msgstr "&Діагональна проекція"
 
 #: objects/ui_MainWindow.h:1031
+#, fuzzy
+msgctxt "diagonal view shortcut"
 msgid "Ctrl+0"
 msgstr "Ctrl+0"
 
@@ -691,6 +750,8 @@ msgid "&Close"
 msgstr "&Закрити"
 
 #: objects/ui_MainWindow.h:1043
+#, fuzzy
+msgctxt "file close shortcut"
 msgid "Ctrl+W"
 msgstr "Ctrl+W"
 
@@ -703,6 +764,8 @@ msgid "&Find..."
 msgstr "З&найти"
 
 #: objects/ui_MainWindow.h:1048
+#, fuzzy
+msgctxt "find text shortcut"
 msgid "Ctrl+F"
 msgstr "Ctrl+F"
 
@@ -711,6 +774,8 @@ msgid "Fin&d and Replace..."
 msgstr "Знайти та &замінити"
 
 #: objects/ui_MainWindow.h:1052
+#, fuzzy
+msgctxt "find and replace shortcut"
 msgid "Ctrl+Alt+F"
 msgstr "Ctrl+Alt+F"
 
@@ -719,6 +784,8 @@ msgid "Find Ne&xt"
 msgstr "Знайти на&ступне"
 
 #: objects/ui_MainWindow.h:1056
+#, fuzzy
+msgctxt "find next shortcut"
 msgid "Ctrl+G"
 msgstr "Ctrl+G"
 
@@ -727,6 +794,8 @@ msgid "Find Pre&vious"
 msgstr "Знайти &попереднє"
 
 #: objects/ui_MainWindow.h:1060
+#, fuzzy
+msgctxt "find previous shortcut"
 msgid "Ctrl+Shift+G"
 msgstr "Ctrl+Shift+G"
 
@@ -735,6 +804,8 @@ msgid "Use Se&lection for Find"
 msgstr "&Шукати виділений текст"
 
 #: objects/ui_MainWindow.h:1064
+#, fuzzy
+msgctxt "use selection for find shortcut"
 msgid "Ctrl+E"
 msgstr "Ctrl+E"
 
@@ -792,6 +863,8 @@ msgid "Zoom In"
 msgstr "Приблизити"
 
 #: objects/ui_MainWindow.h:1080
+#, fuzzy
+msgctxt "zoom in shortcut"
 msgid "Ctrl+]"
 msgstr "Ctrl+]"
 
@@ -800,6 +873,8 @@ msgid "Zoom Out"
 msgstr "Віддалити"
 
 #: objects/ui_MainWindow.h:1084
+#, fuzzy
+msgctxt "zoom out shortcut"
 msgid "Ctrl+["
 msgstr "Ctrl+["
 
@@ -808,6 +883,8 @@ msgid "View All"
 msgstr "Побачити все"
 
 #: objects/ui_MainWindow.h:1088
+#, fuzzy
+msgctxt "view all shortcut"
 msgid "Ctrl+Shift+V"
 msgstr "Ctrl+Shift+V"
 
@@ -824,6 +901,8 @@ msgid "U&nindent"
 msgstr "Прибрати відступи"
 
 #: objects/ui_MainWindow.h:1094
+#, fuzzy
+msgctxt "unindent shortcut"
 msgid "Ctrl+Shift+I"
 msgstr "Ctrl+Shift+I"
 
@@ -836,6 +915,8 @@ msgid "Copy Viewport"
 msgstr "Копіювати видовий екран"
 
 #: objects/ui_MainWindow.h:1099
+#, fuzzy
+msgctxt "copy viewport shortcut"
 msgid "Ctrl+Shift+C"
 msgstr "Ctrl+Shift+C"
 
@@ -974,6 +1055,8 @@ msgid "Description"
 msgstr "Опис"
 
 #: objects/ui_ParameterWidget.h:161
+#, fuzzy
+msgctxt "customizer"
 msgid "save preset"
 msgstr "збереги пресет"
 
@@ -983,10 +1066,14 @@ msgid "delete current preset"
 msgstr "видалити поточний пресет"
 
 #: objects/ui_ParameterWidget.h:165
+#, fuzzy
+msgctxt "customizer delete current preset"
 msgid "-"
 msgstr "-"
 
 #: objects/ui_ParameterWidget.h:167
+#, fuzzy
+msgctxt "customizer"
 msgid "preset selection"
 msgstr "вибір пресету"
 
@@ -995,6 +1082,8 @@ msgid "add new preset"
 msgstr "додати новий пресет"
 
 #: objects/ui_ParameterWidget.h:172
+#, fuzzy
+msgctxt "customizer add new preset"
 msgid "+"
 msgstr "+"
 
@@ -1003,18 +1092,26 @@ msgid "Automatic Preview"
 msgstr "Автоматичний перегляд"
 
 #: objects/ui_ParameterWidget.h:175
+#, fuzzy
+msgctxt "customizer"
 msgid "Show Details"
 msgstr "Показати деталі"
 
 #: objects/ui_ParameterWidget.h:176
+#, fuzzy
+msgctxt "customizer"
 msgid "Inline Details"
 msgstr "Деталі в рядках"
 
 #: objects/ui_ParameterWidget.h:177
+#, fuzzy
+msgctxt "customizer"
 msgid "Hide Details"
 msgstr "Сховати деталі"
 
 #: objects/ui_ParameterWidget.h:178
+#, fuzzy
+msgctxt "customizer"
 msgid "Description Only"
 msgstr "Тільки опис"
 
@@ -1024,6 +1121,8 @@ msgid "reset all parameters to the currently selected preset"
 msgstr "скинути пераметри до поточного пресету"
 
 #: objects/ui_ParameterWidget.h:183
+#, fuzzy
+msgctxt "customizer"
 msgid "Reset"
 msgstr "Скидання"
 
