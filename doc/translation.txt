@@ -61,6 +61,29 @@ overwrite the old .po and run the same script to update the .mo files.
 
    $ ./scripts/translation-update.sh
 
+Message Context:
+================
+
+Some messages need a different translation, depending on the context
+of the message. To enable translators to use different translation for
+the same english message, context can be used.
+
+Typically short messages tend to need context more often then long messages.
+There is no need to add a context preemptively, please wait until a specific
+need arises.
+
+Please note that message context should follow some constrains:
+   - message context comes at some perfomance penalty
+   - Keep the context name short
+   - try to pick a context name that is unlikely to change
+     (changing the context name requires the translates to update the translation)
+   - do not abuse the message context as a comment
+
+The first paramater of _(msgid, msgctxt) and tr(msgid, msgctxt) is the
+message itself.
+The second parameter of _(msgid, msgctxt) and tr(msgid, msgctxt)
+respectivly is the message context.
+
 To add a new language:
 ======================
 
