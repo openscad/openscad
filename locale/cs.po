@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2013.02.24\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-24 14:44+0100\n"
+"POT-Creation-Date: 2018-11-25 11:48+0100\n"
 "PO-Revision-Date: 2015-03-06 10:27+0100\n"
 "Last-Translator: Miro Hrončok <miro@hroncok.cz>\n"
 "Language-Team: Czech <miro@hroncok.cz>\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 
-#: objects/ui_AboutDialog.h:100 src/AboutDialog.h:13
+#: objects/ui_AboutDialog.h:100
 msgid "About OpenSCAD"
 msgstr "O aplikaci OpenSCAD"
 
@@ -1053,8 +1053,9 @@ msgid "save preset"
 msgstr ""
 
 #: objects/ui_ParameterWidget.h:163
+#, fuzzy
 msgid "delete current preset"
-msgstr ""
+msgstr "Chcete uložit změny?"
 
 #: objects/ui_ParameterWidget.h:165
 msgctxt "customizer delete current preset"
@@ -1066,7 +1067,7 @@ msgctxt "customizer"
 msgid "preset selection"
 msgstr ""
 
-#: objects/ui_ParameterWidget.h:170 src/parameter/ParameterWidget.cc:162
+#: objects/ui_ParameterWidget.h:170
 msgid "add new preset"
 msgstr ""
 
@@ -1123,7 +1124,7 @@ msgctxt "preferences"
 msgid "Advanced"
 msgstr "Pokročilé"
 
-#: objects/ui_Preferences.h:1176 src/mainwin.cc:2641
+#: objects/ui_Preferences.h:1176
 msgid "Editor"
 msgstr "Editor"
 
@@ -1203,11 +1204,11 @@ msgstr ""
 msgid "Indent using"
 msgstr "Odsazovat pomocí"
 
-#: objects/ui_Preferences.h:1201 src/settings.cc:175
+#: objects/ui_Preferences.h:1201
 msgid "Spaces"
 msgstr "mezer"
 
-#: objects/ui_Preferences.h:1202 src/settings.cc:175
+#: objects/ui_Preferences.h:1202
 msgid "Tabs"
 msgstr "tabulátorů"
 
@@ -1224,11 +1225,10 @@ msgid "Tab key function"
 msgstr "Funkce klávesy tabulátor"
 
 #: objects/ui_Preferences.h:1207 objects/ui_Preferences.h:1232
-#: src/settings.cc:176
 msgid "Indent"
 msgstr "odsadí"
 
-#: objects/ui_Preferences.h:1208 src/settings.cc:176
+#: objects/ui_Preferences.h:1208
 msgid "Insert Tab"
 msgstr "vloží znak tabulátoru"
 
@@ -1236,11 +1236,11 @@ msgstr "vloží znak tabulátoru"
 msgid "Show whitespace"
 msgstr "Zobrazovat mazery"
 
-#: objects/ui_Preferences.h:1211 src/settings.cc:171
+#: objects/ui_Preferences.h:1211
 msgid "Never"
 msgstr "nikdy"
 
-#: objects/ui_Preferences.h:1212 src/settings.cc:171
+#: objects/ui_Preferences.h:1212
 msgid "Always"
 msgstr "vždy"
 
@@ -1273,16 +1273,15 @@ msgid "Line wrap"
 msgstr "Zalamování řádek"
 
 #: objects/ui_Preferences.h:1221 objects/ui_Preferences.h:1234
-#: objects/ui_Preferences.h:1240 src/settings.cc:73 src/settings.cc:89
-#: src/settings.cc:166 src/settings.cc:169 src/settings.cc:170
+#: objects/ui_Preferences.h:1240
 msgid "None"
 msgstr "vypnout"
 
-#: objects/ui_Preferences.h:1222 src/settings.cc:166
+#: objects/ui_Preferences.h:1222
 msgid "Wrap at character boundaries"
 msgstr "zalamovat na úrovni znaků"
 
-#: objects/ui_Preferences.h:1223 src/settings.cc:166
+#: objects/ui_Preferences.h:1223
 msgid "Wrap at word boundaries"
 msgstr "zalamovat na úrovni slov"
 
@@ -1298,15 +1297,15 @@ msgstr "Pozice symbolu zalomení"
 msgid "Style"
 msgstr "Styl"
 
-#: objects/ui_Preferences.h:1228 src/settings.cc:167
+#: objects/ui_Preferences.h:1228
 msgid "Fixed"
 msgstr "vždy stejný"
 
-#: objects/ui_Preferences.h:1229 src/settings.cc:167
+#: objects/ui_Preferences.h:1229
 msgid "Same"
 msgstr "jako počátek"
 
-#: objects/ui_Preferences.h:1230 src/settings.cc:167
+#: objects/ui_Preferences.h:1230
 msgid "Indented"
 msgstr "odsazený"
 
@@ -1315,17 +1314,14 @@ msgid "Start"
 msgstr "Začátek"
 
 #: objects/ui_Preferences.h:1235 objects/ui_Preferences.h:1241
-#: src/settings.cc:169 src/settings.cc:170
 msgid "Text"
 msgstr "za textem"
 
 #: objects/ui_Preferences.h:1236 objects/ui_Preferences.h:1242
-#: src/settings.cc:169 src/settings.cc:170
 msgid "Border"
 msgstr "konec řádky"
 
 #: objects/ui_Preferences.h:1237 objects/ui_Preferences.h:1243
-#: src/settings.cc:169 src/settings.cc:170
 msgid "Margin"
 msgstr "levý okraj"
 
@@ -1417,325 +1413,6 @@ msgstr ""
 msgid "%v / %m"
 msgstr "%v / %m"
 
-#: src/Camera.cc:116
-#, c-format
-msgid ""
-"Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], "
-"distance = %.2f"
-msgstr ""
-"Pohled: posun = [ %.2f %.2f %.2f ], rotace = [ %.2f %.2f %.2f ], vzdálenost "
-"= %.2f"
-
-#: src/export.cc:77
-#, c-format
-msgid "Can't open file \"%s\" for export"
-msgstr ""
-
-#: src/export.cc:92
-#, c-format
-msgid "ERROR: \"%s\" write error. (Disk full?)"
-msgstr ""
-
-#: src/mainwin.cc:879 src/mainwin.cc:1541
-msgid "Untitled.scad"
-msgstr "Bezejmenný.scad"
-
-#: src/mainwin.cc:1125
-msgid "Compile error."
-msgstr "Chyba kompilace."
-
-#: src/mainwin.cc:1128
-msgid "Error while compiling '%1'."
-msgstr "Chyba při kompilaci '%1'."
-
-#: src/mainwin.cc:1132
-msgid "Compilation generated %1 warning."
-msgid_plural "Compilation generated %1 warnings."
-msgstr[0] "Kompilace vyvolala %1 varování."
-msgstr[1] "Kompilace vyvolala %1 varování."
-msgstr[2] "Kompilace vyvolala %1 varování."
-
-#: src/mainwin.cc:1142
-msgid " For details see <a href=\"#console\">console window</a>."
-msgstr " Pro podrobnosti nahlédněte do <a href=\"#console\">konzole</a>."
-
-#: src/mainwin.cc:1519
-#, fuzzy
-msgid "Failed to open file for writing"
-msgstr "Nepodařilo se otevřít soubor %s: %s"
-
-#: src/mainwin.cc:1529
-#, fuzzy, c-format
-msgid "Saved design '%s'."
-msgstr "Načten design '%s'."
-
-#: src/mainwin.cc:1532
-msgid "Error saving design"
-msgstr ""
-
-#: src/mainwin.cc:1540
-msgid "Save File"
-msgstr "Uložit soubor"
-
-#: src/mainwin.cc:1542
-msgid "OpenSCAD Designs (*.scad)"
-msgstr "OpenSCAD designy(*.scad)"
-
-#: src/mainwin.cc:1552
-msgid ""
-"%1 already exists.\n"
-"Do you want to replace it?"
-msgstr ""
-"%1 již existuje.\n"
-"Chcete jej nahradit?"
-
-#: src/mainwin.cc:1899
-msgid "Application"
-msgstr "Aplikace"
-
-#: src/mainwin.cc:1900
-msgid ""
-"The document has been modified.\n"
-"Do you really want to reload the file?"
-msgstr ""
-"Dokument byl pozměněn.\n"
-"Opravdu jej chcete znovu načíst?"
-
-#: src/mainwin.cc:2280
-msgid "Export %1 File"
-msgstr "Exportovat %s soubor(ů)"
-
-#: src/mainwin.cc:2281
-msgid "%1 Files (*%2)"
-msgstr "%1 Soubor(ů) (*%2)"
-
-#: src/mainwin.cc:2282
-msgid "Untitled"
-msgstr "Bezejmenný"
-
-#: src/mainwin.cc:2339
-msgid "Export CSG File"
-msgstr "Exportovat CSG soubor"
-
-#: src/mainwin.cc:2340
-msgid "Untitled.csg"
-msgstr "Bezejmenný.csg"
-
-#: src/mainwin.cc:2341
-msgid "CSG Files (*.csg)"
-msgstr "CSG soubory (*.csg)"
-
-#: src/mainwin.cc:2367
-#, fuzzy
-msgid "Untitled.png"
-msgstr "Bezejmenný.csg"
-
-#: src/mainwin.cc:2369
-msgid "Export Image"
-msgstr "Exportovat obrázek"
-
-#: src/mainwin.cc:2369
-msgid "PNG Files (*.png)"
-msgstr "PNG Soubory (*.png)"
-
-#: src/mainwin.cc:2646
-msgid "Console"
-msgstr "Konzole"
-
-#: src/mainwin.cc:2651
-msgid "Customizer"
-msgstr ""
-
-#: src/mainwin.cc:2795
-msgid "The document has been modified."
-msgstr "Dokument byl pozměněn."
-
-#: src/mainwin.cc:2796
-msgid "Do you want to save your changes?"
-msgstr "Chcete uložit změny?"
-
-#: src/OpenSCADApp.cc:37
-msgid "Unknown error"
-msgstr ""
-
-#: src/OpenSCADApp.cc:40
-msgid "Critical Error"
-msgstr ""
-
-#: src/OpenSCADApp.cc:40
-msgid ""
-"A critical error was caught. The application may have become unstable:\n"
-"%1"
-msgstr ""
-
-#: src/OpenSCADApp.cc:64
-msgid ""
-"Fontconfig needs to update its font cache.\n"
-"This can take up to a couple of minutes."
-msgstr ""
-"Fontconfig potřebuje aktualizovat cache.\n"
-"To může trvat až několik minut."
-
-#: src/QGLView.cc:149
-msgid ""
-"Warning: You may experience OpenCSG rendering errors.\n"
-"\n"
-msgstr ""
-"Varování: Můžete zaznamenat chyby zobrazení pomocí OpenCSG.\n"
-"\n"
-
-#: src/QGLView.cc:152
-msgid ""
-"Warning: Missing OpenGL capabilities for OpenCSG - OpenCSG has been "
-"disabled.\n"
-"\n"
-msgstr ""
-"Varování: Chybí OpenGL funkce pro OpenCSG - OpenCSG bylo vypnuto.\n"
-"\n"
-
-#: src/QGLView.cc:155
-msgid ""
-"It is highly recommended to use OpenSCAD on a system with OpenGL 2.0 or "
-"later.\n"
-"Your renderer information is as follows:\n"
-msgstr ""
-"Vysoce doporučujeme používat OpenSCAD na systému s OpenGL 2.0 nebo novější.\n"
-"Zde je informace o vašem vykreslovacím systému:\n"
-
-#: src/QGLView.cc:158
-#, fuzzy
-msgid ""
-"GLEW version %1\n"
-"%2 (%3)\n"
-"OpenGL version %4\n"
-msgstr ""
-"GLEW verze %s\n"
-"%s (%s)\n"
-"OpenGL verze %s\n"
-
-#: src/settings.cc:77
-#, c-format
-msgid "Axis %d"
-msgstr ""
-
-#: src/settings.cc:81
-#, c-format
-msgid "Axis %d (inverted)"
-msgstr ""
-
-#: src/settings.cc:90
-#, fuzzy
-msgid "Toggle Perspective"
-msgstr "Pe&rspektivně"
-
-#: src/settings.cc:171
-msgid "After indentation"
-msgstr "za odsazením"
-
-#: src/parameter/ParameterWidget.cc:79 src/parameter/ParameterWidget.cc:238
-msgid "changes on current preset not saved"
-msgstr ""
-
-#: src/parameter/ParameterWidget.cc:81
-msgid ""
-"The changes on the current preset %1 are not saved yet. Do you really want "
-"to reset this preset and lose your changes?"
-msgstr ""
-
-#: src/parameter/ParameterWidget.cc:164
-msgid "remove current preset"
-msgstr ""
-
-#: src/parameter/ParameterWidget.cc:166
-msgid "save current preset"
-msgstr ""
-
-#: src/parameter/ParameterWidget.cc:168 src/parameter/ParameterWidget.cc:169
-#: src/parameter/ParameterWidget.cc:170
-msgid "JSON file read only"
-msgstr ""
-
-#: src/parameter/ParameterWidget.cc:222
-msgid "design default values"
-msgstr ""
-
-#: src/parameter/ParameterWidget.cc:240
-msgid ""
-"The current preset %1 contains changes, but is not saved yet. Do you really "
-"want to change the preset and lose your changes?"
-msgstr ""
-
-#: src/parameter/ParameterWidget.cc:280
-#, fuzzy
-msgid "Do you want to delete the current preset?"
-msgstr "Chcete uložit změny?"
-
-#: src/parameter/ParameterWidget.cc:282
-msgid "Do you want to delete the current preset '%1'?"
-msgstr ""
-
-#: src/parameter/ParameterWidget.cc:517
-msgid "Create new set of parameter"
-msgstr ""
-
-#: src/parameter/ParameterWidget.cc:517
-msgid "Enter name of the parameter set"
-msgstr ""
-
-#: src/parameter/ParameterWidget.cc:528
-msgid "Set Name %1 allready exists"
-msgstr ""
-
-#: src/parameter/ParameterWidget.cc:529
-#, fuzzy
-msgid "The set name  %1 allready exists. Do you want overwrite it?"
-msgstr ""
-"%1 již existuje.\n"
-"Chcete jej nahradit?"
-
-#: src/parameter/ParameterWidget.cc:573
-msgid "Saving presets"
-msgstr ""
-
-#: src/parameter/ParameterWidget.cc:574
-msgid "%1 was found, but was unreadable. Do you want to overwrite %1?"
-msgstr ""
-
-#: src/input/AxisConfigWidget.h:91
-msgid ""
-"This driver was not enabled during build time and is thus not available."
-msgstr ""
-
-#: src/input/AxisConfigWidget.h:93
-msgid ""
-"The DBUS driver is not for actual devices but for remote control, Linux only."
-msgstr ""
-
-#: src/input/AxisConfigWidget.h:94
-msgid ""
-"The HIDAPI driver communicates directly with the 3D mice, Windows and macOS."
-msgstr ""
-
-#: src/input/AxisConfigWidget.h:95
-msgid ""
-"The SpaceNav driver enables 3D-input-devices using the spacenavd daemon, "
-"Linux only."
-msgstr ""
-
-#: src/input/AxisConfigWidget.h:96
-msgid ""
-"The Joystick driver uses the Linux joystick device (fixed to /dev/input/"
-"js0), Linux only."
-msgstr ""
-
-#: src/input/AxisConfigWidget.h:97
-msgid "The QGAMEPAD driver is for multiplattform Gamepad Support."
-msgstr ""
-
-#: src/input/ButtonConfigWidget.cc:186
-msgid "(not supported)"
-msgstr ""
-
 #: examples/examples.json:2
 msgid "Basics"
 msgstr "Základy"
@@ -1793,6 +1470,153 @@ msgid ""
 "parameters from DXF files. Besides DXF files OpenSCAD can read and create 3D "
 "models in the STL and OFF file formats."
 msgstr ""
+
+#~ msgid "Compilation generated %1 warning."
+#~ msgid_plural "Compilation generated %1 warnings."
+#~ msgstr[0] "Kompilace vyvolala %1 varování."
+#~ msgstr[1] "Kompilace vyvolala %1 varování."
+#~ msgstr[2] "Kompilace vyvolala %1 varování."
+
+#~ msgid ""
+#~ "Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], "
+#~ "distance = %.2f"
+#~ msgstr ""
+#~ "Pohled: posun = [ %.2f %.2f %.2f ], rotace = [ %.2f %.2f %.2f ], "
+#~ "vzdálenost = %.2f"
+
+#~ msgid "Untitled.scad"
+#~ msgstr "Bezejmenný.scad"
+
+#~ msgid "Compile error."
+#~ msgstr "Chyba kompilace."
+
+#~ msgid "Error while compiling '%1'."
+#~ msgstr "Chyba při kompilaci '%1'."
+
+#~ msgid " For details see <a href=\"#console\">console window</a>."
+#~ msgstr " Pro podrobnosti nahlédněte do <a href=\"#console\">konzole</a>."
+
+#, fuzzy
+#~ msgid "Failed to open file for writing"
+#~ msgstr "Nepodařilo se otevřít soubor %s: %s"
+
+#, fuzzy
+#~ msgid "Saved design '%s'."
+#~ msgstr "Načten design '%s'."
+
+#~ msgid "Save File"
+#~ msgstr "Uložit soubor"
+
+#~ msgid "OpenSCAD Designs (*.scad)"
+#~ msgstr "OpenSCAD designy(*.scad)"
+
+#~ msgid ""
+#~ "%1 already exists.\n"
+#~ "Do you want to replace it?"
+#~ msgstr ""
+#~ "%1 již existuje.\n"
+#~ "Chcete jej nahradit?"
+
+#~ msgid "Application"
+#~ msgstr "Aplikace"
+
+#~ msgid ""
+#~ "The document has been modified.\n"
+#~ "Do you really want to reload the file?"
+#~ msgstr ""
+#~ "Dokument byl pozměněn.\n"
+#~ "Opravdu jej chcete znovu načíst?"
+
+#~ msgid "Export %1 File"
+#~ msgstr "Exportovat %s soubor(ů)"
+
+#~ msgid "%1 Files (*%2)"
+#~ msgstr "%1 Soubor(ů) (*%2)"
+
+#~ msgid "Untitled"
+#~ msgstr "Bezejmenný"
+
+#~ msgid "Export CSG File"
+#~ msgstr "Exportovat CSG soubor"
+
+#~ msgid "Untitled.csg"
+#~ msgstr "Bezejmenný.csg"
+
+#~ msgid "CSG Files (*.csg)"
+#~ msgstr "CSG soubory (*.csg)"
+
+#, fuzzy
+#~ msgid "Untitled.png"
+#~ msgstr "Bezejmenný.csg"
+
+#~ msgid "Export Image"
+#~ msgstr "Exportovat obrázek"
+
+#~ msgid "PNG Files (*.png)"
+#~ msgstr "PNG Soubory (*.png)"
+
+#~ msgid "Console"
+#~ msgstr "Konzole"
+
+#~ msgid "The document has been modified."
+#~ msgstr "Dokument byl pozměněn."
+
+#~ msgid "Do you want to save your changes?"
+#~ msgstr "Chcete uložit změny?"
+
+#~ msgid ""
+#~ "Fontconfig needs to update its font cache.\n"
+#~ "This can take up to a couple of minutes."
+#~ msgstr ""
+#~ "Fontconfig potřebuje aktualizovat cache.\n"
+#~ "To může trvat až několik minut."
+
+#~ msgid ""
+#~ "Warning: You may experience OpenCSG rendering errors.\n"
+#~ "\n"
+#~ msgstr ""
+#~ "Varování: Můžete zaznamenat chyby zobrazení pomocí OpenCSG.\n"
+#~ "\n"
+
+#~ msgid ""
+#~ "Warning: Missing OpenGL capabilities for OpenCSG - OpenCSG has been "
+#~ "disabled.\n"
+#~ "\n"
+#~ msgstr ""
+#~ "Varování: Chybí OpenGL funkce pro OpenCSG - OpenCSG bylo vypnuto.\n"
+#~ "\n"
+
+#~ msgid ""
+#~ "It is highly recommended to use OpenSCAD on a system with OpenGL 2.0 or "
+#~ "later.\n"
+#~ "Your renderer information is as follows:\n"
+#~ msgstr ""
+#~ "Vysoce doporučujeme používat OpenSCAD na systému s OpenGL 2.0 nebo "
+#~ "novější.\n"
+#~ "Zde je informace o vašem vykreslovacím systému:\n"
+
+#, fuzzy
+#~ msgid ""
+#~ "GLEW version %1\n"
+#~ "%2 (%3)\n"
+#~ "OpenGL version %4\n"
+#~ msgstr ""
+#~ "GLEW verze %s\n"
+#~ "%s (%s)\n"
+#~ "OpenGL verze %s\n"
+
+#, fuzzy
+#~ msgid "Toggle Perspective"
+#~ msgstr "Pe&rspektivně"
+
+#~ msgid "After indentation"
+#~ msgstr "za odsazením"
+
+#, fuzzy
+#~ msgid "The set name  %1 allready exists. Do you want overwrite it?"
+#~ msgstr ""
+#~ "%1 již existuje.\n"
+#~ "Chcete jej nahradit?"
 
 #~ msgid "<"
 #~ msgstr "<"

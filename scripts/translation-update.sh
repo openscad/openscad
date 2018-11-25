@@ -32,9 +32,12 @@ updatepot()
  OPTS=
  OPTS=$OPTS' --package-name=OpenSCAD'
  OPTS=$OPTS' --package-version='$VER
+ OPTS=$OPTS' --language=c++'
+ OPTS=$OPTS' --qt'
  OPTS=$OPTS' --default-domain=openscad'
- OPTS=$OPTS' --keyword=_'
- OPTS=$OPTS' --keyword=N_,'
+ OPTS=$OPTS' --keyword='
+ OPTS=$OPTS' --keyword=tr:1'
+ OPTS=$OPTS' --keyword=tr:1,2c'
  OPTS=$OPTS' --keyword=_:1,2c'
  OPTS=$OPTS' --files-from=./locale/POTFILES'
  cmd="${GETTEXT_PATH}xgettext "$OPTS' -o ./locale/openscad-tmp.pot'

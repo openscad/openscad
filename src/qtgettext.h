@@ -15,18 +15,18 @@
 #include <QString>
 #include "printutils.h"
 
-#define N_(String) String
-
-inline QString _(const char *msgid, int category)
+inline QString tr(const char *msgid, int category)
 {
 	Q_UNUSED(category);
 	return QString::fromUtf8(_(msgid));
 }
 
-inline QString _(const char *msgid, const char *disambiguation)
+inline QString tr(const char *msgid, const char *msgctxt)
 {
-	Q_UNUSED(disambiguation);
-	return QString::fromUtf8(_(msgid));
+	return QString::fromUtf8(msgctxt ?
+		_(msgid, msgctxt):
+		_(msgid)
+		);
 }
 
 #endif

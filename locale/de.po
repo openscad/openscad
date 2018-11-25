@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2014.01.05\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-24 14:44+0100\n"
-"PO-Revision-Date: 2018-11-24 16:14+0100\n"
+"POT-Creation-Date: 2018-11-25 11:48+0100\n"
+"PO-Revision-Date: 2018-11-25 11:52+0100\n"
 "Last-Translator: Torsten Paul <Torsten.Paul@gmx.de>\n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -19,7 +19,7 @@ msgstr ""
 "X-Poedit-SourceCharset: UTF-8\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: objects/ui_AboutDialog.h:100 src/AboutDialog.h:13
+#: objects/ui_AboutDialog.h:100
 msgid "About OpenSCAD"
 msgstr "Über OpenSCAD"
 
@@ -970,8 +970,9 @@ msgid "All"
 msgstr "Alles"
 
 #: objects/ui_MainWindow.h:1127
+#, fuzzy
 msgid "Parameter Widget"
-msgstr ""
+msgstr "Parameter"
 
 #: objects/ui_OpenCSGWarningDialog.h:83
 msgid "OpenGL Warning"
@@ -1044,7 +1045,7 @@ msgctxt "customizer"
 msgid "preset selection"
 msgstr "Voreinstellungsauswahl"
 
-#: objects/ui_ParameterWidget.h:170 src/parameter/ParameterWidget.cc:162
+#: objects/ui_ParameterWidget.h:170
 msgid "add new preset"
 msgstr "neue Voreinstellung hinzufügen"
 
@@ -1095,7 +1096,7 @@ msgctxt "preferences"
 msgid "Advanced"
 msgstr "Erweitert"
 
-#: objects/ui_Preferences.h:1176 src/mainwin.cc:2641
+#: objects/ui_Preferences.h:1176
 msgid "Editor"
 msgstr "Editor"
 
@@ -1175,11 +1176,11 @@ msgstr ""
 msgid "Indent using"
 msgstr "Einrücken mit"
 
-#: objects/ui_Preferences.h:1201 src/settings.cc:175
+#: objects/ui_Preferences.h:1201
 msgid "Spaces"
 msgstr "Leerzeichen"
 
-#: objects/ui_Preferences.h:1202 src/settings.cc:175
+#: objects/ui_Preferences.h:1202
 msgid "Tabs"
 msgstr "Tabs"
 
@@ -1196,11 +1197,10 @@ msgid "Tab key function"
 msgstr "Funktion der Tab-Taste"
 
 #: objects/ui_Preferences.h:1207 objects/ui_Preferences.h:1232
-#: src/settings.cc:176
 msgid "Indent"
 msgstr "Einrücken"
 
-#: objects/ui_Preferences.h:1208 src/settings.cc:176
+#: objects/ui_Preferences.h:1208
 msgid "Insert Tab"
 msgstr "Tab einfügen"
 
@@ -1208,11 +1208,11 @@ msgstr "Tab einfügen"
 msgid "Show whitespace"
 msgstr "Formatierungsymbole anzeigen"
 
-#: objects/ui_Preferences.h:1211 src/settings.cc:171
+#: objects/ui_Preferences.h:1211
 msgid "Never"
 msgstr "nie"
 
-#: objects/ui_Preferences.h:1212 src/settings.cc:171
+#: objects/ui_Preferences.h:1212
 msgid "Always"
 msgstr "immer"
 
@@ -1245,16 +1245,15 @@ msgid "Line wrap"
 msgstr "Zeilenumbruch"
 
 #: objects/ui_Preferences.h:1221 objects/ui_Preferences.h:1234
-#: objects/ui_Preferences.h:1240 src/settings.cc:73 src/settings.cc:89
-#: src/settings.cc:166 src/settings.cc:169 src/settings.cc:170
+#: objects/ui_Preferences.h:1240
 msgid "None"
 msgstr "nie"
 
-#: objects/ui_Preferences.h:1222 src/settings.cc:166
+#: objects/ui_Preferences.h:1222
 msgid "Wrap at character boundaries"
 msgstr "an jedem Zeichen"
 
-#: objects/ui_Preferences.h:1223 src/settings.cc:166
+#: objects/ui_Preferences.h:1223
 msgid "Wrap at word boundaries"
 msgstr "an Wörtern"
 
@@ -1270,15 +1269,15 @@ msgstr "Zeilenumbruch anzeigen"
 msgid "Style"
 msgstr "Stil"
 
-#: objects/ui_Preferences.h:1228 src/settings.cc:167
+#: objects/ui_Preferences.h:1228
 msgid "Fixed"
 msgstr "Fest"
 
-#: objects/ui_Preferences.h:1229 src/settings.cc:167
+#: objects/ui_Preferences.h:1229
 msgid "Same"
 msgstr "Wie vorherige Zeile"
 
-#: objects/ui_Preferences.h:1230 src/settings.cc:167
+#: objects/ui_Preferences.h:1230
 msgid "Indented"
 msgstr "Eingerückt"
 
@@ -1287,17 +1286,14 @@ msgid "Start"
 msgstr "Anfang"
 
 #: objects/ui_Preferences.h:1235 objects/ui_Preferences.h:1241
-#: src/settings.cc:169 src/settings.cc:170
 msgid "Text"
 msgstr "Text"
 
 #: objects/ui_Preferences.h:1236 objects/ui_Preferences.h:1242
-#: src/settings.cc:169 src/settings.cc:170
 msgid "Border"
 msgstr "Rand"
 
 #: objects/ui_Preferences.h:1237 objects/ui_Preferences.h:1243
-#: src/settings.cc:169 src/settings.cc:170
 msgid "Margin"
 msgstr "Seitenrand"
 
@@ -1389,324 +1385,6 @@ msgstr ""
 msgid "%v / %m"
 msgstr "%v / %m"
 
-#: src/Camera.cc:116
-#, c-format
-msgid ""
-"Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], "
-"distance = %.2f"
-msgstr ""
-"Ansicht: Verschiebung = [ %.2f %.2f %.2f ], Rotation = [ %.2f %.2f %.2f ], "
-"Abstand = %.2f"
-
-#: src/export.cc:77
-#, c-format
-msgid "Can't open file \"%s\" for export"
-msgstr "Can't open file \"%s\" for export"
-
-#: src/export.cc:92
-#, c-format
-msgid "ERROR: \"%s\" write error. (Disk full?)"
-msgstr "FEHLER:  \"%s\" Schreibfehler. (Speichervoll?)"
-
-#: src/mainwin.cc:879 src/mainwin.cc:1541
-msgid "Untitled.scad"
-msgstr "Unbenannt.scad"
-
-#: src/mainwin.cc:1125
-msgid "Compile error."
-msgstr "Fehler"
-
-#: src/mainwin.cc:1128
-msgid "Error while compiling '%1'."
-msgstr "Fehler beim Kompilieren von '%1'."
-
-#: src/mainwin.cc:1132
-msgid "Compilation generated %1 warning."
-msgid_plural "Compilation generated %1 warnings."
-msgstr[0] "%1 Warnung beim Kompilieren."
-msgstr[1] "%1 Warnungen beim Kompilieren."
-
-#: src/mainwin.cc:1142
-msgid " For details see <a href=\"#console\">console window</a>."
-msgstr " Für Details das <a href=\"#console\">Konsolen-Fenster</a> öffnen."
-
-#: src/mainwin.cc:1519
-#, fuzzy
-msgid "Failed to open file for writing"
-msgstr "Failed to open file for writing: %s (%s)"
-
-#: src/mainwin.cc:1529
-#, c-format
-msgid "Saved design '%s'."
-msgstr "Saved design '%s'."
-
-#: src/mainwin.cc:1532
-#, fuzzy
-msgid "Error saving design"
-msgstr "error writing deps"
-
-#: src/mainwin.cc:1540
-msgid "Save File"
-msgstr "Datei speichern"
-
-#: src/mainwin.cc:1542
-msgid "OpenSCAD Designs (*.scad)"
-msgstr "OpenSCAD Designs (*.scad)"
-
-#: src/mainwin.cc:1552
-msgid ""
-"%1 already exists.\n"
-"Do you want to replace it?"
-msgstr ""
-"%1 existiert bereits.\n"
-"Mochten Sie die Datei ersetzen?"
-
-#: src/mainwin.cc:1899
-msgid "Application"
-msgstr "Application"
-
-#: src/mainwin.cc:1900
-msgid ""
-"The document has been modified.\n"
-"Do you really want to reload the file?"
-msgstr ""
-"Das Dokument ist verändert.\n"
-"Möchten Sie die Datei wirklich neu laden?"
-
-#: src/mainwin.cc:2280
-msgid "Export %1 File"
-msgstr "%1 Datei exportieren"
-
-#: src/mainwin.cc:2281
-msgid "%1 Files (*%2)"
-msgstr "%1 Dateien (*%2)"
-
-#: src/mainwin.cc:2282
-msgid "Untitled"
-msgstr "Unbenannt"
-
-#: src/mainwin.cc:2339
-msgid "Export CSG File"
-msgstr "Export CSG File"
-
-#: src/mainwin.cc:2340
-msgid "Untitled.csg"
-msgstr "Unbenannt.csg"
-
-#: src/mainwin.cc:2341
-msgid "CSG Files (*.csg)"
-msgstr "CSG Dateien (*.csg)"
-
-#: src/mainwin.cc:2367
-msgid "Untitled.png"
-msgstr "Unbenannt.png"
-
-#: src/mainwin.cc:2369
-msgid "Export Image"
-msgstr "Image exportieren"
-
-#: src/mainwin.cc:2369
-msgid "PNG Files (*.png)"
-msgstr "PNG Dateien (*.png)"
-
-#: src/mainwin.cc:2646
-msgid "Console"
-msgstr "Konsole"
-
-#: src/mainwin.cc:2651
-msgid "Customizer"
-msgstr "Customizer"
-
-#: src/mainwin.cc:2795
-msgid "The document has been modified."
-msgstr "Das Dokument ist verändert."
-
-#: src/mainwin.cc:2796
-msgid "Do you want to save your changes?"
-msgstr "Möchten Sie die Änderungen speichern?"
-
-#: src/OpenSCADApp.cc:37
-msgid "Unknown error"
-msgstr "Unbekannter Fehler"
-
-#: src/OpenSCADApp.cc:40
-msgid "Critical Error"
-msgstr "Kritischer Fehler"
-
-#: src/OpenSCADApp.cc:40
-msgid ""
-"A critical error was caught. The application may have become unstable:\n"
-"%1"
-msgstr ""
-
-#: src/OpenSCADApp.cc:64
-msgid ""
-"Fontconfig needs to update its font cache.\n"
-"This can take up to a couple of minutes."
-msgstr ""
-"Fontconfig muss den Font-Cache aktualisieren.\n"
-"Dies kann einige Minuten dauern."
-
-#: src/QGLView.cc:149
-msgid ""
-"Warning: You may experience OpenCSG rendering errors.\n"
-"\n"
-msgstr ""
-"Achtung: Es können Darstellungsfehler beim Anzeigen der Vorschau auftreten.\n"
-"\n"
-
-#: src/QGLView.cc:152
-msgid ""
-"Warning: Missing OpenGL capabilities for OpenCSG - OpenCSG has been "
-"disabled.\n"
-"\n"
-msgstr ""
-"Achtung: Der Funktionsumfang des OpenGL Treibers reicht für die Vorschau "
-"nicht aus - OpenCSG wurde deaktiviert.\n"
-"\n"
-
-#: src/QGLView.cc:155
-msgid ""
-"It is highly recommended to use OpenSCAD on a system with OpenGL 2.0 or "
-"later.\n"
-"Your renderer information is as follows:\n"
-msgstr ""
-"Für die korrekte Anzeige der Vorschau benötigt OpenSCAD mindestens OpenGL "
-"2.0.\n"
-"Informationen zum OpenGL Treiber:\n"
-
-#: src/QGLView.cc:158
-#, fuzzy
-msgid ""
-"GLEW version %1\n"
-"%2 (%3)\n"
-"OpenGL version %4\n"
-msgstr ""
-"GLEW version %s\n"
-"%s (%s)\n"
-"OpenGL version %s\n"
-
-#: src/settings.cc:77
-#, c-format
-msgid "Axis %d"
-msgstr "Achse %d"
-
-#: src/settings.cc:81
-#, c-format
-msgid "Axis %d (inverted)"
-msgstr "Achse %d (invertiert)"
-
-#: src/settings.cc:90
-#, fuzzy
-msgid "Toggle Perspective"
-msgstr "&Perspektivisch"
-
-#: src/settings.cc:171
-msgid "After indentation"
-msgstr "nach Einrückung"
-
-#: src/parameter/ParameterWidget.cc:79 src/parameter/ParameterWidget.cc:238
-msgid "changes on current preset not saved"
-msgstr "Änderungen an den aktuelle Voreinstellung nicht gespeichert"
-
-#: src/parameter/ParameterWidget.cc:81
-msgid ""
-"The changes on the current preset %1 are not saved yet. Do you really want "
-"to reset this preset and lose your changes?"
-msgstr ""
-
-#: src/parameter/ParameterWidget.cc:164
-msgid "remove current preset"
-msgstr "aktuelle Voreinstellung löschen"
-
-#: src/parameter/ParameterWidget.cc:166
-msgid "save current preset"
-msgstr "aktuelle Voreinstellung speichern"
-
-#: src/parameter/ParameterWidget.cc:168 src/parameter/ParameterWidget.cc:169
-#: src/parameter/ParameterWidget.cc:170
-msgid "JSON file read only"
-msgstr "JSON file ist nicht schreibbar"
-
-#: src/parameter/ParameterWidget.cc:222
-msgid "design default values"
-msgstr "Standardwerte des Designs"
-
-#: src/parameter/ParameterWidget.cc:240
-msgid ""
-"The current preset %1 contains changes, but is not saved yet. Do you really "
-"want to change the preset and lose your changes?"
-msgstr ""
-
-#: src/parameter/ParameterWidget.cc:280
-msgid "Do you want to delete the current preset?"
-msgstr "Möchten Sie die aktuelle Voreinstellung löschen?"
-
-#: src/parameter/ParameterWidget.cc:282
-msgid "Do you want to delete the current preset '%1'?"
-msgstr "Möchten Sie die aktuelle Voreinstellung '%1' löschen?"
-
-#: src/parameter/ParameterWidget.cc:517
-msgid "Create new set of parameter"
-msgstr "Einen neuen Satz Voreinstellung erzeugen"
-
-#: src/parameter/ParameterWidget.cc:517
-msgid "Enter name of the parameter set"
-msgstr "Bitte einen Namen für diese Voreinstellung eingeben"
-
-#: src/parameter/ParameterWidget.cc:528
-msgid "Set Name %1 allready exists"
-msgstr ""
-
-#: src/parameter/ParameterWidget.cc:529
-msgid "The set name  %1 allready exists. Do you want overwrite it?"
-msgstr "Set %1 existiert bereits. Mochten Sie das Set überschreiben?"
-
-#: src/parameter/ParameterWidget.cc:573
-msgid "Saving presets"
-msgstr "Voreinstellung speichern"
-
-#: src/parameter/ParameterWidget.cc:574
-msgid "%1 was found, but was unreadable. Do you want to overwrite %1?"
-msgstr ""
-"%1 wurde gefunden, konnte aber nicht gelesen werden. Möchten Sie %1 "
-"überschreiben?"
-
-#: src/input/AxisConfigWidget.h:91
-msgid ""
-"This driver was not enabled during build time and is thus not available."
-msgstr ""
-
-#: src/input/AxisConfigWidget.h:93
-msgid ""
-"The DBUS driver is not for actual devices but for remote control, Linux only."
-msgstr ""
-
-#: src/input/AxisConfigWidget.h:94
-msgid ""
-"The HIDAPI driver communicates directly with the 3D mice, Windows and macOS."
-msgstr ""
-
-#: src/input/AxisConfigWidget.h:95
-msgid ""
-"The SpaceNav driver enables 3D-input-devices using the spacenavd daemon, "
-"Linux only."
-msgstr ""
-
-#: src/input/AxisConfigWidget.h:96
-msgid ""
-"The Joystick driver uses the Linux joystick device (fixed to /dev/input/"
-"js0), Linux only."
-msgstr ""
-
-#: src/input/AxisConfigWidget.h:97
-msgid "The QGAMEPAD driver is for multiplattform Gamepad Support."
-msgstr ""
-
-#: src/input/ButtonConfigWidget.cc:186
-msgid "(not supported)"
-msgstr ""
-
 #: examples/examples.json:2
 msgid "Basics"
 msgstr "Grundlagen"
@@ -1717,7 +1395,7 @@ msgstr "Funktionen"
 
 #: examples/examples.json:20
 msgid "Advanced"
-msgstr "Erweitert"
+msgstr "Weiterführende Beispiele"
 
 #: examples/examples.json:30
 msgid "Parametric"
@@ -1764,6 +1442,209 @@ msgid ""
 "parameters from DXF files. Besides DXF files OpenSCAD can read and create 3D "
 "models in the STL and OFF file formats."
 msgstr ""
+
+#~ msgid "Compilation generated %1 warning."
+#~ msgid_plural "Compilation generated %1 warnings."
+#~ msgstr[0] "%1 Warnung beim Kompilieren."
+#~ msgstr[1] "%1 Warnungen beim Kompilieren."
+
+#~ msgid ""
+#~ "Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], "
+#~ "distance = %.2f"
+#~ msgstr ""
+#~ "Ansicht: Verschiebung = [ %.2f %.2f %.2f ], Rotation = [ %.2f %.2f "
+#~ "%.2f ], Abstand = %.2f"
+
+#~ msgid "Can't open file \"%s\" for export"
+#~ msgstr "Can't open file \"%s\" for export"
+
+#~ msgid "ERROR: \"%s\" write error. (Disk full?)"
+#~ msgstr "FEHLER:  \"%s\" Schreibfehler. (Speichervoll?)"
+
+#~ msgid "Untitled.scad"
+#~ msgstr "Unbenannt.scad"
+
+#~ msgid "Compile error."
+#~ msgstr "Fehler"
+
+#~ msgid "Error while compiling '%1'."
+#~ msgstr "Fehler beim Kompilieren von '%1'."
+
+#~ msgid " For details see <a href=\"#console\">console window</a>."
+#~ msgstr " Für Details das <a href=\"#console\">Konsolen-Fenster</a> öffnen."
+
+#, fuzzy
+#~ msgid "Failed to open file for writing"
+#~ msgstr "Failed to open file for writing: %s (%s)"
+
+#~ msgid "Saved design '%s'."
+#~ msgstr "Saved design '%s'."
+
+#, fuzzy
+#~ msgid "Error saving design"
+#~ msgstr "error writing deps"
+
+#~ msgid "Save File"
+#~ msgstr "Datei speichern"
+
+#~ msgid "OpenSCAD Designs (*.scad)"
+#~ msgstr "OpenSCAD Designs (*.scad)"
+
+#~ msgid ""
+#~ "%1 already exists.\n"
+#~ "Do you want to replace it?"
+#~ msgstr ""
+#~ "%1 existiert bereits.\n"
+#~ "Mochten Sie die Datei ersetzen?"
+
+#~ msgid "Application"
+#~ msgstr "Application"
+
+#~ msgid ""
+#~ "The document has been modified.\n"
+#~ "Do you really want to reload the file?"
+#~ msgstr ""
+#~ "Das Dokument ist verändert.\n"
+#~ "Möchten Sie die Datei wirklich neu laden?"
+
+#~ msgid "Export %1 File"
+#~ msgstr "%1 Datei exportieren"
+
+#~ msgid "%1 Files (*%2)"
+#~ msgstr "%1 Dateien (*%2)"
+
+#~ msgid "Untitled"
+#~ msgstr "Unbenannt"
+
+#~ msgid "Export CSG File"
+#~ msgstr "Export CSG File"
+
+#~ msgid "Untitled.csg"
+#~ msgstr "Unbenannt.csg"
+
+#~ msgid "CSG Files (*.csg)"
+#~ msgstr "CSG Dateien (*.csg)"
+
+#~ msgid "Untitled.png"
+#~ msgstr "Unbenannt.png"
+
+#~ msgid "Export Image"
+#~ msgstr "Image exportieren"
+
+#~ msgid "PNG Files (*.png)"
+#~ msgstr "PNG Dateien (*.png)"
+
+#~ msgid "Console"
+#~ msgstr "Konsole"
+
+#~ msgid "Customizer"
+#~ msgstr "Customizer"
+
+#~ msgid "The document has been modified."
+#~ msgstr "Das Dokument ist verändert."
+
+#~ msgid "Do you want to save your changes?"
+#~ msgstr "Möchten Sie die Änderungen speichern?"
+
+#~ msgid "Unknown error"
+#~ msgstr "Unbekannter Fehler"
+
+#~ msgid "Critical Error"
+#~ msgstr "Kritischer Fehler"
+
+#~ msgid ""
+#~ "Fontconfig needs to update its font cache.\n"
+#~ "This can take up to a couple of minutes."
+#~ msgstr ""
+#~ "Fontconfig muss den Font-Cache aktualisieren.\n"
+#~ "Dies kann einige Minuten dauern."
+
+#~ msgid ""
+#~ "Warning: You may experience OpenCSG rendering errors.\n"
+#~ "\n"
+#~ msgstr ""
+#~ "Achtung: Es können Darstellungsfehler beim Anzeigen der Vorschau "
+#~ "auftreten.\n"
+#~ "\n"
+
+#~ msgid ""
+#~ "Warning: Missing OpenGL capabilities for OpenCSG - OpenCSG has been "
+#~ "disabled.\n"
+#~ "\n"
+#~ msgstr ""
+#~ "Achtung: Der Funktionsumfang des OpenGL Treibers reicht für die Vorschau "
+#~ "nicht aus - OpenCSG wurde deaktiviert.\n"
+#~ "\n"
+
+#~ msgid ""
+#~ "It is highly recommended to use OpenSCAD on a system with OpenGL 2.0 or "
+#~ "later.\n"
+#~ "Your renderer information is as follows:\n"
+#~ msgstr ""
+#~ "Für die korrekte Anzeige der Vorschau benötigt OpenSCAD mindestens OpenGL "
+#~ "2.0.\n"
+#~ "Informationen zum OpenGL Treiber:\n"
+
+#, fuzzy
+#~ msgid ""
+#~ "GLEW version %1\n"
+#~ "%2 (%3)\n"
+#~ "OpenGL version %4\n"
+#~ msgstr ""
+#~ "GLEW version %s\n"
+#~ "%s (%s)\n"
+#~ "OpenGL version %s\n"
+
+#~ msgid "Axis %d"
+#~ msgstr "Achse %d"
+
+#~ msgid "Axis %d (inverted)"
+#~ msgstr "Achse %d (invertiert)"
+
+#, fuzzy
+#~ msgid "Toggle Perspective"
+#~ msgstr "&Perspektivisch"
+
+#~ msgid "After indentation"
+#~ msgstr "nach Einrückung"
+
+#~ msgid "changes on current preset not saved"
+#~ msgstr "Änderungen an den aktuelle Voreinstellung nicht gespeichert"
+
+#~ msgid "remove current preset"
+#~ msgstr "aktuelle Voreinstellung löschen"
+
+#~ msgid "save current preset"
+#~ msgstr "aktuelle Voreinstellung speichern"
+
+#~ msgid "JSON file read only"
+#~ msgstr "JSON file ist nicht schreibbar"
+
+#~ msgid "design default values"
+#~ msgstr "Standardwerte des Designs"
+
+#~ msgid "Do you want to delete the current preset?"
+#~ msgstr "Möchten Sie die aktuelle Voreinstellung löschen?"
+
+#~ msgid "Do you want to delete the current preset '%1'?"
+#~ msgstr "Möchten Sie die aktuelle Voreinstellung '%1' löschen?"
+
+#~ msgid "Create new set of parameter"
+#~ msgstr "Einen neuen Satz Voreinstellung erzeugen"
+
+#~ msgid "Enter name of the parameter set"
+#~ msgstr "Bitte einen Namen für diese Voreinstellung eingeben"
+
+#~ msgid "The set name  %1 allready exists. Do you want overwrite it?"
+#~ msgstr "Set %1 existiert bereits. Mochten Sie das Set überschreiben?"
+
+#~ msgid "Saving presets"
+#~ msgstr "Voreinstellung speichern"
+
+#~ msgid "%1 was found, but was unreadable. Do you want to overwrite %1?"
+#~ msgstr ""
+#~ "%1 wurde gefunden, konnte aber nicht gelesen werden. Möchten Sie %1 "
+#~ "überschreiben?"
 
 #~ msgid "no preset selected"
 #~ msgstr "keine Voreinstellung ausgewählt"

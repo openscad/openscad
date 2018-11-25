@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2015.03\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-24 14:44+0100\n"
+"POT-Creation-Date: 2018-11-25 11:48+0100\n"
 "PO-Revision-Date: 2018-11-07 02:02+0300\n"
 "Last-Translator: Alexandre Prokoudine <alexandre.prokoudine@gmail.com>\n"
 "Language-Team: русский <gnome-cyr@lists.gnome.org>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)\n"
 "X-Generator: Gtranslator 3.31.0\n"
 
-#: objects/ui_AboutDialog.h:100 src/AboutDialog.h:13
+#: objects/ui_AboutDialog.h:100
 msgid "About OpenSCAD"
 msgstr "О программе OpenSCAD"
 
@@ -1009,8 +1009,9 @@ msgid "All"
 msgstr "Все"
 
 #: objects/ui_MainWindow.h:1127
+#, fuzzy
 msgid "Parameter Widget"
-msgstr ""
+msgstr "Параметр"
 
 #: objects/ui_OpenCSGWarningDialog.h:83
 msgid "OpenGL Warning"
@@ -1086,7 +1087,7 @@ msgctxt "customizer"
 msgid "preset selection"
 msgstr "Выбор предустановки"
 
-#: objects/ui_ParameterWidget.h:170 src/parameter/ParameterWidget.cc:162
+#: objects/ui_ParameterWidget.h:170
 msgid "add new preset"
 msgstr "Создать предустановку"
 
@@ -1143,7 +1144,7 @@ msgctxt "preferences"
 msgid "Advanced"
 msgstr "Дополнительные"
 
-#: objects/ui_Preferences.h:1176 src/mainwin.cc:2641
+#: objects/ui_Preferences.h:1176
 msgid "Editor"
 msgstr "Редактор"
 
@@ -1223,11 +1224,11 @@ msgstr ""
 msgid "Indent using"
 msgstr "Делать отступы"
 
-#: objects/ui_Preferences.h:1201 src/settings.cc:175
+#: objects/ui_Preferences.h:1201
 msgid "Spaces"
 msgstr "Пробелами"
 
-#: objects/ui_Preferences.h:1202 src/settings.cc:175
+#: objects/ui_Preferences.h:1202
 msgid "Tabs"
 msgstr "Табуляцией"
 
@@ -1244,11 +1245,10 @@ msgid "Tab key function"
 msgstr "Функция клавиши Tab"
 
 #: objects/ui_Preferences.h:1207 objects/ui_Preferences.h:1232
-#: src/settings.cc:176
 msgid "Indent"
 msgstr "Отступов"
 
-#: objects/ui_Preferences.h:1208 src/settings.cc:176
+#: objects/ui_Preferences.h:1208
 msgid "Insert Tab"
 msgstr "Вставить Tab"
 
@@ -1256,11 +1256,11 @@ msgstr "Вставить Tab"
 msgid "Show whitespace"
 msgstr "Показывать пробел"
 
-#: objects/ui_Preferences.h:1211 src/settings.cc:171
+#: objects/ui_Preferences.h:1211
 msgid "Never"
 msgstr "Никогда"
 
-#: objects/ui_Preferences.h:1212 src/settings.cc:171
+#: objects/ui_Preferences.h:1212
 msgid "Always"
 msgstr "Всегда"
 
@@ -1293,16 +1293,15 @@ msgid "Line wrap"
 msgstr "Перенос строк"
 
 #: objects/ui_Preferences.h:1221 objects/ui_Preferences.h:1234
-#: objects/ui_Preferences.h:1240 src/settings.cc:73 src/settings.cc:89
-#: src/settings.cc:166 src/settings.cc:169 src/settings.cc:170
+#: objects/ui_Preferences.h:1240
 msgid "None"
 msgstr "Нет"
 
-#: objects/ui_Preferences.h:1222 src/settings.cc:166
+#: objects/ui_Preferences.h:1222
 msgid "Wrap at character boundaries"
 msgstr "Перенос с границы символа"
 
-#: objects/ui_Preferences.h:1223 src/settings.cc:166
+#: objects/ui_Preferences.h:1223
 msgid "Wrap at word boundaries"
 msgstr "Перенос с границы слова"
 
@@ -1318,15 +1317,15 @@ msgstr "Вид переносов строк:"
 msgid "Style"
 msgstr "Стиль"
 
-#: objects/ui_Preferences.h:1228 src/settings.cc:167
+#: objects/ui_Preferences.h:1228
 msgid "Fixed"
 msgstr "Фиксированный"
 
-#: objects/ui_Preferences.h:1229 src/settings.cc:167
+#: objects/ui_Preferences.h:1229
 msgid "Same"
 msgstr "Такой же"
 
-#: objects/ui_Preferences.h:1230 src/settings.cc:167
+#: objects/ui_Preferences.h:1230
 msgid "Indented"
 msgstr "С отступами"
 
@@ -1335,17 +1334,14 @@ msgid "Start"
 msgstr "Начало"
 
 #: objects/ui_Preferences.h:1235 objects/ui_Preferences.h:1241
-#: src/settings.cc:169 src/settings.cc:170
 msgid "Text"
 msgstr "Текст"
 
 #: objects/ui_Preferences.h:1236 objects/ui_Preferences.h:1242
-#: src/settings.cc:169 src/settings.cc:170
 msgid "Border"
 msgstr "Граница"
 
 #: objects/ui_Preferences.h:1237 objects/ui_Preferences.h:1243
-#: src/settings.cc:169 src/settings.cc:170
 msgid "Margin"
 msgstr "Поле"
 
@@ -1437,325 +1433,6 @@ msgstr "Проигрывать звук при завершении рендер
 msgid "%v / %m"
 msgstr "%v / %m"
 
-#: src/Camera.cc:116
-#, c-format
-msgid ""
-"Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], "
-"distance = %.2f"
-msgstr ""
-"Обзор: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], distance "
-"= %.2f"
-
-#: src/export.cc:77
-#, c-format
-msgid "Can't open file \"%s\" for export"
-msgstr "Не удалось открыть файл \"%s\" для экспорта"
-
-#: src/export.cc:92
-#, c-format
-msgid "ERROR: \"%s\" write error. (Disk full?)"
-msgstr ""
-
-#: src/mainwin.cc:879 src/mainwin.cc:1541
-msgid "Untitled.scad"
-msgstr "Безымянный.scad"
-
-#: src/mainwin.cc:1125
-msgid "Compile error."
-msgstr "Ошибка при сборке"
-
-#: src/mainwin.cc:1128
-msgid "Error while compiling '%1'."
-msgstr "Ошибка при сборке '%1'."
-
-#: src/mainwin.cc:1132
-msgid "Compilation generated %1 warning."
-msgid_plural "Compilation generated %1 warnings."
-msgstr[0] "При сборке выведено %1 предупреждение"
-msgstr[1] "При сборке выведено %1 предупреждения"
-msgstr[2] "При сборке выведено %1 предупреждений"
-
-#: src/mainwin.cc:1142
-msgid " For details see <a href=\"#console\">console window</a>."
-msgstr " Для подробностей смотреть <a href=\"#console\">окно консоли</a>."
-
-#: src/mainwin.cc:1519
-msgid "Failed to open file for writing"
-msgstr "Не удалось открыть файл для записи"
-
-#: src/mainwin.cc:1529
-#, c-format
-msgid "Saved design '%s'."
-msgstr "Сохранён проект '%s'."
-
-#: src/mainwin.cc:1532
-msgid "Error saving design"
-msgstr "Ошибка при сохранении проекта"
-
-#: src/mainwin.cc:1540
-msgid "Save File"
-msgstr "Сохранить файл"
-
-#: src/mainwin.cc:1542
-msgid "OpenSCAD Designs (*.scad)"
-msgstr "Модели OpenSCAD (*.scad)"
-
-#: src/mainwin.cc:1552
-msgid ""
-"%1 already exists.\n"
-"Do you want to replace it?"
-msgstr ""
-"%1 уже существует.\n"
-"Перезаписать?"
-
-#: src/mainwin.cc:1899
-msgid "Application"
-msgstr "Приложение"
-
-#: src/mainwin.cc:1900
-msgid ""
-"The document has been modified.\n"
-"Do you really want to reload the file?"
-msgstr ""
-"Документ был изменен.\n"
-"Хотите перезагрузить документ?"
-
-#: src/mainwin.cc:2280
-msgid "Export %1 File"
-msgstr "Экспортировать в файл формата %1"
-
-#: src/mainwin.cc:2281
-msgid "%1 Files (*%2)"
-msgstr "Файлы %1 (*%2)"
-
-#: src/mainwin.cc:2282
-msgid "Untitled"
-msgstr "Безымянный.scad"
-
-#: src/mainwin.cc:2339
-msgid "Export CSG File"
-msgstr "Экспортировать файл CSG"
-
-#: src/mainwin.cc:2340
-msgid "Untitled.csg"
-msgstr "Безымянный.csg"
-
-#: src/mainwin.cc:2341
-msgid "CSG Files (*.csg)"
-msgstr "Файлы CSG (*.csg)"
-
-#: src/mainwin.cc:2367
-msgid "Untitled.png"
-msgstr "Безымянный.png"
-
-#: src/mainwin.cc:2369
-msgid "Export Image"
-msgstr "Экспортировать изображение"
-
-#: src/mainwin.cc:2369
-msgid "PNG Files (*.png)"
-msgstr "Файлы PNG (*.png)"
-
-#: src/mainwin.cc:2646
-msgid "Console"
-msgstr "Консоль"
-
-#: src/mainwin.cc:2651
-msgid "Customizer"
-msgstr ""
-
-#: src/mainwin.cc:2795
-msgid "The document has been modified."
-msgstr "Документ был изменен."
-
-#: src/mainwin.cc:2796
-msgid "Do you want to save your changes?"
-msgstr "Сохранить изменения?"
-
-#: src/OpenSCADApp.cc:37
-msgid "Unknown error"
-msgstr "Неизвестная ошибка"
-
-#: src/OpenSCADApp.cc:40
-msgid "Critical Error"
-msgstr "Критическая ошибка"
-
-#: src/OpenSCADApp.cc:40
-msgid ""
-"A critical error was caught. The application may have become unstable:\n"
-"%1"
-msgstr ""
-
-#: src/OpenSCADApp.cc:64
-msgid ""
-"Fontconfig needs to update its font cache.\n"
-"This can take up to a couple of minutes."
-msgstr ""
-"Fontconfig требуется обновить кеш шрифтов.\n"
-"Это может занять пару минут."
-
-#: src/QGLView.cc:149
-msgid ""
-"Warning: You may experience OpenCSG rendering errors.\n"
-"\n"
-msgstr ""
-"Предупреждение: Возможны ошибки рендеринга OpenCSG.\n"
-"\n"
-
-#: src/QGLView.cc:152
-msgid ""
-"Warning: Missing OpenGL capabilities for OpenCSG - OpenCSG has been "
-"disabled.\n"
-"\n"
-msgstr ""
-"Предупреждение: Не найдены OpenGL расширения для OpenCSG - OpenCSG был "
-"отключен.\n"
-"\n"
-
-#: src/QGLView.cc:155
-msgid ""
-"It is highly recommended to use OpenSCAD on a system with OpenGL 2.0 or "
-"later.\n"
-"Your renderer information is as follows:\n"
-msgstr ""
-"Крайне рекомендуется использовать OpenSCAD на системе с поддержкой  OpenGL "
-"2.0 или новее.\n"
-"Информация о рендере:\n"
-
-#: src/QGLView.cc:158
-msgid ""
-"GLEW version %1\n"
-"%2 (%3)\n"
-"OpenGL version %4\n"
-msgstr ""
-"Версия GLEW %1\n"
-"%2 (%3)\n"
-"Версия OpenGL %4\n"
-
-#: src/settings.cc:77
-#, c-format
-msgid "Axis %d"
-msgstr ""
-
-#: src/settings.cc:81
-#, c-format
-msgid "Axis %d (inverted)"
-msgstr ""
-
-#: src/settings.cc:90
-#, fuzzy
-msgid "Toggle Perspective"
-msgstr "Перспект&ива"
-
-#: src/settings.cc:171
-msgid "After indentation"
-msgstr "После отступа"
-
-#: src/parameter/ParameterWidget.cc:79 src/parameter/ParameterWidget.cc:238
-msgid "changes on current preset not saved"
-msgstr ""
-
-#: src/parameter/ParameterWidget.cc:81
-msgid ""
-"The changes on the current preset %1 are not saved yet. Do you really want "
-"to reset this preset and lose your changes?"
-msgstr ""
-
-#: src/parameter/ParameterWidget.cc:164
-msgid "remove current preset"
-msgstr "Удалить выбранную предустановку"
-
-#: src/parameter/ParameterWidget.cc:166
-msgid "save current preset"
-msgstr "Сохранить выбранную предустановку"
-
-#: src/parameter/ParameterWidget.cc:168 src/parameter/ParameterWidget.cc:169
-#: src/parameter/ParameterWidget.cc:170
-msgid "JSON file read only"
-msgstr ""
-
-#: src/parameter/ParameterWidget.cc:222
-msgid "design default values"
-msgstr ""
-
-#: src/parameter/ParameterWidget.cc:240
-msgid ""
-"The current preset %1 contains changes, but is not saved yet. Do you really "
-"want to change the preset and lose your changes?"
-msgstr ""
-
-#: src/parameter/ParameterWidget.cc:280
-#, fuzzy
-msgid "Do you want to delete the current preset?"
-msgstr "Удалить выбранную предустановку"
-
-#: src/parameter/ParameterWidget.cc:282
-#, fuzzy
-msgid "Do you want to delete the current preset '%1'?"
-msgstr "Удалить выбранную предустановку"
-
-#: src/parameter/ParameterWidget.cc:517
-msgid "Create new set of parameter"
-msgstr "Создать новый набор параметров"
-
-#: src/parameter/ParameterWidget.cc:517
-msgid "Enter name of the parameter set"
-msgstr "Введите название нового набора параметров"
-
-#: src/parameter/ParameterWidget.cc:528
-msgid "Set Name %1 allready exists"
-msgstr ""
-
-#: src/parameter/ParameterWidget.cc:529
-#, fuzzy
-msgid "The set name  %1 allready exists. Do you want overwrite it?"
-msgstr ""
-"%1 уже существует.\n"
-"Перезаписать?"
-
-#: src/parameter/ParameterWidget.cc:573
-msgid "Saving presets"
-msgstr "Сохранение предустановок"
-
-#: src/parameter/ParameterWidget.cc:574
-msgid "%1 was found, but was unreadable. Do you want to overwrite %1?"
-msgstr "Файл %1 обнаружен, но не может быть прочтён. Перезаписать %1?"
-
-#: src/input/AxisConfigWidget.h:91
-msgid ""
-"This driver was not enabled during build time and is thus not available."
-msgstr ""
-
-#: src/input/AxisConfigWidget.h:93
-msgid ""
-"The DBUS driver is not for actual devices but for remote control, Linux only."
-msgstr ""
-
-#: src/input/AxisConfigWidget.h:94
-msgid ""
-"The HIDAPI driver communicates directly with the 3D mice, Windows and macOS."
-msgstr ""
-
-#: src/input/AxisConfigWidget.h:95
-msgid ""
-"The SpaceNav driver enables 3D-input-devices using the spacenavd daemon, "
-"Linux only."
-msgstr ""
-
-#: src/input/AxisConfigWidget.h:96
-msgid ""
-"The Joystick driver uses the Linux joystick device (fixed to /dev/input/"
-"js0), Linux only."
-msgstr ""
-
-#: src/input/AxisConfigWidget.h:97
-msgid "The QGAMEPAD driver is for multiplattform Gamepad Support."
-msgstr ""
-
-#: src/input/ButtonConfigWidget.cc:186
-msgid "(not supported)"
-msgstr ""
-
 #: examples/examples.json:2
 msgid "Basics"
 msgstr "Примитивы"
@@ -1813,6 +1490,188 @@ msgid ""
 "parameters from DXF files. Besides DXF files OpenSCAD can read and create 3D "
 "models in the STL and OFF file formats."
 msgstr ""
+
+#~ msgid "Compilation generated %1 warning."
+#~ msgid_plural "Compilation generated %1 warnings."
+#~ msgstr[0] "При сборке выведено %1 предупреждение"
+#~ msgstr[1] "При сборке выведено %1 предупреждения"
+#~ msgstr[2] "При сборке выведено %1 предупреждений"
+
+#~ msgid ""
+#~ "Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], "
+#~ "distance = %.2f"
+#~ msgstr ""
+#~ "Обзор: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], "
+#~ "distance = %.2f"
+
+#~ msgid "Can't open file \"%s\" for export"
+#~ msgstr "Не удалось открыть файл \"%s\" для экспорта"
+
+#~ msgid "Untitled.scad"
+#~ msgstr "Безымянный.scad"
+
+#~ msgid "Compile error."
+#~ msgstr "Ошибка при сборке"
+
+#~ msgid "Error while compiling '%1'."
+#~ msgstr "Ошибка при сборке '%1'."
+
+#~ msgid " For details see <a href=\"#console\">console window</a>."
+#~ msgstr " Для подробностей смотреть <a href=\"#console\">окно консоли</a>."
+
+#~ msgid "Failed to open file for writing"
+#~ msgstr "Не удалось открыть файл для записи"
+
+#~ msgid "Saved design '%s'."
+#~ msgstr "Сохранён проект '%s'."
+
+#~ msgid "Error saving design"
+#~ msgstr "Ошибка при сохранении проекта"
+
+#~ msgid "Save File"
+#~ msgstr "Сохранить файл"
+
+#~ msgid "OpenSCAD Designs (*.scad)"
+#~ msgstr "Модели OpenSCAD (*.scad)"
+
+#~ msgid ""
+#~ "%1 already exists.\n"
+#~ "Do you want to replace it?"
+#~ msgstr ""
+#~ "%1 уже существует.\n"
+#~ "Перезаписать?"
+
+#~ msgid "Application"
+#~ msgstr "Приложение"
+
+#~ msgid ""
+#~ "The document has been modified.\n"
+#~ "Do you really want to reload the file?"
+#~ msgstr ""
+#~ "Документ был изменен.\n"
+#~ "Хотите перезагрузить документ?"
+
+#~ msgid "Export %1 File"
+#~ msgstr "Экспортировать в файл формата %1"
+
+#~ msgid "%1 Files (*%2)"
+#~ msgstr "Файлы %1 (*%2)"
+
+#~ msgid "Untitled"
+#~ msgstr "Безымянный.scad"
+
+#~ msgid "Export CSG File"
+#~ msgstr "Экспортировать файл CSG"
+
+#~ msgid "Untitled.csg"
+#~ msgstr "Безымянный.csg"
+
+#~ msgid "CSG Files (*.csg)"
+#~ msgstr "Файлы CSG (*.csg)"
+
+#~ msgid "Untitled.png"
+#~ msgstr "Безымянный.png"
+
+#~ msgid "Export Image"
+#~ msgstr "Экспортировать изображение"
+
+#~ msgid "PNG Files (*.png)"
+#~ msgstr "Файлы PNG (*.png)"
+
+#~ msgid "Console"
+#~ msgstr "Консоль"
+
+#~ msgid "The document has been modified."
+#~ msgstr "Документ был изменен."
+
+#~ msgid "Do you want to save your changes?"
+#~ msgstr "Сохранить изменения?"
+
+#~ msgid "Unknown error"
+#~ msgstr "Неизвестная ошибка"
+
+#~ msgid "Critical Error"
+#~ msgstr "Критическая ошибка"
+
+#~ msgid ""
+#~ "Fontconfig needs to update its font cache.\n"
+#~ "This can take up to a couple of minutes."
+#~ msgstr ""
+#~ "Fontconfig требуется обновить кеш шрифтов.\n"
+#~ "Это может занять пару минут."
+
+#~ msgid ""
+#~ "Warning: You may experience OpenCSG rendering errors.\n"
+#~ "\n"
+#~ msgstr ""
+#~ "Предупреждение: Возможны ошибки рендеринга OpenCSG.\n"
+#~ "\n"
+
+#~ msgid ""
+#~ "Warning: Missing OpenGL capabilities for OpenCSG - OpenCSG has been "
+#~ "disabled.\n"
+#~ "\n"
+#~ msgstr ""
+#~ "Предупреждение: Не найдены OpenGL расширения для OpenCSG - OpenCSG был "
+#~ "отключен.\n"
+#~ "\n"
+
+#~ msgid ""
+#~ "It is highly recommended to use OpenSCAD on a system with OpenGL 2.0 or "
+#~ "later.\n"
+#~ "Your renderer information is as follows:\n"
+#~ msgstr ""
+#~ "Крайне рекомендуется использовать OpenSCAD на системе с поддержкой  "
+#~ "OpenGL 2.0 или новее.\n"
+#~ "Информация о рендере:\n"
+
+#~ msgid ""
+#~ "GLEW version %1\n"
+#~ "%2 (%3)\n"
+#~ "OpenGL version %4\n"
+#~ msgstr ""
+#~ "Версия GLEW %1\n"
+#~ "%2 (%3)\n"
+#~ "Версия OpenGL %4\n"
+
+#, fuzzy
+#~ msgid "Toggle Perspective"
+#~ msgstr "Перспект&ива"
+
+#~ msgid "After indentation"
+#~ msgstr "После отступа"
+
+#~ msgid "remove current preset"
+#~ msgstr "Удалить выбранную предустановку"
+
+#~ msgid "save current preset"
+#~ msgstr "Сохранить выбранную предустановку"
+
+#, fuzzy
+#~ msgid "Do you want to delete the current preset?"
+#~ msgstr "Удалить выбранную предустановку"
+
+#, fuzzy
+#~ msgid "Do you want to delete the current preset '%1'?"
+#~ msgstr "Удалить выбранную предустановку"
+
+#~ msgid "Create new set of parameter"
+#~ msgstr "Создать новый набор параметров"
+
+#~ msgid "Enter name of the parameter set"
+#~ msgstr "Введите название нового набора параметров"
+
+#, fuzzy
+#~ msgid "The set name  %1 allready exists. Do you want overwrite it?"
+#~ msgstr ""
+#~ "%1 уже существует.\n"
+#~ "Перезаписать?"
+
+#~ msgid "Saving presets"
+#~ msgstr "Сохранение предустановок"
+
+#~ msgid "%1 was found, but was unreadable. Do you want to overwrite %1?"
+#~ msgstr "Файл %1 обнаружен, но не может быть прочтён. Перезаписать %1?"
 
 #~ msgid "no preset selected"
 #~ msgstr "Предустановка не выбрана"
