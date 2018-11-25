@@ -218,7 +218,7 @@ RESOURCES = openscad.qrc
 # Qt5 removed access to the QMAKE_UIC variable, the following
 # way works for both Qt4 and Qt5
 load(uic)
-uic.commands += -tr _
+uic.commands += -tr tr
 
 FORMS   += src/MainWindow.ui \
            src/Preferences.ui \
