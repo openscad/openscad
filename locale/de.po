@@ -1,21 +1,22 @@
 # German translations for OpenSCAD package.
-# opyright (C) 2013 THE OpenSCAD'S COPYRIGHT HOLDER
+# Copyright (C) 2013 THE OpenSCAD'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the OpenSCAD package.
 # Torsten Paul <Torsten.Paul@gmx.de>, 2014.
+# Michael Frey <michael.frey@gmx.ch>, 2018.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2014.01.05\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-25 12:07+0100\n"
-"PO-Revision-Date: 2018-03-01 07:41+0100\n"
+"POT-Creation-Date: 2018-11-25 14:06+0100\n"
+"PO-Revision-Date: 2018-11-25 13:19+0100\n"
 "Last-Translator: Torsten Paul <Torsten.Paul@gmx.de>\n"
 "Language-Team: German\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.0.4\n"
+"X-Generator: Poedit 2.1.1\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
@@ -62,12 +63,13 @@ msgstr "Einstellungen"
 #: objects/ui_AxisConfigWidget.h:850 objects/ui_AxisConfigWidget.h:852
 #: objects/ui_AxisConfigWidget.h:863
 msgid "Trim"
-msgstr ""
+msgstr "Trim"
 
 #: objects/ui_AxisConfigWidget.h:837
-#, fuzzy
 msgid "Reset Trim"
-msgstr "Ans&icht zurücksetzen"
+msgstr ""
+"Trim\n"
+"zurücksetzen"
 
 #: objects/ui_AxisConfigWidget.h:838 objects/ui_AxisConfigWidget.h:841
 #: objects/ui_AxisConfigWidget.h:842 objects/ui_AxisConfigWidget.h:843
@@ -80,179 +82,191 @@ msgstr ""
 #: objects/ui_AxisConfigWidget.h:839
 msgid "Auto Trim Axis"
 msgstr ""
+"Automatisches\n"
+"Trimmen der Achsen"
 
 #: objects/ui_AxisConfigWidget.h:853
-msgid "Axis2"
-msgstr ""
+#, fuzzy
+msgid "Axis 2"
+msgstr "Achse 2"
 
 #: objects/ui_AxisConfigWidget.h:854
-msgid "Axis0"
-msgstr ""
+#, fuzzy
+msgid "Axis 0"
+msgstr "Achse 0"
 
 #: objects/ui_AxisConfigWidget.h:855
-msgid "Axis3"
-msgstr ""
+#, fuzzy
+msgid "Axis 3"
+msgstr "Achse 3"
 
 #: objects/ui_AxisConfigWidget.h:856
-msgid "Axis6"
-msgstr ""
+#, fuzzy
+msgid "Axis 6"
+msgstr "Achse 6"
 
 #: objects/ui_AxisConfigWidget.h:857
-msgid "Axis8"
-msgstr ""
+#, fuzzy
+msgid "Axis 8"
+msgstr "Achse 8"
 
 #: objects/ui_AxisConfigWidget.h:858
-msgid "Axis7"
-msgstr ""
+#, fuzzy
+msgid "Axis 7"
+msgstr "Achse 7"
 
 #: objects/ui_AxisConfigWidget.h:859
-msgid "Axis5"
-msgstr ""
+#, fuzzy
+msgid "Axis 5"
+msgstr "Achse 5"
 
 #: objects/ui_AxisConfigWidget.h:860
-msgid "Axis1"
-msgstr ""
+#, fuzzy
+msgid "Axis 1"
+msgstr "Achse 1"
 
 #: objects/ui_AxisConfigWidget.h:861
-msgid "Axis4"
-msgstr ""
+#, fuzzy
+msgid "Axis 4"
+msgstr "Achse 4"
 
 #: objects/ui_AxisConfigWidget.h:864
 #, fuzzy
 msgid "Rotation"
-msgstr "&Dokumentation"
+msgstr "Rotation"
 
 #: objects/ui_AxisConfigWidget.h:865
-#, fuzzy
 msgid "Zoom"
-msgstr "Vergrößern"
+msgstr "Zoom"
 
 #: objects/ui_AxisConfigWidget.h:866
 msgid "X"
-msgstr ""
+msgstr "X"
 
 #: objects/ui_AxisConfigWidget.h:867
 msgid "Gain"
-msgstr ""
+msgstr "Verstärkung"
 
 #: objects/ui_AxisConfigWidget.h:868
 msgid "Y"
-msgstr ""
+msgstr "Y"
 
 #: objects/ui_AxisConfigWidget.h:869
 msgid "Z"
-msgstr ""
+msgstr "Z"
 
 #: objects/ui_AxisConfigWidget.h:870
 msgid "Translation"
-msgstr ""
+msgstr "Translation"
 
 #: objects/ui_AxisConfigWidget.h:871
-#, fuzzy
 msgid "ViewPort rel.<br/>Translation"
-msgstr "Aktuelle Versch&iebung einfügen"
+msgstr "Ansichtabhängige<br/>Translation"
 
 #: objects/ui_AxisConfigWidget.h:872
-#, fuzzy
-msgid "ViewPortrel.<br />Rotation"
-msgstr "Aktuelle Versch&iebung einfügen"
+msgid "ViewPort rel.<br />Rotation"
+msgstr ""
+"Ansichtabhängige\n"
+"Rotation"
 
 #: objects/ui_AxisConfigWidget.h:873
+#, fuzzy
 msgid "Axis Setup:"
-msgstr ""
+msgstr "Achseneinstellung:"
 
 #: objects/ui_AxisConfigWidget.h:874
 msgid "<b>Driver selection:</b> <i>(changes requires restarting OpenSCAD)</i>"
 msgstr ""
+"<b>Treiber Auswahl:</b><i>Änderungen erfordern einen Neustart von OpenSCAD)</"
+"i>"
 
 #: objects/ui_AxisConfigWidget.h:875
-#, fuzzy
 msgid "SpaceNav"
-msgstr "Leerzeichen"
+msgstr "SpaceNav"
 
 #: objects/ui_AxisConfigWidget.h:876
 msgid "HIDAPI"
-msgstr ""
+msgstr "HIDAPI"
 
 #: objects/ui_AxisConfigWidget.h:877
 msgid "QGamepad"
-msgstr ""
+msgstr "QGamepad"
 
 #: objects/ui_AxisConfigWidget.h:878
 msgid "Joystick"
-msgstr ""
+msgstr "Joystick"
 
 #: objects/ui_AxisConfigWidget.h:879
 msgid "DBus"
-msgstr ""
+msgstr "DBus"
 
 #: objects/ui_AxisConfigWidget.h:880
 msgid "Axis Mapping:"
-msgstr ""
+msgstr "Achsenzuordnung:"
 
 #: objects/ui_ButtonConfigWidget.h:267
 msgid "Button 2"
-msgstr ""
+msgstr "Knopf 2"
 
 #: objects/ui_ButtonConfigWidget.h:268
 msgid "Button 3"
-msgstr ""
+msgstr "Knopf 3"
 
 #: objects/ui_ButtonConfigWidget.h:269
 msgid "Button 5"
-msgstr ""
+msgstr "Knopf 5"
 
 #: objects/ui_ButtonConfigWidget.h:270
 msgid "Button 6"
-msgstr ""
+msgstr "Knopf 6"
 
 #: objects/ui_ButtonConfigWidget.h:271
 msgid "Button 4"
-msgstr ""
+msgstr "Knopf 4"
 
 #: objects/ui_ButtonConfigWidget.h:272
 msgid "Button 9"
-msgstr ""
+msgstr "Knopf 9"
 
 #: objects/ui_ButtonConfigWidget.h:273
 msgid "Button 8"
-msgstr ""
+msgstr "Knopf 8"
 
 #: objects/ui_ButtonConfigWidget.h:274
 msgid "Button 7"
-msgstr ""
+msgstr "Knopf 7"
 
 #: objects/ui_ButtonConfigWidget.h:275
 msgid "Button 0"
-msgstr ""
+msgstr "Knopf 0"
 
 #: objects/ui_ButtonConfigWidget.h:276
 msgid "Button 1"
-msgstr ""
+msgstr "Knopf 1"
 
 #: objects/ui_ButtonConfigWidget.h:277
 msgid "Button 12"
-msgstr ""
+msgstr "Knopf 12"
 
 #: objects/ui_ButtonConfigWidget.h:278
 msgid "Button 10"
-msgstr ""
+msgstr "Knopf 10"
 
 #: objects/ui_ButtonConfigWidget.h:279
 msgid "Button 11"
-msgstr ""
+msgstr "Knopf 11"
 
 #: objects/ui_ButtonConfigWidget.h:280
 msgid "Button 13"
-msgstr ""
+msgstr "Knopf 13"
 
 #: objects/ui_ButtonConfigWidget.h:281
 msgid "Button 14"
-msgstr ""
+msgstr "Knopf 14"
 
 #: objects/ui_ButtonConfigWidget.h:282
 msgid "Button 15"
-msgstr ""
+msgstr "Knopf 15"
 
 #: objects/ui_FontListDialog.h:103
 msgid "OpenSCAD Font List"
@@ -405,13 +419,12 @@ msgid "Ctrl+Shift+Z"
 msgstr "Ctrl+Shift+Z"
 
 #: objects/ui_MainWindow.h:917
-#, fuzzy
 msgid "Ctrl+Y"
-msgstr "Ctrl+N"
+msgstr "Ctrl+Y"
 
 #: objects/ui_MainWindow.h:919
 msgid "Cu&t"
-msgstr "Ausschneiden"
+msgstr "&Ausschneiden"
 
 #: objects/ui_MainWindow.h:921
 msgid "Ctrl+X"
@@ -419,7 +432,7 @@ msgstr "Ctrl+X"
 
 #: objects/ui_MainWindow.h:923
 msgid "&Copy"
-msgstr "Kopieren"
+msgstr "&Kopieren"
 
 #: objects/ui_MainWindow.h:925
 msgid "Ctrl+C"
@@ -683,11 +696,11 @@ msgstr "&Dokumentation"
 
 #: objects/ui_MainWindow.h:1039
 msgid "Clear Recent"
-msgstr "Zuletzt benutze Dateien löschen"
+msgstr "Liste der zuletzt benutzen Dateien löschen"
 
 #: objects/ui_MainWindow.h:1040
 msgid "Export as &DXF..."
-msgstr "DXF exportieren..."
+msgstr "&DXF exportieren..."
 
 #: objects/ui_MainWindow.h:1041
 msgid "&Close"
@@ -755,11 +768,11 @@ msgstr "&Automatisch neu Laden und Vorschau"
 
 #: objects/ui_MainWindow.h:1069
 msgid "Export as &Image..."
-msgstr "Image exportieren..."
+msgstr "&Bild exportieren..."
 
 #: objects/ui_MainWindow.h:1070
 msgid "Export as &CSG..."
-msgstr "CSG exportieren..."
+msgstr "&CSG exportieren..."
 
 #: objects/ui_MainWindow.h:1071
 msgid "&Library info"
@@ -779,16 +792,15 @@ msgstr "&Fontliste"
 
 #: objects/ui_MainWindow.h:1075
 msgid "Export as S&VG..."
-msgstr "SVG exportieren..."
+msgstr "S&VG exportieren..."
 
 #: objects/ui_MainWindow.h:1076
 msgid "Export as &AMF..."
-msgstr "AMF exportieren..."
+msgstr "&AMF exportieren..."
 
 #: objects/ui_MainWindow.h:1077
-#, fuzzy
 msgid "Export as &3MF..."
-msgstr "AMF exportieren..."
+msgstr "&3MF exportieren..."
 
 #: objects/ui_MainWindow.h:1078
 msgid "Zoom In"
@@ -811,9 +823,8 @@ msgid "View All"
 msgstr "Alle&s anzeigen"
 
 #: objects/ui_MainWindow.h:1088
-#, fuzzy
 msgid "Ctrl+Shift+V"
-msgstr "Ctrl+Shift+S"
+msgstr "Ctrl+Shift+V"
 
 #: objects/ui_MainWindow.h:1090
 msgid "Conv&ert Tabs to Spaces"
@@ -836,14 +847,12 @@ msgid "&Cheat Sheet"
 msgstr "&Befehlsübersicht"
 
 #: objects/ui_MainWindow.h:1097
-#, fuzzy
 msgid "Copy Viewport"
-msgstr "Kopieren"
+msgstr "Viewport kopieren"
 
 #: objects/ui_MainWindow.h:1099
-#, fuzzy
 msgid "Ctrl+Shift+C"
-msgstr "Ctrl+Shift+S"
+msgstr "Ctrl+Shift+C"
 
 #: objects/ui_MainWindow.h:1101
 msgid "Hide Customizer"
@@ -934,8 +943,9 @@ msgid "All"
 msgstr "Alles"
 
 #: objects/ui_MainWindow.h:1127
-msgid "Parameter Widget"
-msgstr ""
+#, fuzzy
+msgid "Customizer Widget"
+msgstr "Customizer"
 
 #: objects/ui_OpenCSGWarningDialog.h:83
 msgid "OpenGL Warning"
@@ -983,30 +993,27 @@ msgstr "Form"
 
 #: objects/ui_ParameterEntryWidget.h:341
 msgid "Parameter"
-msgstr ""
+msgstr "Parameter"
 
 #: objects/ui_ParameterEntryWidget.h:342 objects/ui_ParameterEntryWidget.h:343
 msgid "Description"
-msgstr ""
+msgstr "Beschreibung"
 
 #: objects/ui_ParameterWidget.h:161
-#, fuzzy
 msgid "save preset"
 msgstr "aktuelle Voreinstellung speichern"
 
 #: objects/ui_ParameterWidget.h:163
-#, fuzzy
 msgid "delete current preset"
 msgstr "aktuelle Voreinstellung löschen"
 
 #: objects/ui_ParameterWidget.h:165
 msgid "-"
-msgstr ""
+msgstr "-"
 
 #: objects/ui_ParameterWidget.h:167
-#, fuzzy
 msgid "preset selection"
-msgstr "keine Voreinstellung ausgewählt"
+msgstr "Voreinstellungsauswahl"
 
 #: objects/ui_ParameterWidget.h:170 src/parameter/ParameterWidget.cc:162
 msgid "add new preset"
@@ -1014,46 +1021,41 @@ msgstr "neue Voreinstellung hinzufügen"
 
 #: objects/ui_ParameterWidget.h:172
 msgid "+"
-msgstr ""
+msgstr "+"
 
 #: objects/ui_ParameterWidget.h:174
-#, fuzzy
 msgid "Automatic Preview"
-msgstr "&Automatisch neu Laden und Vorschau"
+msgstr "Automatische Vorschau"
 
 #: objects/ui_ParameterWidget.h:175
-#, fuzzy
 msgid "Show Details"
-msgstr "Koordinaten&achsen anzeigen"
+msgstr "Details anzeigen"
 
 #: objects/ui_ParameterWidget.h:176
 msgid "Inline Details"
-msgstr ""
+msgstr "Details Inline anzeigen"
 
 #: objects/ui_ParameterWidget.h:177
-#, fuzzy
 msgid "Hide Details"
-msgstr "Symbolleisten verstecken"
+msgstr "Details verstecken"
 
 #: objects/ui_ParameterWidget.h:178
 msgid "Description Only"
-msgstr ""
+msgstr "nur Beschreibung"
 
 #: objects/ui_ParameterWidget.h:181
 msgid "reset all parameters to the currently selected preset"
-msgstr ""
+msgstr "alle Parameter auf die aktuelle Voreinstellung zurücksetzen"
 
 #: objects/ui_ParameterWidget.h:183
-#, fuzzy
 msgid "Reset"
-msgstr "Ans&icht zurücksetzen"
+msgstr "zurücksetzen"
 
 #: objects/ui_Preferences.h:1174
 msgid "3D View"
 msgstr "3D Ansicht"
 
 #: objects/ui_Preferences.h:1175
-#, fuzzy
 msgctxt "preferences"
 msgid "Advanced"
 msgstr "Erweitert"
@@ -1076,15 +1078,15 @@ msgstr "Experimentelle Erweiterungen ein-/ausschalten"
 
 #: objects/ui_Preferences.h:1182
 msgid "Axis"
-msgstr ""
+msgstr "Achse"
 
 #: objects/ui_Preferences.h:1184
 msgid "Input driver configuration and Axis mapping"
-msgstr ""
+msgstr "Treiberkonfiguration und Achsenzuordnung"
 
 #: objects/ui_Preferences.h:1186
 msgid "Buttons"
-msgstr ""
+msgstr "Knöpfe"
 
 #: objects/ui_Preferences.h:1187
 msgid "Color scheme:"
@@ -1346,7 +1348,7 @@ msgstr "Fenster nach vorne bringen nach automatischem Neuladen"
 
 #: objects/ui_Preferences.h:1267
 msgid "Play sound notification on render complete"
-msgstr ""
+msgstr "Ton abspielen wenn rendern abgeschlossen ist"
 
 #: objects/ui_ProgressWidget.h:70
 msgid "%v / %m"
@@ -1364,7 +1366,7 @@ msgstr ""
 #: src/export.cc:77
 #, c-format
 msgid "Can't open file \"%s\" for export"
-msgstr "Can't open file \"%s\" for export"
+msgstr "Datei\"%s\" konnte nicht zum Export geöffnet werden"
 
 #: src/export.cc:92
 #, c-format
@@ -1394,9 +1396,8 @@ msgid " For details see <a href=\"#console\">console window</a>."
 msgstr " Für Details das <a href=\"#console\">Konsolen-Fenster</a> öffnen."
 
 #: src/mainwin.cc:1519
-#, fuzzy
 msgid "Failed to open file for writing"
-msgstr "Failed to open file for writing: %s (%s)"
+msgstr "Datei konnte nicht zum schreiben geöffnet werden"
 
 #: src/mainwin.cc:1529
 #, c-format
@@ -1404,9 +1405,8 @@ msgid "Saved design '%s'."
 msgstr "Saved design '%s'."
 
 #: src/mainwin.cc:1532
-#, fuzzy
 msgid "Error saving design"
-msgstr "error writing deps"
+msgstr "Fehler beim speichern des Designs"
 
 #: src/mainwin.cc:1540
 msgid "Save File"
@@ -1422,7 +1422,7 @@ msgid ""
 "Do you want to replace it?"
 msgstr ""
 "%1 existiert bereits.\n"
-"Mochten Sie die Datei ersetzen?"
+"Möchten Sie die Datei ersetzen?"
 
 #: src/mainwin.cc:1899
 msgid "Application"
@@ -1482,7 +1482,7 @@ msgstr "Customizer"
 
 #: src/mainwin.cc:2795
 msgid "The document has been modified."
-msgstr "Das Dokument ist verändert."
+msgstr "Das Dokument wurde verändert."
 
 #: src/mainwin.cc:2796
 msgid "Do you want to save your changes?"
@@ -1552,32 +1552,32 @@ msgstr ""
 #: src/settings.cc:77
 #, c-format
 msgid "Axis %d"
-msgstr ""
+msgstr "Achse %d"
 
 #: src/settings.cc:81
 #, c-format
 msgid "Axis %d (inverted)"
-msgstr ""
+msgstr "Achse %d (invertiert)"
 
 #: src/settings.cc:90
-#, fuzzy
 msgid "Toggle Perspective"
-msgstr "&Perspektivisch"
+msgstr "Perspektive umschalten"
 
 #: src/settings.cc:171
 msgid "After indentation"
 msgstr "nach Einrückung"
 
 #: src/parameter/ParameterWidget.cc:79 src/parameter/ParameterWidget.cc:238
-#, fuzzy
 msgid "changes on current preset not saved"
-msgstr "aktuelle Voreinstellung speichern"
+msgstr "Änderungen an den aktuelle Voreinstellung nicht gespeichert"
 
 #: src/parameter/ParameterWidget.cc:81
 msgid ""
 "The changes on the current preset %1 are not saved yet. Do you really want "
 "to reset this preset and lose your changes?"
 msgstr ""
+"Die Änderungen an der akutellen Voreinstellung %1 sind noch nicht gespeichert."
+"Möchten Sie die Änderungen wirklich zurücksetzen?"
 
 #: src/parameter/ParameterWidget.cc:164
 msgid "remove current preset"
@@ -1594,23 +1594,23 @@ msgstr "JSON file ist nicht schreibbar"
 
 #: src/parameter/ParameterWidget.cc:222
 msgid "design default values"
-msgstr ""
+msgstr "Standardwerte des Designs"
 
 #: src/parameter/ParameterWidget.cc:240
 msgid ""
 "The current preset %1 contains changes, but is not saved yet. Do you really "
 "want to change the preset and lose your changes?"
 msgstr ""
+"Die Änderungen an der akutellen Voreinstellung %1 sind noch nicht gespeichert."
+"Möchten Sie wirklich die Voreinstellung wechseln und somit Ihre Änderungen verlieren?"
 
 #: src/parameter/ParameterWidget.cc:280
-#, fuzzy
 msgid "Do you want to delete the current preset?"
-msgstr "aktuelle Voreinstellung löschen"
+msgstr "Möchten Sie die aktuelle Voreinstellung löschen?"
 
 #: src/parameter/ParameterWidget.cc:282
-#, fuzzy
 msgid "Do you want to delete the current preset '%1'?"
-msgstr "aktuelle Voreinstellung löschen"
+msgstr "Möchten Sie die aktuelle Voreinstellung '%1' löschen?"
 
 #: src/parameter/ParameterWidget.cc:517
 msgid "Create new set of parameter"
@@ -1622,21 +1622,17 @@ msgstr "Bitte einen Namen für diese Voreinstellung eingeben"
 
 #: src/parameter/ParameterWidget.cc:528
 msgid "Set Name %1 allready exists"
-msgstr ""
+msgstr "Set %1 existiert bereits."
 
 #: src/parameter/ParameterWidget.cc:529
-#, fuzzy
 msgid "The set name  %1 allready exists. Do you want overwrite it?"
-msgstr ""
-"%1 existiert bereits.\n"
-"Mochten Sie die Datei ersetzen?"
+msgstr "%1 existiert bereits. Mochten Sie diese Voreinstellung ersetzen?"
 
 #: src/parameter/ParameterWidget.cc:573
 msgid "Saving presets"
 msgstr "Voreinstellung speichern"
 
 #: src/parameter/ParameterWidget.cc:574
-#, fuzzy
 msgid "%1 was found, but was unreadable. Do you want to overwrite %1?"
 msgstr ""
 "%1 wurde gefunden, konnte aber nicht gelesen werden. Möchten Sie %1 "
@@ -1675,7 +1671,7 @@ msgstr ""
 
 #: src/input/ButtonConfigWidget.cc:186
 msgid "(not supported)"
-msgstr ""
+msgstr "(nicht unterstützt)"
 
 #: examples/examples.json:2
 msgid "Basics"
@@ -1687,11 +1683,11 @@ msgstr "Funktionen"
 
 #: examples/examples.json:20
 msgid "Advanced"
-msgstr "Erweitert"
+msgstr "weiterführende Beispiele"
 
 #: examples/examples.json:30
 msgid "Parametric"
-msgstr ""
+msgstr "Parametrische Beispiele"
 
 #: examples/examples.json:34
 msgid "Old"
@@ -1734,6 +1730,10 @@ msgid ""
 "parameters from DXF files. Besides DXF files OpenSCAD can read and create 3D "
 "models in the STL and OFF file formats."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Parameter Widget"
+#~ msgstr "Parameter"
 
 #~ msgid "no preset selected"
 #~ msgstr "keine Voreinstellung ausgewählt"
