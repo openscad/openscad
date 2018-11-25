@@ -606,7 +606,7 @@
   </widget>
   <widget class="Dock" name="parameterDock">
    <property name="windowTitle">
-    <string>Parameter Widget</string>
+    <string>Customizer Widget</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>2</number>
