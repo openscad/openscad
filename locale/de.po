@@ -86,52 +86,42 @@ msgstr ""
 "Trimmen der Achsen"
 
 #: objects/ui_AxisConfigWidget.h:853
-#, fuzzy
 msgid "Axis 2"
 msgstr "Achse 2"
 
 #: objects/ui_AxisConfigWidget.h:854
-#, fuzzy
 msgid "Axis 0"
 msgstr "Achse 0"
 
 #: objects/ui_AxisConfigWidget.h:855
-#, fuzzy
 msgid "Axis 3"
 msgstr "Achse 3"
 
 #: objects/ui_AxisConfigWidget.h:856
-#, fuzzy
 msgid "Axis 6"
 msgstr "Achse 6"
 
 #: objects/ui_AxisConfigWidget.h:857
-#, fuzzy
 msgid "Axis 8"
 msgstr "Achse 8"
 
 #: objects/ui_AxisConfigWidget.h:858
-#, fuzzy
 msgid "Axis 7"
 msgstr "Achse 7"
 
 #: objects/ui_AxisConfigWidget.h:859
-#, fuzzy
 msgid "Axis 5"
 msgstr "Achse 5"
 
 #: objects/ui_AxisConfigWidget.h:860
-#, fuzzy
 msgid "Axis 1"
 msgstr "Achse 1"
 
 #: objects/ui_AxisConfigWidget.h:861
-#, fuzzy
 msgid "Axis 4"
 msgstr "Achse 4"
 
 #: objects/ui_AxisConfigWidget.h:864
-#, fuzzy
 msgid "Rotation"
 msgstr "Rotation"
 
@@ -170,15 +160,13 @@ msgstr ""
 "Rotation"
 
 #: objects/ui_AxisConfigWidget.h:873
-#, fuzzy
 msgid "Axis Setup:"
 msgstr "Achseneinstellung:"
 
 #: objects/ui_AxisConfigWidget.h:874
 msgid "<b>Driver selection:</b> <i>(changes requires restarting OpenSCAD)</i>"
 msgstr ""
-"<b>Treiber Auswahl:</b><i>Änderungen erfordern einen Neustart von OpenSCAD)</"
-"i>"
+"<b>Treiber Auswahl:</b> <i>Änderungen erfordern einen Neustart von OpenSCAD)</i>"
 
 #: objects/ui_AxisConfigWidget.h:875
 msgid "SpaceNav"
@@ -943,7 +931,6 @@ msgid "All"
 msgstr "Alles"
 
 #: objects/ui_MainWindow.h:1127
-#, fuzzy
 msgid "Customizer Widget"
 msgstr "Customizer"
 
