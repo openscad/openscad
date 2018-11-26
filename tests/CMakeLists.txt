@@ -1227,6 +1227,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/errors-warnings.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/isundef-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/operators-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/builtins-calling-vec3vec2.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1472.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/empty-stl.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1516.scad
