@@ -19,3 +19,7 @@ hello();
 b=test();
 //radius is ignored as a diameter is defined
 circle(r=1,d=4);
+
+$vpr="[1,2,3]";
+$vpt=[1,2,3,4];
+$vpd=[1];

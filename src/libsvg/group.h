@@ -10,7 +10,6 @@ protected:
 
 public:
     group();
-    group(const group& orig);
     ~group();
 
     bool is_container() override { return true; }

@@ -4,14 +4,8 @@ namespace libsvg {
 
 const std::string line::name("line"); 
 
-line::line()
+line::line() : x2(0), y2(0)
 {
-}
-
-line::line(const line& orig) : shape(orig)
-{
-	x2 = orig.x2;
-	y2 = orig.y2;
 }
 
 line::~line()

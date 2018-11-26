@@ -672,7 +672,7 @@ void yyerror (char const *s)
          (*sourcefile()) % lexerget_lineno() % s);
 }
 
-bool parse(FileModule *&module, const char *text, const std::string &filename, const std::string &mainFile, int debug)
+bool parse(FileModule *&module, const std::string& text, const std::string &filename, const std::string &mainFile, int debug)
 {
   fs::path parser_sourcefile = fs::absolute(fs::path(filename));
   main_file_folder = parser_sourcefile.parent_path().generic_string();
@@ -681,7 +681,7 @@ bool parse(FileModule *&module, const char *text, const std::string &filename, c
 
   lexerin = NULL;
   parser_error_pos = -1;
-  parser_input_buffer = text;
+  parser_input_buffer = text.c_str();
   fileEnded=false;
 
   rootmodule = new FileModule(main_file_folder, parser_sourcefile.filename().generic_string());
@@ -698,10 +698,8 @@ bool parse(FileModule *&module, const char *text, const std::string &filename, c
   if (parserretval != 0) return false;
 
   parser_error_pos = -1;
+  parser_input_buffer = nullptr;
   scope_stack.pop();
 
-  parser_input_buffer = nullptr;
-  parser_sourcefile.clear();
-  
   return true;
 }

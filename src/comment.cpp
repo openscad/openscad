@@ -257,12 +257,12 @@ static GroupList collectGroups(const std::string &fulltext)
   Insert Parameters in AST of given scad file
   form of annotations
 */
-void CommentParser::collectParameters(const char *fulltext, FileModule *root_module)
+void CommentParser::collectParameters(const std::string& fulltext, FileModule *root_module)
 {
 	static auto EmptyStringLiteral(std::make_shared<Literal>(ValuePtr(std::string(""))));
 
 	// Get all groups of parameters
-	GroupList groupList = collectGroups(std::string(fulltext));
+	GroupList groupList = collectGroups(fulltext);
 	int parseTill=getLineToStop(fulltext);
 	// Extract parameters for all literal assignments
 	for (auto &assignment : root_module->scope.assignments) {
@@ -281,7 +281,7 @@ void CommentParser::collectParameters(const char *fulltext, FileModule *root_mod
 		AnnotationList *annotationList = new AnnotationList();
  
 		// Extracting the parameter comment
-		std::string comment = getComment(std::string(fulltext), firstLine);
+		std::string comment = getComment(fulltext, firstLine);
 		// getting the node for parameter annotation
 		shared_ptr<Expression> params = CommentParser::parser(comment.c_str());
 		if (!params) {
@@ -292,7 +292,7 @@ void CommentParser::collectParameters(const char *fulltext, FileModule *root_mod
 		annotationList->push_back(Annotation("Parameter", params));
 
 		//extracting the description
-		std::string descr = getDescription(std::string(fulltext), firstLine - 1);
+		std::string descr = getDescription(fulltext, firstLine - 1);
 		if (descr != "") {
 			//creating node for description
 			shared_ptr<Expression> expr(new Literal(ValuePtr(std::string(descr.c_str()))));

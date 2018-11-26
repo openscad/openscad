@@ -135,6 +135,9 @@ ValuePtr Context::lookup_variable(const std::string &name, bool silent, const Lo
 				return confvars.find(name)->second;
 			}
 		}
+		if (!silent) {
+			PRINTB("WARNING: Ignoring unknown variable '%s', %s.", name % loc.toString());
+		}
 		return ValuePtr::undefined;
 	}
 	if (!this->parent && this->constants.find(name) != this->constants.end()) {

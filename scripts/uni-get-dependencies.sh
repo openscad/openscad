@@ -169,8 +169,10 @@ get_ubuntu_14_deps()
 
 get_arch_deps()
 {
-  pacman -S --noconfirm qt5 qscintilla-qt5 cgal gmp mpfr boost \
-    opencsg glew eigen glib2 fontconfig freetype2 harfbuzz bison flex make
+  pacman -S --noconfirm \
+	base-devel gcc bison flex make libzip \
+	qt5 qscintilla-qt5 cgal gmp mpfr boost opencsg \
+	glew eigen glib2 fontconfig freetype2 harfbuzz
 }
 
 get_ubuntu_16_deps()

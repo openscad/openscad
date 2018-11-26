@@ -44,11 +44,6 @@ path::path()
 {
 }
 
-path::path(const path& orig) : shape(orig)
-{
-	data = orig.data;
-}
-
 path::~path()
 {
 }
