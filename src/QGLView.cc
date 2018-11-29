@@ -312,12 +312,13 @@ bool QGLView::save(const char *filename)
 
 void QGLView::wheelEvent(QWheelEvent *event)
 {
+  auto pos = event->pos();
 #if QT_VERSION >= 0x050000
     int v = event->angleDelta().y();
 #else
     int v = event->delta();
 #endif
-    zoom(v, true);
+    zoomCursor(pos.x(), pos.y(), v);
 }
 
 void QGLView::ZoomIn(void)
@@ -334,6 +335,21 @@ void QGLView::zoom(double v, bool relative)
 {
     this->cam.zoom(v, relative);
     updateGL();
+}
+
+void QGLView::zoomCursor(int x, int y, int zoom)
+{
+  auto old_dist = cam.zoomValue();
+  this->cam.zoom(zoom, true);
+  auto dist = cam.zoomValue();
+  auto ratio = old_dist / dist - 1.0; 
+  // screen coordinates from -1 to 1
+  auto screen_x = 2.0 * (x + 0.5) / this->cam.pixel_width - 1.0;
+  auto screen_y = 1.0 - 2.0 * (y + 0.5) / this->cam.pixel_height;
+  auto height = dist * tan(cam.fov /2 * M_PI / 180);
+  auto mx = ratio*screen_x*(aspectratio*height);
+  auto mz = ratio*screen_y*height;
+  translate(-mx, 0, -mz, true);
 }
 
 void QGLView::setOrthoMode(bool enabled)
