@@ -1,4 +1,5 @@
 #include "printutils.h"
+#include "boost-utils.h"
 #include <sstream>
 #include <stdio.h>
 #include <boost/algorithm/string.hpp>
@@ -14,6 +15,8 @@ std::string OpenSCAD::debug("");
 bool OpenSCAD::quiet = false;
 
 boost::circular_buffer<std::string> lastmessages(5);
+std::string mainFilename("");
+std::string currentFilename("");
 
 void set_output_handler(OutputHandlerFunc *newhandler, void *userdata)
 {
@@ -61,6 +64,39 @@ void PRINT_NOCACHE(const std::string &msg)
 		}
 		if (i == 5) return; // Suppress output after 5 equal ERROR or WARNING outputs.
 		else lastmessages.push_back(msg);
+	}
+	if (boost::starts_with(msg, "MAINFILENAME")) {
+		auto name = msg.substr(strlen("MAINFILENAME: "));
+		if (mainFilename == name){
+			return;
+		}
+		mainFilename = name;
+		currentFilename = "";
+		return;
+	}
+	if (boost::starts_with(msg, "FILENAME")) {
+		auto name = msg.substr(strlen("FILENAME: "));
+		if (currentFilename == name){
+			return;
+		}
+		currentFilename = name;
+		std::string msgTemplate =  "FILENAME: %s";
+		if(name == mainFilename){
+			msgTemplate =  "FILENAME: %s (mainfile)";
+		}
+		std::string uncPath = boostfs_uncomplete(currentFilename,boost::filesystem::path(mainFilename).parent_path().generic_string()).generic_string();
+		std::string message = boost::str(boost::format(msgTemplate) % uncPath);
+		if (!OpenSCAD::quiet){
+			if (!outputhandler) {
+				fprintf(stderr, "%s\n", message.c_str());
+			} else {
+				outputhandler(message, outputhandler_data);
+			}
+		}
+		return;
+	}
+	if (! boost::starts_with(msg, "WARNING") && ! boost::starts_with(msg, "FILENAME")){
+		currentFilename = "";
 	}
 
 	if (!OpenSCAD::quiet || boost::starts_with(msg, "ERROR")) {
@@ -123,4 +159,5 @@ void resetSuppressedMessages()
 {
 	printedDeprecations.clear();
 	lastmessages.clear();
+	currentFilename="";
 }

@@ -1,3 +1,4 @@
 WARNING: myval was assigned on line 5 but was overwritten on line 7
+FILENAME: value-reassignment-tests.scad (mainfile)
 WARNING: Ignoring unknown variable 'i', line 7.
 ECHO: undef, 2

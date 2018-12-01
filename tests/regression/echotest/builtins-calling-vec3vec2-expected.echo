@@ -1,3 +1,4 @@
+FILENAME: builtins-calling-vec3vec2.scad (mainfile)
 WARNING: Unable to convert cube(size=[1], ...) parameter to a number or a vec3 of numbers, line 4
 WARNING: Unable to convert cube(size=[1, 2], ...) parameter to a number or a vec3 of numbers, line 5
 WARNING: Unable to convert cube(size=[1, 2, 3, 4], ...) parameter to a number or a vec3 of numbers, line 7

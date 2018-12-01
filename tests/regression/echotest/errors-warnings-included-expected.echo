@@ -1,5 +1,14 @@
+FILENAME: errors-warnings.scad
+WARNING: Ignoring unknown function 'test', line 19.
+ECHO: "include"
+FILENAME: errors-warnings.scad
+WARNING: Ignoring unknown variable 'a', line 1.
+ECHO: undef
+FILENAME: errors-warnings.scad
+WARNING: Ignoring unknown module 'hello', line 17.
+WARNING: Ignoring radius variable 'r' as diameter 'd' is defined too.
 DEPRECATED: Using ranges of the form [begin:end] with begin value greater than the end value is deprecated.
-FILENAME: for-tests.scad (mainfile)
+FILENAME: ../3D/features/for-tests.scad
 WARNING: Bad range parameter in for statement: too many elements (4294967295), line 35
 ECHO: "a"
 ECHO: "↑"
@@ -12,7 +21,7 @@ ECHO: "INF", 0
 ECHO: "-INF", 0
 ECHO: "INF", 0
 ECHO: "-INF", 1
-FILENAME: for-tests.scad (mainfile)
+FILENAME: ../3D/features/for-tests.scad
 WARNING: Bad range parameter in for statement: too many elements (4294967295), line 72
 WARNING: Bad range parameter in for statement: too many elements (4294967295), line 73
 WARNING: Bad range parameter in for statement: too many elements (4294967295), line 74
@@ -25,3 +34,12 @@ WARNING: Bad range parameter in for statement: too many elements (4294967295), l
 WARNING: Bad range parameter in for statement: too many elements (4294967295), line 82
 WARNING: Bad range parameter in for statement: too many elements (4294967295), line 83
 WARNING: Bad range parameter in for statement: too many elements (4294967295), line 84
+ECHO: "mainfile"
+FILENAME: errors-warnings-included.scad (mainfile)
+WARNING: Ignoring unknown variable 'notDefinedVariable', line 5.
+ECHO: undef
+ECHO: "use"
+FILENAME: errors-warnings-use.scad
+WARNING: Ignoring unknown variable 'a', line 2.
+ECHO: undef
+ERROR: Assertion 'false' failed in file errors-warnings-use.scad, line 4

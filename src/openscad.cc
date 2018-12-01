@@ -361,6 +361,8 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 	AbstractNode *absolute_root_node;
 	shared_ptr<const Geometry> root_geom;
 
+	PRINTB("MAINFILENAME: %s", filename);
+
 	handle_dep(filename);
 
 	std::ifstream ifs(filename.c_str());
