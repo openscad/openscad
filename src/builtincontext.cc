@@ -19,7 +19,7 @@ ValuePtr BuiltinContext::evaluate_function(const std::string &name, const class 
 	const auto &search = Builtins::instance()->getFunctions().find(name);
 	if (search != Builtins::instance()->getFunctions().end()) {
 		AbstractFunction *f = search->second;
-		if (f->is_enabled()) return f->evaluate(this, evalctx);
+		if (f->is_enabled()) return f->evaluate(this, evalctx, loc);
 		else PRINTB("WARNING: Experimental builtin function '%s' is not enabled.", name);
 	}
 	return Context::evaluate_function(name, evalctx, loc);
