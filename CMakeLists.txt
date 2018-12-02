@@ -57,14 +57,17 @@ message(STATUS "Eigen3: ${EIGEN3_VERSION_STRING}")
 include_directories(${EIGEN3_INCLUDE_DIRS})
 add_definitions(-DEIGEN_DONT_ALIGN)
 
-find_package(Boost 1.36 REQUIRED COMPONENTS filesystem system thread regex program_options QUIET)
-message(STATUS "Boost: ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
-include_directories(${Boost_INCLUDE_DIRS})
-
 find_package(CGAL REQUIRED QUIET)
 message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}")
 include_directories(${CGAL_INCLUDE_DIRS})
 add_definitions(-DENABLE_CGAL)
+
+# NOTE FindCGAL.cmake resets the BOOST_* and Boost_* variables,
+#   because it looks for Boost itself, so it has to be called
+#   before we look for our own required boost libraries.
+find_package(Boost 1.36 REQUIRED COMPONENTS filesystem system thread regex program_options QUIET)
+message(STATUS "Boost: ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
+include_directories(${Boost_INCLUDE_DIRS})
 
 find_package(HarfBuzz 0.9.19 REQUIRED QUIET)
 message(STATUS "Harfbuzz: ${HARFBUZZ_VERSION}")
