@@ -3,3 +3,8 @@ WARNING: Ignoring unknown variable 'a', line 1.
 ECHO: undef
 WARNING: Ignoring unknown module 'hello', line 17.
 WARNING: Ignoring radius variable 'r' as diameter 'd' is defined too.
+WARNING: color() expects numbers between 0.0 and 1.0. Value of -1.0 is out of range, line 27
+WARNING: color() expects numbers between 0.0 and 1.0. Value of 2.0 is out of range, line 27
+WARNING: Unable to parse color "notaname", line 28. Please see
+WARNING: http://en.wikipedia.org/wiki/Web_colors
+WARNING: Ignoring unknown module 'box', line 29.

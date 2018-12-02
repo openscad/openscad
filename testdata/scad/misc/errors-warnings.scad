@@ -23,3 +23,7 @@ circle(r=1,d=4);
 $vpr="[1,2,3]";
 $vpt=[1,2,3,4];
 $vpd=[1];
+
+color([-1,0,1,2])
+color("notAName")
+box();
