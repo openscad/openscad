@@ -49,7 +49,7 @@ protected:
 	ValueMap variables;
 	ValueMap config_variables;
 
-	std::string document_path; // FIXME: This is a remnant only needed by dxfdim
+	std::string document_path;
 
 public:
 #ifdef DEBUG

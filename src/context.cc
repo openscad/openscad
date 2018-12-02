@@ -136,7 +136,7 @@ ValuePtr Context::lookup_variable(const std::string &name, bool silent, const Lo
 			}
 		}
 		if (!silent) {
-			PRINTB("WARNING: Ignoring unknown variable '%s', %s.", name % loc.toString());
+			PRINTB("WARNING: Ignoring unknown variable '%s', %s.", name % loc.toString(this->documentPath()));
 		}
 		return ValuePtr::undefined;
 	}
@@ -150,7 +150,7 @@ ValuePtr Context::lookup_variable(const std::string &name, bool silent, const Lo
 		return this->parent->lookup_variable(name, silent, loc);
 	}
 	if (!silent) {
-		PRINTB("WARNING: Ignoring unknown variable '%s', %s.", name % loc.toString());
+		PRINTB("WARNING: Ignoring unknown variable '%s', %s.", name % loc.toString(this->documentPath()));
 	}
 	return ValuePtr::undefined;
 }
@@ -187,21 +187,21 @@ bool Context::has_local_variable(const std::string &name) const
  * @param what what is ignored
  * @param name name of the ignored object
  */
-static void print_ignore_warning(const char *what, const char *name, const Location &loc){
-	PRINTB("WARNING: Ignoring unknown %s '%s', %s.", what % name % loc.toString());
+static void print_ignore_warning(const char *what, const char *name, const Location &loc, const Context ctx){
+	PRINTB("WARNING: Ignoring unknown %s '%s', %s.", what % name % loc.toString(ctx.documentPath()));
 }
  
 ValuePtr Context::evaluate_function(const std::string &name, const EvalContext *evalctx, const Location &loc) const
 {
 	if (this->parent) return this->parent->evaluate_function(name, evalctx,loc);
-	print_ignore_warning("function", name.c_str(),loc);
+	print_ignore_warning("function", name.c_str(),loc,this);
 	return ValuePtr::undefined;
 }
 
 AbstractNode *Context::instantiate_module(const ModuleInstantiation &inst, EvalContext *evalctx, const Location &loc) const
 {
 	if (this->parent) return this->parent->instantiate_module(inst, evalctx, loc);
-	print_ignore_warning("module", inst.name().c_str(),loc);
+	print_ignore_warning("module", inst.name().c_str(),loc,this);
 	return nullptr;
 }
 

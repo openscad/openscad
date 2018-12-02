@@ -24,7 +24,7 @@ public:
 	int lastColumn() const { return last_col; }
 	bool isNone() const;
 
-	std::string toString() const;
+	std::string toString(std::string docPath) const;
 
 	static const Location NONE;
 private:
