@@ -83,7 +83,7 @@ static inline double rad2deg(double x)
 	return x * 180.0 / M_PI;
 }
 
-ValuePtr builtin_abs(const Context *, const EvalContext *evalctx, const Location &loc)
+ValuePtr builtin_abs(const Context *, const EvalContext *evalctx, const Location &)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
@@ -93,7 +93,7 @@ ValuePtr builtin_abs(const Context *, const EvalContext *evalctx, const Location
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_sign(const Context *, const EvalContext *evalctx, const Location &loc)
+ValuePtr builtin_sign(const Context *, const EvalContext *evalctx, const Location &)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
@@ -122,7 +122,7 @@ ValuePtr builtin_rands(const Context *, const EvalContext *evalctx, const Locati
 		if (v1->type() != Value::ValueType::NUMBER) goto quit;
 		double max = v1->toDouble();
 		if (std::isinf(max)) {
-			PRINT("WARNING: rands() range max cannot be infinite");
+			PRINTB("WARNING: rands() range max cannot be infinite, %s", loc.toString());
 			max = std::numeric_limits<double>::max()/2;
 			PRINTB("WARNING: resetting to %f",max);
 		}
@@ -167,8 +167,7 @@ quit:
 	return ValuePtr::undefined;
 }
 
-
-ValuePtr builtin_min(const Context *, const EvalContext *evalctx, const Location &loc)
+ValuePtr builtin_min(const Context *, const EvalContext *evalctx, const Location &)
 {
 	// preserve special handling of the first argument
 	// as a template for vector processing
@@ -200,7 +199,7 @@ quit:
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_max(const Context *, const EvalContext *evalctx, const Location &loc)
+ValuePtr builtin_max(const Context *, const EvalContext *evalctx, const Location &)
 {
 	// preserve special handling of the first argument
 	// as a template for vector processing
@@ -272,7 +271,7 @@ double sin_degrees(double x)
 	return oppose ? -x : x;
 }
 
-ValuePtr builtin_sin(const Context *, const EvalContext *evalctx, const Location &loc)
+ValuePtr builtin_sin(const Context *, const EvalContext *evalctx, const Location &)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
@@ -321,7 +320,7 @@ double cos_degrees(double x)
 	return oppose ? -x : x;
 }
 
-ValuePtr builtin_cos(const Context *, const EvalContext *evalctx, const Location &loc)
+ValuePtr builtin_cos(const Context *, const EvalContext *evalctx, const Location &)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
@@ -331,7 +330,7 @@ ValuePtr builtin_cos(const Context *, const EvalContext *evalctx, const Location
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_asin(const Context *, const EvalContext *evalctx, const Location &loc)
+ValuePtr builtin_asin(const Context *, const EvalContext *evalctx, const Location &)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
@@ -341,7 +340,7 @@ ValuePtr builtin_asin(const Context *, const EvalContext *evalctx, const Locatio
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_acos(const Context *, const EvalContext *evalctx, const Location &loc)
+ValuePtr builtin_acos(const Context *, const EvalContext *evalctx, const Location &)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
@@ -391,7 +390,7 @@ double tan_degrees(double x)
 	return oppose ? -x : x;
 }
 
-ValuePtr builtin_tan(const Context *, const EvalContext *evalctx, const Location &loc)
+ValuePtr builtin_tan(const Context *, const EvalContext *evalctx, const Location &)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
@@ -401,7 +400,7 @@ ValuePtr builtin_tan(const Context *, const EvalContext *evalctx, const Location
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_atan(const Context *, const EvalContext *evalctx, const Location &loc)
+ValuePtr builtin_atan(const Context *, const EvalContext *evalctx, const Location &)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
@@ -411,7 +410,7 @@ ValuePtr builtin_atan(const Context *, const EvalContext *evalctx, const Locatio
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_atan2(const Context *, const EvalContext *evalctx, const Location &loc)
+ValuePtr builtin_atan2(const Context *, const EvalContext *evalctx, const Location &)
 {
 	if (evalctx->numArgs() == 2) {
 		ValuePtr v0 = evalctx->getArgValue(0), v1 = evalctx->getArgValue(1);
@@ -421,7 +420,7 @@ ValuePtr builtin_atan2(const Context *, const EvalContext *evalctx, const Locati
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_pow(const Context *, const EvalContext *evalctx, const Location &loc)
+ValuePtr builtin_pow(const Context *, const EvalContext *evalctx, const Location &)
 {
 	if (evalctx->numArgs() == 2) {
 		ValuePtr v0 = evalctx->getArgValue(0), v1 = evalctx->getArgValue(1);
@@ -431,7 +430,7 @@ ValuePtr builtin_pow(const Context *, const EvalContext *evalctx, const Location
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_round(const Context *, const EvalContext *evalctx, const Location &loc)
+ValuePtr builtin_round(const Context *, const EvalContext *evalctx, const Location &)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
@@ -441,7 +440,7 @@ ValuePtr builtin_round(const Context *, const EvalContext *evalctx, const Locati
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_ceil(const Context *, const EvalContext *evalctx, const Location &loc)
+ValuePtr builtin_ceil(const Context *, const EvalContext *evalctx, const Location &)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
@@ -451,7 +450,7 @@ ValuePtr builtin_ceil(const Context *, const EvalContext *evalctx, const Locatio
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_floor(const Context *, const EvalContext *evalctx, const Location &loc)
+ValuePtr builtin_floor(const Context *, const EvalContext *evalctx, const Location &)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
@@ -461,7 +460,7 @@ ValuePtr builtin_floor(const Context *, const EvalContext *evalctx, const Locati
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_sqrt(const Context *, const EvalContext *evalctx, const Location &loc)
+ValuePtr builtin_sqrt(const Context *, const EvalContext *evalctx, const Location &)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
@@ -471,7 +470,7 @@ ValuePtr builtin_sqrt(const Context *, const EvalContext *evalctx, const Locatio
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_exp(const Context *, const EvalContext *evalctx, const Location &loc)
+ValuePtr builtin_exp(const Context *, const EvalContext *evalctx, const Location &)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
@@ -481,7 +480,7 @@ ValuePtr builtin_exp(const Context *, const EvalContext *evalctx, const Location
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_length(const Context *, const EvalContext *evalctx, const Location &loc)
+ValuePtr builtin_length(const Context *, const EvalContext *evalctx, const Location &)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
@@ -495,7 +494,7 @@ ValuePtr builtin_length(const Context *, const EvalContext *evalctx, const Locat
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_log(const Context *, const EvalContext *evalctx, const Location &loc)
+ValuePtr builtin_log(const Context *, const EvalContext *evalctx, const Location &)
 {
 	size_t n = evalctx->numArgs();
 	if (n == 1 || n == 2) {
@@ -514,7 +513,7 @@ quit:
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_ln(const Context *, const EvalContext *evalctx, const Location &loc)
+ValuePtr builtin_ln(const Context *, const EvalContext *evalctx, const Location &)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
@@ -524,7 +523,7 @@ ValuePtr builtin_ln(const Context *, const EvalContext *evalctx, const Location 
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_str(const Context *, const EvalContext *evalctx, const Location &loc)
+ValuePtr builtin_str(const Context *, const EvalContext *evalctx, const Location &)
 {
 	std::stringstream stream;
 
@@ -534,7 +533,7 @@ ValuePtr builtin_str(const Context *, const EvalContext *evalctx, const Location
 	return ValuePtr(stream.str());
 }
 
-ValuePtr builtin_chr(const Context *, const EvalContext *evalctx, const Location &loc)
+ValuePtr builtin_chr(const Context *, const EvalContext *evalctx, const Location &)
 {
 	std::stringstream stream;
 	
@@ -681,7 +680,7 @@ ValuePtr builtin_lookup(const Context *, const EvalContext *evalctx, const Locat
 
 static Value::VectorType search(const str_utf8_wrapper &find, const str_utf8_wrapper &table,
 																unsigned int num_returns_per_match,
-																const Location &loc)
+																const Location &)
 {
 	Value::VectorType returnvec;
 	//Unicode glyph count for the length
@@ -833,7 +832,7 @@ ValuePtr builtin_search(const Context *, const EvalContext *evalctx, const Locat
 #define QUOTE(x__) # x__
 #define QUOTED(x__) QUOTE(x__)
 
-ValuePtr builtin_version(const Context *, const EvalContext *evalctx, const Location &loc)
+ValuePtr builtin_version(const Context *, const EvalContext *evalctx, const Location &)
 {
 	(void)evalctx; // unusued parameter
 	Value::VectorType val;
@@ -955,7 +954,7 @@ ValuePtr builtin_cross(const Context *, const EvalContext *evalctx, const Locati
 	return ValuePtr(result);
 }
 
-ValuePtr builtin_is_undef(const Context *, const EvalContext *evalctx, const Location &loc)
+ValuePtr builtin_is_undef(const Context *, const EvalContext *evalctx, const Location &)
 {
 	if (evalctx->numArgs() == 1) {
 		const auto &arg =evalctx->getArgs()[0];
