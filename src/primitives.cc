@@ -66,7 +66,7 @@ class PrimitiveNode : public LeafNode
 {
 public:
 	VISITABLE();
-	PrimitiveNode(const ModuleInstantiation *mi, primitive_type_e type,const Context *ctx) : LeafNode(mi), ctx(ctx), type(type) { }
+	PrimitiveNode(const ModuleInstantiation *mi, primitive_type_e type, const Context *ctx) : LeafNode(mi), ctx(ctx), type(type) { }
 	std::string toString() const override;
 	std::string name() const override {
 		switch (this->type) {

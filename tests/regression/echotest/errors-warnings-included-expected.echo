@@ -35,4 +35,10 @@ ECHO: undef
 ECHO: "use"
 WARNING: Ignoring unknown variable 'a', in file errors-warnings-use.scad, line 2.
 ECHO: undef
-ERROR: Assertion 'false' failed in file errors-warnings-use.scad, line 4
+WARNING: Ignoring unknown module 'unknown', in file sub2/useuse.scad, line 3.
+WARNING: Ignoring unknown variable 'a', in file errors-warnings-use.scad, line 2.
+ECHO: undef
+WARNING: Ignoring unknown module 'unknownIncuse', in file sub2/incuse.scad, line 2.
+WARNING: Ignoring unknown variable 'xyz', in file sub1/errors-warnings-incuse.scad, line 2.
+ECHO: undef
+WARNING: Ignoring unknown function 'test', in file sub1/errors-warnings-incuse.scad, line 3.
