@@ -22,7 +22,7 @@ bool Location::isNone() const{
 	return ((*this)==Location::NONE);
 }
 
-std::string Location::toString(std::string docPath) const{
+std::string Location::toRelativeString(std::string docPath) const{
 	if(this->isNone()) return "location unkown";
 	return "in file "+boostfs_uncomplete((*path), docPath).generic_string()+ ", "+"line " + std::to_string(this->firstLine());
 }

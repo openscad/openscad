@@ -198,7 +198,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 			converted |= size->getDouble(node->z);
 			converted |= size->getVec3(node->x, node->y, node->z);
 			if(!converted){
-				PRINTB("WARNING: Unable to convert cube(size=%s, ...) parameter to a number or a vec3 of numbers, %s", size->toEchoString() % inst->location().toString(ctx->documentPath()));
+				PRINTB("WARNING: Unable to convert cube(size=%s, ...) parameter to a number or a vec3 of numbers, %s", size->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 			}
 		}
 		if (center->type() == Value::ValueType::BOOL) {
@@ -260,7 +260,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 			converted |= size->getDouble(node->y);
 			converted |= size->getVec2(node->x, node->y);
 			if(!converted){
-				PRINTB("WARNING: Unable to convert square(size=%s, ...) parameter to a number or a vec2 of numbers, %s", size->toEchoString() % inst->location().toString(ctx->documentPath()));
+				PRINTB("WARNING: Unable to convert square(size=%s, ...) parameter to a number or a vec2 of numbers, %s", size->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 			}
 		}
 		if (center->type() == Value::ValueType::BOOL) {
@@ -516,7 +516,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 					double px, py, pz;
 					if (!this->points->toVector()[pt]->getVec3(px, py, pz, 0.0) ||
 					    std::isinf(px) || std::isinf(py) || std::isinf(pz)) {
-						PRINTB("ERROR: Unable to convert point at index %d to a vec3 of numbers, %s", j % this->modinst->location().toString(ctx->documentPath()));
+						PRINTB("ERROR: Unable to convert point at index %d to a vec3 of numbers, %s", j % this->modinst->location().toRelativeString(ctx->documentPath()));
 						return p;
 					}
 					p->insert_vertex(px, py, pz);
@@ -572,7 +572,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 				const auto &val = *vec[i];
 				if (!val.getVec2(x, y) || std::isinf(x) || std::isinf(y)) {
 					PRINTB("ERROR: Unable to convert point %s at index %d to a vec2 of numbers, %s", 
-								 val.toString() % i % this->modinst->location().toString(ctx->documentPath()));
+								 val.toString() % i % this->modinst->location().toRelativeString(ctx->documentPath()));
 					return p;
 				}
 				outline.vertices.emplace_back(x, y);

@@ -38,7 +38,7 @@
 
 namespace {
 
-std::string toString(const Vector3d &v)
+std::string toRelativeString(const Vector3d &v)
 {
 	return OSS(v[0] << " " << v[1] << " " << v[2]);
 }
