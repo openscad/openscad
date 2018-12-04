@@ -44,6 +44,8 @@ if(APPLE)
   set(CMAKE_CXX_FLAGS "-stdlib=libc++")
 endif()
 
+add_definitions(-DSTACKSIZE=8388608 -D_REENTRANT)
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 set(CMAKE_PREFIX_PATH "$ENV{OPENSCAD_LIBRARIES}")
 
