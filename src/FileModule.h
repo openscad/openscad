@@ -3,7 +3,7 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
-#include <time.h>
+#include <ctime>
 
 #include "module.h"
 #include "value.h"
@@ -23,8 +23,8 @@ public:
 	const std::string &modulePath() const { return this->path; }
 	void registerUse(const std::string path);
 	void registerInclude(const std::string &localpath, const std::string &fullpath);
-	time_t includesChanged() const;
-	time_t handleDependencies();
+	std::time_t includesChanged() const;
+	std::time_t handleDependencies();
 	bool hasIncludes() const { return !this->includes.empty(); }
 	bool usesLibraries() const { return !this->usedlibs.empty(); }
 	bool isHandlingDependencies() const { return this->is_handling_dependencies; }
@@ -40,7 +40,7 @@ private:
 		std::string filename;
 	};
 
-	time_t include_modified(const IncludeFile &inc) const;
+	std::time_t include_modified(const IncludeFile &inc) const;
 
 	typedef std::unordered_map<std::string, struct IncludeFile> IncludeContainer;
 	IncludeContainer includes;

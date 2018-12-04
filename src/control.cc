@@ -79,7 +79,7 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 			RangeType range = it_values->toRange();
 			uint32_t steps = range.numValues();
 			if (steps >= 10000) {
-				PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu).", steps);
+				PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu), %s", steps % inst.location().toString());
 			} else {
 				for (RangeType::iterator it = range.begin();it != range.end();it++) {
 					c.set_variable(it_name, ValuePtr(*it));
@@ -93,6 +93,12 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 				for_eval(node, inst, l+1, &c, evalctx);
 			}
 		}
+                else if (it_values->type() == Value::ValueType::STRING) {
+                        utf8_split(it_values->toString(), [&](ValuePtr v) {
+                            c.set_variable(it_name, v);
+                            for_eval(node, inst, l+1, &c, evalctx);
+                        });
+                }
 		else if (it_values->type() != Value::ValueType::UNDEFINED) {
 			c.set_variable(it_name, it_values);
 			for_eval(node, inst, l+1, &c, evalctx);

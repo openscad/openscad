@@ -37,6 +37,7 @@
 #include <assert.h>
 #include <cmath>
 #include <boost/assign/std/vector.hpp>
+#include "ModuleInstantiation.h"
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 #define F_MINIMUM 0.01
@@ -189,10 +190,16 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 	case primitive_type_e::CUBE: {
 		auto size = c.lookup_variable("size");
 		auto center = c.lookup_variable("center");
-		size->getDouble(node->x);
-		size->getDouble(node->y);
-		size->getDouble(node->z);
-		size->getVec3(node->x, node->y, node->z);
+		if(size != ValuePtr::undefined){
+			bool converted=false;
+			converted |= size->getDouble(node->x);
+			converted |= size->getDouble(node->y);
+			converted |= size->getDouble(node->z);
+			converted |= size->getVec3(node->x, node->y, node->z);
+			if(!converted){
+				PRINTB("WARNING: Unable to convert cube(size=%s, ...) parameter to a number or a vec3 of numbers, %s", size->toEchoString() % inst->location().toString());
+			}
+		}
 		if (center->type() == Value::ValueType::BOOL) {
 			node->center = center->toBool();
 		}
@@ -246,9 +253,15 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 	case primitive_type_e::SQUARE: {
 		auto size = c.lookup_variable("size");
 		auto center = c.lookup_variable("center");
-		size->getDouble(node->x);
-		size->getDouble(node->y);
-		size->getVec2(node->x, node->y);
+		if(size != ValuePtr::undefined){
+			bool converted=false;
+			converted |= size->getDouble(node->x);
+			converted |= size->getDouble(node->y);
+			converted |= size->getVec2(node->x, node->y);
+			if(!converted){
+				PRINTB("WARNING: Unable to convert square(size=%s, ...) parameter to a number or a vec2 of numbers, %s", size->toEchoString() % inst->location().toString());
+			}
+		}
 		if (center->type() == Value::ValueType::BOOL) {
 			node->center = center->toBool();
 		}
@@ -500,9 +513,9 @@ const Geometry *PrimitiveNode::createGeometry() const
 				size_t pt = vec[j]->toDouble();
 				if (pt < this->points->toVector().size()) {
 					double px, py, pz;
-					if (!this->points->toVector()[pt]->getVec3(px, py, pz) ||
-							std::isinf(px) || std::isinf(py) || std::isinf(pz)) {
-						PRINTB("ERROR: Unable to convert point at index %d to a vec3 of numbers", j);
+					if (!this->points->toVector()[pt]->getVec3(px, py, pz, 0.0) ||
+					    std::isinf(px) || std::isinf(py) || std::isinf(pz)) {
+						PRINTB("ERROR: Unable to convert point at index %d to a vec3 of numbers, %s", j % this->modinst->location().toString());
 						return p;
 					}
 					p->insert_vertex(px, py, pz);
@@ -557,8 +570,8 @@ const Geometry *PrimitiveNode::createGeometry() const
 			for (unsigned int i=0;i<vec.size();i++) {
 				const auto &val = *vec[i];
 				if (!val.getVec2(x, y) || std::isinf(x) || std::isinf(y)) {
-					PRINTB("ERROR: Unable to convert point %s at index %d to a vec2 of numbers", 
-								 val.toString() % i);
+					PRINTB("ERROR: Unable to convert point %s at index %d to a vec2 of numbers, %s", 
+								 val.toString() % i % this->modinst->location().toString());
 					return p;
 				}
 				outline.vertices.emplace_back(x, y);

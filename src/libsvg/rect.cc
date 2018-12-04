@@ -10,16 +10,8 @@ namespace libsvg {
 
 const std::string rect::name("rect"); 
 
-rect::rect()
+rect::rect() : width(0), height(0), rx(0), ry(0)
 {
-}
-
-rect::rect(const rect& orig) : path(orig)
-{
-	rx = orig.rx;
-	ry = orig.ry;
-	width = orig.width;
-	height = orig.height;
 }
 
 rect::~rect()

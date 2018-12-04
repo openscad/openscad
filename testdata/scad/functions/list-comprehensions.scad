@@ -17,6 +17,8 @@ echo([for(x=[0:3]) [ for(y=[10:13]) [x,y] ] ]);
 echo([for(x=[0:3]) if(x==1) [ for(y=[10:13]) if(y != 11) [x,y] ] ]);
 a = [for(x=[0:3]) [ for(y=[10:13]) [x,y] ] ];
 echo(a);
+echo([ for (a = "") a ]);
+echo([ for (a = "a\u2191b\U01f600") a ]);
 echo([ for(i=a) for(j=i) j ]);
 echo([ for(i=a) for(j=i) for(k=j) k ]);
 echo([ for(i=a,j=i) j ]);

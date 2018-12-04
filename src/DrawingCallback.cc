@@ -32,7 +32,7 @@
 #include "DrawingCallback.h"
 
 DrawingCallback::DrawingCallback(unsigned long fn) :
-	pen(Vector2d(0, 0)), offset(Vector2d(0, 0)), advance(Vector2d(0, 0)), fn(fn)
+	pen(Vector2d(0, 0)), offset(Vector2d(0, 0)), advance(Vector2d(0, 0)), fn(fn), polygon(nullptr)
 {
 }
 

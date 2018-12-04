@@ -285,7 +285,7 @@ void ParameterWidget::onSetNameChanged(){
 		msgBox.setDefaultButton(QMessageBox::Cancel);
 
 		if (msgBox.exec() == QMessageBox::Cancel) {
-			comboBoxPreset->setCurrentText(oldName);
+			comboBoxPreset->lineEdit()->setText(oldName);
 		}else{
 			onSetDelete();
 		}
@@ -351,8 +351,6 @@ void ParameterWidget::connectWidget()
 {
 	this->setEnabled(true);
 
-	this->anyfocused = false;
-
 	rebuildGroupMap();
 	
 	std::vector<std::string> global;
@@ -393,9 +391,6 @@ void ParameterWidget::connectWidget()
 			groupWidget->setContentLayout(*anyLayout);
 			this->scrollAreaWidgetContents->layout()->addWidget(groupWidget);
 		}
-	}
-	if (anyfocused != 0){
-		entryToFocus->setParameterFocus();
 	}
 }
 
@@ -473,10 +468,6 @@ ParameterVirtualWidget* ParameterWidget::CreateParameterWidget(std::string param
     }
     if (entry) {
 		connect(entry, SIGNAL(changed()), this, SLOT(onValueChanged()));
-		if (entries[parameterName]->focus){
-			entryToFocus = entry;
-			anyfocused = true;
-		}
 	}
 	return entry;
 }
@@ -595,4 +586,13 @@ void ParameterWidget::writeParameterSets()
 void ParameterWidget::removeChangeIndicator()
 {
 	this->labelChangeIndicator->setText("");
+}
+
+bool ParameterWidget::childHasFocus(){
+	if(this->hasFocus()) return true;
+	auto children = this->findChildren<QWidget *>();
+	for (auto child : children) {
+		if(child->hasFocus()) return true;
+	}
+	return false;
 }

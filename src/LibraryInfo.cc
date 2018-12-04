@@ -32,6 +32,11 @@
 
 extern std::vector<std::string> librarypath;
 extern std::vector<std::string> fontpath;
+extern const std::string get_lib3mf_version();
+extern const std::string get_fontconfig_version();
+extern const std::string get_harfbuzz_version();
+extern const std::string get_freetype_version();
+extern const char * LODEPNG_VERSION_STRING;
 
 std::string LibraryInfo::info()
 {
@@ -109,7 +114,12 @@ std::string LibraryInfo::info()
 #endif
 	  << "\nMingW build: " << mingwstatus
 	  << "\nGLib version: "       << GLIB_MAJOR_VERSION << "." << GLIB_MINOR_VERSION << "." << GLIB_MICRO_VERSION
+	  << "\nlodepng version: " << LODEPNG_VERSION_STRING
 	  << "\nlibzip version: " << LIBZIP_VERSION
+	  << "\nfontconfig version: " << get_fontconfig_version()
+	  << "\nfreetype version: " << get_freetype_version()
+	  << "\nharfbuzz version: " << get_harfbuzz_version()
+	  << "\nlib3mf version: " << get_lib3mf_version()
 	  << "\nApplication Path: " << PlatformUtils::applicationPath()
 	  << "\nDocuments Path: " << PlatformUtils::documentsPath()
 	  << "\nResource Path: " << PlatformUtils::resourceBasePath()

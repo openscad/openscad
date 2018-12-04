@@ -79,6 +79,7 @@ void processNode(xmlTextReaderPtr reader)
 	if (!isEmpty) {
 		break;
 	}
+	/* fall through */
 	case XML_READER_TYPE_END_ELEMENT:
 	{
 		if (std::string("defs") == name) {

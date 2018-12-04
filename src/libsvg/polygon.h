@@ -11,7 +11,6 @@ private:
 
 public:
     polygon();
-    polygon(const polygon& orig);
     ~polygon();
 
     void set_attrs(attr_map_t& attrs) override;

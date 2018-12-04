@@ -23,3 +23,8 @@ for src in src/parameter/*.h src/parameter/*.cc src/parameter/*.cpp
 do
 	echo $src
 done
+
+for src in src/input/*.h src/input/*.cc
+do
+	echo $src
+done

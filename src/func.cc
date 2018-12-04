@@ -545,6 +545,38 @@ ValuePtr builtin_chr(const Context *, const EvalContext *evalctx)
 	return ValuePtr(stream.str());
 }
 
+ValuePtr builtin_ord(const Context *, const EvalContext *evalctx)
+{
+	const size_t numArgs = evalctx->numArgs();
+
+	if (numArgs == 0) {
+		return ValuePtr::undefined;
+	} else if (numArgs > 1) {
+		PRINTB("WARNING: ord() called with %d arguments, only 1 argument expected.", numArgs);
+		return ValuePtr::undefined;
+	}
+
+	const ValuePtr& arg = evalctx->getArgValue(0);
+	const std::string arg_str = arg->toString();
+	const char *ptr = arg_str.c_str();
+
+	if (arg->type() != Value::ValueType::STRING) {
+		PRINTB("WARNING: ord() argument %s is not of type string.", arg_str);
+		return ValuePtr::undefined;
+	}
+
+	if (!g_utf8_validate(ptr, -1, NULL)) {
+		PRINTB("WARNING: ord() argument '%s' is not valid utf8 string.", arg_str);
+		return ValuePtr::undefined;
+	}
+
+	if (g_utf8_strlen(ptr, -1) == 0) {
+		return ValuePtr::undefined;
+	}
+	const gunichar ch = g_utf8_get_char(ptr);
+	return ValuePtr((double)ch);
+}
+
 ValuePtr builtin_concat(const Context *, const EvalContext *evalctx)
 {
 	Value::VectorType result;
@@ -815,11 +847,9 @@ ValuePtr builtin_version(const Context *, const EvalContext *evalctx)
 ValuePtr builtin_version_num(const Context *ctx, const EvalContext *evalctx)
 {
 	ValuePtr val = (evalctx->numArgs() == 0) ? builtin_version(ctx, evalctx) : evalctx->getArgValue(0);
-	double y, m, d = 0;
-	if (!val->getVec3(y, m, d)) {
-		if (!val->getVec2(y, m)) {
-			return ValuePtr::undefined;
-		}
+	double y, m, d;
+	if (!val->getVec3(y, m, d, 0)) {
+		return ValuePtr::undefined;
 	}
 	return ValuePtr(y * 10000 + m * 100 + d);
 }
@@ -924,6 +954,22 @@ ValuePtr builtin_cross(const Context *, const EvalContext *evalctx)
 	return ValuePtr(result);
 }
 
+ValuePtr builtin_is_undef(const Context *, const EvalContext *evalctx)
+{
+	if (evalctx->numArgs() == 1) {
+		const auto &arg =evalctx->getArgs()[0];
+		ValuePtr v;
+		if(auto lookup = dynamic_pointer_cast<Lookup> (arg.expr)){
+			v = lookup->evaluateSilently(evalctx);
+		}else{
+			v = evalctx->getArgValue(0);
+		}
+		return ValuePtr(v == ValuePtr::undefined);
+	}
+
+	return ValuePtr::undefined;
+}
+
 void register_builtin_functions()
 {
 	Builtins::init("abs", new BuiltinFunction(&builtin_abs));
@@ -949,6 +995,7 @@ void register_builtin_functions()
 	Builtins::init("ln", new BuiltinFunction(&builtin_ln));
 	Builtins::init("str", new BuiltinFunction(&builtin_str));
 	Builtins::init("chr", new BuiltinFunction(&builtin_chr));
+	Builtins::init("ord", new BuiltinFunction(&builtin_ord));
 	Builtins::init("concat", new BuiltinFunction(&builtin_concat));
 	Builtins::init("lookup", new BuiltinFunction(&builtin_lookup));
 	Builtins::init("search", new BuiltinFunction(&builtin_search));
@@ -957,4 +1004,5 @@ void register_builtin_functions()
 	Builtins::init("norm", new BuiltinFunction(&builtin_norm));
 	Builtins::init("cross", new BuiltinFunction(&builtin_cross));
 	Builtins::init("parent_module", new BuiltinFunction(&builtin_parent_module));
+	Builtins::init("is_undef", new BuiltinFunction(&builtin_is_undef));
 }

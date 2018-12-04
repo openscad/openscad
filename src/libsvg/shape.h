@@ -43,7 +43,6 @@ protected:
     
 public:
     shape();
-    shape(const shape& orig);
     virtual ~shape();
 
     virtual shape * get_parent() { return parent; }

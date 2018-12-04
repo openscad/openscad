@@ -55,7 +55,6 @@ int lexerget_lineno(void);
 static void yyunput(int, char*) __attribute__((unused));
 #endif
 extern const char *parser_input_buffer;
-extern std::shared_ptr<fs::path> parser_sourcefile;
 extern FileModule *rootmodule;
 
 #define YY_INPUT(buf,result,max_size) {   \
@@ -97,6 +96,7 @@ extern void parsererror(char const *s);
 void to_utf8(const char *, char *);
 void includefile();
 std::shared_ptr<fs::path> sourcefile();
+std::shared_ptr<fs::path> parser_sourcefile;
 std::vector<std::shared_ptr<fs::path>> filename_stack;
 std::vector<int> lineno_stack;
 std::vector<FILE*> openfiles;
@@ -266,6 +266,11 @@ void to_utf8(const char *str, char *out)
     } else {
         out[0] = ' ';
     }
+}
+
+void lexer_set_parser_sourcefile(const fs::path& path)
+{
+    parser_sourcefile = std::make_shared<fs::path>(path);
 }
 
 // Filename of the source file currently being lexed.

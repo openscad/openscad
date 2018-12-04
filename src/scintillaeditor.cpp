@@ -375,7 +375,7 @@ void ScintillaEditor::enumerateColorSchemesInPath(ScintillaEditor::colorscheme_s
 	const auto color_schemes = path / "color-schemes" / "editor";
 
 	if (fs::exists(color_schemes) && fs::is_directory(color_schemes)) {
-		for (const auto& dirEntry : fs::directory_iterator{color_schemes}) {
+		for (const auto& dirEntry : boost::make_iterator_range(fs::directory_iterator{color_schemes}, {})) {
 			if (!fs::is_regular_file(dirEntry.status())) continue;
 
 			const auto &path = dirEntry.path();

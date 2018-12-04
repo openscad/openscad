@@ -76,7 +76,7 @@ AbstractNode *ModuleInstantiation::evaluate(const Context *ctx) const
 	c.dump(nullptr, this);
 #endif
 
-	AbstractNode *node = ctx->instantiate_module(*this, &c); // Passes c as evalctx
+	AbstractNode *node = ctx->instantiate_module(*this, &c, loc); // Passes c as evalctx
 	return node;
 }
 

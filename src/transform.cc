@@ -88,7 +88,11 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 		auto v = c.lookup_variable("v");
 		if (!v->getVec3(scalevec[0], scalevec[1], scalevec[2], 1.0)) {
 			double num;
-			if (v->getDouble(num)) scalevec.setConstant(num);
+			if (v->getDouble(num)){
+				scalevec.setConstant(num);
+			}else{
+				PRINTB("WARNING: Unable to convert scale(%s) parameter to a number, a vec3 or vec2 of numbers or a number, %s", v->toEchoString() % inst->location().toString());
+			}
 		}
 		node->matrix.scale(scalevec);
 	}
@@ -120,7 +124,7 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 			val_a->getDouble(a);
 
 			Vector3d axis(0, 0, 1);
-			if (val_v->getVec3(axis[0], axis[1], axis[2])) {
+			if (val_v->getVec3(axis[0], axis[1], axis[2], 0.0)) {
 				if (axis.squaredNorm() > 0) axis.normalize();
 			}
 
@@ -133,11 +137,13 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 		auto val_v = c.lookup_variable("v");
 		double x = 1.0, y = 0.0, z = 0.0;
 	
-		if (val_v->getVec3(x, y, z)) {
+		if (val_v->getVec3(x, y, z, 0.0)) {
 			if (x != 0.0 || y != 0.0 || z != 0.0) {
 				double sn = 1.0 / sqrt(x*x + y*y + z*z);
 				x *= sn, y *= sn, z *= sn;
 			}
+		}else{
+			PRINTB("WARNING: Unable to convert mirror(%s) parameter to a vec3 or vec2 of numbers, %s", val_v->toEchoString() % inst->location().toString());
 		}
 
 		if (x != 0.0 || y != 0.0 || z != 0.0)	{
@@ -152,8 +158,11 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 	else if (this->type == transform_type_e::TRANSLATE)	{
 		auto v = c.lookup_variable("v");
 		Vector3d translatevec(0,0,0);
-		v->getVec3(translatevec[0], translatevec[1], translatevec[2]);
-		node->matrix.translate(translatevec);
+		if (v->getVec3(translatevec[0], translatevec[1], translatevec[2], 0.0)) {
+			node->matrix.translate(translatevec);
+		}else{
+			PRINTB("WARNING: Unable to convert translate(%s) parameter to a vec3 or vec2 of numbers, %s", v->toEchoString() % inst->location().toString());
+		}
 	}
 	else if (this->type == transform_type_e::MULTMATRIX) {
 		auto v = c.lookup_variable("m");

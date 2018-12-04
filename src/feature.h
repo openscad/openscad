@@ -15,6 +15,8 @@ public:
 	typedef list_t::iterator iterator;
 
         static const Feature ExperimentalAmfImport;
+        static const Feature Experimental3mfImport;
+        static const Feature Experimental3mfExport;
         static const Feature ExperimentalSvgImport;
         static const Feature ExperimentalCustomizer;
         static const Feature ExperimentalInputDriver;

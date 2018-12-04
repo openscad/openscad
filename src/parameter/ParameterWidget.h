@@ -47,9 +47,7 @@ private:
 	QTimer autoPreviewTimer;
 	DescLoD descriptionLoD; //configuration if and how much of the description is shown
 	std::string jsonFile;
-	bool anyfocused;
 	bool valueChanged;
-	ParameterVirtualWidget *entryToFocus;
 	int lastComboboxIndex = 0;
 
 	void connectWidget();
@@ -76,6 +74,7 @@ public:
 	void writeBackupFile(QString scadFile);
 	void setParameters(const FileModule* module,bool);
 	void applyParameters(FileModule *fileModule);
+	bool childHasFocus();
 
 protected slots:
 	void onValueChanged();

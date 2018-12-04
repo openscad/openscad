@@ -8,7 +8,6 @@ class ParameterCheckBox : public ParameterVirtualWidget
 public:
 	ParameterCheckBox(QWidget *parent, ParameterObject *parameterobject, DescLoD descriptionLoD);
 	void setValue() override;
-	void setParameterFocus() override;
 
 protected slots:
 	void onChanged();

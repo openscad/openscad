@@ -22,6 +22,13 @@ mingw-cross-env*: {
     # MinGW/MXE has good *.prf file.
     QSCILOADED=yes
   }
+} else {
+  mingw*: {
+    load(qscintilla2) {
+      # MSYS2
+      QSCILOADED=yes
+    }
+  }
 }
 
 # The qscintilla2.prf which ships with QScintilla is broken for Mac/Windows

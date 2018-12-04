@@ -15,16 +15,9 @@ ParameterCheckBox::ParameterCheckBox(QWidget *parent, ParameterObject *parameter
 void ParameterCheckBox::onChanged()
 {
 	if(!this->suppressUpdate){
-		object->focus = true;
 		object->value = ValuePtr(checkBox->isChecked());
 		emit changed();
 	}
-}
-
-void ParameterCheckBox::setParameterFocus()
-{
-	this->checkBox->setFocus();
-	object->focus = false;
 }
 
 void ParameterCheckBox::setValue() {

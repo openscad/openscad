@@ -27,9 +27,9 @@
 #include "StatCache.h"
 #include "printutils.h"
 
-#include <sys/timeb.h>
 #include <string>
 #include <unordered_map>
+#include <chrono>
 
 namespace {
 
@@ -37,9 +37,7 @@ const float stale = 0.190;  // Maximum lifetime of a cache entry chosen to be sh
 
 double millis_clock(void)
 {
-	struct timeb tb;
-	ftime(&tb);
-	return tb.time + double(tb.millitm) / 1000;
+	return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
 struct CacheEntry

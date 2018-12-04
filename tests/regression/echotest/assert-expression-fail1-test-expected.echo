@@ -1,1 +1,1 @@
-ERROR: Assertion 'false' failed in file ../../../../../testdata/scad/functions/assert-expression-fail1-test.scad, line 1
+ERROR: Assertion 'false' failed in file assert-expression-fail1-test.scad, line 1

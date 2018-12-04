@@ -17,7 +17,7 @@ PolySet *import_off(const std::string &filename)
 	else {
 		file >> poly;
 		file.close();
-		bool err = CGALUtils::createPolySetFromPolyhedron(poly, *p);
+		CGALUtils::createPolySetFromPolyhedron(poly, *p);
 	}
 #else
   PRINT("WARNING: OFF import requires CGAL.");

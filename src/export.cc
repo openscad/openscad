@@ -45,6 +45,9 @@ void exportFile(const shared_ptr<const Geometry> &root_geom, std::ostream &outpu
 	case FileFormat::AMF:
 		export_amf(root_geom, output);
 		break;
+	case FileFormat::_3MF:
+		export_3mf(root_geom, output);
+		break;
 	case FileFormat::DXF:
 		export_dxf(root_geom, output);
 		break;
@@ -65,7 +68,11 @@ void exportFile(const shared_ptr<const Geometry> &root_geom, std::ostream &outpu
 void exportFileByName(const shared_ptr<const Geometry> &root_geom, FileFormat format,
 	const char *name2open, const char *name2display)
 {
-	std::ofstream fstream(name2open);
+	std::ios::openmode mode = std::ios::out | std::ios::trunc;
+	if (format == FileFormat::_3MF) {
+		mode |= std::ios::binary;
+	}
+	std::ofstream fstream(name2open, mode);
 	if (!fstream.is_open()) {
 		PRINTB(_("Can't open file \"%s\" for export"), name2display);
 	} else {

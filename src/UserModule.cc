@@ -40,7 +40,7 @@ std::deque<std::string> UserModule::module_stack;
 AbstractNode *UserModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	if (StackCheck::inst()->check()) {
-		throw RecursionException::create("module", inst->name());
+		throw RecursionException::create("module", inst->name(),loc);
 		return nullptr;
 	}
 
