@@ -535,10 +535,6 @@ LcIf::LcIf(Expression *cond, Expression *ifexpr, Expression *elseexpr, const Loc
 
 ValuePtr LcIf::evaluate(const Context *context) const
 {
-    if (this->elseexpr) {
-    	ExperimentalFeatureException::check(Feature::ExperimentalElseExpression);
-    }
-
     const shared_ptr<Expression> &expr = this->cond->evaluate(context) ? this->ifexpr : this->elseexpr;
 	
     Value::VectorType vec;
@@ -567,8 +563,6 @@ LcEach::LcEach(Expression *expr, const Location &loc) : ListComprehension(loc), 
 
 ValuePtr LcEach::evaluate(const Context *context) const
 {
-	ExperimentalFeatureException::check(Feature::ExperimentalEachExpression);
-
 	Value::VectorType vec;
 
     ValuePtr v = this->expr->evaluate(context);
@@ -672,8 +666,6 @@ LcForC::LcForC(const AssignmentList &args, const AssignmentList &incrargs, Expre
 
 ValuePtr LcForC::evaluate(const Context *context) const
 {
-	ExperimentalFeatureException::check(Feature::ExperimentalForCExpression);
-
 	Value::VectorType vec;
 
     Context c(context);
