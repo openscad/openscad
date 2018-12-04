@@ -1233,7 +1233,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1528.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1923.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/preview_variable.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1851-each-fail-on-scalar.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1851-each-fail-on-scalar.scad
             )
 
 list(APPEND ASTDUMPTEST_FILES ${MISC_FILES}
@@ -1439,7 +1439,6 @@ experimental_tests(cgalpngtest_cube-with-hole
                    astdumptest_assert-expression-fail1-test
                    astdumptest_assert-expression-fail2-test
                    astdumptest_assert-expression-fail3-test
-		   echotest_issue1851-each-fail-on-scalar
 		   cgalpngtest_import_3mf-tests
 		   opencsgtest_import_3mf-tests
 		   csgpngtest_import_3mf-tests
