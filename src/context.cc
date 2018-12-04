@@ -186,22 +186,24 @@ bool Context::has_local_variable(const std::string &name) const
  * 
  * @param what what is ignored
  * @param name name of the ignored object
+ * @param loc location of the function/modul call
+ * @param docPath document path of the root file, used to calculate the relative path
  */
-static void print_ignore_warning(const char *what, const char *name, const Location &loc, const Context ctx){
-	PRINTB("WARNING: Ignoring unknown %s '%s', %s.", what % name % loc.toRelativeString(ctx.documentPath()));
+static void print_ignore_warning(const char *what, const char *name, const Location &loc, const std::string &docPath){
+	PRINTB("WARNING: Ignoring unknown %s '%s', %s.", what % name % loc.toRelativeString(docPath));
 }
  
 ValuePtr Context::evaluate_function(const std::string &name, const EvalContext *evalctx, const Location &loc) const
 {
 	if (this->parent) return this->parent->evaluate_function(name, evalctx,loc);
-	print_ignore_warning("function", name.c_str(),loc,this);
+	print_ignore_warning("function", name.c_str(),loc,this->documentPath());
 	return ValuePtr::undefined;
 }
 
 AbstractNode *Context::instantiate_module(const ModuleInstantiation &inst, EvalContext *evalctx, const Location &loc) const
 {
 	if (this->parent) return this->parent->instantiate_module(inst, evalctx, loc);
-	print_ignore_warning("module", inst.name().c_str(),loc,this);
+	print_ignore_warning("module", inst.name().c_str(),loc,this->documentPath());
 	return nullptr;
 }
 
