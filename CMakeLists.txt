@@ -44,6 +44,9 @@ if(APPLE)
   set(CMAKE_CXX_FLAGS "-stdlib=libc++")
 endif()
 
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -frounding-math")
+endif()
 add_definitions(-DSTACKSIZE=8388608 -D_REENTRANT)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
