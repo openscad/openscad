@@ -66,7 +66,7 @@ class PrimitiveNode : public LeafNode
 {
 public:
 	VISITABLE();
-	PrimitiveNode(const ModuleInstantiation *mi, primitive_type_e type) : LeafNode(mi), type(type) { }
+	PrimitiveNode(const ModuleInstantiation *mi, primitive_type_e type, const std::string &docPath) : LeafNode(mi), document_path(docPath), type(type) { }
 	std::string toString() const override;
 	std::string name() const override {
 		switch (this->type) {
@@ -96,6 +96,7 @@ public:
 			return "unknown";
 		}
 	}
+	const std::string document_path;
 
 	bool center;
 	double x, y, z, h, r1, r2;
@@ -137,7 +138,7 @@ Value PrimitiveModule::lookup_radius(const Context &ctx, const std::string &diam
 
 AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
-	auto node = new PrimitiveNode(inst, this->type);
+	auto node = new PrimitiveNode(inst, this->type, ctx->documentPath());
 
 	node->center = false;
 	node->x = node->y = node->z = node->h = node->r1 = node->r2 = 1;
@@ -197,7 +198,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 			converted |= size->getDouble(node->z);
 			converted |= size->getVec3(node->x, node->y, node->z);
 			if(!converted){
-				PRINTB("WARNING: Unable to convert cube(size=%s, ...) parameter to a number or a vec3 of numbers, %s", size->toEchoString() % inst->location().toString());
+				PRINTB("WARNING: Unable to convert cube(size=%s, ...) parameter to a number or a vec3 of numbers, %s", size->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 			}
 		}
 		if (center->type() == Value::ValueType::BOOL) {
@@ -259,7 +260,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 			converted |= size->getDouble(node->y);
 			converted |= size->getVec2(node->x, node->y);
 			if(!converted){
-				PRINTB("WARNING: Unable to convert square(size=%s, ...) parameter to a number or a vec2 of numbers, %s", size->toEchoString() % inst->location().toString());
+				PRINTB("WARNING: Unable to convert square(size=%s, ...) parameter to a number or a vec2 of numbers, %s", size->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 			}
 		}
 		if (center->type() == Value::ValueType::BOOL) {
@@ -515,7 +516,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 					double px, py, pz;
 					if (!this->points->toVector()[pt]->getVec3(px, py, pz, 0.0) ||
 					    std::isinf(px) || std::isinf(py) || std::isinf(pz)) {
-						PRINTB("ERROR: Unable to convert point at index %d to a vec3 of numbers, %s", j % this->modinst->location().toString());
+						PRINTB("ERROR: Unable to convert point at index %d to a vec3 of numbers, %s", j % this->modinst->location().toRelativeString(this->document_path));
 						return p;
 					}
 					p->insert_vertex(px, py, pz);
@@ -571,7 +572,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 				const auto &val = *vec[i];
 				if (!val.getVec2(x, y) || std::isinf(x) || std::isinf(y)) {
 					PRINTB("ERROR: Unable to convert point %s at index %d to a vec2 of numbers, %s", 
-								 val.toString() % i % this->modinst->location().toString());
+								 val.toString() % i % this->modinst->location().toRelativeString(this->document_path));
 					return p;
 				}
 				outline.vertices.emplace_back(x, y);

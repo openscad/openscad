@@ -91,7 +91,7 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 			if (v->getDouble(num)){
 				scalevec.setConstant(num);
 			}else{
-				PRINTB("WARNING: Unable to convert scale(%s) parameter to a number, a vec3 or vec2 of numbers or a number, %s", v->toEchoString() % inst->location().toString());
+				PRINTB("WARNING: Unable to convert scale(%s) parameter to a number, a vec3 or vec2 of numbers or a number, %s", v->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 			}
 		}
 		node->matrix.scale(scalevec);
@@ -127,13 +127,13 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 			bool v_supplied = (val_v != ValuePtr::undefined);
 			if(ok){
 				if(v_supplied){
-					PRINTB("WARNING: When parameter a is supplied as vector, v is ignored rotate(a=%s, v=%s), %s", val_a->toEchoString() % val_v->toEchoString() % inst->location().toString());
+					PRINTB("WARNING: When parameter a is supplied as vector, v is ignored rotate(a=%s, v=%s), %s", val_a->toEchoString() % val_v->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 				}
 			}else{
 				if(v_supplied){
-					PRINTB("WARNING: Problem converting rotate(a=%s, v=%s) parameter, %s", val_a->toString() % val_v->toEchoString() % inst->location().toString());
+					PRINTB("WARNING: Problem converting rotate(a=%s, v=%s) parameter, %s", val_a->toString() % val_v->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 				}else{
-					PRINTB("WARNING: Problem converting rotate(a=%s) parameter, %s", val_a->toEchoString() % inst->location().toString());
+					PRINTB("WARNING: Problem converting rotate(a=%s) parameter, %s", val_a->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 				}
 			}
 			
@@ -154,12 +154,12 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 			
 			if(val_v != ValuePtr::undefined && ! vConverted){
 				if(aConverted){
-					PRINTB("WARNING: Problem converting rotate(..., v=%s) parameter, %s", val_v->toEchoString() % inst->location().toString());
+					PRINTB("WARNING: Problem converting rotate(..., v=%s) parameter, %s", val_v->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 				}else{
-					PRINTB("WARNING: Problem converting rotate(a=%s, v=%s) parameter, %s", val_a->toEchoString() % val_v->toEchoString() % inst->location().toString());
+					PRINTB("WARNING: Problem converting rotate(a=%s, v=%s) parameter, %s", val_a->toEchoString() % val_v->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 				}
 			}else if(!aConverted){
-				PRINTB("WARNING: Problem converting rotate(a=%s) parameter, %s", val_a->toEchoString() % inst->location().toString());
+				PRINTB("WARNING: Problem converting rotate(a=%s) parameter, %s", val_a->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 			}
 		}
 	}
@@ -173,7 +173,7 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 				x *= sn, y *= sn, z *= sn;
 			}
 		}else{
-			PRINTB("WARNING: Unable to convert mirror(%s) parameter to a vec3 or vec2 of numbers, %s", val_v->toEchoString() % inst->location().toString());
+			PRINTB("WARNING: Unable to convert mirror(%s) parameter to a vec3 or vec2 of numbers, %s", val_v->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 		}
 
 		if (x != 0.0 || y != 0.0 || z != 0.0)	{
@@ -191,7 +191,7 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 		if (v->getVec3(translatevec[0], translatevec[1], translatevec[2], 0.0)) {
 			node->matrix.translate(translatevec);
 		}else{
-			PRINTB("WARNING: Unable to convert translate(%s) parameter to a vec3 or vec2 of numbers, %s", v->toEchoString() % inst->location().toString());
+			PRINTB("WARNING: Unable to convert translate(%s) parameter to a vec3 or vec2 of numbers, %s", v->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 		}
 	}
 	else if (this->type == transform_type_e::MULTMATRIX) {

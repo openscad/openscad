@@ -2,6 +2,8 @@
 #include "rendersettings.h"
 #include "printutils.h"
 
+static const double DEFAULT_DISTANCE = 140.0;
+
 Camera::Camera() :
 	projection(ProjectionType::PERSPECTIVE), fov(22.5), viewall(false), autocenter(false)
 {
@@ -41,16 +43,22 @@ void Camera::setup(std::vector<double> params)
 */
 void Camera::viewAll(const BoundingBox &bbox)
 {
-	if (this->autocenter) {
-		// autocenter = point camera at the center of the bounding box.
-		this->object_trans = -bbox.center();
-	}
+	if (bbox.isEmpty()) {
+		setVpt(0, 0, 0);
+		setVpd(DEFAULT_DISTANCE);
+	} else {
 
-	double bboxRadius = bbox.diagonal().norm() / 2;
-	double radius = (bbox.center() + object_trans).norm() + bboxRadius;
-	this->viewer_distance = radius / sin(this->fov / 2 * M_PI / 180);
-	PRINTDB("modified obj trans x y z %f %f %f",object_trans.x() % object_trans.y() % object_trans.z());
-	PRINTDB("modified obj rot   x y z %f %f %f",object_rot.x() % object_rot.y() % object_rot.z());
+		if (this->autocenter) {
+			// autocenter = point camera at the center of the bounding box.
+			this->object_trans = -bbox.center();
+		}
+
+		double bboxRadius = bbox.diagonal().norm() / 2;
+		double radius = (bbox.center() + object_trans).norm() + bboxRadius;
+		this->viewer_distance = radius / sin(this->fov / 2 * M_PI / 180);
+		PRINTDB("modified obj trans x y z %f %f %f",object_trans.x() % object_trans.y() % object_trans.z());
+		PRINTDB("modified obj rot   x y z %f %f %f",object_rot.x() % object_rot.y() % object_rot.z());
+	}
 }
 
 void Camera::zoom(int zoom, bool relative)
@@ -71,7 +79,7 @@ void Camera::resetView()
 {
 	setVpr(55, 0, 25);  // set in user space units
 	setVpt(0, 0, 0);
-	setVpd(140);
+	setVpd(DEFAULT_DISTANCE);
 }
 
 Eigen::Vector3d Camera::getVpt() const

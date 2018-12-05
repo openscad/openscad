@@ -79,7 +79,7 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 			RangeType range = it_values->toRange();
 			uint32_t steps = range.numValues();
 			if (steps >= 10000) {
-				PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu).", steps);
+				PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu), %s", steps % inst.location().toRelativeString(ctx->documentPath()));
 			} else {
 				for (RangeType::iterator it = range.begin();it != range.end();it++) {
 					c.set_variable(it_name, ValuePtr(*it));

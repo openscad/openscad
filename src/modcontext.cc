@@ -9,6 +9,9 @@
 #include "builtin.h"
 #include "ModuleCache.h"
 #include <cmath>
+#ifdef DEBUG
+#include <boost/format.hpp>
+#endif
 
 ModuleContext::ModuleContext(const Context *parent, const EvalContext *evalctx)
 	: Context(parent), functions_p(nullptr), modules_p(nullptr), evalctx(evalctx)
