@@ -1,0 +1,44 @@
+WARNING: Ignoring unknown function 'test', in file errors-warnings.scad, line 19.
+ECHO: "include"
+WARNING: Ignoring unknown variable 'a', in file errors-warnings.scad, line 1.
+ECHO: undef
+WARNING: Ignoring unknown module 'hello', in file errors-warnings.scad, line 17.
+WARNING: Ignoring radius variable 'r' as diameter 'd' is defined too.
+DEPRECATED: Using ranges of the form [begin:end] with begin value greater than the end value is deprecated.
+WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 35
+ECHO: "a"
+ECHO: "↑"
+ECHO: "b"
+ECHO: "😀"
+ECHO: nan
+ECHO: inf
+ECHO: -inf
+ECHO: "INF", 0
+ECHO: "-INF", 0
+ECHO: "INF", 0
+ECHO: "-INF", 1
+WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 72
+WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 73
+WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 74
+WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 75
+WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 77
+WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 78
+WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 79
+WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 80
+WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 81
+WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 82
+WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 83
+WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 84
+ECHO: "mainfile"
+WARNING: Ignoring unknown variable 'notDefinedVariable', in file errors-warnings-included.scad, line 5.
+ECHO: undef
+ECHO: "use"
+WARNING: Ignoring unknown variable 'a', in file errors-warnings-use.scad, line 2.
+ECHO: undef
+WARNING: Ignoring unknown module 'unknown', in file sub2/useuse.scad, line 3.
+WARNING: Ignoring unknown variable 'a', in file errors-warnings-use.scad, line 2.
+ECHO: undef
+WARNING: Ignoring unknown module 'unknownIncuse', in file sub2/incuse.scad, line 2.
+WARNING: Ignoring unknown variable 'xyz', in file sub1/errors-warnings-incuse.scad, line 2.
+ECHO: undef
+WARNING: Ignoring unknown function 'test', in file sub1/errors-warnings-incuse.scad, line 3.

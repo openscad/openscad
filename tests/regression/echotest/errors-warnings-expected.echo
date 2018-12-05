@@ -1,5 +1,5 @@
-WARNING: Ignoring unknown function 'test', line 19.
-WARNING: Ignoring unknown variable 'a', line 1.
+WARNING: Ignoring unknown function 'test', in file errors-warnings.scad, line 19.
+WARNING: Ignoring unknown variable 'a', in file errors-warnings.scad, line 1.
 ECHO: undef
-WARNING: Ignoring unknown module 'hello', line 17.
+WARNING: Ignoring unknown module 'hello', in file errors-warnings.scad, line 17.
 WARNING: Ignoring radius variable 'r' as diameter 'd' is defined too.
