@@ -535,10 +535,6 @@ LcIf::LcIf(Expression *cond, Expression *ifexpr, Expression *elseexpr, const Loc
 
 ValuePtr LcIf::evaluate(const Context *context) const
 {
-    if (this->elseexpr) {
-    	ExperimentalFeatureException::check(Feature::ExperimentalElseExpression);
-    }
-
     const shared_ptr<Expression> &expr = this->cond->evaluate(context) ? this->ifexpr : this->elseexpr;
 	
     Value::VectorType vec;
@@ -567,8 +563,6 @@ LcEach::LcEach(Expression *expr, const Location &loc) : ListComprehension(loc), 
 
 ValuePtr LcEach::evaluate(const Context *context) const
 {
-	ExperimentalFeatureException::check(Feature::ExperimentalEachExpression);
-
 	Value::VectorType vec;
 
     ValuePtr v = this->expr->evaluate(context);
@@ -577,7 +571,7 @@ ValuePtr LcEach::evaluate(const Context *context) const
         RangeType range = v->toRange();
         uint32_t steps = range.numValues();
         if (steps >= 1000000) {
-            PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu), %s", loc.toString());
+            PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu), %s", loc.toRelativeString(context->documentPath()));
         } else {
             for (RangeType::iterator it = range.begin();it != range.end();it++) {
                 vec.push_back(ValuePtr(*it));
@@ -631,7 +625,7 @@ ValuePtr LcFor::evaluate(const Context *context) const
         RangeType range = it_values->toRange();
         uint32_t steps = range.numValues();
         if (steps >= 1000000) {
-            PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu), %s", steps % loc.toString());
+            PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu), %s", steps % loc.toRelativeString(context->documentPath()));
         } else {
             for (RangeType::iterator it = range.begin();it != range.end();it++) {
                 c.set_variable(it_name, ValuePtr(*it));
@@ -672,8 +666,6 @@ LcForC::LcForC(const AssignmentList &args, const AssignmentList &incrargs, Expre
 
 ValuePtr LcForC::evaluate(const Context *context) const
 {
-	ExperimentalFeatureException::check(Feature::ExperimentalForCExpression);
-
 	Value::VectorType vec;
 
     Context c(context);

@@ -21,7 +21,7 @@ project(openscad)
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/objects")
 set(AUTOGEN_BUILD_DIR "${CMAKE_BINARY_DIR}/objects")
-add_custom_target(make-objects-directory ALL COMMAND ${CMAKE_COMMAND} -E make_directory ${AUTOGEN_BUILD_DIR})
+file(MAKE_DIRECTORY ${AUTOGEN_BUILD_DIR})
 
 # Default to Release build
 if(NOT CMAKE_BUILD_TYPE)
@@ -44,21 +44,38 @@ if(APPLE)
   set(CMAKE_CXX_FLAGS "-stdlib=libc++")
 endif()
 
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -frounding-math")
+endif()
+add_definitions(-DSTACKSIZE=8388608 -D_REENTRANT)
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 set(CMAKE_PREFIX_PATH "$ENV{OPENSCAD_LIBRARIES}")
 
 find_package(Eigen3 REQUIRED QUIET)
 message(STATUS "Eigen3: ${EIGEN3_VERSION_STRING}")
 include_directories(${EIGEN3_INCLUDE_DIRS})
-
-find_package(Boost 1.36 REQUIRED COMPONENTS filesystem system thread regex program_options QUIET)
-message(STATUS "Boost: ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
-include_directories(${Boost_INCLUDE_DIRS})
+add_definitions(-DEIGEN_DONT_ALIGN)
 
 find_package(CGAL REQUIRED QUIET)
 message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}")
 include_directories(${CGAL_INCLUDE_DIRS})
 add_definitions(-DENABLE_CGAL)
+
+# NOTE FindCGAL.cmake resets the BOOST_* and Boost_* variables,
+#   because it looks for Boost itself, so it has to be called
+#   before we look for our own required boost libraries.
+set(BOOST_DIRECTLY_REQUIRED_LIBRARIES filesystem system thread regex program_options)
+find_package(Boost 1.36 REQUIRED COMPONENTS ${BOOST_DIRECTLY_REQUIRED_LIBRARIES} QUIET)
+message(STATUS "Boost: ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
+include_directories(${Boost_INCLUDE_DIRS})
+
+# Check if boost dependency libraries have been found too
+list(LENGTH BOOST_DIRECTLY_REQUIRED_LIBRARIES BOOST_DIRECTLY_REQUIRED_LIBRARIES_LENGTH)
+list(LENGTH Boost_LIBRARIES Boost_LIBRARIES_LENGTH)
+if(Boost_LIBRARIES_LENGTH EQUAL BOOST_DIRECTLY_REQUIRED_LIBRARIES_LENGTH)
+  message(FATAL_ERROR "No dependent Boost libraries found. Your CMake (${CMAKE_VERSION}) version might be too old for the version of boost you are using (${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}). In that case, you should have received warnings above of the type: 'Imported targets not available for Boost version ${Boost_VERSION}'")
+endif()
 
 find_package(HarfBuzz 0.9.19 REQUIRED QUIET)
 message(STATUS "Harfbuzz: ${HARFBUZZ_VERSION}")
