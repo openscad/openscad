@@ -268,7 +268,7 @@ AbstractNode *ColorModule::instantiate(const Context *ctx, const ModuleInstantia
 		for (size_t i = 0; i < 4; i++) {
 			node->color[i] = i < v->toVector().size() ? v->toVector()[i]->toDouble() : 1.0;
 			if (node->color[i] > 1 || node->color[i] < 0){
-				PRINTB_NOCACHE("WARNING: color() expects numbers between 0.0 and 1.0. Value of %.1f is out of range, %s", node->color[i] % inst->location().toString());
+				PRINTB_NOCACHE("WARNING: color() expects numbers between 0.0 and 1.0. Value of %.1f is out of range, %s", node->color[i] % inst->location().toRelativeString(ctx->documentPath()));
 			}
 		}
 	} else if (v->type() == Value::ValueType::STRING) {
@@ -282,7 +282,7 @@ AbstractNode *ColorModule::instantiate(const Context *ctx, const ModuleInstantia
 			if (hexColor) {
 				node->color = *hexColor;
 			} else {
-				PRINTB_NOCACHE("WARNING: Unable to parse color \"%s\", %s. Please see", colorname % inst->location().toString());
+				PRINTB_NOCACHE("WARNING: Unable to parse color \"%s\", %s. Please see", colorname % inst->location().toRelativeString(ctx->documentPath()));
 				PRINT_NOCACHE("WARNING: http://en.wikipedia.org/wiki/Web_colors");
 			}
 		}

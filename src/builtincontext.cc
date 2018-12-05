@@ -20,7 +20,7 @@ ValuePtr BuiltinContext::evaluate_function(const std::string &name, const class 
 	if (search != Builtins::instance()->getFunctions().end()) {
 		AbstractFunction *f = search->second;
 		if (f->is_enabled()) return f->evaluate(this, evalctx, loc);
-		else PRINTB("WARNING: Experimental builtin function '%s' is not enabled.", name);
+		else PRINTB("WARNING: Experimental builtin function '%s' is not enabled, %s", name % loc.toRelativeString(this->documentPath()));
 	}
 	return Context::evaluate_function(name, evalctx, loc);
 }
@@ -32,7 +32,7 @@ class AbstractNode *BuiltinContext::instantiate_module(const class ModuleInstant
 	if (search != Builtins::instance()->getModules().end()) {
 		AbstractModule *m = search->second;
 		if (!m->is_enabled()) {
-			PRINTB("WARNING: Experimental builtin module '%s' is not enabled.", name);
+			PRINTB("WARNING: Experimental builtin module '%s' is not enabled, %s", name % loc.toRelativeString(this->documentPath()));
 		}
 		std::string replacement = Builtins::instance()->instance()->isDeprecated(name);
 		if (!replacement.empty()) {
