@@ -8,3 +8,5 @@ WARNING: color() expects numbers between 0.0 and 1.0. Value of 2.0 is out of ran
 WARNING: Unable to parse color "notaname", in file errors-warnings.scad, line 28. Please see
 WARNING: http://en.wikipedia.org/wiki/Web_colors
 WARNING: Ignoring unknown module 'box', in file errors-warnings.scad, line 29.
+WARNING: $fs too small - clamping to 0.010000, in file errors-warnings.scad, line 31
+WARNING: $fa too small - clamping to 0.010000, in file errors-warnings.scad, line 32

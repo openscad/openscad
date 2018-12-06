@@ -179,11 +179,11 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 	node->fa = c.lookup_variable("$fa")->toDouble();
 
 	if (node->fs < F_MINIMUM) {
-		PRINTB("WARNING: $fs too small - clamping to %f", F_MINIMUM);
+		PRINTB("WARNING: $fs too small - clamping to %f, %s", F_MINIMUM % inst->location().toRelativeString(ctx->documentPath()));
 		node->fs = F_MINIMUM;
 	}
 	if (node->fa < F_MINIMUM) {
-		PRINTB("WARNING: $fa too small - clamping to %f", F_MINIMUM);
+		PRINTB("WARNING: $fa too small - clamping to %f, %s", F_MINIMUM % inst->location().toRelativeString(ctx->documentPath()));
 		node->fa = F_MINIMUM;
 	}
 

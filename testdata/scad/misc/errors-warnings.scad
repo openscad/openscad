@@ -27,3 +27,9 @@ $vpd=[1];
 color([-1,0,1,2])
 color("notAName")
 box();
+
+cylinder($fs=0);
+cylinder($fa=0);
+
+cylinder($fs=1/0);
+cylinder($fa=1/0);
