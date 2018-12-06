@@ -312,11 +312,11 @@ bool QGLView::save(const char *filename)
 
 void QGLView::wheelEvent(QWheelEvent *event)
 {
-  auto pos = event->pos();
+  const auto pos = event->pos();
 #if QT_VERSION >= 0x050000
-    int v = event->angleDelta().y();
+    const int v = event->angleDelta().y();
 #else
-    int v = event->delta();
+    const int v = event->delta();
 #endif
     zoomCursor(pos.x(), pos.y(), v);
 }
@@ -339,16 +339,16 @@ void QGLView::zoom(double v, bool relative)
 
 void QGLView::zoomCursor(int x, int y, int zoom)
 {
-  auto old_dist = cam.zoomValue();
+  const auto old_dist = cam.zoomValue();
   this->cam.zoom(zoom, true);
-  auto dist = cam.zoomValue();
-  auto ratio = old_dist / dist - 1.0; 
+  const auto dist = cam.zoomValue();
+  const auto ratio = old_dist / dist - 1.0; 
   // screen coordinates from -1 to 1
-  auto screen_x = 2.0 * (x + 0.5) / this->cam.pixel_width - 1.0;
-  auto screen_y = 1.0 - 2.0 * (y + 0.5) / this->cam.pixel_height;
-  auto height = dist * tan(cam.fov /2 * M_PI / 180);
-  auto mx = ratio*screen_x*(aspectratio*height);
-  auto mz = ratio*screen_y*height;
+  const auto screen_x = 2.0 * (x + 0.5) / this->cam.pixel_width - 1.0;
+  const auto screen_y = 1.0 - 2.0 * (y + 0.5) / this->cam.pixel_height;
+  const auto height = dist * tan(cam.fov /2 * M_PI / 180);
+  const auto mx = ratio*screen_x*(aspectratio*height);
+  const auto mz = ratio*screen_y*height;
   translate(-mx, 0, -mz, true);
 }
 
