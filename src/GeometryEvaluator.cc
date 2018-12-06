@@ -222,7 +222,8 @@ std::vector<const class Polygon2d *> GeometryEvaluator::collectChildren2D(const 
 				children.push_back(polygons);
 			}
 			else {
-				PRINT("WARNING: Ignoring 3D child object for 2D operation");
+				std::string loc = item.first->modinst->location().toRelativeString(item.first->modinst->path());
+				PRINTB("WARNING: Ignoring 3D child object for 2D operation, %s", loc);
 			}
 		}
 	}
