@@ -84,7 +84,8 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const Abstrac
 		if (!item.first->modinst->isBackground() && item.second) {
 			if (!dim) dim = item.second->getDimension();
 			else if (dim != item.second->getDimension()) {
-				PRINT("WARNING: Mixing 2D and 3D objects is not supported.");
+				std::string loc = item.first->modinst->location().toRelativeString(item.first->modinst->path());
+				PRINTB("WARNING: Mixing 2D and 3D objects is not supported, %s", loc);
 				break;
 			}
 		}
