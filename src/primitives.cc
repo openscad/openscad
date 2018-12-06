@@ -59,7 +59,7 @@ public:
 	PrimitiveModule(primitive_type_e type) : type(type) { }
 	AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const override;
 private:
-	Value lookup_radius(const Context &ctx, const std::string &radius_var, const std::string &diameter_var) const;
+	Value lookup_radius(const Context &ctx, const ModuleInstantiation *inst, const std::string &radius_var, const std::string &diameter_var) const;
 };
 
 class PrimitiveNode : public LeafNode
@@ -118,7 +118,7 @@ public:
  * @return radius value of type Value::ValueType::NUMBER or Value::ValueType::UNDEFINED if both
  *         variables are invalid or not set.
  */
-Value PrimitiveModule::lookup_radius(const Context &ctx, const std::string &diameter_var, const std::string &radius_var) const
+Value PrimitiveModule::lookup_radius(const Context &ctx, const ModuleInstantiation *inst, const std::string &diameter_var, const std::string &radius_var) const
 {
 	auto d = ctx.lookup_variable(diameter_var, true);
 	auto r = ctx.lookup_variable(radius_var, true);
@@ -126,7 +126,8 @@ Value PrimitiveModule::lookup_radius(const Context &ctx, const std::string &diam
 	
 	if (d->type() == Value::ValueType::NUMBER) {
 		if (r_defined) {
-			PRINTB("WARNING: Ignoring radius variable '%s' as diameter '%s' is defined too.", radius_var % diameter_var);
+			std::string loc = inst->location().toRelativeString(inst->path());
+			PRINTB("WARNING: Ignoring radius variable '%s' as diameter '%s' is defined too, %s", radius_var % diameter_var % loc);
 		}
 		return {d->toDouble() / 2.0};
 	} else if (r_defined) {
@@ -207,7 +208,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		break;
 	}
 	case primitive_type_e::SPHERE: {
-		const auto r = lookup_radius(c, "d", "r");
+		const auto r = lookup_radius(c, inst, "d", "r");
 		if (r.type() == Value::ValueType::NUMBER) {
 			node->r1 = r.toDouble();
 		}
@@ -219,9 +220,9 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 			node->h = h->toDouble();
 		}
 
-		const auto r = lookup_radius(c, "d", "r");
-		const auto r1 = lookup_radius(c, "d1", "r1");
-		const auto r2 = lookup_radius(c, "d2", "r2");
+		const auto r = lookup_radius(c, inst, "d", "r");
+		const auto r1 = lookup_radius(c, inst, "d1", "r1");
+		const auto r2 = lookup_radius(c, inst, "d2", "r2");
 		if (r.type() == Value::ValueType::NUMBER) {
 			node->r1 = r.toDouble();
 			node->r2 = r.toDouble();
@@ -269,7 +270,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		break;
 	}
 	case primitive_type_e::CIRCLE: {
-		const auto r = lookup_radius(c, "d", "r");
+		const auto r = lookup_radius(c, inst, "d", "r");
 		if (r.type() == Value::ValueType::NUMBER) {
 			node->r1 = r.toDouble();
 		}
