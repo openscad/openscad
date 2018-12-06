@@ -30,6 +30,12 @@ box();
 
 cylinder($fs=0);
 cylinder($fa=0);
+cylinder($fn=0);
 
 cylinder($fs=1/0);
 cylinder($fa=1/0);
+cylinder($fn=1/0);
+
+cylinder($fs="test");
+cylinder($fa="test");
+cylinder($fn="test");

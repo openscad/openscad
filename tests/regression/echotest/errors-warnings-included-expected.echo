@@ -11,6 +11,8 @@ WARNING: http://en.wikipedia.org/wiki/Web_colors
 WARNING: Ignoring unknown module 'box', in file errors-warnings.scad, line 29.
 WARNING: $fs too small - clamping to 0.010000, in file errors-warnings.scad, line 31
 WARNING: $fa too small - clamping to 0.010000, in file errors-warnings.scad, line 32
+WARNING: $fs too small - clamping to 0.010000, in file errors-warnings.scad, line 39
+WARNING: $fa too small - clamping to 0.010000, in file errors-warnings.scad, line 40
 DEPRECATED: Using ranges of the form [begin:end] with begin value greater than the end value is deprecated.
 WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 35
 ECHO: "a"
