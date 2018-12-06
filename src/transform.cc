@@ -98,38 +98,68 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 	}
 	else if (this->type == transform_type_e::ROTATE) {
 		auto val_a = c.lookup_variable("a");
+		auto val_v = c.lookup_variable("v");
 		if (val_a->type() == Value::ValueType::VECTOR) {
 			Eigen::AngleAxisd rotx(0, Vector3d::UnitX());
 			Eigen::AngleAxisd roty(0, Vector3d::UnitY());
 			Eigen::AngleAxisd rotz(0, Vector3d::UnitZ());
-			double a;
+			double a=0.0;
+			bool ok=true;
 			if (val_a->toVector().size() > 0) {
-				val_a->toVector()[0]->getDouble(a);
+				ok &= val_a->toVector()[0]->getDouble(a);
+				ok &= !std::isinf(a) && !std::isnan(a);
 				rotx = Eigen::AngleAxisd(a*M_PI/180, Vector3d::UnitX());
 			}
 			if (val_a->toVector().size() > 1) {
-				val_a->toVector()[1]->getDouble(a);
+				ok &= val_a->toVector()[1]->getDouble(a);
+				ok &= !std::isinf(a) && !std::isnan(a);
 				roty = Eigen::AngleAxisd(a*M_PI/180, Vector3d::UnitY());
 			}
 			if (val_a->toVector().size() > 2) {
-				val_a->toVector()[2]->getDouble(a);
+				ok &= val_a->toVector()[2]->getDouble(a);
+				ok &= !std::isinf(a) && !std::isnan(a);
 				rotz = Eigen::AngleAxisd(a*M_PI/180, Vector3d::UnitZ());
 			}
+			if (val_a->toVector().size() > 3) {
+				ok &= false;
+			}
+			
+			bool v_supplied = (val_v != ValuePtr::undefined);
+			if(ok){
+				if(v_supplied){
+					PRINTB("WARNING: When parameter a is supplied as vector, v is ignored rotate(a=%s, v=%s), %s", val_a->toEchoString() % val_v->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+				}
+			}else{
+				if(v_supplied){
+					PRINTB("WARNING: Problem converting rotate(a=%s, v=%s) parameter, %s", val_a->toString() % val_v->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+				}else{
+					PRINTB("WARNING: Problem converting rotate(a=%s) parameter, %s", val_a->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+				}
+			}
+			
 			node->matrix.rotate(rotz * roty * rotx);
-		}
-		else {
-			auto val_v = c.lookup_variable("v");
+		} else {
 			double a = 0.0;
-
-			val_a->getDouble(a);
-
+			bool aConverted = val_a->getDouble(a);
+			aConverted &= !std::isinf(a) && !std::isnan(a);
 			Vector3d axis(0, 0, 1);
-			if (val_v->getVec3(axis[0], axis[1], axis[2], 0.0)) {
+			bool vConverted = val_v->getVec3(axis[0], axis[1], axis[2], 0.0);
+			if (vConverted) {
 				if (axis.squaredNorm() > 0) axis.normalize();
 			}
 
 			if (axis.squaredNorm() > 0) {
 				node->matrix = Eigen::AngleAxisd(a*M_PI/180, axis);
+			}
+			
+			if(val_v != ValuePtr::undefined && ! vConverted){
+				if(aConverted){
+					PRINTB("WARNING: Problem converting rotate(..., v=%s) parameter, %s", val_v->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+				}else{
+					PRINTB("WARNING: Problem converting rotate(a=%s, v=%s) parameter, %s", val_a->toEchoString() % val_v->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+				}
+			}else if(!aConverted){
+				PRINTB("WARNING: Problem converting rotate(a=%s) parameter, %s", val_a->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 			}
 		}
 	}
