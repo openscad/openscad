@@ -36,7 +36,7 @@ class AbstractNode *BuiltinContext::instantiate_module(const class ModuleInstant
 		}
 		std::string replacement = Builtins::instance()->instance()->isDeprecated(name);
 		if (!replacement.empty()) {
-			PRINT_DEPRECATION("The %s() module will be removed in future releases. Use %s instead.", name % replacement);
+			PRINT_DEPRECATION("The %s() module will be removed in future releases. Use %s instead. %s", name % replacement % loc.toRelativeString(this->documentPath()));
 		}
 		return m->instantiate(this, &inst, evalctx);
 	}

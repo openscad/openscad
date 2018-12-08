@@ -299,6 +299,8 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 	localization_init();
 
 	Tree tree;
+	boost::filesystem::path doc(filename);
+	tree.setDocumentPath(doc.remove_filename().string());
 #ifdef ENABLE_CGAL
 	GeometryEvaluator geomevaluator(tree);
 #endif

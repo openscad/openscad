@@ -126,7 +126,7 @@ Value PrimitiveModule::lookup_radius(const Context &ctx, const ModuleInstantiati
 	
 	if (d->type() == Value::ValueType::NUMBER) {
 		if (r_defined) {
-			std::string loc = inst->location().toRelativeString(inst->path());
+			std::string loc = inst->location().toRelativeString(ctx.documentPath());
 			PRINTB("WARNING: Ignoring radius variable '%s' as diameter '%s' is defined too, %s", radius_var % diameter_var % loc);
 		}
 		return {d->toDouble() / 2.0};

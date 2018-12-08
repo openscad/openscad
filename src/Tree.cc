@@ -70,3 +70,12 @@ void Tree::setRoot(const AbstractNode *root)
 	this->root_node = root; 
 	this->nodecachemap.clear();
 }
+
+void Tree::setDocumentPath(const std::string path){
+	this->document_path = path;
+}
+
+const std::string Tree::getDocumentPath() const
+{
+	return this->document_path;
+}
