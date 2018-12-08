@@ -51,7 +51,6 @@ parts:
     - libqt5opengl5-dev
     - qt5-qmake
     - libcgal-dev
-    - libopencsg-dev
     - libeigen3-dev
     - libglib2.0-dev
     - bison
