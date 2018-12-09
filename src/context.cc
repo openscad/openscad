@@ -74,7 +74,7 @@ Context::~Context()
 	Initialize context from a module argument list and a evaluation context
 	which may pass variables which will be preferred over default values.
 */
-void Context::setVariables(const AssignmentList &args, const EvalContext *evalctx, bool silent)
+void Context::setVariables(const AssignmentList &args, const EvalContext *evalctx, bool silentOverwrite)
 {
   // Set any default values
   for (const auto &arg : args) {
@@ -84,24 +84,21 @@ void Context::setVariables(const AssignmentList &args, const EvalContext *evalct
   if (evalctx) {
 		auto assignments = evalctx->resolveArguments(args);
 		for (const auto &ass : assignments) {
-			this->set_variable(ass.first, ass.second->evaluate(evalctx),silent);
+			this->set_variable(ass.first, ass.second->evaluate(evalctx),silentOverwrite);
     }
   }
 }
 
-void Context::set_variable(const std::string &name, const ValuePtr &value, bool silent)
+void Context::set_variable(const std::string &name, const ValuePtr &value, bool silentOverwrite)
 {
-	//if(!silent && this->parent->variables.find(name)!= this->parent->variables.end()){
-	//	PRINTB("WARNING: %s is shadowed", name);
-	//}
-	if(!silent && this->variables.find(name)!= this->variables.end()){
+	if(!silentOverwrite && this->variables.find(name)!= this->variables.end()){
 		PRINTB("WARNING: %s is overwritten", name);
 	}
 	if (is_config_variable(name)) this->config_variables[name] = value;
 	else this->variables[name] = value;
 }
 
-void Context::set_variable(const std::string &name, const Value &value, bool silent)
+void Context::set_variable(const std::string &name, const Value &value, bool silentOverwrite)
 {
 	set_variable(name, ValuePtr(value));
 }
@@ -121,10 +118,10 @@ void Context::set_constant(const std::string &name, const Value &value)
 	set_constant(name, ValuePtr(value));
 }
 
-void Context::apply_variables(const Context &other, bool silent)
+void Context::apply_variables(const Context &other, bool silentOverwrite)
 {
 	for (const auto &var : other.variables) {
-		set_variable(var.first, var.second, silent);
+		set_variable(var.first, var.second, silentOverwrite);
 	}
 }
 
