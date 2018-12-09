@@ -74,7 +74,10 @@ void ModuleContext::initializeModule(const UserModule &module)
 	this->functions_p = &module.scope.functions;
 	this->modules_p = &module.scope.modules;
 	for (const auto &ass : module.scope.assignments) {
-		this->set_variable(ass.name, ass.expr->evaluate(this),false,ass.location());
+		if(this->lookup_variable(ass.name)){
+			PRINTB("WARNING: %s is overwritting, line %i", ass.name % ass.location().firstLine());
+		}
+		this->set_variable(ass.name, ass.expr->evaluate(this));
 	}
 
 // Experimental code. See issue #399

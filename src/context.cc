@@ -74,7 +74,7 @@ Context::~Context()
 	Initialize context from a module argument list and a evaluation context
 	which may pass variables which will be preferred over default values.
 */
-void Context::setVariables(const AssignmentList &args, const EvalContext *evalctx, bool silentOverwrite, const Location &loc)
+void Context::setVariables(const AssignmentList &args, const EvalContext *evalctx)
 {
   // Set any default values
   for (const auto &arg : args) {
@@ -84,23 +84,20 @@ void Context::setVariables(const AssignmentList &args, const EvalContext *evalct
   if (evalctx) {
 		auto assignments = evalctx->resolveArguments(args);
 		for (const auto &ass : assignments) {
-			this->set_variable(ass.first, ass.second->evaluate(evalctx),silentOverwrite, ass.second->location());
+			this->set_variable(ass.first, ass.second->evaluate(evalctx));
     }
   }
 }
 
-void Context::set_variable(const std::string &name, const ValuePtr &value, bool silentOverwrite, const Location &loc)
+void Context::set_variable(const std::string &name, const ValuePtr &value)
 {
-	if(!silentOverwrite && this->variables.find(name)!= this->variables.end()){
-		PRINTB("WARNING: %s is overwritting, line %i", name % loc.firstLine());
-	}
 	if (is_config_variable(name)) this->config_variables[name] = value;
 	else this->variables[name] = value;
 }
 
-void Context::set_variable(const std::string &name, const Value &value, bool silentOverwrite, const Location &loc)
+void Context::set_variable(const std::string &name, const Value &value)
 {
-	set_variable(name, ValuePtr(value), silentOverwrite, loc);
+	set_variable(name, ValuePtr(value));
 }
 
 void Context::set_constant(const std::string &name, const ValuePtr &value)
@@ -118,10 +115,10 @@ void Context::set_constant(const std::string &name, const Value &value)
 	set_constant(name, ValuePtr(value));
 }
 
-void Context::apply_variables(const Context &other, bool silentOverwrite, const Location &loc)
+void Context::apply_variables(const Context &other)
 {
 	for (const auto &var : other.variables) {
-		set_variable(var.first, var.second, silentOverwrite, loc);
+		set_variable(var.first, var.second);
 	}
 }
 
