@@ -74,7 +74,7 @@ void ModuleContext::initializeModule(const UserModule &module)
 	this->functions_p = &module.scope.functions;
 	this->modules_p = &module.scope.modules;
 	for (const auto &ass : module.scope.assignments) {
-		this->set_variable(ass.name, ass.expr->evaluate(this));
+		this->set_variable(ass.name, ass.expr->evaluate(this),false);
 	}
 
 // Experimental code. See issue #399

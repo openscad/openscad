@@ -20,14 +20,14 @@ public:
 	virtual ValuePtr evaluate_function(const std::string &name, const class EvalContext *evalctx, const Location &loc) const;
 	virtual class AbstractNode *instantiate_module(const class ModuleInstantiation &inst, EvalContext *evalctx, const Location &loc) const;
 
-	void setVariables(const AssignmentList &args, const class EvalContext *evalctx = nullptr);
+	void setVariables(const AssignmentList &args, const class EvalContext *evalctx = nullptr, bool silent=true);
 
-	void set_variable(const std::string &name, const ValuePtr &value);
-	void set_variable(const std::string &name, const Value &value);
+	void set_variable(const std::string &name, const ValuePtr &value, bool silent=true);
+	void set_variable(const std::string &name, const Value &value, bool silent=true);
 	void set_constant(const std::string &name, const ValuePtr &value);
 	void set_constant(const std::string &name, const Value &value);
 
-	void apply_variables(const Context &other);
+	void apply_variables(const Context &other,  bool silent=true);
 	ValuePtr lookup_variable(const std::string &name, bool silent = false, const Location &loc=Location::NONE) const;
 	double lookup_variable_with_default(const std::string &variable, const double &def, const Location &loc=Location::NONE) const;
 	std::string lookup_variable_with_default(const std::string &variable, const std::string &def, const Location &loc=Location::NONE) const;

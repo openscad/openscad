@@ -3,6 +3,8 @@
 #include "Assignment.h"
 #include <unordered_map>
 
+enum class LocalScopeType { std, inst};
+
 class LocalScope
 {
 public:
@@ -29,4 +31,6 @@ public:
 	typedef std::unordered_map<std::string, class UserModule*> ModuleContainer;
 	ModuleContainer	modules;
 	std::vector<std::pair<std::string, UserModule*>> astModules;
+	
+	LocalScopeType ScopeType=LocalScopeType::std;
 };

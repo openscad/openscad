@@ -13,6 +13,7 @@ ECHO: "child_module_2 child 1"
 ECHO: "copy $children"
 ECHO: "copy_children_module: ", 2, 2
 ECHO: "inner variables shadows parameter"
+WARNING: b is overwritten
 ECHO: 5, 24
 ECHO: "user-defined special variables as parameter"
 ECHO: 7
