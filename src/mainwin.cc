@@ -1088,7 +1088,8 @@ try{
 	}
 
 	compileDone(didcompile | forcedone);
-}catch(int){
+}catch(HardWarningException){
+	PRINT("Execution aborted");
 	GuiLocker::unlock();
 }
 }
@@ -1150,6 +1151,7 @@ void MainWindow::updateCompileResult()
 
 void MainWindow::compileDone(bool didchange)
 {
+try{
 	const char *callslot;
 	if (didchange) {
 		updateTemporalVariables();
@@ -1163,6 +1165,10 @@ void MainWindow::compileDone(bool didchange)
 
 	this->procevents = false;
 	QMetaObject::invokeMethod(this, callslot);
+}catch(HardWarningException){
+	PRINT("Execution aborted");
+	GuiLocker::unlock();
+}
 }
 
 void MainWindow::compileEnded()
@@ -1239,6 +1245,7 @@ void MainWindow::instantiateRoot()
 */
 void MainWindow::compileCSG()
 {
+try{
 	assert(this->root_node);
 	PRINT("Compiling design (CSG Products generation)...");
 	this->processEvents();
@@ -1288,7 +1295,7 @@ void MainWindow::compileCSG()
 		}
 		else {
 			this->root_products.reset();
-			PRINT("WARNING: CSG normalization resulted in an empty tree");
+			PRINT("<b>WARNING: CSG normalization resulted in an empty tree</b>");
 			this->processEvents();
 		}
 	}
@@ -1326,8 +1333,8 @@ void MainWindow::compileCSG()
 	if (this->root_products &&
 			(this->root_products->size() >
 			 Preferences::inst()->getValue("advanced/openCSGLimit").toUInt())) {
-		PRINTB("WARNING: Normalized tree has %d elements!", this->root_products->size());
-		PRINT("WARNING: OpenCSG rendering has been disabled.");
+		PRINTB("<b>WARNING: Normalized tree has %d elements!</b>", this->root_products->size());
+		PRINT("<b>WARNING: OpenCSG rendering has been disabled.</b>");
 	}
 #ifdef ENABLE_OPENCSG
 	else {
@@ -1346,6 +1353,10 @@ void MainWindow::compileCSG()
 	int s = this->renderingTime.elapsed() / 1000;
 	PRINTB("Total rendering time: %d hours, %d minutes, %d seconds\n", (s / (60*60)) % ((s / 60) % 60) % (s % 60));
 	this->processEvents();
+}catch(HardWarningException){
+	PRINT("Execution aborted");
+	GuiLocker::unlock();
+}
 }
 
 void MainWindow::actionNew()
@@ -1463,7 +1474,7 @@ void MainWindow::saveBackup()
 {
 	auto path = PlatformUtils::backupPath();
 	if ((!fs::exists(path)) && (!PlatformUtils::createBackupPath())) {
-		PRINTB("WARNING: Cannot create backup path: %s", path);
+		PRINTB("<b>WARNING: Cannot create backup path: %s</b>", path);
 		return;
 	}
 
@@ -1481,7 +1492,7 @@ void MainWindow::saveBackup()
 	}
 
 	if ((!this->tempFile->isOpen()) && (! this->tempFile->open())) {
-		PRINT("WARNING: Failed to create backup file");
+		PRINT("<b>WARNING: Failed to create backup file</b>");
 		return;
 	}
 	return writeBackup(this->tempFile);
@@ -1571,9 +1582,9 @@ void MainWindow::actionShowLibraryFolder()
 {
 	auto path = PlatformUtils::userLibraryPath();
 	if (!fs::exists(path)) {
-		PRINTB("WARNING: Library path %s doesnt exist. Creating", path);
+		PRINTB("<b>WARNING: Library path %s doesnt exist. Creating</b>", path);
 		if (!PlatformUtils::createUserLibraryPath()) {
-			PRINTB("ERROR: Cannot create library path: %s",path);
+			PRINTB("<b>ERROR: Cannot create library path: %s</b>",path);
 		}
 	}
 	auto url = QString::fromStdString(path);
@@ -2106,7 +2117,7 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 		else viewModeSurface();
 	}
 	else {
-		PRINT("WARNING: No top level geometry to render");
+		PRINT("<b>WARNING: No top level geometry to render</b>");
 		PRINT(" ");
 	}
 
@@ -2257,7 +2268,7 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
 	setCurrentOutput();
 
 	if (!this->root_geom) {
-		PRINT("ERROR: Nothing to export! Try rendering first (press F6).");
+		PRINT("<b>ERROR: Nothing to export! Try rendering first (press F6).</b>");
 		clearCurrentOutput();
 		return;
 	}
@@ -2274,20 +2285,20 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
 	}
 
 	if (this->root_geom->getDimension() != dim) {
-		PRINTB("ERROR: Current top level object is not a %dD object.", dim);
+		PRINTB("<b>ERROR: Current top level object is not a %dD object.</b>", dim);
 		clearCurrentOutput();
 		return;
 	}
 
 	if (this->root_geom->isEmpty()) {
-		PRINT("ERROR: Current top level object is empty.");
+		PRINT("<b>ERROR: Current top level object is empty.</b>");
 		clearCurrentOutput();
 		return;
 	}
 
 	auto N = dynamic_cast<const CGAL_Nef_polyhedron *>(this->root_geom.get());
 	if (N && !N->p3->is_simple()) {
-	 	PRINT("WARNING: Object may not be a valid 2-manifold and may need repair! See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
+	 	PRINT("<b>WARNING: Object may not be a valid 2-manifold and may need repair! See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export</b>");
 	}
 
 	auto title = QString(_("Export %1 File")).arg(type_name);

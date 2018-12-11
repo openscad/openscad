@@ -5,6 +5,8 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/circular_buffer.hpp>
 #include <boost/filesystem.hpp>
+#include "exceptions.h"
+
 namespace fs = boost::filesystem;
 
 std::list<std::string> print_messages_stack;
@@ -73,7 +75,7 @@ void PRINT_NOCACHE(const std::string &msg)
 		}
 	}
 	if(stop){
-		throw(1);
+		throw HardWarningException("");
 	}
 }
 
