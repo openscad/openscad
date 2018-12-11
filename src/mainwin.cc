@@ -1011,6 +1011,7 @@ void MainWindow::refreshDocument()
 */
 void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidget)
 {
+try{
 	bool shouldcompiletoplevel = false;
 	bool didcompile = false;
 
@@ -1087,6 +1088,9 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 	}
 
 	compileDone(didcompile | forcedone);
+}catch(int){
+	GuiLocker::unlock();
+}
 }
 
 void MainWindow::waitAfterReload()

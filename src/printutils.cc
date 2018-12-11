@@ -52,6 +52,7 @@ void PRINT(const std::string &msg)
 
 void PRINT_NOCACHE(const std::string &msg)
 {
+	bool stop(false);
 	if (msg.empty()) return;
 
 	if (boost::starts_with(msg, "WARNING") || boost::starts_with(msg, "ERROR")) {
@@ -61,6 +62,7 @@ void PRINT_NOCACHE(const std::string &msg)
 		}
 		if (i == 5) return; // Suppress output after 5 equal ERROR or WARNING outputs.
 		else lastmessages.push_back(msg);
+		stop=true;
 	}
 
 	if (!OpenSCAD::quiet || boost::starts_with(msg, "ERROR")) {
@@ -69,6 +71,9 @@ void PRINT_NOCACHE(const std::string &msg)
 		} else {
 			outputhandler(msg, outputhandler_data);
 		}
+	}
+	if(stop){
+		throw(1);
 	}
 }
 
