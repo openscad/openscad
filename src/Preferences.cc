@@ -598,6 +598,12 @@ void Preferences::on_enableSoundOnRenderCompleteCheckBox_toggled(bool state)
 	settings.setValue("advanced/enableSoundNotification", state);
 }
 
+void Preferences::on_enableHardwarningsCheckBox_toggled(bool state)
+{
+	QSettingsCached settings;
+	settings.setValue("advanced/enableHardwarnings", state);
+}
+
 void Preferences::writeSettings()
 {
 	SettingsWriter settingsWriter;
@@ -705,6 +711,7 @@ void Preferences::updateGUI()
 	this->undockCheckBox->setEnabled(this->reorderCheckBox->isChecked());
 	this->launcherBox->setChecked(getValue("launcher/showOnStartup").toBool());
 	this->enableSoundOnRenderCompleteCheckBox->setChecked(getValue("advanced/enableSoundNotification").toBool());
+	this->enableHardwarningsCheckBox->setChecked(getValue("advanced/enableHardwarnings").toBool());
 
 	Settings::Settings *s = Settings::Settings::inst();
 	updateComboBox(this->comboBoxLineWrap, Settings::Settings::lineWrap);

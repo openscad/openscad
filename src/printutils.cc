@@ -14,6 +14,7 @@ OutputHandlerFunc *outputhandler = nullptr;
 void *outputhandler_data = nullptr;
 std::string OpenSCAD::debug("");
 bool OpenSCAD::quiet = false;
+bool OpenSCAD::hardwarnings = false;
 
 boost::circular_buffer<std::string> lastmessages(5);
 
@@ -74,7 +75,7 @@ void PRINT_NOCACHE(const std::string &msg)
 			outputhandler(msg, outputhandler_data);
 		}
 	}
-	if(stop){
+	if(stop && OpenSCAD::hardwarnings){
 		throw HardWarningException("");
 	}
 }
