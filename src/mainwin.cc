@@ -1011,89 +1011,89 @@ void MainWindow::refreshDocument()
 */
 void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidget)
 {
-OpenSCAD::hardwarnings = Preferences::inst()->getValue("advanced/enableHardwarnings").toBool();
-try{
-	bool shouldcompiletoplevel = false;
-	bool didcompile = false;
+	OpenSCAD::hardwarnings = Preferences::inst()->getValue("advanced/enableHardwarnings").toBool();
+	try{
+		bool shouldcompiletoplevel = false;
+		bool didcompile = false;
 
-	compileErrors = 0;
-	compileWarnings = 0;
+		compileErrors = 0;
+		compileWarnings = 0;
 
-	this->renderingTime.start();
+		this->renderingTime.start();
 
-	// Reload checks the timestamp of the toplevel file and refreshes if necessary,
-	if (reload) {
-		// Refresh files if it has changed on disk
-		if (fileChangedOnDisk() && checkEditorModified()) {
-			shouldcompiletoplevel = true;
-			refreshDocument();
-			if (Preferences::inst()->getValue("advanced/autoReloadRaise").toBool()) {
-				// reloading the 'same' document brings the 'old' one to front.
-				this->raise();
+		// Reload checks the timestamp of the toplevel file and refreshes if necessary,
+		if (reload) {
+			// Refresh files if it has changed on disk
+			if (fileChangedOnDisk() && checkEditorModified()) {
+				shouldcompiletoplevel = true;
+				refreshDocument();
+				if (Preferences::inst()->getValue("advanced/autoReloadRaise").toBool()) {
+					// reloading the 'same' document brings the 'old' one to front.
+					this->raise();
+				}
+			}
+			// If the file hasn't changed, we might still need to compile it
+			// if we haven't yet compiled the current text.
+			else {
+				auto current_doc = editor->toPlainText();
+				if (current_doc != last_compiled_doc && last_compiled_doc.size() == 0) {
+					shouldcompiletoplevel = true;
+				}
 			}
 		}
-		// If the file hasn't changed, we might still need to compile it
-		// if we haven't yet compiled the current text.
 		else {
-			auto current_doc = editor->toPlainText();
-			if (current_doc != last_compiled_doc && last_compiled_doc.size() == 0) {
+			shouldcompiletoplevel = true;
+		}
+
+		if (!shouldcompiletoplevel && this->parsed_module) {
+			auto mtime = this->parsed_module->includesChanged();
+			if (mtime > this->includes_mtime) {
+				this->includes_mtime = mtime;
 				shouldcompiletoplevel = true;
 			}
 		}
-	}
-	else {
-		shouldcompiletoplevel = true;
-	}
 
-	if (!shouldcompiletoplevel && this->parsed_module) {
-		auto mtime = this->parsed_module->includesChanged();
-		if (mtime > this->includes_mtime) {
-			this->includes_mtime = mtime;
-			shouldcompiletoplevel = true;
-		}
-	}
-
-	if (shouldcompiletoplevel) {
-		if (editor->isContentModified()) saveBackup();
-		compileTopLevelDocument(rebuildParameterWidget);
-		didcompile = true;
-	}
-
-	if (this->root_module) {
-		auto mtime = this->root_module->handleDependencies();
-		if (mtime > this->deps_mtime) {
-			this->deps_mtime = mtime;
-			PRINTB("Used file cache size: %d files", ModuleCache::instance()->size());
+		if (shouldcompiletoplevel) {
+			if (editor->isContentModified()) saveBackup();
+			compileTopLevelDocument(rebuildParameterWidget);
 			didcompile = true;
 		}
-	}
 
-	// If we're auto-reloading, listen for a cascade of changes by starting a timer
-	// if something changed _and_ there are any external dependencies
-	if (reload && didcompile && this->root_module) {
-		if (this->root_module->hasIncludes() ||
-				this->root_module->usesLibraries()) {
-			this->waitAfterReloadTimer->start();
-			this->procevents = false;
-			return;
-		}
-	}
-
-	if (!reload && didcompile) {
-		if (!animate_panel->isVisible()) {
-			emit unhighlightLastError();
-			if (!this->root_module) {
-				emit highlightError( parser_error_pos );
+		if (this->root_module) {
+			auto mtime = this->root_module->handleDependencies();
+			if (mtime > this->deps_mtime) {
+				this->deps_mtime = mtime;
+				PRINTB("Used file cache size: %d files", ModuleCache::instance()->size());
+				didcompile = true;
 			}
 		}
-	}
 
-	compileDone(didcompile | forcedone);
-}catch(HardWarningException){
-	PRINT("Execution aborted");
-	GuiLocker::unlock();
-}
-OpenSCAD::hardwarnings = false;
+		// If we're auto-reloading, listen for a cascade of changes by starting a timer
+		// if something changed _and_ there are any external dependencies
+		if (reload && didcompile && this->root_module) {
+			if (this->root_module->hasIncludes() ||
+					this->root_module->usesLibraries()) {
+				this->waitAfterReloadTimer->start();
+				this->procevents = false;
+				return;
+			}
+		}
+
+		if (!reload && didcompile) {
+			if (!animate_panel->isVisible()) {
+				emit unhighlightLastError();
+				if (!this->root_module) {
+					emit highlightError( parser_error_pos );
+				}
+			}
+		}
+
+		compileDone(didcompile | forcedone);
+	}catch(HardWarningException){
+		PRINT("Execution aborted");
+		GuiLocker::unlock();
+	}
+	OpenSCAD::hardwarnings = false;
 }
 
 void MainWindow::waitAfterReload()
@@ -1153,25 +1153,26 @@ void MainWindow::updateCompileResult()
 
 void MainWindow::compileDone(bool didchange)
 {
-OpenSCAD::hardwarnings = Preferences::inst()->getValue("advanced/enableHardwarnings").toBool();
-try{
-	const char *callslot;
-	if (didchange) {
-		updateTemporalVariables();
-		instantiateRoot();
-		updateCompileResult();
-		callslot = afterCompileSlot;
-	}
-	else {
-		callslot = "compileEnded";
-	}
+	OpenSCAD::hardwarnings = Preferences::inst()->getValue("advanced/enableHardwarnings").toBool();
+	try{
+		const char *callslot;
+		if (didchange) {
+			updateTemporalVariables();
+			instantiateRoot();
+			updateCompileResult();
+			callslot = afterCompileSlot;
+		}
+		else {
+			callslot = "compileEnded";
+		}
 
-	this->procevents = false;
-	QMetaObject::invokeMethod(this, callslot);
-}catch(HardWarningException){
-	PRINT("Execution aborted");
-	GuiLocker::unlock();
-}
+		this->procevents = false;
+		QMetaObject::invokeMethod(this, callslot);
+	}catch(HardWarningException){
+		PRINT("Execution aborted");
+		GuiLocker::unlock();
+	}
+	OpenSCAD::hardwarnings = false;
 }
 
 void MainWindow::compileEnded()
@@ -1248,120 +1249,120 @@ void MainWindow::instantiateRoot()
 */
 void MainWindow::compileCSG()
 {
-OpenSCAD::hardwarnings = Preferences::inst()->getValue("advanced/enableHardwarnings").toBool();
-try{
-	assert(this->root_node);
-	PRINT("Compiling design (CSG Products generation)...");
-	this->processEvents();
+	OpenSCAD::hardwarnings = Preferences::inst()->getValue("advanced/enableHardwarnings").toBool();
+	try{
+		assert(this->root_node);
+		PRINT("Compiling design (CSG Products generation)...");
+		this->processEvents();
 
-	// Main CSG evaluation
-	this->progresswidget = new ProgressWidget(this);
-	connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
+		// Main CSG evaluation
+		this->progresswidget = new ProgressWidget(this);
+		connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
 
 #ifdef ENABLE_CGAL
-		GeometryEvaluator geomevaluator(this->tree);
+			GeometryEvaluator geomevaluator(this->tree);
 #else
-		// FIXME: Will we support this?
+			// FIXME: Will we support this?
 #endif
 #ifdef ENABLE_OPENCSG
-		CSGTreeEvaluator csgrenderer(this->tree, &geomevaluator);
+			CSGTreeEvaluator csgrenderer(this->tree, &geomevaluator);
 #endif
 
-	progress_report_prep(this->root_node, report_func, this);
-	try {
+		progress_report_prep(this->root_node, report_func, this);
+		try {
 #ifdef ENABLE_OPENCSG
-		this->processEvents();
-		this->csgRoot = csgrenderer.buildCSGTree(*root_node);
+			this->processEvents();
+			this->csgRoot = csgrenderer.buildCSGTree(*root_node);
 #endif
-		GeometryCache::instance()->print();
+			GeometryCache::instance()->print();
 #ifdef ENABLE_CGAL
-		CGALCache::instance()->print();
+			CGALCache::instance()->print();
 #endif
-		this->processEvents();
-	}
-	catch (const ProgressCancelException &e) {
-		PRINT("CSG generation cancelled.");
-	}
-	progress_report_fin();
-	updateStatusBar(nullptr);
-
-	PRINT("Compiling design (CSG Products normalization)...");
-	this->processEvents();
-
-	size_t normalizelimit = 2 * Preferences::inst()->getValue("advanced/openCSGLimit").toUInt();
-	CSGTreeNormalizer normalizer(normalizelimit);
-	
-	if (this->csgRoot) {
-		this->normalizedRoot = normalizer.normalize(this->csgRoot);
-		if (this->normalizedRoot) {
-			this->root_products.reset(new CSGProducts());
-			this->root_products->import(this->normalizedRoot);
-		}
-		else {
-			this->root_products.reset();
-			PRINT("<b>WARNING: CSG normalization resulted in an empty tree</b>");
 			this->processEvents();
 		}
-	}
-
-	const std::vector<shared_ptr<CSGNode> > &highlight_terms = csgrenderer.getHighlightNodes();
-	if (highlight_terms.size() > 0) {
-		PRINTB("Compiling highlights (%d CSG Trees)...", highlight_terms.size());
-		this->processEvents();
-		
-		this->highlights_products.reset(new CSGProducts());
-		for (unsigned int i = 0; i < highlight_terms.size(); i++) {
-			auto nterm = normalizer.normalize(highlight_terms[i]);
-			this->highlights_products->import(nterm);
+		catch (const ProgressCancelException &e) {
+			PRINT("CSG generation cancelled.");
 		}
-	}
-	else {
-		this->highlights_products.reset();
-	}
+		progress_report_fin();
+		updateStatusBar(nullptr);
+
+		PRINT("Compiling design (CSG Products normalization)...");
+		this->processEvents();
+
+		size_t normalizelimit = 2 * Preferences::inst()->getValue("advanced/openCSGLimit").toUInt();
+		CSGTreeNormalizer normalizer(normalizelimit);
 	
-	const auto &background_terms = csgrenderer.getBackgroundNodes();
-	if (background_terms.size() > 0) {
-		PRINTB("Compiling background (%d CSG Trees)...", background_terms.size());
-		this->processEvents();
-		
-		this->background_products.reset(new CSGProducts());
-		for (unsigned int i = 0; i < background_terms.size(); i++) {
-			auto nterm = normalizer.normalize(background_terms[i]);
-			this->background_products->import(nterm);
+		if (this->csgRoot) {
+			this->normalizedRoot = normalizer.normalize(this->csgRoot);
+			if (this->normalizedRoot) {
+				this->root_products.reset(new CSGProducts());
+				this->root_products->import(this->normalizedRoot);
+			}
+			else {
+				this->root_products.reset();
+				PRINT("WARNING: CSG normalization resulted in an empty tree");
+				this->processEvents();
+			}
 		}
-	}
-	else {
-		this->background_products.reset();
-	}
 
-	if (this->root_products &&
-			(this->root_products->size() >
-			 Preferences::inst()->getValue("advanced/openCSGLimit").toUInt())) {
-		PRINTB("<b>WARNING: Normalized tree has %d elements!</b>", this->root_products->size());
-		PRINT("<b>WARNING: OpenCSG rendering has been disabled.</b>");
-	}
+		const std::vector<shared_ptr<CSGNode> > &highlight_terms = csgrenderer.getHighlightNodes();
+		if (highlight_terms.size() > 0) {
+			PRINTB("Compiling highlights (%d CSG Trees)...", highlight_terms.size());
+			this->processEvents();
+		
+			this->highlights_products.reset(new CSGProducts());
+			for (unsigned int i = 0; i < highlight_terms.size(); i++) {
+				auto nterm = normalizer.normalize(highlight_terms[i]);
+				this->highlights_products->import(nterm);
+			}
+		}
+		else {
+			this->highlights_products.reset();
+		}
+	
+		const auto &background_terms = csgrenderer.getBackgroundNodes();
+		if (background_terms.size() > 0) {
+			PRINTB("Compiling background (%d CSG Trees)...", background_terms.size());
+			this->processEvents();
+		
+			this->background_products.reset(new CSGProducts());
+			for (unsigned int i = 0; i < background_terms.size(); i++) {
+				auto nterm = normalizer.normalize(background_terms[i]);
+				this->background_products->import(nterm);
+			}
+		}
+		else {
+			this->background_products.reset();
+		}
+
+		if (this->root_products &&
+				(this->root_products->size() >
+				Preferences::inst()->getValue("advanced/openCSGLimit").toUInt())) {
+			PRINTB("WARNING: Normalized tree has %d elements!", this->root_products->size());
+			PRINT("WARNING: OpenCSG rendering has been disabled.");
+		}
 #ifdef ENABLE_OPENCSG
-	else {
-		PRINTB("Normalized CSG tree has %d elements",
-					 (this->root_products ? this->root_products->size() : 0));
-		this->opencsgRenderer = new OpenCSGRenderer(this->root_products,
+		else {
+			PRINTB("Normalized CSG tree has %d elements",
+						(this->root_products ? this->root_products->size() : 0));
+			this->opencsgRenderer = new OpenCSGRenderer(this->root_products,
 																								this->highlights_products,
 																								this->background_products,
 																								this->qglview->shaderinfo);
-	}
+		}
 #endif
-	this->thrownTogetherRenderer = new ThrownTogetherRenderer(this->root_products,
+		this->thrownTogetherRenderer = new ThrownTogetherRenderer(this->root_products,
 																														this->highlights_products,
 																														this->background_products);
-	PRINT("Compile and preview finished.");
-	int s = this->renderingTime.elapsed() / 1000;
-	PRINTB("Total rendering time: %d hours, %d minutes, %d seconds\n", (s / (60*60)) % ((s / 60) % 60) % (s % 60));
-	this->processEvents();
-}catch(HardWarningException){
-	PRINT("Execution aborted");
-	GuiLocker::unlock();
-}
-OpenSCAD::hardwarnings = false;
+		PRINT("Compile and preview finished.");
+		int s = this->renderingTime.elapsed() / 1000;
+		PRINTB("Total rendering time: %d hours, %d minutes, %d seconds\n", (s / (60*60)) % ((s / 60) % 60) % (s % 60));
+		this->processEvents();
+	}catch(HardWarningException){
+		PRINT("Execution aborted");
+		GuiLocker::unlock();
+	}
+	OpenSCAD::hardwarnings = false;
 }
 
 void MainWindow::actionNew()
@@ -1479,7 +1480,7 @@ void MainWindow::saveBackup()
 {
 	auto path = PlatformUtils::backupPath();
 	if ((!fs::exists(path)) && (!PlatformUtils::createBackupPath())) {
-		PRINTB("<b>WARNING: Cannot create backup path: %s</b>", path);
+		PRINTB("WARNING: Cannot create backup path: %s", path);
 		return;
 	}
 
@@ -1497,7 +1498,7 @@ void MainWindow::saveBackup()
 	}
 
 	if ((!this->tempFile->isOpen()) && (! this->tempFile->open())) {
-		PRINT("<b>WARNING: Failed to create backup file</b>");
+		PRINT("WARNING: Failed to create backup file");
 		return;
 	}
 	return writeBackup(this->tempFile);
@@ -1587,9 +1588,9 @@ void MainWindow::actionShowLibraryFolder()
 {
 	auto path = PlatformUtils::userLibraryPath();
 	if (!fs::exists(path)) {
-		PRINTB("<b>WARNING: Library path %s doesnt exist. Creating</b>", path);
+		PRINTB("WARNING: Library path %s doesnt exist. Creating", path);
 		if (!PlatformUtils::createUserLibraryPath()) {
-			PRINTB("<b>ERROR: Cannot create library path: %s</b>",path);
+			PRINTB("ERROR: Cannot create library path: %s",path);
 		}
 	}
 	auto url = QString::fromStdString(path);
@@ -2122,7 +2123,7 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 		else viewModeSurface();
 	}
 	else {
-		PRINT("<b>WARNING: No top level geometry to render</b>");
+		PRINT("WARNING: No top level geometry to render");
 		PRINT(" ");
 	}
 
@@ -2273,7 +2274,7 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
 	setCurrentOutput();
 
 	if (!this->root_geom) {
-		PRINT("<b>ERROR: Nothing to export! Try rendering first (press F6).</b>");
+		PRINT("ERROR: Nothing to export! Try rendering first (press F6).");
 		clearCurrentOutput();
 		return;
 	}
@@ -2290,20 +2291,20 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
 	}
 
 	if (this->root_geom->getDimension() != dim) {
-		PRINTB("<b>ERROR: Current top level object is not a %dD object.</b>", dim);
+		PRINTB("ERROR: Current top level object is not a %dD object.", dim);
 		clearCurrentOutput();
 		return;
 	}
 
 	if (this->root_geom->isEmpty()) {
-		PRINT("<b>ERROR: Current top level object is empty.</b>");
+		PRINT("ERROR: Current top level object is empty.");
 		clearCurrentOutput();
 		return;
 	}
 
 	auto N = dynamic_cast<const CGAL_Nef_polyhedron *>(this->root_geom.get());
 	if (N && !N->p3->is_simple()) {
-	 	PRINT("<b>WARNING: Object may not be a valid 2-manifold and may need repair! See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export</b>");
+	 	PRINT("WARNING: Object may not be a valid 2-manifold and may need repair! See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
 	}
 
 	auto title = QString(_("Export %1 File")).arg(type_name);
