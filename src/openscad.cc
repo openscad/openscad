@@ -1073,7 +1073,7 @@ int main(int argc, char **argv)
 		try{
 			rc = cmdline(deps_output_file, inputFiles[0], output_file, original_path, parameterFile, parameterSet, viewOptions, camera);
 		}catch(HardWarningException){
-			rc = 1;
+			rc = 0;
 		}
 	}
 	else if (QtUseGUI()) {

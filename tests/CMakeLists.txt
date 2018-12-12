@@ -1913,12 +1913,17 @@ add_cmdline_test(openscad-colorscheme-metallic-render EXE ${OPENSCAD_BINPATH}
                  ARGS --colorscheme=Metallic --render -o 
                  SUFFIX png 
                  FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/CSG.scad)
-
-# Hardwarning Test tests
-add_cmdline_test(openscad-hardwarnings EXE ${OPENSCAD_BINPATH}
+                 
+add_cmdline_test(openscad-override EXE ${OPENSCAD_BINPATH}
                  ARGS --hardwarnings -o
                  SUFFIX echo
                  FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/errors-warnings.scad)
+                 
+# Hardwarning Test
+#add_cmdline_test(openscad-hardwarnings EXE ${OPENSCAD_BINPATH}
+#                 ARGS --hardwarnings -o 
+#                 SUFFIX echo
+#                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/errors-warnings.scad)
 
 #message("Available test configurations: ${TEST_CONFIGS}")
 #foreach(CONF ${TEST_CONFIGS})
