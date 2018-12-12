@@ -1070,7 +1070,11 @@ int main(int argc, char **argv)
 
 	if (arg_info || cmdlinemode) {
 		if (inputFiles.size() > 1) help(argv[0], desc, true);
-		rc = cmdline(deps_output_file, inputFiles[0], output_file, original_path, parameterFile, parameterSet, viewOptions, camera);
+		try{
+			rc = cmdline(deps_output_file, inputFiles[0], output_file, original_path, parameterFile, parameterSet, viewOptions, camera);
+		}catch(HardWarningException){
+			rc = 1;
+		}
 	}
 	else if (QtUseGUI()) {
 		rc = gui(inputFiles, original_path, argc, argv);
