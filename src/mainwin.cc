@@ -1090,8 +1090,7 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 
 		compileDone(didcompile | forcedone);
 	}catch(HardWarningException){
-		PRINT("Execution aborted");
-		GuiLocker::unlock();
+		exceptionCleanup();
 	}
 	OpenSCAD::hardwarnings = false;
 }
@@ -1169,8 +1168,7 @@ void MainWindow::compileDone(bool didchange)
 		this->procevents = false;
 		QMetaObject::invokeMethod(this, callslot);
 	}catch(HardWarningException){
-		PRINT("Execution aborted");
-		GuiLocker::unlock();
+		exceptionCleanup();
 	}
 	OpenSCAD::hardwarnings = false;
 }
@@ -1359,8 +1357,7 @@ void MainWindow::compileCSG()
 		PRINTB("Total rendering time: %d hours, %d minutes, %d seconds\n", (s / (60*60)) % ((s / 60) % 60) % (s % 60));
 		this->processEvents();
 	}catch(HardWarningException){
-		PRINT("Execution aborted");
-		GuiLocker::unlock();
+		exceptionCleanup();
 	}
 	OpenSCAD::hardwarnings = false;
 }
@@ -2171,6 +2168,11 @@ void MainWindow::updateStatusBar(ProgressWidget *progressWidget)
 		}
 		sb->addPermanentWidget(progressWidget);
 	}
+}
+
+void MainWindow::exceptionCleanup(){
+	PRINT("Execution aborted");
+	GuiLocker::unlock();
 }
 
 void MainWindow::actionDisplayAST()
