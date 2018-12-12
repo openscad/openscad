@@ -1011,6 +1011,7 @@ void MainWindow::refreshDocument()
 */
 void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidget)
 {
+OpenSCAD::hardwarnings = Preferences::inst()->getValue("advanced/enableHardwarnings").toBool();
 try{
 	bool shouldcompiletoplevel = false;
 	bool didcompile = false;
@@ -1092,6 +1093,7 @@ try{
 	PRINT("Execution aborted");
 	GuiLocker::unlock();
 }
+OpenSCAD::hardwarnings = false;
 }
 
 void MainWindow::waitAfterReload()
@@ -1151,6 +1153,7 @@ void MainWindow::updateCompileResult()
 
 void MainWindow::compileDone(bool didchange)
 {
+OpenSCAD::hardwarnings = Preferences::inst()->getValue("advanced/enableHardwarnings").toBool();
 try{
 	const char *callslot;
 	if (didchange) {
@@ -1245,6 +1248,7 @@ void MainWindow::instantiateRoot()
 */
 void MainWindow::compileCSG()
 {
+OpenSCAD::hardwarnings = Preferences::inst()->getValue("advanced/enableHardwarnings").toBool();
 try{
 	assert(this->root_node);
 	PRINT("Compiling design (CSG Products generation)...");
@@ -1357,6 +1361,7 @@ try{
 	PRINT("Execution aborted");
 	GuiLocker::unlock();
 }
+OpenSCAD::hardwarnings = false;
 }
 
 void MainWindow::actionNew()

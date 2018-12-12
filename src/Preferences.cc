@@ -160,6 +160,7 @@ void Preferences::init() {
 	this->defaultmap["advanced/localization"] = true;
 	this->defaultmap["advanced/autoReloadRaise"] = false;
 	this->defaultmap["advanced/enableSoundNotification"] = true;
+	this->defaultmap["advanced/enableHardwarnings"] = false;
 
 	// Toolbar
 	QActionGroup *group = new QActionGroup(this);
