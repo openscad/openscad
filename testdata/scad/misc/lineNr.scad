@@ -10,3 +10,5 @@ echo($linenumber);
 echo(fn());
 test();
 echo(fn2($linenumber));
+
+echo($mainfilename);

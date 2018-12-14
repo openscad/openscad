@@ -110,6 +110,7 @@ bool fileEnded=false;
 %token TOK_FALSE
 %token TOK_UNDEF
 %token TOK_LN
+%token TOK_MAINFILE
 
 %token LE GE EQ NE AND OR
 
@@ -381,6 +382,10 @@ expr:
         | TOK_LN
             {
               $$ = new Literal(ValuePtr(LOC(@$).firstLine()), LOC(@$));
+            }
+        | TOK_MAINFILE
+            {
+              $$ = new Literal(ValuePtr(std::string(mainFilePath.filename().string())), LOC(@$));
             }
         | expr '.' TOK_ID
             {
