@@ -221,6 +221,7 @@ use[ \t\r\n]*"<"	{ BEGIN(cond_use); }
 "false"		return TOK_FALSE;
 "$linenumber"	return TOK_LN;
 "$mainfilename"	return TOK_MAINFILE;
+"$currentfilename"	return TOK_CURRFILE;
 "undef"		return TOK_UNDEF;
 
 %{/*

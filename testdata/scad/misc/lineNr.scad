@@ -12,3 +12,4 @@ test();
 echo(fn2($linenumber));
 
 echo($mainfilename);
+echo($currentfilename);
