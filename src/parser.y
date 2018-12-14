@@ -109,6 +109,7 @@ bool fileEnded=false;
 %token TOK_TRUE
 %token TOK_FALSE
 %token TOK_UNDEF
+%token TOK_LN
 
 %token LE GE EQ NE AND OR
 
@@ -376,6 +377,10 @@ expr:
             {
               $$ = new Lookup($1, LOC(@$));
                 free($1);
+            }
+        | TOK_LN
+            {
+              $$ = new Literal(ValuePtr(LOC(@$).firstLine()), LOC(@$));
             }
         | expr '.' TOK_ID
             {
