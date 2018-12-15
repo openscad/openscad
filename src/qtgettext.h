@@ -15,7 +15,7 @@
 #include <QString>
 #include "printutils.h"
 
-inline QString tr(const char *msgid, const char *msgctxt)
+inline QString q_(const char *msgid, const char *msgctxt)
 {
 	return QString::fromUtf8(msgctxt ?
 		_(msgid, msgctxt):
