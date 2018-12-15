@@ -877,7 +877,7 @@ void MainWindow::setFileName(const QString &filename)
 	if (filename.isEmpty()) {
 		this->fileName.clear();
 		setWindowFilePath(_("Untitled.scad"));
-
+		this->top_ctx.setMainfile(this->fileName.toLocal8Bit().constData());
 		this->top_ctx.setDocumentPath(currentdir);
 	} else {
 		QFileInfo fileinfo(filename);
@@ -887,6 +887,7 @@ void MainWindow::setFileName(const QString &filename)
 			this->parameterWidget->readFile(this->fileName);
 		}
 		QDir::setCurrent(fileinfo.dir().absolutePath());
+		this->top_ctx.setMainfile(this->fileName.toLocal8Bit().constData());
 		this->top_ctx.setDocumentPath(fileinfo.dir().absolutePath().toLocal8Bit().constData());
 	}
 	editorTopLevelChanged(editorDock->isFloating());

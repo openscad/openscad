@@ -3,6 +3,6 @@ ECHO: 9
 ECHO: 1
 ECHO: 5
 ECHO: [12, " ", 2]
-ECHO: "lineNr.scad"
+ECHO: "lineNrInclude.scad"
 ECHO: "lineNr.scad"
 ECHO: [17, 18, 19, 21]

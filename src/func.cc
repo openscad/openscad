@@ -970,6 +970,12 @@ ValuePtr builtin_is_undef(const Context *, const EvalContext *evalctx)
 	return ValuePtr::undefined;
 }
 
+ValuePtr builtin_mainfilename(const Context *ctx, const EvalContext *)
+{
+	return ValuePtr(fs::path(ctx->mainfile()).filename().string());
+}
+
+
 void register_builtin_functions()
 {
 	Builtins::init("abs", new BuiltinFunction(&builtin_abs));
@@ -1005,4 +1011,5 @@ void register_builtin_functions()
 	Builtins::init("cross", new BuiltinFunction(&builtin_cross));
 	Builtins::init("parent_module", new BuiltinFunction(&builtin_parent_module));
 	Builtins::init("is_undef", new BuiltinFunction(&builtin_is_undef));
+	Builtins::init("mainfilename", new BuiltinFunction(&builtin_mainfilename));
 }

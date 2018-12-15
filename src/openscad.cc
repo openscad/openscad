@@ -394,6 +394,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 	auto fpath = fs::absolute(fs::path(filename));
 	auto fparent = fpath.parent_path();
 	fs::current_path(fparent);
+	top_ctx.setMainfile(fpath.string());
 	top_ctx.setDocumentPath(fparent.string());
 
 	AbstractNode::resetIndexCounter();

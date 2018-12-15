@@ -11,5 +11,13 @@ echo(fn());
 test();
 echo(fn2($linenumber));
 
-echo($mainfilename);
+echo(mainfilename());
 echo($currentfilename);
+
+echo(concat($linenumber,
+$linenumber,
+$linenumber,
+
+$linenumber
+
+));

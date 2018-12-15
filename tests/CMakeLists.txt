@@ -1237,6 +1237,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/preview_variable.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1851-each-fail-on-scalar.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/lineNr.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/lineNrInclude.scad
             )
 
 list(APPEND ASTDUMPTEST_FILES ${MISC_FILES}

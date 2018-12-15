@@ -36,6 +36,8 @@ public:
 
 	void setDocumentPath(const std::string &path) { this->document_path = path; }
 	const std::string &documentPath() const { return this->document_path; }
+	void setMainfile(const std::string &path) { this->main_file = path; }
+	const std::string &mainfile() const { return this->main_file; }
 	std::string getAbsolutePath(const std::string &filename) const;
         
 public:
@@ -50,6 +52,7 @@ protected:
 	ValueMap config_variables;
 
 	std::string document_path;
+	std::string main_file;
 
 public:
 #ifdef DEBUG
