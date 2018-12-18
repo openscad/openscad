@@ -8,6 +8,8 @@ class EvaluationException : public std::runtime_error {
 public:
 	EvaluationException(const std::string &what_arg) : std::runtime_error(what_arg) {}
 	~EvaluationException() throw() {}
+public:
+	int count=12;
 };
 
 class AssertionFailedException : public EvaluationException {

@@ -32,7 +32,7 @@
 #include "stackcheck.h"
 #include "modcontext.h"
 #include "expression.h"
-
+#include "printutils.h"
 #include <sstream>
 
 std::deque<std::string> UserModule::module_stack;
@@ -40,6 +40,8 @@ std::deque<std::string> UserModule::module_stack;
 AbstractNode *UserModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	if (StackCheck::inst()->check()) {
+		std::string locs = loc.toRelativeString(ctx->documentPath());
+		PRINTB("ERROR: Recursion detected calling module %s, %s", inst->name() % locs);
 		throw RecursionException::create("module", inst->name(),loc);
 		return nullptr;
 	}

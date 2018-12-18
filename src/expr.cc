@@ -34,6 +34,7 @@
 #include "stackcheck.h"
 #include "exceptions.h"
 #include "feature.h"
+#include "printutils.h"
 #include <boost/bind.hpp>
 
 #include <boost/assign/std/vector.hpp>
@@ -432,6 +433,8 @@ FunctionCall::FunctionCall(const std::string &name,
 ValuePtr FunctionCall::evaluate(const Context *context) const
 {
 	if (StackCheck::inst()->check()) {
+		std::string locs = loc.toRelativeString(context->documentPath());
+		PRINTB("ERROR: Recursion detected calling function %s, %s", this->name % locs);
 		throw RecursionException::create("function", this->name,loc);
 	}
     

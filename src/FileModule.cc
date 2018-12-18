@@ -185,13 +185,13 @@ AbstractNode *FileModule::instantiateWithFileContext(FileContext *ctx, const Mod
 		const auto docPath = boost::filesystem::path(ctx->documentPath());
 		const auto uncPath = boostfs_uncomplete(e.loc.filePath(), docPath);
 
-		PRINTB("%s in file %s, line %d", e.what() % uncPath.generic_string() % e.loc.firstLine());
+		//PRINTB("%s in file %s, line %d", e.what() % uncPath.generic_string() % e.loc.firstLine());
 	}
 	catch (AssertionFailedException &e) {
 		const auto docPath = boost::filesystem::path(ctx->documentPath());
 		const auto uncPath = boostfs_uncomplete(e.loc.filePath(), docPath);
 
-		PRINTB("%s failed in file %s, line %d", e.what() % uncPath.generic_string() % e.loc.firstLine());
+		//PRINTB("%s failed in file %s, line %d", e.what() % uncPath.generic_string() % e.loc.firstLine());
 	}
 	catch (EvaluationException &e) {
 		PRINT(e.what());

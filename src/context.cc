@@ -203,7 +203,10 @@ ValuePtr Context::evaluate_function(const std::string &name, const EvalContext *
 		if (this->parent) return this->parent->evaluate_function(name, evalctx,loc);
 		print_ignore_warning("function", name.c_str(),loc,this->documentPath());
 	}catch(EvaluationException &e){
+		if(e.count>0){
 		print_catch_warning("function", name.c_str(),loc,this->documentPath());
+			e.count--;
+		}
 		throw;
 	}
 	return ValuePtr::undefined;
@@ -215,7 +218,10 @@ AbstractNode *Context::instantiate_module(const ModuleInstantiation &inst, EvalC
 		if (this->parent) return this->parent->instantiate_module(inst, evalctx, loc);
 		print_ignore_warning("module", inst.name().c_str(),loc,this->documentPath());
 	}catch(EvaluationException &e){
-		print_catch_warning("module", inst.name().c_str(),loc,this->documentPath());
+		if(e.count>0){
+			print_catch_warning("module", inst.name().c_str(),loc,this->documentPath());
+			e.count--;
+		}
 		throw;
 	}
 	return nullptr;
