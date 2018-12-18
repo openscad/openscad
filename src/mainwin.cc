@@ -2902,6 +2902,8 @@ void MainWindow::consoleOutput(const QString &msg)
 	} else if (msg.startsWith("ERROR:")) {
 		this->compileErrors++;
 		this->console->appendHtml("<span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span>");
+	} else if (msg.startsWith("TRACE:")) {
+		this->console->appendHtml("<span style=\"color: black; background-color: #d0d0ff;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span>");
 	}
 	else {
 		QString qmsg = msg;

@@ -194,7 +194,7 @@ static void print_ignore_warning(const char *what, const char *name, const Locat
 }
 
 static void print_catch_warning(const char *what, const char *name, const Location &loc, const std::string &docPath){
-	PRINTB("WARNING: was called by %s '%s', %s.", what % name % loc.toRelativeString(docPath));
+	PRINTB("TRACE: was called by %s '%s', %s.", what % name % loc.toRelativeString(docPath));
 }
 
 ValuePtr Context::evaluate_function(const std::string &name, const EvalContext *evalctx, const Location &loc) const
