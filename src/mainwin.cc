@@ -365,6 +365,7 @@ MainWindow::MainWindow(const QString &filename)
 #else
 	this->designActionRender->setVisible(false);
 #endif
+	connect(this->designAction3DPrint, SIGNAL(triggered()), this, SLOT(action3DPrint()));
 	connect(this->designCheckValidity, SIGNAL(triggered()), this, SLOT(actionCheckValidity()));
 	connect(this->designActionDisplayAST, SIGNAL(triggered()), this, SLOT(actionDisplayAST()));
 	connect(this->designActionDisplayCSGTree, SIGNAL(triggered()), this, SLOT(actionDisplayCSGTree()));
@@ -507,6 +508,7 @@ MainWindow::MainWindow(const QString &filename)
 	initActionIcon(editActionZoomTextIn, ":/images/zoom-text-in.png", ":/images/zoom-text-in-white.png");
 	initActionIcon(editActionZoomTextOut, ":/images/zoom-text-out.png", ":/images/zoom-text-out-white.png");
 	initActionIcon(designActionRender, ":/images/render-32.png", ":/images/render-32-white.png");
+	initActionIcon(designAction3DPrint, ":/images/3dprint-32.png", ":/images/3dprint-32-white.png");
 	initActionIcon(viewActionShowAxes, ":/images/blackaxes.png", ":/images/axes.png");
 	initActionIcon(viewActionShowEdges, ":/images/Rotation-32.png", ":/images/grid.png");
 	initActionIcon(viewActionZoomIn, ":/images/zoomin.png", ":/images/Zoom-In-32.png");
@@ -2012,6 +2014,12 @@ void MainWindow::csgRender()
 
 	compileEnded();
 }
+
+void MainWindow::action3DPrint()
+{
+	PRINT("3D Printing...");
+}
+
 
 #ifdef ENABLE_CGAL
 
