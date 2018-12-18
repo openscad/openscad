@@ -1,3 +1,4 @@
+ERROR: Assertion '(f(angle) > 0)', in file assert-fail3-test.scad, line 4
 WARNING: was called by module 'assert', in file assert-fail3-test.scad, line 4.
 WARNING: was called by module 'assert', in file assert-fail3-test.scad, line 4.
-ERROR: Assertion '(f(angle) > 0)' failed in file assert-fail3-test.scad, line 4
+ failed in file assert-fail3-test.scad, line 4

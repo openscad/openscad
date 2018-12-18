@@ -27,6 +27,7 @@
 #include "function.h"
 #include "evalcontext.h"
 #include "expression.h"
+#include "printutils.h"
 
 AbstractFunction::~AbstractFunction()
 {
@@ -95,7 +96,11 @@ public:
 			tmp.setVariables(definition_arguments, &ec);
 			c.apply_variables(tmp);
 			
-			if (counter++ == 1000000) throw RecursionException::create("function", this->name,loc);
+			if (counter++ == 1000000){
+				std::string locs = loc.toRelativeString(ctx->documentPath());
+				PRINTB("ERROR: Recursion detected calling function '%s', %s", this->name % locs);
+				throw RecursionException::create("function", this->name,loc);
+			}
 		}
 		
 		ValuePtr result = endexpr->evaluate(&c);

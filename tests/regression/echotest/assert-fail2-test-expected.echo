@@ -1,2 +1,3 @@
+ERROR: Assertion '((a < 20) && (b < 20))':"Test! <html>&</html>", in file assert-fail2-test.scad, line 3
 WARNING: was called by module 'assert', in file assert-fail2-test.scad, line 3.
-ERROR: Assertion '((a < 20) && (b < 20))': "Test! <html>&</html>" failed in file assert-fail2-test.scad, line 3
+ failed in file assert-fail2-test.scad, line 3

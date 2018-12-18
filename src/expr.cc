@@ -675,8 +675,11 @@ ValuePtr LcForC::evaluate(const Context *context) const
     while (this->cond->evaluate(&c)) {
         vec.push_back(this->expr->evaluate(&c));
 
-		if (counter++ == 1000000) throw RecursionException::create("for loop", "", loc);
-
+		if (counter++ == 1000000) {
+			std::string locs = loc.toRelativeString(context->documentPath());
+			PRINTB("ERROR: Recursion detected calling for loop, %s", locs);
+			throw RecursionException::create("for loop", "", loc);
+		}
         Context tmp(&c);
         evaluate_sequential_assignment(this->incr_arguments, &tmp);
         c.apply_variables(tmp);
@@ -733,14 +736,20 @@ void evaluate_assert(const Context &context, const class EvalContext *evalctx, c
 	const ValuePtr condition = c.lookup_variable("condition");
 
 	if (!condition->toBool()) {
-		std::stringstream msg;
-		msg << "ERROR: Assertion";
+		//std::stringstream msg;
+		//msg << "ERROR: Assertion";
 		const Expression *expr = assignments["condition"];
-		if (expr) msg << " '" << *expr << "'";
+		//if (expr) msg << " '" << *expr << "'";
 		const ValuePtr message = c.lookup_variable("message", true);
+		
+		std::string locs = loc.toRelativeString(context.documentPath());
 		if (message->isDefined()) {
-			msg << ": " << message->toEchoString();
+			//msg << ": " << message->toEchoString();
+			PRINTB("ERROR: Assertion '%s':%s, %s", *expr % message->toEchoString() % locs);
+		}else{
+			PRINTB("ERROR: Assertion '%s', %s", *expr % locs);
 		}
-		throw AssertionFailedException(msg.str(),loc);
+
+		throw AssertionFailedException("",loc);
 	}
 }
