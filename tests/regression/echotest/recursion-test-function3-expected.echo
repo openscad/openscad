@@ -1,2 +1,9 @@
 ECHO: sum10 = 55
+WARNING: was called by function 'add_up_to', in file recursion-test-function3.scad, line 5.
+WARNING: was called by function 'add_up_to', in file recursion-test-function3.scad, line 5.
+WARNING: was called by function 'add_up_to', in file recursion-test-function3.scad, line 5.
+WARNING: was called by function 'add_up_to', in file recursion-test-function3.scad, line 5.
+WARNING: was called by function 'add_up_to', in file recursion-test-function3.scad, line 5.
+WARNING: was called by function 'add_up_to', in file recursion-test-function3.scad, line 9.
+WARNING: was called by module 'echo', in file recursion-test-function3.scad, line 9.
 ERROR: Recursion detected calling function 'add_up_to' in file recursion-test-function3.scad, line 5

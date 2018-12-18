@@ -1,1 +1,8 @@
+WARNING: was called by function 'crash', in file recursion-test-function.scad, line 1.
+WARNING: was called by function 'crash', in file recursion-test-function.scad, line 1.
+WARNING: was called by function 'crash', in file recursion-test-function.scad, line 1.
+WARNING: was called by function 'crash', in file recursion-test-function.scad, line 1.
+WARNING: was called by function 'crash', in file recursion-test-function.scad, line 1.
+WARNING: was called by function 'crash', in file recursion-test-function.scad, line 3.
+WARNING: was called by module 'echo', in file recursion-test-function.scad, line 3.
 ERROR: Recursion detected calling function 'crash' in file recursion-test-function.scad, line 1

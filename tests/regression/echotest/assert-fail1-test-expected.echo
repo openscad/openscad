@@ -1,1 +1,2 @@
+WARNING: was called by module 'assert', in file assert-fail1-test.scad, line 1.
 ERROR: Assertion 'false' failed in file assert-fail1-test.scad, line 1
