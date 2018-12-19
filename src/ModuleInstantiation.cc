@@ -1,7 +1,10 @@
 #include "ModuleInstantiation.h"
 #include "evalcontext.h"
 #include "expression.h"
+#include "exceptions.h"
+#include "printutils.h"
 #include <boost/filesystem.hpp>
+
 namespace fs = boost::filesystem;
 
 ModuleInstantiation::~ModuleInstantiation()
@@ -75,9 +78,16 @@ AbstractNode *ModuleInstantiation::evaluate(const Context *ctx) const
 	PRINT("New eval ctx:");
 	c.dump(nullptr, this);
 #endif
-
-	AbstractNode *node = ctx->instantiate_module(*this, &c, loc); // Passes c as evalctx
-	return node;
+	try{
+		AbstractNode *node = ctx->instantiate_module(*this, &c, loc); // Passes c as evalctx
+		return node;
+	}catch(EvaluationException &e){
+		if(e.count>0){
+			PRINTB("TRACE: was called by module '%s', %s.", name() % loc.toRelativeString(ctx->documentPath()));
+			e.count--;
+		}
+		throw;
+	}
 }
 
 std::vector<AbstractNode*> ModuleInstantiation::instantiateChildren(const Context *evalctx) const

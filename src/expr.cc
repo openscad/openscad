@@ -437,11 +437,17 @@ ValuePtr FunctionCall::evaluate(const Context *context) const
 		PRINTB("ERROR: Recursion detected calling function %s, %s", this->name % locs);
 		throw RecursionException::create("function", this->name,loc);
 	}
-    
-	EvalContext c(context, this->arguments);
-	ValuePtr result = context->evaluate_function(this->name, &c,this->loc);
-
-	return result;
+	try{
+		EvalContext c(context, this->arguments);
+		ValuePtr result = context->evaluate_function(this->name, &c,this->loc);
+		return result;
+	}catch(EvaluationException &e){
+		if(e.count>0){
+			PRINTB("TRACE: was called by function '%s', %s.", this->name % loc.toRelativeString(context->documentPath()));
+			e.count--;
+		}
+		throw;
+	}
 }
 
 void FunctionCall::print(std::ostream &stream, const std::string &) const
@@ -739,18 +745,14 @@ void evaluate_assert(const Context &context, const class EvalContext *evalctx, c
 	const ValuePtr condition = c.lookup_variable("condition");
 
 	if (!condition->toBool()) {
-		//std::stringstream msg;
-		//msg << "ERROR: Assertion";
 		const Expression *expr = assignments["condition"];
-		//if (expr) msg << " '" << *expr << "'";
 		const ValuePtr message = c.lookup_variable("message", true);
 		
 		std::string locs = loc.toRelativeString(context.documentPath());
 		if (message->isDefined()) {
-			//msg << ": " << message->toEchoString();
-			PRINTB("ERROR: Assertion '%s':%s, %s", *expr % message->toEchoString() % locs);
+			PRINTB("ERROR: Assertion '%s': %s failed %s", *expr % message->toEchoString() % locs);
 		}else{
-			PRINTB("ERROR: Assertion '%s', %s", *expr % locs);
+			PRINTB("ERROR: Assertion '%s' failed %s", *expr % locs);
 		}
 
 		throw AssertionFailedException("",loc);
