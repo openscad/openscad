@@ -434,7 +434,7 @@ ValuePtr FunctionCall::evaluate(const Context *context) const
 {
 	if (StackCheck::inst()->check()) {
 		std::string locs = loc.toRelativeString(context->documentPath());
-		PRINTB("ERROR: Recursion detected calling function %s, %s", this->name % locs);
+		PRINTB("ERROR: Recursion detected calling function '%s', %s", this->name % locs);
 		throw RecursionException::create("function", this->name,loc);
 	}
 	try{
@@ -443,7 +443,7 @@ ValuePtr FunctionCall::evaluate(const Context *context) const
 		return result;
 	}catch(EvaluationException &e){
 		if(e.count>0){
-			PRINTB("TRACE: was called by function '%s', %s.", this->name % loc.toRelativeString(context->documentPath()));
+			PRINTB("TRACE: called by '%s', %s.", this->name % loc.toRelativeString(context->documentPath()));
 			e.count--;
 		}
 		throw;

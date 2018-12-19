@@ -1,7 +1,7 @@
-ERROR: Recursion detected calling function crash, in file recursion-test-function2.scad, line 2
-TRACE: was called by function 'crash', in file recursion-test-function2.scad, line 2.
-TRACE: was called by function 'crash', in file recursion-test-function2.scad, line 2.
-TRACE: was called by function 'crash', in file recursion-test-function2.scad, line 2.
-TRACE: was called by function 'crash', in file recursion-test-function2.scad, line 2.
-TRACE: was called by function 'crash', in file recursion-test-function2.scad, line 2.
+ERROR: Recursion detected calling function 'crash', in file recursion-test-function2.scad, line 2
+TRACE: called by 'crash', in file recursion-test-function2.scad, line 2.
+TRACE: called by 'crash', in file recursion-test-function2.scad, line 2.
+TRACE: called by 'crash', in file recursion-test-function2.scad, line 2.
+TRACE: called by 'crash', in file recursion-test-function2.scad, line 2.
+TRACE: called by 'crash', in file recursion-test-function2.scad, line 2.
 ERROR: Recursion detected calling function 'crash'

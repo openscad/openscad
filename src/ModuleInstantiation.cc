@@ -83,7 +83,7 @@ AbstractNode *ModuleInstantiation::evaluate(const Context *ctx) const
 		return node;
 	}catch(EvaluationException &e){
 		if(e.count>0){
-			PRINTB("TRACE: was called by module '%s', %s.", name() % loc.toRelativeString(ctx->documentPath()));
+			PRINTB("TRACE: called by '%s', %s.", name() % loc.toRelativeString(ctx->documentPath()));
 			e.count--;
 		}
 		throw;

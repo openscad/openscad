@@ -32,7 +32,6 @@
 #include "ModuleInstantiation.h"
 #include "builtin.h"
 #include "printutils.h"
-#include "exceptions.h"
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
@@ -205,7 +204,6 @@ AbstractNode *Context::instantiate_module(const ModuleInstantiation &inst, EvalC
 {
 	if (this->parent) return this->parent->instantiate_module(inst, evalctx, loc);
 	print_ignore_warning("module", inst.name().c_str(),loc,this->documentPath());
-
 	return nullptr;
 }
 
