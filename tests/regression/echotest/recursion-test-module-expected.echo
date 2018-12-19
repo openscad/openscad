@@ -1,6 +1,7 @@
-WARNING: was called by module 'crash', in file recursion-test-module.scad, line 2.
-WARNING: was called by module 'crash', in file recursion-test-module.scad, line 2.
-WARNING: was called by module 'crash', in file recursion-test-module.scad, line 2.
-WARNING: was called by module 'crash', in file recursion-test-module.scad, line 2.
-WARNING: was called by module 'crash', in file recursion-test-module.scad, line 2.
-ERROR: Recursion detected calling module 'crash' in file recursion-test-module.scad, line 2
+ERROR: Recursion detected calling module crash, in file recursion-test-module.scad, line 2
+TRACE: was called by module 'crash', in file recursion-test-module.scad, line 2.
+TRACE: was called by module 'crash', in file recursion-test-module.scad, line 2.
+TRACE: was called by module 'crash', in file recursion-test-module.scad, line 2.
+TRACE: was called by module 'crash', in file recursion-test-module.scad, line 2.
+TRACE: was called by module 'crash', in file recursion-test-module.scad, line 2.
+ERROR: Recursion detected calling module 'crash'
