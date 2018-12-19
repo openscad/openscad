@@ -2017,7 +2017,30 @@ void MainWindow::csgRender()
 
 void MainWindow::action3DPrint()
 {
+	setCurrentOutput();
 	PRINT("3D Printing...");
+	
+// 	//Make sure we have the rendered file:
+// 	actionRender();
+	
+    unsigned int dim = 3;
+    
+	setCurrentOutput();
+
+    //Make sure we can export:
+	if (! canExport(dim))
+	{
+		PRINT("Cannot 3D print due to errors.");
+		return;
+	}
+	
+	
+// 	QString export_filename=QString("/tmp/asdf.stl")
+// 	
+// 	exportFileByName(this->root_geom, FileFormat::STL,
+// 		export_filename.toLocal8Bit().constData(),
+// 		export_filename.toUtf8());
+    
 }
 
 
@@ -2249,21 +2272,14 @@ void MainWindow::actionCheckValidity()
 #endif /* ENABLE_CGAL */
 }
 
-#ifdef ENABLE_CGAL
-void MainWindow::actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim)
-#else
-	void MainWindow::actionExport(FileFormat, QString, QString, unsigned int)
-#endif
+//Returns if we can export (true) or not(false) (bool)
+//Separated into it's own function for re-use.f
+bool MainWindow::canExport(unsigned int dim)
 {
-	if (GuiLocker::isLocked()) return;
-	GuiLocker lock;
-#ifdef ENABLE_CGAL
-	setCurrentOutput();
-
 	if (!this->root_geom) {
 		PRINT("ERROR: Nothing to export! Try rendering first (press F6).");
 		clearCurrentOutput();
-		return;
+		return 0;
 	}
 
 	// editor has changed since last render
@@ -2273,26 +2289,46 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
 				"Do you really want to export the previous content?",
 				QMessageBox::Yes | QMessageBox::No);
 		if (ret != QMessageBox::Yes) {
-			return;
+			return 0;
 		}
 	}
 
 	if (this->root_geom->getDimension() != dim) {
 		PRINTB("ERROR: Current top level object is not a %dD object.", dim);
 		clearCurrentOutput();
-		return;
+		return 0;
 	}
 
 	if (this->root_geom->isEmpty()) {
 		PRINT("ERROR: Current top level object is empty.");
 		clearCurrentOutput();
-		return;
+		return 0;
 	}
 
 	auto N = dynamic_cast<const CGAL_Nef_polyhedron *>(this->root_geom.get());
 	if (N && !N->p3->is_simple()) {
 	 	PRINT("WARNING: Object may not be a valid 2-manifold and may need repair! See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
 	}
+	
+	return 1;
+}
+
+#ifdef ENABLE_CGAL
+void MainWindow::actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim)
+#else
+	void MainWindow::actionExport(FileFormat, QString, QString, unsigned int, QString)
+#endif
+{
+    //Setting filename skips the file selection dialog and uses the path provided instead.
+    
+	if (GuiLocker::isLocked()) return;
+	GuiLocker lock;
+#ifdef ENABLE_CGAL
+	setCurrentOutput();
+    
+    //Return if something is wrong and we can't export.
+    if (! canExport(dim))
+        return;
 
 	auto title = QString(_("Export %1 File")).arg(type_name);
 	auto filter = QString(_("%1 Files (*%2)")).arg(type_name, suffix);

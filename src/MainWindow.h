@@ -190,6 +190,7 @@ private slots:
 	void actionDisplayAST();
 	void actionDisplayCSGTree();
 	void actionDisplayCSGProducts();
+    bool canExport(unsigned int dim);
 	void actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim);
 	void actionExportSTL();
 	void actionExport3MF();
