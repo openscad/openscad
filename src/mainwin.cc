@@ -135,6 +135,7 @@
 
 #include "FontCache.h"
 #include "input/InputDriverManager.h"
+#include <cstdio>
 
 // Global application state
 unsigned int GuiLocker::gui_locked = 0;
@@ -2020,10 +2021,14 @@ void MainWindow::action3DPrint()
 	setCurrentOutput();
 	PRINT("3D Printing...");
 	
-// 	//Make sure we have the rendered file:
+    //TODO:  Figure out how to do the render.  This doesn't seem to do it.
+	//Make sure we have the render built:
 // 	actionRender();
 	
     unsigned int dim = 3;
+    
+    //Where we hold our temporary stl file name:
+    char tempStlFileName[L_tmpnam];
     
 	setCurrentOutput();
 
@@ -2034,13 +2039,18 @@ void MainWindow::action3DPrint()
 		return;
 	}
 	
-	
-// 	QString export_filename=QString("/tmp/asdf.stl")
-// 	
-// 	exportFileByName(this->root_geom, FileFormat::STL,
-// 		export_filename.toLocal8Bit().constData(),
-// 		export_filename.toUtf8());
+	//TODO:  Use some library to create a temporary file name valid on all systems and that 
+	// hopefully won't self-clobber if multiple instances are open.
+	QString export_filename=QString(std::tmpnam(tempStlFileName));
     
+    //Render the stl to a temporary file:
+	exportFileByName(this->root_geom, FileFormat::STL,
+		export_filename.toLocal8Bit().constData(),
+		export_filename.toUtf8());
+    
+    //TODO:  Then, call a function that uploads it and returns the url.
+    
+    //TODO:  THen, call a function that opens the url in the default browser.
 }
 
 
