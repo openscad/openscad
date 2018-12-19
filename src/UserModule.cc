@@ -41,7 +41,7 @@ AbstractNode *UserModule::instantiate(const Context *ctx, const ModuleInstantiat
 {
 	if (StackCheck::inst()->check()) {
 		std::string locs = loc.toRelativeString(ctx->documentPath());
-		PRINTB("ERROR: Recursion detected calling module %s, %s", inst->name() % locs);
+		PRINTB("ERROR: Recursion detected calling module '%s' %s", inst->name() % locs);
 		throw RecursionException::create("module", inst->name(),loc);
 		return nullptr;
 	}

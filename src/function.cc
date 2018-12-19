@@ -98,7 +98,7 @@ public:
 			
 			if (counter++ == 1000000){
 				std::string locs = loc.toRelativeString(ctx->documentPath());
-				PRINTB("ERROR: Recursion detected calling function '%s', %s", this->name % locs);
+				PRINTB("ERROR: Recursion detected calling function '%s' %s", this->name % locs);
 				throw RecursionException::create("function", this->name,loc);
 			}
 		}
