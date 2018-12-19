@@ -26,6 +26,7 @@
 
 #define BOOST_SPIRIT_QI_DEBUG
 
+#include <map>
 #include <string>
 #include <fstream>
 #include <boost/spirit/include/qi.hpp>
