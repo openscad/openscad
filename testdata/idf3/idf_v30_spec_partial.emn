@@ -1,0 +1,129 @@
+.HEADER
+BOARD_FILE  3.0  "Sample File Generator"  10/22/96.16:02:44  1
+sample_board  THOU
+.END_HEADER
+.BOARD_OUTLINE         MCAD
+62.0
+0    5030.5  -120.0     0.0
+0    5187.5  -120.0     0.0
+0    5187.5  2130.0     0.0
+0    5155.0  2130.0     0.0
+0    5155.0  2550.0  -180.0
+0    5187.5  2550.0     0.0
+0    5187.5  4935.0     0.0
+0    4945.0  5145.0     0.0
+0    4945.0  5420.0     0.0
+0    4865.0  5500.0     0.0
+0     210.0  5500.0     0.0
+0     130.0  5420.0     0.0
+0     130.0  5145.0     0.0
+0    -112.5  4935.0     0.0
+0    -112.5  2550.0     0.0
+0     -80.0  2550.0     0.0
+0     -80.0  2130.0  -180.0
+0    -112.5  2130.0     0.0
+0    -112.5  -140.0     0.0
+0      45.5  -140.0     0.0
+0      45.5  -400.0     0.0
+0    2442.5  -400.0     0.0
+0    2442.5  -140.0     0.0
+0    2631.5  -140.0     0.0
+0    2631.5  -400.0     0.0
+0    5030.5  -400.0     0.0
+0    5030.5  -120.0     0.0
+1    2650.0  2350.0     0.0
+1    3000.0  2350.0   360.0
+.END_BOARD_OUTLINE
+.DRILLED_HOLES
+    30.0  1800.0   100.0     PTH      J1     PIN    ECAD
+    30.0  1700.0   100.0     PTH      J1     PIN    ECAD
+    30.0  1600.0   100.0     PTH      J1     PIN    ECAD
+    30.0  1500.0   100.0     PTH      J1     PIN    ECAD
+    30.0  1400.0   100.0     PTH      J1     PIN    ECAD
+    30.0  1300.0   100.0     PTH      J1     PIN    ECAD
+    30.0  1200.0   100.0     PTH      J1     PIN    ECAD
+    30.0  1100.0   100.0     PTH      J1     PIN    ECAD
+    30.0  1000.0   100.0     PTH      J1     PIN    ECAD
+    30.0  0900.0   100.0     PTH      J1     PIN    ECAD
+    30.0  0800.0   100.0     PTH      J1     PIN    ECAD
+    30.0  0700.0   100.0     PTH      J1     PIN    ECAD
+    30.0  0700.0   200.0     PTH      J1     PIN    ECAD
+    30.0  0800.0   200.0     PTH      J1     PIN    ECAD
+    30.0  0900.0   200.0     PTH      J1     PIN    ECAD
+    30.0  1000.0   200.0     PTH      J1     PIN    ECAD
+    30.0  1100.0   200.0     PTH      J1     PIN    ECAD
+    30.0  1200.0   200.0     PTH      J1     PIN    ECAD
+    30.0  1300.0   200.0     PTH      J1     PIN    ECAD
+    30.0  1400.0   200.0     PTH      J1     PIN    ECAD
+    30.0  1500.0   200.0     PTH      J1     PIN    ECAD
+    30.0  1600.0   200.0     PTH      J1     PIN    ECAD
+    30.0  1700.0   200.0     PTH      J1     PIN    ECAD
+    30.0  1800.0   200.0     PTH      J1     PIN    ECAD
+    30.0  4400.0   100.0     PTH      J2     PIN    ECAD
+    30.0  4300.0   100.0     PTH      J2     PIN    ECAD
+    30.0  4200.0   100.0     PTH      J2     PIN    ECAD
+    30.0  4100.0   100.0     PTH      J2     PIN    ECAD
+    30.0  4000.0   100.0     PTH      J2     PIN    ECAD
+    30.0  3900.0   100.0     PTH      J2     PIN    ECAD
+    30.0  3800.0   100.0     PTH      J2     PIN    ECAD
+    30.0  3700.0   100.0     PTH      J2     PIN    ECAD
+    30.0  3600.0   100.0     PTH      J2     PIN    ECAD
+    30.0  3500.0   100.0     PTH      J2     PIN    ECAD
+    30.0  3400.0   100.0     PTH      J2     PIN    ECAD
+    30.0  3300.0   100.0     PTH      J2     PIN    ECAD
+    30.0  3300.0   200.0     PTH      J2     PIN    ECAD
+    30.0  3400.0   200.0     PTH      J2     PIN    ECAD
+    30.0  3500.0   200.0     PTH      J2     PIN    ECAD
+    30.0  3600.0   200.0     PTH      J2     PIN    ECAD
+    30.0  3700.0   200.0     PTH      J2     PIN    ECAD
+    30.0  3800.0   200.0     PTH      J2     PIN    ECAD
+    30.0  3900.0   200.0     PTH      J2     PIN    ECAD
+    30.0  4000.0   200.0     PTH      J2     PIN    ECAD
+    30.0  4100.0   200.0     PTH      J2     PIN    ECAD
+    30.0  4200.0   200.0     PTH      J2     PIN    ECAD
+    30.0  4300.0   200.0     PTH      J2     PIN    ECAD
+    30.0  4400.0   200.0     PTH      J2     PIN    ECAD
+    30.0  3000.0  3300.0     PTH      U3     PIN    ECAD
+    30.0  3024.2  3203.0     PTH      U3     PIN    ECAD
+    30.0  3048.4  3105.9     PTH      U3     PIN    ECAD
+    30.0  3072.6  3008.9     PTH      U3     PIN    ECAD
+    30.0  3096.8  2911.9     PTH      U3     PIN    ECAD
+    30.0  3121.0  2814.9     PTH      U3     PIN    ECAD
+    30.0  3145.2  2717.8     PTH      U3     PIN    ECAD
+    30.0  3436.2  2790.4     PTH      U3     PIN    ECAD
+    30.0  3412.1  2887.4     PTH      U3     PIN    ECAD
+    30.0  3387.9  2984.5     PTH      U3     PIN    ECAD
+    30.0  3363.7  3081.5     PTH      U3     PIN    ECAD
+    30.0  3339.5  3178.5     PTH      U3     PIN    ECAD
+    30.0  3315.3  3275.6     PTH      U3     PIN    ECAD
+    30.0  3291.1  3372.6     PTH      U3     PIN    ECAD
+    30.0  2200.0  2500.0     PTH      U4     PIN    ECAD
+    30.0  2100.0  2500.0     PTH      U4     PIN    ECAD
+    30.0  2000.0  2500.0     PTH      U4     PIN    ECAD
+    30.0  1900.0  2500.0     PTH      U4     PIN    ECAD
+    30.0  1800.0  2500.0     PTH      U4     PIN    ECAD
+    30.0  1700.0  2500.0     PTH      U4     PIN    ECAD
+    30.0  1600.0  2500.0     PTH      U4     PIN    ECAD
+    30.0  1600.0  2200.0     PTH      U4     PIN    ECAD
+    30.0  1700.0  2200.0     PTH      U4     PIN    ECAD
+    30.0  1800.0  2200.0     PTH      U4     PIN    ECAD
+    30.0  1900.0  2200.0     PTH      U4     PIN    ECAD
+    30.0  2000.0  2200.0     PTH      U4     PIN    ECAD
+    30.0  2100.0  2200.0     PTH      U4     PIN    ECAD
+    30.0  2200.0  2200.0     PTH      U4     PIN    ECAD
+    20.0  2500.0  3100.0     PTH   BOARD     VIA    ECAD
+    20.0  2500.0  3200.0     PTH   BOARD     VIA    ECAD
+    20.0  2500.0  3300.0     PTH   BOARD     VIA    ECAD
+    20.0  2000.0  1600.0     PTH   BOARD     VIA    ECAD
+    20.0  1100.0  0900.0     PTH   BOARD     VIA    ECAD
+    20.0  1200.0  1600.0     PTH   BOARD     VIA    ECAD
+    20.0  3900.0  3800.0     PTH   BOARD     VIA    ECAD
+    20.0  3900.0  2300.0     PTH   BOARD     VIA    ECAD
+   100.0  3100.0   -50.0    NPTH      J2     MTG    ECAD
+   100.0  4600.0   -50.0    NPTH      J2     MTG    ECAD
+   100.0   500.0   -50.0    NPTH      J1     MTG    ECAD
+   100.0  2000.0   -50.0    NPTH      J1     MTG    ECAD
+    93.0  5075.0     0.0     PTH   BOARD     MTG UNOWNED
+    93.0     0.0  4800.0    NPTH   BOARD    TOOL    MCAD
+    93.0     0.0     0.0     PTH   BOARD     MTG UNOWNED
+.END_DRILLED_HOLES
