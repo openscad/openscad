@@ -37,6 +37,8 @@ ValuePtr EvalContext::getArgValue(size_t i, const Context *ctx) const
 */
 AssignmentMap EvalContext::resolveArguments(const AssignmentList &args) const
 {
+  //typedef std::unordered_map<std::string, const Expression*> AssignmentMap;
+  //typedef std::vector<Assignment> AssignmentList;
   AssignmentMap resolvedArgs;
   size_t posarg = 0;
   // Iterate over positional args
@@ -44,6 +46,15 @@ AssignmentMap EvalContext::resolveArguments(const AssignmentList &args) const
     const auto &name = this->getArgName(i); // name is optional
     const auto expr = this->getArgs()[i].expr.get();
     if (!name.empty()) {
+      bool found=false;
+      if(name.at(0)!='$'){
+        for(auto const& arg: args) {
+          if(arg.name == name) found=true;
+        }
+        if(not found){
+          PRINTB("WARNING: variable %s not specified as parameter", name);
+        }
+      }
       resolvedArgs[name] = expr;
     }
     // If positional, find name of arg with this position
