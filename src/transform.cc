@@ -80,7 +80,7 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 	}
 
 	Context c(ctx);
-	c.setVariables(args, evalctx);
+	c.setVariables(evalctx, args);
 	inst->scope.apply(*evalctx);
 
 	if (this->type == transform_type_e::SCALE) {

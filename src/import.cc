@@ -88,7 +88,7 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 
 	Context c(ctx);
 	c.setDocumentPath(evalctx->documentPath());
-	c.setVariables(args, evalctx);
+	c.setVariables(evalctx, args);
 #if 0 && DEBUG
 	c.dump(this, inst);
 #endif

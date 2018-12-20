@@ -51,7 +51,7 @@ AbstractNode *TextModule::instantiate(const Context *ctx, const ModuleInstantiat
 	AssignmentList args{Assignment("text"), Assignment("size"), Assignment("font")};
 
 	Context c(ctx);
-	c.setVariables(args, evalctx);
+	c.setVariables(evalctx, args);
 
 	auto fn = c.lookup_variable("$fn")->toDouble();
 	auto fa = c.lookup_variable("$fa")->toDouble();

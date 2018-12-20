@@ -69,7 +69,7 @@ void ModuleContext::evaluateAssignments(const AssignmentList &assignments)
 
 void ModuleContext::initializeModule(const UserModule &module)
 {
-	this->setVariables(module.definition_arguments, evalctx);
+	this->setVariables(evalctx, module.definition_arguments);
 	// FIXME: Don't access module members directly
 	this->functions_p = &module.scope.functions;
 	this->modules_p = &module.scope.modules;

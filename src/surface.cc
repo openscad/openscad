@@ -87,7 +87,7 @@ AbstractNode *SurfaceModule::instantiate(const Context *ctx, const ModuleInstant
 	AssignmentList args{Assignment("file"), Assignment("center"), Assignment("convexity")};
 
 	Context c(ctx);
-	c.setVariables(args, evalctx);
+	c.setVariables(evalctx, args);
 
 	auto fileval = c.lookup_variable("file");
 	auto filename = lookup_file(fileval->isUndefined() ? "" : fileval->toString(), inst->path(), c.documentPath());

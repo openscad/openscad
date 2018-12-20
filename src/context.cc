@@ -74,7 +74,7 @@ Context::~Context()
 	Initialize context from a module argument list and a evaluation context
 	which may pass variables which will be preferred over default values.
 */
-void Context::setVariables(const AssignmentList &args, const EvalContext *evalctx)
+void Context::setVariables(const EvalContext *evalctx, const AssignmentList &args)
 {
   // Set any default values
   for (const auto &arg : args) {
