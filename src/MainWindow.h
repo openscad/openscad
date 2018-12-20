@@ -181,6 +181,7 @@ private slots:
 	void csgRender();
 	void csgReloadRender();
 	void action3DPrint();
+    bool uploadStlAndGetPartUrl(QString export_filename, char * partUrl, int partUrlSize);
 #ifdef ENABLE_CGAL
 	void actionRender();
 	void actionRenderDone(shared_ptr<const class Geometry>);

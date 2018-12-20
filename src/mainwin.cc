@@ -136,6 +136,7 @@
 #include "FontCache.h"
 #include "input/InputDriverManager.h"
 #include <cstdio>
+#include <QtNetwork>
 
 // Global application state
 unsigned int GuiLocker::gui_locked = 0;
@@ -2016,16 +2017,16 @@ void MainWindow::csgRender()
 	compileEnded();
 }
 
+
 void MainWindow::action3DPrint()
 {
 	setCurrentOutput();
 	PRINT("3D Printing...");
 	
-    //TODO:  Figure out how to do the render.  This doesn't seem to do it.
-	//Make sure we have the render built:
-// 	actionRender();
-	
     unsigned int dim = 3;
+    
+    int partUrlSize=255;
+    char partUrl[partUrlSize];
     
     //Where we hold our temporary stl file name:
     char tempStlFileName[L_tmpnam];
@@ -2039,8 +2040,7 @@ void MainWindow::action3DPrint()
 		return;
 	}
 	
-	//TODO:  Use some library to create a temporary file name valid on all systems and that 
-	// hopefully won't self-clobber if multiple instances are open.
+	//Ccreate a temporary file name valid on all systems:
 	QString export_filename=QString(std::tmpnam(tempStlFileName));
     
     //Render the stl to a temporary file:
@@ -2048,11 +2048,116 @@ void MainWindow::action3DPrint()
 		export_filename.toLocal8Bit().constData(),
 		export_filename.toUtf8());
     
-    //TODO:  Then, call a function that uploads it and returns the url.
     
+    //TODO:  Check the status:
+    //Upload the file to the 3D Printing server and get the corresponding url to see it.
+    //The result is put in partUrl.
+    
+    if (! uploadStlAndGetPartUrl(export_filename, partUrl, partUrlSize))
+    {
+        PRINT("An error occured while contacting the print API.");
+        return;
+    }
+    
+    PRINT("partUrl:");
+    PRINT(partUrl);
+        
     //TODO:  THen, call a function that opens the url in the default browser.
 }
 
+//This function uploads an stl to the 3D printing API endpoint and returns a url that, 
+// when accessed, will show the stl file as a part that can be configured and added to the 
+// shopping cart.  Returns True if successful.
+bool MainWindow::uploadStlAndGetPartUrl(QString export_filename, char * partUrl, int partUrlSize)
+{
+    
+    //Create a request:
+    QNetworkRequest request(QUrl("https://print.openscad.org/api/v1/part-upload/"));
+    
+    //Set the content header:
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    
+    //Get the file name from the file path:
+    QString fileNameBase=QFileInfo(export_filename).baseName();
+
+    //Create the request:
+    QJsonObject jsonInput;
+    
+    //Start building the json request:
+    jsonInput.insert("fileName", fileNameBase);
+
+    
+    char * memblock;
+    std::streampos fileSize;
+    
+    //Open the stl file:
+    std::ifstream stlFileHandle (export_filename.toLocal8Bit().constData(), 
+                                    std::ios::in|std::ios::binary|std::ios::ate);
+    if (stlFileHandle.is_open())
+    {
+        //Read the whole file into memory:
+        fileSize = stlFileHandle.tellg();
+        memblock = new char [fileSize];
+        stlFileHandle.seekg (0, std::ios::beg);
+        stlFileHandle.read (memblock, fileSize);
+        stlFileHandle.close();
+    }
+    else 
+    {
+        PRINT("Unable to open exported stl file.");
+        return 0;
+    }
+    
+    delete[] memblock;
+    
+    //TODO:  Update with 
+    //Base 64-encoded file contents:
+    jsonInput.insert("file", "U1RMIHJlcGFpcmVkIGJ5IFByaW50IGEgVGhpbmcsIExMQwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAAAAAACAvwAAAAAAAAAAAAAAAAAAAAAAADhCAAAAAAAAOEIAADhCAAAAAAAAAAAAAAAAAAAAAIC/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA4QgAAOEIAAAAAAAA4QgAAAAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAA4QgAAOEIAAAAAAAA4QgAAOEIAADhCAAA4QgAAAAAAgAAAAAAAAIA/AAAAAAAAOEIAADhCAAAAAAAAAAAAADhCAAA4QgAAOEIAADhCAAAAAAAAAACAvwAAAAAAAAAAAAAAAAAAAAAAADhCAAAAAAAAAAAAADhCAAAAAAAAOEIAAAAAAAAAAIC/AAAAAAAAAAAAAAAAAAA4QgAAAAAAAAAAAAAAAAAAOEIAAAAAAAA4QgAAAAAAAAAAAAAAAIC/AAAAAAAAOEIAAAAAAAA4QgAAOEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgL8AAAAAAAAAAAAAAAAAADhCAAA4QgAAAAAAADhCAAAAAAAAAAAAAAAAAIAAAIA/AAAAAAAAAAAAADhCAAA4QgAAOEIAADhCAAA4QgAAAAAAADhCAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAOEIAAAAAAAA4QgAAOEIAADhCAAA4QgAAOEIAAAAAAAAAAIA/AAAAAAAAAAAAADhCAAAAAAAAAAAAADhCAAA4QgAAAAAAADhCAAA4QgAAOEIAAAAAgD8AAACAAAAAAAAAOEIAAAAAAAA4QgAAOEIAAAAAAAAAAAAAOEIAADhCAAA4QgAA");
+
+    //Create a network access manager:
+    QNetworkAccessManager nam;
+    
+    //Send the post:
+    QNetworkReply *reply = nam.post(request, QJsonDocument(jsonInput).toJson());
+
+    //Wait for the reply:
+    while(!reply->isFinished())
+    {
+        qApp->processEvents();
+    }
+
+    QVariant statusCodeV = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);  
+    
+    //Clean up the reply object:
+    reply->deleteLater();
+    
+    char statusStr[250];
+    
+    if (statusCodeV.toInt()!=200)
+    {
+        sprintf(statusStr, "API status code: %d", statusCodeV.toInt());
+        
+        PRINT(statusStr);
+        return 0;
+    }
+    
+    //Interpret the response as a json document:
+    QJsonDocument jsonOutDoc= QJsonDocument::fromJson(reply->readAll());
+    
+    //Get teh corresponding json object:
+    QJsonObject jsonOutput = jsonOutDoc.object();
+    
+    ////Print the whole document:
+    //PRINT(QString(jsonOutDoc.toJson()).toLocal8Bit().constData());
+    
+    //Extract the cartUrl:
+    QString partUrlQstring=jsonOutput.value(QString("data")).toObject().value(QString("cartUrl")).toString();
+    
+    //Copy it to our output variable:
+    strncpy(partUrl, partUrlQstring.toLocal8Bit().constData(), partUrlSize);
+    
+    return 1;
+}
 
 #ifdef ENABLE_CGAL
 
