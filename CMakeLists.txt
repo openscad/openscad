@@ -309,6 +309,7 @@ set(CORE_SOURCES
   src/libsvg/svgpage.cc
   src/libsvg/transformation.cc
   src/libsvg/util.cc
+  src/libidf/idf3.cc
   src/clipper-utils.cc
   src/Assignment.cc
   src/annotation.cc 
