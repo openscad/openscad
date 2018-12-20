@@ -72,6 +72,9 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 		Assignment("layername")
 	};
 	
+  AssignmentList optargs{
+    Assignment("width"), Assignment("height")
+  };
   // FIXME: This is broken. Tag as deprecated and fix
 	// Map old argnames to new argnames for compatibility
 	// To fix: 
@@ -88,7 +91,7 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 
 	Context c(ctx);
 	c.setDocumentPath(evalctx->documentPath());
-	c.setVariables(evalctx, args);
+	c.setVariables(evalctx, args, optargs);
 #if 0 && DEBUG
 	c.dump(this, inst);
 #endif

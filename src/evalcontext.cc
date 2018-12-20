@@ -35,7 +35,7 @@ ValuePtr EvalContext::getArgValue(size_t i, const Context *ctx) const
   Resolves arguments specified by evalctx, using args to lookup positional arguments.
   Returns an AssignmentMap (string -> Expression*)
 */
-AssignmentMap EvalContext::resolveArguments(const AssignmentList &args) const
+AssignmentMap EvalContext::resolveArguments(const AssignmentList &args, const AssignmentList &optargs) const
 {
   //typedef std::unordered_map<std::string, const Expression*> AssignmentMap;
   //typedef std::vector<Assignment> AssignmentList;
@@ -49,6 +49,9 @@ AssignmentMap EvalContext::resolveArguments(const AssignmentList &args) const
       bool found=false;
       if(name.at(0)!='$'){
         for(auto const& arg: args) {
+          if(arg.name == name) found=true;
+        }
+        for(auto const& arg: optargs) {
           if(arg.name == name) found=true;
         }
         if(not found){

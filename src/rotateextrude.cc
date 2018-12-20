@@ -53,9 +53,10 @@ AbstractNode *RotateExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	auto node = new RotateExtrudeNode(inst);
 
 	AssignmentList args{Assignment("file"), Assignment("layer"), Assignment("origin"), Assignment("scale")};
+	AssignmentList optargs{Assignment("convexity"), Assignment("angle")};
 
 	Context c(ctx);
-	c.setVariables(evalctx, args);
+	c.setVariables(evalctx, args, optargs);
 	inst->scope.apply(*evalctx);
 
 	node->fn = c.lookup_variable("$fn")->toDouble();

@@ -144,6 +144,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 	node->x = node->y = node->z = node->h = node->r1 = node->r2 = 1;
 
 	AssignmentList args;
+	AssignmentList optargs;
 
 	switch (this->type) {
 	case primitive_type_e::CUBE:
@@ -151,9 +152,11 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		break;
 	case primitive_type_e::SPHERE:
 		args += Assignment("r");
+		optargs += Assignment("d");
 		break;
 	case primitive_type_e::CYLINDER:
 		args += Assignment("h"), Assignment("r1"), Assignment("r2"), Assignment("center");
+		optargs += Assignment("r"),  Assignment("d"), Assignment("d1"),  Assignment("d2");
 		break;
 	case primitive_type_e::POLYHEDRON:
 		args += Assignment("points"), Assignment("faces"), Assignment("convexity");
@@ -163,6 +166,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		break;
 	case primitive_type_e::CIRCLE:
 		args += Assignment("r");
+		optargs += Assignment("d");
 		break;
 	case primitive_type_e::POLYGON:
 		args += Assignment("points"), Assignment("paths"), Assignment("convexity");
@@ -172,7 +176,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 	}
 
 	Context c(ctx);
-	c.setVariables(evalctx, args);
+	c.setVariables(evalctx, args, optargs);
 
 	node->fn = c.lookup_variable("$fn")->toDouble();
 	node->fs = c.lookup_variable("$fs")->toDouble();
@@ -222,6 +226,11 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		const auto r = lookup_radius(c, "d", "r");
 		const auto r1 = lookup_radius(c, "d1", "r1");
 		const auto r2 = lookup_radius(c, "d2", "r2");
+		if(r.type() == Value::ValueType::NUMBER && 
+			(r1.type() == Value::ValueType::NUMBER || r2.type() == Value::ValueType::NUMBER)
+			){
+				PRINTB("WARNING: %s", inst->location().toRelativeString(ctx->documentPath()));
+		}
 		if (r.type() == Value::ValueType::NUMBER) {
 			node->r1 = r.toDouble();
 			node->r2 = r.toDouble();

@@ -56,9 +56,10 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	auto node = new LinearExtrudeNode(inst);
 
 	AssignmentList args{Assignment("file"), Assignment("layer"), Assignment("height"), Assignment("origin"), Assignment("scale"), Assignment("center"), Assignment("twist"), Assignment("slices")};
+	AssignmentList optargs{Assignment("convexity")};
 
 	Context c(ctx);
-	c.setVariables(evalctx, args);
+	c.setVariables(evalctx, args, optargs);
 	inst->scope.apply(*evalctx);
 
 	node->fn = c.lookup_variable("$fn")->toDouble();
