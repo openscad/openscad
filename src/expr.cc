@@ -436,7 +436,7 @@ ValuePtr FunctionCall::evaluate(const Context *context) const
 	}
     
 	EvalContext c(context, this->arguments, this->loc);
-	ValuePtr result = context->evaluate_function(this->name, &c,this->loc);
+	ValuePtr result = context->evaluate_function(this->name, &c);
 
 	return result;
 }
@@ -471,7 +471,7 @@ ValuePtr Assert::evaluate(const Context *context) const
 	EvalContext assert_context(context, this->arguments, this->loc);
 
 	Context c(&assert_context);
-	evaluate_assert(c, &assert_context, this->loc);
+	evaluate_assert(c, &assert_context);
 
 	ValuePtr result = expr ? expr->evaluate(&c) : ValuePtr::undefined;
 	return result;
@@ -715,7 +715,7 @@ void LcLet::print(std::ostream &stream, const std::string &) const
     stream << "let(" << this->arguments << ") (" << *this->expr << ")";
 }
 
-void evaluate_assert(const Context &context, const class EvalContext *evalctx, const Location &loc)
+void evaluate_assert(const Context &context, const class EvalContext *evalctx)
 {
 	AssignmentList args;
 	args += Assignment("condition"), Assignment("message");
@@ -741,6 +741,6 @@ void evaluate_assert(const Context &context, const class EvalContext *evalctx, c
 		if (message->isDefined()) {
 			msg << ": " << message->toEchoString();
 		}
-		throw AssertionFailedException(msg.str(),loc);
+		throw AssertionFailedException(msg.str(),evalctx->loc);
 	}
 }

@@ -258,4 +258,4 @@ private:
 	shared_ptr<Expression> expr;
 };
 
-void evaluate_assert(const Context &context, const class EvalContext *evalctx, const Location &loc);
+void evaluate_assert(const Context &context, const class EvalContext *evalctx);

@@ -277,7 +277,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 		node = new GroupNode(inst);
 
 		Context c(evalctx);
-		evaluate_assert(c, evalctx, inst->location());
+		evaluate_assert(c, evalctx);
 		inst->scope.apply(c);
 		node->children = inst->instantiateChildren(&c);
 	}

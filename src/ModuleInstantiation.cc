@@ -69,14 +69,14 @@ void IfElseModuleInstantiation::print(std::ostream &stream, const std::string &i
 
 AbstractNode *ModuleInstantiation::evaluate(const Context *ctx) const
 {
-	EvalContext c(ctx, this->arguments, loc, &this->scope);
+	EvalContext c(ctx, this->arguments, this->loc, &this->scope);
 
 #if 0 && DEBUG
 	PRINT("New eval ctx:");
 	c.dump(nullptr, this);
 #endif
 
-	AbstractNode *node = ctx->instantiate_module(*this, &c, loc); // Passes c as evalctx
+	AbstractNode *node = ctx->instantiate_module(*this, &c); // Passes c as evalctx
 	return node;
 }
 

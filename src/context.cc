@@ -193,17 +193,17 @@ static void print_ignore_warning(const char *what, const char *name, const Locat
 	PRINTB("WARNING: Ignoring unknown %s '%s', %s.", what % name % loc.toRelativeString(docPath));
 }
  
-ValuePtr Context::evaluate_function(const std::string &name, const EvalContext *evalctx, const Location &loc) const
+ValuePtr Context::evaluate_function(const std::string &name, const EvalContext *evalctx) const
 {
-	if (this->parent) return this->parent->evaluate_function(name, evalctx,loc);
-	print_ignore_warning("function", name.c_str(),loc,this->documentPath());
+	if (this->parent) return this->parent->evaluate_function(name, evalctx);
+	print_ignore_warning("function", name.c_str(),evalctx->loc,this->documentPath());
 	return ValuePtr::undefined;
 }
 
-AbstractNode *Context::instantiate_module(const ModuleInstantiation &inst, EvalContext *evalctx, const Location &loc) const
+AbstractNode *Context::instantiate_module(const ModuleInstantiation &inst, EvalContext *evalctx) const
 {
-	if (this->parent) return this->parent->instantiate_module(inst, evalctx, loc);
-	print_ignore_warning("module", inst.name().c_str(),loc,this->documentPath());
+	if (this->parent) return this->parent->instantiate_module(inst, evalctx);
+	print_ignore_warning("module", inst.name().c_str(),evalctx->loc,this->documentPath());
 	return nullptr;
 }
 

@@ -112,20 +112,20 @@ const UserModule *ModuleContext::findLocalModule(const std::string &name) const
 }
 
 ValuePtr ModuleContext::evaluate_function(const std::string &name, 
-																												 const EvalContext *evalctx, const Location &loc) const
+																												 const EvalContext *evalctx) const
 {
 	const auto foundf = findLocalFunction(name);
 	if (foundf) return foundf->evaluate(this, evalctx);
 
-	return Context::evaluate_function(name, evalctx, loc);
+	return Context::evaluate_function(name, evalctx);
 }
 
-AbstractNode *ModuleContext::instantiate_module(const ModuleInstantiation &inst, EvalContext *evalctx, const Location &loc) const
+AbstractNode *ModuleContext::instantiate_module(const ModuleInstantiation &inst, EvalContext *evalctx) const
 {
 	const auto foundm = this->findLocalModule(inst.name());
 	if (foundm) return foundm->instantiate(this, &inst, evalctx);
 
-	return Context::instantiate_module(inst, evalctx, loc);
+	return Context::instantiate_module(inst, evalctx);
 }
 
 #ifdef DEBUG
@@ -182,7 +182,7 @@ ValuePtr FileContext::sub_evaluate_function(const std::string &name,
 }
 
 ValuePtr FileContext::evaluate_function(const std::string &name, 
-																											 const EvalContext *evalctx, const Location &loc) const
+																											 const EvalContext *evalctx) const
 {
 	const auto foundf = findLocalFunction(name);
 	if (foundf) return foundf->evaluate(this, evalctx);
@@ -194,10 +194,10 @@ ValuePtr FileContext::evaluate_function(const std::string &name,
 			return sub_evaluate_function(name, evalctx, usedmod);
 	}
 
-	return ModuleContext::evaluate_function(name, evalctx, loc);
+	return ModuleContext::evaluate_function(name, evalctx);
 }
 
-AbstractNode *FileContext::instantiate_module(const ModuleInstantiation &inst, EvalContext *evalctx, const Location &loc) const
+AbstractNode *FileContext::instantiate_module(const ModuleInstantiation &inst, EvalContext *evalctx) const
 {
 	const auto foundm = this->findLocalModule(inst.name());
 	if (foundm) return foundm->instantiate(this, &inst, evalctx);
@@ -218,7 +218,7 @@ AbstractNode *FileContext::instantiate_module(const ModuleInstantiation &inst, E
 		}
 	}
 
-	return ModuleContext::instantiate_module(inst, evalctx, loc);
+	return ModuleContext::instantiate_module(inst, evalctx);
 }
 
 void FileContext::initializeModule(const class FileModule &module)
