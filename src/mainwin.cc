@@ -2041,28 +2041,30 @@ void MainWindow::action3DPrint()
 	}
 	
 	//Ccreate a temporary file name valid on all systems:
-	QString export_filename=QString(std::tmpnam(tempStlFileName));
+	QString export_filename=QString(std::tmpnam(tempStlFileName)).append(".stl");
     
     //Render the stl to a temporary file:
 	exportFileByName(this->root_geom, FileFormat::STL,
 		export_filename.toLocal8Bit().constData(),
 		export_filename.toUtf8());
     
-    
-    //TODO:  Check the status:
     //Upload the file to the 3D Printing server and get the corresponding url to see it.
     //The result is put in partUrl.
-    
-    if (! uploadStlAndGetPartUrl(export_filename, partUrl, partUrlSize))
+    bool uploadWorked=uploadStlAndGetPartUrl(export_filename, partUrl, partUrlSize);
+    setCurrentOutput();
+
+    //Check the result:
+    if (! uploadWorked)
     {
         PRINT("An error occured while contacting the print API.");
         return;
     }
     
-    PRINT("partUrl:");
-    PRINT(partUrl);
-        
-    //TODO:  THen, call a function that opens the url in the default browser.
+    //PRINT("partUrl:");
+    //PRINT(partUrl);
+    
+    //Then, call a function that opens the url in the default browser.
+    QDesktopServices::openUrl ( QUrl(partUrl) );
 }
 
 //This function uploads an stl to the 3D printing API endpoint and returns a url that, 
@@ -2070,7 +2072,8 @@ void MainWindow::action3DPrint()
 // shopping cart.  Returns True if successful.
 bool MainWindow::uploadStlAndGetPartUrl(QString export_filename, char * partUrl, int partUrlSize)
 {
-    
+    setCurrentOutput();
+
     //Create a request:
     QNetworkRequest request(QUrl("https://print.openscad.org/api/v1/part-upload/"));
     
@@ -2078,16 +2081,15 @@ bool MainWindow::uploadStlAndGetPartUrl(QString export_filename, char * partUrl,
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     
     //Get the file name from the file path:
-    QString fileNameBase=QFileInfo(export_filename).baseName();
+    QString fileNameBase=QFileInfo(export_filename).fileName();
 
     //Create the request:
     QJsonObject jsonInput;
     
     //Start building the json request:
     jsonInput.insert("fileName", fileNameBase);
-
     
-    char * memblock;
+    char * memStlFile;
     std::streampos fileSize;
     
     //Open the stl file:
@@ -2097,9 +2099,9 @@ bool MainWindow::uploadStlAndGetPartUrl(QString export_filename, char * partUrl,
     {
         //Read the whole file into memory:
         fileSize = stlFileHandle.tellg();
-        memblock = new char [fileSize];
+        memStlFile = new char [fileSize];
         stlFileHandle.seekg (0, std::ios::beg);
-        stlFileHandle.read (memblock, fileSize);
+        stlFileHandle.read (memStlFile, fileSize);
         stlFileHandle.close();
     }
     else 
@@ -2108,12 +2110,19 @@ bool MainWindow::uploadStlAndGetPartUrl(QString export_filename, char * partUrl,
         return 0;
     }
     
-    delete[] memblock;
+    //Convert it to base64:
+    QString stlFileB64=QByteArray(memStlFile).toBase64();
     
-    //TODO:  Update with 
     //Base 64-encoded file contents:
-    jsonInput.insert("file", "U1RMIHJlcGFpcmVkIGJ5IFByaW50IGEgVGhpbmcsIExMQwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAAAAAACAvwAAAAAAAAAAAAAAAAAAAAAAADhCAAAAAAAAOEIAADhCAAAAAAAAAAAAAAAAAAAAAIC/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA4QgAAOEIAAAAAAAA4QgAAAAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAA4QgAAOEIAAAAAAAA4QgAAOEIAADhCAAA4QgAAAAAAgAAAAAAAAIA/AAAAAAAAOEIAADhCAAAAAAAAAAAAADhCAAA4QgAAOEIAADhCAAAAAAAAAACAvwAAAAAAAAAAAAAAAAAAAAAAADhCAAAAAAAAAAAAADhCAAAAAAAAOEIAAAAAAAAAAIC/AAAAAAAAAAAAAAAAAAA4QgAAAAAAAAAAAAAAAAAAOEIAAAAAAAA4QgAAAAAAAAAAAAAAAIC/AAAAAAAAOEIAAAAAAAA4QgAAOEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgL8AAAAAAAAAAAAAAAAAADhCAAA4QgAAAAAAADhCAAAAAAAAAAAAAAAAAIAAAIA/AAAAAAAAAAAAADhCAAA4QgAAOEIAADhCAAA4QgAAAAAAADhCAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAOEIAAAAAAAA4QgAAOEIAADhCAAA4QgAAOEIAAAAAAAAAAIA/AAAAAAAAAAAAADhCAAAAAAAAAAAAADhCAAA4QgAAAAAAADhCAAA4QgAAOEIAAAAAgD8AAACAAAAAAAAAOEIAAAAAAAA4QgAAOEIAAAAAAAAAAAAAOEIAADhCAAA4QgAA");
+    jsonInput.insert("file", stlFileB64.toLocal8Bit().constData());
+    
+    //Pring the input json:
+    //PRINT("Sending this JSON:");
+    //PRINT(QString(QJsonDocument(jsonInput).toJson()).toLocal8Bit().constData());
 
+    //Get rid of the block of memory we used to store the stlFile
+    delete[] memStlFile;
+    
     //Create a network access manager:
     QNetworkAccessManager nam;
     
@@ -2135,6 +2144,8 @@ bool MainWindow::uploadStlAndGetPartUrl(QString export_filename, char * partUrl,
     
     if (statusCodeV.toInt()!=200)
     {
+        setCurrentOutput();
+
         sprintf(statusStr, "API status code: %d", statusCodeV.toInt());
         
         PRINT(statusStr);
