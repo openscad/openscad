@@ -39,6 +39,7 @@ AssignmentMap EvalContext::resolveArguments(const AssignmentList &args, const As
 {
   AssignmentMap resolvedArgs;
   size_t posarg = 0;
+  bool tooManyWarned=false;
   // Iterate over positional args
   for (size_t i=0; i<this->numArgs(); i++) {
     const auto &name = this->getArgName(i); // name is optional
@@ -60,8 +61,9 @@ AssignmentMap EvalContext::resolveArguments(const AssignmentList &args, const As
     }
     // If positional, find name of arg with this position
     else if (posarg < args.size()) resolvedArgs[args[posarg++].name] = expr;
-    else{
+    else if (!tooManyWarned){
       PRINTB("WARNING: Too many unnamed arguments supplied, %s", this->loc.toRelativeString(this->documentPath()));
+      tooManyWarned=true;
     }
   }
   return resolvedArgs;

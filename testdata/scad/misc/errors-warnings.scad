@@ -25,6 +25,10 @@ rotate([1/0,1/0])
 rotate((1/0)/(1/0))
 cube();
 
+circle(rad=5);
+//too many unnamed arguments
+cube(1,2,3,4,5,6);
+
 $vpr="[1,2,3]";
 $vpt=[1,2,3,4];
 $vpd=[1];
