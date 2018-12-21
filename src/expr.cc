@@ -66,7 +66,7 @@ namespace {
 	}
 
 	void evaluate_sequential_assignment(const AssignmentList &assignment_list, Context *context) {
-		EvalContext ctx(context, assignment_list);
+		EvalContext ctx(context, assignment_list, Location::NONE);
 		ctx.assignTo(*context);
 	}
 }
@@ -435,7 +435,7 @@ ValuePtr FunctionCall::evaluate(const Context *context) const
 		throw RecursionException::create("function", this->name,loc);
 	}
     
-	EvalContext c(context, this->arguments);
+	EvalContext c(context, this->arguments, this->loc);
 	ValuePtr result = context->evaluate_function(this->name, &c,this->loc);
 
 	return result;
@@ -468,10 +468,10 @@ Assert::Assert(const AssignmentList &args, Expression *expr, const Location &loc
 
 ValuePtr Assert::evaluate(const Context *context) const
 {
-	EvalContext assert_context(context, this->arguments);
+	EvalContext assert_context(context, this->arguments, this->loc);
 
 	Context c(&assert_context);
-	evaluate_assert(c, &assert_context, loc);
+	evaluate_assert(c, &assert_context, this->loc);
 
 	ValuePtr result = expr ? expr->evaluate(&c) : ValuePtr::undefined;
 	return result;
@@ -492,7 +492,7 @@ Echo::Echo(const AssignmentList &args, Expression *expr, const Location &loc)
 ValuePtr Echo::evaluate(const Context *context) const
 {
 	std::stringstream msg;
-	EvalContext echo_context(context, this->arguments);
+	EvalContext echo_context(context, this->arguments, this->loc);
 	msg << "ECHO: " << echo_context;
 	PRINTB("%s", msg.str());
 
@@ -611,7 +611,7 @@ ValuePtr LcFor::evaluate(const Context *context) const
 {
 	Value::VectorType vec;
 
-    EvalContext for_context(context, this->arguments);
+    EvalContext for_context(context, this->arguments, this->loc);
 
     Context assign_context(context);
 

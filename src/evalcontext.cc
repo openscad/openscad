@@ -9,8 +9,8 @@
 #include "exceptions.h"
 
 EvalContext::EvalContext(const Context *parent, 
-												 const AssignmentList &args, const class LocalScope *const scope)
-	: Context(parent), eval_arguments(args), scope(scope)
+												 const AssignmentList &args, const Location &loc, const class LocalScope *const scope)
+	: Context(parent), eval_arguments(args), loc(loc), scope(scope)
 {
 }
 
@@ -37,8 +37,6 @@ ValuePtr EvalContext::getArgValue(size_t i, const Context *ctx) const
 */
 AssignmentMap EvalContext::resolveArguments(const AssignmentList &args, const AssignmentList &optargs) const
 {
-  //typedef std::unordered_map<std::string, const Expression*> AssignmentMap;
-  //typedef std::vector<Assignment> AssignmentList;
   AssignmentMap resolvedArgs;
   size_t posarg = 0;
   // Iterate over positional args
@@ -55,7 +53,7 @@ AssignmentMap EvalContext::resolveArguments(const AssignmentList &args, const As
           if(arg.name == name) found=true;
         }
         if(not found){
-          PRINTB("WARNING: variable %s not specified as parameter", name);
+          PRINTB("WARNING: variable %s not specified as parameter, %s", name % this->loc.toRelativeString(this->documentPath()));
         }
       }
       resolvedArgs[name] = expr;

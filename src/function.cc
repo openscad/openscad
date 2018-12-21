@@ -88,7 +88,7 @@ public:
 		Context c(ctx);
 		c.setVariables(evalctx, definition_arguments);
 		
-		EvalContext ec(&c, call->arguments);
+		EvalContext ec(&c, call->arguments, loc);
 		Context tmp(&c);
 		unsigned int counter = 0;
 		while (invert ^ this->op->cond->evaluate(&c)) {
