@@ -2023,17 +2023,17 @@ void MainWindow::action3DPrint()
 	setCurrentOutput();
 	PRINT("3D Printing...");
 	
-    unsigned int dim = 3;
-    
-    int partUrlSize=255;
-    char partUrl[partUrlSize];
-    
-    //Where we hold our temporary stl file name:
-    char tempStlFileName[L_tmpnam];
-    
+	unsigned int dim = 3;
+	
+	int partUrlSize=255;
+	char partUrl[partUrlSize];
+	
+	//Where we hold our temporary stl file name:
+	char tempStlFileName[L_tmpnam];
+	
 	setCurrentOutput();
 
-    //Make sure we can export:
+	//Make sure we can export:
 	if (! canExport(dim))
 	{
 		PRINT("Cannot 3D print due to errors.");
@@ -2042,29 +2042,29 @@ void MainWindow::action3DPrint()
 	
 	//Ccreate a temporary file name valid on all systems:
 	QString export_filename=QString(std::tmpnam(tempStlFileName)).append(".stl");
-    
-    //Render the stl to a temporary file:
+	
+	//Render the stl to a temporary file:
 	exportFileByName(this->root_geom, FileFormat::STL,
 		export_filename.toLocal8Bit().constData(),
 		export_filename.toUtf8());
-    
-    //Upload the file to the 3D Printing server and get the corresponding url to see it.
-    //The result is put in partUrl.
-    bool uploadWorked=uploadStlAndGetPartUrl(export_filename, partUrl, partUrlSize);
-    setCurrentOutput();
+	
+	//Upload the file to the 3D Printing server and get the corresponding url to see it.
+	//The result is put in partUrl.
+	bool uploadWorked=uploadStlAndGetPartUrl(export_filename, partUrl, partUrlSize);
+	setCurrentOutput();
 
-    //Check the result:
-    if (! uploadWorked)
-    {
-        PRINT("An error occured while contacting the print API.");
-        return;
-    }
-    
-    //PRINT("partUrl:");
-    //PRINT(partUrl);
-    
-    //Then, call a function that opens the url in the default browser.
-    QDesktopServices::openUrl ( QUrl(partUrl) );
+	//Check the result:
+	if (! uploadWorked)
+	{
+		PRINT("An error occured while contacting the print API.");
+		return;
+	}
+	
+	//PRINT("partUrl:");
+	//PRINT(partUrl);
+	
+	//Then, call a function that opens the url in the default browser.
+	QDesktopServices::openUrl ( QUrl(partUrl) );
 }
 
 //This function uploads an stl to the 3D printing API endpoint and returns a url that, 
@@ -2072,102 +2072,102 @@ void MainWindow::action3DPrint()
 // shopping cart.  Returns True if successful.
 bool MainWindow::uploadStlAndGetPartUrl(QString export_filename, char * partUrl, int partUrlSize)
 {
-    setCurrentOutput();
+	setCurrentOutput();
 
-    //Create a request:
-    QNetworkRequest request(QUrl("https://print.openscad.org/api/v1/part-upload/"));
-    
-    //Set the content header:
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-    
-    //Get the file name from the file path:
-    QString fileNameBase=QFileInfo(export_filename).fileName();
+	//Create a request:
+	QNetworkRequest request(QUrl("https://print.openscad.org/api/v1/part-upload/"));
+	
+	//Set the content header:
+	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+	
+	//Get the file name from the file path:
+	QString fileNameBase=QFileInfo(export_filename).fileName();
 
-    //Create the request:
-    QJsonObject jsonInput;
-    
-    //Start building the json request:
-    jsonInput.insert("fileName", fileNameBase);
-    
-    char * memStlFile;
-    std::streampos fileSize;
-    
-    //Open the stl file:
-    std::ifstream stlFileHandle (export_filename.toLocal8Bit().constData(), 
-                                    std::ios::in|std::ios::binary|std::ios::ate);
-    if (stlFileHandle.is_open())
-    {
-        //Read the whole file into memory:
-        fileSize = stlFileHandle.tellg();
-        memStlFile = new char [fileSize];
-        stlFileHandle.seekg (0, std::ios::beg);
-        stlFileHandle.read (memStlFile, fileSize);
-        stlFileHandle.close();
-    }
-    else 
-    {
-        PRINT("Unable to open exported stl file.");
-        return 0;
-    }
-    
-    //Convert it to base64:
-    QString stlFileB64=QByteArray(memStlFile).toBase64();
-    
-    //Base 64-encoded file contents:
-    jsonInput.insert("file", stlFileB64.toLocal8Bit().constData());
-    
-    //Pring the input json:
-    //PRINT("Sending this JSON:");
-    //PRINT(QString(QJsonDocument(jsonInput).toJson()).toLocal8Bit().constData());
+	//Create the request:
+	QJsonObject jsonInput;
+	
+	//Start building the json request:
+	jsonInput.insert("fileName", fileNameBase);
+	
+	char * memStlFile;
+	std::streampos fileSize;
+	
+	//Open the stl file:
+	std::ifstream stlFileHandle (export_filename.toLocal8Bit().constData(), 
+									std::ios::in|std::ios::binary|std::ios::ate);
+	if (stlFileHandle.is_open())
+	{
+		//Read the whole file into memory:
+		fileSize = stlFileHandle.tellg();
+		memStlFile = new char [fileSize];
+		stlFileHandle.seekg (0, std::ios::beg);
+		stlFileHandle.read (memStlFile, fileSize);
+		stlFileHandle.close();
+	}
+	else 
+	{
+		PRINT("Unable to open exported stl file.");
+		return 0;
+	}
+	
+	//Convert it to base64:
+	QString stlFileB64=QByteArray(memStlFile).toBase64();
+	
+	//Base 64-encoded file contents:
+	jsonInput.insert("file", stlFileB64.toLocal8Bit().constData());
+	
+	//Pring the input json:
+	//PRINT("Sending this JSON:");
+	//PRINT(QString(QJsonDocument(jsonInput).toJson()).toLocal8Bit().constData());
 
-    //Get rid of the block of memory we used to store the stlFile
-    delete[] memStlFile;
-    
-    //Create a network access manager:
-    QNetworkAccessManager nam;
-    
-    //Send the post:
-    QNetworkReply *reply = nam.post(request, QJsonDocument(jsonInput).toJson());
+	//Get rid of the block of memory we used to store the stlFile
+	delete[] memStlFile;
+	
+	//Create a network access manager:
+	QNetworkAccessManager nam;
+	
+	//Send the post:
+	QNetworkReply *reply = nam.post(request, QJsonDocument(jsonInput).toJson());
 
-    //Wait for the reply:
-    while(!reply->isFinished())
-    {
-        qApp->processEvents();
-    }
+	//Wait for the reply:
+	while(!reply->isFinished())
+	{
+		qApp->processEvents();
+	}
 
-    QVariant statusCodeV = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);  
-    
-    //Clean up the reply object:
-    reply->deleteLater();
-    
-    char statusStr[250];
-    
-    if (statusCodeV.toInt()!=200)
-    {
-        setCurrentOutput();
+	QVariant statusCodeV = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);  
+	
+	//Clean up the reply object:
+	reply->deleteLater();
+	
+	char statusStr[250];
+	
+	if (statusCodeV.toInt()!=200)
+	{
+		setCurrentOutput();
 
-        sprintf(statusStr, "API status code: %d", statusCodeV.toInt());
-        
-        PRINT(statusStr);
-        return 0;
-    }
-    
-    //Interpret the response as a json document:
-    QJsonDocument jsonOutDoc= QJsonDocument::fromJson(reply->readAll());
-    
-    //Get teh corresponding json object:
-    QJsonObject jsonOutput = jsonOutDoc.object();
-    
-    ////Print the whole document:
-    //PRINT(QString(jsonOutDoc.toJson()).toLocal8Bit().constData());
-    
-    //Extract the cartUrl:
-    QString partUrlQstring=jsonOutput.value(QString("data")).toObject().value(QString("cartUrl")).toString();
-    
-    //Copy it to our output variable:
-    strncpy(partUrl, partUrlQstring.toLocal8Bit().constData(), partUrlSize);
-    
-    return 1;
+		sprintf(statusStr, "API status code: %d", statusCodeV.toInt());
+		
+		PRINT(statusStr);
+		return 0;
+	}
+	
+	//Interpret the response as a json document:
+	QJsonDocument jsonOutDoc= QJsonDocument::fromJson(reply->readAll());
+	
+	//Get teh corresponding json object:
+	QJsonObject jsonOutput = jsonOutDoc.object();
+	
+	////Print the whole document:
+	//PRINT(QString(jsonOutDoc.toJson()).toLocal8Bit().constData());
+	
+	//Extract the cartUrl:
+	QString partUrlQstring=jsonOutput.value(QString("data")).toObject().value(QString("cartUrl")).toString();
+	
+	//Copy it to our output variable:
+	strncpy(partUrl, partUrlQstring.toLocal8Bit().constData(), partUrlSize);
+	
+	return 1;
 }
 
 #ifdef ENABLE_CGAL
@@ -2451,11 +2451,10 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
 	GuiLocker lock;
 #ifdef ENABLE_CGAL
 	setCurrentOutput();
-    
-    //Return if something is wrong and we can't export.
-    if (! canExport(dim))
-        return;
-
+	
+	//Return if something is wrong and we can't export.
+	if (! canExport(dim))
+		return;
 	auto title = QString(_("Export %1 File")).arg(type_name);
 	auto filter = QString(_("%1 Files (*%2)")).arg(type_name, suffix);
 	auto filename = this->fileName.isEmpty() ? QString(_("Untitled")) + suffix : QFileInfo(this->fileName).completeBaseName() + suffix;
