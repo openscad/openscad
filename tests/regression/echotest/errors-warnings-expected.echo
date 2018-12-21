@@ -8,3 +8,4 @@ WARNING: Problem converting rotate(a=[inf, inf]) parameter, in file errors-warni
 WARNING: Problem converting rotate(a=nan) parameter, in file errors-warnings.scad, line 25
 WARNING: variable rad not specified as parameter, in file errors-warnings.scad, line 28
 WARNING: Too many unnamed arguments supplied, in file errors-warnings.scad, line 30
+WARNING: Cylinder parameters ambiguous, in file errors-warnings.scad, line 32

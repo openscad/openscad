@@ -229,7 +229,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		if(r.type() == Value::ValueType::NUMBER && 
 			(r1.type() == Value::ValueType::NUMBER || r2.type() == Value::ValueType::NUMBER)
 			){
-				PRINTB("WARNING: %s", inst->location().toRelativeString(ctx->documentPath()));
+				PRINTB("WARNING: Cylinder parameters ambiguous, %s", inst->location().toRelativeString(ctx->documentPath()));
 		}
 		if (r.type() == Value::ValueType::NUMBER) {
 			node->r1 = r.toDouble();

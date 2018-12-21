@@ -28,6 +28,8 @@ cube();
 circle(rad=5);
 //too many unnamed arguments
 cube(1,2,3,4,5,6);
+//either r or r1 and r2
+cylinder(r1=1,r2=2,r=3);
 
 $vpr="[1,2,3]";
 $vpt=[1,2,3,4];
