@@ -2025,8 +2025,7 @@ void MainWindow::action3DPrint()
 	
 	unsigned int dim = 3;
 	
-	int partUrlSize=255;
-	char partUrl[partUrlSize];
+    QUrl partUrl;
 	
 	//Where we hold our temporary stl file name:
 	char tempStlFileName[L_tmpnam];
@@ -2050,7 +2049,7 @@ void MainWindow::action3DPrint()
 	
 	//Upload the file to the 3D Printing server and get the corresponding url to see it.
 	//The result is put in partUrl.
-	bool uploadWorked=uploadStlAndGetPartUrl(export_filename, partUrl, partUrlSize);
+	bool uploadWorked=uploadStlAndGetPartUrl(export_filename, partUrl);
 	setCurrentOutput();
 
 	//Check the result:
@@ -2064,13 +2063,13 @@ void MainWindow::action3DPrint()
 	//PRINT(partUrl);
 	
 	//Then, call a function that opens the url in the default browser.
-	QDesktopServices::openUrl ( QUrl(partUrl) );
+	QDesktopServices::openUrl ( partUrl );
 }
 
 //This function uploads an stl to the 3D printing API endpoint and returns a url that, 
 // when accessed, will show the stl file as a part that can be configured and added to the 
 // shopping cart.  Returns True if successful.
-bool MainWindow::uploadStlAndGetPartUrl(QString export_filename, char * partUrl, int partUrlSize)
+bool MainWindow::uploadStlAndGetPartUrl(QString & export_filename, QUrl &partUrl)
 {
 	setCurrentOutput();
 
@@ -2082,7 +2081,7 @@ bool MainWindow::uploadStlAndGetPartUrl(QString export_filename, char * partUrl,
 	
 	//Get the file name from the file path:
 	QString fileNameBase=QFileInfo(export_filename).fileName();
-
+	
 	//Create the request:
 	QJsonObject jsonInput;
 	
@@ -2118,7 +2117,7 @@ bool MainWindow::uploadStlAndGetPartUrl(QString export_filename, char * partUrl,
 	{
 		qApp->processEvents();
 	}
-
+	
 	QVariant statusCodeV = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);  
 	
 	//Clean up the reply object:
@@ -2129,7 +2128,7 @@ bool MainWindow::uploadStlAndGetPartUrl(QString export_filename, char * partUrl,
 	if (statusCodeV.toInt()!=200)
 	{
 		setCurrentOutput();
-
+		
 		sprintf(statusStr, "API status code: %d", statusCodeV.toInt());
 		
 		PRINT(statusStr);
@@ -2146,10 +2145,10 @@ bool MainWindow::uploadStlAndGetPartUrl(QString export_filename, char * partUrl,
 	//PRINT(QString(jsonOutDoc.toJson()).toLocal8Bit().constData());
 	
 	//Extract the cartUrl:
-	QString partUrlQstring=jsonOutput.value("data").toObject().value("cartUrl").toString();
+	QString partUrlStr=jsonOutput.value("data").toObject().value("cartUrl").toString();
 	
-	//Copy it to our output variable:
-	strncpy(partUrl, partUrlQstring.toLocal8Bit().constData(), partUrlSize);
+	//Put it in our output partUrl:
+	partUrl.setUrl(partUrlStr);
 	
 	return 1;
 }
