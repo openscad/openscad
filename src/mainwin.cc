@@ -1192,6 +1192,9 @@ void MainWindow::instantiateRoot()
 	this->root_node = nullptr;
 	this->tree.setRoot(nullptr);
 
+	boost::filesystem::path doc(fileName.toStdString());
+	this->tree.setDocumentPath(doc.remove_filename().string());
+
 	if (this->root_module) {
 		// Evaluate CSG tree
 		PRINT("Compiling design (CSG Tree generation)...");
