@@ -20,7 +20,7 @@ public:
 	virtual ValuePtr evaluate_function(const std::string &name, const class EvalContext *evalctx) const;
 	virtual class AbstractNode *instantiate_module(const class ModuleInstantiation &inst, EvalContext *evalctx) const;
 
-	void setVariables(const class EvalContext *evalctx,const AssignmentList &args, const AssignmentList &optargs={}, bool usermodule=false);
+	void setVariables(const class EvalContext *evalctx, const AssignmentList &args, const AssignmentList &optargs={}, bool usermodule=false);
 
 	void set_variable(const std::string &name, const ValuePtr &value);
 	void set_variable(const std::string &name, const Value &value);

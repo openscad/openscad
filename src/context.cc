@@ -76,17 +76,17 @@ Context::~Context()
 */
 void Context::setVariables(const EvalContext *evalctx, const AssignmentList &args, const AssignmentList &optargs, bool usermodule)
 {
-  // Set any default values
-  for (const auto &arg : args) {
-    set_variable(arg.name, arg.expr ? arg.expr->evaluate(this->parent) : ValuePtr::undefined);
-  }
+	// Set any default values
+	for (const auto &arg : args) {
+		set_variable(arg.name, arg.expr ? arg.expr->evaluate(this->parent) : ValuePtr::undefined);
+	}
 	
-  if (evalctx) {
-		auto assignments = evalctx->resolveArguments(args,optargs,usermodule);
+	if (evalctx) {
+		auto assignments = evalctx->resolveArguments(args, optargs, usermodule);
 		for (const auto &ass : assignments) {
 			this->set_variable(ass.first, ass.second->evaluate(evalctx));
-    }
-  }
+		}
+	}
 }
 
 void Context::set_variable(const std::string &name, const ValuePtr &value)

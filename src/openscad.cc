@@ -920,7 +920,7 @@ int main(int argc, char **argv)
 		("d,d", po::value<string>(), "deps_file -generate a dependency file for make")
 		("m,m", po::value<string>(), "make_cmd -runs make_cmd file if file is missing")
 		("quiet,q", "quiet mode (don't print anything *except* errors)")
-		("parametercheckoff", po::value<string>(), "disables the parameter check")
+		("parametercheckoff", "disables the parameter check")
 		("debug", po::value<string>(), "special debug info")
 		("s,s", po::value<string>(), "stl_file deprecated, use -o")
 		("x,x", po::value<string>(), "dxf_file deprecated, use -o")
@@ -952,6 +952,9 @@ int main(int argc, char **argv)
 	if (vm.count("debug")) {
 		OpenSCAD::debug = vm["debug"].as<string>();
 		PRINTB("Debug on. --debug=%s",OpenSCAD::debug);
+	}
+	if (vm.count("quiet")) {
+		OpenSCAD::quiet = true;
 	}
 	if (vm.count("parametercheckoff")) {
 		OpenSCAD::parameterCheck = false;
