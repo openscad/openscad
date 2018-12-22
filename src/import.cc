@@ -83,9 +83,9 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 	c.dump(this, inst);
 #endif
 
-	auto v = c.lookup_variable("file");
+	auto v = c.lookup_variable("file", true);
 	if (v->isUndefined()) {
-		v = c.lookup_variable("filename");
+		v = c.lookup_variable("filename", true);
 		if (!v->isUndefined()) {
 			printDeprecation("filename= is deprecated. Please use file=");
 		}
@@ -112,14 +112,14 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 	node->fa = c.lookup_variable("$fa")->toDouble();
 
 	node->filename = filename;
-	auto layerval = *c.lookup_variable("layer", true);
-	if (layerval.isUndefined()) {
-		layerval = *c.lookup_variable("layername");
-		if (!layerval.isUndefined()) {
+	auto layerval = c.lookup_variable("layer", true);
+	if (layerval->isUndefined()) {
+		layerval = c.lookup_variable("layername", true);
+		if (!layerval->isUndefined()) {
 			printDeprecation("layername= is deprecated. Please use layer=");
 		}
 	}
-	node->layername = layerval.isUndefined() ? ""  : layerval.toString();
+	node->layername = layerval->isUndefined() ? ""  : layerval->toString();
 	node->convexity = c.lookup_variable("convexity", true)->toDouble();
 
 	if (node->convexity <= 0) node->convexity = 1;
