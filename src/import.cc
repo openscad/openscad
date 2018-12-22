@@ -68,27 +68,13 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 {
   AssignmentList args{
     Assignment("file"), Assignment("layer"), Assignment("convexity"),
-		Assignment("origin"), Assignment("scale"), Assignment("filename"),
-		Assignment("layername")
+		Assignment("origin"), Assignment("scale")
 	};
 	
 	AssignmentList optargs{
-		Assignment("width"), Assignment("height")
+		Assignment("width"), Assignment("height"),
+		Assignment("filename"), Assignment("layername")
 	};
-
-  // FIXME: This is broken. Tag as deprecated and fix
-	// Map old argnames to new argnames for compatibility
-	// To fix: 
-  // o after c.setVariables()
-	//   - if "filename" in evalctx: deprecated-warning && v.set_variable("file", value);
-	//   - if "layername" in evalctx: deprecated-warning && v.set_variable("layer", value);
-#if 0
-	std::vector<std::string> inst_argnames = inst->argnames;
-	for (size_t i=0; i<inst_argnames.size(); i++) {
-		if (inst_argnames[i] == "filename") inst_argnames[i] = "file";
-		if (inst_argnames[i] == "layername") inst_argnames[i] = "layer";
-	}
-#endif
 
 	Context c(ctx);
 	c.setDocumentPath(evalctx->documentPath());
