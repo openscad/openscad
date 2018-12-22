@@ -21,7 +21,7 @@ public:
 	ValuePtr getArgValue(size_t i, const Context *ctx = nullptr) const;
 	const AssignmentList & getArgs() const { return this->eval_arguments; }
 
-	AssignmentMap resolveArguments(const AssignmentList &args, const AssignmentList &optargs={}) const;
+	AssignmentMap resolveArguments(const AssignmentList &args, const AssignmentList &optargs={}, bool usermodule=false) const;
 
 	size_t numChildren() const;
 	ModuleInstantiation *getChild(size_t i) const;

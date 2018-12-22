@@ -74,7 +74,7 @@ Context::~Context()
 	Initialize context from a module argument list and a evaluation context
 	which may pass variables which will be preferred over default values.
 */
-void Context::setVariables(const EvalContext *evalctx, const AssignmentList &args, const AssignmentList &optargs)
+void Context::setVariables(const EvalContext *evalctx, const AssignmentList &args, const AssignmentList &optargs, bool usermodule)
 {
   // Set any default values
   for (const auto &arg : args) {
@@ -82,7 +82,7 @@ void Context::setVariables(const EvalContext *evalctx, const AssignmentList &arg
   }
 	
   if (evalctx) {
-		auto assignments = evalctx->resolveArguments(args,optargs);
+		auto assignments = evalctx->resolveArguments(args,optargs,usermodule);
 		for (const auto &ass : assignments) {
 			this->set_variable(ass.first, ass.second->evaluate(evalctx));
     }
