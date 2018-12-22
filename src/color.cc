@@ -258,9 +258,10 @@ AbstractNode *ColorModule::instantiate(const Context *ctx, const ModuleInstantia
 	auto node = new ColorNode(inst);
 
 	AssignmentList args{Assignment("c"), Assignment("alpha")};
+	AssignmentList optargs;
 
 	Context c(ctx);
-	c.setVariables(evalctx, args);
+	c.setVariables(evalctx, args, optargs);
 	inst->scope.apply(*evalctx);
 
 	auto v = c.lookup_variable("c");

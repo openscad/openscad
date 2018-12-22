@@ -54,9 +54,10 @@ AbstractNode *OffsetModule::instantiate(const Context *ctx, const ModuleInstanti
 	auto node = new OffsetNode(inst);
 
 	AssignmentList args{Assignment("r")};
+	AssignmentList optargs{Assignment("delta"),Assignment("chamfer")};
 
 	Context c(ctx);
-	c.setVariables(evalctx, args);
+	c.setVariables(evalctx, args, optargs);
 	inst->scope.apply(*evalctx);
 
 	node->fn = c.lookup_variable("$fn")->toDouble();

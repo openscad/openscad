@@ -47,9 +47,10 @@ AbstractNode *RenderModule::instantiate(const Context *ctx, const ModuleInstanti
 	auto node = new RenderNode(inst);
 
 	AssignmentList args{Assignment("convexity")};
+	AssignmentList optargs;
 
 	Context c(ctx);
-	c.setVariables(evalctx, args);
+	c.setVariables(evalctx, args, optargs);
 	inst->scope.apply(*evalctx);
 
 	auto v = c.lookup_variable("convexity");
