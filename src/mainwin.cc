@@ -2036,7 +2036,7 @@ void MainWindow::action3DPrint()
 	//Make sure we can export:
 	if (! canExport(dim))
 	{
-		PRINT("Cannot 3D print due to errors.");
+		PRINT("Cannot 3D Print due to errors.");
 		return;
 	}
 	
@@ -2056,7 +2056,7 @@ void MainWindow::action3DPrint()
 	//Check the result:
 	if (! uploadWorked)
 	{
-		PRINT("An error occured while contacting the print API.");
+		PRINT("An error occured while contacting the 3D Print API.");
 		return;
 	}
 	
@@ -2089,39 +2089,24 @@ bool MainWindow::uploadStlAndGetPartUrl(QString export_filename, char * partUrl,
 	//Start building the json request:
 	jsonInput.insert("fileName", fileNameBase);
 	
-	char * memStlFile;
-	std::streampos fileSize;
 	
-	//Open the stl file:
-	std::ifstream stlFileHandle (export_filename.toLocal8Bit().constData(), 
-									std::ios::in|std::ios::binary|std::ios::ate);
-	if (stlFileHandle.is_open())
-	{
-		//Read the whole file into memory:
-		fileSize = stlFileHandle.tellg();
-		memStlFile = new char [fileSize];
-		stlFileHandle.seekg (0, std::ios::beg);
-		stlFileHandle.read (memStlFile, fileSize);
-		stlFileHandle.close();
-	}
-	else 
+	//Read our stl file:
+	QFile file(export_filename);
+	if (!file.open(QIODevice::ReadOnly))
 	{
 		PRINT("Unable to open exported stl file.");
 		return 0;
 	}
 	
-	//Convert it to base64:
-	QString stlFileB64=QByteArray(memStlFile).toBase64();
+	//Convert it to base 64:
+	QString stlFileB64=file.readAll().toBase64();
 	
 	//Base 64-encoded file contents:
 	jsonInput.insert("file", stlFileB64.toLocal8Bit().constData());
 	
 	//Pring the input json:
-	//PRINT("Sending this JSON:");
-	//PRINT(QString(QJsonDocument(jsonInput).toJson()).toLocal8Bit().constData());
-
-	//Get rid of the block of memory we used to store the stlFile
-	delete[] memStlFile;
+	PRINT("Sending this JSON:");
+	PRINT(QString(QJsonDocument(jsonInput).toJson()).toLocal8Bit().constData());
 	
 	//Create a network access manager:
 	QNetworkAccessManager nam;
