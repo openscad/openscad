@@ -65,8 +65,8 @@ namespace {
 		return ret;
 	}
 
-	void evaluate_sequential_assignment(const AssignmentList &assignment_list, Context *context) {
-		EvalContext ctx(context, assignment_list, Location::NONE);
+	void evaluate_sequential_assignment(const AssignmentList &assignment_list, Context *context, const Location &loc) {
+		EvalContext ctx(context, assignment_list, loc);
 		ctx.assignTo(*context);
 	}
 }
@@ -514,7 +514,7 @@ Let::Let(const AssignmentList &args, Expression *expr, const Location &loc)
 ValuePtr Let::evaluate(const Context *context) const
 {
 	Context c(context);
-	evaluate_sequential_assignment(this->arguments, &c);
+	evaluate_sequential_assignment(this->arguments, &c, this->loc);
 
 	return this->expr->evaluate(&c);
 }
@@ -669,7 +669,7 @@ ValuePtr LcForC::evaluate(const Context *context) const
 	Value::VectorType vec;
 
     Context c(context);
-    evaluate_sequential_assignment(this->arguments, &c);
+    evaluate_sequential_assignment(this->arguments, &c, this->loc);
 
 	unsigned int counter = 0;
     while (this->cond->evaluate(&c)) {
@@ -678,7 +678,7 @@ ValuePtr LcForC::evaluate(const Context *context) const
 		if (counter++ == 1000000) throw RecursionException::create("for loop", "", loc);
 
         Context tmp(&c);
-        evaluate_sequential_assignment(this->incr_arguments, &tmp);
+        evaluate_sequential_assignment(this->incr_arguments, &tmp, this->loc);
         c.apply_variables(tmp);
     }    
 
@@ -706,7 +706,7 @@ LcLet::LcLet(const AssignmentList &args, Expression *expr, const Location &loc)
 ValuePtr LcLet::evaluate(const Context *context) const
 {
     Context c(context);
-    evaluate_sequential_assignment(this->arguments, &c);
+    evaluate_sequential_assignment(this->arguments, &c, this->loc);
     return this->expr->evaluate(&c);
 }
 
