@@ -2112,7 +2112,7 @@ bool MainWindow::uploadStlAndGetPartUrl(const QString & exportFilename, const QS
 	if (!file.open(QIODevice::ReadOnly))
 	{
 		PRINT("Unable to open exported stl file.");
-		return 0;
+		return false;
 	}
 	
 	//Convert it to base 64:
@@ -2149,7 +2149,7 @@ bool MainWindow::uploadStlAndGetPartUrl(const QString & exportFilename, const QS
 		setCurrentOutput();
 		
 		PRINTB("API status code: %d", statusCodeV.toInt());
-		return 0;
+		return false;
 	}
 	
 	//Interpret the response as a json document:
@@ -2170,7 +2170,7 @@ bool MainWindow::uploadStlAndGetPartUrl(const QString & exportFilename, const QS
     //Remove the temporary file:
     remove(exportFilename.toLocal8Bit().constData());
     
-	return 1;
+	return true;
 }
 
 #ifdef ENABLE_CGAL
@@ -2408,7 +2408,7 @@ bool MainWindow::canExport(unsigned int dim)
 	if (!this->root_geom) {
 		PRINT("ERROR: Nothing to export! Try rendering first (press F6).");
 		clearCurrentOutput();
-		return 0;
+		return false;
 	}
 
 	// editor has changed since last render
@@ -2418,20 +2418,20 @@ bool MainWindow::canExport(unsigned int dim)
 				"Do you really want to export the previous content?",
 				QMessageBox::Yes | QMessageBox::No);
 		if (ret != QMessageBox::Yes) {
-			return 0;
+			return false;
 		}
 	}
 
 	if (this->root_geom->getDimension() != dim) {
 		PRINTB("ERROR: Current top level object is not a %dD object.", dim);
 		clearCurrentOutput();
-		return 0;
+		return false;
 	}
 
 	if (this->root_geom->isEmpty()) {
 		PRINT("ERROR: Current top level object is empty.");
 		clearCurrentOutput();
-		return 0;
+		return false;
 	}
 
 	auto N = dynamic_cast<const CGAL_Nef_polyhedron *>(this->root_geom.get());
@@ -2439,7 +2439,7 @@ bool MainWindow::canExport(unsigned int dim)
 	 	PRINT("WARNING: Object may not be a valid 2-manifold and may need repair! See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
 	}
 	
-	return 1;
+	return true;
 }
 
 #ifdef ENABLE_CGAL
