@@ -2148,9 +2148,7 @@ bool MainWindow::uploadStlAndGetPartUrl(const QString & exportFilename, const QS
 	{
 		setCurrentOutput();
 		
-		sprintf(statusStr, "API status code: %d", statusCodeV.toInt());
-		
-		PRINT(statusStr);
+		PRINTB("API status code: %d", statusCodeV.toInt());
 		return 0;
 	}
 	
