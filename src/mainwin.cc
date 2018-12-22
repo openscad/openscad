@@ -2089,7 +2089,6 @@ bool MainWindow::uploadStlAndGetPartUrl(QString export_filename, char * partUrl,
 	//Start building the json request:
 	jsonInput.insert("fileName", fileNameBase);
 	
-	
 	//Read our stl file:
 	QFile file(export_filename);
 	if (!file.open(QIODevice::ReadOnly))
@@ -2104,9 +2103,9 @@ bool MainWindow::uploadStlAndGetPartUrl(QString export_filename, char * partUrl,
 	//Base 64-encoded file contents:
 	jsonInput.insert("file", stlFileB64.toLocal8Bit().constData());
 	
-	//Pring the input json:
-	PRINT("Sending this JSON:");
-	PRINT(QString(QJsonDocument(jsonInput).toJson()).toLocal8Bit().constData());
+	////Pring the input json:
+	//PRINT("Sending this JSON:");
+	//PRINT(QString(QJsonDocument(jsonInput).toJson()).toLocal8Bit().constData());
 	
 	//Create a network access manager:
 	QNetworkAccessManager nam;
@@ -2140,14 +2139,14 @@ bool MainWindow::uploadStlAndGetPartUrl(QString export_filename, char * partUrl,
 	//Interpret the response as a json document:
 	QJsonDocument jsonOutDoc= QJsonDocument::fromJson(reply->readAll());
 	
-	//Get teh corresponding json object:
+	//Get the corresponding json object:
 	QJsonObject jsonOutput = jsonOutDoc.object();
 	
 	////Print the whole document:
 	//PRINT(QString(jsonOutDoc.toJson()).toLocal8Bit().constData());
 	
 	//Extract the cartUrl:
-	QString partUrlQstring=jsonOutput.value(QString("data")).toObject().value(QString("cartUrl")).toString();
+	QString partUrlQstring=jsonOutput.value("data").toObject().value("cartUrl").toString();
 	
 	//Copy it to our output variable:
 	strncpy(partUrl, partUrlQstring.toLocal8Bit().constData(), partUrlSize);
