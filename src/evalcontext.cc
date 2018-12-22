@@ -46,7 +46,7 @@ AssignmentMap EvalContext::resolveArguments(const AssignmentList &args, const As
     const auto expr = this->getArgs()[i].expr.get();
     if (!name.empty()) {
       bool found=false;
-      if(name.at(0)!='$'){
+      if(name.at(0)!='$' && OpenSCAD::parameterCheck){
         for(auto const& arg: args) {
           if(arg.name == name) found=true;
         }

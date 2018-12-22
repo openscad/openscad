@@ -15,6 +15,7 @@ extern void *outputhandler_data;
 namespace OpenSCAD {
 	extern std::string debug;
 	extern bool quiet;
+	extern bool parameterCheck;
 }
 
 void set_output_handler(OutputHandlerFunc *newhandler, void *userdata);

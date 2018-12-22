@@ -12,6 +12,7 @@ OutputHandlerFunc *outputhandler = nullptr;
 void *outputhandler_data = nullptr;
 std::string OpenSCAD::debug("");
 bool OpenSCAD::quiet = false;
+bool OpenSCAD::parameterCheck = true;
 
 boost::circular_buffer<std::string> lastmessages(5);
 
