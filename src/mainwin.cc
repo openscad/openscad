@@ -2042,10 +2042,17 @@ void MainWindow::action3DPrint()
 	{
 		PRINT("Cannot 3D Print due to errors.");
 		return;
-	}
+    }
 	
-	//Ccreate a temporary file name valid on all systems:
-	QString exportFilename=QString(std::tmpnam(tempStlFileName));
+	//Create a temporary file name valid on all systems:
+	QTemporaryFile exportFile;
+	//Open the file so we can get the name:
+	if ( ! exportFile.open())
+	{
+		PRINT("Could not open temporary file.");
+		return;
+	}
+	QString exportFilename=exportFile.fileName();
 	
 	//Render the stl to a temporary file:
 	exportFileByName(this->root_geom, FileFormat::STL,
@@ -2167,9 +2174,6 @@ bool MainWindow::uploadStlAndGetPartUrl(const QString & exportFilename, const QS
 	//Put it in our output partUrl:
 	partUrl.setUrl(partUrlStr);
 	
-    //Remove the temporary file:
-    remove(exportFilename.toLocal8Bit().constData());
-    
 	return true;
 }
 
