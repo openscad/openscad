@@ -2020,12 +2020,17 @@ void MainWindow::csgRender()
 
 void MainWindow::action3DPrint()
 {
+	//Keeps track of how many times we've exported and tries to create slightly unique filenames.
+	//Not mission critical, since non-unique file names are fine for the API, just harder to 
+	//differentiate between in customer support later.
+	static unsigned int printCounter=0;
+	
 	setCurrentOutput();
 	PRINT("3D Printing...");
 	
 	unsigned int dim = 3;
 	
-    QUrl partUrl;
+	QUrl partUrl;
 	
 	//Where we hold our temporary stl file name:
 	char tempStlFileName[L_tmpnam];
@@ -2040,16 +2045,24 @@ void MainWindow::action3DPrint()
 	}
 	
 	//Ccreate a temporary file name valid on all systems:
-	QString export_filename=QString(std::tmpnam(tempStlFileName)).append(".stl");
+	QString exportFilename=QString(std::tmpnam(tempStlFileName));
 	
 	//Render the stl to a temporary file:
 	exportFileByName(this->root_geom, FileFormat::STL,
-		export_filename.toLocal8Bit().constData(),
-		export_filename.toUtf8());
+		exportFilename.toLocal8Bit().constData(),
+		exportFilename.toUtf8());
+	
+	//Create a name that the order process will use to refer to the file. Base it off of the
+	//project name
+	QString userFacingName="unsaved.stl";
+	if (!this->fileName.isEmpty()) {
+		QString fileBasename = QFileInfo(this->fileName).baseName();
+		userFacingName = fileBasename.append("_").append(QString::number(printCounter++)).append(".stl");
+	}
 	
 	//Upload the file to the 3D Printing server and get the corresponding url to see it.
 	//The result is put in partUrl.
-	bool uploadWorked=uploadStlAndGetPartUrl(export_filename, partUrl);
+	bool uploadWorked=uploadStlAndGetPartUrl(exportFilename, userFacingName, partUrl);
 	setCurrentOutput();
 
 	//Check the result:
@@ -2062,17 +2075,23 @@ void MainWindow::action3DPrint()
 	//PRINT("partUrl:");
 	//PRINT(partUrl);
 	
-	//Then, call a function that opens the url in the default browser.
+	//Open the url in the default browser:
 	QDesktopServices::openUrl ( partUrl );
 }
 
 //This function uploads an stl to the 3D printing API endpoint and returns a url that, 
-// when accessed, will show the stl file as a part that can be configured and added to the 
-// shopping cart.  Returns True if successful.
-bool MainWindow::uploadStlAndGetPartUrl(QString & export_filename, QUrl &partUrl)
+//when accessed, will show the stl file as a part that can be configured and added to the 
+//shopping cart.  Returns True if successful.
+//
+//Inputs:
+//    exportFilename  - The path to the temporary file that has the stl export in it.
+//    userFacingName  - Then name we should give the file when it is uploaded for the order process.
+//Outputs:
+//    partUrl         - The resulting url to go to next to continue the order process.
+bool MainWindow::uploadStlAndGetPartUrl(const QString & exportFilename, const QString &userFacingName, QUrl &partUrl)
 {
 	setCurrentOutput();
-
+	
 	//Create a request:
 	QNetworkRequest request(QUrl("https://print.openscad.org/api/v1/part-upload/"));
 	
@@ -2080,16 +2099,16 @@ bool MainWindow::uploadStlAndGetPartUrl(QString & export_filename, QUrl &partUrl
 	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 	
 	//Get the file name from the file path:
-	QString fileNameBase=QFileInfo(export_filename).fileName();
+	QString fileNameBase=QFileInfo(exportFilename).fileName();
 	
 	//Create the request:
 	QJsonObject jsonInput;
 	
 	//Start building the json request:
-	jsonInput.insert("fileName", fileNameBase);
+	jsonInput.insert("fileName", userFacingName);
 	
 	//Read our stl file:
-	QFile file(export_filename);
+	QFile file(exportFilename);
 	if (!file.open(QIODevice::ReadOnly))
 	{
 		PRINT("Unable to open exported stl file.");
@@ -2150,6 +2169,9 @@ bool MainWindow::uploadStlAndGetPartUrl(QString & export_filename, QUrl &partUrl
 	//Put it in our output partUrl:
 	partUrl.setUrl(partUrlStr);
 	
+    //Remove the temporary file:
+    remove(exportFilename.toLocal8Bit().constData());
+    
 	return 1;
 }
 
@@ -2441,17 +2463,17 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
 	auto title = QString(_("Export %1 File")).arg(type_name);
 	auto filter = QString(_("%1 Files (*%2)")).arg(type_name, suffix);
 	auto filename = this->fileName.isEmpty() ? QString(_("Untitled")) + suffix : QFileInfo(this->fileName).completeBaseName() + suffix;
-	auto export_filename = QFileDialog::getSaveFileName(this, title, filename, filter);
-	if (export_filename.isEmpty()) {
+	auto exportFilename = QFileDialog::getSaveFileName(this, title, filename, filter);
+	if (exportFilename.isEmpty()) {
 		clearCurrentOutput();
 		return;
 	}
 
 	exportFileByName(this->root_geom, format,
-		export_filename.toLocal8Bit().constData(),
-		export_filename.toUtf8());
+		exportFilename.toLocal8Bit().constData(),
+		exportFilename.toUtf8());
 	PRINTB("%s export finished: %s",
-		type_name % export_filename.toUtf8().constData());
+		type_name % exportFilename.toUtf8().constData());
 
 	clearCurrentOutput();
 #endif /* ENABLE_CGAL */
