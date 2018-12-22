@@ -2119,7 +2119,7 @@ bool MainWindow::uploadStlAndGetPartUrl(const QString & exportFilename, const QS
 	QString stlFileB64=file.readAll().toBase64();
 	
 	//Base 64-encoded file contents:
-	jsonInput.insert("file", stlFileB64.toLocal8Bit().constData());
+	jsonInput.insert("file", stlFileB64);
 	
 	////Pring the input json:
 	//PRINT("Sending this JSON:");
