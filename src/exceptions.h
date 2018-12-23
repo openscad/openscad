@@ -9,7 +9,7 @@ public:
 	EvaluationException(const std::string &what_arg) : std::runtime_error(what_arg) {}
 	~EvaluationException() throw() {}
 public:
-	int count=12;
+	int traceDepth=12;
 };
 
 class AssertionFailedException : public EvaluationException {

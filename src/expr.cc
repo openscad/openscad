@@ -442,9 +442,9 @@ ValuePtr FunctionCall::evaluate(const Context *context) const
 		ValuePtr result = context->evaluate_function(this->name, &c,this->loc);
 		return result;
 	}catch(EvaluationException &e){
-		if(e.count>0){
+		if(e.traceDepth>0){
 			PRINTB("TRACE: called by '%s', %s.", this->name % loc.toRelativeString(context->documentPath()));
-			e.count--;
+			e.traceDepth--;
 		}
 		throw;
 	}

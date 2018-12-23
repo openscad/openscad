@@ -82,9 +82,9 @@ AbstractNode *ModuleInstantiation::evaluate(const Context *ctx) const
 		AbstractNode *node = ctx->instantiate_module(*this, &c, loc); // Passes c as evalctx
 		return node;
 	}catch(EvaluationException &e){
-		if(e.count>0){
+		if(e.traceDepth>0){
 			PRINTB("TRACE: called by '%s', %s.", name() % loc.toRelativeString(ctx->documentPath()));
-			e.count--;
+			e.traceDepth--;
 		}
 		throw;
 	}
