@@ -2031,10 +2031,7 @@ void MainWindow::action3DPrint()
 	unsigned int dim = 3;
 	
 	QUrl partUrl;
-	
-	//Where we hold our temporary stl file name:
-	char tempStlFileName[L_tmpnam];
-	
+
 	setCurrentOutput();
 
 	//Make sure we can export:
