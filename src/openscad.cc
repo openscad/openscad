@@ -295,18 +295,12 @@ void set_render_color_scheme(const std::string color_scheme, const bool exit_if_
 
 int cmdline(const char *deps_output_file, const std::string &filename, const char *output_file, const fs::path &original_path, const std::string &parameterFile, const std::string &setName, const ViewOptions& viewOptions, Camera camera)
 {
-	parser_init();
-	localization_init();
-
 	Tree tree;
 	boost::filesystem::path doc(filename);
 	tree.setDocumentPath(doc.remove_filename().string());
 #ifdef ENABLE_CGAL
 	GeometryEvaluator geomevaluator(tree);
 #endif
-	if (arg_info) {
-	    return info();
-	}
 	
 	const char *stl_output_file = nullptr;
 	const char *off_output_file = nullptr;
@@ -1068,7 +1062,15 @@ int main(int argc, char **argv)
 
 	if (arg_info || cmdlinemode) {
 		if (inputFiles.size() > 1) help(argv[0], desc, true);
-		rc = cmdline(deps_output_file, inputFiles[0], output_file, original_path, parameterFile, parameterSet, viewOptions, camera);
+		
+		parser_init();
+		localization_init();
+		if (arg_info) {
+			rc = info();
+		}
+		else {
+			rc = cmdline(deps_output_file, inputFiles[0], output_file, original_path, parameterFile, parameterSet, viewOptions, camera);
+		}
 	}
 	else if (QtUseGUI()) {
 		rc = gui(inputFiles, original_path, argc, argv);
