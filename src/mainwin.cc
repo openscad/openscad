@@ -2146,8 +2146,6 @@ bool MainWindow::uploadStlAndGetPartUrl(const QString & exportFilename, const QS
 	//Clean up the reply object:
 	reply->deleteLater();
 	
-	char statusStr[250];
-	
 	if (statusCodeV.toInt()!=200)
 	{
 		setCurrentOutput();
