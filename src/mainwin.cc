@@ -2406,7 +2406,7 @@ void MainWindow::actionCheckValidity()
 }
 
 //Returns if we can export (true) or not(false) (bool)
-//Separated into it's own function for re-use.f
+//Separated into it's own function for re-use.
 bool MainWindow::canExport(unsigned int dim)
 {
 	if (!this->root_geom) {
