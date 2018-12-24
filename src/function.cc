@@ -27,6 +27,7 @@
 #include "function.h"
 #include "evalcontext.h"
 #include "expression.h"
+#include "stackcheck.h"
 
 AbstractFunction::~AbstractFunction()
 {
@@ -96,6 +97,9 @@ public:
 			c.apply_variables(tmp);
 			
 			if (counter++ == 1000000) throw RecursionException::create("function", this->name,loc);
+			if (StackCheck::inst()->check()) {
+				throw RecursionException::create("function", this->name,loc);
+			}
 		}
 		
 		ValuePtr result = endexpr->evaluate(&c);
