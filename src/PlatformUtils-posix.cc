@@ -52,8 +52,8 @@ static fs::path getXdgConfigDir()
 // setup.
 static std::string getXdgUserDir(const std::string &dir)
 {
-	const auto config_dir{getXdgConfigDir()};
-	const auto user_dirs{readText((config_dir / "user-dirs.dirs").generic_string())};
+	const auto config_dir = getXdgConfigDir() / "user-dirs.dirs";
+	const auto user_dirs{readText(config_dir.generic_string())};
 
 	boost::smatch results;
 	boost::regex documents_dir{"^" + dir + "=\"[$]HOME/([^\"]+)\""};
