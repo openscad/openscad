@@ -36,7 +36,7 @@ PACKAGES=(
     "eigen 3.3.5"
     "gmp 6.1.2"
     "mpfr 4.0.1"
-    "boost 1.68.0"
+    "boost 1.65.1"
     "qt5 5.11.2"
     "qscintilla 2.10.8"
     "cgal 4.13"
