@@ -1358,6 +1358,9 @@ disable_tests(
   # z-fighting different on different machines
   throwntogethertest_issue1803
   opencsgtest_issue1165
+  opencsgtest_issue1215
+  throwntogethertest_issue1089
+  throwntogethertest_issue1215
 )
 
 # 2D tests
