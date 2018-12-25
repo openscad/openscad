@@ -364,7 +364,7 @@ message(STATUS "OPENGL_LIBRARIES: ")
 foreach(GLLIB ${OPENGL_LIBRARIES})
   message(STATUS "  " ${GLLIB})
 endforeach()
-if (UNIX)
+if (UNIX AND NOT APPLE)
   # see github issue 1355. as of writing the code for offscreen GL context
   # setup requires X11 on Un*x like systems (not Apple/Win).
   find_package(X11 REQUIRED)
