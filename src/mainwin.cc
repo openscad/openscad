@@ -2959,7 +2959,7 @@ QString MainWindow::exportPath(const char *suffix) {
 		path = path_it->second;
 	else
 		if(this->fileName.isEmpty())
-			path = QString(PlatformUtils::documentsPath().c_str()) + QString(_("/Untitled")) + suffix;
+			path = QString(PlatformUtils::userDocumentsPath().c_str()) + QString(_("/Untitled")) + suffix;
 		else {
 			auto info = QFileInfo(this->fileName);
 			path = info.absolutePath() + QString(_("/")) + info.completeBaseName() + suffix;

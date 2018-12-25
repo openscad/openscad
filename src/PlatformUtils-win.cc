@@ -77,6 +77,11 @@ static const std::string getFolderPath(int nFolder)
 	return "";
 }
 
+std::string PlatformUtils::userDocumentsPath()
+{
+	return documentsPath();
+}
+
 // retrieve the path to 'My Documents' for the current user under windows
 // In XP this is 'c:\documents and settings\username\my documents'
 // In Vista, 7, 8+ this is 'c:\users\username\documents'
