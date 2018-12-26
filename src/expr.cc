@@ -722,7 +722,7 @@ void evaluate_assert(const Context &context, const class EvalContext *evalctx)
 
 	Context c(&context);
 
-	AssignmentMap assignments = evalctx->resolveArguments(args);
+	AssignmentMap assignments = evalctx->resolveArguments(args, {}, false);
 	for (const auto &arg : args) {
 		auto it = assignments.find(arg.name);
 		if (it != assignments.end()) {

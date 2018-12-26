@@ -35,7 +35,7 @@ ValuePtr EvalContext::getArgValue(size_t i, const Context *ctx) const
   Resolves arguments specified by evalctx, using args to lookup positional arguments.
   Returns an AssignmentMap (string -> Expression*)
 */
-AssignmentMap EvalContext::resolveArguments(const AssignmentList &args, const AssignmentList &optargs, bool usermodule) const
+AssignmentMap EvalContext::resolveArguments(const AssignmentList &args, const AssignmentList &optargs, bool silent) const
 {
   AssignmentMap resolvedArgs;
   size_t posarg = 0;
@@ -45,7 +45,7 @@ AssignmentMap EvalContext::resolveArguments(const AssignmentList &args, const As
     const auto &name = this->getArgName(i); // name is optional
     const auto expr = this->getArgs()[i].expr.get();
     if (!name.empty()) {
-      if(name.at(0)!='$' && (OpenSCAD::parameterCheck || (not usermodule))){
+      if(name.at(0)!='$' && !silent){
         bool found=false;
         for(auto const& arg: args) {
           if(arg.name == name) found=true;
@@ -53,7 +53,7 @@ AssignmentMap EvalContext::resolveArguments(const AssignmentList &args, const As
         for(auto const& arg: optargs) {
           if(arg.name == name) found=true;
         }
-        if(not found){
+        if(!found){
           PRINTB("WARNING: variable %s not specified as parameter, %s", name % this->loc.toRelativeString(this->documentPath()));
         }
       }

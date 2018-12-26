@@ -82,7 +82,7 @@ void Context::setVariables(const EvalContext *evalctx, const AssignmentList &arg
 	}
 	
 	if (evalctx) {
-		auto assignments = evalctx->resolveArguments(args, optargs, usermodule);
+		auto assignments = evalctx->resolveArguments(args, optargs, usermodule && !OpenSCAD::parameterCheck);
 		for (const auto &ass : assignments) {
 			this->set_variable(ass.first, ass.second->evaluate(evalctx));
 		}
