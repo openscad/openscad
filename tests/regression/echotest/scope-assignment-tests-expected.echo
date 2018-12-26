@@ -37,3 +37,6 @@ DEPRECATED: The assign() module will be removed in future releases. Use a regula
 ECHO: "i (10)", 10
 ECHO: "group scope:"
 ECHO: "local a (11)", 11
+ECHO: "legimate case for module parameter overwrite: (see #2628)"
+ECHO: "parameter a(20)", 20
+ECHO: "local a(10)", 10
