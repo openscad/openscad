@@ -61,18 +61,18 @@ public:
 	QString last_compiled_doc;
 
 	QAction *actionRecentFile[UIUtils::maxRecentFiles];
-		QMap<QString, QString> knownFileExtensions;
+	QMap<QString, QString> knownFileExtensions;
 
-		QLabel *versionLabel;
-		QWidget *editorDockTitleWidget;
-		QWidget *consoleDockTitleWidget;
-		QWidget *parameterDockTitleWidget;
+	QLabel *versionLabel;
+	QWidget *editorDockTitleWidget;
+	QWidget *consoleDockTitleWidget;
+	QWidget *parameterDockTitleWidget;
 
 	QString editortype;	
 	bool useScintilla;
 
-		int compileErrors;
-		int compileWarnings;
+	int compileErrors;
+	int compileWarnings;
 
 	MainWindow(const QString &filename);
 	~MainWindow();
@@ -86,9 +86,9 @@ private slots:
 	void updatedAnimSteps();
 	void updatedAnimDump(bool checked);
 	void updateTVal();
-		void updateMdiMode(bool mdi);
-		void updateUndockMode(bool undockMode);
-		void updateReorderMode(bool reorderMode);
+	void updateMdiMode(bool mdi);
+	void updateUndockMode(bool undockMode);
+	void updateReorderMode(bool reorderMode);
 	void setFileName(const QString &filename);
 	void setFont(const QString &family, uint size);
 	void setColorScheme(const QString &cs);
@@ -98,18 +98,18 @@ private slots:
 	void updateActionUndoState();
 
 private:
-		void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
-		void handleFileDrop(const QString &filename);
+	void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
+	void handleFileDrop(const QString &filename);
 	void refreshDocument();
 	void updateCamera(const class FileContext &ctx);
 	void updateTemporalVariables();
 	bool fileChangedOnDisk();
 	void compileTopLevelDocument(bool rebuildParameterWidget);
-		void updateCompileResult();
+	void updateCompileResult();
 	void compile(bool reload, bool forcedone = false, bool rebuildParameterWidget=true);
 	void compileCSG();
 	bool maybeSave();
-		void saveError(const QIODevice &file, const std::string &msg);
+	void saveError(const QIODevice &file, const std::string &msg);
 	bool checkEditorModified();
 	QString dumpCSGTree(AbstractNode *root);
 	static void consoleOutput(const std::string &msg, void *userdata);
@@ -140,7 +140,7 @@ private slots:
 	void actionSaveAs();
 	void actionReload();
 	void actionShowLibraryFolder();
-		void convertTabsToSpaces();
+	void convertTabsToSpaces();
 
 	void instantiateRoot();
 	void compileDone(bool didchange);
@@ -148,8 +148,9 @@ private slots:
 	void changeParameterWidget();
 
 private slots:
-	void pasteViewportTranslation();
-	void pasteViewportRotation();
+	void copyViewportTranslation();
+	void copyViewportRotation();
+	void copyViewportDistance();
 	void preferences();
 	void hideToolbars();
 	void hideEditor();
@@ -207,14 +208,14 @@ public:
 	void clearCurrentOutput();
   bool isEmpty();
 
-        void onAxisChanged(InputEventAxisChanged *event) override;
-        void onButtonChanged(InputEventButtonChanged *event) override;
+	void onAxisChanged(InputEventAxisChanged *event) override;
+	void onButtonChanged(InputEventButtonChanged *event) override;
 
-        void onTranslateEvent(InputEventTranslate *event) override;
-        void onRotateEvent(InputEventRotate *event) override;
-        void onRotate2Event(InputEventRotate2 *event) override;
-        void onActionEvent(InputEventAction *event) override;
-        void onZoomEvent(InputEventZoom *event) override;
+	void onTranslateEvent(InputEventTranslate *event) override;
+	void onRotateEvent(InputEventRotate *event) override;
+	void onRotate2Event(InputEventRotate2 *event) override;
+	void onActionEvent(InputEventAction *event) override;
+	void onZoomEvent(InputEventZoom *event) override;
 
 	QList<double> getTranslation() const;
 	QList<double> getRotation() const;
@@ -222,14 +223,14 @@ public:
 public slots:
 	void openFile(const QString &filename);
 	void actionReloadRenderPreview();
-		void on_editorDock_visibilityChanged(bool);
-		void on_consoleDock_visibilityChanged(bool);
-		void on_parameterDock_visibilityChanged(bool);
-		void on_toolButtonCompileResultClose_clicked();
-		void editorTopLevelChanged(bool);
-		void consoleTopLevelChanged(bool);
-		void parameterTopLevelChanged(bool);
-		void processEvents();
+	void on_editorDock_visibilityChanged(bool);
+	void on_consoleDock_visibilityChanged(bool);
+	void on_parameterDock_visibilityChanged(bool);
+	void on_toolButtonCompileResultClose_clicked();
+	void editorTopLevelChanged(bool);
+	void consoleTopLevelChanged(bool);
+	void parameterTopLevelChanged(bool);
+	void processEvents();
 
 #ifdef ENABLE_OPENCSG
 	void viewModePreview();
