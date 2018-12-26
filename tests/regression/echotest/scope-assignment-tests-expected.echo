@@ -7,12 +7,12 @@ ECHO: "union scope"
 ECHO: "local a (5):", 5
 ECHO: "global a (4):", 4
 ECHO: "module scope:"
-WARNING: Module mymodule: Parameter b is overwritten, in file scope-assignment-tests.scad, line 12
+WARNING: Module mymodule: Parameter b is overwritten with a literal, in file scope-assignment-tests.scad, line 12
 ECHO: "local b (7)", 7
-WARNING: Module mymodule: Parameter b is overwritten, in file scope-assignment-tests.scad, line 12
+WARNING: Module mymodule: Parameter b is overwritten with a literal, in file scope-assignment-tests.scad, line 12
 ECHO: "local b (7)", 7
 ECHO: "module children scope:"
-WARNING: Module mymodule2: Parameter b2 is overwritten, in file scope-assignment-tests.scad, line 20
+WARNING: Module mymodule2: Parameter b2 is overwritten with a literal, in file scope-assignment-tests.scad, line 20
 ECHO: "b2 (3)", 3
 ECHO: "for loop (c = 0,1,25):"
 ECHO: "c", 0

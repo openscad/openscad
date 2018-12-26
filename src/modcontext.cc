@@ -74,9 +74,9 @@ void ModuleContext::initializeModule(const UserModule &module)
 	this->functions_p = &module.scope.functions;
 	this->modules_p = &module.scope.modules;
 	for (const auto &ass : module.scope.assignments) {
-		if (this->variables.find(ass.name) != this->variables.end()) {
+		if (ass.expr->isLiteral() && this->variables.find(ass.name) != this->variables.end()) {
 			std::string loc = ass.location().toRelativeString(this->documentPath());
-			PRINTB("WARNING: Module %s: Parameter %s is overwritten, %s", module.name % ass.name % loc);
+			PRINTB("WARNING: Module %s: Parameter %s is overwritten with a literal, %s", module.name % ass.name % loc);
 		}
 		this->set_variable(ass.name, ass.expr->evaluate(this));
 	}

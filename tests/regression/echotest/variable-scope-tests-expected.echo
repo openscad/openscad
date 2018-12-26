@@ -13,7 +13,7 @@ ECHO: "child_module_2 child 1"
 ECHO: "copy $children"
 ECHO: "copy_children_module: ", 2, 2
 ECHO: "inner variables shadows parameter"
-WARNING: Module inner_variables: Parameter b is overwritten, in file variable-scope-tests.scad, line 45
+WARNING: Module inner_variables: Parameter b is overwritten with a literal, in file variable-scope-tests.scad, line 45
 ECHO: 5, 24
 ECHO: "user-defined special variables as parameter"
 ECHO: 7
