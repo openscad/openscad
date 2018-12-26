@@ -225,31 +225,31 @@ std::string Context::dump(const AbstractModule *mod, const ModuleInstantiation *
 {
 	std::stringstream s;
 	if (inst) {
-		s << boost::format("ModuleContext %p (%p) for %s inst (%p)") % this % this->parent % inst->name() % inst;
+		s << boost::format("ModuleContext %p (%p) for %s inst (%p)\n") % this % this->parent % inst->name() % inst;
 	}
 	else {
-		s << boost::format("Context: %p (%p)") % this % this->parent;
+		s << boost::format("Context: %p (%p)\n") % this % this->parent;
 	}
-	s << boost::format("  document path: %s") % this->document_path;
+	s << boost::format("  document path: %s\n") % this->document_path;
 	if (mod) {
 		const UserModule *m = dynamic_cast<const UserModule*>(mod);
 		if (m) {
 			s << "  module args:";
 			for(const auto &arg : m->definition_arguments) {
-				s << boost::format("    %s = %s") % arg.name % variables[arg.name];
+				s << boost::format("    %s = %s\n") % arg.name % variables[arg.name];
 			}
 		}
 	}
 	typedef std::pair<std::string, ValuePtr> ValueMapType;
-	s << "  vars:";
+	s << "  vars:\n";
 	for(const auto &v : constants) {
-		s << boost::format("    %s = %s") % v.first % v.second;
+		s << boost::format("    %s = %s\n") % v.first % v.second->toEchoString();
 	}
 	for(const auto &v : variables) {
-		s << boost::format("    %s = %s") % v.first % v.second;
+		s << boost::format("    %s = %s\n") % v.first % v.second->toEchoString();
 	}
 	for(const auto &v : config_variables) {
-		s << boost::format("    %s = %s") % v.first % v.second;
+		s << boost::format("    %s = %s\n") % v.first % v.second->toEchoString();
 	}
 	return s.str();
 }

@@ -119,7 +119,7 @@ ValuePtr ModuleContext::evaluate_function(const std::string &name,
 																												 const EvalContext *evalctx, const Location &loc) const
 {
 	const auto foundf = findLocalFunction(name);
-	if (foundf) return foundf->evaluate(this, evalctx);
+	if (foundf) return foundf->evaluate(this, evalctx, loc);
 
 	return Context::evaluate_function(name, evalctx, loc);
 }
@@ -173,7 +173,7 @@ FileContext::FileContext(const Context *parent) : ModuleContext(parent), usedlib
 
 ValuePtr FileContext::sub_evaluate_function(const std::string &name, 
 																						const EvalContext *evalctx,
-																						FileModule *usedmod) const
+																						FileModule *usedmod, const Location &loc) const
 {
 	FileContext ctx(this->parent);
 	ctx.initializeModule(*usedmod);
@@ -182,20 +182,20 @@ ValuePtr FileContext::sub_evaluate_function(const std::string &name,
 	PRINTDB("New lib Context for %s func:", name);
 	PRINTDB("%s",ctx.dump(nullptr, nullptr));
 #endif
-	return usedmod->scope.functions[name]->evaluate(&ctx, evalctx);
+	return usedmod->scope.functions[name]->evaluate(&ctx, evalctx, loc);
 }
 
 ValuePtr FileContext::evaluate_function(const std::string &name, 
 																											 const EvalContext *evalctx, const Location &loc) const
 {
 	const auto foundf = findLocalFunction(name);
-	if (foundf) return foundf->evaluate(this, evalctx);
+	if (foundf) return foundf->evaluate(this, evalctx, loc);
 
 	for (const auto &m : *this->usedlibs_p) {
 		// usedmod is nullptr if the library wasn't be compiled (error or file-not-found)
 		auto usedmod = ModuleCache::instance()->lookup(m);
 		if (usedmod && usedmod->scope.functions.find(name) != usedmod->scope.functions.end())
-			return sub_evaluate_function(name, evalctx, usedmod);
+			return sub_evaluate_function(name, evalctx, usedmod, loc);
 	}
 
 	return ModuleContext::evaluate_function(name, evalctx, loc);

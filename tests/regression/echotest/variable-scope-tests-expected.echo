@@ -19,7 +19,7 @@ ECHO: "user-defined special variables as parameter"
 ECHO: 7
 ECHO: 7
 ECHO: "assign only visible in children's scope"
-DEPRECATED: The assign() module will be removed in future releases. Use a regular assignment instead.
+DEPRECATED: The assign() module will be removed in future releases. Use a regular assignment instead. in file variable-scope-tests.scad, line 72
 WARNING: Ignoring unknown variable 'c', in file variable-scope-tests.scad, line 65.
 ECHO: undef
 ECHO: 5
