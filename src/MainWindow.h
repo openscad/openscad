@@ -295,6 +295,9 @@ private:
 	bool contentschanged; // Set if the source code has changes since the last render (F6)
 	time_t includes_mtime;   // latest include mod time
 	time_t deps_mtime;	  // latest dependency mod time
+	std::unordered_map<std::string, QString> export_paths; // for each file type, where it was exported to last
+	void clearExportPaths(); // clear exports paths when main file is changed by open, new, etc.
+	QString exportPath(const char *suffix); // look up the last export path and generate one if not found
 
 signals:
 	void highlightError(int);
