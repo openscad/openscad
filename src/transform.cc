@@ -139,13 +139,14 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 					PRINTB("WARNING: Problem converting rotate(a=%s) parameter, %s", val_a->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 				}
 			}
-			Matrix4d m;
-			m <<  cy * cz,  cz * sx * sy - cx * sz,   cx * cz * sy + sx * sz, 0,
+			Matrix4d M;
+			M <<  cy * cz,  cz * sx * sy - cx * sz,   cx * cz * sy + sx * sz, 0,
 			      cy * sz,  cx * cz + sx * sy * sz,  -cz * sx + cx * sy * sz, 0,
 			     -sy,       cy * sx,                  cx * cy,                0,
 			      0,        0,                        0,                      1;
-			node->matrix = m;
+			node->matrix = M;
 		} else {
+			Matrix4d M{Matrix4d::Identity()};
 			double a = 0.0;
 			bool aConverted = val_a->getDouble(a);
 			aConverted &= !std::isinf(a) && !std::isnan(a);
@@ -156,21 +157,20 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 				// Formula from https://en.wikipedia.org/wiki/Rotation_matrix#Rotation_matrix_from_axis_and_angle
 				// We avoid dividing by the square root of the magnitude as much as possible
 				// to minimise rounding errors.
-				double s = sin_degrees(a);
-				double c = cos_degrees(a);
-				double C = 1 - c;
-				double m = v.squaredNorm();
+				auto s = sin_degrees(a);
+				auto c = cos_degrees(a);
+				auto m = v.squaredNorm();
 				if (m > 0) {
+				    auto C = (1 - c) / m;
 					Vector3d u = v;
 					u.normalize();
-					Matrix4d M;
-					M <<  C * v[0] * v[0] / m + c,        C * v[0] * v[1] / m - u[2] * s, C * v[0] * v[2] / m + u[1] * s, 0,
-					      C * v[1] * v[0] / m + u[2] * s, C * v[1] * v[1] / m + c,        C * v[1] * v[2] / m - u[0] * s, 0,
-					      C * v[2] * v[0] / m - u[1] * s, C * v[2] * v[1] / m + u[0] * s, C * v[2] * v[2] / m + c,        0,
-					      0,                              0,                              0,                              1;
-					node->matrix = M;
+					M <<  C * v[0] * v[0] + c,        C * v[0] * v[1] - u[2] * s, C * v[0] * v[2] + u[1] * s, 0,
+					      C * v[1] * v[0] + u[2] * s, C * v[1] * v[1] + c,        C * v[1] * v[2] - u[0] * s, 0,
+					      C * v[2] * v[0] - u[1] * s, C * v[2] * v[1] + u[0] * s, C * v[2] * v[2] + c,        0,
+					      0,                          0,                          0,                          1;
 				}
 			}
+			node->matrix = M;
 			if(val_v != ValuePtr::undefined && ! vConverted){
 				if(aConverted){
 					PRINTB("WARNING: Problem converting rotate(..., v=%s) parameter, %s", val_v->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
