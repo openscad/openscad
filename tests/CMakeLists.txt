@@ -697,7 +697,8 @@ set(CORE_SOURCES
   ../src/value.cc 
   ../src/calc.cc 
   ../src/hash.cc 
-  ../src/expr.cc 
+  ../src/expr.cc
+  ../src/degree_trig.cc
   ../src/func.cc 
   ../src/function.cc 
   ../src/stackcheck.cc 

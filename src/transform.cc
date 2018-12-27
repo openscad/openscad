@@ -31,6 +31,7 @@
 #include "builtin.h"
 #include "value.h"
 #include "printutils.h"
+#include "degree_trig.h"
 #include <sstream>
 #include <vector>
 #include <assert.h>
@@ -100,25 +101,27 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 		auto val_a = c.lookup_variable("a");
 		auto val_v = c.lookup_variable("v");
 		if (val_a->type() == Value::ValueType::VECTOR) {
-			Eigen::AngleAxisd rotx(0, Vector3d::UnitX());
-			Eigen::AngleAxisd roty(0, Vector3d::UnitY());
-			Eigen::AngleAxisd rotz(0, Vector3d::UnitZ());
-			double a=0.0;
-			bool ok=true;
+			double sx = 0, sy = 0, sz = 0;
+			double cx = 1, cy = 1, cz = 1;
+			double a = 0.0;
+			bool ok = true;
 			if (val_a->toVector().size() > 0) {
 				ok &= val_a->toVector()[0]->getDouble(a);
 				ok &= !std::isinf(a) && !std::isnan(a);
-				rotx = Eigen::AngleAxisd(a*M_PI/180, Vector3d::UnitX());
+				sx = sin_degrees(a);
+				cx = cos_degrees(a);
 			}
 			if (val_a->toVector().size() > 1) {
 				ok &= val_a->toVector()[1]->getDouble(a);
 				ok &= !std::isinf(a) && !std::isnan(a);
-				roty = Eigen::AngleAxisd(a*M_PI/180, Vector3d::UnitY());
+				sy = sin_degrees(a);
+				cy = cos_degrees(a);
 			}
 			if (val_a->toVector().size() > 2) {
 				ok &= val_a->toVector()[2]->getDouble(a);
 				ok &= !std::isinf(a) && !std::isnan(a);
-				rotz = Eigen::AngleAxisd(a*M_PI/180, Vector3d::UnitZ());
+				sz = sin_degrees(a);
+				cz = cos_degrees(a);
 			}
 			if (val_a->toVector().size() > 3) {
 				ok &= false;
@@ -136,22 +139,38 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 					PRINTB("WARNING: Problem converting rotate(a=%s) parameter, %s", val_a->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 				}
 			}
-			
-			node->matrix.rotate(rotz * roty * rotx);
+			Matrix4d m;
+			m <<  cy * cz,  cz * sx * sy - cx * sz,   cx * cz * sy + sx * sz, 0,
+			      cy * sz,  cx * cz + sx * sy * sz,  -cz * sx + cx * sy * sz, 0,
+			     -sy,       cy * sx,                  cx * cy,                0,
+			      0,        0,                        0,                      1;
+			node->matrix = m;
 		} else {
 			double a = 0.0;
 			bool aConverted = val_a->getDouble(a);
 			aConverted &= !std::isinf(a) && !std::isnan(a);
-			Vector3d axis(0, 0, 1);
-			bool vConverted = val_v->getVec3(axis[0], axis[1], axis[2], 0.0);
-			if (vConverted) {
-				if (axis.squaredNorm() > 0) axis.normalize();
-			}
 
-			if (axis.squaredNorm() > 0) {
-				node->matrix = Eigen::AngleAxisd(a*M_PI/180, axis);
+			Vector3d v(0, 0, 1);
+			bool vConverted = val_v->getVec3(v[0], v[1], v[2], 0.0);
+			if (aConverted) {
+				// Formula from https://en.wikipedia.org/wiki/Rotation_matrix#Rotation_matrix_from_axis_and_angle
+				// We avoid dividing by the square root of the magnitude as much as possible
+				// to minimise rounding errors.
+				double s = sin_degrees(a);
+				double c = cos_degrees(a);
+				double C = 1 - c;
+				double m = v.squaredNorm();
+				if (m > 0) {
+					Vector3d u = v;
+					u.normalize();
+					Matrix4d M;
+					M <<  C * v[0] * v[0] / m + c,        C * v[0] * v[1] / m - u[2] * s, C * v[0] * v[2] / m + u[1] * s, 0,
+					      C * v[1] * v[0] / m + u[2] * s, C * v[1] * v[1] / m + c,        C * v[1] * v[2] / m - u[0] * s, 0,
+					      C * v[2] * v[0] / m - u[1] * s, C * v[2] * v[1] / m + u[0] * s, C * v[2] * v[2] / m + c,        0,
+					      0,                              0,                              0,                              1;
+					node->matrix = M;
+				}
 			}
-			
 			if(val_v != ValuePtr::undefined && ! vConverted){
 				if(aConverted){
 					PRINTB("WARNING: Problem converting rotate(..., v=%s) parameter, %s", val_v->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
