@@ -62,7 +62,7 @@ void ModuleContext::evaluateAssignments(const AssignmentList &assignments)
 					undefined_vars.erase(curr);
 				}
 			}
-		}
+		}+-
 	}
 }
 #endif
@@ -74,6 +74,10 @@ void ModuleContext::initializeModule(const UserModule &module)
 	this->functions_p = &module.scope.functions;
 	this->modules_p = &module.scope.modules;
 	for (const auto &ass : module.scope.assignments) {
+		if (ass.expr->isLiteral() && this->variables.find(ass.name) != this->variables.end()) {
+			std::string loc = ass.location().toRelativeString(this->documentPath());
+			PRINTB("WARNING: Module %s: Parameter %s is overwritten with a literal, %s", module.name % ass.name % loc);
+		}
 		this->set_variable(ass.name, ass.expr->evaluate(this));
 	}
 
