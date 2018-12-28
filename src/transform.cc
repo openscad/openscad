@@ -161,7 +161,7 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 				auto c = cos_degrees(a);
 				auto m = v.squaredNorm();
 				if (m > 0) {
-					Vector3d Cv = v * (1 - c) / m;
+					Vector3d Cv = v * ((1 - c) / m);
 					Vector3d us = v.normalized() * s;
 					M <<  Cv[0] * v[0] + c,     Cv[1] * v[0] - us[2], Cv[2] * v[0] + us[1], 0,
 					      Cv[0] * v[1] + us[2], Cv[1] * v[1] + c,     Cv[2] * v[1] - us[0], 0,
