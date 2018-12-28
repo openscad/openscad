@@ -161,13 +161,12 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 				auto c = cos_degrees(a);
 				auto m = v.squaredNorm();
 				if (m > 0) {
-				    auto C = (1 - c) / m;
-					Vector3d u = v;
-					u.normalize();
-					M <<  C * v[0] * v[0] + c,        C * v[0] * v[1] - u[2] * s, C * v[0] * v[2] + u[1] * s, 0,
-					      C * v[1] * v[0] + u[2] * s, C * v[1] * v[1] + c,        C * v[1] * v[2] - u[0] * s, 0,
-					      C * v[2] * v[0] - u[1] * s, C * v[2] * v[1] + u[0] * s, C * v[2] * v[2] + c,        0,
-					      0,                          0,                          0,                          1;
+					auto Cv = v * (1 - c) / m;
+					auto us = v.normalized() * s;
+					M <<  Cv[0] * v[0] + c,     Cv[1] * v[0] - us[2], Cv[2] * v[0] + us[1], 0,
+					      Cv[0] * v[1] + us[2], Cv[1] * v[1] + c,     Cv[2] * v[1] - us[0], 0,
+					      Cv[0] * v[2] - us[1], Cv[1] * v[2] + us[0], Cv[2] * v[2] + c,     0,
+					      0,                    0,                    0,                    1;
 				}
 			}
 			node->matrix = M;
