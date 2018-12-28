@@ -33,6 +33,7 @@
 #include "printutils.h"
 #include "context.h"
 #include "calc.h"
+#include "degree_trig.h"
 #include <sstream>
 #include <assert.h>
 #include <cmath>
@@ -296,9 +297,9 @@ struct point2d {
 static void generate_circle(point2d *circle, double r, int fragments)
 {
 	for (int i=0; i<fragments; i++) {
-		double phi = (M_PI*2*i) / fragments;
-		circle[i].x = r*cos(phi);
-		circle[i].y = r*sin(phi);
+		double phi = (360.0 * i) / fragments;
+		circle[i].x = r * cos_degrees(phi);
+		circle[i].y = r * sin_degrees(phi);
 	}
 }
 
@@ -387,10 +388,10 @@ const Geometry *PrimitiveNode::createGeometry() const
 
 //		double offset = 0.5 * ((fragments / 2) % 2);
 			for (int i = 0; i < rings; i++) {
-//			double phi = (M_PI * (i + offset)) / (fragments/2);
-				double phi = (M_PI * (i + 0.5)) / rings;
-				double r = r1 * sin(phi);
-				ring[i].z = r1 * cos(phi);
+//			double phi = (180.0 * (i + offset)) / (fragments/2);
+				double phi = (180.0 * (i + 0.5)) / rings;
+				double r = r1 * sin_degrees(phi);
+				ring[i].z = r1 * cos_degrees(phi);
 				ring[i].points = new point2d[fragments];
 				generate_circle(ring[i].points, r, fragments);
 			}
@@ -554,8 +555,8 @@ const Geometry *PrimitiveNode::createGeometry() const
 			Outline2d o;
 			o.vertices.resize(fragments);
 			for (int i=0; i < fragments; i++) {
-				double phi = (M_PI*2*i) / fragments;
-				o.vertices[i] = {this->r1*cos(phi), this->r1*sin(phi)};
+				double phi = (360.0 * i) / fragments;
+				o.vertices[i] = {this->r1 * cos_degrees(phi), this->r1 * sin_degrees(phi)};
 			}
 			p->addOutline(o);
 		}
