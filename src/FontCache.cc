@@ -321,7 +321,12 @@ FT_Face FontCache::find_face(const std::string &font) const
 	const std::string lookup = trimmed.empty() ? DEFAULT_FONT : trimmed;
 	PRINTDB("font = \"%s\", lookup = \"%s\"", font % lookup);
 	FT_Face face = find_face_fontconfig(lookup);
-	PRINTDB("result = \"%s\", style = \"%s\"", face->family_name % face->style_name);
+	if (face) {
+		PRINTDB("result = \"%s\", style = \"%s\"", face->family_name % face->style_name);
+	}
+	else {
+		PRINTD("font not found");
+	}
 	return face;
 }
 
