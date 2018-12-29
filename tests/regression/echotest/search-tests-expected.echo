@@ -26,3 +26,8 @@ ECHO: [[]]
   WARNING: search term not found: "c", in file search-tests.scad, line 82
   WARNING: search term not found: "d", in file search-tests.scad, line 82
 ECHO: [[0], [], [], []]
+ECHO: [[], [], [], []]
+WARNING: Invalid entry in search vector at index 1, required number of values in the entry: 1. Invalid entry: undef, in file search-tests.scad, line 87
+ECHO: []
+WARNING: Invalid entry in search vector at index 1, required number of values in the entry: 1. Invalid entry: -inf, in file search-tests.scad, line 90
+ECHO: []
