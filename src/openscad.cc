@@ -845,6 +845,15 @@ std::string join(const Seq &seq, const std::string &sep, const ToString &toStrin
     return boost::algorithm::join(boost::adaptors::transform(seq, toString), sep);
 }
 
+void flagConvert(bool &flag, std::string str){
+	if(str =="1" || boost::iequals(str, "on") || boost::iequals(str, "true")) {
+		flag=true;
+	}
+	if(str =="0" || boost::iequals(str, "off") || boost::iequals(str, "false")) {
+		flag=false;
+	}
+}
+
 int main(int argc, char **argv)
 {
 	int rc = 0;
@@ -914,7 +923,7 @@ int main(int argc, char **argv)
 		("d,d", po::value<string>(), "deps_file -generate a dependency file for make")
 		("m,m", po::value<string>(), "make_cmd -runs make_cmd file if file is missing")
 		("quiet,q", "quiet mode (don't print anything *except* errors)")
-		("parametercheckoff", "disables the parameter check")
+		("check-parameters", po::value<string>(), "=true/false, configure the parameter check for user modules and functions")
 		("debug", po::value<string>(), "special debug info")
 		("s,s", po::value<string>(), "stl_file deprecated, use -o")
 		("x,x", po::value<string>(), "dxf_file deprecated, use -o")
@@ -950,8 +959,9 @@ int main(int argc, char **argv)
 	if (vm.count("quiet")) {
 		OpenSCAD::quiet = true;
 	}
-	if (vm.count("parametercheckoff")) {
-		OpenSCAD::parameterCheck = false;
+	if (vm.count("check-parameters")) {
+		auto str = vm["check-parameters"].as<string>();
+		flagConvert(OpenSCAD::parameterCheck,str);
 	}
 	if (vm.count("help")) help(argv[0], desc);
 	if (vm.count("version")) version();
