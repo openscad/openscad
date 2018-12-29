@@ -341,8 +341,9 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->editActionComment, SIGNAL(triggered()), editor, SLOT(commentSelection()));
 	connect(this->editActionUncomment, SIGNAL(triggered()), editor, SLOT(uncommentSelection()));
 	connect(this->editActionConvertTabsToSpaces, SIGNAL(triggered()), this, SLOT(convertTabsToSpaces()));
-	connect(this->editActionPasteVPT, SIGNAL(triggered()), this, SLOT(pasteViewportTranslation()));
-	connect(this->editActionPasteVPR, SIGNAL(triggered()), this, SLOT(pasteViewportRotation()));
+	connect(this->editActionCopyVPT, SIGNAL(triggered()), this, SLOT(copyViewportTranslation()));
+	connect(this->editActionCopyVPR, SIGNAL(triggered()), this, SLOT(copyViewportRotation()));
+	connect(this->editActionCopyVPD, SIGNAL(triggered()), this, SLOT(copyViewportDistance()));
 	connect(this->editActionZoomTextIn, SIGNAL(triggered()), editor, SLOT(zoomIn()));
 	connect(this->editActionZoomTextOut, SIGNAL(triggered()), editor, SLOT(zoomOut()));
 	connect(this->editActionPreferences, SIGNAL(triggered()), this, SLOT(preferences()));
@@ -866,6 +867,7 @@ void MainWindow::openFile(const QString &new_filename)
 	fileChangedOnDisk(); // force cached autoReloadId to update
 	refreshDocument();
 	clearCurrentOutput();
+	clearExportPaths();
 
 	if (Feature::ExperimentalCustomizer.is_enabled()) {
 		compileTopLevelDocument(true);
@@ -1192,6 +1194,9 @@ void MainWindow::instantiateRoot()
 	this->root_node = nullptr;
 	this->tree.setRoot(nullptr);
 
+	boost::filesystem::path doc(fileName.toStdString());
+	this->tree.setDocumentPath(doc.remove_filename().string());
+
 	if (this->root_module) {
 		// Evaluate CSG tree
 		PRINT("Compiling design (CSG Tree generation)...");
@@ -1354,6 +1359,7 @@ void MainWindow::actionNew()
 
 		setFileName("");
 		editor->setPlainText("");
+		clearExportPaths();
 	}
 }
 
@@ -1559,6 +1565,7 @@ void MainWindow::actionSaveAs()
 			this->parameterWidget->writeFileIfNotEmpty(new_filename);
 		}
 		setFileName(new_filename);
+		clearExportPaths();
 		actionSave();
 	}
 }
@@ -1585,20 +1592,27 @@ void MainWindow::actionReload()
 	}
 }
 
-void MainWindow::pasteViewportTranslation()
+void MainWindow::copyViewportTranslation()
 {
 	QString txt;
 	auto vpt = qglview->cam.getVpt();
 	txt.sprintf("[ %.2f, %.2f, %.2f ]", vpt.x(), vpt.y(), vpt.z());
-	this->editor->insert(txt);
+	QApplication::clipboard()->setText(txt);
 }
 
-void MainWindow::pasteViewportRotation()
+void MainWindow::copyViewportRotation()
 {
 	QString txt;
 	auto vpr = qglview->cam.getVpr();
 	txt.sprintf("[ %.2f, %.2f, %.2f ]", vpr.x(), vpr.y(), vpr.z());
-	this->editor->insert(txt);
+	QApplication::clipboard()->setText(txt);
+}
+
+void MainWindow::copyViewportDistance()
+{
+	QString txt;
+	txt.sprintf("%.2f", qglview->cam.zoomValue());
+	QApplication::clipboard()->setText(txt);
 }
 
 QList<double> MainWindow::getTranslation() const
@@ -2288,13 +2302,12 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
 
 	auto title = QString(_("Export %1 File")).arg(type_name);
 	auto filter = QString(_("%1 Files (*%2)")).arg(type_name, suffix);
-	auto filename = this->fileName.isEmpty() ? QString(_("Untitled")) + suffix : QFileInfo(this->fileName).completeBaseName() + suffix;
-	auto export_filename = QFileDialog::getSaveFileName(this, title, filename, filter);
+	auto export_filename = QFileDialog::getSaveFileName(this, title, exportPath(suffix), filter);
 	if (export_filename.isEmpty()) {
 		clearCurrentOutput();
 		return;
 	}
-
+	this->export_paths[suffix] = export_filename;
 	exportFileByName(this->root_geom, format,
 		export_filename.toLocal8Bit().constData(),
 		export_filename.toUtf8());
@@ -2344,10 +2357,9 @@ void MainWindow::actionExportCSG()
 		clearCurrentOutput();
 		return;
 	}
-
-	auto csg_filename = QFileDialog::getSaveFileName(this, _("Export CSG File"),
-	    this->fileName.isEmpty() ? _("Untitled.csg") : QFileInfo(this->fileName).baseName()+".csg",
-	    _("CSG Files (*.csg)"));
+	const auto suffix = ".csg";
+	auto csg_filename = QFileDialog::getSaveFileName(this,
+		_("Export CSG File"), exportPath(suffix), _("CSG Files (*.csg)"));
 
 	if (csg_filename.isEmpty()) {
 		clearCurrentOutput();
@@ -2362,6 +2374,7 @@ void MainWindow::actionExportCSG()
 		fstream << this->tree.getString(*this->root_node, "\t") << "\n";
 		fstream.close();
 		PRINT("CSG export finished.");
+		this->export_paths[suffix] = csg_filename;
 	}
 
 	clearCurrentOutput();
@@ -2373,17 +2386,15 @@ void MainWindow::actionExportImage()
 
   // Grab first to make sure dialog box isn't part of the grabbed image
 	qglview->grabFrame();
-	auto filename = this->fileName.isEmpty() ? QString(_("Untitled.png")) : QFileInfo(this->fileName).completeBaseName() + ".png";
+	const auto suffix = ".png";
 	auto img_filename = QFileDialog::getSaveFileName(this,
-			_("Export Image"), filename, _("PNG Files (*.png)"));
-	if (img_filename.isEmpty()) {
-		clearCurrentOutput();
-		return;
+			_("Export Image"),  exportPath(suffix), _("PNG Files (*.png)"));
+	if (!img_filename.isEmpty()) {
+		qglview->save(img_filename.toLocal8Bit().constData());
+		this->export_paths[suffix] = img_filename;
 	}
 
-	qglview->save(img_filename.toLocal8Bit().constData());
 	clearCurrentOutput();
-	return;
 }
 
 void MainWindow::actionCopyViewport()
@@ -2944,4 +2955,24 @@ void MainWindow::setContentsChanged()
 void MainWindow::processEvents()
 {
 	if (this->procevents) QApplication::processEvents();
+}
+
+void MainWindow::clearExportPaths()
+{
+	export_paths.clear();
+}
+
+QString MainWindow::exportPath(const char *suffix) {
+	QString path;
+	auto path_it = this->export_paths.find(suffix);
+	if(path_it != export_paths.end())
+		path = path_it->second;
+	else
+		if(this->fileName.isEmpty())
+			path = QString(PlatformUtils::userDocumentsPath().c_str()) + QString(_("/Untitled")) + suffix;
+		else {
+			auto info = QFileInfo(this->fileName);
+			path = info.absolutePath() + QString(_("/")) + info.completeBaseName() + suffix;
+		}
+	return path;
 }

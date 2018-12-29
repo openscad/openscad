@@ -81,39 +81,39 @@ msgid "Auto Trim Axis"
 msgstr ""
 
 #: objects/ui_AxisConfigWidget.h:853
-msgid "Axis2"
+msgid "Axis 2"
 msgstr ""
 
 #: objects/ui_AxisConfigWidget.h:854
-msgid "Axis0"
+msgid "Axis 0"
 msgstr ""
 
 #: objects/ui_AxisConfigWidget.h:855
-msgid "Axis3"
+msgid "Axis 3"
 msgstr ""
 
 #: objects/ui_AxisConfigWidget.h:856
-msgid "Axis6"
+msgid "Axis 6"
 msgstr ""
 
 #: objects/ui_AxisConfigWidget.h:857
-msgid "Axis8"
+msgid "Axis 8"
 msgstr ""
 
 #: objects/ui_AxisConfigWidget.h:858
-msgid "Axis7"
+msgid "Axis 7"
 msgstr ""
 
 #: objects/ui_AxisConfigWidget.h:859
-msgid "Axis5"
+msgid "Axis 5"
 msgstr ""
 
 #: objects/ui_AxisConfigWidget.h:860
-msgid "Axis1"
+msgid "Axis 1"
 msgstr ""
 
 #: objects/ui_AxisConfigWidget.h:861
-msgid "Axis4"
+msgid "Axis 4"
 msgstr ""
 
 #: objects/ui_AxisConfigWidget.h:864
@@ -153,7 +153,7 @@ msgstr "Вст&авить смещение точки обзора"
 
 #: objects/ui_AxisConfigWidget.h:872
 #, fuzzy
-msgid "ViewPortrel.<br />Rotation"
+msgid "ViewPort rel.<br />Rotation"
 msgstr "Вст&авить смещение точки обзора"
 
 #: objects/ui_AxisConfigWidget.h:873
@@ -929,7 +929,7 @@ msgid "All"
 msgstr "Все"
 
 #: objects/ui_MainWindow.h:1127
-msgid "Parameter Widget"
+msgid "Customizer Widget"
 msgstr ""
 
 #: objects/ui_OpenCSGWarningDialog.h:83
