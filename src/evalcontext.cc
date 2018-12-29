@@ -33,6 +33,7 @@ ValuePtr EvalContext::getArgValue(size_t i, const Context *ctx) const
 
 /*!
   Resolves arguments specified by evalctx, using args to lookup positional arguments.
+  optargs is for optional arguments that are not positional arguments.
   Returns an AssignmentMap (string -> Expression*)
 */
 AssignmentMap EvalContext::resolveArguments(const AssignmentList &args, const AssignmentList &optargs, bool silent) const
@@ -61,7 +62,7 @@ AssignmentMap EvalContext::resolveArguments(const AssignmentList &args, const As
     }
     // If positional, find name of arg with this position
     else if (posarg < args.size()) resolvedArgs[args[posarg++].name] = expr;
-    else if (!tooManyWarned){
+    else if (!silent && !tooManyWarned){
       PRINTB("WARNING: Too many unnamed arguments supplied, %s", this->loc.toRelativeString(this->documentPath()));
       tooManyWarned=true;
     }
