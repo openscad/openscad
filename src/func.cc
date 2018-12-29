@@ -970,7 +970,7 @@ ValuePtr builtin_is_undef(const Context *, const EvalContext *evalctx, const Loc
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_mainfilename(const Context *ctx, const EvalContext *)
+ValuePtr builtin_mainfilename(const Context *ctx, const EvalContext *, const Location &)
 {
 	return ValuePtr(fs::path(ctx->mainfile()).filename().string());
 }
