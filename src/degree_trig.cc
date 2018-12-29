@@ -187,12 +187,12 @@ Matrix3d angle_axis_degrees(double a, Vector3d v)
     // Formula from https://en.wikipedia.org/wiki/Rotation_matrix#Rotation_matrix_from_axis_and_angle
     // We avoid dividing by the square root of the magnitude as much as possible
     // to minimise rounding errors.
-    auto s = sin_degrees(a);
-    auto c = cos_degrees(a);
-    auto m = v.squaredNorm();
+    const auto s = sin_degrees(a);
+    const auto c = cos_degrees(a);
+    const auto m = v.squaredNorm();
     if (m > 0) {
-        Vector3d Cv = v * ((1 - c) / m);
-        Vector3d us = v.normalized() * s;
+        const Vector3d Cv = v * ((1 - c) / m);
+        const Vector3d us = v.normalized() * s;
         M <<  Cv[0] * v[0] + c,     Cv[1] * v[0] - us[2], Cv[2] * v[0] + us[1],
               Cv[0] * v[1] + us[2], Cv[1] * v[1] + c,     Cv[2] * v[1] - us[0],
               Cv[0] * v[2] - us[1], Cv[1] * v[2] + us[0], Cv[2] * v[2] + c;
@@ -205,11 +205,11 @@ Matrix3d angle_axis_degrees(double a, Vector3d v)
 Matrix3d rotate_degrees(double angle)
 {
 	Eigen::Matrix3d m;
-    const auto s = sin_degrees(angle);
-    const auto c = cos_degrees(angle);
+	const auto s = sin_degrees(angle);
+	const auto c = cos_degrees(angle);
 	m <<
 		c, -s,  0,
 		s,  c,  0,
 		0,  0,  1;
-    return m;
+	return m;
 }
