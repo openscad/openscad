@@ -33,6 +33,7 @@
 #include "fileutils.h"
 #include "evalcontext.h"
 #include "handle_dep.h"
+#include "degree_trig.h"
 
 #include <cmath>
 #include <sstream>
@@ -98,7 +99,7 @@ ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx, const L
 			double x = d->coords[4][0] - d->coords[3][0];
 			double y = d->coords[4][1] - d->coords[3][1];
 			double angle = d->angle;
-			double distance_projected_on_line = std::fabs(x * cos(angle*M_PI/180) + y * sin(angle*M_PI/180));
+			double distance_projected_on_line = std::fabs(x * cos_degrees(angle) + y * sin_degrees(angle));
 			return dxf_dim_cache[key] = ValuePtr(distance_projected_on_line);
 		}
 		else if (type == 1) {
@@ -109,9 +110,9 @@ ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx, const L
 		}
 		else if (type == 2) {
 			// Angular
-			double a1 = atan2(d->coords[0][0] - d->coords[5][0], d->coords[0][1] - d->coords[5][1]);
-			double a2 = atan2(d->coords[4][0] - d->coords[3][0], d->coords[4][1] - d->coords[3][1]);
-			return dxf_dim_cache[key] = ValuePtr(std::fabs(a1 - a2) * 180 / M_PI);
+			double a1 = atan2_degrees(d->coords[0][0] - d->coords[5][0], d->coords[0][1] - d->coords[5][1]);
+			double a2 = atan2_degrees(d->coords[4][0] - d->coords[3][0], d->coords[4][1] - d->coords[3][1]);
+			return dxf_dim_cache[key] = ValuePtr(std::fabs(a1 - a2));
 		}
 		else if (type == 3 || type == 4) {
 			// Diameter or Radius

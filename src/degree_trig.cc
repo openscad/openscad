@@ -34,6 +34,11 @@
 #define M_SQRT3_4 0.86602540378443859659 /* sqrt(3/4) == sqrt(3)/2 */
 #define M_SQRT1_3 0.57735026918962573106 /* sqrt(1/3) == sqrt(3)/3 */
 
+static inline double rad2deg(double x)
+{
+	return x * 180.0 / M_PI;
+}
+
 static inline double deg2rad(double x)
 {
 	return x * M_PI / 180.0;
@@ -157,4 +162,54 @@ double tan_degrees(double x)
 	}
 	return oppose ? -x : x;
 }
-
+//
+// Inverse trig
+//
+double asin_degrees(double x)
+{
+	return rad2deg(asin(x));
+}
+double acos_degrees(double x) {
+	return rad2deg(acos(x));
+}
+double atan_degrees(double x) {
+	return rad2deg(atan(x));
+}
+double atan2_degrees(double y, double x) {
+	return rad2deg(atan2(y, x));    
+}
+//
+// Rotation_matrix_from_axis_and_angle
+//
+Matrix3d angle_axis_degrees(double a, Vector3d v)
+{
+    Matrix3d M{Matrix3d::Identity()};
+    // Formula from https://en.wikipedia.org/wiki/Rotation_matrix#Rotation_matrix_from_axis_and_angle
+    // We avoid dividing by the square root of the magnitude as much as possible
+    // to minimise rounding errors.
+    auto s = sin_degrees(a);
+    auto c = cos_degrees(a);
+    auto m = v.squaredNorm();
+    if (m > 0) {
+        Vector3d Cv = v * ((1 - c) / m);
+        Vector3d us = v.normalized() * s;
+        M <<  Cv[0] * v[0] + c,     Cv[1] * v[0] - us[2], Cv[2] * v[0] + us[1],
+              Cv[0] * v[1] + us[2], Cv[1] * v[1] + c,     Cv[2] * v[1] - us[0],
+              Cv[0] * v[2] - us[1], Cv[1] * v[2] + us[0], Cv[2] * v[2] + c;
+    }
+    return M;
+}
+//
+// 2D rotation matrix from angle in degrees
+//
+Matrix3d rotate_degrees(double angle)
+{
+	Eigen::Matrix3d m;
+    const auto s = sin_degrees(angle);
+    const auto c = cos_degrees(angle);
+	m <<
+		c, -s,  0,
+		s,  c,  0,
+		0,  0,  1;
+    return m;
+}

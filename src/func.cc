@@ -70,12 +70,6 @@ int process_id = getpid();
 boost::mt19937 deterministic_rng;
 boost::mt19937 lessdeterministic_rng( std::time(nullptr) + process_id );
 
-
-static inline double rad2deg(double x)
-{
-	return x * 180.0 / M_PI;
-}
-
 ValuePtr builtin_abs(const Context *, const EvalContext *evalctx, const Location &)
 {
 	if (evalctx->numArgs() == 1) {
@@ -250,7 +244,7 @@ ValuePtr builtin_asin(const Context *, const EvalContext *evalctx, const Locatio
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
 		if (v->type() == Value::ValueType::NUMBER)
-			return ValuePtr(rad2deg(asin(v->toDouble())));
+			return ValuePtr(asin_degrees(v->toDouble()));
 	}
 	return ValuePtr::undefined;
 }
@@ -260,7 +254,7 @@ ValuePtr builtin_acos(const Context *, const EvalContext *evalctx, const Locatio
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
 		if (v->type() == Value::ValueType::NUMBER)
-			return ValuePtr(rad2deg(acos(v->toDouble())));
+			return ValuePtr(acos_degrees(v->toDouble()));
 	}
 	return ValuePtr::undefined;
 }
@@ -280,7 +274,7 @@ ValuePtr builtin_atan(const Context *, const EvalContext *evalctx, const Locatio
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
 		if (v->type() == Value::ValueType::NUMBER)
-			return ValuePtr(rad2deg(atan(v->toDouble())));
+			return ValuePtr(atan_degrees(v->toDouble()));
 	}
 	return ValuePtr::undefined;
 }
@@ -290,7 +284,7 @@ ValuePtr builtin_atan2(const Context *, const EvalContext *evalctx, const Locati
 	if (evalctx->numArgs() == 2) {
 		ValuePtr v0 = evalctx->getArgValue(0), v1 = evalctx->getArgValue(1);
 		if (v0->type() == Value::ValueType::NUMBER && v1->type() == Value::ValueType::NUMBER)
-			return ValuePtr(rad2deg(atan2(v0->toDouble(), v1->toDouble())));
+			return ValuePtr(atan2_degrees(v0->toDouble(), v1->toDouble()));
 	}
 	return ValuePtr::undefined;
 }

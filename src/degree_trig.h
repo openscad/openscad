@@ -27,7 +27,15 @@
 // Trigonometry function taking degrees, accurate for 30, 45, 60 and 90, etc.
 //
 #pragma once
+#include "linalg.h"
 
 double sin_degrees(double x);
 double cos_degrees(double x);
 double tan_degrees(double x);
+double asin_degrees(double x);
+double acos_degrees(double x);
+double atan_degrees(double x);
+double atan2_degrees(double y, double x);
+
+Matrix3d angle_axis_degrees(double a, Vector3d v);
+Matrix3d rotate_degrees(double angle);
