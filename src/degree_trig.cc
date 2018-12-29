@@ -36,12 +36,12 @@
 
 static inline double rad2deg(double x)
 {
-	return x * 180.0 / M_PI;
+	return x * 180 / M_PI;
 }
 
 static inline double deg2rad(double x)
 {
-	return x * M_PI / 180.0;
+	return x * M_PI / 180;
 }
 
 // this limit assumes 26+26=52 bits mantissa
@@ -167,16 +167,35 @@ double tan_degrees(double x)
 //
 double asin_degrees(double x)
 {
-	return rad2deg(asin(x));
+	const auto degs = rad2deg(asin(x));
+	const auto whole = round(degs);
+	if(sin_degrees(whole) == x)
+		return whole;
+	return degs;
 }
-double acos_degrees(double x) {
-	return rad2deg(acos(x));
+double acos_degrees(double x)
+{
+	const auto degs = rad2deg(acos(x));
+	const auto whole = round(degs);
+	if(cos_degrees(whole) == x)
+		return whole;
+	return degs;
 }
-double atan_degrees(double x) {
-	return rad2deg(atan(x));
+double atan_degrees(double x)
+{
+	const auto degs = rad2deg(atan(x));
+	const auto whole = round(degs);
+	if(tan_degrees(whole) == x)
+		return whole;
+	return degs;
 }
-double atan2_degrees(double y, double x) {
-	return rad2deg(atan2(y, x));    
+double atan2_degrees(double y, double x)
+{
+	const auto degs = rad2deg(atan2(y, x));
+	const auto whole = round(degs);
+	if(fabs(degs - whole) < 3.0E-14)
+		return whole;
+	return degs;
 }
 //
 // Rotation_matrix_from_axis_and_angle
