@@ -53,5 +53,6 @@ private:
 	// This sub_* method is needed to minimize stack usage only.
 	ValuePtr sub_evaluate_function(const std::string &name, 
 																 const EvalContext *evalctx, 
-																 FileModule *usedmod) const;
+																 FileModule *usedmod,
+																 const Location &loc) const;
 };
