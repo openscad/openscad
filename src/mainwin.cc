@@ -2066,33 +2066,32 @@ void MainWindow::action3DPrint()
 	
 	//Upload the file to the 3D Printing server and get the corresponding url to see it.
 	//The result is put in partUrl.
-	bool uploadWorked=uploadStlAndGetPartUrl(exportFilename, userFacingName, partUrl);
-	setCurrentOutput();
-
-	//Check the result:
-	if (! uploadWorked)
+	try
 	{
-		PRINT("An error occured while contacting the 3D Print API.");
-		return;
-	}
-	
-	//PRINT("partUrl:");
-	//PRINT(partUrl);
-	
+        uploadStlAndGetPartUrl(exportFilename, userFacingName, partUrl);
+    }
+    catch (std::exception & e)
+    {
+		PRINT(e.what());
+        return;
+    }
+    
+    setCurrentOutput();
+
 	//Open the url in the default browser:
 	QDesktopServices::openUrl ( partUrl );
 }
 
 //This function uploads an stl to the 3D printing API endpoint and returns a url that, 
 //when accessed, will show the stl file as a part that can be configured and added to the 
-//shopping cart.  Returns True if successful.
+//shopping cart.  If it's not successful, it throws an exception with a message.
 //
 //Inputs:
 //    exportFilename  - The path to the temporary file that has the stl export in it.
 //    userFacingName  - Then name we should give the file when it is uploaded for the order process.
 //Outputs:
 //    partUrl         - The resulting url to go to next to continue the order process.
-bool MainWindow::uploadStlAndGetPartUrl(const QString & exportFilename, const QString &userFacingName, QUrl &partUrl)
+void MainWindow::uploadStlAndGetPartUrl(const QString & exportFilename, const QString &userFacingName, QUrl &partUrl)
 {
 	setCurrentOutput();
 	
@@ -2115,8 +2114,7 @@ bool MainWindow::uploadStlAndGetPartUrl(const QString & exportFilename, const QS
 	QFile file(exportFilename);
 	if (!file.open(QIODevice::ReadOnly))
 	{
-		PRINT("Unable to open exported stl file.");
-		return false;
+		throw std::runtime_error("Unable to open exported stl file.");
 	}
 	
 	//Convert it to base 64:
@@ -2145,13 +2143,14 @@ bool MainWindow::uploadStlAndGetPartUrl(const QString & exportFilename, const QS
 	
 	//Clean up the reply object:
 	reply->deleteLater();
+    
+    char errorMessage[150];
 	
+    //If it wasn't successful:
 	if (! (statusCodeV.toInt()==200 or statusCodeV.toInt()==201 ))
 	{
-		setCurrentOutput();
-		
-		PRINTB("API status code: %d", statusCodeV.toInt());
-		return false;
+        sprintf(errorMessage, "An error occured while contacting the 3D Print API.  \nStatus code returned: %d", statusCodeV.toInt());
+        throw std::runtime_error(errorMessage);
 	}
 	
 	//Interpret the response as a json document:
@@ -2161,6 +2160,7 @@ bool MainWindow::uploadStlAndGetPartUrl(const QString & exportFilename, const QS
 	QJsonObject jsonOutput = jsonOutDoc.object();
 	
 	////Print the whole document:
+  	//PRINT("Received this JSON:");
 	//PRINT(QString(jsonOutDoc.toJson()).toLocal8Bit().constData());
 	
 	//Extract the cartUrl:
@@ -2168,8 +2168,6 @@ bool MainWindow::uploadStlAndGetPartUrl(const QString & exportFilename, const QS
 	
 	//Put it in our output partUrl:
 	partUrl.setUrl(partUrlStr);
-	
-	return true;
 }
 
 #ifdef ENABLE_CGAL
