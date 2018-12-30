@@ -2161,8 +2161,13 @@ void MainWindow::uploadStlAndGetPartUrl(const QString & exportFilename, const QS
     PRINTD("Received this JSON in response:");
 	PRINTD(QString(jsonOutDoc.toJson()).toLocal8Bit().constData());
 	
-	//Extract the cartUrl:
-	QString partUrlStr=jsonOutput.value("data").toObject().value("cartUrl").toString();
+    //Start trying to extract the cartUrl:
+    auto cartUrlValue=jsonOutput.value("data").toObject().value("cartUrl");
+
+    if (cartUrlValue == QJsonValue::Undefined)
+        throw std::runtime_error("Could not get data.cartUrl field from results.");
+    
+	QString partUrlStr=cartUrlValue.toString();
 	
 	//Put it in our output partUrl:
 	partUrl.setUrl(partUrlStr);
