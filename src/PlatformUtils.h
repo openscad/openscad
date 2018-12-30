@@ -14,7 +14,25 @@ namespace PlatformUtils {
 	void registerApplicationPath(const std::string &applicationpath);
 	std::string applicationPath();
 
+        /**
+         * The OpenSCAD document path which is used for searching user
+         * libraries and storing backup files.
+         * On Linux this is $HOME/.local/share, on Windows the CSIDL_PERSONAL
+         * directory (My Documents) and on MacOS it is the NSDocumentDirectory
+         * ($HOME/Documents).
+         *
+         * @return the application documents path
+         */
 	std::string documentsPath();
+        /**
+         * The user documents path where files are saved/exported to by
+         * default. On Linux this is the $XDG_DOCUMENTS_DIR, if this is
+         * not set, the $XDG_CONFIG_HOME/user-dirs.dirs file will be checked.
+         * On Windows and MacOS this is currently identical to documentsPath().
+         *
+         * @return the path for saving user documents
+         */
+	std::string userDocumentsPath();
         std::string resourceBasePath();
 	fs::path resourcePath(const std::string& resource);
 	std::string userLibraryPath();

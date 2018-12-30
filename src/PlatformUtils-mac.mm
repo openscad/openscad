@@ -10,6 +10,11 @@ std::string PlatformUtils::pathSeparatorChar()
 	return ":";
 }
 
+std::string PlatformUtils::userDocumentsPath()
+{
+	return documentsPath();
+}
+
 std::string PlatformUtils::documentsPath()
 {
   return std::string([[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject] UTF8String]);

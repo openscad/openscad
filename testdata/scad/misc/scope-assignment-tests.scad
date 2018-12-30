@@ -87,3 +87,13 @@ group() {
   a=11;
   echo("local a (11)", a);
 }
+
+echo("legimate case for module parameter overwrite: (see #2628)");
+function clamp(a) = a > 10 ? 10 : a < 0 ? 0: a;
+
+module mytest(a=5){
+    a=clamp(echo("parameter a(20)", a) a);
+    echo("local a(10)", a);
+}
+
+mytest(20);
