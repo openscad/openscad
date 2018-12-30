@@ -218,7 +218,7 @@ DxfData::DxfData(double fn, double fs, double fa,
 					double a1 = arc_start_angle + arc_angle * i / n;
 					double a2 = arc_start_angle + arc_angle * (i + 1) / n;
 					ADD_LINE(cos_degrees(a1)*radius + center[0], sin_degrees(a1)*radius + center[1],
-							 cos_degrees(a2)*radius + center[0], sin_degrees(a2)*radius + center[1]);
+					         cos_degrees(a2)*radius + center[0], sin_degrees(a2)*radius + center[1]);
 				}
 			}
 			else if (mode == "ELLIPSE") {
@@ -255,7 +255,7 @@ DxfData::DxfData(double fn, double fs, double fa,
 					Vector2d p2(cos(a)*r_major, sin(a)*r_minor);
 //					p2.rotate(rot_angle);
 					Vector2d p2_rot(cos(rot_angle)*p2[0] - sin(rot_angle)*p2[1],
-											 sin(rot_angle)*p2[0] + cos(rot_angle)*p2[1]);
+					                sin(rot_angle)*p2[0] + cos(rot_angle)*p2[1]);
 //					p2 += center;
 					p2_rot[0] += center[0];
 					p2_rot[1] += center[1];
