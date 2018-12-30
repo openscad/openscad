@@ -2123,9 +2123,8 @@ void MainWindow::uploadStlAndGetPartUrl(const QString & exportFilename, const QS
 	//Base 64-encoded file contents:
 	jsonInput.insert("file", stlFileB64);
 	
-	////Pring the input json:
-	//PRINT("Sending this JSON:");
-	//PRINT(QString(QJsonDocument(jsonInput).toJson()).toLocal8Bit().constData());
+	PRINTD("Sending this JSON:");
+	PRINTD(QString(QJsonDocument(jsonInput).toJson()).toLocal8Bit().constData());
 	
 	//Create a network access manager:
 	QNetworkAccessManager nam;
@@ -2159,9 +2158,8 @@ void MainWindow::uploadStlAndGetPartUrl(const QString & exportFilename, const QS
 	//Get the corresponding json object:
 	QJsonObject jsonOutput = jsonOutDoc.object();
 	
-	////Print the whole document:
-  	//PRINT("Received this JSON:");
-	//PRINT(QString(jsonOutDoc.toJson()).toLocal8Bit().constData());
+    PRINTD("Received this JSON in response:");
+	PRINTD(QString(jsonOutDoc.toJson()).toLocal8Bit().constData());
 	
 	//Extract the cartUrl:
 	QString partUrlStr=jsonOutput.value("data").toObject().value("cartUrl").toString();
