@@ -236,6 +236,7 @@
         <widget class="QToolBar" name="viewerToolBar">
          <addaction name="designActionPreview"/>
          <addaction name="designActionRender"/>
+         <addaction name="designAction3DPrint"/>
          <addaction name="separator"/>
          <addaction name="viewActionViewAll"/>
          <addaction name="viewActionZoomIn"/>
@@ -359,6 +360,7 @@
     <addaction name="designActionReloadAndPreview"/>
     <addaction name="designActionPreview"/>
     <addaction name="designActionRender"/>
+    <addaction name="designAction3DPrint"/>
     <addaction name="separator"/>
     <addaction name="designCheckValidity"/>
     <addaction name="designActionDisplayAST"/>
@@ -463,6 +465,7 @@
        <addaction name="separator"/>
        <addaction name="designActionPreview"/>
        <addaction name="designActionRender"/>
+       <addaction name="designAction3DPrint"/>
        <addaction name="separator"/>
        <addaction name="fileActionExportSTL"/>
       </widget>
@@ -879,6 +882,18 @@
    </property>
    <property name="shortcut">
     <string>F6</string>
+   </property>
+  </action>
+  <action name="designAction3DPrint">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/3dprint-32.png</normaloff>:/images/3dprint-32.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;3D Print</string>
+   </property>
+   <property name="shortcut">
+    <string>F7</string>
    </property>
   </action>
   <action name="designCheckValidity">
