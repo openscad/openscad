@@ -101,8 +101,10 @@
 #if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
 #include <QTextDocument>
 #define QT_HTML_ESCAPE(qstring) Qt::escape(qstring)
+#undef ENABLE_3D_PRINTING
 #else
 #define QT_HTML_ESCAPE(qstring) (qstring).toHtmlEscaped()
+#define ENABLE_3D_PRINTING
 #endif
 
 #if (QT_VERSION < QT_VERSION_CHECK(5, 1, 0))
@@ -389,8 +391,14 @@ MainWindow::MainWindow(const QString &filename)
 	bool export3mfVisible = false;
 #endif
 	this->fileActionExport3MF->setVisible(export3mfVisible);
-	this->designAction3DPrint->setVisible(Feature::Experimental3dPrint.is_enabled());
-	this->designAction3DPrint->setEnabled(Feature::Experimental3dPrint.is_enabled());
+
+#ifdef ENABLE_3D_PRINTING
+	bool enable3dPrinting = Feature::Experimental3dPrint.is_enabled();
+#else
+	bool enable3dPrinting = false;
+#endif
+	this->designAction3DPrint->setVisible(enable3dPrinting);
+	this->designAction3DPrint->setEnabled(enable3dPrinting);
 
 	// View menu
 #ifndef ENABLE_OPENCSG
@@ -2036,6 +2044,7 @@ void MainWindow::csgRender()
 
 void MainWindow::action3DPrint()
 {
+#ifdef ENABLE_3D_PRINTING
 	if (!Feature::Experimental3dPrint.is_enabled()) {
 		return;
 	}
@@ -2100,6 +2109,7 @@ void MainWindow::action3DPrint()
 
 	//Open the url in the default browser:
 	QDesktopServices::openUrl ( partUrl );
+#endif
 }
 
 //This function uploads an stl to the 3D printing API endpoint and returns a url that, 
@@ -2113,6 +2123,7 @@ void MainWindow::action3DPrint()
 //    partUrl         - The resulting url to go to next to continue the order process.
 void MainWindow::uploadStlAndGetPartUrl(const QString & exportFilename, const QString &userFacingName, QUrl &partUrl)
 {
+#ifdef ENABLE_3D_PRINTING
 	setCurrentOutput();
 	
 	//Create a request:
@@ -2195,6 +2206,7 @@ void MainWindow::uploadStlAndGetPartUrl(const QString & exportFilename, const QS
 	
 	//Put it in our output partUrl:
 	partUrl.setUrl(partUrlStr);
+#endif
 }
 
 #ifdef ENABLE_CGAL
