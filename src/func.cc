@@ -113,7 +113,7 @@ ValuePtr builtin_rands(const Context *ctx, const EvalContext *evalctx, const Loc
 		if (v0->type() != Value::ValueType::NUMBER) goto quit;
 		double min = v0->toDouble();
 
-		if (std::isinf(min)) {
+		if (std::isinf(min) || std::isnan(min)){
 			PRINTB("WARNING: rands() range min cannot be infinite, %s", loc.toRelativeString(ctx->documentPath()));
 			min = -std::numeric_limits<double>::max()/2;
 			PRINTB("WARNING: resetting to %f",min);
@@ -121,7 +121,7 @@ ValuePtr builtin_rands(const Context *ctx, const EvalContext *evalctx, const Loc
 		ValuePtr v1 = evalctx->getArgValue(1);
 		if (v1->type() != Value::ValueType::NUMBER) goto quit;
 		double max = v1->toDouble();
-		if (std::isinf(max)) {
+		if (std::isinf(max)  || std::isnan(max)) {
 			PRINTB("WARNING: rands() range max cannot be infinite, %s", loc.toRelativeString(ctx->documentPath()));
 			max = std::numeric_limits<double>::max()/2;
 			PRINTB("WARNING: resetting to %f",max);
@@ -132,7 +132,7 @@ ValuePtr builtin_rands(const Context *ctx, const EvalContext *evalctx, const Loc
 		ValuePtr v2 = evalctx->getArgValue(2);
 		if (v2->type() != Value::ValueType::NUMBER) goto quit;
 		double numresultsd = std::abs( v2->toDouble() );
-		if (std::isinf(numresultsd)) {
+		if (std::isinf(numresultsd)  || std::isnan(numresultsd)) {
 			PRINTB("WARNING: rands() cannot create an infinite number of results, %s", loc.toRelativeString(ctx->documentPath()));
 			PRINT("WARNING: resetting number of results to 1");
 			numresultsd = 1;
