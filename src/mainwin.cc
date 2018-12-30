@@ -2122,7 +2122,11 @@ void MainWindow::uploadStlAndGetPartUrl(const QString & exportFilename, const QS
 	
 	//Base 64-encoded file contents:
 	jsonInput.insert("file", stlFileB64);
-	
+    
+    //Make sure it's there:
+    if (jsonInput.value("file") == QJsonValue::Undefined)
+        throw std::runtime_error("Could not enode stl into JSON.  Perhapse it is too large of a file? Try simplifying.");
+        
 	PRINTD("Sending this JSON:");
 	PRINTD(QString(QJsonDocument(jsonInput).toJson()).toLocal8Bit().constData());
 	
