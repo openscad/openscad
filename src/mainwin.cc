@@ -388,6 +388,8 @@ MainWindow::MainWindow(const QString &filename)
 	bool export3mfVisible = false;
 #endif
 	this->fileActionExport3MF->setVisible(export3mfVisible);
+	this->designAction3DPrint->setVisible(Feature::Experimental3dPrint.is_enabled());
+	this->designAction3DPrint->setEnabled(Feature::Experimental3dPrint.is_enabled());
 
 	// View menu
 #ifndef ENABLE_OPENCSG
@@ -2020,6 +2022,10 @@ void MainWindow::csgRender()
 
 void MainWindow::action3DPrint()
 {
+	if (!Feature::Experimental3dPrint.is_enabled()) {
+		return;
+	}
+
 	//Keeps track of how many times we've exported and tries to create slightly unique filenames.
 	//Not mission critical, since non-unique file names are fine for the API, just harder to 
 	//differentiate between in customer support later.
