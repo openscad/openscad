@@ -845,13 +845,15 @@ std::string join(const Seq &seq, const std::string &sep, const ToString &toStrin
     return boost::algorithm::join(boost::adaptors::transform(seq, toString), sep);
 }
 
-void flagConvert(bool &flag, std::string str){
+bool flagConvert(std::string str){
 	if(str =="1" || boost::iequals(str, "on") || boost::iequals(str, "true")) {
-		flag=true;
+		return true;
 	}
 	if(str =="0" || boost::iequals(str, "off") || boost::iequals(str, "false")) {
-		flag=false;
+		return false;
 	}
+	throw std::runtime_error("");
+	return false;
 }
 
 int main(int argc, char **argv)
@@ -959,10 +961,21 @@ int main(int argc, char **argv)
 	if (vm.count("quiet")) {
 		OpenSCAD::quiet = true;
 	}
-	if (vm.count("check-parameters")) {
-		auto str = vm["check-parameters"].as<string>();
-		flagConvert(OpenSCAD::parameterCheck,str);
+	
+	std::map<std::string, bool*> flags;
+	flags.insert(std::make_pair("check-parameters",&OpenSCAD::parameterCheck));
+	for(auto flag : flags) {
+		std::string name = flag.first;
+		if(vm.count(name)){
+			std::string opt = vm[name].as<string>();
+			try {
+				(*(flag.second) = flagConvert(opt));
+			} catch ( const std::runtime_error &e ) {
+				PRINTB("Could not parse '--%s %s' as flag", name % opt);
+			}
+		}
 	}
+	
 	if (vm.count("help")) help(argv[0], desc);
 	if (vm.count("version")) version();
 	if (vm.count("info")) arg_info = true;
