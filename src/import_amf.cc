@@ -28,6 +28,7 @@
 
 #include "polyset.h"
 #include "printutils.h"
+#include "AST.h"
 
 #ifdef ENABLE_CGAL
 #include "cgalutils.h"
@@ -355,14 +356,14 @@ xmlTextReaderPtr AmfImporterZIP::createXmlReader(const char *filepath)
 	}
 }
 
-PolySet *import_amf(const std::string filename) {
+PolySet *import_amf(const std::string filename, const Location &) {
 	AmfImporterZIP importer;
 	return importer.read(filename);
 }
 
 #else
 
-PolySet *import_amf(const std::string filename) {
+PolySet *import_amf(const std::string filename, const Location &) {
 	AmfImporter importer;
 	return importer.read(filename);
 }
