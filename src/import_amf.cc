@@ -83,15 +83,18 @@ private:
 	int streamFile(const char *filename);
 	void processNode(xmlTextReaderPtr reader);
 
+protected:
+	const Location &loc;
+	
 public:
-	AmfImporter();
+	AmfImporter(const Location &loc);
 	virtual ~AmfImporter();
 	PolySet *read(const std::string filename);
 	
 	virtual xmlTextReaderPtr createXmlReader(const char *filename);
 };
 
-AmfImporter::AmfImporter() : polySet(nullptr), x(0), y(0), z(0), idx_v1(0), idx_v2(0), idx_v3(0)
+AmfImporter::AmfImporter(const Location &loc) : polySet(nullptr), x(0), y(0), z(0), idx_v1(0), idx_v2(0), idx_v3(0), loc(loc)
 {
 }
 
@@ -221,7 +224,7 @@ int AmfImporter::streamFile(const char *filename)
 	xmlTextReaderPtr reader = createXmlReader(filename);
 	
 	if (reader == nullptr) {
-		PRINTB("WARNING: Can't open import file '%s'.", filename);
+		PRINTB("WARNING: Can't open import file '%s', import() at line %d", filename % this->loc.firstLine());
 		return 1;
 	}
 
@@ -237,7 +240,7 @@ int AmfImporter::streamFile(const char *filename)
 		ret = -1;
 	}
 	if (ret != 0) {
-		PRINTB("WARNING: Failed to parse file '%s'.", filename);
+		PRINTB("WARNING: Failed to parse file '%s', import() at line %d", filename % this->loc.firstLine());
 	}
 	return ret;
 }
@@ -271,7 +274,7 @@ PolySet * AmfImporter::read(const std::string filename)
 		if (CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, *result)) {
 			delete result;
 			p = new PolySet(3);
-			PRINTB("ERROR: Error importing multi-object AMF file '%s'", filename);
+			PRINTB("ERROR: Error importing multi-object AMF file '%s', import() at line %d", filename % this->loc.firstLine());
 		} else {
 			p = result;
 		}
@@ -299,13 +302,13 @@ private:
 	static int close_callback(void *context);
 
 public:
-	AmfImporterZIP();
+	AmfImporterZIP(const Location &loc);
 	~AmfImporterZIP();
 
 	xmlTextReaderPtr createXmlReader(const char *filename) override;
 };
 
-AmfImporterZIP::AmfImporterZIP() : archive(nullptr), zipfile(nullptr)
+AmfImporterZIP::AmfImporterZIP(const Location &loc) : AmfImporter(loc), archive(nullptr), zipfile(nullptr)
 {
 }
 
@@ -337,7 +340,7 @@ xmlTextReaderPtr AmfImporterZIP::createXmlReader(const char *filepath)
 		const char *filename = last_slash ? last_slash + 1 : filepath;
 		zipfile = zip_fopen(archive, filename, ZIP_FL_NODIR);
 		if (zipfile == nullptr) {
-			PRINTB("WARNING: Can't read file '%s' from zipped AMF '%s'", filename % filepath);
+			PRINTB("WARNING: Can't read file '%s' from zipped AMF '%s', import() at line %d", filename % filepath % this->loc.firstLine());
 		}
 		if ((zipfile == nullptr) && (zip_get_num_files(archive) == 1)) {
 			PRINTB("WARNING: Trying to read single entry '%s'", zip_get_name(archive, 0, 0));
@@ -356,15 +359,15 @@ xmlTextReaderPtr AmfImporterZIP::createXmlReader(const char *filepath)
 	}
 }
 
-PolySet *import_amf(const std::string filename, const Location &) {
-	AmfImporterZIP importer;
+PolySet *import_amf(const std::string filename, const Location &loc) {
+	AmfImporterZIP importer(loc);
 	return importer.read(filename);
 }
 
 #else
 
-PolySet *import_amf(const std::string filename, const Location &) {
-	AmfImporter importer;
+PolySet *import_amf(const std::string filename, const Location &loc) {
+	AmfImporter importer(loc);
 	return importer.read(filename);
 }
 
