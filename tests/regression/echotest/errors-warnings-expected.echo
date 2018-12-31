@@ -3,15 +3,21 @@ WARNING: Ignoring unknown variable 'a', in file errors-warnings.scad, line 1.
 ECHO: undef
 WARNING: Ignoring unknown module 'hello', in file errors-warnings.scad, line 17.
 WARNING: Ignoring radius variable 'r' as diameter 'd' is defined too, in file errors-warnings.scad, line 21
-WARNING: Problem converting rotate(a=inf) parameter, in file errors-warnings.scad, line 23
-WARNING: Problem converting rotate(a=[inf, inf]) parameter, in file errors-warnings.scad, line 24
-WARNING: Problem converting rotate(a=nan) parameter, in file errors-warnings.scad, line 25
-WARNING: color() expects numbers between 0.0 and 1.0. Value of -1.0 is out of range, in file errors-warnings.scad, line 32
-WARNING: color() expects numbers between 0.0 and 1.0. Value of 2.0 is out of range, in file errors-warnings.scad, line 32
-WARNING: Unable to parse color "notaname", in file errors-warnings.scad, line 33. 
+WARNING: Ignoring radius variable 'r1' as diameter 'd1' is defined too, in file errors-warnings.scad, line 22
+WARNING: Problem converting rotate(a=inf) parameter, in file errors-warnings.scad, line 24
+WARNING: Problem converting rotate(a=[inf, inf]) parameter, in file errors-warnings.scad, line 25
+WARNING: Problem converting rotate(a=nan) parameter, in file errors-warnings.scad, line 26
+WARNING: variable rad not specified as parameter, in file errors-warnings.scad, line 29
+WARNING: Too many unnamed arguments supplied, in file errors-warnings.scad, line 31
+WARNING: Cylinder parameters ambiguous, in file errors-warnings.scad, line 33
+WARNING: Cylinder parameters ambiguous, in file errors-warnings.scad, line 34
+WARNING: Cylinder parameters ambiguous, in file errors-warnings.scad, line 35
+WARNING: color() expects numbers between 0.0 and 1.0. Value of -1.0 is out of range, in file errors-warnings.scad, line 42
+WARNING: color() expects numbers between 0.0 and 1.0. Value of 2.0 is out of range, in file errors-warnings.scad, line 42
+WARNING: Unable to parse color "notaname", in file errors-warnings.scad, line 43. 
 WARNING: Please see http://en.wikipedia.org/wiki/Web_colors
-WARNING: Ignoring unknown module 'box', in file errors-warnings.scad, line 34.
-WARNING: $fs too small - clamping to 0.010000, in file errors-warnings.scad, line 36
-WARNING: $fa too small - clamping to 0.010000, in file errors-warnings.scad, line 37
-WARNING: $fs too small - clamping to 0.010000, in file errors-warnings.scad, line 44
-WARNING: $fa too small - clamping to 0.010000, in file errors-warnings.scad, line 45
+WARNING: Ignoring unknown module 'box', in file errors-warnings.scad, line 44.
+WARNING: $fs too small - clamping to 0.010000, in file errors-warnings.scad, line 46
+WARNING: $fa too small - clamping to 0.010000, in file errors-warnings.scad, line 47
+WARNING: $fs too small - clamping to 0.010000, in file errors-warnings.scad, line 54
+WARNING: $fa too small - clamping to 0.010000, in file errors-warnings.scad, line 55

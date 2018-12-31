@@ -845,6 +845,17 @@ std::string join(const Seq &seq, const std::string &sep, const ToString &toStrin
     return boost::algorithm::join(boost::adaptors::transform(seq, toString), sep);
 }
 
+bool flagConvert(std::string str){
+	if(str =="1" || boost::iequals(str, "on") || boost::iequals(str, "true")) {
+		return true;
+	}
+	if(str =="0" || boost::iequals(str, "off") || boost::iequals(str, "false")) {
+		return false;
+	}
+	throw std::runtime_error("");
+	return false;
+}
+
 int main(int argc, char **argv)
 {
 	int rc = 0;
@@ -915,6 +926,7 @@ int main(int argc, char **argv)
 		("m,m", po::value<string>(), "make_cmd -runs make_cmd file if file is missing")
 		("quiet,q", "quiet mode (don't print anything *except* errors)")
 		("hardwarnings", "Stop on the first warning")
+		("check-parameters", po::value<string>(), "=true/false, configure the parameter check for user modules and functions")
 		("debug", po::value<string>(), "special debug info")
 		("s,s", po::value<string>(), "stl_file deprecated, use -o")
 		("x,x", po::value<string>(), "dxf_file deprecated, use -o")
@@ -950,9 +962,25 @@ int main(int argc, char **argv)
 	if (vm.count("quiet")) {
 		OpenSCAD::quiet = true;
 	}
+
 	if (vm.count("hardwarnings")) {
 		OpenSCAD::hardwarnings = true;
 	}
+	
+	std::map<std::string, bool*> flags;
+	flags.insert(std::make_pair("check-parameters",&OpenSCAD::parameterCheck));
+	for(auto flag : flags) {
+		std::string name = flag.first;
+		if(vm.count(name)){
+			std::string opt = vm[name].as<string>();
+			try {
+				(*(flag.second) = flagConvert(opt));
+			} catch ( const std::runtime_error &e ) {
+				PRINTB("Could not parse '--%s %s' as flag", name % opt);
+			}
+		}
+	}
+	
 	if (vm.count("help")) help(argv[0], desc);
 	if (vm.count("version")) version();
 	if (vm.count("info")) arg_info = true;

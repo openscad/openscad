@@ -16,8 +16,8 @@ public:
 	~ModuleContext();
 
 	void initializeModule(const class UserModule &m);
-	ValuePtr evaluate_function(const std::string &name, const EvalContext *evalctx, const Location &loc) const override;
-	AbstractNode *instantiate_module(const ModuleInstantiation &inst, EvalContext *evalctx, const Location &loc) const override;
+	ValuePtr evaluate_function(const std::string &name, const EvalContext *evalctx) const override;
+	AbstractNode *instantiate_module(const ModuleInstantiation &inst, EvalContext *evalctx) const override;
 
 	const UserModule *findLocalModule(const std::string &name) const;
 	const UserFunction *findLocalFunction(const std::string &name) const;
@@ -43,9 +43,9 @@ public:
 	~FileContext() {}
 	void initializeModule(const FileModule &module);
 	ValuePtr evaluate_function(const std::string &name, 
-																		 const EvalContext *evalctx, const Location &loc) const override;
+																		 const EvalContext *evalctx) const override;
 	AbstractNode *instantiate_module(const ModuleInstantiation &inst, 
-																					 EvalContext *evalctx, const Location &loc) const override;
+																					 EvalContext *evalctx) const override;
 
 private:
 	const FileModule::ModuleContainer *usedlibs_p;
@@ -53,6 +53,5 @@ private:
 	// This sub_* method is needed to minimize stack usage only.
 	ValuePtr sub_evaluate_function(const std::string &name, 
 																 const EvalContext *evalctx, 
-																 FileModule *usedmod,
-																 const Location &loc) const;
+																 FileModule *usedmod) const;
 };

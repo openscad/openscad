@@ -1455,6 +1455,16 @@
              </widget>
             </item>
             <item>
+             <widget class="QCheckBox" name="enableParameterCheckBox">
+              <property name="text">
+               <string>Warn when there is a parameter mismatch in user module calls</string>
+              </property>
+              <property name="checked">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QCheckBox" name="enableHardwarningsCheckBox">
               <property name="text">
                <string>Stop on the first warning</string>

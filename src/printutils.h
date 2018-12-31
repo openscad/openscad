@@ -30,6 +30,7 @@ namespace OpenSCAD {
 	extern std::string debug;
 	extern bool quiet;
 	extern bool hardwarnings;
+	extern bool parameterCheck;
 }
 
 void set_output_handler(OutputHandlerFunc *newhandler, void *userdata);

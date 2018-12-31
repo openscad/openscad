@@ -68,34 +68,24 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 {
   AssignmentList args{
     Assignment("file"), Assignment("layer"), Assignment("convexity"),
-		Assignment("origin"), Assignment("scale"), Assignment("filename"),
-		Assignment("layername")
+		Assignment("origin"), Assignment("scale")
 	};
 	
-  // FIXME: This is broken. Tag as deprecated and fix
-	// Map old argnames to new argnames for compatibility
-	// To fix: 
-  // o after c.setVariables()
-	//   - if "filename" in evalctx: deprecated-warning && v.set_variable("file", value);
-	//   - if "layername" in evalctx: deprecated-warning && v.set_variable("layer", value);
-#if 0
-	std::vector<std::string> inst_argnames = inst->argnames;
-	for (size_t i=0; i<inst_argnames.size(); i++) {
-		if (inst_argnames[i] == "filename") inst_argnames[i] = "file";
-		if (inst_argnames[i] == "layername") inst_argnames[i] = "layer";
-	}
-#endif
+	AssignmentList optargs{
+		Assignment("width"), Assignment("height"),
+		Assignment("filename"), Assignment("layername")
+	};
 
 	Context c(ctx);
 	c.setDocumentPath(evalctx->documentPath());
-	c.setVariables(args, evalctx);
+	c.setVariables(evalctx, args, optargs);
 #if 0 && DEBUG
 	c.dump(this, inst);
 #endif
 
-	auto v = c.lookup_variable("file");
+	auto v = c.lookup_variable("file", true);
 	if (v->isUndefined()) {
-		v = c.lookup_variable("filename");
+		v = c.lookup_variable("filename", true);
 		if (!v->isUndefined()) {
 			printDeprecation("filename= is deprecated. Please use file=");
 		}
@@ -122,14 +112,14 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 	node->fa = c.lookup_variable("$fa")->toDouble();
 
 	node->filename = filename;
-	auto layerval = *c.lookup_variable("layer", true);
-	if (layerval.isUndefined()) {
-		layerval = *c.lookup_variable("layername");
-		if (!layerval.isUndefined()) {
+	auto layerval = c.lookup_variable("layer", true);
+	if (layerval->isUndefined()) {
+		layerval = c.lookup_variable("layername", true);
+		if (!layerval->isUndefined()) {
 			printDeprecation("layername= is deprecated. Please use layer=");
 		}
 	}
-	node->layername = layerval.isUndefined() ? ""  : layerval.toString();
+	node->layername = layerval->isUndefined() ? ""  : layerval->toString();
 	node->convexity = c.lookup_variable("convexity", true)->toDouble();
 
 	if (node->convexity <= 0) node->convexity = 1;
