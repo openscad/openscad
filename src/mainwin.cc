@@ -1021,6 +1021,7 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 {
 	bool shouldcompiletoplevel = false;
 	bool didcompile = false;
+	OpenSCAD::parameterCheck = Preferences::inst()->getValue("advanced/enableParameterCheck").toBool();
 
 	compileErrors = 0;
 	compileWarnings = 0;

@@ -56,7 +56,7 @@ AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstant
 		args += Assignment("newsize"), Assignment("auto");
 
 	Context c(ctx);
-	c.setVariables(args, evalctx);
+	c.setVariables(evalctx, args);
 	inst->scope.apply(*evalctx);
 
 	auto convexity = ValuePtr::undefined;

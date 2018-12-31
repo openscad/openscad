@@ -160,6 +160,7 @@ void Preferences::init() {
 	this->defaultmap["advanced/localization"] = true;
 	this->defaultmap["advanced/autoReloadRaise"] = false;
 	this->defaultmap["advanced/enableSoundNotification"] = true;
+	this->defaultmap["advanced/enableParameterCheck"] = true;
 
 	// Toolbar
 	QActionGroup *group = new QActionGroup(this);
@@ -598,6 +599,12 @@ void Preferences::on_enableSoundOnRenderCompleteCheckBox_toggled(bool state)
 	settings.setValue("advanced/enableSoundNotification", state);
 }
 
+void Preferences::on_enableParameterCheckBox_toggled(bool state)
+{
+	QSettingsCached settings;
+	settings.setValue("advanced/enableParameterCheck", state);
+}
+
 void Preferences::writeSettings()
 {
 	SettingsWriter settingsWriter;
@@ -705,6 +712,7 @@ void Preferences::updateGUI()
 	this->undockCheckBox->setEnabled(this->reorderCheckBox->isChecked());
 	this->launcherBox->setChecked(getValue("launcher/showOnStartup").toBool());
 	this->enableSoundOnRenderCompleteCheckBox->setChecked(getValue("advanced/enableSoundNotification").toBool());
+	this->enableParameterCheckBox->setChecked(getValue("advanced/enableParameterCheck").toBool());
 
 	Settings::Settings *s = Settings::Settings::inst();
 	updateComboBox(this->comboBoxLineWrap, Settings::Settings::lineWrap);

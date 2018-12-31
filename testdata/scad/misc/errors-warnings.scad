@@ -19,11 +19,21 @@ hello();
 b=test();
 //radius is ignored as a diameter is defined
 circle(r=1,d=4);
+cylinder(r1=1,d1=1);
 
 rotate(1/0)
 rotate([1/0,1/0])
 rotate((1/0)/(1/0))
 cube();
+
+circle(rad=5);
+//too many unnamed arguments
+cube(1,2,3,4,5,6);
+//either r or r1 and r2
+cylinder(r1=1,r2=2,r=3);
+cylinder(r=0,r1=1,r2=2);
+cylinder(d=0,r1=1,r2=2);
+cylinder(5,r1=1,r2=2);
 
 $vpr="[1,2,3]";
 $vpt=[1,2,3,4];

@@ -52,6 +52,7 @@ public slots:
 	void on_launcherBox_toggled(bool);
 	void on_editorType_currentIndexChanged(int);
 	void on_enableSoundOnRenderCompleteCheckBox_toggled(bool);
+	void on_enableParameterCheckBox_toggled(bool);
 
 	void on_checkBoxShowWarningsIn3dView_toggled(bool);
   //
