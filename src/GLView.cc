@@ -68,7 +68,7 @@ void GLView::setColorScheme(const std::string &cs)
     setColorScheme(*colorscheme);
   }
   else {
-    PRINTB("WARNING: GLView: unknown colorscheme %s", cs);
+    PRINTB("UI-WARNING: GLView: unknown colorscheme %s", cs);
   }
 }
 

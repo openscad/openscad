@@ -101,7 +101,7 @@ void append_stl(const PolySet &ps, std::ostream &output)
 void append_stl(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 {
 	if (!root_N.p3->is_simple()) {
-		PRINT("WARNING: Exported object may not be a valid 2-manifold and may need repair");
+		PRINT("EXPORT-WARNING: Exported object may not be a valid 2-manifold and may need repair");
 	}
 
 	PolySet ps(3);
@@ -109,7 +109,7 @@ void append_stl(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 		append_stl(ps, output);
 	}
 	else {
-		PRINT("ERROR: Nef->PolySet failed");
+		PRINT("EXPORT-ERROR: Nef->PolySet failed");
 	}
 }
 

@@ -1498,7 +1498,7 @@ void MainWindow::saveBackup()
 {
 	auto path = PlatformUtils::backupPath();
 	if ((!fs::exists(path)) && (!PlatformUtils::createBackupPath())) {
-		PRINTB("WARNING: Cannot create backup path: %s", path);
+		PRINTB("UI-WARNING: Cannot create backup path: %s", path);
 		return;
 	}
 
@@ -1516,7 +1516,7 @@ void MainWindow::saveBackup()
 	}
 
 	if ((!this->tempFile->isOpen()) && (! this->tempFile->open())) {
-		PRINT("WARNING: Failed to create backup file");
+		PRINT("UI-WARNING: Failed to create backup file");
 		return;
 	}
 	return writeBackup(this->tempFile);
@@ -1607,9 +1607,9 @@ void MainWindow::actionShowLibraryFolder()
 {
 	auto path = PlatformUtils::userLibraryPath();
 	if (!fs::exists(path)) {
-		PRINTB("WARNING: Library path %s doesnt exist. Creating", path);
+		PRINTB("UI-WARNING: Library path %s doesnt exist. Creating", path);
 		if (!PlatformUtils::createUserLibraryPath()) {
-			PRINTB("ERROR: Cannot create library path: %s",path);
+			PRINTB("UI-ERROR: Cannot create library path: %s",path);
 		}
 	}
 	auto url = QString::fromStdString(path);
@@ -1845,21 +1845,21 @@ void MainWindow::updateCamera(const FileContext &ctx)
 	if (vpr->getVec3(x, y, z, 0.0)){
 		qglview->cam.setVpr(x, y, z);
 	}else{
-		PRINTB("WARNING: Unable to convert $vpr=%s to a vec3 or vec2 of numbers", vpr->toEchoString());
+		PRINTB("UI-WARNING: Unable to convert $vpr=%s to a vec3 or vec2 of numbers", vpr->toEchoString());
 	}
 
 	const auto vpt = ctx.lookup_variable("$vpt");
 	if (vpt->getVec3(x, y, z, 0.0)){
 		qglview->cam.setVpt(x, y, z);
 	}else{
-		PRINTB("WARNING: Unable to convert $vpt=%s to a vec3 or vec2 of numbers", vpt->toEchoString());
+		PRINTB("UI-WARNING: Unable to convert $vpt=%s to a vec3 or vec2 of numbers", vpt->toEchoString());
 	}
 
 	const auto vpd = ctx.lookup_variable("$vpd");
 	if (vpd->type() == Value::ValueType::NUMBER){
 		qglview->cam.setVpd(vpd->toDouble());
 	}else{
-		PRINTB("WARNING: Unable to convert $vpd=%s to a number", vpd->toEchoString());
+		PRINTB("UI-WARNING: Unable to convert $vpd=%s to a number", vpd->toEchoString());
 	}
 }
 
@@ -2293,7 +2293,7 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 					PRINTB("   Facets:     %6d", N->p3->number_of_facets());
 					PRINTB("   Volumes:    %6d", N->p3->number_of_volumes());
 					if (!simple) {
-						PRINT("WARNING: Object may not be a valid 2-manifold and may need repair!");
+						PRINT("UI-WARNING: Object may not be a valid 2-manifold and may need repair!");
 					}
 				}
 			}
@@ -2317,7 +2317,7 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 		else viewModeSurface();
 	}
 	else {
-		PRINT("WARNING: No top level geometry to render");
+		PRINT("UI-WARNING: No top level geometry to render");
 		PRINT(" ");
 	}
 
@@ -2483,20 +2483,20 @@ bool MainWindow::canExport(unsigned int dim)
 	}
 
 	if (this->root_geom->getDimension() != dim) {
-		PRINTB("ERROR: Current top level object is not a %dD object.", dim);
+		PRINTB("UI-ERROR: Current top level object is not a %dD object.", dim);
 		clearCurrentOutput();
 		return false;
 	}
 
 	if (this->root_geom->isEmpty()) {
-		PRINT("ERROR: Current top level object is empty.");
+		PRINT("UI-ERROR: Current top level object is empty.");
 		clearCurrentOutput();
 		return false;
 	}
 
 	auto N = dynamic_cast<const CGAL_Nef_polyhedron *>(this->root_geom.get());
 	if (N && !N->p3->is_simple()) {
-	 	PRINT("WARNING: Object may not be a valid 2-manifold and may need repair! See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
+	 	PRINT("UI-WARNING: Object may not be a valid 2-manifold and may need repair! See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
 	}
 	
 	return true;
@@ -3129,11 +3129,14 @@ void MainWindow::consoleOutput(const QString &msg)
 	if (msg.startsWith("WARNING:") || msg.startsWith("DEPRECATED:")) {
 		this->compileWarnings++;
 		this->console->appendHtml("<span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span>");
+	} else if (msg.startsWith("UI-WARNING:") || msg.startsWith("FONT-WARNING:") || msg.startsWith("EXPORT-WARNING:")) {
+		this->console->appendHtml("<span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span>");
 	} else if (msg.startsWith("ERROR:")) {
 		this->compileErrors++;
 		this->console->appendHtml("<span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span>");
-	}
-	else {
+	} else if (msg.startsWith("EXPORT-ERROR:") || msg.startsWith("UI-ERROR:")) {
+		this->console->appendHtml("<span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span>");
+	} else {
 		QString qmsg = msg;
 		if(qmsg.contains('\t') && !qmsg.contains("<pre>", Qt::CaseInsensitive))
 			this->console->appendPlainText(qmsg);
