@@ -13,7 +13,7 @@ public:
 	typedef std::vector<class ModuleInstantiation *> InstanceList;
 
 	EvalContext(const Context *parent, 
-							const AssignmentList &args, const class LocalScope *const scope = nullptr);
+							const AssignmentList &args, const Location &loc, const class LocalScope *const scope = nullptr);
 	~EvalContext() {}
 
 	size_t numArgs() const { return this->eval_arguments.size(); }
@@ -21,7 +21,7 @@ public:
 	ValuePtr getArgValue(size_t i, const Context *ctx = nullptr) const;
 	const AssignmentList & getArgs() const { return this->eval_arguments; }
 
-	AssignmentMap resolveArguments(const AssignmentList &args) const;
+	AssignmentMap resolveArguments(const AssignmentList &args, const AssignmentList &optargs, bool silent) const;
 
 	size_t numChildren() const;
 	ModuleInstantiation *getChild(size_t i) const;
@@ -31,6 +31,8 @@ public:
 #ifdef DEBUG
 	virtual std::string dump(const class AbstractModule *mod, const ModuleInstantiation *inst);
 #endif
+
+	const Location &loc;
 
 private:
 	const AssignmentList &eval_arguments;

@@ -101,8 +101,10 @@
 #if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
 #include <QTextDocument>
 #define QT_HTML_ESCAPE(qstring) Qt::escape(qstring)
+#undef ENABLE_3D_PRINTING
 #else
 #define QT_HTML_ESCAPE(qstring) (qstring).toHtmlEscaped()
+#define ENABLE_3D_PRINTING
 #endif
 
 #if (QT_VERSION < QT_VERSION_CHECK(5, 1, 0))
@@ -135,6 +137,8 @@
 
 #include "FontCache.h"
 #include "input/InputDriverManager.h"
+#include <cstdio>
+#include <QtNetwork>
 
 // Global application state
 unsigned int GuiLocker::gui_locked = 0;
@@ -366,6 +370,7 @@ MainWindow::MainWindow(const QString &filename)
 #else
 	this->designActionRender->setVisible(false);
 #endif
+	connect(this->designAction3DPrint, SIGNAL(triggered()), this, SLOT(action3DPrint()));
 	connect(this->designCheckValidity, SIGNAL(triggered()), this, SLOT(actionCheckValidity()));
 	connect(this->designActionDisplayAST, SIGNAL(triggered()), this, SLOT(actionDisplayAST()));
 	connect(this->designActionDisplayCSGTree, SIGNAL(triggered()), this, SLOT(actionDisplayCSGTree()));
@@ -386,6 +391,14 @@ MainWindow::MainWindow(const QString &filename)
 	bool export3mfVisible = false;
 #endif
 	this->fileActionExport3MF->setVisible(export3mfVisible);
+
+#ifdef ENABLE_3D_PRINTING
+	bool enable3dPrinting = Feature::Experimental3dPrint.is_enabled();
+#else
+	bool enable3dPrinting = false;
+#endif
+	this->designAction3DPrint->setVisible(enable3dPrinting);
+	this->designAction3DPrint->setEnabled(enable3dPrinting);
 
 	// View menu
 #ifndef ENABLE_OPENCSG
@@ -508,6 +521,7 @@ MainWindow::MainWindow(const QString &filename)
 	initActionIcon(editActionZoomTextIn, ":/images/zoom-text-in.png", ":/images/zoom-text-in-white.png");
 	initActionIcon(editActionZoomTextOut, ":/images/zoom-text-out.png", ":/images/zoom-text-out-white.png");
 	initActionIcon(designActionRender, ":/images/render-32.png", ":/images/render-32-white.png");
+	initActionIcon(designAction3DPrint, ":/images/3dprint-32.png", ":/images/3dprint-32-white.png");
 	initActionIcon(viewActionShowAxes, ":/images/blackaxes.png", ":/images/axes.png");
 	initActionIcon(viewActionShowEdges, ":/images/Rotation-32.png", ":/images/grid.png");
 	initActionIcon(viewActionZoomIn, ":/images/zoomin.png", ":/images/Zoom-In-32.png");
@@ -1015,6 +1029,7 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 {
 	bool shouldcompiletoplevel = false;
 	bool didcompile = false;
+	OpenSCAD::parameterCheck = Preferences::inst()->getValue("advanced/enableParameterCheck").toBool();
 
 	compileErrors = 0;
 	compileWarnings = 0;
@@ -2027,6 +2042,174 @@ void MainWindow::csgRender()
 	compileEnded();
 }
 
+
+void MainWindow::action3DPrint()
+{
+#ifdef ENABLE_3D_PRINTING
+	if (!Feature::Experimental3dPrint.is_enabled()) {
+		return;
+	}
+
+	//Keeps track of how many times we've exported and tries to create slightly unique filenames.
+	//Not mission critical, since non-unique file names are fine for the API, just harder to 
+	//differentiate between in customer support later.
+	static unsigned int printCounter=0;
+	
+	setCurrentOutput();
+	PRINT("3D Printing...");
+	
+	unsigned int dim = 3;
+	
+	QUrl partUrl;
+
+	setCurrentOutput();
+
+	//Make sure we can export:
+	if (! canExport(dim))
+	{
+		PRINT("Cannot 3D Print due to errors.");
+		return;
+    }
+	
+	//Create a temporary file name valid on all systems:
+	QTemporaryFile exportFile;
+	//Open the file so we can get the name:
+	if ( ! exportFile.open())
+	{
+		PRINT("Could not open temporary file.");
+		return;
+	}
+	QString exportFilename=exportFile.fileName();
+	
+	//Render the stl to a temporary file:
+	exportFileByName(this->root_geom, FileFormat::STL,
+		exportFilename.toLocal8Bit().constData(),
+		exportFilename.toUtf8());
+	
+	//Create a name that the order process will use to refer to the file. Base it off of the
+	//project name
+	QString userFacingName="unsaved.stl";
+	if (!this->fileName.isEmpty()) {
+		QString fileBasename = QFileInfo(this->fileName).baseName();
+		userFacingName = fileBasename.append("_").append(QString::number(printCounter++)).append(".stl");
+	}
+	
+	//Upload the file to the 3D Printing server and get the corresponding url to see it.
+	//The result is put in partUrl.
+	try
+	{
+        uploadStlAndGetPartUrl(exportFilename, userFacingName, partUrl);
+    }
+    catch (std::exception & e)
+    {
+		PRINT(e.what());
+        return;
+    }
+    
+    setCurrentOutput();
+
+	//Open the url in the default browser:
+	QDesktopServices::openUrl ( partUrl );
+#endif
+}
+
+//This function uploads an stl to the 3D printing API endpoint and returns a url that, 
+//when accessed, will show the stl file as a part that can be configured and added to the 
+//shopping cart.  If it's not successful, it throws an exception with a message.
+//
+//Inputs:
+//    exportFilename  - The path to the temporary file that has the stl export in it.
+//    userFacingName  - Then name we should give the file when it is uploaded for the order process.
+//Outputs:
+//    partUrl         - The resulting url to go to next to continue the order process.
+void MainWindow::uploadStlAndGetPartUrl(const QString & exportFilename, const QString &userFacingName, QUrl &partUrl)
+{
+#ifdef ENABLE_3D_PRINTING
+	setCurrentOutput();
+	
+	//Create a request:
+	QNetworkRequest request(QUrl("https://print.openscad.org/api/v1/part-upload/"));
+	
+	//Set the content header:
+	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+	
+	//Get the file name from the file path:
+	QString fileNameBase=QFileInfo(exportFilename).fileName();
+	
+	//Create the request:
+	QJsonObject jsonInput;
+	
+	//Start building the json request:
+	jsonInput.insert("fileName", userFacingName);
+	
+	//Read our stl file:
+	QFile file(exportFilename);
+	if (!file.open(QIODevice::ReadOnly))
+	{
+		throw std::runtime_error("Unable to open exported stl file.");
+	}
+	
+	//Convert it to base 64:
+	QString stlFileB64=file.readAll().toBase64();
+	
+	//Base 64-encoded file contents:
+	jsonInput.insert("file", stlFileB64);
+    
+    //Make sure it's there:
+    if (jsonInput.value("file") == QJsonValue::Undefined)
+        throw std::runtime_error("Could not enode stl into JSON.  Perhapse it is too large of a file? Try simplifying.");
+        
+	PRINTD("Sending this JSON:");
+	PRINTD(QString(QJsonDocument(jsonInput).toJson()).toLocal8Bit().constData());
+	
+	//Create a network access manager:
+	QNetworkAccessManager nam;
+	
+	//Send the post:
+	QNetworkReply *reply = nam.post(request, QJsonDocument(jsonInput).toJson());
+
+	//Wait for the reply:
+	while(!reply->isFinished())
+	{
+		qApp->processEvents();
+	}
+	
+	QVariant statusCodeV = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);  
+	
+	//Clean up the reply object:
+	reply->deleteLater();
+    
+    char errorMessage[150];
+	
+    //If it wasn't successful:
+	if (! (statusCodeV.toInt()==200 or statusCodeV.toInt()==201 ))
+	{
+        sprintf(errorMessage, "An error occured while contacting the 3D Print API.  \nStatus code returned: %d", statusCodeV.toInt());
+        throw std::runtime_error(errorMessage);
+	}
+	
+	//Interpret the response as a json document:
+	QJsonDocument jsonOutDoc= QJsonDocument::fromJson(reply->readAll());
+	
+	//Get the corresponding json object:
+	QJsonObject jsonOutput = jsonOutDoc.object();
+	
+    PRINTD("Received this JSON in response:");
+	PRINTD(QString(jsonOutDoc.toJson()).toLocal8Bit().constData());
+	
+    //Start trying to extract the cartUrl:
+    auto cartUrlValue=jsonOutput.value("data").toObject().value("cartUrl");
+
+    if (cartUrlValue == QJsonValue::Undefined)
+        throw std::runtime_error("Could not get data.cartUrl field from results.");
+    
+	QString partUrlStr=cartUrlValue.toString();
+	
+	//Put it in our output partUrl:
+	partUrl.setUrl(partUrlStr);
+#endif
+}
+
 #ifdef ENABLE_CGAL
 
 void MainWindow::actionRender()
@@ -2255,21 +2438,14 @@ void MainWindow::actionCheckValidity()
 #endif /* ENABLE_CGAL */
 }
 
-#ifdef ENABLE_CGAL
-void MainWindow::actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim)
-#else
-	void MainWindow::actionExport(FileFormat, QString, QString, unsigned int)
-#endif
+//Returns if we can export (true) or not(false) (bool)
+//Separated into it's own function for re-use.
+bool MainWindow::canExport(unsigned int dim)
 {
-	if (GuiLocker::isLocked()) return;
-	GuiLocker lock;
-#ifdef ENABLE_CGAL
-	setCurrentOutput();
-
 	if (!this->root_geom) {
 		PRINT("ERROR: Nothing to export! Try rendering first (press F6).");
 		clearCurrentOutput();
-		return;
+		return false;
 	}
 
 	// editor has changed since last render
@@ -2279,40 +2455,60 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
 				"Do you really want to export the previous content?",
 				QMessageBox::Yes | QMessageBox::No);
 		if (ret != QMessageBox::Yes) {
-			return;
+			return false;
 		}
 	}
 
 	if (this->root_geom->getDimension() != dim) {
 		PRINTB("ERROR: Current top level object is not a %dD object.", dim);
 		clearCurrentOutput();
-		return;
+		return false;
 	}
 
 	if (this->root_geom->isEmpty()) {
 		PRINT("ERROR: Current top level object is empty.");
 		clearCurrentOutput();
-		return;
+		return false;
 	}
 
 	auto N = dynamic_cast<const CGAL_Nef_polyhedron *>(this->root_geom.get());
 	if (N && !N->p3->is_simple()) {
 	 	PRINT("WARNING: Object may not be a valid 2-manifold and may need repair! See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
 	}
+	
+	return true;
+}
 
+#ifdef ENABLE_CGAL
+void MainWindow::actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim)
+#else
+	void MainWindow::actionExport(FileFormat, QString, QString, unsigned int, QString)
+#endif
+{
+    //Setting filename skips the file selection dialog and uses the path provided instead.
+    
+	if (GuiLocker::isLocked()) return;
+	GuiLocker lock;
+#ifdef ENABLE_CGAL
+	setCurrentOutput();
+	
+	//Return if something is wrong and we can't export.
+	if (! canExport(dim))
+		return;
 	auto title = QString(_("Export %1 File")).arg(type_name);
 	auto filter = QString(_("%1 Files (*%2)")).arg(type_name, suffix);
-	auto export_filename = QFileDialog::getSaveFileName(this, title, exportPath(suffix), filter);
-	if (export_filename.isEmpty()) {
+	auto filename = this->fileName.isEmpty() ? QString(_("Untitled")) + suffix : QFileInfo(this->fileName).completeBaseName() + suffix;
+	auto exportFilename = QFileDialog::getSaveFileName(this, title, filename, filter);
+	if (exportFilename.isEmpty()) {
 		clearCurrentOutput();
 		return;
 	}
-	this->export_paths[suffix] = export_filename;
+	this->export_paths[suffix] = exportFilename;
 	exportFileByName(this->root_geom, format,
-		export_filename.toLocal8Bit().constData(),
-		export_filename.toUtf8());
+		exportFilename.toLocal8Bit().constData(),
+		exportFilename.toUtf8());
 	PRINTB("%s export finished: %s",
-		type_name % export_filename.toUtf8().constData());
+		type_name % exportFilename.toUtf8().constData());
 
 	clearCurrentOutput();
 #endif /* ENABLE_CGAL */

@@ -181,6 +181,8 @@ private slots:
 	void actionRenderPreview(bool rebuildParameterWidget=true);
 	void csgRender();
 	void csgReloadRender();
+	void action3DPrint();
+	void uploadStlAndGetPartUrl(const QString & exportFilename, const QString &userFacingName, QUrl &partUrl);
 #ifdef ENABLE_CGAL
 	void actionRender();
 	void actionRenderDone(shared_ptr<const class Geometry>);
@@ -190,6 +192,7 @@ private slots:
 	void actionDisplayAST();
 	void actionDisplayCSGTree();
 	void actionDisplayCSGProducts();
+	bool canExport(unsigned int dim);
 	void actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim);
 	void actionExportSTL();
 	void actionExport3MF();
