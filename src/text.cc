@@ -51,7 +51,7 @@ AbstractNode *TextModule::instantiate(const Context *ctx, const ModuleInstantiat
 	AssignmentList args{Assignment("text"), Assignment("size"), Assignment("font")};
 	AssignmentList optargs{
 		Assignment("direction"), Assignment("language"), Assignment("script"),
-		Assignment("halign"), Assignment("valign")
+		Assignment("halign"), Assignment("valign"), Assignment("spacing")
 	};
 
 	Context c(ctx);
