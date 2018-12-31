@@ -1106,7 +1106,7 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 		}
 
 		compileDone(didcompile | forcedone);
-	}catch(HardWarningException){
+	}catch(const HardWarningException&){
 		exceptionCleanup();
 	}
 	OpenSCAD::hardwarnings = false;
@@ -1184,7 +1184,7 @@ void MainWindow::compileDone(bool didchange)
 
 		this->procevents = false;
 		QMetaObject::invokeMethod(this, callslot);
-	}catch(HardWarningException){
+	}catch(const HardWarningException&){
 		exceptionCleanup();
 	}
 	OpenSCAD::hardwarnings = false;
@@ -1376,7 +1376,7 @@ void MainWindow::compileCSG()
 		int s = this->renderingTime.elapsed() / 1000;
 		PRINTB("Total rendering time: %d hours, %d minutes, %d seconds\n", (s / (60*60)) % ((s / 60) % 60) % (s % 60));
 		this->processEvents();
-	}catch(HardWarningException){
+	}catch(const HardWarningException&){
 		exceptionCleanup();
 	}
 	OpenSCAD::hardwarnings = false;
