@@ -5,6 +5,8 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/circular_buffer.hpp>
 #include <boost/filesystem.hpp>
+#include "exceptions.h"
+
 namespace fs = boost::filesystem;
 
 std::list<std::string> print_messages_stack;
@@ -12,6 +14,7 @@ OutputHandlerFunc *outputhandler = nullptr;
 void *outputhandler_data = nullptr;
 std::string OpenSCAD::debug("");
 bool OpenSCAD::quiet = false;
+bool OpenSCAD::hardwarnings = false;
 bool OpenSCAD::parameterCheck = true;
 
 boost::circular_buffer<std::string> lastmessages(5);
@@ -53,6 +56,7 @@ void PRINT(const std::string &msg)
 
 void PRINT_NOCACHE(const std::string &msg)
 {
+	bool stop{false};
 	if (msg.empty()) return;
 
 	if (boost::starts_with(msg, "WARNING") || boost::starts_with(msg, "ERROR")) {
@@ -62,6 +66,7 @@ void PRINT_NOCACHE(const std::string &msg)
 		}
 		if (i == 5) return; // Suppress output after 5 equal ERROR or WARNING outputs.
 		else lastmessages.push_back(msg);
+		stop=true;
 	}
 
 	if (!OpenSCAD::quiet || boost::starts_with(msg, "ERROR")) {
@@ -70,6 +75,9 @@ void PRINT_NOCACHE(const std::string &msg)
 		} else {
 			outputhandler(msg, outputhandler_data);
 		}
+	}
+	if(stop && OpenSCAD::hardwarnings){
+		throw HardWarningException(msg);
 	}
 }
 

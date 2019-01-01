@@ -85,7 +85,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const Abstrac
 			if (!dim) dim = item.second->getDimension();
 			else if (dim != item.second->getDimension()) {
 				std::string loc = item.first->modinst->location().toRelativeString(this->tree.getDocumentPath());
-				PRINTB("WARNING: Mixing 2D and 3D objects is not supported, %s", loc);
+				PRINTB("CSG-WARNING: Mixing 2D and 3D objects is not supported, %s", loc);
 				break;
 			}
 		}
@@ -223,7 +223,7 @@ std::vector<const class Polygon2d *> GeometryEvaluator::collectChildren2D(const 
 			}
 			else {
 				std::string loc = item.first->modinst->location().toRelativeString(this->tree.getDocumentPath());
-				PRINTB("WARNING: Ignoring 3D child object for 2D operation, %s", loc);
+				PRINTB("CSG-WARNING: Ignoring 3D child object for 2D operation, %s", loc);
 			}
 		}
 	}
@@ -247,7 +247,7 @@ void GeometryEvaluator::smartCacheInsert(const AbstractNode &node,
 	else {
 		if (!GeometryCache::instance()->contains(key)) {
 			if (!GeometryCache::instance()->insert(key, geom)) {
-				PRINT("WARNING: GeometryEvaluator: Node didn't fit into cache");
+				PRINT("CSG-WARNING: GeometryEvaluator: Node didn't fit into cache");
 			}
 		}
 	}
@@ -292,7 +292,7 @@ Geometry::Geometries GeometryEvaluator::collectChildren3D(const AbstractNode &no
 		if (chgeom) {
 			if (chgeom->getDimension() == 2) {
 				std::string loc = item.first->modinst->location().toRelativeString(this->tree.getDocumentPath());
-				PRINTB("WARNING: Ignoring 2D child object for 3D operation, %s", loc);
+				PRINTB("CSG-WARNING: Ignoring 2D child object for 3D operation, %s", loc);
 			}
 			else if (chgeom->isEmpty() || chgeom->getDimension() == 3) {
 				children.push_back(item);
@@ -567,7 +567,7 @@ Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 			if (matrix_contains_infinity(node.matrix) || matrix_contains_nan(node.matrix)) {
 				// due to the way parse/eval works we can't currently distinguish between NaN and Inf
 				std::string loc = node.modinst->location().toRelativeString(this->tree.getDocumentPath());
-				PRINTB("WARNING: Transformation matrix contains Not-a-Number and/or Infinity - removing object. %s", loc);
+				PRINTB("CSG-WARNING: Transformation matrix contains Not-a-Number and/or Infinity - removing object. %s", loc);
 			}
 			else {
 				// First union all children
