@@ -884,7 +884,11 @@ void MainWindow::openFile(const QString &new_filename)
 	clearExportPaths();
 
 	if (Feature::ExperimentalCustomizer.is_enabled()) {
-		compileTopLevelDocument(true);
+		try{
+			compileTopLevelDocument(true);
+		}catch(const HardWarningException&){
+			exceptionCleanup();
+		}
 	}
 }
 
@@ -1028,10 +1032,11 @@ void MainWindow::refreshDocument()
 void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidget)
 {
 	OpenSCAD::hardwarnings = Preferences::inst()->getValue("advanced/enableHardwarnings").toBool();
+	OpenSCAD::parameterCheck = Preferences::inst()->getValue("advanced/enableParameterCheck").toBool();
+
 	try{
 		bool shouldcompiletoplevel = false;
 		bool didcompile = false;
-		OpenSCAD::parameterCheck = Preferences::inst()->getValue("advanced/enableParameterCheck").toBool();
 
 		compileErrors = 0;
 		compileWarnings = 0;
@@ -1109,7 +1114,6 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 	}catch(const HardWarningException&){
 		exceptionCleanup();
 	}
-	OpenSCAD::hardwarnings = false;
 }
 
 void MainWindow::waitAfterReload()
@@ -1187,7 +1191,6 @@ void MainWindow::compileDone(bool didchange)
 	}catch(const HardWarningException&){
 		exceptionCleanup();
 	}
-	OpenSCAD::hardwarnings = false;
 }
 
 void MainWindow::compileEnded()
@@ -1356,8 +1359,8 @@ void MainWindow::compileCSG()
 		if (this->root_products &&
 				(this->root_products->size() >
 				Preferences::inst()->getValue("advanced/openCSGLimit").toUInt())) {
-			PRINTB("WARNING: Normalized tree has %d elements!", this->root_products->size());
-			PRINT("WARNING: OpenCSG rendering has been disabled.");
+			PRINTB("UI-WARNING: Normalized tree has %d elements!", this->root_products->size());
+			PRINT("UI-WARNING: OpenCSG rendering has been disabled.");
 		}
 #ifdef ENABLE_OPENCSG
 		else {
@@ -1379,7 +1382,6 @@ void MainWindow::compileCSG()
 	}catch(const HardWarningException&){
 		exceptionCleanup();
 	}
-	OpenSCAD::hardwarnings = false;
 }
 
 void MainWindow::actionNew()
