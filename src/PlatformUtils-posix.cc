@@ -12,6 +12,8 @@
 
 #include "PlatformUtils.h"
 
+extern std::string openscad_detailedversionnumber;
+
 namespace fs=boost::filesystem;
 
 static std::string readText(const std::string &path)
@@ -149,7 +151,7 @@ unsigned long PlatformUtils::stackLimit()
  * @see http://www.freedesktop.org/software/systemd/man/os-release.html
  * @return the PRETTY_NAME from the os-release file or an empty string.
  */
-static std::string checkOsRelease()
+static const std::string checkOsRelease()
 {
     std::string os_release(readText("/etc/os-release"));
 
@@ -162,7 +164,7 @@ static std::string checkOsRelease()
     return "";
 }
 
-static std::string checkEtcIssue()
+static const std::string checkEtcIssue()
 {
     std::string issue(readText("/etc/issue"));
 
@@ -175,7 +177,7 @@ static std::string checkEtcIssue()
     return issue;
 }
 
-static std::string detectDistribution()
+static const std::string detectDistribution()
 {
     std::string osrelease = checkOsRelease();
     if (!osrelease.empty()) {
@@ -190,51 +192,81 @@ static std::string detectDistribution()
     return "";
 }
 
-std::string PlatformUtils::sysinfo(bool extended)
+static const std::string get_distribution(const std::string& separator)
+{
+	std::string result;
+    std::string distribution = detectDistribution();
+    if (!distribution.empty()) {
+			result += separator;
+			result += distribution;
+    }
+	return result;
+}
+
+static const std::string get_system_info(bool extended = true)
 {
     std::string result;
-    
+
     struct utsname osinfo;
     if (uname(&osinfo) == 0) {
 			result += osinfo.sysname;
 			result += " ";
-			result += osinfo.release;
-			result += " ";
-			result += osinfo.version;
-			result += " ";
+			if (extended) {
+				result += osinfo.release;
+				result += " ";
+				result += osinfo.version;
+				result += " ";
+			}
 			result += osinfo.machine;
     } else {
-			result += "Unknown Linux";
-    }
-    
-    std::string distribution = detectDistribution();
-    if (!distribution.empty()) {
-			result += " ";
-			result += distribution;
+			result += "Unknown Unix";
     }
 
-		if (extended) {
-			long numcpu = sysconf(_SC_NPROCESSORS_ONLN);
-			if (numcpu > 0) {
-				result += " ";
-				result += boost::lexical_cast<std::string>(numcpu);
-				result += " CPU";
-				if (numcpu > 1) {
-					result += "s";
-				}
-			}
-			
-			long pages = sysconf(_SC_PHYS_PAGES);
-			long pagesize = sysconf(_SC_PAGE_SIZE);
-			if ((pages > 0) && (pagesize > 0)) {
-				result += " ";
-				result += PlatformUtils::toMemorySizeString(pages * pagesize, 2);
-				result += " RAM";
+	return result;
+}
+
+const std::string PlatformUtils::user_agent()
+{
+    std::string result;
+
+	result += "OpenSCAD/";
+	result += openscad_detailedversionnumber;
+	result += " (";
+	result += get_system_info(false);
+	result += get_distribution("; ");
+	result += ")";
+
+	return result;
+}
+
+const std::string PlatformUtils::sysinfo(bool extended)
+{
+    std::string result;
+
+	result += get_system_info(true);
+    result += get_distribution(" ");
+
+	if (extended) {
+		long numcpu = sysconf(_SC_NPROCESSORS_ONLN);
+		if (numcpu > 0) {
+			result += " ";
+			result += boost::lexical_cast<std::string>(numcpu);
+			result += " CPU";
+			if (numcpu > 1) {
+				result += "s";
 			}
 		}
-		
-    return result;
+
+		long pages = sysconf(_SC_PHYS_PAGES);
+		long pagesize = sysconf(_SC_PAGE_SIZE);
+		if ((pages > 0) && (pagesize > 0)) {
+			result += " ";
+			result += PlatformUtils::toMemorySizeString(pages * pagesize, 2);
+			result += " RAM";
+		}
+	}
+
+	return result;
 }
 
 void PlatformUtils::ensureStdIO(void) {}
-

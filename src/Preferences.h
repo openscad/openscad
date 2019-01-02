@@ -25,6 +25,7 @@ public:
 	QVariant getValue(const QString &key) const;
 	void init();
 	void apply() const;
+	void updateGUI();
 	void fireEditorConfigChanged() const;
 
 public slots:
@@ -81,6 +82,18 @@ public slots:
 	void on_checkBoxEnableBraceMatching_toggled(bool);
 	void on_checkBoxEnableLineNumbers_toggled(bool);
 
+	// Print
+	void on_checkBoxShowPrintServiceSelectionDialog_toggled(bool);
+	void on_pushButtonOctoPrintCheckConnection_clicked();
+	void on_pushButtonOctoPrintSlicingEngine_clicked();
+	void on_comboBoxOctoPrintSlicingEngine_activated(int);
+	void on_pushButtonOctoPrintSlicingProfile_clicked();
+	void on_comboBoxOctoPrintSlicingProfile_activated(int);
+	void on_comboBoxOctoPrintAction_activated(int);
+	void on_comboBoxOctoPrintFileFormat_activated(int);
+	void on_lineEditOctoPrintURL_editingFinished();
+	void on_lineEditOctoPrintApiKey_editingFinished();
+
 signals:
 	void requestRedraw() const;
 	void updateMdiMode(bool mdi) const;
@@ -97,7 +110,6 @@ signals:
 private:
     Preferences(QWidget *parent = nullptr);
 	void keyPressEvent(QKeyEvent *e) override;
-	void updateGUI();
 	void removeDefaultSettings();
 	void setupFeaturesPage();
 	void writeSettings();

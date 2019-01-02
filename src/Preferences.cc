@@ -43,6 +43,7 @@
 #include "QSettingsCached.h"
 #include "input/InputDriverManager.h"
 #include "SettingsWriter.h"
+#include "OctoPrint.h"
 
 Preferences *Preferences::instance = nullptr;
 
@@ -162,6 +163,7 @@ void Preferences::init() {
 	this->defaultmap["advanced/enableSoundNotification"] = true;
 	this->defaultmap["advanced/enableHardwarnings"] = false;
 	this->defaultmap["advanced/enableParameterCheck"] = true;
+	this->defaultmap["printing/showPrintDialog"] = Settings::Settings::printServiceShowDialog.defaultValue().toBool();
 
 	// Toolbar
 	QActionGroup *group = new QActionGroup(this);
@@ -173,10 +175,12 @@ void Preferences::init() {
 	this->toolBar->removeAction(prefsActionUpdate);
 #endif
 #ifdef ENABLE_EXPERIMENTAL
+	addPrefPage(group, prefsAction3DPrint, page3DPrint);
 	addPrefPage(group, prefsActionFeatures, pageFeatures);
 	addPrefPage(group, prefsActionInput, pageInput);
 	addPrefPage(group, prefsActionInputButton, pageInputButton);
 #else
+	this->toolBar->removeAction(prefsAction3DPrint);
 	this->toolBar->removeAction(prefsActionFeatures);
 	this->toolBar->removeAction(prefsActionInput);
 	this->toolBar->removeAction(prefsActionInputButton);
@@ -211,8 +215,28 @@ void Preferences::init() {
 	initSpinBox(this->spinBoxShowWhitespaceSize, Settings::Settings::showWhitespaceSize);
 	initSpinBox(this->spinBoxTabWidth, Settings::Settings::tabWidth);
 
+	initComboBox(this->comboBoxOctoPrintFileFormat, Settings::Settings::octoPrintFileFormat);
+	initComboBox(this->comboBoxOctoPrintAction, Settings::Settings::octoPrintAction);
+
 	SettingsReader settingsReader;
-	Settings::Settings::inst()->visit(settingsReader);
+	Settings::Settings *s = Settings::Settings::inst();
+	s->visit(settingsReader);
+
+	const QString slicer = QString::fromStdString(s->get(Settings::Settings::octoPrintSlicerEngine).toString());
+	const QString slicerDesc = QString::fromStdString(s->get(Settings::Settings::octoPrintSlicerEngineDesc).toString());
+	const QString profile = QString::fromStdString(s->get(Settings::Settings::octoPrintSlicerProfile).toString());
+	const QString profileDesc = QString::fromStdString(s->get(Settings::Settings::octoPrintSlicerProfileDesc).toString());
+	this->comboBoxOctoPrintSlicingEngine->clear();
+	this->comboBoxOctoPrintSlicingEngine->addItem(_("<Default>"), QVariant{""});
+	if (!slicer.isEmpty()) {
+		this->comboBoxOctoPrintSlicingEngine->addItem(slicerDesc, QVariant{slicer});
+	}
+	this->comboBoxOctoPrintSlicingProfile->clear();
+	this->comboBoxOctoPrintSlicingProfile->addItem(_("<Default>"), QVariant{""});
+	if (!profile.isEmpty()) {
+		this->comboBoxOctoPrintSlicingProfile->addItem(profileDesc, QVariant{profile});
+	}
+
 	emit editorConfigChanged();
 }
 
@@ -279,6 +303,9 @@ void Preferences::featuresCheckBoxToggled(bool state)
 		this->toolBar->removeAction(prefsActionInputButton);
 		InputDriverManager::instance()->closeDrivers();
 	}
+	if (!Feature::Experimental3dPrint.is_enabled()) {
+		this->toolBar->removeAction(prefsAction3DPrint);
+	}
 }
 
 /**
@@ -329,6 +356,9 @@ void Preferences::setupFeaturesPage()
 		this->toolBar->removeAction(prefsActionInput);
 		this->toolBar->removeAction(prefsActionInputButton);
 		InputDriverManager::instance()->closeDrivers();
+	}
+	if (!Feature::Experimental3dPrint.is_enabled()) {
+		this->toolBar->removeAction(prefsAction3DPrint);
 	}
 }
 
@@ -612,6 +642,108 @@ void Preferences::on_enableParameterCheckBox_toggled(bool state)
 	settings.setValue("advanced/enableParameterCheck", state);
 }
 
+void Preferences::on_checkBoxShowPrintServiceSelectionDialog_toggled(bool checked)
+{
+	Settings::Settings::inst()->set(Settings::Settings::printServiceShowDialog, Value(checked));
+	writeSettings();
+}
+
+void Preferences::on_comboBoxOctoPrintAction_activated(int val)
+{
+	applyComboBox(comboBoxOctoPrintAction, val, Settings::Settings::octoPrintAction);
+}
+
+void Preferences::on_lineEditOctoPrintURL_editingFinished()
+{
+	Settings::Settings::inst()->set(Settings::Settings::octoPrintUrl, this->lineEditOctoPrintURL->text().toStdString());
+	writeSettings();
+}
+
+void Preferences::on_lineEditOctoPrintApiKey_editingFinished()
+{
+	Settings::Settings::inst()->set(Settings::Settings::octoPrintApiKey, this->lineEditOctoPrintApiKey->text().toStdString());
+	writeSettings();
+}
+
+void Preferences::on_comboBoxOctoPrintFileFormat_activated(int val)
+{
+	applyComboBox(this->comboBoxOctoPrintFileFormat, val, Settings::Settings::octoPrintFileFormat);
+}
+
+void Preferences::on_pushButtonOctoPrintCheckConnection_clicked()
+{
+	OctoPrint octoPrint;
+
+	std::string error;
+	std::string api_version;
+	std::string server_version;
+	std::tie(error, api_version, server_version) = octoPrint.get_version();
+	if (error.empty()) {
+		const auto msg = QString{_("Success: Server Version = %1, API Version = %2")}.arg(QString::fromStdString(server_version)).arg(QString::fromStdString(api_version));
+		this->labelOctoPrintCheckConnection->setText(msg);
+	}
+}
+
+void Preferences::on_pushButtonOctoPrintSlicingEngine_clicked()
+{
+	OctoPrint octoPrint;
+
+	const QString selection = this->comboBoxOctoPrintSlicingEngine->currentText();
+
+	const auto slicers = octoPrint.get_slicers();
+	this->comboBoxOctoPrintSlicingEngine->clear();
+	this->comboBoxOctoPrintSlicingEngine->addItem(_("<Default>"), QVariant{""});
+	for (const auto & entry : slicers) {
+		this->comboBoxOctoPrintSlicingEngine->addItem(QString::fromStdString(entry.second), QVariant{QString::fromStdString(entry.first)});
+	}
+
+	const int idx = this->comboBoxOctoPrintSlicingEngine->findText(selection);
+	if (idx >= 0) {
+		this->comboBoxOctoPrintSlicingEngine->setCurrentIndex(idx);
+	}
+}
+
+void Preferences::on_comboBoxOctoPrintSlicingEngine_activated(int val)
+{
+	const QString text = this->comboBoxOctoPrintSlicingEngine->itemData(val).toString();
+	const QString desc = text.isEmpty() ? QString{} : this->comboBoxOctoPrintSlicingEngine->itemText(val);
+	Settings::Settings::inst()->set(Settings::Settings::octoPrintSlicerEngine, text.toStdString());
+	Settings::Settings::inst()->set(Settings::Settings::octoPrintSlicerEngineDesc, desc.toStdString());
+	Settings::Settings::inst()->set(Settings::Settings::octoPrintSlicerProfile, "");
+	Settings::Settings::inst()->set(Settings::Settings::octoPrintSlicerProfileDesc, "");
+	writeSettings();
+	this->comboBoxOctoPrintSlicingProfile->setCurrentIndex(0);
+}
+
+void Preferences::on_pushButtonOctoPrintSlicingProfile_clicked()
+{
+	OctoPrint octoPrint;
+
+	const QString selection = this->comboBoxOctoPrintSlicingProfile->currentText();
+	const QString slicer = this->comboBoxOctoPrintSlicingEngine->itemData(this->comboBoxOctoPrintSlicingEngine->currentIndex()).toString();
+
+	const auto slicers = octoPrint.get_profiles(slicer);
+	this->comboBoxOctoPrintSlicingProfile->clear();
+	this->comboBoxOctoPrintSlicingProfile->addItem(_("<Default>"), QVariant{""});
+	for (const auto & entry : slicers) {
+		this->comboBoxOctoPrintSlicingProfile->addItem(QString::fromStdString(entry.second), QVariant{QString::fromStdString(entry.first)});
+	}
+
+	const int idx = this->comboBoxOctoPrintSlicingProfile->findText(selection);
+	if (idx >= 0) {
+		this->comboBoxOctoPrintSlicingProfile->setCurrentIndex(idx);
+	}
+}
+
+void Preferences::on_comboBoxOctoPrintSlicingProfile_activated(int val)
+{
+	const QString text = this->comboBoxOctoPrintSlicingProfile->itemData(val).toString();
+	const QString desc = text.isEmpty() ? QString{} : this->comboBoxOctoPrintSlicingProfile->itemText(val);
+	Settings::Settings::inst()->set(Settings::Settings::octoPrintSlicerProfile, text.toStdString());
+	Settings::Settings::inst()->set(Settings::Settings::octoPrintSlicerProfileDesc, desc.toStdString());
+	writeSettings();
+}
+
 void Preferences::writeSettings()
 {
 	SettingsWriter settingsWriter;
@@ -741,6 +873,13 @@ void Preferences::updateGUI()
 	this->checkBoxShowWarningsIn3dView->setChecked(s->get(Settings::Settings::showWarningsIn3dView).toBool());
 	this->checkBoxEnableLineNumbers->setChecked(s->get(Settings::Settings::enableLineNumbers).toBool());
 	this->spinBoxLineWrapIndentationIndent->setDisabled(this->comboBoxLineWrapIndentationStyle->currentText() == "Same");
+
+	this->checkBoxShowPrintServiceSelectionDialog->setChecked(s->get(Settings::Settings::printServiceShowDialog).toBool());
+	this->lineEditOctoPrintURL->setText(QString::fromStdString(s->get(Settings::Settings::octoPrintUrl).toString()));
+	this->lineEditOctoPrintApiKey->setText(QString::fromStdString(s->get(Settings::Settings::octoPrintApiKey).toString()));
+	updateComboBox(this->comboBoxOctoPrintAction, Settings::Settings::octoPrintAction);
+	updateComboBox(this->comboBoxOctoPrintSlicingEngine, Settings::Settings::octoPrintSlicerEngine);
+	updateComboBox(this->comboBoxOctoPrintSlicingProfile, Settings::Settings::octoPrintSlicerProfile);
 }
 
 void Preferences::initComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry)

@@ -225,6 +225,7 @@ FORMS   += src/MainWindow.ui \
            src/OpenCSGWarningDialog.ui \
            src/AboutDialog.ui \
            src/FontListDialog.ui \
+           src/PrintInitDialog.ui \
            src/ProgressWidget.ui \
            src/launchingscreen.ui \
            src/LibraryInfoDialog.ui \
@@ -280,6 +281,7 @@ HEADERS += src/version_check.h \
            src/AboutDialog.h \
            src/FontListDialog.h \
            src/FontListTableView.h \
+           src/PrintInitDialog.h \
            src/GroupModule.h \
            src/FileModule.h \
            src/StatCache.h \
@@ -509,6 +511,7 @@ SOURCES += \
            src/Dock.cc \
            src/FontListDialog.cc \
            src/FontListTableView.cc \
+           src/PrintInitDialog.cc \
            src/launchingscreen.cc \
            src/legacyeditor.cc \
            src/LibraryInfoDialog.cc\
@@ -569,6 +572,11 @@ HEADERS += src/ext/libtess2/Include/tesselator.h \
            src/ext/libtess2/Source/priorityq.h \
            src/ext/libtess2/Source/sweep.h \
            src/ext/libtess2/Source/tess.h
+
+has_qt5 {
+  HEADERS += src/OctoPrint.h
+  SOURCES += src/OctoPrint.cc
+}
 
 has_qt5:unix:!macx {
   QT += dbus

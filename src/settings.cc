@@ -178,6 +178,17 @@ SettingsEntry Settings::highlightCurrentLine("editor", "highlightCurrentLine", V
 SettingsEntry Settings::enableBraceMatching("editor", "enableBraceMatching", Value(true), Value(true));
 SettingsEntry Settings::enableLineNumbers("editor", "enableLineNumbers", Value(true), Value(true));
 
+SettingsEntry Settings::printServiceShowDialog("printing", "showPrintDialog", Value(true), Value(true));
+SettingsEntry Settings::printService("printing", "printService", values("None", _("None"), "PrintAThing", _("Print a Thing"), "OctoPrint", _("OctoPrint")), Value("None"));
+SettingsEntry Settings::octoPrintUrl("printing", "octoPrintUrl", Value(""), Value(""));
+SettingsEntry Settings::octoPrintApiKey("printing", "octoPrintApiKey", Value(""), Value(""));
+SettingsEntry Settings::octoPrintFileFormat("printing", "octoPrintFileFormat", values("STL", "STL", "OFF", "OFF", "AMF", "AMF", "3MF", "3MF"), Value("STL"));
+SettingsEntry Settings::octoPrintAction("printing", "octoPrintAction", values("upload", _("Upload only"), "slice", _("Upload & Slice"), "select", _("Upload, Slice & Select for printing"), "print", _("Upload, Slice & Start printing")), Value("upload"));
+SettingsEntry Settings::octoPrintSlicerEngine("printing", "octoPrintSlicerEngine", Value(""), Value(""));
+SettingsEntry Settings::octoPrintSlicerEngineDesc("printing", "octoPrintSlicerEngineDesc", Value(""), Value(""));
+SettingsEntry Settings::octoPrintSlicerProfile("printing", "octoPrintSlicerProfile", Value(""), Value(""));
+SettingsEntry Settings::octoPrintSlicerProfileDesc("printing", "octoPrintSlicerProfileDesc", Value(""), Value(""));
+
 SettingsEntry Settings::inputEnableDriverHIDAPI("input", "enableDriverHIDAPI", Value(true), Value(false));
 SettingsEntry Settings::inputEnableDriverSPNAV("input", "enableDriverSPNAV", Value(true), Value(false));
 SettingsEntry Settings::inputEnableDriverJOYSTICK("input", "enableDriverJOYSTICK", Value(true), Value(false));
