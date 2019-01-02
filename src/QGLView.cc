@@ -158,9 +158,9 @@ void QGLView::display_opencsg_warning_dialog()
 							 "Your renderer information is as follows:\n");
   QString rendererinfo(_("GLEW version %1\n%2 (%3)\nOpenGL version %4\n"));
   message += rendererinfo.arg((const char *)glewGetString(GLEW_VERSION),
-							  (const char *)glGetString(GL_RENDERER),
-							  (const char *)glGetString(GL_VENDOR),
-							  (const char *)glGetString(GL_VERSION));
+                              (const char *)glGetString(GL_RENDERER),
+                              (const char *)glGetString(GL_VENDOR),
+                              (const char *)glGetString(GL_VERSION));
 
   dialog->setText(message);
   dialog->enableOpenCSGBox->setChecked(Preferences::inst()->getValue("advanced/enable_opencsg_opengl1x").toBool());
