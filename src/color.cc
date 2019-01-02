@@ -282,8 +282,8 @@ AbstractNode *ColorModule::instantiate(const Context *ctx, const ModuleInstantia
 			if (hexColor) {
 				node->color = *hexColor;
 			} else {
-				PRINTB_NOCACHE("WARNING: Unable to parse color \"%s\", %s. Please see", colorname % inst->location().toRelativeString(ctx->documentPath()));
-				PRINT_NOCACHE("WARNING: http://en.wikipedia.org/wiki/Web_colors");
+				PRINTB_NOCACHE("WARNING: Unable to parse color \"%s\", %s. ", colorname % inst->location().toRelativeString(ctx->documentPath()));
+				PRINT_NOCACHE("WARNING: Please see http://en.wikipedia.org/wiki/Web_colors");
 			}
 		}
 	}
