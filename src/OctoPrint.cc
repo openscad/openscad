@@ -158,7 +158,7 @@ const QString OctoPrint::upload(QFile *file, const QString fileName) const {
 	reply->deleteLater();
 	const auto statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
 	PRINTB("Status code: %3d", statusCode.toInt());
-	PRINTB("Result: %s", reply->readAll().toStdString());
+	PRINTB("Result: %s", std::string{reply->readAll().data()});
 	const auto location = reply->header(QNetworkRequest::LocationHeader).toString();
 	PRINTB("Location: %s", location.toStdString());
 	return location;
@@ -172,11 +172,11 @@ void OctoPrint::slice(const QString url, const QString slicer, const QString pro
 	request.setRawHeader(QByteArray{"X-Api-Key"}, QByteArray{api_key().c_str()});
 
 	QJsonObject jsonInput;
-	jsonInput.insert("command", "slice");
+	jsonInput.insert("command", QString{"slice"});
 	jsonInput.insert("slicer", slicer);
 	jsonInput.insert("profile", profile);
-	jsonInput.insert("select", select ? "true" : "false");
-	jsonInput.insert("print", print ? "true" : "false");
+	jsonInput.insert("select", QString{select ? "true" : "false"});
+	jsonInput.insert("print", QString{print ? "true" : "false"});
 
 	QNetworkAccessManager nam;
 	QNetworkReply *reply = nam.post(request, QJsonDocument(jsonInput).toJson());
