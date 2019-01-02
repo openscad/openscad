@@ -5,7 +5,7 @@
 
 #import <Foundation/Foundation.h>
 
-extern std::string openscad_detailedversionnumber;
+#include "version.h"
 
 std::string PlatformUtils::pathSeparatorChar()
 {

@@ -16,7 +16,7 @@
 #define __IVisualProperties_INTERFACE_DEFINED__
 #include <shlobj.h>
 
-extern std::string openscad_detailedversionnumber;
+#include "version.h"
 
 std::string PlatformUtils::pathSeparatorChar()
 {

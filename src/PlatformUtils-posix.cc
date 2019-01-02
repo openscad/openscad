@@ -10,9 +10,8 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 
+#include "version.h"
 #include "PlatformUtils.h"
-
-extern std::string openscad_detailedversionnumber;
 
 namespace fs=boost::filesystem;
 

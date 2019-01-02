@@ -317,6 +317,7 @@ HEADERS += src/version_check.h \
            src/colornode.h \
            src/rendernode.h \
            src/textnode.h \
+           src/version.h \
            src/openscad.h \
            src/handle_dep.h \
            src/Geometry.h \
@@ -503,6 +504,7 @@ SOURCES += \
            src/system-gl.cc \
            src/imageutils.cc \
            \
+           src/version.cc \
            src/openscad.cc \
            src/mainwin.cc \
            src/OpenSCADApp.cc \

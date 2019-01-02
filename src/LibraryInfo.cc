@@ -9,6 +9,8 @@
 #include "version_check.h"
 #include "PlatformUtils.h"
 #include "openscad.h"
+#include "version.h"
+
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 
