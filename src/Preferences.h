@@ -31,6 +31,7 @@ public:
 public slots:
 	void actionTriggered(class QAction *);
 	void featuresCheckBoxToggled(bool);
+	void on_stackedWidget_currentChanged(int);
 	void on_colorSchemeChooser_itemSelectionChanged();
 	void on_fontChooser_activated(const QString &);
 	void on_fontSize_currentIndexChanged(const QString &);
@@ -93,6 +94,7 @@ public slots:
 	void on_comboBoxOctoPrintFileFormat_activated(int);
 	void on_lineEditOctoPrintURL_editingFinished();
 	void on_lineEditOctoPrintApiKey_editingFinished();
+	void on_pushButtonOctoPrintApiKey_clicked();
 
 signals:
 	void requestRedraw() const;
@@ -110,9 +112,12 @@ signals:
 private:
     Preferences(QWidget *parent = nullptr);
 	void keyPressEvent(QKeyEvent *e) override;
+	void showEvent(QShowEvent *e) override;
+	void closeEvent(QCloseEvent *e) override;
 	void removeDefaultSettings();
 	void setupFeaturesPage();
 	void writeSettings();
+	void hidePasswords();
 	void addPrefPage(QActionGroup *group, QAction *action, QWidget *widget);
 
 	/** Initialize combobox list values from the settings range values */

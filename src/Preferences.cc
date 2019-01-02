@@ -257,8 +257,7 @@ Preferences::~Preferences()
  * @param widget The widget that should be shown when the action is triggered.
  *               This must be a child page of the stackedWidget.
  */
-void
-Preferences::addPrefPage(QActionGroup *group, QAction *action, QWidget *widget)
+void Preferences::addPrefPage(QActionGroup *group, QAction *action, QWidget *widget)
 {
 	group->addAction(action);
 	prefPages[action] = widget;
@@ -269,10 +268,24 @@ Preferences::addPrefPage(QActionGroup *group, QAction *action, QWidget *widget)
  * 
  * @param action The action triggered by the user.
  */
-void
-Preferences::actionTriggered(QAction *action)
+void Preferences::actionTriggered(QAction *action)
 {
 	this->stackedWidget->setCurrentWidget(prefPages[action]);
+}
+
+/**
+ * Called at least on showing / closing the Preferences dialog
+ * and when switching tabs.
+ */
+void Preferences::hidePasswords()
+{
+	this->pushButtonOctoPrintApiKey->setChecked(false);
+	this->lineEditOctoPrintApiKey->setEchoMode(QLineEdit::EchoMode::PasswordEchoOnEdit);
+}
+
+void Preferences::on_stackedWidget_currentChanged(int)
+{
+	hidePasswords();
 }
 
 /**
@@ -665,6 +678,11 @@ void Preferences::on_lineEditOctoPrintApiKey_editingFinished()
 	writeSettings();
 }
 
+void Preferences::on_pushButtonOctoPrintApiKey_clicked()
+{
+	this->lineEditOctoPrintApiKey->setEchoMode(this->pushButtonOctoPrintApiKey->isChecked() ? QLineEdit::EchoMode::Normal : QLineEdit::EchoMode::PasswordEchoOnEdit);
+}
+
 void Preferences::on_comboBoxOctoPrintFileFormat_activated(int val)
 {
 	applyComboBox(this->comboBoxOctoPrintFileFormat, val, Settings::Settings::octoPrintFileFormat);
@@ -767,6 +785,18 @@ void Preferences::keyPressEvent(QKeyEvent *e)
 				e->key() == Qt::Key_Escape) {
 			close();
 		}
+}
+
+void Preferences::showEvent(QShowEvent *e)
+{
+    QMainWindow::showEvent(e);
+	hidePasswords();
+}
+
+void Preferences::closeEvent(QCloseEvent *e)
+{
+	hidePasswords();
+    QMainWindow::closeEvent(e);
 }
 
 /*!
