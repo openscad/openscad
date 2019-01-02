@@ -37,8 +37,8 @@ private:
 	RecursionException(const std::string &what_arg, const Location &loc) : EvaluationException(what_arg), loc(loc) {}
 };
 
-class HardWarningException : public std::runtime_error {
+class HardWarningException : public EvaluationException {
 public:
-	HardWarningException(const std::string &what_arg) : std::runtime_error(what_arg) {}
+	HardWarningException(const std::string &what_arg) : EvaluationException(what_arg) {}
 	~HardWarningException() throw() {}
 };
