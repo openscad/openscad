@@ -286,6 +286,7 @@ void Preferences::hidePasswords()
 void Preferences::on_stackedWidget_currentChanged(int)
 {
 	hidePasswords();
+	this->labelOctoPrintCheckConnection->setText("");
 }
 
 /**
@@ -692,13 +693,14 @@ void Preferences::on_pushButtonOctoPrintCheckConnection_clicked()
 {
 	OctoPrint octoPrint;
 
-	std::string error;
-	std::string api_version;
-	std::string server_version;
-	std::tie(error, api_version, server_version) = octoPrint.get_version();
-	if (error.empty()) {
-		const auto msg = QString{_("Success: Server Version = %1, API Version = %2")}.arg(QString::fromStdString(server_version)).arg(QString::fromStdString(api_version));
-		this->labelOctoPrintCheckConnection->setText(msg);
+	try {
+		QString api_version;
+		QString server_version;
+		std::tie(api_version, server_version) = octoPrint.get_version();
+		this->labelOctoPrintCheckConnection->setText(QString{_("Success: Server Version = %2, API Version = %1")}.arg(api_version).arg(server_version));
+	} catch (const NetworkException& e) {
+		QMessageBox::critical(this, _("Error"), e.getErrorMessage(), QMessageBox::Ok);
+		this->labelOctoPrintCheckConnection->setText("");
 	}
 }
 
@@ -708,16 +710,20 @@ void Preferences::on_pushButtonOctoPrintSlicingEngine_clicked()
 
 	const QString selection = this->comboBoxOctoPrintSlicingEngine->currentText();
 
-	const auto slicers = octoPrint.get_slicers();
-	this->comboBoxOctoPrintSlicingEngine->clear();
-	this->comboBoxOctoPrintSlicingEngine->addItem(_("<Default>"), QVariant{""});
-	for (const auto & entry : slicers) {
-		this->comboBoxOctoPrintSlicingEngine->addItem(QString::fromStdString(entry.second), QVariant{QString::fromStdString(entry.first)});
-	}
+	try {
+		const auto slicers = octoPrint.get_slicers();
+		this->comboBoxOctoPrintSlicingEngine->clear();
+		this->comboBoxOctoPrintSlicingEngine->addItem(_("<Default>"), QVariant{""});
+		for (const auto & entry : slicers) {
+			this->comboBoxOctoPrintSlicingEngine->addItem(entry.second, QVariant{entry.first});
+		}
 
-	const int idx = this->comboBoxOctoPrintSlicingEngine->findText(selection);
-	if (idx >= 0) {
-		this->comboBoxOctoPrintSlicingEngine->setCurrentIndex(idx);
+		const int idx = this->comboBoxOctoPrintSlicingEngine->findText(selection);
+		if (idx >= 0) {
+			this->comboBoxOctoPrintSlicingEngine->setCurrentIndex(idx);
+		}
+	} catch (const NetworkException& e) {
+		QMessageBox::critical(this, _("Error"), e.getErrorMessage(), QMessageBox::Ok);
 	}
 }
 
@@ -740,16 +746,20 @@ void Preferences::on_pushButtonOctoPrintSlicingProfile_clicked()
 	const QString selection = this->comboBoxOctoPrintSlicingProfile->currentText();
 	const QString slicer = this->comboBoxOctoPrintSlicingEngine->itemData(this->comboBoxOctoPrintSlicingEngine->currentIndex()).toString();
 
-	const auto slicers = octoPrint.get_profiles(slicer);
-	this->comboBoxOctoPrintSlicingProfile->clear();
-	this->comboBoxOctoPrintSlicingProfile->addItem(_("<Default>"), QVariant{""});
-	for (const auto & entry : slicers) {
-		this->comboBoxOctoPrintSlicingProfile->addItem(QString::fromStdString(entry.second), QVariant{QString::fromStdString(entry.first)});
-	}
+	try {
+		const auto profiles = octoPrint.get_profiles(slicer);
+		this->comboBoxOctoPrintSlicingProfile->clear();
+		this->comboBoxOctoPrintSlicingProfile->addItem(_("<Default>"), QVariant{""});
+		for (const auto & entry : profiles) {
+			this->comboBoxOctoPrintSlicingProfile->addItem(entry.second, QVariant{entry.first});
+		}
 
-	const int idx = this->comboBoxOctoPrintSlicingProfile->findText(selection);
-	if (idx >= 0) {
-		this->comboBoxOctoPrintSlicingProfile->setCurrentIndex(idx);
+		const int idx = this->comboBoxOctoPrintSlicingProfile->findText(selection);
+		if (idx >= 0) {
+			this->comboBoxOctoPrintSlicingProfile->setCurrentIndex(idx);
+		}
+	} catch (const NetworkException& e) {
+		QMessageBox::critical(this, _("Error"), e.getErrorMessage(), QMessageBox::Ok);
 	}
 }
 

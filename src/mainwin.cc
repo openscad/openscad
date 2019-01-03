@@ -2072,6 +2072,9 @@ void MainWindow::action3DPrint()
 		return;
 	}
 
+	if (GuiLocker::isLocked()) return;
+	GuiLocker lock;
+
 	setCurrentOutput();
 
 	//Make sure we can export:
@@ -2175,16 +2178,20 @@ void MainWindow::sendToOctoPrint()
 	exportFileByName(this->root_geom, exportFileFormat, exportFileName.toLocal8Bit().constData(), exportFileName.toUtf8());
 
 	OctoPrint octoPrint;
-	const QString fileUrl = octoPrint.upload(new QFile(exportFileName), userFileName);
+	try {
+		const QString fileUrl = octoPrint.upload(new QFile(exportFileName), userFileName);
 
-	const std::string action = s->get(Settings::Settings::octoPrintAction).toString();
-	if (action == "upload") {
-		return;
+		const std::string action = s->get(Settings::Settings::octoPrintAction).toString();
+		if (action == "upload") {
+			return;
+		}
+
+		const QString slicer = QString::fromStdString(s->get(Settings::Settings::octoPrintSlicerEngine).toString());
+		const QString profile = QString::fromStdString(s->get(Settings::Settings::octoPrintSlicerProfile).toString());
+		octoPrint.slice(fileUrl, slicer, profile, action != "slice", action == "print");
+	} catch (const NetworkException& e) {
+		PRINTB("ERROR: %s", e.getErrorMessage().toStdString());
 	}
-
-	const QString slicer = QString::fromStdString(s->get(Settings::Settings::octoPrintSlicerEngine).toString());
-	const QString profile = QString::fromStdString(s->get(Settings::Settings::octoPrintSlicerProfile).toString());
-	octoPrint.slice(fileUrl, slicer, profile, action != "slice", action == "print");
 #endif
 }
 

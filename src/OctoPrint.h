@@ -42,24 +42,44 @@ public:
 
 #else
 
+#include <QString>
+#include <QtNetwork>
+
+class NetworkException: public std::exception
+{
+public:
+	NetworkException(const QNetworkReply::NetworkError& error, const QString& errorMessage) : error(error), errorMessage(errorMessage) { }
+	virtual ~NetworkException() {}
+
+	const QNetworkReply::NetworkError& getError() const { return error; }
+	const QString& getErrorMessage() const { return errorMessage; }
+
+	virtual const char* what() const throw()
+	{
+		return errorMessage.toStdString().c_str();
+	}
+
+private:
+	QNetworkReply::NetworkError error;
+	QString errorMessage;
+};
+
 class OctoPrint
 {
 public:
 	OctoPrint();
 	~OctoPrint();
 
-	const std::string url() const;
+	const QString url() const;
 	const std::string api_key() const;
-	const std::tuple<std::string, std::string, std::string> get_version() const;
-	const std::vector<std::pair<std::string, std::string>> get_slicers() const;
-	const std::vector<std::pair<std::string, std::string>> get_profiles(const QString slicer) const;
+	const std::pair<const QString, const QString> get_version() const;
+	const std::vector<std::pair<const QString, const QString>> get_slicers() const;
+	const std::vector<std::pair<const QString, const QString>> get_profiles(const QString slicer) const;
 	const QString upload(QFile *file, const QString fileName) const;
 	void slice(const QString url, const QString slicer, const QString profile, const bool select, const bool print) const;
 
 private:
-	const QJsonDocument get_json_data(const std::string endpoint) const;
-
-	std::string user_agent;
+	const QJsonDocument get_json_data(const QString endpoint) const;
 };
 
 #endif
