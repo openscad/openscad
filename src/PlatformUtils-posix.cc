@@ -1,3 +1,4 @@
+#include <mutex>
 #include <string>
 #include <fstream>
 #include <streambuf>
@@ -14,6 +15,8 @@
 #include "PlatformUtils.h"
 
 namespace fs=boost::filesystem;
+
+static std::mutex user_agent_mutex;
 
 static std::string readText(const std::string &path)
 {
@@ -43,8 +46,6 @@ static fs::path getXdgConfigDir()
 
 	return fs::path{};
 }
-
-
 
 // see https://www.freedesktop.org/wiki/Software/xdg-user-dirs/
 // This partially implements the xdg-user-dir handling by reading the
@@ -226,14 +227,18 @@ static const std::string get_system_info(bool extended = true)
 
 const std::string PlatformUtils::user_agent()
 {
-    std::string result;
+    static std::string result;
 
-	result += "OpenSCAD/";
-	result += openscad_detailedversionnumber;
-	result += " (";
-	result += get_system_info(false);
-	result += get_distribution("; ");
-	result += ")";
+    std::lock_guard<std::mutex> lock(user_agent_mutex);
+
+	if (result.empty()) {
+		result += "OpenSCAD/";
+		result += openscad_detailedversionnumber;
+		result += " (";
+		result += get_system_info(false);
+		result += get_distribution("; ");
+		result += ")";
+	}
 
 	return result;
 }

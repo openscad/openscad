@@ -117,9 +117,7 @@ const QJsonDocument OctoPrint::get_json_data(const QString endpoint) const
 
 const std::vector<std::pair<const QString, const QString>> OctoPrint::get_slicers() const
 {
-	const auto doc = get_json_data("/slicing");
-
-	const auto obj = doc.object();
+	const auto obj = get_json_data("/slicing").object();
 	std::vector<std::pair<const QString, const QString>> slicers;
 	for (const auto & key : obj.keys()) {
 		slicers.emplace_back(std::make_pair(key, obj[key].toObject().value("displayName").toString()));
@@ -129,9 +127,7 @@ const std::vector<std::pair<const QString, const QString>> OctoPrint::get_slicer
 
 const std::vector<std::pair<const QString, const QString>> OctoPrint::get_profiles(const QString slicer) const
 {
-	const auto doc = get_json_data("/slicing");
-
-	const auto obj = doc.object();
+	const auto obj = get_json_data("/slicing").object();
 	std::vector<std::pair<const QString, const QString>> profiles;
 	for (const auto & key : obj.keys()) {
 		const auto entry = obj[key].toObject();
