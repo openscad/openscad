@@ -222,7 +222,7 @@ assignment:
                             //assigments via commandline
                         }else if(prevFile==mainFile && currFile == mainFile){
                             //both assigments in the mainFile
-                            PRINTB("WARNING: %s was assigned on line %i but was overwritten on line %i",
+                            PRINTB("PARSER-WARNING: %s was assigned on line %i but was overwritten on line %i",
                                     assignment.name%
                                     assignment.location().firstLine()%
                                     LOC(@$).firstLine());
@@ -230,7 +230,7 @@ assignment:
                             //assigment overwritten within the same file
                             //the line number beeing equal happens, when a file is included multiple times
                             if(assignment.location().firstLine() != LOC(@$).firstLine()){
-                                PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i",
+                                PRINTB("PARSER-WARNING: %s was assigned on line %i of %s but was overwritten on line %i",
                                         assignment.name%
                                         assignment.location().firstLine()%
                                         uncPathPrev%
@@ -238,7 +238,7 @@ assignment:
                             }
                         }else if(prevFile==mainFile && currFile != mainFile){
                             //assigment from the mainFile overwritten by an include
-                            PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i of %s",
+                            PRINTB("PARSER-WARNING: %s was assigned on line %i of %s but was overwritten on line %i of %s",
                                     assignment.name%
                                     assignment.location().firstLine()%
                                     uncPathPrev%
@@ -668,7 +668,7 @@ int parserlex(void)
 void yyerror (char const *s)
 {
   // FIXME: We leak memory on parser errors...
-  PRINTB("ERROR: Parser error in file %s, line %d: %s\n",
+  PRINTB("PARSER-ERROR: Parser error in file %s, line %d: %s\n",
          (*sourcefile()) % lexerget_lineno() % s);
 }
 
