@@ -26,6 +26,8 @@
 
 #pragma once
 
+#include <QtGlobal>
+
 #if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
 
 // Dummy class for compiling Preferences.cc for Qt4
@@ -42,33 +44,19 @@ public:
 
 #else
 
+#include <tuple>
+
+#include <QFile>
 #include <QString>
-#include <QtNetwork>
+#include <QJsonDocument>
 
-class NetworkException: public std::exception
-{
-public:
-	NetworkException(const QNetworkReply::NetworkError& error, const QString& errorMessage) : error(error), errorMessage(errorMessage) { }
-	virtual ~NetworkException() {}
-
-	const QNetworkReply::NetworkError& getError() const { return error; }
-	const QString& getErrorMessage() const { return errorMessage; }
-
-	virtual const char* what() const throw()
-	{
-		return errorMessage.toStdString().c_str();
-	}
-
-private:
-	QNetworkReply::NetworkError error;
-	QString errorMessage;
-};
+#include "Network.h"
 
 class OctoPrint
 {
 public:
 	OctoPrint();
-	~OctoPrint();
+	virtual ~OctoPrint();
 
 	const QString url() const;
 	const std::string api_key() const;
@@ -76,7 +64,7 @@ public:
 	const std::vector<std::pair<const QString, const QString>> get_slicers() const;
 	const std::vector<std::pair<const QString, const QString>> get_profiles(const QString slicer) const;
 	const QString upload(QFile *file, const QString fileName) const;
-	void slice(const QString url, const QString slicer, const QString profile, const bool select, const bool print) const;
+	void slice(const QString fileUrl, const QString slicer, const QString profile, const bool select, const bool print) const;
 
 private:
 	const QJsonDocument get_json_data(const QString endpoint) const;

@@ -24,9 +24,6 @@
  *
  */
 
-#include <tuple>
-#include <QJsonDocument>
-
 #include "settings.h"
 #include "OctoPrint.h"
 #include "printutils.h"
@@ -50,56 +47,11 @@ const std::string OctoPrint::api_key() const
 	return Settings::Settings::inst()->get(Settings::Settings::octoPrintApiKey).toString();
 }
 
-using setup_func_t = std::function<void(QNetworkRequest&)>;
-using reply_func_t = std::function<QNetworkReply*(QNetworkAccessManager&, QNetworkRequest&)>;
-
-template <typename ResultType>
-ResultType read_sync(const QUrl url, const std::vector<int> accepted_codes, setup_func_t setup_func, reply_func_t reply_func, std::function<ResultType(QNetworkReply *)> transform_func)
-{
-	QNetworkRequest request(url);
-	request.setHeader(QNetworkRequest::UserAgentHeader, QString::fromStdString(PlatformUtils::user_agent()));
-	setup_func(request);
-
-	QNetworkAccessManager nam;
-	QNetworkReply *reply = reply_func(nam, request);
-
-	QTimer timer;
-	timer.setSingleShot(true);
-
-	QEventLoop loop;
-	QObject::connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
-	QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
-	timer.start(30000);
-	loop.exec();
-
-	bool isTimeout = false;
-	if (timer.isActive()) {
-		timer.stop();
-	}
-	if (!reply->isFinished()) {
-		reply->abort();
-		isTimeout = true;
-	}
-
-	reply->deleteLater();
-	if (isTimeout) {
-		throw NetworkException{QNetworkReply::TimeoutError, _("Timeout error")};
-	}
-	if (reply->error() != QNetworkReply::NoError) {
-		throw NetworkException{reply->error(), reply->errorString()};
-	}
-	const auto statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-	if (std::find(accepted_codes.begin(), accepted_codes.end(), statusCode) == accepted_codes.end()) {
-		QString reason = reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString();
-		throw NetworkException{QNetworkReply::ProtocolFailure, reason};
-	}
-
-	return transform_func(reply);
-}
-
 const QJsonDocument OctoPrint::get_json_data(const QString endpoint) const
 {
-	return read_sync<const QJsonDocument>(QUrl(url() + endpoint), { 200 },
+	auto networkRequest = NetworkRequest<const QJsonDocument>{QUrl{url() + endpoint}, { 200 }, 30};
+
+	return networkRequest.execute(
 			[&](QNetworkRequest& request) {
 				request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 				request.setRawHeader(QByteArray{"X-Api-Key"}, QByteArray{api_key().c_str()});
@@ -167,7 +119,8 @@ const QString OctoPrint::upload(QFile *file, const QString fileName) const {
 
 	multiPart->append(filePart);
 
-	return read_sync<const QString>(QUrl(url() + "/files/local"), { 200, 201 },
+	auto networkRequest = NetworkRequest<const QString>{QUrl{url() + "/files/local"}, { 200, 201 }, 180};
+	return networkRequest.execute(
 			[&](QNetworkRequest& request) {
 				request.setHeader(QNetworkRequest::UserAgentHeader, QString::fromStdString(PlatformUtils::user_agent()));
 				request.setRawHeader(QByteArray{"X-Api-Key"}, QByteArray{api_key().c_str()});
@@ -187,7 +140,7 @@ const QString OctoPrint::upload(QFile *file, const QString fileName) const {
 	);
 }
 
-void OctoPrint::slice(const QString url, const QString slicer, const QString profile, const bool select, const bool print) const
+void OctoPrint::slice(const QString fileUrl, const QString slicer, const QString profile, const bool select, const bool print) const
 {
 	QJsonObject jsonInput;
 	jsonInput.insert("command", QString{"slice"});
@@ -196,7 +149,8 @@ void OctoPrint::slice(const QString url, const QString slicer, const QString pro
 	jsonInput.insert("select", QString{select ? "true" : "false"});
 	jsonInput.insert("print", QString{print ? "true" : "false"});
 
-	return read_sync<void>(QUrl(url), { 200, 202 },
+	auto networkRequest = NetworkRequest<void>{QUrl{fileUrl}, { 200, 202 }, 30};
+	return networkRequest.execute(
 			[&](QNetworkRequest& request) {
 				request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 				request.setRawHeader(QByteArray{"X-Api-Key"}, QByteArray{api_key().c_str()});
