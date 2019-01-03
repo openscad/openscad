@@ -56,7 +56,6 @@ void PRINT(const std::string &msg)
 
 void PRINT_NOCACHE(const std::string &msg)
 {
-	bool stop{false};
 	if (msg.empty()) return;
 
 	if (boost::starts_with(msg, "WARNING") || boost::starts_with(msg, "ERROR") || boost::starts_with(msg, "TRACE")) {
