@@ -35,6 +35,7 @@
 #include "exceptions.h"
 #include "memory.h"
 #include "UserModule.h"
+#include "degree_trig.h"
 
 #include <cmath>
 #include <sstream>
@@ -68,20 +69,6 @@ int process_id = getpid();
 
 boost::mt19937 deterministic_rng;
 boost::mt19937 lessdeterministic_rng( std::time(nullptr) + process_id );
-
-#define M_SQRT3   1.73205080756887719318 /* sqrt(3)   */
-#define M_SQRT3_4 0.86602540378443859659 /* sqrt(3/4) == sqrt(3)/2 */
-#define M_SQRT1_3 0.57735026918962573106 /* sqrt(1/3) == sqrt(3)/3 */
-
-static inline double deg2rad(double x)
-{
-	return x * M_PI / 180.0;
-}
-
-static inline double rad2deg(double x)
-{
-	return x * 180.0 / M_PI;
-}
 
 ValuePtr builtin_abs(const Context *, const EvalContext *evalctx)
 {
@@ -231,46 +218,6 @@ quit:
 	return ValuePtr::undefined;
 }
 
-// this limit assumes 26+26=52 bits mantissa
-// comment/undefine it to disable domain check
-#define TRIG_HUGE_VAL ((1L<<26)*360.0*(1L<<26))
-
-double sin_degrees(double x)
-{
-	// use positive tests because of possible Inf/NaN
-	if (x < 360.0 && x >= 0.0) {
-		// Ok for now
-	} else
-#ifdef TRIG_HUGE_VAL
-	if (x < TRIG_HUGE_VAL && x > -TRIG_HUGE_VAL)
-#endif
-	{
-		double revolutions = floor(x/360.0);
-		x -= 360.0*revolutions;
-	}
-#ifdef TRIG_HUGE_VAL
-	else {
-		// total loss of computational accuracy
-		// the result would be meaningless
-		return std::numeric_limits<double>::quiet_NaN();
-	}
-#endif
-	bool oppose = x >= 180.0;
-	if (oppose) x -= 180.0;
-	if (x > 90.0) x = 180.0 - x;
-	if (x < 45.0) {
-		if (x == 30.0) x = 0.5;
-		else x = sin(deg2rad(x));
-	} else if (x == 45.0) {
-		x = M_SQRT1_2;
-	} else if (x == 60.0) {
-		x = M_SQRT3_4;
-	} else { // Inf/Nan would fall here
-		x = cos(deg2rad(90.0-x));
-	}
-	return oppose ? -x : x;
-}
-
 ValuePtr builtin_sin(const Context *, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
@@ -281,44 +228,6 @@ ValuePtr builtin_sin(const Context *, const EvalContext *evalctx)
 	return ValuePtr::undefined;
 }
 
-double cos_degrees(double x)
-{
-	// use positive tests because of possible Inf/NaN
-	if (x < 360.0 && x >= 0.0) {
-		// Ok for now
-	} else
-#ifdef TRIG_HUGE_VAL
-	if (x < TRIG_HUGE_VAL && x > -TRIG_HUGE_VAL)
-#endif
-	{
-		double revolutions = floor(x/360.0);
-		x -= 360.0*revolutions;
-	}
-#ifdef TRIG_HUGE_VAL
-	else {
-		// total loss of computational accuracy
-		// the result would be meaningless
-		return std::numeric_limits<double>::quiet_NaN();
-	}
-#endif
-	bool oppose = x >= 180.0;
-	if (oppose) x -= 180.0;
-	if (x > 90.0) {
-		x = 180.0 - x;
-		oppose = !oppose;
-	}
-	if (x > 45.0) {
-		if (x == 60.0) x = 0.5;
-		else x = sin(deg2rad(90.0-x));
-	} else if (x == 45.0) {
-		x = M_SQRT1_2;
-	} else if (x == 30.0) {
-		x = M_SQRT3_4;
-	} else { // Inf/Nan would fall here
-		x = cos(deg2rad(x));
-	}
-	return oppose ? -x : x;
-}
 
 ValuePtr builtin_cos(const Context *, const EvalContext *evalctx)
 {
@@ -335,7 +244,7 @@ ValuePtr builtin_asin(const Context *, const EvalContext *evalctx)
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
 		if (v->type() == Value::ValueType::NUMBER)
-			return ValuePtr(rad2deg(asin(v->toDouble())));
+			return ValuePtr(asin_degrees(v->toDouble()));
 	}
 	return ValuePtr::undefined;
 }
@@ -345,49 +254,9 @@ ValuePtr builtin_acos(const Context *, const EvalContext *evalctx)
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
 		if (v->type() == Value::ValueType::NUMBER)
-			return ValuePtr(rad2deg(acos(v->toDouble())));
+			return ValuePtr(acos_degrees(v->toDouble()));
 	}
 	return ValuePtr::undefined;
-}
-
-double tan_degrees(double x)
-{
-	int cycles = floor((x) / 180.0);
-	// use positive tests because of possible Inf/NaN
-	if (x < 180.0 && x >= 0.0) {
-		// Ok for now
-	} else
-#ifdef TRIG_HUGE_VAL
-	if (x < TRIG_HUGE_VAL && x > -TRIG_HUGE_VAL)
-#endif
-	{
-		x -= 180.0*cycles;
-	}
-#ifdef TRIG_HUGE_VAL
-	else {
-		// total loss of computational accuracy
-		// the result would be meaningless
-		return std::numeric_limits<double>::quiet_NaN();
-	}
-#endif
-	bool oppose = x > 90.0;
-	if (oppose) x = 180.0-x;
-	if (x == 0.0) {
-		x = (cycles % 2) == 0 ? 0.0 : -0.0;
-	} else if (x == 30.0) {
-		x = M_SQRT1_3;
-	} else if (x == 45.0) {
-		x = 1.0;
-	} else if (x == 60.0) {
-		x = M_SQRT3;
-	} else if (x == 90.0) {
-		x = (cycles % 2) == 0 ? 
-			std::numeric_limits<double>::infinity() :
-			-std::numeric_limits<double>::infinity();
-	} else {
-		x = tan(deg2rad(x));
-	}
-	return oppose ? -x : x;
 }
 
 ValuePtr builtin_tan(const Context *, const EvalContext *evalctx)
@@ -405,7 +274,7 @@ ValuePtr builtin_atan(const Context *, const EvalContext *evalctx)
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
 		if (v->type() == Value::ValueType::NUMBER)
-			return ValuePtr(rad2deg(atan(v->toDouble())));
+			return ValuePtr(atan_degrees(v->toDouble()));
 	}
 	return ValuePtr::undefined;
 }
@@ -415,7 +284,7 @@ ValuePtr builtin_atan2(const Context *, const EvalContext *evalctx)
 	if (evalctx->numArgs() == 2) {
 		ValuePtr v0 = evalctx->getArgValue(0), v1 = evalctx->getArgValue(1);
 		if (v0->type() == Value::ValueType::NUMBER && v1->type() == Value::ValueType::NUMBER)
-			return ValuePtr(rad2deg(atan2(v0->toDouble(), v1->toDouble())));
+			return ValuePtr(atan2_degrees(v0->toDouble(), v1->toDouble()));
 	}
 	return ValuePtr::undefined;
 }

@@ -10,6 +10,7 @@
 #include "polyset-utils.h"
 #include "grid.h"
 #include "node.h"
+#include "degree_trig.h"
 
 #include "cgal.h"
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
@@ -158,7 +159,7 @@ namespace CGALUtils {
 	*/
 	bool is_approximately_convex(const PolySet &ps) {
 
-		const double angle_threshold = cos(.1/180*M_PI); // .1°
+		const double angle_threshold = cos_degrees(.1); // .1°
 
 		typedef CGAL::Simple_cartesian<double> K;
 		typedef K::Vector_3 Vector;
