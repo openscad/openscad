@@ -17,9 +17,19 @@ CGAL_Nef_polyhedron *import_nef3(const std::string &filename, const Location &lo
 		PRINTB("WARNING: Can't open import file '%s', import() at line %d", filename % loc.firstLine());
 		return N;
 	}
-
-	N->p3.reset(new CGAL_Nef_polyhedron3);
-	f >> *(N->p3);
+	
+	bool succes{true};
+	std::string msg="";
+	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+	try{
+		N->p3.reset(new CGAL_Nef_polyhedron3);
+		f >> *(N->p3);
+	} catch (const CGAL::Failure_exception &e) {
+		PRINTB("CSG-WARNING: Failure trying to import '%s', import() at line %d", filename % loc.firstLine());
+		PRINT(e.what());
+		N = new CGAL_Nef_polyhedron;
+	}
+	CGAL::set_error_behaviour(old_behaviour);
 	return N;
 }
 #endif
