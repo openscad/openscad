@@ -63,7 +63,6 @@ public:
 	using reply_func_t = std::function<QNetworkReply*(QNetworkAccessManager&, QNetworkRequest&)>;
 	using transform_func_t = std::function<ResultType(QNetworkReply *)>;
 
-	NetworkRequest(QObject *parent) : QObject(parent) { }
 	NetworkRequest(const QUrl url, const std::vector<int> accepted_codes, const int timeout_seconds) : url(url), accepted_codes(accepted_codes), timeout_seconds(timeout_seconds) { }
 	virtual ~NetworkRequest() { }
 
