@@ -5,6 +5,7 @@
 #include "rendersettings.h"
 #include "printutils.h"
 #include "renderer.h"
+#include "degree_trig.h"
 #include <cmath>
 
 #ifdef _WIN32
@@ -68,7 +69,7 @@ void GLView::setColorScheme(const std::string &cs)
     setColorScheme(*colorscheme);
   }
   else {
-    PRINTB("WARNING: GLView: unknown colorscheme %s", cs);
+    PRINTB("UI-WARNING: GLView: unknown colorscheme %s", cs);
   }
 }
 
@@ -101,7 +102,7 @@ void GLView::setupCamera()
 	}
 	default:
 	case Camera::ProjectionType::ORTHOGONAL: {
-		auto height = dist * tan(cam.fov /2 * M_PI / 180);
+		auto height = dist * tan_degrees(cam.fov / 2);
 		glOrtho(-height * aspectratio, height * aspectratio,
 		        -height, height,
 		        -100 * dist, +100 * dist);

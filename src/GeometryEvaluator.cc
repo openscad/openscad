@@ -26,6 +26,7 @@
 #include "svg.h"
 #include "calc.h"
 #include "dxfdata.h"
+#include "degree_trig.h"
 
 #include <algorithm>
 
@@ -85,7 +86,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const Abstrac
 			if (!dim) dim = item.second->getDimension();
 			else if (dim != item.second->getDimension()) {
 				std::string loc = item.first->modinst->location().toRelativeString(this->tree.getDocumentPath());
-				PRINTB("WARNING: Mixing 2D and 3D objects is not supported, %s", loc);
+				PRINTB("CSG-WARNING: Mixing 2D and 3D objects is not supported, %s", loc);
 				break;
 			}
 		}
@@ -223,7 +224,7 @@ std::vector<const class Polygon2d *> GeometryEvaluator::collectChildren2D(const 
 			}
 			else {
 				std::string loc = item.first->modinst->location().toRelativeString(this->tree.getDocumentPath());
-				PRINTB("WARNING: Ignoring 3D child object for 2D operation, %s", loc);
+				PRINTB("CSG-WARNING: Ignoring 3D child object for 2D operation, %s", loc);
 			}
 		}
 	}
@@ -247,7 +248,7 @@ void GeometryEvaluator::smartCacheInsert(const AbstractNode &node,
 	else {
 		if (!GeometryCache::instance()->contains(key)) {
 			if (!GeometryCache::instance()->insert(key, geom)) {
-				PRINT("WARNING: GeometryEvaluator: Node didn't fit into cache");
+				PRINT("CSG-WARNING: GeometryEvaluator: Node didn't fit into cache");
 			}
 		}
 	}
@@ -292,7 +293,7 @@ Geometry::Geometries GeometryEvaluator::collectChildren3D(const AbstractNode &no
 		if (chgeom) {
 			if (chgeom->getDimension() == 2) {
 				std::string loc = item.first->modinst->location().toRelativeString(this->tree.getDocumentPath());
-				PRINTB("WARNING: Ignoring 2D child object for 3D operation, %s", loc);
+				PRINTB("CSG-WARNING: Ignoring 2D child object for 3D operation, %s", loc);
 			}
 			else if (chgeom->isEmpty() || chgeom->getDimension() == 3) {
 				children.push_back(item);
@@ -416,8 +417,8 @@ Response GeometryEvaluator::visit(State &state, const OffsetNode &node)
 				const Polygon2d *polygon = dynamic_cast<const Polygon2d*>(geometry);
 				// ClipperLib documentation: The formula for the number of steps in a full
 				// circular arc is ... Pi / acos(1 - arc_tolerance / abs(delta))
-                double n = Calc::get_fragments_from_r(std::abs(node.delta), node.fn, node.fs, node.fa);
-				double arc_tolerance = std::abs(node.delta) * (1 - cos(M_PI / n));
+				double n = Calc::get_fragments_from_r(std::abs(node.delta), node.fn, node.fs, node.fa);
+				double arc_tolerance = std::abs(node.delta) * (1 - cos_degrees(180 / n));
 				const Polygon2d *result = ClipperUtils::applyOffset(*polygon, node.delta, node.join_type, node.miter_limit, arc_tolerance);
 				assert(result);
 				geom.reset(result);
@@ -567,7 +568,7 @@ Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 			if (matrix_contains_infinity(node.matrix) || matrix_contains_nan(node.matrix)) {
 				// due to the way parse/eval works we can't currently distinguish between NaN and Inf
 				std::string loc = node.modinst->location().toRelativeString(this->tree.getDocumentPath());
-				PRINTB("WARNING: Transformation matrix contains Not-a-Number and/or Infinity - removing object. %s", loc);
+				PRINTB("CSG-WARNING: Transformation matrix contains Not-a-Number and/or Infinity - removing object. %s", loc);
 			}
 			else {
 				// First union all children
@@ -643,10 +644,10 @@ static void add_slice(PolySet *ps, const Polygon2d &poly,
 											const Vector2d &scale1,
 											const Vector2d &scale2)
 {
-	Eigen::Affine2d trans1(Eigen::Scaling(scale1) * Eigen::Rotation2D<double>(-rot1*M_PI/180));
-	Eigen::Affine2d trans2(Eigen::Scaling(scale2) * Eigen::Rotation2D<double>(-rot2*M_PI/180));
+	Eigen::Affine2d trans1(Eigen::Scaling(scale1) * Eigen::Affine2d(rotate_degrees(-rot1)));
+	Eigen::Affine2d trans2(Eigen::Scaling(scale2) * Eigen::Affine2d(rotate_degrees(-rot2)));
 	
-	bool splitfirst = sin((rot1 - rot2)*M_PI/180) > 0.0;
+	bool splitfirst = sin_degrees(rot1 - rot2) > 0.0;
 	for(const auto &o : poly.outlines()) {
 		Vector2d prev1 = trans1 * o.vertices[0];
 		Vector2d prev2 = trans2 * o.vertices[0];
@@ -719,8 +720,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &
 	delete ps_bottom;
 	if (node.scale_x > 0 || node.scale_y > 0) {
 		Polygon2d top_poly(poly);
-		Eigen::Affine2d trans(Eigen::Scaling(node.scale_x, node.scale_y) *
-													 Eigen::Rotation2D<double>(-node.twist*M_PI/180));
+		Eigen::Affine2d trans(Eigen::Scaling(node.scale_x, node.scale_y) * Eigen::Affine2d(rotate_degrees(-node.twist)));
 		top_poly.transform(trans); // top
 		PolySet *ps_top = top_poly.tessellate();
 		translate_PolySet(*ps_top, Vector3d(0,0,h2));
@@ -790,14 +790,14 @@ static void fill_ring(std::vector<Vector3d> &ring, const Outline2d &o, double a,
 	if (flip) {
 		unsigned int l = o.vertices.size()-1;
 		for (unsigned int i=0 ;i<o.vertices.size();i++) {
-			ring[i][0] = o.vertices[l-i][0] * sin(a);
-			ring[i][1] = o.vertices[l-i][0] * cos(a);
+			ring[i][0] = o.vertices[l-i][0] * sin_degrees(a);
+			ring[i][1] = o.vertices[l-i][0] * cos_degrees(a);
 			ring[i][2] = o.vertices[l-i][1];
 		}
 	} else {
 		for (unsigned int i=0 ;i<o.vertices.size();i++) {
-			ring[i][0] = o.vertices[i][0] * sin(a);
-			ring[i][1] = o.vertices[i][0] * cos(a);
+			ring[i][0] = o.vertices[i][0] * sin_degrees(a);
+			ring[i][1] = o.vertices[i][0] * cos_degrees(a);
 			ring[i][2] = o.vertices[i][1];
 		}
 	}
@@ -849,7 +849,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 	
 	if (node.angle != 360) {
 		PolySet *ps_start = poly.tessellate(); // starting face
-		Transform3d rot(Eigen::AngleAxisd(M_PI/2, Vector3d::UnitX()));
+		Transform3d rot(angle_axis_degrees(90, Vector3d::UnitX()));
 		ps_start->transform(rot);
 		// Flip vertex ordering
 		if (!flip_faces) {
@@ -861,7 +861,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 		delete ps_start;
 
 		PolySet *ps_end = poly.tessellate();
-		Transform3d rot2(Eigen::AngleAxisd(node.angle*M_PI/180, Vector3d::UnitZ()) * Eigen::AngleAxisd(M_PI/2, Vector3d::UnitX()));
+		Transform3d rot2(angle_axis_degrees(node.angle, Vector3d::UnitZ()) * angle_axis_degrees(90, Vector3d::UnitX()));
 		ps_end->transform(rot2);
 		if (flip_faces) {
 			for(auto &p : ps_end->polygons) {
@@ -877,13 +877,13 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 		rings[0].resize(o.vertices.size());
 		rings[1].resize(o.vertices.size());
 
-		fill_ring(rings[0], o, (node.angle == 360) ? -M_PI/2 : M_PI/2, flip_faces); // first ring
+		fill_ring(rings[0], o, (node.angle == 360) ? -90 : 90, flip_faces); // first ring
 		for (int j = 0; j < fragments; j++) {
 			double a;
 			if (node.angle == 360)
-			    a = -M_PI/2 + ((j+1)%fragments*2*M_PI) / fragments; // start on the -X axis, for legacy support
+			    a = -90 + ((j+1)%fragments) * 360.0 / fragments; // start on the -X axis, for legacy support
 			else
-				a = M_PI/2 - (j+1)*(node.angle*M_PI/180) / fragments; // start on the X axis
+				a = 90 - (j+1)* node.angle / fragments; // start on the X axis
 			fill_ring(rings[(j+1)%2], o, a, flip_faces);
 
 			for (size_t i=0;i<o.vertices.size();i++) {

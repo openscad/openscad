@@ -52,7 +52,7 @@ public:
     static SettingsEntry highlightCurrentLine;
     static SettingsEntry enableBraceMatching;
     static SettingsEntry enableLineNumbers;
-
+    
     static SettingsEntry inputEnableDriverHIDAPI;
     static SettingsEntry inputEnableDriverSPNAV;
     static SettingsEntry inputEnableDriverJOYSTICK;
