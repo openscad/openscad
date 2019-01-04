@@ -74,7 +74,7 @@ void PRINT_NOCACHE(const std::string &msg)
 			outputhandler(msg, outputhandler_data);
 		}
 	}
-	if(boost::starts_with(msg, "WARNING") && OpenSCAD::hardwarnings){
+	if(OpenSCAD::hardwarnings && !std::current_exception() && boost::starts_with(msg, "WARNING")){
 		throw HardWarningException(msg);
 	}
 }
