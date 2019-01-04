@@ -26,11 +26,13 @@
 
 #pragma once
 
+#include <QObject>
 #include <QString>
 #include <QtNetwork>
 
 #include "printutils.h"
 #include "PlatformUtils.h"
+#include "NetworkSignal.h"
 
 class NetworkException: public std::exception
 {
@@ -51,6 +53,8 @@ private:
 	QString errorMessage;
 };
 
+using network_progress_func_t = std::function<bool(double)>;
+
 template <typename ResultType>
 class NetworkRequest
 {
@@ -59,15 +63,18 @@ public:
 	using reply_func_t = std::function<QNetworkReply*(QNetworkAccessManager&, QNetworkRequest&)>;
 	using transform_func_t = std::function<ResultType(QNetworkReply *)>;
 
+	NetworkRequest(QObject *parent) : QObject(parent) { }
 	NetworkRequest(const QUrl url, const std::vector<int> accepted_codes, const int timeout_seconds) : url(url), accepted_codes(accepted_codes), timeout_seconds(timeout_seconds) { }
 	virtual ~NetworkRequest() { }
 
+	void set_progress_func(network_progress_func_t progress_func) { this->progress_func = progress_func; }
 	ResultType execute(setup_func_t setup_func, reply_func_t reply_func, transform_func_t transform_func);
 
 private:
 	QUrl url;
 	std::vector<int> accepted_codes;
 	int timeout_seconds;
+	network_progress_func_t progress_func = nullptr;
 };
 
 template <typename ResultType>
@@ -81,11 +88,18 @@ ResultType NetworkRequest<ResultType>::execute(NetworkRequest::setup_func_t setu
 	QNetworkReply *reply = reply_func(nam, request);
 
 	QTimer timer;
-	timer.setSingleShot(true);
-
 	QEventLoop loop;
+	NetworkSignal forwarder{nullptr, [&](qint64 bytesSent, qint64 bytesTotal) {
+		const double permille = (1000.0 * bytesSent) / bytesTotal;
+		timer.start();
+		if (progress_func && progress_func(permille)) {
+			reply->abort();
+		}
+	}};
 	QObject::connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
 	QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
+	QObject::connect(reply, SIGNAL(uploadProgress(qint64, qint64)), &forwarder, SLOT(network_progress(qint64, qint64)));
+	timer.setSingleShot(true);
 	timer.start(timeout_seconds * 1000);
 	loop.exec();
 

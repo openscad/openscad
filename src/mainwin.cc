@@ -2064,7 +2064,6 @@ void MainWindow::csgRender()
 	compileEnded();
 }
 
-
 void MainWindow::action3DPrint()
 {
 #ifdef ENABLE_3D_PRINTING
@@ -2179,7 +2178,15 @@ void MainWindow::sendToOctoPrint()
 
 	OctoPrint octoPrint;
 	try {
-		const QString fileUrl = octoPrint.upload(new QFile(exportFileName), userFileName);
+		this->progresswidget = new ProgressWidget(this);
+		connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
+
+		const QString fileUrl = octoPrint.upload(new QFile(exportFileName), userFileName,
+				[&](const double permille) -> bool {
+					QMetaObject::invokeMethod(this->progresswidget, "setValue", Qt::QueuedConnection, Q_ARG(int, (int)permille));
+					return (progresswidget && progresswidget->wasCanceled());
+				}
+		);
 
 		const std::string action = s->get(Settings::Settings::octoPrintAction).toString();
 		if (action == "upload") {
@@ -2192,6 +2199,8 @@ void MainWindow::sendToOctoPrint()
 	} catch (const NetworkException& e) {
 		PRINTB("ERROR: %s", e.getErrorMessage().toStdString());
 	}
+
+	updateStatusBar(nullptr);
 #endif
 }
 

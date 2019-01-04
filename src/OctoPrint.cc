@@ -106,7 +106,7 @@ const std::pair<const QString, const QString> OctoPrint::get_version() const
 	return result;
 }
 
-const QString OctoPrint::upload(QFile *file, const QString fileName) const {
+const QString OctoPrint::upload(QFile *file, const QString fileName, network_progress_func_t progress_func) const {
 
 	QHttpMultiPart *multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
 	QHttpPart filePart;
@@ -120,6 +120,7 @@ const QString OctoPrint::upload(QFile *file, const QString fileName) const {
 	multiPart->append(filePart);
 
 	auto networkRequest = NetworkRequest<const QString>{QUrl{url() + "/files/local"}, { 200, 201 }, 180};
+	networkRequest.set_progress_func(progress_func);
 	return networkRequest.execute(
 			[&](QNetworkRequest& request) {
 				request.setHeader(QNetworkRequest::UserAgentHeader, QString::fromStdString(PlatformUtils::user_agent()));
