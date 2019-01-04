@@ -194,7 +194,6 @@ static void print_ignore_warning(const char *what, const char *name, const Locat
 }
  
 ValuePtr Context::evaluate_function(const std::string &name, const EvalContext *evalctx) const
-
 {
 	if (this->parent) return this->parent->evaluate_function(name, evalctx);
 	print_ignore_warning("function", name.c_str(),evalctx->loc,this->documentPath());

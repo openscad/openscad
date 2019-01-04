@@ -754,6 +754,6 @@ void evaluate_assert(const Context &context, const class EvalContext *evalctx)
 		}else{
 			PRINTB("ERROR: Assertion '%s' failed %s", *expr % locs);
 		}
-		throw AssertionFailedException("",evalctx->loc);
+		throw AssertionFailedException("Assertion Failed",evalctx->loc);
 	}
 }
