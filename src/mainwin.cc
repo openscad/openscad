@@ -3128,7 +3128,7 @@ void MainWindow::consoleOutput(const QString &msg)
 	c.movePosition(QTextCursor::End);
 	this->console->setTextCursor(c);
 
-	if (msg.startsWith("WARNING:") || msg.startsWith("DEPRECATED:")) {
+	if (msg.startsWith("WARNING:") || msg.startsWith("PARSER-WARNING:") || msg.startsWith("DEPRECATED:")) {
 		this->compileWarnings++;
 		this->console->appendHtml("<span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span>");
 	} else if (msg.startsWith("UI-WARNING:") || msg.startsWith("FONT-WARNING:") || msg.startsWith("EXPORT-WARNING:") || msg.startsWith("CSG-WARNING:")) {
@@ -3136,7 +3136,7 @@ void MainWindow::consoleOutput(const QString &msg)
 	} else if (msg.startsWith("ERROR:")) {
 		this->compileErrors++;
 		this->console->appendHtml("<span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span>");
-	} else if (msg.startsWith("EXPORT-ERROR:") || msg.startsWith("UI-ERROR:")) {
+	} else if (msg.startsWith("EXPORT-ERROR:") || msg.startsWith("UI-ERROR:") || msg.startsWith("PARSER-ERROR:")) {
 		this->console->appendHtml("<span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span>");
 	} else {
 		QString qmsg = msg;

@@ -1,2 +1,2 @@
-WARNING: myval was assigned on line 5 but was overwritten on line 7
+PARSER-WARNING: myval was assigned on line 5 but was overwritten on line 7
 ECHO: 3, 3
