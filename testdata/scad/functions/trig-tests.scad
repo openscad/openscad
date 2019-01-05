@@ -98,6 +98,8 @@ echo("***Verify Inverse Trigonometric functions***");
 asin_fails = [for(a = [-90:1: 90]) if (asin(sin(a)) - a) [a, asin(sin(a))] ];
 acos_fails = [for(a = [  0:1:180]) if (acos(cos(a)) - a) [a, acos(cos(a))] ];
 atan_fails = [for(a = [-90:1: 90]) if (atan(tan(a)) - a) [a, atan(tan(a))] ];
+atan2_fails = [for(a = [-180:1:179]) if (atan2(sin(a),cos(a)) - a) [a, atan2(sin(a),cos(a))] ];
 print_results("asin() inverse check", asin_fails);
 print_results("acos() inverse check", acos_fails);
 print_results("atan() inverse check", atan_fails);
+print_results("atan2() inverse check", atan2_fails);
