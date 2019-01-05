@@ -2522,8 +2522,7 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
 		return;
 	auto title = QString(_("Export %1 File")).arg(type_name);
 	auto filter = QString(_("%1 Files (*%2)")).arg(type_name, suffix);
-	auto filename = this->fileName.isEmpty() ? QString(_("Untitled")) + suffix : QFileInfo(this->fileName).completeBaseName() + suffix;
-	auto exportFilename = QFileDialog::getSaveFileName(this, title, filename, filter);
+	auto exportFilename = QFileDialog::getSaveFileName(this, title, exportPath(suffix), filter);
 	if (exportFilename.isEmpty()) {
 		clearCurrentOutput();
 		return;
