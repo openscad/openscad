@@ -77,7 +77,7 @@ std::string get_os_info()
 		return STR("OS info: " << u.sysname << " " << u.release << " " << u.version << "\n" <<
 							 "Machine: " << u.machine);
 	}
-	return ""
+	return "";
 }
 
 std::string offscreen_context_getinfo(OffscreenContext *ctx)
