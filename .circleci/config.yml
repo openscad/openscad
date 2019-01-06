@@ -63,7 +63,10 @@ jobs:
               mkdir -p /tmp/out
               for f in OpenSCAD-*.AppImage; do N=$(basename "$f" | sed -e "s/OpenSCAD-\\(.*\\)/OpenSCAD-${OPENSCAD_VERSION}-${SUFFIX}\\1/;"); cp -iv "$f" /tmp/out/"$N"; done
               echo $CODE_SIGNING_KEY | base64 -d | gzip -d | gpg --import
-              gpg -u 4DDDC2144A4F6A23 --detach-sign --armor /tmp/out/OpenSCAD-*.AppImage
+              echo $CODE_SIGNING_PW | gpg -u 4DDDC2144A4F6A23 --batch --yes --passphrase-fd 0 --detach-sign --armor /tmp/out/OpenSCAD-*.AppImage
+              rm -rf ~/.gnupg
+              cd /tmp/out
+              for a in OpenSCAD-*.AppImage; do sha1sum "$a" | tee "${a}.sha1"; sha256sum "$a" | tee "${a}.sha256"; done
       - store_artifacts:
           path: /tmp/out
           destination: 64-bit
