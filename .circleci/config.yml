@@ -13,7 +13,7 @@ jobs:
               export NUMCPU=2
               export MXEDIR=/mxe
               export LIB3MF_INCLUDEPATH=/mxe/usr/i686-w64-mingw32.static.posix/include/lib3mf
-              if [ x"${BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,')"; fi
+              if [ x"${CIRCLE_BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,')"; fi
               export OPENSCAD_VERSION="$(date +%Y.%m.%d).ci${CIRCLE_BUILD_NUM}"
               . ./scripts/setenv-mingw-xbuild.sh 32 && ./scripts/release-common.sh -snapshot -mingw32 -v "$OPENSCAD_VERSION"
               mkdir -p /tmp/out
@@ -34,7 +34,7 @@ jobs:
               export NUMCPU=2
               export MXEDIR=/mxe
               export LIB3MF_INCLUDEPATH=/mxe/usr/x86_64-w64-mingw32.static.posix/include/lib3mf
-              if [ x"${BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,')"; fi
+              if [ x"${CIRCLE_BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,')"; fi
               export OPENSCAD_VERSION="$(date +%Y.%m.%d).ci${CIRCLE_BUILD_NUM}"
               . ./scripts/setenv-mingw-xbuild.sh 64 && ./scripts/release-common.sh -snapshot -mingw64 -v "$OPENSCAD_VERSION"
               mkdir -p /tmp/out
@@ -54,14 +54,14 @@ jobs:
           command: |
               export OPENSCAD_COMMIT=$(git log -1 --pretty=format:%h)
               export OPENSCAD_VERSION="$(date +%Y.%m.%d).ai${CIRCLE_BUILD_NUM}"
-              if [ x"${BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,')"; fi
+              if [ x"${CIRCLE_BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,')"; fi
               qmake CONFIG+=experimental CONFIG+=snapshot CONFIG-=debug PREFIX=/usr VERSION="$OPENSCAD_VERSION" OPENSCAD_COMMIT="$OPENSCAD_COMMIT"
               make -j2
               make install INSTALL_ROOT=AppDir
               export PATH=/appimage/usr/bin:"$PATH"
               linuxdeploy --plugin qt --output appimage --appdir AppDir
               mkdir -p /tmp/out
-              for f in OpenSCAD-*.AppImage; do N=$(basename "$f" | sed -e "s/OpenSCAD-\\(.*\\)/OpenSCAD-${OPENSCAD_VERSION}${SUFFIX}\\1/;"); cp -iv "$f" /tmp/out/"$N"; done
+              for f in OpenSCAD-*.AppImage; do N=$(basename "$f" | sed -e "s/OpenSCAD-\\(.*\\)/OpenSCAD-${OPENSCAD_VERSION}-${SUFFIX}\\1/;"); cp -iv "$f" /tmp/out/"$N"; done
       - store_artifacts:
           path: /tmp/out
           destination: 64-bit
