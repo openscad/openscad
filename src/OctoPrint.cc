@@ -42,19 +42,19 @@ const QString OctoPrint::url() const
 	return QString::fromStdString(Settings::Settings::inst()->get(Settings::Settings::octoPrintUrl).toString());
 }
 
-const std::string OctoPrint::api_key() const
+const std::string OctoPrint::apiKey() const
 {
 	return Settings::Settings::inst()->get(Settings::Settings::octoPrintApiKey).toString();
 }
 
-const QJsonDocument OctoPrint::get_json_data(const QString endpoint) const
+const QJsonDocument OctoPrint::getJsonData(const QString endpoint) const
 {
 	auto networkRequest = NetworkRequest<const QJsonDocument>{QUrl{url() + endpoint}, { 200 }, 30};
 
 	return networkRequest.execute(
 			[&](QNetworkRequest& request) {
 				request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-				request.setRawHeader(QByteArray{"X-Api-Key"}, QByteArray{api_key().c_str()});
+				request.setRawHeader(QByteArray{"X-Api-Key"}, QByteArray{apiKey().c_str()});
 			},
 			[](QNetworkAccessManager& nam, QNetworkRequest& request) {
 				return nam.get(request);
@@ -67,9 +67,9 @@ const QJsonDocument OctoPrint::get_json_data(const QString endpoint) const
 	);
 }
 
-const std::vector<std::pair<const QString, const QString>> OctoPrint::get_slicers() const
+const std::vector<std::pair<const QString, const QString>> OctoPrint::getSlicers() const
 {
-	const auto obj = get_json_data("/slicing").object();
+	const auto obj = getJsonData("/slicing").object();
 	std::vector<std::pair<const QString, const QString>> slicers;
 	for (const auto & key : obj.keys()) {
 		slicers.emplace_back(std::make_pair(key, obj[key].toObject().value("displayName").toString()));
@@ -77,9 +77,9 @@ const std::vector<std::pair<const QString, const QString>> OctoPrint::get_slicer
 	return slicers;
 }
 
-const std::vector<std::pair<const QString, const QString>> OctoPrint::get_profiles(const QString slicer) const
+const std::vector<std::pair<const QString, const QString>> OctoPrint::getProfiles(const QString slicer) const
 {
-	const auto obj = get_json_data("/slicing").object();
+	const auto obj = getJsonData("/slicing").object();
 	std::vector<std::pair<const QString, const QString>> profiles;
 	for (const auto & key : obj.keys()) {
 		const auto entry = obj[key].toObject();
@@ -97,9 +97,9 @@ const std::vector<std::pair<const QString, const QString>> OctoPrint::get_profil
 	return profiles;
 }
 
-const std::pair<const QString, const QString> OctoPrint::get_version() const
+const std::pair<const QString, const QString> OctoPrint::getVersion() const
 {
-	const auto obj = get_json_data("/version").object();
+	const auto obj = getJsonData("/version").object();
     const auto api_version = obj.value("api").toString();
     const auto server_version = obj.value("server").toString();
 	const auto result = std::make_pair(api_version, server_version);
@@ -124,7 +124,7 @@ const QString OctoPrint::upload(QFile *file, const QString fileName, network_pro
 	return networkRequest.execute(
 			[&](QNetworkRequest& request) {
 				request.setHeader(QNetworkRequest::UserAgentHeader, QString::fromStdString(PlatformUtils::user_agent()));
-				request.setRawHeader(QByteArray{"X-Api-Key"}, QByteArray{api_key().c_str()});
+				request.setRawHeader(QByteArray{"X-Api-Key"}, QByteArray{apiKey().c_str()});
 			},
 			[&](QNetworkAccessManager& nam, QNetworkRequest& request) {
 				const auto reply = nam.post(request, multiPart);
@@ -154,7 +154,7 @@ void OctoPrint::slice(const QString fileUrl, const QString slicer, const QString
 	return networkRequest.execute(
 			[&](QNetworkRequest& request) {
 				request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-				request.setRawHeader(QByteArray{"X-Api-Key"}, QByteArray{api_key().c_str()});
+				request.setRawHeader(QByteArray{"X-Api-Key"}, QByteArray{apiKey().c_str()});
 			},
 			[&](QNetworkAccessManager& nam, QNetworkRequest& request) {
 				return nam.post(request, QJsonDocument(jsonInput).toJson());

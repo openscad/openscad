@@ -37,9 +37,9 @@ public:
 	OctoPrint() {}
 	~OctoPrint() {}
 
-	const std::tuple<std::string, std::string, std::string> get_version() const { return {}; }
-	const std::vector<std::pair<std::string, std::string>> get_slicers() const { return {}; }
-	const std::vector<std::pair<std::string, std::string>> get_profiles(const QString) const { return {}; }
+	const std::pair<const QString, const QString> getVersion() const { return {}; }
+	const std::vector<std::pair<const QString, const QString>> getSlicers() const { return {}; }
+	const std::vector<std::pair<const QString, const QString>> getProfiles(const QString slicer) const { return {}; }
 };
 
 #else
@@ -59,15 +59,15 @@ public:
 	virtual ~OctoPrint();
 
 	const QString url() const;
-	const std::string api_key() const;
-	const std::pair<const QString, const QString> get_version() const;
-	const std::vector<std::pair<const QString, const QString>> get_slicers() const;
-	const std::vector<std::pair<const QString, const QString>> get_profiles(const QString slicer) const;
+	const std::string apiKey() const;
+	const std::pair<const QString, const QString> getVersion() const;
+	const std::vector<std::pair<const QString, const QString>> getSlicers() const;
+	const std::vector<std::pair<const QString, const QString>> getProfiles(const QString slicer) const;
 	const QString upload(QFile *file, const QString fileName, network_progress_func_t progress_func) const;
 	void slice(const QString fileUrl, const QString slicer, const QString profile, const bool select, const bool print) const;
 
 private:
-	const QJsonDocument get_json_data(const QString endpoint) const;
+	const QJsonDocument getJsonData(const QString endpoint) const;
 };
 
 #endif

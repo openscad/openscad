@@ -696,7 +696,7 @@ void Preferences::on_pushButtonOctoPrintCheckConnection_clicked()
 	try {
 		QString api_version;
 		QString server_version;
-		std::tie(api_version, server_version) = octoPrint.get_version();
+		std::tie(api_version, server_version) = octoPrint.getVersion();
 		this->labelOctoPrintCheckConnection->setText(QString{_("Success: Server Version = %2, API Version = %1")}.arg(api_version).arg(server_version));
 	} catch (const NetworkException& e) {
 		QMessageBox::critical(this, _("Error"), e.getErrorMessage(), QMessageBox::Ok);
@@ -711,7 +711,7 @@ void Preferences::on_pushButtonOctoPrintSlicingEngine_clicked()
 	const QString selection = this->comboBoxOctoPrintSlicingEngine->currentText();
 
 	try {
-		const auto slicers = octoPrint.get_slicers();
+		const auto slicers = octoPrint.getSlicers();
 		this->comboBoxOctoPrintSlicingEngine->clear();
 		this->comboBoxOctoPrintSlicingEngine->addItem(_("<Default>"), QVariant{""});
 		for (const auto & entry : slicers) {
@@ -747,7 +747,7 @@ void Preferences::on_pushButtonOctoPrintSlicingProfile_clicked()
 	const QString slicer = this->comboBoxOctoPrintSlicingEngine->itemData(this->comboBoxOctoPrintSlicingEngine->currentIndex()).toString();
 
 	try {
-		const auto profiles = octoPrint.get_profiles(slicer);
+		const auto profiles = octoPrint.getProfiles(slicer);
 		this->comboBoxOctoPrintSlicingProfile->clear();
 		this->comboBoxOctoPrintSlicingProfile->addItem(_("<Default>"), QVariant{""});
 		for (const auto & entry : profiles) {
