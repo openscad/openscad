@@ -20,8 +20,8 @@ jobs:
               for f in mingw*/*.zip mingw*/*.exe; do N=$(basename "$f" | sed -e "s/\\(-x86-[36][24]\\)/\\1${SUFFIX}/;"); cp -iv "$f" /tmp/out/"$N"; done
               cd /tmp/out
               echo $CODE_SIGNING_DATA | base64 -d | gzip -d | gpg --import
-              alias sign="gpg --batch --yes --passphrase-fd 0 --pinentry-mode loopback --detach-sign --armor"
-              for a in *.exe *.zip; do echo "$CODE_SIGNING_PW" | sign -u "$CODE_SIGNING_KEY" "$a"; sha1sum "$a" | tee "${a}.sha1"; sha256sum "$a" | tee "${a}.sha256"; done
+              export GPG_ARGS="--batch --yes --passphrase-fd 0 --pinentry-mode loopback --detach-sign --armor"
+              for a in *.exe *.zip; do echo "$CODE_SIGNING_PW" | gpg -u "$CODE_SIGNING_KEY" $GPG_ARGS "$a"; sha1sum "$a" | tee "${a}.sha1"; sha256sum "$a" | tee "${a}.sha256"; done
               rm -rf ~/.gnupg
       - store_artifacts:
           path: /tmp/out
@@ -46,8 +46,8 @@ jobs:
               for f in mingw*/*.zip mingw*/*.exe; do N=$(basename "$f" | sed -e "s/\\(-x86-[36][24]\\)/\\1${SUFFIX}/;"); cp -iv "$f" /tmp/out/"$N"; done
               cd /tmp/out
               echo $CODE_SIGNING_DATA | base64 -d | gzip -d | gpg --import
-              alias sign="gpg --batch --yes --passphrase-fd 0 --pinentry-mode loopback --detach-sign --armor"
-              for a in *.exe *.zip; do echo "$CODE_SIGNING_PW" | sign -u "$CODE_SIGNING_KEY" "$a"; sha1sum "$a" | tee "${a}.sha1"; sha256sum "$a" | tee "${a}.sha256"; done
+              export GPG_ARGS="--batch --yes --passphrase-fd 0 --pinentry-mode loopback --detach-sign --armor"
+              for a in *.exe *.zip; do echo "$CODE_SIGNING_PW" | sign -u "$CODE_SIGNING_KEY" $GPG_ARGS "$a"; sha1sum "$a" | tee "${a}.sha1"; sha256sum "$a" | tee "${a}.sha256"; done
               rm -rf ~/.gnupg
       - store_artifacts:
           path: /tmp/out
@@ -74,8 +74,8 @@ jobs:
               for f in OpenSCAD-*.AppImage; do N=$(basename "$f" | sed -e "s/OpenSCAD-\\(.*\\)/OpenSCAD-${OPENSCAD_VERSION}-${SUFFIX}\\1/;"); cp -iv "$f" /tmp/out/"$N"; done
               cd /tmp/out
               echo $CODE_SIGNING_DATA | base64 -d | gzip -d | gpg --import
-              alias sign="gpg --batch --yes --passphrase-fd 0 --detach-sign --armor"
-              for a in *.AppImage; do echo "$CODE_SIGNING_PW" | sign -u "$CODE_SIGNING_KEY" "$a"; sha1sum "$a" | tee "${a}.sha1"; sha256sum "$a" | tee "${a}.sha256"; done
+              export GPG_ARGS="--batch --yes --passphrase-fd 0 --detach-sign --armor"
+              for a in *.AppImage; do echo "$CODE_SIGNING_PW" | gpg -u "$CODE_SIGNING_KEY" $GPG_ARGS "$a"; sha1sum "$a" | tee "${a}.sha1"; sha256sum "$a" | tee "${a}.sha256"; done
               rm -rf ~/.gnupg
       - store_artifacts:
           path: /tmp/out
@@ -85,7 +85,9 @@ workflows:
   version: 2
   build:
     jobs:
-      - openscad-mxe-32bit
-      - openscad-mxe-64bit
+      - openscad-mxe-32bit:
+          context: secret-context
+      - openscad-mxe-64bit:
+          context: secret-context
       - openscad-appimage-64bit:
           context: secret-context
