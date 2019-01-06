@@ -2181,7 +2181,7 @@ void MainWindow::sendToOctoPrint()
 		this->progresswidget = new ProgressWidget(this);
 		connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
 
-		const QString fileUrl = octoPrint.upload(new QFile(exportFileName), userFileName,
+		const QString fileUrl = octoPrint.upload(exportFileName, userFileName,
 				[&](const double permille) -> bool {
 					QMetaObject::invokeMethod(this->progresswidget, "setValue", Qt::QueuedConnection, Q_ARG(int, (int)permille));
 					return (progresswidget && progresswidget->wasCanceled());

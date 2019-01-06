@@ -63,7 +63,7 @@ public:
 	const std::pair<const QString, const QString> getVersion() const;
 	const std::vector<std::pair<const QString, const QString>> getSlicers() const;
 	const std::vector<std::pair<const QString, const QString>> getProfiles(const QString slicer) const;
-	const QString upload(QFile *file, const QString fileName, network_progress_func_t progress_func) const;
+	const QString upload(const QString exportFileName, const QString fileName, network_progress_func_t progress_func) const;
 	void slice(const QString fileUrl, const QString slicer, const QString profile, const bool select, const bool print) const;
 
 private:
