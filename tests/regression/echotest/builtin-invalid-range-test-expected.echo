@@ -1,0 +1,2 @@
+WARNING: Parameter range cube(size=[1, 1, -1], ...) invalid - no geometry will be created, in file builtin-invalid-range-test.scad, line 1
+WARNING: Parameter range sphere(r1=-1) invalid - no geometry will be created, in file builtin-invalid-range-test.scad, line 2

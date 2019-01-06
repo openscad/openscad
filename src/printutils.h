@@ -31,6 +31,7 @@ namespace OpenSCAD {
 	extern bool quiet;
 	extern bool hardwarnings;
 	extern bool parameterCheck;
+	extern bool rangeCheck;
 }
 
 void set_output_handler(OutputHandlerFunc *newhandler, void *userdata);

@@ -927,6 +927,7 @@ int main(int argc, char **argv)
 		("quiet,q", "quiet mode (don't print anything *except* errors)")
 		("hardwarnings", "Stop on the first warning")
 		("check-parameters", po::value<string>(), "=true/false, configure the parameter check for user modules and functions")
+		("check-parameter-ranges", po::value<string>(), "=true/false, configure the parameter check for user modules and functions")
 		("debug", po::value<string>(), "special debug info")
 		("s,s", po::value<string>(), "stl_file deprecated, use -o")
 		("x,x", po::value<string>(), "dxf_file deprecated, use -o")
@@ -969,6 +970,7 @@ int main(int argc, char **argv)
 	
 	std::map<std::string, bool*> flags;
 	flags.insert(std::make_pair("check-parameters",&OpenSCAD::parameterCheck));
+	flags.insert(std::make_pair("check-parameter-ranges",&OpenSCAD::rangeCheck));
 	for(auto flag : flags) {
 		std::string name = flag.first;
 		if(vm.count(name)){

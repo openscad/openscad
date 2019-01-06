@@ -1033,6 +1033,7 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 {
 	OpenSCAD::hardwarnings = Preferences::inst()->getValue("advanced/enableHardwarnings").toBool();
 	OpenSCAD::parameterCheck = Preferences::inst()->getValue("advanced/enableParameterCheck").toBool();
+	//OpenSCAD::rangeCheck = Preferences::inst()->getValue("advanced/enableRangeCheck").toBool();
 
 	try{
 		bool shouldcompiletoplevel = false;

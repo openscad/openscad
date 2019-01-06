@@ -206,6 +206,15 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 			if(!converted){
 				PRINTB("WARNING: Unable to convert cube(size=%s, ...) parameter to a number or a vec3 of numbers, %s", size->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 			}
+			if(OpenSCAD::rangeCheck){
+				bool ok = true;
+				ok &= (node->x > 0);
+				ok &= (node->y > 0);
+				ok &= (node->z > 0);
+				if(!ok){
+					PRINTB("WARNING: Parameter range cube(size=%s, ...) invalid - no geometry will be created, %s", size->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+				}
+			}
 		}
 		if (center->type() == Value::ValueType::BOOL) {
 			node->center = center->toBool();
@@ -216,6 +225,9 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		const auto r = lookup_radius(c, inst->location(), "d", "r");
 		if (r.type() == Value::ValueType::NUMBER) {
 			node->r1 = r.toDouble();
+			if (OpenSCAD::rangeCheck && (node->r1 < 0)){
+				PRINTB("WARNING: Parameter range sphere(r1=%d) invalid - no geometry will be created, %s", node->r1 % inst->location().toRelativeString(ctx->documentPath()));
+			}
 		}
 		break;
 	}
@@ -244,7 +256,16 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		if (r2.type() == Value::ValueType::NUMBER) {
 			node->r2 = r2.toDouble();
 		}
-		
+
+		if(OpenSCAD::rangeCheck){
+			if (node->h < 0){
+				PRINTB("WARNING: Parameter range cylinder(h=%d, ...) invalid - no geometry will be created, %s", node->h % inst->location().toRelativeString(ctx->documentPath()));
+			}
+			if (node->r1 < 0 || node->r2 < 0){
+				PRINTB("WARNING: Parameter range cylinder(r1=%d, r2=%d, ...) invalid - no geometry will be created, %s", node->r1 % node->r2 % inst->location().toRelativeString(ctx->documentPath()));
+			}
+		}
+
 		auto center = c.lookup_variable("center");
 		if (center->type() == Value::ValueType::BOOL) {
 			node->center = center->toBool();
