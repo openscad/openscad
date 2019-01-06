@@ -1298,7 +1298,7 @@
              <number>9</number>
             </property>
             <item>
-             <widget class="QGroupBox" name="groupBox">
+             <widget class="QGroupBox" name="groupBox_CSG">
               <property name="title">
                <string>OpenCSG</string>
               </property>
@@ -1352,126 +1352,153 @@
              </widget>
             </item>
             <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_2">
-              <item>
-               <widget class="QLabel" name="label_4">
-                <property name="text">
-                 <string>CGAL Cache size</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QLineEdit" name="cgalCacheSizeEdit"/>
-              </item>
-              <item>
-               <widget class="QLabel" name="label_2">
-                <property name="text">
-                 <string>bytes</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_3">
-              <property name="bottomMargin">
-               <number>0</number>
+             <widget class="QGroupBox" name="groupBox_CGAL">
+              <property name="title">
+               <string>CGAL</string>
               </property>
-              <item>
-               <widget class="QLabel" name="label_5">
-                <property name="text">
-                 <string>PolySet Cache size</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QLineEdit" name="polysetCacheSizeEdit"/>
-              </item>
-              <item>
-               <widget class="QLabel" name="label_6">
-                <property name="text">
-                 <string>bytes</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="mdiCheckBox">
-              <property name="text">
-               <string>Allow opening multiple documents</string>
-              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_14">
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_cgalCacheSize">
+                 <item>
+                  <widget class="QLabel" name="label_4">
+                   <property name="text">
+                    <string>CGAL Cache size</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="cgalCacheSizeEdit"/>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="label_2">
+                   <property name="text">
+                    <string>bytes</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_polysetCacheSize">
+                 <property name="bottomMargin">
+                  <number>0</number>
+                 </property>
+                 <item>
+                  <widget class="QLabel" name="label_5">
+                   <property name="text">
+                    <string>PolySet Cache size</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="polysetCacheSizeEdit"/>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="label_6">
+                   <property name="text">
+                    <string>bytes</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+              </layout>
              </widget>
             </item>
             <item>
-             <widget class="QCheckBox" name="reorderCheckBox">
-              <property name="text">
-               <string>Enable docking of Editor and Console in different places</string>
+             <widget class="QGroupBox" name="groupBox_UI">
+              <property name="title">
+               <string>User Interface</string>
               </property>
+              <layout class="QVBoxLayout" name="verticalLayout_13">
+               <item>
+                <widget class="QCheckBox" name="mdiCheckBox">
+                 <property name="text">
+                  <string>Allow opening multiple documents</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="reorderCheckBox">
+                 <property name="text">
+                  <string>Enable docking of Editor and Console in different places</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="undockCheckBox">
+                 <property name="text">
+                  <string>Enable undocking of Editor and Console to separate windows</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="launcherBox">
+                 <property name="text">
+                  <string>Show Welcome Screen</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="localizationCheckBox">
+                 <property name="text">
+                  <string>Enable user interface localization (requires restart of OpenSCAD)</string>
+                 </property>
+                 <property name="checked">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="autoReloadRaiseCheckBox">
+                 <property name="text">
+                  <string>Bring window to front after automatic reload</string>
+                 </property>
+                 <property name="checked">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="enableSoundOnRenderCompleteCheckBox">
+                 <property name="text">
+                  <string>Play sound notification on render complete</string>
+                 </property>
+                 <property name="checked">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </widget>
             </item>
             <item>
-             <widget class="QCheckBox" name="undockCheckBox">
-              <property name="text">
-               <string>Enable undocking of Editor and Console to separate windows</string>
+             <widget class="QGroupBox" name="groupBox_lang">
+              <property name="title">
+               <string>OpenSCAD Language Features</string>
               </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="launcherBox">
-              <property name="text">
-               <string>Show Welcome Screen</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="localizationCheckBox">
-              <property name="text">
-               <string>Enable user interface localization (requires restart of OpenSCAD)</string>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="autoReloadRaiseCheckBox">
-              <property name="text">
-               <string>Bring window to front after automatic reload</string>
-              </property>
-              <property name="checked">
-               <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="enableSoundOnRenderCompleteCheckBox">
-              <property name="text">
-               <string>Play sound notification on render complete</string>
-              </property>
-              <property name="checked">
-               <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="enableParameterCheckBox">
-              <property name="text">
-               <string>Warn when there is a parameter mismatch in user module calls</string>
-              </property>
-              <property name="checked">
-               <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="enableHardwarningsCheckBox">
-              <property name="text">
-               <string>Stop on the first warning</string>
-              </property>
-              <property name="checked">
-               <bool>false</bool>
-              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_15">
+               <item>
+                <widget class="QCheckBox" name="enableParameterCheckBox">
+                 <property name="text">
+                  <string>Warn when there is a parameter mismatch in user module calls</string>
+                 </property>
+                 <property name="checked">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="enableHardwarningsCheckBox">
+                 <property name="text">
+                  <string>Stop on the first warning</string>
+                 </property>
+                 <property name="checked">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </widget>
             </item>
             <item>
