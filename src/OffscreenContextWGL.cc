@@ -1,4 +1,4 @@
-﻿/*
+﻿*
 
 Create an OpenGL context without creating an OpenGL Window. for Windows.
 
@@ -59,7 +59,7 @@ string get_os_info()
 
   SYSTEM_INFO si;
   GetSystemInfo(&si);
-  map<WORD,const char*> archs;
+	std::map<WORD,const char*> archs;
   archs[PROCESSOR_ARCHITECTURE_AMD64] = "amd64";
   archs[PROCESSOR_ARCHITECTURE_IA64] = "itanium";
   archs[PROCESSOR_ARCHITECTURE_INTEL] = "x86";
