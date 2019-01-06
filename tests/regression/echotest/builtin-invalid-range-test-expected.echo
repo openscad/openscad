@@ -1,3 +1,4 @@
+ECHO: "Primitives"
 ECHO: "i=1"
 ECHO: "i=0"
 WARNING: cube(size=[1, 0, 1], ...), in file builtin-invalid-range-test.scad, line 7
@@ -44,4 +45,18 @@ WARNING: square(size=inf, ...), in file builtin-invalid-range-test.scad, line 11
 WARNING: square(size=[1, inf], ...), in file builtin-invalid-range-test.scad, line 12
 WARNING: square(size=[inf, 1], ...), in file builtin-invalid-range-test.scad, line 13
 WARNING: circle(r1=inf), in file builtin-invalid-range-test.scad, line 14
+ECHO: "Transformations"
+ECHO: "i=1"
+ECHO: "i=0"
+WARNING: scale(0), in file builtin-invalid-range-test.scad, line 19
+ECHO: "i=-1"
+ECHO: "i=-inf"
+WARNING: scale(-inf), in file builtin-invalid-range-test.scad, line 19
+WARNING: Problem converting rotate(a=-inf) parameter, in file builtin-invalid-range-test.scad, line 21
+ECHO: "i=nan"
+WARNING: scale(nan), in file builtin-invalid-range-test.scad, line 19
+WARNING: Problem converting rotate(a=nan) parameter, in file builtin-invalid-range-test.scad, line 21
+ECHO: "i=inf"
+WARNING: scale(inf), in file builtin-invalid-range-test.scad, line 19
+WARNING: Problem converting rotate(a=inf) parameter, in file builtin-invalid-range-test.scad, line 21
 ECHO: "Those are okay"

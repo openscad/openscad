@@ -1,7 +1,7 @@
 inf = 1/0;
 nan = inf / inf;
 tests= [1,0,-1,-inf,nan,inf];
-
+echo("Primitives");
 for(i=tests){
     echo(str("i=",i));
     cube([1,i,1]);
@@ -13,10 +13,15 @@ for(i=tests){
     square([i,1]);
     circle(i);
 }
-
+echo("Transformations");
 for(i=tests){
+    echo(str("i=",i));
     scale(i)
+    sphere();
+    rotate(i);
     cube();
+    translate([0,i,0])
+    cylinder();
 }
 echo("Those are okay");
 cylinder(r1=1,r2=0,h=10);
