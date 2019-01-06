@@ -47,7 +47,7 @@ jobs:
               cd /tmp/out
               echo $CODE_SIGNING_DATA | base64 -d | gzip -d | gpg --import --allow-secret-key-import --pinentry-mode loopback --passphrase-file <(echo $CODE_SIGNING_PW)
               export GPG_ARGS="--batch --yes --passphrase-fd 0 --pinentry-mode loopback --detach-sign --armor"
-              for a in *.exe *.zip; do echo "$CODE_SIGNING_PW" | sign -u "$CODE_SIGNING_KEY" $GPG_ARGS "$a"; sha1sum "$a" | tee "${a}.sha1"; sha256sum "$a" | tee "${a}.sha256"; done
+              for a in *.exe *.zip; do echo "$CODE_SIGNING_PW" | gpg -u "$CODE_SIGNING_KEY" $GPG_ARGS "$a"; sha1sum "$a" | tee "${a}.sha1"; sha256sum "$a" | tee "${a}.sha256"; done
               rm -rf ~/.gnupg
       - store_artifacts:
           path: /tmp/out
