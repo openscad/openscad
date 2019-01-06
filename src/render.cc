@@ -65,11 +65,7 @@ AbstractNode *RenderModule::instantiate(const Context *ctx, const ModuleInstanti
 
 std::string RenderNode::toString() const
 {
-	std::stringstream stream;
-
-	stream << this->name() << "(convexity = " << convexity << ")";
-
-	return stream.str();
+	return STR(this->name() << "(convexity = " << convexity << ")");
 }
 
 void register_builtin_render()

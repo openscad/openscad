@@ -300,11 +300,7 @@ AbstractNode *ColorModule::instantiate(const Context *ctx, const ModuleInstantia
 
 std::string ColorNode::toString() const
 {
-	std::stringstream stream;
-
-	stream << "color([" << this->color[0] << ", " << this->color[1] << ", " << this->color[2] << ", " << this->color[3] << "])";
-
-	return stream.str();
+	return STR("color([" << this->color[0] << ", " << this->color[1] << ", " << this->color[2] << ", " << this->color[3] << "])");
 }
 
 std::string ColorNode::name() const

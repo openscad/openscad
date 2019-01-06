@@ -82,11 +82,9 @@ string get_os_info()
 string offscreen_context_getinfo(OffscreenContext * /*ctx*/)
 {
   // should probably get some info from WGL context here?
-  stringstream out;
-  out << "GL context creator: WGL\n"
-      << "PNG generator: lodepng\n"
-      << get_os_info();
-  return out.str();
+  return STR("GL context creator: WGL\n" <<
+						 "PNG generator: lodepng\n" <<
+						 get_os_info());
 }
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) 
