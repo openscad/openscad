@@ -2101,7 +2101,7 @@ void MainWindow::action3DPrint()
 		if (dialog_result.rememberDecision) {
 			switch (dialog_result.service) {
 			case print_service_t::PRINT_A_THING:
-				s->set(Settings::Settings::printService, "PrintAThing");
+				s->set(Settings::Settings::printService, "ExternalPrintService");
 				break;
 			case print_service_t::OCTOPRINT:
 				s->set(Settings::Settings::printService, "OctoPrint");
@@ -2115,7 +2115,7 @@ void MainWindow::action3DPrint()
 		Preferences::Preferences::inst()->updateGUI();
 	} else {
 		const auto service = s->get(Settings::Settings::printService).toString();
-		if (service == "PrintAThing") {
+		if (service == "ExternalPrintService") {
 			print_service = print_service_t::PRINT_A_THING;
 		} else if (service == "OctoPrint") {
 			print_service = print_service_t::OCTOPRINT;
@@ -2126,11 +2126,11 @@ void MainWindow::action3DPrint()
 
 	switch (print_service) {
 	case print_service_t::PRINT_A_THING:
-		PRINT("Sending design to print service Print a Thing");
-		sendToPrintAThing();
+		PRINT("Sending design to print service...");
+		sendToPrintService();
 		break;
 	case print_service_t::OCTOPRINT:
-		PRINT("Sending design to OctoPrint");
+		PRINT("Sending design to OctoPrint...");
 		sendToOctoPrint();
 		break;
 	default:
@@ -2204,7 +2204,7 @@ void MainWindow::sendToOctoPrint()
 #endif
 }
 
-void MainWindow::sendToPrintAThing()
+void MainWindow::sendToPrintService()
 {
 #ifdef ENABLE_3D_PRINTING
 	//Keeps track of how many times we've exported and tries to create slightly unique filenames.

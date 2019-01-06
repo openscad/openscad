@@ -81,7 +81,7 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
-       <widget class="QRadioButton" name="radioButtonPrintAThing">
+       <widget class="QRadioButton" name="radioButtonPrintService">
         <property name="text">
          <string>Upload Design to Print a Thing</string>
         </property>

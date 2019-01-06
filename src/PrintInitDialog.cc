@@ -46,7 +46,7 @@ const PrintServiceResult PrintInitDialog::get_result() const
 void PrintInitDialog::on_okButton_clicked()
 {
 	const bool remember = this->checkBoxRemember->isChecked();
-	if (this->radioButtonPrintAThing->isChecked()) {
+	if (this->radioButtonPrintService->isChecked()) {
 		result = { print_service_t::PRINT_A_THING, remember };
 	} else if (this->radioButtonOctoPrint->isChecked()) {
 		result = { print_service_t::OCTOPRINT, remember };

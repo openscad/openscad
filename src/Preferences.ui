@@ -1445,7 +1445,7 @@
             </layout>
            </item>
            <item row="6" column="0">
-            <widget class="QLabel" name="label_11">
+            <widget class="QLabel" name="labelOctoPrintAction">
              <property name="text">
               <string>Action</string>
              </property>
@@ -1475,7 +1475,7 @@
             </layout>
            </item>
            <item row="1" column="2">
-            <layout class="QHBoxLayout" name="horizontalLayout_30">
+            <layout class="QHBoxLayout" name="horizontalLayoutApiKey">
              <item>
               <widget class="QLineEdit" name="lineEditOctoPrintApiKey">
                <property name="echoMode">

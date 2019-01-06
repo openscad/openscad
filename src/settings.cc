@@ -179,7 +179,7 @@ SettingsEntry Settings::enableBraceMatching("editor", "enableBraceMatching", Val
 SettingsEntry Settings::enableLineNumbers("editor", "enableLineNumbers", Value(true), Value(true));
 
 SettingsEntry Settings::printServiceShowDialog("printing", "showPrintDialog", Value(true), Value(true));
-SettingsEntry Settings::printService("printing", "printService", values("None", _("None"), "PrintAThing", _("Print a Thing"), "OctoPrint", _("OctoPrint")), Value("None"));
+SettingsEntry Settings::printService("printing", "printService", values("None", _("None"), "ExternalPrintService", _("Print a Thing"), "OctoPrint", _("OctoPrint")), Value("None"));
 SettingsEntry Settings::octoPrintUrl("printing", "octoPrintUrl", Value(""), Value(""));
 SettingsEntry Settings::octoPrintApiKey("printing", "octoPrintApiKey", Value(""), Value(""));
 SettingsEntry Settings::octoPrintFileFormat("printing", "octoPrintFileFormat", values("STL", "STL", "OFF", "OFF", "AMF", "AMF", "3MF", "3MF"), Value("STL"));

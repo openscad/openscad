@@ -184,7 +184,7 @@ private slots:
 	void csgReloadRender();
 	void action3DPrint();
 	void sendToOctoPrint();
-	void sendToPrintAThing();
+	void sendToPrintService();
 	void uploadStlAndGetPartUrl(const QString & exportFilename, const QString &userFacingName, QUrl &partUrl);
 #ifdef ENABLE_CGAL
 	void actionRender();
