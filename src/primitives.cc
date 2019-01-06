@@ -207,12 +207,10 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 				PRINTB("WARNING: Unable to convert cube(size=%s, ...) parameter to a number or a vec3 of numbers, %s", size->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 			}
 			if(OpenSCAD::rangeCheck){
-				bool ok = true;
-				ok &= (node->x > 0);
-				ok &= (node->y > 0);
-				ok &= (node->z > 0);
+				bool ok = (node->x > 0) && (node->y > 0) && (node->z > 0);
+				ok &= std::isfinite(node->x) && std::isfinite(node->y) && std::isfinite(node->z);
 				if(!ok){
-					PRINTB("WARNING: cube(size=%s, ...) parameter =< 0, %s",
+					PRINTB("WARNING: cube(size=%s, ...), %s",
 						size->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 				}
 			}
@@ -226,8 +224,8 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		const auto r = lookup_radius(c, inst->location(), "d", "r");
 		if (r.type() == Value::ValueType::NUMBER) {
 			node->r1 = r.toDouble();
-			if (OpenSCAD::rangeCheck && (node->r1 <= 0)){
-				PRINTB("WARNING: sphere(r1=%d) parameter <= 0 %s",
+			if (OpenSCAD::rangeCheck && (node->r1 <= 0 || !std::isfinite(node->r1))){
+				PRINTB("WARNING: sphere(r1=%d), %s",
 					node->r1 % inst->location().toRelativeString(ctx->documentPath()));
 			}
 		}
@@ -260,12 +258,12 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		}
 
 		if(OpenSCAD::rangeCheck){
-			if (node->h < 0){
-				PRINTB("WARNING: cylinder(h=%d, ...) parameter =< 0, %s",
+			if (node->h <= 0 || !std::isfinite(node->h)){
+				PRINTB("WARNING: cylinder(h=%d, ...), %s",
 					node->h % inst->location().toRelativeString(ctx->documentPath()));
 			}
-			if (node->r1 < 0 || node->r2 < 0){
-				PRINTB("WARNING: cylinder(r1=%d, r2=%d, ...) parameter =< 0, %s",
+			if (node->r1 <= 0 || node->r2 <= 0 || !std::isfinite(node->r1) || !std::isfinite(node->r2)){
+				PRINTB("WARNING: cylinder(r1=%d, r2=%d, ...), %s",
 					node->r1 % node->r2 % inst->location().toRelativeString(ctx->documentPath()));
 			}
 		}
@@ -301,10 +299,10 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 			}
 			if(OpenSCAD::rangeCheck){
 				bool ok = true;
-				ok &= (node->x > 0);
-				ok &= (node->y > 0);
+				ok &= (node->x > 0) && (node->y > 0);
+				ok &= std::isfinite(node->x) && std::isfinite(node->y);
 				if(!ok){
-					PRINTB("WARNING: square(size=%s, ...) parameter =< 0, %s",
+					PRINTB("WARNING: square(size=%s, ...), %s",
 						size->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 				}
 			}
@@ -318,8 +316,8 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		const auto r = lookup_radius(c, inst->location(), "d", "r");
 		if (r.type() == Value::ValueType::NUMBER) {
 			node->r1 = r.toDouble();
-			if (OpenSCAD::rangeCheck && (node->r1 <= 0)){
-				PRINTB("WARNING: circle(r1=%d) parameter <= 0 %s",
+			if (OpenSCAD::rangeCheck && ((node->r1 <= 0) || !std::isfinite(node->r1))){
+				PRINTB("WARNING: circle(r1=%d), %s",
 					node->r1 % inst->location().toRelativeString(ctx->documentPath()));
 			}
 		}
