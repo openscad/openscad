@@ -1,20 +1,9 @@
-echo("OK:");
-cube([1,1,1]);
-sphere(1);
-square(1);
-square([1,1]);
-circle(1);
-echo("---------");
-echo("Warnings for -1:");
-cube([1,1,-1]);
-sphere(-1);
-square(-1);
-square([-1,1]);
-circle(-1);
-echo("---------");
-echo("Warnings for 0:");
-cube([1,1,0]);
-sphere(0);
-square(0);
-square([0,1]);
-circle(0);
+for(i=[-1:1:1]){
+    echo(str("i=",i));
+    cube([1,i,1]);
+    sphere(i);
+    square(i);
+    square([1,i]);
+    square([i,1]);
+    circle(i);
+}

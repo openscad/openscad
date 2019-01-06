@@ -1,2 +1,15 @@
-WARNING: Parameter range cube(size=[1, 1, -1], ...) invalid - no geometry will be created, in file builtin-invalid-range-test.scad, line 1
-WARNING: Parameter range sphere(r1=-1) invalid - no geometry will be created, in file builtin-invalid-range-test.scad, line 2
+ECHO: "i=-1"
+WARNING: cube(size=[1, -1, 1], ...) parameter =< 0, in file builtin-invalid-range-test.scad, line 3
+WARNING: sphere(r1=-1) parameter <= 0 in file builtin-invalid-range-test.scad, line 4
+WARNING: square(size=-1, ...) parameter =< 0, in file builtin-invalid-range-test.scad, line 5
+WARNING: square(size=[1, -1], ...) parameter =< 0, in file builtin-invalid-range-test.scad, line 6
+WARNING: square(size=[-1, 1], ...) parameter =< 0, in file builtin-invalid-range-test.scad, line 7
+WARNING: circle(r1=-1) parameter <= 0 in file builtin-invalid-range-test.scad, line 8
+ECHO: "i=0"
+WARNING: cube(size=[1, 0, 1], ...) parameter =< 0, in file builtin-invalid-range-test.scad, line 3
+WARNING: sphere(r1=0) parameter <= 0 in file builtin-invalid-range-test.scad, line 4
+WARNING: square(size=0, ...) parameter =< 0, in file builtin-invalid-range-test.scad, line 5
+WARNING: square(size=[1, 0], ...) parameter =< 0, in file builtin-invalid-range-test.scad, line 6
+WARNING: square(size=[0, 1], ...) parameter =< 0, in file builtin-invalid-range-test.scad, line 7
+WARNING: circle(r1=0) parameter <= 0 in file builtin-invalid-range-test.scad, line 8
+ECHO: "i=1"
