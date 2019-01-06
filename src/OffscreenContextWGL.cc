@@ -27,8 +27,6 @@ For more info:
 #include <string>
 #include <sstream>
 
-using namespace std;
-
 struct OffscreenContext
 {
   HWND window;
@@ -67,7 +65,7 @@ string get_os_info()
   archs[PROCESSOR_ARCHITECTURE_INTEL] = "x86";
   archs[PROCESSOR_ARCHITECTURE_UNKNOWN] = "unknown";
 
-  stringstream out;
+	std::ostringstream out;
   out << "OS info: "
       << "Microsoft(TM) Windows(TM) " << osvi.dwMajorVersion << " "
       << osvi.dwMinorVersion << " " << osvi.dwBuildNumber << " "

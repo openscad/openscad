@@ -18,8 +18,6 @@
 #include <opencsg.h>
 #endif
 
-#include <boost/lexical_cast.hpp>
-
 GLView::GLView()
 {
   aspectratio = 1;
@@ -560,10 +558,7 @@ void GLView::showScalemarkers(const Color4f &col)
 
 void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
 {
-	// convert the axis position to a string
-	std::ostringstream oss;
-	oss << i;
-	const auto unsigned_digit = oss.str();
+	const auto unsigned_digit = std::to_string(i);
 
 	// setup how far above the axis (or tick TBD) to draw the number
 	double dig_buf = (l/size_div_sm)/4;

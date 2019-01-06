@@ -733,7 +733,7 @@ void evaluate_assert(const Context &context, const class EvalContext *evalctx)
 	const ValuePtr condition = c.lookup_variable("condition");
 
 	if (!condition->toBool()) {
-		std::stringstream msg;
+		std::ostringstream msg;
 		msg << "ERROR: Assertion";
 		const Expression *expr = assignments["condition"];
 		if (expr) msg << " '" << *expr << "'";

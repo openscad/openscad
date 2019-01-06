@@ -106,11 +106,9 @@ std::string two_digit_exp_format( std::string doublestr )
 	return doublestr;
 }
 
-std::string two_digit_exp_format( double x )
+std::string two_digit_exp_format(double x)
 {
-	std::stringstream s;
-	s << x;
-	return two_digit_exp_format( s.str() );
+	return two_digit_exp_format(std::to_string(x));
 }
 
 #include <set>

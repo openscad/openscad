@@ -194,7 +194,7 @@ void CSGProducts::import(shared_ptr<CSGNode> csgnode, OpenSCADOperator type, CSG
 
 std::string CSGProduct::dump() const
 {
-	std::stringstream dump;
+	std::ostringstream dump;
 	dump << this->intersections.front().leaf->label;
 	for(const auto &csgobj :
 								boost::make_iterator_range(this->intersections.begin() + 1,
@@ -222,7 +222,7 @@ BoundingBox CSGProduct::getBoundingBox() const
 
 std::string CSGProducts::dump() const
 {
-	std::stringstream dump;
+	std::ostringstream dump;
 
 	for(const auto &product : this->products) {
 		dump << "+" << product.dump() << "\n";

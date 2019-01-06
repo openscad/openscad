@@ -40,7 +40,7 @@ extern const char * LODEPNG_VERSION_STRING;
 
 std::string LibraryInfo::info()
 {
-	std::stringstream s;
+	std::ostringstream s;
 
 #if defined(__x86_64__) || defined(_M_X64)
 	std::string bits(" 64bit");
