@@ -262,7 +262,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 				PRINTB("WARNING: cylinder(h=%d, ...), %s",
 					node->h % inst->location().toRelativeString(ctx->documentPath()));
 			}
-			if (node->r1 <= 0 || node->r2 <= 0 || !std::isfinite(node->r1) || !std::isfinite(node->r2)){
+			if (node->r1 < 0 || node->r2 < 0 || node->r1 == 0 && node->r2 == 0 || !std::isfinite(node->r1) || !std::isfinite(node->r2)){
 				PRINTB("WARNING: cylinder(r1=%d, r2=%d, ...), %s",
 					node->r1 % node->r2 % inst->location().toRelativeString(ctx->documentPath()));
 			}
