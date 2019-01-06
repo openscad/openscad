@@ -25,7 +25,7 @@ CGAL_Nef_polyhedron *import_nef3(const std::string &filename, const Location &lo
 		N->p3.reset(new CGAL_Nef_polyhedron3);
 		f >> *(N->p3);
 	} catch (const CGAL::Failure_exception &e) {
-		PRINTB("CSG-WARNING: Failure trying to import '%s', import() at line %d", filename % loc.firstLine());
+		PRINTB("WARNING: Failure trying to import '%s', import() at line %d", filename % loc.firstLine());
 		PRINT(e.what());
 		N = new CGAL_Nef_polyhedron;
 	}
