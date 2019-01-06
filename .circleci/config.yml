@@ -7,7 +7,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Build OpenSCAD (32bit)
+          name: Build OpenSCAD Windows Application (32bit)
           no_output_timeout: 18000
           command: |
               export NUMCPU=2
@@ -28,7 +28,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Build OpenSCAD (64bit)
+          name: Build OpenSCAD Windows Application (64bit)
           no_output_timeout: 18000
           command: |
               export NUMCPU=2
@@ -42,6 +42,29 @@ jobs:
       - store_artifacts:
           path: /tmp/out
           destination: 64-bit
+  openscad-appimage-64bit:
+    working_directory: ~/workspace
+    docker:
+      - image: openscad/appimage-x86_64-base:latest
+    steps:
+      - checkout
+      - run:
+          name: Build OpenSCAD AppImage (64bit)
+          no_output_timeout: 18000
+          command: |
+              export OPENSCAD_COMMIT=$(git log -1 --pretty=format:%h)
+              export OPENSCAD_VERSION="$(date +%Y.%m.%d).ai${CIRCLE_BUILD_NUM}"
+              if [ x"${BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,')"; fi
+              qmake CONFIG+=experimental CONFIG+=snapshot CONFIG-=debug PREFIX=/usr VERSION="$OPENSCAD_VERSION" OPENSCAD_COMMIT="$OPENSCAD_COMMIT"
+              make -j2
+              make install INSTALL_ROOT=AppDir
+              export PATH=/appimage/usr/bin:"$PATH"
+              linuxdeploy --plugin qt --output appimage --appdir AppDir
+              mkdir -p /tmp/out
+              for f in OpenSCAD-*.AppImage; do N=$(basename "$f" | sed -e "s/OpenSCAD-\\(.*\\)/OpenSCAD-${OPENSCAD_VERSION}${SUFFIX}\\1/;"); cp -iv "$f" /tmp/out/"$N"; done
+      - store_artifacts:
+          path: /tmp/out
+          destination: 64-bit
 
 workflows:
   version: 2
@@ -49,3 +72,4 @@ workflows:
     jobs:
       - openscad-mxe-32bit
       - openscad-mxe-64bit
+      - openscad-appimage-64bit
