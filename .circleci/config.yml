@@ -62,6 +62,8 @@ jobs:
               linuxdeploy --plugin qt --output appimage --appdir AppDir
               mkdir -p /tmp/out
               for f in OpenSCAD-*.AppImage; do N=$(basename "$f" | sed -e "s/OpenSCAD-\\(.*\\)/OpenSCAD-${OPENSCAD_VERSION}-${SUFFIX}\\1/;"); cp -iv "$f" /tmp/out/"$N"; done
+              echo $CODE_SIGNING_KEY | base64 -d | gzip -d | gpg --import
+              gpg -u 4DDDC2144A4F6A23 --detach-sign --armor /tmp/out/OpenSCAD-*.AppImage
       - store_artifacts:
           path: /tmp/out
           destination: 64-bit
@@ -72,4 +74,5 @@ workflows:
     jobs:
       - openscad-mxe-32bit
       - openscad-mxe-64bit
-      - openscad-appimage-64bit
+      - openscad-appimage-64bit:
+          context: secret-context
