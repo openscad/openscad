@@ -1,6 +1,6 @@
 /*
  *  OpenSCAD (www.openscad.org)
- *  Copyright (C) 2009-2011 Clifford Wolf <clifford@clifford.at> and
+ *  Copyright (C) 2009-2019 Clifford Wolf <clifford@clifford.at> and
  *                          Marius Kintel <marius@kintel.net>
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -24,18 +24,25 @@
  *
  */
 
-#pragma once
+#include "version.h"
 
-#include <boost/filesystem.hpp>
+#define QUOTE(x__) # x__
+#define QUOTED(x__) QUOTE(x__)
 
-extern bool parse(class FileModule *&module, const std::string& text, const std::string &filename, const std::string &mainFile, int debug);
+std::string openscad_shortversionnumber = QUOTED(OPENSCAD_SHORTVERSION);
+std::string openscad_versionnumber = QUOTED(OPENSCAD_VERSION);
 
-#include <string>
-extern std::string commandline_commands;
+std::string openscad_displayversionnumber =
+#ifdef OPENSCAD_COMMIT
+  QUOTED(OPENSCAD_VERSION)
+  " (git " QUOTED(OPENSCAD_COMMIT) ")";
+#else
+  QUOTED(OPENSCAD_SHORTVERSION);
+#endif
 
-// The CWD when application started. We shouldn't change CWD, but until we stop
-// doing this, use currentdir to get the original CWD.
-extern std::string currentdir;
-
-// Custom argument parser
-std::pair<std::string, std::string> customSyntax(const std::string& s);
+std::string openscad_detailedversionnumber =
+#ifdef OPENSCAD_COMMIT
+  openscad_displayversionnumber;
+#else
+  openscad_versionnumber;
+#endif

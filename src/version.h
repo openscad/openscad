@@ -1,6 +1,6 @@
 /*
  *  OpenSCAD (www.openscad.org)
- *  Copyright (C) 2009-2011 Clifford Wolf <clifford@clifford.at> and
+ *  Copyright (C) 2009-2019 Clifford Wolf <clifford@clifford.at> and
  *                          Marius Kintel <marius@kintel.net>
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -26,16 +26,14 @@
 
 #pragma once
 
-#include <boost/filesystem.hpp>
-
-extern bool parse(class FileModule *&module, const std::string& text, const std::string &filename, const std::string &mainFile, int debug);
-
 #include <string>
-extern std::string commandline_commands;
 
-// The CWD when application started. We shouldn't change CWD, but until we stop
-// doing this, use currentdir to get the original CWD.
-extern std::string currentdir;
-
-// Custom argument parser
-std::pair<std::string, std::string> customSyntax(const std::string& s);
+// Version number without any patch level indicator
+extern std::string openscad_shortversionnumber;
+// The full version number, e.g. 2014.03, 2015.03-1, 2014.12.23
+extern std::string openscad_versionnumber;
+// Version used for display, typically without patchlevel indicator,
+// but may include git commit id for snapshot builds
+extern std::string openscad_displayversionnumber;
+// Version used for detailed display
+extern std::string openscad_detailedversionnumber;
