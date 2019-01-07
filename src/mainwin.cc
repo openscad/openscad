@@ -105,6 +105,8 @@
 #else
 #define QT_HTML_ESCAPE(qstring) (qstring).toHtmlEscaped()
 #define ENABLE_3D_PRINTING
+#include "OctoPrint.h"
+#include "PrintService.h"
 #endif
 
 #if (QT_VERSION < QT_VERSION_CHECK(5, 1, 0))
@@ -136,6 +138,7 @@
 #endif // ENABLE_CGAL
 
 #include "FontCache.h"
+#include "PrintInitDialog.h"
 #include "input/InputDriverManager.h"
 #include <cstdio>
 #include <QtNetwork>
@@ -2064,7 +2067,6 @@ void MainWindow::csgRender()
 	compileEnded();
 }
 
-
 void MainWindow::action3DPrint()
 {
 #ifdef ENABLE_3D_PRINTING
@@ -2072,27 +2074,152 @@ void MainWindow::action3DPrint()
 		return;
 	}
 
+	if (GuiLocker::isLocked()) return;
+	GuiLocker lock;
+
+	setCurrentOutput();
+
+	//Make sure we can export:
+	unsigned int dim = 3;
+	if (!canExport(dim))
+	{
+		PRINT("Cannot 3D Print due to errors.");
+		return;
+    }
+
+
+	Settings::Settings *s = Settings::Settings::inst();
+	const bool showDialog = s->get(Settings::Settings::printServiceShowDialog).toBool();
+
+	print_service_t selectedService;
+	const auto printService = PrintService::inst();
+	if (showDialog) {
+		auto printInitDialog = new PrintInitDialog();
+		auto printInitResult = printInitDialog->exec();
+		printInitDialog->deleteLater();
+		if (printInitResult == QDialog::Rejected) {
+			return;
+		}
+
+		const auto dialog_result = printInitDialog->get_result();
+		selectedService = dialog_result.service;
+		if (dialog_result.rememberDecision) {
+			switch (dialog_result.service) {
+			case print_service_t::PRINT_SERVICE:
+				s->set(Settings::Settings::printService, printService->getService().toStdString());
+				break;
+			case print_service_t::OCTOPRINT:
+				s->set(Settings::Settings::printService, "OctoPrint");
+				break;
+			default:
+				s->set(Settings::Settings::printService, "None");
+				break;
+			}
+			s->set(Settings::Settings::printServiceShowDialog, false);
+		}
+		Preferences::Preferences::inst()->updateGUI();
+	} else {
+		const auto service = s->get(Settings::Settings::printService).toString();
+		if (service == printService->getService().toStdString()) {
+			selectedService = print_service_t::PRINT_SERVICE;
+		} else if (service == "OctoPrint") {
+			selectedService = print_service_t::OCTOPRINT;
+		} else {
+			selectedService = print_service_t::NONE;
+		}
+	}
+
+	switch (selectedService) {
+	case print_service_t::PRINT_SERVICE:
+		PRINTB("Sending design to print service %s...", printService->getDisplayName().toStdString());
+		sendToPrintService(printService->getApiUrl());
+		break;
+	case print_service_t::OCTOPRINT:
+		PRINT("Sending design to OctoPrint...");
+		sendToOctoPrint();
+		break;
+	default:
+		if (!showDialog) {
+			PRINT("Sending design to print services is disabled, check Preferences to enable.");
+		}
+		break;
+	}
+#endif
+}
+
+void MainWindow::sendToOctoPrint()
+{
+#ifdef ENABLE_3D_PRINTING
+	Settings::Settings *s = Settings::Settings::inst();
+	const QString fileFormat = QString::fromStdString(s->get(Settings::Settings::octoPrintFileFormat).toString());
+	FileFormat exportFileFormat{FileFormat::STL};
+	if (fileFormat == "OFF") {
+		exportFileFormat = FileFormat::OFF;
+	} else if (fileFormat == "AMF") {
+		exportFileFormat = FileFormat::AMF;
+	} else if (fileFormat == "3MF") {
+		exportFileFormat = FileFormat::_3MF;
+	} else {
+		exportFileFormat = FileFormat::STL;
+	}
+
+	QTemporaryFile exportFile{QDir::temp().filePath("OpenSCAD.XXXXXX." + fileFormat.toLower())};
+	if (!exportFile.open()) {
+		PRINT("Could not open temporary file.");
+		return;
+	}
+	const QString exportFileName = exportFile.fileName();
+	exportFile.close();
+
+	QString userFileName;
+	if (this->fileName.isEmpty()) {
+		userFileName = exportFileName;
+	} else {
+		QFileInfo fileInfo{this->fileName};
+		userFileName = fileInfo.baseName() + "." + fileFormat.toLower();
+	}
+
+	exportFileByName(this->root_geom, exportFileFormat, exportFileName.toLocal8Bit().constData(), exportFileName.toUtf8());
+
+	OctoPrint octoPrint;
+	try {
+		this->progresswidget = new ProgressWidget(this);
+		connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
+
+		const QString fileUrl = octoPrint.upload(exportFileName, userFileName,
+				[&](const double permille) -> bool {
+					QMetaObject::invokeMethod(this->progresswidget, "setValue", Qt::QueuedConnection, Q_ARG(int, (int)permille));
+					return (progresswidget && progresswidget->wasCanceled());
+				}
+		);
+
+		const std::string action = s->get(Settings::Settings::octoPrintAction).toString();
+		if (action == "upload") {
+			return;
+		}
+
+		const QString slicer = QString::fromStdString(s->get(Settings::Settings::octoPrintSlicerEngine).toString());
+		const QString profile = QString::fromStdString(s->get(Settings::Settings::octoPrintSlicerProfile).toString());
+		octoPrint.slice(fileUrl, slicer, profile, action != "slice", action == "print");
+	} catch (const NetworkException& e) {
+		PRINTB("ERROR: %s", e.getErrorMessage().toStdString());
+	}
+
+	updateStatusBar(nullptr);
+#endif
+}
+
+void MainWindow::sendToPrintService(const QString& apiUrl)
+{
+#ifdef ENABLE_3D_PRINTING
 	//Keeps track of how many times we've exported and tries to create slightly unique filenames.
 	//Not mission critical, since non-unique file names are fine for the API, just harder to 
 	//differentiate between in customer support later.
 	static unsigned int printCounter=0;
 	
-	setCurrentOutput();
-	PRINT("3D Printing...");
-	
-	unsigned int dim = 3;
 	
 	QUrl partUrl;
 
-	setCurrentOutput();
-
-	//Make sure we can export:
-	if (! canExport(dim))
-	{
-		PRINT("Cannot 3D Print due to errors.");
-		return;
-    }
-	
 	//Create a temporary file name valid on all systems:
 	QTemporaryFile exportFile;
 	//Open the file so we can get the name:
@@ -2120,7 +2247,7 @@ void MainWindow::action3DPrint()
 	//The result is put in partUrl.
 	try
 	{
-        uploadStlAndGetPartUrl(exportFilename, userFacingName, partUrl);
+        uploadStlAndGetPartUrl(apiUrl, exportFilename, userFacingName, partUrl);
     }
     catch (std::exception & e)
     {
@@ -2144,13 +2271,13 @@ void MainWindow::action3DPrint()
 //    userFacingName  - Then name we should give the file when it is uploaded for the order process.
 //Outputs:
 //    partUrl         - The resulting url to go to next to continue the order process.
-void MainWindow::uploadStlAndGetPartUrl(const QString & exportFilename, const QString &userFacingName, QUrl &partUrl)
+void MainWindow::uploadStlAndGetPartUrl(const QString& apiUrl, const QString& exportFilename, const QString& userFacingName, QUrl& partUrl)
 {
 #ifdef ENABLE_3D_PRINTING
 	setCurrentOutput();
 	
 	//Create a request:
-	QNetworkRequest request(QUrl("https://print.openscad.org/api/v1/part-upload/"));
+	QNetworkRequest request{QUrl{apiUrl}};
 	
 	//Set the content header:
 	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");

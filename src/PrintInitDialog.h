@@ -1,6 +1,6 @@
 /*
  *  OpenSCAD (www.openscad.org)
- *  Copyright (C) 2009-2011 Clifford Wolf <clifford@clifford.at> and
+ *  Copyright (C) 2009-2019 Clifford Wolf <clifford@clifford.at> and
  *                          Marius Kintel <marius@kintel.net>
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -26,16 +26,28 @@
 
 #pragma once
 
-#include <boost/filesystem.hpp>
+#include "qtgettext.h"
+#include "ui_PrintInitDialog.h"
 
-extern bool parse(class FileModule *&module, const std::string& text, const std::string &filename, const std::string &mainFile, int debug);
+enum class print_service_t { NONE, PRINT_SERVICE, OCTOPRINT };
 
-#include <string>
-extern std::string commandline_commands;
+struct PrintServiceResult
+{
+	print_service_t service;
+	bool rememberDecision;
+};
 
-// The CWD when application started. We shouldn't change CWD, but until we stop
-// doing this, use currentdir to get the original CWD.
-extern std::string currentdir;
+class PrintInitDialog : public QDialog, public Ui::PrintInitDialog
+{
+	Q_OBJECT;
+public:
+	PrintInitDialog();
+	~PrintInitDialog();
+	const PrintServiceResult get_result() const;
 
-// Custom argument parser
-std::pair<std::string, std::string> customSyntax(const std::string& s);
+public slots:
+	void on_okButton_clicked();
+	void on_cancelButton_clicked();
+private:
+	PrintServiceResult result;
+};
