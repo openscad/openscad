@@ -229,6 +229,7 @@ FORMS   += src/MainWindow.ui \
            src/ProgressWidget.ui \
            src/launchingscreen.ui \
            src/LibraryInfoDialog.ui \
+           src/Console.ui \
            src/parameter/ParameterWidget.ui \
            src/parameter/ParameterEntryWidget.ui \
            src/input/ButtonConfigWidget.ui \
@@ -359,6 +360,7 @@ HEADERS += src/version_check.h \
            src/CsgInfo.h \
            \
            src/Dock.h \
+           src/Console.h \
            src/AutoUpdater.h \
            src/launchingscreen.h \
            src/legacyeditor.h \
@@ -512,6 +514,7 @@ SOURCES += \
            src/WindowManager.cc \
            src/UIUtils.cc \
            src/Dock.cc \
+           src/Console.cc \
            src/FontListDialog.cc \
            src/FontListTableView.cc \
            src/PrintInitDialog.cc \
