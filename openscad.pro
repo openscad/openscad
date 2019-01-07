@@ -576,8 +576,8 @@ HEADERS += src/ext/libtess2/Include/tesselator.h \
            src/ext/libtess2/Source/tess.h
 
 has_qt5 {
-  HEADERS += src/Network.h src/NetworkSignal.h src/OctoPrint.h
-  SOURCES += src/OctoPrint.cc
+  HEADERS += src/Network.h src/NetworkSignal.h src/PrintService.h src/OctoPrint.h
+  SOURCES += src/PrintService.cc src/OctoPrint.cc
 }
 
 has_qt5:unix:!macx {

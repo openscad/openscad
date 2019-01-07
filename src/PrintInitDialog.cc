@@ -24,6 +24,10 @@
  *
  */
 
+#include <QFile>
+#include <QString>
+
+#include "PrintService.h"
 #include "PrintInitDialog.h"
 
 PrintInitDialog::PrintInitDialog()
@@ -31,6 +35,22 @@ PrintInitDialog::PrintInitDialog()
 	setupUi(this);
 	this->textBrowser->setOpenExternalLinks(true);
 	this->radioButtonCancel->setChecked(true);
+
+	const auto printService = PrintService::inst();
+	QFile html(":/src/PrintInitDialog.html");
+
+	if (html.open(QIODevice::ReadOnly | QIODevice::Text)) {
+		QString infoHtml = printService->isEnabled() ? printService->getInfoHtml() : "";
+		this->textBrowser->setHtml(QString{html.readAll()}.replace("@@PrintServiceInfoHtml@@", infoHtml));
+	}
+
+	if (printService->isEnabled()) {
+		this->radioButtonPrintService->setText(this->radioButtonPrintService->text().arg(printService->getDisplayName()));
+	} else {
+		this->radioButtonPrintService->setText(_("Upload to Print Service not available"));
+		this->radioButtonPrintService->setEnabled(false);
+	}
+
 	result = { print_service_t::NONE, false };
 }
 
@@ -47,7 +67,7 @@ void PrintInitDialog::on_okButton_clicked()
 {
 	const bool remember = this->checkBoxRemember->isChecked();
 	if (this->radioButtonPrintService->isChecked()) {
-		result = { print_service_t::PRINT_A_THING, remember };
+		result = { print_service_t::PRINT_SERVICE, remember };
 	} else if (this->radioButtonOctoPrint->isChecked()) {
 		result = { print_service_t::OCTOPRINT, remember };
 	} else {

@@ -105,6 +105,8 @@
 #else
 #define QT_HTML_ESCAPE(qstring) (qstring).toHtmlEscaped()
 #define ENABLE_3D_PRINTING
+#include "OctoPrint.h"
+#include "PrintService.h"
 #endif
 
 #if (QT_VERSION < QT_VERSION_CHECK(5, 1, 0))
@@ -138,7 +140,6 @@
 #include "FontCache.h"
 #include "PrintInitDialog.h"
 #include "input/InputDriverManager.h"
-#include "OctoPrint.h"
 #include <cstdio>
 #include <QtNetwork>
 
@@ -2084,10 +2085,12 @@ void MainWindow::action3DPrint()
 		return;
     }
 
+
 	Settings::Settings *s = Settings::Settings::inst();
 	const bool showDialog = s->get(Settings::Settings::printServiceShowDialog).toBool();
 
-	print_service_t print_service;
+	print_service_t selectedService;
+	const auto printService = PrintService::inst();
 	if (showDialog) {
 		auto printInitDialog = new PrintInitDialog();
 		auto printInitResult = printInitDialog->exec();
@@ -2097,11 +2100,11 @@ void MainWindow::action3DPrint()
 		}
 
 		const auto dialog_result = printInitDialog->get_result();
-		print_service = dialog_result.service;
+		selectedService = dialog_result.service;
 		if (dialog_result.rememberDecision) {
 			switch (dialog_result.service) {
-			case print_service_t::PRINT_A_THING:
-				s->set(Settings::Settings::printService, "ExternalPrintService");
+			case print_service_t::PRINT_SERVICE:
+				s->set(Settings::Settings::printService, printService->getService().toStdString());
 				break;
 			case print_service_t::OCTOPRINT:
 				s->set(Settings::Settings::printService, "OctoPrint");
@@ -2115,19 +2118,19 @@ void MainWindow::action3DPrint()
 		Preferences::Preferences::inst()->updateGUI();
 	} else {
 		const auto service = s->get(Settings::Settings::printService).toString();
-		if (service == "ExternalPrintService") {
-			print_service = print_service_t::PRINT_A_THING;
+		if (service == printService->getService().toStdString()) {
+			selectedService = print_service_t::PRINT_SERVICE;
 		} else if (service == "OctoPrint") {
-			print_service = print_service_t::OCTOPRINT;
+			selectedService = print_service_t::OCTOPRINT;
 		} else {
-			print_service = print_service_t::NONE;
+			selectedService = print_service_t::NONE;
 		}
 	}
 
-	switch (print_service) {
-	case print_service_t::PRINT_A_THING:
-		PRINT("Sending design to print service...");
-		sendToPrintService();
+	switch (selectedService) {
+	case print_service_t::PRINT_SERVICE:
+		PRINTB("Sending design to print service %s...", printService->getDisplayName().toStdString());
+		sendToPrintService(printService->getApiUrl());
 		break;
 	case print_service_t::OCTOPRINT:
 		PRINT("Sending design to OctoPrint...");
@@ -2204,7 +2207,7 @@ void MainWindow::sendToOctoPrint()
 #endif
 }
 
-void MainWindow::sendToPrintService()
+void MainWindow::sendToPrintService(const QString& apiUrl)
 {
 #ifdef ENABLE_3D_PRINTING
 	//Keeps track of how many times we've exported and tries to create slightly unique filenames.
@@ -2242,7 +2245,7 @@ void MainWindow::sendToPrintService()
 	//The result is put in partUrl.
 	try
 	{
-        uploadStlAndGetPartUrl(exportFilename, userFacingName, partUrl);
+        uploadStlAndGetPartUrl(apiUrl, exportFilename, userFacingName, partUrl);
     }
     catch (std::exception & e)
     {
@@ -2266,13 +2269,13 @@ void MainWindow::sendToPrintService()
 //    userFacingName  - Then name we should give the file when it is uploaded for the order process.
 //Outputs:
 //    partUrl         - The resulting url to go to next to continue the order process.
-void MainWindow::uploadStlAndGetPartUrl(const QString & exportFilename, const QString &userFacingName, QUrl &partUrl)
+void MainWindow::uploadStlAndGetPartUrl(const QString& apiUrl, const QString& exportFilename, const QString& userFacingName, QUrl& partUrl)
 {
 #ifdef ENABLE_3D_PRINTING
 	setCurrentOutput();
 	
 	//Create a request:
-	QNetworkRequest request(QUrl("https://print.openscad.org/api/v1/part-upload/"));
+	QNetworkRequest request{QUrl{apiUrl}};
 	
 	//Set the content header:
 	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");

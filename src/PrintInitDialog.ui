@@ -83,7 +83,7 @@
       <item>
        <widget class="QRadioButton" name="radioButtonPrintService">
         <property name="text">
-         <string>Upload Design to Print a Thing</string>
+         <string>Upload Design to %1</string>
         </property>
        </widget>
       </item>

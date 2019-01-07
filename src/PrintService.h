@@ -26,28 +26,38 @@
 
 #pragma once
 
-#include "qtgettext.h"
-#include "ui_PrintInitDialog.h"
+#include <mutex>
 
-enum class print_service_t { NONE, PRINT_SERVICE, OCTOPRINT };
+#include <QString>
+#include <QJsonDocument>
 
-struct PrintServiceResult
+class PrintService
 {
-	print_service_t service;
-	bool rememberDecision;
-};
-
-class PrintInitDialog : public QDialog, public Ui::PrintInitDialog
-{
-	Q_OBJECT;
 public:
-	PrintInitDialog();
-	~PrintInitDialog();
-	const PrintServiceResult get_result() const;
+	static PrintService * inst();
 
-public slots:
-	void on_okButton_clicked();
-	void on_cancelButton_clicked();
+	bool isEnabled() const { return enabled; }
+	const QString getService() const { return service; }
+	const QString getDisplayName() const { return displayName; }
+	const QString getApiUrl() const { return apiUrl; }
+	long getFileSizeLimit() const { return fileSizeLimitMB * 1024 * 1024; }
+	const QString getInfoHtml() const { return infoHtml; }
+	const QString getInfoUrl() const { return infoUrl; }
+
 private:
-	PrintServiceResult result;
+	PrintService();
+	virtual ~PrintService();
+
+	void init();
+	void initService(const QJsonObject& serviceObject);
+
+	bool enabled;
+	QString service;
+	QString displayName;
+	QString apiUrl;
+	int fileSizeLimitMB;
+	QString infoUrl;
+	QString infoHtml;
+
+	static std::mutex printServiceMutex;
 };
