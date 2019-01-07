@@ -193,7 +193,9 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 	else if (this->type == transform_type_e::TRANSLATE)	{
 		auto v = c.lookup_variable("v");
 		Vector3d translatevec(0,0,0);
-		if (v->getVec3(translatevec[0], translatevec[1], translatevec[2], 0.0)) {
+		bool ok = v->getVec3(translatevec[0], translatevec[1], translatevec[2], 0.0);
+		ok &= std::isfinite(translatevec[0]) && std::isfinite(translatevec[1]) && std::isfinite(translatevec[2]) ;
+		if (ok) {
 			node->matrix.translate(translatevec);
 		}else{
 			PRINTB("WARNING: Unable to convert translate(%s) parameter to a vec3 or vec2 of numbers, %s", v->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
