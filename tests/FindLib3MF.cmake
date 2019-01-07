@@ -36,7 +36,7 @@ if ("${LIB3MF_LIBDIR}" STREQUAL "")
 endif()
 
 if (NOT ${LIB3MF_LIBDIR} STREQUAL "")
-  set(LIB3MF_LDFLAGS "-L${LIB3MF_LIBDIR}" "-l3MF")
+  set(LIB3MF_LDFLAGS "-L${LIB3MF_LIBDIR}" "-l3MF -lzip -lz")
   set(LIB3MF_CFLAGS "-D__GCC -DENABLE_LIB3MF")
   message(STATUS "Found lib3mf in ${LIB3MF_LIBDIR}.")
 else()
