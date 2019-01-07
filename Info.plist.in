@@ -103,7 +103,7 @@
 	<key>SUPublicDSAKeyFile</key>
 	<string>dsa_pub.pem</string>
 	<key>SUFeedURL</key>
-	<string>http://files.openscad.org/appcast.xml</string>
+	<string>https://files.openscad.org/appcast.xml</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>

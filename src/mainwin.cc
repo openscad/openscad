@@ -458,7 +458,7 @@ MainWindow::MainWindow(const QString &filename)
 
 	setCurrentOutput();
 
-	std::string helptitle = "OpenSCAD " + openscad_versionnumber +  "\nhttp://www.openscad.org\n";
+	std::string helptitle = "OpenSCAD " + openscad_versionnumber +  "\nhttps://www.openscad.org/\n";
 	PRINT(helptitle);
 	PRINT(copyrighttext);
 
@@ -2625,7 +2625,7 @@ bool MainWindow::canExport(unsigned int dim)
 
 	auto N = dynamic_cast<const CGAL_Nef_polyhedron *>(this->root_geom.get());
 	if (N && !N->p3->is_simple()) {
-	 	PRINT("UI-WARNING: Object may not be a valid 2-manifold and may need repair! See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
+		PRINT("UI-WARNING: Object may not be a valid 2-manifold and may need repair! See https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
 	}
 	
 	return true;
