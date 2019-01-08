@@ -409,6 +409,7 @@ set(GUI_SOURCES
   src/AutoUpdater.cc
   src/QGLView.cc
   src/Dock.cc
+  src/Console.cc
   src/UIUtils.cc
   src/scadlexer.cpp
   src/highlighter.cc
