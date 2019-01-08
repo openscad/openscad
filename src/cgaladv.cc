@@ -117,7 +117,7 @@ std::string CgaladvNode::name() const
 
 std::string CgaladvNode::toString() const
 {
-	std::stringstream stream;
+	std::ostringstream stream;
 
 	stream << this->name();
 	switch (type) {

@@ -23,8 +23,6 @@ struct OffscreenContext
 
 std::string offscreen_context_getinfo(OffscreenContext *)
 {
-  std::stringstream out;
-
   struct utsname name;
   uname(&name);
 
@@ -38,6 +36,7 @@ std::string offscreen_context_getinfo(OffscreenContext *)
   if (sizeof(int*) == 4) arch = "32-bit";
   else if (sizeof(int*) == 8) arch = "64-bit";
 
+  std::ostringstream out;
   out << "GL context creator: Cocoa / CGL\n"
       << "PNG generator: Core Foundation\n"
       << "OS info: Mac OS X " << majorVersion << "." << minorVersion << "." << bugFixVersion << " (" << name.machine << " kernel)\n"

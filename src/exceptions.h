@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <sstream>
 #include "expression.h"
+#include "printutils.h"
 
 class EvaluationException : public std::runtime_error {
 public:
@@ -21,10 +22,8 @@ public:
 
 class RecursionException: public EvaluationException {
 public:
-	static RecursionException create(const char *recursiontype, const std::string &name, const Location &loc) {
-		std::stringstream out;
-		out << "ERROR: Recursion detected calling " << recursiontype << " '" << name << "'";
-		return RecursionException(out.str(), loc);
+	static RecursionException create(const std::string &recursiontype, const std::string &name, const Location &loc) {
+		return RecursionException{STR("ERROR: Recursion detected calling " << recursiontype << " '" << name << "'"), loc};
 	}
 	~RecursionException() throw() {}
 

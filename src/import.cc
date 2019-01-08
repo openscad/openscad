@@ -191,7 +191,7 @@ const Geometry *ImportNode::createGeometry() const
 
 std::string ImportNode::toString() const
 {
-	std::stringstream stream;
+	std::ostringstream stream;
 	fs::path path((std::string)this->filename);
 
 	stream << this->name();

@@ -35,7 +35,7 @@ std::ostream &operator<<(std::ostream &stream, const ASTNode &ast)
 
 std::string ASTNode::dump(const std::string &indent) const
 {
-	std::stringstream stream;
+	std::ostringstream stream;
 	print(stream, indent);
 	return stream.str();
 }

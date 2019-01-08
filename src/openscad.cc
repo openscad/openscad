@@ -60,8 +60,6 @@
 #include "csgnode.h"
 #include "CSGTreeEvaluator.h"
 
-#include <sstream>
-
 #include "Camera.h"
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
@@ -112,10 +110,8 @@ public:
 
 static void help(const char *arg0, const po::options_description &desc, bool failure = false)
 {
-	std::stringstream ss;
-	ss << desc;
 	const fs::path progpath(arg0);
-	PRINTB("Usage: %s [options] file.scad\n%s", progpath.filename().string() % ss.str());
+	PRINTB("Usage: %s [options] file.scad\n%s", progpath.filename().string() % STR(desc));
 	exit(failure ? 1 : 0);
 }
 

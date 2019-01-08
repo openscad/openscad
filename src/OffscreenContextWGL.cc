@@ -27,8 +27,6 @@ For more info:
 #include <string>
 #include <sstream>
 
-using namespace std;
-
 struct OffscreenContext
 {
   HWND window;
@@ -51,7 +49,7 @@ void offscreen_context_init(OffscreenContext &ctx, int width, int height)
   ctx.fbo = nullptr;
 }
 
-string get_os_info()
+std::string get_os_info()
 {
   OSVERSIONINFO osvi;
 
@@ -61,13 +59,13 @@ string get_os_info()
 
   SYSTEM_INFO si;
   GetSystemInfo(&si);
-  map<WORD,const char*> archs;
+	std::map<WORD,const char*> archs;
   archs[PROCESSOR_ARCHITECTURE_AMD64] = "amd64";
   archs[PROCESSOR_ARCHITECTURE_IA64] = "itanium";
   archs[PROCESSOR_ARCHITECTURE_INTEL] = "x86";
   archs[PROCESSOR_ARCHITECTURE_UNKNOWN] = "unknown";
 
-  stringstream out;
+	std::ostringstream out;
   out << "OS info: "
       << "Microsoft(TM) Windows(TM) " << osvi.dwMajorVersion << " "
       << osvi.dwMinorVersion << " " << osvi.dwBuildNumber << " "
@@ -81,14 +79,12 @@ string get_os_info()
   return out.str();
 }
 
-string offscreen_context_getinfo(OffscreenContext * /*ctx*/)
+std::string offscreen_context_getinfo(OffscreenContext * /*ctx*/)
 {
   // should probably get some info from WGL context here?
-  stringstream out;
-  out << "GL context creator: WGL\n"
-      << "PNG generator: lodepng\n"
-      << get_os_info();
-  return out.str();
+  return STR("GL context creator: WGL\n" <<
+						 "PNG generator: lodepng\n" <<
+						 get_os_info());
 }
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) 
@@ -113,8 +109,8 @@ bool create_wgl_dummy_context(OffscreenContext &ctx)
   ATOM class_atom = RegisterClassW( &wc );
 
   if ( class_atom == 0 ) {
-    cerr << "MS GDI - RegisterClass failed\n";
-    cerr << "last-error code: " << GetLastError() << "\n";
+		std::cerr << "MS GDI - RegisterClass failed\n";
+    std::cerr << "last-error code: " << GetLastError() << "\n";
     return false;
   }
 
@@ -134,8 +130,8 @@ bool create_wgl_dummy_context(OffscreenContext &ctx)
     nWidth, nHeight, hWndParent, hMenu, hInstance, lpParam );
 
   if ( window==nullptr ) {
-    cerr << "MS GDI - CreateWindow failed\n";
-    cerr << "last-error code: " << GetLastError() << "\n";
+    std::cerr << "MS GDI - CreateWindow failed\n";
+    std::cerr << "last-error code: " << GetLastError() << "\n";
     return false;
   }
 
@@ -145,8 +141,8 @@ bool create_wgl_dummy_context(OffscreenContext &ctx)
   int chosenformat;
   HDC dev_context = GetDC( window );
   if ( dev_context == nullptr ) {
-    cerr << "MS GDI - GetDC failed\n";
-    cerr << "last-error code: " << GetLastError() << "\n";
+    std::cerr << "MS GDI - GetDC failed\n";
+    std::cerr << "last-error code: " << GetLastError() << "\n";
     return false;
   }
 
@@ -164,30 +160,30 @@ bool create_wgl_dummy_context(OffscreenContext &ctx)
 
   chosenformat = ChoosePixelFormat( dev_context, &pixformat );
   if (chosenformat==0) {
-    cerr << "MS GDI - ChoosePixelFormat failed\n";
-    cerr << "last-error code: " << GetLastError() << "\n";
+    std::cerr << "MS GDI - ChoosePixelFormat failed\n";
+    std::cerr << "last-error code: " << GetLastError() << "\n";
     return false;
   }
 
   bool spfok = SetPixelFormat( dev_context, chosenformat, &pixformat );
   if (!spfok) {
-    cerr << "MS GDI - SetPixelFormat failed\n";
-    cerr << "last-error code: " << GetLastError() << "\n";
+    std::cerr << "MS GDI - SetPixelFormat failed\n";
+    std::cerr << "last-error code: " << GetLastError() << "\n";
     return false;
   }
 
   HGLRC gl_render_context = wglCreateContext( dev_context );
   if ( gl_render_context == nullptr ) {
-      cerr << "MS WGL - wglCreateContext failed\n";
-    cerr << "last-error code: " << GetLastError() << "\n";
+      std::cerr << "MS WGL - wglCreateContext failed\n";
+			std::cerr << "last-error code: " << GetLastError() << "\n";
       ReleaseDC( ctx.window, ctx.dev_context );
       return false;
   }
 
   bool mcok = wglMakeCurrent( dev_context, gl_render_context );
   if (!mcok) {
-    cerr << "MS WGL - wglMakeCurrent failed\n";
-    cerr << "last-error code: " << GetLastError() << "\n";
+    std::cerr << "MS WGL - wglMakeCurrent failed\n";
+    std::cerr << "last-error code: " << GetLastError() << "\n";
     return false;
   }
 
