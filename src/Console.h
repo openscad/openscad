@@ -26,43 +26,21 @@
 
 #pragma once
 
-#include <mutex>
+#include <QPlainTextEdit>
 
-#include <QString>
-#include <QJsonDocument>
+#include "qtgettext.h"
+#include "ui_Console.h"
 
-#include "Network.h"
-
-class PrintService
+class Console : public QPlainTextEdit, public Ui::Console
 {
+	Q_OBJECT
+
 public:
-	static PrintService * inst();
+	Console(QWidget *parent = nullptr);
+	virtual ~Console();
 
-	bool isEnabled() const { return enabled; }
-	const QString getService() const { return service; }
-	const QString getDisplayName() const { return displayName; }
-	const QString getApiUrl() const { return apiUrl; }
-	long getFileSizeLimit() const { return fileSizeLimitMB * 1024 * 1024; }
-	long getFileSizeLimitMB() const { return fileSizeLimitMB; }
-	const QString getInfoHtml() const { return infoHtml; }
-	const QString getInfoUrl() const { return infoUrl; }
+	void on_actionClearConsole_triggered();
+	void on_actionSaveAs_triggered();
 
-	const QString upload(const QString& exportFileName, const QString& fileName, network_progress_func_t progress_func);
-
-private:
-	PrintService();
-	virtual ~PrintService();
-
-	void init();
-	void initService(const QJsonObject& serviceObject);
-
-	bool enabled;
-	QString service;
-	QString displayName;
-	QString apiUrl;
-	int fileSizeLimitMB;
-	QString infoUrl;
-	QString infoHtml;
-
-	static std::mutex printServiceMutex;
+	void contextMenuEvent(QContextMenuEvent *event) override;
 };

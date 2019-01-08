@@ -24,9 +24,8 @@
  *
  */
 
-#include "Network.h"
-#include "PrintService.h"
 #include "printutils.h"
+#include "PrintService.h"
 
 std::mutex PrintService::printServiceMutex;
 
@@ -62,12 +61,12 @@ PrintService * PrintService::inst()
 
 void PrintService::init()
 {
-	auto networkRequest = NetworkRequest<void>{QUrl{"http://files.openscad.org/print-service.json"}, { 200 }, 30};
+	auto networkRequest = NetworkRequest<void>{QUrl{"https://files.openscad.org/print-service.json"}, { 200 }, 30};
 	return networkRequest.execute(
-			[&](QNetworkRequest& request) {
+			[](QNetworkRequest& request) {
 				request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 			},
-			[&](QNetworkAccessManager& nam, QNetworkRequest& request) {
+			[](QNetworkAccessManager& nam, QNetworkRequest& request) {
 				return nam.get(request);
 			},
 			[&](QNetworkReply *reply) {
@@ -92,4 +91,58 @@ void PrintService::initService(const QJsonObject& serviceObject)
 	infoHtml = serviceObject.value("infoHtml").toString();
 	infoUrl = serviceObject.value("infoUrl").toString();
 	enabled = !displayName.isEmpty() && !apiUrl.isEmpty() && !infoHtml.isEmpty() && !infoUrl.isEmpty() && fileSizeLimitMB != 0;
+}
+
+/**
+ * This function uploads a design to the 3D printing API endpoint and
+ * returns an URL that, when accessed, will show the design as a part
+ * that can be configured and added to the shopping cart. If it's not
+ * successful, it throws an exception with a message.
+ *
+ * Inputs:
+ *   fileName - Then name we should give the file when it is uploaded
+ *              for the order process.
+ * Outputs:
+ *    The resulting url to go to next to continue the order process.
+ */
+const QString PrintService::upload(const QString& fileName, const QString& contentBase64, network_progress_func_t progress_func)
+{
+	QJsonObject jsonInput;
+	jsonInput.insert("fileName", fileName);
+	jsonInput.insert("file", contentBase64);
+
+    // Safe guard against QJson silently dropping the file content if it's
+	// too big. This seems to be configured at MaxSize = (1<<27) - 1 in Qt
+	// via qtbase/src/corelib/json/qjson_p.h
+	// Due to the base64 encoding having 33% overhead, that should allow for
+	// about 96MB data.
+    if (jsonInput.value("file") == QJsonValue::Undefined) {
+		const QString msg = "Could not encode STL into JSON. Perhaps it is too large of a file? Maybe try reducing the model resolution.";
+        throw NetworkException(QNetworkReply::ProtocolFailure, msg);
+	}
+
+	auto networkRequest = NetworkRequest<const QString>{QUrl{apiUrl}, { 200, 201 }, 180};
+	networkRequest.set_progress_func(progress_func);
+	return networkRequest.execute(
+			[](QNetworkRequest& request) {
+				request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+			},
+			[&](QNetworkAccessManager& nam, QNetworkRequest& request) {
+				return nam.post(request, QJsonDocument(jsonInput).toJson());
+			},
+			[](QNetworkReply *reply) {
+				const auto doc = QJsonDocument::fromJson(reply->readAll());
+				PRINTDB("Response: %s", QString{doc.toJson()}.toStdString());
+
+				// Extract cartUrl which gives the page to open in a webbrowser to view uploaded part
+				const auto cartUrlValue = doc.object().value("data").toObject().value("cartUrl");
+				const auto cartUrl = cartUrlValue.toString();
+				if ((cartUrlValue == QJsonValue::Undefined) || (cartUrl.isEmpty())) {
+					const QString msg = "Could not get data.cartUrl field from response.";
+					throw NetworkException(QNetworkReply::ProtocolFailure, msg);
+				}
+				PRINTB("Upload finished, opening URL %s.", cartUrl.toStdString());
+				return cartUrl;
+			}
+	);
 }
