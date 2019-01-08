@@ -94,3 +94,5 @@ public:
 		return *this;
 	}
 };
+
+#define STR(s) static_cast<std::ostringstream&&>(std::ostringstream() << s).str()

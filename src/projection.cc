@@ -33,7 +33,6 @@
 #include "polyset.h"
 
 #include <assert.h>
-#include <sstream>
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
@@ -72,12 +71,8 @@ AbstractNode *ProjectionModule::instantiate(const Context *ctx, const ModuleInst
 
 std::string ProjectionNode::toString() const
 {
-	std::stringstream stream;
-
-	stream << "projection(cut = " << (this->cut_mode ? "true" : "false")
-				 << ", convexity = " << this->convexity << ")";
-
-	return stream.str();
+	return STR("projection(cut = " << (this->cut_mode ? "true" : "false")
+						 << ", convexity = " << this->convexity << ")");
 }
 
 void register_builtin_projection()

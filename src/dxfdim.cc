@@ -69,7 +69,6 @@ ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 		if (n == "name") name = v->toString();
 	}
 
-	std::stringstream keystream;
 	fs::path filepath(filename);
 	uintmax_t filesize = -1;
 	time_t lastwritetime = -1;
@@ -77,10 +76,9 @@ ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 		filesize = fs::file_size(filepath);
 		lastwritetime = fs::last_write_time(filepath);
 	}
-	keystream << filename << "|" << layername << "|" << name << "|" << xorigin
-						<< "|" << yorigin <<"|" << scale << "|" << lastwritetime
-						<< "|" << filesize;
-	std::string key = keystream.str();
+	std::string key = STR(filename << "|" << layername << "|" << name << "|" << xorigin
+												<< "|" << yorigin <<"|" << scale << "|" << lastwritetime
+												<< "|" << filesize);
 	if (dxf_dim_cache.find(key) != dxf_dim_cache.end())
 		return dxf_dim_cache.find(key)->second;
 	handle_dep(filepath.string());
@@ -159,7 +157,6 @@ ValuePtr builtin_dxf_cross(const Context *ctx, const EvalContext *evalctx)
 		if (n == "scale") v->getDouble(scale);
 	}
 
-	std::stringstream keystream;
 	fs::path filepath(filename);
 	uintmax_t filesize = -1;
 	time_t lastwritetime = -1;
@@ -167,10 +164,9 @@ ValuePtr builtin_dxf_cross(const Context *ctx, const EvalContext *evalctx)
 		filesize = fs::file_size(filepath);
 		lastwritetime = fs::last_write_time(filepath);
 	}
-	keystream << filename << "|" << layername << "|" << xorigin << "|" << yorigin
-						<< "|" << scale << "|" << lastwritetime
-						<< "|" << filesize;
-	std::string key = keystream.str();
+	std::string key = STR(filename << "|" << layername << "|" << xorigin << "|" << yorigin
+												<< "|" << scale << "|" << lastwritetime
+												<< "|" << filesize);
 
 	if (dxf_cross_cache.find(key) != dxf_cross_cache.end()) {
 		return dxf_cross_cache.find(key)->second;

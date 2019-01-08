@@ -118,7 +118,7 @@ void InputDriverManager::doOpen(bool firstOpen)
 
 std::string InputDriverManager::listDrivers() const
 {
-    std::stringstream stream;
+    std::ostringstream stream;
     const char *sep = "";
     for (auto driver : drivers) {
         stream << sep << driver->get_name();

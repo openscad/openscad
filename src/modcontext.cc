@@ -135,7 +135,7 @@ AbstractNode *ModuleContext::instantiate_module(const ModuleInstantiation &inst,
 #ifdef DEBUG
 std::string ModuleContext::dump(const AbstractModule *mod, const ModuleInstantiation *inst)
 {
-	std::stringstream s;
+	std::ostringstream s;
 	if (inst) {
 		s << boost::format("ModuleContext %p (%p) for %s inst (%p) ") % this % this->parent % inst->name() % inst;
 	}

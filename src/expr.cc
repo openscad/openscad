@@ -491,10 +491,8 @@ Echo::Echo(const AssignmentList &args, Expression *expr, const Location &loc)
 
 ValuePtr Echo::evaluate(const Context *context) const
 {
-	std::stringstream msg;
-	EvalContext echo_context(context, this->arguments, this->loc);
-	msg << "ECHO: " << echo_context;
-	PRINTB("%s", msg.str());
+	EvalContext echo_context(context, this->arguments, this->loc);	
+	PRINTB("%s", STR("ECHO: " << echo_context));
 
 	ValuePtr result = expr ? expr->evaluate(context) : ValuePtr::undefined;
 	return result;
@@ -733,7 +731,7 @@ void evaluate_assert(const Context &context, const class EvalContext *evalctx)
 	const ValuePtr condition = c.lookup_variable("condition");
 
 	if (!condition->toBool()) {
-		std::stringstream msg;
+		std::ostringstream msg;
 		msg << "ERROR: Assertion";
 		const Expression *expr = assignments["condition"];
 		if (expr) msg << " '" << *expr << "'";

@@ -92,7 +92,7 @@ AbstractNode *OffsetModule::instantiate(const Context *ctx, const ModuleInstanti
 
 std::string OffsetNode::toString() const
 {
-	std::stringstream stream;
+	std::ostringstream stream;
 
 	bool isRadius = this->join_type == ClipperLib::jtRound;
 	auto var = isRadius ? "(r = " : "(delta = ";

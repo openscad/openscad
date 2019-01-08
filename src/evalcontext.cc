@@ -10,7 +10,7 @@
 
 EvalContext::EvalContext(const Context *parent, 
 												 const AssignmentList &args, const Location &loc, const class LocalScope *const scope)
-	: Context(parent), eval_arguments(args), loc(loc), scope(scope)
+	: Context(parent), loc(loc), eval_arguments(args), scope(scope)
 {
 }
 
@@ -107,7 +107,7 @@ std::ostream &operator<<(std::ostream &stream, const EvalContext &ec)
 #ifdef DEBUG
 std::string EvalContext::dump(const AbstractModule *mod, const ModuleInstantiation *inst)
 {
-	std::stringstream s;
+	std::ostringstream s;
 	if (inst)
 		s << boost::format("EvalContext %p (%p) for %s inst (%p)") % this % this->parent % inst->name() % inst;
 	else

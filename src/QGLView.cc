@@ -112,7 +112,7 @@ void QGLView::initializeGL()
 
 std::string QGLView::getRendererInfo() const
 {
-  std::stringstream info;
+  std::ostringstream info;
   info << glew_dump();
   // Don't translate as translated text in the Library Info dialog is not wanted
 #ifdef USE_QOPENGLWIDGET

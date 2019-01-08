@@ -39,7 +39,7 @@ BoundingBox Polygon2d::getBoundingBox() const
 
 std::string Polygon2d::dump() const
 {
-	std::stringstream out;
+	std::ostringstream out;
 	for (const auto &o : this->theoutlines) {
 		out << "contour:\n";
 		for (const auto &v : o.vertices) {
