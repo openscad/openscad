@@ -1,6 +1,6 @@
 /*
  *  OpenSCAD (www.openscad.org)
- *  Copyright (C) 2009-2011 Clifford Wolf <clifford@clifford.at> and
+ *  Copyright (C) 2009-2019 Clifford Wolf <clifford@clifford.at> and
  *                          Marius Kintel <marius@kintel.net>
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -26,16 +26,21 @@
 
 #pragma once
 
-#include <boost/filesystem.hpp>
+#include <QPlainTextEdit>
 
-extern bool parse(class FileModule *&module, const std::string& text, const std::string &filename, const std::string &mainFile, int debug);
+#include "qtgettext.h"
+#include "ui_Console.h"
 
-#include <string>
-extern std::string commandline_commands;
+class Console : public QPlainTextEdit, public Ui::Console
+{
+	Q_OBJECT
 
-// The CWD when application started. We shouldn't change CWD, but until we stop
-// doing this, use currentdir to get the original CWD.
-extern std::string currentdir;
+public:
+	Console(QWidget *parent = nullptr);
+	virtual ~Console();
 
-// Custom argument parser
-std::pair<std::string, std::string> customSyntax(const std::string& s);
+	void on_actionClearConsole_triggered();
+	void on_actionSaveAs_triggered();
+
+	void contextMenuEvent(QContextMenuEvent *event) override;
+};

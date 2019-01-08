@@ -1,6 +1,6 @@
 /*
  *  OpenSCAD (www.openscad.org)
- *  Copyright (C) 2009-2011 Clifford Wolf <clifford@clifford.at> and
+ *  Copyright (C) 2009-2019 Clifford Wolf <clifford@clifford.at> and
  *                          Marius Kintel <marius@kintel.net>
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -26,16 +26,43 @@
 
 #pragma once
 
-#include <boost/filesystem.hpp>
+#include <mutex>
 
-extern bool parse(class FileModule *&module, const std::string& text, const std::string &filename, const std::string &mainFile, int debug);
+#include <QString>
+#include <QJsonDocument>
 
-#include <string>
-extern std::string commandline_commands;
+#include "Network.h"
 
-// The CWD when application started. We shouldn't change CWD, but until we stop
-// doing this, use currentdir to get the original CWD.
-extern std::string currentdir;
+class PrintService
+{
+public:
+	static PrintService * inst();
 
-// Custom argument parser
-std::pair<std::string, std::string> customSyntax(const std::string& s);
+	bool isEnabled() const { return enabled; }
+	const QString getService() const { return service; }
+	const QString getDisplayName() const { return displayName; }
+	const QString getApiUrl() const { return apiUrl; }
+	long getFileSizeLimit() const { return fileSizeLimitMB * 1024 * 1024; }
+	long getFileSizeLimitMB() const { return fileSizeLimitMB; }
+	const QString getInfoHtml() const { return infoHtml; }
+	const QString getInfoUrl() const { return infoUrl; }
+
+	const QString upload(const QString& exportFileName, const QString& fileName, network_progress_func_t progress_func);
+
+private:
+	PrintService();
+	virtual ~PrintService();
+
+	void init();
+	void initService(const QJsonObject& serviceObject);
+
+	bool enabled;
+	QString service;
+	QString displayName;
+	QString apiUrl;
+	int fileSizeLimitMB;
+	QString infoUrl;
+	QString infoHtml;
+
+	static std::mutex printServiceMutex;
+};

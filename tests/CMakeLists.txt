@@ -731,6 +731,7 @@ set(CORE_SOURCES
   ../src/surface.cc 
   ../src/control.cc 
   ../src/render.cc 
+  ../src/version.cc
   ../src/rendersettings.cc 
   ../src/dxfdata.cc 
   ../src/dxfdim.cc 

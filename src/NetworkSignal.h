@@ -1,6 +1,6 @@
 /*
  *  OpenSCAD (www.openscad.org)
- *  Copyright (C) 2009-2011 Clifford Wolf <clifford@clifford.at> and
+ *  Copyright (C) 2009-2019 Clifford Wolf <clifford@clifford.at> and
  *                          Marius Kintel <marius@kintel.net>
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -26,16 +26,28 @@
 
 #pragma once
 
-#include <boost/filesystem.hpp>
+#include <functional>
 
-extern bool parse(class FileModule *&module, const std::string& text, const std::string &filename, const std::string &mainFile, int debug);
+#include <QObject>
 
-#include <string>
-extern std::string commandline_commands;
+using network_progress_func_t = std::function<bool(double)>;
 
-// The CWD when application started. We shouldn't change CWD, but until we stop
-// doing this, use currentdir to get the original CWD.
-extern std::string currentdir;
+class NetworkSignal : public QObject
+{
+	Q_OBJECT;
 
-// Custom argument parser
-std::pair<std::string, std::string> customSyntax(const std::string& s);
+	using callback_t = std::function<void(qint64, qint64)>;
+
+	NetworkSignal(QObject *parent, callback_t callback) : QObject(parent), callback(callback) { }
+	virtual ~NetworkSignal() { }
+
+public slots:
+	void network_progress(qint64 bytesSent, qint64 bytesTotal) {
+		callback(bytesSent, bytesTotal);
+	}
+
+private:
+	callback_t callback;
+
+	template <typename T> friend class NetworkRequest;
+};

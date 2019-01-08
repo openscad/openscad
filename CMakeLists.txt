@@ -266,6 +266,7 @@ set(CORE_SOURCES
   src/builtincontext.cc
   src/modcontext.cc 
   src/evalcontext.cc 
+  src/version.cc
   src/feature.cc
   src/csgnode.cc 
   src/CSGTreeNormalizer.cc 
@@ -401,12 +402,14 @@ set(GUI_SOURCES
   src/SettingsWriter.cc
   src/FontListDialog.cc
   src/FontListTableView.cc
+  src/PrintInitDialog.cc
   src/LibraryInfoDialog.cc
   src/OpenCSGWarningDialog.cc
   src/ProgressWidget.cc
   src/AutoUpdater.cc
   src/QGLView.cc
   src/Dock.cc
+  src/Console.cc
   src/UIUtils.cc
   src/scadlexer.cpp
   src/highlighter.cc
