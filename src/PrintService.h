@@ -31,6 +31,8 @@
 #include <QString>
 #include <QJsonDocument>
 
+#include "Network.h"
+
 class PrintService
 {
 public:
@@ -41,8 +43,11 @@ public:
 	const QString getDisplayName() const { return displayName; }
 	const QString getApiUrl() const { return apiUrl; }
 	long getFileSizeLimit() const { return fileSizeLimitMB * 1024 * 1024; }
+	long getFileSizeLimitMB() const { return fileSizeLimitMB; }
 	const QString getInfoHtml() const { return infoHtml; }
 	const QString getInfoUrl() const { return infoUrl; }
+
+	const QString upload(const QString& exportFileName, const QString& fileName, network_progress_func_t progress_func);
 
 private:
 	PrintService();
