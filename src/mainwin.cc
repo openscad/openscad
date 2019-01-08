@@ -850,6 +850,12 @@ void MainWindow::report_func(const class AbstractNode*, void *vp, int mark)
 	if (thisp->progresswidget->wasCanceled()) throw ProgressCancelException();
 }
 
+bool MainWindow::network_progress_func(const double permille)
+{
+	QMetaObject::invokeMethod(this->progresswidget, "setValue", Qt::QueuedConnection, Q_ARG(int, (int)permille));
+	return (progresswidget && progresswidget->wasCanceled());
+}
+
 /*!
  	Open the given file. In MDI mode a new window is created if the current
  	one is not empty. Otherwise the current window content is overwritten.
@@ -2085,7 +2091,6 @@ void MainWindow::action3DPrint()
 		return;
     }
 
-
 	Settings::Settings *s = Settings::Settings::inst();
 	const bool showDialog = s->get(Settings::Settings::printServiceShowDialog).toBool();
 
@@ -2130,7 +2135,7 @@ void MainWindow::action3DPrint()
 	switch (selectedService) {
 	case print_service_t::PRINT_SERVICE:
 		PRINTB("Sending design to print service %s...", printService->getDisplayName().toStdString());
-		sendToPrintService(printService->getApiUrl());
+		sendToPrintService();
 		break;
 	case print_service_t::OCTOPRINT:
 		PRINT("Sending design to OctoPrint...");
@@ -2183,13 +2188,7 @@ void MainWindow::sendToOctoPrint()
 	try {
 		this->progresswidget = new ProgressWidget(this);
 		connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
-
-		const QString fileUrl = octoPrint.upload(exportFileName, userFileName,
-				[&](const double permille) -> bool {
-					QMetaObject::invokeMethod(this->progresswidget, "setValue", Qt::QueuedConnection, Q_ARG(int, (int)permille));
-					return (progresswidget && progresswidget->wasCanceled());
-				}
-		);
+		const QString fileUrl = octoPrint.upload(exportFileName, userFileName, [this](double v) -> bool { return network_progress_func(v); });
 
 		const std::string action = s->get(Settings::Settings::octoPrintAction).toString();
 		if (action == "upload") {
@@ -2207,153 +2206,58 @@ void MainWindow::sendToOctoPrint()
 #endif
 }
 
-void MainWindow::sendToPrintService(const QString& apiUrl)
+void MainWindow::sendToPrintService()
 {
 #ifdef ENABLE_3D_PRINTING
 	//Keeps track of how many times we've exported and tries to create slightly unique filenames.
 	//Not mission critical, since non-unique file names are fine for the API, just harder to 
 	//differentiate between in customer support later.
-	static unsigned int printCounter=0;
+	static unsigned int printCounter = 0;
 	
-	
-	QUrl partUrl;
-
-	//Create a temporary file name valid on all systems:
 	QTemporaryFile exportFile;
-	//Open the file so we can get the name:
-	if ( ! exportFile.open())
-	{
-		PRINT("Could not open temporary file.");
+	if (!exportFile.open()) {
+		PRINT("ERROR: Could not open temporary file.");
 		return;
 	}
-	QString exportFilename=exportFile.fileName();
+	const QString exportFilename = exportFile.fileName();
 	
 	//Render the stl to a temporary file:
-	exportFileByName(this->root_geom, FileFormat::STL,
-		exportFilename.toLocal8Bit().constData(),
-		exportFilename.toUtf8());
-	
-	//Create a name that the order process will use to refer to the file. Base it off of the
-	//project name
-	QString userFacingName="unsaved.stl";
+	exportFileByName(this->root_geom, FileFormat::STL, exportFilename.toLocal8Bit().constData(), exportFilename.toUtf8());
+
+	//Create a name that the order process will use to refer to the file. Base it off of the project name
+	QString userFacingName = "unsaved.stl";
 	if (!this->fileName.isEmpty()) {
-		QString fileBasename = QFileInfo(this->fileName).baseName();
-		userFacingName = fileBasename.append("_").append(QString::number(printCounter++)).append(".stl");
+		const QString baseName = QFileInfo(this->fileName).baseName();
+		userFacingName = QString{"%1_%2.stl"}.arg(baseName).arg(printCounter++);
+	}
+
+	QFile file(exportFilename);
+	if (!file.open(QIODevice::ReadOnly)) {
+		PRINT("ERROR: Unable to open exported STL file.");
+		return;
+	}
+	const QString fileContentBase64 = file.readAll().toBase64();
+
+	if (fileContentBase64.length() > PrintService::inst()->getFileSizeLimit()) {
+		const auto msg = QString{_("Exported design exceeds the service upload limit of (%1 MB).")}.arg(PrintService::inst()->getFileSizeLimitMB());
+		QMessageBox::warning(this, _("Upload Error"), msg, QMessageBox::Ok);
+		PRINTB("ERROR: %s", msg.toStdString());
+		return;
 	}
 	
 	//Upload the file to the 3D Printing server and get the corresponding url to see it.
 	//The result is put in partUrl.
 	try
 	{
-        uploadStlAndGetPartUrl(apiUrl, exportFilename, userFacingName, partUrl);
+		this->progresswidget = new ProgressWidget(this);
+		connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
+        const QString partUrl = PrintService::inst()->upload(userFacingName, fileContentBase64, [this](double v) -> bool { return network_progress_func(v); });
+		QDesktopServices::openUrl(QUrl{partUrl});
+	} catch (const NetworkException& e) {
+		PRINTB("ERROR: %s", e.getErrorMessage().toStdString());
     }
-    catch (std::exception & e)
-    {
-		PRINT(e.what());
-        return;
-    }
-    
-    setCurrentOutput();
 
-	//Open the url in the default browser:
-	QDesktopServices::openUrl ( partUrl );
-#endif
-}
-
-//This function uploads an stl to the 3D printing API endpoint and returns a url that, 
-//when accessed, will show the stl file as a part that can be configured and added to the 
-//shopping cart.  If it's not successful, it throws an exception with a message.
-//
-//Inputs:
-//    exportFilename  - The path to the temporary file that has the stl export in it.
-//    userFacingName  - Then name we should give the file when it is uploaded for the order process.
-//Outputs:
-//    partUrl         - The resulting url to go to next to continue the order process.
-void MainWindow::uploadStlAndGetPartUrl(const QString& apiUrl, const QString& exportFilename, const QString& userFacingName, QUrl& partUrl)
-{
-#ifdef ENABLE_3D_PRINTING
-	setCurrentOutput();
-	
-	//Create a request:
-	QNetworkRequest request{QUrl{apiUrl}};
-	
-	//Set the content header:
-	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-	
-	//Get the file name from the file path:
-	QString fileNameBase=QFileInfo(exportFilename).fileName();
-	
-	//Create the request:
-	QJsonObject jsonInput;
-	
-	//Start building the json request:
-	jsonInput.insert("fileName", userFacingName);
-	
-	//Read our stl file:
-	QFile file(exportFilename);
-	if (!file.open(QIODevice::ReadOnly))
-	{
-		throw std::runtime_error("Unable to open exported stl file.");
-	}
-	
-	//Convert it to base 64:
-	QString stlFileB64=file.readAll().toBase64();
-	
-	//Base 64-encoded file contents:
-	jsonInput.insert("file", stlFileB64);
-    
-    //Make sure it's there:
-    if (jsonInput.value("file") == QJsonValue::Undefined)
-        throw std::runtime_error("Could not enode stl into JSON.  Perhapse it is too large of a file? Try simplifying.");
-        
-	PRINTD("Sending this JSON:");
-	PRINTD(QString(QJsonDocument(jsonInput).toJson()).toLocal8Bit().constData());
-	
-	//Create a network access manager:
-	QNetworkAccessManager nam;
-	
-	//Send the post:
-	QNetworkReply *reply = nam.post(request, QJsonDocument(jsonInput).toJson());
-
-	//Wait for the reply:
-	while(!reply->isFinished())
-	{
-		qApp->processEvents();
-	}
-	
-	QVariant statusCodeV = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);  
-	
-	//Clean up the reply object:
-	reply->deleteLater();
-    
-    char errorMessage[150];
-	
-    //If it wasn't successful:
-	if (! (statusCodeV.toInt()==200 or statusCodeV.toInt()==201 ))
-	{
-        sprintf(errorMessage, "An error occured while contacting the 3D Print API.  \nStatus code returned: %d", statusCodeV.toInt());
-        throw std::runtime_error(errorMessage);
-	}
-	
-	//Interpret the response as a json document:
-	QJsonDocument jsonOutDoc= QJsonDocument::fromJson(reply->readAll());
-	
-	//Get the corresponding json object:
-	QJsonObject jsonOutput = jsonOutDoc.object();
-	
-    PRINTD("Received this JSON in response:");
-	PRINTD(QString(jsonOutDoc.toJson()).toLocal8Bit().constData());
-	
-    //Start trying to extract the cartUrl:
-    auto cartUrlValue=jsonOutput.value("data").toObject().value("cartUrl");
-
-    if (cartUrlValue == QJsonValue::Undefined)
-        throw std::runtime_error("Could not get data.cartUrl field from results.");
-    
-	QString partUrlStr=cartUrlValue.toString();
-	
-	//Put it in our output partUrl:
-	partUrl.setUrl(partUrlStr);
+	updateStatusBar(nullptr);
 #endif
 }
 

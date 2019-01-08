@@ -184,8 +184,7 @@ private slots:
 	void csgReloadRender();
 	void action3DPrint();
 	void sendToOctoPrint();
-	void sendToPrintService(const QString& apiUrl);
-	void uploadStlAndGetPartUrl(const QString& apiUrl, const QString& exportFilename, const QString& userFacingName, QUrl& partUrl);
+	void sendToPrintService();
 #ifdef ENABLE_CGAL
 	void actionRender();
 	void actionRenderDone(shared_ptr<const class Geometry>);
@@ -281,6 +280,7 @@ public slots:
 	void setContentsChanged();
 
 private:
+	bool network_progress_func(const double permille);
 	static void report_func(const class AbstractNode*, void *vp, int mark);
 	static bool mdiMode;
 	static bool undockMode;
