@@ -225,7 +225,7 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 
 std::string TransformNode::toString() const
 {
-	std::stringstream stream;
+	std::ostringstream stream;
 
 	stream << "multmatrix([";
 	for (int j=0;j<4;j++) {

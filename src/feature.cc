@@ -99,8 +99,6 @@ ExperimentalFeatureException::~ExperimentalFeatureException() throw()
 void ExperimentalFeatureException::check(const Feature &feature)
 {
 	if (!feature.is_enabled()) {
-		std::stringstream out;
-		out << "ERROR: Experimental feature not enabled: '" << feature.get_name() << "'. Please check preferences.";
-		throw ExperimentalFeatureException(out.str());
+		throw ExperimentalFeatureException(STR("ERROR: Experimental feature not enabled: '" << feature.get_name() << "'. Please check preferences."));
 	}
 }

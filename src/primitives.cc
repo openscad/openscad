@@ -654,7 +654,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 
 std::string PrimitiveNode::toString() const
 {
-	std::stringstream stream;
+	std::ostringstream stream;
 
 	stream << this->name();
 

@@ -223,7 +223,7 @@ std::string Context::getAbsolutePath(const std::string &filename) const
 #ifdef DEBUG
 std::string Context::dump(const AbstractModule *mod, const ModuleInstantiation *inst)
 {
-	std::stringstream s;
+	std::ostringstream s;
 	if (inst) {
 		s << boost::format("ModuleContext %p (%p) for %s inst (%p)\n") % this % this->parent % inst->name() % inst;
 	}

@@ -337,7 +337,7 @@ namespace CGALUtils {
 
 	template <typename Polyhedron>
 	std::string printPolyhedron(const Polyhedron &p) {
-		std::stringstream sstream;
+		std::ostringstream sstream;
 		sstream.precision(20);
 
     Polyhedron_writer writer;

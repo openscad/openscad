@@ -34,13 +34,11 @@
 #include "cgal.h"
 #include "cgalutils.h"
 
-#define OSS(X) static_cast<std::ostringstream &&>(std::ostringstream() << X).str()
-
 namespace {
 
 std::string toString(const Vector3d &v)
 {
-	return OSS(v[0] << " " << v[1] << " " << v[2]);
+	return STR(v[0] << " " << v[1] << " " << v[2]);
 }
 
 Vector3d fromString(const std::string &vertexString)
