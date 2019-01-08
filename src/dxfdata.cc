@@ -578,7 +578,7 @@ int DxfData::addPoint(double x, double y)
 
 std::string DxfData::dump() const
 {
-	std::stringstream out;
+	std::ostringstream out;
 	out << "DxfData"
 	  << "\n num points: " << points.size()
 	  << "\n num paths: " << paths.size()

@@ -33,7 +33,6 @@
 #include "builtin.h"
 #include "printutils.h"
 #include <cstdint>
-#include <sstream>
 
 class ControlModule : public AbstractModule
 {
@@ -267,9 +266,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 
 	case Type::ECHO: {
 		node = new GroupNode(inst);
-		std::stringstream msg;
-		msg << "ECHO: " << *evalctx;
-		PRINTB("%s", msg.str());
+		PRINTB("%s", STR("ECHO: " << *evalctx));
 	}
 		break;
 

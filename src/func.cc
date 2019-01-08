@@ -394,7 +394,7 @@ ValuePtr builtin_ln(const Context *, const EvalContext *evalctx)
 
 ValuePtr builtin_str(const Context *, const EvalContext *evalctx)
 {
-	std::stringstream stream;
+	std::ostringstream stream;
 
 	for (size_t i = 0; i < evalctx->numArgs(); i++) {
 		stream << evalctx->getArgValue(i)->toString();
@@ -404,7 +404,7 @@ ValuePtr builtin_str(const Context *, const EvalContext *evalctx)
 
 ValuePtr builtin_chr(const Context *, const EvalContext *evalctx)
 {
-	std::stringstream stream;
+	std::ostringstream stream;
 	
 	for (size_t i = 0; i < evalctx->numArgs(); i++) {
 		ValuePtr v = evalctx->getArgValue(i);
