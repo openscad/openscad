@@ -38,7 +38,8 @@ def latest_builds():
 	data = json.loads(response.data.decode('UTF-8'))
 	builds32 = [ x["build_num"] for x in data if filter(x, 'openscad-mxe-32bit') ]
 	builds64 = [ x["build_num"] for x in data if filter(x, 'openscad-mxe-64bit') ]
-	builds = { '32bit': max(builds32), '64bit': max(builds64) }
+	appimages64 = [ x["build_num"] for x in data if filter(x, 'openscad-appimage-64bit') ]
+	builds = { '32bit': max(builds32), '64bit': max(builds64), 'appimage-64bit': max(appimages64) }
 	return builds
 
 def latest_artifacts(builds):
@@ -66,6 +67,8 @@ def new_builds():
 		new_builds.append(builds['32bit'])
 	if '64bit' not in last_builds or last_builds['64bit'] != builds['64bit']:
 		new_builds.append(builds['64bit'])
+	if 'appimage-64bit' not in last_builds or last_builds['appimage-64bit'] != builds['appimage-64bit']:
+		new_builds.append(builds['appimage-64bit'])
 
 	return new_builds
 
