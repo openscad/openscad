@@ -114,18 +114,5 @@
 	<string>dsa_pub.pem</string>
 	<key>SUFeedURL</key>
 	<string>https://files.openscad.org/appcast.xml</string>
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSAllowsArbitraryLoads</key>
-		<false/>
-		<key>NSExceptionDomains</key>
-		<dict>
-			<key>files.openscad.org</key>
-			<dict>
-				<key>NSExceptionAllowsInsecureHTTPLoads</key><true/>
-				<key>NSExceptionRequiresForwardSecrecy</key><false/>
-			</dict>
-		</dict>
-	</dict>
 </dict>
 </plist>
