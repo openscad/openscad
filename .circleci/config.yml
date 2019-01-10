@@ -98,6 +98,10 @@ jobs:
 workflows:
   version: 2
   build:
+    branches:
+      ignore:
+        - coverity_scan
+        - /^(?i:continuous)/
     jobs:
       - openscad-mxe-32bit:
           context: secret-context
