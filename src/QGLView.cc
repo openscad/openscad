@@ -319,7 +319,12 @@ void QGLView::wheelEvent(QWheelEvent *event)
 #else
     const int v = event->delta();
 #endif
-    zoomCursor(pos.x(), pos.y(), v);
+    auto s = Settings::Settings::inst();
+    if(s->get(Settings::Settings::mouseCentricZoom).toBool()){
+        zoomCursor(pos.x(), pos.y(), v);
+    }else{
+        zoom(v, true);
+    }
 }
 
 void QGLView::ZoomIn(void)
