@@ -70,10 +70,11 @@ jobs:
           name: Build OpenSCAD AppImage (64bit)
           no_output_timeout: 18000
           command: |
+              set -x
+              . /opt/qt511/bin/qt511-env.sh
               export OPENSCAD_COMMIT=$(git log -1 --pretty=format:%h)
               export OPENSCAD_VERSION="$(date +%Y.%m.%d).ai${CIRCLE_BUILD_NUM}"
               if [ x"${CIRCLE_BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,')"; fi
-              . /opt/qt511/bin/qt511-env.sh
               qmake -v
               qmake CONFIG+=experimental CONFIG+=snapshot CONFIG-=debug PREFIX=/usr VERSION="$OPENSCAD_VERSION" OPENSCAD_COMMIT="$OPENSCAD_COMMIT"
               make -j2
@@ -82,6 +83,7 @@ jobs:
               linuxdeploy --plugin qt --output appimage --appdir AppDir
               mkdir -p /tmp/out
               for f in OpenSCAD-*.AppImage; do N=$(basename "$f" | sed -e "s/OpenSCAD-\\(.*\\)/OpenSCAD-${OPENSCAD_VERSION}-${SUFFIX}\\1/;"); cp -iv "$f" /tmp/out/"$N"; done
+              set +x
               if [ -n "${CODE_SIGNING_KEY}" ]; then
                   cd /tmp/out
                   echo $CODE_SIGNING_DATA | base64 -d | gzip -d | gpg --import
@@ -98,14 +100,25 @@ jobs:
 workflows:
   version: 2
   build:
-    branches:
-      ignore:
-        - coverity_scan
-        - /^(?i:continuous)/
     jobs:
       - openscad-mxe-32bit:
           context: secret-context
+          filters:
+              branches:
+                  ignore:
+                      - coverity_scan
+                      - /^(?i:continuous)$/
       - openscad-mxe-64bit:
           context: secret-context
+          filters:
+              branches:
+                  ignore:
+                      - coverity_scan
+                      - /^(?i:continuous)$/
       - openscad-appimage-64bit:
           context: secret-context
+          filters:
+              branches:
+                  ignore:
+                      - coverity_scan
+                      - /^(?i:continuous)$/
