@@ -109,6 +109,7 @@ signals:
 	void editorTypeChanged(const QString &type);
 	void editorConfigChanged() const;
 	void ExperimentalChanged() const ;
+	void updateMouseCentricZoom(bool state) const;
 
 private:
     Preferences(QWidget *parent = nullptr);

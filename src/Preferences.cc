@@ -552,6 +552,7 @@ void Preferences::on_checkBoxMouseCentricZoom_toggled(bool val)
 {
 	Settings::Settings::inst()->set(Settings::Settings::mouseCentricZoom, Value(val));
 	writeSettings();
+	emit updateMouseCentricZoom(val);
 }
 
 void Preferences::on_spinBoxIndentationWidth_valueChanged(int val)
