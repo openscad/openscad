@@ -5,6 +5,7 @@
 #include "GeometryEvaluator.h"
 #include "progress.h"
 #include "printutils.h"
+#include "exceptions.h"
 
 CGALWorker::CGALWorker()
 {
@@ -35,6 +36,9 @@ void CGALWorker::work()
 	}
 	catch (const ProgressCancelException &e) {
 		PRINT("Rendering cancelled.");
+	}
+	catch (const HardWarningException &e) {
+		PRINT("Rendering cancelled on first warning.");
 	}
 
 	emit done(root_geom);
