@@ -311,6 +311,7 @@ set(CORE_SOURCES
   src/libsvg/svgpage.cc
   src/libsvg/transformation.cc
   src/libsvg/util.cc
+  src/libidf/idf3.cc
   src/clipper-utils.cc
   src/Assignment.cc
   src/annotation.cc 
@@ -329,6 +330,7 @@ set(NOCGAL_SOURCES
   src/import_amf.cc
   src/import_off.cc
   src/import_svg.cc
+  src/import_idf3.cc
   src/export.cc
   src/export_3mf.cc
   src/export_stl.cc

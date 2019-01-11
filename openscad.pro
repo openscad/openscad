@@ -498,6 +498,8 @@ SOURCES += \
            src/import_svg.cc \
            src/import_amf.cc \
            src/import_3mf.cc \
+           src/import_idf3.cc \
+           src/libidf/idf3.cc \
            src/renderer.cc \
            src/colormap.cc \
            src/ThrownTogetherRenderer.cc \

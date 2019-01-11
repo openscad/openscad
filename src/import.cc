@@ -55,6 +55,7 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 
 extern PolySet * import_amf(std::string);
 extern Geometry * import_3mf(const std::string &);
+extern Geometry * import_idf3(const std::string &, const double fn, const double fa, const double fs);
 
 class ImportModule : public AbstractModule
 {
@@ -100,6 +101,8 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 		else if (ext == ".off") actualtype = ImportType::OFF;
 		else if (ext == ".dxf") actualtype = ImportType::DXF;
 		else if (ext == ".nef3") actualtype = ImportType::NEF3;
+		else if (ext == ".emp") actualtype = ImportType::IDF3;
+		else if (ext == ".emn") actualtype = ImportType::IDF3;
 		else if (Feature::Experimental3mfImport.is_enabled() && ext == ".3mf") actualtype = ImportType::_3MF;
 		else if (Feature::ExperimentalAmfImport.is_enabled() && ext == ".amf") actualtype = ImportType::AMF;
 		else if (Feature::ExperimentalSvgImport.is_enabled() && ext == ".svg") actualtype = ImportType::SVG;
@@ -154,6 +157,10 @@ const Geometry *ImportNode::createGeometry() const
 	}
 	case ImportType::AMF: {
 		g = import_amf(this->filename);
+		break;
+	}
+	case ImportType::IDF3: {
+		g = import_idf3(this->filename, this->fn, this->fs, this->fa);
 		break;
 	}
 	case ImportType::_3MF: {

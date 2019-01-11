@@ -9,7 +9,7 @@
 	positive is (optionally) used to distinguish between polygon contours and hold contours.
 */
 struct Outline2d {
-	Outline2d() : positive(true) {}
+	Outline2d(bool positive = true) : positive(positive) {}
 	std::vector<Vector2d> vertices;
 	bool positive;
 };
