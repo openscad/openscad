@@ -217,7 +217,6 @@ assignment:
                         
                         const auto uncPathCurr = boostfs_uncomplete(currFile, mainFilePath.parent_path());
                         const auto uncPathPrev = boostfs_uncomplete(prevFile, mainFilePath.parent_path());
-                        try{
                         if(fileEnded){
                             //assigments via commandline
                         }else if(prevFile==mainFile && currFile == mainFile){
@@ -244,10 +243,6 @@ assignment:
                                     uncPathPrev%
                                     LOC(@$).firstLine()%
                                     uncPathCurr);
-                        }
-                        }catch (const HardWarningException &e) {
-                            yyerror("stopp on first warning");
-                            YYERROR;
                         }
                         assignment.expr = shared_ptr<Expression>($3);
                         assignment.setLocation(LOC(@$));
@@ -671,7 +666,7 @@ int parserlex(void)
 void yyerror (char const *s)
 {
   // FIXME: We leak memory on parser errors...
-  PRINTB("PARSER-ERROR: Parser error in file %s, line %d: %s\n",
+  PRINTB("ERROR: Parser error in file %s, line %d: %s\n",
          (*sourcefile()) % lexerget_lineno() % s);
 }
 
@@ -692,7 +687,12 @@ bool parse(FileModule *&module, const std::string& text, const std::string &file
   //        PRINTB_NOCACHE("New module: %s %p", "root" % rootmodule);
 
   parserdebug = debug;
-  int parserretval = parserparse();
+  int parserretval = -1;
+  try{
+     parserretval = parserparse();
+  }catch (const HardWarningException &e) {
+    yyerror("stop on first warning");
+  }
 
   lexerdestroy();
   lexerlex_destroy();
