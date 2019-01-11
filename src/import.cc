@@ -53,8 +53,8 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 #include <boost/detail/endian.hpp>
 #include <cstdint>
 
-extern PolySet * import_amf(std::string);
-extern Geometry * import_3mf(const std::string &);
+extern PolySet * import_amf(std::string, const Location &loc);
+extern Geometry * import_3mf(const std::string &, const Location &loc);
 
 class ImportModule : public AbstractModule
 {
@@ -146,26 +146,27 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 const Geometry *ImportNode::createGeometry() const
 {
 	Geometry *g = nullptr;
+	auto loc = this->modinst->location();
 
 	switch (this->type) {
 	case ImportType::STL: {
-		g = import_stl(this->filename);
+		g = import_stl(this->filename, loc);
 		break;
 	}
 	case ImportType::AMF: {
-		g = import_amf(this->filename);
+		g = import_amf(this->filename, loc);
 		break;
 	}
 	case ImportType::_3MF: {
-		g = import_3mf(this->filename);
+		g = import_3mf(this->filename, loc);
 		break;
 	}
 	case ImportType::OFF: {
-		g = import_off(this->filename);
+		g = import_off(this->filename, loc);
 		break;
 	}
 	case ImportType::SVG: {
-		g = import_svg(this->filename);
+		g = import_svg(this->filename, loc);
  		break;
 	}
 	case ImportType::DXF: {
@@ -175,12 +176,12 @@ const Geometry *ImportNode::createGeometry() const
 	}
 #ifdef ENABLE_CGAL
 	case ImportType::NEF3: {
-		g = import_nef3(this->filename);
+		g = import_nef3(this->filename, loc);
 		break;
 	}
 #endif
 	default:
-		PRINTB("ERROR: Unsupported file format while trying to import file '%s'", this->filename);
+		PRINTB("ERROR: Unsupported file format while trying to import file '%s', import() at Line %d", this->filename % loc.firstLine());
 		g = new PolySet(0);
 	}
 
