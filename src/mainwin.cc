@@ -3160,7 +3160,7 @@ void MainWindow::consoleOutput(const QString &msg)
 	c.movePosition(QTextCursor::End);
 	this->console->setTextCursor(c);
 
-	if (msg.startsWith("WARNING:") || msg.startsWith("PARSER-WARNING:") || msg.startsWith("DEPRECATED:")) {
+	if (msg.startsWith("WARNING:") || msg.startsWith("DEPRECATED:")) {
 		this->compileWarnings++;
 		this->console->appendHtml("<span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span>");
 	} else if (msg.startsWith("UI-WARNING:") || msg.startsWith("FONT-WARNING:") || msg.startsWith("EXPORT-WARNING:")) {
