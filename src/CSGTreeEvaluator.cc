@@ -218,7 +218,7 @@ Response CSGTreeEvaluator::visit(State &state, const TransformNode &node)
 {
 	if (state.isPrefix()) {
 		if (matrix_contains_infinity(node.matrix) || matrix_contains_nan(node.matrix)) {
-			PRINT("CSG-WARNING: Transformation matrix contains Not-a-Number and/or Infinity - removing object.");
+			PRINT("WARNING: Transformation matrix contains Not-a-Number and/or Infinity - removing object.");
 			return Response::PruneTraversal;
 		}
 		state.setMatrix(state.matrix() * node.matrix);
