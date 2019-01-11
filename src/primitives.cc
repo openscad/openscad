@@ -563,7 +563,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 				if (pt < this->points->toVector().size()) {
 					double px, py, pz;
 					if (!this->points->toVector()[pt]->getVec3(px, py, pz, 0.0) ||
-					    std::isinf(px) || std::isinf(py) || std::isinf(pz)) {
+					    !std::isfinite(px) || !std::isfinite(py) || !std::isfinite(pz)) {
 						PRINTB("ERROR: Unable to convert point at index %d to a vec3 of numbers, %s", j % this->modinst->location().toRelativeString(this->document_path));
 						return p;
 					}

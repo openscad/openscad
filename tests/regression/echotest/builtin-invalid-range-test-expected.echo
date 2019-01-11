@@ -48,18 +48,18 @@ WARNING: circle(r1=inf), in file builtin-invalid-range-test.scad, line 14
 ECHO: "Transformations"
 ECHO: "i=1"
 ECHO: "i=0"
-WARNING: scale(0), in file builtin-invalid-range-test.scad, line 19
+WARNING: scale(0), in file builtin-invalid-range-test.scad, line 25
 ECHO: "i=-1"
 ECHO: "i=-inf"
-WARNING: scale(-inf), in file builtin-invalid-range-test.scad, line 19
-WARNING: Problem converting rotate(a=-inf) parameter, in file builtin-invalid-range-test.scad, line 21
-WARNING: Unable to convert translate([0, -inf, 0]) parameter to a vec3 or vec2 of numbers, in file builtin-invalid-range-test.scad, line 23
+WARNING: scale(-inf), in file builtin-invalid-range-test.scad, line 25
+WARNING: Problem converting rotate(a=-inf) parameter, in file builtin-invalid-range-test.scad, line 27
+WARNING: Unable to convert translate([0, -inf, 0]) parameter to a vec3 or vec2 of numbers, in file builtin-invalid-range-test.scad, line 29
 ECHO: "i=nan"
-WARNING: scale(nan), in file builtin-invalid-range-test.scad, line 19
-WARNING: Problem converting rotate(a=nan) parameter, in file builtin-invalid-range-test.scad, line 21
-WARNING: Unable to convert translate([0, nan, 0]) parameter to a vec3 or vec2 of numbers, in file builtin-invalid-range-test.scad, line 23
+WARNING: scale(nan), in file builtin-invalid-range-test.scad, line 25
+WARNING: Problem converting rotate(a=nan) parameter, in file builtin-invalid-range-test.scad, line 27
+WARNING: Unable to convert translate([0, nan, 0]) parameter to a vec3 or vec2 of numbers, in file builtin-invalid-range-test.scad, line 29
 ECHO: "i=inf"
-WARNING: scale(inf), in file builtin-invalid-range-test.scad, line 19
-WARNING: Problem converting rotate(a=inf) parameter, in file builtin-invalid-range-test.scad, line 21
-WARNING: Unable to convert translate([0, inf, 0]) parameter to a vec3 or vec2 of numbers, in file builtin-invalid-range-test.scad, line 23
+WARNING: scale(inf), in file builtin-invalid-range-test.scad, line 25
+WARNING: Problem converting rotate(a=inf) parameter, in file builtin-invalid-range-test.scad, line 27
+WARNING: Unable to convert translate([0, inf, 0]) parameter to a vec3 or vec2 of numbers, in file builtin-invalid-range-test.scad, line 29
 ECHO: "Those are okay"
