@@ -206,7 +206,7 @@ void PolySet::resize(const Vector3d &newsize, const Eigen::Matrix<bool,3,1> &aut
 	neighboring grids.
 	May reduce the number of polygons if polygons collapse into < 3 vertices.
 */
-
+namespace /* anonymous */ {
 bool is_degenerate(const Polygon &p, double &x)
 {
 	if(p.size() == 3) {
@@ -296,6 +296,7 @@ unsigned flip_denerate_triangles(PolySet &ps)
 	} while(skipped && flipped); // while more to do and still progressing
 	return total;
 }
+} // namespace
 
 void PolySet::quantizeVertices()
 {
