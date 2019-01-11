@@ -1,6 +1,7 @@
 #include "import.h"
 #include "polyset.h"
 #include "printutils.h"
+#include "AST.h"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/regex.hpp>
@@ -52,14 +53,14 @@ static void read_stl_facet(std::ifstream &f, stl_facet &facet)
 #endif
 }
 
-PolySet *import_stl(const std::string &filename)
+PolySet *import_stl(const std::string &filename, const Location &loc)
 {
 	PolySet *p = new PolySet(3);
 
 	// Open file and position at the end
 	std::ifstream f(filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
 	if (!f.good()) {
-		PRINTB("WARNING: Can't open import file '%s'.", filename);
+		PRINTB("WARNING: Can't open import file '%s', import() at line %d", filename % loc.firstLine());
 		return p;
 	}
 	
@@ -108,7 +109,7 @@ PolySet *import_stl(const std::string &filename)
 					}
 				}
 				catch (const boost::bad_lexical_cast &blc) {
-					PRINTB("WARNING: Can't parse vertex line '%s'.", line);
+					PRINTB("WARNING: Can't parse vertex line '%s', import() at line %d", line % loc.firstLine());
 					i = 10;
 					continue;
 				}
