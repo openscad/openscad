@@ -119,6 +119,14 @@ def normalize_string(s):
         return match.groups()[0] + match.groups()[2]
     s = re.sub('(file = ")([^"/]*/)*([^"]*")', pathrep, s)
 
+    """C++ ... does not explicitly specify the representation ...
+    of nonfinite values, leaving it implementation-defined.
+    So without some specific action, input and output of
+    nonfinite values is not portable. 
+    https://www.boost.org/doc/libs/1_51_0/libs/math/doc/sf_and_dist/html/math_toolkit/utils/fp_facets/intro.html"""
+    s = re.sub('=-nan, ','=nan, ', s)
+    s = re.sub('=-nan\)','=nan\)', s)
+
     return s
 
 def get_normalized_text(filename):
