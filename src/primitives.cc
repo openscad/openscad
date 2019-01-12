@@ -205,8 +205,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 			converted |= size->getVec3(node->x, node->y, node->z);
 			if(!converted){
 				PRINTB("WARNING: Unable to convert cube(size=%s, ...) parameter to a number or a vec3 of numbers, %s", size->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
-			}
-			if(OpenSCAD::rangeCheck){
+			}else if(OpenSCAD::rangeCheck){
 				bool ok = (node->x > 0) && (node->y > 0) && (node->z > 0);
 				ok &= std::isfinite(node->x) && std::isfinite(node->y) && std::isfinite(node->z);
 				if(!ok){
@@ -296,8 +295,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 			converted |= size->getVec2(node->x, node->y);
 			if(!converted){
 				PRINTB("WARNING: Unable to convert square(size=%s, ...) parameter to a number or a vec2 of numbers, %s", size->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
-			}
-			if(OpenSCAD::rangeCheck){
+			}else if(OpenSCAD::rangeCheck){
 				bool ok = true;
 				ok &= (node->x > 0) && (node->y > 0);
 				ok &= std::isfinite(node->x) && std::isfinite(node->y);

@@ -1,9 +1,15 @@
 inf = 1/0;
 nan = inf / inf;
-tests= [1,0,-1,-inf,nan,inf];
+tests= [1,0,-1,-inf,nan,inf,"test"];
 echo("Primitives");
 for(i=tests){
-    echo(str("i=",i));
+    if(i==i){
+        echo(str("i=",i));
+    }else{
+        //nan compared to anything evals false
+        //depending on compiler, nan can be displayed as nan or -nan
+        echo(str("i=","not a number"));
+    }
     cube([1,i,1]);
     sphere(i);
     cylinder(h=i);
