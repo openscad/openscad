@@ -217,12 +217,11 @@ assignment:
                         
                         const auto uncPathCurr = boostfs_uncomplete(currFile, mainFilePath.parent_path());
                         const auto uncPathPrev = boostfs_uncomplete(prevFile, mainFilePath.parent_path());
-
                         if(fileEnded){
                             //assigments via commandline
                         }else if(prevFile==mainFile && currFile == mainFile){
                             //both assigments in the mainFile
-                            PRINTB("PARSER-WARNING: %s was assigned on line %i but was overwritten on line %i",
+                            PRINTB("WARNING: %s was assigned on line %i but was overwritten on line %i",
                                     assignment.name%
                                     assignment.location().firstLine()%
                                     LOC(@$).firstLine());
@@ -230,7 +229,7 @@ assignment:
                             //assigment overwritten within the same file
                             //the line number beeing equal happens, when a file is included multiple times
                             if(assignment.location().firstLine() != LOC(@$).firstLine()){
-                                PRINTB("PARSER-WARNING: %s was assigned on line %i of %s but was overwritten on line %i",
+                                PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i",
                                         assignment.name%
                                         assignment.location().firstLine()%
                                         uncPathPrev%
@@ -238,14 +237,13 @@ assignment:
                             }
                         }else if(prevFile==mainFile && currFile != mainFile){
                             //assigment from the mainFile overwritten by an include
-                            PRINTB("PARSER-WARNING: %s was assigned on line %i of %s but was overwritten on line %i of %s",
+                            PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i of %s",
                                     assignment.name%
                                     assignment.location().firstLine()%
                                     uncPathPrev%
                                     LOC(@$).firstLine()%
                                     uncPathCurr);
                         }
-
                         assignment.expr = shared_ptr<Expression>($3);
                         assignment.setLocation(LOC(@$));
                         found = true;
@@ -668,7 +666,7 @@ int parserlex(void)
 void yyerror (char const *s)
 {
   // FIXME: We leak memory on parser errors...
-  PRINTB("PARSER-ERROR: Parser error in file %s, line %d: %s\n",
+  PRINTB("ERROR: Parser error in file %s, line %d: %s\n",
          (*sourcefile()) % lexerget_lineno() % s);
 }
 
@@ -689,7 +687,12 @@ bool parse(FileModule *&module, const std::string& text, const std::string &file
   //        PRINTB_NOCACHE("New module: %s %p", "root" % rootmodule);
 
   parserdebug = debug;
-  int parserretval = parserparse();
+  int parserretval = -1;
+  try{
+     parserretval = parserparse();
+  }catch (const HardWarningException &e) {
+    yyerror("stop on first warning");
+  }
 
   lexerdestroy();
   lexerlex_destroy();

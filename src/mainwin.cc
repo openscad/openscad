@@ -1310,8 +1310,10 @@ void MainWindow::compileCSG()
 #endif
 			this->processEvents();
 		}
-		catch (const ProgressCancelException &e) {
+		catch (const ProgressCancelException &) {
 			PRINT("CSG generation cancelled.");
+		}catch(const HardWarningException &){
+			PRINT("CSG generation cancelled due to hardwarning beeing enabled.");
 		}
 		progress_report_fin();
 		updateStatusBar(nullptr);
@@ -3158,10 +3160,10 @@ void MainWindow::consoleOutput(const QString &msg)
 	c.movePosition(QTextCursor::End);
 	this->console->setTextCursor(c);
 
-	if (msg.startsWith("WARNING:") || msg.startsWith("PARSER-WARNING:") || msg.startsWith("DEPRECATED:")) {
+	if (msg.startsWith("WARNING:") || msg.startsWith("DEPRECATED:")) {
 		this->compileWarnings++;
 		this->console->appendHtml("<span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span>");
-	} else if (msg.startsWith("UI-WARNING:") || msg.startsWith("FONT-WARNING:") || msg.startsWith("EXPORT-WARNING:") || msg.startsWith("CSG-WARNING:")) {
+	} else if (msg.startsWith("UI-WARNING:") || msg.startsWith("FONT-WARNING:") || msg.startsWith("EXPORT-WARNING:")) {
 		this->console->appendHtml("<span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span>");
 	} else if (msg.startsWith("ERROR:")) {
 		this->compileErrors++;
