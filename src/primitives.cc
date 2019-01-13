@@ -224,7 +224,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		if (r.type() == Value::ValueType::NUMBER) {
 			node->r1 = r.toDouble();
 			if (OpenSCAD::rangeCheck && (node->r1 <= 0 || !std::isfinite(node->r1))){
-				PRINTB("WARNING: sphere(r1=%d), %s",
+				PRINTB("WARNING: sphere(r=%d), %s",
 					node->r1 % inst->location().toRelativeString(ctx->documentPath()));
 			}
 		}
