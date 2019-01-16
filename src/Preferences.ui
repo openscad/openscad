@@ -1495,6 +1495,13 @@
              </item>
             </layout>
            </item>
+           <item row="2" column="2">
+            <widget class="QLabel" name="labelOctoPrintApiKeyNote">
+             <property name="text">
+              <string>Note: The API key is stored unencrypted in the application settings.</string>
+             </property>
+            </widget>
+           </item>
           </layout>
          </widget>
         </item>
