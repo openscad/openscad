@@ -317,9 +317,6 @@ void Preferences::featuresCheckBoxToggled(bool state)
 		this->toolBar->removeAction(prefsActionInputButton);
 		InputDriverManager::instance()->closeDrivers();
 	}
-	if (!Feature::Experimental3dPrint.is_enabled()) {
-		this->toolBar->removeAction(prefsAction3DPrint);
-	}
 }
 
 /**
@@ -370,9 +367,6 @@ void Preferences::setupFeaturesPage()
 		this->toolBar->removeAction(prefsActionInput);
 		this->toolBar->removeAction(prefsActionInputButton);
 		InputDriverManager::instance()->closeDrivers();
-	}
-	if (!Feature::Experimental3dPrint.is_enabled()) {
-		this->toolBar->removeAction(prefsAction3DPrint);
 	}
 }
 
