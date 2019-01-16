@@ -2086,10 +2086,9 @@ void MainWindow::action3DPrint()
 	setCurrentOutput();
 
 	//Make sure we can export:
-	unsigned int dim = 3;
+	const unsigned int dim = 3;
 	if (!canExport(dim))
 	{
-		PRINT("Cannot 3D Print due to errors.");
 		return;
     }
 
