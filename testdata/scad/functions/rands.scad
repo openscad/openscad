@@ -299,3 +299,10 @@ echo("rands(-1.1,-1.1,-1.1,1/0)", rands(-1.1,-1.1,-1.1,1/0));
 echo("rands(-1.1,-1.1,-1.1,-1/0)", rands(-1.1,-1.1,-1.1,-1/0));
 echo("rands(-1.1,-1.1,-1.1,1.1)", rands(-1.1,-1.1,-1.1,1.1));
 echo("rands(-1.1,-1.1,-1.1,-1.1)", rands(-1.1,-1.1,-1.1,-1.1));
+
+// part 3 - verify seeded rands() behavior with bizarro not a number inputs
+nan = (1/0)/(1/0);
+echo("rands(0,10,nan,1)", rands(0,10,nan,1));
+echo("rands(0,nan,10,1)", rands(0,nan,10,1));
+echo("rands(nan,0,10,1)", rands(nan,0,10,1));
+echo("rands(0,0,10,nan)", rands(0,0,10,nan));

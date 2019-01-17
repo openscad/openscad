@@ -364,7 +364,7 @@ message(STATUS "OPENGL_LIBRARIES: ")
 foreach(GLLIB ${OPENGL_LIBRARIES})
   message(STATUS "  " ${GLLIB})
 endforeach()
-if (UNIX)
+if (UNIX AND NOT APPLE)
   # see github issue 1355. as of writing the code for offscreen GL context
   # setup requires X11 on Un*x like systems (not Apple/Win).
   find_package(X11 REQUIRED)
@@ -831,7 +831,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
       if (${EXPERIMENTAL} EQUAL -1)
         set(EXPERIMENTAL_OPTION "")
       else()
-        set(EXPERIMENTAL_OPTION "--enable=lc-each" "--enable=lc-else" "--enable=lc-for-c" "--enable=svg-import" "--enable=amf-import" "--enable=3mf-import" "--enable=3mf-export")
+        set(EXPERIMENTAL_OPTION "--enable=amf-import" "--enable=svg-import" "--enable=3mf-import" "--enable=3mf-export")
       endif()
 
       # 2D tests should be viewed from the top, not an angle.
@@ -942,6 +942,7 @@ file(GLOB ISSUES_3D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/*.scad)
 file(GLOB SCAD_DXF_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/dxf/*.scad)
 file(GLOB SCAD_SVG_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/svg/*.scad)
 file(GLOB SCAD_AMF_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/amf/*.scad)
+file(GLOB SCAD_NEF3_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/nef3/*.scad)
 file(GLOB FUNCTION_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/*.scad)
 file(GLOB_RECURSE EXAMPLE_3D_FILES ${CMAKE_SOURCE_DIR}/../examples/*.scad)
 
@@ -982,6 +983,7 @@ list(APPEND FAILING_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1890-
 
 list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/for-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/rotate-parameters.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/expression-evaluation-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/echo-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/assert-fail1-test.scad
@@ -1021,15 +1023,17 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/concat-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-recursive-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/errors-warnings.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/errors-warnings-included.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/isundef-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/operators-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/builtins-calling-vec3vec2.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1472.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/empty-stl.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1516.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1528.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1923.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/preview_variable.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1851-each-fail-on-scalar.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1851-each-fail-on-scalar.scad
             )
 
 list(APPEND ASTDUMPTEST_FILES ${MISC_FILES}
@@ -1040,14 +1044,13 @@ list(APPEND ASTDUMPTEST_FILES ${MISC_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/echo-expression-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/let-test-single.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/let-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/list-comprehensions-experimental.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/list-comprehensions.scad
             )
 
 list(APPEND DUMPTEST_FILES ${FEATURES_2D_FILES} ${FEATURES_3D_FILES} ${DEPRECATED_3D_FILES} ${MISC_FILES})
 
 list(APPEND CGALPNGTEST_2D_FILES ${FEATURES_2D_FILES} ${SCAD_DXF_FILES} ${ISSUES_2D_FILES} ${EXAMPLE_2D_FILES})
-list(APPEND CGALPNGTEST_3D_FILES ${FEATURES_3D_FILES} ${SCAD_AMF_FILES} ${DEPRECATED_3D_FILES} ${ISSUES_3D_FILES} ${EXAMPLE_3D_FILES})
+list(APPEND CGALPNGTEST_3D_FILES ${FEATURES_3D_FILES} ${SCAD_AMF_FILES} ${DEPRECATED_3D_FILES} ${ISSUES_3D_FILES} ${EXAMPLE_3D_FILES} ${SCAD_NEF3_FILES})
 list(APPEND CGALPNGTEST_3D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/use-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/assert-tests.scad
@@ -1153,6 +1156,9 @@ disable_tests(
   # z-fighting different on different machines
   throwntogethertest_issue1803
   opencsgtest_issue1165
+  opencsgtest_issue1215
+  throwntogethertest_issue1089
+  throwntogethertest_issue1215
 )
 
 # 2D tests
@@ -1196,9 +1202,7 @@ disable_tests(csgpngtest_primitive-inf-tests
               cgalpngtest_empty-shape-tests
               csgpngtest_issue1258)
 
-experimental_tests(astdumptest_list-comprehensions-experimental
-                   echotest_list-comprehensions-experimental
-                   cgalpngtest_cube-with-hole
+experimental_tests(cgalpngtest_cube-with-hole
                    cgalpngtest_multi-volume-binary
                    cgalpngtest_sphere20face
                    cgalpngtest_split_pyramid
@@ -1239,7 +1243,6 @@ experimental_tests(astdumptest_list-comprehensions-experimental
                    astdumptest_assert-expression-fail2-test
                    astdumptest_assert-expression-fail3-test
 		   echotest_issue1851-each-fail-on-scalar
-
 		   cgalpngtest_import_3mf-tests
 		   opencsgtest_import_3mf-tests
 		   csgpngtest_import_3mf-tests
@@ -1509,6 +1512,9 @@ add_cmdline_test(svgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/
 add_failing_test(stlfailedtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/shouldfail.py ARGS --openscad=${OPENSCAD_BINPATH} --retval=1 -o SUFFIX stl FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/empty-union.scad)
 add_failing_test(offfailedtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/shouldfail.py ARGS --openscad=${OPENSCAD_BINPATH} --retval=1 -o SUFFIX off FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/empty-union.scad)
 add_failing_test(parsererrors EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/shouldfail.py ARGS --openscad=${OPENSCAD_BINPATH} --retval=1 -o SUFFIX stl FILES ${FAILING_FILES})
+
+# Hardwarning Test       
+add_failing_test(hardwarnings EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/shouldfail.py ARGS --openscad=${OPENSCAD_BINPATH} --retval=1 --hardwarnings -o SUFFIX echo FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/errors-warnings.scad)
 
 # Verify that test framework is paying attention to alpha channel, issue 1492
 #add_cmdline_test(openscad-colorscheme-cornfield-alphafail EXE ${OPENSCAD_BINPATH} ARGS --colorscheme=Cornfield -o SUFFIX png FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/logo.scad)

@@ -14,6 +14,10 @@ https://commons.wikimedia.org/wiki/File:Input-keyboard.svg / Tango Icon Library 
 
 - prefsInputButtons.png
 
+https://openclipart.org/detail/171015/laser-printer / public domain:
+
+- prefs3DPrint.png
+
 https://openclipart.org/detail/2281/information-icons-set-by-kuba / public domain:
 
 - information-icons-error.png

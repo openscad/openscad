@@ -30,6 +30,7 @@
 #include "Geometry.h"
 #include "printutils.h"
 #include "version_helper.h"
+#include "AST.h"
 
 #ifdef ENABLE_LIB3MF
 #include <Model/COM/NMR_DLLInterfaces.h>
@@ -74,7 +75,7 @@ static Geometry * import_3mf_error(PLib3MFModel *model = nullptr, PLib3MFModelRe
 	return new PolySet(3);
 }
 
-Geometry * import_3mf(const std::string &filename)
+Geometry * import_3mf(const std::string &filename, const Location &loc)
 {
 	DWORD interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro;
 	HRESULT result = lib3mf_getinterfaceversion(&interfaceVersionMajor, &interfaceVersionMinor, &interfaceVersionMicro);
@@ -107,7 +108,7 @@ Geometry * import_3mf(const std::string &filename)
 	result = lib3mf_reader_readfromfileutf8(reader, filename.c_str());
 	lib3mf_release(reader);
 	if (result != LIB3MF_OK) {
-		PRINTB("WARNING: Could not read file '%s'", filename.c_str());
+		PRINTB("WARNING: Could not read file '%s', import() at line %d", filename.c_str() % loc.firstLine());
 		return import_3mf_error(model);
 	}
 
@@ -212,9 +213,9 @@ const std::string get_lib3mf_version() {
 	return lib3mf_version;
 }
 
-Geometry * import_3mf(const std::string &)
+Geometry * import_3mf(const std::string &, const Location &loc)
 {
-	PRINT("WARNING: Import from 3MF format was not enabled when building the application.");
+	PRINTB("WARNING: Import from 3MF format was not enabled when building the application, import() at line %d", loc.firstLine());
 	return new PolySet(3);
 }
 

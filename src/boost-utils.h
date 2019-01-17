@@ -1,6 +1,7 @@
 #pragma once
 
 #include <boost/filesystem.hpp>
+#include "printutils.h"
 namespace fs = boost::filesystem;
 
 fs::path boostfs_normalize(const fs::path &path);
@@ -19,7 +20,7 @@ On other conversion failures, return 0. */
 template <class Tout,class Tin> Tout boost_numeric_cast( Tin input )
 {
 	Tout result = 0;
-	std::stringstream status;
+	std::ostringstream status;
 	status.str("ok");
 	try {
 		result = boost::numeric_cast<Tout>(input);
@@ -33,12 +34,10 @@ template <class Tout,class Tin> Tout boost_numeric_cast( Tin input )
 		status << e.what();
 		result = 0;
 	}
-	if (status.str()!="ok") {
-		std::stringstream tmp;
-		tmp << input;
-		PRINTB("WARNING: problem converting this number: %s",tmp.str());
-		PRINTB("WARNING: %s", status.str() );
-		PRINTB("WARNING: setting result to %u",result);
+	if (status.str() != "ok") {
+		PRINTB("WARNING: problem converting this number: %s", std::to_string(input));
+		PRINTB("WARNING: %s", status.str());
+		PRINTB("WARNING: setting result to %u", result);
 	}
 	return result;
 }

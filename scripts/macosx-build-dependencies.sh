@@ -33,25 +33,24 @@ OPTION_FORCE=0
 OPTION_CXX11=true
 
 PACKAGES=(
-    # NB! For eigen, also update the path in the function
-    "eigen 3.3.3"
+    "eigen 3.3.5"
     "gmp 6.1.2"
-    "mpfr 3.1.6"
+    "mpfr 4.0.1"
     "boost 1.65.1"
     "qt5 5.11.2"
-    "qscintilla 2.9.3"
-    "cgal 4.11"
-    "glew 1.13.0"
+    "qscintilla 2.10.8"
+    "cgal 4.13"
+    "glew 2.1.0"
     "gettext 0.19.8"
     "libffi 3.2.1"
-    "glib2 2.54.2"
+    "glib2 2.56.3"
     "opencsg 1.4.2"
-    "freetype 2.8.1"
+    "freetype 2.9.1"
     "ragel 6.10"
-    "harfbuzz 1.7.1"
-    "libzip 1.3.2"
-    "libxml2 2.9.7"
-    "fontconfig 2.12.4"
+    "harfbuzz 2.1.3"
+    "libzip 1.5.1"
+    "libxml2 2.9.8"
+    "fontconfig 2.13.1"
     "hidapi 0.8.0-rc1"
     "libuuid 1.6.2"
     "lib3mf ca53e4d3d73b835ab9c0c00274a736eecf4f732f"
@@ -256,10 +255,10 @@ build_qscintilla()
   fi
   tar xzf QScintilla_gpl-$version.tar.gz
   cd QScintilla_gpl-$version/Qt4Qt5
-  patch -p2 < $OPENSCADDIR/patches/QScintilla-2.9.3-xcode8.patch
+#  patch -p2 < $OPENSCADDIR/patches/QScintilla-2.9.3-xcode8.patch
   qmake QMAKE_CXXFLAGS+="$CXXSTDFLAGS" QMAKE_LFLAGS+="$CXXSTDFLAGS" qscintilla.pro
   make -j"$NUMCPU" install
-  install_name_tool -id @rpath/libqscintilla2.dylib $DEPLOYDIR/lib/libqscintilla2.dylib
+  install_name_tool -id @rpath/libqscintilla2_qt5.dylib $DEPLOYDIR/lib/libqscintilla2_qt5.dylib
 }
 
 check_gmp()
@@ -286,11 +285,6 @@ build_gmp()
   install_name_tool -id @rpath/libgmp.dylib $DEPLOYDIR/lib/libgmp.dylib
   install_name_tool -id @rpath/libgmpxx.dylib $DEPLOYDIR/lib/libgmpxx.dylib
   install_name_tool -change $DEPLOYDIR/lib/libgmp.10.dylib @rpath/libgmp.dylib $DEPLOYDIR/lib/libgmpxx.dylib
-}
-
-check_mpfr()
-{
-    check_file include/mpfr.h
 }
 
 # As with gmplib, mpfr is built separately in 32-bit and 64-bit mode and then merged
@@ -337,8 +331,7 @@ build_boost()
   fi
   tar xjf boost_$bversion.tar.bz2
   cd boost_$bversion
-  # We only need the thread and program_options libraries
-  ./bootstrap.sh --prefix=$DEPLOYDIR --with-libraries=thread,program_options,filesystem,chrono,system,regex
+  ./bootstrap.sh --prefix=$DEPLOYDIR --with-libraries=thread,program_options,filesystem,chrono,system,regex,date_time,atomic
   if $USING_LLVM; then
     BOOST_TOOLSET="toolset=darwin-llvm"
     echo "using darwin : llvm : llvm-g++ ;" >> tools/build/user-config.jam 
@@ -381,7 +374,7 @@ build_cgal()
   fi
   tar xzf CGAL-$version.tar.xz
   cd CGAL-$version
-  CXXFLAGS="$CXXSTDFLAGS" cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.dylib -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.dylib -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.dylib -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_Qt5=OFF -DWITH_CGAL_ImageIO=OFF -DBUILD_SHARED_LIBS=TRUE -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="x86_64" -DBOOST_ROOT=$DEPLOYDIR -DBoost_USE_MULTITHREADED=false
+  CXXFLAGS="$CXXSTDFLAGS" cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_BUILD_TYPE=Release -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.dylib -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.dylib -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.dylib -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_Qt5=OFF -DWITH_CGAL_ImageIO=OFF -DBUILD_SHARED_LIBS=TRUE -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="x86_64" -DBOOST_ROOT=$DEPLOYDIR -DBoost_USE_MULTITHREADED=false
   make -j"$NUMCPU" install
   make install
   install_name_tool -id @rpath/libCGAL.dylib $DEPLOYDIR/lib/libCGAL.dylib
@@ -542,7 +535,7 @@ build_freetype()
   PKG_CONFIG_LIBDIR="$DEPLOYDOR/lib/pkgconfig" ./configure --prefix="$DEPLOYDIR" CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN $extra_config_flags
   make -j"$NUMCPU"
   make install
-  install_name_tool -id $DEPLOYDIR/lib/libfreetype.dylib $DEPLOYDIR/lib/libfreetype.dylib
+  install_name_tool -id @rpath/libfreetype.dylib $DEPLOYDIR/lib/libfreetype.dylib
 }
  
 check_libzip()
@@ -562,7 +555,7 @@ build_libzip()
   fi
   tar xzf "libzip-$version.tar.gz"
   cd "libzip-$version"
-  ./configure --prefix="$DEPLOYDIR" CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN
+  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" .
   make -j$NUMCPU
   make install
   install_name_tool -id @rpath/libzip.dylib $DEPLOYDIR/lib/libzip.dylib
@@ -588,7 +581,7 @@ build_libxml2()
   ./configure --prefix="$DEPLOYDIR" --with-zlib=/usr --without-lzma --without-ftp --without-http --without-python CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN
   make -j$NUMCPU
   make install
-  install_name_tool -id $DEPLOYDIR/lib/libxml2.dylib $DEPLOYDIR/lib/libxml2.dylib
+  install_name_tool -id @rpath/libxml2.dylib $DEPLOYDIR/lib/libxml2.dylib
 }
 
 check_fontconfig()
@@ -723,6 +716,7 @@ check_harfbuzz()
 
 build_harfbuzz()
 {
+    set -x
   version=$1
   extra_config_flags="--with-coretext=auto --with-glib=no --disable-gtk-doc-html"
 

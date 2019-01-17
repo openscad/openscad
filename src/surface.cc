@@ -85,9 +85,10 @@ AbstractNode *SurfaceModule::instantiate(const Context *ctx, const ModuleInstant
 	auto node = new SurfaceNode(inst);
 
 	AssignmentList args{Assignment("file"), Assignment("center"), Assignment("convexity")};
+	AssignmentList optargs{Assignment("center"),Assignment("invert")};
 
 	Context c(ctx);
-	c.setVariables(args, evalctx);
+	c.setVariables(evalctx, args, optargs);
 
 	auto fileval = c.lookup_variable("file");
 	auto filename = lookup_file(fileval->isUndefined() ? "" : fileval->toString(), inst->path(), c.documentPath());
@@ -299,7 +300,7 @@ const Geometry *SurfaceNode::createGeometry() const
 
 std::string SurfaceNode::toString() const
 {
-	std::stringstream stream;
+	std::ostringstream stream;
 	fs::path path{static_cast<std::string>(this->filename)}; // gcc-4.6
 
 	stream << this->name() << "(file = " << this->filename

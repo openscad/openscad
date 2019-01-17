@@ -65,7 +65,7 @@ void InputDriverManager::registerActions(const QList<QAction *> &actions, const 
 	for (const auto action : actions) {
 		const auto description = parent + action->text();
 		if (!action->objectName().isEmpty()) {
-			this->actions.push_back({objectName(), description, action->icon()});
+			this->actions.push_back({action->objectName(), description, action->icon()});
 		}
 		if (action->menu()) {
 			registerActions(action->menu()->actions(), description +  QString::fromUtf8(" \u2192 "));
@@ -118,7 +118,7 @@ void InputDriverManager::doOpen(bool firstOpen)
 
 std::string InputDriverManager::listDrivers() const
 {
-    std::stringstream stream;
+    std::ostringstream stream;
     const char *sep = "";
     for (auto driver : drivers) {
         stream << sep << driver->get_name();

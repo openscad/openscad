@@ -30,10 +30,10 @@
 #include <QFileDialog>
 #include <QDesktopServices>
 
-#include "qtgettext.h"
+#include "version.h"
 #include "UIUtils.h"
+#include "qtgettext.h"
 #include "PlatformUtils.h"
-#include "openscad.h"
 #include "QSettingsCached.h"
 
 

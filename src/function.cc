@@ -45,7 +45,7 @@ ValuePtr UserFunction::evaluate(const Context *ctx, const EvalContext *evalctx) 
 {
 	if (!expr) return ValuePtr::undefined;
 	Context c(ctx);
-	c.setVariables(definition_arguments, evalctx);
+	c.setVariables(evalctx, definition_arguments);
 	ValuePtr result = expr->evaluate(&c);
 
 	return result;
@@ -86,13 +86,13 @@ public:
 		if (!expr) return ValuePtr::undefined;
 		
 		Context c(ctx);
-		c.setVariables(definition_arguments, evalctx);
+		c.setVariables(evalctx, definition_arguments);
 		
-		EvalContext ec(&c, call->arguments);
+		EvalContext ec(&c, call->arguments, loc);
 		Context tmp(&c);
 		unsigned int counter = 0;
 		while (invert ^ this->op->cond->evaluate(&c)) {
-			tmp.setVariables(definition_arguments, &ec);
+			tmp.setVariables(&ec, definition_arguments);
 			c.apply_variables(tmp);
 			
 			if (counter++ == 1000000) throw RecursionException::create("function", this->name,loc);

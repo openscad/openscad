@@ -49,9 +49,13 @@ AbstractNode *TextModule::instantiate(const Context *ctx, const ModuleInstantiat
 	auto node = new TextNode(inst);
 
 	AssignmentList args{Assignment("text"), Assignment("size"), Assignment("font")};
+	AssignmentList optargs{
+		Assignment("direction"), Assignment("language"), Assignment("script"),
+		Assignment("halign"), Assignment("valign"), Assignment("spacing")
+	};
 
 	Context c(ctx);
-	c.setVariables(args, evalctx);
+	c.setVariables(evalctx, args, optargs);
 
 	auto fn = c.lookup_variable("$fn")->toDouble();
 	auto fa = c.lookup_variable("$fa")->toDouble();
@@ -99,9 +103,7 @@ FreetypeRenderer::Params TextNode::get_params() const
 
 std::string TextNode::toString() const
 {
-	std::stringstream stream;
-	stream << name() << "(" << this->params << ")";
-	return stream.str();
+	return STR(name() << "(" << this->params << ")");
 }
 
 void register_builtin_text()

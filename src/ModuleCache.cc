@@ -8,7 +8,6 @@
 
 #include <stdio.h>
 #include <fstream>
-#include <sstream>
 #include <sys/stat.h>
 #include <algorithm>
 
@@ -93,15 +92,12 @@ std::time_t ModuleCache::evaluate(const std::string &mainFile,const std::string 
 
 		std::string text;
 		{
-			std::stringstream textbuf;
 			std::ifstream ifs(filename.c_str());
 			if (!ifs.is_open()) {
 				PRINTB("WARNING: Can't open library file '%s'\n", filename);
 				return 0;
 			}
-			textbuf << ifs.rdbuf();
-			textbuf << "\n\x03\n" << commandline_commands;
-			text = textbuf.str();
+			text = STR(ifs.rdbuf() << "\n\x03\n" << commandline_commands);
 		}
 		
 		print_messages_push();

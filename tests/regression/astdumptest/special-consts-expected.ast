@@ -12,6 +12,7 @@ if((undef == a)) echo("undef is a");
 if((a == b)) echo("a is b");
 if((c == undef)) echo("c is undef");
 if((undef == c)) echo("undef is c");
+if(($customSpecialVariable == undef)) echo("$customSpecialVariable is undef");
 echo("-- comparing undef --");
 if(a) echo("undef evaluates true");
 else echo("undef evaluates false");
