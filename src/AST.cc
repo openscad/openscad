@@ -1,5 +1,6 @@
 #include "AST.h"
 #include <sstream>
+#include "boost-utils.h"
 
 const Location Location::NONE(0, 0, 0, 0, nullptr);
 
@@ -21,9 +22,9 @@ bool Location::isNone() const{
 	return ((*this)==Location::NONE);
 }
 
-std::string Location::toString() const{
+std::string Location::toRelativeString(const std::string &docPath) const{
 	if(this->isNone()) return "location unkown";
-	return "line " + std::to_string(this->firstLine());
+	return "in file "+boostfs_uncomplete((*path), docPath).generic_string()+ ", "+"line " + std::to_string(this->firstLine());
 }
 
 std::ostream &operator<<(std::ostream &stream, const ASTNode &ast)
@@ -34,7 +35,7 @@ std::ostream &operator<<(std::ostream &stream, const ASTNode &ast)
 
 std::string ASTNode::dump(const std::string &indent) const
 {
-	std::stringstream stream;
+	std::ostringstream stream;
 	print(stream, indent);
 	return stream.str();
 }

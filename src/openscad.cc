@@ -60,8 +60,6 @@
 #include "csgnode.h"
 #include "CSGTreeEvaluator.h"
 
-#include <sstream>
-
 #include "Camera.h"
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
@@ -94,26 +92,6 @@ std::string currentdir;
 static bool arg_info = false;
 static std::string arg_colorscheme;
 
-#define QUOTE(x__) # x__
-#define QUOTED(x__) QUOTE(x__)
-
-std::string openscad_shortversionnumber = QUOTED(OPENSCAD_SHORTVERSION);
-std::string openscad_versionnumber = QUOTED(OPENSCAD_VERSION);
-
-std::string openscad_displayversionnumber =
-#ifdef OPENSCAD_COMMIT
-  QUOTED(OPENSCAD_VERSION)
-  " (git " QUOTED(OPENSCAD_COMMIT) ")";
-#else
-  QUOTED(OPENSCAD_SHORTVERSION);
-#endif
-
-std::string openscad_detailedversionnumber =
-#ifdef OPENSCAD_COMMIT
-  openscad_displayversionnumber;
-#else
-  openscad_versionnumber;
-#endif
 
 class Echostream : public std::ofstream
 {
@@ -132,10 +110,8 @@ public:
 
 static void help(const char *arg0, const po::options_description &desc, bool failure = false)
 {
-	std::stringstream ss;
-	ss << desc;
 	const fs::path progpath(arg0);
-	PRINTB("Usage: %s [options] file.scad\n%s", progpath.filename().string() % ss.str());
+	PRINTB("Usage: %s [options] file.scad\n%s", progpath.filename().string() % STR(desc));
 	exit(failure ? 1 : 0);
 }
 
@@ -295,16 +271,12 @@ void set_render_color_scheme(const std::string color_scheme, const bool exit_if_
 
 int cmdline(const char *deps_output_file, const std::string &filename, const char *output_file, const fs::path &original_path, const std::string &parameterFile, const std::string &setName, const ViewOptions& viewOptions, Camera camera)
 {
-	parser_init();
-	localization_init();
-
 	Tree tree;
+	boost::filesystem::path doc(filename);
+	tree.setDocumentPath(doc.remove_filename().string());
 #ifdef ENABLE_CGAL
 	GeometryEvaluator geomevaluator(tree);
 #endif
-	if (arg_info) {
-	    return info();
-	}
 	
 	const char *stl_output_file = nullptr;
 	const char *off_output_file = nullptr;
@@ -849,6 +821,17 @@ std::string join(const Seq &seq, const std::string &sep, const ToString &toStrin
     return boost::algorithm::join(boost::adaptors::transform(seq, toString), sep);
 }
 
+bool flagConvert(std::string str){
+	if(str =="1" || boost::iequals(str, "on") || boost::iequals(str, "true")) {
+		return true;
+	}
+	if(str =="0" || boost::iequals(str, "off") || boost::iequals(str, "false")) {
+		return false;
+	}
+	throw std::runtime_error("");
+	return false;
+}
+
 int main(int argc, char **argv)
 {
 	int rc = 0;
@@ -918,6 +901,8 @@ int main(int argc, char **argv)
 		("d,d", po::value<string>(), "deps_file -generate a dependency file for make")
 		("m,m", po::value<string>(), "make_cmd -runs make_cmd file if file is missing")
 		("quiet,q", "quiet mode (don't print anything *except* errors)")
+		("hardwarnings", "Stop on the first warning")
+		("check-parameters", po::value<string>(), "=true/false, configure the parameter check for user modules and functions")
 		("debug", po::value<string>(), "special debug info")
 		("s,s", po::value<string>(), "stl_file deprecated, use -o")
 		("x,x", po::value<string>(), "dxf_file deprecated, use -o")
@@ -953,6 +938,25 @@ int main(int argc, char **argv)
 	if (vm.count("quiet")) {
 		OpenSCAD::quiet = true;
 	}
+
+	if (vm.count("hardwarnings")) {
+		OpenSCAD::hardwarnings = true;
+	}
+	
+	std::map<std::string, bool*> flags;
+	flags.insert(std::make_pair("check-parameters",&OpenSCAD::parameterCheck));
+	for(auto flag : flags) {
+		std::string name = flag.first;
+		if(vm.count(name)){
+			std::string opt = vm[name].as<string>();
+			try {
+				(*(flag.second) = flagConvert(opt));
+			} catch ( const std::runtime_error &e ) {
+				PRINTB("Could not parse '--%s %s' as flag", name % opt);
+			}
+		}
+	}
+	
 	if (vm.count("help")) help(argv[0], desc);
 	if (vm.count("version")) version();
 	if (vm.count("info")) arg_info = true;
@@ -1066,7 +1070,18 @@ int main(int argc, char **argv)
 
 	if (arg_info || cmdlinemode) {
 		if (inputFiles.size() > 1) help(argv[0], desc, true);
-		rc = cmdline(deps_output_file, inputFiles[0], output_file, original_path, parameterFile, parameterSet, viewOptions, camera);
+		try {
+			parser_init();
+			localization_init();
+			if (arg_info) {
+				rc = info();
+			}
+			else {
+				rc = cmdline(deps_output_file, inputFiles[0], output_file, original_path, parameterFile, parameterSet, viewOptions, camera);
+			}
+		} catch (const HardWarningException &) {
+			rc = 1;
+		}
 	}
 	else if (QtUseGUI()) {
 		rc = gui(inputFiles, original_path, argc, argv);

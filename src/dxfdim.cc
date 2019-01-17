@@ -33,6 +33,7 @@
 #include "fileutils.h"
 #include "evalcontext.h"
 #include "handle_dep.h"
+#include "degree_trig.h"
 
 #include <cmath>
 #include <sstream>
@@ -68,7 +69,6 @@ ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 		if (n == "name") name = v->toString();
 	}
 
-	std::stringstream keystream;
 	fs::path filepath(filename);
 	uintmax_t filesize = -1;
 	time_t lastwritetime = -1;
@@ -76,10 +76,9 @@ ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 		filesize = fs::file_size(filepath);
 		lastwritetime = fs::last_write_time(filepath);
 	}
-	keystream << filename << "|" << layername << "|" << name << "|" << xorigin
-						<< "|" << yorigin <<"|" << scale << "|" << lastwritetime
-						<< "|" << filesize;
-	std::string key = keystream.str();
+	std::string key = STR(filename << "|" << layername << "|" << name << "|" << xorigin
+												<< "|" << yorigin <<"|" << scale << "|" << lastwritetime
+												<< "|" << filesize);
 	if (dxf_dim_cache.find(key) != dxf_dim_cache.end())
 		return dxf_dim_cache.find(key)->second;
 	handle_dep(filepath.string());
@@ -98,7 +97,7 @@ ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 			double x = d->coords[4][0] - d->coords[3][0];
 			double y = d->coords[4][1] - d->coords[3][1];
 			double angle = d->angle;
-			double distance_projected_on_line = std::fabs(x * cos(angle*M_PI/180) + y * sin(angle*M_PI/180));
+			double distance_projected_on_line = std::fabs(x * cos_degrees(angle) + y * sin_degrees(angle));
 			return dxf_dim_cache[key] = ValuePtr(distance_projected_on_line);
 		}
 		else if (type == 1) {
@@ -109,9 +108,9 @@ ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 		}
 		else if (type == 2) {
 			// Angular
-			double a1 = atan2(d->coords[0][0] - d->coords[5][0], d->coords[0][1] - d->coords[5][1]);
-			double a2 = atan2(d->coords[4][0] - d->coords[3][0], d->coords[4][1] - d->coords[3][1]);
-			return dxf_dim_cache[key] = ValuePtr(std::fabs(a1 - a2) * 180 / M_PI);
+			double a1 = atan2_degrees(d->coords[0][0] - d->coords[5][0], d->coords[0][1] - d->coords[5][1]);
+			double a2 = atan2_degrees(d->coords[4][0] - d->coords[3][0], d->coords[4][1] - d->coords[3][1]);
+			return dxf_dim_cache[key] = ValuePtr(std::fabs(a1 - a2));
 		}
 		else if (type == 3 || type == 4) {
 			// Diameter or Radius
@@ -158,7 +157,6 @@ ValuePtr builtin_dxf_cross(const Context *ctx, const EvalContext *evalctx)
 		if (n == "scale") v->getDouble(scale);
 	}
 
-	std::stringstream keystream;
 	fs::path filepath(filename);
 	uintmax_t filesize = -1;
 	time_t lastwritetime = -1;
@@ -166,10 +164,9 @@ ValuePtr builtin_dxf_cross(const Context *ctx, const EvalContext *evalctx)
 		filesize = fs::file_size(filepath);
 		lastwritetime = fs::last_write_time(filepath);
 	}
-	keystream << filename << "|" << layername << "|" << xorigin << "|" << yorigin
-						<< "|" << scale << "|" << lastwritetime
-						<< "|" << filesize;
-	std::string key = keystream.str();
+	std::string key = STR(filename << "|" << layername << "|" << xorigin << "|" << yorigin
+												<< "|" << scale << "|" << lastwritetime
+												<< "|" << filesize);
 
 	if (dxf_cross_cache.find(key) != dxf_cross_cache.end()) {
 		return dxf_cross_cache.find(key)->second;

@@ -11,15 +11,15 @@ ECHO: undef
 ECHO: undef
 ECHO: undef
 ECHO: undef
-WARNING: Incorrect arguments to norm()
+WARNING: Incorrect arguments to norm(), in file norm-tests.scad, line 19
 ECHO: undef
-WARNING: Incorrect arguments to norm()
+WARNING: Incorrect arguments to norm(), in file norm-tests.scad, line 20
 ECHO: undef
-WARNING: Incorrect arguments to norm()
+WARNING: Incorrect arguments to norm(), in file norm-tests.scad, line 21
 ECHO: undef
-WARNING: Incorrect arguments to norm()
+WARNING: Incorrect arguments to norm(), in file norm-tests.scad, line 22
 ECHO: undef
-WARNING: Incorrect arguments to norm()
+WARNING: Incorrect arguments to norm(), in file norm-tests.scad, line 23
 ECHO: undef
 ECHO: undef
 ECHO: undef

@@ -129,7 +129,7 @@ FontCache::FontCache()
 	// Just load the configs. We'll build the fonts once all configs are loaded
 	this->config = FcInitLoadConfig();
 	if (!this->config) {
-		PRINT("WARNING: Can't initialize fontconfig library, text() objects will not be rendered");
+		PRINT("FONT-WARNING: Can't initialize fontconfig library, text() objects will not be rendered");
 		return;
 	}
 
@@ -174,7 +174,7 @@ FontCache::FontCache()
 
 	const FT_Error error = FT_Init_FreeType(&this->library);
 	if (error) {
-		PRINT("WARNING: Can't initialize freetype library, text() objects will not be rendered");
+		PRINT("FONT-WARNING: Can't initialize freetype library, text() objects will not be rendered");
 		return;
 	}
 
@@ -321,7 +321,12 @@ FT_Face FontCache::find_face(const std::string &font) const
 	const std::string lookup = trimmed.empty() ? DEFAULT_FONT : trimmed;
 	PRINTDB("font = \"%s\", lookup = \"%s\"", font % lookup);
 	FT_Face face = find_face_fontconfig(lookup);
-	PRINTDB("result = \"%s\", style = \"%s\"", face->family_name % face->style_name);
+	if (face) {
+		PRINTDB("result = \"%s\", style = \"%s\"", face->family_name % face->style_name);
+	}
+	else {
+		PRINTD("font not found");
+	}
 	return face;
 }
 
@@ -387,7 +392,7 @@ FT_Face FontCache::find_face_fontconfig(const std::string &font) const
 		if (!charmap_set)
 			charmap_set = try_charmap(face, TT_PLATFORM_ISO, TT_ISO_ID_7BIT_ASCII);
 		if (!charmap_set)
-			PRINTB("Warning: Could not select a char map for font %s/%s", face->family_name % face->style_name);
+			PRINTB("Font-Warning: Could not select a char map for font %s/%s", face->family_name % face->style_name);
 	}
 	
 	return error ? nullptr : face;

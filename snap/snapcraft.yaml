@@ -24,23 +24,33 @@ apps:
     desktop: usr/share/applications/openscad-nightly.desktop
 
 parts:
+  opencsg:
+    disable-parallel: true
+    source: http://www.opencsg.org/OpenCSG-1.4.2.tar.gz
+    plugin: qmake
+    override-build: |
+      ( cd src && qmake INSTALLDIR=/usr && sed -i 's,-isystem /usr/include,,' Makefile )
+      make -C src
+      make -C src INSTALL_ROOT="${SNAPCRAFT_PART_INSTALL}" install
+    qt-version: qt5
+    build-packages:
+    - freeglut3-dev
+
   openscad-nightly:
     disable-parallel: true
     plugin: qmake
     qt-version: qt5
-    after: [desktop-qt5]
+    after: [desktop-qt5, opencsg]
     project-files: [ "openscad.pro" ]
     options: [ "PREFIX=/usr", "CONFIG+=experimental", "CONFIG-=debug", "SUFFIX=-nightly" ]
     build-packages:
     - git
-    - ccache
     - qt5-default
     - qtbase5-dev
     - qtmultimedia5-dev
     - libqt5opengl5-dev
     - qt5-qmake
     - libcgal-dev
-    - libopencsg-dev
     - libeigen3-dev
     - libglib2.0-dev
     - bison

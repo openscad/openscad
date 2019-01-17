@@ -68,6 +68,26 @@ lSearch5=[1,"zz","dog",500,11];
 l5=search(lSearch5,lTable3,0,1);
 echo(str("Return all matches for mixed search; alternate columns (",lSearch5,"): ",l5));
 
+// causing warnings
+lTableW1=[ ["a",1],123 ];
+echo(search("a", lTableW1, num_returns_per_match=0)); 
+
+lTableW2=[ ["a",1],"string" ];
+echo(search("a", lTableW2, num_returns_per_match=0)); 
+
+lTableW3=[ ["b",1] ];
+echo(search("a", lTableW3, num_returns_per_match=0)); 
+
+lTableW4=[ ["a",1] ];
+echo(search("abcd", lTableW4, num_returns_per_match=0)); 
+
+echo(search("abcd", "xyz", num_returns_per_match=0)); 
+
+lTableW5=[ ["a",1],undef,1/0,-1/0 ];
+echo(search("a", lTableW5, num_returns_per_match=0)); 
+
+lTableW6=[ ["a",1],-1/0];
+echo(search("a", lTableW6, num_returns_per_match=0)); 
 
 // for completeness
 cube(1.0);
