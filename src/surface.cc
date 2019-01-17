@@ -63,7 +63,7 @@ class SurfaceNode : public LeafNode
 {
 public:
 	VISITABLE();
-	SurfaceNode(const ModuleInstantiation *mi) : LeafNode(mi) { }
+	SurfaceNode(const ModuleInstantiation *mi) : LeafNode(mi), center(false), invert(false), convexity(1) { }
 	std::string toString() const override;
 	std::string name() const override { return "surface"; }
 
@@ -83,14 +83,12 @@ private:
 AbstractNode *SurfaceModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	auto node = new SurfaceNode(inst);
-	node->center = false;
-	node->invert = false;
-	node->convexity = 1;
 
 	AssignmentList args{Assignment("file"), Assignment("center"), Assignment("convexity")};
+	AssignmentList optargs{Assignment("center"),Assignment("invert")};
 
 	Context c(ctx);
-	c.setVariables(args, evalctx);
+	c.setVariables(evalctx, args, optargs);
 
 	auto fileval = c.lookup_variable("file");
 	auto filename = lookup_file(fileval->isUndefined() ? "" : fileval->toString(), inst->path(), c.documentPath());
@@ -302,7 +300,7 @@ const Geometry *SurfaceNode::createGeometry() const
 
 std::string SurfaceNode::toString() const
 {
-	std::stringstream stream;
+	std::ostringstream stream;
 	fs::path path{static_cast<std::string>(this->filename)}; // gcc-4.6
 
 	stream << this->name() << "(file = " << this->filename

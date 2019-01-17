@@ -241,7 +241,7 @@ public:
     }
     // attempt to emulate Qt's QString.sprintf("%g"); from old OpenSCAD.
     // see https://github.com/openscad/openscad/issues/158
-    std::stringstream tmp;
+    std::ostringstream tmp;
     tmp.unsetf(std::ios::floatfield);
     tmp << op1;
     return tmp.str();
@@ -256,7 +256,7 @@ public:
   }
 
   std::string operator()(const Value::VectorType &v) const {
-    std::stringstream stream;
+    std::ostringstream stream;
     stream << '[';
     for (size_t i = 0; i < v.size(); i++) {
       if (i > 0) stream << ", ";
@@ -312,7 +312,7 @@ public:
 
 	std::string operator()(const Value::VectorType &v) const
 		{
-			std::stringstream stream;
+			std::ostringstream stream;
 			for (size_t i = 0; i < v.size(); i++) {
 				stream << v[i]->chrString();
 			}
@@ -327,7 +327,7 @@ public:
 				return "";
 			}
 
-			std::stringstream stream;
+			std::ostringstream stream;
 			RangeType range = v;
 			for (RangeType::iterator it = range.begin();it != range.end();it++) {
 				const Value value(*it);
@@ -370,6 +370,17 @@ bool Value::getVec2(double &x, double &y, bool ignoreInfinite) const
   }
 
   return valid;
+}
+
+bool Value::getVec3(double &x, double &y, double &z) const
+{
+  if (this->type() != ValueType::VECTOR) return false;
+
+  const VectorType &v = toVector();
+
+  if (v.size() != 3) return false;
+
+  return (v[0]->getDouble(x) && v[1]->getDouble(y) && v[2]->getDouble(z));
 }
 
 bool Value::getVec3(double &x, double &y, double &z, double defaultval) const

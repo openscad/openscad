@@ -11,6 +11,7 @@
 #include <boost/algorithm/string.hpp>
 
 #include "path.h"
+#include "degree_trig.h"
 
 namespace libsvg {
 
@@ -44,11 +45,6 @@ path::path()
 {
 }
 
-path::path(const path& orig) : shape(orig)
-{
-	data = orig.data;
-}
-
 path::~path()
 {
 }
@@ -56,9 +52,9 @@ path::~path()
 static double
 vector_angle(double ux, double uy, double vx, double vy)
 {
-	double angle = atan2(vy, vx) - atan2(uy, ux);
+	double angle = atan2_degrees(vy, vx) - atan2_degrees(uy, ux);
 	if (angle < 0) {
-		angle += 2 * M_PI;
+		angle += 360;
 	}
 	return angle;
 }
@@ -69,12 +65,12 @@ path::arc_to(path_t& path, double x1, double y1, double rx, double ry, double x2
 	// http://www.w3.org/TR/SVG/implnote.html#ArcImplementationNotes
 	
 	// (F.6.5.1))
-        double cos_rad = cos(M_PI * angle / 180.0);
-        double sin_rad = sin(M_PI * angle / 180.0);
-        double dx = (x1 - x2) / 2;
-        double dy = (y1 - y2) / 2;
-        double x1_ = cos_rad * dx + sin_rad * dy;
-        double y1_ = -sin_rad * dx + cos_rad * dy;
+	double cos_rad = cos_degrees(angle);
+	double sin_rad = sin_degrees(angle);
+	double dx = (x1 - x2) / 2;
+	double dy = (y1 - y2) / 2;
+	double x1_ = cos_rad * dx + sin_rad * dy;
+	double y1_ = -sin_rad * dx + cos_rad * dy;
 
 	double d = (x1_ * x1_) / (rx * rx) + (y1_ * y1_) / (ry * ry);
 	if (d > 1) {
@@ -101,23 +97,23 @@ path::arc_to(path_t& path, double x1, double y1, double rx, double ry, double x2
 	double cy = sin_rad * cx_ + cos_rad * cy_ + (y1 + y2) / 2.0;
 
 	// F.6.5.4
-        double ux = (x1_ - cx_) / rx;
-        double uy = (y1_ - cy_) / ry;
+	double ux = (x1_ - cx_) / rx;
+	double uy = (y1_ - cy_) / ry;
 	double vx = (-x1_ - cx_) / rx;
 	double vy = (-y1_ - cy_) / ry;
 	
 	double theta = vector_angle(1, 0, ux, uy);
 	double delta = vector_angle(ux, uy, vx, vy);
 	if (!sweep) {
-            delta -= 2 * M_PI;
+		delta -= 360;
 	}
 	
-	int steps = std::fabs(delta) * 10.0 / M_PI + 4;
+	int steps = std::fabs(delta) * 10.0 / 180 + 4;
 	for (int a = 0;a <= steps;a++) {
-	        double phi = theta + delta * a / steps;
+		double phi = theta + delta * a / steps;
 
-		double xx = cos_rad * cos(phi) * rx - sin_rad * sin(phi) * ry;
-		double yy = sin_rad * cos(phi) * rx + cos_rad * sin(phi) * ry;
+		double xx = cos_rad * cos_degrees(phi) * rx - sin_rad * sin_degrees(phi) * ry;
+		double yy = sin_rad * cos_degrees(phi) * rx + cos_rad * sin_degrees(phi) * ry;
 		
 		path.push_back(Eigen::Vector3d(xx + cx, yy + cy, 0));
 	}

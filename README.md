@@ -1,7 +1,8 @@
-[![Travis CI](https://api.travis-ci.org/openscad/openscad.png)](https://travis-ci.org/openscad/openscad)
-[![CircleCI](https://circleci.com/gh/openscad/openscad/tree/master.svg?style=svg)](https://circleci.com/gh/openscad/openscad/tree/master)
-[![AppVeyor](https://ci.appveyor.com/api/projects/status/github/openscad/openscad?branch=master&svg=false)](https://ci.appveyor.com/project/kintel/openscad)
-[![Coverity Status](https://scan.coverity.com/projects/2510/badge.svg)](https://scan.coverity.com/projects/2510)
+[![Travis (master)](https://img.shields.io/travis/openscad/openscad/master.svg?logo=travis&logoColor=black&colorA=f9d72c&style=plastic)](https://travis-ci.org/openscad/openscad/)
+[![AppVeyor (master)](https://img.shields.io/appveyor/ci/kintel/openscad/master.svg?logo=appveyor&logoColor=black&colorA=f9d72c&style=plastic)](https://ci.appveyor.com/project/kintel/openscad)
+[![CircleCI (master)](https://img.shields.io/circleci/project/github/openscad/openscad/master.svg?logo=circleci&logoColor=black&colorA=f9d72c&style=plastic)](https://circleci.com/gh/openscad/openscad/tree/master)
+[![Coverity Scan](https://img.shields.io/coverity/scan/2510.svg?colorA=f9d72c&logoColor=black&style=plastic)](https://scan.coverity.com/projects/2510)
+
 
 [![Visit our IRC channel](https://kiwiirc.com/buttons/irc.freenode.net/openscad.png)](https://kiwiirc.com/client/irc.freenode.net/#openscad)
 
@@ -118,6 +119,7 @@ Follow the instructions for the platform you're compiling on below.
 * [fontconfig (2.10 -> )](http://fontconfig.org/)
 * [freetype2 (2.4 -> )](https://freetype.org/)
 * [harfbuzz (0.9.19 -> )](http://harfbuzz.org/)
+* [libzip (0.10.1 -> )](https://libzip.org/)
 * [Bison (2.4 -> )](https://www.gnu.org/software/bison/)
 * [Flex (2.5.35 -> )](http://flex.sourceforge.net/)
 * [pkg-config (0.26 -> )](https://www.freedesktop.org/wiki/Software/pkg-config/)

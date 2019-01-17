@@ -23,7 +23,7 @@ DEBUG = False
 cxxlib = None
 
 def usage():
-    print >> sys.stderr, "Usage: " + sys.argv[0] + " <executable>"
+    print("Usage: " + sys.argv[0] + " <executable>", sys.stderr)
     sys.exit(1)
 
 # Try to find the given library by searching in the typical locations

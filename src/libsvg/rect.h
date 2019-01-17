@@ -15,7 +15,6 @@ protected:
 
 public:
     rect();
-    rect(const rect& orig);
     ~rect();
 
     double get_width() { return width; }

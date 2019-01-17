@@ -46,7 +46,6 @@ struct ViewOption {
 struct ViewOptions {
 	Previewer previewer{Previewer::OPENCSG};
 	RenderType renderer{RenderType::OPENCSG};
-	Camera camera;
 
 	std::map<std::string, bool> flags{
 		{"axes", false},
@@ -72,5 +71,5 @@ struct ViewOptions {
 	
 };
 
-bool export_png(const shared_ptr<const class Geometry> &root_geom, ViewOptions options, std::ostream &output);
-bool export_preview_png(Tree &tree, ViewOptions options, std::ostream &output);
+bool export_png(const shared_ptr<const class Geometry> &root_geom, const ViewOptions& options, Camera camera, std::ostream &output);
+bool export_preview_png(Tree &tree, const ViewOptions& options, Camera camera, std::ostream &output);

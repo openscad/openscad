@@ -29,10 +29,12 @@
 
 InputDriverManager * InputDriverManager::self = 0;
 
-InputDriverManager::InputDriverManager(void) : currentWindow(nullptr)
+/**
+ * This can be called from non-GUI context, so no Qt initialization is done
+ * at this point.
+ */
+InputDriverManager::InputDriverManager(void) : currentWindow(nullptr), timer(nullptr)
 {
-    connect(QApplication::instance(), SIGNAL(focusChanged(QWidget *, QWidget *)), this, SLOT(onFocusChanged(QWidget *, QWidget *)));
-    timer = new QTimer(this);
 }
 
 InputDriverManager::~InputDriverManager(void)
@@ -63,7 +65,7 @@ void InputDriverManager::registerActions(const QList<QAction *> &actions, const 
 	for (const auto action : actions) {
 		const auto description = parent + action->text();
 		if (!action->objectName().isEmpty()) {
-			this->actions.push_back({objectName(), description, action->icon()});
+			this->actions.push_back({action->objectName(), description, action->icon()});
 		}
 		if (action->menu()) {
 			registerActions(action->menu()->actions(), description +  QString::fromUtf8(" \u2192 "));
@@ -73,6 +75,9 @@ void InputDriverManager::registerActions(const QList<QAction *> &actions, const 
 
 void InputDriverManager::init()
 {
+    timer = new QTimer(this);
+    connect(QApplication::instance(), SIGNAL(focusChanged(QWidget *, QWidget *)), this, SLOT(onFocusChanged(QWidget *, QWidget *)));
+
     doOpen(true);
     connect(timer, SIGNAL(timeout()), this, SLOT(onTimeout()));
     timer->start(10 * 1000);
@@ -113,7 +118,7 @@ void InputDriverManager::doOpen(bool firstOpen)
 
 std::string InputDriverManager::listDrivers() const
 {
-    std::stringstream stream;
+    std::ostringstream stream;
     const char *sep = "";
     for (auto driver : drivers) {
         stream << sep << driver->get_name();
@@ -127,7 +132,9 @@ std::string InputDriverManager::listDrivers() const
 
 void InputDriverManager::closeDrivers()
 {
-    timer->stop();
+    if (timer != nullptr) {
+        timer->stop();
+    }
     InputEventMapper::instance()->stop();
 
     for (auto driver : drivers) {

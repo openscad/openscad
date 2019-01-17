@@ -30,7 +30,6 @@
  */
 
 #include <iomanip>
-#include <iostream>
 #include <bitset>
 
 #include "input/HidApiInputDriver.h"
@@ -195,13 +194,9 @@ bool HidApiInputDriver::open()
         hid_dev = hid_open(device_ids[idx].vendor_id, device_ids[idx].product_id, NULL);
         if (hid_dev != NULL) {
             dev = &device_ids[idx];
-            std::stringstream sstream;
-            sstream << std::setfill('0') << std::setw(4) << std::hex
-                << "HidApiInputDriver ("
-                << dev->vendor_id << ":" << dev->product_id
-                 << " - " << dev->name
-                << ")";
-            name = sstream.str();
+            name = STR(std::setfill('0') << std::setw(4) << std::hex
+											 << "HidApiInputDriver (" << dev->vendor_id << ":" << dev->product_id
+											 << " - " << dev->name << ")");
             start();
             return true;
         }

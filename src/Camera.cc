@@ -1,9 +1,12 @@
 #include "Camera.h"
 #include "rendersettings.h"
 #include "printutils.h"
+#include "degree_trig.h"
+
+static const double DEFAULT_DISTANCE = 140.0;
 
 Camera::Camera() :
-	projection(ProjectionType::PERSPECTIVE), fov(22.5), viewall(false)
+	projection(ProjectionType::PERSPECTIVE), fov(22.5), viewall(false), autocenter(false)
 {
 	PRINTD("Camera()");
 
@@ -12,7 +15,6 @@ Camera::Camera() :
 
 	pixel_width = RenderSettings::inst()->img_width;
 	pixel_height = RenderSettings::inst()->img_height;
-	autocenter = false;
 }
 
 void Camera::setup(std::vector<double> params)
@@ -29,10 +31,10 @@ void Camera::setup(std::vector<double> params)
 		viewer_distance = dir.norm();
 		object_rot.z() = (!dir[1] && !dir[0]) ? dir[2] < 0 ? 0
 		                                                   : 180
-		                                      : -atan2(dir[1], dir[0]) * 180 / M_PI + 90;
+		                                      : -atan2_degrees(dir[1], dir[0]) + 90;
 		object_rot.y() = 0;
 		Eigen::Vector3d projection(dir[0], dir[1], 0);
-		object_rot.x() = -atan2(dir[2], projection.norm()) * 180 / M_PI;
+		object_rot.x() = -atan2_degrees(dir[2], projection.norm());
 	} else {
 		assert("Gimbal cam needs 7 numbers, Vector camera needs 6");
 	}
@@ -42,16 +44,22 @@ void Camera::setup(std::vector<double> params)
 */
 void Camera::viewAll(const BoundingBox &bbox)
 {
-	if (this->autocenter) {
-		// autocenter = point camera at the center of the bounding box.
-		this->object_trans = -bbox.center();
-	}
+	if (bbox.isEmpty()) {
+		setVpt(0, 0, 0);
+		setVpd(DEFAULT_DISTANCE);
+	} else {
 
-	double bboxRadius = bbox.diagonal().norm() / 2;
-	double radius = (bbox.center() + object_trans).norm() + bboxRadius;
-	this->viewer_distance = radius / sin(this->fov / 2 * M_PI / 180);
-	PRINTDB("modified obj trans x y z %f %f %f",object_trans.x() % object_trans.y() % object_trans.z());
-	PRINTDB("modified obj rot   x y z %f %f %f",object_rot.x() % object_rot.y() % object_rot.z());
+		if (this->autocenter) {
+			// autocenter = point camera at the center of the bounding box.
+			this->object_trans = -bbox.center();
+		}
+
+		double bboxRadius = bbox.diagonal().norm() / 2;
+		double radius = (bbox.center() + object_trans).norm() + bboxRadius;
+		this->viewer_distance = radius / sin_degrees(this->fov / 2);
+		PRINTDB("modified obj trans x y z %f %f %f",object_trans.x() % object_trans.y() % object_trans.z());
+		PRINTDB("modified obj rot   x y z %f %f %f",object_rot.x() % object_rot.y() % object_rot.z());
+	}
 }
 
 void Camera::zoom(int zoom, bool relative)
@@ -72,7 +80,7 @@ void Camera::resetView()
 {
 	setVpr(55, 0, 25);  // set in user space units
 	setVpt(0, 0, 0);
-	setVpd(140);
+	setVpd(DEFAULT_DISTANCE);
 }
 
 Eigen::Vector3d Camera::getVpt() const

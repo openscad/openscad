@@ -28,6 +28,7 @@
 #include "QGLView.h"
 #include "Preferences.h"
 #include "renderer.h"
+#include "degree_trig.h"
 
 #include <QApplication>
 #include <QWheelEvent>
@@ -111,7 +112,7 @@ void QGLView::initializeGL()
 
 std::string QGLView::getRendererInfo() const
 {
-  std::stringstream info;
+  std::ostringstream info;
   info << glew_dump();
   // Don't translate as translated text in the Library Info dialog is not wanted
 #ifdef USE_QOPENGLWIDGET
@@ -157,9 +158,9 @@ void QGLView::display_opencsg_warning_dialog()
 							 "Your renderer information is as follows:\n");
   QString rendererinfo(_("GLEW version %1\n%2 (%3)\nOpenGL version %4\n"));
   message += rendererinfo.arg((const char *)glewGetString(GLEW_VERSION),
-															(const char *)glGetString(GL_RENDERER),
-															(const char *)glGetString(GL_VENDOR),
-															(const char *)glGetString(GL_VERSION));
+                              (const char *)glGetString(GL_RENDERER),
+                              (const char *)glGetString(GL_VENDOR),
+                              (const char *)glGetString(GL_VERSION));
 
   dialog->setText(message);
   dialog->enableOpenCSGBox->setChecked(Preferences::inst()->getValue("advanced/enable_opencsg_opengl1x").toBool());
@@ -312,12 +313,13 @@ bool QGLView::save(const char *filename)
 
 void QGLView::wheelEvent(QWheelEvent *event)
 {
+  const auto pos = event->pos();
 #if QT_VERSION >= 0x050000
-    int v = event->angleDelta().y();
+    const int v = event->angleDelta().y();
 #else
-    int v = event->delta();
+    const int v = event->delta();
 #endif
-    zoom(v, true);
+    zoomCursor(pos.x(), pos.y(), v);
 }
 
 void QGLView::ZoomIn(void)
@@ -336,6 +338,21 @@ void QGLView::zoom(double v, bool relative)
     updateGL();
 }
 
+void QGLView::zoomCursor(int x, int y, int zoom)
+{
+  const auto old_dist = cam.zoomValue();
+  this->cam.zoom(zoom, true);
+  const auto dist = cam.zoomValue();
+  const auto ratio = old_dist / dist - 1.0; 
+  // screen coordinates from -1 to 1
+  const auto screen_x = 2.0 * (x + 0.5) / this->cam.pixel_width - 1.0;
+  const auto screen_y = 1.0 - 2.0 * (y + 0.5) / this->cam.pixel_height;
+  const auto height = dist * tan_degrees(cam.fov / 2);
+  const auto mx = ratio*screen_x*(aspectratio*height);
+  const auto mz = ratio*screen_y*height;
+  translate(-mx, 0, -mz, true);
+}
+
 void QGLView::setOrthoMode(bool enabled)
 {
 	if (enabled) this->cam.setProjection(Camera::ProjectionType::ORTHOGONAL);
@@ -345,9 +362,9 @@ void QGLView::setOrthoMode(bool enabled)
 void QGLView::translate(double x, double y, double z, bool relative, bool viewPortRelative)
 {
     Matrix3d aax, aay, aaz;
-    aax = Eigen::AngleAxisd(-(cam.object_rot.x() / 180) * M_PI, Vector3d::UnitX());
-    aay = Eigen::AngleAxisd(-(cam.object_rot.y() / 180) * M_PI, Vector3d::UnitY());
-    aaz = Eigen::AngleAxisd(-(cam.object_rot.z() / 180) * M_PI, Vector3d::UnitZ());
+    aax = angle_axis_degrees(-cam.object_rot.x(), Vector3d::UnitX());
+    aay = angle_axis_degrees(-cam.object_rot.y(), Vector3d::UnitY());
+    aaz = angle_axis_degrees(-cam.object_rot.z(), Vector3d::UnitZ());
     Matrix3d tm3 = aaz * aay * aax;
 
     Matrix4d tm = Matrix4d::Identity();
@@ -358,6 +375,7 @@ void QGLView::translate(double x, double y, double z, bool relative, bool viewPo
             }
         }
     }
+
     Matrix4d vec;
     vec <<
         0, 0, 0, x,
@@ -396,35 +414,35 @@ void QGLView::rotate2(double x, double y, double z)
 
     // get current rotation matrix
     Matrix3d aax, aay, aaz, rmx;
-    aax = Eigen::AngleAxisd(-cam.object_rot.x() / 180 * M_PI, Vector3d::UnitX());
-    aay = Eigen::AngleAxisd(-cam.object_rot.y() / 180 * M_PI, Vector3d::UnitY());
-    aaz = Eigen::AngleAxisd(-cam.object_rot.z() / 180 * M_PI, Vector3d::UnitZ());
+    aax = angle_axis_degrees(-cam.object_rot.x(), Vector3d::UnitX());
+    aay = angle_axis_degrees(-cam.object_rot.y(), Vector3d::UnitY());
+    aaz = angle_axis_degrees(-cam.object_rot.z(), Vector3d::UnitZ());
     rmx = aaz * (aay * aax);
 
     // rotate
-    rmx = rmx * Eigen::AngleAxisd(rot.norm() / 180. * M_PI, rot.normalized());
+    rmx = rmx * angle_axis_degrees(rot.norm(), rot.normalized());
 
     // back to euler
     // see: http://staff.city.ac.uk/~sbbh653/publications/euler.pdf
     double theta, psi, phi;
     if (abs(rmx(2, 0)) != 1) {
-        theta = -asin(rmx(2, 0));
-        psi = atan2(rmx(2, 1) / cos(theta), rmx(2, 2) / cos(theta));
-        phi = atan2(rmx(1, 0) / cos(theta), rmx(0, 0) / cos(theta));
+        theta = -asin_degrees(rmx(2, 0));
+        psi = atan2_degrees(rmx(2, 1) / cos_degrees(theta), rmx(2, 2) / cos_degrees(theta));
+        phi = atan2_degrees(rmx(1, 0) / cos_degrees(theta), rmx(0, 0) / cos_degrees(theta));
     } else {
         phi = 0;
         if (rmx(2, 0) == -1) {
-            theta = M_PI / 2;
-            psi = phi + atan2(rmx(0, 1), rmx(0, 2));
+            theta = 90;
+            psi = phi + atan2_degrees(rmx(0, 1), rmx(0, 2));
         } else {
-            theta = -M_PI / 2;
-            psi = -phi + atan2(-rmx(0, 1), -rmx(0, 2));
+            theta = -90;
+            psi = -phi + atan2_degrees(-rmx(0, 1), -rmx(0, 2));
         }
     }
 
-    cam.object_rot.x() = -psi * 180. / M_PI;
-    cam.object_rot.y() = -theta * 180. / M_PI;
-    cam.object_rot.z() = -phi * 180. / M_PI;
+    cam.object_rot.x() = -psi;
+    cam.object_rot.y() = -theta;
+    cam.object_rot.z() = -phi;
 
     normalizeAngle(cam.object_rot.x());
     normalizeAngle(cam.object_rot.y());

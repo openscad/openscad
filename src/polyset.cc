@@ -59,7 +59,7 @@ PolySet::~PolySet()
 
 std::string PolySet::dump() const
 {
-	std::stringstream out;
+	std::ostringstream out;
 	out << "PolySet:"
 	  << "\n dimensions:" << this->dim
 	  << "\n convexity:" << this->convexity

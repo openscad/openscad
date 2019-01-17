@@ -34,13 +34,11 @@
 #include "cgal.h"
 #include "cgalutils.h"
 
-#define OSS(X) static_cast<std::ostringstream &&>(std::ostringstream() << X).str()
-
 namespace {
 
 std::string toString(const Vector3d &v)
 {
-	return OSS(v[0] << " " << v[1] << " " << v[2]);
+	return STR(v[0] << " " << v[1] << " " << v[2]);
 }
 
 Vector3d fromString(const std::string &vertexString)
@@ -101,7 +99,7 @@ void append_stl(const PolySet &ps, std::ostream &output)
 void append_stl(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 {
 	if (!root_N.p3->is_simple()) {
-		PRINT("WARNING: Exported object may not be a valid 2-manifold and may need repair");
+		PRINT("EXPORT-WARNING: Exported object may not be a valid 2-manifold and may need repair");
 	}
 
 	PolySet ps(3);
@@ -109,7 +107,7 @@ void append_stl(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 		append_stl(ps, output);
 	}
 	else {
-		PRINT("ERROR: Nef->PolySet failed");
+		PRINT("EXPORT-ERROR: Nef->PolySet failed");
 	}
 }
 

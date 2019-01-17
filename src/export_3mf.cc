@@ -78,19 +78,19 @@ static void export_3mf_error(const std::string msg, PLib3MFModel *model = NULL)
 static void append_3mf(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 {
 	if (!root_N.p3 || !root_N.p3->is_simple()) {
-		PRINT("WARNING: Export failed, the object isn't a valid 2-manifold.");
+		PRINT("EXPORT-WARNING: Export failed, the object isn't a valid 2-manifold.");
 		return;
 	}
 
 	DWORD interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro;
 	HRESULT result = lib3mf_getinterfaceversion(&interfaceVersionMajor, &interfaceVersionMinor, &interfaceVersionMicro);
 	if (result != LIB3MF_OK) {
-		PRINT("ERROR: Error reading 3MF library version");
+		PRINT("EXPORT-ERROR: Error reading 3MF library version");
 		return;
 	}
 
 	if ((interfaceVersionMajor != NMR_APIVERSION_INTERFACE_MAJOR)) {
-		PRINTB("ERROR: Invalid 3MF library major version %d.%d.%d, expected %d.%d.%d",
+		PRINTB("EXPORT-ERROR: Invalid 3MF library major version %d.%d.%d, expected %d.%d.%d",
                         interfaceVersionMajor % interfaceVersionMinor % interfaceVersionMicro %
                         NMR_APIVERSION_INTERFACE_MAJOR % NMR_APIVERSION_INTERFACE_MINOR % NMR_APIVERSION_INTERFACE_MICRO);
 		return;
@@ -99,17 +99,17 @@ static void append_3mf(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 	PLib3MFModel *model;
 	result = lib3mf_createmodel(&model);
 	if (result != LIB3MF_OK) {
-		export_3mf_error("ERROR: Can't create 3MF model.");
+		export_3mf_error("EXPORT-ERROR: Can't create 3MF model.");
 		return;
 	}
 
 	PLib3MFModelMeshObject *mesh;
 	if (lib3mf_model_addmeshobject(model, &mesh) != LIB3MF_OK) {
-		export_3mf_error("ERROR: Can't add mesh to 3MF model.", model);
+		export_3mf_error("EXPORT-ERROR: Can't add mesh to 3MF model.", model);
 		return;
 	}
 	if (lib3mf_object_setnameutf8(mesh, "OpenSCAD Model") != LIB3MF_OK) {
-		export_3mf_error("ERROR: Can't set name for 3MF model.", model);
+		export_3mf_error("EXPORT-ERROR: Can't set name for 3MF model.", model);
 		return;
 	}
 
@@ -158,7 +158,7 @@ static void append_3mf(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 			v.m_fPosition[1] = CGAL::to_double(vertex.y());
 			v.m_fPosition[2] = CGAL::to_double(vertex.z());
 			if (lib3mf_meshobject_addvertex(mesh, &v, NULL) != LIB3MF_OK) {
-				export_3mf_error("ERROR: Can't add vertex to 3MF model.", model);
+				export_3mf_error("EXPORT-ERROR: Can't add vertex to 3MF model.", model);
 				return;
 			}
 		}
@@ -170,20 +170,20 @@ static void append_3mf(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 			t.m_nIndices[1] = std::distance(vertices.begin(), std::find(vertices.begin(), vertices.end(), triangle.vertex(1)));
 			t.m_nIndices[2] = std::distance(vertices.begin(), std::find(vertices.begin(), vertices.end(), triangle.vertex(2)));
 			if (lib3mf_meshobject_addtriangle(mesh, &t, NULL) != LIB3MF_OK) {
-				export_3mf_error("ERROR: Can't add triangle to 3MF model.", model);
+				export_3mf_error("EXPORT-ERROR: Can't add triangle to 3MF model.", model);
 				return;
 			}
 		}
 
 		PLib3MFModelBuildItem *builditem;
 		if (lib3mf_model_addbuilditem(model, mesh, NULL, &builditem) != LIB3MF_OK) {
-			export_3mf_error("ERROR: Can't add triangle to 3MF model.", model);
+			export_3mf_error("EXPORT-ERROR: Can't add triangle to 3MF model.", model);
 			return;
 		}
 
 		PLib3MFModelWriter *writer;
 		if (lib3mf_model_querywriter(model, "3mf", &writer) != LIB3MF_OK) {
-			export_3mf_error("ERROR: Can't get writer for 3MF model.", model);
+			export_3mf_error("EXPORT-ERROR: Can't get writer for 3MF model.", model);
 			return;
 		}
 
@@ -192,10 +192,10 @@ static void append_3mf(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 		lib3mf_release(writer);
 		lib3mf_release(model);
 		if (result != LIB3MF_OK) {
-			export_3mf_error("ERROR: Error writing 3MF model.");
+			export_3mf_error("EXPORT-ERROR: Error writing 3MF model.");
 		}
 	} catch (CGAL::Assertion_exception& e) {
-		PRINTB("ERROR: CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s", e.what());
+		PRINTB("EXPORT-ERROR: CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s", e.what());
 	}
 	CGAL::set_error_behaviour(old_behaviour);
 }

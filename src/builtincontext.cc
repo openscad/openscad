@@ -4,6 +4,7 @@
 #include "function.h"
 #include "ModuleInstantiation.h"
 #include "printutils.h"
+#include "evalcontext.h"
 
 BuiltinContext::BuiltinContext()
 {
@@ -14,13 +15,13 @@ BuiltinContext::BuiltinContext()
 	this->set_constant("PI", ValuePtr(M_PI));
 }
 
-ValuePtr BuiltinContext::evaluate_function(const std::string &name, const class EvalContext *evalctx) const
+ValuePtr BuiltinContext::evaluate_function(const std::string &name, const EvalContext *evalctx) const
 {
 	const auto &search = Builtins::instance()->getFunctions().find(name);
 	if (search != Builtins::instance()->getFunctions().end()) {
 		AbstractFunction *f = search->second;
 		if (f->is_enabled()) return f->evaluate(this, evalctx);
-		else PRINTB("WARNING: Experimental builtin function '%s' is not enabled.", name);
+		else PRINTB("WARNING: Experimental builtin function '%s' is not enabled, %s", name % evalctx->loc.toRelativeString(this->documentPath()));
 	}
 	return Context::evaluate_function(name, evalctx);
 }
@@ -32,11 +33,11 @@ class AbstractNode *BuiltinContext::instantiate_module(const class ModuleInstant
 	if (search != Builtins::instance()->getModules().end()) {
 		AbstractModule *m = search->second;
 		if (!m->is_enabled()) {
-			PRINTB("WARNING: Experimental builtin module '%s' is not enabled.", name);
+			PRINTB("WARNING: Experimental builtin module '%s' is not enabled, %s", name % evalctx->loc.toRelativeString(this->documentPath()));
 		}
 		std::string replacement = Builtins::instance()->instance()->isDeprecated(name);
 		if (!replacement.empty()) {
-			PRINT_DEPRECATION("The %s() module will be removed in future releases. Use %s instead.", name % replacement);
+			PRINT_DEPRECATION("The %s() module will be removed in future releases. Use %s instead. %s", name % replacement % evalctx->loc.toRelativeString(this->documentPath()));
 		}
 		return m->instantiate(this, &inst, evalctx);
 	}

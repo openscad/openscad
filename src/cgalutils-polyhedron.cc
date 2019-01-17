@@ -296,7 +296,7 @@ namespace CGALUtils {
 		bool firstv;
 		std::vector<int> indices;
 	public:
-    Polyhedron_writer() {}
+    Polyhedron_writer() : out(nullptr), firstv(true) {}
     void write_header(std::ostream &stream,
 											std::size_t /*vertices*/,
 											std::size_t /*halfedges*/,
@@ -337,7 +337,7 @@ namespace CGALUtils {
 
 	template <typename Polyhedron>
 	std::string printPolyhedron(const Polyhedron &p) {
-		std::stringstream sstream;
+		std::ostringstream sstream;
 		sstream.precision(20);
 
     Polyhedron_writer writer;

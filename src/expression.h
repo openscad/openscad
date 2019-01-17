@@ -132,6 +132,7 @@ class Lookup : public Expression
 public:
 	Lookup(const std::string &name, const Location &loc);
 	ValuePtr evaluate(const class Context *context) const override;
+	ValuePtr evaluateSilently(const class Context *context) const;
 	void print(std::ostream &stream, const std::string &indent) const override;
 private:
 	std::string name;
@@ -257,4 +258,4 @@ private:
 	shared_ptr<Expression> expr;
 };
 
-void evaluate_assert(const Context &context, const class EvalContext *evalctx, const Location &loc);
+void evaluate_assert(const Context &context, const class EvalContext *evalctx);

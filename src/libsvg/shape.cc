@@ -18,14 +18,11 @@
 #include "group.h"
 
 #include "transformation.h"
+#include "degree_trig.h"
 
 namespace libsvg {
 
 shape::shape() : parent(nullptr), x(0), y(0)
-{
-}
-
-shape::shape(const shape& /*orig*/)
 {
 }
 
@@ -241,9 +238,9 @@ void
 shape::draw_ellipse(path_t& path, double x, double y, double rx, double ry) {
 	unsigned long fn = 40;
 	for (unsigned long idx = 1;idx <= fn;idx++) {
-		const double a = idx * (2 * M_PI / (double)fn);
-		const double xx = rx * sin(a) + x;
-		const double yy = ry * cos(a) + y;
+		const double a = idx * 360.0 / fn;
+		const double xx = rx * sin_degrees(a) + x;
+		const double yy = ry * cos_degrees(a) + y;
 		path.push_back(Eigen::Vector3d(xx, yy, 0));
 	}
 }

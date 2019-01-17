@@ -23,7 +23,7 @@ color([1, 0, 0, 1]) {
 				}
 			}
 			multmatrix([[1, 0, 0, 0], [0, 1, 0, 15], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-				multmatrix([[-1, -1.22465e-16, 0, 0], [1.22465e-16, -1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				multmatrix([[-1, 0, 0, 0], [0, -1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 					group() {
 						cube(size = [8, 8, 8], center = true);
 					}
@@ -80,7 +80,7 @@ color([0, 0.501961, 0, 1]) {
 				}
 			}
 			multmatrix([[1, 0, 0, 30], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-				multmatrix([[2.22045e-16, -1, 0, 0], [1, 2.22045e-16, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				multmatrix([[0, -1, 0, 0], [1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 					group() {
 						difference() {
 							sphere($fn = 0, $fa = 12, $fs = 2, r = 5);
@@ -110,7 +110,7 @@ color([0, 0.501961, 0, 1]) {
 				}
 			}
 			multmatrix([[1, 0, 0, 0], [0, 1, 0, 30], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-				multmatrix([[-1, -1.22465e-16, 0, 0], [1.22465e-16, -1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				multmatrix([[-1, 0, 0, 0], [0, -1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 					group() {
 						difference() {
 							sphere($fn = 0, $fa = 12, $fs = 2, r = 5);
@@ -140,7 +140,7 @@ color([0, 0.501961, 0, 1]) {
 				}
 			}
 			multmatrix([[1, 0, 0, -30], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-				multmatrix([[-2.22045e-16, 1, 0, 0], [-1, -2.22045e-16, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				multmatrix([[0, 1, 0, 0], [-1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 					group() {
 						difference() {
 							sphere($fn = 0, $fa = 12, $fs = 2, r = 5);
@@ -182,7 +182,7 @@ color([0, 1, 1, 1]) {
 							cube(size = [10, 10, 10], center = true);
 							cylinder($fn = 40, $fa = 12, $fs = 2, h = 12, r1 = 2, r2 = 2, center = false);
 							multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 12], [0, 0, 0, 1]]) {
-								multmatrix([[1, 0, 0, 0], [0, 2.22045e-16, -1, 0], [0, 1, 2.22045e-16, 0], [0, 0, 0, 1]]) {
+								multmatrix([[1, 0, 0, 0], [0, 0, -1, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
 									linear_extrude(height = 2, center = true, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
 										text(text = "SCAD", size = 8, spacing = 1, font = "", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
 									}
@@ -196,13 +196,13 @@ color([0, 1, 1, 1]) {
 				}
 			}
 			multmatrix([[1, 0, 0, 50], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-				multmatrix([[2.22045e-16, -1, 0, 0], [1, 2.22045e-16, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				multmatrix([[0, -1, 0, 0], [1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 					group() {
 						group() {
 							cube(size = [10, 10, 10], center = true);
 							cylinder($fn = 40, $fa = 12, $fs = 2, h = 12, r1 = 2, r2 = 2, center = false);
 							multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 12], [0, 0, 0, 1]]) {
-								multmatrix([[1, 0, 0, 0], [0, 2.22045e-16, -1, 0], [0, 1, 2.22045e-16, 0], [0, 0, 0, 1]]) {
+								multmatrix([[1, 0, 0, 0], [0, 0, -1, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
 									linear_extrude(height = 2, center = true, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
 										text(text = "SCAD", size = 8, spacing = 1, font = "", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
 									}
@@ -216,13 +216,13 @@ color([0, 1, 1, 1]) {
 				}
 			}
 			multmatrix([[1, 0, 0, 0], [0, 1, 0, 50], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-				multmatrix([[-1, -1.22465e-16, 0, 0], [1.22465e-16, -1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				multmatrix([[-1, 0, 0, 0], [0, -1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 					group() {
 						group() {
 							cube(size = [10, 10, 10], center = true);
 							cylinder($fn = 40, $fa = 12, $fs = 2, h = 12, r1 = 2, r2 = 2, center = false);
 							multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 12], [0, 0, 0, 1]]) {
-								multmatrix([[1, 0, 0, 0], [0, 2.22045e-16, -1, 0], [0, 1, 2.22045e-16, 0], [0, 0, 0, 1]]) {
+								multmatrix([[1, 0, 0, 0], [0, 0, -1, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
 									linear_extrude(height = 2, center = true, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
 										text(text = "SCAD", size = 8, spacing = 1, font = "", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
 									}
@@ -236,13 +236,13 @@ color([0, 1, 1, 1]) {
 				}
 			}
 			multmatrix([[1, 0, 0, -50], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-				multmatrix([[-2.22045e-16, 1, 0, 0], [-1, -2.22045e-16, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				multmatrix([[0, 1, 0, 0], [-1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 					group() {
 						group() {
 							cube(size = [10, 10, 10], center = true);
 							cylinder($fn = 40, $fa = 12, $fs = 2, h = 12, r1 = 2, r2 = 2, center = false);
 							multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 12], [0, 0, 0, 1]]) {
-								multmatrix([[1, 0, 0, 0], [0, 2.22045e-16, -1, 0], [0, 1, 2.22045e-16, 0], [0, 0, 0, 1]]) {
+								multmatrix([[1, 0, 0, 0], [0, 0, -1, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
 									linear_extrude(height = 2, center = true, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
 										text(text = "SCAD", size = 8, spacing = 1, font = "", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
 									}
@@ -259,3 +259,4 @@ color([0, 1, 1, 1]) {
 	}
 }
 group();
+

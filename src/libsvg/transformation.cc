@@ -4,6 +4,7 @@
 
 #include "util.h"
 #include "transformation.h"
+#include "degree_trig.h"
 
 namespace libsvg {
 
@@ -36,7 +37,7 @@ transformation::add_arg(const std::string arg)
 
 const std::string
 transformation::get_args() {
-	std::stringstream str;
+	std::ostringstream str;
 	for (unsigned int a = 0;a < args.size();a++) {
 		str << ((a == 0) ? "(" : ", ") << args[a];
 	}
@@ -173,7 +174,7 @@ rotate::get_matrices()
 	
 	bool has_center = args.size() == 3;
 
-	double angle = M_PI * args[0] / 180.0;
+	double angle = args[0];
 	double cx = has_center ? args[1] : 0;
 	double cy = has_center ? args[2] : 0;
 	
@@ -188,12 +189,7 @@ rotate::get_matrices()
 		result.push_back(t);
 	}
 	
-	Eigen::Matrix3d m;
-	m <<
-		cos(angle), -sin(angle), 0,
-		sin(angle),  cos(angle), 0,
-		         0,           0, 1;
-	result.push_back(m);
+	result.push_back(rotate_degrees(angle));
 
 	if (has_center) {
 		Eigen::Matrix3d t;
@@ -226,13 +222,13 @@ skew_x::get_matrices()
 		return std::vector<Eigen::Matrix3d>();
 	}
 	
-	double angle = M_PI * args[0] / 180.0;
+	double angle = args[0];
 
 	Eigen::Matrix3d m;
 	m <<
-		1, tan(angle), 0,
-		0,          1, 0,
-		0,          0, 1;
+		1, tan_degrees(angle), 0,
+		0, 1,                  0,
+		0, 0,                  1;
 
 	std::vector<Eigen::Matrix3d> result;
 	result.push_back(m);
@@ -258,13 +254,13 @@ skew_y::get_matrices()
 		return std::vector<Eigen::Matrix3d>();
 	}
 
-	double angle = M_PI * args[0] / 180.0;
+	double angle = args[0];
 
 	Eigen::Matrix3d m;
 	m <<
-		         1, 0, 0,
-		tan(angle), 1, 0,
-		         0, 0, 1;
+	                     1, 0, 0,
+	    tan_degrees(angle), 1, 0,
+	                     0, 0, 1;
 
 	std::vector<Eigen::Matrix3d> result;
 	result.push_back(m);

@@ -5,6 +5,7 @@
 #include "rendersettings.h"
 #include "printutils.h"
 #include "renderer.h"
+#include "degree_trig.h"
 #include <cmath>
 
 #ifdef _WIN32
@@ -17,10 +18,9 @@
 #include <opencsg.h>
 #endif
 
-#include <boost/lexical_cast.hpp>
-
 GLView::GLView()
 {
+  aspectratio = 1;
   showedges = false;
   showfaces = true;
   showaxes = false;
@@ -67,7 +67,7 @@ void GLView::setColorScheme(const std::string &cs)
     setColorScheme(*colorscheme);
   }
   else {
-    PRINTB("WARNING: GLView: unknown colorscheme %s", cs);
+    PRINTB("UI-WARNING: GLView: unknown colorscheme %s", cs);
   }
 }
 
@@ -100,7 +100,7 @@ void GLView::setupCamera()
 	}
 	default:
 	case Camera::ProjectionType::ORTHOGONAL: {
-		auto height = dist * tan(cam.fov /2 * M_PI / 180);
+		auto height = dist * tan_degrees(cam.fov / 2);
 		glOrtho(-height * aspectratio, height * aspectratio,
 		        -height, height,
 		        -100 * dist, +100 * dist);
@@ -558,10 +558,7 @@ void GLView::showScalemarkers(const Color4f &col)
 
 void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
 {
-	// convert the axis position to a string
-	std::ostringstream oss;
-	oss << i;
-	const auto unsigned_digit = oss.str();
+	const auto unsigned_digit = STR(i);
 
 	// setup how far above the axis (or tick TBD) to draw the number
 	double dig_buf = (l/size_div_sm)/4;

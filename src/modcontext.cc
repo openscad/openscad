@@ -9,6 +9,9 @@
 #include "builtin.h"
 #include "ModuleCache.h"
 #include <cmath>
+#ifdef DEBUG
+#include <boost/format.hpp>
+#endif
 
 ModuleContext::ModuleContext(const Context *parent, const EvalContext *evalctx)
 	: Context(parent), functions_p(nullptr), modules_p(nullptr), evalctx(evalctx)
@@ -59,18 +62,22 @@ void ModuleContext::evaluateAssignments(const AssignmentList &assignments)
 					undefined_vars.erase(curr);
 				}
 			}
-		}
+		}+-
 	}
 }
 #endif
 
 void ModuleContext::initializeModule(const UserModule &module)
 {
-	this->setVariables(module.definition_arguments, evalctx);
+	this->setVariables(evalctx, module.definition_arguments, {}, true);
 	// FIXME: Don't access module members directly
 	this->functions_p = &module.scope.functions;
 	this->modules_p = &module.scope.modules;
 	for (const auto &ass : module.scope.assignments) {
+		if (ass.expr->isLiteral() && this->variables.find(ass.name) != this->variables.end()) {
+			std::string loc = ass.location().toRelativeString(this->documentPath());
+			PRINTB("WARNING: Module %s: Parameter %s is overwritten with a literal, %s", module.name % ass.name % loc);
+		}
 		this->set_variable(ass.name, ass.expr->evaluate(this));
 	}
 
@@ -128,7 +135,7 @@ AbstractNode *ModuleContext::instantiate_module(const ModuleInstantiation &inst,
 #ifdef DEBUG
 std::string ModuleContext::dump(const AbstractModule *mod, const ModuleInstantiation *inst)
 {
-	std::stringstream s;
+	std::ostringstream s;
 	if (inst) {
 		s << boost::format("ModuleContext %p (%p) for %s inst (%p) ") % this % this->parent % inst->name() % inst;
 	}

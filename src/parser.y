@@ -59,6 +59,7 @@ void yyerror(char const *s);
 
 int lexerget_lineno(void);
 std::shared_ptr<fs::path> sourcefile(void);
+void lexer_set_parser_sourcefile(const fs::path& path);
 int lexerlex_destroy(void);
 int lexerlex(void);
 
@@ -67,11 +68,11 @@ FileModule *rootmodule;
 
 extern void lexerdestroy();
 extern FILE *lexerin;
-extern const char *parser_input_buffer;
 const char *parser_input_buffer;
-std::shared_ptr<fs::path> parser_sourcefile;
+static fs::path mainFilePath;
+static std::string main_file_folder;
 
-bool assignmentWarning=true;
+bool fileEnded=false;
 %}
 
 %union {
@@ -195,7 +196,7 @@ statement:
           ';'
         | TOK_EOT
             {
-                assignmentWarning=false;
+                fileEnded=true;
             }
         ;
 
@@ -210,25 +211,33 @@ assignment:
                 bool found = false;
                 for (auto &assignment : scope_stack.top()->assignments) {
                     if (assignment.name == $1) {
-
-                        auto RootFile = rootmodule->getFullpath();
+                        auto mainFile = mainFilePath.string();
                         auto prevFile = assignment.location().fileName();
                         auto currFile = LOC(@$).fileName();
                         
-                        if(assignmentWarning && prevFile==RootFile && currFile == RootFile){
-                            //both assigments in the RootModule
+                        const auto uncPathCurr = boostfs_uncomplete(currFile, mainFilePath.parent_path());
+                        const auto uncPathPrev = boostfs_uncomplete(prevFile, mainFilePath.parent_path());
+                        if(fileEnded){
+                            //assigments via commandline
+                        }else if(prevFile==mainFile && currFile == mainFile){
+                            //both assigments in the mainFile
                             PRINTB("WARNING: %s was assigned on line %i but was overwritten on line %i",
                                     assignment.name%
                                     assignment.location().firstLine()%
                                     LOC(@$).firstLine());
-                        }else if(assignmentWarning && prevFile == RootFile && currFile != prevFile){
-                            //assigment from the RootModule overwritten by an include
-                            const auto docPath = boost::filesystem::path(RootFile).parent_path();
-
-                            const auto uncPathCurr = boostfs_uncomplete(currFile, docPath);
-                            const auto uncPathPrev = boostfs_uncomplete(prevFile, docPath);
-
-                            PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i  of %s",
+                        }else if(uncPathCurr == uncPathPrev){
+                            //assigment overwritten within the same file
+                            //the line number beeing equal happens, when a file is included multiple times
+                            if(assignment.location().firstLine() != LOC(@$).firstLine()){
+                                PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i",
+                                        assignment.name%
+                                        assignment.location().firstLine()%
+                                        uncPathPrev%
+                                        LOC(@$).firstLine());
+                            }
+                        }else if(prevFile==mainFile && currFile != mainFile){
+                            //assigment from the mainFile overwritten by an include
+                            PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i of %s",
                                     assignment.name%
                                     assignment.location().firstLine()%
                                     uncPathPrev%
@@ -304,7 +313,7 @@ ifelse_statement:
 if_statement:
           TOK_IF '(' expr ')'
             {
-                $<ifelse>$ = new IfElseModuleInstantiation(shared_ptr<Expression>($3), parser_sourcefile->parent_path().generic_string(), LOC(@$));
+                $<ifelse>$ = new IfElseModuleInstantiation(shared_ptr<Expression>($3), main_file_folder, LOC(@$));
                 scope_stack.push(&$<ifelse>$->scope);
             }
           child_statement
@@ -342,7 +351,7 @@ module_id:
 single_module_instantiation:
           module_id '(' arguments_call ')'
             {
-                $$ = new ModuleInstantiation($1, *$3, parser_sourcefile->parent_path().generic_string(), LOC(@$));
+                $$ = new ModuleInstantiation($1, *$3, main_file_folder, LOC(@$));
                 free($1);
                 delete $3;
             }
@@ -661,22 +670,29 @@ void yyerror (char const *s)
          (*sourcefile()) % lexerget_lineno() % s);
 }
 
-bool parse(FileModule *&module, const char *text, const std::string &filename, int debug)
+bool parse(FileModule *&module, const std::string& text, const std::string &filename, const std::string &mainFile, int debug)
 {
-  fs::path path = fs::absolute(fs::path(filename));
-  
+  fs::path parser_sourcefile = fs::absolute(fs::path(filename));
+  main_file_folder = parser_sourcefile.parent_path().generic_string();
+  lexer_set_parser_sourcefile(parser_sourcefile);
+  mainFilePath = mainFile;
+
   lexerin = NULL;
   parser_error_pos = -1;
-  parser_input_buffer = text;
-  parser_sourcefile = std::make_shared<fs::path>(path);
-  assignmentWarning=true;
+  parser_input_buffer = text.c_str();
+  fileEnded=false;
 
-  rootmodule = new FileModule(path.parent_path().generic_string(), path.filename().generic_string());
+  rootmodule = new FileModule(main_file_folder, parser_sourcefile.filename().generic_string());
   scope_stack.push(&rootmodule->scope);
   //        PRINTB_NOCACHE("New module: %s %p", "root" % rootmodule);
 
   parserdebug = debug;
-  int parserretval = parserparse();
+  int parserretval = -1;
+  try{
+     parserretval = parserparse();
+  }catch (const HardWarningException &e) {
+    yyerror("stop on first warning");
+  }
 
   lexerdestroy();
   lexerlex_destroy();
@@ -685,6 +701,7 @@ bool parse(FileModule *&module, const char *text, const std::string &filename, i
   if (parserretval != 0) return false;
 
   parser_error_pos = -1;
+  parser_input_buffer = nullptr;
   scope_stack.pop();
 
   return true;

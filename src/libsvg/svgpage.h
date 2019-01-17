@@ -12,7 +12,6 @@ protected:
 
 public:
     svgpage();
-    svgpage(const svgpage& orig);
     ~svgpage() override;
 
     double get_width() { return width; }

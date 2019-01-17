@@ -33,10 +33,12 @@
 #include "printutils.h"
 #include "context.h"
 #include "calc.h"
+#include "degree_trig.h"
 #include <sstream>
 #include <assert.h>
 #include <cmath>
 #include <boost/assign/std/vector.hpp>
+#include "ModuleInstantiation.h"
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 #define F_MINIMUM 0.01
@@ -58,14 +60,14 @@ public:
 	PrimitiveModule(primitive_type_e type) : type(type) { }
 	AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const override;
 private:
-	Value lookup_radius(const Context &ctx, const std::string &radius_var, const std::string &diameter_var) const;
+	Value lookup_radius(const Context &ctx, const Location &loc, const std::string &radius_var, const std::string &diameter_var) const;
 };
 
 class PrimitiveNode : public LeafNode
 {
 public:
 	VISITABLE();
-	PrimitiveNode(const ModuleInstantiation *mi, primitive_type_e type) : LeafNode(mi), type(type) { }
+	PrimitiveNode(const ModuleInstantiation *mi, primitive_type_e type, const std::string &docPath) : LeafNode(mi), document_path(docPath), type(type) { }
 	std::string toString() const override;
 	std::string name() const override {
 		switch (this->type) {
@@ -95,6 +97,7 @@ public:
 			return "unknown";
 		}
 	}
+	const std::string document_path;
 
 	bool center;
 	double x, y, z, h, r1, r2;
@@ -116,7 +119,7 @@ public:
  * @return radius value of type Value::ValueType::NUMBER or Value::ValueType::UNDEFINED if both
  *         variables are invalid or not set.
  */
-Value PrimitiveModule::lookup_radius(const Context &ctx, const std::string &diameter_var, const std::string &radius_var) const
+Value PrimitiveModule::lookup_radius(const Context &ctx, const Location &loc, const std::string &diameter_var, const std::string &radius_var) const
 {
 	auto d = ctx.lookup_variable(diameter_var, true);
 	auto r = ctx.lookup_variable(radius_var, true);
@@ -124,7 +127,8 @@ Value PrimitiveModule::lookup_radius(const Context &ctx, const std::string &diam
 	
 	if (d->type() == Value::ValueType::NUMBER) {
 		if (r_defined) {
-			PRINTB("WARNING: Ignoring radius variable '%s' as diameter '%s' is defined too.", radius_var % diameter_var);
+			std::string locStr = loc.toRelativeString(ctx.documentPath());
+			PRINTB("WARNING: Ignoring radius variable '%s' as diameter '%s' is defined too, %s", radius_var % diameter_var % locStr);
 		}
 		return {d->toDouble() / 2.0};
 	} else if (r_defined) {
@@ -136,12 +140,13 @@ Value PrimitiveModule::lookup_radius(const Context &ctx, const std::string &diam
 
 AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
-	auto node = new PrimitiveNode(inst, this->type);
+	auto node = new PrimitiveNode(inst, this->type, ctx->documentPath());
 
 	node->center = false;
 	node->x = node->y = node->z = node->h = node->r1 = node->r2 = 1;
 
 	AssignmentList args;
+	AssignmentList optargs;
 
 	switch (this->type) {
 	case primitive_type_e::CUBE:
@@ -149,9 +154,11 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		break;
 	case primitive_type_e::SPHERE:
 		args += Assignment("r");
+		optargs += Assignment("d");
 		break;
 	case primitive_type_e::CYLINDER:
 		args += Assignment("h"), Assignment("r1"), Assignment("r2"), Assignment("center");
+		optargs += Assignment("r"),  Assignment("d"), Assignment("d1"),  Assignment("d2");
 		break;
 	case primitive_type_e::POLYHEDRON:
 		args += Assignment("points"), Assignment("faces"), Assignment("convexity");
@@ -161,6 +168,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		break;
 	case primitive_type_e::CIRCLE:
 		args += Assignment("r");
+		optargs += Assignment("d");
 		break;
 	case primitive_type_e::POLYGON:
 		args += Assignment("points"), Assignment("paths"), Assignment("convexity");
@@ -170,18 +178,18 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 	}
 
 	Context c(ctx);
-	c.setVariables(args, evalctx);
+	c.setVariables(evalctx, args, optargs);
 
 	node->fn = c.lookup_variable("$fn")->toDouble();
 	node->fs = c.lookup_variable("$fs")->toDouble();
 	node->fa = c.lookup_variable("$fa")->toDouble();
 
 	if (node->fs < F_MINIMUM) {
-		PRINTB("WARNING: $fs too small - clamping to %f", F_MINIMUM);
+		PRINTB("WARNING: $fs too small - clamping to %f, %s", F_MINIMUM % inst->location().toRelativeString(ctx->documentPath()));
 		node->fs = F_MINIMUM;
 	}
 	if (node->fa < F_MINIMUM) {
-		PRINTB("WARNING: $fa too small - clamping to %f", F_MINIMUM);
+		PRINTB("WARNING: $fa too small - clamping to %f, %s", F_MINIMUM % inst->location().toRelativeString(ctx->documentPath()));
 		node->fa = F_MINIMUM;
 	}
 
@@ -189,17 +197,23 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 	case primitive_type_e::CUBE: {
 		auto size = c.lookup_variable("size");
 		auto center = c.lookup_variable("center");
-		size->getDouble(node->x);
-		size->getDouble(node->y);
-		size->getDouble(node->z);
-		size->getVec3(node->x, node->y, node->z);
+		if(size != ValuePtr::undefined){
+			bool converted=false;
+			converted |= size->getDouble(node->x);
+			converted |= size->getDouble(node->y);
+			converted |= size->getDouble(node->z);
+			converted |= size->getVec3(node->x, node->y, node->z);
+			if(!converted){
+				PRINTB("WARNING: Unable to convert cube(size=%s, ...) parameter to a number or a vec3 of numbers, %s", size->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+			}
+		}
 		if (center->type() == Value::ValueType::BOOL) {
 			node->center = center->toBool();
 		}
 		break;
 	}
 	case primitive_type_e::SPHERE: {
-		const auto r = lookup_radius(c, "d", "r");
+		const auto r = lookup_radius(c, inst->location(), "d", "r");
 		if (r.type() == Value::ValueType::NUMBER) {
 			node->r1 = r.toDouble();
 		}
@@ -211,9 +225,15 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 			node->h = h->toDouble();
 		}
 
-		const auto r = lookup_radius(c, "d", "r");
-		const auto r1 = lookup_radius(c, "d1", "r1");
-		const auto r2 = lookup_radius(c, "d2", "r2");
+		const auto r = lookup_radius(c, inst->location(), "d", "r");
+		const auto r1 = lookup_radius(c, inst->location(), "d1", "r1");
+		const auto r2 = lookup_radius(c, inst->location(), "d2", "r2");
+		if(r.type() == Value::ValueType::NUMBER && 
+			(r1.type() == Value::ValueType::NUMBER || r2.type() == Value::ValueType::NUMBER)
+			){
+				PRINTB("WARNING: Cylinder parameters ambiguous, %s", inst->location().toRelativeString(ctx->documentPath()));
+		}
+
 		if (r.type() == Value::ValueType::NUMBER) {
 			node->r1 = r.toDouble();
 			node->r2 = r.toDouble();
@@ -246,16 +266,22 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 	case primitive_type_e::SQUARE: {
 		auto size = c.lookup_variable("size");
 		auto center = c.lookup_variable("center");
-		size->getDouble(node->x);
-		size->getDouble(node->y);
-		size->getVec2(node->x, node->y);
+		if(size != ValuePtr::undefined){
+			bool converted=false;
+			converted |= size->getDouble(node->x);
+			converted |= size->getDouble(node->y);
+			converted |= size->getVec2(node->x, node->y);
+			if(!converted){
+				PRINTB("WARNING: Unable to convert square(size=%s, ...) parameter to a number or a vec2 of numbers, %s", size->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+			}
+		}
 		if (center->type() == Value::ValueType::BOOL) {
 			node->center = center->toBool();
 		}
 		break;
 	}
 	case primitive_type_e::CIRCLE: {
-		const auto r = lookup_radius(c, "d", "r");
+		const auto r = lookup_radius(c, inst->location(), "d", "r");
 		if (r.type() == Value::ValueType::NUMBER) {
 			node->r1 = r.toDouble();
 		}
@@ -281,9 +307,9 @@ struct point2d {
 static void generate_circle(point2d *circle, double r, int fragments)
 {
 	for (int i=0; i<fragments; i++) {
-		double phi = (M_PI*2*i) / fragments;
-		circle[i].x = r*cos(phi);
-		circle[i].y = r*sin(phi);
+		double phi = (360.0 * i) / fragments;
+		circle[i].x = r * cos_degrees(phi);
+		circle[i].y = r * sin_degrees(phi);
 	}
 }
 
@@ -372,10 +398,10 @@ const Geometry *PrimitiveNode::createGeometry() const
 
 //		double offset = 0.5 * ((fragments / 2) % 2);
 			for (int i = 0; i < rings; i++) {
-//			double phi = (M_PI * (i + offset)) / (fragments/2);
-				double phi = (M_PI * (i + 0.5)) / rings;
-				double r = r1 * sin(phi);
-				ring[i].z = r1 * cos(phi);
+//			double phi = (180.0 * (i + offset)) / (fragments/2);
+				double phi = (180.0 * (i + 0.5)) / rings;
+				double r = r1 * sin_degrees(phi);
+				ring[i].z = r1 * cos_degrees(phi);
 				ring[i].points = new point2d[fragments];
 				generate_circle(ring[i].points, r, fragments);
 			}
@@ -500,9 +526,9 @@ const Geometry *PrimitiveNode::createGeometry() const
 				size_t pt = vec[j]->toDouble();
 				if (pt < this->points->toVector().size()) {
 					double px, py, pz;
-					if (!this->points->toVector()[pt]->getVec3(px, py, pz) ||
-							std::isinf(px) || std::isinf(py) || std::isinf(pz)) {
-						PRINTB("ERROR: Unable to convert point at index %d to a vec3 of numbers", j);
+					if (!this->points->toVector()[pt]->getVec3(px, py, pz, 0.0) ||
+					    std::isinf(px) || std::isinf(py) || std::isinf(pz)) {
+						PRINTB("ERROR: Unable to convert point at index %d to a vec3 of numbers, %s", j % this->modinst->location().toRelativeString(this->document_path));
 						return p;
 					}
 					p->insert_vertex(px, py, pz);
@@ -539,8 +565,8 @@ const Geometry *PrimitiveNode::createGeometry() const
 			Outline2d o;
 			o.vertices.resize(fragments);
 			for (int i=0; i < fragments; i++) {
-				double phi = (M_PI*2*i) / fragments;
-				o.vertices[i] = {this->r1*cos(phi), this->r1*sin(phi)};
+				double phi = (360.0 * i) / fragments;
+				o.vertices[i] = {this->r1 * cos_degrees(phi), this->r1 * sin_degrees(phi)};
 			}
 			p->addOutline(o);
 		}
@@ -557,8 +583,8 @@ const Geometry *PrimitiveNode::createGeometry() const
 			for (unsigned int i=0;i<vec.size();i++) {
 				const auto &val = *vec[i];
 				if (!val.getVec2(x, y) || std::isinf(x) || std::isinf(y)) {
-					PRINTB("ERROR: Unable to convert point %s at index %d to a vec2 of numbers", 
-								 val.toString() % i);
+					PRINTB("ERROR: Unable to convert point %s at index %d to a vec2 of numbers, %s", 
+								 val.toString() % i % this->modinst->location().toRelativeString(this->document_path));
 					return p;
 				}
 				outline.vertices.emplace_back(x, y);
@@ -592,7 +618,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 
 std::string PrimitiveNode::toString() const
 {
-	std::stringstream stream;
+	std::ostringstream stream;
 
 	stream << this->name();
 

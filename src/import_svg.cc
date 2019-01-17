@@ -3,8 +3,9 @@
 #include "printutils.h"
 #include "libsvg/libsvg.h"
 #include "clipper-utils.h"
+#include "AST.h"
 
-Polygon2d *import_svg(const std::string &filename)
+Polygon2d *import_svg(const std::string &filename, const Location &loc)
 {
 	libsvg::shapes_list_t *shapes = libsvg::libsvg_read_file(filename.c_str());
 	double x_min = 1.0/0.0;

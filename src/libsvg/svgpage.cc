@@ -7,14 +7,8 @@ namespace libsvg {
 
 const std::string svgpage::name("svg"); 
 
-svgpage::svgpage()
+svgpage::svgpage() : width(0), height(0)
 {
-}
-
-svgpage::svgpage(const svgpage& orig) : shape(orig)
-{
-	width = orig.width;
-	height = orig.height;
 }
 
 svgpage::~svgpage()

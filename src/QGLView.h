@@ -66,6 +66,7 @@ public:
 #endif
 
 	void zoom(double v, bool relative);
+	void zoomCursor(int x, int y, int zoom);
 	void rotate(double x, double y, double z, bool relative);
 	void rotate2(double x, double y, double z);
 	void translate(double x, double y, double z, bool relative, bool viewPortRelative = true);

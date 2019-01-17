@@ -5,9 +5,11 @@
 #include "GeometryEvaluator.h"
 #include "progress.h"
 #include "printutils.h"
+#include "exceptions.h"
 
 CGALWorker::CGALWorker()
 {
+	this->tree = nullptr;
 	this->thread = new QThread();
 	if (this->thread->stackSize() < 1024*1024) this->thread->setStackSize(1024*1024);
 	connect(this->thread, SIGNAL(started()), this, SLOT(work()));
@@ -34,6 +36,9 @@ void CGALWorker::work()
 	}
 	catch (const ProgressCancelException &e) {
 		PRINT("Rendering cancelled.");
+	}
+	catch (const HardWarningException &e) {
+		PRINT("Rendering cancelled on first warning.");
 	}
 
 	emit done(root_geom);

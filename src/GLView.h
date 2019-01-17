@@ -62,10 +62,7 @@ public:
 	const ColorScheme *colorscheme;
 	Camera cam;
 	double far_far_away;
-	size_t width;
-	size_t height;
 	double aspectratio;
-	bool orthomode;
 	bool showaxes;
 	bool showfaces;
 	bool showedges;

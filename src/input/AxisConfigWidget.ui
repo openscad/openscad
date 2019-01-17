@@ -83,7 +83,7 @@
             <number>0</number>
            </property>
            <property name="format">
-            <string>0.00</string>
+            <string notr="true">0.00</string>
            </property>
           </widget>
          </item>
@@ -123,7 +123,7 @@
             <number>0</number>
            </property>
            <property name="format">
-            <string>0.00</string>
+            <string notr="true">0.00</string>
            </property>
           </widget>
          </item>
@@ -136,7 +136,7 @@
             <number>0</number>
            </property>
            <property name="format">
-            <string>0.00</string>
+            <string notr="true">0.00</string>
            </property>
           </widget>
          </item>
@@ -169,7 +169,7 @@
             <number>0</number>
            </property>
            <property name="format">
-            <string>0.00</string>
+            <string notr="true">0.00</string>
            </property>
           </widget>
          </item>
@@ -214,7 +214,7 @@
             <number>0</number>
            </property>
            <property name="format">
-            <string>0.00</string>
+            <string notr="true">0.00</string>
            </property>
           </widget>
          </item>
@@ -254,7 +254,7 @@
             <number>0</number>
            </property>
            <property name="format">
-            <string>0.00</string>
+            <string notr="true">0.00</string>
            </property>
           </widget>
          </item>
@@ -357,7 +357,7 @@
             <number>0</number>
            </property>
            <property name="format">
-            <string>0.00</string>
+            <string notr="true">0.00</string>
            </property>
           </widget>
          </item>
@@ -370,7 +370,7 @@
             <number>0</number>
            </property>
            <property name="format">
-            <string>0.00</string>
+            <string notr="true">0.00</string>
            </property>
           </widget>
          </item>
@@ -383,7 +383,7 @@
             <number>0</number>
            </property>
            <property name="format">
-            <string>0.00</string>
+            <string notr="true">0.00</string>
            </property>
           </widget>
          </item>
@@ -552,7 +552,7 @@
             </sizepolicy>
            </property>
            <property name="text">
-            <string>Axis2</string>
+            <string>Axis 2</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
@@ -568,7 +568,7 @@
             </sizepolicy>
            </property>
            <property name="text">
-            <string>Axis0</string>
+            <string>Axis 0</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
@@ -584,7 +584,7 @@
             </sizepolicy>
            </property>
            <property name="text">
-            <string>Axis3</string>
+            <string>Axis 3</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
@@ -600,7 +600,7 @@
             </sizepolicy>
            </property>
            <property name="text">
-            <string>Axis6</string>
+            <string>Axis 6</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
@@ -616,7 +616,7 @@
             </sizepolicy>
            </property>
            <property name="text">
-            <string>Axis8</string>
+            <string>Axis 8</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
@@ -632,7 +632,7 @@
             </sizepolicy>
            </property>
            <property name="text">
-            <string>Axis7</string>
+            <string>Axis 7</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
@@ -648,7 +648,7 @@
             </sizepolicy>
            </property>
            <property name="text">
-            <string>Axis5</string>
+            <string>Axis 5</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
@@ -664,7 +664,7 @@
             </sizepolicy>
            </property>
            <property name="text">
-            <string>Axis1</string>
+            <string>Axis 1</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
@@ -680,7 +680,7 @@
             </sizepolicy>
            </property>
            <property name="text">
-            <string>Axis4</string>
+            <string>Axis 4</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
@@ -999,7 +999,7 @@
          <item row="4" column="0">
           <widget class="QLabel" name="labelInputRotationViewPortRelative">
            <property name="text">
-            <string>ViewPortrel.&lt;br /&gt;Rotation</string>
+            <string>ViewPort rel.&lt;br /&gt;Rotation</string>
            </property>
           </widget>
          </item>

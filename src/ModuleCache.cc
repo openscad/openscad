@@ -8,7 +8,6 @@
 
 #include <stdio.h>
 #include <fstream>
-#include <sstream>
 #include <sys/stat.h>
 #include <algorithm>
 
@@ -28,7 +27,7 @@ ModuleCache *ModuleCache::inst = nullptr;
 
 	Returns the latest modification time of the module, its dependencies or includes.
 */
-std::time_t ModuleCache::evaluate(const std::string &filename, FileModule *&module)
+std::time_t ModuleCache::evaluate(const std::string &mainFile,const std::string &filename, FileModule *&module)
 {
 	module = nullptr;
 	auto entry = this->entries.find(filename);
@@ -91,21 +90,20 @@ std::time_t ModuleCache::evaluate(const std::string &filename, FileModule *&modu
 		}
 #endif
 
-		std::stringstream textbuf;
+		std::string text;
 		{
 			std::ifstream ifs(filename.c_str());
 			if (!ifs.is_open()) {
 				PRINTB("WARNING: Can't open library file '%s'\n", filename);
 				return 0;
 			}
-			textbuf << ifs.rdbuf();
+			text = STR(ifs.rdbuf() << "\n\x03\n" << commandline_commands);
 		}
-		textbuf << "\n\x03\n" << commandline_commands;
 		
 		print_messages_push();
 		
 		delete cacheEntry.parsed_module;
-		lib_mod = parse(cacheEntry.parsed_module, textbuf.str().c_str(), filename, false) ? cacheEntry.parsed_module : nullptr;
+		lib_mod = parse(cacheEntry.parsed_module, text, filename, mainFile, false) ? cacheEntry.parsed_module : nullptr;
 		PRINTDB("  compiled module: %p", lib_mod);
 		cacheEntry.module = lib_mod;
 		cacheEntry.cache_id = cache_id;
