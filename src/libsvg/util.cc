@@ -24,6 +24,10 @@
  */
 #include <boost/spirit/include/qi.hpp>
 
+// include fusion headers for Ubuntu trusty, everything later seems happy without
+#include <boost/fusion/adapted/struct/adapt_struct.hpp>
+#include <boost/fusion/include/adapt_struct.hpp>
+
 #include "util.h"
 
 BOOST_FUSION_ADAPT_STRUCT(libsvg::length_struct, (double, number) (std::string, unit))
