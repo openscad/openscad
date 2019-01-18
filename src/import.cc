@@ -129,10 +129,9 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 	origin->getVec2(node->origin_x, node->origin_y);
 
 	auto center = c.lookup_variable("center", true);
-	node->center = center->toBool();
+	node->center = center->type() == Value::ValueType::BOOL ? center->toBool() : false;
 
 	node->scale = c.lookup_variable("scale", true)->toDouble();
-
 	if (node->scale <= 0) node->scale = 1;
 
 	auto width = c.lookup_variable("width", true);
