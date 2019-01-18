@@ -1242,7 +1242,6 @@ experimental_tests(cgalpngtest_cube-with-hole
                    astdumptest_assert-expression-fail1-test
                    astdumptest_assert-expression-fail2-test
                    astdumptest_assert-expression-fail3-test
-		   echotest_issue1851-each-fail-on-scalar
 		   cgalpngtest_import_3mf-tests
 		   opencsgtest_import_3mf-tests
 		   csgpngtest_import_3mf-tests
