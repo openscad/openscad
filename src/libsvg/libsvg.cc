@@ -188,7 +188,7 @@ void dump(int idx, shape *s) {
 	for (int a = 0;a < idx;a++) {
 		std::cout << "  ";
 	}
-	std::cout << "=> " << *s << std::endl;
+	std::cout << "=> " << s->dump() << std::endl;
 	for (const auto& c : s->get_children()) {
 		dump(idx + 1, c);
 	} 
@@ -202,7 +202,7 @@ libsvg_read_file(const char *filename)
 
 //#ifdef DEBUG
 //	if (!shape_list->empty()) {
-//		dump(0, (*shape_list)[0]);
+//		dump(0, shape_list->front().get());
 //	}
 //#endif
 

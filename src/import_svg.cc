@@ -9,12 +9,20 @@ Polygon2d *import_svg(const std::string &filename, const bool center, const Loca
 
 {
 	const libsvg::shapes_list_t *shapes = libsvg::libsvg_read_file(filename.c_str());
+
 	double x_min = 1.0/0.0;
 	double x_max = -1.0/0.0;
 	double y_min = 1.0/0.0;
 	double y_max = -1.0/0.0;
+	double width = 0;
+	double height = 0;
 	for (const auto& shape_ptr : *shapes) {
 		PRINTD("SVG shape");
+		const auto page = dynamic_cast<libsvg::svgpage *>(shape_ptr.get());
+		if (page) {
+			width = page->get_width();
+			height = page->get_height();
+		}
 		const auto& s = *shape_ptr;
 		for (const auto& p : s.get_path_list()) {
 			PRINTD("SVG path");
@@ -36,7 +44,7 @@ Polygon2d *import_svg(const std::string &filename, const bool center, const Loca
 	}
 	
 	double cx = center ? (x_min + x_max) / 2 : 0;
-	double cy = center ? (y_min + y_max) / 2 : 0;
+	double cy = center ? (y_min + y_max) / 2 : height;
 	
 	std::vector<const Polygon2d*> polygons;
 	for (const auto& shape_ptr : *shapes) {
