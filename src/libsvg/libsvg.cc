@@ -28,6 +28,7 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <boost/filesystem.hpp>
+#include <boost/format.hpp>
 #include <libxml/xmlreader.h>
 
 #include "libsvg.h"
@@ -176,10 +177,10 @@ int streamFile(const char *filename)
 		}
 		xmlFreeTextReader(reader);
 		if (ret != 0) {
-			printf("%s : failed to parse\n", filename);
+			throw SvgException((boost::format("Error parsing file '%1%'") % filename).str());
 		}
 	} else {
-		printf("Unable to open %s\n", filename);
+		throw SvgException((boost::format("Can't open file '%1%'") % filename).str());
 	}
 	return 0;
 }
