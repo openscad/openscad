@@ -24,7 +24,7 @@ const Feature Feature::Experimental3mfImport("3mf-import", "Enable 3MF import.")
 const Feature Feature::Experimental3mfExport("3mf-export", "Enable 3MF export.");
 const Feature Feature::ExperimentalSvgImport("svg-import", "Enable SVG import.");
 const Feature Feature::ExperimentalCustomizer("customizer", "Enable Customizer");
-const Feature Feature::ExperimentalInputDriver("input-driver", "Enable input drivers (requires restart)");
+const Feature Feature::ExperimentalInputDriverDBus("input-driver-dbus", "Enable DBus input drivers (requires restart)");
 const Feature Feature::Experimental3dPrint("3d-print", "Design upload to print service (requires restart)");
 
 Feature::Feature(const std::string &name, const std::string &description)

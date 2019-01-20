@@ -312,11 +312,6 @@ void Preferences::featuresCheckBoxToggled(bool state)
 	settings.setValue(QString("feature/%1").arg(QString::fromStdString(feature->get_name())), state);
 	emit ExperimentalChanged();
 
-	if (!Feature::ExperimentalInputDriver.is_enabled()) {
-		this->toolBar->removeAction(prefsActionInput);
-		this->toolBar->removeAction(prefsActionInputButton);
-		InputDriverManager::instance()->closeDrivers();
-	}
 	if (!Feature::Experimental3dPrint.is_enabled()) {
 		this->toolBar->removeAction(prefsAction3DPrint);
 	}
@@ -366,11 +361,6 @@ void Preferences::setupFeaturesPage()
 	// spacer item itself.
 	gridLayoutExperimentalFeatures->addItem(new QSpacerItem(20, 0, QSizePolicy::Fixed, QSizePolicy::Fixed), 1, 0, 1, 1, Qt::AlignLeading);
 
-	if (!Feature::ExperimentalInputDriver.is_enabled()) {
-		this->toolBar->removeAction(prefsActionInput);
-		this->toolBar->removeAction(prefsActionInputButton);
-		InputDriverManager::instance()->closeDrivers();
-	}
 	if (!Feature::Experimental3dPrint.is_enabled()) {
 		this->toolBar->removeAction(prefsAction3DPrint);
 	}

@@ -20,7 +20,7 @@ public:
         static const Feature Experimental3mfExport;
         static const Feature ExperimentalSvgImport;
         static const Feature ExperimentalCustomizer;
-        static const Feature ExperimentalInputDriver;
+        static const Feature ExperimentalInputDriverDBus;
 
 	const std::string& get_name() const;
 	const std::string& get_description() const;
