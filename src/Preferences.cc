@@ -358,7 +358,6 @@ void Preferences::setupFeaturesPage()
 	// fixed size space essentially gives the first row the width of the
 	// spacer item itself.
 	gridLayoutExperimentalFeatures->addItem(new QSpacerItem(20, 0, QSizePolicy::Fixed, QSizePolicy::Fixed), 1, 0, 1, 1, Qt::AlignLeading);
-	}
 }
 
 void Preferences::on_colorSchemeChooser_itemSelectionChanged()
