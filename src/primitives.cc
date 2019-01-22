@@ -205,6 +205,13 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 			converted |= size->getVec3(node->x, node->y, node->z);
 			if(!converted){
 				PRINTB("WARNING: Unable to convert cube(size=%s, ...) parameter to a number or a vec3 of numbers, %s", size->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+			}else if(OpenSCAD::rangeCheck){
+				bool ok = (node->x > 0) && (node->y > 0) && (node->z > 0);
+				ok &= std::isfinite(node->x) && std::isfinite(node->y) && std::isfinite(node->z);
+				if(!ok){
+					PRINTB("WARNING: cube(size=%s, ...), %s",
+						size->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+				}
 			}
 		}
 		if (center->type() == Value::ValueType::BOOL) {
@@ -216,6 +223,10 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		const auto r = lookup_radius(c, inst->location(), "d", "r");
 		if (r.type() == Value::ValueType::NUMBER) {
 			node->r1 = r.toDouble();
+			if (OpenSCAD::rangeCheck && (node->r1 <= 0 || !std::isfinite(node->r1))){
+				PRINTB("WARNING: sphere(r=%d), %s",
+					node->r1 % inst->location().toRelativeString(ctx->documentPath()));
+			}
 		}
 		break;
 	}
@@ -244,7 +255,18 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		if (r2.type() == Value::ValueType::NUMBER) {
 			node->r2 = r2.toDouble();
 		}
-		
+
+		if(OpenSCAD::rangeCheck){
+			if (node->h <= 0 || !std::isfinite(node->h)){
+				PRINTB("WARNING: cylinder(h=%d, ...), %s",
+					node->h % inst->location().toRelativeString(ctx->documentPath()));
+			}
+			if (node->r1 < 0 || node->r2 < 0 || (node->r1 == 0 && node->r2 == 0) || !std::isfinite(node->r1) || !std::isfinite(node->r2)){
+				PRINTB("WARNING: cylinder(r1=%d, r2=%d, ...), %s",
+					node->r1 % node->r2 % inst->location().toRelativeString(ctx->documentPath()));
+			}
+		}
+
 		auto center = c.lookup_variable("center");
 		if (center->type() == Value::ValueType::BOOL) {
 			node->center = center->toBool();
@@ -273,6 +295,14 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 			converted |= size->getVec2(node->x, node->y);
 			if(!converted){
 				PRINTB("WARNING: Unable to convert square(size=%s, ...) parameter to a number or a vec2 of numbers, %s", size->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+			}else if(OpenSCAD::rangeCheck){
+				bool ok = true;
+				ok &= (node->x > 0) && (node->y > 0);
+				ok &= std::isfinite(node->x) && std::isfinite(node->y);
+				if(!ok){
+					PRINTB("WARNING: square(size=%s, ...), %s",
+						size->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+				}
 			}
 		}
 		if (center->type() == Value::ValueType::BOOL) {
@@ -284,6 +314,10 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		const auto r = lookup_radius(c, inst->location(), "d", "r");
 		if (r.type() == Value::ValueType::NUMBER) {
 			node->r1 = r.toDouble();
+			if (OpenSCAD::rangeCheck && ((node->r1 <= 0) || !std::isfinite(node->r1))){
+				PRINTB("WARNING: circle(r1=%d), %s",
+					node->r1 % inst->location().toRelativeString(ctx->documentPath()));
+			}
 		}
 		break;
 	}
@@ -527,7 +561,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 				if (pt < this->points->toVector().size()) {
 					double px, py, pz;
 					if (!this->points->toVector()[pt]->getVec3(px, py, pz, 0.0) ||
-					    std::isinf(px) || std::isinf(py) || std::isinf(pz)) {
+					    !std::isfinite(px) || !std::isfinite(py) || !std::isfinite(pz)) {
 						PRINTB("ERROR: Unable to convert point at index %d to a vec3 of numbers, %s", j % this->modinst->location().toRelativeString(this->document_path));
 						return p;
 					}

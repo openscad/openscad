@@ -263,7 +263,7 @@ MainWindow::MainWindow(const QString &filename)
 	knownFileExtensions["off"] = importStatement;
 	knownFileExtensions["dxf"] = importStatement;
 	if (Feature::ExperimentalSvgImport.is_enabled()) knownFileExtensions["svg"] = importStatement;
-	if (Feature::ExperimentalAmfImport.is_enabled()) knownFileExtensions["amf"] = importStatement;
+	knownFileExtensions["amf"] = importStatement;
 	knownFileExtensions["dat"] = surfaceStatement;
 	knownFileExtensions["png"] = surfaceStatement;
 	knownFileExtensions["scad"] = "";
@@ -1042,6 +1042,7 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 {
 	OpenSCAD::hardwarnings = Preferences::inst()->getValue("advanced/enableHardwarnings").toBool();
 	OpenSCAD::parameterCheck = Preferences::inst()->getValue("advanced/enableParameterCheck").toBool();
+	OpenSCAD::rangeCheck = Preferences::inst()->getValue("advanced/enableParameterRangeCheck").toBool();
 
 	try{
 		bool shouldcompiletoplevel = false;
