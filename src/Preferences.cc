@@ -163,6 +163,7 @@ void Preferences::init() {
 	this->defaultmap["advanced/enableSoundNotification"] = true;
 	this->defaultmap["advanced/enableHardwarnings"] = false;
 	this->defaultmap["advanced/enableParameterCheck"] = true;
+	this->defaultmap["advanced/enableParameterRangeCheck"] = false;
 	this->defaultmap["printing/showPrintDialog"] = Settings::Settings::printServiceShowDialog.defaultValue().toBool();
 
 	// Toolbar
@@ -311,11 +312,6 @@ void Preferences::featuresCheckBoxToggled(bool state)
 	QSettingsCached settings;
 	settings.setValue(QString("feature/%1").arg(QString::fromStdString(feature->get_name())), state);
 	emit ExperimentalChanged();
-
-	if (!Feature::ExperimentalInputDriver.is_enabled()) {
-		this->toolBar->removeAction(prefsActionInput);
-		this->toolBar->removeAction(prefsActionInputButton);
-		InputDriverManager::instance()->closeDrivers();
 	}
 }
 
@@ -362,11 +358,6 @@ void Preferences::setupFeaturesPage()
 	// fixed size space essentially gives the first row the width of the
 	// spacer item itself.
 	gridLayoutExperimentalFeatures->addItem(new QSpacerItem(20, 0, QSizePolicy::Fixed, QSizePolicy::Fixed), 1, 0, 1, 1, Qt::AlignLeading);
-
-	if (!Feature::ExperimentalInputDriver.is_enabled()) {
-		this->toolBar->removeAction(prefsActionInput);
-		this->toolBar->removeAction(prefsActionInputButton);
-		InputDriverManager::instance()->closeDrivers();
 	}
 }
 
@@ -650,6 +641,12 @@ void Preferences::on_enableParameterCheckBox_toggled(bool state)
 	settings.setValue("advanced/enableParameterCheck", state);
 }
 
+void Preferences::on_enableRangeCheckBox_toggled(bool state)
+{
+	QSettingsCached settings;
+	settings.setValue("advanced/enableParameterRangeCheck", state);
+}
+
 void Preferences::on_checkBoxShowPrintServiceSelectionDialog_toggled(bool checked)
 {
 	Settings::Settings::inst()->set(Settings::Settings::printServiceShowDialog, Value(checked));
@@ -887,7 +884,8 @@ void Preferences::updateGUI()
 	this->enableSoundOnRenderCompleteCheckBox->setChecked(getValue("advanced/enableSoundNotification").toBool());
 	this->enableHardwarningsCheckBox->setChecked(getValue("advanced/enableHardwarnings").toBool());
 	this->enableParameterCheckBox->setChecked(getValue("advanced/enableParameterCheck").toBool());
-
+	this->enableRangeCheckBox->setChecked(getValue("advanced/enableParameterRangeCheck").toBool());
+	
 	Settings::Settings *s = Settings::Settings::inst();
 	updateComboBox(this->comboBoxLineWrap, Settings::Settings::lineWrap);
 	updateComboBox(this->comboBoxLineWrapIndentationStyle, Settings::Settings::lineWrapIndentationStyle);
