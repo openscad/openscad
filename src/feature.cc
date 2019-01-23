@@ -19,8 +19,6 @@ Feature::list_t Feature::feature_list;
  * argument to enable the option and for saving the option value in GUI
  * context.
  */
-const Feature Feature::Experimental3mfImport("3mf-import", "Enable 3MF import.");
-const Feature Feature::Experimental3mfExport("3mf-export", "Enable 3MF export.");
 const Feature Feature::ExperimentalSvgImport("svg-import", "Enable SVG import.");
 const Feature Feature::ExperimentalCustomizer("customizer", "Enable Customizer");
 const Feature Feature::ExperimentalInputDriverDBus("input-driver-dbus", "Enable DBus input drivers (requires restart)");

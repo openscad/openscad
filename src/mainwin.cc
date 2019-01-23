@@ -259,7 +259,7 @@ MainWindow::MainWindow(const QString &filename)
 	const QString importStatement = "import(\"%1\");\n";
 	const QString surfaceStatement = "surface(\"%1\");\n";
 	knownFileExtensions["stl"] = importStatement;
-	if (Feature::Experimental3mfImport.is_enabled()) knownFileExtensions["3mf"] = importStatement;
+	knownFileExtensions["3mf"] = importStatement;
 	knownFileExtensions["off"] = importStatement;
 	knownFileExtensions["dxf"] = importStatement;
 	if (Feature::ExperimentalSvgImport.is_enabled()) knownFileExtensions["svg"] = importStatement;
@@ -388,12 +388,9 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->fileActionExportImage, SIGNAL(triggered()), this, SLOT(actionExportImage()));
 	connect(this->designActionFlushCaches, SIGNAL(triggered()), this, SLOT(actionFlushCaches()));
 
-#ifdef ENABLE_LIB3MF
-	bool export3mfVisible = Feature::Experimental3mfExport.is_enabled();
-#else
-	bool export3mfVisible = false;
+#ifndef ENABLE_LIB3MF
+	this->fileActionExport3MF->setVisible(false);
 #endif
-	this->fileActionExport3MF->setVisible(export3mfVisible);
 
 #ifdef ENABLE_3D_PRINTING
 	bool enable3dPrinting = Feature::Experimental3dPrint.is_enabled();
