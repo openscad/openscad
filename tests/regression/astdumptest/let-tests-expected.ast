@@ -14,3 +14,5 @@ echo(let($a = (2 * b), b = ($a * 3)) ($a * b));
 echo(let(b = ($a * 3), $a = (2 * b)) ($a * b));
 echo(let(b = $a, $a = b) [$a, b]);
 echo(let(b = (2 * $a), $a = b) [for(i = [1 : b]) ([i, $a])]);
+let(42);
+let(1, 2, 3, 4);
