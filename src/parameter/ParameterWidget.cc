@@ -525,8 +525,8 @@ void ParameterWidget::updateParameterSet(std::string setName, bool newSet)
 	//check for duplicates
 	if(newSet && setMgr->setNameExists(setName)){
 		QMessageBox msgBox;
-		msgBox.setWindowTitle(QString(_("Set Name %1 allready exists")).arg(QString::fromStdString(setName)));
-		msgBox.setText(QString(_("The set name  %1 allready exists. Do you want overwrite it?")).arg(QString::fromStdString(setName)));
+		msgBox.setWindowTitle(QString(_("Set Name %1 already exists")).arg(QString::fromStdString(setName)));
+		msgBox.setText(QString(_("The set name  %1 already exists. Do you want overwrite it?")).arg(QString::fromStdString(setName)));
 		msgBox.setStandardButtons(QMessageBox::Yes);
 		msgBox.addButton(QMessageBox::No);
 		msgBox.setDefaultButton(QMessageBox::No);

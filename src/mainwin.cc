@@ -1610,7 +1610,7 @@ void MainWindow::actionShowLibraryFolder()
 {
 	auto path = PlatformUtils::userLibraryPath();
 	if (!fs::exists(path)) {
-		PRINTB("UI-WARNING: Library path %s doesnt exist. Creating", path);
+		PRINTB("UI-WARNING: Library path %s doesn't exist. Creating", path);
 		if (!PlatformUtils::createUserLibraryPath()) {
 			PRINTB("UI-ERROR: Cannot create library path: %s",path);
 		}

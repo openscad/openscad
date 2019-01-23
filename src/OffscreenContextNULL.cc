@@ -1,6 +1,6 @@
 ﻿/*
 
-Create an NULL OpenGL context that doesnt actually use any OpenGL code,
+Create an NULL OpenGL context that doesn't actually use any OpenGL code,
 and can be compiled on a system without OpenGL.
 
 */
