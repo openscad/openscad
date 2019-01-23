@@ -1,0 +1,86 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" 
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="10cm" height="10cm" viewBox="0 0 1000 1000"
+     xmlns="http://www.w3.org/2000/svg" version="1.1">
+  <title>Example cubic02 - cubic Bézier commands in path data</title>
+  <desc>Picture showing examples of "C" and "S" commands,
+        along with annotations showing the control points
+        and end points</desc>
+  <style type="text/css"><![CDATA[
+    .Border { fill:none; stroke:blue; stroke-width:1 }
+    .Connect { fill:none; stroke:#888888; stroke-width:2 }
+    .SamplePath { fill:none; stroke:red; stroke-width:5 }
+    .EndPoint { fill:none; stroke:#888888; stroke-width:2 }
+    .CtlPoint { fill:#888888; stroke:none }
+    .AutoCtlPoint { fill:none; stroke:blue; stroke-width:4 }
+    .Label { text-anchor:middle; font-size:22; font-family:Verdana }
+  ]]></style>
+
+  <!-- Path 1 -->
+  <polyline class="Connect" points="100,200 100,100" />
+  <polyline class="Connect" points="400,100 400,200" />
+  <path class="SamplePath" d="M100,200 C100,100 400,100 400,200" />
+  <circle class="EndPoint" cx="100" cy="200" r="10" />
+  <circle class="EndPoint" cx="400" cy="200" r="10" />
+  <circle class="CtlPoint" cx="100" cy="100" r="10" />
+  <circle class="CtlPoint" cx="400" cy="100" r="10" />
+  <text class="Label" x="250" y="275">M100,200 C100,100 400,100 400,200</text>
+
+  <!-- Path 2 -->
+  <polyline class="Connect" points="100,500 25,400" />
+  <polyline class="Connect" points="475,400 400,500" />
+  <path class="SamplePath" d="M100,500 C25,400 475,400 400,500" />
+  <circle class="EndPoint" cx="100" cy="500" r="10" />
+  <circle class="EndPoint" cx="400" cy="500" r="10" />
+  <circle class="CtlPoint" cx="25" cy="400" r="10" />
+  <circle class="CtlPoint" cx="475" cy="400" r="10" />
+  <text class="Label" x="250" y="575">M100,500 C25,400 475,400 400,500</text>
+
+  <!-- Path 3 -->
+  <polyline class="Connect" points="100,800 175,700" />
+  <polyline class="Connect" points="325,700 400,800" />
+  <path class="SamplePath" d="M100,800 C175,700 325,700 400,800" />
+  <circle class="EndPoint" cx="100" cy="800" r="10" />
+  <circle class="EndPoint" cx="400" cy="800" r="10" />
+  <circle class="CtlPoint" cx="175" cy="700" r="10" />
+  <circle class="CtlPoint" cx="325" cy="700" r="10" />
+  <text class="Label" x="250" y="875">M100,800 C175,700 325,700 400,800</text>
+
+  <!-- Path 4 -->
+  <polyline class="Connect" points="600,200 675,100" />
+  <polyline class="Connect" points="975,100 900,200" />
+  <path class="SamplePath" d="M600,200 C675,100 975,100 900,200" />
+  <circle class="EndPoint" cx="600" cy="200" r="10" />
+  <circle class="EndPoint" cx="900" cy="200" r="10" />
+  <circle class="CtlPoint" cx="675" cy="100" r="10" />
+  <circle class="CtlPoint" cx="975" cy="100" r="10" />
+  <text class="Label" x="750" y="275">M600,200 C675,100 975,100 900,200</text>
+
+  <!-- Path 5 -->
+  <polyline class="Connect" points="600,500 600,350" />
+  <polyline class="Connect" points="900,650 900,500" />
+  <path class="SamplePath" d="M600,500 C600,350 900,650 900,500" />
+  <circle class="EndPoint" cx="600" cy="500" r="10" />
+  <circle class="EndPoint" cx="900" cy="500" r="10" />
+  <circle class="CtlPoint" cx="600" cy="350" r="10" />
+  <circle class="CtlPoint" cx="900" cy="650" r="10" />
+  <text class="Label" x="750" y="575">M600,500 C600,350 900,650 900,500</text>
+
+  <!-- Path 6 (C and S command) -->
+  <polyline class="Connect" points="600,800 625,700" />
+  <polyline class="Connect" points="725,700 750,800" />
+  <polyline class="Connect" points="750,800 775,900" />
+  <polyline class="Connect" points="875,900 900,800" />
+  <path class="SamplePath" d="M600,800 C625,700 725,700 750,800
+                                       S875,900 900,800" />
+  <circle class="EndPoint" cx="600" cy="800" r="10" />
+  <circle class="EndPoint" cx="750" cy="800" r="10" />
+  <circle class="EndPoint" cx="900" cy="800" r="10" />
+  <circle class="CtlPoint" cx="625" cy="700" r="10" />
+  <circle class="CtlPoint" cx="725" cy="700" r="10" />
+  <circle class="CtlPoint" cx="875" cy="900" r="10" />
+  <circle class="AutoCtlPoint" cx="775" cy="900" r="9" />
+  <text class="Label" x="750" y="945">M600,800 C625,700 725,700 750,800</text>
+  <text class="Label" x="750" y="975">S875,900 900,800</text>
+</svg>

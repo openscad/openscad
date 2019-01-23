@@ -112,7 +112,7 @@ mingw* {
   debug: QMAKE_CXXFLAGS += -O1
 }
 
-CONFIG += qt
+CONFIG += qt object_parallel_to_source
 QT += widgets concurrent multimedia network
 
 netbsd* {
@@ -395,6 +395,9 @@ SOURCES += \
            src/libsvg/circle.cc \
            src/libsvg/ellipse.cc \
            src/libsvg/line.cc \
+           src/libsvg/text.cc \
+           src/libsvg/tspan.cc \
+           src/libsvg/data.cc \
            src/libsvg/polygon.cc \
            src/libsvg/polyline.cc \
            src/libsvg/rect.cc \

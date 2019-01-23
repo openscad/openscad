@@ -687,212 +687,6 @@ elseif(WIN32)
    set(PLATFORMUTILS_SOURCE "PlatformUtils-win.cc" CACHE TYPE STRING)
 endif()
 
-set(CORE_SOURCES
-  tests-common.cc 
-  ../src/parsersettings.cc
-  ../src/linalg.cc
-  ../src/colormap.cc
-  ../src/Camera.cc
-  ../src/handle_dep.cc 
-  ../src/value.cc 
-  ../src/calc.cc 
-  ../src/hash.cc 
-  ../src/expr.cc
-  ../src/degree_trig.cc
-  ../src/func.cc 
-  ../src/function.cc 
-  ../src/stackcheck.cc 
-  ../src/localscope.cc 
-  ../src/module.cc 
-  ../src/FileModule.cc 
-  ../src/UserModule.cc 
-  ../src/GroupModule.cc 
-  ../src/AST.cc 
-  ../src/ModuleInstantiation.cc 
-  ../src/ModuleCache.cc 
-  ../src/StatCache.cc
-  ../src/node.cc 
-  ../src/NodeVisitor.cc 
-  ../src/context.cc 
-  ../src/modcontext.cc 
-  ../src/builtincontext.cc 
-  ../src/evalcontext.cc 
-  ../src/feature.cc
-  ../src/csgnode.cc 
-  ../src/CSGTreeNormalizer.cc 
-  ../src/Geometry.cc 
-  ../src/Polygon2d.cc 
-  ../src/csgops.cc 
-  ../src/transform.cc 
-  ../src/color.cc 
-  ../src/primitives.cc 
-  ../src/projection.cc 
-  ../src/cgaladv.cc 
-  ../src/surface.cc 
-  ../src/control.cc 
-  ../src/render.cc 
-  ../src/version.cc
-  ../src/rendersettings.cc 
-  ../src/dxfdata.cc 
-  ../src/dxfdim.cc 
-  ../src/offset.cc 
-  ../src/linearextrude.cc 
-  ../src/rotateextrude.cc 
-  ../src/text.cc 
-  ../src/printutils.cc 
-  ../src/fileutils.cc 
-  ../src/progress.cc 
-  ../src/boost-utils.cc 
-  ../src/FontCache.cc
-  ../src/DrawingCallback.cc
-  ../src/FreetypeRenderer.cc
-  ../src/ext/lodepng/lodepng.cpp
-  ../src/PlatformUtils.cc 
-  ../src/libsvg/circle.cc
-  ../src/libsvg/ellipse.cc
-  ../src/libsvg/group.cc
-  ../src/libsvg/libsvg.cc
-  ../src/libsvg/line.cc
-  ../src/libsvg/path.cc
-  ../src/libsvg/polygon.cc
-  ../src/libsvg/polyline.cc
-  ../src/libsvg/rect.cc
-  ../src/libsvg/shape.cc
-  ../src/libsvg/svgpage.cc
-  ../src/libsvg/transformation.cc
-  ../src/libsvg/util.cc
-  ../src/clipper-utils.cc
-  ../src/Assignment.cc
-  ../src/annotation.cc 
-  ../src/ext/polyclipping/clipper.cpp
-  ../src/${PLATFORMUTILS_SOURCE}
-  ${FLEX_OpenSCADlexer_OUTPUTS}
-  ${BISON_OpenSCADparser_OUTPUTS})
-
-set(NOCGAL_SOURCES
-  ../src/builtin.cc 
-  ../src/import.cc
-  ../src/import_stl.cc
-  ../src/import_amf.cc
-  ../src/import_off.cc
-  ../src/import_svg.cc
-  ../src/import_3mf.cc
-  ../src/export.cc
-  ../src/export_stl.cc
-  ../src/export_amf.cc
-  ../src/export_off.cc
-  ../src/export_dxf.cc
-  ../src/export_svg.cc
-  ../src/LibraryInfo.cc
-  ../src/polyset.cc
-  ../src/polyset-gl.cc
-  ../src/polyset-utils.cc
-  ../src/GeometryUtils.cc)
-
-set(CGAL_SOURCES
-  ${NOCGAL_SOURCES}
-  ../src/CSGTreeEvaluator.cc 
-  ../src/CGAL_Nef_polyhedron.cc 
-  ../src/export_nef.cc
-  ../src/cgalutils.cc 
-  ../src/cgalutils-applyops.cc 
-  ../src/cgalutils-project.cc 
-  ../src/cgalutils-tess.cc 
-  ../src/cgalutils-polyhedron.cc 
-  ../src/CGALCache.cc
-  ../src/Polygon2d-CGAL.cc
-  ../src/svg.cc
-  ../src/GeometryEvaluator.cc)
-
-set(COMMON_SOURCES
-  ../src/nodedumper.cc 
-  ../src/GeometryCache.cc 
-  ../src/clipper-utils.cc 
-  ../src/Tree.cc
-  ../src/ext/polyclipping/clipper.cpp
-  ../src/ext/libtess2/Source/bucketalloc.c
-  ../src/ext/libtess2/Source/dict.c
-  ../src/ext/libtess2/Source/geom.c
-  ../src/ext/libtess2/Source/mesh.c
-  ../src/ext/libtess2/Source/priorityq.c
-  ../src/ext/libtess2/Source/sweep.c
-  ../src/ext/libtess2/Source/tess.c
-  ../src/Tree.cc)
-
-#
-# Offscreen OpenGL context source code
-#
-
-set(OFFSCREEN_SOURCES
-  ../src/GLView.cc
-  ../src/OffscreenView.cc
-  ../src/${OFFSCREEN_CTX_SOURCE}
-  ../src/${OFFSCREEN_IMGUTILS_SOURCE}
-  ../src/imageutils.cc
-  ../src/fbo.cc
-  ../src/system-gl.cc
-  ../src/export_png.cc
-  ../src/CGALRenderer.cc
-  ../src/ThrownTogetherRenderer.cc
-  ../src/renderer.cc
-  ../src/render.cc
-  ../src/OpenCSGRenderer.cc
-)
-
-if(NULLGL)
-  message(STATUS "NULLGL is set. Overriding previous OpenGL(TM) settings")
-  set(OFFSCREEN_SOURCES
-    ../src/NULLGL.cc # contains several 'nullified' versions of above .cc files
-    ../src/OffscreenView.cc
-    ../src/OffscreenContextNULL.cc
-    ../src/export_png.cc
-    ../src/${OFFSCREEN_IMGUTILS_SOURCE}
-    ../src/imageutils.cc
-    ../src/renderer.cc
-    ../src/render.cc)
-endif()
-
-add_library(tests-core STATIC ${CORE_SOURCES})
-target_link_libraries(tests-core ${OPENGL_LIBRARIES} ${GLIB2_LIBRARIES} ${FONTCONFIG_LDFLAGS} ${FREETYPE_LDFLAGS} ${HARFBUZZ_LDFLAGS} ${LIBXML2_LIBRARIES} ${LIB3MF_LDFLAGS} ${Boost_LIBRARIES} ${COCOA_LIBRARY})
-
-add_library(tests-common STATIC ${COMMON_SOURCES})
-target_link_libraries(tests-common tests-core)
-
-#
-# Create non-CGAL tests
-#
-add_library(tests-nocgal STATIC ${NOCGAL_SOURCES})
-target_link_libraries(tests-nocgal tests-common)
-if (NOT NULLGL)
-  set_target_properties(tests-nocgal PROPERTIES COMPILE_FLAGS "${ENABLE_OPENCSG_FLAG}")
-endif()
-
-#
-# csgtexttest
-#
-find_package(OpenCSG REQUIRED)
-add_executable(csgtexttest csgtexttest.cc CSGTextRenderer.cc CSGTextCache.cc)
-target_link_libraries(csgtexttest tests-nocgal ${GLEW_LIBRARY} ${OPENCSG_LIBRARY} ${APP_SERVICES_LIBRARY})
-
-#
-# openscad_nogui - an OpenSCAD binary build without Qt
-# Enabled by using -DNOGUI=1 as a cmake parameter. Only kept for backwards compatibility and in case
-# someone needs that binary.
-#
-if (NOGUI)
- add_library(tests-offscreen STATIC ${OFFSCREEN_SOURCES})
- set_target_properties(tests-offscreen PROPERTIES COMPILE_FLAGS "${ENABLE_OPENCSG_FLAG} -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
- target_link_libraries(tests-offscreen ${OFFSCREEN_CTX_LIBRARIES})
-
- add_library(tests-cgal STATIC ${CGAL_SOURCES})
- set_target_properties(tests-cgal PROPERTIES COMPILE_FLAGS "${ENABLE_OPENCSG_FLAG} -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
- target_link_libraries(tests-cgal tests-common ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${GMP_LIBRARIES} ${MPFR_LIBRARIES})
-
- add_executable(openscad_nogui ../src/openscad.cc)
- set_target_properties(openscad_nogui PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing -DEIGEN_DONT_ALIGN ${ENABLE_OPENCSG_FLAG} -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
- target_link_libraries(openscad_nogui tests-offscreen tests-cgal ${GLEW_LIBRARY} ${OPENCSG_LIBRARY} ${APP_SERVICES_LIBRARY})
-endif()
-
 #
 # GUI binary tests
 #
@@ -1147,6 +941,7 @@ file(GLOB DEPRECATED_3D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/deprecated
 file(GLOB ISSUES_2D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/2D/issues/*.scad)
 file(GLOB ISSUES_3D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/*.scad)
 file(GLOB SCAD_DXF_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/dxf/*.scad)
+file(GLOB SCAD_SVG_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/svg/*.scad)
 file(GLOB SCAD_AMF_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/amf/*.scad)
 file(GLOB SCAD_NEF3_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/nef3/*.scad)
 file(GLOB FUNCTION_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/*.scad)
@@ -1368,8 +1163,8 @@ disable_tests(
 )
 
 # 2D tests
-list(APPEND FILES_2D ${FEATURES_2D_FILES} ${SCAD_DXF_FILES} ${SCAD_SVG_FILES} ${ISSUES_2D_FILES} ${EXAMPLE_2D_FILES})
-list(APPEND ALL_2D_FILES ${FILES_2D})
+list(APPEND FILES_2D ${FEATURES_2D_FILES} ${ISSUES_2D_FILES} ${EXAMPLE_2D_FILES})
+list(APPEND ALL_2D_FILES ${FILES_2D} ${SCAD_DXF_FILES} ${SCAD_SVG_FILES})
 
 # FIXME: This test illustrates a weakness in child() combined with modifiers.
 # Reenable it when this is improved
@@ -1616,20 +1411,6 @@ endif()
 # 1. Start/stop Virtual Framebuffer for linux/bsd. 2. Pretty Print
 # Please see the CTestCustom.template file for more info. 
 
-#
-# Post-test pretty print
-#
-
-add_executable(test_pretty_print test_pretty_print.cc)
-file(TO_NATIVE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/test_pretty_print.py PYSRC)
-set_target_properties(test_pretty_print PROPERTIES COMPILE_FLAGS
-  "-DPYBIN=${PYTHON_EXECUTABLE} -DPYSRC=${PYSRC} -DBUILDDIR=--builddir=${CMAKE_CURRENT_BINARY_DIR}"
-)
-#if (MINGW_CROSS_ENV_DIR)
-#  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/test_pretty_print "test_pretty_print.exe")
-#  execute_process(COMMAND chmod ugo+x ${CMAKE_CURRENT_BINARY_DIR}/test_pretty_print)
-#endif()
-
 file(READ ${CMAKE_CURRENT_SOURCE_DIR}/CTestCustom.template TMP)
 string(REPLACE __cmake_current_binary_dir__ ${CMAKE_CURRENT_BINARY_DIR} TMP ${TMP})
 string(REPLACE __cmake_current_source_dir__ ${CMAKE_CURRENT_SOURCE_DIR} TMP ${TMP})
@@ -1667,10 +1448,6 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.cmake ${TMP})
 #
 
 add_cmdline_test(astdumptest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX ast FILES ${ASTDUMPTEST_FILES})
-add_cmdline_test(csgtexttest SUFFIX txt FILES
-                             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allexpressions.scad
-                             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allfunctions.scad
-                             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allmodules.scad)
 add_cmdline_test(csgtermtest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX term FILES
                              ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allexpressions.scad
                              ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allfunctions.scad
@@ -1703,7 +1480,7 @@ add_cmdline_test(offpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/
 add_cmdline_test(amfpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=AMF EXPECTEDDIR monotonepngtest SUFFIX png FILES ${TRIVIAL_IMPORT_EXPORT_3D_FILES})
 add_cmdline_test(3mfpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=3MF EXPECTEDDIR monotonepngtest SUFFIX png FILES ${TRIVIAL_IMPORT_EXPORT_3D_FILES})
 add_cmdline_test(dxfpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=DXF --render=cgal EXPECTEDDIR monotonepngtest SUFFIX png FILES ${TRIVIAL_IMPORT_EXPORT_2D_FILES})
-add_cmdline_test(svgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=SVG --enable=svg-import --render=cgal EXPECTEDDIR monotonepngtest SUFFIX png FILES ${TRIVIAL_IMPORT_EXPORT_2D_FILES})
+add_cmdline_test(svgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=SVG --render=cgal --enable=svg-import EXPECTEDDIR monotonepngtest SUFFIX png FILES ${TRIVIAL_IMPORT_EXPORT_2D_FILES})
 
 #
 # Corner-case Export/Import tests
@@ -1726,9 +1503,9 @@ add_cmdline_test(cgalstlcgalpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOUR
 add_cmdline_test(offpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=OFF --render EXPECTEDDIR monotonepngtest SUFFIX png FILES ${EXPORT3D_TEST_FILES})
 add_cmdline_test(offcgalpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=OFF --render=cgal EXPECTEDDIR monotonepngtest SUFFIX png FILES ${EXPORT3D_CGAL_TEST_FILES})
 
-add_cmdline_test(dxfpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=DXF --render=cgal EXPECTEDDIR cgalpngtest SUFFIX png FILES ${FILES_2D})
+add_cmdline_test(dxfpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=DXF --render=cgal EXPECTEDDIR cgalpngtest SUFFIX png FILES ${FILES_2D} ${SCAD_DXF_FILES})
 
-add_cmdline_test(svgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=SVG --render=cgal --enable=svg-import EXPECTEDDIR cgalpngtest SUFFIX png FILES ${FILES_2D})
+add_cmdline_test(svgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=SVG --render=cgal --enable=svg-import EXPECTEDDIR cgalpngtest SUFFIX png FILES ${FILES_2D} ${SCAD_SVG_FILES})
 
 #
 # Failing tests

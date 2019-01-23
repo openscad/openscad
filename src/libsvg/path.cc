@@ -1,3 +1,27 @@
+/*
+ * The MIT License
+ *
+ * Copyright (c) 2016-2018, Torsten Paul <torsten.paul@gmx.de>,
+ *                          Marius Kintel <marius@kintel.net>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 #include <stdlib.h>
 
 #include <string>
@@ -494,7 +518,7 @@ path::set_attrs(attr_map_t& attrs)
 }
 
 bool
-path::is_open_path(path_t& path)
+path::is_open_path(path_t& path) const
 {
 	const Eigen::Vector3d p1 = path[0];
 	const Eigen::Vector3d p2 = path.back();
@@ -502,22 +526,21 @@ path::is_open_path(path_t& path)
 	return distance > 0.1;
 }
 
-void
-path::dump()
+const std::string
+path::dump() const
 {
-	std::cout << get_name()
+	std::stringstream s;
+	s << get_name()
 		<< ": x = " << this->x
 		<< ", y = " << this->y;
-	for (path_list_t::iterator it = path_list.begin();it != path_list.end();it++) {
-		path_t& p = *it;
-		std::cout << "[";
-		for (path_t::iterator it2 = p.begin();it2 != p.end();it2++) {
-			Eigen::Vector3d& v = *it2;
-			std::cout << " (" << v.x() << ", " << v.y() << ")";
+	for (const auto& p : path_list) {
+		s << "[";
+		for (const auto& v : p) {
+			s << " (" << v.x() << ", " << v.y() << ")";
 		}
-		std::cout << "]";
+		s << "]";
 	}
-	std::cout << std::endl;
+	return s.str();
 }
 
 }
