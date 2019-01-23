@@ -175,19 +175,20 @@ void Preferences::init() {
 #else
 	this->toolBar->removeAction(prefsActionUpdate);
 #endif
-#ifdef ENABLE_EXPERIMENTAL
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 	addPrefPage(group, prefsAction3DPrint, page3DPrint);
-	addPrefPage(group, prefsActionFeatures, pageFeatures);
-	addPrefPage(group, prefsActionInput, pageInput);
-	addPrefPage(group, prefsActionInputButton, pageInputButton);
 #else
 	this->toolBar->removeAction(prefsAction3DPrint);
-	this->toolBar->removeAction(prefsActionFeatures);
-	this->toolBar->removeAction(prefsActionInput);
-	this->toolBar->removeAction(prefsActionInputButton);
 #endif
+#ifdef ENABLE_EXPERIMENTAL
+	addPrefPage(group, prefsActionFeatures, pageFeatures);
+#else
+	this->toolBar->removeAction(prefsActionFeatures);
+#endif
+	addPrefPage(group, prefsActionInput, pageInput);
+	addPrefPage(group, prefsActionInputButton, pageInputButton);
 	addPrefPage(group, prefsActionAdvanced, pageAdvanced);
-	
+
 	connect(group, SIGNAL(triggered(QAction*)), this, SLOT(actionTriggered(QAction*)));
 
 	prefsAction3DView->setChecked(true);
