@@ -22,7 +22,6 @@ Feature::list_t Feature::feature_list;
 const Feature Feature::ExperimentalSvgImport("svg-import", "Enable SVG import.");
 const Feature Feature::ExperimentalCustomizer("customizer", "Enable Customizer");
 const Feature Feature::ExperimentalInputDriverDBus("input-driver-dbus", "Enable DBus input drivers (requires restart)");
-const Feature Feature::Experimental3dPrint("3d-print", "Design upload to print service (requires restart)");
 
 Feature::Feature(const std::string &name, const std::string &description)
 	: enabled(false), name(name), description(description)

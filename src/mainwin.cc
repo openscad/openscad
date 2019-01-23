@@ -392,14 +392,6 @@ MainWindow::MainWindow(const QString &filename)
 	this->fileActionExport3MF->setVisible(false);
 #endif
 
-#ifdef ENABLE_3D_PRINTING
-	bool enable3dPrinting = Feature::Experimental3dPrint.is_enabled();
-#else
-	bool enable3dPrinting = false;
-#endif
-	this->designAction3DPrint->setVisible(enable3dPrinting);
-	this->designAction3DPrint->setEnabled(enable3dPrinting);
-
 	// View menu
 #ifndef ENABLE_OPENCSG
 	this->viewActionPreview->setVisible(false);
@@ -2074,20 +2066,15 @@ void MainWindow::csgRender()
 void MainWindow::action3DPrint()
 {
 #ifdef ENABLE_3D_PRINTING
-	if (!Feature::Experimental3dPrint.is_enabled()) {
-		return;
-	}
-
 	if (GuiLocker::isLocked()) return;
 	GuiLocker lock;
 
 	setCurrentOutput();
 
 	//Make sure we can export:
-	unsigned int dim = 3;
+	const unsigned int dim = 3;
 	if (!canExport(dim))
 	{
-		PRINT("Cannot 3D Print due to errors.");
 		return;
     }
 

@@ -312,10 +312,6 @@ void Preferences::featuresCheckBoxToggled(bool state)
 	QSettingsCached settings;
 	settings.setValue(QString("feature/%1").arg(QString::fromStdString(feature->get_name())), state);
 	emit ExperimentalChanged();
-
-	if (!Feature::Experimental3dPrint.is_enabled()) {
-		this->toolBar->removeAction(prefsAction3DPrint);
-	}
 }
 
 /**
@@ -361,10 +357,6 @@ void Preferences::setupFeaturesPage()
 	// fixed size space essentially gives the first row the width of the
 	// spacer item itself.
 	gridLayoutExperimentalFeatures->addItem(new QSpacerItem(20, 0, QSizePolicy::Fixed, QSizePolicy::Fixed), 1, 0, 1, 1, Qt::AlignLeading);
-
-	if (!Feature::Experimental3dPrint.is_enabled()) {
-		this->toolBar->removeAction(prefsAction3DPrint);
-	}
 }
 
 void Preferences::on_colorSchemeChooser_itemSelectionChanged()
