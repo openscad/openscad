@@ -57,6 +57,9 @@ public slots:
 #ifdef USE_QOPENGLWIDGET
 	inline void updateGL() { update(); }
 #endif
+	void setMouseCentricZoom(bool var){
+		this->mouseCentricZoom=var;
+	}
 
 public:
 	QLabel *statusLabel;
@@ -75,6 +78,7 @@ private:
 	void init();
 
 	bool mouse_drag_active;
+	bool mouseCentricZoom=true;
 	QPoint last_mouse;
 	QImage frame; // Used by grabFrame() and save()
 
