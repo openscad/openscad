@@ -34,20 +34,20 @@
 Console::Console(QWidget *parent) : QPlainTextEdit(parent)
 {
 	setupUi(this);
-	connect(this->actionClear, &QAction::triggered, this, &Console::on_actionClearConsole_triggered);
-	connect(this->actionSaveAs, &QAction::triggered, this, &Console::on_actionSaveAs_triggered);
+	connect(this->actionClear, SIGNAL(triggered()), this, SLOT(actionClearConsole_triggered()));
+	connect(this->actionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs_triggered()));
 }
 
 Console::~Console()
 {
 }
 
-void Console::on_actionClearConsole_triggered()
+void Console::actionClearConsole_triggered()
 {
 	this->document()->clear();
 }
 
-void Console::on_actionSaveAs_triggered()
+void Console::actionSaveAs_triggered()
 {
 	const auto& text = this->document()->toPlainText();
 	const auto fileName = QFileDialog::getSaveFileName(this, _("Save console content"));

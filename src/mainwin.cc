@@ -392,6 +392,11 @@ MainWindow::MainWindow(const QString &filename)
 	this->fileActionExport3MF->setVisible(false);
 #endif
 
+#ifndef ENABLE_3D_PRINTING
+	this->designAction3DPrint->setVisible(false);
+	this->designAction3DPrint->setEnabled(false);
+#endif
+
 	// View menu
 #ifndef ENABLE_OPENCSG
 	this->viewActionPreview->setVisible(false);
