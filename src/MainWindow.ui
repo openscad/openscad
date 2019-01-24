@@ -272,7 +272,7 @@
      <x>0</x>
      <y>0</y>
      <width>1118</width>
-     <height>19</height>
+     <height>18</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -296,6 +296,7 @@
      <addaction name="fileActionExportSTL"/>
      <addaction name="fileActionExportOFF"/>
      <addaction name="fileActionExportAMF"/>
+     <addaction name="fileActionExport3MF"/>
      <addaction name="fileActionExportDXF"/>
      <addaction name="fileActionExportSVG"/>
      <addaction name="fileActionExportCSG"/>
@@ -329,16 +330,16 @@
     <addaction name="editActionCopy"/>
     <addaction name="editActionPaste"/>
     <addaction name="separator"/>
-    <addaction name="editActionCopyViewport"/>
-    <addaction name="separator"/>
     <addaction name="editActionIndent"/>
     <addaction name="editActionUnindent"/>
     <addaction name="editActionComment"/>
     <addaction name="editActionUncomment"/>
     <addaction name="editActionConvertTabsToSpaces"/>
     <addaction name="separator"/>
-    <addaction name="editActionPasteVPT"/>
-    <addaction name="editActionPasteVPR"/>
+    <addaction name="editActionCopyViewport"/>
+    <addaction name="editActionCopyVPT"/>
+    <addaction name="editActionCopyVPR"/>
+    <addaction name="editActionCopyVPD"/>
     <addaction name="separator"/>
     <addaction name="editActionFind"/>
     <addaction name="editActionFindAndReplace"/>
@@ -358,6 +359,7 @@
     <addaction name="designActionReloadAndPreview"/>
     <addaction name="designActionPreview"/>
     <addaction name="designActionRender"/>
+    <addaction name="designAction3DPrint"/>
     <addaction name="separator"/>
     <addaction name="designCheckValidity"/>
     <addaction name="designActionDisplayAST"/>
@@ -464,6 +466,7 @@
        <addaction name="designActionRender"/>
        <addaction name="separator"/>
        <addaction name="fileActionExportSTL"/>
+       <addaction name="designAction3DPrint"/>
       </widget>
      </item>
      <item>
@@ -497,7 +500,7 @@
          <number>0</number>
         </property>
         <item row="0" column="0">
-         <widget class="QComboBox" name="findTypeComboBox"> 
+         <widget class="QComboBox" name="findTypeComboBox">
           <item>
            <property name="text">
             <string>Find</string>
@@ -512,7 +515,7 @@
         </item>
         <item row="0" column="1">
          <widget class="QWordSearchField" name="findInputField">
-          <property name="placeholderText">
+          <property name="placeholderText" stdset="0">
            <string>Search string</string>
           </property>
          </widget>
@@ -520,42 +523,42 @@
         <item row="0" column="2">
          <widget class="QPushButton" name="findPrevButton">
           <property name="text">
-           <string>Prev.</string> 
+           <string>Prev.</string>
           </property>
          </widget>
         </item>
         <item row="0" column="3">
          <widget class="QPushButton" name="findNextButton">
           <property name="text">
-           <string>Next</string> 
+           <string>Next</string>
           </property>
          </widget>
         </item>
         <item row="0" column="4">
          <widget class="QPushButton" name="cancelButton">
           <property name="text">
-           <string>Done</string> 
+           <string>Done</string>
           </property>
          </widget>
         </item>
         <item row="1" column="1">
          <widget class="QLineEdit" name="replaceInputField">
           <property name="placeholderText">
-           <string>Replacement string</string> 
+           <string>Replacement string</string>
           </property>
          </widget>
         </item>
-        <item row="1" column="2" colspan="2"> 
+        <item row="1" column="2" colspan="2">
          <widget class="QPushButton" name="replaceButton">
           <property name="text">
-           <string>Replace</string> 
+           <string>Replace</string>
           </property>
          </widget>
         </item>
         <item row="1" column="4">
          <widget class="QPushButton" name="replaceAllButton">
           <property name="text">
-           <string>All</string> 
+           <string>All</string>
           </property>
          </widget>
         </item>
@@ -585,7 +588,7 @@
       <number>0</number>
      </property>
      <item>
-      <widget class="QTextEdit" name="console">
+      <widget class="Console" name="console">
        <property name="minimumSize">
         <size>
          <width>10</width>
@@ -605,7 +608,7 @@
   </widget>
   <widget class="Dock" name="parameterDock">
    <property name="windowTitle">
-    <string>Parameter Widget</string>
+    <string>Customizer Widget</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>2</number>
@@ -798,17 +801,30 @@
     <string>Ctrl+Shift+D</string>
    </property>
   </action>
-  <action name="editActionPasteVPT">
+  <action name="editActionCopyViewport">
    <property name="text">
-    <string>P&amp;aste viewport translation</string>
+    <string>Copy viewport ima&amp;ge</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+C</string>
+   </property>
+  </action>
+  <action name="editActionCopyVPT">
+   <property name="text">
+    <string>Copy viewport transl&amp;ation</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+T</string>
    </property>
   </action>
-  <action name="editActionPasteVPR">
+  <action name="editActionCopyVPR">
    <property name="text">
-    <string>Past&amp;e viewport rotation</string>
+    <string>Cop&amp;y viewport rotation</string>
+   </property>
+  </action>
+  <action name="editActionCopyVPD">
+   <property name="text">
+    <string>Copy vie&amp;wport distance</string>
    </property>
   </action>
   <action name="editActionZoomTextIn">
@@ -867,6 +883,18 @@
     <string>F6</string>
    </property>
   </action>
+  <action name="designAction3DPrint">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/3dprint-32.png</normaloff>:/images/3dprint-32.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;3D Print</string>
+   </property>
+   <property name="shortcut">
+    <string>F8</string>
+   </property>
+  </action>
   <action name="designCheckValidity">
    <property name="text">
     <string>&amp;Check Validity</string>
@@ -894,6 +922,9 @@
    </property>
    <property name="text">
     <string>Export as &amp;STL...</string>
+   </property>
+   <property name="shortcut">
+    <string>F7</string>
    </property>
   </action>
   <action name="fileActionExportOFF">
@@ -1041,7 +1072,7 @@
   <action name="viewActionLeft">
    <property name="icon">
     <iconset resource="../openscad.qrc">
-     <normaloff>:/images/blackleft (copy).png</normaloff>:/images/blackleft (copy).png</iconset>
+     <normaloff>:/images/blackleft.png</normaloff>:/images/blackleft.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Left</string>
@@ -1295,6 +1326,15 @@
     <string>Export as &amp;AMF...</string>
    </property>
   </action>
+  <action name="fileActionExport3MF">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/3MF.png</normaloff>:/images/3MF.png</iconset>
+   </property>
+   <property name="text">
+    <string>Export as &amp;3MF...</string>
+   </property>
+  </action>
   <action name="viewActionZoomIn">
    <property name="icon">
     <iconset resource="../openscad.qrc">
@@ -1361,14 +1401,6 @@
     <string>&amp;Cheat Sheet</string>
    </property>
   </action>
-  <action name="editActionCopyViewport">
-   <property name="text">
-    <string>Copy Viewport</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Shift+C</string>
-   </property>
-  </action>
   <action name="viewActionHideParameters">
    <property name="checkable">
     <bool>true</bool>
@@ -1405,6 +1437,11 @@
    <extends>QFrame</extends>
    <header>QWordSearchField.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>Console</class>
+   <extends>QPlainTextEdit</extends>
+   <header>Console.h</header>
   </customwidget>
  </customwidgets>
  <resources>

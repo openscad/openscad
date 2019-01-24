@@ -30,7 +30,7 @@ UNICODE {U2}{U}|{U3}{U}{U}|{U4}{U}{U}{U}
                     try {
                         comment_parserlval.num = boost::lexical_cast<double>(yytext);
                         return NUM;
-                    } catch (boost::bad_lexical_cast) {}
+                    } catch (boost::bad_lexical_cast&) {}
                 }
                 
 "[" { return yytext[0];}

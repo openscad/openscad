@@ -9,7 +9,14 @@
 #ifndef _WIN32_IE
 #define _WIN32_IE 0x0501 // SHGFP_TYPE_CURRENT
 #endif
+
+// Ugly hack to disable definitions in shobjidl.h which use unavailable
+// structure LOGFONTW.
+#define __IPreviewHandlerVisuals_INTERFACE_DEFINED__
+#define __IVisualProperties_INTERFACE_DEFINED__
 #include <shlobj.h>
+
+#include "version.h"
 
 std::string PlatformUtils::pathSeparatorChar()
 {
@@ -72,6 +79,11 @@ static const std::string getFolderPath(int nFolder)
 	return "";
 }
 
+std::string PlatformUtils::userDocumentsPath()
+{
+	return documentsPath();
+}
+
 // retrieve the path to 'My Documents' for the current user under windows
 // In XP this is 'c:\documents and settings\username\my documents'
 // In Vista, 7, 8+ this is 'c:\users\username\documents'
@@ -121,7 +133,20 @@ static BOOL IsWow64()
     return bIsWow64;
 }
 
-std::string PlatformUtils::sysinfo(bool extended)
+const std::string PlatformUtils::user_agent()
+{
+	std::string result;
+
+	result += "OpenSCAD/";
+	result += openscad_detailedversionnumber;
+	result += " (";
+	result += sysinfo(false);
+	result += ")";
+
+	return result;
+}
+
+const std::string PlatformUtils::sysinfo(bool extended)
 {
 	std::string result;
 

@@ -51,6 +51,7 @@ typedef CGAL_Nef_polyhedron3::Aff_transformation_3 CGAL_Aff_transformation;
 typedef CGAL::Polyhedron_3<CGAL_Kernel3> CGAL_Polyhedron;
 
 typedef CGAL::Point_3<CGAL_Kernel3> CGAL_Point_3;
+typedef CGAL::Triangle_3<CGAL_Kernel3> CGAL_Triangle_3;
 typedef CGAL::Iso_cuboid_3<CGAL_Kernel3> CGAL_Iso_cuboid_3;
 typedef std::vector<CGAL_Point_3> CGAL_Polygon_3;
 

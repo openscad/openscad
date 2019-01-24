@@ -33,7 +33,6 @@
 #include "builtin.h"
 #include "printutils.h"
 #include <cstdint>
-#include <sstream>
 
 class ControlModule : public AbstractModule
 {
@@ -79,7 +78,7 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 			RangeType range = it_values->toRange();
 			uint32_t steps = range.numValues();
 			if (steps >= 10000) {
-				PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu).", steps);
+				PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu), %s", steps % inst.location().toRelativeString(ctx->documentPath()));
 			} else {
 				for (RangeType::iterator it = range.begin();it != range.end();it++) {
 					c.set_variable(it_name, ValuePtr(*it));
@@ -93,6 +92,12 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 				for_eval(node, inst, l+1, &c, evalctx);
 			}
 		}
+                else if (it_values->type() == Value::ValueType::STRING) {
+                        utf8_split(it_values->toString(), [&](ValuePtr v) {
+                            c.set_variable(it_name, v);
+                            for_eval(node, inst, l+1, &c, evalctx);
+                        });
+                }
 		else if (it_values->type() != Value::ValueType::UNDEFINED) {
 			c.set_variable(it_name, it_values);
 			for_eval(node, inst, l+1, &c, evalctx);
@@ -261,9 +266,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 
 	case Type::ECHO: {
 		node = new GroupNode(inst);
-		std::stringstream msg;
-		msg << "ECHO: " << *evalctx;
-		PRINTB("%s", msg.str());
+		PRINTB("%s", STR("ECHO: " << *evalctx));
 	}
 		break;
 
@@ -271,7 +274,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 		node = new GroupNode(inst);
 
 		Context c(evalctx);
-		evaluate_assert(c, evalctx, inst->location());
+		evaluate_assert(c, evalctx);
 		inst->scope.apply(c);
 		node->children = inst->instantiateChildren(&c);
 	}
@@ -339,7 +342,7 @@ void register_builtin_control()
 	Builtins::init("child", new ControlModule(ControlModule::Type::CHILD));
 	Builtins::init("children", new ControlModule(ControlModule::Type::CHILDREN));
 	Builtins::init("echo", new ControlModule(ControlModule::Type::ECHO));
-	Builtins::init("assert", new ControlModule(ControlModule::Type::ASSERT, Feature::ExperimentalAssertExpression));
+	Builtins::init("assert", new ControlModule(ControlModule::Type::ASSERT));
 	Builtins::init("assign", new ControlModule(ControlModule::Type::ASSIGN));
 	Builtins::init("for", new ControlModule(ControlModule::Type::FOR));
 	Builtins::init("let", new ControlModule(ControlModule::Type::LET));

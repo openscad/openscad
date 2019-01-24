@@ -52,9 +52,8 @@ template <class Key, class T>
 class Cache
 {
 	struct Node {
-		inline Node() : keyPtr(nullptr) {}
-		inline Node(T *data, int cost)
-			: keyPtr(nullptr), t(data), c(cost), p(nullptr), n(nullptr) {}
+		inline Node() : keyPtr(nullptr), t(nullptr), c(0), p(nullptr), n(nullptr) {}
+		inline Node(T *data, int cost) : keyPtr(nullptr), t(data), c(cost), p(nullptr), n(nullptr) {}
 		const Key *keyPtr; T *t; int c; Node *p,*n;
 	};
 	typedef typename std::unordered_map<Key, Node> map_type;

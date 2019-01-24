@@ -17,8 +17,9 @@
 #include <QMutex>
 #include <QTime>
 #include <QIODevice>
+#include "input/InputDriver.h"
 
-class MainWindow : public QMainWindow, public Ui::MainWindow
+class MainWindow : public QMainWindow, public Ui::MainWindow, public InputEventHandler
 {
 	Q_OBJECT
 
@@ -60,18 +61,18 @@ public:
 	QString last_compiled_doc;
 
 	QAction *actionRecentFile[UIUtils::maxRecentFiles];
-		QMap<QString, QString> knownFileExtensions;
+	QMap<QString, QString> knownFileExtensions;
 
-		QLabel *versionLabel;
-		QWidget *editorDockTitleWidget;
-		QWidget *consoleDockTitleWidget;
-		QWidget *parameterDockTitleWidget;
+	QLabel *versionLabel;
+	QWidget *editorDockTitleWidget;
+	QWidget *consoleDockTitleWidget;
+	QWidget *parameterDockTitleWidget;
 
 	QString editortype;	
 	bool useScintilla;
 
-		int compileErrors;
-		int compileWarnings;
+	int compileErrors;
+	int compileWarnings;
 
 	MainWindow(const QString &filename);
 	~MainWindow();
@@ -85,9 +86,9 @@ private slots:
 	void updatedAnimSteps();
 	void updatedAnimDump(bool checked);
 	void updateTVal();
-		void updateMdiMode(bool mdi);
-		void updateUndockMode(bool undockMode);
-		void updateReorderMode(bool reorderMode);
+	void updateMdiMode(bool mdi);
+	void updateUndockMode(bool undockMode);
+	void updateReorderMode(bool reorderMode);
 	void setFileName(const QString &filename);
 	void setFont(const QString &family, uint size);
 	void setColorScheme(const QString &cs);
@@ -97,18 +98,18 @@ private slots:
 	void updateActionUndoState();
 
 private:
-		void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
-		void handleFileDrop(const QString &filename);
+	void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
+	void handleFileDrop(const QString &filename);
 	void refreshDocument();
 	void updateCamera(const class FileContext &ctx);
 	void updateTemporalVariables();
 	bool fileChangedOnDisk();
 	void compileTopLevelDocument(bool rebuildParameterWidget);
-		void updateCompileResult();
+	void updateCompileResult();
 	void compile(bool reload, bool forcedone = false, bool rebuildParameterWidget=true);
-	void compileCSG(bool procevents);
+	void compileCSG();
 	bool maybeSave();
-		void saveError(const QIODevice &file, const std::string &msg);
+	void saveError(const QIODevice &file, const std::string &msg);
 	bool checkEditorModified();
 	QString dumpCSGTree(AbstractNode *root);
 	static void consoleOutput(const std::string &msg, void *userdata);
@@ -117,11 +118,11 @@ private:
 	void updateWindowSettings(bool console, bool editor, bool customizer, bool toolbar);
 	void saveBackup();
 	void writeBackup(class QFile *file);
-	QString get2dExportFilename(QString format, QString extension);
 	void show_examples();
 	void setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel);
-		void addKeyboardShortCut(const QList<QAction *> &actions);
-		void updateStatusBar(class ProgressWidget *progressWidget);
+	void addKeyboardShortCut(const QList<QAction *> &actions);
+	void updateStatusBar(class ProgressWidget *progressWidget);
+	void exceptionCleanup();
 
 	EditorInterface *editor;
 
@@ -140,7 +141,7 @@ private slots:
 	void actionSaveAs();
 	void actionReload();
 	void actionShowLibraryFolder();
-		void convertTabsToSpaces();
+	void convertTabsToSpaces();
 
 	void instantiateRoot();
 	void compileDone(bool didchange);
@@ -148,8 +149,9 @@ private slots:
 	void changeParameterWidget();
 
 private slots:
-	void pasteViewportTranslation();
-	void pasteViewportRotation();
+	void copyViewportTranslation();
+	void copyViewportRotation();
+	void copyViewportDistance();
 	void preferences();
 	void hideToolbars();
 	void hideEditor();
@@ -172,6 +174,7 @@ private slots:
 	// Mac OSX FindBuffer support
 	void findBufferChanged();
 	void updateFindBuffer(QString);
+	bool event(QEvent* event);
 protected:
 	bool eventFilter(QObject* obj, QEvent *event) override;
 
@@ -179,6 +182,9 @@ private slots:
 	void actionRenderPreview(bool rebuildParameterWidget=true);
 	void csgRender();
 	void csgReloadRender();
+	void action3DPrint();
+	void sendToOctoPrint();
+	void sendToPrintService();
 #ifdef ENABLE_CGAL
 	void actionRender();
 	void actionRenderDone(shared_ptr<const class Geometry>);
@@ -188,8 +194,10 @@ private slots:
 	void actionDisplayAST();
 	void actionDisplayCSGTree();
 	void actionDisplayCSGProducts();
+	bool canExport(unsigned int dim);
 	void actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim);
 	void actionExportSTL();
+	void actionExport3MF();
 	void actionExportOFF();
 	void actionExportAMF();
 	void actionExportDXF();
@@ -205,17 +213,29 @@ public:
 	void clearCurrentOutput();
   bool isEmpty();
 
+	void onAxisChanged(InputEventAxisChanged *event) override;
+	void onButtonChanged(InputEventButtonChanged *event) override;
+
+	void onTranslateEvent(InputEventTranslate *event) override;
+	void onRotateEvent(InputEventRotate *event) override;
+	void onRotate2Event(InputEventRotate2 *event) override;
+	void onActionEvent(InputEventAction *event) override;
+	void onZoomEvent(InputEventZoom *event) override;
+
+	QList<double> getTranslation() const;
+	QList<double> getRotation() const;
+
 public slots:
 	void openFile(const QString &filename);
 	void actionReloadRenderPreview();
-		void on_editorDock_visibilityChanged(bool);
-		void on_consoleDock_visibilityChanged(bool);
-		void on_parameterDock_visibilityChanged(bool);
-		void on_toolButtonCompileResultClose_clicked();
-		void editorTopLevelChanged(bool);
-		void consoleTopLevelChanged(bool);
-		void parameterTopLevelChanged(bool);
-		void processEvents();
+	void on_editorDock_visibilityChanged(bool);
+	void on_consoleDock_visibilityChanged(bool);
+	void on_parameterDock_visibilityChanged(bool);
+	void on_toolButtonCompileResultClose_clicked();
+	void editorTopLevelChanged(bool);
+	void consoleTopLevelChanged(bool);
+	void parameterTopLevelChanged(bool);
+	void processEvents();
 
 #ifdef ENABLE_OPENCSG
 	void viewModePreview();
@@ -240,6 +260,7 @@ public slots:
 	void viewCenter();
 	void viewPerspective();
 	void viewOrthogonal();
+	void viewTogglePerspective();
 	void viewResetView();
 	void viewAll();
 	void animateUpdateDocChanged();
@@ -259,6 +280,7 @@ public slots:
 	void setContentsChanged();
 
 private:
+	bool network_progress_func(const double permille);
 	static void report_func(const class AbstractNode*, void *vp, int mark);
 	static bool mdiMode;
 	static bool undockMode;
@@ -280,6 +302,9 @@ private:
 	bool contentschanged; // Set if the source code has changes since the last render (F6)
 	time_t includes_mtime;   // latest include mod time
 	time_t deps_mtime;	  // latest dependency mod time
+	std::unordered_map<std::string, QString> export_paths; // for each file type, where it was exported to last
+	void clearExportPaths(); // clear exports paths when main file is changed by open, new, etc.
+	QString exportPath(const char *suffix); // look up the last export path and generate one if not found
 
 signals:
 	void highlightError(int);

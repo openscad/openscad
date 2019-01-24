@@ -1,3 +1,27 @@
+/*
+ * The MIT License
+ *
+ * Copyright (c) 2016-2018, Torsten Paul <torsten.paul@gmx.de>,
+ *                          Marius Kintel <marius@kintel.net>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 #include <stdlib.h>
 
 #include <string>
@@ -11,8 +35,11 @@
 #include <boost/algorithm/string.hpp>
 
 #include "path.h"
+#include "degree_trig.h"
 
 namespace libsvg {
+
+using tokenizer = boost::tokenizer<boost::char_separator<char> >;
 
 const std::string path::name("path"); 
 
@@ -42,11 +69,6 @@ path::path()
 {
 }
 
-path::path(const path& orig) : shape(orig)
-{
-	data = orig.data;
-}
-
 path::~path()
 {
 }
@@ -54,9 +76,9 @@ path::~path()
 static double
 vector_angle(double ux, double uy, double vx, double vy)
 {
-	double angle = atan2(vy, vx) - atan2(uy, ux);
+	double angle = atan2_degrees(vy, vx) - atan2_degrees(uy, ux);
 	if (angle < 0) {
-		angle += 2 * M_PI;
+		angle += 360;
 	}
 	return angle;
 }
@@ -67,12 +89,12 @@ path::arc_to(path_t& path, double x1, double y1, double rx, double ry, double x2
 	// http://www.w3.org/TR/SVG/implnote.html#ArcImplementationNotes
 	
 	// (F.6.5.1))
-        double cos_rad = cos(M_PI * angle / 180.0);
-        double sin_rad = sin(M_PI * angle / 180.0);
-        double dx = (x1 - x2) / 2;
-        double dy = (y1 - y2) / 2;
-        double x1_ = cos_rad * dx + sin_rad * dy;
-        double y1_ = -sin_rad * dx + cos_rad * dy;
+	double cos_rad = cos_degrees(angle);
+	double sin_rad = sin_degrees(angle);
+	double dx = (x1 - x2) / 2;
+	double dy = (y1 - y2) / 2;
+	double x1_ = cos_rad * dx + sin_rad * dy;
+	double y1_ = -sin_rad * dx + cos_rad * dy;
 
 	double d = (x1_ * x1_) / (rx * rx) + (y1_ * y1_) / (ry * ry);
 	if (d > 1) {
@@ -99,23 +121,23 @@ path::arc_to(path_t& path, double x1, double y1, double rx, double ry, double x2
 	double cy = sin_rad * cx_ + cos_rad * cy_ + (y1 + y2) / 2.0;
 
 	// F.6.5.4
-        double ux = (x1_ - cx_) / rx;
-        double uy = (y1_ - cy_) / ry;
+	double ux = (x1_ - cx_) / rx;
+	double uy = (y1_ - cy_) / ry;
 	double vx = (-x1_ - cx_) / rx;
 	double vy = (-y1_ - cy_) / ry;
 	
 	double theta = vector_angle(1, 0, ux, uy);
 	double delta = vector_angle(ux, uy, vx, vy);
 	if (!sweep) {
-            delta -= 2 * M_PI;
+		delta -= 360;
 	}
 	
-	int steps = std::fabs(delta) * 10.0 / M_PI + 4;
+	int steps = std::fabs(delta) * 10.0 / 180 + 4;
 	for (int a = 0;a <= steps;a++) {
-	        double phi = theta + delta * a / steps;
+		double phi = theta + delta * a / steps;
 
-		double xx = cos_rad * cos(phi) * rx - sin_rad * sin(phi) * ry;
-		double yy = sin_rad * cos(phi) * rx + cos_rad * sin(phi) * ry;
+		double xx = cos_rad * cos_degrees(phi) * rx - sin_rad * sin_degrees(phi) * ry;
+		double yy = sin_rad * cos_degrees(phi) * rx + cos_rad * sin_degrees(phi) * ry;
 		
 		path.push_back(Eigen::Vector3d(xx + cx, yy + cy, 0));
 	}
@@ -145,17 +167,54 @@ path::curve_to(path_t& path, double x, double y, double cx1, double cy1, double 
 	}
 }
 
+/**
+ * Workaround for parsing ",1-23.16.88" where the number split
+ * happens implicitly at the dot.
+ */
+static std::vector<std::string> split_dots(const std::string& str)
+{
+	std::vector<std::string> result;
+	const size_t n = std::count(str.begin(), str.end(), '.');
+	if (n < 2) {
+		result.push_back(str);
+		return result;
+	}
+
+	boost::char_separator<char> sep("", ".");
+	tokenizer tokens(str, sep);
+
+	std::string text;
+	bool dot_seen = false;
+	for (const auto& token : tokens) {
+		text += token;
+		if (token == ".") {
+			dot_seen = true;
+			continue;
+		} else if (dot_seen == true) {
+			result.push_back(text);
+			text.clear();
+		}
+	}
+
+	return result;
+}
+
 void
 path::set_attrs(attr_map_t& attrs)
 {
 	std::string commands = "-zmlcqahvstZMLCQAHVST";
-	
+
 	shape::set_attrs(attrs);
 	this->data = attrs["d"];
 
-	typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
 	boost::char_separator<char> sep(" ,", commands.c_str());
 	tokenizer tokens(this->data, sep);
+
+	std::vector<std::string> path_tokens;
+	for (const auto& token : tokens) {
+		const std::vector<std::string> parts = split_dots(token);
+		path_tokens.insert(path_tokens.end(), parts.begin(), parts.end());
+	}
 
 	double x = 0;
 	double y = 0;
@@ -179,8 +238,7 @@ path::set_attrs(attr_map_t& attrs)
 	bool path_closed = false;
 	std::string exp;
 	path_list.push_back(path_t());
-	for (tokenizer::iterator it = tokens.begin();it != tokens.end();++it) {
-		std::string v = (*it);
+	for (const auto& v : path_tokens) {
 
 		double p = 0;
 		if ((v.length() == 1) && (commands.find(v) != std::string::npos)) {
@@ -460,7 +518,7 @@ path::set_attrs(attr_map_t& attrs)
 }
 
 bool
-path::is_open_path(path_t& path)
+path::is_open_path(path_t& path) const
 {
 	const Eigen::Vector3d p1 = path[0];
 	const Eigen::Vector3d p2 = path.back();
@@ -468,22 +526,21 @@ path::is_open_path(path_t& path)
 	return distance > 0.1;
 }
 
-void
-path::dump()
+const std::string
+path::dump() const
 {
-	std::cout << get_name()
+	std::stringstream s;
+	s << get_name()
 		<< ": x = " << this->x
 		<< ", y = " << this->y;
-	for (path_list_t::iterator it = path_list.begin();it != path_list.end();it++) {
-		path_t& p = *it;
-		std::cout << "[";
-		for (path_t::iterator it2 = p.begin();it2 != p.end();it2++) {
-			Eigen::Vector3d& v = *it2;
-			std::cout << " (" << v.x() << ", " << v.y() << ")";
+	for (const auto& p : path_list) {
+		s << "[";
+		for (const auto& v : p) {
+			s << " (" << v.x() << ", " << v.y() << ")";
 		}
-		std::cout << "]";
+		s << "]";
 	}
-	std::cout << std::endl;
+	return s.str();
 }
 
 }

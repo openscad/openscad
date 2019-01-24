@@ -5,6 +5,8 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/circular_buffer.hpp>
 #include <boost/filesystem.hpp>
+#include "exceptions.h"
+
 namespace fs = boost::filesystem;
 
 std::list<std::string> print_messages_stack;
@@ -12,6 +14,9 @@ OutputHandlerFunc *outputhandler = nullptr;
 void *outputhandler_data = nullptr;
 std::string OpenSCAD::debug("");
 bool OpenSCAD::quiet = false;
+bool OpenSCAD::hardwarnings = false;
+bool OpenSCAD::parameterCheck = true;
+bool OpenSCAD::rangeCheck = false;
 
 boost::circular_buffer<std::string> lastmessages(5);
 
@@ -54,7 +59,7 @@ void PRINT_NOCACHE(const std::string &msg)
 {
 	if (msg.empty()) return;
 
-	if (boost::starts_with(msg, "WARNING") || boost::starts_with(msg, "ERROR")) {
+	if (boost::starts_with(msg, "WARNING") || boost::starts_with(msg, "ERROR") || boost::starts_with(msg, "TRACE")) {
 		size_t i;
 		for (i=0;i<lastmessages.size();i++) {
 			if (lastmessages[i] != msg) break;
@@ -69,6 +74,9 @@ void PRINT_NOCACHE(const std::string &msg)
 		} else {
 			outputhandler(msg, outputhandler_data);
 		}
+	}
+	if(OpenSCAD::hardwarnings && !std::current_exception() && boost::starts_with(msg, "WARNING")){
+		throw HardWarningException(msg);
 	}
 }
 
@@ -99,11 +107,9 @@ std::string two_digit_exp_format( std::string doublestr )
 	return doublestr;
 }
 
-std::string two_digit_exp_format( double x )
+std::string two_digit_exp_format(double x)
 {
-	std::stringstream s;
-	s << x;
-	return two_digit_exp_format( s.str() );
+	return two_digit_exp_format(std::to_string(x));
 }
 
 #include <set>

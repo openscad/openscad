@@ -23,7 +23,7 @@ public:
         auto result = this->cache.find(node.index()); 
         return result != this->cache.end() && 
             result->second.second >= 0L && 
-            this->rootString.size() >= result->second.second;
+            (long)this->rootString.size() >= result->second.second;
     }
 
     std::string operator[](const AbstractNode &node) const {

@@ -86,7 +86,7 @@ def execute_and_redirect(cmd, params, outfile):
     retval = -1
     try:
         proc = subprocess.Popen([cmd] + params, stdout=outfile, stderr=subprocess.STDOUT)
-        out = proc.communicate()[0]
+        out = proc.communicate()[0].decode('utf-8')
         retval = proc.wait()
     except:
         print("Error running subprocess: ", sys.exc_info()[1], file=sys.stderr)
@@ -118,6 +118,14 @@ def normalize_string(s):
     def pathrep(match):
         return match.groups()[0] + match.groups()[2]
     s = re.sub('(file = ")([^"/]*/)*([^"]*")', pathrep, s)
+
+    """C++ ... does not explicitly specify the representation ...
+    of nonfinite values, leaving it implementation-defined.
+    So without some specific action, input and output of
+    nonfinite values is not portable. 
+    https://www.boost.org/doc/libs/1_51_0/libs/math/doc/sf_and_dist/html/math_toolkit/utils/fp_facets/intro.html"""
+    s = re.sub('=-nan, ','=nan, ', s)
+    s = re.sub('=-nan\)','=nan)', s)
 
     return s
 
@@ -155,7 +163,7 @@ def compare_png(resultfilename):
     #args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-composite", "-threshold", "10%", "-blur", "2", "-threshold", "30%", "-format", "%[fx:w*h*mean]", "info:"]
     args = [expectedfilename, resultfilename, "-alpha", "On", "-compose", "difference", "-composite", "-threshold", "10%", "-morphology", "Erode", "Square", "-format", "%[fx:w*h*mean]", "info:"]
 
-    # for systems with older imagemagick that doesnt support '-morphology'
+    # for systems with older imagemagick that doesn't support '-morphology'
     # http://www.imagemagick.org/Usage/morphology/#alturnative
     if options.comparator == 'old':
       args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-composite", "-threshold", "10%", "-gaussian-blur","3x65535", "-threshold", "99.99%", "-format", "%[fx:w*h*mean]", "info:"]
@@ -209,6 +217,18 @@ def compare_with_expected(resultfilename):
         else: return compare_default(resultfilename)
     return True
 
+#
+#  Extract the content of a 3MF file (which is a ZIP file having one main XML file
+#  and some additional meta data files) and replace the original file with just
+#  the XML content for easier comparison by the test framework.
+#
+def post_process_3mf(filename):
+    print('post processing 3MF file (extracting XML data from ZIP): ', filename)
+    xml_content = subprocess.check_output(["unzip", "-p", filename, "3D/3dmodel.model"])
+    xml_content = re.sub('UUID="[^"]*"', 'UUID="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXX"', xml_content.decode('utf-8'))
+    with open(filename, 'wb') as xml_file:
+        xml_file.write(xml_content.encode('utf-8'))
+
 def run_test(testname, cmd, args):
     cmdname = os.path.split(options.cmd)[1]
 
@@ -232,8 +252,9 @@ def run_test(testname, cmd, args):
 
     try:
         cmdline = [cmd] + args + [outputname]
+        sys.stderr.flush()
         print('run_test() cmdline:',cmdline)
-        fontdir =  os.path.join(os.path.dirname(cmd), "testdata")
+        fontdir =  os.path.join(os.path.dirname(__file__), "..", "testdata/ttf");
         fontenv = os.environ.copy()
         fontenv["OPENSCAD_FONT_PATH"] = fontdir
         print('using font directory:', fontdir)
@@ -341,4 +362,5 @@ if __name__ == '__main__':
 
     resultfile = run_test(options.testname, options.cmd, args[1:])
     if not resultfile: exit(1)
+    if options.suffix == "3mf": post_process_3mf(resultfile)
     if not verification or not compare_with_expected(resultfile): exit(1)

@@ -1,100 +1,74 @@
 #include "Camera.h"
 #include "rendersettings.h"
 #include "printutils.h"
+#include "degree_trig.h"
 
-Camera::Camera(CameraType camtype) :
-	type(camtype), projection(ProjectionType::PERSPECTIVE), fov(22.5), viewall(false)
+static const double DEFAULT_DISTANCE = 140.0;
+
+Camera::Camera() :
+	projection(ProjectionType::PERSPECTIVE), fov(22.5), viewall(false), autocenter(false)
 {
 	PRINTD("Camera()");
 
 	// gimbal cam values
-	object_trans << 0,0,0;
-	object_rot << 35,0,25;
-	viewer_distance = 500;
-	
-	// vector cam values
-	center << 0,0,0;
-	Eigen::Vector3d cameradir(1, 1, -0.5);
-	eye = center - 500 * cameradir;
-	
+	resetView();
+
 	pixel_width = RenderSettings::inst()->img_width;
 	pixel_height = RenderSettings::inst()->img_height;
-	autocenter = false;
 }
 
 void Camera::setup(std::vector<double> params)
 {
 	if (params.size() == 7) {
-		type = CameraType::GIMBAL;
-		object_trans << params[0], params[1], params[2];
-		object_rot << params[3], params[4], params[5];
+		setVpt(params[0], params[1], params[2]);
+		setVpr(params[3], params[4], params[5]);
 		viewer_distance = params[6];
 	} else if (params.size() == 6) {
-		type = CameraType::VECTOR;
-		eye << params[0], params[1], params[2];
-		center << params[3], params[4], params[5];
+		const Eigen::Vector3d eye(params[0], params[1], params[2]);
+		const Eigen::Vector3d center(params[3], params[4], params[5]);
+		object_trans = -center;
+		auto dir = center - eye;
+		viewer_distance = dir.norm();
+		object_rot.z() = (!dir[1] && !dir[0]) ? dir[2] < 0 ? 0
+		                                                   : 180
+		                                      : -atan2_degrees(dir[1], dir[0]) + 90;
+		object_rot.y() = 0;
+		Eigen::Vector3d projection(dir[0], dir[1], 0);
+		object_rot.x() = -atan2_degrees(dir[2], projection.norm());
 	} else {
 		assert("Gimbal cam needs 7 numbers, Vector camera needs 6");
 	}
 }
-
-void Camera::gimbalDefaultTranslate()
-{	// match the GUI viewport numbers (historical reasons)
-	object_trans.x() *= -1;
-	object_trans.y() *= -1;
-	object_trans.z() *= -1;
-	object_rot.x() = fmodf(360 - object_rot.x() + 90, 360);
-	object_rot.y() = fmodf(360 - object_rot.y(), 360);
-	object_rot.z() = fmodf(360 - object_rot.z(), 360);
-}
-
 /*!
 	Moves camera so that the given bbox is fully visible.
 */
 void Camera::viewAll(const BoundingBox &bbox)
 {
-	if (this->type == CameraType::NONE) {
-		this->type = CameraType::VECTOR;
-		this->center = bbox.center();
-		this->eye = this->center - Vector3d(1,1,-0.5);
-	}
+	if (bbox.isEmpty()) {
+		setVpt(0, 0, 0);
+		setVpd(DEFAULT_DISTANCE);
+	} else {
 
-	if (this->autocenter) {
-		// autocenter = point camera at the center of the bounding box.
-        if (this->type == CameraType::GIMBAL) {
-            this->object_trans = -bbox.center(); // for Gimbal cam
-        }
-        else if (this->type == CameraType::VECTOR) {
-            Vector3d dir = this->center - this->eye;
-            this->center = bbox.center(); // for Vector cam
-            this->eye = this->center - dir;
-        }
-	}
+		if (this->autocenter) {
+			// autocenter = point camera at the center of the bounding box.
+			this->object_trans = -bbox.center();
+		}
 
-	double bboxRadius = bbox.diagonal().norm()/2;
-	double radius = (bbox.center()-this->center).norm() + bboxRadius;
-	double distance = radius / sin(this->fov/2*M_PI/180);
-	switch (this->type) {
-	case CameraType::GIMBAL:
-		this->viewer_distance = distance;
-		break;
-	case CameraType::VECTOR: {
-		Vector3d cameradir = (this->center - this->eye).normalized();
-		this->eye = this->center - distance*cameradir;
-		break;
+		double bboxRadius = bbox.diagonal().norm() / 2;
+		double radius = (bbox.center() + object_trans).norm() + bboxRadius;
+		this->viewer_distance = radius / sin_degrees(this->fov / 2);
+		PRINTDB("modified obj trans x y z %f %f %f",object_trans.x() % object_trans.y() % object_trans.z());
+		PRINTDB("modified obj rot   x y z %f %f %f",object_rot.x() % object_rot.y() % object_rot.z());
 	}
-	default:
-		assert(false && "Camera type not specified");
-	}
-	PRINTDB("modified center x y z %f %f %f",center.x() % center.y() % center.z());
-	PRINTDB("modified eye    x y z %f %f %f",eye.x() % eye.y() % eye.z());
-	PRINTDB("modified obj trans x y z %f %f %f",object_trans.x() % object_trans.y() % object_trans.z());
-	PRINTDB("modified obj rot   x y z %f %f %f",object_rot.x() % object_rot.y() % object_rot.z());
 }
 
-void Camera::zoom(int delta)
+void Camera::zoom(int zoom, bool relative)
 {
-	this->viewer_distance *= pow(0.9, delta / 120.0);
+    if (relative) {
+	this->viewer_distance *= pow(0.9, zoom / 120.0);
+    } else {
+        this->viewer_distance = zoom;
+    }
 }
 
 void Camera::setProjection(ProjectionType type)
@@ -104,22 +78,53 @@ void Camera::setProjection(ProjectionType type)
 
 void Camera::resetView()
 {
-	type = CameraType::GIMBAL;
-	object_rot << 35, 0, -25;
-	object_trans << 0, 0, 0;
-	viewer_distance = 140;
+	setVpr(55, 0, 25);  // set in user space units
+	setVpt(0, 0, 0);
+	setVpd(DEFAULT_DISTANCE);
 }
 
-double Camera::zoomValue()
+Eigen::Vector3d Camera::getVpt() const
+{
+	return -object_trans;
+}
+
+void Camera::setVpt(double x, double y, double z)
+{
+	object_trans << -x, -y, -z;
+}
+
+static double wrap(double angle)
+{
+	return fmodf(360 + angle, 360); // force angle to be 0-360
+}
+
+Eigen::Vector3d Camera::getVpr() const
+{
+	return Eigen::Vector3d(wrap(90 -object_rot.x()), wrap(-object_rot.y()), wrap(-object_rot.z()));
+}
+
+void Camera::setVpr(double x, double y, double z)
+{
+	object_rot << wrap(90 - x), wrap(-y), wrap(-z);
+}
+
+void Camera::setVpd(double d)
+{
+    viewer_distance = d;
+}
+
+double Camera::zoomValue() const
 {
 	return viewer_distance;
 }
 
-std::string Camera::statusText()
+std::string Camera::statusText() const
 {
+	const auto vpt = getVpt();
+	const auto vpr = getVpr();
 	boost::format fmt(_("Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], distance = %.2f"));
-	fmt % object_trans.x() % object_trans.y() % object_trans.z()
-		% object_rot.x() % object_rot.y() % object_rot.z()
+	fmt % vpt.x() % vpt.y() % vpt.z()
+		% vpr.x() % vpr.y() % vpr.z()
 		% viewer_distance;
 	return fmt.str();
 }

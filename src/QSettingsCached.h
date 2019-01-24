@@ -1,12 +1,13 @@
-#ifndef __openscad_qsettingscached_h__
-#define __openscad_qsettingscached_h__
+#pragma once
+
 #include <QSettings>
-#include <QDebug>
 #include <map>
 #include <iostream>
 #include <memory>
 #include <mutex>
 #include <thread>
+
+#include "printutils.h"
 
 class QSettingsCached {
     public:
@@ -21,6 +22,7 @@ class QSettingsCached {
         }
 
         inline void setValue(const QString &key, const QVariant &value) {
+            PRINTDB("QSettings::setValue(): %s = '%s'", key.toStdString() % value.toString().toStdString());
             qsettingsPointer->setValue(key,value); // It is safe to access qsettings from Multiple sources. it is thread safe
             // Disabling forced sync to persisted storage on write. Will rely on automatic behavior of QSettings
             // qsettingsPointer->sync(); // force write to file system on each modification of open scad settings
@@ -50,5 +52,3 @@ class QSettingsCached {
         static std::mutex ctor_mutex;
 
 };
-
-#endif

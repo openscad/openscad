@@ -3,27 +3,29 @@
 
 ParameterExtractor::ParameterExtractor()
 {
-  resetPara = false;
+
 }
 
 ParameterExtractor::~ParameterExtractor()
 {
 }
 
-void ParameterExtractor::applyParameters(FileModule *fileModule)
+void ParameterExtractor::applyParameters(FileModule *fileModule, entry_map_t& entries)
 {
   if (!fileModule) return;
 
   for (auto &assignment : fileModule->scope.assignments) {
     auto entry = entries.find(assignment.name);
     if (entry != entries.end()) {
-      entry->second->applyParameter(assignment);
-      entry->second->set = false;
+      if (entry->second->groupName != "Hidden") {
+        entry->second->applyParameter(assignment);
+        entry->second->set = false;
+      }
     }
   }
 }
 
-void ParameterExtractor::setParameters(const FileModule* module, bool rebuildParameterWidget)
+void ParameterExtractor::setParameters(const FileModule* module,entry_map_t& entries,std::vector<std::string>& ParameterPos, bool &rebuildParameterWidget)
 {
   if (!module) return;
 
@@ -37,22 +39,22 @@ void ParameterExtractor::setParameters(const FileModule* module, bool rebuildPar
     const ValuePtr defaultValue = assignment.expr->evaluate(&ctx);
     if (defaultValue->type() == Value::ValueType::UNDEFINED) continue;
 
-    ParameterObject *entryObject = new ParameterObject();
-    entryObject->setAssignment(&ctx, &assignment, defaultValue);
+    ParameterObject *entryObject = new ParameterObject(&ctx, assignment, defaultValue);
 
     //check whether object exist or not previously
-    if (entries.find(assignment.name) == entries.end() || resetPara) {
-      //if object doen't exist
-      //or we have reset Parameters then add new entry
+    if (entries.find(assignment.name) == entries.end()) {
+      //if object doen't exist, add new entry
       entries[assignment.name] = entryObject;
       rebuildParameterWidget = true;
     } else {
       //if entry object is already exist we check if its modified
       //or not
       if (*entryObject == *entries[assignment.name]) {
+        delete entryObject;
         //if entry is not modified then we don't add new entry
         entryObject = entries[assignment.name];
       } else {
+        delete entries[assignment.name];
         //if entry is modified then we add new entry
         entries[assignment.name] = entryObject;
       }
@@ -60,10 +62,4 @@ void ParameterExtractor::setParameters(const FileModule* module, bool rebuildPar
     entryObject->set = true;
     ParameterPos.push_back(assignment.name);
   }
-  if(rebuildParameterWidget){
-    connectWidget();
-  }else{
-    updateWidget();
-  }
-  this->resetPara = false;
 }

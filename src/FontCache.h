@@ -29,7 +29,7 @@
 #include <string>
 #include <iostream>
 
-#include <time.h>
+#include <ctime>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -41,6 +41,8 @@
 
 #include <hb.h>
 #include <hb-ft.h>
+
+#include "version_helper.h"
 
 class FontInfo {
 public:
@@ -86,6 +88,7 @@ public:
     void register_font_file(const std::string &path);
     void clear();
     FontInfoList *list_fonts() const;
+    const std::string get_freetype_version() const;
     
     static FontCache *instance();
 
@@ -93,7 +96,7 @@ public:
     static void registerProgressHandler(InitHandlerFunc *handler, void *userdata = nullptr);
 
 private:
-    typedef std::pair<FT_Face, time_t> cache_entry_t;
+    typedef std::pair<FT_Face, std::time_t> cache_entry_t;
     typedef std::map<std::string, cache_entry_t> cache_t;
 
     static FontCache *self;

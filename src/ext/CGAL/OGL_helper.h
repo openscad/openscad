@@ -616,8 +616,9 @@ namespace OGL {
 	os << "  "<<*e<<", mark="<<e->mark()<<std::endl;
       os << "Facets:" << std::endl;
       Halffacet_iterator f;
-      for(f=halffacets_.begin();f!=halffacets_.end();++f)
+      for(f=halffacets_.begin();f!=halffacets_.end();++f) {
 	f->debug(); os << std::endl;
+      }
       os << std::endl;
     }
 

@@ -52,7 +52,7 @@ static int objectid;
 static void append_amf(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 {
 	if (!root_N.p3->is_simple()) {
-		PRINT("WARNING: Export failed, the object isn't a valid 2-manifold.");
+		PRINT("EXPORT-WARNING: Export failed, the object isn't a valid 2-manifold.");
 		return;
 	}
 	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
@@ -86,15 +86,9 @@ static void append_amf(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 				double x3 = CGAL::to_double(v3.point().x());
 				double y3 = CGAL::to_double(v3.point().y());
 				double z3 = CGAL::to_double(v3.point().z());
-				std::stringstream stream;
-				stream << x1 << " " << y1 << " " << z1;
-				std::string vs1 = stream.str();
-				stream.str("");
-				stream << x2 << " " << y2 << " " << z2;
-				std::string vs2 = stream.str();
-				stream.str("");
-				stream << x3 << " " << y3 << " " << z3;
-				std::string vs3 = stream.str();
+				std::string vs1{STR(x1 << " " << y1 << " " << z1)};
+				std::string vs2{STR(x2 << " " << y2 << " " << z2)};
+				std::string vs3{STR(x3 << " " << y3 << " " << z3)};
 				if (std::find(vertices.begin(), vertices.end(), vs1) == vertices.end())
 					vertices.push_back(vs1);
 				if (std::find(vertices.begin(), vertices.end(), vs2) == vertices.end())
@@ -148,8 +142,8 @@ static void append_amf(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 		output << "   </volume>\r\n";
 		output << "  </mesh>\r\n"
 					 << " </object>\r\n";
-	} catch (CGAL::Assertion_exception e) {
-		PRINTB("ERROR: CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s", e.what());
+	} catch (CGAL::Assertion_exception& e) {
+		PRINTB("EXPORT-ERROR: CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s", e.what());
 	}
 	CGAL::set_error_behaviour(old_behaviour);
 }

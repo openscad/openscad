@@ -10,25 +10,26 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/format.hpp>
 
-using namespace std;
-using namespace boost;
+#include "printutils.h"
 
 double gl_version()
 {
-	string tmp((const char*)glGetString( GL_VERSION ));
-	vector<string> strs;
-	split(strs, tmp, is_any_of("."));
-	stringstream out;
-	if ( strs.size() >= 2)
+	std::string tmp((const char*)glGetString( GL_VERSION ));
+	std::vector<std::string> strs;
+	boost::split(strs, tmp, boost::is_any_of("."));
+	std::stringstream out;
+	if (strs.size() >= 2) {
 		out << strs[0] << "." << strs[1];
-	else
+	}
+	else {
 		out << "0.0";
+	}
 	double d;
 	out >> d;
 	return d;
 }
 
-string glew_extensions_dump()
+std::string glew_extensions_dump()
 {
 	std::string tmp;
 	if ( gl_version() >= 3.0 ) {
@@ -41,17 +42,18 @@ string glew_extensions_dump()
 	} else {
  	 tmp = (const char *) glGetString(GL_EXTENSIONS);
 	}
-	vector<string> extensions;
-	split( extensions, tmp, is_any_of(" "));
-	sort( extensions.begin(), extensions.end() );
-	stringstream out;
+	std::vector<std::string> extensions;
+	boost::split(extensions, tmp, boost::is_any_of(" "));
+	std::sort(extensions.begin(), extensions.end());
+	std::ostringstream out;
 	out << "GL Extensions:";
-	for ( unsigned int i=0;i<extensions.size();i++ )
+	for (unsigned int i=0;i<extensions.size();i++) {
 		out << extensions[i] << "\n";
+	}
 	return out.str();
 }
 
-string glew_dump()
+std::string glew_dump()
 {
   GLint rbits, gbits, bbits, abits, dbits, sbits;
   glGetIntegerv(GL_RED_BITS, &rbits);
@@ -61,7 +63,7 @@ string glew_dump()
   glGetIntegerv(GL_DEPTH_BITS, &dbits);
   glGetIntegerv(GL_STENCIL_BITS, &sbits);
 
-  stringstream out;
+	std::ostringstream out;
   out << "GLEW version: " << glewGetString(GLEW_VERSION)
       << "\nOpenGL Version: " << (const char *)glGetString(GL_VERSION)
       << "\nGL Renderer: " << (const char *)glGetString(GL_RENDERER)
@@ -82,9 +84,7 @@ bool report_glerror(const char * function)
 {
   GLenum tGLErr = glGetError();
   if (tGLErr != GL_NO_ERROR) {
-    std::ostringstream hexErr;
-    hexErr << hex << tGLErr;
-    cerr << "OpenGL error 0x" << hexErr.str() << ": " << gluErrorString(tGLErr) << " after " << function << endl;
+		std::cerr << "OpenGL error 0x" << STR(std::hex << tGLErr) << ": " << gluErrorString(tGLErr) << " after " << function << std::endl;
     return true;
   }
   return false;

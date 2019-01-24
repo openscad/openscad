@@ -1,43 +1,30 @@
 #include "parametercheckbox.h"
 
-ParameterCheckBox::ParameterCheckBox(ParameterObject *parameterobject, int showDescription)
+ParameterCheckBox::ParameterCheckBox(QWidget *parent, ParameterObject *parameterobject, DescLoD descriptionLoD)
+	: ParameterVirtualWidget(parent, parameterobject, descriptionLoD)
 {
-	object = parameterobject;
-	setName(QString::fromStdString(object->name));
 	setValue();
 	connect(checkBox, SIGNAL(clicked()), this, SLOT(onChanged()));
 
-	if (showDescription == 0){
-		setDescription(object->description);
-	}else if(showDescription == 1){
-		addInline(object->description);
-		checkBox->setStyleSheet(""); //small checkbox, when description not shown
-	}else{
-		checkBox->setToolTip(object->description);
-		checkBox->setStyleSheet(""); //small checkbox, when description not shown
+	if (descriptionLoD == DescLoD::ShowDetails){
+		//large checkbox, when we have the space
+		checkBox->setStyleSheet("QCheckBox::indicator {\nwidth: 20px;\nheight: 20px;\n}");
 	}
 }
 
 void ParameterCheckBox::onChanged()
 {
-	if(!suppressUpdate){
-		object->focus = true;
+	if(!this->suppressUpdate){
 		object->value = ValuePtr(checkBox->isChecked());
 		emit changed();
 	}
 }
 
-void ParameterCheckBox::setParameterFocus()
-{
-	this->checkBox->setFocus();
-	object->focus = false;
-}
-
 void ParameterCheckBox::setValue() {
-	suppressUpdate=true;
+	this->suppressUpdate=true;
 	this->stackedWidgetRight->setCurrentWidget(this->pageCheckBox);
 	this->pageCheckBox->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Expanding);
 	this->stackedWidgetBelow->hide();
 	this->checkBox->setChecked(object->value->toBool());
-	suppressUpdate=false;
+	this->suppressUpdate=false;
 }

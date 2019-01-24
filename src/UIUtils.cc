@@ -30,10 +30,10 @@
 #include <QFileDialog>
 #include <QDesktopServices>
 
-#include "qtgettext.h"
+#include "version.h"
 #include "UIUtils.h"
+#include "qtgettext.h"
 #include "PlatformUtils.h"
-#include "openscad.h"
 #include "QSettingsCached.h"
 
 
@@ -133,7 +133,7 @@ QFileInfoList UIUtils::exampleFiles(const QString &category)
 
 void UIUtils::openHomepageURL()
 {
-    QDesktopServices::openUrl(QUrl("http://openscad.org/"));
+    QDesktopServices::openUrl(QUrl("https://www.openscad.org/"));
 }
 
 static void openVersionedURL(QString url)
@@ -143,10 +143,14 @@ static void openVersionedURL(QString url)
 
 void UIUtils::openUserManualURL()
 {
-    openVersionedURL("http://www.openscad.org/documentation.html?version=%1");
+    openVersionedURL("https://www.openscad.org/documentation.html?version=%1");
 }
 
 void UIUtils::openCheatSheetURL()
 {
-    openVersionedURL("http://www.openscad.org/cheatsheet/index.html?version=%1");
+#ifdef OPENSCAD_SNAPSHOT
+    openVersionedURL("https://www.openscad.org/cheatsheet/snapshot.html?version=%1");
+#else
+    openVersionedURL("https://www.openscad.org/cheatsheet/index.html?version=%1");
+#endif
 }

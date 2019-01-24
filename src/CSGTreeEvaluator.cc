@@ -16,8 +16,6 @@
 #include <string>
 #include <map>
 #include <list>
-#include <sstream>
-#include <iostream>
 #include <assert.h>
 #include <cstddef>
 
@@ -161,9 +159,6 @@ shared_ptr<CSGNode> CSGTreeEvaluator::evaluateCSGNodeFromGeometry(
 	State &state, const shared_ptr<const Geometry> &geom,
 	const ModuleInstantiation *modinst, const AbstractNode &node)
 {
-	std::stringstream stream;
-	stream << node.name() << node.index();
-
 	// We cannot render Polygon2d directly, so we preprocess (tessellate) it here
 	auto g = geom;
 	if (!g->isEmpty()) {
@@ -176,7 +171,7 @@ shared_ptr<CSGNode> CSGTreeEvaluator::evaluateCSGNodeFromGeometry(
 			auto ps = dynamic_pointer_cast<const PolySet>(geom);
 			// Since is_convex() doesn't handle non-planar faces, we need to tessellate
 			// also in the indeterminate state so we cannot just use a boolean comparison. See #1061
-			bool convex = ps->convexValue();
+			bool convex{ps->convexValue()};
 			if (ps && !convex) {
 				assert(ps->getDimension() == 3);
 				auto ps_tri = new PolySet(3, ps->convexValue());
@@ -187,7 +182,7 @@ shared_ptr<CSGNode> CSGTreeEvaluator::evaluateCSGNodeFromGeometry(
 		}
 	}
 
-	shared_ptr<CSGNode> t(new CSGLeaf(g, state.matrix(), state.color(), stream.str()));
+	shared_ptr<CSGNode> t(new CSGLeaf(g, state.matrix(), state.color(), STR(node.name() << node.index())));
 	if (modinst->isHighlight()) t->setHighlight(true);
 	else if (modinst->isBackground()) t->setBackground(true);
 	return t;

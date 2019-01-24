@@ -13,6 +13,7 @@ public:
         ~Dock();
         void setConfigKey(const QString configKey);
         void setAction(QAction *action);
+	void disableSettingsUpdate();
 
 public slots:
         void setVisible(bool visible) override;
@@ -20,4 +21,5 @@ public slots:
 private:
         QString configKey;
         QAction *action;
+	bool updateSettings;
 };

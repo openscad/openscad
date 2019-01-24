@@ -5,9 +5,16 @@
 
 #import <Foundation/Foundation.h>
 
+#include "version.h"
+
 std::string PlatformUtils::pathSeparatorChar()
 {
 	return ":";
+}
+
+std::string PlatformUtils::userDocumentsPath()
+{
+	return documentsPath();
 }
 
 std::string PlatformUtils::documentsPath()
@@ -39,13 +46,26 @@ unsigned long PlatformUtils::stackLimit()
   return STACK_LIMIT_DEFAULT;
 }
 
-std::string PlatformUtils::sysinfo(bool extended)
+const std::string PlatformUtils::user_agent()
+{
+	std::string result;
+
+	result += "OpenSCAD/";
+	result += openscad_detailedversionnumber;
+	result += " (";
+	result += sysinfo(false);
+	result += ")";
+
+	return result;
+}
+
+const std::string PlatformUtils::sysinfo(bool extended)
 {
   std::string result;
   
   result += "Mac OS X ";
   result += [[[NSProcessInfo processInfo] operatingSystemVersionString] UTF8String];
-  
+
   int64_t physical_memory;
   int32_t numcpu;
   size_t length64 = sizeof(int64_t);

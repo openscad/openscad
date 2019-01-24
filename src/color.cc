@@ -260,15 +260,16 @@ AbstractNode *ColorModule::instantiate(const Context *ctx, const ModuleInstantia
 	AssignmentList args{Assignment("c"), Assignment("alpha")};
 
 	Context c(ctx);
-	c.setVariables(args, evalctx);
+	c.setVariables(evalctx, args);
 	inst->scope.apply(*evalctx);
 
 	auto v = c.lookup_variable("c");
 	if (v->type() == Value::ValueType::VECTOR) {
 		for (size_t i = 0; i < 4; i++) {
 			node->color[i] = i < v->toVector().size() ? v->toVector()[i]->toDouble() : 1.0;
-			if (node->color[i] > 1)
-				PRINTB_NOCACHE("WARNING: color() expects numbers between 0.0 and 1.0. Value of %.1f is too large.", node->color[i]);
+			if (node->color[i] > 1 || node->color[i] < 0){
+				PRINTB_NOCACHE("WARNING: color() expects numbers between 0.0 and 1.0. Value of %.1f is out of range, %s", node->color[i] % inst->location().toRelativeString(ctx->documentPath()));
+			}
 		}
 	} else if (v->type() == Value::ValueType::STRING) {
 		auto colorname = v->toString();
@@ -281,8 +282,8 @@ AbstractNode *ColorModule::instantiate(const Context *ctx, const ModuleInstantia
 			if (hexColor) {
 				node->color = *hexColor;
 			} else {
-				PRINTB_NOCACHE("WARNING: Unable to parse color \"%s\". Please see", colorname);
-				PRINT_NOCACHE("WARNING: http://en.wikipedia.org/wiki/Web_colors");
+				PRINTB_NOCACHE("WARNING: Unable to parse color \"%s\", %s. ", colorname % inst->location().toRelativeString(ctx->documentPath()));
+				PRINT_NOCACHE("WARNING: Please see https://en.wikipedia.org/wiki/Web_colors");
 			}
 		}
 	}
@@ -299,11 +300,7 @@ AbstractNode *ColorModule::instantiate(const Context *ctx, const ModuleInstantia
 
 std::string ColorNode::toString() const
 {
-	std::stringstream stream;
-
-	stream << "color([" << this->color[0] << ", " << this->color[1] << ", " << this->color[2] << ", " << this->color[3] << "])";
-
-	return stream.str();
+	return STR("color([" << this->color[0] << ", " << this->color[1] << ", " << this->color[2] << ", " << this->color[3] << "])");
 }
 
 std::string ColorNode::name() const

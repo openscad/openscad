@@ -32,9 +32,10 @@
 #include "modcontext.h"
 #include "parsersettings.h"
 #include "StatCache.h"
-
+#include "evalcontext.h"
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
+#include "boost-utils.h"
 namespace fs = boost::filesystem;
 #include "FontCache.h"
 #include <sys/stat.h>
@@ -131,7 +132,7 @@ time_t FileModule::handleDependencies()
 			auto wascached = ModuleCache::instance()->isCached(filename);
 			auto oldmodule = ModuleCache::instance()->lookup(filename);
 			FileModule *newmodule;
-			auto mtime = ModuleCache::instance()->evaluate(filename, newmodule);
+			auto mtime = ModuleCache::instance()->evaluate(this->getFullpath(),filename, newmodule);
 			if (mtime > latest) latest = mtime;
 			auto changed = newmodule && newmodule != oldmodule;
 			// Detect appearance but not removal of files, and keep old module
@@ -179,6 +180,18 @@ AbstractNode *FileModule::instantiateWithFileContext(FileContext *ctx, const Mod
 		// FIXME: Set document path to the path of the module
 		auto instantiatednodes = this->scope.instantiateChildren(ctx);
 		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
+	}
+	catch (RecursionException &e) {
+		const auto docPath = boost::filesystem::path(ctx->documentPath());
+		const auto uncPath = boostfs_uncomplete(e.loc.filePath(), docPath);
+
+		PRINTB("%s in file %s, line %d", e.what() % uncPath.generic_string() % e.loc.firstLine());
+	}
+	catch (AssertionFailedException &e) {
+		const auto docPath = boost::filesystem::path(ctx->documentPath());
+		const auto uncPath = boostfs_uncomplete(e.loc.filePath(), docPath);
+
+		PRINTB("%s failed in file %s, line %d", e.what() % uncPath.generic_string() % e.loc.firstLine());
 	}
 	catch (EvaluationException &e) {
 		PRINT(e.what());

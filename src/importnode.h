@@ -6,6 +6,7 @@
 enum class ImportType {
 	UNKNOWN,
 	AMF,
+	_3MF,
 	STL,
 	OFF,
 	SVG,
@@ -25,6 +26,7 @@ public:
 	Filename filename;
 	std::string layername;
 	int convexity;
+	bool center;
 	double fn, fs, fa;
 	double origin_x, origin_y, scale;
 	double width, height;

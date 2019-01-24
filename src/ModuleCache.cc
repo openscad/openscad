@@ -8,8 +8,6 @@
 
 #include <stdio.h>
 #include <fstream>
-#include <sstream>
-#include <time.h>
 #include <sys/stat.h>
 #include <algorithm>
 
@@ -29,7 +27,7 @@ ModuleCache *ModuleCache::inst = nullptr;
 
 	Returns the latest modification time of the module, its dependencies or includes.
 */
-time_t ModuleCache::evaluate(const std::string &filename, FileModule *&module)
+std::time_t ModuleCache::evaluate(const std::string &mainFile,const std::string &filename, FileModule *&module)
 {
 	module = nullptr;
 	auto entry = this->entries.find(filename);
@@ -67,7 +65,7 @@ time_t ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 			shouldCompile = false;
 			// Recompile if includes changed
 			if (cacheEntry.parsed_module) {
-				time_t mtime = cacheEntry.parsed_module->includesChanged();
+				std::time_t mtime = cacheEntry.parsed_module->includesChanged();
 				if (mtime > cacheEntry.includes_mtime) {
 					cacheEntry.includes_mtime = mtime;
 					shouldCompile = true;
@@ -92,21 +90,20 @@ time_t ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 		}
 #endif
 
-		std::stringstream textbuf;
+		std::string text;
 		{
 			std::ifstream ifs(filename.c_str());
 			if (!ifs.is_open()) {
 				PRINTB("WARNING: Can't open library file '%s'\n", filename);
 				return 0;
 			}
-			textbuf << ifs.rdbuf();
+			text = STR(ifs.rdbuf() << "\n\x03\n" << commandline_commands);
 		}
-		textbuf << "\n" << commandline_commands;
 		
 		print_messages_push();
 		
 		delete cacheEntry.parsed_module;
-		lib_mod = parse(cacheEntry.parsed_module, textbuf.str().c_str(), filename, false) ? cacheEntry.parsed_module : nullptr;
+		lib_mod = parse(cacheEntry.parsed_module, text, filename, mainFile, false) ? cacheEntry.parsed_module : nullptr;
 		PRINTDB("  compiled module: %p", lib_mod);
 		cacheEntry.module = lib_mod;
 		cacheEntry.cache_id = cache_id;
@@ -116,7 +113,7 @@ time_t ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 	
 	module = lib_mod;
 	// FIXME: Do we need to handle include-only cases?
-	time_t deps_mtime = lib_mod ? lib_mod->handleDependencies() : 0;
+	std::time_t deps_mtime = lib_mod ? lib_mod->handleDependencies() : 0;
 
 	return std::max({deps_mtime, cacheEntry.mtime, cacheEntry.includes_mtime});
 }

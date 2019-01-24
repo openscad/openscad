@@ -53,8 +53,9 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 #include <boost/detail/endian.hpp>
 #include <cstdint>
 
-extern PolySet * import_amf(std::string);
-	
+extern PolySet * import_amf(std::string, const Location &loc);
+extern Geometry * import_3mf(const std::string &, const Location &loc);
+
 class ImportModule : public AbstractModule
 {
 public:
@@ -67,34 +68,24 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 {
   AssignmentList args{
     Assignment("file"), Assignment("layer"), Assignment("convexity"),
-		Assignment("origin"), Assignment("scale"), Assignment("filename"),
-		Assignment("layername")
+		Assignment("origin"), Assignment("scale")
 	};
 	
-  // FIXME: This is broken. Tag as deprecated and fix
-	// Map old argnames to new argnames for compatibility
-	// To fix: 
-  // o after c.setVariables()
-	//   - if "filename" in evalctx: deprecated-warning && v.set_variable("file", value);
-	//   - if "layername" in evalctx: deprecated-warning && v.set_variable("layer", value);
-#if 0
-	std::vector<std::string> inst_argnames = inst->argnames;
-	for (size_t i=0; i<inst_argnames.size(); i++) {
-		if (inst_argnames[i] == "filename") inst_argnames[i] = "file";
-		if (inst_argnames[i] == "layername") inst_argnames[i] = "layer";
-	}
-#endif
+	AssignmentList optargs{
+		Assignment("width"), Assignment("height"),
+		Assignment("filename"), Assignment("layername"), Assignment("center")
+	};
 
 	Context c(ctx);
 	c.setDocumentPath(evalctx->documentPath());
-	c.setVariables(args, evalctx);
+	c.setVariables(evalctx, args, optargs);
 #if 0 && DEBUG
 	c.dump(this, inst);
 #endif
 
-	auto v = c.lookup_variable("file");
+	auto v = c.lookup_variable("file", true);
 	if (v->isUndefined()) {
-		v = c.lookup_variable("filename");
+		v = c.lookup_variable("filename", true);
 		if (!v->isUndefined()) {
 			printDeprecation("filename= is deprecated. Please use file=");
 		}
@@ -109,7 +100,8 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 		else if (ext == ".off") actualtype = ImportType::OFF;
 		else if (ext == ".dxf") actualtype = ImportType::DXF;
 		else if (ext == ".nef3") actualtype = ImportType::NEF3;
-		else if (Feature::ExperimentalAmfImport.is_enabled() && ext == ".amf") actualtype = ImportType::AMF;
+		else if (ext == ".3mf") actualtype = ImportType::_3MF;
+		else if (ext == ".amf") actualtype = ImportType::AMF;
 		else if (Feature::ExperimentalSvgImport.is_enabled() && ext == ".svg") actualtype = ImportType::SVG;
 	}
 
@@ -120,14 +112,14 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 	node->fa = c.lookup_variable("$fa")->toDouble();
 
 	node->filename = filename;
-	auto layerval = *c.lookup_variable("layer", true);
-	if (layerval.isUndefined()) {
-		layerval = *c.lookup_variable("layername");
-		if (!layerval.isUndefined()) {
+	auto layerval = c.lookup_variable("layer", true);
+	if (layerval->isUndefined()) {
+		layerval = c.lookup_variable("layername", true);
+		if (!layerval->isUndefined()) {
 			printDeprecation("layername= is deprecated. Please use layer=");
 		}
 	}
-	node->layername = layerval.isUndefined() ? ""  : layerval.toString();
+	node->layername = layerval->isUndefined() ? ""  : layerval->toString();
 	node->convexity = c.lookup_variable("convexity", true)->toDouble();
 
 	if (node->convexity <= 0) node->convexity = 1;
@@ -136,8 +128,10 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 	node->origin_x = node->origin_y = 0;
 	origin->getVec2(node->origin_x, node->origin_y);
 
-	node->scale = c.lookup_variable("scale", true)->toDouble();
+	auto center = c.lookup_variable("center", true);
+	node->center = center->type() == Value::ValueType::BOOL ? center->toBool() : false;
 
+	node->scale = c.lookup_variable("scale", true)->toDouble();
 	if (node->scale <= 0) node->scale = 1;
 
 	auto width = c.lookup_variable("width", true);
@@ -154,22 +148,27 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 const Geometry *ImportNode::createGeometry() const
 {
 	Geometry *g = nullptr;
+	auto loc = this->modinst->location();
 
 	switch (this->type) {
 	case ImportType::STL: {
-		g = import_stl(this->filename);
+		g = import_stl(this->filename, loc);
 		break;
 	}
 	case ImportType::AMF: {
-		g = import_amf(this->filename);
+		g = import_amf(this->filename, loc);
+		break;
+	}
+	case ImportType::_3MF: {
+		g = import_3mf(this->filename, loc);
 		break;
 	}
 	case ImportType::OFF: {
-		g = import_off(this->filename);
+		g = import_off(this->filename, loc);
 		break;
 	}
 	case ImportType::SVG: {
-		g = import_svg(this->filename);
+		g = import_svg(this->filename, this->center, loc);
  		break;
 	}
 	case ImportType::DXF: {
@@ -179,12 +178,12 @@ const Geometry *ImportNode::createGeometry() const
 	}
 #ifdef ENABLE_CGAL
 	case ImportType::NEF3: {
-		g = import_nef3(this->filename);
+		g = import_nef3(this->filename, loc);
 		break;
 	}
 #endif
 	default:
-		PRINTB("ERROR: Unsupported file format while trying to import file '%s'", this->filename);
+		PRINTB("ERROR: Unsupported file format while trying to import file '%s', import() at Line %d", this->filename % loc.firstLine());
 		g = new PolySet(0);
 	}
 
@@ -194,19 +193,21 @@ const Geometry *ImportNode::createGeometry() const
 
 std::string ImportNode::toString() const
 {
-	std::stringstream stream;
+	std::ostringstream stream;
 	fs::path path((std::string)this->filename);
 
 	stream << this->name();
-	stream << "(file = " << this->filename << ", "
-		"layer = " << QuotedString(this->layername) << ", "
-		"origin = [" << std::dec << this->origin_x << ", " << this->origin_y << "], "
-		"scale = " << this->scale << ", "
-		"convexity = " << this->convexity << ", "
-		"$fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs
-				 << ", " "timestamp = " << (fs::exists(path) ? fs::last_write_time(path) : 0)
-				 << ")";
-
+	stream << "(file = " << this->filename
+		<< ", layer = " << QuotedString(this->layername)
+		<< ", origin = [" << std::dec << this->origin_x << ", " << this->origin_y << "]";
+	if (this->type == ImportType::SVG) {
+		stream << ", center = " << (this->center ? "true" : "false");
+	}
+	stream << ", scale = " << this->scale
+		<< ", convexity = " << this->convexity
+		<< ", $fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs
+		<< ", timestamp = " << (fs::exists(path) ? fs::last_write_time(path) : 0)
+		<< ")";
 
 	return stream.str();
 }

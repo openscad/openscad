@@ -21,7 +21,7 @@ get_fedora_deps_dnf()
   boost-devel mpfr-devel gmp-devel glew-devel CGAL-devel gcc gcc-c++ pkgconfig \
   opencsg-devel git libXmu-devel curl ImageMagick glib2-devel make \
   xorg-x11-server-Xvfb gettext qscintilla-devel qscintilla-qt5-devel \
-  mesa-dri-drivers libzip-devel ccache
+  mesa-dri-drivers libzip-devel ccache qt5-qtmultimedia-devel
  dnf -y install libxml2-devel
  dnf -y install libffi-devel
  dnf -y install redhat-rpm-config
@@ -60,7 +60,7 @@ get_opensuse_deps()
   glew-devel cmake git bison flex cgal-devel curl \
   glib2-devel gettext freetype-devel harfbuzz-devel  \
   libqscintilla-qt5-devel libqt5-qtbase-devel libQt5OpenGL-devel \
-  xvfb-run libzip-devel
+  xvfb-run libzip-devel libqt5-qtmultimedia-devel
  zypper install libeigen3-devel
  if [ $? -ne 0 ]; then
   zypper install libeigen3
@@ -142,7 +142,7 @@ get_qt4or5_deps_debian()
   fi
 
   if [ $useqt = 5 ]; then
-    apt-get -y install qtbase5-dev libqt5scintilla2-dev libqt5opengl5-dev qt5-qmake
+    apt-get -y install qtbase5-dev libqt5scintilla2-dev libqt5opengl5-dev qtmultimedia5-dev libqt5multimedia5-plugins qt5-qmake
   else
     apt-get -y install libqt4-dev libqscintilla2-dev libqt4-opengl-dev
   fi
@@ -169,8 +169,10 @@ get_ubuntu_14_deps()
 
 get_arch_deps()
 {
-  pacman -S --noconfirm qt5 qscintilla-qt5 cgal gmp mpfr boost \
-    opencsg glew eigen glib2 fontconfig freetype2 harfbuzz bison flex make
+  pacman -S --noconfirm \
+	base-devel gcc bison flex make libzip \
+	qt5 qscintilla-qt5 cgal gmp mpfr boost opencsg \
+	glew eigen glib2 fontconfig freetype2 harfbuzz
 }
 
 get_ubuntu_16_deps()
@@ -192,6 +194,16 @@ get_neon_deps()
   echo on KDE Neon please use qmake-qt4 to build
 }
 
+get_solus_deps()
+{
+  eopkg -y it -c system.devel
+  eopkg -y install qt5-base-devel qt5-multimedia-devel qscintilla-devel \
+	CGAL-devel gmp-devel mpfr-devel glib2-devel libboost-devel \
+	opencsg-devel glew-devel eigen3 \
+	fontconfig-devel freetype2-devel harfbuzz-devel libzip-devel \
+	bison flex
+}
+
 unknown()
 {
  echo "Unknown system type. Please install the dependency packages listed"
@@ -209,6 +221,8 @@ if [ -e /etc/issue ]; then
   get_debian_deps
  elif [ "`grep -i elementary.*freya /etc/issue`" ]; then
   get_ubuntu_14_deps
+ elif [ "`grep ID=.solus /etc/os-release`" ]; then
+  get_solus_deps
  elif [ "`grep -i debian.GNU.Linux.7 /etc/issue`" ]; then
   get_debian_7_deps
  elif [ "`grep -i debian /etc/issue`" ]; then

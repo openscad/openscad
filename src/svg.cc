@@ -14,7 +14,7 @@ int svg_px_height = SVG_PXH;
 
 std::string svg_header(int widthpx, int heightpx)
 {
-	std::stringstream out;
+	std::ostringstream out;
 	out << "<svg width='" << widthpx << "px' height='" << heightpx << "px'"
 			<< " xmlns='http://www.w3.org/2000/svg' version='1.1'>\n";
 	out << "<!-- please do not write code depending on this format -->\n";
@@ -24,14 +24,14 @@ std::string svg_header(int widthpx, int heightpx)
 
 std::string svg_label(std::string s)
 {
-	std::stringstream out;
+	std::ostringstream out;
 	out << "   <text fill='black' x='20' y='40' font-size='24'>" << s << "</text>";
 	return out.str();
 }
 
 std::string svg_styleblock(std::string strokewidth)
 {
-	std::stringstream out;
+	std::ostringstream out;
 	// halfedge: f1/f0 = face mark, b1/b0 = body or hole, m1/m0 = halfedge mark
 	out << "\
 	<style type='text/css'>\n\
@@ -51,7 +51,7 @@ std::string svg_styleblock(std::string strokewidth)
 
 std::string svg_border()
 {
-	std::stringstream out;
+	std::ostringstream out;
 	out << " <!-- border -->\n";
 	out << "  <polyline points='0,0 "
 		<< svg_px_width  << ",0 "
@@ -64,7 +64,7 @@ std::string svg_border()
 
 std::string svg_axes()
 {
-	std::stringstream out;
+	std::ostringstream out;
 	out << " <!-- axes -->\n";
 	out << "  <polyline points='10,455 10,475 10,465 18,465 2,465 10,465 14,461 6,469 10,465'"
 		<< " style='fill:none;stroke:black;' />\n";
@@ -117,11 +117,11 @@ std::string dump_cgal_nef_polyhedron2_face_svg(
 	CGAL_Nef_polyhedron2::Explorer explorer,
 	bool facemark, bool body )
 {
-	std::stringstream style;
+	std::ostringstream style;
 	style << "halfedge_f" << facemark << "_b" << body << "_m";
 	auto styleclass = style.str();
 
-	std::stringstream out;
+	std::ostringstream out;
 	CGAL_For_all(c1, c2) {
 		if (explorer.is_standard( explorer.target(c1))) {
 			auto source = explorer.point( explorer.source( c1 ) );
@@ -155,7 +155,7 @@ static CGAL_Iso_rectangle_2e bounding_box(const CGAL_Nef_polyhedron2 &N)
 
 std::string dump_svg(const CGAL_Nef_polyhedron2 &N)
 {
-	std::stringstream out;
+	std::ostringstream out;
 	auto explorer = N.explorer();
 	auto bbox = bounding_box(N);
 
@@ -175,7 +175,7 @@ std::string dump_svg(const CGAL_Nef_polyhedron2 &N)
 		for (auto j = explorer.holes_begin( i ); j!= explorer.holes_end( i ); ++j) {
 			out << "   <!-- hole begin. mark: " << j->mark() << " -->\n";
 			CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator c3(j), c4(c3);
-			out << dump_cgal_nef_polyhedron2_face_svg(c3, c4, explorer, "green", j->mark());
+			out << dump_cgal_nef_polyhedron2_face_svg(c3, c4, explorer, j->mark(), false);
 			out << "   <!-- hole end -->\n";
 		}
 		out << "  <!-- face end -->\n";
@@ -188,7 +188,7 @@ std::string dump_svg(const CGAL_Nef_polyhedron2 &N)
 
 std::string point_dump( CGAL_Point_3 p )
 {
-  std::stringstream out;
+  std::ostringstream out;
   out << CGAL::to_double(p.x()) << ","
     << CGAL::to_double(p.y()) << ","
     << CGAL::to_double(p.z());
@@ -197,7 +197,7 @@ std::string point_dump( CGAL_Point_3 p )
 
 std::string point_dump( CGAL::Sphere_point<CGAL_Kernel3> p )
 {
-  std::stringstream out;
+  std::ostringstream out;
   out << CGAL::to_double(p.x()) << ","
     << CGAL::to_double(p.y()) << ","
     << CGAL::to_double(p.z());
@@ -220,7 +220,7 @@ see http://doc.cgal.org/latest/Nef_3/index.html
 */
 std::string sphere_map_dump( const CGAL_Nef_polyhedron3& N)
 {
-  std::stringstream out;
+  std::ostringstream out;
   typedef CGAL_Nef_polyhedron3::Vertex_const_iterator Vertex_const_iterator;
   typedef CGAL_Nef_polyhedron3::Nef_polyhedron_S2 Nef_polyhedron_S2;
   typedef Nef_polyhedron_S2::SVertex_const_handle SVertex_const_handle;
@@ -277,7 +277,7 @@ std::string sphere_map_dump( const CGAL_Nef_polyhedron3& N)
 // http://www.cgal.org/Manual/latest/doc_html/cgal_manual/Nef_3/Chapter_main.html#Subsection_29.7.2
 class NefPoly3_dumper_svg {
 public:
-	std::stringstream out;
+	std::ostringstream out;
 	CGAL_Iso_cuboid_3 bbox;
 	NefPoly3_dumper_svg(const CGAL_Nef_polyhedron3& N)
 	{
@@ -348,7 +348,7 @@ public:
 
 std::string dump_svg( const CGAL_Nef_polyhedron3 &N )
 {
-	std::stringstream out;
+	std::ostringstream out;
 	std::string linewidth = "0.05";
 	out << "<!--CGAL_Nef_polyhedron3 dump begin-->\n";
 	out << svg_header() << "\n" << svg_border() << "\n";

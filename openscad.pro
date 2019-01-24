@@ -16,20 +16,17 @@
 #   resource folder. E.g. using SUFFIX=-nightly will name the
 #   resulting binary openscad-nightly.
 #
-# Please see the 'Building' sections of the OpenSCAD user manual 
+# Please see the 'Building' sections of the OpenSCAD user manual
 # for updated tips & workarounds.
 #
 # https://en.wikibooks.org/wiki/OpenSCAD_User_Manual
 
-!experimental {
-  message("If you're building a development binary, consider adding CONFIG+=experimental")
-}
+include(defaults.pri)
 
-isEmpty(QT_VERSION) {
-  error("Please use qmake for Qt 4 or Qt 5 (probably qmake-qt4)")
-}
+# Local settings are read from local.pri
+exists(local.pri): include(local.pri)
 
-# Auto-include config_<variant>.pri if the VARIANT variable is give on the
+# Auto-include config_<variant>.pri if the VARIANT variable is given on the
 # command-line, e.g. qmake VARIANT=mybuild
 !isEmpty(VARIANT) {
   message("Variant: $${VARIANT}")
@@ -39,6 +36,15 @@ isEmpty(QT_VERSION) {
   }
 }
 
+debug {
+  experimental {
+    message("Building experimental debug version")
+  }
+  else {
+    message("If you're building a development binary, consider adding CONFIG+=experimental")
+  }
+}
+  
 # If VERSION is not set, populate VERSION, VERSION_YEAR, VERSION_MONTH from system date
 include(version.pri)
 
@@ -55,11 +61,14 @@ deploy {
   DEFINES += OPENSCAD_DEPLOY
   macx: {
     CONFIG += sparkle
+    OBJECTIVE_SOURCES += src/SparkleAutoUpdater.mm
     QMAKE_RPATHDIR = @executable_path/../Frameworks
   }
 }
-snapshot: DEFINES += OPENSCAD_SNAPSHOT
-
+snapshot {
+  DEFINES += OPENSCAD_SNAPSHOT
+}
+  
 macx {
   TARGET = OpenSCAD
 }
@@ -67,6 +76,7 @@ else {
   TARGET = openscad$${SUFFIX}
 }
 FULLNAME = openscad$${SUFFIX}
+APPLICATIONID = org.openscad.OpenSCAD
 !isEmpty(SUFFIX): DEFINES += INSTALL_SUFFIX="\"\\\"$${SUFFIX}\\\"\""
 
 macx {
@@ -102,8 +112,8 @@ mingw* {
   debug: QMAKE_CXXFLAGS += -O1
 }
 
-CONFIG += qt
-QT += widgets concurrent
+CONFIG += qt object_parallel_to_source
+QT += widgets concurrent multimedia network
 
 netbsd* {
    QMAKE_LFLAGS += -L/usr/X11R7/lib
@@ -148,15 +158,14 @@ netbsd* {
   QMAKE_CXXFLAGS_WARN_ON += -Wno-sign-compare
 }
 
-!lessThan(QT_VERSION, 5.9): CONFIG += ccache
-
-CONFIG(skip-version-check) {
+skip-version-check {
   # force the use of outdated libraries
   DEFINES += OPENSCAD_SKIP_VERSION_CHECK
 }
 
+isEmpty(PKG_CONFIG):PKG_CONFIG = pkg-config
+
 # Application configuration
-macx:CONFIG += mdi
 CONFIG += c++11
 CONFIG += cgal
 CONFIG += opencsg
@@ -167,9 +176,12 @@ CONFIG += glib-2.0
 CONFIG += harfbuzz
 CONFIG += freetype
 CONFIG += fontconfig
+CONFIG += lib3mf
 CONFIG += gettext
 CONFIG += libxml2
 CONFIG += libzip
+CONFIG += hidapi
+CONFIG += spnav
 
 #Uncomment the following line to enable the QScintilla editor
 !nogui {
@@ -189,6 +201,11 @@ mdi {
   DEFINES += ENABLE_MDI
 }
 
+system("ccache -V >/dev/null 2>/dev/null") {
+  CONFIG += ccache
+  message("Using ccache")
+}
+
 include(common.pri)
 
 # mingw has to come after other items so OBJECT_DIRS will work properly
@@ -201,18 +218,22 @@ RESOURCES = openscad.qrc
 # Qt5 removed access to the QMAKE_UIC variable, the following
 # way works for both Qt4 and Qt5
 load(uic)
-uic.commands += -tr _
+uic.commands += -tr q_
 
 FORMS   += src/MainWindow.ui \
            src/Preferences.ui \
            src/OpenCSGWarningDialog.ui \
            src/AboutDialog.ui \
            src/FontListDialog.ui \
+           src/PrintInitDialog.ui \
            src/ProgressWidget.ui \
            src/launchingscreen.ui \
            src/LibraryInfoDialog.ui \
+           src/Console.ui \
            src/parameter/ParameterWidget.ui \
-           src/parameter/ParameterEntryWidget.ui
+           src/parameter/ParameterEntryWidget.ui \
+           src/input/ButtonConfigWidget.ui \
+           src/input/AxisConfigWidget.ui
 
 # AST nodes
 FLEXSOURCES += src/lexer.l 
@@ -241,6 +262,7 @@ FLEXSOURCES += src/comment_lexer.l
 BISONSOURCES += src/comment_parser.y
 
 HEADERS += src/version_check.h \
+           src/version_helper.h \
            src/ProgressWidget.h \
            src/parsersettings.h \
            src/renderer.h \
@@ -255,6 +277,7 @@ HEADERS += src/version_check.h \
            src/OpenSCADApp.h \
            src/WindowManager.h \
            src/Preferences.h \
+           src/SettingsWriter.h \
            src/OpenCSGWarningDialog.h \
            src/AboutDialog.h \
            src/FontListDialog.h \
@@ -294,6 +317,7 @@ HEADERS += src/version_check.h \
            src/colornode.h \
            src/rendernode.h \
            src/textnode.h \
+           src/version.h \
            src/openscad.h \
            src/handle_dep.h \
            src/Geometry.h \
@@ -335,6 +359,7 @@ HEADERS += src/version_check.h \
            src/CsgInfo.h \
            \
            src/Dock.h \
+           src/Console.h \
            src/AutoUpdater.h \
            src/launchingscreen.h \
            src/legacyeditor.h \
@@ -356,13 +381,22 @@ HEADERS += src/version_check.h \
            src/parameter/parameterset.h \
            src/parameter/ignoreWheelWhenNotFocused.h \
            src/QWordSearchField.h \
-           src/QSettingsCached.h
+           src/QSettingsCached.h \
+           src/input/InputDriver.h \
+           src/input/InputEventMapper.h \
+           src/input/InputDriverManager.h \
+           src/input/AxisConfigWidget.h \
+           src/input/ButtonConfigWidget.h \
+           src/input/WheelIgnorer.h
 
 SOURCES += \
            src/libsvg/libsvg.cc \
            src/libsvg/circle.cc \
            src/libsvg/ellipse.cc \
            src/libsvg/line.cc \
+           src/libsvg/text.cc \
+           src/libsvg/tspan.cc \
+           src/libsvg/data.cc \
            src/libsvg/polygon.cc \
            src/libsvg/polyline.cc \
            src/libsvg/rect.cc \
@@ -373,13 +407,16 @@ SOURCES += \
            src/libsvg/transformation.cc \
            src/libsvg/util.cc \
            \
-           src/version_check.cc \
+           src/version_check.cc
+
+SOURCES += \
            src/ProgressWidget.cc \
            src/linalg.cc \
            src/Camera.cc \
            src/handle_dep.cc \
            src/value.cc \
            src/stackcheck.cc \
+           src/degree_trig.cc \
            src/func.cc \
            src/localscope.cc \
            src/feature.cc \
@@ -435,6 +472,7 @@ SOURCES += \
            src/rendersettings.cc \
            src/highlighter.cc \
            src/Preferences.cc \
+           src/SettingsWriter.cc \
            src/OpenCSGWarningDialog.cc \
            src/editor.cc \
            src/GLView.cc \
@@ -450,6 +488,7 @@ SOURCES += \
            src/export.cc \
            src/export_stl.cc \
            src/export_amf.cc \
+           src/export_3mf.cc \
            src/export_off.cc \
            src/export_dxf.cc \
            src/export_svg.cc \
@@ -460,6 +499,7 @@ SOURCES += \
            src/import_off.cc \
            src/import_svg.cc \
            src/import_amf.cc \
+           src/import_3mf.cc \
            src/renderer.cc \
            src/colormap.cc \
            src/ThrownTogetherRenderer.cc \
@@ -469,12 +509,14 @@ SOURCES += \
            src/system-gl.cc \
            src/imageutils.cc \
            \
+           src/version.cc \
            src/openscad.cc \
            src/mainwin.cc \
            src/OpenSCADApp.cc \
            src/WindowManager.cc \
            src/UIUtils.cc \
            src/Dock.cc \
+           src/Console.cc \
            src/FontListDialog.cc \
            src/FontListTableView.cc \
            src/launchingscreen.cc \
@@ -497,8 +539,14 @@ SOURCES += \
            src/parameter/parametervirtualwidget.cpp \
            src/parameter/ignoreWheelWhenNotFocused.cpp \
            src/QWordSearchField.cc\
+           src/QSettingsCached.cc \
            \
-           src/QSettingsCached.cc
+           src/input/InputDriver.cc \
+           src/input/InputEventMapper.cc \
+           src/input/InputDriverManager.cc \
+           src/input/AxisConfigWidget.cc \
+           src/input/ButtonConfigWidget.cc \
+           src/input/WheelIgnorer.cc
 
 # CGAL
 HEADERS += src/ext/CGAL/convex_hull_3_bugfix.h \
@@ -531,6 +579,37 @@ HEADERS += src/ext/libtess2/Include/tesselator.h \
            src/ext/libtess2/Source/priorityq.h \
            src/ext/libtess2/Source/sweep.h \
            src/ext/libtess2/Source/tess.h
+
+has_qt5 {
+  HEADERS += src/Network.h src/NetworkSignal.h src/PrintService.h src/OctoPrint.h src/PrintInitDialog.h
+  SOURCES += src/PrintService.cc src/OctoPrint.cc src/PrintInitDialog.cc
+}
+
+has_qt5:unix:!macx {
+  QT += dbus
+  DEFINES += ENABLE_DBUS
+  DBUS_ADAPTORS += org.openscad.OpenSCAD.xml
+  DBUS_INTERFACES += org.openscad.OpenSCAD.xml
+
+  HEADERS += src/input/DBusInputDriver.h
+  SOURCES += src/input/DBusInputDriver.cc
+}
+
+linux: {
+  DEFINES += ENABLE_JOYSTICK
+
+  HEADERS += src/input/JoystickInputDriver.h
+  SOURCES += src/input/JoystickInputDriver.cc
+}
+
+!lessThan(QT_MAJOR_VERSION, 5) {
+  qtHaveModule(gamepad) {
+    QT += gamepad
+    DEFINES += ENABLE_QGAMEPAD
+    HEADERS += src/input/QGamepadInputDriver.h
+    SOURCES += src/input/QGamepadInputDriver.cc
+  }
+}
 
 unix:!macx {
   SOURCES += src/imageutils-lodepng.cc
@@ -641,8 +720,8 @@ mimexml.path = $$PREFIX/share/mime/packages
 mimexml.extra = cp -f icons/openscad.xml \"\$(INSTALL_ROOT)$${mimexml.path}/$${FULLNAME}.xml\"
 INSTALLS += mimexml
 
-appdata.path = $$PREFIX/share/appdata
-appdata.extra = cp -f openscad.appdata.xml \"\$(INSTALL_ROOT)$${appdata.path}/$${FULLNAME}.appdata.xml\"
+appdata.path = $$PREFIX/share/metainfo
+appdata.extra = mkdir -p \"\$(INSTALL_ROOT)$${appdata.path}\" && cat openscad.appdata.xml | sed -e \"'s/$${APPLICATIONID}/$${APPLICATIONID}$${SUFFIX}/; s/openscad.desktop/openscad$${SUFFIX}.desktop/; s/openscad.png/openscad$${SUFFIX}.png/'\" > \"\$(INSTALL_ROOT)$${appdata.path}/$${APPLICATIONID}$${SUFFIX}.appdata.xml\"
 INSTALLS += appdata
 
 icons.path = $$PREFIX/share/pixmaps
@@ -652,3 +731,10 @@ INSTALLS += icons
 man.path = $$PREFIX/share/man/man1
 man.extra = cp -f doc/openscad.1 \"\$(INSTALL_ROOT)$${man.path}/$${FULLNAME}.1\"
 INSTALLS += man
+
+info: {
+    include(info.pri)
+}
+
+DISTFILES += \
+    sounds/complete.wav

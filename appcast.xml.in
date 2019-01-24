@@ -2,14 +2,14 @@
 <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
   <channel>
     <title>OpenSCAD Updates</title>
-    <link>http://openscad.org/appcast.xml</link>
+    <link>https://openscad.org/appcast.xml</link>
     <language>en</language>
     <item>
       <title>OpenSCAD @VERSION@</title>
       <pubDate>@VERSIONDATE@</pubDate>
       <sparkle:releaseNotesLink>https://raw.githubusercontent.com/openscad/openscad/openscad-@VERSION@/releases/@SHORTVERSION@.md</sparkle:releaseNotesLink>
       <sparkle:minimumSystemVersion>10.7.0</sparkle:minimumSystemVersion>
-      <enclosure url="http://files.openscad.org/OpenSCAD-@VERSION@.dmg"
+      <enclosure url="https://files.openscad.org/OpenSCAD-@VERSION@.dmg"
                  sparkle:version="@VERSIONDATE@"
                  sparkle:shortVersionString="@VERSION@"
                  sparkle:dsaSignature="@DSASIGNATURE@"

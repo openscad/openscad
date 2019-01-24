@@ -1,9 +1,34 @@
+/*
+ * The MIT License
+ *
+ * Copyright (c) 2016-2018, Torsten Paul <torsten.paul@gmx.de>,
+ *                          Marius Kintel <marius@kintel.net>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 #include <string>
 #include <vector>
 #include <iostream>
 
 #include "util.h"
 #include "transformation.h"
+#include "degree_trig.h"
 
 namespace libsvg {
 
@@ -15,18 +40,6 @@ transformation::~transformation()
 {
 }
 
-const std::string&
-transformation::get_op()
-{
-	return op;
-}
-
-const std::string&
-transformation::get_name()
-{
-	return name;
-}
-
 void
 transformation::add_arg(const std::string arg)
 {
@@ -35,8 +48,8 @@ transformation::add_arg(const std::string arg)
 }
 
 const std::string
-transformation::get_args() {
-	std::stringstream str;
+transformation::get_args() const {
+	std::ostringstream str;
 	for (unsigned int a = 0;a < args.size();a++) {
 		str << ((a == 0) ? "(" : ", ") << args[a];
 	}
@@ -173,7 +186,7 @@ rotate::get_matrices()
 	
 	bool has_center = args.size() == 3;
 
-	double angle = M_PI * args[0] / 180.0;
+	double angle = args[0];
 	double cx = has_center ? args[1] : 0;
 	double cy = has_center ? args[2] : 0;
 	
@@ -188,12 +201,7 @@ rotate::get_matrices()
 		result.push_back(t);
 	}
 	
-	Eigen::Matrix3d m;
-	m <<
-		cos(angle), -sin(angle), 0,
-		sin(angle),  cos(angle), 0,
-		         0,           0, 1;
-	result.push_back(m);
+	result.push_back(rotate_degrees(angle));
 
 	if (has_center) {
 		Eigen::Matrix3d t;
@@ -226,13 +234,13 @@ skew_x::get_matrices()
 		return std::vector<Eigen::Matrix3d>();
 	}
 	
-	double angle = M_PI * args[0] / 180.0;
+	double angle = args[0];
 
 	Eigen::Matrix3d m;
 	m <<
-		1, tan(angle), 0,
-		0,          1, 0,
-		0,          0, 1;
+		1, tan_degrees(angle), 0,
+		0, 1,                  0,
+		0, 0,                  1;
 
 	std::vector<Eigen::Matrix3d> result;
 	result.push_back(m);
@@ -258,13 +266,13 @@ skew_y::get_matrices()
 		return std::vector<Eigen::Matrix3d>();
 	}
 
-	double angle = M_PI * args[0] / 180.0;
+	double angle = args[0];
 
 	Eigen::Matrix3d m;
 	m <<
-		         1, 0, 0,
-		tan(angle), 1, 0,
-		         0, 0, 1;
+	                     1, 0, 0,
+	    tan_degrees(angle), 1, 0,
+	                     0, 0, 1;
 
 	std::vector<Eigen::Matrix3d> result;
 	result.push_back(m);

@@ -27,6 +27,16 @@ std::vector<std::string> ParameterSet::getParameterNames()
 	return names;
 }
 
+bool ParameterSet::setNameExists(const std::string &setName){
+	boost::optional<pt::ptree &> sets = parameterSets();
+	if (sets.is_initialized()) {
+		for (const auto &v : sets.get()) {
+			if(v.first == setName) return true;
+		}
+	}
+	return false;
+}
+
 boost::optional<pt::ptree &> ParameterSet::getParameterSet(const std::string &setName)
 {
 	boost::optional<pt::ptree &> sets = parameterSets();

@@ -24,11 +24,10 @@ if [ ! $BASEDIR ]; then
 	BASEDIR=$HOME/openscad_deps
 fi
 
-MXELIBTYPE=static
+MXELIBTYPE=static.posix
 if [ "`echo $* | grep shared `" ]; then
-	MXELIBTYPE=shared
+	MXELIBTYPE=shared.posix
 fi
-
 
 DEPLOYDIR64=$OPENSCADDIR/mingw64.$MXELIBTYPE
 DEPLOYDIR32=$OPENSCADDIR/mingw32.$MXELIBTYPE
@@ -82,10 +81,7 @@ fi
 PATH=$MXEDIR/usr/bin:$PATH
 PATH=$MXETARGETDIR/$MXEQTSUBDIR/bin:$PATH
 
-OPENSCAD_LIBRARIES=$MXETARGETDIR
-
 if [ "`echo $* | grep clean`" ]; then
-  OPENSCAD_LIBRARIES=
   BASEDIR=
   MXEDIR=
   MXETARGETDIR=
@@ -122,5 +118,9 @@ if [ "`echo $* | grep clean`" ]; then
 else
   echo PATH modified: $MXEDIR/usr/bin
   echo PATH modified: $MXETARGETDIR/$MXEQTSUBDIR/bin
+fi
+
+if [ "`echo $PATH | grep anaconda.*bin`" ]; then
+  echo please remove pytho anaconda/bin from your PATH, exit, and rerun this
 fi
 

@@ -17,11 +17,14 @@ public:
 	}
 
 	std::string fileName() const { return path ? path->generic_string() : ""; }
+	fs::path filePath() const { return *path; }
 	int firstLine() const { return first_line; }
 	int firstColumn() const { return first_col; }
 	int lastLine() const { return last_line; }
 	int lastColumn() const { return last_col; }
+	bool isNone() const;
 
+	std::string toRelativeString(const std::string &docPath) const;
 
 	static const Location NONE;
 private:
@@ -31,6 +34,9 @@ private:
 	int last_col;
 	std::shared_ptr<fs::path> path;
 };
+
+bool operator == (Location const& lhs, Location const& rhs);
+bool operator != (Location const& lhs, Location const& rhs);
 
 class ASTNode
 {

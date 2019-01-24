@@ -1,1 +1,0 @@
-group1(linear_extrude+transform4(linear_extrude)+transform7(linear_extrude)+transform10(linear_extrude)+transform13(linear_extrude)+transform16(linear_extrude))

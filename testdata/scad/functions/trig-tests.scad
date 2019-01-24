@@ -95,11 +95,11 @@ print_results("tan() periodic check", tan_aperiodic);
 
 echo();
 echo("***Verify Inverse Trigonometric functions***");
-epsilon = 2e-13; // smallest value that passes
-// Probably not feasible/useful to try making these exact
-asin_fails = [for(a = [-90:1: 90]) if (abs(asin(sin(a)) - a) > epsilon) [a, asin(sin(a))] ];
-acos_fails = [for(a = [  0:1:180]) if (abs(acos(cos(a)) - a) > epsilon) [a, acos(cos(a))] ];
-atan_fails = [for(a = [-90:1: 90]) if (abs(atan(tan(a)) - a) > epsilon) [a, atan(tan(a))] ];
+asin_fails = [for(a = [-90:1: 90]) if (asin(sin(a)) - a) [a, asin(sin(a))] ];
+acos_fails = [for(a = [  0:1:180]) if (acos(cos(a)) - a) [a, acos(cos(a))] ];
+atan_fails = [for(a = [-90:1: 90]) if (atan(tan(a)) - a) [a, atan(tan(a))] ];
+atan2_fails = [for(a = [-180:1:179]) if (atan2(sin(a),cos(a)) - a) [a, atan2(sin(a),cos(a))] ];
 print_results("asin() inverse check", asin_fails);
 print_results("acos() inverse check", acos_fails);
 print_results("atan() inverse check", atan_fails);
+print_results("atan2() inverse check", atan2_fails);

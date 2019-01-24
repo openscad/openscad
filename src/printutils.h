@@ -8,6 +8,20 @@
 #include <libintl.h>
 #include <locale.h>
 inline char * _( const char * msgid ) { return gettext( msgid ); }
+inline const char * _( const char * msgid, const char *msgctxt) {
+	/* The separator between msgctxt and msgid in a .mo file.  */
+	const char* GETTEXT_CONTEXT_GLUE = "\004";
+
+	std::string str = msgctxt;
+	str += GETTEXT_CONTEXT_GLUE;
+	str += msgid;
+	auto translation = dcgettext(NULL,str.c_str(), LC_MESSAGES);
+	if(translation==str){
+		return gettext(msgid);
+	}else{
+		return translation;
+	}
+}
 
 typedef void (OutputHandlerFunc)(const std::string &msg, void *userdata);
 extern OutputHandlerFunc *outputhandler;
@@ -15,6 +29,9 @@ extern void *outputhandler_data;
 namespace OpenSCAD {
 	extern std::string debug;
 	extern bool quiet;
+	extern bool hardwarnings;
+	extern bool parameterCheck;
+	extern bool rangeCheck;
 }
 
 void set_output_handler(OutputHandlerFunc *newhandler, void *userdata);
@@ -78,3 +95,5 @@ public:
 		return *this;
 	}
 };
+
+#define STR(s) static_cast<std::ostringstream&&>(std::ostringstream() << s).str()

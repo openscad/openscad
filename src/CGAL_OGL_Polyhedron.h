@@ -110,7 +110,7 @@ public:
 	}
 
 	// set this->colors based on the given colorscheme. vertex colors
-	// are not set here as colorscheme doesnt yet hold vertex colors.
+	// are not set here as colorscheme doesn't yet hold vertex colors.
 	void setColorScheme(const ColorScheme &cs) {
 		PRINTD("setColorScheme");
 		setColor(CGALColorIndex::MARKED_FACET_COLOR, ColorMap::getColor(cs, RenderColor::CGAL_FACE_BACK_COLOR));

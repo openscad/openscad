@@ -26,9 +26,7 @@ macx {
 }
 
 c++11 {
-  # -std=c++11 is only available in gcc>=4.7
-  *g++*: QMAKE_CXXFLAGS += -std=c++0x
-  else: QMAKE_CXXFLAGS += -std=c++11
+  QMAKE_CXXFLAGS += -std=c++11
   message("Using C++11")
 
   *clang*: {

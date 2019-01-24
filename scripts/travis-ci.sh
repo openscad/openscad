@@ -21,11 +21,9 @@ travis_finish() {
 }
 
 PARALLEL=-j2
-if [[ "$DIST" == "trusty" ]]; then
-    PARALLEL_CTEST=-j1
-else
-    PARALLEL_CTEST=-j4
-fi
+
+# This should be set via .travis.yml depending on the OS/Distribution
+# PARALLEL_CTEST=-j1
 
 travis_start qmake "Building OpenSCAD using qmake"
 qmake CONFIG+=experimental CONFIG+=nogui && make $PARALLEL
@@ -34,7 +32,7 @@ travis_finish qmake
 travis_start cmake "Building tests using cmake"
 
 cd tests
-cmake . 
+cmake .
 if [[ $? != 0 ]]; then
   echo "Error configuring test suite"
   exit 1
