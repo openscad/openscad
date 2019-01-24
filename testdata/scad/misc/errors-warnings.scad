@@ -13,9 +13,9 @@ polyhedron(
 import("doesNotExist.aaa");
 //file does not exist an thus creates a warning
 import("doesNotExist.off");
-//unkown module
+//unknown module
 hello();
-//unkown function
+//unknown function
 b=test();
 //radius is ignored as a diameter is defined
 circle(r=1,d=4);

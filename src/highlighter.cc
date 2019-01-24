@@ -30,7 +30,7 @@
 
  Speed Note:
 
- setFormat() is very slow. normally this doesnt matter because we
+ setFormat() is very slow. normally this doesn't matter because we
  only highlight a block or two at once. But when OpenSCAD first starts,
  QT automagically calls 'highlightBlock' on every single textblock in the file
  even if it's not visible in the window. On a large file (50,000 lines) this
