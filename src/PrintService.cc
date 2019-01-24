@@ -38,7 +38,7 @@ PrintService::PrintService()
 		PRINTB("ERROR: %s", e.getErrorMessage().toStdString());
 	}
 	if (enabled) {
-		PRINTB("External print service available: %s (url = %s, upload limit = %d MB)", displayName.toStdString() % infoUrl.toStdString() % fileSizeLimitMB);
+		PRINTB("External print service: %s", displayName.toStdString() );
 	}
 }
 
@@ -117,7 +117,7 @@ const QString PrintService::upload(const QString& fileName, const QString& conte
 	// Due to the base64 encoding having 33% overhead, that should allow for
 	// about 96MB data.
     if (jsonInput.value("file") == QJsonValue::Undefined) {
-		const QString msg = "Could not encode STL into JSON. Perhaps it is too large of a file? Maybe try reducing the model resolution.";
+		const QString msg = "Could not encode STL into JSON. Perhaps it is too large of a file? Try reducing the model resolution.";
         throw NetworkException(QNetworkReply::ProtocolFailure, msg);
 	}
 
