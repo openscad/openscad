@@ -33,7 +33,7 @@
 PrintInitDialog::PrintInitDialog()
 {
 	setupUi(this);
-	this->radioButtonCancel->setChecked(true);
+	this->radioButtonPrintService->setChecked(true);
 
 	const auto printService = PrintService::inst();
 	QFile html(":/src/PrintInitDialog.html");
