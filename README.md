@@ -48,7 +48,7 @@ STL and OFF file formats.
 # Getting started
 
 You can download the latest binaries of OpenSCAD at
-<http://www.openscad.org/downloads.html>. Install binaries as you would any other
+<https://www.openscad.org/downloads.html>. Install binaries as you would any other
 software.
 
 When you open OpenSCAD, you'll see three frames within the window. The
@@ -86,7 +86,7 @@ Manual](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual).
 
 # Documentation
 
-Have a look at the OpenSCAD Homepage (http://www.openscad.org/documentation.html) for documentation.
+Have a look at the OpenSCAD Homepage (https://www.openscad.org/documentation.html) for documentation.
 
 ## Building OpenSCAD
 
@@ -106,7 +106,7 @@ Follow the instructions for the platform you're compiling on below.
 
 * A C++ compiler supporting C++11
 * [Qt (4.4 -> 5.x)](https://qt.io/)
-* [QScintilla2 (2.7 ->)](https://riverbankcomputing.co.uk/software/qscintilla/)
+* [QScintilla2 (2.7 ->)](https://riverbankcomputing.com/software/qscintilla/)
 * [CGAL (3.6 ->)](https://www.cgal.org/)
  * [GMP (5.x)](https://gmplib.org/)
  * [MPFR (3.x)](https://www.mpfr.org/)
@@ -114,9 +114,9 @@ Follow the instructions for the platform you're compiling on below.
 * [boost (1.35 ->)](https://www.boost.org/)
 * [OpenCSG (1.3.2 ->)](http://www.opencsg.org/)
 * [GLEW (1.5.4 ->)](http://glew.sourceforge.net/)
-* [Eigen (3.x)](http://eigen.tuxfamily.org/)
+* [Eigen (3.x)](https://eigen.tuxfamily.org/)
 * [glib2 (2.x)](https://developer.gnome.org/glib/)
-* [fontconfig (2.10 -> )](http://fontconfig.org/)
+* [fontconfig (2.10 -> )](https://fontconfig.org/)
 * [freetype2 (2.4 -> )](https://freetype.org/)
 * [harfbuzz (0.9.19 -> )](http://harfbuzz.org/)
 * [libzip (0.10.1 -> )](https://libzip.org/)
@@ -223,7 +223,7 @@ attempt an MSVC build on Windows, please see this site:
 https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Windows
 
 To cross-build, first make sure that you have all necessary dependencies 
-of the MXE project ( listed at http://mxe.cc/#requirements ). Don't install
+of the MXE project ( listed at https://mxe.cc/#requirements ). Don't install
 MXE itself, the scripts below will do that for you under `$HOME/openscad_deps/mxe`
 
 Then get your development tools installed to get GCC. Then after you've 
@@ -237,7 +237,7 @@ Then run the script to download & compile all the prerequisite libraries above:
     ./scripts/mingw-x-build-dependencies.sh 64
 
 Note that this process can take several hours, and tens of gigabytes of 
-disk space, as it uses the [http://mxe.cc](http://mxe.cc) system to cross-build many 
+disk space, as it uses the [https://mxe.cc](https://mxe.cc) system to cross-build many
 libraries. After it is complete, build OpenSCAD and package it to an 
 installer:
 
