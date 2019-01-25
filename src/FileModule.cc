@@ -181,7 +181,7 @@ AbstractNode *FileModule::instantiateWithFileContext(FileContext *ctx, const Mod
 		auto instantiatednodes = this->scope.instantiateChildren(ctx);
 		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 	} catch (EvaluationException &e) {
-		PRINT(e.what());
+		//PRINT(e.what()); //please output the message before throwing the exception
 	}
 
 	return node;
