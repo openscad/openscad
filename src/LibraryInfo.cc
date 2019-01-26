@@ -106,6 +106,7 @@ std::string LibraryInfo::info()
 	  << "\nSystem information: " << PlatformUtils::sysinfo()
 	  << "\nUser Agent: " << PlatformUtils::user_agent()
 	  << "\nCompiler: " << compiler_info
+	  << "\nMinGW build: " << mingwstatus
 	  << "\nBoost version: " << BOOST_LIB_VERSION
 	  << "\nEigen version: " << EIGEN_WORLD_VERSION << "." << EIGEN_MAJOR_VERSION << "." << EIGEN_MINOR_VERSION
 	  << "\nCGAL version, kernels: " << TOSTRING(CGAL_VERSION) << ", " << cgal_3d_kernel << ", " << cgal_2d_kernel << ", " << cgal_2d_kernelEx
@@ -115,7 +116,6 @@ std::string LibraryInfo::info()
 	  << "\nQScintilla version: " << QSCINTILLA_VERSION_STR
           << "\nInputDrivers: " << InputDriverManager::instance()->listDrivers()
 #endif
-	  << "\nMingW build: " << mingwstatus
 	  << "\nGLib version: "       << GLIB_MAJOR_VERSION << "." << GLIB_MINOR_VERSION << "." << GLIB_MICRO_VERSION
 	  << "\nlodepng version: " << LODEPNG_VERSION_STRING
 	  << "\nlibzip version: " << LIBZIP_VERSION
