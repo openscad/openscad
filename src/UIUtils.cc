@@ -133,7 +133,7 @@ QFileInfoList UIUtils::exampleFiles(const QString &category)
 
 void UIUtils::openHomepageURL()
 {
-    QDesktopServices::openUrl(QUrl("http://openscad.org/"));
+    QDesktopServices::openUrl(QUrl("https://www.openscad.org/"));
 }
 
 static void openVersionedURL(QString url)
@@ -143,14 +143,14 @@ static void openVersionedURL(QString url)
 
 void UIUtils::openUserManualURL()
 {
-    openVersionedURL("http://www.openscad.org/documentation.html?version=%1");
+    openVersionedURL("https://www.openscad.org/documentation.html?version=%1");
 }
 
 void UIUtils::openCheatSheetURL()
 {
 #ifdef OPENSCAD_SNAPSHOT
-    openVersionedURL("http://www.openscad.org/cheatsheet/snapshot.html?version=%1");
+    openVersionedURL("https://www.openscad.org/cheatsheet/snapshot.html?version=%1");
 #else
-    openVersionedURL("http://www.openscad.org/cheatsheet/index.html?version=%1");
+    openVersionedURL("https://www.openscad.org/cheatsheet/index.html?version=%1");
 #endif
 }

@@ -95,6 +95,11 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 				PRINTB("WARNING: Unable to convert scale(%s) parameter to a number, a vec3 or vec2 of numbers or a number, %s", v->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 			}
 		}
+		if(OpenSCAD::rangeCheck){
+			if(scalevec[0]==0 || scalevec[1]==0 || scalevec[2]==0 || !std::isfinite(scalevec[0])|| !std::isfinite(scalevec[1])|| !std::isfinite(scalevec[2])){
+				PRINTB("WARNING: scale(%s), %s", v->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+			}
+		}
 		node->matrix.scale(scalevec);
 	}
 	else if (this->type == transform_type_e::ROTATE) {
@@ -188,7 +193,9 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 	else if (this->type == transform_type_e::TRANSLATE)	{
 		auto v = c.lookup_variable("v");
 		Vector3d translatevec(0,0,0);
-		if (v->getVec3(translatevec[0], translatevec[1], translatevec[2], 0.0)) {
+		bool ok = v->getVec3(translatevec[0], translatevec[1], translatevec[2], 0.0);
+		ok &= std::isfinite(translatevec[0]) && std::isfinite(translatevec[1]) && std::isfinite(translatevec[2]) ;
+		if (ok) {
 			node->matrix.translate(translatevec);
 		}else{
 			PRINTB("WARNING: Unable to convert translate(%s) parameter to a vec3 or vec2 of numbers, %s", v->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));

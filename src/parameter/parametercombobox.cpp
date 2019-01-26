@@ -41,7 +41,6 @@ void ParameterComboBox::setValue()
 		} else {
 			text = QString::fromStdString(textData->toString());
 			data = text;
-			
 		}
 		comboBox->addItem(text, QVariant(data));
 	}

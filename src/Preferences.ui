@@ -97,6 +97,16 @@
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QCheckBox" name="checkBoxMouseCentricZoom">
+          <property name="text">
+           <string>mouse centric zoom</string>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
       <widget class="QWidget" name="pageEditor">
@@ -1495,6 +1505,13 @@
              </item>
             </layout>
            </item>
+           <item row="2" column="2">
+            <widget class="QLabel" name="labelOctoPrintApiKeyNote">
+             <property name="text">
+              <string>Note: The API key is stored unencrypted in the application settings.</string>
+             </property>
+            </widget>
+           </item>
           </layout>
          </widget>
         </item>
@@ -1752,6 +1769,16 @@
                 <widget class="QCheckBox" name="enableHardwarningsCheckBox">
                  <property name="text">
                   <string>Stop on the first warning</string>
+                 </property>
+                 <property name="checked">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="enableRangeCheckBox">
+                 <property name="text">
+                  <string>check the parameter range for builtin modules</string>
                  </property>
                  <property name="checked">
                   <bool>false</bool>

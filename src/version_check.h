@@ -76,7 +76,7 @@ a time, to avoid confusion.
 
 #ifdef ENABLE_OPENCSG
 #include <GL/glew.h>
-// kludge - GLEW doesnt have compiler-accessible version numbering
+// kludge - GLEW doesn't have compiler-accessible version numbering
 #ifndef GLEW_ARB_occlusion_query2
 #error GLEW library missing or version too old. See README.md. To force compile, run qmake CONFIG+=skip-version-check
 #else

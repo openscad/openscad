@@ -121,6 +121,7 @@ check_nsis()
 }
 
 check_zip()
+{
 	if [ ! "`command -v zip`" ]; then
 		echo the zip command was not found. please install zip
 		echo on debian, sudo apt-get install zip

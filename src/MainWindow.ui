@@ -236,7 +236,6 @@
         <widget class="QToolBar" name="viewerToolBar">
          <addaction name="designActionPreview"/>
          <addaction name="designActionRender"/>
-         <addaction name="designAction3DPrint"/>
          <addaction name="separator"/>
          <addaction name="viewActionViewAll"/>
          <addaction name="viewActionZoomIn"/>
@@ -465,9 +464,9 @@
        <addaction name="separator"/>
        <addaction name="designActionPreview"/>
        <addaction name="designActionRender"/>
-       <addaction name="designAction3DPrint"/>
        <addaction name="separator"/>
        <addaction name="fileActionExportSTL"/>
+       <addaction name="designAction3DPrint"/>
       </widget>
      </item>
      <item>
@@ -893,7 +892,7 @@
     <string>&amp;3D Print</string>
    </property>
    <property name="shortcut">
-    <string>F7</string>
+    <string>F8</string>
    </property>
   </action>
   <action name="designCheckValidity">
@@ -923,6 +922,9 @@
    </property>
    <property name="text">
     <string>Export as &amp;STL...</string>
+   </property>
+   <property name="shortcut">
+    <string>F7</string>
    </property>
   </action>
   <action name="fileActionExportOFF">

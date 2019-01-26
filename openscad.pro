@@ -112,7 +112,7 @@ mingw* {
   debug: QMAKE_CXXFLAGS += -O1
 }
 
-CONFIG += qt
+CONFIG += qt object_parallel_to_source
 QT += widgets concurrent multimedia network
 
 netbsd* {
@@ -282,7 +282,6 @@ HEADERS += src/version_check.h \
            src/AboutDialog.h \
            src/FontListDialog.h \
            src/FontListTableView.h \
-           src/PrintInitDialog.h \
            src/GroupModule.h \
            src/FileModule.h \
            src/StatCache.h \
@@ -395,6 +394,9 @@ SOURCES += \
            src/libsvg/circle.cc \
            src/libsvg/ellipse.cc \
            src/libsvg/line.cc \
+           src/libsvg/text.cc \
+           src/libsvg/tspan.cc \
+           src/libsvg/data.cc \
            src/libsvg/polygon.cc \
            src/libsvg/polyline.cc \
            src/libsvg/rect.cc \
@@ -517,7 +519,6 @@ SOURCES += \
            src/Console.cc \
            src/FontListDialog.cc \
            src/FontListTableView.cc \
-           src/PrintInitDialog.cc \
            src/launchingscreen.cc \
            src/legacyeditor.cc \
            src/LibraryInfoDialog.cc\
@@ -580,8 +581,8 @@ HEADERS += src/ext/libtess2/Include/tesselator.h \
            src/ext/libtess2/Source/tess.h
 
 has_qt5 {
-  HEADERS += src/Network.h src/NetworkSignal.h src/PrintService.h src/OctoPrint.h
-  SOURCES += src/PrintService.cc src/OctoPrint.cc
+  HEADERS += src/Network.h src/NetworkSignal.h src/PrintService.h src/OctoPrint.h src/PrintInitDialog.h
+  SOURCES += src/PrintService.cc src/OctoPrint.cc src/PrintInitDialog.cc
 }
 
 has_qt5:unix:!macx {

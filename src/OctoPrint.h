@@ -31,15 +31,19 @@
 #if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
 
 // Dummy class for compiling Preferences.cc for Qt4
-class OctoPrint
+struct OctoPrint
 {
-public:
 	OctoPrint() {}
 	~OctoPrint() {}
 
 	const std::pair<const QString, const QString> getVersion() const { return {}; }
 	const std::vector<std::pair<const QString, const QString>> getSlicers() const { return {}; }
-	const std::vector<std::pair<const QString, const QString>> getProfiles(const QString slicer) const { return {}; }
+	const std::vector<std::pair<const QString, const QString>> getProfiles(const QString) const { return {}; }
+};
+
+struct NetworkException
+{
+	const QString getErrorMessage() const { return ""; }
 };
 
 #else

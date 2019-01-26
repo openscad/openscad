@@ -298,7 +298,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 	if (suffix == ".stl") stl_output_file = output_file;
 	else if (suffix == ".off") off_output_file = output_file;
 	else if (suffix == ".amf") amf_output_file = output_file;
-	else if (Feature::Experimental3mfExport.is_enabled() && suffix == ".3mf") _3mf_output_file = output_file;
+	else if (suffix == ".3mf") _3mf_output_file = output_file;
 	else if (suffix == ".dxf") dxf_output_file = output_file;
 	else if (suffix == ".svg") svg_output_file = output_file;
 	else if (suffix == ".csg") csg_output_file = output_file;
@@ -737,44 +737,46 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(releaseQSettingsCached()));
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 
-	if (Feature::ExperimentalInputDriver.is_enabled()) {
-		auto *s = Settings::Settings::inst();
+	auto *s = Settings::Settings::inst();
 #ifdef ENABLE_HIDAPI
-		if(s->get(Settings::Settings::inputEnableDriverHIDAPI).toBool()){
-			auto hidApi = new HidApiInputDriver();
-			InputDriverManager::instance()->registerDriver(hidApi);
-		}
+	if(s->get(Settings::Settings::inputEnableDriverHIDAPI).toBool()){
+		auto hidApi = new HidApiInputDriver();
+		InputDriverManager::instance()->registerDriver(hidApi);
+	}
 #endif
 #ifdef ENABLE_SPNAV
-		if(s->get(Settings::Settings::inputEnableDriverSPNAV).toBool()){
-			auto spaceNavDriver = new SpaceNavInputDriver();
-			bool spaceNavDominantAxisOnly = s->get(Settings::Settings::inputEnableDriverHIDAPI).toBool();
-			spaceNavDriver->setDominantAxisOnly(spaceNavDominantAxisOnly);
-			InputDriverManager::instance()->registerDriver(spaceNavDriver);
-        }
+	if(s->get(Settings::Settings::inputEnableDriverSPNAV).toBool()){
+		auto spaceNavDriver = new SpaceNavInputDriver();
+		bool spaceNavDominantAxisOnly = s->get(Settings::Settings::inputEnableDriverHIDAPI).toBool();
+		spaceNavDriver->setDominantAxisOnly(spaceNavDominantAxisOnly);
+		InputDriverManager::instance()->registerDriver(spaceNavDriver);
+	}
 #endif
 #ifdef ENABLE_JOYSTICK
-		if(s->get(Settings::Settings::inputEnableDriverJOYSTICK).toBool()){
-			std::string nr = s->get(Settings::Settings::joystickNr).toString();
-			auto joyDriver = new JoystickInputDriver();
-			joyDriver->setJoystickNr(nr);
-			InputDriverManager::instance()->registerDriver(joyDriver);
-		}
+	if(s->get(Settings::Settings::inputEnableDriverJOYSTICK).toBool()){
+		std::string nr = s->get(Settings::Settings::joystickNr).toString();
+		auto joyDriver = new JoystickInputDriver();
+		joyDriver->setJoystickNr(nr);
+		InputDriverManager::instance()->registerDriver(joyDriver);
+	}
 #endif
 #ifdef ENABLE_QGAMEPAD
-		if(s->get(Settings::Settings::inputEnableDriverQGAMEPAD).toBool()){
-			auto qGamepadDriver = new QGamepadInputDriver();
-			InputDriverManager::instance()->registerDriver(qGamepadDriver);
-		}
+	if(s->get(Settings::Settings::inputEnableDriverQGAMEPAD).toBool()){
+		auto qGamepadDriver = new QGamepadInputDriver();
+		InputDriverManager::instance()->registerDriver(qGamepadDriver);
+	}
 #endif
 #ifdef ENABLE_DBUS
-	if(s->get(Settings::Settings::inputEnableDriverDBUS).toBool()){
+	if (Feature::ExperimentalInputDriverDBus.is_enabled()) {
+		if(s->get(Settings::Settings::inputEnableDriverDBUS).toBool()){
 			auto dBusDriver =new DBusInputDriver();
 			InputDriverManager::instance()->registerDriver(dBusDriver);
 		}
-#endif
-		InputDriverManager::instance()->init();
 	}
+#endif
+
+	InputDriverManager::instance()->init();
+
 	int rc = app.exec();
 	for (auto &mainw : scadApp->windowManager.getWindows()) delete mainw;
 	return rc;
@@ -903,6 +905,7 @@ int main(int argc, char **argv)
 		("quiet,q", "quiet mode (don't print anything *except* errors)")
 		("hardwarnings", "Stop on the first warning")
 		("check-parameters", po::value<string>(), "=true/false, configure the parameter check for user modules and functions")
+		("check-parameter-ranges", po::value<string>(), "=true/false, configure the parameter range check for builtin modules")
 		("debug", po::value<string>(), "special debug info")
 		("s,s", po::value<string>(), "stl_file deprecated, use -o")
 		("x,x", po::value<string>(), "dxf_file deprecated, use -o")
@@ -945,6 +948,7 @@ int main(int argc, char **argv)
 	
 	std::map<std::string, bool*> flags;
 	flags.insert(std::make_pair("check-parameters",&OpenSCAD::parameterCheck));
+	flags.insert(std::make_pair("check-parameter-ranges",&OpenSCAD::rangeCheck));
 	for(auto flag : flags) {
 		std::string name = flag.first;
 		if(vm.count(name)){

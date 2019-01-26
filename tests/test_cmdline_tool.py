@@ -119,6 +119,14 @@ def normalize_string(s):
         return match.groups()[0] + match.groups()[2]
     s = re.sub('(file = ")([^"/]*/)*([^"]*")', pathrep, s)
 
+    """C++ ... does not explicitly specify the representation ...
+    of nonfinite values, leaving it implementation-defined.
+    So without some specific action, input and output of
+    nonfinite values is not portable. 
+    https://www.boost.org/doc/libs/1_51_0/libs/math/doc/sf_and_dist/html/math_toolkit/utils/fp_facets/intro.html"""
+    s = re.sub('=-nan, ','=nan, ', s)
+    s = re.sub('=-nan\)','=nan)', s)
+
     return s
 
 def get_normalized_text(filename):
@@ -155,7 +163,7 @@ def compare_png(resultfilename):
     #args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-composite", "-threshold", "10%", "-blur", "2", "-threshold", "30%", "-format", "%[fx:w*h*mean]", "info:"]
     args = [expectedfilename, resultfilename, "-alpha", "On", "-compose", "difference", "-composite", "-threshold", "10%", "-morphology", "Erode", "Square", "-format", "%[fx:w*h*mean]", "info:"]
 
-    # for systems with older imagemagick that doesnt support '-morphology'
+    # for systems with older imagemagick that doesn't support '-morphology'
     # http://www.imagemagick.org/Usage/morphology/#alturnative
     if options.comparator == 'old':
       args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-composite", "-threshold", "10%", "-gaussian-blur","3x65535", "-threshold", "99.99%", "-format", "%[fx:w*h*mean]", "info:"]

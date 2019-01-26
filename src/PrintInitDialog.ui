@@ -48,10 +48,16 @@
        <height>200</height>
       </size>
      </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
      <property name="source">
       <url>
        <string>qrc:/src/PrintInitDialog.html</string>
       </url>
+     </property>
+     <property name="openExternalLinks">
+      <bool>true</bool>
      </property>
     </widget>
    </item>

@@ -147,7 +147,7 @@
 unsigned int GuiLocker::gui_locked = 0;
 
 static char copyrighttext[] =
-	"Copyright (C) 2009-2018 The OpenSCAD Developers\n\n"
+	"Copyright (C) 2009-2019 The OpenSCAD Developers\n\n"
 	"This program is free software; you can redistribute it and/or modify "
 	"it under the terms of the GNU General Public License as published by "
 	"the Free Software Foundation; either version 2 of the License, or "
@@ -259,11 +259,11 @@ MainWindow::MainWindow(const QString &filename)
 	const QString importStatement = "import(\"%1\");\n";
 	const QString surfaceStatement = "surface(\"%1\");\n";
 	knownFileExtensions["stl"] = importStatement;
-	if (Feature::Experimental3mfImport.is_enabled()) knownFileExtensions["3mf"] = importStatement;
+	knownFileExtensions["3mf"] = importStatement;
 	knownFileExtensions["off"] = importStatement;
 	knownFileExtensions["dxf"] = importStatement;
 	if (Feature::ExperimentalSvgImport.is_enabled()) knownFileExtensions["svg"] = importStatement;
-	if (Feature::ExperimentalAmfImport.is_enabled()) knownFileExtensions["amf"] = importStatement;
+	knownFileExtensions["amf"] = importStatement;
 	knownFileExtensions["dat"] = surfaceStatement;
 	knownFileExtensions["png"] = surfaceStatement;
 	knownFileExtensions["scad"] = "";
@@ -277,6 +277,9 @@ MainWindow::MainWindow(const QString &filename)
 	this->qglview->statusLabel = new QLabel(this);
 	this->qglview->statusLabel->setMinimumWidth(100);
 	statusBar()->addWidget(this->qglview->statusLabel);
+
+	auto s = Settings::Settings::inst();
+	this->qglview->setMouseCentricZoom(s->get(Settings::Settings::mouseCentricZoom).toBool());
 
 	animate_timer = new QTimer(this);
 	connect(animate_timer, SIGNAL(timeout()), this, SLOT(updateTVal()));
@@ -388,20 +391,14 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->fileActionExportImage, SIGNAL(triggered()), this, SLOT(actionExportImage()));
 	connect(this->designActionFlushCaches, SIGNAL(triggered()), this, SLOT(actionFlushCaches()));
 
-#ifdef ENABLE_LIB3MF
-	bool export3mfVisible = Feature::Experimental3mfExport.is_enabled();
-#else
-	bool export3mfVisible = false;
+#ifndef ENABLE_LIB3MF
+	this->fileActionExport3MF->setVisible(false);
 #endif
-	this->fileActionExport3MF->setVisible(export3mfVisible);
 
-#ifdef ENABLE_3D_PRINTING
-	bool enable3dPrinting = Feature::Experimental3dPrint.is_enabled();
-#else
-	bool enable3dPrinting = false;
+#ifndef ENABLE_3D_PRINTING
+	this->designAction3DPrint->setVisible(false);
+	this->designAction3DPrint->setEnabled(false);
 #endif
-	this->designAction3DPrint->setVisible(enable3dPrinting);
-	this->designAction3DPrint->setEnabled(enable3dPrinting);
 
 	// View menu
 #ifndef ENABLE_OPENCSG
@@ -458,7 +455,7 @@ MainWindow::MainWindow(const QString &filename)
 
 	setCurrentOutput();
 
-	std::string helptitle = "OpenSCAD " + openscad_versionnumber +  "\nhttp://www.openscad.org\n";
+	std::string helptitle = "OpenSCAD " + openscad_versionnumber +  "\nhttps://www.openscad.org/\n";
 	PRINT(helptitle);
 	PRINT(copyrighttext);
 
@@ -475,6 +472,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->qglview, SIGNAL(doAnimateUpdate()), this, SLOT(animateUpdate()));
 
 	connect(Preferences::inst(), SIGNAL(requestRedraw()), this->qglview, SLOT(updateGL()));
+	connect(Preferences::inst(), SIGNAL(updateMouseCentricZoom(bool)), this->qglview, SLOT(setMouseCentricZoom(bool)));
 	connect(Preferences::inst(), SIGNAL(updateMdiMode(bool)), this, SLOT(updateMdiMode(bool)));
 	connect(Preferences::inst(), SIGNAL(updateReorderMode(bool)), this, SLOT(updateReorderMode(bool)));
 	connect(Preferences::inst(), SIGNAL(updateUndockMode(bool)), this, SLOT(updateUndockMode(bool)));
@@ -1042,6 +1040,7 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 {
 	OpenSCAD::hardwarnings = Preferences::inst()->getValue("advanced/enableHardwarnings").toBool();
 	OpenSCAD::parameterCheck = Preferences::inst()->getValue("advanced/enableParameterCheck").toBool();
+	OpenSCAD::rangeCheck = Preferences::inst()->getValue("advanced/enableParameterRangeCheck").toBool();
 
 	try{
 		bool shouldcompiletoplevel = false;
@@ -1620,7 +1619,7 @@ void MainWindow::actionShowLibraryFolder()
 {
 	auto path = PlatformUtils::userLibraryPath();
 	if (!fs::exists(path)) {
-		PRINTB("UI-WARNING: Library path %s doesnt exist. Creating", path);
+		PRINTB("UI-WARNING: Library path %s doesn't exist. Creating", path);
 		if (!PlatformUtils::createUserLibraryPath()) {
 			PRINTB("UI-ERROR: Cannot create library path: %s",path);
 		}
@@ -2076,20 +2075,15 @@ void MainWindow::csgRender()
 void MainWindow::action3DPrint()
 {
 #ifdef ENABLE_3D_PRINTING
-	if (!Feature::Experimental3dPrint.is_enabled()) {
-		return;
-	}
-
 	if (GuiLocker::isLocked()) return;
 	GuiLocker lock;
 
 	setCurrentOutput();
 
 	//Make sure we can export:
-	unsigned int dim = 3;
+	const unsigned int dim = 3;
 	if (!canExport(dim))
 	{
-		PRINT("Cannot 3D Print due to errors.");
 		return;
     }
 
@@ -2531,7 +2525,7 @@ bool MainWindow::canExport(unsigned int dim)
 
 	auto N = dynamic_cast<const CGAL_Nef_polyhedron *>(this->root_geom.get());
 	if (N && !N->p3->is_simple()) {
-	 	PRINT("UI-WARNING: Object may not be a valid 2-manifold and may need repair! See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
+		PRINT("UI-WARNING: Object may not be a valid 2-manifold and may need repair! See https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
 	}
 	
 	return true;

@@ -33,15 +33,15 @@
 PrintInitDialog::PrintInitDialog()
 {
 	setupUi(this);
-	this->textBrowser->setOpenExternalLinks(true);
 	this->radioButtonCancel->setChecked(true);
 
 	const auto printService = PrintService::inst();
 	QFile html(":/src/PrintInitDialog.html");
 
-	if (html.open(QIODevice::ReadOnly | QIODevice::Text)) {
-		QString infoHtml = printService->isEnabled() ? printService->getInfoHtml() : "";
-		this->textBrowser->setHtml(QString{html.readAll()}.replace("@@PrintServiceInfoHtml@@", infoHtml));
+	if (html.open(QIODevice::ReadOnly)) {
+		const auto infoHtml = printService->isEnabled() ? printService->getInfoHtml() : "";
+		const auto fullHtml = QString{html.readAll()}.replace("@@PrintServiceInfoHtml@@", infoHtml);
+		this->textBrowser->setHtml(fullHtml);
 	}
 
 	if (printService->isEnabled()) {

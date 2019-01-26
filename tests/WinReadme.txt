@@ -32,5 +32,5 @@ tests-build directory.
 
 -'Diff' text-tests may not run properly on Windows(TM). 
 
--Detection of ctest, python, and imagemagick doesnt always work properly
+-Detection of ctest, python, and imagemagick doesn't always work properly
 
