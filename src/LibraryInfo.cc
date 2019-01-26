@@ -70,6 +70,12 @@ std::string LibraryInfo::info()
 	std::string mingwstatus("No");
 #endif
 
+#ifdef DEBUG
+	std::string debugstatus("Yes");
+#else
+	std::string debugstatus("No");
+#endif
+
 #ifndef OPENCSG_VERSION_STRING
 #define OPENCSG_VERSION_STRING "unknown, <1.3.2"
 #endif
@@ -107,6 +113,7 @@ std::string LibraryInfo::info()
 	  << "\nUser Agent: " << PlatformUtils::user_agent()
 	  << "\nCompiler: " << compiler_info
 	  << "\nMinGW build: " << mingwstatus
+	  << "\nDebug build: " << debugstatus
 	  << "\nBoost version: " << BOOST_LIB_VERSION
 	  << "\nEigen version: " << EIGEN_WORLD_VERSION << "." << EIGEN_MAJOR_VERSION << "." << EIGEN_MINOR_VERSION
 	  << "\nCGAL version, kernels: " << TOSTRING(CGAL_VERSION) << ", " << cgal_3d_kernel << ", " << cgal_2d_kernel << ", " << cgal_2d_kernelEx
