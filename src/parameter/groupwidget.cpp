@@ -2,21 +2,21 @@
 
 GroupWidget::GroupWidget(bool &show, const QString & title, QWidget *parent) : QWidget(parent)
 {
-	toggleButton.setText(title);
-	toggleButton.setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Maximum);
-	toggleButton.setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-	toggleButton.setCheckable(true);
+	this->toggleButton.setText(title);
+	this->toggleButton.setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Maximum);
+	this->toggleButton.setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+	this->toggleButton.setCheckable(true);
 
 	this->show = &show;
-	toggleButton.setChecked(show);
+	this->toggleButton.setChecked(show);
 
 	// don't waste space
-	mainLayout.setVerticalSpacing(0);
-	mainLayout.setContentsMargins(0, 0, 0, 0);
-    contentArea.setContentsMargins(0, 0, 0, 0);
+	this->mainLayout.setVerticalSpacing(0);
+	this->mainLayout.setContentsMargins(0, 0, 0, 0);
+	this->contentArea.setContentsMargins(0, 0, 0, 0);
 
-	mainLayout.addWidget(&toggleButton, 0, 0);
-	mainLayout.addWidget(&contentArea, 1, 0);
+	this->mainLayout.addWidget(&toggleButton, 0, 0);
+	this->mainLayout.addWidget(&contentArea, 1, 0);
 	setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Maximum);
 	setLayout(&mainLayout);
 	QObject::connect(&toggleButton, SIGNAL(toggled(bool)),this, SLOT(onclicked(bool)));
@@ -25,9 +25,9 @@ GroupWidget::GroupWidget(bool &show, const QString & title, QWidget *parent) : Q
 
 void GroupWidget::onclicked(const bool /*checked*/)
 {
-	toggleButton.setArrowType(toggleButton.isChecked() ? Qt::DownArrow : Qt::RightArrow);
+	this->toggleButton.setArrowType(this->toggleButton.isChecked() ? Qt::DownArrow : Qt::RightArrow);
 
-	if (toggleButton.isChecked()) {
+	if (this->toggleButton.isChecked()) {
 		*(this->show) = true; //update the show flag in the group map
 		contentArea.show();
 	} else {
@@ -38,9 +38,9 @@ void GroupWidget::onclicked(const bool /*checked*/)
 
 void GroupWidget::setContentLayout(QLayout & contentLayout)
 {
-	delete contentArea.layout();
+	delete this->contentArea.layout();
 
-	contentArea.setLayout(&contentLayout);
+	this->contentArea.setLayout(&contentLayout);
 
-	onclicked(toggleButton.isChecked());
+	onclicked(this->toggleButton.isChecked());
 }
