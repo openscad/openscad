@@ -11,10 +11,10 @@ ParameterVector::ParameterVector(QWidget *parent, ParameterObject *parameterobje
 	connect(doubleSpinBox4,SIGNAL(valueChanged(double)),this,SLOT(onChanged(double)));
 
 	IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
-	doubleSpinBox1->installEventFilter(ignoreWheelWhenNotFocused);
-	doubleSpinBox2->installEventFilter(ignoreWheelWhenNotFocused);
-	doubleSpinBox3->installEventFilter(ignoreWheelWhenNotFocused);
-	doubleSpinBox4->installEventFilter(ignoreWheelWhenNotFocused);
+	this->doubleSpinBox1->installEventFilter(ignoreWheelWhenNotFocused);
+	this->doubleSpinBox2->installEventFilter(ignoreWheelWhenNotFocused);
+	this->doubleSpinBox3->installEventFilter(ignoreWheelWhenNotFocused);
+	this->doubleSpinBox4->installEventFilter(ignoreWheelWhenNotFocused);
 }
 
 void ParameterVector::onChanged(double)
