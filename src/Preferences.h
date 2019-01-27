@@ -86,7 +86,6 @@ public slots:
 	void on_checkBoxEnableLineNumbers_toggled(bool);
 
 	// Print
-	void on_checkBoxShowPrintServiceSelectionDialog_toggled(bool);
 	void on_pushButtonOctoPrintCheckConnection_clicked();
 	void on_pushButtonOctoPrintSlicingEngine_clicked();
 	void on_comboBoxOctoPrintSlicingEngine_activated(int);

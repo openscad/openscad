@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>553</width>
-    <height>480</height>
+    <width>581</width>
+    <height>498</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -136,8 +136,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>435</width>
-             <height>563</height>
+             <width>547</width>
+             <height>751</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_5">
@@ -254,7 +254,7 @@
                  <widget class="QFontComboBox" name="fontChooser">
                   <property name="currentFont">
                    <font>
-                    <family>Nimbus Sans L</family>
+                    <family>Lucida Grande</family>
                     <pointsize>12</pointsize>
                    </font>
                   </property>
@@ -1230,8 +1230,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>100</width>
-               <height>30</height>
+               <width>98</width>
+               <height>36</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_10">
@@ -1265,13 +1265,6 @@
       </widget>
       <widget class="QWidget" name="page3DPrint">
        <layout class="QVBoxLayout" name="verticalLayout_5">
-        <item>
-         <widget class="QCheckBox" name="checkBoxShowPrintServiceSelectionDialog">
-          <property name="text">
-           <string>Show Print Service Selection Dialog</string>
-          </property>
-         </widget>
-        </item>
         <item>
          <widget class="QGroupBox" name="groupBoxOctoPrint">
           <property name="title">
@@ -1560,8 +1553,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>355</width>
-             <height>409</height>
+             <width>456</width>
+             <height>563</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_12">
