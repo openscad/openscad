@@ -9,6 +9,8 @@ class EvaluationException : public std::runtime_error {
 public:
 	EvaluationException(const std::string &what_arg) : std::runtime_error(what_arg) {}
 	~EvaluationException() throw() {}
+public:
+	int traceDepth=12;
 };
 
 class AssertionFailedException : public EvaluationException {
@@ -34,8 +36,8 @@ private:
 	RecursionException(const std::string &what_arg, const Location &loc) : EvaluationException(what_arg), loc(loc) {}
 };
 
-class HardWarningException : public std::runtime_error {
+class HardWarningException : public EvaluationException {
 public:
-	HardWarningException(const std::string &what_arg) : std::runtime_error(what_arg) {}
+	HardWarningException(const std::string &what_arg) : EvaluationException(what_arg) {}
 	~HardWarningException() throw() {}
 };

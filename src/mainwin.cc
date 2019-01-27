@@ -3171,6 +3171,8 @@ void MainWindow::consoleOutput(const QString &msg)
 		this->console->appendHtml("<span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span>");
 	} else if (msg.startsWith("EXPORT-ERROR:") || msg.startsWith("UI-ERROR:") || msg.startsWith("PARSER-ERROR:")) {
 		this->console->appendHtml("<span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span>");
+	} else if (msg.startsWith("TRACE:")) {
+		this->console->appendHtml("<span style=\"color: black; background-color: #d0d0ff;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span>");
 	} else {
 		QString qmsg = msg;
 		if(qmsg.contains('\t') && !qmsg.contains("<pre>", Qt::CaseInsensitive))
