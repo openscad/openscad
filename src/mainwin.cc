@@ -156,6 +156,7 @@ bool MainWindow::mdiMode = false;
 bool MainWindow::undockMode = false;
 bool MainWindow::reorderMode = false;
 const int MainWindow::tabStopWidth = 15;
+QElapsedTimer *MainWindow::progressThrottle = new QElapsedTimer();
 
 namespace {
 
@@ -299,6 +300,8 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->e_fps, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimFps()));
 	connect(this->e_fsteps, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimSteps()));
 	connect(this->e_dump, SIGNAL(toggled(bool)), this, SLOT(updatedAnimDump(bool)));
+
+	progressThrottle->start();
 
 	animate_panel->hide();
 	this->hideFind(); 
@@ -835,17 +838,23 @@ void MainWindow::showProgress()
 
 void MainWindow::report_func(const class AbstractNode*, void *vp, int mark)
 {
-	auto thisp = static_cast<MainWindow*>(vp);
-	auto v = static_cast<int>((mark*1000.0) / progress_report_count);
-	auto permille = v < 1000 ? v : 999;
-	if (permille > thisp->progresswidget->value()) {
-		QMetaObject::invokeMethod(thisp->progresswidget, "setValue", Qt::QueuedConnection,
-															Q_ARG(int, permille));
-		QApplication::processEvents();
-	}
+	// limit to progress bar update calls to 30 per second
+	static const qint64 MIN_TIMEOUT = 33;
+	if (progressThrottle->hasExpired(MIN_TIMEOUT)) {
+		progressThrottle->start();
 
-	// FIXME: Check if cancel was requested by e.g. Application quit
-	if (thisp->progresswidget->wasCanceled()) throw ProgressCancelException();
+		auto thisp = static_cast<MainWindow*>(vp);
+		auto v = static_cast<int>((mark*1000.0) / progress_report_count);
+		auto permille = v < 1000 ? v : 999;
+		if (permille > thisp->progresswidget->value()) {
+			QMetaObject::invokeMethod(thisp->progresswidget, "setValue", Qt::QueuedConnection,
+																Q_ARG(int, permille));
+			QApplication::processEvents();
+		}
+
+		// FIXME: Check if cancel was requested by e.g. Application quit
+		if (thisp->progresswidget->wasCanceled()) throw ProgressCancelException();
+	}
 }
 
 bool MainWindow::network_progress_func(const double permille)
