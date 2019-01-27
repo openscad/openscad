@@ -2149,6 +2149,13 @@ void MainWindow::action3DPrint()
 void MainWindow::sendToOctoPrint()
 {
 #ifdef ENABLE_3D_PRINTING
+	OctoPrint octoPrint;
+
+	if (octoPrint.url().trimmed().isEmpty()) {
+		PRINT("ERROR: OctoPrint connection not configured. Please check preferences.");
+		return;
+	}
+
 	Settings::Settings *s = Settings::Settings::inst();
 	const QString fileFormat = QString::fromStdString(s->get(Settings::Settings::octoPrintFileFormat).toString());
 	FileFormat exportFileFormat{FileFormat::STL};
@@ -2180,7 +2187,6 @@ void MainWindow::sendToOctoPrint()
 
 	exportFileByName(this->root_geom, exportFileFormat, exportFileName.toLocal8Bit().constData(), exportFileName.toUtf8());
 
-	OctoPrint octoPrint;
 	try {
 		this->progresswidget = new ProgressWidget(this);
 		connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
