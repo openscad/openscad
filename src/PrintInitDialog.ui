@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>693</width>
-    <height>560</height>
+    <width>504</width>
+    <height>246</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>OpenSCAD 3D Printing</string>
+   <string>3D Print</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <property name="horizontalSpacing">
@@ -44,8 +44,8 @@
     <widget class="QTextBrowser" name="textBrowser">
      <property name="minimumSize">
       <size>
-       <width>400</width>
-       <height>200</height>
+       <width>480</width>
+       <height>128</height>
       </size>
      </property>
      <property name="readOnly">
