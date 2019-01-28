@@ -2082,51 +2082,20 @@ void MainWindow::action3DPrint()
 
 	//Make sure we can export:
 	const unsigned int dim = 3;
-	if (!canExport(dim))
-	{
-		return;
-    }
+	if (!canExport(dim)) return;
 
 	Settings::Settings *s = Settings::Settings::inst();
-	const bool showDialog = s->get(Settings::Settings::printServiceShowDialog).toBool();
 
-	print_service_t selectedService;
 	const auto printService = PrintService::inst();
-	if (showDialog) {
-		auto printInitDialog = new PrintInitDialog();
-		auto printInitResult = printInitDialog->exec();
-		printInitDialog->deleteLater();
-		if (printInitResult == QDialog::Rejected) {
-			return;
-		}
-
-		const auto dialog_result = printInitDialog->get_result();
-		selectedService = dialog_result.service;
-		if (dialog_result.rememberDecision) {
-			switch (dialog_result.service) {
-			case print_service_t::PRINT_SERVICE:
-				s->set(Settings::Settings::printService, printService->getService().toStdString());
-				break;
-			case print_service_t::OCTOPRINT:
-				s->set(Settings::Settings::printService, "OctoPrint");
-				break;
-			default:
-				s->set(Settings::Settings::printService, "None");
-				break;
-			}
-			s->set(Settings::Settings::printServiceShowDialog, false);
-		}
-		Preferences::Preferences::inst()->updateGUI();
-	} else {
-		const auto service = s->get(Settings::Settings::printService).toString();
-		if (service == printService->getService().toStdString()) {
-			selectedService = print_service_t::PRINT_SERVICE;
-		} else if (service == "OctoPrint") {
-			selectedService = print_service_t::OCTOPRINT;
-		} else {
-			selectedService = print_service_t::NONE;
-		}
+	auto printInitDialog = new PrintInitDialog();
+	auto printInitResult = printInitDialog->exec();
+	printInitDialog->deleteLater();
+	if (printInitResult == QDialog::Rejected) {
+		return;
 	}
+
+	const auto selectedService = printInitDialog->getResult();
+	Preferences::Preferences::inst()->updateGUI();
 
 	switch (selectedService) {
 	case print_service_t::PRINT_SERVICE:
@@ -2138,9 +2107,6 @@ void MainWindow::action3DPrint()
 		sendToOctoPrint();
 		break;
 	default:
-		if (!showDialog) {
-			PRINT("Sending design to print services is disabled, check Preferences to enable.");
-		}
 		break;
 	}
 #endif
