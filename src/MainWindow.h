@@ -15,6 +15,7 @@
 #include "export.h"
 #include <vector>
 #include <QMutex>
+#include <QElapsedTimer>
 #include <QTime>
 #include <QIODevice>
 #include "input/InputDriver.h"
@@ -38,7 +39,6 @@ public:
 	QTimer *autoReloadTimer;
 	std::string autoReloadId;
 	QTimer *waitAfterReloadTimer;
-
 	QTime renderingTime;
 
 	BuiltinContext top_ctx;
@@ -286,6 +286,7 @@ private:
 	static bool undockMode;
 	static bool reorderMode;
 	static const int tabStopWidth;
+	static QElapsedTimer *progressThrottle;
 
 	shared_ptr<class CSGNode> csgRoot;		   // Result of the CSGTreeEvaluator
 	shared_ptr<CSGNode> normalizedRoot;		  // Normalized CSG tree
