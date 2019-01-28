@@ -838,8 +838,8 @@ void MainWindow::showProgress()
 
 void MainWindow::report_func(const class AbstractNode*, void *vp, int mark)
 {
-	// limit to progress bar update calls to 30 per second
-	static const qint64 MIN_TIMEOUT = 33;
+	// limit to progress bar update calls to 5 per second
+	static const qint64 MIN_TIMEOUT = 200;
 	if (progressThrottle->hasExpired(MIN_TIMEOUT)) {
 		progressThrottle->start();
 
