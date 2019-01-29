@@ -256,11 +256,15 @@ public:
   }
 
   std::string operator()(const Value::VectorType &v) const {
+    // Create a single stream and pass reference to it for list elements for optimization.
     std::ostringstream stream;
+    // Configure stream in case we ouput doubles.
+    // see note in "tostring_visitor::operator()(const double &op1)" above
+    stream.unsetf(std::ios::floatfield);
     stream << '[';
     for (size_t i = 0; i < v.size(); i++) {
       if (i > 0) stream << ", ";
-      stream << v[i]->toEchoString();
+      v[i]->toEchoStream(stream);
     }
     stream << ']';
     return stream.str();
@@ -275,9 +279,63 @@ public:
   }
 };
 
+// Optimization to avoid multiple stream instantiations and copies to str for long vectors.
+// Functions identically to "class tostring_visitor", except outputting to stream and not returning strings
+class tostream_visitor : public boost::static_visitor<>
+{
+public:
+  std::ostringstream &stream;
+  tostream_visitor(std::ostringstream& stream) : stream(stream) {};
+  template <typename T> void operator()(const T &op1) const {
+    //    std::cout << "[generic tostream_visitor]\n";
+    stream << boost::lexical_cast<std::string>(op1);
+  }
+
+  void operator()(const double &op1) const {
+    if (op1 != op1) { // Fix for avoiding nan vs. -nan across platforms
+      stream << "nan";
+    } else if (op1 == 0) {
+      stream << "0"; // Don't return -0 (exactly -0 and 0 equal 0)
+    } else {
+      stream << op1;
+    }
+  }
+
+  void operator()(const boost::blank &) const {
+    stream << "undef";
+  }
+
+  void operator()(const bool &v) const {
+    stream << (v ? "true" : "false");
+  }
+
+  void operator()(const Value::VectorType &v) const {
+    stream << '[';
+    for (size_t i = 0; i < v.size(); i++) {
+      if (i > 0) stream << ", ";
+      v[i]->toEchoStream(stream);
+    }
+    stream << ']';
+  }
+
+  void operator()(const RangeType &v) const {
+    stream << (boost::format("[%1% : %2% : %3%]") % v.begin_val % v.step_val % v.end_val);
+  }
+
+  void operator()(const ValuePtr &v) const {
+    v->toStream(stream);
+  }
+};
+
+
 std::string Value::toString() const
 {
   return boost::apply_visitor(tostring_visitor(), this->value);
+}
+
+void Value::toStream(std::ostringstream &stream) const
+{
+  boost::apply_visitor(tostream_visitor(stream), this->value);
 }
 
 std::string Value::toEchoString() const
@@ -286,6 +344,17 @@ std::string Value::toEchoString() const
 		return std::string("\"") + toString() + '"';
 	} else {
 		return toString();
+	}
+}
+
+void Value::toEchoStream(std::ostringstream &stream) const
+{
+	if (type() == Value::ValueType::STRING) {
+		stream << '"';
+		toStream(stream);
+		stream << '"';
+	} else {
+		toStream(stream);
 	}
 }
 
