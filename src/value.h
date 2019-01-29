@@ -94,6 +94,7 @@ public:
   
 	friend class chr_visitor;
 	friend class tostring_visitor;
+	friend class tostream_visitor;
 	friend class bracket_visitor;
 };
 
@@ -192,6 +193,8 @@ public:
   bool toBool() const;
   std::string toString() const;
   std::string toEchoString() const;
+  void toStream(std::ostringstream &stream) const;
+  void toEchoStream(std::ostringstream &stream) const;
   std::string chrString() const;
   const VectorType &toVector() const;
   bool getVec2(double &x, double &y, bool ignoreInfinite = false) const;
