@@ -55,8 +55,6 @@ public:
     static SettingsEntry enableBraceMatching;
     static SettingsEntry enableLineNumbers;
 
-	static SettingsEntry printServiceShowDialog;
-	static SettingsEntry printService;
 	static SettingsEntry octoPrintUrl;
 	static SettingsEntry octoPrintApiKey;
 	static SettingsEntry octoPrintFileFormat;

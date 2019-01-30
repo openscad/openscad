@@ -180,21 +180,8 @@ AbstractNode *FileModule::instantiateWithFileContext(FileContext *ctx, const Mod
 		// FIXME: Set document path to the path of the module
 		auto instantiatednodes = this->scope.instantiateChildren(ctx);
 		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
-	}
-	catch (RecursionException &e) {
-		const auto docPath = boost::filesystem::path(ctx->documentPath());
-		const auto uncPath = boostfs_uncomplete(e.loc.filePath(), docPath);
-
-		PRINTB("%s in file %s, line %d", e.what() % uncPath.generic_string() % e.loc.firstLine());
-	}
-	catch (AssertionFailedException &e) {
-		const auto docPath = boost::filesystem::path(ctx->documentPath());
-		const auto uncPath = boostfs_uncomplete(e.loc.filePath(), docPath);
-
-		PRINTB("%s failed in file %s, line %d", e.what() % uncPath.generic_string() % e.loc.firstLine());
-	}
-	catch (EvaluationException &e) {
-		PRINT(e.what());
+	} catch (EvaluationException &e) {
+		//PRINT(e.what()); //please output the message before throwing the exception
 	}
 
 	return node;

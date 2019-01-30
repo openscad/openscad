@@ -29,13 +29,7 @@
 #include "qtgettext.h"
 #include "ui_PrintInitDialog.h"
 
-enum class print_service_t { NONE, PRINT_SERVICE, OCTOPRINT };
-
-struct PrintServiceResult
-{
-	print_service_t service;
-	bool rememberDecision;
-};
+enum class print_service_t { PRINT_SERVICE, OCTOPRINT };
 
 class PrintInitDialog : public QDialog, public Ui::PrintInitDialog
 {
@@ -43,11 +37,14 @@ class PrintInitDialog : public QDialog, public Ui::PrintInitDialog
 public:
 	PrintInitDialog();
 	~PrintInitDialog();
-	const PrintServiceResult get_result() const;
+	print_service_t getResult() const { return this->result; }
 
 public slots:
+	void on_printServiceButton_clicked();
+	void on_octoPrintButton_clicked();
 	void on_okButton_clicked();
 	void on_cancelButton_clicked();
 private:
-	PrintServiceResult result;
+	print_service_t result;
+	QString htmlTemplate;
 };

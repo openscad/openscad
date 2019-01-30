@@ -49,6 +49,10 @@ const std::string OctoPrint::apiKey() const
 
 const QJsonDocument OctoPrint::getJsonData(const QString endpoint) const
 {
+	if (url().trimmed().isEmpty()) {
+		throw NetworkException{QNetworkReply::ProtocolFailure, "OctoPrint URL not configured."};
+	}
+
 	auto networkRequest = NetworkRequest<const QJsonDocument>{QUrl{url() + endpoint}, { 200 }, 30};
 
 	return networkRequest.execute(

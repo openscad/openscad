@@ -34,6 +34,7 @@
 #include "stackcheck.h"
 #include "exceptions.h"
 #include "feature.h"
+#include "printutils.h"
 #include <boost/bind.hpp>
 
 #include <boost/assign/std/vector.hpp>
@@ -432,13 +433,21 @@ FunctionCall::FunctionCall(const std::string &name,
 ValuePtr FunctionCall::evaluate(const Context *context) const
 {
 	if (StackCheck::inst()->check()) {
-		throw RecursionException::create("function", this->name,loc);
+		std::string locs = this->loc.toRelativeString(context->documentPath());
+		PRINTB("ERROR: Recursion detected calling function '%s' %s", this->name % locs);
+		throw RecursionException::create("function", this->name,this->loc);
 	}
-    
-	EvalContext c(context, this->arguments, this->loc);
-	ValuePtr result = context->evaluate_function(this->name, &c);
-
-	return result;
+	try{
+		EvalContext c(context, this->arguments, this->loc);
+		ValuePtr result = context->evaluate_function(this->name, &c);
+		return result;
+	}catch(EvaluationException &e){
+		if(e.traceDepth>0){
+			PRINTB("TRACE: called by '%s', %s.", this->name % this->loc.toRelativeString(context->documentPath()));
+			e.traceDepth--;
+		}
+		throw;
+	}
 }
 
 void FunctionCall::print(std::ostream &stream, const std::string &) const
@@ -673,8 +682,11 @@ ValuePtr LcForC::evaluate(const Context *context) const
     while (this->cond->evaluate(&c)) {
         vec.push_back(this->expr->evaluate(&c));
 
-		if (counter++ == 1000000) throw RecursionException::create("for loop", "", loc);
-
+		if (counter++ == 1000000) {
+			std::string locs = loc.toRelativeString(context->documentPath());
+			PRINTB("ERROR: Recursion detected calling for loop, %s", locs);
+			throw RecursionException::create("for loop", "", loc);
+		}
         Context tmp(&c);
         evaluate_sequential_assignment(this->incr_arguments, &tmp, this->loc);
         c.apply_variables(tmp);
@@ -731,14 +743,15 @@ void evaluate_assert(const Context &context, const class EvalContext *evalctx)
 	const ValuePtr condition = c.lookup_variable("condition");
 
 	if (!condition->toBool()) {
-		std::ostringstream msg;
-		msg << "ERROR: Assertion";
 		const Expression *expr = assignments["condition"];
-		if (expr) msg << " '" << *expr << "'";
 		const ValuePtr message = c.lookup_variable("message", true);
+		
+		std::string locs = evalctx->loc.toRelativeString(context.documentPath());
 		if (message->isDefined()) {
-			msg << ": " << message->toEchoString();
+			PRINTB("ERROR: Assertion '%s': %s failed %s", *expr % message->toEchoString() % locs);
+		}else{
+			PRINTB("ERROR: Assertion '%s' failed %s", *expr % locs);
 		}
-		throw AssertionFailedException(msg.str(),evalctx->loc);
+		throw AssertionFailedException("Assertion Failed",evalctx->loc);
 	}
 }
