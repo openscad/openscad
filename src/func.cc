@@ -840,6 +840,22 @@ ValuePtr builtin_is_undef(const Context *, const EvalContext *evalctx)
 	return ValuePtr::undefined;
 }
 
+ValuePtr builtin_datetime(const Context *, const EvalContext *evalctx)
+{
+	time_t now = time(0);
+	tm *ltm = localtime(&now);
+   
+	(void)evalctx; // unusued parameter
+	Value::VectorType val;
+	val.push_back(double(1900 + ltm->tm_year));
+	val.push_back(double(1 +ltm->tm_mon));
+	val.push_back(double(ltm->tm_mday));
+	val.push_back(double(ltm->tm_hour));
+	val.push_back(double(ltm->tm_min));
+	val.push_back(double(ltm->tm_sec));
+	return ValuePtr(val);
+}
+
 void register_builtin_functions()
 {
 	Builtins::init("abs", new BuiltinFunction(&builtin_abs));
@@ -875,4 +891,5 @@ void register_builtin_functions()
 	Builtins::init("cross", new BuiltinFunction(&builtin_cross));
 	Builtins::init("parent_module", new BuiltinFunction(&builtin_parent_module));
 	Builtins::init("is_undef", new BuiltinFunction(&builtin_is_undef));
+	Builtins::init("datetime", new BuiltinFunction(&builtin_datetime));
 }
