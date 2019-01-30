@@ -60,6 +60,9 @@ public slots:
 	void setMouseCentricZoom(bool var){
 		this->mouseCentricZoom=var;
 	}
+	void setUseRotate2(bool var){
+		this->useRotate2=var;
+	}
 
 public:
 	QLabel *statusLabel;
@@ -79,6 +82,7 @@ private:
 
 	bool mouse_drag_active;
 	bool mouseCentricZoom=true;
+	bool useRotate2=false;
 	QPoint last_mouse;
 	QImage frame; // Used by grabFrame() and save()
 

@@ -254,10 +254,18 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
       // Left button rotates in xz, Shift-left rotates in xy
       // On Mac, Ctrl-Left is handled as right button on other platforms
       if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
+            if(this->useRotate2){
+                rotate2(dy, dx, 0.0);
+            }else{
                 rotate(dy, dx, 0.0, true);
+            }
 	}
       else {
+            if(this->useRotate2){
+                rotate2(dy, 0.0, dx);
+            }else{
                 rotate(dy, 0.0, dx, true);
+            }
 	}
 
       normalizeAngle(cam.object_rot.x());

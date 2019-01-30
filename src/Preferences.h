@@ -59,6 +59,7 @@ public slots:
 	void on_enableRangeCheckBox_toggled(bool);
 	void on_checkBoxShowWarningsIn3dView_toggled(bool);
 	void on_checkBoxMouseCentricZoom_toggled(bool);
+	void on_checkBoxRotate2_toggled(bool);
   //
 	// editor settings
   //
@@ -111,6 +112,7 @@ signals:
 	void editorConfigChanged() const;
 	void ExperimentalChanged() const ;
 	void updateMouseCentricZoom(bool state) const;
+	void updateUseRotate2(bool state) const;
 
 private:
     Preferences(QWidget *parent = nullptr);
