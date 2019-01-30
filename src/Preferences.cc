@@ -164,7 +164,6 @@ void Preferences::init() {
 	this->defaultmap["advanced/enableHardwarnings"] = false;
 	this->defaultmap["advanced/enableParameterCheck"] = true;
 	this->defaultmap["advanced/enableParameterRangeCheck"] = false;
-	this->defaultmap["printing/showPrintDialog"] = Settings::Settings::printServiceShowDialog.defaultValue().toBool();
 
 	// Toolbar
 	QActionGroup *group = new QActionGroup(this);
@@ -653,12 +652,6 @@ void Preferences::on_enableRangeCheckBox_toggled(bool state)
 	settings.setValue("advanced/enableParameterRangeCheck", state);
 }
 
-void Preferences::on_checkBoxShowPrintServiceSelectionDialog_toggled(bool checked)
-{
-	Settings::Settings::inst()->set(Settings::Settings::printServiceShowDialog, Value(checked));
-	writeSettings();
-}
-
 void Preferences::on_comboBoxOctoPrintAction_activated(int val)
 {
 	applyComboBox(comboBoxOctoPrintAction, val, Settings::Settings::octoPrintAction);
@@ -913,7 +906,6 @@ void Preferences::updateGUI()
 	this->checkBoxEnableLineNumbers->setChecked(s->get(Settings::Settings::enableLineNumbers).toBool());
 	this->spinBoxLineWrapIndentationIndent->setDisabled(this->comboBoxLineWrapIndentationStyle->currentText() == "Same");
 
-	this->checkBoxShowPrintServiceSelectionDialog->setChecked(s->get(Settings::Settings::printServiceShowDialog).toBool());
 	this->lineEditOctoPrintURL->setText(QString::fromStdString(s->get(Settings::Settings::octoPrintUrl).toString()));
 	this->lineEditOctoPrintApiKey->setText(QString::fromStdString(s->get(Settings::Settings::octoPrintApiKey).toString()));
 	updateComboBox(this->comboBoxOctoPrintAction, Settings::Settings::octoPrintAction);

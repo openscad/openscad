@@ -156,6 +156,7 @@ bool MainWindow::mdiMode = false;
 bool MainWindow::undockMode = false;
 bool MainWindow::reorderMode = false;
 const int MainWindow::tabStopWidth = 15;
+QElapsedTimer *MainWindow::progressThrottle = new QElapsedTimer();
 
 namespace {
 
@@ -299,6 +300,8 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->e_fps, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimFps()));
 	connect(this->e_fsteps, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimSteps()));
 	connect(this->e_dump, SIGNAL(toggled(bool)), this, SLOT(updatedAnimDump(bool)));
+
+	progressThrottle->start();
 
 	animate_panel->hide();
 	this->hideFind(); 
@@ -835,17 +838,23 @@ void MainWindow::showProgress()
 
 void MainWindow::report_func(const class AbstractNode*, void *vp, int mark)
 {
-	auto thisp = static_cast<MainWindow*>(vp);
-	auto v = static_cast<int>((mark*1000.0) / progress_report_count);
-	auto permille = v < 1000 ? v : 999;
-	if (permille > thisp->progresswidget->value()) {
-		QMetaObject::invokeMethod(thisp->progresswidget, "setValue", Qt::QueuedConnection,
-															Q_ARG(int, permille));
-		QApplication::processEvents();
-	}
+	// limit to progress bar update calls to 5 per second
+	static const qint64 MIN_TIMEOUT = 200;
+	if (progressThrottle->hasExpired(MIN_TIMEOUT)) {
+		progressThrottle->start();
 
-	// FIXME: Check if cancel was requested by e.g. Application quit
-	if (thisp->progresswidget->wasCanceled()) throw ProgressCancelException();
+		auto thisp = static_cast<MainWindow*>(vp);
+		auto v = static_cast<int>((mark*1000.0) / progress_report_count);
+		auto permille = v < 1000 ? v : 999;
+		if (permille > thisp->progresswidget->value()) {
+			QMetaObject::invokeMethod(thisp->progresswidget, "setValue", Qt::QueuedConnection,
+																Q_ARG(int, permille));
+			QApplication::processEvents();
+		}
+
+		// FIXME: Check if cancel was requested by e.g. Application quit
+		if (thisp->progresswidget->wasCanceled()) throw ProgressCancelException();
+	}
 }
 
 bool MainWindow::network_progress_func(const double permille)
@@ -2082,51 +2091,20 @@ void MainWindow::action3DPrint()
 
 	//Make sure we can export:
 	const unsigned int dim = 3;
-	if (!canExport(dim))
-	{
-		return;
-    }
+	if (!canExport(dim)) return;
 
 	Settings::Settings *s = Settings::Settings::inst();
-	const bool showDialog = s->get(Settings::Settings::printServiceShowDialog).toBool();
 
-	print_service_t selectedService;
 	const auto printService = PrintService::inst();
-	if (showDialog) {
-		auto printInitDialog = new PrintInitDialog();
-		auto printInitResult = printInitDialog->exec();
-		printInitDialog->deleteLater();
-		if (printInitResult == QDialog::Rejected) {
-			return;
-		}
-
-		const auto dialog_result = printInitDialog->get_result();
-		selectedService = dialog_result.service;
-		if (dialog_result.rememberDecision) {
-			switch (dialog_result.service) {
-			case print_service_t::PRINT_SERVICE:
-				s->set(Settings::Settings::printService, printService->getService().toStdString());
-				break;
-			case print_service_t::OCTOPRINT:
-				s->set(Settings::Settings::printService, "OctoPrint");
-				break;
-			default:
-				s->set(Settings::Settings::printService, "None");
-				break;
-			}
-			s->set(Settings::Settings::printServiceShowDialog, false);
-		}
-		Preferences::Preferences::inst()->updateGUI();
-	} else {
-		const auto service = s->get(Settings::Settings::printService).toString();
-		if (service == printService->getService().toStdString()) {
-			selectedService = print_service_t::PRINT_SERVICE;
-		} else if (service == "OctoPrint") {
-			selectedService = print_service_t::OCTOPRINT;
-		} else {
-			selectedService = print_service_t::NONE;
-		}
+	auto printInitDialog = new PrintInitDialog();
+	auto printInitResult = printInitDialog->exec();
+	printInitDialog->deleteLater();
+	if (printInitResult == QDialog::Rejected) {
+		return;
 	}
+
+	const auto selectedService = printInitDialog->getResult();
+	Preferences::Preferences::inst()->updateGUI();
 
 	switch (selectedService) {
 	case print_service_t::PRINT_SERVICE:
@@ -2138,9 +2116,6 @@ void MainWindow::action3DPrint()
 		sendToOctoPrint();
 		break;
 	default:
-		if (!showDialog) {
-			PRINT("Sending design to print services is disabled, check Preferences to enable.");
-		}
 		break;
 	}
 #endif
@@ -2149,6 +2124,13 @@ void MainWindow::action3DPrint()
 void MainWindow::sendToOctoPrint()
 {
 #ifdef ENABLE_3D_PRINTING
+	OctoPrint octoPrint;
+
+	if (octoPrint.url().trimmed().isEmpty()) {
+		PRINT("ERROR: OctoPrint connection not configured. Please check preferences.");
+		return;
+	}
+
 	Settings::Settings *s = Settings::Settings::inst();
 	const QString fileFormat = QString::fromStdString(s->get(Settings::Settings::octoPrintFileFormat).toString());
 	FileFormat exportFileFormat{FileFormat::STL};
@@ -2180,7 +2162,6 @@ void MainWindow::sendToOctoPrint()
 
 	exportFileByName(this->root_geom, exportFileFormat, exportFileName.toLocal8Bit().constData(), exportFileName.toUtf8());
 
-	OctoPrint octoPrint;
 	try {
 		this->progresswidget = new ProgressWidget(this);
 		connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
@@ -2399,6 +2380,7 @@ void MainWindow::updateStatusBar(ProgressWidget *progressWidget)
 void MainWindow::exceptionCleanup(){
 	PRINT("Execution aborted");
 	GuiLocker::unlock();
+	if (designActionAutoReload->isChecked()) autoReloadTimer->start();
 }
 
 void MainWindow::actionDisplayAST()
@@ -3164,6 +3146,8 @@ void MainWindow::consoleOutput(const QString &msg)
 		this->console->appendHtml("<span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span>");
 	} else if (msg.startsWith("EXPORT-ERROR:") || msg.startsWith("UI-ERROR:") || msg.startsWith("PARSER-ERROR:")) {
 		this->console->appendHtml("<span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span>");
+	} else if (msg.startsWith("TRACE:")) {
+		this->console->appendHtml("<span style=\"color: black; background-color: #d0d0ff;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span>");
 	} else {
 		QString qmsg = msg;
 		if(qmsg.contains('\t') && !qmsg.contains("<pre>", Qt::CaseInsensitive))

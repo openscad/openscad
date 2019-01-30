@@ -2,6 +2,7 @@
   <qresource prefix="/">
     <file>icons/prefs3DPrint.png</file>
     <file>src/PrintInitDialog.html</file>
+    <file>src/OctoPrintInfo.html</file>
     <file>icons/prefsInput.png</file>
     <file>icons/prefsInputAxis.png</file>
     <file>icons/prefsInputButtons.png</file>
