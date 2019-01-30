@@ -22,6 +22,8 @@ WARNING: $fs too small - clamping to 0.010000, in file errors-warnings.scad, lin
 WARNING: $fa too small - clamping to 0.010000, in file errors-warnings.scad, line 47
 WARNING: $fs too small - clamping to 0.010000, in file errors-warnings.scad, line 54
 WARNING: $fa too small - clamping to 0.010000, in file errors-warnings.scad, line 55
+WARNING: argument center supplied more then once, in file errors-warnings.scad, line 58
+WARNING: argument r supplied more then once, in file errors-warnings.scad, line 59
 DEPRECATED: Using ranges of the form [begin:end] with begin value greater than the end value is deprecated.
 WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 35
 ECHO: "a"
