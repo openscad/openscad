@@ -990,6 +990,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/assert-fail1-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/assert-fail2-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/assert-fail3-test.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/for-c-style-infinite-loop.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/parser-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/builtin-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/dim-all.scad
