@@ -1,4 +1,6 @@
+WARNING: min() number of parameters does not match, in file min-max-tests.scad, line 1
 ECHO: undef
+WARNING: max() number of parameters does not match, in file min-max-tests.scad, line 2
 ECHO: undef
 ECHO: undef
 ECHO: undef

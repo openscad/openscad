@@ -17,6 +17,7 @@ bool OpenSCAD::quiet = false;
 bool OpenSCAD::hardwarnings = false;
 bool OpenSCAD::parameterCheck = true;
 bool OpenSCAD::rangeCheck = false;
+bool OpenSCAD::funcCheck = true;
 
 boost::circular_buffer<std::string> lastmessages(5);
 
