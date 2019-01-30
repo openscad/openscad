@@ -673,7 +673,7 @@ ValuePtr LcForC::evaluate(const Context *context) const
     while (this->cond->evaluate(&c)) {
         vec.push_back(this->expr->evaluate(&c));
 
-		if (counter++ == 1000000) throw RecursionException::create("for loop", "", loc);
+		if (counter++ == 1000000) throw LoopCntException::create("for", loc);
 
         Context tmp(&c);
         evaluate_sequential_assignment(this->incr_arguments, &tmp, this->loc);

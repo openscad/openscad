@@ -34,6 +34,20 @@ private:
 	RecursionException(const std::string &what_arg, const Location &loc) : EvaluationException(what_arg), loc(loc) {}
 };
 
+class LoopCntException: public EvaluationException {
+public:
+	static LoopCntException create(const std::string &type, const Location &loc) {
+		return LoopCntException{STR("ERROR: " << type << " loop counter exceeded limit"), loc};
+	}
+	~LoopCntException() throw() {}
+
+public:
+	Location loc;
+
+private:
+	LoopCntException(const std::string &what_arg, const Location &loc) : EvaluationException(what_arg), loc(loc) {}
+};
+
 class HardWarningException : public std::runtime_error {
 public:
 	HardWarningException(const std::string &what_arg) : std::runtime_error(what_arg) {}
