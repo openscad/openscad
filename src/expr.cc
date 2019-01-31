@@ -682,11 +682,12 @@ ValuePtr LcForC::evaluate(const Context *context) const
     while (this->cond->evaluate(&c)) {
         vec.push_back(this->expr->evaluate(&c));
 
-		if (counter++ == 1000000) {
-			std::string locs = loc.toRelativeString(context->documentPath());
-			PRINTB("ERROR: Recursion detected calling for loop, %s", locs);
-			throw RecursionException::create("for loop", "", loc);
-		}
+        if (counter++ == 1000000) {
+            std::string locs = loc.toRelativeString(context->documentPath());
+            PRINTB("ERROR: for loop counter exceeded limit, %s", locs);
+            throw LoopCntException::create("for", loc);
+        }
+
         Context tmp(&c);
         evaluate_sequential_assignment(this->incr_arguments, &tmp, this->loc);
         c.apply_variables(tmp);
