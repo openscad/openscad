@@ -58,6 +58,9 @@ AssignmentMap EvalContext::resolveArguments(const AssignmentList &args, const As
           PRINTB("WARNING: variable %s not specified as parameter, %s", name % this->loc.toRelativeString(this->documentPath()));
         }
       }
+      if(resolvedArgs.find(name) != resolvedArgs.end()){
+          PRINTB("WARNING: argument %s supplied more then once, %s", name % this->loc.toRelativeString(this->documentPath()));
+      }
       resolvedArgs[name] = expr;
     }
     // If positional, find name of arg with this position

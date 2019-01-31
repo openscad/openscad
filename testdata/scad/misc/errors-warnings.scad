@@ -54,3 +54,6 @@ cylinder($fn=1/0);
 cylinder($fs="test");
 cylinder($fa="test");
 cylinder($fn="test");
+
+cube(10,center=true,center=false);
+sphere(r=1,r=2);
