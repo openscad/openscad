@@ -97,6 +97,7 @@ macx {
 # Set same stack size for the linker and #define used in PlatformUtils.h
 STACKSIZE = 8388608 # 8MB # github issue 116
 QMAKE_CXXFLAGS += -DSTACKSIZE=$$STACKSIZE
+QMAKE_CXXFLAGS_DEBUG += -g
 DEFINES += STACKSIZE=$$STACKSIZE
 
 win* {
