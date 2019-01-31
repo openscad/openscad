@@ -76,12 +76,21 @@ static void print_argCnt_warning(const char *name, const Context *ctx, const Eva
 	}
 }
 
+static void print_argConvert_warning(const char *name, const Context *ctx, const EvalContext *evalctx){
+	if(OpenSCAD::funcCheck){
+		PRINTB("WARNING: %s() parameter could not be converted, %s", name % evalctx->loc.toRelativeString(ctx->documentPath()));
+	}
+}
+
 ValuePtr builtin_abs(const Context *ctx, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
-		if (v->type() == Value::ValueType::NUMBER)
+		if (v->type() == Value::ValueType::NUMBER){
 			return ValuePtr(std::fabs(v->toDouble()));
+		}else{
+			print_argConvert_warning("abs", ctx, evalctx);
+		}
 	}else{
 		print_argCnt_warning("abs", ctx, evalctx);
 	}
@@ -96,6 +105,8 @@ ValuePtr builtin_sign(const Context *ctx, const EvalContext *evalctx)
 		if (v->type() == Value::ValueType::NUMBER) {
 			double x = v->toDouble();
 			return ValuePtr((x<0) ? -1.0 : ((x>0) ? 1.0 : 0.0));
+		}else{
+			print_argConvert_warning("sign", ctx, evalctx);
 		}
 	}else{
 		print_argCnt_warning("sign", ctx, evalctx);
@@ -194,10 +205,13 @@ ValuePtr builtin_min(const Context *ctx, const EvalContext *evalctx)
 			}
 			return ValuePtr(val);
 		}
+		
 	}else{
 		print_argCnt_warning("min", ctx, evalctx);
+		return ValuePtr::undefined;
 	}
 quit:
+	print_argConvert_warning("min", ctx, evalctx);
 	return ValuePtr::undefined;
 }
 
@@ -230,8 +244,10 @@ ValuePtr builtin_max(const Context *ctx, const EvalContext *evalctx)
 		}
 	}else{
 		print_argCnt_warning("max", ctx, evalctx);
+		return ValuePtr::undefined;
 	}
 quit:
+	print_argConvert_warning("max", ctx, evalctx);
 	return ValuePtr::undefined;
 }
 
@@ -239,8 +255,11 @@ ValuePtr builtin_sin(const Context *ctx, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
-		if (v->type() == Value::ValueType::NUMBER)
+		if (v->type() == Value::ValueType::NUMBER){
 			return ValuePtr(sin_degrees(v->toDouble()));
+		}else{
+			print_argConvert_warning("sin", ctx, evalctx);
+		}
 	}else{
 		print_argCnt_warning("sin", ctx, evalctx);
 	}
@@ -252,8 +271,11 @@ ValuePtr builtin_cos(const Context *ctx, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
-		if (v->type() == Value::ValueType::NUMBER)
+		if (v->type() == Value::ValueType::NUMBER){
 			return ValuePtr(cos_degrees(v->toDouble()));
+		}else{
+			print_argConvert_warning("cos", ctx, evalctx);
+		}
 	}else{
 		print_argCnt_warning("cos", ctx, evalctx);
 	}
@@ -264,8 +286,11 @@ ValuePtr builtin_asin(const Context *ctx, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
-		if (v->type() == Value::ValueType::NUMBER)
+		if (v->type() == Value::ValueType::NUMBER){
 			return ValuePtr(asin_degrees(v->toDouble()));
+		}else{
+			print_argConvert_warning("asin", ctx, evalctx);
+		}
 	}else{
 		print_argCnt_warning("asin", ctx, evalctx);
 	}
@@ -276,8 +301,11 @@ ValuePtr builtin_acos(const Context *ctx, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
-		if (v->type() == Value::ValueType::NUMBER)
+		if (v->type() == Value::ValueType::NUMBER){
 			return ValuePtr(acos_degrees(v->toDouble()));
+		}else{
+			print_argConvert_warning("acos", ctx, evalctx);
+		}
 	}else{
 		print_argCnt_warning("acos", ctx, evalctx);
 	}
@@ -288,8 +316,11 @@ ValuePtr builtin_tan(const Context *ctx, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
-		if (v->type() == Value::ValueType::NUMBER)
+		if (v->type() == Value::ValueType::NUMBER){
 			return ValuePtr(tan_degrees(v->toDouble()));
+		}else{
+			print_argConvert_warning("tan", ctx, evalctx);
+		}
 	}else{
 		print_argCnt_warning("tan", ctx, evalctx);
 	}
@@ -300,8 +331,11 @@ ValuePtr builtin_atan(const Context *ctx, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
-		if (v->type() == Value::ValueType::NUMBER)
+		if (v->type() == Value::ValueType::NUMBER){
 			return ValuePtr(atan_degrees(v->toDouble()));
+		}else{
+			print_argConvert_warning("atan", ctx, evalctx);
+		}
 	}else{
 		print_argCnt_warning("atan", ctx, evalctx);
 	}
@@ -312,8 +346,11 @@ ValuePtr builtin_atan2(const Context *ctx, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 2) {
 		ValuePtr v0 = evalctx->getArgValue(0), v1 = evalctx->getArgValue(1);
-		if (v0->type() == Value::ValueType::NUMBER && v1->type() == Value::ValueType::NUMBER)
+		if (v0->type() == Value::ValueType::NUMBER && v1->type() == Value::ValueType::NUMBER){
 			return ValuePtr(atan2_degrees(v0->toDouble(), v1->toDouble()));
+		}else{
+			print_argConvert_warning("atan2", ctx, evalctx);
+		}
 	}else{
 		print_argCnt_warning("atan2", ctx, evalctx);
 	}
@@ -324,8 +361,11 @@ ValuePtr builtin_pow(const Context *ctx, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 2) {
 		ValuePtr v0 = evalctx->getArgValue(0), v1 = evalctx->getArgValue(1);
-		if (v0->type() == Value::ValueType::NUMBER && v1->type() == Value::ValueType::NUMBER)
+		if (v0->type() == Value::ValueType::NUMBER && v1->type() == Value::ValueType::NUMBER){
 			return ValuePtr(pow(v0->toDouble(), v1->toDouble()));
+		}else{
+			print_argConvert_warning("pow", ctx, evalctx);
+		}
 	}else{
 		print_argCnt_warning("pow", ctx, evalctx);
 	}
@@ -336,8 +376,11 @@ ValuePtr builtin_round(const Context *ctx, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
-		if (v->type() == Value::ValueType::NUMBER)
+		if (v->type() == Value::ValueType::NUMBER){
 			return ValuePtr(round(v->toDouble()));
+		}else{
+			print_argConvert_warning("round", ctx, evalctx);
+		}
 	}else{
 		print_argCnt_warning("round", ctx, evalctx);
 	}
@@ -348,8 +391,11 @@ ValuePtr builtin_ceil(const Context *ctx, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
-		if (v->type() == Value::ValueType::NUMBER)
+		if (v->type() == Value::ValueType::NUMBER){
 			return ValuePtr(ceil(v->toDouble()));
+		}else{
+			print_argConvert_warning("ceil", ctx, evalctx);
+		}
 	}else{
 		print_argCnt_warning("ceil", ctx, evalctx);
 	}
@@ -360,8 +406,11 @@ ValuePtr builtin_floor(const Context *ctx, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
-		if (v->type() == Value::ValueType::NUMBER)
+		if (v->type() == Value::ValueType::NUMBER){
 			return ValuePtr(floor(v->toDouble()));
+		}else{
+			print_argConvert_warning("floor", ctx, evalctx);
+		}
 	}else{
 		print_argCnt_warning("floor", ctx, evalctx);
 	}
@@ -372,8 +421,11 @@ ValuePtr builtin_sqrt(const Context *ctx, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
-		if (v->type() == Value::ValueType::NUMBER)
+		if (v->type() == Value::ValueType::NUMBER){
 			return ValuePtr(sqrt(v->toDouble()));
+		}else{
+			print_argConvert_warning("sqrt", ctx, evalctx);
+		}
 	}else{
 		print_argCnt_warning("sqrt", ctx, evalctx);
 	}
@@ -384,8 +436,11 @@ ValuePtr builtin_exp(const Context *ctx, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
-		if (v->type() == Value::ValueType::NUMBER)
+		if (v->type() == Value::ValueType::NUMBER){
 			return ValuePtr(exp(v->toDouble()));
+		}else{
+			print_argConvert_warning("exp", ctx, evalctx);
+		}
 	}else{
 		print_argCnt_warning("exp", ctx, evalctx);
 	}
@@ -402,6 +457,7 @@ ValuePtr builtin_length(const Context *ctx, const EvalContext *evalctx)
 			std::string text = v->toString();
 			return ValuePtr(int( g_utf8_strlen( text.c_str(), text.size() ) ));
 		}
+		print_argConvert_warning("length", ctx, evalctx);
 	}else{
 		print_argCnt_warning("length", ctx, evalctx);
 	}
@@ -424,8 +480,10 @@ ValuePtr builtin_log(const Context *ctx, const EvalContext *evalctx)
 		}
 	}else{
 		print_argCnt_warning("log", ctx, evalctx);
+		return ValuePtr::undefined;
 	}
 quit:
+	print_argConvert_warning("log", ctx, evalctx);
 	return ValuePtr::undefined;
 }
 
@@ -433,8 +491,11 @@ ValuePtr builtin_ln(const Context *ctx, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
-		if (v->type() == Value::ValueType::NUMBER)
+		if (v->type() == Value::ValueType::NUMBER){
 			return ValuePtr(log(v->toDouble()));
+		}else{
+			print_argConvert_warning("ln", ctx, evalctx);
+		}
 	}else{
 		print_argCnt_warning("ln", ctx, evalctx);
 	}
