@@ -102,8 +102,8 @@ DEFINES += STACKSIZE=$$STACKSIZE
 win* {
   RC_FILE = openscad_win32.rc
   QMAKE_CXXFLAGS += -DNOGDI
-  QMAKE_CFLAGS += -g -O0
-  QMAKE_CXXFLAGS += -g -O0
+  QMAKE_CFLAGS += -g -Og
+  QMAKE_CXXFLAGS += -g -Og
   QMAKE_CFLAGS -= -O2
   QMAKE_CXXFLAGS -= -O2
   QMAKE_LFLAGS += -Wl,--stack,$$STACKSIZE
@@ -115,8 +115,8 @@ mingw* {
   # as.exe: objects/cgalutils.o: too many sections (76541)
   # using -Wa,-mbig-obj did not help
   #debug: QMAKE_CXXFLAGS += -O1
-  QMAKE_CFLAGS += -g -O0
-  QMAKE_CXXFLAGS += -g -O0
+  QMAKE_CFLAGS += -g -Og
+  QMAKE_CXXFLAGS += -g -Og
   QMAKE_CFLAGS -= -O2
   QMAKE_CXXFLAGS -= -O2
   QMAKE_LFLAGS_RELEASE -= -Wl,-s
