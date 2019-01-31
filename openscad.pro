@@ -97,13 +97,15 @@ macx {
 # Set same stack size for the linker and #define used in PlatformUtils.h
 STACKSIZE = 8388608 # 8MB # github issue 116
 QMAKE_CXXFLAGS += -DSTACKSIZE=$$STACKSIZE
-QMAKE_CFLAGS += -g
-QMAKE_CXXFLAGS += -g
 DEFINES += STACKSIZE=$$STACKSIZE
 
 win* {
   RC_FILE = openscad_win32.rc
   QMAKE_CXXFLAGS += -DNOGDI
+  QMAKE_CFLAGS += -g -O0
+  QMAKE_CXXFLAGS += -g -O0
+  QMAKE_CFLAGS -= -O2
+  QMAKE_CXXFLAGS -= -O2
   QMAKE_LFLAGS += -Wl,--stack,$$STACKSIZE
   QMAKE_LFLAGS_RELEASE -= -Wl,-s
 }
@@ -112,7 +114,11 @@ mingw* {
   # needed to prevent compilation error on MSYS2:
   # as.exe: objects/cgalutils.o: too many sections (76541)
   # using -Wa,-mbig-obj did not help
-  debug: QMAKE_CXXFLAGS += -O1
+  #debug: QMAKE_CXXFLAGS += -O1
+  QMAKE_CFLAGS += -g -O0
+  QMAKE_CXXFLAGS += -g -O0
+  QMAKE_CFLAGS -= -O2
+  QMAKE_CXXFLAGS -= -O2
   QMAKE_LFLAGS_RELEASE -= -Wl,-s
 }
 
