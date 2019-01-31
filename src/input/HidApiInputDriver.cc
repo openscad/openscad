@@ -32,6 +32,7 @@
 #include <iomanip>
 #include <bitset>
 #include <ostream>
+#include <codecvt>
 
 #include <boost/format.hpp>
 
@@ -224,6 +225,15 @@ static const device_id * match_device(const struct hid_device_info *info)
 	return nullptr;
 }
 
+static std::string to_string(const wchar_t *wstr)
+{
+	if (wstr) {
+		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> conv;
+		return conv.to_bytes(wstr);
+	}
+	return "<null>";
+}
+
 bool HidApiInputDriver::enumerate()
 {
 	dev = nullptr;
@@ -232,7 +242,11 @@ bool HidApiInputDriver::enumerate()
 	L("Enumerating HID devices...");
 	struct hid_device_info *info = hid_enumerate(0, 0);
 	for (;info != nullptr;info = info->next) {
-		LL("D: %04x:%04x %s %ls", info->vendor_id % info->product_id % info->path % info->serial_number);
+		LL("D: %04x:%04x | path = %s, serial = %s, manufacturer = %s, product = %s",
+				info->vendor_id % info->product_id % info->path
+				% to_string(info->serial_number)
+				% to_string(info->manufacturer_string)
+				% to_string(info->product_string));
 		const device_id *dev = match_device(info);
 		if (!dev) {
 			continue;
@@ -244,20 +258,20 @@ bool HidApiInputDriver::enumerate()
 		hid_dev = hid_open_path(info->path);
 
 		if (!hid_dev) {
-			LL("O: %04x:%04x %ls", info->vendor_id % info->product_id % info->serial_number);
+			LL("O: %04x:%04x %s", info->vendor_id % info->product_id % to_string(info->serial_number));
 			hid_dev = hid_open(info->vendor_id, info->product_id, info->serial_number);
 			if (!hid_dev) {
 				continue;
 			}
 		}
 
-		LL("R: %04x:%04x %ls", info->vendor_id % info->product_id % info->serial_number);
+		LL("R: %04x:%04x %s", info->vendor_id % info->product_id % to_string(info->serial_number));
 		unsigned char buf[BUFLEN];
 		const int len = hid_read_timeout(hid_dev, buf, BUFLEN, 100);
 		LL("?: %d", len);
 
 		if (len < 0) {
-			LL("E: %ls", hid_error(hid_dev));
+			LL("E: %s", to_string(hid_error(hid_dev)));
 			hid_close(hid_dev);
 			continue;
 		}
