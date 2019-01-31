@@ -105,7 +105,7 @@ win* {
   RC_FILE = openscad_win32.rc
   QMAKE_CXXFLAGS += -DNOGDI
   QMAKE_LFLAGS += -Wl,--stack,$$STACKSIZE
-  QMAKE_LFLAGS -= -Wl,-s
+  QMAKE_LFLAGS_RELEASE -= -Wl,-s
 }
 
 mingw* {
@@ -113,7 +113,7 @@ mingw* {
   # as.exe: objects/cgalutils.o: too many sections (76541)
   # using -Wa,-mbig-obj did not help
   debug: QMAKE_CXXFLAGS += -O1
-  QMAKE_LFLAGS -= -Wl,-s
+  QMAKE_LFLAGS_RELEASE -= -Wl,-s
 }
 
 CONFIG += qt object_parallel_to_source
