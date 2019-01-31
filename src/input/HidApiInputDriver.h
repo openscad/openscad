@@ -54,6 +54,7 @@ public:
     void hidapi_decode_button2(const unsigned char *buf, unsigned int len);
 
 private:
+	bool enumerate();
     void hidapi_input(hid_device* hid_dev);
 };
 

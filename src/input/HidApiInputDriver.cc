@@ -214,45 +214,88 @@ void HidApiInputDriver::hidapi_input(hid_device* hid_dev)
     hid_close(hid_dev);
 }
 
-static void enumerate() {
-	L("Enumerating HID devices...");
-	struct hid_device_info *dev = hid_enumerate(0, 0);
-	for (;dev != nullptr;dev = dev->next) {
-		LL("D: %04x:%04x %s", dev->vendor_id % dev->product_id % dev->path);
+static const device_id * match_device(const struct hid_device_info *info)
+{
+	for (int idx = 0;device_ids[idx].name != nullptr;idx++) {
+		if ((device_ids[idx].vendor_id == info->vendor_id) && (device_ids[idx].product_id == info->product_id)) {
+			return &device_ids[idx];
+		}
 	}
+	return nullptr;
+}
+
+bool HidApiInputDriver::enumerate()
+{
+	dev = nullptr;
+	hid_dev = nullptr;
+
+	L("Enumerating HID devices...");
+	struct hid_device_info *info = hid_enumerate(0, 0);
+	for (;info != nullptr;info = info->next) {
+		LL("D: %04x:%04x %s %ls", info->vendor_id % info->product_id % info->path % info->serial_number);
+		const device_id *dev = match_device(info);
+		if (!dev) {
+			continue;
+		}
+
+		hid_device *hid_dev;
+
+		LL("P: %04x:%04x %s", info->vendor_id % info->product_id % info->path);
+		hid_dev = hid_open_path(info->path);
+
+		if (!hid_dev) {
+			LL("O: %04x:%04x %ls", info->vendor_id % info->product_id % info->serial_number);
+			hid_dev = hid_open(info->vendor_id, info->product_id, info->serial_number);
+			if (!hid_dev) {
+				continue;
+			}
+		}
+
+		LL("R: %04x:%04x %ls", info->vendor_id % info->product_id % info->serial_number);
+		unsigned char buf[BUFLEN];
+		const int len = hid_read_timeout(hid_dev, buf, BUFLEN, 100);
+		LL("?: %d", len);
+
+		if (len < 0) {
+			LL("E: %ls", hid_error(hid_dev));
+			hid_close(hid_dev);
+			continue;
+		}
+
+		this->dev = dev;
+		this->hid_dev = hid_dev;
+	}
+	hid_free_enumeration(info);
 	L("Done enumerating.");
+	return this->hid_dev != nullptr;
 }
 
 bool HidApiInputDriver::open()
 {
+	L("HidApiInputDriver::open()");
     if (hid_init() < 0) {
 		L("hid_init() failed");
         PRINTD("Can't hid_init().\n");
         return false;
     }
 
-	enumerate();
-
-	L("Checking for HID devices...");
-    for (int idx = 0;device_ids[idx].name != nullptr;idx++) {
-        hid_dev = hid_open(device_ids[idx].vendor_id, device_ids[idx].product_id, nullptr);
-		LL("Trying to open %04x:%04x: %s", device_ids[idx].vendor_id % device_ids[idx].product_id % (hid_dev == nullptr ? "failed" : "ok"));
-        if (hid_dev != nullptr) {
-            dev = &device_ids[idx];
-            name = STR(std::setfill('0') << std::setw(4) << std::hex
-											 << "HidApiInputDriver (" << dev->vendor_id << ":" << dev->product_id
-											 << " - " << dev->name << ")");
-            start();
-            return true;
-        }
+	if (enumerate()) {
+		name = STR(std::setfill('0') << std::setw(4) << std::hex
+		<< "HidApiInputDriver (" << dev->vendor_id << ":" << dev->product_id
+		<< " - " << dev->name << ")");
+		start();
+		LL("HidApiInputDriver::open(): %s", name);
+		return true;
     }
-	L("No matching device found.");
+
+	L("HidApiInputDriver::open(): No matching device found.");
     return false;
 }
 
 void HidApiInputDriver::close()
 {
-
+	dev = nullptr;
+	hid_dev = nullptr;
 }
 
 const std::string & HidApiInputDriver::get_name() const
