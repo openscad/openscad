@@ -71,15 +71,11 @@ boost::mt19937 deterministic_rng;
 boost::mt19937 lessdeterministic_rng( std::time(nullptr) + process_id );
 
 static void print_argCnt_warning(const char *name, const Context *ctx, const EvalContext *evalctx){
-	if(OpenSCAD::funcCheck){
-		PRINTB("WARNING: %s() number of parameters does not match, %s", name % evalctx->loc.toRelativeString(ctx->documentPath()));
-	}
+	PRINTB("WARNING: %s() number of parameters does not match, %s", name % evalctx->loc.toRelativeString(ctx->documentPath()));
 }
 
 static void print_argConvert_warning(const char *name, const Context *ctx, const EvalContext *evalctx){
-	if(OpenSCAD::funcCheck){
-		PRINTB("WARNING: %s() parameter could not be converted, %s", name % evalctx->loc.toRelativeString(ctx->documentPath()));
-	}
+	PRINTB("WARNING: %s() parameter could not be converted, %s", name % evalctx->loc.toRelativeString(ctx->documentPath()));
 }
 
 ValuePtr builtin_abs(const Context *ctx, const EvalContext *evalctx)
