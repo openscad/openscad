@@ -204,7 +204,7 @@ case $OS in
         if [ $MXELIBTYPE = "shared" ]; then
           MINGWCONFIG=mingw-cross-env-shared
         fi
-        qmake VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+="$CONFIG" CONFIG+=link_pkgconfig CONFIG+=$MINGWCONFIG CONFIG-=debug ../openscad.pro
+        qmake VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+="$CONFIG" CONFIG+=link_pkgconfig CONFIG+=$MINGWCONFIG CONFIG+=debug ../openscad.pro
         cd $OPENSCADDIR
     ;;
     *)
@@ -213,7 +213,7 @@ case $OS in
 	then
 		QMAKE=qmake
 	fi
-	"$QMAKE" VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+="$CONFIG" CONFIG-=debug openscad.pro
+	"$QMAKE" VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+="$CONFIG" CONFIG+=debug openscad.pro
     ;;
 esac
 
