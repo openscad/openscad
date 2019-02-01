@@ -1038,6 +1038,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-recursive-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/errors-warnings.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/errors-warnings-included.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/children-warnings-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/isundef-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/operators-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/builtins-calling-vec3vec2.scad
