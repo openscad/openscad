@@ -256,7 +256,7 @@ AbstractNode *ControlModule::instantiate(const Context* ctx, const ModuleInstant
 			else {
 				// Invalid parameter
 				// (e.g. first child of difference is invalid)
-				PRINTB("WARNING: Bad parameter type (%s) for children, only accept: empty, number, vector, range, %s", value->toString() % evalctx->loc.toRelativeString(ctx->documentPath()));
+				PRINTB("WARNING: Bad parameter type (%s) for children, only accept: empty, number, vector, range, %s", value->toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
 				return nullptr;
 			}
 		}
