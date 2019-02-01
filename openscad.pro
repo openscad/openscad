@@ -102,8 +102,8 @@ DEFINES += STACKSIZE=$$STACKSIZE
 win* {
   RC_FILE = openscad_win32.rc
   QMAKE_CXXFLAGS += -DNOGDI
-  QMAKE_CFLAGS += -g -Og
-  QMAKE_CXXFLAGS += -g -Og
+  QMAKE_CFLAGS += -g -Og -fno-omit-frame-pointer
+  QMAKE_CXXFLAGS += -g -Og -fno-omit-frame-pointer
   QMAKE_CFLAGS_RELEASE -= -O2
   QMAKE_CXXFLAGS_RELEASE -= -O2
   QMAKE_LFLAGS += -Wl,--stack,$$STACKSIZE
