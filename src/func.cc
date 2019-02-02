@@ -804,11 +804,11 @@ ValuePtr builtin_cross(const Context *ctx, const EvalContext *evalctx)
 		double d0 = v0[a]->toDouble();
 		double d1 = v1[a]->toDouble();
 		if (std::isnan(d0) || std::isnan(d1)) {
-			PRINTB("WARNING: Invalid value (NaN) in parameter vector for cross(), %s", evalctx->loc.toRelativeString(ctx->documentPath()));
+			PRINTB("WARNING: Invalid value (NaN) in parameter vector for cross(), %s", loc.toRelativeString(ctx->documentPath()));
 			return ValuePtr::undefined;
 		}
 		if (std::isinf(d0) || std::isinf(d1)) {
-			PRINTB("WARNING: Invalid value (INF) in parameter vector for cross(), %s", evalctx->loc.toRelativeString(ctx->documentPath()));
+			PRINTB("WARNING: Invalid value (INF) in parameter vector for cross(), %s", loc.toRelativeString(ctx->documentPath()));
 			return ValuePtr::undefined;
 		}
 	}
