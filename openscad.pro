@@ -182,6 +182,7 @@ CONFIG += libxml2
 CONFIG += libzip
 CONFIG += hidapi
 CONFIG += spnav
+CONFIG += double-conversion
 
 #Uncomment the following line to enable the QScintilla editor
 !nogui {
