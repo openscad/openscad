@@ -121,19 +121,11 @@ void ParameterWidget::onSetDelete()
 //adds a new parameter set
 void ParameterWidget::onSetAdd()
 {
-	if (this->setMgr->isEmpty()) {
-		pt::ptree setRoot;
-		this->setMgr->addChild(ParameterSet::parameterSetsKey, setRoot);
-	}
 	updateParameterSet("",true);
 }
 
 void ParameterWidget::onSetSaveButton()
 {
-	if (this->setMgr->isEmpty()) {
-		pt::ptree setRoot;
-		this->setMgr->addChild(ParameterSet::parameterSetsKey, setRoot);
-	}
 	updateParameterSet(comboBoxPreset->itemData(this->comboBoxPreset->currentIndex()).toString().toStdString());
 }
 
@@ -508,6 +500,11 @@ void ParameterWidget::applyParameterSet(std::string setName)
 
 void ParameterWidget::updateParameterSet(std::string setName, bool newSet)
 {
+	if (this->setMgr->isEmpty()) {
+		pt::ptree setRoot;
+		this->setMgr->addChild(ParameterSet::parameterSetsKey, setRoot);
+	}
+
 	if (newSet && setName == "") {
 		QInputDialog *setDialog = new QInputDialog();
 
