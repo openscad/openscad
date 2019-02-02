@@ -188,9 +188,11 @@ void ParameterWidget::writeFileIfNotEmpty(QString scadFile)
 //This is e.g. useful when saving hidden back up files.
 void ParameterWidget::writeBackupFile(QString scadFile)
 {
-	boost::filesystem::path p = scadFile.toStdString();
-	auto jsonFile = p.replace_extension(".json").string();
-	this->setMgr->writeParameterSet(jsonFile);
+	if (!this->setMgr->isEmpty()){
+		boost::filesystem::path p = scadFile.toStdString();
+		auto jsonFile = p.replace_extension(".json").string();
+		this->setMgr->writeParameterSet(jsonFile);
+	}
 }
 
 void ParameterWidget::setParameters(const FileModule* module,bool rebuildParameterWidget)
