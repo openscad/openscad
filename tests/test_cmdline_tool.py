@@ -106,6 +106,8 @@ def normalize_string(s):
     This also normalizes away import paths from 'file = ' arguments."""
 
     s = re.sub(', timestamp = [0-9]+', '', s)
+    
+    """ Don't replace floats after implementing double-conversion library
     def floatrep(match):
         value = float(match.groups()[0])
         if abs(value) < 10**-12:
@@ -114,7 +116,7 @@ def normalize_string(s):
             return "%d"%value
         return "%.6g"%value
     s = re.sub('(-?[0-9]+(\\.[0-9]+)?(e[+-][0-9]+)?)', floatrep, s)
-
+    """
     def pathrep(match):
         return match.groups()[0] + match.groups()[2]
     s = re.sub('(file = ")([^"/]*/)*([^"]*")', pathrep, s)
