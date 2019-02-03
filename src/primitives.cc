@@ -671,9 +671,11 @@ std::string PrimitiveNode::toString() const
 					 << ", r2 = " << this->r2 << ", center = " << (center ? "true" : "false") << ")";
 			break;
 	case primitive_type_e::POLYHEDRON:
-		stream << "(points = " << *this->points
-					 << ", faces = " << *this->faces
-					 << ", convexity = " << this->convexity << ")";
+		stream << "(points = ";
+		this->points->toStream(stream);
+		stream << ", faces = ";
+		this->faces->toStream(stream);
+		stream << ", convexity = " << this->convexity << ")";
 			break;
 	case primitive_type_e::SQUARE:
 		stream << "(size = [" << this->x << ", " << this->y << "], "
@@ -684,7 +686,11 @@ std::string PrimitiveNode::toString() const
 					 << ", $fs = " << this->fs << ", r = " << this->r1 << ")";
 		break;
 	case primitive_type_e::POLYGON:
-		stream << "(points = " << *this->points << ", paths = " << *this->paths << ", convexity = " << this->convexity << ")";
+		stream << "(points = ";
+		this->points->toStream(stream);
+		stream << ", paths = ";
+		this->paths->toStream(stream);
+		stream << ", convexity = " << this->convexity << ")";
 			break;
 	default:
 		assert(false);

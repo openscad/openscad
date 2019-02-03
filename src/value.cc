@@ -26,6 +26,9 @@
 
 #include "value.h"
 #include "printutils.h"
+#include "double-conversion/double-conversion.h"
+#include "double-conversion/utils.h"
+
 #include <cmath>
 #include <assert.h>
 #include <sstream>
@@ -35,12 +38,24 @@
 #include <boost/format.hpp>
 #include "boost-utils.h"
 #include <boost/filesystem.hpp>
+
 namespace fs=boost::filesystem;
 /*Unicode support for string lengths and array accesses*/
 #include <glib.h>
 
 const Value Value::undefined;
 const ValuePtr ValuePtr::undefined;
+
+/* Define values for double-conversion library. */
+#define DC_BUFFER_SIZE 128
+#define DC_FLAGS (double_conversion::DoubleToStringConverter::UNIQUE_ZERO | double_conversion::DoubleToStringConverter::EMIT_POSITIVE_EXPONENT_SIGN)
+#define DC_INF "inf"
+#define DC_NAN "nan"
+#define DC_EXP 'e'
+#define DC_DECIMAL_LOW_EXP -6
+#define DC_DECIMAL_HIGH_EXP 21
+#define DC_MAX_LEADING_ZEROES 0
+#define DC_MAX_TRAILING_ZEROES 0
 
 void utf8_split(const std::string& str, std::function<void(ValuePtr)> f)
 {
@@ -233,18 +248,12 @@ public:
   }
 
   std::string operator()(const double &op1) const {
-    if (op1 != op1) { // Fix for avoiding nan vs. -nan across platforms
-      return "nan";
-    }
-    if (op1 == 0) {
-      return "0"; // Don't return -0 (exactly -0 and 0 equal 0)
-    }
-    // attempt to emulate Qt's QString.sprintf("%g"); from old OpenSCAD.
-    // see https://github.com/openscad/openscad/issues/158
-    std::ostringstream tmp;
-    tmp.unsetf(std::ios::floatfield);
-    tmp << op1;
-    return tmp.str();
+    char buffer[DC_BUFFER_SIZE];
+    double_conversion::StringBuilder builder(buffer, DC_BUFFER_SIZE);
+    double_conversion::DoubleToStringConverter dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP, 
+      DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP, DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES);
+    dc.ToShortestSingle(op1, &builder);
+    return builder.Finalize();
   }
 
   std::string operator()(const boost::blank &) const {
@@ -258,9 +267,6 @@ public:
   std::string operator()(const Value::VectorType &v) const {
     // Create a single stream and pass reference to it for list elements for optimization.
     std::ostringstream stream;
-    // Configure stream in case we ouput doubles.
-    // see note in "tostring_visitor::operator()(const double &op1)" above
-    stream.unsetf(std::ios::floatfield);
     stream << '[';
     for (size_t i = 0; i < v.size(); i++) {
       if (i > 0) stream << ", ";
@@ -275,7 +281,7 @@ public:
   }
 
   std::string operator()(const ValuePtr &v) const {
-    return v->toString();
+    return v->toString(this);
   }
 };
 
@@ -285,20 +291,26 @@ class tostream_visitor : public boost::static_visitor<>
 {
 public:
   std::ostringstream &stream;
-  tostream_visitor(std::ostringstream& stream) : stream(stream) {};
+  
+
+  mutable char buffer[DC_BUFFER_SIZE];
+  mutable double_conversion::StringBuilder builder;
+  double_conversion::DoubleToStringConverter dc;
+
+  tostream_visitor(std::ostringstream& stream) 
+    : stream(stream), builder(buffer, DC_BUFFER_SIZE), 
+      dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP, DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP, DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES) 
+    {};
+
   template <typename T> void operator()(const T &op1) const {
     //    std::cout << "[generic tostream_visitor]\n";
     stream << boost::lexical_cast<std::string>(op1);
   }
 
   void operator()(const double &op1) const {
-    if (op1 != op1) { // Fix for avoiding nan vs. -nan across platforms
-      stream << "nan";
-    } else if (op1 == 0) {
-      stream << "0"; // Don't return -0 (exactly -0 and 0 equal 0)
-    } else {
-      stream << op1;
-    }
+    builder.Reset();
+    dc.ToShortestSingle(op1, &builder);
+    stream << builder.Finalize();
   }
 
   void operator()(const boost::blank &) const {
@@ -313,17 +325,23 @@ public:
     stream << '[';
     for (size_t i = 0; i < v.size(); i++) {
       if (i > 0) stream << ", ";
-      v[i]->toEchoStream(stream);
+      v[i]->toEchoStream(this);
     }
     stream << ']';
   }
 
   void operator()(const RangeType &v) const {
-    stream << (boost::format("[%1% : %2% : %3%]") % v.begin_val % v.step_val % v.end_val);
+    stream << "[";
+    this->operator()(v.begin_val);
+    stream << " : ";
+    this->operator()(v.step_val);
+    stream << " : ";
+    this->operator()(v.end_val);
+    stream << "]";
   }
 
   void operator()(const ValuePtr &v) const {
-    v->toStream(stream);
+    v->toStream(this);
   }
 };
 
@@ -333,9 +351,21 @@ std::string Value::toString() const
   return boost::apply_visitor(tostring_visitor(), this->value);
 }
 
+// helper called by tostring_visitor methods to avoid extra instantiations
+std::string Value::toString(const tostring_visitor *visitor) const
+{
+  return boost::apply_visitor(*visitor, this->value);
+}
+
 void Value::toStream(std::ostringstream &stream) const
 {
   boost::apply_visitor(tostream_visitor(stream), this->value);
+}
+
+// helper called by tostream_visitor methods to avoid extra instantiations
+void Value::toStream(const tostream_visitor *visitor) const
+{
+  boost::apply_visitor(*visitor, this->value);
 }
 
 std::string Value::toEchoString() const
@@ -347,6 +377,16 @@ std::string Value::toEchoString() const
 	}
 }
 
+// helper called by tostring_visitor methods to avoid extra instantiations
+std::string Value::toEchoString(const tostring_visitor *visitor) const
+{
+	if (type() == Value::ValueType::STRING) {
+		return std::string("\"") + toString(visitor) + '"';
+	} else {
+		return toString(visitor);
+	}
+}
+
 void Value::toEchoStream(std::ostringstream &stream) const
 {
 	if (type() == Value::ValueType::STRING) {
@@ -355,6 +395,18 @@ void Value::toEchoStream(std::ostringstream &stream) const
 		stream << '"';
 	} else {
 		toStream(stream);
+	}
+}
+
+// helper called by tostream_visitor methods to avoid extra instantiations
+void Value::toEchoStream(const tostream_visitor *visitor) const
+{
+	if (type() == Value::ValueType::STRING) {
+		visitor->stream << '"';
+		toStream(visitor);
+		visitor->stream << '"';
+	} else {
+		toStream(visitor);
 	}
 }
 
