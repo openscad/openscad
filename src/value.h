@@ -200,8 +200,6 @@ public:
   std::string toEchoString(const tostring_visitor *visitor) const;
   void toStream(std::ostringstream &stream) const;
   void toStream(const tostream_visitor *visitor) const;
-  void toEchoStream(std::ostringstream &stream) const;
-  void toEchoStream(const tostream_visitor *visitor) const;
   std::string chrString() const;
   const VectorType &toVector() const;
   bool getVec2(double &x, double &y, bool ignoreInfinite = false) const;

@@ -28,7 +28,7 @@
 #include "printutils.h"
 #include "double-conversion/double-conversion.h"
 #include "double-conversion/utils.h"
-
+#include "double-conversion/ieee.h"
 #include <cmath>
 #include <assert.h>
 #include <sstream>
@@ -54,8 +54,83 @@ const ValuePtr ValuePtr::undefined;
 #define DC_EXP 'e'
 #define DC_DECIMAL_LOW_EXP -6
 #define DC_DECIMAL_HIGH_EXP 21
-#define DC_MAX_LEADING_ZEROES 0
+#define DC_MAX_LEADING_ZEROES 5
 #define DC_MAX_TRAILING_ZEROES 0
+
+#define DC_PRECISION_REQUESTED 6
+
+
+inline void trimTrailingZeroes(char *buffer, const int pos) {
+  char *decimal = strchr(buffer, '.');
+  if (decimal) {
+    char *ptr = decimal;
+    while (*ptr != '\0') {
+      char *zero = strchr(ptr, '0');
+      if (zero) {
+        ptr = zero;
+        char ch;
+        while ((ch = *(++ptr))) {
+          if (ch == DC_EXP) {
+            // found exponent character after all zeroes, 
+            // move chunk from exponent to end of string to replace decimal
+            memmove((zero-1 == decimal) ? decimal : zero, ptr, &buffer[pos]-ptr+1);
+            return;
+          } else if (ch != '0') {
+            // found non-zero digit, start over looking for zeroes
+            ++ptr;
+            break;
+          }
+        }
+        if (ch == '\0') {
+          // reached end of string with all zeroes
+          if (zero-1 == decimal) {
+            // first zero was immediately after decimal
+            *decimal = '\0'; // replace decimal with terminator
+            return;
+          } else {
+            // replace zero with terminator
+            *zero = '\0';
+            return;
+          }
+        }
+      } else {
+        // no zeroes after decimal
+        return;
+      }
+    }
+  }
+}
+
+inline bool HandleSpecialValues(const double &value, double_conversion::StringBuilder &builder) {
+  double_conversion::Double double_inspect(value);
+  if (double_inspect.IsInfinite()) {
+    if (value < 0) {
+      builder.AddCharacter('-');
+    }
+    builder.AddString(DC_INF);
+    return true;
+  }
+  if (double_inspect.IsNan()) {
+    builder.AddString(DC_NAN);
+    return true;
+  }
+  return false;
+}
+
+inline char* DoubleConvert(const double &value, char *buffer, 
+    double_conversion::StringBuilder &builder, const double_conversion::DoubleToStringConverter &dc) {
+  builder.Reset();
+  if (double_conversion::Double(value).IsSpecial()) {
+    HandleSpecialValues(value, builder);
+    builder.Finalize();
+    return buffer;
+  }
+  dc.ToPrecision(value, DC_PRECISION_REQUESTED, &builder);
+  int pos = builder.position(); // get position before Finalize destroys it
+  builder.Finalize();
+  trimTrailingZeroes(buffer, pos);
+  return buffer;
+}
 
 void utf8_split(const std::string& str, std::function<void(ValuePtr)> f)
 {
@@ -252,8 +327,7 @@ public:
     double_conversion::StringBuilder builder(buffer, DC_BUFFER_SIZE);
     double_conversion::DoubleToStringConverter dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP, 
       DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP, DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES);
-    dc.ToShortest(op1, &builder);
-    return builder.Finalize();
+    return DoubleConvert(op1, buffer, builder, dc);
   }
 
   std::string operator()(const boost::blank &) const {
@@ -270,7 +344,7 @@ public:
     stream << '[';
     for (size_t i = 0; i < v.size(); i++) {
       if (i > 0) stream << ", ";
-      v[i]->toEchoStream(stream);
+      v[i]->toStream(stream);
     }
     stream << ']';
     return stream.str();
@@ -280,9 +354,6 @@ public:
     return (boost::format("[%1% : %2% : %3%]") % v.begin_val % v.step_val % v.end_val).str();
   }
 
-  std::string operator()(const ValuePtr &v) const {
-    return v->toString(this);
-  }
 };
 
 // Optimization to avoid multiple stream instantiations and copies to str for long vectors.
@@ -308,9 +379,7 @@ public:
   }
 
   void operator()(const double &op1) const {
-    builder.Reset();
-    dc.ToShortest(op1, &builder);
-    stream << builder.Finalize();
+    stream << DoubleConvert(op1, buffer, builder, dc);
   }
 
   void operator()(const boost::blank &) const {
@@ -325,9 +394,13 @@ public:
     stream << '[';
     for (size_t i = 0; i < v.size(); i++) {
       if (i > 0) stream << ", ";
-      v[i]->toEchoStream(this);
+      v[i]->toStream(this);
     }
     stream << ']';
+  }
+
+  void operator()(const str_utf8_wrapper &v) const {
+    stream << '"' << v << '"';
   }
 
   void operator()(const RangeType &v) const {
@@ -340,9 +413,6 @@ public:
     stream << "]";
   }
 
-  void operator()(const ValuePtr &v) const {
-    v->toStream(this);
-  }
 };
 
 
@@ -384,29 +454,6 @@ std::string Value::toEchoString(const tostring_visitor *visitor) const
 		return std::string("\"") + toString(visitor) + '"';
 	} else {
 		return toString(visitor);
-	}
-}
-
-void Value::toEchoStream(std::ostringstream &stream) const
-{
-	if (type() == Value::ValueType::STRING) {
-		stream << '"';
-		toStream(stream);
-		stream << '"';
-	} else {
-		toStream(stream);
-	}
-}
-
-// helper called by tostream_visitor methods to avoid extra instantiations
-void Value::toEchoStream(const tostream_visitor *visitor) const
-{
-	if (type() == Value::ValueType::STRING) {
-		visitor->stream << '"';
-		toStream(visitor);
-		visitor->stream << '"';
-	} else {
-		toStream(visitor);
 	}
 }
 
