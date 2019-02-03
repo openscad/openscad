@@ -252,7 +252,7 @@ public:
     double_conversion::StringBuilder builder(buffer, DC_BUFFER_SIZE);
     double_conversion::DoubleToStringConverter dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP, 
       DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP, DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES);
-    dc.ToShortestSingle(op1, &builder);
+    dc.ToShortest(op1, &builder);
     return builder.Finalize();
   }
 
@@ -309,7 +309,7 @@ public:
 
   void operator()(const double &op1) const {
     builder.Reset();
-    dc.ToShortestSingle(op1, &builder);
+    dc.ToShortest(op1, &builder);
     stream << builder.Finalize();
   }
 
