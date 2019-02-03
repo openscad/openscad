@@ -98,7 +98,7 @@ ECHO: v = -4.2, op = "-v", result = 4.2
 ECHO: v = -4.2, op = "v *", result = -12.6
 ECHO: v = -4.2, op = "* v", result = -8.4
 ECHO: v = -4.2, op = "v /", result = -1.4
-ECHO: v = -4.2, op = "/ v", result = -0.47619047619
+ECHO: v = -4.2, op = "/ v", result = -0.47619
 ECHO: v = -4.2, op = "v %", result = -1.2
 ECHO: v = -4.2, op = "% v", result = 2
 ECHO: v = -4.2, op = "v +", result = -1.2
@@ -116,7 +116,7 @@ ECHO: v = -2, op = "not v", result = false
 ECHO: v = -2, op = "-v", result = 2
 ECHO: v = -2, op = "v *", result = -6
 ECHO: v = -2, op = "* v", result = -4
-ECHO: v = -2, op = "v /", result = -0.66666666666
+ECHO: v = -2, op = "v /", result = -0.666667
 ECHO: v = -2, op = "/ v", result = -1
 ECHO: v = -2, op = "v %", result = -2
 ECHO: v = -2, op = "% v", result = 0
@@ -136,7 +136,7 @@ ECHO: v = 3, op = "-v", result = -3
 ECHO: v = 3, op = "v *", result = 9
 ECHO: v = 3, op = "* v", result = 6
 ECHO: v = 3, op = "v /", result = 1
-ECHO: v = 3, op = "/ v", result = 0.66666666666
+ECHO: v = 3, op = "/ v", result = 0.666667
 ECHO: v = 3, op = "v %", result = 0
 ECHO: v = 3, op = "% v", result = 2
 ECHO: v = 3, op = "v +", result = 6
@@ -155,7 +155,7 @@ ECHO: v = 42.42, op = "-v", result = -42.42
 ECHO: v = 42.42, op = "v *", result = 127.26
 ECHO: v = 42.42, op = "* v", result = 84.84
 ECHO: v = 42.42, op = "v /", result = 14.14
-ECHO: v = 42.42, op = "/ v", result = 0.0471475719
+ECHO: v = 42.42, op = "/ v", result = 0.0471476
 ECHO: v = 42.42, op = "v %", result = 0.42
 ECHO: v = 42.42, op = "% v", result = 2
 ECHO: v = 42.42, op = "v +", result = 45.42
@@ -173,8 +173,8 @@ ECHO: v = 242, op = "not v", result = false
 ECHO: v = 242, op = "-v", result = -242
 ECHO: v = 242, op = "v *", result = 726
 ECHO: v = 242, op = "* v", result = 484
-ECHO: v = 242, op = "v /", result = 80.66666666666
-ECHO: v = 242, op = "/ v", result = 0.00826446281
+ECHO: v = 242, op = "v /", result = 80.6667
+ECHO: v = 242, op = "/ v", result = 0.00826446
 ECHO: v = 242, op = "v %", result = 2
 ECHO: v = 242, op = "% v", result = 2
 ECHO: v = 242, op = "v +", result = 245
@@ -306,7 +306,7 @@ ECHO: v = [1], op = "not v", result = false
 ECHO: v = [1], op = "-v", result = [-1]
 ECHO: v = [1], op = "v *", result = [3]
 ECHO: v = [1], op = "* v", result = [2]
-ECHO: v = [1], op = "v /", result = [0.33333333333]
+ECHO: v = [1], op = "v /", result = [0.333333]
 ECHO: v = [1], op = "/ v", result = [2]
 ECHO: v = [1], op = "v %", result = undef
 ECHO: v = [1], op = "% v", result = undef
