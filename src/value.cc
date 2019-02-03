@@ -57,6 +57,8 @@ const ValuePtr ValuePtr::undefined;
 #define DC_MAX_LEADING_ZEROES 5
 #define DC_MAX_TRAILING_ZEROES 0
 
+/* WARNING: using values > 8 will significantly slow double to string 
+ * conversion, defeating the purpose of using double-conversion library */
 #define DC_PRECISION_REQUESTED 6
 
 
@@ -64,7 +66,7 @@ inline void trimTrailingZeroes(char *buffer, const int pos) {
   char *decimal = strchr(buffer, '.');
   if (decimal) {
     char *ptr = decimal;
-    while (*ptr != '\0') {
+    while (*(++ptr) != '\0') {
       char *zero = strchr(ptr, '0');
       if (zero) {
         ptr = zero;
@@ -77,7 +79,6 @@ inline void trimTrailingZeroes(char *buffer, const int pos) {
             return;
           } else if (ch != '0') {
             // found non-zero digit, start over looking for zeroes
-            ++ptr;
             break;
           }
         }
