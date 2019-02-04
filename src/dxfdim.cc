@@ -46,6 +46,7 @@ namespace fs = boost::filesystem;
 
 ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 {
+	std::string rawFilename;
 	std::string filename;
 	std::string layername;
 	std::string name;
@@ -60,6 +61,7 @@ ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 		ValuePtr n = evalctx->getArgName(i);
 		ValuePtr v = evalctx->getArgValue(i);
 		if (evalctx->getArgName(i) == "file") {
+			rawFilename = v->toString();
 			filename = lookup_file(v->toString(), 
 			evalctx->documentPath(), ctx->documentPath());
 		}else if (n == "layer") {
@@ -136,13 +138,13 @@ ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 			return dxf_dim_cache[key] = ValuePtr((d->type & 64) ? d->coords[3][0] : d->coords[3][1]);
 		}
 
-		PRINTB("WARNING: Dimension '%s' in '%s', layer '%s' has unsupported type!", 
-					 name % filename % layername);
+		PRINTB("WARNING: Dimension '%s' in '%s', layer '%s' has unsupported type! %s", 
+					 name % rawFilename  % layername % evalctx->loc.toRelativeString(ctx->documentPath()));
 		return ValuePtr::undefined;
 	}
 
-	PRINTB("WARNING: Can't find dimension '%s' in '%s', layer '%s'!",
-				 name % filename % layername);
+	PRINTB("WARNING: Can't find dimension '%s' in '%s', layer '%s'! %s",
+				 name % rawFilename % layername % evalctx->loc.toRelativeString(ctx->documentPath()));
 
 	return ValuePtr::undefined;
 }
@@ -150,6 +152,7 @@ ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 ValuePtr builtin_dxf_cross(const Context *ctx, const EvalContext *evalctx)
 {
 	std::string filename;
+	std::string rawFilename;
 	std::string layername;
 	double xorigin = 0;
 	double yorigin = 0;
@@ -162,6 +165,7 @@ ValuePtr builtin_dxf_cross(const Context *ctx, const EvalContext *evalctx)
 		ValuePtr n = evalctx->getArgName(i);
 		ValuePtr v = evalctx->getArgValue(i);
 		if (n == "file"){
+			rawFilename = v->toString();
 			filename = ctx->getAbsolutePath(v->toString());
 		}else if (n == "layer"){
 			layername = v->toString();
@@ -224,7 +228,7 @@ ValuePtr builtin_dxf_cross(const Context *ctx, const EvalContext *evalctx)
 		}
 	}
 
-	PRINTB("WARNING: Can't find cross in '%s', layer '%s'!", filename % layername);
+	PRINTB("WARNING: Can't find cross in '%s', layer '%s'! %s", rawFilename % layername % evalctx->loc.toRelativeString(ctx->documentPath()));
 
 	return ValuePtr::undefined;
 }
