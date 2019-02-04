@@ -65,3 +65,11 @@ circle(r = 1);
 linear_extrude(height = 10, center = true, convexity = 10, origin="test", scale=1/0)
 translate([2, 0, 0])
 circle(r = 1);
+
+table1 = [[10,10],[20,20]];
+echo(lookup(0, table1));  //OK, but limited to 10
+echo(lookup(15, table1)); //OK
+echo(lookup(30, table1)); //OK, but limited to 20
+echo(lookup("test", table1)); //invalid first parameter
+echo(lookup(1, table1, 3)); //to many arguments
+echo(lookup(1)); //not enough arguments

@@ -568,12 +568,17 @@ ValuePtr builtin_concat(const Context *, const EvalContext *evalctx)
 	return ValuePtr(result);
 }
 
-ValuePtr builtin_lookup(const Context *, const EvalContext *evalctx)
+ValuePtr builtin_lookup(const Context *ctx, const EvalContext *evalctx)
 {
 	double p, low_p, low_v, high_p, high_v;
-	if (evalctx->numArgs() < 2 ||                     // Needs two args
-	    !evalctx->getArgValue(0)->getDouble(p)) // First must be a number
+	if (evalctx->numArgs() < 2){ // Needs two args
+		print_argCnt_warning("lookup", ctx, evalctx);
 		return ValuePtr::undefined;
+	}
+	if(!evalctx->getArgValue(0)->getDouble(p) || !isfinite(p)){ // First arg must be a number
+		PRINTB("WARNING: lookup(%s, ...) first argument is not a number, %s", evalctx->getArgValue(0)->toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
+		return ValuePtr::undefined;
+	}
 
 	ValuePtr v1 = evalctx->getArgValue(1);
 	const Value::VectorType &vec = v1->toVector();
