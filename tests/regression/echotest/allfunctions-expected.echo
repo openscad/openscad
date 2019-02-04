@@ -19,6 +19,7 @@ WARNING: exp() number of parameters does not match, in file allfunctions.scad, l
 WARNING: length() number of parameters does not match, in file allfunctions.scad, line 19
 WARNING: log() number of parameters does not match, in file allfunctions.scad, line 20
 WARNING: ln() number of parameters does not match, in file allfunctions.scad, line 21
+WARNING: lookup() number of parameters does not match, in file allfunctions.scad, line 25
 WARNING: search() number of parameters does not match, in file allfunctions.scad, line 26
 WARNING: norm() number of parameters does not match, in file allfunctions.scad, line 29
 WARNING: Invalid number of parameters for cross(), in file allfunctions.scad, line 30
