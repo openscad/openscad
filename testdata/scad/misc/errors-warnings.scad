@@ -73,3 +73,16 @@ echo(lookup(30, table1)); //OK, but limited to 20
 echo(lookup("test", table1)); //invalid first parameter
 echo(lookup(1, table1, 3)); //to many arguments
 echo(lookup(1)); //not enough arguments
+
+nan = (1/0)/(1/0);
+
+OriginPoint = dxf_cross(file="doesNotExist.dxf",
+    layer="SCAD.Origin", 
+    origin=[1/0, nan],
+    scale=1);
+    
+TotalWidth = dxf_dim(file="doesNotExist.dxf",
+    name="TotalWidth",
+    layer="SCAD.Origin",
+    origin=[1,2,3],
+    scale=1);    
