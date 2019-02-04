@@ -227,7 +227,7 @@ assignment:
                                     LOC(@$).firstLine());
                         }else if(uncPathCurr == uncPathPrev){
                             //assigment overwritten within the same file
-                            //the line number beeing equal happens, when a file is included multiple times
+                            //the line number being equal happens, when a file is included multiple times
                             if(assignment.location().firstLine() != LOC(@$).firstLine()){
                                 PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i",
                                         assignment.name%
