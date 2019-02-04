@@ -127,7 +127,7 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 	auto origin = c.lookup_variable("origin", true);
 	node->origin_x = node->origin_y = 0;
 	bool originOk = origin->getVec2(node->origin_x, node->origin_y);
-	originOk &= isfinite(node->origin_x) && isfinite(node->origin_y);
+	originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
 	if(origin!=ValuePtr::undefined && !originOk){
 		PRINTB("WARNING: linear_extrude(..., origin=%s) could not be converted, %s", origin->toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
 	}

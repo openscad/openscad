@@ -575,7 +575,7 @@ ValuePtr builtin_lookup(const Context *ctx, const EvalContext *evalctx)
 		print_argCnt_warning("lookup", ctx, evalctx);
 		return ValuePtr::undefined;
 	}
-	if(!evalctx->getArgValue(0)->getDouble(p) || !isfinite(p)){ // First arg must be a number
+	if(!evalctx->getArgValue(0)->getDouble(p) || !std::isfinite(p)){ // First arg must be a number
 		PRINTB("WARNING: lookup(%s, ...) first argument is not a number, %s", evalctx->getArgValue(0)->toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
 		return ValuePtr::undefined;
 	}

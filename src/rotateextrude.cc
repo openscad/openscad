@@ -81,7 +81,7 @@ AbstractNode *RotateExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	node->layername = layer->isUndefined() ? "" : layer->toString();
 	node->convexity = static_cast<int>(convexity->toDouble());
 	bool originOk = origin->getVec2(node->origin_x, node->origin_y);
-	originOk &= isfinite(node->origin_x) && isfinite(node->origin_y);
+	originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
 	if(origin!=ValuePtr::undefined && !originOk){
 		PRINTB("WARNING: rotate_extrude(..., origin=%s) could not be converted, %s", origin->toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
 	}
