@@ -62,11 +62,21 @@ ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 		if (evalctx->getArgName(i) == "file") {
 			filename = lookup_file(v->toString(), 
 			evalctx->documentPath(), ctx->documentPath());
+		}else if (n == "layer") {
+			layername = v->toString();
+		}else if (n == "origin"){
+			bool originOk = v->getVec2(xorigin, yorigin);
+			originOk &= std::isfinite(xorigin) && std::isfinite(yorigin);
+			if(!originOk){
+				PRINTB("WARNING: dxf_dim(..., origin=%s) could not be converted, %s", v->toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
+			}
+		}else if (n == "scale"){
+			v->getDouble(scale);
+		} else if (n == "name") {
+			name = v->toString();
+		}else{
+			//unkown parameter - maybe we should warn?
 		}
-		if (n == "layer") layername = v->toString();
-		if (n == "origin") v->getVec2(xorigin, yorigin);
-		if (n == "scale") v->getDouble(scale);
-		if (n == "name") name = v->toString();
 	}
 
 	fs::path filepath(filename);
@@ -147,14 +157,25 @@ ValuePtr builtin_dxf_cross(const Context *ctx, const EvalContext *evalctx)
 
   // FIXME: We don't lookup the file relative to where this function was instantiated
 	// since the path is only available for ModuleInstantiations, not function expressions.
-	// See isse #217
+	// See issue #217
 	for (size_t i = 0; i < evalctx->numArgs(); i++) {
 		ValuePtr n = evalctx->getArgName(i);
 		ValuePtr v = evalctx->getArgValue(i);
-		if (n == "file") filename = ctx->getAbsolutePath(v->toString());
-		if (n == "layer") layername = v->toString();
-		if (n == "origin") v->getVec2(xorigin, yorigin);
-		if (n == "scale") v->getDouble(scale);
+		if (n == "file"){
+			filename = ctx->getAbsolutePath(v->toString());
+		}else if (n == "layer"){
+			layername = v->toString();
+		}else if (n == "origin"){
+			bool originOk = v->getVec2(xorigin, yorigin);
+			originOk &= std::isfinite(xorigin) && std::isfinite(yorigin);
+			if(!originOk){
+				PRINTB("WARNING: dxf_cross(..., origin=%s) could not be converted, %s", v->toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
+			}
+		}else if (n == "scale"){
+			v->getDouble(scale);
+		}else{
+			//unkown parameter - maybe we should warn?
+		}
 	}
 
 	fs::path filepath(filename);
