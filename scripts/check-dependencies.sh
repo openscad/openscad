@@ -40,8 +40,8 @@ doubleconversion_sysver()
   doubleconvpath=$1/include/double-conversion/double-conversion.h
   if [ ! -e $doubleconvpath ]; then return; fi
   # No version info in headers, not sure what to check here
-  # Just assume version 3 if file exists?
-  doubleconversion_sysver_result="3.0.0"
+  # Just assume version 2.0.1 (version available in trusty) if file exists?
+  doubleconversion_sysver_result="2.0.1"
 }
 
 eigen_sysver()

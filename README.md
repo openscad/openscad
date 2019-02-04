@@ -123,7 +123,7 @@ Follow the instructions for the platform you're compiling on below.
 * [Bison (2.4 -> )](https://www.gnu.org/software/bison/)
 * [Flex (2.5.35 -> )](http://flex.sourceforge.net/)
 * [pkg-config (0.26 -> )](https://www.freedesktop.org/wiki/Software/pkg-config/)
-* [double-conversion (3.0.0 -> )](https://github.com/google/double-conversion/)
+* [double-conversion (2.0.1 -> )](https://github.com/google/double-conversion/)
 
 ### Getting the source code
 
