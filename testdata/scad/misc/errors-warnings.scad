@@ -12,7 +12,7 @@ polyhedron(
 //file does not exist - we only care about the file ending
 import("doesNotExist.aaa");
 //file does not exist an thus creates a warning
-import("doesNotExist.off");
+import("doesNotExist.off", origin="string");
 //unknown module
 hello();
 //unknown function
