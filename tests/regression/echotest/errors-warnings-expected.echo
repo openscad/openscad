@@ -32,6 +32,7 @@ ECHO: 15
 ECHO: 20
 WARNING: lookup("test", ...) first argument is not a number, in file errors-warnings.scad, line 73
 ECHO: undef
-ECHO: 10
+WARNING: lookup() number of parameters does not match, in file errors-warnings.scad, line 74
+ECHO: undef
 WARNING: lookup() number of parameters does not match, in file errors-warnings.scad, line 75
 ECHO: undef

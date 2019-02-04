@@ -571,7 +571,7 @@ ValuePtr builtin_concat(const Context *, const EvalContext *evalctx)
 ValuePtr builtin_lookup(const Context *ctx, const EvalContext *evalctx)
 {
 	double p, low_p, low_v, high_p, high_v;
-	if (evalctx->numArgs() < 2){ // Needs two args
+	if (evalctx->numArgs() != 2){ // Needs two args
 		print_argCnt_warning("lookup", ctx, evalctx);
 		return ValuePtr::undefined;
 	}
