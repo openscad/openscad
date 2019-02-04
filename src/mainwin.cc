@@ -2093,8 +2093,6 @@ void MainWindow::action3DPrint()
 	const unsigned int dim = 3;
 	if (!canExport(dim)) return;
 
-	Settings::Settings *s = Settings::Settings::inst();
-
 	const auto printService = PrintService::inst();
 	auto printInitDialog = new PrintInitDialog();
 	auto printInitResult = printInitDialog->exec();
