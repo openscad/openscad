@@ -1321,7 +1321,7 @@ void MainWindow::compileCSG()
 		catch (const ProgressCancelException &) {
 			PRINT("CSG generation cancelled.");
 		}catch(const HardWarningException &){
-			PRINT("CSG generation cancelled due to hardwarning beeing enabled.");
+			PRINT("CSG generation cancelled due to hardwarning being enabled.");
 		}
 		progress_report_fin();
 		updateStatusBar(nullptr);
