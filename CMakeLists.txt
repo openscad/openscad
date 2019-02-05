@@ -14,7 +14,11 @@ if(APPLE)
   set(CMAKE_OSX_DEPLOYMENT_TARGET 10.9)
 endif()
 cmake_minimum_required(VERSION 3.3)
-cmake_policy(SET CMP0071 OLD)
+
+# CMP0071 introduced in 3.10.2
+if (CMAKE_VERSION VERSION_GREATER "3.10.1") 
+  cmake_policy(SET CMP0071 OLD)
+endif()
 
 if(NULLGL)
   list(APPEND CONFIG_OPTIONS "NULLGL")
