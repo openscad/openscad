@@ -1042,6 +1042,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/isundef-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/isnum-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/isbool-test.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/isstring-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/operators-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/builtins-calling-vec3vec2.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1472.scad

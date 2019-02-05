@@ -985,6 +985,21 @@ ValuePtr builtin_is_bool(const Context *ctx, const EvalContext *evalctx)
 	return ValuePtr::undefined;
 }
 
+ValuePtr builtin_is_string(const Context *ctx, const EvalContext *evalctx)
+{
+	if (evalctx->numArgs() == 1) {
+		ValuePtr v = evalctx->getArgValue(0);
+		if (v->type() == Value::ValueType::STRING){
+			return ValuePtr(true);
+		}else{
+			return ValuePtr(false);
+		}
+	}else{
+		print_argCnt_warning("is_string", ctx, evalctx);
+	}
+	return ValuePtr::undefined;
+}
+
 void register_builtin_functions()
 {
 	Builtins::init("abs", new BuiltinFunction(&builtin_abs));
@@ -1022,4 +1037,5 @@ void register_builtin_functions()
 	Builtins::init("is_undef", new BuiltinFunction(&builtin_is_undef));
 	Builtins::init("is_num", new BuiltinFunction(&builtin_is_num));
 	Builtins::init("is_bool", new BuiltinFunction(&builtin_is_bool));
+	Builtins::init("is_string", new BuiltinFunction(&builtin_is_string));
 }
