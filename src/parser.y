@@ -81,6 +81,7 @@ bool fileEnded=false;
   class Value *value;
   class Expression *expr;
   class Vector *vec;
+  class Record *rec;
   class ModuleInstantiation *inst;
   class IfElseModuleInstantiation *ifelse;
   class Assignment *arg;
@@ -134,6 +135,7 @@ bool fileEnded=false;
 
 %type <expr> expr
 %type <vec> vector_expr
+%type <rec> record_expr
 %type <expr> list_comprehension_elements
 %type <expr> list_comprehension_elements_p
 %type <expr> list_comprehension_elements_or_expr
@@ -405,6 +407,14 @@ expr:
             {
               $$ = $2;
             }
+        | '{' optional_commas '}'
+            {
+              $$ = new Literal(ValuePtr(Value::RecordType()), LOC(@$));
+            }
+        | '{' record_expr optional_commas '}'
+            {
+              $$ = $2;
+            }
         | expr '*' expr
             {
               $$ = new BinaryOp($1, BinaryOp::Op::Multiply, $3, LOC(@$));
@@ -592,6 +602,20 @@ vector_expr:
               $$->push_back($4);
             }
         ;
+
+record_expr:
+           TOK_ID ':' expr
+            {
+              $$ = new Record(LOC(@$));
+              $$->add($1,$3);
+              free($1);
+            }
+        | record_expr ',' optional_commas TOK_ID ':' expr
+            {
+              $$ = $1;
+              $$->add($4,$6);
+              free($4);
+            }
 
 arguments_decl:
           /* empty */
