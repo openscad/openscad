@@ -25,9 +25,9 @@ PARALLEL=-j2
 # This should be set via .travis.yml depending on the OS/Distribution
 # PARALLEL_CTEST=-j1
 
-travis_start qmake "Building OpenSCAD using qmake"
-qmake CONFIG+=experimental CONFIG+=nogui && make $PARALLEL
-travis_finish qmake
+travis_start cmake "Building OpenSCAD using cmake"
+cmake -DEXPERIMENTAL=ON -DHEADLESS=ON && make $PARALLEL
+travis_finish cmake
 
 travis_start cmake "Building tests using cmake"
 
