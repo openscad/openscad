@@ -107,6 +107,10 @@ message(STATUS "LibZip: ${LIBZIP_VERSION}")
 include_directories(${LIBZIP_INCLUDE_DIR_ZIP})
 include_directories(${LIBZIP_INCLUDE_DIR_ZIPCONF})
 
+find_package(Lib3MF REQUIRED QUIET)
+add_definitions(${LIB3MF_CFLAGS})
+include_directories(${LIB3MF_INCLUDE_DIRS})
+
 # Output compilation database (compile_commands.json), so we can e.g. run clang-tidy or other tools separately
 set(CMAKE_EXPORT_COMPILE_COMMANDS "ON")
 # Use clang-tidy if run with -DCLANG_TIDY=1
@@ -133,7 +137,7 @@ if(NOT HEADLESS)
   set(CMAKE_AUTOMOC ON)
   set(CMAKE_AUTOUIC ON)
   set(CMAKE_AUTORCC ON)
-  find_package(Qt5 COMPONENTS Core Widgets Multimedia OpenGL Concurrent REQUIRED QUIET)
+  find_package(Qt5 COMPONENTS Core Widgets Multimedia OpenGL Concurrent Network REQUIRED QUIET)
   message(STATUS "Qt5: ${Qt5_VERSION}")
   set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -405,7 +409,9 @@ set(GUI_SOURCES
   src/SettingsWriter.cc
   src/FontListDialog.cc
   src/FontListTableView.cc
+  src/OctoPrint.cc
   src/PrintInitDialog.cc
+  src/PrintService.cc
   src/LibraryInfoDialog.cc
   src/OpenCSGWarningDialog.cc
   src/ProgressWidget.cc
@@ -450,6 +456,8 @@ set(GUI_SOURCES
 set(GUI_HEADERS
   src/AboutDialog.h
   src/MainWindow.h
+  src/Network.h
+  src/NetworkSignal.h
   )
 
 if(NULLGL)
@@ -518,6 +526,7 @@ set(COMMON_LIBRARIES
     ${FREETYPE_LIBRARIES}
     ${GLIB2_LIBRARIES}
     ${LIBXML2_LIBRARIES}
+    ${LIB3MF_LIBRARIES}
     ${LIBZIP_LIBRARY}
     ${OPENGL_LIBRARIES}
     ${GLEW_LIBRARY}
@@ -526,6 +535,6 @@ set(COMMON_LIBRARIES
 
 target_link_libraries(OpenSCAD ${COMMON_LIBRARIES})
 if(NOT HEADLESS)
-  target_link_libraries(OpenSCAD Qt5::Core Qt5::Widgets Qt5::Multimedia Qt5::OpenGL Qt5::Concurrent ${QT5QSCINTILLA_LIBRARY} ${Qt5DBus_LIBRARIES})
+  target_link_libraries(OpenSCAD Qt5::Core Qt5::Widgets Qt5::Multimedia Qt5::OpenGL Qt5::Concurrent Qt5::Network ${QT5QSCINTILLA_LIBRARY} ${Qt5DBus_LIBRARIES})
 endif()
 
