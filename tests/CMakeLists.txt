@@ -543,13 +543,13 @@ add_definitions(${GLIB2_DEFINITIONS})
 inclusion(GLIB2_DIR GLIB2_INCLUDE_DIRS)
 
 # 3MF
-include(FindLib3MF.cmake)
+find_package(Lib3MF REQUIRED)
 add_definitions(${LIB3MF_CFLAGS})
 include_directories(${LIB3MF_INCLUDE_DIRS})
 
 # find libraries using pkg-config
 find_package(PkgConfig REQUIRED)
-include(PkgConfigTools.cmake)
+include(PkgConfigTools)
 save_pkg_config_env()
 
 if (DEFINED ENV{OPENSCAD_LIBRARIES})

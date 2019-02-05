@@ -4,8 +4,9 @@
 #
 # LIB3MF_FOUND
 # LIB3MF_CFLAGS
+# LIB3MF_LIBDIR
 # LIB3MF_INCLUDE_DIRS
-# LIB3MF_LDFLAGS
+# LIB3MF_LIBRARIES
 # 
 
 message(STATUS "Searching for lib3mf.")
@@ -36,7 +37,7 @@ if ("${LIB3MF_LIBDIR}" STREQUAL "")
 endif()
 
 if (NOT ${LIB3MF_LIBDIR} STREQUAL "")
-  set(LIB3MF_LDFLAGS "-L${LIB3MF_LIBDIR}" "-l3MF -lzip -lz")
+  set(LIB3MF_LIBRARIES "-L${LIB3MF_LIBDIR}" "-l3MF -lzip -lz")
   set(LIB3MF_CFLAGS "-D__GCC -DENABLE_LIB3MF")
   message(STATUS "Found lib3mf in ${LIB3MF_LIBDIR}.")
 else()
