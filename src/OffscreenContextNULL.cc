@@ -31,7 +31,16 @@ void offscreen_context_init(OffscreenContext &ctx, int width, int height)
 
 string offscreen_context_getinfo(OffscreenContext *ctx)
 {
-  return string("NULLGL");
+  const char *arch = "unknown";
+  if (sizeof(int*) == 4) arch = "32-bit";
+  else if (sizeof(int*) == 8) arch = "64-bit";
+#ifdef OPENSCAD_OS
+  auto OSInfo = OPENSCAD_OS;
+#else
+  auto OSInfo = "unknown";
+#endif
+  return STR("OS info: " << OSInfo 
+    << "\nMachine: " << arch << "\n");
 }
 
 OffscreenContext *create_offscreen_context(int w, int h)
