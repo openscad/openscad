@@ -6,12 +6,15 @@
 #   -DNULLGL=<ON|OFF>
 #   -DSNAPSHOT=<ON|OFF>
 #   -DEXPERIMENTAL=<ON|OFF>
+#
+#  TODO
+#   find packages for spnav, hidapi
 
 if(APPLE)
   set(CMAKE_OSX_DEPLOYMENT_TARGET 10.8)
 endif()
-cmake_minimum_required(VERSION 3.2.2)
-
+cmake_minimum_required(VERSION 3.3)
+cmake_policy(SET CMP0071 OLD)
 
 if(NULLGL)
   list(APPEND CONFIG_OPTIONS "NULLGL")
@@ -180,6 +183,15 @@ if(NOT HEADLESS)
     message(STATUS "DBus input driver disabled as the QtDBus module could not be found.")
   endif()
   
+  find_package(Qt5Gamepad QUIET)
+  if (Qt5Gamepad_FOUND)
+    message(STATUS "Gamepad input driver enabled")
+    set(GUI_SOURCES ${GUI_SOURCES} src/input/QGamepadInputDriver.cc)
+    add_definitions(-DENABLE_QGAMEPAD)
+  else()
+    message(STATUS "Gamepad input driver disabled as the Qt5Gamepad module could not be found.")
+  endif()
+
 #  add_definitions(${Qt5Widgets_DEFINITIONS})
 #  add_definitions(${Qt5OpenGL_DEFINITIONS})
 #  add_definitions(${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS})
@@ -267,7 +279,7 @@ elseif(WIN32)
   message(STATUS "Offscreen OpenGL Context - using Microsoft WGL")
   set(PLATFORM_SOURCES src/imageutils-lodepng.cc src/PlatformUtils-win.cc)
   if(NULLGL)
-    add_definitions(-DOPENSCAD_OS="Microsoft(TM) Windows(TM)")
+    add_definitions(-DOPENSCAD_OS="Windows")
   else()
     set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/OffscreenContextWGL.cc)
   endif()
@@ -444,10 +456,17 @@ else()
 endif()
 
 
+if(UNIX AND (NOT HEADLESS))
+  set(PLATFORM_INPUT_DRIVER_SOURCES src/input/JoystickInputDriver.cc)
+  add_definitions(-DENABLE_JOYSTICK)
+endif()
+
 set(INPUT_DRIVER_SOURCES
+  ${PLATFORM_INPUT_DRIVER_SOURCES}
   ${INPUT_DRIVER_DBUS_SOURCES})
 
 set(GUI_SOURCES
+  ${GUI_SOURCES}
   src/mainwin.cc
   src/OpenSCADApp.cc
   src/EventFilter.h
@@ -574,3 +593,6 @@ if(NOT HEADLESS)
   target_link_libraries(OpenSCAD Qt5::Core Qt5::Widgets Qt5::Multimedia Qt5::OpenGL Qt5::Concurrent Qt5::Network ${QT5QSCINTILLA_LIBRARY} ${Qt5DBus_LIBRARIES})
 endif()
 
+if(INFO)
+  include(info)
+endif()
