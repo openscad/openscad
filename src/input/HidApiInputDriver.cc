@@ -254,18 +254,18 @@ bool HidApiInputDriver::enumerate()
 
 		hid_device *hid_dev;
 
-		LL("P: %04x:%04x %s", info->vendor_id % info->product_id % info->path);
+		LL("P: %04x:%04x | %s", info->vendor_id % info->product_id % info->path);
 		hid_dev = hid_open_path(info->path);
 
 		if (!hid_dev) {
-			LL("O: %04x:%04x %s", info->vendor_id % info->product_id % to_string(info->serial_number));
+			LL("O: %04x:%04x | %s", info->vendor_id % info->product_id % to_string(info->serial_number));
 			hid_dev = hid_open(info->vendor_id, info->product_id, info->serial_number);
 			if (!hid_dev) {
 				continue;
 			}
 		}
 
-		LL("R: %04x:%04x %s", info->vendor_id % info->product_id % to_string(info->serial_number));
+		LL("R: %04x:%04x | %s", info->vendor_id % info->product_id % to_string(info->serial_number));
 		unsigned char buf[BUFLEN];
 		const int len = hid_read_timeout(hid_dev, buf, BUFLEN, 100);
 		LL("?: %d", len);
@@ -278,10 +278,12 @@ bool HidApiInputDriver::enumerate()
 
 		this->dev = dev;
 		this->hid_dev = hid_dev;
+		break;
 	}
 	hid_free_enumeration(info);
-	L("Done enumerating.");
-	return this->hid_dev != nullptr;
+	const bool ret = this->hid_dev != nullptr;
+	LL("Done enumerating (status = %s).", (ret ? "ok" : "failed"));
+	return ret;
 }
 
 bool HidApiInputDriver::open()
