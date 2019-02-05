@@ -10,6 +10,7 @@
 #  TODO
 #   find packages for spnav, hidapi
 
+
 if(APPLE)
   set(CMAKE_OSX_DEPLOYMENT_TARGET 10.9)
 endif()
@@ -76,7 +77,13 @@ add_definitions(-DSTACKSIZE=8388608 -D_REENTRANT)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 set(CMAKE_PREFIX_PATH "$ENV{OPENSCAD_LIBRARIES}")
 
-find_package(Eigen3 REQUIRED QUIET)
+find_package(Eigen3 QUIET)
+if (NOT Eigen3_FOUND)
+  # Ubuntu Trusty Eigen package installs FindEigen3.cmake but assumes cmake-2.8, not cmake3
+  # See https://packages.ubuntu.com/trusty/all/libeigen3-dev/filelist
+  set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "/usr/share/cmake-2.8/Modules")
+  find_package(Eigen3 REQUIRED QUIET)
+endif()
 message(STATUS "Eigen3: ${EIGEN3_VERSION_STRING}")
 include_directories(${EIGEN3_INCLUDE_DIRS})
 add_definitions(-DEIGEN_DONT_ALIGN)
