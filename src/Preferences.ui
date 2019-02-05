@@ -107,6 +107,16 @@
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QCheckBox" name="checkBoxRotate2">
+          <property name="text">
+           <string>use rotate2 (viewport relative rotate) for mouse</string>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
       <widget class="QWidget" name="pageEditor">

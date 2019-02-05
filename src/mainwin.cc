@@ -281,6 +281,7 @@ MainWindow::MainWindow(const QString &filename)
 
 	auto s = Settings::Settings::inst();
 	this->qglview->setMouseCentricZoom(s->get(Settings::Settings::mouseCentricZoom).toBool());
+	this->qglview->setUseRotate2(s->get(Settings::Settings::mouseRotate2).toBool());
 
 	animate_timer = new QTimer(this);
 	connect(animate_timer, SIGNAL(timeout()), this, SLOT(updateTVal()));
@@ -476,6 +477,7 @@ MainWindow::MainWindow(const QString &filename)
 
 	connect(Preferences::inst(), SIGNAL(requestRedraw()), this->qglview, SLOT(updateGL()));
 	connect(Preferences::inst(), SIGNAL(updateMouseCentricZoom(bool)), this->qglview, SLOT(setMouseCentricZoom(bool)));
+	connect(Preferences::inst(), SIGNAL(updateUseRotate2(bool)), this->qglview, SLOT(setUseRotate2(bool)));
 	connect(Preferences::inst(), SIGNAL(updateMdiMode(bool)), this, SLOT(updateMdiMode(bool)));
 	connect(Preferences::inst(), SIGNAL(updateReorderMode(bool)), this, SLOT(updateReorderMode(bool)));
 	connect(Preferences::inst(), SIGNAL(updateUndockMode(bool)), this, SLOT(updateUndockMode(bool)));

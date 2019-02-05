@@ -538,6 +538,13 @@ void Preferences::on_checkBoxMouseCentricZoom_toggled(bool val)
 	emit updateMouseCentricZoom(val);
 }
 
+void Preferences::on_checkBoxRotate2_toggled(bool val)
+{
+	Settings::Settings::inst()->set(Settings::Settings::mouseRotate2, Value(val));
+	writeSettings();
+	emit updateUseRotate2(val);
+}
+
 void Preferences::on_spinBoxIndentationWidth_valueChanged(int val)
 {
 	Settings::Settings::inst()->set(Settings::Settings::indentationWidth, Value(val));
@@ -903,6 +910,7 @@ void Preferences::updateGUI()
 	this->checkBoxEnableBraceMatching->setChecked(s->get(Settings::Settings::enableBraceMatching).toBool());
 	this->checkBoxShowWarningsIn3dView->setChecked(s->get(Settings::Settings::showWarningsIn3dView).toBool());
 	this->checkBoxMouseCentricZoom->setChecked(s->get(Settings::Settings::mouseCentricZoom).toBool());
+	this->checkBoxRotate2->setChecked(s->get(Settings::Settings::mouseRotate2).toBool());
 	this->checkBoxEnableLineNumbers->setChecked(s->get(Settings::Settings::enableLineNumbers).toBool());
 	this->spinBoxLineWrapIndentationIndent->setDisabled(this->comboBoxLineWrapIndentationStyle->currentText() == "Same");
 

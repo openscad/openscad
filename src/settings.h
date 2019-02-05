@@ -37,6 +37,7 @@ class Settings
 public:
     static SettingsEntry showWarningsIn3dView;
     static SettingsEntry mouseCentricZoom;
+    static SettingsEntry mouseRotate2;
     static SettingsEntry indentationWidth;
     static SettingsEntry tabWidth;
     static SettingsEntry lineWrap;
