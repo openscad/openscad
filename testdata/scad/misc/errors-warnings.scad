@@ -86,3 +86,15 @@ TotalWidth = dxf_dim(file="doesNotExist.dxf",
     layer="SCAD.Origin",
     origin=[1,2,3],
     scale=1);    
+    
+dxf="dim-all.dxf"; // this does exist
+echo(dxf);
+OriginPoint2 = dxf_cross(file=dxf,
+    layer="SCAD.Origin", 
+    origin=[1/0, 0],
+    scale=1);
+
+TotalWidth2 = dxf_dim(file=dxf,
+    name="TotalWidth",
+    layer="SCAD.Origin",
+    scale=1); 
