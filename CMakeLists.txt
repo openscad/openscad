@@ -140,9 +140,13 @@ message(STATUS "Bison: ${BISON_VERSION}")
 
 find_package(LibZip REQUIRED QUIET)
 message(STATUS "LibZip: ${LIBZIP_VERSION}")
+message(STATUS "LibZip Dir: '${LIBZIP_INCLUDE_DIR_ZIP}'")
+message(STATUS "LibZip Dir ZipConf: '${LIBZIP_INCLUDE_DIR_ZIPCONF}'")
+message(STATUS "LibZip Library: '${LIBZIP_LIBRARY}'")
+
 include_directories(${LIBZIP_INCLUDE_DIR_ZIP})
 include_directories(${LIBZIP_INCLUDE_DIR_ZIPCONF})
-
+add_definitions(-DENABLE_LIBZIP)
 
 find_package(Lib3MF REQUIRED QUIET)
 add_definitions(${LIB3MF_CFLAGS})
@@ -232,8 +236,6 @@ else()
   message(STATUS "OpenCSG: ${OPENCSG_VERSION_STRING}")
   add_definitions(-DENABLE_OPENCSG)
 endif()
-
-add_definitions(-DENABLE_LIBZIP)
 
 # Stack size 8MB; github issue 116
 add_definitions(-DSTACKSIZE=8388608)
