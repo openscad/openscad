@@ -8,7 +8,7 @@ WARNING: cylinder(r1=0, r2=0, ...), in file builtin-invalid-range-test.scad, lin
 WARNING: square(size=0, ...), in file builtin-invalid-range-test.scad, line 12
 WARNING: square(size=[1, 0], ...), in file builtin-invalid-range-test.scad, line 13
 WARNING: square(size=[0, 1], ...), in file builtin-invalid-range-test.scad, line 14
-WARNING: circle(r1=0), in file builtin-invalid-range-test.scad, line 15
+WARNING: circle(r=0), in file builtin-invalid-range-test.scad, line 15
 ECHO: "i=-1, primitive test"
 WARNING: cube(size=[1, -1, 1], ...), in file builtin-invalid-range-test.scad, line 8
 WARNING: sphere(r=-1), in file builtin-invalid-range-test.scad, line 9
@@ -17,7 +17,7 @@ WARNING: cylinder(r1=-1, r2=-1, ...), in file builtin-invalid-range-test.scad, l
 WARNING: square(size=-1, ...), in file builtin-invalid-range-test.scad, line 12
 WARNING: square(size=[1, -1], ...), in file builtin-invalid-range-test.scad, line 13
 WARNING: square(size=[-1, 1], ...), in file builtin-invalid-range-test.scad, line 14
-WARNING: circle(r1=-1), in file builtin-invalid-range-test.scad, line 15
+WARNING: circle(r=-1), in file builtin-invalid-range-test.scad, line 15
 ECHO: "i=-inf, primitive test"
 WARNING: cube(size=[1, -inf, 1], ...), in file builtin-invalid-range-test.scad, line 8
 WARNING: sphere(r=-inf), in file builtin-invalid-range-test.scad, line 9
@@ -26,16 +26,16 @@ WARNING: cylinder(r1=-inf, r2=-inf, ...), in file builtin-invalid-range-test.sca
 WARNING: square(size=-inf, ...), in file builtin-invalid-range-test.scad, line 12
 WARNING: square(size=[1, -inf], ...), in file builtin-invalid-range-test.scad, line 13
 WARNING: square(size=[-inf, 1], ...), in file builtin-invalid-range-test.scad, line 14
-WARNING: circle(r1=-inf), in file builtin-invalid-range-test.scad, line 15
+WARNING: circle(r=-inf), in file builtin-invalid-range-test.scad, line 15
 ECHO: "i=nan, primitive test"
 WARNING: cube(size=[1, nan, 1], ...), in file builtin-invalid-range-test.scad, line 8
-WARNING: sphere(r=-nan), in file builtin-invalid-range-test.scad, line 9
-WARNING: cylinder(h=-nan, ...), in file builtin-invalid-range-test.scad, line 10
-WARNING: cylinder(r1=-nan, r2=-nan, ...), in file builtin-invalid-range-test.scad, line 11
+WARNING: sphere(r=nan), in file builtin-invalid-range-test.scad, line 9
+WARNING: cylinder(h=nan, ...), in file builtin-invalid-range-test.scad, line 10
+WARNING: cylinder(r1=nan, r2=nan, ...), in file builtin-invalid-range-test.scad, line 11
 WARNING: square(size=nan, ...), in file builtin-invalid-range-test.scad, line 12
 WARNING: square(size=[1, nan], ...), in file builtin-invalid-range-test.scad, line 13
 WARNING: square(size=[nan, 1], ...), in file builtin-invalid-range-test.scad, line 14
-WARNING: circle(r1=-nan), in file builtin-invalid-range-test.scad, line 15
+WARNING: circle(r=nan), in file builtin-invalid-range-test.scad, line 15
 ECHO: "i=inf, primitive test"
 WARNING: cube(size=[1, inf, 1], ...), in file builtin-invalid-range-test.scad, line 8
 WARNING: sphere(r=inf), in file builtin-invalid-range-test.scad, line 9
@@ -44,7 +44,7 @@ WARNING: cylinder(r1=inf, r2=inf, ...), in file builtin-invalid-range-test.scad,
 WARNING: square(size=inf, ...), in file builtin-invalid-range-test.scad, line 12
 WARNING: square(size=[1, inf], ...), in file builtin-invalid-range-test.scad, line 13
 WARNING: square(size=[inf, 1], ...), in file builtin-invalid-range-test.scad, line 14
-WARNING: circle(r1=inf), in file builtin-invalid-range-test.scad, line 15
+WARNING: circle(r=inf), in file builtin-invalid-range-test.scad, line 15
 ECHO: "i=test, primitive test"
 WARNING: Unable to convert cube(size=[1, "test", 1], ...) parameter to a number or a vec3 of numbers, in file builtin-invalid-range-test.scad, line 8
 WARNING: Unable to convert square(size="test", ...) parameter to a number or a vec2 of numbers, in file builtin-invalid-range-test.scad, line 12

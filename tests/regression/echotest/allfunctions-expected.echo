@@ -16,7 +16,7 @@ WARNING: floor() number of parameters does not match, in file allfunctions.scad,
 WARNING: pow() number of parameters does not match, in file allfunctions.scad, line 16
 WARNING: sqrt() number of parameters does not match, in file allfunctions.scad, line 17
 WARNING: exp() number of parameters does not match, in file allfunctions.scad, line 18
-WARNING: length() number of parameters does not match, in file allfunctions.scad, line 19
+WARNING: len() number of parameters does not match, in file allfunctions.scad, line 19
 WARNING: log() number of parameters does not match, in file allfunctions.scad, line 20
 WARNING: ln() number of parameters does not match, in file allfunctions.scad, line 21
 WARNING: lookup() number of parameters does not match, in file allfunctions.scad, line 25

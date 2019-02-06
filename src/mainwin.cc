@@ -1321,7 +1321,7 @@ void MainWindow::compileCSG()
 		catch (const ProgressCancelException &) {
 			PRINT("CSG generation cancelled.");
 		}catch(const HardWarningException &){
-			PRINT("CSG generation cancelled due to hardwarning beeing enabled.");
+			PRINT("CSG generation cancelled due to hardwarning being enabled.");
 		}
 		progress_report_fin();
 		updateStatusBar(nullptr);
@@ -2092,8 +2092,6 @@ void MainWindow::action3DPrint()
 	//Make sure we can export:
 	const unsigned int dim = 3;
 	if (!canExport(dim)) return;
-
-	Settings::Settings *s = Settings::Settings::inst();
 
 	const auto printService = PrintService::inst();
 	auto printInitDialog = new PrintInitDialog();

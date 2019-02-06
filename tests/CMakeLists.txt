@@ -543,13 +543,13 @@ add_definitions(${GLIB2_DEFINITIONS})
 inclusion(GLIB2_DIR GLIB2_INCLUDE_DIRS)
 
 # 3MF
-include(FindLib3MF.cmake)
+find_package(Lib3MF REQUIRED)
 add_definitions(${LIB3MF_CFLAGS})
 include_directories(${LIB3MF_INCLUDE_DIRS})
 
 # find libraries using pkg-config
 find_package(PkgConfig REQUIRED)
-include(PkgConfigTools.cmake)
+include(PkgConfigTools)
 save_pkg_config_env()
 
 if (DEFINED ENV{OPENSCAD_LIBRARIES})
@@ -1040,6 +1040,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/errors-warnings-included.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/children-warnings-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/isundef-test.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/islist-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/operators-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/builtins-calling-vec3vec2.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1472.scad
