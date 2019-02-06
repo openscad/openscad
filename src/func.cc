@@ -453,9 +453,9 @@ ValuePtr builtin_length(const Context *ctx, const EvalContext *evalctx)
 			std::string text = v->toString();
 			return ValuePtr(int( g_utf8_strlen( text.c_str(), text.size() ) ));
 		}
-		print_argConvert_warning("length", ctx, evalctx);
+		print_argConvert_warning("len", ctx, evalctx);
 	}else{
-		print_argCnt_warning("length", ctx, evalctx);
+		print_argCnt_warning("len", ctx, evalctx);
 	}
 	return ValuePtr::undefined;
 }
