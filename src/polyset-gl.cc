@@ -38,6 +38,7 @@ static void draw_triangle(GLint *shaderinfo, const Vector3d &p0, const Vector3d 
 }
 #endif
 
+#ifndef NULLGL
 static void draw_tri(const Vector3d &p0, const Vector3d &p1, const Vector3d &p2, double z, bool mirror)
 {
 	glVertex3d(p0[0], p0[1], p0[2] + z);
@@ -46,7 +47,6 @@ static void draw_tri(const Vector3d &p0, const Vector3d &p1, const Vector3d &p2,
 	if (mirror) glVertex3d(p1[0], p1[1], p1[2] + z); 
 }
 
-#ifndef NULLGL
 static void gl_draw_triangle(GLint *shaderinfo, const Vector3d &p0, const Vector3d &p1, const Vector3d &p2, bool e0, bool e1, bool e2, double z, bool mirrored)
 {
 	double ax = p1[0] - p0[0], bx = p1[0] - p2[0];

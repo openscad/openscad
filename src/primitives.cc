@@ -224,8 +224,8 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		if (r.type() == Value::ValueType::NUMBER) {
 			node->r1 = r.toDouble();
 			if (OpenSCAD::rangeCheck && (node->r1 <= 0 || !std::isfinite(node->r1))){
-				PRINTB("WARNING: sphere(r=%d), %s",
-					node->r1 % inst->location().toRelativeString(ctx->documentPath()));
+				PRINTB("WARNING: sphere(r=%s), %s",
+					r.toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 			}
 		}
 		break;
@@ -258,12 +258,14 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 
 		if(OpenSCAD::rangeCheck){
 			if (node->h <= 0 || !std::isfinite(node->h)){
-				PRINTB("WARNING: cylinder(h=%d, ...), %s",
-					node->h % inst->location().toRelativeString(ctx->documentPath()));
+				PRINTB("WARNING: cylinder(h=%s, ...), %s",
+					h->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 			}
 			if (node->r1 < 0 || node->r2 < 0 || (node->r1 == 0 && node->r2 == 0) || !std::isfinite(node->r1) || !std::isfinite(node->r2)){
-				PRINTB("WARNING: cylinder(r1=%d, r2=%d, ...), %s",
-					node->r1 % node->r2 % inst->location().toRelativeString(ctx->documentPath()));
+				PRINTB("WARNING: cylinder(r1=%s, r2=%s, ...), %s",
+					(r1.type() == Value::ValueType::NUMBER ? r1.toEchoString() : r.toEchoString()) % 
+					(r2.type() == Value::ValueType::NUMBER ? r2.toEchoString() : r.toEchoString()) % 
+					inst->location().toRelativeString(ctx->documentPath()));
 			}
 		}
 
@@ -315,8 +317,8 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		if (r.type() == Value::ValueType::NUMBER) {
 			node->r1 = r.toDouble();
 			if (OpenSCAD::rangeCheck && ((node->r1 <= 0) || !std::isfinite(node->r1))){
-				PRINTB("WARNING: circle(r1=%d), %s",
-					node->r1 % inst->location().toRelativeString(ctx->documentPath()));
+				PRINTB("WARNING: circle(r=%s), %s",
+					r.toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 			}
 		}
 		break;
@@ -618,7 +620,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 				const auto &val = *vec[i];
 				if (!val.getVec2(x, y) || std::isinf(x) || std::isinf(y)) {
 					PRINTB("ERROR: Unable to convert point %s at index %d to a vec2 of numbers, %s", 
-								 val.toString() % i % this->modinst->location().toRelativeString(this->document_path));
+								 val.toEchoString() % i % this->modinst->location().toRelativeString(this->document_path));
 					return p;
 				}
 				outline.vertices.emplace_back(x, y);
@@ -671,9 +673,11 @@ std::string PrimitiveNode::toString() const
 					 << ", r2 = " << this->r2 << ", center = " << (center ? "true" : "false") << ")";
 			break;
 	case primitive_type_e::POLYHEDRON:
-		stream << "(points = " << *this->points
-					 << ", faces = " << *this->faces
-					 << ", convexity = " << this->convexity << ")";
+		stream << "(points = ";
+		this->points->toStream(stream);
+		stream << ", faces = ";
+		this->faces->toStream(stream);
+		stream << ", convexity = " << this->convexity << ")";
 			break;
 	case primitive_type_e::SQUARE:
 		stream << "(size = [" << this->x << ", " << this->y << "], "
@@ -684,7 +688,11 @@ std::string PrimitiveNode::toString() const
 					 << ", $fs = " << this->fs << ", r = " << this->r1 << ")";
 		break;
 	case primitive_type_e::POLYGON:
-		stream << "(points = " << *this->points << ", paths = " << *this->paths << ", convexity = " << this->convexity << ")";
+		stream << "(points = ";
+		this->points->toStream(stream);
+		stream << ", paths = ";
+		this->paths->toStream(stream);
+		stream << ", convexity = " << this->convexity << ")";
 			break;
 	default:
 		assert(false);

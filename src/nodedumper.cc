@@ -55,7 +55,7 @@ Response NodeDumper::visit(State &state, const AbstractNode &node)
 		
 		if (this->idString) {
 			
-			const boost::regex re("[^\\s\\\"]+|\\\"(?:[^\\\"\\\\]|\\\\.)*\\\"");
+			static const boost::regex re("[^\\s\\\"]+|\\\"(?:[^\\\"\\\\]|\\\\.)*\\\"");
 			const auto name = STR(node);
 			boost::sregex_token_iterator it(name.begin(), name.end(), re, 0);
 			std::copy(it, boost::sregex_token_iterator(), std::ostream_iterator<std::string>(this->dumpstream));

@@ -1040,6 +1040,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/errors-warnings-included.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/children-warnings-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/isundef-test.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/islist-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/isnum-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/isbool-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/isstring-test.scad

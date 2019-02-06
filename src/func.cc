@@ -453,9 +453,9 @@ ValuePtr builtin_length(const Context *ctx, const EvalContext *evalctx)
 			std::string text = v->toString();
 			return ValuePtr(int( g_utf8_strlen( text.c_str(), text.size() ) ));
 		}
-		print_argConvert_warning("length", ctx, evalctx);
+		print_argConvert_warning("len", ctx, evalctx);
 	}else{
-		print_argCnt_warning("length", ctx, evalctx);
+		print_argCnt_warning("len", ctx, evalctx);
 	}
 	return ValuePtr::undefined;
 }
@@ -955,6 +955,21 @@ ValuePtr builtin_is_undef(const Context *ctx, const EvalContext *evalctx)
 	return ValuePtr::undefined;
 }
 
+ValuePtr builtin_is_list(const Context *ctx, const EvalContext *evalctx)
+{
+	if (evalctx->numArgs() == 1) {
+		ValuePtr v = evalctx->getArgValue(0);
+		if (v->type() == Value::ValueType::VECTOR){
+			return ValuePtr(true);
+		}else{
+			return ValuePtr(false);
+		}
+	}else{
+		print_argCnt_warning("is_list", ctx, evalctx);
+	}
+	return ValuePtr::undefined;
+}
+
 ValuePtr builtin_is_num(const Context *ctx, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
@@ -997,7 +1012,6 @@ ValuePtr builtin_is_string(const Context *ctx, const EvalContext *evalctx)
 	}else{
 		print_argCnt_warning("is_string", ctx, evalctx);
 	}
-	return ValuePtr::undefined;
 }
 
 void register_builtin_functions()
@@ -1035,6 +1049,7 @@ void register_builtin_functions()
 	Builtins::init("cross", new BuiltinFunction(&builtin_cross));
 	Builtins::init("parent_module", new BuiltinFunction(&builtin_parent_module));
 	Builtins::init("is_undef", new BuiltinFunction(&builtin_is_undef));
+	Builtins::init("is_list", new BuiltinFunction(&builtin_is_list));
 	Builtins::init("is_num", new BuiltinFunction(&builtin_is_num));
 	Builtins::init("is_bool", new BuiltinFunction(&builtin_is_bool));
 	Builtins::init("is_string", new BuiltinFunction(&builtin_is_string));

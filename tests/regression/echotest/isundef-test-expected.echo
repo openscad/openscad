@@ -34,7 +34,7 @@ ECHO: undef
 WARNING: is_undef() number of parameters does not match, in file isundef-test.scad, line 44
 ECHO: undef
 ECHO: "functions resulting in true"
-WARNING: length() number of parameters does not match, in file isundef-test.scad, line 47
+WARNING: len() number of parameters does not match, in file isundef-test.scad, line 47
 ECHO: true
 WARNING: is_undef() number of parameters does not match, in file isundef-test.scad, line 48
 ECHO: true
