@@ -24,7 +24,5 @@ WARNING: search() number of parameters does not match, in file allfunctions.scad
 WARNING: norm() number of parameters does not match, in file allfunctions.scad, line 29
 WARNING: Invalid number of parameters for cross(), in file allfunctions.scad, line 30
 WARNING: Parent module index (1) greater than the number of modules on the stack, in file allfunctions.scad, line 31
-WARNING: Can't open DXF file ''.
-WARNING: Can't find dimension '' in '', layer ''!
-WARNING: Can't open DXF file ''.
-WARNING: Can't find cross in '', layer ''!
+WARNING: Can't open DXF file ''! in file allfunctions.scad, line 32
+WARNING: Can't open DXF file ''! in file allfunctions.scad, line 33

@@ -87,6 +87,10 @@ ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 	if (fs::exists(filepath) && fs::is_regular_file(filepath)) {
 		filesize = fs::file_size(filepath);
 		lastwritetime = fs::last_write_time(filepath);
+	}else{
+		PRINTB("WARNING: Can't open DXF file '%s'! %s",
+					 rawFilename % evalctx->loc.toRelativeString(ctx->documentPath()));
+		return ValuePtr::undefined;
 	}
 	std::string key = STR(filename << "|" << layername << "|" << name << "|" << xorigin
 												<< "|" << yorigin <<"|" << scale << "|" << lastwritetime
@@ -188,7 +192,12 @@ ValuePtr builtin_dxf_cross(const Context *ctx, const EvalContext *evalctx)
 	if (fs::exists(filepath) && fs::is_regular_file(filepath)) {
 		filesize = fs::file_size(filepath);
 		lastwritetime = fs::last_write_time(filepath);
+	}else{
+		PRINTB("WARNING: Can't open DXF file '%s'! %s",
+					 rawFilename % evalctx->loc.toRelativeString(ctx->documentPath()));
+		return ValuePtr::undefined;
 	}
+
 	std::string key = STR(filename << "|" << layername << "|" << xorigin << "|" << yorigin
 												<< "|" << scale << "|" << lastwritetime
 												<< "|" << filesize);
