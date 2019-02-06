@@ -26,7 +26,7 @@ PARALLEL=-j2
 # PARALLEL_CTEST=-j1
 
 travis_start cmake "Building OpenSCAD using cmake"
-cmake -DEXPERIMENTAL=ON -DHEADLESS=ON && make $PARALLEL
+cmake -DEXPERIMENTAL=ON -DHEADLESS=ON && make VERBOSE=1 $PARALLEL
 travis_finish cmake
 
 travis_start cmake "Building tests using cmake"
