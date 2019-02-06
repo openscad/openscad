@@ -60,8 +60,9 @@ if(NOT CMAKE_BUILD_TYPE)
 else()
   message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 endif()
-
 add_compile_options("$<$<CONFIG:DEBUG>:-DDEBUG>")
+
+string(REPLACE "-O3" "-O2" CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
 
 # cmake default flags include -DNDEBUG for non-Debug builds.
 # NDEBUG is known to cause OpenSCAD to crash in some case, so make sure it is unset.  Issue #2180 for details.
