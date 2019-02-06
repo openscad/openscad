@@ -960,7 +960,7 @@ ValuePtr builtin_is_num(const Context *ctx, const EvalContext *evalctx)
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
 		if (v->type() == Value::ValueType::NUMBER){
-			return ValuePtr(std::isfinite(v->toDouble()));
+			return ValuePtr(!std::isnan(v->toDouble()));
 		}else{
 			return ValuePtr(false);
 		}
