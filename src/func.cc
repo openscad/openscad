@@ -1012,6 +1012,7 @@ ValuePtr builtin_is_string(const Context *ctx, const EvalContext *evalctx)
 	}else{
 		print_argCnt_warning("is_string", ctx, evalctx);
 	}
+	return ValuePtr::undefined;
 }
 
 void register_builtin_functions()
