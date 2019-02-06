@@ -143,6 +143,7 @@ message(STATUS "LibZip: ${LIBZIP_VERSION}")
 include_directories(${LIBZIP_INCLUDE_DIR_ZIP})
 include_directories(${LIBZIP_INCLUDE_DIR_ZIPCONF})
 
+
 find_package(Lib3MF REQUIRED QUIET)
 add_definitions(${LIB3MF_CFLAGS})
 include_directories(${LIB3MF_INCLUDE_DIRS})
@@ -591,6 +592,8 @@ endif()
 if(ENABLE_SPNAV)
   target_link_libraries(OpenSCAD spnav)
 endif()
+
+target_link_libraries(OpenSCAD double-conversion)
 
 set(COMMON_LIBRARIES
     ${CGAL_LIBRARY}
