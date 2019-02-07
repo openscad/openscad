@@ -7,7 +7,6 @@
 #include "node.h"
 #include "nodecache.h"
 
-
 // GroupNodeChecker does a quick first pass to count children of group nodes
 // If a GroupNode has 0 children, don't include in node id strings
 // If a GroupNode has 1 child, we replace it with its child
@@ -33,10 +32,8 @@ private:
 class NodeDumper : public NodeVisitor
 {
 public:
-    /*! If idPrefix is true, we will output "n<id>:" in front of each node,
-    which is useful for debugging. */
-    NodeDumper(NodeCache &cache, const AbstractNode *root_node, const std::string& indent, bool idString, bool idPrefix) :
-            cache(cache), indent(indent), idString(idString), idprefix(idPrefix), currindent(0), root(root_node) { 
+    NodeDumper(NodeCache &cache, const AbstractNode *root_node, const std::string& indent, bool idString) :
+            cache(cache), indent(indent), idString(idString), currindent(0), root(root_node) { 
         if (idString) { 
             groupChecker.reset();
             groupChecker.traverse(*root);
@@ -57,7 +54,6 @@ private:
     // Output Formatting options
     std::string indent;
     bool idString;
-    bool idprefix;
 
     int currindent;
     const AbstractNode *root;

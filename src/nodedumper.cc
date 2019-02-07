@@ -91,13 +91,19 @@ Response NodeDumper::visit(State &state, const GroupNode &node)
 		if (node.modinst->isBackground()) this->dumpstream << "%";
 		if (node.modinst->isHighlight()) this->dumpstream << "#";
 
+// If IDPREFIX is set, we will output "/*id*/" in front of each node
+// which is useful for debugging.
+#ifdef IDPREFIX
+		if (this->idString) this->dumpstream << "\n";	
+		this->dumpstream << "/*" << node.index() << "*/";
+#endif
+
 		// insert start index
 		this->cache.insertStart(node.index(), this->dumpstream.tellp());
 		
 		if(this->groupChecker.getChildCount(node.index()) > 1) {
 			this->dumpstream << STR(node) << "{";
 		}
-		if (this->idprefix) this->dumpstream << "n" << node.index() << ":";
 		this->currindent++;
 	} else if (state.isPostfix()) {
 		this->currindent--;
@@ -134,6 +140,13 @@ Response NodeDumper::visit(State &state, const AbstractNode &node)
 		if (node.modinst->isBackground()) this->dumpstream << "%";
 		if (node.modinst->isHighlight()) this->dumpstream << "#";
 
+// If IDPREFIX is set, we will output "/*id*/" in front of each node
+// which is useful for debugging.
+#ifdef IDPREFIX
+		if (this->idString) this->dumpstream << "\n";	
+		this->dumpstream << "/*" << node.index() << "*/";
+#endif
+
 		// insert start index
 		this->cache.insertStart(node.index(), this->dumpstream.tellp());
 		
@@ -158,8 +171,6 @@ Response NodeDumper::visit(State &state, const AbstractNode &node)
 				this->dumpstream << " {\n";
 			}
 		}
-
-		if (this->idprefix) this->dumpstream << "n" << node.index() << ":";
 
 		this->currindent++;
 

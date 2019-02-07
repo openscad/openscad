@@ -68,7 +68,12 @@ deploy {
 snapshot {
   DEFINES += OPENSCAD_SNAPSHOT
 }
-  
+# add CONFIG+=idprefix to the qmake command-line to debug node ID's in csg output
+idprefix {
+  DEFINES += IDPREFIX
+  message("Setting IDPREFIX for csg debugging")
+  warning("Setting IDPREFIX will negatively affect cache hits")
+}  
 macx {
   TARGET = OpenSCAD
 }

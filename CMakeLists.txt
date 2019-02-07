@@ -35,6 +35,12 @@ if(EXPERIMENTAL)
   list(APPEND CONFIG_OPTIONS "EXPERIMENTAL")
 endif()
 
+if(IDPREFIX)
+  add_definitions(-DIDPREFIX)
+  list(APPEND CONFIG_OPTIONS "IDPREFIX")
+  message(WARNING "IDPREFIX set, this will negatively affect cache hits")
+endif()
+
 message(STATUS "Configuration: ${CONFIG_OPTIONS}")
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/objects")
