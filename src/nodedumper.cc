@@ -31,9 +31,6 @@ Response GroupNodeChecker::visit(State &state, const GroupNode &node)
 	if (state.isPrefix()) {
 		// create entry for group node, which children may increment
 		this->groupChildCounts.emplace(std::make_pair(node.index(),0));
-		if (node.getChildren().size() == 0) {
-			return Response::PruneTraversal;
-		}
 	} else if (state.isPostfix()) {
 		if ((this->getChildCount(node.index()) > 0) && state.parent()) {
 		    this->incChildCount(state.parent()->index());
