@@ -8,6 +8,49 @@
 #include <assert.h>
 #include <boost/regex.hpp>
 
+
+void GroupNodeChecker::incChildCount(int groupNodeIndex) {
+	auto search = this->groupChildCounts.find(groupNodeIndex);
+	// if no entry then given node wasn't a group node
+	if (search != this->groupChildCounts.end()) {
+		++(search->second);
+	}
+}
+
+int GroupNodeChecker::getChildCount(int groupNodeIndex) {
+	auto search = this->groupChildCounts.find(groupNodeIndex);
+	if (search != this->groupChildCounts.end()) {
+		return search->second;
+	} else {
+		return -1;
+	}
+}
+
+Response GroupNodeChecker::visit(State &state, const GroupNode &node)
+{
+	if (state.isPrefix()) {
+		// create entry for group node, which children may increment
+		this->groupChildCounts.emplace(std::make_pair(node.index(),0));
+		if (node.getChildren().size() == 0) {
+			return Response::PruneTraversal;
+		}
+	} else if (state.isPostfix()) {
+		if ((this->getChildCount(node.index()) > 0) && state.parent()) {
+		    this->incChildCount(state.parent()->index());
+		}
+	}
+	return Response::ContinueTraversal;
+}
+
+Response GroupNodeChecker::visit(State &state, const AbstractNode &)
+{
+	if (state.isPostfix() && state.parent()) {
+		this->incChildCount(state.parent()->index());
+	}
+	return Response::ContinueTraversal;
+}
+
+
 /*!
 	\class NodeDumper
 
@@ -33,9 +76,50 @@ bool NodeDumper::isCached(const AbstractNode &node) const
 	return this->cache.contains(node);
 }
 
+Response NodeDumper::visit(State &state, const GroupNode &node)
+{
+	if (!this->idString) {
+		return NodeDumper::visit(state, (const AbstractNode &)node);
+	}
+	if (state.isPrefix()) {
+		// For handling root modifier '!'
+		// Check if we are processing the root of the current Tree and init cache
+		if (this->root == &node) {
+			this->initCache();
+		}
+
+		if (node.modinst->isBackground()) this->dumpstream << "%";
+		if (node.modinst->isHighlight()) this->dumpstream << "#";
+
+		// insert start index
+		this->cache.insertStart(node.index(), this->dumpstream.tellp());
+		
+		if(this->groupChecker.getChildCount(node.index()) > 1) {
+			this->dumpstream << STR(node) << "{";
+		}
+		if (this->idprefix) this->dumpstream << "n" << node.index() << ":";
+		this->currindent++;
+	} else if (state.isPostfix()) {
+		this->currindent--;
+		if (this->groupChecker.getChildCount(node.index()) > 1) {
+			this->dumpstream << "}";
+		}
+		// insert end index
+		this->cache.insertEnd(node.index(), this->dumpstream.tellp());
+
+		// For handling root modifier '!'
+		// Check if we are processing the root of the current Tree and finalize cache
+		if (this->root == &node) {
+			this->finalizeCache();
+		}
+	}
+
+	return Response::ContinueTraversal;
+}
+
+
 /*!
 	Called for each node in the tree.
-	Will abort traversal if we're cached
 */
 Response NodeDumper::visit(State &state, const AbstractNode &node)
 {
