@@ -92,9 +92,11 @@ echo(dxf);
 OriginPoint2 = dxf_cross(file=dxf,
     layer="SCAD.Origin", 
     origin=[1/0, 0],
-    scale=1);
+    scale=1,
+    notSupported="test");
 
 TotalWidth2 = dxf_dim(file=dxf,
     name="TotalWidth",
     layer="SCAD.Origin",
-    scale=1); 
+    scale=1,
+    notSupported="test"); 

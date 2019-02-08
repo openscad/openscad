@@ -62,7 +62,7 @@ ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 		ValuePtr v = evalctx->getArgValue(i);
 		if (evalctx->getArgName(i) == "file") {
 			rawFilename = v->toString();
-			filename = lookup_file(v->toString(), 
+			filename = lookup_file(rawFilename, 
 			evalctx->documentPath(), ctx->documentPath());
 		}else if (n == "layer") {
 			layername = v->toString();
@@ -77,7 +77,7 @@ ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 		} else if (n == "name") {
 			name = v->toString();
 		}else{
-			//unkown parameter - maybe we should warn?
+			PRINTB("WARNING: dxf_dim(..., %s=...) is not supported, %s", n->toString() % evalctx->loc.toRelativeString(ctx->documentPath()));
 		}
 	}
 
@@ -170,7 +170,7 @@ ValuePtr builtin_dxf_cross(const Context *ctx, const EvalContext *evalctx)
 		ValuePtr v = evalctx->getArgValue(i);
 		if (n == "file"){
 			rawFilename = v->toString();
-			filename = ctx->getAbsolutePath(v->toString());
+			filename = ctx->getAbsolutePath(rawFilename);
 		}else if (n == "layer"){
 			layername = v->toString();
 		}else if (n == "origin"){
@@ -182,7 +182,7 @@ ValuePtr builtin_dxf_cross(const Context *ctx, const EvalContext *evalctx)
 		}else if (n == "scale"){
 			v->getDouble(scale);
 		}else{
-			//unkown parameter - maybe we should warn?
+			PRINTB("WARNING: dxf_cross(..., %s=...) is not supported, %s", n->toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
 		}
 	}
 
