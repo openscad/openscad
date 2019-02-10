@@ -54,7 +54,7 @@ ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 	double yorigin = 0;
 	double scale = 1;
 
-  // FIXME: We don't lookup the file relative to where this function was instantiated
+	// FIXME: We don't lookup the file relative to where this function was instantiated
 	// since the path is only available for ModuleInstantiations, not function expressions.
 	// See issue #217
 	for (size_t i = 0; i < evalctx->numArgs(); i++) {
@@ -84,9 +84,11 @@ ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 	fs::path filepath(filename);
 	uintmax_t filesize = -1;
 	time_t lastwritetime = -1;
-	if (fs::exists(filepath) && fs::is_regular_file(filepath)) {
-		filesize = fs::file_size(filepath);
-		lastwritetime = fs::last_write_time(filepath);
+	if (fs::exists(filepath)) {
+		if(fs::is_regular_file(filepath)){
+			filesize = fs::file_size(filepath);
+			lastwritetime = fs::last_write_time(filepath);
+		}
 	}else{
 		PRINTB("WARNING: Can't open DXF file '%s'! %s",
 					 rawFilename % evalctx->loc.toRelativeString(ctx->documentPath()));
@@ -162,7 +164,7 @@ ValuePtr builtin_dxf_cross(const Context *ctx, const EvalContext *evalctx)
 	double yorigin = 0;
 	double scale = 1;
 
-  // FIXME: We don't lookup the file relative to where this function was instantiated
+	// FIXME: We don't lookup the file relative to where this function was instantiated
 	// since the path is only available for ModuleInstantiations, not function expressions.
 	// See issue #217
 	for (size_t i = 0; i < evalctx->numArgs(); i++) {
@@ -189,9 +191,11 @@ ValuePtr builtin_dxf_cross(const Context *ctx, const EvalContext *evalctx)
 	fs::path filepath(filename);
 	uintmax_t filesize = -1;
 	time_t lastwritetime = -1;
-	if (fs::exists(filepath) && fs::is_regular_file(filepath)) {
-		filesize = fs::file_size(filepath);
-		lastwritetime = fs::last_write_time(filepath);
+	if (fs::exists(filepath)) {
+		if(fs::is_regular_file(filepath)){
+			filesize = fs::file_size(filepath);
+			lastwritetime = fs::last_write_time(filepath);
+		}
 	}else{
 		PRINTB("WARNING: Can't open DXF file '%s'! %s",
 					 rawFilename % evalctx->loc.toRelativeString(ctx->documentPath()));
