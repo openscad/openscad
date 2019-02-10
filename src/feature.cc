@@ -20,7 +20,6 @@ Feature::list_t Feature::feature_list;
  * context.
  */
 const Feature Feature::ExperimentalSvgImport("svg-import", "Enable SVG import.");
-const Feature Feature::ExperimentalCustomizer("customizer", "Enable Customizer");
 const Feature Feature::ExperimentalInputDriverDBus("input-driver-dbus", "Enable DBus input drivers (requires restart)");
 
 Feature::Feature(const std::string &name, const std::string &description)
