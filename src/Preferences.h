@@ -38,8 +38,8 @@ public slots:
 	void on_syntaxHighlight_activated(const QString &);
 	void on_openCSGWarningBox_toggled(bool);
 	void on_enableOpenCSGBox_toggled(bool);
-	void on_cgalCacheSizeEdit_textChanged(const QString &);
-	void on_polysetCacheSizeEdit_textChanged(const QString &);
+	void on_cgalCacheSizeMBEdit_textChanged(const QString &);
+	void on_polysetCacheSizeMBEdit_textChanged(const QString &);
 	void on_opencsgLimitEdit_textChanged(const QString &);
 	void on_forceGoldfeatherBox_toggled(bool);
 	void on_mouseWheelZoomBox_toggled(bool);

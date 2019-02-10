@@ -148,9 +148,9 @@ void Preferences::init() {
 	// Setup default settings
 	this->defaultmap["advanced/opencsg_show_warning"] = true;
 	this->defaultmap["advanced/enable_opencsg_opengl1x"] = true;
-	this->defaultmap["advanced/polysetCacheSize"] = uint(GeometryCache::instance()->maxSize());
+	this->defaultmap["advanced/polysetCacheSizeMB"] = uint(GeometryCache::instance()->maxSizeMB());
 #ifdef ENABLE_CGAL
-	this->defaultmap["advanced/cgalCacheSize"] = uint(CGALCache::instance()->maxSize());
+	this->defaultmap["advanced/cgalCacheSizeMB"] = uint(CGALCache::instance()->maxSizeMB());
 #endif
 	this->defaultmap["advanced/openCSGLimit"] = RenderSettings::inst()->openCSGTermLimit;
 	this->defaultmap["advanced/forceGoldfeather"] = false;
@@ -196,12 +196,14 @@ void Preferences::init() {
 	// 3D View pane
 	this->defaultmap["3dview/colorscheme"] = "Cornfield";
 
-  // Advanced pane	
+	// Advanced pane	
+	const int absolute_max = (sizeof(void*) == 8) ? 1024 * 1024 : 2048; // 1TB for 64bit or 2GB for 32bit
+	QValidator *memvalidator = new QIntValidator(1,absolute_max,this);
 	QValidator *validator = new QIntValidator(this);
 #ifdef ENABLE_CGAL
-	this->cgalCacheSizeEdit->setValidator(validator);
+	this->cgalCacheSizeMBEdit->setValidator(memvalidator);
 #endif
-	this->polysetCacheSizeEdit->setValidator(validator);
+	this->polysetCacheSizeMBEdit->setValidator(memvalidator);
 	this->opencsgLimitEdit->setValidator(validator);
 
 	initComboBox(this->comboBoxIndentUsing, Settings::Settings::indentStyle);
@@ -471,20 +473,20 @@ Preferences::on_enableOpenCSGBox_toggled(bool state)
 	settings.setValue("advanced/enable_opencsg_opengl1x", state);
 }
 
-void Preferences::on_cgalCacheSizeEdit_textChanged(const QString &text)
+void Preferences::on_cgalCacheSizeMBEdit_textChanged(const QString &text)
 {
 	QSettingsCached settings;
-	settings.setValue("advanced/cgalCacheSize", text);
+	settings.setValue("advanced/cgalCacheSizeMB", text);
 #ifdef ENABLE_CGAL
-	CGALCache::instance()->setMaxSize(text.toULong());
+	CGALCache::instance()->setMaxSizeMB(text.toULong());
 #endif
 }
 
-void Preferences::on_polysetCacheSizeEdit_textChanged(const QString &text)
+void Preferences::on_polysetCacheSizeMBEdit_textChanged(const QString &text)
 {
 	QSettingsCached settings;
-	settings.setValue("advanced/polysetCacheSize", text);
-	GeometryCache::instance()->setMaxSize(text.toULong());
+	settings.setValue("advanced/polysetCacheSizeMB", text);
+	GeometryCache::instance()->setMaxSizeMB(text.toULong());
 }
 
 void Preferences::on_opencsgLimitEdit_textChanged(const QString &text)
@@ -869,8 +871,8 @@ void Preferences::updateGUI()
 
 	this->openCSGWarningBox->setChecked(getValue("advanced/opencsg_show_warning").toBool());
 	this->enableOpenCSGBox->setChecked(getValue("advanced/enable_opencsg_opengl1x").toBool());
-	this->cgalCacheSizeEdit->setText(getValue("advanced/cgalCacheSize").toString());
-	this->polysetCacheSizeEdit->setText(getValue("advanced/polysetCacheSize").toString());
+	this->cgalCacheSizeMBEdit->setText(getValue("advanced/cgalCacheSizeMB").toString());
+	this->polysetCacheSizeMBEdit->setText(getValue("advanced/polysetCacheSizeMB").toString());
 	this->opencsgLimitEdit->setText(getValue("advanced/openCSGLimit").toString());
 	this->localizationCheckBox->setChecked(getValue("advanced/localization").toBool());
 	this->autoReloadRaiseCheckBox->setChecked(getValue("advanced/autoReloadRaise").toBool());

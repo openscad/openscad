@@ -1369,7 +1369,7 @@ msgid "CGAL Cache size"
 msgstr ""
 
 #: objects/ui_Preferences.h:1540 objects/ui_Preferences.h:1542
-msgid "bytes"
+msgid "MB"
 msgstr ""
 
 #: objects/ui_Preferences.h:1541
