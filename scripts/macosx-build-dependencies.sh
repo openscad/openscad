@@ -33,6 +33,7 @@ OPTION_FORCE=0
 OPTION_CXX11=true
 
 PACKAGES=(
+    "double_conversion 3.1.1"
     "eigen 3.3.5"
     "gmp 6.1.2"
     "mpfr 4.0.1"
@@ -141,6 +142,28 @@ check_file()
     test -f "$DEPLOYDIR/$1"
 }
 
+
+check_double_conversion()
+{
+    check_file lib/libdouble-conversion.a
+}
+
+build_double_conversion()
+{
+  version="$1"
+
+  echo "Building double-conversion $version..."
+  cd "$BASEDIR"/src
+  rm -rf "double-conversion-$version"
+  if [ ! -f "double-conversion-$version.tar.gz" ]; then
+    curl -L "https://github.com/google/double-conversion/archive/v$version.tar.gz" -o double-conversion-$version.tar.gz
+  fi
+  tar xzf "double-conversion-$version.tar.gz"
+  cd "double-conversion-$version"
+  CXXFLAGS="$CXXSTDFLAGS" cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" .
+  make -j$NUMCPU
+  make install
+}
 
 patch_qt_disable_core_wlan()
 {
