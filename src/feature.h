@@ -14,7 +14,6 @@ public:
 	typedef std::vector<Feature *> list_t;
 	typedef list_t::iterator iterator;
 
-        static const Feature Experimental3dPrint;
         static const Feature ExperimentalSvgImport;
         static const Feature ExperimentalInputDriverDBus;
 
