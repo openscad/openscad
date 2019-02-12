@@ -933,13 +933,6 @@ configure_file(${CMAKE_SOURCE_DIR}/../testdata/scad/templates/import_3mf-tests-t
                ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/import_3mf-tests.scad)
 configure_file(${CMAKE_SOURCE_DIR}/../testdata/scad/templates/import_dxf-tests-template.scad
                ${CMAKE_SOURCE_DIR}/../testdata/scad/2D/features/import_dxf-tests.scad)
-
-if(WIN32)
-  # rely on windows file associations instead of assuming path
-  set(CMAKE_PYTHON_INTERPRETER "")
-else()
-  set(CMAKE_PYTHON_INTERPRETER "#! /usr/bin/python")
-endif()
 configure_file(${CMAKE_SOURCE_DIR}/../testdata/python/gen_issue2342-template.py
                ${CMAKE_SOURCE_DIR}/../testdata/python/gen_issue2342.py)
 
@@ -1468,7 +1461,6 @@ add_cmdline_test(echotest EXE ${OPENSCAD_BINPATH} ARGS --check-parameter-ranges=
 # generate a very large scad file which we would rather not commit to the source tree
 # this is for stress-testing the parser
 set(GEN_SCRIPT_DIR ${CMAKE_SOURCE_DIR}/../testdata/python)
-# surprisingly difficult to have cmake generate a test dependency
 add_custom_target(issue2342 ALL 
   COMMAND ${GEN_SCRIPT_DIR}/gen_issue2342.py ">${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue2342.scad"
   WORKING_DIRECTORY ${GEN_SCRIPT_DIR}

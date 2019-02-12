@@ -1,4 +1,4 @@
-${CMAKE_PYTHON_INTERPRETER}
+#! ${PYTHON_EXECUTABLE}
 # # This python script generates a large output .scad file (3.1MB) for stress testing the parser.
 # See Issue #2342 / Pull Request #2343
 
