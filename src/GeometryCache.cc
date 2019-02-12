@@ -32,14 +32,14 @@ bool GeometryCache::insert(const std::string &id, const shared_ptr<const Geometr
 	return inserted;
 }
 
-size_t GeometryCache::maxSize() const
+size_t GeometryCache::maxSizeMB() const
 {
-	return this->cache.maxCost();
+	return this->cache.maxCost()/(1024*1024);
 }
 
-void GeometryCache::setMaxSize(size_t limit)
+void GeometryCache::setMaxSizeMB(size_t limit)
 {
-	this->cache.setMaxCost(limit);
+	this->cache.setMaxCost(limit*1024*1024);
 }
 
 void GeometryCache::print()
