@@ -1246,13 +1246,9 @@ set_test_config(Heavy
   csgpngtest_camera-tests
   cgalpngtest_surface-tests
   csgpngtest_surface-tests
-  csgpngtest_linear_extrude-parameter-tests
-  cgalpngtest_linear_extrude-parameter-tests
   csgpngtest_rotate_extrude-angle
   cgalpngtest_rotate_extrude-angle
   cgalpngtest_projection-extrude-tests
-  cgalpngtest_for-tests
-  csgpngtest_for-tests
   stlpngtest_fence
   stlpngtest_surface
   stlpngtest_demo_cut
@@ -1269,9 +1265,11 @@ set_test_config(Heavy
   offpngtest_translation
   cgalstlcgalpngtest_rotate_extrude-tests
   monotonepngtest_rotate_extrude-tests
-  echotest_tail-recursion-tests
   cgalstlcgalpngtest_rotate_extrude-tests
   openscad-colorscheme-metallic-render_CSG
+  cgalpngtest_issue267-normalization-crash
+  csgpngtest_issue267-normalization-crash
+  opencsgtest_issue267-normalization-crash
 )
 
 # We know that we cannot import weakly manifold files into CGAL, so to make tests easier
