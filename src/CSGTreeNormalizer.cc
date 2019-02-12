@@ -71,7 +71,7 @@ shared_ptr<CSGNode> CSGTreeNormalizer::normalizePass(shared_ptr<CSGNode> node)
 	// http://www.cc.gatech.edu/~turk/my_papers/pxpl_csg.pdf
 
 	// Iterative tree traversal used to workaround stack limits for very large inputs.
-	// TODO reference issues #____ and #____
+	// See Pull Request #2343
 
 	// Keep a stack of visited parent nodes for iterative traversal
 	std::stack<shared_ptr<CSGOperation>> parentstack;
@@ -84,7 +84,6 @@ shared_ptr<CSGNode> CSGTreeNormalizer::normalizePass(shared_ptr<CSGNode> node)
 		
 		// handle current node, iterate into left branch
 		while(currentnode && !dynamic_pointer_cast<CSGLeaf>(currentnode)) {
-			// FIXME need to store unaltered node before match_and_replace?
 			unalterednode = currentnode;
 			
 			while (currentnode && match_and_replace(currentnode)) { }
@@ -113,7 +112,6 @@ shared_ptr<CSGNode> CSGTreeNormalizer::normalizePass(shared_ptr<CSGNode> node)
 				}
 			}
 			
-
 			if (shared_ptr<CSGOperation> op = dynamic_pointer_cast<CSGOperation>(currentnode)) {
 				// handle left child next iteration
 				parentstack.emplace(op);
@@ -143,13 +141,6 @@ shared_ptr<CSGNode> CSGTreeNormalizer::normalizePass(shared_ptr<CSGNode> node)
 					// left child was just normalized
 					parent->left() = currentnode;
 					
-					// problem with unalterednode not having its own stack?
-					// when does the node actually change? 
-					//		match_and_replace
-					//			can this affect the left/right child comparison?
-					//		here in the stack popping section
-					// can the parentstack represent strictly unaltered nodes?
-					
 					if (this->aborted) {
 						// abort, do not normalize right child, pop stack
 						unalterednode = parent;
@@ -174,7 +165,7 @@ shared_ptr<CSGNode> CSGTreeNormalizer::normalizePass(shared_ptr<CSGNode> node)
 					// right child was just normalized
 					parent->right() = currentnode;
 					
-					//   make a copy of unaltered parent, then collapse null terms, and pop
+					// make a copy of unaltered parent, then collapse null terms, and pop
 					unalterednode = parent;
 					currentnode = unalterednode;
 					
