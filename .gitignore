@@ -70,3 +70,4 @@ CMakeFiles/
 cmake_install.cmake
 OpenSCAD_autogen
 /local.pri
+testdata/scad/issues/issue2342.scad
