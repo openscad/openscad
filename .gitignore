@@ -71,3 +71,4 @@ cmake_install.cmake
 OpenSCAD_autogen
 /local.pri
 testdata/scad/issues/issue2342.scad
+testdata/python/gen_issue2342.py
