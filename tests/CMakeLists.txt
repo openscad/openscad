@@ -934,6 +934,15 @@ configure_file(${CMAKE_SOURCE_DIR}/../testdata/scad/templates/import_3mf-tests-t
 configure_file(${CMAKE_SOURCE_DIR}/../testdata/scad/templates/import_dxf-tests-template.scad
                ${CMAKE_SOURCE_DIR}/../testdata/scad/2D/features/import_dxf-tests.scad)
 
+if(WIN32)
+  # rely on windows file associations instead of assuming path
+  set(CMAKE_PYTHON_INTERPRETER "")
+else()
+  set(CMAKE_PYTHON_INTERPRETER "#! /usr/bin/python")
+endif()
+configure_file(${CMAKE_SOURCE_DIR}/../testdata/python/gen_issue2342-template.py
+               ${CMAKE_SOURCE_DIR}/../testdata/python/gen_issue2342.py)
+
 # Find all scad files
 file(GLOB FEATURES_3D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/*.scad)
 file(GLOB FEATURES_2D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/2D/features/*.scad)
