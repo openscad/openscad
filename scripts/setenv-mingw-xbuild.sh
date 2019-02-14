@@ -97,6 +97,7 @@ fi
 export OPENSCAD_LIBRARIES
 export BASEDIR
 export MXEDIR
+export MXE_TARGETS
 export MXETARGETDIR
 export MXELIBTYPE
 export DEPLOYDIR
