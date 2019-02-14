@@ -286,10 +286,6 @@ echo "Building test suite..."
 if [ $BUILD_TESTS ]; then
   case $OS in
     UNIX_CROSS_WIN)
-        TESTBUILD_MACHINE=x86_64-w64-mingw32
-        if [[ $ARCH == 32 ]]; then
-            TESTBUILD_MACHINE=i686-pc-mingw32
-        fi
         # dont use build-machine triple in TESTBINDIR because the 'mingw32'
         # will confuse people who are on 64 bit machines
         TESTBINDIR=tests-build
@@ -299,7 +295,7 @@ if [ $BUILD_TESTS ]; then
         $MXE_TARGETS-cmake $OPENSCADDIR/tests/ \
           -DCMAKE_TOOLCHAIN_FILE=../tests/CMingw-cross-env.cmake \
           -DMINGW_CROSS_ENV_DIR=$MXEDIR \
-          -DMACHINE=$TESTBUILD_MACHINE
+          -DMACHINE=$MXE_TARGETS
         if [ $FAKEMAKE ]; then
             echo "notexe. debugging build process" > openscad_nogui.exe
         else
