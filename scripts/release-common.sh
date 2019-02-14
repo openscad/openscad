@@ -75,15 +75,45 @@ fi
 if [ "`echo $* | grep mingw`" ]; then
   OS=UNIX_CROSS_WIN
   ARCH=32
-  MXELIBTYPE=static
   if [ "`echo $* | grep mingw64`" ]; then
     ARCH=64
   fi
-  if [ "`echo $* | grep shared`" ]; then
-    MXELIBTYPE=shared
-  fi
-  echo Mingw-cross build using ARCH=$ARCH MXELIBTYPE=$MXELIBTYPE
 fi
+
+if [ $OS ]; then
+  echo "Detected OS: $OS"
+else
+  echo "Error: Couldn't detect OSTYPE"
+  exit
+fi
+
+case $OS in
+    LINUX|MACOSX) 
+        TARGET=
+        # for QT4 set QT_SELECT=4
+        export QT_SELECT=5
+    ;;
+    WIN)
+        export QTDIR=/c/devmingw/qt2009.03
+        export QTMAKESPEC=win32-g++
+        export PATH=$PATH:/c/devmingw/qt2009.03/bin:/c/devmingw/qt2009.03/qt/bin
+        TARGET=release
+        ZIP="/c/Program Files/7-Zip/7z.exe"
+        ZIPARGS="a -tzip"
+    ;;
+    UNIX_CROSS_WIN)
+        SHARED=
+        if [ "`echo $* | grep shared`" ]; then
+	        SHARED=-shared
+        fi
+        MINGWCONFIG=mingw-cross-env$SHARED
+        . ./scripts/setenv-mingw-xbuild.sh $ARCH $SHARED
+        TARGET=release
+        ZIP="zip"
+        ZIPARGS="-r -q"
+        echo Mingw-cross build using ARCH=$ARCH MXELIBTYPE=$MXELIBTYPE
+    ;;
+esac
 
 if [ "`echo $* | grep snapshot`" ]; then
   CONFIG="$CONFIG snapshot experimental"
@@ -93,13 +123,6 @@ fi
 BUILD_TESTS=
 if [ "`echo $* | grep tests`" ]; then
   BUILD_TESTS=1
-fi
-
-if [ $OS ]; then
-  echo "Detected OS: $OS"
-else
-  echo "Error: Couldn't detect OSTYPE"
-  exit
 fi
 
 while getopts 'v:d:c' c
@@ -174,46 +197,18 @@ echo "NUMCPU: " $NUMCPU
 
 
 case $OS in
-    LINUX|MACOSX) 
-        TARGET=
-        # for QT4 set QT_SELECT=4
-        QT_SELECT=5
-        export QT_SELECT
-        ;;
-    WIN)
-        export QTDIR=/c/devmingw/qt2009.03
-        export QTMAKESPEC=win32-g++
-        export PATH=$PATH:/c/devmingw/qt2009.03/bin:/c/devmingw/qt2009.03/qt/bin
-        ZIP="/c/Program Files/7-Zip/7z.exe"
-        ZIPARGS="a -tzip"
-        TARGET=release
-        ;;
-    UNIX_CROSS_WIN)
-        . ./scripts/setenv-mingw-xbuild.sh $ARCH $MXELIBTYPE
-        TARGET=release
-        ZIP="zip"
-        ZIPARGS="-r -q"
-        ;;
-esac
-
-
-case $OS in
     UNIX_CROSS_WIN)
         cd $DEPLOYDIR
-        MINGWCONFIG=mingw-cross-env
-        if [ $MXELIBTYPE = "shared" ]; then
-          MINGWCONFIG=mingw-cross-env-shared
-        fi
         qmake VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+="$CONFIG" CONFIG+=link_pkgconfig CONFIG+=$MINGWCONFIG CONFIG-=debug ../openscad.pro
         cd $OPENSCADDIR
     ;;
     *)
-	QMAKE="`command -v qmake-qt5`"
-	if [ ! -x "$QMAKE" ]
-	then
-		QMAKE=qmake
-	fi
-	"$QMAKE" VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+="$CONFIG" CONFIG-=debug openscad.pro
+        QMAKE="`command -v qmake-qt5`"
+        if [ ! -x "$QMAKE" ]
+        then
+          QMAKE=qmake
+        fi
+        "$QMAKE" VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+="$CONFIG" CONFIG-=debug openscad.pro
     ;;
 esac
 
@@ -231,18 +226,18 @@ esac
 case $OS in
     MACOSX) 
         rm -rf OpenSCAD.app
-        ;;
+    ;;
     WIN)
         #if the following files are missing their tried removal stops the build process on msys
         touch -t 200012121010 parser_yacc.h parser_yacc.cpp lexer_lex.cpp
-        ;;
+    ;;
     UNIX_CROSS_WIN)
         # kludge to enable paralell make
         touch -t 200012121010 $OPENSCADDIR/src/parser_yacc.h
         touch -t 200012121010 $OPENSCADDIR/src/parser_yacc.cpp
         touch -t 200012121010 $OPENSCADDIR/src/parser_yacc.hpp
         touch -t 200012121010 $OPENSCADDIR/src/lexer_lex.cpp
-        ;;
+    ;;
 esac
 
 echo "Building GUI binary..."
@@ -292,18 +287,16 @@ if [ $BUILD_TESTS ]; then
   case $OS in
     UNIX_CROSS_WIN)
         TESTBUILD_MACHINE=x86_64-w64-mingw32
-        # dont use build-machine trilpe in TESTBINDIR because the 'mingw32'
-        # will confuse people who are on 64 bit machines
-        TESTBINDIR=tests-build
-        export TESTBUILD_MACHINE
-        export TESTBINDIR
         if [[ $ARCH == 32 ]]; then
             TESTBUILD_MACHINE=i686-pc-mingw32
         fi
+        # dont use build-machine triple in TESTBINDIR because the 'mingw32'
+        # will confuse people who are on 64 bit machines
+        TESTBINDIR=tests-build
         cd $DEPLOYDIR
         mkdir $TESTBINDIR
         cd $TESTBINDIR
-        cmake $OPENSCADDIR/tests/ \
+        $MXE_TARGETS-cmake $OPENSCADDIR/tests/ \
           -DCMAKE_TOOLCHAIN_FILE=../tests/CMingw-cross-env.cmake \
           -DMINGW_CROSS_ENV_DIR=$MXEDIR \
           -DMACHINE=$TESTBUILD_MACHINE
@@ -423,7 +416,7 @@ case $OS in
         "$ZIP" $ZIPARGS openscad-$VERSION.x86-$ARCH.zip openscad-$VERSION
         rm -rf openscad-$VERSION
         echo "Binary created: openscad-$VERSION.zip"
-        ;;
+    ;;
     UNIX_CROSS_WIN)
         cd $OPENSCADDIR
         cd $DEPLOYDIR
@@ -431,7 +424,7 @@ case $OS in
         INSTFILE=$DEPLOYDIR/OpenSCAD-$VERSION-x86-$ARCH-Installer.exe
 
         #package
-        if [ $MXELIBTYPE = "shared" ]; then
+        if [ "`echo $* | grep shared`" ]; then
           flprefix=$DEPLOYDIR/mingw-cross-env/bin
           echo Copying dlls for shared library build
           echo from $flprefix
@@ -536,7 +529,7 @@ case $OS in
             echo "Build failed. Cannot find" $BINFILE
             exit 1
         fi
-        ;;
+    ;;
     LINUX)
         # Do stuff from release-linux.sh
         mkdir openscad-$VERSION/bin
@@ -550,25 +543,25 @@ case $OS in
         fi
         ./chrpath_linux -d openscad-$VERSION/lib/openscad/openscad
 
-	QTLIBDIR=$(dirname $(ldd openscad | grep Qt5Gui | head -n 1 | awk '{print $3;}'))
-	( ldd openscad ; ldd "$QTLIBDIR"/qt5/plugins/platforms/libqxcb.so ) \
-		| sed -re 's,.* => ,,; s,[\t ].*,,;' -e '/^$/d' -e '/libc\.so|libm\.so|libdl\.so|libgcc_|libpthread\.so/d' \
-		| sort -u \
-		| xargs cp -vt "openscad-$VERSION/lib/openscad/"
-	PLATFORMDIR="openscad-$VERSION/lib/openscad/platforms/"
-	mkdir -p "$PLATFORMDIR"
-	cp -av "$QTLIBDIR"/qt5/plugins/platforms/libqxcb.so "$PLATFORMDIR"
-	DRIDRIVERDIR=$(find /usr/lib -xdev -type d -name dri)
-	if [ -d "$DRIDRIVERDIR" ]
-	then
-		DRILIB="openscad-$VERSION/lib/openscad/dri/"
-		mkdir -p "$DRILIB"
-		cp -av "$DRIDRIVERDIR"/swrast_dri.so "$DRILIB"
-	fi
+        QTLIBDIR=$(dirname $(ldd openscad | grep Qt5Gui | head -n 1 | awk '{print $3;}'))
+        ( ldd openscad ; ldd "$QTLIBDIR"/qt5/plugins/platforms/libqxcb.so ) \
+          | sed -re 's,.* => ,,; s,[\t ].*,,;' -e '/^$/d' -e '/libc\.so|libm\.so|libdl\.so|libgcc_|libpthread\.so/d' \
+          | sort -u \
+          | xargs cp -vt "openscad-$VERSION/lib/openscad/"
+        PLATFORMDIR="openscad-$VERSION/lib/openscad/platforms/"
+        mkdir -p "$PLATFORMDIR"
+        cp -av "$QTLIBDIR"/qt5/plugins/platforms/libqxcb.so "$PLATFORMDIR"
+        DRIDRIVERDIR=$(find /usr/lib -xdev -type d -name dri)
+        if [ -d "$DRIDRIVERDIR" ]
+        then
+          DRILIB="openscad-$VERSION/lib/openscad/dri/"
+          mkdir -p "$DRILIB"
+          cp -av "$DRIDRIVERDIR"/swrast_dri.so "$DRILIB"
+        fi
 
         strip openscad-$VERSION/lib/openscad/*
         mkdir -p openscad-$VERSION/share/appdata
-	cp icons/openscad.{desktop,png,xml} openscad-$VERSION/share/appdata
+	      cp icons/openscad.{desktop,png,xml} openscad-$VERSION/share/appdata
         cp scripts/installer-linux.sh openscad-$VERSION/install.sh
         chmod 755 -R openscad-$VERSION/
         PACKAGEFILE=openscad-$VERSION.x86-$ARCH.tar.gz
@@ -576,7 +569,7 @@ case $OS in
         echo
         echo "Binary created:" $PACKAGEFILE
         echo
-        ;;
+    ;;
 esac
 
 
@@ -590,7 +583,7 @@ if [ $BUILD_TESTS ]; then
     ;;
     WIN)
         echo 'building regression test package on Win not implemented'
-        ;;
+    ;;
     UNIX_CROSS_WIN)
         # Build a .zip file containing all the files we need to run a
         # ctest on Windows(TM). For the sake of simplicity, we do not
@@ -626,7 +619,7 @@ if [ $BUILD_TESTS ]; then
         cp -v ./tests/OpenSCAD_Test_Console.py .
         cp -v ./tests/WinReadme.txt .
         cp -v ./tests/mingw_convert_ctest.py ./$TESTBINDIR
-	cp -v ./tests/mingwcon.bat ./$TESTBINDIR
+	      cp -v ./tests/mingwcon.bat ./$TESTBINDIR
 
         echo "Creating mingw_cross_info.py file"
         cd $DEPLOYDIR
@@ -648,11 +641,11 @@ if [ $BUILD_TESTS ]; then
         echo "linux_convert='/bin/echo'" >> mingw_cross_info.py
         echo "win_installdir='OpenSCAD_Tests_"$VERSIONDATE"'" >> mingw_cross_info.py
 
-	echo 'Converting linefeed to carriage-return+linefeed'
-	for textfile in `find . | grep txt$`; do lf2crlf $textfile; done
-	for textfile in `find . | grep py$`; do lf2crlf $textfile; done
-	for textfile in `find . | grep cmake$`; do lf2crlf $textfile; done
-	for textfile in `find . | grep bat$`; do lf2crlf $textfile; done
+        echo 'Converting linefeed to carriage-return+linefeed'
+        for textfile in `find . | grep txt$`; do lf2crlf $textfile; done
+        for textfile in `find . | grep py$`; do lf2crlf $textfile; done
+        for textfile in `find . | grep cmake$`; do lf2crlf $textfile; done
+        for textfile in `find . | grep bat$`; do lf2crlf $textfile; done
 
         # Test binaries can be hundreds of megabytes due to debugging info.
         # By default, we strip that. In most cases we wont need it and it
@@ -684,10 +677,10 @@ if [ $BUILD_TESTS ]; then
             exit 1
         fi
         cd $OPENSCADDIR
-        ;;
+    ;;
     LINUX)
         echo 'building regression test package on linux not implemented'
-        ;;
+    ;;
   esac
 else
   echo "Not building regression tests package"
