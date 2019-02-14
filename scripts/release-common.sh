@@ -293,7 +293,7 @@ if [ $BUILD_TESTS ]; then
         cd $DEPLOYDIR
         mkdir $TESTBINDIR
         cd $TESTBINDIR
-        $MXE_TARGETS-cmake $OPENSCADDIR/tests/ \
+        OPENSCAD_LIBRARIES=$MXETARGETDIR $MXE_TARGETS-cmake $OPENSCADDIR/tests/ \
           -DCMAKE_TOOLCHAIN_FILE=../tests/CMingw-cross-env.cmake \
           -DMINGW_CROSS_ENV_DIR=$MXEDIR \
           -DMACHINE=$MXE_TARGETS
