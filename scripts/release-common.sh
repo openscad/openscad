@@ -289,6 +289,7 @@ if [ $BUILD_TESTS ]; then
         # dont use build-machine triple in TESTBINDIR because the 'mingw32'
         # will confuse people who are on 64 bit machines
         TESTBINDIR=tests-build
+        export OPENSCAD_BINARY=$DEPLOYDIR/release/openscad.exe
         cd $DEPLOYDIR
         mkdir $TESTBINDIR
         cd $TESTBINDIR
