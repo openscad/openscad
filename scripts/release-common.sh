@@ -29,18 +29,18 @@
 # see https://kb.iu.edu/data/acux.html
 lf2crlf()
 {
-	fname=$1
-	if [ "`command -v unix2dos`" ]; then
-		unix2dos $fname
-		return
-	fi
-	if [ "`command -v awk`" ]; then
-		echo using awk to convert end of line markers in $fname
-		awk 'sub("$", "\r")' $fname > $fname".temp"
-		mv $fname".temp" $fname
-		return
-	fi
-	echo 'warning- cant change eol to cr eol'
+  fname=$1
+  if [ "`command -v unix2dos`" ]; then
+    unix2dos $fname
+    return
+  fi
+  if [ "`command -v awk`" ]; then
+    echo using awk to convert end of line markers in $fname
+    awk 'sub("$", "\r")' $fname > $fname".temp"
+    mv $fname".temp" $fname
+    return
+  fi
+  echo 'warning- cant change eol to cr eol'
 }
 
 printUsage()
@@ -104,7 +104,7 @@ case $OS in
     UNIX_CROSS_WIN)
         SHARED=
         if [ "`echo $* | grep shared`" ]; then
-	        SHARED=-shared
+          SHARED=-shared
         fi
         MINGWCONFIG=mingw-cross-env$SHARED
         . ./scripts/setenv-mingw-xbuild.sh $ARCH $SHARED
@@ -281,36 +281,6 @@ if [[ $? != 0 ]]; then
   exit 1
 fi
 
-echo "Building test suite..."
-
-if [ $BUILD_TESTS ]; then
-  case $OS in
-    UNIX_CROSS_WIN)
-        TESTBUILD_MACHINE=$MXE_TARGETS
-        # dont use build-machine triple in TESTBINDIR because the 'mingw32'
-        # will confuse people who are on 64 bit machines
-        TESTBINDIR=tests-build
-        export OPENSCAD_BINARY=$DEPLOYDIR/release/openscad.exe
-        cd $DEPLOYDIR
-        mkdir $TESTBINDIR
-        cd $TESTBINDIR
-        OPENSCAD_LIBRARIES=$MXETARGETDIR $MXE_TARGETS-cmake $OPENSCADDIR/tests/ \
-          -DCMAKE_TOOLCHAIN_FILE=../tests/CMingw-cross-env.cmake \
-          -DMINGW_CROSS_ENV_DIR=$MXEDIR \
-          -DMACHINE=$TESTBUILD_MACHINE
-        if [ $FAKEMAKE ]; then
-            echo "notexe. debugging build process" > openscad_nogui.exe
-        else
-            make -j$NUMCPU
-        fi
-        cd $OPENSCADDIR
-    ;;
-    *)
-        echo 'test suite build not implemented for osx/linux'
-    ;;
-  esac
-fi # BUILD_TESTS
-
 echo "Creating directory structure..."
 
 case $OS in
@@ -479,11 +449,9 @@ case $OS in
         echo "from $DEPLOYDIR/$TARGET"
         echo "to $DEPLOYDIR/openscad-$VERSION"
         TMPTAR=$DEPLOYDIR/tmpmingw.$ARCH.$MXELIBTYPE.tar
-        cd $DEPLOYDIR
-        cd $TARGET
+        cd $DEPLOYDIR/$TARGET
         tar cvf $TMPTAR --exclude=winconsole.o .
-        cd $DEPLOYDIR
-        cd ./openscad-$VERSION
+        cd $DEPLOYDIR/openscad-$VERSION
         tar xvf $TMPTAR
         cd $DEPLOYDIR
         rm -f $TMPTAR
@@ -555,7 +523,7 @@ case $OS in
 
         strip openscad-$VERSION/lib/openscad/*
         mkdir -p openscad-$VERSION/share/appdata
-	      cp icons/openscad.{desktop,png,xml} openscad-$VERSION/share/appdata
+        cp icons/openscad.{desktop,png,xml} openscad-$VERSION/share/appdata
         cp scripts/installer-linux.sh openscad-$VERSION/install.sh
         chmod 755 -R openscad-$VERSION/
         PACKAGEFILE=openscad-$VERSION.x86-$ARCH.tar.gz
@@ -566,8 +534,36 @@ case $OS in
     ;;
 esac
 
-
-
+if [ $BUILD_TESTS ]; then
+  echo "Building test suite..."
+  case $OS in
+    UNIX_CROSS_WIN)
+        TESTBUILD_MACHINE=$MXE_TARGETS
+        # dont use build-machine triple in TESTBUILDDIR because the 'mingw32'
+        # will confuse people who are on 64 bit machines
+        TESTBUILDDIR=tests-build
+        OPENSCAD_BINDIR="$DEPLOYDIR/openscad-$VERSION"
+        OPENSCAD_BINARY="$OPENSCAD_BINDIR/openscad.com"
+        export OPENSCAD_BINARY
+        cd $DEPLOYDIR
+        mkdir $TESTBUILDDIR
+        cd $TESTBUILDDIR
+        OPENSCAD_LIBRARIES=$MXETARGETDIR $MXE_TARGETS-cmake $OPENSCADDIR/tests/ \
+          -DCMAKE_TOOLCHAIN_FILE=../tests/CMingw-cross-env.cmake \
+          -DMINGW_CROSS_ENV_DIR=$MXEDIR \
+          -DMACHINE=$TESTBUILD_MACHINE
+        if [ $FAKEMAKE ]; then
+            echo "notexe. debugging build process" > openscad_nogui.exe
+        else
+            make -j$NUMCPU
+        fi
+        cd $OPENSCADDIR
+    ;;
+    *)
+        echo 'test suite build not implemented for osx/linux'
+    ;;
+  esac
+fi # BUILD_TESTS
 
 if [ $BUILD_TESTS ]; then
   echo "Creating regression tests package..."
@@ -579,10 +575,28 @@ if [ $BUILD_TESTS ]; then
         echo 'building regression test package on Win not implemented'
     ;;
     UNIX_CROSS_WIN)
+        # Tests output subdirectory
         OPENSCAD_TESTSDIR=OpenSCAD-Tests-$VERSION
         # Build a .zip file containing all the files we need to run a
         # ctest on Windows(TM). For the sake of simplicity, we do not
         # create an installer for the tests.
+
+        cd $DEPLOYDIR
+        if [ -e ./$OPENSCAD_TESTSDIR ]; then
+          rm -rf ./$OPENSCAD_TESTSDIR
+        fi
+        mkdir $OPENSCAD_TESTSDIR
+
+        # copy release files into test package dir
+        echo "Copying release files"
+        echo "from $DEPLOYDIR/openscad-$VERSION"
+        echo "to $DEPLOYDIR/$OPENSCAD_TESTSDIR"
+        TMPTAR=$DEPLOYDIR/tmpmingw.$ARCH.$MXELIBTYPE.tar
+        cd $DEPLOYDIR/openscad-$VERSION
+        tar pcvf $TMPTAR --exclude=*.ns* --exclude=*setup.exe .
+        cd $DEPLOYDIR/$OPENSCAD_TESTSDIR
+        tar pxf $TMPTAR
+        rm -f $TMPTAR
 
         echo "Copying files..."
         cd $OPENSCADDIR
@@ -590,53 +604,34 @@ if [ $BUILD_TESTS ]; then
         # as above, we use tar as a somewhat portable way to do 'exclude'
         # while copying.
         rm -f ./ostests.tar
-       	for subdir in tests testdata libraries examples doc; do
-          tar prvf ./ostests.tar --exclude=.git* --exclude=*.cc.obj --exclude=*.a $subdir
+        for subdir in tests testdata; do
+          tar prvf ./ostests.tar --exclude=.git* --exclude=*.cc.obj --exclude=*.cc --exclude=*.h --exclude=CMake* --exclude=*.a $subdir
         done
         cd $DEPLOYDIR
-        tar prvf $OPENSCADDIR/ostests.tar --exclude=.git* --exclude=*.cc.obj --exclude=*.a $TESTBINDIR
+        tar prvf $OPENSCADDIR/ostests.tar --exclude=.git* --exclude=*.cc.obj --exclude=CMakeFiles --exclude=*.a $TESTBUILDDIR
 
-        cd $DEPLOYDIR
-        if [ -e ./$OPENSCAD_TESTSDIR ]; then
-          rm -rf ./$OPENSCAD_TESTSDIR
-        fi
-        mkdir $OPENSCAD_TESTSDIR
-        cd $OPENSCAD_TESTSDIR
+        cd $DEPLOYDIR/$OPENSCAD_TESTSDIR
         tar pxf $OPENSCADDIR/ostests.tar
         rm -f $OPENSCADDIR/ostests.tar
-
-        echo "Copying main binary .exe, .com, and dlls"
-        echo "from $DEPLOYDIR/$TARGET"
-        echo "to $DEPLOYDIR/$OPENSCAD_TESTSDIR/$TESTBINDIR"
-        TMPTAR=$DEPLOYDIR/tmpmingw.$ARCH.$MXELIBTYPE.tar
-        cd $DEPLOYDIR/$TARGET
-        tar cvf $TMPTAR --exclude=winconsole.o .
-        cd $DEPLOYDIR/$OPENSCAD_TESTSDIR/$TESTBINDIR
-        tar xvf $TMPTAR
-        rm -f $TMPTAR
 
         # Now we have the basic files copied into our tree that will become
         # our .zip file. We also want to move some files around for easier
         # access for the user:
-        cd $DEPLOYDIR
-        cd ./$OPENSCAD_TESTSDIR
+        cd $DEPLOYDIR/$OPENSCAD_TESTSDIR
         echo "Copying files for ease of use when running from cmdline"
-        cp -v ./tests/OpenSCAD_Test_Console.py .
-        cp -v ./tests/WinReadme.txt .
-        cp -v ./tests/mingw_convert_ctest.py ./$TESTBINDIR
-	      cp -v ./tests/mingwcon.bat ./$TESTBINDIR
+        mv -v ./tests/OpenSCAD_Test_Console.py .
+        mv -v ./tests/WinReadme.txt .
+        mv -v ./tests/mingw_convert_ctest.py $TESTBUILDDIR
+        mv -v ./tests/mingwcon.bat $TESTBUILDDIR
 
         echo "Creating mingw_cross_info.py file"
-        cd $DEPLOYDIR
-        cd ./$OPENSCAD_TESTSDIR
-        cd $TESTBINDIR
+        cd $DEPLOYDIR/$OPENSCAD_TESTSDIR/$TESTBUILDDIR
         if [ -e ./mingw_cross_info.py ]; then
           rm -f ./mingw_cross_info.py
         fi
         echo "# created automatically by release-common.sh from within linux " >> mingw_cross_info.py
         echo "linux_abs_basedir='"$OPENSCADDIR"'" >> mingw_cross_info.py
-        echo "linux_abs_builddir='"$DEPLOYDIR/$TESTBINDIR"'" >> mingw_cross_info.py
-        echo "bindir='"$TESTBINDIR"'" >> mingw_cross_info.py
+        echo "linux_abs_builddir='"$OPENSCAD_BINDIR"'" >> mingw_cross_info.py
         # Parse CTestTestfiles to find linux python strings
         PYTHON_PATH=`grep -o -m 1 -h [^\"]*python[^\"]* CTestTestfile.cmake`
         echo "linux_python='$PYTHON_PATH'" >> mingw_cross_info.py
@@ -656,7 +651,7 @@ if [ $BUILD_TESTS ]; then
         # By default, we strip that. In most cases we wont need it and it
         # causes too many problems to have >100MB files.
         echo "stripping .exe binaries"
-        cd $DEPLOYDIR/$OPENSCAD_TESTSDIR/$TESTBINDIR
+        cd $DEPLOYDIR/$OPENSCAD_TESTSDIR
         if [ "`command -v $TESTBUILD_MACHINE'-strip' `" ]; then
             for exefile in *exe; do
                 ls -sh $exefile
