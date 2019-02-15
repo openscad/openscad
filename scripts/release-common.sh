@@ -579,6 +579,7 @@ if [ $BUILD_TESTS ]; then
         echo 'building regression test package on Win not implemented'
     ;;
     UNIX_CROSS_WIN)
+        OPENSCAD_TESTSDIR=OpenSCAD-Tests-$VERSION
         # Build a .zip file containing all the files we need to run a
         # ctest on Windows(TM). For the sake of simplicity, we do not
         # create an installer for the tests.
@@ -596,19 +597,29 @@ if [ $BUILD_TESTS ]; then
         tar prvf $OPENSCADDIR/ostests.tar --exclude=.git* --exclude=*.cc.obj --exclude=*.a $TESTBINDIR
 
         cd $DEPLOYDIR
-        if [ -e ./OpenSCAD-Tests-$VERSION ]; then
-          rm -rf ./OpenSCAD-Tests-$VERSION
+        if [ -e ./$OPENSCAD_TESTSDIR ]; then
+          rm -rf ./$OPENSCAD_TESTSDIR
         fi
-        mkdir OpenSCAD-Tests-$VERSION
-        cd OpenSCAD-Tests-$VERSION
+        mkdir $OPENSCAD_TESTSDIR
+        cd $OPENSCAD_TESTSDIR
         tar pxf $OPENSCADDIR/ostests.tar
         rm -f $OPENSCADDIR/ostests.tar
+
+        echo "Copying main binary .exe, .com, and dlls"
+        echo "from $DEPLOYDIR/$TARGET"
+        echo "to $DEPLOYDIR/$OPENSCAD_TESTSDIR/$TESTBINDIR"
+        TMPTAR=$DEPLOYDIR/tmpmingw.$ARCH.$MXELIBTYPE.tar
+        cd $DEPLOYDIR/$TARGET
+        tar cvf $TMPTAR --exclude=winconsole.o .
+        cd $DEPLOYDIR/$OPENSCAD_TESTSDIR/$TESTBINDIR
+        tar xvf $TMPTAR
+        rm -f $TMPTAR
 
         # Now we have the basic files copied into our tree that will become
         # our .zip file. We also want to move some files around for easier
         # access for the user:
         cd $DEPLOYDIR
-        cd ./OpenSCAD-Tests-$VERSION
+        cd ./$OPENSCAD_TESTSDIR
         echo "Copying files for ease of use when running from cmdline"
         cp -v ./tests/OpenSCAD_Test_Console.py .
         cp -v ./tests/WinReadme.txt .
@@ -617,7 +628,7 @@ if [ $BUILD_TESTS ]; then
 
         echo "Creating mingw_cross_info.py file"
         cd $DEPLOYDIR
-        cd ./OpenSCAD-Tests-$VERSION
+        cd ./$OPENSCAD_TESTSDIR
         cd $TESTBINDIR
         if [ -e ./mingw_cross_info.py ]; then
           rm -f ./mingw_cross_info.py
@@ -626,9 +637,9 @@ if [ $BUILD_TESTS ]; then
         echo "linux_abs_basedir='"$OPENSCADDIR"'" >> mingw_cross_info.py
         echo "linux_abs_builddir='"$DEPLOYDIR/$TESTBINDIR"'" >> mingw_cross_info.py
         echo "bindir='"$TESTBINDIR"'" >> mingw_cross_info.py
-        # fixme .. parse CTestTestfiles to find linux+convert python strings
-        # or have CMake itself dump them during it's cross build cmake call
-        echo "linux_python='"`which python`"'" >> mingw_cross_info.py
+        # Parse CTestTestfiles to find linux python strings
+        PYTHON_PATH=`grep -o -m 1 -h [^\"]*python[^\"]* CTestTestfile.cmake`
+        echo "linux_python='$PYTHON_PATH'" >> mingw_cross_info.py
         # note- this has to match the CMakeLists.txt line that sets the
         # convert executable... and CMingw-cross-env.cmake's skip-imagemagick
         # setting. what a kludge!
@@ -645,9 +656,7 @@ if [ $BUILD_TESTS ]; then
         # By default, we strip that. In most cases we wont need it and it
         # causes too many problems to have >100MB files.
         echo "stripping .exe binaries"
-        cd $DEPLOYDIR
-        cd ./OpenSCAD-Tests-$VERSION
-        cd $TESTBINDIR
+        cd $DEPLOYDIR/$OPENSCAD_TESTSDIR/$TESTBINDIR
         if [ "`command -v $TESTBUILD_MACHINE'-strip' `" ]; then
             for exefile in *exe; do
                 ls -sh $exefile
@@ -659,10 +668,10 @@ if [ $BUILD_TESTS ]; then
 
         # Build the actual .zip archive based on the file tree we've built above
         cd $DEPLOYDIR
-        ZIPFILE=OpenSCAD-Tests-$VERSION-x86-$ARCH.zip
+        ZIPFILE=$OPENSCAD_TESTSDIR-x86-$ARCH.zip
         echo "Creating binary zip package for Tests:" $ZIPFILE
         rm -f ./$ZIPFILE
-        "$ZIP" $ZIPARGS $ZIPFILE OpenSCAD-Tests-$VERSION
+        "$ZIP" $ZIPARGS $ZIPFILE $OPENSCAD_TESTSDIR
 
         if [ -e $ZIPFILE ]; then
             echo "ZIP package created:" `pwd`/$ZIPFILE

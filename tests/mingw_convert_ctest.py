@@ -9,20 +9,21 @@
 
 # Usage:
 # 
-# In Windows(TM) open a console, cd to the test suite as built by
+# On Windows(TM), Python (version >= 3.4) should be installed and included
+# in your PATH environment variable, accessible as "python.exe"
+# Open a console, cd to the test suite as built by
 # openscad/scripts/release-common.sh tests, then run this script.
-#
 # C:
-# cd C:\temp\OpenSCAD-Tests-2012.03.40
-# C:\python27\python.exe mingw_convert_ctest.py
+# cd C:\temp\OpenSCAD-Tests-2019.02.15
+# python.exe mingw_convert_ctest.py
 #   This will overwrite CTestTestfile.cmake and CTestCustom.cmake.
 #   If all goes well, 'ctest' can then be run. 
 #
 #
-# C:\python27\python.exe mingw_convert_ctest.py --debug
+# python.exe mingw_convert_ctest.py --debug
 #   This will provide extra debug info
 #
-# C:\python27\python.exe mingw_convert_ctest.py --undo
+# python.exe mingw_convert_ctest.py --undo
 #   This will restore original CTest files from backup
 
 
@@ -60,9 +61,9 @@ winbuild=winbase+'/'+mingw_cross_info.bindir
 lintct=linbase+'/tests/test_cmdline_tool.py'
 wintct=winbase+'/tests/test_cmdline_tool.py'
 
-linpy=mingw_cross_info.linux_python #'/usr/bin/python'
+linpy=mingw_cross_info.linux_python #'/usr/bin/python3'
 # FIXME - find python
-winpy='c:/python27/python.exe'
+winpy='python.exe'
 
 linosng=linbuild+'/openscad.exe'
 winosng=winbuild+'/openscad.exe'
