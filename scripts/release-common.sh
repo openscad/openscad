@@ -293,18 +293,14 @@ if [ $BUILD_TESTS ]; then
         cd $DEPLOYDIR
         mkdir $TESTBINDIR
         cd $TESTBINDIR
-        OPENSCAD_LIBRARIES=$MXETARGETDIR $MXE_TARGETS-cmake $OPENSCADDIR/tests/ \
-          -DCMAKE_TOOLCHAIN_FILE=../tests/CMingw-cross-env.cmake \
+        OPENSCAD_LIBRARIES=$MXETARGETDIR $MXE_TARGETS-cmake . \
+          -DCMAKE_TOOLCHAIN_FILE=CMingw-cross-env.cmake \
           -DMINGW_CROSS_ENV_DIR=$MXEDIR \
           -DMACHINE=$MXE_TARGETS
         if [ $FAKEMAKE ]; then
             echo "notexe. debugging build process" > openscad_nogui.exe
         else
             make -j$NUMCPU
-        fi
-        if [ ! -e openscad_nogui.exe ]; then
-            echo 'test cross-build failed'
-            exit 1
         fi
         cd $OPENSCADDIR
     ;;

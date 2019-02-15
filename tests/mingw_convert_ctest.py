@@ -64,8 +64,8 @@ linpy=mingw_cross_info.linux_python #'/usr/bin/python'
 # FIXME - find python
 winpy='c:/python27/python.exe'
 
-linosng=linbuild+'/openscad_nogui.exe'
-winosng=winbuild+'/openscad_nogui.exe'
+linosng=linbuild+'/openscad.exe'
+winosng=winbuild+'/openscad.exe'
 
 linconv=mingw_cross_info.linux_convert #'/usr/bin/convert'
 # Find imagemagick's convert.exe
