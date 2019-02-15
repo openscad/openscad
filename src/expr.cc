@@ -430,11 +430,19 @@ FunctionCall::FunctionCall(const std::string &name,
 {
 }
 
+static void __attribute__ ((noinline)) print_err(const char *name, const Location &loc,const Context *ctx){
+	std::string locs = loc.toRelativeString(ctx->documentPath());
+	PRINTB("ERROR: Recursion detected calling function '%s' %s", name % locs);
+}
+
+static void __attribute__ ((noinline)) print_trace(const FunctionCall *val, const Context *ctx){
+	PRINTB("TRACE: called by '%s', %s.", val->name % val->location().toRelativeString(ctx->documentPath()));
+}
+
 ValuePtr FunctionCall::evaluate(const Context *context) const
 {
 	if (StackCheck::inst()->check()) {
-		std::string locs = this->loc.toRelativeString(context->documentPath());
-		PRINTB("ERROR: Recursion detected calling function '%s' %s", this->name % locs);
+		print_err(this->name.c_str(),loc,context);
 		throw RecursionException::create("function", this->name,this->loc);
 	}
 	try{
@@ -443,7 +451,7 @@ ValuePtr FunctionCall::evaluate(const Context *context) const
 		return result;
 	}catch(EvaluationException &e){
 		if(e.traceDepth>0){
-			PRINTB("TRACE: called by '%s', %s.", this->name % this->loc.toRelativeString(context->documentPath()));
+			print_trace(this, context);
 			e.traceDepth--;
 		}
 		throw;
