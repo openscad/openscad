@@ -1628,7 +1628,7 @@
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_14">
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_cgalCacheSize">
+                <layout class="QHBoxLayout" name="horizontalLayout_cgalCacheSizeMB">
                  <item>
                   <widget class="QLabel" name="label_4">
                    <property name="text">
@@ -1637,19 +1637,19 @@
                   </widget>
                  </item>
                  <item>
-                  <widget class="QLineEdit" name="cgalCacheSizeEdit"/>
+                  <widget class="QLineEdit" name="cgalCacheSizeMBEdit"/>
                  </item>
                  <item>
                   <widget class="QLabel" name="label_2">
                    <property name="text">
-                    <string>bytes</string>
+                    <string>MB</string>
                    </property>
                   </widget>
                  </item>
                 </layout>
                </item>
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_polysetCacheSize">
+                <layout class="QHBoxLayout" name="horizontalLayout_polysetCacheSizeMB">
                  <property name="bottomMargin">
                   <number>0</number>
                  </property>
@@ -1661,12 +1661,12 @@
                   </widget>
                  </item>
                  <item>
-                  <widget class="QLineEdit" name="polysetCacheSizeEdit"/>
+                  <widget class="QLineEdit" name="polysetCacheSizeMBEdit"/>
                  </item>
                  <item>
                   <widget class="QLabel" name="label_6">
                    <property name="text">
-                    <string>bytes</string>
+                    <string>MB</string>
                    </property>
                   </widget>
                  </item>

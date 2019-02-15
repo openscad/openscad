@@ -1311,8 +1311,8 @@ msgid "CGAL Cache size"
 msgstr "Taille du Cache de CGAL"
 
 #: objects/ui_Preferences.h:1258 objects/ui_Preferences.h:1260
-msgid "bytes"
-msgstr "octets"
+msgid "MB"
+msgstr "Mo"
 
 #: objects/ui_Preferences.h:1259
 msgid "PolySet Cache size"

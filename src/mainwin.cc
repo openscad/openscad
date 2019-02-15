@@ -765,11 +765,11 @@ void MainWindow::loadDesignSettings()
 	if (settings.value("design/autoReload", true).toBool()) {
 		designActionAutoReload->setChecked(true);
 	}
-	auto polySetCacheSize = Preferences::inst()->getValue("advanced/polysetCacheSize").toUInt();
-	GeometryCache::instance()->setMaxSize(polySetCacheSize);
+	auto polySetCacheSizeMB = Preferences::inst()->getValue("advanced/polysetCacheSizeMB").toUInt();
+	GeometryCache::instance()->setMaxSizeMB(polySetCacheSizeMB);
 #ifdef ENABLE_CGAL
-	auto cgalCacheSize = Preferences::inst()->getValue("advanced/cgalCacheSize").toUInt();
-	CGALCache::instance()->setMaxSize(cgalCacheSize);
+	auto cgalCacheSizeMB = Preferences::inst()->getValue("advanced/cgalCacheSizeMB").toUInt();
+	CGALCache::instance()->setMaxSizeMB(cgalCacheSizeMB);
 #endif
 }
 

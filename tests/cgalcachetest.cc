@@ -66,7 +66,7 @@ po::variables_map parse_options(int argc, char *argv[])
 	po::options_description desc("Allowed options");
 	desc.add_options()
 		("help,h", "help message")
-		("cgalcachesize", po::value<size_t>(), "Set CGAL cache size in bytes");
+		("cgalcachesize", po::value<size_t>(), "Set CGAL cache size in MB");
 	
 	po::options_description hidden("Hidden options");
 	hidden.add_options()
@@ -89,7 +89,7 @@ po::variables_map parse_options(int argc, char *argv[])
 int main(int argc, char **argv)
 {
 	const char *filename, *outfilename = NULL;
-	size_t cgalcachesize = 1*1024*1024;
+	size_t cgalcachesize = 1;
 	StackCheck::inst()->init();
 
 	po::variables_map vm;
@@ -113,7 +113,7 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	CGALCache::instance()->setMaxSize(cgalcachesize);
+	CGALCache::instance()->setMaxSizeMB(cgalcachesize);
 	
 	Builtins::instance()->initialize();
 
