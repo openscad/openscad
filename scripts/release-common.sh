@@ -589,10 +589,10 @@ if [ $BUILD_TESTS ]; then
         # while copying.
         rm -f ./ostests.tar
        	for subdir in tests testdata libraries examples doc; do
-          tar prvf ./ostests.tar --exclude=.git* --exclude=*/mingw* --exclude=*.cc.obj --exclude=*.a $subdir
+          tar prvf ./ostests.tar --exclude=.git* --exclude=*.cc.obj --exclude=*.a $subdir
         done
         cd $DEPLOYDIR
-        tar prvf $OPENSCADDIR/ostests.tar --exclude=.git* --exclude=*/mingw* --exclude=*.cc.obj --exclude=*.a $TESTBINDIR
+        tar prvf $OPENSCADDIR/ostests.tar --exclude=.git* --exclude=*.cc.obj --exclude=*.a $TESTBINDIR
 
         cd $DEPLOYDIR
         if [ -e ./OpenSCAD-Tests-$VERSION ]; then
