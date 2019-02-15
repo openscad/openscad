@@ -70,6 +70,10 @@ void IfElseModuleInstantiation::print(std::ostream &stream, const std::string &i
 	}
 }
 
+static void __attribute__ ((noinline)) print_trace(const ModuleInstantiation *mod, const Context *ctx){
+	PRINTB("TRACE: called by '%s', %s.", mod->name() % mod->location().toRelativeString(ctx->documentPath()));
+}
+
 AbstractNode *ModuleInstantiation::evaluate(const Context *ctx) const
 {
 	EvalContext c(ctx, this->arguments, this->loc, &this->scope);
@@ -83,7 +87,7 @@ AbstractNode *ModuleInstantiation::evaluate(const Context *ctx) const
 		return node;
 	}catch(EvaluationException &e){
 		if(e.traceDepth>0){
-			PRINTB("TRACE: called by '%s', %s.", name() % this->loc.toRelativeString(ctx->documentPath()));
+			print_trace(this, ctx);
 			e.traceDepth--;
 		}
 		throw;
