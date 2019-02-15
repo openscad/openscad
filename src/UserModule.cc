@@ -45,8 +45,6 @@ static void __attribute__ ((noinline)) print_err(std::string name, const Locatio
 AbstractNode *UserModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	if (StackCheck::inst()->check()) {
-		std::string locs = loc.toRelativeString(ctx->documentPath());
-		PRINTB("ERROR: Recursion detected calling module '%s' %s", inst->name() % locs);
 		print_err(inst->name(),loc,ctx);
 		throw RecursionException::create("module", inst->name(),loc);
 		return nullptr;
