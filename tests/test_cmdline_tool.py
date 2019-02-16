@@ -218,7 +218,8 @@ def compare_with_expected(resultfilename):
 #
 def post_process_3mf(filename):
     print('post processing 3MF file (extracting XML data from ZIP): ', filename)
-    xml_content = subprocess.check_output(["unzip", "-p", filename, "3D/3dmodel.model"])
+    from zipfile import ZipFile
+    xml_content = ZipFile(filename).read("3D/3dmodel.model")
     xml_content = re.sub('UUID="[^"]*"', 'UUID="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXX"', xml_content.decode('utf-8'))
     with open(filename, 'wb') as xml_file:
         xml_file.write(xml_content.encode('utf-8'))

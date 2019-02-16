@@ -89,7 +89,8 @@ set(CMAKE_C_COMPILER ${MINGW_CROSS_ENV_DIR}/usr/bin/${MACHINE}-gcc)
 set(CMAKE_CXX_COMPILER ${MINGW_CROSS_ENV_DIR}/usr/bin/${MACHINE}-g++)
 set(CMAKE_RC_COMPILER ${MINGW_CROSS_ENV_DIR}/usr/bin/${MACHINE}-windres)
 set(QT_QMAKE_EXECUTABLE ${MINGW_CROSS_ENV_DIR}/usr/bin/${MACHINE}-qmake)
-set(PKG_CONFIG_EXECUTABLE ${MINGW_CROSS_ENV_DIR}/usr/bin/${MACHINE}-pkg-config)
+# Fix for finding PkgConfig: see https://github.com/mxe/mxe/issues/1023
+set(PKG_CONFIG_EXECUTABLE ${MINGW_CROSS_ENV_DIR}/usr/bin/${MACHINE}-pkg-config CACHE PATH "pkg-config executable" FORCE) 
 set(CMAKE_BUILD_TYPE RelWithDebInfo)
 
 #
