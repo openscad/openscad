@@ -177,8 +177,7 @@ def compare_png(resultfilename):
       args = [expectedfilename, resultfilename]
       compare_method = 'diffpng'
 
-    print('Image comparison cmdline: ', file=sys.stderr)
-    print('["'+str(options.comparison_exec) + '"],' + str(args), file=sys.stderr)
+    print('Image comparison cmdline: ' + options.comparison_exec + ' ' + ' '.join(args), file=sys.stderr)
 
     # these two lines are parsed by the test_pretty_print.py
     print(' actual image: ' + resultfilename + '\n', file=sys.stderr)
@@ -248,7 +247,7 @@ def run_test(testname, cmd, args):
     try:
         cmdline = [cmd] + args + [outputname]
         sys.stderr.flush()
-        print('run_test() cmdline:',cmdline)
+        print('run_test() cmdline:', ' '.join(cmdline))
         fontdir =  os.path.join(os.path.dirname(__file__), "..", "testdata/ttf");
         fontenv = os.environ.copy()
         fontenv["OPENSCAD_FONT_PATH"] = fontdir

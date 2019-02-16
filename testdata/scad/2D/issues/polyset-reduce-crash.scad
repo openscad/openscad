@@ -1,3 +1,8 @@
+/*
+This testcase causes a crash in PolySet::PolyReducer::add_edges().
+It appears to be because we collapse two close vertices into the same
+vertex. This is handled by just abort()'ing.
+*/
 N=20;
 
 rotate (a = [0, 0, 36]) {
