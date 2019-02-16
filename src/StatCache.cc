@@ -60,8 +60,10 @@ int stat(const std::string &path, struct ::stat &st)
 			st = iter->second.st;                        // Not stale yet so return it
 			return 0;
 		}
-		statMap.erase(iter);                            // Remove stale entry
+		//statMap.erase(iter);                            // Remove stale entry
 	}
+	else
+		PRINTD(path);
 	if (auto rv = ::stat(path.c_str(), &st)) return rv; // stat failed
 	statMap[path] = {st, millis_clock()};
 	return 0;
