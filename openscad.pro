@@ -212,6 +212,8 @@ include(common.pri)
 # mingw has to come after other items so OBJECT_DIRS will work properly
 CONFIG(mingw-cross-env)|CONFIG(mingw-cross-env-shared) {
   include(mingw-cross-env.pri)
+  # Disable attributes warnings due to gcc bug spamming the logs: Issue #2771
+  QMAKE_CXXFLAGS += -Wno-attributes
 }
 
 RESOURCES = openscad.qrc
