@@ -143,6 +143,11 @@ netbsd* {
 *g++* {
   QMAKE_CXXFLAGS *= -fno-strict-aliasing
   QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-local-typedefs # ignored before 4.8
+
+  # Disable attributes warnings on MSYS/MXE due to gcc bug spamming the logs: Issue #2771
+  win* | CONFIG(mingw-cross-env)|CONFIG(mingw-cross-env-shared) {
+    QMAKE_CXXFLAGS += -Wno-attributes
+  }
 }
 
 *clang* {
@@ -212,8 +217,6 @@ include(common.pri)
 # mingw has to come after other items so OBJECT_DIRS will work properly
 CONFIG(mingw-cross-env)|CONFIG(mingw-cross-env-shared) {
   include(mingw-cross-env.pri)
-  # Disable attributes warnings due to gcc bug spamming the logs: Issue #2771
-  QMAKE_CXXFLAGS += -Wno-attributes
 }
 
 RESOURCES = openscad.qrc
