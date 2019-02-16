@@ -29,15 +29,17 @@
 
 #include <string>
 #include <unordered_map>
-#include <chrono>
+#include <sys/timeb.h>
 
 namespace {
 
-const float stale = 190;  // Maximum lifetime of a cache entry chosen to be shorter than the automatic reload poll time
+const float stale = 0.190;  // Maximum lifetime of a cache entry chosen to be shorter than the automatic reload poll time
 
 double millis_clock(void)
 {
-	return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+	struct timeb tb;
+	ftime(&tb);
+	return tb.time + double(tb.millitm) / 1000;
 }
 
 struct CacheEntry
@@ -60,11 +62,13 @@ int stat(const std::string &path, struct ::stat &st)
 			st = iter->second.st;                        // Not stale yet so return it
 			return 0;
 		}
-		//statMap.erase(iter);                            // Remove stale entry
 	}
 	else
 		PRINTD(path);
-	if (auto rv = ::stat(path.c_str(), &st)) return rv; // stat failed
+	if (auto rv = ::stat(path.c_str(), &st)) {            // stat failed
+		if(iter != statMap.end())
+			statMap.erase(iter);                          // Remove stale entry
+    }
 	statMap[path] = {st, millis_clock()};
 	return 0;
 }   
