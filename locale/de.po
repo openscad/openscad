@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: OpenSCAD 2014.01.05\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-02-17 10:19+0100\n"
-"PO-Revision-Date: 2018-11-25 13:19+0100\n"
+"PO-Revision-Date: 2019-02-17 12:57+0100\n"
 "Last-Translator: Torsten Paul <Torsten.Paul@gmx.de>\n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -267,9 +267,8 @@ msgid "Clear console"
 msgstr "Konsole"
 
 #: objects/ui_Console.h:46
-#, fuzzy
 msgid "Save As"
-msgstr "Speichern &Unter..."
+msgstr "Speichern Unter..."
 
 #: objects/ui_Console.h:48
 msgid "Save console content to file"
@@ -552,11 +551,11 @@ msgstr "F6"
 
 #: objects/ui_MainWindow.h:985
 msgid "&3D Print"
-msgstr ""
+msgstr "&3D-Druck"
 
 #: objects/ui_MainWindow.h:987
 msgid "F8"
-msgstr ""
+msgstr "F8"
 
 #: objects/ui_MainWindow.h:989
 msgid "&Check Validity"
@@ -580,7 +579,7 @@ msgstr "&STL exportieren..."
 
 #: objects/ui_MainWindow.h:995
 msgid "F7"
-msgstr ""
+msgstr "F7"
 
 #: objects/ui_MainWindow.h:997
 msgid "Export as &OFF..."
@@ -1117,11 +1116,11 @@ msgstr "Knöpfe"
 
 #: objects/ui_Preferences.h:1451 objects/ui_PrintInitDialog.h:109
 msgid "3D Print"
-msgstr ""
+msgstr "3D-Druck"
 
 #: objects/ui_Preferences.h:1453
 msgid "3D Printing Services"
-msgstr ""
+msgstr "3D-Druckdienstleister"
 
 #: objects/ui_Preferences.h:1455
 msgid "Color scheme:"
@@ -1327,7 +1326,7 @@ msgstr "Zuletzt gesucht: "
 
 #: objects/ui_Preferences.h:1520 objects/ui_PrintInitDialog.h:114
 msgid "OctoPrint"
-msgstr ""
+msgstr "OctoPrint"
 
 #: objects/ui_Preferences.h:1521
 msgid "URL"
@@ -1339,7 +1338,7 @@ msgstr ""
 
 #: objects/ui_Preferences.h:1523 objects/ui_Preferences.h:1524
 msgid "Load"
-msgstr ""
+msgstr "laden"
 
 #: objects/ui_Preferences.h:1526
 #, fuzzy
@@ -1611,9 +1610,8 @@ msgid "Do you want to save your changes?"
 msgstr "Möchten Sie die Änderungen speichern?"
 
 #: src/mainwin.cc:3202
-#, fuzzy
 msgid "/Untitled"
-msgstr "Unbenannt"
+msgstr "/Unbenannt"
 
 #: src/mainwin.cc:3205
 msgid "/"
@@ -1652,7 +1650,7 @@ msgstr ""
 
 #: src/Preferences.cc:696 src/Preferences.cc:720 src/Preferences.cc:756
 msgid "Error"
-msgstr ""
+msgstr "Fehler"
 
 #: src/PrintInitDialog.cc:44
 msgid "Print Service not available"
@@ -1687,15 +1685,14 @@ msgstr ""
 "Informationen zum OpenGL Treiber:\n"
 
 #: src/QGLView.cc:159
-#, fuzzy
 msgid ""
 "GLEW version %1\n"
 "%2 (%3)\n"
 "OpenGL version %4\n"
 msgstr ""
-"GLEW version %s\n"
-"%s (%s)\n"
-"OpenGL version %s\n"
+"GLEW version %1\n"
+"%2 (%3)\n"
+"OpenGL version %4\n"
 
 #: src/settings.cc:77
 #, c-format
@@ -1786,14 +1783,12 @@ msgid "Enter name of the parameter set"
 msgstr "Bitte einen Namen für diese Voreinstellung eingeben"
 
 #: src/parameter/ParameterWidget.cc:527
-#, fuzzy
 msgid "Set Name %1 already exists"
 msgstr "Set %1 existiert bereits."
 
 #: src/parameter/ParameterWidget.cc:528
-#, fuzzy
 msgid "The set name  %1 already exists. Do you want overwrite it?"
-msgstr "%1 existiert bereits. Mochten Sie diese Voreinstellung ersetzen?"
+msgstr "Set %1 existiert bereits. Mochten Sie dieses Set ersetzen?"
 
 #: src/parameter/ParameterWidget.cc:572
 msgid "Saving presets"
