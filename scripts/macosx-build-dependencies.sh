@@ -782,7 +782,8 @@ build_lib3mf()
   fi
   tar xzf $version.tar.gz
   cd lib3mf-$version
-  cmake -DLIB3MF_TESTS=false -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR .
+  cmake -DLIB3MF_TESTS=false -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR  -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" .
+  make -j"$NUMCPU" VERBOSE=1
   make -j"$NUMCPU" install
 }
 
