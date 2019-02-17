@@ -1976,7 +1976,7 @@
      <normaloff>:/icons/prefsInputAxis.png</normaloff>:/icons/prefsInputAxis.png</iconset>
    </property>
    <property name="text">
-    <string>Axis</string>
+    <string>Axes</string>
    </property>
    <property name="toolTip">
     <string>Input driver configuration and Axis mapping</string>
