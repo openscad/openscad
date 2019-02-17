@@ -46,7 +46,7 @@ def lookup_library(file):
             found = os.path.join("/Library/Frameworks", file)
             if DEBUG: print("Framework found: " + str(found))
         else:
-            for path in os.getenv("DYLD_LIBRARY_PATH").split(':'):
+            for path in os.getenv("DYLD_LIBRARY_PATH", "").split(':'):
                 abs = os.path.join(path, file)
                 if os.path.exists(abs): found = abs
                 if DEBUG: print("Library found: " + str(found))
