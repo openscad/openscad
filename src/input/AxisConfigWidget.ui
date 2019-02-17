@@ -1053,7 +1053,7 @@
           </font>
          </property>
          <property name="text">
-          <string>Axes Setup:</string>
+          <string>Axis Setup:</string>
          </property>
         </widget>
        </item>

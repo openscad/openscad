@@ -1979,7 +1979,7 @@
     <string>Axes</string>
    </property>
    <property name="toolTip">
-    <string>Input driver configuration and Axes mapping</string>
+    <string>Input driver configuration and Axis mapping</string>
    </property>
   </action>
   <action name="prefsActionInputButton">

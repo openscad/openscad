@@ -158,7 +158,7 @@ msgid "ViewPort rel.<br />Rotation"
 msgstr "Wklej przesunięcie podglądu (&translate)"
 
 #: objects/ui_AxisConfigWidget.h:873
-msgid "Axes Setup:"
+msgid "Axis Setup:"
 msgstr ""
 
 #: objects/ui_AxisConfigWidget.h:874
@@ -1113,7 +1113,7 @@ msgid "Axes"
 msgstr "Pokaż osie"
 
 #: objects/ui_Preferences.h:1448
-msgid "Input driver configuration and Axes mapping"
+msgid "Input driver configuration and Axis mapping"
 msgstr ""
 
 #: objects/ui_Preferences.h:1450
