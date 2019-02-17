@@ -29,11 +29,8 @@ IF (APPLE)
      ELSE()
        message("Detected Maverick (10.9) or later")
      ENDIF()
-     set(CMAKE_C_COMPILER "clang")
-     set(CMAKE_CXX_COMPILER "clang++")
-     # Somehow, since we build dependencies for 10.8, we need to also build executables
-     # for 10.8. This used to not be necessary, but since 10.9 it apparently is..
-     SET(CMAKE_OSX_DEPLOYMENT_TARGET 10.8 CACHE STRING "Deployment target")
+     # Since we build dependencies for 10.9, also build executables for 10.9
+     SET(CMAKE_OSX_DEPLOYMENT_TARGET 10.9 CACHE STRING "Deployment target")
    ELSEIF (NOT ${MACOSX_VERSION} VERSION_LESS "10.8.0")
      message("Detected Mountain Lion (10.8)")
      set(CMAKE_C_COMPILER "clang")

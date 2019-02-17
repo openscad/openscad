@@ -11,7 +11,7 @@
 #   find packages for spnav, hidapi
 
 if(APPLE)
-  set(CMAKE_OSX_DEPLOYMENT_TARGET 10.8)
+  set(CMAKE_OSX_DEPLOYMENT_TARGET 10.9)
 endif()
 cmake_minimum_required(VERSION 3.3)
 cmake_policy(SET CMP0071 OLD)
@@ -57,10 +57,6 @@ add_compile_options("$<$<CONFIG:DEBUG>:-DDEBUG>")
 add_compile_options("-UNDEBUG")
 
 set(CMAKE_CXX_STANDARD 11)
-if(APPLE)
-  # Needed for deployment target 10.8 as cmake doesn't know about the libc++
-  set(CMAKE_CXX_FLAGS "-stdlib=libc++")
-endif()
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -frounding-math")

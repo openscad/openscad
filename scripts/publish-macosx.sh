@@ -61,7 +61,7 @@ SHORTVERSION=${VERSION%%-*}
 # Turn off ccache, just for safety
 PATH=${PATH//\/opt\/local\/libexec\/ccache:}
 
-export MACOSX_DEPLOYMENT_TARGET=10.8
+export MACOSX_DEPLOYMENT_TARGET=10.9
 
 # This is the same location as DEPLOYDIR in macosx-build-dependencies.sh
 export OPENSCAD_LIBRARIES=$PWD/../libraries/install
