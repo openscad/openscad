@@ -70,6 +70,13 @@ void IfElseModuleInstantiation::print(std::ostream &stream, const std::string &i
 	}
 }
 
+/**
+ * This is separated because PRINTB uses quite a lot of stack space
+ * and the method using it evaluate()
+ * is called often when recursive modules are evaluated.
+ * noinline is required, as we here specifically optimize for stack usage
+ * during normal operating, not runtime during error handling.
+*/
 static void __attribute__ ((noinline)) print_trace(const ModuleInstantiation *mod, const Context *ctx){
 	PRINTB("TRACE: called by '%s', %s.", mod->name() % mod->location().toRelativeString(ctx->documentPath()));
 }

@@ -430,11 +430,25 @@ FunctionCall::FunctionCall(const std::string &name,
 {
 }
 
+/**
+ * This is separated because PRINTB uses quite a lot of stack space
+ * and the method using it evaluate()
+ * is called often when recursive functions are evaluated.
+ * noinline is required, as we here specifically optimize for stack usage
+ * during normal operating, not runtime during error handling.
+*/
 static void __attribute__ ((noinline)) print_err(const char *name, const Location &loc,const Context *ctx){
 	std::string locs = loc.toRelativeString(ctx->documentPath());
 	PRINTB("ERROR: Recursion detected calling function '%s' %s", name % locs);
 }
 
+/**
+ * This is separated because PRINTB uses quite a lot of stack space
+ * and the method using it evaluate()
+ * is called often when recursive functions are evaluated.
+ * noinline is required, as we here specifically optimize for stack usage
+ * during normal operating, not runtime during error handling.
+*/
 static void __attribute__ ((noinline)) print_trace(const FunctionCall *val, const Context *ctx){
 	PRINTB("TRACE: called by '%s', %s.", val->name % val->location().toRelativeString(ctx->documentPath()));
 }
