@@ -51,7 +51,7 @@ PACKAGES=(
     "qscintilla 2.10.8"
 )
 DEPLOY_PACKAGES=(
-    "sparkle 1.13.1"
+    "sparkle 1.21.3"
 )
 
 printUsage()
