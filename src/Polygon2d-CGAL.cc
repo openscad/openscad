@@ -87,7 +87,7 @@ mark_domains(CDT &cdt)
 /*!
 	Triangulates this polygon2d and returns a 2D PolySet.
 */
-PolySet *Polygon2d::tessellate() const
+PolySet *Polygon2d::tessellate(bool in3d) const
 {
 	PRINTDB("Polygon2d::tessellate(): %d outlines", this->outlines().size());
 	auto polyset = new PolySet(*this);
@@ -98,7 +98,7 @@ PolySet *Polygon2d::tessellate() const
 	try {
 
 	// Adds all vertices, and add all contours as constraints.
-	for (const auto &outline : this->outlines()) {
+	for (const auto &outline : (in3d? this->untransformedOutlines() : this->outlines())) {
 		// Start with last point
 		auto prev = cdt.insert({outline.vertices[outline.vertices.size()-1][0], outline.vertices[outline.vertices.size()-1][1]});
 		for (const auto &v : outline.vertices) {
@@ -131,5 +131,7 @@ PolySet *Polygon2d::tessellate() const
 			}
 		}
 	}
+	if (in3d)
+		polyset->transform(this->getTransform3d());
 	return polyset;
 }
