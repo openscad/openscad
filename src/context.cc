@@ -192,7 +192,7 @@ bool Context::has_local_variable(const std::string &name) const
  * @param loc location of the function/modul call
  * @param docPath document path of the root file, used to calculate the relative path
  */
-static void __attribute__ ((noinline)) print_ignore_warning(const char *what, const char *name, const Location &loc, const char *docPath){
+static void [[gnu::noinline]] print_ignore_warning(const char *what, const char *name, const Location &loc, const char *docPath){
 	PRINTB("WARNING: Ignoring unknown %s '%s', %s.", what % name % loc.toRelativeString(docPath));
 }
  
