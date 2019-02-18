@@ -1,6 +1,16 @@
 WARNING: Ignoring unknown function 'test', in file errors-warnings.scad, line 19.
+WARNING: dxf_cross(..., origin=[inf, nan]) could not be converted, in file errors-warnings.scad, line 79
+WARNING: Can't open DXF file 'doesNotExist.dxf'! in file errors-warnings.scad, line 79
+WARNING: dxf_dim(..., origin=[1, 2, 3]) could not be converted, in file errors-warnings.scad, line 84
+WARNING: Can't open DXF file 'doesNotExist.dxf'! in file errors-warnings.scad, line 84
+WARNING: dxf_cross(..., origin=[inf, 0]) could not be converted, in file errors-warnings.scad, line 92
+WARNING: dxf_cross(..., "notSupported"=...) is not supported, in file errors-warnings.scad, line 92
+WARNING: Can't find cross in 'dim-all.dxf', layer 'SCAD.Origin'! in file errors-warnings.scad, line 92
+WARNING: dxf_dim(..., notSupported=...) is not supported, in file errors-warnings.scad, line 98
+WARNING: Can't find dimension 'TotalWidth' in 'dim-all.dxf', layer 'SCAD.Origin'! in file errors-warnings.scad, line 98
 WARNING: Ignoring unknown variable 'a', in file errors-warnings.scad, line 1.
 ECHO: undef
+WARNING: linear_extrude(..., origin="string") could not be converted, in file errors-warnings.scad, line 15
 WARNING: Ignoring unknown module 'hello', in file errors-warnings.scad, line 17.
 WARNING: Ignoring radius variable 'r' as diameter 'd' is defined too, in file errors-warnings.scad, line 21
 WARNING: Ignoring radius variable 'r1' as diameter 'd1' is defined too, in file errors-warnings.scad, line 22
@@ -23,3 +33,16 @@ WARNING: $fs too small - clamping to 0.010000, in file errors-warnings.scad, lin
 WARNING: $fa too small - clamping to 0.010000, in file errors-warnings.scad, line 55
 WARNING: argument center supplied more then once, in file errors-warnings.scad, line 58
 WARNING: argument r supplied more then once, in file errors-warnings.scad, line 59
+WARNING: rotate_extrude(..., origin="test") could not be converted, in file errors-warnings.scad, line 61
+WARNING: linear_extrude(..., origin="test") could not be converted, in file errors-warnings.scad, line 65
+WARNING: linear_extrude(..., scale=inf) could not be converted, in file errors-warnings.scad, line 65
+ECHO: 10
+ECHO: 15
+ECHO: 20
+WARNING: lookup("test", ...) first argument is not a number, in file errors-warnings.scad, line 73
+ECHO: undef
+WARNING: lookup() number of parameters does not match, in file errors-warnings.scad, line 74
+ECHO: undef
+WARNING: lookup() number of parameters does not match, in file errors-warnings.scad, line 75
+ECHO: undef
+ECHO: "dim-all.dxf"

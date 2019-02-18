@@ -46,6 +46,7 @@ namespace fs = boost::filesystem;
 
 ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 {
+	std::string rawFilename;
 	std::string filename;
 	std::string layername;
 	std::string name;
@@ -53,28 +54,45 @@ ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 	double yorigin = 0;
 	double scale = 1;
 
-  // FIXME: We don't lookup the file relative to where this function was instantiated
+	// FIXME: We don't lookup the file relative to where this function was instantiated
 	// since the path is only available for ModuleInstantiations, not function expressions.
 	// See issue #217
 	for (size_t i = 0; i < evalctx->numArgs(); i++) {
 		ValuePtr n = evalctx->getArgName(i);
 		ValuePtr v = evalctx->getArgValue(i);
 		if (evalctx->getArgName(i) == "file") {
-			filename = lookup_file(v->toString(), 
+			rawFilename = v->toString();
+			filename = lookup_file(rawFilename, 
 			evalctx->documentPath(), ctx->documentPath());
+		}else if (n == "layer") {
+			layername = v->toString();
+		}else if (n == "origin"){
+			bool originOk = v->getVec2(xorigin, yorigin);
+			originOk &= std::isfinite(xorigin) && std::isfinite(yorigin);
+			if(!originOk){
+				PRINTB("WARNING: dxf_dim(..., origin=%s) could not be converted, %s", v->toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
+			}
+		}else if (n == "scale"){
+			v->getDouble(scale);
+		} else if (n == "name") {
+			name = v->toString();
+		}else{
+			PRINTB("WARNING: dxf_dim(..., %s=...) is not supported, %s", n->toString() % evalctx->loc.toRelativeString(ctx->documentPath()));
 		}
-		if (n == "layer") layername = v->toString();
-		if (n == "origin") v->getVec2(xorigin, yorigin);
-		if (n == "scale") v->getDouble(scale);
-		if (n == "name") name = v->toString();
 	}
 
 	fs::path filepath(filename);
 	uintmax_t filesize = -1;
 	time_t lastwritetime = -1;
-	if (fs::exists(filepath) && fs::is_regular_file(filepath)) {
-		filesize = fs::file_size(filepath);
-		lastwritetime = fs::last_write_time(filepath);
+	if (fs::exists(filepath)) {
+		if(fs::is_regular_file(filepath)){
+			filesize = fs::file_size(filepath);
+			lastwritetime = fs::last_write_time(filepath);
+		}
+	}else{
+		PRINTB("WARNING: Can't open DXF file '%s'! %s",
+					 rawFilename % evalctx->loc.toRelativeString(ctx->documentPath()));
+		return ValuePtr::undefined;
 	}
 	std::string key = STR(filename << "|" << layername << "|" << name << "|" << xorigin
 												<< "|" << yorigin <<"|" << scale << "|" << lastwritetime
@@ -126,13 +144,13 @@ ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 			return dxf_dim_cache[key] = ValuePtr((d->type & 64) ? d->coords[3][0] : d->coords[3][1]);
 		}
 
-		PRINTB("WARNING: Dimension '%s' in '%s', layer '%s' has unsupported type!", 
-					 name % filename % layername);
+		PRINTB("WARNING: Dimension '%s' in '%s', layer '%s' has unsupported type! %s", 
+					 name % rawFilename  % layername % evalctx->loc.toRelativeString(ctx->documentPath()));
 		return ValuePtr::undefined;
 	}
 
-	PRINTB("WARNING: Can't find dimension '%s' in '%s', layer '%s'!",
-				 name % filename % layername);
+	PRINTB("WARNING: Can't find dimension '%s' in '%s', layer '%s'! %s",
+				 name % rawFilename % layername % evalctx->loc.toRelativeString(ctx->documentPath()));
 
 	return ValuePtr::undefined;
 }
@@ -140,30 +158,50 @@ ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 ValuePtr builtin_dxf_cross(const Context *ctx, const EvalContext *evalctx)
 {
 	std::string filename;
+	std::string rawFilename;
 	std::string layername;
 	double xorigin = 0;
 	double yorigin = 0;
 	double scale = 1;
 
-  // FIXME: We don't lookup the file relative to where this function was instantiated
+	// FIXME: We don't lookup the file relative to where this function was instantiated
 	// since the path is only available for ModuleInstantiations, not function expressions.
-	// See isse #217
+	// See issue #217
 	for (size_t i = 0; i < evalctx->numArgs(); i++) {
 		ValuePtr n = evalctx->getArgName(i);
 		ValuePtr v = evalctx->getArgValue(i);
-		if (n == "file") filename = ctx->getAbsolutePath(v->toString());
-		if (n == "layer") layername = v->toString();
-		if (n == "origin") v->getVec2(xorigin, yorigin);
-		if (n == "scale") v->getDouble(scale);
+		if (n == "file"){
+			rawFilename = v->toString();
+			filename = ctx->getAbsolutePath(rawFilename);
+		}else if (n == "layer"){
+			layername = v->toString();
+		}else if (n == "origin"){
+			bool originOk = v->getVec2(xorigin, yorigin);
+			originOk &= std::isfinite(xorigin) && std::isfinite(yorigin);
+			if(!originOk){
+				PRINTB("WARNING: dxf_cross(..., origin=%s) could not be converted, %s", v->toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
+			}
+		}else if (n == "scale"){
+			v->getDouble(scale);
+		}else{
+			PRINTB("WARNING: dxf_cross(..., %s=...) is not supported, %s", n->toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
+		}
 	}
 
 	fs::path filepath(filename);
 	uintmax_t filesize = -1;
 	time_t lastwritetime = -1;
-	if (fs::exists(filepath) && fs::is_regular_file(filepath)) {
-		filesize = fs::file_size(filepath);
-		lastwritetime = fs::last_write_time(filepath);
+	if (fs::exists(filepath)) {
+		if(fs::is_regular_file(filepath)){
+			filesize = fs::file_size(filepath);
+			lastwritetime = fs::last_write_time(filepath);
+		}
+	}else{
+		PRINTB("WARNING: Can't open DXF file '%s'! %s",
+					 rawFilename % evalctx->loc.toRelativeString(ctx->documentPath()));
+		return ValuePtr::undefined;
 	}
+
 	std::string key = STR(filename << "|" << layername << "|" << xorigin << "|" << yorigin
 												<< "|" << scale << "|" << lastwritetime
 												<< "|" << filesize);
@@ -203,7 +241,7 @@ ValuePtr builtin_dxf_cross(const Context *ctx, const EvalContext *evalctx)
 		}
 	}
 
-	PRINTB("WARNING: Can't find cross in '%s', layer '%s'!", filename % layername);
+	PRINTB("WARNING: Can't find cross in '%s', layer '%s'! %s", rawFilename % layername % evalctx->loc.toRelativeString(ctx->documentPath()));
 
 	return ValuePtr::undefined;
 }
