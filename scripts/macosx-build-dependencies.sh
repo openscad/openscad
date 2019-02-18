@@ -759,6 +759,7 @@ build_libuuid()
   fi
   tar xzf uuid-$version.tar.gz
   cd uuid-$version
+  patch -p1 < $OPENSCADDIR/patches/uuid-1.6.2.patch
   ./configure -prefix $DEPLOYDIR CFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN" --without-perl --without-php --without-pgsql
   make -j"$NUMCPU"
   make install
