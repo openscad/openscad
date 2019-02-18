@@ -32,12 +32,10 @@ Windows(TM):
 Cross-build from within linux:
 
 64-bit:
-    $ source ./scripts/setenv-mingw-xbuild.sh 64
     $ ./scripts/release-common.sh mingw64 tests
     $ # result is .zip file under ./mingw64/
 
 32-bit: 
-    $ source ./scripts/setenv-mingw-xbuild.sh 32
     $ ./scripts/release-common.sh mingw32 tests
     $ # result is .zip file under ./mingw32/
 

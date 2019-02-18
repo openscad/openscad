@@ -876,6 +876,8 @@ function(add_cmdline_test TESTCMD_BASENAME)
         set(FILENAME_OPTION -f ${FILE_BASENAME})
       endif()
 
+      # debug message
+      #message("${TEST_FULLNAME} ${CONFVAL} ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py --comparator=${COMPARATOR} -c ${IMAGE_COMPARE_EXECUTABLE} -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION} ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION} ${EXPERIMENTAL_OPTION} ${TESTCMD_ARGS}")
       add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py --comparator=${COMPARATOR} -c ${IMAGE_COMPARE_EXECUTABLE} -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION} ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION} ${EXPERIMENTAL_OPTION} ${TESTCMD_ARGS})
       set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT "${CTEST_ENVIRONMENT}")
     endif()
@@ -958,6 +960,7 @@ file(GLOB SCAD_AMF_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/amf/*.scad)
 file(GLOB SCAD_NEF3_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/nef3/*.scad)
 file(GLOB FUNCTION_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/*.scad)
 file(GLOB_RECURSE EXAMPLE_3D_FILES ${CMAKE_SOURCE_DIR}/../examples/*.scad)
+file(GLOB_RECURSE BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/*.scad)
 
 list(REMOVE_ITEM EXAMPLE_3D_FILES
                   ${CMAKE_SOURCE_DIR}/../examples/Old/example015.scad
@@ -1047,7 +1050,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/operators-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/builtins-calling-vec3vec2.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1472.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/empty-stl.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/empty-stl.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1516.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1528.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1923.scad
@@ -1074,7 +1077,6 @@ list(APPEND CGALPNGTEST_3D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/inclu
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/use-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/assert-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/let-module-tests.scad
-                           ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/transform-nan-inf-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/localfiles-test.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/localfiles_dir/localfiles-compatibility-test.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/rotate-empty-bbox.scad
@@ -1091,7 +1093,7 @@ list(APPEND CGALPNGTEST_3D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/inclu
 
 list(APPEND CGALPNGTEST_FILES ${CGALPNGTEST_2D_FILES} ${CGALPNGTEST_3D_FILES})
 list(APPEND OPENCSGTEST_FILES ${CGALPNGTEST_FILES})
-list(APPEND OPENCSGTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/intersection-prune-test.scad)
+list(APPEND OPENCSGTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/intersection-prune-test.scad)
 list(APPEND THROWNTOGETHERTEST_FILES ${OPENCSGTEST_FILES})
 
 list(APPEND CGALSTLSANITYTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/normal-nan.scad)
@@ -1118,19 +1120,17 @@ list(APPEND EXPORT3D_CGALCGAL_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1221.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/issue1225.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/preview_variable.scad
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/fn_bug.scad
                                 )
 
-# Issue #910
 set_test_config(Bugs 
-                     offcgalpngtest_polyhedron-tests
-                     offpngtest_nonmanifold-polyhedron
-                     offcgalpngtest_bad-stl-pcbvicebar
-                     offcgalpngtest_bad-stl-tardis
-                     offpngtest_bad-stl-wing
-                     offcgalpngtest_issue1105b
-                     offcgalpngtest_issue1105c
-                     offcgalpngtest_issue1215b
-                     offcgalpngtest_issue1258)
+  # Issue #910
+  offcgalpngtest_polyhedron-tests
+  offpngtest_nonmanifold-polyhedron
+  offpngtest_bad-stl-wing
+
+  cgalpngtest_escape-test.scad
+)
 
 list(APPEND EXPORT3D_CGAL_TEST_FILES 
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/polyhedron-tests.scad
@@ -1143,9 +1143,6 @@ list(APPEND EXPORT3D_CGAL_TEST_FILES
 list(APPEND EXPORT3D_TEST_FILES 
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/nonmanifold-polyhedron.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/bad-stl-wing.scad)
-
-# No issue - this was introduced when fixing #1033
-set_test_config(Bugs stlpngtest_bad-stl-wing)
 
 disable_tests(
   # These don't output anything
@@ -1169,182 +1166,110 @@ disable_tests(
   stlpngtest_logo_and_text
   offpngtest_logo_and_text
 
-  # Has floating point rounding issues
-  dumptest-examples_module_recursion
-
   # z-fighting different on different machines
   throwntogethertest_issue1803
   opencsgtest_issue1165
   opencsgtest_issue1215
   throwntogethertest_issue1089
   throwntogethertest_issue1215
+
+  # FIXME: This test illustrates a weakness in child() combined with modifiers.
+  # Reenable it when this is improved
+  opencsgtest_child-background
+
+  # These tests only makes sense in OpenCSG mode
+  cgalpngtest_child-background
+  cgalpngtest_highlight-and-background-modifier
+  cgalpngtest_highlight-modifier2
+  cgalpngtest_background-modifier2
+  cgalpngtest_testcolornames
+  csgpngtest_child-background
+  csgpngtest_highlight-and-background-modifier
+  csgpngtest_highlight-modifier2
+  csgpngtest_background-modifier2
+  csgpngtest_testcolornames
+  throwntogethertest_testcolornames
+
+  # This test won't render anything meaningful in throwntogether mode
+  throwntogethertest_minkowski3-erosion
+
+  # The inf/nan tests fail when exporting CSG and rendering that output again
+  # as currently inf/nan is written directly to the CSG file (e.g. r = inf)
+  # which is not valid or even misleading in case a variable inf exists.
+  # FIXME: define export behavior for inf/nan when exporting CSG files
+  # These tests return error code 1.
+  # FIXME: We should have a way of running these and verify the return code
+  csgpngtest_primitive-inf-tests
+  csgpngtest_transform-nan-inf-tests
+  csgpngtest_primitive-inf-tests
+  csgpngtest_transform-nan-inf-tests
+  # Triggers a floating point accuracy issue causing loaded .csg to
+  # render slightly differently
+  cgalpngtest_nothing-decimal-comma-separated
+  cgalpngtest_import-empty-tests
+  cgalpngtest_empty-shape-tests
+  csgpngtest_issue1258
+
 )
 
 # 2D tests
 list(APPEND FILES_2D ${FEATURES_2D_FILES} ${ISSUES_2D_FILES} ${EXAMPLE_2D_FILES})
 list(APPEND ALL_2D_FILES ${FILES_2D} ${SCAD_DXF_FILES} ${SCAD_SVG_FILES})
 
-# FIXME: This test illustrates a weakness in child() combined with modifiers.
-# Reenable it when this is improved
-disable_tests(opencsgtest_child-background)
 
-# These tests only makes sense in OpenCSG mode
-disable_tests(cgalpngtest_child-background
-              cgalpngtest_highlight-and-background-modifier
-              cgalpngtest_highlight-modifier2
-              cgalpngtest_background-modifier2
-              cgalpngtest_testcolornames
-              csgpngtest_child-background
-              csgpngtest_highlight-and-background-modifier
-              csgpngtest_highlight-modifier2
-              csgpngtest_background-modifier2
-              csgpngtest_testcolornames
-              throwntogethertest_testcolornames)
-
-# This test won't render anything meaningful in throwntogether mode
-disable_tests(throwntogethertest_minkowski3-erosion)
-
-# The inf/nan tests fail when exporting CSG and rendering that output again
-# as currently inf/nan is written directly to the CSG file (e.g. r = inf)
-# which is not valid or even misleading in case a variable inf exists.
-# FIXME: define export behavior for inf/nan when exporting CSG files
-# These tests return error code 1.
-# FIXME: We should have a way of running these and verify the return code
-disable_tests(csgpngtest_primitive-inf-tests
-              csgpngtest_transform-nan-inf-tests
-              csgpngtest_primitive-inf-tests
-              csgpngtest_transform-nan-inf-tests
-              # Triggers a floating point accuracy issue causing loaded .csg to
-              # render slightly differently
-              cgalpngtest_nothing-decimal-comma-separated
-              cgalpngtest_import-empty-tests
-              cgalpngtest_empty-shape-tests
-              csgpngtest_issue1258)
-
-experimental_tests(cgalpngtest_cube-with-hole
-                   cgalpngtest_multi-volume-binary
-                   cgalpngtest_sphere20face
-                   cgalpngtest_split_pyramid
-                   cgalpngtest_tetra_multicolor
-                   opencsgtest_cube-with-hole
-                   opencsgtest_multi-volume-binary
-                   opencsgtest_sphere20face
-                   opencsgtest_split_pyramid
-                   opencsgtest_tetra_multicolor
-                   csgpngtest_cube-with-hole
-                   csgpngtest_multi-volume-binary
-                   csgpngtest_sphere20face
-                   csgpngtest_split_pyramid
-                   csgpngtest_tetra_multicolor
-                   throwntogethertest_cube-with-hole
-                   throwntogethertest_multi-volume-binary
-                   throwntogethertest_sphere20face
-                   throwntogethertest_split_pyramid
-                   throwntogethertest_tetra_multicolor
-                   dumptest_assert-tests
-                   astdumptest_assert-tests
-                   echotest_assert-tests
-                   cgalpngtest_assert-tests
-                   opencsgtest_assert-tests
-                   csgpngtest_assert-tests
-                   throwntogethertest_assert-tests
-                   echotest_assert-fail1-test
-                   echotest_assert-fail2-test
-                   echotest_assert-fail3-test
-                   echotest_echo-expression-tests
-                   echotest_assert-expression-tests
-                   echotest_assert-expression-fail1-test
-                   echotest_assert-expression-fail2-test
-                   echotest_assert-expression-fail3-test
-                   astdumptest_echo-expression-tests
-                   astdumptest_assert-expression-tests
-                   astdumptest_assert-expression-fail1-test
-                   astdumptest_assert-expression-fail2-test
-                   astdumptest_assert-expression-fail3-test
-		   cgalpngtest_import_3mf-tests
-		   opencsgtest_import_3mf-tests
-		   csgpngtest_import_3mf-tests
-		   throwntogethertest_import_3mf-tests
-		   3mfexport_3mf-export)
+# No tests related to experimental features currently
+#experimental_tests()
 
 # Test config handling
 
 # Heavy tests are tests taking more than 10 seconds on a development computer
-set_test_config(Heavy cgalpngtest_rotate_extrude-tests
-                      csgpngtest_rotate_extrude-tests
-                      cgalpngtest_for-nested-tests
-                      csgpngtest_for-nested-tests
-                      cgalpngtest_resize-tests
-                      cgalpngtest_fractal
-                      csgpngtest_fractal
-                      cgalpngtest_iteration
-                      csgpngtest_iteration
-                      cgalpngtest_linear_extrude-scale-zero-tests
-                      csgpngtest_linear_extrude-scale-zero-tests
-                      cgalpngtest_sphere-tests
-                      csgpngtest_sphere-tests
-                      csgpngtest_resize-tests
-                      csgpngtest_resize-tests
-                      csgpngtest_minkowski3-erosion
-                      cgalpngtest_minkowski3-erosion
-                      opencsgtest_minkowski3-erosion
-                      cgalpngtest_camera-tests
-                      csgpngtest_camera-tests
-                      cgalpngtest_surface-tests
-                      csgpngtest_surface-tests
-                      csgpngtest_linear_extrude-parameter-tests
-                      cgalpngtest_linear_extrude-parameter-tests
-                      csgpngtest_rotate_extrude-angle
-                      cgalpngtest_rotate_extrude-angle
-                      cgalpngtest_projection-extrude-tests
-                      cgalpngtest_for-tests
-                      csgpngtest_for-tests
-                      stlpngtest_fence
-                      stlpngtest_surface
-                      stlpngtest_demo_cut
-                      stlpngtest_search
-                      stlpngtest_rounded_box
-                      stlpngtest_difference
-                      stlpngtest_translation
-                      offpngtest_fence
-                      offpngtest_surface
-                      offpngtest_demo_cut
-                      offpngtest_search
-                      offpngtest_rounded_box
-                      offpngtest_difference
-                      offpngtest_translation
-                      cgalstlcgalpngtest_rotate_extrude-tests
-                      monotonepngtest_rotate_extrude-tests
-                      echotest_tail-recursion-tests
-                      cgalstlcgalpngtest_rotate_extrude-tests
-                      openscad-colorscheme-metallic-render_CSG
-                      )
-
-# Bugs
-
-list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue13.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue13b.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue13c.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue584.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue591.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue666.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue791.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue802.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue945.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue945b.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue945c.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue945d.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue945e.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue945f.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1455.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1529.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1580-back-to-back.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1580-import-back-to-back.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1580-back-to-back2.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1580-import-back-to-back2.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1580-zero-area-triangle.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1580-import-zero-area-triangle.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1876.scad
+set_test_config(Heavy 
+  cgalpngtest_rotate_extrude-tests
+  csgpngtest_rotate_extrude-tests
+  cgalpngtest_for-nested-tests
+  csgpngtest_for-nested-tests
+  cgalpngtest_resize-tests
+  cgalpngtest_fractal
+  csgpngtest_fractal
+  cgalpngtest_iteration
+  csgpngtest_iteration
+  cgalpngtest_linear_extrude-scale-zero-tests
+  csgpngtest_linear_extrude-scale-zero-tests
+  cgalpngtest_sphere-tests
+  csgpngtest_sphere-tests
+  csgpngtest_resize-tests
+  csgpngtest_resize-tests
+  csgpngtest_minkowski3-erosion
+  cgalpngtest_minkowski3-erosion
+  opencsgtest_minkowski3-erosion
+  cgalpngtest_camera-tests
+  csgpngtest_camera-tests
+  cgalpngtest_surface-tests
+  csgpngtest_surface-tests
+  csgpngtest_rotate_extrude-angle
+  cgalpngtest_rotate_extrude-angle
+  cgalpngtest_projection-extrude-tests
+  stlpngtest_fence
+  stlpngtest_surface
+  stlpngtest_demo_cut
+  stlpngtest_search
+  stlpngtest_rounded_box
+  stlpngtest_difference
+  stlpngtest_translation
+  offpngtest_fence
+  offpngtest_surface
+  offpngtest_demo_cut
+  offpngtest_search
+  offpngtest_rounded_box
+  offpngtest_difference
+  offpngtest_translation
+  cgalstlcgalpngtest_rotate_extrude-tests
+  monotonepngtest_rotate_extrude-tests
+  cgalstlcgalpngtest_rotate_extrude-tests
+  openscad-colorscheme-metallic-render_CSG
+  cgalpngtest_issue267-normalization-crash
+  csgpngtest_issue267-normalization-crash
+  opencsgtest_issue267-normalization-crash
 )
 
 # We know that we cannot import weakly manifold files into CGAL, so to make tests easier
@@ -1357,12 +1282,6 @@ list(APPEND EXPORT3D_CGALCGAL_TEST_FILES ${BUGS_FILES})
 #)
 #list(APPEND EXPORT3D_CGAL_TEST_FILES
 #)
-
-# 2D files
-list(REMOVE_ITEM EXPORT3D_CGALCGAL_TEST_FILES
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue899.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1089.scad)
-list(APPEND ALL_2D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue899.scad)
 
 list(APPEND OPENCSGTEST_FILES ${BUGS_FILES})
 list(APPEND CGALPNGTEST_FILES ${BUGS_FILES})
@@ -1542,14 +1461,10 @@ add_failing_test(hardwarnings EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR
 # Commented out because the master branch isn't capable of making the expected image yet. Also TEST_GENERATE=1 makes an expected image that makes the test fail.
 #set_property(TEST openscad-colorscheme-cornfield-alphafail_logo PROPERTY WILL_FAIL TRUE)
 
-#
-# Add experimental tests
-#
 
 #
 # Customizer tests
 #
-
 add_cmdline_test(customizertest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX ast FILES
                  ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/description.scad
                  ${CMAKE_SOURCE_DIR}/../testdata/scad/customizer/parameter.scad
