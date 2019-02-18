@@ -59,7 +59,7 @@ void FileModule::registerUse(const std::string path)
 	auto ext = fs::path(path).extension().generic_string();
 	
 	if (boost::iequals(ext, ".otf") || boost::iequals(ext, ".ttf")) {
-		if (fs::is_regular(path)) {
+		if (fs::is_regular_file(path)) {
 			FontCache::instance()->register_font_file(path);
 		} else {
 			PRINTB("ERROR: Can't read font with path '%s'", path);
