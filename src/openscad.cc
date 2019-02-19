@@ -351,14 +351,12 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 		return 1;
 	}
 
-	if (Feature::ExperimentalCustomizer.is_enabled()) {
-		// add parameter to AST
-		CommentParser::collectParameters(text.c_str(), root_module);
-		if (!parameterFile.empty() && !setName.empty()) {
-			ParameterSet param;
-			param.readParameterSet(parameterFile);
-			param.applyParameterSet(root_module, setName);
-		}
+	// add parameter to AST
+	CommentParser::collectParameters(text.c_str(), root_module);
+	if (!parameterFile.empty() && !setName.empty()) {
+		ParameterSet param;
+		param.readParameterSet(parameterFile);
+		param.applyParameterSet(root_module, setName);
 	}
     
 	root_module->handleDependencies();
@@ -1023,27 +1021,19 @@ int main(int argc, char **argv)
 #endif
 
 	string parameterFile;
-	string parameterSet;
-	
-	if (Feature::ExperimentalCustomizer.is_enabled()) {
-		if (vm.count("p")) {
-			if (!parameterFile.empty()) help(argv[0], desc, true);
-			
-			parameterFile = vm["p"].as<string>().c_str();
-		}
-		
-		if (vm.count("P")) {
-			if (!parameterSet.empty()) help(argv[0], desc, true);
-			
-			parameterSet = vm["P"].as<string>().c_str();
-		}
-	}
-	else {
-		if (vm.count("p") || vm.count("P")) {
-			if (!parameterSet.empty()) help(argv[0], desc, true);
-			PRINT("Customizer feature not activated\n");
+	if (vm.count("p")) {
+		if (!parameterFile.empty()) {
 			help(argv[0], desc, true);
 		}
+		parameterFile = vm["p"].as<string>().c_str();
+	}
+
+	string parameterSet;
+	if (vm.count("P")) {
+		if (!parameterSet.empty()) {
+			help(argv[0], desc, true);
+		}
+		parameterSet = vm["P"].as<string>().c_str();
 	}
 	
 	vector<string> inputFiles;

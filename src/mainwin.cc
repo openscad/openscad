@@ -671,15 +671,8 @@ void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer
 	hideEditor();
 	viewActionHideToolBars->setChecked(toolbar);
 	hideToolbars();
-
-	if (Feature::ExperimentalCustomizer.is_enabled()) {
-		viewActionHideParameters->setChecked(customizer);
-		hideParameters();
-	} else {
-		viewActionHideParameters->setChecked(true);
-		hideParameters();
-		viewActionHideParameters->setVisible(false);
-	}
+	viewActionHideParameters->setChecked(customizer);
+	hideParameters();
 }
 
 void MainWindow::onAxisChanged(InputEventAxisChanged *)
@@ -899,12 +892,10 @@ void MainWindow::openFile(const QString &new_filename)
 	clearCurrentOutput();
 	clearExportPaths();
 
-	if (Feature::ExperimentalCustomizer.is_enabled()) {
-		try{
-			compileTopLevelDocument(true);
-		}catch(const HardWarningException&){
-			exceptionCleanup();
-		}
+	try {
+		compileTopLevelDocument(true);
+	} catch (const HardWarningException&) {
+		exceptionCleanup();
 	}
 }
 
@@ -919,9 +910,7 @@ void MainWindow::setFileName(const QString &filename)
 		QFileInfo fileinfo(filename);
 		this->fileName = fileinfo.absoluteFilePath();
 		setWindowFilePath(this->fileName);
-		if (Feature::ExperimentalCustomizer.is_enabled()) {
-			this->parameterWidget->readFile(this->fileName);
-		}
+		this->parameterWidget->readFile(this->fileName);
 		QDir::setCurrent(fileinfo.dir().absolutePath());
 		this->top_ctx.setDocumentPath(fileinfo.dir().absolutePath().toLocal8Bit().constData());
 	}
@@ -1002,7 +991,7 @@ void MainWindow::updateTVal()
 {
 	if (this->anim_numsteps == 0) return;
 
-	if (Feature::ExperimentalCustomizer.is_enabled() && viewActionHideParameters->isVisible()) {
+	if (viewActionHideParameters->isVisible()) {
 		if (this->parameterWidget->childHasFocus()) return;
 	}
 	
@@ -1507,10 +1496,7 @@ void MainWindow::writeBackup(QFile *file)
 	QTextStream writer(file);
 	writer.setCodec("UTF-8");
 	writer << this->editor->toPlainText();
-
-	if (Feature::ExperimentalCustomizer.is_enabled()) {
-		this->parameterWidget->writeBackupFile(file->fileName());
-	}
+	this->parameterWidget->writeBackupFile(file->fileName());
 	
 	PRINTB("Saved backup file: %s", file->fileName().toUtf8().constData());
 }
@@ -1615,9 +1601,7 @@ void MainWindow::actionSaveAs()
 				}
 			}
 		}
-		if (Feature::ExperimentalCustomizer.is_enabled()) {
-			this->parameterWidget->writeFileIfNotEmpty(new_filename);
-		}
+		this->parameterWidget->writeFileIfNotEmpty(new_filename);
 		setFileName(new_filename);
 		clearExportPaths();
 		actionSave();
@@ -1912,10 +1896,7 @@ bool MainWindow::fileChangedOnDisk()
 */
 void MainWindow::compileTopLevelDocument(bool rebuildParameterWidget)
 {
-	if (Feature::ExperimentalCustomizer.is_enabled()) {
-		this->parameterWidget->setEnabled(false);
-	}
-
+	this->parameterWidget->setEnabled(false);
 	resetSuppressedMessages();
 
 	this->last_compiled_doc = editor->toPlainText();
@@ -1929,27 +1910,18 @@ void MainWindow::compileTopLevelDocument(bool rebuildParameterWidget)
 	delete this->parsed_module;
 	this->root_module = parse(this->parsed_module, fulltext, fname, fname, false) ? this->parsed_module : nullptr;
 
-	if (Feature::ExperimentalCustomizer.is_enabled()) {
-		if (this->root_module!=nullptr) {
-			//add parameters as annotation in AST
-			CommentParser::collectParameters(fulltext,this->root_module);
-			this->parameterWidget->setParameters(this->root_module,rebuildParameterWidget);
-			this->parameterWidget->applyParameters(this->root_module);
-			this->parameterWidget->setEnabled(true);
-		}
+	if (this->root_module!=nullptr) {
+		//add parameters as annotation in AST
+		CommentParser::collectParameters(fulltext,this->root_module);
+		this->parameterWidget->setParameters(this->root_module,rebuildParameterWidget);
+		this->parameterWidget->applyParameters(this->root_module);
+		this->parameterWidget->setEnabled(true);
 	}
 }
 
 void MainWindow::changeParameterWidget()
 {
-	if (Feature::ExperimentalCustomizer.is_enabled()) {
-		viewActionHideParameters->setVisible(true);
-	}
-	else {
-		viewActionHideParameters->setChecked(true);
-		hideParameters();
-		viewActionHideParameters->setVisible(false);
-	}
+	viewActionHideParameters->setVisible(true);
 }
 
 void MainWindow::checkAutoReload()

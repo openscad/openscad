@@ -1,5 +1,7 @@
 function f() = [for(a = [0 : 4]) (pow(2, a))];
+//Parameter("")
 y = 0;
+//Parameter("")
 z = 1;
 a = [for(x = [0 : 3]) ([for(y = [10 : 13]) ([x, y])])];
 echo([]);
