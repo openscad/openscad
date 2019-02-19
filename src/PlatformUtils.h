@@ -11,6 +11,11 @@ namespace fs=boost::filesystem;
 namespace PlatformUtils {
         extern const char *OPENSCAD_FOLDER_NAME;
 
+        /*
+        * Do whatever platform specific initialization is needed at the beginning of the program
+        */
+       void initPlatform();
+
 	void registerApplicationPath(const std::string &applicationpath);
 	std::string applicationPath();
 
@@ -105,11 +110,6 @@ namespace PlatformUtils {
 	 */
 	std::string pathSeparatorChar();
 	
-	/* Provide stdout/stderr if not available.
-	 * Currently limited to MS Windows GUI application console only.
-	 */
-	void ensureStdIO(void);
-        
         /**
          * Convert the number of bytes to a human readable string with
          * a given number of digits.

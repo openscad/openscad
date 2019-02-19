@@ -92,7 +92,7 @@ void ParameterWidget::resetParameter()
 
 	defaultParameter();
 	if(comboBoxPreset->currentIndex() != 0){ //0 is "design default values"
-		const std::string v = comboBoxPreset->itemData(currPreset).toString().toUtf8().constData();
+		const std::string v = comboBoxPreset->itemData(currPreset).toString().toStdString();
 		applyParameterSet(v);
 	}
 	emit previewRequested();
@@ -252,7 +252,7 @@ void ParameterWidget::onSetChanged(int idx)
 	defaultParameter();
 	if(idx!=0){ //0 is "design default values"
 		//apply the change
-		const std::string v = comboBoxPreset->itemData(idx).toString().toUtf8().constData();
+		const std::string v = comboBoxPreset->itemData(idx).toString().toStdString();
 		applyParameterSet(v);
 	}
 	emit previewRequested(false);

@@ -15,8 +15,73 @@
 #define __IPreviewHandlerVisuals_INTERFACE_DEFINED__
 #define __IVisualProperties_INTERFACE_DEFINED__
 #include <shlobj.h>
-
+#include <codecvt>
+#include <locale>
+#include <io.h>
+#include <stdio.h>
+#include <fstream>
+#include <nowide/iostream.hpp>
 #include "version.h"
+
+
+
+// attach to parent console if standard IO handles not available
+// It may be good idea to redirect the output to file(s) here in some future.
+void ensureStdIO(void)
+{
+	// Preserve existing handles whenever available.
+	// HANDLE hRead = (HANDLE)_get_osfhandle(_fileno(stdin));
+	HANDLE hWrite = (HANDLE)_get_osfhandle(_fileno(stdout));
+	HANDLE hError = (HANDLE)_get_osfhandle(_fileno(stderr));
+
+	if (/* INVALID_HANDLE_VALUE != hRead && */ INVALID_HANDLE_VALUE != hWrite && INVALID_HANDLE_VALUE != hError)
+		return;
+
+	// I see nothing to do about error(s) here.
+	if (!AttachConsole(ATTACH_PARENT_PROCESS)) return;
+
+	// Let CRT machinery performs proper setup.
+	// if (INVALID_HANDLE_VALUE == hRead) (void)_wfreopen(L"CONIN$",  L"rt", stdin);
+	if (INVALID_HANDLE_VALUE == hWrite) (void)_wfreopen(L"CONOUT$",  L"wt", stdout);
+	if (INVALID_HANDLE_VALUE == hError) (void)_wfreopen(L"CONOUT$",  L"wt", stderr);
+
+	std::ios_base::sync_with_stdio();
+}
+// set the Windows console code page
+// and restore it to previous value upon exit
+void setCP(bool exit_flag=false) {
+	static unsigned int icp = 0;
+	static unsigned int ocp = 0;
+	if (exit_flag && icp && ocp) {
+		SetConsoleCP(icp);
+		SetConsoleOutputCP(ocp);
+	} else {
+		icp = GetConsoleCP();
+		ocp = GetConsoleOutputCP();
+		SetConsoleCP(CP_UTF8);
+		SetConsoleOutputCP(CP_UTF8);
+	}
+}
+
+void atexit_handler() {
+	setCP(true);
+}
+
+void PlatformUtils::initPlatform() {
+	ensureStdIO();
+	setCP();
+	// return console code page to normal upon program exit
+	const int reg_fail = std::atexit(atexit_handler);
+	if (reg_fail) {
+		nowide::cerr << "atexit registration failed!" << std::endl;
+		exit(1);
+	}
+
+	// make sure boost treats std::string and char* as UTF-8, so it properly 
+	// encodes it to utf16 wchar_t for windows file operations
+	std::locale tmp = std::locale(std::locale(),new std::codecvt_utf8_utf16<wchar_t>());
+	boost::filesystem::path::imbue(tmp);
+}
 
 std::string PlatformUtils::pathSeparatorChar()
 {
@@ -189,29 +254,3 @@ const std::string PlatformUtils::sysinfo(bool extended)
 	return result;
 }
 
-#include <io.h>
-#include <stdio.h>
-#include <fstream>
-
-// attach to parent console if standard IO handles not available
-// It may be good idea to redirect the output to file(s) here in some future.
-void PlatformUtils::ensureStdIO(void)
-{
-	// Preserve existing handles whenever available.
-	// HANDLE hRead = (HANDLE)_get_osfhandle(_fileno(stdin));
-	HANDLE hWrite = (HANDLE)_get_osfhandle(_fileno(stdout));
-	HANDLE hError = (HANDLE)_get_osfhandle(_fileno(stderr));
-
-	if (/* INVALID_HANDLE_VALUE != hRead && */ INVALID_HANDLE_VALUE != hWrite && INVALID_HANDLE_VALUE != hError)
-		return;
-
-	// I see nothing to do about error(s) here.
-	if (!AttachConsole(ATTACH_PARENT_PROCESS)) return;
-
-	// Let CRT machinery performs proper setup.
-	// if (INVALID_HANDLE_VALUE == hRead) (void)_wfreopen(L"CONIN$",  L"rt", stdin);
-	if (INVALID_HANDLE_VALUE == hWrite) (void)_wfreopen(L"CONOUT$",  L"wt", stdout);
-	if (INVALID_HANDLE_VALUE == hError) (void)_wfreopen(L"CONOUT$",  L"wt", stderr);
-
-	std::ios_base::sync_with_stdio();
-}

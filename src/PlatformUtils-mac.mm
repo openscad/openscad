@@ -7,6 +7,11 @@
 
 #include "version.h"
 
+void PlatformUtils::initPlatform() {
+    bool isGuiLaunched = getenv("GUI_LAUNCHED") != nullptr;
+    if (isGuiLaunched) set_output_handler(CocoaUtils::nslog, nullptr);
+}
+
 std::string PlatformUtils::pathSeparatorChar()
 {
 	return ":";
@@ -97,6 +102,3 @@ const std::string PlatformUtils::sysinfo(bool extended)
 
   return result;
 }
-
-void PlatformUtils::ensureStdIO(void) {}
-

@@ -18,6 +18,8 @@ namespace fs=boost::filesystem;
 
 static std::mutex user_agent_mutex;
 
+void PlatformUtils::initPlatform() {}
+
 static std::string readText(const std::string &path)
 {
     std::ifstream s{path.c_str()};
@@ -272,5 +274,3 @@ const std::string PlatformUtils::sysinfo(bool extended)
 
 	return result;
 }
-
-void PlatformUtils::ensureStdIO(void) {}

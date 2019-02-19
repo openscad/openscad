@@ -1496,7 +1496,7 @@ void MainWindow::writeBackup(QFile *file)
 	writer << this->editor->toPlainText();
 	this->parameterWidget->writeBackupFile(file->fileName());
 
-	PRINTB("Saved backup file: %s", file->fileName().toUtf8().constData());
+	PRINTB("Saved backup file: %s", file->fileName().toStdString());
 }
 
 void MainWindow::saveBackup()
@@ -1899,7 +1899,7 @@ void MainWindow::compileTopLevelDocument(bool rebuildParameterWidget)
 	this->last_compiled_doc = editor->toPlainText();
 
 	auto fulltext =
-		std::string(this->last_compiled_doc.toUtf8().constData()) +
+		this->last_compiled_doc.toStdString() +
 		"\n\x03\n" + commandline_commands;
 	
 	auto fnameba = this->fileName.toStdString();
@@ -2432,7 +2432,7 @@ void MainWindow::actionCheckValidity()
 		N.reset(CGALUtils::createNefPolyhedronFromGeometry(*ps));
 	}
 	if (N || (N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(this->root_geom))) {
-            valid = N->p3 ? N->p3->is_valid() : false;
+		valid = N->p3 ? N->p3->is_valid() : false;
 	}
 	PRINTB("   Valid:      %6s", (valid ? "yes" : "no"));
 	clearCurrentOutput();

@@ -842,12 +842,7 @@ int main(int argc, char **argv)
 	PlatformUtils::registerApplicationPath(fs::absolute(boost::filesystem::path(argv[0]).parent_path()).generic_string());
 #endif
 	
-#ifdef Q_OS_MAC
-	bool isGuiLaunched = getenv("GUI_LAUNCHED") != nullptr;
-	if (isGuiLaunched) set_output_handler(CocoaUtils::nslog, nullptr);
-#else
-	PlatformUtils::ensureStdIO();
-#endif
+	PlatformUtils::initPlatform();
 
 #ifdef ENABLE_CGAL
 	// Causes CGAL errors to abort directly instead of throwing exceptions
