@@ -86,9 +86,11 @@ class GroupNode : public AbstractNode
 {
 public:
 	VISITABLE();
-	GroupNode(const class ModuleInstantiation *mi) : AbstractNode(mi) { }
+	GroupNode(const class ModuleInstantiation *mi) : AbstractNode(mi), impliedUnion(true) { }
 	~GroupNode() { }
 	std::string name() const override;
+	// To maintain back-compat, GroupNode might perform an implied UNION of its children.
+	bool impliedUnion;
 };
 
 /*!

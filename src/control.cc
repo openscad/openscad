@@ -99,7 +99,16 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
                         });
                 }
 		else if (it_values->type() != Value::ValueType::UNDEFINED) {
-			c.set_variable(it_name, it_values);
+			// special case: if user appends "union=false" then pass all child nodes
+			// of for() loop to the parent node as if they were declared there.
+			GroupNode *gr;
+			if (Feature::ExperimentalExtrude.is_enabled()
+				&& it_name == "union" && it_values->type() == Value::ValueType::BOOL
+				&& (gr = dynamic_cast<GroupNode*>(&node))
+			)
+				gr->impliedUnion = it_values->toBool();
+			else
+				c.set_variable(it_name, it_values);
 			for_eval(node, inst, l+1, &c, evalctx);
 		}
 	} else if (l > 0) {
