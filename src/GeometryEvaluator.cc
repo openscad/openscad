@@ -8,6 +8,7 @@
 #include "state.h"
 #include "offsetnode.h"
 #include "transformnode.h"
+#include "extrudenode.h"
 #include "linearextrudenode.h"
 #include "rotateextrudenode.h"
 #include "csgnode.h"
@@ -598,17 +599,22 @@ Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 						if (res.isConst()) newpoly.reset(new Polygon2d(*polygons));
 						else newpoly = dynamic_pointer_cast<Polygon2d>(res.ptr());
 						
-						Transform2d mat2;
-						mat2.matrix() << 
-							node.matrix(0,0), node.matrix(0,1), node.matrix(0,3),
-							node.matrix(1,0), node.matrix(1,1), node.matrix(1,3),
-							node.matrix(3,0), node.matrix(3,1), node.matrix(3,3);
-						newpoly->transform(mat2);
-						// A 2D transformation may flip the winding order of a polygon.
-						// If that happens with a sanitized polygon, we need to reverse
-						// the winding order for it to be correct.
-						if (newpoly->isSanitized() && mat2.matrix().determinant() <= 0) {
-							geom.reset(ClipperUtils::sanitize(*newpoly));
+						geom = newpoly;
+						if (Feature::ExperimentalExtrude.is_enabled())
+							newpoly->transform3d(node.matrix);
+						else {
+							Transform2d mat2;
+							mat2.matrix() <<
+							   node.matrix(0,0), node.matrix(0,1), node.matrix(0,3),
+							   node.matrix(1,0), node.matrix(1,1), node.matrix(1,3),
+							   node.matrix(3,0), node.matrix(3,1), node.matrix(3,3);
+							newpoly->transform(mat2);
+							// A 2D transformation may flip the winding order of a polygon.
+							// If that happens with a sanitized polygon, we need to reverse
+							// the winding order for it to be correct.
+							if (newpoly->isSanitized() && mat2.matrix().determinant() <= 0) {
+							   geom.reset(ClipperUtils::sanitize(*newpoly));
+							}
 						}
 					}
 					else if (geom->getDimension() == 3) {
@@ -639,6 +645,146 @@ Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 			geom = smartCacheGet(node, state.preferNef());
 		}
 		addToParent(state, node, geom);
+		node.progress_report();
+	}
+	return Response::ContinueTraversal;
+}
+
+// Check whether every vertex of every polygon lies on the positive side of the plane given by AX+BY+CZ+D=0
+bool polygons_are_positive_side_of_plane(const PolySet *polys, Vector3d abc, double d) {
+	for (const auto &p : polys->polygons)
+		for (const auto &v : p)
+			if (abc.dot(v) + d <= 0)
+				return false;
+	return true;
+}
+
+/*!
+	input: List of 2D objects arranged in 3D, each with identical outline count and vertex count
+	output: 3D PolySet
+ */
+shared_ptr<const Geometry> extrudePolygonSequence(const ExtrudeNode &node, const std::vector<const class Polygon2d *> &slices, const std::string &loc)
+{
+	size_t i, p, v;
+	// Verify there is something to work with
+	if (slices.size() < 2) {
+		PRINTB("ERROR: %s requires at least two slices, %s", node.name() % loc);
+		return nullptr;
+	}
+	
+	// Verify that every slice has the same number of contours with the same number of vetices
+	auto slice0 = slices[0];
+	for (auto slice : slices) {
+		bool match = slice->outlines().size() == slice0->outlines().size();
+		for (p = 0; match && p < slice->outlines().size(); p++)
+			match = slice->outlines()[p].vertices.size() == slice0->outlines()[p].vertices.size();
+		if (!match) {
+			PRINTB("ERROR: Each extrusion slice must have exactly the same number of polygons of the same vertex count, %s", loc);
+			return nullptr;
+		}
+	}
+
+	// Start extruding slices.  Come back to "end caps" at the end.
+	PolySet tmp0(3), tmp1(3), tmp2(3), *result = new PolySet(3, unknown);
+	result->setConvexity(node.convexity);
+	// Unroll first iteration so we have a "prev" to work with, and so we can use it again at the end
+	for (const auto &outline : slice0->untransformedOutlines()) {
+		tmp0.append_poly();
+		for (const auto &vtx : outline.vertices)
+			tmp0.append_vertex(vtx[0], vtx[1], 0);
+	}
+	tmp0.transform(slice0->getTransform3d());
+	
+	PolySet *cur = &tmp1, *prev = &tmp0;
+	for (i = 1; i < slices.size(); i++, prev = cur, cur = (cur == &tmp1? &tmp2 : &tmp1)) {
+		const Transform3d &cur_mat = slices[i]->getTransform3d();
+		const Transform3d &prev_mat = slices[i-1]->getTransform3d();
+		// Build new polygon set in 3D from 2D outlines.  This is just temporary data and
+		// doesn't get added to the solid.
+		cur->polygons.clear();
+		for (const auto &outline : slices[i]->untransformedOutlines()) {
+			cur->append_poly();
+			for (const auto &vtx : outline.vertices)
+				cur->append_vertex(vtx[0], vtx[1], 0);
+		}
+		cur->transform(cur_mat);
+		
+		// If final slice looks mostly identical to first slice, then connect it to the first slice
+		if (i == slices.size()-1) {
+			const double CLOSE_ENOUGH = 0.00000000000000001;
+			bool closed_loop = true;
+			for (p = 0; closed_loop && p < cur->polygons.size(); p++) {
+				for (v = 0; closed_loop && v < cur->polygons[p].size(); v++) {
+					closed_loop = fabs(tmp0.polygons[p][v][0] - cur->polygons[p][v][0]) < CLOSE_ENOUGH
+					           && fabs(tmp0.polygons[p][v][1] - cur->polygons[p][v][1]) < CLOSE_ENOUGH
+					           && fabs(tmp0.polygons[p][v][2] - cur->polygons[p][v][2]) < CLOSE_ENOUGH;
+				}
+			}
+			if (closed_loop) // use exact original coordinates
+				cur = &tmp0;
+			else { // else need to append end-cap polygons
+				// Always progress in +Z direction, so start needs reversed, and end does not.
+				PolySet *start = slice0->tessellate(true);
+				for(auto &p : start->polygons) std::reverse(p.begin(), p.end());
+				result->append(*start);
+				delete start;
+
+				PolySet *end = slices[i]->tessellate(true);
+				result->append(*end);
+				delete end;
+			}
+		}
+		
+		// Prepare plane equations to further sanity check the 3D transform that was done
+		Vector3d cur_origin(cur_mat * Vector3d(0,0,0));
+		Vector3d cur_abc(cur_mat * Vector3d(0,0,-1) - cur_origin);
+		double cur_d = - (cur_abc.dot(cur_origin));
+		Vector3d prev_origin(prev_mat * Vector3d(0,0,0));
+		Vector3d prev_abc(prev_mat * Vector3d(0,0,1) - prev_origin);
+		double prev_d = - (prev_abc.dot(prev_origin));
+		// Every vertex of cur should fall on the positive side of the previous slice's plane
+		if (!polygons_are_positive_side_of_plane(cur, prev_abc, prev_d)
+			|| !polygons_are_positive_side_of_plane(prev, cur_abc, cur_d)
+		) {
+			PRINTB("ERROR: Each extrusion_shape slice must fall completely in the positive-Z space"
+				" of the previous slice (collision at slice %d), %s", i % loc);
+			delete result;
+			return nullptr;
+		}
+		
+		// It would take a lot more effort to really make sure the user gave sensible
+		// translations... whatever, just hope for the best.
+
+		// For each pair of adjacent vertices on each of the current and previous
+		// polygons, build a quad between them using two triangles.
+		for (p = 0; p < cur->polygons.size(); p++) {
+			for (size_t v0 = cur->polygons[p].size()-1, v1 = 0; v1 < cur->polygons[p].size(); v0 = v1, ++v1) {
+				result->append_poly();
+				result->append_vertex(cur->polygons[p][v0]);
+				result->append_vertex(prev->polygons[p][v0]);
+				result->append_vertex(prev->polygons[p][v1]);
+				result->append_poly();
+				result->append_vertex(prev->polygons[p][v1]);
+				result->append_vertex(cur->polygons[p][v1]);
+				result->append_vertex(cur->polygons[p][v0]);
+			}
+		}
+	}
+	return shared_ptr<const Geometry>(result);
+}
+
+/*!
+	input: List of 2D objects arranged in 3D, each with identical outline count and vertex count
+	output: 3D PolySet
+ */
+Response GeometryEvaluator::visit(State &state, const ExtrudeNode &node)
+{
+	if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;
+	if (state.isPostfix()) {
+		std::string loc = node.modinst->location().toRelativeString(this->tree.getDocumentPath());
+		shared_ptr<const Geometry> geom = isSmartCached(node)? smartCacheGet(node, false)
+			: extrudePolygonSequence(node, collectChildren2D(node), loc);
+		if (geom) addToParent(state, node, geom);
 		node.progress_report();
 	}
 	return Response::ContinueTraversal;
