@@ -6,6 +6,7 @@
 #include <boost/format.hpp>
 
 #include <libintl.h>
+#undef snprintf
 #include <locale.h>
 inline char * _( const char * msgid ) { return gettext( msgid ); }
 inline const char * _( const char * msgid, const char *msgctxt) {

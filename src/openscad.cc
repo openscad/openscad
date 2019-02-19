@@ -876,10 +876,11 @@ int main(int argc, char **argv)
 		("p,p", po::value<string>(), "customizer parameter file")
 		("P,P", po::value<string>(), "customizer parameter set")
 		("enable", po::value<vector<string>>(), ("enable experimental features: " +
-																						 join(boost::make_iterator_range(Feature::begin(), Feature::end()), " | ", [](const Feature *feature) {
-																								 return feature->get_name();
-																							 }) +
-																						 "\n").c_str())
+		                                          join(boost::make_iterator_range(Feature::begin(), Feature::end()), " | ",
+		                                               [](const Feature *feature) {
+		                                                   return feature->get_name();
+		                                               }) +
+		                                          "\n").c_str())
 #endif
 		("help,h", "print this help message and exit")
 		("version,v", "print the version")
@@ -895,11 +896,11 @@ int main(int argc, char **argv)
 		("projection", po::value<string>(), "=(o)rtho or (p)erspective when exporting png")
 		("csglimit", po::value<unsigned int>(), "=n -stop rendering at n CSG elements when exporting png")
 		("colorscheme", po::value<string>(), ("=colorscheme: " +
-																					join(ColorMap::inst()->colorSchemeNames(), " | ", [](const std::string& colorScheme) {
-																							return (ColorMap::inst()->defaultColorSchemeName() ? "*" : "") + colorScheme;
-																						}) +
-																					"\n").c_str())
-
+		                                      join(ColorMap::inst()->colorSchemeNames(), " | ",
+		                                           [](const std::string& colorScheme) {
+		                                               return (colorScheme == ColorMap::inst()->defaultColorSchemeName() ? "*" : "") + colorScheme;
+		                                           }) +
+		                                      "\n").c_str())
 		("d,d", po::value<string>(), "deps_file -generate a dependency file for make")
 		("m,m", po::value<string>(), "make_cmd -runs make_cmd file if file is missing")
 		("quiet,q", "quiet mode (don't print anything *except* errors)")
