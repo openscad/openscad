@@ -17,7 +17,7 @@ void GroupNodeChecker::incChildCount(int groupNodeIndex) {
 	}
 }
 
-int GroupNodeChecker::getChildCount(int groupNodeIndex) {
+int GroupNodeChecker::getChildCount(int groupNodeIndex) const {
 	auto search = this->groupChildCounts.find(groupNodeIndex);
 	if (search != this->groupChildCounts.end()) {
 		return search->second;
@@ -30,7 +30,7 @@ Response GroupNodeChecker::visit(State &state, const GroupNode &node)
 {
 	if (state.isPrefix()) {
 		// create entry for group node, which children may increment
-		this->groupChildCounts.emplace(std::make_pair(node.index(),0));
+		this->groupChildCounts.emplace(node.index(),0);
 	} else if (state.isPostfix()) {
 		if ((this->getChildCount(node.index()) > 0) && state.parent()) {
 		    this->incChildCount(state.parent()->index());
@@ -99,7 +99,7 @@ Response NodeDumper::visit(State &state, const GroupNode &node)
 		this->cache.insertStart(node.index(), this->dumpstream.tellp());
 		
 		if(this->groupChecker.getChildCount(node.index()) > 1) {
-			this->dumpstream << STR(node) << "{";
+			this->dumpstream << node << "{";
 		}
 		this->currindent++;
 	} else if (state.isPostfix()) {

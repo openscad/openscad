@@ -19,9 +19,8 @@ public:
 
     Response visit(State &state, const AbstractNode &node) override;
     Response visit(State &state, const GroupNode &node) override;
-    //Response visit(State &state, const RootNode &node) override;
     void incChildCount(int groupNodeIndex);
-    int getChildCount(int groupNodeIndex);
+    int getChildCount(int groupNodeIndex) const;
     void reset() { groupChildCounts.clear(); }
 
 private:
@@ -35,7 +34,6 @@ public:
     NodeDumper(NodeCache &cache, const AbstractNode *root_node, const std::string& indent, bool idString) :
             cache(cache), indent(indent), idString(idString), currindent(0), root(root_node) { 
         if (idString) { 
-            groupChecker.reset();
             groupChecker.traverse(*root);
         }
     }
