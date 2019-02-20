@@ -784,7 +784,7 @@ Response GeometryEvaluator::visit(State &state, const ExtrudeNode &node)
 		std::string loc = node.modinst->location().toRelativeString(this->tree.getDocumentPath());
 		shared_ptr<const Geometry> geom = isSmartCached(node)? smartCacheGet(node, false)
 			: extrudePolygonSequence(node, collectChildren2D(node), loc);
-		if (geom) addToParent(state, node, geom);
+		addToParent(state, node, geom);
 		node.progress_report();
 	}
 	return Response::ContinueTraversal;
