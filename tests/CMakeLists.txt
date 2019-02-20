@@ -27,7 +27,7 @@ IF (APPLE)
      ELSEIF (NOT ${MACOSX_VERSION} VERSION_LESS "10.10.0")
        message("Detected Yosemite (10.10) or later")
      ELSE()
-     message("Detected Maverick (10.9) or later")
+       message("Detected Maverick (10.9) or later")
      ENDIF()
      # Since we build dependencies for 10.9, also build executables for 10.9
      SET(CMAKE_OSX_DEPLOYMENT_TARGET 10.9 CACHE STRING "Deployment target")
@@ -399,11 +399,11 @@ if (GLEW_DIR)
   find_path(GLEW_INCLUDE_DIR
             GL/glew.h
             HINTS ${GLEW_DIR}/include
-	    NO_DEFAULT_PATH)
+            NO_DEFAULT_PATH)
   find_library(GLEW_LIBRARY
                NAMES GLEW glew
                HINTS ${GLEW_DIR}/lib ${GLEW_DIR}/lib64
-	       NO_DEFAULT_PATH)
+               NO_DEFAULT_PATH)
   if (GLEW_INCLUDE_DIR AND GLEW_LIBRARY)
     set(GLEW_FOUND 1)
   endif()
@@ -678,22 +678,22 @@ set(CTEST_ENVIRONMENT "${CTEST_ENVIRONMENT};OPENSCADPATH=${CMAKE_CURRENT_SOURCE_
 # Platform specific settings
 
 if(APPLE)
-	message(STATUS "Offscreen OpenGL Context - using Apple CGL")
-	set(OFFSCREEN_CTX_SOURCE "OffscreenContextCGL.mm" CACHE TYPE STRING)
-	set(OFFSCREEN_IMGUTILS_SOURCE "imageutils-macosx.cc" CACHE TYPE STRING)
-	set(PLATFORMUTILS_SOURCE "PlatformUtils-mac.mm" CACHE TYPE STRING)
+  message(STATUS "Offscreen OpenGL Context - using Apple CGL")
+  set(OFFSCREEN_CTX_SOURCE "OffscreenContextCGL.mm" CACHE TYPE STRING)
+  set(OFFSCREEN_IMGUTILS_SOURCE "imageutils-macosx.cc" CACHE TYPE STRING)
+  set(PLATFORMUTILS_SOURCE "PlatformUtils-mac.mm" CACHE TYPE STRING)
 elseif(UNIX)
-	message(STATUS "Offscreen OpenGL Context - using Unix GLX")
-	set(OFFSCREEN_CTX_SOURCE "OffscreenContextGLX.cc" CACHE TYPE STRING)
-	set(OFFSCREEN_IMGUTILS_SOURCE "imageutils-lodepng.cc" CACHE TYPE STRING)
-	set(PLATFORMUTILS_SOURCE "PlatformUtils-posix.cc" CACHE TYPE STRING)
-	# X11 needed for Offscreen OpenGL on current Un*x, see github issue 1355
-	set(OFFSCREEN_CTX_LIBRARIES ${X11_LIBRARIES} CACHE TYPE STRING)
+  message(STATUS "Offscreen OpenGL Context - using Unix GLX")
+  set(OFFSCREEN_CTX_SOURCE "OffscreenContextGLX.cc" CACHE TYPE STRING)
+  set(OFFSCREEN_IMGUTILS_SOURCE "imageutils-lodepng.cc" CACHE TYPE STRING)
+  set(PLATFORMUTILS_SOURCE "PlatformUtils-posix.cc" CACHE TYPE STRING)
+  # X11 needed for Offscreen OpenGL on current Un*x, see github issue 1355
+  set(OFFSCREEN_CTX_LIBRARIES ${X11_LIBRARIES} CACHE TYPE STRING)
 elseif(WIN32)
-	message(STATUS "Offscreen OpenGL Context - using Microsoft WGL")
-	set(OFFSCREEN_CTX_SOURCE "OffscreenContextWGL.cc" CACHE TYPE STRING)
-	set(OFFSCREEN_IMGUTILS_SOURCE "imageutils-lodepng.cc" CACHE TYPE STRING)
-	set(PLATFORMUTILS_SOURCE "PlatformUtils-win.cc" CACHE TYPE STRING)
+  message(STATUS "Offscreen OpenGL Context - using Microsoft WGL")
+  set(OFFSCREEN_CTX_SOURCE "OffscreenContextWGL.cc" CACHE TYPE STRING)
+  set(OFFSCREEN_IMGUTILS_SOURCE "imageutils-lodepng.cc" CACHE TYPE STRING)
+  set(PLATFORMUTILS_SOURCE "PlatformUtils-win.cc" CACHE TYPE STRING)
 endif()
 
 #
@@ -838,11 +838,11 @@ function(add_cmdline_test TESTCMD_BASENAME)
       list(FIND EXPERIMENTAL_TESTS ${TEST_FULLNAME} EXPERIMENTAL)
 
       if (${EXPERIMENTAL} EQUAL -1)
-      set(EXPERIMENTAL_OPTION "")
+        set(EXPERIMENTAL_OPTION "")
       else()
         # add global experimental options here
-         set(EXPERIMENTAL_OPTION "")
-        endif()
+        set(EXPERIMENTAL_OPTION "")
+      endif()
 
       # 2D tests should be viewed from the top, not an angle.
       set(CAMERA_OPTION "")
@@ -1124,10 +1124,10 @@ list(APPEND EXPORT3D_CGALCGAL_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D
                                 )
 
 set_test_config(Bugs 
-# Issue #910
-                     offcgalpngtest_polyhedron-tests
-                     offpngtest_nonmanifold-polyhedron
-                     offpngtest_bad-stl-wing
+  # Issue #910
+  offcgalpngtest_polyhedron-tests
+  offpngtest_nonmanifold-polyhedron
+  offpngtest_bad-stl-wing
 
   cgalpngtest_escape-test.scad
 )
@@ -1173,42 +1173,42 @@ disable_tests(
   throwntogethertest_issue1089
   throwntogethertest_issue1215
 
-# FIXME: This test illustrates a weakness in child() combined with modifiers.
-# Reenable it when this is improved
+  # FIXME: This test illustrates a weakness in child() combined with modifiers.
+  # Reenable it when this is improved
   opencsgtest_child-background
 
-# These tests only makes sense in OpenCSG mode
+  # These tests only makes sense in OpenCSG mode
   cgalpngtest_child-background
-              cgalpngtest_highlight-and-background-modifier
+  cgalpngtest_highlight-and-background-modifier
   cgalpngtest_highlight-modifier2
   cgalpngtest_background-modifier2
-              cgalpngtest_testcolornames
-              csgpngtest_child-background
-              csgpngtest_highlight-and-background-modifier
+  cgalpngtest_testcolornames
+  csgpngtest_child-background
+  csgpngtest_highlight-and-background-modifier
   csgpngtest_highlight-modifier2
   csgpngtest_background-modifier2
-              csgpngtest_testcolornames
+  csgpngtest_testcolornames
   throwntogethertest_testcolornames
 
-# This test won't render anything meaningful in throwntogether mode
+  # This test won't render anything meaningful in throwntogether mode
   throwntogethertest_minkowski3-erosion
 
-# The inf/nan tests fail when exporting CSG and rendering that output again
-# as currently inf/nan is written directly to the CSG file (e.g. r = inf)
-# which is not valid or even misleading in case a variable inf exists.
-# FIXME: define export behavior for inf/nan when exporting CSG files
+  # The inf/nan tests fail when exporting CSG and rendering that output again
+  # as currently inf/nan is written directly to the CSG file (e.g. r = inf)
+  # which is not valid or even misleading in case a variable inf exists.
+  # FIXME: define export behavior for inf/nan when exporting CSG files
   # These tests return error code 1.
   # FIXME: We should have a way of running these and verify the return code
   csgpngtest_primitive-inf-tests
-              csgpngtest_transform-nan-inf-tests
-              csgpngtest_primitive-inf-tests
-              csgpngtest_transform-nan-inf-tests
-              # Triggers a floating point accuracy issue causing loaded .csg to
-              # render slightly differently
+  csgpngtest_transform-nan-inf-tests
+  csgpngtest_primitive-inf-tests
+  csgpngtest_transform-nan-inf-tests
+  # Triggers a floating point accuracy issue causing loaded .csg to
+  # render slightly differently
   cgalpngtest_nothing-decimal-comma-separated
   cgalpngtest_import-empty-tests
   cgalpngtest_empty-shape-tests
-              csgpngtest_issue1258
+  csgpngtest_issue1258
 
 )
 
@@ -1225,20 +1225,20 @@ list(APPEND ALL_2D_FILES ${FILES_2D} ${SCAD_DXF_FILES} ${SCAD_SVG_FILES})
 # Heavy tests are tests taking more than 10 seconds on a development computer
 set_test_config(Heavy 
   cgalpngtest_rotate_extrude-tests
-                      csgpngtest_rotate_extrude-tests
-                      cgalpngtest_for-nested-tests
-                      csgpngtest_for-nested-tests
-                      cgalpngtest_resize-tests
-                      cgalpngtest_fractal
-                      csgpngtest_fractal
-                      cgalpngtest_iteration
-                      csgpngtest_iteration
-                      cgalpngtest_linear_extrude-scale-zero-tests
-                      csgpngtest_linear_extrude-scale-zero-tests
-                      cgalpngtest_sphere-tests
+  csgpngtest_rotate_extrude-tests
+  cgalpngtest_for-nested-tests
+  csgpngtest_for-nested-tests
+  cgalpngtest_resize-tests
+  cgalpngtest_fractal
+  csgpngtest_fractal
+  cgalpngtest_iteration
+  csgpngtest_iteration
+  cgalpngtest_linear_extrude-scale-zero-tests
+  csgpngtest_linear_extrude-scale-zero-tests
+  cgalpngtest_sphere-tests
   csgpngtest_sphere-tests
-                      csgpngtest_resize-tests
-                      csgpngtest_resize-tests
+  csgpngtest_resize-tests
+  csgpngtest_resize-tests
   csgpngtest_minkowski3-erosion
   cgalpngtest_minkowski3-erosion
   opencsgtest_minkowski3-erosion
@@ -1249,20 +1249,20 @@ set_test_config(Heavy
   csgpngtest_rotate_extrude-angle
   cgalpngtest_rotate_extrude-angle
   cgalpngtest_projection-extrude-tests
-                      stlpngtest_fence
-                      stlpngtest_surface
-                      stlpngtest_demo_cut
-                      stlpngtest_search
-                      stlpngtest_rounded_box
-                      stlpngtest_difference
-                      stlpngtest_translation
-                      offpngtest_fence
-                      offpngtest_surface
-                      offpngtest_demo_cut
-                      offpngtest_search
-                      offpngtest_rounded_box
-                      offpngtest_difference
-                      offpngtest_translation
+  stlpngtest_fence
+  stlpngtest_surface
+  stlpngtest_demo_cut
+  stlpngtest_search
+  stlpngtest_rounded_box
+  stlpngtest_difference
+  stlpngtest_translation
+  offpngtest_fence
+  offpngtest_surface
+  offpngtest_demo_cut
+  offpngtest_search
+  offpngtest_rounded_box
+  offpngtest_difference
+  offpngtest_translation
   cgalstlcgalpngtest_rotate_extrude-tests
   monotonepngtest_rotate_extrude-tests
   cgalstlcgalpngtest_rotate_extrude-tests

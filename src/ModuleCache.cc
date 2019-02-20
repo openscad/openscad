@@ -5,7 +5,6 @@
 #include "openscad.h"
 
 #include <boost/format.hpp>
-#include <boost/filesystem.hpp>
 #include <nowide/fstream.hpp>
 
 #include <sys/stat.h>
@@ -39,21 +38,13 @@ std::time_t ModuleCache::evaluate(const std::string &mainFile,const std::string 
 	if (lib_mod && lib_mod->isHandlingDependencies()) return 0;
 
 	// Create cache ID
-	fs::path fpath(filename);
+	struct stat st;
+	bool valid = (StatCache::stat(filename.c_str(), st) == 0);
 	// If file isn't there, just return and let the cache retain the old module
-	if (!fs::exists(fpath)) return false;
+	if (!valid) return 0;
 
 	// If the file is present, we'll always cache some result
-	std::time_t mtime = 0;
-	uintmax_t size = 0;
-	try {
-		mtime = fs::last_write_time(fpath);
-		size = fs::file_size(fpath);
-	}
-	catch (fs::filesystem_error &e) {
-		// Just ignore the error as we cache 0 values
-	}
-	std::string cache_id = str(boost::format("%x.%x") % mtime % size);
+	std::string cache_id = str(boost::format("%x.%x") % st.st_mtime % st.st_size);
 
 	cache_entry &cacheEntry = this->entries[filename];
 	// Initialize entry, if new
@@ -61,9 +52,9 @@ std::time_t ModuleCache::evaluate(const std::string &mainFile,const std::string 
 		cacheEntry.module = nullptr;
 		cacheEntry.parsed_module = nullptr;
 		cacheEntry.cache_id = cache_id;
-		cacheEntry.includes_mtime = mtime;
+		cacheEntry.includes_mtime = st.st_mtime;
 	}
-	cacheEntry.mtime = mtime;
+	cacheEntry.mtime = st.st_mtime;
   
 	bool shouldCompile = true;
 	if (found) {

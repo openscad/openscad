@@ -70,7 +70,7 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
     Assignment("file"), Assignment("layer"), Assignment("convexity"),
 		Assignment("origin"), Assignment("scale")
 	};
-
+	
 	AssignmentList optargs{
 		Assignment("width"), Assignment("height"),
 		Assignment("filename"), Assignment("layername"), Assignment("center")
@@ -158,23 +158,23 @@ const Geometry *ImportNode::createGeometry() const
 	case ImportType::STL: {
 		g = import_stl(this->filename, loc);
 		break;
-		}
+	}
 	case ImportType::AMF: {
 		g = import_amf(this->filename, loc);
 		break;
-			}
+	}
 	case ImportType::_3MF: {
 		g = import_3mf(this->filename, loc);
 		break;
-		}
+	}
 	case ImportType::OFF: {
 		g = import_off(this->filename, loc);
 		break;
-				}
+	}
 	case ImportType::SVG: {
 		g = import_svg(this->filename, this->center, loc);
-		break;
-		}
+ 		break;
+	}
 	case ImportType::DXF: {
 		DxfData dd(this->fn, this->fs, this->fa, this->filename, this->layername, this->origin_x, this->origin_y, this->scale);
 		g = dd.toPolygon2d();
@@ -211,7 +211,7 @@ std::string ImportNode::toString() const
 		<< ", convexity = " << this->convexity
 		<< ", $fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs
 		<< ", timestamp = " << (fs::exists(path) ? fs::last_write_time(path) : 0)
-				 << ")";
+		<< ")";
 
 	return stream.str();
 }

@@ -133,30 +133,12 @@ bool SurfaceNode::is_png(std::vector<uint8_t> &png) const
 											std::array<uint8_t, 8>({{0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a}}).data(), 8) == 0);
 }
 
-static void load_png_file(std::vector<unsigned char>& buffer, const std::string& filename)
-{
-  //  nowide::ifstream file(filename.c_str(), std::ios::in|std::ios::binary|std::ios::ate);
-  // nowide doesn't support ios::ate, so we do this manually
-  // See http://sourceforge.net/p/cppcms/bugs/140/
-  nowide::ifstream file(filename.c_str(), std::ios::in|std::ios::binary);
-  file.seekg(0, std::ios::end);
-
-  /*get filesize*/
-  std::streamsize size = 0;
-  if(file.seekg(0, std::ios::end).good()) size = file.tellg();
-  if(file.seekg(0, std::ios::beg).good()) size -= file.tellg();
-
-  /*read contents of the file into the vector*/
-  buffer.resize(size_t(size));
-  if(size > 0) file.read((char*)(&buffer[0]), size);
-}
-
 img_data_t SurfaceNode::read_png_or_dat(std::string filename) const
 {
 	img_data_t data;
 	std::vector<uint8_t> png;
 	
-	load_png_file(png, filename);
+	lodepng::load_file(png, filename);
 	
 	if (!is_png(png)) {
 		png.clear();
@@ -190,7 +172,7 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
 	int lines = 0, columns = 0;
 	double min_val = 0;
 
-	typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+	typedef boost::tokenizer<boost::char_separator<char>> tokenizer;
 	boost::char_separator<char> sep(" \t");
 
 	while (!stream.eof()) {
@@ -303,15 +285,15 @@ const Geometry *SurfaceNode::createGeometry() const
 	}
 
 	if (columns > 1 && lines > 1) {
-	p->append_poly();
-	for (int i = 0; i < columns-1; i++)
-		p->insert_vertex(ox + i, oy + 0, min_val);
-	for (int i = 0; i < lines-1; i++)
-		p->insert_vertex(ox + columns-1, oy + i, min_val);
-	for (int i = columns-1; i > 0; i--)
-		p->insert_vertex(ox + i, oy + lines-1, min_val);
-	for (int i = lines-1; i > 0; i--)
-		p->insert_vertex(ox + 0, oy + i, min_val);
+		p->append_poly();
+		for (int i = 0; i < columns-1; i++)
+			p->insert_vertex(ox + i, oy + 0, min_val);
+		for (int i = 0; i < lines-1; i++)
+			p->insert_vertex(ox + columns-1, oy + i, min_val);
+		for (int i = columns-1; i > 0; i--)
+			p->insert_vertex(ox + i, oy + lines-1, min_val);
+		for (int i = lines-1; i > 0; i--)
+			p->insert_vertex(ox + 0, oy + i, min_val);
 	}
 
 	return p;

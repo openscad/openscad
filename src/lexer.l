@@ -138,8 +138,8 @@ include[ \t\r\n]*"<"	{ BEGIN(cond_include); filepath = filename = ""; }
 use[ \t\r\n]*"<"	{ BEGIN(cond_use); }
 <cond_use>{
 [^\t\r\n>]+	{ filename = yytext; }
- ">"		{ 
-	BEGIN(INITIAL); 
+ ">"		{
+	BEGIN(INITIAL);
         fs::path fullpath = find_valid_path(sourcefile()->parent_path(), fs::path(filename), &openfilenames);
 	if (fullpath.empty()) {
           PRINTB("WARNING: Can't open library '%s'.", filename);
@@ -232,7 +232,7 @@ use[ \t\r\n]*"<"	{ BEGIN(cond_use); }
 
 {UNICODE}+              { parser_error_pos -= strlen(yytext); return TOK_ERROR; }
 
-{D}+{E}? | 
+{D}+{E}? |
 {D}*\.{D}+{E}? |
 {D}+\.{D}*{E}?          {
                             try {
@@ -273,7 +273,7 @@ void lexer_set_parser_sourcefile(const fs::path& path)
 {
     parser_sourcefile = std::make_shared<fs::path>(path);
 }
-  
+
 // Filename of the source file currently being lexed.
 std::shared_ptr<fs::path>  sourcefile()
 {
@@ -321,19 +321,19 @@ void includefile()
   openfiles.push_back(yyin);
   openfilenames.push_back(fullname);
   filename.clear();
-  
+
   yypush_buffer_state(yy_create_buffer(yyin, YY_BUF_SIZE));
 }
 
 /*!
-  In case of an error, this will make sure we clean up our custom data structures 
+  In case of an error, this will make sure we clean up our custom data structures
   and close all files.
 */
 void lexerdestroy()
 {
 	for (auto f : openfiles) fclose(f);
-  openfiles.clear();
-  openfilenames.clear();
+	openfiles.clear();
+	openfilenames.clear();
 	filename_stack.clear();
 	lineno_stack.clear();
 }

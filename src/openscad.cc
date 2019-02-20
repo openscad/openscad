@@ -97,10 +97,10 @@ static std::string arg_colorscheme;
 class Echostream : public nowide::ofstream
 {
 public:
-	Echostream( const char * filename ) : nowide::ofstream( filename ) {
+	Echostream(const char * filename) : nowide::ofstream(filename) {
 		set_output_handler( &Echostream::output, this );
 	}
-	static void output( const std::string &msg, void *userdata ) {
+	static void output(const std::string &msg, void *userdata) {
 		auto thisp = static_cast<Echostream*>(userdata);
 		*thisp << msg << "\n";
 	}
@@ -166,7 +166,7 @@ Camera get_camera(const po::variables_map &vm)
 		vector<string> strs;
 		vector<double> cam_parameters;
 		boost::split(strs, vm["camera"].as<string>(), is_any_of(","));
-		if ( strs.size()==6 || strs.size()==7 ) {
+		if (strs.size() == 6 || strs.size() == 7) {
 			try {
 				for (const auto &s : strs) cam_parameters.push_back(lexical_cast<double>(s));
 				camera.setup(cam_parameters);
@@ -255,12 +255,12 @@ void set_render_color_scheme(const std::string color_scheme, const bool exit_if_
 	if (color_scheme.empty()) {
 		return;
 	}
-	
+
 	if (ColorMap::inst()->findColorScheme(color_scheme)) {
 		RenderSettings::inst()->colorscheme = color_scheme;
 		return;
 	}
-		
+
 	if (exit_if_not_found) {
 		PRINTB("Unknown color scheme '%s'. Valid schemes:", color_scheme);
 		PRINT(boost::join(ColorMap::inst()->colorSchemeNames(), "\n"));
@@ -294,7 +294,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 	const char *nef3_output_file = nullptr;
 
 	auto suffix = fs::path(output_file).extension().generic_string();
-	boost::algorithm::to_lower( suffix );
+	boost::algorithm::to_lower(suffix);
 
 	if (suffix == ".stl") stl_output_file = output_file;
 	else if (suffix == ".off") off_output_file = output_file;
@@ -315,7 +315,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 	}
 
 	set_render_color_scheme(arg_colorscheme, true);
-	
+
 	// Top context - this context only holds builtins
 	BuiltinContext top_ctx;
 	const bool preview = png_output_file ? (viewOptions.renderer == RenderType::OPENCSG || viewOptions.renderer == RenderType::THROWNTOGETHER) : false;
@@ -325,7 +325,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 #endif
 	shared_ptr<Echostream> echostream;
 	if (echo_output_file) {
-		echostream.reset( new Echostream( echo_output_file ) );
+		echostream.reset(new Echostream(echo_output_file));
 	}
 
 	FileModule *root_module;
@@ -458,13 +458,13 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 		if (off_output_file) {
 			if (!checkAndExport(root_geom, 3, FileFormat::OFF, off_output_file)) {
 				return 1;
-		}
+			}
 		}
 
 		if (amf_output_file) {
 			if (!checkAndExport(root_geom, 3, FileFormat::AMF, amf_output_file)) {
 				return 1;
-		}
+			}
 		}
 
 		if (_3mf_output_file) {
@@ -475,13 +475,13 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 		if (dxf_output_file) {
 			if (!checkAndExport(root_geom, 2, FileFormat::DXF, dxf_output_file)) {
 				return 1;
+			}
 		}
-		}
-		
+
 		if (svg_output_file) {
 			if (!checkAndExport(root_geom, 2, FileFormat::SVG, svg_output_file)) {
 				return 1;
-		}
+			}
 		}
 
 		if (png_output_file) {
@@ -548,7 +548,7 @@ Q_IMPORT_PLUGIN(qtaccessiblewidgets)
 #endif
 #ifdef ENABLE_QGAMEPAD
 #include "input/QGamepadInputDriver.h"
-  #endif
+#endif
 #include <QString>
 #include <QDir>
 #include <QFileInfo>
@@ -568,7 +568,7 @@ static QString assemblePath(const fs::path& absoluteBaseDir,
   auto qsDir = QString::fromStdString(absoluteBaseDir.generic_string());
   auto qsFile = QString::fromStdString(fileName);
   // if qsfile is absolute, dir is ignored. (see documentation of QFileInfo)
-  QFileInfo info( qsDir, qsFile );
+  QFileInfo info(qsDir, qsFile);
   return info.absoluteFilePath();
 }
 
@@ -606,7 +606,7 @@ void dialogInitHandler(FontCacheInitializer *initializer, void *)
 	// Block, in case we're in a separate thread, or the dialog was closed by the user
 	futureWatcher.waitForFinished();
 
-	// We don't always receive the finished signal. We still need the signal to break 
+	// We don't always receive the finished signal. We still need the signal to break
 	// out of the exec() though.
 	QMetaObject::invokeMethod(scadApp, "hideFontCacheDialog");
 }
@@ -646,9 +646,9 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 #else
 	app.setWindowIcon(QIcon(":/icons/openscad.png"));
 #endif
-	
+
 	// Other global settings
-	qRegisterMetaType<shared_ptr<const Geometry> >();
+	qRegisterMetaType<shared_ptr<const Geometry>>();
 
 	FontCache::registerProgressHandler(dialogInitHandler);
 
@@ -692,7 +692,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 
 	set_render_color_scheme(arg_colorscheme, false);
 	auto noInputFiles = false;
-	
+
 	if (!inputFiles.size()) {
 		noInputFiles = true;
 		inputFiles.push_back("");
@@ -832,7 +832,7 @@ int main(int argc, char **argv)
 
 	int rc = 0;
 	StackCheck::inst()->init();
-	
+
 #ifdef OPENSCAD_QTGUI
 	{   // Need a dummy app instance to get the application path but it needs to be destroyed before the GUI is launched.
 		QCoreApplication app(argc, argv);
@@ -911,7 +911,7 @@ int main(int argc, char **argv)
 #ifdef Q_OS_MACX
 		("psn", po::value<string>(), "process serial number")
 #endif
-		("input-file", po::value< vector<string> >(), "input file");
+		("input-file", po::value< vector<string>>(), "input file");
 
 	po::positional_options_description p;
 	p.add("input-file", -1);
@@ -996,7 +996,7 @@ int main(int argc, char **argv)
 		if (output_file) help(argv[0], desc, true);
 		output_file = vm["s"].as<string>().c_str();
 	}
-	if (vm.count("x")) { 
+	if (vm.count("x")) {
 		printDeprecation("The -x option is deprecated. Use -o instead.\n");
 		if (output_file) help(argv[0], desc, true);
 		output_file = vm["x"].as<string>().c_str();
@@ -1042,7 +1042,7 @@ int main(int argc, char **argv)
 	
 	vector<string> inputFiles;
 	if (vm.count("input-file"))	{
-		inputFiles = vm["input-file"].as<vector<string> >();
+		inputFiles = vm["input-file"].as<vector<string>>();
 	}
 
 	if (vm.count("colorscheme")) {
