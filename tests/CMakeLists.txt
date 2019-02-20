@@ -944,6 +944,8 @@ configure_file(${CMAKE_SOURCE_DIR}/../testdata/scad/templates/import_3mf-tests-t
                ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/import_3mf-tests.scad)
 configure_file(${CMAKE_SOURCE_DIR}/../testdata/scad/templates/import_dxf-tests-template.scad
                ${CMAKE_SOURCE_DIR}/../testdata/scad/2D/features/import_dxf-tests.scad)
+configure_file(${CMAKE_SOURCE_DIR}/../testdata/python/gen_issue2342-template.py
+               ${CMAKE_SOURCE_DIR}/../testdata/python/gen_issue2342.py)
 
 # Find all scad files
 file(GLOB FEATURES_3D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/*.scad)
@@ -1053,6 +1055,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1923.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/preview_variable.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1851-each-fail-on-scalar.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue2342.scad
             )
 
 list(APPEND ASTDUMPTEST_FILES ${MISC_FILES}
@@ -1388,6 +1391,16 @@ add_cmdline_test(csgtermtest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX term FILES
                              ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allmodules.scad)
 add_cmdline_test(echotest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX echo FILES ${ECHO_FILES})
 add_cmdline_test(echotest EXE ${OPENSCAD_BINPATH} ARGS --check-parameter-ranges=on -o SUFFIX echo FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/builtin-invalid-range-test.scad)
+
+# generate a very large scad file which we would rather not commit to the source tree
+# this is for stress-testing the parser
+set(GEN_SCRIPT_DIR ${CMAKE_SOURCE_DIR}/../testdata/python)
+add_custom_target(issue2342 ALL 
+  COMMAND ${GEN_SCRIPT_DIR}/gen_issue2342.py ">${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue2342.scad"
+  WORKING_DIRECTORY ${GEN_SCRIPT_DIR}
+  COMMENT "Generating issue2342.scad"
+)
+
 add_cmdline_test(dumptest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX csg FILES ${DUMPTEST_FILES})
 add_cmdline_test(dumptest-examples EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX csg FILES ${EXAMPLE_FILES})
 add_cmdline_test(cgalpngtest EXE ${OPENSCAD_BINPATH} ARGS --render -o SUFFIX png FILES ${CGALPNGTEST_FILES})
