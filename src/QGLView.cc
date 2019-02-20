@@ -308,7 +308,7 @@ const QImage & QGLView::grabFrame()
 
 bool QGLView::save(const std::string &filename)
 {
-  return this->frame.save(filename, "PNG");
+  return this->frame.save(QString::fromStdString(filename), "PNG");
 }
 
 void QGLView::wheelEvent(QWheelEvent *event)
