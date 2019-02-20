@@ -211,7 +211,7 @@ namespace OGL {
       if (i<fc_ends_.size()-1) return coords_.begin()+fc_ends_[i+1];
       else return coords_.end(); }
 
-    void debug(std::ostream& os = std::cerr) const
+    void debug(std::ostream& os = nowide::cerr) const
     { os << "DFacet, normal=" << normal_ << ", mark=" << mark() << std::endl;
       for(unsigned i=0; i<number_of_facet_cycles(); ++i) {
 	os << "  facet cycle ";
@@ -603,7 +603,7 @@ namespace OGL {
       PRINTD("draw() end");
    }
 
-    void debug(std::ostream& os = std::cerr) const
+    void debug(std::ostream& os = nowide::cerr) const
     {
       os << "OGL::Polyhedron" << std::endl;
       os << "Vertices:" << std::endl;

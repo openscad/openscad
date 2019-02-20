@@ -6,7 +6,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>
-#include <fstream>
+#include <nowide/fstream.hpp>
 
 #define STL_FACET_NUMBYTES 4*3*4+2
 // as there is no 'float32_t' standard, we assume the systems 'float'
@@ -42,7 +42,7 @@ static void uint32_byte_swap(uint32_t &x)
 }
 #endif
 
-static void read_stl_facet(std::ifstream &f, stl_facet &facet)
+static void read_stl_facet(nowide::ifstream &f, stl_facet &facet)
 {
 	f.read( (char*)facet.data8, STL_FACET_NUMBYTES );
 #ifdef BOOST_BIG_ENDIAN
@@ -58,7 +58,7 @@ PolySet *import_stl(const std::string &filename, const Location &loc)
 	PolySet *p = new PolySet(3);
 
 	// Open file and position at the end
-	std::ifstream f(filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+	nowide::ifstream f(filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
 	if (!f.good()) {
 		PRINTB("WARNING: Can't open import file '%s', import() at line %d", filename % loc.firstLine());
 		return p;

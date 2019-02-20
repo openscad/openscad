@@ -1,7 +1,6 @@
 #include "OffscreenView.h"
 #include "system-gl.h"
 #include <math.h>
-#include <stdio.h>
 #include <string.h>
 #include <cstdlib>
 #include <sstream>

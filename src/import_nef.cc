@@ -1,6 +1,7 @@
 #include "import.h"
 #include "printutils.h"
 #include "AST.h"
+#include <nowide/fstream.hpp>
 
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
@@ -12,7 +13,7 @@ CGAL_Nef_polyhedron *import_nef3(const std::string &filename, const Location &lo
 	CGAL_Nef_polyhedron *N = new CGAL_Nef_polyhedron;
 
 	// Open file and position at the end
-	std::ifstream f(filename.c_str(), std::ios::in | std::ios::binary);
+	nowide::ifstream f(filename.c_str(), std::ios::in | std::ios::binary);
 	if (!f.good()) {
 		PRINTB("WARNING: Can't open import file '%s', import() at line %d", filename % loc.firstLine());
 		return N;

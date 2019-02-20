@@ -28,7 +28,7 @@
 #include "printutils.h"
 #include "Geometry.h"
 
-#include <fstream>
+#include <nowide/fstream.hpp>
 
 #define QUOTE(x__) # x__
 #define QUOTED(x__) QUOTE(x__)
@@ -66,11 +66,11 @@ void exportFile(const shared_ptr<const Geometry> &root_geom, std::ostream &outpu
 }
 
 void exportFileByName(const shared_ptr<const Geometry> &root_geom, FileFormat format,
-		      const std::string &name, const std::string &name2display)
+		      const std::string &name)
 {
-	nowide::ofstream fstream(name2open.c_str());
+	nowide::ofstream fstream(name.c_str());
 	if (!fstream.is_open()) {
-		PRINTB(_("Can't open file \"%s\" for export"), name2display);
+		PRINTB(_("Can't open file \"%s\" for export"), name);
 	} else {
 		bool onerror = false;
 		fstream.exceptions(std::ios::badbit|std::ios::failbit);
@@ -85,7 +85,7 @@ void exportFileByName(const shared_ptr<const Geometry> &root_geom, FileFormat fo
 			onerror = true;
 		}
 		if (onerror) {
-			PRINTB(_("ERROR: \"%s\" write error. (Disk full?)"), name2display);
+			PRINTB(_("ERROR: \"%s\" write error. (Disk full?)"), name);
 		}
 	}
 }

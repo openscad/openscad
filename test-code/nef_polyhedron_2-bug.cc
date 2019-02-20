@@ -28,8 +28,8 @@ typedef Explorer::Halfedge_const_handle Halfedge_const_handle;
 
 void print(const Nef_polyhedron &RST)
 {
-	//   CGAL::set_pretty_mode(std::cout);
-	//   std::cout << RST << std::endl;
+	//   CGAL::set_pretty_mode(nowide::cout);
+	//   nowide::cout << RST << std::endl;
 
 	Explorer explorer = RST.explorer();
 	explorer.print_statistics();
@@ -37,41 +37,41 @@ void print(const Nef_polyhedron &RST)
 	CGAL::Object_index<Vertex_const_handle> VI(explorer.vertices_begin(), explorer.vertices_end(), 'v');
 
 	for (Vertex_const_iterator vit = explorer.vertices_begin(); vit!=explorer.vertices_end(); ++vit) {
-		std::cout << VI(vit, true);
-		if (explorer.is_standard(vit)) std::cout << " [ " << to_double(explorer.point(vit).x()) << ", " << to_double(explorer.point(vit).y()) << " ]";
-		std::cout << "\n";
+		nowide::cout << VI(vit, true);
+		if (explorer.is_standard(vit)) nowide::cout << " [ " << to_double(explorer.point(vit).x()) << ", " << to_double(explorer.point(vit).y()) << " ]";
+		nowide::cout << "\n";
 	}
 
 	for (Face_const_iterator fit = explorer.faces_begin();
 			 fit != explorer.faces_end();
 			 fit++) {
-		std::cout << "explorer.mark(explorer.faces_begin()) "  << ((explorer.mark(fit))? "is part of polygon" :  "is not part of polygon") << std::endl;
+		nowide::cout << "explorer.mark(explorer.faces_begin()) "  << ((explorer.mark(fit))? "is part of polygon" :  "is not part of polygon") << std::endl;
 
-		if (fit->halfedge() == Halfedge_const_handle()) std::cout << "X\n";
+		if (fit->halfedge() == Halfedge_const_handle()) nowide::cout << "X\n";
 		else {
 			Halfedge_around_face_const_circulator hafc = explorer.face_cycle(fit), done(hafc);
 			do {
 				Vertex_const_handle vh = explorer.target(hafc);
-				std::cout << VI(vh, true) << " ";
-				if (explorer.is_standard(vh)) std::cout << "[" << to_double(explorer.point(vh).x()) << ", " << to_double(explorer.point(vh).y()) << "],  " ;
+				nowide::cout << VI(vh, true) << " ";
+				if (explorer.is_standard(vh)) nowide::cout << "[" << to_double(explorer.point(vh).x()) << ", " << to_double(explorer.point(vh).y()) << "],  " ;
 				hafc++;
 			} while(hafc != done);
-			std::cout << std::endl;
+			nowide::cout << std::endl;
 		}
 		if (fit->fc_begin() == fit->fc_end()) {
-			std::cout << "Y\n";
+			nowide::cout << "Y\n";
 		}
 		else {
 			for (Hole_const_iterator hit = explorer.holes_begin(fit); hit != explorer.holes_end(fit); hit++){
-				std::cout << "Hole: ";
+				nowide::cout << "Hole: ";
 				Halfedge_around_face_const_circulator hafc(hit), done(hit);
 				do{
 					Vertex_const_handle vh = explorer.target(hafc);
-					std::cout << VI(vh, true) << " ";
-					if (explorer.is_standard(vh)) std::cout << "[" << to_double(explorer.point(vh).x()) << ", " << to_double(explorer.point(vh).y()) << "],  " ;
+					nowide::cout << VI(vh, true) << " ";
+					if (explorer.is_standard(vh)) nowide::cout << "[" << to_double(explorer.point(vh).x()) << ", " << to_double(explorer.point(vh).y()) << "],  " ;
 					hafc++;
 				}while(hafc != done);
-				std::cout << std::endl;
+				nowide::cout << std::endl;
 			}
 		}
 	}

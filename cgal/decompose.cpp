@@ -486,7 +486,7 @@ void uint32_byte_swap( uint32_t &x )
 #endif
 }
 
-void read_stl_facet( std::ifstream &f, stl_facet &facet )
+void read_stl_facet( nowide::ifstream &f, stl_facet &facet )
 {
 	f.read( (char*)facet.data8, STL_FACET_NUMBYTES );
 #ifdef BOOST_BIG_ENDIAN
@@ -502,7 +502,7 @@ PolySet *import_stl(const std::string &filename)
   PolySet *p = new PolySet(3);
 
   // Open file and position at the end
-  std::ifstream f(filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+  nowide::ifstream f(filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
   if (!f.good()) {
     PRINTB("WARNING: Can't open import file '%s'.", filename);
     return NULL;
@@ -590,7 +590,7 @@ PolySet *import_stl(const std::string &filename)
 */
 bool import_polygon(PolyholeK &polyhole, const std::string &filename)
 {
-  std::ifstream ifs(filename.c_str());
+  nowide::ifstream ifs(filename.c_str());
   if (!ifs) return false;
 
   std::string line;
@@ -609,7 +609,7 @@ bool import_polygon(PolyholeK &polyhole, const std::string &filename)
     if (c == ',') {ss.read(&c, 1); c = ss.peek();} //gobble comma
     while (c == ' ') {ss.read(&c, 1); c = ss.peek();} //gobble spaces after comma
     if (!(ss >> Y)) {
-      std::cerr << "Y error\n";
+      nowide::cerr << "Y error\n";
       return false;
     }
     c = ss.peek();
@@ -617,7 +617,7 @@ bool import_polygon(PolyholeK &polyhole, const std::string &filename)
     if (c == ',') {ss.read(&c, 1); c = ss.peek();} //gobble comma
     while (c == ' ') {ss.read(&c, 1); c = ss.peek();} //gobble spaces after comma
     if (!(ss >> Z)) {
-      std::cerr << "Z error\n";
+      nowide::cerr << "Z error\n";
       return false;
     }
     polygon.push_back(Vertex3K(X, Y, Z));
@@ -640,20 +640,20 @@ int main(int argc, char *argv[])
     std::string suffix = fs::path(filename).extension().generic_string();
     if (suffix == ".stl") {
       if (!(ps = import_stl(filename))) {
-        std::cerr << "Error importing STL " << filename << std::endl;
+        nowide::cerr << "Error importing STL " << filename << std::endl;
         exit(1);
       }
-      std::cerr << "Imported " << ps->numPolygons() << " polygons" << std::endl;
+      nowide::cerr << "Imported " << ps->numPolygons() << " polygons" << std::endl;
     }
     else if (suffix == ".nef3") {
       N = new CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3);
-      std::ifstream stream(filename.c_str());
+      nowide::ifstream stream(filename.c_str());
       stream >> *N->p3;
-      std::cerr << "Imported Nef polyhedron" << std::endl;
+      nowide::cerr << "Imported Nef polyhedron" << std::endl;
     }
   }
   else {
-    std::cerr << "Usage: " << argv[0] << " <file.stl> <file.stl>" << std::endl;
+    nowide::cerr << "Usage: " << argv[0] << " <file.stl> <file.stl>" << std::endl;
     exit(1);
   }
 
@@ -662,20 +662,20 @@ int main(int argc, char *argv[])
   std::vector<PolyhedronK> result;
   decompose(N->p3.get(), std::back_inserter(result));
 
-  std::cerr << "Decomposed into " << result.size() << " convex parts" << std::endl;
+  nowide::cerr << "Decomposed into " << result.size() << " convex parts" << std::endl;
 
   int idx = 0;
   BOOST_FOREACH(const PolyhedronK &P, result) {
     PolySet *result_ps = new PolySet(3);
     if (CGALUtils::createPolySetFromPolyhedron(P, *result_ps)) {
-      std::cerr << "Error converting to PolySet\n";
+      nowide::cerr << "Error converting to PolySet\n";
     }
     else {
       std::stringstream ss;
       ss << "out" << idx++ << ".stl";
-      exportFileByName(shared_ptr<const Geometry>(result_ps), OPENSCAD_STL, ss.str().c_str(), ss.str().c_str());
-      std::cout << "color([" << colors[idx%147][0] << "," << colors[idx%147][1] << "," << colors[idx%147][2] << "]) " << "import(\"" << ss.str() << "\");\n";
+      exportFileByName(shared_ptr<const Geometry>(result_ps), OPENSCAD_STL, ss.str());
+      nowide::cout << "color([" << colors[idx%147][0] << "," << colors[idx%147][1] << "," << colors[idx%147][2] << "]) " << "import(\"" << ss.str() << "\");\n";
     }
   }
-  std::cerr << "Done." << std::endl;
+  nowide::cerr << "Done." << std::endl;
 }

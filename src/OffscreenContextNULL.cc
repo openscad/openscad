@@ -56,9 +56,9 @@ bool teardown_offscreen_context(OffscreenContext *ctx)
 
 bool save_framebuffer(OffscreenContext *ctx, char const * filename)
 {
-        std::ofstream fstream(filename,std::ios::out|std::ios::binary);
+        nowide::ofstream fstream(filename,std::ios::out|std::ios::binary);
         if (!fstream.is_open()) {
-                std::cerr << "Can't open file " << filename << " for writing";
+                nowide::cerr << "Can't open file " << filename << " for writing";
                 return false;
         } else {
                 save_framebuffer(ctx, fstream);

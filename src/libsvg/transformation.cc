@@ -24,7 +24,7 @@
  */
 #include <string>
 #include <vector>
-#include <iostream>
+#include <nowide/iostream.hpp>
 
 #include "util.h"
 #include "transformation.h"
@@ -74,7 +74,7 @@ std::vector<Eigen::Matrix3d>
 matrix::get_matrices()
 {
 	if (args.size() != 6) {
-		std::cout << "invalid arguments for matrix" << std::endl;
+		nowide::cout << "invalid arguments for matrix" << std::endl;
 		return std::vector<Eigen::Matrix3d>();
 	}
 	
@@ -105,7 +105,7 @@ std::vector<Eigen::Matrix3d>
 translate::get_matrices()
 {
 	if ((args.size() < 1) || (args.size() > 2)) {
-		std::cout << "invalid arguments for " << get_name() << std::endl;
+		nowide::cout << "invalid arguments for " << get_name() << std::endl;
 		return std::vector<Eigen::Matrix3d>();
 	}
 	
@@ -139,7 +139,7 @@ std::vector<Eigen::Matrix3d>
 scale::get_matrices()
 {
 	if ((args.size() < 1) || (args.size() > 2)) {
-		std::cout << "invalid arguments for " << get_name() << std::endl;
+		nowide::cout << "invalid arguments for " << get_name() << std::endl;
 		return std::vector<Eigen::Matrix3d>();
 	}
 
@@ -180,7 +180,7 @@ std::vector<Eigen::Matrix3d>
 rotate::get_matrices()
 {
 	if ((args.size() != 1) && (args.size() != 3)) {
-		std::cout << "invalid arguments for " << get_name() << std::endl;
+		nowide::cout << "invalid arguments for " << get_name() << std::endl;
 		return std::vector<Eigen::Matrix3d>();
 	}
 	
@@ -230,7 +230,7 @@ std::vector<Eigen::Matrix3d>
 skew_x::get_matrices()
 {
 	if (args.size() != 1) {
-		std::cout << "invalid arguments for " << get_name() << std::endl;
+		nowide::cout << "invalid arguments for " << get_name() << std::endl;
 		return std::vector<Eigen::Matrix3d>();
 	}
 	
@@ -262,7 +262,7 @@ std::vector<Eigen::Matrix3d>
 skew_y::get_matrices()
 {
 	if (args.size() != 1) {
-		std::cout << "invalid arguments for " << get_name() << std::endl;
+		nowide::cout << "invalid arguments for " << get_name() << std::endl;
 		return std::vector<Eigen::Matrix3d>();
 	}
 

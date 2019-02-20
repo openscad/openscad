@@ -273,11 +273,11 @@ void FontCache::clear()
 
 void FontCache::dump_cache(const std::string &info)
 {
-	std::cout << info << ":";
+	nowide::cout << info << ":";
 	for (cache_t::iterator it = this->cache.begin(); it != this->cache.end(); it++) {
-		std::cout << " " << (*it).first << " (" << (*it).second.second << ")";
+		nowide::cout << " " << (*it).first << " (" << (*it).second.second << ")";
 	}
-	std::cout << std::endl;
+	nowide::cout << std::endl;
 }
 
 void FontCache::check_cleanup()

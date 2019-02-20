@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 #include <stdlib.h>
-#include <iostream>
+#include <nowide/iostream.hpp>
 
 #include "group.h"
 

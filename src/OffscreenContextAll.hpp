@@ -14,9 +14,9 @@ void bind_offscreen_context(OffscreenContext *ctx)
  */
 bool save_framebuffer(OffscreenContext *ctx, const char *filename)
 {
-	std::ofstream fstream(filename,std::ios::out|std::ios::binary);
+	nowide::ofstream fstream(filename,std::ios::out|std::ios::binary);
 	if (!fstream.is_open()) {
-		std::cerr << "Can't open file " << filename << " for writing";
+		nowide::cerr << "Can't open file " << filename << " for writing";
 		return false;
 	} else {
 		save_framebuffer(ctx, fstream);
@@ -41,7 +41,7 @@ bool save_framebuffer_common(OffscreenContext *ctx, std::ostream &output)
 
 	unsigned char *flippedBuffer = (unsigned char *)malloc(rowBytes * ctx->height);
 	if (!flippedBuffer) {
-		std::cerr << "Unable to allocate flipped buffer for corrected image.";
+		nowide::cerr << "Unable to allocate flipped buffer for corrected image.";
 		return 1;
 	}
 	flip_image(&pixels[0], flippedBuffer, samplesPerPixel, ctx->width, ctx->height);
@@ -59,7 +59,7 @@ OffscreenContext *create_offscreen_context_common(OffscreenContext *ctx)
 	if (!ctx) return nullptr;
 	GLenum err = glewInit(); // must come after Context creation and before FBO c$
 	if (GLEW_OK != err) {
-		std::cerr << "Unable to init GLEW: " << glewGetErrorString(err) << "\n";
+		nowide::cerr << "Unable to init GLEW: " << glewGetErrorString(err) << "\n";
 		return nullptr;
 	}
 

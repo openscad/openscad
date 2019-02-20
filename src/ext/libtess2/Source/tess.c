@@ -38,7 +38,6 @@
 #include "sweep.h"
 #include "geom.h"
 #include <math.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 #define TRUE 1

@@ -1,6 +1,6 @@
 #include "imageutils.h"
 #include "ext/lodepng/lodepng.h"
-#include <stdio.h>
+#include <nowide/cstdio.hpp>
 #include <stdlib.h>
 #include <vector>
 #include <iterator>
@@ -17,6 +17,6 @@ bool write_png(std::ostream &output, unsigned char *pixels, int width, int heigh
 	unsigned err = lodepng::encode(dataout, pixels, width, height, state);
 	if ( err ) return false;
 	output.write( reinterpret_cast<const char *>(&dataout[0]), dataout.size());
-	if ( output.bad() ) std::cerr << "Error writing to ostream\n";
+	if ( output.bad() ) nowide::cerr << "Error writing to ostream\n";
 	return output.good();
 }

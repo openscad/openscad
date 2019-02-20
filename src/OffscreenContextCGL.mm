@@ -8,7 +8,7 @@
 #include <CoreServices/CoreServices.h>
 #include <sys/utsname.h>
 
-#define REPORTGLERROR(task) { GLenum tGLErr = glGetError(); if (tGLErr != GL_NO_ERROR) { std::cout << "OpenGL error " << tGLErr << " while " << task << "\n"; } }
+#define REPORTGLERROR(task) { GLenum tGLErr = glGetError(); if (tGLErr != GL_NO_ERROR) { nowide::cout << "OpenGL error " << tGLErr << " while " << task << "\n"; } }
 
 struct OffscreenContext
 {
@@ -71,7 +71,7 @@ OffscreenContext *create_offscreen_context(int w, int h)
   // Create and make current the OpenGL context to render with (with color and depth buffers)
   ctx->openGLContext = [[NSOpenGLContext alloc] initWithFormat:pixFormat shareContext:nil];
   if (!ctx->openGLContext) {
-    std::cerr << "Unable to create NSOpenGLContext\n";
+    nowide::cerr << "Unable to create NSOpenGLContext\n";
     return nullptr;
   }
 
@@ -80,7 +80,7 @@ OffscreenContext *create_offscreen_context(int w, int h)
   // glewInit must come after Context creation and before FBO calls.
   GLenum err = glewInit();
   if (GLEW_OK != err) {
-    std::cerr << "Unable to init GLEW: " << glewGetErrorString(err) << std::endl;
+    nowide::cerr << "Unable to init GLEW: " << glewGetErrorString(err) << std::endl;
     return nullptr;
   }
   glew_dump();
@@ -119,7 +119,7 @@ bool save_framebuffer(OffscreenContext *ctx, std::ostream &output)
   int rowBytes = samplesPerPixel * ctx->width;
   unsigned char *bufferData = (unsigned char *)malloc(rowBytes * ctx->height);
   if (!bufferData) {
-    std::cerr << "Unable to allocate buffer for image extraction.";
+    nowide::cerr << "Unable to allocate buffer for image extraction.";
     return 1;
   }
   glReadPixels(0, 0, ctx->width, ctx->height, GL_RGBA, GL_UNSIGNED_BYTE, 
@@ -129,7 +129,7 @@ bool save_framebuffer(OffscreenContext *ctx, std::ostream &output)
   // Flip it vertically - images read from OpenGL buffers are upside-down
   unsigned char *flippedBuffer = (unsigned char *)malloc(rowBytes * ctx->height);
   if (!flippedBuffer) {
-    std::cout << "Unable to allocate flipped buffer for corrected image.";
+    nowide::cout << "Unable to allocate flipped buffer for corrected image.";
     return 1;
   }
   flip_image(bufferData, flippedBuffer, samplesPerPixel, ctx->width, ctx->height);

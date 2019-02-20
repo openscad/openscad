@@ -198,47 +198,47 @@ std::ostream &operator<<(std::ostream &stream, const QuotedString &s)
 
 Value::Value() : value(boost::blank())
 {
-  //  std::cout << "creating undef\n";
+  //  nowide::cout << "creating undef\n";
 }
 
 Value::Value(bool v) : value(v)
 {
-  //  std::cout << "creating bool\n";
+  //  nowide::cout << "creating bool\n";
 }
 
 Value::Value(int v) : value(double(v))
 {
-  //  std::cout << "creating int\n";
+  //  nowide::cout << "creating int\n";
 }
 
 Value::Value(double v) : value(v)
 {
-  //  std::cout << "creating double " << v << "\n";
+  //  nowide::cout << "creating double " << v << "\n";
 }
 
 Value::Value(const std::string &v) : value(str_utf8_wrapper(v))
 {
-  //  std::cout << "creating string\n";
+  //  nowide::cout << "creating string\n";
 }
 
 Value::Value(const char *v) : value(str_utf8_wrapper(v))
 {
-  //  std::cout << "creating string from char *\n";
+  //  nowide::cout << "creating string from char *\n";
 }
 
 Value::Value(char v) : value(str_utf8_wrapper(1, v))
 {
-  //  std::cout << "creating string from char\n";
+  //  nowide::cout << "creating string from char\n";
 }
 
 Value::Value(const VectorType &v) : value(v)
 {
-  //  std::cout << "creating vector\n";
+  //  nowide::cout << "creating vector\n";
 }
 
 Value::Value(const RangeType &v) : value(v)
 {
-  //  std::cout << "creating range\n";
+  //  nowide::cout << "creating range\n";
 }
 
 Value::ValueType Value::type() const
@@ -319,7 +319,7 @@ class tostring_visitor : public boost::static_visitor<std::string>
 {
 public:
   template <typename T> std::string operator()(const T &op1) const {
-    //    std::cout << "[generic tostring_visitor]\n";
+    //    nowide::cout << "[generic tostring_visitor]\n";
     return boost::lexical_cast<std::string>(op1);	
   }
 
@@ -375,7 +375,7 @@ public:
     {};
 
   template <typename T> void operator()(const T &op1) const {
-    //    std::cout << "[generic tostream_visitor]\n";
+    //    nowide::cout << "[generic tostream_visitor]\n";
     stream << boost::lexical_cast<std::string>(op1);
   }
 
@@ -915,7 +915,7 @@ public:
   }
 
   template <typename T, typename U> Value operator()(const T &, const U &) const {
-    //    std::cout << "generic bracket_visitor\n";
+    //    nowide::cout << "generic bracket_visitor\n";
     return Value::undefined;
   }
 };

@@ -17,7 +17,7 @@ public:
 	OffscreenContext *ctx;
 
 	// overrides
-	bool save(const std:string &filename) override;
+	bool save(const std::string &filename) override;
 	std::string getRendererInfo() const override;
 #ifdef ENABLE_OPENCSG
 	void display_opencsg_warning() override;

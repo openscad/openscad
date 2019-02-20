@@ -2,7 +2,6 @@
 #include "printutils.h"
 #include "OffscreenView.h"
 #include "CsgInfo.h"
-#include <stdio.h>
 #include "polyset.h"
 #include "rendersettings.h"
 

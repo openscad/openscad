@@ -7,6 +7,8 @@
 #include <boost/regex.hpp>
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
+#include <nowide/cstdio.hpp>
+
 
 std::unordered_set<std::string> dependencies;
 const char *make_command = nullptr;
@@ -27,7 +29,7 @@ void handle_dep(const std::string &filename)
 
 bool write_deps(const std::string &filename, const std::string &output_file)
 {
-	FILE *fp = fopen(filename.c_str(), "wt");
+	FILE *fp = nowide::fopen(filename.c_str(), "wt");
 	if (!fp) {
 		fprintf(stderr, "Can't open dependencies file `%s' for writing!\n", filename.c_str());
 		return false;

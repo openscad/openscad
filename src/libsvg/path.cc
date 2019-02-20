@@ -25,7 +25,7 @@
 #include <stdlib.h>
 
 #include <string>
-#include <iostream>
+#include <nowide/iostream.hpp>
 #include <cmath>
 
 #include <Eigen/Core>

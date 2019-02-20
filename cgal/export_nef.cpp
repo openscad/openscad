@@ -3,7 +3,7 @@
 #include <boost/filesystem.hpp>
 #include <sstream>
 #include <iostream>
-#include <fstream>
+#include <nowide/fstream.hpp>
 #include <locale.h>
 
 #include "cgalutils.h"
@@ -48,7 +48,7 @@ void uint32_byte_swap( uint32_t &x )
 #endif
 }
 
-void read_stl_facet( std::ifstream &f, stl_facet &facet )
+void read_stl_facet( nowide::ifstream &f, stl_facet &facet )
 {
 	f.read( (char*)facet.data8, STL_FACET_NUMBYTES );
 #ifdef BOOST_BIG_ENDIAN
@@ -64,7 +64,7 @@ PolySet *import_stl(const std::string &filename)
   PolySet *p = new PolySet(3);
 
   // Open file and position at the end
-  std::ifstream f(filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+  nowide::ifstream f(filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
   if (!f.good()) {
     PRINTB("WARNING: Can't open import file '%s'.", filename);
     return NULL;
@@ -157,25 +157,25 @@ int main(int argc, char *argv[])
     boost::algorithm::to_lower(suffix);
     if (suffix == ".stl") {
       if (!(ps = import_stl(filename))) {
-        std::cerr << "Error importing STL " << argv[1] << std::endl;
+        nowide::cerr << "Error importing STL " << argv[1] << std::endl;
         exit(1);
       }
-      std::cerr << "Imported " << ps->numPolygons() << " polygons" << std::endl;
+      nowide::cerr << "Imported " << ps->numPolygons() << " polygons" << std::endl;
     }
     else if (suffix == ".nef3") {
       N = new CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3);
-      std::ifstream stream(filename.c_str());
+      nowide::ifstream stream(filename.c_str());
       stream >> *N->p3;
-      std::cerr << "Imported Nef polyhedron" << std::endl;
+      nowide::cerr << "Imported Nef polyhedron" << std::endl;
     }
   }
   else {
-    std::cerr << "Usage: " << argv[0] << " <file.stl>" << std::endl;
+    nowide::cerr << "Usage: " << argv[0] << " <file.stl>" << std::endl;
     exit(1);
   }
 
   if (ps && !N) N = createNefPolyhedronFromGeometry(*ps);
 
-  export_stl(N, std::cout);
-  std::cerr << "Done." << std::endl;
+  export_stl(N, nowide::cout);
+  nowide::cerr << "Done." << std::endl;
 }

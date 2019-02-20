@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -76,7 +75,7 @@ Feature::iterator Feature::end()
 void Feature::dump_features()
 {
 	for (map_t::iterator it = feature_map.begin(); it != feature_map.end(); it++) {
-		std::cout << "Feature('" << it->first << "') = " << (it->second->is_enabled() ? "enabled" : "disabled") << std::endl;
+		nowide::cout << "Feature('" << it->first << "') = " << (it->second->is_enabled() ? "enabled" : "disabled") << std::endl;
 	}
 }
 

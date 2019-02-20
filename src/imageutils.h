@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdlib.h>
-#include <iostream>
+#include <nowide/iostream.hpp>
 
 bool write_png(const char *filename, unsigned char *pixels, int width, int height);
 bool write_png(std::ostream &output, unsigned char *pixels, int width, int height);

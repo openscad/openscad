@@ -22,7 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include <stdio.h>
+#include <nowide/cstdio.hpp>
 #include <string>
 #include <vector>
 
@@ -196,7 +196,7 @@ shape::collect_transform_matrices(std::vector<Eigen::Matrix3d>& matrices, shape 
 				t = new skew_y();
 				break;
 			default:
-				std::cout << "unknown transform op " << v << std::endl;
+				nowide::cout << "unknown transform op " << v << std::endl;
 				t = nullptr;
 			}
 		} else {

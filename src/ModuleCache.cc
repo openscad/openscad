@@ -8,8 +8,6 @@
 #include <boost/filesystem.hpp>
 #include <nowide/fstream.hpp>
 
-#include <stdio.h>
-#include <fstream>
 #include <sys/stat.h>
 #include <algorithm>
 
@@ -65,7 +63,7 @@ std::time_t ModuleCache::evaluate(const std::string &mainFile,const std::string 
 		cacheEntry.cache_id = cache_id;
 		cacheEntry.includes_mtime = mtime;
 	}
-	cacheEntry.mtime = st.st_mtime;
+	cacheEntry.mtime = mtime;
   
 	bool shouldCompile = true;
 	if (found) {
@@ -101,7 +99,7 @@ std::time_t ModuleCache::evaluate(const std::string &mainFile,const std::string 
 
 		std::string text;
 		{
-			std::ifstream ifs(filename.c_str());
+			nowide::ifstream ifs(filename.c_str());
 			if (!ifs.is_open()) {
 				PRINTB("WARNING: Can't open library file '%s'\n", filename);
 				return 0;

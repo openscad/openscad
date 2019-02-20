@@ -119,8 +119,6 @@
 #define QT_FILE_SAVE_COMMIT if (saveOk) { saveOk = file.commit(); } else { file.cancelWriting(); }
 #endif
 
-#include <fstream>
-
 #include <algorithm>
 #include <boost/version.hpp>
 #include <nowide/fstream.hpp>
@@ -141,7 +139,6 @@
 #include "FontCache.h"
 #include "PrintInitDialog.h"
 #include "input/InputDriverManager.h"
-#include <cstdio>
 #include <QtNetwork>
 
 // Global application state
@@ -2131,7 +2128,7 @@ void MainWindow::sendToOctoPrint()
 		userFileName = fileInfo.baseName() + "." + fileFormat.toLower();
 	}
 
-	exportFileByName(this->root_geom, exportFileFormat, exportFileName.toLocal8Bit().constData(), exportFileName.toUtf8());
+	exportFileByName(this->root_geom, exportFileFormat, exportFileName.toStdString());
 
 	try {
 		this->progresswidget = new ProgressWidget(this);
@@ -2170,7 +2167,7 @@ void MainWindow::sendToPrintService()
 	const QString exportFilename = exportFile.fileName();
 	
 	//Render the stl to a temporary file:
-	exportFileByName(this->root_geom, FileFormat::STL, exportFilename.toLocal8Bit().constData(), exportFilename.toUtf8());
+	exportFileByName(this->root_geom, FileFormat::STL, exportFilename.toStdString());
 
 	//Create a name that the order process will use to refer to the file. Base it off of the project name
 	QString userFacingName = "unsaved.stl";
@@ -2509,7 +2506,6 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
 	}
 	this->export_paths[suffix] = exportFilename;
 	exportFileByName(this->root_geom, format,
-		exportFilename.toStdString(),
 		exportFilename.toStdString());
 	PRINTB("%s export finished: %s",
 		type_name % exportFilename.toStdString());

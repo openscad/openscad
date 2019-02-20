@@ -30,6 +30,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
 #include <libxml/xmlreader.h>
+#include <nowide/iostream.hpp>
 
 #include "libsvg.h"
 
@@ -187,9 +188,9 @@ int streamFile(const char *filename)
 
 void dump(int idx, shape *s) {
 	for (int a = 0;a < idx;a++) {
-		std::cout << "  ";
+		nowide::cout << "  ";
 	}
-	std::cout << "=> " << s->dump() << std::endl;
+	nowide::cout << "=> " << s->dump() << std::endl;
 	for (const auto& c : s->get_children()) {
 		dump(idx + 1, c);
 	} 

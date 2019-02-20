@@ -20,7 +20,7 @@ FileModule *parsefile(const char *filename, const char *fakepath)
 	FileModule *root_module = NULL;
 
 	handle_dep(filename);
-	std::ifstream ifs(filename);
+	nowide::ifstream ifs(filename);
 	if (!ifs.is_open()) {
 		fprintf(stderr, "Can't open input file `%s'!\n", filename);
 	}

@@ -301,7 +301,7 @@ void Highlighter::highlightBlock(const QString &text)
 {
 	int block_first_pos = currentBlock().position();
 	//int block_last_pos = block_first_pos + currentBlock().length() - 1;
-	//std::cout << "block[" << block_first_pos << ":" << block_last_pos << "]"
+	//nowide::cout << "block[" << block_first_pos << ":" << block_last_pos << "]"
 	//  << ", err:" << errorPos << "," << errorState
 	//  << ", text:'" << text.toStdString() << "'\n";
 

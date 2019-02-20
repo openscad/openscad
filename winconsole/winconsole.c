@@ -48,7 +48,6 @@ Fix printing of unicode on console.
 #include <process.h>
 #include <io.h>
 #include <fcntl.h>
-/*#include <stdio.h>*/
 #include <string.h>
 
 // manage MS Windows error codes

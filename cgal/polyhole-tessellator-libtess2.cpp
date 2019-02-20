@@ -2,7 +2,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 #include <sstream>
-#include <fstream>
+#include <nowide/fstream.hpp>
 #include <iostream>
 #include <locale.h>
 
@@ -67,7 +67,7 @@ static void export_stl(const IndexedTriangleMesh &trimesh, std::ostream &output)
 bool import_polygon(IndexedPolygons &polyhole, const std::string &filename)
 {
   Reindexer<Vector3f> uniqueVertices;
-  std::ifstream ifs(filename.c_str());
+  nowide::ifstream ifs(filename.c_str());
   if (!ifs) return false;
 
   std::string line;
@@ -86,7 +86,7 @@ bool import_polygon(IndexedPolygons &polyhole, const std::string &filename)
     if (c == ',') {ss.read(&c, 1); c = ss.peek();} //gobble comma
     while (c == ' ') {ss.read(&c, 1); c = ss.peek();} //gobble spaces after comma
     if (!(ss >> Y)) {
-      std::cerr << "Y error\n";
+      nowide::cerr << "Y error\n";
       return false;
     }
     c = ss.peek();
@@ -94,7 +94,7 @@ bool import_polygon(IndexedPolygons &polyhole, const std::string &filename)
     if (c == ',') {ss.read(&c, 1); c = ss.peek();} //gobble comma
     while (c == ' ') {ss.read(&c, 1); c = ss.peek();} //gobble spaces after comma
     if (!(ss >> Z)) {
-      std::cerr << "Z error\n";
+      nowide::cerr << "Z error\n";
       return false;
     }
     polygon.push_back(uniqueVertices.lookup(Vector3f(X, Y, Z)));
@@ -113,10 +113,10 @@ int main(int argc, char *argv[])
   Vector3f *normal = NULL;
   if (argc >= 2) {
     if (!import_polygon(polyhole, argv[1])) {
-      std::cerr << "Error importing polygon" << std::endl;
+      nowide::cerr << "Error importing polygon" << std::endl;
       exit(1);
     }
-    std::cerr << "Imported " << polyhole.faces.size() << " polygons" << std::endl;
+    nowide::cerr << "Imported " << polyhole.faces.size() << " polygons" << std::endl;
 
     if (argc == 3) {
       std::vector<std::string> strs;
@@ -149,11 +149,11 @@ int main(int argc, char *argv[])
 
   std::vector<IndexedTriangle> triangles;
   bool ok = GeometryUtils::tessellatePolygonWithHoles(&polyhole.vertices.front(), polyhole.faces, triangles, normal);
-  std::cerr << "Tessellated into " << triangles.size() << " triangles" << std::endl;
+  nowide::cerr << "Tessellated into " << triangles.size() << " triangles" << std::endl;
 
   IndexedTriangleMesh trimesh;
   trimesh.vertices = polyhole.vertices;
   trimesh.triangles = triangles;
 
-  export_stl(trimesh, std::cout);
+  export_stl(trimesh, nowide::cout);
 }

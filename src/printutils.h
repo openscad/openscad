@@ -2,7 +2,7 @@
 
 #include <string>
 #include <list>
-#include <iostream>
+#include <nowide/iostream.hpp>
 #include <boost/format.hpp>
 
 #include <libintl.h>
@@ -85,7 +85,7 @@ public:
 	int loglevel;
 	logstream( int level = 0 ) {
 		loglevel = level;
-		out = &(std::cout);
+		out = &(nowide::cout);
 	}
 	template <typename T> logstream & operator<<( T const &t ) {
 		if (out && loglevel <= openscad_loglevel) {

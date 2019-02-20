@@ -29,7 +29,6 @@
 ** Author: Mikko Mononen, July 2009.
 */
 
-#include <stdio.h>
 #include <stdlib.h>
 #include "../Include/tesselator.h"
 

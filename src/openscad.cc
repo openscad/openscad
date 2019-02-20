@@ -50,7 +50,6 @@
 #include"parameter/parameterset.h"
 #include <string>
 #include <vector>
-#include <fstream>
 
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
@@ -127,11 +126,11 @@ static void version()
 
 static int info()
 {
-	std::cout << LibraryInfo::info() << "\n\n";
+	nowide::cout << LibraryInfo::info() << "\n\n";
 
 	try {
 		OffscreenView glview(512,512);
-		std::cout << glview.getRendererInfo() << "\n";
+		nowide::cout << glview.getRendererInfo() << "\n";
 	} catch (int error) {
 		PRINTB("Can't create OpenGL OffscreenView. Code: %i. Exiting.\n", error);
 		return 1;
@@ -237,7 +236,7 @@ Camera get_camera(const po::variables_map &vm)
 #define OPENSCAD_QTGUI 1
 #endif
 static bool checkAndExport(shared_ptr<const Geometry> root_geom, unsigned nd,
-													 FileFormat format, const char *filename)
+													 FileFormat format, const std::string &filename)
 {
 	if (root_geom->getDimension() != nd) {
 		PRINTB("Current top level object is not a %dD object.", nd);
@@ -247,7 +246,7 @@ static bool checkAndExport(shared_ptr<const Geometry> root_geom, unsigned nd,
 		PRINT("Current top level object is empty.");
 		return false;
 	}
-	exportFileByName(root_geom, format, filename, filename);
+	exportFileByName(root_geom, format, filename);
 	return true;
 }
 
@@ -837,7 +836,7 @@ int main(int argc, char **argv)
 #ifdef OPENSCAD_QTGUI
 	{   // Need a dummy app instance to get the application path but it needs to be destroyed before the GUI is launched.
 		QCoreApplication app(argc, argv);
-		PlatformUtils::registerApplicationPath(app.applicationDirPath().toLocal8Bit().constData());
+		PlatformUtils::registerApplicationPath(app.applicationDirPath().toStdString());
 	}
 #else
 	PlatformUtils::registerApplicationPath(fs::absolute(boost::filesystem::path(argv[0]).parent_path()).generic_string());

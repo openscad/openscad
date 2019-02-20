@@ -317,28 +317,28 @@ namespace CGALUtils {
 		std::vector<IndexedTriangle> allTriangles;
 		for (const auto &faces : polygons) {
 #if 0 // For debugging
-			std::cerr << "---\n";
+			nowide::cerr << "---\n";
 			for(const auto &poly : faces) {
 				for(auto i : poly) {
-					std::cerr << i << " ";
+					nowide::cerr << i << " ";
 				}
-				std::cerr << "\n";
+				nowide::cerr << "\n";
 			}
 #if 0 // debug
-			std::cerr.precision(20);
+			nowide::cerr.precision(20);
 			for(const auto &poly : faces) {
 				for(auto i : poly) {
-					std::cerr << verts[i][0] << "," << verts[i][1] << "," << verts[i][2] << "\n";
+					nowide::cerr << verts[i][0] << "," << verts[i][1] << "," << verts[i][2] << "\n";
 				}
-				std::cerr << "\n";
+				nowide::cerr << "\n";
 			}
 #endif // debug
-			std::cerr << "-\n";
+			nowide::cerr << "-\n";
 #endif // debug
 #if 0 // For debugging
-		std::cerr.precision(20);
+		nowide::cerr.precision(20);
 		for (size_t i=0;i<allVertices.size();i++) {
-			std::cerr << verts[i][0] << ", " << verts[i][1] << ", " << verts[i][2] << "\n";
+			nowide::cerr << verts[i][0] << ", " << verts[i][1] << ", " << verts[i][2] << "\n";
 		}		
 #endif // debug
 
@@ -368,7 +368,7 @@ namespace CGALUtils {
 
 #if 0 // For debugging
 		for(const auto &t : allTriangles) {
-			std::cerr << t[0] << " " << t[1] << " " << t[2] << "\n";
+			nowide::cerr << t[0] << " " << t[1] << " " << t[2] << "\n";
 		}
 #endif // debug
 		// 4. Validate mesh (manifoldness)
@@ -385,9 +385,9 @@ namespace CGALUtils {
 		}
 
 #if 0 // For debugging
-		std::cerr.precision(20);
+		nowide::cerr.precision(20);
 		for (size_t i=0;i<allVertices.size();i++) {
-			std::cerr << verts[i][0] << ", " << verts[i][1] << ", " << verts[i][2] << "\n";
+			nowide::cerr << verts[i][0] << ", " << verts[i][1] << ", " << verts[i][2] << "\n";
 		}		
 #endif // debug
 
@@ -580,14 +580,14 @@ namespace CGALUtils {
 				polyholes.push_back(polygon);
 			}
 
-			std::cout << "---\n";
+			nowide::cout << "---\n";
 			for(const auto &poly : polyholes) {
 				for(const auto &v : poly) {
-					std::cout << v.x() << "," << v.y() << "," << v.z() << "\n";
+					nowide::cout << v.x() << "," << v.y() << "," << v.z() << "\n";
 				}
-				std::cout << "\n";
+				nowide::cout << "\n";
 			}
-			std::cout << "-\n";
+			nowide::cout << "-\n";
 
 			/* at this stage, we have a sequence of polygons. the first
 				 is the "outside edge' or 'body' or 'border', and the rest of the
@@ -613,9 +613,9 @@ namespace CGALUtils {
 					ps.append_vertex(p[0].x(), p[0].y(), p[0].z());
 					ps.append_vertex(p[1].x(), p[1].y(), p[1].z());
 					ps.append_vertex(p[2].x(), p[2].y(), p[2].z());
-					// std::cout << p[0].x() << "," << p[0].y() << "," << p[0].z() << "\n";
-					// std::cout << p[1].x() << "," << p[1].y() << "," << p[1].z() << "\n";
-					// std::cout << p[2].x() << "," << p[2].y() << "," << p[2].z() << "\n\n";
+					// nowide::cout << p[0].x() << "," << p[0].y() << "," << p[0].z() << "\n";
+					// nowide::cout << p[1].x() << "," << p[1].y() << "," << p[1].z() << "\n";
+					// nowide::cout << p[2].x() << "," << p[2].y() << "," << p[2].z() << "\n\n";
 				}
 			}
 		}
@@ -654,15 +654,15 @@ namespace CGALUtils {
 			uniqueVertices.copy(std::back_inserter(polyhole.vertices));
 
 #if 0 // For debugging
-			std::cerr << "---\n";
-			std::cerr.precision(20);
+			nowide::cerr << "---\n";
+			nowide::cerr.precision(20);
 			for(const auto &poly : polyhole.faces) {
 				for(auto i : poly) {
-					std::cerr << polyhole.vertices[i][0] << "," << polyhole.vertices[i][1] << "," << polyhole.vertices[i][2] << "\n";
+					nowide::cerr << polyhole.vertices[i][0] << "," << polyhole.vertices[i][1] << "," << polyhole.vertices[i][2] << "\n";
 				}
-				std::cerr << "\n";
+				nowide::cerr << "\n";
 			}
-			std::cerr << "-\n";
+			nowide::cerr << "-\n";
 #endif // debug
 
 			/* at this stage, we have a sequence of polygons. the first

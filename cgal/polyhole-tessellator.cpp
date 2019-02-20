@@ -1,9 +1,9 @@
 #include <boost/foreach.hpp>
 #include <boost/algorithm/string.hpp>
 #include <sstream>
-#include <iostream>
 #include <locale.h>
-
+#include <nowide/cstdio.hpp>
+#include <nowide/iostream.hpp>
 #include "cgalutils.h"
 
 
@@ -57,7 +57,7 @@ static void export_stl(const Polygons &triangles, std::ostream &output)
 */
 bool import_polygon(PolyholeK &polyhole, const std::string &filename)
 {
-  std::ifstream ifs(filename.c_str());
+  nowide::ifstream ifs(filename.c_str());
   if (!ifs) return false;
 
   std::string line;
@@ -76,7 +76,7 @@ bool import_polygon(PolyholeK &polyhole, const std::string &filename)
     if (c == ',') {ss.read(&c, 1); c = ss.peek();} //gobble comma
     while (c == ' ') {ss.read(&c, 1); c = ss.peek();} //gobble spaces after comma
     if (!(ss >> Y)) {
-      std::cerr << "Y error\n";
+      nowide::cerr << "Y error\n";
       return false;
     }
     c = ss.peek();
@@ -84,7 +84,7 @@ bool import_polygon(PolyholeK &polyhole, const std::string &filename)
     if (c == ',') {ss.read(&c, 1); c = ss.peek();} //gobble comma
     while (c == ' ') {ss.read(&c, 1); c = ss.peek();} //gobble spaces after comma
     if (!(ss >> Z)) {
-      std::cerr << "Z error\n";
+      nowide::cerr << "Z error\n";
       return false;
     }
     polygon.push_back(Vertex3K(X, Y, Z));
@@ -101,10 +101,10 @@ int main(int argc, char *argv[])
   K::Vector_3 *normal = NULL;
   if (argc >= 2) {
     if (!import_polygon(polyhole, argv[1])) {
-      std::cerr << "Error importing polygon" << std::endl;
+      nowide::cerr << "Error importing polygon" << std::endl;
       exit(1);
     }
-    std::cerr << "Imported " << polyhole.size() << " polygons" << std::endl;
+    nowide::cerr << "Imported " << polyhole.size() << " polygons" << std::endl;
 
     if (argc == 3) {
       std::vector<std::string> strs;
@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
 
   Polygons triangles;
   bool ok = CGALUtils::tessellatePolygonWithHoles(polyhole, triangles, normal);
-  std::cerr << "Tessellated into " << triangles.size() << " triangles" << std::endl;
+  nowide::cerr << "Tessellated into " << triangles.size() << " triangles" << std::endl;
 
-  export_stl(triangles, std::cout);
+  export_stl(triangles, nowide::cout);
 }

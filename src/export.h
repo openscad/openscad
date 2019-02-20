@@ -22,7 +22,7 @@ enum class FileFormat {
 };
 
 void exportFileByName(const shared_ptr<const class Geometry> &root_geom, FileFormat format,
-											const char *name2open, const char *name2display);
+											const std::string &name);
 
 void export_stl(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_3mf(const shared_ptr<const Geometry> &geom, std::ostream &output);
@@ -32,11 +32,6 @@ void export_dxf(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_svg(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_nefdbg(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_nef3(const shared_ptr<const Geometry> &geom, std::ostream &output);
-
-// void exportFile(const class Geometry *root_geom, std::ostream &output, FileFormat format);
-void exportFileByName(const class Geometry *root_geom, FileFormat format,
-	const std::string &name2open, const std::string &name2display);
-void export_png(shared_ptr<const class Geometry> root_geom, Camera &c, std::ostream &output);
 
 enum class Previewer { OPENCSG, THROWNTOGETHER };
 enum class RenderType { GEOMETRY, CGAL, OPENCSG, THROWNTOGETHER };

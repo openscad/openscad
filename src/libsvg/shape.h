@@ -28,7 +28,7 @@
 #include <string>
 #include <vector>
 
-#include <iostream>
+#include <nowide/iostream.hpp>
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>

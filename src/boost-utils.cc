@@ -1,6 +1,5 @@
 #include "boosty.h"
 #include "boost-utils.h"
-#include <stdio.h>
 #include <iostream>
 
 namespace fs=boost::filesystem;

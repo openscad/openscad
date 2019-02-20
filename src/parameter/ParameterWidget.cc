@@ -41,13 +41,11 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
-#include <fstream>
-
 namespace pt = boost::property_tree;
 
 #include <QInputDialog>
 #include <QMessageBox>
-#include <fstream>
+#include <nowide/fstream.hpp>
 
 ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 {
@@ -154,7 +152,7 @@ void ParameterWidget::readFile(QString scadFile)
 		readable = this->setMgr->readParameterSet(this->jsonFile);
 
 		//check whether file is writeable or not
-		if (std::fstream(this->jsonFile, std::ios::app)) writeable = true;
+		if (nowide::fstream(this->jsonFile, std::ios::app)) writeable = true;
 	}
 
 	if(writeable || !exists){

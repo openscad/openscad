@@ -10,8 +10,8 @@
 #include "transformnode.h"
 
 #include <sstream>
-#include <iostream>
 #include <assert.h>
+#include <nowide/iostream.hpp>
 
 bool CSGTextRenderer::isCached(const AbstractNode &node)
 {
@@ -150,8 +150,8 @@ Response CSGTextRenderer::visit(State &state, const AbstractPolyNode &node)
 			string N = node.name();
 			this->cache.insert(node, N);
 		
-// 		std::cout << "Insert: " << N << "\n";
-// 		std::cout << "Node: " << cacheid.toStdString() << "\n\n";
+// 		nowide::cout << "Insert: " << N << "\n";
+// 		nowide::cout << "Node: " << cacheid.toStdString() << "\n\n";
 		}
 		addToParent(state, node);
 	}

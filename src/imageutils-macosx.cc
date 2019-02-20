@@ -15,7 +15,7 @@ size_t write_bytes_to_ostream (void *info,const void *buffer,size_t count)
 		output->write( (const char *)buffer, count );
 		endpos = output->tellp();
 	} catch (const std::ios_base::failure& e) {
-		std::cerr << "Error writing to ostream:" << e.what() << "\n";
+		nowide::cerr << "Error writing to ostream:" << e.what() << "\n";
 	}
 	return (endpos-startpos);
 }
@@ -39,13 +39,13 @@ bool write_png(std::ostream &output, unsigned char *pixels, int width, int heigh
 																									bitsPerComponent, rowBytes, 
                                                   colorSpace, bitmapInfo);
   if (!contextRef) {
-    std::cerr << "Unable to create CGContextRef.";
+    nowide::cerr << "Unable to create CGContextRef.";
     return false;
   }
 
   CGImageRef imageRef = CGBitmapContextCreateImage(contextRef);
   if (!imageRef) {
-    std::cerr <<  "Unable to create CGImageRef.";
+    nowide::cerr <<  "Unable to create CGImageRef.";
     return false;
   }
 
@@ -55,7 +55,7 @@ bool write_png(std::ostream &output, unsigned char *pixels, int width, int heigh
   CFURLRef fileURL = CFURLCreateWithFileSystemPath(kCFAllocatorDefault,
                                                    fname, kCFURLPOSIXPathStyle, false);
   if (!fileURL) {
-    std::cerr << "Unable to create file URL ref.";
+    nowide::cerr << "Unable to create file URL ref.";
     return false;
   }
 
@@ -71,7 +71,7 @@ bool write_png(std::ostream &output, unsigned char *pixels, int width, int heigh
                                                                              fileImageIndex, 
                                                                              fileDict);
   if (!imageDest) {
-    std::cerr <<  "Unable to create CGImageDestinationRef.";
+    nowide::cerr <<  "Unable to create CGImageDestinationRef.";
     return false;
   }
 

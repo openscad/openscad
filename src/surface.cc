@@ -135,7 +135,7 @@ bool SurfaceNode::is_png(std::vector<uint8_t> &png) const
 
 static void load_png_file(std::vector<unsigned char>& buffer, const std::string& filename)
 {
-  //  std::ifstream file(filename.c_str(), std::ios::in|std::ios::binary|std::ios::ate);
+  //  nowide::ifstream file(filename.c_str(), std::ios::in|std::ios::binary|std::ios::ate);
   // nowide doesn't support ios::ate, so we do this manually
   // See http://sourceforge.net/p/cppcms/bugs/140/
   nowide::ifstream file(filename.c_str(), std::ios::in|std::ios::binary);

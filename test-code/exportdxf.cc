@@ -42,6 +42,7 @@
 #include <QTextStream>
 #include <getopt.h>
 #include <iostream>
+#include <nowide/cstdio.hpp>
 
 QString commandline_commands;
 const char *make_command = NULL;
@@ -138,7 +139,7 @@ int main(int argc, char **argv)
 
 	QFileInfo fileInfo(filename);
 	handle_dep(filename);
-	FILE *fp = fopen(filename, "rt");
+	FILE *fp = nowide::fopen(filename, "rt");
 	if (!fp) {
 		fprintf(stderr, "Can't open input file `%s'!\n", filename);
 		exit(1);
@@ -151,7 +152,7 @@ int main(int argc, char **argv)
 			text += buffer;
 		}
 		fclose(fp);
-		if(!parse(root_module, (text+commandline_commands).toAscii().data(), fileInfo.absolutePath().toLocal8Bit(), false)) {
+		if(!parse(root_module, (text+commandline_commands).toAscii().data(), fileInfo.absolutePath().toUtf8(), false)) {
 			delete root_module; // parse failed
 			root_module = NULL;
 		}

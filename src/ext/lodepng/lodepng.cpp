@@ -31,8 +31,8 @@ Rename this file to lodepng.cpp to use it for C++, or to lodepng.c to use it for
 #include "lodepng.h"
 
 #include <limits.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <nowide/cstdio.hpp>
+#include <nowide/cstdlib.hpp>
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1310) /*Visual Studio: A few warning types are not desired here.*/
 #pragma warning( disable : 4244 ) /*implicit conversions: not warned by gcc -Wall -Wextra and requires too much casts*/
@@ -348,7 +348,7 @@ static long lodepng_filesize(const char* filename)
 {
   FILE* file;
   long size;
-  file = fopen(filename, "rb");
+  file = nowide::fopen(filename, "rb");
   if(!file) return -1;
 
   if(fseek(file, 0, SEEK_END) != 0)
@@ -370,7 +370,7 @@ static unsigned lodepng_buffer_file(unsigned char* out, size_t size, const char*
 {
   FILE* file;
   size_t readsize;
-  file = fopen(filename, "rb");
+  file = nowide::fopen(filename, "rb");
   if(!file) return 78;
 
   readsize = fread(out, 1, size, file);
@@ -396,7 +396,7 @@ unsigned lodepng_load_file(unsigned char** out, size_t* outsize, const char* fil
 unsigned lodepng_save_file(const unsigned char* buffer, size_t buffersize, const char* filename)
 {
   FILE* file;
-  file = fopen(filename, "wb" );
+  file = nowide::fopen(filename, "wb" );
   if(!file) return 79;
   fwrite(buffer, 1, buffersize, file);
   fclose(file);
@@ -515,13 +515,13 @@ typedef struct HuffmanTree
 /*
 static void HuffmanTree_draw(HuffmanTree* tree)
 {
-  std::cout << "tree. length: " << tree->numcodes << " maxbitlen: " << tree->maxbitlen << std::endl;
+  nowide::cout << "tree. length: " << tree->numcodes << " maxbitlen: " << tree->maxbitlen << std::endl;
   for(size_t i = 0; i != tree->tree1d.size; ++i)
   {
     if(tree->lengths.data[i])
-      std::cout << i << " " << tree->tree1d.data[i] << " " << tree->lengths.data[i] << std::endl;
+      nowide::cout << i << " " << tree->tree1d.data[i] << " " << tree->lengths.data[i] << std::endl;
   }
-  std::cout << std::endl;
+  nowide::cout << std::endl;
 }*/
 
 static void HuffmanTree_init(HuffmanTree* tree)
@@ -3728,14 +3728,14 @@ void lodepng_color_profile_init(LodePNGColorProfile* profile)
 /*function used for debug purposes with C++*/
 /*void printColorProfile(LodePNGColorProfile* p)
 {
-  std::cout << "colored: " << (int)p->colored << ", ";
-  std::cout << "key: " << (int)p->key << ", ";
-  std::cout << "key_r: " << (int)p->key_r << ", ";
-  std::cout << "key_g: " << (int)p->key_g << ", ";
-  std::cout << "key_b: " << (int)p->key_b << ", ";
-  std::cout << "alpha: " << (int)p->alpha << ", ";
-  std::cout << "numcolors: " << (int)p->numcolors << ", ";
-  std::cout << "bits: " << (int)p->bits << std::endl;
+  nowide::cout << "colored: " << (int)p->colored << ", ";
+  nowide::cout << "key: " << (int)p->key << ", ";
+  nowide::cout << "key_r: " << (int)p->key_r << ", ";
+  nowide::cout << "key_g: " << (int)p->key_g << ", ";
+  nowide::cout << "key_b: " << (int)p->key_b << ", ";
+  nowide::cout << "alpha: " << (int)p->alpha << ", ";
+  nowide::cout << "numcolors: " << (int)p->numcolors << ", ";
+  nowide::cout << "bits: " << (int)p->bits << std::endl;
 }*/
 
 /*Returns how many bits needed to represent given value (max 8 bit)*/

@@ -96,7 +96,7 @@ int main(int argc, char **argv)
 	try {
 		vm = parse_options(argc, argv);
 	} catch ( po::error e ) {
-		std::cerr << "error parsing options: " << e.what() << "\n";
+		nowide::cerr << "error parsing options: " << e.what() << "\n";
 	}
 	if (vm.count("cgalcachesize")) {
 		cgalcachesize = vm["cgalcachesize"].as<size_t>();
@@ -109,7 +109,7 @@ int main(int argc, char **argv)
 	}
 
 	if ((!filename || !outfilename)) {
-		std::cerr << "Usage: " << argv[0] << " <file.scad> <output.txt>\n";
+		nowide::cerr << "Usage: " << argv[0] << " <file.scad> <output.txt>\n";
 		exit(1);
 	}
 
@@ -150,9 +150,9 @@ int main(int argc, char **argv)
 
 	print_messages_push();
 
-	std::cout << "First evaluation:\n";
+	nowide::cout << "First evaluation:\n";
 	shared_ptr<const Geometry> geom = geomevaluator.evaluateGeometry(*root_node, true);
-	std::cout << "Second evaluation:\n";
+	nowide::cout << "Second evaluation:\n";
 	shared_ptr<const Geometry> geom2 = geomevaluator.evaluateGeometry(*root_node, true);
 	// FIXME:
 	// Evaluate again to make cache kick in

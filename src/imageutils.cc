@@ -1,7 +1,7 @@
 #include "imageutils.h"
 #include <assert.h>
 #include <string.h>
-#include <fstream>
+#include <nowide/fstream.hpp>
 
 void flip_image(const unsigned char *src, unsigned char *dst, size_t pixelsize, size_t width, size_t height)
 {
@@ -15,13 +15,13 @@ void flip_image(const unsigned char *src, unsigned char *dst, size_t pixelsize, 
 bool write_png(const char *filename, unsigned char *pixels, int width, int height)
 {
   assert(filename && pixels);
-  std::ofstream fstream(filename, std::ios::binary);
+  nowide::ofstream fstream(filename, std::ios::binary);
   if (fstream.is_open()) {
     write_png(fstream, pixels, width, height);
     fstream.close();
     return true;
   } else {
-    std::cerr << "Can't open file " << filename << " for export.";
+    nowide::cerr << "Can't open file " << filename << " for export.";
     return false;
   }
 }
