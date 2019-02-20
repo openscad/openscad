@@ -101,7 +101,7 @@ namespace nowide {
     {
         char const *key = string;
         char const *key_end = string;
-        while(*key_end!='=' && key_end!='\0')
+        while(*key_end!='=' && *key_end!='\0')
             key_end++;
         if(*key_end == '\0')
             return -1;
